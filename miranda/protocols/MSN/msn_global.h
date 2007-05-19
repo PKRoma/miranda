@@ -516,6 +516,7 @@ BOOL __stdcall p2p_sessionRegistered( filetransfer* ft );
 void __stdcall p2p_registerDC( directconnection* ft );
 void __stdcall p2p_unregisterDC( directconnection* dc );
 directconnection* __stdcall p2p_getDCByCallID( const char* CallID );
+void p2p_detectUPnP( ThreadData* info );
 
 void ft_startFileSend( ThreadData* info, const char* Invcommand, const char* Invcookie );
 

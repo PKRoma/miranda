@@ -1,5 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
+Copyright (c) 2006-7 Boris Krasnovskiy.
 Copyright (c) 2003-5 George Hazan.
 Copyright (c) 2002-3 Richard Hughes (original version).
 
@@ -34,6 +35,7 @@ static char sttP2Pheader[] =
 	"P2P-Dest: %s\r\n\r\n";
 
 static char sttVoidNonce[] = "{00000000-0000-0000-0000-000000000000}";
+static bool upnpDetected = false;
 
 void __cdecl p2p_filePassiveThread( ThreadData* info );
 
@@ -70,6 +72,38 @@ static char* getNewUuid()
 	return result;
 }
 
+void p2p_detectUPnP( ThreadData* info )
+{
+	char ipaddr[256];
+	if ( MSN_GetMyHostAsString( ipaddr, sizeof( ipaddr ))) {
+		MSN_DebugLog( "Cannot detect my host address" );
+		return;
+	}
+
+	NETLIBBIND nlb = {0};
+	nlb.cbSize = sizeof( nlb );
+	nlb.pfnNewConnectionV2 = MSN_ConnectionProc;
+	nlb.wPort = 0;	// Use user-specified incoming port ranges, if available
+	HANDLE sb = (HANDLE) MSN_CallService(MS_NETLIB_BINDPORT, (WPARAM) hNetlibUser, ( LPARAM )&nlb);
+	if ( sb == NULL ) {
+		MSN_DebugLog( "Unable to bind the port for incoming transfers" );
+		return;
+	}
+
+	SOCKET s = MSN_CallService( MS_NETLIB_GETSOCKET, ( WPARAM )info->s, 0 );
+	if ( s != INVALID_SOCKET) {
+		SOCKADDR_IN saddr;
+		int len = sizeof( saddr );
+		if ( getsockname( s, ( SOCKADDR* )&saddr, &len ) != SOCKET_ERROR )
+			upnpDetected = nlb.dwExternalIP != nlb.dwInternalIP;
+			MSN_DebugLog( "NAT Detect %s %s, %x, %x", ipaddr, inet_ntoa( saddr.sin_addr ),
+				nlb.dwExternalIP, nlb.dwInternalIP );
+	}
+
+	Netlib_CloseHandle( sb );
+}
+
+
 static int sttCreateListener(
 	ThreadData* info,
 	filetransfer* ft,
@@ -101,7 +135,7 @@ static int sttCreateListener(
 		if ( getsockname( s, ( SOCKADDR* )&saddr, &len ) != SOCKET_ERROR )
 			bAllowIncoming = strcmp( ipaddr, inet_ntoa( saddr.sin_addr )) == 0 ||
 				nlb.dwExternalIP != nlb.dwInternalIP || MSN_GetByte( "NLSpecifyIncomingPorts", 0 ) != 0 ;
-			MSN_DebugLog( "NAT Detect %s %s, %x, %x %d", ipaddr, inet_ntoa( saddr.sin_addr ), 
+			MSN_DebugLog( "NAT Detect %s %s, %x, %x %d", ipaddr, inet_ntoa( saddr.sin_addr ),
 				nlb.dwExternalIP, nlb.dwInternalIP, MSN_GetByte( "NLSpecifyIncomingPorts", 0 ));
 	}
 
@@ -260,18 +294,24 @@ static const char sttVoidSession[] = "ACHTUNG!!! an attempt made to send a messa
 
 void __stdcall p2p_sendAck( filetransfer* ft, ThreadData* info, P2P_Header* hdrdata )
 {
-	if ( ft == NULL ) {
-		MSN_DebugLog( sttVoidSession );
-		return;
-	}
+	char* buf = ( char* )alloca( 1000 + MSN_MAX_EMAIL_LEN );
+	char* p = buf;
 
-	char* buf = ( char* )alloca( 1000 + strlen( ft->p2p_dest ));
-	char* p = buf + sprintf( buf, sttP2Pheader, ft->p2p_dest );
+	if ( ft == NULL ) {
+		if ( info->mJoinedCount == 0 )
+			return;
+		char email[MSN_MAX_EMAIL_LEN];
+		if ( MSN_GetStaticString( "e-mail", info->mJoinedContacts[0], email, MSN_MAX_EMAIL_LEN ))
+			return;
+		p += sprintf( buf, sttP2Pheader, email );
+	}
+	else
+		p += sprintf( buf, sttP2Pheader, ft->p2p_dest );
 
 	P2P_Header* tHdr = ( P2P_Header* )p; p += sizeof( P2P_Header );
 	memset( tHdr, 0, sizeof( P2P_Header ));
 	tHdr->mSessionID = hdrdata->mSessionID;
-	tHdr->mID = ++ft->p2p_msgid;
+	tHdr->mID = ft ? ++ft->p2p_msgid : rand();
 	tHdr->mAckDataSize = hdrdata->mTotalSize;
 	tHdr->mTotalSize = hdrdata->mTotalSize;
 	tHdr->mFlags = 2;
@@ -290,7 +330,7 @@ void __stdcall p2p_sendAck( filetransfer* ft, ThreadData* info, P2P_Header* hdrd
 		info->send(( char* )p2pPacket, sizeof( P2P_Header ) + sizeof( DWORD ));
 	}
 	else info->sendRawMessage( 'D', buf, int( p - buf ));
-	ft->ts = time( NULL );
+	if ( ft ) ft->ts = time( NULL );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -410,6 +450,9 @@ void __stdcall p2p_sendSlp(
 		case 603: p += sprintf( p, "MSNSLP/1.0 603 DECLINE" ); break;
 		default: return;
 	}
+	
+	if ( iKind < 0 )
+		replaceStr(ft->p2p_branch, getNewUuid());
 
 	p += sprintf( p,
 		"\r\nTo: <msnmsgr:%s>\r\n"
@@ -1251,13 +1294,16 @@ LBL_Close:
 		char ipaddr[256] = "";
 		MSN_GetMyHostAsString( ipaddr, sizeof( ipaddr ));
 
-		SOCKET s = MSN_CallService( MS_NETLIB_GETSOCKET, ( WPARAM )info->s, 0 );
-		if ( s != INVALID_SOCKET) {
-			SOCKADDR_IN saddr;
-			int len = sizeof( saddr );
-			if ( getsockname( s, ( SOCKADDR* )&saddr, &len ) != SOCKET_ERROR )
-				if ( strcmp( ipaddr, inet_ntoa( saddr.sin_addr )) && bAllowIncoming )
-					conn = "Unknown-NAT";
+		if ( bAllowIncoming && MSN_GetByte( "NLSpecifyIncomingPorts", 0 ) == 0 )
+		{
+			SOCKET s = MSN_CallService( MS_NETLIB_GETSOCKET, ( WPARAM )info->s, 0 );
+			if ( s != INVALID_SOCKET) {
+				SOCKADDR_IN saddr;
+				int len = sizeof( saddr );
+				if ( getsockname( s, ( SOCKADDR* )&saddr, &len ) != SOCKET_ERROR )
+					if ( strcmp( ipaddr, inet_ntoa( saddr.sin_addr )))
+						conn = "Unknown-NAT";
+			}
 		}
 
 		directconnection* dc = new directconnection( ft );
@@ -1274,8 +1320,8 @@ LBL_Close:
 
 		tResult.addString( "Content-Type", "application/x-msnmsgr-transreqbody" );
 		cbBody = mir_snprintf( szBody, 1024,
-			"Bridges: TCPv1\r\nNetID: %u\r\nConn-Type: %s\r\nUPnPNat: false\r\nICF: false\r\n%s\r\n%c",
-			inet_addr(ipaddr), conn, szNonce, 0 );
+			"Bridges: TCPv1\r\nNetID: %i\r\nConn-Type: %s\r\nUPnPNat: %s\r\nICF: false\r\n%s\r\n%c",
+			inet_addr(ipaddr), conn, upnpDetected ? "true" : "false", szNonce, 0 );
 
 	}
 	else if ( !strcmp( szOldContentType, "application/x-msnmsgr-transrespbody" )) {
@@ -1381,7 +1427,7 @@ void __stdcall p2p_processMsg( ThreadData* info, const char* msgbody )
 	sttLogHeader( hdrdata );
 
 	//---- if we got a message
-	if ( hdrdata->mFlags == 0 )
+	if ( hdrdata->mFlags == 0 && hdrdata->mSessionID == 0 )
 	{
 		int iMsgType = 0;
 		if ( !memcmp( msgbody, "INVITE MSNMSGR:", 15 ))
@@ -1397,37 +1443,39 @@ void __stdcall p2p_processMsg( ThreadData* info, const char* msgbody )
 		else if ( !memcmp( msgbody, "MSNSLP/1.0 500 ", 15 ))
 			iMsgType = 4;
 
-		if ( iMsgType ) {
-			const char* peol = strstr( msgbody, "\r\n" );
-			if ( peol != NULL )
-				msgbody = peol+2;
+		const char* peol = strstr( msgbody, "\r\n" );
+		if ( peol != NULL )
+			msgbody = peol+2;
 
-			MimeHeaders tFileInfo, tFileInfo2;
-			msgbody = tFileInfo.readFromBuffer( msgbody );
-			msgbody = tFileInfo2.readFromBuffer( msgbody );
+		MimeHeaders tFileInfo, tFileInfo2;
+		msgbody = tFileInfo.readFromBuffer( msgbody );
+		msgbody = tFileInfo2.readFromBuffer( msgbody );
 
-			const char* szContentType = tFileInfo[ "Content-Type" ];
-			if ( szContentType == NULL ) {
-				MSN_DebugLog( "Invalid or missing Content-Type field, exiting" );
-				return;
-			}
+		const char* szContentType = tFileInfo[ "Content-Type" ];
+		if ( szContentType == NULL ) {
+			MSN_DebugLog( "Invalid or missing Content-Type field, exiting" );
+			return;
+		}
 
-			switch( iMsgType ) {
-			case 1:
-				if ( !strcmp( szContentType, "application/x-msnmsgr-sessionreqbody" ))
-					sttInitFileTransfer( hdrdata, info, tFileInfo, tFileInfo2, msgbody );
-				else if ( !strcmp( szContentType, "application/x-msnmsgr-transreqbody" ))
-					sttInitDirectTransfer( hdrdata, info, tFileInfo, tFileInfo2 );
-				else if ( !strcmp( szContentType, "application/x-msnmsgr-transrespbody" ))
-					sttInitDirectTransfer2( hdrdata, info, tFileInfo, tFileInfo2 );
-				break;
+		switch( iMsgType ) {
+		case 1:
+			if ( !strcmp( szContentType, "application/x-msnmsgr-sessionreqbody" ))
+				sttInitFileTransfer( hdrdata, info, tFileInfo, tFileInfo2, msgbody );
+			else if ( !strcmp( szContentType, "application/x-msnmsgr-transreqbody" ))
+				sttInitDirectTransfer( hdrdata, info, tFileInfo, tFileInfo2 );
+			else if ( !strcmp( szContentType, "application/x-msnmsgr-transrespbody" ))
+				sttInitDirectTransfer2( hdrdata, info, tFileInfo, tFileInfo2 );
+			break;
 
-			case 2:
-				sttAcceptTransfer( hdrdata, info, tFileInfo, tFileInfo2 );
-				break;
+		case 2:
+			sttAcceptTransfer( hdrdata, info, tFileInfo, tFileInfo2 );
+			break;
 
-			case 3:
-				if ( !strcmp( szContentType, "application/x-msnmsgr-sessionclosebody" ))
+		case 3:
+			if ( !strcmp( szContentType, "application/x-msnmsgr-sessionclosebody" ))
+			{
+				filetransfer* ft = p2p_getSessionByCallID( tFileInfo[ "Call-ID" ] );
+				if ( ft != NULL )
 				{
 					filetransfer* ft = p2p_getSessionByCallID( tFileInfo[ "Call-ID" ] );
 					if ( ft != NULL )
@@ -1441,14 +1489,18 @@ void __stdcall p2p_processMsg( ThreadData* info, const char* msgbody )
 						p2p_sessionComplete( ft );
 					}
 				}
-				break;
-
-			case 4:
-				sttCloseTransfer( hdrdata, info, tFileInfo );
-				break;
 			}
-			return;
+			break;
+
+		case 4:
+			sttCloseTransfer( hdrdata, info, tFileInfo );
+			break;
+
+		default:
+			p2p_sendAck( NULL, info, hdrdata );
+			break;
 		}
+		return;
 	}
 
 	filetransfer* ft = p2p_getSessionByID( hdrdata->mSessionID );

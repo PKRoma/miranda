@@ -866,7 +866,7 @@ filetransfer::filetransfer()
 
 filetransfer::~filetransfer( void )
 {
-	MSN_DebugLog( "Destroying file transfer session %lu", p2p_sessionid );
+	MSN_DebugLog( "Destroying file transfer session %08X", p2p_sessionid );
 
 	WaitForSingleObject( hLockHandle, 2000 );
 	CloseHandle( hLockHandle );
@@ -884,20 +884,21 @@ filetransfer::~filetransfer( void )
 	else if ( fileId != -1 )
 		_close( fileId );
 
-	if ( p2p_branch != NULL ) mir_free( p2p_branch );
-	if ( p2p_callID != NULL ) mir_free( p2p_callID );
-	if ( p2p_dest   != NULL ) mir_free( p2p_dest );
+	mir_free( p2p_branch );
+	mir_free( p2p_callID );
+	mir_free( p2p_dest );
+	mir_free( p2p_object );
 
-	if ( std.currentFile != NULL ) mir_free( std.currentFile );
-	if ( std.workingDir != NULL ) mir_free( std.workingDir );
+	mir_free( std.currentFile );
+	mir_free( std.workingDir );
 	if ( std.files != NULL ) {
 		for ( int i=0; i < std.totalFiles; i++ )
 			mir_free( std.files[ i ] );
 		mir_free( std.files );
 	}
 
-	if ( wszFileName != NULL ) mir_free(  wszFileName );
-	if ( szInvcookie != NULL ) mir_free( szInvcookie );
+	mir_free( wszFileName );
+	mir_free( szInvcookie );
 }
 
 void filetransfer::close( void )

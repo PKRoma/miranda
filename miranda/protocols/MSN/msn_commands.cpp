@@ -1421,8 +1421,10 @@ LBL_InvalidCommand:
 						MSN_SetString( hContact, "MirVer", "Miranda IM 0.5.x (MSN v.0.5.x)" );
 					else if ( dwValue == 805306404 )
 						MSN_SetString( hContact, "MirVer", "Miranda IM 0.4.x (MSN v.0.4.x)" );
+					else if (( dwValue & 0x70000000 ) == 0x70000000 )
+						MSN_SetString( hContact, "MirVer", "WLM 8.1" );
 					else if (( dwValue & 0x60000000 ) == 0x60000000 )
-						MSN_SetString( hContact, "MirVer", "MSN 8.x" );
+						MSN_SetString( hContact, "MirVer", "WLM 8.0" );
 					else if (( dwValue & 0x50000000 ) == 0x50000000 )
 						MSN_SetString( hContact, "MirVer", "MSN 7.5" );
 					else if ( dwValue & 0x40000000 )
@@ -1684,6 +1686,10 @@ LBL_InvalidCommand:
 			sttProcessNotificationMessage( HReadBuffer( info, 0 ).surelyRead( trid ), trid );
 			break;
 
+		case ' GPI':   //********* IPG: mobile page
+			sttProcessNotificationMessage( HReadBuffer( info, 0 ).surelyRead( trid ), trid );
+			break;
+
 		case ' TUO':   //********* OUT: sections 7.10 Connection Close, 8.6 Leaving a Switchboard Session
 			if ( !stricmp( params, "OTH" )) {
 				MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_OTHERLOCATION );
@@ -1817,6 +1823,7 @@ LBL_InvalidCommand:
 			sttListedContact = NULL;
 			tridUrlInbox = msnNsThread->sendPacket( "URL", "INBOX" );
 			tridUrlEdit  = msnNsThread->sendPacket( "URL", "PROFILE 0x%04x", GetUserDefaultLCID() );
+			p2p_detectUPnP( info );
 			break;
 		}
 		case ' XBU':   // UBX : MSNP11+ User Status Message
