@@ -42,13 +42,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_utils.h>
 #include <m_langpack.h>
 #include "sqlite3/sqlite3.h"
-#include "contacts.h"
-#include "events.h"
 #include "resource.h"
-#include "settings.h"
-#include "sql.h"
-#include "utf8.h"
-#include "utils.h"
 
 extern HINSTANCE g_hInst;
 extern sqlite3 *g_sqlite;
@@ -84,5 +78,82 @@ extern HANDLE hEventDeletedEvent;
 #ifndef MS_DB_SETSETTINGRESIDENT
 #define MS_DB_SETSETTINGRESIDENT "DB/SetSettingResident"
 #endif
+
+// contacts.c
+void contacts_init();
+void contacts_destroy();
+int contacts_getCount(WPARAM wParam, LPARAM lParam);
+int contacts_findFirst(WPARAM wParam, LPARAM lParam);
+int contacts_findNext(WPARAM wParam, LPARAM lParam);
+int contacts_delete(WPARAM wParam, LPARAM lParam);
+int contacts_add(WPARAM wParam, LPARAM lParam);
+int contacts_isContact(WPARAM wParam, LPARAM lParam);
+
+// events.c
+void events_init();
+void events_destroy();
+int events_getCount(WPARAM wParam, LPARAM lParam);
+int events_add(WPARAM wParam, LPARAM lParam);
+int events_delete(WPARAM wParam, LPARAM lParam);
+int events_getBlobSize(WPARAM wParam, LPARAM lParam);
+int events_get(WPARAM wParam, LPARAM lParam);
+int events_markRead(WPARAM wParam, LPARAM lParam);
+int events_getContact(WPARAM wParam, LPARAM lParam);
+int events_findFirst(WPARAM wParam, LPARAM lParam);
+int events_findFirstUnread(WPARAM wParam, LPARAM lParam);
+int events_findLast(WPARAM wParam, LPARAM lParam);
+int events_findNext(WPARAM wParam, LPARAM lParam);
+int events_findPrev(WPARAM wParam, LPARAM lParam);
+
+// settings.c
+void settings_init();
+void settings_destroy();
+int setting_getSetting(WPARAM wParam, LPARAM lParam);
+int setting_getSettingStr(WPARAM wParam, LPARAM lParam);
+int setting_getSettingStatic(WPARAM wParam, LPARAM lParam);
+int setting_freeVariant(WPARAM wParam, LPARAM lParam);
+int setting_writeSetting(WPARAM wParam, LPARAM lParam);
+int setting_deleteSetting(WPARAM wParam, LPARAM lParam);
+int setting_enumSettings(WPARAM wParam, LPARAM lParam);
+int setting_modulesEnum(WPARAM wParam, LPARAM lParam);
+void settings_emptyContactCache(HANDLE hContact);
+int settings_setResident(WPARAM wParam, LPARAM lParam);
+
+// sql.c
+void sql_init();
+void sql_destroy();
+void sql_prepare_add(char **text, sqlite3_stmt **stmts, int len);
+void sql_prepare_statements();
+int sql_step(sqlite3_stmt *stmt);
+int sql_reset(sqlite3_stmt *stmt);
+int sql_exec(sqlite3 *sql, const char *query);
+int sql_open(const char *path, sqlite3 **sql);
+int sql_close(sqlite3 *sql);
+int sql_prepare(sqlite3 *sql, const char *query, sqlite3_stmt **stmt);
+int sql_finalize(sqlite3_stmt *stmt);
+
+// utf8.c
+void utf8_decode(char* str, wchar_t** ucs2);
+char* utf8_encode(const char* src);
+char* utf8_encodeUsc2(const wchar_t* src);
+
+// utils.c
+#ifdef DBRW_LOGGING
+void utils_log_init();
+void utils_log_destroy();
+void utils_log_fmt(const char *file,int line,const char *fmt,...);
+#endif
+int utils_setSafetyMode(WPARAM wParam, LPARAM lParam);
+int utils_getProfileName(WPARAM wParam, LPARAM lParam);
+int utils_getProfilePath(WPARAM wParam, LPARAM lParam);
+int utils_encodeString(WPARAM wParam,LPARAM lParam);
+int utils_decodeString(WPARAM wParam,LPARAM lParam);
+DWORD utils_hashString(const char *szStr);
+int utils_private_setting_get_int(const char *setting, int defval);
+int utils_private_setting_set_int(const char *setting, int val);
+void utils_vacuum_check();
+void* utils_mem_alloc(size_t size);
+void* utils_mem_realloc(void* ptr, size_t size);
+void utils_mem_free(void* ptr);
 
 #endif

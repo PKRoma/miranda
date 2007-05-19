@@ -258,7 +258,7 @@ static int dbrw_Load(char *profile, void *link) {
 	events_init();
 
 	// Prepare SQL statements
-	sql_prepare_stmts();
+	sql_prepare_statements();
 
 	return 0;
 }

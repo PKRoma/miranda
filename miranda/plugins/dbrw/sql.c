@@ -68,18 +68,6 @@ void sql_destroy() {
     DestroyWindow(hAPCWindow);
 }
 
-static unsigned __stdcall sql_threadProc(void *arg) {
-    while (WaitForSingleObjectEx(hSqlThreadEvent, INFINITE, TRUE)!=WAIT_OBJECT_0);
-    CloseHandle(hSqlThreadEvent);
-    return 0;
-}
-
-static DWORD CALLBACK sql_apcproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-	if (msg==WM_NULL) 
-        SleepEx(0, TRUE);
-	return DefWindowProc(hwnd, msg, wParam, lParam);
-}
-
 void sql_prepare_add(char **text, sqlite3_stmt **stmts, int len) {
 	int i;
 
@@ -92,11 +80,23 @@ void sql_prepare_add(char **text, sqlite3_stmt **stmts, int len) {
 	sql_prepare_len += len;
 }
 
-void sql_prepare_stmts() {
+void sql_prepare_statements() {
 	int i;
 	
 	for(i = 0; i < sql_prepare_len; i++)
 		sql_prepare(g_sqlite, sql_prepare_text[i], sql_prepare_stmt[i]);
+}
+
+static unsigned __stdcall sql_threadProc(void *arg) {
+    while (WaitForSingleObjectEx(hSqlThreadEvent, INFINITE, TRUE)!=WAIT_OBJECT_0);
+    CloseHandle(hSqlThreadEvent);
+    return 0;
+}
+
+static DWORD CALLBACK sql_apcproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	if (msg==WM_NULL) 
+        SleepEx(0, TRUE);
+	return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
 static void CALLBACK sql_server_sync_apc(DWORD dwParam) {

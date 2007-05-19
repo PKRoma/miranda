@@ -23,6 +23,8 @@ Changes
 1.2
  - Automatic compaction dialog is now threaded
  - Database file is now locked while in use
+ - Performance improvements
+ - Update SQLite library to v3.3.17
 
 Author
 ------
