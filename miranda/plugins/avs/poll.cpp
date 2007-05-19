@@ -210,6 +210,91 @@ void QueueAdd(ThreadQueue &queue, HANDLE hContact)
 	LeaveCriticalSection(&queue.cs);
 }
 
+void ProcessAvatarInfo(HANDLE hContact, int type, PROTO_AVATAR_INFORMATION *pai = NULL)
+{
+	if (type == GAIR_SUCCESS) 
+	{
+		if (pai == NULL)
+			return;
+
+		// Fix settings in DB
+		DBDeleteContactSetting(hContact, "ContactPhoto", "NeedUpdate");
+		DBDeleteContactSetting(hContact, "ContactPhoto", "RFile");
+		if (!DBGetContactSettingByte(hContact, "ContactPhoto", "Locked", 0))
+			DBDeleteContactSetting(hContact, "ContactPhoto", "Backup");
+		DBWriteContactSettingString(hContact, "ContactPhoto", "File", pai->filename);
+		DBWriteContactSettingWord(hContact, "ContactPhoto", "Format", pai->format);
+
+		if (pai->format == PA_FORMAT_PNG || pai->format == PA_FORMAT_JPEG 
+			|| pai->format == PA_FORMAT_ICON  || pai->format == PA_FORMAT_BMP
+			|| pai->format == PA_FORMAT_GIF)
+		{
+			// We can load it!
+			MakePathRelative(hContact, pai->filename);
+			ChangeAvatar(hContact, TRUE, TRUE, pai->format);
+		}
+		else
+		{
+			// As we can't load it, notify as deleted
+			ChangeAvatar(hContact, FALSE, TRUE, pai->format);
+		}
+	}
+	else if (type == GAIR_NOAVATAR) 
+	{
+		DBDeleteContactSetting(hContact, "ContactPhoto", "NeedUpdate");
+
+		if (DBGetContactSettingByte(NULL, AVS_MODULE, "RemoveAvatarWhenContactRemoves", 1)) 
+		{
+			// Delete settings
+			DBDeleteContactSetting(hContact, "ContactPhoto", "RFile");
+			if (!DBGetContactSettingByte(hContact, "ContactPhoto", "Locked", 0))
+				DBDeleteContactSetting(hContact, "ContactPhoto", "Backup");
+			DBDeleteContactSetting(hContact, "ContactPhoto", "File");
+			DBDeleteContactSetting(hContact, "ContactPhoto", "Format");
+
+			// Fix cache
+			ChangeAvatar(hContact, FALSE, TRUE, 0);
+		}
+	}
+}
+
+void ProcessAvatarInfo(int type, PROTO_AVATAR_INFORMATION *pai)
+{
+	if (pai == NULL)
+		return;
+
+	ProcessAvatarInfo(pai->hContact, type, pai);
+}
+
+int FetchAvatarFor(HANDLE hContact, char *szProto = NULL)
+{
+	int result = GAIR_NOAVATAR;
+
+	if (szProto == NULL)
+		szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+
+    if (szProto != NULL && PollProtocolCanHaveAvatar(szProto) && PollContactCanHaveAvatar(hContact, szProto))
+	{
+		// Can have avatar, but must request it?
+		if (
+			(g_AvatarHistoryAvail && CallService(MS_AVATARHISTORY_ENABLED, (WPARAM) hContact, 0))
+			 || (PollCheckProtocol(szProto) && PollCheckContact(hContact, szProto))
+			)
+		{
+			// Request it
+			PROTO_AVATAR_INFORMATION pai_s = {0};
+			pai_s.cbSize = sizeof(pai_s);
+			pai_s.hContact = hContact;
+			pai_s.format = PA_FORMAT_UNKNOWN;
+            //_DebugTrace(hContact, "schedule request");
+			result = CallProtoService(szProto, PS_GETAVATARINFO, GAIF_FORCE, (LPARAM)&pai_s);
+			ProcessAvatarInfo(result, &pai_s);
+		}
+	}
+
+	return result;
+}
+
 
 static void RequestThread(void *vParam)
 {
@@ -250,70 +335,10 @@ static void RequestThread(void *vParam)
 				if (Miranda_Terminated())
 					break;
 
-				char *szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-                if (szProto != NULL && PollProtocolCanHaveAvatar(szProto) && PollContactCanHaveAvatar(hContact, szProto))
+				if (FetchAvatarFor(hContact) == GAIR_WAITFOR)
 				{
-					// Can have avatar, but must request it?
-					if (
-						(g_AvatarHistoryAvail && CallService(MS_AVATARHISTORY_ENABLED, (WPARAM) hContact, 0))
-						 || (PollCheckProtocol(szProto) && PollCheckContact(hContact, szProto))
-						)
-					{
-						// Request it
-						PROTO_AVATAR_INFORMATION pai_s = {0};
-						pai_s.cbSize = sizeof(pai_s);
-						pai_s.hContact = hContact;
-						pai_s.format = PA_FORMAT_UNKNOWN;
-                        //_DebugTrace(hContact, "schedule request");
-						int result = CallProtoService(szProto, PS_GETAVATARINFO, GAIF_FORCE, (LPARAM)&pai_s);
-						if (result == GAIR_SUCCESS) 
-						{
-							// Fix settings in DB
-							DBDeleteContactSetting(hContact, "ContactPhoto", "NeedUpdate");
-							DBDeleteContactSetting(hContact, "ContactPhoto", "RFile");
-							if (!DBGetContactSettingByte(hContact, "ContactPhoto", "Locked", 0))
-								DBDeleteContactSetting(hContact, "ContactPhoto", "Backup");
-							DBWriteContactSettingString(hContact, "ContactPhoto", "File", pai_s.filename);
-							DBWriteContactSettingWord(hContact, "ContactPhoto", "Format", pai_s.format);
-
-							if (pai_s.format == PA_FORMAT_PNG || pai_s.format == PA_FORMAT_JPEG 
-								|| pai_s.format == PA_FORMAT_ICON  || pai_s.format == PA_FORMAT_BMP
-								|| pai_s.format == PA_FORMAT_GIF)
-							{
-								// We can load it!
-								MakePathRelative(hContact, pai_s.filename);
-								ChangeAvatar(hContact, TRUE, TRUE, pai_s.format);
-							}
-							else
-							{
-								// As we can't load it, notify as deleted
-								ChangeAvatar(hContact, FALSE, TRUE, pai_s.format);
-							}
-						}
-						else if (result == GAIR_NOAVATAR) 
-						{
-							DBDeleteContactSetting(hContact, "ContactPhoto", "NeedUpdate");
-
-							if (DBGetContactSettingByte(NULL, AVS_MODULE, "RemoveAvatarWhenContactRemoves", 1)) 
-							{
-								// Delete settings
-								DBDeleteContactSetting(hContact, "ContactPhoto", "RFile");
-								if (!DBGetContactSettingByte(hContact, "ContactPhoto", "Locked", 0))
-									DBDeleteContactSetting(hContact, "ContactPhoto", "Backup");
-								DBDeleteContactSetting(hContact, "ContactPhoto", "File");
-								DBDeleteContactSetting(hContact, "ContactPhoto", "Format");
-
-								// Fix cache
-								ChangeAvatar(hContact, FALSE, TRUE, 0);
-							}
-							//NotifyEventHooks(hEventContactAvatarChanged, (WPARAM)hContact, NULL);
-						}
-						else if (result == GAIR_WAITFOR) 
-						{
-							// Wait a little until requesting again
-							SleepEx(REQUEST_DELAY, TRUE);
-						}
-					}
+					// Wait a little until requesting again
+					SleepEx(REQUEST_DELAY, TRUE);
 				}
 			}
 		}

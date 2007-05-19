@@ -214,7 +214,7 @@ SOURCE=.\m_avatarhistory.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\m_avatars.h
+SOURCE=..\..\include\m_avatars.h
 # End Source File
 # Begin Source File
 

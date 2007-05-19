@@ -4,7 +4,7 @@
 #define _WIN32_WINNT 0x0501
 #include <windows.h>
 
-#include "m_avatars.h"
+#include <m_avatars.h>
 
 
 // Load an image

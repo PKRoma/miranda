@@ -64,10 +64,15 @@ static int  OkToExitProc(WPARAM wParam, LPARAM lParam);
 static int  OnDetailsInit(WPARAM wParam, LPARAM lParam);
 static int  GetFileHash(char* filename);
 
+void ProcessAvatarInfo(int type, PROTO_AVATAR_INFORMATION *pai);
+void ProcessAvatarInfo(HANDLE hContact, int type, PROTO_AVATAR_INFORMATION *pai = NULL);
+int FetchAvatarFor(HANDLE hContact, char *szProto = NULL);
+
 BOOL Proto_IsAvatarsEnabled(char *proto);
 BOOL Proto_IsAvatarFormatSupported(char *proto, int format);
 void Proto_GetAvatarMaxSize(char *proto, int &width, int &height);
 int Proto_AvatarImageProportion(char *proto);
+BOOL Proto_NeedDelaysForAvatars(char *proto);
 
 FI_INTERFACE *fei = 0;
 
@@ -806,52 +811,24 @@ static int ProtocolAck(WPARAM wParam, LPARAM lParam)
 		// Ignore metacontacts
 		&& (!g_MetaAvail || strcmp(ack->szModule, g_szMetaName))) 
 	{
-        if (ack->result == ACKRESULT_SUCCESS) 
+        if (ack->result == ACKRESULT_SUCCESS || ack->result == ACKRESULT_FAILED) 
 		{
-			PROTO_AVATAR_INFORMATION *pai = (PROTO_AVATAR_INFORMATION *) ack->hProcess;
-			if(pai == NULL)
-				return 0;
-
-			// Fix settings in DB
-			DBDeleteContactSetting(pai->hContact, "ContactPhoto", "NeedUpdate");
-			DBDeleteContactSetting(pai->hContact, "ContactPhoto", "RFile");
-			if (!DBGetContactSettingByte(pai->hContact, "ContactPhoto", "Locked", 0))
-				DBDeleteContactSetting(pai->hContact, "ContactPhoto", "Backup");
-			DBWriteContactSettingString(pai->hContact, "ContactPhoto", "File", pai->filename);
-			DBWriteContactSettingWord(pai->hContact, "ContactPhoto", "Format", pai->format);
-
-			if (pai->format == PA_FORMAT_PNG || pai->format == PA_FORMAT_JPEG 
-				|| pai->format == PA_FORMAT_ICON  || pai->format == PA_FORMAT_BMP
-				|| pai->format == PA_FORMAT_GIF)
-			{
-				// We can load it!
-				MakePathRelative(pai->hContact, pai->filename);
-				ChangeAvatar(pai->hContact, TRUE, TRUE, pai->format);
-			}
-			else
-			{
-				// As we can't load it, notify as deleted
-				ChangeAvatar(pai->hContact, FALSE, TRUE, pai->format);
-			}
-        }
-        else if(ack->result == ACKRESULT_FAILED) 
-		{
-			if (DBGetContactSettingByte(NULL, AVS_MODULE, "RemoveAvatarOnFail", 0)) 
-			{
-				// Fix settings in DB
-				DBDeleteContactSetting(ack->hContact, "ContactPhoto", "RFile");
-				if (!DBGetContactSettingByte(ack->hContact, "ContactPhoto", "Locked", 0))
-					DBDeleteContactSetting(ack->hContact, "ContactPhoto", "Backup");
-				DBDeleteContactSetting(ack->hContact, "ContactPhoto", "File");
-				DBDeleteContactSetting(ack->hContact, "ContactPhoto", "Format");
-				// Fix cache
-				ChangeAvatar(ack->hContact, FALSE, FALSE, 0);
-			}
+			ProcessAvatarInfo(ack->hContact, ack->result, (PROTO_AVATAR_INFORMATION *) ack->hProcess);
         }
 		else if(ack->result == ACKRESULT_STATUS) 
 		{
-			DBWriteContactSettingByte(ack->hContact, "ContactPhoto", "NeedUpdate", 1);
-			QueueAdd(requestQueue, ack->hContact);
+			char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)ack->hContact, 0);
+			if (szProto == NULL || Proto_NeedDelaysForAvatars(szProto))
+			{
+				// Queue
+				DBWriteContactSettingByte(ack->hContact, "ContactPhoto", "NeedUpdate", 1);
+				QueueAdd(requestQueue, ack->hContact);
+			}
+			else
+			{
+				// Fetch it now
+				FetchAvatarFor(ack->hContact, szProto);
+			}
 		}
     }
     return 0;
@@ -1668,7 +1645,19 @@ static DWORD WINAPI PicLoader(LPVOID param)
                 int result = CreateAvatarInCache(node->ace.hContact, &ace_temp, NULL);
 
                 if (result == -2)
-                    QueueAdd(requestQueue, node->ace.hContact);
+				{
+					char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)node->ace.hContact, 0);
+					if (szProto == NULL || Proto_NeedDelaysForAvatars(szProto))
+					{
+						QueueAdd(requestQueue, node->ace.hContact);
+					}
+					else
+					{
+						if (FetchAvatarFor(node->ace.hContact, szProto) == GAIR_SUCCESS)
+							// Try yo create again
+							result = CreateAvatarInCache(node->ace.hContact, &ace_temp, NULL);
+					}
+				}
 
 				if(result == 1 && ace_temp.hbmPic != 0) {
                     HBITMAP oldPic = node->ace.hbmPic;
@@ -2372,5 +2361,19 @@ void Proto_GetAvatarMaxSize(char *proto, int &width, int &height)
 		height = 0;
 	else if (height > 300)
 		height = 300;
+}
+
+BOOL Proto_NeedDelaysForAvatars(char *proto)
+{
+	if (ProtoServiceExists(proto, PS_GETAVATARCAPS))
+	{
+		int ret = CallProtoService(proto, PS_GETAVATARCAPS, AF_DONTNEEDDELAYS, 0);
+		if (ret > 0)
+			return FALSE;
+		else
+			return TRUE;
+	}
+
+	return TRUE;
 }
 

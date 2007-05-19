@@ -70,7 +70,7 @@ extern "C"
 #include <m_userinfo.h>
 #include "m_folders.h"
 
-#include "m_avatars.h"
+#include <m_avatars.h>
 #include <m_popup.h>
 #include "m_metacontacts.h"
 #include "m_avatarhistory.h"
