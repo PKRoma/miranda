@@ -46,7 +46,7 @@ HICON   g_hIcon = 0;
 
 static struct   CacheNode *g_Cache = 0;
 struct          protoPicCacheEntry *g_ProtoPictures = 0;
-static struct   protoPicCacheEntry *g_MyAvatars = 0;
+struct			protoPicCacheEntry *g_MyAvatars = 0;
 
 static  CRITICAL_SECTION cachecs, alloccs;
 char    *g_szMetaName = NULL;
@@ -78,7 +78,7 @@ PLUGININFO pluginInfo = {
 #else
 	"Avatar service",
 #endif
-	PLUGIN_MAKE_VERSION(0, 0, 3, 0), 
+	PLUGIN_MAKE_VERSION(0, 0, 3, 1), 
 	"Load and manage contact pictures for other plugins", 
 	"Nightwish, Pescuma", 
 	"", 
@@ -596,6 +596,8 @@ done:
 	ace->bmHeight = 0;
 	ace->bmWidth = 0;
 	ace->lpDIBSection = NULL;
+    strncpy(ace->szFilename, szFilename, MAX_PATH);
+    ace->szFilename[MAX_PATH - 1] = 0;
     if(ace->hbmPic != 0) {
         BITMAP bminfo;
 
@@ -608,8 +610,6 @@ done:
         ace->hContact = hContact;
         ace->bmHeight = bminfo.bmHeight;
         ace->bmWidth = bminfo.bmWidth;
-        strncpy(ace->szFilename, szFilename, MAX_PATH);
-        ace->szFilename[MAX_PATH - 1] = 0;
 
 		BOOL noTransparency = DBGetContactSettingByte(0, AVS_MODULE, "RemoveAllTransparency", 0);
 
@@ -1067,7 +1067,7 @@ static UINT_PTR CALLBACK OFNHookProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 	return 0;
 }
 
-static int GetImageFormat(char *filename)
+int GetImageFormat(char *filename)
 {
 	size_t len = strlen(filename);
 

@@ -23,6 +23,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 
+extern int g_protocount;
+extern struct protoPicCacheEntry *g_MyAvatars;
+extern int GetImageFormat(char *filename);
+
 #define DM_AVATARCHANGED (WM_USER + 20)
 #define DM_MYAVATARCHANGED (WM_USER + 21)
 
@@ -53,7 +57,7 @@ void ResizeFlash(HWND hwnd, ACCData* data)
 		RECT rc;
 		GetClientRect(hwnd, &rc);
 
-		if (data->borderColor != -1)
+		if (data->borderColor != -1 || data->avatarBorderColor != -1)
 		{
 			rc.left ++;
 			rc.right -= 2;
@@ -91,6 +95,9 @@ void SetBkgFlash(HWND hwnd, ACCData* data)
 
 void DestroyFlash(HWND hwnd, ACCData* data)
 {
+	if (!data->showingFlash)
+		return;
+
 	if ((data->hContact != NULL || data->proto[0] != '\0')
 		&& ServiceExists(MS_FAVATAR_DESTROY))
 	{
@@ -101,29 +108,59 @@ void DestroyFlash(HWND hwnd, ACCData* data)
         fa.id = 1675;
 		CallService(MS_FAVATAR_DESTROY, (WPARAM)&fa, 0);
 	}
+
+	data->showingFlash = FALSE;
 }
 
-BOOL StartFlash(HWND hwnd, ACCData* data)
+void StartFlash(HWND hwnd, ACCData* data)
 {
-	if ((data->hContact != NULL || data->proto[0] != '\0')
-		&& ServiceExists(MS_FAVATAR_MAKE))
+	if (data->showingFlash)
+		return;
+
+	if (!ServiceExists(MS_FAVATAR_MAKE))
+		return;
+
+	int format;
+	if (data->hContact != NULL)
 	{
-		FLASHAVATAR fa = {0}; 
-        fa.hContact = data->hContact;
-		fa.cProto = data->proto;
-		fa.hParentWindow = hwnd;
-        fa.id = 1675;
-		CallService(MS_FAVATAR_MAKE, (WPARAM)&fa, 0);
-
-		if (fa.hWindow != NULL) 
-		{
-			ResizeFlash(hwnd, data);
-			SetBkgFlash(hwnd, data);
-			return TRUE;
-		}
+		format = DBGetContactSettingWord(data->hContact, "ContactPhoto", "Format", 0);
 	}
+	else if (data->proto[0] != '\0')
+	{
+		protoPicCacheEntry *ace = NULL;
+		for(int i = 0; i < g_protocount; i++) 
+		{
+			if (!strcmp(data->proto, g_MyAvatars[i].szProtoname))
+			{
+				ace = &g_MyAvatars[i];
+				break;
+			}
+		}
 
-	return FALSE;
+		if (ace != NULL && ace->szFilename != NULL)
+			format = GetImageFormat(ace->szFilename);
+		else 
+			format = 0;
+	}
+	else
+		return;
+
+	if (format != PA_FORMAT_XML && format != PA_FORMAT_SWF)
+		return;
+
+	FLASHAVATAR fa = {0}; 
+    fa.hContact = data->hContact;
+	fa.cProto = data->proto;
+	fa.hParentWindow = hwnd;
+    fa.id = 1675;
+	CallService(MS_FAVATAR_MAKE, (WPARAM)&fa, 0);
+
+	if (fa.hWindow == NULL) 
+		return;
+
+	data->showingFlash = TRUE;
+	ResizeFlash(hwnd, data);
+	SetBkgFlash(hwnd, data);
 }
 
 BOOL ScreenToClient(HWND hWnd, LPRECT lpRect)
@@ -225,19 +262,12 @@ static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM l
 		}
 		case AVATAR_SETCONTACT:
 		{
-			if (data->showingFlash)
-			{
-				DestroyFlash(hwnd, data);
-				data->showingFlash = FALSE;
-			}
+			DestroyFlash(hwnd, data);
 
 			data->hContact = (HANDLE) lParam;
 			lstrcpynA(data->proto, (char*) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)data->hContact, 0), sizeof(data->proto));
 
-			if (DBGetContactSettingWord(data->hContact, "ContactPhoto", "Format", 0) == PA_FORMAT_XML)
-			{
-				data->showingFlash = StartFlash(hwnd, data);
-			}
+			StartFlash(hwnd, data);
 
 			NotifyAvatarChange(hwnd);
 			Invalidate(hwnd);
@@ -245,17 +275,15 @@ static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM l
 		}
 		case AVATAR_SETPROTOCOL:
 		{
-			if (data->showingFlash)
-			{
-				DestroyFlash(hwnd, data);
-				data->showingFlash = FALSE;
-			}
+			DestroyFlash(hwnd, data);
 
 			data->hContact = NULL;
 			if (lParam == NULL)
 				data->proto[0] = '\0';
 			else
 				lstrcpynA(data->proto, (char *) lParam, sizeof(data->proto));
+
+			StartFlash(hwnd, data);
 
 			NotifyAvatarChange(hwnd);
 			Invalidate(hwnd);
@@ -282,6 +310,8 @@ static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM l
 		case AVATAR_SETAVATARBORDERCOLOR:
 		{
 			data->avatarBorderColor = (COLORREF) lParam;
+			if (data->showingFlash)
+				ResizeFlash(hwnd, data);
 			NotifyAvatarChange(hwnd);
 			Invalidate(hwnd);
 			return TRUE;
@@ -387,14 +417,8 @@ static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM l
 		{
 			if (data->hContact == (HANDLE) wParam)
 			{
-				if (data->showingFlash)
-				{
-					DestroyFlash(hwnd, data);
-					data->showingFlash = FALSE;
-				}
-
-				if (DBGetContactSettingWord(data->hContact, "ContactPhoto", "Format", 0) == PA_FORMAT_XML)
-					data->showingFlash = StartFlash(hwnd, data);
+				DestroyFlash(hwnd, data);
+				StartFlash(hwnd, data);
 
 				NotifyAvatarChange(hwnd);
 				Invalidate(hwnd);
@@ -405,11 +429,8 @@ static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM l
 		{
 			if (data->hContact == NULL && strcmp(data->proto, (char*) wParam) == 0)
 			{
-				if (data->showingFlash)
-				{
-					DestroyFlash(hwnd, data);
-					data->showingFlash = FALSE;
-				}
+				DestroyFlash(hwnd, data);
+				StartFlash(hwnd, data);
 
 				NotifyAvatarChange(hwnd);
 				Invalidate(hwnd);
@@ -453,9 +474,9 @@ static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM l
 				if (fa.hWindow != NULL)
 				{
 					// Draw control border
-					if (data->borderColor != -1)
+					if (data->borderColor != -1 || data->avatarBorderColor != -1)
 					{
-						HBRUSH hbrush = CreateSolidBrush(data->borderColor);
+						HBRUSH hbrush = CreateSolidBrush(data->borderColor != -1 ? data->borderColor : data->avatarBorderColor);
 						FrameRect(hdc, &rc, hbrush);
 						DeleteObject(hbrush);
 					}

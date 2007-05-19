@@ -652,11 +652,12 @@ BOOL CALLBACK DlgProcAvatarUserInfo(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 			HWND protopic = GetDlgItem(hwndDlg, IDC_PROTOPIC);
             SendMessage(protopic, AVATAR_SETCONTACT, 0, (LPARAM) dat->hContact);
-			SendMessage(protopic, AVATAR_SETBKGCOLOR, 0, (LPARAM) GetSysColor(COLOR_BTNFACE));
-			SendMessage(protopic, AVATAR_SETBORDERCOLOR, 0, (LPARAM) GetSysColor(COLOR_BTNSHADOW));
+//			SendMessage(protopic, AVATAR_SETBKGCOLOR, 0, (LPARAM) GetSysColor(COLOR_BTNFACE));
+//			SendMessage(protopic, AVATAR_SETBORDERCOLOR, 0, (LPARAM) GetSysColor(COLOR_BTNSHADOW));
 			SendMessage(protopic, AVATAR_SETAVATARBORDERCOLOR, 0, (LPARAM) GetSysColor(COLOR_BTNSHADOW));
 			SendMessage(protopic, AVATAR_SETNOAVATARTEXT, 0, (LPARAM) "Contact has no avatar");
 			SendMessage(protopic, AVATAR_RESPECTHIDDEN, 0, (LPARAM) FALSE);
+			SendMessage(protopic, AVATAR_SETRESIZEIFSMALLER, 0, (LPARAM) FALSE);
 
             SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)dat);
             hContact = (HANDLE)lParam;
