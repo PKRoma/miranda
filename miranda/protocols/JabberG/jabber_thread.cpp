@@ -1289,9 +1289,14 @@ void JabberProcessPresenceCapabilites( XmlNode *node )
 					TCHAR szMirVer[ 512 ];
 					if ( _tcsstr( szNode, _T("miranda-im.org"))) {
 						if ( szExt )
-							mir_sntprintf( szMirVer, SIZEOF(szMirVer ), _T("Miranda IM %s (Jabber %s) (%s)"), szVer, szVer, szExt );
+						{
+							mir_sntprintf( szMirVer, SIZEOF(szMirVer ), _T("Miranda IM %s (Jabber %s [%s]) (%s)"), szVer, szVer, r->resourceName, szExt );
+
+							if (TCHAR *pszSecureIm = _tcsstr( szMirVer, _T(JABBER_EXT_SECUREIM)))
+								_tcsncpy(pszSecureIm, _T("SecureIM"), 8);
+						}
 						else
-							mir_sntprintf( szMirVer, SIZEOF(szMirVer ), _T("Miranda IM %s (Jabber %s)"), szVer, szVer );
+							mir_sntprintf( szMirVer, SIZEOF(szMirVer ), _T("Miranda IM %s (Jabber %s [%s])"), szVer, szVer, r->resourceName );
 					}
 					else if ( !szExt )
 						mir_sntprintf( szMirVer, SIZEOF(szMirVer ), _T("%s#%s"), szNode, szVer );
