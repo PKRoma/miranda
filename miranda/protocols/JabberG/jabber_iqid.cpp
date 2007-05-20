@@ -31,6 +31,9 @@ Last change by : $Author$
 #include "jabber_iq.h"
 #include "jabber_caps.h"
 
+#include "m_genmenu.h"
+#include "m_clistint.h"
+
 extern char* jabberVcardPhotoFileName;
 extern char* jabberVcardPhotoType;
 
@@ -51,11 +54,12 @@ void JabberIqResultServerDiscoInfo( XmlNode* iqNode, void* userdata )
 			TCHAR *identityType = JabberXmlGetAttrValue( identity, "type" );
 			if ( identityCategory && identityType && !_tcscmp( identityCategory, _T("pubsub") ) && !_tcscmp( identityType, _T("pep")) ) {
 				jabberPepSupported = TRUE;
+
+				CLIST_INTERFACE* pcli = ( CLIST_INTERFACE* )CallService( MS_CLIST_RETRIEVE_INTERFACE, 0, 0 );
+				if ( pcli && pcli->version > 4 )
+					pcli->pfnReloadProtoMenus();
 				break;
-			}
-		}
-	}
-}
+}	}	}	}
 
 static void JabberOnLoggedIn( ThreadData* info )
 {
