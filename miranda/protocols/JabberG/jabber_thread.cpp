@@ -1432,39 +1432,40 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 							if ( !result || lstrcmp( dbv.ptszVal, xNode->text )) {
 								JabberLog( "Avatar was changed. Using vcard-temp:x:update" );
 								JSendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, NULL );
-							} JabberLog( "Not broadcasting avatar changed" );
+							}
+							else JabberLog( "Not broadcasting avatar changed" );
 							if ( !result ) JFreeVariant( &dbv );
 		}	}	}	}	}
 		return;
 	}
 
 	if ( !_tcscmp( type, _T("unavailable"))) {
-		if ( !JabberListExist( LIST_ROSTER, from ))
-			JabberLog( "SKIP Receive presence offline from " TCHAR_STR_PARAM " ( who is not in my roster )", from );
-		else
+		int status = ID_STATUS_OFFLINE;
+		hContact = JabberHContactFromJID( from );
+		if (( item = JabberListGetItemPtr( LIST_ROSTER, from )) != NULL ) {
 			JabberListRemoveResource( LIST_ROSTER, from );
 
-		int status = ID_STATUS_OFFLINE;
-		if (( statusNode = JabberXmlGetChild( node, "status" )) != NULL ) {
-			if ( JGetByte( "OfflineAsInvisible", FALSE ) == TRUE )
-				status = ID_STATUS_INVISIBLE;
-
-			if (( hContact = JabberHContactFromJID( from )) != NULL) {
-				if ( statusNode->text )
-					DBWriteContactSettingTString(hContact, "CList", "StatusMsg", statusNode->text );
+			// set status only if no more available resources
+			if ( !item->resourceCount && hContact ) {
+				if ((( statusNode = JabberXmlGetChild( node, "status" )) != NULL ) && statusNode->text )
+					DBWriteContactSettingTString( hContact, "CList", "StatusMsg", statusNode->text );
 				else
-					DBDeleteContactSetting(hContact, "CList", "StatusMsg");
-		}	}
+					DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
+			}
 
-		// Determine status to show for the contact based on the remaining resources
-		if (( item=JabberListGetItemPtr( LIST_ROSTER, from )) != NULL ) {
-			status = ID_STATUS_OFFLINE;
+			// Determine status to show for the contact based on the remaining resources
+			int r = -1;
 			for ( i=0; i < item->resourceCount; i++ )
-				status = JabberCombineStatus( status, item->resource[i].status );
+				if (( status = JabberCombineStatus( status, item->resource[i].status )) == item->resource[i].status )
+					r = i;
 			item->status = status;
-			JabberMenuUpdateSrmmIcon(item);
+			if ( r != -1 && hContact )
+				DBWriteContactSettingTString( hContact, "CList", "StatusMsg", item->resource[r].statusMessage );
+			JabberMenuUpdateSrmmIcon( item );
 		}
-		if (( hContact=JabberHContactFromJID( from )) != NULL ) {
+		else JabberLog( "SKIP Receive presence offline from " TCHAR_STR_PARAM " ( who is not in my roster )", from );
+
+		if ( hContact ) {
 			if ( _tcschr( from, '@' )!=NULL || JGetByte( "ShowTransport", TRUE )==TRUE )
 				if ( JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != status )
 					JSetWord( hContact, "Status", ( WORD )status );
