@@ -859,7 +859,7 @@ void __cdecl p2p_sendFeedThread( ThreadData* info )
 
 		ReleaseMutex( hLockHandle );
 
-		if ( T->mType != SERVER_P2P_DIRECT )
+		if ( T != NULL && T->mType != SERVER_P2P_DIRECT )
 			WaitForSingleObject( T->hWaitEvent, 5000 );
 	}
 	ReleaseMutex( hLockHandle );
