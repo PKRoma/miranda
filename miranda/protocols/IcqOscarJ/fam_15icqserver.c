@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/fam_15icqserver.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -123,14 +123,13 @@ static void handleExtensionError(unsigned char *buf, WORD wPackLen)
             // more sofisticated detection, send ack
             if (wSubType == META_REQUEST_FULL_INFO)
             {
-              DWORD dwCookieUin;
+              HANDLE hContact;
               fam15_cookie_data* pCookieData = NULL;
               int foundCookie;
 
-              foundCookie = FindCookie(wCookie, &dwCookieUin, (void**)&pCookieData);
+              foundCookie = FindCookie(wCookie, &hContact, (void**)&pCookieData);
               if (foundCookie && pCookieData)
               {
-                HANDLE hContact = HContactFromUIN(dwCookieUin, NULL);
                 ICQBroadcastAck(hContact,  ACKTYPE_GETINFO, ACKRESULT_FAILED, (HANDLE)1 ,0);
 
                 ReleaseCookie(wCookie);  // we do not leak cookie and memory
@@ -334,7 +333,7 @@ static void parseOfflineMessage(unsigned char *databuf, WORD wPacketLen)
       if (bType == MTYPE_PLUGIN)
         parseOfflineGreeting(databuf, wPacketLen, wMsgLen, dwUin, dwTimestamp, bFlags);
       else
-        handleMessageTypes(dwUin, dwTimestamp, 0, 0, 0, 0, bType, bFlags, 0, wPacketLen, wMsgLen, databuf, FALSE);
+        handleMessageTypes(dwUin, dwTimestamp, 0, 0, 0, 0, bType, bFlags, 0, wPacketLen, wMsgLen, databuf, FALSE, NULL);
 
       // Success
       return; 
@@ -349,48 +348,16 @@ static void parseOfflineMessage(unsigned char *databuf, WORD wPacketLen)
 
 static void parseOfflineGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, DWORD dwTimestamp, BYTE bFlags)
 {
-  WORD wInfoLen;
-  DWORD dwPluginNameLen;
   DWORD dwLengthToEnd;
   DWORD dwDataLen;
-  DWORD q1,q2,q3,q4;
-  WORD qt;
-  char* szPluginName;
   int typeId;
 
-  NetLog_Server("Parsing Greeting message through server");
+  NetLog_Server("Parsing Greeting message from offline server");
 
   pDataBuf += wMsgLen;   // Message
   wLen -= wMsgLen;
 
-  //
-  unpackLEWord(&pDataBuf, &wInfoLen);
-
-  unpackDWord(&pDataBuf, &q1); // get data GUID & function id
-  unpackDWord(&pDataBuf, &q2);
-  unpackDWord(&pDataBuf, &q3);
-  unpackDWord(&pDataBuf, &q4);
-  unpackLEWord(&pDataBuf, &qt);
-  wLen -= 20;
-
-  unpackLEDWord(&pDataBuf, &dwPluginNameLen);
-  wLen -= 4;
-
-  if (dwPluginNameLen > wLen)
-  { // check for malformed plugin name
-    dwPluginNameLen = wLen;
-    NetLog_Server("Warning: malformed size of plugin name.");
-  }
-  szPluginName = (char *)_alloca(dwPluginNameLen + 1);
-  memcpy(szPluginName, pDataBuf, dwPluginNameLen);
-  szPluginName[dwPluginNameLen] = '\0';
-  wLen -= (WORD)dwPluginNameLen;
-
-  pDataBuf += dwPluginNameLen + 15;
-
-  typeId = TypeGUIDToTypeId(q1, q2, q3, q4, qt);
-  if (!typeId)
-    NetLog_Server("Error: Unknown type {%08x-%08x-%08x-%08x:%04x}: %s", q1,q2,q3,q4,qt, szPluginName);
+  if (!unpackPluginTypeId(&pDataBuf, &wLen, &typeId, NULL, FALSE)) return;
 
   if (wLen > 8)
   {
@@ -405,9 +372,9 @@ static void parseOfflineGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD 
       dwDataLen = wLen;
 
     if (typeId)
-      handleMessageTypes(dwUin, dwTimestamp, 0, 0, 0, 0, typeId, bFlags, 0, dwLengthToEnd, (WORD)dwDataLen, pDataBuf, FALSE);
+      handleMessageTypes(dwUin, dwTimestamp, 0, 0, 0, 0, typeId, bFlags, 0, dwLengthToEnd, (WORD)dwDataLen, pDataBuf, FALSE, NULL);
     else
-      NetLog_Server("Unsupported plugin message type '%s'", szPluginName);
+      NetLog_Server("Unsupported plugin message type %d", typeId);
   }
 }
 
@@ -763,20 +730,18 @@ static void parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD wCo
 static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen, WORD wCookie, WORD wFlags, WORD wReplySubtype, BYTE bResultCode)
 {
   BOOL bMoreDataFollows;
-  DWORD dwCookieUin;
   fam15_cookie_data* pCookieData = NULL;
   HANDLE hContact = INVALID_HANDLE_VALUE;
+  DWORD dwCookieUin;
   int foundCookie;
   BOOL bOK = TRUE;
   
 
-  foundCookie = FindCookie(wCookie, &dwCookieUin, (void**)&pCookieData);
+  foundCookie = FindCookie(wCookie, &hContact, (void**)&pCookieData);
   if (foundCookie && pCookieData)
   {
     if (pCookieData->bRequestType == REQUESTTYPE_OWNER)
       hContact = NULL; // this is here for situation when we have own uin in clist
-    else
-      hContact = HContactFromUIN(dwCookieUin, NULL);
   }
   else
   {
@@ -784,6 +749,8 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
 
     return;
   }
+  // obtain contact UIN
+  dwCookieUin = ICQGetContactSettingUIN(hContact);
 
   if (bResultCode != 0x0A)
   {

@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_servlist.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -464,6 +464,8 @@ void LoadServerIDs()
   EnterCriticalSection(&servlistMutex);
   if (wSrvID = ICQGetContactSettingWord(NULL, "SrvAvatarID", 0))
     ReserveServerID(wSrvID, SSIT_ITEM);
+  if (wSrvID = ICQGetContactSettingWord(NULL, "SrvPhotoID", 0))
+    ReserveServerID(wSrvID, SSIT_ITEM);
   if (wSrvID = ICQGetContactSettingWord(NULL, "SrvVisibilityID", 0))
     ReserveServerID(wSrvID, SSIT_ITEM);
 
@@ -581,6 +583,9 @@ static DWORD icq_sendServerItem(DWORD dwCookie, WORD wAction, WORD wGroupId, WOR
   // Send the packet and return the cookie
   sendServPacket(&packet);
 
+  // Force reload of server-list after change
+  ICQWriteContactSettingWord(NULL, "SrvRecordCount", 0);
+
   return dwCookie;
 }
 
@@ -649,6 +654,9 @@ DWORD icq_sendServerContact(HANDLE hContact, DWORD dwCookie, WORD wAction, WORD 
   if (bAuth) // icq5 gives this as last TLV
     packDWord(&pBuffer, 0x00660000);  // "Still waiting for auth" TLV
 
+  SAFE_FREE(&szNick);
+  SAFE_FREE(&szNote);
+
   return icq_sendServerItem(dwCookie, wAction, wGroupId, wContactId, strUID(dwUin, szUid), pBuffer.pData, wTLVlen, SSI_ITEM_BUDDY);
 }
 
@@ -705,7 +713,7 @@ DWORD icq_modifyServerPrivacyItem(HANDLE hContact, DWORD dwUin, char* szUid, WOR
     ack->hContact = hContact;
     ack->wContactId = wItemId;
 
-    dwCookie = AllocateCookie(CKT_SERVERLIST, wAction, dwUin, ack);
+    dwCookie = AllocateCookie(CKT_SERVERLIST, wAction, hContact, ack);
   }
   return icq_sendSimpleItem(dwCookie, wAction, dwUin, szUid, 0, wItemId, wType);
 }
@@ -1402,7 +1410,7 @@ void addServContactReady(WORD wGroupID, LPARAM lParam)
   ack->wGroupId = wGroupID;
   ack->wContactId = wItemID;
 
-  dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_ADDTOLIST, dwUin, ack);
+  dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_ADDTOLIST, ack->hContact, ack);
 
   sendAddStart(0);
   icq_sendServerContact(ack->hContact, dwCookie, ICQ_LISTS_ADDTOLIST, wGroupID, wItemID);
@@ -1411,7 +1419,7 @@ void addServContactReady(WORD wGroupID, LPARAM lParam)
 
 
 // Called when contact should be added to server list, if group does not exist, create one
-DWORD addServContact(HANDLE hContact, const char *pszNick, const char *pszGroup)
+DWORD addServContact(HANDLE hContact, const char *pszGroup)
 {
   servlistcookie* ack;
 
@@ -1480,7 +1488,7 @@ DWORD removeServContact(HANDLE hContact)
     ack->wGroupId = wGroupID;
     ack->wContactId = wItemID;
 
-    dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_REMOVEFROMLIST, dwUin, ack);
+    dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_REMOVEFROMLIST, hContact, ack);
   }
 
   sendAddStart(0);
@@ -1552,8 +1560,8 @@ void moveServContactReady(WORD wNewGroupID, LPARAM lParam)
   ack->wNewGroupId = wNewGroupID;
   ack->lParam = 0; // we use this as a sign
 
-  dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_REMOVEFROMLIST, dwUin, ack);
-  dwCookie2 = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_ADDTOLIST, dwUin, ack);
+  dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_REMOVEFROMLIST, ack->hContact, ack);
+  dwCookie2 = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_ADDTOLIST, ack->hContact, ack);
 
   sendAddStart(0);
   // imitate icq5, previously here was different order, but AOL changed and it ceased to work
@@ -1650,7 +1658,7 @@ static DWORD updateServContact(HANDLE hContact)
     ack->dwUin = dwUin;
     ack->hContact = hContact;
 
-    dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_UPDATEGROUP, dwUin, ack);
+    dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_UPDATEGROUP, hContact, ack);
   }
 
   // There is no need to send ICQ_LISTS_CLI_MODIFYSTART or
@@ -1716,6 +1724,37 @@ void renameServGroup(WORD wGroupId, char* szGroupName)
 }
 
 
+
+void resetServContactAuthState(HANDLE hContact, DWORD dwUin)
+{
+  WORD wContactId = ICQGetContactSettingWord(hContact, "ServerId", 0);
+  WORD wGroupId = ICQGetContactSettingWord(hContact, "SrvGroupId", 0);
+
+  if (wContactId && wGroupId)
+  {
+    DWORD dwCookie;
+    servlistcookie* ack;
+
+    if (ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie)))
+    { // we have cookie good, go on
+      ack->hContact = hContact;
+      ack->wContactId = wContactId;
+      ack->wGroupId = wGroupId;
+      ack->dwAction = SSA_CONTACT_FIX_AUTH;
+      ack->dwUin = dwUin;
+      dwCookie = AllocateCookie(CKT_SERVERLIST, 0, hContact, ack);
+
+      sendAddStart(0);
+      icq_sendServerContact(hContact, dwCookie, ICQ_LISTS_REMOVEFROMLIST, wGroupId, wContactId);
+      ICQDeleteContactSetting(hContact, "ServerData");
+      icq_sendServerContact(hContact, dwCookie, ICQ_LISTS_ADDTOLIST, wGroupId, wContactId);
+      sendAddEnd();
+    }
+  }
+}
+
+
+
 /*****************************************
  *
  *   --- Miranda Contactlist Hooks ---
@@ -1755,27 +1794,8 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
       (cws->value.type == DBVT_DELETED || (cws->value.type == DBVT_BYTE && cws->value.bVal == 0)) &&
       ICQGetContactSettingByte(NULL, "ServerAddRemove", DEFAULT_SS_ADDSERVER) &&
       !DBGetContactSettingByte((HANDLE)wParam, "CList", "Hidden", 0))
-    {
-      DWORD dwUin;
-      uid_str szUid;
-
-      // Does this contact have a UID?
-      if (!ICQGetContactSettingUID((HANDLE)wParam, &dwUin, &szUid))
-      {
-        char *pszNick;
-        char *pszGroup;
-
-        // Read nick name from DB
-        pszNick = UniGetContactSettingUtf((HANDLE)wParam, "CList", "MyHandle", NULL);
-
-        // Read group from DB
-        pszGroup = UniGetContactSettingUtf((HANDLE)wParam, "CList", "Group", NULL);
-
-        addServContact((HANDLE)wParam, pszNick, pszGroup);
-
-        SAFE_FREE(&pszNick);
-        SAFE_FREE(&pszGroup);
-      }
+    { // Add to server-list
+      IcqAddServerContact(wParam, 0);
     }
 
     // Has contact been renamed?
@@ -1847,6 +1867,11 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
 static int ServListDbContactDeleted(WPARAM wParam, LPARAM lParam)
 {
   DeleteFromCache((HANDLE)wParam);
+
+  if (!icqOnline && gbSsiEnabled)
+  { // contact was deleted only locally - retrieve full list on next connect
+    ICQWriteContactSettingWord((HANDLE)wParam, "SrvRecordCount", 0);
+  }
 
   if (!icqOnline || !gbSsiEnabled)
     return 0;

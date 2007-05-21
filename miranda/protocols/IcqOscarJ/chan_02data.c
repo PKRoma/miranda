@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -64,7 +64,7 @@ void handleDataChannel(unsigned char *pBuffer, WORD wBufferLength, serverthread_
       break;
 
     case ICQ_BUDDY_FAMILY:
-      handleBuddyFam(pBuffer, wBufferLength, &snacHeader);
+      handleBuddyFam(pBuffer, wBufferLength, &snacHeader, info);
       break;
 
     case ICQ_MSG_FAMILY:
@@ -146,14 +146,22 @@ int unpackSnacHeader(snac_header* pSnacHeader, unsigned char **pBuffer, WORD* pw
         if (wExtraBytes == 6)
         {
           *pBuffer += 4; // TLV type and length?
-          unpackWord(pBuffer,  &(pSnacHeader->wVersion));
-          *pwBufferLength -= 6;
+          unpackWord(pBuffer, &(pSnacHeader->wVersion));
+          *pwBufferLength -= wExtraBytes;
+          pSnacHeader->bValid = TRUE;
+        }
+        else if (wExtraBytes == 0x0E)
+        {
+          *pBuffer += 8; // TLV(2) - unknown
+          *pBuffer += 4;
+          unpackWord(pBuffer, &(pSnacHeader->wVersion));
+          *pwBufferLength -= wExtraBytes;
           pSnacHeader->bValid = TRUE;
         }
         else
         {
-          *pwBufferLength -= wExtraBytes;
           *pBuffer += wExtraBytes;
+          *pwBufferLength -= wExtraBytes;
           pSnacHeader->bValid = TRUE;
         }
       }
@@ -209,6 +217,14 @@ void LogFamilyError(WORD wFamily, WORD wError)
     case 0x16: msg = "Request ambiguous"; break;
     case 0x17: msg = "Server queue full"; break;
     case 0x18: msg = "Not while on AOL"; break;
+    case 0x19: msg = "Query failed"; break;
+    case 0x1A: msg = "Timeout"; break;
+    case 0x1B: msg = "Error text"; break; // ?
+    case 0x1C: msg = "General failure"; break;
+    case 0x1D: msg = "Progress"; break;
+    case 0x1E: msg = "In free area"; break;
+    case 0x1F: msg = "Parental controls"; break;
+    case 0x20: msg = "Remote restricted"; break;
     default:   msg = ""; break;
   }
 

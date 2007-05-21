@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/utilities.h,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -87,6 +87,8 @@ void parseServerAddress(char *szServer, WORD* wPort);
 char *DemangleXml(const char *string, int len);
 char *MangleXml(const char *string, int len);
 char *EliminateHtml(const char *string, int len);
+char* ApplyEncoding(const char *string, const char* pszEncoding);
+
 
 void ResetSettingsOnListReload(void);
 void ResetSettingsOnConnect(void);
@@ -118,7 +120,8 @@ void* __fastcall SAFE_MALLOC(size_t size);
 void LinkContactPhotoToFile(HANDLE hContact, char* szFile);
 void ContactPhotoSettingChanged(HANDLE hContact);
 
-HANDLE NetLib_OpenConnection(HANDLE hUser, NETLIBOPENCONNECTION* nloc);
+HANDLE NetLib_OpenConnection(HANDLE hUser, const char* szIdent, NETLIBOPENCONNECTION* nloc);
+HANDLE NetLib_BindPort(NETLIBNEWCONNECTIONPROC_V2 pFunc, void* lParam, WORD* pwPort, DWORD* pdwIntIP);
 void NetLib_SafeCloseHandle(HANDLE *hConnection, int bServerConn);
 int NetLog_Server(const char *fmt,...);
 int NetLog_Direct(const char *fmt,...);
@@ -133,6 +136,13 @@ char* __fastcall ICQTranslateUtfStatic(const char* src, char* buf);
 
 char* GetUserPassword(BOOL bAlways);
 WORD GetMyStatusFlags();
+
+/* Unicode FS utility functions */
+
+char* FileNameToUtf(const char *filename);
+int FileStatUtf(const char *path, struct _stati64 *buffer);
+int MakeDirUtf(const char *dir);
+int OpenFileUtf(const char *filename, int oflag, int pmode);
 
 /* Unicode UI utility functions */
 wchar_t* GetWindowTextUcs(HWND hWnd);

@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera, Bio
+// Copyright © 2004,2005,2006,2007 Joe Kucera, Bio
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -47,13 +47,13 @@ typedef struct icq_packet_s
 {
   WORD wPlace;
   BYTE nChannel;
-  WORD wSequence;
   WORD wLen;
   BYTE *pData;
 } icq_packet;
 
 /*---------* Functions *---------------*/
 
+void __fastcall init_generic_packet(icq_packet* pPacket, WORD wHeaderLen);
 void write_httphdr(icq_packet *d, WORD wType, DWORD dwSeq);
 void __fastcall write_flap(icq_packet *, BYTE);
 void __fastcall serverPacketInit(icq_packet *, WORD);
@@ -64,6 +64,7 @@ void __fastcall serverCookieInit(icq_packet *, BYTE *, WORD);
 void __fastcall packByte(icq_packet *, BYTE);
 void __fastcall packWord(icq_packet *, WORD);
 void __fastcall packDWord(icq_packet *, DWORD);
+void __fastcall packQWord(icq_packet *, DWORD64);
 void packTLV(icq_packet* pPacket, WORD wType, WORD wLength, BYTE* pbyValue);
 void packTLVWord(icq_packet *d, unsigned short nType, WORD wData);
 void packTLVDWord(icq_packet *d, unsigned short nType, DWORD dwData);
@@ -102,6 +103,7 @@ void ppackTLVLNTSBytefromDB(PBYTE *buf, int *buflen, const char *szSetting, BYTE
 void __fastcall unpackByte(unsigned char **, BYTE *);
 void __fastcall unpackWord(unsigned char **, WORD *);
 void __fastcall unpackDWord(unsigned char **, DWORD *);
+void __fastcall unpackQWord(unsigned char **, DWORD64 *);
 void unpackString(unsigned char **buf, char *string, WORD len);
 void unpackWideString(unsigned char **buf, WCHAR *string, WORD len);
 void unpackTypedTLV(unsigned char **, int, WORD, WORD *, WORD *, char **);

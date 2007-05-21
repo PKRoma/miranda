@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_infoupdate.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -40,13 +40,10 @@
 #define LISTSIZE 100
 static CRITICAL_SECTION listmutex;
 static HANDLE hQueueEvent = NULL;
-static HANDLE hDummyEvent = NULL;
 static int nUserCount = 0;
 static int bPendingUsers = 0;
-static BOOL bEnabled = TRUE;
-static BOOL bPaused = FALSE;
+static BOOL bEnabled = FALSE;
 static BOOL bRunning = FALSE;
-static DWORD tLast;
 static HANDLE hInfoThread = NULL;
 static DWORD dwUpdateThreshold;
 typedef struct s_userinfo {
@@ -67,9 +64,8 @@ void icq_InitInfoUpdate(void)
   
   // Create wait objects
   hQueueEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-  hDummyEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
   
-  if (hQueueEvent && hDummyEvent)
+  if (hQueueEvent)
   {
     // Init mutexes
     InitializeCriticalSection(&listmutex);
@@ -81,7 +77,7 @@ void icq_InitInfoUpdate(void)
       userList[i].hContact = NULL;
     }
 
-	  dwUpdateThreshold = ICQGetContactSettingByte(NULL, "InfoUpdate", UPDATE_THRESHOLD/(3600*24))*3600*24;
+    dwUpdateThreshold = ICQGetContactSettingByte(NULL, "InfoUpdate", UPDATE_THRESHOLD)*3600*24;
 
     hInfoThread = (HANDLE)forkthreadex(NULL, 0, icq_InfoUpdateThread, 0, 0, (DWORD*)&hInfoThread);
   }
@@ -216,23 +212,9 @@ void icq_EnableUserLookup(BOOL bEnable)
 {
   bEnabled = bEnable;
 
-  if (bEnabled) bPaused = FALSE;
-
   // Notify worker thread
   if (bEnabled && hQueueEvent)
     SetEvent(hQueueEvent);
-}
-
-
-
-void icq_PauseUserLookup()
-{
-  bPaused = TRUE;
-  tLast = GetTickCount();
-
-#ifdef _DEBUG
-  NetLog_Server("Pausing Auto-info update thread...");
-#endif
 }
 
 
@@ -252,11 +234,9 @@ unsigned __stdcall icq_InfoUpdateThread(void* arg)
     if (!nUserCount && bPendingUsers) // whole queue processed, check if more users needs updating
       icq_RescanInfoUpdate();
 
-    if ((nUserCount > 0) && bEnabled && icqOnline)
-      dwWait = WaitForSingleObjectEx(hDummyEvent, 3000, TRUE);
-    else
-    { // we need to slow down the process or icq will kick us
-      dwWait = WaitForSingleObjectEx(hDummyEvent, 1000, TRUE);
+    if (!nUserCount || !bEnabled || !icqOnline)
+    {
+      dwWait = WAIT_TIMEOUT;
       while (bRunning && dwWait == WAIT_TIMEOUT)
       { // wait for new work or until we should end
         dwWait = WaitForSingleObjectEx(hQueueEvent, 10000, TRUE);
@@ -275,19 +255,6 @@ unsigned __stdcall icq_InfoUpdateThread(void* arg)
       // Time to check for new users
       if (!bEnabled) continue; // we can't send requests now
 
-      if (bPaused)
-      { // pause for 30sec
-        if (GetTickCount()-tLast>30000) 
-        {
-          bPaused = FALSE;
-#ifdef _DEBUG
-          NetLog_Server("Resuming auto-info update thread...");
-#endif
-        }
-        continue;
-      }
-      tLast = GetTickCount();
-
 #ifdef _DEBUG
       NetLog_Server("Users %u", nUserCount);
 #endif
@@ -299,11 +266,50 @@ unsigned __stdcall icq_InfoUpdateThread(void* arg)
           if (userList[i].hContact)
           {
             // Check TS again, maybe it has been updated while we slept
-            if ((time(NULL) - ICQGetContactSettingDword(userList[i].hContact, "InfoTS", 0)) > dwUpdateThreshold) {
+            if ((time(NULL) - ICQGetContactSettingDword(userList[i].hContact, "InfoTS", 0)) > dwUpdateThreshold) 
+            {
+              WORD wGroup;
+
+              EnterCriticalSection(&ratesMutex);
+              if (!gRates)
+              { // we cannot send info request - icq is offline
+                LeaveCriticalSection(&ratesMutex);
+                break;
+              }
+              wGroup = ratesGroupFromSNAC(gRates, ICQ_EXTENSIONS_FAMILY, ICQ_META_CLI_REQ);
+              while (ratesNextRateLevel(gRates, wGroup) < ratesGetLimitLevel(gRates, wGroup, RML_IDLE_50))
+              { // we are over rate, need to wait before sending
+                int nDelay = ratesDelayToLevel(gRates, wGroup, ratesGetLimitLevel(gRates, wGroup, RML_IDLE_50) + 200);
+
+                LeaveCriticalSection(&ratesMutex);
+                LeaveCriticalSection(&listmutex);
+#ifdef _DEBUG
+                NetLog_Server("Rates: InfoUpdate delayed %dms", nDelay);
+#endif
+                SleepEx(nDelay, TRUE); // do not keep things locked during sleep
+                if (!bRunning)
+                { // need to end as fast as possible
+                  NetLog_Server("%s thread ended.", "Info-Update");
+
+                  return 0;
+                }
+                EnterCriticalSection(&listmutex);
+                EnterCriticalSection(&ratesMutex);
+                if (!gRates) // we lost connection when we slept, go away
+                  break;
+              }
+              if (!gRates)
+              { // we cannot send info request - icq is offline
+                LeaveCriticalSection(&ratesMutex);
+                break;
+              }
+              LeaveCriticalSection(&ratesMutex);
+
+              if (!userList[i].hContact) continue; // user was dequeued during our sleep
 #ifdef _DEBUG
               NetLog_Server("Request info for user %u", userList[i].dwUin);
 #endif
-              sendUserInfoAutoRequest(userList[i].dwUin);
+              sendUserInfoAutoRequest(userList[i].hContact, userList[i].dwUin);
 
               // Dequeue user and go back to sleep
               userList[i].dwUin = 0;
@@ -334,6 +340,7 @@ unsigned __stdcall icq_InfoUpdateThread(void* arg)
       break;
     }
   }
+  NetLog_Server("%s thread ended.", "Info-Update");
 
   return 0;
 }
@@ -344,12 +351,10 @@ unsigned __stdcall icq_InfoUpdateThread(void* arg)
 void icq_InfoUpdateCleanup(void)
 {
   bRunning = FALSE;
-  SetEvent(hDummyEvent); // break timeout
   SetEvent(hQueueEvent); // break queue loop
   if (hInfoThread) WaitForSingleObjectEx(hInfoThread, INFINITE, TRUE);
   // Uninit mutex
   DeleteCriticalSection(&listmutex);
   CloseHandle(hQueueEvent);
-  CloseHandle(hDummyEvent);
   CloseHandle(hInfoThread);
 }

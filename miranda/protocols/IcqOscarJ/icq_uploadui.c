@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -260,7 +260,7 @@ static DWORD sendUploadBuddy(HANDLE hContact, WORD wAction, DWORD dwUin, char *s
     ack->wGroupId = wGroupId;
     ack->dwAction = SSA_SERVLIST_ACK;
     ack->dwUin = dwUin;
-    dwCookie = AllocateCookie(CKT_SERVERLIST, wAction, dwUin, ack);
+    dwCookie = AllocateCookie(CKT_SERVERLIST, wAction, hContact, ack);
     ack->lParam = dwCookie;
 
     if (wItemType == SSI_ITEM_BUDDY)
@@ -920,7 +920,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
       {
       case IDOK:
         SendDlgItemMessage(hwndDlg, IDC_LOG, LB_RESETCONTENT, 0, 0);
-        if (gnCurrentStatus == ID_STATUS_OFFLINE || gnCurrentStatus == ID_STATUS_CONNECTING)
+        if (!icqOnline)
         {
           char str[MAX_PATH];
 

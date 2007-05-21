@@ -63,6 +63,7 @@ static plugin_guid MGTYPE_WEBURL         = {MGTYPE_WEBURL_s};
 static plugin_guid MGTYPE_CONTACTS       = {MGTYPE_CONTACTS_s};
 static plugin_guid MGTYPE_GREETING_CARD  = {MGTYPE_GREETING_CARD_s};
 static plugin_guid MGTYPE_CHAT           = {MGTYPE_CHAT_s};
+static plugin_guid MGTYPE_SMS_MESSAGE    = {MGTYPE_SMS_MESSAGE_s};
 static plugin_guid MGTYPE_XTRAZ_SCRIPT   = {MGTYPE_XTRAZ_SCRIPT_s};
 
 

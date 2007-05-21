@@ -133,6 +133,7 @@
 #define MTN_FINISHED                0x0000
 #define MTN_TYPED                   0x0001
 #define MTN_BEGUN                   0x0002
+#define MTN_WINDOW_CLOSED           0x000F
 
 
 
@@ -144,16 +145,20 @@
 #define BINARY_CAP_SIZE             16
 #define CAP_SRV_RELAY               0x09, 0x46, 0x13, 0x49, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00
 #define CAP_UTF                     0x09, 0x46, 0x13, 0x4e, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00
+#define CAP_RTF                     0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34, 0xad, 0x22, 0xd6, 0xab, 0xf7, 0x3f, 0x14, 0x92
+#define CAP_ICQDIRECT               0x09, 0x46, 0x13, 0x44, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00
 #define CAP_TYPING                  0x56, 0x3f, 0xc8, 0x09, 0x0b, 0x6f, 0x41, 0xbd, 0x9f, 0x79, 0x42, 0x26, 0x09, 0xdf, 0xa2, 0xf3
 #define CAP_XTRAZ                   0x1A, 0x09, 0x3C, 0x6C, 0xD7, 0xFD, 0x4E, 0xC5, 0x9D, 0x51, 0xA6, 0x47, 0x4E, 0x34, 0xF5, 0xA0
-#define CAP_AIM_FILE                0x09, 0x46, 0x13, 0x43, 0x4C, 0x7F, 0x11, 0xD1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00
+#define CAP_OSCAR_FILE              0x09, 0x46, 0x13, 0x43, 0x4C, 0x7F, 0x11, 0xD1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00
 
 // Miranda IM Capability bitmask
 #define CAPF_SRV_RELAY              0x00000001
 #define CAPF_UTF                    0x00000002
-#define CAPF_TYPING                 0x00000004
-#define CAPF_XTRAZ                  0x00000010
-#define CAPF_AIM_FILE               0x00000040
+#define CAPF_RTF                    0x00000004
+#define CAPF_ICQDIRECT              0x00000010
+#define CAPF_TYPING                 0x00000020
+#define CAPF_XTRAZ                  0x00000100
+#define CAPF_OSCAR_FILE             0x00000400
 
 
 // Message Capability IDs
@@ -198,6 +203,7 @@
 #define MTYPE_REQUESTCONTACTS       0x102 // Request for Contacts
 #define MTYPE_MESSAGE               0x103 // Message+
 #define MTYPE_STATUSMSGEXT          0x104 // StatusMsgExt (2003b)
+#define MTYPE_SMS_MESSAGE           0x110 // SMS message from Mobile
 #define MTYPE_SCRIPT_INVITATION     0x201 // Xtraz Invitation
 #define MTYPE_SCRIPT_DATA           0x202 // Xtraz Message
 #define MTYPE_SCRIPT_NOTIFY         0x208 // Xtraz Response
@@ -211,15 +217,16 @@
 #define MGTYPE_CONTACTS_s           0x2A0E7D46, 0x7676D411, 0xBCE60004, 0xAC961EA6 
 #define MGTYPE_GREETING_CARD_s      0x01E53B48, 0x2AE4D111, 0xB6790060, 0x97E1E294
 #define MGTYPE_CHAT_s               0xBFF720B2, 0x378ED411, 0xBD280004, 0xAC96D905
+#define MGTYPE_SMS_MESSAGE_s        0x0e28f600, 0x11e7d311, 0xbcf30004, 0xac969dc2
 #define MGTYPE_XTRAZ_SCRIPT_s       0x3b60b3ef, 0xd82a6c45, 0xa4e09c5a, 0x5e67e865
 
 // Message Plugin Sub-Type IDs
-#define MGTYPE_STANDARD_SEND        0x00
-#define MGTYPE_CONTACTS_REQUEST     0x02
-#define MGTYPE_SCRIPT_INVITATION    0x01
-#define MGTYPE_SCRIPT_DATA          0x02
-#define MGTYPE_SCRIPT_USER_REMOVE   0x04
-#define MGTYPE_SCRIPT_NOTIFY        0x08
+#define MGTYPE_STANDARD_SEND        0x0000
+#define MGTYPE_CONTACTS_REQUEST     0x0002
+#define MGTYPE_SCRIPT_INVITATION    0x0001
+#define MGTYPE_SCRIPT_DATA          0x0002
+#define MGTYPE_SCRIPT_USER_REMOVE   0x0004
+#define MGTYPE_SCRIPT_NOTIFY        0x0008
 #define MGTYPE_UNDEFINED            0xFFFF
 
 
@@ -530,15 +537,16 @@
 
 
 // Internal Constants
-#define ICQ_PLUG_VERSION            0x00030706
+#define ICQ_PLUG_VERSION            0x00030900
 #define ICQ_VERSION                 8
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_NICK_SIZE               32
 #define MAX_CONTACTSSEND            15
 #define MAX_MESSAGESNACSIZE         8000
 #define CLIENTRATELIMIT             0
-#define UPDATE_THRESHOLD            1209600 // Two weeks
+#define UPDATE_THRESHOLD            14      // Two weeks
 #define COOKIE_TIMEOUT              3600    // One hour
+#define KEEPALIVE_INTERVAL          57000   // One minute
 #define WEBFRONTPORT                0x50
 #define CLIENTFEATURES              0x3
 #define URL_FORGOT_PASSWORD         "https://www.icq.com/password/"
@@ -548,5 +556,7 @@
 #define CLIENT_MD5_STRING           "AOL Instant Messenger (SM)"
 #define UNIQUEIDSETTING             "UIN"
 #define UINMAXLEN                   11 // DWORD string max len + 1
+#define OSCAR_PROXY_HOST            "ars.oscar.aol.com"
+#define OSCAR_PROXY_VERSION         0x044A
 
 #endif /* __ICQ_CONSTANTS_H */

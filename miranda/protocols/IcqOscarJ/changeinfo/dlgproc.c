@@ -3,7 +3,7 @@
 //                ________________________________________
 // 
 // Copyright © 2001,2002,2003,2004 Richard Hughes, Martin Öberg
-// Copyright © 2004,2005,2006 Joe Kucera, Bio
+// Copyright © 2004,2005,2006,2007 Joe Kucera, Bio
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -21,7 +21,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/changeinfo/dlgproc.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -413,7 +413,7 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
               EndStringEdit(1);
               EndListEdit(1);
-              if(nm->wVKey==VK_SPACE || nm->wVKey==VK_RETURN) nm->wVKey=0;
+              if(nm->wVKey==VK_SPACE || nm->wVKey==VK_RETURN || nm->wVKey==VK_F2) nm->wVKey=0;
               if(nm->wVKey && (nm->wVKey<'0' || (nm->wVKey>'9' && nm->wVKey<'A') || (nm->wVKey>'Z' && nm->wVKey<VK_NUMPAD0) || nm->wVKey>=VK_F1))
                 break;
               lvi.mask=LVIF_PARAM|LVIF_STATE;

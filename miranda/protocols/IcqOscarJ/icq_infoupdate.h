@@ -53,6 +53,3 @@ void icq_InfoUpdateCleanup(void);
 
 // Enable/disable user info lookups
 void icq_EnableUserLookup(BOOL bEnable);
-
-// Pause user info lookup for 30sec
-void icq_PauseUserLookup();

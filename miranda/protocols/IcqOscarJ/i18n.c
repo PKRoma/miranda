@@ -4,8 +4,8 @@
 //
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin  berg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -98,6 +98,7 @@ int UTF8_IsValid(const unsigned char* pszInput)
   int nb, i;
   const unsigned char* c = pszInput;
 
+  if (!pszInput) return 0;
 
   for (c = pszInput; *c; c += (nb + 1))
   {
@@ -170,6 +171,7 @@ unsigned char *make_utf8_string(const wchar_t *unicode)
   unsigned char* out;
   unsigned short c;
 
+  if (!unicode) return NULL;
 
   /* first calculate the size of the target string */
   c = unicode[index++];
@@ -221,6 +223,8 @@ wchar_t *make_unicode_string(const unsigned char *utf8)
   int size = 0, index = 0, out_index = 0;
   wchar_t *out;
   unsigned char c;
+
+  if (!utf8) return NULL;
 
   /* first calculate the size of the target string */
   c = utf8[index++];
@@ -315,7 +319,7 @@ int utf8_encode(const char *from, char **to)
 
 char *ansi_to_utf8(const char *szAnsi)
 {
-  char *szUtf;
+  char *szUtf = NULL;
 
   if (strlennull(szAnsi))
   {

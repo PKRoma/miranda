@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/iconlib.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -49,7 +49,7 @@ void InitIconLib()
   {
     SKINICONDESC sid = {0};
 
-    if (CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid) >= PLUGIN_MAKE_VERSION(0,0,1,0))
+    if (ServiceExists(MS_SKIN2_RELEASEICON) || (CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid) >= PLUGIN_MAKE_VERSION(0,0,1,0)))
       bIcoUtf = 1;
   }
 }
@@ -99,7 +99,7 @@ void IconLibDefine(const char* desc, const char* section, const char* ident, HIC
 
 
 
-HICON IconLibProcess(HICON icon, const char* ident)
+HICON IconLibGetIcon(const char* ident)
 {
   if (bIcoReady)
   {
@@ -111,7 +111,20 @@ HICON IconLibProcess(HICON icon, const char* ident)
     if (hNew) return hNew;
   }
 
-  return icon;
+  return NULL;
+}
+
+
+
+void IconLibReleaseIcon(const char* ident)
+{
+  if (bIcoReady)
+  {
+		char szTemp[MAX_PATH + 128];
+
+		null_snprintf(szTemp, sizeof(szTemp), "%s_%s", gpszICQProtoName, ident);
+		CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)szTemp);
+  }
 }
 
 

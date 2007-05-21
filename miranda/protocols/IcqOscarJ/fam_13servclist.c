@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/fam_13servclist.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -74,12 +74,11 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
     if (wBufferLength >= 2)
     {
       WORD wError;
-      DWORD dwActUin;
       servlistcookie* sc;
 
       unpackWord(&pBuffer, &wError);
 
-      if (FindCookie(pSnacHeader->dwRef, &dwActUin, &sc))
+      if (FindCookie(pSnacHeader->dwRef, NULL, &sc))
       { // look for action cookie
 #ifdef _DEBUG
         NetLog_Server("Received expected server list ack, action: %d, result: %d", sc->dwAction, wError);
@@ -205,13 +204,24 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
               BYTE bAuth = ICQGetContactSettingByte(hContact, "Auth", 0);
 
               if (bAuth && !pAuth)
-              { // server authorised our contact
+              { // server authorized our contact
                 char str[MAX_PATH];
                 char msg[MAX_PATH];
                 char *nick = NickFromHandleUtf(hContact);
 
                 ICQWriteContactSettingByte(hContact, "Auth", 0);
-                null_snprintf(str, MAX_PATH, ICQTranslateUtfStatic("User \"%s\" was authorised in the server list.", msg), nick);
+                null_snprintf(str, MAX_PATH, ICQTranslateUtfStatic("Contact \"%s\" was authorized in the server list.", msg), nick);
+                icq_LogMessage(LOG_WARNING, str);
+                SAFE_FREE(&nick);
+              }
+              else if (!bAuth && pAuth)
+              { // server took away authorization of our contact
+                char str[MAX_PATH];
+                char msg[MAX_PATH];
+                char *nick = NickFromHandleUtf(hContact);
+
+                ICQWriteContactSettingByte(hContact, "Auth", 1);
+                null_snprintf(str, MAX_PATH, ICQTranslateUtfStatic("Contact \"%s\" lost its authorization in the server list.", msg), nick);
                 icq_LogMessage(LOG_WARNING, str);
                 SAFE_FREE(&nick);
               }
@@ -318,12 +328,11 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
     if (wBufferLength >= 2)
     {
       WORD wError;
-      DWORD dwActUin;
       servlistcookie* sc;
 
       unpackWord(&pBuffer, &wError);
 
-      if (FindCookie(pSnacHeader->dwRef, &dwActUin, &sc))
+      if (FindCookie(pSnacHeader->dwRef, NULL, &sc))
       { // look for action cookie
 #ifdef _DEBUG
         NetLog_Server("Received server list error, action: %d, result: %d", sc->dwAction, wError);
@@ -461,7 +470,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
           NetLog_Server("Contact could not be added without authorization, add with await auth flag.");
 
           ICQWriteContactSettingByte(sc->hContact, "Auth", 1); // we need auth
-          dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_ADDTOLIST, sc->dwUin, sc);
+          dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_ADDTOLIST, sc->hContact, sc);
           icq_sendServerContact(sc->hContact, dwCookie, ICQ_LISTS_ADDTOLIST, sc->wGroupId, sc->wContactId);
 
           sc = NULL; // we do not want it to be freed now
@@ -638,9 +647,32 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
       }
       if (wError)
       {
+        if (wError == 0x0E && sc->lParam == 1)
+        { // second ack - adding failed with error 0x0E, try to add with AVAIT_AUTH flag
+          DWORD dwCookie;
+
+          if (!ICQGetContactSettingByte(sc->hContact, "Auth", 0))
+          { // we tried without AWAIT_AUTH, try again with it
+            NetLog_Server("Contact could not be added without authorization, add with await auth flag.");
+
+            ICQWriteContactSettingByte(sc->hContact, "Auth", 1); // we need auth
+          }
+          else
+          { // we tried with AWAIT_AUTH, try again without
+            NetLog_Server("Contact count not be added awaiting authorization, try authorized.");
+
+            ICQWriteContactSettingByte(sc->hContact, "Auth", 0);
+          }
+          dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_ADDTOLIST, sc->hContact, sc);
+          icq_sendServerContact(sc->hContact, dwCookie, ICQ_LISTS_ADDTOLIST, sc->wNewGroupId, sc->wNewContactId);
+
+          sc->lParam = 2; // do not cycle
+          sc = NULL; // we do not want to be freed here
+          break;
+        }
         RemovePendingOperation(sc->hContact, 0);
         NetLog_Server("Moving of user to another group on server list failed, error %d", wError);
-        icq_LogMessage(LOG_WARNING, "Moving of user to another group on server list failed.");
+        icq_LogMessage(LOG_ERROR, "Moving of user to another group on server list failed.");
         if (!sc->lParam) // is this first ack ?
         {
           sc->lParam = -1;
@@ -696,6 +728,13 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         ICQDeleteContactSetting(sc->hContact, "SrvGroupId");
         sc->lParam = 1;
         sc = NULL; // wait for second ack
+      }
+      break;
+    }
+  case SSA_CONTACT_FIX_AUTH:
+    {
+      if (wError)
+      { // FIXME: something failed, we should handle it properly
       }
       break;
     }
@@ -1277,7 +1316,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
           // Set apparent mode & ignore
           ICQWriteContactSettingWord(hContact, "ApparentMode", ID_STATUS_OFFLINE);
           // set ignore all events
-          DBWriteContactSettingDword(hContact, "Ignore", "Mask1", 0xFFFF);
+          CallService(MS_IGNORE_IGNORE, (WPARAM)hContact, IGNOREEVENT_ALL);
           NetLog_Server("Ignore-contact (%s)", szRecordName);
         }
         else
@@ -1299,7 +1338,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
         /* data is TLV(13) {TLV(D4) {time_t importTime}} */
         ICQWriteContactSettingDword(NULL, "ImportTS", getDWordFromChain(pChain, SSI_TLV_TIMESTAMP, 1));
         ICQWriteContactSettingWord(NULL, "SrvImportID", wItemId);
-        NetLog_Server("SSI first import recognized");
+        NetLog_Server("SSI %s item recognized", "first import");
       }
       break;
 
@@ -1311,9 +1350,17 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
         /* data is TLV(D5) hash */
         /* we ignore this, just save the id */
         /* cause we get the hash again after login */
+        if (!strcmpnull(szRecordName, "12"))
+        { // need to handle Photo Item separately
+          ICQWriteContactSettingWord(NULL, "SrvPhotoID", wItemId);
+          NetLog_Server("SSI %s item recognized", "Photo");
+        }
+        else
+        {
+          ICQWriteContactSettingWord(NULL, "SrvAvatarID", wItemId);
+          NetLog_Server("SSI %s item recognized", "Avatar");
+        }
         ReserveServerID(wItemId, SSIT_ITEM);
-        ICQWriteContactSettingWord(NULL, "SrvAvatarID", wItemId);
-        NetLog_Server("SSI Avatar item recognized");
       }
       break;
 

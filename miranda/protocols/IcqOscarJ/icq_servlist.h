@@ -49,6 +49,7 @@
 #define SSA_CONTACT_ADD_AUTH  0x11  // add contact with auth
 #define SSA_CONTACT_SET_GROUP 0x12  // move to group
 #define SSA_CONTACT_REMOVE    0x13  // delete contact
+#define SSA_CONTACT_FIX_AUTH  0x40  // reuploading contact for auth re-request
 #define SSA_GROUP_ADD         0x15  // create group
 #define SSA_GROUP_REMOVE      0x16  // delete group
 #define SSA_GROUP_UPDATE      0x17  // update group
@@ -98,6 +99,9 @@ DWORD icq_sendGroupUtf(DWORD dwCookie, WORD wAction, WORD wGroupId, const char *
 
 DWORD icq_removeServerPrivacyItem(HANDLE hContact, DWORD dwUin, char* szUid, WORD wItemId, WORD wType);
 DWORD icq_addServerPrivacyItem(HANDLE hContact, DWORD dwUin, char* szUid, WORD wItemId, WORD wType);
+
+
+void resetServContactAuthState(HANDLE hContact, DWORD dwUin);
 
 // id type groups
 #define SSIT_ITEM 0

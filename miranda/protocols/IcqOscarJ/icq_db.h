@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -39,37 +39,39 @@
 
 void InitDB();
 
-BYTE ICQGetContactSettingByte(HANDLE hContact, const char* szSetting, BYTE bDef);
-WORD ICQGetContactSettingWord(HANDLE hContact, const char* szSetting, WORD wDef);
-DWORD ICQGetContactSettingDword(HANDLE hContact, const char* szSetting, DWORD dwDef);
-DWORD ICQGetContactSettingUIN(HANDLE hContact);
-int ICQGetContactSettingUID(HANDLE hContact, DWORD *pdwUin, uid_str* ppszUid);
-int ICQGetContactSetting(HANDLE hContact, const char* szSetting, DBVARIANT *dbv);
-char* ICQGetContactSettingUtf(HANDLE hContact, const char* szSetting, char* szDef);
+void __stdcall ICQCreateResidentSetting(const char* szSetting);
 
-WORD ICQGetContactStatus(HANDLE hContact);
+BYTE __stdcall ICQGetContactSettingByte(HANDLE hContact, const char* szSetting, BYTE bDef);
+WORD __stdcall ICQGetContactSettingWord(HANDLE hContact, const char* szSetting, WORD wDef);
+DWORD __stdcall ICQGetContactSettingDword(HANDLE hContact, const char* szSetting, DWORD dwDef);
+DWORD __stdcall ICQGetContactSettingUIN(HANDLE hContact);
+int __stdcall ICQGetContactSettingUID(HANDLE hContact, DWORD *pdwUin, uid_str* ppszUid);
+int __stdcall ICQGetContactSetting(HANDLE hContact, const char* szSetting, DBVARIANT *dbv);
+char* __stdcall ICQGetContactSettingUtf(HANDLE hContact, const char* szSetting, char* szDef);
 
-int ICQGetContactStaticString(HANDLE hContact, const char* valueName, char* dest, int dest_len);
+WORD __stdcall ICQGetContactStatus(HANDLE hContact);
 
-int ICQDeleteContactSetting(HANDLE hContact, const char* szSetting);
+int __stdcall ICQGetContactStaticString(HANDLE hContact, const char* valueName, char* dest, int dest_len);
 
-int ICQWriteContactSettingByte(HANDLE hContact, const char* szSetting, BYTE bValue);
-int ICQWriteContactSettingWord(HANDLE hContact, const char* szSetting, WORD wValue);
-int ICQWriteContactSettingDword(HANDLE hContact, const char* szSetting, DWORD dwValue);
-int ICQWriteContactSettingString(HANDLE hContact, const char* szSetting, char* szValue);
-int ICQWriteContactSettingUtf(HANDLE hContact, const char* szSetting, char* szValue);
+int __stdcall ICQDeleteContactSetting(HANDLE hContact, const char* szSetting);
 
-int ICQWriteContactSettingBlob(HANDLE hContact,const char *szSetting,const char *val, const int cbVal);
+int __stdcall ICQWriteContactSettingByte(HANDLE hContact, const char* szSetting, BYTE bValue);
+int __stdcall ICQWriteContactSettingWord(HANDLE hContact, const char* szSetting, WORD wValue);
+int __stdcall ICQWriteContactSettingDword(HANDLE hContact, const char* szSetting, DWORD dwValue);
+int __stdcall ICQWriteContactSettingString(HANDLE hContact, const char* szSetting, char* szValue);
+int __stdcall ICQWriteContactSettingUtf(HANDLE hContact, const char* szSetting, char* szValue);
 
-char* UniGetContactSettingUtf(HANDLE hContact, const char *szModule,const char* szSetting, char* szDef);
-int UniWriteContactSettingUtf(HANDLE hContact, const char *szModule,const char* szSetting, char* szValue);
+int __stdcall ICQWriteContactSettingBlob(HANDLE hContact,const char *szSetting,const char *val, const int cbVal);
 
-int ICQFreeVariant(DBVARIANT* dbv);
+char* __stdcall UniGetContactSettingUtf(HANDLE hContact, const char *szModule,const char* szSetting, char* szDef);
+int __stdcall UniWriteContactSettingUtf(HANDLE hContact, const char *szModule,const char* szSetting, char* szValue);
 
-HANDLE ICQAddEvent(HANDLE hContact, WORD wType, DWORD dwTime, DWORD flags, DWORD cbBlob, PBYTE pBlob);
+int __stdcall ICQFreeVariant(DBVARIANT* dbv);
 
-int IsICQContact(HANDLE hContact);
-HANDLE ICQFindFirstContact();
-HANDLE ICQFindNextContact(HANDLE hContact);
+HANDLE __stdcall ICQAddEvent(HANDLE hContact, WORD wType, DWORD dwTime, DWORD flags, DWORD cbBlob, PBYTE pBlob);
+
+int __fastcall IsICQContact(HANDLE hContact);
+HANDLE __fastcall ICQFindFirstContact();
+HANDLE __fastcall ICQFindNextContact(HANDLE hContact);
 
 #endif /* __ICQ_DB_H */

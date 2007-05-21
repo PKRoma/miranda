@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_popups.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -100,12 +100,12 @@ static BOOL CALLBACK DlgProcIcqPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, 
     SetDlgItemInt(hwndDlg, IDC_POPUP_SPAM_TIMEOUT, ICQGetContactSettingDword(NULL,"PopupsSpamTimeout",DEFAULT_SPAM_TIMEOUT),FALSE);
     bEnabled = ICQGetContactSettingByte(NULL,"PopupsWinColors",DEFAULT_POPUPS_WIN_COLORS);
     CheckDlgButton(hwndDlg, IDC_USEWINCOLORS, bEnabled);
-    icq_EnableMultipleControls(hwndDlg, icqPopupColorControls, sizeof(icqPopupColorControls)/sizeof(icqPopupColorControls[0]), bEnabled);
+    icq_EnableMultipleControls(hwndDlg, icqPopupColorControls, SIZEOF(icqPopupColorControls), bEnabled);
     CheckDlgButton(hwndDlg, IDC_USESYSICONS, ICQGetContactSettingByte(NULL,"PopupsSysIcons",DEFAULT_POPUPS_SYS_ICONS));
     bEnabled = ICQGetContactSettingByte(NULL,"PopupsEnabled",DEFAULT_POPUPS_ENABLED);
     CheckDlgButton(hwndDlg, IDC_POPUPS_ENABLED, bEnabled);
-    icq_EnableMultipleControls(hwndDlg, icqPopupsControls, sizeof(icqPopupsControls)/sizeof(icqPopupsControls[0]), bEnabled);
-    icq_EnableMultipleControls(hwndDlg, icqPopupColorControls, sizeof(icqPopupColorControls)/sizeof(icqPopupColorControls[0]), bEnabled);
+    icq_EnableMultipleControls(hwndDlg, icqPopupsControls, SIZEOF(icqPopupsControls), bEnabled);
+    icq_EnableMultipleControls(hwndDlg, icqPopupColorControls, SIZEOF(icqPopupColorControls), bEnabled & !IsDlgButtonChecked(hwndDlg,IDC_USEWINCOLORS));
 
     return TRUE;
 
@@ -124,13 +124,11 @@ static BOOL CALLBACK DlgProcIcqPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, 
 
     case IDC_POPUPS_ENABLED:
       bEnabled = IsDlgButtonChecked(hwndDlg,IDC_POPUPS_ENABLED);
-      icq_EnableMultipleControls(hwndDlg, icqPopupsControls, sizeof(icqPopupsControls)/sizeof(icqPopupsControls[0]), bEnabled);
-      icq_EnableMultipleControls(hwndDlg, icqPopupColorControls, sizeof(icqPopupColorControls)/sizeof(icqPopupColorControls[0]), bEnabled & IsDlgButtonChecked(hwndDlg,IDC_POPUPS_ENABLED));
-      break;
+      icq_EnableMultipleControls(hwndDlg, icqPopupsControls, SIZEOF(icqPopupsControls), bEnabled);
 
     case IDC_USEWINCOLORS:
       bEnabled = IsDlgButtonChecked(hwndDlg,IDC_POPUPS_ENABLED);
-      icq_EnableMultipleControls(hwndDlg, icqPopupColorControls, sizeof(icqPopupColorControls)/sizeof(icqPopupColorControls[0]), bEnabled);
+      icq_EnableMultipleControls(hwndDlg, icqPopupColorControls, SIZEOF(icqPopupColorControls), bEnabled & !IsDlgButtonChecked(hwndDlg,IDC_USEWINCOLORS));
       break;
     }
     SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
@@ -228,12 +226,20 @@ int ShowPopUpMsg(HANDLE hContact, const char* szTitle, const char* szMsg, BYTE b
       rsIcon = MAKEINTRESOURCE(IDI_ICQ);
     }
     ppd.lchIcon = (HICON)LoadImage(hIcons, rsIcon, IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), LR_SHARED);
-    strcpy(szSetting, szPrefix);
-    strcat(szSetting, "TextColor");
-    ppd.colorText = ICQGetContactSettingDword(NULL, szSetting, ppd.colorText);
-    strcpy(szSetting, szPrefix);
-    strcat(szSetting, "BackColor");
-    ppd.colorBack = ICQGetContactSettingDword(NULL, szSetting, ppd.colorBack);
+    if (ICQGetContactSettingByte(NULL, "PopupsWinColors", DEFAULT_POPUPS_WIN_COLORS))
+    {
+      ppd.colorText = GetSysColor(COLOR_WINDOWTEXT);
+      ppd.colorBack = GetSysColor(COLOR_WINDOW);
+    }
+    else
+    {
+      strcpy(szSetting, szPrefix);
+      strcat(szSetting, "TextColor");
+      ppd.colorText = ICQGetContactSettingDword(NULL, szSetting, ppd.colorText);
+      strcpy(szSetting, szPrefix);
+      strcat(szSetting, "BackColor");
+      ppd.colorBack = ICQGetContactSettingDword(NULL, szSetting, ppd.colorBack);
+    }
     strcpy(szSetting, szPrefix);
     strcat(szSetting, "Timeout");
     ppd.iSeconds = ICQGetContactSettingDword(NULL, szSetting, ppd.iSeconds);

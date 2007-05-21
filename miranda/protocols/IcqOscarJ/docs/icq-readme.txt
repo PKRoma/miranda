@@ -30,36 +30,61 @@ ______________
   Manage server list contacts added contacts should never receive auth requests, but
   if you have an old account they can receive added notification.
 
-- When owner avatar is deleted it is removed from server, but contacts are not 
-  notified immediately. They get notified when they reconnect or when icq is reconnected.
-
 - Some wicked firewall software can cause HTML tags (e.g. <font> </font>) to be added to
   incoming messages.
+
+- With HTTP Proxy Mode in Connection settings, neither Avatars nor File Transfer can work.
+  This is partly a limitation of current Miranda's network module implementation. But
+  File Transfer cannot work with HTTP Proxy, that is a protocol limitation.
+
 
 TO-DO List
 __________
 
-0.3.9
-  Manage server-list dialog now groups requests - much faster
+0.3.10
+  Server-list support now groups requests - much more faster & reliable
   Full support for sub-groups in Manage server-list dialog
-  Real Level 1 rate management (will solve multi-recipient message problems)
-  AIM file transfers (OFT) - like icq5 (including transfer thru server)
+  Simple sub-groups support (optional)
+  New White-pages support (like ICQ 6)
+  
 
 0.5
   Account management (together with Miranda core changes)
   Multi-user chat (Xtraz based)
+  Mid-NetLib module for HTTP gateway (for Avatars to work) [icq_net]
 
 
 
 Changes
 _______
 
-0.3.7.6
+0.3.9
 
 Bugfixes:
-  Some fixes from development version 0.3.8.x
-  
-  
+  Fixed peer-to-peer session cookie checking (was working only due to coincidence)
+  Fixed SMS message handling, made message parsing more consistent
+  Applied fix for re-requesting authorization (thx Bio)
+  Fixed handling of message acks & status msg replies from ICQ 6
+  Fixed handling of malformed messages acks
+  Minor fixes for Popup plugin support
+  Minor protocol related tweaks
+  Fixed possible lags caused by typing notifications (on slow connections)
+  Fixed message handling (fixes bug used for stealth invisibility detection)
+  Several fixes to Rate Level 2 handling - more propper handling of message responses  
+
+New Features:
+  Oscar File Transfers - like icq5 (including: transfer thru server, resume)
+
+Improvements:
+  Client detection improvements
+  Level 1 Rate management (global) - should solve problems with many contacts in list
+  Support for Custom Profile Folders plug-in - configurable avatars cache folder
+  Ability to send long offline messages (up to 4096 characters)
+  Messsage Error handling is now complete (no more disconnections on long msgs) 
+  Support for Aim contacts enhanced
+  Better support for Miranda Ignore module
+
+
 0.3.7.5
 
 Bugfixes:
@@ -94,7 +119,7 @@ Bugfixes:
   Fixed offline greeting cards were not processed properly
   Fixed small protocol glitch with reverse peer-to-peer connection
 
-  
+
 0.3.7.1
 
 Bugfixes:
@@ -102,7 +127,7 @@ Bugfixes:
   Fixed avatars were not working when server port set to 0
   Made message parser more strict (fixes bug allowing stealth invisible client detection)
   Fixed Popup's unicode support cannot be used in ANSI mode even if available
-
+  
 Improvements:
   Added new session password API - allowing plugins like Secure Login to work better
 
@@ -368,6 +393,8 @@ Database items (usually at Contact\ICQ):
 
 Database items for Main Contact (usually at Settings\ICQ):
 (BYTE)InfoUpdate - Threshold in DAYS for updating user info (restart is needed) - default is 14 days
+
+(DWORD)KeepAliveInterval - Period in which Keep-Alive packets are send if enabled - default is one minute
 
 (BYTE)PrivacyItems = 1 - adds more privacy tools to contact menu (e.g. Revoke Authorization)
 

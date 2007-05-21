@@ -148,6 +148,8 @@ CLEAN :
 	-@erase "$(INTDIR)\main.sbr"
 	-@erase "$(INTDIR)\md5.obj"
 	-@erase "$(INTDIR)\md5.sbr"
+	-@erase "$(INTDIR)\oscar_filetransfer.obj"
+	-@erase "$(INTDIR)\oscar_filetransfer.sbr"
 	-@erase "$(INTDIR)\resources.res"
 	-@erase "$(INTDIR)\stdpackets.obj"
 	-@erase "$(INTDIR)\stdpackets.sbr"
@@ -268,6 +270,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\icq_xtraz.sbr" \
 	"$(INTDIR)\icqoscar.sbr" \
 	"$(INTDIR)\md5.sbr" \
+	"$(INTDIR)\oscar_filetransfer.sbr" \
 	"$(INTDIR)\stdpackets.sbr" \
 	"$(INTDIR)\tlv.sbr" \
 	"$(INTDIR)\utilities.sbr"
@@ -337,6 +340,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\icq_xtraz.obj" \
 	"$(INTDIR)\icqoscar.obj" \
 	"$(INTDIR)\md5.obj" \
+	"$(INTDIR)\oscar_filetransfer.obj" \
 	"$(INTDIR)\stdpackets.obj" \
 	"$(INTDIR)\tlv.obj" \
 	"$(INTDIR)\utilities.obj" \
@@ -470,6 +474,8 @@ CLEAN :
 	-@erase "$(INTDIR)\main.sbr"
 	-@erase "$(INTDIR)\md5.obj"
 	-@erase "$(INTDIR)\md5.sbr"
+	-@erase "$(INTDIR)\oscar_filetransfer.obj"
+	-@erase "$(INTDIR)\oscar_filetransfer.sbr"
 	-@erase "$(INTDIR)\resources.res"
 	-@erase "$(INTDIR)\stdpackets.obj"
 	-@erase "$(INTDIR)\stdpackets.sbr"
@@ -591,6 +597,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\icq_xtraz.sbr" \
 	"$(INTDIR)\icqoscar.sbr" \
 	"$(INTDIR)\md5.sbr" \
+	"$(INTDIR)\oscar_filetransfer.sbr" \
 	"$(INTDIR)\stdpackets.sbr" \
 	"$(INTDIR)\tlv.sbr" \
 	"$(INTDIR)\utilities.sbr"
@@ -660,6 +667,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\icq_xtraz.obj" \
 	"$(INTDIR)\icqoscar.obj" \
 	"$(INTDIR)\md5.obj" \
+	"$(INTDIR)\oscar_filetransfer.obj" \
 	"$(INTDIR)\stdpackets.obj" \
 	"$(INTDIR)\tlv.obj" \
 	"$(INTDIR)\utilities.obj" \
@@ -1001,6 +1009,11 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 SOURCE=.\md5.c
 
 "$(INTDIR)\md5.obj"	"$(INTDIR)\md5.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
+
+
+SOURCE=.\oscar_filetransfer.c
+
+"$(INTDIR)\oscar_filetransfer.obj"	"$(INTDIR)\oscar_filetransfer.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
 SOURCE=.\stdpackets.c

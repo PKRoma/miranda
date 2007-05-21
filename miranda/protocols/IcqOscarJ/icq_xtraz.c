@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -132,7 +132,10 @@ void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, cha
                 rr.wCookie = wCookie;
                 rr.szData = szResponse;
                 rr.bThruDC = bThruDC;
-                rr.rate_group = 0x102;
+                rr.nRequestType = 0x102;
+                EnterCriticalSection(&ratesMutex);
+                rr.wGroup = ratesGroupFromSNAC(gRates, ICQ_MSG_FAMILY, ICQ_MSG_RESPONSE);
+                LeaveCriticalSection(&ratesMutex);
                 if (bThruDC || !handleRateItem(&rr, TRUE))
                   SendXtrazNotifyResponse(dwUin, dwMID, dwMID2, wCookie, szResponse, nResponseLen, bThruDC);
               }
@@ -429,11 +432,11 @@ DWORD SendXtrazNotifyRequest(HANDLE hContact, char* szQuery, char* szNotify, int
 
   // Set up the ack type
   pCookieData = CreateMessageCookie(MTYPE_SCRIPT_NOTIFY, ACKTYPE_CLIENT);
-  dwCookie = AllocateCookie(CKT_MESSAGE, 0, dwUin, (void*)pCookieData);
+  dwCookie = AllocateCookie(CKT_MESSAGE, 0, hContact, (void*)pCookieData);
 
   // have we a open DC, send through that
-  if (gbDCMsgEnabled && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD))
-    icq_sendXtrazRequestDirect(dwUin, hContact, dwCookie, szBody, nBodyLen, MTYPE_SCRIPT_NOTIFY);
+  if (gbDCMsgEnabled && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD, 0))
+    icq_sendXtrazRequestDirect(hContact, dwCookie, szBody, nBodyLen, MTYPE_SCRIPT_NOTIFY);
   else
     icq_sendXtrazRequestServ(dwUin, dwCookie, szBody, nBodyLen, pCookieData);
 
@@ -459,8 +462,8 @@ void SendXtrazNotifyResponse(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCooki
   SAFE_FREE(&szResBody);
 
   // Was request received thru DC and have we a open DC, send through that
-  if (bThruDC && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD))
-    icq_sendXtrazResponseDirect(dwUin, hContact, wCookie, szBody, nBodyLen, MTYPE_SCRIPT_NOTIFY);
+  if (bThruDC && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD, 0))
+    icq_sendXtrazResponseDirect(hContact, wCookie, szBody, nBodyLen, MTYPE_SCRIPT_NOTIFY);
   else
     icq_sendXtrazResponseServ(dwUin, dwMID, dwMID2, wCookie, szBody, nBodyLen, MTYPE_SCRIPT_NOTIFY);
 }

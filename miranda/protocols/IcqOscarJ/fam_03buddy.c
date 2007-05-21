@@ -4,8 +4,8 @@
 //
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin  berg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -37,23 +37,21 @@
 #include "icqoscar.h"
 
 static void handleUserOffline(BYTE* buf, WORD wPackLen);
-static void handleUserOnline(BYTE* buf, WORD wPackLen);
+static void handleUserOnline(BYTE* buf, WORD wPackLen, serverthread_info* info);
 static void handleReplyBuddy(BYTE* buf, WORD wPackLen);
 static void handleNotifyRejected(BYTE* buf, WORD wPackLen);
 
-extern DWORD dwLocalDirectConnCookie;
-
 extern const capstr capAimIcon;
 extern const char* cliSpamBot;
-extern char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, BYTE* bClientId, char* szClientBuf);
+extern char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, BYTE bDirectFlag, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, BYTE* bClientId, char* szClientBuf);
 
 
-void handleBuddyFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSnacHeader)
+void handleBuddyFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSnacHeader, serverthread_info *info)
 {
   switch (pSnacHeader->wSubtype)
   {
   case ICQ_USER_ONLINE:
-    handleUserOnline(pBuffer, wBufferLength);
+    handleUserOnline(pBuffer, wBufferLength, info);
     break;
 
   case ICQ_USER_OFFLINE:
@@ -98,7 +96,7 @@ void handleBuddyFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSn
 // TLV(D) Capabilities
 // TLV(F) Session timer (in seconds)
 // TLV(1D) Avatar Hash (20 bytes)
-static void handleUserOnline(BYTE* buf, WORD wLen)
+static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
 {
   HANDLE hContact;
   DWORD dwPort = 0;
@@ -118,6 +116,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
   WORD wStatus;
   BYTE nTCPFlag = 0;
   DWORD dwOnlineSince;
+  DWORD dwMemberSince;
   WORD wIdleTimer;
   time_t tIdleTS = 0;
   char szStrBuf[MAX_PATH];
@@ -233,6 +232,9 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
     // Get Online Since TLV
     dwOnlineSince = getDWordFromChain(pChain, 0x03, 1);
 
+    // Get Member Since TLV
+    dwMemberSince = getDWordFromChain(pChain, 0x05, 1);
+
     // Get Idle timer TLV
     wIdleTimer = getWordFromChain(pChain, 0x04, 1);
     if (wIdleTimer)
@@ -341,7 +343,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
           // handle Xtraz status
           handleXStatusCaps(hContact, capBuf, capLen);
 
-          szClient = detectUserClient(hContact, dwUIN, wVersion, dwFT1, dwFT2, dwFT3, dwOnlineSince, dwDirectConnCookie, dwWebPort, capBuf, capLen, &bClientId, szStrBuf);
+          szClient = detectUserClient(hContact, dwUIN, wVersion, dwFT1, dwFT2, dwFT3, dwOnlineSince, nTCPFlag, dwDirectConnCookie, dwWebPort, capBuf, capLen, &bClientId, szStrBuf);
         }
 
 #ifdef _DEBUG
@@ -381,11 +383,11 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
   {
     if (szClient == 0) szClient = ICQTranslateUtfStatic("Unknown", szStrBuf); // if no detection, set uknown
 
-    ICQWriteContactSettingDword(hContact,  "LogonTS",      dwOnlineSince);
+    ICQWriteContactSettingDword(hContact, "LogonTS",      dwOnlineSince);
+    if (dwMemberSince)
+      ICQWriteContactSettingDword(hContact, "MemberTS",     dwMemberSince);
     if (dwUIN)
     { // on AIM these are not used
-      ICQWriteContactSettingDword(hContact, "IP",           dwIP);
-      ICQWriteContactSettingDword(hContact, "RealIP",       dwRealIP);
       ICQWriteContactSettingDword(hContact, "DirectCookie", dwDirectConnCookie);
       ICQWriteContactSettingByte(hContact,  "DCType",       (BYTE)nTCPFlag);
       ICQWriteContactSettingWord(hContact,  "UserPort",     (WORD)(dwPort & 0xffff));
@@ -395,17 +397,28 @@ static void handleUserOnline(BYTE* buf, WORD wLen)
     {
       ICQWriteContactSettingUtf(hContact,   "MirVer",       szClient);
       ICQWriteContactSettingByte(hContact,  "ClientID",     bClientId);
+      ICQWriteContactSettingDword(hContact, "IP",           dwIP);
+      ICQWriteContactSettingDword(hContact, "RealIP",       dwRealIP);
+    }
+    else
+    { // if not first notification only write significant information
+      if (dwIP)
+        ICQWriteContactSettingDword(hContact, "IP",         dwIP);
+      if (dwRealIP)
+        ICQWriteContactSettingDword(hContact, "RealIP",     dwRealIP);
+
     }
     ICQWriteContactSettingWord(hContact,  "Status", (WORD)IcqStatusToMiranda(wStatus));
     ICQWriteContactSettingDword(hContact, "IdleTS", tIdleTS);
 
     // Update info?
-    if (dwUIN && ((time(NULL) - ICQGetContactSettingDword(hContact, "InfoTS", 0)) > UPDATE_THRESHOLD))
-      icq_QueueUser(hContact);
-  }
-  else
-  {
-    dwLocalDirectConnCookie = dwDirectConnCookie;
+    if (dwUIN)
+    {
+      DWORD dwUpdateThreshold = ICQGetContactSettingByte(NULL, "InfoUpdate", UPDATE_THRESHOLD)*3600*24;
+
+      if ((time(NULL) - ICQGetContactSettingDword(hContact, "InfoTS", 0)) > dwUpdateThreshold)
+        icq_QueueUser(hContact);
+    }
   }
 
   // And a small log notice...
@@ -450,6 +463,8 @@ static void handleUserOffline(BYTE *buf, WORD wLen)
     ICQWriteContactSettingDword(hContact, "IdleTS", 0);
     // close Direct Connections to that user
     CloseContactDirectConns(hContact);
+    // Reset DC status
+    ICQWriteContactSettingByte(hContact, "DCStatus", 0);
     // clear Xtraz status
     handleXStatusCaps(hContact, NULL, 0);
   }

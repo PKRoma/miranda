@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -47,9 +47,9 @@ int icq_sendFileSendDirectv7(filetransfer *ft, const char *pszFiles);
 int icq_sendFileSendDirectv8(filetransfer *ft, const char *pszFiles);
 void icq_sendFileAcceptDirect(HANDLE hContact, filetransfer *ft);
 void icq_sendFileDenyDirect(HANDLE hContact, filetransfer* ft, char *szReason);
-DWORD icq_SendDirectMessage(DWORD dwUin, HANDLE hContact, const char *szMessage, int nBodyLength, WORD wPriority, message_cookie_data *pCookieData, char *szCap);
+DWORD icq_SendDirectMessage(HANDLE hContact, const char *szMessage, int nBodyLength, WORD wPriority, message_cookie_data *pCookieData, char *szCap);
 
-void icq_sendXtrazRequestDirect(DWORD dwUin, HANDLE hContact, DWORD dwCookie, char* szBody, int nBodyLen, WORD wType);
-void icq_sendXtrazResponseDirect(DWORD dwUin, HANDLE hContact, WORD wCookie, char* szBody, int nBodyLen, WORD wType);
+void icq_sendXtrazRequestDirect(HANDLE hContact, DWORD dwCookie, char* szBody, int nBodyLen, WORD wType);
+void icq_sendXtrazResponseDirect(HANDLE hContact, WORD wCookie, char* szBody, int nBodyLen, WORD wType);
 
 #endif /* __ICQ_DIRECTPACKETS_H */

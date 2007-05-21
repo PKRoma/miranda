@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -56,7 +56,7 @@ void handleLocationFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* 
   case ICQ_ERROR:
   { 
     WORD wError;
-    DWORD dwCookieUin;
+    HANDLE hCookieContact;
     fam15_cookie_data *pCookieData;
 
 
@@ -67,9 +67,9 @@ void handleLocationFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* 
 
     if (wError == 4)
     {
-      if (FindCookie(pSnacHeader->dwRef, &dwCookieUin, &pCookieData) && !dwCookieUin && pCookieData->bRequestType == REQUESTTYPE_PROFILE)
+      if (FindCookie(pSnacHeader->dwRef, &hCookieContact, &pCookieData) && !ICQGetContactSettingUIN(hCookieContact) && pCookieData->bRequestType == REQUESTTYPE_PROFILE)
       {
-        ICQBroadcastAck(pCookieData->hContact, ACKTYPE_GETINFO, ACKRESULT_FAILED, (HANDLE)1 ,0);
+        ICQBroadcastAck(hCookieContact, ACKTYPE_GETINFO, ACKRESULT_FAILED, (HANDLE)1 ,0);
 
         ReleaseCookie(pSnacHeader->dwRef);
       }
@@ -94,31 +94,16 @@ static char* AimApplyEncoding(char* pszStr, const char* pszEncoding)
     char *szEnc = strstr(pszEncoding, "charset=");
 
     if (szEnc)
-    {
-      szEnc = szEnc + 9; // get charset string
+    { // decode custom encoding to Utf-8
+      char* szStr = ApplyEncoding(pszStr, szEnc + 9);
+      // decode utf-8 to ansi
+      char *szRes = NULL;
 
-      if (!strnicmp(szEnc, "utf-8", 5))
-      { // it is utf-8 encoded
-        char *szRes = NULL;
+      SAFE_FREE(&pszStr);
+      utf8_decode(szStr, &szRes);
+      SAFE_FREE(&szStr);
 
-        utf8_decode(pszStr, &szRes);
-        SAFE_FREE(&pszStr);
-
-        return szRes;
-      }
-      if (!strnicmp(szEnc, "unicode-2-0", 11))
-      { // it is UCS-2 encoded
-        int wLen = wcslen((wchar_t*)pszStr) + 1;
-        wchar_t *szStr = (wchar_t*)_alloca(wLen*2);
-        char *szRes = (char*)SAFE_MALLOC(wLen);
-        char *tmp = pszStr;
-
-        unpackWideString(&tmp, szStr, (WORD)(wLen*2));
-        WideCharToMultiByte(CP_ACP, 0, szStr, -1, szRes, wLen, NULL, NULL);
-        SAFE_FREE(&pszStr);
-
-        return szRes;
-      }
+      return szRes;
     }
   }
   return pszStr;
@@ -133,7 +118,7 @@ void handleLocationAwayReply(BYTE* buf, WORD wLen, DWORD dwCookie)
   uid_str szUID;
   WORD wTLVCount;
   WORD wWarningLevel;
-  DWORD dwCookieUin;
+  HANDLE hCookieContact;
   WORD status;
   message_cookie_data *pCookieData;
 
@@ -164,15 +149,15 @@ void handleLocationAwayReply(BYTE* buf, WORD wLen, DWORD dwCookie)
     return;
   }
 
-  if (!FindCookie(dwCookie, &dwCookieUin, &pCookieData))
+  if (!FindCookie(dwCookie, &hCookieContact, &pCookieData))
   {
     NetLog_Server("Error: Received unexpected away reply from %s", strUID(dwUIN, szUID));
     return;
   }
 
-  if (dwUIN != dwCookieUin)
+  if (hContact != hCookieContact)
   {
-    NetLog_Server("Error: Away reply UIN does not match Cookie UIN(%u != %u)", dwUIN, dwCookieUin);
+    NetLog_Server("Error: Away reply Contact does not match Cookie Contact(0x%x != 0x%x)", hContact, hCookieContact);
 
     ReleaseCookie(dwCookie); // This could be a bad idea, but I think it is safe
     return;

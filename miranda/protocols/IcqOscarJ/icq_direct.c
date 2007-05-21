@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_direct.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -67,7 +67,6 @@ static int expectedFileRecvCount = 0;
 static filetransfer** expectedFileRecv = NULL;
 
 extern WORD wListenPort;
-extern DWORD dwLocalDirectConnCookie;
 
 static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen);
 static DWORD __stdcall icq_directThread(directthreadstartinfo* dtsi);
@@ -76,6 +75,7 @@ static int DecryptDirectPacket(directconnect* dc, PBYTE buf, WORD wLen);
 static void sendPeerInitAck(directconnect* dc);
 static void sendPeerMsgInit(directconnect* dc, DWORD dwSeq);
 static void sendPeerFileInit(directconnect* dc);
+
 
 
 void InitDirectConns(void)
@@ -291,7 +291,7 @@ directthreadstartinfo* CreateDTSI(HANDLE hContact, HANDLE hConnection, int type)
 
 // Check if we have an open and initialized DC with type
 // 'type' to the specified contact
-BOOL IsDirectConnectionOpen(HANDLE hContact, int type)
+BOOL IsDirectConnectionOpen(HANDLE hContact, int type, int bPassive)
 {
   int i;
   BOOL bIsOpen = FALSE, bIsCreated = FALSE;
@@ -319,10 +319,14 @@ BOOL IsDirectConnectionOpen(HANDLE hContact, int type)
   
   LeaveCriticalSection(&directConnListMutex);
   
-  if (!bIsCreated && !bIsOpen && type == DIRECTCONN_STANDARD && gbDCMsgEnabled == 2)
+  if (!bPassive && !bIsCreated && !bIsOpen && type == DIRECTCONN_STANDARD && gbDCMsgEnabled == 2)
   { // do not try to open DC to offline contact
     if (ICQGetContactStatus(hContact) == ID_STATUS_OFFLINE) return FALSE;
+    // do not try to open DC if previous attempt was not successfull
+    if (ICQGetContactSettingByte(hContact, "DCStatus", 0)) return FALSE;
 
+    // Set DC status as tried
+    ICQWriteContactSettingByte(hContact, "DCStatus", 1);
     // Create a new connection
     OpenDirectConnection(hContact, DIRECTCONN_STANDARD, NULL);
   }
@@ -334,7 +338,7 @@ BOOL IsDirectConnectionOpen(HANDLE hContact, int type)
 
 // This function is called from the Netlib when someone is connecting to
 // one of our incomming DC ports
-void icq_newConnectionReceived(HANDLE hNewConnection, DWORD dwRemoteIP)
+void icq_newConnectionReceived(HANDLE hNewConnection, DWORD dwRemoteIP, void *pExtra)
 {
   pthread_t tid;
 
@@ -446,11 +450,17 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
     dc.dwRemoteInternalIP = ICQGetContactSettingDword(dtsi->hContact, "RealIP", 0);
     dc.dwRemotePort = ICQGetContactSettingWord(dtsi->hContact, "UserPort", 0);
     dc.dwRemoteUin = ICQGetContactSettingUIN(dtsi->hContact);
+    dc.dwConnectionCookie = ICQGetContactSettingDword(dtsi->hContact, "DirectCookie", 0);
     dc.wVersion = ICQGetContactSettingWord(dtsi->hContact, "Version", 0);
-    dc.dwConnCookie = ICQGetContactSettingDword(dtsi->hContact, "DirectCookie", 0);
 
     if (!dc.dwRemoteExternalIP && !dc.dwRemoteInternalIP)
     { // we do not have any ip, do not try to connect
+      RemoveDirectConnFromList(&dc);
+      SAFE_FREE(&dtsi);
+      return 0; 
+    }
+    if (!dc.dwRemotePort)
+    { // we do not have port, do not try to connect
       RemoveDirectConnFromList(&dc);
       SAFE_FREE(&dtsi);
       return 0; 
@@ -490,15 +500,17 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
   if (!dc.incoming)
   {
     NETLIBOPENCONNECTION nloc = {0};
-    IN_ADDR addr;
+    IN_ADDR addr = {0}, addr2 = {0};
 
-
-    nloc.cbSize = sizeof(nloc);
-    nloc.flags = 0;
-    if (dc.dwRemoteExternalIP == dc.dwLocalExternalIP)
+    if (dc.dwRemoteExternalIP == dc.dwLocalExternalIP && dc.dwRemoteInternalIP)
       addr.S_un.S_addr = htonl(dc.dwRemoteInternalIP);
     else
+    {
       addr.S_un.S_addr = htonl(dc.dwRemoteExternalIP);
+      // for different internal, try it also (for LANs with multiple external IP, VPNs, etc.)
+      if (dc.dwRemoteInternalIP != dc.dwRemoteExternalIP)
+        addr2.S_un.S_addr = htonl(dc.dwRemoteInternalIP);
+    }
 
     if (!addr.S_un.S_addr)
     { // IP to connect to is empty, go away
@@ -507,45 +519,57 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
     }
     nloc.szHost = inet_ntoa(addr);
     nloc.wPort = (WORD)dc.dwRemotePort;
-    NetLog_Direct("%sConnecting to %s:%u", dc.type==DIRECTCONN_REVERSE?"Reverse ":"", nloc.szHost, nloc.wPort);
-
-    dc.hConnection = NetLib_OpenConnection(ghDirectNetlibUser, &nloc);
-    if (dc.hConnection == NULL)
+    nloc.timeout = 8; // 8 secs to connect
+    dc.hConnection = NetLib_OpenConnection(ghDirectNetlibUser, dc.type==DIRECTCONN_REVERSE?"Reverse ":NULL, &nloc);
+    if (!dc.hConnection && addr2.S_un.S_addr)
+    { // first address failed, try second one if available
+      nloc.szHost = inet_ntoa(addr2);
+      dc.hConnection = NetLib_OpenConnection(ghDirectNetlibUser, dc.type==DIRECTCONN_REVERSE?"Reverse ":NULL, &nloc);
+    }
+    if (!dc.hConnection)
     {
-      if (dc.type != DIRECTCONN_REVERSE)
-      { // try reverse connect
-        reverse_cookie *pCookie = (reverse_cookie*)SAFE_MALLOC(sizeof(reverse_cookie));
-        DWORD dwCookie;
+      if (CheckContactCapabilities(dc.hContact, CAPF_ICQDIRECT))
+      { // only if the contact support ICQ DC connections
+        if (dc.type != DIRECTCONN_REVERSE)
+        { // try reverse connect
+          reverse_cookie *pCookie = (reverse_cookie*)SAFE_MALLOC(sizeof(reverse_cookie));
+          DWORD dwCookie;
 
-        NetLog_Direct("connect() failed (%d), trying reverse.", GetLastError());
+          NetLog_Direct("connect() failed (%d), trying reverse.", GetLastError());
 
-        if (pCookie)
-        { // ini cookie
-          pCookie->pMessage.bMessageType = MTYPE_REVERSE_REQUEST;
-          pCookie->pMessage.dwMsgID1 = time(NULL);
-          pCookie->pMessage.dwMsgID2 = RandRange(0, 0x00FF);
-          pCookie->hContact = dc.hContact;
-          pCookie->dwUin = dc.dwRemoteUin;
-          pCookie->type = dc.type;
-          pCookie->ft = dc.ft;
-          dwCookie = AllocateCookie(CKT_REVERSEDIRECT, 0, dc.dwRemoteUin, pCookie);
-          icq_sendReverseReq(&dc, dwCookie, (message_cookie_data*)pCookie);
-          RemoveDirectConnFromList(&dc);
+          if (pCookie)
+          { // init cookie
+            InitMessageCookie(&pCookie->pMessage);
+            pCookie->pMessage.bMessageType = MTYPE_REVERSE_REQUEST;
+            pCookie->hContact = dc.hContact;
+            pCookie->dwUin = dc.dwRemoteUin;
+            pCookie->type = dc.type;
+            pCookie->ft = dc.ft;
+            dwCookie = AllocateCookie(CKT_REVERSEDIRECT, 0, dc.hContact, pCookie);
+            icq_sendReverseReq(&dc, dwCookie, (message_cookie_data*)pCookie);
+            RemoveDirectConnFromList(&dc);
 
-          return 0;
+            return 0;
+          }
+          else
+            NetLog_Direct("Reverse failed (%s)", "malloc failed");
         }
-        else
-          NetLog_Direct("Reverse failed (%s)", "malloc failed");
       }
-      else // we failed reverse connection
+      else // Set DC status to failed
+        ICQWriteContactSettingByte(dc.hContact, "DCStatus", 2);
+
+      if (dc.type == DIRECTCONN_REVERSE) // failed reverse connection
       { // announce we failed
         icq_sendReverseFailed(&dc, dwReqMsgID1, dwReqMsgID2, dc.dwReqId);
       }
       NetLog_Direct("connect() failed (%d)", GetLastError());
       RemoveDirectConnFromList(&dc);
-      if (dc.type == DIRECTCONN_FILE) 
+      if (dc.type == DIRECTCONN_FILE)
+      {
         ICQBroadcastAck(dc.ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, dc.ft, 0);
-
+        // Release transfer
+        SafeReleaseFileTransfer(&dc.ft);
+      }
       return 0;
     }
 
@@ -677,20 +701,7 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
     else if (dc.ft->hConnection)
       ICQBroadcastAck(dc.ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, dc.ft, 0);
 
-    SAFE_FREE(&dc.ft->szFilename);
-    SAFE_FREE(&dc.ft->szDescription);
-    SAFE_FREE(&dc.ft->szSavePath);
-    SAFE_FREE(&dc.ft->szThisFile);
-    SAFE_FREE(&dc.ft->szThisSubdir);
-    if (dc.ft->files)
-    {
-      int i;
-
-      for (i = 0; i < (int)dc.ft->dwFileCount; i++)
-        SAFE_FREE(&dc.ft->files[i]);
-      SAFE_FREE((char**)&dc.ft->files);
-    }
-    SAFE_FREE(&dc.ft);
+    SafeReleaseFileTransfer(&dc.ft);
     _chdir("\\");    /* so we don't leave a subdir handle open so it can't be deleted */
   }
 
@@ -733,11 +744,10 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
       if (dc->incoming && dc->type == DIRECTCONN_REVERSE)
       {
         reverse_cookie* pCookie;
-        DWORD dwCookieUin;
 
         dc->incoming = 0;
 
-        if (FindCookie(dc->dwReqId, &dwCookieUin, &pCookie) && pCookie)
+        if (FindCookie(dc->dwReqId, NULL, &pCookie) && pCookie)
         { // valid reverse DC, check and init session
           FreeCookie(dc->dwReqId);
           if (pCookie->dwUin == dc->dwRemoteUin)
@@ -841,11 +851,23 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
             return;   /* don't allow direct connection with people not on my clist */
           }
 
-          if (dwCookie != ICQGetContactSettingDword(hContact, "DirectCookie", 0))
-          {
-            NetLog_Direct("Error: Received PEER_INIT with broken cookie");
-            CloseDirectConnection(dc);
-            return;
+          if (dc->incoming)
+          { // this is the first PEER_INIT with our cookie
+            if (dwCookie != ICQGetContactSettingDword(hContact, "DirectCookie", 0))
+            {
+              NetLog_Direct("Error: Received PEER_INIT with broken cookie");
+              CloseDirectConnection(dc);
+              return;
+            }
+          }
+          else
+          { // this is the second PEER_INIT with peer cookie
+            if (dwCookie != dc->dwConnectionCookie)
+            {
+              NetLog_Direct("Error: Received PEER_INIT with broken cookie");
+              CloseDirectConnection(dc);
+              return;
+            }
           }
         }
 
@@ -855,9 +877,8 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
           if (!dc->dwRemoteUin)
           { // we need to load cookie (licq)
             reverse_cookie* pCookie;
-            DWORD dwCookieUin;
 
-            if (FindCookie(dc->dwReqId, &dwCookieUin, &pCookie) && pCookie)
+            if (FindCookie(dc->dwReqId, NULL, &pCookie) && pCookie)
             { // valid reverse DC, check and init session
               dc->dwRemoteUin = pCookie->dwUin;
               dc->hContact = pCookie->hContact;
@@ -876,7 +897,7 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
         if (dc->incoming)
         { // store good IP info
           dc->hContact = hContact;
-          dc->dwConnCookie = dwCookie;
+          dc->dwConnectionCookie = dwCookie;
           ICQWriteContactSettingDword(dc->hContact, "IP", dc->dwRemoteExternalIP); 
           ICQWriteContactSettingDword(dc->hContact, "RealIP", dc->dwRemoteInternalIP);
           sendPeerInit_v78(dc); // reply with our PEER_INIT
@@ -900,6 +921,8 @@ static void handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
             dc->initialised = 1;
           }
         }
+        // Set DC Status to successful
+        ICQWriteContactSettingByte(dc->hContact, "DCStatus", 0);
       }
       else
       {
@@ -1089,7 +1112,7 @@ static int DecryptDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
     return 1;  // no decryption necessary.
 
   if (size < 4)
-  return 1;
+    return 1;
 
   if (dc->wVersion < 4)
     return 1;
@@ -1204,36 +1227,6 @@ static int DecryptDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
 
 
 
-/*
-void startHandshake_v6(const char *szHost, DWORD dwPort, DWORD dwUin)
-{
-  icq_packet packet;
-  DWORD dwSessionId;
-
-  dwSessionId = rand();
-
-  directPacketInit(&packet, 44);
-  packByte(&packet, 0xff);      // Ident
-  packLEDWord(&packet, ICQ_VERSION);  // Our version
-  packLEDWord(&packet, dwUin);
-  
-  packWord(&packet, 0);
-
-  packLEDWord(&packet, dwListenPort);
-  packLEDWord(&packet, dwLocalUin);
-  packDWord(&packet, dwExternalIP);
-  packDWord(&packet, dwInteralIP);
-  packByte(&packet, nTCPFlag);
-  packLEDWord(&packet, dwSessionId);
-  packLEDWord(&packet, dwListenPort);
-  packLEDWord(&packet, dwSessionId);
-  packLEDWord(&packet, WEBFRONTPORT);
-  packLEDWord(&packet, 0x00000003);
-}
-*/
-
-
-
 // Sends a PEER_INIT packet through a DC
 // -----------------------------------------------------------------------
 // This packet is sent during direct connection initialization between two
@@ -1257,7 +1250,7 @@ static void sendPeerInit_v78(directconnect* dc)
   packDWord(&packet, dc->dwLocalInternalIP); // Our internal IP
   packByte(&packet, DC_TYPE);                // TCP connection flags
   packLEDWord(&packet, wListenPort);         // Our port
-  packLEDWord(&packet, dc->dwConnCookie);    // DC cookie
+  packLEDWord(&packet, dc->dwConnectionCookie); // DC cookie
   packLEDWord(&packet, WEBFRONTPORT);        // Unknown
   packLEDWord(&packet, CLIENTFEATURES);      // Unknown
   if (dc->type == DIRECTCONN_REVERSE)

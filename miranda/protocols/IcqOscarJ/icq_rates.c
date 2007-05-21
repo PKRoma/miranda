@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_rates.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -36,15 +36,261 @@
 
 #include "icqoscar.h"
 
+
+//
+// Rate Level 1 Management
+/////////////////////////////
+
+CRITICAL_SECTION ratesMutex;
+
+
+rates* ratesCreate(BYTE* pBuffer, WORD wLen)
+{
+  rates* pRates;
+  WORD wCount;
+  int i;
+
+  unpackWord(&pBuffer, &wCount);
+  wLen -= 2;
+  
+  pRates = (rates*)SAFE_MALLOC(sizeof(rates)+(wCount)*sizeof(rates_group));
+  pRates->nGroups = wCount;
+  // Parse Group details
+  for (i=0; i<wCount; i++)
+  {
+    rates_group* pGroup = &pRates->groups[i];
+
+    if (wLen >= 35)
+    {
+      pBuffer += 2; // Group ID
+      unpackDWord(&pBuffer, &pGroup->dwWindowSize);
+      unpackDWord(&pBuffer, &pGroup->dwClearLevel);
+      unpackDWord(&pBuffer, &pGroup->dwAlertLevel);
+      unpackDWord(&pBuffer, &pGroup->dwLimitLevel);
+      pBuffer += 8;
+      unpackDWord(&pBuffer, &pGroup->dwMaxLevel);
+      pBuffer += 5;
+      wLen -= 35;
+    }
+    else
+    { // packet broken, put some basic defaults
+      pGroup->dwWindowSize = 10;
+      pGroup->dwMaxLevel = 5000;
+    }
+    pGroup->rCurrentLevel = pGroup->dwMaxLevel;
+  }
+  // Parse Group associated pairs
+  for (i=0; i<wCount; i++)
+  {
+    rates_group* pGroup = &pRates->groups[i];
+    WORD wNum;
+    int n;
+
+    if (wLen<4) break;
+    pBuffer += 2; // Group ID
+    unpackWord(&pBuffer, &wNum);
+    wLen -= 4;
+    if (wLen < wNum*4) break;
+    pGroup->nPairs = wNum;
+    pGroup->pPairs = (WORD*)SAFE_MALLOC(wNum*4);
+    for (n=0; n<wNum*2; n++)
+    {
+      WORD wItem;
+
+      unpackWord(&pBuffer, &wItem);
+      pGroup->pPairs[n] = wItem;
+    }
+#ifdef _DEBUG
+    NetLog_Server("Rates: %d# %d pairs.", i+1, wNum);
+#endif
+    wLen -= wNum*4;
+  }
+
+  return pRates;
+}
+
+
+
+void ratesRelease(rates** pRates)
+{
+  if (pRates)
+  {
+    rates* rates = *pRates;
+
+    EnterCriticalSection(&ratesMutex);
+
+    if (rates)
+    {
+      int i;
+
+      for (i = 0; i < rates->nGroups; i++)
+      {
+        SAFE_FREE(&rates->groups[i].pPairs);
+      }
+      SAFE_FREE(pRates);
+    }
+    LeaveCriticalSection(&ratesMutex);
+  }
+}
+
+
+
+WORD ratesGroupFromSNAC(rates* pRates, WORD wFamily, WORD wCommand)
+{
+  int i;
+
+  if (pRates)
+  {
+    for (i = 0; i < pRates->nGroups; i++)
+    {
+      rates_group* group = &pRates->groups[i];
+      int j;
+
+      for (j = 0; j < 2*group->nPairs; j += 2)
+      {
+        if (group->pPairs[j] == wFamily && group->pPairs[j + 1] == wCommand)
+        { // we found the group
+          return (WORD)(i + 1);
+        }
+      }
+    }
+    _ASSERTE(0);
+  }
+
+  return 0; // Failure
+}
+
+
+
+WORD ratesGroupFromPacket(rates* pRates, icq_packet* pPacket)
+{
+  if (pRates)
+  {
+    if (pPacket->nChannel == ICQ_DATA_CHAN && pPacket->wLen >= 0x10)
+    {
+      WORD wFam, wCmd;
+      BYTE* pBuf = pPacket->pData + 6;
+
+      unpackWord(&pBuf, &wFam);
+      unpackWord(&pBuf, &wCmd);
+
+      return ratesGroupFromSNAC(pRates, wFam, wCmd);
+    }
+  }
+  return 0;
+}
+
+
+
+static rates_group* getRatesGroup(rates* pRates, WORD wGroup)
+{
+  if (pRates && wGroup <= pRates->nGroups)
+  {
+    return &pRates->groups[wGroup-1];
+  }
+  return NULL;
+}
+
+
+int ratesNextRateLevel(rates* pRates, WORD wGroup)
+{
+  rates_group* pGroup = getRatesGroup(pRates, wGroup);
+
+  if (pGroup)
+  {
+    int nLevel = pGroup->rCurrentLevel*(pGroup->dwWindowSize-1)/pGroup->dwWindowSize + (GetTickCount() - pGroup->tCurrentLevel)/pGroup->dwWindowSize;
+
+    return nLevel < (int)pGroup->dwMaxLevel ? nLevel : pGroup->dwMaxLevel;
+  }
+  return -1; // Failure
+}
+
+
+
+int ratesDelayToLevel(rates* pRates, WORD wGroup, int nLevel)
+{
+  rates_group* pGroup = getRatesGroup(pRates, wGroup);
+
+  if (pGroup)
+  {
+    return (nLevel - pGroup->rCurrentLevel)*pGroup->dwWindowSize + pGroup->rCurrentLevel;
+  }
+  return 0; // Failure
+}
+
+
+
+void ratesPacketSent(rates* pRates, icq_packet* pPacket)
+{
+  if (pRates)
+  {
+    WORD wGroup = ratesGroupFromPacket(pRates, pPacket);
+
+    if (wGroup)
+      ratesUpdateLevel(pRates, wGroup, ratesNextRateLevel(pRates, wGroup));
+  }
+}
+
+
+
+void ratesUpdateLevel(rates* pRates, WORD wGroup, int nLevel)
+{
+  rates_group* pGroup = getRatesGroup(pRates, wGroup);
+
+  if (pGroup)
+  {
+    pGroup->rCurrentLevel = nLevel;
+    pGroup->tCurrentLevel = GetTickCount();
+#ifdef _DEBUG
+    NetLog_Server("Rates: New level %d for #%d", nLevel, wGroup);
+#endif
+  }
+}
+
+
+
+int ratesGetLimitLevel(rates* pRates, WORD wGroup, int nLevel)
+{
+  rates_group* pGroup = getRatesGroup(pRates, wGroup);
+
+  if (pGroup)
+  {
+    switch(nLevel)
+    {
+    case RML_CLEAR:
+      return pGroup->dwClearLevel;
+
+    case RML_ALERT:
+      return pGroup->dwAlertLevel;
+
+    case RML_LIMIT:
+      return pGroup->dwLimitLevel;
+
+    case RML_IDLE_10:
+      return pGroup->dwClearLevel + ((pGroup->dwMaxLevel - pGroup->dwClearLevel)/10);
+
+    case RML_IDLE_30:
+      return pGroup->dwClearLevel + (3*(pGroup->dwMaxLevel - pGroup->dwClearLevel)/10);
+
+    case RML_IDLE_50:
+      return pGroup->dwClearLevel + ((pGroup->dwMaxLevel - pGroup->dwClearLevel)/2);
+
+    case RML_IDLE_70:
+      return pGroup->dwClearLevel + (7*(pGroup->dwMaxLevel - pGroup->dwClearLevel)/10);
+    }
+  }
+  return 9999; // some high number - without rates we allow anything
+}
+
+
+//
+// Rate Level 2 Management
+/////////////////////////////
+
 // links to functions that are under Rate Control
 extern DWORD sendXStatusDetailsRequest(HANDLE hContact, int bForced);
 
-static int rGroupXtrazRequest = 4500; // represents higher limits for ICQ Rate Group #3
-static int tGroupXtrazRequest;
-static int rGroupMsgResponse = 6000;  //  dtto #1
-static int tGroupMsgResponse;
-
-static CRITICAL_SECTION ratesMutex;  // we need to be thread safe
+static CRITICAL_SECTION ratesListsMutex;  // we need to be thread safe
 
 static rate_record **pendingList1; // rate queue for xtraz requests
 static int pendingListSize1;
@@ -75,9 +321,9 @@ void InitDelay(int nDelay, void (*delaycode)())
 {
   rate_delay_args* pArgs;
 
-//#ifdef _DEBUG
+#ifdef _DEBUG
   NetLog_Server("Delay %dms", nDelay);
-//#endif
+#endif
 
   pArgs = (rate_delay_args*)SAFE_MALLOC(sizeof(rate_delay_args)); // This will be freed in the new thread
 
@@ -92,30 +338,15 @@ void InitDelay(int nDelay, void (*delaycode)())
 static void RatesTimer1()
 {
   rate_record *item;
-  int nLev;
+  int bSetupTimer = 0;
 
-  if (!pendingList1) return;
-
-  EnterCriticalSection(&ratesMutex);
-  // take from queue, execute
-  item = pendingList1[0];
-  if (pendingListSize1 > 1)
-  { // we need to keep order
-    memmove(&pendingList1[0], &pendingList1[1], (pendingListSize1 - 1)*sizeof(rate_record*));
+  EnterCriticalSection(&ratesListsMutex);
+  if (!pendingList1)
+  {
+    LeaveCriticalSection(&ratesListsMutex);
+    return;
   }
-  else
-    SAFE_FREE((void**)&pendingList1);
-  pendingListSize1--;
-  nLev = rGroupXtrazRequest*19/20 + (GetTickCount() - tGroupXtrazRequest)/20;
-  rGroupXtrazRequest = nLev < 4500 ? nLev : 4500;
-  tGroupXtrazRequest = GetTickCount();
-  if (pendingListSize1 && icqOnline)
-  { // in queue remains some items, setup timer
-    int nDelay = (3800 - rGroupXtrazRequest)*20;
 
-    if (nDelay < 10) nDelay = 10;
-    InitDelay(nDelay, RatesTimer1);
-  }
   if (!icqOnline)
   {
     int i;
@@ -123,8 +354,39 @@ static void RatesTimer1()
     for (i=0; i<pendingListSize1; i++) SAFE_FREE(&pendingList1[i]);
     SAFE_FREE((void**)&pendingList1);
     pendingListSize1 = 0;
+    LeaveCriticalSection(&ratesListsMutex);
+
+    return;
+  }
+  // take from queue, execute
+  item = pendingList1[0];
+
+  EnterCriticalSection(&ratesMutex);
+  if (ratesNextRateLevel(gRates, item->wGroup) < ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_30))
+  { // the rate is higher, keep sleeping
+    int nDelay = ratesDelayToLevel(gRates, item->wGroup, ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_50));
+
+    LeaveCriticalSection(&ratesMutex);
+    LeaveCriticalSection(&ratesListsMutex);
+    if (nDelay < 10) nDelay = 10;
+    InitDelay(nDelay, RatesTimer1);
+
+    return;
   }
   LeaveCriticalSection(&ratesMutex);
+
+  if (pendingListSize1 > 1)
+  { // we need to keep order
+    memmove(&pendingList1[0], &pendingList1[1], (pendingListSize1 - 1)*sizeof(rate_record*));
+  }
+  else
+    SAFE_FREE((void**)&pendingList1);
+  pendingListSize1--;
+
+  if (pendingListSize1)
+    bSetupTimer = 1;
+
+  LeaveCriticalSection(&ratesListsMutex);
 
   if (icqOnline)
   {
@@ -134,6 +396,18 @@ static void RatesTimer1()
   }
   else
     NetLog_Server("Rates: Discarding request.");
+
+  if (bSetupTimer)
+  { // in queue remained some items, setup timer
+    int nDelay;
+
+    EnterCriticalSection(&ratesMutex);
+    nDelay = ratesDelayToLevel(gRates, item->wGroup, ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_50));
+    LeaveCriticalSection(&ratesMutex);
+
+    if (nDelay < 10) nDelay = 10;
+    InitDelay(nDelay, RatesTimer1);
+  }
   SAFE_FREE(&item);
 }
 
@@ -141,8 +415,6 @@ static void RatesTimer1()
 
 static void putItemToQueue1(rate_record *item, int nLev)
 {
-  int nDelay = (3800 - nLev)*20;
-
   if (!icqOnline) return;
 
   NetLog_Server("Rates: Delaying operation.");
@@ -166,6 +438,11 @@ static void putItemToQueue1(rate_record *item, int nLev)
   else
   {
     rate_record *tmp;
+    int nDelay;
+    
+    EnterCriticalSection(&ratesMutex);
+    nDelay = ratesDelayToLevel(gRates, item->wGroup, ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_50));
+    LeaveCriticalSection(&ratesMutex);
 
     pendingListSize1++;
     pendingList1 = (rate_record**)SAFE_MALLOC(sizeof(rate_record*));
@@ -184,13 +461,47 @@ static void putItemToQueue1(rate_record *item, int nLev)
 static void RatesTimer2()
 {
   rate_record *item;
-  int nLev;
+  int bSetupTimer = 0;
 
-  if (!pendingList2) return;
+  EnterCriticalSection(&ratesListsMutex);
+  if (!pendingList2)
+  {
+    LeaveCriticalSection(&ratesListsMutex);
+    return;
+  }
 
-  EnterCriticalSection(&ratesMutex);
+  if (!icqOnline)
+  {
+    int i;
+
+    for (i=0; i<pendingListSize2; i++)
+    {
+      SAFE_FREE(&pendingList2[i]->szData);
+      SAFE_FREE(&pendingList2[i]);
+    }
+    SAFE_FREE((void**)&pendingList2);
+    pendingListSize2 = 0;
+    LeaveCriticalSection(&ratesListsMutex);
+
+    return;
+  }
   // take from queue, execute
   item = pendingList2[0];
+
+  EnterCriticalSection(&ratesMutex);
+  if (ratesNextRateLevel(gRates, item->wGroup) < ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_10))
+  { // the rate is higher, keep sleeping
+    int nDelay = ratesDelayToLevel(gRates, item->wGroup, ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_30));
+
+    LeaveCriticalSection(&ratesMutex);
+    LeaveCriticalSection(&ratesListsMutex);
+    if (nDelay < 10) nDelay = 10;
+    InitDelay(nDelay, RatesTimer2);
+
+    return;
+  }
+
+  LeaveCriticalSection(&ratesMutex);
   if (pendingListSize2 > 1)
   { // we need to keep order
     memmove(&pendingList2[0], &pendingList2[1], (pendingListSize2 - 1)*sizeof(rate_record*));
@@ -198,25 +509,11 @@ static void RatesTimer2()
   else
     SAFE_FREE((void**)&pendingList2);
   pendingListSize2--;
-  nLev = rGroupMsgResponse*79/80 + (GetTickCount() - tGroupMsgResponse)/80;
-  rGroupMsgResponse = nLev < 6000 ? nLev : 6000;
-  tGroupMsgResponse = GetTickCount();
-  if (pendingListSize2 && icqOnline)
-  { // in queue remains some items, setup timer
-    int nDelay = (4500 - rGroupMsgResponse)*80;
 
-    if (nDelay < 10) nDelay = 10;
-    InitDelay(nDelay, RatesTimer2);
-  }
-  if (!icqOnline)
-  {
-    int i;
+  if (pendingListSize2)
+    bSetupTimer = 1;
 
-    for (i=0; i<pendingListSize2; i++) SAFE_FREE(&pendingList2[i]);
-    SAFE_FREE((void**)&pendingList2);
-    pendingListSize2 = 0;
-  }
-  LeaveCriticalSection(&ratesMutex);
+  LeaveCriticalSection(&ratesListsMutex);
 
   if (icqOnline)
   {
@@ -233,6 +530,18 @@ static void RatesTimer2()
   else
     NetLog_Server("Rates: Discarding response.");
   SAFE_FREE(&item->szData);
+
+  if (bSetupTimer)
+  { // in queue remained some items, setup timer
+    int nDelay;
+    
+    EnterCriticalSection(&ratesMutex);
+    nDelay = ratesDelayToLevel(gRates, item->wGroup, ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_30));
+    LeaveCriticalSection(&ratesMutex);
+
+    if (nDelay < 10) nDelay = 10;
+    InitDelay(nDelay, RatesTimer2);
+  }
   SAFE_FREE(&item);
 }
 
@@ -240,15 +549,33 @@ static void RatesTimer2()
 
 static void putItemToQueue2(rate_record *item, int nLev)
 {
-  int nDelay = (4500 - nLev)*80;
   rate_record *tmp;
+  int bFound = FALSE;
 
   if (!icqOnline) return;
 
   NetLog_Server("Rates: Delaying operation.");
 
-  pendingListSize2++;
-  pendingList2 = (rate_record**)realloc(pendingList2, pendingListSize2*sizeof(rate_record*));
+  if (pendingListSize2)
+  {
+    int i;
+
+    for (i = 0; i < pendingListSize2; i++)
+    {
+      if (pendingList2[i]->hContact == item->hContact && pendingList2[i]->bType == item->bType)
+      { // there is older response in the queue, discard it (server won't accept it anyway)
+        SAFE_FREE(&pendingList2[i]->szData);
+        SAFE_FREE(&pendingList2[i]);
+        memcpy(&pendingList2[i], &pendingList2[i + 1], (pendingListSize2 - i - 1)*sizeof(rate_record*));
+        bFound = TRUE;
+      }
+    }
+  }
+  if (!bFound)
+  { // not found, enlarge the queue
+    pendingListSize2++;
+    pendingList2 = (rate_record**)realloc(pendingList2, pendingListSize2*sizeof(rate_record*));
+  }
   tmp = (rate_record*)SAFE_MALLOC(sizeof(rate_record));
   memcpy(tmp, item, sizeof(rate_record));
   tmp->szData = null_strdup(item->szData);
@@ -256,6 +583,12 @@ static void putItemToQueue2(rate_record *item, int nLev)
 
   if (pendingListSize2 == 1)
   { // queue was empty setup timer
+    int nDelay;
+    
+    EnterCriticalSection(&ratesMutex);
+    nDelay = ratesDelayToLevel(gRates, item->wGroup, ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_30));
+    LeaveCriticalSection(&ratesMutex);
+
     if (nDelay < 10) nDelay = 10;
     InitDelay(nDelay, RatesTimer2);
   }
@@ -265,43 +598,43 @@ static void putItemToQueue2(rate_record *item, int nLev)
 
 int handleRateItem(rate_record *item, BOOL bAllowDelay)
 {
-  int tNow = GetTickCount();
+  if (!gRates) return 0;
 
-  EnterCriticalSection(&ratesMutex);
+  EnterCriticalSection(&ratesListsMutex);
 
-  if (item->rate_group == 0x101)
+  if (item->nRequestType == 0x101)
   { // xtraz request
-    int nLev = rGroupXtrazRequest*19/20 + (tNow - tGroupXtrazRequest)/20;
+    int nLev, nLimit;
+    
+    EnterCriticalSection(&ratesMutex);
+    nLev = ratesNextRateLevel(gRates, item->wGroup);
+    nLimit = ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_50) + 200;
+    LeaveCriticalSection(&ratesMutex);
 
-    if ((nLev < 3800 || item->nMinDelay) && bAllowDelay)
+    if ((nLev < nLimit || item->nMinDelay) && bAllowDelay)
     { // limit reached or min delay configured, add to queue
       putItemToQueue1(item, nLev);
-      LeaveCriticalSection(&ratesMutex);
+      LeaveCriticalSection(&ratesListsMutex);
       return 1;
     }
-    else
-    {
-      rGroupXtrazRequest = nLev < 4500 ? nLev : 4500;
-      tGroupXtrazRequest = tNow;
-    }
   }
-  else if (item->rate_group == 0x102)
+  else if (item->nRequestType == 0x102)
   { // msg response
-    int nLev = rGroupMsgResponse*79/80 + (tNow - tGroupMsgResponse)/80;
+    int nLev, nLimit;
 
-    if (nLev < 4500)
-    { // limit reached or min delay configured, add to queue
+    EnterCriticalSection(&ratesMutex);
+    nLev = ratesNextRateLevel(gRates, item->wGroup);
+    nLimit = ratesGetLimitLevel(gRates, item->wGroup, RML_IDLE_30) + 100;
+    LeaveCriticalSection(&ratesMutex);
+
+    if (nLev < nLimit)
+    { // limit reached, add to queue
       putItemToQueue2(item, nLev);
-      LeaveCriticalSection(&ratesMutex);
+      LeaveCriticalSection(&ratesListsMutex);
       return 1;
     }
-    else
-    {
-      rGroupMsgResponse = nLev < 6000 ? nLev : 6000;
-      tGroupMsgResponse = tNow;
-    }
   }
-  LeaveCriticalSection(&ratesMutex);
+  LeaveCriticalSection(&ratesListsMutex);
 
   return 0;
 }
@@ -311,13 +644,12 @@ int handleRateItem(rate_record *item, BOOL bAllowDelay)
 void InitRates()
 {
   InitializeCriticalSection(&ratesMutex);
+  InitializeCriticalSection(&ratesListsMutex);
 
   pendingListSize1 = 0;
   pendingList1 = NULL;
   pendingListSize2 = 0;
   pendingList2 = NULL;
-
-  tGroupXtrazRequest = tGroupMsgResponse = GetTickCount();
 }
 
 
@@ -327,4 +659,5 @@ void UninitRates()
   SAFE_FREE((void**)&pendingList1);
   SAFE_FREE((void**)&pendingList2);
   DeleteCriticalSection(&ratesMutex);
+  DeleteCriticalSection(&ratesListsMutex);
 }

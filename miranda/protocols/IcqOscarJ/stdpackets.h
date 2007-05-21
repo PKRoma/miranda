@@ -4,8 +4,8 @@
 //
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin  berg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/stdpackets.h,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -53,10 +53,10 @@ void icq_requestnewfamily(WORD wFamily, void (*familyhandler)(HANDLE hConn, char
 
 void icq_setidle(int bAllow);
 void icq_setstatus(WORD wStatus);
-DWORD icq_sendGetInfoServ(DWORD, int);
+DWORD icq_sendGetInfoServ(HANDLE, DWORD, int, int);
 DWORD icq_sendGetAimProfileServ(HANDLE hContact, char *szUid);
-DWORD icq_sendGetAwayMsgServ(DWORD, int, WORD);
-DWORD icq_sendGetAimAwayMsgServ(char *szUID, int type);
+DWORD icq_sendGetAwayMsgServ(HANDLE, DWORD, int, WORD);
+DWORD icq_sendGetAimAwayMsgServ(HANDLE hContact, char *szUID, int type);
 void icq_sendSetAimAwayMsgServ(char *szMsg);
 void icq_sendFileSendServv7(filetransfer* ft, const char *szFiles);
 void icq_sendFileSendServv8(filetransfer* ft, const char *szFiles, int nAckType);
@@ -85,12 +85,12 @@ void icq_sendAuthResponseServ(DWORD dwUin, char* szUid,int auth,char *szReason);
 void icq_sendYouWereAddedServ(DWORD,DWORD);
 
 void sendOwnerInfoRequest(void);
-void sendUserInfoAutoRequest(DWORD dwUin);
+void sendUserInfoAutoRequest(HANDLE hContact, DWORD dwUin);
 
 DWORD icq_SendChannel1Message(DWORD dwUin, char *szUID, HANDLE hContact, char *pszText, message_cookie_data *pCookieData);
 DWORD icq_SendChannel1MessageW(DWORD dwUin, char *szUID, HANDLE hContact, wchar_t *pszText, message_cookie_data *pCookieData); // UTF-16
-DWORD icq_SendChannel2Message(DWORD dwUin, const char *szMessage, int nBodyLength, WORD wPriority, message_cookie_data *pCookieData, char *szCap);
-DWORD icq_SendChannel4Message(DWORD dwUin, BYTE bMsgType, WORD wMsgLen, const char *szMsg, message_cookie_data *pCookieData);
+DWORD icq_SendChannel2Message(DWORD dwUin, HANDLE hContact, const char *szMessage, int nBodyLength, WORD wPriority, message_cookie_data *pCookieData, char *szCap);
+DWORD icq_SendChannel4Message(DWORD dwUin, HANDLE hContact, BYTE bMsgType, WORD wMsgLen, const char *szMsg, message_cookie_data *pCookieData);
 
 void icq_sendReverseReq(directconnect *dc, DWORD dwCookie, message_cookie_data *pCookie);
 void icq_sendReverseFailed(directconnect* dc, DWORD dwMsgID1, DWORD dwMsgID2, DWORD dwCookie);
@@ -103,5 +103,12 @@ DWORD SearchByNames(char *pszNick, char *pszFirstName, char *pszLastName);
 DWORD SearchByEmail(char *pszEmail);
 
 DWORD icq_searchAimByEmail(char* pszEmail, DWORD dwSearchId);
+
+void oft_sendFileRequest(DWORD dwUin, char *szUid, oscar_filetransfer* ft, char* pszFiles, DWORD dwLocalInternalIP);
+void oft_sendFileAccept(DWORD dwUin, char *szUid, oscar_filetransfer* ft);
+void oft_sendFileDeny(DWORD dwUin, char *szUid, oscar_filetransfer* ft);
+void oft_sendFileCancel(DWORD dwUin, char *szUid, oscar_filetransfer* ft);
+void oft_sendFileResponse(DWORD dwUin, char *szUid, oscar_filetransfer* ft, WORD wResponse);
+void oft_sendFileRedirect(DWORD dwUin, char *szUid, oscar_filetransfer* ft, DWORD dwIP, WORD wPort, int bProxy);
 
 #endif /* __STDPACKETS_H */

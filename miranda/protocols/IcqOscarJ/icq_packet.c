@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera, Bio
+// Copyright © 2004,2005,2006,2007 Joe Kucera, Bio
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -38,11 +38,18 @@
 
 
 
-void write_httphdr(icq_packet* pPacket, WORD wType, DWORD dwSeq)
+void __fastcall init_generic_packet(icq_packet* pPacket, WORD wHeaderLen)
 {
   pPacket->wPlace = 0;
-  pPacket->wLen += 14;
+  pPacket->wLen += wHeaderLen;
   pPacket->pData = (BYTE*)SAFE_MALLOC(pPacket->wLen);
+}
+
+
+
+void write_httphdr(icq_packet* pPacket, WORD wType, DWORD dwSeq)
+{
+  init_generic_packet(pPacket, 14);
 
   packWord(pPacket, (WORD)(pPacket->wLen - 2));
   packWord(pPacket, HTTP_PROXY_VERSION);
@@ -55,9 +62,9 @@ void write_httphdr(icq_packet* pPacket, WORD wType, DWORD dwSeq)
 
 void __fastcall write_flap(icq_packet* pPacket, BYTE byFlapChannel)
 {
-  pPacket->wPlace = 0;
-  pPacket->wLen += 6;
-  pPacket->pData = (BYTE*)SAFE_MALLOC(pPacket->wLen);
+  init_generic_packet(pPacket, 6);
+
+  pPacket->nChannel = byFlapChannel;
 
   packByte(pPacket, FLAP_MARKER);
   packByte(pPacket, byFlapChannel);
@@ -118,6 +125,14 @@ void __fastcall packDWord(icq_packet* pPacket, DWORD dwValue)
   pPacket->pData[pPacket->wPlace++] = (BYTE)((dwValue & 0x00ff0000) >> 16);
   pPacket->pData[pPacket->wPlace++] = (BYTE)((dwValue & 0x0000ff00) >> 8);
   pPacket->pData[pPacket->wPlace++] = (BYTE) (dwValue & 0x000000ff);
+}
+
+
+
+void __fastcall packQWord(icq_packet* pPacket, DWORD64 qwValue)
+{
+  packDWord(pPacket, (DWORD)(qwValue >> 32));
+  packDWord(pPacket, (DWORD)(qwValue & 0xffffffff));
 }
 
 
@@ -520,6 +535,25 @@ void __fastcall unpackDWord(BYTE** pSource, DWORD* dwDestination)
   else
   {
     *pSource += 4;
+  }
+}
+
+
+
+void __fastcall unpackQWord(BYTE** pSource, DWORD64* qwDestination)
+{
+  DWORD dwData;
+
+  if (qwDestination)
+  {
+    unpackDWord(pSource, &dwData);
+    *qwDestination = ((DWORD64)dwData) << 32;
+    unpackDWord(pSource, &dwData);
+    *qwDestination |= dwData;
+  }
+  else
+  {
+    *pSource += 8;
   }
 }
 
