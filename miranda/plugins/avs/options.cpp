@@ -50,6 +50,7 @@ extern void MakePathRelative(HANDLE hContact, char *path);
 
 extern int ProtoServiceExists(const char *szModule,const char *szService);
 extern BOOL Proto_IsAvatarsEnabled(char *proto);
+extern BOOL ScreenToClient(HWND hWnd, LPRECT lpRect);
 
 static BOOL dialoginit = TRUE;
 
@@ -652,8 +653,6 @@ BOOL CALLBACK DlgProcAvatarUserInfo(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 			HWND protopic = GetDlgItem(hwndDlg, IDC_PROTOPIC);
             SendMessage(protopic, AVATAR_SETCONTACT, 0, (LPARAM) dat->hContact);
-//			SendMessage(protopic, AVATAR_SETBKGCOLOR, 0, (LPARAM) GetSysColor(COLOR_BTNFACE));
-//			SendMessage(protopic, AVATAR_SETBORDERCOLOR, 0, (LPARAM) GetSysColor(COLOR_BTNSHADOW));
 			SendMessage(protopic, AVATAR_SETAVATARBORDERCOLOR, 0, (LPARAM) GetSysColor(COLOR_BTNSHADOW));
 			SendMessage(protopic, AVATAR_SETNOAVATARTEXT, 0, (LPARAM) "Contact has no avatar");
 			SendMessage(protopic, AVATAR_RESPECTHIDDEN, 0, (LPARAM) FALSE);
@@ -812,19 +811,93 @@ static char * GetSelectedProtocol(HWND hwndDlg)
 
 static void EnableDisableControls(HWND hwndDlg)
 {
-	char *proto = GetSelectedProtocol(hwndDlg);
-	if (proto == NULL)
+	if (IsDlgButtonChecked(hwndDlg, IDC_PER_PROTO))
 	{
-		EnableWindow(GetDlgItem(hwndDlg, IDC_CHANGE), FALSE);
-		EnableWindow(GetDlgItem(hwndDlg, IDC_DELETE), FALSE);
+		char *proto = GetSelectedProtocol(hwndDlg);
+		if (proto == NULL)
+		{
+			EnableWindow(GetDlgItem(hwndDlg, IDC_CHANGE), FALSE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_DELETE), FALSE);
+		}
+		else
+		{
+			EnableWindow(GetDlgItem(hwndDlg, IDC_CHANGE), TRUE);
+
+			int width, height;
+			SendMessage(GetDlgItem(hwndDlg, IDC_PROTOPIC), AVATAR_GETUSEDSPACE, (WPARAM) &width, (LPARAM) &height);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_DELETE), (LPARAM) width != 0 || height != 0);
+		}
 	}
 	else
 	{
 		EnableWindow(GetDlgItem(hwndDlg, IDC_CHANGE), TRUE);
 
-		int width, height;
-		SendMessage(GetDlgItem(hwndDlg, IDC_PROTOPIC), AVATAR_GETUSEDSPACE, (WPARAM) &width, (LPARAM) &height);
-		EnableWindow(GetDlgItem(hwndDlg, IDC_DELETE), (LPARAM) width != 0 || height != 0);
+		if (DBGetContactSettingByte(NULL, AVS_MODULE, "GlobalUserAvatarNotConsistent", 1))
+		{
+			EnableWindow(GetDlgItem(hwndDlg, IDC_DELETE), TRUE);
+		}
+		else
+		{
+			int width, height;
+			SendMessage(GetDlgItem(hwndDlg, IDC_PROTOPIC), AVATAR_GETUSEDSPACE, (WPARAM) &width, (LPARAM) &height);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_DELETE), (LPARAM) width != 0 || height != 0);
+		}
+	}
+}
+
+static void OffsetWindow(HWND parent, HWND hwnd, int dx, int dy)
+{
+	RECT rc;
+	GetWindowRect(hwnd, &rc);
+	ScreenToClient(parent, &rc);
+	OffsetRect(&rc, dx, dy);
+	MoveWindow(hwnd, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE);
+}
+
+static void EnableDisableProtocols(HWND hwndDlg, BOOL init)
+{
+	int diff = 147; // Pre-calc
+	BOOL perProto = IsDlgButtonChecked(hwndDlg, IDC_PER_PROTO);
+	HWND hwndList = GetDlgItem(hwndDlg, IDC_PROTOCOLS);
+
+	if (perProto)
+	{
+		if (!init && !IsWindowVisible(hwndList))
+		{
+			// Show list of protocols
+			ShowWindow(hwndList, SW_SHOW);
+
+			// Move controls
+			OffsetWindow(hwndDlg, GetDlgItem(hwndDlg, IDC_PROTOPIC), diff, 0);
+			OffsetWindow(hwndDlg, GetDlgItem(hwndDlg, IDC_CHANGE), diff, 0);
+			OffsetWindow(hwndDlg, GetDlgItem(hwndDlg, IDC_DELETE), diff, 0);
+		}
+
+		char * proto = GetSelectedProtocol(hwndDlg);
+		if (proto == NULL)
+		{
+			ListView_SetItemState(hwndList, 0, LVIS_FOCUSED | LVIS_SELECTED, 0x0F);
+		}
+		else
+		{
+			SendMessage(GetDlgItem(hwndDlg, IDC_PROTOPIC), AVATAR_SETPROTOCOL, 0, (LPARAM) proto);
+			EnableDisableControls(hwndDlg);
+		}
+	}
+	else
+	{
+		if (init || IsWindowVisible(hwndList))
+		{
+			// Show list of protocols
+			ShowWindow(hwndList, SW_HIDE);
+
+			// Move controls
+			OffsetWindow(hwndDlg, GetDlgItem(hwndDlg, IDC_PROTOPIC), -diff, 0);
+			OffsetWindow(hwndDlg, GetDlgItem(hwndDlg, IDC_CHANGE), -diff, 0);
+			OffsetWindow(hwndDlg, GetDlgItem(hwndDlg, IDC_DELETE), -diff, 0);
+		}
+
+		SendMessage(GetDlgItem(hwndDlg, IDC_PROTOPIC), AVATAR_SETPROTOCOL, 0, NULL);
 	}
 }
 
@@ -838,7 +911,7 @@ BOOL CALLBACK DlgProcAvatarProtoInfo(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
 			HWND protopic = GetDlgItem(hwndDlg, IDC_PROTOPIC);
 			SendMessage(protopic, AVATAR_SETAVATARBORDERCOLOR, 0, (LPARAM) GetSysColor(COLOR_BTNSHADOW));
-			SendMessage(protopic, AVATAR_SETNOAVATARTEXT, 0, (LPARAM) "Protocol has no avatar");
+			SendMessage(protopic, AVATAR_SETNOAVATARTEXT, 0, (LPARAM) "No avatar");
 			SendMessage(protopic, AVATAR_SETRESIZEIFSMALLER, 0, (LPARAM) FALSE);
 
 		    HWND hwndList = GetDlgItem(hwndDlg, IDC_PROTOCOLS);
@@ -889,7 +962,11 @@ BOOL CALLBACK DlgProcAvatarProtoInfo(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
             ListView_SetColumnWidth(hwndList, 0, LVSCW_AUTOSIZE);
             ListView_Arrange(hwndList, LVA_ALIGNLEFT | LVA_ALIGNTOP);
-			ListView_SetItemState(hwndList, 0, LVIS_FOCUSED | LVIS_SELECTED, 0x0F);
+
+			// Check if should show per protocol avatars
+			CheckDlgButton(hwndDlg, IDC_PER_PROTO, DBGetContactSettingByte(NULL, AVS_MODULE, "PerProtocolUserAvatars", 1));
+			EnableDisableProtocols(hwndDlg, TRUE);
+
             return TRUE;
         }
         case WM_NOTIFY:
@@ -935,24 +1012,45 @@ BOOL CALLBACK DlgProcAvatarProtoInfo(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			{
                 case IDC_CHANGE:
 				{
-					char *proto = GetSelectedProtocol(hwndDlg);
-					if (proto == NULL)
-						break;
+					if (!IsDlgButtonChecked(hwndDlg, IDC_PER_PROTO))
+					{
+						CallService(MS_AV_SETMYAVATAR, NULL, 0);
+					}
+					else
+					{
+						char *proto = GetSelectedProtocol(hwndDlg);
+						if (proto == NULL)
+							break;
 
-					CallService(MS_AV_SETMYAVATAR, (WPARAM) proto, 0);
+						CallService(MS_AV_SETMYAVATAR, (WPARAM) proto, 0);
+					}
                     break;
 				}
                 case IDC_DELETE:
 				{
-					char *proto = GetSelectedProtocol(hwndDlg);
-					if (proto == NULL)
-						break;
+					if (!IsDlgButtonChecked(hwndDlg, IDC_PER_PROTO))
+					{
+						if (MessageBoxA(hwndDlg, Translate("Are you sure you want to remove your avatar?"), Translate("Global Avatar"), MB_YESNO) == IDYES)
+							CallService(MS_AV_SETMYAVATAR, NULL, (LPARAM) "");
+					}
+					else
+					{
+						char *proto = GetSelectedProtocol(hwndDlg);
+						if (proto == NULL)
+							break;
 
-					char description[256];
-					CallProtoService(proto, PS_GETNAME, sizeof(description),(LPARAM) description);
-					if (MessageBoxA(hwndDlg, Translate("Are you sure you want to remove your avatar?"), description, MB_YESNO) == IDYES)
-						CallService(MS_AV_SETMYAVATAR, (WPARAM) proto, (LPARAM) "");
+						char description[256];
+						CallProtoService(proto, PS_GETNAME, sizeof(description),(LPARAM) description);
+						if (MessageBoxA(hwndDlg, Translate("Are you sure you want to remove your avatar?"), description, MB_YESNO) == IDYES)
+							CallService(MS_AV_SETMYAVATAR, (WPARAM) proto, (LPARAM) "");
+					}
                     break;
+				}
+				case IDC_PER_PROTO:
+				{
+					DBWriteContactSettingByte(NULL, AVS_MODULE, "PerProtocolUserAvatars", IsDlgButtonChecked(hwndDlg, IDC_PER_PROTO) ? 1 : 0);
+					EnableDisableProtocols(hwndDlg, FALSE);
+					break;
 				}
             }
             break;

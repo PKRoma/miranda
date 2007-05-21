@@ -172,10 +172,12 @@ BEGIN
     CONTROL         "",IDC_PROTOCOLS,"SysListView32",LVS_REPORT | 
                     LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_AUTOARRANGE | 
                     LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | 
-                    WS_TABSTOP,3,4,77,144
+                    WS_TABSTOP,3,4,77,126
     CONTROL         "",IDC_PROTOPIC,"MAvatarControlClass",0x0,101,4,96,89
-    PUSHBUTTON      "Set",IDC_CHANGE,101,118,96,14
-    PUSHBUTTON      "Delete",IDC_DELETE,101,134,96,14
+    PUSHBUTTON      "Set",IDC_CHANGE,101,100,96,14
+    PUSHBUTTON      "Delete",IDC_DELETE,101,116,96,14
+    CONTROL         "Use per protocol avatars",IDC_PER_PROTO,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,3,137,215,11
 END
 
 

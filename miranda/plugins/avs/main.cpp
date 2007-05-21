@@ -67,6 +67,7 @@ static int  GetFileHash(char* filename);
 void ProcessAvatarInfo(int type, PROTO_AVATAR_INFORMATION *pai);
 void ProcessAvatarInfo(HANDLE hContact, int type, PROTO_AVATAR_INFORMATION *pai = NULL);
 int FetchAvatarFor(HANDLE hContact, char *szProto = NULL);
+static int ReportMyAvatarChanged(WPARAM wParam, LPARAM lParam);
 
 BOOL Proto_IsAvatarsEnabled(char *proto);
 BOOL Proto_IsAvatarFormatSupported(char *proto, int format);
@@ -491,6 +492,13 @@ int CreateAvatarInCache(HANDLE hContact, struct avatarCacheEntry *ace, char *szP
     
     szFilename[0] = 0;
 
+	ace->hbmPic = 0;
+	ace->dwFlags = 0;
+	ace->bmHeight = 0;
+	ace->bmWidth = 0;
+	ace->lpDIBSection = NULL;
+    ace->szFilename[0] = 0;
+
     if(szProto == NULL) {
         if(DBGetContactSettingByte(hContact, "ContactPhoto", "Locked", 0)
 				&& !DBGetContactSetting(hContact, "ContactPhoto", "Backup", &dbv)) {
@@ -518,7 +526,15 @@ int CreateAvatarInCache(HANDLE hContact, struct avatarCacheEntry *ace, char *szP
 		}
 		else if(hContact == (HANDLE)-1) {	// create own picture - note, own avatars are not on demand, they are loaded once at
 											// startup and everytime they are changed.
-			if (ProtoServiceExists(szProto, PS_GETMYAVATAR)) {
+			if (szProto[0] == '\0') {
+				// Global avatar
+				if (!DBGetContactSetting(NULL, AVS_MODULE, "GlobalUserAvatarFile", &dbv)) {
+					AVS_pathToAbsolute(dbv.pszVal, szFilename);
+					DBFreeVariant(&dbv);
+				} else
+					return -10;
+
+			} else if (ProtoServiceExists(szProto, PS_GETMYAVATAR)) {
 				if (CallProtoService(szProto, PS_GETMYAVATAR, (WPARAM)szFilename, (LPARAM)MAX_PATH)) {
 					szFilename[0] = '\0';
 				}
@@ -610,7 +626,7 @@ done:
 
         ace->cbSize = sizeof(struct avatarCacheEntry);
         ace->dwFlags = AVS_BITMAP_VALID;
-        if(DBGetContactSettingByte(hContact, "ContactPhoto", "Hidden", 0))
+        if (hContact != NULL && DBGetContactSettingByte(hContact, "ContactPhoto", "Hidden", 0))
             ace->dwFlags |= AVS_HIDEONCLIST;
         ace->hContact = hContact;
         ace->bmHeight = bminfo.bmHeight;
@@ -1147,6 +1163,20 @@ static void FilterGetStrings(char *filter, int bytesLeft, BOOL xml, BOOL swf)
 	if(bytesLeft) *pfilter='\0';
 }
 
+static void DeleteGlobalUserAvatar()
+{
+	DBVARIANT dbv = {0};
+	if (DBGetContactSetting(NULL, AVS_MODULE, "GlobalUserAvatarFile", &dbv))
+		return;
+
+	char szFilename[MAX_PATH];
+	AVS_pathToAbsolute(dbv.pszVal, szFilename);
+	DBFreeVariant(&dbv);
+
+	DeleteFileA(szFilename);
+	DBDeleteContactSetting(NULL, AVS_MODULE, "GlobalUserAvatarFile");
+}
+
 /*
  * set an avatar for a protocol (service function)
  * if lParam == NULL, a open file dialog will be opened, otherwise, lParam is taken as a FULL
@@ -1167,7 +1197,7 @@ static int SetMyAvatar(WPARAM wParam, LPARAM lParam)
 	if (protocol != NULL && !CanSetMyAvatar((WPARAM) protocol, 0))
 		return -1;
 
-	if (hwndSetMyAvatar != 0)
+	if (lParam == 0 && hwndSetMyAvatar != 0)
 	{
 		SetForegroundWindow((HWND) hwndSetMyAvatar);
 		SetFocus((HWND) hwndSetMyAvatar);
@@ -1265,6 +1295,18 @@ static int SetMyAvatar(WPARAM wParam, LPARAM lParam)
 				ret = CallProtoService(protocol, PS_SETMYAVATAR, 0, NULL);
 			else
 				ret = -3;
+
+			if (ret == 0)
+			{
+				// Has global avatar?
+				DBVARIANT dbv = {0};
+				if (!DBGetContactSetting(NULL, AVS_MODULE, "GlobalUserAvatarFile", &dbv))
+				{
+					DBFreeVariant(&dbv);
+					DBWriteContactSettingByte(NULL, AVS_MODULE, "GlobalUserAvatarNotConsistent", 1);
+					DeleteGlobalUserAvatar();
+				}
+			}
 		}
 		else
 		{
@@ -1287,12 +1329,20 @@ static int SetMyAvatar(WPARAM wParam, LPARAM lParam)
 					continue;
 				
 				// Found a protocol
-				int retTmp = CallProtoService(protos[i]->szName, PS_SETMYAVATAR, 0, NULL);;
+				int retTmp = CallProtoService(protos[i]->szName, PS_SETMYAVATAR, 0, NULL);
 				if (retTmp != 0)
 					ret = retTmp;
 			}
+
+			DeleteGlobalUserAvatar();
+
+			if (ret)
+				DBWriteContactSettingByte(NULL, AVS_MODULE, "GlobalUserAvatarNotConsistent", 1);
+			else
+				DBWriteContactSettingByte(NULL, AVS_MODULE, "GlobalUserAvatarNotConsistent", 0);
 		}
 
+		ReportMyAvatarChanged((WPARAM) "", 0);
 		return ret;
 	}
 
@@ -1340,6 +1390,12 @@ static int SetMyAvatar(WPARAM wParam, LPARAM lParam)
 	if (protocol != NULL)
 	{
 		ret = SetProtoMyAvatar(protocol, hBmp, szFinalName, format);
+
+		if (ret == 0)
+		{
+			DeleteGlobalUserAvatar();
+			DBWriteContactSettingByte(NULL, AVS_MODULE, "GlobalUserAvatarNotConsistent", 1);
+		}
 	}
 	else
 	{
@@ -1365,8 +1421,80 @@ static int SetMyAvatar(WPARAM wParam, LPARAM lParam)
 			if (retTmp != 0)
 				ret = retTmp;
 		}
+
+		DeleteGlobalUserAvatar();
+
+		if (ret)
+		{
+			DBWriteContactSettingByte(NULL, AVS_MODULE, "GlobalUserAvatarNotConsistent", 1);
+		}
+		else
+		{
+			// Copy avatar file to store as global one
+			char globalFile[1024];
+			BOOL saved = TRUE;
+			if (FoldersGetCustomPath(hProtocolAvatarsFolder, globalFile, sizeof(globalFile), ""))
+			{
+				mir_snprintf(globalFile, sizeof(globalFile), "%s\\%s", g_szDBPath, "MyAvatar");
+				CreateDirectoryA(globalFile, NULL);
+			}
+
+			char *ext = strrchr(szFinalName, '.'); // Can't be NULL here
+			if (format == PA_FORMAT_XML || format == PA_FORMAT_SWF)
+			{
+				mir_snprintf(globalFile, sizeof(globalFile), "%s\\my_global_avatar%s", globalFile, ext);
+				CopyFileA(szFinalName, globalFile, FALSE);
+			}
+			else
+			{
+				// Resize (to avoid too big avatars)
+				ResizeBitmap rb = {0};
+				rb.size = sizeof(ResizeBitmap);
+				rb.hBmp = hBmp;
+				rb.max_height = 300;
+				rb.max_width = 300;
+				rb.fit = RESIZEBITMAP_KEEP_PROPORTIONS | RESIZEBITMAP_FLAG_DONT_GROW;
+
+				HBITMAP hBmpTmp = (HBITMAP) BmpFilterResizeBitmap((WPARAM)&rb, 0);
+
+				// Check if need to resize
+				if (hBmpTmp == hBmp)
+				{
+					// Use original image
+					mir_snprintf(globalFile, sizeof(globalFile), "%s\\my_global_avatar%s", globalFile, ext);
+					CopyFileA(szFinalName, globalFile, FALSE);
+				}
+				else
+				{
+					// Save as PNG
+					mir_snprintf(globalFile, sizeof(globalFile), "%s\\my_global_avatar.png", globalFile);
+					if (BmpFilterSaveBitmap((WPARAM) hBmpTmp, (LPARAM) globalFile))
+						saved = FALSE;
+
+					DeleteObject(hBmpTmp);
+				}
+			}
+
+			if (saved)
+			{
+				char relFile[1024];
+				if (AVS_pathToRelative(globalFile, relFile))
+					DBWriteContactSettingString(NULL, AVS_MODULE, "GlobalUserAvatarFile", relFile);
+				else
+					DBWriteContactSettingString(NULL, AVS_MODULE, "GlobalUserAvatarFile", globalFile);
+
+				DBWriteContactSettingByte(NULL, AVS_MODULE, "GlobalUserAvatarNotConsistent", 0);
+			}
+			else
+			{
+				DBWriteContactSettingByte(NULL, AVS_MODULE, "GlobalUserAvatarNotConsistent", 1);
+			}
+		}
 	}
+
 	DeleteObject(hBmp);
+
+	ReportMyAvatarChanged((WPARAM) "", 0);
 	return ret;
 }
 
@@ -1518,10 +1646,10 @@ static int GetMyAvatar(WPARAM wParam, LPARAM lParam)
 	if(wParam || g_shutDown || fei == NULL)
 		return 0;
 
-	if(lParam == 0 || IsBadReadPtr((void *)lParam, 4))
+	if(lParam == 0 || IsBadReadPtr(szProto, 4))
 		return 0;
 
-	for(i = 0; i < g_protocount; i++) {
+	for(i = 0; i < g_protocount + 1; i++) {
 		if(!strcmp(szProto, g_MyAvatars[i].szProtoname) && g_MyAvatars[i].hbmPic != 0)
 			return (int)&g_MyAvatars[i];
 	}
@@ -1797,8 +1925,8 @@ static int ModulesLoaded(WPARAM wParam, LPARAM lParam)
     g_ProtoPictures = (struct protoPicCacheEntry *)malloc(sizeof(struct protoPicCacheEntry) * (g_protocount + 1));
     ZeroMemory((void *)g_ProtoPictures, sizeof(struct protoPicCacheEntry) * (g_protocount + 1));
 
-	g_MyAvatars = (struct protoPicCacheEntry *)malloc(sizeof(struct protoPicCacheEntry) * (g_protocount + 1));
-    ZeroMemory((void *)g_MyAvatars, sizeof(struct protoPicCacheEntry) * (g_protocount + 1));
+	g_MyAvatars = (struct protoPicCacheEntry *)malloc(sizeof(struct protoPicCacheEntry) * (g_protocount + 2));
+    ZeroMemory((void *)g_MyAvatars, sizeof(struct protoPicCacheEntry) * (g_protocount + 2));
     
     j = 0;
     for(i = 0; i < g_protocount; i++) {
@@ -1823,6 +1951,8 @@ static int ModulesLoaded(WPARAM wParam, LPARAM lParam)
             g_MyAvatars[j++].szProtoname[99] = 0;
         }
     }
+	// Load global avatar
+	CreateAvatarInCache((HANDLE)-1, (struct avatarCacheEntry *)&g_MyAvatars[j], "");
 
 
     // updater plugin support
@@ -1879,7 +2009,7 @@ static void ReloadMyAvatar(LPVOID lpParam)
 	char *szProto = (char *)lpParam;
 	
     Sleep(1000);
-    for(int i = 0; i < g_protocount; i++) {
+    for(int i = 0; i < g_protocount + 1; i++) {
 		if(!strcmp(g_MyAvatars[i].szProtoname, szProto)) {
 			if(g_MyAvatars[i].hbmPic)
 				DeleteObject(g_MyAvatars[i].hbmPic);
@@ -1902,7 +2032,7 @@ static int ReportMyAvatarChanged(WPARAM wParam, LPARAM lParam)
 	char *proto = (char *) wParam;
 
 	int i;
-	for(i = 0; i < g_protocount; i++) {
+	for(i = 0; i < g_protocount + 1; i++) {
 		if(!strcmp(g_MyAvatars[i].szProtoname, proto)) {
 			LPVOID lpParam = (void *)malloc(lstrlenA(g_MyAvatars[i].szProtoname) + 2);
 			strcpy((char *)lpParam, g_MyAvatars[i].szProtoname);
@@ -2017,6 +2147,9 @@ static int DrawAvatarPicture(WPARAM wParam, LPARAM lParam)
         if(r->szProto == NULL)
             return 0;
         
+		if (r->szProto[0] == '\0' && DBGetContactSettingByte(NULL, AVS_MODULE, "GlobalUserAvatarNotConsistent", 1))
+			return -1;
+
 		ace = (AVATARCACHEENTRY *)GetMyAvatar(0, (LPARAM)r->szProto);
 	}
     else
@@ -2261,7 +2394,7 @@ extern "C" int __declspec(dllexport) Unload(void)
 		free(g_cacheBlocks[i]);
 	free(g_cacheBlocks);
 
-	for(i = 0; i < g_protocount; i++) {
+	for(i = 0; i < g_protocount + 1; i++) {
         if(g_ProtoPictures[i].hbmPic != 0)
             DeleteObject(g_ProtoPictures[i].hbmPic);
 		if(g_MyAvatars[i].hbmPic != 0)

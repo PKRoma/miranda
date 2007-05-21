@@ -344,13 +344,13 @@ int BmpFilterLoadBitmap32(WPARAM wParam,LPARAM lParam)
 				*dwTrans = 1;
 			}
         }
-		if(fei->FI_GetWidth(dib32) > 100 || fei->FI_GetHeight(dib32) > 100) {
-			FIBITMAP *dib_new = fei->FI_MakeThumbnail(dib32, 100, FALSE);
-            fei->FI_Unload(dib32);
-            if(dib_new == NULL)
-				return (int)0;
-            dib32 = dib_new;
-        }
+		//if(fei->FI_GetWidth(dib32) > 100 || fei->FI_GetHeight(dib32) > 100) {
+		//	FIBITMAP *dib_new = fei->FI_MakeThumbnail(dib32, 100, FALSE);
+        //    fei->FI_Unload(dib32);
+        //    if(dib_new == NULL)
+		//		return (int)0;
+        //    dib32 = dib_new;
+        //}
 
         HBITMAP bitmap = fei->FI_CreateHBITMAPFromDIB(dib32);
 

@@ -128,7 +128,7 @@ void StartFlash(HWND hwnd, ACCData* data)
 	else if (data->proto[0] != '\0')
 	{
 		protoPicCacheEntry *ace = NULL;
-		for(int i = 0; i < g_protocount; i++) 
+		for(int i = 0; i < g_protocount + 1; i++) 
 		{
 			if (!strcmp(data->proto, g_MyAvatars[i].szProtoname))
 			{
@@ -348,13 +348,6 @@ static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM l
 			int *width = (int *)wParam;
 			int *height = (int *)lParam;
 
-			if (data->hContact == NULL && data->proto[0] == '\0')
-			{
-				*width = 0;
-				*height = 0;
-				return TRUE;
-			}
-
 			RECT rc;
 			GetClientRect(hwnd, &rc);
 
@@ -440,9 +433,6 @@ static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM l
 		case WM_NCPAINT:
 		case WM_PAINT:
 		{
-			if (data->hContact == NULL && data->proto[0] == '\0')
-				break;
-
 			PAINTSTRUCT ps;
 			HDC hdc = BeginPaint(hwnd, &ps);
 			if (hdc == NULL) 
@@ -499,7 +489,9 @@ static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM l
 				| (data->resizeIfSmaller ? 0 : AVDRQ_DONTRESIZEIFSMALLER);
             avdrq.clrBorder = data->avatarBorderColor;
             avdrq.radius = data->avatarRoundCornerRadius;
-			if (!CallService(MS_AV_DRAWAVATAR, 0, (LPARAM)&avdrq)) 
+
+			int ret = CallService(MS_AV_DRAWAVATAR, 0, (LPARAM)&avdrq);
+			if (ret == 0 || ret == -1) 
 			{
 				HGDIOBJ oldFont = SelectObject(hdc, data->hFont);
 
@@ -510,15 +502,18 @@ static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM l
 				tr.left += 10;
 				tr.right -= 10;
 
+				char *text = (ret == -1 ? Translate("Protocols have different avatars") 
+										  : data->noAvatarText);
+
 				// Calc text size
 				RECT tr_ret = tr;
-				DrawTextA(hdc, data->noAvatarText, -1, &tr_ret, 
+				DrawTextA(hdc, text, -1, &tr_ret, 
 						DT_WORDBREAK | DT_NOPREFIX | DT_CENTER | DT_CALCRECT);
 				
 				// Calc needed size
 				tr.top += ((tr.bottom - tr.top) - (tr_ret.bottom - tr_ret.top)) / 2;
 				tr.bottom = tr.top + (tr_ret.bottom - tr_ret.top);
-				DrawTextA(hdc, data->noAvatarText, -1, &tr, 
+				DrawTextA(hdc, text, -1, &tr, 
 						DT_WORDBREAK | DT_NOPREFIX | DT_CENTER);
 
 				SelectObject(hdc, oldFont);

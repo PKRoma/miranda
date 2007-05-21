@@ -19,6 +19,7 @@
 #define IDC_CHECK1                      1007
 #define IDC_PROTECTAVATAR               1007
 #define IDC_SHOWWARNINGS                1007
+#define IDC_PER_PROTO                   1007
 #define IDC_CHANGE                      1008
 #define IDC_MAKE_TRANSPARENT_BKG        1008
 #define IDC_RESET                       1009
