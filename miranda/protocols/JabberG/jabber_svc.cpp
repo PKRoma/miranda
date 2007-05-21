@@ -869,9 +869,10 @@ int JabberGetInfo( WPARAM wParam, LPARAM lParam )
 				item = JabberListGetItemPtr( LIST_ROSTER, dbv.ptszVal );
 
 			if ( item && item->resource ) {
-				for (int i = 0; i < item->resourceCount; i++) {
-					
-					mir_sntprintf( jid, 256, _T("%s/%s"), dbv.ptszVal, item->resource[i].resourceName );
+				for ( int i = 0; i < item->resourceCount; i++ ) {
+					TCHAR szp1[ JABBER_MAX_JID_LEN ];
+					JabberStripJid( dbv.ptszVal, szp1, sizeof( szp1 ));
+					mir_sntprintf( jid, 256, _T("%s/%s"), szp1, item->resource[i].resourceName );
 					
 					iqId = JabberSerialNext();
 					JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultLastActivity );
@@ -884,8 +885,7 @@ int JabberGetInfo( WPARAM wParam, LPARAM lParam )
 						XmlNodeIq iq4( "get", iqId, jid );
 						XmlNode* query = iq4.addQuery( JABBER_FEAT_VERSION );
 						jabberThreadInfo->send( iq4 );
-					}
-		}	}	}
+		}	}	}	}
 
 		JabberSendGetVcard( dbv.ptszVal );
 		JFreeVariant( &dbv );
