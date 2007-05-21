@@ -45,6 +45,7 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
+				ProgramDatabaseFile="$(OutDir)/advaimg.pdb"
 				GenerateMapFile="TRUE"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -111,7 +112,7 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\Release/advaimg.pdb"
+				ProgramDatabaseFile="$(OutDir)/advaimg.pdb"
 				GenerateMapFile="TRUE"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -180,6 +181,7 @@ copy Source\FreeImage.h Dist
 				OutputFile="$(OutDir)/advaimg.dll"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
+				ProgramDatabaseFile="$(OutDir)/advaimg.pdb"
 				GenerateMapFile="TRUE"
 				TargetMachine="1"/>
 			<Tool
@@ -244,6 +246,7 @@ copy Source\FreeImage.h Dist
 				OutputFile="$(OutDir)/advaimg.dll"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
+				ProgramDatabaseFile="$(OutDir)/advaimg.pdb"
 				GenerateMapFile="TRUE"
 				TargetMachine="1"/>
 			<Tool
