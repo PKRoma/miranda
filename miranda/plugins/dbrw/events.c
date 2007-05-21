@@ -121,7 +121,8 @@ static char *events_moduleCacheAdd(char *szModule) {
     if (!szModule)
         return 0;
     {
-        int idx = 0, nameLen;
+        int idx = 0;
+        unsigned int nameLen;
 		DBCachedModuleName Vtemp, *V;
 
 		Vtemp.name = szModule;
@@ -283,7 +284,7 @@ static int events_getConditional(HANDLE hDbEvent, DBEVENTINFO *dbei, int cache) 
 		dbei->timestamp = (DWORD)sqlite3_column_int64(stmt, 1);
 		dbei->flags = (DWORD)sqlite3_column_int(stmt, 2);
 		dbei->eventType = (WORD)sqlite3_column_int(stmt, 3);
-		dbei->szModule = events_moduleCacheAdd((char*)sqlite3_column_text(stmt, 6));
+		dbei->szModule = events_moduleCacheAdd((char*)sqlite3_column_text(stmt, 7));
 		copySize = size<dbei->cbBlob ? size : dbei->cbBlob;
 		CopyMemory(dbei->pBlob, blob, copySize);
 		dbei->cbBlob = copySize;

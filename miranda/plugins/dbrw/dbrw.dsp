@@ -124,35 +124,11 @@ SOURCE=.\utils.c
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
-SOURCE=.\contacts.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\dbrw.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\events.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\resource.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\settings.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\sql.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\utf8.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\utils.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"
