@@ -20,7 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 File name      : $Source: /cvsroot/miranda/miranda/protocols/JabberG/jabber_misc.cpp,v $
 Revision       : $Revision$
-Last change on : $Date: 2006-07-13 16:11:29 +0400 
+Last change on : $Date: 2006-07-13 16:11:29 +0400
 Last change by : $Author$
 
 */
@@ -267,13 +267,13 @@ void JabberGetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen )
 		DBVARIANT dbv1, dbv2;
 		BOOL res1 = DBGetContactSetting( NULL, jabberProtoName, "LoginName", &dbv1 );
 		BOOL res2 = DBGetContactSetting( NULL, jabberProtoName, "LoginServer", &dbv2 );
-		mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%s@%s avatar.%s", 
-			res1 ? "noname" : dbv1.pszVal, 
+		mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%s@%s avatar.%s",
+			res1 ? "noname" : dbv1.pszVal,
 			res2 ? jabberProtoName : dbv2.pszVal,
 			szFileType );
 		if (!res1) JFreeVariant( &dbv1 );
 		if (!res2) JFreeVariant( &dbv2 );
-	}	
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -353,7 +353,7 @@ void JabberSetServerStatus( int iNewStatus )
 	}
 
 	// send presence update
-	JabberSendPresence( jabberStatus, true );
+	JabberSendPresence( jabberStatus, false );
 	JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, jabberStatus );
 }
 

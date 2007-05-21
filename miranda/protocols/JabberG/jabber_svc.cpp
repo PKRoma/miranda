@@ -299,7 +299,7 @@ int JabberBasicSearch( WPARAM wParam, LPARAM lParam )
 		mir_free( jsb );
 		return jabberSearchID;
 	}
-	
+
 	JabberLog( "Adding '%s' without validation", jsb->jid );
    jsb->hSearch = JabberSerialNext();
 	mir_forkthread(( pThreadFunc )JabberBasicSearchThread, jsb );
@@ -873,13 +873,13 @@ int JabberGetInfo( WPARAM wParam, LPARAM lParam )
 					TCHAR szp1[ JABBER_MAX_JID_LEN ];
 					JabberStripJid( dbv.ptszVal, szp1, sizeof( szp1 ));
 					mir_sntprintf( jid, 256, _T("%s/%s"), szp1, item->resource[i].resourceName );
-					
+
 					iqId = JabberSerialNext();
 					JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultLastActivity );
 					XmlNodeIq iq3( "get", iqId, jid );
 					iq3.addQuery( JABBER_FEAT_LAST_ACTIVITY );
 					jabberThreadInfo->send( iq3 );
-		
+
 					if ( !item->resource[i].dwVersionRequestTime ) {
 						iqId = JabberSerialNext();
 						XmlNodeIq iq4( "get", iqId, jid );
@@ -1306,7 +1306,7 @@ static int JabberSetAvatar( WPARAM wParam, LPARAM lParam )
 	BYTE* pResult = new BYTE[ dwPngSize ];
 	if ( pResult == NULL )
 		return 2;
-	
+
 	read( fileIn, pResult, dwPngSize );
 	close( fileIn );
 
@@ -1389,7 +1389,7 @@ int JabberSetAwayMsg( WPARAM wParam, LPARAM lParam )
 		*szMsg = newModeMsg;
 		// Send a presence update if needed
 		if ( desiredStatus == jabberStatus ) {
-			JabberSendPresence( jabberStatus, false );
+			JabberSendPresence( jabberStatus, true );
 	}	}
 
 	LeaveCriticalSection( &modeMsgMutex );
@@ -1500,10 +1500,10 @@ int ServiceSendXML(WPARAM wParam, LPARAM lParam)
 
 int JabberGCGetToolTipText(WPARAM wParam, LPARAM lParam)
 {
-	if (!wParam) 
+	if (!wParam)
 		return 0;
 
-	if (!lParam) 
+	if (!lParam)
 		return 0; //room global tooltip not supported yet
 
 	JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_CHATROOM, (TCHAR*)wParam);
@@ -1516,12 +1516,12 @@ int JabberGCGetToolTipText(WPARAM wParam, LPARAM lParam)
 			info = &p;
 			break;
 		}	}
-	if ( info==NULL ) 
+	if ( info==NULL )
 		return 0; //no info found
 
 	// ok process info output will be:
 	// JID:			real@jid/resource or
-	// Nick:		Nickname 	
+	// Nick:		Nickname
 	// Status:		StatusText
 	// Role:		Moderaror
 	// Affiliation:  Affiliation
@@ -1536,8 +1536,8 @@ int JabberGCGetToolTipText(WPARAM wParam, LPARAM lParam)
 	static const TCHAR * JabberEnum2RoleStr[]={ _T("None"), _T("Visitor"), _T("Participant"), _T("Moderator") };
 
 	//FIXME Table conversion fast but is not safe
-	static const TCHAR * JabberEnum2StatusStr[]= {	_T("Offline"), _T("Online"), _T("Away"), _T("DND"), 
-		_T("NA"), _T("Occupied"), _T("Free for chat"), 
+	static const TCHAR * JabberEnum2StatusStr[]= {	_T("Offline"), _T("Online"), _T("Away"), _T("DND"),
+		_T("NA"), _T("Occupied"), _T("Free for chat"),
 		_T("Invisible"), _T("On the phone"), _T("Out to lunch"),
 		_T("Idle")  };
 
