@@ -30,6 +30,17 @@ static HANDLE hSqlThreadEvent = NULL;
 static unsigned __stdcall sql_threadProc(void *arg);
 static DWORD CALLBACK sql_apcproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
+enum {
+	SQL_STMT_BEGIN=0,
+	SQL_STMT_END,
+	SQL_STMT_NUM
+};
+static char *sql_stmts[SQL_STMT_NUM] = {
+	"BEGIN TRANSACTION;",
+	"COMMIT;"
+};
+sqlite3_stmt *sql_stmts_prep[SQL_STMT_NUM] = {0};
+
 typedef struct TSqlMessage {
   int op;
   sqlite3 *pDb;
@@ -54,6 +65,7 @@ void sql_init() {
     hSqlThread = (HANDLE)mir_forkthreadex(sql_threadProc, 0, 0, &sqlThreadId);
     hAPCWindow = CreateWindowEx(0, _T("STATIC"), NULL, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL);
     SetWindowLong(hAPCWindow, GWL_WNDPROC, (LONG)sql_apcproc);
+    sql_prepare_add(sql_stmts, sql_stmts_prep, SQL_STMT_NUM);
 }
 
 void sql_destroy() {
@@ -85,6 +97,18 @@ void sql_prepare_statements() {
 	
 	for(i = 0; i < sql_prepare_len; i++)
 		sql_prepare(g_sqlite, sql_prepare_text[i], sql_prepare_stmt[i]);
+}
+
+int sql_stmt_begin() {
+    int rc = sql_step(sql_stmts_prep[SQL_STMT_BEGIN]);
+    sql_reset(sql_stmts_prep[SQL_STMT_BEGIN]);
+    return rc;
+}
+
+int sql_stmt_end() {
+    int rc = sql_step(sql_stmts_prep[SQL_STMT_END]);
+    sql_reset(sql_stmts_prep[SQL_STMT_END]);
+    return rc;
 }
 
 static unsigned __stdcall sql_threadProc(void *arg) {

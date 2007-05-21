@@ -72,6 +72,7 @@ enum {
 	SQL_SET_STMT_ENUM,
 	SQL_SET_STMT_ENUMMODULES,
 	SQL_SET_STMT_SETTINGCHECK,
+    SQL_SET_STMT_DELETECONTACT,
 	SQL_SET_STMT_NUM
 };
 char *settings_stmts[SQL_SET_STMT_NUM] = {
@@ -80,7 +81,8 @@ char *settings_stmts[SQL_SET_STMT_NUM] = {
 	"SELECT type,val FROM dbrw_settings WHERE setting = ? AND module = ? AND id = ? LIMIT 1;",
 	"SELECT setting from dbrw_settings where id = ? AND module = ? ORDER by setting;",
 	"SELECT DISTINCT module from dbrw_settings;",
-    "SELECT count(*) FROM dbrw_settings WHERE setting = ? AND module = ? AND id = ?;"
+    "SELECT count(*) FROM dbrw_settings WHERE setting = ? AND module = ? AND id = ?;",
+	"DELETE FROM dbrw_settings WHERE id = ?;"
 };
 static sqlite3_stmt *settings_stmts_prep[SQL_SET_STMT_NUM] = {0};
 
@@ -350,7 +352,7 @@ static void settings_writeUpdatedSettings() {
 				szTokTmp2 = szTok+strlen(szTokTmp1)+1;
 				if (szTokTmp2) {
                     if (!dbWrite) {
-                        sql_exec(g_sqlite, "BEGIN TRANSACTION;");
+                        sql_stmt_begin();
                         dbWrite = 1;
                     }
 					settings_writeToDB(0, szTokTmp1, szTokTmp2, &V->value);
@@ -371,7 +373,7 @@ static void settings_writeUpdatedSettings() {
 					szTokTmp2 = szTok+strlen(szTokTmp1)+1;
 					if (szTokTmp2) {
                         if (!dbWrite) {
-                            sql_exec(g_sqlite, "BEGIN TRANSACTION;");
+                            sql_stmt_begin();
                             dbWrite = 1;
                         }
 						settings_writeToDB(VL->hContact, szTokTmp1, szTokTmp2, &VI->value);
@@ -383,7 +385,7 @@ static void settings_writeUpdatedSettings() {
 		}
 	}
     if (dbWrite)
-        sql_exec(g_sqlite, "COMMIT;");
+        sql_stmt_end();
 	LeaveCriticalSection(&csSettingsDb);
 }
 
@@ -772,7 +774,6 @@ int setting_enumSettings(WPARAM wParam, LPARAM lParam) {
 		const char *sczSetting = sqlite3_column_text(settings_stmts_prep[SQL_SET_STMT_ENUM], 0);
 		if (sczSetting) {
             char * szCachedSetting = settings_getCachedSettingName(dbces->szModule, sczSetting);
-            // Ignore resident settings here (see next loop)
             if (szCachedSetting&&!settings_isResident(szCachedSetting)) {
                 rc = (dbces->pfnEnumProc)(sczSetting,dbces->lParam);
             }
@@ -806,11 +807,12 @@ int setting_modulesEnum(WPARAM wParam, LPARAM lParam) {
 }
 
 // Assume critical section
-void settings_emptyContactCache(HANDLE hContact) {
+void settings_deleteContactData(HANDLE hContact) {
 	int idx;
 	DBCachedContactValueList VLtemp,*VL;
 	DBCachedContactValue *V;
-
+    
+    EnterCriticalSection(&csSettingsDb);
 	VLtemp.hContact = hContact;
 	if (li.List_GetIndex(&sContactSettings, &VLtemp, &idx)) {
 		VL = (DBCachedContactValueList*)sContactSettings.items[idx];
@@ -822,6 +824,10 @@ void settings_emptyContactCache(HANDLE hContact) {
 			V = V->next;
 		}
 	}
+    sqlite3_bind_int(settings_stmts_prep[SQL_SET_STMT_DELETECONTACT], 1, (int)hContact);
+    sql_step(settings_stmts_prep[SQL_SET_STMT_DELETECONTACT]);
+    sql_reset(settings_stmts_prep[SQL_SET_STMT_DELETECONTACT]);
+    LeaveCriticalSection(&csSettingsDb);
 }
 
 int settings_setResident(WPARAM wParam, LPARAM lParam) {

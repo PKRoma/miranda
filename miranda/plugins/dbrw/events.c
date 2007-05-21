@@ -50,6 +50,7 @@ enum {
 	SQL_EVT_STMT_FINDPREV,   
 	SQL_EVT_STMT_CREATETEMPTABLE,
 	SQL_EVT_STMT_DROPTEMPTABLE,
+    SQL_EVT_STMT_DELETECONTACT,
 	SQL_EVT_STMT_NUM
 };
 static char *evt_stmts[SQL_EVT_STMT_NUM] = {
@@ -76,7 +77,8 @@ static char *evt_stmts[SQL_EVT_STMT_NUM] = {
     "drop trigger insert_new_temp_event1;"
         "drop trigger insert_new_temp_event2;"
         "drop trigger delete_temp_event;"
-        "drop table temp_dbrw_events;"
+        "drop table temp_dbrw_events;",
+	"DELETE FROM dbrw_events WHERE contactid = ?;"
 };
 static sqlite3_stmt *evt_stmts_prep[SQL_EVT_STMT_NUM] = {0};
 
@@ -148,10 +150,10 @@ static unsigned __stdcall events_timerProcThread(void *arg) {
             break;
         else if(dwWait == WAIT_TIMEOUT) {
             EnterCriticalSection(&csEventsDb);
-            sql_exec(g_sqlite, "BEGIN TRANSACTION;");
+            sql_stmt_begin();
             sql_step(evt_stmts_prep[SQL_EVT_STMT_DROPTEMPTABLE]);
             sql_step(evt_stmts_prep[SQL_EVT_STMT_CREATETEMPTABLE]);
-            sql_exec(g_sqlite, "COMMIT;");
+            sql_stmt_end();
             sql_reset(evt_stmts_prep[SQL_EVT_STMT_DROPTEMPTABLE]);
             sql_reset(evt_stmts_prep[SQL_EVT_STMT_CREATETEMPTABLE]);
             LeaveCriticalSection(&csEventsDb);
@@ -307,7 +309,7 @@ int events_markRead(WPARAM wParam, LPARAM lParam) {
 	int rc = -1;
 	
 	EnterCriticalSection(&csEventsDb);
-    sql_exec(g_sqlite, "BEGIN TRANSACTION;");
+    sql_stmt_begin();
 	sqlite3_bind_int(evt_stmts_prep[SQL_EVT_STMT_GETFLAGS], 1, (int)hDbEvent);
 	if (sql_step(evt_stmts_prep[SQL_EVT_STMT_GETFLAGS])==SQLITE_ROW) {
 		DWORD flags = (DWORD)sqlite3_column_int(evt_stmts_prep[SQL_EVT_STMT_GETFLAGS], 0);
@@ -325,7 +327,7 @@ int events_markRead(WPARAM wParam, LPARAM lParam) {
         }
 	}
 	else sql_reset(evt_stmts_prep[SQL_EVT_STMT_GETFLAGS]);
-    sql_exec(g_sqlite, "COMMIT;");
+    sql_stmt_end();
 	LeaveCriticalSection(&csEventsDb);
 	return rc;
 }
@@ -447,3 +449,10 @@ int events_findPrev(WPARAM wParam, LPARAM lParam) {
 	return rc;
 }
 
+void events_deleteContactData(HANDLE hContact) {
+    EnterCriticalSection(&csEventsDb);
+    sqlite3_bind_int(evt_stmts_prep[SQL_EVT_STMT_DELETECONTACT], 1, (int)hContact);
+    sql_step(evt_stmts_prep[SQL_EVT_STMT_DELETECONTACT]);
+    sql_reset(evt_stmts_prep[SQL_EVT_STMT_DELETECONTACT]);
+    LeaveCriticalSection(&csEventsDb);
+}

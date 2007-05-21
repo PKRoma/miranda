@@ -104,6 +104,7 @@ int events_findFirstUnread(WPARAM wParam, LPARAM lParam);
 int events_findLast(WPARAM wParam, LPARAM lParam);
 int events_findNext(WPARAM wParam, LPARAM lParam);
 int events_findPrev(WPARAM wParam, LPARAM lParam);
+void events_deleteContactData(HANDLE hContact);
 
 // settings.c
 void settings_init();
@@ -116,7 +117,7 @@ int setting_writeSetting(WPARAM wParam, LPARAM lParam);
 int setting_deleteSetting(WPARAM wParam, LPARAM lParam);
 int setting_enumSettings(WPARAM wParam, LPARAM lParam);
 int setting_modulesEnum(WPARAM wParam, LPARAM lParam);
-void settings_emptyContactCache(HANDLE hContact);
+void settings_deleteContactData(HANDLE hContact);
 int settings_setResident(WPARAM wParam, LPARAM lParam);
 
 // sql.c
@@ -124,6 +125,8 @@ void sql_init();
 void sql_destroy();
 void sql_prepare_add(char **text, sqlite3_stmt **stmts, int len);
 void sql_prepare_statements();
+int sql_stmt_begin();
+int sql_stmt_end();
 int sql_step(sqlite3_stmt *stmt);
 int sql_reset(sqlite3_stmt *stmt);
 int sql_exec(sqlite3 *sql, const char *query);

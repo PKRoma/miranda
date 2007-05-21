@@ -26,15 +26,11 @@ static int contacts_compare(void* p1, void* p2);
 enum {
 	SQL_CTC_STMT_DELETE=0,
 	SQL_CTC_STMT_ADD,
-	SQL_CTC_STMT_DELETESETTINGS,
-	SQL_CTC_STMT_DELETEEVENTS,
 	SQL_CTC_STMT_NUM
 };
 static char *ctc_stmts[SQL_CTC_STMT_NUM] = {
 	"DELETE FROM dbrw_contacts WHERE id = ?;",
-	"INSERT INTO dbrw_contacts VALUES(NULL,?);",
-	"DELETE FROM dbrw_settings WHERE id = ?;", //should add to settings_emptyContactCache instead?
-	"DELETE FROM dbrw_events WHERE contactid = ?;"
+	"INSERT INTO dbrw_contacts VALUES(NULL,?);"
 };
 static sqlite3_stmt *ctc_stmts_prep[SQL_CTC_STMT_NUM] = {0};
 
@@ -141,7 +137,7 @@ int contacts_delete(WPARAM wParam, LPARAM lParam) {
 		li.List_Remove(&sContactList, idx);
 		
         // Begin Transaction
-        sql_exec(g_sqlite, "BEGIN TRANSACTION;");
+        sql_stmt_begin();
         
 		// Delete contact
 		sqlite3_bind_int(ctc_stmts_prep[SQL_CTC_STMT_DELETE], 1, id);
@@ -149,18 +145,13 @@ int contacts_delete(WPARAM wParam, LPARAM lParam) {
 		sql_reset(ctc_stmts_prep[SQL_CTC_STMT_DELETE]);
         
 		// Delete contact's settings
-		sqlite3_bind_int(ctc_stmts_prep[SQL_CTC_STMT_DELETESETTINGS], 1, id);
-		sql_step(ctc_stmts_prep[SQL_CTC_STMT_DELETESETTINGS]);
-		sql_reset(ctc_stmts_prep[SQL_CTC_STMT_DELETESETTINGS]);
-		settings_emptyContactCache((HANDLE)id);
+		settings_deleteContactData((HANDLE)id);
 
 		// Delete contact's events
-		sqlite3_bind_int(ctc_stmts_prep[SQL_CTC_STMT_DELETEEVENTS], 1, id);
-		sql_step(ctc_stmts_prep[SQL_CTC_STMT_DELETEEVENTS]);
-		sql_reset(ctc_stmts_prep[SQL_CTC_STMT_DELETEEVENTS]);
+        events_deleteContactData((HANDLE)id);
         
         // Commit transaction
-        sql_exec(g_sqlite, "COMMIT;");
+        sql_stmt_end();
         log1("Deleted contact data (%d)", id);
 	}
 	LeaveCriticalSection(&csContactsDb);
