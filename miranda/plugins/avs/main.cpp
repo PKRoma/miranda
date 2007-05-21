@@ -34,7 +34,7 @@ static BOOL     g_MetaAvail = FALSE;
 BOOL            g_AvatarHistoryAvail = FALSE;
 static long     hwndSetMyAvatar = 0;
 static HANDLE   hMyAvatarsFolder = 0;
-static HANDLE   hProtocolAvatarsFolder = 0;
+static HANDLE   hGlobalAvatarFolder = 0;
 static HANDLE   hLoaderEvent = 0;
 static HANDLE  hLoaderThread = 0;
 
@@ -543,66 +543,10 @@ int CreateAvatarInCache(HANDLE hContact, struct avatarCacheEntry *ace, char *szP
 				DBFreeVariant(&dbv);
 			}
 			else {
-				char szTestFile[MAX_PATH];
-				HANDLE hFFD;
-				WIN32_FIND_DATAA ffd = {0};
-				char inipath[2048];
-
-				// First try protocol avatars folder
-				FoldersGetCustomPath(hProtocolAvatarsFolder, inipath, sizeof(inipath), g_szDBPath);
-
-				_snprintf(szTestFile, MAX_PATH, "%s\\MSN\\%s avatar.*", inipath, szProto);
-				szTestFile[MAX_PATH - 1] = 0;
-				if((hFFD = FindFirstFileA(szTestFile, &ffd)) != INVALID_HANDLE_VALUE) {
-					_snprintf(szFilename, MAX_PATH, "%s\\MSN\\%s", inipath, ffd.cFileName);
-					FindClose(hFFD);
-					goto done;
-				}
-				_snprintf(szTestFile, MAX_PATH, "%s\\jabber\\%s avatar.*", inipath, szProto);
-				szTestFile[MAX_PATH - 1] = 0;
-				if((hFFD = FindFirstFileA(szTestFile, &ffd)) != INVALID_HANDLE_VALUE) {
-					_snprintf(szFilename, MAX_PATH, "%s\\jabber\\%s", inipath, ffd.cFileName);
-					FindClose(hFFD);
-					goto done;
-				}
-				_snprintf(szTestFile, MAX_PATH, "%s\\jabber\\%s avatar.*", inipath, getJGMailID(szProto));
-				szTestFile[MAX_PATH - 1] = 0;
-				if((hFFD = FindFirstFileA(szTestFile, &ffd)) != INVALID_HANDLE_VALUE) {
-					_snprintf(szFilename, MAX_PATH, "%s\\jabber\\%s", inipath, ffd.cFileName);
-					FindClose(hFFD);
-					goto done;
-				}
-				// Now try profile folder
-				if (_strcmpi(inipath, g_szDBPath)) {
-					strcpy(inipath, g_szDBPath);
-
-					_snprintf(szTestFile, MAX_PATH, "%s\\MSN\\%s avatar.*", inipath, szProto);
-					szTestFile[MAX_PATH - 1] = 0;
-					if((hFFD = FindFirstFileA(szTestFile, &ffd)) != INVALID_HANDLE_VALUE) {
-						_snprintf(szFilename, MAX_PATH, "%s\\MSN\\%s", inipath, ffd.cFileName);
-						FindClose(hFFD);
-						goto done;
-					}
-					_snprintf(szTestFile, MAX_PATH, "%s\\jabber\\%s avatar.*", inipath, szProto);
-					szTestFile[MAX_PATH - 1] = 0;
-					if((hFFD = FindFirstFileA(szTestFile, &ffd)) != INVALID_HANDLE_VALUE) {
-						_snprintf(szFilename, MAX_PATH, "%s\\jabber\\%s", inipath, ffd.cFileName);
-						FindClose(hFFD);
-						goto done;
-					}
-					_snprintf(szTestFile, MAX_PATH, "%s\\jabber\\%s avatar.*", inipath, getJGMailID(szProto));
-					szTestFile[MAX_PATH - 1] = 0;
-					if((hFFD = FindFirstFileA(szTestFile, &ffd)) != INVALID_HANDLE_VALUE) {
-						_snprintf(szFilename, MAX_PATH, "%s\\jabber\\%s", inipath, ffd.cFileName);
-						FindClose(hFFD);
-						goto done;
-					}
-				}
 				return -1;
 			}
 		}
     }
-done:
     if(lstrlenA(szFilename) < 4)
         return -1;
 
@@ -1433,9 +1377,9 @@ static int SetMyAvatar(WPARAM wParam, LPARAM lParam)
 			// Copy avatar file to store as global one
 			char globalFile[1024];
 			BOOL saved = TRUE;
-			if (FoldersGetCustomPath(hProtocolAvatarsFolder, globalFile, sizeof(globalFile), ""))
+			if (FoldersGetCustomPath(hGlobalAvatarFolder, globalFile, sizeof(globalFile), ""))
 			{
-				mir_snprintf(globalFile, sizeof(globalFile), "%s\\%s", g_szDBPath, "MyAvatar");
+				mir_snprintf(globalFile, sizeof(globalFile), "%s\\%s", g_szDBPath, "GlobalAvatar");
 				CreateDirectoryA(globalFile, NULL);
 			}
 
@@ -1907,8 +1851,8 @@ static int ModulesLoaded(WPARAM wParam, LPARAM lParam)
 		hMyAvatarsFolder = (HANDLE) FoldersRegisterCustomPath(Translate("Avatars"), Translate("My Avatars"), 
 													  PROFILE_PATH "\\" CURRENT_PROFILE "\\MyAvatars");
 
-		hProtocolAvatarsFolder = (HANDLE) FoldersRegisterCustomPath(Translate("Avatars"), Translate("Protocol Avatars Cache"), 
-													  FOLDER_AVATARS);
+		hGlobalAvatarFolder = (HANDLE) FoldersRegisterCustomPath(Translate("Avatars"), Translate("My Global Avatar Cache"), 
+													  FOLDER_AVATARS "\\GlobalAvatar");
 	}
 
     g_AvatarHistoryAvail = ServiceExists(MS_AVATARHISTORY_ENABLED);
