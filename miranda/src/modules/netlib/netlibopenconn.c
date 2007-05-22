@@ -27,16 +27,20 @@ extern CRITICAL_SECTION csNetlibUser;
 extern DWORD g_LastConnectionTick; // protected by csNetlibUser
 static int iUPnPCleanup = 0;
 
+#define RECV_DEFAULT_TIMEOUT	60000
+
 //returns in network byte order
 DWORD DnsLookup(struct NetlibUser *nlu,const char *szHost)
 {
-	DWORD ip;
-	HOSTENT *host;
+	HOSTENT* host;
+	DWORD ip = inet_addr( szHost);
+	if ( ip != INADDR_NONE )
+		return ip;
 
-	ip=inet_addr(szHost);
-	if(ip!=INADDR_NONE) return ip;
-	host=gethostbyname(szHost);
-	if(host) return *(u_long *)host->h_addr_list[0];
+	host = gethostbyname( szHost );
+	if ( host )
+		return *( u_long* )host->h_addr_list[0];
+
 	Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"gethostbyname",WSAGetLastError());
 	return 0;
 }
@@ -77,6 +81,34 @@ static int WaitUntilWritable(SOCKET s,DWORD dwTimeout)
 	return 1;
 }
 
+BOOL RecvUntilTimeout(struct NetlibConnection *nlc,char *buf,int len,int flags,DWORD dwTimeout)
+{
+	int nReceived = 0;
+	DWORD dwStartTime = GetTickCount();
+	while (GetTickCount() - dwStartTime < dwTimeout) {		
+		TIMEVAL timeout = {0, 10000};
+		fd_set fds;
+		FD_ZERO(&fds);
+		FD_SET(nlc->s, &fds);
+		switch( select(0, &fds, NULL, NULL, &timeout )) {
+		case 0:
+			continue;
+		case SOCKET_ERROR:
+			return FALSE;
+		}
+		nReceived = NLRecv(nlc, buf, len, flags);
+		if (nReceived <= 0)
+			break;
+
+		buf += nReceived;
+		len -= nReceived;
+		if ( !len )
+			return TRUE;
+	}
+	SetLastError( ERROR_TIMEOUT );
+	return FALSE;
+}
+
 static int NetlibInitSocks4Connection(struct NetlibConnection *nlc,struct NetlibUser *nlu,NETLIBOPENCONNECTION *nloc)
 {	//http://www.socks.nec.com/protocol/socks4.protocol and http://www.socks.nec.com/protocol/socks4a.protocol
 	PBYTE pInit;
@@ -92,7 +124,8 @@ static int NetlibInitSocks4Connection(struct NetlibConnection *nlc,struct Netlib
 	if(nlu->settings.szProxyAuthUser==NULL) pInit[8]=0;
 	else lstrcpyA(pInit+8,nlu->settings.szProxyAuthUser);
 	if(nlu->settings.dnsThroughProxy) {
-		if((*(PDWORD)(pInit+4)=inet_addr(nloc->szHost))==INADDR_NONE) {
+		if((*(PDWORD)(pInit+4)=DnsLookup(nlu,nloc->szHost))==0) {
+			// FIXME: very suspect code :)
 			*(PDWORD)(pInit+4)=0x01000000;
 			lstrcpyA(pInit+9+nUserLen,nloc->szHost);
 			len=10+nUserLen+nHostLen;
@@ -114,23 +147,18 @@ static int NetlibInitSocks4Connection(struct NetlibConnection *nlc,struct Netlib
 	}
 	mir_free(pInit);
 
-	if(!WaitUntilReadable(nlc->s,30000)) {
-		Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"WaitUntilReadable",GetLastError());
+	if (!RecvUntilTimeout(nlc,reply,SIZEOF(reply),MSG_DUMPPROXY,RECV_DEFAULT_TIMEOUT)) {
+		Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"RecvUntilTimeout",GetLastError());
 		return 0;
 	}
-
-	len=NLRecv(nlc,reply,SIZEOF(reply),MSG_DUMPPROXY);
-	if(len < sizeof(reply) || reply[1]!=90) {
-		if(len != SOCKET_ERROR) {
-			if (len < SIZEOF(reply)) SetLastError(ERROR_BAD_FORMAT);
-			else switch(reply[1]) {
-				case 91: SetLastError(ERROR_ACCESS_DENIED); break;
-				case 92: SetLastError(ERROR_CONNECTION_UNAVAIL); break;
-				case 93: SetLastError(ERROR_INVALID_ACCESS); break;
-				default: SetLastError(ERROR_INVALID_DATA); break;
-			}
+	if ( reply[1] != 90 ) {
+		switch( reply[1] ) {
+			case 91: SetLastError(ERROR_ACCESS_DENIED); break;
+			case 92: SetLastError(ERROR_CONNECTION_UNAVAIL); break;
+			case 93: SetLastError(ERROR_INVALID_ACCESS); break;
+			default: SetLastError(ERROR_INVALID_DATA); break;
 		}
-		Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"NLRecv",GetLastError());
+		Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"RecvUntilTimeout",GetLastError());
 		return 0;
 	}
 	//connected
@@ -139,8 +167,7 @@ static int NetlibInitSocks4Connection(struct NetlibConnection *nlc,struct Netlib
 
 static int NetlibInitSocks5Connection(struct NetlibConnection *nlc,struct NetlibUser *nlu,NETLIBOPENCONNECTION *nloc)
 {	//rfc1928
-	int len;
-	BYTE buf[256];
+	BYTE buf[258];
 
 	buf[0]=5;  //yep, socks5
 	buf[1]=1;  //one auth method
@@ -150,17 +177,13 @@ static int NetlibInitSocks5Connection(struct NetlibConnection *nlc,struct Netlib
 		return 0;
 	}
 
-	if(!WaitUntilReadable(nlc->s,10000)) {
-		Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"WaitUntilReadable",GetLastError());
+	//confirmation of auth method
+	if (!RecvUntilTimeout(nlc,buf,2,MSG_DUMPPROXY,RECV_DEFAULT_TIMEOUT)) {
+		Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"RecvUntilTimeout",GetLastError());
 		return 0;
 	}
-
-	len=NLRecv(nlc,buf,2,MSG_DUMPPROXY);	   //confirmation of auth method
-	if(len<2 || (buf[1]!=0 && buf[1]!=2)) {
-		if(len!=SOCKET_ERROR) {
-			if(len<2) SetLastError(ERROR_BAD_FORMAT);
-			else SetLastError(ERROR_INVALID_ID_AUTHORITY);
-		}
+	if((buf[1]!=0 && buf[1]!=2)) {
+		SetLastError(ERROR_INVALID_ID_AUTHORITY);
 		Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"NLRecv",GetLastError());
 		return 0;
 	}
@@ -184,18 +207,13 @@ static int NetlibInitSocks5Connection(struct NetlibConnection *nlc,struct Netlib
 		}
 		mir_free(pAuthBuf);
 
-		if(!WaitUntilReadable(nlc->s,10000)) {
-			Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"WaitUntilReadable",GetLastError());
+		if (!RecvUntilTimeout(nlc,buf,2,MSG_DUMPPROXY,RECV_DEFAULT_TIMEOUT)) {
+			Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"RecvUntilTimeout",GetLastError());
 			return 0;
 		}
-
-		len=NLRecv(nlc,buf,SIZEOF(buf),MSG_DUMPPROXY);
-		if(len<2 || buf[1]) {
-			if(len!=SOCKET_ERROR) {
-				if(len<2) SetLastError(ERROR_BAD_FORMAT);
-				else SetLastError(ERROR_ACCESS_DENIED);
-			}
-			Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"NLRecv",GetLastError());
+		if(buf[1]) {
+			SetLastError(ERROR_ACCESS_DENIED);
+			Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"RecvUntilTimeout",GetLastError());
 			return 0;
 		}
 	}
@@ -236,16 +254,16 @@ static int NetlibInitSocks5Connection(struct NetlibConnection *nlc,struct Netlib
 		mir_free(pInit);
 	}
 
-	if(!WaitUntilReadable(nlc->s,30000)) {
-		Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"WaitUntilReadable",GetLastError());
+	if (!RecvUntilTimeout(nlc,buf,5,MSG_DUMPPROXY,RECV_DEFAULT_TIMEOUT)) {
+		Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"RecvUntilTimeout",GetLastError());
 		return 0;
 	}
 
-	len=NLRecv(nlc,buf,SIZEOF(buf),MSG_DUMPPROXY);
-	if(len<7 || buf[0]!=5 || buf[1]) {
-		if(len!=SOCKET_ERROR) {
-			if(len<7 || buf[0]!=5) SetLastError(ERROR_BAD_FORMAT);
-			else switch(buf[1]) {
+	if ( buf[0]!=5 || buf[1] ) {
+		if ( buf[0] != 5 )
+			SetLastError(ERROR_BAD_FORMAT);
+		else 
+			switch(buf[1]) {
 				case 1: SetLastError(ERROR_GEN_FAILURE); break;
 				case 2: SetLastError(ERROR_ACCESS_DENIED); break;
 				case 3: SetLastError(WSAENETUNREACH); break;
@@ -256,10 +274,30 @@ static int NetlibInitSocks5Connection(struct NetlibConnection *nlc,struct Netlib
 				case 8: SetLastError(ERROR_INVALID_ADDRESS); break;
 				default: SetLastError(ERROR_INVALID_DATA); break;
 			}
-		}
-		Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"NLRecv",GetLastError());
+		Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"RecvUntilTimeout",GetLastError());
 		return 0;
 	}
+	{
+		int nRecvSize = 0;
+		switch( buf[3] ) {
+		case 1:// ipv4 addr
+			nRecvSize = 5;
+			break;
+		case 3:// dns name addr
+			nRecvSize = buf[4] + 2;
+			break;
+		case 4:// ipv6 addr
+			nRecvSize = 17;
+			break;
+		default:
+			Netlib_Logf(nlu,"%s %d: %s() unknown address type (%u)",__FILE__,__LINE__,"NetlibInitSocks5Connection",(int)buf[3]);
+			return 0;
+		}
+		if (!RecvUntilTimeout(nlc,buf,nRecvSize,MSG_DUMPPROXY,RECV_DEFAULT_TIMEOUT)) {
+			Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"RecvUntilTimeout",GetLastError());
+			return 0;
+	}	}
+
 	//connected
 	return 1;
 }
