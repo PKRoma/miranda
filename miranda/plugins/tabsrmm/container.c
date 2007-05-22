@@ -1801,12 +1801,12 @@ buttons_done:
                 struct MessageWindowData *dat = NULL;
 
                 if(lParam) {                // lParam != 0 means sent by a chat window
-                    char szText[512];
+                    TCHAR szText[512];
                     dat = (struct MessageWindowData *)GetWindowLong((HWND)wParam, GWL_USERDATA);
 
-                    GetWindowTextA((HWND)wParam, szText, 512);
-                    szText[511] = 0;
-                    SetWindowTextA(hwndDlg, szText);
+                    GetWindowText((HWND)wParam, szText, SIZEOF(szText));
+                    szText[SIZEOF(szText)-1] = 0;
+                    SetWindowText(hwndDlg, szText);
                     if(dat)
                         SendMessage(hwndDlg, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM)(dat->hTabIcon != dat->hTabStatusIcon ? dat->hTabIcon : dat->hTabStatusIcon));
                     break;
