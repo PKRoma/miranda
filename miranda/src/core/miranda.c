@@ -28,7 +28,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MMI_SIZE_V1 (4*sizeof(void*))
 
 int InitialiseModularEngine(void);
-void DestroyingModularEngine(void);
 void DestroyModularEngine(void);
 int UnloadNewPluginsModule(void);
 
@@ -441,7 +440,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				dying++;
 				SetEvent(hMirandaShutdown);
 				NotifyEventHooks(hPreShutdownEvent, 0, 0);
-				DestroyingModularEngine();
+				
 				// this spins and processes the msg loop, objects and APC.
 				UnwindThreadWait();
 				NotifyEventHooks(hShutdownEvent, 0, 0);
