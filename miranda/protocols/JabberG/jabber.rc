@@ -89,15 +89,12 @@ BEGIN
     LTEXT           "Password:",IDC_STATIC,15,30,45,8
     EDITTEXT        IDC_EDIT_PASSWORD,66,28,86,12,ES_PASSWORD | 
                     ES_AUTOHSCROLL
-    LTEXT           "Resource:",IDC_RESOURCE_T,15,44,45,8
-    EDITTEXT        IDC_EDIT_RESOURCE,66,42,86,12,ES_AUTOHSCROLL
-    LTEXT           "Priority:",IDC_PRIORITY_LABEL,161,44,31,8
-    EDITTEXT        IDC_PRIORITY,195,42,42,12,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "Spin1",IDC_PRIORITY_SPIN,"msctls_updown32",
-                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_NOTHOUSANDS,236,42,11,12
-    CONTROL         "Save password",IDC_SAVEPASSWORD,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,66,56,172,10
+    LTEXT           "Resource:",IDC_RESOURCE_T,15,57,45,8
+    COMBOBOX        IDC_COMBO_RESOURCE,66,54,86,130,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Priority:",IDC_PRIORITY_LABEL,161,57,31,8
+    EDITTEXT        IDC_PRIORITY,195,55,42,12,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "Spin1",IDC_PRIORITY_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_NOTHOUSANDS,236,55,11,12
+    CONTROL         "Save password",IDC_SAVEPASSWORD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,66,43,172,10
     LTEXT           "Login server:",IDC_STATIC,15,70,45,8
     EDITTEXT        IDC_EDIT_LOGIN_SERVER,66,68,86,12,ES_AUTOHSCROLL
     LTEXT           "Port:",IDC_STATIC,15,84,45,8
@@ -964,6 +961,7 @@ IDI_BOOKMARKS           ICON                    "icos\\bookmarks.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
+
 
 
 

@@ -178,16 +178,22 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				if ( !dbv.pszVal[0] ) enableRegister = FALSE;
 				JFreeVariant( &dbv );
 			}
+
+			// fill predefined resources
+			TCHAR* szResources[] = { _T("Home"), _T("Work"), _T("Office"), _T("Miranda") };
+			for ( int i = 0; i < SIZEOF(szResources); i++ )
+				SendDlgItemMessage( hwndDlg, IDC_COMBO_RESOURCE, CB_ADDSTRING, 0, (LPARAM)TranslateTS( szResources[i] ));
+			
 			if ( !DBGetContactSettingTString( NULL, jabberProtoName, "Resource", &dbv )) {
-				SetDlgItemText( hwndDlg, IDC_EDIT_RESOURCE, dbv.ptszVal );
+				SetDlgItemText( hwndDlg, IDC_COMBO_RESOURCE, dbv.ptszVal );
 				JFreeVariant( &dbv );
 			}
-			else SetDlgItemTextA( hwndDlg, IDC_EDIT_RESOURCE, "Miranda" );
+			else SetDlgItemTextA( hwndDlg, IDC_COMBO_RESOURCE, "Miranda" );
 
 			SendMessage( GetDlgItem( hwndDlg, IDC_PRIORITY_SPIN ), UDM_SETRANGE, 0, ( LPARAM )MAKELONG( 100, 0 ));
 
 			char text[256];
-			sprintf( text, "%d", JGetWord( NULL, "Priority", 0 ));
+			sprintf( text, "%d", JGetWord( NULL, "Priority", 5 ));
 			SetDlgItemTextA( hwndDlg, IDC_PRIORITY, text );
 			CheckDlgButton( hwndDlg, IDC_SAVEPASSWORD, JGetByte( "SavePassword", TRUE ));
 			if ( !DBGetContactSetting( NULL, jabberProtoName, "LoginServer", &dbv )) {
@@ -254,7 +260,7 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		switch ( LOWORD( wParam )) {
 		case IDC_EDIT_USERNAME:
 		case IDC_EDIT_PASSWORD:
-		case IDC_EDIT_RESOURCE:
+		case IDC_COMBO_RESOURCE:
 		case IDC_EDIT_LOGIN_SERVER:
 		case IDC_PORT:
 		case IDC_MANUAL:
@@ -277,7 +283,8 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 			}
 			else {
-				if (( HWND )lParam==GetFocus() && HIWORD( wParam )==EN_CHANGE )
+				WORD wHiParam = HIWORD( wParam );
+				if ( ((HWND)lParam==GetFocus() && wHiParam==EN_CHANGE) || ((HWND)lParam==GetParent(GetFocus()) && (wHiParam == CBN_EDITCHANGE || wHiParam == CBN_SELCHANGE)) )
 					SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 			}
 
@@ -383,7 +390,7 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			}
 			else JDeleteSetting( NULL, "Password" );
 
-			GetDlgItemText( hwndDlg, IDC_EDIT_RESOURCE, textT, SIZEOF( textT ));
+			GetDlgItemText( hwndDlg, IDC_COMBO_RESOURCE, textT, SIZEOF( textT ));
 			if ( !JGetStringT( NULL, "Resource", &dbv )) {
 				if ( _tcscmp( textT, dbv.ptszVal ))
 					reconnectRequired = TRUE;

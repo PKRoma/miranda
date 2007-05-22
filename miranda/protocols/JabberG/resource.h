@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
-// Used by msvc6.rc
+// Microsoft Visual C++ generated include file.
+// Used by jabber.rc
 //
 #define IDCANCEL2                       3
 #define IDD_OPT_JABBER                  101
@@ -216,6 +216,7 @@
 #define IDC_COMMANDS1                   1216
 #define IDC_COMMANDS2                   1217
 #define IDC_STATIC_LOGOFF_TIME_LABEL    1217
+#define IDC_COMBO_RESOURCE              1218
 #define IDC_WHITERECT                   1221
 #define IDC_UPDATING                    1231
 #define IDC_EMAILS                      1306
@@ -258,12 +259,12 @@
 #define IDM_VCARD                       10018
 
 // Next default values for new objects
-//
+// 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        190
 #define _APS_NEXT_COMMAND_VALUE         40017
-#define _APS_NEXT_CONTROL_VALUE         1218
+#define _APS_NEXT_CONTROL_VALUE         1219
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
