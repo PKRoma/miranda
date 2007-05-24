@@ -164,7 +164,7 @@ static time_t utils_private_setting_get_time(const char *setting, time_t defval)
     sql_prepare(g_sqlite, "SELECT val FROM dbrw_core where setting = ?;", &stmt);
     sqlite3_bind_text(stmt, 1, setting, (int)strlen(setting), SQLITE_STATIC);
     if (sql_step(stmt)==SQLITE_ROW) {
-        rc = (time_t)sqlite3_column_int64(stmt, 0);
+        rc = (time_t)sqlite3_column_int(stmt, 0);
     }
     sql_finalize(stmt);
     return rc;
@@ -178,7 +178,7 @@ static int utils_private_setting_set_time(const char *setting, time_t val) {
         return rc;
     sql_prepare(g_sqlite, "REPLACE INTO dbrw_core VALUES(?,?);", &stmt);
     sqlite3_bind_text(stmt, 1, setting, (int)strlen(setting), SQLITE_STATIC);
-    sqlite3_bind_int64(stmt, 2, val);
+    sqlite3_bind_int(stmt, 2, val);
     if (sql_step(stmt)==SQLITE_DONE) {
         rc = 1;
     }
@@ -188,6 +188,7 @@ static int utils_private_setting_set_time(const char *setting, time_t val) {
 
 static HWND hwndVacuum;
 #define DM_VACUUM (WM_USER+1)
+#define DBRW_VACUUM_KEY "LastCompact"
 
 static void __cdecl utils_vacuum_thread(void *args) {
     sql_exec(g_sqlite, "VACUUM;");
@@ -210,31 +211,31 @@ static BOOL CALLBACK utils_vacuum_proc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 }
 
 void utils_vacuum_check() {
-    time_t lastC = utils_private_setting_get_time("LastCompact", 0);
+    time_t lastC = utils_private_setting_get_time(DBRW_VACUUM_KEY, 0);
     time_t now = time(NULL);
     
     if (lastC) {
         if (lastC>now) {
             log0("System time changed.  Resetting LastCompact key.");
-            utils_private_setting_set_time("LastCompact", now);
+            utils_private_setting_set_time(DBRW_VACUUM_KEY, now);
         }
         else if ((now-lastC)>(60*60*24*DBRW_COMPACT_DAYS)) {
             log0("Compacting database");
             DialogBoxParam(g_hInst, MAKEINTRESOURCE(IDD_INFODLG), 0, utils_vacuum_proc,(LPARAM)0);
             hwndVacuum = NULL;
-            utils_private_setting_set_time("LastCompact", now);
+            utils_private_setting_set_time(DBRW_VACUUM_KEY, now);
         }
     }
     else {
-        utils_private_setting_set_time("LastCompact", now);
+        utils_private_setting_set_time(DBRW_VACUUM_KEY, now);
     }
-    
 }
 
 /* The follow memory functions are needed so a single function
    can be used even if the memory manager hasn't been initialized
    from the core.  This happens when the db is being created (core
-   isn't completely loaded yet). */
+   hasn't passed the pluginLink in dbrw_makeDatabase or dbrw_grokHeader). */
+
 void* utils_mem_alloc(size_t size) {
     if (memoryManagerInterface.mmi_malloc) /* check for mmi initialization */
         return memoryManagerInterface.mmi_malloc(size);

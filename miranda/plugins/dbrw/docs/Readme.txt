@@ -26,6 +26,10 @@ Changes
  - Performance improvements
  - Update SQLite library to v3.3.17
 
+1.3
+ - Event cache table initialized improperly
+
+
 Author
 ------
 Robert rainwater <rainwater@miranda-im.org>

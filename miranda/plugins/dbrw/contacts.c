@@ -76,7 +76,7 @@ static int contacts_isRealContact(int id) {
 }
 
 int contacts_getCount(WPARAM wParam, LPARAM lParam) {
-	int rc = 0;
+	int rc;
 
 	EnterCriticalSection(&csContactsDb);
 	rc = sContactList.realCount;
@@ -152,7 +152,7 @@ int contacts_delete(WPARAM wParam, LPARAM lParam) {
         
         // Commit transaction
         sql_stmt_end();
-        log1("Deleted contact data (%d)", id);
+        log1("Deleted contact (%d) and associated data", id);
 	}
 	LeaveCriticalSection(&csContactsDb);
 	return rc;
@@ -163,7 +163,7 @@ int contacts_add(WPARAM wParam, LPARAM lParam) {
 	int idx;
 
 	EnterCriticalSection(&csContactsDb);
-	sqlite3_bind_int64(ctc_stmts_prep[SQL_CTC_STMT_ADD], 1, (__int64)time(NULL));
+	sqlite3_bind_int(ctc_stmts_prep[SQL_CTC_STMT_ADD], 1, time(NULL));
 	if (sql_step(ctc_stmts_prep[SQL_CTC_STMT_ADD])==SQLITE_DONE) {
 		id = (int)sqlite3_last_insert_rowid(g_sqlite);
 		if (!li.List_GetIndex(&sContactList, (void*)id, &idx))

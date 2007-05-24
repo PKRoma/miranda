@@ -90,9 +90,11 @@ void events_init() {
 	sModuleNames.sortFunc = events_cmpModuleNames;
 	sql_prepare_add(evt_stmts, evt_stmts_prep, SQL_EVT_STMT_NUM);
     sql_exec(g_sqlite, "BEGIN TRANSACTION;");
-    sql_step(evt_stmts_prep[SQL_EVT_STMT_CREATETEMPTABLE]);
+    sql_exec(g_sqlite, "create temp table temp_dbrw_events (id integer primary key,eventtime integer,flags integer,eventtype integer, blob any, blobsize integer, contactid integer,modulename varchar(255),inserttime integer);"
+        "create temp trigger insert_new_temp_event1 after insert on dbrw_events begin replace into temp_dbrw_events values(new.id,new.eventtime,new.flags,new.eventtype,new.blob,new.blobsize,new.contactid,new.modulename,new.inserttime); end;"
+        "create temp trigger insert_new_temp_event2 after update on dbrw_events begin replace into temp_dbrw_events values(new.id,new.eventtime,new.flags,new.eventtype,new.blob,new.blobsize,new.contactid,new.modulename,new.inserttime); end;"
+        "create temp trigger delete_temp_event after delete on dbrw_events begin delete from temp_dbrw_events where id=old.id and contactid=old.id; end;");
     sql_exec(g_sqlite, "COMMIT;");
-	sql_reset(evt_stmts_prep[SQL_EVT_STMT_CREATETEMPTABLE]);
     hEventsEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
     hEventsThread = (HANDLE)mir_forkthreadex(events_timerProcThread, 0, 0, 0);
 }
@@ -197,14 +199,14 @@ int events_add(WPARAM wParam, LPARAM lParam) {
 		return 0;
 	}
 	EnterCriticalSection(&csEventsDb);
-	sqlite3_bind_int64(evt_stmts_prep[SQL_EVT_STMT_ADD], 1, (__int64)dbei->timestamp);
+	sqlite3_bind_int(evt_stmts_prep[SQL_EVT_STMT_ADD], 1, (int)dbei->timestamp);
 	sqlite3_bind_int(evt_stmts_prep[SQL_EVT_STMT_ADD], 2, (int)dbei->flags);
 	sqlite3_bind_int(evt_stmts_prep[SQL_EVT_STMT_ADD], 3, (int)dbei->eventType);
 	sqlite3_bind_blob(evt_stmts_prep[SQL_EVT_STMT_ADD], 4, dbei->pBlob, (int)dbei->cbBlob, SQLITE_STATIC);
 	sqlite3_bind_int(evt_stmts_prep[SQL_EVT_STMT_ADD], 5, (int)dbei->cbBlob);
 	sqlite3_bind_int(evt_stmts_prep[SQL_EVT_STMT_ADD], 6, (int)hContact);
 	sqlite3_bind_text(evt_stmts_prep[SQL_EVT_STMT_ADD], 7, dbei->szModule?dbei->szModule:NULL, dbei->szModule?(int)strlen(dbei->szModule):0, SQLITE_STATIC);
-	sqlite3_bind_int64(evt_stmts_prep[SQL_EVT_STMT_ADD], 8, (__int64)time(NULL));
+	sqlite3_bind_int(evt_stmts_prep[SQL_EVT_STMT_ADD], 8, time(NULL));
 	if (sql_step(evt_stmts_prep[SQL_EVT_STMT_ADD])==SQLITE_DONE) {
 		rc = (int)sqlite3_last_insert_rowid(g_sqlite);
 	}
@@ -281,7 +283,7 @@ static int events_getConditional(HANDLE hDbEvent, DBEVENTINFO *dbei, int cache) 
 		const void *blob = sqlite3_column_blob(stmt, 4);
 		const size_t size = sqlite3_column_int(stmt, 5);
 		
-		dbei->timestamp = (DWORD)sqlite3_column_int64(stmt, 1);
+		dbei->timestamp = (DWORD)sqlite3_column_int(stmt, 1);
 		dbei->flags = (DWORD)sqlite3_column_int(stmt, 2);
 		dbei->eventType = (WORD)sqlite3_column_int(stmt, 3);
 		dbei->szModule = events_moduleCacheAdd((char*)sqlite3_column_text(stmt, 7));

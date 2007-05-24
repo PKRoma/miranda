@@ -251,7 +251,7 @@ static int dbrw_Load(char *profile, void *link) {
 	hEventFilterAddedEvent = CreateHookableEvent(ME_DB_EVENT_FILTER_ADD);
 	hEventAddedEvent = CreateHookableEvent(ME_DB_EVENT_ADDED);
 	hEventDeletedEvent = CreateHookableEvent(ME_DB_EVENT_DELETED);
-
+    
 	// Initialize modules
 	contacts_init();
 	settings_init();

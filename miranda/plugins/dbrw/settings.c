@@ -736,7 +736,7 @@ int setting_deleteSetting(WPARAM wParam, LPARAM lParam) {
 			return 1;
         }
         sql_reset(settings_stmts_prep[SQL_SET_STMT_SETTINGCHECK]);
-         
+
 		// Delete from db
 		sqlite3_bind_text(settings_stmts_prep[SQL_SET_STMT_DELETE], 1, dbcgs->szSetting, (int)strlen(dbcgs->szSetting), SQLITE_STATIC);
 		sqlite3_bind_text(settings_stmts_prep[SQL_SET_STMT_DELETE], 2, dbcgs->szModule, (int)strlen(dbcgs->szModule), SQLITE_STATIC);
