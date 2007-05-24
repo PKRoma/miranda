@@ -765,7 +765,7 @@ static void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat)
 	if (dat->bPaused>0)	{	dat->bPended=TRUE;	return; 	}
 	else dat->bPended=FALSE;
 #ifdef _DEBUG
-	__AniAva_DebugRenderStrip();
+	//__AniAva_DebugRenderStrip();
 #endif
 	if (dat->bPlaying && IsWindowVisible(dat->hWindow))
 	{

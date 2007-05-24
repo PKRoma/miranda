@@ -1311,6 +1311,8 @@ case WM_KEYDOWN:
 			if(dat->selection>=pcli->pfnGetGroupContentsCount(&dat->list,1))
 				dat->selection=pcli->pfnGetGroupContentsCount(&dat->list,1)-1;
 			if(dat->selection<0) dat->selection=0;
+			if (dat->bCompactMode)
+				SendMessage(hwnd,WM_SIZE,0,0);
 			CLUI__cliInvalidateRect(hwnd,NULL,FALSE);
 			pcli->pfnEnsureVisible(hwnd,dat,dat->selection,0);
 			UpdateWindow(hwnd);
