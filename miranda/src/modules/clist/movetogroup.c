@@ -24,30 +24,51 @@ TCHAR* DBGetString(HANDLE hContact, const char* szModule, const char* szSetting)
 
 #define MTG_MOVE "MoveToGroup/Move"
 
+static TCHAR* PrepareGroupName( TCHAR* str )
+{
+	TCHAR* p = _tcschr( str, '&' ), *d;
+	if ( p == NULL )
+		return mir_tstrdup( str );
+
+	d = p = mir_alloc( sizeof( TCHAR )*( 2*_tcslen( str )+1 ));
+	while ( *str ) {
+		if ( *str == '&' )
+			*d++ = '&';
+		*d++ = *str++;
+	}
+
+	*d++ = 0;
+	return p;
+}
+
 static HANDLE AddGroupItem(HANDLE hRoot, TCHAR* name,int pos,int param,int checked)
 {
+	HANDLE result;
 	CLISTMENUITEM mi = { 0 };
 	mi.cbSize        = sizeof(mi);
 	mi.pszPopupName  = ( char* )hRoot;
 	mi.popupPosition = param; // param to pszService - only with CMIF_CHILDPOPUP !!!!!!
 	mi.position      = pos;
-	mi.ptszName      = name;
+	mi.ptszName      = PrepareGroupName( name );
 	mi.flags         = CMIF_CHILDPOPUP | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
 	if ( checked )
 		mi.flags |= CMIF_CHECKED;
 	mi.pszService = MTG_MOVE;
-	return ( HANDLE )CallService(MS_CLIST_ADDCONTACTMENUITEM, param, (LPARAM)&mi);
+	result = ( HANDLE )CallService(MS_CLIST_ADDCONTACTMENUITEM, param, (LPARAM)&mi);
+	mir_free( mi.ptszName );
+	return result;
 }
 
 static void ModifyGroupItem(HANDLE hItem, TCHAR* name,int checked)
 {
 	CLISTMENUITEM mi = {0};
 	mi.cbSize  = sizeof(mi);
-	mi.ptszName = name;
+	mi.ptszName = PrepareGroupName( name );
 	mi.flags   = CMIM_NAME | CMIM_FLAGS | CMIF_TCHAR;
 	if ( checked )
 		mi.flags |= CMIF_CHECKED;
 	CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hItem, (LPARAM)&mi);
+	mir_free( mi.ptszName );
 }
 
 static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
