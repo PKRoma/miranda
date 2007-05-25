@@ -1245,12 +1245,6 @@
 				RelativePath=".\res\1.ico">
 			</File>
 			<File
-				RelativePath=".\res\10.ico">
-			</File>
-			<File
-				RelativePath=".\res\11.ico">
-			</File>
-			<File
 				RelativePath=".\res\2.ico">
 			</File>
 			<File
@@ -1272,9 +1266,6 @@
 				RelativePath=".\res\8.ico">
 			</File>
 			<File
-				RelativePath=".\res\9.ico">
-			</File>
-			<File
 				RelativePath=".\res\addgoupp.ico">
 			</File>
 			<File
@@ -1287,37 +1278,16 @@
 				RelativePath=".\res\Back.tga">
 			</File>
 			<File
-				RelativePath=".\res\blank.ico">
-			</File>
-			<File
-				RelativePath=".\res\Center.ico">
-			</File>
-			<File
 				RelativePath=".\res\chat.ico">
 			</File>
 			<File
 				RelativePath=".\res\Chatchannel.ico">
 			</File>
 			<File
-				RelativePath=".\res\delete.ico">
-			</File>
-			<File
 				RelativePath=".\res\dnd.ico">
 			</File>
 			<File
-				RelativePath=".\res\dragcopy.cur">
-			</File>
-			<File
-				RelativePath=".\res\folder.ico">
-			</File>
-			<File
-				RelativePath=".\res\globus.ico">
-			</File>
-			<File
 				RelativePath=".\res\hide_avatar.ico">
-			</File>
-			<File
-				RelativePath=".\res\hyperlin.cur">
 			</File>
 			<File
 				RelativePath=".\res\invisible.ico">
@@ -1356,13 +1326,7 @@
 				RelativePath=".\res\MicroPhone.ico">
 			</File>
 			<File
-				RelativePath=".\res\Miranda.ico">
-			</File>
-			<File
 				RelativePath=".\res\NA.ico">
-			</File>
-			<File
-				RelativePath=".\res\neo_meta_add.cur">
 			</File>
 			<File
 				RelativePath=".\res\neo_meta_create.cur">
@@ -1383,9 +1347,6 @@
 				RelativePath=".\res\offline.ico">
 			</File>
 			<File
-				RelativePath=".\res\online.ico">
-			</File>
-			<File
 				RelativePath=".\res\phone.ico">
 			</File>
 			<File
@@ -1401,22 +1362,13 @@
 				RelativePath=".\res\rate_none.ico">
 			</File>
 			<File
-				RelativePath=".\res\rename.ico">
-			</File>
-			<File
 				RelativePath=".\resource.rc">
-			</File>
-			<File
-				RelativePath=".\res\sendmail.ico">
 			</File>
 			<File
 				RelativePath=".\res\show_avatar.ico">
 			</File>
 			<File
 				RelativePath=".\res\skin.msf">
-			</File>
-			<File
-				RelativePath=".\res\sms.ico">
 			</File>
 		</Filter>
 	</Files>

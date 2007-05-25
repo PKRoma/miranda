@@ -1063,28 +1063,10 @@
 			Name="Resource Files"
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 			<File
-				RelativePath="res\addcontact.ico">
-			</File>
-			<File
-				RelativePath="res\away.ico">
-			</File>
-			<File
 				RelativePath="res\blank.ico">
 			</File>
 			<File
-				RelativePath="res\changefont.ico">
-			</File>
-			<File
 				RelativePath="res\delete.ico">
-			</File>
-			<File
-				RelativePath="res\detailsl.ico">
-			</File>
-			<File
-				RelativePath="res\dnd.ico">
-			</File>
-			<File
-				RelativePath="res\downarrow.ico">
 			</File>
 			<File
 				RelativePath="res\dragcopy.cur">
@@ -1093,52 +1075,10 @@
 				RelativePath="res\dropuser.cur">
 			</File>
 			<File
-				RelativePath="res\emptyblo.ico">
-			</File>
-			<File
-				RelativePath="res\file.ico">
-			</File>
-			<File
-				RelativePath="res\filledbl.ico">
-			</File>
-			<File
-				RelativePath="res\finduser.ico">
-			</File>
-			<File
-				RelativePath="res\freechat.ico">
-			</File>
-			<File
-				RelativePath="res\groupope.ico">
-			</File>
-			<File
-				RelativePath="res\groupshu.ico">
-			</File>
-			<File
-				RelativePath="res\help.ico">
-			</File>
-			<File
-				RelativePath="res\history.ico">
-			</File>
-			<File
 				RelativePath="res\hyperlin.cur">
 			</File>
 			<File
 				RelativePath="res\invisible.ico">
-			</File>
-			<File
-				RelativePath="res\message.ico">
-			</File>
-			<File
-				RelativePath="res\miranda.ico">
-			</File>
-			<File
-				RelativePath="res\mirandaw.ico">
-			</File>
-			<File
-				RelativePath="res\multisend.ico">
-			</File>
-			<File
-				RelativePath="res\na2.ico">
 			</File>
 			<File
 				RelativePath="res\notick.ico">
@@ -1147,28 +1087,10 @@
 				RelativePath="res\notick1.ico">
 			</File>
 			<File
-				RelativePath="res\occupied.ico">
-			</File>
-			<File
-				RelativePath="res\offline2.ico">
-			</File>
-			<File
-				RelativePath="res\online2.ico">
-			</File>
-			<File
-				RelativePath="res\onthepho.ico">
-			</File>
-			<File
 				RelativePath="res\options.ico">
 			</File>
 			<File
-				RelativePath="res\outtolun.ico">
-			</File>
-			<File
 				RelativePath="res\rename.ico">
-			</File>
-			<File
-				RelativePath="res\reply.ico">
 			</File>
 			<File
 				RelativePath="resource.rc">
@@ -1200,36 +1122,6 @@
 						PreprocessorDefinitions=""
 						AdditionalIncludeDirectories=""/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="res\searchal.ico">
-			</File>
-			<File
-				RelativePath="res\sendmail.ico">
-			</File>
-			<File
-				RelativePath="res\smalldot.ico">
-			</File>
-			<File
-				RelativePath="res\sms.ico">
-			</File>
-			<File
-				RelativePath="res\sortcold.bmp">
-			</File>
-			<File
-				RelativePath="res\sortcolu.bmp">
-			</File>
-			<File
-				RelativePath="res\timestamp.ico">
-			</File>
-			<File
-				RelativePath="res\url.ico">
-			</File>
-			<File
-				RelativePath="res\useronli.ico">
-			</File>
-			<File
-				RelativePath="res\viewdetails.ico">
 			</File>
 		</Filter>
 	</Files>
