@@ -5,10 +5,10 @@
 	Name="clist_mw"
 	ProjectGUID="{56997126-0098-407A-94E1-7C5748C1C9EF}"
 	RootNamespace="clist_mw"
-	SccProjectName="&quot;$/Miranda/miranda/plugins/mwclist&quot;, VNDAAAAA"
+	SccProjectName=""
 	SccAuxPath=""
-	SccLocalPath="."
-	SccProvider="MSSCCI:Microsoft Visual SourceSafe">
+	SccLocalPath=""
+	SccProvider="">
 	<Platforms>
 		<Platform
 			Name="Win32"/>

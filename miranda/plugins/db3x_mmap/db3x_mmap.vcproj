@@ -4,10 +4,10 @@
 	Version="7.10"
 	Name="db3x_mmap"
 	ProjectGUID="{20D781FB-4A20-4B75-B863-304A47182966}"
-	SccProjectName="&quot;$/Miranda/miranda/plugins/db3x_mmap&quot;, WKIAAAAA"
+	SccProjectName=""
 	SccAuxPath=""
-	SccLocalPath="."
-	SccProvider="MSSCCI:Microsoft Visual SourceSafe">
+	SccLocalPath=""
+	SccProvider="">
 	<Platforms>
 		<Platform
 			Name="Win32"/>
