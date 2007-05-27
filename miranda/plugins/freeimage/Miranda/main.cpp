@@ -319,7 +319,7 @@ static int serviceBmpFilterResizeBitmap(WPARAM wParam,LPARAM lParam)
 	{
 		FIBITMAP *dib = FreeImage_CreateDIBFromHBITMAP(info->hBmp);
 
-		FIBITMAP *dib_new = FreeImage_Rescale(dib, width, height, FILTER_LANCZOS3);
+		FIBITMAP *dib_new = FreeImage_Rescale(dib, width, height, FILTER_CATMULLROM);
 
 		if(hwndClui == 0)
 			hwndClui = (HWND)CallService(MS_CLUI_GETHWND, 0, 0);
