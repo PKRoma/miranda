@@ -1313,7 +1313,7 @@ static int SetMyAvatar(WPARAM wParam, LPARAM lParam)
 	else
 	{
 		// Try to open if is not a flash or XML
-		hBmp = (HBITMAP) BmpFilterLoadBitmap32(NULL, (LPARAM)szFinalName);
+		hBmp = (HBITMAP) CallService(MS_IMG_LOAD, (WPARAM) szFinalName, 0);
 		if (hBmp == NULL)
 			return -4;
 
