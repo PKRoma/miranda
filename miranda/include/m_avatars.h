@@ -97,7 +97,7 @@ struct CacheNode {
 #define AVDRQ_DRAWBORDER 8                 // draw a border around the picture
 #define AVDRQ_PROTOPICT  16                // draw a protocol picture (if available).
 #define AVDRQ_HIDEBORDERONTRANSPARENCY 32  // hide border if bitmap has transparency
-#define AVDRQ_OWNPIC	64				   // draw own avatar (szProto is valid)
+#define AVDRQ_OWNPIC	64				   // draw own avatar (szProto is valid - use "" for global avatar)
 #define AVDRQ_RESPECTHIDDEN 128			   // don't draw images marked as hidden
 #define AVDRQ_DONTRESIZEIFSMALLER 256	   // don't resize images that are smaller then the draw area
 
@@ -136,7 +136,7 @@ typedef struct _avatarDrawRequest {
 
 // obtain a avatar cache entry for one of my own avatars
 // wParam = 0
-// lParam = (char *)szProto  (protocol for which we need to obtain the own avatar information)
+// lParam = (char *)szProto  (protocol for which we need to obtain the own avatar information). Use "" to global
 // returns: pointer to a struct avatarCacheEntry *, NULL on failure
 // DONT modify the contents of the returned data structure
 
@@ -163,7 +163,7 @@ typedef struct _avatarDrawRequest {
 
 // set a local picture for the given protocol
 // 
-// wParam = (char *) protocol name
+// wParam = (char *) protocol name or NULL for all protocols
 // lParam = either a full picture filename or NULL. If lParam == NULL, the service
 // will open a file selection dialog. If lParam == "" the avatar will be removed
 
@@ -194,6 +194,7 @@ typedef struct _avatarDrawRequest {
 // service DOES schedule an avatar update so your plugin will be notified by the ME_AV_AVATARCHANGED
 // event when the requested avatar is ready for use.
 //				 1 -> success. avatar was found and drawing should be ok.
+//				-1 -> global avatar is incosistent
 
 #define MS_AV_DRAWAVATAR "SV_Avatars/Draw"
 
