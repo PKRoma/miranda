@@ -44,6 +44,11 @@ static int BmpFilterLoadBitmap(WPARAM wParam,LPARAM lParam)
 	filenameLen=lstrlenA(szFilename);
 	if(filenameLen>4) {
 		char* pszExt = szFilename+filenameLen-4;
+		
+		if(ServiceExists("IMG/Load")) {
+            return (int)CallService("IMG/Load", (WPARAM)szFilename, 0);
+        }
+		
 		if ( !lstrcmpiA( pszExt,".bmp" ) || !lstrcmpiA( pszExt, ".rle" )) {
 			//LoadImage can do this much faster
 			return (int)LoadImageA( GetModuleHandle(NULL), szFilename, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE );
