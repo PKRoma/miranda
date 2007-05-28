@@ -155,7 +155,7 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 							lvItem.cchTextMax = SIZEOF( text );
 							ListView_GetItem( lv, &lvItem );
 							if (( item=JabberListGetItemPtr( LIST_ROSTER, lvItem.pszText )) != NULL ) {
-								if ( item->status == ID_STATUS_OFFLINE )
+								if ( item->itemResource.status == ID_STATUS_OFFLINE )
 									EnableWindow( GetDlgItem( hwndDlg, IDC_AGENT_LOGON ), TRUE );
 								else
 									EnableWindow( GetDlgItem( hwndDlg, IDC_AGENT_LOGOFF ), TRUE );
@@ -223,7 +223,7 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 					lvItem.pszText = text;
 					ListView_InsertItem( lv, &lvItem );
 					lvItem.iSubItem = 1;
-					if ( item->status != ID_STATUS_OFFLINE )
+					if ( item->itemResource.status != ID_STATUS_OFFLINE )
 						lvItem.pszText = TranslateT( "Online" );
 					else
 						lvItem.pszText = TranslateT( "Offline" );

@@ -64,9 +64,14 @@ static HANDLE arXStatusIcons[ NUM_XMODES ];
 void JabberSetContactMood( HANDLE hContact, const char* moodType, const TCHAR* moodText )
 {
 	if ( moodType ) {
+		char* mood = NEWSTR_ALLOCA( moodType );
+		_toupper(mood);
+		char* spacePos = strchr( mood, '_' );
+		if ( spacePos ) *spacePos = ' ';
+
 		int i;
 		for ( i=0; i < NUM_XMODES; i++ ) {
-			if ( !strcmpi( moodType, arXStatusNames[i] )) {
+			if ( !strcmpi( mood, arXStatusNames[i] )) {
 				JSetByte( hContact, DBSETTING_XSTATUSID, i );
 				break;
 		}	}
@@ -74,7 +79,7 @@ void JabberSetContactMood( HANDLE hContact, const char* moodType, const TCHAR* m
 		if ( i == NUM_XMODES )
 			JDeleteSetting( hContact, DBSETTING_XSTATUSID );
 
- 		JSetString( hContact, DBSETTING_XSTATUSNAME, moodType );
+ 		JSetString( hContact, DBSETTING_XSTATUSNAME, mood );
 	}
 	else {
 		JDeleteSetting( hContact, DBSETTING_XSTATUSID );
@@ -116,18 +121,29 @@ int JabberSetXStatus( WPARAM wParam, LPARAM lParam )
 			XmlNodeIq iq( "set", JabberSerialNext() );
 			XmlNode* pubsubNode = iq.addChild( "pubsub" );
 			pubsubNode->addAttr( "xmlns", JABBER_FEAT_PUBSUB );
-			XmlNode* publishNode = pubsubNode->addChild( "publish" );
-			publishNode->addAttr( "node", JABBER_FEAT_USER_MOOD );
-			XmlNode* itemNode = publishNode->addChild( "item" );
-			itemNode->addAttr( "id", "current" );
-			XmlNode* moodNode = itemNode->addChild( "mood" );
-			moodNode->addAttr( "xmlns", JABBER_FEAT_USER_MOOD );
 
 			if ( wParam ) {
+				XmlNode* publishNode = pubsubNode->addChild( "publish" );
+				publishNode->addAttr( "node", JABBER_FEAT_USER_MOOD );
+				XmlNode* itemNode = publishNode->addChild( "item" );
+				itemNode->addAttr( "id", "current" );
+				XmlNode* moodNode = itemNode->addChild( "mood" );
+				moodNode->addAttr( "xmlns", JABBER_FEAT_USER_MOOD );
+				
 				char* mood = NEWSTR_ALLOCA( arXStatusNames[ wParam-1 ] );
 				strlwr( mood );
+				char* spacePos = strchr(mood, ' ');
+				if ( spacePos ) *spacePos = '_';
 				moodNode->addChild( mood );
-				moodNode->addChild( "text", "Miranda can User Moods!" );
+				moodNode->addChild( "text", arXStatusNames[ wParam-1 ] );
+			}
+			else
+			{
+				XmlNode* retractNode = pubsubNode->addChild( "retract" );
+				retractNode->addAttr( "node", JABBER_FEAT_USER_MOOD );
+				retractNode->addAttr( "notify", 1 );
+				XmlNode* itemNode = retractNode->addChild( "item" );
+				itemNode->addAttr( "id", "current" );
 			}
 
 			jabberThreadInfo->send( iq );

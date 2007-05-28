@@ -28,6 +28,8 @@ Last change by : $Author$
 #ifndef _JABBER_LIST_H_
 #define _JABBER_LIST_H_
 
+#include "jabber_caps.h"
+
 typedef enum {
 	LIST_ROSTER,        // Roster list
 	LIST_AGENT,         // Agent list to show on the Jabber Agents dialog
@@ -104,6 +106,10 @@ struct JABBER_RESOURCE_STATUS
 	TCHAR* szCapsExt;
 	DWORD dwVersionRequestTime;
 	DWORD dwDiscoInfoRequestTime;
+	JabberCapsBits jcbCachedCaps;
+
+	// XEP-0085 gone event support
+	BOOL bMessageSessionActive;
 };
 
 struct JABBER_LIST_ITEM
@@ -115,16 +121,13 @@ struct JABBER_LIST_ITEM
 	// jid = jid of the contact
 	TCHAR* nick;
 	int resourceCount;
-	int status;	// Main status, currently useful for transport where no resource information is kept.
-				// On normal contact, this is the same status as shown on contact list.
-	time_t logoffTime;// XEP-0012 support, 0 = unknown, -1 = online
 	JABBER_RESOURCE_STATUS *resource;
+	JABBER_RESOURCE_STATUS itemResource; // resource for jids without /resource node
 	int lastSeenResource;	// index to resource[x] which was last seen active
 	int manualResource;	// manually set index to resource[x]
 //	int defaultResource;	// index to resource[x] which is the default, negative ( -1 ) means no resource is chosen yet
 	JABBER_RESOURCE_MODE resourceMode;
 	JABBER_SUBSCRIPTION subscription;
-	TCHAR* statusMessage;	// Status message when the update is to JID with no resource specified ( e.g. transport user )
 	TCHAR* group;
 	char* photoFileName;
 	int idMsgAckPending;

@@ -388,6 +388,7 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	if ( hInitChat )
 		DestroyHookableEvent( hInitChat );
 
+	g_JabberClientCapsManager.StopResolverThread();
 	JabberXStatusUninit();
 	JabberSvcUninit();
 	JabberSslUninit();

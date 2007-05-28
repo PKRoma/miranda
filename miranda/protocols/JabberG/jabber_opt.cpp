@@ -579,8 +579,8 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 						HANDLE hContact = JabberHContactFromJID( item->jid );
 						if ( hContact != NULL ) {
 							if ( bChecked ) {
-								if ( item->status != JGetWord( hContact, "Status", ID_STATUS_OFFLINE )) {
-									JSetWord( hContact, "Status", ( WORD )item->status );
+								if ( item->itemResource.status != JGetWord( hContact, "Status", ID_STATUS_OFFLINE )) {
+									JSetWord( hContact, "Status", ( WORD )item->itemResource.status );
 							}	}
 							else if ( JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != ID_STATUS_OFFLINE )
 								JSetWord( hContact, "Status", ID_STATUS_OFFLINE );

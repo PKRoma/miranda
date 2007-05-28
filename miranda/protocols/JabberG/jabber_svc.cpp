@@ -781,11 +781,11 @@ static void __cdecl JabberGetAwayMsgThread( HANDLE hContact )
 				return;
 			}
 
-			if ( item->statusMessage != NULL ) {
+			if ( item->itemResource.statusMessage != NULL ) {
 				#if defined( _UNICODE )
-					char* msg = u2a(item->statusMessage);
+					char* msg = u2a(item->itemResource.statusMessage);
 				#else
-					char* msg = item->statusMessage;
+					char* msg = item->itemResource.statusMessage;
 				#endif
 				JSendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE ) 1, ( LPARAM )msg );
 				#if defined( _UNICODE )
@@ -868,24 +868,30 @@ int JabberGetInfo( WPARAM wParam, LPARAM lParam )
 			if (( item = JabberListGetItemPtr( LIST_VCARD_TEMP, dbv.ptszVal )) == NULL)
 				item = JabberListGetItemPtr( LIST_ROSTER, dbv.ptszVal );
 
-			if ( item && item->resource ) {
-				for ( int i = 0; i < item->resourceCount; i++ ) {
-					TCHAR szp1[ JABBER_MAX_JID_LEN ];
-					JabberStripJid( dbv.ptszVal, szp1, sizeof( szp1 ));
-					mir_sntprintf( jid, 256, _T("%s/%s"), szp1, item->resource[i].resourceName );
+			if ( item ) {
+				if ( item->resource ) {
+					for ( int i = 0; i < item->resourceCount; i++ ) {
+						TCHAR szp1[ JABBER_MAX_JID_LEN ];
+						JabberStripJid( dbv.ptszVal, szp1, sizeof( szp1 ));
+						mir_sntprintf( jid, 256, _T("%s/%s"), szp1, item->resource[i].resourceName );
 
-					iqId = JabberSerialNext();
-					JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultLastActivity );
-					XmlNodeIq iq3( "get", iqId, jid );
-					iq3.addQuery( JABBER_FEAT_LAST_ACTIVITY );
-					jabberThreadInfo->send( iq3 );
-
-					if ( !item->resource[i].dwVersionRequestTime ) {
 						iqId = JabberSerialNext();
-						XmlNodeIq iq4( "get", iqId, jid );
-						XmlNode* query = iq4.addQuery( JABBER_FEAT_VERSION );
-						jabberThreadInfo->send( iq4 );
-		}	}	}	}
+						JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultLastActivity );
+						XmlNodeIq iq3( "get", iqId, jid );
+						iq3.addQuery( JABBER_FEAT_LAST_ACTIVITY );
+						jabberThreadInfo->send( iq3 );
+
+						if ( !item->resource[i].dwVersionRequestTime ) {
+							XmlNodeIq iq4( "get", JabberSerialNext(), jid );
+							XmlNode* query = iq4.addQuery( JABBER_FEAT_VERSION );
+							jabberThreadInfo->send( iq4 );
+					}	}
+				}
+				else if ( !item->itemResource.dwVersionRequestTime ) {
+					XmlNodeIq iq4( "get", JabberSerialNext(), item->jid );
+					XmlNode* query = iq4.addQuery( JABBER_FEAT_VERSION );
+					jabberThreadInfo->send( iq4 );
+		}	}	}
 
 		JabberSendGetVcard( dbv.ptszVal );
 		JFreeVariant( &dbv );
@@ -1208,6 +1214,10 @@ int JabberSendMessage( WPARAM wParam, LPARAM lParam )
 
 		TCHAR szClientJid[ 256 ];
 		JabberGetClientJID( dbv.ptszVal, szClientJid, SIZEOF( szClientJid ));
+
+		JABBER_RESOURCE_STATUS *r = JabberResourceInfoFromJID( szClientJid );
+		if ( r )
+			r->bMessageSessionActive = TRUE;
 
 		JabberCapsBits jcb = JabberGetResourceCapabilites( szClientJid );
 

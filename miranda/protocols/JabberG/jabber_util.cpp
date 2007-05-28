@@ -126,6 +126,29 @@ TCHAR* __stdcall JabberNickFromJID( const TCHAR* jid )
 	return nick;
 }
 
+JABBER_RESOURCE_STATUS* __stdcall JabberResourceInfoFromJID( TCHAR* jid )
+{
+	JABBER_LIST_ITEM *item = NULL;
+	if (( item = JabberListGetItemPtr( LIST_VCARD_TEMP, jid )) == NULL)
+		item = JabberListGetItemPtr( LIST_ROSTER, jid );
+	if ( item == NULL ) return NULL;
+
+	TCHAR* p = _tcschr( jid, '/' );
+	if ( p == NULL )    
+		return &item->itemResource;
+	if ( *++p == '\0' ) return NULL;
+
+	JABBER_RESOURCE_STATUS *r = item->resource;
+	if ( r == NULL ) return NULL;
+
+	int i;
+	for ( i=0; i<item->resourceCount && _tcscmp( r->resourceName, p ); i++, r++ );
+	if ( i >= item->resourceCount )
+		return NULL;
+
+	return r;
+}
+
 char* __stdcall JabberUrlDecode( char* str )
 {
 	char* p, *q;
@@ -845,8 +868,9 @@ void __stdcall JabberSendPresenceTo( int status, TCHAR* to, XmlNode* extra )
 	if ( JGetByte( "EnableAvatars", TRUE )) {
 		char hashValue[ 50 ];
 		if ( !JGetStaticString( "AvatarHash", NULL, hashValue, sizeof hashValue )) {
-			XmlNode* x = p.addChild( "x" ); x->addAttr( "xmlns", "jabber:x:avatar" );
-			x->addChild( "hash", hashValue );
+			XmlNode* x;
+//			x = p.addChild( "x" ); x->addAttr( "xmlns", "jabber:x:avatar" );
+//			x->addChild( "hash", hashValue );
 
 			x = p.addChild( "x" ); x->addAttr( "xmlns", "vcard-temp:x:update" );
 			x->addChild( "photo", hashValue );

@@ -28,6 +28,8 @@ Last change by : $Author: ghazan $
 #ifndef _JABBER_CAPS_H_
 #define _JABBER_CAPS_H_
 
+#include "jabber_iq.h"
+
 typedef DWORD JabberCapsBits;
 
 #define JABBER_RESOURCE_CAPS_QUERY_TIMEOUT	10000
@@ -170,15 +172,69 @@ public:
 	}
 };
 
+class CJabberClientCapsQuery;
+typedef void ( *JABBER_CAPS_QUERY_PFUNC )( CJabberClientCapsQuery *pQuery );
+class CJabberClientCapsQuery
+{
+protected:
+	TCHAR *m_szJid;
+	CJabberClientCapsQuery *m_pNext;
+	DWORD m_dwStartTime;
+	JABBER_CAPS_QUERY_PFUNC m_pFunc;
+	int m_nIqId;
+public:
+	CJabberClientCapsQuery(int nIqId, TCHAR *szJid, JABBER_CAPS_QUERY_PFUNC pFunc)
+	{
+		m_nIqId = nIqId;
+		m_szJid = mir_tstrdup( szJid );
+		m_pNext = NULL;
+		m_dwStartTime = GetTickCount();
+		m_pFunc = pFunc;
+	}
+	~CJabberClientCapsQuery()
+	{
+		mir_free( m_szJid );
+		if (m_pNext)
+			delete m_pNext;
+	}
+	CJabberClientCapsQuery* SetNext(CJabberClientCapsQuery *pNext)
+	{
+		CJabberClientCapsQuery* pRetVal = m_pNext;
+		m_pNext = pNext;
+		return pRetVal;
+	}
+	__inline CJabberClientCapsQuery* GetNext()
+	{	return m_pNext;
+	}
+	__inline BOOL IsExpired()
+	{	return GetTickCount() - m_dwStartTime > JABBER_RESOURCE_CAPS_QUERY_TIMEOUT;
+	}
+	__inline void Callback()
+	{	m_pFunc(this);
+	}
+	__inline int GetIqId()
+	{	return m_nIqId;
+	}
+	__inline TCHAR* GetJid()
+	{	return m_szJid;
+	}
+};
+
 class CJabberClientCapsManager
 {
 
 protected:
 	CRITICAL_SECTION m_cs;
 	CJabberClientCaps *m_pClients;
+	BOOL m_bResolverThreadStopRequest;
+	HANDLE m_hResolverThread;
+	CJabberClientCapsQuery *m_pQueries;
 
 protected:
 	CJabberClientCaps *FindClient( TCHAR *szNode );
+	static DWORD WINAPI _ResolverThread(LPVOID pParam);
+	void ResolverThread();
+	CJabberClientCapsQuery* FindExpiredQuery();
 
 public:
 	CJabberClientCapsManager();
@@ -190,6 +246,13 @@ public:
 	__inline void Unlock()
 	{	LeaveCriticalSection( &m_cs );
 	}
+
+	BOOL StartResolverThread();
+	BOOL StopResolverThread();
+	BOOL IsResolverThreadRunning();
+
+	BOOL AddQuery( int nIqId, TCHAR *szJid, JABBER_CAPS_QUERY_PFUNC pFunc );
+	BOOL DeleteQuery( int nIqId );
 
 	void AddDefaultCaps();
 

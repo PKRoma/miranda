@@ -1196,6 +1196,8 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 		HANDLE hContact = JabberHContactFromJID( from );
 
 		if ( item != NULL ) {
+			JABBER_RESOURCE_STATUS *r = JabberResourceInfoFromJID( from );
+			if ( r ) r->bMessageSessionActive = TRUE;
 			item->wantComposingEvent = composing;
 			if ( hContact != NULL )
 				JCallService( MS_PROTO_CONTACTISTYPING, ( WPARAM ) hContact, PROTOTYPE_CONTACTTYPING_OFF );
@@ -1258,24 +1260,14 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 void JabberProcessPresenceCapabilites( XmlNode *node )
 {
 	TCHAR* from;
-	XmlNode *n;
-
 	if (( from = JabberXmlGetAttrValue( node, "from" )) == NULL ) return;
 
-	JABBER_LIST_ITEM *item = JabberListGetItemPtr( LIST_ROSTER, from );
-	if ( item == NULL ) return;
+	JabberLog("presence: for jid %S", from);
 
-	JABBER_RESOURCE_STATUS *r = item->resource;
+	JABBER_RESOURCE_STATUS *r = JabberResourceInfoFromJID( from );
 	if ( r == NULL ) return;
 
-	TCHAR* p = _tcschr( from, '/' );
-	if ( p == NULL )    return;
-	if ( *++p == '\0' ) return;
-
-	int i;
-	for ( i=0; i<item->resourceCount && _tcscmp( r->resourceName, p ); i++, r++ );
-	if ( i >= item->resourceCount )
-		return;
+	XmlNode *n;
 
 	// check XEP-0115 support:
 	if (( n = JabberXmlGetChildWithGivenAttrValue( node, "c", "xmlns", _T(JABBER_FEAT_ENTITY_CAPS))) != NULL ) {
@@ -1283,40 +1275,57 @@ void JabberProcessPresenceCapabilites( XmlNode *node )
 		TCHAR *szVer = JabberXmlGetAttrValue( n, "ver" );
 		TCHAR *szExt = JabberXmlGetAttrValue( n, "ext" );
 		if ( szNode && szVer ) {
-			if ( !r->dwVersionRequestTime ) {
-				HANDLE hContact = JabberHContactFromJID( from );
-				if ( hContact ) {
-					TCHAR szMirVer[ 512 ];
-					if ( _tcsstr( szNode, _T("miranda-im.org"))) {
-						if ( szExt )
-						{
-							mir_sntprintf( szMirVer, SIZEOF(szMirVer ), _T("Miranda IM %s (Jabber %s [%s]) (%s)"), szVer, szVer, r->resourceName, szExt );
-
-							if (TCHAR *pszSecureIm = _tcsstr( szMirVer, _T(JABBER_EXT_SECUREIM)))
-								_tcsncpy(pszSecureIm, _T("SecureIM"), 8);
-						}
-						else
-							mir_sntprintf( szMirVer, SIZEOF(szMirVer ), _T("Miranda IM %s (Jabber %s [%s])"), szVer, szVer, r->resourceName );
-					}
-					else if ( !szExt )
-						mir_sntprintf( szMirVer, SIZEOF(szMirVer ), _T("%s#%s"), szNode, szVer );
-					else if ( _tcsstr( szExt, _T(JABBER_EXT_SECUREIM) ))
-						mir_sntprintf( szMirVer, SIZEOF(szMirVer), _T("%s#%s#%s (SecureIM)"), szNode, szVer, szExt );
-					else if ( _tcsstr( szNode, _T("www.google.com") ))
-						mir_sntprintf( szMirVer, SIZEOF(szMirVer), _T("%s#%s#%s gtalk"), szNode, szVer, szExt );
-					else
-						mir_sntprintf( szMirVer, SIZEOF(szMirVer), _T("%s#%s#%s"), szNode, szVer, szExt );
-					JSetStringT( hContact, "MirVer", szMirVer );
-			}	}
-
 			replaceStr( r->szCapsNode, szNode );
 			replaceStr( r->szCapsVer, szVer );
 			replaceStr( r->szCapsExt, szExt );
+			HANDLE hContact = JabberHContactFromJID( from );
+			if ( hContact )
+				JabberUpdateMirVer( hContact, r );
 		}
 	}
 
 	// update user's caps
 	DWORD dwCaps = JabberGetResourceCapabilites( from );
+}
+
+void JabberUpdateJidDbSettings( TCHAR *jid )
+{
+	JABBER_LIST_ITEM *item = JabberListGetItemPtr( LIST_ROSTER, jid );
+	if ( !item ) return;
+	HANDLE hContact = JabberHContactFromJID( jid );
+	if ( !hContact ) return;
+
+	int status = ID_STATUS_OFFLINE;
+	if ( !item->resourceCount ) {
+		// set offline only if jid has resources
+		if ( _tcschr( jid, '/' )==NULL )
+			status = item->itemResource.status;
+		if ( item->itemResource.statusMessage )
+			DBWriteContactSettingTString( hContact, "CList", "StatusMsg", item->itemResource.statusMessage );
+		else
+			DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
+	}
+
+	// Determine status to show for the contact based on the remaining resources
+	int r = -1, i = 0;
+	for ( i=0; i < item->resourceCount; i++ )
+		if (( status = JabberCombineStatus( status, item->resource[i].status )) == item->resource[i].status )
+			r = i;
+	item->itemResource.status = status;
+	if ( r != -1 ) {
+		JabberLog("JabberUpdateJidDbSettings: updating jid %S to rc %S", item->jid, item->resource[r].resourceName );
+		if ( item->resource[r].statusMessage )
+			DBWriteContactSettingTString( hContact, "CList", "StatusMsg", item->resource[r].statusMessage );
+		else
+			DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
+		JabberUpdateMirVer( hContact, &item->resource[r] );
+	}
+
+	if ( _tcschr( jid, '@' )!=NULL || JGetByte( "ShowTransport", TRUE )==TRUE )
+		if ( JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != status )
+			JSetWord( hContact, "Status", ( WORD )status );
+
+	JabberMenuUpdateSrmmIcon( item );
 }
 
 static void JabberProcessPresence( XmlNode *node, void *userdata )
@@ -1326,7 +1335,6 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 	XmlNode *showNode, *statusNode, *priorityNode;
 	JABBER_LIST_ITEM *item;
 	TCHAR* from, *nick, *show;
-	int i;
 	TCHAR* p;
 
 	if ( !node || !node->name || strcmp( node->name, "presence" )) return;
@@ -1370,35 +1378,20 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 			priority = (char)_ttoi( priorityNode->text );
 
 		if (( statusNode = JabberXmlGetChild( node, "status" )) != NULL && statusNode->text != NULL )
-			p = mir_tstrdup( statusNode->text );
+			p = statusNode->text;
 		else
 			p = NULL;
 		JabberListAddResource( LIST_ROSTER, from, status, p, priority );
-		if ( p ) {
-			DBWriteContactSettingTString( hContact, "CList", "StatusMsg", p );
-			mir_free( p );
-		}
-		else DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
+		
+		// XEP-0115: Entity Capabilities
+		JabberProcessPresenceCapabilites( node );
 
-		// Determine status to show for the contact
-		if (( item=JabberListGetItemPtr( LIST_ROSTER, from )) != NULL ) {
-			for ( i=0; i < item->resourceCount; i++ )
-				status = JabberCombineStatus( status, item->resource[i].status );
-			item->status = status;
-			JabberMenuUpdateSrmmIcon(item);
-		}
-
-		if ( _tcschr( from, '@' )!=NULL || JGetByte( "ShowTransport", TRUE )==TRUE )
-			if ( JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != status )
-				JSetWord( hContact, "Status", ( WORD )status );
+		JabberUpdateJidDbSettings( from );
 
 		if ( _tcschr( from, '@' )==NULL && hwndJabberAgents )
 			SendMessage( hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
 		JabberLog( TCHAR_STR_PARAM " ( " TCHAR_STR_PARAM " ) online, set contact status to %s", nick, from, JCallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,(WPARAM)status,0 ));
 		mir_free( nick );
-
-		// XEP-0115: Entity Capabilities
-		JabberProcessPresenceCapabilites( node );
 
 		XmlNode* xNode;
 		BOOL hasXAvatar = false;
@@ -1446,32 +1439,19 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 			JabberListRemoveResource( LIST_ROSTER, from );
 
 			// set status only if no more available resources
-			if ( !item->resourceCount && hContact ) {
+			if ( !item->resourceCount )
+			{
+				item->itemResource.status = ID_STATUS_OFFLINE;
 				if ((( statusNode = JabberXmlGetChild( node, "status" )) != NULL ) && statusNode->text )
-					DBWriteContactSettingTString( hContact, "CList", "StatusMsg", statusNode->text );
+					replaceStr( item->itemResource.statusMessage, statusNode->text );
 				else
-					DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
+					replaceStr( item->itemResource.statusMessage, NULL );
 			}
-
-			// Determine status to show for the contact based on the remaining resources
-			int r = -1;
-			for ( i=0; i < item->resourceCount; i++ )
-				if (( status = JabberCombineStatus( status, item->resource[i].status )) == item->resource[i].status )
-					r = i;
-			item->status = status;
-			if ( r != -1 && hContact )
-				DBWriteContactSettingTString( hContact, "CList", "StatusMsg", item->resource[r].statusMessage );
-			JabberMenuUpdateSrmmIcon( item );
 		}
 		else JabberLog( "SKIP Receive presence offline from " TCHAR_STR_PARAM " ( who is not in my roster )", from );
 
-		if ( hContact ) {
-			if ( _tcschr( from, '@' )!=NULL || JGetByte( "ShowTransport", TRUE )==TRUE )
-				if ( JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != status )
-					JSetWord( hContact, "Status", ( WORD )status );
+		JabberUpdateJidDbSettings( from );
 
-			JabberLog( TCHAR_STR_PARAM " offline, set contact status to %d", from, status );
-		}
 		if ( _tcschr( from, '@' )==NULL && hwndJabberAgents )
 			SendMessage( hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
 		JabberDBCheckIsTransportedContact(from, hContact);
@@ -1734,66 +1714,38 @@ static void JabberProcessIqAvatar( TCHAR* idStr, XmlNode* node )
 	mir_free( buffer );
 }
 
-static void JabberProcessIqResultVersion( TCHAR* type, XmlNode* node, XmlNode* queryNode  )
+static void JabberProcessIqResultVersion( TCHAR* type, XmlNode* node, XmlNode* queryNode )
 {
 	TCHAR* from = JabberXmlGetAttrValue( node, "from" );
 	if ( from == NULL ) return;
 
-	JABBER_LIST_ITEM *item = NULL;
-
-	if (( item = JabberListGetItemPtr( LIST_VCARD_TEMP, from )) == NULL)
-		item = JabberListGetItemPtr( LIST_ROSTER, from );
-
-	if ( item == NULL ) return;
-
-	JABBER_RESOURCE_STATUS *r = item->resource;
+	JABBER_RESOURCE_STATUS *r = JabberResourceInfoFromJID( from );
 	if ( r == NULL ) return;
 
-	TCHAR* p = _tcschr( from, '/' );
-	if ( p == NULL )    return;
-	if ( *++p == '\0' ) return;
+	r->dwVersionRequestTime = -1;
 
-	int i;
-	for ( i=0; i<item->resourceCount && _tcscmp( r->resourceName, p ); i++, r++ );
-	if ( i >= item->resourceCount )
-		return;
+	g_JabberClientCapsManager.DeleteQuery( JabberGetPacketID( node ));
 
 	HANDLE hContact = JabberHContactFromJID( from );
 	if ( hContact == NULL )
 		return;
 
-	r->dwVersionRequestTime = -1;
+	replaceStr(r->software, NULL);
+	replaceStr(r->version, NULL);
+	replaceStr(r->system, NULL);
 
-	if ( !lstrcmp( type, _T("error"))) {
-		if ( r->resourceName != NULL && !r->szCapsNode && !r->szCapsVer )
-			JSetStringT( hContact, "MirVer", r->resourceName );
-		return;
+	if ( !lstrcmp( type, _T("result"))) {
+		XmlNode* n;
+		if (( n=JabberXmlGetChild( queryNode, "name" ))!=NULL && n->text )
+			r->software = mir_tstrdup( n->text );
+		if (( n=JabberXmlGetChild( queryNode, "version" ))!=NULL && n->text )
+			r->version = mir_tstrdup( n->text );
+		if (( n=JabberXmlGetChild( queryNode, "os" ))!=NULL && n->text )
+			r->system = mir_tstrdup( n->text );
 	}
 
-	XmlNode* n;
-	if ( r->software ) mir_free( r->software );
-	if (( n=JabberXmlGetChild( queryNode, "name" ))!=NULL && n->text ) {
-		if (( hContact=JabberHContactFromJID( item->jid )) != NULL ) {
-			if (( p = _tcsstr( n->text, _T("Miranda IM"))) != NULL )
-				JSetStringT( hContact, "MirVer", p );
-			else
-				JSetStringT( hContact, "MirVer", n->text );
-		}
-		r->software = mir_tstrdup( n->text );
-	}
-	else r->software = NULL;
-	if ( r->version ) mir_free( r->version );
-	if (( n=JabberXmlGetChild( queryNode, "version" ))!=NULL && n->text )
-		r->version = mir_tstrdup( n->text );
-	else
-		r->version = NULL;
-	if ( r->system ) mir_free( r->system );
-	if (( n=JabberXmlGetChild( queryNode, "os" ))!=NULL && n->text )
-		r->system = mir_tstrdup( n->text );
-	else
-		r->system = NULL;
-
-	JabberCapsBits jcb = JabberGetResourceCapabilites(from);
+	JabberGetResourceCapabilites( from );
+	JabberUpdateMirVer( hContact, r );
 
 	if ( hwndJabberInfo != NULL )
 		PostMessage( hwndJabberInfo, WM_JABBER_REFRESH, 0, 0);

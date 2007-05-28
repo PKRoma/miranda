@@ -65,6 +65,18 @@ void JabberListUninit( void )
 /////////////////////////////////////////////////////////////////////////////////////////
 // List item freeing
 
+static void JabberListFreeResourceInternal( JABBER_RESOURCE_STATUS *r)
+{
+	if ( r->resourceName ) mir_free( r->resourceName );
+	if ( r->statusMessage ) mir_free( r->statusMessage );
+	if ( r->software ) mir_free( r->software );
+	if ( r->version ) mir_free( r->version );
+	if ( r->system ) mir_free( r->system );
+	if ( r->szCapsNode ) mir_free( r->szCapsNode );
+	if ( r->szCapsVer ) mir_free( r->szCapsVer );
+	if ( r->szCapsExt ) mir_free( r->szCapsExt );
+}
+
 static void JabberListFreeItemInternal( JABBER_LIST_ITEM *item )
 {
 	if ( item == NULL )
@@ -74,18 +86,12 @@ static void JabberListFreeItemInternal( JABBER_LIST_ITEM *item )
 	if ( item->nick ) mir_free( item->nick );
 
 	JABBER_RESOURCE_STATUS* r = item->resource;
-	for ( int i=0; i < item->resourceCount; i++, r++ ) {
-		if ( r->resourceName ) mir_free( r->resourceName );
-		if ( r->statusMessage ) mir_free( r->statusMessage );
-		if ( r->software ) mir_free( r->software );
-		if ( r->version ) mir_free( r->version );
-		if ( r->system ) mir_free( r->system );
-		if ( r->szCapsNode ) mir_free( r->szCapsNode );
-		if ( r->szCapsVer ) mir_free( r->szCapsVer );
-		if ( r->szCapsExt ) mir_free( r->szCapsExt );
-	}
+	for ( int i=0; i < item->resourceCount; i++, r++ )
+		JabberListFreeResourceInternal( r );
 	if ( item->resource ) mir_free( item->resource );
-	if ( item->statusMessage ) mir_free( item->statusMessage );
+
+	JabberListFreeResourceInternal( &item->itemResource );
+	
 	if ( item->group ) mir_free( item->group );
 	if ( item->photoFileName ) {
 		DeleteFileA( item->photoFileName );
@@ -153,7 +159,7 @@ JABBER_LIST_ITEM *JabberListAdd( JABBER_LIST list, const TCHAR* jid )
 	ZeroMemory( item, sizeof( JABBER_LIST_ITEM ));
 	item->list = list;
 	item->jid = s;
-	item->status = ID_STATUS_OFFLINE;
+	item->itemResource.status = ID_STATUS_OFFLINE;
 	item->resource = NULL;
 	item->resourceMode = RSMODE_LASTSEEN;
 	item->lastSeenResource = -1;
@@ -241,7 +247,14 @@ int JabberListAddResource( JABBER_LIST list, const TCHAR* jid, int status, const
 			}	}
 		}
 		// No resource, update the main statusMessage
-		else replaceStr( LI->statusMessage, statusMessage );
+		else {
+			LI->itemResource.status = status;
+			replaceStr( LI->itemResource.statusMessage, statusMessage );
+		}
+	}
+	else {
+		LI->itemResource.status = status;
+		replaceStr( LI->itemResource.statusMessage, statusMessage );
 	}
 
 	LeaveCriticalSection( &csLists );
@@ -293,14 +306,7 @@ void JabberListRemoveResource( JABBER_LIST list, const TCHAR* jid )
 					// Update MirVer due to possible resource changes
 					JabberUpdateMirVer(LI);
 
-					if ( r->resourceName ) mir_free( r->resourceName );
-					if ( r->statusMessage ) mir_free( r->statusMessage );
-					if ( r->software ) mir_free( r->software );
-					if ( r->version ) mir_free( r->version );
-					if ( r->system ) mir_free( r->system );
-					if ( r->szCapsNode ) mir_free( r->szCapsNode );
-					if ( r->szCapsVer ) mir_free( r->szCapsVer );
-					if ( r->szCapsExt ) mir_free( r->szCapsExt );
+					JabberListFreeResourceInternal( r );
 
 					if ( LI->resourceCount-- == 1 ) {
 						mir_free( r );

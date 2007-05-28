@@ -28,6 +28,7 @@ Last change by : $Author$
 #include "jabber.h"
 #include "jabber_list.h"
 #include "resource.h"
+#include "jabber_caps.h"
 
 #include <m_contacts.h>
 
@@ -321,7 +322,7 @@ int JabberMenuTransportLogin( WPARAM wParam, LPARAM lParam )
 	JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, jid.ptszVal );
 	if ( item != NULL ) {
 		XmlNode p( "presence" ); p.addAttr( "to", item->jid );
-		if ( item->status == ID_STATUS_ONLINE )
+		if ( item->itemResource.status == ID_STATUS_ONLINE )
 			p.addAttr( "type", "unavailable" );
 		jabberThreadInfo->send( p );
 	}
@@ -594,6 +595,37 @@ int JabberMenuProcessSrmmEvent( WPARAM wParam, LPARAM lParam )
 	else if ( event->uType == MSG_WINDOW_EVT_CLOSING ) {
 		if (hDialogsList)
 			WindowList_Remove(hDialogsList, event->hwndWindow);
+
+		DBVARIANT dbv;
+		BOOL bSupportTyping = FALSE;
+		if ( !DBGetContactSetting( event->hContact, "SRMsg", "SupportTyping", &dbv )) {
+			bSupportTyping = dbv.bVal == 1;
+			JFreeVariant( &dbv );
+		}
+		if ( bSupportTyping && !JGetStringT( event->hContact, "jid", &dbv )) {
+			TCHAR jid[ 256 ];
+			JabberGetClientJID( dbv.ptszVal, jid, SIZEOF( jid ));
+			JFreeVariant( &dbv );
+
+			JABBER_RESOURCE_STATUS *r = JabberResourceInfoFromJID( jid );
+
+			if ( r && r->bMessageSessionActive ) {
+				r->bMessageSessionActive = FALSE;
+				JabberCapsBits jcb = JabberGetResourceCapabilites( jid );
+
+				if ( jcb & JABBER_CAPS_CHATSTATES ) {
+					int iqId = JabberSerialNext();
+					XmlNode msg( "message" );
+					msg.addAttr( "to", jid );
+					msg.addAttr( "type", "chat" );
+					msg.addAttrID( iqId );
+					XmlNode *goneNode = msg.addChild( "gone" );
+					goneNode->addAttr( "xmlns", JABBER_FEAT_CHATSTATES );
+
+					jabberThreadInfo->send( msg );
+				}
+			}
+		}
 	}
 
 	return 0;

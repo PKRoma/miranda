@@ -27,6 +27,7 @@ Last change by : $Author$
 
 #include "jabber.h"
 #include "jabber_list.h"
+#include "jabber_caps.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // JabberAddContactToRoster() - adds a contact to the roster
@@ -402,6 +403,8 @@ void   JabberUpdateMirVer(JABBER_LIST_ITEM *item)
 	if (!hContact)
 		return;
 
+	JabberLog("JabberUpdateMirVer: for jid %S", item->jid);
+
 	int resource = -1;
 	if (item->resourceMode == RSMODE_LASTSEEN)
 		resource = item->lastSeenResource;
@@ -410,8 +413,47 @@ void   JabberUpdateMirVer(JABBER_LIST_ITEM *item)
 	if ((resource < 0) || (resource >= item->resourceCount))
 		return;
 
-	if (!item->resource[resource].software)
-		return;
+	JabberUpdateMirVer( hContact, &item->resource[resource] );
+}
 
-	JSetStringT(hContact, "MirVer", item->resource[resource].software);
+void JabberUpdateMirVer(HANDLE hContact, JABBER_RESOURCE_STATUS *resource)
+{
+	// jabber:iq:version info requested and exists?
+	if ( resource->dwVersionRequestTime && resource->software ) {
+		JabberLog("JabberUpdateMirVer: for iq:version rc %S: %S", resource->resourceName, resource->software);
+		JSetStringT( hContact, "MirVer", resource->software );
+		return;
+	}
+
+	// no version info and no caps info? set MirVer = resource name
+	if ( !resource->szCapsNode || !resource->szCapsVer ) {
+		JabberLog("JabberUpdateMirVer: for rc %S: %S", resource->resourceName, resource->resourceName);
+		if ( resource->resourceName )
+			JSetStringT( hContact, "MirVer", resource->resourceName );
+		return;
+	}
+	JabberLog("JabberUpdateMirVer: for rc %S: %S#%S", resource->resourceName, resource->szCapsNode, resource->szCapsVer);
+
+	// XEP-0115 caps mode
+	TCHAR szMirVer[ 512 ];
+	if ( _tcsstr( resource->szCapsNode, _T("miranda-im.org"))) {
+		if ( resource->szCapsExt ) {
+			mir_sntprintf( szMirVer, SIZEOF(szMirVer ), _T("Miranda IM %s (Jabber %s [%s]) (%s)"), resource->szCapsVer, resource->szCapsVer, resource->resourceName, resource->szCapsExt );
+
+			if (TCHAR *pszSecureIm = _tcsstr( szMirVer, _T(JABBER_EXT_SECUREIM)))
+				_tcsncpy(pszSecureIm, _T("SecureIM"), 8);
+		}
+		else
+			mir_sntprintf( szMirVer, SIZEOF(szMirVer ), _T("Miranda IM %s (Jabber %s [%s])"), resource->szCapsVer, resource->szCapsVer, resource->resourceName );
+	}
+	else if ( !resource->szCapsExt )
+		mir_sntprintf( szMirVer, SIZEOF(szMirVer ), _T("%s#%s"), resource->szCapsNode, resource->szCapsVer );
+	else if ( _tcsstr( resource->szCapsExt, _T(JABBER_EXT_SECUREIM) ))
+		mir_sntprintf( szMirVer, SIZEOF(szMirVer), _T("%s#%s#%s (SecureIM)"), resource->szCapsNode, resource->szCapsVer, resource->szCapsExt );
+	else if ( _tcsstr( resource->szCapsNode, _T("www.google.com") ))
+		mir_sntprintf( szMirVer, SIZEOF(szMirVer), _T("%s#%s#%s gtalk"), resource->szCapsNode, resource->szCapsVer, resource->szCapsExt );
+	else
+		mir_sntprintf( szMirVer, SIZEOF(szMirVer), _T("%s#%s#%s"), resource->szCapsNode, resource->szCapsVer, resource->szCapsExt );
+	
+	JSetStringT( hContact, "MirVer", szMirVer );
 }

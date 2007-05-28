@@ -510,6 +510,7 @@ void   JabberSetServerStatus( int iNewStatus );
 TCHAR* EscapeChatTags(TCHAR* pszText);
 char*  UnEscapeChatTags(char* str_in);
 void   JabberUpdateMirVer(JABBER_LIST_ITEM *item);
+void   JabberUpdateMirVer(HANDLE hContact, JABBER_RESOURCE_STATUS *resource);
 
 //---- jabber_adhoc.cpp	---------------------------------------------
 int JabberContactMenuRunCommands(WPARAM wParam, LPARAM lParam);
@@ -581,6 +582,7 @@ unsigned int  __stdcall JabberSerialNext( void );
 HANDLE        __stdcall JabberHContactFromJID( const TCHAR* jid );
 void          __stdcall JabberLog( const char* fmt, ... );
 TCHAR*        __stdcall JabberNickFromJID( const TCHAR* jid );
+JABBER_RESOURCE_STATUS* __stdcall JabberResourceInfoFromJID( TCHAR* jid );
 char*         __stdcall JabberUrlDecode( char* str );
 void          __stdcall JabberUrlDecodeW( WCHAR* str );
 char*         __stdcall JabberUrlEncode( const char* str );

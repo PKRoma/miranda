@@ -88,6 +88,10 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 								int index = SendMessage( hwndList, LB_ADDSTRING, 0, ( LPARAM )displayResource );
 								SendMessage( hwndList, LB_SETITEMDATA, index, ( LPARAM )r[i].resourceName );
 						}	}
+						else {
+							int index = SendMessage( hwndList, LB_ADDSTRING, 0, ( LPARAM )item->jid );
+							SendMessage( hwndList, LB_SETITEMDATA, index, 0);
+						}
 
 						if ( selectedResource == LB_ERR && item->resourceCount == 1 )
 							selectedResource = 0;
@@ -112,14 +116,14 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 							break;
 						}
 
-						if ( item->logoffTime > 0 ) {
+						if ( item->itemResource.idleStartTime > 0 ) {
 							TCHAR logoffTime[26];
-							_tcsncpy( logoffTime, _tctime(&item->logoffTime), 24 );
+							_tcsncpy( logoffTime, _tctime(&item->itemResource.idleStartTime), 24 );
 							logoffTime[24] = _T( '\0' );
 							SetDlgItemText( hwndDlg, IDC_LOGOFF_TIME, logoffTime );
 							EnableWindow( GetDlgItem( hwndDlg, IDC_LOGOFF_TIME ), TRUE );
 						}
-						else if ( !item->logoffTime ) {
+						else if ( !item->itemResource.idleStartTime ) {
 							SetDlgItemText( hwndDlg, IDC_LOGOFF_TIME, TranslateT( "unknown" ));
 							EnableWindow( GetDlgItem( hwndDlg, IDC_LOGOFF_TIME ), FALSE );
 						}
@@ -168,51 +172,59 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 						if (( item = JabberListGetItemPtr( LIST_VCARD_TEMP, jid )) == NULL)
 							item = JabberListGetItemPtr( LIST_ROSTER, jid );
 						
-						JABBER_RESOURCE_STATUS *r;
+						JABBER_RESOURCE_STATUS *r = NULL;
 
-						if ( szResource != ( TCHAR* )LB_ERR && item != NULL && ( r=item->resource ) != NULL ) {
-							int i;
-							for ( i=0; i < item->resourceCount && _tcscmp( r[i].resourceName, szResource ); i++ );
-							if ( i < item->resourceCount ) {
-								if ( r[i].software != NULL ) {
-									SetDlgItemText( hwndDlg, IDC_SOFTWARE, r[i].software );
-									EnableWindow( GetDlgItem( hwndDlg, IDC_SOFTWARE ), TRUE );
-								}
-								else {
-									SetDlgItemText( hwndDlg, IDC_SOFTWARE, TranslateT( "<not specified>" ));
-									EnableWindow( GetDlgItem( hwndDlg, IDC_SOFTWARE ), FALSE );
-								}
-								if ( r[i].version != NULL ) {
-									SetDlgItemText( hwndDlg, IDC_VERSION, r[i].version );
-									EnableWindow( GetDlgItem( hwndDlg, IDC_VERSION ), TRUE );
-								}
-								else {
-									SetDlgItemText( hwndDlg, IDC_VERSION, TranslateT( "<not specified>" ));
-									EnableWindow( GetDlgItem( hwndDlg, IDC_VERSION ), FALSE );
-								}
-								if ( r[i].system != NULL ) {
-									SetDlgItemText( hwndDlg, IDC_SYSTEM, r[i].system );
-									EnableWindow( GetDlgItem( hwndDlg, IDC_SYSTEM ), TRUE );
-								}
-								else {
-									SetDlgItemText( hwndDlg, IDC_SYSTEM, TranslateT( "<not specified>" ));
-									EnableWindow( GetDlgItem( hwndDlg, IDC_SYSTEM ), FALSE );
-								}
-								if ( r[i].idleStartTime > 0 ) {
-									TCHAR logoffTime[26];
-									_tcsncpy( logoffTime, _tctime(&r[i].idleStartTime), 24 );
-									logoffTime[24] = _T( '\0' );
-									SetDlgItemText( hwndDlg, IDC_IDLE_SINCE, logoffTime );
-									EnableWindow( GetDlgItem( hwndDlg, IDC_IDLE_SINCE ), TRUE );
-								}
-								else if ( !r[i].idleStartTime ) {
-									SetDlgItemText( hwndDlg, IDC_IDLE_SINCE, TranslateT( "<unknown>" ));
-									EnableWindow( GetDlgItem( hwndDlg, IDC_IDLE_SINCE ), FALSE );
-								}
-								else {
-									SetDlgItemText( hwndDlg, IDC_IDLE_SINCE, TranslateT( "<not specified>" ));
-									EnableWindow( GetDlgItem( hwndDlg, IDC_IDLE_SINCE ), FALSE );
-						}	}	}
+						if ( szResource == NULL )
+							r = &item->itemResource;
+						else {
+							if ( szResource != ( TCHAR* )LB_ERR && item != NULL && ( r=item->resource ) != NULL ) {
+								int i;
+								for ( i=0; i < item->resourceCount && _tcscmp( r[i].resourceName, szResource ); i++ );
+								if ( i < item->resourceCount )
+									r = &item->resource[i];
+							}
+						}
+						if ( r ) {
+							if ( r->software != NULL ) {
+								SetDlgItemText( hwndDlg, IDC_SOFTWARE, r->software );
+								EnableWindow( GetDlgItem( hwndDlg, IDC_SOFTWARE ), TRUE );
+							}
+							else {
+								SetDlgItemText( hwndDlg, IDC_SOFTWARE, TranslateT( "<not specified>" ));
+								EnableWindow( GetDlgItem( hwndDlg, IDC_SOFTWARE ), FALSE );
+							}
+							if ( r->version != NULL ) {
+								SetDlgItemText( hwndDlg, IDC_VERSION, r->version );
+								EnableWindow( GetDlgItem( hwndDlg, IDC_VERSION ), TRUE );
+							}
+							else {
+								SetDlgItemText( hwndDlg, IDC_VERSION, TranslateT( "<not specified>" ));
+								EnableWindow( GetDlgItem( hwndDlg, IDC_VERSION ), FALSE );
+							}
+							if ( r->system != NULL ) {
+								SetDlgItemText( hwndDlg, IDC_SYSTEM, r->system );
+								EnableWindow( GetDlgItem( hwndDlg, IDC_SYSTEM ), TRUE );
+							}
+							else {
+								SetDlgItemText( hwndDlg, IDC_SYSTEM, TranslateT( "<not specified>" ));
+								EnableWindow( GetDlgItem( hwndDlg, IDC_SYSTEM ), FALSE );
+							}
+							if ( r->idleStartTime > 0 ) {
+								TCHAR logoffTime[26];
+								_tcsncpy( logoffTime, _tctime(&r->idleStartTime), 24 );
+								logoffTime[24] = _T( '\0' );
+								SetDlgItemText( hwndDlg, IDC_IDLE_SINCE, logoffTime );
+								EnableWindow( GetDlgItem( hwndDlg, IDC_IDLE_SINCE ), TRUE );
+							}
+							else if ( !r->idleStartTime ) {
+								SetDlgItemText( hwndDlg, IDC_IDLE_SINCE, TranslateT( "<unknown>" ));
+								EnableWindow( GetDlgItem( hwndDlg, IDC_IDLE_SINCE ), FALSE );
+							}
+							else {
+								SetDlgItemText( hwndDlg, IDC_IDLE_SINCE, TranslateT( "<not specified>" ));
+								EnableWindow( GetDlgItem( hwndDlg, IDC_IDLE_SINCE ), FALSE );
+						}	}
+
 						JFreeVariant( &dbv );
 			}	}	}
 			break;
