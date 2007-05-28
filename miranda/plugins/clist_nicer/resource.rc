@@ -388,7 +388,7 @@ IDD_OPT_XICONS DIALOG DISCARDABLE  0, 0, 227, 205
 STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg"
 BEGIN
-    GROUPBOX        "Extra icons",IDC_STATIC,1,102,224,80
+    GROUPBOX        "Extra icons (drag items to reorder them)",IDC_STATIC,1,102,224,80
     EDITTEXT        IDC_EXICONSCALE,141,185,31,12,ES_RIGHT | ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "",IDC_EXICONSCALESPIN,"msctls_updown32",UDS_SETBUDDYINT | 
@@ -400,7 +400,7 @@ BEGIN
     GROUPBOX        "Icons",IDC_STATIC,1,0,224,99
     CONTROL         "Show visibility icons",IDC_SHOWVISIBILITY,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,22,136,10
-    CONTROL         "When possible, draw staus icons in avatar space",
+    CONTROL         "When possible, draw status icons in avatar space",
                     IDC_SELECTIVEICONS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     8,34,204,10
     CONTROL         "Centered when possible",IDC_STATUSICONSCENTERED,"Button",

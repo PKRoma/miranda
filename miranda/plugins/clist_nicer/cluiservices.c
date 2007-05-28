@@ -77,7 +77,7 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 	char *szStoredName;
 	char buf[10];
 	int toshow;
-	char *szStatus = NULL;
+	TCHAR *szStatus = NULL;
 	char *szMaxProto = NULL;
 	int maxOnline = 0, onlineness = 0;
 	WORD maxStatus = ID_STATUS_OFFLINE, wStatus;
@@ -301,7 +301,7 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 	* when connecting multiple protocols significantly.
 	*/
 	//g_isConnecting = (wStatus >= ID_STATUS_CONNECTING && wStatus < ID_STATUS_OFFLINE);
-	szStatus = (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM) wStatus, 0);
+	szStatus = (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM) wStatus, GCMDF_TCHAR);
 
 	/*
 	* set the global status icon and display the global (most online) status mode on the
@@ -310,7 +310,7 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 
 	if (szStatus) {
 		if(pcli->hwndContactList && IsWindow(GetDlgItem(pcli->hwndContactList, IDC_TBGLOBALSTATUS)) && IsWindow(GetDlgItem(pcli->hwndContactList, IDC_TBTOPSTATUS))) {
-			SendMessageA(GetDlgItem(pcli->hwndContactList, IDC_TBGLOBALSTATUS), WM_SETTEXT, 0, (LPARAM) szStatus);
+			SendMessage(GetDlgItem(pcli->hwndContactList, IDC_TBGLOBALSTATUS), WM_SETTEXT, 0, (LPARAM) szStatus);
 			if(!hIcon) {
 				SendMessage(GetDlgItem(pcli->hwndContactList, IDC_TBGLOBALSTATUS), BM_SETIMLICON, (WPARAM) hCListImages, (LPARAM) iIcon);
                 if(g_ButtonItems == NULL)
