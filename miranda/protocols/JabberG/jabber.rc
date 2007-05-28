@@ -31,8 +31,6 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    COMBOBOX        IDC_SERVER,0,11,92,75,CBS_DROPDOWN | CBS_AUTOHSCROLL | 
-                    WS_VSCROLL | WS_TABSTOP
     DEFPUSHBUTTON   "Go",IDC_GO,93,11,16,13,WS_DISABLED
     LTEXT           "Search service",IDC_STATIC,0,1,97,8
     SCROLLBAR       IDC_VSCROLL,97,49,12,99,SBS_BOTTOMALIGN | SBS_VERT | NOT 
@@ -41,6 +39,8 @@ BEGIN
                     ES_AUTOVSCROLL | ES_READONLY | NOT WS_BORDER | NOT 
                     WS_TABSTOP
     LTEXT           "",IDC_FRAME,0,49,97,99,NOT WS_GROUP
+    COMBOBOX        IDC_SERVER,0,11,92,75,CBS_DROPDOWN | CBS_AUTOHSCROLL | 
+                    WS_VSCROLL | WS_TABSTOP
 END
 
 
@@ -961,6 +961,7 @@ IDI_BOOKMARKS           ICON                    "icos\\bookmarks.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
+
 
 
 
