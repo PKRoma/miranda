@@ -1345,7 +1345,7 @@ static int JabberSetAvatar( WPARAM wParam, LPARAM lParam )
 	delete pResult;
 
 	if ( jabberConnected )
-		JabberSendPresence( jabberDesiredStatus, true );
+		JabberSendPresence( jabberDesiredStatus, false );
 
 	return 0;
 }
