@@ -325,7 +325,7 @@ extern int fontOptionsListSize;
 #define SRMSGDEFSET_MSGTIMEOUT     10000
 #define SRMSGSET_MSGTIMEOUT_MIN    4000 // minimum value (4 seconds)
 #define SRMSGSET_FLASHCOUNT        "FlashMax"
-#define SRMSGDEFSET_FLASHCOUNT     5
+#define SRMSGDEFSET_FLASHCOUNT     3
 
 #define SRMSGSET_LOADHISTORY       "LoadHistory"
 #define SRMSGDEFSET_LOADHISTORY    LOADHISTORY_UNREAD

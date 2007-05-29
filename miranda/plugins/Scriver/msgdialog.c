@@ -1084,7 +1084,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 //			dat->sendBuffer = NULL;
 			dat->sendCount = 0;
 			dat->messagesInProgress = 0;
-//			dat->nFlash = 0;
 			dat->nTypeSecs = 0;
 			dat->nLastTyping = 0;
 			dat->showTyping = 0;
@@ -1145,7 +1144,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			dat->minEditBoxHeight = dat->minEditInit.bottom - dat->minEditInit.top;
 			dat->minLogBoxHeight = dat->minEditBoxHeight;
 			dat->splitterPos = (int) DBGetContactSettingDword((g_dat->flags & SMF_SAVESPLITTERPERCONTACT) ? dat->hContact : NULL, SRMMMOD, "splitterPos", (DWORD) - 1);
-//			dat->nFlashMax = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_FLASHCOUNT, SRMSGDEFSET_FLASHCOUNT);
 			dat->toolbarSize.cy = DBGetContactSettingDword((g_dat->flags & SMF_SAVESPLITTERPERCONTACT) ? dat->hContact : NULL, SRMMMOD, "splitterHeight", (DWORD) 26);
 			dat->toolbarSize.cx = GetToolbarWidth();
 			if (dat->splitterPos == -1) {
@@ -1299,11 +1297,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			SendMessage(GetParent(hwndDlg), CM_POPUPWINDOW, (WPARAM) (newData->flags & NMWLP_INCOMING), (LPARAM) hwndDlg);
 			NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPEN);
 			if (notifyUnread) {
-				SendMessage(dat->hwndParent, CM_STARTFLASHING, 0, 0);
 				if (GetForegroundWindow() != dat->hwndParent || dat->parent->hwndActive != hwndDlg) {
-					dat->showUnread = 0;
-					SetTimer(hwndDlg, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
+					dat->showUnread = 1;
+					SendMessage(hwndDlg, DM_UPDATEICON, 0, 0);
+					//SetTimer(hwndDlg, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
 				}
+				SendMessage(dat->hwndParent, CM_STARTFLASHING, 0, 0);
 			}
 			return TRUE;
 		}
@@ -1575,13 +1574,16 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			hIcon = NULL;
 			if (dat->showTyping) {
 				tcd.hIcon = g_dat->hIcons[SMF_ICON_TYPING];
-			} else if (dat->showUnread) {
-				hIcon = tcd.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
+			} else if (dat->showUnread & 1) {
+				int index = ImageList_ReplaceIcon(g_dat->hHelperIconList, 0, hStatusIcon);
+				hIcon = tcd.hIcon = ImageList_GetIcon(g_dat->hHelperIconList, index, ILD_TRANSPARENT|INDEXTOOVERLAYMASK(1));
+				//hIcon = tcd.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
 			} else {
-				tcd.hIcon = hStatusIcon;//LoadSkinnedProtoIcon(szProto, dat->wStatus);
+				tcd.hIcon = hStatusIcon;
 			}
 			SendMessage(dat->hwndParent, CM_UPDATETABCONTROL, (WPARAM)&tcd, (LPARAM)hwndDlg);
-			CallService(MS_SKIN2_RELEASEICON,(WPARAM)hIcon, 0);
+			DestroyIcon(hIcon);
+			//CallService(MS_SKIN2_RELEASEICON,(WPARAM)hIcon, 0);
 		}
 		break;
     case DM_USERNAMETOCLIP:
@@ -1853,9 +1855,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 	case WM_MOUSEACTIVATE:
 		if (dat->showUnread) {
 			dat->showUnread = 0;
+			/*
 			if (KillTimer(hwndDlg, TIMERID_FLASHWND)) {
-	//			dat->nFlash = 0;
-			}
+			}*/
 			SendMessage(hwndDlg, DM_UPDATEICON, 0, 0);
 		}
 		break;
@@ -2024,12 +2026,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				else
 					SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
 				if (!(dbei.flags & DBEF_SENT) && dbei.eventType != EVENTTYPE_STATUSCHANGE) {
-//					dat->nFlash = dat->nFlashMax;
-					SendMessage(dat->hwndParent, CM_STARTFLASHING, 0, 0);
 					if (GetActiveWindow() != dat->hwndParent || GetForegroundWindow() != dat->hwndParent || dat->parent->hwndActive != hwndDlg) {
-						dat->showUnread = 0;
-						SetTimer(hwndDlg, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
+						dat->showUnread = 1;
+						SendMessage(hwndDlg, DM_UPDATEICON, 0, 0);
+						//SetTimer(hwndDlg, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
 					}
+					SendMessage(dat->hwndParent, CM_STARTFLASHING, 0, 0);
 				}
 			}
 		}
@@ -2134,11 +2136,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					}
 				}
 			}
-		}
+		}/*
 		else if (wParam == TIMERID_FLASHWND) {
 			dat->showUnread++;
 			SendMessage(hwndDlg, DM_UPDATEICON, 0, 0);
-		}
+		}*/
 		else if (wParam == TIMERID_TYPE) {
 			if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON && GetTickCount() - dat->nLastTyping > TIMEOUT_TYPEOFF) {
 				NotifyTyping(dat, PROTOTYPE_SELFTYPING_OFF);

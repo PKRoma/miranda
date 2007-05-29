@@ -725,13 +725,13 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 		break;
 	case WM_TIMER:
 		if (wParam == TIMERID_FLASHWND) {
-			if ((dat->nFlash > dat->nFlashMax)) {// || ((GetActiveWindow() == hwndDlg) && (GetForegroundWindow() == hwndDlg))) {
-				KillTimer(hwndDlg, TIMERID_FLASHWND);
-				FlashWindow(hwndDlg, FALSE);
-			} else if (dat->nFlash < dat->nFlashMax) {
+			if (dat->nFlash < 2 * dat->nFlashMax) {
 				FlashWindow(hwndDlg, TRUE);
 				dat->nFlash++;
-			}
+			} else {// || ((GetActiveWindow() == hwndDlg) && (GetForegroundWindow() == hwndDlg))) {
+				KillTimer(hwndDlg, TIMERID_FLASHWND);
+				FlashWindow(hwndDlg, FALSE);
+			} 
 		}
 		break;
 	case WM_CONTEXTMENU:

@@ -197,6 +197,11 @@ void RegisterIcoLibIcons() {
 		sid.pszDescription = Translate("Close button");
 		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 
+		sid.pszName = (char *) "scriver_OVERLAY";
+		sid.iDefaultIndex = -IDI_OVERLAY;
+		sid.pszDescription = Translate("Icon overlay");
+		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
 		sid.pszName = (char *) "scriver_INCOMING";
 		sid.iDefaultIndex = -IDI_INCOMING;
 		sid.pszDescription = Translate("Incoming message");
@@ -228,12 +233,13 @@ void LoadGlobalIcons() {
 		g_dat->hIcons[SMF_ICON_UNICODEOFF] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_UNICODEOFF");
 		g_dat->hIcons[SMF_ICON_DELIVERING] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_DELIVERING");
 		g_dat->hIcons[SMF_ICON_QUOTE] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_QUOTE");
+		g_dat->hIcons[SMF_ICON_CLOSEX] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_CLOSEX");
+		g_dat->hIcons[SMF_ICON_OVERLAY] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_OVERLAY");
 
 		g_dat->hIcons[SMF_ICON_INCOMING] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_INCOMING),IMAGE_ICON,0,0,0);
 		g_dat->hIcons[SMF_ICON_OUTGOING] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_OUTGOING),IMAGE_ICON,0,0,0);
 		g_dat->hIcons[SMF_ICON_NOTICE] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_NOTICE),IMAGE_ICON,0,0,0);
 
-		g_dat->hIcons[SMF_ICON_CLOSEX] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_CLOSEX");
 	} else {
 		g_dat->hIcons[SMF_ICON_ADD] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_ADDCONTACT), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
 		g_dat->hIcons[SMF_ICON_USERDETAILS] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_USERDETAILS), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
@@ -246,12 +252,13 @@ void LoadGlobalIcons() {
 		g_dat->hIcons[SMF_ICON_UNICODEOFF] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_UNICODEOFF), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
 		g_dat->hIcons[SMF_ICON_DELIVERING] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TIMESTAMP), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
 		g_dat->hIcons[SMF_ICON_QUOTE] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_QUOTE), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
+		g_dat->hIcons[SMF_ICON_CLOSEX] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_CLOSEX),IMAGE_ICON,0,0,0);
+		g_dat->hIcons[SMF_ICON_OVERLAY] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_OVERLAY),IMAGE_ICON,0,0,0);
 
 		g_dat->hIcons[SMF_ICON_INCOMING] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_INCOMING),IMAGE_ICON,0,0,0);
 		g_dat->hIcons[SMF_ICON_OUTGOING] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_OUTGOING),IMAGE_ICON,0,0,0);
 		g_dat->hIcons[SMF_ICON_NOTICE] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_NOTICE),IMAGE_ICON,0,0,0);
 
-		g_dat->hIcons[SMF_ICON_CLOSEX] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_CLOSEX),IMAGE_ICON,0,0,0);
 	}
 	for (i=0; i<sizeof(buttonIcons)/sizeof(int); i++) {
 		if (buttonIcons[i] == -1) {
@@ -259,6 +266,11 @@ void LoadGlobalIcons() {
 		} else {
 			ImageList_AddIcon(g_dat->hButtonIconList, g_dat->hIcons[buttonIcons[i]]);
 		}
+	}
+	{
+		ImageList_AddIcon(g_dat->hHelperIconList, g_dat->hIcons[SMF_ICON_OVERLAY]);
+		int overlayIcon = ImageList_AddIcon(g_dat->hHelperIconList, g_dat->hIcons[SMF_ICON_OVERLAY]);
+		ImageList_SetOverlayImage(g_dat->hHelperIconList, overlayIcon, 1);
 	}
 }
 
@@ -276,6 +288,7 @@ void ReleaseGlobalIcons() {
 		CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_DELIVERING");
 		CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_QUOTE");
 		CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_CLOSEX");
+		CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_OVERLAY");
 		DestroyIcon(g_dat->hIcons[SMF_ICON_INCOMING]);
 		DestroyIcon(g_dat->hIcons[SMF_ICON_OUTGOING]);
 		DestroyIcon(g_dat->hIcons[SMF_ICON_NOTICE]);
@@ -285,6 +298,7 @@ void ReleaseGlobalIcons() {
 			DestroyIcon(g_dat->hIcons[i]);
 	}
 	ImageList_RemoveAll(g_dat->hButtonIconList);
+	ImageList_RemoveAll(g_dat->hHelperIconList);
 }
 
 static BOOL CALLBACK LangAddCallback(CHAR * str) {
@@ -334,18 +348,20 @@ void InitGlobals() {
 	g_dat->tabIconListUsageSize = 0;
 	g_dat->hButtonIconList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 0, 0);
 	g_dat->hTabIconList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 0, 0);
+	g_dat->hHelperIconList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 0, 0);
 	g_dat->draftList = NULL;
 }
 
 void FreeGlobals() {
 	if (g_dat) {
 		if (g_dat->draftList != NULL) tcmdlist_free(g_dat->draftList);
+		ReleaseGlobalIcons();
 		if (g_dat->hTabIconList)
 			ImageList_Destroy(g_dat->hTabIconList);
-		ReleaseGlobalIcons();
 		if (g_dat->hButtonIconList)
 			ImageList_Destroy(g_dat->hButtonIconList);
-
+		if (g_dat->hHelperIconList)
+			ImageList_Destroy(g_dat->hHelperIconList);
 		mir_free(g_dat);
 	}
 }

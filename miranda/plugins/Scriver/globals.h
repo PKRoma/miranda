@@ -99,8 +99,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SMF_ICON_NOTICE		13
 
 #define SMF_ICON_CLOSEX		14
+#define SMF_ICON_OVERLAY    15
 
-#define SMF_ICON_COUNT		15
+#define SMF_ICON_COUNT		16
 
 typedef struct ImageListUsageEntry_tag
 {
@@ -129,6 +130,7 @@ struct GlobalMessageData
 	int     tabIconListUsageSize;
 	ImageListUsageEntry     *tabIconListUsage;
 	HIMAGELIST hButtonIconList;
+	HIMAGELIST hHelperIconList;
 	TCmdList *draftList;
 	int		avatarServiceExists;
 	int		smileyServiceExists;
