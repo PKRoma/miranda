@@ -1,35 +1,31 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on avs.dsp
 !IF "$(CFG)" == ""
-CFG=avs - Win32 Debug Unicode
-!MESSAGE No configuration specified. Defaulting to avs - Win32 Debug Unicode.
-!ENDIF 
+CFG=avs - Win32 Release Unicode
+!MESSAGE No configuration specified. Defaulting to avs - Win32 Release Unicode.
+!ENDIF
 
 !IF "$(CFG)" != "avs - Win32 Release" && "$(CFG)" != "avs - Win32 Debug" && "$(CFG)" != "avs - Win32 Release Unicode" && "$(CFG)" != "avs - Win32 Debug Unicode"
 !MESSAGE Invalid configuration "$(CFG)" specified.
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
-!MESSAGE 
+!MESSAGE
 !MESSAGE NMAKE /f "avs.mak" CFG="avs - Win32 Debug Unicode"
-!MESSAGE 
+!MESSAGE
 !MESSAGE Possible choices for configuration are:
-!MESSAGE 
+!MESSAGE
 !MESSAGE "avs - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "avs - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "avs - Win32 Release Unicode" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "avs - Win32 Debug Unicode" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE 
+!MESSAGE
 !ERROR An invalid configuration is specified.
-!ENDIF 
+!ENDIF
 
 !IF "$(OS)" == "Windows_NT"
 NULL=
-!ELSE 
+!ELSE
 NULL=nul
-!ENDIF 
-
-CPP=cl.exe
-MTL=midl.exe
-RSC=rc.exe
+!ENDIF
 
 !IF  "$(CFG)" == "avs - Win32 Release"
 
@@ -59,15 +55,49 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "MBCS" /D "_USRDLL" /D "AVS_EXPORTS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
-RSC_PROJ=/l 0x809 /fo"$(INTDIR)\avs.res" /d "NDEBUG" 
+CPP=cl.exe
+CPP_PROJ=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "MBCS" /D "_USRDLL" /D "AVS_EXPORTS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+MTL=midl.exe
+MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
+RSC=rc.exe
+RSC_PROJ=/l 0x809 /fo"$(INTDIR)\avs.res" /d "NDEBUG"
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\avs.bsc" 
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\avs.bsc"
 BSC32_SBRS= \
-	
+
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib /nologo /base:"0x5130000" /dll /incremental:no /pdb:"$(OUTDIR)\avs.pdb" /map:"$(INTDIR)\avs.map" /debug /machine:I386 /out:"../../bin/release/plugins/avs.dll" /implib:"$(OUTDIR)\avs.lib" /IGNORE:4089 /filealign:512 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib /nologo /base:"0x5130000" /dll /incremental:no /pdb:"$(OUTDIR)\avs.pdb" /map:"$(INTDIR)\avs.map" /debug /machine:I386 /out:"../../bin/release/plugins/avs.dll" /implib:"$(OUTDIR)\avs.lib" /IGNORE:4089 /filealign:512
 LINK32_OBJS= \
 	"$(INTDIR)\acc.obj" \
 	"$(INTDIR)\image_utils.obj" \
@@ -123,11 +153,45 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "AVS_EXPORTS" /Fr"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
-MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
-RSC_PROJ=/l 0x809 /fo"$(INTDIR)\avs.res" /d "_DEBUG" 
+CPP=cl.exe
+CPP_PROJ=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "AVS_EXPORTS" /Fr"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+MTL=midl.exe
+MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
+RSC=rc.exe
+RSC_PROJ=/l 0x809 /fo"$(INTDIR)\avs.res" /d "_DEBUG"
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\avs.bsc" 
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\avs.bsc"
 BSC32_SBRS= \
 	"$(INTDIR)\acc.sbr" \
 	"$(INTDIR)\image_utils.sbr" \
@@ -143,7 +207,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=..\zlib\Release\zlib.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib gdiplus.lib delayimp.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\avs.pdb" /map:"$(INTDIR)\avs.map" /debug /machine:I386 /out:"../../bin/debug/plugins/avs.dll" /implib:"$(OUTDIR)\avs.lib" /pdbtype:sept 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib gdiplus.lib delayimp.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\avs.pdb" /map:"$(INTDIR)\avs.map" /debug /machine:I386 /out:"../../bin/debug/plugins/avs.dll" /implib:"$(OUTDIR)\avs.lib" /pdbtype:sept
 LINK32_OBJS= \
 	"$(INTDIR)\acc.obj" \
 	"$(INTDIR)\image_utils.obj" \
@@ -187,15 +251,49 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "AVS_EXPORTS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
-RSC_PROJ=/l 0x809 /fo"$(INTDIR)\avs.res" /d "NDEBUG" /d "UNICODE" 
+CPP=cl.exe
+CPP_PROJ=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "AVS_EXPORTS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+MTL=midl.exe
+MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
+RSC=rc.exe
+RSC_PROJ=/l 0x809 /fo"$(INTDIR)\avs.res" /d "NDEBUG" /d "UNICODE"
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\avs.bsc" 
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\avs.bsc"
 BSC32_SBRS= \
-	
+
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib /nologo /base:"0x5130000" /dll /incremental:no /pdb:"$(OUTDIR)\avs.pdb" /map:"$(INTDIR)\avs.map" /debug /machine:I386 /out:"../../bin/release Unicode/plugins/avs.dll" /implib:"$(OUTDIR)\avs.lib" /IGNORE:4089 /filealign:512 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib /nologo /base:"0x5130000" /dll /incremental:no /pdb:"$(OUTDIR)\avs.pdb" /map:"$(INTDIR)\avs.map" /debug /machine:I386 /out:"../../bin/release Unicode/plugins/avs.dll" /implib:"$(OUTDIR)\avs.lib" /IGNORE:4089 /filealign:512
 LINK32_OBJS= \
 	"$(INTDIR)\acc.obj" \
 	"$(INTDIR)\image_utils.obj" \
@@ -251,11 +349,45 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "AVS_EXPORTS" /Fr"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
-MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
-RSC_PROJ=/l 0x809 /fo"$(INTDIR)\avs.res" /d "_DEBUG" /d "UNICODE" 
+CPP=cl.exe
+CPP_PROJ=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "AVS_EXPORTS" /Fr"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+MTL=midl.exe
+MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
+RSC=rc.exe
+RSC_PROJ=/l 0x809 /fo"$(INTDIR)\avs.res" /d "_DEBUG" /d "UNICODE"
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\avs.bsc" 
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\avs.bsc"
 BSC32_SBRS= \
 	"$(INTDIR)\acc.sbr" \
 	"$(INTDIR)\image_utils.sbr" \
@@ -271,7 +403,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=..\zlib\Release\zlib.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib gdiplus.lib delayimp.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\avs.pdb" /map:"$(INTDIR)\avs.map" /debug /machine:I386 /out:"../../bin/debug Unicode/plugins/avs.dll" /implib:"$(OUTDIR)\avs.lib" /pdbtype:sept 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib gdiplus.lib delayimp.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\avs.pdb" /map:"$(INTDIR)\avs.map" /debug /machine:I386 /out:"../../bin/debug Unicode/plugins/avs.dll" /implib:"$(OUTDIR)\avs.lib" /pdbtype:sept
 LINK32_OBJS= \
 	"$(INTDIR)\acc.obj" \
 	"$(INTDIR)\image_utils.obj" \
@@ -287,46 +419,16 @@ LINK32_OBJS= \
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
 
-!ENDIF 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
+!ENDIF
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
 !IF EXISTS("avs.dep")
 !INCLUDE "avs.dep"
-!ELSE 
+!ELSE
 !MESSAGE Warning: cannot find "avs.dep"
-!ENDIF 
-!ENDIF 
+!ENDIF
+!ENDIF
 
 
 !IF "$(CFG)" == "avs - Win32 Release" || "$(CFG)" == "avs - Win32 Debug" || "$(CFG)" == "avs - Win32 Release Unicode" || "$(CFG)" == "avs - Win32 Debug Unicode"
@@ -356,7 +458,7 @@ SOURCE=.\acc.cpp
 "$(INTDIR)\acc.obj"	"$(INTDIR)\acc.sbr" : $(SOURCE) "$(INTDIR)"
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\image_utils.cpp
 
@@ -384,7 +486,7 @@ SOURCE=.\image_utils.cpp
 "$(INTDIR)\image_utils.obj"	"$(INTDIR)\image_utils.sbr" : $(SOURCE) "$(INTDIR)"
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\main.cpp
 
@@ -412,7 +514,7 @@ SOURCE=.\main.cpp
 "$(INTDIR)\main.obj"	"$(INTDIR)\main.sbr" : $(SOURCE) "$(INTDIR)"
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\mir_dblists.cpp
 
@@ -440,7 +542,7 @@ SOURCE=.\mir_dblists.cpp
 "$(INTDIR)\mir_dblists.obj"	"$(INTDIR)\mir_dblists.sbr" : $(SOURCE) "$(INTDIR)"
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\mir_memory.cpp
 
@@ -468,7 +570,7 @@ SOURCE=.\mir_memory.cpp
 "$(INTDIR)\mir_memory.obj"	"$(INTDIR)\mir_memory.sbr" : $(SOURCE) "$(INTDIR)"
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\options.cpp
 
@@ -496,7 +598,7 @@ SOURCE=.\options.cpp
 "$(INTDIR)\options.obj"	"$(INTDIR)\options.sbr" : $(SOURCE) "$(INTDIR)"
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\poll.cpp
 
@@ -524,7 +626,7 @@ SOURCE=.\poll.cpp
 "$(INTDIR)\poll.obj"	"$(INTDIR)\poll.sbr" : $(SOURCE) "$(INTDIR)"
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\avs.rc
 
@@ -533,5 +635,4 @@ SOURCE=.\avs.rc
 
 
 
-!ENDIF 
-
+!ENDIF

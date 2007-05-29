@@ -2,6 +2,7 @@
 
 .\acc.cpp : \
 	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
@@ -30,7 +31,6 @@
 	".\image_utils.h"\
 	".\m_acc.h"\
 	".\m_avatarhistory.h"\
-	".\m_avatars.h"\
 	".\m_flash.h"\
 	".\m_folders.h"\
 	".\m_metacontacts.h"\
@@ -72,6 +72,7 @@
 
 .\image_utils.cpp : \
 	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
@@ -100,7 +101,6 @@
 	".\image_utils.h"\
 	".\m_acc.h"\
 	".\m_avatarhistory.h"\
-	".\m_avatars.h"\
 	".\m_flash.h"\
 	".\m_folders.h"\
 	".\m_metacontacts.h"\
@@ -142,6 +142,7 @@
 
 .\main.cpp : \
 	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
@@ -170,7 +171,6 @@
 	".\image_utils.h"\
 	".\m_acc.h"\
 	".\m_avatarhistory.h"\
-	".\m_avatars.h"\
 	".\m_flash.h"\
 	".\m_folders.h"\
 	".\m_metacontacts.h"\
@@ -212,6 +212,7 @@
 
 .\mir_dblists.cpp : \
 	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
@@ -240,7 +241,6 @@
 	".\image_utils.h"\
 	".\m_acc.h"\
 	".\m_avatarhistory.h"\
-	".\m_avatars.h"\
 	".\m_flash.h"\
 	".\m_folders.h"\
 	".\m_metacontacts.h"\
@@ -282,6 +282,7 @@
 
 .\mir_memory.cpp : \
 	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
@@ -310,7 +311,6 @@
 	".\image_utils.h"\
 	".\m_acc.h"\
 	".\m_avatarhistory.h"\
-	".\m_avatars.h"\
 	".\m_flash.h"\
 	".\m_folders.h"\
 	".\m_metacontacts.h"\
@@ -352,6 +352,7 @@
 
 .\options.cpp : \
 	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
@@ -380,7 +381,6 @@
 	".\image_utils.h"\
 	".\m_acc.h"\
 	".\m_avatarhistory.h"\
-	".\m_avatars.h"\
 	".\m_flash.h"\
 	".\m_folders.h"\
 	".\m_metacontacts.h"\
@@ -422,6 +422,7 @@
 
 .\poll.cpp : \
 	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
@@ -450,7 +451,6 @@
 	".\image_utils.h"\
 	".\m_acc.h"\
 	".\m_avatarhistory.h"\
-	".\m_avatars.h"\
 	".\m_flash.h"\
 	".\m_folders.h"\
 	".\m_metacontacts.h"\
