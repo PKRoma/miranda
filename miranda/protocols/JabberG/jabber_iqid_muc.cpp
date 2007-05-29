@@ -180,12 +180,27 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 			SendMessage( hwndDlg, WM_JABBER_REFRESH, 0, lParam );
 		}
 		return TRUE;
+	case WM_SIZE:
+		{
+			RECT listrc, dlgrc;
+			LVCOLUMN lvc;
+			HWND hwndList = GetDlgItem( hwndDlg, IDC_LIST );
+			GetClientRect( hwndDlg, &dlgrc );
+			SetWindowPos(hwndList, NULL, 0, 0, dlgrc.right-21, dlgrc.bottom-22, SWP_NOMOVE);
+			GetClientRect( hwndList, &listrc );
+			lvc.mask = LVCF_WIDTH;
+			listrc.right -= GetSystemMetrics( SM_CXVSCROLL );
+			lvc.cx = listrc.right - 20;
+			SendMessage(hwndList, LVM_SETCOLUMN, 0, (LPARAM)&lvc);
+		}
+		break;
+
 	case WM_JABBER_REFRESH:
 		{
 			// lParam is ( JABBER_MUC_JIDLIST_INFO * )
 			JABBER_MUC_JIDLIST_INFO *jidListInfo;
 			XmlNode *iqNode, *queryNode, *itemNode;
-			TCHAR* from, *jid, *localFrom;
+			TCHAR* from, *jid, *reason, *nick, *localFrom;
 			LVITEM lvi;
 			HWND hwndList;
 			int count, i;
@@ -227,7 +242,7 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 					if (( from = JabberXmlGetAttrValue( iqNode, "from" )) != NULL ) {
 						jidListInfo->roomJid = mir_tstrdup( from );
 						localFrom = mir_tstrdup( from );
-						mir_sntprintf( title, SIZEOF( title ), _T("%s ( %s )"),
+						mir_sntprintf( title, SIZEOF( title ), _T("%s (%s)"),
 							( jidListInfo->type==MUC_VOICELIST ) ? TranslateT( "Voice List" ) :
 							( jidListInfo->type==MUC_MEMBERLIST ) ? TranslateT( "Member List" ) :
 							( jidListInfo->type==MUC_MODERATORLIST ) ? TranslateT( "Moderator List" ) :
@@ -246,6 +261,20 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 									if (( jid=JabberXmlGetAttrValue( itemNode, "jid" )) != NULL ) {
 										lvi.pszText = jid;
 										lvi.lParam = ( LPARAM )mir_tstrdup( jid );
+										if ( jidListInfo->type == MUC_BANLIST ) {										
+											if (( reason = JabberXmlGetChild( itemNode, "reason" )->text ) != NULL ) {
+												TCHAR jidreason[ 200 ];
+												mir_sntprintf( jidreason, SIZEOF( jidreason ), _T("%s (%s)") , jid, reason );
+												lvi.pszText = jidreason;
+										}	}
+
+										if ( jidListInfo->type == MUC_VOICELIST || jidListInfo->type == MUC_MODERATORLIST ) {										
+											if (( nick = JabberXmlGetAttrValue( itemNode, "nick" )) != NULL ) {
+												TCHAR nickjid[ 200 ];
+												mir_sntprintf( nickjid, SIZEOF( nickjid ), _T("%s (%s)") , nick, jid );
+												lvi.pszText = nickjid;
+										}	}
+
 										ListView_InsertItem( hwndList, &lvi );
 										lvi.iItem++;
 				}	}	}	}	}	}
