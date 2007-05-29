@@ -43,7 +43,7 @@ Last change by : $Author: rainwater $
 #include <m_png.h>
 #include <m_clui.h>
 
-#include "include\m_imgsrvc.h"
+#include <m_imgsrvc.h>
 
 #include "..\Source\libpng\png.h"
 

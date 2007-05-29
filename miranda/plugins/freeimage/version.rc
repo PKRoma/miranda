@@ -79,7 +79,6 @@ BEGIN
     BEGIN
         BLOCK "000004b0"
         BEGIN
-#if !defined(UNICODE)
             VALUE "Comments", "Provides generic image services for Miranda IM"
             VALUE "CompanyName", "Miranda IM and FreeImage"
             VALUE "FileDescription", "fe_imgsrvc"
@@ -87,23 +86,10 @@ BEGIN
             VALUE "InternalName", "fe_imgsrvc"
             VALUE "LegalCopyright", "Copyright (C) 2007, Nightwish, based on the FreeImage project (http://freeimage.sourceforge.net/)"
             VALUE "LegalTrademarks", "Licensed under the Gnu General Public License V2 or any later version"
-            VALUE "OriginalFilename", "fe_imgsrvc.dll"
+            VALUE "OriginalFilename", "advaimg.dll"
             VALUE "ProductName", "Miranda IM Image services"
-            VALUE "ProductVersion", "0, 0, 1, 0"
+            VALUE "ProductVersion", "0, 0, 2, 0"
             VALUE "SpecialBuild", "011"
-#else
-            VALUE "Comments", "Provides generic image services for Miranda IM"
-            VALUE "CompanyName", "Miranda IM and FreeImage"
-            VALUE "FileDescription", "fe_imgsrvc (UNICODE)"
-            VALUE "FileVersion", "0, 0, 1, 0"
-            VALUE "InternalName", "fe_imgsrvcW"
-            VALUE "LegalCopyright", "Copyright (C) 2007, Nightwish, based on the FreeImage project (http://freeimage.sourceforge.net/)"
-            VALUE "LegalTrademarks", "Licensed under the Gnu General Public License V2 or any later version"
-            VALUE "OriginalFilename", "fe_imgsrvc.dll"
-            VALUE "ProductName", "Miranda IM Image services"
-            VALUE "ProductVersion", "0, 0, 1, 0"
-            VALUE "SpecialBuild", "011"
-#endif
         END
     END
     BLOCK "VarFileInfo"

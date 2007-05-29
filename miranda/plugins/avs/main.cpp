@@ -685,7 +685,7 @@ struct CacheNode *FindAvatarInCache(HANDLE hContact, BOOL add)
             }
             else {
                 LeaveCriticalSection(&cachecs);
-                return cacheNode;
+                return NULL;
             }
 		}
 

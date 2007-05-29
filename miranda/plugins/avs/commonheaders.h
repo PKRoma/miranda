@@ -72,9 +72,9 @@ extern "C"
 
 #include <m_avatars.h>
 #include <m_popup.h>
+#include <m_imgsrvc.h>
 #include "m_metacontacts.h"
 #include "m_avatarhistory.h"
-#include "..\freeimage\Miranda\include\m_imgsrvc.h"
 
 }
 
