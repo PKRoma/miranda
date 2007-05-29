@@ -268,8 +268,9 @@ void LoadGlobalIcons() {
 		}
 	}
 	{
+		int overlayIcon;
 		ImageList_AddIcon(g_dat->hHelperIconList, g_dat->hIcons[SMF_ICON_OVERLAY]);
-		int overlayIcon = ImageList_AddIcon(g_dat->hHelperIconList, g_dat->hIcons[SMF_ICON_OVERLAY]);
+		overlayIcon = ImageList_AddIcon(g_dat->hHelperIconList, g_dat->hIcons[SMF_ICON_OVERLAY]);
 		ImageList_SetOverlayImage(g_dat->hHelperIconList, overlayIcon, 1);
 	}
 }
