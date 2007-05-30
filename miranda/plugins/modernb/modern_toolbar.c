@@ -30,6 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MS_CLUI_SHOWSTATUSMENU  "CList/ShowStatusMenu"
 #define MS_JABBER_SHOWBOOKMARK  "JABBER/Bookmarks"
 
+#define MS_TTB_TOGGLEHIDEOFFLINE  "CList/ToggleHideOffline"
 
 /*
 1. Init module
@@ -70,10 +71,10 @@ typedef struct _tagMTBButtonInfo
 	char * szService;						// Service to be executed
 	TCHAR * szTooltip;
 	TCHAR * szTooltipPressed;
-	int	   nOrderValue;						// Order of button
-	BYTE   position;
-	BOOL   bPushButton;						// 2 icon state button.
-
+	int	    nOrderValue;						// Order of button
+	BYTE    position;
+	BOOL    bPushButton;						// 2 icon state button.
+	BYTE	bSeparator;						//0 - No, 2- flex, 1 -fixed
 }MTBBUTTONINFO;
 
 #define mir_safe_free(a) if(a) mir_free(a);
@@ -107,6 +108,8 @@ enum {
 	MTBM_ADDBUTTON,				// will be broad casted thought bars to add button
 	MTBM_REPOSBUTTONS,
 	MTBM_LAYEREDPAINT,
+	MTBM_SETBUTTONSTATE,
+	MTBM_GETBUTTONSTATE,
 	MTBM_LAST
 };
 
@@ -116,6 +119,7 @@ static HANDLE hToolBarWindowList;
 static HANDLE hehModulesLoaded			= NULL;
 static HANDLE hehSystemShutdown			= NULL;
 static HANDLE hehTBModuleLoaded			= NULL;
+static HANDLE hehSettingsChanged		= NULL;
 static HANDLE hsvcToolBarAddButton		= NULL;
 static HANDLE hsvcToolBarRemoveButton	= NULL;
 static HANDLE hsvcToolBarGetButtonState	= NULL;
@@ -125,6 +129,8 @@ static HBITMAP mtb_hBmpBackground = NULL;
 static COLORREF mtb_bkColour = 0;
 static WORD mtb_backgroundBmpUse = 0;
 static BOOL mtb_useWinColors = FALSE;
+
+static HANDLE hHideOfflineButton = NULL;
 
 COLORREF sttGetColor(char * module, char * color, COLORREF defColor);
 
@@ -139,9 +145,11 @@ static int svcToolBarSetButtonState(WPARAM wParam, LPARAM lParam);
 
 static int ehhModulesLoaded(WPARAM wParam, LPARAM lParam);
 static int ehhSystemShutdown(WPARAM wParam, LPARAM lParam);
+static int ehhSettingsChanged( WPARAM wParam, LPARAM lParam );
 
 static void mtbDefButtonRegistration();
 
+static void sttSetButtonPressed( HANDLE hButton, BOOL bPressed );
 static HWND sttCreateToolBarFrame( HWND hwndParent, char * szCaption, int nHeight );
 
 static int _MTB_OnBackgroundSettingsChanged(WPARAM wParam, LPARAM lParam)
@@ -207,6 +215,13 @@ static int ehhModulesLoaded(WPARAM wParam, LPARAM lParam)
 	hToolBarWindowList=(HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST,0,0);
 	
 	CreateServiceFunction(MS_TB_ADDBUTTON,svcToolBarAddButton);
+	CreateServiceFunction(MS_TB_SETBUTTONSTATE, svcToolBarSetButtonState);
+	
+	hehSettingsChanged=HookEvent(ME_DB_CONTACT_SETTINGCHANGED, ehhSettingsChanged );
+	//CreateSubFrames
+	//toggle the 'hide offline contacts' flag and call CLUI   
+	//wParam=0
+	//lParam=0
 
 	//Create bar ???
 	{
@@ -214,7 +229,7 @@ static int ehhModulesLoaded(WPARAM wParam, LPARAM lParam)
 		sttCreateToolBarFrame( hwndClist, "ToolBar #1", 24);
 	}
 	mtbDefButtonRegistration();
-
+	
 
 	NotifyEventHooks(ME_TB_MODULELOADED, 0, 0);	
 	return 0;
@@ -223,11 +238,25 @@ static int ehhModulesLoaded(WPARAM wParam, LPARAM lParam)
 static int ehhSystemShutdown(WPARAM wParam, LPARAM lParam)
 {
 	//Remove services;
+	UnhookEvent(hehSettingsChanged);
 	UnhookEvent(hehModulesLoaded);
 	UnhookEvent(hehSystemShutdown);
 	return 0;
 }
 
+
+static int ehhSettingsChanged( WPARAM wParam, LPARAM lParam )
+{
+	DBCONTACTWRITESETTING *cws=(DBCONTACTWRITESETTING*)lParam;
+	if ((HANDLE)wParam!=NULL) return 0;
+	if (hHideOfflineButton==NULL) return 0;	
+	if (!mir_strcmp(cws->szModule,"CList"))
+	{
+		if (!mir_strcmp(cws->szSetting,"HideOffline"))
+			sttSetButtonPressed(hHideOfflineButton, (BOOL) DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT) );
+	}
+	return 0;
+}
 static void sttUpdateButtonState(MTBBUTTONINFO * mtbi)
 {
 	HANDLE ilIcon;
@@ -243,19 +272,64 @@ static void sttUpdateButtonState(MTBBUTTONINFO * mtbi)
 	ilIcon=RegisterIcolibIconHandle(iconId, "ToolBar", iconName, _T("toolbar.dll"),1, g_hInst, IDI_RESETVIEW );
 	SendMessage(mtbi->hWindow, MBM_SETICOLIBHANDLE, 0, (LPARAM) ilIcon );	
 	SendMessage(mtbi->hWindow, BUTTONADDTOOLTIP, (WPARAM)((mtbi->bPushButton) ? mtbi->szTooltipPressed : mtbi->szTooltip), 0);
+	
 }
 /*UNSAFE SHOULDBE CALLED FROM TOOLBAR WINDOW PROC ONLY */ 
 
 void sttReposButtons(MTBINFO * mti)
 {
-	int i=0;
-	int nextX=0;
-	HDWP hdwp=BeginDeferWindowPos( mti->pButtonList->realCount );
+	RECT rcClient;
+	HDWP hdwp;
+	int  nBarSize;
+	int  nFlexSeparatorsCount=0;
+	int  nUsedWidth=0;
+	int  i=0;
+	int  nextX=0;
+	int  nFreeSpace;
+
+	GetClientRect(mti->hWnd, &rcClient);
+    nBarSize=rcClient.right-rcClient.left;
+
+	//calculating count of visible buttons and separators
 	for (i=0; i<mti->pButtonList->realCount; i++)
 	{
 		MTBBUTTONINFO * mtbi=(MTBBUTTONINFO *)mti->pButtonList->items[i];
-		if (hdwp) hdwp=DeferWindowPos(hdwp, mtbi->hWindow, NULL, nextX, 0, 0,	0,	SWP_NOSIZE|SWP_NOZORDER	);
-		nextX+=mti->nButtonWidth+1;
+		if ( mtbi->bSeparator==2 )
+			nFlexSeparatorsCount++;
+		else
+		{
+			int width=(mtbi->bSeparator==1)? 4 : mti->nButtonWidth+1;
+			if (nUsedWidth+width>=nBarSize) break;
+			nUsedWidth+=width;
+		}
+	}
+	nFreeSpace=nBarSize-nUsedWidth;
+	
+	hdwp=BeginDeferWindowPos( mti->pButtonList->realCount );
+	for (i=0; i<mti->pButtonList->realCount; i++)
+	{
+		MTBBUTTONINFO * mtbi=(MTBBUTTONINFO *)mti->pButtonList->items[i];
+		if (mtbi->hWindow)
+		{
+			if (hdwp)
+			{
+				if (nextX+mti->nButtonWidth +1 <= nBarSize)
+					hdwp=DeferWindowPos(hdwp, mtbi->hWindow, NULL, nextX, 0, 0,	0,	SWP_NOSIZE|SWP_NOZORDER|SWP_SHOWWINDOW);
+				else
+					hdwp=DeferWindowPos(hdwp, mtbi->hWindow, NULL, nextX, 0, 0,	0,	SWP_NOSIZE|SWP_NOZORDER|SWP_HIDEWINDOW);
+			}
+			nextX+=mti->nButtonWidth+1;
+		}
+		else if ( mtbi->bSeparator==1 )
+		{
+			nextX+=4;
+		}
+		else if (nFlexSeparatorsCount>0)
+		{
+			nextX+=nFreeSpace/nFlexSeparatorsCount;
+			nFreeSpace-=nFreeSpace/nFlexSeparatorsCount;
+			nFlexSeparatorsCount--;
+		}
 	}
 	if (hdwp) EndDeferWindowPos(hdwp);
 }
@@ -267,20 +341,28 @@ static int svcToolBarAddButton(WPARAM wParam, LPARAM lParam)
 	if (mtbi)
 	{
 		HWND hwndButton=(HWND)mtbi->hWindow;
-		TBButton * bi=(TBButton *)lParam;		
-		mtbi->szButtonName=mir_strdup(bi->pszButtonName);
-		mtbi->szService=mir_strdup(bi->pszServiceName);
-		mtbi->szButtonID=mir_strdup(bi->pszButtonID);
-		mtbi->bPushButton=(bi->tbbFlags&TBBF_PUSHED)?TRUE:FALSE;
-		mtbi->szTooltip=a2t(Translate(bi->pszTooltipUp));
-		mtbi->szTooltipPressed=a2t(Translate(bi->pszTooltipDn));
-		{
-			char * buttonId=_alloca(sizeof("ToolBar.")+strlen(mtbi->szButtonID)+2);
-			strcpy(buttonId,"ToolBar.");
-			strcat(buttonId,mtbi->szButtonID);
-			SendMessage(hwndButton, BUTTONSETID, 0 ,(LPARAM) buttonId );
+		TBButton * bi=(TBButton *)lParam;
+		if (hwndButton)
+		{			
+			mtbi->szButtonName=mir_strdup(bi->pszButtonName);
+			mtbi->szService=mir_strdup(bi->pszServiceName);
+			mtbi->szButtonID=mir_strdup(bi->pszButtonID);
+			mtbi->bPushButton=(bi->tbbFlags&TBBF_PUSHED)?TRUE:FALSE;
+			mtbi->szTooltip=a2t(Translate(bi->pszTooltipUp));
+			mtbi->szTooltipPressed=a2t(Translate(bi->pszTooltipDn));
+			{
+				char * buttonId=_alloca(sizeof("ToolBar.")+strlen(mtbi->szButtonID)+2);
+				strcpy(buttonId,"ToolBar.");
+				strcat(buttonId,mtbi->szButtonID);
+				SendMessage(hwndButton, BUTTONSETID, 0 ,(LPARAM) buttonId );
+			}
+			sttUpdateButtonState( mtbi );
 		}
-		sttUpdateButtonState( mtbi );
+		else
+		{
+			mtbi->bSeparator= (((bi->tbbFlags & TBBF_FLEXSIZESEPARATOR) == TBBF_FLEXSIZESEPARATOR)? 2 : 
+								((bi->tbbFlags & TBBF_ISSEPARATOR) == TBBF_ISSEPARATOR)? 1 : 0); 
+		}
 		SendMessage( mtbi->hwndToolBar, MTBM_REPOSBUTTONS, 0, 0);
 		return (int)hwndButton;
 	}
@@ -292,10 +374,13 @@ static int svcToolBarRemoveButton(WPARAM wParam, LPARAM lParam)
 }
 static int svcToolBarGetButtonState(WPARAM wParam, LPARAM lParam)
 {
-	return 0;
+	int res=-1;
+	WindowList_Broadcast(hToolBarWindowList, MTBM_GETBUTTONSTATE, wParam, (LPARAM) &res);
+	return res;
 }
 static int svcToolBarSetButtonState(WPARAM wParam, LPARAM lParam)
 {
+	WindowList_Broadcast(hToolBarWindowList, MTBM_SETBUTTONSTATE, wParam, lParam);
 	return 0;
 }
 
@@ -408,25 +493,39 @@ static LRESULT CALLBACK ToolBarProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lPar
 			//Adding button
 			MTBBUTTONINFO * mtbi;
 			MTBBUTTONINFO ** retMTBI=(MTBBUTTONINFO **)wParam;
-			HWND hwndButton= CreateWindow(SKINBUTTONCLASS /*MIRANDABUTTONCLASS*/, _T(""), BS_PUSHBUTTON | WS_VISIBLE | WS_CHILD | WS_TABSTOP , 0, 0, pMTBInfo->nButtonWidth, pMTBInfo->nButtonHeight, 
-				hwnd, (HMENU) IDC_SELECTMODE, g_hInst, NULL);
-    		if (pMTBInfo->bFlatButtons)			
-				SendMessage(hwndButton, BUTTONSETASFLATBTN, 0, 1 );
-
+			TBButton * pButton=(TBButton *)lParam;
+			HWND hwndButton = NULL;
+			if (!(pButton->tbbFlags & TBBF_ISSEPARATOR))
+			{
+				hwndButton= CreateWindow(SKINBUTTONCLASS /*MIRANDABUTTONCLASS*/, _T(""), BS_PUSHBUTTON | WS_VISIBLE | WS_CHILD | WS_TABSTOP , 0, 0, pMTBInfo->nButtonWidth, pMTBInfo->nButtonHeight, 
+											hwnd, (HMENU) IDC_SELECTMODE, g_hInst, NULL);
+			}
 			mtbi=mir_alloc(sizeof(MTBBUTTONINFO));
 			memset(mtbi,0,sizeof(MTBBUTTONINFO));
 			mtbi->hWindow=hwndButton;
 			mtbi->hwndToolBar=hwnd;
-            SetWindowLong(hwndButton,GWL_USERDATA,(LONG)mtbi);
+
 			li.List_Insert(pMTBInfo->pButtonList,mtbi,pMTBInfo->pButtonList->realCount);
 			if (retMTBI) *retMTBI=mtbi;
-			SendMessage(hwndButton, MBM_UPDATETRANSPARENTFLAG, 0, 2);
+			if (hwndButton) 
+			{	
+				if (pMTBInfo->bFlatButtons)			
+					SendMessage(hwndButton, BUTTONSETASFLATBTN, 0, 1 );
+				SetWindowLong(hwndButton,GWL_USERDATA,(LONG)mtbi);
+				SendMessage(hwndButton, MBM_UPDATETRANSPARENTFLAG, 0, 2);
+			}
 			return (LRESULT)hwndButton;			
 		}
+
+	case WM_SIZE: //fall through
 	case MTBM_REPOSBUTTONS:
 		{
-			sttReposButtons(pMTBInfo);
-			return 0;
+			if (pMTBInfo && pMTBInfo->hWnd == hwnd)
+			{
+				sttReposButtons(pMTBInfo);
+				return 0;
+			}			
+			break;
 		}
 	case WM_ERASEBKGND:
 			return _MTB_DrawBackground(hwnd, (HDC)wParam, NULL, pMTBInfo);
@@ -475,6 +574,24 @@ static LRESULT CALLBACK ToolBarProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lPar
 			}	
 			return 0;
 		}
+	case MTBM_SETBUTTONSTATE:
+		{
+			HWND hButton = (HWND)wParam;
+			MTBBUTTONINFO *mtbi=NULL;
+			int i;
+			if (!hButton) return 0;
+			for (i=0; i<pMTBInfo->pButtonList->realCount; i++)
+			{
+				mtbi=(MTBBUTTONINFO*)pMTBInfo->pButtonList->items[i];
+				if (mtbi->hWindow == hButton)
+				{
+					mtbi->bPushButton=(BOOL)lParam;
+				    sttUpdateButtonState(mtbi);
+					pcli->pfnInvalidateRect(hwnd, NULL, FALSE);
+				    break;
+				}
+			}						
+		}
 	default :
 		return DefWindowProc(hwnd, msg, wParam, lParam);
 	}		
@@ -486,49 +603,71 @@ static int ToolBarLayeredPaintProc(HWND hWnd, HDC hDC, RECT * rcPaint, HRGN rgn,
 	return SendMessage(hWnd, MTBM_LAYEREDPAINT,(WPARAM)hDC,0);
 }
 
-static void _sttRegisterButton(char * pszButtonID, char * pszButtonName, char * pszServiceName,
+static HANDLE _sttRegisterButton(char * pszButtonID, char * pszButtonName, char * pszServiceName,
 					   char * pszTooltipUp, char * pszTooltipDn, int icoDefIdx, int defResource, int defResource2)
 {
 	TBButton tbb;
 	memset(&tbb,0, sizeof(TBButton));
 	tbb.cbSize=sizeof(TBButton);
-	tbb.pszButtonID=pszButtonID;
-	tbb.pszButtonName=pszButtonName;
-	tbb.pszServiceName=pszServiceName;
-	tbb.pszTooltipUp=pszTooltipUp;
-	tbb.pszTooltipDn=pszTooltipDn;
+	if (pszButtonID) 	
 	{
-		char buf[255];
-		_snprintf(buf,sizeof(buf),"%s%s%s",TOOLBARBUTTON_ICONIDPREFIX, pszButtonID, TOOLBARBUTTON_ICONIDPRIMARYSUFFIX);
-		RegisterIcolibIconHandle( buf, "ToolBar", pszButtonName , _T("toolbar.dll"),icoDefIdx, g_hInst, defResource );
+		tbb.pszButtonID=pszButtonID;
+		tbb.pszButtonName=pszButtonName;
+		tbb.pszServiceName=pszServiceName;
+		tbb.pszTooltipUp=pszTooltipUp;
+		tbb.pszTooltipDn=pszTooltipDn;
+		{
+			char buf[255];
+			_snprintf(buf,sizeof(buf),"%s%s%s",TOOLBARBUTTON_ICONIDPREFIX, pszTooltipUp, TOOLBARBUTTON_ICONIDPRIMARYSUFFIX);
+			RegisterIcolibIconHandle( buf, "ToolBar", pszButtonName , _T("toolbar.dll"),icoDefIdx, g_hInst, defResource );
+		}
+		if (pszTooltipDn)
+		{
+			char buf[255];
+			_snprintf(buf,sizeof(buf),"%s%s%s",TOOLBARBUTTON_ICONIDPREFIX, pszButtonID, TOOLBARBUTTON_ICONIDSECONDARYSUFFIX);
+			RegisterIcolibIconHandle( buf, "ToolBar", pszTooltipDn , _T("toolbar.dll"),icoDefIdx+1, g_hInst, defResource2 );
+		}
 	}
-	if (pszTooltipDn)
-	{
-		char buf[255];
-		char buf2[255];
-		_snprintf(buf,sizeof(buf),"%s%s%s",TOOLBARBUTTON_ICONIDPREFIX, pszButtonID, TOOLBARBUTTON_ICONIDSECONDARYSUFFIX);
-		_snprintf(buf2,sizeof(buf2),"%s%s", pszButtonName, TOOLBARBUTTON_ICONNAMEPRESSEDSUFFIX);
-   		RegisterIcolibIconHandle( buf, "ToolBar", buf2 , _T("toolbar.dll"),icoDefIdx+1, g_hInst, defResource2 );
-	}	
-	CallService(MS_TB_ADDBUTTON,0, (LPARAM)&tbb);
+	else 
+	{		
+		if ((BYTE)pszButtonName) tbb.tbbFlags=TBBF_FLEXSIZESEPARATOR;
+		else tbb.tbbFlags=TBBF_ISSEPARATOR;
+	}
+	
+	return (HANDLE)CallService(MS_TB_ADDBUTTON,0, (LPARAM)&tbb);
+}
+
+static void sttSetButtonPressed( HANDLE hButton, BOOL bPressed )
+{
+	CallService(MS_TB_SETBUTTONSTATE, (WPARAM) hButton, (LPARAM) (bPressed ? TBST_PUSHED : TBST_RELEASED) );
 }
 
 static void mtbDefButtonRegistration()
 {
 	
+	_sttRegisterButton( NULL, (char*)FALSE, NULL, NULL, NULL, 0, 0, 0 );
+
 	_sttRegisterButton( "MainMenu", "Main Menu", MS_CLUI_SHOWMAINMENU,
 		"Main menu", NULL,  2 , IDI_RESETVIEW, IDI_RESETVIEW  );
 
-	_sttRegisterButton( "ShowHideOffline","Show/Hide offline contacts", MS_CLIST_TOGGLEHIDEOFFLINE,
-					    "Show offline contacts", "Hide offline contacts", 1 , IDI_RESETVIEW, IDI_RESETVIEW  );
+	hHideOfflineButton=_sttRegisterButton( "ShowHideOffline","Show/Hide offline contacts", MS_CLIST_TOGGLEHIDEOFFLINE,
+					    "Hide offline contacts", "Show offline contacts", 1 , IDI_RESETVIEW, IDI_RESETVIEW  );
+	
+	sttSetButtonPressed(hHideOfflineButton, (BOOL) DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT) );
 
     _sttRegisterButton( "JabberBookmarks","Jabber Bookmarks", MS_JABBER_SHOWBOOKMARK,
 		"Jabber Bookmark", NULL,  3 , IDI_RESETVIEW, IDI_RESETVIEW  );
 
+	_sttRegisterButton( NULL, (char*)TRUE, NULL, NULL, NULL, 0, 0, 0 );
+
 	_sttRegisterButton( "FindUser","Find User", "FindAdd/FindAddCommand",
 		"Find User", NULL,  4 , IDI_RESETVIEW, IDI_RESETVIEW  );
-
+	
+	_sttRegisterButton( NULL, (char*)TRUE, NULL, NULL, NULL, 0, 0, 0 );
+	
 	_sttRegisterButton( "Options","Options", "Options/OptionsCommand",
 		"Options", NULL,  5 , IDI_RESETVIEW, IDI_RESETVIEW  );
+
+	_sttRegisterButton( NULL, (char*)FALSE, NULL, NULL, NULL, 0, 0, 0 );
 
 }

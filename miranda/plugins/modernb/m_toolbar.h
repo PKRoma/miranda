@@ -7,15 +7,13 @@
 #define TOOLBARBUTTON_ICONNAMEPRESSEDSUFFIX "Pressed"
 
 //button flags
-#define TBBF_DISABLED			1<<0
-#define TBBF_VISIBLE			1<<1 
-#define TBBF_PUSHED				1<<2
-#define TBBF_SHOWTOOLTIP		1<<3
-#define TBBF_ISSEPARATOR		1<<5
-#define TBBF_ISLBUTTON			1<<6
-#define TBBF_RIGHT				1<<7		//button is right/bottom positioned
-#define TBBF_CENTER				1<<8		//button is center positioned
-
+#define TBBF_DISABLED			(1<<0)
+#define TBBF_VISIBLE			(1<<1) 
+#define TBBF_PUSHED				(1<<2)
+#define TBBF_SHOWTOOLTIP		(1<<3)
+#define TBBF_ISSEPARATOR		(1<<5)
+#define TBBF_ISLBUTTON			(1<<6)
+#define TBBF_FLEXSIZESEPARATOR  (TBBF_ISSEPARATOR|TBBF_PUSHED) 
 typedef struct _tagTBButton
 {
 	int cbSize;				 // size of structure

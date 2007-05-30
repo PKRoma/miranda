@@ -335,4 +335,8 @@ extern BOOL (WINAPI *pfEnableThemeDialogTexture)(HANDLE, DWORD);
 extern BOOL (WINAPI *MySetProcessWorkingSetSize)(HANDLE,SIZE_T,SIZE_T);
 extern LRESULT ( CALLBACK *saveContactListControlWndProc )(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
+/* SkinEngine.c */
+
+BYTE SkinDBGetContactSettingByte(HANDLE hContact, const char* szSection, const char*szKey, BYTE bDefault);
+
 #endif

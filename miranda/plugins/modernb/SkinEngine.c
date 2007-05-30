@@ -338,9 +338,12 @@ int SkinEngine_LoadModule()
     g_hSkinLoadedEvent=HookEvent(ME_SKIN_SERVICESCREATED,CLUI_OnSkinLoad);
 
 
+	{
+		BYTE test=SkinDBGetContactSettingByte(NULL,"CLUI","StoreNotUsingElements",0);
+		test=test;
+	}
 
-    // if (DBGetContactSettingByte(NULL,"CLUI","StoreNotUsingElements",0))
-    //     SkinEngine_GetSkinFromDB(DEFAULTSKINSECTION,&g_SkinObjectList);
+//         SkinEngine_GetSkinFromDB(DEFAULTSKINSECTION,&g_SkinObjectList);
 
     //notify services created
     {
@@ -4667,4 +4670,80 @@ HICON SkinEngine_CreateJoinedIcon(HICON hBottom, HICON hTop, BYTE alpha)
         DeleteObject(nMask);
     }
     return res;
+}
+
+#define NEWJOINEDSTR( destination, first, separator, last)						\
+        destination=alloca(strlen(first)+strlen(separator)+strlen(last)+1);	\
+		if (destination) {													\
+			*destination='\0';												\
+			strcat(destination,first);										\
+			strcat(destination,separator);									\
+			strcat(destination,last);										\
+		}													   
+
+#define SKINSETSECTION "SkinnedSettings"
+
+BOOL SkinDBGetContactSetting(HANDLE hContact, const char* szSection, const char*szKey, DBVARIANT * retdbv, BOOL * bSkined )
+{
+	if (!hContact) {  //only for not contact settings
+		char * szSkinKey=NEWJOINEDSTR(szSkinKey,szSection,"@",szKey);
+		if ( !DBGetContactSetting(hContact, SKINSETSECTION, szSkinKey, retdbv) )	{
+			if (bSkined) *bSkined=TRUE;
+			return FALSE;
+	}	}
+	// not skinned
+	if (bSkined) bSkined=FALSE;
+	return DBGetContactSetting(hContact, szSection, szKey, retdbv);
+}
+
+BYTE SkinDBGetContactSettingByte(HANDLE hContact, const char* szSection, const char*szKey, BYTE bDefault)
+{
+	DBVARIANT dbv={0};
+	BOOL bSkined=FALSE;
+	if ( !SkinDBGetContactSetting(hContact, szSection, szKey, &dbv, &bSkined)) {
+		if (dbv.type==DBVT_BYTE)
+		{
+			BYTE retVal=dbv.bVal;
+			DBFreeVariant(&dbv);
+			return retVal;
+		} else {
+			DBFreeVariant(&dbv);
+			if (!bSkined) return DBGetContactSettingByte(hContact, szSection, szKey, bDefault);
+		}
+	}
+	return bDefault;
+}
+
+WORD SkinDBGetContactSettingWord(HANDLE hContact, const char* szSection, const char*szKey, WORD wDefault)
+{
+	BOOL bSkined=FALSE;
+	DBVARIANT dbv={0};
+	if ( !SkinDBGetContactSetting(hContact, szSection, szKey, &dbv, &bSkined)) {
+		if (dbv.type==DBVT_WORD)	{
+			WORD retVal=dbv.wVal;
+			DBFreeVariant(&dbv);
+			return retVal;
+		} else {
+			DBFreeVariant(&dbv);
+			if (!bSkined) return DBGetContactSettingWord(hContact, szSection, szKey, wDefault);
+		}	
+	}
+	return wDefault;
+}
+
+DWORD SkinDBGetContactSettingDword(HANDLE hContact, const char* szSection, const char*szKey, DWORD dwDefault)
+{
+	DBVARIANT dbv={0};
+	BOOL bSkined=FALSE;
+	if ( !SkinDBGetContactSetting(hContact, szSection, szKey, &dbv, &bSkined)) {
+		if (dbv.type==DBVT_DWORD)	{
+			DWORD retVal=dbv.dVal;
+			DBFreeVariant(&dbv);
+			return retVal;
+		} else {
+			DBFreeVariant(&dbv);
+			if (!bSkined) return DBGetContactSettingDword(hContact, szSection, szKey, dwDefault);
+		}	
+	}
+	return dwDefault;
 }

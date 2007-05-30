@@ -2206,7 +2206,7 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		g_hCLUIOptionsWnd=hwndDlg;
 		CheckDlgButton(hwndDlg, IDC_ONTOP, DBGetContactSettingByte(NULL,"CList","OnTop",SETTING_ONTOP_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);		
 		{	// ====== Activate/Deactivate Non-Layered items =======
-			fEnabled=!g_CluiData.fLayered || !g_CluiData.fDisableSkinEngine;
+			fEnabled=!g_CluiData.fLayered || g_CluiData.fDisableSkinEngine;
 			EnableWindow(GetDlgItem(hwndDlg,IDC_TOOLWND),fEnabled);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_MIN2TRAY),fEnabled);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_BORDER),fEnabled);
