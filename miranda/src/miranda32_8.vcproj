@@ -1059,6 +1059,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\modules\database\dbutils.c"
+					>
+				</File>
+				<File
 					RelativePath=".\modules\database\profilemanager.c"
 					>
 				</File>

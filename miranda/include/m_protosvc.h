@@ -128,6 +128,7 @@ static __inline unsigned long Proto_Status2Flag(int status)
 #define PF4_SUPPORTIDLE   0x00000010 // protocol understands idle, added during v0.3.4+ (2004/09/13)
 #define PF4_AVATARS		  0x00000020 // protocol has avatar support, added during v0.3.4 (2004/09/13)
 #define PF4_OFFLINEFILES  0x00000040 // protocols supports sending files to offline users (v0.5.2)
+#define PF4_IMSENDUTF     0x00000080 // protocol is able to process messages in utf-8 (v.0.7.0+)
 
 #define PFLAG_UNIQUEIDTEXT  100    //returns a static buffer of text describing the unique field by which this protocol identifies users (already translated), or NULL
 
@@ -585,6 +586,7 @@ typedef struct {
 #define PREF_CREATEREAD   1     //create the database event with the 'read' flag set
 #define PREF_UNICODE	     2
 #define PREF_RTL          4     // 0.5+ addition: support for right-to-left messages
+#define PREF_UTF          8     // message is in utf-8 (0.7.0+)
 #define PSR_MESSAGE   "/RecvMessage"
 
 #if defined( _UNICODE )

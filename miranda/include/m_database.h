@@ -75,6 +75,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define DBVT_BLOB   254	  //cpbVal and pbVal are valid
 #define DBVT_UTF8   253   //pszVal is valid
 #define DBVT_WCHAR  252   //pszVal is valid
+#if defined( _UNICODE )
+  #define DBVT_TCHAR DBVT_WCHAR
+#else
+  #define DBVT_TCHAR DBVT_ASCIIZ
+#endif
 #define DBVTF_VARIABLELENGTH  0x80
 typedef struct {
 	BYTE type;
@@ -360,6 +365,7 @@ db/time/x below with useful stuff for dealing with it.
 #define DBEF_READ     4    //event has been read by the user. It does not need
                            //to be processed any more except for history.
 #define DBEF_RTL      8    //event contains the right-to-left aligned text
+#define DBEF_UTF     16    //event contains a text in utf-8
 
 typedef struct {
 	int cbSize;       //size of the structure in bytes
@@ -417,6 +423,18 @@ On return, dbe.szModule is a pointer to the database module's own internal list
 of modules. Look but don't touch.
 */
 #define MS_DB_EVENT_GET  "DB/Event/Get"
+
+/* DB/Event/GetText (0.7.0+)
+Retrieves the event's text
+  wParam=(WPARAM)(DBEVENTINFO*)&dbe
+  lParam=(LPARAM)dataType, DBVT_WCHAR or DBVT_ASCIIZ or DBVT_TCHAR
+
+dbe should be the valid database event read via MS_DB_EVENT_GET
+Only events of type EVENTTYPE_MESSAGE are supported.
+Function returns a pointer to a string in the required format.
+This string should be freed by a call of mir_free
+*/
+#define MS_DB_EVENT_GETTEXT "DB/Event/GetText"
 
 /* DB/Event/MarkRead
 Changes the flags for an event to mark it as read.

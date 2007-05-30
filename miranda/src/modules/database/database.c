@@ -323,6 +323,7 @@ int LoadDatabaseModule(void)
 
 	// load the older basic services of the db
 	InitTime();
+	InitUtils();
 
 	// find out which profile to load
 	if ( getProfile(szProfile, SIZEOF(szProfile)) )
@@ -373,4 +374,3 @@ int LoadDatabaseModule(void)
 
 	return iReturn;
 }
-

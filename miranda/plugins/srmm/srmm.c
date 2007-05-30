@@ -29,6 +29,7 @@ PLUGINLINK* pluginLink;
 HINSTANCE   g_hInst;
 
 struct MM_INTERFACE mmi;
+struct UTF8_INTERFACE utfi;
 
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
@@ -71,6 +72,7 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 {
 	pluginLink = link;
 	mir_getMMI( &mmi );
+	mir_getUTFI( &utfi );
 	return LoadSendRecvMessageModule();
 }
 

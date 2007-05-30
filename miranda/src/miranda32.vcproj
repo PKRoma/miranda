@@ -929,6 +929,9 @@
 					RelativePath=".\modules\database\dbtime.c">
 				</File>
 				<File
+					RelativePath=".\modules\database\dbutils.c">
+				</File>
+				<File
 					RelativePath=".\modules\database\profilemanager.c">
 				</File>
 				<File

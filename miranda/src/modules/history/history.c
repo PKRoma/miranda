@@ -81,25 +81,10 @@ int LoadHistoryModule(void)
 
 static void GetMessageDescription( DBEVENTINFO *dbei, TCHAR* buf, int cbBuf )
 {
-	char* pszSrc = ( char* )dbei->pBlob;
-	#if defined( _UNICODE )
-		unsigned len = strlen(( char* )dbei->pBlob )+1;
-		if ( dbei->cbBlob != len ) {
-			int len2 = dbei->cbBlob - len;
-			if ( len2 > cbBuf )
-				len2 = cbBuf - sizeof( TCHAR );
-
-			memcpy( buf, &dbei->pBlob[ len ], len2 );
-			return;
-		}
-	#endif
-
-	#if !defined( _UNICODE )
-		strncpy( buf, ( const char* )pszSrc, cbBuf );
-	#else
-		MultiByteToWideChar( CP_ACP, 0, ( LPCSTR )pszSrc, -1, buf, cbBuf );
-	#endif
+	TCHAR* msg = ( TCHAR* )CallService( MS_DB_EVENT_GETTEXT, (WPARAM)dbei, DBVT_TCHAR);
+	_tcsncpy( buf, msg, cbBuf );
 	buf[ cbBuf-1 ] = 0;
+	mir_free( msg );
 }
 
 static void GetUrlDescription( DBEVENTINFO *dbei, TCHAR* buf, int cbBuf )

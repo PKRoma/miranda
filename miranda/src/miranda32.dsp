@@ -439,6 +439,10 @@ SOURCE=.\modules\database\dbtime.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\modules\database\dbutils.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\modules\database\profilemanager.c
 # End Source File
 # Begin Source File
