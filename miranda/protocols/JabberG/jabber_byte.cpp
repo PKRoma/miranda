@@ -40,6 +40,18 @@ static int JabberByteSendParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char* b
 static int JabberByteSendProxyParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char* buffer, int datalen );
 void JabberByteSendViaProxy( JABBER_BYTE_TRANSFER *jbt );
 
+TCHAR* PrepareJid(TCHAR *jid)
+{
+	if ( !jid ) return NULL;
+	TCHAR* szNewJid = mir_tstrdup(jid);
+	if ( !szNewJid ) return NULL;
+	TCHAR* pDelimiter = _tcschr( szNewJid, _T('/') );
+	if ( pDelimiter ) *pDelimiter = _T('\0');
+	CharLower( szNewJid );
+	if ( pDelimiter ) *pDelimiter = _T('/');
+	return szNewJid;
+}
+
 void JabberByteFreeJbt( JABBER_BYTE_TRANSFER *jbt )
 {
 	if ( jbt )  {
@@ -406,8 +418,14 @@ static int JabberByteSendParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char* b
 		// 08-09 bnd.port server bound port
 		if ( datalen == 47 && *(( DWORD* )buffer )==0x03000105 && buffer[4]==40 && *(( WORD* )( buffer+45 ))==0 ) {
 			TCHAR text[256];
-			mir_sntprintf( text, SIZEOF( text ), _T("%s%s%s"), jbt->sid, jbt->srcJID, jbt->dstJID );
-			char* szAuthString = t2a( text );
+
+			TCHAR *szInitiatorJid = PrepareJid(jbt->srcJID);
+			TCHAR *szTargetJid = PrepareJid(jbt->dstJID);
+			mir_sntprintf( text, SIZEOF( text ), _T("%s%s%s"), jbt->sid, szInitiatorJid, szTargetJid );
+			mir_free(szInitiatorJid);
+			mir_free(szTargetJid);
+
+			char* szAuthString = mir_utf8encodeT( text );
 			JabberLog( "Auth: '%s'", szAuthString );
 			if (( str = JabberSha1( szAuthString )) != NULL ) {
 				for ( i=0; i<40 && buffer[i+5]==str[i]; i++ );
@@ -556,8 +574,14 @@ static int JabberByteSendProxyParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, ch
 			data[4] = 40;
 
 			TCHAR text[256];
-			mir_sntprintf( text, SIZEOF( text ), _T("%s%s%s"), jbt->sid, jbt->srcJID, jbt->dstJID );
-			char* szAuthString = t2a( text );
+
+			TCHAR *szInitiatorJid = PrepareJid(jbt->srcJID);
+			TCHAR *szTargetJid = PrepareJid(jbt->dstJID);
+			mir_sntprintf( text, SIZEOF( text ), _T("%s%s%s"), jbt->sid, szInitiatorJid, szTargetJid );
+			mir_free(szInitiatorJid);
+			mir_free(szTargetJid);
+
+			char* szAuthString = mir_utf8encodeT( text );
 			JabberLog( "Auth: '%s'", szAuthString );
 			char* szHash = JabberSha1( szAuthString );
 			strncpy(( char* )( data+5 ), szHash, 40 );
@@ -760,8 +784,12 @@ static int JabberByteReceiveParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char
 			data[4] = 40;
 
 			TCHAR text[256];
-			mir_sntprintf( text, SIZEOF( text ), _T("%s%s%s"), jbt->sid, jbt->srcJID, jbt->dstJID );
-			char* szAuthString = t2a( text );
+			TCHAR *szInitiatorJid = PrepareJid(jbt->srcJID);
+			TCHAR *szTargetJid = PrepareJid(jbt->dstJID);
+			mir_sntprintf( text, SIZEOF( text ), _T("%s%s%s"), jbt->sid, szInitiatorJid, szTargetJid );
+			mir_free(szInitiatorJid);
+			mir_free(szTargetJid);
+			char* szAuthString = mir_utf8encodeT( text );
 			JabberLog( "Auth: '%s'", szAuthString );
 			char* szHash = JabberSha1( szAuthString );
 			strncpy(( char* )( data+5 ), szHash, 40 );
