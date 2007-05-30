@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2007 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -50,7 +50,7 @@ typedef struct {
 			 //with the implication that this plugin provides back-end-compatible features
 } PLUGININFO;
 
-/* 0.7+ 
+/* 0.7+
    New plugin loader implementation
 */
 /* The UUID structure below is used to for plugin UUID's and module type definitions */
@@ -79,8 +79,8 @@ typedef struct _MUUID {
 #define MIID_AUTOAWAY       {0x9c87f7dc, 0x3bd7, 0x4983, {0xb7, 0xfb, 0xb8, 0x48, 0xfd, 0xbc, 0x91, 0xf0}}
 #define MIID_USERONLINE     {0x130829e0, 0x2463, 0x4ff8, {0xbb, 0xc8, 0xce, 0x73, 0xc0, 0x18, 0x84, 0x42}}
 #define MIID_IDLE           {0x296f9f3b, 0x5b6f, 0x40e5, {0x8f, 0xb0, 0xa6, 0x49, 0x6c, 0x18, 0xbf, 0xa}}
-#define MIID_FONTSERVICE    {0x56f39112, 0xe37f, 0x4234, 0xa9, 0xe6, 0x7a, 0x81, 0x17, 0x45, 0xc1, 0x75)}}
-#define MIID_UPDATENOTIFY   {0x4e68b12a, 0x6b54, 0x44de, 0x86, 0x37, 0xf1, 0x12, 0xd, 0xb6, 0x81, 0x40}}
+#define MIID_FONTSERVICE    {0x56f39112, 0xe37f, 0x4234, {0xa9, 0xe6, 0x7a, 0x81, 0x17, 0x45, 0xc1, 0x75)}
+#define MIID_UPDATENOTIFY   {0x4e68b12a, 0x6b54, 0x44de, {0x86, 0x37, 0xf1, 0x12, 0xd, 0xb6, 0x81, 0x40}}
 
 /* Common plugin interfaces (core plugins) */
 #define MIID_DATABASE       {0xae77fd33, 0xe484, 0x4dc7, {0x8c, 0xbc, 0x9, 0x9f, 0xed, 0xcc, 0xcf, 0xdd}}
@@ -191,13 +191,13 @@ extern PLUGINLINK *pluginLink;
 
 typedef struct {
 	int cbSize;
-	
+
 	/*
 	returns what the driver can do given the flag
 	*/
 	int (*getCapability) ( int flag );
 
-	/* 
+	/*
 		buf: pointer to a string buffer
 		cch: length of buffer
 		shortName: if true, the driver should return a short but descriptive name, e.g. "3.xx profile"
@@ -222,7 +222,7 @@ typedef struct {
 		error: [in/out] pointer to an int to set with error if any
 		Affect: Ask the database plugin if it supports the given profile, if it does it will
 			return 0, if it doesnt return 1, with the error set in error -- EGROKPRF_* can be valid error
-			condition, most common error would be [EGROKPRF_UNKHEADER] 
+			condition, most common error would be [EGROKPRF_UNKHEADER]
 		Note: Just because 1 is returned, doesnt mean the profile is not supported, the profile might be damaged
 			etc.
 		Returns: 0 on success, non zero on failure
@@ -246,6 +246,3 @@ typedef struct {
 } DATABASELINK;
 
 #endif // M_NEWPLUGINAPI_H__
-
-
-
