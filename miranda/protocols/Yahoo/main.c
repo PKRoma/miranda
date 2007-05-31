@@ -46,7 +46,6 @@ static HANDLE   hHookOptsInit;
 static HANDLE   hHookModulesLoaded;
 static HANDLE   hHookSettingChanged;
 static HANDLE   hHookUserTyping;
-static HANDLE   hHookUserInfoInit;
 HANDLE   hHookContactDeleted;
 HANDLE   hHookIdle;
 HANDLE   hYahooNudge = NULL;
