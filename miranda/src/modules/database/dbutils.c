@@ -33,15 +33,26 @@ int DbEventGetText(WPARAM wParam, LPARAM lParam)
 	if ( lParam == DBVT_WCHAR )
 	{
 		WCHAR* msg;
-		int msglen = strlen(( char* )dbei->pBlob) + 1;
 		if ( dbei->flags & DBEF_UTF )
 			Utf8Decode( dbei->pBlob, &msg );
-		else if ( msglen != (int) dbei->cbBlob )
-			msg = mir_wstrdup(( WCHAR* )&dbei->pBlob[ msglen ] );
 		else {
-			msg = ( WCHAR* )mir_alloc( sizeof(TCHAR) * msglen );
-			MultiByteToWideChar(CP_ACP, 0, (char *) dbei->pBlob, -1, msg, msglen);
-		}
+			// ушлепкам типа скотта торжественно посвящается
+			int msglen = strlen(( char* )dbei->pBlob) + 1, msglenW = 0;
+			if ( msglen != (int) dbei->cbBlob ) {
+				int i, count = (( dbei->cbBlob - msglen ) / sizeof( WCHAR ));
+				WCHAR* p = ( WCHAR* )&dbei->pBlob[ msglen ];
+				for (  i=0; i < count; i++ ) {
+					if ( p[i] == 0 ) {
+						msglenW = i;
+						break;
+			}	}	}
+
+			if ( msglenW > 0 && msglenW < msglen )
+				msg = mir_wstrdup(( WCHAR* )&dbei->pBlob[ msglen ] );
+			else {
+				msg = ( WCHAR* )mir_alloc( sizeof(TCHAR) * msglen );
+				MultiByteToWideChar(CP_ACP, 0, (char *) dbei->pBlob, -1, msg, msglen);
+		}	}
 		return ( int )msg;
 	}
 	else if ( lParam == DBVT_ASCIIZ ) {
