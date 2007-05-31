@@ -14,7 +14,6 @@
 #include <malloc.h>
 #include <sys/stat.h>
 #include <io.h>
-#include <fcntl.h>
 
 #include "yahoo.h"
 #include "resource.h"
@@ -34,11 +33,11 @@ extern yahoo_local_account *ylad;
  *31 bit hash function  - this is based on g_string_hash function from glib
  */
 
-int YAHOO_avt_hash(const char *key, long ksize)
+int YAHOO_avt_hash(const char *key, DWORD ksize)
 {
   const char *p = key;
   int h = *p;
-  long l = 0;
+  long l = 1;
   
   if (h)
 	for (p += 1; l < ksize; p++, l++)
@@ -47,7 +46,6 @@ int YAHOO_avt_hash(const char *key, long ksize)
   return h;
 }
 
-void upload_avt(int id, int fd, int error, void *data);
 
 /**************** Send Avatar ********************/
 
@@ -814,36 +812,65 @@ return=0 for sucess
 int YahooSetMyAvatar(WPARAM wParam, LPARAM lParam)
 {
 	char* szFile = ( char* )lParam;
-
 	char szMyFile[MAX_PATH+1];
+	
 	GetAvatarFileName(NULL, szMyFile, MAX_PATH, 2);
 
 	if (szFile == NULL) {
-		remove(szMyFile);
-		DBDeleteContactSetting( NULL, yahooProtocolName, "AvatarHash" );
-	}
-	else {
-		long  dwPngSize;
+		YAHOO_DebugLog("[Deleting Avatar Info]");	
+		
+		/* remove ALL our Avatar Info Keys */
+		DBDeleteContactSetting(NULL, yahooProtocolName, "AvatarFile");	
+		DBDeleteContactSetting(NULL, yahooProtocolName, "AvatarHash");
+		DBDeleteContactSetting(NULL, yahooProtocolName, "AvatarURL");	
+		DBDeleteContactSetting(NULL, yahooProtocolName, "AvatarTS");	
+		
+		/* Send a Yahoo packet saying we don't got an avatar anymore */
+		YAHOO_set_avatar(0);
+		
+		YAHOO_SetByte("ShareAvatar",0);
+		
+		DeleteFile(szMyFile);
+	} else {
+		DWORD  dwPngSize, dw;
 		BYTE* pResult;
 		unsigned int hash;
-		int fileId = _open(szFile, _O_RDONLY | _O_BINARY, _S_IREAD);
-		if ( fileId == -1 )
+		HANDLE  *hFile;
+
+		hFile = CreateFile(szFile, 
+							GENERIC_READ, 
+							FILE_SHARE_READ|FILE_SHARE_WRITE, 
+							NULL, 
+							OPEN_EXISTING, 
+							FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, 
+							0 );
+	
+		if ( hFile ==  INVALID_HANDLE_VALUE )
 			return 1;
 
-		dwPngSize = filelength( fileId );
+		dwPngSize = GetFileSize( hFile, NULL );
 		if (( pResult = ( BYTE* )malloc( dwPngSize )) == NULL )
 			return 2;
 
-		_read( fileId, pResult, dwPngSize );
-		_close( fileId );
+		ReadFile( hFile, pResult, dwPngSize, &dw, NULL );
+		CloseHandle( hFile );
 
-		fileId = _open( szMyFile, _O_CREAT | _O_TRUNC | _O_WRONLY | O_BINARY,  _S_IREAD | _S_IWRITE );
-		if ( fileId > -1 ) {
-			_write( fileId, pResult, dwPngSize );
-			_close( fileId );
-		}
-
+		hFile = CreateFile(szMyFile, 
+							GENERIC_WRITE, 
+							FILE_SHARE_WRITE, 
+							NULL, 
+							OPEN_ALWAYS, 
+							FILE_ATTRIBUTE_NORMAL, 0);
+		if ( hFile ==  INVALID_HANDLE_VALUE ) 
+			return 1;
+		
+		WriteFile( hFile, pResult, dwPngSize, &dw, NULL );
+		SetEndOfFile( hFile);
+		CloseHandle( hFile );
+		
 		hash = YAHOO_avt_hash(pResult, dwPngSize);
+		free( pResult );
+		
 		if ( hash ) {
 			LOG(("[YAHOO_SetAvatar] File: '%s' CK: %d", szMyFile, hash));	
 
@@ -852,6 +879,12 @@ int YahooSetMyAvatar(WPARAM wParam, LPARAM lParam)
 				YAHOO_SetString(NULL, "AvatarFile", szMyFile);
 				DBWriteContactSettingDword(NULL, yahooProtocolName, "TMPAvatarHash", hash);
 
+				/*	Set Sharing to ON if it's OFF */
+				if (YAHOO_GetByte( "ShareAvatar", 0 ) != 2) {
+					YAHOO_SetByte( "ShareAvatar", 2 );
+					YAHOO_set_avatar( 2 );
+				}
+				
 				YAHOO_SendAvatar(szMyFile);
 			} 
 			else LOG(("[YAHOO_SetAvatar] Same checksum and avatar on YahooFT. Not Reuploading."));	  
