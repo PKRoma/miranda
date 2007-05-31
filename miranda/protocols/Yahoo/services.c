@@ -1091,8 +1091,6 @@ int LoadYahooServices( void )
 	YAHOO_CreateProtoServiceFunction( PSS_AUTHREQUEST,	YahooSendAuthRequest);
 	///
 	YAHOO_CreateProtoServiceFunction( PSS_MESSAGE,	YahooSendMessage );
-	YAHOO_CreateProtoServiceFunction( PSS_MESSAGE"W",	YahooSendMessageW );
-	
 	YAHOO_CreateProtoServiceFunction( PSR_MESSAGE,	YahooRecvMessage );
 	
 	YAHOO_CreateProtoServiceFunction( PSS_GETAWAYMSG,	YahooGetAwayMessage );

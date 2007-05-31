@@ -198,17 +198,30 @@ static void __cdecl yahoo_im_sendackfail_longmsg(HANDLE hContact)
 //=======================================================
 //Send a message
 //=======================================================
-//#define MSG_LEN                                   2048
 int YahooSendMessage(WPARAM wParam, LPARAM lParam)
 {
     CCSDATA *ccs = (CCSDATA *) lParam;
     DBVARIANT dbv;
-    char *msg = (char *) ccs->lParam;
-    
+    char *msg;
+	int  bANSI;
+		
+	bANSI = YAHOO_GetByte( "DisableUTF8", 0 );
+
     if (!yahooLoggedIn) {/* don't send message if we not connected! */
         mir_forkthread(yahoo_im_sendackfail, ccs->hContact);
         return 1;
     }
+
+	if (bANSI) {
+		/* convert to ANSI */
+		msg = ( char* )ccs->lParam;
+	} else if ( ccs->wParam & PREF_UNICODE ) {
+		/* convert to utf8 */
+		char* p = ( char* )ccs->lParam;
+		msg = mir_utf8encodeW(( wchar_t* )&p[ strlen(p)+1 ] );
+	} else {
+		msg = mir_utf8encode(( char* )ccs->lParam );
+	}
         
     if (lstrlen(msg) > 800) {
         mir_forkthread(	yahoo_im_sendackfail_longmsg, ccs->hContact);
@@ -216,69 +229,14 @@ int YahooSendMessage(WPARAM wParam, LPARAM lParam)
     }
 
 	if (!DBGetContactSetting(ccs->hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
-		if (YAHOO_GetByte( "DisableUTF8", 0 )){
-			// don't send UTF8, because settings say so
-			yahoo_send_msg(dbv.pszVal, msg, 0);
-			mir_forkthread(yahoo_im_sendacksuccess, ccs->hContact);
-		} else {
-		
-			msg = mir_utf8encode((char *) ccs->lParam );
-			
-			if (msg) {
-				yahoo_send_msg(dbv.pszVal, msg, 1);
-				mir_free(msg);
-				mir_forkthread(yahoo_im_sendacksuccess, ccs->hContact);
-			} else
-				mir_forkthread(yahoo_im_sendackfail, ccs->hContact);
-		}
-		
-        DBFreeVariant(&dbv);
-        return 1;
-    }
-    
-    return 0;
-}
-
-int YahooSendMessageW(WPARAM wParam, LPARAM lParam)
-{
-    CCSDATA *ccs = (CCSDATA *) lParam;
-    DBVARIANT dbv;
-
-	YAHOO_DebugLog("[YahooSendMessageW]");	
-	
-    if (!yahooLoggedIn) {/* don't send message if we not connected! */
-        mir_forkthread(yahoo_im_sendackfail, ccs->hContact);
-        return 1;
-    }
-
-
-	if (!DBGetContactSetting(ccs->hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
-		char* msg;
-		int  bANSI;
-		
-		bANSI = YAHOO_GetByte( "DisableUTF8", 0 );
-
-		if (bANSI) { /* No Conversion!! */
-			msg = ( char* )ccs->lParam; /* grab the ANSI portion */
-		} else {
-			char* p = ( char* )ccs->lParam;
-			msg = mir_utf8encodeW(( wchar_t* )&p[ strlen(p)+1 ] );
-		}
-
-		YAHOO_DebugLog("[YahooSendMessageW] String: %s length: %d", msg, lstrlen(msg));
-		
-		if (lstrlen(msg) > 800) {/* we don't support very long messages */
-			mir_forkthread(yahoo_im_sendackfail_longmsg, ccs->hContact);
-		} else {
-			yahoo_send_msg(dbv.pszVal, msg, (bANSI) ? 0:1);
-		    mir_forkthread(yahoo_im_sendacksuccess, ccs->hContact);
-		}
-
-        DBFreeVariant(&dbv);
+		yahoo_send_msg(dbv.pszVal, msg, (bANSI) ? 1 : 0);
 		
 		if (!bANSI)
 			mir_free(msg);
 		
+		mir_forkthread(yahoo_im_sendacksuccess, ccs->hContact);
+		
+        DBFreeVariant(&dbv);
         return 1;
     }
     
