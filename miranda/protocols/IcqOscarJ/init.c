@@ -62,7 +62,7 @@ extern int bHideXStatusUI;
 PLUGININFOEX pluginInfo = {
   sizeof(PLUGININFOEX),
   NULL,
-  PLUGIN_MAKE_VERSION(0,3,10,3),
+  PLUGIN_MAKE_VERSION(0,3,10,4),
   "Support for ICQ network, enhanced.",
   "Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
   "jokusoftware@miranda-im.org",
@@ -242,7 +242,6 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
   ICQCreateServiceFunction(PS_SET_NICKNAME, IcqSetNickName);
   ICQCreateServiceFunction(PSS_GETINFO, IcqGetInfo);
   ICQCreateServiceFunction(PSS_MESSAGE, IcqSendMessage);
-  ICQCreateServiceFunction(PSS_MESSAGE"W", IcqSendMessageW);
   ICQCreateServiceFunction(PSS_URL, IcqSendUrl);
   ICQCreateServiceFunction(PSS_CONTACTS, IcqSendContacts);
   ICQCreateServiceFunction(PSS_SETAPPARENTMODE, IcqSetApparentMode);

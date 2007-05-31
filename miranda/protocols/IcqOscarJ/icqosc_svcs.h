@@ -62,7 +62,6 @@ int IcqGetInfo(WPARAM wParam, LPARAM lParam);
 int IcqSendSms(WPARAM wParam, LPARAM lParam);
 int IcqSetApparentMode(WPARAM wParam, LPARAM lParam);
 int IcqSendMessage(WPARAM wParam, LPARAM lParam);
-int IcqSendMessageW(WPARAM wParam, LPARAM lParam);
 int IcqSendUrl(WPARAM wParam, LPARAM lParam);
 int IcqSendContacts(WPARAM wParam, LPARAM lParam);
 int IcqSendFile(WPARAM wParam, LPARAM lParam);

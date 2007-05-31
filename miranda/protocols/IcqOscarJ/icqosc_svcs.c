@@ -200,7 +200,7 @@ int IcqGetAvatarInfo(WPARAM wParam, LPARAM lParam)
   { // we know the format, test file
     GetFullAvatarFileName(dwUIN, szUID, dwPaFormat, pai->filename, MAX_PATH);
 
-    pai->format = dwPaFormat; 
+    pai->format = dwPaFormat;
 
     if (!IsAvatarSaved(pai->hContact, dbv.pbVal, dbv.cpbVal))
     { // hashes are the same
@@ -426,7 +426,7 @@ int IcqSetStatus(WPARAM wParam, LPARAM lParam)
 
           if (pszPwd)
             icq_login(pszPwd);
-          else 
+          else
             RequestPassword();
 
           break;
@@ -663,7 +663,7 @@ int IcqBasicSearch(WPARAM wParam, LPARAM lParam)
         }
       }
       pszUIN[j] = 0;
-      
+
       if (strlennull(pszUIN))
       {
         if (IsStringUIN(pszUIN))
@@ -708,7 +708,7 @@ int IcqSearchByEmail(WPARAM wParam, LPARAM lParam)
       dwSecId = icq_searchAimByEmail((char *)lParam, dwSearchId);
     else
       dwSecId = 0;
-    if (dwSearchId) 
+    if (dwSearchId)
       return dwSearchId;
     else
       return dwSecId;
@@ -781,7 +781,7 @@ static HANDLE AddToListByUIN(DWORD dwUin, DWORD dwFlags)
 
   if (hContact)
   {
-    if ((!dwFlags & PALF_TEMPORARY) && DBGetContactSettingByte(hContact, "CList", "NotOnList", 1)) 
+    if ((!dwFlags & PALF_TEMPORARY) && DBGetContactSettingByte(hContact, "CList", "NotOnList", 1))
     {
       DBDeleteContactSetting(hContact, "CList", "NotOnList");
       SetContactHidden(hContact, 0);
@@ -803,7 +803,7 @@ static HANDLE AddToListByUID(char *szUID, DWORD dwFlags)
 
   if (hContact)
   {
-    if ((!dwFlags & PALF_TEMPORARY) && DBGetContactSettingByte(hContact, "CList", "NotOnList", 1)) 
+    if ((!dwFlags & PALF_TEMPORARY) && DBGetContactSettingByte(hContact, "CList", "NotOnList", 1))
     {
       DBDeleteContactSetting(hContact, "CList", "NotOnList");
       SetContactHidden(hContact, 0);
@@ -1126,7 +1126,7 @@ int IcqFileDeny(WPARAM wParam, LPARAM lParam)
     if (ICQGetContactSettingUID(ccs->hContact, &dwUin, &szUid))
       return 1; // Invalid contact
 
-    if (icqOnline && ccs->wParam && ccs->hContact) 
+    if (icqOnline && ccs->wParam && ccs->hContact)
     {
       if (dwUin && ft->ft_magic == FT_MAGIC_ICQ)
       { // deny old fashioned file transfer
@@ -1338,7 +1338,7 @@ int IcqGetAwayMsg(WPARAM wParam,LPARAM lParam)
           return icq_sendGetAwayMsgServExt(ccs->hContact, dwUin, wMessageType,
             (WORD)(ICQGetContactSettingWord(ccs->hContact, "Version", 0)==9?9:ICQ_VERSION)); // Success
         else
-          return icq_sendGetAwayMsgServ(ccs->hContact, dwUin, wMessageType, 
+          return icq_sendGetAwayMsgServ(ccs->hContact, dwUin, wMessageType,
             (WORD)(ICQGetContactSettingWord(ccs->hContact, "Version", 0)==9?9:ICQ_VERSION)); // Success
       }
     }
@@ -1363,187 +1363,13 @@ static message_cookie_data* CreateMsgCookieData(BYTE bMsgType, HANDLE hContact, 
 
   if (!ICQGetContactSettingByte(NULL, "SlowSend", DEFAULT_SLOWSEND))
     bAckType = ACKTYPE_NONE;
-  else if ((!dwUin) || (!CheckContactCapabilities(hContact, CAPF_SRV_RELAY)) || 
+  else if ((!dwUin) || (!CheckContactCapabilities(hContact, CAPF_SRV_RELAY)) ||
       (wStatus == ID_STATUS_OFFLINE) || ICQGetContactSettingByte(NULL, "OnlyServerAcks", DEFAULT_ONLYSERVERACKS))
     bAckType = ACKTYPE_SERVER;
   else
     bAckType = ACKTYPE_CLIENT;
 
   return CreateMessageCookie(bMsgType, bAckType);
-}
-
-
-
-int IcqSendMessage(WPARAM wParam, LPARAM lParam)
-{
-  if (lParam)
-  {
-    CCSDATA* ccs = (CCSDATA*)lParam;
-
-    if (ccs->hContact && ccs->lParam)
-    {
-      WORD wRecipientStatus;
-      DWORD dwCookie;
-      DWORD dwUin;
-      uid_str szUID;
-      char* pszText;
-
-      if (ICQGetContactSettingUID(ccs->hContact, &dwUin, &szUID))
-      { // Invalid contact
-        dwCookie = GenerateCookie(0);
-        icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, ICQTranslate("The receiver has an invalid user ID."));
-        return dwCookie;
-      }
-
-      if (gbTempVisListEnabled && gnCurrentStatus == ID_STATUS_INVISIBLE)
-        makeContactTemporaryVisible(ccs->hContact);  // make us temporarily visible to contact
-
-      pszText = (char*)ccs->lParam;
-
-      wRecipientStatus = ICQGetContactStatus(ccs->hContact);
-
-      // Failure scenarios
-      if (!icqOnline)
-      {
-        dwCookie = GenerateCookie(0);
-        icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, ICQTranslate("You cannot send messages when you are offline."));
-      }
-      else if ((wRecipientStatus == ID_STATUS_OFFLINE) && (strlennull(pszText) > 4096))
-      {
-        dwCookie = GenerateCookie(0);
-        icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, ICQTranslate("Messages to offline contacts must be shorter than 4096 characters."));
-      }
-      // Looks OK
-      else
-      {
-        message_cookie_data* pCookieData;
-
-        if (wRecipientStatus != ID_STATUS_OFFLINE && gbUtfEnabled==2 && !IsUSASCII(pszText, strlennull(pszText)) 
-          && CheckContactCapabilities(ccs->hContact, CAPF_UTF) && ICQGetContactSettingByte(ccs->hContact, "UnicodeSend", 1))
-        { // text contains national chars and we should send all this as Unicode, so do it
-          char* pszUtf = NULL;
-          int nStrSize = MultiByteToWideChar(CP_ACP, 0, pszText, strlennull(pszText), (WCHAR*)pszUtf, 0);
-          int nRes;
-
-          pszUtf = (char*)SAFE_MALLOC((nStrSize + 2)*sizeof(WCHAR));
-          // we omit ansi string - not used...
-          MultiByteToWideChar(CP_ACP, 0, pszText, strlennull(pszText), (WCHAR*)(pszUtf+1), nStrSize);
-          *(WORD*)(pszUtf + 1 + nStrSize*sizeof(WCHAR)) = '\0'; // trailing zeros
-
-          ccs->lParam = (LPARAM)pszUtf; // yeah, this is quite a hack, BE AWARE OF THAT !!!
-          ccs->wParam |= PREF_UNICODE;
-
-          nRes = IcqSendMessageW(wParam, lParam);
-          ccs->lParam = (LPARAM)pszText;
-
-          SAFE_FREE(&pszUtf); // release memory
-
-          return nRes;
-        }
-
-        if (!dwUin)
-        { // prepare AIM Html message
-          char *mng = MangleXml(pszText, strlennull(pszText));
-          char *tmp = (char*)SAFE_MALLOC(strlennull(mng) + 28);
-
-          strcpy(tmp, "<HTML><BODY>");
-          strcat(tmp, mng);
-          SAFE_FREE(&mng);
-          strcat(tmp, "</BODY></HTML>");
-          pszText = tmp;
-        }
-
-        // Set up the ack type
-        pCookieData = CreateMsgCookieData(MTYPE_PLAIN, ccs->hContact, dwUin);
-
-#ifdef _DEBUG
-        NetLog_Server("Send message - Message cap is %u", CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY));
-        NetLog_Server("Send message - Contact status is %u", wRecipientStatus);
-#endif
-        if (dwUin && gbDCMsgEnabled && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD, 0))
-        {
-          int iRes = icq_SendDirectMessage(ccs->hContact, pszText, strlennull(pszText), 1, pCookieData, NULL);
-          if (iRes) return iRes; // we succeded, return
-        }
-
-        if ((!dwUin || !CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY)) || (wRecipientStatus == ID_STATUS_OFFLINE))
-        {
-          // set flag for offline messages - to allow proper error handling
-          if (wRecipientStatus == ID_STATUS_OFFLINE) ((message_cookie_data_ex*)pCookieData)->isOffline = TRUE;
-
-          if (strlennull(pszText) > MAX_MESSAGESNACSIZE)
-          { // max length check // TLV(2) is currently limited to 0xA00 bytes in online mode
-            // only limit to not get disconnected, all other will be handled by error 0x0A
-            SAFE_FREE(&pCookieData);
-            if (!dwUin) SAFE_FREE(&pszText);
-
-            dwCookie = GenerateCookie(0);
-            icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, ICQTranslate("The message could not be delivered, it is too long."));
-
-            return dwCookie;
-          }
-          // Rate check
-          if (IsServerOverRate(ICQ_MSG_FAMILY, ICQ_MSG_SRV_SEND, RML_LIMIT))
-          { // rate is too high, the message will not go thru...
-            SAFE_FREE(&pCookieData);
-            if (!dwUin) SAFE_FREE(&pszText);
-
-            dwCookie = GenerateCookie(0);
-            icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, ICQTranslate("The message could not be delivered. You are sending too fast. Wait a while and try again."));
-
-            return dwCookie;
-          }
-
-          dwCookie = icq_SendChannel1Message(dwUin, szUID, ccs->hContact, pszText, pCookieData);
-        }
-        else
-        {
-          WORD wPriority;
-
-          if (wRecipientStatus == ID_STATUS_ONLINE || wRecipientStatus == ID_STATUS_FREECHAT)
-            wPriority = 0x0001;
-          else
-            wPriority = 0x0021;
-
-          if (strlennull(pszText) > MAX_MESSAGESNACSIZE - 102)
-          { // max length check
-            SAFE_FREE(&pCookieData);
-
-            dwCookie = GenerateCookie(0);
-            icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, ICQTranslate("The message could not be delivered, it is too long."));
-
-            return dwCookie;
-          }
-          // Rate check
-          if (IsServerOverRate(ICQ_MSG_FAMILY, ICQ_MSG_SRV_SEND, RML_LIMIT))
-          { // rate is too high, the message will not go thru...
-            SAFE_FREE(&pCookieData);
-
-            dwCookie = GenerateCookie(0);
-            icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, ICQTranslate("The message could not be delivered. You are sending too fast. Wait a while and try again."));
-
-            return dwCookie;
-          }
-
-          dwCookie = icq_SendChannel2Message(dwUin, ccs->hContact, pszText, strlennull(pszText), wPriority, pCookieData, NULL);
-        }
-
-        // This will stop the message dialog from waiting for the real message delivery ack
-        if (pCookieData->nAckType == ACKTYPE_NONE)
-        {
-          icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_SUCCESS, ACKTYPE_MESSAGE, NULL);
-          // We need to free this here since we will never see the real ack
-          // The actual cookie value will still have to be returned to the message dialog though
-          ReleaseCookie(dwCookie);
-        }
-        if (!dwUin) SAFE_FREE(&pszText);
-      }
-
-      return dwCookie; // Success
-    }
-  }
-
-  return 0; // Failure
 }
 
 
@@ -1568,7 +1394,7 @@ static char* convertMsgToUserSpecificAnsi(HANDLE hContact, const char* szMsg)
 
 
 
-int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
+int IcqSendMessage(WPARAM wParam, LPARAM lParam)
 {
   if (lParam)
   {
@@ -1580,20 +1406,9 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
       DWORD dwCookie;
       DWORD dwUin;
       uid_str szUID;
-      WCHAR* pszText;
-      // TODO: this was not working, removed check
-      if (!gbUtfEnabled || /*(ccs->wParam & PREF_UNICODE == PREF_UNICODE) ||*/ 
-        (!CheckContactCapabilities(ccs->hContact, CAPF_UTF)) || (!ICQGetContactSettingByte(ccs->hContact, "UnicodeSend", 1)))
-      {  // send as unicode only if marked as unicode & unicode enabled
-        char* szAnsi = convertMsgToUserSpecificAnsi(ccs->hContact, (char*)ccs->lParam);
-        int nRes;
-
-        if (szAnsi) ccs->lParam = (LPARAM)szAnsi;
-        nRes = IcqSendMessage(wParam, lParam);
-        SAFE_FREE(&szAnsi);
-
-        return nRes;
-      }
+      char* pszText = NULL;
+      WCHAR* pwszText = NULL;
+      int bNeedFreeA = 0, bNeedFreeW = 0;
 
       if (ICQGetContactSettingUID(ccs->hContact, &dwUin, &szUID))
       { // Invalid contact
@@ -1602,12 +1417,31 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
         return dwCookie;
       }
 
-      if (gbTempVisListEnabled && gnCurrentStatus == ID_STATUS_INVISIBLE)
-        makeContactTemporaryVisible(ccs->hContact); // make us temporarily visible to contact
-
-      pszText = (WCHAR*)((char*)ccs->lParam+strlennull((char*)ccs->lParam)+1); // get the UTF-16 part
+      pszText = (char*)ccs->lParam;
+      if ((ccs->wParam & PREF_UNICODE) == PREF_UNICODE)
+        pwszText = (WCHAR*)((char*)ccs->lParam+strlennull(pszText)+1); // get the UTF-16 part
 
       wRecipientStatus = ICQGetContactStatus(ccs->hContact);
+
+      if (pwszText)
+      { // we have unicode message, check if it is possible and reasonable to send it as unicode
+        BOOL plain_ascii = IsUnicodeAscii(pwszText, wcslen(pwszText));
+
+        if (wRecipientStatus == ID_STATUS_OFFLINE || plain_ascii ||
+          !gbUtfEnabled || !CheckContactCapabilities(ccs->hContact, CAPF_UTF) ||
+          !ICQGetContactSettingByte(ccs->hContact, "UnicodeSend", 1))
+        {  // unicode is not available for target contact, convert to good codepage
+          if (!plain_ascii)
+          { // do not convert plain ascii messages
+            pszText = convertMsgToUserSpecificAnsi(ccs->hContact, pszText);
+            bNeedFreeA = 1;
+          }
+          pwszText = NULL; // no unicode
+        }
+      }
+
+      if (gbTempVisListEnabled && gnCurrentStatus == ID_STATUS_INVISIBLE)
+        makeContactTemporaryVisible(ccs->hContact);  // make us temporarily visible to contact
 
       // Failure scenarios
       if (!icqOnline)
@@ -1615,130 +1449,171 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
         dwCookie = GenerateCookie(0);
         icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, ICQTranslate("You cannot send messages when you are offline."));
       }
+      else if ((wRecipientStatus == ID_STATUS_OFFLINE) && (strlennull(pszText) > 4096))
+      {
+        dwCookie = GenerateCookie(0);
+        icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, ICQTranslate("Messages to offline contacts must be shorter than 4096 characters."));
+      }
       // Looks OK
       else
       {
         message_cookie_data* pCookieData;
-        BOOL plain_ascii = IsUnicodeAscii(pszText, wcslen(pszText));
 
-        if ((wRecipientStatus == ID_STATUS_OFFLINE) || plain_ascii)
-        { // send as plain if no special char or user offline
-          char* szAnsi;
-          int nRes;
+        if (!pwszText && wRecipientStatus != ID_STATUS_OFFLINE && gbUtfEnabled==2 && !IsUSASCII(pszText, strlennull(pszText))
+          && CheckContactCapabilities(ccs->hContact, CAPF_UTF) && ICQGetContactSettingByte(ccs->hContact, "UnicodeSend", 1))
+        { // text is not unicode and contains national chars and we should send all this as Unicode, so do it
+          int nStrSize = MultiByteToWideChar(CP_ACP, 0, pszText, strlennull(pszText), NULL, 0);
 
-          if (!plain_ascii)
-          {
-            szAnsi = convertMsgToUserSpecificAnsi(ccs->hContact, (char*)ccs->lParam);
-            if (szAnsi) ccs->lParam = (LPARAM)szAnsi;
+          pwszText = (WCHAR*)SAFE_MALLOC((nStrSize + 2)*sizeof(WCHAR));
+          MultiByteToWideChar(CP_ACP, 0, pszText, strlennull(pszText), (WCHAR*)(pwszText), nStrSize);
+          pwszText[nStrSize] = '\0'; // trailing zeros
+          bNeedFreeW = 1;
+        }
+
+        if (!dwUin)
+        { // prepare AIM Html message
+          char *src, *mng;
+
+          if (pwszText) // handle unicode as utf-8
+            src = make_utf8_string(pwszText);
+          else
+            src = pszText;
+          mng = MangleXml(src, strlennull(src));
+          if (pwszText) // release temporary utf-8 string
+            SAFE_FREE(&src);
+          src = (char*)SAFE_MALLOC(strlennull(mng) + 28);
+          strcpy(src, "<HTML><BODY>");
+          strcat(src, mng);
+          SAFE_FREE(&mng);
+          strcat(src, "</BODY></HTML>");
+          if (pwszText)
+          { // convert back to UCS-2
+            if (bNeedFreeW) SAFE_FREE(&pwszText);
+            pwszText = make_unicode_string(src);
+            bNeedFreeW = 1;
+            SAFE_FREE(&src);
           }
-          nRes = IcqSendMessage(wParam, lParam);
-          if (!plain_ascii)
-            SAFE_FREE(&szAnsi);
-
-          return nRes;
-        };
-
+          else
+          {
+            if (bNeedFreeA) SAFE_FREE(&pszText);
+            pszText = src;
+            bNeedFreeA = 1;
+          }
+        }
         // Set up the ack type
         pCookieData = CreateMsgCookieData(MTYPE_PLAIN, ccs->hContact, dwUin);
 
 #ifdef _DEBUG
-        NetLog_Server("Send unicode message - Message cap is %u", CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY));
-        NetLog_Server("Send unicode message - Contact status is %u", wRecipientStatus);
+        NetLog_Server("Send %s message - Message cap is %u", pwszText ? "unicode" : "", CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY));
+        NetLog_Server("Send %s message - Contact status is %u", pwszText ? "unicode" : "", wRecipientStatus);
 #endif
         if (dwUin && gbDCMsgEnabled && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD, 0))
-        {
-          char* utf8msg = make_utf8_string(pszText);
-          int iRes;
+        { // send thru direct
+          char* dc_msg = pszText;
+          char* dc_cap = NULL;
 
-          iRes = icq_SendDirectMessage(ccs->hContact, utf8msg, strlennull(utf8msg), 1, pCookieData, CAP_UTF8MSGS);
-          SAFE_FREE(&utf8msg);
-
-          if (iRes) return iRes; // we succeded, return
-        }
-
-        if (!dwUin || !CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY))
-        {
-          char* utmp;
-          char* mng;
-          char* tmp;
-
-          if (!dwUin)
-          {
-            utmp = make_utf8_string(pszText);
-            mng = MangleXml(utmp, strlennull(utmp));
-            SAFE_FREE(&utmp);
-            tmp = (char*)SAFE_MALLOC(strlennull(mng) + 28);
-            strcpy(tmp, "<HTML><BODY>");
-            strcat(tmp, mng);
-            SAFE_FREE(&mng);
-            strcat(tmp, "</BODY></HTML>");
-            pszText = make_unicode_string(tmp);
-            SAFE_FREE(&tmp);
+          if (pwszText)
+          { // direct connection uses utf-8, prepare
+            dc_msg = make_utf8_string(pwszText);
+            dc_cap = CAP_UTF8MSGS;
           }
+          dwCookie = icq_SendDirectMessage(ccs->hContact, dc_msg, strlennull(dc_msg), 1, pCookieData, dc_cap);
+          if (pwszText)
+            SAFE_FREE(&dc_msg);
 
-          if (wcslen(pszText)*sizeof(WCHAR) > MAX_MESSAGESNACSIZE)
+          if (dwCookie)
+          { // free the buffers if alloced
+            if (bNeedFreeA) SAFE_FREE(&pszText);
+            if (bNeedFreeW) SAFE_FREE(&pwszText);
+
+            return dwCookie; // we succeded, return
+          }
+          // on failure, fallback to send thru server
+        }
+        if (!dwUin || !CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY) || wRecipientStatus == ID_STATUS_OFFLINE)
+        {
+          if ((pwszText ? wcslen(pwszText)*sizeof(WCHAR) : strlennull(pszText)) > MAX_MESSAGESNACSIZE)
           { // max length check // TLV(2) is currently limited to 0xA00 bytes in online mode
             // only limit to not get disconnected, all other will be handled by error 0x0A
-            SAFE_FREE(&pCookieData);
-            if (!dwUin) SAFE_FREE(&pszText);
-
             dwCookie = GenerateCookie(0);
             icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, ICQTranslate("The message could not be delivered, it is too long."));
+
+            SAFE_FREE(&pCookieData);
+            // free the buffers if alloced
+            if (bNeedFreeA) SAFE_FREE(&pszText);
+            if (bNeedFreeW) SAFE_FREE(&pwszText);
 
             return dwCookie;
           }
           // Rate check
           if (IsServerOverRate(ICQ_MSG_FAMILY, ICQ_MSG_SRV_SEND, RML_LIMIT))
           { // rate is too high, the message will not go thru...
-            SAFE_FREE(&pCookieData);
-            if (!dwUin) SAFE_FREE(&pszText);
-
             dwCookie = GenerateCookie(0);
             icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, ICQTranslate("The message could not be delivered. You are sending too fast. Wait a while and try again."));
 
+            SAFE_FREE(&pCookieData);
+            // free the buffers if alloced
+            if (bNeedFreeA) SAFE_FREE(&pszText);
+            if (bNeedFreeW) SAFE_FREE(&pwszText);
+
             return dwCookie;
           }
-          dwCookie = icq_SendChannel1MessageW(dwUin, szUID, ccs->hContact, pszText, pCookieData);
+          // set flag for offline messages - to allow proper error handling
+          if (wRecipientStatus == ID_STATUS_OFFLINE) ((message_cookie_data_ex*)pCookieData)->isOffline = TRUE;
 
-          if (!dwUin) SAFE_FREE(&pszText);
+          if (pwszText)
+            dwCookie = icq_SendChannel1MessageW(dwUin, szUID, ccs->hContact, pwszText, pCookieData);
+          else
+            dwCookie = icq_SendChannel1Message(dwUin, szUID, ccs->hContact, pszText, pCookieData);
         }
         else
         {
           WORD wPriority;
-          char* utf8msg;
+          char* srv_msg = pszText;
+          char* srv_cap = NULL;
 
           if (wRecipientStatus == ID_STATUS_ONLINE || wRecipientStatus == ID_STATUS_FREECHAT)
             wPriority = 0x0001;
           else
             wPriority = 0x0021;
 
-          utf8msg = make_utf8_string(pszText);
-
-          if (strlennull(utf8msg) > MAX_MESSAGESNACSIZE - 144)
+          if (pwszText)
+          { // type-2 messages are utf-8 encoded, prepare
+            srv_msg = make_utf8_string(pwszText);
+            srv_cap = CAP_UTF8MSGS;
+          }
+          if (strlennull(srv_msg) + (pwszText ? 144 : 102) > MAX_MESSAGESNACSIZE)
           { // max length check
-            SAFE_FREE(&pCookieData);
-            SAFE_FREE(&utf8msg);
+            if (pwszText) SAFE_FREE(&srv_msg);
 
             dwCookie = GenerateCookie(0);
             icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, ICQTranslate("The message could not be delivered, it is too long."));
+
+            SAFE_FREE(&pCookieData);
+            // free the buffers if alloced
+            if (bNeedFreeA) SAFE_FREE(&pszText);
+            if (bNeedFreeW) SAFE_FREE(&pwszText);
 
             return dwCookie;
           }
           // Rate check
           if (IsServerOverRate(ICQ_MSG_FAMILY, ICQ_MSG_SRV_SEND, RML_LIMIT))
           { // rate is too high, the message will not go thru...
-            SAFE_FREE(&pCookieData);
-            SAFE_FREE(&utf8msg);
+            if (pwszText) SAFE_FREE(&srv_msg);
 
             dwCookie = GenerateCookie(0);
             icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_FAILED, ACKTYPE_MESSAGE, ICQTranslate("The message could not be delivered. You are sending too fast. Wait a while and try again."));
 
+            SAFE_FREE(&pCookieData);
+            // free the buffers if alloced
+            if (bNeedFreeA) SAFE_FREE(&pszText);
+            if (bNeedFreeW) SAFE_FREE(&pwszText);
+
             return dwCookie;
           }
-
-          dwCookie = icq_SendChannel2Message(dwUin, ccs->hContact, utf8msg, strlennull(utf8msg), wPriority, pCookieData, CAP_UTF8MSGS);
-
-          SAFE_FREE(&utf8msg);
+          dwCookie = icq_SendChannel2Message(dwUin, ccs->hContact, srv_msg, strlennull(srv_msg), wPriority, pCookieData, srv_cap);
+          // release utf-8 message
+          if (pwszText) SAFE_FREE(&srv_msg);
         }
 
         // This will stop the message dialog from waiting for the real message delivery ack
@@ -1749,8 +1624,11 @@ int IcqSendMessageW(WPARAM wParam, LPARAM lParam)
           // The actual cookie value will still have to be returned to the message dialog though
           ReleaseCookie(dwCookie);
         }
-
       }
+      // free the buffers if alloced
+      if (bNeedFreeA) SAFE_FREE(&pszText);
+      if (bNeedFreeW) SAFE_FREE(&pwszText);
+
       return dwCookie; // Success
     }
   }
@@ -2155,7 +2033,7 @@ int IcqSendFile(WPARAM wParam, LPARAM lParam)
                 {
                   if (gbDCMsgEnabled && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD, 0))
                   {
-                    int iRes = icq_sendFileSendDirectv7(ft, pszFiles); 
+                    int iRes = icq_sendFileSendDirectv7(ft, pszFiles);
                     if (iRes) return (int)(HANDLE)ft; // Success
                   }
                   NetLog_Server("Sending v%u file transfer request through server", 7);
@@ -2165,7 +2043,7 @@ int IcqSendFile(WPARAM wParam, LPARAM lParam)
                 {
                   if (gbDCMsgEnabled && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD, 0))
                   {
-                    int iRes = icq_sendFileSendDirectv8(ft, pszFiles); 
+                    int iRes = icq_sendFileSendDirectv8(ft, pszFiles);
                     if (iRes) return (int)(HANDLE)ft; // Success
                   }
                   NetLog_Server("Sending v%u file transfer request through server", 8);
@@ -2427,7 +2305,7 @@ int IcqRecvContacts(WPARAM wParam, LPARAM lParam)
     cbBlob += strlennull(isrList[i]->hdr.nick) + 2; // both trailing zeros
     if (isrList[i]->uin)
       cbBlob += getUINLen(isrList[i]->uin);
-    else 
+    else
       cbBlob += strlennull(isrList[i]->uid);
   }
   pBlob = (PBYTE)_alloca(cbBlob);

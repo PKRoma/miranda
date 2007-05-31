@@ -45,7 +45,7 @@ __________
   Server-list support now groups requests - much more faster & reliable
   Full support for sub-groups in Manage server-list dialog
   Simple sub-groups support (optional)
-  Bigger Avatars support (like ICQ 6)
+  New White-pages support (like ICQ 6)
   
 
 0.5
@@ -69,7 +69,8 @@ Bugfixes:
   Minor fixes for Popup plugin support
   Minor protocol related tweaks
   Fixed possible lags caused by typing notifications (on slow connections)
-  Fixed message handling (fixes bug used for stealth invisibility detection) 
+  Fixed message handling (fixes bug used for stealth invisibility detection)
+  Several fixes to Rate Level 2 handling - more propper handling of message responses  
 
 New Features:
   Oscar File Transfers - like icq5 (including: transfer thru server, resume)
