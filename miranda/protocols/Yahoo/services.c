@@ -979,84 +979,80 @@ extern HANDLE   hHookIdle;
 
 void YahooMenuInit( void )
 {
-	if (!YAHOO_GetByte( "DisableMainMenu", 0 ))
-        {
-        char servicefunction[ 100 ];
-        char* tDest;
-        CLISTMENUITEM mi;
-        
-        lstrcpy( servicefunction, yahooProtocolName );
-    	tDest = servicefunction + lstrlen( servicefunction );
-    	
-    	// Show custom status menu    
-    	lstrcpy( tDest, YAHOO_SET_CUST_STAT );
-    	CreateServiceFunction( servicefunction, SetCustomStatCommand );
-    	memset( &mi, 0, sizeof( mi ));
-    	mi.pszPopupName = yahooProtocolName;
-    	mi.cbSize = sizeof( mi );
-    	mi.popupPosition = 500090000;
-    	mi.position = 500090000;
-    	mi.hIcon = LoadIconEx( "set_status" );
-    	mi.pszName = Translate( "Set &Custom Status" );
-    	mi.pszService = servicefunction;
-        YahooMenuItems [ 0 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
+	char servicefunction[ 100 ];
+	char* tDest;
+	CLISTMENUITEM mi;
+	
+	lstrcpy( servicefunction, yahooProtocolName );
+	tDest = servicefunction + lstrlen( servicefunction );
+	
+	// Show custom status menu    
+	lstrcpy( tDest, YAHOO_SET_CUST_STAT );
+	CreateServiceFunction( servicefunction, SetCustomStatCommand );
+	memset( &mi, 0, sizeof( mi ));
+	mi.pszPopupName = yahooProtocolName;
+	mi.cbSize = sizeof( mi );
+	mi.popupPosition = 500090000;
+	mi.position = 500090000;
+	mi.hIcon = LoadIconEx( "set_status" );
+	mi.pszName = Translate( "Set &Custom Status" );
+	mi.pszService = servicefunction;
+	YahooMenuItems [ 0 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
-    	// Show My profile menu    
-    	lstrcpy( tDest, YAHOO_SHOW_MY_PROFILE );
-    	CreateServiceFunction( servicefunction, YahooShowMyProfileCommand );
-    	mi.position = 500090005;
-    	mi.hIcon = LoadIconEx( "profile" );
-    	mi.pszName = Translate( "&My Profile" );
-    	mi.pszService = servicefunction;
-    	YahooMenuItems [ 1 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
-    
-   	    // Show Yahoo mail menu
-    	strcpy( tDest, YAHOO_YAHOO_MAIL );
-    	CreateServiceFunction( servicefunction, YahooGotoMailboxCommand );
-    	mi.position = 500090010;
-    	mi.hIcon = LoadIconEx( "mail" );
-    	mi.pszName = Translate( "&Yahoo Mail" );
-    	mi.pszService = servicefunction;
-    	YahooMenuItems [ 2 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+	// Show My profile
+	lstrcpy( tDest, YAHOO_SHOW_MY_PROFILE );
+	CreateServiceFunction( servicefunction, YahooShowMyProfileCommand );
+	mi.position = 500090005;
+	mi.hIcon = LoadIconEx( "profile" );
+	mi.pszName = Translate( "&My Profile" );
+	mi.pszService = servicefunction;
+	YahooMenuItems [ 1 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 
-        // Show refresh menu    
-    	strcpy( tDest, YAHOO_AB );
-    	CreateServiceFunction( servicefunction, YahooABCommand );
-    	mi.position = 500090015;
-    	mi.hIcon = LoadIconEx( "yab" );
-    	mi.pszName = Translate( "&Address Book" );
-    	mi.pszService = servicefunction;
-    	YahooMenuItems [ 3 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+	// Show Yahoo mail 
+	strcpy( tDest, YAHOO_YAHOO_MAIL );
+	CreateServiceFunction( servicefunction, YahooGotoMailboxCommand );
+	mi.position = 500090010;
+	mi.hIcon = LoadIconEx( "mail" );
+	mi.pszName = Translate( "&Yahoo Mail" );
+	mi.pszService = servicefunction;
+	YahooMenuItems [ 2 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 
-        // Show refresh menu    
-    	strcpy( tDest, YAHOO_CALENDAR );
-    	CreateServiceFunction( servicefunction, YahooCalendarCommand );
-    	mi.position = 500090015;
-    	mi.hIcon = LoadIconEx( "calendar" );
-    	mi.pszName = Translate( "&Calendar" );
-    	mi.pszService = servicefunction;
-    	YahooMenuItems [ 4 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+	// Show Address Book    
+	strcpy( tDest, YAHOO_AB );
+	CreateServiceFunction( servicefunction, YahooABCommand );
+	mi.position = 500090015;
+	mi.hIcon = LoadIconEx( "yab" );
+	mi.pszName = Translate( "&Address Book" );
+	mi.pszService = servicefunction;
+	YahooMenuItems [ 3 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 
-		// Show refresh menu    
-    	strcpy( tDest, YAHOO_REFRESH );
-    	CreateServiceFunction( servicefunction, YahooRefreshCommand );
-    	mi.position = 500090015;
-    	mi.hIcon = LoadIconEx( "refresh" );
-    	mi.pszName = Translate( "&Refresh" );
-    	mi.pszService = servicefunction;
-    	YahooMenuItems [ 5 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
-		
-        // Show show profile menu    
-    	strcpy( tDest, YAHOO_SHOW_PROFILE );
-    	CreateServiceFunction( servicefunction, YahooShowProfileCommand );
-    	mi.position = -2000006000;
-    	mi.hIcon = LoadIconEx( "profile" );
-    	mi.pszName = Translate( "&Show Profile" );
-    	mi.pszService = servicefunction;
-		mi.pszContactOwner = yahooProtocolName;
-    	YahooMenuItems [ 6 ] = ( HANDLE )CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
-    
-	}
+	// Show Calendar
+	strcpy( tDest, YAHOO_CALENDAR );
+	CreateServiceFunction( servicefunction, YahooCalendarCommand );
+	mi.position = 500090015;
+	mi.hIcon = LoadIconEx( "calendar" );
+	mi.pszName = Translate( "&Calendar" );
+	mi.pszService = servicefunction;
+	YahooMenuItems [ 4 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+
+	// Show Refresh     
+	strcpy( tDest, YAHOO_REFRESH );
+	CreateServiceFunction( servicefunction, YahooRefreshCommand );
+	mi.position = 500090015;
+	mi.hIcon = LoadIconEx( "refresh" );
+	mi.pszName = Translate( "&Refresh" );
+	mi.pszService = servicefunction;
+	YahooMenuItems [ 5 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+	
+	// Show Profile 
+	strcpy( tDest, YAHOO_SHOW_PROFILE );
+	CreateServiceFunction( servicefunction, YahooShowProfileCommand );
+	mi.position = -2000006000;
+	mi.hIcon = LoadIconEx( "profile" );
+	mi.pszName = Translate( "&Show Profile" );
+	mi.pszService = servicefunction;
+	mi.pszContactOwner = yahooProtocolName;
+	YahooMenuItems [ 6 ] = ( HANDLE )CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 }
 //=======================================================
 //Load the yahoo service/plugin
