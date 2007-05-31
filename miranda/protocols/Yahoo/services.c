@@ -1119,10 +1119,9 @@ int LoadYahooServices( void )
 	YAHOO_CreateProtoServiceFunction( PSS_SETAPPARENTMODE,	YahooSetApparentMode);
 	
 	YAHOO_CreateProtoServiceFunction( PS_GETAVATARINFO,	YahooGetAvatarInfo);
-	YAHOO_CreateProtoServiceFunction( PS_GETMYAVATARMAXSIZE, YahooGetAvatarSize);
+	YAHOO_CreateProtoServiceFunction( PS_GETAVATARCAPS, YahooGetAvatarCaps);
 	YAHOO_CreateProtoServiceFunction( PS_GETMYAVATAR, YahooGetMyAvatar);
 	YAHOO_CreateProtoServiceFunction( PS_SETMYAVATAR, YahooSetMyAvatar);
-	YAHOO_CreateProtoServiceFunction( PS_ISAVATARFORMATSUPPORTED, YahooAvatarFormatSupported);
 	
 	return 0;
 }

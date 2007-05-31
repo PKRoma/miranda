@@ -28,8 +28,6 @@
 #include "avatar.h"
 #include "file_transfer.h"
 
-static BOOL CALLBACK AvatarDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-
 extern yahoo_local_account *ylad;
 
 /*
@@ -720,34 +718,49 @@ int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 /*
  * --=[ AVS / LoadAvatars API/Services ]=--
  */
-
-/*
-Optional. Will pass PNG or BMP if this is not found
-wParam = 0
-lParam = PA_FORMAT_*   // avatar format
-return = 1 (supported) or 0 (not supported)
-*/
-int YahooAvatarFormatSupported(WPARAM wParam, LPARAM lParam)
+int YahooGetAvatarCaps(WPARAM wParam, LPARAM lParam)
 {
-  YAHOO_DebugLog("[YahooAvatarFormatSupported]");
+  if (wParam == AF_MAXSIZE)
+  {
+    POINT *size = (POINT*)lParam;
 
-	return (lParam == PA_FORMAT_PNG) ? 1 : 0;
-}
-
-/*
-Service: /GetMyAvatarMaxSize
-wParam=(int *)max width of avatar
-lParam=(int *)max height of avatar
-return=0
-*/
-int YahooGetAvatarSize(WPARAM wParam, LPARAM lParam)
-{
-	YAHOO_DebugLog("[YahooGetAvatarSize]");
+	LOG(("[YahooGetAvatarCaps] AF_MAXSIZE"));
 	
-	if (wParam != 0) *((int*) wParam) = 96;
-	if (lParam != 0) *((int*) lParam) = 96;
+    if (size)
+    {
+      size->x = 96;
+      size->y = 96;
 
-	return 0;
+      return 0;
+    }
+  }
+  else if (wParam == AF_PROPORTION)
+  {
+	LOG(("[YahooGetAvatarCaps] AF_PROPORTION"));
+	
+    return PIP_NONE;
+  }
+  else if (wParam == AF_FORMATSUPPORTED)
+  {
+	LOG(("[YahooGetAvatarCaps] AF_FORMATSUPPORTED"));
+	  
+    if (lParam == PA_FORMAT_PNG)
+      return 1;
+    else
+      return 0;
+  }
+  else if (wParam == AF_ENABLED)
+  {
+	LOG(("[YahooGetAvatarCaps] AF_ENABLED"));
+	
+    if (YAHOO_GetByte( "ShowAvatars", 0 ))
+      return 1;
+    else
+      return 0;
+  }
+  
+  LOG(("[YahooGetAvatarCaps] Unknown: %d", wParam));
+  return -1;
 }
 
 /*

@@ -13,6 +13,8 @@
 #ifndef _YAHOO_AVATAR_H_
 #define _YAHOO_AVATAR_H_
 
+#include <m_avatars.h>
+
 void YAHOO_request_avatar(const char* who);
 void GetAvatarFileName(HANDLE hContact, char* pszDest, int cbLen, int type);
 
@@ -37,16 +39,9 @@ void YAHOO_get_avatar(const char *who, const char *pic_url, long cksum);
 /**
  * AVS Services - loadavatars.dll uses these to get the info from us
  */
-#define PS_ISAVATARFORMATSUPPORTED "/IsAvatarFormatSupported"
-#define PS_GETMYAVATARMAXSIZE "/GetMyAvatarMaxSize"
-#define PS_SETMYAVATAR "/SetMyAvatar"
-#define PS_GETMYAVATAR "/GetMyAvatar"
+int YahooGetAvatarCaps(WPARAM wParam, LPARAM lParam);
 
 int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam);
-
-int YahooAvatarFormatSupported(WPARAM wParam, LPARAM lParam);
-
-int YahooGetAvatarSize(WPARAM wParam, LPARAM lParam);
 
 int YahooGetMyAvatar(WPARAM wParam, LPARAM lParam);
 
