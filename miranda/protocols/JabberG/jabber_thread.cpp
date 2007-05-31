@@ -1395,7 +1395,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 
 		XmlNode* xNode;
 		BOOL hasXAvatar = false;
-		if (JGetByte( "EnableAvatars", TRUE )) {
+		if ( JGetByte( "EnableAvatars", TRUE )) {
 			JabberLog( "Avatar enabled" );
 			for ( int i = 1; ( xNode=JabberXmlGetNthChild( node, "x", i )) != NULL; i++ ) {
 				if ( !lstrcmp( JabberXmlGetAttrValue( xNode, "xmlns" ), _T("jabber:x:avatar"))) {
@@ -1412,12 +1412,12 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 						} else JabberLog( "Not broadcasting avatar changed" );
 						if ( !result ) JFreeVariant( &dbv );
 			}	}	}
-			if (!hasXAvatar) { //no jabber:x:avatar. try vcard-temp:x:update
+			if ( !hasXAvatar ) { //no jabber:x:avatar. try vcard-temp:x:update
 				JabberLog( "Not hasXAvatar" );
 				for ( int i = 1; ( xNode=JabberXmlGetNthChild( node, "x", i )) != NULL; i++ ) {
 					if ( !lstrcmp( JabberXmlGetAttrValue( xNode, "xmlns" ), _T("vcard-temp:x:update"))) {
 						if (( xNode = JabberXmlGetChild( xNode, "photo" )) != NULL && xNode->text != NULL ) {
-							JSetByte(hContact,"AvatarXVcard",1);
+							JSetByte( hContact, "AvatarXVcard", 1 );
 							JabberLog( "AvatarXVcard set" );
 							JSetStringT( hContact, "AvatarHash", xNode->text );
 							DBVARIANT dbv = {0};

@@ -84,7 +84,6 @@ int    jabberSearchID;
 JABBER_MODEMSGS modeMsgs;
 CRITICAL_SECTION modeMsgMutex;
 char* jabberVcardPhotoFileName = NULL;
-char* jabberVcardPhotoType = NULL;
 BOOL  jabberSendKeepAlive;
 
 BOOL jabberPepSupported = FALSE;
@@ -408,7 +407,6 @@ extern "C" int __declspec( dllexport ) Unload( void )
 		DeleteFileA( jabberVcardPhotoFileName );
 		mir_free( jabberVcardPhotoFileName );
 	}
-	if ( jabberVcardPhotoType ) mir_free( jabberVcardPhotoType );
 	if ( streamId ) mir_free( streamId );
 
 	for ( i=0; i < jabberTransports.getCount(); i++ )

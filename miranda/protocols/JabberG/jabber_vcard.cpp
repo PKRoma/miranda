@@ -35,7 +35,6 @@ Last change by : $Author$
 #include "jabber_caps.h"
 
 extern char* jabberVcardPhotoFileName;
-extern char* jabberVcardPhotoType;
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -799,7 +798,7 @@ static void SetServerVcard()
 {
 	DBVARIANT dbv;
 	int  iqId;
-	char *szFileName, *szFileType;
+	char *szFileName;
 	int  i;
 	char idstr[33];
 	WORD nFlag;
@@ -893,17 +892,10 @@ static void SetServerVcard()
 		if ( nFlag & JABBER_VCTEL_PCS )   n->addChild( "PCS" );
 	}
 
-	if ( bPhotoChanged ) {
-		if ( szPhotoFileName[0] ) {
-			szFileName = szPhotoFileName;
-			szFileType = szPhotoType;
-		}
-		else szFileName = NULL;
-	}
-	else {
+	if ( bPhotoChanged )
+		szFileName = ( szPhotoFileName[0] ) ? szPhotoFileName : NULL;
+	else
 		szFileName = jabberVcardPhotoFileName;
-		szFileType = jabberVcardPhotoType;
-	}
 
 	// Set photo element, also update the global jabberVcardPhotoFileName to reflect the update
 	JabberLog( "Before update, jabberVcardPhotoFileName = %s", jabberVcardPhotoFileName );
@@ -929,41 +921,34 @@ static void SetServerVcard()
 					if ( ReadFile( hFile, buffer, st.st_size, &nRead, NULL )) {
 						if (( str=JabberBase64Encode( buffer, nRead )) != NULL ) {
 							n = v->addChild( "PHOTO" );
-							if ( szFileType ) {
-								n->addChild( "TYPE", szFileType );
-								JabberLog( "File type sent is %s", szFileType );
+
+							char* szFileType;
+							switch( JabberGetPictureType( buffer )) {
+								case PA_FORMAT_PNG:  szFileType = "image/png";   break;
+								case PA_FORMAT_GIF:  szFileType = "image/gif";   break;
+								case PA_FORMAT_BMP:  szFileType = "image/bmp";   break;
+								default:             szFileType = "image/jpeg";  break;
 							}
-							else {
-								n->addChild( "TYPE", "image/jpeg" );
-								JabberLog( "File type sent is default to image/jpge" );
-							}
+							n->addChild( "TYPE", szFileType );
 
 							n->addChild( "BINVAL", str );
 							mir_free( str );
 
-							if ( szFileName != jabberVcardPhotoFileName ) {
+							if ( bPhotoChanged ) {
 								if ( jabberVcardPhotoFileName ) {
 									DeleteFileA( jabberVcardPhotoFileName );
 									mir_free( jabberVcardPhotoFileName );
 									jabberVcardPhotoFileName = NULL;
-									if ( jabberVcardPhotoType ) {
-										mir_free( jabberVcardPhotoType );
-										jabberVcardPhotoType = NULL;
-								}	}
+								}
 
 								if ( GetTempPathA( sizeof( szTempPath ), szTempPath ) <= 0 )
 									strcpy( szTempPath, ".\\" );
 								if ( GetTempFileNameA( szTempPath, "jab", 0, szTempFileName ) > 0 ) {
 									JabberLog( "New global file is %s", szTempFileName );
-									if ( CopyFileA( szFileName, szTempFileName, FALSE ) == TRUE ) {
+									if ( CopyFileA( szFileName, szTempFileName, FALSE ))
 										jabberVcardPhotoFileName = mir_strdup( szTempFileName );
-										if ( jabberVcardPhotoType ) mir_free( jabberVcardPhotoType );
-										if ( szFileType )
-											jabberVcardPhotoType = mir_strdup( szFileType );
-										else 
-											jabberVcardPhotoType = NULL;
-									}
-									else DeleteFileA( szTempFileName );
+									else 
+										DeleteFileA( szTempFileName );
 					}	}	}	}
 					mir_free( buffer );
 				}
@@ -1057,7 +1042,8 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		bPhotoChanged = FALSE;
 		szPhotoFileName[0] = '\0';
 
-		if ( jabberOnline ) SendMessage( hwndDlg, WM_COMMAND, IDC_UPDATE, 0 );
+		if ( jabberOnline )
+			SendMessage( hwndDlg, WM_COMMAND, IDC_UPDATE, 0 );
 		return TRUE;
 	}
 	case WM_CTLCOLORSTATIC:

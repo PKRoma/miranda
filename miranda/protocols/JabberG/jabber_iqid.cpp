@@ -35,7 +35,6 @@ Last change by : $Author$
 #include "m_clistint.h"
 
 extern char* jabberVcardPhotoFileName;
-extern char* jabberVcardPhotoType;
 
 void JabberIqResultServerDiscoInfo( XmlNode* iqNode, void* userdata )
 {
@@ -87,7 +86,6 @@ static void JabberOnLoggedIn( ThreadData* info )
 	XmlNodeIq diq( "get", iqId, jabberThreadInfo->server );
 	diq.addQuery( JABBER_FEAT_DISCO_INFO );
 	jabberThreadInfo->send( diq );
-
 
 	char szServerName[ sizeof(info->server) ];
 	if ( JGetStaticString( "LastLoggedServer", NULL, szServerName, sizeof(szServerName)))
@@ -587,20 +585,22 @@ void JabberIqResultSetRegister( XmlNode *iqNode, void *userdata )
 
 static void JabberIqResultGetVcardPhoto( const TCHAR* jid, XmlNode* n, HANDLE hContact, BOOL& hasPhoto )
 {
-	if ( hasPhoto ) return;
+	if ( hasPhoto )
+		return;
 
 	XmlNode* o = JabberXmlGetChild( n, "BINVAL" );
-	if ( o == NULL || o->text == NULL ) return;
+	if ( o == NULL || o->text == NULL )
+		return;
 
 	int bufferLen;
 	char* buffer = JabberBase64Decode( o->text, &bufferLen );
-	if ( buffer == NULL ) return;
+	if ( buffer == NULL )
+		return;
 
+	char* szPicType;
 	XmlNode* m = JabberXmlGetChild( n, "TYPE" );
 	if ( m == NULL || m->text == NULL ) {
 LBL_NoTypeSpecified:
-		char* szPicType;
-
 		switch( JabberGetPictureType( buffer )) {
 		case PA_FORMAT_GIF:	szPicType = "image/gif";	break;
 		case PA_FORMAT_BMP:  szPicType = "image/bmp";	break;
@@ -609,15 +609,18 @@ LBL_NoTypeSpecified:
 		default:
 			goto LBL_Ret;
 		}
-
-		replaceStr( jabberVcardPhotoType, szPicType );
 	}
 	else {
-		if ( _tcscmp( m->text, _T("image/jpeg")) && _tcscmp( m->text, _T("image/png")) && _tcscmp( m->text, _T("image/gif")) && _tcscmp( m->text, _T("image/bmp")))
+		if ( !_tcscmp( m->text, _T("image/jpeg")))
+			szPicType = "image/jpeg";
+		else if ( !_tcscmp( m->text, _T("image/png")))
+			szPicType = "image/png";
+		else if ( !_tcscmp( m->text, _T("image/gif")))
+			szPicType = "image/gif";
+		else if ( !_tcscmp( m->text, _T("image/bmp")))
+			szPicType = "image/bmp";
+		else
 			goto LBL_NoTypeSpecified;
-
-		if ( jabberVcardPhotoType ) mir_free(jabberVcardPhotoType);
-		jabberVcardPhotoType = t2a( m->text );
 	}
 
 	DWORD nWritten;
@@ -635,7 +638,7 @@ LBL_Ret:
 
 	{	char* p = strrchr( szTempFileName, '.' );
 		if ( p != NULL )
-			lstrcpyA( p+1, jabberVcardPhotoType + 6 );
+			lstrcpyA( p+1, szPicType + 6 );
 	}
 
 	JabberLog( "Picture file name set to %s", szTempFileName );
@@ -1478,7 +1481,7 @@ void JabberIqResultGetAvatar( XmlNode *iqNode, void *userdata )
 		return;
 	XmlNode* n = NULL;
 	TCHAR* mimeType = NULL;
-	if (JGetByte(hContact,"AvatarXVcard",0)){
+	if ( JGetByte( hContact, "AvatarXVcard", 0 )) {
 		XmlNode *vCard = JabberXmlGetChild( iqNode, "vCard" );
 		if (vCard == NULL) return;
 		vCard = JabberXmlGetChild( vCard, "PHOTO" );
@@ -1486,7 +1489,8 @@ void JabberIqResultGetAvatar( XmlNode *iqNode, void *userdata )
 		XmlNode *typeNode = JabberXmlGetChild( vCard, "TYPE" );
 		if (typeNode != NULL) mimeType = typeNode->text;
 		n = JabberXmlGetChild( vCard, "BINVAL" );
-	}else {
+	}
+	else {
 		XmlNode *queryNode = JabberXmlGetChild( iqNode, "query" );
 		if ( queryNode == NULL )
 			return;

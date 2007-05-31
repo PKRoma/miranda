@@ -697,22 +697,23 @@ static int JabberGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 			JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, dbv.ptszVal );
 			if ( item != NULL ) {
 				TCHAR szJid[ 512 ];
-				BOOL isXVcard = JGetByte(AI->hContact,"AvatarXVcard",0);
-				if ( (item->resourceCount != NULL) & (!isXVcard)){
+				BOOL isXVcard = JGetByte( AI->hContact, "AvatarXVcard", 0 );
+				if ( item->resourceCount != NULL & !isXVcard ) {
 					TCHAR *bestResName = JabberListGetBestClientResourceNamePtr(dbv.ptszVal);
 					mir_sntprintf( szJid, SIZEOF( szJid ), bestResName?_T("%s/%s"):_T("%s"), dbv.ptszVal, bestResName );
-				}else
-					lstrcpyn( szJid, dbv.ptszVal, SIZEOF( szJid ));
+				}
+				else lstrcpyn( szJid, dbv.ptszVal, SIZEOF( szJid ));
 
-				JabberLog( "Rereading %s for " TCHAR_STR_PARAM, isXVcard?JABBER_FEAT_VCARD_TEMP:JABBER_FEAT_AVATAR, szJid );
+				JabberLog( "Rereading %s for " TCHAR_STR_PARAM, isXVcard ? JABBER_FEAT_VCARD_TEMP : JABBER_FEAT_AVATAR, szJid );
 
 				int iqId = JabberSerialNext();
 				JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultGetAvatar );
 
 				XmlNodeIq iq( "get", iqId, szJid );
-				if (isXVcard) {
-					XmlNode* vs = iq.addChild( "vCard" ); vs->addAttr( "xmlns", JABBER_FEAT_VCARD_TEMP );
-				} else XmlNode* query = iq.addQuery( isXVcard?"":JABBER_FEAT_AVATAR );
+				if ( isXVcard )
+					iq.addChild( "vCard" )->addAttr( "xmlns", JABBER_FEAT_VCARD_TEMP );
+				else 
+					iq.addQuery( isXVcard ? "" : JABBER_FEAT_AVATAR );
 				jabberThreadInfo->send( iq );
 
 				JFreeVariant( &dbv );
@@ -1313,9 +1314,11 @@ static int JabberSetAvatar( WPARAM wParam, LPARAM lParam )
 		return 1;
 
 	long  dwPngSize = filelength( fileIn );
-	BYTE* pResult = new BYTE[ dwPngSize ];
-	if ( pResult == NULL )
+	char* pResult = new char[ dwPngSize ];
+	if ( pResult == NULL ) {
+		close( fileIn );
 		return 2;
+	}
 
 	read( fileIn, pResult, dwPngSize );
 	close( fileIn );
@@ -1333,8 +1336,8 @@ static int JabberSetAvatar( WPARAM wParam, LPARAM lParam )
 	char buf[MIR_SHA1_HASH_SIZE*2+1];
 	for ( int i=0; i<MIR_SHA1_HASH_SIZE; i++ )
 		sprintf( buf+( i<<1 ), "%02x", digest[i] );
-   JSetString( NULL, "AvatarHash", buf );
-	JSetByte( "AvatarType", PA_FORMAT_PNG );
+	JSetString( NULL, "AvatarHash", buf );
+	JSetByte( "AvatarType", JabberGetPictureType( pResult ));
 
 	JabberGetAvatarFileName( NULL, tFileName, MAX_PATH );
 	FILE* out = fopen( tFileName, "wb" );

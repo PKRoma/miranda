@@ -867,10 +867,10 @@ void __stdcall JabberSendPresenceTo( int status, TCHAR* to, XmlNode* extra )
 
 	if ( JGetByte( "EnableAvatars", TRUE )) {
 		char hashValue[ 50 ];
-		if ( !JGetStaticString( "AvatarHash", NULL, hashValue, sizeof hashValue )) {
+		if ( !JGetStaticString( "AvatarHash", NULL, hashValue, sizeof( hashValue ))) {
 			XmlNode* x;
-//			x = p.addChild( "x" ); x->addAttr( "xmlns", "jabber:x:avatar" );
-//			x->addChild( "hash", hashValue );
+			x = p.addChild( "x" ); x->addAttr( "xmlns", "jabber:x:avatar" );
+			x->addChild( "hash", hashValue );
 
 			x = p.addChild( "x" ); x->addAttr( "xmlns", "vcard-temp:x:update" );
 			x->addChild( "photo", hashValue );
@@ -1026,7 +1026,7 @@ TCHAR* __stdcall JabberStripJid( const TCHAR* jid, TCHAR* dest, size_t destLen )
 int __stdcall JabberGetPictureType( const char* buf )
 {
 	if ( buf != NULL ) {
-		if ( memcmp( buf, "GIF89", 5 ) == 0 )    return PA_FORMAT_GIF;
+		if ( memcmp( buf, "GIF8", 4 ) == 0 )     return PA_FORMAT_GIF;
 		if ( memcmp( buf, "\x89PNG", 4 ) == 0 )  return PA_FORMAT_PNG;
 		if ( memcmp( buf, "BM", 2 ) == 0 )       return PA_FORMAT_BMP;
 		if ( memcmp( buf, "\xFF\xD8", 2 ) == 0 ) return PA_FORMAT_JPEG;
