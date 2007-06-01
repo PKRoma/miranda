@@ -131,6 +131,7 @@ int BmpFilterResizeBitmap(WPARAM wParam,LPARAM lParam)
 
 	if ((width == bminfo.bmWidth && height == bminfo.bmHeight) 
 		|| ((info->fit & RESIZEBITMAP_FLAG_DONT_GROW) 
+			&& !(info->fit & RESIZEBITMAP_MAKE_SQUARE) 
 			&& width > bminfo.bmWidth && height > bminfo.bmHeight))
 	{
 		// Do nothing
@@ -138,19 +139,33 @@ int BmpFilterResizeBitmap(WPARAM wParam,LPARAM lParam)
 	}
 	else
 	{
-        FIBITMAP *dib;
-
         if(fei == NULL)
             return (int)info->hBmp;
 
-        dib = fei->FI_CreateDIBFromHBITMAP(info->hBmp);
-        if(dib) { 
-            fei->FI_Rescale(dib, width, height, FILTER_LANCZOS3);
-            HBITMAP hbmReturn = fei->FI_CreateHBITMAPFromDIB(dib);
-            fei->FI_Unload(dib);
-            return (int)hbmReturn;
-        }
-        return (int)info->hBmp;
+        FIBITMAP *dib = fei->FI_CreateDIBFromHBITMAP(info->hBmp);
+		if (dib == NULL)
+			return (int)info->hBmp;
+
+		FIBITMAP *sub;
+		if (xOrig > 0 || yOrig > 0)
+			sub = fei->FI_Copy(dib, xOrig, yOrig, xOrig + widthOrig, yOrig + heightOrig);
+		else 
+			sub = dib;
+
+		if (sub == NULL)
+			return (int)info->hBmp;
+
+        FIBITMAP *res = fei->FI_Rescale(sub, width, height, FILTER_LANCZOS3);
+
+        HBITMAP hbmReturn = fei->FI_CreateHBITMAPFromDIB(res);
+
+		if (res != sub)
+			fei->FI_Unload(res);
+		if (sub != dib)
+			fei->FI_Unload(sub);
+        fei->FI_Unload(dib);
+
+        return (int)hbmReturn;
 	}
 }
 
@@ -384,7 +399,7 @@ int SaveIMG(HBITMAP hBmp, const char *szFilename)
             else {
                 FIBITMAP *dib_new = fei->FI_ConvertTo24Bits(dib);
 
-                fei->FI_Save(fif, dib_new, szFilename, JPEG_DEFAULT);
+                fei->FI_Save(fif, dib_new, szFilename, JPEG_QUALITYSUPERB);
                 fei->FI_Unload(dib_new);
             }
         }

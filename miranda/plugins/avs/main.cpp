@@ -124,7 +124,7 @@ extern BOOL CALLBACK DlgProcAvatarUserInfo(HWND hwndDlg, UINT msg, WPARAM wParam
 extern BOOL CALLBACK DlgProcAvatarProtoInfo(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 
-static int SetProtoMyAvatar(char *protocol, HBITMAP hBmp, char *originalFilename, int format);
+static int SetProtoMyAvatar(char *protocol, HBITMAP hBmp, char *originalFilename, int format, BOOL square, BOOL grow);
 
 // See if a protocol service exists
 int ProtoServiceExists(const char *szModule,const char *szService) {
@@ -963,10 +963,19 @@ static int CanSetMyAvatar(WPARAM wParam, LPARAM lParam)
 	return ProtoServiceExists(protocol, PS_SETMYAVATAR);
 }
 
+struct SetMyAvatarHookData {
+	char *protocol;
+	BOOL square;
+	BOOL grow;
+
+	BOOL thumbnail;
+};
+
+
 /*
  * Callback to set thumbnaill view to open dialog
  */
-static UINT_PTR CALLBACK OFNHookProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+static UINT_PTR CALLBACK SetMyAvatarHookProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch(msg)
 	{
@@ -976,26 +985,40 @@ static UINT_PTR CALLBACK OFNHookProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 
             SetWindowLong(hwnd, GWL_USERDATA, (LONG)lParam);
             OPENFILENAMEA *ofn = (OPENFILENAMEA *)lParam;
-			ofn->lCustData = TRUE;
+			SetMyAvatarHookData *data = (SetMyAvatarHookData *) ofn->lCustData;
+			data->thumbnail = TRUE;
+
+			CheckDlgButton(hwnd, IDC_MAKE_SQUARE, data->square ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwnd, IDC_GROW, data->grow ? BST_CHECKED : BST_UNCHECKED);
+
+			if (data->protocol != NULL && (Proto_AvatarImageProportion(data->protocol) & PIP_SQUARE))
+				EnableWindow(GetDlgItem(hwnd, IDC_MAKE_SQUARE), FALSE);
+
 			break;
 		}
 		case WM_NOTIFY:
 		{
 			OPENFILENAMEA *ofn = (OPENFILENAMEA *)GetWindowLong(hwnd, GWL_USERDATA);
-			if (ofn->lCustData)
+			SetMyAvatarHookData *data = (SetMyAvatarHookData *) ofn->lCustData;
+			if (data->thumbnail)
 			{
 				HWND hwndParent = GetParent(hwnd);
 				HWND hwndLv = FindWindowEx(hwndParent, NULL, _T("SHELLDLL_DefView"), NULL) ;
 				if (hwndLv != NULL) 
 				{
 					SendMessage(hwndLv, WM_COMMAND, SHVIEW_THUMBNAIL, 0);
-					ofn->lCustData = FALSE;
+					data->thumbnail = FALSE;
 				}
 			}
 			break;
 		}
 		case WM_DESTROY:
 		{
+			OPENFILENAMEA *ofn = (OPENFILENAMEA *)GetWindowLong(hwnd, GWL_USERDATA);
+			SetMyAvatarHookData *data = (SetMyAvatarHookData *) ofn->lCustData;
+			data->square = IsDlgButtonChecked(hwnd, IDC_MAKE_SQUARE);
+			data->grow = IsDlgButtonChecked(hwnd, IDC_GROW);
+
 			InterlockedExchange(&hwndSetMyAvatar, 0);
 			break;
 		}
@@ -1149,6 +1172,8 @@ static int SetMyAvatar(WPARAM wParam, LPARAM lParam)
 		return -2;
 	}
 
+	SetMyAvatarHookData data = { 0 };
+
 	// Check for XML and SWF
 	if (protocol == NULL)
 	{
@@ -1176,17 +1201,25 @@ static int SetMyAvatar(WPARAM wParam, LPARAM lParam)
 			allAcceptXML = allAcceptXML && Proto_IsAvatarFormatSupported(protos[i]->szName, PA_FORMAT_XML);
 			allAcceptSWF = allAcceptSWF && Proto_IsAvatarFormatSupported(protos[i]->szName, PA_FORMAT_SWF);
 		}
+
+		data.square = DBGetContactSettingByte(0, AVS_MODULE, "SetAllwaysMakeSquare", 0);
 	}
 	else
 	{
 		allAcceptXML = Proto_IsAvatarFormatSupported(protocol, PA_FORMAT_XML);
 		allAcceptSWF = Proto_IsAvatarFormatSupported(protocol, PA_FORMAT_SWF);
+
+		data.protocol = protocol;
+		data.square = (Proto_AvatarImageProportion(protocol) & PIP_SQUARE)
+						|| DBGetContactSettingByte(0, AVS_MODULE, "SetAllwaysMakeSquare", 0);
 	}
 
     if(lParam == 0) {
         OPENFILENAMEA ofn = {0};
 		char filter[512];
 		char inipath[1024];
+
+		data.protocol = protocol;
 
 		filter[0] = '\0';
 		FilterGetStrings(filter, sizeof(filter), allAcceptXML, allAcceptSWF);
@@ -1202,9 +1235,11 @@ static int SetMyAvatar(WPARAM wParam, LPARAM lParam)
         ofn.lpstrFilter = filter;
         ofn.nMaxFile = MAX_PATH;
         ofn.nMaxFileTitle = MAX_PATH;
-        ofn.Flags = OFN_FILEMUSTEXIST | OFN_EXPLORER | OFN_ENABLESIZING | OFN_ENABLEHOOK;
+        ofn.Flags = OFN_FILEMUSTEXIST | OFN_ENABLETEMPLATE | OFN_EXPLORER | OFN_ENABLESIZING | OFN_ENABLEHOOK;
 		ofn.lpstrInitialDir = inipath;
-		ofn.lpfnHook = OFNHookProc;
+		ofn.lpTemplateName = MAKEINTRESOURCEA(IDD_SET_OWN_SUBCLASS);
+		ofn.lpfnHook = SetMyAvatarHookProc;
+		ofn.lCustData = (LPARAM) &data;
 
         *FileName = '\0';
         ofn.lpstrDefExt="";
@@ -1333,7 +1368,7 @@ static int SetMyAvatar(WPARAM wParam, LPARAM lParam)
 	int ret = 0;
 	if (protocol != NULL)
 	{
-		ret = SetProtoMyAvatar(protocol, hBmp, szFinalName, format);
+		ret = SetProtoMyAvatar(protocol, hBmp, szFinalName, format, data.square, data.grow);
 
 		if (ret == 0)
 		{
@@ -1361,7 +1396,7 @@ static int SetMyAvatar(WPARAM wParam, LPARAM lParam)
 			if (!Proto_IsAvatarsEnabled(protos[i]->szName))
 				continue;
 			
-			int retTmp = SetProtoMyAvatar(protos[i]->szName, hBmp, szFinalName, format);
+			int retTmp = SetProtoMyAvatar(protos[i]->szName, hBmp, szFinalName, format, data.square, data.grow);
 			if (retTmp != 0)
 				ret = retTmp;
 		}
@@ -1442,7 +1477,8 @@ static int SetMyAvatar(WPARAM wParam, LPARAM lParam)
 	return ret;
 }
 
-static int SetProtoMyAvatar(char *protocol, HBITMAP hBmp, char *originalFilename, int originalFormat)
+static int SetProtoMyAvatar(char *protocol, HBITMAP hBmp, char *originalFilename, int originalFormat,
+							BOOL square, BOOL grow)
 {
 	if (!ProtoServiceExists(protocol, PS_SETMYAVATAR))
 		return -1;
@@ -1467,23 +1503,19 @@ static int SetProtoMyAvatar(char *protocol, HBITMAP hBmp, char *originalFilename
 
 	// Protocol has max size?
 	int width, height;
-	BOOL square = FALSE;	// Get user setting
 
 	Proto_GetAvatarMaxSize(protocol, width, height);
 
-
-	if (DBGetContactSettingByte(0, AVS_MODULE, "SetAllwaysMakeSquare", 0))
+	if (Proto_AvatarImageProportion(protocol) & PIP_SQUARE)
 		square = TRUE;
-	else 
-		square = Proto_AvatarImageProportion(protocol) & PIP_SQUARE;
-
 
 	ResizeBitmap rb;
 	rb.size = sizeof(ResizeBitmap);
 	rb.hBmp = hBmp;
 	rb.max_height = (height <= 0 ? 300 : height);
 	rb.max_width = (width <= 0 ? 300 : width);
-	rb.fit = square ? RESIZEBITMAP_MAKE_SQUARE : RESIZEBITMAP_KEEP_PROPORTIONS;
+	rb.fit = (grow ? 0 : RESIZEBITMAP_FLAG_DONT_GROW) 
+			| (square ? RESIZEBITMAP_MAKE_SQUARE : RESIZEBITMAP_KEEP_PROPORTIONS);
 
 	HBITMAP hBmpProto = (HBITMAP) BmpFilterResizeBitmap((WPARAM)&rb, 0);
 
