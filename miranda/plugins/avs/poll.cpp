@@ -46,7 +46,7 @@ extern int ChangeAvatar(HANDLE hContact, BOOL fLoad, BOOL fNotifyHist = FALSE, i
 extern int DeleteAvatar(HANDLE hContact);
 extern void MakePathRelative(HANDLE hContact, char *path);
 
-struct CacheNode *FindAvatarInCache(HANDLE hContact, BOOL add);
+struct CacheNode *FindAvatarInCache(HANDLE hContact, BOOL add, BOOL findAny = FALSE);
 
 extern HANDLE hEventContactAvatarChanged;
 extern BOOL g_AvatarHistoryAvail;
@@ -158,7 +158,7 @@ static BOOL PollContactCanHaveAvatar(HANDLE hContact, const char *szProto)
 static BOOL PollCheckContact(HANDLE hContact, const char *szProto)
 {
 	return !DBGetContactSettingByte(hContact, "ContactPhoto", "Locked", 0)
-            && FindAvatarInCache(hContact, FALSE) != NULL;
+            && FindAvatarInCache(hContact, FALSE, TRUE) != NULL;
 }
 
 static void QueueRemove(ThreadQueue &queue, HANDLE hContact)

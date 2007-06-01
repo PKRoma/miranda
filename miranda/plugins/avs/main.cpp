@@ -668,7 +668,7 @@ static struct CacheNode *AddToList(struct CacheNode *node) {
     return pCurrent;
 }
 
-struct CacheNode *FindAvatarInCache(HANDLE hContact, BOOL add)
+struct CacheNode *FindAvatarInCache(HANDLE hContact, BOOL add, BOOL findAny = FALSE)
 {
 	struct CacheNode *cacheNode = g_Cache, *foundNode = NULL;
 
@@ -679,7 +679,7 @@ struct CacheNode *FindAvatarInCache(HANDLE hContact, BOOL add)
 		if(cacheNode->ace.hContact == hContact)
 		{
             cacheNode->ace.t_lastAccess = time(NULL);
-            if(cacheNode->loaded) {
+            if(cacheNode->loaded || findAny) {
                 LeaveCriticalSection(&cachecs);
                 return cacheNode;
             }
@@ -1704,7 +1704,7 @@ int ChangeAvatar(HANDLE hContact, BOOL fLoad, BOOL fNotifyHist, int pa_format)
 	hContact = GetContactThatHaveTheAvatar(hContact);
 
 	// Get the node
-    struct CacheNode *node = FindAvatarInCache(hContact, g_AvatarHistoryAvail && fNotifyHist);
+    struct CacheNode *node = FindAvatarInCache(hContact, g_AvatarHistoryAvail && fNotifyHist, TRUE);
 	if (node == NULL) 
 		return 0;
 
