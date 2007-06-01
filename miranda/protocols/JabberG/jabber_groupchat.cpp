@@ -612,7 +612,8 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 						}
 						r->role = newRole;
 					}
-					str = JabberXmlGetAttrValue( itemNode, "jid" );
+					if ( str = JabberXmlGetAttrValue( itemNode, "jid" ))
+						replaceStr( r->szRealJid, str );
 			}	}
 
 			if ( sttGetStatusCode( xNode ) == 201 )

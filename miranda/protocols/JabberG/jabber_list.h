@@ -99,6 +99,7 @@ struct JABBER_RESOURCE_STATUS
 	unsigned int cap;					// 0 = haven't done disco#info yet, see CLIENT_CAP_*
 	JABBER_GC_AFFILIATION affiliation;
 	JABBER_GC_ROLE role;
+	TCHAR* szRealJid; // real jid for jabber conferences
 
 	// XEP-0115 support
 	TCHAR* szCapsNode;

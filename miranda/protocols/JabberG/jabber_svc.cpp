@@ -1086,7 +1086,25 @@ int JabberSendFile( WPARAM wParam, LPARAM lParam )
 	}
 
 	JabberCapsBits jcb = JabberGetResourceCapabilites( item->jid );
-	if ( ( jcb & JABBER_RESOURCE_CAPS_ERROR ) || ( jcb == JABBER_RESOURCE_CAPS_NONE ) || !(jcb & ( JABBER_CAPS_SI_FT | JABBER_CAPS_OOB ) ) ) {
+	
+	// fix for very smart clients, like gajim
+	if ( !JGetByte( "BsDirect", FALSE ) && !JGetByte( "BsProxy", FALSE ) ) {
+		// disable bytestreams
+		jcb &= ~JABBER_CAPS_BYTESTREAMS;
+	}
+	
+	// if only JABBER_CAPS_SI_FT feature set (without BS or IBB), disable JABBER_CAPS_SI_FT
+	if (( jcb & (JABBER_CAPS_SI_FT | JABBER_CAPS_IBB | JABBER_CAPS_BYTESTREAMS)) == JABBER_CAPS_SI_FT)
+		jcb &= ~JABBER_CAPS_SI_FT;
+
+	if (
+		// can't get caps
+		( jcb & JABBER_RESOURCE_CAPS_ERROR )
+		// caps not already received
+		|| ( jcb == JABBER_RESOURCE_CAPS_NONE )
+		// XEP-0096 and OOB not supported?
+		|| !(jcb & ( JABBER_CAPS_SI_FT | JABBER_CAPS_OOB ) )
+		) {
 		JFreeVariant( &dbv );
 		return 0;
 	}
@@ -1113,37 +1131,10 @@ int JabberSendFile( WPARAM wParam, LPARAM lParam )
 	ft->jid = mir_tstrdup( dbv.ptszVal );
 	JFreeVariant( &dbv );
 
-	if ( jcb & JABBER_CAPS_SI_FT ) {
+	if ( jcb & JABBER_CAPS_SI_FT )
 		JabberFtInitiate( item->jid, ft );
-	}
-	else if ( jcb & JABBER_CAPS_OOB ) {
+	else if ( jcb & JABBER_CAPS_OOB )
 		mir_forkthread(( pThreadFunc )JabberFileServerThread, ft );
-	}
-
-	/*
-	if (( item->cap & CLIENT_CAP_READY ) == 0 ) {
-		int iqId;
-		TCHAR* rs;
-
-		// Probe client capability
-		if (( rs=JabberListGetBestClientResourceNamePtr( item->jid )) != NULL ) {
-			item->ft = ft;
-			iqId = JabberSerialNext();
-			JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultDiscoClientInfo );
-
-			TCHAR jid[ 200 ];
-			mir_sntprintf( jid, SIZEOF(jid), _T("%s/%s"), item->jid, rs );
-			XmlNodeIq iq( "get", iqId, jid );
-			XmlNode* query = iq.addQuery( JABBER_FEAT_DISCO_INFO );
-			jabberThreadInfo->send( iq );
-		}
-	}
-	else if (( item->cap & CLIENT_CAP_FILE ) && ( item->cap & CLIENT_CAP_BYTESTREAM ))
-		// Use the new standard file transfer
-		JabberFtInitiate( item->jid, ft );
-	else // Use the jabber:iq:oob file transfer
-		mir_forkthread(( pThreadFunc )JabberFileServerThread, ft );
-	*/
 
 	return ( int )( HANDLE ) ft;
 }
@@ -1583,6 +1574,13 @@ int JabberGCGetToolTipText(WPARAM wParam, LPARAM lParam)
 		_tcsncat( outBuf, szSeparator, sizeof(outBuf) );
 		_tcsncat( outBuf, TranslateT("Affiliation:\t"), sizeof(outBuf) );
 		_tcsncat( outBuf, TranslateTS( JabberEnum2AffilationStr[info->affiliation] ), sizeof(outBuf) );
+	}
+
+	// real jid
+	if ( info->szRealJid ) {
+		_tcsncat( outBuf, szSeparator, sizeof(outBuf) );
+		_tcsncat( outBuf, TranslateT("Real JID:\t"), sizeof(outBuf) );
+		_tcsncat( outBuf, info->szRealJid, sizeof(outBuf) );
 	}
 
 	if ( lstrlen( outBuf ) == 0)

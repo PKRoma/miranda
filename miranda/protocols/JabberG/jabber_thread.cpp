@@ -1346,13 +1346,23 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 		return;
 	}
 
+
+	BOOL bSelfPresence = FALSE;
+	TCHAR szBareFrom[ 512 ];
+	JabberStripJid( from, szBareFrom, SIZEOF( szBareFrom ));
+	TCHAR szBareOurJid[ 512 ];
+	JabberStripJid( info->fullJID, szBareOurJid, SIZEOF( szBareOurJid ));
+
+	if ( !_tcsicmp( szBareFrom, szBareOurJid ))
+		bSelfPresence = TRUE;
+
 	TCHAR* type = JabberXmlGetAttrValue( node, "type" );
 	if ( type == NULL || !_tcscmp( type, _T("available"))) {
 		if (( nick = JabberNickFromJID( from )) == NULL )
 			return;
 
 		if (( hContact = JabberHContactFromJID( from )) == NULL ) {
-			if (!JabberListExist( LIST_ROSTER, from )) {
+			if ( !bSelfPresence && !JabberListExist( LIST_ROSTER, from )) {
 				JabberLog("SKIP Receive presence online from "TCHAR_STR_PARAM" ( who is not in my roster and not in list - skiping)", from );
 				mir_free( nick );
 				return;

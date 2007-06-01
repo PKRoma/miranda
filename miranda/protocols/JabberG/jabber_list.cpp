@@ -75,6 +75,7 @@ static void JabberListFreeResourceInternal( JABBER_RESOURCE_STATUS *r)
 	if ( r->szCapsNode ) mir_free( r->szCapsNode );
 	if ( r->szCapsVer ) mir_free( r->szCapsVer );
 	if ( r->szCapsExt ) mir_free( r->szCapsExt );
+	if ( r->szRealJid ) mir_free( r->szRealJid );
 }
 
 static void JabberListFreeItemInternal( JABBER_LIST_ITEM *item )

@@ -181,11 +181,16 @@ static void JabberFtSiResult( XmlNode *iqNode, void *userdata )
 						length = _ttoi( str );
 				}
 			}
+
+			// fix for very smart clients, like gajim
+			BOOL bDirect = JGetByte( "BsDirect", FALSE );
+			BOOL bProxy = JGetByte( "BsProxy", FALSE );
+
 			if (( featureNode=JabberXmlGetChild( siNode, "feature" )) != NULL ) {
 				if (( xNode=JabberXmlGetChildWithGivenAttrValue( featureNode, "x", "xmlns", _T(JABBER_FEAT_DATA_FORMS))) != NULL ) {
 					if (( fieldNode=JabberXmlGetChildWithGivenAttrValue( xNode, "field", "var", _T("stream-method"))) != NULL ) {
 						if (( valueNode=JabberXmlGetChild( fieldNode, "value" ))!=NULL && valueNode->text!=NULL ) {
-							if ( !_tcscmp( valueNode->text, _T(JABBER_FEAT_BYTESTREAMS))) {
+							if (( bDirect || bProxy ) && !_tcscmp( valueNode->text, _T(JABBER_FEAT_BYTESTREAMS))) {
 								// Start Bytestream session
 								jbt = ( JABBER_BYTE_TRANSFER * ) mir_alloc( sizeof( JABBER_BYTE_TRANSFER ));
 								ZeroMemory( jbt, sizeof( JABBER_BYTE_TRANSFER ));
