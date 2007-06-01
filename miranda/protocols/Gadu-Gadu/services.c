@@ -24,8 +24,6 @@
 pthread_mutex_t modeMsgsMutex;
 pthread_mutex_t threadMutex;
 
-BOOL flagSetOnlyStatus = FALSE;
-
 uin_t nextUIN = 0;
 unsigned long lastCRC = 0;
 
@@ -212,19 +210,13 @@ int gg_setstatus(WPARAM wParam, LPARAM lParam)
 	// Status wicked code due Miranda incompatibility with status+descr changing in one shot
 	// Status request is offline / just request disconnect
 	if(ggDesiredStatus == ID_STATUS_OFFLINE)
-	{
 		// Go offline
-		flagSetOnlyStatus = FALSE;
 		gg_refreshstatus(ggDesiredStatus);
-	}
 	// Miranda will always ask for a new status message
-	else
-	{
 #ifdef DEBUGMODE
+	else
 		gg_netlog("gg_setstatus(): Postponed to gg_setawaymsg().");
 #endif
-		flagSetOnlyStatus = (ggDesiredStatus == ggStatus);
-	}
 	return 0;
 }
 
@@ -552,12 +544,11 @@ int gg_setawaymsg(WPARAM wParam, LPARAM lParam)
 	if(*szMsg && (char *) lParam && !strcmp(*szMsg, (char *) lParam)
 		|| !*szMsg && (!(char *)lParam || !*((char *) lParam)))
 	{
-		if(status == ggDesiredStatus && ggDesiredStatus == ggStatus && flagSetOnlyStatus)
+		if(status == ggDesiredStatus && ggDesiredStatus == ggStatus)
 		{
 #ifdef DEBUGMODE
 			gg_netlog("gg_setawaymsg(): Message hasn't been changed, return.");
 #endif
-			flagSetOnlyStatus = FALSE;
 			pthread_mutex_unlock(&modeMsgsMutex);
 			return 0;
 		}
@@ -572,9 +563,18 @@ int gg_setawaymsg(WPARAM wParam, LPARAM lParam)
 #endif
 	}
 
-	// Change the status now whatever happened before
-	flagSetOnlyStatus = FALSE;
-	gg_refreshstatus(status);
+	// Change the status only if it was desired by PS_SETSTATUS
+	if(status == ggDesiredStatus)
+		gg_refreshstatus(status);
+#ifdef DEBUGMODE
+	else
+	{
+		char error[128];
+		snprintf(error, sizeof(error), Translate("GG: PS_AWAYMSG was called without previous PS_SETSTATUS for status %d, desired %d, current %d."),
+			status, ggDesiredStatus, ggStatus);
+		PUShowMessage(error, SM_WARNING);
+	}
+#endif
 	pthread_mutex_unlock(&modeMsgsMutex);
 
 	return 0;

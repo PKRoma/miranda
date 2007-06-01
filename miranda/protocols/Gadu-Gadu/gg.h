@@ -67,6 +67,9 @@ extern "C" {
 #include <m_button.h>
 #include <m_clc.h>
 #include <m_message.h>
+#ifdef DEBUGMODE
+#include <m_popup.h>
+#endif
 
 // Groupchat is now in miranda headers
 #include <m_chat.h>
