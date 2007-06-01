@@ -26,15 +26,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 int DbEventGetText(WPARAM wParam, LPARAM lParam)
 {
-	DBEVENTINFO* dbei = ( DBEVENTINFO* )wParam;
+	DBEVENTGETTEXT* egt = (DBEVENTGETTEXT*)lParam;
+
+	DBEVENTINFO* dbei = egt->dbei;
 	if ( dbei->eventType != EVENTTYPE_MESSAGE )
 		return 0;
 
-	if ( lParam == DBVT_WCHAR )
+	if ( egt->datatype == DBVT_WCHAR )
 	{
 		WCHAR* msg;
 		if ( dbei->flags & DBEF_UTF )
-			Utf8Decode( dbei->pBlob, &msg );
+			Utf8DecodeCP( dbei->pBlob, egt->codepage, &msg );
 		else {
 			// ушлепкам типа скотта торжественно посвящается
 			int msglen = strlen(( char* )dbei->pBlob) + 1, msglenW = 0;
@@ -51,14 +53,14 @@ int DbEventGetText(WPARAM wParam, LPARAM lParam)
 				msg = mir_wstrdup(( WCHAR* )&dbei->pBlob[ msglen ] );
 			else {
 				msg = ( WCHAR* )mir_alloc( sizeof(TCHAR) * msglen );
-				MultiByteToWideChar(CP_ACP, 0, (char *) dbei->pBlob, -1, msg, msglen);
+				MultiByteToWideChar( egt->codepage, 0, (char *) dbei->pBlob, -1, msg, msglen );
 		}	}
 		return ( int )msg;
 	}
-	else if ( lParam == DBVT_ASCIIZ ) {
+	else if ( egt->datatype == DBVT_ASCIIZ ) {
 		char* msg = mir_strdup(( char* )dbei->pBlob );
 		if (dbei->flags & DBEF_UTF)
-			Utf8Decode( msg, NULL );
+			Utf8DecodeCP( msg, egt->codepage, NULL );
 
       return ( int )msg;
 	}

@@ -81,7 +81,7 @@ int LoadHistoryModule(void)
 
 static void GetMessageDescription( DBEVENTINFO *dbei, TCHAR* buf, int cbBuf )
 {
-	TCHAR* msg = ( TCHAR* )CallService( MS_DB_EVENT_GETTEXT, (WPARAM)dbei, DBVT_TCHAR);
+	TCHAR* msg = DbGetEventTextT( dbei, CP_ACP );
 	_tcsncpy( buf, msg, cbBuf );
 	buf[ cbBuf-1 ] = 0;
 	mir_free( msg );

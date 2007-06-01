@@ -320,34 +320,12 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 	switch (dbei.eventType) {
 		case EVENTTYPE_MESSAGE:
 		{
-			TCHAR* msg;
-			BOOL   bNeedsFree = FALSE;
+			TCHAR* msg = DbGetEventTextT( &dbei, CP_ACP );
 
 			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", SetToStyle(dbei.flags & DBEF_SENT ? MSGFONTID_MYMSG : MSGFONTID_YOURMSG));
-
-			#if defined( _UNICODE )
-			{
-				int msglen = strlen((char *) dbei.pBlob) + 1;
-				if (dbei.flags & DBEF_UTF) {
-					mir_utf8decode(dbei.pBlob, &msg);
-					bNeedsFree = TRUE;
-				}
-				else if (msglen != (int) dbei.cbBlob)
-					msg = (TCHAR *) & dbei.pBlob[msglen];
-				else {
-					msg = (TCHAR *) alloca(sizeof(TCHAR) * msglen);
-					MultiByteToWideChar(CP_ACP, 0, (char *) dbei.pBlob, -1, msg, msglen);
-				}
-			}
-			#else
-				if (dbei.flags & DBEF_UTF)
-					msg = mir_utf8decode(dbei.pBlob, NULL);
-				else
-					msg = (BYTE *) dbei.pBlob;
-			#endif
 			AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, msg);
-			if (bNeedsFree)
-				mir_free(msg);
+
+			mir_free(msg);
 			break;
 		}
 		case EVENTTYPE_STATUSCHANGE:

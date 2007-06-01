@@ -434,7 +434,28 @@ Only events of type EVENTTYPE_MESSAGE are supported.
 Function returns a pointer to a string in the required format.
 This string should be freed by a call of mir_free
 */
+typedef struct {
+	DBEVENTINFO* dbei;
+	int datatype;
+	int codepage;
+} DBEVENTGETTEXT;
+
 #define MS_DB_EVENT_GETTEXT "DB/Event/GetText"
+
+__inline static char* DbGetEventTextA( DBEVENTINFO* dbei, int codepage )
+{  DBEVENTGETTEXT temp = { dbei, DBVT_ASCIIZ, codepage };
+   return (char*)CallService(MS_DB_EVENT_GETTEXT,0,(LPARAM)&temp);
+}
+
+__inline static WCHAR* DbGetEventTextW( DBEVENTINFO* dbei, int codepage )
+{  DBEVENTGETTEXT temp = { dbei, DBVT_WCHAR, codepage };
+   return (WCHAR*)CallService(MS_DB_EVENT_GETTEXT,0,(LPARAM)&temp);
+}
+
+__inline static TCHAR* DbGetEventTextT( DBEVENTINFO* dbei, int codepage )
+{  DBEVENTGETTEXT temp = { dbei, DBVT_TCHAR, codepage };
+   return (TCHAR*)CallService(MS_DB_EVENT_GETTEXT,0,(LPARAM)&temp);
+}
 
 /* DB/Event/MarkRead
 Changes the flags for an event to mark it as read.
