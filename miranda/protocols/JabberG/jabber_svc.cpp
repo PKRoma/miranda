@@ -698,7 +698,7 @@ static int JabberGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 			if ( item != NULL ) {
 				TCHAR szJid[ 512 ];
 				BOOL isXVcard = JGetByte( AI->hContact, "AvatarXVcard", 0 );
-				if ( item->resourceCount != NULL & !isXVcard ) {
+				if ( item->resourceCount != NULL && !isXVcard ) {
 					TCHAR *bestResName = JabberListGetBestClientResourceNamePtr(dbv.ptszVal);
 					mir_sntprintf( szJid, SIZEOF( szJid ), bestResName?_T("%s/%s"):_T("%s"), dbv.ptszVal, bestResName );
 				}
@@ -825,7 +825,7 @@ int JabberGetCaps( WPARAM wParam, LPARAM lParam )
 	case PFLAGNUM_3:
 		return PF2_ONLINE | PF2_SHORTAWAY | PF2_LONGAWAY | PF2_HEAVYDND | PF2_FREECHAT;
 	case PFLAGNUM_4:
-		return PF4_FORCEAUTH | PF4_NOCUSTOMAUTH | PF4_SUPPORTTYPING | PF4_AVATARS;
+		return PF4_FORCEAUTH | PF4_NOCUSTOMAUTH | PF4_SUPPORTTYPING | PF4_AVATARS | PF4_IMSENDUTF;
 	case PFLAG_UNIQUEIDTEXT:
 		return ( int ) JTranslate( "JID" );
 	case PFLAG_UNIQUEIDSETTING:
@@ -1190,7 +1190,9 @@ int JabberSendMessage( WPARAM wParam, LPARAM lParam )
 	}
 	else isEncrypted = 0;
 
-	if ( ccs->wParam & PREF_UNICODE )
+	if ( ccs->wParam & PREF_UTF )
+		msg = mir_strdup( pszSrc );
+	else if ( ccs->wParam & PREF_UNICODE )
 		msg = JabberTextEncodeW(( wchar_t* )&pszSrc[ strlen( pszSrc )+1 ] );
 	else
 		msg = JabberTextEncode( pszSrc );
@@ -1225,9 +1227,8 @@ int JabberSendMessage( WPARAM wParam, LPARAM lParam )
 		if ( jcb & JABBER_RESOURCE_CAPS_ERROR )
 			jcb = JABBER_RESOURCE_CAPS_NONE;
 
-		if ( jcb & JABBER_CAPS_CHATSTATES ) {
-			XmlNode* active = m.addChild( "active" ); active->addAttr( "xmlns", _T(JABBER_FEAT_CHATSTATES));
-		}
+		if ( jcb & JABBER_CAPS_CHATSTATES )
+			m.addChild( "active" )->addAttr( "xmlns", _T(JABBER_FEAT_CHATSTATES));
 
 		if ( ( jcb & JABBER_CAPS_MESSAGE_EVENTS_NO_DELIVERY ) || !( jcb & JABBER_CAPS_MESSAGE_EVENTS ) || !strcmp( msgType, "groupchat" ) || !JGetByte( "MsgAck", FALSE ) || !JGetByte( ccs->hContact, "MsgAck", TRUE )) {
 			if ( !strcmp( msgType, "groupchat" ))
@@ -1238,8 +1239,7 @@ int JabberSendMessage( WPARAM wParam, LPARAM lParam )
 				m.addAttr( "to", szClientJid ); m.addAttrID( id );
 				if ( jcb & JABBER_CAPS_MESSAGE_EVENTS ) {
 					XmlNode* x = m.addChild( "x" ); x->addAttr( "xmlns", JABBER_FEAT_MESSAGE_EVENTS ); x->addChild( "composing" );
-				}
-			}
+			}	}
 
 			jabberThreadInfo->send( m );
 			mir_forkthread( JabberSendMessageAckThread, ccs->hContact );
