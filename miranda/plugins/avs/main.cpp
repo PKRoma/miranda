@@ -679,16 +679,10 @@ struct CacheNode *FindAvatarInCache(HANDLE hContact, BOOL add, BOOL findAny = FA
 		if(cacheNode->ace.hContact == hContact)
 		{
             cacheNode->ace.t_lastAccess = time(NULL);
-            if(cacheNode->loaded || findAny) {
-                LeaveCriticalSection(&cachecs);
-                return cacheNode;
-            }
-            else {
-                LeaveCriticalSection(&cachecs);
-                return NULL;
-            }
-		}
-
+			foundNode = cacheNode->loaded || findAny ? cacheNode : NULL;
+            LeaveCriticalSection(&cachecs);
+            return foundNode;		
+        }
 		if(foundNode == NULL && cacheNode->ace.hContact == 0)
 			foundNode = cacheNode;				// found an empty and usable node
 
@@ -1799,6 +1793,7 @@ static DWORD WINAPI PicLoader(LPVOID param)
             LeaveCriticalSection(&alloccs);
         }
         WaitForSingleObject(hLoaderEvent, INFINITE);
+        //_DebugTrace(0, "pic loader awake...");
         ResetEvent(hLoaderEvent);
     }
     return 0;
