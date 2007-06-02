@@ -259,18 +259,6 @@ typedef struct _contactAvatarChangedNotification {
 // lParam = PA_FORMAT_*   // image format
 #define MS_AV_CANSAVEBITMAP "SV_Avatars/CanSaveBitmap"
 
-
-#define RESIZEBITMAP_STRETCH 0				// Distort bitmap to size in (max_width, max_height)
-#define RESIZEBITMAP_KEEP_PROPORTIONS 1		// Keep bitmap proportions (probabily only one of the 
-											// max_width/max_height will be respected, and the other will be
-											// smaller)
-#define RESIZEBITMAP_CROP 2					// Keep bitmap proportions but crop it to fix exactly in (max_width, max_height)
-											// Some image info outside will be lost
-#define RESIZEBITMAP_MAKE_SQUARE 3			// Image will be allways square. Image will be croped and the size
-											// returned will be min(max_width, max_height)
-
-#define RESIZEBITMAP_FLAG_DONT_GROW	0x1000	// If set, the image will not grow. Else, it will grow to fit the max width/height
-
 // Returns a copy of the bitmap with the size especified or the original bitmap if nothing has to be changed
 // wParam = ResizeBitmap *
 // lParam = NULL

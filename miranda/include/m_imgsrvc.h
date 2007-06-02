@@ -475,14 +475,14 @@ typedef struct {
 	int max_width;
 	int max_height;
 
-	int fit; // One of: RESIZEBITMAP_*
+	int fit; // One of RESIZEBITMAP_* with an OR with RESIZEBITMAP_FLAG_DONT_GROW if needed
 } ResizeBitmap;
 
 // Returns a copy of the bitmap with the size especified or the original bitmap if nothing has to be changed
 // wParam = ResizeBitmap *
 // lParam = NULL
-// after return, compare the returned HBITMAP with the original. You are responsible for calling DestroyObject()
-// on the original HBITMAP
+// return NULL on error, ResizeBitmap->hBmp if don't need to resize or a new HBITMAP if resized
+// You are responsible for calling DestroyObject() on the original HBITMAP
 
 #define MS_IMG_RESIZE "IMG/ResizeBitmap"
 
