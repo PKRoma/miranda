@@ -518,41 +518,59 @@ static void findUPnPGateway(void)
 		if (strcmp(szHostNew, szHostExist) == 0)
 			return;
 
-		txtParseParam(szUrl, NULL, "http://", "/", szCtlUrl, sizeof(szCtlUrl));
-		
 		gatewayFound = httpTransact(szUrl, szData, 8192, NULL) == 200;
 		if (gatewayFound)
 		{
-			char szTemp[256];
+			char szTemp[256], *rpth;
 			size_t ctlLen;
 
 			txtParseParam(szData, NULL, "<URLBase>", "</URLBase>", szTemp, sizeof(szTemp));
-			if (szTemp[0] != 0) strcpy(szCtlUrl, szTemp);
-			ctlLen = strlen(szCtlUrl);
-			if (ctlLen > 0 && szCtlUrl[ctlLen-1] == '/')
-				szCtlUrl[--ctlLen] = 0;
+			strncpy(szCtlUrl, szTemp[0] ? szTemp : szUrl, sizeof(szCtlUrl));
+			szCtlUrl[sizeof(szCtlUrl)-1] = 0;
 
 			mir_snprintf(szTemp, sizeof(szTemp), search_device, szDev);
 			txtParseParam(szData, szTemp, "<controlURL>", "</controlURL>", szUrl, sizeof(szUrl));
-			switch (szUrl[0])
+
+			// URL combining per RFC 2396
+			if (szUrl[0] == 0)
 			{
-				case 0:
-					gatewayFound = FALSE;
-					break;
+				gatewayFound = FALSE;
+				szCtlUrl[0] = 0;
+			}
+			else if (strstr(szUrl, "://") != NULL)                      // absolute URI  
+				rpth = szCtlUrl;
+			else if (strncmp(szUrl, "//", 2) == 0)                      // relative URI net_path
+			{
+				rpth = strstr(szCtlUrl, "//");
+				if (rpth == NULL) rpth = szCtlUrl;
+			}
+			else if (szUrl[0] == '/')                                   // relative URI abs_path
+			{
+				rpth = strstr(szCtlUrl, "//");
+				rpth = rpth ? rpth + 2 : szCtlUrl;
 
-				case '/': 
-					strncat(szCtlUrl, szUrl, sizeof(szCtlUrl) - ctlLen);
-					szCtlUrl[sizeof(szCtlUrl)-1] = 0;
-					break;
+				rpth = strchr(rpth, '/');
+				if (rpth == NULL) rpth = szCtlUrl + strlen(szCtlUrl);
+			}
+			else                                                        // relative URI rel_path
+			{
+				size_t ctlCLen = strlen(szCtlUrl);
+				rpth = szCtlUrl + ctlCLen;
+				if (ctlCLen != 0 && *(rpth-1) != '/')
+					strncpy(rpth++, "/", sizeof(szCtlUrl) - ctlCLen);
+			}
 
-				default: 
-					strncpy(szCtlUrl, szUrl, sizeof(szCtlUrl));
-					szCtlUrl[sizeof(szCtlUrl)-1] = 0;
-					break;
-		}	}
+			ctlLen = sizeof(szCtlUrl) - (rpth - szCtlUrl);
+			strncpy(rpth, szUrl, ctlLen);
+			szCtlUrl[sizeof(szCtlUrl)-1] = 0;
+		}
+		else
+			szCtlUrl[0] = 0;
 
 		Netlib_Logf(NULL, "UPnP Gateway detected %d, Control URL: %s\n", gatewayFound, szCtlUrl); 
-}	}
+	}	
+}
+
 
 BOOL NetlibUPnPAddPortMapping(WORD intport, char *proto, WORD *extport, DWORD *extip, BOOL search)
 {
