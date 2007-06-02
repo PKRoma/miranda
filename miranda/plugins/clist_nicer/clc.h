@@ -554,7 +554,7 @@ void SFL_Destroy();
 void SFL_SetState();
 void SFL_SetSize();
 void SFL_PaintNotifyArea();
-void SFL_Update(HICON hIcon, int iIcon, HIMAGELIST hIml, const char *szText, BOOL refresh);
+void SFL_Update(HICON hIcon, int iIcon, HIMAGELIST hIml, const TCHAR *szText, BOOL refresh);
 
 void FLT_Update(struct ClcData *dat, struct ClcContact *contact);
 int FLT_CheckAvail();
