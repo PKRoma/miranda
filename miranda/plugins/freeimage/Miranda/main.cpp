@@ -233,6 +233,7 @@ static FIBITMAP *FreeImage_CreateDIBFromHBITMAP(HBITMAP hBmp)
 // !! the caller is responsible for destroying the original bitmap when it is no longer needed !!
 // wParam = ResizeBitmap *
 // lParam = NULL
+// return NULL on error, ResizeBitmap->hBmp if don't need to resize or a new HBITMAP if resized
 
 static int serviceBmpFilterResizeBitmap(WPARAM wParam,LPARAM lParam)
 {
@@ -266,21 +267,29 @@ static int serviceBmpFilterResizeBitmap(WPARAM wParam,LPARAM lParam)
 
 	switch(info->fit & ~RESIZEBITMAP_FLAG_DONT_GROW)
 	{
-	case RESIZEBITMAP_STRETCH:
+		case RESIZEBITMAP_STRETCH:
 		{
 			// Do nothing
 			break;
 		}
-	case RESIZEBITMAP_KEEP_PROPORTIONS:
+		case RESIZEBITMAP_KEEP_PROPORTIONS:
 		{
 			if (height * widthOrig / heightOrig <= width)
+			{
+				if (info->fit & RESIZEBITMAP_FLAG_DONT_GROW)
+					height = min(height, bminfo.bmHeight);
 				width = height * widthOrig / heightOrig;
+			}
 			else
+			{
+				if (info->fit & RESIZEBITMAP_FLAG_DONT_GROW)
+					width = min(width, bminfo.bmWidth);
 				height = width * heightOrig / widthOrig;
+			}
 
 			break;
 		}
-	case RESIZEBITMAP_MAKE_SQUARE:
+		case RESIZEBITMAP_MAKE_SQUARE:
 		{
 			if (info->fit & RESIZEBITMAP_FLAG_DONT_GROW)
 			{
@@ -291,7 +300,7 @@ static int serviceBmpFilterResizeBitmap(WPARAM wParam,LPARAM lParam)
 			width = height = min(width, height);
 			// Do not break. Use crop calcs to make size
 		}
-	case RESIZEBITMAP_CROP:
+		case RESIZEBITMAP_CROP:
 		{
 			if (heightOrig * width / height >= widthOrig)
 			{
@@ -310,7 +319,8 @@ static int serviceBmpFilterResizeBitmap(WPARAM wParam,LPARAM lParam)
 
 	if ((width == bminfo.bmWidth && height == bminfo.bmHeight)
 		|| ((info->fit & RESIZEBITMAP_FLAG_DONT_GROW)
-		&& width > bminfo.bmWidth && height > bminfo.bmHeight))
+			&& !(info->fit & RESIZEBITMAP_MAKE_SQUARE) 
+			&& width > bminfo.bmWidth && height > bminfo.bmHeight))
 	{
 		// Do nothing
 		return (int) info->hBmp;
@@ -318,19 +328,31 @@ static int serviceBmpFilterResizeBitmap(WPARAM wParam,LPARAM lParam)
 	else
 	{
 		FIBITMAP *dib = FreeImage_CreateDIBFromHBITMAP(info->hBmp);
+		if (dib == NULL)
+			return NULL;
 
-		FIBITMAP *dib_new = FreeImage_Rescale(dib, width, height, FILTER_CATMULLROM);
+		FIBITMAP *dib_tmp;
+		if (xOrig > 0 || yOrig > 0)
+			dib_tmp = FreeImage_Copy(dib, xOrig, yOrig, xOrig + widthOrig, yOrig + heightOrig);
+		else 
+			dib_tmp = dib;
 
-		if(hwndClui == 0)
-			hwndClui = (HWND)CallService(MS_CLUI_GETHWND, 0, 0);
+		if (dib_tmp == NULL)
+		{
+			FreeImage_Unload(dib);
+			return NULL;
+		}
 
-		HDC hDC = GetDC(hwndClui);
-		HBITMAP bitmap_new = CreateDIBitmap(hDC, FreeImage_GetInfoHeader(dib_new),
-			CBM_INIT, FreeImage_GetBits(dib_new), FreeImage_GetInfo(dib_new), DIB_RGB_COLORS);
+		FIBITMAP *dib_new = FreeImage_Rescale(dib_tmp, width, height, FILTER_CATMULLROM);
 
-		ReleaseDC(hwndClui, hDC);
-		FreeImage_Unload(dib);
-		FreeImage_Unload(dib_new);
+		HBITMAP bitmap_new = FreeImage_CreateHBITMAPFromDIB(dib_new);
+
+		if (dib_new != dib_tmp)
+			FreeImage_Unload(dib_new);
+		if (dib_tmp != dib)
+			FreeImage_Unload(dib_tmp);
+        FreeImage_Unload(dib);
+
 		return (int)bitmap_new;
 	}
 }
@@ -868,6 +890,7 @@ static int serviceLoad(WPARAM wParam, LPARAM lParam)
 
 		HBITMAP hbm = FreeImage_CreateHBITMAPFromDIB(dib);
 		FreeImage_Unload(dib);
+		FI_CorrectBitmap32Alpha(hbm, FALSE);
 		return((int)hbm);
 	}
 	return NULL;
