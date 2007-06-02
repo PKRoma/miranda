@@ -1348,18 +1348,6 @@ static int SetMyAvatar(WPARAM wParam, LPARAM lParam)
 		hBmp = (HBITMAP) CallService(MS_IMG_LOAD, (WPARAM) szFinalName, 0);
 		if (hBmp == NULL)
 			return -4;
-
-		BITMAP bminfo;
-		GetObject(hBmp, sizeof(bminfo), &bminfo);
-
-		if (bminfo.bmBitsPixel != 32)
-		{
-			HBITMAP hBmpTmp = CopyBitmapTo32(hBmp);
-			DeleteObject(hBmp);
-			if (hBmpTmp == 0)
-				return -5;
-			hBmp = hBmpTmp;
-		}
 	}
 
 	int ret = 0;
@@ -1435,7 +1423,7 @@ static int SetMyAvatar(WPARAM wParam, LPARAM lParam)
 				HBITMAP hBmpTmp = (HBITMAP) BmpFilterResizeBitmap((WPARAM)&rb, 0);
 
 				// Check if need to resize
-				if (hBmpTmp == hBmp)
+				if (hBmpTmp == hBmp || hBmpTmp == NULL)
 				{
 					// Use original image
 					mir_snprintf(globalFile, sizeof(globalFile), "%s\\my_global_avatar%s", globalFile, ext);
@@ -1517,6 +1505,9 @@ static int SetProtoMyAvatar(char *protocol, HBITMAP hBmp, char *originalFilename
 
 	HBITMAP hBmpProto = (HBITMAP) BmpFilterResizeBitmap((WPARAM)&rb, 0);
 
+	if (hBmpProto == NULL)
+		return -1;
+
 	// Check if need to resize
 	if (hBmpProto == hBmp && Proto_IsAvatarFormatSupported(protocol, originalFormat))
 	{
@@ -1545,8 +1536,7 @@ static int SetProtoMyAvatar(char *protocol, HBITMAP hBmp, char *originalFilename
 	bool saved = false;
 
 	// What format?
-	if (BmpFilterCanSaveBitmap(0, PA_FORMAT_PNG) // Png is default
-		&& Proto_IsAvatarFormatSupported(protocol, PA_FORMAT_PNG))
+	if (Proto_IsAvatarFormatSupported(protocol, PA_FORMAT_PNG)) // Png is default
 
 	{
 		mir_snprintf(image_file_name, sizeof(image_file_name), "%s%s", temp_file, ".png");
@@ -1555,7 +1545,6 @@ static int SetProtoMyAvatar(char *protocol, HBITMAP hBmp, char *originalFilename
 	}
 	
 	if (!saved  // Jpeg is second
-		&& BmpFilterCanSaveBitmap(0, PA_FORMAT_JPEG)
 		&& Proto_IsAvatarFormatSupported(protocol, PA_FORMAT_JPEG))
 
 	{
@@ -1565,7 +1554,6 @@ static int SetProtoMyAvatar(char *protocol, HBITMAP hBmp, char *originalFilename
 	}
 	
 	if (!saved  // Gif
-		&& BmpFilterCanSaveBitmap(0, PA_FORMAT_GIF)
 		&& Proto_IsAvatarFormatSupported(protocol, PA_FORMAT_GIF))
 
 	{
@@ -1575,7 +1563,6 @@ static int SetProtoMyAvatar(char *protocol, HBITMAP hBmp, char *originalFilename
 	}
 	
 	if (!saved   // Bitmap
-		&& BmpFilterCanSaveBitmap(0, PA_FORMAT_BMP)
 		&& Proto_IsAvatarFormatSupported(protocol, PA_FORMAT_BMP))
 
 	{
