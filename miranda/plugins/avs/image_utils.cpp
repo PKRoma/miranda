@@ -95,9 +95,17 @@ int BmpFilterResizeBitmap(WPARAM wParam,LPARAM lParam)
 		case RESIZEBITMAP_KEEP_PROPORTIONS:
 		{
 			if (height * widthOrig / heightOrig <= width)
+			{
+				if (info->fit & RESIZEBITMAP_FLAG_DONT_GROW)
+					height = min(height, bminfo.bmHeight);
 				width = height * widthOrig / heightOrig;
+			}
 			else
+			{
+				if (info->fit & RESIZEBITMAP_FLAG_DONT_GROW)
+					width = min(width, bminfo.bmWidth);
 				height = width * heightOrig / widthOrig;
+			}
 
 			break;
 		}

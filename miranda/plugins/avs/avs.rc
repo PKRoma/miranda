@@ -93,14 +93,15 @@ BEGIN
                     7,7,237,8
 END
 
-IDD_SET_OWN_SUBCLASS DIALOG DISCARDABLE  0, 0, 246, 31
+IDD_SET_OWN_SUBCLASS DIALOG DISCARDABLE  0, 0, 323, 31
 STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPSIBLINGS
 FONT 8, "MS Shell Dlg"
 BEGIN
-    CONTROL         "Make the picture square",IDC_MAKE_SQUARE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,7,237,8
-    CONTROL         "Grow to fit max allowed proto size",IDC_GROW,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,19,237,8
+    CONTROL         "Make the avatar square",IDC_MAKE_SQUARE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,68,0,237,8
+    CONTROL         "Resize the avatar to fit max allowed protocol size",
+                    IDC_GROW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,68,12,237,
+                    8
 END
 
 IDD_AVATAROPTIONS DIALOGEX 0, 0, 213, 212
@@ -200,12 +201,6 @@ END
 GUIDELINES DESIGNINFO 
 BEGIN
     IDD_OPENSUBCLASS, DIALOG
-    BEGIN
-        RIGHTMARGIN, 208
-        TOPMARGIN, 7
-    END
-
-    IDD_SET_OWN_SUBCLASS, DIALOG
     BEGIN
         RIGHTMARGIN, 208
         TOPMARGIN, 7

@@ -1,13 +1,13 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
-// Used by avatars.rc
+// Microsoft Developer Studio generated include file.
+// Used by avs.rc
 //
 #define ID_USE_DEFAULTS                 3
 #define IDD_OPTIONS                     101
 #define IDD_OPENSUBCLASS                102
-#define IDD_SET_OWN_SUBCLASS            105
 #define IDD_AVATAROPTIONS               103
 #define IDI_AVATAR                      104
+#define IDD_SET_OWN_SUBCLASS            105
 #define IDD_DIALOG1                     106
 #define IDD_USER_AVATAR                 106
 #define IDD_PROTO_AVATARS               107
