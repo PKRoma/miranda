@@ -293,7 +293,7 @@ static bool IsIcfEnabled(void)
 	BSTR fwBstrProcessImageFileName = NULL;
 
 	hr = CoInitialize(NULL);
-    if (FAILED(hr)) goto error;
+    if (FAILED(hr)) return false;
 	
 	// Create an instance of the firewall settings manager.
     hr = CoCreateInstance(__uuidof(NetFwMgr), NULL, CLSCTX_INPROC_SERVER,
@@ -389,6 +389,8 @@ void MSNConnDetectThread( void* )
 	}
 	else
 	{
+		MSN_DebugLog("P2PNAT User overwrote IP connection is guessed by user settings only");
+
 		// User specified host by himself so check if it matches MSN information
 		// if it does, move to connection type autodetection, 
 		// if it does not, guess connection type from available info 
@@ -423,11 +425,10 @@ void MSNConnDetectThread( void* )
 
 	MSNatDetect();
 
-	MSN_DebugLog("P2PNAT Connection %s found UPnP: %d", conStr[MyConnection.udpConType], MyConnection.upnpNAT);
-
 	// If user mapped incoming ports consider direct connection 
 	if (portsMapped)
 	{
+		MSN_DebugLog("P2PNAT User manually mapped ports for incoming connection");
 		switch(MyConnection.udpConType)
 		{ 
 		case conUnknown:
@@ -444,6 +445,9 @@ void MSNConnDetectThread( void* )
 			break;
 		}
 	}
+
+	MSN_DebugLog("P2PNAT Connection %s found UPnP: %d ICF: %d", conStr[MyConnection.udpConType], 
+		MyConnection.upnpNAT, MyConnection.icf);
 
 	MyConnection.CalculateWeight();
 }
