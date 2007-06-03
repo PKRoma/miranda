@@ -962,15 +962,30 @@ static int serviceSave(WPARAM wParam, LPARAM lParam)
 			else if(isi->dib != NULL && (isi->dwMask & IMGI_FBITMAP) && !(isi->dwMask & IMGI_HBITMAP))
 				dib = isi->dib;
 
+			int ret = 0;
 			if(dib) {
-				if(lParam & IMGL_WCHAR)
-					FreeImage_SaveU(fif, dib, isi->wszName, 0);
+				int flags = HIWORD(lParam);
+
+				if(fif == FIF_PNG || fif == FIF_BMP || fif == FIF_JNG)
+				{
+					if(lParam & IMGL_WCHAR)
+						ret = FreeImage_SaveU(fif, dib, isi->wszName, flags);
+					else
+						ret = FreeImage_Save(fif, dib, isi->szName, flags);
+				}
 				else
-					FreeImage_Save(fif, dib, isi->szName, 0);
+				{
+					FIBITMAP *dib_new = FreeImage_ConvertTo24Bits(dib);
+					if(lParam & IMGL_WCHAR)
+						ret = FreeImage_SaveU(fif, dib_new, isi->wszName, flags);
+					else
+						ret = FreeImage_Save(fif, dib_new, isi->szName, flags);
+					FreeImage_Unload(dib_new);
+				}
 
 				if(fUnload)
 					FreeImage_Unload(dib);
-				return 1;
+				return ret;
 			}
 			return 0;
 		}
