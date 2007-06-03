@@ -693,7 +693,9 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 		TCHAR* str = JabberErrorMsg( errorNode );
 		MessageBox( NULL, str, TranslateT( "Jabber Error Message" ), MB_OK|MB_SETFOREGROUND );
 		//JabberListRemoveResource( LIST_CHATROOM, from );
-		JabberListRemove( LIST_CHATROOM, from );
+		JABBER_LIST_ITEM* item = JabberListGetItemPtr (LIST_CHATROOM, from );
+		if ( item != NULL) 
+			if (!item->bChatActive) JabberListRemove( LIST_CHATROOM, from );
 		mir_free( str );
 }	}
 
