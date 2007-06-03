@@ -1,7 +1,7 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on msn.dsp
 !IF "$(CFG)" == ""
 CFG=msn - Win32 Release Unicode
-!MESSAGE No configuration specified. Defaulting to msn - Win32 Debug Unicode.
+!MESSAGE No configuration specified. Defaulting to msn - Win32 Release Unicode.
 !ENDIF
 
 !IF "$(CFG)" != "msn - Win32 Release" && "$(CFG)" != "msn - Win32 Debug" && "$(CFG)" != "msn - Win32 Release Unicode" && "$(CFG)" != "msn - Win32 Debug Unicode"
@@ -53,6 +53,7 @@ CLEAN :
 	-@erase "$(INTDIR)\msn_misc.obj"
 	-@erase "$(INTDIR)\msn_msgqueue.obj"
 	-@erase "$(INTDIR)\msn_msgsplit.obj"
+	-@erase "$(INTDIR)\msn_natdetect.obj"
 	-@erase "$(INTDIR)\msn_opts.obj"
 	-@erase "$(INTDIR)\msn_p2p.obj"
 	-@erase "$(INTDIR)\msn_p2ps.obj"
@@ -134,10 +135,11 @@ LINK32_OBJS= \
 	"$(INTDIR)\msn_mime.obj" \
 	"$(INTDIR)\msn_misc.obj" \
 	"$(INTDIR)\msn_msgqueue.obj" \
+	"$(INTDIR)\msn_msgsplit.obj" \
+	"$(INTDIR)\msn_natdetect.obj" \
 	"$(INTDIR)\msn_opts.obj" \
 	"$(INTDIR)\msn_p2p.obj" \
 	"$(INTDIR)\msn_p2ps.obj" \
-	"$(INTDIR)\msn_msgsplit.obj" \
 	"$(INTDIR)\msn_srv.obj" \
 	"$(INTDIR)\msn_ssl.obj" \
 	"$(INTDIR)\msn_std.obj" \
@@ -198,6 +200,8 @@ CLEAN :
 	-@erase "$(INTDIR)\msn_msgqueue.sbr"
 	-@erase "$(INTDIR)\msn_msgsplit.obj"
 	-@erase "$(INTDIR)\msn_msgsplit.sbr"
+	-@erase "$(INTDIR)\msn_natdetect.obj"
+	-@erase "$(INTDIR)\msn_natdetect.sbr"
 	-@erase "$(INTDIR)\msn_opts.obj"
 	-@erase "$(INTDIR)\msn_opts.sbr"
 	-@erase "$(INTDIR)\msn_p2p.obj"
@@ -287,10 +291,11 @@ BSC32_SBRS= \
 	"$(INTDIR)\msn_mime.sbr" \
 	"$(INTDIR)\msn_misc.sbr" \
 	"$(INTDIR)\msn_msgqueue.sbr" \
+	"$(INTDIR)\msn_msgsplit.sbr" \
+	"$(INTDIR)\msn_natdetect.sbr" \
 	"$(INTDIR)\msn_opts.sbr" \
 	"$(INTDIR)\msn_p2p.sbr" \
 	"$(INTDIR)\msn_p2ps.sbr" \
-	"$(INTDIR)\msn_msgsplit.sbr" \
 	"$(INTDIR)\msn_srv.sbr" \
 	"$(INTDIR)\msn_ssl.sbr" \
 	"$(INTDIR)\msn_std.sbr" \
@@ -323,10 +328,11 @@ LINK32_OBJS= \
 	"$(INTDIR)\msn_mime.obj" \
 	"$(INTDIR)\msn_misc.obj" \
 	"$(INTDIR)\msn_msgqueue.obj" \
+	"$(INTDIR)\msn_msgsplit.obj" \
+	"$(INTDIR)\msn_natdetect.obj" \
 	"$(INTDIR)\msn_opts.obj" \
 	"$(INTDIR)\msn_p2p.obj" \
 	"$(INTDIR)\msn_p2ps.obj" \
-	"$(INTDIR)\msn_msgsplit.obj" \
 	"$(INTDIR)\msn_srv.obj" \
 	"$(INTDIR)\msn_ssl.obj" \
 	"$(INTDIR)\msn_std.obj" \
@@ -368,6 +374,7 @@ CLEAN :
 	-@erase "$(INTDIR)\msn_misc.obj"
 	-@erase "$(INTDIR)\msn_msgqueue.obj"
 	-@erase "$(INTDIR)\msn_msgsplit.obj"
+	-@erase "$(INTDIR)\msn_natdetect.obj"
 	-@erase "$(INTDIR)\msn_opts.obj"
 	-@erase "$(INTDIR)\msn_p2p.obj"
 	-@erase "$(INTDIR)\msn_p2ps.obj"
@@ -449,10 +456,11 @@ LINK32_OBJS= \
 	"$(INTDIR)\msn_mime.obj" \
 	"$(INTDIR)\msn_misc.obj" \
 	"$(INTDIR)\msn_msgqueue.obj" \
+	"$(INTDIR)\msn_msgsplit.obj" \
+	"$(INTDIR)\msn_natdetect.obj" \
 	"$(INTDIR)\msn_opts.obj" \
 	"$(INTDIR)\msn_p2p.obj" \
 	"$(INTDIR)\msn_p2ps.obj" \
-	"$(INTDIR)\msn_msgsplit.obj" \
 	"$(INTDIR)\msn_srv.obj" \
 	"$(INTDIR)\msn_ssl.obj" \
 	"$(INTDIR)\msn_std.obj" \
@@ -513,6 +521,8 @@ CLEAN :
 	-@erase "$(INTDIR)\msn_msgqueue.sbr"
 	-@erase "$(INTDIR)\msn_msgsplit.obj"
 	-@erase "$(INTDIR)\msn_msgsplit.sbr"
+	-@erase "$(INTDIR)\msn_natdetect.obj"
+	-@erase "$(INTDIR)\msn_natdetect.sbr"
 	-@erase "$(INTDIR)\msn_opts.obj"
 	-@erase "$(INTDIR)\msn_opts.sbr"
 	-@erase "$(INTDIR)\msn_p2p.obj"
@@ -602,10 +612,11 @@ BSC32_SBRS= \
 	"$(INTDIR)\msn_mime.sbr" \
 	"$(INTDIR)\msn_misc.sbr" \
 	"$(INTDIR)\msn_msgqueue.sbr" \
+	"$(INTDIR)\msn_msgsplit.sbr" \
+	"$(INTDIR)\msn_natdetect.sbr" \
 	"$(INTDIR)\msn_opts.sbr" \
 	"$(INTDIR)\msn_p2p.sbr" \
 	"$(INTDIR)\msn_p2ps.sbr" \
-	"$(INTDIR)\msn_msgsplit.sbr" \
 	"$(INTDIR)\msn_srv.sbr" \
 	"$(INTDIR)\msn_ssl.sbr" \
 	"$(INTDIR)\msn_std.sbr" \
@@ -638,10 +649,11 @@ LINK32_OBJS= \
 	"$(INTDIR)\msn_mime.obj" \
 	"$(INTDIR)\msn_misc.obj" \
 	"$(INTDIR)\msn_msgqueue.obj" \
+	"$(INTDIR)\msn_msgsplit.obj" \
+	"$(INTDIR)\msn_natdetect.obj" \
 	"$(INTDIR)\msn_opts.obj" \
 	"$(INTDIR)\msn_p2p.obj" \
 	"$(INTDIR)\msn_p2ps.obj" \
-	"$(INTDIR)\msn_msgsplit.obj" \
 	"$(INTDIR)\msn_srv.obj" \
 	"$(INTDIR)\msn_ssl.obj" \
 	"$(INTDIR)\msn_std.obj" \
@@ -1146,6 +1158,34 @@ SOURCE=.\msn_msgsplit.cpp
 
 
 "$(INTDIR)\msn_msgsplit.obj"	"$(INTDIR)\msn_msgsplit.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\msn.pch"
+
+
+!ENDIF
+
+SOURCE=.\msn_natdetect.cpp
+
+!IF  "$(CFG)" == "msn - Win32 Release"
+
+
+"$(INTDIR)\msn_natdetect.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\msn.pch"
+
+
+!ELSEIF  "$(CFG)" == "msn - Win32 Debug"
+
+
+"$(INTDIR)\msn_natdetect.obj"	"$(INTDIR)\msn_natdetect.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\msn.pch"
+
+
+!ELSEIF  "$(CFG)" == "msn - Win32 Release Unicode"
+
+
+"$(INTDIR)\msn_natdetect.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\msn.pch"
+
+
+!ELSEIF  "$(CFG)" == "msn - Win32 Debug Unicode"
+
+
+"$(INTDIR)\msn_natdetect.obj"	"$(INTDIR)\msn_natdetect.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\msn.pch"
 
 
 !ENDIF

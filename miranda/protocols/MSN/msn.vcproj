@@ -710,6 +710,9 @@
 				RelativePath=".\msn_msgsplit.cpp">
 			</File>
 			<File
+				RelativePath=".\msn_natdetect.cpp">
+			</File>
+			<File
 				RelativePath="msn_opts.cpp">
 				<FileConfiguration
 					Name="Release|Win32">

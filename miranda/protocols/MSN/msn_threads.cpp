@@ -290,7 +290,7 @@ void  MSN_CloseThreads()
 
 	bool opcon = false;
 	for ( int i=0; i < sttThreads.getCount(); i++ )
-		opcon |= sttThreads[ i ]->s != NULL;
+		opcon |= (sttThreads[ i ]->s != NULL);
 
 	LeaveCriticalSection( &sttLock );
 

@@ -902,6 +902,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\msn_natdetect.cpp"
+				>
+			</File>
+			<File
 				RelativePath="msn_opts.cpp"
 				>
 				<FileConfiguration

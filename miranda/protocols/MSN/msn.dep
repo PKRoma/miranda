@@ -32,6 +32,7 @@
 	"..\..\include\win2k.h"\
 	".\msn_global.h"\
 	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
 	".\sdk\m_proto_listeningto.h"\
 	
 
@@ -63,6 +64,7 @@
 	"..\..\include\win2k.h"\
 	".\msn_global.h"\
 	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
 	".\sdk\m_proto_listeningto.h"\
 	".\version.h"\
 	
@@ -96,6 +98,7 @@
 	"..\..\include\win2k.h"\
 	".\msn_global.h"\
 	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
 	".\sdk\m_proto_listeningto.h"\
 	
 
@@ -127,6 +130,7 @@
 	"..\..\include\win2k.h"\
 	".\msn_global.h"\
 	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
 	".\sdk\m_proto_listeningto.h"\
 	
 
@@ -158,6 +162,7 @@
 	"..\..\include\win2k.h"\
 	".\msn_global.h"\
 	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
 	".\sdk\m_proto_listeningto.h"\
 	
 
@@ -189,6 +194,7 @@
 	"..\..\include\win2k.h"\
 	".\msn_global.h"\
 	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
 	".\sdk\m_proto_listeningto.h"\
 	
 
@@ -220,6 +226,7 @@
 	"..\..\include\win2k.h"\
 	".\msn_global.h"\
 	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
 	".\sdk\m_proto_listeningto.h"\
 	
 
@@ -251,6 +258,7 @@
 	"..\..\include\win2k.h"\
 	".\msn_global.h"\
 	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
 	".\sdk\m_proto_listeningto.h"\
 	
 
@@ -282,6 +290,7 @@
 	"..\..\include\win2k.h"\
 	".\msn_global.h"\
 	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
 	".\sdk\m_proto_listeningto.h"\
 	
 
@@ -313,6 +322,7 @@
 	"..\..\include\win2k.h"\
 	".\msn_global.h"\
 	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
 	".\sdk\m_proto_listeningto.h"\
 	
 
@@ -344,6 +354,7 @@
 	"..\..\include\win2k.h"\
 	".\msn_global.h"\
 	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
 	".\sdk\m_proto_listeningto.h"\
 	
 
@@ -375,6 +386,7 @@
 	"..\..\include\win2k.h"\
 	".\msn_global.h"\
 	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
 	".\sdk\m_proto_listeningto.h"\
 	
 
@@ -406,6 +418,7 @@
 	"..\..\include\win2k.h"\
 	".\msn_global.h"\
 	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
 	".\sdk\m_proto_listeningto.h"\
 	".\version.h"\
 	
@@ -438,6 +451,7 @@
 	"..\..\include\win2k.h"\
 	".\msn_global.h"\
 	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
 	".\sdk\m_proto_listeningto.h"\
 	
 
@@ -469,6 +483,39 @@
 	"..\..\include\win2k.h"\
 	".\msn_global.h"\
 	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
+	".\sdk\m_proto_listeningto.h"\
+	
+
+.\msn_natdetect.cpp : \
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\msn_global.h"\
+	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
 	".\sdk\m_proto_listeningto.h"\
 	
 
@@ -500,6 +547,7 @@
 	"..\..\include\win2k.h"\
 	".\msn_global.h"\
 	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
 	".\sdk\m_proto_listeningto.h"\
 	
 
@@ -531,6 +579,7 @@
 	"..\..\include\win2k.h"\
 	".\msn_global.h"\
 	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
 	".\sdk\m_proto_listeningto.h"\
 	
 
@@ -562,6 +611,7 @@
 	"..\..\include\win2k.h"\
 	".\msn_global.h"\
 	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
 	".\sdk\m_proto_listeningto.h"\
 	
 
@@ -593,6 +643,7 @@
 	"..\..\include\win2k.h"\
 	".\msn_global.h"\
 	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
 	".\sdk\m_proto_listeningto.h"\
 	
 
@@ -624,6 +675,7 @@
 	"..\..\include\win2k.h"\
 	".\msn_global.h"\
 	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
 	".\sdk\m_proto_listeningto.h"\
 	
 
@@ -655,6 +707,7 @@
 	"..\..\include\win2k.h"\
 	".\msn_global.h"\
 	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
 	".\sdk\m_proto_listeningto.h"\
 	
 
@@ -686,6 +739,7 @@
 	"..\..\include\win2k.h"\
 	".\msn_global.h"\
 	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
 	".\sdk\m_proto_listeningto.h"\
 	
 
@@ -717,6 +771,7 @@
 	"..\..\include\win2k.h"\
 	".\msn_global.h"\
 	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
 	".\sdk\m_proto_listeningto.h"\
 	
 
@@ -748,6 +803,7 @@
 	"..\..\include\win2k.h"\
 	".\msn_global.h"\
 	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
 	".\sdk\m_proto_listeningto.h"\
 	
 
@@ -779,6 +835,7 @@
 	"..\..\include\win2k.h"\
 	".\msn_global.h"\
 	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
 	".\sdk\m_proto_listeningto.h"\
 	
 
@@ -810,6 +867,7 @@
 	"..\..\include\win2k.h"\
 	".\msn_global.h"\
 	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
 	".\sdk\m_proto_listeningto.h"\
 	
 
