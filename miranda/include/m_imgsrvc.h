@@ -439,7 +439,8 @@ typedef struct _tagIMGSRVC_INFO {
 // save image to disk
 // wParam = IMGSRVC_INFO *  (szName/wszName, hbm OR dib, cbSize, dwMask mandatory. fif optional, if FIF_UNKNOWN is given
 //                           it will be determined from the filename).
-// lParam = IMG_* flags     (IMGL_WCHAR is the only valid - filename will be assumed to be wchar_t and wszName must be used)
+// lParam = low word: IMG_* flags     (IMGL_WCHAR is the only valid - filename will be assumed to be wchar_t and wszName must be used)
+//          high word: FreeImage_Save flags
 // set IMGSRVC_INFO.dwMask to indicate whether the HBITMAP of FIBITMAP member is valid
 
 #define MS_IMG_SAVE  "IMG/Save"

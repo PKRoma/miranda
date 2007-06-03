@@ -321,7 +321,7 @@ return=0 for sucess
 #define AF_DONTNEEDDELAYS 5
 
 // Avatar file max size
-// return size in Kbytes (0 for no limit)
+// return size in bytes (0 for no limit)
 #define AF_MAXFILESIZE 6
 
 
