@@ -143,9 +143,6 @@ void __cdecl MSNServerThread( ThreadData* info )
 		msnNsThread = info;
 	}
 
-	if ( info->mType == SERVER_DISPATCH )
-		mir_forkthread(( pThreadFunc )msn_keepAliveThread, NULL );
-
 	MSN_DebugLog( "Entering main recv loop" );
 	info->mBytesInData = 0;
 	while ( TRUE ) {

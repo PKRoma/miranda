@@ -182,34 +182,6 @@ void 	MSN_DebugLog( const char *fmt, ... )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// MSN_DumpMemory - dumps a memory block to the network log
-
-void  MSN_DumpMemory( const char* buffer, int bufSize )
-{
-   char TmpBuffer[ 256 ];
-   long Ptr = 0;
-
-   while ( Ptr < bufSize ) {
-		char* bufferPtr = TmpBuffer + sprintf( TmpBuffer, "%04X ", Ptr );
-      int i;
-
-		for ( i=0; Ptr+i < bufSize && i < 16; i++ )
-         bufferPtr += sprintf( bufferPtr, "%02X ", BYTE( buffer[Ptr+i] ));
-
-		while ( i++ < 17 ) {
-			strcat( bufferPtr, "   " );
-			bufferPtr += 3;
-		}
-
-      for ( i=0; Ptr < bufSize && i < 16; i++, Ptr++ )
-			*bufferPtr++ = ( BYTE( buffer[ Ptr ]) >= ' ' ) ? buffer[ Ptr ] : '.';
-
-		*bufferPtr = 0;
-
-		MSN_CallService( MS_NETLIB_LOG, ( WPARAM )hNetlibUser, ( LPARAM )TmpBuffer );
-}	}
-
-/////////////////////////////////////////////////////////////////////////////////////////
 // MSN_GetAvatarFileName - gets a file name for an contact's avatar
 
 void  MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, size_t cbLen )
@@ -306,7 +278,7 @@ void 	MSN_GoOffline()
 	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL )
 	{
-		if ( !lstrcmpA( msnProtocolName, (char*)MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 )))
+		if ( MSN_IsMyContact( hContact ))
 			if ( ID_STATUS_OFFLINE != MSN_GetWord( hContact, "Status", ID_STATUS_OFFLINE )) {
 				MSN_SetWord( hContact, "Status", ID_STATUS_OFFLINE );
 				MSN_SetDword( hContact, "IdleTS", 0 );
@@ -1277,4 +1249,10 @@ char* MSN_Base64Decode( const char* str )
 	res[nlb.cbDecoded] = 0;
 
 	return res;
+}
+
+bool MSN_IsMyContact( HANDLE hContact )
+{
+	const char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 );
+	return szProto != NULL && strcmp( msnProtocolName, szProto ) == 0;
 }

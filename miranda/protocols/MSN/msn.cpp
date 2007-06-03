@@ -92,7 +92,7 @@ PLUGININFOEX pluginInfo =
 	"MSN Protocol",
 	__VERSION_DWORD,
 	"Adds support for communicating with users of the MSN Messenger network",
-	"Boris Krasnovskiy",
+	"Boris Krasnovskiy (borkra)",
 	"borkra@miranda-im.org",
 	"© 2001-2007 Richard Hughes, George Hazan, Boris Krasnovskiy",
 	"http://miranda-im.org",
@@ -344,27 +344,23 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 
 	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL ) {
-		char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact,0 );
-		if ( szProto != NULL && !strcmp( msnProtocolName, szProto ))
+		if ( MSN_IsMyContact( hContact ))
 		{
 			MSN_DeleteSetting( hContact, "Status" );
 			MSN_DeleteSetting( hContact, "IdleTS" );
 			MSN_DeleteSetting( hContact, "p2pMsgId" );
 			DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
-//			MSN_SetWord( hContact, "Status", ID_STATUS_OFFLINE );
 		}
 		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT,( WPARAM )hContact, 0 );
 	}
 
-	char mailsoundtemp[ 64 ];
-	strcpy( mailsoundtemp, protocolname );
-	strcat( mailsoundtemp, ": " );
-	strcat( mailsoundtemp,  MSN_Translate( "Hotmail" ));
-	mailsoundname = mir_strdup( mailsoundtemp );
-	SkinAddNewSound( mailsoundtemp, mailsoundtemp, "hotmail.wav" );
+	mailsoundname = ( char* )mir_alloc( 64 );
+	mir_snprintf(mailsoundname, 64, "%s:%s", protocolname, MSN_Translate( "Hotmail" ));
+	SkinAddNewSound( mailsoundname, mailsoundname, "hotmail.wav" );
 
 	msnStatusMode = msnDesiredStatus = ID_STATUS_OFFLINE;
 	memset(&msnCurrentMedia, 0, sizeof(msnCurrentMedia));
+
 	msnLoggedIn = false;
 	LoadMsnServices();
 	MsnInitIcons();

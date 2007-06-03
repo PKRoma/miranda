@@ -40,8 +40,7 @@ static HANDLE AddToListByEmail( const char *email, DWORD flags )
 		   hContact != NULL;
 			hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 ))
 	{
-		char *szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 );
-		if ( szProto != NULL && !strcmp( szProto, msnProtocolName )) {
+		if ( MSN_IsMyContact( hContact )) {
 			char tEmail[ MSN_MAX_EMAIL_LEN ];
 			if ( MSN_GetStaticString( "e-mail", hContact, tEmail, sizeof( tEmail )))
 				continue;
@@ -221,14 +220,14 @@ static int MsnBasicSearch(WPARAM wParam,LPARAM lParam)
 
 int MsnContactDeleted( WPARAM wParam, LPARAM lParam )
 {
+	const HANDLE hContact = ( HANDLE )wParam;
+
 	if ( !msnLoggedIn )  //should never happen for MSN contacts
 		return 0;
 
-	char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, wParam, 0 );
-	if ( szProto == NULL || strcmp( szProto, msnProtocolName ))
+	if ( !MSN_IsMyContact( hContact ))
 		return 0;
 
-	HANDLE hContact = ( HANDLE )wParam;
 	char tEmail[ MSN_MAX_EMAIL_LEN ];
 	if ( !MSN_GetStaticString( "e-mail", hContact, tEmail, sizeof( tEmail ))) {
 		MSN_AddUser( hContact, tEmail, LIST_FL | LIST_REMOVE );
@@ -284,8 +283,7 @@ int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 	}
 
 	if ( !strcmp( cws->szSetting, "ApparentMode" )) {
-		char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-		if ( szProto == NULL || strcmp( szProto, msnProtocolName ))
+		if ( !MSN_IsMyContact( hContact ))
 			return 0;
 
 		char tEmail[ MSN_MAX_EMAIL_LEN ];
@@ -302,8 +300,7 @@ int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 	}	}	}
 
 	if ( !strcmp( cws->szModule, "CList" )) {
-		char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-		if ( szProto == NULL || strcmp( szProto, msnProtocolName ))
+		if ( !MSN_IsMyContact( hContact ))
 			return 0;
 
 		if ( !strcmp( cws->szSetting, "Group" )) {
@@ -360,8 +357,7 @@ int MsnWindowEvent(WPARAM wParam, LPARAM lParam)
 	MessageWindowEventData* msgEvData  = (MessageWindowEventData*)lParam;
 
 	if ( msgEvData->uType == MSG_WINDOW_EVT_OPENING ) {
-		char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )msgEvData->hContact, 0 );
-		if ( szProto == NULL || strcmp( msnProtocolName, szProto )) return 0;
+		if ( !MSN_IsMyContact( msgEvData->hContact )) return 0;
 
 		WORD wStatus = MSN_GetWord( msgEvData->hContact, "Status", ID_STATUS_OFFLINE );
 		if ( wStatus == ID_STATUS_OFFLINE || msnStatusMode == ID_STATUS_INVISIBLE ) return 0;
@@ -566,11 +562,13 @@ static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 		return GAIR_NOAVATAR;
 
 	char tEmail[ MSN_MAX_EMAIL_LEN ];
-	if ( !MSN_GetStaticString( "e-mail", AI->hContact, tEmail, sizeof( tEmail )) && !strcmp( tEmail, MyOptions.szEmail ))
+	if ( !MSN_GetStaticString( "e-mail", AI->hContact, tEmail, sizeof( tEmail )) && 
+		!strcmp( tEmail, MyOptions.szEmail ))
 		return GAIR_NOAVATAR;
 
 	char szContext[ MAX_PATH ];
-	if ( MSN_GetStaticString(( AI->hContact == NULL ) ? "PictObject" : "PictContext", AI->hContact, szContext, sizeof szContext ))
+	if ( MSN_GetStaticString(( AI->hContact == NULL ) ? "PictObject" : "PictContext", AI->hContact, 
+		szContext, sizeof( szContext )))
 		return GAIR_NOAVATAR;
 
 	MSN_GetAvatarFileName( AI->hContact, AI->filename, sizeof( AI->filename ));

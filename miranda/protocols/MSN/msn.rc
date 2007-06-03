@@ -140,7 +140,7 @@ BEGIN
     GROUPBOX        "Other",IDC_STATIC,3,121,232,80
     CONTROL         "Display errors using popups",IDC_ERRORS_USING_POPUPS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,133,216,10
-    CONTROL         "Enable 'First message delivered' popup",
+    CONTROL         "Enable 'Chat Session Established' popup",
                     IDC_NOTIFY_FIRSTMSG,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,11,145,216,10
     LTEXT           "Timeout (*)",IDC_STATIC,10,185,60,8
@@ -148,8 +148,9 @@ BEGIN
                     ES_NUMBER
     LTEXT           "sec.",IDC_STATIC,98,185,30,8
     DEFPUSHBUTTON   "Previe&w",IDC_PREVIEW2,174,182,52,12
-    CONTROL         "Enable 'User left channel' popup",IDC_NOTIFY_ENDSESSION,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,158,218,8
+    CONTROL         "Enable 'Contact left channel' popup",
+                    IDC_NOTIFY_ENDSESSION,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,11,158,218,8
     CONTROL         "Enable 'Custom Smiley' popup",IDC_NOTIFY_CUSTOMSMILEY,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,171,218,8
 END

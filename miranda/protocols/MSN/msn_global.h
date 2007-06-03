@@ -77,6 +77,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "sdk/m_proto_listeningto.h"
 #include "sdk/m_folders.h"
+#include "sdk/m_metacontacts.h"
 
 #include "resource.h"
 
@@ -180,14 +181,13 @@ HANDLE      MSN_HContactFromEmail( const char* msnEmail, const char* msnNick, in
 HANDLE      MSN_HContactFromEmailT( const TCHAR* msnEmail );
 HANDLE      MSN_HContactById( const char* szGuid );
 
+bool		MSN_IsMyContact( HANDLE hContact );
 int         MSN_AddContact( char* uhandle,char* nick ); //returns clist ID
 int         MSN_AddUser( HANDLE hContact, const char* email, int flags );
 void        MSN_AddAuthRequest( HANDLE hContact, const char *email, const char *nick );
 int         MSN_ContactFromHandle( char* uhandle ); //get cclist id from Uhandle
 void        MSN_DebugLog( const char* fmt, ... );
-void        MSN_DumpMemory( const char* buffer, int bufSize );
 void        MSN_HandleFromContact( unsigned long uin, char* uhandle );
-int         MSN_GetMyHostAsString( char* parBuf, int parBufSize );
 
 void     __cdecl     MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP, void* );
 void        MSN_GoOffline( void );
@@ -527,8 +527,6 @@ filetransfer*  p2p_getSessionByCallID( const char* CallID );
 bool  p2p_sessionRegistered( filetransfer* ft );
 bool  p2p_isAvatarOnly( HANDLE hContact );
 unsigned p2p_getMsgId( HANDLE hContact, int inc );
-void p2p_detectUPnP( ThreadData* info );
-
 
 void  p2p_registerDC( directconnection* ft );
 void  p2p_unregisterDC( directconnection* dc );
@@ -710,3 +708,38 @@ public:
 #define UTF8(A) UTFEncoder(A).str()
 
 TCHAR* a2t( const char* str );
+
+
+typedef enum
+{
+	conUnknown,
+	conDirect,
+	conUnknownNAT,
+	conIPRestrictNAT,
+	conPortRestrictNAT,
+	conSymmetricNAT,
+	conFirewall,
+	conISALike
+} ConEnum;
+
+extern const char* conStr[];
+
+typedef struct
+{
+	unsigned intIP;
+	unsigned extIP;
+	ConEnum udpConType;
+	ConEnum tcpConType;
+	unsigned weight;
+	bool upnpNAT;
+	bool icf;
+
+	const char* GetMyExtIPStr(void) { return inet_ntoa(*((PIN_ADDR)&extIP)); }
+	const char* GetMyUdpConStr(void) { return conStr[udpConType]; }
+	void SetUdpCon(const char* str);
+	void CalculateWeight(void);
+} MyConnectionType;
+
+extern MyConnectionType MyConnection;
+
+

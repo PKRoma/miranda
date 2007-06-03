@@ -225,6 +225,14 @@ SOURCE=.\msn_msgqueue.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\msn_msgsplit.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\msn_natdetect.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\msn_opts.cpp
 # End Source File
 # Begin Source File
@@ -234,10 +242,6 @@ SOURCE=.\msn_p2p.cpp
 # Begin Source File
 
 SOURCE=.\msn_p2ps.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\msn_msgsplit.cpp
 # End Source File
 # Begin Source File
 

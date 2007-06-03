@@ -557,7 +557,7 @@ static BOOL CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM wPa
 			break;
 
 		case IDC_PREVIEW2:
-			MSN_ShowPopup( "vasya.pupkin@hotmail.com", MSN_Translate( "First message delivered" ), 0 );
+			MSN_ShowPopup( "vasya.pupkin@hotmail.com", MSN_Translate( "Chat session established" ), 0 );
 			break;
 		}
 		break;

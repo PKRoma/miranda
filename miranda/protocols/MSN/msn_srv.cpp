@@ -202,8 +202,7 @@ void MSN_RemoveEmptyGroups( void )
 	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL )
 	{
-		char *proto = (char*)MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 );
-		if ( lstrcmpA( msnProtocolName, proto ) == 0 ) 
+		if ( MSN_IsMyContact( hContact )) 
 		{
 			char szGroupID[ 100 ];
 			if ( !MSN_GetStaticString( "GroupID", hContact, szGroupID, sizeof( szGroupID ))) {
@@ -246,7 +245,7 @@ void  MSN_UploadServerGroups( char* group )
 
 	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL ) {
-		if ( !lstrcmpA( msnProtocolName, ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact,0 ))) {
+		if ( MSN_IsMyContact( hContact )) {
 			DBVARIANT dbv;
 			if ( !DBGetContactSettingStringUtf( hContact, "CList", "Group", &dbv )) {
 				char szGroupID[ 100 ];

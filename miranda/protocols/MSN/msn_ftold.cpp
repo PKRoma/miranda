@@ -291,22 +291,17 @@ void ft_startFileSend( ThreadData* info, const char* Invcommand, const char* Inv
 
 	bool bHasError = false;
 	NETLIBBIND nlb = {0};
-	char ipaddr[256];
 	HANDLE sb;
 
 	filetransfer* ft = info->mMsnFtp; info->mMsnFtp = NULL;
 	if ( ft != NULL ) {
-		if ( MSN_GetMyHostAsString( ipaddr, sizeof ipaddr ))
+		nlb.cbSize = sizeof( nlb );
+		nlb.pfnNewConnectionV2 = MSN_ConnectionProc;
+		sb = ( HANDLE )MSN_CallService( MS_NETLIB_BINDPORT, ( WPARAM )hNetlibUser, ( LPARAM )&nlb);
+		if ( sb == NULL ) {
+			MSN_DebugLog( "Unable to bind the port for incoming transfers" );
 			bHasError = true;
-		else {
-			nlb.cbSize = sizeof( nlb );
-			nlb.pfnNewConnectionV2 = MSN_ConnectionProc;
-			nlb.wPort = 0;	// Use user-specified incoming port ranges, if available
-			sb = ( HANDLE )MSN_CallService( MS_NETLIB_BINDPORT, ( WPARAM )hNetlibUser, ( LPARAM )&nlb);
-			if ( sb == NULL ) {
-				MSN_DebugLog( "Unable to bind the port for incoming transfers" );
-				bHasError = true;
-	}	}	}
+	}	}
 	else bHasError = true;
 
 	char command[ 1024 ];
@@ -321,7 +316,7 @@ void ft_startFileSend( ThreadData* info, const char* Invcommand, const char* Inv
 		"Launch-Application: FALSE\r\n"
 		"Request-Data: IP-Address:\r\n\r\n",
 		( bHasError ) ? "CANCEL" : "ACCEPT",
-		Invcookie, ipaddr, nlb.wExPort, rand() << 16 | rand());
+		Invcookie, MyConnection.GetMyExtIPStr(), nlb.wExPort, rand() << 16 | rand());
 	info->sendPacket( "MSG", "N %d\r\n%s", nBytes, command );
 
 	if ( bHasError ) {

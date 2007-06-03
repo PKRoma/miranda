@@ -81,44 +81,6 @@ static int sttDivideWords( char* parBuffer, int parMinItems, char** parDest )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// MSN_GetMyHostAsString - retrieves a host address as a string
-
-int  MSN_GetMyHostAsString( char* parBuf, int parBufSize )
-{
-	IN_ADDR  in;
-	hostent* myhost;
-
-	if ( msnExternalIP != NULL )
-		strncpy( parBuf, msnExternalIP, parBufSize );
-	else
-		gethostname( parBuf, parBufSize );
-
-	if ( MSN_GetByte( "AutoGetHost", 1 ))
-		MSN_SetString( NULL, "YourHost", parBuf );
-	else
-		MSN_GetStaticString( "YourHost", NULL, parBuf, parBufSize );
-
-	long ipaddrlong = inet_addr( parBuf );
-	if ( ipaddrlong != INADDR_NONE )
-		in.S_un.S_addr = ipaddrlong;
-	else
-	{	myhost = gethostbyname( parBuf );
-		if ( myhost == NULL ) {
-			{	TWinErrorCode tError;
-				MSN_ShowError( "Unknown or invalid host name was specified (%s). Error %d: %s.",
-					parBuf, tError.mErrorCode, tError.getText());
-			}
-
-			return 1;
-		}
-		in = *( PIN_ADDR )myhost->h_addr;
-	}
-
-	strncpy( parBuf, inet_ntoa( in ), parBufSize );
-	return 0;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
 // Starts a file sending thread
 
 void MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP, void* )
@@ -151,28 +113,27 @@ void MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP, void* )
 
 void sttSetMirVer( HANDLE hContact, DWORD dwValue )
 {
+	static const char* MirVerStr[] =
+	{
+		"MSN 4.x-5.x",
+		"MSN 6.0",
+		"MSN 6.1",
+		"MSN 6.2",
+		"MSN 7.0",
+		"MSN 7.5",
+		"WLM 8.0",
+		"WLM 8.1",
+		"WLM 8.5",
+	};
+
 	if ( dwValue & 0x200 )
 		MSN_SetString( hContact, "MirVer", "Webmessenger" );
 	else if ( dwValue == 1342177280 )
 		MSN_SetString( hContact, "MirVer", "Miranda IM 0.5.x (MSN v.0.5.x)" );
 	else if ( dwValue == 805306404 )
 		MSN_SetString( hContact, "MirVer", "Miranda IM 0.4.x (MSN v.0.4.x)" );
-	else if (( dwValue & 0x70000000 ) == 0x70000000 )
-		MSN_SetString( hContact, "MirVer", "WLM 8.1" );
-	else if (( dwValue & 0x60000000 ) == 0x60000000 )
-		MSN_SetString( hContact, "MirVer", "WLM 8.0" );
-	else if (( dwValue & 0x50000000 ) == 0x50000000 )
-		MSN_SetString( hContact, "MirVer", "MSN 7.5" );
-	else if ( dwValue & 0x40000000 )
-		MSN_SetString( hContact, "MirVer", "MSN 7.0" );
-	else if (( dwValue & 0x30000000 ) == 0x30000000 )
-		MSN_SetString( hContact, "MirVer", "MSN 6.2" );
-	else if ( dwValue & 0x20000000 )
-		MSN_SetString( hContact, "MirVer", "MSN 6.1" );
-	else if ( dwValue & 0x10000000 )
-		MSN_SetString( hContact, "MirVer", "MSN 6.0" );
-	else
-		MSN_SetString( hContact, "MirVer", "MSN 4.x-5.x" );
+	else 
+		MSN_SetString( hContact, "MirVer", MirVerStr[ dwValue >> 28 & 0xff ] );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -422,9 +383,6 @@ static void sttInviteMessage( ThreadData* info, const char* msgBody, char* email
 
 	if ( Appname == NULL && SessionID != NULL && SessionProtocol != NULL ) { // netmeeting send 1
 		if ( !strcmpi( Invcommand,"ACCEPT" )) {
-			char ipaddr[256];
-			MSN_GetMyHostAsString( ipaddr, sizeof( ipaddr ));
-
 			ShellExecuteA(NULL, "open", "conf.exe", NULL, NULL, SW_SHOW);
 			Sleep(3000);
 
@@ -437,7 +395,7 @@ static void sttInviteMessage( ThreadData* info, const char* msgBody, char* email
 				"Session-ID: {1A879604-D1B8-11D7-9066-0003FF431510}\r\n"
 				"Launch-Application: TRUE\r\n"
 				"IP-Address: %s\r\n\r\n",
-				Invcookie, ipaddr);
+				Invcookie, MyConnection.GetMyExtIPStr());
 			info->sendPacket( "MSG", "N %d\r\n%s", nBytes, command );
 		}
 		return;
@@ -450,9 +408,6 @@ static void sttInviteMessage( ThreadData* info, const char* msgBody, char* email
 		mir_snprintf( command, sizeof( command ), "Accept NetMeeting request from %s?", email );
 
 		if ( MessageBoxA( NULL, command, "MSN Protocol", MB_YESNO | MB_ICONQUESTION ) == IDYES ) {
-			char ipaddr[256];
-			MSN_GetMyHostAsString( ipaddr, sizeof( ipaddr ));
-
 			nBytes = mir_snprintf( command, sizeof( command ),
 				"MIME-Version: 1.0\r\n"
 				"Content-Type: text/x-msmsgsinvite; charset=UTF-8\r\n\r\n"
@@ -463,7 +418,7 @@ static void sttInviteMessage( ThreadData* info, const char* msgBody, char* email
 				"Launch-Application: TRUE\r\n"
 				"Request-Data: IP-Address:\r\n"
 				"IP-Address: %s\r\n\r\n",
-				Invcookie, ipaddr);
+				Invcookie, MyConnection.GetMyExtIPStr());
 		}
 		else {
 			nBytes = mir_snprintf( command, sizeof( command ),
@@ -1028,13 +983,13 @@ static void sttProcessStatusMessage( BYTE* buf, unsigned len, HANDLE hContact )
 	size_t cmLen = p1 - p;
 	char *parts[16];
 	int pCount = 0;
-	p1 = strstr(p, "\\0");
+	p1 = strchr(p, '\0');
 	do {
 		*p1 = '\0';
 		parts[pCount] = p;
 		pCount ++;
 		p = p1 + 2;
-		p1 = strstr(p, "\\0");
+		p1 = strchr(p, '\0');
 	} while( p1 != NULL && pCount < 16 );
 
 	// Now let's mount the final string
@@ -1256,7 +1211,7 @@ LBL_InvalidCommand:
 				info->sendCaps();
 				if ( info->mJoinedCount == 1 ) {
 					MsgQueueEntry E;
-					bool msgExist = false, typing = false;
+					bool typing = false;
 					HANDLE hContact = info->mJoinedContacts[0];
 					
 					while (MsgQueue_GetNext( hContact, E ) != 0 ) 
@@ -1272,7 +1227,6 @@ LBL_InvalidCommand:
 						else info->sendRawMessage( E.msgType, E.message, E.msgSize );
 
 						mir_free( E.message );
-						msgExist = true;
 
 						if ( E.ft != NULL )
 							info->mMsnFtp = E.ft;
@@ -1281,8 +1235,8 @@ LBL_InvalidCommand:
 					if ( typing )
 						MSN_StartStopTyping( info, true );
 
-					if ( msgExist && MSN_GetByte( "EnableDeliveryPopup", 1 ))
-							MSN_ShowPopup( MSN_GetContactName( hContact ), MSN_Translate( "First message delivered" ), 0 );
+					if ( MSN_GetByte( "EnableDeliveryPopup", 1 ))
+							MSN_ShowPopup( MSN_GetContactName( hContact ), MSN_Translate( "Chat session established" ), 0 );
 			}	}
 
 			break;
@@ -1409,8 +1363,7 @@ LBL_InvalidCommand:
 			{
 				HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 				while ( hContact != NULL ) {
-					char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-					if ( szProto != NULL && strcmp( szProto, msnProtocolName ) == 0 ) {	
+					if ( MSN_IsMyContact( hContact )) {	
 						char tEmail[ MSN_MAX_EMAIL_LEN ];
 						if ( MSN_GetStaticString( "e-mail", hContact, tEmail, sizeof( tEmail )) == 0 && strncmp(tEmail, "tel:", 4) == 0 )
 						{
@@ -1583,8 +1536,14 @@ LBL_InvalidCommand:
 							MSN_SendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, NULL );
 				}	}
 				else {
+					MSN_DeleteSetting( hContact, "AvatarHash" );
 					MSN_DeleteSetting( hContact, "PictContext" );
 					MSN_DeleteSetting( hContact, "PictSavedContext" );
+
+					char tFileName[ MAX_PATH ];
+					MSN_GetAvatarFileName( hContact, tFileName, sizeof( tFileName ));
+					remove( tFileName );
+
 					MSN_SendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, NULL );
 			}	}
 			else {
@@ -1652,7 +1611,7 @@ LBL_InvalidCommand:
 				info->sendCaps();
 				MsgQueueEntry E;
 
-				bool msgExist = false, typing = false;
+				bool typing = false;
 				
 				while (MsgQueue_GetNext( hContact, E ) != 0 ) 
 				{
@@ -1667,7 +1626,6 @@ LBL_InvalidCommand:
 					else info->sendRawMessage( E.msgType, E.message, E.msgSize );
 
 					mir_free( E.message );
-					msgExist = true;
 
 					if ( E.ft != NULL )
 						info->mMsnFtp = E.ft;
@@ -1676,8 +1634,8 @@ LBL_InvalidCommand:
 				if ( typing )
 					MSN_StartStopTyping( info, true );
 
-				if ( msgExist && MSN_GetByte( "EnableDeliveryPopup", 1 ))
-					MSN_ShowPopup( MSN_GetContactName( hContact ), MSN_Translate( "First message delivered" ), 0 );
+				if ( MSN_GetByte( "EnableDeliveryPopup", 1 ))
+					MSN_ShowPopup( MSN_GetContactName( hContact ), MSN_Translate( "Chat session established" ), 0 );
 			}
 			else {
 				bool chatCreated = info->mChatID[0] != 0;
@@ -1945,7 +1903,6 @@ LBL_InvalidCommand:
 			sttListedContact = NULL;
 			tridUrlInbox = msnNsThread->sendPacket( "URL", "INBOX" );
 			tridUrlEdit  = msnNsThread->sendPacket( "URL", "PROFILE 0x%04x", GetUserDefaultLCID() );
-			p2p_detectUPnP( info );
 			break;
 		}
 		case ' XBU':   // UBX : MSNP11+ User Status Message
@@ -2068,6 +2025,13 @@ LBL_InvalidCommand:
 
 					msnLoggedIn = true;
 					sttListNumber = 0;
+
+					void __cdecl msn_keepAliveThread( void* );
+					mir_forkthread(( pThreadFunc )msn_keepAliveThread, NULL );
+					
+					void MSNConnDetectThread( void* );
+					mir_forkthread( MSNConnDetectThread, NULL );
+
 					info->sendPacket( "SYN", "0 0" );
 				}
 				else {

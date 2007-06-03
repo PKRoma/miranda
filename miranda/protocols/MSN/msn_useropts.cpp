@@ -66,8 +66,7 @@ BOOL CALLBACK MsnDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 int MsnOnDetailsInit( WPARAM wParam, LPARAM lParam )
 {
 /*
-	char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 );
-	if ( lstrcmpA( szProto, msnProtocolName ))
+	if ( !MSN_IsMyContact( hContact ))
 		return 0;
 
 	if ( MSN_GetDword( hContact, "FlagBits", 0 )) {

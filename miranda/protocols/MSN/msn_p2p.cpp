@@ -59,9 +59,6 @@ static const char sttP2Pheader[] =
 
 static const char sttVoidNonce[] = "{00000000-0000-0000-0000-000000000000}";
 
-static bool upnpDetected = false;
-
-
 void __cdecl p2p_filePassiveThread( ThreadData* info );
 
 static void sttLogHeader( P2P_Header* hdrdata )
@@ -107,75 +104,18 @@ unsigned p2p_getMsgId( HANDLE hContact, int inc )
 }
 
 
-void p2p_detectUPnP( ThreadData* info )
-{
-	char ipaddr[256];
-	if ( MSN_GetMyHostAsString( ipaddr, sizeof( ipaddr ))) {
-		MSN_DebugLog( "Cannot detect my host address" );
-		return;
-	}
-
-	NETLIBBIND nlb = {0};
-	nlb.cbSize = sizeof( nlb );
-	nlb.pfnNewConnectionV2 = MSN_ConnectionProc;
-	nlb.wPort = 0;	// Use user-specified incoming port ranges, if available
-	HANDLE sb = (HANDLE) MSN_CallService(MS_NETLIB_BINDPORT, (WPARAM) hNetlibUser, ( LPARAM )&nlb);
-	if ( sb == NULL ) {
-		MSN_DebugLog( "Unable to bind the port for incoming transfers" );
-		return;
-	}
-
-	SOCKET s = MSN_CallService( MS_NETLIB_GETSOCKET, ( WPARAM )info->s, 0 );
-	if ( s != INVALID_SOCKET) {
-		SOCKADDR_IN saddr;
-		int len = sizeof( saddr );
-		if ( getsockname( s, ( SOCKADDR* )&saddr, &len ) != SOCKET_ERROR )
-			upnpDetected = nlb.dwExternalIP != nlb.dwInternalIP;
-			MSN_DebugLog( "NAT Detect %s %s, %x, %x", ipaddr, inet_ntoa( saddr.sin_addr ),
-				nlb.dwExternalIP, nlb.dwInternalIP );
-	}
-
-	Netlib_CloseHandle( sb );
-}
-
-
 static int sttCreateListener(
 	ThreadData* info,
 	filetransfer* ft,
 	directconnection *dc,
 	char* szBody, size_t cbBody )
 {
-	char ipaddr[256];
-	if ( MSN_GetMyHostAsString( ipaddr, sizeof( ipaddr ))) {
-		MSN_DebugLog( "Cannot detect my host address" );
-		return 0;
-	}
-
 	NETLIBBIND nlb = {0};
 	nlb.cbSize = sizeof( nlb );
 	nlb.pfnNewConnectionV2 = MSN_ConnectionProc;
-	nlb.wPort = 0;	// Use user-specified incoming port ranges, if available
 	HANDLE sb = (HANDLE) MSN_CallService(MS_NETLIB_BINDPORT, (WPARAM) hNetlibUser, ( LPARAM )&nlb);
 	if ( sb == NULL ) {
 		MSN_DebugLog( "Unable to bind the port for incoming transfers" );
-		return 0;
-	}
-
-	bool bAllowIncoming = true;
-
-	SOCKET s = MSN_CallService( MS_NETLIB_GETSOCKET, ( WPARAM )info->s, 0 );
-	if ( s != INVALID_SOCKET) {
-		SOCKADDR_IN saddr;
-		int len = sizeof( saddr );
-		if ( getsockname( s, ( SOCKADDR* )&saddr, &len ) != SOCKET_ERROR )
-			bAllowIncoming = strcmp( ipaddr, inet_ntoa( saddr.sin_addr )) == 0 ||
-				nlb.dwExternalIP != nlb.dwInternalIP || MSN_GetByte( "NLSpecifyIncomingPorts", 0 ) != 0 ;
-			MSN_DebugLog( "NAT Detect %s %s, %x, %x %d", ipaddr, inet_ntoa( saddr.sin_addr ),
-				nlb.dwExternalIP, nlb.dwInternalIP, MSN_GetByte( "NLSpecifyIncomingPorts", 0 ));
-	}
-
-	if ( !bAllowIncoming ) {
-		Netlib_CloseHandle( sb );
 		return 0;
 	}
 
@@ -213,7 +153,7 @@ static int sttCreateListener(
 		"SessionID: %lu\r\n"
 		"SChannelState: 0\r\n\r\n%c",
 		dc->useHashedNonce ? "Hashed-Nonce" : "Nonce", szUuid,
-		ipaddr, nlb.wExPort, hostname, nlb.wPort, ft->p2p_sessionid, 0 );
+		MyConnection.GetMyExtIPStr(), nlb.wExPort, hostname, nlb.wPort, ft->p2p_sessionid, 0 );
 
 	mir_free( szUuid );
 
@@ -285,7 +225,7 @@ static void sttSavePicture2disk( filetransfer* ft )
 		_close( fileId );
 
 		MSN_SetString( ft->std.hContact, "PictSavedContext", tContext );
-		MSN_SendBroadcast( AI.hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS, HANDLE( &AI ), NULL );
+		MSN_SendBroadcast( AI.hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS, &AI, NULL );
 
 		// Store also avatar hash
 		char* pshadEnd = strstr( pshad+7, "\"" );
@@ -295,7 +235,7 @@ static void sttSavePicture2disk( filetransfer* ft )
 	}
 	else {
 		MSN_DeleteSetting( ft->std.hContact, "AvatarHash" );
-		MSN_SendBroadcast( AI.hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, HANDLE( &AI ), NULL );
+		MSN_SendBroadcast( AI.hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, &AI, NULL );
 }	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -1169,17 +1109,6 @@ static void sttInitDirectTransfer(
 		return;
 	}
 
-	bool bUseDirect = false, bActAsServer = false;
-	if ( atol( szNetID ) == 0 ) {
-		if ( !strcmp( szConnType, "Direct-Connect" ) || !strcmp( szConnType, "Firewall" ))
-			bUseDirect = true;
-	}
-
-	if (( !( MyOptions.UseGateway || MyOptions.UseProxy ) || !MSN_GetByte( "AutoGetHost", 1 ))) {
-		MSN_DebugLog( "My machine can accept incoming connections" );
-		bUseDirect = bActAsServer = true;
-	}
-
 	directconnection *dc = new directconnection( ft );
 	dc->useHashedNonce = szHashedNonce != NULL;
 	if ( dc->useHashedNonce )
@@ -1191,9 +1120,18 @@ static void sttInitDirectTransfer(
 	tResult.addString( "Call-ID", ft->p2p_callID );
 	tResult.addLong( "Max-Forwards", 0 );
 
+	MyConnectionType conType = {0};
+
+	conType.extIP = atol( szNetID );
+	conType.SetUdpCon(szConnType);
+	conType.upnpNAT = strcmp(szUPnPNat, "true") == 0;
+	conType.icf = strcmp(szICF, "true") == 0;
+	conType.CalculateWeight();
+
 	char szBody[ 512 ];
 	int  cbBodyLen = 0;
-	if ( bActAsServer )
+
+	if (conType.weight > MyConnection.weight)
 		cbBodyLen = sttCreateListener( info, ft, dc, szBody, sizeof( szBody ));
 
 	if ( !cbBodyLen ) {
@@ -1210,10 +1148,7 @@ static void sttInitDirectTransfer(
 		if ( dc->useHashedNonce ) mir_free(( void* )szUuid );
 	}
 
-	if ( !bUseDirect || bActAsServer )
-		tResult.addString( "Content-Type", "application/x-msnmsgr-transrespbody" );
-	else
-		tResult.addString( "Content-Type", "application/x-msnmsgr-transreqbody" );
+	tResult.addString( "Content-Type", "application/x-msnmsgr-transrespbody" );
 
 	p2p_getMsgId( ft->std.hContact, -2 );
 	p2p_sendSlp( ft, tResult, 200, szBody, cbBodyLen );
@@ -1264,10 +1199,7 @@ static void sttInitDirectTransfer2(
 
 		ThreadData* newThread = new ThreadData;
 
-		char ipaddr[256] = "";
-		MSN_GetMyHostAsString( ipaddr, sizeof( ipaddr ));
-
-		if ( extOk && ( strcmp( szExternalAddress, ipaddr ) || !intOk ))
+		if ( extOk && ( strcmp( szExternalAddress, MyConnection.GetMyExtIPStr()) || !intOk ))
 			mir_snprintf( newThread->mServer, sizeof( newThread->mServer ), "%s:%s", szExternalAddress, szExternalPort );
 		else if ( intOk )
 			mir_snprintf( newThread->mServer, sizeof( newThread->mServer ), "%s:%s", szInternalAddress, szInternalPort );
@@ -1341,23 +1273,6 @@ LBL_Close:
 		if ( MyOptions.UseGateway )
 			return;
 
-		char *conn = bAllowIncoming ? "Direct-Connect" : "Unknown-Connect";
-
-		char ipaddr[256] = "";
-		MSN_GetMyHostAsString( ipaddr, sizeof( ipaddr ));
-
-		if ( bAllowIncoming && MSN_GetByte( "NLSpecifyIncomingPorts", 0 ) == 0 )
-		{
-			SOCKET s = MSN_CallService( MS_NETLIB_GETSOCKET, ( WPARAM )info->s, 0 );
-			if ( s != INVALID_SOCKET) {
-				SOCKADDR_IN saddr;
-				int len = sizeof( saddr );
-				if ( getsockname( s, ( SOCKADDR* )&saddr, &len ) != SOCKET_ERROR )
-					if ( strcmp( ipaddr, inet_ntoa( saddr.sin_addr )))
-						conn = "Unknown-NAT";
-			}
-		}
-
 		directconnection* dc = new directconnection( ft );
 		p2p_registerDC( dc );
 
@@ -1370,7 +1285,8 @@ LBL_Close:
 		tResult.addString( "Content-Type", "application/x-msnmsgr-transreqbody" );
 		cbBody = mir_snprintf( szBody, 1024,
 			"Bridges: TCPv1\r\nNetID: %i\r\nConn-Type: %s\r\nUPnPNat: %s\r\nICF: false\r\n%s\r\n%c",
-			inet_addr(ipaddr), conn, upnpDetected ? "true" : "false", szNonce, 0 );
+			MyConnection.extIP, MyConnection.GetMyUdpConStr(), 
+			MyConnection.upnpNAT ? "true" : "false", szNonce, 0 );
 
 	}
 	else if ( !strcmp( szOldContentType, "application/x-msnmsgr-transrespbody" )) {
@@ -1399,10 +1315,7 @@ LBL_Close:
 
 			ThreadData* newThread = new ThreadData;
 
-			char ipaddr[256] = "";
-			MSN_GetMyHostAsString( ipaddr, sizeof( ipaddr ));
-
-			if ( extOk && ( strcmp( szExternalAddress, ipaddr ) || !intOk ))
+			if ( extOk && ( strcmp( szExternalAddress, MyConnection.GetMyExtIPStr()) || !intOk ))
 				mir_snprintf( newThread->mServer, sizeof( newThread->mServer ), "%s:%s", szExternalAddress, szExternalPort );
 			else if ( intOk )
 				mir_snprintf( newThread->mServer, sizeof( newThread->mServer ), "%s:%s", szInternalAddress, szInternalPort );

@@ -92,6 +92,8 @@ void MSN_ChatStart(ThreadData* info)
 	if ( info->mChatID[0] != 0 )
 		return;
 
+	MSN_StartStopTyping(info, false);
+
 	NotifyEventHooks( hInitChat, (WPARAM)info, 0 );
 
 	// add all participants onto the list
@@ -140,7 +142,7 @@ void InviteUser(ThreadData* info) {
 
 	// generate a list of contact
 	while ( hContact != NULL ) {
-		if ( !lstrcmpA( msnProtocolName, ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact,0 ))) {
+		if ( MSN_IsMyContact( hContact )) {
 			if (DBGetContactSettingByte(hContact, msnProtocolName, "ChatRoom", 0) == 0) {
 				if (MSN_GetWord(hContact, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE) {
 					BOOL alreadyInSession = FALSE;

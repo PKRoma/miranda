@@ -98,6 +98,13 @@ bool ThreadData::isTimeout( void )
 
 			res = MSN_CallService( MS_MSG_GETWINDOWDATA, ( WPARAM )&msgWinInData, ( LPARAM )&msgWinData ) != 0;
 			res = res || msgWinData.hwndWindow == NULL;
+			if ( res ) {	
+				msgWinInData.hContact = ( HANDLE )MSN_CallService( MS_MC_GETMETACONTACT, ( WPARAM )mJoinedContacts[0], 0 );
+				if ( msgWinInData.hContact != NULL ) {
+					res = MSN_CallService( MS_MSG_GETWINDOWDATA, ( WPARAM )&msgWinInData, ( LPARAM )&msgWinData ) != 0;
+					res = res || msgWinData.hwndWindow == NULL;
+				}
+			}
 		}
 		else
 			res = true;

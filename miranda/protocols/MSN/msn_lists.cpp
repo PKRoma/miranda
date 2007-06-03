@@ -182,18 +182,16 @@ static void SetAllContactIcons( HWND hwndList )
 		if ( hItem == NULL )
 			continue;
 
-		char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 );
-		if ( szProto == NULL ) {
-LBL_Bad:	SendMessage( hwndList, CLM_DELETEITEM, ( WPARAM )hItem, 0 );
+		if ( !MSN_IsMyContact( hContact )) {
+			SendMessage( hwndList, CLM_DELETEITEM, ( WPARAM )hItem, 0 );
 			continue;
 		}
 
-		if ( strcmp( szProto, msnProtocolName ))
-			goto LBL_Bad;
-
 		char szEmail[ MSN_MAX_EMAIL_LEN ];
-		if ( MSN_GetStaticString( "e-mail", hContact, szEmail, sizeof szEmail ))
-			goto LBL_Bad;
+		if ( MSN_GetStaticString( "e-mail", hContact, szEmail, sizeof szEmail )) {
+			SendMessage( hwndList, CLM_DELETEITEM, ( WPARAM )hItem, 0 );
+			continue;
+		}
 
 		DWORD dwMask = Lists_GetMask( szEmail );
 		if ( SendMessage( hwndList, CLM_GETEXTRAIMAGE, ( WPARAM )hItem, MAKELPARAM(0,0)) == 0xFF )
@@ -205,7 +203,7 @@ LBL_Bad:	SendMessage( hwndList, CLM_DELETEITEM, ( WPARAM )hItem, 0 );
 		if ( SendMessage( hwndList, CLM_GETEXTRAIMAGE, ( WPARAM )hItem, MAKELPARAM(3,0)) == 0xFF )
 			SendMessage( hwndList, CLM_SETEXTRAIMAGE,( WPARAM )hItem, MAKELPARAM(3,( dwMask & LIST_RL )?4:0));
 	}
-		while( hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 ));
+	while( hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 ));
 }
 
 static void SaveListItem( HANDLE hContact, const char* szEmail, int list, int iPrevValue, int iNewValue )
@@ -226,9 +224,7 @@ static void SaveSettings( HWND hwndList )
 		if ( hItem == NULL )
 			continue;
 
-		char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 );
-		if ( szProto == NULL ) continue;
-		if ( strcmp( szProto, msnProtocolName )) continue;
+		if ( !MSN_IsMyContact( hContact )) continue;
 
 		char szEmail[ MSN_MAX_EMAIL_LEN ];
 		if ( MSN_GetStaticString( "e-mail", hContact, szEmail, sizeof szEmail ))

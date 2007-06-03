@@ -29,8 +29,7 @@ HANDLE  MSN_HContactFromEmail( const char* msnEmail, const char* msnNick, int ad
 	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL )
 	{
-		char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO,( WPARAM )hContact, 0 );
-		if ( szProto != NULL && !strcmp( msnProtocolName, szProto )) {
+		if ( MSN_IsMyContact( hContact )) {
 			char tEmail[ MSN_MAX_EMAIL_LEN ];
 			if ( !MSN_GetStaticString( "e-mail", hContact, tEmail, sizeof( tEmail )))
 				if ( !strcmpi( msnEmail, tEmail ))
@@ -60,8 +59,7 @@ HANDLE  MSN_HContactFromEmailT( const TCHAR* msnEmail )
 	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL )
 	{
-		char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO,( WPARAM )hContact, 0 );
-		if ( szProto != NULL && !strcmp( msnProtocolName, szProto )) {
+		if ( MSN_IsMyContact( hContact )) {
 			DBVARIANT dbv;
 			if ( !MSN_GetStringT( "e-mail", hContact, &dbv ))
 				if ( !lstrcmpi( msnEmail, dbv.ptszVal ))
@@ -79,8 +77,7 @@ HANDLE  MSN_HContactById( const char* szGuid )
 	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL )
 	{
-		char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO,( WPARAM )hContact, 0 );
-		if ( szProto != NULL && !strcmp( msnProtocolName, szProto )) {
+		if ( MSN_IsMyContact( hContact )) {
 			char tId[ 100 ];
 			if ( !MSN_GetStaticString( "ID", hContact, tId, sizeof tId ))
 				if ( !strcmpi( szGuid, tId ))
