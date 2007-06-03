@@ -1421,6 +1421,8 @@ LBL_InvalidCommand:
 						MSN_SetString( hContact, "MirVer", "Miranda IM 0.5.x (MSN v.0.5.x)" );
 					else if ( dwValue == 805306404 )
 						MSN_SetString( hContact, "MirVer", "Miranda IM 0.4.x (MSN v.0.4.x)" );
+					else if (( dwValue & 0x80000000 ) == 0x80000000 )
+						MSN_SetString( hContact, "MirVer", "WLM 8.5" );
 					else if (( dwValue & 0x70000000 ) == 0x70000000 )
 						MSN_SetString( hContact, "MirVer", "WLM 8.1" );
 					else if (( dwValue & 0x60000000 ) == 0x60000000 )
@@ -1439,7 +1441,7 @@ LBL_InvalidCommand:
 						MSN_SetString( hContact, "MirVer", "MSN 4.x-5.x" );
 				}
 
-				if (( dwValue & 0x70000000 ) && data.cmdstring[0] && strcmp( data.cmdstring, "0" )) {
+				if (( dwValue & 0xff0000000 ) && data.cmdstring[0] && strcmp( data.cmdstring, "0" )) {
 					int temp_status = MSN_GetWord(hContact, "Status", ID_STATUS_OFFLINE);
 					if (temp_status == (WORD)ID_STATUS_OFFLINE)
 						MSN_SetWord( hContact, "Status", (WORD)ID_STATUS_INVISIBLE);

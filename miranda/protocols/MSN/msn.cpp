@@ -91,9 +91,9 @@ PLUGININFO pluginInfo =
 	#endif
 	__VERSION_DWORD,
 	"Adds support for communicating with users of the MSN Messenger network",
-	"George Hazan",
-	"george_hazan@hotmail.com",
-	"© 2001-5 Richard Hughes, George Hazan",
+	"Boris Krasnovskiy",
+	"borkra@miranda-im.org",
+	"© 2001-2007 Richard Hughes, George Hazan, Boris Krasnovskiy",
 	"http://miranda-im.org/download/details.php?action=viewfile&id=702",
 	0,	0
 };
@@ -102,7 +102,7 @@ bool			volatile msnLoggedIn = false;
 ThreadData*	volatile msnNsThread = NULL;
 
 int				msnStatusMode,
-					msnDesiredStatus;
+				msnDesiredStatus;
 HANDLE			msnMenuItems[ MENU_ITEMS_COUNT ];
 HANDLE			hNetlibUser = NULL;
 HANDLE			hInitChat = NULL;
