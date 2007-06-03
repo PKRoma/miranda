@@ -275,31 +275,6 @@ static HWND hwndClui = 0;
 // PNG and BMP will be saved as 32bit images, jpg as 24bit with default quality (75)
 // returns 1 on success, 0 on failure
 
-int SaveIMG(HBITMAP hBmp, const char *szFilename)
-{
-    FIBITMAP *dib = NULL;
-    if(hBmp) {
-        dib = fei->FI_CreateDIBFromHBITMAP(hBmp);
-        if(dib == NULL)
-            return 0;
-
-        FREE_IMAGE_FORMAT fif = fei->FI_GetFIFFromFilename(szFilename);
-        //FreeImage_Save(fif, dib, szFilename, 0);
-        if(fif != FIF_UNKNOWN) {
-            if(fif == FIF_PNG || fif == FIF_BMP || fif == FIF_JNG)
-                fei->FI_Save(fif, dib, szFilename, 0);
-            else {
-                FIBITMAP *dib_new = fei->FI_ConvertTo24Bits(dib);
-
-                fei->FI_Save(fif, dib_new, szFilename, JPEG_QUALITYSUPERB);
-                fei->FI_Unload(dib_new);
-            }
-        }
-        fei->FI_Unload(dib);
-        return 0;
-    }
-    return 1;
-}
 
 // Save an HBITMAP to an image
 // wParam = HBITMAP
@@ -319,7 +294,13 @@ int BmpFilterSaveBitmap(WPARAM wParam,LPARAM lParam)
 	filenameLen=lstrlenA(szFilename);
 	if(filenameLen>4) 
 	{
-        return SaveIMG(hBmp, szFilename);
+		IMGSRVC_INFO i = {0};
+		i.cbSize = sizeof(IMGSRVC_INFO);
+		i.szName = szFilename;
+		i.hbm = hBmp;
+		i.dwMask = IMGI_HBITMAP;
+
+        return !CallService(MS_IMG_SAVE, (WPARAM) &i, 0);
 	}
 
 	return -1;
