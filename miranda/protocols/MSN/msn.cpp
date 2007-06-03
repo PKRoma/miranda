@@ -92,7 +92,7 @@ PLUGININFOEX pluginInfo =
 	"MSN Protocol",
 	__VERSION_DWORD,
 	"Adds support for communicating with users of the MSN Messenger network",
-	"Boris Krasnovskiy (borkra)",
+	"Boris Krasnovskiy, George Hazan, Richard Hughes",
 	"borkra@miranda-im.org",
 	"© 2001-2007 Richard Hughes, George Hazan, Boris Krasnovskiy",
 	"http://miranda-im.org",
