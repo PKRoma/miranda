@@ -320,6 +320,11 @@ return=0 for sucess
 // return = 1 (don't need) or 0 (need)
 #define AF_DONTNEEDDELAYS 5
 
+// Avatar file max size
+// return size in Kbytes (0 for no limit)
+#define AF_MAXFILESIZE 6
+
+
 /*
 Query avatar caps for a protocol
 wParam = One of AF_*
