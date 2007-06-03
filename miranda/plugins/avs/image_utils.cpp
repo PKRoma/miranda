@@ -275,6 +275,17 @@ static HWND hwndClui = 0;
 // PNG and BMP will be saved as 32bit images, jpg as 24bit with default quality (75)
 // returns 1 on success, 0 on failure
 
+int BmpFilterSaveBitmap(HBITMAP hBmp, char *szFile, int flags)
+{
+	IMGSRVC_INFO i = {0};
+	i.cbSize = sizeof(IMGSRVC_INFO);
+	i.szName = szFile;
+	i.hbm = hBmp;
+	i.dwMask = IMGI_HBITMAP;
+	i.fif = FIF_UNKNOWN;
+
+    return !CallService(MS_IMG_SAVE, (WPARAM) &i, MAKELONG(0, flags));
+}
 
 // Save an HBITMAP to an image
 // wParam = HBITMAP
@@ -294,13 +305,7 @@ int BmpFilterSaveBitmap(WPARAM wParam,LPARAM lParam)
 	filenameLen=lstrlenA(szFilename);
 	if(filenameLen>4) 
 	{
-		IMGSRVC_INFO i = {0};
-		i.cbSize = sizeof(IMGSRVC_INFO);
-		i.szName = szFilename;
-		i.hbm = hBmp;
-		i.dwMask = IMGI_HBITMAP;
-
-        return !CallService(MS_IMG_SAVE, (WPARAM) &i, 0);
+        return BmpFilterSaveBitmap(hBmp, szFilename, 0);
 	}
 
 	return -1;

@@ -28,14 +28,8 @@ int BmpFilterCanSaveBitmap(WPARAM wParam,LPARAM lParam);
 int BmpFilterResizeBitmap(WPARAM wParam,LPARAM lParam);
 
 
+int BmpFilterSaveBitmap(HBITMAP hBmp, char *szFile, int flags);
 
-
-void LoadGdiPlus(void);
-void FreeGdiPlus(void);
-void InitGdiPlus(void);
-void ShutdownGdiPlus(void);
-
-void CorrectBitmap32Alpha(HBITMAP hBitmap, BOOL force);
 HBITMAP CopyBitmapTo32(HBITMAP hBitmap);
 
 BOOL PreMultiply(HBITMAP hBitmap);

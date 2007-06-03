@@ -74,6 +74,7 @@ BOOL Proto_IsAvatarFormatSupported(char *proto, int format);
 void Proto_GetAvatarMaxSize(char *proto, int &width, int &height);
 int Proto_AvatarImageProportion(char *proto);
 BOOL Proto_NeedDelaysForAvatars(char *proto);
+int Proto_GetAvatarMaxFileSize(char *proto);
 
 FI_INTERFACE *fei = 0;
 
@@ -1463,6 +1464,23 @@ static int SetMyAvatar(WPARAM wParam, LPARAM lParam)
 	return ret;
 }
 
+static DWORD GetFileSize(char *szFilename)
+{
+	HANDLE hFile = CreateFileA(szFilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    if(hFile == INVALID_HANDLE_VALUE)
+        return 0;
+    
+	DWORD hi;
+	DWORD low = GetFileSize(hFile, &hi);
+
+    CloseHandle(hFile);
+
+	if (low == INVALID_FILE_SIZE)
+		return 0;
+
+	return MAKELONG(low, hi);
+}
+
 static int SetProtoMyAvatar(char *protocol, HBITMAP hBmp, char *originalFilename, int originalFormat,
 							BOOL square, BOOL grow)
 {
@@ -1487,89 +1505,156 @@ static int SetProtoMyAvatar(char *protocol, HBITMAP hBmp, char *originalFilename
 		return CallProtoService(protocol, PS_SETMYAVATAR, 0, (LPARAM) originalFilename);
 	}
 
-	// Protocol has max size?
-	int width, height;
+	// Get protocol info
+	DWORD max_size = (DWORD) Proto_GetAvatarMaxFileSize(protocol);
 
+	int width, height;
 	Proto_GetAvatarMaxSize(protocol, width, height);
 
 	if (Proto_AvatarImageProportion(protocol) & PIP_SQUARE)
 		square = TRUE;
 
-	ResizeBitmap rb;
-	rb.size = sizeof(ResizeBitmap);
-	rb.hBmp = hBmp;
-	rb.max_height = (height <= 0 ? 300 : height);
-	rb.max_width = (width <= 0 ? 300 : width);
-	rb.fit = (grow ? 0 : RESIZEBITMAP_FLAG_DONT_GROW) 
-			| (square ? RESIZEBITMAP_MAKE_SQUARE : RESIZEBITMAP_KEEP_PROPORTIONS);
-
-	HBITMAP hBmpProto = (HBITMAP) BmpFilterResizeBitmap((WPARAM)&rb, 0);
-
-	if (hBmpProto == NULL)
-		return -1;
-
-	// Check if need to resize
-	if (hBmpProto == hBmp && Proto_IsAvatarFormatSupported(protocol, originalFormat))
-	{
-		// Use original image
-		return CallProtoService(protocol, PS_SETMYAVATAR, 0, (LPARAM) originalFilename);
-	}
-
-	// Need to resize...
-
-	// Save to a temporary file
-	char temp_file[MAX_PATH];
-	temp_file[0] = '\0';
-	if (GetTempPathA(MAX_PATH, temp_file) == 0)
-	{
-		if (hBmpProto != hBmp) DeleteObject(hBmpProto);
-		return -1;
-	}
-	if (GetTempFileNameA(temp_file, "mir_av_", 0, temp_file) == 0)
-	{
-		if (hBmpProto != hBmp) DeleteObject(hBmpProto);
-		return -1;
-	}
-
+	// Try to save until a valid image is found or we give up
 	char image_file_name[MAX_PATH];
+	BOOL saved = FALSE, need_smaller_size = TRUE;
+	int num_tries = 0;
+	int orig_width = width;
+	int orig_height = height;
+	char temp_file[MAX_PATH] = "";
+	HBITMAP hBmpProto = NULL;
 
-	bool saved = false;
+	do {
+		// Lets do it
+		ResizeBitmap rb;
+		rb.size = sizeof(ResizeBitmap);
+		rb.hBmp = hBmp;
+		rb.max_height = height;
+		rb.max_width = width;
+		rb.fit = (grow ? 0 : RESIZEBITMAP_FLAG_DONT_GROW) 
+				| (square ? RESIZEBITMAP_MAKE_SQUARE : RESIZEBITMAP_KEEP_PROPORTIONS);
 
-	// What format?
-	if (Proto_IsAvatarFormatSupported(protocol, PA_FORMAT_PNG)) // Png is default
+		hBmpProto = (HBITMAP) BmpFilterResizeBitmap((WPARAM)&rb, 0);
 
-	{
-		mir_snprintf(image_file_name, sizeof(image_file_name), "%s%s", temp_file, ".png");
-		if (!BmpFilterSaveBitmap((WPARAM)hBmpProto, (LPARAM)image_file_name))
-			saved = true;
-	}
-	
-	if (!saved  // Jpeg is second
-		&& Proto_IsAvatarFormatSupported(protocol, PA_FORMAT_JPEG))
+		if (hBmpProto == NULL)
+		{
+			if (temp_file[0] != '\0')
+				DeleteFileA(temp_file);
+			return -1;
+		}
 
-	{
-		mir_snprintf(image_file_name, sizeof(image_file_name), "%s%s", temp_file, ".jpg");
-		if (!BmpFilterSaveBitmap((WPARAM)hBmpProto, (LPARAM)image_file_name))
-			saved = true;
-	}
-	
-	if (!saved  // Gif
-		&& Proto_IsAvatarFormatSupported(protocol, PA_FORMAT_GIF))
+		// Check if can use original image
+		if (hBmpProto == hBmp 
+			&& Proto_IsAvatarFormatSupported(protocol, originalFormat)
+			&& (max_size == 0 || GetFileSize(originalFilename) < max_size))
+		{
+			if (temp_file[0] != '\0')
+				DeleteFileA(temp_file);
 
-	{
-		mir_snprintf(image_file_name, sizeof(image_file_name), "%s%s", temp_file, ".gif");
-		if (!BmpFilterSaveBitmap((WPARAM)hBmpProto, (LPARAM)image_file_name))
-			saved = true;
-	}
-	
-	if (!saved   // Bitmap
-		&& Proto_IsAvatarFormatSupported(protocol, PA_FORMAT_BMP))
+			// Use original image
+			return CallProtoService(protocol, PS_SETMYAVATAR, 0, (LPARAM) originalFilename);
+		}
 
-	{
-		mir_snprintf(image_file_name, sizeof(image_file_name), "%s%s", temp_file, ".bmp");
-		if (!BmpFilterSaveBitmap((WPARAM)hBmpProto, (LPARAM)image_file_name))
-			saved = true;
-	}
+		// Create a temporary file (if was not created already)
+		if (temp_file[0] == '\0')
+		{
+			temp_file[0] = '\0';
+			if (GetTempPathA(MAX_PATH, temp_file) == 0 
+				|| GetTempFileNameA(temp_file, "mir_av_", 0, temp_file) == 0)
+			{
+				DeleteObject(hBmpProto);
+				return -1;
+			}
+		}
+
+		// Which format?
+		// Png is default
+		if (Proto_IsAvatarFormatSupported(protocol, PA_FORMAT_PNG)) 
+		{
+			mir_snprintf(image_file_name, sizeof(image_file_name), "%s%s", temp_file, ".png");
+			if (!BmpFilterSaveBitmap(hBmpProto, image_file_name, 0))
+			{
+				if (max_size != 0 && GetFileSize(image_file_name) > max_size)
+				{
+					DeleteFileA(image_file_name);
+					need_smaller_size = TRUE;
+				}
+				else
+					saved = TRUE;
+			}
+		}
+		
+		// Jpeg is second
+		if (!saved && Proto_IsAvatarFormatSupported(protocol, PA_FORMAT_JPEG))
+		{
+			mir_snprintf(image_file_name, sizeof(image_file_name), "%s%s", temp_file, ".jpg");
+			if (!BmpFilterSaveBitmap(hBmpProto, image_file_name, JPEG_QUALITYSUPERB))
+			{
+				if (max_size != 0 && GetFileSize(image_file_name) > max_size)
+				{
+					DeleteFileA(image_file_name);
+
+					// Try with lower quality
+					if (!BmpFilterSaveBitmap(hBmpProto, image_file_name, JPEG_QUALITYGOOD))
+					{
+						if (GetFileSize(image_file_name) > max_size)
+						{
+							DeleteFileA(image_file_name);
+							need_smaller_size = TRUE;
+						}
+						else
+							saved = TRUE;
+					}
+				}
+				else
+					saved = TRUE;
+			}
+		}
+		
+		// Gif
+		if (!saved && Proto_IsAvatarFormatSupported(protocol, PA_FORMAT_GIF))
+		{
+			mir_snprintf(image_file_name, sizeof(image_file_name), "%s%s", temp_file, ".gif");
+			if (!BmpFilterSaveBitmap(hBmpProto, image_file_name, 0))
+			{
+				if (max_size != 0 && GetFileSize(image_file_name) > max_size)
+				{
+					DeleteFileA(image_file_name);
+					need_smaller_size = TRUE;
+				}
+				else
+					saved = TRUE;
+			}
+		}
+		
+		// Bitmap
+		if (!saved && Proto_IsAvatarFormatSupported(protocol, PA_FORMAT_BMP))
+		{
+			mir_snprintf(image_file_name, sizeof(image_file_name), "%s%s", temp_file, ".bmp");
+			if (!BmpFilterSaveBitmap(hBmpProto, image_file_name, 0))
+			{
+				if (max_size != 0 && GetFileSize(image_file_name) > max_size)
+				{
+					DeleteFileA(image_file_name);
+					need_smaller_size = TRUE;
+				}
+				else
+					saved = TRUE;
+			}
+		}
+
+		num_tries++;
+		if (!saved && need_smaller_size && num_tries < 4)
+		{
+			// Cleanup
+			if (hBmpProto != hBmp) 
+				DeleteObject(hBmpProto);
+
+			// use a smaller size
+			width = orig_width * (4 - num_tries) / 4;
+			height = orig_height * (4 - num_tries) / 4;
+		}
+
+	} while(!saved && need_smaller_size && num_tries < 4);
 	
 	int ret;
 
@@ -1584,7 +1669,8 @@ static int SetProtoMyAvatar(char *protocol, HBITMAP hBmp, char *originalFilename
 		ret = -1;
 	}
 
-	DeleteFileA(temp_file);
+	if (temp_file[0] != '\0')
+		DeleteFileA(temp_file);
 
 	if (hBmpProto != hBmp) 
 		DeleteObject(hBmpProto);
@@ -2470,5 +2556,14 @@ BOOL Proto_NeedDelaysForAvatars(char *proto)
 	}
 
 	return TRUE;
+}
+
+
+int Proto_GetAvatarMaxFileSize(char *proto)
+{
+	if (ProtoServiceExists(proto, PS_GETAVATARCAPS))
+		return CallProtoService(proto, PS_GETAVATARCAPS, AF_MAXFILESIZE, 0);
+
+	return 0;
 }
 
