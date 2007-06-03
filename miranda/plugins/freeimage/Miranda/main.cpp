@@ -956,6 +956,7 @@ static int serviceSave(WPARAM wParam, LPARAM lParam)
 			if(isi->hbm != 0 && (isi->dwMask & IMGI_HBITMAP) && !(isi->dwMask & IMGI_FBITMAP)) {
 				// create temporary dib, because we got a HBTIMAP passed
 				fUnload = TRUE;
+				FI_CorrectBitmap32Alpha(isi->hbm, FALSE);
 				dib = FreeImage_CreateDIBFromHBITMAP(isi->hbm);
 			}
 			else if(isi->dib != NULL && (isi->dwMask & IMGI_FBITMAP) && !(isi->dwMask & IMGI_HBITMAP))
