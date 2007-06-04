@@ -18,7 +18,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "msn_global.h"
-#include <netfw.h>
+#include "SDK/netfw.h"
 //#include <objbase.h>
 //#include <oleauto.h>
 
@@ -62,18 +62,18 @@ static void DecryptEchoPacket(UDPProbePkt& pkt)
 
 
 	IN_ADDR addr;
-	MSN_DebugLog("Echo packet: version: 0x%x  service code: 0x%x  transaction ID: 0x%x", 
+	MSN_DebugLog("Echo packet: version: 0x%x  service code: 0x%x  transaction ID: 0x%x",
 		pkt.version, pkt.serviceCode, pkt.trId);
 	addr.S_un.S_addr = pkt.clientIP;
-	MSN_DebugLog("Echo packet: client port: %u  client addr: %s", 
+	MSN_DebugLog("Echo packet: client port: %u  client addr: %s",
 		pkt.clientPort, inet_ntoa(addr));
 	addr.S_un.S_addr = pkt.testIP;
-	MSN_DebugLog("Echo packet: discard port: %u  test port: %u test addr: %s", 
+	MSN_DebugLog("Echo packet: discard port: %u  test port: %u test addr: %s",
 		pkt.discardPort, pkt.testPort, inet_ntoa(addr));
 }
 
 
-static void DiscardExtraPackets(SOCKET s) 
+static void DiscardExtraPackets(SOCKET s)
 {
 	Sleep(3000);
 
@@ -84,7 +84,7 @@ static void DiscardExtraPackets(SOCKET s)
 	for (;;)
 	{
 		FD_ZERO(&fd);
-		FD_SET(s, &fd); 
+		FD_SET(s, &fd);
 
 		if (select(1, &fd, NULL, NULL, &tv) == 1)
 			recv(s, (char*)&buf, sizeof(buf), 0);
@@ -99,7 +99,7 @@ static void MSNatDetect(void)
 	unsigned i;
 
 	PHOSTENT host = gethostbyname("echo.edge.messenger.live.com");
-	if (host == NULL) 
+	if (host == NULL)
 	{
 		MSN_DebugLog("P2PNAT could not find echo server \"echo.edge.messenger.live.com\"");
 		return;
@@ -111,7 +111,7 @@ static void MSNatDetect(void)
 	addr.sin_addr = *( PIN_ADDR )host->h_addr_list[0];
 
 	MSN_DebugLog("P2PNAT Detected echo server IP %d.%d.%d.%d",
-		addr.sin_addr.S_un.S_un_b.s_b1, addr.sin_addr.S_un.S_un_b.s_b2, 
+		addr.sin_addr.S_un.S_un_b.s_b1, addr.sin_addr.S_un.S_un_b.s_b2,
 		addr.sin_addr.S_un.S_un_b.s_b3, addr.sin_addr.S_un.S_un_b.s_b4);
 
 	SOCKET s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -132,9 +132,9 @@ static void MSNatDetect(void)
 
 	MyConnection.intIP = myaddr.sin_addr.S_un.S_addr;
 	MSN_DebugLog("P2PNAT Detected IP facing internet %d.%d.%d.%d",
-		myaddr.sin_addr.S_un.S_un_b.s_b1, myaddr.sin_addr.S_un.S_un_b.s_b2, 
+		myaddr.sin_addr.S_un.S_un_b.s_b1, myaddr.sin_addr.S_un.S_un_b.s_b2,
 		myaddr.sin_addr.S_un.S_un_b.s_b3, myaddr.sin_addr.S_un.S_un_b.s_b4);
-	 
+
 	SOCKET s1 = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
 	pkt.version = 2;
@@ -153,7 +153,7 @@ static void MSNatDetect(void)
 
 		fd_set fd;
 		FD_ZERO(&fd);
-		FD_SET(s1, &fd); 
+		FD_SET(s1, &fd);
 		TIMEVAL tv = {0, 200000 * (1 << i) };
 
 		if ( select(1, &fd, NULL, NULL, &tv) == 1 )
@@ -171,7 +171,7 @@ static void MSNatDetect(void)
 	closesocket(s);
 
 	// Server did not respond
-	if (i >= 4) 
+	if (i >= 4)
 	{
 		MyConnection.udpConType = conFirewall;
 		closesocket(s1);
@@ -182,7 +182,7 @@ static void MSNatDetect(void)
 
 	// Check if NAT not found
 	if (MyConnection.extIP == MyConnection.intIP)
-	{ 
+	{
 		if (msnExternalIP != NULL && inet_addr( msnExternalIP ) != MyConnection.extIP)
 			MyConnection.udpConType = conISALike;
 		else
@@ -198,12 +198,12 @@ static void MSNatDetect(void)
 	nlb.pfnNewConnectionV2 = MSN_ConnectionProc;
 
 	HANDLE sb = (HANDLE) MSN_CallService(MS_NETLIB_BINDPORT, (WPARAM) hNetlibUser, ( LPARAM )&nlb);
-	if ( sb != NULL ) 
+	if ( sb != NULL )
 	{
 		MyConnection.upnpNAT = htonl(nlb.dwExternalIP) == MyConnection.extIP;
 		Netlib_CloseHandle( sb );
 	}
-	
+
 	DiscardExtraPackets(s1);
 
 	// Start IP Restricted NAT detection
@@ -222,7 +222,7 @@ static void MSNatDetect(void)
 
 		fd_set fd;
 		FD_ZERO(&fd);
-		FD_SET(s1, &fd); 
+		FD_SET(s1, &fd);
 		TIMEVAL tv = {0, 200000 * (1 << i) };
 
 		if ( select(1, &fd, NULL, NULL, &tv) == 1 )
@@ -237,8 +237,8 @@ static void MSNatDetect(void)
 	}
 
 	// Response recieved so it's an IP Restricted NAT (Restricted Cone NAT)
-	// (MSN does not detect Full Cone NAT and consider it as IP Restricted NAT)  
-	if (i < 4) 
+	// (MSN does not detect Full Cone NAT and consider it as IP Restricted NAT)
+	if (i < 4)
 	{
 		MyConnection.udpConType = conIPRestrictNAT;
 		closesocket(s1);
@@ -257,7 +257,7 @@ static void MSNatDetect(void)
 
 		fd_set fd;
 		FD_ZERO(&fd);
-		FD_SET(s1, &fd); 
+		FD_SET(s1, &fd);
 		TIMEVAL tv = {1 << i, 0 };
 
 		if ( select(1, &fd, NULL, NULL, &tv) == 1 )
@@ -270,7 +270,7 @@ static void MSNatDetect(void)
 		else
 			MSN_DebugLog("P2PNAT Request 3 attempt %d timeout", i);
 	}
-	if (i < 4) 
+	if (i < 4)
 	{
 		// If ports different it's symmetric NAT
 		MyConnection.udpConType = rpkt.clientPort == rpkt2.clientPort ?
@@ -294,7 +294,7 @@ static bool IsIcfEnabled(void)
 
 	hr = CoInitialize(NULL);
     if (FAILED(hr)) return false;
-	
+
 	// Create an instance of the firewall settings manager.
     hr = CoCreateInstance(__uuidof(NetFwMgr), NULL, CLSCTX_INPROC_SERVER,
             __uuidof(INetFwMgr), (void**)&fwMgr );
@@ -311,7 +311,7 @@ static bool IsIcfEnabled(void)
     // Get the current state of the firewall.
     hr = fwProfile->get_FirewallEnabled(&fwEnabled);
     if (FAILED(hr)) goto error;
-    
+
     if (fwEnabled == VARIANT_FALSE) goto error;
 
     // Retrieve the authorized application collection.
@@ -377,11 +377,11 @@ void MSNConnDetectThread( void* )
 		{
 			strncpy( parBuf, msnExternalIP, sizeof( parBuf ));
 		}
-		else 
+		else
 		{
 			gethostname( parBuf, sizeof( parBuf ));
 			PHOSTENT myhost = gethostbyname( parBuf );
-			if ( myhost != NULL ) 
+			if ( myhost != NULL )
 				MyConnection.extIP = ((PIN_ADDR)myhost->h_addr)->S_un.S_addr;
 		}
 		MyConnection.intIP = MyConnection.extIP;
@@ -392,17 +392,17 @@ void MSNConnDetectThread( void* )
 		MSN_DebugLog("P2PNAT User overwrote IP connection is guessed by user settings only");
 
 		// User specified host by himself so check if it matches MSN information
-		// if it does, move to connection type autodetection, 
-		// if it does not, guess connection type from available info 
+		// if it does, move to connection type autodetection,
+		// if it does not, guess connection type from available info
 		parBuf[0] = 0;
 		MSN_GetStaticString("YourHost", NULL, parBuf, sizeof(parBuf));
 		if (msnExternalIP != NULL && strcmp(msnExternalIP, parBuf) != 0)
 		{
 			MyConnection.extIP = inet_addr( parBuf );
 			if ( MyConnection.extIP == INADDR_NONE )
-			{	
+			{
 				PHOSTENT myhost = gethostbyname( parBuf );
-				if ( myhost != NULL ) 
+				if ( myhost != NULL )
 					MyConnection.extIP = ((PIN_ADDR)myhost->h_addr)->S_un.S_addr;
 				else
 					MSN_SetByte("AutoGetHost", 1);
@@ -425,12 +425,12 @@ void MSNConnDetectThread( void* )
 
 	MSNatDetect();
 
-	// If user mapped incoming ports consider direct connection 
+	// If user mapped incoming ports consider direct connection
 	if (portsMapped)
 	{
 		MSN_DebugLog("P2PNAT User manually mapped ports for incoming connection");
 		switch(MyConnection.udpConType)
-		{ 
+		{
 		case conUnknown:
 		case conFirewall:
 		case conISALike:
@@ -446,7 +446,7 @@ void MSNConnDetectThread( void* )
 		}
 	}
 
-	MSN_DebugLog("P2PNAT Connection %s found UPnP: %d ICF: %d", conStr[MyConnection.udpConType], 
+	MSN_DebugLog("P2PNAT Connection %s found UPnP: %d ICF: %d", conStr[MyConnection.udpConType],
 		MyConnection.upnpNAT, MyConnection.icf);
 
 	MyConnection.CalculateWeight();
@@ -470,10 +470,10 @@ void MyConnectionType::CalculateWeight(void)
 {
 	if (icf) weight = 0;
 	else if (udpConType == conDirect) weight = 6;
-	else if (udpConType >= conPortRestrictNAT && udpConType <= conSymmetricNAT) 
-		weight = upnpNAT ? 5 : 2; 
-	else if (udpConType == conUnknownNAT) 
-		weight = upnpNAT ? 4 : 1; 
+	else if (udpConType >= conPortRestrictNAT && udpConType <= conSymmetricNAT)
+		weight = upnpNAT ? 5 : 2;
+	else if (udpConType == conUnknownNAT)
+		weight = upnpNAT ? 4 : 1;
 	else if (udpConType == conUnknown) weight = 1;
 	else if (udpConType == conFirewall) weight = 2;
 	else if (udpConType == conISALike) weight = 3;
