@@ -1286,7 +1286,8 @@ LBL_Close:
 		cbBody = mir_snprintf( szBody, 1024,
 			"Bridges: TCPv1\r\nNetID: %i\r\nConn-Type: %s\r\nUPnPNat: %s\r\nICF: false\r\n%s\r\n%c",
 			MyConnection.extIP, MyConnection.GetMyUdpConStr(), 
-			MyConnection.upnpNAT ? "true" : "false", szNonce, 0 );
+			MyConnection.upnpNAT ? "true" : "false", MyConnection.icf ? "true" : "false", 
+			szNonce, 0 );
 
 	}
 	else if ( !strcmp( szOldContentType, "application/x-msnmsgr-transrespbody" )) {
