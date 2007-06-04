@@ -23,9 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "file.h"
 
-static HANDLE *hFileMenu;
-static int hFileMenuCount = 0;
-
 static int SendFileCommand(WPARAM wParam,LPARAM lParam)
 {
 	struct FileSendData fsd;
@@ -219,42 +216,10 @@ static int SRFileModulesLoaded(WPARAM wParam,LPARAM lParam)
 			if ( !( CallProtoService( protocol[i]->szName, PS_GETCAPS,PFLAGNUM_4, 0 ) & PF4_OFFLINEFILES ))
 				mi.flags |= CMIF_NOTOFFLINE;
 			mi.pszContactOwner = protocol[i]->szName;
-			hFileMenu = (HANDLE*)mir_realloc(hFileMenu,sizeof(HANDLE)*(hFileMenuCount+1));
-			hFileMenu[hFileMenuCount] = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
-			hFileMenuCount++;
+			CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
 	}	}
 
 	RemoveUnreadFileEvents();
-	return 0;
-}
-
-static int hUpdateIcons = 0;
-int FilePreBuildContactMenu(WPARAM wParam,LPARAM lParam) {
-	if (hUpdateIcons) {
-		CLISTMENUITEM mi;
-		int i;
-
-		hUpdateIcons = 0;
-		ZeroMemory(&mi,sizeof(mi));
-		mi.cbSize = sizeof(mi);
-		mi.flags = CMIM_FLAGS|CMIM_ICON;
-		mi.hIcon = LoadSkinIcon( SKINICON_EVENT_FILE );
-
-		for(i=0;i<hFileMenuCount;i++)
-			CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hFileMenu[i], (LPARAM)&mi);
-
-		IconLib_ReleaseIcon(mi.hIcon, 0);
-	}
-	return 0;
-}
-
-int FileIconsChanged(WPARAM wParam,LPARAM lParam) {
-	hUpdateIcons = 1;
-	return 0;
-}
-
-int FileShutdownProc(WPARAM wParam,LPARAM lParam) {
-	mir_free(hFileMenu);
 	return 0;
 }
 
@@ -263,9 +228,6 @@ int LoadSendRecvFileModule(void)
 	HookEvent(ME_SYSTEM_MODULESLOADED,SRFileModulesLoaded);
 	HookEvent(ME_DB_EVENT_ADDED,FileEventAdded);
 	HookEvent(ME_OPT_INITIALISE,FileOptInitialise);
-	HookEvent(ME_CLIST_PREBUILDCONTACTMENU,FilePreBuildContactMenu);
-	HookEvent(ME_SKIN_ICONSCHANGED,FileIconsChanged);
-	HookEvent(ME_SYSTEM_SHUTDOWN,FileShutdownProc);
 	CreateServiceFunction(MS_FILE_SENDFILE,SendFileCommand);
 	CreateServiceFunction(MS_FILE_SENDSPECIFICFILES,SendSpecificFiles);
 	CreateServiceFunction(MS_FILE_GETRECEIVEDFILESFOLDER,GetReceivedFilesFolder);
@@ -274,19 +236,5 @@ int LoadSendRecvFileModule(void)
 	SkinAddNewSoundEx("FileDone",Translate("File"),Translate("Complete"));
 	SkinAddNewSoundEx("FileFailed",Translate("File"),Translate("Error"));
 	SkinAddNewSoundEx("FileDenied",Translate("File"),Translate("Denied"));
-    // Upgrade Routine for File Received Path - Remove me after 0.3.4
-	{
-        DBVARIANT dbv;
-
-	    if(!DBGetContactSetting(NULL,"SRFile","RecvFilesDir",&dbv)) {
-            char szPath[MAX_PATH];
-
-            mir_snprintf(szPath, SIZEOF(szPath), "%s%s%s", dbv.pszVal, dbv.pszVal[strlen(dbv.pszVal)-1]=='\\'?"":"\\" , "%userid%");
-            DBFreeVariant(&dbv);
-            DBWriteContactSettingString(NULL,"SRFile","RecvFilesDirAdv",szPath);
-            DBDeleteContactSetting(NULL,"SRFile","RecvFilesDir");
-        }
-    }
-    // End Upgrade
 	return 0;
 }

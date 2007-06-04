@@ -1305,7 +1305,7 @@ static int IcoLibIconsChanged(WPARAM wParam, LPARAM lParam)
 
 static int IconsChanged(WPARAM wParam, LPARAM lParam)
 {
-    if (hMsgMenuItem) {
+    if ( hMsgMenuItem && !ServiceExists( MS_SKIN2_GETICONBYHANDLE )) {
         int j;
         CLISTMENUITEM mi;
 
@@ -1313,9 +1313,8 @@ static int IconsChanged(WPARAM wParam, LPARAM lParam)
         mi.flags = CMIM_ICON;
         mi.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
 
-        for (j = 0; j < hMsgMenuItemCount; j++) {
+        for (j = 0; j < hMsgMenuItemCount; j++)
             CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hMsgMenuItem[j], (LPARAM) & mi);
-        }
     }
     CreateImageList(FALSE);
     CacheMsgLogIcons();

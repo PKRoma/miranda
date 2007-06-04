@@ -28,8 +28,7 @@ static void InitREOleCallback(void);
 
 HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
 static HANDLE hEventDbEventAdded, hEventDbSettingChange, hEventContactDeleted;
-HANDLE *hMsgMenuItem = NULL, hHookWinEvt=NULL;
-int hMsgMenuItemCount = 0;
+HANDLE hHookWinEvt = NULL;
 
 extern HINSTANCE g_hInst;
 
@@ -345,8 +344,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 			continue;
 		if (CallProtoService(protocol[i]->szName, PS_GETCAPS, PFLAGNUM_1, 0) & PF1_IMSEND) {
 			mi.pszContactOwner = protocol[i]->szName;
-			hMsgMenuItem = realloc(hMsgMenuItem, (hMsgMenuItemCount + 1) * sizeof(HANDLE));
-			hMsgMenuItem[hMsgMenuItemCount++] = (HANDLE) CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
+			CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
 	}	}
 
 	HookEvent(ME_FONT_RELOAD, FontsChanged);
@@ -374,11 +372,6 @@ int SplitmsgShutdown(void)
 	FreeMsgLogIcons();
 	FreeLibrary(GetModuleHandleA("riched20"));
 	OleUninitialize();
-	if (hMsgMenuItem) {
-		free(hMsgMenuItem);
-		hMsgMenuItem = NULL;
-		hMsgMenuItemCount = 0;
-	}
 	RichUtil_Unload();
 	FreeGlobals();
 	return 0;
@@ -386,18 +379,6 @@ int SplitmsgShutdown(void)
 
 static int IconsChanged(WPARAM wParam, LPARAM lParam)
 {
-	if (hMsgMenuItem) {
-		int j;
-		CLISTMENUITEM mi;
-
-		mi.cbSize = sizeof(mi);
-		mi.flags = CMIM_ICON;
-		mi.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
-
-		for (j = 0; j < hMsgMenuItemCount; j++) {
-			CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hMsgMenuItem[j], (LPARAM) & mi);
-		}
-	}
 	FreeMsgLogIcons();
 	LoadMsgLogIcons();
 	WindowList_Broadcast(g_dat->hMessageWindowList, DM_REMAKELOG, 0, 0);

@@ -98,7 +98,7 @@ int ImageList_ReplaceIcon_ProtoEx(HIMAGELIST hIml, int nIndex, const char* szPro
 
 int IconsChanged(WPARAM wParam, LPARAM lParam)
 {
-	if (hMsgMenuItem) {
+	if ( hMsgMenuItem && !ServiceExists( MS_SKIN2_GETICONBYHANDLE )) {
 		int j;
 		CLISTMENUITEM mi;
 		mi.cbSize = sizeof(mi);
