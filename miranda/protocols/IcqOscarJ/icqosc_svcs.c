@@ -1433,8 +1433,13 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
         {  // unicode is not available for target contact, convert to good codepage
           if (!plain_ascii)
           { // do not convert plain ascii messages
-            pszText = convertMsgToUserSpecificAnsi(ccs->hContact, pszText);
-            bNeedFreeA = 1;
+            char* szUserAnsi = convertMsgToUserSpecificAnsi(ccs->hContact, pszText); 
+            
+            if (szUserAnsi)
+            { // we have special encoding, use it
+              pszText = szUserAnsi; 
+              bNeedFreeA = 1;
+            }
           }
           pwszText = NULL; // no unicode
         }
