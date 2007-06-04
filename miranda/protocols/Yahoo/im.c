@@ -229,7 +229,7 @@ int YahooSendMessage(WPARAM wParam, LPARAM lParam)
     }
 
 	if (!DBGetContactSetting(ccs->hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
-		yahoo_send_msg(dbv.pszVal, msg, (bANSI) ? 1 : 0);
+		yahoo_send_msg(dbv.pszVal, msg, (!bANSI) ? 1 : 0);
 		
 		if (!bANSI)
 			mir_free(msg);
