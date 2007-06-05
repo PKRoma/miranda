@@ -80,7 +80,7 @@ struct ClcGroup* fnAddGroup(HWND hwnd, struct ClcData *dat, const TCHAR *szName,
 			}
 			if (pNextField == NULL && group->cl.items[i]->groupId == 0)
 				break;
-			if (groupId && group->cl.items[i]->groupId > groupId)
+			if (!(dat->exStyle & CLS_EX_SORTGROUPSALPHA) && groupId && group->cl.items[i]->groupId > groupId)
 				break;
 		}
 		if (compareResult) {
