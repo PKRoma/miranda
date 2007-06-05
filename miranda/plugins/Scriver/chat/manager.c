@@ -29,6 +29,8 @@ extern struct MM_INTERFACE		mmi ;
 
 extern struct GlobalMessageData *g_dat;
 
+void LoadModuleIcons(MODULEINFO * mi);
+
 #define WINDOWS_COMMANDS_MAX 30
 #define	STATUSICONCOUNT 6
 
@@ -884,8 +886,6 @@ void MM_IconsChanged(void)
 
 	while (pTemp != NULL)
 	{
-	    int index;
-
 		if (pTemp->hOfflineIcon)
 			DestroyIcon(pTemp->hOfflineIcon);
 		if (pTemp->hOnlineIcon)
@@ -895,8 +895,7 @@ void MM_IconsChanged(void)
 		if (pTemp->hOfflineTalkIcon)
 			DestroyIcon(pTemp->hOfflineTalkIcon);
 
-
-        LoadModuleIcons(pTemp);
+      LoadModuleIcons(pTemp);
 		pTemp = pTemp->next;
 	}
 	return;

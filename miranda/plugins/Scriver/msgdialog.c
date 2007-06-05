@@ -22,6 +22,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 #include "m_metacontacts.h"
+
+#include <malloc.h>
 #include <commctrl.h>
 
 #define TIMERID_MSGSEND      0
@@ -260,6 +262,15 @@ static char *MsgServiceName(HANDLE hContact)
         return PSS_MESSAGE "W";
 #endif
     return PSS_MESSAGE;
+}
+
+static BOOL IsUtfSendAvailable(HANDLE hContact)
+{
+	char* szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
+	if ( szProto == NULL )
+		return FALSE;
+
+	return ( CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_4, 0) & PF4_IMSENDUTF ) ? TRUE : FALSE;
 }
 
 #if defined(_UNICODE)
@@ -2292,49 +2303,82 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			//if(GetKeyState(VK_CTRL) & 0x8000) {    // copy user name
 					//SendMessage(hwndDlg, DM_USERNAMETOCLIP, 0, 0);
 			//}
-			if (dat->hContact !=NULL) {
-				struct MessageSendInfo msi;
-				int bufSize;
-				bufSize = GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE)) + 1;
-				msi.sendBufferSize = bufSize * (sizeof(TCHAR) + 1);
-				msi.sendBuffer = (char *) mir_alloc(msi.sendBufferSize);
-				msi.flags = SEND_FLAGS;
-				GetDlgItemTextA(hwndDlg, IDC_MESSAGE, msi.sendBuffer, bufSize);
-				{
-					PARAFORMAT2 pf2;
-					ZeroMemory((void *)&pf2, sizeof(pf2));
-					pf2.cbSize = sizeof(pf2);
-					pf2.dwMask = PFM_RTLPARA;
-					SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETPARAFORMAT, 0, (LPARAM)&pf2);
-					if (pf2.wEffects & PFE_RTLPARA) {
-						msi.flags |= PREF_RTL;
-					}
-				}
+			if (dat->hContact != NULL) {
+				struct MessageSendInfo msi = { 0 };
+				int bufSize = GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE)) + 1;
 
-		#if defined( _UNICODE )
-				{
-					GETTEXTEX  gt;
-					gt.cb = bufSize * sizeof(TCHAR);
-					gt.flags = GT_USECRLF;
-					gt.codepage = 1200;
-					SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETTEXTEX, (WPARAM) &gt, (LPARAM) &msi.sendBuffer[bufSize]);
-				}
-
-				if ( RTL_Detect((wchar_t *)&msi.sendBuffer[bufSize] )) {
+				PARAFORMAT2 pf2;
+				ZeroMemory((void *)&pf2, sizeof(pf2));
+				pf2.cbSize = sizeof(pf2);
+				pf2.dwMask = PFM_RTLPARA;
+				SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETPARAFORMAT, 0, (LPARAM)&pf2);
+				if (pf2.wEffects & PFE_RTLPARA)
 					msi.flags |= PREF_RTL;
+
+				if ( IsUtfSendAvailable( dat->hContact )) {
+					char* szMsgUtf;
+					msi.flags |= PREF_UTF;
+					#if defined( _UNICODE )
+					{	WCHAR* temp = ( WCHAR* )alloca( bufSize * sizeof( TCHAR ));
+						GETTEXTEX gt;
+						gt.cb = bufSize * sizeof(TCHAR);
+						gt.flags = GT_USECRLF;
+						gt.codepage = 1200;
+						SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETTEXTEX, (WPARAM)&gt, (LPARAM)temp );
+						if ( *temp == 0 )
+							break;
+
+						szMsgUtf = mir_utf8encodeW( temp );
+						dat->cmdList = tcmdlist_append(dat->cmdList, temp);
+						if ( RTL_Detect( temp ))
+							msi.flags |= PREF_RTL;
+					}
+					#else
+					{	char* temp = ( char* )alloca( bufSize );
+						GetDlgItemTextA(hwndDlg, IDC_MESSAGE, temp, bufSize);
+						if ( *temp == 0 )
+							break;
+
+						szMsgUtf = mir_utf8encodecp(temp, dat->codepage);
+						dat->cmdList = tcmdlist_append(dat->cmdList, temp);
+					}
+					#endif
+					if (!szMsgUtf || *szMsgUtf == 0)
+						break;
+
+					msi.sendBufferSize = strlen(szMsgUtf)+1;
+					msi.sendBuffer = szMsgUtf;
 				}
-		#endif
-				if (msi.sendBuffer[0] == 0)
-					break;
-		#if defined( _UNICODE )
-				dat->cmdList = tcmdlist_append(dat->cmdList, (TCHAR *) &msi.sendBuffer[bufSize]);
-		#else
-				dat->cmdList = tcmdlist_append(dat->cmdList, msi.sendBuffer);
-		#endif
+				else {
+					msi.sendBufferSize = bufSize * (sizeof(TCHAR) + 1);
+					msi.sendBuffer = (char *) mir_alloc(msi.sendBufferSize);
+					msi.flags |= PREF_TCHAR;
+					GetDlgItemTextA(hwndDlg, IDC_MESSAGE, msi.sendBuffer, bufSize);
+
+					#if defined( _UNICODE )
+						{
+							GETTEXTEX  gt;
+							gt.cb = bufSize * sizeof(TCHAR);
+							gt.flags = GT_USECRLF;
+							gt.codepage = 1200;
+							SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETTEXTEX, (WPARAM) &gt, (LPARAM) &msi.sendBuffer[bufSize]);
+						}
+
+						if ( RTL_Detect((wchar_t *)&msi.sendBuffer[bufSize] ))
+							msi.flags |= PREF_RTL;
+					#endif
+					if (msi.sendBuffer[0] == 0)
+						break;
+					#if defined( _UNICODE )
+						dat->cmdList = tcmdlist_append(dat->cmdList, (TCHAR *) &msi.sendBuffer[bufSize]);
+					#else
+						dat->cmdList = tcmdlist_append(dat->cmdList, msi.sendBuffer);
+					#endif
+				}
 				dat->cmdListCurrent = 0;
-				if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON) {
+				if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON)
 					NotifyTyping(dat, PROTOTYPE_SELFTYPING_OFF);
-				}
+
 				SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
 				EnableWindow(GetDlgItem(hwndDlg, IDOK), FALSE);
 				if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOMIN, SRMSGDEFSET_AUTOMIN))
@@ -2425,30 +2469,37 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				dbei.pBlob = (PBYTE) mir_alloc(dbei.cbBlob);
 				CallService(MS_DB_EVENT_GET, (WPARAM)  dat->hDbEventLast, (LPARAM) & dbei);
 				if (dbei.eventType == EVENTTYPE_MESSAGE || dbei.eventType == EVENTTYPE_STATUSCHANGE) {
-					TCHAR *buffer = NULL;
-#ifdef _UNICODE
-					DWORD aLen = strlen((char *)dbei.pBlob)+1;
-					if (dbei.eventType == EVENTTYPE_MESSAGE) {
-						if (dbei.cbBlob > aLen) {
-							DWORD wlen = safe_wcslen((wchar_t *)&dbei.pBlob[aLen], (dbei.cbBlob - aLen) / 2);
-							if (wlen > 0 && wlen < aLen) {
-								buffer = (TCHAR *)&dbei.pBlob[aLen];
+					TCHAR *buffer;
+
+					if ( bNewDbApi )
+						buffer = DbGetEventTextT( &dbei, CP_ACP );
+					else {
+						#ifdef _UNICODE
+							DWORD aLen = strlen((char *)dbei.pBlob)+1;
+							if (dbei.eventType == EVENTTYPE_MESSAGE) {
+								if (dbei.cbBlob > aLen) {
+									DWORD wlen = safe_wcslen((wchar_t *)&dbei.pBlob[aLen], (dbei.cbBlob - aLen) / 2);
+									if (wlen > 0 && wlen < aLen) {
+										buffer = (TCHAR *)&dbei.pBlob[aLen];
+									}
+								}
 							}
-						}
+							if (buffer == NULL) {
+								buffer = a2t((char *) dbei.pBlob);
+								mir_free(dbei.pBlob);
+								dbei.pBlob = (char *)buffer;
+							}
+						#else
+							buffer = (TCHAR *)dbei.pBlob;
+						#endif
 					}
-					if (buffer == NULL) {
-						buffer = a2t((char *) dbei.pBlob);
-						mir_free(dbei.pBlob);
-						dbei.pBlob = (char *)buffer;
-					}
-#else
-					buffer = (TCHAR *)dbei.pBlob;
-#endif
 					if (buffer!=NULL) {
 						TCHAR *quotedBuffer = GetQuotedTextW(buffer);
 						SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SETTEXTEX, (WPARAM) &st, (LPARAM)quotedBuffer);
 						mir_free(quotedBuffer);
 					}
+					if ( bNewDbApi )
+						mir_free(buffer);
 				}
 				mir_free(dbei.pBlob);
 				SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
@@ -2704,11 +2755,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			dbei.cbSize = sizeof(dbei);
 			dbei.eventType = EVENTTYPE_MESSAGE;
 			dbei.flags = DBEF_SENT | (( dat->sendInfo[i].flags & PREF_RTL) ? DBEF_RTL : 0 );
+			if ( dat->sendInfo[i].flags & PREF_UTF )
+				dbei.flags |= DBEF_UTF;
 			dbei.szModule = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) dat->hContact, 0);
 			dbei.timestamp = time(NULL);
 			dbei.cbBlob = lstrlenA(dat->sendInfo[i].sendBuffer) + 1;
 	#if defined( _UNICODE )
-			dbei.cbBlob *= sizeof(TCHAR) + 1;
+			if ( !( dat->sendInfo[i].flags & PREF_UTF ))
+				dbei.cbBlob *= sizeof(TCHAR) + 1;
 	#endif
 			dbei.pBlob = (PBYTE) dat->sendInfo[i].sendBuffer;
 			hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM) dat->hContact, (LPARAM) & dbei);

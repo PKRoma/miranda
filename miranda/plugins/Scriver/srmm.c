@@ -29,9 +29,11 @@ extern void Chat_Load(PLUGINLINK *link);
 extern void Chat_Unload();
 
 struct MM_INTERFACE memoryManagerInterface;
+struct UTF8_INTERFACE utfi;
 
 PLUGINLINK *pluginLink;
 HINSTANCE g_hInst;
+int bNewDbApi = FALSE;
 
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
@@ -75,9 +77,13 @@ __declspec(dllexport)
 int __declspec(dllexport) Load(PLUGINLINK * link)
 {
 	pluginLink = link;
+
 	// set the memory manager
-	memoryManagerInterface.cbSize = sizeof(struct MM_INTERFACE);
-	CallService(MS_SYSTEM_GET_MMI,0,(LPARAM)&memoryManagerInterface);
+	mir_getMMI( &mmi );
+	mir_getUTFI( &utfi );
+
+	if ( ServiceExists( MS_DB_EVENT_GETTEXT ))
+		bNewDbApi = TRUE;
 
 	Chat_Load(link);
 	return LoadSendRecvMessageModule();
