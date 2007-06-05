@@ -81,6 +81,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
   #define DBVT_TCHAR DBVT_ASCIIZ
 #endif
 #define DBVTF_VARIABLELENGTH  0x80
+#define DBVTF_DENYUNICODE     0x10000
 typedef struct {
 	BYTE type;
 	union {

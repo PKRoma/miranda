@@ -27,11 +27,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 int DbEventGetText(WPARAM wParam, LPARAM lParam)
 {
 	DBEVENTGETTEXT* egt = (DBEVENTGETTEXT*)lParam;
+	BOOL bIsDenyUnicode = (egt->datatype & DBVTF_DENYUNICODE);
 
 	DBEVENTINFO* dbei = egt->dbei;
-	if ( dbei->eventType != EVENTTYPE_MESSAGE )
+	if ( dbei->eventType == EVENTTYPE_FILE )
 		return 0;
 
+   egt->datatype &= ~DBVTF_DENYUNICODE;
 	if ( egt->datatype == DBVT_WCHAR )
 	{
 		WCHAR* msg;
@@ -49,7 +51,7 @@ int DbEventGetText(WPARAM wParam, LPARAM lParam)
 						break;
 			}	}	}
 
-			if ( msglenW > 0 && msglenW < msglen )
+			if ( msglenW > 0 && msglenW < msglen && !bIsDenyUnicode )
 				msg = mir_wstrdup(( WCHAR* )&dbei->pBlob[ msglen ] );
 			else {
 				msg = ( WCHAR* )mir_alloc( sizeof(TCHAR) * msglen );
