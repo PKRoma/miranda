@@ -34,7 +34,9 @@ DWORD g_mirandaVersion = 0;
 PLUGINLINK *pluginLink;
 HINSTANCE g_hInst;
 extern MYGLOBALS myGlobals;
-struct MM_INTERFACE memoryManagerInterface;
+struct MM_INTERFACE mmi;
+struct UTF8_INTERFACE utfi;
+int bNewDbApi = FALSE;
 
 pfnSetMenuInfo fnSetMenuInfo = NULL;
 
@@ -136,9 +138,11 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 	}
 #endif
 
-	memset(&memoryManagerInterface, 0, sizeof(memoryManagerInterface));
-	memoryManagerInterface.cbSize = sizeof(memoryManagerInterface);
-	CallService(MS_SYSTEM_GET_MMI, 0, (LPARAM) &memoryManagerInterface);
+	mir_getMMI( &mmi );
+	mir_getUTFI( &utfi );
+
+	if ( ServiceExists( MS_DB_EVENT_GETTEXT ))
+		bNewDbApi = TRUE;
 
 	fnSetMenuInfo = ( pfnSetMenuInfo )GetProcAddress( GetModuleHandleA( "USER32.DLL" ), "GetMenuInfo" );
 

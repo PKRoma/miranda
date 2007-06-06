@@ -38,6 +38,7 @@ extern      void ReleaseRichEditOle(IRichEditOle *ole);
 extern      MYGLOBALS myGlobals;
 extern      struct RTFColorTable *rtf_ctable;
 extern      void ImageDataInsertBitmap(IRichEditOle *ole, HBITMAP hBm);
+extern      int bNewDbApi;
 
 struct CPTABLE cpTable[] = {
     {	874,	_T("Thai") },
@@ -745,20 +746,27 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
         }
     }
 
+    if(dbei.eventType == EVENTTYPE_MESSAGE && !isSent)
+        dat->stats.lastReceivedChars = lstrlenA((char *) dbei.pBlob);
+
+	 if ( bNewDbApi ) {
+		 msg = DbGetEventTextT( &dbei, dat->codePage );
+		 TrimMessage(msg);
+       formatted = FormatRaw(dat->dwFlags, msg, dwFormattingParams, szProto, dat->hContact, &dat->clr_added);
+		 mir_free(msg);
+	 }
+	 else
 #if defined( _UNICODE )
     {
         int wlen;
         int msglen = lstrlenA((char *) dbei.pBlob) + 1;
 
-        if(dbei.eventType == EVENTTYPE_MESSAGE && !isSent)
-            dat->stats.lastReceivedChars = msglen - 1;
         if ((dbei.cbBlob >= (DWORD)(2 * msglen)) && !(dat->sendMode & SMODE_FORCEANSI)) {
             msg = (wchar_t *) &dbei.pBlob[msglen];
             wlen = safe_wcslen(msg, (dbei.cbBlob - msglen) / 2);
             if(wlen <= (msglen - 1) && wlen > 0){
                 TrimMessage(msg);
                 formatted = FormatRaw(dat->dwFlags, msg, dwFormattingParams, szProto, dat->hContact, &dat->clr_added);
-                //AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, formatted, MAKELONG(isSent, dat->isHistory));
             }
             else
                 goto nounicode;
@@ -769,18 +777,14 @@ nounicode:
             MultiByteToWideChar(dat->codePage, 0, (char *) dbei.pBlob, -1, msg, msglen);
             TrimMessage(msg);
             formatted = FormatRaw(dat->dwFlags, msg, dwFormattingParams, szProto, dat->hContact, &dat->clr_added);
-            //AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, formatted, MAKELONG(isSent, dat->isHistory));
         }
     }
 #else   // unicode
     {
         msg = (char *) dbei.pBlob;
-        if(dbei.eventType == EVENTTYPE_MESSAGE && !isSent)
-            dat->stats.lastReceivedChars = lstrlenA(msg);
         TrimMessage(msg);
         formatted = FormatRaw(dat->dwFlags, msg, dwFormattingParams, szProto, dat->hContact, &dat->clr_added);
     }
-    //AppendToBufferWithRTF(MAKELONG(isSent, dat->isHistory), &buffer, &bufferEnd, &bufferAlloced, "%s", formatted);
 #endif      // unicode
 
     dat->stats.lastReceivedChars = 0;

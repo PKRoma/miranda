@@ -25,8 +25,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 HANDLE      g_hWindowList;
 HMENU       g_hMenu = NULL;
 
-struct MM_INTERFACE memoryManagerInterface;
-
 FONTINFO    aFonts[OPTIONS_FONTCOUNT];
 HICON       hIcons[30];
 BOOL        IEviewInstalled = FALSE;
@@ -45,11 +43,7 @@ int Chat_Load(PLUGINLINK *link)
 {
 	BOOL bFlag = FALSE;
 	
-	// set the memory manager
-	memoryManagerInterface.cbSize = sizeof(struct MM_INTERFACE);
-	CallService(MS_SYSTEM_GET_MMI,0,(LPARAM)&memoryManagerInterface);
-
-    if(!DBGetContactSettingByte(NULL, SRMSGMOD_T, "enable_chat", 0))
+   if(!DBGetContactSettingByte(NULL, SRMSGMOD_T, "enable_chat", 0))
         return 0;
     
     g_chat_integration_enabled = 1;

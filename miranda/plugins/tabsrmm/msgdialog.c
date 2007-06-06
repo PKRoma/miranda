@@ -133,6 +133,15 @@ static struct _buttonicons { int id; HICON *pIcon; } buttonicons[] = {
 struct SendJob *sendJobs = NULL;
 static int splitterEdges = -1;
 
+static BOOL IsUtfSendAvailable(HANDLE hContact)
+{
+	char* szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
+	if ( szProto == NULL )
+		return FALSE;
+
+	return ( CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_4, 0) & PF4_IMSENDUTF ) ? TRUE : FALSE;
+}
+
 // pt in screen coords
 static void ShowPopupMenu(HWND hwndDlg, struct MessageWindowData *dat, int idFrom, HWND hwndFrom, POINT pt)
 {
@@ -3743,7 +3752,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             switch (LOWORD(wParam)) {
                 case IDOK:
                     {
-                    int bufSize = 0, memRequired = 0, isUnicode = 0, isRtl = 0;
+                    int bufSize = 0, memRequired = 0, flags = 0;
                     char *streamOut = NULL;
                     TCHAR *decoded = NULL, *converted = NULL;
                     FINDTEXTEXA fi = {0};
@@ -3769,24 +3778,26 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if(streamOut != NULL) {
                         decoded = Utf8_Decode(streamOut);
                         if(decoded != NULL) {
+									 char* utfResult = NULL;
                             if(final_sendformat)
                                 DoRtfToTags(decoded, dat);
                             DoTrimMessage(decoded);
                             bufSize = WideCharToMultiByte(dat->codePage, 0, decoded, -1, dat->sendBuffer, 0, 0, 0);
                             if(myGlobals.m_Send7bitStrictAnsi) {
                                 if(!IsUnicodeAscii(decoded, lstrlenW(decoded))) {
-                                    isUnicode = TRUE;
-                                    memRequired = bufSize + ((lstrlenW(decoded) + 1) * sizeof(WCHAR));
+LBL_UnicodeSend:	                  if ( !IsUtfSendAvailable(dat->hContact)) {
+													flags |= PREF_UNICODE;
+													memRequired = bufSize + ((lstrlenW(decoded) + 1) * sizeof(WCHAR));
+												}
+												else {
+													flags |= PREF_UTF;
+													utfResult = mir_utf8encodeW(decoded);
+													memRequired = strlen( utfResult )+1;
+												}
                                 }
-                                else {
-                                    isUnicode = FALSE;
-                                    memRequired = bufSize;
-                                }
+                                else memRequired = bufSize;
                             }
-                            else {
-                                isUnicode = TRUE;
-                                memRequired = bufSize + ((lstrlenW(decoded) + 1) * sizeof(WCHAR));
-                            }
+                            else goto LBL_UnicodeSend;
 
                             /*
                              * try to detect RTL
@@ -3798,8 +3809,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             SendMessage(hwndEdit, EM_SETSEL, 0, -1);
                             SendMessage(hwndEdit, EM_GETPARAFORMAT, 0, (LPARAM)&pf2);
                             if(pf2.wEffects & PFE_RTLPARA)
-                                isRtl = RTL_Detect(decoded);
-                            SendMessage(hwndEdit, WM_SETREDRAW, TRUE, 0);
+                                if ( RTL_Detect( decoded ))
+											  flags |= PREF_RTL;
+
+									 SendMessage(hwndEdit, WM_SETREDRAW, TRUE, 0);
                             SendMessage(hwndEdit, EM_SETSEL, -1, -1);
                             InvalidateRect(hwndEdit, NULL, FALSE);
 
@@ -3807,9 +3820,15 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                 dat->sendBuffer = (char *) realloc(dat->sendBuffer, memRequired);
                                 dat->iSendBufferSize = memRequired;
                             }
-                            WideCharToMultiByte(dat->codePage, 0, decoded, -1, dat->sendBuffer, bufSize, 0, 0);
-                            if(isUnicode)
-                                CopyMemory(&dat->sendBuffer[bufSize], decoded, (lstrlenW(decoded) + 1) * sizeof(WCHAR));
+									 if ( utfResult ) {
+										 CopyMemory( dat->sendBuffer, utfResult, memRequired );
+										 mir_free( utfResult );
+									 }
+									 else {
+	                            WideCharToMultiByte(dat->codePage, 0, decoded, -1, dat->sendBuffer, bufSize, 0, 0);
+		                         if(flags & PREF_UNICODE)
+			                          CopyMemory(&dat->sendBuffer[bufSize], decoded, (lstrlenW(decoded) + 1) * sizeof(WCHAR));
+									 }
                             free(decoded);
                         }
                         free(streamOut);
@@ -3903,11 +3922,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     }
                     DeletePopupsForContact(dat->hContact, PU_REMOVE_ON_SEND);
                     if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "allow_sendhook", 0)) {
-                        int result = TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CUSTOM, MAKELONG((isUnicode ? PREF_UNICODE : 0) | (isRtl ? PREF_RTL : 0), tabMSG_WINDOW_EVT_CUSTOM_BEFORESEND));
+                        int result = TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CUSTOM, MAKELONG(flags, tabMSG_WINDOW_EVT_CUSTOM_BEFORESEND));
                         if(result)
                             return TRUE;
                     }
-                    AddToSendQueue(hwndDlg, dat, memRequired, (isUnicode ? PREF_UNICODE : 0) | (isRtl ? PREF_RTL : 0));
+                    AddToSendQueue(hwndDlg, dat, memRequired, flags);
                     return TRUE;
                     }
                 case IDC_QUOTE:
@@ -5087,6 +5106,8 @@ quote_from_last:
                     dbei.cbBlob *= sizeof(TCHAR) + 1;
                 if(sendJobs[iFound].dwFlags & PREF_RTL)
                     dbei.flags |= DBEF_RTL;
+                if(sendJobs[iFound].dwFlags & PREF_UTF)
+                    dbei.flags |= DBEF_UTF;
 #endif
                 dbei.pBlob = (PBYTE) sendJobs[iFound].sendBuffer;
                 hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM) sendJobs[iFound].hContact[i], (LPARAM) & dbei);
