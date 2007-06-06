@@ -216,9 +216,6 @@ static void discoverUPnP(char* szUrl, int sizeUrl)
 	enetaddr.sin_port = htons(1900);
 	enetaddr.sin_addr.s_addr = inet_addr("239.255.255.250");
 
-	FD_ZERO(&readfd);
-	FD_SET(sock, &readfd);
-
 	szUrl[0] = 0;
 
 	gethostname( hostname, sizeof( hostname ));
@@ -251,6 +248,9 @@ static void discoverUPnP(char* szUrl, int sizeUrl)
 			sendto(sock, buf, buflen, 0, (SOCKADDR*)&enetaddr, sizeof(enetaddr)); 
 			LongLog(buf);
 		}
+
+		FD_ZERO(&readfd);
+		FD_SET(sock, &readfd);
 
 		while (select(0, &readfd, NULL, NULL, &tv) == 1) 
 		{
