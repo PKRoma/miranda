@@ -56,7 +56,7 @@ static int UpdateTBToolTip(int framepos);
 int		CLUIFrameSetFloat(WPARAM wParam,LPARAM lParam);
 int		CLUIFrameResizeFloatingFrame(int framepos);
 
-static int  SkinEngine_Service_RegisterFramePaintCallbackProcedure(WPARAM wParam, LPARAM lParam);
+static int  ske_Service_RegisterFramePaintCallbackProcedure(WPARAM wParam, LPARAM lParam);
 static HWND CreateSubContainerWindow(HWND parent,int x,int y,int width,int height);
 
 static int syncService_CLUIFrames_Service_RegisterFramePaintCallbackProcedure(WPARAM wParam, LPARAM lParam);
@@ -2535,7 +2535,7 @@ int CLUIFrames_ApplyNewSizes(int mode)
 	}
 	if (IsWindowVisible(pcli->hwndContactList))
 	{
-		SkinEngine_DrawNonFramedObjects(1,0);
+		ske_DrawNonFramedObjects(1,0);
 		CallService(MS_SKINENG_INVALIDATEFRAMEIMAGE,0,0);
 	}
 	g_CluiData.mutexPreventDockMoving=1;
@@ -2998,8 +2998,8 @@ static int DrawTitleBar(HDC hdcMem2,RECT * rect,int Frameid)
 
 	SetBkMode(hdcMem,TRANSPARENT);
 	hoTTBFont=SelectObject(hdcMem,TitleBarFont);
-	SkinEngine_ResetTextEffect(hdcMem);
-	SkinEngine_ResetTextEffect(hdcMem2);
+	ske_ResetTextEffect(hdcMem);
+	ske_ResetTextEffect(hdcMem2);
 	hBack=GetSysColorBrush(COLOR_3DFACE);
 	hoBrush=SelectObject(hdcMem,hBack);  
 
@@ -3018,7 +3018,7 @@ static int DrawTitleBar(HDC hdcMem2,RECT * rect,int Frameid)
 		{
 			Frames[pos].TitleBar.wndSize=rc;
 		}
-		b1=SkinEngine_CreateDIB32(rc.right-rc.left,rc.bottom-rc.top);
+		b1=ske_CreateDIB32(rc.right-rc.left,rc.bottom-rc.top);
 		b2=SelectObject(hdcMem,b1);
 		if ( Frames[pos].floating && !g_CluiData.fDisableSkinEngine)
 		{
@@ -3042,7 +3042,7 @@ static int DrawTitleBar(HDC hdcMem2,RECT * rect,int Frameid)
 			}
 			else if (!g_CluiData.fLayered)
 			{
-				SkinEngine_BltBackImage(Frames[pos].TitleBar.hwnd,hdcMem,&rc);
+				ske_BltBackImage(Frames[pos].TitleBar.hwnd,hdcMem,&rc);
 			}
 			else  BitBlt(hdcMem,0,0,rc.right-rc.left,rc.bottom-rc.top,hdcMem2,rect->left,rect->top,SRCCOPY);
 			SkinDrawGlyph(hdcMem,&rc,&rc,"Main,ID=FrameCaption");
@@ -3086,7 +3086,7 @@ static int DrawTitleBar(HDC hdcMem2,RECT * rect,int Frameid)
 			}
 			else
 			*/
-			SkinEngine_TextOutA(hdcMem,textrc.left,textrc.top,Frames[pos].TitleBar.tbname,mir_strlen(Frames[pos].TitleBar.tbname));
+			ske_TextOutA(hdcMem,textrc.left,textrc.top,Frames[pos].TitleBar.tbname,mir_strlen(Frames[pos].TitleBar.tbname));
 
 		}
 		if (!AlignCOLLIconToLeft)
@@ -3561,7 +3561,7 @@ static LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam
 				GetClientRect(hwnd,&rect);
 				if (!g_CluiData.fLayered)
 				{
-					SkinEngine_BltBackImage(hwnd,(HDC)wParam,&rect);
+					ske_BltBackImage(hwnd,(HDC)wParam,&rect);
 				}
 				DrawTitleBar((HDC)wParam,&rect,Frameid);
 			}

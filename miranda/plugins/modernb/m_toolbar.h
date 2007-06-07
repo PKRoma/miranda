@@ -22,7 +22,7 @@ typedef struct _tagTBButton
 	char * pszServiceName;	 // service name to be executed
 	LPARAM lParam;			 // param of service to be called
 	char * pszTooltipUp, *pszTooltipDn;	
-	WORD defPos;			 // default order pos of button (less values are nearer to edge).. please use values greater that 100. the default buttons has pos: 10,20..90
+	DWORD defPos;			 // default order pos of button (less values are nearer to edge).. please use values greater that 100. the default buttons has pos: 10,20..90
 	DWORD tbbFlags;			 // combine of TBBF_ flags above
 	void (*ParamDestructor)(void *); //will be called on parameters deletion
 }TBButton;

@@ -277,7 +277,7 @@ void CLUI_ChangeWindowMode()
 		SetMenu(pcli->hwndContactList,g_hMenuMain);
 
 	if (g_CluiData.fLayered&&(DBGetContactSettingByte(NULL,"CList","OnDesktop", 0)))
-		SkinEngine_UpdateWindowImage();
+		ske_UpdateWindowImage();
 	//6- Pin to desktop mode
 	if (DBGetContactSettingByte(NULL,"CList","OnDesktop", 0)) 
 	{
@@ -480,7 +480,7 @@ static int CLUI_FillAlphaChannel(HWND hwnd, HDC hdc, RECT * ParentRect, BYTE alp
 	rect=(RECT *)rdata->Buffer;
 	for (d=0; d<rdata->rdh.nCount; d++)
 	{
-		SkinEngine_SetRectOpaque(hdc,&rect[d]);
+		ske_SetRectOpaque(hdc,&rect[d]);
 	}
 
 	mir_free_and_nill(rdata);
@@ -504,7 +504,7 @@ int CLUI_IsInMainWindow(HWND hwnd)
 
 int CLUI_OnSkinLoad(WPARAM wParam, LPARAM lParam)
 {
-	SkinEngine_LoadSkinFromDB();
+	ske_LoadSkinFromDB();
 	//    CreateGlyphedObject("Main Window/ScrollBar Up Button");
 	//    CreateGlyphedObject("Main Window/ScrollBar Down Button");
 	//    CreateGlyphedObject("Main Window/ScrollBar Thumb");       
@@ -735,7 +735,7 @@ int CLUI_GetConnectingIconService(WPARAM wParam,LPARAM lParam)
 			//		hIcon=CLUI_GetConnectingIconForProto("Global",b);
 			//	else
 			if (pt->himlIconList)
-				hIcon=SkinEngine_ImageList_GetIcon(pt->himlIconList,b,ILD_NORMAL);
+				hIcon=ske_ImageList_GetIcon(pt->himlIconList,b,ILD_NORMAL);
 			else
 				hIcon=NULL;
 			//hIcon=CLUI_GetConnectingIconForProto(szProto,b);
@@ -849,6 +849,7 @@ int CLUI_ReloadCLUIOptions()
 		g_CluiData.BottomClientMargin=(int)DBGetContactSettingByte(NULL,"CLUI","BottomClientMargin",0);
 	}			
 	BroadCastMessageToChild(pcli->hwndContactList, WM_THEMECHANGED, 0, 0);
+
 	NotifyEventHooks(hEventBkgrChanged, 0, 0);
 	return 0;
 }
@@ -1022,8 +1023,8 @@ static int CLUI_DrawMenuBackGround(HWND hwnd, HDC hdc, int item, int state)
 		GetWindowRect(hwnd,&rc);
 		OffsetRect(&rc,-rc.left, -rc.top);
 		FillRect(hdc,&r1,GetSysColorBrush(COLOR_MENU));
-		SkinEngine_SetRectOpaque(hdc,&r1);
-		//SkinEngine_BltBackImage(hwnd,hdc,&r1);
+		ske_SetRectOpaque(hdc,&r1);
+		//ske_BltBackImage(hwnd,hdc,&r1);
 	}
 	if (!g_CluiData.fDisableSkinEngine)
 		SkinDrawGlyph(hdc,&r1,&r1,"Main,ID=MenuBar");
@@ -1264,9 +1265,9 @@ int CLUI_OnSizingMoving(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				//reposition buttons and new size applying
 				{
 					ModernButton_ReposButtons(hwnd,FALSE,&work_rect);
-					SkinEngine_PrepeareImageButDontUpdateIt(&work_rect);
+					ske_PrepeareImageButDontUpdateIt(&work_rect);
 					g_CluiData.mutexPreventDockMoving=0;			
-					SkinEngine_UpdateWindowImageRect(&work_rect);        
+					ske_UpdateWindowImageRect(&work_rect);        
 					EndDeferWindowPos(PosBatch);
 					g_CluiData.mutexPreventDockMoving=1;
 				}       
@@ -1335,7 +1336,7 @@ int CLUI_OnSizingMoving(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 					return 0;
 
 				if (!g_CluiData.fLayered && !g_CluiData.fDisableSkinEngine)
-					SkinEngine_ReCreateBackImage(TRUE,NULL);
+					ske_ReCreateBackImage(TRUE,NULL);
 
 				GetWindowRect(hwnd, &rc);
 				CheckFramesPos(&rc);
@@ -1353,7 +1354,7 @@ int CLUI_OnSizingMoving(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 					g_mutex_bSizing=0;
 				}
 
-				//       SkinEngine_RedrawCompleteWindow();
+				//       ske_RedrawCompleteWindow();
 				if(!CallService(MS_CLIST_DOCKINGISDOCKED,0,0))
 				{ //if g_CluiData.fDocked, dont remember pos (except for width)
 					DBWriteContactSettingDword(NULL,"CList","Height",(DWORD)(rc.bottom - rc.top));
@@ -1477,7 +1478,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 
 	case UM_UPDATE:
 		if (g_flag_bPostWasCanceled) return 0;
-		return SkinEngine_ValidateFrameImageProc(NULL);               
+		return ske_ValidateFrameImageProc(NULL);               
 	case WM_INITMENU:
 		{
 			if (ServiceExists(MS_CLIST_MENUBUILDMAIN)){CallService(MS_CLIST_MENUBUILDMAIN,0,0);};
@@ -1529,9 +1530,9 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 				paintDC = GetDC(hwnd);
 				w2=w;
 				hdc=CreateCompatibleDC(paintDC);
-				hbmp=SkinEngine_CreateDIB32(w.right,w.bottom);
+				hbmp=ske_CreateDIB32(w.right,w.bottom);
 				oldbmp=SelectObject(hdc,hbmp);
-				SkinEngine_ReCreateBackImage(FALSE,NULL);
+				ske_ReCreateBackImage(FALSE,NULL);
 				BitBlt(paintDC,w2.left,w2.top,w2.right-w2.left,w2.bottom-w2.top,g_pCachedWindow->hBackDC,w2.left,w2.top,SRCCOPY);
 				SelectObject(hdc,oldbmp);
 				DeleteObject(hbmp);
@@ -1541,7 +1542,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 			else
 			{
 				HDC hdc=BeginPaint(hwnd,&ps);
-				SkinEngine_BltBackImage(hwnd,hdc,&ps.rcPaint);
+				ske_BltBackImage(hwnd,hdc,&ps.rcPaint);
 				ps.fErase=FALSE;
 				EndPaint(hwnd,&ps); 
 			}
@@ -1959,7 +1960,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 				{
 					g_CluiData.bCurrentAlpha=0;
 					callProxied_CLUIFrames_OnShowHide(pcli->hwndContactList,1);
-					SkinEngine_RedrawCompleteWindow();
+					ske_RedrawCompleteWindow();
 				}
 				CLUI_SmoothAlphaTransition(hwnd, gAlpha, 1);
 			}
@@ -2200,7 +2201,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 					{	
 						char buf[255]={0};	
 						short dx=1+(dis->itemState&ODS_SELECTED?1:0)-(dis->itemState&ODS_HOTLIGHT?1:0);
-						HICON hIcon=SkinEngine_ImageList_GetIcon(himlMirandaIcon,0,ILD_NORMAL);
+						HICON hIcon=ske_ImageList_GetIcon(himlMirandaIcon,0,ILD_NORMAL);
 						CLUI_DrawMenuBackGround(hwnd, dis->hDC, 1, dis->itemState);
 						_snprintf(buf,sizeof(buf),"Main,ID=MainMenu,Selected=%s,Hot=%s",(dis->itemState&ODS_SELECTED)?"True":"False",(dis->itemState&ODS_HOTLIGHT)?"True":"False");
 						SkinDrawGlyph(dis->hDC,&dis->rcItem,&dis->rcItem,buf);
@@ -2243,7 +2244,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 					//TODO check if caption is visible
 					char buf[255]={0};	
 					short dx=1+(dis->itemState&ODS_SELECTED?1:0)-(dis->itemState&ODS_HOTLIGHT?1:0);
-					HICON hIcon=SkinEngine_ImageList_GetIcon(himlMirandaIcon,0,ILD_NORMAL);
+					HICON hIcon=ske_ImageList_GetIcon(himlMirandaIcon,0,ILD_NORMAL);
 					CLUI_DrawMenuBackGround(hwnd, dis->hDC, 3, dis->itemState);
 					_snprintf(buf,sizeof(buf),"Main,ID=MainMenu,Selected=%s,Hot=%s",(dis->itemState&ODS_SELECTED)?"True":"False",(dis->itemState&ODS_HOTLIGHT)?"True":"False");
 					SkinDrawGlyph(dis->hDC,&dis->rcItem,&dis->rcItem,buf);
@@ -2305,7 +2306,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 			TRACE("CLUI.c: WM_DESTROY - UnLoadCLUIFramesModule DONE\n");
 			ImageList_Destroy(himlMirandaIcon);
 			DBWriteContactSettingByte(NULL,"CList","State",(BYTE)state);
-			SkinEngine_UnloadSkin(&g_SkinObjectList);
+			ske_UnloadSkin(&g_SkinObjectList);
 			FreeLibrary(hUserDll);
 			TRACE("CLUI.c: WM_DESTROY - hUserDll freed\n");
 			pcli->hwndContactList=NULL;
@@ -2328,7 +2329,7 @@ int CLUI_IconsChanged(WPARAM wParam,LPARAM lParam)
 	ExtraImage_SetAllExtraIcons(pcli->hwndContactTree,0);
 	// need to update tray cause it use combined icons
 	pcli->pfnTrayIconIconsChanged();  //TODO: remove as soon as core will include icolib
-	SkinEngine_RedrawCompleteWindow();
+	ske_RedrawCompleteWindow();
 	//	pcli->pfnClcBroadcast( INTM_INVALIDATE,0,0);
 	return 0;
 }
@@ -2703,7 +2704,7 @@ static int CLUI_SmoothAlphaThreadTransition(HWND hwnd)
 		if (g_CluiData.bCurrentAlpha==0)
 		{			
 			g_CluiData.bCurrentAlpha=1;
-			SkinEngine_JustUpdateWindowImage();
+			ske_JustUpdateWindowImage();
 			mutex_bShowHideCalledFromAnimation=1;             
 			CLUI_ShowWindowMod(pcli->hwndContactList,0);
 			callProxied_CLUIFrames_OnShowHide(hwnd,0);
@@ -2714,7 +2715,7 @@ static int CLUI_SmoothAlphaThreadTransition(HWND hwnd)
 		}
 	}
 	else   g_CluiData.bCurrentAlpha=a;   
-	SkinEngine_JustUpdateWindowImage();     
+	ske_JustUpdateWindowImage();     
 	return 1;
 }
 
@@ -2733,7 +2734,7 @@ int CLUI_SmoothAlphaTransition(HWND hwnd, BYTE GoalAlpha, BOOL wParam)
 				callProxied_CLUIFrames_OnShowHide(hwnd,1);
 				mutex_bShowHideCalledFromAnimation=0;
 				g_CluiData.bCurrentAlpha=GoalAlpha;
-				SkinEngine_UpdateWindowImage();
+				ske_UpdateWindowImage();
 
 			}
 		}
@@ -2773,7 +2774,7 @@ int CLUI_SmoothAlphaTransition(HWND hwnd, BYTE GoalAlpha, BOOL wParam)
 				callProxied_CLUIFrames_OnShowHide(hwnd,SW_SHOW);
 				mutex_bShowHideCalledFromAnimation=0;
 				g_CluiData.bCurrentAlpha=1;
-				SkinEngine_UpdateWindowImage();
+				ske_UpdateWindowImage();
 			}
 			if (IsWindowVisible(hwnd) && !g_dwSmoothAnimationThreadID)
 			{
@@ -2797,7 +2798,7 @@ int CLUI_SmoothAlphaTransition(HWND hwnd, BYTE GoalAlpha, BOOL wParam)
 			if (bAlphaEnd==0) 
 			{
 				g_CluiData.bCurrentAlpha=1;
-				SkinEngine_UpdateWindowImage();
+				ske_UpdateWindowImage();
 				mutex_bShowHideCalledFromAnimation=1;             
 				CLUI_ShowWindowMod(pcli->hwndContactList,0);
 				callProxied_CLUIFrames_OnShowHide(pcli->hwndContactList,0);
@@ -2807,13 +2808,13 @@ int CLUI_SmoothAlphaTransition(HWND hwnd, BYTE GoalAlpha, BOOL wParam)
 			else
 			{
 				g_CluiData.bCurrentAlpha=bAlphaEnd;
-				SkinEngine_UpdateWindowImage();
+				ske_UpdateWindowImage();
 			}
 		}
 		else
 		{
 			g_CluiData.bCurrentAlpha=a;
-			SkinEngine_UpdateWindowImage();
+			ske_UpdateWindowImage();
 		}
 	}
 

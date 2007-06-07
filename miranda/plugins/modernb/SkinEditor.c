@@ -351,7 +351,7 @@ int GetShortFileName(char * FullFile)
 	char * f=strrchr(FullFile,'\\');
 	char * file=f?mir_strdup(f+1):0;
 	if (!file) return 0;
-	SkinEngine_GetFullFilename(buf,file,0,TRUE);
+	ske_GetFullFilename(buf,file,0,TRUE);
 	if (mir_bool_strcmpi(buf,FullFile))
 	{
 		_snprintf(FullFile,MAX_PATH,"%s",file);
@@ -514,16 +514,16 @@ int GetFileSizes(HWND hwndDlg)
 	char buf[MAX_PATH];
 	SIZE sz={0};
 	SendDlgItemMessageA(hwndDlg,IDC_FILE,WM_GETTEXT,(WPARAM)MAX_PATH,(LPARAM)buf);
-	SkinEngine_GetFullFilename(buf,buf,0,TRUE);
+	ske_GetFullFilename(buf,buf,0,TRUE);
 	{
-		HBITMAP hbmp=SkinEngine_LoadGlyphImage(buf);
+		HBITMAP hbmp=ske_LoadGlyphImage(buf);
 		if (hbmp)
 		{
 			BITMAP bm={0};
 			GetObject(hbmp,sizeof(BITMAP),&bm);
 			sz.cx=bm.bmWidth;
 			sz.cy=bm.bmHeight;
-			SkinEngine_UnloadGlyphImage(hbmp);
+			ske_UnloadGlyphImage(hbmp);
 		}
 	}
 	_snprintf(buf, MAX_PATH, "%s %d x %d %s",Translate("Image size is"),sz.cx, sz.cy, Translate("pixels")); 
@@ -673,7 +673,7 @@ BOOL CALLBACK DlgSkinEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						}
 						else
 						{
-							SkinEngine_GetFullFilename(str,str,(char*)0,TRUE);
+							ske_GetFullFilename(str,str,(char*)0,TRUE);
 						}
 						ofn.lpstrFile = str;
 						
@@ -808,10 +808,10 @@ BOOL CALLBACK DlgSkinEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				{
 					StoreTreeToDB(GetDlgItem(hwndDlg,IDC_OBJECT_TREE),SKIN);
 					//ReloadSkin
-					SkinEngine_LoadSkinFromDB();	
+					ske_LoadSkinFromDB();	
 					pcli->pfnClcBroadcast( INTM_RELOADOPTIONS,0,0);
 					callProxied_CLUIFrames_OnClistResize_mod(0,0);
-					SkinEngine_RedrawCompleteWindow();        
+					ske_RedrawCompleteWindow();        
 					callProxied_CLUIFrames_OnClistResize_mod(0,0);
 					{
 						HWND hwnd=pcli->hwndContactList;

@@ -43,10 +43,18 @@ static BOOL	bThemed=FALSE;
 
 static HANDLE hButtonWindowList=NULL;
 static HANDLE hIconChangedHook=NULL;
+static HANDLE hBkgChangedHook=NULL;
+
 
 static int OnIconLibIconChanged(WPARAM wParam, LPARAM lParam)
 {
 	WindowList_BroadcastAsync(hButtonWindowList, MBM_REFRESHICOLIBICON,0,0);
+	return 0;
+}
+
+int Buttons_OnSkinModeSettingsChanged(WPARAM wParam, LPARAM lParam)
+{	
+	WindowList_BroadcastAsync(hButtonWindowList, MBM_UPDATETRANSPARENTFLAG,0,2);
 	return 0;
 }
 
@@ -64,12 +72,14 @@ int LoadSkinButtonModule()
 	RegisterClassEx(&wc);
 	hButtonWindowList=(HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
 	hIconChangedHook=HookEvent(ME_SKIN2_ICONSCHANGED,OnIconLibIconChanged);
-
+	hBkgChangedHook=HookEvent(ME_BACKGROUNDCONFIG_CHANGED,Buttons_OnSkinModeSettingsChanged);
+   
 	return 0;
 }
 int UnloadSkinButtonModule(WPARAM wParam, LPARAM lParam)
 {
 	//TODO dealloc window list?
+	UnhookEvent(hBkgChangedHook);
 	UnhookEvent(hIconChangedHook);
 	return 0;
 }
@@ -534,7 +544,7 @@ static void PaintWorker(SKINBUTTONDATA *lpSBData, HDC hdcPaint , POINT * pOffset
 	hOldFont = SelectObject(hdcMem, lpSBData->hFont);
 	if (!pOffset) 
 	{
-		hbmMem = SkinEngine_CreateDIB32(width, height);
+		hbmMem = ske_CreateDIB32(width, height);
 		hbmOld = SelectObject(hdcMem, hbmMem);		
 	}
 	else
@@ -576,7 +586,7 @@ static void PaintWorker(SKINBUTTONDATA *lpSBData, HDC hdcPaint , POINT * pOffset
 					HDC dc = CreateCompatibleDC(NULL);
 					HBITMAP memBM, oldBM;
 					GetWindowRect(hwndParent,&btnRect);
-					memBM = SkinEngine_CreateDIB32( btnRect.right-btnRect.left, btnRect.bottom-btnRect.top );
+					memBM = ske_CreateDIB32( btnRect.right-btnRect.left, btnRect.bottom-btnRect.top );
 					oldBM = SelectObject ( dc, memBM );
 					ret = SendMessage(hwndParent,WM_ERASEBKGND,(WPARAM)dc,0);
 					GetWindowRect(lpSBData->hWnd,&btnRect);
@@ -671,7 +681,7 @@ static void PaintWorker(SKINBUTTONDATA *lpSBData, HDC hdcPaint , POINT * pOffset
 			rcIcon.top+=(rcClient.bottom-rcClient.top)/2 - 8; /* CYSM_ICON/2 */
 			rcIcon.bottom=rcIcon.top + 16; /* CYSM_ICON */
 			/* draw it */
-			SkinEngine_DrawIconEx(hdcMem, rcIcon.left+bPressed, rcIcon.top+bPressed, hHasIcon,
+			ske_DrawIconEx(hdcMem, rcIcon.left+bPressed, rcIcon.top+bPressed, hHasIcon,
 				16, 16, 0, NULL, DI_NORMAL);
 		}
 		if (fHasText)
@@ -682,12 +692,12 @@ static void PaintWorker(SKINBUTTONDATA *lpSBData, HDC hdcPaint , POINT * pOffset
 				CLCPaint_ChangeToFont(hdcMem,NULL,lpSBData->nFontID,NULL);
 			{
 				RECT TextRequiredRect=rcText;
-				SkinEngine_DrawText(hdcMem, lpSBData->szText, -1, &TextRequiredRect, DT_CENTER | DT_VCENTER | DT_CALCRECT);
+				ske_DrawText(hdcMem, lpSBData->szText, -1, &TextRequiredRect, DT_CENTER | DT_VCENTER | DT_CALCRECT | DT_SINGLELINE);
 				if (TextRequiredRect.right-TextRequiredRect.left>rcText.right-rcText.left)
 					bCentered=FALSE;
 
 			}
-			SkinEngine_DrawText(hdcMem, lpSBData->szText, -1, &rcText, (bCentered ? DT_CENTER: 0) | DT_VCENTER);
+			ske_DrawText(hdcMem, lpSBData->szText, -1, &rcText, (bCentered ? DT_CENTER: 0) | DT_VCENTER | DT_SINGLELINE);
 		}
 		if (!pOffset)
 			BitBlt(hdcPaint,0,0,width,height,hdcMem,0,0,SRCCOPY);

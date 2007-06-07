@@ -419,7 +419,7 @@ int AddStrModernMaskToList(DWORD maskID, char * szStr, char * objectName,  LISTM
     MODERNMASK mm={0};
     if (!szStr || !mmTemplateList) return -1;
     if (ParseToModernMask(&mm,szStr)) return -1;
-    mm.pObject=(void*) SkinEngine_FindObjectByName(objectName, OT_ANY, (SKINOBJECTSLIST*) pObjectList);
+    mm.pObject=(void*) ske_FindObjectByName(objectName, OT_ANY, (SKINOBJECTSLIST*) pObjectList);
         mm.dwMaskId=maskID;
     return AddModernMaskToList(&mm,mmTemplateList);
 }
@@ -643,7 +643,7 @@ int RegisterObjectByParce(char * ObjectName, char * Params)
                  gl.Style=ST_SKIP;
              }
              obj.Data=&gl;
-             res=SkinEngine_AddDescriptorToSkinObjectList(&obj,NULL);
+             res=ske_AddDescriptorToSkinObjectList(&obj,NULL);
              mir_free_and_nill(obj.szObjectID);
              if (gl.szFileName) mir_free_and_nill(gl.szFileName);
              return res;

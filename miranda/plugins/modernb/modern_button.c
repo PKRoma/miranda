@@ -114,10 +114,10 @@ int PaintWorker(HWND hwnd, HDC whdc)
     hdc=CreateCompatibleDC(NULL);
   }
   GetClientRect(hwnd,&rc);
-  bmp=SkinEngine_CreateDIB32(rc.right,rc.bottom);
+  bmp=ske_CreateDIB32(rc.right,rc.bottom);
   oldbmp=SelectObject(hdc,bmp);
   if (!g_CluiData.fLayered)
-	SkinEngine_BltBackImage(bct->hwnd,hdc,NULL);
+	ske_BltBackImage(bct->hwnd,hdc,NULL);
   {
     MODERNMASK Request={0};
     //   int res;
@@ -185,7 +185,7 @@ int PaintWorker(HWND hwnd, HDC whdc)
   {
     RECT r;
     SetRect(&r,bct->Left,bct->Top,bct->Right,bct->Bottom);
-    SkinEngine_DrawImageAt(hdc,&r);
+    ske_DrawImageAt(hdc,&r);
     //CallingService to immeadeately update window with new image.
   }
   if (whdc && !g_CluiData.fLayered)

@@ -237,7 +237,7 @@ HRESULT	xpt_DrawTheme(XPTHANDLE xptHandle, HWND hwnd, HDC hdc, int type, int sta
 HRESULT xpt_DrawThemeText(XPTHANDLE xptHandle, HDC hdc, int type, int state, LPCTSTR lpStr, int len, DWORD flag1, DWORD flag2, const RECT * textRect)
 {
 #ifndef _UNICODE
-	SkinEngine_DrawText(hdc,lpStr,len, (RECT*)textRect, flag1);
+	ske_DrawText(hdc,lpStr,len, (RECT*)textRect, flag1);
 	return S_OK;
 #else
 	HRESULT res=S_FALSE;
@@ -246,7 +246,7 @@ HRESULT xpt_DrawThemeText(XPTHANDLE xptHandle, HDC hdc, int type, int state, LPC
 	if (xpt_IsThemed(xptHandle))
 		_xpt_DrawThemeText(((XPTObject*)xptHandle)->hThemeHandle,  hdc,  type,  state,  (LPCWSTR)lpStr,  len,  flag1,  flag2,  textRect);
 	else
-		SkinEngine_DrawText(hdc,lpStr,len, (RECT*)textRect, flag1);
+		ske_DrawText(hdc,lpStr,len, (RECT*)textRect, flag1);
 	xptunlock();
 	return S_OK;
 #endif

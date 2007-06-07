@@ -91,15 +91,15 @@ void GroupMenus_Init();
 int ModernButton_LoadModule();
 int ModernButton_ReposButtons(HWND parent, BOOL draw,RECT *r);
 
-void SkinEngine_ApplyTransluency();
-HBITMAP SkinEngine_CreateDIB32(int cx, int cy);
-HBITMAP SkinEngine_CreateDIB32Point(int cx, int cy, void ** bits);
-int SkinEngine_JustUpdateWindowImage();
-void SkinEngine_LoadSkinFromDB(void);
-int SkinEngine_RedrawCompleteWindow();
-BOOL SkinEngine_SetRectOpaque(HDC memdc,RECT *fr);
-int SkinEngine_UpdateWindowImage();
-int SkinEngine_ValidateFrameImageProc(RECT * r);
+void ske_ApplyTransluency();
+HBITMAP ske_CreateDIB32(int cx, int cy);
+HBITMAP ske_CreateDIB32Point(int cx, int cy, void ** bits);
+int ske_JustUpdateWindowImage();
+void ske_LoadSkinFromDB(void);
+int ske_RedrawCompleteWindow();
+BOOL ske_SetRectOpaque(HDC memdc,RECT *fr);
+int ske_UpdateWindowImage();
+int ske_ValidateFrameImageProc(RECT * r);
 
 int StatusBar_Create(HWND parent);
 

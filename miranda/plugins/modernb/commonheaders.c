@@ -187,35 +187,13 @@ void TRACE_ERROR()
 BOOL DebugDeleteObject(HGDIOBJ a)
 {
 	BOOL res=DeleteObject(a);
-	if (!res) 
-	{
-		DWORD t = GetLastError();
-		LPVOID lpMsgBuf;
-		if (!FormatMessage( 
-			FORMAT_MESSAGE_ALLOCATE_BUFFER | 
-			FORMAT_MESSAGE_FROM_SYSTEM | 
-			FORMAT_MESSAGE_IGNORE_INSERTS,
-			NULL,
-			t,
-			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
-			(LPTSTR) &lpMsgBuf,
-			0,
-			NULL ))
-		{
-		// Handle the error.
-		return res;
-		}
-
-		MessageBox( NULL, (LPCTSTR)lpMsgBuf, _T("Error"), MB_OK | MB_ICONINFORMATION );
-		LocalFree( lpMsgBuf );
-
-	}
+	if (!res) TRACE_ERROR();
 	return res;
 }
 
 __inline BOOL mod_DeleteDC(HDC hdc)
 {
-//  SkinEngine_ResetTextEffect(hdc);
+//  ske_ResetTextEffect(hdc);
   return DeleteDC(hdc);
 }
 #ifdef _DEBUG

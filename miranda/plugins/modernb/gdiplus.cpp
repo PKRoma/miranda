@@ -45,7 +45,7 @@ extern "C"
 extern "C" BYTE saved_alpha;
 extern "C" DWORD g_gdiplusToken;
 extern "C" int mir_strlen(const char *a);
-extern "C" HBITMAP SkinEngine_CreateDIB32(int cx, int cy);
+extern "C" HBITMAP ske_CreateDIB32(int cx, int cy);
 
 DWORD g_gdiplusToken;
 
@@ -316,7 +316,7 @@ extern "C" void GDIPlus_ExtractAnimatedGIF(TCHAR * szName, int width, int height
 	clipWidth=(int)(xscale*imWidth+.5);
 	clipHeight=(int)(xscale*imHeight+.5);
 
-	HBITMAP hBitmap=SkinEngine_CreateDIB32(clipWidth*nFrameCount, height);
+	HBITMAP hBitmap=ske_CreateDIB32(clipWidth*nFrameCount, height);
 	HDC hdc=CreateCompatibleDC(NULL);
 	HBITMAP oldBmp=(HBITMAP)SelectObject(hdc,hBitmap);
 	Graphics graphics(hdc);

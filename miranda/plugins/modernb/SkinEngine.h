@@ -1,5 +1,5 @@
-#ifndef SKINENGINE_H_INC
-#define SKINENGINE_H_INC
+#ifndef ske_H_INC
+#define ske_H_INC
 
 #include "mod_skin_selector.h"
 #include "commonprototypes.h"
@@ -82,9 +82,9 @@ typedef struct
 
 
 
-int SkinEngine_UnloadSkin(SKINOBJECTSLIST * Skin);
-int SkinEngine_AddDescriptorToSkinObjectList (LPSKINOBJECTDESCRIPTOR lpDescr, SKINOBJECTSLIST* Skin);
-int SkinEngine_Service_DrawGlyph(WPARAM wParam,LPARAM lParam);
+int ske_UnloadSkin(SKINOBJECTSLIST * Skin);
+int ske_AddDescriptorToSkinObjectList (LPSKINOBJECTDESCRIPTOR lpDescr, SKINOBJECTSLIST* Skin);
+int ske_Service_DrawGlyph(WPARAM wParam,LPARAM lParam);
 
 #endif
 

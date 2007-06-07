@@ -192,8 +192,6 @@ BOOL CALLBACK DlgProcItemNewRowOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					{
 					case PSN_APPLY:
 						{
-							//DBWriteContactSettingByte(NULL,"CList","AvatarsOverlayType",SETTING_AVATAR_OVERLAY_TYPE_PROTOCOL);
-							//MessageBox(hwndDlg,"Store NewRow Dialog settings","Notify",MB_OK);
 							return TRUE;
 						}
 					}

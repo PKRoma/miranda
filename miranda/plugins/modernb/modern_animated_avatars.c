@@ -578,7 +578,7 @@ static void _AniAva_RealRemoveAvatar(DWORD UniqueID)
 						}
 
 					hNewDC=CreateCompatibleDC(NULL);
-					hNewBmp=SkinEngine_CreateDIB32(newWidth,newHeight);
+					hNewBmp=ske_CreateDIB32(newWidth,newHeight);
 					hNewOldBmp=SelectObject(hNewDC,hNewBmp);
 					// copy from old and from new strip
 					if (aai->nStripTop>0)
@@ -670,7 +670,7 @@ static int	_AniAva_LoadAvatarFromImage(TCHAR * szFileName, int width, int height
 		newHeight=max(paai->FrameSize.cy,AniAva.height);
 
 		hNewDC=CreateCompatibleDC(NULL);
-		hNewBmp=SkinEngine_CreateDIB32(newWidth,newHeight);
+		hNewBmp=ske_CreateDIB32(newWidth,newHeight);
 		hNewOldBmp=SelectObject(hNewDC,hNewBmp);
 
 		_AniAva_PausePainting();
@@ -798,7 +798,7 @@ static void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat)
 			HRGN hRgn=NULL;
 			int cornerRadius= AniAva.cornerRadius;
 			tempDC	= CreateCompatibleDC( NULL );
-			hBmp	= SkinEngine_CreateDIB32( szWnd.cx, szWnd.cy );
+			hBmp	= ske_CreateDIB32( szWnd.cx, szWnd.cy );
 			hOldBmp	= SelectObject(tempDC,hBmp);
 			if ( AniAva.bFlags & AAO_ROUND_CORNERS )
 			{
@@ -814,7 +814,7 @@ static void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat)
 				hRgn=CreateRoundRectRgn( 1, 1, szWnd.cx, szWnd.cy, cornerRadius<<1, cornerRadius<<1);
 				CombineRgn( rgnOutside,rgnOutside,hRgn,RGN_DIFF);
 				FillRgn( tempDC, rgnOutside, hBrush);
-				SkinEngine_SetRgnOpaqueOpt( tempDC, rgnOutside, TRUE);
+				ske_SetRgnOpaqueOpt( tempDC, rgnOutside, TRUE);
 				SelectObject(tempDC, hOldBrush);
 				DeleteObject(hBrush);
 				DeleteObject(rgnOutside);
@@ -832,7 +832,7 @@ static void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat)
 				HBRUSH hBrush = CreateSolidBrush( AniAva.bkgColor );
 				HBRUSH hOldBrush = SelectObject( tempDC, hBrush );				
 				FillRgn( tempDC, hRgn, hBrush );
-				SkinEngine_SetRgnOpaqueOpt( tempDC, hRgn, TRUE );
+				ske_SetRgnOpaqueOpt( tempDC, hRgn, TRUE );
 			}
 			// draw avatar
 			if ( !(AniAva.bFlags & AAO_OPAQUE) )
@@ -840,7 +840,7 @@ static void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat)
 			else
 			{ 	
 				BLENDFUNCTION abf={AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
-				SkinEngine_AlphaBlend(tempDC,0, 0, szWnd.cx, szWnd.cy , AniAva.hAniAvaDC, dat->ptFromPoint.x+dat->sizeAvatar.cx*dat->currentFrame, dat->ptFromPoint.y, szWnd.cx, szWnd.cy, abf);
+				ske_AlphaBlend(tempDC,0, 0, szWnd.cx, szWnd.cy , AniAva.hAniAvaDC, dat->ptFromPoint.x+dat->sizeAvatar.cx*dat->currentFrame, dat->ptFromPoint.y, szWnd.cx, szWnd.cy, abf);
 			}
 			// reset clip area
 			if ( hRgn )
@@ -859,7 +859,7 @@ static void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat)
 				// position - on avatar
 				int x=szWnd.cx-ICON_WIDTH;
 				int y=szWnd.cy-ICON_HEIGHT;
-				SkinEngine_ImageList_DrawEx(AniAva.overlayIconImageList,
+				ske_ImageList_DrawEx(AniAva.overlayIconImageList,
 					dat->overlayIconIdx&0xFFFF,
 					tempDC, x, y, ICON_WIDTH, ICON_HEIGHT,
 					CLR_NONE, CLR_NONE, ILD_NORMAL);

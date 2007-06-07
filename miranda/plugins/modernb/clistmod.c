@@ -90,7 +90,7 @@ HICON cliGetIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
 					{
 						// get overlay
 						HICON MainOverlay=(HICON)GetMainStatusOverlay(status);
-						hIcon=SkinEngine_CreateJoinedIcon(hXIcon,MainOverlay,(trayOption&4)?192:0);
+						hIcon=ske_CreateJoinedIcon(hXIcon,MainOverlay,(trayOption&4)?192:0);
 						DestroyIcon_protect(hXIcon);
                         DestroyIcon_protect(MainOverlay);
 					}
@@ -105,7 +105,7 @@ HICON cliGetIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
 	}
 	if (!hIcon)
 	{
-		hIcon=SkinEngine_ImageList_GetIcon(himlCListClc,ExtIconFromStatusMode(hContact,szProto,status),ILD_NORMAL);
+		hIcon=ske_ImageList_GetIcon(himlCListClc,ExtIconFromStatusMode(hContact,szProto,status),ILD_NORMAL);
 	}
 	// if not ready take normal icon
 	return hIcon;
@@ -345,7 +345,7 @@ int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY) {
 		int dx,dy;
 		BYTE *ptr=NULL;
 		HRGN rgn=NULL;
-		WindowImage=g_CluiData.fLayered?SkinEngine_GetCurrentWindowImage():0;
+		WindowImage=g_CluiData.fLayered?ske_GetCurrentWindowImage():0;
 		if (WindowImage&&g_CluiData.fLayered)
 		{
 			GetObject(WindowImage,sizeof(BITMAP),&bmp);

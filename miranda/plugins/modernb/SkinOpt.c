@@ -80,7 +80,7 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 	{
 	case WM_DESTROY: 
 		{
-			if (hPreviewBitmap) SkinEngine_UnloadGlyphImage(hPreviewBitmap);
+			if (hPreviewBitmap) ske_UnloadGlyphImage(hPreviewBitmap);
 			break;
 		}
 
@@ -184,12 +184,12 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 							res=MessageBoxA(hwndDlg,Translate("Current skin was not saved to file.\n\nAll changes will be lost.\n\n Continue to load new skin?"),Translate("Warning!"),MB_OKCANCEL|MB_ICONWARNING|MB_DEFBUTTON2|MB_TOPMOST);
 						if (res!=IDOK) return 0;
 					}
-					SkinEngine_LoadSkinFromIniFile(sd->File);
-					SkinEngine_LoadSkinFromDB();	
+					ske_LoadSkinFromIniFile(sd->File);
+					ske_LoadSkinFromDB();	
 					glOtherSkinWasLoaded=TRUE;
 					pcli->pfnClcBroadcast( INTM_RELOADOPTIONS,0,0);
 					callProxied_CLUIFrames_OnClistResize_mod(0,0);
-					SkinEngine_RedrawCompleteWindow();        
+					ske_RedrawCompleteWindow();        
 					callProxied_CLUIFrames_OnClistResize_mod(0,0);
 					{
 						HWND hwnd=pcli->hwndContactList;
@@ -264,7 +264,7 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			mWidth=dis->rcItem.right-dis->rcItem.left;
 			mHeight=dis->rcItem.bottom-dis->rcItem.top;
 			memDC=CreateCompatibleDC(dis->hDC);
-			hbmp=SkinEngine_CreateDIB32(mWidth,mHeight);
+			hbmp=ske_CreateDIB32(mWidth,mHeight);
 			holdbmp=SelectObject(memDC,hbmp);
 			workRect=dis->rcItem;
 			OffsetRect(&workRect,-workRect.left,-workRect.top);
@@ -301,7 +301,7 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 					BLENDFUNCTION bf={AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
 					imgDC=CreateCompatibleDC(dis->hDC);
 					imgOldbmp=SelectObject(imgDC,hPreviewBitmap);                 
-					SkinEngine_AlphaBlend(memDC,imgPos.x,imgPos.y,dWidth,dHeight,imgDC,0,0,bmp.bmWidth,bmp.bmHeight,bf);
+					ske_AlphaBlend(memDC,imgPos.x,imgPos.y,dWidth,dHeight,imgDC,0,0,bmp.bmWidth,bmp.bmHeight,bf);
 					SelectObject(imgDC,imgOldbmp);
 					mod_DeleteDC(imgDC);
 				}
@@ -326,7 +326,7 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 					SkinListData * sd=NULL;
 					if (hPreviewBitmap) 
 					{
-						SkinEngine_UnloadGlyphImage(hPreviewBitmap);
+						ske_UnloadGlyphImage(hPreviewBitmap);
 						hPreviewBitmap=NULL;
 					}
 					if (nmtv->itemNew.lParam)
@@ -344,10 +344,10 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 							char imfn[MAX_PATH]={0};
 							char skinfolder[MAX_PATH]={0};
 							GetPrivateProfileStringA("Skin_Description_Section","Preview","",imfn,sizeof(imfn),sd->File);
-							SkinEngine_GetSkinFolder(sd->File,skinfolder);
+							ske_GetSkinFolder(sd->File,skinfolder);
 							_snprintf(prfn,sizeof(prfn),"%s\\%s",skinfolder,imfn);
 							CallService(MS_UTILS_PATHTOABSOLUTE,(WPARAM)prfn,(LPARAM) imfn);
-							hPreviewBitmap=SkinEngine_LoadGlyphImage(imfn);
+							hPreviewBitmap=ske_LoadGlyphImage(imfn);
 						}
 						EnableWindow(GetDlgItem(hwndDlg,IDC_BUTTON_APPLY_SKIN),TRUE);
 						EnableWindow(GetDlgItem(hwndDlg,IDC_BUTTON_INFO),TRUE);

@@ -288,7 +288,6 @@ static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam) {
 	PROTOCOLDESCRIPTOR **proto;
 	int protoCount,i;
 	if (MirandaExiting()) return 0;
-	BGModuleLoad();
 
 	if (ServiceExists(MS_MC_DISABLEHIDDENGROUP));
 	CallService(MS_MC_DISABLEHIDDENGROUP, (WPARAM)TRUE, (LPARAM)0);

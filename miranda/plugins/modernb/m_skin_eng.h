@@ -21,8 +21,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#ifndef M_SKINENGINE_H_INC
-#define M_SKINENGINE_H_INC
+#ifndef M_ske_H_INC
+#define M_ske_H_INC
 
 #include "newpluginapi.h"
 #include "m_clui.h"
@@ -226,7 +226,7 @@ static BOOL __inline ScreenToClientRect(HWND hWnd, LPRECT lpRect)
 //    prm.szObjectID=ObjID;
 //    return CallService(MS_SKIN_REGISTERDEFOBJECT,(WPARAM)&prm,0);
 //}  
-int SkinEngine_Service_DrawGlyph(WPARAM wParam,LPARAM lParam);
+int ske_Service_DrawGlyph(WPARAM wParam,LPARAM lParam);
 int __inline SkinDrawGlyph(HDC hdc, RECT * rcSize, RECT * rcClip, char * objectID)
 {
   SKINDRAWREQUEST rq;
@@ -235,7 +235,7 @@ int __inline SkinDrawGlyph(HDC hdc, RECT * rcSize, RECT * rcClip, char * objectI
   rq.rcDestRect=*rcSize;
   rq.rcClipRect=*rcClip;  
   strncpy(rq.szObjectID,objectID,sizeof(rq.szObjectID));
-  return SkinEngine_Service_DrawGlyph((WPARAM)&rq,0);
+  return ske_Service_DrawGlyph((WPARAM)&rq,0);
   //return CallService(MS_SKIN_DRAWGLYPH,(WPARAM)&rq,0);
 }
 #include "mod_skin_selector.h"
@@ -248,7 +248,7 @@ int __inline SkinDrawGlyphMask(HDC hdc, RECT * rcSize, RECT * rcClip, MODERNMASK
     rq.rcDestRect=*rcSize;
     rq.rcClipRect=*rcClip;  
     strncpy(rq.szObjectID,"Masked draw",sizeof("Masked draw"));
-    return SkinEngine_Service_DrawGlyph((WPARAM)&rq,(LPARAM)ModernMask);
+    return ske_Service_DrawGlyph((WPARAM)&rq,(LPARAM)ModernMask);
 }
 
 
@@ -270,7 +270,7 @@ int __inline SkinDrawWindowBack(HWND hwndIn, HDC hdc, RECT * rcClip, char * obje
   rq.rcDestRect=rc;
   rq.rcClipRect=*rcClip;
   strncpy(rq.szObjectID,objectID,sizeof(rq.szObjectID));
-  ///SkinEngine_Service_DrawGlyph((WPARAM)&rq,0);    //$$$
+  ///ske_Service_DrawGlyph((WPARAM)&rq,0);    //$$$
   return CallService(MS_SKIN_DRAWGLYPH,(WPARAM)&rq,0);
 }
 
@@ -297,18 +297,18 @@ typedef struct sPAINT_REQUEST
 // wParam = hWnd of called frame
 // lParam = pointer to tPaintCallBackProc    (or NULL to remove)
 // return 1 - succes, 0 - failure
-#define MS_SKINENG_REGISTERPAINTSUB "SkinEngine/SkinEngine_Service_RegisterFramePaintCallbackProcedure"
+#define MS_SKINENG_REGISTERPAINTSUB "SkinEngine/ske_Service_RegisterFramePaintCallbackProcedure"
 
 // Request to repaint frame or change/drop callback data immeadeately
 // wParam = hWnd of called frame
 // lParam = pointer to sPaintRequest (or NULL to redraw all)
-#define MS_SKINENG_UPTATEFRAMEIMAGE "SkinEngine/SkinEngine_Service_UpdateFrameImage"
+#define MS_SKINENG_UPTATEFRAMEIMAGE "SkinEngine/ske_Service_UpdateFrameImage"
 
 // Request to repaint frame or change/drop callback data
 // wParam = hWnd of called frame
 // lParam = pointer to sPaintRequest (or NULL to redraw all)
 // return 2 - already queued, data updated, 1-have been queued, 0 - failure
-#define MS_SKINENG_INVALIDATEFRAMEIMAGE "SkinEngine/SkinEngine_Service_InvalidateFrameImage"
+#define MS_SKINENG_INVALIDATEFRAMEIMAGE "SkinEngine/ske_Service_InvalidateFrameImage"
 
 // Callback proc type
 typedef int (/*__stdcall*/ *tPaintCallbackProc)(HWND hWnd, HDC hDC, RECT * rcPaint, HRGN rgnUpdate, DWORD dFlags, void * CallBackData);
@@ -351,7 +351,7 @@ int __inline SkinInvalidateFrame(HWND hWnd, CONST RECT* lpRect,BOOL bErase)
 // 
 // Paints text with correct alpha channel
 // wParam - pointer to AlphaTextOutParams
-#define MS_SKINENG_ALPHATEXTOUT "SkinEngine/SkinEngine_AlphaTextOut"
+#define MS_SKINENG_ALPHATEXTOUT "SkinEngine/ske_AlphaTextOut"
 typedef struct _AlphaTextOutParams
 {
   HDC hDC;

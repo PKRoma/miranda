@@ -27,10 +27,10 @@ Created by Pescuma
 #include "image_array.h"
 #include "commonprototypes.h"
 
-// To use this code in other places, replace the body of this func by the body of SkinEngine_CreateDIB32
+// To use this code in other places, replace the body of this func by the body of ske_CreateDIB32
 static HBITMAP ImageArray_CreateBitmapPoint(int cx, int cy, void ** pt)
 {
-	return SkinEngine_CreateDIB32Point(cx, cy, pt);
+	return ske_CreateDIB32Point(cx, cy, pt);
 }
 
 
@@ -684,7 +684,7 @@ BOOL ImageArray_DrawImage(LP_IMAGE_ARRAY_DATA iad, int pos, HDC hdcDest, int nXD
 		}
 		{
 			BLENDFUNCTION bf={AC_SRC_OVER, 0, Alpha, AC_SRC_ALPHA };
-			/*SkinEngine_*/AlphaBlend(hdcDest, nXDest, nYDest, iad->nodes[pos].width, iad->nodes[pos].height, iad->hdc, w, h, iad->nodes[pos].width, iad->nodes[pos].height,bf);
+			/*ske_*/AlphaBlend(hdcDest, nXDest, nYDest, iad->nodes[pos].width, iad->nodes[pos].height, iad->hdc, w, h, iad->nodes[pos].width, iad->nodes[pos].height,bf);
 		}
 	}
 

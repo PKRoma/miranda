@@ -1345,7 +1345,7 @@ void Cache_ProceedAvatarInList(struct ClcData *dat, struct ClcContact *contact)
 		}
 		// Create objs
 		hdc = CreateCompatibleDC(dat->avatar_cache.hdc); 
-		hDrawBmp = SkinEngine_CreateDIB32Point(width_clip, height_clip,&pt);
+		hDrawBmp = ske_CreateDIB32Point(width_clip, height_clip,&pt);
 		oldBmp=SelectObject(hdc, hDrawBmp);
 		//need to draw avatar bitmap here
 		{
@@ -1379,7 +1379,7 @@ void Cache_ProceedAvatarInList(struct ClcData *dat, struct ClcContact *contact)
 						RECT r={0,0,w,h};
 						HDC hdcTmp2 = CreateCompatibleDC(hdc);
 						HBITMAP bmo=SelectObject(hdcTmp,ace->hbmPic);
-						HBITMAP b2=SkinEngine_CreateDIB32(w,h);
+						HBITMAP b2=ske_CreateDIB32(w,h);
 						HBITMAP bmo2=SelectObject(hdcTmp2,b2);
 						SetStretchBltMode(hdcTmp,  HALFTONE);
 						SetStretchBltMode(hdcTmp2,  HALFTONE);
@@ -1387,7 +1387,7 @@ void Cache_ProceedAvatarInList(struct ClcData *dat, struct ClcContact *contact)
 							hdcTmp, 0, 0, ace->bmWidth, ace->bmHeight,
 							SRCCOPY);
 
-						SkinEngine_SetRectOpaque(hdcTmp2,&r);
+						ske_SetRectOpaque(hdcTmp2,&r);
 						BitBlt(hdc, rc.left, rc.top, w, h,hdcTmp2,0,0,SRCCOPY);
 						SelectObject(hdcTmp2,bmo2);
 						SelectObject(hdcTmp,bmo);
@@ -1400,7 +1400,7 @@ void Cache_ProceedAvatarInList(struct ClcData *dat, struct ClcContact *contact)
 						HDC hdcTempAv = CreateCompatibleDC(hdc);
 						HBITMAP hbmTempAvOld;
 						hbmTempAvOld = SelectObject(hdcTempAv,ace->hbmPic);
-						SkinEngine_AlphaBlend(hdc, rc.left, rc.top, w, h, hdcTempAv, 0, 0,ace->bmWidth,ace->bmHeight, bf);
+						ske_AlphaBlend(hdc, rc.left, rc.top, w, h, hdcTempAv, 0, 0,ace->bmWidth,ace->bmHeight, bf);
 						SelectObject(hdcTempAv, hbmTempAvOld);
 						mod_DeleteDC(hdcTempAv);
 					}
@@ -1501,7 +1501,7 @@ void Cache_GetAvatar(struct ClcData *dat, struct ClcContact *contact)
 
                         // Create objs
                         hdc = CreateCompatibleDC(dat->avatar_cache.hdc); 
-                        hDrawBmp = SkinEngine_CreateDIB32(width_clip, height_clip);
+                        hDrawBmp = ske_CreateDIB32(width_clip, height_clip);
                         oldBmp=SelectObject(hdc, hDrawBmp);
                         SetBkMode(hdc,TRANSPARENT);
                         {
@@ -1526,7 +1526,7 @@ void Cache_GetAvatar(struct ClcData *dat, struct ClcContact *contact)
                             RECT rtr={0};
                             rtr.right=width_clip+1;
                             rtr.bottom=height_clip+1;
-                            SkinEngine_SetRectOpaque(hdc,&rtr);
+                            ske_SetRectOpaque(hdc,&rtr);
                         }
 
                         hDrawBmp = GetCurrentObject(hdc, OBJ_BITMAP);

@@ -28,7 +28,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "commonprototypes.h"
 #include <time.h>
-//#include "skinEngine.h"
 #include "version.h"
 
 int LoadSkinButtonModule();
@@ -365,13 +364,13 @@ LBL_Error:
 	memset(&SED,0,sizeof(SED));
 	CreateServiceFunction(CLUI_SetDrawerService,SetDrawer);
 
-	///test///
-	LoadSkinButtonModule();
+	
 	ModernButton_LoadModule();
-	SkinEngine_LoadModule();
+	ske_LoadModule();
 	rc=LoadContactListModule();
 	if (rc==0) rc=LoadCLCModule();
-
+	BGModuleLoad();
+	LoadSkinButtonModule();
 	InitTBModule();
 	TRACE("CListInitialise ClistMW...Done\r\n");
 	return rc;
@@ -395,7 +394,7 @@ int __declspec(dllexport) Unload(void)
 	UninitSkinHotKeys();
 	UnhookEvent(g_hSkinLoadedEvent);
 	UnhookAll();
-	SkinEngine_UnloadModule();
+	ske_UnloadModule();
 	FreeRowCell();
 	pcli->hwndContactList=0;
 	UnhookAll();

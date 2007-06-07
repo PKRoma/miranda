@@ -196,9 +196,9 @@ extern int UnhookAll();
 
 
 
-HBITMAP SkinEngine_CreateDIB32(int cx, int cy);
-BOOL SkinEngine_SetRectOpaqueOpt(HDC memdc,RECT *fr, BOOL force);
-BOOL SkinEngine_SetRgnOpaqueOpt(HDC memdc,HRGN hrgn, BOOL force);
+HBITMAP ske_CreateDIB32(int cx, int cy);
+BOOL ske_SetRectOpaqueOpt(HDC memdc,RECT *fr, BOOL force);
+BOOL ske_SetRgnOpaqueOpt(HDC memdc,HRGN hrgn, BOOL force);
 
 extern void InitDisplayNameCache(void);
 extern void FreeDisplayNameCache();
@@ -232,8 +232,8 @@ extern void Utf8Decode( char* str, wchar_t** ucs2 );
 extern void TRACE_ERROR();
 extern BOOL DebugDeleteObject(HGDIOBJ a);
 extern BOOL mod_DeleteDC(HDC hdc);
-extern BOOL SkinEngine_ResetTextEffect(HDC hdc);
-extern BOOL SkinEngine_SelectTextEffect(HDC hdc, BYTE EffectID, DWORD FirstColor, DWORD SecondColor);
+extern BOOL ske_ResetTextEffect(HDC hdc);
+extern BOOL ske_SelectTextEffect(HDC hdc, BYTE EffectID, DWORD FirstColor, DWORD SecondColor);
 #define GLOBAL_PROTO_NAME "global_connect"
 extern void IvalidateDisplayNameCache(DWORD mode);
 

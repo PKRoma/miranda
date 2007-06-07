@@ -142,11 +142,11 @@ int mod_CalcRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcContact *
                 RECT count_rc={0};
                 // calc width and height
                 CLCPaint_ChangeToFont(hdc,dat,contact->group->expanded?FONTID_OPENGROUPCOUNTS:FONTID_CLOSEDGROUPCOUNTS,NULL);
-                SkinEngine_DrawText(hdc,_T(" "),1,&count_rc,DT_CALCRECT | DT_NOPREFIX);
+                ske_DrawText(hdc,_T(" "),1,&count_rc,DT_CALCRECT | DT_NOPREFIX);
                 size.cx +=count_rc.right-count_rc.left;
                 count_rc.right=0;
                 count_rc.left=0;
-                SkinEngine_DrawTextA(hdc,szCounts,lstrlenA(szCounts),&count_rc,DT_CALCRECT);
+                ske_DrawTextA(hdc,szCounts,lstrlenA(szCounts),&count_rc,DT_CALCRECT);
                 size.cx +=count_rc.right-count_rc.left;
                 tmp = max(tmp,count_rc.bottom-count_rc.top);
               }
@@ -333,7 +333,7 @@ int mod_CalcRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcContact *
                 CLCPaint_ChangeToFont(hdc,dat,FONTID_CONTACT_TIME,NULL);
 
                 // Get text size
-                text_size.cy = SkinEngine_DrawText(hdc, szResult, lstrlen(szResult), &rc, DT_CALCRECT | DT_NOPREFIX | DT_SINGLELINE);
+                text_size.cy = ske_DrawText(hdc, szResult, lstrlen(szResult), &rc, DT_CALCRECT | DT_NOPREFIX | DT_SINGLELINE);
                 SelectObject(hdc,GetStockObject(DEFAULT_GUI_FONT));
 				mod_DeleteDC(hdc);
                 text_size.cx = rc.right - rc.left;

@@ -205,14 +205,15 @@ static struct TabItemOptionConf
 	TCHAR *name;			// Tab name
 	int id;					// Dialog id
 	DLGPROC wnd_proc;		// Dialog function
+	DWORD flag;				// Expertonly
 } clist_opt_items[] = 
 { 
-	{ _T("General"), IDD_OPT_CLIST, DlgProcGenOpts},
-	{ _T("List"), IDD_OPT_CLC, DlgProcClcMainOpts },
-	{ _T("Window"), IDD_OPT_CLUI, DlgProcCluiOpts },
-	{ _T("Behaviour"), IDD_OPT_CLUI_2, DlgProcCluiOpts2 },
-	{ _T("Status Bar"), IDD_OPT_SBAR, DlgProcSBarOpts},	
-	{ _T("Additional stuff"), IDD_OPT_META_CLC, DlgProcClcMetaOpts },
+	{ _T("General"), IDD_OPT_CLIST, DlgProcGenOpts, 0},
+	{ _T("List"), IDD_OPT_CLC, DlgProcClcMainOpts, 0 },
+	{ _T("Window"), IDD_OPT_CLUI, DlgProcCluiOpts, 0 },
+	{ _T("Behaviour"), IDD_OPT_CLUI_2, DlgProcCluiOpts2, 0 },
+	{ _T("Status Bar"), IDD_OPT_SBAR, DlgProcSBarOpts, 0},	
+	{ _T("Additional stuff"), IDD_OPT_META_CLC, DlgProcClcMetaOpts, 0 },
 	{ 0 }
 };
 
@@ -229,7 +230,7 @@ int ClcOptInit(WPARAM wParam,LPARAM lParam)
 	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_CLC);
 	odp.ptszTitle=TranslateT("Contact List");
 	odp.pfnDlgProc=DlgProcClcMainOpts;
-	odp.flags=ODPF_BOLDGROUPS|ODPF_EXPERTONLY|ODPF_TCHAR;
+	odp.flags=ODPF_BOLDGROUPS|ODPF_TCHAR;
 	//CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);  
 	{
 		int i;	
@@ -238,6 +239,7 @@ int ClcOptInit(WPARAM wParam,LPARAM lParam)
 			odp.pszTemplate=MAKEINTRESOURCEA(clist_opt_items[i].id);
 			odp.ptszTab=TranslateTS(clist_opt_items[i].name);
 			odp.pfnDlgProc=clist_opt_items[i].wnd_proc;
+			odp.flags=ODPF_BOLDGROUPS|ODPF_TCHAR|clist_opt_items[i].flag;
 			CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 		}
 	}
@@ -1502,17 +1504,17 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
 			HBRUSH hBrush=CreateSolidBrush(GetSysColor(COLOR_3DFACE));
 			HDC hdc=CreateCompatibleDC(dis->hDC);
-			HBITMAP hbmp=SkinEngine_CreateDIB32(dis->rcItem.right-dis->rcItem.left,dis->rcItem.bottom-dis->rcItem.top);
+			HBITMAP hbmp=ske_CreateDIB32(dis->rcItem.right-dis->rcItem.left,dis->rcItem.bottom-dis->rcItem.top);
 			HBITMAP obmp=SelectObject(hdc,hbmp);
 			HFONT oldFnt=SelectObject(hdc,hFontSample);
 			RECT rc={0};
 			rc.right=dis->rcItem.right-dis->rcItem.left;
 			rc.bottom=dis->rcItem.bottom-dis->rcItem.top;
 			FillRect(hdc,&rc,hBrush);
-			SkinEngine_SetRectOpaque(hdc,&rc);
+			ske_SetRectOpaque(hdc,&rc);
 			SetTextColor(hdc,ColorSample);
-			SkinEngine_SelectTextEffect(hdc,EffectSample-1,Color1Sample,Color2Sample);
-			SkinEngine_DrawText(hdc,TranslateT("Sample"),lstrlen(TranslateT("Sample")),&rc,DT_CENTER|DT_VCENTER);
+			ske_SelectTextEffect(hdc,EffectSample-1,Color1Sample,Color2Sample);
+			ske_DrawText(hdc,TranslateT("Sample"),lstrlen(TranslateT("Sample")),&rc,DT_CENTER|DT_VCENTER);
 			BitBlt(dis->hDC,dis->rcItem.left,dis->rcItem.top,rc.right,rc.bottom,hdc,0,0,SRCCOPY);
 			SelectObject(hdc,obmp);
 			SelectObject(hdc,oldFnt);
@@ -2508,7 +2510,7 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) & ~WS_EX_LAYERED);
 			}
 			*/
-			SkinEngine_LoadSkinFromDB();
+			ske_LoadSkinFromDB();
 			CLUI_UpdateLayeredMode();	
 			CLUI_ChangeWindowMode(); 
 			SendMessage(pcli->hwndContactTree,WM_SIZE,0,0);	//forces it to send a cln_listsizechanged

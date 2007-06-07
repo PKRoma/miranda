@@ -1164,7 +1164,7 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				rc.bottom++;
 				hdc = GetDC(hwnd);
 				hdc2=CreateCompatibleDC(hdc);
-				hbmp=SkinEngine_CreateDIB32(rc.right,rc.bottom);
+				hbmp=ske_CreateDIB32(rc.right,rc.bottom);
 				hbmpo=SelectObject(hdc2,hbmp);		
 				if (GetParent(hwnd)!=pcli->hwndContactList)
 				{
@@ -1172,7 +1172,7 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
                     FillRect(hdc2,&rc,br);
 				}
 				else
-					SkinEngine_BltBackImage(hwnd,hdc2,&rc);
+					ske_BltBackImage(hwnd,hdc2,&rc);
 				DrawViewModeBar(hwnd,hdc2);	
 				{
 					int i;
