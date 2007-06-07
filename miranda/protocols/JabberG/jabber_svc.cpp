@@ -657,11 +657,29 @@ int JabberGetAvatar(WPARAM wParam, LPARAM lParam)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// JabberGetAvatarFormatSupported - Jabber supports avatars of virtually all formats
+// JabberGetAvatarCaps - returns directives how to process avatars
 
-int JabberGetAvatarFormatSupported(WPARAM wParam, LPARAM lParam)
+int JabberGetAvatarCaps(WPARAM wParam, LPARAM lParam)
 {
-	return 1;
+	switch( wParam ) {
+	case AF_MAXSIZE:
+		{
+			POINT* size = (POINT*)lParam;
+			if ( size )
+				size->x = size->y = 96;
+		}
+      return 0;
+
+	case AF_PROPORTION:
+		return PIP_NONE;
+
+	case AF_FORMATSUPPORTED: // Jabber supports avatars of virtually all formats
+		return 1;
+
+	case AF_ENABLED:
+		return JGetByte( "EnableAvatars", TRUE );
+	}
+	return -1;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -722,16 +740,6 @@ static int JabberGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 
 	JabberLog( "No avatar" );
 	return GAIR_NOAVATAR;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// JabberGetAvatarMaxSize - retrieves the optimal avatar size
-
-int JabberGetAvatarMaxSize(WPARAM wParam, LPARAM lParam)
-{
-	if (wParam != 0) *((int*) wParam) = 64;
-	if (lParam != 0) *((int*) lParam) = 64;
-	return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -1630,10 +1638,9 @@ int JabberSvcInit( void )
 	heventRawXMLIn = JCreateHookableEvent( JE_RAWXMLIN );
 	heventRawXMLOut = JCreateHookableEvent( JE_RAWXMLOUT );
 	JCreateServiceFunction( JS_SENDXML, ServiceSendXML );
-	JCreateServiceFunction( JS_ISAVATARFORMATSUPPORTED, JabberGetAvatarFormatSupported );
-	JCreateServiceFunction( JS_GETMYAVATARMAXSIZE, JabberGetAvatarMaxSize );
-	JCreateServiceFunction( JS_GETMYAVATAR, JabberGetAvatar );
-	JCreateServiceFunction( JS_SETMYAVATAR, JabberSetAvatar );
+	JCreateServiceFunction( PS_GETMYAVATAR, JabberGetAvatar );
+	JCreateServiceFunction( PS_GETAVATARCAPS, JabberGetAvatarCaps );
+	JCreateServiceFunction( PS_SETMYAVATAR, JabberSetAvatar );
 
 	// service to get from protocol chat buddy info
 	JCreateServiceFunction( MS_GC_PROTO_GETTOOLTIPTEXT, JabberGCGetToolTipText );

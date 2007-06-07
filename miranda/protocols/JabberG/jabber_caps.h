@@ -32,7 +32,7 @@ Last change by : $Author: ghazan $
 
 typedef DWORD JabberCapsBits;
 
-#define JABBER_RESOURCE_CAPS_QUERY_TIMEOUT	10000
+#define JABBER_RESOURCE_CAPS_QUERY_TIMEOUT	5000
 
 #define JABBER_RESOURCE_CAPS_TIMEOUT      0x80000002
 #define JABBER_RESOURCE_CAPS_IN_PROGRESS  0x80000001
@@ -124,15 +124,15 @@ protected:
 public:
 	CJabberClientPartialCaps( TCHAR *szVer );
 	~CJabberClientPartialCaps();
-	
+
 	CJabberClientPartialCaps* SetNext( CJabberClientPartialCaps *pCaps );
 	__inline CJabberClientPartialCaps* GetNext()
 	{	return m_pNext;
 	}
-	
+
 	void SetCaps( JabberCapsBits jcbCaps, int nIqId = -1 );
 	JabberCapsBits GetCaps();
-	
+
 	__inline TCHAR* GetVersion()
 	{	return m_szVer;
 	}

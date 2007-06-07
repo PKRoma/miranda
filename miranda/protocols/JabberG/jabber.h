@@ -179,10 +179,6 @@ enum {
 #define JE_RAWXMLOUT               "/RawXMLOut"
 
 #define JS_SENDXML                 "/SendXML"
-#define JS_ISAVATARFORMATSUPPORTED "/IsAvatarFormatSupported"
-#define JS_GETMYAVATARMAXSIZE      "/GetMyAvatarMaxSize"
-#define JS_SETMYAVATAR             "/SetMyAvatar"
-#define JS_GETMYAVATAR             "/GetMyAvatar"
 #define JS_GETADVANCEDSTATUSICON   "/GetAdvancedStatusIcon"
 #define JS_GETXSTATUS              "/GetXStatus"
 #define JS_SETXSTATUS              "/SetXStatus"
