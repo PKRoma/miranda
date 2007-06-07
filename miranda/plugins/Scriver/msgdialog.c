@@ -1556,10 +1556,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				hStatusIcon = CopyIcon(hIcon);
 				CallService(MS_SKIN2_RELEASEICON,(WPARAM)hIcon , 0);
 			}
-			
+
 			if (dat->userMenuIcon != NULL) DestroyIcon(dat->userMenuIcon);
 			dat->userMenuIcon = hStatusIcon;
-			
+
 			//CallService(MS_SKIN2_RELEASEICON,(WPARAM)dat->userMenuIcon, 0);
 			//dat->userMenuIcon = LoadSkinnedProtoIcon(szProto, dat->wStatus);
 			//hStatusIcon = dat->userMenuIcon;
@@ -2333,7 +2333,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						if ( *temp == 0 )
 							break;
 
-						szMsgUtf = mir_utf8encodecp(temp, dat->codepage);
+						szMsgUtf = mir_utf8encodecp(temp, dat->codePage);
 						dat->cmdList = tcmdlist_append(dat->cmdList, temp);
 					}
 					#endif
