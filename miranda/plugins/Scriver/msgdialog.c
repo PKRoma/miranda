@@ -37,12 +37,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define ENTERCLICKTIME   1000   //max time in ms during which a double-tap on enter will cause a send
 
-#if defined(_UNICODE)
-	#define SEND_FLAGS PREF_UNICODE
-#else
-	#define SEND_FLAGS 0
-#endif
-
 extern HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand, hDragCursor;
 extern HANDLE hHookWinEvt;
 extern HANDLE hHookWinPopup;
