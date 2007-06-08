@@ -459,12 +459,12 @@ static char * HtmlEncodeUTF8T( const TCHAR *src )
 	if (src == NULL)
 		return mir_strdup("");
 
-	TCHAR *tmp = HtmlEncodeT(src);
 #if defined( _UNICODE )
-	char *ret = mir_utf8encodeW(tmp);
+	char *tmp = mir_utf8encodeW(src);
 #else
-	char *ret = mir_utf8encode(tmp);
+	char *tmp = mir_utf8encode(src);
 #endif
+	char *ret = HtmlEncode(tmp);
 	mir_free(tmp);
 	return ret;
 }
@@ -474,12 +474,14 @@ void  MSN_SendStatusMessage( const char* msg )
 	if ( !msnLoggedIn )
 		return;
 
-	char* msgEnc = HtmlEncode(( msg == NULL ) ? "" : msg );
-	char  szMsg[ 1024 ];
+	char *tmp = mir_utf8encode(msg);
+	char* msgEnc = HtmlEncode(( tmp == NULL ) ? "" : tmp );
+	mir_free(tmp);
 
+	char  szMsg[ 2048 ];
 	if ( msnCurrentMedia.cbSize == 0 ) 
 	{
-		mir_snprintf( szMsg, sizeof szMsg, "<Data><PSM>%s</PSM></Data>", UTF8(msgEnc));
+		mir_snprintf( szMsg, sizeof szMsg, "<Data><PSM>%s</PSM></Data>", msgEnc);
 		mir_free( msgEnc );
 	}
 	else 
@@ -530,11 +532,11 @@ void  MSN_SendStatusMessage( const char* msg )
 		mir_free( szType );
 	}
 
-	if ( !lstrcmpA( msnPreviousUUX, szMsg ))
-		return;
-
-	replaceStr( msnPreviousUUX, szMsg );
-	msnNsThread->sendPacket( "UUX", "%d\r\n%s", strlen( szMsg ), szMsg );
+	if ( msnPreviousUUX != NULL && strcmp( msnPreviousUUX, szMsg ))
+	{
+		replaceStr( msnPreviousUUX, szMsg );
+		msnNsThread->sendPacket( "UUX", "%d\r\n%s", strlen( szMsg ), szMsg );
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
