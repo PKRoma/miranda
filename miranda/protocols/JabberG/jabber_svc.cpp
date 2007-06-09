@@ -1190,7 +1190,7 @@ int JabberSendMessage( WPARAM wParam, LPARAM lParam )
 	else isEncrypted = 0;
 
 	if ( ccs->wParam & PREF_UTF )
-		msg = mir_strdup( pszSrc );
+		msg = JabberUrlEncode( pszSrc );
 	else if ( ccs->wParam & PREF_UNICODE )
 		msg = JabberTextEncodeW(( wchar_t* )&pszSrc[ strlen( pszSrc )+1 ] );
 	else
