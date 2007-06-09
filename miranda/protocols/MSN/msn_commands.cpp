@@ -124,6 +124,7 @@ void sttSetMirVer( HANDLE hContact, DWORD dwValue )
 		"WLM 8.0",
 		"WLM 8.1",
 		"WLM 8.5",
+		"WLM Unknown",
 	};
 
 	if ( dwValue & 0x200 )
@@ -132,8 +133,10 @@ void sttSetMirVer( HANDLE hContact, DWORD dwValue )
 		MSN_SetString( hContact, "MirVer", "Miranda IM 0.5.x (MSN v.0.5.x)" );
 	else if ( dwValue == 805306404 )
 		MSN_SetString( hContact, "MirVer", "Miranda IM 0.4.x (MSN v.0.4.x)" );
-	else 
-		MSN_SetString( hContact, "MirVer", MirVerStr[ dwValue >> 28 & 0xff ] );
+	else {
+		unsigned wlmId = min(dwValue >> 28 & 0xff, SIZEOF(MirVerStr));
+		MSN_SetString( hContact, "MirVer", MirVerStr[ wlmId ] );
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -1205,6 +1208,9 @@ LBL_InvalidCommand:
 				goto LBL_InvalidCommand;
 			break;
 
+		case ' SBS':
+			break;
+
 		case ' SNA':    //********* ANS: section 8.4 Getting Invited to a Switchboard Session
 			if ( strcmp( params, "OK" ) == 0 ) {
 				info->mInitialContact = NULL;
@@ -1348,7 +1354,7 @@ LBL_InvalidCommand:
 			}	}
 			// this is not in chat session, quit the session when everyone left
 			else if ( personleft == 0 )
-				return 1; // die
+				info->sendPacket( "OUT", NULL );
 
 			break;
 		}
