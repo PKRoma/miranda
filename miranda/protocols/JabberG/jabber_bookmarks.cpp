@@ -223,7 +223,6 @@ static BOOL CALLBACK JabberBookmarksDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 		EnableWindow( GetDlgItem( hwndDlg, IDC_ADD ), FALSE );
 		EnableWindow( GetDlgItem( hwndDlg, IDC_EDIT ), FALSE );
 		EnableWindow( GetDlgItem( hwndDlg, IDC_REMOVE ), FALSE );
-		TranslateDialogDefault( hwndDlg );
 		sortColumn = -1;
 
 		lv = GetDlgItem( hwndDlg, IDC_BM_LIST );

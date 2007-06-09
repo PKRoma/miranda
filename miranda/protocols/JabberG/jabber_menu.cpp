@@ -29,6 +29,7 @@ Last change by : $Author$
 #include "jabber_list.h"
 #include "resource.h"
 #include "jabber_caps.h"
+#include "jabber_privacy.h"
 
 #include <m_contacts.h>
 
@@ -50,6 +51,7 @@ static HANDLE hMenuGroupchat = NULL;
 static HANDLE hMenuBookmarks = NULL;
 static HANDLE hMenuAddBookmark = NULL;
 static HANDLE hMenuCommands = NULL;
+static HANDLE hMenuPrivacyLists = NULL;
 
 
 
@@ -534,6 +536,15 @@ void JabberMenuInit()
 	mi.icolibItem = GetIconHandle( IDI_BOOKMARKS );
 	hMenuBookmarks = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuBookmarks, ( LPARAM )&clmi );
+
+	// "Privacy lists..."
+	strcpy( tDest, "/PrivacyLists" );
+	CreateServiceFunction( text, JabberMenuHandlePrivacyLists);
+	mi.pszName = "Privacy Lists...";
+	mi.position = 2000050005;
+	mi.icolibItem = GetIconHandle( IDI_EDIT );
+	hMenuPrivacyLists = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuPrivacyLists, ( LPARAM )&clmi );
 }
 
 void JabberEnableMenuItems( BOOL bEnable )
@@ -551,6 +562,7 @@ void JabberEnableMenuItems( BOOL bEnable )
 	if ( jabberThreadInfo && !( jabberThreadInfo->caps & CAPS_BOOKMARK ))
 		clmi.flags |= CMIF_GRAYED;
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuBookmarks, ( LPARAM )&clmi );
+	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuPrivacyLists, ( LPARAM )&clmi );
 }
 
 //////////////////////////////////////////////////////////////////////////

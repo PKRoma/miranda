@@ -217,8 +217,28 @@
 #define IDC_COMMANDS2                   1217
 #define IDC_STATIC_LOGOFF_TIME_LABEL    1217
 #define IDC_COMBO_RESOURCE              1218
+#define IDC_PL_LIST                     1219
+#define IDC_PL_RULES_LIST               1219
 #define IDC_WHITERECT                   1221
+#define IDC_ADD_RULE                    1221
+#define IDC_EDIT_RULE                   1222
+#define IDC_REMOVE_RULE                 1223
+#define IDC_COMBO_CURRENT_LIST          1224
+#define IDC_ADD_LIST                    1225
+#define IDC_REMOVE_LIST                 1226
+#define IDC_COMBO_ACTIVE_LIST           1227
+#define IDC_COMBO_DEFAULT_LIST          1228
+#define IDC_COMBO_TYPE                  1230
 #define IDC_UPDATING                    1231
+#define IDC_EDIT_VALUE                  1231
+#define IDC_COMBO_ACTION                1232
+#define IDC_CHECK_MESSAGES              1233
+#define IDC_CHECK_QUERIES               1234
+#define IDC_CHECK_PRESENCE_OUT          1235
+#define IDC_CHECK_PRESENCE_IN           1236
+#define IDC_COMBO_VALUE                 1237
+#define IDC_EDIT_NAME                   1238
+#define IDC_STATIC_LISTS_LABEL          1239
 #define IDC_EMAILS                      1306
 #define IDC_PHONES                      1308
 #define IDC_UPDATE                      1313
@@ -233,9 +253,17 @@
 #define IDC_ADD                         3004
 #define IDC_REMOVE                      3005
 #define IDD_BOOKMARK_ADD                3006
+#define IDC_UP                          3006
+#define IDC_UP_RULE                     3006
 #define IDC_ROOM_JID                    3007
+#define IDD_PRIVACY_LISTS               3007
+#define IDC_DOWN                        3007
+#define IDC_DOWN_RULE                   3007
 #define IDC_ROSTER2BOOKMARK             3008
+#define IDC_APPLY                       3008
+#define IDD_PRIVACY_RULE                3008
 #define IDC_ROOM_RADIO                  3009
+#define IDD_PRIVACY_ADD_LIST            3009
 #define IDC_AUTOJOIN_BOOKMARKS          3010
 #define IDC_URL_RADIO                   3011
 #define IDC_AGENT_RADIO                 3012
@@ -264,7 +292,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        190
 #define _APS_NEXT_COMMAND_VALUE         40017
-#define _APS_NEXT_CONTROL_VALUE         1219
+#define _APS_NEXT_CONTROL_VALUE         1240
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

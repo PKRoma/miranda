@@ -59,6 +59,7 @@ JabberFeatCapPair g_JabberFeatCapPairs[] = {
 	{	_T(JABBER_FEAT_USER_MOOD_NOTIFY), JABBER_CAPS_USER_MOOD_NOTIFY },
 	{	_T(JABBER_FEAT_PUBSUB),			  JABBER_CAPS_PUBSUB,          },
 	{	_T(JABBER_FEAT_SECUREIM),         JABBER_CAPS_SECUREIM,        },
+	{	_T(JABBER_FEAT_PRIVACY_LISTS),	  JABBER_CAPS_PRIVACY_LISTS,   },
 	{	NULL,                             0                            }
 };
 

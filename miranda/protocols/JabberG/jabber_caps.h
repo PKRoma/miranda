@@ -97,6 +97,8 @@ typedef DWORD JabberCapsBits;
 #define JABBER_CAPS_PUBSUB                      (1<<27)
 #define JABBER_FEAT_SECUREIM                    "http://miranda-im.org/caps/secureim"
 #define JABBER_CAPS_SECUREIM                    (1<<28)
+#define JABBER_FEAT_PRIVACY_LISTS				"jabber:iq:privacy"
+#define JABBER_CAPS_PRIVACY_LISTS				(1<<29)
 
 #define JABBER_FEAT_PUBSUB_EVENT                "http://jabber.org/protocol/pubsub#event"
 #define JABBER_FEAT_PUBSUB_NODE_CONFIG          "http://jabber.org/protocol/pubsub#node_config"

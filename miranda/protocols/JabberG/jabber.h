@@ -397,6 +397,7 @@ extern BOOL   jabberChangeStatusMessageOnly;
 extern BOOL   jabberSendKeepAlive;
 extern BOOL   jabberPepSupported;
 extern BOOL   jabberChatDllPresent;
+extern JabberCapsBits jabberServerCaps;
 
 extern HWND hwndJabberAgents;
 extern HWND hwndAgentReg;
@@ -416,6 +417,8 @@ extern HWND hwndMucOwnerList;
 extern HWND hwndJabberBookmarks;
 extern HWND hwndJabberAddBookmark;
 extern HWND hwndJabberInfo;
+extern HWND hwndPrivacyLists;
+extern HWND hwndPrivacyRule;
 
 
 extern const char xmlnsOwner[], xmlnsAdmin[];

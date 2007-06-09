@@ -37,6 +37,7 @@ Last change by : $Author$
 #include "resource.h"
 #include "version.h"
 #include "jabber_caps.h"
+#include "jabber_privacy.h"
 
 // <iq/> identification number for various actions
 // for JABBER_REGISTER thread
@@ -1802,6 +1803,10 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 		pfunc( node, userdata );
 	}
 
+	// RECVED: <iq type='set'><query xmlns='jabber:iq:privacy'
+	else if ( xmlns && !_tcscmp( xmlns, _T( JABBER_FEAT_PRIVACY_LISTS ))) {
+		JabberProcessIqPrivacyLists( node );
+	}
 	// RECVED: <iq type='set'><query ...
 	else if ( !_tcscmp( type, _T("set")) && queryNode!=NULL && xmlns != NULL ) {
 

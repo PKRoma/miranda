@@ -30,6 +30,7 @@ Last change by : $Author$
 #include "jabber_list.h"
 #include "jabber_iq.h"
 #include "jabber_caps.h"
+#include "jabber_privacy.h"
 
 #include "m_genmenu.h"
 #include "m_clistint.h"
@@ -58,7 +59,23 @@ void JabberIqResultServerDiscoInfo( XmlNode* iqNode, void* userdata )
 				if ( pcli && pcli->version > 4 )
 					pcli->pfnReloadProtoMenus();
 				break;
-}	}	}	}
+			}
+		}
+		jabberServerCaps = JABBER_RESOURCE_CAPS_NONE;
+		XmlNode *feature;
+		for ( int i = 1; ( feature = JabberXmlGetNthChild( query, "feature", i )) != NULL; i++ ) {
+			TCHAR *featureName = JabberXmlGetAttrValue( feature, "var" );
+			if ( featureName ) {
+				for ( int i = 0; g_JabberFeatCapPairs[i].szFeature; i++ ) {
+					if ( !_tcscmp( g_JabberFeatCapPairs[i].szFeature, featureName )) {
+						jabberServerCaps |= g_JabberFeatCapPairs[i].jcbCap;
+						break;
+					}
+				}
+			}
+		}
+	}	
+}
 
 static void JabberOnLoggedIn( ThreadData* info )
 {
@@ -81,11 +98,18 @@ static void JabberOnLoggedIn( ThreadData* info )
 	info->send( biq );
 
 	jabberPepSupported = FALSE;
+	jabberServerCaps = JABBER_RESOURCE_CAPS_NONE;
 	iqId = JabberSerialNext();
 	JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultServerDiscoInfo );
 	XmlNodeIq diq( "get", iqId, jabberThreadInfo->server );
 	diq.addQuery( JABBER_FEAT_DISCO_INFO );
 	jabberThreadInfo->send( diq );
+
+	iqId = JabberSerialNext();
+	JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultPrivacyLists );
+	XmlNodeIq piq( "get", iqId );
+	piq.addQuery( JABBER_FEAT_PRIVACY_LISTS );
+	jabberThreadInfo->send( piq );
 
 	char szServerName[ sizeof(info->server) ];
 	if ( JGetStaticString( "LastLoggedServer", NULL, szServerName, sizeof(szServerName)))

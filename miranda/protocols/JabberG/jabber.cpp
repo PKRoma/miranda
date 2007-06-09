@@ -87,6 +87,7 @@ char* jabberVcardPhotoFileName = NULL;
 BOOL  jabberSendKeepAlive;
 
 BOOL jabberPepSupported = FALSE;
+JabberCapsBits jabberServerCaps = JABBER_RESOURCE_CAPS_NONE;
 
 // SSL-related global variable
 HMODULE hLibSSL = NULL;
@@ -113,6 +114,8 @@ HWND hwndJabberChangePassword = NULL;
 HWND hwndJabberBookmarks = NULL;
 HWND hwndJabberAddBookmark = NULL;
 HWND hwndJabberInfo = NULL;
+HWND hwndPrivacyLists = NULL;
+HWND hwndPrivacyRule = NULL;
 
 // Service and event handles
 HANDLE heventRawXMLIn;
@@ -184,6 +187,8 @@ static int OnPreShutdown( WPARAM wParam, LPARAM lParam )
 	if ( hwndJabberChangePassword ) SendMessage( hwndJabberChangePassword, WM_CLOSE, 0, 0 );
 	if ( hwndJabberBookmarks ) SendMessage( hwndJabberBookmarks, WM_CLOSE, 0, 0 );
 	if ( hwndJabberAddBookmark ) SendMessage( hwndJabberAddBookmark, WM_CLOSE, 0, 0 );
+	if ( hwndPrivacyRule ) SendMessage( hwndPrivacyRule, WM_CLOSE, 0, 0 );
+	if ( hwndPrivacyLists ) SendMessage( hwndPrivacyLists, WM_CLOSE, 0, 0 );
 
 	hwndJabberAgents = NULL;
 	hwndJabberGroupchat = NULL;
@@ -202,6 +207,8 @@ static int OnPreShutdown( WPARAM wParam, LPARAM lParam )
 	hwndJabberChangePassword = NULL;
 	hwndJabberBookmarks = NULL;
 	hwndJabberAddBookmark = NULL;
+	hwndPrivacyLists = NULL;
+	hwndPrivacyRule = NULL;
 	return 0;
 }
 
