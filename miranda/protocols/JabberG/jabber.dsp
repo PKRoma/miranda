@@ -259,6 +259,10 @@ SOURCE=.\jabber_password.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\jabber_privacy.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\jabber_proxy.cpp
 # ADD CPP /Yu
 # End Source File
@@ -354,6 +358,10 @@ SOURCE=.\jabber_iq.h
 # Begin Source File
 
 SOURCE=.\jabber_list.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\jabber_privacy.h
 # End Source File
 # Begin Source File
 

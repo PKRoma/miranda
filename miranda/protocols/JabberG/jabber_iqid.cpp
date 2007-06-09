@@ -43,13 +43,15 @@ void JabberIqResultServerDiscoInfo( XmlNode* iqNode, void* userdata )
 		return;
 
 	TCHAR *type = JabberXmlGetAttrValue( iqNode, "type" );
+	int i;
 
 	if ( !_tcscmp( type, _T("result"))) {
 		XmlNode *query = JabberXmlGetChildWithGivenAttrValue( iqNode, "query", "xmlns", _T(JABBER_FEAT_DISCO_INFO) );
 		if ( !query )
 			return;
+
 		XmlNode *identity;
-		for ( int i = 1; ( identity = JabberXmlGetNthChild( query, "identity", i )) != NULL; i++ ) {
+		for ( i = 1; ( identity = JabberXmlGetNthChild( query, "identity", i )) != NULL; i++ ) {
 			TCHAR *identityCategory = JabberXmlGetAttrValue( identity, "category" );
 			TCHAR *identityType = JabberXmlGetAttrValue( identity, "type" );
 			if ( identityCategory && identityType && !_tcscmp( identityCategory, _T("pubsub") ) && !_tcscmp( identityType, _T("pep")) ) {
@@ -63,19 +65,14 @@ void JabberIqResultServerDiscoInfo( XmlNode* iqNode, void* userdata )
 		}
 		jabberServerCaps = JABBER_RESOURCE_CAPS_NONE;
 		XmlNode *feature;
-		for ( int i = 1; ( feature = JabberXmlGetNthChild( query, "feature", i )) != NULL; i++ ) {
+		for ( i = 1; ( feature = JabberXmlGetNthChild( query, "feature", i )) != NULL; i++ ) {
 			TCHAR *featureName = JabberXmlGetAttrValue( feature, "var" );
 			if ( featureName ) {
 				for ( int i = 0; g_JabberFeatCapPairs[i].szFeature; i++ ) {
 					if ( !_tcscmp( g_JabberFeatCapPairs[i].szFeature, featureName )) {
 						jabberServerCaps |= g_JabberFeatCapPairs[i].jcbCap;
 						break;
-					}
-				}
-			}
-		}
-	}	
-}
+}	}	}	}	}	}
 
 static void JabberOnLoggedIn( ThreadData* info )
 {
@@ -1424,10 +1421,10 @@ void JabberIqResultDiscoAgentInfo( XmlNode *iqNode, void *userdata )
 										cap |= AGENT_CAP_GROUPCHAT;
 									else if ( !lstrcmp( var, _T(JABBER_FEAT_COMMANDS)))
 										cap |= AGENT_CAP_ADHOC;
-								}	
-							}	
-						}	
-					}	
+								}
+							}
+						}
+					}
 				if (item) item->cap=cap;
 				if (rosterItem) rosterItem->cap|=cap;
 		}	}

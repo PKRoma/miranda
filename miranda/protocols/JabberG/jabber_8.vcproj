@@ -1088,6 +1088,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\jabber_privacy.cpp"
+				>
+			</File>
+			<File
 				RelativePath="jabber_proxy.cpp"
 				>
 				<FileConfiguration
@@ -1554,6 +1558,10 @@
 			</File>
 			<File
 				RelativePath="jabber_list.h"
+				>
+			</File>
+			<File
+				RelativePath=".\jabber_privacy.h"
 				>
 			</File>
 			<File
