@@ -815,33 +815,35 @@ struct OpenFileSubclassData {
 	BYTE *locking_request;
 	BYTE setView;
 };
+
 static BOOL CALLBACK OpenFileSubclass(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    switch(msg) {
-        case WM_INITDIALOG: 
+	switch(msg) {
+	case WM_INITDIALOG: 
 		{
-            OPENFILENAMEA *ofn = (OPENFILENAMEA *)lParam;
+			OPENFILENAMEA *ofn = (OPENFILENAMEA *)lParam;
 
 			OpenFileSubclassData *data = (OpenFileSubclassData *) malloc(sizeof(OpenFileSubclassData));
-            SetWindowLong(hwnd, GWL_USERDATA, (LONG)data);
-            data->locking_request = (BYTE *)ofn->lCustData;
+			SetWindowLong(hwnd, GWL_USERDATA, (LONG)data);
+			data->locking_request = (BYTE *)ofn->lCustData;
 			data->setView = TRUE;
 
-            CheckDlgButton(hwnd, IDC_PROTECTAVATAR, *(data->locking_request));
-            break;
-        }
-        case WM_COMMAND:
-		{
-            if(LOWORD(wParam) == IDC_PROTECTAVATAR) 
-			{
-                OpenFileSubclassData *data= (OpenFileSubclassData *)GetWindowLong(hwnd, GWL_USERDATA);
-                *(data->locking_request) = IsDlgButtonChecked(hwnd, IDC_PROTECTAVATAR) ? TRUE : FALSE;
-            }
-            break;
+			TranslateDialogDefault(hwnd);
+			CheckDlgButton(hwnd, IDC_PROTECTAVATAR, *(data->locking_request));
+			break;
 		}
-		case WM_NOTIFY:
+
+	case WM_COMMAND:
+		if(LOWORD(wParam) == IDC_PROTECTAVATAR) 
 		{
-            OpenFileSubclassData *data= (OpenFileSubclassData *)GetWindowLong(hwnd, GWL_USERDATA);
+			OpenFileSubclassData *data= (OpenFileSubclassData *)GetWindowLong(hwnd, GWL_USERDATA);
+			*(data->locking_request) = IsDlgButtonChecked(hwnd, IDC_PROTECTAVATAR) ? TRUE : FALSE;
+		}
+		break;
+
+	case WM_NOTIFY:
+		{
+			OpenFileSubclassData *data= (OpenFileSubclassData *)GetWindowLong(hwnd, GWL_USERDATA);
 			if (data->setView)
 			{
 				HWND hwndParent = GetParent(hwnd);
@@ -852,18 +854,17 @@ static BOOL CALLBACK OpenFileSubclass(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 					data->setView = FALSE;
 				}
 			}
-			break;
 		}
-		case WM_NCDESTROY:
-		{
-            OpenFileSubclassData *data= (OpenFileSubclassData *)GetWindowLong(hwnd, GWL_USERDATA);
-			free((OpenFileSubclassData *)data);
-			SetWindowLong(hwnd, GWL_USERDATA, (LONG)0);
-			break;
-		}
+		break;
+
+	case WM_NCDESTROY:
+		OpenFileSubclassData *data= (OpenFileSubclassData *)GetWindowLong(hwnd, GWL_USERDATA);
+		free((OpenFileSubclassData *)data);
+		SetWindowLong(hwnd, GWL_USERDATA, (LONG)0);
+		break;
 	}
 
-    return FALSE;
+	return FALSE;
 }
 
 /*
