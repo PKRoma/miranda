@@ -691,7 +691,7 @@ static int MsnGetCaps(WPARAM wParam,LPARAM lParam)
 				 PF2_ONTHEPHONE | PF2_OUTTOLUNCH;
 
 	case PFLAGNUM_4:
-		return PF4_SUPPORTTYPING | PF4_AVATARS;
+		return PF4_SUPPORTTYPING | PF4_AVATARS | PF4_IMSENDUTF;
 
 	case PFLAG_UNIQUEIDTEXT:
 		return ( int )MSN_Translate( "E-mail address" );
@@ -914,7 +914,7 @@ static void sttFakeAck( LPVOID param )
 static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 {
 	CCSDATA* ccs = ( CCSDATA* )lParam;
-	char *msg, *errMsg = NULL;
+	char *errMsg;
 
 	char tEmail[ MSN_MAX_EMAIL_LEN ];
 	if ( !MSN_GetStaticString( "e-mail", ccs->hContact, tEmail, sizeof( tEmail )) && !strcmp( tEmail, MyOptions.szEmail )) {
@@ -923,11 +923,20 @@ static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 		return 999999;
 	}
 
+	char *msg = ( char* )ccs->lParam;
 	if ( ccs->wParam & PREF_UNICODE ) {
-		char* p = ( char* )ccs->lParam;
-		msg = mir_utf8encodeW(( wchar_t* )&p[ strlen(p)+1 ] );
+		char* p = strchr(msg, '\0');
+		if (p != msg) {
+			while ( *(++p) == '\0' ); 
+			msg = mir_utf8encodeW(( wchar_t* )p );
+		}
+		else
+			msg = mir_strdup( msg );
 	}
-	else msg = mir_utf8encode(( char* )ccs->lParam );
+	else if ( ccs->wParam & PREF_UTF )
+		msg = mir_strdup( msg );
+	else
+		msg = mir_utf8encode( msg );
 
 	if ( strlen( msg ) > 1202 ) {
 		errMsg = MSN_Translate( "Message is too long: MSN messages are limited by 1202 UTF8 chars" );

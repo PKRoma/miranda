@@ -124,7 +124,7 @@ static int sttCreateListener(
 	newThread->mCaller = 3;
 	newThread->mIncomingBoundPort = sb;
 	newThread->mIncomingPort = nlb.wPort;
-	strncpy( newThread->mCookie, ( char* )dc->callId, sizeof( newThread->mCookie ));
+	strncpy( newThread->mCookie, ( char* )dc->callId , sizeof( newThread->mCookie ));
 	newThread->mInitialContact = ft->std.hContact;
 
 	newThread->startThread(( pThreadFunc ) p2p_filePassiveThread );
@@ -1039,13 +1039,13 @@ static void sttInitFileTransfer(
 
 		case 4:
 			if ( !strcmp( szEufGuid, "{4BD96FC0-AB17-4425-A14A-439185962DC8}" )) {
-				MSN_ShowPopup( MSN_GetContactName( ft->std.hContact ),
-					MSN_Translate( "Contact tried to send its webcam data (currently not supported)" ), 
+				MSN_ShowPopup( ft->std.hContact,
+					TranslateT( "Contact tried to send its webcam data (currently not supported)" ), 
 					MSN_ALLOW_MSGBOX );
 			}
 			if ( !strcmp( szEufGuid, "{1C9AA97E-9C05-4583-A3BD-908A196F1E92}" )) {
-				MSN_ShowPopup( MSN_GetContactName( ft->std.hContact ),
-					MSN_Translate( "Contact tried to view our webcam data (currently not supported)" ), 
+				MSN_ShowPopup( ft->std.hContact,
+					TranslateT( "Contact tried to view our webcam data (currently not supported)" ), 
 					MSN_ALLOW_MSGBOX );
 			}
 			break;
@@ -1284,7 +1284,7 @@ LBL_Close:
 
 		tResult.addString( "Content-Type", "application/x-msnmsgr-transreqbody" );
 		cbBody = mir_snprintf( szBody, 1024,
-			"Bridges: TCPv1\r\nNetID: %i\r\nConn-Type: %s\r\nUPnPNat: %s\r\nICF: false\r\n%s\r\n%c",
+			"Bridges: TCPv1\r\nNetID: %i\r\nConn-Type: %s\r\nUPnPNat: %s\r\nICF: %s\r\n%s\r\n%c",
 			MyConnection.extIP, MyConnection.GetMyUdpConStr(), 
 			MyConnection.upnpNAT ? "true" : "false", MyConnection.icf ? "true" : "false", 
 			szNonce, 0 );

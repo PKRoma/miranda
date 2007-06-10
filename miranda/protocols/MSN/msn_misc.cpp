@@ -614,10 +614,16 @@ void __cdecl MSN_ShowError( const char* msgtext, ... )
 	mir_vsnprintf( tBuffer, sizeof( tBuffer ), MSN_Translate( msgtext ), tArgs );
 	va_end( tArgs );
 
+	TCHAR* buf1 = a2t( msnProtocolName );
+	TCHAR* buf2 = a2t( tBuffer );
+
 	if ( MyOptions.ShowErrorsAsPopups )
-		MSN_ShowPopup( msnProtocolName, tBuffer, MSN_ALLOW_MSGBOX | MSN_SHOW_ERROR );
+		MSN_ShowPopup( buf1, buf2, MSN_ALLOW_MSGBOX | MSN_SHOW_ERROR );
 	else
-		MessageBoxA( NULL, tBuffer, msnProtocolName, MB_OK );
+		MessageBox( NULL, buf2, buf1, MB_OK );
+
+	mir_free(buf1);
+	mir_free(buf2);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -658,39 +664,37 @@ LRESULT CALLBACK NullWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 
 void CALLBACK sttMainThreadCallback( ULONG dwParam )
 {
-	POPUPDATAEX* ppd = ( POPUPDATAEX* )dwParam;
+	LPPOPUPDATAT ppd = ( LPPOPUPDATAT )dwParam;
 
-	if ( msnUseExtendedPopups )
-		MSN_CallService( MS_POPUP_ADDPOPUPEX, ( WPARAM )ppd, 0 );
-	else
-		MSN_CallService( MS_POPUP_ADDPOPUP, ( WPARAM )ppd, 0 );
+	PUAddPopUpT(ppd);
 
 	mir_free( ppd );
 }
 
-void 	MSN_ShowPopup( const char* nickname, const char* msg, int flags )
+void MSN_ShowPopup( const TCHAR* nickname, const TCHAR* msg, int flags )
 {
-	if ( !ServiceExists( MS_POPUP_ADDPOPUP )) {
+	if ( !ServiceExists( MS_POPUP_ADDPOPUPT )) {
 		if ( flags & MSN_ALLOW_MSGBOX ) {
-			char szMsg[ MAX_SECONDLINE + MAX_CONTACTNAME ];
-			mir_snprintf( szMsg, SIZEOF( szMsg ), "%s:\n%s", nickname, msg );
-			MessageBoxA( NULL, szMsg, "MSN Protocol", MB_OK + ( flags & MSN_SHOW_ERROR ) ? MB_ICONERROR : MB_ICONINFORMATION );
+			TCHAR szMsg[ MAX_SECONDLINE + MAX_CONTACTNAME ];
+			mir_sntprintf( szMsg, SIZEOF( szMsg ), _T("%s:\n%s"), nickname, msg );
+			MessageBox( NULL, szMsg, _T("MSN Protocol"), 
+				MB_OK + ( flags & MSN_SHOW_ERROR ) ? MB_ICONERROR : MB_ICONINFORMATION );
 		}
 		return;
 	}
 
-	POPUPDATAEX* ppd = ( POPUPDATAEX* )mir_calloc( sizeof( POPUPDATAEX ));
+	LPPOPUPDATAT ppd = ( LPPOPUPDATAT )mir_calloc( sizeof( POPUPDATAT ));
 
 	ppd->lchContact = NULL;
-	strncpy( ppd->lpzContactName, nickname, MAX_CONTACTNAME );
-	ppd->lpzText[MAX_CONTACTNAME-1] = 0;
-	strncpy( ppd->lpzText, msg, MAX_SECONDLINE );
-	ppd->lpzText[MAX_SECONDLINE-1] = 0;
+	_tcsncpy( ppd->lptzContactName, nickname, MAX_CONTACTNAME );
+	ppd->lptzContactName[MAX_CONTACTNAME-1] = 0;
+	_tcsncpy( ppd->lptzText, msg, MAX_SECONDLINE );
+	ppd->lptzText[MAX_SECONDLINE-1] = 0;
 
 	if ( flags & MSN_SHOW_ERROR ) {
 		ppd->lchIcon = ( HICON )LoadImage( NULL, IDI_WARNING, IMAGE_ICON, 0, 0, LR_SHARED );
-		ppd->colorBack = RGB(191,0,0); //Red
-		ppd->colorText = RGB(255,245,225); //Yellow
+		ppd->colorBack = RGB(191, 0, 0); //Red
+		ppd->colorText = RGB(255, 245, 225); //Yellow
 		ppd->iSeconds  = 60;
 	}
 	else {
@@ -708,8 +712,17 @@ void 	MSN_ShowPopup( const char* nickname, const char* msg, int flags )
 	pud->flags = flags;
 	pud->hIcon = ppd->lchIcon;
 
-	QueueUserAPC( sttMainThreadCallback , msnMainThread, ( ULONG )ppd );
+	QueueUserAPC( sttMainThreadCallback , msnMainThread, ( DWORD )ppd );
 }
+
+
+void MSN_ShowPopup( const HANDLE hContact, const TCHAR* msg, int flags )
+{
+	TCHAR* nickname = a2t( MSN_GetContactName( hContact ));
+	MSN_ShowPopup( nickname, msg, flags );
+	mir_free( nickname );
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // UrlDecode - converts URL chars like %20 into printable characters
@@ -722,25 +735,23 @@ static int SingleHexToDecimal(char c)
 	return -1;
 }
 
-void  UrlDecode( char* str )
+void  UrlDecode( char* str, bool pq )
 {
+	const char key = pq ? '=' : '%';
 	char* s = str, *d = str;
 
 	while( *s )
 	{
-		if ( *s != '%' ) {
-			*d++ = *s++;
-			continue;
-		}
-
-		int digit1 = SingleHexToDecimal( s[1] ), digit2 = SingleHexToDecimal( s[2] );
-		if ( digit1 == -1 || digit2 == -1 ) {
-			*d++ = *s++;
-			continue;
-		}
-
-		s += 3;
-		*d++ = ( digit1 << 4 ) + digit2;
+		if ( *s == key ) {
+			int digit1 = SingleHexToDecimal( s[1] );
+			if ( digit1 != -1 ) {
+				int digit2 = SingleHexToDecimal( s[2] );
+				if ( digit2 != -1 ) {
+					s += 3;
+					*d++ = (char)(( digit1 << 4 ) | digit2);
+					continue;
+		}	}	}
+		*d++ = *s++;
 	}
 
 	*d = 0;

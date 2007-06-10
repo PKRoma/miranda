@@ -134,7 +134,7 @@ void sttSetMirVer( HANDLE hContact, DWORD dwValue )
 	else if ( dwValue == 805306404 )
 		MSN_SetString( hContact, "MirVer", "Miranda IM 0.4.x (MSN v.0.4.x)" );
 	else {
-		unsigned wlmId = min(dwValue >> 28 & 0xff, SIZEOF(MirVerStr));
+		unsigned wlmId = min(dwValue >> 28 & 0xff, SIZEOF(MirVerStr)-1);
 		MSN_SetString( hContact, "MirVer", MirVerStr[ wlmId ] );
 	}
 }
@@ -144,12 +144,11 @@ void sttSetMirVer( HANDLE hContact, DWORD dwValue )
 
 static void sttNotificationMessage( const char* msgBody, bool isInitial )
 {
-	char tBuffer[512];
-	char tBuffer2[512];
+	TCHAR tBuffer[512];
+	TCHAR tBuffer2[512];
 	const char* SrcFolder;
 	const char* MsgDelta;
 	const char* DestFolder;
-	bool tIsPopup = ServiceExists( MS_POPUP_ADDPOPUP ) != 0;
 	int  UnreadMessages = 0, UnreadJunkEmails = 0, iDelta=0;
 
 	MimeHeaders tFileInfo;
@@ -197,24 +196,27 @@ static void sttNotificationMessage( const char* msgBody, bool isInitial )
 			return;
 		mUnreadMessages += 1;
 
-		char mimeFrom[ 1024 ], mimeSubject[ 1024 ];
-		mmdecode( mimeFrom,    ( char* )From );
-		mmdecode( mimeSubject, ( char* )Subject );
+		wchar_t* mimeFromW = tFileInfo.decode("From");
+		wchar_t* mimeSubjectW = tFileInfo.decode("Subject");
+		
+#ifdef _UNICODE
+		mir_sntprintf( tBuffer2, SIZEOF( tBuffer2 ), TranslateT("Subject: %s"), mimeSubjectW );
+#else
+		mir_sntprintf( tBuffer2, SIZEOF( tBuffer2 ), TranslateT("Subject: %S"), mimeSubjectW );
+#endif
 
-		if ( !strcmpi( From, Fromaddr )) {
-			if ( tIsPopup ) {
-				mir_snprintf( tBuffer, sizeof( tBuffer ), MSN_Translate( "Hotmail from %s" ), mimeFrom );
-				mir_snprintf( tBuffer2, sizeof( tBuffer2 ), MSN_Translate( "Subject: %s" ), mimeSubject );
-			}
-			else mir_snprintf( tBuffer, sizeof( tBuffer ), MSN_Translate("A new mail has come from %s (title: %s)."), mimeFrom, mimeSubject );
-		}
-		else {
-			if ( tIsPopup ) {
-				mir_snprintf( tBuffer, sizeof( tBuffer ), MSN_Translate("Hotmail from %s (%s)"),mimeFrom, Fromaddr );
-				mir_snprintf( tBuffer2, sizeof( tBuffer2 ), MSN_Translate("Subject: %s"), mimeSubject );
-			}
-			else mir_snprintf( tBuffer, sizeof( tBuffer ),  MSN_Translate("A new mail has come from %s (%s) (title: %s)."),mimeFrom, Fromaddr, mimeSubject );
-	}	}
+#ifdef _UNICODE
+		TCHAR* msgtxt = strcmpi( From, Fromaddr ) ? 
+			TranslateT("Hotmail from %s (%S)") : TranslateT( "Hotmail from %s" );
+		mir_sntprintf( tBuffer, SIZEOF( tBuffer ), msgtxt, mimeFromW, Fromaddr );
+#else
+		TCHAR* msgtxt = strcmpi( From, Fromaddr ) ? 
+			TranslateT("Hotmail from %S (%s)") : TranslateT( "Hotmail from %S" );
+		mir_sntprintf( tBuffer, SIZEOF( tBuffer ), msgtxt, mimeFromW, Fromaddr );
+#endif
+		mir_free(mimeSubjectW);
+		mir_free(mimeFromW);
+	}
 	else {
 		const char* MailData = tFileInfo[ "Mail-Data" ];
 		if ( MailData != NULL ) {
@@ -231,13 +233,8 @@ static void sttNotificationMessage( const char* msgBody, bool isInitial )
 		if ( UnreadMessages == 0 && UnreadJunkEmails == 0 )
 			return;
 
-		char* dest;
-		if ( tIsPopup ) {
-			mir_snprintf( tBuffer, sizeof( tBuffer ), MSN_Translate( "Hotmail" ));
-			dest = tBuffer2;
-		}
-		else dest = tBuffer;
-		mir_snprintf( dest, sizeof( tBuffer ), MSN_Translate( "Unread mail is available: %d messages (%d junk e-mails)." ),
+		mir_sntprintf( tBuffer, SIZEOF( tBuffer ), TranslateT( "Hotmail" ));
+		mir_sntprintf( tBuffer2, SIZEOF( tBuffer2 ), TranslateT( "Unread mail is available: %d messages (%d junk e-mails)." ),
 			UnreadMessages, UnreadJunkEmails );
 	}
 
@@ -251,19 +248,17 @@ static void sttNotificationMessage( const char* msgBody, bool isInitial )
 	if ( !MSN_GetByte( "DisableHotmail", 1 )) {
 		if ( UnreadMessages != 0 || !MSN_GetByte( "DisableHotmailJunk", 0 )) {
 			SkinPlaySound( mailsoundname );
-			if ( tIsPopup )
-				MSN_ShowPopup( tBuffer, tBuffer2, MSN_ALLOW_ENTER + MSN_ALLOW_MSGBOX + MSN_HOTMAIL_POPUP );
-			else
-				MessageBoxA( NULL, tBuffer, "MSN Protocol", MB_OK | MB_ICONINFORMATION );
+			MSN_ShowPopup( tBuffer, tBuffer2, MSN_ALLOW_ENTER + MSN_ALLOW_MSGBOX + MSN_HOTMAIL_POPUP );
 	}	}
 
 	if ( !MSN_GetByte( "RunMailerOnHotmail", 0 ))
 		return;
 
-	if ( !MSN_GetStaticString( "MailerPath", NULL, tBuffer, sizeof( tBuffer ))) {
-		if ( tBuffer[0] ) {
+	char mailerpath[MAX_PATH];
+	if ( !MSN_GetStaticString( "MailerPath", NULL, mailerpath, sizeof( mailerpath ))) {
+		if ( mailerpath[0] ) {
 			char* tParams = "";
-			char* p = tBuffer;
+			char* p = mailerpath;
 
 			if ( *p == '\"' ) {
 				char* tEndPtr = strchr( p+1, '\"' );
@@ -283,8 +278,8 @@ LBL_Run:
 			while ( *tParams == ' ' )
 				tParams++;
 
-			MSN_DebugLog( "Running mailer \"%s\" with params \"%s\"", tBuffer, tParams );
-			ShellExecuteA( NULL, "open", tBuffer, tParams, NULL, TRUE );
+			MSN_DebugLog( "Running mailer \"%s\" with params \"%s\"", mailerpath, tParams );
+			ShellExecuteA( NULL, "open", mailerpath, tParams, NULL, TRUE );
 }	}	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -309,8 +304,9 @@ static void sttInviteMessage( ThreadData* info, const char* msgBody, char* email
 
 	if ( AppGUID != NULL ) {
 		if ( !strcmp( AppGUID, "{02D3C01F-BF30-4825-A83A-DE7AF41648AA}" )) {
-			MSN_ShowPopup( MSN_GetContactName( info->mJoinedContacts[0] ),
-				MSN_Translate( "Contact tried to open an audio conference (currently not supported)" ), MSN_ALLOW_MSGBOX );
+			MSN_ShowPopup( info->mJoinedContacts[0],
+				TranslateT( "Contact tried to open an audio conference (currently not supported)" ), 
+				MSN_ALLOW_MSGBOX );
 			return;
 	}	}
 
@@ -500,14 +496,14 @@ static void sttCustomSmiley( const char* msgBody, char* email, char* nick, int i
 
 	if ( MSN_GetByte( "EnableCustomSmileyPopup", 1 )) 
 	{
-		char popupMessage[500];
+		TCHAR popupMessage[500];
 		
-		char *szContactName = ( char* )CallService( MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0 );
-		char* fmt = MSN_Translate( iSmileyType == MSN_APPID_CUSTOMSMILEY ? 
-				"%s sent you %d custom smiley(s):\n%s" : "%s sent you %d custom animated smiley(s):\n%s" );
+		TCHAR* fmt = iSmileyType == MSN_APPID_CUSTOMSMILEY ? 
+				TranslateT("sent you %d custom smiley(s):\n%s") : 
+				TranslateT("sent you %d custom animated smiley(s):\n%s");
 
-		mir_snprintf( popupMessage, sizeof( popupMessage ), fmt, szContactName, iCount, smileyList );
-		MSN_ShowPopup( szContactName, popupMessage, 0 );
+		mir_sntprintf( popupMessage, SIZEOF( popupMessage ), fmt, iCount, smileyList );
+		MSN_ShowPopup( hContact, popupMessage, 0 );
 	}	
 }
 
@@ -1106,7 +1102,16 @@ static void sttProcessNotificationMessage( BYTE* buf, unsigned len )
 	else dataBuf[0] = 0;
 
 	if (txtParseParam(dataBuf, NULL, "<TEXT>", "</TEXT>", dataBuf, len))
-		MSN_ShowPopup(MSN_Translate("MSN Alert"), dataBuf, 0);
+	{
+		wchar_t* alrtu;
+		mir_utf8decode( dataBuf, &alrtu );
+#ifdef _UNICODE
+		MSN_ShowPopup(TranslateT("MSN Alert"), alrtu, 0);
+#else
+		MSN_ShowPopup(TranslateT("MSN Alert"), dataBuf, 0);
+#endif
+		mir_free(alrtu);
+	}
 
 	MSN_DebugLog( "Notification message: %s", dataBuf );
 }
@@ -1242,7 +1247,7 @@ LBL_InvalidCommand:
 						MSN_StartStopTyping( info, true );
 
 					if ( MSN_GetByte( "EnableDeliveryPopup", 1 ))
-							MSN_ShowPopup( MSN_GetContactName( hContact ), MSN_Translate( "Chat session established" ), 0 );
+							MSN_ShowPopup( hContact, TranslateT( "Chat session established" ), 0 );
 			}	}
 
 			break;
@@ -1302,10 +1307,10 @@ LBL_InvalidCommand:
 			sttDivideWords( params, 2, tWords );
 			UrlDecode( data.userEmail );
 
-			if ( MSN_GetByte( "EnableSessionPopup", 0 ))
-				MSN_ShowPopup( data.userEmail, MSN_Translate( "Contact left channel" ), 0 );
-
 			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, NULL, 0, 0 );
+
+			if ( MSN_GetByte( "EnableSessionPopup", 0 ))
+				MSN_ShowPopup( hContact, TranslateT( "Contact left channel" ), 0 );
 
 			// modified for chat
 			if ( msnHaveChatDll ) {
@@ -1641,7 +1646,7 @@ LBL_InvalidCommand:
 					MSN_StartStopTyping( info, true );
 
 				if ( MSN_GetByte( "EnableDeliveryPopup", 1 ))
-					MSN_ShowPopup( MSN_GetContactName( hContact ), MSN_Translate( "Chat session established" ), 0 );
+					MSN_ShowPopup( hContact, TranslateT( "Chat session established" ), 0 );
 			}
 			else {
 				bool chatCreated = info->mChatID[0] != 0;

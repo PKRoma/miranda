@@ -553,11 +553,11 @@ static BOOL CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM wPa
 			break;
 
 		case IDC_PREVIEW:
-			MSN_ShowPopup( MSN_Translate( "A New Hotmail has come!" ), MSN_Translate( "Test: Arrival Hotmail" ), MSN_HOTMAIL_POPUP );
+			MSN_ShowPopup( TranslateT( "A New Hotmail has come!" ), TranslateT( "Test: Arrival Hotmail" ), MSN_HOTMAIL_POPUP );
 			break;
 
 		case IDC_PREVIEW2:
-			MSN_ShowPopup( "vasya.pupkin@hotmail.com", MSN_Translate( "Chat session established" ), 0 );
+			MSN_ShowPopup( _T("vasya.pupkin@hotmail.com"), TranslateT( "Chat session established" ), 0 );
 			break;
 		}
 		break;

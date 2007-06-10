@@ -158,7 +158,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define	MSN_ALLOW_ENTER		2
 #define	MSN_HOTMAIL_POPUP	4
 #define MSN_SHOW_ERROR      8
-void  MSN_ShowPopup( const char* nickname, const char* msg, int flags );
+void  MSN_ShowPopup( const TCHAR* nickname, const TCHAR* msg, int flags );
+void  MSN_ShowPopup( const HANDLE hContact, const TCHAR* msg, int flags );
 
 LONG		MSN_SendPacket( HANDLE, const char* cmd, const char* params, ... );
 char*		MirandaStatusToMSN( int status );
@@ -174,7 +175,7 @@ WCHAR*      HtmlEncodeW( const WCHAR* str );
 bool		txtParseParam (const char* szData, const char* presearch, const char* start, const char* finish, char* param, const int size);
 char*		MSN_Base64Decode( const char* str );
 
-void     	UrlDecode( char*str );
+void     	UrlDecode( char*str, bool pq = false );
 void     	UrlEncode( const char* src, char* dest, int cbDest );
 
 HANDLE      MSN_HContactFromEmail( const char* msnEmail, const char* msnNick, int addIfNeeded, int temporary );
@@ -250,6 +251,7 @@ void     MsnInitMenus( void );
 TCHAR* EscapeChatTags(TCHAR* pszText);
 TCHAR* UnEscapeChatTags(TCHAR* str_in);
 
+TCHAR* a2t( const char* str );
 TCHAR* a2tf( const TCHAR* str, BOOL unicode );
 void   overrideStr( TCHAR*& dest, const TCHAR* src, BOOL unicode, const TCHAR* def = NULL );
 void   replaceStr( char*& dest, const char* src );
@@ -282,7 +284,9 @@ struct MimeHeaders
 	~MimeHeaders();
 
 	const char*	readFromBuffer( const char* pSrc );
-	const char* operator[]( const char* fieldName );
+	const char* find( const char* fieldName );
+	const char* operator[]( const char* fieldName ) { return find( fieldName ); }
+	wchar_t* decode(const char* fieldName);
 
 	void  addString( const char* name, const char* szValue );
 	void	addLong( const char* name, long lValue );
@@ -706,8 +710,6 @@ public:
 };
 
 #define UTF8(A) UTFEncoder(A).str()
-
-TCHAR* a2t( const char* str );
 
 
 typedef enum
