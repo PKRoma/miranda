@@ -462,7 +462,7 @@ static BOOL CALLBACK JabberPrivacyRuleDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 					break;
 
 				case Else:
-					ShowWindow( GetDlgItem( hwndDlg, IDC_EDIT_VALUE ), SW_HIDE );
+					ShowWindow( GetDlgItem( hwndDlg, IDC_COMBO_VALUES ), SW_HIDE );
 					ShowWindow( GetDlgItem( hwndDlg, IDC_COMBO_VALUE ), SW_HIDE );
 					break;
 			}	}
@@ -688,10 +688,12 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 				g_PrivacyListManager.Lock();
 				TCHAR *szListName = ((CPrivacyList* )nErr)->GetListName();
+				BOOL bListEmpty = TRUE;
 
 				CPrivacyListRule* pRule = ((CPrivacyList* )nErr)->GetFirstRule();
 
 				while ( pRule ) {
+					bListEmpty = FALSE;
 					TCHAR szTypeValue[ 512 ];
 					switch ( pRule->GetType() ) {
 					case Jid:
@@ -744,7 +746,12 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 					pRule = pRule->GetNext();
 				}
 
-				SendDlgItemMessage( hwndDlg, IDC_PL_RULES_LIST, LB_SETCURSEL, nLbSel, 0 );
+				EnableWindow( GetDlgItem( hwndDlg, IDC_PL_RULES_LIST ), !bListEmpty );
+				if ( bListEmpty )
+					SendDlgItemMessage( hwndDlg, IDC_PL_RULES_LIST, LB_ADDSTRING, 0, (LPARAM)TranslateTS(_T("List has no rules, empty lists will be deleted then changes applied")));
+				else
+					SendDlgItemMessage( hwndDlg, IDC_PL_RULES_LIST, LB_SETCURSEL, nLbSel, 0 );
+				
 				PostMessage( hwndDlg, WM_COMMAND, MAKEWPARAM( IDC_PL_RULES_LIST, LBN_SELCHANGE ), 0 );
 
 				g_PrivacyListManager.Unlock();
@@ -928,6 +935,9 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 				CPrivacyList* pList = g_PrivacyListManager.GetFirstList();
 				while ( pList ) {
 					if ( pList->IsModified() ) {
+						CPrivacyListRule* pRule = pList->GetFirstRule();
+						if ( !pRule )
+							pList->SetDeleted();
 						if ( pList->IsDeleted() )
 							pList->RemoveAllRules();
 						pList->SetModified( FALSE );
@@ -939,7 +949,6 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 						XmlNode* listTag = query->addChild( "list" );
 						listTag->addAttr( "name", pList->GetListName() );
 
-						CPrivacyListRule* pRule = pList->GetFirstRule();
 						while ( pRule ) {
 							XmlNode* itemTag = listTag->addChild( "item" );
 							switch ( pRule->GetType() ) {
