@@ -35,7 +35,6 @@ pIncrementFunc *MyInterlockedIncrement = MyInterlockedIncrementInit;
 
 static CRITICAL_SECTION csInterlocked95;
 extern HANDLE msnMainThread;
-extern bool msnUseExtendedPopups;
 extern char* msnPreviousUUX;
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -618,7 +617,7 @@ void __cdecl MSN_ShowError( const char* msgtext, ... )
 	TCHAR* buf2 = a2t( tBuffer );
 
 	if ( MyOptions.ShowErrorsAsPopups )
-		MSN_ShowPopup( buf1, buf2, MSN_ALLOW_MSGBOX | MSN_SHOW_ERROR );
+		MSN_ShowPopup( buf1, buf2, MSN_ALLOW_MSGBOX | MSN_SHOW_ERROR, NULL );
 	else
 		MessageBox( NULL, buf2, buf1, MB_OK );
 
@@ -634,10 +633,16 @@ LRESULT CALLBACK NullWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 	switch( message ) {
 		case WM_COMMAND: {
 			PopupData* tData = ( PopupData* )PUGetPluginData( hWnd );
-			if ( tData != NULL && ( tData->flags & MSN_ALLOW_ENTER )) {
-				CallProtoService( msnProtocolName, MS_GOTO_INBOX, 0, 0 );
-				PUDeletePopUp( hWnd );
+			if ( tData != NULL )
+			{
+				if ( tData->url != NULL )
+					MSN_CallService( MS_UTILS_OPENURL, 1, ( LPARAM )tData->url );
+
+				if ( tData->flags & MSN_ALLOW_ENTER )
+					CallProtoService( msnProtocolName, MS_GOTO_INBOX, 0, 0 );
 			}
+
+			PUDeletePopUp( hWnd );
 			break;
 		}
 
@@ -650,6 +655,7 @@ LRESULT CALLBACK NullWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 			if ( tData != NULL && tData != (void*)CALLSERVICE_NOTFOUND)
 			{
 				CallService( MS_SKIN2_RELEASEICON, (WPARAM)tData->hIcon, 0 );
+				mir_free( tData->url );
 				mir_free( tData );
 			}
 			break;
@@ -671,7 +677,7 @@ void CALLBACK sttMainThreadCallback( ULONG dwParam )
 	mir_free( ppd );
 }
 
-void MSN_ShowPopup( const TCHAR* nickname, const TCHAR* msg, int flags )
+void MSN_ShowPopup( const TCHAR* nickname, const TCHAR* msg, int flags, char* url )
 {
 	if ( !ServiceExists( MS_POPUP_ADDPOPUPT )) {
 		if ( flags & MSN_ALLOW_MSGBOX ) {
@@ -701,8 +707,8 @@ void MSN_ShowPopup( const TCHAR* nickname, const TCHAR* msg, int flags )
 		ppd->lchIcon = LoadIconEx( "main" );
 		ppd->colorBack = ( MyOptions.UseWinColors ) ? GetSysColor( COLOR_BTNFACE ) : MyOptions.BGColour;
 		ppd->colorText = ( MyOptions.UseWinColors ) ? GetSysColor( COLOR_WINDOWTEXT ) : MyOptions.TextColour;
-		if ( msnUseExtendedPopups )
-			ppd->iSeconds = ( flags & MSN_HOTMAIL_POPUP ) ? MyOptions.PopupTimeoutHotmail : MyOptions.PopupTimeoutOther;
+		ppd->iSeconds = ( flags & ( MSN_HOTMAIL_POPUP | MSN_ALERT_POPUP )) ? 
+			MyOptions.PopupTimeoutHotmail : MyOptions.PopupTimeoutOther;
 	}
 
 	ppd->PluginWindowProc = ( WNDPROC )NullWindowProc;
@@ -711,6 +717,7 @@ void MSN_ShowPopup( const TCHAR* nickname, const TCHAR* msg, int flags )
 	PopupData* pud = ( PopupData* )ppd->PluginData;
 	pud->flags = flags;
 	pud->hIcon = ppd->lchIcon;
+	pud->url = mir_strdup( url );
 
 	QueueUserAPC( sttMainThreadCallback , msnMainThread, ( DWORD )ppd );
 }
@@ -718,9 +725,8 @@ void MSN_ShowPopup( const TCHAR* nickname, const TCHAR* msg, int flags )
 
 void MSN_ShowPopup( const HANDLE hContact, const TCHAR* msg, int flags )
 {
-	TCHAR* nickname = a2t( MSN_GetContactName( hContact ));
-	MSN_ShowPopup( nickname, msg, flags );
-	mir_free( nickname );
+	TCHAR* nickname = hContact ? MSN_GetContactNameT( hContact ) : _T("Me");
+	MSN_ShowPopup( nickname, msg, flags, NULL );
 }
 
 

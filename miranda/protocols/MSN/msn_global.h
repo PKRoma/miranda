@@ -154,11 +154,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define NEWSTR_ALLOCA(A) (A==NULL)?NULL:strcpy((char*)alloca(strlen(A)+1),A)
 #define NEWTSTR_ALLOCA(A) (A==NULL)?NULL:_tcscpy((TCHAR*)alloca(sizeof(TCHAR)*(_tcslen(A)+1)),A)
 
-#define	MSN_ALLOW_MSGBOX	1
-#define	MSN_ALLOW_ENTER		2
-#define	MSN_HOTMAIL_POPUP	4
+#define	MSN_ALLOW_MSGBOX    1
+#define	MSN_ALLOW_ENTER	    2
+#define	MSN_HOTMAIL_POPUP   4
 #define MSN_SHOW_ERROR      8
-void  MSN_ShowPopup( const TCHAR* nickname, const TCHAR* msg, int flags );
+#define	MSN_ALERT_POPUP	    16
+void  MSN_ShowPopup( const TCHAR* nickname, const TCHAR* msg, int flags, char* url );
 void  MSN_ShowPopup( const HANDLE hContact, const TCHAR* msg, int flags );
 
 LONG		MSN_SendPacket( HANDLE, const char* cmd, const char* params, ... );
@@ -266,6 +267,7 @@ typedef struct
 {
 	unsigned flags;
 	HICON hIcon;
+	char* url;
 } PopupData;
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -659,8 +661,8 @@ extern  MSN_StatusMessage    msnModeMsgs[ MSN_NUM_MODES ];
 
 extern  LISTENINGTOINFO      msnCurrentMedia;
 
-extern	ThreadData*	volatile msnNsThread;
-extern	bool		volatile msnLoggedIn;
+extern	ThreadData*	msnNsThread;
+extern	bool        msnLoggedIn;
 
 extern	char*	    msnProtocolName;
 extern	int         msnSearchID;
@@ -673,6 +675,7 @@ extern	char*       msnProductID;
 
 extern	char*		ModuleName;
 extern	char*	    mailsoundname;
+extern	char*	    alertsoundname;
 
 extern	char*       sid;
 extern	char*       kv;

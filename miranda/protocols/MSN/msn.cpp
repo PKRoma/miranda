@@ -84,6 +84,7 @@ char* msnProtChallenge = NULL;
 char* msnProductID  = NULL;
 
 char* mailsoundname;
+char* alertsoundname;
 char* ModuleName;
 
 PLUGININFOEX pluginInfo =
@@ -105,14 +106,13 @@ PLUGININFOEX pluginInfo =
     #endif
 };
 
-bool			volatile msnLoggedIn = false;
-ThreadData*	volatile msnNsThread = NULL;
+bool        msnLoggedIn = false;
+ThreadData*	msnNsThread = NULL;
 
 int				msnStatusMode,
 				msnDesiredStatus;
 HANDLE			hNetlibUser = NULL;
 HANDLE			hInitChat = NULL;
-bool			msnUseExtendedPopups;
 
 int CompareHandles( const void* p1, const void* p2 )
 {	return (long)p1 - (long)p2;
@@ -251,7 +251,6 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 
 	MsnInitMenus();
 
-	msnUseExtendedPopups = ServiceExists( MS_POPUP_ADDPOPUPEX ) != 0;
 //	arHooks.insert( HookEvent( ME_USERINFO_INITIALISE, MsnOnDetailsInit ));
 	arHooks.insert( HookEvent( ME_MSG_WINDOWEVENT, MsnWindowEvent ));
 	arHooks.insert( HookEvent( ME_IDLE_CHANGED, MsnIdleChanged ));
@@ -357,6 +356,9 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	mailsoundname = ( char* )mir_alloc( 64 );
 	mir_snprintf(mailsoundname, 64, "%s:%s", protocolname, MSN_Translate( "Hotmail" ));
 	SkinAddNewSound( mailsoundname, mailsoundname, "hotmail.wav" );
+	alertsoundname = ( char* )mir_alloc( 64 );
+	mir_snprintf(mailsoundname, 64, "%s:%s", protocolname, MSN_Translate( "Hotmail" ));
+	SkinAddNewSound( alertsoundname, alertsoundname, "msnalert.wav" );
 
 	msnStatusMode = msnDesiredStatus = ID_STATUS_OFFLINE;
 	memset(&msnCurrentMedia, 0, sizeof(msnCurrentMedia));
@@ -402,6 +404,7 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	Netlib_CloseHandle( hNetlibUser );
 
 	mir_free( mailsoundname );
+	mir_free( alertsoundname );
 	mir_free( msnProtocolName );
 	mir_free( ModuleName );
 

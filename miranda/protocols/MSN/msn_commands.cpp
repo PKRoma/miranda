@@ -248,7 +248,7 @@ static void sttNotificationMessage( const char* msgBody, bool isInitial )
 	if ( !MSN_GetByte( "DisableHotmail", 1 )) {
 		if ( UnreadMessages != 0 || !MSN_GetByte( "DisableHotmailJunk", 0 )) {
 			SkinPlaySound( mailsoundname );
-			MSN_ShowPopup( tBuffer, tBuffer2, MSN_ALLOW_ENTER + MSN_ALLOW_MSGBOX + MSN_HOTMAIL_POPUP );
+			MSN_ShowPopup( tBuffer, tBuffer2, MSN_ALLOW_ENTER + MSN_ALLOW_MSGBOX + MSN_HOTMAIL_POPUP, NULL );
 	}	}
 
 	if ( !MSN_GetByte( "RunMailerOnHotmail", 0 ))
@@ -1101,19 +1101,27 @@ static void sttProcessNotificationMessage( BYTE* buf, unsigned len )
 	}
 	else dataBuf[0] = 0;
 
-	if (txtParseParam(dataBuf, NULL, "<TEXT>", "</TEXT>", dataBuf, len))
+	char* txt = ( char* )alloca( len );
+	if (txtParseParam(dataBuf, NULL, "<TEXT>", "</TEXT>", txt, len))
 	{
+		char url[256], msgid[64], notid[64], fullurl[512];
+
+		txtParseParam(dataBuf, "NOTIFICATION", "id=\"", "\"", notid, sizeof(notid));
+		txtParseParam(dataBuf, "MSG", "id=\"", "\"", msgid, sizeof(msgid));
+		txtParseParam(dataBuf, "ACTION", "url=\"", "\"", url, sizeof(url));
+		
+		mir_snprintf(fullurl, sizeof(fullurl), "%snotification_id=%s&message_id=%s", url, notid, msgid);
+
 		wchar_t* alrtu;
-		mir_utf8decode( dataBuf, &alrtu );
+		mir_utf8decode( txt, &alrtu );
+		SkinPlaySound( alertsoundname );
 #ifdef _UNICODE
-		MSN_ShowPopup(TranslateT("MSN Alert"), alrtu, 0);
+		MSN_ShowPopup(TranslateT("MSN Alert"), alrtu, MSN_ALERT_POPUP | MSN_ALLOW_MSGBOX, fullurl);
 #else
-		MSN_ShowPopup(TranslateT("MSN Alert"), dataBuf, 0);
+		MSN_ShowPopup(TranslateT("MSN Alert"), dataBuf, MSN_ALERT_POPUP | MSN_ALLOW_MSGBOX, fullurl);
 #endif
 		mir_free(alrtu);
 	}
-
-	MSN_DebugLog( "Notification message: %s", dataBuf );
 }
 
 int MSN_HandleCommands( ThreadData* info, char* cmdString )
@@ -1246,8 +1254,8 @@ LBL_InvalidCommand:
 					if ( typing )
 						MSN_StartStopTyping( info, true );
 
-					if ( MSN_GetByte( "EnableDeliveryPopup", 1 ))
-							MSN_ShowPopup( hContact, TranslateT( "Chat session established" ), 0 );
+					if ( MSN_GetByte( "EnableDeliveryPopup", 0 ))
+							MSN_ShowPopup( hContact, TranslateT( "Chat session established by my request" ), 0 );
 			}	}
 
 			break;
@@ -1645,8 +1653,8 @@ LBL_InvalidCommand:
 				if ( typing )
 					MSN_StartStopTyping( info, true );
 
-				if ( MSN_GetByte( "EnableDeliveryPopup", 1 ))
-					MSN_ShowPopup( hContact, TranslateT( "Chat session established" ), 0 );
+				if ( MSN_GetByte( "EnableDeliveryPopup", 0 ))
+					MSN_ShowPopup( hContact, TranslateT( "Chat session established by contact request" ), 0 );
 			}
 			else {
 				bool chatCreated = info->mChatID[0] != 0;

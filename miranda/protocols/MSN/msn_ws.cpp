@@ -114,7 +114,11 @@ bool ThreadData::isTimeout( void )
 		bool sbsess = mType == SERVER_SWITCHBOARD;
 
 		MSN_DebugLog( "Dropping the idle %s due to inactivity", sbsess ? "switchboard" : "p2p");
-		if ( !sbsess ) return true; 
+		if ( sbsess ) 
+			if ( MSN_GetByte( "EnableSessionPopup", 0 ))
+				MSN_ShowPopup( NULL, TranslateT( "Session dropped due to inactivity" ), 0 );
+		else
+			return true;
 
 		sendPacket( "OUT", NULL );
 		mWaitPeriod = 15;

@@ -494,7 +494,7 @@ static BOOL CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM wPa
 		CheckDlgButton( hwndDlg, IDC_DISABLEHOTMAIL,      MSN_GetByte( "DisableHotmail", 0 ));
 		CheckDlgButton( hwndDlg, IDC_DISABLEHOTJUNK,	     MSN_GetByte( "DisableHotmailJunk", 0 ));
 		CheckDlgButton( hwndDlg, IDC_NOTIFY_ENDSESSION,   MSN_GetByte( "EnableSessionPopup", 0 ));
-		CheckDlgButton( hwndDlg, IDC_NOTIFY_FIRSTMSG,     MSN_GetByte( "EnableDeliveryPopup", 1 ));
+		CheckDlgButton( hwndDlg, IDC_NOTIFY_FIRSTMSG,     MSN_GetByte( "EnableDeliveryPopup", 0 ));
 		CheckDlgButton( hwndDlg, IDC_NOTIFY_CUSTOMSMILEY, MSN_GetByte( "EnableCustomSmileyPopup", 1 ));
 		CheckDlgButton( hwndDlg, IDC_ERRORS_USING_POPUPS, MSN_GetByte( "ShowErrorsAsPopups", 0 ));
 
@@ -557,7 +557,7 @@ static BOOL CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM wPa
 			break;
 
 		case IDC_PREVIEW2:
-			MSN_ShowPopup( _T("vasya.pupkin@hotmail.com"), TranslateT( "Chat session established" ), 0 );
+			MSN_ShowPopup( _T("vasya.pupkin@hotmail.com"), TranslateT( "Chat session established" ), 0, NULL );
 			break;
 		}
 		break;
@@ -632,19 +632,11 @@ int MsnOptInit(WPARAM wParam,LPARAM lParam)
 	odp.pfnDlgProc  = DlgProcMsnServLists;
 	MSN_CallService( MS_OPT_ADDPAGE, wParam,( LPARAM )&odp );
 
-	if ( ServiceExists( MS_POPUP_ADDPOPUP )) {
-		memset( &odp, 0, sizeof( odp ));
-		odp.cbSize			= sizeof( odp );
-		odp.position		= 100000000;
-		odp.hInstance		= hInst;
-		odp.pszTemplate	= MAKEINTRESOURCEA( IDD_HOTMAIL_OPT_POPUP );
-		odp.pszTitle		= msnProtocolName;
-		odp.pszGroup		= "Popups";
-		odp.groupPosition	= 910000000;
-		odp.flags			= ODPF_BOLDGROUPS;
-		odp.pfnDlgProc		= DlgProcHotmailPopUpOpts;
-		MSN_CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
-	}
+	odp.pszTab      = "Notifications";
+	odp.pszTemplate	= MAKEINTRESOURCEA( IDD_HOTMAIL_OPT_POPUP );
+	odp.pfnDlgProc		= DlgProcHotmailPopUpOpts;
+	MSN_CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
+
 	return 0;
 }
 
