@@ -36,6 +36,7 @@ int JabberMenuHandlePrivacyLists( WPARAM wParam, LPARAM lParam );
 #define JABBER_PL_RULE_TYPE_PRESENCE_IN		2
 #define JABBER_PL_RULE_TYPE_PRESENCE_OUT	4
 #define JABBER_PL_RULE_TYPE_IQ				8
+#define JABBER_PL_RULE_TYPE_ALL				0x0F
 
 enum PrivacyListRuleType
 {
@@ -392,6 +393,7 @@ public:
 	BOOL SetModified(BOOL bModified = TRUE)
 	{
 		m_bModified = bModified;
+		return TRUE;
 	}
 	BOOL IsModified()
 	{

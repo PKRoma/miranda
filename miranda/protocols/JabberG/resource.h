@@ -247,6 +247,7 @@
 #define IDC_PLAN                        1415
 #define IDC_PERSONALGROUP               1434
 #define IDC_EXTRAGROUP                  1436
+#define IDC_COMBO_VALUES                1437
 #define IDI_BOOKMARKS                   3000
 #define IDD_BOOKMARKS                   3001
 #define IDC_BM_LIST                     3002
@@ -270,6 +271,7 @@
 #define IDC_BOOKMARK_TYPE               3013
 #define IDC_CHECK_BM_AUTOJOIN           3014
 #define IDC_ZLIB                        3015
+#define IDI_PRIVACY_LISTS               3016
 #define IDM_MESSAGE                     10002
 #define IDM_CLEAR                       10003
 #define IDM_VOICE                       10005

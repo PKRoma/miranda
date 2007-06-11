@@ -87,20 +87,21 @@ struct
 }
 static iconList[] =
 {
-	{	"Protocol icon",         "main",       IDI_JABBER     },
-	{	"Agents list",           "Agents",     IDI_AGENTS     },
-	{	"Change password",       "key",        IDI_KEYS       },
-	{	"Multi-User Conference", "group",      IDI_GROUP      },
-	{	"Personal vCard",        "vcard",      IDI_VCARD      },
-	{	"Request authorization", "Request",    IDI_REQUEST    },
-	{	"Grant authorization",   "Grant",      IDI_GRANT      },
-	{	"Revoke authorization",  "Revoke",     IDI_AUTHREVOKE },
-	{	"Convert to room",       "convert",    IDI_USER2ROOM  },
-	{	"Add to roster",         "addroster",  IDI_ADDROSTER  },
-	{	"Login/logout",          "trlogonoff", IDI_LOGIN      },
-	{	"Resolve nicks",         "trresolve",  IDI_REFRESH    },
-	{	"Bookmarks",             "bookmarks",  IDI_BOOKMARKS  }, 
-	{	"AdHoc Command",         "adhoc",	   IDI_COMMAND    }
+	{	"Protocol icon",         "main",         IDI_JABBER        },
+	{	"Agents list",           "Agents",       IDI_AGENTS        },
+	{	"Change password",       "key",          IDI_KEYS          },
+	{	"Multi-User Conference", "group",        IDI_GROUP         },
+	{	"Personal vCard",        "vcard",        IDI_VCARD         },
+	{	"Request authorization", "Request",      IDI_REQUEST       },
+	{	"Grant authorization",   "Grant",        IDI_GRANT         },
+	{	"Revoke authorization",  "Revoke",       IDI_AUTHREVOKE    },
+	{	"Convert to room",       "convert",      IDI_USER2ROOM     },
+	{	"Add to roster",         "addroster",    IDI_ADDROSTER     },
+	{	"Login/logout",          "trlogonoff",   IDI_LOGIN         },
+	{	"Resolve nicks",         "trresolve",    IDI_REFRESH       },
+	{	"Bookmarks",             "bookmarks",    IDI_BOOKMARKS     }, 
+	{	"Privacy Lists",         "privacylists", IDI_PRIVACY_LISTS },
+	{	"AdHoc Command",         "adhoc",        IDI_COMMAND       }
 };
 
 void JabberIconsInit( void )

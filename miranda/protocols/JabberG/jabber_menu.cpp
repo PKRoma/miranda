@@ -542,7 +542,7 @@ void JabberMenuInit()
 	CreateServiceFunction( text, JabberMenuHandlePrivacyLists);
 	mi.pszName = "Privacy Lists...";
 	mi.position = 2000050005;
-	mi.icolibItem = GetIconHandle( IDI_EDIT );
+	mi.icolibItem = GetIconHandle( IDI_PRIVACY_LISTS );
 	hMenuPrivacyLists = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuPrivacyLists, ( LPARAM )&clmi );
 }

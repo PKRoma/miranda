@@ -1282,6 +1282,9 @@
 				RelativePath="icos\pages.ico">
 			</File>
 			<File
+				RelativePath=".\icos\privacy_lists.ico">
+			</File>
+			<File
 				RelativePath=".\icos\refresh.ico">
 			</File>
 			<File
