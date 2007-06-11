@@ -975,14 +975,14 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 		case IDCLOSE:
 		case IDCANCEL:
-			if ( JabberPrivacyListDlgCanExit( hwndDlg ))
+			if ( jabberOnline && JabberPrivacyListDlgCanExit( hwndDlg ))
 				DestroyWindow( hwndDlg );
 			return TRUE;
 		}
 		break;
 
 	case WM_CLOSE:
-		if ( JabberPrivacyListDlgCanExit( hwndDlg ))
+		if ( jabberOnline && JabberPrivacyListDlgCanExit( hwndDlg ))
 			DestroyWindow( hwndDlg );
 		return TRUE;
 
