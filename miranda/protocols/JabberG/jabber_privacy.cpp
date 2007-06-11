@@ -571,6 +571,15 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		EnableWindow( GetDlgItem( hwndDlg, IDC_REMOVE_RULE ), FALSE );
 		EnableWindow( GetDlgItem( hwndDlg, IDC_UP_RULE ), FALSE );
 		EnableWindow( GetDlgItem( hwndDlg, IDC_DOWN_RULE ), FALSE );
+		{
+			int iqId = JabberSerialNext();
+			JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultPrivacyLists);
+
+			XmlNodeIq iq( "get", iqId);
+
+			XmlNode* query = iq.addQuery( JABBER_FEAT_PRIVACY_LISTS );
+			jabberThreadInfo->send( iq );
+		}
 		return TRUE;
 
 	case WM_JABBER_REFRESH:
@@ -999,17 +1008,8 @@ int JabberMenuHandlePrivacyLists( WPARAM wParam, LPARAM lParam )
 {
 	if ( hwndPrivacyLists && IsWindow( hwndPrivacyLists ))
 		SetForegroundWindow( hwndPrivacyLists );
-	else {
-		int iqId = JabberSerialNext();
-		JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultPrivacyLists);
-
-		XmlNodeIq iq( "get", iqId);
-
-		XmlNode* query = iq.addQuery( JABBER_FEAT_PRIVACY_LISTS );
-		jabberThreadInfo->send( iq );
-
+	else
 		CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_PRIVACY_LISTS ), NULL, JabberPrivacyListsDlgProc, lParam );
-	}
 
 	return 0;
 }
