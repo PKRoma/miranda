@@ -115,8 +115,10 @@ bool ThreadData::isTimeout( void )
 
 		MSN_DebugLog( "Dropping the idle %s due to inactivity", sbsess ? "switchboard" : "p2p");
 		if ( sbsess ) 
-			if ( MSN_GetByte( "EnableSessionPopup", 0 ))
-				MSN_ShowPopup( NULL, TranslateT( "Session dropped due to inactivity" ), 0 );
+			if ( MSN_GetByte( "EnableSessionPopup", 0 )) {
+				HANDLE hContact = mJoinedCount ? mJoinedContacts[0] : mInitialContact;
+				MSN_ShowPopup( hContact, TranslateT( "Chat session dropped due to inactivity" ), 0 );
+			}
 		else
 			return true;
 
