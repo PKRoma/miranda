@@ -164,10 +164,6 @@ SOURCE=.\ezxml.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\mmdecsjis.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\msn.cpp
 # ADD CPP /Yc"msn_global.h"
 # End Source File

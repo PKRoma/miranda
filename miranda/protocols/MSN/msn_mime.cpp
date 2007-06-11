@@ -299,7 +299,7 @@ wchar_t* MimeHeaders::decode(const char* fieldName)
 	const char *p = tbuf;
 	for (;;)
 	{
-		char *cp = strstr(p, "=?");
+		char *cp = (char*)strstr(p, "=?");
 		if (cp == NULL) break;
 		*cp = 0;
 
