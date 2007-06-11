@@ -30,8 +30,17 @@ int DbEventGetText(WPARAM wParam, LPARAM lParam)
 	BOOL bIsDenyUnicode = (egt->datatype & DBVTF_DENYUNICODE);
 
 	DBEVENTINFO* dbei = egt->dbei;
-	if ( dbei->eventType == EVENTTYPE_FILE )
+	if ( dbei->eventType == EVENTTYPE_FILE ) {
+		char* filename = ((char *)dbei->pBlob) + sizeof(DWORD);
+		char* descr = filename + lstrlenA( filename ) + 1;
+		switch ( egt->datatype ) {
+		case DBVT_WCHAR:
+			return ( int )a2t( *descr == 0 ? filename : descr );
+		case DBVT_ASCIIZ:
+			return ( int )mir_strdup( *descr == 0 ? filename : descr );
+		}
 		return 0;
+	}
 
    egt->datatype &= ~DBVTF_DENYUNICODE;
 	if ( egt->datatype == DBVT_WCHAR )
