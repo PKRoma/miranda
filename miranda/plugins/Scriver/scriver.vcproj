@@ -4,10 +4,10 @@
 	Version="7.10"
 	Name="Scriver"
 	ProjectGUID="{B8928210-546C-4AE3-956B-E2B724E6B8E5}"
-	SccProjectName=""
+	SccProjectName="&quot;$/Miranda/miranda&quot;, SHIAAAAA"
 	SccAuxPath=""
-	SccLocalPath=""
-	SccProvider="">
+	SccLocalPath="..\.."
+	SccProvider="MSSCCI:Microsoft Visual SourceSafe">
 	<Platforms>
 		<Platform
 			Name="Win32"/>
@@ -959,82 +959,16 @@
 			Name="Resource Files"
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 			<File
-				RelativePath="..\..\Miranda-IM\res\addcontact.ico">
-			</File>
-			<File
-				RelativePath="res\addcontact.ico">
-			</File>
-			<File
-				RelativePath="..\..\src\res\addcontact.ico">
-			</File>
-			<File
-				RelativePath="res\Clock32.ico">
-			</File>
-			<File
-				RelativePath="res\Clock8.ico">
-			</File>
-			<File
 				RelativePath="res\delete.ico">
 			</File>
 			<File
-				RelativePath="..\..\src\res\delete.ico">
-			</File>
-			<File
-				RelativePath="res\Details32.ico">
-			</File>
-			<File
-				RelativePath="res\Details8.ico">
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\downarrow.ico">
-			</File>
-			<File
-				RelativePath="res\Downarrow32.ico">
-			</File>
-			<File
-				RelativePath="res\Downarrow8.ico">
-			</File>
-			<File
 				RelativePath="res\dragcopy.cur">
-			</File>
-			<File
-				RelativePath="..\..\src\res\dragcopy.cur">
-			</File>
-			<File
-				RelativePath="res\emptyblo.ico">
-			</File>
-			<File
-				RelativePath="..\..\src\res\emptyblo.ico">
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\history.ico">
-			</File>
-			<File
-				RelativePath="res\History32.ico">
-			</File>
-			<File
-				RelativePath="res\History8.ico">
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\hyperlin.cur">
-			</File>
-			<File
-				RelativePath="res\hyperlin.cur">
 			</File>
 			<File
 				RelativePath="..\..\src\res\hyperlin.cur">
 			</File>
 			<File
 				RelativePath="res\incoming.ico">
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\multisend.ico">
-			</File>
-			<File
-				RelativePath="res\Multisend32.ico">
-			</File>
-			<File
-				RelativePath="res\Multisend8.ico">
 			</File>
 			<File
 				RelativePath="res\notice.ico">
@@ -1044,9 +978,6 @@
 			</File>
 			<File
 				RelativePath="res\quote.ico">
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\rename.ico">
 			</File>
 			<File
 				RelativePath="resource.rc">
@@ -1080,40 +1011,10 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="res\send8.ico">
-			</File>
-			<File
-				RelativePath="res\smiley8.ico">
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\timestamp.ico">
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\typing.ico">
-			</File>
-			<File
-				RelativePath="res\Typing32.ico">
-			</File>
-			<File
-				RelativePath="res\Typing8.ico">
-			</File>
-			<File
-				RelativePath="res\typingoff.ico">
-			</File>
-			<File
-				RelativePath="res\typingon.ico">
-			</File>
-			<File
 				RelativePath="res\unicodeoff.ico">
 			</File>
 			<File
 				RelativePath="res\unicodeon.ico">
-			</File>
-			<File
-				RelativePath="res\unknown.bmp">
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\viewdetails.ico">
 			</File>
 		</Filter>
 	</Files>
