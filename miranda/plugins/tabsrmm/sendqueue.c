@@ -520,6 +520,8 @@ void LogErrorMessage(HWND hwndDlg, struct MessageWindowData *dat, int iSendJobIn
         iMsgLen = 0;
         dbei.pBlob = NULL;
     }
+	 if ( sendJobs[iSendJobIndex].dwFlags & PREF_UTF )
+		 dbei.flags = DBEF_UTF;
 #if defined(_UNICODE)
     if(iSendJobIndex >= 0) {
         if(sendJobs[iSendJobIndex].dwFlags & PREF_UNICODE) {
