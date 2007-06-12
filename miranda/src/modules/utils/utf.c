@@ -39,7 +39,7 @@ char* Utf8DecodeCP( char* str, int codepage, wchar_t** ucs2 )
 	if ( len < 2 ) {
 		if ( ucs2 != NULL ) {
 			*ucs2 = ( wchar_t* )mir_alloc(( len+1 )*sizeof( wchar_t ));
-			MultiByteToWideChar( CP_ACP, 0, str, len, *ucs2, len );
+			MultiByteToWideChar( codepage, 0, str, len, *ucs2, len );
 			( *ucs2 )[ len ] = 0;
 		}
 		return str;
@@ -89,7 +89,7 @@ char* Utf8DecodeCP( char* str, int codepage, wchar_t** ucs2 )
 		memcpy( *ucs2, tempBuf, fullLen );
 	}
 
-	WideCharToMultiByte( CP_ACP, 0, tempBuf, -1, str, len, "?", &errFlag );
+	WideCharToMultiByte( codepage, 0, tempBuf, -1, str, len, "?", &errFlag );
 
    if ( needs_free )
 		mir_free( tempBuf );
