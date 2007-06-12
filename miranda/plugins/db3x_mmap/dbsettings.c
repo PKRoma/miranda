@@ -375,9 +375,17 @@ static int GetContactSetting(WPARAM wParam,LPARAM lParam)
 		return 1;
 
 	if ( dgs->pValue->type == DBVT_UTF8 ) {
-		mir_utf8decode( dgs->pValue->pszVal, NULL );
-		dgs->pValue->type = DBVT_ASCIIZ;
-	}
+		WCHAR* tmp;
+		char* val = mir_utf8decode( dgs->pValue->pszVal, &tmp );
+		if ( val == NULL ) {
+			dgs->pValue->type = DBVT_WCHAR;
+			mir_free( dgs->pValue->pszVal );
+			dgs->pValue->pwszVal = tmp;
+		}
+		else {
+			dgs->pValue->type = DBVT_ASCIIZ;
+			mir_free( tmp );
+	}	}
 
 	return 0;
 }

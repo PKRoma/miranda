@@ -30,6 +30,7 @@ char* Utf8DecodeCP( char* str, int codepage, wchar_t** ucs2 )
 {
 	int len, needs_free = 0;
 	wchar_t* tempBuf;
+	BOOL errFlag = FALSE;
 	
 	if ( str == NULL )
 		return NULL;
@@ -88,12 +89,12 @@ char* Utf8DecodeCP( char* str, int codepage, wchar_t** ucs2 )
 		memcpy( *ucs2, tempBuf, fullLen );
 	}
 
-   WideCharToMultiByte( CP_ACP, 0, tempBuf, -1, str, len, NULL, NULL );
+	WideCharToMultiByte( CP_ACP, 0, tempBuf, -1, str, len, "?", &errFlag );
 
    if ( needs_free )
 		mir_free( tempBuf );
 
-	return str;
+	return ( errFlag ) ? NULL : str;
 }
 
 char* Utf8Decode( char* str, wchar_t** ucs2 )
