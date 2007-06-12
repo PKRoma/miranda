@@ -128,7 +128,7 @@ static BOOL txtParseParam(char* szData, char* presearch,
 
 	len = min(cp1 - cp, size);
 	strncpy(param, cp, len);
-	param[len] = 0;
+	param[len-1] = 0;
 
 	return TRUE;
 }
