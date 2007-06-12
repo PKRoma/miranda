@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #pragma comment(exestr, "\r\n\r\n Bio was here 8-) \r\n")
 
-static BOOL safetyMode=TRUE;
+BOOL safetyMode = TRUE;
 static int flushBuffersTimerId;
 
 static PBYTE pNull = 0;
@@ -162,7 +162,7 @@ static int CacheSetSafetyMode(WPARAM wParam,LPARAM lParam)
 
 int InitCache(void)
 {
-    DWORD x;
+	DWORD x;
 	SYSTEM_INFO sinf;
 
 	GetSystemInfo(&sinf);

@@ -102,7 +102,7 @@ void UninitModuleNames(void)
 	li.List_Destroy(&lOfs);
 }
 
-static DWORD FindExistingModuleNameOfs(const char *szName,int nameLen)
+static DWORD FindExistingModuleNameOfs(const char *szName)
 {
 	static ModuleName *lastmn = NULL;
 	ModuleName mn, *pmn;
@@ -127,12 +127,15 @@ static DWORD FindExistingModuleNameOfs(const char *szName,int nameLen)
 DWORD GetModuleNameOfs(const char *szName)
 {
 	struct DBModuleName dbmn;
-	int nameLen=strlen(szName);
+	int nameLen;
 	DWORD ofsNew,ofsExisting;
 	char *mod;
 
-	ofsExisting=FindExistingModuleNameOfs(szName,nameLen);
+	ofsExisting=FindExistingModuleNameOfs(szName);
 	if(ofsExisting) return ofsExisting;
+
+	nameLen = strlen(szName);
+
 	//need to create the module name
 	ofsNew=CreateNewSpace(nameLen+offsetof(struct DBModuleName,name));
 	dbmn.signature=DBMODULENAME_SIGNATURE;
@@ -159,11 +162,11 @@ char *GetModuleNameByOfs(DWORD ofs)
 	ModuleName mn, *pmn;
 	int index;
 
+	if (lastmn && lastmn->ofs == ofs)
+		return lastmn->name;
+
 	mn.name = NULL;
 	mn.ofs = ofs;
-
-	if (lastmn && OfsCompare(&mn,lastmn) == 0)
-		return lastmn->name;
 
 	if (li.List_GetIndex(&lOfs,&mn,&index)) {
 		pmn = (ModuleName*)lOfs.items[index];

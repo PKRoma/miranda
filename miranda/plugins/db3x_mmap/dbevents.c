@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 
+extern BOOL safetyMode;
 
 DWORD GetModuleNameOfs(const char *szName);
 char *GetModuleNameByOfs(DWORD ofs);
@@ -86,6 +87,7 @@ static int AddEvent(WPARAM wParam,LPARAM lParam)
 	struct DBContact dbc;
 	struct DBEvent dbe,*dbeTest;
 	DWORD ofsNew,ofsModuleName,ofsContact,ofsThis;
+	BOOL neednotify;
 
 	if(dbei==NULL||dbei->cbSize!=sizeof(DBEVENTINFO)) return (int)NULL;
 	if(dbei->timestamp==0) return (int)NULL;
@@ -162,14 +164,22 @@ static int AddEvent(WPARAM wParam,LPARAM lParam)
 			dbc.timestampFirstUnread=dbe.timestamp;
 			dbc.ofsFirstUnreadEvent=ofsNew;
 		}
+		neednotify = TRUE;
 	}
+	else neednotify = safetyMode;
+
 	DBWrite(ofsContact,&dbc,sizeof(struct DBContact));
 	DBWrite(ofsNew,&dbe,offsetof(struct DBEvent,blob));
 	DBWrite(ofsNew+offsetof(struct DBEvent,blob),dbei->pBlob,dbei->cbBlob);
 	DBFlush(0);
+
 	LeaveCriticalSection(&csDbAccess);
 	log1("add event @ %08x",ofsNew);
-	NotifyEventHooks(hEventAddedEvent,wParam,(LPARAM)ofsNew);
+
+	// Notify only in safe mode or on really new events
+	if (neednotify)
+		NotifyEventHooks(hEventAddedEvent,wParam,(LPARAM)ofsNew);
+
 	return (int)ofsNew;
 }
 

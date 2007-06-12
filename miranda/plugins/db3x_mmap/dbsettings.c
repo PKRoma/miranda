@@ -28,6 +28,8 @@ DBCachedContactValueList* AddToCachedContactList(HANDLE hContact, int index);
 
 HANDLE hCacheHeap = NULL;
 SortedList lContacts = {0};
+HANDLE hLastCachedContact = NULL;
+static DBCachedContactValueList *LastVL = NULL;
 
 static SortedList lSettings={0}, lGlobalSettings={0}, lResidentSettings={0};
 static HANDLE hSettingChangeEvent = NULL;
@@ -148,20 +150,30 @@ static DBVARIANT* GetCachedValuePtr( HANDLE hContact, char* szSetting, int bAllo
 		DBCachedContactValue *V, *V1;
 		DBCachedContactValueList VLtemp,*VL;
 
-		VLtemp.hContact=hContact;
-		if ( li.List_GetIndex(&lContacts,&VLtemp,&index)) {
-			VL = (DBCachedContactValueList*)lContacts.items[index];
-		}
-		else {
-			if ( bAllocate != 1 )
-				return NULL;
+		if (hLastCachedContact==hContact && LastVL) {
+			VL = LastVL;
+		} else {
+			VLtemp.hContact=hContact;
 
-			VL = AddToCachedContactList(hContact,index);
+			if ( li.List_GetIndex(&lContacts,&VLtemp,&index)) {
+				VL = (DBCachedContactValueList*)lContacts.items[index];
+			}
+			else {
+				if ( bAllocate != 1 )
+					return NULL;
+
+				VL = AddToCachedContactList(hContact,index);
+			}
+
+			LastVL = VL;
+			hLastCachedContact = hContact;
 		}
 
-		for ( V = VL->first; V != NULL; V = V->next)
+		for ( V = VL->first; V != NULL; V = V->next) {
+			//if (strcmp(V->name,szSetting)==0)
 			if (V->name == szSetting)
 				break;
+		}
 
 		if ( V == NULL ) {
 			if ( bAllocate != 1 )
@@ -184,12 +196,12 @@ static DBVARIANT* GetCachedValuePtr( HANDLE hContact, char* szSetting, int bAllo
 			}
 			else
 				for ( V1 = VL->first; V1 != NULL; V1 = V1->next )
-				if ( V1->next == V ) {
-					V1->next = V->next;
+					if ( V1->next == V ) {
+						V1->next = V->next;
 						if (VL->last == V)
 							VL->last = V1;
-					break;
-				}
+						break;
+					}
 			HeapFree(hCacheHeap,0,V);
 			return NULL;
 		}
