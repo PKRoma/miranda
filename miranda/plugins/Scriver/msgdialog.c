@@ -2101,7 +2101,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			ZeroMemory(&event, sizeof(event));
 			event.cbSize = sizeof(event);
 			event.iType = IEE_CLEAR_LOG;
-			event.dwFlags = 0;
+			event.dwFlags = ((dat->flags & SMF_RTL) ? IEEF_RTL : 0) | ((dat->flags & SMF_DISABLE_UNICODE) ? IEEF_NO_UNICODE : 0);
 			event.hwnd = dat->hwndLog;
 			event.hContact = dat->hContact;
 			event.codepage = dat->codePage;

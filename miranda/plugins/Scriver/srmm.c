@@ -38,11 +38,11 @@ int bNewDbApi = FALSE;
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
 	"Scriver",
-	PLUGIN_MAKE_VERSION(2, 5, 9, 17),
+	PLUGIN_MAKE_VERSION(2, 5, 9, 18),
 	"Scriver - send and receive instant messages",
 	"Miranda IM Development Team",
 	"the_leech@users.berlios.de",
-	"Copyright © 2000-2007 Miranda IM Project",
+	"Copyright Â© 2000-2007 Miranda IM Project",
 	"http://www.miranda-im.org",
 	UNICODE_AWARE,
 	DEFMOD_SRMESSAGE,            // replace internal version (if any)
@@ -68,7 +68,7 @@ __declspec(dllexport)
 }
 
 static const MUUID interfaces[] = {MIID_SRMM, MIID_CHAT, MIID_LAST};
-__declspec(dllexport) 
+__declspec(dllexport)
      const MUUID* MirandaPluginInterfaces(void)
 {
 	return interfaces;
