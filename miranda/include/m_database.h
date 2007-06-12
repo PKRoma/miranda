@@ -427,11 +427,13 @@ of modules. Look but don't touch.
 
 /* DB/Event/GetText (0.7.0+)
 Retrieves the event's text
-  wParam=(WPARAM)(DBEVENTINFO*)&dbe
-  lParam=(LPARAM)dataType, DBVT_WCHAR or DBVT_ASCIIZ or DBVT_TCHAR
+  wParam=(WPARAM)0 (unused)
+  lParam=(LPARAM)(DBEVENTGETTEXT*)egt - pointer to structure with parameters
+  egt->dbei should be the valid database event read via MS_DB_EVENT_GET
+  egt->datatype = DBVT_WCHAR or DBVT_ASCIIZ or DBVT_TCHAR. If a caller wants to
+suppress Unicode part of event in answer, add DBVTF_DENYUNICODE to this field.
+  egt->codepage is any valid codepage, CP_ACP by default.
 
-dbe should be the valid database event read via MS_DB_EVENT_GET
-Only events of type EVENTTYPE_MESSAGE are supported.
 Function returns a pointer to a string in the required format.
 This string should be freed by a call of mir_free
 */
