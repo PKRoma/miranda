@@ -58,7 +58,6 @@ static HRESULT  (WINAPI *MyCloseThemeData)(HANDLE);
 
 LONG g_cxsmIcon, g_cysmIcon;
 
-void  ShutdownGdiPlus();
 void  SetDBButtonStates(HANDLE hContact);
 
 HMENU BuildGroupPopupMenu( struct ClcGroup* group )
@@ -240,7 +239,6 @@ int ClcShutdown(WPARAM wParam, LPARAM lParam)
 	DeleteObject(g_CluiData.hBrushCLCBk);
 	DeleteObject(g_CluiData.hBrushAvatarBorder);
 	ClearIcons(1);
-	ShutdownGdiPlus();
 	pDrawAlpha = 0;
 	SFL_UnregisterWindowClass();
 	if (g_ExtraCache) {

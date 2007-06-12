@@ -139,7 +139,6 @@ static char *DBGetString(HANDLE hContact,const char *szModule,const char *szSett
 
 extern BOOL __forceinline GetItemByStatus(int status, StatusItems_t *retitem);
 
-void GDIp_DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWORD basecolor2, BOOL transparent, DWORD FLG_GRADIENT, DWORD FLG_CORNER, DWORD BORDERSTYLE);
 void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor2, BOOL transparent, BYTE FLG_GRADIENT, BYTE FLG_CORNER, DWORD BORDERSTYLE, ImageItem *item);
 
 void FreeAndNil( void** );

@@ -359,8 +359,6 @@ BEGIN
     CONTROL         "",IDC_RADIUSSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,204,34,8,
                     13
-    CONTROL         "Render with GDI+",IDC_RENDERGDIP,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,52,166,10
     CONTROL         "Always align icons and text for missing avatars",
                     IDC_ALWAYSALIGNNICK,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,8,65,178,10

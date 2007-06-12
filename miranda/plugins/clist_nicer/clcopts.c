@@ -48,7 +48,6 @@ extern struct CluiData g_CluiData;
 extern int    g_nextExtraCacheEntry;
 extern struct ExtraCache *g_ExtraCache;
 extern HIMAGELIST himlExtraImages;
-extern DWORD g_gdiplusToken;
 extern pfnDrawAlpha pDrawAlpha;
 
 struct CheckBoxToStyleEx_t {
@@ -443,7 +442,7 @@ void DSP_Apply(DISPLAYPROFILE *p)
 
     pDrawAlpha = NULL;
     if(!pDrawAlpha)
-        pDrawAlpha = (g_CluiData.dwFlags & CLUI_FRAME_GDIPLUS  && g_gdiplusToken) ? (pfnDrawAlpha)GDIp_DrawAlpha : (pfnDrawAlpha)DrawAlpha;
+        pDrawAlpha = (pfnDrawAlpha)DrawAlpha;
 
     for(i = 0; i < g_nextExtraCacheEntry; i++)
         g_ExtraCache[i].dwXMask = CalcXMask(g_ExtraCache[i].hContact);
@@ -744,7 +743,6 @@ static CALLBACK DlgProcDspAdvanced(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                 CheckDlgButton(hwndDlg, IDC_AVATARSROUNDED, (p->dwFlags & CLUI_FRAME_ROUNDAVATAR) ? BST_CHECKED : BST_UNCHECKED);
                 CheckDlgButton(hwndDlg, IDC_ALWAYSALIGNNICK, (p->dwFlags & CLUI_FRAME_ALWAYSALIGNNICK) ? BST_CHECKED : BST_UNCHECKED);
                 CheckDlgButton(hwndDlg, IDC_SHOWSTATUSMSG, (p->dwFlags & CLUI_FRAME_SHOWSTATUSMSG) ? BST_CHECKED : BST_UNCHECKED);
-                CheckDlgButton(hwndDlg, IDC_RENDERGDIP, (p->dwFlags & CLUI_FRAME_GDIPLUS) ? BST_CHECKED : BST_UNCHECKED);
 
                 SendDlgItemMessage(hwndDlg, IDC_AVATARBORDERCLR, CPM_SETCOLOUR, 0, p->avatarBorder);
 
@@ -757,7 +755,6 @@ static CALLBACK DlgProcDspAdvanced(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                 EnableWindow(GetDlgItem(hwndDlg, IDC_RADIUS), IsDlgButtonChecked(hwndDlg, IDC_AVATARSROUNDED) ? TRUE : FALSE);
                 EnableWindow(GetDlgItem(hwndDlg, IDC_RADIUSSPIN), IsDlgButtonChecked(hwndDlg, IDC_AVATARSROUNDED) ? TRUE : FALSE);
                 EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARBORDERCLR), IsDlgButtonChecked(hwndDlg, IDC_AVATARSBORDER) ? TRUE : FALSE);
-                EnableWindow(GetDlgItem(hwndDlg, IDC_RENDERGDIP), g_gdiplusToken != 0 ? TRUE : FALSE);
 
                 CheckDlgButton(hwndDlg, IDC_SHOWLOCALTIME, p->bShowLocalTime ? 1 : 0);
                 CheckDlgButton(hwndDlg, IDC_SHOWLOCALTIMEONLYWHENDIFFERENT, p->bShowLocalTimeSelective ? 1 : 0);
@@ -794,8 +791,7 @@ static CALLBACK DlgProcDspAdvanced(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                                (IsDlgButtonChecked(hwndDlg, IDC_AVATARSBORDER) ? CLUI_FRAME_AVATARBORDER : 0) |
                                (IsDlgButtonChecked(hwndDlg, IDC_AVATARSROUNDED) ? CLUI_FRAME_ROUNDAVATAR : 0) |
                                (IsDlgButtonChecked(hwndDlg, IDC_ALWAYSALIGNNICK) ? CLUI_FRAME_ALWAYSALIGNNICK : 0) |
-                               (IsDlgButtonChecked(hwndDlg, IDC_SHOWSTATUSMSG) ? CLUI_FRAME_SHOWSTATUSMSG : 0) |
-                               (IsDlgButtonChecked(hwndDlg, IDC_RENDERGDIP) ? CLUI_FRAME_GDIPLUS : 0));
+                               (IsDlgButtonChecked(hwndDlg, IDC_SHOWSTATUSMSG) ? CLUI_FRAME_SHOWSTATUSMSG : 0));
 
                 p->avatarBorder = SendDlgItemMessage(hwndDlg, IDC_AVATARBORDERCLR, CPM_GETCOLOUR, 0, 0);
                 p->avatarRadius = GetDlgItemInt(hwndDlg, IDC_RADIUS, &translated, FALSE);

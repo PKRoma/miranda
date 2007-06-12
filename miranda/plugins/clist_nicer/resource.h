@@ -287,7 +287,6 @@
 #define IDC_PROXYTYPE                   1117
 #define IDC_RADIUSSPIN2                 1118
 #define IDC_READMSG                     1119
-#define IDC_RENDERGDIP                  1120
 #define IDC_RIGHTMARGIN                 1121
 #define IDC_ROWGAP                      1122
 #define IDC_UIN                         1123

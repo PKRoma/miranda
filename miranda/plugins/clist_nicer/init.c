@@ -220,7 +220,6 @@ __declspec(dllexport) const MUUID * MirandaPluginInterfaces(void)
 int  LoadContactListModule(void);
 int  LoadCLCModule(void);
 void LoadCLUIModule( void );
-int  InitGdiPlus();
 
 static int systemModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
@@ -265,7 +264,6 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 
 	pfnSetLayout = (DWORD ( WINAPI *)(HDC, DWORD))GetProcAddress( GetModuleHandleA( "GDI32.DLL" ), "SetLayout" );
 
-	InitGdiPlus();
 	LoadCLCButtonModule();
 	RegisterCLUIFrameClasses();
 	hUserDll = GetModuleHandleA("user32.dll");
@@ -379,7 +377,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 
 	pDrawAlpha = NULL;
 	if(!pDrawAlpha)
-		pDrawAlpha = (g_CluiData.dwFlags & CLUI_FRAME_GDIPLUS && g_gdiplusToken) ? (pfnDrawAlpha)GDIp_DrawAlpha : (pfnDrawAlpha)DrawAlpha;
+		pDrawAlpha = (pfnDrawAlpha)DrawAlpha;
 
 	if(DBGetContactSettingByte(NULL, "Skin", "UseSound", 0) != g_CluiData.soundsOff)
 		DBWriteContactSettingByte(NULL, "Skin", "UseSound", (BYTE)(g_CluiData.soundsOff ? 0 : 1));
