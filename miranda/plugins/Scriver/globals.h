@@ -153,6 +153,7 @@ int IcoLibIconsChanged(WPARAM wParam, LPARAM lParam) ;
 int ScriverRestoreWindowPosition(HWND hwnd,HANDLE hContact,const char *szModule,const char *szNamePrefix, int flags, int showCmd);
 
 int ImageList_AddIcon_Ex(HIMAGELIST hIml, int id);
+int ImageList_AddIcon_Ex2(HIMAGELIST hIml, HICON hIcon);
 int ImageList_ReplaceIcon_Ex(HIMAGELIST hIml, int nIndex, int id);
 int ImageList_AddIcon_ProtoEx(HIMAGELIST hIml, const char* szProto, int status);
 int ImageList_ReplaceIcon_ProtoEx(HIMAGELIST hIml, int nIndex, const char* szProto, int status);

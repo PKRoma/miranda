@@ -1,7 +1,7 @@
 /*
 Chat module plugin for Miranda IM
 
-Copyright (C) 2003 JÃ¶rgen Persson
+Copyright (C) 2003 Jörgen Persson
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -607,6 +607,13 @@ HICON LoadIconEx(int iIndex, char * pszIcoLibName, int iX, int iY)
 	}
 
 	return (HICON)LoadImage(g_hInst,MAKEINTRESOURCE(iIndex),IMAGE_ICON,iX,iY,LR_SHARED);
+}
+
+DWORD ReleaseIconEx(char * pszIcoLibName)
+{
+	char szTemp[256];
+	mir_snprintf(szTemp, SIZEOF(szTemp), "chat_%s", pszIcoLibName);
+	return CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)szTemp);
 }
 
 static void InitSetting(TCHAR** ppPointer, char* pszSetting, TCHAR* pszDefault)

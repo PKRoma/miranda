@@ -1,7 +1,7 @@
 /*
 Chat module plugin for Miranda IM
 
-Copyright (C) 2003 JÃ¶rgen Persson
+Copyright (C) 2003 Jörgen Persson
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -193,7 +193,7 @@ static int RoomWndResize(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
    switch(urc->wId) {
    case IDOK:
       urc->rcItem.left = bSend?315:urc->dlgNewSize.cx ;
-      urc->rcItem.top = urc->dlgNewSize.cy - si->iSplitterY+23;
+      urc->rcItem.top = urc->dlgNewSize.cy - si->iSplitterY+3;
       urc->rcItem.bottom = urc->dlgNewSize.cy -1;
       return RD_ANCHORX_RIGHT|RD_ANCHORY_CUSTOM;
 
@@ -201,31 +201,31 @@ static int RoomWndResize(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
       urc->rcItem.top = 0;
       urc->rcItem.left = 0;
       urc->rcItem.right = bNick?urc->dlgNewSize.cx - si->iSplitterX:urc->dlgNewSize.cx;
-      urc->rcItem.bottom = bToolbar?(urc->dlgNewSize.cy - si->iSplitterY):(urc->dlgNewSize.cy - si->iSplitterY+20);
+      urc->rcItem.bottom = bToolbar?(urc->dlgNewSize.cy - si->iSplitterY - 20):(urc->dlgNewSize.cy - si->iSplitterY);
       return RD_ANCHORX_CUSTOM|RD_ANCHORY_CUSTOM;
 
    case IDC_CHAT_LIST:
       urc->rcItem.top = 0;
       urc->rcItem.right = urc->dlgNewSize.cx ;
       urc->rcItem.left = urc->dlgNewSize.cx - si->iSplitterX + 2;
-      urc->rcItem.bottom = bToolbar?(urc->dlgNewSize.cy - si->iSplitterY):(urc->dlgNewSize.cy - si->iSplitterY+20);
+      urc->rcItem.bottom = bToolbar?(urc->dlgNewSize.cy - si->iSplitterY - 20):(urc->dlgNewSize.cy - si->iSplitterY);
       return RD_ANCHORX_CUSTOM|RD_ANCHORY_CUSTOM;
 
    case IDC_CHAT_SPLITTERX:
       urc->rcItem.right = urc->dlgNewSize.cx - si->iSplitterX+2;
       urc->rcItem.left = urc->dlgNewSize.cx - si->iSplitterX;
-      urc->rcItem.bottom = bToolbar?(urc->dlgNewSize.cy - si->iSplitterY):(urc->dlgNewSize.cy - si->iSplitterY+20);
+      urc->rcItem.bottom = bToolbar?(urc->dlgNewSize.cy - si->iSplitterY - 20):(urc->dlgNewSize.cy - si->iSplitterY);
       urc->rcItem.top = 1;
       return RD_ANCHORX_CUSTOM|RD_ANCHORY_CUSTOM;
 
    case IDC_CHAT_SPLITTERY:
-      urc->rcItem.top = bToolbar?urc->dlgNewSize.cy - si->iSplitterY:urc->dlgNewSize.cy - si->iSplitterY+20;
-      urc->rcItem.bottom = bToolbar?(urc->dlgNewSize.cy - si->iSplitterY+2):(urc->dlgNewSize.cy - si->iSplitterY+22);
+      urc->rcItem.top = urc->dlgNewSize.cy - si->iSplitterY;
+      urc->rcItem.bottom = urc->dlgNewSize.cy - si->iSplitterY+2;
       return RD_ANCHORX_WIDTH|RD_ANCHORY_CUSTOM;
 
    case IDC_CHAT_MESSAGE:
       urc->rcItem.right = bSend?urc->dlgNewSize.cx - 64:urc->dlgNewSize.cx ;
-      urc->rcItem.top = urc->dlgNewSize.cy - si->iSplitterY+22;
+      urc->rcItem.top = urc->dlgNewSize.cy - si->iSplitterY+2;
       urc->rcItem.bottom = urc->dlgNewSize.cy -1 ;
       return RD_ANCHORX_LEFT|RD_ANCHORY_CUSTOM;
 
@@ -235,16 +235,16 @@ static int RoomWndResize(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
    case IDC_CHAT_UNDERLINE:
    case IDC_CHAT_COLOR:
    case IDC_CHAT_BKGCOLOR:
-      urc->rcItem.top = urc->dlgNewSize.cy - si->iSplitterY+3;
-      urc->rcItem.bottom = urc->dlgNewSize.cy - si->iSplitterY+19;
+      urc->rcItem.top = urc->dlgNewSize.cy - si->iSplitterY-17;
+      urc->rcItem.bottom = urc->dlgNewSize.cy - si->iSplitterY-1;
       return RD_ANCHORX_LEFT|RD_ANCHORY_CUSTOM;
 
    case IDC_CHAT_HISTORY:
    case IDC_CHAT_CHANMGR:
    case IDC_CHAT_SHOWNICKLIST:
    case IDC_CHAT_FILTER:
-      urc->rcItem.top = urc->dlgNewSize.cy - si->iSplitterY+3;
-      urc->rcItem.bottom = urc->dlgNewSize.cy - si->iSplitterY+19;
+      urc->rcItem.top = urc->dlgNewSize.cy - si->iSplitterY-17;
+      urc->rcItem.bottom = urc->dlgNewSize.cy - si->iSplitterY-1;
       return RD_ANCHORX_RIGHT|RD_ANCHORY_CUSTOM;
 
    case IDC_CHAT_CLOSE:
@@ -1225,7 +1225,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
          }
          tbd.iFlags = TBDF_TEXT | TBDF_ICON;
          tbd.pszText = szTemp;
-         tbd.hIcon = LoadIconEx(IDI_CHANMGR, "window", 0, 0);
+         tbd.hIcon = hIcons[ICON_WINDOW];
          SendMessage(GetParent(hwndDlg), CM_UPDATETITLEBAR, (WPARAM) &tbd, (LPARAM) hwndDlg);
          SendMessage(hwndDlg, DM_UPDATETABCONTROL, 0, 0);
       }
@@ -1538,7 +1538,6 @@ LABEL_SHOWWINDOW:
       {   POINT pt;
          RECT rc;
          RECT rcLog;
-         BOOL bFormat = IsWindowVisible(GetDlgItem(hwndDlg,IDC_CHAT_SMILEY));
 
          static int x = 0;
 
@@ -1564,11 +1563,11 @@ LABEL_SHOWWINDOW:
             ScreenToClient(hwndDlg,&pt);
 
             oldSplitterY=si->iSplitterY;
-            si->iSplitterY=bFormat?rc.bottom-pt.y+1:rc.bottom-pt.y+20;
+            si->iSplitterY=rc.bottom-pt.y;
             if (si->iSplitterY<63)
                si->iSplitterY=63;
-            if (si->iSplitterY>rc.bottom-rc.top-40)
-               si->iSplitterY = rc.bottom-rc.top-40;
+            if (si->iSplitterY>rc.bottom-rc.top-50)
+               si->iSplitterY = rc.bottom-rc.top-50;
             g_Settings.iSplitterY = si->iSplitterY;
          }
          if (x==2) {
@@ -2134,6 +2133,9 @@ LABEL_SHOWWINDOW:
 			SendMessage(GetParent(hwndDlg), WM_SYSCOMMAND, SC_MINIMIZE, 0);
 		break;
 
+	case WM_LBUTTONDOWN:
+		SendMessage(GetParent(hwndDlg), WM_LBUTTONDOWN, wParam, lParam);
+		return TRUE;
 
    case WM_CLOSE:
       SendMessage(hwndDlg, GC_CLOSEWINDOW, 0, 0);

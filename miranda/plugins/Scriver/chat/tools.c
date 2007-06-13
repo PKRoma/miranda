@@ -139,7 +139,7 @@ static int ShowPopup (HANDLE hContact, SESSION_INFO* si, HICON hIcon,  char* psz
 	if ( hIcon )
 		pd.lchIcon = hIcon ;
 	else
-		pd.lchIcon = LoadIconEx(IDI_CHANMGR, "window", 0, 0 );
+		pd.lchIcon = hIcons[ICON_WINDOW];
 
 	mir_sntprintf(pd.lptzContactName, MAX_CONTACTNAME-1, _T(TCHAR_STR_PARAM) _T(" - %s"),
 		pszProtoName, CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR ));
@@ -833,7 +833,7 @@ BOOL DoEventHook(const TCHAR* pszID, const char* pszModule, int iType, const TCH
 	gch.dwData = dwItem;
 	gch.pDest = &gcd;
 	NotifyEventHooks(hSendEvent,0,(WPARAM)&gch);
-	
+
 	mir_free( gcd.pszID );
 	mir_free( gch.ptszUID );
 	mir_free( gch.ptszText );

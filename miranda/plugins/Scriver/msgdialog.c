@@ -42,8 +42,6 @@ extern HANDLE hHookWinEvt;
 extern HANDLE hHookWinPopup;
 extern struct CREOleCallback reOleCallback, reOleCallback2;
 extern HINSTANCE g_hInst;
-extern void ReleaseIconSafe(HICON hIcon);
-
 
 static void UpdateReadChars(HWND hwndDlg, struct MessageWindowData * dat);
 
@@ -2466,7 +2464,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				dbei.pBlob = (PBYTE) mir_alloc(dbei.cbBlob);
 				CallService(MS_DB_EVENT_GET, (WPARAM)  dat->hDbEventLast, (LPARAM) & dbei);
 				if (dbei.eventType == EVENTTYPE_MESSAGE || dbei.eventType == EVENTTYPE_STATUSCHANGE) {
-					TCHAR *buffer;
+					TCHAR *buffer = NULL;
 
 					if ( bNewDbApi )
 						buffer = DbGetEventTextT( &dbei, CP_ACP );

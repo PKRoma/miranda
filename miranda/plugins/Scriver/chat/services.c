@@ -1,7 +1,7 @@
 /*
 Chat module plugin for Miranda IM
 
-Copyright (C) 2003 JÃ¶rgen Persson
+Copyright (C) 2003 Jörgen Persson
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -26,6 +26,7 @@ extern HANDLE		g_hInst;
 extern BOOL			SmileyAddInstalled;
 extern BOOL			PopUpInstalled;
 extern BOOL			IEviewInstalled;
+extern HICON      hIcons[30];
 
 HANDLE				hSendEvent;
 HANDLE				hBuildMenuEvent ;
@@ -152,7 +153,7 @@ int Chat_FontsChanged(WPARAM wParam,LPARAM lParam)
 int Chat_IconsChanged(WPARAM wParam,LPARAM lParam)
 {
 	FreeMsgLogBitmaps();
-
+	ReleaseLogIcons();
 	LoadLogIcons();
 	LoadMsgLogBitmaps();
 	MM_IconsChanged();
@@ -222,7 +223,7 @@ int Service_GetInfo(WPARAM wParam,LPARAM lParam)
 void LoadModuleIcons(MODULEINFO * mi) {
     int index;
     HIMAGELIST hList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 0, 0);
-	int overlayIcon = ImageList_AddIcon_Ex(hList, LoadIconEx(IDI_OVERLAY, "overlay", 0, 0));
+	int overlayIcon = ImageList_AddIcon(hList, hIcons[ICON_OVERLAY]);
 	ImageList_SetOverlayImage(hList, overlayIcon, 1);
 	index = ImageList_AddIcon_ProtoEx(hList, mi->pszModule, ID_STATUS_ONLINE);
 	mi->hOnlineIcon = ImageList_GetIcon(hList, index, ILD_TRANSPARENT);
@@ -521,7 +522,7 @@ void ShowRoom(SESSION_INFO * si, WPARAM wp, BOOL bSetForeground)
 	//Do we need to create a window?
 	if (si->hWnd == NULL)
 	{
-	    hParent = GetParentWindow(NULL, TRUE);
+	    hParent = GetParentWindow(si->hContact, TRUE);
 	    si->hWnd = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CHANNEL), hParent, RoomWndProc, (LPARAM)si);
 	}
 	SendMessage(si->hWnd, DM_UPDATETABCONTROL, -1, (LPARAM)si);

@@ -54,7 +54,6 @@ static void DrawTab(ParentWindowData *dat, HWND hwnd, WPARAM wParam, LPARAM lPar
 BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 extern TCHAR *GetNickname(HANDLE hContact, const char* szProto);
-extern void ReleaseIconSafe(HICON hIcon);
 
 void SubclassTabCtrl(HWND hwnd) {
 	OldTabCtrlProc = (WNDPROC) SetWindowLong(hwnd, GWL_WNDPROC, (LONG) TabCtrlProc);
@@ -731,7 +730,7 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			} else {// || ((GetActiveWindow() == hwndDlg) && (GetForegroundWindow() == hwndDlg))) {
 				KillTimer(hwndDlg, TIMERID_FLASHWND);
 				FlashWindow(hwndDlg, FALSE);
-			} 
+			}
 		}
 		break;
 	case WM_CONTEXTMENU:
@@ -892,7 +891,6 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				mir_free((MessageWindowTabData *) tci.lParam);
 				ReleaseIcon(tci.iImage);
 			}
-			//ReleaseIconSafe((HICON)SendMessage(hwndDlg, WM_SETICON, (WPARAM) ICON_BIG, 0));
 			DestroyIcon((HICON)SendMessage(hwndDlg, WM_SETICON, (WPARAM) ICON_BIG, 0));
 			SetWindowLong(hwndDlg, GWL_USERDATA, 0);
 			WindowList_Remove(g_dat->hParentWindowList, hwndDlg);
@@ -1053,9 +1051,6 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				if (tbd->iFlags & TBDF_ICON) {
 					if (hwnd == dat->hwndActive)
 						DestroyIcon((HICON)SendMessage(hwndDlg, WM_SETICON, (WPARAM) ICON_BIG, (LPARAM) CopyIcon(tbd->hIcon)));
-						//ReleaseIconSafe((HICON)SendMessage(hwndDlg, WM_SETICON, (WPARAM) ICON_BIG, (LPARAM) tbd->hIcon));
-//					else
-//						ReleaseIconSafe(tbd->hIcon);
 				}
 			}
 			break;

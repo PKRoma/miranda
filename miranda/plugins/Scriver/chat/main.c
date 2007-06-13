@@ -161,6 +161,31 @@ void UpgradeCheck(void)
 	return;
 }
 
+void ReleaseLogIcons() {
+	ReleaseIconEx("log_action");
+	ReleaseIconEx("log_addstatus");
+	ReleaseIconEx("log_highlight");
+	ReleaseIconEx("log_info");
+	ReleaseIconEx("log_join");
+	ReleaseIconEx("log_kick");
+	ReleaseIconEx("log_message_in");
+	ReleaseIconEx("log_message_out");
+	ReleaseIconEx("log_nick");
+	ReleaseIconEx("log_notice");
+	ReleaseIconEx("log_part");
+	ReleaseIconEx("log_quit");
+	ReleaseIconEx("log_removestatus");
+	ReleaseIconEx("log_topic");
+	ReleaseIconEx("status0");
+	ReleaseIconEx("status1");
+	ReleaseIconEx("status2");
+	ReleaseIconEx("status3");
+	ReleaseIconEx("status4");
+	ReleaseIconEx("status5");
+	ReleaseIconEx("window");
+	ReleaseIconEx("overlay");
+}
+
 void LoadLogIcons(void)
 {
 	hIcons[ICON_ACTION] = LoadIconEx(IDI_ACTION, "log_action", 10, 10); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_ACTION),IMAGE_ICON,0,0,0);
@@ -177,12 +202,14 @@ void LoadLogIcons(void)
 	hIcons[ICON_QUIT] = LoadIconEx(IDI_QUIT, "log_quit", 10, 10); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_QUIT),IMAGE_ICON,0,0,0);
 	hIcons[ICON_REMSTATUS] = LoadIconEx(IDI_REMSTATUS, "log_removestatus", 10, 10); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_REMSTATUS),IMAGE_ICON,0,0,0);
 	hIcons[ICON_TOPIC] = LoadIconEx(IDI_TOPIC, "log_topic", 10, 10); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_TOPIC),IMAGE_ICON,0,0,0);
+	hIcons[ICON_STATUS0] = LoadIconEx(IDI_STATUS0, "status0", 10, 10); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_STATUS0),IMAGE_ICON,0,0,0);
 	hIcons[ICON_STATUS1] = LoadIconEx(IDI_STATUS1, "status1", 10, 10); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_STATUS1),IMAGE_ICON,0,0,0);
 	hIcons[ICON_STATUS2] = LoadIconEx(IDI_STATUS2, "status2", 10, 10); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_STATUS2),IMAGE_ICON,0,0,0);
 	hIcons[ICON_STATUS3] = LoadIconEx(IDI_STATUS3, "status3", 10, 10); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_STATUS3),IMAGE_ICON,0,0,0);
 	hIcons[ICON_STATUS4] = LoadIconEx(IDI_STATUS4, "status4", 10, 10); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_STATUS4),IMAGE_ICON,0,0,0);
-	hIcons[ICON_STATUS0] = LoadIconEx(IDI_STATUS0, "status0", 10, 10); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_STATUS0),IMAGE_ICON,0,0,0);
 	hIcons[ICON_STATUS5] = LoadIconEx(IDI_STATUS5, "status5", 10, 10); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_STATUS5),IMAGE_ICON,0,0,0);
+	hIcons[ICON_WINDOW] = LoadIconEx(IDI_CHANMGR, "window", 10, 10); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_STATUS5),IMAGE_ICON,0,0,0);
+	hIcons[ICON_OVERLAY] = LoadIconEx(IDI_OVERLAY, "overlay", 10, 10); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_STATUS5),IMAGE_ICON,0,0,0);
 
 	return;
 }

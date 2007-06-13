@@ -52,14 +52,6 @@ BOOL IsStaticIcon(HICON hIcon) {
 	return FALSE;
 }
 
-void ReleaseIconSafe(HICON hIcon) {
-	if (!IsStaticIcon(hIcon)) {
-		DWORD result = CallService(MS_SKIN2_RELEASEICON,(WPARAM)hIcon, 0);
-		if ( result == 1 )
-			DestroyIcon(hIcon);
-	}
-}
-
 void ReleaseIconSmart(HICON hIcon) {
 	if (!IsStaticIcon(hIcon)) {
 		DWORD result = CallService(MS_SKIN2_RELEASEICON,(WPARAM)hIcon, 0);
@@ -70,6 +62,12 @@ void ReleaseIconSmart(HICON hIcon) {
 
 int ImageList_AddIcon_Ex(HIMAGELIST hIml, int id) {
 	HICON hIcon = LoadSkinnedIcon(id);
+ 	int res = ImageList_AddIcon(hIml, hIcon);
+ 	CallService(MS_SKIN2_RELEASEICON,(WPARAM)hIcon, 0);
+ 	return res;
+}
+
+int ImageList_AddIcon_Ex2(HIMAGELIST hIml, HICON hIcon) {
  	int res = ImageList_AddIcon(hIml, hIcon);
  	CallService(MS_SKIN2_RELEASEICON,(WPARAM)hIcon, 0);
  	return res;

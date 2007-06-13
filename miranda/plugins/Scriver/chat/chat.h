@@ -103,6 +103,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define ICON_STATUS0			18
 #define ICON_STATUS5			19
 
+#define ICON_WINDOW				20
+#define ICON_OVERLAY			21
+
 // special service for tweaking performance
 #define MS_GC_GETEVENTPTR  "GChat/GetNewEventPtr"
 typedef int (*GETEVENTFUNC)(WPARAM wParam, LPARAM lParam);
@@ -340,6 +343,8 @@ void   Chat_LoadMsgDlgFont(int i, LOGFONT * lf, COLORREF * colour);
 void   LoadGlobalSettings(void);
 void   AddIcons(void);
 HICON  LoadIconEx(int iIndex, char * pszIcoLibName, int iX, int iY);
+DWORD  ReleaseIconEx(char *pszIcoLibName);
+void   ReleaseLogIcons(void);
 void   LoadLogFonts(void);
 
 //services.c
