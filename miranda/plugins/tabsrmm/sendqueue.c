@@ -603,7 +603,7 @@ void RecallFailedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry
         if(sendJobs[iEntry].dwFlags & PREF_UNICODE)
             SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)&sendJobs[iEntry].sendBuffer[lstrlenA(sendJobs[iEntry].sendBuffer) + 1]);
         else {
-            stx.codepage = CP_ACP;
+            stx.codepage = (sendJobs[iEntry].dwFlags & PREF_UTF) ? CP_UTF8 : CP_ACP;
             SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)sendJobs[iEntry].sendBuffer);
         }
 #else
