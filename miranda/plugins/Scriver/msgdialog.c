@@ -1427,6 +1427,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			return 0;
 		}
 		GetObject(dat->avatarPic, sizeof(bminfo), &bminfo);
+		if ( bminfo.bmWidth == 0 || bminfo.bmHeight == 0 ) {
+			ShowWindow(GetDlgItem(hwndDlg, IDC_AVATAR), SW_HIDE);
+			return 0;
+		}
 		dat->avatarHeight = avatarH = dat->splitterPos + ((pdat->flags2&SMF2_SHOWTOOLBAR) ? dat->toolbarSize.cy : 0);//- 3;
 		if (g_dat->flags & SMF_LIMITAVATARH) {
 			if (avatarH < g_dat->limitAvatarMinH) {
@@ -1456,7 +1460,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				if (dat->avatarHeight < 0) dat->avatarHeight = 0;
 				aspect = (double)dat->avatarHeight / (double)bminfo.bmHeight;
 				dat->avatarWidth = (int)(bminfo.bmWidth * aspect);
-
 			}
 		}
 		ShowWindow(GetDlgItem(hwndDlg, IDC_AVATAR), SW_SHOW);
