@@ -124,7 +124,7 @@ void __cdecl JabberByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 	bProxy = JGetByte( "BsProxy", TRUE );
 
 	BOOL bProxyManual = JGetByte( "BsProxyManual" , FALSE );
-	if ( bProxyManual ) {
+	if ( bProxy && bProxyManual ) {
 		proxyJid = NULL;
 		if ( !DBGetContactSetting( NULL, jabberProtoName, "BsProxyServer", &dbv )) {
 			proxyJid = mir_strdup( dbv.pszVal );

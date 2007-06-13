@@ -938,8 +938,10 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 						CPrivacyListRule* pRule = pList->GetFirstRule();
 						if ( !pRule )
 							pList->SetDeleted();
-						if ( pList->IsDeleted() )
+						if ( pList->IsDeleted() ) {
 							pList->RemoveAllRules();
+							pRule = NULL;
+						}
 						pList->SetModified( FALSE );
 
 						int iqId = JabberSerialNext();
