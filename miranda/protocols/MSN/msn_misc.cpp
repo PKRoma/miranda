@@ -531,7 +531,7 @@ void  MSN_SendStatusMessage( const char* msg )
 		mir_free( szType );
 	}
 
-	if ( msnPreviousUUX != NULL && strcmp( msnPreviousUUX, szMsg ))
+	if ( msnPreviousUUX == NULL || strcmp( msnPreviousUUX, szMsg ))
 	{
 		replaceStr( msnPreviousUUX, szMsg );
 		msnNsThread->sendPacket( "UUX", "%d\r\n%s", strlen( szMsg ), szMsg );
