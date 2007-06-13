@@ -981,15 +981,18 @@ static void sttProcessStatusMessage( BYTE* buf, unsigned len, HANDLE hContact )
 	// Get parts separeted by "\\0"
 	size_t cmLen = p1 - p;
 	char *parts[16];
-	int pCount = 0;
-	p1 = strchr(p, '\0');
-	do {
-		*p1 = '\0';
+	unsigned pCount;
+
+	for (pCount = 0; pCount < SIZEOF(parts); ++pCount)
+	{
 		parts[pCount] = p;
-		pCount ++;
+        
+		p1 = strstr(p, "\\0");
+		if (p1 == NULL) break;
+		
+		*p1 = '\0';
 		p = p1 + 2;
-		p1 = strchr(p, '\0');
-	} while( p1 != NULL && pCount < 16 );
+	} 
 
 	// Now let's mount the final string
 	if ( pCount <= 4 )  {
@@ -999,7 +1002,7 @@ static void sttProcessStatusMessage( BYTE* buf, unsigned len, HANDLE hContact )
 
 	// Check if there is any info in the string
 	BOOL foundUsefullInfo = FALSE;
-	for (int i = 4; i < pCount; i++) {
+	for (unsigned i = 4; i < pCount; i++) {
 		if ( parts[i][0] != '\0' )  {
 			foundUsefullInfo = TRUE;
 			break;
@@ -1020,10 +1023,9 @@ static void sttProcessStatusMessage( BYTE* buf, unsigned len, HANDLE hContact )
 		if (ServiceExists(MS_LISTENINGTO_GETUNKNOWNTEXT))
 			unknown = mir_utf8encodeT((TCHAR *) CallService(MS_LISTENINGTO_GETUNKNOWNTEXT, 0, 0));
 
-		for (int i = 4; i < pCount; i++) {
+		for (unsigned i = 4; i < pCount; i++) {
 			char part[16];
-			mir_snprintf(part, sizeof(part), "{%d}", i - 4);
-			size_t lenPart = strlen(part);
+			size_t lenPart = mir_snprintf(part, sizeof(part), "{%d}", i - 4);
 			if (parts[i][0] == '\0' && unknown != NULL)
 				parts[i] = unknown;
 			size_t lenPartsI = strlen(parts[i]);
