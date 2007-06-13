@@ -214,45 +214,41 @@ int JabberListAddResource( JABBER_LIST list, const TCHAR* jid, int status, const
 		LeaveCriticalSection( &csLists );
 		return 0;
 	}
-	JABBER_LIST_ITEM* LI = roster[i-1];
 
+	JABBER_LIST_ITEM* LI = roster[i-1];
 	int bIsNewResource = false;
 
-	if (( p = _tcschr( jid, '@' )) != NULL ) {
-		if (( q = _tcschr( p, '/' )) != NULL ) {
-			const TCHAR* resource = q+1;
-			if ( resource[0] ) {
-				JABBER_RESOURCE_STATUS* r = LI->resource;
-				for ( j=0; j < LI->resourceCount; j++, r++ ) {
-					if ( !_tcscmp( r->resourceName, resource )) {
-						// Already exist, update status and statusMessage
-						r->status = status;
-						replaceStr( r->statusMessage, statusMessage );
-						r->priority = priority;
-						break;
-				}	}
-
-				if ( j >= LI->resourceCount ) {
-					// Not already exist, add new resource
-					LI->resource = ( JABBER_RESOURCE_STATUS * ) mir_realloc( LI->resource, ( LI->resourceCount+1 )*sizeof( JABBER_RESOURCE_STATUS ));
-					bIsNewResource = true;
-					r = LI->resource + LI->resourceCount++;
-					memset( r, 0, sizeof( JABBER_RESOURCE_STATUS ));
+	const TCHAR* p = _tcschr( jid, '@' );
+	const TCHAR* q = _tcschr(( p == NULL ) ? jid : p, '/' );
+	if ( q ) {
+		const TCHAR* resource = q+1;
+		if ( resource[0] ) {
+			JABBER_RESOURCE_STATUS* r = LI->resource;
+			for ( j=0; j < LI->resourceCount; j++, r++ ) {
+				if ( !_tcscmp( r->resourceName, resource )) {
+					// Already exist, update status and statusMessage
 					r->status = status;
-					r->affiliation = AFFILIATION_NONE;
-					r->role = ROLE_NONE;
-					r->resourceName = mir_tstrdup( resource );
-					if ( statusMessage )
-						r->statusMessage = mir_tstrdup( statusMessage );
+					replaceStr( r->statusMessage, statusMessage );
 					r->priority = priority;
+					break;
 			}	}
-		}
-		// No resource, update the main statusMessage
-		else {
-			LI->itemResource.status = status;
-			replaceStr( LI->itemResource.statusMessage, statusMessage );
-		}
+
+			if ( j >= LI->resourceCount ) {
+				// Not already exist, add new resource
+				LI->resource = ( JABBER_RESOURCE_STATUS * ) mir_realloc( LI->resource, ( LI->resourceCount+1 )*sizeof( JABBER_RESOURCE_STATUS ));
+				bIsNewResource = true;
+				r = LI->resource + LI->resourceCount++;
+				memset( r, 0, sizeof( JABBER_RESOURCE_STATUS ));
+				r->status = status;
+				r->affiliation = AFFILIATION_NONE;
+				r->role = ROLE_NONE;
+				r->resourceName = mir_tstrdup( resource );
+				if ( statusMessage )
+					r->statusMessage = mir_tstrdup( statusMessage );
+				r->priority = priority;
+		}	}
 	}
+	// No resource, update the main statusMessage
 	else {
 		LI->itemResource.status = status;
 		replaceStr( LI->itemResource.statusMessage, statusMessage );
@@ -261,7 +257,6 @@ int JabberListAddResource( JABBER_LIST list, const TCHAR* jid, int status, const
 	LeaveCriticalSection( &csLists );
 
 	JabberMenuUpdateSrmmIcon(LI);
-
 	return bIsNewResource;
 }
 
