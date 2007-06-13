@@ -126,9 +126,9 @@ static BOOL txtParseParam(char* szData, char* presearch,
 	if (cp1 == NULL) return FALSE;
 	while (*(cp1-1) == ' ' && cp1 > cp) --cp1;
 
-	len = min(cp1 - cp, size);
+	len = min(cp1 - cp, size-1);
 	strncpy(param, cp, len);
-	param[len-1] = 0;
+	param[len] = 0;
 
 	return TRUE;
 }
@@ -203,8 +203,7 @@ static void discoverUPnP(char* szUrl, int sizeUrl)
 	unsigned* ips = NULL;
 
 	static const unsigned any = INADDR_ANY;
-	fd_set readfd;
-	TIMEVAL tv = { 1, 500000 };
+	static const TIMEVAL tv = { 1, 600000 };
 
 	char hostname[256];
 	PHOSTENT he;
@@ -235,6 +234,10 @@ static void discoverUPnP(char* szUrl, int sizeUrl)
 
 	for(i = 3;  --i && szUrl[0] == 0;) 
 	{
+		fd_set readfd;
+		FD_ZERO(&readfd);
+		FD_SET(sock, &readfd);
+
 		for (j=0; j<nip; ++j)
 		{
 			if (ips)
@@ -249,10 +252,7 @@ static void discoverUPnP(char* szUrl, int sizeUrl)
 			LongLog(buf);
 		}
 
-		FD_ZERO(&readfd);
-		FD_SET(sock, &readfd);
-
-		while (select(0, &readfd, NULL, NULL, &tv) == 1) 
+		while (select(1, &readfd, NULL, NULL, &tv) == 1) 
 		{
 			buflen = recv(sock, buf, 1500, 0);
 			if (buflen != SOCKET_ERROR) 
