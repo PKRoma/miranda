@@ -1352,21 +1352,19 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
     case GC_FIXTABICONS:
     {
         TabControlData tcd;
-        HICON hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
+        HICON hIcon = NULL;
         if (!(si->wState&GC_EVENT_HIGHLIGHT))
         {
             if (si->wState&STATE_TALK)
                 hIcon = (si->wStatus==ID_STATUS_ONLINE) ? MM_FindModule(si->pszModule)->hOnlineTalkIcon : MM_FindModule(si->pszModule)->hOfflineTalkIcon;
             else
                 hIcon = (si->wStatus==ID_STATUS_ONLINE) ? MM_FindModule(si->pszModule)->hOnlineIcon : MM_FindModule(si->pszModule)->hOfflineIcon;
-//            image = si->wStatus==ID_STATUS_ONLINE?MM_FindModule(si->pszModule)->OnlineIconIndex:MM_FindModule(si->pszModule)->OfflineIconIndex;
-  //          if (si->wState&STATE_TALK)
-    //           image++;
+         } else {
+         	hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
          }
          tcd.iFlags = TCDF_ICON;
          tcd.hIcon = hIcon;
          CallService(MS_SKIN2_RELEASEICON, (WPARAM)hIcon, 0);
-         //tcd.iconIdx = image;
          SendMessage(GetParent(hwndDlg), CM_UPDATETABCONTROL, (WPARAM) &tcd, (LPARAM) hwndDlg);
     }
     break;
@@ -1564,10 +1562,10 @@ LABEL_SHOWWINDOW:
 
             oldSplitterY=si->iSplitterY;
             si->iSplitterY=rc.bottom-pt.y;
-            if (si->iSplitterY<63)
-               si->iSplitterY=63;
-            if (si->iSplitterY>rc.bottom-rc.top-50)
-               si->iSplitterY = rc.bottom-rc.top-50;
+            if (si->iSplitterY<43)
+               si->iSplitterY=43;
+            if (si->iSplitterY>rc.bottom-rc.top-60)
+               si->iSplitterY = rc.bottom-rc.top-60;
             g_Settings.iSplitterY = si->iSplitterY;
          }
          if (x==2) {
@@ -2122,7 +2120,7 @@ LABEL_SHOWWINDOW:
          if (mmi->ptMinTrackSize.x < 350)
             mmi->ptMinTrackSize.x = 350;
 
-         mmi->ptMinTrackSize.y = si->iSplitterY + 80;
+         mmi->ptMinTrackSize.y = si->iSplitterY + 30;
       }
       break;
 
