@@ -152,28 +152,26 @@ static DBVARIANT* GetCachedValuePtr( HANDLE hContact, char* szSetting, int bAllo
 
 		if (hLastCachedContact==hContact && LastVL) {
 			VL = LastVL;
-		} else {
+		}
+		else {
 			VLtemp.hContact=hContact;
 
-			if ( li.List_GetIndex(&lContacts,&VLtemp,&index)) {
-				VL = (DBCachedContactValueList*)lContacts.items[index];
-			}
-			else {
+			if ( !li.List_GetIndex(&lContacts,&VLtemp,&index))
+			{
 				if ( bAllocate != 1 )
 					return NULL;
 
 				VL = AddToCachedContactList(hContact,index);
 			}
+			else VL = (DBCachedContactValueList*)lContacts.items[index];
 
 			LastVL = VL;
 			hLastCachedContact = hContact;
 		}
 
-		for ( V = VL->first; V != NULL; V = V->next) {
-			//if (strcmp(V->name,szSetting)==0)
+		for ( V = VL->first; V != NULL; V = V->next)
 			if (V->name == szSetting)
 				break;
-		}
 
 		if ( V == NULL ) {
 			if ( bAllocate != 1 )
@@ -188,6 +186,7 @@ static DBVARIANT* GetCachedValuePtr( HANDLE hContact, char* szSetting, int bAllo
 			V->name = szSetting;
 		}
 		else if ( bAllocate == -1 ) {
+		   LastVL = NULL;
 			FreeCachedVariant(&V->value);
 			if ( VL->first == V ) {
 				VL->first = V->next;
