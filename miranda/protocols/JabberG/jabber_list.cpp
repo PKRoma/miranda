@@ -205,9 +205,6 @@ void JabberListRemoveByIndex( int index )
 
 int JabberListAddResource( JABBER_LIST list, const TCHAR* jid, int status, const TCHAR* statusMessage, char priority )
 {
-	int j;
-	const TCHAR* p, *q;
-
 	EnterCriticalSection( &csLists );
 	int i = JabberListExist( list, jid );
 	if ( !i ) {
@@ -216,7 +213,7 @@ int JabberListAddResource( JABBER_LIST list, const TCHAR* jid, int status, const
 	}
 
 	JABBER_LIST_ITEM* LI = roster[i-1];
-	int bIsNewResource = false;
+	int bIsNewResource = false, j;
 
 	const TCHAR* p = _tcschr( jid, '@' );
 	const TCHAR* q = _tcschr(( p == NULL ) ? jid : p, '/' );
