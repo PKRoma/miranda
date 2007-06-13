@@ -91,7 +91,6 @@ extern HANDLE hNotifyFrame;
 int SortList(WPARAM wParam, LPARAM lParam);
 int LoadCluiServices(void);
 void InitGroupMenus();
-void InitGdiPlus(void);//, InitImgCache();
 void ReloadExtraIcons();
 void FS_RegisterFonts();
 void LoadExtraIconModule();
