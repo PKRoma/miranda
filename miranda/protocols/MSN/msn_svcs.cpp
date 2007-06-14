@@ -562,12 +562,12 @@ static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 		return GAIR_NOAVATAR;
 
 	char tEmail[ MSN_MAX_EMAIL_LEN ];
-	if ( !MSN_GetStaticString( "e-mail", AI->hContact, tEmail, sizeof( tEmail )) && 
+	if ( !MSN_GetStaticString( "e-mail", AI->hContact, tEmail, sizeof( tEmail )) &&
 		!strcmp( tEmail, MyOptions.szEmail ))
 		return GAIR_NOAVATAR;
 
 	char szContext[ MAX_PATH ];
-	if ( MSN_GetStaticString(( AI->hContact == NULL ) ? "PictObject" : "PictContext", AI->hContact, 
+	if ( MSN_GetStaticString(( AI->hContact == NULL ) ? "PictObject" : "PictContext", AI->hContact,
 		szContext, sizeof( szContext )))
 		return GAIR_NOAVATAR;
 
@@ -577,16 +577,16 @@ static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 	if ( AI->hContact ) {
 		size_t len = strlen( AI->filename );
 		strcpy( AI->filename + len, "png" );
-		if ( _access( AI->filename, 0 ) == 0 ) 
+		if ( _access( AI->filename, 0 ) == 0 )
 			AI->format = PA_FORMAT_PNG;
 		else {
 			strcpy( AI->filename + len, "jpg" );
-			if ( _access( AI->filename, 0 ) == 0 ) 
+			if ( _access( AI->filename, 0 ) == 0 )
 				AI->format = PA_FORMAT_JPEG;
 		}
 	}
 	else {
-		if ( _access( AI->filename, 0 ) == 0 ) 
+		if ( _access( AI->filename, 0 ) == 0 )
 			AI->format = PA_FORMAT_PNG;
 	}
 
@@ -597,7 +597,7 @@ static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 				return GAIR_SUCCESS;
 	}
 
-	if (( wParam & GAIF_FORCE ) != 0 && AI->hContact != NULL ) 
+	if (( wParam & GAIF_FORCE ) != 0 && AI->hContact != NULL )
 	{
 		WORD wStatus = MSN_GetWord( AI->hContact, "Status", ID_STATUS_OFFLINE );
 		if ( wStatus == ID_STATUS_OFFLINE || msnStatusMode == ID_STATUS_INVISIBLE ) {
@@ -607,7 +607,7 @@ static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 			mir_forkthread( sttFakeAvatarAck, fakeAI );
 		}
 		else {
-			if ( p2p_getAvatarSession( AI->hContact ) == NULL ) 
+			if ( p2p_getAvatarSession( AI->hContact ) == NULL )
 				p2p_invite( AI->hContact, MSN_APPID_AVATAR );
 		}
 
@@ -634,7 +634,7 @@ static int MsnGetAvatarCaps(WPARAM wParam, LPARAM lParam)
 	case AF_PROPORTION:
 		res = PIP_NONE;
 		break;
-		
+
 	case AF_FORMATSUPPORTED:
 		res = lParam == PA_FORMAT_PNG;
 		break;
@@ -678,7 +678,7 @@ static int MsnGetCaps(WPARAM wParam,LPARAM lParam)
 	switch( wParam ) {
 	case PFLAGNUM_1:
 	{	int result = PF1_IM | PF1_SERVERCLIST | PF1_AUTHREQ | PF1_BASICSEARCH |
-				 PF1_ADDSEARCHRES | PF1_SEARCHBYEMAIL | PF1_USERIDISEMAIL |
+				 PF1_ADDSEARCHRES | PF1_SEARCHBYEMAIL | PF1_USERIDISEMAIL | PF1_CHAT |
 				 PF1_FILESEND | PF1_FILERECV | PF1_URLRECV | PF1_VISLIST | PF1_MODEMSG;
 		return result;
 	}
@@ -927,7 +927,7 @@ static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 	if ( ccs->wParam & PREF_UNICODE ) {
 		char* p = strchr(msg, '\0');
 		if (p != msg) {
-			while ( *(++p) == '\0' ); 
+			while ( *(++p) == '\0' );
 			msg = mir_utf8encodeW(( wchar_t* )p );
 		}
 		else
@@ -1367,7 +1367,7 @@ int LoadMsnServices( void )
 	arServices.insert( MSN_CreateProtoServiceFunction( PS_GETMYAVATAR,      MsnGetAvatar ));
 	arServices.insert( MSN_CreateProtoServiceFunction( PS_SETMYAVATAR,      MsnSetAvatar ));
 	arServices.insert( MSN_CreateProtoServiceFunction( PS_GETAVATARCAPS,    MsnGetAvatarCaps ));
-	
+
 	arServices.insert( MSN_CreateProtoServiceFunction( PS_SET_LISTENINGTO,  MsnSetCurrentMedia ));
 	arServices.insert( MSN_CreateProtoServiceFunction( PS_GET_LISTENINGTO,  MsnGetCurrentMedia ));
 
