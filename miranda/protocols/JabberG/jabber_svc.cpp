@@ -730,7 +730,7 @@ static int JabberGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 				XmlNodeIq iq( "get", iqId, szJid );
 				if ( isXVcard )
 					iq.addChild( "vCard" )->addAttr( "xmlns", JABBER_FEAT_VCARD_TEMP );
-				else 
+				else
 					iq.addQuery( isXVcard ? "" : JABBER_FEAT_AVATAR );
 				jabberThreadInfo->send( iq );
 
@@ -827,7 +827,7 @@ int JabberGetCaps( WPARAM wParam, LPARAM lParam )
 {
 	switch( wParam ) {
 	case PFLAGNUM_1:
-		return PF1_IM|PF1_AUTHREQ|PF1_SERVERCLIST|PF1_MODEMSG|PF1_BASICSEARCH/*|PF1_SEARCHBYEMAIL |PF1_SEARCHBYNAME|PF1_EXTSEARCHUI*/ | PF1_EXTSEARCH |PF1_FILE|PF1_VISLIST|PF1_INVISLIST;
+		return PF1_IM | PF1_AUTHREQ | PF1_CHAT | PF1_SERVERCLIST | PF1_MODEMSG|PF1_BASICSEARCH | PF1_EXTSEARCH | PF1_FILE;
 	case PFLAGNUM_2:
 		return PF2_ONLINE | PF2_INVISIBLE | PF2_SHORTAWAY | PF2_LONGAWAY | PF2_HEAVYDND | PF2_FREECHAT;
 	case PFLAGNUM_3:
@@ -1094,13 +1094,13 @@ int JabberSendFile( WPARAM wParam, LPARAM lParam )
 	}
 
 	JabberCapsBits jcb = JabberGetResourceCapabilites( item->jid );
-	
+
 	// fix for very smart clients, like gajim
 	if ( !JGetByte( "BsDirect", FALSE ) && !JGetByte( "BsProxy", FALSE ) ) {
 		// disable bytestreams
 		jcb &= ~JABBER_CAPS_BYTESTREAMS;
 	}
-	
+
 	// if only JABBER_CAPS_SI_FT feature set (without BS or IBB), disable JABBER_CAPS_SI_FT
 	if (( jcb & (JABBER_CAPS_SI_FT | JABBER_CAPS_IBB | JABBER_CAPS_BYTESTREAMS)) == JABBER_CAPS_SI_FT)
 		jcb &= ~JABBER_CAPS_SI_FT;
