@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern HANDLE hCacheHeap;
 extern SortedList lContacts;
+extern HANDLE hLastCachedContact;
 
 int GetContactSettingStatic(WPARAM wParam,LPARAM lParam);
 void FreeCachedVariant( DBVARIANT* V );
@@ -185,6 +186,8 @@ static int DeleteContact(WPARAM wParam,LPARAM lParam)
 			}
 			HeapFree( hCacheHeap, 0, VL );
 
+			if (VLtemp.hContact == hLastCachedContact)
+				hLastCachedContact = NULL;
 			li.List_Remove(&lContacts,index);
 	}	}
 
