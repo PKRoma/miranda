@@ -373,7 +373,7 @@ static RECT CLCPaint_GetRectangleEx(struct ClcData *dat, RECT *row_rc, RECT *fre
 static RECT CLCPaint_GetRectangle(struct ClcData *dat, RECT *row_rc, RECT *free_row_rc, int *left_pos, int *right_pos, BOOL left, int real_width, int width, int height, int horizontal_space)
 {
        RECT rc = *free_row_rc;
-    int width_tmp;
+    int width_tmp=width;
     if (left)
     {
         if (dat->row_align_left_items_to_left)
