@@ -210,12 +210,16 @@ static void sttSavePicture2disk( filetransfer* ft )
 	if ( *(unsigned short*)ft->fileBuffer == 0xd8ff )
 	{
 		AI.format =  PA_FORMAT_JPEG;
-		strcat( AI.filename, "jpg" ); 
+		strcat( AI.filename, "png" );
+		remove( AI.filename );
+		strcpy( strrchr(AI.filename, '.') + 1, "jpg" ); 
 	}
 	else
 	{
 		AI.format =  PA_FORMAT_PNG;
-		strcat( AI.filename, "png" ); 
+		strcat( AI.filename, "jpg" ); 
+		remove( AI.filename );
+		strcpy( strrchr(AI.filename, '.') + 1, "png" ); 
 	}
 
 	MSN_DebugLog( "Avatar for contact %08x saved to file '%s'", AI.hContact, AI.filename );

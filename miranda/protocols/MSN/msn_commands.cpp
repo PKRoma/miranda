@@ -449,7 +449,7 @@ static void sttCustomSmiley( const char* msgBody, char* email, char* nick, int i
 
 	const char *tok1 = msgBody, *tok2;
 	char *smlp = smileyList;
-	char lastsml[10];
+	char lastsml[50];
 
 	unsigned iCount = 0;
 	bool parseSmiley = true;
@@ -459,12 +459,13 @@ static void sttCustomSmiley( const char* msgBody, char* email, char* nick, int i
 		tok2 = strchr(tok1, '\t');
 		if (tok2 == NULL) break;
 
-		int sz = tok2 - tok1;
+		size_t sz = tok2 - tok1;
 		if (parseSmiley)
 		{
+			sz = min(sz, sizeof(lastsml) - 1);
 			memcpy(lastsml, tok1, sz);
 			lastsml[sz] = 0;
-			
+
 			memcpy(smlp, tok1, sz); smlp += sz;
 			*(smlp++) = '\n'; *smlp = 0;
 			++iCount;
@@ -502,7 +503,14 @@ static void sttCustomSmiley( const char* msgBody, char* email, char* nick, int i
 				TranslateT("sent you %d custom smiley(s):\n%s") : 
 				TranslateT("sent you %d custom animated smiley(s):\n%s");
 
+		wchar_t* wsml;
+		mir_utf8decode(smileyList, &wsml);
+#ifdef _UNICODE
+		mir_sntprintf( popupMessage, SIZEOF( popupMessage ), fmt, iCount, wsml );
+#else
 		mir_sntprintf( popupMessage, SIZEOF( popupMessage ), fmt, iCount, smileyList );
+#endif
+		mir_free(wsml);
 		MSN_ShowPopup( hContact, popupMessage, 0 );
 	}	
 }

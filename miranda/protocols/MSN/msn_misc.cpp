@@ -229,7 +229,7 @@ void  MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, size_t cbLen,
 	{
 		CallService(MS_DB_GETPROFILEPATH, (WPARAM) cbLen, (LPARAM)pszDest);
 		tPathLen = strlen( pszDest );
-		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s\\", msnProtocolName);
+		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s", msnProtocolName);
 	}
 	else {
 		strcpy( pszDest, path );
@@ -241,17 +241,17 @@ void  MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, size_t cbLen,
 		if ( MSN_GetStaticString( "e-mail", hContact, szEmail, sizeof( szEmail )))
 			ltoa(( long )hContact, szEmail, 10 );
 		
-		tPathLen += mir_snprintf( pszDest + tPathLen, cbLen - tPathLen, "\\%s\\", szEmail );
+		tPathLen += mir_snprintf( pszDest + tPathLen, cbLen - tPathLen, "\\%s", szEmail );
 	}
 	else 
-		tPathLen += mir_snprintf( pszDest + tPathLen, cbLen - tPathLen, "\\%s\\", msnProtocolName );
+		tPathLen += mir_snprintf( pszDest + tPathLen, cbLen - tPathLen, "\\%s", msnProtocolName );
 		
 	_mkdir( pszDest );
 
 	if ( type == MSN_APPID_CUSTOMSMILEY )
-		mir_snprintf( pszDest + tPathLen, cbLen - tPathLen, "%s.png", SmileyName );
+		mir_snprintf( pszDest + tPathLen, cbLen - tPathLen, "\\%s.png", SmileyName );
 	else
-		mir_snprintf( pszDest + tPathLen, cbLen - tPathLen, "%s.gif", SmileyName );
+		mir_snprintf( pszDest + tPathLen, cbLen - tPathLen, "\\%s.gif", SmileyName );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
