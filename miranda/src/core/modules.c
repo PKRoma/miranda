@@ -510,7 +510,7 @@ void KillModuleEventHooks( HINSTANCE hInst )
 				GetModuleFileNameA( hooks.items[i]->subscriber[j].hOwner, szModuleName, sizeof(szModuleName));
 				Netlib_Logf( NULL, "A hook %08x for event '%s' was abnormally deleted because module '%s' didn't released it",
 					hooks.items[i]->subscriber[j].pfnHook, hooks.items[i]->name, szModuleName );
-				UnhookEvent(( HANDLE )(( i << 16 ) + j + 1 ));
+				UnhookEvent(( HANDLE )(( hooks.items[i]->id << 16 ) + j + 1 ));
 				if ( hooks.items[i]->subscriberCount == 0 )
 					break;
 	}	}	}
