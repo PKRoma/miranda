@@ -300,18 +300,18 @@ int MO_GetMenuItem(WPARAM wParam,LPARAM lParam)
 
 //wparam MenuItemHandle
 //lparam PMO_MenuItem
-int MO_ModifyMenuItem( int menuHandle, PMO_MenuItem pmiparam )
+int MO_ModifyMenuItem( int menuHandle, PMO_MenuItem pmi )
 {
 	PMO_IntMenuItem pimi;
 	int oldflags;
 	int objidx;
 
-	if ( !isGenMenuInited || pmiparam == NULL )
+	if ( !isGenMenuInited || pmi == NULL )
 		return -1;
 
 	EnterCriticalSection( &csMenuHook );
 	pimi = MO_GetIntMenuItem( menuHandle );
-	if ( pimi == NULL || pmiparam->cbSize != sizeof( TMO_MenuItem )) {
+	if ( pimi == NULL || pmi->cbSize != sizeof( TMO_MenuItem )) {
 		LeaveCriticalSection( &csMenuHook );
 		return -1;
 	}
@@ -322,42 +322,49 @@ int MO_ModifyMenuItem( int menuHandle, PMO_MenuItem pmiparam )
 		return -1;
 	}
 
-	if ( pmiparam->flags & CMIM_NAME ) {
-		FreeAndNil(&pimi->mi.pszName);
+	if ( pmi->flags & CMIM_NAME ) {
+		FreeAndNil( &pimi->mi.pszName );
 		#if defined( _UNICODE )
-			if ( pmiparam->flags & CMIF_UNICODE )
-				pimi->mi.ptszName = mir_tstrdup( TranslateTS( pmiparam->ptszName ));
-			else
-				pimi->mi.ptszName = LangPackPcharToTchar( pmiparam->pszName );
+			if ( pmi->flags & CMIF_UNICODE )
+				pimi->mi.ptszName = mir_tstrdup(( pmi->flags & CMIF_KEEPUNTRANSLATED ) ? pmi->ptszName : TranslateTS( pmi->ptszName ));
+			else {
+				if ( pmi->flags & CMIF_KEEPUNTRANSLATED ) {
+					int len = lstrlenA( pmi->pszName );
+					pimi->mi.ptszName = ( TCHAR* )mir_alloc( sizeof( TCHAR )*( len+1 ));
+					MultiByteToWideChar( CP_ACP, 0, pmi->pszName, -1, pimi->mi.ptszName, len+1 );
+					pimi->mi.ptszName[ len ] = 0;
+				}
+				else pimi->mi.ptszName = LangPackPcharToTchar( pmi->pszName );
+			}
 		#else
-			pimi->mi.ptszName = mir_strdup( Translate( pmiparam->ptszName ));
+			pimi->mi.ptszName = mir_strdup(( pmi->flags & CMIF_KEEPUNTRANSLATED ) ? pmi->ptszName :  Translate( pmi->ptszName ));
 		#endif
 	}
-	if ( pmiparam->flags & CMIM_FLAGS ) {
+	if ( pmi->flags & CMIM_FLAGS ) {
 		oldflags = pimi->mi.flags & ( CMIF_ROOTPOPUP | CMIF_CHILDPOPUP | CMIF_ICONFROMICOLIB );
-		pimi->mi.flags = pmiparam->flags & ~CMIM_ALL;
+		pimi->mi.flags = pmi->flags & ~CMIM_ALL;
 		pimi->mi.flags |= oldflags;
 	}
-	if ( pmiparam->flags & CMIM_ICON ) {
+	if ( pmi->flags & CMIM_ICON ) {
 		if ( pimi->mi.flags & CMIF_ICONFROMICOLIB ) {
-			HICON hIcon = IcoLib_GetIconByHandle( pmiparam->hIcolibItem );
+			HICON hIcon = IcoLib_GetIconByHandle( pmi->hIcolibItem );
 			if ( hIcon != NULL ) {
-				pimi->hIcolibItem = pmiparam->hIcolibItem;
+				pimi->hIcolibItem = pmi->hIcolibItem;
 				pimi->iconId = ImageList_ReplaceIcon( MenuObjects[objidx].hMenuIcons, pimi->iconId, hIcon );
 				IconLib_ReleaseIcon( hIcon, 0 );
 			}
 			else pimi->iconId = -1, pimi->hIcolibItem = NULL;
 		}
 		else {
-			pimi->mi.hIcon = pmiparam->hIcon;
-			if ( pmiparam->hIcon != NULL )
-				pimi->iconId = ImageList_ReplaceIcon( MenuObjects[objidx].hMenuIcons, pimi->iconId, pmiparam->hIcon );
+			pimi->mi.hIcon = pmi->hIcon;
+			if ( pmi->hIcon != NULL )
+				pimi->iconId = ImageList_ReplaceIcon( MenuObjects[objidx].hMenuIcons, pimi->iconId, pmi->hIcon );
 			else
 				pimi->iconId = -1;	  //fixme, should remove old icon & shuffle all iconIds
 	}	}
 
-	if ( pmiparam->flags & CMIM_HOTKEY )
-		pimi->mi.hotKey = pmiparam->hotKey;
+	if ( pmi->flags & CMIM_HOTKEY )
+		pimi->mi.hotKey = pmi->hotKey;
 
 	LeaveCriticalSection( &csMenuHook );
 	return 0;
@@ -632,12 +639,19 @@ int MO_AddNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi )
 		p->OverrideShow = TRUE;
 		p->originalPosition = pmi->position;
 		#if defined( _UNICODE )
-			if ( pmi->flags & CMIF_UNICODE )
-				p->mi.ptszName = mir_tstrdup( TranslateTS( pmi->ptszName ));
-			else
-				p->mi.ptszName = LangPackPcharToTchar( pmi->pszName );
+			if ( pmi->flags & CMIF_UNICODE ) 
+				p->mi.ptszName = mir_tstrdup(( pmi->flags & CMIF_KEEPUNTRANSLATED ) ? pmi->ptszName : TranslateTS( pmi->ptszName ));
+			else {
+				if ( pmi->flags & CMIF_KEEPUNTRANSLATED ) {
+					int len = lstrlenA( pmi->pszName );
+					p->mi.ptszName = ( TCHAR* )mir_alloc( sizeof( TCHAR )*( len+1 ));
+					MultiByteToWideChar( CP_ACP, 0, pmi->pszName, -1, p->mi.ptszName, len+1 );
+					p->mi.ptszName[ len ] = 0;
+				}
+				else p->mi.ptszName = LangPackPcharToTchar( pmi->pszName );
+			}
 		#else
-			p->mi.ptszName = mir_strdup( Translate( pmi->ptszName ));
+			p->mi.ptszName = mir_strdup(( pmi->flags & CMIF_KEEPUNTRANSLATED ) ? pmi->ptszName : Translate( pmi->ptszName ));
 		#endif
 		if ( pmi->hIcon != NULL ) {
 			if ( pmi->flags & CMIF_ICONFROMICOLIB ) {

@@ -1,4 +1,4 @@
-#include "commonheaders.h"
+	#include "commonheaders.h"
 //#include "genmenu.h"
 
 HANDLE hOnCntMenuBuild;
@@ -64,7 +64,7 @@ static void ModifyGroupItem(HANDLE hItem, TCHAR* name,int checked)
 	CLISTMENUITEM mi = {0};
 	mi.cbSize  = sizeof(mi);
 	mi.ptszName = PrepareGroupName( name );
-	mi.flags   = CMIM_NAME | CMIM_FLAGS | CMIF_TCHAR;
+	mi.flags   = CMIM_NAME | CMIM_FLAGS | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
 	if ( checked )
 		mi.flags |= CMIF_CHECKED;
 	CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hItem, (LPARAM)&mi);
