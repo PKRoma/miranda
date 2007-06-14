@@ -485,21 +485,23 @@ static char *SetToStyle(int style)
 	return szStyle;
 }
 
-TCHAR *TimestampToString(DWORD dwFlags, time_t check, int groupStart)
+// mode: 0 - date & time, 1 - date, 2 - time
+
+TCHAR *TimestampToString(DWORD dwFlags, time_t check, int mode)
 {
     static TCHAR szResult[512];
     TCHAR str[80];
-
+	TCHAR format[20];
     DBTIMETOSTRINGT dbtts;
+
+    szResult[0] = '\0';
+    format[0] = '\0';
 
     dbtts.cbDest = 70;;
     dbtts.szDest = str;
+	dbtts.szFormat = format;
 
-    if(!groupStart || !(dwFlags & SMF_SHOWDATE)) {
-        dbtts.szFormat = (dwFlags & SMF_SHOWSECONDS) ? _T("s") : _T("t");
-        szResult[0] = '\0';
-    }
-    else {
+    if ((mode == 0 || mode == 1) && (dwFlags & SMF_SHOWDATE)) {
 		struct tm tm_now, tm_today;
 		time_t now = time(NULL);
 		time_t today;
@@ -509,29 +511,36 @@ TCHAR *TimestampToString(DWORD dwFlags, time_t check, int groupStart)
         today = mktime(&tm_today);
 
         if(dwFlags & SMF_RELATIVEDATE && check >= today) {
-            dbtts.szFormat = (dwFlags & SMF_SHOWSECONDS) ? _T("s") : _T("t");
             lstrcpy(szResult, TranslateT("Today"));
-	        lstrcat(szResult, _T(", "));
-        }
-        else if(dwFlags & SMF_RELATIVEDATE && check > (today - 86400)) {
-            dbtts.szFormat = (dwFlags & SMF_SHOWSECONDS) ? _T("s") : _T("t");
+            if (mode == 0) {
+				lstrcat(szResult, _T(","));
+            }
+        } else if(dwFlags & SMF_RELATIVEDATE && check > (today - 86400)) {
             lstrcpy(szResult, TranslateT("Yesterday"));
-	        lstrcat(szResult, _T(", "));
-        }
-        else {
+            if (mode == 0) {
+				lstrcat(szResult, _T(","));
+            }
+        } else {
             if(dwFlags & SMF_LONGDATE)
-                dbtts.szFormat = (dwFlags & SMF_SHOWSECONDS) ? _T("D s") : _T("D t");
+				lstrcpy(format, _T("D"));
             else
-                dbtts.szFormat = (dwFlags & SMF_SHOWSECONDS) ? _T("d s") : _T("d t");
-            szResult[0] = '\0';
+				lstrcpy(format, _T("d"));
         }
     }
+    if (mode == 0 || mode == 2) {
+    	if (mode == 0 && (dwFlags & SMF_SHOWDATE)) {
+			lstrcat(format, _T(" "));
+    	}
+		lstrcat(format, (dwFlags & SMF_SHOWSECONDS) ? _T("s") : _T("t"));
+    }
+    if (format[0] != '\0') {
 #if defined ( _UNICODE )
-	CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, check, (LPARAM) & dbtts);
+		CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, check, (LPARAM) & dbtts);
 #else
-	CallService(MS_DB_TIME_TIMESTAMPTOSTRING, check, (LPARAM) & dbtts);
+		CallService(MS_DB_TIME_TIMESTAMPTOSTRING, check, (LPARAM) & dbtts);
 #endif
-    _tcsncat(szResult, str, 500);
+		_tcsncat(szResult, str, 500);
+    }
     return szResult;
 }
 
@@ -711,7 +720,7 @@ static char *CreateRTFFromDbEvent2(struct MessageWindowData *dat, struct EventDa
 		isGroupBreak = FALSE;
 	}
 	if (!streamData->isFirst && !dat->isMixed) {
-		if (isGroupBreak) {
+		if (isGroupBreak || g_dat->flags & SMF_MARKFOLLOWUPS) {
 			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par");
 		} else {
 			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\line");
@@ -784,13 +793,24 @@ static char *CreateRTFFromDbEvent2(struct MessageWindowData *dat, struct EventDa
 		bufferEnd += logIconBmpSize[i];
 		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " ");
 	}
-	if (g_dat->flags&SMF_SHOWTIME &&
-		(event->eventType != EVENTTYPE_MESSAGE ||
-		!(g_dat->flags & SMF_GROUPMESSAGES) ||
-		(isGroupBreak && !(g_dat->flags & SMF_MARKFOLLOWUPS)) ||  (!isGroupBreak && (g_dat->flags & SMF_MARKFOLLOWUPS))))
-	{
-		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", SetToStyle(event->dwFlags & IEEDF_SENT ? MSGFONTID_MYTIME : MSGFONTID_YOURTIME));
-		AppendTToBuffer(&buffer, &bufferEnd, &bufferAlloced, TimestampToString(g_dat->flags, event->time, isGroupBreak));
+	if (g_dat->flags&SMF_SHOWTIME && (event->eventType != EVENTTYPE_MESSAGE ||
+		(g_dat->flags & SMF_MARKFOLLOWUPS || isGroupBreak || !(g_dat->flags & SMF_GROUPMESSAGES)))) {
+		TCHAR * timestampString = NULL;
+		if (g_dat->flags & SMF_GROUPMESSAGES) {
+			if (isGroupBreak) {
+				if  (!(g_dat->flags & SMF_MARKFOLLOWUPS)) {
+					timestampString = TimestampToString(g_dat->flags, event->time, 0);
+				} else if (g_dat->flags & SMF_SHOWDATE)
+					timestampString = TimestampToString(g_dat->flags, event->time, 1);
+			} else if (g_dat->flags & SMF_MARKFOLLOWUPS) {
+				timestampString = TimestampToString(g_dat->flags, event->time, 2);
+			}
+		} else
+			timestampString = TimestampToString(g_dat->flags, event->time, 0);
+		if (timestampString != NULL) {
+			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", SetToStyle(event->dwFlags & IEEDF_SENT ? MSGFONTID_MYTIME : MSGFONTID_YOURTIME));
+			AppendTToBuffer(&buffer, &bufferEnd, &bufferAlloced, timestampString);
+		}
 		if (event->eventType != EVENTTYPE_MESSAGE) {
 			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s: ", SetToStyle(event->dwFlags & IEEDF_SENT ? MSGFONTID_MYCOLON : MSGFONTID_YOURCOLON));
 		}
@@ -817,7 +837,11 @@ static char *CreateRTFFromDbEvent2(struct MessageWindowData *dat, struct EventDa
 #endif
 		showColon = 1;
 		if (event->eventType == EVENTTYPE_MESSAGE && g_dat->flags & SMF_GROUPMESSAGES) {
-			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\line");
+			if (g_dat->flags & SMF_MARKFOLLOWUPS) {
+				AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par");
+			} else {
+				AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\line");
+			}
 			showColon = 0;
 		}
 	}
@@ -825,7 +849,7 @@ static char *CreateRTFFromDbEvent2(struct MessageWindowData *dat, struct EventDa
 	if (g_dat->flags&SMF_SHOWTIME && g_dat->flags & SMF_GROUPMESSAGES && g_dat->flags & SMF_MARKFOLLOWUPS
 		&& event->eventType == EVENTTYPE_MESSAGE && isGroupBreak) {
 		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", SetToStyle(event->dwFlags & IEEDF_SENT ? MSGFONTID_MYTIME : MSGFONTID_YOURTIME));
-		AppendTToBuffer(&buffer, &bufferEnd, &bufferAlloced, TimestampToString(g_dat->flags, event->time, isGroupBreak));
+		AppendTToBuffer(&buffer, &bufferEnd, &bufferAlloced, TimestampToString(g_dat->flags, event->time, 2));
 		showColon = 1;
 	}
 	if (showColon && event->eventType == EVENTTYPE_MESSAGE) {
