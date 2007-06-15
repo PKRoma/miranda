@@ -69,6 +69,7 @@ int cliGetRowsPriorTo(struct ClcGroup *group,struct ClcGroup *subgroup,int conta
 		}
 		if(group==subgroup && contactIndex==group->scanIndex) return count;
 		count++;
+		
 		/*		if ((group->cl.items[group->scanIndex]->type==CLCIT_CONTACT) && (group->cl.items[group->scanIndex].flags & CONTACTF_STATUSMSG)) {
 		count++;
 		}
@@ -80,6 +81,15 @@ int cliGetRowsPriorTo(struct ClcGroup *group,struct ClcGroup *subgroup,int conta
 				group=group->cl.items[group->scanIndex]->group;
 				group->scanIndex=0;
 				continue;
+			}
+		}
+		if (group==subgroup)
+		{
+			if(group->cl.items[group->scanIndex]->type==CLCIT_CONTACT && group->cl.items[group->scanIndex]->SubAllocated)
+			{
+				int rows=(group->cl.items[group->scanIndex]->SubAllocated*group->cl.items[group->scanIndex]->SubExpanded*k);
+				if (group->scanIndex+rows >= contactIndex)
+					return count+(contactIndex-group->scanIndex)-1;				
 			}
 		}
 		if(group->cl.items[group->scanIndex]->type==CLCIT_CONTACT)

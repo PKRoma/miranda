@@ -158,7 +158,26 @@ LRESULT cli_ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARA
 			}
 			return (LRESULT) (HANDLE) NULL;
 		}
-
+		return 0;
+	case CLM_SELECTITEM:
+		{
+			struct ClcContact *contact;
+			struct ClcGroup *group, *tgroup;
+			int index=-1;
+			if (!pcli->pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, &group, NULL))
+				break;
+			for (tgroup = group; tgroup; tgroup = tgroup->parent)
+				pcli->pfnSetGroupExpand(hwnd, dat, tgroup, 1);
+			if (!contact->isSubcontact)
+				index=li.List_IndexOf((SortedList*)&group->cl,contact);
+			else
+			{
+				index=li.List_IndexOf((SortedList*)&group->cl,contact->subcontacts);
+				index+=contact->isSubcontact;
+			}
+			dat->selection = pcli->pfnGetRowsPriorTo(&dat->list, group, index);
+			pcli->pfnEnsureVisible(hwnd, dat, dat->selection, 0);			
+		}
 		return 0;
 	}
 
