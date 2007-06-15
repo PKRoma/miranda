@@ -796,7 +796,7 @@ static char *CreateRTFFromDbEvent2(struct MessageWindowData *dat, struct EventDa
 	if (g_dat->flags&SMF_SHOWTIME && (event->eventType != EVENTTYPE_MESSAGE ||
 		(g_dat->flags & SMF_MARKFOLLOWUPS || isGroupBreak || !(g_dat->flags & SMF_GROUPMESSAGES)))) {
 		TCHAR * timestampString = NULL;
-		if (g_dat->flags & SMF_GROUPMESSAGES) {
+		if (g_dat->flags & SMF_GROUPMESSAGES && event->eventType == EVENTTYPE_MESSAGE) {
 			if (isGroupBreak) {
 				if  (!(g_dat->flags & SMF_MARKFOLLOWUPS)) {
 					timestampString = TimestampToString(g_dat->flags, event->time, 0);
