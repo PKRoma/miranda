@@ -118,11 +118,11 @@ static int ModifyStatusIcon(WPARAM wParam, LPARAM lParam) {
 				current->sid.flags = sid->flags;
 				if(sid->hIcon) {
 					ReleaseIconSmart(current->sid.hIcon);
-					current->sid.hIcon = sid->hIcon;				
+					current->sid.hIcon = sid->hIcon;
 				}
 				if(sid->hIconDisabled) {
 					ReleaseIconSmart(current->sid.hIconDisabled);
-					current->sid.hIconDisabled = sid->hIconDisabled;				
+					current->sid.hIconDisabled = sid->hIconDisabled;
 				}
 				if(sid->szTooltip) {
 					if(current->sid.szTooltip) mir_free(current->sid.szTooltip);
@@ -177,14 +177,15 @@ void DrawStatusIcons(HANDLE hContact, HDC hDC, RECT r, int gap) {
 void CheckStatusIconClick(HANDLE hContact, HWND hwndFrom, POINT pt, RECT r, int gap, int click_flags) {
 	StatusIconClickData sicd;
 	struct StatusIconListNode *current = status_icon_list;
-	unsigned int iconNum = (pt.x - r.left) / (GetSystemMetrics(SM_CXSMICON) + gap);
+	unsigned int iconNum = (pt.x - r.left) / (GetSystemMetrics(SM_CXSMICON) + gap) + 1;
 	int flags;
 	char buff[256];
 
-	while(current && iconNum > 0) {
+	while(current) {
 		sprintf(buff, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
 		flags = DBGetContactSettingByte(hContact, current->sid.szModule, buff, current->sid.flags);
 		if(!(flags & MBF_HIDDEN)) iconNum--;
+		if (iconNum == 0) break;
 		current = current->next;
 	}
 
@@ -195,7 +196,6 @@ void CheckStatusIconClick(HANDLE hContact, HWND hwndFrom, POINT pt, RECT r, int 
 		sicd.dwId = current->sid.dwId;
 		sicd.szModule = current->sid.szModule;
 		sicd.flags = click_flags;
-
 		NotifyEventHooks(hHookIconPressedEvt, (WPARAM)hContact, (LPARAM)&sicd);
 	}
 }
