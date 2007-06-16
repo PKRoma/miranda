@@ -347,19 +347,45 @@ char* SSL_WinInet::getSslResult( char* parUrl, char* parAuthInfo, char* hdrs )
 			"Accept: txt/xml\r\nContent-Type: text/xml; charset=utf-8\r\n%s", 
 			hdrs ? hdrs : "");
 
+		bool restart = false;
+
 LBL_Restart:
 			MSN_DebugLog( "Sending request..." );
 //			MSN_DebugLog( parAuthInfo );
-			DWORD tErrorCode = f_HttpSendRequest( tRequest, headers, strlen( headers ), parAuthInfo, strlen( parAuthInfo ));
+			DWORD tErrorCode = f_HttpSendRequest( tRequest, headers, strlen( headers ), 
+				parAuthInfo, strlen( parAuthInfo ));
 			if ( tErrorCode == 0 ) {
 				TWinErrorCode errCode;
-				MSN_DebugLog( "HttpSendRequest() failed with error %ld", errCode.mErrorCode );
+				MSN_DebugLog( "HttpSendRequest() failed with error %d: %s", errCode.mErrorCode, errCode.getText());
 
-				if ( errCode.mErrorCode == 2 )
-					MSN_ShowError( "Internet Explorer is in the 'Offline' mode. Switch IE to the 'Online' mode and then try to relogin" );
-				else
-					MSN_ShowError( "MSN Passport verification failed with error %d: %s",
-						errCode.mErrorCode, errCode.getText());
+				switch( errCode.mErrorCode ) {
+					case 2:
+						MSN_ShowError( "Internet Explorer is in the 'Offline' mode. Switch IE to the 'Online' mode and then try to relogin" );
+						break;
+
+					case ERROR_INTERNET_INVALID_CA:
+					case ERROR_INTERNET_SEC_CERT_DATE_INVALID:
+					case ERROR_INTERNET_SEC_CERT_NO_REV:
+					case ERROR_INTERNET_SEC_CERT_REV_FAILED:
+						if (!restart)
+						{
+							DWORD dwFlags = SECURITY_FLAG_IGNORE_UNKNOWN_CA  |
+								  			SECURITY_FLAG_IGNORE_REVOCATION  |   
+											SECURITY_FLAG_IGNORE_CERT_DATE_INVALID;
+
+							f_InternetSetOption( tRequest, INTERNET_OPTION_SECURITY_FLAGS, 
+								&dwFlags, sizeof( dwFlags ));
+							mir_free( readData( tRequest ));
+							restart = true;
+							goto LBL_Restart;
+						}
+
+					default:
+						MSN_ShowError( "MSN Passport verification failed with error %d: %s",
+							errCode.mErrorCode, errCode.getText());
+				}
+
+
 			}
 			else {
 				DWORD dwCode;
@@ -367,30 +393,15 @@ LBL_Restart:
 				f_HttpQueryInfo( tRequest, HTTP_QUERY_STATUS_CODE | HTTP_QUERY_FLAG_NUMBER, &dwCode, &tBufSize, 0 );
 
 				switch( dwCode ) {
-				case HTTP_STATUS_REDIRECT:
-				case HTTP_STATUS_OK:
-					tSslAnswer = readData( tRequest );
-					break;
+					case HTTP_STATUS_REDIRECT:
+					case HTTP_STATUS_OK:
+						tSslAnswer = readData( tRequest );
+						break;
 
-				case ERROR_INTERNET_HTTP_TO_HTTPS_ON_REDIR:
-				case ERROR_INTERNET_INCORRECT_PASSWORD:
-				case ERROR_INTERNET_INVALID_CA:
-				case ERROR_INTERNET_POST_IS_NON_SECURE:
-				case ERROR_INTERNET_SEC_CERT_CN_INVALID:
-				case ERROR_INTERNET_SEC_CERT_DATE_INVALID:
-				case ERROR_INTERNET_SEC_CERT_ERRORS:
-				case ERROR_INTERNET_SEC_CERT_NO_REV:
-				case ERROR_INTERNET_SEC_CERT_REV_FAILED:
-					MSN_DebugLog( "HttpSendRequest returned error code %d", tErrorCode );
-					if ( ERROR_INTERNET_FORCE_RETRY == f_InternetErrorDlg( GetDesktopWindow(), tRequest, tErrorCode, ERROR_FLAGS, NULL )) {
+					// else fall into the general error handling routine
+					default:
 						mir_free( readData( tRequest ));
-						goto LBL_Restart;
-					}
-
-				// else fall into the general error handling routine
-				default:
-					mir_free( readData( tRequest ));
-					tSslAnswer = NULL;
+						tSslAnswer = NULL;
 			}	}
 
 			f_InternetCloseHandle( tRequest );
