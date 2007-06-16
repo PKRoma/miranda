@@ -54,7 +54,7 @@ struct DbToolOptions {
 	HANDLE hOutFile;
 	DWORD error;
 	int bCheckOnly,bBackup,bAggressive;
-	int bEraseHistory,bMarkRead;
+	int bEraseHistory,bMarkRead,bConvertUtf;
 };
 
 extern HINSTANCE hInst;
@@ -84,6 +84,7 @@ DWORD ConvertModuleNameOfs(DWORD ofsOld);
 void FreeModuleChain();
 
 int TranslateDialog(HWND hwndDlg);
+int LangPackCodePage(void);
 int LoadLangPackModule(void);
 int LangPackShutdown(void);
 
