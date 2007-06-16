@@ -1244,6 +1244,8 @@ static int MsnSetCurrentMedia(WPARAM wParam, LPARAM lParam)
 
 static int MsnSetStatus( WPARAM wParam, LPARAM lParam )
 {
+	if (msnDesiredStatus == wParam) return 0;
+
 	msnDesiredStatus = wParam;
 	MSN_DebugLog( "PS_SETSTATUS(%d,0)", wParam );
 
