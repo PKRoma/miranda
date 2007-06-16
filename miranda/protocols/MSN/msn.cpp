@@ -357,7 +357,7 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	mir_snprintf(mailsoundname, 64, "%s:%s", protocolname, MSN_Translate( "Hotmail" ));
 	SkinAddNewSound( mailsoundname, mailsoundname, "hotmail.wav" );
 	alertsoundname = ( char* )mir_alloc( 64 );
-	mir_snprintf(mailsoundname, 64, "%s:%s", protocolname, MSN_Translate( "Hotmail" ));
+	mir_snprintf(alertsoundname, 64, "%s:%s", protocolname, MSN_Translate( "Alerts" ));
 	SkinAddNewSound( alertsoundname, alertsoundname, "msnalert.wav" );
 
 	msnStatusMode = msnDesiredStatus = ID_STATUS_OFFLINE;
