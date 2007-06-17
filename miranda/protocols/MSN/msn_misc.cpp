@@ -59,10 +59,10 @@ char*  MirandaStatusToMSN( int status )
 int  MSNStatusToMiranda(const char *status)
 {
 	switch((*(PDWORD)status&0x00FFFFFF)|0x20000000) {
-		case ' LDI': //return ID_STATUS_IDLE;
+		case ' LDI': return ID_STATUS_AWAY;
 		case ' NLN': return ID_STATUS_ONLINE;
-		case ' YWA': return ( MyOptions.AwayAsBrb ) ? ID_STATUS_NA : ID_STATUS_AWAY;
-		case ' BRB': return ( MyOptions.AwayAsBrb ) ? ID_STATUS_AWAY : ID_STATUS_NA;
+		case ' YWA': return MyOptions.AwayAsBrb ? ID_STATUS_NA : ID_STATUS_AWAY;
+		case ' BRB': return MyOptions.AwayAsBrb ? ID_STATUS_AWAY : ID_STATUS_NA;
 		case ' YSB': return ID_STATUS_OCCUPIED;
 		case ' NHP': return ID_STATUS_ONTHEPHONE;
 		case ' NUL': return ID_STATUS_OUTTOLUNCH;

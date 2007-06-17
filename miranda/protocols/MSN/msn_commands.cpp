@@ -717,7 +717,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 			if ( hContact != NULL )
 				strcpy( userNick, MSN_GetContactName( hContact ));
 
-			MSN_CallService( MS_PROTO_CONTACTISTYPING, WPARAM( hContact ), 6 );
+			MSN_CallService( MS_PROTO_CONTACTISTYPING, WPARAM( hContact ), 7 );
 		}
 	}
 	else if ( !_strnicmp( tContentType, "text/x-msnmsgr-datacast", 23 )) {
