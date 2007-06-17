@@ -587,13 +587,14 @@ typedef struct {
 #define PREF_UNICODE	     2
 #define PREF_RTL          4     // 0.5+ addition: support for right-to-left messages
 #define PREF_UTF          8     // message is in utf-8 (0.7.0+)
-#define PSR_MESSAGE   "/RecvMessage"
 
 #if defined( _UNICODE )
 	#define PREF_TCHAR PREF_UNICODE
 #else
 	#define PREF_TCHAR 0
 #endif
+
+#define PSR_MESSAGE   "/RecvMessage"
 
 //An URL has been received
 //wParam=0

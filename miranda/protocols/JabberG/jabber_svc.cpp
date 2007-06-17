@@ -943,47 +943,9 @@ int JabberLoadIcon( WPARAM wParam, LPARAM lParam )
 
 int JabberRecvFile( WPARAM wParam, LPARAM lParam )
 {
-	CCSDATA *ccs = ( CCSDATA * ) lParam;
-	PROTORECVEVENT *pre = ( PROTORECVEVENT * ) ccs->lParam;
-	char* szFile = pre->szMessage + sizeof( DWORD );
-	char* szDesc = szFile + strlen( szFile ) + 1;
-	JabberLog( "Description = %s", szDesc );
-
-	DBDeleteContactSetting( ccs->hContact, "CList", "Hidden" );
-
-	DBEVENTINFO dbei = { 0 };
-	dbei.cbSize = sizeof( dbei );
-	dbei.szModule = jabberProtoName;
-	dbei.timestamp = pre->timestamp;
-	dbei.flags = ( pre->flags & PREF_CREATEREAD ) ? DBEF_READ : 0;
-	dbei.eventType = EVENTTYPE_FILE;
-	dbei.cbBlob = sizeof( DWORD )+ strlen( szFile ) + strlen( szDesc ) + 2;
-	dbei.pBlob = ( PBYTE ) pre->szMessage;
-	JCallService( MS_DB_EVENT_ADD, ( WPARAM ) ccs->hContact, ( LPARAM )&dbei );
-	return 0;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////
-// JabberRecvMessage - receives a message
-
-int JabberRecvMessage( WPARAM wParam, LPARAM lParam )
-{
 	CCSDATA *ccs = ( CCSDATA* )lParam;
-	PROTORECVEVENT *pre = ( PROTORECVEVENT* )ccs->lParam;
-
-	DBEVENTINFO dbei = { 0 };
-	dbei.cbSize = sizeof( dbei );
-	dbei.szModule = jabberProtoName;
-	dbei.timestamp = pre->timestamp;
-	dbei.flags = pre->flags & PREF_CREATEREAD ? DBEF_READ : 0;
-	dbei.eventType = EVENTTYPE_MESSAGE;
-	dbei.cbBlob = strlen( pre->szMessage ) + 1;
-	if ( pre->flags & PREF_UNICODE )
-		dbei.cbBlob *= ( sizeof( wchar_t )+1 );
-
-	dbei.pBlob = ( PBYTE ) pre->szMessage;
-	JCallService( MS_DB_EVENT_ADD, ( WPARAM ) ccs->hContact, ( LPARAM )&dbei );
-	return 0;
+	DBDeleteContactSetting( ccs->hContact, "CList", "Hidden" );
+	return CALLSERVICE_NOTFOUND; // allows the core service to be called
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -1626,7 +1588,6 @@ int JabberSvcInit( void )
 	JCreateServiceFunction( PSS_FILECANCEL, JabberFileCancel );
 	JCreateServiceFunction( PSS_FILEDENY, JabberFileDeny );
 	JCreateServiceFunction( PSS_FILE, JabberSendFile );
-	JCreateServiceFunction( PSR_MESSAGE, JabberRecvMessage );
 	JCreateServiceFunction( PSR_FILE, JabberRecvFile );
 	JCreateServiceFunction( PSS_USERISTYPING, JabberUserIsTyping );
 

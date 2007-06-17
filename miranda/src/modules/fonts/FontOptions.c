@@ -23,7 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 #include "FontService.h"
-#include "../database/dblists.h"
 
 // *_w2 is working copy of list
 // *_w3 is stores initial configuration

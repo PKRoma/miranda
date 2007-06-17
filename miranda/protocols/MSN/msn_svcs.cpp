@@ -765,21 +765,7 @@ int MsnRecvFile( WPARAM wParam, LPARAM lParam )
 		return 0;
 	}
 
-	PROTORECVEVENT* pre = ( PROTORECVEVENT* )ccs->lParam;
-	char* szFile = pre->szMessage + sizeof( DWORD );
-	char* szDescr = szFile + strlen( szFile ) + 1;
-
-	DBEVENTINFO dbei;
-	memset( &dbei, 0, sizeof( dbei ));
-	dbei.cbSize = sizeof( dbei );
-	dbei.szModule = msnProtocolName;
-	dbei.timestamp = pre->timestamp;
-	dbei.flags = ( pre->flags & PREF_CREATEREAD ) ? DBEF_READ : 0;
-	dbei.eventType = EVENTTYPE_FILE;
-	dbei.cbBlob = sizeof( DWORD ) + strlen( szFile ) + strlen( szDescr ) + 2;
-	dbei.pBlob = ( PBYTE )pre->szMessage;
-	MSN_CallService( MS_DB_EVENT_ADD, ( WPARAM )ccs->hContact, ( LPARAM )&dbei );
-	return 0;
+	return CALLSERVICE_NOTFOUND; // allows the core service to be called
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -788,25 +774,8 @@ int MsnRecvFile( WPARAM wParam, LPARAM lParam )
 static int MsnRecvMessage(WPARAM wParam,LPARAM lParam)
 {
 	CCSDATA* ccs = ( CCSDATA* )lParam;
-	PROTORECVEVENT* pre = ( PROTORECVEVENT* )ccs->lParam;
-
 	DBDeleteContactSetting( ccs->hContact, "CList", "Hidden" );
-
-	DBEVENTINFO dbei = { 0 };
-	dbei.cbSize = sizeof( dbei );
-	dbei.szModule = msnProtocolName;
-	dbei.timestamp = pre->timestamp;
-	dbei.flags = ( pre->flags & PREF_CREATEREAD ) ? DBEF_READ : 0;
-	if ( pre->flags & PREF_RTL )
-		dbei.flags |= DBEF_RTL;
-	dbei.eventType = EVENTTYPE_MESSAGE;
-	dbei.cbBlob = strlen( pre->szMessage )+1;
-	if ( pre->flags & PREF_UNICODE )
-		dbei.cbBlob *= ( sizeof( wchar_t )+1 );
-
-	dbei.pBlob = ( PBYTE )pre->szMessage;
-	MSN_CallService( MS_DB_EVENT_ADD, ( WPARAM )ccs->hContact, ( LPARAM )&dbei );
-	return 0;
+	return CALLSERVICE_NOTFOUND; // allows the core service to be called
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

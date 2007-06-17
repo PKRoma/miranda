@@ -87,5 +87,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "forkthread.h"
 #include "miranda.h"
+#include "../modules/database/dblists.h"
 
 #include "../resource.h"

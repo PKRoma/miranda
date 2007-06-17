@@ -1169,30 +1169,14 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 		if ( bodyNode->text == NULL )
 			return;
 
-		WCHAR* wszMessage;
-		char*  szAnsiMsg;
-		int    cbAnsiLen, cbWideLen;
-
 		if (( szMessage = JabberUnixToDosT( szMessage )) == NULL )
 			szMessage = mir_tstrdup( _T(""));
 
 		#if defined( _UNICODE )
-			wszMessage = szMessage; cbWideLen = wcslen( szMessage );
-			cbAnsiLen = WideCharToMultiByte( CP_ACP, 0, wszMessage, cbWideLen, NULL, 0, NULL, NULL );
-			szAnsiMsg = ( char* )alloca( cbAnsiLen+1 );
-			WideCharToMultiByte( CP_ACP, 0, wszMessage, cbWideLen, szAnsiMsg, cbAnsiLen, NULL, NULL );
-			szAnsiMsg[ cbAnsiLen ] = 0;
+			char* buf = mir_utf8encodeW( szMessage );
 		#else
-			szAnsiMsg = szMessage; cbAnsiLen = strlen( szMessage );
-			cbWideLen = MultiByteToWideChar( CP_ACP, 0, szAnsiMsg, cbAnsiLen, NULL, 0 );
-			wszMessage = ( WCHAR* )alloca( sizeof(WCHAR)*( cbWideLen+1 ));
-			MultiByteToWideChar( CP_ACP, 0, szAnsiMsg, cbAnsiLen, wszMessage, cbWideLen );
-			wszMessage[ cbWideLen ] = 0;
+			char* buf = mir_utf8encode( szMessage );
 		#endif
-
-		char* buf = ( char* )alloca( cbAnsiLen+1 + (cbWideLen+1)*sizeof( WCHAR ));
-		memcpy( buf, szAnsiMsg, cbAnsiLen+1 );
-		memcpy( buf + cbAnsiLen + 1, wszMessage, (cbWideLen+1)*sizeof( WCHAR ));
 
 		HANDLE hContact = JabberHContactFromJID( from );
 
@@ -1242,7 +1226,7 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 			msgTime = now;
 
 		PROTORECVEVENT recv;
-		recv.flags = PREF_UNICODE;
+		recv.flags = PREF_UTF;
 		recv.timestamp = ( DWORD )msgTime;
 		recv.szMessage = buf;
 		recv.lParam = 0;
@@ -1255,6 +1239,7 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 		JCallService( MS_PROTO_CHAINRECV, 0, ( LPARAM )&ccs );
 
 		mir_free( szMessage );
+		mir_free( buf );
 }	}
 
 // XEP-0115: Entity Capabilities

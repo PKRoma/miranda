@@ -835,26 +835,35 @@ static int PopupShow(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent,
 
 #if defined(_UNICODE)
 
-static char *GetPreviewW(UINT eventType, char* pBlob, DWORD blobsize, BOOL *isWstring)
+static char *GetPreviewW(UINT eventType, DBEVENTINFO* dbe, BOOL *isWstring)
 {
     char* comment1 = NULL;
     char* comment2 = NULL;
     char* commentFix = NULL;
-    static char szPreviewHelp[256];
+    static char szPreviewHelp[2048];
+	 char* pBlob = dbe->pBlob;
 
     *isWstring = 0;
     
     //now get text
     switch (eventType) {
         case EVENTTYPE_MESSAGE:
+			   if ( ServiceExists( MS_DB_EVENT_GETTEXT )) {
+					WCHAR* buf = DbGetEventTextW( dbe, CP_ACP );
+					wcsncpy(( WCHAR* )szPreviewHelp, buf, sizeof(szPreviewHelp) / sizeof(WCHAR));
+					mir_free( buf );
+               *isWstring = 1;
+					return (char *)szPreviewHelp;
+				}
+
             if (pBlob) {
                 int msglen = lstrlenA((char *) pBlob) + 1;
                 wchar_t *msg;
                 int wlen;
                 
-                if ((blobsize >= (DWORD)(2 * msglen))) {
+                if ((dbe->cbBlob >= (DWORD)(2 * msglen))) {
                     msg = (wchar_t *) &pBlob[msglen];
-                    wlen = safe_wcslen(msg, (blobsize - msglen) / 2);
+                    wlen = safe_wcslen(msg, (dbe->cbBlob - msglen) / 2);
                     if(wlen <= (msglen - 1) && wlen > 0){
                         *isWstring = 1;
                         return (char *)msg;
@@ -963,7 +972,7 @@ static int PopupUpdateW(HANDLE hContact, HANDLE hEvent)
             wcsftime(timestamp, MAX_DATASIZE, formatTime, localtime((time_t *)&dbe.timestamp));
             mir_snprintfW(pdata->eventData[pdata->nrMerged].szText, MAX_SECONDLINE, L"\n[b][i]%s[/i][/b]\n", timestamp);
         }
-        szPreview = GetPreviewW(dbe.eventType, (char *)dbe.pBlob, dbe.cbBlob, &isUnicode);
+        szPreview = GetPreviewW(dbe.eventType, &dbe, &isUnicode);
         if(szPreview) {
             if(isUnicode)
                 wcsncat(pdata->eventData[pdata->nrMerged].szText, (wchar_t *)szPreview, MAX_SECONDLINE);
@@ -1189,7 +1198,7 @@ static int PopupShowW(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent
         pud.lpwzContactName[MAX_CONTACTNAME - 1] = 0;
     }
 
-    szPreview = GetPreviewW(eventType, (char *)dbe.pBlob, dbe.cbBlob, &isUnicode);
+    szPreview = GetPreviewW(eventType, &dbe, &isUnicode);
     if(szPreview) {
         if(isUnicode)
             mir_snprintfW(pud.lpwzText, MAX_SECONDLINE, L"%s", (wchar_t *)szPreview);

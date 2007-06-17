@@ -35,25 +35,30 @@ static int Proto_CallContactService(WPARAM wParam,LPARAM lParam)
 	DBVARIANT dbv;
 	int ret;
 
-	if(wParam==(WPARAM)(-1)) return 1;
-	for(i=wParam;;i++) {
-		_itoa(i,str,10);
-		if(DBGetContactSetting(ccs->hContact,"_Filter",str,&dbv)) break;
-		if((ret=CallProtoService(dbv.pszVal,ccs->szProtoService,i+1,lParam))!=CALLSERVICE_NOTFOUND) {
+	if ( wParam == (WPARAM)(-1))
+		return 1;
+	
+	for ( i = wParam;; i++ ) {
+		_itoa( i, str, 10 );
+		if ( DBGetContactSetting( ccs->hContact, "_Filter", str, &dbv ))
+			break;
+
+		if (( ret = CallProtoService( dbv.pszVal, ccs->szProtoService, i+1, lParam )) != CALLSERVICE_NOTFOUND ) {
 			//chain was started, exit
-			mir_free(dbv.pszVal);
+			mir_free( dbv.pszVal );
 			return ret;
 		}
-		mir_free(dbv.pszVal);
+		mir_free( dbv.pszVal );
 	}
-	if(DBGetContactSetting(ccs->hContact,"Protocol","p",&dbv)) return 1;
-	if((ret=CallProtoService(dbv.pszVal,ccs->szProtoService,(WPARAM)(-1),lParam))!=CALLSERVICE_NOTFOUND) {
-		//chain was started, exit
-		mir_free(dbv.pszVal);
-		return ret;
-	}
+	if ( DBGetContactSetting( ccs->hContact, "Protocol", "p", &dbv ))
+		return 1;
+
+	if (( ret = CallProtoService( dbv.pszVal, ccs->szProtoService, (WPARAM)(-1), lParam )) == CALLSERVICE_NOTFOUND )
+		if (( ret = CallProtoService( "Proto", ccs->szProtoService, (WPARAM)(-1), lParam )) == CALLSERVICE_NOTFOUND )
+			ret = 1;
+
 	mir_free(dbv.pszVal);
-	return 1;
+	return ret;
 }
 
 static int CallRecvChain(WPARAM wParam,LPARAM lParam)
@@ -63,33 +68,40 @@ static int CallRecvChain(WPARAM wParam,LPARAM lParam)
 	char str[10];
 	DBVARIANT dbv;
 
-	if(wParam==(WPARAM)(-1)) return 1;   //shouldn't happen - sanity check
-	if(wParam==0) {	   //begin processing by finding end of chain
-		for(;;wParam++) {
-			_itoa(wParam,str,10);
-			if(DBGetContactSetting(ccs->hContact,"_Filter",str,&dbv)) break;
+	if ( wParam == (WPARAM)(-1)) return 1;   //shouldn't happen - sanity check
+	if ( wParam == 0 ) {	   //begin processing by finding end of chain
+		for( ;;wParam++ ) {
+			_itoa( wParam, str, 10 );
+			if ( DBGetContactSetting( ccs->hContact, "_Filter", str, &dbv ))
+				break;
 			mir_free(dbv.pszVal);
 		}
 	}
 	else wParam--;
-	for(i=wParam-1;i>=0;i--) {
-		_itoa(i,str,10);
-		if(DBGetContactSetting(ccs->hContact,"_Filter",str,&dbv)) return 1; //never happens
-		if((ret=CallProtoService(dbv.pszVal,ccs->szProtoService,i+1,lParam))!=CALLSERVICE_NOTFOUND) {
+
+	for ( i = wParam-1; i >= 0; i-- ) {
+		_itoa( i, str, 10 );
+		if ( DBGetContactSetting( ccs->hContact, "_Filter", str, &dbv ))  //never happens
+			return 1;
+
+		if (( ret = CallProtoService( dbv.pszVal, ccs->szProtoService, i+1, lParam )) != CALLSERVICE_NOTFOUND ) {
 			//chain was started, exit
-			mir_free(dbv.pszVal);
+			mir_free( dbv.pszVal );
 			return ret;
 		}
-		mir_free(dbv.pszVal);
+		mir_free( dbv.pszVal );
 	}
+
 	//end of chain, call network protocol again
-	if(DBGetContactSetting(ccs->hContact,"Protocol","p",&dbv)) return 1;
-	if((ret=CallProtoService(dbv.pszVal,ccs->szProtoService,(WPARAM)(-1),lParam))!=CALLSERVICE_NOTFOUND) {
-		mir_free(dbv.pszVal);
-		return ret;
-	}
-	mir_free(dbv.pszVal);
-	return 1;
+	if ( DBGetContactSetting( ccs->hContact, "Protocol", "p", &dbv ))
+		return 1;
+
+	if (( ret = CallProtoService( dbv.pszVal, ccs->szProtoService, (WPARAM)(-1), lParam )) == CALLSERVICE_NOTFOUND )
+		if (( ret = CallProtoService( "Proto", ccs->szProtoService, (WPARAM)(-1), lParam )) == CALLSERVICE_NOTFOUND )
+			ret = 1;
+
+	mir_free( dbv.pszVal );
+	return ret;
 }
 
 static int Proto_ChainRecv(WPARAM wParam,LPARAM lParam)
@@ -106,15 +118,18 @@ static int Proto_GetContactBaseProto(WPARAM wParam,LPARAM lParam)
 	DBCONTACTGETSETTING dbcgs;
 	char name[32];
 
-	dbv.type=DBVT_ASCIIZ;
-	dbv.pszVal=name;
-	dbv.cchVal=SIZEOF(name);
-	dbcgs.pValue=&dbv;
-	dbcgs.szModule="Protocol";
-	dbcgs.szSetting="p";
-	if(CallService(MS_DB_CONTACT_GETSETTINGSTATIC,wParam,(LPARAM)&dbcgs)) return (int)(char*)NULL;
-	pd=(PROTOCOLDESCRIPTOR*)Proto_IsProtocolLoaded(0,(LPARAM)dbv.pszVal);
-	if(pd==NULL) return (int)(char*)NULL;
+	dbv.type = DBVT_ASCIIZ;
+	dbv.pszVal = name;
+	dbv.cchVal = SIZEOF(name);
+	dbcgs.pValue = &dbv;
+	dbcgs.szModule = "Protocol";
+	dbcgs.szSetting = "p";
+	if ( CallService( MS_DB_CONTACT_GETSETTINGSTATIC, wParam, (LPARAM)&dbcgs ))
+		return (int)(char*)NULL;
+
+	pd = ( PROTOCOLDESCRIPTOR* )Proto_IsProtocolLoaded( 0, ( LPARAM )dbv.pszVal );
+	if ( pd == NULL )
+		return (int)(char*)NULL;
 	return (int)pd->szName;
 }
 #endif
