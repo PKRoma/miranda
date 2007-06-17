@@ -593,30 +593,21 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 	}	}
 
 	if ( !_strnicmp( tContentType, "text/plain", 10 )) {
-		CCSDATA ccs;
+		CCSDATA ccs = {0};
 		HANDLE tContact = MSN_HContactFromEmail( data.fromEmail, data.fromNick, 1, 1 );
 
-		int isRtl = FALSE;
-		{	const char* p = tHeader[ "X-MMS-IM-Format" ];
-			if ( p != NULL )
-				if ( strstr( p, "RL=1" ) != NULL )
-					isRtl = TRUE;
-		}
-
-		char* tPrefix = NULL;
-		int   tPrefixLen = 0;
+		const char* p = tHeader[ "X-MMS-IM-Format" ];
+		bool isRtl =  p != NULL && strstr( p, "RL=1" ) != NULL;
 
 		if ( info->mJoinedCount > 1 && info->mJoinedContacts != NULL ) {
 			if ( msnHaveChatDll )
 				MSN_ChatStart( info );
-			else if ( info->mJoinedContacts[0] != tContact ) {
-				for ( int j=1; j < info->mJoinedCount; j++ ) {
-					if ( info->mJoinedContacts[j] == tContact ) {
-						TCHAR* tNickName = MSN_GetContactNameT( info->mJoinedContacts[j] );
-						tPrefix = mir_utf8encodeT( tNickName );
+			else 
+				for ( int j=0; j < info->mJoinedCount; j++ ) {
+					if ( info->mJoinedContacts[j] == tContact && j != 0 ) {
 						ccs.hContact = info->mJoinedContacts[ 0 ];
 						break;
-			}	}	}
+				}	}
 		}
 		else ccs.hContact = tContact;
 
@@ -631,7 +622,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 			gce.dwFlags = GC_TCHAR | GCEF_ADDTOLOG;
 			gce.pDest = &gcd;
 			gce.ptszUID = a2t(data.fromEmail);
-			gce.ptszNick = MSN_GetContactNameT( MSN_HContactFromEmail( data.fromEmail, NULL, 1, 1 ));
+			gce.ptszNick = MSN_GetContactNameT( tContact );
 			gce.time = time( NULL );
 			gce.bIsMe = FALSE;
 
@@ -651,7 +642,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		else {
 			PROTORECVEVENT pre;
 			pre.szMessage = ( char* )msgBody;
-			pre.flags = PREF_UTF + (( isRtl ) ? PREF_RTL : 0);
+			pre.flags = PREF_UTF + ( isRtl ? PREF_RTL : 0);
 			pre.timestamp = ( DWORD )time(NULL);
 			pre.lParam = 0;
 
@@ -690,60 +681,27 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		}
 	}
 	else if ( !_strnicmp( tContentType, "text/x-msnmsgr-datacast", 23 )) {
-		CCSDATA ccs;
 		HANDLE tContact = MSN_HContactFromEmail( data.fromEmail, data.fromNick, 1, 1 );
 
-		wchar_t* tRealBody = NULL;
-		int      tRealBodyLen = 0;
-		if ( strstr( tContentType, "charset=UTF-8" ))
-		{	mir_utf8decode(( char* )msgBody, &tRealBody );
-			tRealBodyLen = wcslen( tRealBody );
+		MimeHeaders tFileInfo;
+		tFileInfo.readFromBuffer( msgBody );
+
+		const char* id = tFileInfo[ "ID" ];
+		if (id != NULL)
+		{
+			switch (atol(id))
+			{
+				case 1:  // Nudge
+					NotifyEventHooks(hMSNNudge,(WPARAM) tContact,0);
+					break;
+
+				case 2: // Wink
+					break;
+
+				case 4: // Action Message
+					break;
+			}
 		}
-		int tMsgBodyLen = strlen( msgBody );
-
-		char* tPrefix = NULL;
-		int   tPrefixLen = 0;
-
-		if ( info->mJoinedCount > 1 && info->mJoinedContacts != NULL ) {
-			if ( msnHaveChatDll )
-				MSN_ChatStart( info );
-			else if ( info->mJoinedContacts[0] != tContact ) {
-				for ( int j=1; j < info->mJoinedCount; j++ ) {
-					if ( info->mJoinedContacts[j] == tContact ) {
-						char* tNickName = MSN_GetContactName( info->mJoinedContacts[j] );
-						tPrefixLen = strlen( tNickName )+2;
-						tPrefix = ( char* )alloca( tPrefixLen+1 );
-						strcpy( tPrefix, "<" );
-						strcat( tPrefix, tNickName );
-						strcat( tPrefix, "> " );
-						ccs.hContact = info->mJoinedContacts[ 0 ];
-						break;
-			}	}	}
-		}
-		else ccs.hContact = tContact;
-
-		int tMsgBufLen = tMsgBodyLen+1 + (tRealBodyLen+1)*sizeof( wchar_t ) + tPrefixLen*(sizeof( wchar_t )+1);
-		char* tMsgBuf = ( char* )alloca( tMsgBufLen );
-		char* p = tMsgBuf;
-
-		if ( tPrefixLen != 0 ) {
-			memcpy( p, tPrefix, tPrefixLen );
-			p += tPrefixLen;
-		}
-		strcpy( p, msgBody );
-		p += tMsgBodyLen+1;
-
-		if ( tPrefixLen != 0 ) {
-			MultiByteToWideChar( CP_ACP, 0, tPrefix, tPrefixLen, ( wchar_t* )p, tPrefixLen );
-			p += tPrefixLen*sizeof( wchar_t );
-		}
-		if ( tRealBodyLen != 0 ) {
-			memcpy( p, tRealBody, sizeof( wchar_t )*( tRealBodyLen+1 ));
-			mir_free( tRealBody );
-		}
-
-		if( !_strnicmp(tMsgBuf,"ID: 1",5))
-			NotifyEventHooks(hMSNNudge,(WPARAM) tContact,0);
 	}
 	else if ( !_strnicmp( tContentType,"text/x-msmsgsemailnotification", 30 ))
 		sttNotificationMessage( msgBody, false );
