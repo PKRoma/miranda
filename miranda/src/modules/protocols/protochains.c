@@ -54,8 +54,7 @@ static int Proto_CallContactService(WPARAM wParam,LPARAM lParam)
 		return 1;
 
 	if (( ret = CallProtoService( dbv.pszVal, ccs->szProtoService, (WPARAM)(-1), lParam )) == CALLSERVICE_NOTFOUND )
-		if (( ret = CallProtoService( "Proto", ccs->szProtoService, (WPARAM)(-1), lParam )) == CALLSERVICE_NOTFOUND )
-			ret = 1;
+		ret = 1;
 
 	mir_free(dbv.pszVal);
 	return ret;
@@ -97,8 +96,7 @@ static int CallRecvChain(WPARAM wParam,LPARAM lParam)
 		return 1;
 
 	if (( ret = CallProtoService( dbv.pszVal, ccs->szProtoService, (WPARAM)(-1), lParam )) == CALLSERVICE_NOTFOUND )
-		if (( ret = CallProtoService( "Proto", ccs->szProtoService, (WPARAM)(-1), lParam )) == CALLSERVICE_NOTFOUND )
-			ret = 1;
+		ret = 1;
 
 	mir_free( dbv.pszVal );
 	return ret;

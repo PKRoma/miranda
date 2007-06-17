@@ -945,7 +945,15 @@ int JabberRecvFile( WPARAM wParam, LPARAM lParam )
 {
 	CCSDATA *ccs = ( CCSDATA* )lParam;
 	DBDeleteContactSetting( ccs->hContact, "CList", "Hidden" );
-	return CALLSERVICE_NOTFOUND; // allows the core service to be called
+	return CallService( MS_PROTO_RECVFILE, wParam, lParam );
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
+// JabberRecvMessage - receives a message
+
+int JabberRecvMessage( WPARAM wParam, LPARAM lParam )
+{
+	return CallService( MS_PROTO_RECVMSG, wParam, lParam );
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -1588,6 +1596,7 @@ int JabberSvcInit( void )
 	JCreateServiceFunction( PSS_FILECANCEL, JabberFileCancel );
 	JCreateServiceFunction( PSS_FILEDENY, JabberFileDeny );
 	JCreateServiceFunction( PSS_FILE, JabberSendFile );
+	JCreateServiceFunction( PSR_MESSAGE, JabberRecvMessage );
 	JCreateServiceFunction( PSR_FILE, JabberRecvFile );
 	JCreateServiceFunction( PSS_USERISTYPING, JabberUserIsTyping );
 

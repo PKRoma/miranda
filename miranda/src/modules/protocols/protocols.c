@@ -212,8 +212,8 @@ int LoadProtocolsModule(void)
 	CreateServiceFunction( MS_PROTO_SELFISTYPING,     Proto_SelfIsTyping     );
 	CreateServiceFunction( MS_PROTO_CONTACTISTYPING,  Proto_ContactIsTyping  );
 
-	CreateServiceFunction( "Proto" PSR_FILE,          Proto_RecvFile         );
-	CreateServiceFunction( "Proto" PSR_MESSAGE,       Proto_RecvMessage      );
+	CreateServiceFunction( MS_PROTO_RECVFILE,         Proto_RecvFile         );
+	CreateServiceFunction( MS_PROTO_RECVMSG,          Proto_RecvMessage      );
 
 	InitContactDir();
 	return 0;

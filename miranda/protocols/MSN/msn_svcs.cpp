@@ -751,6 +751,22 @@ static int MsnLoadIcon(WPARAM wParam,LPARAM lParam)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
+// MsnRecvFile - creates a database event from the file request been received
+
+int MsnRecvFile( WPARAM wParam, LPARAM lParam )
+{
+	return MSN_CallService( MS_PROTO_RECVFILE, wParam, lParam );
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// MsnRecvMessage - creates a database event from the message been received
+
+static int MsnRecvMessage(WPARAM wParam,LPARAM lParam)
+{
+	return MSN_CallService( MS_PROTO_RECVMSG, wParam, lParam );
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 // MsnSendFile - initiates a file transfer
 
 static int MsnSendFile( WPARAM wParam, LPARAM lParam )
@@ -1292,6 +1308,8 @@ int LoadMsnServices( void )
 	arServices.insert( MSN_CreateProtoServiceFunction( PS_SETSTATUS,        MsnSetStatus ));
 
 	arServices.insert( MSN_CreateProtoServiceFunction( PSR_AUTH,            MsnRecvAuth ));
+	arServices.insert( MSN_CreateProtoServiceFunction( PSR_FILE,            MsnRecvFile ));
+	arServices.insert( MSN_CreateProtoServiceFunction( PSR_MESSAGE,         MsnRecvMessage ));
 
 	arServices.insert( MSN_CreateProtoServiceFunction( PSS_FILE,            MsnSendFile ));
 	arServices.insert( MSN_CreateProtoServiceFunction( PSS_FILEALLOW,       MsnFileAllow ));

@@ -596,6 +596,8 @@ typedef struct {
 
 #define PSR_MESSAGE   "/RecvMessage"
 
+#define MS_PROTO_RECVMSG "Proto/RecvMessage"
+
 //An URL has been received
 //wParam=0
 //lParam=(LPARAM)(PROTORECVEVENT*)&pre
@@ -636,6 +638,8 @@ typedef struct {
 	LPARAM lParam;     //extra space for the network level protocol module
 } PROTORECVFILE;
 #define PSR_FILE       "/RecvFile"
+
+#define MS_PROTO_RECVFILE "Proto/RecvFile"
 
 //An away message reply has been received
 //wParam=statusMode
