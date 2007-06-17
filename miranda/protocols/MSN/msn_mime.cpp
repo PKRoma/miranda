@@ -296,10 +296,10 @@ wchar_t* MimeHeaders::decode(const char* fieldName)
 	wchar_t* res = (wchar_t*)mir_alloc(ssz * sizeof(wchar_t));
 	wchar_t* resp = res;
 
-	const char *p = tbuf;
+	char *p = tbuf;
 	for (;;)
 	{
-		char *cp = (char*)strstr(p, "=?");
+		char *cp = strstr(p, "=?");
 		if (cp == NULL) break;
 		*cp = 0;
 

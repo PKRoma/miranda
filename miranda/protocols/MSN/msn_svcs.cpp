@@ -751,34 +751,6 @@ static int MsnLoadIcon(WPARAM wParam,LPARAM lParam)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// MsnRecvFile - creates a database event from the file request been received
-
-int MsnRecvFile( WPARAM wParam, LPARAM lParam )
-{
-	CCSDATA* ccs = ( CCSDATA* )lParam;
-	DBDeleteContactSetting( ccs->hContact, "CList", "Hidden" );
-
-	ThreadData* thread = MSN_GetP2PThreadByContact( ccs->hContact );
-	if ( thread == NULL ) {
-		if ( MSN_GetUnconnectedThread( ccs->hContact ) == NULL )
-			msnNsThread->sendPacket( "XFR", "SB" );
-		return 0;
-	}
-
-	return CALLSERVICE_NOTFOUND; // allows the core service to be called
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// MsnRecvMessage - creates a database event from the message been received
-
-static int MsnRecvMessage(WPARAM wParam,LPARAM lParam)
-{
-	CCSDATA* ccs = ( CCSDATA* )lParam;
-	DBDeleteContactSetting( ccs->hContact, "CList", "Hidden" );
-	return CALLSERVICE_NOTFOUND; // allows the core service to be called
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
 // MsnSendFile - initiates a file transfer
 
 static int MsnSendFile( WPARAM wParam, LPARAM lParam )
@@ -1319,8 +1291,6 @@ int LoadMsnServices( void )
 	arServices.insert( MSN_CreateProtoServiceFunction( PS_SEARCHBYEMAIL,    MsnBasicSearch ));
 	arServices.insert( MSN_CreateProtoServiceFunction( PS_SETSTATUS,        MsnSetStatus ));
 
-	arServices.insert( MSN_CreateProtoServiceFunction( PSR_FILE,            MsnRecvFile ));
-	arServices.insert( MSN_CreateProtoServiceFunction( PSR_MESSAGE,         MsnRecvMessage ));
 	arServices.insert( MSN_CreateProtoServiceFunction( PSR_AUTH,            MsnRecvAuth ));
 
 	arServices.insert( MSN_CreateProtoServiceFunction( PSS_FILE,            MsnSendFile ));

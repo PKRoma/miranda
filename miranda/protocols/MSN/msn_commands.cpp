@@ -622,11 +622,9 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 				for ( int j=1; j < info->mJoinedCount; j++ ) {
 					if ( info->mJoinedContacts[j] == tContact ) {
 						char* tNickName = MSN_GetContactName( info->mJoinedContacts[j] );
-						tPrefixLen = strlen( tNickName )+2;
+						tPrefixLen = strlen( tNickName )+3;
 						tPrefix = ( char* )alloca( tPrefixLen+1 );
-						strcpy( tPrefix, "<" );
-						strcat( tPrefix, tNickName );
-						strcat( tPrefix, "> " );
+						mir_snprintf(tPrefix, tPrefixLen+1, "<%s> ", tNickName);
 						ccs.hContact = info->mJoinedContacts[ 0 ];
 						break;
 			}	}	}
