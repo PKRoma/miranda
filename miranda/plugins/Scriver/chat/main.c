@@ -97,12 +97,15 @@ int Chat_Load(PLUGINLINK *link)
 	UpgradeCheck();
 
 	g_hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENU));
-    OleInitialize(NULL);
-    InitREOleCallback();
+	OleInitialize(NULL);
+	InitREOleCallback();
 	HookEvents();
 	CreateServiceFunctions();
 	CreateHookableEvents();
 	OptionsInit();
+	AddIcons();
+	RegisterFonts();
+	LoadIcons();
 	return 0;
 }
 

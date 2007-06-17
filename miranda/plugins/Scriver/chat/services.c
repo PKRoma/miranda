@@ -95,9 +95,6 @@ int Chat_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	char* mods[3] = { "Chat", "ChatFonts" };
 	CallService( "DBEditorpp/RegisterModule", (WPARAM)mods, 2 );
 
-	AddIcons();
-	RegisterFonts();
-	LoadIcons();
 
 	if ( ServiceExists( MS_SMILEYADD_SHOWSELECTION )) {
 		SmileyAddInstalled = TRUE;
