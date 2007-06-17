@@ -185,7 +185,7 @@ HANDLE      MSN_HContactById( const char* szGuid );
 
 bool		MSN_IsMyContact( HANDLE hContact );
 int         MSN_AddContact( char* uhandle,char* nick ); //returns clist ID
-int         MSN_AddUser( HANDLE hContact, const char* email, int flags );
+void        MSN_AddUser( HANDLE hContact, const char* email, int flags );
 void        MSN_AddAuthRequest( HANDLE hContact, const char *email, const char *nick );
 int         MSN_ContactFromHandle( char* uhandle ); //get cclist id from Uhandle
 void        MSN_DebugLog( const char* fmt, ... );
@@ -222,13 +222,13 @@ char*       MSN_GetContactName( HANDLE hContact );
 TCHAR*      MSN_GetContactNameT( HANDLE hContact );
 DWORD       MSN_GetDword( HANDLE hContact, const char* valueName, DWORD parDefltValue );
 DWORD       MSN_GetByte( const char* valueName, int parDefltValue );
-int         MSN_GetStaticString( const char* valueName, HANDLE hContact, char* dest, int dest_len );
+int         MSN_GetStaticString( const char* valueName, HANDLE hContact, char* dest, unsigned dest_len );
 int         MSN_GetStringT( const char* valueName, HANDLE hContact, DBVARIANT* dbv );
 WORD        MSN_GetWord( HANDLE hContact, const char* valueName, int parDefltValue );
 int         MSN_SendBroadcast( HANDLE hContact, int type, int result, HANDLE hProcess, LPARAM lParam );
-DWORD       MSN_SetByte( const char* valueName, int parValue );
+DWORD       MSN_SetByte( const char* valueName, BYTE parValue );
 DWORD       MSN_SetDword( HANDLE hContact, const char* valueName, DWORD parValue );
-DWORD       MSN_SetWord( HANDLE hContact, const char* valueName, int parValue );
+DWORD       MSN_SetWord( HANDLE hContact, const char* valueName, WORD parValue );
 DWORD       MSN_SetString( HANDLE hContact, const char* valueName, const char* parValue );
 DWORD       MSN_SetStringT( HANDLE hContact, const char* valueName, const TCHAR* parValue );
 DWORD       MSN_SetStringUtf( HANDLE hContact, const char* valueName, char* parValue );
@@ -653,8 +653,8 @@ struct TWinErrorCode
 
 struct MSN_StatusMessage
 {
-	int   m_mode;
-	char* m_msg;
+	unsigned  m_mode;
+	char*     m_msg;
 };
 
 extern  MSN_StatusMessage    msnModeMsgs[ MSN_NUM_MODES ];
@@ -667,7 +667,7 @@ extern	bool        msnLoggedIn;
 extern	char*	    msnProtocolName;
 extern	int         msnSearchID;
 extern	char*       msnExternalIP;
-extern	int			msnStatusMode,
+extern	unsigned	msnStatusMode,
 					msnDesiredStatus;
 
 extern	char*       msnProtChallenge;
@@ -690,7 +690,7 @@ extern  HANDLE		hMSNAvatarsFolder;
 extern  HANDLE		hCustomSmileyFolder;
 extern	HANDLE		hNetlibUser;
 extern	HINSTANCE	hInst;
-extern	int			msnOtherContactsBlocked;
+extern	unsigned	msnOtherContactsBlocked;
 
 extern	bool		msnHaveChatDll;
 

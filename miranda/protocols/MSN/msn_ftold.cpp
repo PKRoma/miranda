@@ -106,8 +106,8 @@ int MSN_HandleMSNFTP( ThreadData *info, char *cmdString )
 				if ( packetLen > 2045 )
 					packetLen = 2045;
 
-				sendpacket[ wPlace++ ] = packetLen & 0x00ff;
-				sendpacket[ wPlace++ ] = ( packetLen & 0xff00 ) >> 8;
+				sendpacket[ wPlace++ ] = (char)(packetLen & 0x00ff);
+				sendpacket[ wPlace++ ] = (char)(( packetLen & 0xff00 ) >> 8);
 				_read( ft->fileId, &sendpacket[wPlace], packetLen );
 
 				info->send( &sendpacket[0], packetLen+3 );
@@ -172,7 +172,7 @@ LBL_InvalidCommand:
 		{
 			HReadBuffer tBuf( info, int( cmdString - info->mData ));
 
-			while ( true )
+			for ( ;; )
 			{
 				if ( ft->bCanceled )
 				{	info->send( "CCL\r\n", 5 );
@@ -223,8 +223,6 @@ static void __cdecl sttSendFileThread( ThreadData* info )
 {
 	MSN_DebugLog( "Waiting for an incoming connection to '%s'...", info->mServer );
 
-	filetransfer* ft = info->mMsnFtp;
-
 	switch( WaitForSingleObject( info->hWaitEvent, 60000 )) {
 	case WAIT_TIMEOUT:
 	case WAIT_FAILED:
@@ -234,7 +232,7 @@ static void __cdecl sttSendFileThread( ThreadData* info )
 
 	info->mBytesInData = 0;
 
-	while ( TRUE ) {
+	for ( ;; ) {
 		int recvResult = info->recv( info->mData+info->mBytesInData, 1000 - info->mBytesInData );
 		if ( recvResult == SOCKET_ERROR || !recvResult )
 			break;
@@ -247,7 +245,7 @@ static void __cdecl sttSendFileThread( ThreadData* info )
 				break;
 		}
 		else {  // info->mType!=SERVER_FILETRANS
-			while ( TRUE ) {
+			for ( ;; ) {
 				char* peol = strchr(info->mData,'\r');
 				if ( peol == NULL )
 					break;
@@ -286,23 +284,20 @@ static void __cdecl sttSendFileThread( ThreadData* info )
 
 void ft_startFileSend( ThreadData* info, const char* Invcommand, const char* Invcookie )
 {
-	if ( strcmpi( Invcommand,"ACCEPT" ))
+	if ( _stricmp( Invcommand, "ACCEPT" ))
 		return;
 
-	bool bHasError = false;
 	NETLIBBIND nlb = {0};
-	HANDLE sb;
+	HANDLE sb = NULL;
 
 	filetransfer* ft = info->mMsnFtp; info->mMsnFtp = NULL;
 	if ( ft != NULL ) {
 		nlb.cbSize = sizeof( nlb );
 		nlb.pfnNewConnectionV2 = MSN_ConnectionProc;
 		sb = ( HANDLE )MSN_CallService( MS_NETLIB_BINDPORT, ( WPARAM )hNetlibUser, ( LPARAM )&nlb);
-		if ( sb == NULL ) {
+		if ( sb == NULL )
 			MSN_DebugLog( "Unable to bind the port for incoming transfers" );
-			bHasError = true;
-	}	}
-	else bHasError = true;
+	}
 
 	char command[ 1024 ];
 	int  nBytes = mir_snprintf( command, sizeof( command ),
@@ -315,20 +310,20 @@ void ft_startFileSend( ThreadData* info, const char* Invcommand, const char* Inv
 		"AuthCookie: %i\r\n"
 		"Launch-Application: FALSE\r\n"
 		"Request-Data: IP-Address:\r\n\r\n",
-		( bHasError ) ? "CANCEL" : "ACCEPT",
+		sb ? "ACCEPT" : "CANCEL",
 		Invcookie, MyConnection.GetMyExtIPStr(), nlb.wExPort, rand() << 16 | rand());
 	info->sendPacket( "MSG", "N %d\r\n%s", nBytes, command );
 
-	if ( bHasError ) {
-		delete ft;
-		return;
+	if ( sb ) {
+		ThreadData* newThread = new ThreadData;
+		newThread->mType = SERVER_FILETRANS;
+		newThread->mCaller = 2;
+		newThread->mMsnFtp = ft;
+		newThread->mIncomingBoundPort = sb;
+		newThread->mIncomingPort = nlb.wPort;
+		newThread->startThread(( pThreadFunc )sttSendFileThread );
 	}
+	else
+		delete ft;
 	
-	ThreadData* newThread = new ThreadData;
-	newThread->mType = SERVER_FILETRANS;
-	newThread->mCaller = 2;
-	newThread->mMsnFtp = ft;
-	newThread->mIncomingBoundPort = sb;
-	newThread->mIncomingPort = nlb.wPort;
-	newThread->startThread(( pThreadFunc )sttSendFileThread );
 }

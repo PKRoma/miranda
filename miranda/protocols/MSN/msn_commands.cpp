@@ -206,7 +206,7 @@ static void sttNotificationMessage( const char* msgBody, bool isInitial )
 #endif
 
 #ifdef _UNICODE
-		TCHAR* msgtxt = strcmpi( From, Fromaddr ) ? 
+		TCHAR* msgtxt = _stricmp( From, Fromaddr ) ? 
 			TranslateT("Hotmail from %s (%S)") : TranslateT( "Hotmail from %s" );
 		mir_sntprintf( tBuffer, SIZEOF( tBuffer ), msgtxt, mimeFromW, Fromaddr );
 #else
@@ -381,7 +381,7 @@ static void sttInviteMessage( ThreadData* info, const char* msgBody, char* email
 	}
 
 	if ( Appname == NULL && SessionID != NULL && SessionProtocol != NULL ) { // netmeeting send 1
-		if ( !strcmpi( Invcommand,"ACCEPT" )) {
+		if ( !_stricmp( Invcommand,"ACCEPT" )) {
 			ShellExecuteA(NULL, "open", "conf.exe", NULL, NULL, SW_SHOW);
 			Sleep(3000);
 
@@ -400,7 +400,7 @@ static void sttInviteMessage( ThreadData* info, const char* msgBody, char* email
 		return;
 	}
 
-	if ( Appname != NULL && !strcmpi( Appname,"NetMeeting" )) { // netmeeting receive 1
+	if ( Appname != NULL && !_stricmp( Appname,"NetMeeting" )) { // netmeeting receive 1
 		char command[ 1024 ];
 		int nBytes;
 
@@ -568,14 +568,14 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 	
 
 	// message from the server (probably)
-	if (( strchr( data.fromEmail, '@' ) == NULL ) && strcmpi( data.fromEmail, "Hotmail" ))
+	if (( strchr( data.fromEmail, '@' ) == NULL ) && _stricmp( data.fromEmail, "Hotmail" ))
 		return;
 
 	const char* tContentType = tHeader[ "Content-Type" ];
 	if ( tContentType == NULL )
 		return;
 
-	if ( !strnicmp( tContentType, "text/x-clientcaps", 17 )) {
+	if ( !_strnicmp( tContentType, "text/x-clientcaps", 17 )) {
 		MimeHeaders tFileInfo;
 		tFileInfo.readFromBuffer( msgBody );
 		info->firstMsgRecv = true;
@@ -593,7 +593,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 				sttSetMirVer( hContact, MSN_GetDword( hContact, "FlagBits", 0 ));
 	}	}
 
-	if ( !strnicmp( tContentType, "text/plain", 10 )) {
+	if ( !_strnicmp( tContentType, "text/plain", 10 )) {
 		CCSDATA ccs;
 		HANDLE tContact = MSN_HContactFromEmail( data.fromEmail, data.fromNick, 1, 1 );
 
@@ -692,7 +692,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 			MSN_CallService( MS_PROTO_CHAINRECV, 0, ( LPARAM )&ccs );
 		}
 	}
-	else if ( !strnicmp( tContentType, "text/x-msmsgsprofile", 20 )) {
+	else if ( !_strnicmp( tContentType, "text/x-msmsgsprofile", 20 )) {
 		MimeHeaders tFileInfo;
 		tFileInfo.readFromBuffer( msg );
 		replaceStr( sid,           tFileInfo[ "sid" ]      );
@@ -703,15 +703,11 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		if ( msnExternalIP != NULL && MSN_GetByte( "AutoGetHost", 1 ))
 			MSN_SetString( NULL, "YourHost", msnExternalIP );
 	}
-	else if ( !strnicmp( tContentType, "text/x-msmsgscontrol", 20 )) {
+	else if ( !_strnicmp( tContentType, "text/x-msmsgscontrol", 20 )) {
 		MimeHeaders tFileInfo;
 		tFileInfo.readFromBuffer( msg );
 
-		char* tTypingUser = NULL;
-
-		for ( unsigned j=0; j < tFileInfo.mCount; j++ )
-			if ( !strcmpi( tFileInfo.mVals[ j ].name, "TypingUser" ))
-				tTypingUser = tFileInfo.mVals[ j ].value;
+		const char* tTypingUser = tFileInfo[ "TypingUser" ];
 
 		if ( tTypingUser != NULL && info->mChatID[0] == 0 ) {
 			char userNick[ 388 ];
@@ -724,7 +720,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 			MSN_CallService( MS_PROTO_CONTACTISTYPING, WPARAM( hContact ), 6 );
 		}
 	}
-	else if ( !strnicmp( tContentType, "text/x-msnmsgr-datacast", 23 )) {
+	else if ( !_strnicmp( tContentType, "text/x-msnmsgr-datacast", 23 )) {
 		CCSDATA ccs;
 		HANDLE tContact = MSN_HContactFromEmail( data.fromEmail, data.fromNick, 1, 1 );
 
@@ -777,30 +773,30 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 			mir_free( tRealBody );
 		}
 
-		if( !strnicmp(tMsgBuf,"ID: 1",5))
+		if( !_strnicmp(tMsgBuf,"ID: 1",5))
 			NotifyEventHooks(hMSNNudge,(WPARAM) tContact,0);
 	}
-	else if ( !strnicmp( tContentType,"text/x-msmsgsemailnotification", 30 ))
+	else if ( !_strnicmp( tContentType,"text/x-msmsgsemailnotification", 30 ))
 		sttNotificationMessage( msgBody, false );
-	else if ( !strnicmp( tContentType, "text/x-msmsgsinitialemailnotification", 37 ))
+	else if ( !_strnicmp( tContentType, "text/x-msmsgsinitialemailnotification", 37 ))
 		sttNotificationMessage( msgBody, true );
-	else if ( !strnicmp( tContentType, "text/x-msmsgsactivemailnotification", 35 ))
+	else if ( !_strnicmp( tContentType, "text/x-msmsgsactivemailnotification", 35 ))
 		sttNotificationMessage( msgBody, false );
-	else if ( !strnicmp( tContentType, "text/x-msmsgsinitialmdatanotification", 37 ))
+	else if ( !_strnicmp( tContentType, "text/x-msmsgsinitialmdatanotification", 37 ))
 		sttNotificationMessage( msgBody, true );
-	else if ( !strnicmp( tContentType, "text/x-msmsgsoimnotification", 28 )) {
+	else if ( !_strnicmp( tContentType, "text/x-msmsgsoimnotification", 28 )) {
 		MimeHeaders tFileInfo;
 		tFileInfo.readFromBuffer( msgBody );
 		const char* MailData = tFileInfo[ "Mail-Data" ];
 		if ( MailData != NULL )	MSN_GetOIMs( msgBody );
 	}
-	else if ( !strnicmp( tContentType, "text/x-msmsgsinvite", 19 ))
+	else if ( !_strnicmp( tContentType, "text/x-msmsgsinvite", 19 ))
 		sttInviteMessage( info, msgBody, data.fromEmail, data.fromNick );
-	else if ( !strnicmp( tContentType, "application/x-msnmsgrp2p", 24 ))
+	else if ( !_strnicmp( tContentType, "application/x-msnmsgrp2p", 24 ))
 		p2p_processMsg( info, msgBody );
-	else if ( !strnicmp( tContentType, "text/x-mms-emoticon", 19 ))
+	else if ( !_strnicmp( tContentType, "text/x-mms-emoticon", 19 ))
 		sttCustomSmiley( msgBody, data.fromEmail, data.fromNick, MSN_APPID_CUSTOMSMILEY );
-	else if ( !strnicmp( tContentType, "text/x-mms-animemoticon", 23 ))
+	else if ( !_strnicmp( tContentType, "text/x-mms-animemoticon", 23 ))
 		sttCustomSmiley( msgBody, data.fromEmail, data.fromNick, MSN_APPID_CUSTOMANIMATEDSMILEY );
 
 	mir_free( newbody );
@@ -893,23 +889,25 @@ static bool sttAddGroup( char* params, bool isFromBoot )
 	UrlDecode( data.grpName );
 	MSN_AddGroup( data.grpName, data.grpId );
 
-	int i;
+	int i = 0;
 	char str[ 10 ];
 
-	for ( i=0; true; i++ ) {
-		ltoa( i, str, 10 );
+	for ( ;; ) {
+		_ltoa( i, str, 10 );
 
 		DBVARIANT dbv;
 		if ( DBGetContactSettingStringUtf( NULL, "CListGroups", str, &dbv ))
 			break;
 
-		bool result = !stricmp( dbv.pszVal+1, data.grpName );
+		bool result = !_stricmp( dbv.pszVal+1, data.grpName );
 		MSN_FreeVariant( &dbv );
 		if ( result ) {
 			MSN_SetGroupNumber( data.grpId, i );
 			if ( !isFromBoot ) MSN_UploadServerGroups( data.grpName );
 			return true;
-	}	}
+		}
+		 ++i;
+	}
 
 	if ( isFromBoot ) {
 		MSN_SetGroupNumber( data.grpId, i );
@@ -987,7 +985,6 @@ static void sttProcessStatusMessage( BYTE* buf, unsigned len, HANDLE hContact )
 	HtmlDecode( p );
 
 	// Get parts separeted by "\\0"
-	size_t cmLen = p1 - p;
 	char *parts[16];
 	unsigned pCount;
 
@@ -1280,7 +1277,7 @@ LBL_InvalidCommand:
 			if ( sttDivideWords( params, 2, tWords ) == 1 )
 				data.listName = data.junk;
 
-			msnOtherContactsBlocked = stricmp( data.listName, "BL" ) == 0;
+			msnOtherContactsBlocked = _stricmp( data.listName, "BL" ) == 0;
 			break;
 		}
 		case ' RPB':	//********* BPR:
@@ -1434,7 +1431,7 @@ LBL_InvalidCommand:
 			_snprintf( chlString, sizeof( chlString ), "%s%s00000000", authChallengeInfo, msnProductID );
 			chlString[ (strlen(authChallengeInfo)+strlen(msnProductID)+7) & 0xF8 ] = 0;
 
-			LONGLONG high=0, low=0, bskey=0;
+			LONGLONG high=0, low=0;
 			int* chlStringArray = ( int* )chlString;
 			for ( i=0; i < strlen( chlString )/4; i += 2) {
 				LONGLONG temp = chlStringArray[i];
@@ -1603,10 +1600,8 @@ LBL_InvalidCommand:
 			MSN_ContactJoined( info, hContact );
 
 			int thisContact = atol( data.strThisContact );
-			if ( thisContact != 1 ) {
-				char* tContactName = MSN_GetContactName( hContact );
+			if ( thisContact != 1 )
 				mir_utf8decode( data.userNick, NULL );
-			}
 
 			// only start the chat session after all the IRO messages has been recieved
 			if ( msnHaveChatDll && info->mJoinedCount > 1 && !lstrcmpA(data.strThisContact, data.totalContacts) )
@@ -1668,8 +1663,6 @@ LBL_InvalidCommand:
 			}
 			else {
 				bool chatCreated = info->mChatID[0] != 0;
-
-				char* tContactName = MSN_GetContactName( info->mJoinedContacts[chatCreated] );
 
 				info->sendCaps();
 
@@ -1798,12 +1791,12 @@ LBL_InvalidCommand:
 			break;
 
 		case ' TUO':   //********* OUT: sections 7.10 Connection Close, 8.6 Leaving a Switchboard Session
-			if ( !stricmp( params, "OTH" )) {
+			if ( !_stricmp( params, "OTH" )) {
 				MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_OTHERLOCATION );
 				MSN_DebugLog( "You have been disconnected from the MSN server because you logged on from another location using the same MSN passport." );
 			}
 
-			if ( !stricmp( params, "MIG" )) // ignore it
+			if ( !_stricmp( params, "MIG" )) // ignore it
 				break;
 
 			return 1;
@@ -1819,7 +1812,7 @@ LBL_InvalidCommand:
 				goto LBL_InvalidCommand;
 
 			UrlDecode( data.value );
-			if ( !stricmp( data.name, "MFN" ))
+			if ( !_stricmp( data.name, "MFN" ))
 				if ( !sttIsSync || !MSN_GetByte( "NeverUpdateNickname", 0 ))
 					MSN_SetStringUtf( NULL, "Nick", data.value );
 			break;

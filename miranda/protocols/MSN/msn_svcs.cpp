@@ -1045,7 +1045,7 @@ static int MsnSetAvatar( WPARAM wParam, LPARAM lParam )
 		if ( fileId == -1 )
 			return 1;
 
-		long  dwPngSize = filelength( fileId );
+		long  dwPngSize = _filelength( fileId );
 		BYTE* pResult = new BYTE[ dwPngSize ];
 		if ( pResult == NULL )
 			return 2;
@@ -1073,7 +1073,7 @@ static int MsnSetAvatar( WPARAM wParam, LPARAM lParam )
 		mir_sha1_append( &sha1ctx, ( PBYTE )MyOptions.szEmail, strlen( MyOptions.szEmail ));
 
 		char szFileSize[ 20 ];
-		ltoa( dwPngSize, szFileSize, 10 );
+		_ltoa( dwPngSize, szFileSize, 10 );
 		mir_sha1_append( &sha1ctx, ( PBYTE )"Size", 4 );
 		mir_sha1_append( &sha1ctx, ( PBYTE )szFileSize, strlen( szFileSize ));
 

@@ -71,7 +71,7 @@ PBYTE msn_httpGatewayUnwrapRecv( NETLIBHTTPREQUEST* nlhr, PBYTE buf, int len, in
 	for ( int i=0; i < nlhr->headersCount; i++ )
 	{
 		NETLIBHTTPHEADER& tHeader = nlhr->headers[ i ];
-		if ( stricmp( tHeader.szName, "X-MSN-Messenger" ) != 0 )
+		if ( _stricmp( tHeader.szName, "X-MSN-Messenger" ) != 0 )
 			continue;
 
 		if ( strstr( tHeader.szValue, "Session=close" ) != 0 )

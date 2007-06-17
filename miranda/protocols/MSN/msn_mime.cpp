@@ -71,7 +71,7 @@ void MimeHeaders::addLong( const char* name, long lValue )
 	H.name = mir_strdup( name );
 
 	char szBuffer[ 20 ];
-	ltoa( lValue, szBuffer, 10 );
+	_ltoa( lValue, szBuffer, 10 );
 	H.value = mir_strdup( szBuffer );
 }
 
@@ -162,7 +162,7 @@ const char* MimeHeaders::find( const char* szFieldName )
 {
 	for ( unsigned i=0; i < mCount; i++ ) {
 		MimeHeader& MH = mVals[i];
-		if ( !strcmp( MH.name, szFieldName ))
+		if ( _stricmp( MH.name, szFieldName ) == 0 )
 			return MH.value;
 	}
 
@@ -275,7 +275,7 @@ static unsigned FindCP( const char* mimecp )
 	unsigned cp = CP_ACP;
 	for (unsigned i = 0; i < SIZEOF(cptbl); ++i)
 	{
-		if (stricmp(mimecp, cptbl[i].mimecp) == 0)
+		if (_stricmp(mimecp, cptbl[i].mimecp) == 0)
 		{
 			cp = cptbl[i].cp;
 			break;
@@ -335,7 +335,7 @@ wchar_t* MimeHeaders::decode(const char* fieldName)
 			break;
 		}
 		
-		if (stricmp(cp, "UTF-8") == 0)
+		if (_stricmp(cp, "UTF-8") == 0)
 		{
 			wchar_t *dec;
 			mir_utf8decode(fld, &dec);

@@ -42,16 +42,16 @@ int		MsnOnDetailsInit( WPARAM, LPARAM );
 int		MsnWindowEvent(WPARAM wParam, LPARAM lParam);
 
 int		LoadMsnServices( void );
-void     UnloadMsnServices( void );
-void		MsgQueue_Init( void );
-void		MsgQueue_Uninit( void );
-void		Lists_Init( void );
-void		Lists_Uninit( void );
-void		P2pSessions_Uninit( void );
-void		P2pSessions_Init( void );
-void		Threads_Uninit( void );
+void    UnloadMsnServices( void );
+void	MsgQueue_Init( void );
+void	MsgQueue_Uninit( void );
+void	Lists_Init( void );
+void	Lists_Uninit( void );
+void	P2pSessions_Uninit( void );
+void	P2pSessions_Init( void );
+void	Threads_Uninit( void );
 int		MsnOptInit( WPARAM wParam, LPARAM lParam );
-void		UninitSsl( void );
+void	UninitSsl( void );
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Global variables
@@ -60,7 +60,7 @@ int      msnSearchID = -1;
 char*    msnExternalIP = NULL;
 char*    msnPreviousUUX = NULL;
 HANDLE   msnMainThread;
-int      msnOtherContactsBlocked = 0;
+unsigned msnOtherContactsBlocked = 0;
 HANDLE   hMSNNudge = NULL;
 HANDLE	 hMSNAvatarsFolder = NULL;
 HANDLE	 hCustomSmileyFolder = NULL;
@@ -109,10 +109,10 @@ PLUGININFOEX pluginInfo =
 bool        msnLoggedIn = false;
 ThreadData*	msnNsThread = NULL;
 
-int				msnStatusMode,
-				msnDesiredStatus;
-HANDLE			hNetlibUser = NULL;
-HANDLE			hInitChat = NULL;
+unsigned	msnStatusMode,
+			msnDesiredStatus;
+HANDLE		hNetlibUser = NULL;
+HANDLE		hInitChat = NULL;
 
 int CompareHandles( const void* p1, const void* p2 )
 {	return (long)p1 - (long)p2;
@@ -156,16 +156,6 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	}
 
 	char szBuffer[ MAX_PATH ];
-
-	WORD wPort = MSN_GetWord( NULL, "YourPort", 0xFFFF );
-	if ( wPort != 0xFFFF ) {
-		MSN_SetByte( "NLSpecifyIncomingPorts", 1 );
-
-		ltoa( wPort, szBuffer, 10 );
-		MSN_SetString( NULL, "NLIncomingPorts", szBuffer );
-
-		MSN_DeleteSetting( NULL, "YourPort" );
-	}
 
 	mir_snprintf( szBuffer, sizeof(szBuffer), MSN_Translate("%s plugin connections"), msnProtocolName );
 

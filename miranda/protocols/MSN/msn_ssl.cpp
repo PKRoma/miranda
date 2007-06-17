@@ -518,7 +518,7 @@ int SSL_OpenSsl::init()
 
 char* SSL_OpenSsl::getSslResult( char* parUrl, char* parAuthInfo, char* hdrs )
 {
-	if ( strnicmp( parUrl, "https://", 8 ) != 0 )
+	if ( _strnicmp( parUrl, "https://", 8 ) != 0 )
 		return NULL;
 
 	char* url = NEWSTR_ALLOCA( parUrl );
@@ -675,7 +675,7 @@ int MSN_GetPassportAuth( char* authChallengeInfo, char*& parResult )
 	char* szEncAuthInfo = HtmlEncode(authChallengeInfo);
 
 	char* szAuthInfo = ( char* )alloca( 3072 );
-	int nBytes = mir_snprintf( szAuthInfo, 3072, authPacket, MyOptions.szEmail, szEncPassword, szEncAuthInfo );
+	mir_snprintf( szAuthInfo, 3072, authPacket, MyOptions.szEmail, szEncPassword, szEncAuthInfo );
 
 	mir_free( szEncAuthInfo );
 	mir_free( szEncPassword );

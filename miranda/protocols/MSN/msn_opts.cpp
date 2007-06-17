@@ -183,7 +183,7 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				goto LBL_Apply;
 
 			case IDC_RUN_APP_ON_HOTMAIL: {
-				BYTE tIsChosen = IsDlgButtonChecked( hwndDlg, IDC_RUN_APP_ON_HOTMAIL );
+				BOOL tIsChosen = IsDlgButtonChecked( hwndDlg, IDC_RUN_APP_ON_HOTMAIL );
 				EnableWindow( GetDlgItem( hwndDlg, IDC_MAILER_APP ), tIsChosen );
 				EnableWindow( GetDlgItem( hwndDlg, IDC_ENTER_MAILER_APP ), tIsChosen );
 				goto LBL_Apply;
@@ -237,7 +237,7 @@ LBL_Continue:
 
 	case WM_NOTIFY:
 		if (((LPNMHDR)lParam)->code == PSN_APPLY ) {
-			bool reconnectRequired = false, restartRequired = false;
+			bool reconnectRequired = false;
 			TCHAR screenStr[ MAX_PATH ];
 			char  password[ 100 ], szEmail[MSN_MAX_EMAIL_LEN];
 			DBVARIANT dbv;
@@ -271,7 +271,7 @@ LBL_Continue:
 			}
 			MSN_SetStringT( NULL, "Nick", screenStr );
 
-			BYTE tValue = IsDlgButtonChecked( hwndDlg, IDC_DISABLE_ANOTHER_CONTACTS );
+			unsigned tValue = IsDlgButtonChecked( hwndDlg, IDC_DISABLE_ANOTHER_CONTACTS );
 			if ( tValue != msnOtherContactsBlocked && msnLoggedIn ) {
 				msnNsThread->sendPacket( "BLP", ( tValue ) ? "BL" : "AL" );
 				break;
@@ -436,7 +436,7 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				GetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, str, sizeof( str ));
 				MSN_SetString( NULL, "LoginServer", str );
 
-				MSN_SetWord( NULL, "MSNMPort", GetDlgItemInt( hwndDlg, IDC_MSNPORT, NULL, FALSE ));
+				MSN_SetWord( NULL, "MSNMPort", (WORD)GetDlgItemInt( hwndDlg, IDC_MSNPORT, NULL, FALSE ));
 			}
 
 			tValue = ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USEOPENSSL );
@@ -585,8 +585,8 @@ static BOOL CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM wPa
 					MSN_SetDword( NULL, "PopupTimeoutOther", MyOptions.PopupTimeoutOther );
 				}
 
-				MyOptions.ShowErrorsAsPopups = ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_ERRORS_USING_POPUPS );
-				MSN_SetByte( "ShowErrorsAsPopups", MyOptions.ShowErrorsAsPopups );
+				MyOptions.ShowErrorsAsPopups = IsDlgButtonChecked( hwndDlg, IDC_ERRORS_USING_POPUPS );
+				MSN_SetByte( "ShowErrorsAsPopups", ( BYTE )MyOptions.ShowErrorsAsPopups );
 
 				MSN_SetByte( "UseWinColors",	( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USEWINCOLORS ));
 				MSN_SetByte( "EnableCustomSmileyPopup", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_NOTIFY_CUSTOMSMILEY ));

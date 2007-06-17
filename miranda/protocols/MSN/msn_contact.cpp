@@ -32,7 +32,7 @@ HANDLE  MSN_HContactFromEmail( const char* msnEmail, const char* msnNick, int ad
 		if ( MSN_IsMyContact( hContact )) {
 			char tEmail[ MSN_MAX_EMAIL_LEN ];
 			if ( !MSN_GetStaticString( "e-mail", hContact, tEmail, sizeof( tEmail )))
-				if ( !strcmpi( msnEmail, tEmail ))
+				if ( !_stricmp( msnEmail, tEmail ))
 					return hContact;
 		}
 
@@ -80,7 +80,7 @@ HANDLE  MSN_HContactById( const char* szGuid )
 		if ( MSN_IsMyContact( hContact )) {
 			char tId[ 100 ];
 			if ( !MSN_GetStaticString( "ID", hContact, tId, sizeof tId ))
-				if ( !strcmpi( szGuid, tId ))
+				if ( !_stricmp( szGuid, tId ))
 					return hContact;
 		}
 

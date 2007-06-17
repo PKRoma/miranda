@@ -96,7 +96,7 @@ void MSN_FreeGroups()
 LPCSTR MSN_GetGroupById( const char* pId )
 {
 	for ( ServerGroupItem* p = sttFirst; p != NULL; p = p->next )
-		if ( stricmp( p->id, pId ) == 0 )
+		if ( _stricmp( p->id, pId ) == 0 )
 			return p->name;
 
 	return NULL;
@@ -136,7 +136,7 @@ void MSN_MoveContactToGroup( HANDLE hContact, const char* grpName )
 	if ( lstrcmpA( grpName, "MetaContacts Hidden Group" ) == 0 )
 		return;
 
-	LPCSTR szId;
+	LPCSTR szId = NULL;
 	char szContactID[ 100 ], szGroupID[ 100 ];
 	if ( MSN_GetStaticString( "ID", hContact, szContactID, sizeof( szContactID )))
 		return;
@@ -208,7 +208,7 @@ void MSN_RemoveEmptyGroups( void )
 			if ( !MSN_GetStaticString( "GroupID", hContact, szGroupID, sizeof( szGroupID ))) {
 				unsigned i = 0;
 				for ( ServerGroupItem* p = sttFirst; p != NULL; p = p->next )
-					if ( stricmp( p->id, szGroupID ) != 0 ) ++i;
+					if ( _stricmp( p->id, szGroupID ) != 0 ) ++i;
 					else { ++cCount[i]; break; }
 			}
 		}

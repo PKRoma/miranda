@@ -272,21 +272,16 @@ LBL_RecvAgain:
 		if ( *rest == '\r' )
 			rest += 2;
 
-		for ( unsigned i=0; i < tHeaders.mCount; i++ )
-		{
-			MimeHeader& H = tHeaders.mVals[i];
-
-			if ( stricmp( H.name, "X-MSN-Messenger" ) == 0 ) {
-				if ( strstr( H.value, "Session=close" ) != 0 ) {
-					return 0;
-				}
-
-				processSessionData( H.value );
-			}
-
-			if ( stricmp( H.name, "Content-Length" ) == 0 )
-				tContentLength = atol( H.value );
+		const char* xMsnHdr = tHeaders[ "X-MSN-Messenger" ];
+		if ( xMsnHdr != NULL ) {
+			processSessionData( xMsnHdr );
+			if ( strstr( xMsnHdr, "Session=close" ) != NULL )
+				return 0;
 		}
+		
+		const char* contLenHdr = tHeaders[ "Content-Length" ];
+		if ( contLenHdr != NULL ) 
+			tContentLength = atol( contLenHdr );
 
 		hdrLen = int( rest - data );
 	}

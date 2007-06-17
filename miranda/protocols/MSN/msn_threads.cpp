@@ -145,7 +145,7 @@ void __cdecl MSNServerThread( ThreadData* info )
 
 	MSN_DebugLog( "Entering main recv loop" );
 	info->mBytesInData = 0;
-	while ( TRUE ) {
+	for ( ;; ) {
 		int handlerResult;
 
 		int recvResult = info->recv( info->mData + info->mBytesInData, sizeof( info->mData ) - info->mBytesInData );
@@ -167,7 +167,7 @@ void __cdecl MSNServerThread( ThreadData* info )
 				break;
 		}
 		else {
-			while( TRUE ) {
+			for( ;; ) {
 				char* peol = strchr(info->mData,'\r');
 				if ( peol == NULL )
 					break;

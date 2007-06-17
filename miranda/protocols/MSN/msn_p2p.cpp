@@ -89,7 +89,7 @@ static char* getNewUuid()
 	memcpy( result+1, p, len );
 	result[ len+1 ] = '}';
 	result[ len+2 ] = 0;
-	strupr( result );
+	_strupr( result );
 	RpcStringFreeA( &p );
 	return result;
 }
@@ -105,7 +105,6 @@ unsigned p2p_getMsgId( HANDLE hContact, int inc )
 
 
 static int sttCreateListener(
-	ThreadData* info,
 	filetransfer* ft,
 	directconnection *dc,
 	char* szBody, size_t cbBody )
@@ -557,7 +556,7 @@ bool p2p_connectTo( ThreadData* info )
 			tConn.wPort = ( WORD )atol( tPortDelim+1 );
 	}	}
 
-	while( true ) {
+	for( ;; ) {
 		char* pSpace = strchr( info->mServer, ' ' );
 		if ( pSpace != NULL )
 			*pSpace = 0;
@@ -890,8 +889,7 @@ static void sttInitFileTransfer(
 	P2P_Header*		hdrdata,
 	ThreadData*		info,
 	MimeHeaders&	tFileInfo,
-	MimeHeaders&	tFileInfo2,
-	const char*		msgbody )
+	MimeHeaders&	tFileInfo2 )
 {
 	if ( info->mJoinedCount == 0 )
 		return;
@@ -974,7 +972,7 @@ static void sttInitFileTransfer(
 					{
 						replaceStr(ft->std.currentFile, szFileName);
 						MSN_DebugLog( "My avatar file opened for %s as %08p::%d", szContactEmail, ft, ft->fileId );
-						ft->std.totalBytes = ft->std.currentFileSize = filelength( ft->fileId );
+						ft->std.totalBytes = ft->std.currentFileSize = _filelength( ft->fileId );
 						ft->std.sending = true;
 
 						//---- send 200 OK Message
@@ -1066,7 +1064,6 @@ static void sttInitFileTransfer(
 
 static void sttInitDirectTransfer(
 	P2P_Header*		hdrdata,
-	ThreadData*		info,
 	MimeHeaders&	tFileInfo,
 	MimeHeaders&	tFileInfo2 )
 {
@@ -1136,7 +1133,7 @@ static void sttInitDirectTransfer(
 	int  cbBodyLen = 0;
 
 	if (conType.weight > MyConnection.weight)
-		cbBodyLen = sttCreateListener( info, ft, dc, szBody, sizeof( szBody ));
+		cbBodyLen = sttCreateListener( ft, dc, szBody, sizeof( szBody ));
 
 	if ( !cbBodyLen ) {
 		const char* szUuid = dc->useHashedNonce ? dc->mNonceToHash() : sttVoidNonce;
@@ -1161,7 +1158,6 @@ static void sttInitDirectTransfer(
 
 static void sttInitDirectTransfer2(
 	P2P_Header*  hdrdata,
-	ThreadData*  info,
 	MimeHeaders& tFileInfo,
 	MimeHeaders& tFileInfo2 )
 {
@@ -1223,7 +1219,6 @@ static void sttInitDirectTransfer2(
 
 static void sttAcceptTransfer(
 	P2P_Header*		hdrdata,
-	ThreadData*		info,
 	MimeHeaders&	tFileInfo,
 	MimeHeaders&	tFileInfo2 )
 {
@@ -1257,8 +1252,6 @@ LBL_Close:
 	const char* szOldContentType = tFileInfo[ "Content-Type" ];
 	if ( szOldContentType == NULL )
 		goto LBL_Close;
-
-	bool bAllowIncoming = ( !( MyOptions.UseGateway || MyOptions.UseProxy ) || !MSN_GetByte( "AutoGetHost", 1 ));
 
 	MimeHeaders tResult(20);
 	tResult.addString( "CSeq", "0 " );
@@ -1338,7 +1331,7 @@ LBL_Close:
 			return;
 		}
 
-		cbBody = sttCreateListener( info, ft, dc, szBody, 1024 );
+		cbBody = sttCreateListener( ft, dc, szBody, 1024 );
 
 		// no, send a file via server
 		if ( cbBody == 0 ) {
@@ -1361,7 +1354,7 @@ LBL_Close:
 		dc->useHashedNonce = szHashedNonce != NULL;
 		dc->xNonce = mir_strdup( szHashedNonce ? szHashedNonce : szNonce );
 
-		cbBody = sttCreateListener( info, ft, dc, szBody, 1024 );
+		cbBody = sttCreateListener( ft, dc, szBody, 1024 );
 
 		// no, send a file via server
 		if ( cbBody == 0 ) {
@@ -1456,15 +1449,15 @@ void  p2p_processMsg( ThreadData* info,  const char* msgbody )
 		switch( iMsgType ) {
 		case 1:
 			if ( !strcmp( szContentType, "application/x-msnmsgr-sessionreqbody" ))
-				sttInitFileTransfer( hdrdata, info, tFileInfo, tFileInfo2, msgbody );
+				sttInitFileTransfer( hdrdata, info, tFileInfo, tFileInfo2 );
 			else if ( !strcmp( szContentType, "application/x-msnmsgr-transreqbody" ))
-				sttInitDirectTransfer( hdrdata, info, tFileInfo, tFileInfo2 );
+				sttInitDirectTransfer( hdrdata, tFileInfo, tFileInfo2 );
 			else if ( !strcmp( szContentType, "application/x-msnmsgr-transrespbody" ))
-				sttInitDirectTransfer2( hdrdata, info, tFileInfo, tFileInfo2 );
+				sttInitDirectTransfer2( hdrdata, tFileInfo, tFileInfo2 );
 			break;
 
 		case 2:
-			sttAcceptTransfer( hdrdata, info, tFileInfo, tFileInfo2 );
+			sttAcceptTransfer( hdrdata, tFileInfo, tFileInfo2 );
 			break;
 
 		case 3:
@@ -1579,8 +1572,6 @@ void  p2p_processMsg( ThreadData* info,  const char* msgbody )
 			ft->p2p_sendmsgid = hdrdata->mID;
 		}
 
-		int sk = 0;
-
 		__int64 dsz = ft->std.currentFileSize - hdrdata->mOffset;
 		if ( dsz > hdrdata->mPacketLen) dsz = hdrdata->mPacketLen;
 
@@ -1639,8 +1630,6 @@ void  p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft )
 
 	char szEmail[ MSN_MAX_EMAIL_LEN ];
 	MSN_GetStaticString( "e-mail", hContact, szEmail, sizeof( szEmail ));
-
-	ThreadData *thread = MSN_GetThreadByContact( hContact );
 
 	srand( (unsigned)time( NULL ) );
 	long sessionID = rand() << 16 | rand();

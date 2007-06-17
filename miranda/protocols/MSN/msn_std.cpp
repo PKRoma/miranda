@@ -66,11 +66,11 @@ DWORD  MSN_GetDword( HANDLE hContact, const char* valueName, DWORD parDefltValue
 	return DBGetContactSettingDword( hContact, msnProtocolName, valueName, parDefltValue );
 }
 
-int  MSN_GetStaticString( const char* valueName, HANDLE hContact, char* dest, int dest_len )
+int  MSN_GetStaticString( const char* valueName, HANDLE hContact, char* dest, unsigned dest_len )
 {
 	DBVARIANT dbv;
 	dbv.pszVal = dest;
-	dbv.cchVal = dest_len;
+	dbv.cchVal = (WORD)dest_len;
 	dbv.type = DBVT_ASCIIZ;
 
 	DBCONTACTGETSETTING sVal;
@@ -90,7 +90,7 @@ int  MSN_GetStringT( const char* valueName, HANDLE hContact, DBVARIANT* dbv )
 
 WORD  MSN_GetWord( HANDLE hContact, const char* valueName, int parDefltValue )
 {
-	return DBGetContactSettingWord( hContact, msnProtocolName, valueName, parDefltValue );
+	return (WORD)DBGetContactSettingWord( hContact, msnProtocolName, valueName, parDefltValue );
 }
 
 void __fastcall MSN_FreeVariant( DBVARIANT* dbv )
@@ -111,7 +111,7 @@ int  MSN_SendBroadcast( HANDLE hContact, int type, int result, HANDLE hProcess, 
 	return MSN_CallService( MS_PROTO_BROADCASTACK, 0, ( LPARAM )&ack );
 }
 
-DWORD  MSN_SetByte( const char* valueName, int parValue )
+DWORD  MSN_SetByte( const char* valueName, BYTE parValue )
 {
 	return DBWriteContactSettingByte( NULL, msnProtocolName, valueName, parValue );
 }
@@ -136,7 +136,7 @@ DWORD  MSN_SetStringUtf( HANDLE hContact, const char* valueName, char* parValue 
 	return DBWriteContactSettingStringUtf( hContact, msnProtocolName, valueName, parValue );
 }
 
-DWORD  MSN_SetWord( HANDLE hContact, const char* valueName, int parValue )
+DWORD  MSN_SetWord( HANDLE hContact, const char* valueName, WORD parValue )
 {
 	return DBWriteContactSettingWord( hContact, msnProtocolName, valueName, parValue );
 }

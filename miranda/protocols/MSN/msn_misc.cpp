@@ -73,15 +73,15 @@ int  MSNStatusToMiranda(const char *status)
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_AddUser - adds a e-mail address to one of the MSN server lists
 
-int  MSN_AddUser( HANDLE hContact, const char* email, int flags )
+void  MSN_AddUser( HANDLE hContact, const char* email, int flags )
 {
 	if ( flags & LIST_REMOVE )
 	{
 		if ( !Lists_IsInList( flags & 0xFF, email ))
-			return 0;
+			return;
 	}
 	else if ( Lists_IsInList( flags, email ))
-		return 0;
+		return;
 
 	char* listName;
 
@@ -93,19 +93,18 @@ int  MSN_AddUser( HANDLE hContact, const char* email, int flags )
 		case LIST_RL: listName = "RL";	break;
 		case LIST_PL: listName = "PL";	break;
 		default:
-			return -1;
+			return;
 	}
 
-	int msgid;
 	if (( flags & 0xFF ) == LIST_FL ) {
 		if ( flags & LIST_REMOVE ) {
 			if ( hContact == NULL )
 				if (( hContact = MSN_HContactFromEmail( email, NULL, 0, 0 )) == NULL )
-					return -1;
+					return;
 
 			char id[ MSN_GUID_LEN ];
 			if ( !MSN_GetStaticString( "ID", hContact, id, sizeof( id )))
-				msgid = msnNsThread->sendPacket( "REM", "%s %s", listName, id );
+				msnNsThread->sendPacket( "REM", "%s %s", listName, id );
 		}
 		else {
 			char urlNick[388];
@@ -117,17 +116,15 @@ int  MSN_AddUser( HANDLE hContact, const char* email, int flags )
 					UrlEncode( dbv.pszVal, urlNick, sizeof( urlNick ));
 					MSN_FreeVariant( &dbv );
 			}	}
-			msgid = msnNsThread->sendPacket( "ADC", "%s N=%s F=%s", listName, email, urlNick );
+			msnNsThread->sendPacket( "ADC", "%s N=%s F=%s", listName, email, urlNick );
 		}
 	}
 	else {
 		if ( flags & LIST_REMOVE )
-			msgid = msnNsThread->sendPacket( "REM", "%s %s", listName, email );
+			msnNsThread->sendPacket( "REM", "%s %s", listName, email );
 		else
-			msgid = msnNsThread->sendPacket( "ADC", "%s N=%s", listName, email );
+			msnNsThread->sendPacket( "ADC", "%s N=%s", listName, email );
 	}
-
-	return msgid;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -205,7 +202,7 @@ void  MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, size_t cbLen )
 	if ( hContact != NULL ) {
 		char szEmail[ MSN_MAX_EMAIL_LEN ];
 		if ( MSN_GetStaticString( "e-mail", hContact, szEmail, sizeof( szEmail )))
-			ltoa(( long )hContact, szEmail, 10 );
+			_ltoa(( long )hContact, szEmail, 10 );
 
 		long digest[ 4 ];
 		mir_md5_hash(( BYTE* )szEmail, strlen( szEmail ), ( BYTE* )digest );
@@ -239,7 +236,7 @@ void  MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, size_t cbLen,
 	if ( hContact != NULL ) {
 		char szEmail[ MSN_MAX_EMAIL_LEN ];
 		if ( MSN_GetStaticString( "e-mail", hContact, szEmail, sizeof( szEmail )))
-			ltoa(( long )hContact, szEmail, 10 );
+			_ltoa(( long )hContact, szEmail, 10 );
 		
 		tPathLen += mir_snprintf( pszDest + tPathLen, cbLen - tPathLen, "\\%s", szEmail );
 	}
@@ -259,7 +256,7 @@ void  MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, size_t cbLen,
 
 void 	MSN_GoOffline()
 {
-	int msnOldStatus = msnStatusMode; msnStatusMode = ID_STATUS_OFFLINE;
+	int msnOldStatus = msnStatusMode; msnStatusMode = msnDesiredStatus = ID_STATUS_OFFLINE; 
 	MSN_SendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)msnOldStatus, ID_STATUS_OFFLINE );
 
 	msnLoggedIn = false;
@@ -316,7 +313,7 @@ LONG ThreadData::sendMessage( int msgType, const char* parMsg, int parFlags )
 					MSN_FreeVariant( &dbv );
 			}	}
 
-			{	BYTE  tStyle = DBGetContactSettingByte( NULL, "SRMsg", "Font0Sty", 0 );
+			{	int  tStyle = DBGetContactSettingByte( NULL, "SRMsg", "Font0Sty", 0 );
 				p = tFontStyle;
 				if ( tStyle & 1 ) *p++ = 'B';
 				if ( tStyle & 2 ) *p++ = 'I';
@@ -344,7 +341,7 @@ void ThreadData::sendCaps( void )
 	char mversion[100], capMsg[1000];
 	MSN_CallService( MS_SYSTEM_GETVERSIONTEXT, sizeof( mversion ), ( LPARAM )mversion );
 
-	int nBytes = mir_snprintf( capMsg, sizeof( capMsg ),
+	mir_snprintf( capMsg, sizeof( capMsg ),
 		"Content-Type: text/x-clientcaps\r\n\r\n"
 		"Client-Name: Miranda IM %s (MSN v.%s)\r\n",
 		mversion, __VERSION_STRING );
@@ -591,7 +588,7 @@ void  MSN_SetServerStatus( int newStatus )
 		//here we say what functions can be used with this plugins : http://siebe.bot2k3.net/docs/?url=clientid.html
 		msnNsThread->sendPacket( "CHG", "%s 1342177312 %s", szStatusName, szMsnObject );
 
-		int status = newStatus == ID_STATUS_IDLE ? ID_STATUS_ONLINE : newStatus;
+		unsigned status = newStatus == ID_STATUS_IDLE ? ID_STATUS_ONLINE : newStatus;
 		for ( int i=0; i < MSN_NUM_MODES; i++ ) { 
 			if ( msnModeMsgs[ i ].m_mode == status ) {
 				MSN_SendStatusMessage( msnModeMsgs[ i ].m_msg );
@@ -1018,7 +1015,7 @@ int filetransfer::openNext( void )
 		replaceStr(std.currentFile, std.files[std.currentFileNumber] );
 		fileId = _open( std.currentFile, _O_BINARY | _O_RDONLY, _S_IREAD );
 		if ( fileId != -1 ) {
-			std.currentFileSize = filelength( fileId );
+			std.currentFileSize = _filelength( fileId );
 			std.currentFileProgress = 0;
 			
 			p2p_sendmsgid = 0;
@@ -1067,7 +1064,7 @@ char* directconnection::calcHashedNonce(UUID* nonce)
 	size_t len = strlen( p ) + 3;
 	char* result = ( char* )mir_alloc( len );
 	mir_snprintf(result, len, "{%s}", p );
-	strupr( result );
+	_strupr( result );
 	RpcStringFreeA(( BYTE** )&p );
 
 	return result;
@@ -1080,7 +1077,7 @@ char* directconnection::mNonceToText( void )
 	size_t len = strlen( p ) + 3;
 	char* result = ( char* )mir_alloc( len );
 	mir_snprintf(result, len, "{%s}", p );
-	strupr( result );
+	_strupr( result );
 	RpcStringFreeA(( BYTE** )&p );
 
 	return result;
@@ -1134,7 +1131,7 @@ char* TWinErrorCode::getText()
 			tBytes = mir_snprintf( mErrorText, 100, "unknown Windows error code %d", mErrorCode );
 		}
 
-		*mErrorText = tolower( *mErrorText );
+		*mErrorText = (char)tolower( *mErrorText );
 
 		if ( mErrorText[ tBytes-1 ] == '\n' )
 			mErrorText[ --tBytes ] = 0;

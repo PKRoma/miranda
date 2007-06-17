@@ -78,11 +78,11 @@ static void DiscardExtraPackets(SOCKET s)
 	Sleep(3000);
 
 	TIMEVAL tv = {0, 0};
-	fd_set fd;
 	unsigned buf;
 
 	for (;;)
 	{
+		fd_set fd;
 		FD_ZERO(&fd);
 		FD_SET(s, &fd);
 

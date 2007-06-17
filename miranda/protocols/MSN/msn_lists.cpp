@@ -176,11 +176,12 @@ static void ResetListOptions(HWND hwndList)
 
 static void SetAllContactIcons( HWND hwndList )
 {
-	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
-	do {
+	for ( HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
+		hContact != NULL; 
+		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 )) 
+	{
 		HANDLE hItem = ( HANDLE )SendMessage( hwndList, CLM_FINDCONTACT, ( WPARAM )hContact, 0 );
-		if ( hItem == NULL )
-			continue;
+		if ( hItem == NULL ) continue;
 
 		if ( !MSN_IsMyContact( hContact )) {
 			SendMessage( hwndList, CLM_DELETEITEM, ( WPARAM )hItem, 0 );
@@ -188,7 +189,7 @@ static void SetAllContactIcons( HWND hwndList )
 		}
 
 		char szEmail[ MSN_MAX_EMAIL_LEN ];
-		if ( MSN_GetStaticString( "e-mail", hContact, szEmail, sizeof szEmail )) {
+		if ( MSN_GetStaticString( "e-mail", hContact, szEmail, sizeof( szEmail ))) {
 			SendMessage( hwndList, CLM_DELETEITEM, ( WPARAM )hItem, 0 );
 			continue;
 		}
@@ -203,7 +204,6 @@ static void SetAllContactIcons( HWND hwndList )
 		if ( SendMessage( hwndList, CLM_GETEXTRAIMAGE, ( WPARAM )hItem, MAKELPARAM(3,0)) == 0xFF )
 			SendMessage( hwndList, CLM_SETEXTRAIMAGE,( WPARAM )hItem, MAKELPARAM(3,( dwMask & LIST_RL )?4:0));
 	}
-	while( hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 ));
 }
 
 static void SaveListItem( HANDLE hContact, const char* szEmail, int list, int iPrevValue, int iNewValue )
@@ -218,24 +218,23 @@ static void SaveListItem( HANDLE hContact, const char* szEmail, int list, int iP
 
 static void SaveSettings( HWND hwndList )
 {
-	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
-	do {
+	for ( HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
+		hContact != NULL; 
+		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 )) 
+	{
 		HANDLE hItem = ( HANDLE )SendMessage( hwndList, CLM_FINDCONTACT, ( WPARAM )hContact, 0 );
-		if ( hItem == NULL )
-			continue;
+		if ( hItem == NULL ) continue;
 
 		if ( !MSN_IsMyContact( hContact )) continue;
 
 		char szEmail[ MSN_MAX_EMAIL_LEN ];
-		if ( MSN_GetStaticString( "e-mail", hContact, szEmail, sizeof szEmail ))
-			continue;
+		if ( MSN_GetStaticString( "e-mail", hContact, szEmail, sizeof( szEmail ))) continue;
 
 		DWORD dwMask = Lists_GetMask( szEmail );
 		SaveListItem( hContact, szEmail, LIST_FL, ( dwMask & LIST_FL ) != 0, SendMessage( hwndList, CLM_GETEXTRAIMAGE, ( WPARAM )hItem, MAKELPARAM(0,0)));
 		SaveListItem( hContact, szEmail, LIST_AL, ( dwMask & LIST_AL ) != 0, SendMessage( hwndList, CLM_GETEXTRAIMAGE, ( WPARAM )hItem, MAKELPARAM(1,0)));
 		SaveListItem( hContact, szEmail, LIST_BL, ( dwMask & LIST_BL ) != 0, SendMessage( hwndList, CLM_GETEXTRAIMAGE, ( WPARAM )hItem, MAKELPARAM(2,0)));
 	}
-		while( hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 ));
 }
 
 BOOL CALLBACK DlgProcMsnServLists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
