@@ -1175,23 +1175,25 @@ static LONG WINAPI MyInterlockedIncrementInit(PLONG pVal)
 
 // Process a string, and double all % characters, according to chat.dll's restrictions
 // Returns a pointer to the new string (old one is not freed)
-TCHAR* EscapeChatTags(TCHAR* pszText)
+TCHAR* EscapeChatTags(const TCHAR* pszText)
 {
 	int nChars = 0;
-	for ( TCHAR* p = pszText; ( p = _tcschr( p, '%' )) != NULL; p++ )
+	for ( const TCHAR* p = pszText; ( p = _tcschr( p, '%' )) != NULL; p++ )
 		nChars++;
 
 	if ( nChars == 0 )
 		return mir_tstrdup( pszText );
 
-	TCHAR* pszNewText = (TCHAR*)mir_alloc( sizeof(TCHAR)*(lstrlen( pszText ) + 1 + nChars)), *s, *d;
+	TCHAR *pszNewText = (TCHAR*)mir_alloc( sizeof(TCHAR)*(lstrlen( pszText ) + 1 + nChars));
 	if ( pszNewText == NULL )
 		return mir_tstrdup( pszText );
 
-	for ( s = pszText, d = pszNewText; *s; s++ ) {
+	const TCHAR *s = pszText;
+	TCHAR *d = pszNewText;
+	while ( *s ) {
 		if ( *s == '%' )
 			*d++ = '%';
-		*d++ = *s;
+		*d++ = *s++;
 	}
 	*d = 0;
 	return pszNewText;

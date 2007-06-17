@@ -249,7 +249,7 @@ void CachedMsg_Uninit( void );
 void     MsnInitIcons( void );
 void     MsnInitMenus( void );
 
-TCHAR* EscapeChatTags(TCHAR* pszText);
+TCHAR* EscapeChatTags(const TCHAR* pszText);
 TCHAR* UnEscapeChatTags(TCHAR* str_in);
 
 TCHAR* a2t( const char* str );

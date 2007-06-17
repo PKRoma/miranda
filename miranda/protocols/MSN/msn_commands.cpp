@@ -642,7 +642,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 				mir_free( p );
 			#else
 				mir_utf8decode(( char* )msgBody, NULL );
-				gce.ptszText = EscapeChatTags( tMsgBuf );
+				gce.ptszText = EscapeChatTags( msgBody );
 			#endif
 			MSN_CallService(MS_GC_EVENT, NULL, (LPARAM)&gce);
 			mir_free(( void* )gce.pszText);
