@@ -146,8 +146,6 @@ void __cdecl MSNServerThread( ThreadData* info )
 	MSN_DebugLog( "Entering main recv loop" );
 	info->mBytesInData = 0;
 	for ( ;; ) {
-		int handlerResult;
-
 		int recvResult = info->recv( info->mData + info->mBytesInData, sizeof( info->mData ) - info->mBytesInData );
 		if ( recvResult == SOCKET_ERROR ) {
 			MSN_DebugLog( "Connection %08p [%08X] was abortively closed", info->s, GetCurrentThreadId());
@@ -162,8 +160,7 @@ void __cdecl MSNServerThread( ThreadData* info )
 		info->mBytesInData += recvResult;
 
 		if ( info->mCaller == 1 && info->mType == SERVER_FILETRANS ) {
-			handlerResult = MSN_HandleMSNFTP( info, info->mData );
-			if ( handlerResult )
+			if ( MSN_HandleMSNFTP( info, info->mData ))
 				break;
 		}
 		else {
@@ -196,15 +193,18 @@ void __cdecl MSNServerThread( ThreadData* info )
 					if ( info->mType == SERVER_NOTIFICATION )
 						SetEvent( hKeepAliveThreadEvt );
 
+					int handlerResult;
 					if ( isdigit(msg[0]) && isdigit(msg[1]) && isdigit(msg[2]))   //all error messages
 						handlerResult = MSN_HandleErrors( info, msg );
 					else
 						handlerResult = MSN_HandleCommands( info, msg );
-				}
-				else handlerResult = MSN_HandleMSNFTP( info, msg );
 
-				if ( handlerResult )
-					goto LBL_Exit;
+					if ( handlerResult )
+						info->sendPacket( "OUT", NULL );
+				}
+				else 
+					if ( MSN_HandleMSNFTP( info, msg ))
+						goto LBL_Exit;
 		}	}
 
 		if ( info->mBytesInData == sizeof( info->mData )) {
@@ -286,33 +286,38 @@ void  MSN_CloseConnections()
 
 void  MSN_CloseThreads()
 {
-	EnterCriticalSection( &sttLock );
-
-	bool opcon = false;
-	for ( int i=0; i < sttThreads.getCount(); i++ )
-		opcon |= (sttThreads[ i ]->s != NULL);
-
-	LeaveCriticalSection( &sttLock );
-
-	if ( opcon )
-	{
-		Sleep( 1500 );
-
+	for (unsigned j=6; --j; )
+	{	
 		EnterCriticalSection( &sttLock );
 
-		for ( int i=0; i < sttThreads.getCount(); i++ ) 
-		{
-			HANDLE Ts = sttThreads[ i ]->s;
-			if ( Ts != NULL )
-			{
-				SOCKET s = MSN_CallService( MS_NETLIB_GETSOCKET, LPARAM( Ts ), 0 );
-				if ( s != INVALID_SOCKET )
-					shutdown( s, 2 );
-			}
-		}
+		bool opcon = false;
+		for ( int i=0; i < sttThreads.getCount(); i++ )
+			opcon |= (sttThreads[ i ]->s != NULL);
 
 		LeaveCriticalSection( &sttLock );
+		
+		if (!opcon) break;
+		
+		Sleep(250);
 	}
+
+	EnterCriticalSection( &sttLock );
+
+	for ( int i=0; i < sttThreads.getCount(); i++ ) 
+	{
+		const ThreadData* T = sttThreads[ i ];
+		
+		if ( T->s != NULL )
+		{
+			SOCKET s = MSN_CallService( MS_NETLIB_GETSOCKET, LPARAM( T->s ), 0 );
+			if ( s != INVALID_SOCKET ) {
+
+				shutdown( s, 2 );
+			}
+		}
+	}
+
+	LeaveCriticalSection( &sttLock );
 }
 
 void Threads_Uninit( void )

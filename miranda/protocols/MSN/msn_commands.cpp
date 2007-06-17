@@ -1374,7 +1374,7 @@ LBL_InvalidCommand:
 			}	}
 			// this is not in chat session, quit the session when everyone left
 			else if ( personleft == 0 )
-				info->sendPacket( "OUT", NULL );
+				return 1;
 
 			break;
 		}
@@ -1996,14 +1996,14 @@ LBL_InvalidCommand:
 
 				if ( hContact == NULL ) { //can happen if both parties send first message at the same time
 					MSN_DebugLog( "USR (SB) internal: thread created for no reason" );
-					info->sendPacket( "OUT", NULL );
+					return 1;
 					break;
 				}
 
 				char tEmail[ MSN_MAX_EMAIL_LEN ];
 				if ( MSN_GetStaticString( "e-mail", hContact, tEmail, sizeof( tEmail ))) {
 					MSN_DebugLog( "USR (SB) internal: Contact is not MSN" );
-					info->sendPacket( "OUT", NULL );
+					return 1;
 					break;
 				}
 
@@ -2073,8 +2073,9 @@ LBL_InvalidCommand:
 
 		case ' REV':	//******** VER: section 7.1 Protocol Versioning
 		{
-			char protocol1[ 7 ];
-			if ( sscanf( params, "%6s", protocol1 ) < 1 )
+
+			char* protocol1;
+			if ( sttDivideWords( params, 1, &protocol1 ) != 1 )
 				goto LBL_InvalidCommand;
 
 			if ( MyOptions.szEmail[0] == 0 ) {
