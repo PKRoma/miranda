@@ -620,16 +620,6 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		}
 		else ccs.hContact = tContact;
 
-		char* tMsgBuf;
-		int tMsgBufLen = strlen( msgBody );
-		if ( tPrefix ) {
-			tMsgBufLen += strlen( tPrefix ) + 3;
-			tMsgBuf = ( char* )alloca( tMsgBufLen+1 );
-			mir_snprintf( tMsgBuf, tMsgBufLen+1, "<%s> %s", tPrefix, msgBody );
-			mir_free( tPrefix );
-		}
-		else tMsgBuf = ( char* )msgBody;
-
 		MSN_CallService( MS_PROTO_CONTACTISTYPING, WPARAM( tContact ), 0 );
 
 		if ( info->mChatID[0] ) {
@@ -644,13 +634,14 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 			gce.ptszNick = MSN_GetContactNameT( MSN_HContactFromEmail( data.fromEmail, NULL, 1, 1 ));
 			gce.time = time( NULL );
 			gce.bIsMe = FALSE;
+
 			#if defined( _UNICODE )
 				TCHAR* p;
-				mir_utf8decode( tMsgBuf, &p );
+				mir_utf8decode(( char* )msgBody, &p );
 				gce.ptszText = EscapeChatTags( p );
 				mir_free( p );
 			#else
-				mir_utf8decode( tMsgBuf, NULL );
+				mir_utf8decode(( char* )msgBody, NULL );
 				gce.ptszText = EscapeChatTags( tMsgBuf );
 			#endif
 			MSN_CallService(MS_GC_EVENT, NULL, (LPARAM)&gce);
@@ -659,7 +650,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		}
 		else {
 			PROTORECVEVENT pre;
-			pre.szMessage = ( char* )tMsgBuf;
+			pre.szMessage = ( char* )msgBody;
 			pre.flags = PREF_UTF + (( isRtl ) ? PREF_RTL : 0);
 			pre.timestamp = ( DWORD )time(NULL);
 			pre.lParam = 0;
