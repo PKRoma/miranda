@@ -2029,6 +2029,7 @@ LABEL_SHOWWINDOW:
 
       case IDC_CHAT_BKGCOLOR:
          {
+         	MODULEINFO * pInfo = MM_FindModule(si->pszModule);
             CHARFORMAT2 cf;
 
             cf.cbSize = sizeof(CHARFORMAT2);
@@ -2041,19 +2042,28 @@ LABEL_SHOWWINDOW:
                if (DBGetContactSettingByte(NULL, "Chat", "RightClickFilter", 0) == 0)
                   SendMessage(hwndDlg, GC_SHOWCOLORCHOOSER, 0, (LPARAM)IDC_CHAT_BKGCOLOR);
                else if (si->bBGSet){
-                  cf.dwMask = CFM_BACKCOLOR;
-                  cf.crBackColor = MM_FindModule(si->pszModule)->crColors[si->iBG];
-                  SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
+					cf.dwMask = CFM_BACKCOLOR;
+					cf.crBackColor = pInfo->crColors[si->iBG];
+					if (pInfo->bSingleFormat) {
+						SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETCHARFORMAT, SCF_ALL, (LPARAM)&cf);
+					} else {
+						SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
+					}
             }   }
             else {
                cf.dwMask = CFM_BACKCOLOR;
                cf.crBackColor = (COLORREF)DBGetContactSettingDword(NULL, "Chat", "ColorMessageBG", GetSysColor(COLOR_WINDOW));
-               SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
+				if (pInfo->bSingleFormat) {
+					SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETCHARFORMAT, SCF_ALL, (LPARAM)&cf);
+				} else {
+					SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
+				}
          }   }
          break;
 
       case IDC_CHAT_COLOR:
          {
+         	MODULEINFO * pInfo = MM_FindModule(si->pszModule);
             CHARFORMAT2 cf;
             cf.cbSize = sizeof(CHARFORMAT2);
             cf.dwEffects = 0;
@@ -2065,17 +2075,25 @@ LABEL_SHOWWINDOW:
                if (DBGetContactSettingByte(NULL, "Chat", "RightClickFilter", 0) == 0)
                   SendMessage(hwndDlg, GC_SHOWCOLORCHOOSER, 0, (LPARAM)IDC_CHAT_COLOR);
                else if (si->bFGSet) {
-                  cf.dwMask = CFM_COLOR;
-                  cf.crTextColor = MM_FindModule(si->pszModule)->crColors[si->iFG];
-                  SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
+					cf.dwMask = CFM_COLOR;
+					cf.crTextColor = pInfo->crColors[si->iFG];
+					if (pInfo->bSingleFormat) {
+						SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETCHARFORMAT, SCF_ALL, (LPARAM)&cf);
+					} else {
+						SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
+					}
             }   }
             else {
-               COLORREF cr;
+				COLORREF cr;
 
-               Chat_LoadMsgDlgFont(17, NULL, &cr);
-               cf.dwMask = CFM_COLOR;
-               cf.crTextColor = cr;
-               SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
+				Chat_LoadMsgDlgFont(17, NULL, &cr);
+				cf.dwMask = CFM_COLOR;
+				cf.crTextColor = cr;
+				if (pInfo->bSingleFormat) {
+					SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETCHARFORMAT, SCF_ALL, (LPARAM)&cf);
+				} else {
+					SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
+				}
 
          }   }
          break;
@@ -2085,6 +2103,7 @@ LABEL_SHOWWINDOW:
       case IDC_CHAT_UNDERLINE:
 
          {
+         	MODULEINFO * pInfo = MM_FindModule(si->pszModule);
             CHARFORMAT2 cf;
             cf.cbSize = sizeof(CHARFORMAT2);
             cf.dwMask = CFM_BOLD|CFM_ITALIC|CFM_UNDERLINE;
@@ -2102,8 +2121,11 @@ LABEL_SHOWWINDOW:
                cf.dwEffects |= CFE_ITALIC;
             if (IsDlgButtonChecked(hwndDlg, IDC_CHAT_UNDERLINE))
                cf.dwEffects |= CFE_UNDERLINE;
-
-            SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
+			if (pInfo->bSingleFormat) {
+				SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETCHARFORMAT, SCF_ALL, (LPARAM)&cf);
+			} else {
+				SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
+			}
       }   }
       break;
 

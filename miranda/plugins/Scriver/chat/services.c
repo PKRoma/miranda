@@ -259,6 +259,7 @@ int Service_Register(WPARAM wParam, LPARAM lParam)
 		mi->bBkgColor = gcr->dwFlags&GC_BKGCOLOR ;
 		mi->bAckMsg = gcr->dwFlags&GC_ACKMSG ;
 		mi->bChanMgr = gcr->dwFlags&GC_CHANMGR ;
+		mi->bSingleFormat = gcr->dwFlags&GC_SINGLEFORMAT;
 		mi->iMaxText= gcr->iMaxText;
 		mi->nColorCount = gcr->nColors;
 		if ( gcr->nColors > 0) {

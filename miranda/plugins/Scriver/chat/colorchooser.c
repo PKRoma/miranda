@@ -141,7 +141,11 @@ BOOL CALLBACK DlgProcColorToolWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				if ( IsDlgButtonChecked( hWindow, IDC_CHAT_COLOR )) {
 					cf.dwMask = CFM_COLOR;
 					cf.crTextColor = pCC->pModule->crColors[iCurrentHotTrack];
-					SendMessage(pCC->hWndTarget, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
+					if (pCC->pModule->bSingleFormat) {
+						SendMessage(pCC->hWndTarget, EM_SETCHARFORMAT, SCF_ALL, (LPARAM)&cf);
+					} else {
+						SendMessage(pCC->hWndTarget, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
+					}
 				}
 			}
 			else {
@@ -150,7 +154,11 @@ BOOL CALLBACK DlgProcColorToolWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				if(IsDlgButtonChecked(hWindow, IDC_CHAT_BKGCOLOR)) {
 					cf.dwMask = CFM_BACKCOLOR;
 					cf.crBackColor = pCC->pModule->crColors[iCurrentHotTrack];
-					SendMessage(pCC->hWndTarget, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
+					if (pCC->pModule->bSingleFormat) {
+						SendMessage(pCC->hWndTarget, EM_SETCHARFORMAT, SCF_ALL, (LPARAM)&cf);
+					} else {
+						SendMessage(pCC->hWndTarget, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
+					}
 				}
 			}
 		}

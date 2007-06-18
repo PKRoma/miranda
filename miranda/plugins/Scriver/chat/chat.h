@@ -126,6 +126,7 @@ typedef struct  MODULE_INFO_TYPE
 	BOOL		bBkgColor;
 	BOOL		bChanMgr;
 	BOOL		bAckMsg;
+	BOOL		bSingleFormat;
 	int			nColorCount;
 	COLORREF*	crColors;
 	HICON		hOnlineIcon;
