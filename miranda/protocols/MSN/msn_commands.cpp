@@ -1509,7 +1509,7 @@ LBL_InvalidCommand:
 
 			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, data.userNick, 1, 1 );
 			if ( tNumTokens == 5 )
-				MSN_SetDword( hContact, "FlagBits", atol( data.flags ));
+				MSN_SetDword( hContact, "FlagBits", strtoul( data.flags, NULL, 10 ));
 
 			MSN_ContactJoined( info, hContact );
 
@@ -1537,7 +1537,7 @@ LBL_InvalidCommand:
 			UrlDecode( data.userEmail ); UrlDecode( data.userNick );
 			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, data.userNick, 1, 1 );
 			if ( tNumTokens == 3 )
-				MSN_SetDword( hContact, "FlagBits", atol( data.flags ));
+				MSN_SetDword( hContact, "FlagBits", strtoul( data.flags, NULL, 10 ));
 
 
 			mir_utf8decode( data.userNick, NULL );
