@@ -204,7 +204,7 @@ int WorkEventChain(DWORD ofsContact,DBContact *dbc,int firstTime)
 	dbeNew->ofsPrev=dbeOld.ofsPrev;
 	dbeNew->ofsNext=0;
 
-	if ( opts.bConvertUtf && !( dbeOld.flags & DBEF_UTF ))
+	if ( dbeOld.eventType == EVENTTYPE_MESSAGE && opts.bConvertUtf && !( dbeOld.flags & DBEF_UTF ))
 		ConvertOldEvent(dbeNew);
 
 	if((ofsDestThis=WriteSegment(WSOFS_END,dbeNew,offsetof(DBEvent,blob)+dbeNew->cbBlob))==WS_ERROR) {
