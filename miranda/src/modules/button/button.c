@@ -466,35 +466,36 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 			InvalidateRect(bct->hwnd, NULL, TRUE);
 			break;
 		case BUTTONADDTOOLTIP:
-		{
-			TOOLINFO ti;
-
-			if (!(char*)wParam) break;
+			if ( wParam ) {
+				TOOLINFO ti;
             EnterCriticalSection(&csTips);
-			if (!hwndToolTips)
-				hwndToolTips = CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS, _T(""), WS_POPUP, 0, 0, 0, 0, NULL, NULL, GetModuleHandle(NULL), NULL);
+				if ( !hwndToolTips )
+					hwndToolTips = CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS, _T(""), WS_POPUP, 0, 0, 0, 0, NULL, NULL, GetModuleHandle(NULL), NULL);
 
-			ZeroMemory(&ti, sizeof(ti));
-			ti.cbSize = sizeof(ti);
-			ti.uFlags = TTF_IDISHWND;
-			ti.hwnd = bct->hwnd;
-			ti.uId = (UINT)bct->hwnd;
-			if (SendMessage(hwndToolTips, TTM_GETTOOLINFO, 0, (LPARAM)&ti))
-				SendMessage(hwndToolTips, TTM_DELTOOL, 0, (LPARAM)&ti);
-			ti.uFlags = TTF_IDISHWND|TTF_SUBCLASS;
-			ti.uId = (UINT)bct->hwnd;
-			#if defined( _UNICODE )
-				ti.lpszText = LangPackPcharToTchar(( char* )wParam );
-			#else
-				ti.lpszText = ( char* )wParam;
-			#endif
-			SendMessage( hwndToolTips, TTM_ADDTOOL, 0, (LPARAM)&ti);
-			LeaveCriticalSection(&csTips);
-			#if defined( _UNICODE )
-				mir_free( ti.lpszText );
-			#endif
+				ZeroMemory(&ti, sizeof(ti));
+				ti.cbSize = sizeof(ti);
+				ti.uFlags = TTF_IDISHWND;
+				ti.hwnd = bct->hwnd;
+				ti.uId = (UINT)bct->hwnd;
+				if (SendMessage(hwndToolTips, TTM_GETTOOLINFO, 0, (LPARAM)&ti))
+					SendMessage(hwndToolTips, TTM_DELTOOL, 0, (LPARAM)&ti);
+				ti.uFlags = TTF_IDISHWND|TTF_SUBCLASS;
+				ti.uId = (UINT)bct->hwnd;
+				#if defined( _UNICODE )
+					if ( lParam & BATF_UNICODE )
+						ti.lpszText = mir_wstrdup( TranslateW(( WCHAR* )wParam ));
+					else
+						ti.lpszText = LangPackPcharToTchar(( char* )wParam );
+				#else
+					ti.lpszText = Translate(( char* )wParam );
+				#endif
+				SendMessage( hwndToolTips, TTM_ADDTOOL, 0, (LPARAM)&ti);
+				LeaveCriticalSection(&csTips);
+				#if defined( _UNICODE )
+					mir_free( ti.lpszText );
+				#endif
+			}
 			break;
-		}
 		case WM_SETFOCUS: // set keybord focus and redraw
 			bct->focus = 1;
 			InvalidateRect(bct->hwnd, NULL, TRUE);
