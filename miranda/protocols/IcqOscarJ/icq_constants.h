@@ -63,7 +63,7 @@
 #define DEFAULT_CAPS                0
 #define DEFAULT_AVATARS_ENABLED     1
 #define DEFAULT_LOAD_AVATARS        1
-#define DEFAULT_LINK_AVATARS        1
+#define DEFAULT_BIGGER_AVATARS      1
 #define DEFAULT_AVATARS_CHECK       1
 #define DEFAULT_XSTATUS_ENABLED     1
 #define DEFAULT_XSTATUS_AUTO        1
@@ -538,16 +538,16 @@
 
 
 // Internal Constants
-#define ICQ_PLUG_VERSION            0x80030A03
-#define ICQ_VERSION                 8       // Protocol version
+#define ICQ_PLUG_VERSION            0x80030A04
+#define ICQ_VERSION                 8         // Protocol version
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_NICK_SIZE               32
 #define MAX_CONTACTSSEND            15
 #define MAX_MESSAGESNACSIZE         8000
 #define CLIENTRATELIMIT             0
-#define UPDATE_THRESHOLD            14      // Two weeks
-#define COOKIE_TIMEOUT              3600    // One hour
-#define KEEPALIVE_INTERVAL          57000   // One minute
+#define UPDATE_THRESHOLD            14        // Two weeks
+#define COOKIE_TIMEOUT              3600      // One hour
+#define KEEPALIVE_INTERVAL          57000     // One minute
 #define WEBFRONTPORT                0x50
 #define CLIENTFEATURES              0x3
 #define URL_FORGOT_PASSWORD         "https://www.icq.com/password/"

@@ -152,8 +152,8 @@ BEGIN
     CONTROL         "Load avatars automatically (like ICQ Lite)",
                     IDC_AUTOLOADAVATARS,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,12,140,290,10
-    CONTROL         "Link avatars as contact photos (mToolTip photos)",
-                    IDC_LINKAVATARS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,
+    CONTROL         "Allow bigger owner avatars (up to 128x128) [experimental]",
+                    IDC_BIGGERAVATARS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,
                     154,290,10
     LTEXT           "You will need to reconnect to the ICQ network for the changes you have made on this page to take effect.",
                     IDC_RECONNECTREQD,12,176,290,16,NOT WS_VISIBLE
@@ -420,19 +420,6 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,178,217,140,10
 END
 
-IDD_INFO_AVATAR DIALOGEX 0, 0, 222, 131
-STYLE DS_3DLOOK | DS_FIXEDSYS | WS_CHILD
-EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    CONTROL         "",IDC_AVATAR,"Static",SS_BITMAP | SS_CENTERIMAGE | 
-                    SS_SUNKEN,9,11,96,96
-    PUSHBUTTON      "Set",IDC_SETAVATAR,9,112,45,13,NOT WS_VISIBLE
-    PUSHBUTTON      "Delete",IDC_DELETEAVATAR,61,112,45,13,NOT WS_VISIBLE
-    LTEXT           "Note: Only JPGs and GIFs\nImage size max 128x128\nFile size max 12kB",
-                    IDC_STATIC,112,54,106,34,NOT WS_VISIBLE
-END
-
 IDD_ICQUPLOADLIST DIALOGEX 0, 0, 358, 241
 STYLE DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | 
     WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
@@ -667,7 +654,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,3,10,3
+ FILEVERSION 0,3,10,4
  PRODUCTVERSION 0,7,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -686,7 +673,7 @@ BEGIN
             VALUE "Comments", "Licensed under the terms of the GNU General Public License\0"
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "ICQ protocol plugin for Miranda IM, enhanced\0"
-            VALUE "FileVersion", "0, 3, 10, 3\0"
+            VALUE "FileVersion", "0, 3, 10, 4\0"
             VALUE "InternalName", "ICQJ protocol plugin for Miranda IM\0"
             VALUE "LegalCopyright", "Copyright (C) 2000-2007 Joe Kucera, Angeli-Ka, Bio, Martin Öberg, Richard Hughes, Jon Keating\0"
             VALUE "OriginalFilename", "ICQ.dll\0"

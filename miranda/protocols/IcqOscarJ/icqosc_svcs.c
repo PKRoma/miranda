@@ -239,8 +239,16 @@ int IcqGetAvatarCaps(WPARAM wParam, LPARAM lParam)
 
     if (size)
     {
-      size->x = 128;
-      size->y = 128;
+      if (ICQGetContactSettingByte(NULL, "AvatarsAllowBigger", DEFAULT_BIGGER_AVATARS))
+      { // experimental server limits
+        size->x = 128;
+        size->y = 128;
+      }
+      else
+      { // default limits (older)
+        size->x = 64;
+        size->y = 64;
+      }
 
       return 0;
     }

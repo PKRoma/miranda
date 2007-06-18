@@ -116,9 +116,6 @@ BOOL validateStatusMessageRequest(HANDLE hContact, WORD byMessageType);
 void __fastcall SAFE_FREE(void** p);
 void* __fastcall SAFE_MALLOC(size_t size);
 
-void LinkContactPhotoToFile(HANDLE hContact, char* szFile);
-void ContactPhotoSettingChanged(HANDLE hContact);
-
 HANDLE NetLib_OpenConnection(HANDLE hUser, const char* szIdent, NETLIBOPENCONNECTION* nloc);
 HANDLE NetLib_BindPort(NETLIBNEWCONNECTIONPROC_V2 pFunc, void* lParam, WORD* pwPort, DWORD* pdwIntIP);
 void NetLib_SafeCloseHandle(HANDLE *hConnection, int bServerConn);

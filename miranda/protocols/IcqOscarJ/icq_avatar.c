@@ -507,8 +507,6 @@ void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned
     if (avatarType == AVATAR_HASH_STATIC && cbAvatarHash == 0x09 && !memcmp(pAvatarHash + 4, hashEmptyAvatar + 4, 0x05))
     { // empty avatar - unlink image, clear hash
       ICQDeleteContactSetting(hContact, "AvatarHash");
-      LinkContactPhotoToFile(hContact, NULL);
-
       ICQBroadcastAck(hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, (LPARAM)NULL);
       return;
     }
@@ -528,12 +526,6 @@ void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned
           NetLog_Server("Avatar is known, hash stored, linked to file.");
 
           ICQWriteContactSettingBlob(hContact, "AvatarHash", pAvatarHash, cbAvatarHash);
-
-          if (dwPaFormat != PA_FORMAT_UNKNOWN && dwPaFormat != PA_FORMAT_XML)
-            LinkContactPhotoToFile(hContact, szAvatar);
-          else  // the format is not supported unlink
-            LinkContactPhotoToFile(hContact, NULL);
-
           ICQBroadcastAck(hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, (LPARAM)NULL);
         }
         else // the file is lost, request avatar again
@@ -541,10 +533,6 @@ void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned
       }
       else
       { // the hash is not the one we want, request avatar
-        if (fileState == 2)
-        { // the hash is different, unlink contactphoto
-          LinkContactPhotoToFile(hContact, NULL);
-        }
         bJob = TRUE;
       }
     }
@@ -553,7 +541,6 @@ void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned
       NetLog_Hash("Old", dbv.pbVal, dbv.cpbVal);
       if ((dbv.cpbVal != cbAvatarHash) || memcmp(dbv.pbVal, pAvatarHash, cbAvatarHash))
       { // the hash is different, request new avatar
-        LinkContactPhotoToFile(hContact, NULL); // unlink photo
         bJob = TRUE;
       }
       else
@@ -571,23 +558,14 @@ void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned
           else
           {
             GetFullAvatarFileName(dwUIN, szUID, dwPaFormat, szAvatar, MAX_PATH);
-            if (access(szAvatar, 0) == 0)
-            { // the file exists, so try to update photo setting
-              if (dwPaFormat != PA_FORMAT_XML && dwPaFormat != PA_FORMAT_UNKNOWN)
-              {
-                LinkContactPhotoToFile(hContact, szAvatar);
-              }
-            }
-            else // the file was lost, get it again
+            if (access(szAvatar, 0) != 0)
+            { // the file was lost, get it again
               bJob = 2;
+            }
           }
         }
         else
         { // the hash is not the one we want, request avatar
-          if (fileState == 2)
-          { // the hash is different, unlink contactphoto
-            LinkContactPhotoToFile(hContact, NULL);
-          }
           bJob = 2;
         }
       }
@@ -1397,9 +1375,6 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
               _write(out, pBuffer, datalen);
               _close(out);
             
-              if (dwPaFormat != PA_FORMAT_XML && dwPaFormat != PA_FORMAT_UNKNOWN)
-                LinkContactPhotoToFile(ac->hContact, szMyFile); // this should not be here, but no other simple solution available
-
               if (!ac->hContact) // our avatar, set filename
                 storeMyAvatarFileName(szMyFile);
               else

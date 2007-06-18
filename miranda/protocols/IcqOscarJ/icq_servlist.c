@@ -1771,11 +1771,6 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
   if ((HANDLE)wParam == NULL)
     return 0;
 
-  if (!strcmpnull(cws->szModule, "ContactPhoto"))
-  { // contact photo changed ?
-    ContactPhotoSettingChanged((HANDLE)wParam);
-  }
-
   // TODO: Queue changes that occur while offline
   if (!icqOnline || !gbSsiEnabled || bIsSyncingCL)
     return 0;

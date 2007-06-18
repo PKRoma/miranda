@@ -247,7 +247,7 @@ Plugins-included: IcqOscarJ
 ;[Update contacts' details on the server's list when I change them in mine]
 ;[Enable avatar support]
 ;[Load avatars automatically (like ICQ Lite)]
-;[Link avatars as contact photos (mToolTip photos)]
+;[Allow bigger owner avatars (up to 128x128) [experimental]]
 ;[Enable unicode messaging support]
 ;[Send all messages in unicode if possible]
 ;[Make me temporarily visible to contacts I send message to]

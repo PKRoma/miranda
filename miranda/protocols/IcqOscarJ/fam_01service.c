@@ -555,7 +555,6 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
           { // we have no file to upload, remove hash from server
             NetLog_Server("We do not have avatar, removing hash.");
             IcqSetMyAvatar(0, 0);
-            LinkContactPhotoToFile(NULL, NULL);
             break;
           }
           dwPaFormat = DetectAvatarFormat(file);
@@ -564,7 +563,6 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
           { // the hash could not be calculated, remove from server
             NetLog_Server("We could not obtain hash, removing hash.");
             IcqSetMyAvatar(0, 0);
-            LinkContactPhotoToFile(NULL, NULL);
           }
           else if (!memcmp(hash, pBuffer+4, 0x10))
           { // we have the right file
@@ -582,7 +580,6 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
             if (cbFileSize != 0)
             {
               SetAvatarData(NULL, (WORD)(dwPaFormat == PA_FORMAT_XML ? AVATAR_HASH_FLASH : AVATAR_HASH_STATIC), ppMap, cbFileSize);
-              LinkContactPhotoToFile(NULL, file);
             }
 
             if (ppMap != NULL) UnmapViewOfFile(ppMap);
