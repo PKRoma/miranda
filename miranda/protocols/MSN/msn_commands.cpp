@@ -39,7 +39,6 @@ void MSN_KillChatSession(TCHAR* id);
  int tridUrlInbox = -1, tridUrlEdit = -1;
 
 char* sid = NULL;
-char* kv = NULL;
 char* MSPAuth = NULL;
 char* passport = NULL;
 char* urlId = NULL;
@@ -653,31 +652,19 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		}
 	}
 	else if ( !_strnicmp( tContentType, "text/x-msmsgsprofile", 20 )) {
-		MimeHeaders tFileInfo;
-		tFileInfo.readFromBuffer( msg );
-		replaceStr( sid,           tFileInfo[ "sid" ]      );
-		replaceStr( kv,            tFileInfo[ "kv" ]       );
-		replaceStr( MSPAuth,       tFileInfo[ "MSPAuth" ]  );
-		replaceStr( msnExternalIP, tFileInfo[ "ClientIP" ] );
+		replaceStr( sid,           tHeader[ "sid" ]      );
+		replaceStr( MSPAuth,       tHeader[ "MSPAuth" ]  );
+		replaceStr( msnExternalIP, tHeader[ "ClientIP" ] );
 
 		if ( msnExternalIP != NULL && MSN_GetByte( "AutoGetHost", 1 ))
 			MSN_SetString( NULL, "YourHost", msnExternalIP );
 	}
 	else if ( !_strnicmp( tContentType, "text/x-msmsgscontrol", 20 )) {
-		MimeHeaders tFileInfo;
-		tFileInfo.readFromBuffer( msg );
-
-		const char* tTypingUser = tFileInfo[ "TypingUser" ];
+		const char* tTypingUser = tHeader[ "TypingUser" ];
 
 		if ( tTypingUser != NULL && info->mChatID[0] == 0 ) {
-			char userNick[ 388 ];
-			strcpy( userNick, tTypingUser );
-
-			HANDLE hContact = MSN_HContactFromEmail( tTypingUser, userNick, 1, 0 );
-			if ( hContact != NULL )
-				strcpy( userNick, MSN_GetContactName( hContact ));
-
-			MSN_CallService( MS_PROTO_CONTACTISTYPING, WPARAM( hContact ), 7 );
+			HANDLE hContact = MSN_HContactFromEmail( tTypingUser, tTypingUser, 1, 1 );
+			MSN_CallService( MS_PROTO_CONTACTISTYPING, ( WPARAM ) hContact, 7 );
 		}
 	}
 	else if ( !_strnicmp( tContentType, "text/x-msnmsgr-datacast", 23 )) {

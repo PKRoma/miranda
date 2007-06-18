@@ -404,7 +404,6 @@ extern "C" int __declspec( dllexport ) Unload( void )
 		if ( msnModeMsgs[ i ].m_msg )
 			mir_free( msnModeMsgs[ i ].m_msg );
 
-	mir_free( kv );
 	mir_free( sid );
 	mir_free( passport );
 	mir_free( MSPAuth );

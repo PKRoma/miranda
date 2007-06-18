@@ -678,7 +678,6 @@ extern	char*	    mailsoundname;
 extern	char*	    alertsoundname;
 
 extern	char*       sid;
-extern	char*       kv;
 extern	char*       passport;
 extern	char*       urlId;
 extern	char*       MSPAuth;
