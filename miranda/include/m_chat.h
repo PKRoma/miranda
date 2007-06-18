@@ -1,7 +1,7 @@
 /*
 Chat module plugin for Miranda IM
 
-Copyright (C) 2003 Jörgen Persson
+Copyright (C) 2003 JÃ¶rgen Persson
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -135,6 +135,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define GC_ACKMSG          0x0020		//the protocol must acknowlege messages sent
 #define GC_TYPNOTIF        0x0040		//NOT SUPPORTED YET! Enable typing notifications.
 #define GC_CHANMGR         0x0080		//enable the 'channel settings' button
+#define GC_SINGLEFORMAT 0x0100		//the protocol supports only 1 formatting per message
 
 #define GC_UNICODE        0x01000		//NOT SUPPORTED YET! Enable unicode (if chat supports it),
 													//Pass UNICODE instead of ASCII. Note that
