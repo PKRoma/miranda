@@ -484,7 +484,7 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 			ti.uFlags = TTF_IDISHWND|TTF_SUBCLASS;
 			ti.uId = (UINT)bct->hwnd;
 			#if defined( _UNICODE )
-				ti.lpszText = a2u(( char* )wParam );
+				ti.lpszText = LangPackPcharToTchar(( char* )wParam );
 			#else
 				ti.lpszText = ( char* )wParam;
 			#endif
