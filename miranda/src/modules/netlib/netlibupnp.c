@@ -100,22 +100,19 @@ HANDLE portListMutex;
 
 static char szCtlUrl[256], szDev[256];
 
-
-static BOOL txtParseParam(char* szData, char* presearch, 
-						  char* start, char* finish, char* param, int size)
+static BOOL txtParseParam(char* szData, char* presearch, char* start, char* finish, char* param, int size)
 {
 	char *cp, *cp1;
 	int len;
 	
 	*param = 0;
 
-	if (presearch != NULL)
-	{
+	if (presearch != NULL) {
 		cp1 = strstr(szData, presearch);
-		if (cp1 == NULL) return FALSE;
+		if (cp1 == NULL) 
+			return FALSE;
 	}
-	else
-		cp1 = szData;
+	else cp1 = szData;
 
 	cp = strstr(cp1, start);
 	if (cp == NULL) return FALSE;
@@ -156,32 +153,25 @@ void parseURL(char* szUrl, char* szHost, unsigned short* sPort, char* szPath)
 		szHost[sz-1] = 0;
 	}
 
-	if (sPort != NULL)
-	{
-		if (pport < ppath)
-		{
+	if (sPort != NULL) {
+		if (pport < ppath) {
 			long prt = atol(pport+1);
 			*sPort = prt != 0 ? (unsigned short)prt : 80;
 		}
-		else
-			*sPort = 80;
+		else *sPort = 80;
 	}
 
-	if (szPath != NULL)
-	{
+	if ( szPath != NULL ) {
 		strncpy(szPath, ppath, 256);
 		szPath[255] = 0;
-	}
-}
-
+}	}
 
 static LongLog(char* szData)
 {
 	char* buf = szData;
 	int sz = strlen(szData);
 
-	while ( sz > 1000)
-	{
+	while ( sz > 1000 ) {
 		char* nbuf = buf + 1000;
 		char t = *nbuf;
 		*nbuf = 0;
@@ -219,9 +209,7 @@ static void discoverUPnP(char* szUrl, int sizeUrl)
 
 	gethostname( hostname, sizeof( hostname ));
 	he = gethostbyname( hostname );
-
-	if (he)
-	{
+	if ( he ) {
 		while(he->h_addr_list[nip]) ++nip;
 
 		ips = mir_alloc(nip * sizeof(unsigned));
@@ -232,15 +220,13 @@ static void discoverUPnP(char* szUrl, int sizeUrl)
 
 	buf = ( char* )alloca(1500);
 
-	for(i = 3;  --i && szUrl[0] == 0;) 
-	{
+	for( i = 3; --i && szUrl[0] == 0; ) {
 		fd_set readfd;
 		FD_ZERO(&readfd);
 		FD_SET(sock, &readfd);
 
-		for (j=0; j<nip; ++j)
-		{
-			if (ips)
+		for ( j=0; j < nip; j++ ) {
+			if ( ips )
 				setsockopt(sock, IPPROTO_IP, IP_MULTICAST_IF, (char *)&ips[j], sizeof(unsigned));
 
 			buflen = mir_snprintf(buf, 1500, search_request_msg, "WANIPConnection:1");
@@ -252,11 +238,9 @@ static void discoverUPnP(char* szUrl, int sizeUrl)
 			LongLog(buf);
 		}
 
-		while (select(1, &readfd, NULL, NULL, &tv) == 1) 
-		{
+		while (select(1, &readfd, NULL, NULL, &tv) == 1) {
 			buflen = recv(sock, buf, 1500, 0);
-			if (buflen != SOCKET_ERROR) 
-			{
+			if (buflen != SOCKET_ERROR) {
 				buf[buflen] = 0;
 				LongLog(buf);
 
@@ -290,12 +274,8 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 
 	parseURL(szUrl, szHost, &sPort, szPath);
 
-	for (;;)
-	{
-		if (szActionName == NULL) 
-			sz = mir_snprintf (szData, 4096, xml_get_hdr, szPath, szHost, sPort);
-		else
-		{
+	while ( TRUE ) { 
+		if ( szActionName != NULL) {
 			char szData1[1024];
 			
 			sz = mir_snprintf (szData1, sizeof(szData1),
@@ -305,6 +285,7 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 				szPostHdr, szPath, szHost, sPort, 
 				sz, szDev, szActionName, szData1);
 		}
+		else sz = mir_snprintf (szData, 4096, xml_get_hdr, szPath, szHost, sPort);
 
 		{
 			static TIMEVAL tv = { 5, 0 };
@@ -320,10 +301,9 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 			enetaddr.sin_addr.s_addr = inet_addr(szHost);
 
 			// Resolve host name if needed
-			if (enetaddr.sin_addr.s_addr == INADDR_NONE)
-			{
+			if (enetaddr.sin_addr.s_addr == INADDR_NONE) {
 				PHOSTENT he = gethostbyname(szHost);
-				if (he) 
+				if ( he )
 					enetaddr.sin_addr.s_addr = *(unsigned*)he->h_addr_list[0];
 			}
 
@@ -339,38 +319,32 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 			ioctlsocket(sock, FIONBIO, &mode);
 
 			// Connect to the remote host
-			if (connect(sock, (SOCKADDR*)&enetaddr, sizeof(enetaddr)) == SOCKET_ERROR)
-			{
+			if (connect(sock, (SOCKADDR*)&enetaddr, sizeof(enetaddr)) == SOCKET_ERROR) {
 				int err = WSAGetLastError();
 				
 				// Socket connection failed
-				if (err != WSAEWOULDBLOCK)
-				{
+				if (err != WSAEWOULDBLOCK) {
 					Netlib_Logf(NULL, "UPnP connect failed %d", err);
 					break;
 				}
+
 				// Wait for socket to connect 
-				else if (select(-1, NULL, &readfd, NULL, &tv) != 1) 
-				{
+				else if (select(-1, NULL, &readfd, NULL, &tv) != 1) {
 					Netlib_Logf(NULL, "UPnP connect timeout");
 					break;
-				}
-			}
+			}	}
 
-			if (send( sock, szData, sz, 0 ) != SOCKET_ERROR)
-			{
+			if (send( sock, szData, sz, 0 ) != SOCKET_ERROR) {
 				char *hdrend = NULL;
 				int acksz = 0, pktsz = 0;
 
 				LongLog(szData);
 				sz = 0;
-				for(;;) 
-				{
+				while ( TRUE ) {
 					int bytesRecv;
 
 					// Wait for the next packet
-					if (select(0, &readfd, NULL, NULL, &tv) != 1) 
-					{
+					if (select(0, &readfd, NULL, NULL, &tv) != 1) {
 						Netlib_Logf(NULL, "UPnP recieve timeout"); 
 						break;
 					}
@@ -380,25 +354,21 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 					// Connection closed or aborted, all data received
 					if ( bytesRecv == 0 || bytesRecv == SOCKET_ERROR) 
 						break;
-					else
-						sz += bytesRecv;
+					
+					sz += bytesRecv;
 
 					// Insert null terminator to use string functions
-					if (sz >= (resSize-1)) 
-					{
+					if (sz >= (resSize-1)) {
 						szResult[resSize-1] = 0;
 						break;
 					}
-					else
-						szResult[sz] = 0;
+					else szResult[sz] = 0;
 					
 					// HTTP header found?
-					if (hdrend == NULL)
-					{
+					if (hdrend == NULL) {
 						// Find HTTP header end
 						hdrend = strstr(szResult, "\r\n\r\n");
-						if (hdrend != NULL)
-						{
+						if (hdrend != NULL) {
 							hdrend += 4;
 
 							// Get packet size if provided
@@ -409,13 +379,9 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 								pktsz = atol(szRes) + (hdrend - szResult);
 							}
 							// Get encoding type if provided
-							if (txtParseParam(szResult, NULL, "Transfer-Encoding:", "\r", szRes, sizeof(szRes)) &&
-								stricmp(szRes, "Chunked") == 0)
-							{
+							if (txtParseParam(szResult, NULL, "Transfer-Encoding:", "\r", szRes, sizeof(szRes)) && !stricmp(szRes, "Chunked"))
 								acksz = hdrend - szResult;
-							}
-						}
-					}
+					}	}
 
 					// Content-Length bytes reached, all data received
 					if (sz >= pktsz && pktsz != 0)
@@ -425,19 +391,16 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 					}
  
 					// Chunked encoding processing
-					if (sz > acksz && acksz != 0)
-					{
+					if (sz > acksz && acksz != 0) {
 						// Parse out chunk size
 						char* data = szResult + acksz;
 						char* peol1 = data == hdrend ? data - 2 : strstr(data, "\r\n");
-						if (peol1 != NULL)
-						{
+						if (peol1 != NULL) {
 							char *peol2;
 							peol1 += 2;
 							
 							peol2 = strstr(peol1, "\r\n");
-							if (peol2 != NULL)
-							{
+							if (peol2 != NULL) {
 								// Get chunk size
 								int chunkBytes = strtol(peol1, NULL, 16);
 								acksz += chunkBytes;
@@ -447,30 +410,26 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 								sz -= peol2 - data;
 
 								// Last chunk, all data received
-								if (chunkBytes == 0) break;
-							}
-						}
-					}
-				}
+								if (chunkBytes == 0) 
+									break;
+				}	}	}	}
+
 				LongLog(szResult);
 			}
 			else
 				Netlib_Logf(NULL, "UPnP send failed %d", WSAGetLastError()); 
 
-			if (szActionName == NULL) 
-			{
+			if (szActionName == NULL) {
 				int len = sizeof(locIP);
 				getsockname(sock, (SOCKADDR*)&locIP, &len);
-				if (locIP.sin_addr.S_un.S_addr == 0x0100007f)
-				{
+				if (locIP.sin_addr.S_un.S_addr == 0x0100007f) {
 					struct hostent *he;
 
 					gethostname(szPath, sizeof(szPath));
 					he = gethostbyname(szPath);
 					if (he != NULL)
 						locIP.sin_addr.S_un.S_addr = *(PDWORD)he->h_addr_list[0];
-				}
-			}
+			}	}
 
 			shutdown(sock, 2);
 			closesocket(sock);
@@ -484,8 +443,7 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 			break;
 	}
 
-	if (sock != INVALID_SOCKET)
-	{
+	if (sock != INVALID_SOCKET) {
 		shutdown(sock, 2);
 		closesocket(sock);
 	}
@@ -499,8 +457,7 @@ static void findUPnPGateway(void)
 {
 	time_t curTime = time(NULL);
 
-	if ((curTime - lastDiscTime) >= expireTime)
-	{
+	if ((curTime - lastDiscTime) >= expireTime) {
 		char szUrl[256];
 		char szHostNew[256], szHostExist[256];
 		char* szData = (char*)alloca(8192);
@@ -518,9 +475,9 @@ static void findUPnPGateway(void)
 		if (strcmp(szHostNew, szHostExist) == 0)
 			return;
 
+		szCtlUrl[0] = 0;
 		gatewayFound = httpTransact(szUrl, szData, 8192, NULL) == 200;
-		if (gatewayFound)
-		{
+		if ( gatewayFound ) {
 			char szTemp[256], *rpth;
 			size_t ctlLen;
 
@@ -532,45 +489,36 @@ static void findUPnPGateway(void)
 			txtParseParam(szData, szTemp, "<controlURL>", "</controlURL>", szUrl, sizeof(szUrl));
 
 			// URL combining per RFC 2396
-			if (szUrl[0] == 0)
-			{
-				gatewayFound = FALSE;
-				szCtlUrl[0] = 0;
-			}
-			else if (strstr(szUrl, "://") != NULL)                      // absolute URI  
-				rpth = szCtlUrl;
-			else if (strncmp(szUrl, "//", 2) == 0)                      // relative URI net_path
-			{
-				rpth = strstr(szCtlUrl, "//");
-				if (rpth == NULL) rpth = szCtlUrl;
-			}
-			else if (szUrl[0] == '/')                                   // relative URI abs_path
-			{
-				rpth = strstr(szCtlUrl, "//");
-				rpth = rpth ? rpth + 2 : szCtlUrl;
+			if ( szUrl[0] != 0 ) {
+				if (strstr(szUrl, "://") != NULL)                      // absolute URI  
+					rpth = szCtlUrl;
+				else if (strncmp(szUrl, "//", 2) == 0) {                    // relative URI net_path
+					rpth = strstr(szCtlUrl, "//");
+					if (rpth == NULL) rpth = szCtlUrl;
+				}
+				else if (szUrl[0] == '/') {                                 // relative URI abs_path
+					rpth = strstr(szCtlUrl, "//");
+					rpth = rpth ? rpth + 2 : szCtlUrl;
 
-				rpth = strchr(rpth, '/');
-				if (rpth == NULL) rpth = szCtlUrl + strlen(szCtlUrl);
-			}
-			else                                                        // relative URI rel_path
-			{
-				size_t ctlCLen = strlen(szCtlUrl);
-				rpth = szCtlUrl + ctlCLen;
-				if (ctlCLen != 0 && *(rpth-1) != '/')
-					strncpy(rpth++, "/", sizeof(szCtlUrl) - ctlCLen);
-			}
+					rpth = strchr(rpth, '/');
+					if (rpth == NULL) rpth = szCtlUrl + strlen(szCtlUrl);
+				}
+				else {                                                      // relative URI rel_path
+					size_t ctlCLen = strlen(szCtlUrl);
+					rpth = szCtlUrl + ctlCLen;
+					if (ctlCLen != 0 && *(rpth-1) != '/')
+						strncpy(rpth++, "/", sizeof(szCtlUrl) - ctlCLen);
+				}
 
-			ctlLen = sizeof(szCtlUrl) - (rpth - szCtlUrl);
-			strncpy(rpth, szUrl, ctlLen);
-			szCtlUrl[sizeof(szCtlUrl)-1] = 0;
+				ctlLen = sizeof(szCtlUrl) - (rpth - szCtlUrl);
+				strncpy(rpth, szUrl, ctlLen);
+				szCtlUrl[sizeof(szCtlUrl)-1] = 0;
+			}
+			else gatewayFound = FALSE;
 		}
-		else
-			szCtlUrl[0] = 0;
 
 		Netlib_Logf(NULL, "UPnP Gateway detected %d, Control URL: %s\n", gatewayFound, szCtlUrl); 
-	}	
-}
-
+}	}
 
 BOOL NetlibUPnPAddPortMapping(WORD intport, char *proto, WORD *extport, DWORD *extip, BOOL search)
 {
@@ -639,20 +587,21 @@ void NetlibUPnPDeletePortMapping(WORD extport, char* proto)
 
 void NetlibUPnPCleanup(void* extra)
 {
-    if (DBGetContactSettingByte(NULL,"Netlib","NLEnableUPnP",1)==0) {
-        // upnp is disabled globally, no need for a cleanup
-        return;
-    }
-    {
-        int i, incoming = 0;
-        EnterCriticalSection(&csNetlibUser);
-        for(i=netlibUserCount; i--; ) {
-            if (netlibUser[i]->user.flags&NUF_INCOMING)
-                incoming = 1;
-        }
-		LeaveCriticalSection(&csNetlibUser);
-        if (!incoming) return;
-    }
+	// upnp is disabled globally, no need for a cleanup
+	if (DBGetContactSettingByte(NULL,"Netlib","NLEnableUPnP",1)==0)
+		return;
+
+	{
+		int i, incoming = 0;
+		EnterCriticalSection( &csNetlibUser );
+		for ( i = netlibUserCount; i--; )
+			if ( netlibUser[i]->user.flags & NUF_INCOMING )
+				incoming = 1;
+
+		LeaveCriticalSection( &csNetlibUser );
+		if ( !incoming ) 
+			return;
+	}
 	findUPnPGateway();
 
 	if ( gatewayFound ) {
@@ -696,8 +645,7 @@ void NetlibUPnPCleanup(void* extra)
 			WaitForSingleObject(portListMutex, INFINITE);
 			NetlibUPnPDeletePortMapping(ports[i], "TCP");
 			ReleaseMutex(portListMutex);
-	}	}
-}
+}	}	}
 
 void NetlibUPnPInit(void)
 {
