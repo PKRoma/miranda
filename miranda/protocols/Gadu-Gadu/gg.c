@@ -25,7 +25,7 @@
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
 	"Gadu-Gadu Protocol",
-	PLUGIN_MAKE_VERSION(0, 0, 4, 4),
+	PLUGIN_MAKE_VERSION(0, 0, 4, 5),
 	"Provides support for Gadu-Gadu protocol",
 	"Adam Strzelecki",
 	"ono+miranda@java.pl",
@@ -53,12 +53,13 @@ char *ggProtoError = NULL;					// proto error get from DLL name (def Gadu-Gadu f
 struct gg_status_msgs ggModeMsg;
 
 // Event hooks
-static HANDLE hHookOptsInit;
-static HANDLE hHookUserInfoInit;
-static HANDLE hHookModulesLoaded;
-static HANDLE hHookPreShutdown;
-static HANDLE hHookSettingDeleted;
-static HANDLE hHookSettingChanged;
+static HANDLE hHookOptsInit = NULL;
+static HANDLE hHookUserInfoInit = NULL;
+static HANDLE hHookModulesLoaded = NULL;
+static HANDLE hHookPreShutdown = NULL;
+static HANDLE hHookSettingDeleted = NULL;
+static HANDLE hHookSettingChanged = NULL;
+static HANDLE hHookIconsChanged = NULL;
 
 static unsigned long crc_table[256];
 
@@ -77,9 +78,9 @@ char *ws_strerror(int code)
 				  NULL, WSAGetLastError(), 0, buff,
 				  sizeof(buff), NULL);
 		if(len == 0)
-			snprintf(err_desc, sizeof(err_desc), "WinSock %u: Unknown error.", WSAGetLastError());
+			mir_snprintf(err_desc, sizeof(err_desc), "WinSock %u: Unknown error.", WSAGetLastError());
 		else
-			snprintf(err_desc, sizeof(err_desc), "WinSock %d: %s", WSAGetLastError(), buff);
+			mir_snprintf(err_desc, sizeof(err_desc), "WinSock %d: %s", WSAGetLastError(), buff);
 		return err_desc;
 	}
 
@@ -118,16 +119,6 @@ unsigned long crc_get(char *mem)
 		crc = ((crc>>8) & 0x00FFFFFF) ^ crc_table[(crc ^ *(mem++)) & 0xFF];
 
 	return (crc ^ 0xFFFFFFFF);
-}
-
-void gg_refreshblockedicon()
-{
-	// Store blocked icon
-	char strFmt1[MAX_PATH], strFmt2[MAX_PATH];
-	GetModuleFileName(hInstance, strFmt1, sizeof(strFmt1));
-	snprintf(strFmt2, sizeof(strFmt2), "%s,-%d", strFmt1, IDI_STOP);
-	snprintf(strFmt1, sizeof(strFmt1), "%s%d", GG_PROTO, ID_STATUS_DND);
-	DBWriteContactSettingString(NULL, "Icons", strFmt1, strFmt2);
 }
 
 //////////////////////////////////////////////////////////
@@ -250,6 +241,7 @@ int gg_modulesloaded(WPARAM wParam, LPARAM lParam)
 	hHookUserInfoInit = HookEvent(ME_USERINFO_INITIALISE, gg_details_init);
 	hHookSettingDeleted = HookEvent(ME_DB_CONTACT_DELETED, gg_userdeleted);
 	hHookSettingChanged = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, gg_dbsettingchanged);
+	hHookIconsChanged = HookEvent(ME_SKIN2_ICONSCHANGED, gg_iconschanged);
 
 	free(szTitle);
 
@@ -257,12 +249,13 @@ int gg_modulesloaded(WPARAM wParam, LPARAM lParam)
 	gg_ssl_init();
 
 	// Init misc thingies
+	gg_icolib_init();
+	gg_gc_init();
 	/* gg_userinfo_init(); DEPRECATED */
 	gg_keepalive_init();
 	gg_import_init();
 	/* gg_chpass_init(); DEPRECATED */
 	gg_img_init();
-	gg_gc_init();
 
 	// Make error message
 	szError = Translate("Error");
@@ -391,6 +384,7 @@ int __declspec(dllexport) Unload()
 	LocalEventUnhook(hHookOptsInit);
 	LocalEventUnhook(hHookSettingDeleted);
 	LocalEventUnhook(hHookSettingChanged);
+	LocalEventUnhook(hHookIconsChanged);
 #ifdef DEBUGMODE
 	gg_netlog("Unload(): closing hNetlib");
 #endif
@@ -476,7 +470,7 @@ void gg_debughandler(int level, const char *format, va_list ap)
 	strncpy(szText, GG_PROTO, sizeof(szText));
 	strncat(szText, "	   >> libgadu << \0", sizeof(szText) - strlen(szText));
 
-	_vsnprintf(szText + strlen(szText), sizeof(szText) - strlen(szText), szFormat, ap);
+	mir_vsnprintf(szText + strlen(szText), sizeof(szText) - strlen(szText), szFormat, ap);
 	CallService(MS_NETLIB_LOG, (WPARAM) hNetlib, (LPARAM) szText);
 	free(szFormat);
 }
@@ -491,7 +485,7 @@ int gg_netlog(const char *fmt, ...)
 	strncat(szText, "::\0", sizeof(szText) - strlen(szText));
 
 	va_start(va, fmt);
-	_vsnprintf(szText + strlen(szText), sizeof(szText) - strlen(szText), fmt, va);
+	mir_vsnprintf(szText + strlen(szText), sizeof(szText) - strlen(szText), fmt, va);
 	va_end(va);
 	return CallService(MS_NETLIB_LOG, (WPARAM) hNetlib, (LPARAM) szText);
 }

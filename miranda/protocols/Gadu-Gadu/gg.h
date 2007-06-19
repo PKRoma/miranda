@@ -67,6 +67,7 @@ extern "C" {
 #include <m_button.h>
 #include <m_clc.h>
 #include <m_message.h>
+#include <m_icolib.h>
 #ifdef DEBUGMODE
 #include <m_popup.h>
 #endif
@@ -386,6 +387,12 @@ int gg_img_sendimage(WPARAM wParam, LPARAM lParam);
 int gg_img_sendonrequest(struct gg_event* e);
 BOOL gg_img_opened(uin_t uin);
 void *__stdcall gg_img_dlgthread(void *empty);
+
+/* IcoLib functions */
+void gg_icolib_init();
+int gg_iconschanged(WPARAM wParam, LPARAM lParam);
+HICON LoadIconEx(int iconId);
+HANDLE GetIconHandle(int iconId);
 
 /* UI page initializers */
 int gg_options_init(WPARAM wParam, LPARAM lParam);

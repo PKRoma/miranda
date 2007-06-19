@@ -21,21 +21,25 @@
 #include <windows.h>
 #include "resource.h"
 
-IDI_GG				ICON DISCARDABLE "icos\\gg.ico"
-IDI_IMPORT_SERVER	ICON DISCARDABLE "icos\\InBox.ico"
-IDI_IMPORT_TEXT 	ICON DISCARDABLE "icos\\Strawberry.ico"
-IDI_REMOVE_SERVER	ICON DISCARDABLE "icos\\ArrowLeft.ico"
-IDI_EXPORT_SERVER	ICON DISCARDABLE "icos\\OutBox.ico"
-IDI_EXPORT_TEXT 	ICON DISCARDABLE "icos\\Lime.ico"
-IDI_CHPASS			ICON DISCARDABLE "icos\\Fedex.ico"
-IDI_STOP			ICON DISCARDABLE "icos\\Stop.ico"
-IDI_PREV			ICON DISCARDABLE "icos\\Prev.ico"
-IDI_NEXT			ICON DISCARDABLE "icos\\Next.ico"
-//IDI_SCALE 		  ICON DISCARDABLE "icos\\Scale.ico"
-IDI_IMAGE			ICON DISCARDABLE "icos\\Image.ico"
-IDI_SAVE			ICON DISCARDABLE "icos\\Save.ico"
-IDI_DELETE			ICON DISCARDABLE "icos\\Delete.ico"
-IDI_CONFERENCE		ICON DISCARDABLE "icos\\Conference.ico"
+IDI_OFFLINE			ICON DISCARDABLE "icons\\status\\offline.ico"
+IDI_ONLINE			ICON DISCARDABLE "icons\\status\\online.ico"
+IDI_AWAY			ICON DISCARDABLE "icons\\status\\away.ico"
+IDI_INVISIBLE		ICON DISCARDABLE "icons\\status\\invisible.ico"
+
+IDI_GG				ICON DISCARDABLE "icons\\gg.ico"
+IDI_IMPORT_SERVER	ICON DISCARDABLE "icons\\import_list_from_server.ico"
+IDI_IMPORT_TEXT 	ICON DISCARDABLE "icons\\import_list_from_txt_file.ico"
+IDI_REMOVE_SERVER	ICON DISCARDABLE "icons\\remove_list_from_server.ico"
+IDI_EXPORT_SERVER	ICON DISCARDABLE "icons\\export_list_to_server.ico"
+IDI_EXPORT_TEXT 	ICON DISCARDABLE "icons\\export_list_to_txt_file.ico"
+IDI_SETTINGS		ICON DISCARDABLE "icons\\settings.ico"
+IDI_STOP			ICON DISCARDABLE "icons\\stop.ico"
+IDI_PREV			ICON DISCARDABLE "icons\\previous.ico"
+IDI_NEXT			ICON DISCARDABLE "icons\\next.ico"
+IDI_IMAGE			ICON DISCARDABLE "icons\\image.ico"
+IDI_SAVE			ICON DISCARDABLE "icons\\save.ico"
+IDI_DELETE			ICON DISCARDABLE "icons\\delete.ico"
+IDI_CONFERENCE		ICON DISCARDABLE "icons\\conference.ico"
 
 IDD_OPT_GG_MAIN DIALOGEX 0,0,312,247
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
@@ -255,7 +259,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
 	LTEXT			"",IDC_WHITERECT,0,0,238,26
 	CONTROL 		"",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,26,240,1
-	ICON			IDI_CHPASS,IDC_LOGO,7,4,20,20
+	ICON			IDI_SETTINGS,IDC_LOGO,7,4,20,20
 	LTEXT			"Change Gadu-Gadu password",IDC_NAME,33,5,200,8,0,WS_EX_TRANSPARENT
 	LTEXT			"Changes current Gadu-Gadu user password.",IDC_SUBNAME,44,13,189,8,0,WS_EX_TRANSPARENT
 
@@ -275,7 +279,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
 	LTEXT			"",IDC_WHITERECT,0,0,238,26
 	CONTROL 		"",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,26,240,1
-	ICON			IDI_CHPASS,IDC_LOGO,7,4,20,20
+	ICON			IDI_SETTINGS,IDC_LOGO,7,4,20,20
 	LTEXT			"Change Gadu-Gadu e-mail",IDC_NAME,33,5,200,8,0,WS_EX_TRANSPARENT
 	LTEXT			"Changes current Gadu-Gadu user e-mail.",IDC_SUBNAME,44,13,189,8,0,WS_EX_TRANSPARENT
 

@@ -67,7 +67,7 @@ int gg_gc_init()
 		//hHookGCMenuBuild = HookEvent(ME_GC_BUILDMENU, gg_gc_menu);
 		ggGCEnabled = TRUE;
 		// create & hook event
-		snprintf(service, 64, GG_GC_GETCHAT, GG_PROTO);
+		mir_snprintf(service, 64, GG_GC_GETCHAT, GG_PROTO);
 		if(hEventGGGetChat = CreateHookableEvent(service))
 			SetHookDefaultForHookableEvent(hEventGGGetChat, gg_gc_egetchat);
 #ifdef DEBUGMODE
@@ -80,17 +80,17 @@ int gg_gc_init()
 		mi.cbSize = sizeof(mi);
 
 		// Conferencing
-		snprintf(service, sizeof(service), GGS_OPEN_CONF, GG_PROTO);
+		mir_snprintf(service, sizeof(service), GGS_OPEN_CONF, GG_PROTO);
 		CreateServiceFunction(service, gg_gc_openconf);
 		mi.pszPopupName = GG_PROTONAME;
 		mi.popupPosition = 500090000;
 		mi.position = 500090000;
-		mi.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_CONFERENCE));
+		mi.hIcon = LoadIconEx(IDI_CONFERENCE);
 		mi.pszName = Translate("Open &conference...");
 		mi.pszService = service;
 		CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
 
-		snprintf(service, sizeof(service), GGS_CLEAR_IGNORED, GG_PROTO);
+		mir_snprintf(service, sizeof(service), GGS_CLEAR_IGNORED, GG_PROTO);
 		CreateServiceFunction(service, gg_gc_clearignored);
 		mi.pszPopupName = GG_PROTONAME;
 		mi.popupPosition = 500090000;
@@ -338,7 +338,7 @@ int gg_gc_egetchat(WPARAM wParam, LPARAM lParam)
 			char *senderName = unknownSender ?
 				Translate("Unknown") : ((char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) gg_getcontact(sender, 0, 0, NULL), 0));
 			char error[256];
-			snprintf(error, sizeof(error), Translate("%s has initiated conference with %d participants (%d unknowns).\nDo you want do participate ?"),
+			mir_snprintf(error, sizeof(error), Translate("%s has initiated conference with %d participants (%d unknowns).\nDo you want do participate ?"),
 				senderName, recipients_count + 1, unknown);
 			chat->ignore = (MessageBox(
 				NULL,
@@ -366,7 +366,7 @@ int gg_gc_egetchat(WPARAM wParam, LPARAM lParam)
 
 	// Create new chat window
 	senderName = sender ? (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) gg_getcontact(sender, 1, 0, NULL), 0) : NULL;
-	snprintf(status, 255, sender ? Translate("%s initiated the conference.") : Translate("This is my own conference."), senderName);
+	mir_snprintf(status, 255, sender ? Translate("%s initiated the conference.") : Translate("This is my own conference."), senderName);
 	gcwindow.cbSize		= sizeof(GCSESSION);
 	gcwindow.iType		= GCW_CHATROOM;
 	gcwindow.pszModule	= GG_PROTO;

@@ -345,7 +345,7 @@ static int gg_import_server(WPARAM wParam, LPARAM lParam)
 	if (gg_userlist_request(ggThread->sess, GG_USERLIST_GET, NULL) == -1)
 	{
 		char error[128];
-		snprintf(error, sizeof(error), Translate("List cannot be imported because of error:\n\t%s"), strerror(errno));
+		mir_snprintf(error, sizeof(error), Translate("List cannot be imported because of error:\n\t%s"), strerror(errno));
 		MessageBox(
 			NULL,
 			error,
@@ -395,7 +395,7 @@ static int gg_remove_server(WPARAM wParam, LPARAM lParam)
 	if (gg_userlist_request(ggThread->sess, GG_USERLIST_PUT, NULL) == -1)
 	{
 		char error[128];
-		snprintf(error, sizeof(error), Translate("List cannot be removeed because of error:\n\t%s"), strerror(errno));
+		mir_snprintf(error, sizeof(error), Translate("List cannot be removeed because of error:\n\t%s"), strerror(errno));
 		MessageBox(
 			NULL,
 			error,
@@ -489,7 +489,7 @@ static int gg_import_text(WPARAM wParam, LPARAM lParam)
 	else
 	{
 		char error[128];
-		snprintf(error, sizeof(error), Translate("List cannot be exported to file \"%s\" because of error:\n\t%s"), str, strerror(errno));
+		mir_snprintf(error, sizeof(error), Translate("List cannot be exported to file \"%s\" because of error:\n\t%s"), str, strerror(errno));
 		MessageBox(
 			NULL,
 			error,
@@ -559,7 +559,7 @@ static int gg_export_text(WPARAM wParam, LPARAM lParam)
 	else
 	{
 		char error[128];
-		snprintf(error, sizeof(error), Translate("List cannot be exported to file \"%s\" because of error:\n\t%s"), str, strerror(errno));
+		mir_snprintf(error, sizeof(error), Translate("List cannot be exported to file \"%s\" because of error:\n\t%s"), str, strerror(errno));
 		MessageBox(
 			NULL,
 			error,
@@ -611,7 +611,7 @@ static int gg_export_server(WPARAM wParam, LPARAM lParam)
 	if (gg_userlist_request(ggThread->sess, GG_USERLIST_PUT, contacts) == -1)
 	{
 		char error[128];
-		snprintf(error, sizeof(error), Translate("List cannot be exported because of error:\n\t%s"), strerror(errno));
+		mir_snprintf(error, sizeof(error), Translate("List cannot be exported because of error:\n\t%s"), strerror(errno));
 		MessageBox(
 			NULL,
 			error,
@@ -642,57 +642,57 @@ void gg_import_init()
 	mi.cbSize = sizeof(mi);
 
 	// Import from server item
-	snprintf(service, sizeof(service), GGS_IMPORT_SERVER, GG_PROTO);
+	mir_snprintf(service, sizeof(service), GGS_IMPORT_SERVER, GG_PROTO);
 	CreateServiceFunction(service, gg_import_server);
 	mi.pszPopupName = GG_PROTONAME;
 	mi.popupPosition = 500090000;
 	mi.position = 600090000;
-	mi.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_IMPORT_SERVER));
+	mi.hIcon = LoadIconEx(IDI_IMPORT_SERVER);
 	mi.pszName = Translate("Import List From &Server");
 	mi.pszService = service;
 	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
 
 	// Import from textfile
-	snprintf(service, sizeof(service), GGS_IMPORT_TEXT, GG_PROTO);
+	mir_snprintf(service, sizeof(service), GGS_IMPORT_TEXT, GG_PROTO);
 	CreateServiceFunction(service, gg_import_text);
 	mi.pszPopupName = GG_PROTONAME;
 	mi.popupPosition = 500090000;
 	mi.position = 600090000;
-	mi.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_IMPORT_TEXT));
+	mi.hIcon = LoadIconEx(IDI_IMPORT_TEXT);
 	mi.pszName = Translate("Import List From &Text File...");
 	mi.pszService = service;
 	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
 
 
 	// Remove from server
-	snprintf(service, sizeof(service), GGS_REMOVE_SERVER, GG_PROTO);
+	mir_snprintf(service, sizeof(service), GGS_REMOVE_SERVER, GG_PROTO);
 	CreateServiceFunction(service, gg_remove_server);
 	mi.pszPopupName = GG_PROTONAME;
 	mi.popupPosition = 500090000;
 	mi.position = 600090000;
-	mi.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_REMOVE_SERVER));
+	mi.hIcon = LoadIconEx(IDI_REMOVE_SERVER);
 	mi.pszName = Translate("&Remove List From Server");
 	mi.pszService = service;
 	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
 
 	// Export to server
-	snprintf(service, sizeof(service), GGS_EXPORT_SERVER, GG_PROTO);
+	mir_snprintf(service, sizeof(service), GGS_EXPORT_SERVER, GG_PROTO);
 	CreateServiceFunction(service, gg_export_server);
 	mi.pszPopupName = GG_PROTONAME;
 	mi.popupPosition = 500090000;
 	mi.position = 700090000;
-	mi.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_EXPORT_SERVER));
+	mi.hIcon = LoadIconEx(IDI_EXPORT_SERVER);
 	mi.pszName = Translate("Export List To &Server");
 	mi.pszService = service;
 	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
 
 	// Export to textfile
-	snprintf(service, sizeof(service), GGS_EXPORT_TEXT, GG_PROTO);
+	mir_snprintf(service, sizeof(service), GGS_EXPORT_TEXT, GG_PROTO);
 	CreateServiceFunction(service, gg_export_text);
 	mi.pszPopupName = GG_PROTONAME;
 	mi.popupPosition = 500090000;
 	mi.position = 700090000;
-	mi.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_EXPORT_TEXT));
+	mi.hIcon = LoadIconEx(IDI_EXPORT_TEXT);
 	mi.pszName = Translate("Export List To &Text File...");
 	mi.pszService = service;
 	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);

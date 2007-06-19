@@ -39,7 +39,7 @@ void *gg_doregister(char *newPass, char *newEmail)
 	if (!(h = gg_register3(newEmail, newPass, ggTokenid, ggTokenval, 0)) || !(s = h->data) || !s->success || !s->uin)
 	{
 		char error[128];
-		snprintf(error, sizeof(error), Translate("Cannot register new account because of error:\n\t%s"),
+		mir_snprintf(error, sizeof(error), Translate("Cannot register new account because of error:\n\t%s"),
 			(h && !s) ? http_error_string(h ? h->error : 0) :
 			(s ? Translate("Registration rejected") : strerror(errno)));
 		MessageBox(
@@ -97,7 +97,7 @@ void *gg_dounregister(uin_t uin, char *password)
 	if (!(h = gg_unregister3(uin, password, ggTokenid, ggTokenval, 0)) || !(s = h->data) || !s->success || s->uin != uin)
 	{
 		char error[128];
-		snprintf(error, sizeof(error), Translate("Your account cannot be removed because of error:\n\t%s"),
+		mir_snprintf(error, sizeof(error), Translate("Your account cannot be removed because of error:\n\t%s"),
 			(h && !s) ? http_error_string(h ? h->error : 0) :
 			(s ? Translate("Bad number or password") : strerror(errno)));
 		MessageBox(
@@ -159,7 +159,7 @@ void *gg_dochpass(uin_t uin, char *password, char *newPass)
 	if (!(h = gg_change_passwd4(uin, email, password, newPass, ggTokenid, ggTokenval, 0)) || !(s = h->data) || !s->success)
 	{
 		char error[128];
-		snprintf(error, sizeof(error), Translate("Your password cannot be changed because of error:\n\t%s"),
+		mir_snprintf(error, sizeof(error), Translate("Your password cannot be changed because of error:\n\t%s"),
 			(h && !s) ? http_error_string(h ? h->error : 0) :
 			(s ? Translate("Invalid data entered") : strerror(errno)));
 		MessageBox(
@@ -215,7 +215,7 @@ void *gg_dochemail(uin_t uin, char *password, char *email, char *newEmail)
 	if (!(h = gg_change_passwd4(uin, newEmail, password, password, ggTokenid, ggTokenval, 0)) || !(s = h->data) || !s->success)
 	{
 		char error[128];
-		snprintf(error, sizeof(error), Translate("Your e-mail cannot be changed because of error:\n\t%s"),
+		mir_snprintf(error, sizeof(error), Translate("Your e-mail cannot be changed because of error:\n\t%s"),
 			(h && !s) ? http_error_string(h ? h->error : 0) :
 			(s ? Translate("Bad old e-mail or password") : strerror(errno)));
 		MessageBox(

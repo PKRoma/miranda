@@ -44,6 +44,7 @@ CLEAN :
 	-@erase "$(INTDIR)\gg.obj"
 	-@erase "$(INTDIR)\groupchat.obj"
 	-@erase "$(INTDIR)\http.obj"
+	-@erase "$(INTDIR)\icolib.obj"
 	-@erase "$(INTDIR)\image.obj"
 	-@erase "$(INTDIR)\import.obj"
 	-@erase "$(INTDIR)\keepalive.obj"
@@ -125,6 +126,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\filetransfer.obj" \
 	"$(INTDIR)\gg.obj" \
 	"$(INTDIR)\groupchat.obj" \
+	"$(INTDIR)\icolib.obj" \
 	"$(INTDIR)\image.obj" \
 	"$(INTDIR)\import.obj" \
 	"$(INTDIR)\keepalive.obj" \
@@ -160,6 +162,7 @@ CLEAN :
 	-@erase "$(INTDIR)\gg.obj"
 	-@erase "$(INTDIR)\groupchat.obj"
 	-@erase "$(INTDIR)\http.obj"
+	-@erase "$(INTDIR)\icolib.obj"
 	-@erase "$(INTDIR)\image.obj"
 	-@erase "$(INTDIR)\import.obj"
 	-@erase "$(INTDIR)\keepalive.obj"
@@ -244,6 +247,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\filetransfer.obj" \
 	"$(INTDIR)\gg.obj" \
 	"$(INTDIR)\groupchat.obj" \
+	"$(INTDIR)\icolib.obj" \
 	"$(INTDIR)\image.obj" \
 	"$(INTDIR)\import.obj" \
 	"$(INTDIR)\keepalive.obj" \
@@ -349,6 +353,11 @@ SOURCE=.\gg.c
 SOURCE=.\groupchat.c
 
 "$(INTDIR)\groupchat.obj" : $(SOURCE) "$(INTDIR)"
+
+
+SOURCE=.\icolib.c
+
+"$(INTDIR)\icolib.obj" : $(SOURCE) "$(INTDIR)"
 
 
 SOURCE=.\image.cpp

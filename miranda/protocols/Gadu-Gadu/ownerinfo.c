@@ -51,7 +51,7 @@ static void *__stdcall gg_remindpasswordthread(void *empty)
 	if (!(h = gg_remind_passwd3(rp->uin, rp->email, ggTokenid, ggTokenval, 0)))
 	{
 		char error[128];
-		snprintf(error, sizeof(error), Translate("Password could not be reminded because of error:\n\t%s"), strerror(errno));
+		mir_snprintf(error, sizeof(error), Translate("Password could not be reminded because of error:\n\t%s"), strerror(errno));
 		MessageBox(
 			NULL,
 			error,

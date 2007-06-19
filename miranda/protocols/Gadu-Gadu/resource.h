@@ -28,13 +28,18 @@
 #define IDCANCEL 2
 #endif
 
+#define IDI_ONLINE				104
+#define IDI_OFFLINE				105
+#define IDI_AWAY				128
+#define IDI_INVISIBLE			130
+
 #define IDI_GG					251
 #define IDI_IMPORT_TEXT			252
 #define IDI_IMPORT_SERVER		253
 #define IDI_EXPORT_TEXT			254
 #define IDI_EXPORT_SERVER		255
 #define IDI_REMOVE_SERVER		256
-#define IDI_CHPASS				257
+#define IDI_SETTINGS			257
 #define IDI_STOP				258
 #define IDI_NEXT				259
 #define IDI_PREV				260

@@ -92,17 +92,10 @@ static int gg_getname(WPARAM wParam, LPARAM lParam)
 // loads protocol icon
 static int gg_loadicon(WPARAM wParam, LPARAM lParam)
 {
-	UINT id;
+	if((wParam & 0xffff) == PLI_PROTOCOL)
+		return (int) LoadIconEx(IDI_GG);
 
-	switch (wParam & 0xFFFF) {
-		case PLI_PROTOCOL:
-			id = IDI_GG;
-			break;
-		default:
-			return (int) (HICON) NULL;
-	}
-	return (int) LoadImage(hInstance, MAKEINTRESOURCE(id), IMAGE_ICON, GetSystemMetrics(wParam & PLIF_SMALL ? SM_CXSMICON : SM_CXICON),
-						   GetSystemMetrics(wParam & PLIF_SMALL ? SM_CYSMICON : SM_CYICON), 0);
+	return (int) (HICON) NULL;
 }
 
 //////////////////////////////////////////////////////////
@@ -570,7 +563,7 @@ int gg_setawaymsg(WPARAM wParam, LPARAM lParam)
 	else
 	{
 		char error[128];
-		snprintf(error, sizeof(error), Translate("GG: PS_AWAYMSG was called without previous PS_SETSTATUS for status %d, desired %d, current %d."),
+		mir_snprintf(error, sizeof(error), Translate("GG: PS_AWAYMSG was called without previous PS_SETSTATUS for status %d, desired %d, current %d."),
 			status, ggDesiredStatus, ggStatus);
 		PUShowMessage(error, SM_WARNING);
 	}
@@ -696,7 +689,7 @@ int gg_searchbyadvanced(WPARAM wParam, LPARAM lParam)
 			yearFrom = 0;
 		else
 			yearFrom = ay - yearFrom;
-		snprintf(text, sizeof(text), "%d %d", yearFrom, yearTo);
+		mir_snprintf(text, sizeof(text), "%d %d", yearFrom, yearTo);
 
 		gg_pubdir50_add(req, GG_PUBDIR50_BIRTHYEAR, text);
 		strncat(data, text, sizeof(data) - strlen(data));
@@ -760,69 +753,69 @@ void gg_registerservices()
 	// Bind table
 	char service[128];
 
-	snprintf(service, sizeof(service), "%s%s", GG_PROTO, PS_GETCAPS);
+	mir_snprintf(service, sizeof(service), "%s%s", GG_PROTO, PS_GETCAPS);
 	CreateServiceFunction(service, gg_getcaps);
 
-	snprintf(service, sizeof(service), "%s%s", GG_PROTO, PS_GETNAME);
+	mir_snprintf(service, sizeof(service), "%s%s", GG_PROTO, PS_GETNAME);
 	CreateServiceFunction(service, gg_getname);
 
-	snprintf(service, sizeof(service), "%s%s", GG_PROTO, PS_LOADICON);
+	mir_snprintf(service, sizeof(service), "%s%s", GG_PROTO, PS_LOADICON);
 	CreateServiceFunction(service, gg_loadicon);
 
-	snprintf(service, sizeof(service), "%s%s", GG_PROTO, PS_GETSTATUS);
+	mir_snprintf(service, sizeof(service), "%s%s", GG_PROTO, PS_GETSTATUS);
 	CreateServiceFunction(service, gg_getstatus);
 
-	snprintf(service, sizeof(service), "%s%s", GG_PROTO, PS_SETSTATUS);
+	mir_snprintf(service, sizeof(service), "%s%s", GG_PROTO, PS_SETSTATUS);
 	CreateServiceFunction(service, gg_setstatus);
 
-	snprintf(service, sizeof(service), "%s%s", GG_PROTO, PSR_MESSAGE);
+	mir_snprintf(service, sizeof(service), "%s%s", GG_PROTO, PSR_MESSAGE);
 	CreateServiceFunction(service, gg_recvmessage);
 
-	snprintf(service, sizeof(service), "%s%s", GG_PROTO, PSS_MESSAGE);
+	mir_snprintf(service, sizeof(service), "%s%s", GG_PROTO, PSS_MESSAGE);
 	CreateServiceFunction(service, gg_sendmessage);
 
-	snprintf(service, sizeof(service), "%s%s", GG_PROTO, PS_BASICSEARCH);
+	mir_snprintf(service, sizeof(service), "%s%s", GG_PROTO, PS_BASICSEARCH);
 	CreateServiceFunction(service, gg_basicsearch);
 
-	snprintf(service, sizeof(service), "%s%s", GG_PROTO, PS_SEARCHBYNAME);
+	mir_snprintf(service, sizeof(service), "%s%s", GG_PROTO, PS_SEARCHBYNAME);
 	CreateServiceFunction(service, gg_searchbydetails);
 
-	snprintf(service, sizeof(service), "%s%s", GG_PROTO, PS_ADDTOLIST);
+	mir_snprintf(service, sizeof(service), "%s%s", GG_PROTO, PS_ADDTOLIST);
 	CreateServiceFunction(service, gg_addtolist);
 
-	snprintf(service, sizeof(service), "%s%s", GG_PROTO, PSS_GETINFO);
+	mir_snprintf(service, sizeof(service), "%s%s", GG_PROTO, PSS_GETINFO);
 	CreateServiceFunction(service, gg_getinfo);
 
-	snprintf(service, sizeof(service), "%s%s", GG_PROTO, PS_SETAWAYMSG);
+	mir_snprintf(service, sizeof(service), "%s%s", GG_PROTO, PS_SETAWAYMSG);
 	CreateServiceFunction(service, gg_setawaymsg);
 
-	snprintf(service, sizeof(service), "%s%s", GG_PROTO, PSS_GETAWAYMSG);
+	mir_snprintf(service, sizeof(service), "%s%s", GG_PROTO, PSS_GETAWAYMSG);
 	CreateServiceFunction(service, gg_getawaymsg);
 
-	snprintf(service, sizeof(service), "%s%s", GG_PROTO, PSS_SETAPPARENTMODE);
+	mir_snprintf(service, sizeof(service), "%s%s", GG_PROTO, PSS_SETAPPARENTMODE);
 	CreateServiceFunction(service, gg_setapparentmode);
 
-	snprintf(service, sizeof(service), "%s%s", GG_PROTO, PS_CREATEADVSEARCHUI);
+	mir_snprintf(service, sizeof(service), "%s%s", GG_PROTO, PS_CREATEADVSEARCHUI);
 	CreateServiceFunction(service, gg_createadvsearchui);
 
-	snprintf(service, sizeof(service), "%s%s", GG_PROTO, PS_SEARCHBYADVANCED);
+	mir_snprintf(service, sizeof(service), "%s%s", GG_PROTO, PS_SEARCHBYADVANCED);
 	CreateServiceFunction(service, gg_searchbyadvanced);
 
-	snprintf(service, sizeof(service), "%s%s", GG_PROTO, PSS_FILEALLOW);
+	mir_snprintf(service, sizeof(service), "%s%s", GG_PROTO, PSS_FILEALLOW);
 	CreateServiceFunction(service, gg_fileallow);
 
-	snprintf(service, sizeof(service), "%s%s", GG_PROTO, PSS_FILEDENY);
+	mir_snprintf(service, sizeof(service), "%s%s", GG_PROTO, PSS_FILEDENY);
 	CreateServiceFunction(service, gg_filedeny);
 
-	snprintf(service, sizeof(service), "%s%s", GG_PROTO, PSS_FILECANCEL);
+	mir_snprintf(service, sizeof(service), "%s%s", GG_PROTO, PSS_FILECANCEL);
 	CreateServiceFunction(service, gg_filecancel);
 
-	snprintf(service, sizeof(service), "%s%s", GG_PROTO, PSS_FILE);
+	mir_snprintf(service, sizeof(service), "%s%s", GG_PROTO, PSS_FILE);
 	CreateServiceFunction(service, gg_sendfile);
 
-	snprintf(service, sizeof(service), "%s%s", GG_PROTO, PSR_FILE);
+	mir_snprintf(service, sizeof(service), "%s%s", GG_PROTO, PSR_FILE);
 	CreateServiceFunction(service, gg_recvfile);
 
-	snprintf(service, sizeof(service), GGS_RECVIMAGE, GG_PROTO);
+	mir_snprintf(service, sizeof(service), GGS_RECVIMAGE, GG_PROTO);
 	CreateServiceFunction(service, gg_img_recvimage);
 }

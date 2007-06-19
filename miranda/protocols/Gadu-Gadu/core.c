@@ -346,7 +346,7 @@ start:
 				if(!(p.server_addr = gg_dnslookup(hosts[hostnum].hostname)))
 				{
 					char error[128];
-					snprintf(error, sizeof(error), Translate("Server hostname %s is invalid. Using default hostname provided by the network."), hosts[hostnum].hostname);
+					mir_snprintf(error, sizeof(error), Translate("Server hostname %s is invalid. Using default hostname provided by the network."), hosts[hostnum].hostname);
 					MessageBox(
 						NULL,
 						error,
@@ -440,7 +440,7 @@ start:
 			if(!(p.external_addr = gg_dnslookup(dbv.pszVal)))
 			{
 				char error[128];
-				snprintf(error, sizeof(error), Translate("External direct connections hostname %s is invalid. Disabling external host forwarding."), dbv.pszVal);
+				mir_snprintf(error, sizeof(error), Translate("External direct connections hostname %s is invalid. Disabling external host forwarding."), dbv.pszVal);
 				MessageBox(
 					NULL,
 					error,
@@ -491,7 +491,7 @@ start:
 			}
 			if(!perror)
 			{
-				snprintf(error, sizeof(error), Translate("Connection cannot be established because of error:\n\t%s"), strerror(errno));
+				mir_snprintf(error, sizeof(error), Translate("Connection cannot be established because of error:\n\t%s"), strerror(errno));
 				perror = error;
 			}
 #ifdef DEBUGMODE
@@ -652,10 +652,10 @@ start:
 							char strFmt2[64];
 							GGSEARCHRESULT sr;
 
-							snprintf(strFmt2, sizeof(strFmt2), "%s", (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, status_gg2m(atoi(__status)), 0));
+							mir_snprintf(strFmt2, sizeof(strFmt2), "%s", (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, status_gg2m(atoi(__status)), 0));
 							if(__city)
 							{
-								snprintf(strFmt1, sizeof(strFmt1), ", %s %s", Translate("City:"), __city);
+								mir_snprintf(strFmt1, sizeof(strFmt1), ", %s %s", Translate("City:"), __city);
 								strncat(strFmt2, strFmt1, sizeof(strFmt2) - strlen(strFmt2));
 							}
 							if(__birthyear)
@@ -666,11 +666,11 @@ start:
 
 								if(br < (lt->tm_year + 1900) && br > 1900)
 								{
-									snprintf(strFmt1, sizeof(strFmt1), ", %s %d", Translate("Age:"), (lt->tm_year + 1900) - br);
+									mir_snprintf(strFmt1, sizeof(strFmt1), ", %s %d", Translate("Age:"), (lt->tm_year + 1900) - br);
 									strncat(strFmt2, strFmt1, sizeof(strFmt2) - strlen(strFmt2));
 								}
 							}
-							snprintf(strFmt1, sizeof(strFmt1), "GG: %d", uin);
+							mir_snprintf(strFmt1, sizeof(strFmt1), "GG: %d", uin);
 
 							sr.hdr.cbSize = sizeof(sr);
 							sr.hdr.nick = (char *)__nick;
@@ -882,7 +882,7 @@ start:
 					if(img)
 					{
 						CLISTEVENT cle;
-						char service[128]; snprintf(service, sizeof(service), GGS_RECVIMAGE, GG_PROTO);
+						char service[128]; mir_snprintf(service, sizeof(service), GGS_RECVIMAGE, GG_PROTO);
 
 						cle.cbSize = sizeof(CLISTEVENT);
 						cle.hContact = hContact;
@@ -891,7 +891,7 @@ start:
 							IMAGE_ICON,
 							GetSystemMetrics(SM_CXSMICON),
 							GetSystemMetrics(SM_CYSMICON),
-							0); // LoadIcon(hInstance, MAKEINTRESOURCE(IDI_CHPASS));
+							0);
 						cle.flags = CLEF_URGENT;
 						cle.hDbEvent = (HANDLE)("img");
 						cle.lParam = (LPARAM) img;
@@ -1065,7 +1065,7 @@ int gg_dbsettingchanged(WPARAM wParam, LPARAM lParam)
 	if(!strcmp(cws->szModule, "Icons"))
 	{
 		char strFmt[16];
-		snprintf(strFmt, sizeof(strFmt), "%s%d", GG_PROTO, ID_STATUS_DND);
+		mir_snprintf(strFmt, sizeof(strFmt), "%s%d", GG_PROTO, ID_STATUS_DND);
 		if(!strcmp(cws->szSetting, strFmt) && cws->value.type == DBVT_DELETED)
 			gg_refreshblockedicon();
 	}
@@ -1432,7 +1432,7 @@ void gg_changecontactstatus(uin_t uin, int status, const char *idescr, int time,
 	{
 		char sversion[48];
 		DBWriteContactSettingDword(hContact, GG_PROTO, GG_KEY_CLIENTVERSION, (DWORD) version);
-		_snprintf(sversion, sizeof(sversion), "Gadu-Gadu %s", gg_version2string(version));
+		mir_snprintf(sversion, sizeof(sversion), "Gadu-Gadu %s", gg_version2string(version));
 		DBWriteContactSettingString(hContact, GG_PROTO, "MirVer", sversion);
 	}
 }

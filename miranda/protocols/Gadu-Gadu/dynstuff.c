@@ -23,12 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "dynstuff.h"
-
-#ifdef _MSC_VER
-#define strcasecmp stricmp
-#define snprintf _snprintf
-#endif
+#include "gg.h"
 
 /*
  * list_add_sorted()
@@ -392,7 +387,7 @@ const char *ditoa(long int i)
 	if (index > 9)
 		index = 0;
 
-	snprintf(tmp, 16, "%ld", i);
+	mir_snprintf(tmp, 16, "%ld", i);
 
 	return tmp;
 }

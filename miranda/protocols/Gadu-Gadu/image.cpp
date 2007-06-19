@@ -100,11 +100,11 @@ int gg_img_init()
 	char service[64];
 
 	// Send image contact menu item
-	snprintf(service, sizeof(service), GGS_SENDIMAGE, GG_PROTO);
+	mir_snprintf(service, sizeof(service), GGS_SENDIMAGE, GG_PROTO);
 	CreateServiceFunction(service, gg_img_sendimg);
 	mi.pszPopupName = GG_PROTONAME;
 	mi.position = -2000010000;
-	mi.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_IMAGE));
+	mi.hIcon = LoadIconEx(IDI_IMAGE);
 	mi.pszName = Translate("&Image");
 	mi.pszService = service;
 	mi.pszContactOwner = GG_PROTO;
@@ -512,14 +512,14 @@ static BOOL CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				SendDlgItemMessage(hwndDlg,IDC_IMG_SCALE,BM_SETIMAGE,IMAGE_ICON,(LPARAM)hIcons[4]);
 
 				// Set main window image
-				SendMessage(hwndDlg,WM_SETICON,ICON_BIG,(LPARAM)LoadIcon(hInstance,MAKEINTRESOURCE(IDI_IMAGE)));
+				SendMessage(hwndDlg,WM_SETICON,ICON_BIG,(LPARAM)LoadIconEx(IDI_IMAGE));
 				char *szName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)dat->hContact, 0);
 
 				char szTitle[128];
 				if(dat->bReceiving)
-					snprintf(szTitle, sizeof(szTitle), Translate("Image from %s"), szName);
+					mir_snprintf(szTitle, sizeof(szTitle), Translate("Image from %s"), szName);
 				else
-					snprintf(szTitle, sizeof(szTitle), Translate("Image for %s"), szName);
+					mir_snprintf(szTitle, sizeof(szTitle), Translate("Image for %s"), szName);
 				SetWindowText(hwndDlg, szTitle);
 
 				// Store client extents
@@ -617,7 +617,7 @@ static BOOL CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				if(dat->bReceiving)
 				{
 					char szTitle[128];
-					snprintf(szTitle, sizeof(szTitle),
+					mir_snprintf(szTitle, sizeof(szTitle),
 						"%s (%d / %d)", img->lpszFileName, dat->nImg, dat->nImgTotal);
 					SetDlgItemText(hwndDlg, IDC_IMG_NAME, szTitle);
 				}
