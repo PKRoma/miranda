@@ -232,22 +232,25 @@ DWORD       MSN_SetWord( HANDLE hContact, const char* valueName, WORD parValue )
 DWORD       MSN_SetString( HANDLE hContact, const char* valueName, const char* parValue );
 DWORD       MSN_SetStringT( HANDLE hContact, const char* valueName, const TCHAR* parValue );
 DWORD       MSN_SetStringUtf( HANDLE hContact, const char* valueName, char* parValue );
-void     __cdecl     MSN_ShowError( const char* msgtext, ... );
+void        MSN_ShowError( const char* msgtext, ... );
 char*       MSN_Translate( const char* str );
 
 HANDLE      GetIconHandle( int iconId );
 HICON       LoadIconEx( const char* );
 void        ReleaseIconEx( const char* );
 
-int addCachedMsg( const char* id, const char* msg, const size_t offset, const size_t portion, 
-				 const size_t totsz, const bool bychunk );
-bool getCachedMsg( const int idx, char*& msg, size_t& size );
-bool getCachedMsg( const char* id, char*& msg, size_t& size );
-void clearCachedMsg( int idx = -1 );
-void CachedMsg_Uninit( void );
+int         addCachedMsg( const char* id, const char* msg, const size_t offset, 
+						 const size_t portion, const size_t totsz, const bool bychunk );
+bool        getCachedMsg( const int idx, char*& msg, size_t& size );
+bool        getCachedMsg( const char* id, char*& msg, size_t& size );
+void        clearCachedMsg( int idx = -1 );
+void        CachedMsg_Uninit( void );
 
-void     MsnInitIcons( void );
-void     MsnInitMenus( void );
+void        MsnInitIcons( void );
+void        MsnInitMenus( void );
+
+void        InitCustomFolders(void);
+
 
 TCHAR* EscapeChatTags(const TCHAR* pszText);
 TCHAR* UnEscapeChatTags(TCHAR* str_in);
@@ -685,8 +688,6 @@ extern  char*       profileURL;
 extern  char*       profileURLId;
 extern  char*       rru;
 
-extern  HANDLE		hMSNAvatarsFolder;
-extern  HANDLE		hCustomSmileyFolder;
 extern	HANDLE		hNetlibUser;
 extern	HINSTANCE	hInst;
 extern	unsigned	msnOtherContactsBlocked;

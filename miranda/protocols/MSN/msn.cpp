@@ -62,8 +62,6 @@ char*    msnPreviousUUX = NULL;
 HANDLE   msnMainThread;
 unsigned msnOtherContactsBlocked = 0;
 HANDLE   hMSNNudge = NULL;
-HANDLE	 hMSNAvatarsFolder = NULL;
-HANDLE	 hCustomSmileyFolder = NULL;
 bool	 msnHaveChatDll = false;
 
 MYOPTIONS MyOptions;
@@ -248,14 +246,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	arHooks.insert( HookEvent( ME_DB_CONTACT_SETTINGCHANGED, MsnDbSettingChanged ));
 	arHooks.insert( HookEvent( ME_CLIST_PREBUILDCONTACTMENU, MsnRebuildContactMenu ));
 
-	char AvatarsFolder[MAX_PATH];
-	CallService(MS_DB_GETPROFILEPATH, (WPARAM) MAX_PATH, (LPARAM)AvatarsFolder);
-	strcat(AvatarsFolder,"\\");
-	strcat(AvatarsFolder,msnProtocolName);
-	hMSNAvatarsFolder = FoldersRegisterCustomPath(msnProtocolName,"Avatars",AvatarsFolder);
-	strcat(AvatarsFolder,"\\");
-	strcat(AvatarsFolder,"CustomSmiley");
-	hCustomSmileyFolder = FoldersRegisterCustomPath(msnProtocolName,"Custom Smiley",AvatarsFolder);
+	InitCustomFolders();
 
 	return 0;
 }

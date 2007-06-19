@@ -177,6 +177,25 @@ void 	MSN_DebugLog( const char *fmt, ... )
 	va_end( vararg );
 }
 
+HANDLE	 hMSNAvatarsFolder = NULL;
+HANDLE	 hCustomSmileyFolder = NULL;
+bool InitCstFldRan = false;
+
+void InitCustomFolders(void)
+{
+	if ( InitCstFldRan ) return; 
+
+	char AvatarsFolder[MAX_PATH]= "";
+	CallService(MS_DB_GETPROFILEPATH, (WPARAM) MAX_PATH, (LPARAM)AvatarsFolder);
+	strcat(AvatarsFolder, "\\");
+	strcat(AvatarsFolder, msnProtocolName);
+	hMSNAvatarsFolder = FoldersRegisterCustomPath(msnProtocolName, "Avatars", AvatarsFolder);
+	strcat(AvatarsFolder, "\\CustomSmiley");
+	hCustomSmileyFolder = FoldersRegisterCustomPath(msnProtocolName, "Custom Smiley", AvatarsFolder);
+
+	InitCstFldRan = true;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_GetAvatarFileName - gets a file name for an contact's avatar
 
@@ -184,8 +203,10 @@ void  MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, size_t cbLen )
 {
 	size_t tPathLen;
 
+	InitCustomFolders();
+
 	char* path = ( char* )alloca( cbLen );
-	if ( FoldersGetCustomPath( hMSNAvatarsFolder, path, cbLen, "" ))
+	if ( hMSNAvatarsFolder == NULL || FoldersGetCustomPath( hMSNAvatarsFolder, path, cbLen, "" ))
 	{
 		MSN_CallService( MS_DB_GETPROFILEPATH, cbLen, LPARAM( pszDest ));
 		
@@ -221,12 +242,14 @@ void  MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, size_t cbLen,
 {
 	size_t tPathLen;
 
+	InitCustomFolders();
+
 	char* path = ( char* )alloca( cbLen );
-	if ( FoldersGetCustomPath(hCustomSmileyFolder, path, cbLen, "" )) 
+	if ( hCustomSmileyFolder == NULL || FoldersGetCustomPath(hCustomSmileyFolder, path, cbLen, "" )) 
 	{
 		CallService(MS_DB_GETPROFILEPATH, (WPARAM) cbLen, (LPARAM)pszDest);
 		tPathLen = strlen( pszDest );
-		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s", msnProtocolName);
+		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s\\CustomSmiley", msnProtocolName);
 	}
 	else {
 		strcpy( pszDest, path );
@@ -601,7 +624,7 @@ void  MSN_SetServerStatus( int newStatus )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_ShowError - shows an error
 
-void __cdecl MSN_ShowError( const char* msgtext, ... )
+void MSN_ShowError( const char* msgtext, ... )
 {
 	char    tBuffer[ 4096 ];
 	va_list tArgs;
