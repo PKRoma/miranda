@@ -71,7 +71,7 @@ A million repetitions of "a"
 
 /* Hash a single 512-bit block. This is the core of the algorithm. */
 
-void SHA1_Transform(unsigned long state[5], const unsigned char buffer[64])
+static void SHA1_Transform(unsigned long state[5], const unsigned char buffer[64])
 {
 unsigned long a, b, c, d, e;
 typedef union {
@@ -122,7 +122,7 @@ static unsigned char workspace[64];
 
 /* SHA1_Init - Initialize new context */
 
-void SHA1_Init(SHA_CTX* context)
+static void SHA1_Init(SHA_CTX* context)
 {
     /* SHA1 initialization constants */
     context->state[0] = 0x67452301;
@@ -136,7 +136,7 @@ void SHA1_Init(SHA_CTX* context)
 
 /* Run your data through this. */
 
-void SHA1_Update(SHA_CTX* context, const unsigned char* data, unsigned int len)
+static void SHA1_Update(SHA_CTX* context, const unsigned char* data, unsigned int len)
 {
 unsigned int i, j;
 
@@ -158,7 +158,7 @@ unsigned int i, j;
 
 /* Add padding and return the message digest. */
 
-void SHA1_Final(unsigned char digest[20], SHA_CTX* context)
+static void SHA1_Final(unsigned char digest[20], SHA_CTX* context)
 {
 unsigned long i, j;
 unsigned char finalcount[8];
@@ -190,13 +190,11 @@ unsigned char finalcount[8];
 #endif /* GG_CONFIG_HAVE_OPENSSL */
 
 /**
- * gg_login_hash_sha1()
+ * Liczy skrót SHA1 z ziarna i hasła.
  *
- * liczy hash z hasla i danego seeda, korzystajac z SHA1
- *
- *  - password - haslo do hashowania
- *  - seed - wartosc podana przez serwer
- *  - result - przynajmniej 20 znakowy bufor ktory otrzyma hash
+ * \param password Hasło
+ * \param seed Ziarno
+ * \param result Bufor na wynik funkcji skrótu (20 bajtów)
  */
 void gg_login_hash_sha1(const char *password, uint32_t seed, uint8_t *result)
 {
@@ -208,5 +206,55 @@ void gg_login_hash_sha1(const char *password, uint32_t seed, uint8_t *result)
 	SHA1_Update(&ctx, (uint8_t*) &seed, 4);
 	
 	SHA1_Final(result, &ctx);
+}
+
+/**
+ * \brief Liczy skrót SHA1 z pliku.
+ *
+ * \param fd Deskryptor pliku
+ *
+ * \return 0 lub -1
+ */
+#ifdef GG_CONFIG_MIRANDA
+int gg_file_hash_sha1(FILE *fd, uint8_t *result)
+#else
+int gg_file_hash_sha1(int fd, uint8_t *result)
+#endif
+{
+	unsigned char buf[4096];
+	SHA_CTX ctx;
+	off_t pos;
+	int res;
+
+#ifdef GG_CONFIG_MIRANDA
+	if ((pos = fseek(fd, 0, SEEK_CUR)) == (off_t) -1)
+#else
+	if ((pos = lseek(fd, 0, SEEK_CUR)) == (off_t) -1)
+#endif
+		return -1;
+
+	SHA1_Init(&ctx);
+
+#ifdef GG_CONFIG_MIRANDA
+	while ((res = fread(buf, 1, sizeof(buf), fd)) > 0)
+#else
+	while ((res = read(fd, buf, sizeof(buf))) > 0)
+#endif
+		SHA1_Update(&ctx, buf, res);
+
+	if (res == -1)
+		return -1;
+
+	SHA1_Final(result, &ctx);
+
+#ifdef GG_CONFIG_MIRANDA
+	if ((pos = fseek(fd, 0, SEEK_SET)) == (off_t) -1)
+#else
+	if ((pos = lseek(fd, 0, SEEK_SET)) == (off_t) -1)
+#endif
+		return -1;
+
+	return 0;
+
 }
 

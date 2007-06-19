@@ -23,8 +23,8 @@
  *  USA.
  */
 
-#ifndef GG_CONFIG_H
-#define GG_CONFIG_H
+#ifndef __GG_LIBGADU_H
+#define __GG_LIBGADU_H
 
 #include "libgadu-config.h"
 
@@ -62,12 +62,25 @@ void SHA1_Update(SHA_CTX* context, const unsigned char* data, unsigned int len);
 void SHA1_Final(unsigned char digest[20], SHA_CTX* context);
 #endif
 
+#ifdef GG_CONFIG_MIRANDA
+#define kill(x, y)
+#endif
+
 /*
  * typedef uin_t
  *
  * typ reprezentuj±cy numer osoby.
  */
 typedef uint32_t uin_t;
+
+/*
+ * typedef gg_dcc7_id_t
+ *
+ * typ reprezentuj±cy identyfikator po³±czenia DCC 7.x.
+ */
+typedef struct {
+	uint8_t id[8];
+} gg_dcc7_id_t;
 
 /*
  * ogólna struktura opisuj±ca ró¿ne sesje. przydatna w klientach.
@@ -88,6 +101,7 @@ struct gg_common {
 };
 
 struct gg_image_queue;
+struct gg_dcc7;
 
 /*
  * struct gg_session
@@ -118,10 +132,10 @@ struct gg_session {
 
 	uint32_t external_addr;	/* adres zewnetrzny klienta */
 	uint16_t external_port;	/* port zewnetrzny klienta */
-	
+
 	uin_t uin;		/* numerek klienta */
 	char *password;		/* i jego has³o. zwalniane automagicznie */
-        
+
 	int initial_status;	/* pocz±tkowy stan klienta */
 	int status;		/* aktualny stan klienta */
 
@@ -157,11 +171,16 @@ struct gg_session {
 	struct gg_image_queue *images;	/* aktualnie wczytywane obrazki */
 
 	int hash_type;		/* rodzaj hasha has³a u¿ywanego przy logowaniu */
+
+	char *send_buf;		/* bufor z danymi do wys³ania */
+	int send_left;		/* ile jeszcze trzeba wys³aæ */
+
+	struct gg_dcc7 *dcc7_list;	/* lista po³±czeñ bezpo¶rednich skojarzonych z sesj± */
 };
 
 /*
  * struct gg_http
- * 
+ *
  * ogólna struktura opisuj±ca stan wszystkich operacji HTTP. tworzona
  * przez gg_http_connect(), zwalniana przez gg_http_free().
  */
@@ -197,7 +216,7 @@ struct gg_http {
 
 /*
  * struct gg_file_info
- * 
+ *
  * odpowiednik windowsowej struktury WIN32_FIND_DATA niezbêdnej przy
  * wysy³aniu plików.
  */
@@ -216,7 +235,7 @@ struct gg_file_info {
 
 /*
  * struct gg_dcc
- * 
+ *
  * struktura opisuj±ca nas³uchuj±ce gniazdo po³±czeñ miêdzy klientami.
  * tworzona przez gg_dcc_socket_create(), zwalniana przez gg_dcc_free().
  */
@@ -253,6 +272,47 @@ struct gg_dcc {
 #endif
 };
 
+#define GG_DCC7_HASH_LEN	20
+#define GG_DCC7_FILENAME_LEN	255
+#define GG_DCC7_INFO_LEN	64
+
+struct gg_dcc7 {
+	gg_common_head(struct gg_dcc7)
+
+	gg_dcc7_id_t cid;	/* identyfikator po³±czenia */
+
+	struct gg_event *event;	/* opis zdarzenia */
+
+	uin_t uin;		/* uin klienta */
+	uin_t peer_uin;		/* uin drugiej strony */
+
+#ifdef GG_CONFIG_MIRANDA
+	FILE *file_fd;		/* deskryptor pliku */
+#else
+	int file_fd;		/* deskryptor pliku */
+#endif
+	unsigned int offset;	/* offset w pliku */
+	unsigned int size;	/* rozmiar pliku */
+	unsigned char filename[GG_DCC7_FILENAME_LEN + 1];
+				/* nazwa pliku */
+	unsigned char hash[GG_DCC7_HASH_LEN];
+				/* hash pliku */
+
+	int dcc_type;		/* rodzaj po³±czenia bezpo¶redniego */
+	int established;	/* po³±czenie ustanowione */
+	int incoming;		/* po³±czenie przychodz±ce */
+
+	uint32_t local_addr;	/* adres lokalny */
+	uint16_t local_port;	/* port lokalny */
+
+	uint32_t remote_addr;	/* adres drugiej strony */
+	uint16_t remote_port;	/* port drugiej strony */
+
+	struct gg_session *sess;
+				/* sesja do której przypisano po³±czenie */
+	struct gg_dcc7 *next;	/* nastêpne po³±czenie w li¶cie */
+};
+
 /*
  * enum gg_session_t
  *
@@ -276,7 +336,11 @@ enum gg_session_t {
 	GG_SESSION_UNREGISTER,	/* usuwanie konta */
 	GG_SESSION_USERLIST_REMOVE,	/* usuwanie userlisty */
 	GG_SESSION_TOKEN,	/* pobieranie tokenu */
-	
+	GG_SESSION_DCC7_SOCKET,	/* nas³uchuj±ce gniazdo */
+	GG_SESSION_DCC7_SEND,	/* wysy³anie pliku */
+	GG_SESSION_DCC7_GET,	/* odbieranie pliku */
+	GG_SESSION_DCC7_VOICE,	/* rozmowa g³osowa */
+
 	GG_SESSION_USER0 = 256,	/* zdefiniowana dla u¿ytkownika */
 	GG_SESSION_USER1,	/* j.w. */
 	GG_SESSION_USER2,	/* j.w. */
@@ -341,8 +405,12 @@ enum gg_state_t {
 	/* nowe. bez sensu jest to API. */
 	GG_STATE_TLS_NEGOTIATION,	/* negocjuje po³±czenie TLS */
 
-	GG_STATE_READING_ACK7,		/* wyslanie kodu w 7.x */
-	GG_STATE_SENDING_ACK7		/* odebranie kodu w 7.x */
+	GG_STATE_REQUESTING_ID,		/* czeka na nadanie identyfikatora */
+	GG_STATE_WAITING_FOR_ACCEPT,	/* czeka na potwierdzenie albo odrzucenie */
+	GG_STATE_WAITING_FOR_INFO,	/* czeka na informacje o po³±czeniu */
+
+	GG_STATE_READING_ID,		/* odbiera identyfikator po³±czenia bezpo¶redniego */
+	GG_STATE_SENDING_ID		/* wysy³a identyfikator po³±czenia bezpo¶redniego */
 };
 
 /*
@@ -385,7 +453,7 @@ struct gg_login_params {
 	int hash_type;			/* rodzaj hasha */
 
 	char dummy[5 * sizeof(int)];	/* miejsce na kolejnych 5 zmiennych,
-					 * ¿eby z dodaniem parametru nie 
+					 * ¿eby z dodaniem parametru nie
 					 * zmienia³ siê rozmiar struktury */
 };
 
@@ -456,11 +524,12 @@ enum gg_event_t {
 	GG_EVENT_IMAGE_REPLY,		/* podes³any obrazek GG 6.0 */
 	GG_EVENT_DCC_ACK,		/* potwierdzenie transmisji */
 
-	GG_EVENT_DCC7_GOTID,		/* przesylanie unikatowego numerku do polaczen dcc 7.6.0 */
-	GG_EVENT_DCC7_NEW,		/* nowe polaczenie miedzy klientami 7.6.0 */
-	GG_EVENT_DCC7_ACCEPT,		/* zaakceptowano nasz plik 7.6.0 */
-	GG_EVENT_DCC7_REJECT,		/* odrzucono przesylanie pliku 7.6.0 */
-	GG_EVENT_DCC7_INFO		/* informacje o polaczeniu dcc, ip+port, XXX stan polaczenia itd, pozniej. */
+	GG_EVENT_DCC7_NEW,		/* nowe po³±czenie bezpo¶rednie 7.x */
+	GG_EVENT_DCC7_ACCEPT,		/* zaakceptowano po³±czenie 7.x */
+	GG_EVENT_DCC7_REJECT,		/* odrzucono po³±czenie 7.x */
+	GG_EVENT_DCC7_CONNECTED,	/* zestawiono po³±czenie 7.x */
+	GG_EVENT_DCC7_ERROR,		/* b³±d po³±czenia 7.x */
+	GG_EVENT_DCC7_DONE		/* zakoñczono po³±czenie 7.x */
 };
 
 #define GG_EVENT_SEARCH50_REPLY GG_EVENT_PUBDIR50_SEARCH_REPLY
@@ -502,7 +571,13 @@ enum gg_error_t {
 	GG_ERROR_DCC_FILE,		/* b³±d odczytu/zapisu pliku */
 	GG_ERROR_DCC_EOF,		/* plik siê skoñczy³? */
 	GG_ERROR_DCC_NET,		/* b³±d wysy³ania/odbierania */
-	GG_ERROR_DCC_REFUSED 		/* po³±czenie odrzucone przez usera */
+	GG_ERROR_DCC_REFUSED, 		/* po³±czenie odrzucone przez usera */
+
+	GG_ERROR_DCC7_HANDSHAKE,	/* b³±d negocjacji */
+	GG_ERROR_DCC7_FILE,		/* b³±d odczytu/zapisu pliku */
+	GG_ERROR_DCC7_EOF,		/* plik siê skoñczy³? */
+	GG_ERROR_DCC7_NET,		/* b³±d wysy³ania/odbierania */
+	GG_ERROR_DCC7_REFUSED 		/* po³±czenie odrzucone przez usera */
 };
 
 /*
@@ -547,11 +622,11 @@ struct gg_event {
 		enum gg_failure_t failure;	/* b³±d po³±czenia -- GG_EVENT_FAILURE */
 
 		struct gg_dcc *dcc_new;		/* nowe po³±czenie bezpo¶rednie -- GG_EVENT_DCC_NEW */
-		
+
 		int dcc_error;			/* b³±d po³±czenia bezpo¶redniego -- GG_EVENT_DCC_ERROR */
 
 		gg_pubdir50_t pubdir50;		/* wynik operacji zwi±zanej z katalogiem publicznym -- GG_EVENT_PUBDIR50_* */
-	
+
 		struct {			/* @msg odebrano wiadomo¶æ -- GG_EVENT_MSG */
 			uin_t sender;		/* numer nadawcy */
 			int msgclass;		/* klasa wiadomo¶ci */
@@ -560,16 +635,16 @@ struct gg_event {
 
 			int recipients_count;	/* ilo¶æ odbiorców konferencji */
 			uin_t *recipients;	/* odbiorcy konferencji */
-			
+
 			int formats_length;	/* d³ugo¶æ informacji o formatowaniu tekstu */
 			void *formats;		/* informacje o formatowaniu tekstu */
 		} msg;
-		
+
 		struct {			/* @notify_descr informacje o li¶cie kontaktów z opisami stanu -- GG_EVENT_NOTIFY_DESCR */
 			struct gg_notify_reply *notify;	/* informacje o li¶cie kontaktów */
 			char *descr;		/* opis stanu */
 		} notify_descr;
-		
+
 		struct {			/* @status zmiana stanu -- GG_EVENT_STATUS */
 			uin_t uin;		/* numer */
 			uint32_t status;	/* nowy stan */
@@ -597,42 +672,12 @@ struct gg_event {
 			char *descr;		/* opis stanu */
 			time_t time;		/* czas powrotu */
 		} *notify60;
-		
+
 		struct {			/* @ack potwierdzenie wiadomo¶ci -- GG_EVENT_ACK */
 			uin_t recipient;	/* numer odbiorcy */
 			int status;		/* stan dorêczenia wiadomo¶ci */
 			int seq;		/* numer sekwencyjny wiadomo¶ci */
 		} ack;
-
-		struct {			/* @dcc7_new informacja o checi wyslania pliku -- GG_EVENT_DCC7_NEW */
-			uin_t uin;		/* numerek od kogo */
-			unsigned char unique[8];/* unikalny numerek polaczenia dcc, zarejestrowany na serwerze... XXX uint64_t ? */
-			unsigned char *filename;/* nazwa pliku [cp1250] */
-			uint32_t filesize;	/* rozmiar pliku */
-			unsigned char hash[20];	/* hash w SHA1 */
-		} dcc7_new;
-
-		struct {			/* @dcc7_id informacja o unikatowym numerku id -- GG_EVENT_DCC7_GOTID */
-			unsigned char unique[8];/* unikalny numerek polaczenia dcc, zarejestrowany na serwerze */
-		} dcc7_id;
-
-		struct {			/* @dcc7_accept informacja o przyjeciu polaczenia dcc -- GG_EVENT7_DCC_ACCEPT */
-			uin_t uin;		/* od kogo */
-			unsigned char unique[8];/* kod, j/w */
-			uint32_t offset;	/* od ktorego miejsca mamy wysylac */
-		} dcc7_accept;
-
-		struct {			/* @dcc7_reject informacja o odrzuceniu polaczenia dcc -- GG_EVENT_DCC7_REJECT */
-			uin_t uin;		/* od kogo */
-			unsigned char unique[8];/* kod, j/w */
-			uint32_t reason;	/* powod, patrz: GG_DCC7_REJECT_* */
-		} dcc7_reject;
-
-		struct {
-			uin_t uin;
-			unsigned char unique[8];
-			char ipport[200];
-		} dcc7_info;
 
 		struct {			/* @dcc_voice_data otrzymano dane d¼wiêkowe -- GG_EVENT_DCC_VOICE_DATA */
 			uint8_t *data;		/* dane d¼wiêkowe */
@@ -657,6 +702,27 @@ struct gg_event {
 			char *filename;		/* nazwa pliku */
 			char *image;		/* bufor z obrazkiem */
 		} image_reply;
+
+		struct gg_dcc7 *dcc7_new;	/* nowe po³±czenie bezpo¶rednie -- GG_EVENT_DCC7_NEW */
+
+		int dcc7_error;			/* b³±d po³±czenia bezpo¶redniego 7.x -- GG_EVENT_DCC7_ERROR */
+
+		struct {			/* @dcc7_connected informacja o zestawieniu po³±czenia -- GG_EVENT_DCC7_CONNECTED */
+			struct gg_dcc7 *dcc7;	/* struktura po³±czenia */
+			// XXX czy co¶ siê przyda?
+		} dcc7_connected;
+
+		struct {			/* @dcc7_reject odrzucono po³±czenie bezpo¶rednie -- GG_EVENT_DCC7_REJECT */
+			struct gg_dcc7 *dcc7;	/* struktura po³±czenia */
+			int reason;		/* powód roz³±czenia */
+		} dcc7_reject;
+
+		struct {			/* @dcc7_accept zaakceptowano po³±czenie bezpo¶rednie -- GG_EVENT_DCC7_ACCEPT */
+			struct gg_dcc7 *dcc7;	/* struktura po³±czenia */
+			int type;		/* sposób po³±czenia (P2P, przez serwer) */
+			uint32_t remote_ip;	/* adres zdalnego klienta */
+			uint16_t remote_port;	/* port zdalnego klienta */
+		} dcc7_accept;
 	} event;
 };
 
@@ -834,7 +900,7 @@ struct gg_http *gg_change_passwd4(uin_t uin, const char *email, const char *pass
 
 /*
  * struct gg_change_info_request
- * 
+ *
  * opis ¿±dania zmiany informacji w katalogu publicznym.
  */
 struct gg_change_info_request {
@@ -886,27 +952,10 @@ struct gg_dcc *gg_dcc_voice_chat(uint32_t ip, uint16_t port, uin_t my_uin, uin_t
 void gg_dcc_set_type(struct gg_dcc *d, int type);
 int gg_dcc_fill_file_info(struct gg_dcc *d, const char *filename);
 int gg_dcc_fill_file_info2(struct gg_dcc *d, const char *filename, const char *local_filename);
-int gg_dcc_fill_file_info3(struct gg_dcc *d, const char *filename, const char *local_filename, unsigned char *hash);
 int gg_dcc_voice_send(struct gg_dcc *d, char *buf, int length);
 
 #define GG_DCC_VOICE_FRAME_LENGTH 195
 #define GG_DCC_VOICE_FRAME_LENGTH_505 326
-
-int gg_dcc7_request_id(struct gg_session *sess);
-struct gg_dcc *gg_dcc7_send_file(struct gg_session *sess, uin_t peer_uin, const char *id, const char *filename);
-struct gg_dcc *gg_dcc7_get_file(struct gg_session *sess, uin_t peer_uin, const char *id, uint32_t filesize, uint32_t offset);
-int gg_dcc7_send_info(struct gg_session *sess, uin_t peer_uin, const char *id, const char *ipport);
-int gg_dcc7_reject_file(struct gg_session *sess, uin_t peer_uin, const char *id, uint32_t reason);
-
-#define GG_DCC7_REJECT_TRY_LATER	0x01		/* 7.6.0 nie umie wysyla kilku dcc na raz, wysyla ten pakiet kiedy kod/protokol nie potrafi obsluzyc.
-								'Komunikat: xyz wlasnie przesyla inny plik' */
-#define GG_DCC7_REJECT_REJECTED 	0x02		/* 7.6.0 wysyla wtedy gdy klikniemy rejected... czym sie to rozni od pozostalych, nie stwierdzono 
-								'Komunikat: xyz odrzucil twoj plik' */
-#define GG_DCC7_REJECT_INVALID_VERSION	0x06		/* 7.6.0 wysyla wtedy gdy dla niego nasz protokol jest mniej trendy do przesylania plikow 
-								'Komunikat: xyz odrzucil twoj plik' */
-
-int gg_dcc7_connect(struct gg_dcc *dcc, const char *where);
-struct gg_dcc *gg_dcc7_fix(struct gg_dcc *event_dcc, struct gg_dcc *dest_dcc);
 
 struct gg_dcc *gg_dcc_socket_create(uin_t uin, uint16_t port);
 #define gg_dcc_socket_free gg_free_dcc
@@ -917,6 +966,12 @@ struct gg_event *gg_dcc_watch_fd(struct gg_dcc *d);
 void gg_dcc_free(struct gg_dcc *c);
 #define gg_free_dcc gg_dcc_free
 
+struct gg_event *gg_dcc7_watch_fd(struct gg_dcc7 *d);
+struct gg_dcc7 *gg_dcc7_send_file(struct gg_session *sess, uin_t rcpt, const char *filename, const char *filename1250, const char *hash);
+int gg_dcc7_accept(struct gg_dcc7 *dcc, unsigned int offset);
+int gg_dcc7_reject(struct gg_dcc7 *dcc, int reason);
+void gg_dcc7_free(struct gg_dcc7 *d);
+
 /*
  * je¶li chcemy sobie podebugowaæ, wystarczy ustawiæ `gg_debug_level'.
  * niestety w miarê przybywania wpisów `gg_debug(...)' nie chcia³o mi
@@ -926,7 +981,7 @@ extern int gg_debug_level;	/* poziom debugowania. mapa bitowa sta³ych GG_DEBUG_*
 
 /*
  * mo¿na podaæ wska¼nik do funkcji obs³uguj±cej wywo³ania gg_debug().
- * nieoficjalne, nieudokumentowane, mo¿e siê zmieniæ. je¶li kto¶ jest 
+ * nieoficjalne, nieudokumentowane, mo¿e siê zmieniæ. je¶li kto¶ jest
  * zainteresowany, niech da znaæ na ekg-devel.
  */
 extern void (*gg_debug_handler)(int level, const char *format, va_list ap);
@@ -964,11 +1019,11 @@ extern char *gg_proxy_password;		/* okre¶la has³o u¿ytkownika przy autoryzacji s
 extern int gg_proxy_http_only;		/* w³±cza obs³ugê proxy wy³±cznie dla us³ug HTTP */
 
 
-/* 
+/*
  * adres, z którego ¶lemy pakiety (np ³±czymy siê z serwerem)
  * u¿ywany przy gg_connect()
  */
-extern unsigned long gg_local_ip; 
+extern unsigned long gg_local_ip;
 /*
  * -------------------------------------------------------------------------
  * poni¿ej znajduj± siê wewnêtrzne sprawy biblioteki. zwyk³y klient nie
@@ -978,8 +1033,15 @@ extern unsigned long gg_local_ip;
  * -------------------------------------------------------------------------
  */
 
+#ifdef GG_CONFIG_MIRANDA
+int gg_file_hash_sha1(FILE *fd, uint8_t *result);
+#else
+int gg_file_hash_sha1(int fd, uint8_t *result);
+#endif
+
 #ifdef GG_CONFIG_HAVE_PTHREAD
 int gg_resolve_pthread(int *fd, void **resolver, const char *hostname);
+void gg_resolve_pthread_cleanup(void *resolver, int kill);
 #endif
 
 #ifdef _WIN32
@@ -1021,6 +1083,12 @@ char *gg_base64_encode(const char *buf);
 char *gg_base64_decode(const char *buf);
 int gg_image_queue_remove(struct gg_session *s, struct gg_image_queue *q, int freeq);
 
+int gg_dcc7_handle_id(struct gg_session *sess, struct gg_event *e, void *payload, int len);
+int gg_dcc7_handle_new(struct gg_session *sess, struct gg_event *e, void *payload, int len);
+int gg_dcc7_handle_info(struct gg_session *sess, struct gg_event *e, void *payload, int len);
+int gg_dcc7_handle_accept(struct gg_session *sess, struct gg_event *e, void *payload, int len);
+int gg_dcc7_handle_reject(struct gg_session *sess, struct gg_event *e, void *payload, int len);
+
 #define GG_APPMSG_HOST "appmsg.gadu-gadu.pl"
 #define GG_APPMSG_PORT 80
 #define GG_PUBDIR_HOST "pubdir.gadu-gadu.pl"
@@ -1038,6 +1106,7 @@ int gg_image_queue_remove(struct gg_session *s, struct gg_image_queue *q, int fr
 #define GG_DEFAULT_PROTOCOL_VERSION 0x24
 #define GG_DEFAULT_TIMEOUT 30
 #define GG_HAS_AUDIO_MASK 0x40000000
+#define GG_HAS_AUDIO7_MASK 0x20000000
 #define GG_ERA_OMNIX_MASK 0x04000000
 #define GG_LIBGADU_VERSION "CVS"
 
@@ -1054,7 +1123,7 @@ struct gg_header {
 struct gg_welcome {
 	uint32_t key;			/* klucz szyfrowania has³a */
 } GG_PACKED;
-	
+
 #define GG_LOGIN 0x000c
 
 struct gg_login {
@@ -1191,7 +1260,7 @@ struct gg_new_status {
 #define GG_NOTIFY_LAST 0x0010
 
 #define GG_NOTIFY 0x0010
-	
+
 struct gg_notify {
 	uint32_t uin;				/* numerek danej osoby */
 	uint8_t dunno1;				/* rodzaj wpisu w li¶cie */
@@ -1202,9 +1271,9 @@ struct gg_notify {
 #define GG_USER_BLOCKED 0x04	/* zablokowany u¿ytkownik */
 
 #define GG_LIST_EMPTY 0x0012
-	
+
 #define GG_NOTIFY_REPLY 0x000c	/* tak, to samo co GG_LOGIN */
-	
+
 struct gg_notify_reply {
 	uint32_t uin;			/* numerek */
 	uint32_t status;		/* status danej osoby */
@@ -1215,7 +1284,7 @@ struct gg_notify_reply {
 } GG_PACKED;
 
 #define GG_NOTIFY_REPLY60 0x0011
-	
+
 struct gg_notify_reply60 {
 	uint32_t uin;			/* numerek plus flagi w MSB */
 	uint8_t status;			/* status danej osoby */
@@ -1227,7 +1296,7 @@ struct gg_notify_reply60 {
 } GG_PACKED;
 
 #define GG_STATUS60 0x000f
-	
+
 struct gg_status60 {
 	uint32_t uin;			/* numerek plus flagi w MSB */
 	uint8_t status;			/* status danej osoby */
@@ -1238,9 +1307,35 @@ struct gg_status60 {
 	uint8_t dunno1;			/* 0x00 */
 } GG_PACKED;
 
+#define GG_NOTIFY_REPLY77 0x0018
+
+struct gg_notify_reply77 {
+	uint32_t uin;			/* numerek plus flagi w MSB */
+	uint8_t status;			/* status danej osoby */
+	uint32_t remote_ip;		/* adres ip delikwenta */
+	uint16_t remote_port;		/* port, na którym s³ucha klient */
+	uint8_t version;		/* wersja klienta */
+	uint8_t image_size;		/* maksymalny rozmiar grafiki w KiB */
+	uint8_t dunno1;			/* 0x00 */
+	uint32_t dunno2;		/* ? */
+} GG_PACKED;
+
+#define GG_STATUS77 0x0017
+
+struct gg_status77 {
+	uint32_t uin;			/* numerek plus flagi w MSB */
+	uint8_t status;			/* status danej osoby */
+	uint32_t remote_ip;		/* adres ip delikwenta */
+	uint16_t remote_port;		/* port, na którym s³ucha klient */
+	uint8_t version;		/* wersja klienta */
+	uint8_t image_size;		/* maksymalny rozmiar grafiki w KiB */
+	uint8_t dunno1;			/* 0x00 */
+	uint32_t dunno2;		/* ? */
+} GG_PACKED;
+
 #define GG_ADD_NOTIFY 0x000d
 #define GG_REMOVE_NOTIFY 0x000e
-	
+
 struct gg_add_remove {
 	uint32_t uin;			/* numerek */
 	uint8_t dunno1;			/* bitmapa */
@@ -1252,7 +1347,7 @@ struct gg_status {
 	uint32_t uin;			/* numerek */
 	uint32_t status;		/* nowy stan */
 } GG_PACKED;
-	
+
 #define GG_SEND_MSG 0x000b
 
 #define GG_CLASS_QUEUED 0x0001
@@ -1272,13 +1367,13 @@ struct gg_send_msg {
 } GG_PACKED;
 
 struct gg_msg_richtext {
-	uint8_t flag;		
-	uint16_t length;	  
+	uint8_t flag;
+	uint16_t length;
 } GG_PACKED;
 
 struct gg_msg_richtext_format {
 	uint16_t position;
-	uint8_t font;	  
+	uint8_t font;
 } GG_PACKED;
 
 struct gg_msg_richtext_image {
@@ -1293,7 +1388,7 @@ struct gg_msg_richtext_image {
 #define GG_FONT_COLOR 0x08
 #define GG_FONT_IMAGE 0x80
 
-struct gg_msg_richtext_color { 
+struct gg_msg_richtext_color {
 	uint8_t red;
 	uint8_t green;
 	uint8_t blue;
@@ -1325,7 +1420,7 @@ struct gg_msg_image_reply {
 #define GG_ACK_QUEUED 0x0003
 #define GG_ACK_MBOXFULL 0x0004
 #define GG_ACK_NOT_DELIVERED 0x0006
-	
+
 struct gg_send_msg_ack {
 	uint32_t status;
 	uint32_t recipient;
@@ -1333,7 +1428,7 @@ struct gg_send_msg_ack {
 } GG_PACKED;
 
 #define GG_RECV_MSG 0x000a
-	
+
 struct gg_recv_msg {
 	uint32_t sender;
 	uint32_t seq;
@@ -1342,7 +1437,7 @@ struct gg_recv_msg {
 } GG_PACKED;
 
 #define GG_PING 0x0008
-	
+
 #define GG_PONG 0x0007
 
 #define GG_DISCONNECTING 0x000b
@@ -1371,75 +1466,6 @@ struct gg_userlist_reply {
 /*
  * pakiety, sta³e, struktury dla DCC
  */
-
-#define GG_DCC7_MAGIC1	0x00000004
-
-#define GG_DCC7_REQUEST_ID 0x23
-
-struct gg_dcc7_request_id {
-	uint32_t type;		/* 04 00 00 00 */	/* GG_DCC7_MAGIC1 */
-} GG_PACKED;
-
-#define GG_DCC7_RECEIVED_ID 0x23
-
-struct gg_dcc7_received_id {
-	uint32_t type;		/* 04 00 00 00 */	/* GG_DCC7_MAGIC1 */
-	unsigned char code1[8];
-} GG_PACKED;
-
-#define GG_DCC7_NEW 0x20
-
-struct gg_dcc7_new {
-	unsigned char code1[8];
-	uint32_t uinfrom;	/* LE, from */
-	uint32_t uinto;		/* LE, to */
-	uint32_t dunno1;	/* 04 00 00 00 */
-	unsigned char filename[226];
-	uint16_t emp1;		/* 00 00 */
-	uint16_t dunno2;	/* 10 00 */
-	uint16_t emp2;		/* 00 00 */
-
-	uint16_t dunno31;
-	uint8_t	 dunno32;
-	uint8_t  dunno33;	/* 02 */
-
-	uint32_t emp3;		/* 00 00 00 00 */
-	uint32_t dunno4;	/* b4 e5 32 00 */
-	uint32_t dunno5;	/* 8e d0 4c 00 */
-	uint32_t dunno6;	/* 10 00 00 00 */
-	uint16_t dunno7;	/* unknown */
-	uint8_t dunno8;		/* unknown */
-	uint32_t size;		/* rozmiar, LE */
-	uint32_t emp4;		/* 00 00 00 00 */
-	unsigned char hash[20];	/* hash w sha1 */
-} GG_PACKED;
-
-#define GG_DCC7_ACCEPT 0x21
-
-struct gg_dcc7_accept {
-	uint32_t uin;		/* uin */
-	unsigned char code1[8];	/* kod polaczenia */
-	uint32_t offset;	/* od ktorego miejsca chcemy/mamy wysylac. */
-	uint32_t empty;		/* 00 00 00 00 */
-} GG_PACKED;
-
-#define GG_DCC7_INFO 0x1f
-
-struct gg_dcc7_info {
-	uint32_t uin;			/* uin */
-	uint32_t dunno1;		/* XXX */		/* 000003e8 -> transfer wstrzymano? */
-	unsigned char code1[8];		/* kod */
-	unsigned char ipport[15+1+5];	/* ip <SPACE> port */	/* XXX, what about NUL char? */	/* XXX, not always (ip+port) */
-	unsigned char unk[43];		/* large amount of unknown data */
-} GG_PACKED;
-
-#define GG_DCC7_REJECT 0x22
-
-struct gg_dcc7_reject {
-	uint32_t uin;		/* numerek */
-	unsigned char code1[8];	/* unikalny kod */
-	uint32_t reason;	/* look at GG_DCC7_REJECT_* */
-} GG_PACKED;
 
 struct gg_dcc_tiny_packet {
 	uint8_t type;		/* rodzaj pakietu */
@@ -1472,6 +1498,86 @@ struct gg_dcc_big_packet {
 #define GG_DCC_TIMEOUT_FILE_ACK 300	/* 5 minut */
 #define GG_DCC_TIMEOUT_VOICE_ACK 300	/* 5 minut */
 
+/*
+ * pakiety, sta³e, struktury dla DCC 7.x
+ */
+
+#define GG_DCC7_INFO 0x1f
+
+struct gg_dcc7_info {
+	uint32_t uin;			/* numer nadawcy */
+	uint32_t type;			/* sposób po³±czenia */
+	gg_dcc7_id_t id;		/* identyfikator po³±czenia */
+	char info[GG_DCC7_INFO_LEN];	/* informacje o po³±czeniu "ip port" */
+} GG_PACKED;
+
+#define GG_DCC7_NEW 0x20
+
+struct gg_dcc7_new {
+	gg_dcc7_id_t id;		/* identyfikator po³±czenia */
+	uint32_t uin_from;		/* numer nadawcy */
+	uint32_t uin_to;		/* numer odbiorcy */
+	uint32_t type;			/* rodzaj transmisji */
+	unsigned char filename[GG_DCC7_FILENAME_LEN];	/* nazwa pliku */
+	uint32_t size;			/* rozmiar pliku */
+	uint32_t dunno1;		/* 0x00000000 */
+	unsigned char hash[GG_DCC7_HASH_LEN];	/* hash SHA1 */
+} GG_PACKED;
+
+#define GG_DCC7_ACCEPT 0x21
+
+struct gg_dcc7_accept {
+	uint32_t uin;			/* numer przyjmuj±cego po³±czenie */
+	gg_dcc7_id_t id;		/* identyfikator po³±czenia */
+	uint32_t offset;		/* offset przy wznawianiu transmisji */
+	uint32_t dunno1;		/* 0x00000000 */
+} GG_PACKED;
+
+#define GG_DCC7_TYPE_P2P 0x00000001	/* po³±czenie bezpo¶rednie */
+#define GG_DCC7_TYPE_SERVER 0x00000002	/* po³±czenie przez serwer */
+
+#define GG_DCC7_REJECT 0x22
+
+struct gg_dcc7_reject {
+	uint32_t uin;			/* numer odrzucaj±cego po³±czenie */
+	gg_dcc7_id_t id;		/* identyfikator po³±czenia */
+	uint32_t reason;		/* powód roz³±czenia */
+} GG_PACKED;
+
+#define GG_DCC7_REJECT_BUSY 0x00000001	/* trwa po³±czenie bezpo¶rednie, nie umiem obs³u¿yæ wiêcej */
+#define GG_DCC7_REJECT_USER 0x00000002	/* u¿ytkownik odrzuci³ po³±czenie */
+#define GG_DCC7_REJECT_VERSION 0x00000006	/* druga strona ma wersjê klienta nieobs³uguj±c± po³±czeñ bezpo¶rednich tego typu */
+
+#define GG_DCC7_ID_REQUEST 0x23
+
+struct gg_dcc7_id_request {
+	uint32_t type;			/* rodzaj tranmisji */
+} GG_PACKED;
+
+#define GG_DCC7_TYPE_VOICE 0x00000001	/* transmisja g³osu */
+#define GG_DCC7_TYPE_FILE 0x00000004	/* transmisja pliku */
+
+#define GG_DCC7_ID_REPLY 0x23
+
+struct gg_dcc7_id_reply {
+	uint32_t type;			/* rodzaj transmisji */
+	gg_dcc7_id_t id;		/* przyznany identyfikator */
+} GG_PACKED;
+
+/*
+#define GG_DCC7_DUNNO1 0x24
+
+struct gg_dcc7_dunno1 {
+	// XXX
+} GG_PACKED;
+*/
+
+#define GG_DCC7_TIMEOUT_CONNECT 30	/* 30 sekund */
+#define GG_DCC7_TIMEOUT_SEND 1800	/* 30 minut */
+#define GG_DCC7_TIMEOUT_GET 1800	/* 30 minut */
+#define GG_DCC7_TIMEOUT_FILE_ACK 300	/* 5 minut */
+#define GG_DCC7_TIMEOUT_VOICE_ACK 300	/* 5 minut */
+
 #ifdef __cplusplus
 }
 #ifdef _WIN32
@@ -1479,7 +1585,7 @@ struct gg_dcc_big_packet {
 #endif
 #endif
 
-#endif /* GG_CONFIG_H */
+#endif /* __GG_LIBGADU_H */
 
 /*
  * Local variables:
