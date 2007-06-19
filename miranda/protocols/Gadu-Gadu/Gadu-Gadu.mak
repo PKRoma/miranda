@@ -37,6 +37,7 @@ CLEAN :
 	-@erase "$(INTDIR)\common.obj"
 	-@erase "$(INTDIR)\core.obj"
 	-@erase "$(INTDIR)\dcc.obj"
+	-@erase "$(INTDIR)\dcc7.obj"
 	-@erase "$(INTDIR)\dialogs.obj"
 	-@erase "$(INTDIR)\dynstuff.obj"
 	-@erase "$(INTDIR)\events.obj"
@@ -136,7 +137,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\ssl.obj" \
 	"$(INTDIR)\token.obj" \
 	"$(INTDIR)\userutils.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\dcc7.obj"
 
 "..\..\bin\release\plugins\GG.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -155,6 +157,7 @@ CLEAN :
 	-@erase "$(INTDIR)\common.obj"
 	-@erase "$(INTDIR)\core.obj"
 	-@erase "$(INTDIR)\dcc.obj"
+	-@erase "$(INTDIR)\dcc7.obj"
 	-@erase "$(INTDIR)\dialogs.obj"
 	-@erase "$(INTDIR)\dynstuff.obj"
 	-@erase "$(INTDIR)\events.obj"
@@ -257,7 +260,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\ssl.obj" \
 	"$(INTDIR)\token.obj" \
 	"$(INTDIR)\userutils.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\dcc7.obj"
 
 "..\..\bin\debug\plugins\GG.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -286,6 +290,12 @@ SOURCE=.\libgadu\common.c
 SOURCE=.\libgadu\dcc.c
 
 "$(INTDIR)\dcc.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+SOURCE=.\libgadu\dcc7.c
+
+"$(INTDIR)\dcc7.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
