@@ -259,9 +259,6 @@ int JabberListAddResource( JABBER_LIST list, const TCHAR* jid, int status, const
 
 void JabberListRemoveResource( JABBER_LIST list, const TCHAR* jid )
 {
-	int j;
-	const TCHAR* p, *q;
-
 	EnterCriticalSection( &csLists );
 	int i = JabberListExist( list, jid );
 	JABBER_LIST_ITEM* LI = roster[i-1];
@@ -270,45 +267,47 @@ void JabberListRemoveResource( JABBER_LIST list, const TCHAR* jid )
 		return;
 	}
 
-	if (( p = _tcschr( jid, '@' )) != NULL ) {
-		if (( q = _tcschr( p, '/' )) != NULL ) {
-			const TCHAR* resource = q+1;
-			if ( resource[0] ) {
-				JABBER_RESOURCE_STATUS* r = LI->resource;
-				for ( j=0; j < LI->resourceCount; j++, r++ ) {
-					if ( !_tcsicmp( r->resourceName, resource ))
-						break;
-				}
-				if ( j < LI->resourceCount ) {
-					// Found last seen resource ID to be removed
-					if ( LI->lastSeenResource == j )
-						LI->lastSeenResource = -1;
-					else if ( LI->lastSeenResource > j )
-						LI->lastSeenResource--;
-					// update manually selected resource ID
-					if (LI->resourceMode == RSMODE_MANUAL)
+	const TCHAR* p = _tcschr( jid, '@' );
+	const TCHAR* q = _tcschr(( p == NULL ) ? jid : p, '/' );
+	if ( q ) {
+		const TCHAR* resource = q+1;
+		if ( resource[0] ) {
+			JABBER_RESOURCE_STATUS* r = LI->resource;
+			int j;
+			for ( j=0; j < LI->resourceCount; j++, r++ ) {
+				if ( !_tcsicmp( r->resourceName, resource ))
+					break;
+			}
+			if ( j < LI->resourceCount ) {
+				// Found last seen resource ID to be removed
+				if ( LI->lastSeenResource == j )
+					LI->lastSeenResource = -1;
+				else if ( LI->lastSeenResource > j )
+					LI->lastSeenResource--;
+				// update manually selected resource ID
+				if (LI->resourceMode == RSMODE_MANUAL)
+				{
+					if ( LI->manualResource == j )
 					{
-						if ( LI->manualResource == j )
-						{
-							LI->resourceMode = RSMODE_LASTSEEN;
-							LI->manualResource = -1;
-						} else if ( LI->manualResource > j )
-							LI->manualResource--;
-					}
+						LI->resourceMode = RSMODE_LASTSEEN;
+						LI->manualResource = -1;
+					} else if ( LI->manualResource > j )
+						LI->manualResource--;
+				}
 
-					// Update MirVer due to possible resource changes
-					JabberUpdateMirVer(LI);
+				// Update MirVer due to possible resource changes
+				JabberUpdateMirVer(LI);
 
-					JabberListFreeResourceInternal( r );
+				JabberListFreeResourceInternal( r );
 
-					if ( LI->resourceCount-- == 1 ) {
-						mir_free( r );
-						LI->resource = NULL;
-					}
-					else {
-						memmove( r, r+1, ( LI->resourceCount-j )*sizeof( JABBER_RESOURCE_STATUS ));
-						LI->resource = ( JABBER_RESOURCE_STATUS* )mir_realloc( LI->resource, LI->resourceCount*sizeof( JABBER_RESOURCE_STATUS ));
-	}	}	}	}	}
+				if ( LI->resourceCount-- == 1 ) {
+					mir_free( r );
+					LI->resource = NULL;
+				}
+				else {
+					memmove( r, r+1, ( LI->resourceCount-j )*sizeof( JABBER_RESOURCE_STATUS ));
+					LI->resource = ( JABBER_RESOURCE_STATUS* )mir_realloc( LI->resource, LI->resourceCount*sizeof( JABBER_RESOURCE_STATUS ));
+	}	}	}	}
 
 	LeaveCriticalSection( &csLists );
 
