@@ -207,6 +207,22 @@ static void saveDraftMessage(struct MessageWindowData *dat) {
 }
 
 
+static TCHAR * GetSendBufferMsg(struct MessageWindowData *dat, int i) {
+    TCHAR *szMsg = NULL;
+    int len = strlen(dat->sendInfo[i].sendBuffer);
+#if defined( _UNICODE )
+    if (dat->sendInfo[i].flags & PREF_UTF) {
+        szMsg = mir_utf8decode(dat->sendInfo[i].sendBuffer, dat->codePage);
+    } else {
+        szMsg = (char *)mir_alloc(dat->sendInfo[i].sendBufferSize - len - 1);
+        memcpy(szMsg, dat->sendInfo[i].sendBuffer + len + 1, dat->sendInfo[i].sendBufferSize - len - 1);
+    }
+#else
+    szMsg = (char *)mir_alloc(dat->sendInfo[i].sendBufferSize);
+    memcpy(szMsg, dat->sendInfo[i].sendBuffer, len + 1);
+#endif
+}
+
 static void RemoveSendBuffer(struct MessageWindowData *dat, int i) {
 	if (dat->sendInfo[i].sendBuffer) {
  		mir_free(dat->sendInfo[i].sendBuffer);
@@ -2126,9 +2142,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 							ErrorWindowData *ewd = (ErrorWindowData *) mir_alloc(sizeof(ErrorWindowData));
 							ewd->szName = GetNickname(dat->hContact, dat->szProto);
 							ewd->szDescription = mir_tstrdup(TranslateT("The message send timed out."));
-							ewd->textSize = dat->sendInfo[i].sendBufferSize;
-							ewd->szText = (char *)mir_alloc(dat->sendInfo[i].sendBufferSize);
-							memcpy(ewd->szText, dat->sendInfo[i].sendBuffer, dat->sendInfo[i].sendBufferSize);
+							ewd->szText = GetSendBufferMsg(dat, i);
 							ewd->hwndParent = hwndDlg;
 							ewd->sendIdx = i;
 							if (dat->messagesInProgress>0) {
@@ -2736,9 +2750,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					ErrorWindowData *ewd = (ErrorWindowData *) mir_alloc(sizeof(ErrorWindowData));
 					ewd->szName = GetNickname(dat->hContact, dat->szProto);
 					ewd->szDescription = a2t((char *) ack->lParam);
-					ewd->textSize = dat->sendInfo[i].sendBufferSize;
-					ewd->szText = (char *)mir_alloc(dat->sendInfo[i].sendBufferSize);
-					memcpy(ewd->szText, dat->sendInfo[i].sendBuffer, dat->sendInfo[i].sendBufferSize);
+					ewd->szText = GetSendBufferMsg(dat, i);
 					ewd->hwndParent = hwndDlg;
 					ewd->sendIdx = i;
 					dat->sendInfo[i].hwndErrorDlg = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSENDERROR), hwndDlg, ErrorDlgProc, (LPARAM) ewd);//hwndDlg

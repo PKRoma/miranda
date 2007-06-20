@@ -44,11 +44,7 @@ BOOL CALLBACK ErrorDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 					SetDlgItemText(hwndDlg, IDC_ERRORTEXT, TranslateT("An unknown error has occured."));
 				}
 				if (ewd->szText) {
-			#if defined( _UNICODE )
-					SetDlgItemText(hwndDlg, IDC_MSGTEXT, (TCHAR *)(ewd->szText + strlen(ewd->szText) + 1));
-			#else
 					SetDlgItemText(hwndDlg, IDC_MSGTEXT, ewd->szText);
-			#endif
 				}
 				if (ewd->szName) {
 					mir_sntprintf(szText, SIZEOF(szText), _T("%s - %s"), TranslateT("Send Error"), ewd->szName);

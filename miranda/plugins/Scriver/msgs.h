@@ -38,8 +38,7 @@ typedef struct ErrorWindowDataStruct
 {
 	TCHAR*	szName;
 	TCHAR*	szDescription;
-	char*	szText;
-	int		textSize;
+	TCHAR*	szText;
 	int		sendIdx;
 	HWND	hwndParent;
 } ErrorWindowData;
