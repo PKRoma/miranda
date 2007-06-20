@@ -419,11 +419,7 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 
 static BOOL getUPnPURLs(char* szUrl, size_t sizeUrl)
 {
-	char szHostNew[256], szHostExist[256];
 	char* szData = (char*)alloca(8192);
-
-	parseURL(szUrl, szHostNew, NULL, NULL);
-	parseURL(szCtlUrl, szHostExist, NULL, NULL);
 
 	gatewayFound = httpTransact(szUrl, szData, 8192, NULL) == 200;
 	if (gatewayFound)
@@ -469,7 +465,10 @@ static BOOL getUPnPURLs(char* szUrl, size_t sizeUrl)
 			szCtlUrl[sizeof(szCtlUrl)-1] = 0;
 		}
 		else
+		{
+			szCtlUrl[0] = 0;
 			gatewayFound = FALSE;
+		}
 	}
 
 	return gatewayFound;
@@ -547,6 +546,16 @@ static void discoverUPnP(void)
 					txtParseParam(buf, NULL, "Location:", "\r", szUrl, sizeof(szUrl)))
 				{
 					char age[30];
+					char szHostNew[256], szHostExist[256];
+
+					parseURL(szUrl, szHostNew, NULL, NULL);
+					parseURL(szCtlUrl, szHostExist, NULL, NULL);
+					if (strcmp(szHostNew, szHostExist) == 0)
+					{
+						gatewayFound = TRUE;
+						break;
+					}
+
 					txtParseParam(buf, NULL, "ST:", "\r", szDev, sizeof(szDev));
 					txtParseParam(buf, "max-age", "=", "\r", age, sizeof(age));
 					expireTime = atoi(age);
