@@ -212,7 +212,7 @@ static TCHAR * GetSendBufferMsg(struct MessageWindowData *dat, int i) {
     int len = strlen(dat->sendInfo[i].sendBuffer);
 #if defined( _UNICODE )
     if (dat->sendInfo[i].flags & PREF_UTF) {
-        szMsg = mir_utf8decode(dat->sendInfo[i].sendBuffer, dat->codePage);
+        mir_utf8decode(dat->sendInfo[i].sendBuffer, &szMsg);
     } else {
         szMsg = (char *)mir_alloc(dat->sendInfo[i].sendBufferSize - len - 1);
         memcpy(szMsg, dat->sendInfo[i].sendBuffer + len + 1, dat->sendInfo[i].sendBufferSize - len - 1);
