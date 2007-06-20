@@ -634,24 +634,24 @@ SOURCE=.\version.rc
 !IF  "$(CFG)" == "png2dib - Win32 Release"
 
 "zlib - Win32 Release" : 
-   cd "\Miranda\miranda\plugins\zlib"
+   cd "..\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release" 
    cd "..\png2dib"
 
 "zlib - Win32 ReleaseCLEAN" : 
-   cd "\Miranda\miranda\plugins\zlib"
+   cd "..\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release" RECURSE=1 CLEAN 
    cd "..\png2dib"
 
 !ELSEIF  "$(CFG)" == "png2dib - Win32 Debug"
 
 "zlib - Win32 Debug" : 
-   cd "\Miranda\miranda\plugins\zlib"
+   cd "..\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug" 
    cd "..\png2dib"
 
 "zlib - Win32 DebugCLEAN" : 
-   cd "\Miranda\miranda\plugins\zlib"
+   cd "..\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug" RECURSE=1 CLEAN 
    cd "..\png2dib"
 
