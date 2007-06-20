@@ -104,7 +104,6 @@ int Chat_Load(PLUGINLINK *link)
 	CreateHookableEvents();
 	OptionsInit();
 	AddIcons();
-	RegisterFonts();
 	LoadIcons();
 	return 0;
 }

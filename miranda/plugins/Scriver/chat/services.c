@@ -105,6 +105,7 @@ int Chat_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	if ( ServiceExists( MS_IEVIEW_WINDOW ))
 		IEviewInstalled = TRUE;
 
+	RegisterFonts();
 	CList_SetAllOffline(TRUE);
  	return 0;
 }

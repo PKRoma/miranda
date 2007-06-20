@@ -24,23 +24,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "m_ieview.h"
 
-extern void ChangeStatusIcons();
 struct GlobalMessageData *g_dat=NULL;
 extern HINSTANCE g_hInst;
 extern PSLWA pSetLayeredWindowAttributes;
-extern HANDLE *hMsgMenuItem;
-extern int hMsgMenuItemCount;
 
 HANDLE hEventSkin2IconsChanged;
 
 static HANDLE g_hAck = 0;
 static int ackevent(WPARAM wParam, LPARAM lParam);
 
-int    Chat_ModulesLoaded(WPARAM wParam,LPARAM lParam);
-int    Chat_PreShutdown(WPARAM wParam,LPARAM lParam);
-int    Chat_FontsChanged(WPARAM wParam,LPARAM lParam);
-int    Chat_IconsChanged(WPARAM wParam,LPARAM lParam);
-int    Chat_SmileyOptionsChanged(WPARAM wParam,LPARAM lParam);
+extern int    Chat_ModulesLoaded(WPARAM wParam,LPARAM lParam);
+extern int    Chat_PreShutdown(WPARAM wParam,LPARAM lParam);
 
 BOOL IsStaticIcon(HICON hIcon) {
 	int i;
@@ -92,127 +86,6 @@ int ImageList_ReplaceIcon_ProtoEx(HIMAGELIST hIml, int nIndex, const char* szPro
 	int res = ImageList_ReplaceIcon(hIml, nIndex, hIcon);
  	CallService(MS_SKIN2_RELEASEICON,(WPARAM)hIcon, 0);
  	return res;
-}
-
-int IconsChanged(WPARAM wParam, LPARAM lParam)
-{
-	if ( hMsgMenuItem && !ServiceExists( MS_SKIN2_GETICONBYHANDLE )) {
-		int j;
-		CLISTMENUITEM mi;
-		mi.cbSize = sizeof(mi);
-		mi.flags = CMIM_ICON;
-		mi.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
-		for (j = 0; j < hMsgMenuItemCount; j++) {
-			CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hMsgMenuItem[j], (LPARAM) & mi);
-		}
-		CallService(MS_SKIN2_RELEASEICON,(WPARAM)mi.hIcon, 0);
-	}
-	FreeMsgLogIcons();
-	LoadMsgLogIcons();
-	ChangeStatusIcons();
-	WindowList_Broadcast(g_dat->hMessageWindowList, DM_REMAKELOG, 0, 0);
-	// change all the icons
-	WindowList_Broadcast(g_dat->hMessageWindowList, DM_CHANGEICONS, 0, 0);
-	WindowList_Broadcast(g_dat->hMessageWindowList, DM_UPDATETITLEBAR, 0, 0);
-	Chat_IconsChanged(wParam, lParam);
-	return 0;
-}
-
-int SmileySettingsChanged(WPARAM wParam, LPARAM lParam)
-{
-	WindowList_Broadcast(g_dat->hMessageWindowList, DM_REMAKELOG, wParam, 0);
-	Chat_SmileyOptionsChanged(wParam, lParam);
-	return 0;
-}
-
-int IcoLibIconsChanged(WPARAM wParam, LPARAM lParam)
-{
-	ReleaseGlobalIcons();
-	LoadGlobalIcons();
-	return IconsChanged(wParam, lParam);
-}
-
-void RegisterIcoLibIcons() {
-	hEventSkin2IconsChanged = HookEvent_Ex(ME_SKIN2_ICONSCHANGED, IcoLibIconsChanged);
-	if (hEventSkin2IconsChanged) {
-		SKINICONDESC sid = { 0 };
-		char path[MAX_PATH];
-		GetModuleFileNameA(g_hInst, path, MAX_PATH);
-		sid.cbSize = sizeof(SKINICONDESC);
-		sid.cx = sid.cy = 16;
-		sid.pszSection = Translate("Scriver/Messaging");
-		sid.pszDefaultFile = path;
-		sid.pszName = (char *) "scriver_ADD";
-		sid.iDefaultIndex = -IDI_ADDCONTACT;
-		sid.pszDescription = Translate("Add contact");
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-		sid.pszName = (char *) "scriver_USERDETAILS";
-		sid.iDefaultIndex = -IDI_USERDETAILS;
-		sid.pszDescription = Translate("User's details");
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-		sid.pszName = (char *) "scriver_HISTORY";
-		sid.iDefaultIndex = -IDI_HISTORY;
-		sid.pszDescription = Translate("User's history");
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-		sid.pszName = (char *) "scriver_SEND";
-		sid.iDefaultIndex = -IDI_SEND;
-		sid.pszDescription = Translate("Send message");
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-		sid.pszName = (char *) "scriver_CANCEL";
-		sid.iDefaultIndex = -IDI_CANCEL;
-		sid.pszDescription = Translate("Close session");
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-		sid.pszName = (char *) "scriver_SMILEY";
-		sid.iDefaultIndex = -IDI_SMILEY;
-		sid.pszDescription = Translate("Smiley button");
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-		sid.pszName = (char *) "scriver_TYPING";
-		sid.iDefaultIndex = -IDI_TYPING;
-		sid.pszDescription = Translate("User is typing");
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszName = (char *) "scriver_UNICODEON";
-		sid.iDefaultIndex = -IDI_UNICODEON;
-		sid.pszDescription = Translate("Unicode is on");
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-		sid.pszName = (char *) "scriver_UNICODEOFF";
-		sid.iDefaultIndex = -IDI_UNICODEOFF;
-		sid.pszDescription = Translate("Unicode is off");
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszName = (char *) "scriver_DELIVERING";
-		sid.iDefaultIndex = -IDI_TIMESTAMP;
-		sid.pszDescription = Translate("Sending");
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszName = (char *) "scriver_QUOTE";
-		sid.iDefaultIndex = -IDI_QUOTE;
-		sid.pszDescription = Translate("Quote button");
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszName = (char *) "scriver_CLOSEX";
-		sid.iDefaultIndex = -IDI_CLOSEX;
-		sid.pszDescription = Translate("Close button");
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszName = (char *) "scriver_OVERLAY";
-		sid.iDefaultIndex = -IDI_OVERLAY;
-		sid.pszDescription = Translate("Icon overlay");
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszName = (char *) "scriver_INCOMING";
-		sid.iDefaultIndex = -IDI_INCOMING;
-		sid.pszDescription = Translate("Incoming message");
-//		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-		sid.pszName = (char *) "scriver_OUTGOING";
-		sid.iDefaultIndex = -IDI_OUTGOING;
-		sid.pszDescription = Translate("Outgoing message");
-//		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-		sid.pszName = (char *) "scriver_NOTICE";
-		sid.iDefaultIndex = -IDI_NOTICE;
-		sid.pszDescription = Translate("Notice");
-//		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-	}
 }
 
 static int buttonIcons[] = {SMF_ICON_CLOSEX, -1, SMF_ICON_USERDETAILS, SMF_ICON_SMILEY, SMF_ICON_ADD, SMF_ICON_HISTORY, SMF_ICON_QUOTE, SMF_ICON_CANCEL, SMF_ICON_SEND};
