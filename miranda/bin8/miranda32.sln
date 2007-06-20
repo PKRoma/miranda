@@ -39,6 +39,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "scriver", "..\plugins\Scriv
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "..\plugins\zlib\zlib_8.vcproj", "{E2A369CD-EDA3-414F-8AD0-E732CD7EE68C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GG", "..\protocols\Gadu-Gadu\Gadu-Gadu_8.vcproj", "{6DA1396F-2A44-4D5C-8442-012F71006217}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "avs", "..\plugins\avs\avs_8.vcproj", "{7711F563-6473-4ABD-B5E3-477CE8384AD6}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FreeImage", "..\plugins\freeimage\FreeImage_8.vcproj", "{D0C4EACD-F264-4CFA-9AFC-3918FEC31A9A}"
@@ -47,9 +49,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FreeImage", "..\plugins\fre
 	EndProjectSection
 EndProject
 Global
-	GlobalSection(DPCodeReviewSolutionGUID) = preSolution
-		DPCodeReviewSolutionGUID = {00000000-0000-0000-0000-000000000000}
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug Unicode|Win32 = Debug Unicode|Win32
 		Debug|Win32 = Debug|Win32
@@ -201,6 +200,14 @@ Global
 		{E2A369CD-EDA3-414F-8AD0-E732CD7EE68C}.Release Unicode|Win32.Build.0 = Release Unicode|Win32
 		{E2A369CD-EDA3-414F-8AD0-E732CD7EE68C}.Release|Win32.ActiveCfg = Release|Win32
 		{E2A369CD-EDA3-414F-8AD0-E732CD7EE68C}.Release|Win32.Build.0 = Release|Win32
+		{6DA1396F-2A44-4D5C-8442-012F71006217}.Debug Unicode|Win32.ActiveCfg = Debug Unicode|Win32
+		{6DA1396F-2A44-4D5C-8442-012F71006217}.Debug Unicode|Win32.Build.0 = Debug Unicode|Win32
+		{6DA1396F-2A44-4D5C-8442-012F71006217}.Debug|Win32.ActiveCfg = Debug|Win32
+		{6DA1396F-2A44-4D5C-8442-012F71006217}.Debug|Win32.Build.0 = Debug|Win32
+		{6DA1396F-2A44-4D5C-8442-012F71006217}.Release Unicode|Win32.ActiveCfg = Release Unicode|Win32
+		{6DA1396F-2A44-4D5C-8442-012F71006217}.Release Unicode|Win32.Build.0 = Release Unicode|Win32
+		{6DA1396F-2A44-4D5C-8442-012F71006217}.Release|Win32.ActiveCfg = Release|Win32
+		{6DA1396F-2A44-4D5C-8442-012F71006217}.Release|Win32.Build.0 = Release|Win32
 		{7711F563-6473-4ABD-B5E3-477CE8384AD6}.Debug Unicode|Win32.ActiveCfg = Debug Unicode|Win32
 		{7711F563-6473-4ABD-B5E3-477CE8384AD6}.Debug Unicode|Win32.Build.0 = Debug Unicode|Win32
 		{7711F563-6473-4ABD-B5E3-477CE8384AD6}.Debug|Win32.ActiveCfg = Debug|Win32
@@ -220,5 +227,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(DPCodeReviewSolutionGUID) = preSolution
+		DPCodeReviewSolutionGUID = {00000000-0000-0000-0000-000000000000}
 	EndGlobalSection
 EndGlobal
