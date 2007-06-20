@@ -214,13 +214,14 @@ static TCHAR * GetSendBufferMsg(struct MessageWindowData *dat, int i) {
     if (dat->sendInfo[i].flags & PREF_UTF) {
         mir_utf8decode(dat->sendInfo[i].sendBuffer, &szMsg);
     } else {
-        szMsg = (char *)mir_alloc(dat->sendInfo[i].sendBufferSize - len - 1);
+        szMsg = (TCHAR *)mir_alloc(dat->sendInfo[i].sendBufferSize - len - 1);
         memcpy(szMsg, dat->sendInfo[i].sendBuffer + len + 1, dat->sendInfo[i].sendBufferSize - len - 1);
     }
 #else
     szMsg = (char *)mir_alloc(dat->sendInfo[i].sendBufferSize);
     memcpy(szMsg, dat->sendInfo[i].sendBuffer, len + 1);
 #endif
+    return szMsg;
 }
 
 static void RemoveSendBuffer(struct MessageWindowData *dat, int i) {
