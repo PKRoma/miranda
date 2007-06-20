@@ -175,7 +175,7 @@ void  p2p_clearDormantSessions( void )
 	time_t ts = time( NULL );
 	for ( int i=0; i < sessionList.getCount(); i++ ) {
 		filetransfer* FT = sessionList[i];
-		if ( FT->p2p_waitack && ( ts - FT->ts ) > 10 ) 
+		if ( FT->p2p_waitack && ( ts - FT->ts ) > 60 ) 
 		{
 			LeaveCriticalSection( &sessionLock );
 			p2p_unregisterSession( FT );
