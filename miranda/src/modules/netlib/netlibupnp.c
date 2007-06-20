@@ -425,9 +425,6 @@ static BOOL getUPnPURLs(char* szUrl, size_t sizeUrl)
 	parseURL(szUrl, szHostNew, NULL, NULL);
 	parseURL(szCtlUrl, szHostExist, NULL, NULL);
 
-	if (strcmp(szHostNew, szHostExist) == 0)
-		return FALSE;
-
 	gatewayFound = httpTransact(szUrl, szData, 8192, NULL) == 200;
 	if (gatewayFound)
 	{
