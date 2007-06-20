@@ -101,7 +101,7 @@ void RegisterFontServiceFonts() {
 		LOGFONT lf;
 		FontIDT fid = {0};
 		ColourIDT cid = {0};
-		fid.cbSize = sizeof(fid);
+		fid.cbSize = sizeof(FontIDT);
 		_tcsncpy(fid.group, _T("Scriver/Single Messaging"), SIZEOF(fid.group));
 		strncpy(fid.dbSettingsGroup, (SRMMMOD), SIZEOF(fid.dbSettingsGroup));
 		fid.flags = FIDF_DEFAULTVALID;
@@ -116,7 +116,7 @@ void RegisterFontServiceFonts() {
 			fid.deffontsettings.style = (lf.lfWeight >= FW_BOLD ? FONTF_BOLD : 0) | (lf.lfItalic ? FONTF_ITALIC : 0);
 			fid.deffontsettings.charset = lf.lfCharSet;
 			_tcsncpy(fid.deffontsettings.szFace, lf.lfFaceName, LF_FACESIZE);
-			_tcsncpy(fid.backgroundGroup, _T("Scriver"), SIZEOF(fid.backgroundGroup));
+			_tcsncpy(fid.backgroundGroup, _T("Scriver/Single Messaging"), SIZEOF(fid.backgroundGroup));
 			switch (i) {
 			case MSGFONTID_MYMSG:
 			case MSGFONTID_MYNAME:
@@ -134,8 +134,8 @@ void RegisterFontServiceFonts() {
 			}
 			CallService(MS_FONT_REGISTERT, (WPARAM)&fid, 0);
 		}
-		cid.cbSize = sizeof(fid);
-		_tcsncpy(cid.group, _T("Scriver"), SIZEOF(fid.group));
+		cid.cbSize = sizeof(ColourIDT);
+		_tcsncpy(cid.group, _T("Scriver/Single Messaging"), SIZEOF(fid.group));
 		strncpy(cid.dbSettingsGroup, (SRMMMOD), SIZEOF(fid.dbSettingsGroup));
 		cid.flags = 0;
 		cid.order = 0;

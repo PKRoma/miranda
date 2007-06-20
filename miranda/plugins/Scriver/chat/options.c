@@ -348,8 +348,8 @@ void RegisterFonts( void )
 	fontid.flags = FIDF_ALLOWREREGISTER | FIDF_DEFAULTVALID | FIDF_NEEDRESTART;
 	for (i = 0; i < SIZEOF(fontOptionsList); i++, index++) {
 		strncpy(fontid.dbSettingsGroup, "ChatFonts", sizeof(fontid.dbSettingsGroup));
-		_tcsncpy(fontid.group, TranslateT("Scriver/Group Chats"), SIZEOF(fontid.group));
-		_tcsncpy(fontid.name, TranslateTS(fontOptionsList[i].szDescr), SIZEOF(fontid.name));
+		_tcsncpy(fontid.group, _T("Scriver/Group Chats"), SIZEOF(fontid.group));
+		_tcsncpy(fontid.name, fontOptionsList[i].szDescr, SIZEOF(fontid.name));
 		sprintf(idstr, "Font%d", index);
 		strncpy(fontid.prefix, idstr, sizeof(fontid.prefix));
 		fontid.order = index;
@@ -359,17 +359,17 @@ void RegisterFonts( void )
 		fontid.deffontsettings.size = fontOptionsList[i].defSize;
 		fontid.deffontsettings.style = fontOptionsList[i].defStyle;
 		_tcsncpy(fontid.deffontsettings.szFace, fontOptionsList[i].szDefFace, SIZEOF(fontid.deffontsettings.szFace));
-		_tcsncpy(fontid.backgroundGroup, TranslateT("Chat Module"), SIZEOF(fontid.backgroundGroup));
+		_tcsncpy(fontid.backgroundGroup, _T("Scriver/Group Chats"), SIZEOF(fontid.backgroundGroup));
 		switch (i) {
 		case 17:
-			_tcsncpy(fontid.backgroundName, TranslateT("Message Background"), SIZEOF(fontid.backgroundName));
+			_tcsncpy(fontid.backgroundName, _T("Message Background"), SIZEOF(fontid.backgroundName));
 			break;
 		case 18:
 		case 19:
-			_tcsncpy(fontid.backgroundName, TranslateT("Userlist Background"), SIZEOF(fontid.backgroundName));
+			_tcsncpy(fontid.backgroundName, _T("Userlist Background"), SIZEOF(fontid.backgroundName));
 			break;
 		default:
-			_tcsncpy(fontid.backgroundName, TranslateT("Background"), SIZEOF(fontid.backgroundName));
+			_tcsncpy(fontid.backgroundName, _T("Background"), SIZEOF(fontid.backgroundName));
 			break;
 		}
 		CallService(MS_FONT_REGISTERT, (WPARAM)&fontid, 0);
@@ -380,23 +380,23 @@ void RegisterFonts( void )
 	strncpy(colourid.dbSettingsGroup, "Chat", sizeof(colourid.dbSettingsGroup));
 
 	strncpy(colourid.setting, "ColorLogBG", SIZEOF(colourid.setting));
-	_tcsncpy(colourid.name, TranslateT("Background"), SIZEOF(colourid.name));
-	_tcsncpy(colourid.group, TranslateT("Chat Module"), SIZEOF(colourid.group));
+	_tcsncpy(colourid.name, _T("Background"), SIZEOF(colourid.name));
+	_tcsncpy(colourid.group, _T("Scriver/Group Chats"), SIZEOF(colourid.group));
 	colourid.defcolour = GetSysColor(COLOR_WINDOW);
 	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
 
 	strncpy(colourid.setting, "ColorMessageBG", SIZEOF(colourid.setting));
-	_tcsncpy(colourid.name, TranslateT("Message Background"), SIZEOF(colourid.name));
+	_tcsncpy(colourid.name, _T("Message Background"), SIZEOF(colourid.name));
 	colourid.defcolour = GetSysColor(COLOR_WINDOW);
 	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
 
 	strncpy(colourid.setting, "ColorNicklistBG", SIZEOF(colourid.setting));
-	_tcsncpy(colourid.name, TranslateT("Userlist Background"), SIZEOF(colourid.name));
+	_tcsncpy(colourid.name, _T("Userlist Background"), SIZEOF(colourid.name));
 	colourid.defcolour = GetSysColor(COLOR_WINDOW);
 	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
 
 	strncpy(colourid.setting, "ColorNicklistLines", SIZEOF(colourid.setting));
-	_tcsncpy(colourid.name, TranslateT("Userlist Lines"), SIZEOF(colourid.name));
+	_tcsncpy(colourid.name, _T("Userlist Lines"), SIZEOF(colourid.name));
 	colourid.defcolour = GetSysColor(COLOR_INACTIVEBORDER);
 	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
 }
