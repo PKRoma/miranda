@@ -8,6 +8,7 @@
 //		   libgadu Authors <http://dev.null.pl/ekg/>,
 //		   Liquid (Image send/recv), The Leech (Proxy fixes)
 //		   MirandaIM Polish Forum
+//		   Angeli-Ka (Gadu-Gadu plugin icons)
 ///////////////////////////////////////////////////////////////////
 
 1. About
@@ -50,15 +51,22 @@ Note: For secure connections this plugin requires OpenSSL DLL
 	  If DLL files are not present plugin works only with plain
 	  unsecure connections.
 
-4. Todo
+4. TODO
 -------
- - Enable/disable features that need more bandwidth, i.e. image sending
  - Animated GIFs support (image sending)
  - Full Netlib integration
+ - Integration with Miranda Image services
  - Voice chat
 
 5. History
 ----------
+0.0.4.5: 2007-06-20
+ - Angeli-Ka icons are now default Gadu-Gadu icons
+ - Protocol status icons are now built in the Plugin, so taken by default
+ - IcoLib support, now you can redefine all GG icons including "blocked" icon
+ - Gadu-Gadu libgadu update to support fully DCC7 transfers and GG7.7 features
+   (has to be tested, if it really works)
+ - Some safety internal fixes
 0.0.4.2: 2007-02-22
  - Binary release: Recompiled to support new NETLIB settings structure.
    !!Warning!! Plugin requires now Miranda 0.6.1+ for proxy support.
@@ -280,7 +288,7 @@ Note: For secure connections this plugin requires OpenSSL DLL
 6. Latest development version:
 ------------------------------
 Latest development version is always available at:
-	http://www.miranda-im.pl/download/
+	http://www.miranda-im.org/development/
 
 	- GG.dll - release version
 	- GGdebug.dll - debug version, debug infos in NetLib log

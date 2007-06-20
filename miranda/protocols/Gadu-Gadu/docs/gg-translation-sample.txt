@@ -1,4 +1,4 @@
-; *** Gadu-Gadu
+; ** Gadu-Gadu 0.0.4.5
 
 ; Info page
 [Public Info]
@@ -67,16 +67,14 @@ Podaj adres hosta serwera rêcznie
 [Manually specify connection servers' hosts]
 Podaj adresy hostów serwerów rêcznie
 ;[Use secure SSL connection] @ deprecated 0.0.2.6
-[Use SSL secure connection]
 [Host:]
 Host:
-U¿ywaj bezpiecznego po³¹czenia SSL
-[* new line is separator\n** hostname:port format]
-* nowa linia - separator\n** format nazwahosta:port
 [Use direct connections]
 U¿ywaj po³¹czeñ bezpoœrednich
 [Use forwarding]
 U¿ywaj forwardowania
+[* new line is separator\n** hostname:port format]
+* nowa linia - separator\n** format nazwahosta:port
 
 ; Menu
 [Import List From &Server]
@@ -91,6 +89,34 @@ Eksportuj listê do &serwera
 Eksportuj listê do pliku &tekstowego...
 [Text files]
 Pliki tekstowe
+
+; Icons
+[Protocol icon]
+Ikona protoko³u
+[Import list from server]
+Import listy z serwera
+[Import list from text file]
+Import listy z pliku tekstowego
+[Remove list from server]
+Usuniêcie listy z serwera
+[Export list to server]
+Eksport listy do serwera
+[Export list to text file]
+Eksport listy do pliku tekstowego
+[Account settings]
+Ustawienia konta
+[Blocked to this contact}
+Ten kontakt mnie zablokowa³
+[Previous image]
+Poprzedni obrazek
+[Next image]
+Nastêpny obrazek
+[Send image]
+Wyœlij obrazek
+[Save image]
+Zapisz obrazek
+[Delete image]
+Usuñ obrazek
 
 ; Errors
 ;[Gadu-Gadu Error] << depreciated in 0.0.1.4
@@ -228,7 +254,8 @@ Zostanie utworzone nowe konto Gadu-Gadu.
 Wiek od:
 [to:]
 do:
-;[Search online users only]
+[Search online users only]
+Szukaj tylko wœród dostêpnych
 
 ; Image recv/send
 [&Image]

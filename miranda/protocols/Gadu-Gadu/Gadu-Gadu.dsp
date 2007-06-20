@@ -109,6 +109,10 @@ SOURCE=.\libgadu\dcc.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\libgadu\dcc7.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\libgadu\events.c
 # End Source File
 # Begin Source File
