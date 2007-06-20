@@ -474,7 +474,6 @@ static BOOL getUPnPURLs(char* szUrl, size_t sizeUrl)
 		else 
 			gatewayFound = FALSE;
 	}
-	Netlib_Logf(NULL, "UPnP Gateway detected %d, Control URL: %s\n", gatewayFound, szCtlUrl); 
 	
 	return gatewayFound;
 }
@@ -561,7 +560,6 @@ static void discoverUPnP(void)
 			FD_ZERO(&readfd);
 			FD_SET(sock, &readfd);
 		}	
-		Netlib_Logf(NULL, "UPnP select ended\n"); 
 	}
 
 	mir_free(ips);
@@ -584,6 +582,7 @@ static BOOL findUPnPGateway(void)
 		gatewayFound = FALSE;
 		
 		discoverUPnP();
+		Netlib_Logf(NULL, "UPnP Gateway detected %d, Control URL: %s\n", gatewayFound, szCtlUrl); 
 	}	
 
 	ReleaseMutex(portListMutex);
