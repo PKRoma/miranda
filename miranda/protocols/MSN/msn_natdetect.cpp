@@ -82,6 +82,8 @@ static void DiscardExtraPackets(SOCKET s)
 
 	for (;;)
 	{
+		if (Miranda_Terminated()) break;
+
 		fd_set fd;
 		FD_ZERO(&fd);
 		FD_SET(s, &fd);
@@ -147,6 +149,8 @@ static void MSNatDetect(void)
 	// NAT detection
 	for (i=0; i<4; ++i)
 	{
+		if (Miranda_Terminated()) break;
+
 		// Send echo request to server 1
 		MSN_DebugLog("P2PNAT Request 1 attempt %d sent", i);
 		sendto(s1, (char*)&pkt, sizeof(pkt), 0, (SOCKADDR*)&addr, sizeof(addr));
@@ -214,6 +218,8 @@ static void MSNatDetect(void)
 	addr2.sin_port = rpkt.discardPort;
 	for (i=0; i<4; ++i)
 	{
+		if (Miranda_Terminated()) break;
+
 		MSN_DebugLog("P2PNAT Request 2 attempt %d sent", i);
 		// Remove IP restriction for server 2
 		sendto(s1, NULL, 0, 0, (SOCKADDR*)&addr2, sizeof(addr2));
@@ -251,6 +257,8 @@ static void MSNatDetect(void)
 	addr2.sin_port = rpkt.testPort;
 	for (i=0; i<4; ++i)
 	{
+		if (Miranda_Terminated()) break;
+
 		MSN_DebugLog("P2PNAT Request 3 attempt %d sent", i);
 		// Send echo request to server 1
 		sendto(s1, (char*)&pkt, sizeof(pkt), 0, (SOCKADDR*)&addr2, sizeof(addr2));
