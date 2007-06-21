@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_filerequests.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -76,6 +76,12 @@ void handleFileAck(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, WORD wStat
     return;
   }
 
+  if (wLen < 6) 
+  { // sanity check
+    NetLog_Direct("Ignoring malformed file transfer request response");
+    return;
+  }
+
   // Port to connect to
   unpackWord(&buf, &wPort);
   ft->dwRemotePort = wPort;
@@ -89,15 +95,21 @@ void handleFileAck(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, WORD wStat
   unpackLEWord(&buf, &wFilenameLength);
   if (wFilenameLength > 0)
   {
+    if (wFilenameLength > wLen - 2)
+      wFilenameLength = wLen - 2;
     pszFileName = _alloca(wFilenameLength+1);
     unpackString(&buf, pszFileName, wFilenameLength);
     pszFileName[wFilenameLength] = '\0';
   }
   wLen = wLen - 2 - wFilenameLength;
   
-  // Total filesize
-  unpackLEDWord(&buf, &dwFileSize);
-  wLen -= 4;
+  if (wLen >= 4)
+  { // Total filesize
+    unpackLEDWord(&buf, &dwFileSize);
+    wLen -= 4;
+  }
+  else
+    dwFileSize = 0;
   
   NetLog_Direct("File transfer ack from %u, port %u, name %s, size %u", dwUin, ft->dwRemotePort, pszFileName, dwFileSize);
 
