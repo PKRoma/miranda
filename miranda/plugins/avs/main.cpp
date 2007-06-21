@@ -71,7 +71,7 @@ static int ReportMyAvatarChanged(WPARAM wParam, LPARAM lParam);
 
 BOOL Proto_IsAvatarsEnabled(char *proto);
 BOOL Proto_IsAvatarFormatSupported(char *proto, int format);
-void Proto_GetAvatarMaxSize(char *proto, int &width, int &height);
+void Proto_GetAvatarMaxSize(char *proto, int *width, int *height);
 int Proto_AvatarImageProportion(char *proto);
 BOOL Proto_NeedDelaysForAvatars(char *proto);
 int Proto_GetAvatarMaxFileSize(char *proto);
@@ -85,7 +85,7 @@ PLUGININFO pluginInfo = {
 #else
 	"Avatar service",
 #endif
-	PLUGIN_MAKE_VERSION(0, 0, 3, 1), 
+	PLUGIN_MAKE_VERSION(0, 0, 3, 2), 
 	"Load and manage contact pictures for other plugins", 
 	"Nightwish, Pescuma", 
 	"", 
@@ -1026,6 +1026,26 @@ static UINT_PTR CALLBACK SetMyAvatarHookProc(HWND hwnd, UINT msg, WPARAM wParam,
 	return 0;
 }
 
+const char *GetFormatExtension(int format)
+{
+	if (format == PA_FORMAT_PNG)
+		return ".png";
+	else if (format == PA_FORMAT_JPEG)
+		return ".jpg";
+	else if (format == PA_FORMAT_ICON)
+		return ".ico";
+	else if (format == PA_FORMAT_BMP)
+		return ".bmp";
+	else if (format == PA_FORMAT_GIF)
+		return ".gif";
+	else if (format == PA_FORMAT_SWF)
+		return ".swf";
+	else if (format == PA_FORMAT_XML)
+		return ".xml";
+	else
+		return NULL;
+}
+
 int GetImageFormat(char *filename)
 {
 	size_t len = strlen(filename);
@@ -1143,42 +1163,31 @@ static void DeleteGlobalUserAvatar()
 	DBDeleteContactSetting(NULL, AVS_MODULE, "GlobalUserAvatarFile");
 }
 
-/*
- * set an avatar for a protocol (service function)
- * if lParam == NULL, a open file dialog will be opened, otherwise, lParam is taken as a FULL
- * image filename (will be checked for existance, though)
- */
-static int SetMyAvatar(WPARAM wParam, LPARAM lParam)
+static int InternalRemoveMyAvatar(char *protocol)
 {
-	char *protocol;
-    char FileName[MAX_PATH];
-    char *szFinalName = NULL;
-    HANDLE hFile = 0;
-	BOOL allAcceptXML;
-	BOOL allAcceptSWF;
-    
-	protocol = (char *)wParam;
-    
-	// Protocol allow seting of avatar?
-	if (protocol != NULL && !CanSetMyAvatar((WPARAM) protocol, 0))
-		return -1;
-
-	if (lParam == 0 && hwndSetMyAvatar != 0)
+	// Remove avatar
+	int ret = 0;
+	if (protocol != NULL)
 	{
-		SetForegroundWindow((HWND) hwndSetMyAvatar);
-		SetFocus((HWND) hwndSetMyAvatar);
- 		ShowWindow((HWND) hwndSetMyAvatar, SW_SHOW);
-		return -2;
+		if (ProtoServiceExists(protocol, PS_SETMYAVATAR))
+			ret = CallProtoService(protocol, PS_SETMYAVATAR, 0, NULL);
+		else
+			ret = -3;
+
+		if (ret == 0)
+		{
+			// Has global avatar?
+			DBVARIANT dbv = {0};
+			if (!DBGetContactSetting(NULL, AVS_MODULE, "GlobalUserAvatarFile", &dbv))
+			{
+				DBFreeVariant(&dbv);
+				DBWriteContactSettingByte(NULL, AVS_MODULE, "GlobalUserAvatarNotConsistent", 1);
+				DeleteGlobalUserAvatar();
+			}
+		}
 	}
-
-	SetMyAvatarHookData data = { 0 };
-
-	// Check for XML and SWF
-	if (protocol == NULL)
+	else
 	{
-		allAcceptXML = TRUE;
-		allAcceptSWF = TRUE;
-
 		PROTOCOLDESCRIPTOR **protos;
 		int i,count;
 
@@ -1196,133 +1205,28 @@ static int SetMyAvatar(WPARAM wParam, LPARAM lParam)
 
 			if (!Proto_IsAvatarsEnabled(protos[i]->szName))
 				continue;
-
-			allAcceptXML = allAcceptXML && Proto_IsAvatarFormatSupported(protos[i]->szName, PA_FORMAT_XML);
-			allAcceptSWF = allAcceptSWF && Proto_IsAvatarFormatSupported(protos[i]->szName, PA_FORMAT_SWF);
+			
+			// Found a protocol
+			int retTmp = CallProtoService(protos[i]->szName, PS_SETMYAVATAR, 0, NULL);
+			if (retTmp != 0)
+				ret = retTmp;
 		}
 
-		data.square = DBGetContactSettingByte(0, AVS_MODULE, "SetAllwaysMakeSquare", 0);
-	}
-	else
-	{
-		allAcceptXML = Proto_IsAvatarFormatSupported(protocol, PA_FORMAT_XML);
-		allAcceptSWF = Proto_IsAvatarFormatSupported(protocol, PA_FORMAT_SWF);
+		DeleteGlobalUserAvatar();
 
-		data.protocol = protocol;
-		data.square = (Proto_AvatarImageProportion(protocol) & PIP_SQUARE)
-						|| DBGetContactSettingByte(0, AVS_MODULE, "SetAllwaysMakeSquare", 0);
+		if (ret)
+			DBWriteContactSettingByte(NULL, AVS_MODULE, "GlobalUserAvatarNotConsistent", 1);
+		else
+			DBWriteContactSettingByte(NULL, AVS_MODULE, "GlobalUserAvatarNotConsistent", 0);
 	}
 
-    if(lParam == 0) {
-        OPENFILENAMEA ofn = {0};
-		char filter[512];
-		char inipath[1024];
+	ReportMyAvatarChanged((WPARAM) "", 0);
+	return ret;
+}
 
-		data.protocol = protocol;
-
-		filter[0] = '\0';
-		FilterGetStrings(filter, sizeof(filter), allAcceptXML, allAcceptSWF);
-
-		FoldersGetCustomPath(hMyAvatarsFolder, inipath, sizeof(inipath), ".");
-
-		if (IsWinVer2000Plus())
-			ofn.lStructSize = sizeof(ofn);
-		else
-			ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
-        ofn.hwndOwner = 0;
-        ofn.lpstrFile = FileName;
-        ofn.lpstrFilter = filter;
-        ofn.nMaxFile = MAX_PATH;
-        ofn.nMaxFileTitle = MAX_PATH;
-        ofn.Flags = OFN_FILEMUSTEXIST | OFN_ENABLETEMPLATE | OFN_EXPLORER | OFN_ENABLESIZING | OFN_ENABLEHOOK;
-		ofn.lpstrInitialDir = inipath;
-		ofn.lpTemplateName = MAKEINTRESOURCEA(IDD_SET_OWN_SUBCLASS);
-		ofn.lpfnHook = SetMyAvatarHookProc;
-		ofn.lCustData = (LPARAM) &data;
-
-        *FileName = '\0';
-        ofn.lpstrDefExt="";
-        ofn.hInstance = g_hInst;
-
-		char title[256];
-		if (protocol == NULL)
-			mir_snprintf(title, sizeof(title), Translate("Set My Avatar"));
-		else
-			mir_snprintf(title, sizeof(title), Translate("Set My Avatar for %s"), protocol);
-		ofn.lpstrTitle = title;
-
-        if(GetOpenFileNameA(&ofn)) 
-            szFinalName = FileName;
-        else
-            return 1;
-    }
-    else
-        szFinalName = (char *)lParam;
-
-    /*
-     * filename is now set, check it and perform all needed action
-     */
-
-	if (szFinalName[0] == '\0')
-	{
-		// Remove avatar
-		int ret = 0;
-		if (protocol != NULL)
-		{
-			if (ProtoServiceExists(protocol, PS_SETMYAVATAR))
-				ret = CallProtoService(protocol, PS_SETMYAVATAR, 0, NULL);
-			else
-				ret = -3;
-
-			if (ret == 0)
-			{
-				// Has global avatar?
-				DBVARIANT dbv = {0};
-				if (!DBGetContactSetting(NULL, AVS_MODULE, "GlobalUserAvatarFile", &dbv))
-				{
-					DBFreeVariant(&dbv);
-					DBWriteContactSettingByte(NULL, AVS_MODULE, "GlobalUserAvatarNotConsistent", 1);
-					DeleteGlobalUserAvatar();
-				}
-			}
-		}
-		else
-		{
-			PROTOCOLDESCRIPTOR **protos;
-			int i,count;
-
-			CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM)&count, (LPARAM)&protos);
-			for (i = 0; i < count; i++)
-			{
-				if (protos[i]->type != PROTOTYPE_PROTOCOL)
-					continue;
-
-				if (protos[i]->szName == NULL || protos[i]->szName[0] == '\0')
-					continue;
-
-				if (!ProtoServiceExists(protos[i]->szName, PS_SETMYAVATAR))
-					continue;
-
-				if (!Proto_IsAvatarsEnabled(protos[i]->szName))
-					continue;
-				
-				// Found a protocol
-				int retTmp = CallProtoService(protos[i]->szName, PS_SETMYAVATAR, 0, NULL);
-				if (retTmp != 0)
-					ret = retTmp;
-			}
-
-			DeleteGlobalUserAvatar();
-
-			if (ret)
-				DBWriteContactSettingByte(NULL, AVS_MODULE, "GlobalUserAvatarNotConsistent", 1);
-			else
-				DBWriteContactSettingByte(NULL, AVS_MODULE, "GlobalUserAvatarNotConsistent", 0);
-		}
-
-		ReportMyAvatarChanged((WPARAM) "", 0);
-		return ret;
-	}
+static int InternalSetMyAvatar(char *protocol, char *szFinalName, SetMyAvatarHookData &data, BOOL allAcceptXML, BOOL allAcceptSWF)
+{
+    HANDLE hFile = 0;
 
 	int format = GetImageFormat(szFinalName);
     if (format == PA_FORMAT_UNKNOWN || (hFile = CreateFileA(szFinalName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE)
@@ -1465,6 +1369,135 @@ static int SetMyAvatar(WPARAM wParam, LPARAM lParam)
 	return ret;
 }
 
+/*
+ * set an avatar for a protocol (service function)
+ * if lParam == NULL, a open file dialog will be opened, otherwise, lParam is taken as a FULL
+ * image filename (will be checked for existance, though)
+ */
+static int SetMyAvatar(WPARAM wParam, LPARAM lParam)
+{
+	char *protocol;
+    char FileName[MAX_PATH];
+    char *szFinalName = NULL;
+	BOOL allAcceptXML;
+	BOOL allAcceptSWF;
+    
+	protocol = (char *)wParam;
+    
+	// Protocol allow seting of avatar?
+	if (protocol != NULL && !CanSetMyAvatar((WPARAM) protocol, 0))
+		return -1;
+
+	if (lParam == 0 && hwndSetMyAvatar != 0)
+	{
+		SetForegroundWindow((HWND) hwndSetMyAvatar);
+		SetFocus((HWND) hwndSetMyAvatar);
+ 		ShowWindow((HWND) hwndSetMyAvatar, SW_SHOW);
+		return -2;
+	}
+
+	SetMyAvatarHookData data = { 0 };
+
+	// Check for XML and SWF
+	if (protocol == NULL)
+	{
+		allAcceptXML = TRUE;
+		allAcceptSWF = TRUE;
+
+		PROTOCOLDESCRIPTOR **protos;
+		int i,count;
+
+		CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM)&count, (LPARAM)&protos);
+		for (i = 0; i < count; i++)
+		{
+			if (protos[i]->type != PROTOTYPE_PROTOCOL)
+				continue;
+
+			if (protos[i]->szName == NULL || protos[i]->szName[0] == '\0')
+				continue;
+
+			if (!ProtoServiceExists(protos[i]->szName, PS_SETMYAVATAR))
+				continue;
+
+			if (!Proto_IsAvatarsEnabled(protos[i]->szName))
+				continue;
+
+			allAcceptXML = allAcceptXML && Proto_IsAvatarFormatSupported(protos[i]->szName, PA_FORMAT_XML);
+			allAcceptSWF = allAcceptSWF && Proto_IsAvatarFormatSupported(protos[i]->szName, PA_FORMAT_SWF);
+		}
+
+		data.square = DBGetContactSettingByte(0, AVS_MODULE, "SetAllwaysMakeSquare", 0);
+	}
+	else
+	{
+		allAcceptXML = Proto_IsAvatarFormatSupported(protocol, PA_FORMAT_XML);
+		allAcceptSWF = Proto_IsAvatarFormatSupported(protocol, PA_FORMAT_SWF);
+
+		data.protocol = protocol;
+		data.square = (Proto_AvatarImageProportion(protocol) & PIP_SQUARE)
+						|| DBGetContactSettingByte(0, AVS_MODULE, "SetAllwaysMakeSquare", 0);
+	}
+
+    if(lParam == 0) {
+        OPENFILENAMEA ofn = {0};
+		char filter[512];
+		char inipath[1024];
+
+		data.protocol = protocol;
+
+		filter[0] = '\0';
+		FilterGetStrings(filter, sizeof(filter), allAcceptXML, allAcceptSWF);
+
+		FoldersGetCustomPath(hMyAvatarsFolder, inipath, sizeof(inipath), ".");
+
+		if (IsWinVer2000Plus())
+			ofn.lStructSize = sizeof(ofn);
+		else
+			ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
+        ofn.hwndOwner = 0;
+        ofn.lpstrFile = FileName;
+        ofn.lpstrFilter = filter;
+        ofn.nMaxFile = MAX_PATH;
+        ofn.nMaxFileTitle = MAX_PATH;
+        ofn.Flags = OFN_FILEMUSTEXIST | OFN_ENABLETEMPLATE | OFN_EXPLORER | OFN_ENABLESIZING | OFN_ENABLEHOOK;
+		ofn.lpstrInitialDir = inipath;
+		ofn.lpTemplateName = MAKEINTRESOURCEA(IDD_SET_OWN_SUBCLASS);
+		ofn.lpfnHook = SetMyAvatarHookProc;
+		ofn.lCustData = (LPARAM) &data;
+
+        *FileName = '\0';
+        ofn.lpstrDefExt="";
+        ofn.hInstance = g_hInst;
+
+		char title[256];
+		if (protocol == NULL)
+			mir_snprintf(title, sizeof(title), Translate("Set My Avatar"));
+		else
+			mir_snprintf(title, sizeof(title), Translate("Set My Avatar for %s"), protocol);
+		ofn.lpstrTitle = title;
+
+        if(GetOpenFileNameA(&ofn)) 
+            szFinalName = FileName;
+        else
+            return 1;
+    }
+    else
+        szFinalName = (char *)lParam;
+
+    /*
+     * filename is now set, check it and perform all needed action
+     */
+
+	if (szFinalName[0] == '\0')
+	{
+		return InternalRemoveMyAvatar(protocol);
+	}
+	else
+	{
+		return InternalSetMyAvatar(protocol, szFinalName, data, allAcceptXML, allAcceptSWF);
+	}
+}
+
 static DWORD GetFileSize(char *szFilename)
 {
 	HANDLE hFile = CreateFileA(szFilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -1480,6 +1513,51 @@ static DWORD GetFileSize(char *szFilename)
 		return 0;
 
 	return MAKELONG(low, hi);
+}
+
+struct SaveProtocolData {
+	DWORD max_size;
+	char image_file_name[MAX_PATH];
+	BOOL saved;
+	BOOL need_smaller_size;
+	int width;
+	int height;
+	char temp_file[MAX_PATH];
+	HBITMAP hBmpProto;
+};
+
+static void SaveImage(SaveProtocolData &d, char *protocol, int format) 
+{
+	if (Proto_IsAvatarFormatSupported(protocol, format)) 
+	{
+		mir_snprintf(d.image_file_name, sizeof(d.image_file_name), "%s%s", d.temp_file, GetFormatExtension(format));
+		if (!BmpFilterSaveBitmap(d.hBmpProto, d.image_file_name, format == PA_FORMAT_JPEG ? JPEG_QUALITYSUPERB : 0))
+		{
+			if (d.max_size != 0 && GetFileSize(d.image_file_name) > d.max_size)
+			{
+				DeleteFileA(d.image_file_name);
+
+				if (format == PA_FORMAT_JPEG)
+				{
+					// Try with lower quality
+					if (!BmpFilterSaveBitmap(d.hBmpProto, d.image_file_name, JPEG_QUALITYGOOD))
+					{
+						if (GetFileSize(d.image_file_name) > d.max_size)
+						{
+							DeleteFileA(d.image_file_name);
+							d.need_smaller_size = TRUE;
+						}
+						else
+							d.saved = TRUE;
+					}
+				}
+				else
+					d.need_smaller_size = TRUE;
+			}
+			else
+				d.saved = TRUE;
+		}
+	}
 }
 
 static int SetProtoMyAvatar(char *protocol, HBITMAP hBmp, char *originalFilename, int originalFormat,
@@ -1507,174 +1585,114 @@ static int SetProtoMyAvatar(char *protocol, HBITMAP hBmp, char *originalFilename
 	}
 
 	// Get protocol info
-	DWORD max_size = (DWORD) Proto_GetAvatarMaxFileSize(protocol);
+	SaveProtocolData d = {0};
 
-	int width, height;
-	Proto_GetAvatarMaxSize(protocol, width, height);
+	d.max_size = (DWORD) Proto_GetAvatarMaxFileSize(protocol);
+
+	Proto_GetAvatarMaxSize(protocol, &d.width, &d.height);
+	int orig_width = d.width;
+	int orig_height = d.height;
 
 	if (Proto_AvatarImageProportion(protocol) & PIP_SQUARE)
 		square = TRUE;
 
-	// Try to save until a valid image is found or we give up
-	char image_file_name[MAX_PATH];
-	BOOL saved = FALSE, need_smaller_size = TRUE;
-	int num_tries = 0;
-	int orig_width = width;
-	int orig_height = height;
-	char temp_file[MAX_PATH] = "";
-	HBITMAP hBmpProto = NULL;
 
+	// Try to save until a valid image is found or we give up
+	int num_tries = 0;
 	do {
 		// Lets do it
 		ResizeBitmap rb;
 		rb.size = sizeof(ResizeBitmap);
 		rb.hBmp = hBmp;
-		rb.max_height = height;
-		rb.max_width = width;
+		rb.max_height = d.height;
+		rb.max_width = d.width;
 		rb.fit = (grow ? 0 : RESIZEBITMAP_FLAG_DONT_GROW) 
 				| (square ? RESIZEBITMAP_MAKE_SQUARE : RESIZEBITMAP_KEEP_PROPORTIONS);
 
-		hBmpProto = (HBITMAP) BmpFilterResizeBitmap((WPARAM)&rb, 0);
+		d.hBmpProto = (HBITMAP) BmpFilterResizeBitmap((WPARAM)&rb, 0);
 
-		if (hBmpProto == NULL)
+		if (d.hBmpProto == NULL)
 		{
-			if (temp_file[0] != '\0')
-				DeleteFileA(temp_file);
+			if (d.temp_file[0] != '\0')
+				DeleteFileA(d.temp_file);
 			return -1;
 		}
 
 		// Check if can use original image
-		if (hBmpProto == hBmp 
+		if (d.hBmpProto == hBmp 
 			&& Proto_IsAvatarFormatSupported(protocol, originalFormat)
-			&& (max_size == 0 || GetFileSize(originalFilename) < max_size))
+			&& (d.max_size == 0 || GetFileSize(originalFilename) < d.max_size))
 		{
-			if (temp_file[0] != '\0')
-				DeleteFileA(temp_file);
+			if (d.temp_file[0] != '\0')
+				DeleteFileA(d.temp_file);
 
 			// Use original image
 			return CallProtoService(protocol, PS_SETMYAVATAR, 0, (LPARAM) originalFilename);
 		}
 
 		// Create a temporary file (if was not created already)
-		if (temp_file[0] == '\0')
+		if (d.temp_file[0] == '\0')
 		{
-			temp_file[0] = '\0';
-			if (GetTempPathA(MAX_PATH, temp_file) == 0 
-				|| GetTempFileNameA(temp_file, "mir_av_", 0, temp_file) == 0)
+			d.temp_file[0] = '\0';
+			if (GetTempPathA(MAX_PATH, d.temp_file) == 0 
+				|| GetTempFileNameA(d.temp_file, "mir_av_", 0, d.temp_file) == 0)
 			{
-				DeleteObject(hBmpProto);
+				DeleteObject(d.hBmpProto);
 				return -1;
 			}
 		}
 
 		// Which format?
-		// Png is default
-		if (Proto_IsAvatarFormatSupported(protocol, PA_FORMAT_PNG)) 
-		{
-			mir_snprintf(image_file_name, sizeof(image_file_name), "%s%s", temp_file, ".png");
-			if (!BmpFilterSaveBitmap(hBmpProto, image_file_name, 0))
-			{
-				if (max_size != 0 && GetFileSize(image_file_name) > max_size)
-				{
-					DeleteFileA(image_file_name);
-					need_smaller_size = TRUE;
-				}
-				else
-					saved = TRUE;
-			}
-		}
-		
-		// Jpeg is second
-		if (!saved && Proto_IsAvatarFormatSupported(protocol, PA_FORMAT_JPEG))
-		{
-			mir_snprintf(image_file_name, sizeof(image_file_name), "%s%s", temp_file, ".jpg");
-			if (!BmpFilterSaveBitmap(hBmpProto, image_file_name, JPEG_QUALITYSUPERB))
-			{
-				if (max_size != 0 && GetFileSize(image_file_name) > max_size)
-				{
-					DeleteFileA(image_file_name);
 
-					// Try with lower quality
-					if (!BmpFilterSaveBitmap(hBmpProto, image_file_name, JPEG_QUALITYGOOD))
-					{
-						if (GetFileSize(image_file_name) > max_size)
-						{
-							DeleteFileA(image_file_name);
-							need_smaller_size = TRUE;
-						}
-						else
-							saved = TRUE;
-					}
-				}
-				else
-					saved = TRUE;
-			}
-		}
-		
-		// Gif
-		if (!saved && Proto_IsAvatarFormatSupported(protocol, PA_FORMAT_GIF))
-		{
-			mir_snprintf(image_file_name, sizeof(image_file_name), "%s%s", temp_file, ".gif");
-			if (!BmpFilterSaveBitmap(hBmpProto, image_file_name, 0))
-			{
-				if (max_size != 0 && GetFileSize(image_file_name) > max_size)
-				{
-					DeleteFileA(image_file_name);
-					need_smaller_size = TRUE;
-				}
-				else
-					saved = TRUE;
-			}
-		}
-		
-		// Bitmap
-		if (!saved && Proto_IsAvatarFormatSupported(protocol, PA_FORMAT_BMP))
-		{
-			mir_snprintf(image_file_name, sizeof(image_file_name), "%s%s", temp_file, ".bmp");
-			if (!BmpFilterSaveBitmap(hBmpProto, image_file_name, 0))
-			{
-				if (max_size != 0 && GetFileSize(image_file_name) > max_size)
-				{
-					DeleteFileA(image_file_name);
-					need_smaller_size = TRUE;
-				}
-				else
-					saved = TRUE;
-			}
-		}
+		// First try to use original format
+		if (originalFormat != PA_FORMAT_BMP)
+			SaveImage(d, protocol, originalFormat);
 
+		if (!d.saved && originalFormat != PA_FORMAT_PNG)
+			SaveImage(d, protocol, PA_FORMAT_PNG);
+
+		if (!d.saved && originalFormat != PA_FORMAT_JPEG)
+			SaveImage(d, protocol, PA_FORMAT_JPEG);
+
+		if (!d.saved && originalFormat != PA_FORMAT_GIF)
+			SaveImage(d, protocol, PA_FORMAT_GIF);
+
+		if (!d.saved)
+			SaveImage(d, protocol, PA_FORMAT_BMP);
+
+		
 		num_tries++;
-		if (!saved && need_smaller_size && num_tries < 4)
+		if (!d.saved && d.need_smaller_size && num_tries < 4)
 		{
 			// Cleanup
-			if (hBmpProto != hBmp) 
-				DeleteObject(hBmpProto);
+			if (d.hBmpProto != hBmp) 
+				DeleteObject(d.hBmpProto);
 
 			// use a smaller size
-			width = orig_width * (4 - num_tries) / 4;
-			height = orig_height * (4 - num_tries) / 4;
+			d.width = orig_width * (4 - num_tries) / 4;
+			d.height = orig_height * (4 - num_tries) / 4;
 		}
 
-	} while(!saved && need_smaller_size && num_tries < 4);
+	} while(!d.saved && d.need_smaller_size && num_tries < 4);
 	
 	int ret;
 
-	if (saved)
+	if (d.saved)
 	{
 		// Call proto service
-		ret = CallProtoService(protocol, PS_SETMYAVATAR, 0, (LPARAM)image_file_name);
-		DeleteFileA(image_file_name);
+		ret = CallProtoService(protocol, PS_SETMYAVATAR, 0, (LPARAM)d.image_file_name);
+		DeleteFileA(d.image_file_name);
 	}
 	else
 	{
 		ret = -1;
 	}
 
-	if (temp_file[0] != '\0')
-		DeleteFileA(temp_file);
+	if (d.temp_file[0] != '\0')
+		DeleteFileA(d.temp_file);
 
-	if (hBmpProto != hBmp) 
-		DeleteObject(hBmpProto);
+	if (d.hBmpProto != hBmp) 
+		DeleteObject(d.hBmpProto);
 
 	return ret;
 }
@@ -1686,7 +1704,7 @@ static int ContactOptions(WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-static int GetMyAvatar(WPARAM wParam, LPARAM lParam)
+int GetMyAvatar(WPARAM wParam, LPARAM lParam)
 {
 	int i;
 	char *szProto = (char *)lParam;
@@ -1730,7 +1748,7 @@ HANDLE GetContactThatHaveTheAvatar(HANDLE hContact, int locked = -1) {
 	return hContact;
 }
 
-static int GetAvatarBitmap(WPARAM wParam, LPARAM lParam)
+int GetAvatarBitmap(WPARAM wParam, LPARAM lParam)
 {
     if(wParam == 0 || g_shutDown || fei == NULL)
 		return 0;
@@ -2166,7 +2184,100 @@ static int ShutdownProc(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int DrawAvatarPicture(WPARAM wParam, LPARAM lParam)
+void InternalDrawAvatar(AVATARDRAWREQUEST *r, HBITMAP hbm, LONG bmWidth, LONG bmHeight, DWORD dwFlags)
+{
+    float dScale = 0;
+    int newHeight, newWidth;
+    HDC hdcAvatar;
+    HBITMAP hbmMem;
+    DWORD topoffset = 0, leftoffset = 0;
+    HRGN rgn = 0, oldRgn = 0;
+    int targetWidth = r->rcDraw.right - r->rcDraw.left;
+    int targetHeight = r->rcDraw.bottom - r->rcDraw.top;
+    BLENDFUNCTION bf = {0};
+    
+    hdcAvatar = CreateCompatibleDC(r->hTargetDC);
+    hbmMem = (HBITMAP)SelectObject(hdcAvatar, hbm);
+
+	if ((r->dwFlags & AVDRQ_DONTRESIZEIFSMALLER) && bmHeight <= targetHeight && bmWidth <= targetWidth) {
+		newHeight = bmHeight;
+		newWidth = bmWidth;
+	} 
+    else if (bmHeight >= bmWidth) {
+        dScale = targetHeight / (float)bmHeight;
+        newHeight = targetHeight;
+        newWidth = (int) (bmWidth * dScale);
+    }
+    else {
+        dScale = targetWidth / (float)bmWidth;
+        newWidth = targetWidth;
+        newHeight = (int) (bmHeight * dScale);
+    }
+
+    topoffset = targetHeight > newHeight ? (targetHeight - newHeight) / 2 : 0;
+    leftoffset = targetWidth > newWidth ? (targetWidth - newWidth) / 2 : 0;
+
+    // create the region for the avatar border - use the same region for clipping, if needed.
+
+	oldRgn = CreateRectRgn(0,0,1,1);
+	if (GetClipRgn(r->hTargetDC, oldRgn) != 1)
+	{
+		DeleteObject(oldRgn);
+		oldRgn = NULL;
+	}
+
+    if(r->dwFlags & AVDRQ_ROUNDEDCORNER)
+        rgn = CreateRoundRectRgn(r->rcDraw.left + leftoffset, r->rcDraw.top + topoffset, r->rcDraw.left + leftoffset + newWidth + 1, r->rcDraw.top + topoffset + newHeight + 1, 2 * r->radius, 2 * r->radius);
+    else
+        rgn = CreateRectRgn(r->rcDraw.left + leftoffset, r->rcDraw.top + topoffset, r->rcDraw.left + leftoffset + newWidth, r->rcDraw.top + topoffset + newHeight);
+
+	ExtSelectClipRgn(r->hTargetDC, rgn, RGN_AND);
+
+    bf.SourceConstantAlpha = r->alpha > 0 ? r->alpha : 255;
+    bf.AlphaFormat = dwFlags & AVS_PREMULTIPLIED ? AC_SRC_ALPHA : 0;
+
+    SetStretchBltMode(r->hTargetDC, HALFTONE);
+    if(bf.SourceConstantAlpha == 255 && bf.AlphaFormat == 0) {
+        StretchBlt(r->hTargetDC, r->rcDraw.left + leftoffset, r->rcDraw.top + topoffset, newWidth, newHeight, hdcAvatar, 0, 0, bmWidth, bmHeight, SRCCOPY);
+    }
+    else {
+        /*
+         * get around SUCKY AlphaBlend() rescaling quality...
+         */
+        HDC hdcTemp = CreateCompatibleDC(r->hTargetDC);
+        HBITMAP hbmTemp;
+        HBITMAP hbmTempOld;//
+
+        hbmTemp = CreateCompatibleBitmap(hdcAvatar, bmWidth, bmHeight);
+        hbmTempOld = (HBITMAP)SelectObject(hdcTemp, hbmTemp);
+
+        //SetBkMode(hdcTemp, TRANSPARENT);
+        SetStretchBltMode(hdcTemp, HALFTONE);
+        StretchBlt(hdcTemp, 0, 0, bmWidth, bmHeight, r->hTargetDC, r->rcDraw.left + leftoffset, r->rcDraw.top + topoffset, newWidth, newHeight, SRCCOPY);
+        AlphaBlend(hdcTemp, 0, 0, bmWidth, bmHeight, hdcAvatar, 0, 0, bmWidth, bmHeight, bf);
+        StretchBlt(r->hTargetDC, r->rcDraw.left + leftoffset, r->rcDraw.top + topoffset, newWidth, newHeight, hdcTemp, 0, 0, bmWidth, bmHeight, SRCCOPY);
+        SelectObject(hdcTemp, hbmTempOld);
+        DeleteObject(hbmTemp);
+        DeleteDC(hdcTemp);
+    }
+
+	if((r->dwFlags & AVDRQ_DRAWBORDER) && !((r->dwFlags & AVDRQ_HIDEBORDERONTRANSPARENCY) && (dwFlags & AVS_HASTRANSPARENCY))) {
+        HBRUSH br = CreateSolidBrush(r->clrBorder);
+        HBRUSH brOld = (HBRUSH)SelectObject(r->hTargetDC, br);
+        FrameRgn(r->hTargetDC, rgn, br, 1, 1);
+        SelectObject(r->hTargetDC, brOld);
+        DeleteObject(br);
+    }
+
+    SelectClipRgn(r->hTargetDC, oldRgn);
+    DeleteObject(rgn);
+	if (oldRgn) DeleteObject(oldRgn);
+
+    SelectObject(hdcAvatar, hbmMem);
+    DeleteDC(hdcAvatar);
+}
+
+int DrawAvatarPicture(WPARAM wParam, LPARAM lParam)
 {
     AVATARDRAWREQUEST *r = (AVATARDRAWREQUEST *)lParam;
     AVATARCACHEENTRY *ace = NULL;
@@ -2191,8 +2302,6 @@ static int DrawAvatarPicture(WPARAM wParam, LPARAM lParam)
         }
     }
 	else if(r->dwFlags & AVDRQ_OWNPIC) {
-        int i = 0;
-
         if(r->szProto == NULL)
             return 0;
         
@@ -2202,108 +2311,15 @@ static int DrawAvatarPicture(WPARAM wParam, LPARAM lParam)
 		ace = (AVATARCACHEENTRY *)GetMyAvatar(0, (LPARAM)r->szProto);
 	}
     else
-        ace = (AVATARCACHEENTRY *)GetAvatarBitmap((WPARAM)r->hContact, 0);
+        ace = (AVATARCACHEENTRY *)GetAvatarBitmap((WPARAM)r->hContact, 0);	
 
 	if(ace && (!(r->dwFlags & AVDRQ_RESPECTHIDDEN) || !(ace->dwFlags & AVS_HIDEONCLIST))) {
-        float dScale = 0;
-        int newHeight, newWidth;
-        HDC hdcAvatar;
-        HBITMAP hbmMem;
-        DWORD topoffset = 0, leftoffset = 0;
-        LONG bmWidth, bmHeight;
-        HBITMAP hbm;
-        HRGN rgn = 0, oldRgn = 0;
-        int targetWidth = r->rcDraw.right - r->rcDraw.left;
-        int targetHeight = r->rcDraw.bottom - r->rcDraw.top;
-        BLENDFUNCTION bf = {0};
-        
-        bmHeight = ace->bmHeight;
-        bmWidth = ace->bmWidth;
-        hbm = ace->hbmPic;
-        ace->t_lastAccess = time(NULL);
+		ace->t_lastAccess = time(NULL);
 
-        if(bmHeight == 0 || bmWidth == 0 || hbm == 0)
-            return 0;
+		if(ace->bmHeight == 0 || ace->bmWidth == 0 || ace->hbmPic == 0)
+			return 0;
 
-        hdcAvatar = CreateCompatibleDC(r->hTargetDC);
-        hbmMem = (HBITMAP)SelectObject(hdcAvatar, hbm);
-
-		if ((r->dwFlags & AVDRQ_DONTRESIZEIFSMALLER) && ace->bmHeight <= targetHeight && ace->bmWidth <= targetWidth) {
-			newHeight = bmHeight;
-			newWidth = bmWidth;
-		} 
-        else if (bmHeight >= bmWidth) {
-            dScale = targetHeight / (float)bmHeight;
-            newHeight = targetHeight;
-            newWidth = (int) (bmWidth * dScale);
-        }
-        else {
-            dScale = targetWidth / (float)bmWidth;
-            newWidth = targetWidth;
-            newHeight = (int) (bmHeight * dScale);
-        }
-
-        topoffset = targetHeight > newHeight ? (targetHeight - newHeight) / 2 : 0;
-        leftoffset = targetWidth > newWidth ? (targetWidth - newWidth) / 2 : 0;
-
-        // create the region for the avatar border - use the same region for clipping, if needed.
-
-		oldRgn = CreateRectRgn(0,0,1,1);
-		if (GetClipRgn(r->hTargetDC, oldRgn) != 1)
-		{
-			DeleteObject(oldRgn);
-			oldRgn = NULL;
-		}
-
-        if(r->dwFlags & AVDRQ_ROUNDEDCORNER)
-            rgn = CreateRoundRectRgn(r->rcDraw.left + leftoffset, r->rcDraw.top + topoffset, r->rcDraw.left + leftoffset + newWidth + 1, r->rcDraw.top + topoffset + newHeight + 1, 2 * r->radius, 2 * r->radius);
-        else
-            rgn = CreateRectRgn(r->rcDraw.left + leftoffset, r->rcDraw.top + topoffset, r->rcDraw.left + leftoffset + newWidth, r->rcDraw.top + topoffset + newHeight);
-
-		ExtSelectClipRgn(r->hTargetDC, rgn, RGN_AND);
-
-        bf.SourceConstantAlpha = r->alpha > 0 ? r->alpha : 255;
-        bf.AlphaFormat = ace->dwFlags & AVS_PREMULTIPLIED ? AC_SRC_ALPHA : 0;
-
-        SetStretchBltMode(r->hTargetDC, HALFTONE);
-        if(bf.SourceConstantAlpha == 255 && bf.AlphaFormat == 0) {
-            StretchBlt(r->hTargetDC, r->rcDraw.left + leftoffset, r->rcDraw.top + topoffset, newWidth, newHeight, hdcAvatar, 0, 0, bmWidth, bmHeight, SRCCOPY);
-        }
-        else {
-            /*
-             * get around SUCKY AlphaBlend() rescaling quality...
-             */
-            HDC hdcTemp = CreateCompatibleDC(r->hTargetDC);
-            HBITMAP hbmTemp;
-            HBITMAP hbmTempOld;//
-
-            hbmTemp = CreateCompatibleBitmap(hdcAvatar, bmWidth, bmHeight);
-            hbmTempOld = (HBITMAP)SelectObject(hdcTemp, hbmTemp);
-
-            //SetBkMode(hdcTemp, TRANSPARENT);
-            SetStretchBltMode(hdcTemp, HALFTONE);
-            StretchBlt(hdcTemp, 0, 0, bmWidth, bmHeight, r->hTargetDC, r->rcDraw.left + leftoffset, r->rcDraw.top + topoffset, newWidth, newHeight, SRCCOPY);
-            AlphaBlend(hdcTemp, 0, 0, bmWidth, bmHeight, hdcAvatar, 0, 0, bmWidth, bmHeight, bf);
-            StretchBlt(r->hTargetDC, r->rcDraw.left + leftoffset, r->rcDraw.top + topoffset, newWidth, newHeight, hdcTemp, 0, 0, bmWidth, bmHeight, SRCCOPY);
-            SelectObject(hdcTemp, hbmTempOld);
-            DeleteObject(hbmTemp);
-            DeleteDC(hdcTemp);
-        }
-
-		if((r->dwFlags & AVDRQ_DRAWBORDER) && !((r->dwFlags & AVDRQ_HIDEBORDERONTRANSPARENCY) && (ace->dwFlags & AVS_HASTRANSPARENCY))) {
-            HBRUSH br = CreateSolidBrush(r->clrBorder);
-            HBRUSH brOld = (HBRUSH)SelectObject(r->hTargetDC, br);
-            FrameRgn(r->hTargetDC, rgn, br, 1, 1);
-            SelectObject(r->hTargetDC, brOld);
-            DeleteObject(br);
-        }
-
-        SelectClipRgn(r->hTargetDC, oldRgn);
-        DeleteObject(rgn);
-		if (oldRgn) DeleteObject(oldRgn);
-
-        SelectObject(hdcAvatar, hbmMem);
-        DeleteDC(hdcAvatar);
+		InternalDrawAvatar(r, ace->hbmPic, ace->bmWidth, ace->bmHeight, ace->dwFlags);
         return 1;
     }
     else
@@ -2515,34 +2531,34 @@ int Proto_AvatarImageProportion(char *proto)
 	return 0;
 }
 
-void Proto_GetAvatarMaxSize(char *proto, int &width, int &height)
+void Proto_GetAvatarMaxSize(char *proto, int *width, int *height)
 {
 	if (ProtoServiceExists(proto, PS_GETAVATARCAPS))
 	{
 		POINT maxSize;
 		CallProtoService(proto, PS_GETAVATARCAPS, AF_MAXSIZE, (LPARAM) &maxSize);
-		width = maxSize.y;
-		height = maxSize.x;
+		*width = maxSize.y;
+		*height = maxSize.x;
 	}
 	else if (ProtoServiceExists(proto, PS_GETMYAVATARMAXSIZE))
 	{
-		CallProtoService(proto, PS_GETMYAVATARMAXSIZE, (WPARAM) &width, (LPARAM) &height);
+		CallProtoService(proto, PS_GETMYAVATARMAXSIZE, (WPARAM) width, (LPARAM) height);
 	}
 	else
 	{
-		width = 300;
-		height = 300;
+		*width = 300;
+		*height = 300;
 	}
 
-	if (width < 0)
-		width = 0;
-	else if (width > 300)
-		width = 300;
+	if (*width < 0)
+		*width = 0;
+	else if (*width > 300)
+		*width = 300;
 
-	if (height < 0)
-		height = 0;
-	else if (height > 300)
-		height = 300;
+	if (*height < 0)
+		*height = 0;
+	else if (*height > 300)
+		*height = 300;
 }
 
 BOOL Proto_NeedDelaysForAvatars(char *proto)

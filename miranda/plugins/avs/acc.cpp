@@ -25,10 +25,23 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern int g_protocount;
 extern struct protoPicCacheEntry *g_MyAvatars;
-extern int GetImageFormat(char *filename);
+extern FI_INTERFACE *fei;
+
+int GetImageFormat(char *filename);
+int DrawAvatarPicture(WPARAM wParam, LPARAM lParam);
+int GetAvatarBitmap(WPARAM wParam, LPARAM lParam);
+int GetMyAvatar(WPARAM wParam, LPARAM lParam);
+void InternalDrawAvatar(AVATARDRAWREQUEST *r, HBITMAP hbm, LONG bmWidth, LONG bmHeight, DWORD dwFlags);
+
 
 #define DM_AVATARCHANGED (WM_USER + 20)
 #define DM_MYAVATARCHANGED (WM_USER + 21)
+
+#define GIF_DISPOSAL_UNSPECIFIED	0
+#define GIF_DISPOSAL_LEAVE			1
+#define GIF_DISPOSAL_BACKGROUND		2
+#define GIF_DISPOSAL_PREVIOUS		3
+
 
 typedef struct 
 {
@@ -45,6 +58,31 @@ typedef struct
 	BOOL respectHidden;
 	BOOL showingFlash;
 	BOOL resizeIfSmaller;
+
+	BOOL showingAnimatedGif;
+
+	struct {
+		HBITMAP *hbms;
+		int *times;
+
+		FIMULTIBITMAP *multi;
+		FIBITMAP *dib;
+		int frameCount;
+		int logicalWidth;
+		int logicalHeight;
+		BOOL loop;
+		RGBQUAD background;
+		BOOL started;
+
+		struct {
+			int num;
+			int top;
+			int left;
+			int width;
+			int height;
+			int disposal_method;
+		} frame;
+	} ag;
 
 } ACCData;
 
@@ -114,9 +152,6 @@ void DestroyFlash(HWND hwnd, ACCData* data)
 
 void StartFlash(HWND hwnd, ACCData* data)
 {
-	if (data->showingFlash)
-		return;
-
 	if (!ServiceExists(MS_FAVATAR_MAKE))
 		return;
 
@@ -161,6 +196,248 @@ void StartFlash(HWND hwnd, ACCData* data)
 	data->showingFlash = TRUE;
 	ResizeFlash(hwnd, data);
 	SetBkgFlash(hwnd, data);
+}
+
+BOOL AnimatedGifGetData(ACCData* data)
+{
+	FIBITMAP *page = fei->FI_LockPage(data->ag.multi, 0);
+	if (page == NULL)
+		return FALSE;
+	
+	// Get info
+	FITAG *tag = NULL;
+	if (!fei->FI_GetMetadata(FIMD_ANIMATION, page, "LogicalWidth", &tag))
+		goto ERR;
+	data->ag.logicalWidth = *(WORD *)fei->FI_GetTagValue(tag);
+	
+	if (!fei->FI_GetMetadata(FIMD_ANIMATION, page, "LogicalHeight", &tag))
+		goto ERR;
+	data->ag.logicalHeight = *(WORD *)fei->FI_GetTagValue(tag);
+	
+	if (!fei->FI_GetMetadata(FIMD_ANIMATION, page, "Loop", &tag))
+		goto ERR;
+	data->ag.loop = (*(LONG *)fei->FI_GetTagValue(tag) > 0);
+	
+	if (fei->FI_HasBackgroundColor(page))
+		fei->FI_GetBackgroundColor(page, &data->ag.background);
+
+	fei->FI_UnlockPage(data->ag.multi, page, FALSE);
+	return TRUE;
+
+ERR:
+	fei->FI_UnlockPage(data->ag.multi, page, FALSE);
+	return FALSE;
+}
+
+void AnimatedGifDispodeFrame(ACCData* data)
+{
+	if (data->ag.frame.disposal_method == GIF_DISPOSAL_PREVIOUS) 
+	{
+		// TODO
+	} 
+	else if (data->ag.frame.disposal_method == GIF_DISPOSAL_BACKGROUND) 
+	{
+		for (int y = 0; y < data->ag.frame.height; y++) 
+		{
+			RGBQUAD *scanline = (RGBQUAD *) fei->FI_GetScanLine(data->ag.dib, 
+				data->ag.logicalHeight - (y + data->ag.frame.top) - 1) + data->ag.frame.left;
+			for (int x = 0; x < data->ag.frame.width; x++)
+				*scanline++ = data->ag.background;
+		}
+	}
+}
+
+void AnimatedGifMountFrame(ACCData* data, int page)
+{
+	data->ag.frame.num = page;
+
+	if (data->ag.hbms[page] != NULL)
+	{
+		data->ag.frame.disposal_method = GIF_DISPOSAL_LEAVE;
+		return;
+	}
+
+	FIBITMAP *dib = fei->FI_LockPage(data->ag.multi, data->ag.frame.num);
+	if (dib == NULL)
+		return;
+
+	FITAG *tag = NULL;
+	if (fei->FI_GetMetadata(FIMD_ANIMATION, dib, "FrameLeft", &tag))
+		data->ag.frame.left = *(WORD *)fei->FI_GetTagValue(tag);
+	else
+		data->ag.frame.left = 0;
+
+	if (fei->FI_GetMetadata(FIMD_ANIMATION, dib, "FrameTop", &tag))
+		data->ag.frame.top = *(WORD *)fei->FI_GetTagValue(tag);
+	else
+		data->ag.frame.top = 0;
+
+	if (fei->FI_GetMetadata(FIMD_ANIMATION, dib, "FrameTime", &tag))
+		data->ag.times[page] = *(LONG *)fei->FI_GetTagValue(tag);
+	else
+		data->ag.times[page] = 0;
+
+	if (fei->FI_GetMetadata(FIMD_ANIMATION, dib, "DisposalMethod", &tag))
+		data->ag.frame.disposal_method = *(BYTE *)fei->FI_GetTagValue(tag);
+	else
+		data->ag.frame.disposal_method = 0;
+
+	data->ag.frame.width  = fei->FI_GetWidth(dib);
+	data->ag.frame.height = fei->FI_GetHeight(dib);
+
+
+	//decode page
+	RGBQUAD *pal = fei->FI_GetPalette(dib);
+	bool have_transparent = false;
+	int transparent_color = -1;
+	if( fei->FI_IsTransparent(dib) ) {
+		int count = fei->FI_GetTransparencyCount(dib);
+		BYTE *table = fei->FI_GetTransparencyTable(dib);
+		for( int i = 0; i < count; i++ ) {
+			if( table[i] == 0 ) {
+				have_transparent = true;
+				transparent_color = i;
+				break;
+			}
+		}
+	}
+
+	//copy page data into logical buffer, with full alpha opaqueness
+	for( int y = 0; y < data->ag.frame.height; y++ ) {
+		RGBQUAD *scanline = (RGBQUAD *)fei->FI_GetScanLine(data->ag.dib, data->ag.logicalHeight - (y + data->ag.frame.top) - 1) + data->ag.frame.left;
+		BYTE *pageline = fei->FI_GetScanLine(dib, data->ag.frame.height - y - 1);
+		for( int x = 0; x < data->ag.frame.width; x++ ) {
+			if( !have_transparent || *pageline != transparent_color ) {
+				*scanline = pal[*pageline];
+				scanline->rgbReserved = 255;
+			}
+			scanline++;
+			pageline++;
+		}
+	}
+
+	data->ag.hbms[page] = fei->FI_CreateHBITMAPFromDIB(data->ag.dib);
+
+	fei->FI_UnlockPage(data->ag.multi, dib, FALSE);
+}
+
+void AnimatedGifDeleteTmpValues(ACCData* data)
+{
+	if (data->ag.multi != NULL)
+	{
+		fei->FI_CloseMultiBitmap(data->ag.multi, 0);
+		data->ag.multi = NULL;
+	}
+
+	if (data->ag.dib != NULL)
+	{
+		fei->FI_Unload(data->ag.dib);
+		data->ag.dib = NULL;
+	}
+}
+
+void DestroyAnimatedGif(HWND hwnd, ACCData* data)
+{
+	if (!data->showingAnimatedGif)
+		return;
+
+	AnimatedGifDeleteTmpValues(data);
+
+	if (data->ag.hbms != NULL)
+	{
+		for (int i = 0; i < data->ag.frameCount; i++)
+			if (data->ag.hbms[i] != NULL)
+				DeleteObject(data->ag.hbms[i]);
+
+		free(data->ag.hbms);
+		data->ag.hbms = NULL;
+	}
+
+	if (data->ag.times != NULL)
+	{
+		free(data->ag.times);
+		data->ag.times = NULL;
+	}
+
+	data->showingAnimatedGif = FALSE;
+}
+
+void StartAnimatedGif(HWND hwnd, ACCData* data)
+{
+	if (fei == NULL)
+		return;
+
+	int x, y;
+	AVATARCACHEENTRY *ace = NULL;
+
+	if (data->hContact != NULL)
+        ace = (AVATARCACHEENTRY *) GetAvatarBitmap((WPARAM) data->hContact, 0);	
+    else
+		ace = (AVATARCACHEENTRY *) GetMyAvatar(0, (LPARAM) data->proto);
+
+	if (ace == NULL)
+		return;
+
+	int format = GetImageFormat(ace->szFilename);
+	if (format != PA_FORMAT_GIF)
+		return;
+
+	FREE_IMAGE_FORMAT fif = fei->FI_GetFileType(ace->szFilename, 0);
+	if(fif == FIF_UNKNOWN)
+		fif = fei->FI_GetFIFFromFilename(ace->szFilename);
+
+	data->ag.multi = fei->FI_OpenMultiBitmap(fif, ace->szFilename, FALSE, TRUE, FALSE, 0);
+	if (data->ag.multi == NULL)
+		return;
+
+	data->ag.frameCount = fei->FI_GetPageCount(data->ag.multi);
+	if (data->ag.frameCount <= 1)
+		goto ERR;
+
+	if (!AnimatedGifGetData(data))
+		goto ERR;
+
+	//allocate entire logical area
+	data->ag.dib = fei->FI_Allocate(data->ag.logicalWidth, data->ag.logicalHeight, 32, 0, 0, 0);
+	if (data->ag.dib == NULL)
+		goto ERR;
+
+	//fill with background color to start
+	for (y = 0; y < data->ag.logicalHeight; y++) 
+	{
+		RGBQUAD *scanline = (RGBQUAD *) fei->FI_GetScanLine(data->ag.dib, y);
+		for (x = 0; x < data->ag.logicalWidth; x++)
+			*scanline++ = data->ag.background;
+	}
+
+	data->ag.hbms = (HBITMAP *) malloc(sizeof(HBITMAP *) * data->ag.frameCount);
+	memset(data->ag.hbms, 0, sizeof(HBITMAP *) * data->ag.frameCount);
+
+	data->ag.times = (int *) malloc(sizeof(int *) * data->ag.frameCount);
+	memset(data->ag.times, 0, sizeof(int *) * data->ag.frameCount);
+
+	AnimatedGifMountFrame(data, 0);
+
+	data->showingAnimatedGif = TRUE;
+
+	return;
+ERR:
+	fei->FI_CloseMultiBitmap(data->ag.multi, 0);
+	data->ag.multi = NULL;
+}
+
+void DestroyAnimation(HWND hwnd, ACCData* data)
+{
+	DestroyFlash(hwnd, data);
+	DestroyAnimatedGif(hwnd, data);
+}
+
+void StartAnimation(HWND hwnd, ACCData* data)
+{
+	StartFlash(hwnd, data);
+
+	if (!data->showingFlash)
+		StartAnimatedGif(hwnd, data);
 }
 
 BOOL ScreenToClient(HWND hWnd, LPRECT lpRect)
@@ -215,6 +492,31 @@ static void NotifyAvatarChange(HWND hwnd)
 	SendMessage(GetParent(hwnd), WM_NOTIFY, 0, (LPARAM) &pshn);
 }
 
+static void DrawText(HDC hdc, HFONT hFont, const RECT &rc, const char *text)
+{
+	HGDIOBJ oldFont = SelectObject(hdc, hFont);
+
+	// Get text rectangle
+	RECT tr = rc;
+	tr.top += 10;
+	tr.bottom -= 10;
+	tr.left += 10;
+	tr.right -= 10;
+
+	// Calc text size
+	RECT tr_ret = tr;
+	DrawTextA(hdc, text, -1, &tr_ret, 
+			DT_WORDBREAK | DT_NOPREFIX | DT_CENTER | DT_CALCRECT);
+
+	// Calc needed size
+	tr.top += ((tr.bottom - tr.top) - (tr_ret.bottom - tr_ret.top)) / 2;
+	tr.bottom = tr.top + (tr_ret.bottom - tr_ret.top);
+	DrawTextA(hdc, text, -1, &tr, 
+			DT_WORDBREAK | DT_NOPREFIX | DT_CENTER);
+
+	SelectObject(hdc, oldFont);
+}
+
 static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM lParam) {
 	ACCData* data =  (ACCData *) GetWindowLong(hwnd, 0);
 	switch(msg) 
@@ -239,12 +541,13 @@ static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM l
 			data->respectHidden = TRUE;
 			data->showingFlash = FALSE;
 			data->resizeIfSmaller = TRUE;
+			data->showingAnimatedGif = FALSE;
 
 			return TRUE;
 		}
         case WM_NCDESTROY:
         {
-			DestroyFlash(hwnd, data);
+			DestroyAnimation(hwnd, data);
 			if (data) 
 			{
                 UnhookEvent(data->hHook);
@@ -262,12 +565,12 @@ static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM l
 		}
 		case AVATAR_SETCONTACT:
 		{
-			DestroyFlash(hwnd, data);
+			DestroyAnimation(hwnd, data);
 
 			data->hContact = (HANDLE) lParam;
 			lstrcpynA(data->proto, (char*) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)data->hContact, 0), sizeof(data->proto));
 
-			StartFlash(hwnd, data);
+			StartAnimation(hwnd, data);
 
 			NotifyAvatarChange(hwnd);
 			Invalidate(hwnd);
@@ -275,7 +578,7 @@ static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM l
 		}
 		case AVATAR_SETPROTOCOL:
 		{
-			DestroyFlash(hwnd, data);
+			DestroyAnimation(hwnd, data);
 
 			data->hContact = NULL;
 			if (lParam == NULL)
@@ -283,7 +586,7 @@ static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM l
 			else
 				lstrcpynA(data->proto, (char *) lParam, sizeof(data->proto));
 
-			StartFlash(hwnd, data);
+			StartAnimation(hwnd, data);
 
 			NotifyAvatarChange(hwnd);
 			Invalidate(hwnd);
@@ -410,8 +713,8 @@ static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM l
 		{
 			if (data->hContact == (HANDLE) wParam)
 			{
-				DestroyFlash(hwnd, data);
-				StartFlash(hwnd, data);
+				DestroyAnimation(hwnd, data);
+				StartAnimation(hwnd, data);
 
 				NotifyAvatarChange(hwnd);
 				Invalidate(hwnd);
@@ -422,8 +725,8 @@ static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM l
 		{
 			if (data->hContact == NULL && strcmp(data->proto, (char*) wParam) == 0)
 			{
-				DestroyFlash(hwnd, data);
-				StartFlash(hwnd, data);
+				DestroyAnimation(hwnd, data);
+				StartAnimation(hwnd, data);
 
 				NotifyAvatarChange(hwnd);
 				Invalidate(hwnd);
@@ -452,71 +755,63 @@ static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM l
 				DeleteObject(hbrush);
 			}
 
-			// If has a flash avatar, don't draw it
-			if (data->showingFlash && ServiceExists(MS_FAVATAR_GETINFO))
+			if (data->hContact == NULL && data->proto[0] == '\0'
+				&& DBGetContactSettingByte(NULL, AVS_MODULE, "GlobalUserAvatarNotConsistent", 1))
 			{
-				FLASHAVATAR fa = {0}; 
-                fa.hContact = data->hContact;
-				fa.cProto = data->proto;
-				fa.hParentWindow = hwnd;
-                fa.id = 1675;
-				CallService(MS_FAVATAR_GETINFO, (WPARAM)&fa, 0);
-				if (fa.hWindow != NULL)
+				DrawText(hdc, data->hFont, rc, Translate("Protocols have different avatars"));
+			}
+
+			// Has a flash avatar
+			else if (data->showingFlash)
+			{
+				// Don't draw
+
+				// Draw control border if needed
+				if (data->borderColor == -1 && data->avatarBorderColor != -1)
 				{
-					// Draw control border
-					if (data->borderColor != -1 || data->avatarBorderColor != -1)
-					{
-						HBRUSH hbrush = CreateSolidBrush(data->borderColor != -1 ? data->borderColor : data->avatarBorderColor);
-						FrameRect(hdc, &rc, hbrush);
-						DeleteObject(hbrush);
-					}
-					return TRUE;
+					HBRUSH hbrush = CreateSolidBrush(data->avatarBorderColor);
+					FrameRect(hdc, &rc, hbrush);
+					DeleteObject(hbrush);
 				}
 			}
 
-			// Draw avatar
-            AVATARDRAWREQUEST avdrq = {0};
-            avdrq.cbSize = sizeof(avdrq);
-			avdrq.rcDraw = rc;
-            avdrq.hContact = data->hContact;
-			avdrq.szProto = data->proto;
-            avdrq.hTargetDC = hdc;
-            avdrq.dwFlags = AVDRQ_HIDEBORDERONTRANSPARENCY
-				| (data->respectHidden ? AVDRQ_RESPECTHIDDEN : 0) 
-				| (data->hContact != NULL ? 0 : AVDRQ_OWNPIC)
-				| (data->avatarBorderColor == -1 ? 0 : AVDRQ_DRAWBORDER)
-				| (data->avatarRoundCornerRadius <= 0 ? 0 : AVDRQ_ROUNDEDCORNER)
-				| (data->resizeIfSmaller ? 0 : AVDRQ_DONTRESIZEIFSMALLER);
-            avdrq.clrBorder = data->avatarBorderColor;
-            avdrq.radius = data->avatarRoundCornerRadius;
-
-			int ret = CallService(MS_AV_DRAWAVATAR, 0, (LPARAM)&avdrq);
-			if (ret == 0 || ret == -1) 
+			// Has an animated gif
+			// Has a "normal" image
+			else
 			{
-				HGDIOBJ oldFont = SelectObject(hdc, data->hFont);
+				// Draw avatar
+				AVATARDRAWREQUEST avdrq = {0};
+				avdrq.cbSize = sizeof(avdrq);
+				avdrq.rcDraw = rc;
+				avdrq.hContact = data->hContact;
+				avdrq.szProto = data->proto;
+				avdrq.hTargetDC = hdc;
+				avdrq.dwFlags = AVDRQ_HIDEBORDERONTRANSPARENCY
+					| (data->respectHidden ? AVDRQ_RESPECTHIDDEN : 0) 
+					| (data->hContact != NULL ? 0 : AVDRQ_OWNPIC)
+					| (data->avatarBorderColor == -1 ? 0 : AVDRQ_DRAWBORDER)
+					| (data->avatarRoundCornerRadius <= 0 ? 0 : AVDRQ_ROUNDEDCORNER)
+					| (data->resizeIfSmaller ? 0 : AVDRQ_DONTRESIZEIFSMALLER);
+				avdrq.clrBorder = data->avatarBorderColor;
+				avdrq.radius = data->avatarRoundCornerRadius;
 
-				// Get text rectangle
-				RECT tr = avdrq.rcDraw;
-				tr.top += 10;
-				tr.bottom -= 10;
-				tr.left += 10;
-				tr.right -= 10;
+				int ret;
+				if (data->showingAnimatedGif)
+				{
+					InternalDrawAvatar(&avdrq, data->ag.hbms[data->ag.frame.num], data->ag.logicalWidth, data->ag.logicalHeight, 0);
+					ret = 1;
 
-				char *text = (ret == -1 ? Translate("Protocols have different avatars") 
-										  : data->noAvatarText);
-
-				// Calc text size
-				RECT tr_ret = tr;
-				DrawTextA(hdc, text, -1, &tr_ret, 
-						DT_WORDBREAK | DT_NOPREFIX | DT_CENTER | DT_CALCRECT);
+					if (!data->ag.started)
+					{
+						SetTimer(hwnd, 0, data->ag.times[data->ag.frame.num], NULL);
+						data->ag.started = TRUE;
+					}
+				}
+				else
+					ret = DrawAvatarPicture(0, (LPARAM)&avdrq);
 				
-				// Calc needed size
-				tr.top += ((tr.bottom - tr.top) - (tr_ret.bottom - tr_ret.top)) / 2;
-				tr.bottom = tr.top + (tr_ret.bottom - tr_ret.top);
-				DrawTextA(hdc, text, -1, &tr, 
-						DT_WORDBREAK | DT_NOPREFIX | DT_CENTER);
-
-				SelectObject(hdc, oldFont);
+				if (ret == 0) 
+					DrawText(hdc, data->hFont, rc, data->noAvatarText);
 			}
 
 			// Draw control border
@@ -561,6 +856,31 @@ static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM l
 			if (data->showingFlash)
 				ResizeFlash(hwnd, data);
 			InvalidateRect(hwnd, NULL, TRUE);
+			break;
+		}
+		case WM_TIMER:
+		{
+			if (wParam != 0)
+				break;
+			KillTimer(hwnd, 0);
+
+			if (!data->showingAnimatedGif)
+				break;
+
+			AnimatedGifDispodeFrame(data);
+
+			int frame = data->ag.frame.num + 1;
+			if (frame >= data->ag.frameCount)
+			{
+				// Don't need fi data no more
+				AnimatedGifDeleteTmpValues(data);
+				frame = 0;
+			}
+			AnimatedGifMountFrame(data, frame);
+
+			data->ag.started = FALSE;
+			InvalidateRect(hwnd, NULL, FALSE);
+
 			break;
 		}
 	}
