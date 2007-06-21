@@ -86,8 +86,6 @@ PLUGININFOEX pluginInfoEx = {
 * freeimage helper functions
 */
 
-static HWND hwndClui = 0;
-
 // Correct alpha from bitmaps loaded without it (it cames with 0 and should be 255)
 // originally in loadavatars...
 
@@ -192,14 +190,11 @@ static BOOL FreeImage_PreMultiply(HBITMAP hBitmap)
 
 static HBITMAP  FreeImage_CreateHBITMAPFromDIB(FIBITMAP *dib)
 {
-	if(hwndClui == 0)
-		hwndClui = (HWND)CallService(MS_CLUI_GETHWND, 0, 0);
-
-	HDC hDC = GetDC(hwndClui);
+	HDC hDC = GetDC(NULL);
 	HBITMAP hBmp = CreateDIBitmap(hDC, FreeImage_GetInfoHeader(dib),
 		CBM_INIT, FreeImage_GetBits(dib), FreeImage_GetInfo(dib), DIB_RGB_COLORS);
 
-	ReleaseDC(hwndClui, hDC);
+	ReleaseDC(NULL, hDC);
 	return hBmp;
 }
 
