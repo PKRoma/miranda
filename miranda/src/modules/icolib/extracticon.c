@@ -70,7 +70,7 @@ void* _GetResourceTable(IMAGE_DOS_HEADER* pDosHeader)
 
 	if (pPE->Signature != IMAGE_NT_SIGNATURE)
 		return NULL;
-	if (pPE->FileHeader.SizeOfOptionalHeader < IMAGE_SIZEOF_NT_OPTIONAL32_HEADER)
+	if (pPE->FileHeader.SizeOfOptionalHeader < sizeof(IMAGE_OPTIONAL_HEADER32))
 		return NULL;
 
 	// The DataDirectory is an array of 16 structures. 
