@@ -190,11 +190,10 @@ static BOOL FreeImage_PreMultiply(HBITMAP hBitmap)
 
 static HBITMAP  FreeImage_CreateHBITMAPFromDIB(FIBITMAP *dib)
 {
-	HDC hDC = GetDC(NULL);
-	HBITMAP hBmp = CreateDIBitmap(hDC, FreeImage_GetInfoHeader(dib),
-		CBM_INIT, FreeImage_GetBits(dib), FreeImage_GetInfo(dib), DIB_RGB_COLORS);
-
-	ReleaseDC(NULL, hDC);
+	BYTE *ptPixels;
+	BITMAPINFO *info = FreeImage_GetInfo(dib);
+	HBITMAP hBmp = CreateDIBSection(NULL, info, DIB_RGB_COLORS, (void **)&ptPixels, NULL, 0);
+	memmove(ptPixels, FreeImage_GetBits(dib), info->bmiHeader.biWidth * info->bmiHeader.biHeight * (info->bmiHeader.biBitCount / 8));
 	return hBmp;
 }
 
