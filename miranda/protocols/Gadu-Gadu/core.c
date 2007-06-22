@@ -1445,8 +1445,8 @@ const char *gg_version2string(int v)
 	v &= 0x00ffffff;
 	switch(v)
 	{
-		case 0x30:
-			pstr = "7.7 build 3394"; break;
+		case 0x2a:
+			pstr = "7.7 build 3315"; break;
 		case 0x29:
 			pstr = "7.6 build 1688"; break;
 		case 0x28:
@@ -1458,7 +1458,7 @@ const char *gg_version2string(int v)
 		case 0x25:
 			pstr = "7.0 build 1"; break;
 		case 0x24:
-			pstr = "6.1 build 155 / 7.6 build 1359"; break;
+			pstr = "6.1 (155) / 7.6 (1359)"; break;
 		case 0x22:
 			pstr = "6.0 build 140"; break;
 		case 0x21:
@@ -1494,7 +1494,7 @@ const char *gg_version2string(int v)
 		default:
 			if (v < 0x0b)
 				pstr = "< 4.0.25";
-			else if (v > 0x30)
+			else if (v > 0x2a)
 				pstr = ">= 7.7";
 			break;
 	}
