@@ -48,6 +48,9 @@
 #  include <openssl/err.h>
 #  include <openssl/rand.h>
 #endif
+#ifdef GG_CONFIG_MIRANDA
+#  include <time.h>
+#endif
 
 #include "compat.h"
 #include "libgadu.h"
@@ -442,7 +445,7 @@ int gg_write(struct gg_session *sess, const char *buf, int length)
 	if (sess->ssl) {
 		int err;
 
-		res = SSL_write(sess->ssl, buf, length);
+		res = SSL_write(sess->ssl, (void *)buf, length);
 
 		if (res < 0) {
 			err = SSL_get_error(sess->ssl, res);
@@ -619,7 +622,7 @@ void *gg_recv_packet(struct gg_session *sess)
 			errno = ECONNRESET;
 			return NULL;
 		}
-		if (ret > -1 && ret <= size) {
+		if (ret > -1 && ret <= (int)size) {
 			offset += ret;
 			size -= ret;
 		} else if (ret == -1) {
@@ -1366,7 +1369,7 @@ int gg_image_reply(struct gg_session *sess, uin_t recipient, const char *filenam
 			buflen += strlen(filename) + 1;
 		}
 
-		chunklen = (size >= sizeof(buf) - buflen) ? (sizeof(buf) - buflen) : size;
+		chunklen = (size >= (int)sizeof(buf) - buflen) ? ((int)sizeof(buf) - buflen) : size;
 
 		memcpy(buf + buflen, image, chunklen);
 		size -= chunklen;

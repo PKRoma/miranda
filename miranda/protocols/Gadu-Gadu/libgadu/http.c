@@ -225,7 +225,7 @@ int gg_http_watch_fd(struct gg_http *h)
 		int res = 0;
 		unsigned int res_size = sizeof(res);
 
-		if (h->async && (getsockopt(h->fd, SOL_SOCKET, SO_ERROR, &res, &res_size) || res)) {
+		if (h->async && (getsockopt(h->fd, SOL_SOCKET, SO_ERROR, (char *)&res, &res_size) || res)) {
 			gg_debug(GG_DEBUG_MISC, "=> http, async connection failed (errno=%d, %s)\n", (res) ? res : errno , strerror((res) ? res : errno));
 			close(h->fd);
 			h->fd = -1;
@@ -249,7 +249,7 @@ int gg_http_watch_fd(struct gg_http *h)
 			gg_http_error(GG_ERROR_WRITING);
 		}
 
-		if (res < strlen(h->query)) {
+		if (res < (int)strlen(h->query)) {
 			gg_debug(GG_DEBUG_MISC, "=> http, partial header sent (led=%d, sent=%d)\n", strlen(h->query), res);
 
 			memmove(h->query, h->query + res, strlen(h->query) - res + 1);

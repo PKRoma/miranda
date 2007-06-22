@@ -946,7 +946,7 @@ struct gg_event *gg_dcc_watch_fd(struct gg_dcc *h)
 				gg_debug(GG_DEBUG_MISC, "// gg_dcc_watch_fd() GG_STATE_CONNECTING\n");
 
 				res = 0;
-				if ((foo = getsockopt(h->fd, SOL_SOCKET, SO_ERROR, &res, &res_size)) || res) {
+				if ((foo = getsockopt(h->fd, SOL_SOCKET, SO_ERROR, (char *)&res, &res_size)) || res) {
 					gg_debug(GG_DEBUG_MISC, "// gg_dcc_watch_fd() connection failed (fd=%d,errno=%d(%s),foo=%d,res=%d(%s))\n", h->fd, errno, strerror(errno), foo, res, strerror(res));
 					e->type = GG_EVENT_DCC_ERROR;
 					e->event.dcc_error = GG_ERROR_DCC_HANDSHAKE;

@@ -1580,6 +1580,9 @@ struct gg_dcc7_dunno1 {
 
 #ifdef __cplusplus
 }
+#endif
+
+#if defined(__cplusplus) || defined(GG_CONFIG_MIRANDA)
 #ifdef _WIN32
 #pragma pack(pop)
 #endif

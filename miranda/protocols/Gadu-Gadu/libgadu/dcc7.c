@@ -122,7 +122,7 @@ static int gg_dcc7_connect(struct gg_session *sess, struct gg_dcc7 *dcc)
 	tv.tv_sec = GG_DCC7_TIMEOUT_CONNECT;
 	tv.tv_usec = 0;
 
-	setsockopt(dcc->fd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv));
+	setsockopt(dcc->fd, SOL_SOCKET, SO_SNDTIMEO, (const char *)&tv, sizeof(tv));
 #endif
 
 	return 0;
@@ -368,7 +368,7 @@ int gg_dcc7_handle_id(struct gg_session *sess, struct gg_event *e, void *payload
 	for (tmp = sess->dcc7_list; tmp; tmp = tmp->next) {
 		gg_debug_session(sess, GG_DEBUG_MISC, "// checking dcc %p, state %d, type %d\n", tmp, tmp->state, tmp->dcc_type);
 
-		if (tmp->state != GG_STATE_REQUESTING_ID || tmp->dcc_type != gg_fix32(p->type))
+		if (tmp->state != GG_STATE_REQUESTING_ID || tmp->dcc_type != (int)gg_fix32(p->type))
 			continue;
 		
 		tmp->cid = p->id;
@@ -651,7 +651,7 @@ struct gg_event *gg_dcc7_watch_fd(struct gg_dcc7 *dcc)
 
 			gg_debug(GG_DEBUG_MISC, "// gg_dcc7_watch_fd() GG_STATE_CONNECTING\n");
 
-			if ((res = getsockopt(dcc->fd, SOL_SOCKET, SO_ERROR, &error, &error_size)) == -1 || error != 0) {
+			if ((res = getsockopt(dcc->fd, SOL_SOCKET, SO_ERROR, (char *)&error, &error_size)) == -1 || error != 0) {
 				gg_debug(GG_DEBUG_MISC, "// gg_dcc7_watch_fd() connection failed (%s)\n", (res == -1) ? strerror(errno) : strerror(error));
 				e->type = GG_EVENT_DCC7_ERROR;
 				e->event.dcc_error = GG_ERROR_DCC7_HANDSHAKE;

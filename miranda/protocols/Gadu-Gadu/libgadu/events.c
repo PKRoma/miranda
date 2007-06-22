@@ -204,7 +204,7 @@ static void gg_image_queue_parse(struct gg_event *e, char *p, unsigned int len, 
 
 		/* sprawd¼, czy mamy tekst zakoñczony \0 */
 
-		for (i = 0; i < len; i++) {
+		for (i = 0; i < (int)len; i++) {
 			if (!p[i]) {
 				ok = 1;
 				break;
@@ -1114,7 +1114,7 @@ struct gg_event *gg_watch_fd(struct gg_session *sess)
 
 			/* je¶li asynchroniczne, sprawdzamy, czy nie wyst±pi³
 			 * przypadkiem jaki¶ b³±d. */
-			if (sess->async && (getsockopt(sess->fd, SOL_SOCKET, SO_ERROR, &res, &res_size) || res)) {
+			if (sess->async && (getsockopt(sess->fd, SOL_SOCKET, SO_ERROR, (char *)&res, &res_size) || res)) {
 				/* no tak, nie uda³o siê po³±czyæ z proxy. nawet
 				 * nie próbujemy dalej. */
 				if (sess->proxy_addr && sess->proxy_port) {
@@ -1370,7 +1370,7 @@ struct gg_event *gg_watch_fd(struct gg_session *sess)
 			gg_debug_session(sess, GG_DEBUG_MISC, "// gg_watch_fd() GG_STATE_CONNECTING_GG\n");
 
 			/* je¶li wyst±pi³ b³±d podczas ³±czenia siê... */
-			if (sess->async && (sess->timeout == 0 || getsockopt(sess->fd, SOL_SOCKET, SO_ERROR, &res, &res_size) || res)) {
+			if (sess->async && (sess->timeout == 0 || getsockopt(sess->fd, SOL_SOCKET, SO_ERROR, (char *)&res, &res_size) || res)) {
 				/* je¶li nie uda³o siê po³±czenie z proxy,
 				 * nie mamy czego próbowaæ wiêcej. */
 				if (sess->proxy_addr && sess->proxy_port) {
