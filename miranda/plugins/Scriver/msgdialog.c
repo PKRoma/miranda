@@ -2195,6 +2195,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				dat->sendInfo[dat->sendCount-1].sendBuffer = (char *) mir_alloc(msi->sendBufferSize);
 				dat->sendInfo[dat->sendCount-1].flags = msi->flags;
 				dat->sendInfo[dat->sendCount-1].timeout = 0;
+				dat->sendInfo[dat->sendCount-1].hwndErrorDlg = NULL;
 				memcpy(dat->sendInfo[dat->sendCount-1].sendBuffer, msi->sendBuffer, dat->sendInfo[dat->sendCount-1].sendBufferSize);
 				SetTimer(hwndDlg, TIMERID_MSGSEND, 1000, NULL);
 				dat->messagesInProgress++;
