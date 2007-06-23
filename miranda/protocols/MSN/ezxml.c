@@ -31,6 +31,10 @@
 #include <sys/stat.h>
 #include "ezxml.h"
 
+#ifndef SIZE_MAX
+#define SIZE_MAX UINT_MAX
+#endif
+
 #define EZXML_WS   "\t\r\n "  // whitespace
 #define EZXML_ERRL 128        // maximum error string length
 
