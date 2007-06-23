@@ -29,12 +29,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 	#define _UNICODE
 #endif
 
-#include <malloc.h>
+#if _MSC_VER < 1400
+	#include <malloc.h>
+#endif
 
-#ifdef _DEBUG
+#if defined(_DEBUG) && !defined(__GNUC__)
 	#define _CRTDBG_MAP_ALLOC
 	#include <stdlib.h>
 	#include <crtdbg.h>
+#endif
+
+#if _MSC_VER >= 1400
+	#include <malloc.h>
 #endif
 
 #define _WIN32_WINNT 0x0400
@@ -127,7 +133,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //	Global definitions
 
 #define MSN_MAX_EMAIL_LEN        128
-#define MSN_GUID_LEN					40
+#define MSN_GUID_LEN			  40
 
 #define MSN_DEFAULT_PORT         1863
 #define MSN_DEFAULT_LOGIN_SERVER "messenger.hotmail.com"
@@ -217,7 +223,7 @@ int         MSN_CallService( const char* szSvcName, WPARAM wParam, LPARAM lParam
 HANDLE      MSN_CreateProtoServiceFunction( const char*, MIRANDASERVICE );
 void        MSN_DeleteSetting( HANDLE hContact, const char* valueName );
 void        MSN_EnableMenuItems( BOOL );
-void     __fastcall  MSN_FreeVariant( DBVARIANT* dbv );
+void		MSN_FreeVariant( DBVARIANT* dbv );
 char*       MSN_GetContactName( HANDLE hContact );
 TCHAR*      MSN_GetContactNameT( HANDLE hContact );
 DWORD       MSN_GetDword( HANDLE hContact, const char* valueName, DWORD parDefltValue );
@@ -279,7 +285,7 @@ typedef struct
 struct MimeHeader
 {
 	char* name;
-	char*	value;
+	char* value;
 };
 
 struct MimeHeaders
@@ -631,7 +637,7 @@ typedef struct
 
 	char		szEmail[MSN_MAX_EMAIL_LEN];
 }
-	MYOPTIONS;
+MYOPTIONS;
 
 extern MYOPTIONS MyOptions;
 

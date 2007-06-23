@@ -93,7 +93,7 @@ WORD  MSN_GetWord( HANDLE hContact, const char* valueName, int parDefltValue )
 	return (WORD)DBGetContactSettingWord( hContact, msnProtocolName, valueName, parDefltValue );
 }
 
-void __fastcall MSN_FreeVariant( DBVARIANT* dbv )
+void MSN_FreeVariant( DBVARIANT* dbv )
 {
 	DBFreeVariant( dbv );
 }
