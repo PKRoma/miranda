@@ -572,17 +572,22 @@ LONG ThreadData::sendPacket( const char* cmd, const char* fmt,...)
 	int strsize = 512;
 	char* str = ( char* )mir_alloc( strsize );
 
-	LONG thisTrid = MyInterlockedIncrement( &mTrid );
+	LONG thisTrid = 0;
 
-	if ( fmt == NULL || fmt[0] == '\0' )
-		sprintf( str, "%s %d", cmd, thisTrid );
-	else  {
-		int paramStart = sprintf( str, "%s %d ", cmd, thisTrid );
-		while ( _vsnprintf( str+paramStart, strsize-paramStart-2, fmt, vararg ) == -1 )
-			str = (char*)mir_realloc( str, strsize += 512 );
+	if ( fmt == NULL )
+		mir_snprintf( str, strsize, "%s", cmd );
+	else {
+		thisTrid = MyInterlockedIncrement( &mTrid );
+		if ( fmt[0] == '\0' )
+			mir_snprintf( str, strsize, "%s %d", cmd, thisTrid );
+		else {
+			int paramStart = mir_snprintf( str, strsize, "%s %d ", cmd, thisTrid );
+			while ( _vsnprintf( str+paramStart, strsize-paramStart-2, fmt, vararg ) == -1 )
+				str = (char*)mir_realloc( str, strsize += 512 );
+		}
 	}
 
-	if ( strcmp( cmd, "MSG" ) && strcmp( cmd, "QRY" ) && strcmp( cmd, "UUX" ))
+	if ( strchr( str, '\r' ) == NULL )
 		strcat( str,"\r\n" );
 
 	int result = send( str, strlen( str ));
@@ -1254,9 +1259,14 @@ bool txtParseParam (const char* szData, const char* presearch, const char* start
 	cp += strlen(start);
 	while (*cp == ' ') ++cp;
 
-	cp1 = strstr(cp, finish);
-	if (cp1 == NULL) return FALSE;
-	while (*(cp1-1) == ' ' && cp1 > cp) --cp1;
+	if (finish)
+	{
+		cp1 = strstr(cp, finish);
+		if (cp1 == NULL) return FALSE;
+		while (*(cp1-1) == ' ' && cp1 > cp) --cp1;
+	}
+	else
+		cp1 = strchr(cp, '\0');
 
 	len = min(cp1 - cp, size - 1);
 	memmove(param, cp, len);
