@@ -830,20 +830,10 @@ void MSN_GetOIMs( const char* initxml )
 			char* szMsg = MSN_Base64Decode( tResult );
 
 			mir_free( tResult );
-			szMsg = ( char* )mir_realloc( szMsg, strlen( szMsg ) * 3 + 4 ); 
-
-			wchar_t* szMsgU = NULL;
-			mir_utf8decode( szMsg, &szMsgU );
-
-			size_t alen = strlen( szMsg );
-
-			wcscpy(( wchar_t* )( szMsg+alen+1 ), szMsgU );
-			
-			mir_free( szMsgU );
 
 			PROTORECVEVENT pre;
 			pre.szMessage = szMsg;
-			pre.flags = PREF_UNICODE /*+ (( isRtl ) ? PREF_RTL : 0)*/;
+			pre.flags = PREF_UTF /*+ (( isRtl ) ? PREF_RTL : 0)*/;
 			pre.timestamp = evtm;
 			pre.lParam = 0;
 
