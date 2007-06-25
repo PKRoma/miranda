@@ -1540,6 +1540,13 @@ int JabberGCGetToolTipText(WPARAM wParam, LPARAM lParam)
 		_tcsncat( outBuf, TranslateTS( JabberEnum2StatusStr [ info->status-ID_STATUS_OFFLINE ]), sizeof(outBuf) );
 	}
 
+	// status text
+	if ( info->statusMessage ) {
+		_tcsncat( outBuf, szSeparator, sizeof(outBuf) );
+		_tcsncat( outBuf, TranslateT("Status text:\t"), sizeof(outBuf) );
+		_tcsncat( outBuf, info->statusMessage, sizeof(outBuf) );
+	}
+
 	// Role
 	if ( TRUE || info->role ) {
 		_tcsncat( outBuf, szSeparator, sizeof(outBuf) );
