@@ -22,6 +22,18 @@ Package=<4>
 
 ###############################################################################
 
+Project: "GG"="..\protocols\Gadu-Gadu\Gadu-Gadu.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "ICONS"=..\protocols\IcqOscarJ\icons_pack\ICONS.dsp - Package Owner=<4>
 
 Package=<5>
@@ -70,10 +82,6 @@ Project: "aim"=..\protocols\AimOscar\aimoscar.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
-    begin source code control
-    "$/Miranda/miranda/protocols/AimTOC2", YCPAAAAA
-    ..\protocols\aimoscar
-    end source code control
 }}}
 
 Package=<4>

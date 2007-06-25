@@ -6,18 +6,11 @@
 	".\icos\auth_grant.ico"\
 	".\icos\auth_revoke.ico"\
 	".\icos\icq.ico"\
+	".\icos\srvlist_add.ico"\
 	
 
 .\init.c : \
 	".\m_updater.h"\
-	
-
-.\icq_opts.c : \
-	"..\..\include\win2k.h"\
-	
-
-.\UI\userinfotab.c : \
-	".\ui\m_flash.h"\
 	
 
 .\iconlib.c : \
@@ -33,6 +26,7 @@
 	
 
 .\icqoscar.c : \
+	"..\..\include\m_avatars.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clistint.h"\
@@ -56,6 +50,7 @@
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
 	".\capabilities.h"\
 	".\changeinfo\changeinfo.h"\
 	".\channels.h"\

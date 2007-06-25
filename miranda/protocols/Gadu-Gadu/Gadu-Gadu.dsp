@@ -298,19 +298,11 @@ SOURCE=.\ssl.h
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # Begin Source File
 
-SOURCE=.\icos\ArrowLeft.ico
-# End Source File
-# Begin Source File
-
 SOURCE=.\icos\Conference.ico
 # End Source File
 # Begin Source File
 
 SOURCE=.\icos\delete.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\icos\Fedex.ico
 # End Source File
 # Begin Source File
 
@@ -322,19 +314,7 @@ SOURCE=.\icos\Image.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\icos\InBox.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\icos\Lime.ico
-# End Source File
-# Begin Source File
-
 SOURCE=.\icos\Next.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\icos\OutBox.ico
 # End Source File
 # Begin Source File
 
@@ -351,10 +331,6 @@ SOURCE=.\icos\save.ico
 # Begin Source File
 
 SOURCE=.\icos\stop.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\icos\Strawberry.ico
 # End Source File
 # End Group
 # Begin Source File

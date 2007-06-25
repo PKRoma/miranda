@@ -115,6 +115,7 @@ LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi3
 LINK32_OBJS= \
 	"$(INTDIR)\common.obj" \
 	"$(INTDIR)\dcc.obj" \
+	"$(INTDIR)\dcc7.obj" \
 	"$(INTDIR)\events.obj" \
 	"$(INTDIR)\http.obj" \
 	"$(INTDIR)\libgadu.obj" \
@@ -137,8 +138,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\ssl.obj" \
 	"$(INTDIR)\token.obj" \
 	"$(INTDIR)\userutils.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\dcc7.obj"
+	"$(INTDIR)\resource.res"
 
 "..\..\bin\release\plugins\GG.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -238,6 +238,7 @@ LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi3
 LINK32_OBJS= \
 	"$(INTDIR)\common.obj" \
 	"$(INTDIR)\dcc.obj" \
+	"$(INTDIR)\dcc7.obj" \
 	"$(INTDIR)\events.obj" \
 	"$(INTDIR)\http.obj" \
 	"$(INTDIR)\libgadu.obj" \
@@ -260,8 +261,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\ssl.obj" \
 	"$(INTDIR)\token.obj" \
 	"$(INTDIR)\userutils.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\dcc7.obj"
+	"$(INTDIR)\resource.res"
 
 "..\..\bin\debug\plugins\GG.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
