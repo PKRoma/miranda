@@ -334,6 +334,38 @@ Returns 1 if the contact is a contact, or 0 if the contact is not valid.
 
 /************************** Event *********************************/
 
+/* DB/EventType/Register service (0.7+)
+Registers the specified database event type, with module, id & description.
+When someone needs to retrieve an event's text, a service named Module/GetEventText<id>
+will be called. For example, for module named 'foo' and event id 2000 a service
+foo/GetEventText2000 should be defined to process this request. That handler should 
+decode a blob and return the event text in the required format, its prototype is identical
+to a call of MS_DB_EVENT_GETTEXT (see below)
+  wParam=0
+  lParam=(LPARAM)(DBEVENTTYPEDESCR*)
+Always returns 0.
+*/
+
+typedef struct 
+{
+	int   cbSize;      // structure size in bytes
+	char* module;      // event module name
+	int   eventType;   // event id, unique for this module
+	char* descr;       // event type description (i.e. "File Transfer")
+}
+	DBEVENTTYPEDESCR;
+
+#define MS_DB_EVENT_REGISTERTYPE  "DB/EventType/Register"
+
+/* DB/EventType/Get service (0.7+)
+Retrieves the previously registered database event type, by module & id.
+  wParam=(WPARAM)(char*)szModule
+  lParam=(LPARAM)(int)eventType
+Returns DBEVENTTYPEDESCR* or NULL, if an event isn't found.
+*/
+
+#define MS_DB_EVENT_GETTYPE "DB/EventType/Get"
+
 /* DB/Event/GetCount service
 Gets the number of events in the chain belonging to a contact in the database.
   wParam=(WPARAM)(HANDLE)hContact

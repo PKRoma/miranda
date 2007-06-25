@@ -24,12 +24,55 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "profilemanager.h"
 
-int DbEventGetText(WPARAM wParam, LPARAM lParam)
+struct
+{
+	DBEVENTTYPEDESCR** items;
+	int count, limit, increment;
+	FSortFunc sortFunc;
+}
+static eventTypes;
+
+static int DbEventTypeRegister(WPARAM wParam, LPARAM lParam)
+{
+	DBEVENTTYPEDESCR* et = ( DBEVENTTYPEDESCR* )lParam;
+
+	int idx;
+	if ( !List_GetIndex(( SortedList* )&eventTypes, et, &idx )) {
+		DBEVENTTYPEDESCR* p = mir_alloc( sizeof( DBEVENTTYPEDESCR ));
+		*p = *et;
+		p->module = mir_strdup( et->module );
+		p->descr  = mir_strdup( et->descr  );
+		List_Insert(( SortedList* )&eventTypes, p, idx );
+	}
+
+	return 0;
+}
+
+static int DbEventTypeGet(WPARAM wParam, LPARAM lParam)
+{
+	DBEVENTTYPEDESCR tmp;
+	int idx;
+
+	tmp.module = ( char* )wParam;
+	tmp.eventType = lParam;
+	if ( !List_GetIndex(( SortedList* )&eventTypes, &tmp, &idx ))
+		return 0;
+
+	return ( int )eventTypes.items[idx];
+}
+
+static int DbEventGetText(WPARAM wParam, LPARAM lParam)
 {
 	DBEVENTGETTEXT* egt = (DBEVENTGETTEXT*)lParam;
 	BOOL bIsDenyUnicode = (egt->datatype & DBVTF_DENYUNICODE);
 
 	DBEVENTINFO* dbei = egt->dbei;
+	
+	char szServiceName[100];
+	mir_snprintf( szServiceName, sizeof(szServiceName), "%s/GetEventText%d", dbei->szModule, dbei->eventType );
+	if ( ServiceExists( szServiceName ))
+		return CallService( szServiceName, wParam, lParam );
+	
 	if ( dbei->eventType == EVENTTYPE_FILE ) {
 		char* filename = ((char *)dbei->pBlob) + sizeof(DWORD);
 		char* descr = filename + lstrlenA( filename ) + 1;
@@ -80,6 +123,8 @@ int DbEventGetText(WPARAM wParam, LPARAM lParam)
 
 int InitUtils()
 {
+	CreateServiceFunction(MS_DB_EVENT_REGISTERTYPE, DbEventTypeRegister);
+	CreateServiceFunction(MS_DB_EVENT_GETTYPE, DbEventTypeGet);
 	CreateServiceFunction(MS_DB_EVENT_GETTEXT, DbEventGetText);
 	return 0;
 }
