@@ -107,9 +107,9 @@ void LoadGlobalIcons() {
 		g_dat->hIcons[SMF_ICON_CLOSEX] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_CLOSEX");
 		g_dat->hIcons[SMF_ICON_OVERLAY] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_OVERLAY");
 
-		g_dat->hIcons[SMF_ICON_INCOMING] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_INCOMING),IMAGE_ICON,0,0,0);
-		g_dat->hIcons[SMF_ICON_OUTGOING] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_OUTGOING),IMAGE_ICON,0,0,0);
-		g_dat->hIcons[SMF_ICON_NOTICE] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_NOTICE),IMAGE_ICON,0,0,0);
+		g_dat->hIcons[SMF_ICON_INCOMING] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_INCOMING");
+		g_dat->hIcons[SMF_ICON_OUTGOING] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_OUTGOING");
+		g_dat->hIcons[SMF_ICON_NOTICE] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_NOTICE");
 
 	} else {
 		g_dat->hIcons[SMF_ICON_ADD] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_ADDCONTACT), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
@@ -161,9 +161,9 @@ void ReleaseGlobalIcons() {
 		CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_QUOTE");
 		CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_CLOSEX");
 		CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_OVERLAY");
-		DestroyIcon(g_dat->hIcons[SMF_ICON_INCOMING]);
-		DestroyIcon(g_dat->hIcons[SMF_ICON_OUTGOING]);
-		DestroyIcon(g_dat->hIcons[SMF_ICON_NOTICE]);
+		CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_INCOMING");
+		CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_OUTGOING");
+		CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_NOTICE");
 	} else {
 		int i;
 		for (i=0;i<SIZEOF(g_dat->hIcons);i++)

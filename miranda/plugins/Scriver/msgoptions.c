@@ -273,16 +273,16 @@ void RegisterIcoLibIcons() {
 
 		sid.pszName = (char *) "scriver_INCOMING";
 		sid.iDefaultIndex = -IDI_INCOMING;
-		sid.ptszDescription = TranslateT("Incoming message");
-//		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+		sid.ptszDescription = TranslateT("Incoming message (10x10)");
+		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 		sid.pszName = (char *) "scriver_OUTGOING";
 		sid.iDefaultIndex = -IDI_OUTGOING;
-		sid.ptszDescription = TranslateT("Outgoing message");
-//		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+		sid.ptszDescription = TranslateT("Outgoing message (10x10)");
+		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 		sid.pszName = (char *) "scriver_NOTICE";
 		sid.iDefaultIndex = -IDI_NOTICE;
-		sid.ptszDescription = TranslateT("Notice");
-//		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+		sid.ptszDescription = TranslateT("Notice (10x10)");
+		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 	}
 }
 
