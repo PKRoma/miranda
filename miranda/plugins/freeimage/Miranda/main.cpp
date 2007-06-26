@@ -193,7 +193,7 @@ static HBITMAP  FreeImage_CreateHBITMAPFromDIB(FIBITMAP *dib)
 	BYTE *ptPixels;
 	BITMAPINFO *info = FreeImage_GetInfo(dib);
 	HBITMAP hBmp = CreateDIBSection(NULL, info, DIB_RGB_COLORS, (void **)&ptPixels, NULL, 0);
-	memmove(ptPixels, FreeImage_GetBits(dib), info->bmiHeader.biWidth * info->bmiHeader.biHeight * FreeImage_GetBPP(dib));
+	memmove(ptPixels, FreeImage_GetBits(dib), info->bmiHeader.biWidth * info->bmiHeader.biHeight * FreeImage_GetBPP(dib)/8 );
 	return hBmp;
 }
 
