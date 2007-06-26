@@ -726,6 +726,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\msn_mail.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\msn_menu.cpp"
 				>
 			</File>

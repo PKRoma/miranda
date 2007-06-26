@@ -51,6 +51,7 @@ CLEAN :
 	-@erase "$(INTDIR)\msn_http.obj"
 	-@erase "$(INTDIR)\msn_libstr.obj"
 	-@erase "$(INTDIR)\msn_lists.obj"
+	-@erase "$(INTDIR)\msn_mail.obj"
 	-@erase "$(INTDIR)\msn_menu.obj"
 	-@erase "$(INTDIR)\msn_mime.obj"
 	-@erase "$(INTDIR)\msn_misc.obj"
@@ -116,7 +117,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\msn_threads.obj" \
 	"$(INTDIR)\msn_useropts.obj" \
 	"$(INTDIR)\msn_ws.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\msn_mail.obj"
 
 "..\..\bin\release\plugins\msn.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -156,6 +158,8 @@ CLEAN :
 	-@erase "$(INTDIR)\msn_libstr.sbr"
 	-@erase "$(INTDIR)\msn_lists.obj"
 	-@erase "$(INTDIR)\msn_lists.sbr"
+	-@erase "$(INTDIR)\msn_mail.obj"
+	-@erase "$(INTDIR)\msn_mail.sbr"
 	-@erase "$(INTDIR)\msn_menu.obj"
 	-@erase "$(INTDIR)\msn_menu.sbr"
 	-@erase "$(INTDIR)\msn_mime.obj"
@@ -234,7 +238,8 @@ BSC32_SBRS= \
 	"$(INTDIR)\msn_switchboard.sbr" \
 	"$(INTDIR)\msn_threads.sbr" \
 	"$(INTDIR)\msn_useropts.sbr" \
-	"$(INTDIR)\msn_ws.sbr"
+	"$(INTDIR)\msn_ws.sbr" \
+	"$(INTDIR)\msn_mail.sbr"
 
 "$(OUTDIR)\msn.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -271,7 +276,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\msn_threads.obj" \
 	"$(INTDIR)\msn_useropts.obj" \
 	"$(INTDIR)\msn_ws.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\msn_mail.obj"
 
 "..\..\bin\debug\plugins\msn.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -298,6 +304,7 @@ CLEAN :
 	-@erase "$(INTDIR)\msn_http.obj"
 	-@erase "$(INTDIR)\msn_libstr.obj"
 	-@erase "$(INTDIR)\msn_lists.obj"
+	-@erase "$(INTDIR)\msn_mail.obj"
 	-@erase "$(INTDIR)\msn_menu.obj"
 	-@erase "$(INTDIR)\msn_mime.obj"
 	-@erase "$(INTDIR)\msn_misc.obj"
@@ -363,7 +370,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\msn_threads.obj" \
 	"$(INTDIR)\msn_useropts.obj" \
 	"$(INTDIR)\msn_ws.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\msn_mail.obj"
 
 "..\..\bin\Release Unicode\plugins\msn.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -403,6 +411,8 @@ CLEAN :
 	-@erase "$(INTDIR)\msn_libstr.sbr"
 	-@erase "$(INTDIR)\msn_lists.obj"
 	-@erase "$(INTDIR)\msn_lists.sbr"
+	-@erase "$(INTDIR)\msn_mail.obj"
+	-@erase "$(INTDIR)\msn_mail.sbr"
 	-@erase "$(INTDIR)\msn_menu.obj"
 	-@erase "$(INTDIR)\msn_menu.sbr"
 	-@erase "$(INTDIR)\msn_mime.obj"
@@ -481,7 +491,8 @@ BSC32_SBRS= \
 	"$(INTDIR)\msn_switchboard.sbr" \
 	"$(INTDIR)\msn_threads.sbr" \
 	"$(INTDIR)\msn_useropts.sbr" \
-	"$(INTDIR)\msn_ws.sbr"
+	"$(INTDIR)\msn_ws.sbr" \
+	"$(INTDIR)\msn_mail.sbr"
 
 "$(OUTDIR)\msn.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -518,7 +529,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\msn_threads.obj" \
 	"$(INTDIR)\msn_useropts.obj" \
 	"$(INTDIR)\msn_ws.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\msn_mail.obj"
 
 "..\..\bin\Debug Unicode\plugins\msn.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -876,6 +888,34 @@ SOURCE=.\msn_lists.cpp
 
 
 "$(INTDIR)\msn_lists.obj"	"$(INTDIR)\msn_lists.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\msn.pch"
+
+
+!ENDIF
+
+SOURCE=.\msn_mail.cpp
+
+!IF  "$(CFG)" == "msn - Win32 Release"
+
+
+"$(INTDIR)\msn_mail.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\msn.pch"
+
+
+!ELSEIF  "$(CFG)" == "msn - Win32 Debug"
+
+
+"$(INTDIR)\msn_mail.obj"	"$(INTDIR)\msn_mail.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\msn.pch"
+
+
+!ELSEIF  "$(CFG)" == "msn - Win32 Release Unicode"
+
+
+"$(INTDIR)\msn_mail.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\msn.pch"
+
+
+!ELSEIF  "$(CFG)" == "msn - Win32 Debug Unicode"
+
+
+"$(INTDIR)\msn_mail.obj"	"$(INTDIR)\msn_mail.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\msn.pch"
 
 
 !ENDIF
