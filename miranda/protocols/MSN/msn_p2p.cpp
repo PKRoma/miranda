@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #pragma pack(1)
 
-typedef struct
+typedef struct _tag_HFileContext
 {
 	unsigned len; 
 	unsigned ver;
@@ -38,7 +38,7 @@ typedef struct
 	char unknown2[64];
 } HFileContext;
 
-typedef struct
+typedef struct _tad_P2P_Header
 {
 	unsigned          mSessionID;
 	unsigned          mID;
@@ -1391,7 +1391,7 @@ static void sttCloseTransfer( P2P_Header* hdrdata, ThreadData* info, MimeHeaders
 	p2p_unregisterSession( ft );
 }
 
-void  p2p_processMsg( ThreadData* info,  const char* msgbody )
+void  p2p_processMsg( ThreadData* info,  char* msgbody )
 {
 	P2P_Header* hdrdata = ( P2P_Header* )msgbody; msgbody += sizeof( P2P_Header );
 	sttLogHeader( hdrdata );
@@ -1432,7 +1432,7 @@ void  p2p_processMsg( ThreadData* info,  const char* msgbody )
 		else if ( !memcmp( msgbody, "MSNSLP/1.0 500 ", 15 ))
 			iMsgType = 4;
 
-		const char* peol = strstr( msgbody, "\r\n" );
+		char* peol = strstr( msgbody, "\r\n" );
 		if ( peol != NULL )
 			msgbody = peol+2;
 

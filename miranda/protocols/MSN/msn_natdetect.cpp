@@ -39,7 +39,7 @@ const char* conStr[] =
 
 
 #pragma pack(1)
-typedef struct
+typedef struct _tag_UDPProbePkt
 {
 	unsigned char  version;
 	unsigned char  serviceCode;

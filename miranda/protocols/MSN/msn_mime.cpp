@@ -48,8 +48,8 @@ MimeHeaders::~MimeHeaders()
 
 	for ( unsigned i=0; i < mCount; i++ ) {
 		MimeHeader& H = mVals[ i ];
-		mir_free( H.name );
-		mir_free( H.value );
+		if (H.flags & 1) mir_free( H.name );
+		if (H.flags & 2) mir_free( H.value );
 	}
 
 	mir_free( mVals );
@@ -62,7 +62,8 @@ void MimeHeaders::addString( const char* name, const char* szValue )
 {
 	MimeHeader& H = mVals[ mCount++ ];
 	H.name = mir_strdup( name );
-	H.value = mir_strdup( szValue );
+	H.value = mir_strdup( szValue ); 
+	H.flags = 3;
 }
 
 void MimeHeaders::addLong( const char* name, long lValue )
@@ -72,7 +73,8 @@ void MimeHeaders::addLong( const char* name, long lValue )
 
 	char szBuffer[ 20 ];
 	_ltoa( lValue, szBuffer, 10 );
-	H.value = mir_strdup( szBuffer );
+	H.value = mir_strdup( szBuffer ); 
+	H.flags = 3;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -102,7 +104,7 @@ char* MimeHeaders::writeToBuffer( char* pDest )
 /////////////////////////////////////////////////////////////////////////////////////////
 // read set of values from buffer
 
-const char* MimeHeaders::readFromBuffer( const char* parString )
+char* MimeHeaders::readFromBuffer( char* parString )
 {
 	mCount = 0;
 
@@ -112,27 +114,25 @@ const char* MimeHeaders::readFromBuffer( const char* parString )
 			break;
 		}
 
-		const char* peol = strchr( parString, '\r' );
+		char* peol = strchr( parString, '\r' );
 		if ( peol == NULL )
 			peol = parString + strlen(parString);
-
-		size_t cbLen = peol - parString;
+		*peol = '\0';
+		
 		if ( *++peol == '\n' )
 			peol++;
 
-		char* delim = ( char* )memchr( parString, ':', cbLen );
+		char* delim = strchr( parString, ':' );
 		if ( delim == NULL ) {
 			MSN_DebugLog( "MSG: Invalid MIME header: '%s'", parString );
 			parString = peol;
 			continue;
 		}
-		size_t nmLen = delim++ - parString;
+		*delim++ = '\0';
 		
 		while ( *delim == ' ' || *delim == '\t' )
 			delim++;
 		
-		size_t vlLen = cbLen - ( delim - parString );
-
 		if ( mCount >= mAllocCount ) 
 		{
 			mAllocCount += 10;
@@ -141,15 +141,9 @@ const char* MimeHeaders::readFromBuffer( const char* parString )
 
 		MimeHeader& H = mVals[ mCount ];
 
-		
-		H.name = ( char* )mir_alloc( nmLen + 1 ); 
-		memcpy( H.name, parString, nmLen ); 
-		H.name[nmLen] = 0;
-
-		
-		H.value = ( char* )mir_alloc( vlLen + 1 ); 
-		memcpy( H.value, delim, vlLen ); 
-		H.value[vlLen] = 0;
+		H.name = parString;
+		H.value = delim;
+		H.flags = 0;
 
 		mCount++;
 		parString = peol;
@@ -169,7 +163,7 @@ const char* MimeHeaders::find( const char* szFieldName )
 	return NULL;
 }
 
-static const struct
+static const struct _tag_cpltbl
 {
 	unsigned cp;
 	char* mimecp;
@@ -285,10 +279,61 @@ static unsigned FindCP( const char* mimecp )
 }
 			
 
-wchar_t* MimeHeaders::decode(const char* fieldName)
+static int SingleHexToDecimal(char c)
 {
-	const char *val = find(fieldName);
+	if ( c >= '0' && c <= '9' ) return c-'0';
+	if ( c >= 'a' && c <= 'f' ) return c-'a'+10;
+	if ( c >= 'A' && c <= 'F' ) return c-'A'+10;
+	return -1;
+}
 
+static void  PQDecode( char* str )
+{
+	char* s = str, *d = str;
+
+	while( *s )
+	{
+		switch (*s)
+		{
+			case '=': 
+			{
+				int digit1 = SingleHexToDecimal( s[1] );
+				if ( digit1 != -1 ) 
+				{
+					int digit2 = SingleHexToDecimal( s[2] );
+					if ( digit2 != -1 ) 
+					{
+						s += 3;
+						*d++ = (char)(( digit1 << 4 ) | digit2);
+					}	
+				}
+				break;
+			}
+
+			case '_':
+				*d++ = ' '; ++s;
+				break;
+
+			default:
+				*d++ = *s++;
+				break;
+		}
+	}
+	*d = 0;
+}
+
+static size_t utf8toutf16(char* str, wchar_t* res)
+{
+	wchar_t *dec;
+	mir_utf8decode(str, &dec);
+	wcscpy(res, dec);
+	mir_free(dec);
+	return wcslen(res);
+}
+
+
+wchar_t* MimeHeaders::decode(const char* val)
+{
 	size_t ssz = strlen(val)+1;
 	char* tbuf = (char*)alloca(ssz);
 	memcpy(tbuf, val, ssz);
@@ -297,18 +342,15 @@ wchar_t* MimeHeaders::decode(const char* fieldName)
 	wchar_t* resp = res;
 
 	char *p = tbuf;
-	for (;;)
+	while (*p)
 	{
 		char *cp = strstr(p, "=?");
 		if (cp == NULL) break;
 		*cp = 0;
 
-		int sz = MultiByteToWideChar(20127, 0, p, -1, resp, ssz); 
-		ssz -= --sz; resp += sz * sizeof(wchar_t); cp += 2; 
-
-		char *pe = strstr(cp, "?=");
-		if (pe == NULL) break;
-		*pe = 0;
+		size_t sz = utf8toutf16(p, resp);
+		ssz -= sz; resp += sz; 
+		cp += 2; 
 
 		char *enc = strchr(cp, '?');
 		if (enc == NULL) break;
@@ -318,43 +360,110 @@ wchar_t* MimeHeaders::decode(const char* fieldName)
 		if (fld == NULL) break;
 		*(fld++) = 0;
 
+		char *pe = strstr(fld, "?=");
+		if (pe == NULL) break;
+		*pe = 0;
+
 		switch (*enc)
 		{
-		case 'b':
-		case 'B':
+			case 'b':
+			case 'B':
 			{
 				char* dec = MSN_Base64Decode(fld);
 				strcpy(fld, dec);
 				mir_free(dec);
+				break;
 			}
-			break;
 
-		case 'q':
-		case 'Q':
-			UrlDecode(fld, true);
-			break;
+			case 'q':
+			case 'Q':
+				PQDecode(fld);
+				break;
 		}
 		
 		if (_stricmp(cp, "UTF-8") == 0)
 		{
-			wchar_t *dec;
-			mir_utf8decode(fld, &dec);
-			sz = wcslen(dec); 
-			wcsncpy(resp, dec, ssz);
-			ssz -= sz; resp += sz * sizeof(wchar_t);
-			mir_free(dec);
+			sz = utf8toutf16(fld, resp);
+			ssz -= sz; resp += sz;
 		}
 		else {
-			sz = MultiByteToWideChar(FindCP(cp), 0, p, -1, resp, ssz);
+			sz = MultiByteToWideChar(FindCP(cp), 0, fld, -1, resp, ssz);
 			if (sz == 0)
-				sz = MultiByteToWideChar(CP_ACP, 0, p, -1, resp, ssz);
-			ssz -= --sz; resp += sz * sizeof(wchar_t);
+				sz = MultiByteToWideChar(CP_ACP, 0, fld, -1, resp, ssz);
+			ssz -= --sz; resp += sz;
 		}
- 
-		p = pe + 2;
+ 		p = pe + 2;
 	}
 
-	MultiByteToWideChar(20127, 0, p, -1, resp, ssz); 
+	utf8toutf16(p, resp); 
 
 	return res;
+}
+
+
+char* MimeHeaders::decodeMailBody(char* msgBody)
+{
+	char* res;
+	const char *val = find("Content-Transfer-Encoding");
+	if (val && _stricmp(val, "base64") == 0)
+	{
+		char* ch = msgBody;
+		size_t len = strlen(msgBody) + 1;
+		while (*ch != 0)
+		{
+			if ( *ch == '\n' || *ch == '\r' )
+				memmove( ch, ch+1, len-- - ( ch - msgBody ));
+			else
+				++ch;
+		}
+		res = MSN_Base64Decode(msgBody);
+	}
+	else
+	{
+		res = mir_strdup(msgBody);
+		if (val && _stricmp(val, "quoted-printable") == 0)
+			PQDecode(res);
+	}
+	return res;
+}
+	
+
+int sttDivideWords( char* parBuffer, int parMinItems, char** parDest )
+{
+	int i;
+	for ( i=0; i < parMinItems; i++ ) {
+		parDest[ i ] = parBuffer;
+
+		int tWordLen = strcspn( parBuffer, " \t" );
+		if ( tWordLen == 0 )
+			return i;
+
+		parBuffer += tWordLen;
+		if ( *parBuffer != '\0' ) {
+			int tSpaceLen = strspn( parBuffer, " \t" );
+			memset( parBuffer, 0, tSpaceLen );
+			parBuffer += tSpaceLen;
+	}	}
+
+	return i;
+}
+
+
+char* httpParseHeader(char* buf, unsigned& status)
+{
+	status = 0;
+	char* p = strstr( buf, "\r\n" );
+	if ( p != NULL ) 
+	{
+		*p = 0; p += 2;
+
+		union {
+			char* tWords[ 2 ];
+			struct { char *method, *status; } data;
+		};
+
+		if ( sttDivideWords( buf, 2, tWords ) == 2 )
+			status = strtoul(data.status, NULL, 10);
+	}
+	return p;
 }

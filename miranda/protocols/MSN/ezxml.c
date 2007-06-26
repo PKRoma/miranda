@@ -160,16 +160,16 @@ char *ezxml_decode(char *s, char **ent, char t)
 {
     char *e, *r = s, *m = s;
     long b, c, d, l;
-
+/*
     for (; *s; s++) { // normalize line endings
         while (*s == '\r') {
             *(s++) = '\n';
             if (*s == '\n') memmove(s, (s + 1), strlen(s));
         }
     }
-    
+*/    
     for (s = r; ; ) {
-        while (*s && *s != '&' && (*s != '%' || t != '%') && !isspace(*s)) s++;
+		while (*s && *s != '&' && (*s != '%' || t != '%') && (*s & 0x80 || !isspace(*s))) s++;
 
         if (! *s) break;
         else if (t != 'c' && ! strncmp(s, "&#", 2)) { // character reference

@@ -85,6 +85,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "sdk/m_folders.h"
 #include "sdk/m_metacontacts.h"
 
+#include "ezxml.h"
+
 #include "resource.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -165,7 +167,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define	MSN_HOTMAIL_POPUP   4
 #define MSN_SHOW_ERROR      8
 #define	MSN_ALERT_POPUP	    16
-void  MSN_ShowPopup( const TCHAR* nickname, const TCHAR* msg, int flags, char* url );
+void  MSN_ShowPopup( const TCHAR* nickname, const TCHAR* msg, int flags, const char* url );
 void  MSN_ShowPopup( const HANDLE hContact, const TCHAR* msg, int flags );
 
 LONG		MSN_SendPacket( HANDLE, const char* cmd, const char* params, ... );
@@ -182,7 +184,7 @@ WCHAR*      HtmlEncodeW( const WCHAR* str );
 bool		txtParseParam (const char* szData, const char* presearch, const char* start, const char* finish, char* param, const int size);
 char*		MSN_Base64Decode( const char* str );
 
-void     	UrlDecode( char*str, bool pq = false );
+void     	UrlDecode( char*str );
 void     	UrlEncode( const char* src, char* dest, int cbDest );
 
 HANDLE      MSN_HContactFromEmail( const char* msnEmail, const char* msnNick, int addIfNeeded, int temporary );
@@ -257,6 +259,9 @@ void        MsnInitMenus( void );
 
 void        InitCustomFolders(void);
 
+char*       httpParseHeader(char* buf, unsigned& status);
+int         sttDivideWords( char* parBuffer, int parMinItems, char** parDest );
+void		sttNotificationMessage( char* msgBody, bool isInitial );
 
 TCHAR* EscapeChatTags(const TCHAR* pszText);
 TCHAR* UnEscapeChatTags(TCHAR* str_in);
@@ -272,7 +277,7 @@ void   strdel( char* parBuffer, int len );
 /////////////////////////////////////////////////////////////////////////////////////////
 // PNG library interface
 
-typedef struct
+typedef struct _tag_PopupData
 {
 	unsigned flags;
 	HICON hIcon;
@@ -286,6 +291,7 @@ struct MimeHeader
 {
 	char* name;
 	char* value;
+	unsigned flags;
 };
 
 struct MimeHeaders
@@ -294,10 +300,12 @@ struct MimeHeaders
 	MimeHeaders( unsigned );
 	~MimeHeaders();
 
-	const char*	readFromBuffer( const char* pSrc );
+	char*	readFromBuffer( char* pSrc );
 	const char* find( const char* fieldName );
 	const char* operator[]( const char* fieldName ) { return find( fieldName ); }
-	wchar_t* decode(const char* fieldName);
+	char* decodeMailBody(char* msgBody);
+
+	static wchar_t* decode(const char* val);
 
 	void  addString( const char* name, const char* szValue );
 	void	addLong( const char* name, long lValue );
@@ -521,7 +529,7 @@ void  p2p_cancelAllSessions( void );
 void  p2p_redirectSessions( HANDLE hContact );
 
 void  p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft = NULL );
-void  p2p_processMsg( ThreadData* info, const char* msgbody );
+void  p2p_processMsg( ThreadData* info, char* msgbody );
 void  p2p_sendStatus( filetransfer* ft, long lStatus );
 void  p2p_sendBye( filetransfer* ft );
 void  p2p_sendCancel( filetransfer* ft );
@@ -617,7 +625,7 @@ void   MSN_UploadServerGroups( char* group );
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN plugin options
 
-typedef struct
+typedef struct _tag_MYOPTIONS
 {
 	COLORREF	BGColour;
 	COLORREF	TextColour;
@@ -694,6 +702,9 @@ extern  char*       profileURL;
 extern  char*       profileURLId;
 extern  char*       rru;
 
+extern char pAuthToken[];
+extern char tAuthToken[]; 
+
 extern	HANDLE		hNetlibUser;
 extern	HINSTANCE	hInst;
 extern	unsigned	msnOtherContactsBlocked;
@@ -721,7 +732,7 @@ public:
 #define UTF8(A) UTFEncoder(A).str()
 
 
-typedef enum
+typedef enum _tag_ConEnum
 {
 	conUnknown,
 	conDirect,
@@ -735,7 +746,7 @@ typedef enum
 
 extern const char* conStr[];
 
-typedef struct
+typedef struct _tag_MyConnectionType
 {
 	unsigned intIP;
 	unsigned extIP;
@@ -752,5 +763,28 @@ typedef struct
 } MyConnectionType;
 
 extern MyConnectionType MyConnection;
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// Basic SSL operation class
+
+struct SSL_Base
+{
+	virtual	~SSL_Base();
+
+	virtual  int init(void) = 0;
+	virtual  char* getSslResult( char* parUrl, char* parAuthInfo, char* hdrs ) = 0;
+};
+
+class SSLAgent
+{
+private:
+	SSL_Base* pAgent;
+
+public:
+	SSLAgent();
+	~SSLAgent();
+
+	char* getSslResult( char* parUrl, char* parAuthInfo, char* hdrs );
+};
 
 

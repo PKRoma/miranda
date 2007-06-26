@@ -254,23 +254,22 @@ LBL_RecvAgain:
 
 	bCanPeekMsg = true;
 
-	char* p = strstr( data, "\r\n" );
-	if ( p == NULL ) {
-		MSN_DebugLog( "ACHTUNG! it's not a valid header: '%s'", data );
-		goto LBL_RecvAgain;
-	}
+	unsigned status;
+	char* p = httpParseHeader( data, status );
+	switch  (status)
+	{
+		case 0:
+			MSN_DebugLog( "ACHTUNG! it's not a valid header: '%s'", data );
+			goto LBL_RecvAgain;
 
-	int status = 0;
-	sscanf( data, "HTTP/1.1 %d", &status );
-	if ( status == 100 )
-		goto LBL_RecvAgain;
+		case 100:
+			goto LBL_RecvAgain;
+	}
 	
 	int   tContentLength = 0, hdrLen;
 	{
 		MimeHeaders tHeaders;
-		const char* rest = tHeaders.readFromBuffer( p+2 );
-		if ( *rest == '\r' )
-			rest += 2;
+		const char* rest = tHeaders.readFromBuffer( p );
 
 		const char* contLenHdr = tHeaders[ "Content-Length" ];
 		if ( contLenHdr != NULL ) 

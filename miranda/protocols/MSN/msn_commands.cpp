@@ -28,10 +28,7 @@ void __cdecl MSNNudgeThread( ThreadData* info );
 void __cdecl MSNServerThread( ThreadData* info );
 void __cdecl MSNSendfileThread( ThreadData* info );
 
-int MSN_GetPassportAuth( char* authChallengeInfo, char*& parResult );
-void MSN_GetOIMs( const char* initxml );
-
-void mmdecode(char *trg, char *str);
+int MSN_GetPassportAuth( char* authChallengeInfo );
 
 void MSN_ChatStart(ThreadData* info);
 void MSN_KillChatSession(TCHAR* id);
@@ -50,34 +47,7 @@ extern HANDLE	 hMSNNudge;
 extern int msnPingTimeout;
 extern HANDLE hKeepAliveThreadEvt;
 
-// Global Email counters
-int  mUnreadMessages = 0, mUnreadJunkEmails = 0;
-
 unsigned long sl;
-
-/////////////////////////////////////////////////////////////////////////////////////////
-//	MSN_ReceiveMessage - receives message or a file from the server
-/////////////////////////////////////////////////////////////////////////////////////////
-
-static int sttDivideWords( char* parBuffer, int parMinItems, char** parDest )
-{
-	int i;
-	for ( i=0; i < parMinItems; i++ ) {
-		parDest[ i ] = parBuffer;
-
-		int tWordLen = strcspn( parBuffer, " \t" );
-		if ( tWordLen == 0 )
-			return i;
-
-		parBuffer += tWordLen;
-		if ( *parBuffer != '\0' ) {
-			int tSpaceLen = strspn( parBuffer, " \t" );
-			memset( parBuffer, 0, tSpaceLen );
-			parBuffer += tSpaceLen;
-	}	}
-
-	return i;
-}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Starts a file sending thread
@@ -139,152 +109,9 @@ void sttSetMirVer( HANDLE hContact, DWORD dwValue )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// Processes e-mail notification
-
-static void sttNotificationMessage( const char* msgBody, bool isInitial )
-{
-	TCHAR tBuffer[512];
-	TCHAR tBuffer2[512];
-	const char* SrcFolder;
-	const char* MsgDelta;
-	const char* DestFolder;
-	int  UnreadMessages = 0, UnreadJunkEmails = 0, iDelta=0;
-
-	MimeHeaders tFileInfo;
-	tFileInfo.readFromBuffer( msgBody );
-
-	const char* From = tFileInfo[ "From" ];
-	const char* Subject = tFileInfo[ "Subject" ];
-	const char* Fromaddr = tFileInfo[ "From-Addr" ];
-	{
-		const char* p;
-		if (( p = tFileInfo[ "Inbox-Unread" ] ) != NULL )
-			UnreadMessages = atoi( p );
-		if (( p = tFileInfo[ "Folders-Unread" ] ) != NULL )
-			UnreadJunkEmails = atoi( p );
-	}
-
-	if (!isInitial)
-	{
-		// for the "text/x-msmsgsactivemailnotification"
-		SrcFolder = tFileInfo[ "Src-Folder" ];
-		MsgDelta = tFileInfo[ "Message-Delta" ];
-		DestFolder = tFileInfo[ "Dest-Folder" ];
-		if (MsgDelta != NULL)
-		{
-			if (strcmp(SrcFolder,"ACTIVE") == 0)
-				iDelta = atoi(tFileInfo[ "Message-Delta" ]);
-			else if (strcmp(DestFolder,"ACTIVE") == 0)
-				iDelta = atoi(tFileInfo[ "Message-Delta" ]) * -1;
-		}
-		mUnreadMessages -= iDelta;
-
-		MSN_SendBroadcast( NULL, ACKTYPE_EMAIL, ACKRESULT_STATUS, NULL, 0 );
-	}
-
-	if ( From != NULL && Subject != NULL && Fromaddr != NULL ) {
-		SrcFolder = tFileInfo[ "Src-Folder" ];
-		DestFolder = tFileInfo[ "Dest-Folder" ];
-		if ( DestFolder != NULL && SrcFolder == NULL ) {
-			UnreadMessages = strcmp( DestFolder, "ACTIVE" ) == 0;
-			UnreadJunkEmails = strcmp( DestFolder, "HM_BuLkMail_" ) == 0;
-		}
-
-		// nothing to do, a fake notification
-		if ( UnreadMessages == 0 && UnreadJunkEmails == 0 )
-			return;
-		mUnreadMessages += 1;
-
-		wchar_t* mimeFromW = tFileInfo.decode("From");
-		wchar_t* mimeSubjectW = tFileInfo.decode("Subject");
-
-#ifdef _UNICODE
-		mir_sntprintf( tBuffer2, SIZEOF( tBuffer2 ), TranslateT("Subject: %s"), mimeSubjectW );
-#else
-		mir_sntprintf( tBuffer2, SIZEOF( tBuffer2 ), TranslateT("Subject: %S"), mimeSubjectW );
-#endif
-
-#ifdef _UNICODE
-		TCHAR* msgtxt = _stricmp( From, Fromaddr ) ?
-			TranslateT("Hotmail from %s (%S)") : TranslateT( "Hotmail from %s" );
-		mir_sntprintf( tBuffer, SIZEOF( tBuffer ), msgtxt, mimeFromW, Fromaddr );
-#else
-		TCHAR* msgtxt = strcmpi( From, Fromaddr ) ?
-			TranslateT("Hotmail from %S (%s)") : TranslateT( "Hotmail from %S" );
-		mir_sntprintf( tBuffer, SIZEOF( tBuffer ), msgtxt, mimeFromW, Fromaddr );
-#endif
-		mir_free(mimeSubjectW);
-		mir_free(mimeFromW);
-	}
-	else {
-		const char* MailData = tFileInfo[ "Mail-Data" ];
-		if ( MailData != NULL ) {
-			const char* p = strstr( MailData, "<IU>" );
-			if ( p != NULL )
-				UnreadMessages = atoi( p+4 );
-			if (( p = strstr( MailData, "<OU>" )) != NULL )
-				UnreadJunkEmails = atoi( p+4 );
-
-			MSN_GetOIMs( MailData );
-		}
-
-		// nothing to do, a fake notification
-		if ( UnreadMessages == 0 && UnreadJunkEmails == 0 )
-			return;
-
-		mir_sntprintf( tBuffer, SIZEOF( tBuffer ), TranslateT( "Hotmail" ));
-		mir_sntprintf( tBuffer2, SIZEOF( tBuffer2 ), TranslateT( "Unread mail is available: %d messages (%d junk e-mails)." ),
-			UnreadMessages, UnreadJunkEmails );
-	}
-
-	if (isInitial)
-	{
-		mUnreadMessages = UnreadMessages;
-		MSN_SendBroadcast( NULL, ACKTYPE_EMAIL, ACKRESULT_STATUS, NULL, 0 );
-	}
-
-	// Disable to notify receiving hotmail
-	if ( !MSN_GetByte( "DisableHotmail", 1 )) {
-		if ( UnreadMessages != 0 || !MSN_GetByte( "DisableHotmailJunk", 0 )) {
-			SkinPlaySound( mailsoundname );
-			MSN_ShowPopup( tBuffer, tBuffer2, MSN_ALLOW_ENTER + MSN_ALLOW_MSGBOX + MSN_HOTMAIL_POPUP, NULL );
-	}	}
-
-	if ( !MSN_GetByte( "RunMailerOnHotmail", 0 ))
-		return;
-
-	char mailerpath[MAX_PATH];
-	if ( !MSN_GetStaticString( "MailerPath", NULL, mailerpath, sizeof( mailerpath ))) {
-		if ( mailerpath[0] ) {
-			char* tParams = "";
-			char* p = mailerpath;
-
-			if ( *p == '\"' ) {
-				char* tEndPtr = strchr( p+1, '\"' );
-				if ( tEndPtr != NULL ) {
-					*tEndPtr = 0;
-					strdel( p, 1 );
-					tParams = tEndPtr+1;
-					goto LBL_Run;
-			}	}
-
-			p = strchr( p+1, ' ' );
-			if ( p != NULL ) {
-				*p = 0;
-				tParams = p+1;
-			}
-LBL_Run:
-			while ( *tParams == ' ' )
-				tParams++;
-
-			MSN_DebugLog( "Running mailer \"%s\" with params \"%s\"", mailerpath, tParams );
-			ShellExecuteA( NULL, "open", mailerpath, tParams, NULL, TRUE );
-}	}	}
-
-/////////////////////////////////////////////////////////////////////////////////////////
 // Processes various invitations
 
-static void sttInviteMessage( ThreadData* info, const char* msgBody, char* email, char* nick )
+static void sttInviteMessage( ThreadData* info, char* msgBody, char* email, char* nick )
 {
 	MimeHeaders tFileInfo;
 	tFileInfo.readFromBuffer( msgBody );
@@ -515,7 +342,9 @@ static void sttCustomSmiley( const char* msgBody, char* email, char* nick, int i
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// Processes any received MSG
+//	MSN_ReceiveMessage - receives message or a file from the server
+/////////////////////////////////////////////////////////////////////////////////////////
+
 
 void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 {
@@ -545,7 +374,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 	MSN_DebugLog( "Message:\n%s", msg );
 
 	MimeHeaders tHeader;
-	const char* msgBody = tHeader.readFromBuffer( msg );
+	char* msgBody = tHeader.readFromBuffer( msg );
 
 	const char* tMsgId = tHeader[ "Message-ID" ];
 
@@ -698,12 +527,8 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		sttNotificationMessage( msgBody, false );
 	else if ( !_strnicmp( tContentType, "text/x-msmsgsinitialmdatanotification", 37 ))
 		sttNotificationMessage( msgBody, true );
-	else if ( !_strnicmp( tContentType, "text/x-msmsgsoimnotification", 28 )) {
-		MimeHeaders tFileInfo;
-		tFileInfo.readFromBuffer( msgBody );
-		const char* MailData = tFileInfo[ "Mail-Data" ];
-		if ( MailData != NULL )	MSN_GetOIMs( msgBody );
-	}
+	else if ( !_strnicmp( tContentType, "text/x-msmsgsoimnotification", 28 ))
+		sttNotificationMessage( msgBody, false );
 	else if ( !_strnicmp( tContentType, "text/x-msmsgsinvite", 19 ))
 		sttInviteMessage( info, msgBody, data.fromEmail, data.fromNick );
 	else if ( !_strnicmp( tContentType, "application/x-msnmsgrp2p", 24 ))
@@ -846,67 +671,36 @@ static void sttSwapInt64( LONGLONG* parValue )
 }	}
 
 
-static void sttProcessStatusMessage( BYTE* buf, unsigned len, HANDLE hContact )
+static void sttProcessStatusMessage( char* buf, unsigned len, HANDLE hContact )
 {
-	char* dataBuf = ( char* )alloca( len+1 );
-	if ( buf != NULL ) {
-		memcpy( dataBuf, buf, len );
-		dataBuf[ len ] = 0;
-	}
-	else dataBuf[0] = 0;
+	ezxml_t xmli = ezxml_parse_str(buf, len);
 
 	// Process status message info
-	char* p = strstr( dataBuf, "<PSM>" );
-	if ( p ) {
-		p += 5;
-		char* p1 = strstr( p, "</PSM>" );
-		if ( p1 ) {
-			*p1 = 0;
-			if ( *p != 0 ) {
-				HtmlDecode( p );
-				DBWriteContactSettingStringUtf( hContact, "CList", "StatusMsg", p );
-			}
-			else DBWriteContactSettingString( hContact, "CList", "StatusMsg", "" );
-		}
-	}
-	else DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
+	const char* szStatMsg = ezxml_txt(ezxml_get(xmli, "PSM", -1));
+	if (szStatMsg == NULL || szStatMsg[0] == '\0') 
+		DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
+	else 
+		DBWriteContactSettingStringUtf( hContact, "CList", "StatusMsg", szStatMsg );
 
 	// Process current media info
-	if ( buf != NULL ) {
-		memcpy( dataBuf, buf, len );
-		dataBuf[ len ] = 0;
-	}
-
-	p = strstr( dataBuf, "<CurrentMedia>" );
-	if ( !p ) {
+	const char* szCrntMda = ezxml_txt(ezxml_get(xmli, "CurrentMedia", -1));
+	if (szCrntMda == NULL  || szCrntMda[0] == '\0') 
+	{
 		MSN_DeleteSetting( hContact, "ListeningTo" );
+		ezxml_free(xmli);
 		return;
 	}
-
-	p += 14;
-	char* p1 = strstr( p, "</CurrentMedia>" );
-	if ( !p1 ) {
-		MSN_DeleteSetting( hContact, "ListeningTo" );
-		return;
-	}
-
-	*p1 = 0;
-	if ( *p == 0 ) {
-		MSN_DeleteSetting( hContact, "ListeningTo" );
-		return;
-	}
-
-	HtmlDecode( p );
 
 	// Get parts separeted by "\\0"
 	char *parts[16];
 	unsigned pCount;
 
+	char* p = (char*)szCrntMda;
 	for (pCount = 0; pCount < SIZEOF(parts); ++pCount)
 	{
 		parts[pCount] = p;
 
-		p1 = strstr(p, "\\0");
+		char* p1 = strstr(p, "\\0");
 		if (p1 == NULL) break;
 
 		*p1 = '\0';
@@ -916,6 +710,7 @@ static void sttProcessStatusMessage( BYTE* buf, unsigned len, HANDLE hContact )
 	// Now let's mount the final string
 	if ( pCount <= 4 )  {
 		MSN_DeleteSetting( hContact, "ListeningTo" );
+		ezxml_free(xmli);
 		return;
 	}
 
@@ -929,6 +724,7 @@ static void sttProcessStatusMessage( BYTE* buf, unsigned len, HANDLE hContact )
 	}
 	if ( !foundUsefullInfo ) {
 		MSN_DeleteSetting( hContact, "ListeningTo" );
+		ezxml_free(xmli);
 		return;
 	}
 
@@ -1010,6 +806,7 @@ static void sttProcessStatusMessage( BYTE* buf, unsigned len, HANDLE hContact )
 			mir_free( lti.ptszType );
 		#endif
 	}
+	ezxml_free(xmli);
 }
 
 
@@ -1455,19 +1252,14 @@ LBL_InvalidCommand:
 
 					MSN_SetString( hContact, "PictContext", data.cmdstring );
 
-					char* p = strstr( data.cmdstring, "SHA1D=\"" );
-					if ( p ) {
-						p += 7;
-						char* p1 = strchr( p+1, '\"' );
-						if ( p1 ) {
-							*p1 = 0;
-							MSN_SetString( hContact, "AvatarHash", p );
-							*p1 = '\"';
-						}
-						else p = NULL;
-					}
-					if ( p == NULL )
+					char* tmpbuf = NEWSTR_ALLOCA(data.cmdstring);
+					ezxml_t xmli = ezxml_parse_str(tmpbuf, strlen(tmpbuf));
+					const char* szAvatarHash = ezxml_attr(xmli, "SHA1D");
+					if (szAvatarHash == NULL || szAvatarHash[0] == '\0')
 						MSN_DeleteSetting( hContact, "AvatarHash" );
+					else
+						MSN_SetString( hContact, "AvatarHash", szAvatarHash );
+					ezxml_free(xmli);
 
 					if ( hContact != NULL ) {
 						char szSavedContext[ 256 ];
@@ -1859,7 +1651,7 @@ LBL_InvalidCommand:
 			if ( len < 0 || len > 4000 )
 				goto LBL_InvalidCommand;
 
-			sttProcessStatusMessage( HReadBuffer( info, 0 ).surelyRead( len ), len, hContact );
+			sttProcessStatusMessage( (char*)HReadBuffer( info, 0 ).surelyRead( len ), len, hContact );
 			break;
 		}
 		case ' LRU':
@@ -1935,15 +1727,13 @@ LBL_InvalidCommand:
 					goto LBL_InvalidCommand;
 
 				if ( !strcmp( data.security, "TWN" )) {
-					char* tAuth;
-					if ( MSN_GetPassportAuth( data.authChallengeInfo, tAuth )) {
+					if ( MSN_GetPassportAuth( data.authChallengeInfo )) {
 						MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
 							MSN_GoOffline();
 						return 1;
 					}
 
-					info->sendPacket( "USR", "TWN S %s", tAuth );
-					mir_free( tAuth );
+					info->sendPacket( "USR", "TWN S t=%s&p=%s", tAuthToken, pAuthToken );
 				}
 				else if ( !strcmp( data.security, "OK" )) {
 					UrlDecode( tWords[1] ); UrlDecode( tWords[2] );

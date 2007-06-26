@@ -59,7 +59,7 @@ char*  MirandaStatusToMSN( int status )
 int  MSNStatusToMiranda(const char *status)
 {
 	switch((*(PDWORD)status&0x00FFFFFF)|0x20000000) {
-		case ' LDI': return ID_STATUS_AWAY;
+		case ' LDI': return ID_STATUS_ONLINE;
 		case ' NLN': return ID_STATUS_ONLINE;
 		case ' YWA': return MyOptions.AwayAsBrb ? ID_STATUS_NA : ID_STATUS_AWAY;
 		case ' BRB': return MyOptions.AwayAsBrb ? ID_STATUS_AWAY : ID_STATUS_NA;
@@ -627,6 +627,54 @@ void  MSN_SetServerStatus( int newStatus )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
+// Display Hotmail Inbox thread
+
+void MsnInvokeMyURL( bool ismail, char* url )
+{
+	DBVARIANT dbv;
+	extern unsigned long sl;
+
+	char* email = ( char* )alloca( strlen( MyOptions.szEmail )*3 );
+	UrlEncode( MyOptions.szEmail, email, strlen( MyOptions.szEmail )*3 );
+
+	if ( DBGetContactSetting( NULL, msnProtocolName, "Password", &dbv ))
+		return;
+
+	MSN_CallService( MS_DB_CRYPT_DECODESTRING, strlen( dbv.pszVal )+1, ( LPARAM )dbv.pszVal );
+
+	// for hotmail access
+	int tm = time(NULL) - sl;
+
+	char hippy[ 2048 ];
+	long challen = mir_snprintf( hippy, sizeof( hippy ), "%s%lu%s", MSPAuth, tm, dbv.pszVal );
+	MSN_FreeVariant( &dbv );
+
+	//Digest it
+	unsigned char digest[16];
+	mir_md5_hash(( BYTE* )hippy, challen, digest );
+
+	if ( rru && passport )
+	{
+		char rruenc[256];
+		char* prru = ismail ? (url ? url : rru) : profileURL;
+		UrlEncode(prru, rruenc, sizeof(rruenc));
+
+		mir_snprintf(hippy, sizeof(hippy),
+			"%s&auth=%s&creds=%08x%08x%08x%08x&sl=%d&username=%s&mode=ttl"
+			"&sid=%s&id=%s&rru=%s%s&js=yes",
+			passport, MSPAuth, htonl(*(PDWORD)(digest+0)),htonl(*(PDWORD)(digest+4)),
+			htonl(*(PDWORD)(digest+8)),htonl(*(PDWORD)(digest+12)),
+			tm, email, sid, 
+			ismail ? urlId : profileURLId, rruenc, ismail ? "&svc=mail" : "" );
+	}
+	else
+		strcpy( hippy, ismail ? "http://login.live.com" : "http://spaces.live.com/PersonalSpaceSignup.aspx" );
+
+	MSN_DebugLog( "Starting URL: '%s'", hippy );
+	MSN_CallService( MS_UTILS_OPENURL, 1, ( LPARAM )hippy );
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 // MSN_ShowError - shows an error
 
 void MSN_ShowError( const char* msgtext, ... )
@@ -660,11 +708,16 @@ LRESULT CALLBACK NullWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 			PopupData* tData = ( PopupData* )PUGetPluginData( hWnd );
 			if ( tData != NULL )
 			{
-				if ( tData->url != NULL )
-					MSN_CallService( MS_UTILS_OPENURL, 1, ( LPARAM )tData->url );
-
-				if ( tData->flags & MSN_ALLOW_ENTER )
-					CallProtoService( msnProtocolName, MS_GOTO_INBOX, 0, 0 );
+				if ( tData->flags & MSN_HOTMAIL_POPUP )
+				{
+					if ( tData->flags & MSN_ALLOW_ENTER )
+						MsnInvokeMyURL( true, tData->url );
+				}
+				else
+				{
+					if ( tData->url != NULL )
+						MSN_CallService( MS_UTILS_OPENURL, 1, ( LPARAM )tData->url );
+				}
 			}
 
 			PUDeletePopUp( hWnd );
@@ -702,7 +755,7 @@ void CALLBACK sttMainThreadCallback( ULONG dwParam )
 	mir_free( ppd );
 }
 
-void MSN_ShowPopup( const TCHAR* nickname, const TCHAR* msg, int flags, char* url )
+void MSN_ShowPopup( const TCHAR* nickname, const TCHAR* msg, int flags, const char* url )
 {
 	if ( !ServiceExists( MS_POPUP_ADDPOPUPT )) {
 		if ( flags & MSN_ALLOW_MSGBOX ) {
@@ -766,14 +819,13 @@ static int SingleHexToDecimal(char c)
 	return -1;
 }
 
-void  UrlDecode( char* str, bool pq )
+void  UrlDecode( char* str )
 {
-	const char key = pq ? '=' : '%';
 	char* s = str, *d = str;
 
 	while( *s )
 	{
-		if ( *s == key ) {
+		if ( *s == '%' ) {
 			int digit1 = SingleHexToDecimal( s[1] );
 			if ( digit1 != -1 ) {
 				int digit2 = SingleHexToDecimal( s[2] );
