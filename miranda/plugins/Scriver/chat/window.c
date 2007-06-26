@@ -1449,7 +1449,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
                if (height == 10)
                   offset = 0;
                else
-                  offset = height/2 - 4;
+                  offset = height/2 - 5;
                hIcon = SM_GetStatusIcon(si, ui);
                hFont = (ui->iStatusEx == 0) ? g_Settings.UserListFont : g_Settings.UserListHeadingsFont;
                hOldFont = (HFONT) SelectObject(dis->hDC, hFont);
