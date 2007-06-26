@@ -42,11 +42,6 @@ void ext_yahoo_got_im(int id, const char *me, const char *who, const char *msg, 
     char 		*umsg;
 	const char	*c = msg;
 	int 		oidx = 0;
-	wchar_t* 	tRealBody = NULL;
-	int      	tRealBodyLen = 0;
-	int 		msgLen;
-	char* 		tMsgBuf = NULL;
-	char* 		p = NULL;
 	CCSDATA 		ccs;
 	PROTORECVEVENT 	pre;
 	HANDLE 			hContact;
@@ -73,7 +68,7 @@ void ext_yahoo_got_im(int id, const char *me, const char *who, const char *msg, 
 		return;
 	}
 		
-	umsg = (char *) alloca(lstrlen(msg) * 2 + 1); /* double size to be on the safe side */
+	umsg = (char *) alloca(lstrlen(msg) + 1); 
 	while ( *c != '\0') {
 			// Strip the font tag
         if (!strnicmp(c,"<font ",6) || !strnicmp(c,"</font>",6) ||
@@ -102,40 +97,16 @@ void ext_yahoo_got_im(int id, const char *me, const char *who, const char *msg, 
 	umsg[oidx++]= '\0';
 		
 	/* Need to strip off formatting stuff first. Then do all decoding/converting */
-	if (utf8){	
-		//Utf8Decode( umsg, 0, &tRealBody );
-		mir_utf8decode( umsg, &tRealBody );
-		tRealBodyLen = wcslen( tRealBody );
-	} 
-
 	LOG(("%s: %s", who, umsg));
 	
 	//if(!strcmp(umsg, "<ding>")) 
 	//	:P("\a");
 	
-	if (utf8)
-		msgLen = (lstrlen(umsg) + 1) * (sizeof(wchar_t) + 1);
-	else
-		msgLen = (lstrlen(umsg) + 1);
-	
-	tMsgBuf = ( char* )alloca( msgLen );
-	p = tMsgBuf;
-
-	// MSGBUF Blob:  <ASCII> \0 <UNICODE> \0 
-	strcpy( p, umsg );
-	
-	p += lstrlen(umsg) + 1;
-
-	if ( tRealBodyLen != 0 ) {
-		memcpy( p, tRealBody, sizeof( wchar_t )*( tRealBodyLen+1 ));
-		mir_free( tRealBody );
-	} 
-
 	ccs.szProtoService = PSR_MESSAGE;
 	ccs.hContact = hContact = add_buddy(who, who, PALF_TEMPORARY);
 	ccs.wParam = 0;
 	ccs.lParam = (LPARAM) &pre;
-	pre.flags = (utf8) ? PREF_UNICODE : 0;
+	pre.flags = (utf8) ? PREF_UTF : 0;
 	
 	if (tm) {
 		HANDLE hEvent = (HANDLE)CallService(MS_DB_EVENT_FINDLAST, (WPARAM)hContact, 0);
@@ -156,7 +127,7 @@ void ext_yahoo_got_im(int id, const char *me, const char *who, const char *msg, 
 	} else
 		pre.timestamp = time(NULL);
 		
-	pre.szMessage = tMsgBuf;
+	pre.szMessage = umsg;
 	pre.lParam = 0;
 	
     // Turn off typing
@@ -219,6 +190,8 @@ int YahooSendMessage(WPARAM wParam, LPARAM lParam)
 		/* convert to utf8 */
 		char* p = ( char* )ccs->lParam;
 		msg = mir_utf8encodeW(( wchar_t* )&p[ strlen(p)+1 ] );
+	} else if ( ccs->wParam & PREF_UTF ) {
+		msg = mir_strdup(( char* )ccs->lParam );
 	} else {
 		msg = mir_utf8encode(( char* )ccs->lParam );
 	}
@@ -248,7 +221,6 @@ int YahooSendMessage(WPARAM wParam, LPARAM lParam)
 //=======================================================
 int YahooRecvMessage(WPARAM wParam, LPARAM lParam)
 {
-    DBEVENTINFO dbei;
     CCSDATA *ccs = (CCSDATA *) lParam;
     PROTORECVEVENT *pre = (PROTORECVEVENT *) ccs->lParam;
 
@@ -261,20 +233,7 @@ int YahooRecvMessage(WPARAM wParam, LPARAM lParam)
 		return 0;
     } 
 	
-    ZeroMemory(&dbei, sizeof(dbei));
-    dbei.cbSize = sizeof(dbei);
-    dbei.szModule = yahooProtocolName;
-    dbei.timestamp = pre->timestamp;
-    dbei.flags = (pre->flags & PREF_CREATEREAD) ? DBEF_READ : 0;
-    dbei.eventType = EVENTTYPE_MESSAGE;
-    dbei.cbBlob = (!lstrcmp(pre->szMessage, "<ding>"))? lstrlen("BUZZ!!!")+1:lstrlen(pre->szMessage) + 1;
-	if ( pre->flags & PREF_UNICODE )
-		dbei.cbBlob *= ( sizeof( wchar_t )+1 );
-
-	
-    dbei.pBlob = (PBYTE) (!lstrcmp(pre->szMessage, "<ding>"))? "BUZZ!!!":pre->szMessage;
-    CallService(MS_DB_EVENT_ADD, (WPARAM) ccs->hContact, (LPARAM) & dbei);
-    return 0;
+	return CallService( MS_PROTO_RECVMSG, wParam, lParam );
 }
 
 //=======================================================

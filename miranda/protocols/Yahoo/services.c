@@ -77,7 +77,8 @@ int GetCaps(WPARAM wParam,LPARAM lParam)
             break;
             
         case PFLAGNUM_4:
-            ret = PF4_FORCEAUTH|PF4_FORCEADDED|PF4_SUPPORTTYPING|PF4_SUPPORTIDLE|PF4_AVATARS|PF4_OFFLINEFILES;
+            ret = PF4_FORCEAUTH | PF4_FORCEADDED | PF4_SUPPORTTYPING | PF4_SUPPORTIDLE
+					|PF4_AVATARS | PF4_OFFLINEFILES | PF4_IMSENDUTF;
             break;
         case PFLAG_UNIQUEIDTEXT:
             ret = (int) Translate("ID");
@@ -221,6 +222,7 @@ int SetStatus(WPARAM wParam,LPARAM lParam)
 		/* now tell miranda that we are Online, don't tell Yahoo server yet though! */
 		yahoo_util_broadcaststatus(status);
 	}
+	
     return 0;
 }
 
