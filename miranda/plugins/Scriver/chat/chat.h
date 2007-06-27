@@ -246,8 +246,6 @@ typedef struct SESSION_INFO_TYPE
 
 	struct SESSION_INFO_TYPE *next;
 
-	HWND        hwndTooltip;
-	int         iOldItemID;
 	int			codePage;
 }SESSION_INFO;
 

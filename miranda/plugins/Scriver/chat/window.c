@@ -1025,11 +1025,10 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
    case WM_CONTEXTMENU:
       {
          TVHITTESTINFO hti;
-         int item;
+         DWORD item;
          int height=0;
          USERINFO * ui;
          SESSION_INFO* parentdat =(SESSION_INFO*)GetWindowLong(GetParent(hwnd),GWL_USERDATA);
-
 
          hti.pt.x = (short) LOWORD(lParam);
          hti.pt.y = (short) HIWORD(lParam);
@@ -1042,9 +1041,12 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
          }
          else ScreenToClient(hwnd,&hti.pt);
 
-         item = LOWORD(SendMessage(GetDlgItem(GetParent(hwnd), IDC_CHAT_LIST), LB_ITEMFROMPOINT, 0, MAKELPARAM(hti.pt.x, hti.pt.y)));
-         ui = SM_GetUserFromIndex(parentdat->ptszID, parentdat->pszModule, item);
-         // ui = (USERINFO *)SendMessage(GetDlgItem(GetParent(hwnd), IDC_CHAT_LIST), LB_GETITEMDATA, item, 0);
+         item = (DWORD)(SendMessage(hwnd, LB_ITEMFROMPOINT, 0, MAKELPARAM(hti.pt.x, hti.pt.y)));
+		 if ( HIWORD( item ) == 1 ) 
+			item = (DWORD)(-1);
+		 else 
+			item &= 0xFFFF;
+         ui = SM_GetUserFromIndex(parentdat->ptszID, parentdat->pszModule, (int)item);
          if (ui) {
             HMENU hMenu = 0;
             UINT uID;
@@ -1078,21 +1080,19 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 			POINT pt;
 			RECT clientRect;
 			BOOL bInClient;			
+			SESSION_INFO* parentdat =(SESSION_INFO*)GetWindowLong(GetParent(hwnd),GWL_USERDATA);
 			pt.x=LOWORD(lParam);
 			pt.y=HIWORD(lParam);
 			GetClientRect(hwnd,&clientRect);
 			bInClient=PtInRect(&clientRect, pt);
-
 			//Mouse capturing/releasing
 			if ( bInClient && GetCapture()!=hwnd)
 				SetCapture(hwnd);
 			else if (!bInClient)
-				SetCapture(NULL);
+				ReleaseCapture();
 
 			if (bInClient) {
 				//hit test item under mouse
-				SESSION_INFO* parentdat =(SESSION_INFO*)GetWindowLong(GetParent(hwnd),GWL_USERDATA);
-
 				DWORD nItemUnderMouse=(DWORD)SendMessage(hwnd, LB_ITEMFROMPOINT, 0, lParam);
 				if ( HIWORD( nItemUnderMouse ) == 1 ) 
 					nItemUnderMouse = (DWORD)(-1);
@@ -1207,27 +1207,6 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETEVENTMASK, 0, mask | ENM_LINK | ENM_MOUSEEVENTS);
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_LIMITTEXT, (WPARAM)sizeof(TCHAR)*0x7FFFFFFF, 0);
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETOLECALLBACK, 0, (LPARAM) & reOleCallback);
-
-			// enable tooltips
-			psi->iOldItemID = -1;
-			psi->hwndTooltip = CreateWindow(TOOLTIPS_CLASS,NULL,TTS_ALWAYSTIP,CW_USEDEFAULT,CW_USEDEFAULT,CW_USEDEFAULT,CW_USEDEFAULT,hNickList,(HMENU)NULL,g_hInst,NULL);
-			SetWindowPos(psi->hwndTooltip, HWND_TOPMOST,0, 0, 0, 0,SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
-			{
-				TOOLINFO ti = {0};
-				ti.cbSize = sizeof(TOOLINFO);
-				ti.uFlags = TTF_IDISHWND | TTF_SUBCLASS | TTF_TRANSPARENT;
-				ti.hwnd   = hwndDlg;
-				ti.hinst  = g_hInst;
-				ti.uId    = (UINT)hNickList;
-				ti.lpszText  = LPSTR_TEXTCALLBACK;
-//				GetClientRect( hNickList, &ti.rect );
-				SendMessage( psi->hwndTooltip, TTM_ADDTOOL, 0, ( LPARAM )&ti );
-				SendMessage( psi->hwndTooltip, TTM_SETDELAYTIME, TTDT_AUTOPOP, 20000 );
-				SendMessage( psi->hwndTooltip, TTM_SETMAXTIPWIDTH, 0, 300);
-
-
-				//SendMessage( psi->hwndTooltip, TTM_TRACKACTIVATE, TRUE, ( LPARAM )&ti );
-			}
 
 			EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_SMILEY), TRUE);
 
@@ -2251,20 +2230,7 @@ LABEL_SHOWWINDOW:
    case WM_DESTROY:
 
 		NotifyLocalWinEvent(si->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSING);
-
 		si->hWnd = NULL;
-
-		if (si->hwndTooltip != NULL) {
-			HWND hNickList = GetDlgItem(hwndDlg,IDC_CHAT_LIST);
-			TOOLINFO ti = { 0 };
-			ti.cbSize = sizeof(TOOLINFO);
-			ti.uId = (UINT)hNickList;
-			ti.hwnd = hNickList;
-			SendMessage( si->hwndTooltip, TTM_DELTOOL, 0, (LPARAM)(LPTOOLINFO)&ti );
-		}
-		DestroyWindow( si->hwndTooltip );
-		si->hwndTooltip = NULL;
-
 		SetWindowLong(hwndDlg,GWL_USERDATA,0);
 		SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_SPLITTERX),GWL_WNDPROC,(LONG)OldSplitterProc);
 		SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_SPLITTERY),GWL_WNDPROC,(LONG)OldSplitterProc);
