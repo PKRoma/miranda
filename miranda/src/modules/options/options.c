@@ -30,6 +30,8 @@ static HWND hwndOptions=NULL;
 typedef HRESULT (STDAPICALLTYPE *pfnEnableThemeDialogTexture)(HWND,DWORD);
 static pfnEnableThemeDialogTexture MyEnableThemeDialogTexture = NULL;
 
+static void FillFilterCombo(HWND hDlg, struct OptionsPageData * opd, int PageCount);
+
 struct OptionsPageInit
 {
 	int pageCount;
@@ -323,7 +325,9 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 		dat->rcTab.right -= pt.x;
 		TabCtrl_AdjustRect(GetDlgItem(hdlg,IDC_TAB), FALSE, &dat->rcTab);
 
+		FillFilterCombo(hdlg, dat->opd, dat->pageCount); 
 		SendMessage(hdlg,DM_REBUILDPAGETREE,0,0);
+
 		return TRUE;
 	}
 	case DM_REBUILDPAGETREE:
@@ -331,6 +335,11 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 		TVINSERTSTRUCT tvis;
 		TVITEMA tvi;
 		char str[128],buf[130];
+
+		HINSTANCE FilterInst=NULL;
+		int FilterSelIndex=SendDlgItemMessage(hdlg,IDC_MODULES,CB_GETCURSEL,0,0);
+		if (FilterSelIndex>0) 
+		   FilterInst=(HINSTANCE)SendDlgItemMessage(hdlg,IDC_MODULES,CB_GETITEMDATA,FilterSelIndex,0);
 
 		TreeView_SelectItem(GetDlgItem(hdlg,IDC_PAGETREE),NULL);
 		if ( dat->currentPage != (-1))
@@ -343,6 +352,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 		tvis.item.mask = TVIF_TEXT | TVIF_STATE | TVIF_PARAM;
 		tvis.item.state = tvis.item.stateMask = TVIS_EXPANDED;
 		for ( i=0; i < dat->pageCount; i++ ) {
+			if ( FilterInst!=NULL && dat->opd[i].hInst!=FilterInst ) continue;
 			if (( dat->opd[i].flags & ODPF_SIMPLEONLY ) && IsDlgButtonChecked( hdlg, IDC_EXPERT )) continue;
 			if (( dat->opd[i].flags & ODPF_EXPERTONLY ) && !IsDlgButtonChecked( hdlg, IDC_EXPERT )) continue;
 			tvis.hParent = NULL;
@@ -404,8 +414,11 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 			}
 			tvi.hItem = TreeView_GetNextSibling( GetDlgItem( hdlg, IDC_PAGETREE ), tvi.hItem );
 		}
-		if(dat->hCurrentPage==NULL) dat->hCurrentPage=TreeView_GetRoot(GetDlgItem(hdlg,IDC_PAGETREE));
-		dat->currentPage=-1;
+		if(dat->hCurrentPage==NULL) 
+		{
+			dat->hCurrentPage=TreeView_GetRoot(GetDlgItem(hdlg,IDC_PAGETREE));
+			dat->currentPage=-1;
+		}
 		TreeView_SelectItem(GetDlgItem(hdlg,IDC_PAGETREE),dat->hCurrentPage);
 		ShowWindow(GetDlgItem(hdlg,IDC_PAGETREE),SW_SHOW);
 		break;
@@ -561,6 +574,13 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 		break;
 	case WM_COMMAND:
 		switch(LOWORD(wParam)) {
+			case IDC_MODULES:
+			{
+				if ( HIWORD(wParam)==CBN_SELCHANGE )
+					SendMessage(hdlg,DM_REBUILDPAGETREE,0,0);
+				break;
+			}
+
 			case IDC_EXPERT:
 			{	int expert=IsDlgButtonChecked(hdlg,IDC_EXPERT);
 				int i,j;
@@ -769,6 +789,7 @@ static void OpenOptionsNow(const char *pszGroup,const char *pszPage,const char *
 			mir_free((char*)opi.odp[i].pszTemplate);
 	}
 	mir_free(opi.odp);
+
 }
 
 static int OpenOptions(WPARAM wParam,LPARAM lParam)
@@ -890,4 +911,33 @@ int LoadOptionsModule(void)
 			MyEnableThemeDialogTexture = (pfnEnableThemeDialogTexture)GetProcAddress(hThemeAPI,"EnableThemeDialogTexture");
 	}
 	return 0;
+}
+
+static void FillFilterCombo(HWND hDlg, struct OptionsPageData * opd, int PageCount)
+{
+	int i;
+	int index;
+	HINSTANCE mirInstance=GetModuleHandle( NULL );	
+	SendDlgItemMessage(hDlg, IDC_MODULES,(UINT) CB_RESETCONTENT, 0,0);
+	index=SendDlgItemMessage(hDlg, IDC_MODULES,(UINT) CB_ADDSTRING,(WPARAM)0, (LPARAM)TranslateT("<all modules>"));
+	SendDlgItemMessage(hDlg, IDC_MODULES,(UINT) CB_SETITEMDATA,(WPARAM)index, (LPARAM)NULL);
+	index=SendDlgItemMessage(hDlg, IDC_MODULES,(UINT) CB_ADDSTRING,(WPARAM)0, (LPARAM)TranslateT("<core settings>"));
+	SendDlgItemMessage(hDlg, IDC_MODULES,(UINT) CB_SETITEMDATA,(WPARAM)index, (LPARAM)mirInstance);
+	for (i=0; i<PageCount; i++)
+	{
+		TCHAR * tszModuleName=alloca(MAX_PATH*sizeof(TCHAR));
+		TCHAR * dllName;
+		HINSTANCE inst=opd[i].hInst;
+		if (inst==mirInstance) continue;
+		GetModuleFileName(inst, tszModuleName, MAX_PATH*sizeof(TCHAR));
+	    dllName=_tcsrchr(tszModuleName,_T('\\'));
+		if (!dllName) dllName=tszModuleName;
+		else dllName++;
+		if (SendDlgItemMessage(hDlg, IDC_MODULES,(UINT) CB_FINDSTRING,(WPARAM)-1, (LPARAM)dllName)==-1)
+		{
+			index=SendDlgItemMessage(hDlg, IDC_MODULES,(UINT) CB_ADDSTRING,(WPARAM)0, (LPARAM)dllName);
+			SendDlgItemMessage(hDlg, IDC_MODULES,(UINT) CB_SETITEMDATA,(WPARAM)index, (LPARAM)inst);
+		}	
+	}
+	SendDlgItemMessage(hDlg, IDC_MODULES,(UINT) CB_SETCURSEL,(WPARAM)0, (LPARAM)0);
 }
