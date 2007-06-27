@@ -576,8 +576,12 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 		switch(LOWORD(wParam)) {
 			case IDC_MODULES:
 			{
+
 				if ( HIWORD(wParam)==CBN_SELCHANGE )
+				{
+					SaveOptionsTreeState(hdlg);
 					SendMessage(hdlg,DM_REBUILDPAGETREE,0,0);
+				}
 				break;
 			}
 
@@ -917,6 +921,8 @@ static void FillFilterCombo(HWND hDlg, struct OptionsPageData * opd, int PageCou
 {
 	int i;
 	int index;
+	HINSTANCE * KnownInstances=alloca(sizeof(HINSTANCE)*PageCount);
+	int countKnownInst=0;
 	HINSTANCE mirInstance=GetModuleHandle( NULL );	
 	SendDlgItemMessage(hDlg, IDC_MODULES,(UINT) CB_RESETCONTENT, 0,0);
 	index=SendDlgItemMessage(hDlg, IDC_MODULES,(UINT) CB_ADDSTRING,(WPARAM)0, (LPARAM)TranslateT("<all modules>"));
@@ -927,13 +933,18 @@ static void FillFilterCombo(HWND hDlg, struct OptionsPageData * opd, int PageCou
 	{
 		TCHAR * tszModuleName=alloca(MAX_PATH*sizeof(TCHAR));
 		TCHAR * dllName;
+		int j;
 		HINSTANCE inst=opd[i].hInst;
 		if (inst==mirInstance) continue;
+		for (j=0; j<countKnownInst; j++)
+			if (KnownInstances[j]==inst) break;
+		if (j!=countKnownInst) continue;
+		KnownInstances[countKnownInst]=inst;
+		countKnownInst++;
 		GetModuleFileName(inst, tszModuleName, MAX_PATH*sizeof(TCHAR));
 	    dllName=_tcsrchr(tszModuleName,_T('\\'));
 		if (!dllName) dllName=tszModuleName;
-		else dllName++;
-		if (SendDlgItemMessage(hDlg, IDC_MODULES,(UINT) CB_FINDSTRING,(WPARAM)-1, (LPARAM)dllName)==-1)
+		else dllName++;		
 		{
 			index=SendDlgItemMessage(hDlg, IDC_MODULES,(UINT) CB_ADDSTRING,(WPARAM)0, (LPARAM)dllName);
 			SendDlgItemMessage(hDlg, IDC_MODULES,(UINT) CB_SETITEMDATA,(WPARAM)index, (LPARAM)inst);
