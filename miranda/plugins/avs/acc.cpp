@@ -287,6 +287,7 @@ void AnimatedGifMountFrame(ACCData* data, int page)
 
 
 	//decode page
+	int palSize = fei->FI_GetColorsUsed(dib);
 	RGBQUAD *pal = fei->FI_GetPalette(dib);
 	bool have_transparent = false;
 	int transparent_color = -1;
@@ -386,7 +387,7 @@ void StartAnimatedGif(HWND hwnd, ACCData* data)
 	if(fif == FIF_UNKNOWN)
 		fif = fei->FI_GetFIFFromFilename(ace->szFilename);
 
-	data->ag.multi = fei->FI_OpenMultiBitmap(fif, ace->szFilename, FALSE, TRUE, FALSE, 0);
+	data->ag.multi = fei->FI_OpenMultiBitmap(fif, ace->szFilename, FALSE, TRUE, FALSE, GIF_LOAD256);
 	if (data->ag.multi == NULL)
 		return;
 
@@ -410,11 +411,11 @@ void StartAnimatedGif(HWND hwnd, ACCData* data)
 			*scanline++ = data->ag.background;
 	}
 
-	data->ag.hbms = (HBITMAP *) malloc(sizeof(HBITMAP *) * data->ag.frameCount);
-	memset(data->ag.hbms, 0, sizeof(HBITMAP *) * data->ag.frameCount);
+	data->ag.hbms = (HBITMAP *) malloc(sizeof(HBITMAP) * data->ag.frameCount);
+	memset(data->ag.hbms, 0, sizeof(HBITMAP) * data->ag.frameCount);
 
-	data->ag.times = (int *) malloc(sizeof(int *) * data->ag.frameCount);
-	memset(data->ag.times, 0, sizeof(int *) * data->ag.frameCount);
+	data->ag.times = (int *) malloc(sizeof(int) * data->ag.frameCount);
+	memset(data->ag.times, 0, sizeof(int) * data->ag.frameCount);
 
 	AnimatedGifMountFrame(data, 0);
 
