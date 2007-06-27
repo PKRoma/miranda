@@ -244,17 +244,18 @@ BEGIN
     PUSHBUTTON      "Apply",IDC_APPLY,374,255,50,14
     CONTROL         "Tree1",IDC_PAGETREE,"SysTreeView32",TVS_HASBUTTONS | 
                     TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
-                    TVS_SHOWSELALWAYS | TVS_TRACKSELECT | WS_TABSTOP,4,31,
-                    102,219,WS_EX_STATICEDGE
+                    TVS_SHOWSELALWAYS | TVS_TRACKSELECT | WS_TABSTOP,4,30,
+                    102,220,WS_EX_STATICEDGE
     CONTROL         "",IDC_TAB,"SysTabControl32",NOT WS_VISIBLE | WS_TABSTOP,
                     111,4,313,247
     CONTROL         "Show expert options",IDC_EXPERT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,5,257,102,10
     CTEXT           "Please select a subentry from the list",IDC_STNOPAGE,
                     111,4,313,240,SS_CENTERIMAGE
-    COMBOBOX        IDC_MODULES,4,15,102,79,CBS_DROPDOWN | CBS_SORT | 
+    COMBOBOX        IDC_MODULES,4,15,102,79,CBS_DROPDOWNLIST | CBS_SORT | 
                     WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Show settings only for module:",IDC_STATIC,4,4,100,8
+    LTEXT           "Show settings only for module:",
+                    IDC_STATIC_FILTERCAPTION,4,4,100,8
 END
 
 IDD_READAWAYMSG DIALOGEX 0, 0, 187, 72

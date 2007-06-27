@@ -305,7 +305,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 		GetWindowRect(hdlg,&rcDlg);
 		pt.x=pt.y=0;
 		ClientToScreen(hdlg,&pt);
-		GetWindowRect(GetDlgItem(hdlg,IDC_PAGETREE),&rc);
+		GetWindowRect(GetDlgItem(hdlg,IDC_STATIC_FILTERCAPTION),&rc);
 		dat->rcDisplay.left=rc.right-pt.x+(rc.left-rcDlg.left);
 		dat->rcDisplay.top=rc.top-pt.y;
 		dat->rcDisplay.right=rcDlg.right-(rc.left-rcDlg.left)-pt.x;
