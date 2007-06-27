@@ -338,3 +338,16 @@ proprietary programs.  If your program is a subroutine library, you may
 consider it more useful to permit linking proprietary applications with the
 library.  If this is what you want to do, use the GNU Library General
 Public License instead of this License.
+
+---------------------------------------
+As a special exception, the authors give permission to modify code,
+dynamically link and distribute the Program in binary form within the QIP
+installer or archive, as long as the following requirements are fullfilled:
+1. The Jabber plugin must be announced and advertized as a separate product,
+clearly stating that the Jabber protocol is supported via a separate plugin
+ported from Miranda IM
+2. Any kind of QIP Infium distribution must include this license agreement
+and original copyrights
+3. The original copyrights must be available within the UI
+4. Each version of the modified code must be freely available
+5. Any changes made in the source code are subject to this license.
