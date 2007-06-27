@@ -924,14 +924,14 @@ static void FillFilterCombo(HWND hDlg, struct OptionsPageData * opd, int PageCou
 	HINSTANCE * KnownInstances=alloca(sizeof(HINSTANCE)*PageCount);
 	int countKnownInst=0;
 	HINSTANCE mirInstance=GetModuleHandle( NULL );	
+	TCHAR * tszModuleName=alloca(MAX_PATH*sizeof(TCHAR));
 	SendDlgItemMessage(hDlg, IDC_MODULES,(UINT) CB_RESETCONTENT, 0,0);
 	index=SendDlgItemMessage(hDlg, IDC_MODULES,(UINT) CB_ADDSTRING,(WPARAM)0, (LPARAM)TranslateT("<all modules>"));
 	SendDlgItemMessage(hDlg, IDC_MODULES,(UINT) CB_SETITEMDATA,(WPARAM)index, (LPARAM)NULL);
 	index=SendDlgItemMessage(hDlg, IDC_MODULES,(UINT) CB_ADDSTRING,(WPARAM)0, (LPARAM)TranslateT("<core settings>"));
 	SendDlgItemMessage(hDlg, IDC_MODULES,(UINT) CB_SETITEMDATA,(WPARAM)index, (LPARAM)mirInstance);
 	for (i=0; i<PageCount; i++)
-	{
-		TCHAR * tszModuleName=alloca(MAX_PATH*sizeof(TCHAR));
+	{		
 		TCHAR * dllName;
 		int j;
 		HINSTANCE inst=opd[i].hInst;
