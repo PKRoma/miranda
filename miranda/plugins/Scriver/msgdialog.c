@@ -635,21 +635,27 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 		dat->lastEnterTime = 0;
 		break;
 	case WM_SYSKEYDOWN:
-		if ((wParam == VK_LEFT) && GetKeyState(VK_MENU) & 0x8000) {
-			SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEPREV, 0, (LPARAM)GetParent(hwnd));
-			return 0;
-		}
-		if ((wParam == VK_RIGHT) && GetKeyState(VK_MENU) & 0x8000) {
-			SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATENEXT, 0, (LPARAM)GetParent(hwnd));
-			return 0;
-		}
+		{
+			BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
+			if ((wParam == VK_LEFT) && isAlt) {
+				SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEPREV, 0, (LPARAM)GetParent(hwnd));
+				return 0;
+			}
+			if ((wParam == VK_RIGHT) && isAlt) {
+				SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATENEXT, 0, (LPARAM)GetParent(hwnd));
+				return 0;
+			}
+		}			
 		break;
 	case WM_SYSKEYUP:
-		if ((wParam == VK_LEFT) && GetKeyState(VK_MENU) & 0x8000) {
-			return 0;
-		}
-		if ((wParam == VK_RIGHT) && GetKeyState(VK_MENU) & 0x8000) {
-			return 0;
+		{
+			BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
+			if ((wParam == VK_LEFT) && isAlt) {
+				return 0;
+			}
+			if ((wParam == VK_RIGHT) && isAlt) {
+				return 0;
+			}
 		}
 		break;
 	case WM_SYSCHAR:
