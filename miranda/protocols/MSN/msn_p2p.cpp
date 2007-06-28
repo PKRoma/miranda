@@ -423,8 +423,10 @@ void  p2p_sendSlp(
 		default: return;
 	}
 	
-	if ( iKind < 0 )
-		replaceStr(ft->p2p_branch, getNewUuid());
+	if ( iKind < 0 ) {
+		mir_free(ft->p2p_branch);
+		ft->p2p_branch = getNewUuid();
+	}
 
 	p += sprintf( p,
 		"\r\nTo: <msnmsgr:%s>\r\n"
@@ -1648,7 +1650,6 @@ void  p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft )
 	ft->p2p_type = iAppID;
 	ft->p2p_acksessid = rand() << 16 | rand();
 	ft->p2p_sessionid = sessionID;
-	ft->p2p_branch = getNewUuid();
 	ft->p2p_callID = getNewUuid();
 
 	if ( !p2p_sessionRegistered( ft )) {
