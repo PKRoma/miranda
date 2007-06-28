@@ -1563,11 +1563,12 @@ void  p2p_processMsg( ThreadData* info,  char* msgbody )
 
 	if ( hdrdata->mFlags == 0 ) {
 		//---- accept the data preparation message ------
-		const unsigned* pLongs = ( unsigned* )msgbody;
-		if ( pLongs[0] == 0 && pLongs[1] == htonl(ft->p2p_appID) && hdrdata->mPacketLen == 4 ) {
+//		const unsigned* pLongs = ( unsigned* )msgbody;
+//		if ( pLongs[0] == 0 && pLongs[1] == htonl(ft->p2p_appID) && hdrdata->mPacketLen == 4 ) {
 			p2p_sendAck( ft->std.hContact, hdrdata );
 			return;
-	}	}
+//		}
+	}
 
 	//---- receiving data -----------
 	if ( hdrdata->mFlags == 0x01000030 || hdrdata->mFlags == 0x20 ) {
