@@ -370,7 +370,7 @@ int MsnWindowEvent(WPARAM wParam, LPARAM lParam)
 				MSN_GetUnconnectedThread( msgEvData->hContact ) == NULL )
 		{
 			msnNsThread->sendPacket( "XFR", "SB" );
-			MsgQueue_Add( msgEvData->hContact, 'X', "None", 0, NULL );
+			MsgQueue_Add( msgEvData->hContact, 'X', NULL, 0, NULL );
 		}
 	}
 	return 0;
