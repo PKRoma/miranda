@@ -356,7 +356,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 			if (( dat->opd[i].flags & ODPF_SIMPLEONLY ) && IsDlgButtonChecked( hdlg, IDC_EXPERT )) continue;
 			if (( dat->opd[i].flags & ODPF_EXPERTONLY ) && !IsDlgButtonChecked( hdlg, IDC_EXPERT )) continue;
 			tvis.hParent = NULL;
-			if(dat->opd[i].pszGroup != NULL) {
+			if(dat->opd[i].pszGroup != NULL && FilterInst==NULL) {
 				tvis.hParent = FindNamedTreeItemAtRoot(GetDlgItem(hdlg,IDC_PAGETREE),dat->opd[i].pszGroup);
 				if(tvis.hParent == NULL) {
 					tvis.item.lParam = -1;
