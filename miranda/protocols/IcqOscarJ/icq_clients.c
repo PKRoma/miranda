@@ -499,7 +499,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         strcpy(szClientBuf, "QIP Infium");
         if (dwFT1)
         { // add build
-          null_snprintf(ver, 10, " (%d)", (dwFT1 >> 0x18) | ((dwFT1 >> 0x08) & 0xFF00) | ((dwFT1 << 0x08) & 0xFF0000) | ((dwFT1 << 0x18) & 0xFF000000));
+          null_snprintf(ver, 10, " (%d)", dwFT1);
           strcat(szClientBuf, ver);
         }
         if (dwFT2 == 0x0B)
