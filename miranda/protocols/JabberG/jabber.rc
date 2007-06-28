@@ -143,14 +143,14 @@ BEGIN
                     IDC_DIRECT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,14,
                     202,10
     CONTROL         "Specify proxy server",IDC_PROXY_MANUAL,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,27,50,102,10
-    CONTROL         "Allow file sending through bytestream proxy server (use IBB mode otherwise)",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,50,102,10
+    CONTROL         "Allow file sending through bytestream proxy server",
                     IDC_PROXY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,38,
                     277,10
-    EDITTEXT        IDC_PROXY_ADDR,135,49,81,12,ES_AUTOHSCROLL | WS_GROUP
+    EDITTEXT        IDC_PROXY_ADDR,124,49,81,12,ES_AUTOHSCROLL | WS_GROUP
     CONTROL         "Specify external address",IDC_DIRECT_MANUAL,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,27,26,101,10
-    EDITTEXT        IDC_DIRECT_ADDR,135,25,81,12,ES_AUTOHSCROLL
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,26,101,10
+    EDITTEXT        IDC_DIRECT_ADDR,124,25,81,12,ES_AUTOHSCROLL
     GROUPBOX        "Miscellaneous",IDC_STATIC,8,85,290,142
     CONTROL         "Automatically add contact when accept authorization",
                     IDC_AUTO_ADD,"Button",BS_AUTOCHECKBOX | BS_TOP | 
