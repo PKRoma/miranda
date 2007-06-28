@@ -57,10 +57,10 @@ int  MsgQueue_Add( HANDLE hContact, int msgType, const char* msg, int msgSize, f
 	E.hContact = hContact;
 	E.msgSize = msgSize;
 	E.msgType = msgType;
-	if ( msgSize <= 0 )
-		E.message = mir_strdup( msg );
-	else
-		memcpy( E.message = ( char* )mir_alloc( msgSize ), msg, msgSize );
+
+	if ( msgSize <= 0 ) msgSize = strlen( msg ) + 1;
+	memcpy( E.message = ( char* )mir_alloc( msgSize ), msg, msgSize );
+
 	E.ft = ft;
 	E.seq = seq;
 	E.flags = flags;

@@ -948,9 +948,8 @@ LBL_InvalidCommand:
 
 					while (MsgQueue_GetNext( hContact, E ) != 0 )
 					{
-						if ( E.msgType == 'X' ) continue;
-
-						if ( E.msgType == 2571 )
+						if ( E.msgType == 'X' ) ;
+						else if ( E.msgType == 2571 )
 							typing = E.flags != 0;
 						else if ( E.msgSize == 0 ) {
 							info->sendMessage( E.msgType, E.message, E.flags );
@@ -1340,9 +1339,8 @@ LBL_InvalidCommand:
 
 				while (MsgQueue_GetNext( hContact, E ) != 0 )
 				{
-					if ( E.msgType == 'X' ) continue;
-
-					if ( E.msgType == 2571 )
+					if ( E.msgType == 'X' ) ;
+					else if ( E.msgType == 2571 )
 						typing = E.flags != 0;
 					else if ( E.msgSize == 0 ) {
 						info->sendMessage( E.msgType, E.message, E.flags );
