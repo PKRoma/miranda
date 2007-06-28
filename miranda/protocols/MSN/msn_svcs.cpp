@@ -1025,38 +1025,46 @@ static int MsnSetAvatar( WPARAM wParam, LPARAM lParam )
 		char ext[_MAX_EXT];
 		_splitpath( szFileName, drive, dir, fname, ext );
 		mir_sha1_init( &sha1ctx );
+		ezxml_t xmlp = ezxml_new("msnobj");
 
 		mir_sha1_append( &sha1ctx, ( PBYTE )"Creator", 7 );
 		mir_sha1_append( &sha1ctx, ( PBYTE )MyOptions.szEmail, strlen( MyOptions.szEmail ));
+		ezxml_set_attr(xmlp, "Creator", MyOptions.szEmail);
 
 		char szFileSize[ 20 ];
 		_ltoa( dwPngSize, szFileSize, 10 );
 		mir_sha1_append( &sha1ctx, ( PBYTE )"Size", 4 );
 		mir_sha1_append( &sha1ctx, ( PBYTE )szFileSize, strlen( szFileSize ));
+		ezxml_set_attr(xmlp, "Size", szFileSize);
 
 		mir_sha1_append( &sha1ctx, ( PBYTE )"Type", 4 );
 		mir_sha1_append( &sha1ctx, ( PBYTE )"3", 1 );  // MSN_TYPEID_DISPLAYPICT
+		ezxml_set_attr(xmlp, "Type", "3");
 
 		mir_sha1_append( &sha1ctx, ( PBYTE )"Location", 8 );
 		mir_sha1_append( &sha1ctx, ( PBYTE )fname, sizeof( fname ));
+		ezxml_set_attr(xmlp, "Location", fname);
 
 		mir_sha1_append( &sha1ctx, ( PBYTE )"Friendly", 8 );
 		mir_sha1_append( &sha1ctx, ( PBYTE )"AAA=", 4 );
+		ezxml_set_attr(xmlp, "Friendly", "AAA=");
 
 		mir_sha1_append( &sha1ctx, ( PBYTE )"SHA1D", 5 );
 		mir_sha1_append( &sha1ctx, ( PBYTE )szSha1d, strlen( szSha1d ));
+		ezxml_set_attr(xmlp, "SHA1D", szSha1d);
+		
 		mir_sha1_finish( &sha1ctx, sha1c );
+
 		{	NETLIBBASE64 nlb = { szSha1c, sizeof( szSha1c ), ( PBYTE )sha1c, sizeof( sha1c ) };
 			MSN_CallService( MS_NETLIB_BASE64ENCODE, 0, LPARAM( &nlb ));
+			ezxml_set_attr(xmlp, "SHA1C", szSha1c);
 		}
 		{
-			char szBuffer[ 1000 ];
-			mir_snprintf( szBuffer, sizeof( szBuffer ),
-				"<msnobj Creator=\"%s\" Size=\"%ld\" Type=\"3\" Location=\"%s\" Friendly=\"AAA=\" SHA1D=\"%s\" SHA1C=\"%s\"/>",
-				MyOptions.szEmail, dwPngSize, fname, szSha1d, szSha1c );
-
+			char* szBuffer = ezxml_toxml(xmlp, false);
 			char szEncodedBuffer[ 2000 ];
 			UrlEncode( szBuffer, szEncodedBuffer, sizeof( szEncodedBuffer ));
+			free(szBuffer);
+			ezxml_free(xmlp);
 
 			MSN_SetString( NULL, "PictObject", szEncodedBuffer );
 		}

@@ -23,13 +23,12 @@
  */
 
 #include <limits.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
 #include <ctype.h>
-#include <sys/types.h>
-#include <sys/stat.h>
+
 #include "ezxml.h"
 
 #ifndef SIZE_MAX
@@ -684,15 +683,20 @@ char *ezxml_toxml_r(ezxml_t xml, char **s, size_t *len, size_t *max,
         ezxml_ampencode(attr[i][j + 1], SIZE_MAX, s, len, max, 1);
         *len += sprintf(*s + *len, "\"");
     }
-    *len += sprintf(*s + *len, ">");
+	if (xml->attr != EZXML_NIL && xml->child == NULL && xml->txt[0] == 0)
+		*len += sprintf(*s + *len, "/>");
+	else
+	{
+		*len += sprintf(*s + *len, ">");
 
-    *s = (xml->child) ? ezxml_toxml_r(xml->child, s, len, max, 0, attr) //child
-                      : ezxml_ampencode(xml->txt, SIZE_MAX, s, len, max, 0);  //data
-    
-    while (*len + strlen(xml->name) + 4 > *max) // reallocate s
-        *s = realloc(*s, *max += EZXML_BUFSIZE);
+		*s = (xml->child) ? ezxml_toxml_r(xml->child, s, len, max, 0, attr) //child
+						  : ezxml_ampencode(xml->txt, SIZE_MAX, s, len, max, 0);  //data
+	    
+		while (*len + strlen(xml->name) + 4 > *max) // reallocate s
+			*s = realloc(*s, *max += EZXML_BUFSIZE);
 
-    *len += sprintf(*s + *len, "</%s>", xml->name); // close tag
+		*len += sprintf(*s + *len, "</%s>", xml->name); // close tag
+	}
 
     while (txt[off] && off < xml->off) off++; // make sure off is within bounds
     return (xml->ordered) ? ezxml_toxml_r(xml->ordered, s, len, max, off, attr)
@@ -701,13 +705,16 @@ char *ezxml_toxml_r(ezxml_t xml, char **s, size_t *len, size_t *max,
 
 // Converts an ezxml structure back to xml. Returns a string of xml data that
 // must be freed.
-char *ezxml_toxml(ezxml_t xml)
+char *ezxml_toxml(ezxml_t xml, int addhdr)
 {
     ezxml_t p = (xml) ? xml->parent : NULL, o = (xml) ? xml->ordered : NULL;
     ezxml_root_t root = (ezxml_root_t)xml;
-    size_t len = 0, max = EZXML_BUFSIZE;
-    char *s = strcpy(malloc(max), ""), *t, *n;
+    size_t len, max = EZXML_BUFSIZE;
+    char *s, *t, *n;
     int i, j, k;
+
+	s = strcpy(malloc(max), addhdr ? "<?xml version=\"1.0\" encoding=\"utf-8\"?>" : "");
+	len = strlen(s);
 
     if (! xml || ! xml->name) return realloc(s, len + 1);
     while (root->xml.parent) root = (ezxml_root_t)root->xml.parent; // root tag

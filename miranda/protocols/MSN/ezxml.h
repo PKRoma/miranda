@@ -25,10 +25,8 @@
 #ifndef _EZXML_H
 #define _EZXML_H
 
-#include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
-#include <fcntl.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -103,7 +101,7 @@ ezxml_t ezxml_get(ezxml_t xml, ...);
 
 // Converts an ezxml structure back to xml. Returns a string of xml data that
 // must be freed.
-char *ezxml_toxml(ezxml_t xml);
+char *ezxml_toxml(ezxml_t xml, int addhdr);
 
 // returns a NULL terminated array of processing instructions for the given
 // target

@@ -676,14 +676,14 @@ static void sttProcessStatusMessage( char* buf, unsigned len, HANDLE hContact )
 	ezxml_t xmli = ezxml_parse_str(buf, len);
 
 	// Process status message info
-	const char* szStatMsg = ezxml_txt(ezxml_get(xmli, "PSM", -1));
+	const char* szStatMsg = ezxml_txt(ezxml_child(xmli, "PSM"));
 	if (szStatMsg == NULL || szStatMsg[0] == '\0') 
 		DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
 	else 
 		DBWriteContactSettingStringUtf( hContact, "CList", "StatusMsg", szStatMsg );
 
 	// Process current media info
-	const char* szCrntMda = ezxml_txt(ezxml_get(xmli, "CurrentMedia", -1));
+	const char* szCrntMda = ezxml_txt(ezxml_child(xmli, "CurrentMedia"));
 	if (szCrntMda == NULL  || szCrntMda[0] == '\0') 
 	{
 		MSN_DeleteSetting( hContact, "ListeningTo" );
@@ -810,28 +810,22 @@ static void sttProcessStatusMessage( char* buf, unsigned len, HANDLE hContact )
 }
 
 
-static void sttProcessNotificationMessage( BYTE* buf, unsigned len )
+static void sttProcessNotificationMessage( char* buf, unsigned len )
 {
-	char* dataBuf = ( char* )alloca( len+1 );
-	if ( buf != NULL ) {
-		memcpy( dataBuf, buf, len );
-		dataBuf[ len ] = 0;
-	}
-	else dataBuf[0] = 0;
+	ezxml_t xmlnot = ezxml_parse_str(buf, len);
 
-	char* txt = ( char* )alloca( len );
-	if (txtParseParam(dataBuf, NULL, "<TEXT>", "</TEXT>", txt, len))
+	ezxml_t xmlact = ezxml_child(xmlnot, "ACTION");
+	ezxml_t xmlmsg = ezxml_child(xmlnot, "MSG");
+	ezxml_t xmltxt = ezxml_get(xmlmsg, "BODY", 0, "TEXT", -1);
+
+	if (xmltxt != NULL)
 	{
-		char url[256], msgid[64], notid[64], fullurl[512];
-
-		txtParseParam(dataBuf, "NOTIFICATION", "id=\"", "\"", notid, sizeof(notid));
-		txtParseParam(dataBuf, "MSG", "id=\"", "\"", msgid, sizeof(msgid));
-		txtParseParam(dataBuf, "ACTION", "url=\"", "\"", url, sizeof(url));
-
-		mir_snprintf(fullurl, sizeof(fullurl), "%snotification_id=%s&message_id=%s", url, notid, msgid);
+		char fullurl[1024];
+		mir_snprintf(fullurl, sizeof(fullurl), "%snotification_id=%s&message_id=%s", 
+			ezxml_attr(xmlact, "url"), ezxml_attr(xmlnot, "id"), ezxml_attr(xmlmsg, "id"));
 
 		wchar_t* alrtu;
-		mir_utf8decode( txt, &alrtu );
+		mir_utf8decode( ezxml_txt(xmltxt), &alrtu );
 		SkinPlaySound( alertsoundname );
 #ifdef _UNICODE
 		MSN_ShowPopup(TranslateT("MSN Alert"), alrtu, MSN_ALERT_POPUP | MSN_ALLOW_MSGBOX, fullurl);
@@ -840,6 +834,7 @@ static void sttProcessNotificationMessage( BYTE* buf, unsigned len )
 #endif
 		mir_free(alrtu);
 	}
+	ezxml_free(xmlnot);
 }
 
 int MSN_HandleCommands( ThreadData* info, char* cmdString )
@@ -1489,11 +1484,11 @@ LBL_InvalidCommand:
 			break;
 
 		case ' TON':   //********* NOT: notification message
-			sttProcessNotificationMessage( HReadBuffer( info, 0 ).surelyRead( trid ), trid );
+			sttProcessNotificationMessage( (char*)HReadBuffer( info, 0 ).surelyRead( trid ), trid );
 			break;
 
 		case ' GPI':   //********* IPG: mobile page
-			sttProcessNotificationMessage( HReadBuffer( info, 0 ).surelyRead( trid ), trid );
+			HReadBuffer( info, 0 ).surelyRead( trid );
 			break;
 
 		case ' TUO':   //********* OUT: sections 7.10 Connection Close, 8.6 Leaving a Switchboard Session

@@ -950,11 +950,17 @@ static void sttInitFileTransfer(
 				bool pictmatch = !DBGetContactSetting( NULL, msnProtocolName, "PictObject", &dbv );
 				if ( pictmatch ) 
 				{
-					char szCtBuf[32], szPtBuf[32];
 					UrlDecode(dbv.pszVal);
-					pictmatch &= txtParseParam( szContext,  "SHA1C=", "\"", "\"", szCtBuf, sizeof( szCtBuf ));
-					pictmatch &= txtParseParam( dbv.pszVal, "SHA1C=", "\"", "\"", szPtBuf, sizeof( szPtBuf ));
-					pictmatch = pictmatch && strcmp( szCtBuf, szPtBuf ) == 0;
+
+					ezxml_t xmlcon = ezxml_parse_str((char*)szContext, strlen(szContext));
+					ezxml_t xmldb = ezxml_parse_str(dbv.pszVal, strlen(dbv.pszVal));
+
+					const char *szCtBuf = ezxml_attr(xmlcon, "SHA1C");
+					const char *szPtBuf = ezxml_attr(xmldb,  "SHA1C");
+					pictmatch = szCtBuf && szPtBuf && strcmp( szCtBuf, szPtBuf ) == 0;
+
+					ezxml_free(xmlcon);
+					ezxml_free(xmldb);
 					MSN_FreeVariant( &dbv );
 				}
 				if ( pictmatch ) 
@@ -1650,23 +1656,24 @@ void  p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft )
 		p2p_registerSession( ft );
 	}
 
-	BYTE* pContext;
+	char* pContext;
 	int   cbContext;
-	char* p;
-	char tBuffer[ 1024 ];
 
 	switch ( iAppID ) 
 	{
 		case MSN_APPID_FILE:
 			{
-				HFileContext ctx = {0};
-				ctx.len = sizeof( ctx );
-				ctx.ver = 3; 
-				ctx.type = MSN_TYPEID_FTNOPREVIEW;
-				ctx.dwSize = ft->std.currentFileSize;
-				ctx.id = 0xffffffff;
+				cbContext = sizeof(HFileContext);
+				pContext = (char*)malloc(cbContext);
+				HFileContext* ctx = (HFileContext*)pContext;
+				memset(pContext, 0, cbContext);
+				ctx->len = cbContext;
+				ctx->ver = 3; 
+				ctx->type = MSN_TYPEID_FTNOPREVIEW;
+				ctx->dwSize = ft->std.currentFileSize;
+				ctx->id = 0xffffffff;
 				if ( ft->wszFileName != NULL )
-					wcsncpy( ctx.wszFileName, ft->wszFileName, sizeof( ctx.wszFileName ));
+					wcsncpy( ctx->wszFileName, ft->wszFileName, MAX_PATH);
 				else {
 					char* pszFiles = strrchr( ft->std.currentFile, '\\' );
 					if ( pszFiles )
@@ -1674,10 +1681,9 @@ void  p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft )
 					else
 						pszFiles = ft->std.currentFile;
 
-					MultiByteToWideChar( CP_ACP, 0, pszFiles, -1, ctx.wszFileName, sizeof( ctx.wszFileName ));
+					MultiByteToWideChar( CP_ACP, 0, pszFiles, -1, ctx->wszFileName, MAX_PATH);
 				}
-				pContext = ( BYTE* )&ctx;
-				cbContext = sizeof( ctx );
+	
 				ft->p2p_appID = MSN_APPID_FILE;
 			}
 			break;
@@ -1688,28 +1694,56 @@ void  p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft )
 			ft->std.sending = false;
 			ft->p2p_appID = MSN_APPID_AVATAR2;
 
-			if ( iAppID == MSN_APPID_AVATAR )
-				MSN_GetStaticString( "PictContext", hContact, tBuffer, sizeof( tBuffer ));
-			else {
-				strncpy( tBuffer, ft->p2p_object, sizeof( tBuffer ));
-				tBuffer[ sizeof( tBuffer )-1 ] = 0;
+			{
+				char tBuffer[2048];
+				if ( iAppID == MSN_APPID_AVATAR )
+					MSN_GetStaticString( "PictContext", hContact, tBuffer, sizeof( tBuffer ));
+				else {
+					strncpy( tBuffer, ft->p2p_object, sizeof( tBuffer ));
+					tBuffer[ sizeof( tBuffer )-1 ] = 0;
+				}
+
+				ezxml_t xmlo = ezxml_parse_str(tBuffer, strlen(tBuffer));
+				ezxml_t xmlr = ezxml_new("msnobj");
+				
+				const char* p;
+				p = ezxml_attr(xmlo, "Creator");
+				if (p != NULL)
+					ezxml_set_attr(xmlr, "Creator", p);
+				p = ezxml_attr(xmlo, "Size");
+				if (p != NULL) {
+					ezxml_set_attr(xmlr, "Size", p);
+					ft->std.totalBytes = ft->std.currentFileSize = atol(p);
+				}
+				p = ezxml_attr(xmlo, "Type");
+				if (p != NULL)
+					ezxml_set_attr(xmlr, "Type", p);
+				p = ezxml_attr(xmlo, "Location");
+				if (p != NULL)
+					ezxml_set_attr(xmlr, "Location", p);
+				p = ezxml_attr(xmlo, "Friendly");
+				if (p != NULL)
+					ezxml_set_attr(xmlr, "Friendly", p);
+				p = ezxml_attr(xmlo, "SHA1D");
+				if (p != NULL)
+					ezxml_set_attr(xmlr, "SHA1D", p);
+				p = ezxml_attr(xmlo, "SHA1C");
+				if (p != NULL)
+					ezxml_set_attr(xmlr, "SHA1C", p);
+
+				pContext = ezxml_toxml(xmlr, false);
+				cbContext = strlen( pContext )+1;
+
+				ezxml_free(xmlr);
+				ezxml_free(xmlo);
 			}
 
-			p = strstr( tBuffer, "Size=\"" );
-			if ( p != NULL )
-				ft->std.totalBytes = ft->std.currentFileSize = atol( p + 6 );
-
-			p = strstr( tBuffer, "SHA1C=\"" );
-			if ( p != NULL ) p = strchr( p+7, '\"' );
-			if ( p != NULL ) strcpy(p+1, "/>");
-
 			if ( ft->create() == -1 ) {
-				MSN_DebugLog( "Avatar creation failed for MSNCTX=\'%s\'", tBuffer );
+				MSN_DebugLog( "Avatar creation failed for MSNCTX=\'%s\'", pContext );
+				free(pContext);
 				return;
 			}
 
-			pContext = ( BYTE* )tBuffer;
-			cbContext = strlen( tBuffer )+1;
 			break;
 	}
 
@@ -1722,7 +1756,7 @@ void  p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft )
 		"Context: ",
 		szAppID, sessionID, ft->p2p_appID );
 
-	NETLIBBASE64 nlb = { body+tBytes, cbBody-tBytes, pContext, cbContext };
+	NETLIBBASE64 nlb = { body+tBytes, cbBody-tBytes, (PBYTE)pContext, cbContext };
 	MSN_CallService( MS_NETLIB_BASE64ENCODE, 0, LPARAM( &nlb ));
 	cbBody = tBytes + nlb.cchEncoded;
 	strcpy( body + cbBody - 1, "\r\n\r\n" );
@@ -1736,6 +1770,7 @@ void  p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft )
 
 	p2p_sendSlp( ft, tResult, -2, body, cbBody );
 	mir_free( body );
+	free(pContext);
 }
 
 

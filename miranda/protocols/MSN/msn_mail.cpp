@@ -1,24 +1,7 @@
 
 #include "msn_global.h"
 
-static const char oimRecvPacket[] =
-"<?xml version=\"1.0\" encoding=\"utf-8\"?>" 
-"<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" 
-		" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\""
-		" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">"
-	"<soap:Header>"
-		"<PassportCookie xmlns=\"http://www.hotmail.msn.com/ws/2004/09/oim/rsi\">" 
-			"<t>%s</t>"
-			"<p>%s</p>" 
-		"</PassportCookie>"
-	"</soap:Header>"
-	"<soap:Body>"
-		"<%s xmlns=\"http://www.hotmail.msn.com/ws/2004/09/oim/rsi\">"
-		"%s"
-		"</%s>"
-	"</soap:Body>"
-"</soap:Envelope>";
-
+/*
 static const char oimSendPacket[] =
 "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
 "<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">"
@@ -44,38 +27,65 @@ static const char oimSendPacket[] =
 		"</Content>"
 	"</soap:Body>"
 "</soap:Envelope>";
-
-static const char oimGetAction[] = "<messageId>%s</messageId> <alsoMarkAsRead>%s</alsoMarkAsRead>";
-static const char oimDeleteAction[] = "<messageIds>%s</messageIds>";
-static const char oimDeleteActionAtom[] = "<messageId>%s</messageId>"; 
+*/
 
 // Global Email counters
 int  mUnreadMessages = 0, mUnreadJunkEmails = 0;
 
 
+ezxml_t oimRecvHdr(void)
+{
+	ezxml_t xmlp = ezxml_new("soap:Envelope");
+	ezxml_set_attr(xmlp, "xmlns:xsi",  "http://www.w3.org/2001/XMLSchema-instance");
+	ezxml_set_attr(xmlp, "xmlns:xsd",  "http://www.w3.org/2001/XMLSchema");
+	ezxml_set_attr(xmlp, "xmlns:soap", "http://schemas.xmlsoap.org/soap/envelope/");
+	
+	ezxml_t hdr = ezxml_add_child(xmlp, "soap:Header", 0);
+	ezxml_t cook = ezxml_add_child(hdr, "PassportCookie", 0);
+	ezxml_set_attr(cook, "xmlns", "http://www.hotmail.msn.com/ws/2004/09/oim/rsi");
+	ezxml_t tcook = ezxml_add_child(cook, "t", 0);
+	ezxml_set_txt(tcook, tAuthToken);
+	ezxml_t pcook = ezxml_add_child(cook, "p", 0);
+	ezxml_set_txt(pcook, pAuthToken);
+
+	ezxml_t bdy = ezxml_add_child(xmlp, "soap:Body", 0);
+
+	return xmlp;
+}
+
 void getOIMs(ezxml_t xmli)
 {
-	ezxml_t tokm = ezxml_get(xmli, "M", -1);
-	if (tokm == NULL) return;
+	ezxml_t toki = ezxml_child(xmli, "M");
+	if (toki == NULL) return;
 
 	SSLAgent mAgent;
 
-	char* szDelAct = ( char* )mir_calloc( 1 );
-	size_t lenDelAct = 1;
+	ezxml_t xmlreq = oimRecvHdr();
+	ezxml_t reqbdy = ezxml_child(xmlreq, "soap:Body");
+	ezxml_t reqmsg = ezxml_add_child(reqbdy, "GetMessage", 0);
+	ezxml_set_attr(reqmsg, "xmlns", "http://www.hotmail.msn.com/ws/2004/09/oim/rsi");
+	ezxml_t reqmid = ezxml_add_child(reqmsg, "messageId", 0);
+	ezxml_t reqmrk = ezxml_add_child(reqmsg, "alsoMarkAsRead", 0);
+	ezxml_set_txt(reqmrk, "false");
 
-	while (tokm != NULL)
+	ezxml_t xmldel = oimRecvHdr();
+	ezxml_t delbdy = ezxml_child(xmldel, "soap:Body");
+	ezxml_t delmsg = ezxml_add_child(delbdy, "DeleteMessages", 0);
+	ezxml_set_attr(delmsg, "xmlns", "http://www.hotmail.msn.com/ws/2004/09/oim/rsi");
+	ezxml_t delmids = ezxml_add_child(delmsg, "messageIds", 0);
+
+	while (toki != NULL)
 	{
-		char szData1[1024], szData[2048];
+		char* szId    = ezxml_txt(ezxml_child(toki, "I"));
+		char* szEmail = ezxml_txt(ezxml_child(toki, "E"));
 
-		char* szId    = ezxml_txt(ezxml_get(tokm, "I", -1));
-		char* szEmail = ezxml_txt(ezxml_get(tokm, "E", -1));
-
-		mir_snprintf( szData1, sizeof( szData1 ), oimGetAction, szId, "false");
-		mir_snprintf( szData, sizeof( szData ), oimRecvPacket, tAuthToken, pAuthToken, 
-			"GetMessage", szData1, "GetMessage" );
+		ezxml_set_txt(reqmid, szId);
+		char* szData = ezxml_toxml(xmlreq, true);
 
 		char* tResult = mAgent.getSslResult( "https://rsi.hotmail.com/rsi/rsi.asmx", szData,
 			"SOAPAction: \"http://www.hotmail.msn.com/ws/2004/09/oim/rsi/GetMessage\"\r\n" );
+
+		free(szData);
 
 		if (tResult != NULL)
 		{
@@ -111,56 +121,51 @@ void getOIMs(ezxml_t xmli)
 
 			char* szMsg = mailInfo.decodeMailBody( mailbody );
 
-			PROTORECVEVENT pre;
+			PROTORECVEVENT pre = {0};
 			pre.szMessage = szMsg;
 			pre.flags = PREF_UTF /*+ (( isRtl ) ? PREF_RTL : 0)*/;
 			pre.timestamp = evtm;
-			pre.lParam = 0;
 
-			CCSDATA ccs;
+			CCSDATA ccs = {0};
 			ccs.hContact = MSN_HContactFromEmail( szEmail, szEmail, 0, 0 );
 			ccs.szProtoService = PSR_MESSAGE;
-			ccs.wParam = 0;
 			ccs.lParam = ( LPARAM )&pre;
 			MSN_CallService( MS_PROTO_CHAINRECV, 0, ( LPARAM )&ccs );
 
-			lenDelAct += mir_snprintf( szData1, sizeof( szData1 ), oimDeleteActionAtom, szId);
-			szDelAct = ( char* )mir_realloc( szDelAct, lenDelAct );
-			strcat( szDelAct, szData1 );
+			ezxml_t delmid = ezxml_add_child(delmids, "messageId", 0);
+			ezxml_set_txt(delmid, szId);
 
 			mir_free( szMsg );
 			mir_free( tResult );
+
+			ezxml_free(tokm);
 		}
-		tokm = ezxml_next(tokm);
+		toki = ezxml_next(toki);
 	}
+	ezxml_free(xmlreq);
 	
-	if ( lenDelAct > 1 )
+	if (ezxml_child(delmids, "messageId") != NULL)
 	{
-		lenDelAct += sizeof( oimDeleteAction );
-		char* szDelActAll = ( char* )alloca ( lenDelAct );
-		mir_snprintf( szDelActAll, lenDelAct, oimDeleteAction, szDelAct);
-		
-		lenDelAct += sizeof( oimRecvPacket ) + 28 + strlen( tAuthToken ) + strlen( pAuthToken );
-		char* szDelPack = ( char* )alloca ( lenDelAct );
-		mir_snprintf( szDelPack, lenDelAct, oimRecvPacket, tAuthToken, pAuthToken, "DeleteMessages", szDelActAll, "DeleteMessages" );
+		char* szData = ezxml_toxml(xmldel, true);
 			
-		char* tResult = mAgent.getSslResult( "https://rsi.hotmail.com/rsi/rsi.asmx", szDelPack,
+		char* tResult = mAgent.getSslResult( "https://rsi.hotmail.com/rsi/rsi.asmx", szData,
 			"SOAPAction: \"http://www.hotmail.msn.com/ws/2004/09/oim/rsi/DeleteMessages\"\r\n" );
 		mir_free( tResult );
+		free(szData);
 	}
-	mir_free( szDelAct );
+	ezxml_free(xmldel);
 }
 
 void processMailData(char* mailData)
 {
 	ezxml_t xmli = ezxml_parse_str(mailData, strlen(mailData));
 
-	ezxml_t toke = ezxml_get(xmli, "E", -1);
+	ezxml_t toke = ezxml_child(xmli, "E");
 
-	const char* szIU = ezxml_txt(ezxml_get(toke, "IU", -1));
+	const char* szIU = ezxml_txt(ezxml_child(toke, "IU"));
 	if (szIU != NULL) mUnreadMessages = atol(szIU);
 
-	const char* szOU = ezxml_txt(ezxml_get(toke, "OU", -1));
+	const char* szOU = ezxml_txt(ezxml_child(toke, "OU"));
 	if (szOU != NULL) mUnreadJunkEmails = atol(szOU);
 
 	getOIMs(xmli);
