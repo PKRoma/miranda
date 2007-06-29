@@ -817,8 +817,8 @@ static void sttProcessNotificationMessage( char* buf, unsigned len )
 {
 	ezxml_t xmlnot = ezxml_parse_str(buf, len);
 
-	ezxml_t xmlact = ezxml_child(xmlnot, "ACTION");
 	ezxml_t xmlmsg = ezxml_child(xmlnot, "MSG");
+	ezxml_t xmlact = ezxml_child(xmlmsg, "ACTION");
 	ezxml_t xmltxt = ezxml_get(xmlmsg, "BODY", 0, "TEXT", -1);
 
 	if (xmltxt != NULL)
