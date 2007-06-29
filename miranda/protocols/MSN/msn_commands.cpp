@@ -33,7 +33,7 @@ int MSN_GetPassportAuth( char* authChallengeInfo );
 void MSN_ChatStart(ThreadData* info);
 void MSN_KillChatSession(TCHAR* id);
 
- int tridUrlInbox = -1, tridUrlEdit = -1;
+int tridUrlInbox = -1, tridUrlEdit = -1;
 
 char* sid = NULL;
 char* MSPAuth = NULL;
@@ -42,6 +42,8 @@ char* urlId = NULL;
 char* rru = NULL;
 char* profileURL = NULL;
 char* profileURLId = NULL;
+unsigned langpref;
+
 extern HANDLE	 hMSNNudge;
 
 extern int msnPingTimeout;
@@ -487,6 +489,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		replaceStr( sid,           tHeader[ "sid" ]      );
 		replaceStr( MSPAuth,       tHeader[ "MSPAuth" ]  );
 		replaceStr( msnExternalIP, tHeader[ "ClientIP" ] );
+		langpref = atol(tHeader[ "lang_preference" ]);
 
 		if ( msnExternalIP != NULL && MSN_GetByte( "AutoGetHost", 1 ))
 			MSN_SetString( NULL, "YourHost", msnExternalIP );
@@ -810,6 +813,36 @@ static void sttProcessStatusMessage( char* buf, unsigned len, HANDLE hContact )
 		#endif
 	}
 	ezxml_free(xmli);
+}
+
+
+static void sttProcessPage( char* buf, unsigned len )
+{
+	ezxml_t xmlnot = ezxml_parse_str(buf, len);
+
+	ezxml_t xmlbdy = ezxml_get(xmlnot, "MSG", 0, "BODY", -1);
+	char* szMsg = ezxml_txt(ezxml_child(xmlbdy, "TEXT"));
+	char* szTel = ezxml_txt(ezxml_child(xmlbdy, "TEL"));
+
+	if (szTel != NULL && szMsg != NULL)
+	{
+		size_t lene = strlen(szTel) + 5;
+		char* szEmail = (char*)alloca(lene);
+		mir_snprintf(szEmail, lene, "tel:%s", szTel);
+
+		PROTORECVEVENT pre = {0};
+		pre.szMessage = szMsg;
+		pre.flags = PREF_UTF /*+ (( isRtl ) ? PREF_RTL : 0)*/;
+		pre.timestamp = time(NULL);
+
+		CCSDATA ccs = {0};
+		ccs.hContact = MSN_HContactFromEmail( szEmail, szEmail, 1, 1 );
+		ccs.szProtoService = PSR_MESSAGE;
+		ccs.lParam = ( LPARAM )&pre;
+		MSN_CallService( MS_PROTO_CHAINRECV, 0, ( LPARAM )&ccs );
+
+	}
+	ezxml_free(xmlnot);
 }
 
 
@@ -1485,11 +1518,11 @@ LBL_InvalidCommand:
 			break;
 
 		case ' TON':   //********* NOT: notification message
-			sttProcessNotificationMessage( (char*)HReadBuffer( info, 0 ).surelyRead( trid ), trid );
+			sttProcessNotificationMessage((char*)HReadBuffer( info, 0 ).surelyRead( trid ), trid );
 			break;
 
 		case ' GPI':   //********* IPG: mobile page
-			HReadBuffer( info, 0 ).surelyRead( trid );
+			sttProcessPage((char*)HReadBuffer( info, 0 ).surelyRead( trid ), trid);
 			break;
 
 		case ' TUO':   //********* OUT: sections 7.10 Connection Close, 8.6 Leaving a Switchboard Session
@@ -1626,7 +1659,7 @@ LBL_InvalidCommand:
 
 			sttListedContact = NULL;
 			tridUrlInbox = msnNsThread->sendPacket( "URL", "INBOX" );
-			tridUrlEdit  = msnNsThread->sendPacket( "URL", "PROFILE 0x%04x", GetUserDefaultLCID() );
+			tridUrlEdit  = msnNsThread->sendPacket( "URL", "PROFILE 0x%04x", langpref );
 			break;
 		}
 		case ' XBU':   // UBX : MSNP11+ User Status Message
@@ -1710,7 +1743,7 @@ LBL_InvalidCommand:
 				}
 
 				info->mInitialContact = hContact;
-				info->sendPacket( "CAL", "%s", tEmail );
+				info->sendPacket( "CAL", tEmail );
 			}
 			else 	   //dispatch or notification server (section 7.3)
 			{

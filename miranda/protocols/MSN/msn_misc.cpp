@@ -466,7 +466,19 @@ void  MSN_StartStopTyping( ThreadData* info, bool start )
 			info->mTimerId = 0;
 	}
 }
+long MSN_SendSMS(char* tel, char* txt)
+{
+	static const char *pgd = 
+		"<TEXT xml:space=\"preserve\" enc=\"utf-8\">%s</TEXT> "
+		"<LCID>%u</LCID> <CS>iso-8859-1</CS>";
 
+	char* etxt = HtmlEncode(txt);
+	char pgda[1024];
+	size_t sz = mir_snprintf(pgda, sizeof(pgda), pgd, etxt, langpref);
+	mir_free(etxt);
+
+	return msnNsThread->sendPacket("PGD", "%s 1 %u\r\n%s", tel, sz, pgda);
+}
 
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -497,10 +509,11 @@ void  MSN_SendStatusMessage( const char* msg )
 	char* msgEnc = HtmlEncode(( tmp == NULL ) ? "" : tmp );
 	mir_free(tmp);
 
+	size_t sz;
 	char  szMsg[ 2048 ];
 	if ( msnCurrentMedia.cbSize == 0 ) 
 	{
-		mir_snprintf( szMsg, sizeof szMsg, "<Data><PSM>%s</PSM></Data>", msgEnc);
+		sz = mir_snprintf( szMsg, sizeof szMsg, "<Data><PSM>%s</PSM></Data>", msgEnc);
 		mir_free( msgEnc );
 	}
 	else 
@@ -536,7 +549,7 @@ void  MSN_SendStatusMessage( const char* msg )
 		char *szPlayer = HtmlEncodeUTF8T( msnCurrentMedia.ptszPlayer );
 		char *szType = HtmlEncodeUTF8T( msnCurrentMedia.ptszType );
 
-		mir_snprintf( szMsg, sizeof szMsg, 
+		sz = mir_snprintf( szMsg, sizeof szMsg, 
 			"<Data><PSM>%s</PSM><CurrentMedia>%s\\0%s\\01\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0\\0</CurrentMedia></Data>", 
 			UTF8(msgEnc), szPlayer, szType, szFormatEnc, szTitle, szArtist, szAlbum, szTrack, szYear, szGenre, szLength, szPlayer, szType);
 
@@ -554,7 +567,7 @@ void  MSN_SendStatusMessage( const char* msg )
 	if ( msnPreviousUUX == NULL || strcmp( msnPreviousUUX, szMsg ))
 	{
 		replaceStr( msnPreviousUUX, szMsg );
-		msnNsThread->sendPacket( "UUX", "%d\r\n%s", strlen( szMsg ), szMsg );
+		msnNsThread->sendPacket( "UUX", "%d\r\n%s", sz, szMsg );
 	}
 }
 

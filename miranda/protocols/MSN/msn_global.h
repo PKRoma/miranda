@@ -205,6 +205,7 @@ void        MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, size_t cbLen 
 void        MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, size_t cbLen, char* SmileyName, int Type);
 LPTSTR      MSN_GetErrorText( DWORD parErrorCode );
 void        MSN_SendStatusMessage( const char* msg );
+long		MSN_SendSMS(char* tel, char* txt);
 void        MSN_SetServerStatus( int newStatus );
 void        LoadOptions( void );
 
@@ -701,6 +702,7 @@ extern	char*       MSPAuth;
 extern  char*       profileURL;
 extern  char*       profileURLId;
 extern  char*       rru;
+extern  unsigned	langpref;
 
 extern char pAuthToken[];
 extern char tAuthToken[]; 

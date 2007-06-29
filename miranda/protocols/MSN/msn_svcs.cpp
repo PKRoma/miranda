@@ -895,6 +895,23 @@ static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 	else
 		msg = mir_utf8encode( msg );
 
+	if (strncmp(tEmail, "tel:", 4) == 0)
+	{
+		long id;
+		if ( strlen( msg ) > 133 ) {
+			errMsg = MSN_Translate( "Message is too long: SMS page limited to 133 UTF8 chars" );
+			id = 999999;
+		}
+		else
+		{
+			errMsg = NULL;
+			id = MSN_SendSMS(tEmail, msg);
+		}
+		mir_free( msg );
+		mir_forkthread( sttFakeAck, new TFakeAckParams( ccs->hContact, id, errMsg ));
+		return id;
+	}
+
 	if ( strlen( msg ) > 1202 ) {
 		errMsg = MSN_Translate( "Message is too long: MSN messages are limited by 1202 UTF8 chars" );
 LBL_Error:

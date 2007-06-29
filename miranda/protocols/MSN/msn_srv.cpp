@@ -231,8 +231,8 @@ void MSN_RemoveEmptyGroups( void )
 void MSN_AddServerGroup( const char* pszGroupName, HANDLE hContact )
 {
 	char szBuf[ 200 ];
-	UrlEncode( pszGroupName, szBuf, sizeof szBuf );
-	msnNsThread->sendPacket( "ADG", "%s", szBuf );
+	UrlEncode( pszGroupName, szBuf, sizeof( szBuf ));
+	msnNsThread->sendPacket( "ADG", szBuf );
 	MSN_DeleteSetting( hContact, "GroupID" );
 }
 
