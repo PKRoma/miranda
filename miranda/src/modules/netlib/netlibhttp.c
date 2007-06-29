@@ -692,10 +692,10 @@ NETLIBHTTPREQUEST* NetlibHttpRecv(HANDLE hConnection, DWORD hflags, DWORD dflags
 
 	if (chunked)
 	{
-		mir_realloc(nlhrReply->headers[chunkhdr].szName, 16);
+		nlhrReply->headers[chunkhdr].szName = mir_realloc(nlhrReply->headers[chunkhdr].szName, 16);
 		lstrcpyA(nlhrReply->headers[chunkhdr].szName, "Content-Length");
 
-		mir_realloc(nlhrReply->headers[chunkhdr].szValue, 16);
+		nlhrReply->headers[chunkhdr].szValue = mir_realloc(nlhrReply->headers[chunkhdr].szValue, 16);
 		mir_snprintf(nlhrReply->headers[chunkhdr].szValue, 16, "%u", nlhrReply->dataLength);
 	}
 
