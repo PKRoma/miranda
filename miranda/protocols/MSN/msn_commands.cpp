@@ -303,16 +303,19 @@ static void sttCustomSmiley( const char* msgBody, char* email, char* nick, int i
 
 			ft->p2p_object = (char*)mir_alloc(sz + 1);
 			memcpy(ft->p2p_object, tok1, sz);
-			*(ft->p2p_object + sz) = 0;
+			ft->p2p_object[sz] = 0;
 
-			ft->std.currentFile = mir_strdup( lastsml );
+			size_t slen = strlen(lastsml);
+			size_t rlen = Netlib_GetBase64EncodedBufferSize(slen);
+			char* buf = (char*)mir_alloc(rlen);
 
-			for ( char* p = ft->std.currentFile; *p; p++ ) {
-				switch( *p ) {
-				case '|':	case '<':	case '>':	case ':':	case '/':
-				case '\\':	case '*':	case '?':	case '\"':
-					*p = ' ';
-			}	}
+			NETLIBBASE64 nlb = { buf, rlen, (PBYTE)lastsml, slen };
+			MSN_CallService( MS_NETLIB_BASE64ENCODE, 0, LPARAM( &nlb ));
+
+			ft->std.currentFile = (char*)mir_alloc(rlen*3);
+			UrlEncode(buf, ft->std.currentFile, rlen*3);
+			
+			mir_free(buf);
 
 			MSN_DebugLog( "Custom Smiley p2p invite for object : %s", ft->p2p_object );
 			p2p_invite( hContact, iSmileyType, ft );
