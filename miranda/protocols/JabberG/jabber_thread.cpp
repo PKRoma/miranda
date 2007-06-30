@@ -3,6 +3,7 @@
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
 Copyright ( C ) 2005-07  George Hazan
+Copyright ( C ) 2007     Maxim Mluhov
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -499,6 +500,7 @@ LBL_FatalError:
 		JabberXmlDestroyState(&xmlState);
 
 		if ( info->type == JABBER_SESSION_NORMAL ) {
+			g_JabberIqRequestManager.ExpireAll( info );
 			jabberOnline = FALSE;
 			jabberConnected = FALSE;
 			info->zlibUninit();
@@ -1063,6 +1065,18 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 		if (( hContact = JabberHContactFromJID( from )) != NULL )
 			JCallService( MS_PROTO_CONTACTISTYPING, ( WPARAM ) hContact, PROTOTYPE_CONTACTTYPING_OFF );
 
+	idStr = JabberXmlGetAttrValue( node, "id" );
+
+	n = JabberXmlGetChild( node, "request" );
+	if ( n != NULL && !lstrcmp( JabberXmlGetAttrValue( n, "xmlns" ), _T(JABBER_FEAT_MESSAGE_RECEIPTS))) {
+		XmlNode m( "message" ); m.addAttr( "to", from );
+		XmlNode* receivedNode = m.addChild( "received" );
+		receivedNode->addAttr( "xmlns", JABBER_FEAT_MESSAGE_RECEIPTS );
+		if ( idStr )
+			m.addAttr( "id", idStr );
+		info->send( m );
+	}
+
 	for ( int i = 1; ( xNode = JabberXmlGetNthChild( node, "x", i )) != NULL; i++ ) {
 		TCHAR* ptszXmlns = JabberXmlGetAttrValue( xNode, "xmlns" );
 		if ( ptszXmlns == NULL )
@@ -1112,7 +1126,6 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 				// Check whether any event is requested
 				if ( !delivered && ( n=JabberXmlGetChild( xNode, "delivered" )) != NULL ) {
 					delivered = TRUE;
-					idStr = JabberXmlGetAttrValue( node, "id" );
 
 					XmlNode m( "message" ); m.addAttr( "to", from );
 					XmlNode* x = m.addChild( "x" ); x->addAttr( "xmlns", JABBER_FEAT_MESSAGE_EVENTS ); x->addChild( "delivered" );
@@ -1123,7 +1136,6 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 					composing = TRUE;
 					if ( item->messageEventIdStr )
 						mir_free( item->messageEventIdStr );
-					idStr = JabberXmlGetAttrValue( node, "id" );
 					item->messageEventIdStr = ( idStr==NULL )?NULL:mir_tstrdup( idStr );
 			}	}
 		}
@@ -1271,7 +1283,7 @@ void JabberProcessPresenceCapabilites( XmlNode *node )
 	}
 
 	// update user's caps
-	DWORD dwCaps = JabberGetResourceCapabilites( from );
+	JabberCapsBits jcbCaps = JabberGetResourceCapabilites( from );
 }
 
 void JabberUpdateJidDbSettings( TCHAR *jid )
@@ -1770,10 +1782,13 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 	queryNode = JabberXmlGetChild( node, "query" );
 	xmlns = JabberXmlGetAttrValue( queryNode, "xmlns" );
 
-	/////////////////////////////////////////////////////////////////////////
-	// MATCH BY ID
-	/////////////////////////////////////////////////////////////////////////
+	// new match by id
+	if ( g_JabberIqRequestManager.HandleIq( id, node, userdata ))
+		return;
 
+	/////////////////////////////////////////////////////////////////////////
+	// OLD MATCH BY ID
+	/////////////////////////////////////////////////////////////////////////
 	if (( pfunc=JabberIqFetchFunc( id )) != NULL ) {
 		JabberLog( "Handling iq request for id=%d", id );
 		pfunc( node, userdata );

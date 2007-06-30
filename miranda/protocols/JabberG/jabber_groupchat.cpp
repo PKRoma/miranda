@@ -379,6 +379,8 @@ void JabberGroupchatJoinRoom( const TCHAR* server, const TCHAR* room, const TCHA
 	XmlNode* x = new XmlNode( "x" ); x->addAttr( "xmlns", JABBER_FEAT_MUC );
 	if ( password && password[0]!='\0' )
 		x->addChild( "password", password );
+//	XmlNode *history = x->addChild( "history" );
+//	history->addAttr( "maxstanzas", 20 );
 	JabberSendPresenceTo( status, text, x );
 }
 

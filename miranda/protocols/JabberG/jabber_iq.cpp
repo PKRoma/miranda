@@ -30,6 +30,8 @@ Last change by : $Author$
 #include "jabber_xmlns.h"
 #include "jabber_caps.h"
 
+CJabberIqRequestManager g_JabberIqRequestManager;
+
 static JABBER_IQ_XMLNS_FUNC jabberXmlns[] = {
 	{ _T("http://jabber.org/protocol/disco"), JabberXmlnsDisco, TRUE },
 	{ _T(JABBER_FEAT_BROWSE), JabberXmlnsBrowse, FALSE }

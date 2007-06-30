@@ -3,6 +3,7 @@
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
 Copyright ( C ) 2005-07  George Hazan
+Copyright ( C ) 2007     Maxim Mluhov
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -427,6 +428,13 @@ XmlNode *JabberXmlGetChild( XmlNode *node, char* tag )
 	return JabberXmlGetNthChild( node, tag, 1 );
 }
 
+XmlNode *JabberXmlGetFirstChild( XmlNode *node )
+{
+	if ( node==NULL || node->numChild<=0 )
+		return NULL;
+	return node->child[0];
+}
+
 XmlNode *JabberXmlGetNthChild( XmlNode *node, char* tag, int nth )
 {
 	int i, num;
@@ -566,6 +574,16 @@ XmlNodeIq::XmlNodeIq( const char* type, int id, const char* to ) :
 	if ( id   != NOID ) addAttrID( id );
 }
 #endif
+
+XmlNodeIq::XmlNodeIq( CJabberIqRequestInfo *pInfo ) :
+	XmlNode( "iq" )
+{
+	if ( pInfo ) {
+		if ( pInfo->GetCharIqType() != NULL ) addAttr( "type", pInfo->GetCharIqType() );
+		if ( pInfo->GetReceiver()   != NULL ) addAttr( "to", pInfo->GetReceiver() );
+		if ( pInfo->GetIqId()       != NOID ) addAttrID( pInfo->GetIqId() );
+	}
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // XmlNode class members

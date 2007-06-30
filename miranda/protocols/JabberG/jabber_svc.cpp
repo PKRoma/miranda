@@ -3,6 +3,7 @@
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
 Copyright ( C ) 2005-07  George Hazan
+Copyright ( C ) 2007     Maxim Mluhov
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -858,17 +859,13 @@ int JabberGetInfo( WPARAM wParam, LPARAM lParam )
 			TCHAR jid[ 256 ];
 			JabberGetClientJID( dbv.ptszVal, jid, SIZEOF( jid ));
 
-			int iqId = JabberSerialNext();
-			JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultEntityTime );
-			XmlNodeIq iq( "get", iqId, jid );
+			XmlNodeIq iq( g_JabberIqRequestManager.AddHandler( JabberIqResultEntityTime, JABBER_IQ_TYPE_GET, jid, JABBER_IQ_PARSE_HCONTACT ));
 			XmlNode* pReq = iq.addChild( "time" );
 			pReq->addAttr( "xmlns", JABBER_FEAT_ENTITY_TIME );
 			jabberThreadInfo->send( iq );
 
 			// XEP-0012, last logoff time
-			iqId = JabberSerialNext();
-			JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultLastActivity );
-			XmlNodeIq iq2( "get", iqId, dbv.ptszVal );
+			XmlNodeIq iq2( g_JabberIqRequestManager.AddHandler( JabberIqResultLastActivity, JABBER_IQ_TYPE_GET, dbv.ptszVal, JABBER_IQ_PARSE_FROM ));
 			iq2.addQuery( JABBER_FEAT_LAST_ACTIVITY );
 			jabberThreadInfo->send( iq2 );
 
@@ -884,9 +881,7 @@ int JabberGetInfo( WPARAM wParam, LPARAM lParam )
 						JabberStripJid( dbv.ptszVal, szp1, sizeof( szp1 ));
 						mir_sntprintf( jid, 256, _T("%s/%s"), szp1, item->resource[i].resourceName );
 
-						iqId = JabberSerialNext();
-						JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultLastActivity );
-						XmlNodeIq iq3( "get", iqId, jid );
+						XmlNodeIq iq3( g_JabberIqRequestManager.AddHandler( JabberIqResultLastActivity, JABBER_IQ_TYPE_GET, jid, JABBER_IQ_PARSE_FROM ));
 						iq3.addQuery( JABBER_FEAT_LAST_ACTIVITY );
 						jabberThreadInfo->send( iq3 );
 

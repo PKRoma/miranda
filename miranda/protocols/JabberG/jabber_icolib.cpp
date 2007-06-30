@@ -101,6 +101,7 @@ static iconList[] =
 	{	"Resolve nicks",         "trresolve",    IDI_REFRESH       },
 	{	"Bookmarks",             "bookmarks",    IDI_BOOKMARKS     }, 
 	{	"Privacy Lists",         "privacylists", IDI_PRIVACY_LISTS },
+	{	"Service Discovery",     "servicediscovery", IDI_SERVICE_DISCOVERY },
 	{	"AdHoc Command",         "adhoc",        IDI_COMMAND       }
 };
 

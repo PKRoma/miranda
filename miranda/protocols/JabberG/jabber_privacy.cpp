@@ -3,6 +3,7 @@
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
 Copyright ( C ) 2005-07  George Hazan
+Copyright ( C ) 2007     Maxim Mluhov
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -47,6 +48,25 @@ void JabberProcessIqPrivacyLists( XmlNode* node )
 		XmlNodeIq iq( "result", node, from );
 		jabberThreadInfo->send( iq );
 }	}
+
+void JabberIqResultPrivacyListModify( XmlNode* iqNode, void* userdata, CJabberIqRequestInfo *pInfo )
+{
+	if ( !pInfo->m_pUserData )
+		return;
+
+	CPrivacyListModifyUserParam *pParam = ( CPrivacyListModifyUserParam * )pInfo->m_pUserData;
+
+	if ( pInfo->m_nIqType != JABBER_IQ_TYPE_RESULT )
+		pParam->m_bAllOk = FALSE;
+
+	if ( !g_JabberIqRequestManager.GetGroupPendingIqCount( pInfo->m_dwGroupId )) {
+		if ( !pParam->m_bAllOk ) {
+			// FIXME: msg box with error message
+		}
+		// FIXME: enable apply button
+		delete pParam;
+	}
+}
 
 void JabberIqResultPrivacyList( XmlNode* iqNode, void* userdata )
 {
@@ -235,57 +255,54 @@ void JabberIqResultPrivacyListDefault( XmlNode* iqNode, void* userdata )
 	g_PrivacyListManager.Unlock();
 }
 
-void JabberIqResultPrivacyLists( XmlNode* iqNode, void* userdata )
+void JabberIqResultPrivacyLists( XmlNode* iqNode, void* userdata, CJabberIqRequestInfo *pInfo )
 {
-	if ( !iqNode )
+	if ( pInfo->m_nIqType != JABBER_IQ_TYPE_RESULT )
 		return;
 
-	TCHAR *type = JabberXmlGetAttrValue( iqNode, "type" );
-	if ( !type )
+	XmlNode *query = JabberXmlGetChild( iqNode, "query" );
+	if ( !query )
 		return;
 
-	if ( !_tcscmp( type, _T("result"))) {
-		XmlNode *query = JabberXmlGetChild( iqNode, "query" );
-		if ( !query )
-			return;
+	jabberServerCaps |= JABBER_CAPS_PRIVACY_LISTS;
 
-		jabberServerCaps |= JABBER_CAPS_PRIVACY_LISTS;
+	if ( !hwndPrivacyLists )
+		return;
 
-		if ( hwndPrivacyLists ) {
-			g_PrivacyListManager.Lock();
-			g_PrivacyListManager.RemoveAllLists();
+	g_PrivacyListManager.Lock();
+	g_PrivacyListManager.RemoveAllLists();
 
-			XmlNode *list;
-			for ( int i = 1; ( list = JabberXmlGetNthChild( query, "list", i )) != NULL; i++ ) {
-				TCHAR *listName = JabberXmlGetAttrValue( list, "name" );
-				if ( listName ) {
-					g_PrivacyListManager.AddList(listName);
+	XmlNode *list;
+	for ( int i = 1; ( list = JabberXmlGetNthChild( query, "list", i )) != NULL; i++ ) {
+		TCHAR *listName = JabberXmlGetAttrValue( list, "name" );
+		if ( listName ) {
+			g_PrivacyListManager.AddList(listName);
 
-					int iqId = JabberSerialNext();
-					JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultPrivacyList);
-					XmlNodeIq iq( "get", iqId);
-					XmlNode* queryNode = iq.addQuery( JABBER_FEAT_PRIVACY_LISTS );
-					XmlNode* listNode = queryNode->addChild( "list" );
-					listNode->addAttr( "name", listName );
-					jabberThreadInfo->send( iq );
-			}	}
+			int iqId = JabberSerialNext();
+			JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultPrivacyList);
+			XmlNodeIq iq( "get", iqId);
+			XmlNode* queryNode = iq.addQuery( JABBER_FEAT_PRIVACY_LISTS );
+			XmlNode* listNode = queryNode->addChild( "list" );
+			listNode->addAttr( "name", listName );
+			jabberThreadInfo->send( iq );
+	}	}
 
-			TCHAR *szName = NULL;
-			XmlNode *node = JabberXmlGetChild( query, "active" );
-			if ( node )
-				szName = JabberXmlGetAttrValue( node, "name" );
-			g_PrivacyListManager.SetActiveListName( szName );
+	TCHAR *szName = NULL;
+	XmlNode *node = JabberXmlGetChild( query, "active" );
+	if ( node )
+		szName = JabberXmlGetAttrValue( node, "name" );
+	g_PrivacyListManager.SetActiveListName( szName );
 
-			szName = NULL;
-			node = JabberXmlGetChild( query, "default" );
-			if ( node )
-				szName = JabberXmlGetAttrValue( node, "name" );
-			g_PrivacyListManager.SetDefaultListName( szName );
+	szName = NULL;
+	node = JabberXmlGetChild( query, "default" );
+	if ( node )
+		szName = JabberXmlGetAttrValue( node, "name" );
+	g_PrivacyListManager.SetDefaultListName( szName );
 
-			g_PrivacyListManager.Unlock();
+	g_PrivacyListManager.Unlock();
 
-			SendMessage( hwndPrivacyLists, WM_JABBER_REFRESH, 0, 0);
-}	}	}
+	SendMessage( hwndPrivacyLists, WM_JABBER_REFRESH, 0, 0);
+}
 
 static BOOL CALLBACK JabberPrivacyAddListDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
@@ -572,11 +589,7 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		EnableWindow( GetDlgItem( hwndDlg, IDC_UP_RULE ), FALSE );
 		EnableWindow( GetDlgItem( hwndDlg, IDC_DOWN_RULE ), FALSE );
 		{
-			int iqId = JabberSerialNext();
-			JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultPrivacyLists);
-
-			XmlNodeIq iq( "get", iqId);
-
+			XmlNodeIq iq( g_JabberIqRequestManager.AddHandler( JabberIqResultPrivacyLists ));
 			XmlNode* query = iq.addQuery( JABBER_FEAT_PRIVACY_LISTS );
 			jabberThreadInfo->send( iq );
 		}
@@ -932,6 +945,8 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 			g_PrivacyListManager.Lock();
 			{
+				DWORD dwGroupId = 0;
+				CPrivacyListModifyUserParam *pUserData = NULL;
 				CPrivacyList* pList = g_PrivacyListManager.GetFirstList();
 				while ( pList ) {
 					if ( pList->IsModified() ) {
@@ -944,9 +959,13 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 						}
 						pList->SetModified( FALSE );
 
-						int iqId = JabberSerialNext();
-//							JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultPrivacyListDefault );
-						XmlNodeIq iq( "set", iqId);
+						if ( !dwGroupId ) {
+							dwGroupId = g_JabberIqRequestManager.GetNextFreeGroupId();
+							pUserData = new CPrivacyListModifyUserParam;
+							pUserData->m_bAllOk = TRUE;
+						}
+
+						XmlNodeIq iq( g_JabberIqRequestManager.AddHandler( JabberIqResultPrivacyListModify, JABBER_IQ_TYPE_SET, NULL, 0, -1, pUserData, dwGroupId ));
 						XmlNode* query = iq.addQuery( JABBER_FEAT_PRIVACY_LISTS );
 						XmlNode* listTag = query->addChild( "list" );
 						listTag->addAttr( "name", pList->GetListName() );

@@ -128,6 +128,9 @@ TCHAR* __stdcall JabberNickFromJID( const TCHAR* jid )
 
 JABBER_RESOURCE_STATUS* __stdcall JabberResourceInfoFromJID( TCHAR* jid )
 {
+	if ( !jid )
+		return NULL;
+
 	JABBER_LIST_ITEM *item = NULL;
 	if (( item = JabberListGetItemPtr( LIST_VCARD_TEMP, jid )) == NULL)
 		item = JabberListGetItemPtr( LIST_ROSTER, jid );

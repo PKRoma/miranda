@@ -3,6 +3,7 @@
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
 Copyright ( C ) 2005-07  George Hazan
+Copyright ( C ) 2007     Maxim Mluhov
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -29,7 +30,7 @@ Last change by : $Author: ghazan $
 #define _JABBER_PRIVACY_H_
 
 void JabberProcessIqPrivacyLists( XmlNode* node );
-void JabberIqResultPrivacyLists( XmlNode* iqNode, void* userdata );
+void JabberIqResultPrivacyLists( XmlNode* iqNode, void* userdata, CJabberIqRequestInfo *pInfo );
 int JabberMenuHandlePrivacyLists( WPARAM wParam, LPARAM lParam );
 
 #define JABBER_PL_RULE_TYPE_MESSAGE			1
@@ -44,6 +45,15 @@ enum PrivacyListRuleType
 	Group,
 	Subscription,
 	Else
+};
+
+struct CPrivacyListModifyUserParam
+{
+	BOOL m_bAllOk;
+	CPrivacyListModifyUserParam()
+	{
+		ZeroMemory(this, sizeof(CPrivacyListModifyUserParam));
+	}
 };
 
 class CPrivacyList;

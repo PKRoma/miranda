@@ -3,6 +3,7 @@
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
 Copyright ( C ) 2005-07  George Hazan
+Copyright ( C ) 2007     Maxim Mluhov
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -37,7 +38,6 @@ typedef enum {
 	LIST_ROOM,          // Groupchat room list to show on the Jabber groupchat dialog
 	LIST_FILE,          // Current file transfer session
 	LIST_BYTE,          // Bytestream sending connection
-	LIST_FTSEND,
 	LIST_FTRECV,
 	LIST_BOOKMARK,
 	LIST_VCARD_TEMP,
@@ -166,11 +166,6 @@ struct JABBER_LIST_ITEM
 	JABBER_BYTE_TRANSFER *jbt;
 
 	JABBER_IBB_TRANSFER *jibb;
-
-	// LIST_FTSEND
-	// jid = string representation of iq id
-	// ft = file transfer data
-	// jbt
 
 	// LIST_FTRECV
 	// jid = string representation of stream id ( sid )

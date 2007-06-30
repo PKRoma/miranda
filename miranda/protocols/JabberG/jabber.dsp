@@ -187,6 +187,10 @@ SOURCE=.\jabber_chat.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\jabber_disco.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\jabber_file.cpp
 # ADD CPP /Yu
 # End Source File
@@ -349,6 +353,10 @@ SOURCE=.\jabber_caps.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\jabber_disco.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\jabber_ibb.h
 # End Source File
 # Begin Source File
@@ -386,10 +394,6 @@ SOURCE=.\jabber_xml.h
 # Begin Source File
 
 SOURCE=.\jabber_xmlns.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\jabber_zstream.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

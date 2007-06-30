@@ -3,6 +3,7 @@
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
 Copyright ( C ) 2005-07  George Hazan
+Copyright ( C ) 2007     Maxim Mluhov
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -102,9 +103,9 @@ static void JabberOnLoggedIn( ThreadData* info )
 	diq.addQuery( JABBER_FEAT_DISCO_INFO );
 	jabberThreadInfo->send( diq );
 
-	iqId = JabberSerialNext();
-	JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultPrivacyLists );
-	XmlNodeIq piq( "get", iqId );
+//	iqId = JabberSerialNext();
+//	JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultPrivacyLists );
+	XmlNodeIq piq( g_JabberIqRequestManager.AddHandler( JabberIqResultPrivacyLists ));
 	piq.addQuery( JABBER_FEAT_PRIVACY_LISTS );
 	jabberThreadInfo->send( piq );
 
@@ -1724,19 +1725,14 @@ void JabberIqResultSetBookmarks( XmlNode *iqNode, void *userdata )
 }	}
 
 // last activity (XEP-0012) support
-void JabberIqResultLastActivity( XmlNode *iqNode, void *userdata )
+void JabberIqResultLastActivity( XmlNode *iqNode, void *userdata, CJabberIqRequestInfo *pInfo )
 {
-	TCHAR* from = JabberXmlGetAttrValue( iqNode, "from" );
-	TCHAR *type = JabberXmlGetAttrValue( iqNode, "type" );
-	if ( !from || !type )
-		return;
-
-	JABBER_RESOURCE_STATUS *r = JabberResourceInfoFromJID( from );
+	JABBER_RESOURCE_STATUS *r = JabberResourceInfoFromJID( pInfo->m_szFrom );
 	if ( !r )
 		return;
 
 	time_t lastActivity = -1;
-	if ( !_tcscmp( type, _T( "result" ))) {
+	if ( pInfo->m_nIqType == JABBER_IQ_TYPE_RESULT ) {
 		XmlNode *queryNode = JabberXmlGetChild( iqNode, "query" );
 		if ( queryNode ) {
 			TCHAR *seconds = JabberXmlGetAttrValue( queryNode, "seconds" );
@@ -1753,21 +1749,12 @@ void JabberIqResultLastActivity( XmlNode *iqNode, void *userdata )
 }
 
 // entity time (XEP-0202) support
-void JabberIqResultEntityTime( XmlNode* pIqNode, void* pUserdata )
+void JabberIqResultEntityTime( XmlNode* pIqNode, void* pUserdata, CJabberIqRequestInfo *pInfo )
 {
-	TCHAR* szFrom = JabberXmlGetAttrValue( pIqNode, "from" );
-	if ( !szFrom )
+	if ( !pInfo->m_hContact )
 		return;
-
-	HANDLE hContact = JabberHContactFromJID( szFrom );
-	if ( !hContact )
-		return;
-
-	TCHAR *szType = JabberXmlGetAttrValue( pIqNode, "type" );
-	if ( !szType )
-		return;
-
-	if ( !_tcscmp( szType, _T( "result" ))) {
+	
+	if ( pInfo->m_nIqType == JABBER_IQ_TYPE_RESULT ) {
 		XmlNode* pTimeNode = JabberXmlGetChildWithGivenAttrValue(pIqNode, "time", "xmlns", _T( JABBER_FEAT_ENTITY_TIME ));
 		if ( pTimeNode ) {
 			XmlNode* pTzo = JabberXmlGetChild(pTimeNode, "tzo");
@@ -1782,10 +1769,10 @@ void JabberIqResultEntityTime( XmlNode* pIqNode, void* pUserdata )
 
 					if ( !bNegative )
 						nTz = 256 - nTz;
-					JSetByte( hContact, "Timezone", nTz );
+					JSetByte( pInfo->m_hContact, "Timezone", nTz );
 					return;
 	}	}	}	}
 
-	JDeleteSetting( hContact, "Timezone" );
+	JDeleteSetting( pInfo->m_hContact, "Timezone" );
 	return;
 }

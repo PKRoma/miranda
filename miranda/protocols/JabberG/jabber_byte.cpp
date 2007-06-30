@@ -3,6 +3,7 @@
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
 Copyright ( C ) 2005-07  George Hazan
+Copyright ( C ) 2007     Maxim Mluhov
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -34,7 +35,7 @@ Last change by : $Author$
 
 ///////////////// Bytestream sending /////////////////////////
 
-static void JabberByteInitiateResult( XmlNode *iqNode, void *userdata );
+static void JabberByteInitiateResult( XmlNode *iqNode, void *userdata, CJabberIqRequestInfo *pInfo );
 static void JabberByteSendConnection( HANDLE hNewConnection, DWORD dwRemoteIP );
 static int JabberByteSendParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char* buffer, int datalen );
 static int JabberByteSendProxyParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char* buffer, int datalen );
@@ -71,38 +72,29 @@ void JabberByteFreeJbt( JABBER_BYTE_TRANSFER *jbt )
 		mir_free( jbt );
 }	}
 
-static void JabberIqResultProxyDiscovery( XmlNode* iqNode, void* userdata )
+static void JabberIqResultProxyDiscovery( XmlNode* iqNode, void* userdata, CJabberIqRequestInfo *pInfo )
 {
-	int id = JabberGetPacketID( iqNode );
+	JABBER_BYTE_TRANSFER *jbt = ( JABBER_BYTE_TRANSFER * )pInfo->GetUserData();
 
-	TCHAR listJid[256];
-	mir_sntprintf( listJid, SIZEOF(listJid), _T("ftproxy_%d"), id );
+	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_RESULT ) {
+		XmlNode *queryNode = JabberXmlGetChild( iqNode, "query" );
+		if ( queryNode ) {
+			TCHAR *queryXmlns = JabberXmlGetAttrValue( queryNode, "xmlns" );
+			if (queryXmlns && !_tcscmp( queryXmlns, _T(JABBER_FEAT_BYTESTREAMS))) {
+				XmlNode *streamHostNode = JabberXmlGetChild( queryNode, "streamhost" );
+				if ( streamHostNode ) {
+					TCHAR *streamJid = JabberXmlGetAttrValue( streamHostNode, "jid" );
+					TCHAR *streamHost = JabberXmlGetAttrValue( streamHostNode, "host" );
+					TCHAR *streamPort = JabberXmlGetAttrValue( streamHostNode, "port" );
+					if ( streamJid && streamHost && streamPort ) {
+						jbt->szProxyHost = mir_tstrdup( streamHost );
+						jbt->szProxyJid = mir_tstrdup( streamJid );
+						jbt->szProxyPort = mir_tstrdup( streamPort );
+						jbt->bProxyDiscovered = TRUE;
+	}	}	}	}	}
 
-	JABBER_LIST_ITEM *item = JabberListGetItemPtr( LIST_FTIQID, listJid );
-	if ( !item )
-		return;
-
-	TCHAR *type = JabberXmlGetAttrValue( iqNode, "type" );
-	if ( type ) {
-		if ( !_tcscmp( type, _T( "result" ))) {
-			XmlNode *queryNode = JabberXmlGetChild( iqNode, "query" );
-			if ( queryNode ) {
-				TCHAR *queryXmlns = JabberXmlGetAttrValue( queryNode, "xmlns" );
-				if (queryXmlns && !_tcscmp( queryXmlns, _T(JABBER_FEAT_BYTESTREAMS))) {
-					XmlNode *streamHostNode = JabberXmlGetChild( queryNode, "streamhost" );
-					if ( streamHostNode ) {
-						TCHAR *streamJid = JabberXmlGetAttrValue( streamHostNode, "jid" );
-						TCHAR *streamHost = JabberXmlGetAttrValue( streamHostNode, "host" );
-						TCHAR *streamPort = JabberXmlGetAttrValue( streamHostNode, "port" );
-						if ( streamJid && streamHost && streamPort ) {
-							item->jbt->szProxyHost = mir_tstrdup( streamHost );
-							item->jbt->szProxyJid = mir_tstrdup( streamJid );
-							item->jbt->szProxyPort = mir_tstrdup( streamPort );
-							item->jbt->bProxyDiscovered = TRUE;
-	}	}	}	}	}	}
-
-	if ( item->jbt->hProxyEvent )
-		SetEvent( item->jbt->hProxyEvent );
+	if ( jbt->hProxyEvent )
+		SetEvent( jbt->hProxyEvent );
 }
 
 void __cdecl JabberByteSendThread( JABBER_BYTE_TRANSFER *jbt )
@@ -113,10 +105,10 @@ void __cdecl JabberByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 	DBVARIANT dbv;
 	NETLIBBIND nlb = {0};
 	TCHAR szPort[8];
-	int iqId;
-	JABBER_LIST_ITEM *item;
 	HANDLE hEvent;
-	char* proxyJid;
+	TCHAR* proxyJid;
+	CJabberIqRequestInfo *pInfo = NULL;
+	int nIqId = 0;
 
 	JabberLog( "Thread started: type=bytestream_send" );
 
@@ -127,7 +119,7 @@ void __cdecl JabberByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 	if ( bProxy && bProxyManual ) {
 		proxyJid = NULL;
 		if ( !DBGetContactSetting( NULL, jabberProtoName, "BsProxyServer", &dbv )) {
-			proxyJid = mir_strdup( dbv.pszVal );
+			proxyJid = a2t( dbv.pszVal );
 			JFreeVariant( &dbv );
 		}
 
@@ -138,31 +130,23 @@ void __cdecl JabberByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 			jbt->szProxyJid = NULL;
 			jbt->hProxyEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
 
-			iqId = JabberSerialNext();
-
-			TCHAR listJid[256];
-			mir_sntprintf( listJid, SIZEOF(listJid), _T("ftproxy_%d"), iqId );
-
-			item = JabberListAdd( LIST_FTIQID, listJid );
-			item->jbt = jbt;
-
-			JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultProxyDiscovery );
-			XmlNodeIq iq( "get", iqId, proxyJid );
+			pInfo = g_JabberIqRequestManager.AddHandler( JabberIqResultProxyDiscovery, JABBER_IQ_TYPE_GET, proxyJid, 0, -1, jbt );
+			nIqId = pInfo->GetIqId();
+			XmlNodeIq iq( pInfo );
 			XmlNode* query = iq.addQuery( JABBER_FEAT_BYTESTREAMS );
 			jabberThreadInfo->send( iq );
 
 			WaitForSingleObject( jbt->hProxyEvent, INFINITE );
+			g_JabberIqRequestManager.ExpireIq( nIqId );
 			CloseHandle( jbt->hProxyEvent );
 			jbt->hProxyEvent = NULL;
-
-			JabberListRemove( LIST_FTIQID, listJid );
 
 			mir_free( proxyJid );
 	}	}
 
-	iqId = JabberSerialNext();
-	JabberIqAdd( iqId, IQ_PROC_NONE, JabberByteInitiateResult );
-	XmlNodeIq iq( "set", iqId, jbt->dstJID );
+	pInfo = g_JabberIqRequestManager.AddHandler( JabberByteInitiateResult, JABBER_IQ_TYPE_SET, jbt->dstJID, 0, -1, jbt );
+	nIqId = pInfo->GetIqId();
+	XmlNodeIq iq( pInfo );
 	XmlNode* query = iq.addQuery( JABBER_FEAT_BYTESTREAMS );
 	query->addAttr( "sid", jbt->sid );
 
@@ -189,7 +173,7 @@ void __cdecl JabberByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 		}
 
 		mir_sntprintf( szPort, SIZEOF( szPort ), _T("%d"), nlb.wPort );
-		item = JabberListAdd( LIST_BYTE, szPort );
+		JABBER_LIST_ITEM *item = JabberListAdd( LIST_BYTE, szPort );
 		item->jbt = jbt;
 		hEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
 		jbt->hEvent = hEvent;
@@ -209,19 +193,12 @@ void __cdecl JabberByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 	jbt->hProxyEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
 	jbt->szStreamhostUsed = NULL;
 
-	TCHAR listJid[256];
-	mir_sntprintf(listJid, SIZEOF( listJid ), _T("ftproxy_%d"), iqId);
-
-	item = JabberListAdd( LIST_FTIQID, listJid );
-	item->jbt = jbt;
-
 	jabberThreadInfo->send( iq );
 
 	WaitForSingleObject( jbt->hProxyEvent, INFINITE );
+	g_JabberIqRequestManager.ExpireIq( nIqId );
 	CloseHandle( jbt->hProxyEvent );
 	jbt->hProxyEvent = NULL;
-
-	JabberListRemove( LIST_FTIQID, listJid );
 
 	if ( !jbt->szStreamhostUsed ) {
 		if (bDirect) {
@@ -267,33 +244,24 @@ void __cdecl JabberByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 	JabberLog( "Thread ended: type=bytestream_send" );
 }
 
-static void JabberByteInitiateResult( XmlNode *iqNode, void *userdata )
+static void JabberByteInitiateResult( XmlNode *iqNode, void *userdata, CJabberIqRequestInfo *pInfo )
 {
-	int id = JabberGetPacketID( iqNode );
+	JABBER_BYTE_TRANSFER *jbt = ( JABBER_BYTE_TRANSFER * )pInfo->GetUserData();
 
-	TCHAR listJid[256];
-	mir_sntprintf(listJid, SIZEOF( listJid ), _T("ftproxy_%d"), id);
+	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_RESULT ) {
+		XmlNode* queryNode = JabberXmlGetChild( iqNode, "query" );
+		if ( queryNode ) {
+			TCHAR* queryXmlns = JabberXmlGetAttrValue( queryNode, "xmlns" );
+			if ( queryXmlns && !_tcscmp( queryXmlns, _T( JABBER_FEAT_BYTESTREAMS ))) {
+				XmlNode* streamHostNode = JabberXmlGetChild( queryNode, "streamhost-used" );
+				if ( streamHostNode ) {
+					TCHAR* streamJid = JabberXmlGetAttrValue( streamHostNode, "jid" );
+					if ( streamJid )
+						jbt->szStreamhostUsed = mir_tstrdup( streamJid );
+	}	}	}	}
 
-	JABBER_LIST_ITEM *item = JabberListGetItemPtr( LIST_FTIQID, listJid );
-	if ( !item )
-		return;
-
-	TCHAR *type = JabberXmlGetAttrValue( iqNode, "type" );
-	if ( type ) {
-		if ( !_tcscmp( type, _T( "result" ))) {
-			XmlNode* queryNode = JabberXmlGetChild( iqNode, "query" );
-			if ( queryNode ) {
-				TCHAR* queryXmlns = JabberXmlGetAttrValue( queryNode, "xmlns" );
-				if ( queryXmlns && !_tcscmp( queryXmlns, _T( JABBER_FEAT_BYTESTREAMS ))) {
-					XmlNode* streamHostNode = JabberXmlGetChild( queryNode, "streamhost-used" );
-					if ( streamHostNode ) {
-						TCHAR* streamJid = JabberXmlGetAttrValue( streamHostNode, "jid" );
-						if ( streamJid )
-							item->jbt->szStreamhostUsed = mir_tstrdup( streamJid );
-	}	}	}	}	}
-
-	if ( item->jbt->hProxyEvent )
-		SetEvent( item->jbt->hProxyEvent );
+	if ( jbt->hProxyEvent )
+		SetEvent( jbt->hProxyEvent );
 }
 
 static void JabberByteSendConnection( HANDLE hConn, DWORD dwRemoteIP )

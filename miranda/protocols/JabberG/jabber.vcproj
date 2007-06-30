@@ -416,6 +416,9 @@
 				RelativePath=".\jabber_chat.cpp">
 			</File>
 			<File
+				RelativePath=".\jabber_disco.cpp">
+			</File>
+			<File
 				RelativePath="jabber_file.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -1180,6 +1183,9 @@
 			</File>
 			<File
 				RelativePath=".\jabber_caps.h">
+			</File>
+			<File
+				RelativePath=".\jabber_disco.h">
 			</File>
 			<File
 				RelativePath=".\jabber_ibb.h">

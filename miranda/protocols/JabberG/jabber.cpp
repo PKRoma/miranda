@@ -3,6 +3,7 @@
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
 Copyright ( C ) 2005-07  George Hazan
+Copyright ( C ) 2007     Maxim Mluhov
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -116,6 +117,7 @@ HWND hwndJabberAddBookmark = NULL;
 HWND hwndJabberInfo = NULL;
 HWND hwndPrivacyLists = NULL;
 HWND hwndPrivacyRule = NULL;
+HWND hwndServiceDiscovery = NULL;
 
 // Service and event handles
 HANDLE heventRawXMLIn;
@@ -189,6 +191,7 @@ static int OnPreShutdown( WPARAM wParam, LPARAM lParam )
 	if ( hwndJabberAddBookmark ) SendMessage( hwndJabberAddBookmark, WM_CLOSE, 0, 0 );
 	if ( hwndPrivacyRule ) SendMessage( hwndPrivacyRule, WM_CLOSE, 0, 0 );
 	if ( hwndPrivacyLists ) SendMessage( hwndPrivacyLists, WM_CLOSE, 0, 0 );
+	if ( hwndServiceDiscovery ) SendMessage (hwndServiceDiscovery, WM_CLOSE, 0, 0 );
 
 	hwndJabberAgents = NULL;
 	hwndJabberGroupchat = NULL;
@@ -209,6 +212,7 @@ static int OnPreShutdown( WPARAM wParam, LPARAM lParam )
 	hwndJabberAddBookmark = NULL;
 	hwndPrivacyLists = NULL;
 	hwndPrivacyRule = NULL;
+	hwndServiceDiscovery = NULL;
 	return 0;
 }
 
@@ -377,6 +381,7 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	JabberIconsInit();
 	JabberSvcInit();
 	JabberXStatusInit();
+	g_JabberIqRequestManager.Start();
 	g_JabberClientCapsManager.AddDefaultCaps();
 	return 0;
 }
@@ -395,6 +400,8 @@ extern "C" int __declspec( dllexport ) Unload( void )
 		DestroyHookableEvent( hInitChat );
 
 	g_JabberClientCapsManager.StopResolverThread();
+	g_JabberIqRequestManager.ExpireAll();
+	g_JabberIqRequestManager.Shutdown();
 	JabberXStatusUninit();
 	JabberSvcUninit();
 	JabberSslUninit();

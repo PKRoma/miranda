@@ -3,6 +3,7 @@
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
 Copyright ( C ) 2005-07  George Hazan
+Copyright ( C ) 2007     Maxim Mluhov
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -60,6 +61,7 @@ JabberFeatCapPair g_JabberFeatCapPairs[] = {
 	{	_T(JABBER_FEAT_PUBSUB),			  JABBER_CAPS_PUBSUB,          },
 	{	_T(JABBER_FEAT_SECUREIM),         JABBER_CAPS_SECUREIM,        },
 	{	_T(JABBER_FEAT_PRIVACY_LISTS),	  JABBER_CAPS_PRIVACY_LISTS,   },
+	{	_T(JABBER_FEAT_MESSAGE_RECEIPTS), JABBER_CAPS_MESSAGE_RECEIPTS,},
 	{	NULL,                             0                            }
 };
 
@@ -476,7 +478,7 @@ JabberCapsBits CJabberClientCapsManager::GetClientCaps( TCHAR *szNode, TCHAR *sz
 	}
 	JabberCapsBits jcbCaps = pClient->GetPartialCaps( szVer );
 	Unlock();
-	JabberLog( "CAPS: get caps %08x for: %S, %S", jcbCaps, szNode, szVer );
+	JabberLog( "CAPS: get caps %I64x for: %S, %S", jcbCaps, szNode, szVer );
 	return jcbCaps;
 }
 
@@ -495,7 +497,7 @@ BOOL CJabberClientCapsManager::SetClientCaps( TCHAR *szNode, TCHAR *szVer, Jabbe
 	}
 	BOOL bOk = pClient->SetPartialCaps( szVer, jcbCaps, nIqId );
 	Unlock();
-	JabberLog( "CAPS: set caps %08x for: %S, %S", jcbCaps, szNode, szVer );
+	JabberLog( "CAPS: set caps %I64x for: %S, %S", jcbCaps, szNode, szVer );
 	return bOk;
 }
 
@@ -510,7 +512,7 @@ BOOL CJabberClientCapsManager::SetClientCaps( int nIqId, JabberCapsBits jcbCaps 
 	CJabberClientCaps *pClient = m_pClients;
 	while ( pClient ) {
 		if ( pClient->SetPartialCaps( nIqId, jcbCaps )) {
-			JabberLog( "CAPS: set caps %08x for iq %d", jcbCaps, nIqId );
+			JabberLog( "CAPS: set caps %I64x for iq %d", jcbCaps, nIqId );
 			bOk = TRUE;
 			break;
 		}

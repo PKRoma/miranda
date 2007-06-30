@@ -572,6 +572,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\jabber_disco.cpp"
+				>
+			</File>
+			<File
 				RelativePath="jabber_file.cpp"
 				>
 				<FileConfiguration
@@ -1546,6 +1550,10 @@
 			</File>
 			<File
 				RelativePath=".\jabber_caps.h"
+				>
+			</File>
+			<File
+				RelativePath=".\jabber_disco.h"
 				>
 			</File>
 			<File

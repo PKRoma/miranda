@@ -3,6 +3,7 @@
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
 Copyright ( C ) 2005-07  George Hazan
+Copyright ( C ) 2007     Maxim Mluhov
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -30,6 +31,7 @@ Last change by : $Author$
 #include "resource.h"
 #include "jabber_caps.h"
 #include "jabber_privacy.h"
+#include "jabber_disco.h"
 
 #include <m_contacts.h>
 
@@ -52,6 +54,7 @@ static HANDLE hMenuBookmarks = NULL;
 static HANDLE hMenuAddBookmark = NULL;
 static HANDLE hMenuCommands = NULL;
 static HANDLE hMenuPrivacyLists = NULL;
+static HANDLE hMenuServiceDiscovery = NULL;
 
 
 
@@ -530,7 +533,7 @@ void JabberMenuInit()
 
 	// "Bookmarks..."
 	strcpy( tDest, "/Bookmarks" );
-	CreateServiceFunction( text, JabberMenuHandleBookmarks);
+	CreateServiceFunction( text, JabberMenuHandleBookmarks );
 	mi.pszName = "Bookmarks...";
 	mi.position = 2000050004;
 	mi.icolibItem = GetIconHandle( IDI_BOOKMARKS );
@@ -539,12 +542,21 @@ void JabberMenuInit()
 
 	// "Privacy lists..."
 	strcpy( tDest, "/PrivacyLists" );
-	CreateServiceFunction( text, JabberMenuHandlePrivacyLists);
+	CreateServiceFunction( text, JabberMenuHandlePrivacyLists );
 	mi.pszName = "Privacy Lists...";
 	mi.position = 2000050005;
 	mi.icolibItem = GetIconHandle( IDI_PRIVACY_LISTS );
 	hMenuPrivacyLists = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuPrivacyLists, ( LPARAM )&clmi );
+
+	// "Service Discovery..."
+	strcpy( tDest, "/ServiceDiscovery" );
+	CreateServiceFunction( text, JabberMenuHandleServiceDiscovery );
+	mi.pszName = "Service Discovery...";
+	mi.position = 2000050006;
+	mi.icolibItem = GetIconHandle( IDI_SERVICE_DISCOVERY );
+	hMenuServiceDiscovery = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuServiceDiscovery, ( LPARAM )&clmi );
 }
 
 void JabberEnableMenuItems( BOOL bEnable )
@@ -559,10 +571,12 @@ void JabberEnableMenuItems( BOOL bEnable )
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuChangePassword, ( LPARAM )&clmi );
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuGroupchat, ( LPARAM )&clmi );
 
+	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuPrivacyLists, ( LPARAM )&clmi );
+	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuServiceDiscovery, ( LPARAM )&clmi );
+
 	if ( jabberThreadInfo && !( jabberThreadInfo->caps & CAPS_BOOKMARK ))
 		clmi.flags |= CMIF_GRAYED;
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuBookmarks, ( LPARAM )&clmi );
-	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuPrivacyLists, ( LPARAM )&clmi );
 }
 
 //////////////////////////////////////////////////////////////////////////

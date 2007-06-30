@@ -239,6 +239,11 @@
 #define IDC_COMBO_VALUE                 1237
 #define IDC_EDIT_NAME                   1238
 #define IDC_STATIC_LISTS_LABEL          1239
+#define IDC_TREE_DISCO                  1240
+#define IDC_COMBO_JID                   1243
+#define IDC_COMBO_NODE                  1244
+#define IDC_BUTTON1                     1245
+#define IDC_BUTTON_BROWSE               1245
 #define IDC_EMAILS                      1306
 #define IDC_PHONES                      1308
 #define IDC_UPDATE                      1313
@@ -266,12 +271,14 @@
 #define IDC_ROOM_RADIO                  3009
 #define IDD_PRIVACY_ADD_LIST            3009
 #define IDC_AUTOJOIN_BOOKMARKS          3010
+#define IDD_SERVICE_DISCOVERY           3010
 #define IDC_URL_RADIO                   3011
 #define IDC_AGENT_RADIO                 3012
 #define IDC_BOOKMARK_TYPE               3013
 #define IDC_CHECK_BM_AUTOJOIN           3014
 #define IDC_ZLIB                        3015
 #define IDI_PRIVACY_LISTS               3016
+#define IDI_SERVICE_DISCOVERY           3017
 #define IDM_MESSAGE                     10002
 #define IDM_CLEAR                       10003
 #define IDM_VOICE                       10005
@@ -294,7 +301,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        190
 #define _APS_NEXT_COMMAND_VALUE         40017
-#define _APS_NEXT_CONTROL_VALUE         1240
+#define _APS_NEXT_CONTROL_VALUE         1246
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

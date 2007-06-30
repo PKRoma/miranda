@@ -3,6 +3,7 @@
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
 Copyright ( C ) 2005-07  George Hazan
+Copyright ( C ) 2007     Maxim Mluhov
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -42,60 +43,29 @@ void JabberIbbFreeJibb( JABBER_IBB_TRANSFER *jibb )
 		mir_free( jibb );
 }	}
 
-static void JabberIbbInitiateResult( XmlNode *iqNode, void *userdata )
+static void JabberIbbInitiateResult( XmlNode *iqNode, void *userdata, CJabberIqRequestInfo *pInfo )
 {
-	int id = JabberGetPacketID( iqNode );
-
-	TCHAR listJid[256];
-	mir_sntprintf(listJid, SIZEOF( listJid ), _T("ftibb_%d"), id);
-
-	JABBER_LIST_ITEM *item = JabberListGetItemPtr( LIST_FTIQID, listJid );
-	if ( !item )
-		return;
-
-	TCHAR *type = JabberXmlGetAttrValue( iqNode, "type" );
-	if ( type ) {
-		if ( !_tcscmp( type, _T( "result" ))) {
-			item->jibb->bStreamInitialized = TRUE;
-		}
-	}
-
-	if ( item->jibb->hEvent )
-		SetEvent( item->jibb->hEvent );
+	JABBER_IBB_TRANSFER *jibb = ( JABBER_IBB_TRANSFER * )pInfo->GetUserData();
+	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_RESULT )
+		jibb->bStreamInitialized = TRUE;
+	if ( jibb->hEvent )
+		SetEvent( jibb->hEvent );
 }
 
-static void JabberIbbCloseResult( XmlNode *iqNode, void *userdata )
+static void JabberIbbCloseResult( XmlNode *iqNode, void *userdata, CJabberIqRequestInfo *pInfo )
 {
-	int id = JabberGetPacketID( iqNode );
-
-	TCHAR listJid[256];
-	mir_sntprintf(listJid, SIZEOF( listJid ), _T("ftibb_%d"), id);
-
-	JABBER_LIST_ITEM *item = JabberListGetItemPtr( LIST_FTIQID, listJid );
-	if ( !item )
-		return;
-
-	TCHAR *type = JabberXmlGetAttrValue( iqNode, "type" );
-	if ( type ) {
-		if ( !_tcscmp( type, _T( "result" ))) {
-			item->jibb->bStreamClosed = TRUE;
-		}
-	}
-
-	if ( item->jibb->hEvent )
-		SetEvent( item->jibb->hEvent );
+	JABBER_IBB_TRANSFER *jibb = ( JABBER_IBB_TRANSFER * )pInfo->GetUserData();
+	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_RESULT )
+		jibb->bStreamClosed = TRUE;
+	if ( jibb->hEvent )
+		SetEvent( jibb->hEvent );
 }
 
 void __cdecl JabberIbbSendThread( JABBER_IBB_TRANSFER *jibb )
 {
-	int iqId;
-	JABBER_LIST_ITEM *item;
-
 	JabberLog( "Thread started: type=ibb_send" );
-
-	iqId = JabberSerialNext();
-	JabberIqAdd( iqId, IQ_PROC_NONE, JabberIbbInitiateResult );
-	XmlNodeIq iq( "set", iqId, jibb->dstJID );
+	
+	XmlNodeIq iq( g_JabberIqRequestManager.AddHandler( JabberIbbInitiateResult, JABBER_IQ_TYPE_SET, jibb->dstJID, 0, -1, jibb ));
 	XmlNode* openNode = iq.addChild( "open" );
 	openNode->addAttr( "sid", jibb->sid );
 	openNode->addAttr( "block-size", JABBER_IBB_BLOCK_SIZE );
@@ -106,19 +76,11 @@ void __cdecl JabberIbbSendThread( JABBER_IBB_TRANSFER *jibb )
 	jibb->bStreamClosed = FALSE;
 	jibb->state = JIBB_SENDING;
 
-	TCHAR listJid[256];
-	mir_sntprintf(listJid, SIZEOF( listJid ), _T("ftibb_%d"), iqId);
-
-	item = JabberListAdd( LIST_FTIQID, listJid );
-	item->jibb = jibb;
-
 	jabberThreadInfo->send( iq );
 
 	WaitForSingleObject( jibb->hEvent, INFINITE );
 	CloseHandle( jibb->hEvent );
 	jibb->hEvent = NULL;
-
-	JabberListRemove( LIST_FTIQID, listJid );
 
 	if ( jibb->bStreamInitialized ) {
 
@@ -128,28 +90,18 @@ void __cdecl JabberIbbSendThread( JABBER_IBB_TRANSFER *jibb )
 
 		if ( !jibb->bStreamClosed )
 		{
-			iqId = JabberSerialNext();
-			JabberIqAdd( iqId, IQ_PROC_NONE, JabberIbbCloseResult );
-			XmlNodeIq iq2( "set", iqId, jibb->dstJID );
+			XmlNodeIq iq2( g_JabberIqRequestManager.AddHandler( JabberIbbCloseResult, JABBER_IQ_TYPE_SET, jibb->dstJID, 0, -1, jibb ));
 			XmlNode* closeNode = iq2.addChild( "close" );
 			closeNode->addAttr( "sid", jibb->sid );
 			closeNode->addAttr( "xmlns", JABBER_FEAT_IBB );
 
 			jibb->hEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
 
-			TCHAR listJid[256];
-			mir_sntprintf(listJid, SIZEOF( listJid ), _T("ftibb_%d"), iqId);
-
-			item = JabberListAdd( LIST_FTIQID, listJid );
-			item->jibb = jibb;
-
 			jabberThreadInfo->send( iq2 );
 
 			WaitForSingleObject( jibb->hEvent, INFINITE );
 			CloseHandle( jibb->hEvent );
 			jibb->hEvent = NULL;
-
-			JabberListRemove( LIST_FTIQID, listJid );
 
 			if ( jibb->bStreamClosed && bSent )
 				jibb->state = JIBB_DONE;
