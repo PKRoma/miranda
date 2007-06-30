@@ -100,11 +100,11 @@ void sttSetMirVer( HANDLE hContact, DWORD dwValue )
 
 	if ( dwValue & 0x1 )
 		MSN_SetString( hContact, "MirVer", "MSN Mobile" );
-	if ( dwValue & 0x200 )
+	else if ( dwValue & 0x200 )
 		MSN_SetString( hContact, "MirVer", "Webmessenger" );
-	else if ( dwValue == 1342177280 )
+	else if ( dwValue == 0x50000000 )
 		MSN_SetString( hContact, "MirVer", "Miranda IM 0.5.x (MSN v.0.5.x)" );
-	else if ( dwValue == 805306404 )
+	else if ( dwValue == 0x30000024 )
 		MSN_SetString( hContact, "MirVer", "Miranda IM 0.4.x (MSN v.0.4.x)" );
 	else {
 		unsigned wlmId = min(dwValue >> 28 & 0xff, SIZEOF(MirVerStr)-1);
