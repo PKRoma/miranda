@@ -1241,11 +1241,13 @@ static int MsnSetStatus( WPARAM wParam, LPARAM lParam )
 		int ps = MSN_GetStaticString( "Password", NULL, szPassword, sizeof( szPassword ));
 		if (ps != 0  || *szPassword == 0) {
 			MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
+			msnDesiredStatus = msnStatusMode;
 			return 0;
 		}	
 		 
 		if (*MyOptions.szEmail == 0) {
 			MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_BADUSERID );
+			msnDesiredStatus = msnStatusMode;
 			return 0;
 		}	
 
