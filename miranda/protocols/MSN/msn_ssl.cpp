@@ -637,7 +637,6 @@ int MSN_GetPassportAuth( char* authChallengeInfo )
 
 	while (retVal == -1)
 	{
-		mir_free( tResult );
 		tResult = mAgent.getSslResult( szPassportHost, szAuthInfo, NULL );
 		if ( tResult == NULL ) {
 			if ( defaultUrlAllow ) {
