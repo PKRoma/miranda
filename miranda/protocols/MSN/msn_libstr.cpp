@@ -70,6 +70,15 @@ wchar_t* rtrim( wchar_t* string )
    return string;
 }
 
+void strdel( char* parBuffer, int len )
+{
+	char* p;
+	for ( p = parBuffer+len; *p != 0; p++ )
+		p[ -len ] = *p;
+
+	p[ -len ] = '\0';
+}
+
 TCHAR* a2t( const char* str )
 {
 	if ( str == NULL )

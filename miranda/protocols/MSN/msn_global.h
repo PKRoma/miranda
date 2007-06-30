@@ -273,6 +273,7 @@ void   overrideStr( TCHAR*& dest, const TCHAR* src, BOOL unicode, const TCHAR* d
 void   replaceStr( char*& dest, const char* src );
 char*  rtrim( char* string );
 wchar_t* rtrim( wchar_t* string );
+void strdel( char* parBuffer, int len );
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // PNG library interface
@@ -591,18 +592,18 @@ void     MsgQueue_Clear( HANDLE hContact = NULL );
 #define	LIST_AL		0x0002
 #define	LIST_BL		0x0004
 #define	LIST_RL		0x0008
-#define LIST_PL		0x0010
+#define	LIST_PL		0x0010
 
 #define	LIST_REMOVE	0x0100
 
 #define	IsValidListCode(n)  ((n)!=0)
 
-int		 Lists_NameToCode( const char* name );
-int		 Lists_Add( int list, const char* email, const char* nick );
-int		 Lists_IsInList( int list, const char* email );
-int		 Lists_GetMask( const char* email );
-void	 Lists_Remove( int list, const char* email );
-void	 Lists_Wipe( void );
+int		Lists_NameToCode( const char* name );
+int		Lists_Add( int list, const char* email, const char* nick );
+int		Lists_IsInList( int list, const char* email );
+int		Lists_GetMask( const char* email );
+void		Lists_Remove( int list, const char* email );
+void		Lists_Wipe( void );
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN server groups
