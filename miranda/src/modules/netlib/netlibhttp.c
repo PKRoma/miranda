@@ -257,7 +257,7 @@ int NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 			doneConnectionHeader=1;
 		}
 	}
-	if (!doneConnectionHeader && (nlhr->flags & NLHRF_HTTP11)) 
+	if (!doneConnectionHeader && (nlhr->flags & NLHRF_HTTP11) && nlhr->requestType != REQUEST_CONNECT) 
 		AppendToCharBuffer(&httpRequest,"%s: %s\r\n","Connection","close");
 
 	// Add Sticky Headers
