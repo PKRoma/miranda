@@ -99,7 +99,7 @@ void sttSetMirVer( HANDLE hContact, DWORD dwValue )
 	};
 
 	if ( dwValue & 0x1 )
-		MSN_SetString( hContact, "MirVer", "Mobile" );
+		MSN_SetString( hContact, "MirVer", "MSN Mobile" );
 	if ( dwValue & 0x200 )
 		MSN_SetString( hContact, "MirVer", "Webmessenger" );
 	else if ( dwValue == 1342177280 )

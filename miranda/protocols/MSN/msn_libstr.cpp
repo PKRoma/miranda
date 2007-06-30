@@ -26,8 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 void replaceStr( char*& dest, const char* src )
 {
 	if ( src != NULL ) {
-		if ( dest != NULL )
-			mir_free( dest );
+		mir_free( dest );
 		dest = mir_strdup( src );
 }	}
 
@@ -58,10 +57,9 @@ char* rtrim( char *string )
    return string;
 }
 
-#if defined( _UNICODE )
-TCHAR* rtrim( TCHAR* string )
+wchar_t* rtrim( wchar_t* string )
 {
-   TCHAR* p = string + lstrlen( string ) - 1;
+   wchar_t* p = string + lstrlen( string ) - 1;
 
    while ( p >= string )
    {  if ( *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r' )
@@ -70,16 +68,6 @@ TCHAR* rtrim( TCHAR* string )
 		*p-- = 0;
    }
    return string;
-}
-#endif
-
-void strdel( char* parBuffer, int len )
-{
-	char *p;
-	for ( p = parBuffer+len; *p != 0; p++ )
-		p[ -len ] = *p;
-
-	p[ -len ] = '\0';
 }
 
 TCHAR* a2t( const char* str )

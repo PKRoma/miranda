@@ -558,8 +558,10 @@ bool p2p_connectTo( ThreadData* info )
 			tConn.wPort = ( WORD )atol( tPortDelim+1 );
 	}	}
 
+	char *svr = info->mServer;
 	for( ;; ) {
-		char* pSpace = strchr( info->mServer, ' ' );
+
+		char* pSpace = strchr( svr, ' ' );
 		if ( pSpace != NULL )
 			*pSpace = 0;
 
@@ -579,8 +581,9 @@ bool p2p_connectTo( ThreadData* info )
 			return false;
 		}
 
-		strdel( info->mServer, int( pSpace - info->mServer )+1 );
+		svr = ++pSpace;
 	}
+	memmove(info->mServer, svr, strlen(svr)+1);
 
 	info->send( p2p_greeting, sizeof( p2p_greeting ));
 

@@ -201,7 +201,7 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					char* p = strchr( szFile+1, '\"' );
 					if ( p != NULL ) {
 						*p = '\0';
-						strdel( szFile, 1 );
+						memmove(szFile, szFile+1, strlen(szFile));
 						tSelectLen += 2;
 						goto LBL_Continue;
 				}	}
