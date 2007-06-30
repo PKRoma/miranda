@@ -191,7 +191,8 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		{
 			char* tDelim = strstr( tValue, "http=" );
 			if ( tDelim != 0 ) {
-				strdel( tValue, int( tDelim - tValue )+5 );
+				tDelim += 5;
+				memmove(tValue, tDelim, strlen(tDelim)+1);
 
 				tDelim = strchr( tValue, ';' );
 				if ( tDelim != NULL )
