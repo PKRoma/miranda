@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
+// Microsoft Developer Studio generated include file.
 // Used by chat.rc
 //
 #define IDR_MENU                        151
@@ -55,6 +55,8 @@
 #define IDC_TEXTO                       1069
 #define IDC_LOGGING                     1069
 #define IDC_COLORTEXT                   1070
+#define IDC_TEXTO2                      1070
+#define IDC_TEXTO3                      1071
 #define IDC_LIST                        1072
 #define IDC_1                           1075
 #define IDC_2                           1076
@@ -74,6 +76,30 @@
 #define IDC_10                          1084
 #define IDC_STATIC112                   1085
 #define IDC_11                          1085
+#define IDC_P1                          1087
+#define IDC_P2                          1088
+#define IDC_P3                          1089
+#define IDC_P4                          1090
+#define IDC_P5                          1091
+#define IDC_P6                          1092
+#define IDC_P7                          1093
+#define IDC_P8                          1094
+#define IDC_P9                          1095
+#define IDC_P10                         1096
+#define IDC_P11                         1097
+
+#define IDC_T1                          1100
+#define IDC_T2                          1101
+#define IDC_T3                          1102
+#define IDC_T4                          1103
+#define IDC_T5                          1104
+#define IDC_T6                          1105
+#define IDC_T7                          1106
+#define IDC_T8                          1107
+#define IDC_T9                          1108
+#define IDC_T10                         1109
+#define IDC_T11                         1110
+
 #define IDC_CHAT_HISTORY                1111
 #define IDC_INFOPANELBG                 1124
 #define IDC_BKGOUTGOING                 1125

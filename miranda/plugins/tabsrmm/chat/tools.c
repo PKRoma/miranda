@@ -185,7 +185,7 @@ static BOOL DoTrayIcon(SESSION_INFO* si, GCEVENT * gce)
 {
 	int iEvent = gce->pDest->iType;
 
-	if ( iEvent&g_Settings.dwTrayIconFlags ) {
+	if ( si && (iEvent & si->iLogTrayFlags) ) {
 		switch ( iEvent ) {
 		case GC_EVENT_MESSAGE|GC_EVENT_HIGHLIGHT :
 		case GC_EVENT_ACTION|GC_EVENT_HIGHLIGHT :
@@ -238,7 +238,7 @@ static BOOL DoPopup(SESSION_INFO* si, GCEVENT* gce, struct MessageWindowData* da
 	struct ContainerWindowData *pContainer = dat ? dat->pContainer : NULL;
 	char *szProto = dat ? dat->szProto : si->pszModule;
 
-	if (iEvent&g_Settings.dwPopupFlags)
+	if (si && (iEvent & si->iLogPopupFlags))
 	{
 
 		if (nen_options.iDisable || (dat == 0 && g_Settings.SkipWhenNoWindow))                          // no popups at all. Period
@@ -364,7 +364,7 @@ BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO* si, GCEVENT * gce, BOOL bHighligh
 	HWND hwndContainer = 0;
 	HICON hNotifyIcon = 0;
 
-	if (!gce || !si ||  gce->bIsMe || si->iType == GCW_SERVER)
+	if (!gce || si == NULL || gce->bIsMe || si->iType == GCW_SERVER)
 		return FALSE;
 
     if (si->hWnd) {
@@ -519,7 +519,7 @@ flash_and_switch:
 		BOOL bForcedIcon = ( hNotifyIcon == hIcons[ICON_HIGHLIGHT] || hNotifyIcon == hIcons[ICON_MESSAGE] );
 
 		//if (IsIconic(dat->pContainer->hwnd) || 1) { //dat->pContainer->hwndActive != si->hWnd) {
-		if (iEvent & g_Settings.dwTrayIconFlags || bForcedIcon) { //dat->pContainer->hwndActive != si->hWnd) {
+		if ((iEvent & si->iLogTrayFlags) || bForcedIcon) { //dat->pContainer->hwndActive != si->hWnd) {
 			if (!bActiveTab) {
 				if (hNotifyIcon == hIcons[ICON_HIGHLIGHT])
 					dat->iFlashIcon = hNotifyIcon;
@@ -551,7 +551,7 @@ flash_and_switch:
 			if (!(dat->pContainer->dwFlags & CNT_NOFLASH))
 				FlashContainer(dat->pContainer, 1, 0);
 
-		if (hNotifyIcon && bInactive && (iEvent && g_Settings.dwTrayIconFlags || bForcedIcon)) {
+		if (hNotifyIcon && bInactive && ((iEvent & si->iLogTrayFlags) || bForcedIcon)) {
 			HICON hIcon;
 
 			if (bMustFlash)
@@ -1137,3 +1137,51 @@ char* replaceStrA( char** dest, const char* src )
 	*dest = mir_strdup( src );
 	return *dest;
 }
+
+/*
+ * set all filters and notification config for a session
+ * uses per channel mask + filterbits, default config as backup
+ */
+
+void Chat_SetFilters(SESSION_INFO *si)
+{
+    DWORD dwFlags_default = 0, dwMask = 0, dwFlags_local = 0;
+	int i;
+
+    if(si == NULL)
+        return;
+
+    dwFlags_default = DBGetContactSettingDword(NULL, "Chat", "FilterFlags", 0x03E0);
+    dwFlags_local = DBGetContactSettingDword(si->hContact, "Chat", "FilterFlags", 0x03E0);
+    dwMask = DBGetContactSettingDword(si->hContact, "Chat", "FilterMask", 0);
+
+    si->iLogFilterFlags = dwFlags_default;
+    for(i = 0; i < 32; i++) {
+        if(dwMask & (1 << i))
+            si->iLogFilterFlags = (dwFlags_local & (1 << i) ? si->iLogFilterFlags | (1 << i) : si->iLogFilterFlags & ~(1 << i));
+    }
+
+    dwFlags_default = DBGetContactSettingDword(NULL, "Chat", "PopupFlags", 0x03E0);
+    dwFlags_local = DBGetContactSettingDword(si->hContact, "Chat", "PopupFlags", 0x03E0);
+    dwMask = DBGetContactSettingDword(si->hContact, "Chat", "PopupMask", 0);
+
+    si->iLogPopupFlags = dwFlags_default;
+    for(i = 0; i < 32; i++) {
+        if(dwMask & (1 << i))
+            si->iLogPopupFlags = (dwFlags_local & (1 << i) ? si->iLogPopupFlags | (1 << i) : si->iLogPopupFlags & ~(1 << i));
+    }
+
+    dwFlags_default = DBGetContactSettingDword(NULL, "Chat", "TrayIconFlags", 0x03E0);
+    dwFlags_local = DBGetContactSettingDword(si->hContact, "Chat", "TrayIconFlags", 0x03E0);
+    dwMask = DBGetContactSettingDword(si->hContact, "Chat", "TrayIconMask", 0);
+
+    si->iLogTrayFlags = dwFlags_default;
+    for(i = 0; i < 32; i++) {
+        if(dwMask & (1 << i))
+            si->iLogTrayFlags = (dwFlags_local & (1 << i) ? si->iLogTrayFlags | (1 << i) : si->iLogTrayFlags & ~(1 << i));
+    }
+
+    if(si->iLogFilterFlags == 0)
+        si->bFilterEnabled = 0;
+}
+

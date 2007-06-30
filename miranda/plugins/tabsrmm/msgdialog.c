@@ -3778,26 +3778,28 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     if(streamOut != NULL) {
                         decoded = Utf8_Decode(streamOut);
                         if(decoded != NULL) {
-									 char* utfResult = NULL;
+                            char* utfResult = NULL;
                             if(final_sendformat)
                                 DoRtfToTags(decoded, dat);
                             DoTrimMessage(decoded);
                             bufSize = WideCharToMultiByte(dat->codePage, 0, decoded, -1, dat->sendBuffer, 0, 0, 0);
                             if(myGlobals.m_Send7bitStrictAnsi) {
                                 if(!IsUnicodeAscii(decoded, lstrlenW(decoded))) {
-LBL_UnicodeSend:	                  if ( !IsUtfSendAvailable(dat->hContact)) {
-													flags |= PREF_UNICODE;
-													memRequired = bufSize + ((lstrlenW(decoded) + 1) * sizeof(WCHAR));
-												}
-												else {
-													flags |= PREF_UTF;
-													utfResult = mir_utf8encodeW(decoded);
-													memRequired = strlen( utfResult )+1;
-												}
+LBL_UnicodeSend:	                if ( !IsUtfSendAvailable(dat->hContact)) {
+                                        flags |= PREF_UNICODE;
+                                        memRequired = bufSize + ((lstrlenW(decoded) + 1) * sizeof(WCHAR));
+                                    }
+									else {
+                                        flags |= PREF_UTF;
+                                        utfResult = mir_utf8encodeW(decoded);
+                                        memRequired = strlen( utfResult )+1;
+                                    }
                                 }
-                                else memRequired = bufSize;
+                                else 
+                                    memRequired = bufSize;
                             }
-                            else goto LBL_UnicodeSend;
+                            else 
+                                goto LBL_UnicodeSend;
 
                             /*
                              * try to detect RTL
@@ -3810,9 +3812,9 @@ LBL_UnicodeSend:	                  if ( !IsUtfSendAvailable(dat->hContact)) {
                             SendMessage(hwndEdit, EM_GETPARAFORMAT, 0, (LPARAM)&pf2);
                             if(pf2.wEffects & PFE_RTLPARA)
                                 if ( RTL_Detect( decoded ))
-											  flags |= PREF_RTL;
+                                    flags |= PREF_RTL;
 
-									 SendMessage(hwndEdit, WM_SETREDRAW, TRUE, 0);
+                                SendMessage(hwndEdit, WM_SETREDRAW, TRUE, 0);
                             SendMessage(hwndEdit, EM_SETSEL, -1, -1);
                             InvalidateRect(hwndEdit, NULL, FALSE);
 
@@ -3820,15 +3822,15 @@ LBL_UnicodeSend:	                  if ( !IsUtfSendAvailable(dat->hContact)) {
                                 dat->sendBuffer = (char *) realloc(dat->sendBuffer, memRequired);
                                 dat->iSendBufferSize = memRequired;
                             }
-									 if ( utfResult ) {
-										 CopyMemory( dat->sendBuffer, utfResult, memRequired );
-										 mir_free( utfResult );
-									 }
-									 else {
-	                            WideCharToMultiByte(dat->codePage, 0, decoded, -1, dat->sendBuffer, bufSize, 0, 0);
-		                         if(flags & PREF_UNICODE)
-			                          CopyMemory(&dat->sendBuffer[bufSize], decoded, (lstrlenW(decoded) + 1) * sizeof(WCHAR));
-									 }
+							if ( utfResult ) {
+                                CopyMemory( dat->sendBuffer, utfResult, memRequired );
+                                mir_free( utfResult );
+                            }
+                            else {
+                                WideCharToMultiByte(dat->codePage, 0, decoded, -1, dat->sendBuffer, bufSize, 0, 0);
+                                if(flags & PREF_UNICODE)
+                                    CopyMemory(&dat->sendBuffer[bufSize], decoded, (lstrlenW(decoded) + 1) * sizeof(WCHAR));
+                            }
                             free(decoded);
                         }
                         free(streamOut);
@@ -4581,6 +4583,7 @@ quote_from_last:
                         IEVIEWEVENT event;
                         event.cbSize = sizeof(IEVIEWEVENT);
                         event.iType = IEE_CLEAR_LOG;
+                        event.dwFlags = (dat->dwFlags & MWF_LOG_RTL) ? IEEF_RTL : 0;
                         event.hContact = dat->hContact;
                         if(dat->hwndIEView) {
                             event.hwnd = dat->hwndIEView;

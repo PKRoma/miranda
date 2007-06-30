@@ -247,6 +247,8 @@ typedef struct SESSION_INFO_TYPE
 	int         iSplitterY;
 	int         iSplitterX;
 	int         iLogFilterFlags;
+    int         iLogPopupFlags;
+    int         iLogTrayFlags;
 	int         nUsersInNicklist;
 	int         iEventCount;
 	int         iX;
@@ -309,8 +311,6 @@ struct GlobalLogSettings_t {
 	BOOL        LogLimitNames;
 	BOOL        TimeStampEventColour;
 	DWORD       dwIconFlags;
-	DWORD       dwTrayIconFlags;
-	DWORD       dwPopupFlags;
 	int         LogTextIndent;
 	int         LoggingLimit;
 	int         iEventLimit;

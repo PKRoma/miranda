@@ -141,6 +141,7 @@ void          DestroyGCMenu(HMENU *hMenu, int iIndex);
 BOOL          DoEventHookAsync(HWND hwnd, const TCHAR* pszID, const char* pszModule, int iType, TCHAR* pszUID, TCHAR* pszText, DWORD dwItem);
 BOOL          DoEventHook(const TCHAR* pszID, const char* pszModule, int iType, const TCHAR* pszUID, const TCHAR* pszText, DWORD dwItem);
 BOOL          LogToFile(SESSION_INFO* si, GCEVENT * gce);
+void          Chat_SetFilters(SESSION_INFO *si);
 
 // message.c
 char*         Chat_Message_GetFromStream(HWND hwndDlg, SESSION_INFO* si);

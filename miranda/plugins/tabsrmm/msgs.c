@@ -36,8 +36,9 @@ $Id$
 
 static char *relnotes[] = {
     "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
-    "\\par\t\\b\\ul1 Release notes for version 1.1.0.20\\b0\\ul0\\par ",
-    "*\tTab character limit now working for group chats.\\par",
+    "\\par\t\\b\\ul1 Release notes for version 1.1.1.0\\b0\\ul0\\par ",
+    "*\tSupport for new UTF-8 message storage added.\\par",
+    "*\tNew event filter for group chats (per channel settings for popups and tray notifications added).\\par",
     NULL
 };
 
@@ -854,14 +855,17 @@ static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
         return 0;
     
     if(hwnd) {
-        if(strstr("MyHandle,Status,Nick,ApparentMode,Default,ForceSend,IdleTS,XStatusId", cws->szSetting))
+        if(strstr("MyHandle,Status,Nick,ApparentMode,Default,ForceSend,IdleTS,XStatusId", cws->szSetting)) {
+            if(!strcmp(cws->szSetting, "XStatusId"))
+                PostMessage(hwnd, DM_UPDATESTATUSMSG, 0, 0);
             PostMessage(hwnd, DM_UPDATETITLE, 0, 0);
+        }
         else if(lstrlenA(cws->szSetting) > 6 && !strncmp(cws->szSetting, "Status", 6)) {
             PostMessage(hwnd, DM_UPDATETITLE, 0, 1);
         }
         else if(!strcmp(cws->szSetting, "MirVer"))
             PostMessage(hwnd, DM_CLIENTCHANGED, 0, 0);
-        else if(strstr("StatusMsg,StatusDescr,XStatusMsg,YMsg", cws->szSetting))
+        else if(strstr("StatusMsg,StatusDescr,XStatusMsg,XStatusName,YMsg", cws->szSetting))
             PostMessage(hwnd, DM_UPDATESTATUSMSG, 0, 0);
     }
     
@@ -1610,8 +1614,8 @@ int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild)
 
 HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hContact, int isSend, const char *pszInitialText, BOOL bActivateTab, BOOL bPopupContainer, BOOL bWantPopup, HANDLE hdbEvent)
 {
-	TCHAR *contactName = NULL, newcontactname[128];
-    char *szProto, *szStatus, tabtitle[128];
+	TCHAR *contactName = NULL, newcontactname[128], *szStatus, tabtitle[128];
+    char *szProto = NULL;
 	WORD wStatus;
     int	newItem;
     HWND hwndNew = 0;
@@ -1663,27 +1667,17 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
         }
     }
     else
-        lstrcpyn(newcontactname, _T("_U_"), sizeof(newcontactname) / sizeof(TCHAR));
+        lstrcpyn(newcontactname, _T("_U_"), safe_sizeof(newcontactname));
 
 	wStatus = szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord((HANDLE) newData.hContact, szProto, "Status", ID_STATUS_OFFLINE);
-	szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord((HANDLE)newData.hContact, szProto, "Status", ID_STATUS_OFFLINE), 0);
+	szStatus = (TCHAR *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord((HANDLE)newData.hContact, szProto, "Status", ID_STATUS_OFFLINE), GCMDF_TCHAR);
     
 	if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "tabstatus", 0))
-		_snprintf(tabtitle, sizeof(tabtitle), "%s (%s)   ", newcontactname, szStatus);
+		mir_sntprintf(tabtitle, safe_sizeof(tabtitle), _T("%s (%s)  "), newcontactname, szStatus);
 	else
-		_snprintf(tabtitle, sizeof(tabtitle), "%s   ", newcontactname);
+		mir_sntprintf(tabtitle, safe_sizeof(tabtitle), _T("%s   "), newcontactname);
 
-#ifdef _UNICODE
-	{
-    wchar_t w_tabtitle[256];
-    if(MultiByteToWideChar(myGlobals.m_LangPackCP, 0, tabtitle, -1, w_tabtitle, safe_sizeof(w_tabtitle)) != 0)
-        newData.item.pszText = w_tabtitle;
-	}
-#else
 	newData.item.pszText = tabtitle;
-#endif
-    //newData.item.iImage = GetProtoIconFromList(szProto, wStatus);
-
 	newData.item.mask = TCIF_TEXT | TCIF_IMAGE | TCIF_PARAM;
     newData.item.iImage = 0;
     newData.item.cchTextMax = 255;
