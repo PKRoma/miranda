@@ -1237,6 +1237,18 @@ static int MsnSetStatus( WPARAM wParam, LPARAM lParam )
 	}
 	else if (!msnLoggedIn && !(msnStatusMode>=ID_STATUS_CONNECTING && msnStatusMode<ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES))
 	{
+		char szPassword[ 100 ];
+		int ps = MSN_GetStaticString( "Password", NULL, szPassword, sizeof( szPassword ));
+		if (ps != 0  || *szPassword == 0) {
+			MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
+			return 0;
+		}	
+		 
+		if (*MyOptions.szEmail == 0) {
+			MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_BADUSERID );
+			return 0;
+		}	
+
 		MyOptions.UseProxy = MSN_GetByte( "NLUseProxy", FALSE );
 
 		ThreadData* newThread = new ThreadData;
