@@ -29,9 +29,9 @@ extern CRITICAL_SECTION csNetlibUser;
 
 static const char search_request_msg[] =
 	"M-SEARCH * HTTP/1.1\r\n"
-	"MX: 1\r\n"
 	"HOST: 239.255.255.250:1900\r\n"
 	"MAN: \"ssdp:discover\"\r\n"
+	"MX: 1\r\n"
 	"ST: urn:schemas-upnp-org:service:%s\r\n"
 	"\r\n";
 
