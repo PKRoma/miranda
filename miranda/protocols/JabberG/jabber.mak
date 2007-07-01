@@ -83,6 +83,7 @@ CLEAN :
 	-@erase "$(INTDIR)\jabber_std.obj"
 	-@erase "$(INTDIR)\jabber_svc.obj"
 	-@erase "$(INTDIR)\jabber_thread.obj"
+	-@erase "$(INTDIR)\jabber_treelist.obj"
 	-@erase "$(INTDIR)\jabber_userinfo.obj"
 	-@erase "$(INTDIR)\jabber_util.obj"
 	-@erase "$(INTDIR)\jabber_vcard.obj"
@@ -119,6 +120,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_byte.obj" \
 	"$(INTDIR)\jabber_caps.obj" \
 	"$(INTDIR)\jabber_chat.obj" \
+	"$(INTDIR)\jabber_disco.obj" \
 	"$(INTDIR)\jabber_file.obj" \
 	"$(INTDIR)\jabber_form.obj" \
 	"$(INTDIR)\jabber_ft.obj" \
@@ -151,7 +153,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_xstatus.obj" \
 	"$(INTDIR)\jabber_zstream.obj" \
 	"$(INTDIR)\msvc6.res" \
-	"$(INTDIR)\jabber_disco.obj" \
+	"$(INTDIR)\jabber_treelist.obj" \
 	"..\..\plugins\zlib\Release\zlib.lib"
 
 "..\..\bin\release\plugins\jabber.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -245,6 +247,8 @@ CLEAN :
 	-@erase "$(INTDIR)\jabber_svc.sbr"
 	-@erase "$(INTDIR)\jabber_thread.obj"
 	-@erase "$(INTDIR)\jabber_thread.sbr"
+	-@erase "$(INTDIR)\jabber_treelist.obj"
+	-@erase "$(INTDIR)\jabber_treelist.sbr"
 	-@erase "$(INTDIR)\jabber_userinfo.obj"
 	-@erase "$(INTDIR)\jabber_userinfo.sbr"
 	-@erase "$(INTDIR)\jabber_util.obj"
@@ -287,6 +291,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\jabber_byte.sbr" \
 	"$(INTDIR)\jabber_caps.sbr" \
 	"$(INTDIR)\jabber_chat.sbr" \
+	"$(INTDIR)\jabber_disco.sbr" \
 	"$(INTDIR)\jabber_file.sbr" \
 	"$(INTDIR)\jabber_form.sbr" \
 	"$(INTDIR)\jabber_ft.sbr" \
@@ -318,7 +323,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\jabber_xmlns.sbr" \
 	"$(INTDIR)\jabber_xstatus.sbr" \
 	"$(INTDIR)\jabber_zstream.sbr" \
-	"$(INTDIR)\jabber_disco.sbr"
+	"$(INTDIR)\jabber_treelist.sbr"
 
 "$(OUTDIR)\jabber.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -335,6 +340,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_byte.obj" \
 	"$(INTDIR)\jabber_caps.obj" \
 	"$(INTDIR)\jabber_chat.obj" \
+	"$(INTDIR)\jabber_disco.obj" \
 	"$(INTDIR)\jabber_file.obj" \
 	"$(INTDIR)\jabber_form.obj" \
 	"$(INTDIR)\jabber_ft.obj" \
@@ -367,7 +373,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_xstatus.obj" \
 	"$(INTDIR)\jabber_zstream.obj" \
 	"$(INTDIR)\msvc6.res" \
-	"$(INTDIR)\jabber_disco.obj" \
+	"$(INTDIR)\jabber_treelist.obj" \
 	"..\..\plugins\zlib\Debug\zlib.lib"
 
 "..\..\bin\debug\plugins\jabber.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -427,6 +433,7 @@ CLEAN :
 	-@erase "$(INTDIR)\jabber_std.obj"
 	-@erase "$(INTDIR)\jabber_svc.obj"
 	-@erase "$(INTDIR)\jabber_thread.obj"
+	-@erase "$(INTDIR)\jabber_treelist.obj"
 	-@erase "$(INTDIR)\jabber_userinfo.obj"
 	-@erase "$(INTDIR)\jabber_util.obj"
 	-@erase "$(INTDIR)\jabber_vcard.obj"
@@ -463,6 +470,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_byte.obj" \
 	"$(INTDIR)\jabber_caps.obj" \
 	"$(INTDIR)\jabber_chat.obj" \
+	"$(INTDIR)\jabber_disco.obj" \
 	"$(INTDIR)\jabber_file.obj" \
 	"$(INTDIR)\jabber_form.obj" \
 	"$(INTDIR)\jabber_ft.obj" \
@@ -495,7 +503,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_xstatus.obj" \
 	"$(INTDIR)\jabber_zstream.obj" \
 	"$(INTDIR)\msvc6.res" \
-	"$(INTDIR)\jabber_disco.obj" \
+	"$(INTDIR)\jabber_treelist.obj" \
 	"..\..\plugins\zlib\Release_Unicode\zlib.lib"
 
 "..\..\bin\Release Unicode\plugins\jabber.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -589,6 +597,8 @@ CLEAN :
 	-@erase "$(INTDIR)\jabber_svc.sbr"
 	-@erase "$(INTDIR)\jabber_thread.obj"
 	-@erase "$(INTDIR)\jabber_thread.sbr"
+	-@erase "$(INTDIR)\jabber_treelist.obj"
+	-@erase "$(INTDIR)\jabber_treelist.sbr"
 	-@erase "$(INTDIR)\jabber_userinfo.obj"
 	-@erase "$(INTDIR)\jabber_userinfo.sbr"
 	-@erase "$(INTDIR)\jabber_util.obj"
@@ -631,6 +641,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\jabber_byte.sbr" \
 	"$(INTDIR)\jabber_caps.sbr" \
 	"$(INTDIR)\jabber_chat.sbr" \
+	"$(INTDIR)\jabber_disco.sbr" \
 	"$(INTDIR)\jabber_file.sbr" \
 	"$(INTDIR)\jabber_form.sbr" \
 	"$(INTDIR)\jabber_ft.sbr" \
@@ -662,7 +673,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\jabber_xmlns.sbr" \
 	"$(INTDIR)\jabber_xstatus.sbr" \
 	"$(INTDIR)\jabber_zstream.sbr" \
-	"$(INTDIR)\jabber_disco.sbr"
+	"$(INTDIR)\jabber_treelist.sbr"
 
 "$(OUTDIR)\jabber.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -679,6 +690,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_byte.obj" \
 	"$(INTDIR)\jabber_caps.obj" \
 	"$(INTDIR)\jabber_chat.obj" \
+	"$(INTDIR)\jabber_disco.obj" \
 	"$(INTDIR)\jabber_file.obj" \
 	"$(INTDIR)\jabber_form.obj" \
 	"$(INTDIR)\jabber_ft.obj" \
@@ -711,7 +723,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_xstatus.obj" \
 	"$(INTDIR)\jabber_zstream.obj" \
 	"$(INTDIR)\msvc6.res" \
-	"$(INTDIR)\jabber_disco.obj" \
+	"$(INTDIR)\jabber_treelist.obj" \
 	"..\..\plugins\zlib\Debug_Unicode\zlib.lib"
 
 "..\..\bin\debug unicode\plugins\jabber.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -1930,6 +1942,34 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
+
+
+!ENDIF
+
+SOURCE=.\jabber_treelist.cpp
+
+!IF  "$(CFG)" == "jabberg - Win32 Release"
+
+
+"$(INTDIR)\jabber_treelist.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
+
+
+!ELSEIF  "$(CFG)" == "jabberg - Win32 Debug"
+
+
+"$(INTDIR)\jabber_treelist.obj"	"$(INTDIR)\jabber_treelist.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
+
+
+!ELSEIF  "$(CFG)" == "jabberg - Win32 Release Unicode"
+
+
+"$(INTDIR)\jabber_treelist.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
+
+
+!ELSEIF  "$(CFG)" == "jabberg - Win32 Debug Unicode"
+
+
+"$(INTDIR)\jabber_treelist.obj"	"$(INTDIR)\jabber_treelist.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
 
 
 !ENDIF

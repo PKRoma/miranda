@@ -29,8 +29,8 @@ Last change by : $Author: ghazan $
 
 */
 
-#include <CommCtrl.h>
 #include "jabber.h"
+#include <CommCtrl.h>
 #include "jabber_iq.h"
 #include "resource.h"
 #include "jabber_search.h"
@@ -699,6 +699,7 @@ static BOOL CALLBACK JabberSearchAdvancedDlgProc(HWND hwndDlg, UINT msg, WPARAM 
 
 	case WM_DESTROY:
 		JabberSearchFreeData(hwndDlg,dat);
+		JabberFormDestroyUI(GetDlgItem(hwndDlg, IDC_FRAME));
 		dat=NULL;
 		return TRUE;
 	}

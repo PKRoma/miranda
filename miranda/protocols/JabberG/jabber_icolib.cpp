@@ -102,6 +102,8 @@ static iconList[] =
 	{	"Bookmarks",             "bookmarks",    IDI_BOOKMARKS     }, 
 	{	"Privacy Lists",         "privacylists", IDI_PRIVACY_LISTS },
 	{	"Service Discovery",     "servicediscovery", IDI_SERVICE_DISCOVERY },
+	{	"Discovery succeeded",   "disco_ok",     IDI_DISCO_OK      },
+	{	"Discovery failed",      "disco_fail",   IDI_DISCO_FAIL    },
 	{	"AdHoc Command",         "adhoc",        IDI_COMMAND       }
 };
 

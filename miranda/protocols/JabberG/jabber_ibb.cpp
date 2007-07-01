@@ -43,7 +43,7 @@ void JabberIbbFreeJibb( JABBER_IBB_TRANSFER *jibb )
 		mir_free( jibb );
 }	}
 
-static void JabberIbbInitiateResult( XmlNode *iqNode, void *userdata, CJabberIqRequestInfo *pInfo )
+static void JabberIbbInitiateResult( XmlNode *iqNode, void *userdata, CJabberIqRequestInfo* pInfo )
 {
 	JABBER_IBB_TRANSFER *jibb = ( JABBER_IBB_TRANSFER * )pInfo->GetUserData();
 	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_RESULT )
@@ -52,7 +52,7 @@ static void JabberIbbInitiateResult( XmlNode *iqNode, void *userdata, CJabberIqR
 		SetEvent( jibb->hEvent );
 }
 
-static void JabberIbbCloseResult( XmlNode *iqNode, void *userdata, CJabberIqRequestInfo *pInfo )
+static void JabberIbbCloseResult( XmlNode *iqNode, void *userdata, CJabberIqRequestInfo* pInfo )
 {
 	JABBER_IBB_TRANSFER *jibb = ( JABBER_IBB_TRANSFER * )pInfo->GetUserData();
 	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_RESULT )

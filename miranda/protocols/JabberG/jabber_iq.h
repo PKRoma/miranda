@@ -95,23 +95,24 @@ void JabberIqResultSetPassword( XmlNode *iqNode, void *userdata );
 void JabberIqResultSetRegister( XmlNode *iqNode, void *userdata );
 void JabberIqResultSetSearch( XmlNode *iqNode, void *userdata );
 void JabberIqResultSetVcard( XmlNode *iqNode, void *userdata );
-void JabberIqResultEntityTime( XmlNode *iqNode, void *userdata, CJabberIqRequestInfo *pInfo );
-void JabberIqResultLastActivity( XmlNode *iqNode, void *userdata, CJabberIqRequestInfo *pInfo );
+void JabberIqResultEntityTime( XmlNode *iqNode, void *userdata, CJabberIqRequestInfo* pInfo );
+void JabberIqResultLastActivity( XmlNode *iqNode, void *userdata, CJabberIqRequestInfo* pInfo );
 
 void JabberSetBookmarkRequest (XmlNodeIq& iqId);
 
-
 unsigned int  __stdcall JabberSerialNext( void );
 HANDLE        __stdcall JabberHContactFromJID( const TCHAR* jid );
-void __stdcall replaceStr( WCHAR*& dest, const WCHAR* src );
 void          __stdcall JabberLog( const char* fmt, ... );
+
+void  __stdcall replaceStr( char*& dest, const char* src );
+void  __stdcall replaceStr( WCHAR*& dest, const WCHAR* src );
 
 // 2 minutes, milliseconds
 #define JABBER_DEFAULT_IQ_REQUEST_TIMEOUT		120000
 
 class CJabberIqRequestManager;
 
-typedef void ( *JABBER_IQ_HANDLER )( XmlNode *iqNode, void *usedata, CJabberIqRequestInfo *pInfo );
+typedef void ( *JABBER_IQ_HANDLER )( XmlNode *iqNode, void *usedata, CJabberIqRequestInfo* pInfo );
 
 #define JABBER_IQ_TYPE_FAIL						0
 #define JABBER_IQ_TYPE_RESULT					1
@@ -135,7 +136,7 @@ class CJabberIqRequestInfo
 protected:
 	friend class CJabberIqRequestManager;
 	JABBER_IQ_HANDLER m_pHandler;
-	CJabberIqRequestInfo *m_pNext;
+	CJabberIqRequestInfo* m_pNext;
 	
 	int m_nIqId;
 	DWORD m_dwParamsToParse;
@@ -213,7 +214,7 @@ class CJabberIqRequestManager
 protected:
 	CRITICAL_SECTION m_cs;
 	DWORD m_dwLastUsedHandle;
-	CJabberIqRequestInfo *m_pIqs;
+	CJabberIqRequestInfo* m_pIqs;
 	HANDLE m_hExpirerThread;
 	BOOL m_bExpirerThreadShutdownRequest;
 
@@ -222,7 +223,7 @@ protected:
 		if (!m_pIqs)
 			return NULL;
 
-		CJabberIqRequestInfo *pInfo = m_pIqs;
+		CJabberIqRequestInfo* pInfo = m_pIqs;
 		if (nIqId == -1 ? m_pIqs->m_dwGroupId == dwGroupId : m_pIqs->m_nIqId == nIqId)
 		{
 			m_pIqs = pInfo->m_pNext;
@@ -234,7 +235,7 @@ protected:
 		{
 			if (nIqId == -1 ? pInfo->m_pNext->m_dwGroupId == dwGroupId : pInfo->m_pNext->m_nIqId == nIqId)
 			{
-				CJabberIqRequestInfo *pRetVal = pInfo->m_pNext;
+				CJabberIqRequestInfo* pRetVal = pInfo->m_pNext;
 				pInfo->m_pNext = pInfo->m_pNext->m_pNext;
 				pRetVal->m_pNext = NULL;
 				return pRetVal;
@@ -248,7 +249,7 @@ protected:
 		if (!m_pIqs)
 			return NULL;
 
-		CJabberIqRequestInfo *pInfo = m_pIqs;
+		CJabberIqRequestInfo* pInfo = m_pIqs;
 		if (m_pIqs->m_pUserData == pUserData)
 		{
 			m_pIqs = pInfo->m_pNext;
@@ -260,7 +261,7 @@ protected:
 		{
 			if (pInfo->m_pNext->m_pUserData == pUserData)
 			{
-				CJabberIqRequestInfo *pRetVal = pInfo->m_pNext;
+				CJabberIqRequestInfo* pRetVal = pInfo->m_pNext;
 				pInfo->m_pNext = pInfo->m_pNext->m_pNext;
 				pRetVal->m_pNext = NULL;
 				return pRetVal;
@@ -276,7 +277,7 @@ protected:
 
 		DWORD dwCurrentTime = GetTickCount();
 
-		CJabberIqRequestInfo *pInfo = m_pIqs;
+		CJabberIqRequestInfo* pInfo = m_pIqs;
 		if (pInfo->m_dwRequestTime + pInfo->m_dwTimeout < dwCurrentTime)
 		{
 			m_pIqs = pInfo->m_pNext;
@@ -288,7 +289,7 @@ protected:
 		{
 			if (pInfo->m_pNext->m_dwRequestTime + pInfo->m_pNext->m_dwTimeout < dwCurrentTime)
 			{
-				CJabberIqRequestInfo *pRetVal = pInfo->m_pNext;
+				CJabberIqRequestInfo* pRetVal = pInfo->m_pNext;
 				pInfo->m_pNext = pInfo->m_pNext->m_pNext;
 				pRetVal->m_pNext = NULL;
 				return pRetVal;
@@ -312,7 +313,7 @@ protected:
 		while (!m_bExpirerThreadShutdownRequest)
 		{
 			Lock();
-			CJabberIqRequestInfo *pInfo = DetachExpired();
+			CJabberIqRequestInfo* pInfo = DetachExpired();
 			Unlock();
 			if (!pInfo)
 			{
@@ -324,7 +325,7 @@ protected:
 			delete pInfo;
 		}
 	}
-	void ExpireInfo( CJabberIqRequestInfo *pInfo, void *pUserData = NULL )
+	void ExpireInfo( CJabberIqRequestInfo* pInfo, void *pUserData = NULL )
 	{
 		if ( !pInfo )
 			return;
@@ -339,14 +340,14 @@ protected:
 		pInfo->m_nIqType = JABBER_IQ_TYPE_FAIL;
 		pInfo->m_pHandler( NULL, NULL, pInfo );
 	}
-	BOOL AppendIq(CJabberIqRequestInfo *pInfo)
+	BOOL AppendIq(CJabberIqRequestInfo* pInfo)
 	{
 		Lock();
 		if (!m_pIqs)
 			m_pIqs = pInfo;
 		else
 		{
-			CJabberIqRequestInfo *pTmp = m_pIqs;
+			CJabberIqRequestInfo* pTmp = m_pIqs;
 			while (pTmp->m_pNext)
 				pTmp = pTmp->m_pNext;
 			pTmp->m_pNext = pInfo;
@@ -411,7 +412,7 @@ public:
 	{
 		Lock();
 		DWORD dwCount = 0;
-		CJabberIqRequestInfo *pInfo = m_pIqs;
+		CJabberIqRequestInfo* pInfo = m_pIqs;
 		while (pInfo)
 		{
 			if (pInfo->m_dwGroupId == dwGroup)
@@ -424,7 +425,7 @@ public:
 	// fucking params, maybe just return CJabberIqRequestInfo pointer ?
 	CJabberIqRequestInfo* AddHandler(JABBER_IQ_HANDLER pHandler, int nIqType = JABBER_IQ_TYPE_GET, TCHAR *szReceiver = NULL, DWORD dwParamsToParse = 0, int nIqId = -1, void *pUserData = NULL, DWORD dwGroupId = 0, DWORD dwTimeout = JABBER_DEFAULT_IQ_REQUEST_TIMEOUT)
 	{
-		CJabberIqRequestInfo *pInfo = new CJabberIqRequestInfo();
+		CJabberIqRequestInfo* pInfo = new CJabberIqRequestInfo();
 		if (!pInfo)
 			return NULL;
 
@@ -450,7 +451,7 @@ public:
 			return FALSE;
 
 		Lock();
-		CJabberIqRequestInfo *pInfo = DetachInfo(nIqId, 0);
+		CJabberIqRequestInfo* pInfo = DetachInfo(nIqId, 0);
 		Unlock();
 		if (pInfo)
 		{
@@ -495,7 +496,7 @@ public:
 	BOOL ExpireIq(int nIqId, void *pUserData = NULL)
 	{
 		Lock();
-		CJabberIqRequestInfo *pInfo = DetachInfo(nIqId, 0);
+		CJabberIqRequestInfo* pInfo = DetachInfo(nIqId, 0);
 		Unlock();
 		if (pInfo)
 		{
@@ -511,7 +512,7 @@ public:
 		while (1)
 		{
 			Lock();
-			CJabberIqRequestInfo *pInfo = DetachInfo(-1, dwGroupId);
+			CJabberIqRequestInfo* pInfo = DetachInfo(-1, dwGroupId);
 			Unlock();
 			if (!pInfo)
 				break;
@@ -527,7 +528,7 @@ public:
 		while (1)
 		{
 			Lock();
-			CJabberIqRequestInfo *pInfo = DetachInfo(pUserData);
+			CJabberIqRequestInfo* pInfo = DetachInfo(pUserData);
 			Unlock();
 			if (!pInfo)
 				break;
@@ -542,7 +543,7 @@ public:
 		while (1)
 		{
 			Lock();
-			CJabberIqRequestInfo *pInfo = m_pIqs;
+			CJabberIqRequestInfo* pInfo = m_pIqs;
 			if (pInfo)
 				m_pIqs = m_pIqs->m_pNext;
 			Unlock();

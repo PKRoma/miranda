@@ -35,7 +35,7 @@ Last change by : $Author$
 
 ///////////////// Bytestream sending /////////////////////////
 
-static void JabberByteInitiateResult( XmlNode *iqNode, void *userdata, CJabberIqRequestInfo *pInfo );
+static void JabberByteInitiateResult( XmlNode *iqNode, void *userdata, CJabberIqRequestInfo* pInfo );
 static void JabberByteSendConnection( HANDLE hNewConnection, DWORD dwRemoteIP );
 static int JabberByteSendParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char* buffer, int datalen );
 static int JabberByteSendProxyParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char* buffer, int datalen );
@@ -72,7 +72,7 @@ void JabberByteFreeJbt( JABBER_BYTE_TRANSFER *jbt )
 		mir_free( jbt );
 }	}
 
-static void JabberIqResultProxyDiscovery( XmlNode* iqNode, void* userdata, CJabberIqRequestInfo *pInfo )
+static void JabberIqResultProxyDiscovery( XmlNode* iqNode, void* userdata, CJabberIqRequestInfo* pInfo )
 {
 	JABBER_BYTE_TRANSFER *jbt = ( JABBER_BYTE_TRANSFER * )pInfo->GetUserData();
 
@@ -107,7 +107,7 @@ void __cdecl JabberByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 	TCHAR szPort[8];
 	HANDLE hEvent;
 	TCHAR* proxyJid;
-	CJabberIqRequestInfo *pInfo = NULL;
+	CJabberIqRequestInfo* pInfo = NULL;
 	int nIqId = 0;
 
 	JabberLog( "Thread started: type=bytestream_send" );
@@ -244,7 +244,7 @@ void __cdecl JabberByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 	JabberLog( "Thread ended: type=bytestream_send" );
 }
 
-static void JabberByteInitiateResult( XmlNode *iqNode, void *userdata, CJabberIqRequestInfo *pInfo )
+static void JabberByteInitiateResult( XmlNode *iqNode, void *userdata, CJabberIqRequestInfo* pInfo )
 {
 	JABBER_BYTE_TRANSFER *jbt = ( JABBER_BYTE_TRANSFER * )pInfo->GetUserData();
 

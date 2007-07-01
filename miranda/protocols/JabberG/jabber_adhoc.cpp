@@ -30,8 +30,8 @@ Last change by : $Author$
 
 */
 
-#include <CommCtrl.h>
 #include "jabber.h"
+#include <CommCtrl.h>
 #include "jabber_iq.h"
 #include "resource.h"
 #include "m_clui.h"
@@ -70,7 +70,7 @@ static int	JabberAdHoc_RequestListOfCommands( TCHAR * szResponder, HWND hwndDlg 
 static int	JabberAdHoc_ExecuteCommand( HWND hwndDlg, TCHAR * jid, JabberAdHocData* dat );
 static int	JabberAdHoc_SubmitCommandForm( HWND hwndDlg, JabberAdHocData * dat, char * action );
 static int	JabberAdHoc_OnJAHMCommandListResult( HWND hwndDlg, XmlNode * iqNode, JabberAdHocData* dat );
-static int	JabberAdHoc_OnJAHMProcessResilt( HWND hwndDlg, XmlNode *workNode, JabberAdHocData* dat );
+static int	JabberAdHoc_OnJAHMProcessResult( HWND hwndDlg, XmlNode *workNode, JabberAdHocData* dat );
 static int	JabberAdHoc_AddCommandRadio( HWND hFrame, TCHAR * labelStr, int id, int ypos, int value );
 static void JabberAdHoc_RefreshFrameScroll( HWND hwndDlg, JabberAdHocData * dat );
 static BOOL CALLBACK JabberAdHoc_CommandDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
@@ -177,7 +177,7 @@ static int JabberAdHoc_OnJAHMCommandListResult( HWND hwndDlg, XmlNode * iqNode, 
 			description = errorNode->text;
 		}
 		_sntprintf( buff, SIZEOF(buff), TranslateT( "Error %s %s" ), (code) ? code : _T(""), (description) ? description : _T("") );	
-		SetDlgItemText( hwndDlg, IDC_INSTRUCTION, buff );
+		JabberFormSetInstruction( hwndDlg, buff );
 	} 
 	else if ( !_tcscmp( type, _T("result") ) ) {	
 		BOOL validResponse = FALSE;
@@ -213,19 +213,19 @@ static int JabberAdHoc_OnJAHMCommandListResult( HWND hwndDlg, XmlNode * iqNode, 
 		}	}
 
 		if (nodeIdx>1) {
-			SetDlgItemText( hwndDlg, IDC_INSTRUCTION, TranslateT("Select Command") );				
+			JabberFormSetInstruction( hwndDlg, TranslateT("Select Command") );				
 			ShowDlgItem( hwndDlg, IDC_FRAME, SW_SHOW);
 			ShowDlgItem( hwndDlg, IDC_VSCROLL, SW_SHOW);
 			EnableDlgItem( hwndDlg, IDC_SUBMIT, TRUE);
 		} else {
-			SetDlgItemText(hwndDlg, IDC_INSTRUCTION, TranslateT("Not supported") );
+			JabberFormSetInstruction(hwndDlg, TranslateT("Not supported") );
 	}	}
 
 	JabberAdHoc_RefreshFrameScroll( hwndDlg, dat );
 	return (TRUE);
 }
 
-static int JabberAdHoc_OnJAHMProcessResilt(HWND hwndDlg, XmlNode *workNode, JabberAdHocData* dat)
+static int JabberAdHoc_OnJAHMProcessResult(HWND hwndDlg, XmlNode *workNode, JabberAdHocData* dat)
 {
 	EnumChildWindows( GetDlgItem( hwndDlg, IDC_FRAME ), sttDeleteChildWindowsProc, 0 );
 	dat->CurrentHeight = 0;
@@ -254,9 +254,9 @@ static int JabberAdHoc_OnJAHMProcessResilt(HWND hwndDlg, XmlNode *workNode, Jabb
 			HFONT hFont = ( HFONT ) SendMessage( hFrame, WM_GETFONT, 0, 0 );
 			ShowWindow( GetDlgItem( hwndDlg, IDC_FRAME_TEXT ), SW_HIDE );
 			if (( n=JabberXmlGetChild( xNode, "instructions" ))!=NULL && n->text!=NULL )
-				SetDlgItemText( hwndDlg, IDC_INSTRUCTION, n->text );
+				JabberFormSetInstruction( hwndDlg, n->text );
 			else
-				SetDlgItemText( hwndDlg, IDC_INSTRUCTION, NULL );
+				JabberFormSetInstruction( hwndDlg, NULL );
 			JabberFormCreateUI( hFrame, xNode, &dat->CurrentHeight );
 			ShowDlgItem(  hwndDlg, IDC_FRAME , SW_SHOW);
 		} 
@@ -270,7 +270,7 @@ static int JabberAdHoc_OnJAHMProcessResilt(HWND hwndDlg, XmlNode *workNode, Jabb
 			TCHAR * noteText=NULL;
 			XmlNode * noteNode=JabberXmlGetChild(commandNode, "note");
 			if (noteNode) noteText=noteNode->text;
-			SetDlgItemText(hwndDlg, IDC_INSTRUCTION, noteText?noteText:_T(""));
+			JabberFormSetInstruction(hwndDlg, noteText?noteText:_T(""));
 
 		}
 		//check actions
@@ -313,7 +313,7 @@ static int JabberAdHoc_OnJAHMProcessResilt(HWND hwndDlg, XmlNode *workNode, Jabb
 			description=errorNode->text;
 		}
 		_sntprintf(buff,SIZEOF(buff),TranslateT("Error %s %s"),code ? code : _T(""),description?description:_T(""));	
-		SetDlgItemText(hwndDlg,IDC_INSTRUCTION,buff);
+		JabberFormSetInstruction(hwndDlg,buff);
 	}
 	JabberAdHoc_RefreshFrameScroll( hwndDlg, dat );
 	return TRUE;
@@ -345,7 +345,7 @@ static int JabberAdHoc_SubmitCommandForm(HWND hwndDlg, JabberAdHocData * dat, ch
 	JabberIqAdd( iqId, IQ_PROC_EXECCOMMANDS, JabberIqResult_CommandExecution );
 	jabberThreadInfo->send( iq );
 	
-	SetWindowText( GetDlgItem(hwndDlg,IDC_INSTRUCTION),TranslateT("In progress. Please Wait..."));
+	JabberFormSetInstruction(hwndDlg,TranslateT("In progress. Please Wait..."));
 	
 	int toDisable[]={IDC_SUBMIT, IDC_PREV, IDC_NEXT, IDC_COMPLETE, 0};
 	sttEnableControls( hwndDlg, FALSE, toDisable);
@@ -434,7 +434,7 @@ static BOOL CALLBACK JabberAdHoc_CommandDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 			SetWindowPos(GetDlgItem(hwndDlg,IDC_VSCROLL),HWND_BOTTOM,0,0,0,0,SWP_NOSIZE|SWP_NOMOVE);
 
 			SetDlgItemText(hwndDlg,IDC_SUBMIT, TranslateT("Execute"));
-			SetDlgItemText(hwndDlg,IDC_INSTRUCTION, TranslateT("Requesting command list. Please wait..."));
+			JabberFormSetInstruction(hwndDlg,TranslateT("Requesting command list. Please wait..."));
 
 			TCHAR *jid=(TCHAR *)lParam;
 			JabberAdHoc_RequestListOfCommands(jid, hwndDlg);
@@ -446,6 +446,17 @@ static BOOL CALLBACK JabberAdHoc_CommandDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 			SetWindowText(hwndDlg, Caption);
 
 			return TRUE;
+		}
+	case WM_CTLCOLORSTATIC:
+		if ((GetWindowLong((HWND)lParam, GWL_ID) == IDC_WHITERECT) ||
+			(GetWindowLong((HWND)lParam, GWL_ID) == IDC_INSTRUCTION) ||
+			(GetWindowLong((HWND)lParam, GWL_ID) == IDC_TITLE))
+		{
+			MessageBeep(MB_ICONSTOP);
+			return (BOOL)GetStockObject(WHITE_BRUSH);
+		} else
+		{
+			return NULL;
 		}
 	case WM_COMMAND:
 		{	
@@ -476,7 +487,7 @@ static BOOL CALLBACK JabberAdHoc_CommandDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 	case JAHM_COMMANDLISTRESULT:
 		return (JabberAdHoc_OnJAHMCommandListResult(hwndDlg,(XmlNode *)lParam,dat));	
 	case JAHM_PROCESSRESULT:
-		return JabberAdHoc_OnJAHMProcessResilt(hwndDlg,(XmlNode *) wParam,dat);
+		return JabberAdHoc_OnJAHMProcessResult(hwndDlg,(XmlNode *) wParam,dat);
 
 	case WM_MOUSEWHEEL:
 		{
@@ -530,6 +541,8 @@ static BOOL CALLBACK JabberAdHoc_CommandDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 				}	}	}
 	case WM_DESTROY:
 		{
+			JabberFormDestroyUI(GetDlgItem(hwndDlg, IDC_FRAME));
+
 			hwndCommandWindow = NULL;
 			if (dat->AdHocNode) delete dat->AdHocNode;
 			dat->AdHocNode=NULL;

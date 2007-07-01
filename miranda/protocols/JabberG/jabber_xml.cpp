@@ -575,7 +575,7 @@ XmlNodeIq::XmlNodeIq( const char* type, int id, const char* to ) :
 }
 #endif
 
-XmlNodeIq::XmlNodeIq( CJabberIqRequestInfo *pInfo ) :
+XmlNodeIq::XmlNodeIq( CJabberIqRequestInfo* pInfo ) :
 	XmlNode( "iq" )
 {
 	if ( pInfo ) {
@@ -724,8 +724,10 @@ static char* sttCopyNode( const XmlNode* n, char* dest )
 		lstrcpyA( dest, n->props ); dest += lstrlenA( n->props );
 	}
 
-	*dest++ = '<';
-	lstrcpyA( dest, n->name ); dest += lstrlenA( n->name );
+	if ( n->name != NULL ) {
+		*dest++ = '<';
+		lstrcpyA( dest, n->name ); dest += lstrlenA( n->name );
+	}
 
 	for ( int i=0; i < n->numAttr; i++ ) {
 		*dest++ = ' ';
@@ -747,14 +749,15 @@ static char* sttCopyNode( const XmlNode* n, char* dest )
 		for ( int i=0; i < n->numChild; i++ )
 			dest = sttCopyNode( n->child[i], dest );
 
-	if ( n->numChild != 0 || n->sendText != NULL ) {
-		*dest++ = '<';
-		*dest++ = '/';
-		lstrcpyA( dest, n->name ); dest += lstrlenA( n->name );
+	if ( n->name != NULL ) {
+		if ( n->numChild != 0 || n->sendText != NULL ) {
+			*dest++ = '<';
+			*dest++ = '/';
+			lstrcpyA( dest, n->name ); dest += lstrlenA( n->name );
+		}
+		else if ( !n->dirtyHack ) *dest++ = '/';
+		*dest++ = '>';
 	}
-	else if ( !n->dirtyHack ) *dest++ = '/';
-
-	*dest++ = '>';
 	*dest = 0;
 	return dest;
 }

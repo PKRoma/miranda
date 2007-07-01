@@ -51,6 +51,9 @@
 #define IDI_LOGIN                       186
 #define IDI_AUTHREVOKE                  187
 #define IDI_COMMAND                     188
+#define IDI_DISCO_OK                    190
+#define IDI_ICON2                       191
+#define IDI_DISCO_FAIL                  191
 #define IDC_EDIT_USERNAME               1000
 #define IDC_SAVE                        1000
 #define IDC_EDIT_PASSWORD               1001
@@ -240,6 +243,8 @@
 #define IDC_EDIT_NAME                   1238
 #define IDC_STATIC_LISTS_LABEL          1239
 #define IDC_TREE_DISCO                  1240
+#define IDC_FRAME1                      1241
+#define IDC_FRAME2                      1242
 #define IDC_COMBO_JID                   1243
 #define IDC_COMBO_NODE                  1244
 #define IDC_BUTTON1                     1245
@@ -299,7 +304,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        190
+#define _APS_NEXT_RESOURCE_VALUE        192
 #define _APS_NEXT_COMMAND_VALUE         40017
 #define _APS_NEXT_CONTROL_VALUE         1246
 #define _APS_NEXT_SYMED_VALUE           101

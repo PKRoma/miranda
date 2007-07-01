@@ -446,9 +446,42 @@ void JabberGcQuit( JABBER_LIST_ITEM* jid, int code, XmlNode* reason );
 void __cdecl JabberFileReceiveThread( filetransfer* ft );
 void __cdecl JabberFileServerThread( filetransfer* ft );
 
+//---- jabber_treelist.c ------------------------------------------------
+
+typedef struct TTreeList_ItemInfo *HTREELISTITEM;
+
+void TreeList_Create(HWND hwnd);
+void TreeList_Destroy(HWND hwnd);
+HTREELISTITEM TreeList_AddItem(HWND hwnd, HTREELISTITEM hParent, TCHAR *text, LPARAM data);
+void TreeList_AppendColumn(HTREELISTITEM hItem, TCHAR *text);
+int TreeList_AddIcon(HWND hwnd, HICON hIcon, int iOverlay);
+void TreeList_SetIcon(HTREELISTITEM hItem, int iIcon, int iOverlay);
+LPARAM TreeList_GetData(HTREELISTITEM hItem);
+int TreeList_GetChildrenCount(HTREELISTITEM hItem);
+HTREELISTITEM TreeList_GetChild(HTREELISTITEM hItem, int i);
+void TreeList_Update(HWND hwnd);
+BOOL TreeList_ProcessMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam, UINT idc, BOOL *result);
+
 //---- jabber_form.c ------------------------------------------------
 
+enum TJabberFormControlType
+{
+	JFORM_CTYPE_NONE, JFORM_CTYPE_TEXT_PRIVATE, JFORM_CTYPE_TEXT_MULTI,
+	JFORM_CTYPE_BOOLEAN, JFORM_CTYPE_LIST_SINGLE, JFORM_CTYPE_LIST_MULTI,
+	JFORM_CTYPE_FIXED, JFORM_CTYPE_HIDDEN, JFORM_CTYPE_TEXT_SINGLE
+};
+
+typedef struct TJabberFormControlInfo *HJFORMCTRL;
+typedef struct TJabberFormLayoutInfo *HJFORMLAYOUT;
+
 void JabberFormCreateUI( HWND hwndStatic, XmlNode *xNode, int *formHeight, BOOL bCompact = FALSE );
+void JabberFormDestroyUI(HWND hwndStatic);
+void JabberFormSetInstruction( HWND hwndForm, TCHAR *text );
+HJFORMLAYOUT JabberFormCreateLayout(HWND hwndStatic); // use mir_free to destroy
+HJFORMCTRL JabberFormAppendControl(HWND hwndStatic, HJFORMLAYOUT layout_info, TJabberFormControlType type, TCHAR *labelStr, TCHAR *valueStr);
+void JabberFormAddListItem(HJFORMCTRL item, TCHAR *text, bool selected);
+void JabberFormLayoutControls(HWND hwndStatic, HJFORMLAYOUT layout_info);
+
 void JabberFormCreateDialog( XmlNode *xNode, TCHAR* defTitle, JABBER_FORM_SUBMIT_FUNC pfnSubmit, void *userdata );
 
 XmlNode* JabberFormGetData( HWND hwndStatic, XmlNode *xNode );

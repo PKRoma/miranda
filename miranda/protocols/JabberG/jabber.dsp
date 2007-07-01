@@ -299,6 +299,10 @@ SOURCE=.\jabber_thread.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\jabber_treelist.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\jabber_userinfo.cpp
 # ADD CPP /Yu
 # End Source File

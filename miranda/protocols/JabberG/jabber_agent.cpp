@@ -404,8 +404,20 @@ static BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 		LONG frameExStyle = GetWindowLong( GetDlgItem( hwndDlg, IDC_FRAME ), GWL_EXSTYLE );
 		frameExStyle |= WS_EX_CONTROLPARENT;
 		SetWindowLong( GetDlgItem( hwndDlg, IDC_FRAME ), GWL_EXSTYLE, frameExStyle );
+
 		return TRUE;
 	}
+	case WM_CTLCOLORSTATIC:
+		if ((GetWindowLong((HWND)lParam, GWL_ID) == IDC_WHITERECT) ||
+			(GetWindowLong((HWND)lParam, GWL_ID) == IDC_INSTRUCTION) ||
+			(GetWindowLong((HWND)lParam, GWL_ID) == IDC_TITLE))
+		{
+			MessageBeep(MB_ICONSTOP);
+			return (BOOL)GetStockObject(WHITE_BRUSH);
+		} else
+		{
+			return NULL;
+		}
 	case WM_COMMAND:
 		switch ( LOWORD( wParam )) {
 		case IDC_SUBMIT:
@@ -478,37 +490,35 @@ static BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 			if (( xNode=JabberXmlGetChild( queryNode, "x" )) != NULL ) {
 				// use new jabber:x:data form
 				if (( n=JabberXmlGetChild( xNode, "instructions" ))!=NULL && n->text!=NULL )
-					SetDlgItemText( hwndDlg, IDC_INSTRUCTION, n->text );
+					JabberFormSetInstruction( hwndDlg, n->text );
 
 				JabberFormCreateUI( hFrame, xNode, &i /*dummy*/ );
 			}
 			else {
 				// use old registration information form
+				HJFORMLAYOUT layout_info = JabberFormCreateLayout(hFrame);
 				for ( i=0; i<queryNode->numChild; i++ ) {
 					n = queryNode->child[i];
 					if ( n->name ) {
 						if ( !strcmp( n->name, "instructions" )) {
-							SetDlgItemText( hwndDlg, IDC_INSTRUCTION, n->text );
+							JabberFormSetInstruction( hwndDlg, n->text );
 						}
 						else if ( !strcmp( n->name, "key" ) || !strcmp( n->name, "registered" )) {
 							// do nothing
 						}
 						else if ( !strcmp( n->name, "password" )) {
-							HWND hCtrl = CreateWindowA( "static", n->name, WS_CHILD|WS_VISIBLE|SS_RIGHT, 10, ypos+4, 100, 18, hFrame, ( HMENU ) IDC_STATIC, hInst, NULL );
-							SendMessage( hCtrl, WM_SETFONT, ( WPARAM ) hFont, 0 );
-							hCtrl = CreateWindowEx( WS_EX_CLIENTEDGE, _T("edit"), n->text, WS_CHILD|WS_VISIBLE|WS_BORDER|WS_TABSTOP|ES_LEFT|ES_AUTOHSCROLL|ES_PASSWORD, 120, ypos, 128, 24, hFrame, ( HMENU ) id, hInst, NULL );
-							SendMessage( hCtrl, WM_SETFONT, ( WPARAM ) hFont, 0 );
-							id++;
-							ypos += 24;
+							TCHAR *name = a2t(n->name);
+							JabberFormAppendControl(hFrame, layout_info, JFORM_CTYPE_TEXT_PRIVATE, name, n->text);
+							mir_free(name);
 						}
 						else {	// everything else is a normal text field
-							HWND hCtrl = CreateWindowA( "static", n->name, WS_CHILD|WS_VISIBLE|SS_RIGHT, 10, ypos+4, 100, 18, hFrame, ( HMENU ) IDC_STATIC, hInst, NULL );
-							SendMessage( hCtrl, WM_SETFONT, ( WPARAM ) hFont, 0 );
-							hCtrl = CreateWindowEx( WS_EX_CLIENTEDGE, _T("edit"), n->text, WS_CHILD|WS_VISIBLE|WS_BORDER|WS_TABSTOP|ES_LEFT|ES_AUTOHSCROLL, 120, ypos, 128, 24, hFrame, ( HMENU ) id, hInst, NULL );
-							SendMessage( hCtrl, WM_SETFONT, ( WPARAM ) hFont, 0 );
-							id++;
-							ypos += 24;
-			}	}	}	}
+							TCHAR *name = a2t(n->name);
+							JabberFormAppendControl(hFrame, layout_info, JFORM_CTYPE_TEXT_PRIVATE, name, n->text);
+							mir_free(name);
+				}	}	}
+				JabberFormLayoutControls(hFrame, layout_info);
+				mir_free(layout_info);
+			}
 
 			EnableWindow( GetDlgItem( hwndDlg, IDC_SUBMIT ), TRUE );
 		}
@@ -518,6 +528,7 @@ static BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 		}
 		return TRUE;
 	case WM_DESTROY:
+		JabberFormDestroyUI(GetDlgItem(hwndDlg, IDC_FRAME));
 		hwndAgentRegInput = NULL;
 		EnableWindow( GetParent( hwndDlg ), TRUE );
 		SetActiveWindow( GetParent( hwndDlg ));

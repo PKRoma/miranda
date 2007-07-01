@@ -1276,6 +1276,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\jabber_treelist.cpp"
+				>
+			</File>
+			<File
 				RelativePath="jabber_userinfo.cpp"
 				>
 				<FileConfiguration

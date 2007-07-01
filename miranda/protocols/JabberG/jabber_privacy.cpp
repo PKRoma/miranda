@@ -49,7 +49,7 @@ void JabberProcessIqPrivacyLists( XmlNode* node )
 		jabberThreadInfo->send( iq );
 }	}
 
-void JabberIqResultPrivacyListModify( XmlNode* iqNode, void* userdata, CJabberIqRequestInfo *pInfo )
+void JabberIqResultPrivacyListModify( XmlNode* iqNode, void* userdata, CJabberIqRequestInfo* pInfo )
 {
 	if ( !pInfo->m_pUserData )
 		return;
@@ -255,7 +255,7 @@ void JabberIqResultPrivacyListDefault( XmlNode* iqNode, void* userdata )
 	g_PrivacyListManager.Unlock();
 }
 
-void JabberIqResultPrivacyLists( XmlNode* iqNode, void* userdata, CJabberIqRequestInfo *pInfo )
+void JabberIqResultPrivacyLists( XmlNode* iqNode, void* userdata, CJabberIqRequestInfo* pInfo )
 {
 	if ( pInfo->m_nIqType != JABBER_IQ_TYPE_RESULT )
 		return;

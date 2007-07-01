@@ -106,7 +106,7 @@ struct XmlNodeIq : public XmlNode
 	#if defined( _UNICODE )
 		XmlNodeIq( const char* type, int id, const char* to );
 	#endif
-	XmlNodeIq( CJabberIqRequestInfo *pInfo );
+	XmlNodeIq( CJabberIqRequestInfo* pInfo );
 };
 
 typedef void ( *JABBER_XML_CALLBACK )( XmlNode*, void* );

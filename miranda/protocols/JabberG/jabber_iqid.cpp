@@ -1725,7 +1725,7 @@ void JabberIqResultSetBookmarks( XmlNode *iqNode, void *userdata )
 }	}
 
 // last activity (XEP-0012) support
-void JabberIqResultLastActivity( XmlNode *iqNode, void *userdata, CJabberIqRequestInfo *pInfo )
+void JabberIqResultLastActivity( XmlNode *iqNode, void *userdata, CJabberIqRequestInfo* pInfo )
 {
 	JABBER_RESOURCE_STATUS *r = JabberResourceInfoFromJID( pInfo->m_szFrom );
 	if ( !r )
@@ -1749,7 +1749,7 @@ void JabberIqResultLastActivity( XmlNode *iqNode, void *userdata, CJabberIqReque
 }
 
 // entity time (XEP-0202) support
-void JabberIqResultEntityTime( XmlNode* pIqNode, void* pUserdata, CJabberIqRequestInfo *pInfo )
+void JabberIqResultEntityTime( XmlNode* pIqNode, void* pUserdata, CJabberIqRequestInfo* pInfo )
 {
 	if ( !pInfo->m_hContact )
 		return;

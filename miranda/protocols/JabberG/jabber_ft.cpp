@@ -82,7 +82,7 @@ void JabberFtCancel( filetransfer* ft )
 
 ///////////////// File sending using stream initiation /////////////////////////
 
-static void JabberFtSiResult( XmlNode *iqNode, void *userdata, CJabberIqRequestInfo *pInfo );
+static void JabberFtSiResult( XmlNode *iqNode, void *userdata, CJabberIqRequestInfo* pInfo );
 static BOOL JabberFtSend( HANDLE hConn, void *userdata );
 static BOOL JabberFtIbbSend( int blocksize, void *userdata );
 static void JabberFtSendFinal( BOOL success, void *userdata );
@@ -135,7 +135,7 @@ void JabberFtInitiate( TCHAR* jid, filetransfer* ft )
 	jabberThreadInfo->send( iq );
 }
 
-static void JabberFtSiResult( XmlNode *iqNode, void *userdata, CJabberIqRequestInfo *pInfo )
+static void JabberFtSiResult( XmlNode *iqNode, void *userdata, CJabberIqRequestInfo* pInfo )
 {
 	XmlNode *siNode, *featureNode, *xNode, *fieldNode, *valueNode;
 	filetransfer *ft = (filetransfer *)pInfo->GetUserData();

@@ -134,7 +134,7 @@ protected:
 	DWORD m_dwItemsRequestTime;
 	int m_nInfoRequestId;
 	int m_nItemsRequestId;
-	HTREEITEM m_hTreeItem;
+	HTREELISTITEM m_hTreeItem;
 public:
 	CJabberSDNode(TCHAR *szJid = NULL, TCHAR *szNode = NULL, TCHAR *szName = NULL)
 	{
@@ -179,12 +179,12 @@ public:
 		m_hTreeItem = NULL;
 		return TRUE;
 	}
-	BOOL SetTreeItemHandle(HTREEITEM hItem)
+	BOOL SetTreeItemHandle(HTREELISTITEM hItem)
 	{
 		m_hTreeItem = hItem;
 		return TRUE;
 	}
-	HTREEITEM GetTreeItemHandle()
+	HTREELISTITEM GetTreeItemHandle()
 	{
 		return m_hTreeItem;
 	}
@@ -192,6 +192,8 @@ public:
 	{
 		m_nInfoRequestId = nId;
 		m_dwInfoRequestTime = GetTickCount();
+		if (m_hTreeItem)
+			TreeList_SetIcon(m_hTreeItem, -1, (nId < 0) ? -nId : 0);
 		return TRUE;
 	}
 	int GetInfoRequestId()
@@ -395,12 +397,12 @@ public:
 	}
 	BOOL Lock()
 	{
-		EnterCriticalSection(&m_cs);
+//		EnterCriticalSection(&m_cs);
 		return TRUE;
 	}
 	BOOL Unlock()
 	{
-		LeaveCriticalSection(&m_cs);
+//		LeaveCriticalSection(&m_cs);
 		return TRUE;
 	}
 	CJabberSDNode* GetPrimaryNode()
