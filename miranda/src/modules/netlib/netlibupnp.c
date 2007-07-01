@@ -37,8 +37,8 @@ static const char search_request_msg[] =
 
 static const char xml_get_hdr[] =
 	"GET %s HTTP/1.1\r\n"
-	"Connection: close\r\n"
-	"Host: %s:%u\r\n\r\n";
+	"HOST: %s:%u\r\n"
+	"ACCEPT-LANGUAGE: *\r\n\r\n";
 
 static const char soap_post_hdr[] =
 	"POST %s HTTP/1.1\r\n"
@@ -61,6 +61,7 @@ static const char search_device[] =
 	"<serviceType>%s</serviceType>";
 
 static const char soap_action[] =
+	"<?xml version=\"1.0\"?>\r\n"
 	"<s:Envelope\r\n"
 	"    xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\"\r\n"
 	"    s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">\r\n"
