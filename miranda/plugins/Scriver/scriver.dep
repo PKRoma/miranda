@@ -150,6 +150,7 @@
 	".\msgwindow.h"\
 	".\resource.h"\
 	".\utils.h"\
+	{$(INCLUDE)}"tom.h"\
 	
 
 .\msgoptions.c : \
@@ -305,6 +306,7 @@
 	".\m_smileyadd.h"\
 	".\msgs.h"\
 	".\msgwindow.h"\
+	".\multimon.h"\
 	".\resource.h"\
 	".\statusicon.h"\
 	".\utils.h"\
@@ -427,57 +429,53 @@
 
 .\resource.rc : \
 	".\chat\chat.rc"\
-	".\chat\Icons\1.ico"\
-	".\chat\Icons\2.ico"\
-	".\chat\Icons\3.ico"\
-	".\chat\Icons\4.ico"\
-	".\chat\Icons\5.ico"\
-	".\chat\Icons\6.ico"\
-	".\chat\Icons\action.ico"\
-	".\chat\Icons\addmode.ico"\
-	".\chat\Icons\bkgcolor.ico"\
-	".\chat\Icons\bold.ico"\
-	".\chat\Icons\color.ico"\
-	".\chat\Icons\filter.ico"\
-	".\chat\Icons\filter2.ico"\
-	".\chat\Icons\highlight.ico"\
-	".\chat\Icons\history.ico"\
-	".\chat\Icons\info.ico"\
-	".\chat\Icons\italics.ico"\
-	".\chat\Icons\join.ico"\
-	".\chat\Icons\kick.ico"\
-	".\chat\Icons\message.ico"\
-	".\chat\Icons\messageout.ico"\
-	".\chat\Icons\nick.ico"\
-	".\chat\Icons\nicklist.ico"\
-	".\chat\Icons\nicklist2.ico"\
-	".\chat\Icons\notice.ico"\
-	".\chat\Icons\overlay.ico"\
-	".\chat\Icons\part.ico"\
-	".\chat\Icons\quit.ico"\
-	".\chat\Icons\removestatus.ico"\
-	".\chat\Icons\smiley.ico"\
-	".\chat\Icons\topic.ico"\
-	".\chat\Icons\topicbut.ico"\
-	".\chat\Icons\underline.ico"\
-	".\chat\Icons\window.ico"\
 	".\res\addcontact.ico"\
+	".\res\ansi.ico"\
+	".\res\chat\1.ico"\
+	".\res\chat\2.ico"\
+	".\res\chat\3.ico"\
+	".\res\chat\4.ico"\
+	".\res\chat\5.ico"\
+	".\res\chat\6.ico"\
+	".\res\chat\action.ico"\
+	".\res\chat\addmode.ico"\
+	".\res\chat\bkgcolor.ico"\
+	".\res\chat\bold.ico"\
+	".\res\chat\color.ico"\
+	".\res\chat\filter.ico"\
+	".\res\chat\filter2.ico"\
+	".\res\chat\history.ico"\
+	".\res\chat\info.ico"\
+	".\res\chat\italics.ico"\
+	".\res\chat\join.ico"\
+	".\res\chat\kick.ico"\
+	".\res\chat\nick.ico"\
+	".\res\chat\nicklist.ico"\
+	".\res\chat\nicklist2.ico"\
+	".\res\chat\notice.ico"\
+	".\res\chat\overlay.ico"\
+	".\res\chat\part.ico"\
+	".\res\chat\quit.ico"\
+	".\res\chat\removestatus.ico"\
+	".\res\chat\topic.ico"\
+	".\res\chat\topicbut.ico"\
+	".\res\chat\underline.ico"\
+	".\res\chat\window.ico"\
 	".\res\clock.ico"\
 	".\res\closex.ico"\
 	".\res\delete.ico"\
 	".\res\details.ico"\
 	".\res\dragcopy.cur"\
+	".\res\highlight.ico"\
 	".\res\history.ico"\
 	".\res\hyperlin.cur"\
-	".\res\incoming.ico"\
-	".\res\notice.ico"\
-	".\res\outgoing.ico"\
+	".\res\message.ico"\
+	".\res\messageout.ico"\
 	".\res\quote.ico"\
 	".\res\send.ico"\
 	".\res\smiley.ico"\
 	".\res\typing.ico"\
-	".\res\unicodeoff.ico"\
-	".\res\unicodeon.ico"\
+	".\res\unicode.ico"\
 	".\resource.h"\
 	
 

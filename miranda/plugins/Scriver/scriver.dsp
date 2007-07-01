@@ -252,23 +252,7 @@ SOURCE=.\utils.h
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # Begin Source File
 
-SOURCE="..\..\Miranda-IM\res\addcontact.ico"
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\addcontact.ico
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\src\res\addcontact.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\Clock32.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\Clock8.ico
 # End Source File
 # Begin Source File
 
@@ -280,26 +264,6 @@ SOURCE=..\..\src\res\delete.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\Details32.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\Details8.ico
-# End Source File
-# Begin Source File
-
-SOURCE="..\..\Miranda-IM\res\downarrow.ico"
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\Downarrow32.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\Downarrow8.ico
-# End Source File
-# Begin Source File
-
 SOURCE=.\res\dragcopy.cur
 # End Source File
 # Begin Source File
@@ -308,27 +272,7 @@ SOURCE=..\..\src\res\dragcopy.cur
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\emptyblo.ico
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\src\res\emptyblo.ico
-# End Source File
-# Begin Source File
-
-SOURCE="..\..\Miranda-IM\res\history.ico"
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\History32.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\History8.ico
-# End Source File
-# Begin Source File
-
-SOURCE="..\..\Miranda-IM\res\hyperlin.cur"
 # End Source File
 # Begin Source File
 
@@ -344,18 +288,6 @@ SOURCE=.\res\incoming.ico
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\Miranda-IM\res\multisend.ico"
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\Multisend32.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\Multisend8.ico
-# End Source File
-# Begin Source File
-
 SOURCE=.\res\notice.ico
 # End Source File
 # Begin Source File
@@ -368,43 +300,7 @@ SOURCE=.\res\quote.ico
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\Miranda-IM\res\rename.ico"
-# End Source File
-# Begin Source File
-
 SOURCE=.\resource.rc
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\send8.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\smiley8.ico
-# End Source File
-# Begin Source File
-
-SOURCE="..\..\Miranda-IM\res\timestamp.ico"
-# End Source File
-# Begin Source File
-
-SOURCE="..\..\Miranda-IM\res\typing.ico"
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\Typing32.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\Typing8.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\typingoff.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\typingon.ico
 # End Source File
 # Begin Source File
 
@@ -413,14 +309,6 @@ SOURCE=.\res\unicodeoff.ico
 # Begin Source File
 
 SOURCE=.\res\unicodeon.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\unknown.bmp
-# End Source File
-# Begin Source File
-
-SOURCE="..\..\Miranda-IM\res\viewdetails.ico"
 # End Source File
 # End Group
 # Begin Group "chat"
