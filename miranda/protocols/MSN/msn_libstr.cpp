@@ -32,7 +32,7 @@ void replaceStr( char*& dest, const char* src )
 
 void overrideStr( TCHAR*& dest, const TCHAR* src, BOOL unicode, const TCHAR* def )
 {
-	if ( dest != NULL ) 
+	if ( dest != NULL )
 	{
 		mir_free( dest );
 		dest = NULL;
@@ -59,7 +59,7 @@ char* rtrim( char *string )
 
 wchar_t* rtrim( wchar_t* string )
 {
-   wchar_t* p = string + lstrlen( string ) - 1;
+   wchar_t* p = string + lstrlenW( string ) - 1;
 
    while ( p >= string )
    {  if ( *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r' )
@@ -106,4 +106,3 @@ TCHAR* a2tf( const TCHAR* str, BOOL unicode )
 		return mir_strdup( str );
 	#endif
 }
-
