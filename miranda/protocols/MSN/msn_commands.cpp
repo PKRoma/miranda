@@ -318,7 +318,7 @@ static void sttCustomSmiley( const char* msgBody, char* email, char* nick, int i
 
 			ft->std.currentFile = (char*)mir_alloc(rlen*3);
 			UrlEncode(buf, ft->std.currentFile, rlen*3);
-			
+
 			mir_free(buf);
 
 			MSN_DebugLog( "Custom Smiley p2p invite for object : %s", ft->p2p_object );
@@ -437,7 +437,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		if ( info->mJoinedCount > 1 && info->mJoinedContacts != NULL ) {
 			if ( msnHaveChatDll )
 				MSN_ChatStart( info );
-			else 
+			else
 				for ( int j=0; j < info->mJoinedCount; j++ ) {
 					if ( info->mJoinedContacts[j] == tContact && j != 0 ) {
 						ccs.hContact = info->mJoinedContacts[ 0 ];
@@ -685,14 +685,14 @@ static void sttProcessStatusMessage( char* buf, unsigned len, HANDLE hContact )
 
 	// Process status message info
 	const char* szStatMsg = ezxml_txt(ezxml_child(xmli, "PSM"));
-	if (szStatMsg == NULL || szStatMsg[0] == '\0') 
+	if (szStatMsg == NULL || szStatMsg[0] == '\0')
 		DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
-	else 
+	else
 		DBWriteContactSettingStringUtf( hContact, "CList", "StatusMsg", szStatMsg );
 
 	// Process current media info
 	const char* szCrntMda = ezxml_txt(ezxml_child(xmli, "CurrentMedia"));
-	if (szCrntMda == NULL  || szCrntMda[0] == '\0') 
+	if (szCrntMda == NULL  || szCrntMda[0] == '\0')
 	{
 		MSN_DeleteSetting( hContact, "ListeningTo" );
 		ezxml_free(xmli);
@@ -859,16 +859,17 @@ static void sttProcessNotificationMessage( char* buf, unsigned len )
 	if (xmltxt != NULL)
 	{
 		char fullurl[1024];
-		mir_snprintf(fullurl, sizeof(fullurl), "%snotification_id=%s&message_id=%s", 
+		mir_snprintf(fullurl, sizeof(fullurl), "%snotification_id=%s&message_id=%s",
 			ezxml_attr(xmlact, "url"), ezxml_attr(xmlnot, "id"), ezxml_attr(xmlmsg, "id"));
 
 		wchar_t* alrtu;
-		mir_utf8decode( ezxml_txt(xmltxt), &alrtu );
+		char* txt = ezxml_txt(xmltxt);
+		mir_utf8decode( txt, &alrtu );
 		SkinPlaySound( alertsoundname );
 #ifdef _UNICODE
 		MSN_ShowPopup(TranslateT("MSN Alert"), alrtu, MSN_ALERT_POPUP | MSN_ALLOW_MSGBOX, fullurl);
 #else
-		MSN_ShowPopup(TranslateT("MSN Alert"), dataBuf, MSN_ALERT_POPUP | MSN_ALLOW_MSGBOX, fullurl);
+		MSN_ShowPopup(TranslateT("MSN Alert"), txt, MSN_ALERT_POPUP | MSN_ALLOW_MSGBOX, fullurl);
 #endif
 		mir_free(alrtu);
 	}
