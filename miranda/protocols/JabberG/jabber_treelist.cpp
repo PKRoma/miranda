@@ -91,12 +91,12 @@ void TreeList_Create(HWND hwnd)
 	ListView_SetExtendedListViewStyle(hwnd, LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_GRIDLINES | LVS_EX_INFOTIP );
 
 	HIMAGELIST hIml;
-	hIml = ImageList_Create(16, 16,	 IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR16 | ILC_MASK, 2, 1);
+	hIml = ImageList_Create(16, 16, ILC_MASK + ( IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16 ), 2, 1);
 	ListView_SetImageList (hwnd, hIml, LVSIL_SMALL);
 
-	hIml = ImageList_Create(16, 16,	 IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR16 | ILC_MASK, 2, 1);
-	ImageList_AddIcon(hIml, (HICON)JCallService(MS_SKIN_LOADICON, SKINICON_OTHER_GROUPOPEN,0));
-	ImageList_AddIcon(hIml, (HICON)JCallService(MS_SKIN_LOADICON, SKINICON_OTHER_GROUPSHUT,0));
+	hIml = ImageList_Create(16, 16, ILC_MASK + ( IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16 ), 2, 1);
+	ImageList_AddIcon(hIml, (HICON)JCallService( MS_SKIN_LOADICON, SKINICON_OTHER_GROUPOPEN, 0 ));
+	ImageList_AddIcon(hIml, (HICON)JCallService( MS_SKIN_LOADICON, SKINICON_OTHER_GROUPSHUT, 0 ));
 	ListView_SetImageList (hwnd, hIml, LVSIL_STATE);
 }
 
@@ -109,7 +109,9 @@ void TreeList_Destroy(HWND hwnd)
 
 HTREELISTITEM TreeList_AddItem(HWND hwnd, HTREELISTITEM hParent, TCHAR *text, LPARAM data)
 {
-	if (!hParent) hParent = (HTREELISTITEM)GetWindowLong(hwnd, GWL_USERDATA);
+	if (!hParent)
+		hParent = (HTREELISTITEM)GetWindowLong(hwnd, GWL_USERDATA);
+
 	TTreeList_ItemInfo *item = new TTreeList_ItemInfo;
 	item->data = data;
 	item->parent = hParent;
@@ -149,40 +151,32 @@ void TreeList_Update(HWND hwnd)
 
 	SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
 	sttTreeList_RecursiveApply(hItem, sttTreeList_ResetIndex, (LPARAM)&sortIndex);
-	for (int i = ListView_GetItemCount(hwnd); i--; )
-	{
+	for ( int i = ListView_GetItemCount(hwnd); i--; ) {
 		LVITEM lvi;
 		lvi.mask = LVIF_PARAM;
 		lvi.iItem = i;
 		ListView_GetItem(hwnd, &lvi);
-		if (((HTREELISTITEM)lvi.lParam)->flags & TLIF_VISIBLE)
-		{
-			((HTREELISTITEM)lvi.lParam)->flags |= TLIF_HASITEM;
-			if (((HTREELISTITEM)lvi.lParam)->flags & TLIF_MODIFIED)
-			{
-				lvi.mask = LVIF_TEXT|LVIF_STATE|LVIF_IMAGE;
-				lvi.pszText = ((HTREELISTITEM)lvi.lParam)->text[0];
+
+		HTREELISTITEM ptli = ( HTREELISTITEM )lvi.lParam;
+		if ( ptli->flags & TLIF_VISIBLE ) {
+			ptli->flags |= TLIF_HASITEM;
+			if ( ptli->flags & TLIF_MODIFIED ) {
+				lvi.mask = LVIF_TEXT | LVIF_STATE | LVIF_IMAGE;
+				lvi.pszText = ptli->text[0];
 				lvi.stateMask = 0xFFFFFFFF;
-				lvi.iImage = ((HTREELISTITEM)lvi.lParam)->iIcon;
+				lvi.iImage = ptli->iIcon;
 				lvi.state =
 					INDEXTOSTATEIMAGEMASK(
-						(((HTREELISTITEM)lvi.lParam)->subItems.getCount() == 0) ?
-							0 :
-						(((HTREELISTITEM)lvi.lParam)->flags & TLIF_EXPANDED) ?
-							1 :
-						// else
-							2
-						) |
-					INDEXTOOVERLAYMASK(((HTREELISTITEM)lvi.lParam)->iOverlay);
+						(ptli->subItems.getCount() == 0) ? 0 : (ptli->flags & TLIF_EXPANDED) ? 1 : 2 ) |
+					INDEXTOOVERLAYMASK( ptli->iOverlay );
 				ListView_SetItem(hwnd, &lvi);
-				for (int j = 1; j < ((HTREELISTITEM)lvi.lParam)->text.getCount(); ++j)
-					ListView_SetItemText(hwnd, i, j, ((HTREELISTITEM)lvi.lParam)->text[j]);
+				for (int j = 1; j < ptli->text.getCount(); ++j)
+					ListView_SetItemText( hwnd, i, j, ptli->text[j]);
 			}
-		} else
-		{
-			ListView_DeleteItem(hwnd, i);
-		}
+		} 
+		else ListView_DeleteItem(hwnd, i);
 	}
+
 	sttTreeList_RecursiveApply(hItem, sttTreeList_CreateItems, (LPARAM)hwnd);
 	ListView_SortItems(hwnd, sttTreeList_SortFunc, 0);
 	SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
@@ -191,49 +185,43 @@ void TreeList_Update(HWND hwnd)
 
 BOOL TreeList_ProcessMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam, UINT idc, BOOL *result)
 {
-	switch (msg)
-	{
-		case WM_NOTIFY:
-		{
-			if (((LPNMHDR)lparam)->idFrom != idc)
-				break;
+	switch (msg) {
+	case WM_NOTIFY:
+		if (((LPNMHDR)lparam)->idFrom != idc)
+			break;
 
-			switch (((LPNMHDR)lparam)->code)
+		switch (((LPNMHDR)lparam)->code) {
+			case NM_CLICK:
 			{
-				case NM_CLICK:
-				{
-					LPNMITEMACTIVATE lpnmia = (LPNMITEMACTIVATE)lparam;
-					LVHITTESTINFO lvhti = {0};
-					LVITEM lvi = {0};
-					lvi.mask = LVIF_PARAM;
-					lvi.iItem = lpnmia->iItem;
-					ListView_GetItem(lpnmia->hdr.hwndFrom, &lvi);
-					lvhti.pt = lpnmia->ptAction;
-					ListView_HitTest(lpnmia->hdr.hwndFrom, &lvhti);
-					if ((lvhti.flags & LVHT_ONITEMSTATEICON) && ((HTREELISTITEM)lvi.lParam)->subItems.getCount())
-					{
-						if (((HTREELISTITEM)lvi.lParam)->flags & TLIF_EXPANDED)
-						{
-							((HTREELISTITEM)lvi.lParam)->flags &= ~TLIF_EXPANDED;
-						} else
-						{
-							((HTREELISTITEM)lvi.lParam)->flags |= TLIF_EXPANDED;
+				LPNMITEMACTIVATE lpnmia = (LPNMITEMACTIVATE)lparam;
+				LVHITTESTINFO lvhti = {0};
+				LVITEM lvi = {0};
+				lvi.mask = LVIF_PARAM;
+				lvi.iItem = lpnmia->iItem;
+				ListView_GetItem(lpnmia->hdr.hwndFrom, &lvi);
+				lvhti.pt = lpnmia->ptAction;
+				ListView_HitTest(lpnmia->hdr.hwndFrom, &lvhti);
 
-							NMTREEVIEW nmtv;
-							nmtv.hdr.code = TVN_ITEMEXPANDED;
-							nmtv.hdr.hwndFrom = GetDlgItem(hwnd, idc);
-							nmtv.hdr.idFrom = idc;
-							nmtv.itemNew.hItem = (HTREEITEM)lvi.lParam;
-							SendMessage(hwnd, WM_NOTIFY, idc, (LPARAM)&nmtv);
-						}
-						((HTREELISTITEM)lvi.lParam)->flags |= TLIF_MODIFIED;
-						TreeList_Update(lpnmia->hdr.hwndFrom);
+				HTREELISTITEM ptli = ( HTREELISTITEM )lvi.lParam;
+				if (( lvhti.flags & LVHT_ONITEMSTATEICON ) && ptli->subItems.getCount()) {
+					if ( ptli->flags & TLIF_EXPANDED )
+						ptli->flags &= ~TLIF_EXPANDED;
+					else {
+						ptli->flags |= TLIF_EXPANDED;
+
+						NMTREEVIEW nmtv;
+						nmtv.hdr.code = TVN_ITEMEXPANDED;
+						nmtv.hdr.hwndFrom = GetDlgItem(hwnd, idc);
+						nmtv.hdr.idFrom = idc;
+						nmtv.itemNew.hItem = (HTREEITEM)lvi.lParam;
+						SendMessage(hwnd, WM_NOTIFY, idc, (LPARAM)&nmtv);
 					}
-					break;
-				}
-			}
+					ptli->flags |= TLIF_MODIFIED;
+					TreeList_Update( lpnmia->hdr.hwndFrom );
+			}	}
 			break;
 		}
+		break;
 	}
 	return FALSE;
 }
@@ -241,18 +229,16 @@ BOOL TreeList_ProcessMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam, 
 ///////////////////////////////////////////////////////////////////////////
 static void sttTreeList_RecursiveApply(HTREELISTITEM hItem, void (*func)(HTREELISTITEM, LPARAM), LPARAM data)
 {
-	for (int i = 0; i < hItem->subItems.getCount(); ++i)
-	{
-		func(hItem->subItems[i], data);
-		sttTreeList_RecursiveApply(hItem->subItems[i], func, data);
-	}
-}
+	for ( int i = 0; i < hItem->subItems.getCount(); i++ ) {
+		func( hItem->subItems[i], data );
+		sttTreeList_RecursiveApply( hItem->subItems[i], func, data );
+}	}
 
 static void sttTreeList_ResetIndex(HTREELISTITEM hItem, LPARAM data)
 {
 	hItem->flags &= ~TLIF_HASITEM;
 
-	if (!hItem->parent || (hItem->parent->flags & TLIF_VISIBLE) && (hItem->parent->flags & TLIF_EXPANDED))
+	if ( !hItem->parent || (hItem->parent->flags & TLIF_VISIBLE) && (hItem->parent->flags & TLIF_EXPANDED ))
 		hItem->flags |= TLIF_VISIBLE;
 	else
 		hItem->flags &= ~TLIF_VISIBLE;
@@ -262,10 +248,9 @@ static void sttTreeList_ResetIndex(HTREELISTITEM hItem, LPARAM data)
 
 static void sttTreeList_CreateItems(HTREELISTITEM hItem, LPARAM data)
 {
-	if ((hItem->flags & TLIF_VISIBLE) && !(hItem->flags & TLIF_HASITEM))
-	{
+	if (( hItem->flags & TLIF_VISIBLE ) && !( hItem->flags & TLIF_HASITEM )) {
 		LVITEM lvi = {0};
-		lvi.mask = LVIF_INDENT|LVIF_PARAM|LVIF_IMAGE|LVIF_TEXT|LVIF_STATE;
+		lvi.mask = LVIF_INDENT | LVIF_PARAM | LVIF_IMAGE | LVIF_TEXT | LVIF_STATE;
 		lvi.iIndent = hItem->indent;
 		lvi.lParam = (LPARAM)hItem;
 		lvi.pszText = hItem->text[0];
@@ -273,26 +258,22 @@ static void sttTreeList_CreateItems(HTREELISTITEM hItem, LPARAM data)
 		lvi.iImage = hItem->iIcon;
 		lvi.state =
 			INDEXTOSTATEIMAGEMASK(
-				(hItem->subItems.getCount() == 0) ?
-					0 :
-				(hItem->flags & TLIF_EXPANDED) ?
-					1 :
-				// else
-					2
-				) |
+				(hItem->subItems.getCount() == 0) ? 0 : (hItem->flags & TLIF_EXPANDED) ? 1 : 2) |
 			INDEXTOOVERLAYMASK(hItem->iOverlay);
-			;
+
 		int idx = ListView_InsertItem((HWND)data, &lvi);
-		for (int i = 1; i < hItem->text.getCount(); ++i)
+		for ( int i = 1; i < hItem->text.getCount(); i++ )
 			ListView_SetItemText((HWND)data, idx, i, hItem->text[i]);
-	}
-}
+}	}
 
 static int CALLBACK sttTreeList_SortFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
 {
-	if (((HTREELISTITEM)lParam1)->sortIndex < ((HTREELISTITEM)lParam2)->sortIndex)
+	HTREELISTITEM p1 = ( HTREELISTITEM )lParam1, p2 = ( HTREELISTITEM )lParam2; 
+	if ( p1->sortIndex < p2->sortIndex )
 		return -1;
-	if (((HTREELISTITEM)lParam1)->sortIndex > ((HTREELISTITEM)lParam2)->sortIndex)
+
+	if ( p1->sortIndex > p2->sortIndex )
 		return +1;
+
 	return 0;
 }
