@@ -48,9 +48,9 @@ struct TTreeList_ItemInfo
 	LPARAM data;
 	LIST<TTreeList_ItemInfo> subItems;
 
-	TTreeList_ItemInfo(int columns = 1, int children = 5):
+	TTreeList_ItemInfo(int columns = 3, int children = 5):
 		text(columns), subItems(children), parent(NULL),
-		flags(0), indent(0), sortIndex(0), iIcon(0), iOverlay(0) {}
+		flags(0), indent(0), sortIndex(0), iIcon(0), iOverlay(0), data(0) {}
 	~TTreeList_ItemInfo()
 	{
 		text.destroy();
@@ -152,18 +152,21 @@ void TreeList_Update(HWND hwnd)
 	SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
 	sttTreeList_RecursiveApply(hItem, sttTreeList_ResetIndex, (LPARAM)&sortIndex);
 	for ( int i = ListView_GetItemCount(hwnd); i--; ) {
-		LVITEM lvi;
+		LVITEM lvi = {0};
 		lvi.mask = LVIF_PARAM;
 		lvi.iItem = i;
+		lvi.iSubItem = 0;
 		ListView_GetItem(hwnd, &lvi);
 
 		HTREELISTITEM ptli = ( HTREELISTITEM )lvi.lParam;
 		if ( ptli->flags & TLIF_VISIBLE ) {
 			ptli->flags |= TLIF_HASITEM;
 			if ( ptli->flags & TLIF_MODIFIED ) {
-				lvi.mask = LVIF_TEXT | LVIF_STATE | LVIF_IMAGE;
+				lvi.mask = LVIF_TEXT | LVIF_STATE | LVIF_IMAGE | LVIF_TEXT;
+				lvi.iItem = i;
+				lvi.iSubItem = 0;
 				lvi.pszText = ptli->text[0];
-				lvi.stateMask = 0xFFFFFFFF;
+				lvi.stateMask = LVIS_OVERLAYMASK|LVIS_STATEIMAGEMASK;
 				lvi.iImage = ptli->iIcon;
 				lvi.state =
 					INDEXTOSTATEIMAGEMASK(
@@ -185,17 +188,73 @@ void TreeList_Update(HWND hwnd)
 
 BOOL TreeList_ProcessMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam, UINT idc, BOOL *result)
 {
+	LVITEM lvi = {0};
+
 	switch (msg) {
 	case WM_NOTIFY:
 		if (((LPNMHDR)lparam)->idFrom != idc)
 			break;
 
 		switch (((LPNMHDR)lparam)->code) {
-			case NM_CLICK:
+		case LVN_KEYDOWN:
+			{
+				LPNMLVKEYDOWN lpnmlvk = (LPNMLVKEYDOWN)lparam;
+
+				lvi.mask = LVIF_PARAM|LVIF_INDENT;
+				lvi.iItem = ListView_GetNextItem(lpnmlvk->hdr.hwndFrom, -1, LVNI_SELECTED);
+				if (lvi.iItem < 0) return FALSE;
+				lvi.iSubItem = 0;
+				ListView_GetItem(lpnmlvk->hdr.hwndFrom, &lvi);
+				HTREELISTITEM hItem = (HTREELISTITEM)lvi.lParam;
+
+				switch (lpnmlvk->wVKey) {
+				case VK_SUBTRACT:
+				case VK_LEFT:
+				{
+					if ( hItem->subItems.getCount() && (hItem->flags & TLIF_EXPANDED )) {
+						hItem->flags &= ~TLIF_EXPANDED;
+						hItem->flags |= TLIF_MODIFIED;
+						TreeList_Update( lpnmlvk->hdr.hwndFrom );
+					} 
+					else if ( hItem->indent && (lpnmlvk->wVKey != VK_SUBTRACT )) {
+						for ( int i = lvi.iItem; i--; ) {
+							lvi.mask = LVIF_INDENT;
+							lvi.iItem = i;
+							lvi.iSubItem = 0;
+							ListView_GetItem(lpnmlvk->hdr.hwndFrom, &lvi);
+							if (lvi.iIndent < hItem->indent) {
+								lvi.mask = LVIF_STATE;
+								lvi.iItem = i;
+								lvi.iSubItem = 0;
+								lvi.state = lvi.stateMask = LVIS_FOCUSED|LVNI_SELECTED;
+								ListView_SetItem(lpnmlvk->hdr.hwndFrom, &lvi);
+								break;
+					}	}	}
+					break;
+				}
+
+				case VK_ADD:
+				case VK_RIGHT:
+					if ( hItem->subItems.getCount() && !( hItem->flags & TLIF_EXPANDED )) {
+						hItem->flags |= TLIF_EXPANDED;
+						hItem->flags |= TLIF_MODIFIED;
+
+						NMTREEVIEW nmtv;
+						nmtv.hdr.code = TVN_ITEMEXPANDED;
+						nmtv.hdr.hwndFrom = lpnmlvk->hdr.hwndFrom;
+						nmtv.hdr.idFrom = lpnmlvk->hdr.idFrom;
+						nmtv.itemNew.hItem = (HTREEITEM)hItem;
+						SendMessage(hwnd, WM_NOTIFY, lpnmlvk->hdr.idFrom, (LPARAM)&nmtv);
+						TreeList_Update( lpnmlvk->hdr.hwndFrom );
+					}
+					break;
+			}	}
+			break;
+
+		case NM_CLICK:
 			{
 				LPNMITEMACTIVATE lpnmia = (LPNMITEMACTIVATE)lparam;
 				LVHITTESTINFO lvhti = {0};
-				LVITEM lvi = {0};
 				lvi.mask = LVIF_PARAM;
 				lvi.iItem = lpnmia->iItem;
 				ListView_GetItem(lpnmia->hdr.hwndFrom, &lvi);
@@ -203,7 +262,7 @@ BOOL TreeList_ProcessMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam, 
 				ListView_HitTest(lpnmia->hdr.hwndFrom, &lvhti);
 
 				HTREELISTITEM ptli = ( HTREELISTITEM )lvi.lParam;
-				if (( lvhti.flags & LVHT_ONITEMSTATEICON ) && ptli->subItems.getCount()) {
+				if ((lvhti.iSubItem == 0) && ( lvhti.flags & LVHT_ONITEMSTATEICON ) && ptli->subItems.getCount()) {
 					if ( ptli->flags & TLIF_EXPANDED )
 						ptli->flags &= ~TLIF_EXPANDED;
 					else {
@@ -211,10 +270,10 @@ BOOL TreeList_ProcessMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam, 
 
 						NMTREEVIEW nmtv;
 						nmtv.hdr.code = TVN_ITEMEXPANDED;
-						nmtv.hdr.hwndFrom = GetDlgItem(hwnd, idc);
-						nmtv.hdr.idFrom = idc;
+						nmtv.hdr.hwndFrom = lpnmia->hdr.hwndFrom;
+						nmtv.hdr.idFrom = lpnmia->hdr.idFrom;
 						nmtv.itemNew.hItem = (HTREEITEM)lvi.lParam;
-						SendMessage(hwnd, WM_NOTIFY, idc, (LPARAM)&nmtv);
+						SendMessage(hwnd, WM_NOTIFY, lpnmia->hdr.idFrom, (LPARAM)&nmtv);
 					}
 					ptli->flags |= TLIF_MODIFIED;
 					TreeList_Update( lpnmia->hdr.hwndFrom );
@@ -248,13 +307,13 @@ static void sttTreeList_ResetIndex(HTREELISTITEM hItem, LPARAM data)
 
 static void sttTreeList_CreateItems(HTREELISTITEM hItem, LPARAM data)
 {
-	if (( hItem->flags & TLIF_VISIBLE ) && !( hItem->flags & TLIF_HASITEM )) {
+	if (( hItem->flags & TLIF_VISIBLE ) && !( hItem->flags & TLIF_HASITEM ) && !( hItem->flags & TLIF_ROOT )) {
 		LVITEM lvi = {0};
 		lvi.mask = LVIF_INDENT | LVIF_PARAM | LVIF_IMAGE | LVIF_TEXT | LVIF_STATE;
 		lvi.iIndent = hItem->indent;
 		lvi.lParam = (LPARAM)hItem;
 		lvi.pszText = hItem->text[0];
-		lvi.stateMask = 0xFFFFFFFF;
+		lvi.stateMask = LVIS_OVERLAYMASK|LVIS_STATEIMAGEMASK;
 		lvi.iImage = hItem->iIcon;
 		lvi.state =
 			INDEXTOSTATEIMAGEMASK(
