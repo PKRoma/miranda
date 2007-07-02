@@ -56,6 +56,18 @@ BEGIN
 END
 #endif    // APSTUDIO_INVOKED
 
+#endif    // Neutral resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (Neutral) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -64,9 +76,37 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
+IDI_JABBER              ICON                    "icos\\jabber.ico"
 IDI_DISCO_OK            ICON                    "icos\\disco_ok.ico"
 IDI_DISCO_FAIL          ICON                    "icos\\disco_fail.ico"
-#endif    // Neutral resources
+IDI_GROUP               ICON                    "icos\\group.ico"
+IDI_KEYS                ICON                    "icos\\key.ico"
+IDI_ADDCONTACT          ICON                    "icos\\addcontact.ico"
+IDI_ADDROSTER           ICON                    "icos\\add2roster.ico"
+IDI_AGENTS              ICON                    "icos\\roster.ico"
+IDI_VCARD               ICON                    "icos\\pages.ico"
+IDI_DELETE              ICON                    "icos\\delete.ico"
+IDI_EDIT                ICON                    "icos\\rename.ico"
+IDI_GRANT               ICON                    "icos\\grant.ico"
+IDI_OPEN                ICON                    "icos\\open.ico"
+IDI_REQUEST             ICON                    "icos\\request.ico"
+IDI_USER2ROOM           ICON                    "icos\\user2room.ico"
+IDI_SAVE                ICON                    "icos\\save.ico"
+IDI_LOGIN               ICON                    "icos\\login.ico"
+IDI_AUTHREVOKE          ICON                    "icos\\auth_revoke.ico"
+IDI_REFRESH             ICON                    "icos\\refresh.ico"
+IDI_COMMAND             ICON                    "icos\\command.ico"
+IDI_BOOKMARKS           ICON                    "icos\\bookmarks.ico"
+IDI_PRIVACY_LISTS       ICON                    "icos\\privacy_lists.ico"
+IDI_SERVICE_DISCOVERY   ICON                    "icos\\service_discovery.ico"
+IDI_VIEW_LIST           ICON                    "icos\\view_as_list.ico"
+IDI_VIEW_TREE           ICON                    "icos\\view_as_tree.ico"
+IDI_FILTER_APPLY        ICON                    "icos\\filter.ico"
+IDI_BROWSE              ICON                    "icos\\go.ico"
+IDI_NAV_HOME            ICON                    "icos\\home.ico"
+IDI_NAV_REFRESH         ICON                    "icos\\refresh_node.ico"
+IDI_FILTER_RESET        ICON                    "icos\\reset_filter.ico"
+#endif    // English (Neutral) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
@@ -233,14 +273,14 @@ EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Jabber Form"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_WHITERECT,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,0,0,258,62
+    CONTROL         "",IDC_WHITERECT,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,0,0,258,25
     LTEXT           "Instruction:",IDC_TITLE,7,7,243,8,NOT WS_GROUP
-    EDITTEXT        IDC_INSTRUCTION,17,17,233,38,ES_MULTILINE | ES_READONLY | NOT WS_BORDER
-    CONTROL         "",IDC_FRAME1,"Static",SS_ETCHEDHORZ,0,63,258,1
+    EDITTEXT        IDC_INSTRUCTION,17,17,233,1,ES_MULTILINE | ES_READONLY | NOT WS_BORDER
+    CONTROL         "",IDC_FRAME1,"Static",SS_ETCHEDHORZ,0,26,258,1
     CONTROL         "",IDC_FRAME2,"Static",SS_ETCHEDHORZ,0,197,258,1
-    LTEXT           "",IDC_FRAME,0,64,250,132,NOT WS_GROUP
+    LTEXT           "",IDC_FRAME,0,27,250,169,NOT WS_GROUP
     EDITTEXT        IDC_FRAME_TEXT,18,101,220,33,ES_CENTER | ES_MULTILINE | ES_READONLY | NOT WS_BORDER
-    SCROLLBAR       IDC_VSCROLL,246,65,11,130,SBS_VERT
+    SCROLLBAR       IDC_VSCROLL,246,28,11,167,SBS_VERT
     DEFPUSHBUTTON   "Submit",IDC_SUBMIT,146,203,50,14,WS_DISABLED
     PUSHBUTTON      "Cancel",IDCANCEL,200,203,50,14
     DEFPUSHBUTTON   "Next",IDC_NEXT,50,203,40,14,NOT WS_VISIBLE | WS_DISABLED
@@ -266,7 +306,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "Close",IDCLOSE,188,190,45,14
     LTEXT           "",IDC_WHITERECT,0,0,238,26
-    ICON            IDI_WRITE,IDC_LOGO,7,4,20,20
+    ICON            162,IDC_LOGO,7,4,20,20
     LTEXT           "",IDC_NAME,33,5,200,8,0,WS_EX_TRANSPARENT
     CONTROL         "Tab1",IDC_TABS,"SysTabControl32",TCS_HOTTRACK | TCS_MULTILINE | WS_TABSTOP,5,29,228,158
     LTEXT           "View and update Jabber personal vCard",IDC_DESCRIPTION,44,13,189,8,0,WS_EX_TRANSPARENT
@@ -621,18 +661,26 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,85,35,50,14
 END
 
-IDD_SERVICE_DISCOVERY DIALOGEX 0, 0, 306, 209
+IDD_SERVICE_DISCOVERY DIALOGEX 0, 0, 353, 209
 STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Service Discovery"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    COMBOBOX        IDC_COMBO_JID,25,7,93,197,CBS_DROPDOWN | CBS_AUTOHSCROLL | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_COMBO_NODE,148,7,93,197,CBS_DROPDOWN | CBS_AUTOHSCROLL | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    DEFPUSHBUTTON   "Browse",IDC_BUTTON_BROWSE,249,7,50,14
-    CONTROL         "",IDC_TREE_DISCO,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,5,24,294,180
-    LTEXT           "Node:",IDC_STATIC,124,9,20,8
-    LTEXT           "JID:",IDC_STATIC,5,9,14,8
+    COMBOBOX        IDC_COMBO_JID,96,6,109,60,CBS_DROPDOWN | CBS_AUTOHSCROLL | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_NODE,234,6,93,60,CBS_DROPDOWN | CBS_AUTOHSCROLL | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_TREE_DISCO,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,5,24,343,161
+    LTEXT           "Node:",IDC_TXT_NODE,210,5,20,14,SS_CENTERIMAGE
+    LTEXT           "JID:",IDC_STATIC,79,5,14,14,SS_CENTERIMAGE
+    CONTROL         "H",IDC_BTN_NAVHOME,"MButtonClass",WS_TABSTOP,42,5,16,14
+    EDITTEXT        IDC_TXT_FILTERTEXT,35,190,276,14,ES_AUTOHSCROLL
+    CONTROL         "F",IDC_BTN_FILTERRESET,"MButtonClass",WS_TABSTOP,332,190,16,14
+    RTEXT           "Filter:",IDC_TXT_FILTER,5,190,25,14,SS_CENTERIMAGE
+    CONTROL         "R",IDC_BTN_REFRESH,"MButtonClass",WS_TABSTOP,58,5,16,14
+    CONTROL         "T",IDC_BTN_VIEWTREE,"MButtonClass",WS_TABSTOP,5,5,16,14
+    CONTROL         "L",IDC_BTN_VIEWLIST,"MButtonClass",WS_TABSTOP,21,5,16,14
+    CONTROL         "Go",IDC_BUTTON_BROWSE,"MButtonClass",WS_TABSTOP,332,5,16,14
+    CONTROL         "F",IDC_BTN_FILTERAPPLY,"MButtonClass",WS_TABSTOP,316,190,16,14
 END
 
 
@@ -902,9 +950,26 @@ BEGIN
     IDD_SERVICE_DISCOVERY, DIALOG
     BEGIN
         LEFTMARGIN, 5
-        RIGHTMARGIN, 299
-        TOPMARGIN, 7
+        RIGHTMARGIN, 348
+        VERTGUIDE, 58
+        VERTGUIDE, 74
+        VERTGUIDE, 79
+        VERTGUIDE, 93
+        VERTGUIDE, 96
+        VERTGUIDE, 205
+        VERTGUIDE, 210
+        VERTGUIDE, 230
+        VERTGUIDE, 234
+        VERTGUIDE, 311
+        VERTGUIDE, 316
+        VERTGUIDE, 327
+        VERTGUIDE, 332
+        TOPMARGIN, 5
         BOTTOMMARGIN, 204
+        HORZGUIDE, 19
+        HORZGUIDE, 24
+        HORZGUIDE, 185
+        HORZGUIDE, 190
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -935,35 +1000,6 @@ END
 
 #endif    // APSTUDIO_INVOKED
 
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Icon
-//
-
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
-IDI_JABBER              ICON                    "icos\\jabber.ico"
-IDI_GROUP               ICON                    "icos\\group.ico"
-IDI_KEYS                ICON                    "icos\\key.ico"
-IDI_ADDCONTACT          ICON                    "icos\\addcontact.ico"
-IDI_ADDROSTER           ICON                    "icos\\add2roster.ico"
-IDI_AGENTS              ICON                    "icos\\roster.ico"
-IDI_VCARD               ICON                    "icos\\pages.ico"
-IDI_DELETE              ICON                    "icos\\delete.ico"
-IDI_EDIT                ICON                    "icos\\rename.ico"
-IDI_GRANT               ICON                    "icos\\grant.ico"
-IDI_OPEN                ICON                    "icos\\open.ico"
-IDI_REQUEST             ICON                    "icos\\request.ico"
-IDI_USER2ROOM           ICON                    "icos\\user2room.ico"
-IDI_SAVE                ICON                    "icos\\save.ico"
-IDI_LOGIN               ICON                    "icos\\login.ico"
-IDI_AUTHREVOKE          ICON                    "icos\\auth_revoke.ico"
-IDI_REFRESH             ICON                    "icos\\refresh.ico"
-IDI_COMMAND             ICON                    "icos\\command.ico"
-IDI_BOOKMARKS           ICON                    "icos\\bookmarks.ico"
-IDI_PRIVACY_LISTS       ICON                    "icos\\privacy_lists.ico"
-IDI_SERVICE_DISCOVERY   ICON                    "icos\\service_discovery.ico"
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 

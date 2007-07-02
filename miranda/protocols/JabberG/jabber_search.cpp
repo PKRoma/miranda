@@ -516,7 +516,7 @@ static void JabberSearchDeleteFromRecent(TCHAR * szAddr,BOOL deleteLastFromDB=TR
 			else JFreeVariant( &dbv );
 }	}	}
 
-static void JabberSearchAddToRecent( TCHAR* szAddr, HWND hwndDialog = NULL )
+void JabberSearchAddToRecent( TCHAR* szAddr, HWND hwndDialog = NULL )
 {
 	DBVARIANT dbv;
 	char key[30];

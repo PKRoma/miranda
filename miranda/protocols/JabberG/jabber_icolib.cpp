@@ -102,6 +102,13 @@ static iconList[] =
 	{	"Bookmarks",             "bookmarks",    IDI_BOOKMARKS     }, 
 	{	"Privacy Lists",         "privacylists", IDI_PRIVACY_LISTS },
 	{	"Service Discovery",     "servicediscovery", IDI_SERVICE_DISCOVERY },
+	{	"View as tree",          "sd_view_tree",     IDI_VIEW_TREE },
+	{	"View as list",          "sd_view_list",     IDI_VIEW_LIST },
+	{	"Nivigate home",         "sd_nav_home",      IDI_NAV_HOME },
+	{	"Refresh node",          "sd_nav_refresh",   IDI_NAV_REFRESH },
+	{	"Browse node",           "sd_browse",        IDI_BROWSE },
+	{	"Apply filter",          "sd_filter_apply",  IDI_FILTER_APPLY },
+	{	"Reset filter",          "sd_filter_reset",  IDI_FILTER_RESET },
 	{	"Discovery succeeded",   "disco_ok",     IDI_DISCO_OK      },
 	{	"Discovery failed",      "disco_fail",   IDI_DISCO_FAIL    },
 	{	"AdHoc Command",         "adhoc",        IDI_COMMAND       }

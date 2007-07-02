@@ -469,13 +469,13 @@ void JabberFormCreateUI( HWND hwndStatic, XmlNode *xNode, int *formHeight, BOOL 
 								if ( v->name && !strcmp( v->name, "value" ) && v->text )
 									size += _tcslen( v->text ) + 2;
 							}
-							TCHAR *valueText = ( TCHAR* )mir_alloc( sizeof(TCHAR)*size );
-							valueText[0] = '\0';
+							valueStr = ( TCHAR* )mir_alloc( sizeof(TCHAR)*size );
+							valueStr[0] = '\0';
 							for ( j=0; j<n->numChild; j++ ) {
 								v = n->child[j];
 								if ( v->name && !strcmp( v->name, "value" ) && v->text ) {
-									if ( valueText[0] )	_tcscat( valueText, _T("\r\n"));
-									_tcscat( valueText, v->text );
+									if ( valueStr[0] )	_tcscat( valueStr, _T("\r\n"));
+									_tcscat( valueStr, v->text );
 							}	}
 						}
 					} else

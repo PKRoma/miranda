@@ -384,6 +384,12 @@ void JabberGroupchatJoinRoom( const TCHAR* server, const TCHAR* room, const TCHA
 	JabberSendPresenceTo( status, text, x );
 }
 
+void JabberGroupchatJoinRoomByJid(HWND hwndParent, TCHAR *jid)
+{
+	DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_GROUPCHAT_JOIN ), hwndParent, JabberGroupchatJoinDlgProc, ( LPARAM )jid );
+}
+
+
 static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	TCHAR text[128];

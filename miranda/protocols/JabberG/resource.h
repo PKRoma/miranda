@@ -54,6 +54,14 @@
 #define IDI_DISCO_OK                    190
 #define IDI_ICON2                       191
 #define IDI_DISCO_FAIL                  191
+#define IDI_VIEW_LIST                   192
+#define IDI_VIEW_TREE                   193
+#define IDI_FILTER_APPLY                194
+#define IDI_BROWSE                      195
+#define IDI_NAV_HOME                    196
+#define IDI_NAV_REFRESH                 197
+#define IDI_ICON8                       198
+#define IDI_FILTER_RESET                198
 #define IDC_EDIT_USERNAME               1000
 #define IDC_SAVE                        1000
 #define IDC_EDIT_PASSWORD               1001
@@ -249,6 +257,15 @@
 #define IDC_COMBO_NODE                  1244
 #define IDC_BUTTON1                     1245
 #define IDC_BUTTON_BROWSE               1245
+#define IDC_BTN_NAVHOME                 1246
+#define IDC_TXT_FILTERTEXT              1247
+#define IDC_BTN_FILTERRESET             1248
+#define IDC_TXT_FILTER                  1249
+#define IDC_TXT_NODE                    1250
+#define IDC_BTN_REFRESH                 1253
+#define IDC_BTN_VIEWTREE                1254
+#define IDC_BTN_VIEWLIST                1255
+#define IDC_BTN_FILTERAPPLY             1258
 #define IDC_EMAILS                      1306
 #define IDC_PHONES                      1308
 #define IDC_UPDATE                      1313
@@ -304,9 +321,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        192
+#define _APS_NEXT_RESOURCE_VALUE        199
 #define _APS_NEXT_COMMAND_VALUE         40017
-#define _APS_NEXT_CONTROL_VALUE         1246
+#define _APS_NEXT_CONTROL_VALUE         1251
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
