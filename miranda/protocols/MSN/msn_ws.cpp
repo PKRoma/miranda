@@ -43,7 +43,7 @@ int ThreadData::send( char* data, int datalen )
 
 	NETLIBBUFFER nlb = { data, datalen, 0 };
 
-	mWaitPeriod = mJoinedCount ? 60 : 15;
+	mWaitPeriod = mJoinedCount ? 60 : 30;
 
 	if ( MyOptions.UseGateway && !( mType == SERVER_FILETRANS || mType == SERVER_P2P_DIRECT )) {
 		mGatewayTimeout = 2;
@@ -114,13 +114,12 @@ bool ThreadData::isTimeout( void )
 		bool sbsess = mType == SERVER_SWITCHBOARD;
 
 		MSN_DebugLog( "Dropping the idle %s due to inactivity", sbsess ? "switchboard" : "p2p");
-		if ( sbsess ) 
-			if ( MSN_GetByte( "EnableSessionPopup", 0 )) {
-				HANDLE hContact = mJoinedCount ? mJoinedContacts[0] : mInitialContact;
-				MSN_ShowPopup( hContact, TranslateT( "Chat session dropped due to inactivity" ), 0 );
-			}
-		else
-			return true;
+		if ( !sbsess ) return true;
+
+		if ( MSN_GetByte( "EnableSessionPopup", 0 )) {
+			HANDLE hContact = mJoinedCount ? mJoinedContacts[0] : mInitialContact;
+			MSN_ShowPopup( hContact, TranslateT( "Chat session dropped due to inactivity" ), 0 );
+		}
 
 		sendPacket( "OUT", NULL );
 		mWaitPeriod = 15;
@@ -290,7 +289,7 @@ LBL_RecvAgain:
 	else
 	{
 		mGatewayTimeout = 1;
-		mWaitPeriod = mJoinedCount ? 60 : 15;
+		mWaitPeriod = mJoinedCount ? 60 : 30;
 	}
 
 	ret -= hdrLen;
@@ -337,7 +336,7 @@ int ThreadData::recv( char* data, long datalen )
 
 LBL_RecvAgain:
 	if ( !mIsMainThread && !MyOptions.UseGateway && !MyOptions.UseProxy ) {
-		mWaitPeriod = mJoinedCount ? 60 : 15;
+		mWaitPeriod = mJoinedCount ? 60 : 30;
 		NETLIBSELECT nls = { 0 };
 		nls.cbSize = sizeof( nls );
 		nls.dwTimeout = 1000;
