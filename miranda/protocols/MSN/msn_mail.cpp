@@ -278,9 +278,9 @@ void sttNotificationMessage( char* msgBody, bool isInitial )
 	MSN_SendBroadcast( NULL, ACKTYPE_EMAIL, ACKRESULT_STATUS, NULL, 0 );
 
 	// Disable to notify receiving hotmail
-	if ( !MSN_GetByte( "DisableHotmail", 1 ) && ShowPopUp) 
-	{
-		if ( mUnreadMessages != 0 || !MSN_GetByte( "DisableHotmailJunk", 0 )) 
+	if ( !MSN_GetByte( "DisableHotmail", 1 ) && ShowPopUp && 
+		(mUnreadMessages != 0 || 
+		(mUnreadJunkEmails != 0 && !MSN_GetByte( "DisableHotmailJunk", 0 ))))
 		{
 			SkinPlaySound( mailsoundname );
 			MSN_ShowPopup( tBuffer, tBuffer2, 
