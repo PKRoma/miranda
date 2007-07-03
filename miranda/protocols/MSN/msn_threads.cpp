@@ -496,7 +496,7 @@ ThreadData::ThreadData()
 {
 	memset( this, 0, sizeof( ThreadData ));
 	mGatewayTimeout = 2;
-	mWaitPeriod = 15;
+	mWaitPeriod = 30;
 	hWaitEvent = CreateSemaphore( NULL, 0, 5, NULL );
 }
 
