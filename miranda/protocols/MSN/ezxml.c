@@ -636,9 +636,9 @@ char *ezxml_ampencode(const char *s, size_t len, char **dst, size_t *dlen,
         case '<': *dlen += sprintf(*dst + *dlen, "&lt;"); break;
         case '>': *dlen += sprintf(*dst + *dlen, "&gt;"); break;
         case '"': *dlen += sprintf(*dst + *dlen, (a) ? "&quot;" : "\""); break;
-        case '\n': *dlen += sprintf(*dst + *dlen, (a) ? "&#xA;" : "\n"); break;
+//        case '\n': *dlen += sprintf(*dst + *dlen, (a) ? "&#xA;" : "\n"); break;
         case '\t': *dlen += sprintf(*dst + *dlen, (a) ? "&#x9;" : "\t"); break;
-        case '\r': *dlen += sprintf(*dst + *dlen, "&#xD;"); break;
+//        case '\r': *dlen += sprintf(*dst + *dlen, "&#xD;"); break;
         default: (*dst)[(*dlen)++] = *s;
         }
     }
@@ -897,7 +897,7 @@ ezxml_t ezxml_set_attr(ezxml_t xml, const char *name, const char *value)
         xml->attr[l + 3] = realloc(xml->attr[l + 1],
                                    (c = strlen(xml->attr[l + 1])) + 2);
         strcpy(xml->attr[l + 3] + c, " "); // set name/value as not malloced
-        if (xml->flags & EZXML_DUP) xml->attr[l + 3][c] = EZXML_NAMEM;
+        if (xml->flags & EZXML_DUP) xml->attr[l + 3][c] = (char)EZXML_NAMEM;
     }
     else if (xml->flags & EZXML_DUP) free((char *)name); // name was strduped
 
