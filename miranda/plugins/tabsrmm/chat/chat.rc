@@ -58,7 +58,7 @@ BEGIN
                     14,13,0x18000000L
     CONTROL         "",IDC_CHAT_CLOSE,"TSButtonClass",WS_TABSTOP,200,108,14,
                     13,0x18000000L
-    CONTROL         "",IDC_CHAT_LOG,"RichEdit20A",WS_VSCROLL | 0x844,8,23,
+    CONTROL         "",IDC_CHAT_LOG,RICHEDIT_CLASS,WS_VSCROLL | 0x844,8,23,
                     164,73,WS_EX_STATICEDGE
     CONTROL         "",IDC_CHAT_TOGGLESIDEBAR,"TSButtonClass",WS_TABSTOP,1,
                     112,4,28,0x18000000L
