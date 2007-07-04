@@ -106,6 +106,8 @@ static int sttCreateListener(
 	directconnection *dc,
 	char* szBody, size_t cbBody )
 {
+	if (MyConnection.extIP == 0) return 0;
+	
 	NETLIBBIND nlb = {0};
 	nlb.cbSize = sizeof( nlb );
 	nlb.pfnNewConnectionV2 = MSN_ConnectionProc;

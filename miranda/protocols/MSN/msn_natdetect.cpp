@@ -19,8 +19,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "msn_global.h"
 #include "SDK/netfw.h"
-//#include <objbase.h>
-//#include <oleauto.h>
 
 
 MyConnectionType MyConnection;
@@ -476,7 +474,7 @@ void MyConnectionType::SetUdpCon(const char* str)
 
 void MyConnectionType::CalculateWeight(void)
 {
-	if (icf) weight = 0;
+	if (icf || extIP == 0) weight = 0;
 	else if (udpConType == conDirect) weight = 6;
 	else if (udpConType >= conPortRestrictNAT && udpConType <= conSymmetricNAT)
 		weight = upnpNAT ? 5 : 2;
