@@ -59,7 +59,7 @@ char* rtrim( char *string )
 
 wchar_t* rtrim( wchar_t* string )
 {
-   wchar_t* p = string + lstrlenW( string ) - 1;
+   wchar_t* p = string + wcslen( string ) - 1;
 
    while ( p >= string )
    {  if ( *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r' )

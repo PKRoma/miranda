@@ -48,8 +48,8 @@ MimeHeaders::~MimeHeaders()
 
 	for ( unsigned i=0; i < mCount; i++ ) {
 		MimeHeader& H = mVals[ i ];
-		if (H.flags & 1) mir_free( H.name );
-		if (H.flags & 2) mir_free( H.value );
+		if (H.flags & 1) mir_free(( void* )H.name );
+		if (H.flags & 2) mir_free(( void* )H.value );
 	}
 
 	mir_free( mVals );
@@ -61,20 +61,20 @@ MimeHeaders::~MimeHeaders()
 void MimeHeaders::addString( const char* name, const char* szValue )
 {
 	MimeHeader& H = mVals[ mCount++ ];
-	H.name = mir_strdup( name );
-	H.value = mir_strdup( szValue ); 
-	H.flags = 3;
+	H.name = name;
+	H.value = szValue; 
+	H.flags = 0;
 }
 
 void MimeHeaders::addLong( const char* name, long lValue )
 {
 	MimeHeader& H = mVals[ mCount++ ];
-	H.name = mir_strdup( name );
+	H.name = name;
 
 	char szBuffer[ 20 ];
 	_ltoa( lValue, szBuffer, 10 );
 	H.value = mir_strdup( szBuffer ); 
-	H.flags = 3;
+	H.flags = 2;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

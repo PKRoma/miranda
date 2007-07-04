@@ -28,8 +28,6 @@ void __cdecl MSNNudgeThread( ThreadData* info );
 void __cdecl MSNServerThread( ThreadData* info );
 void __cdecl MSNSendfileThread( ThreadData* info );
 
-int MSN_GetPassportAuth( char* authChallengeInfo );
-
 void MSN_ChatStart(ThreadData* info);
 void MSN_KillChatSession(TCHAR* id);
 
@@ -669,30 +667,20 @@ static bool sttAddGroup( char* params, bool isFromBoot )
 	return true;
 }
 
-static void sttSwapInt64( LONGLONG* parValue )
-{
-	BYTE* p = ( BYTE* )parValue;
-	for ( int i=0; i < 4; i++ ) {
-		BYTE temp = p[i];
-		p[i] = p[7-i];
-		p[7-i] = temp;
-}	}
-
-
 static void sttProcessStatusMessage( char* buf, unsigned len, HANDLE hContact )
 {
 	ezxml_t xmli = ezxml_parse_str(buf, len);
 
 	// Process status message info
 	const char* szStatMsg = ezxml_txt(ezxml_child(xmli, "PSM"));
-	if (szStatMsg == NULL || szStatMsg[0] == '\0')
-		DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
-	else
+	if (*szStatMsg)
 		DBWriteContactSettingStringUtf( hContact, "CList", "StatusMsg", szStatMsg );
+	else
+		DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
 
 	// Process current media info
 	const char* szCrntMda = ezxml_txt(ezxml_child(xmli, "CurrentMedia"));
-	if (szCrntMda == NULL  || szCrntMda[0] == '\0')
+	if (!*szCrntMda)
 	{
 		MSN_DeleteSetting( hContact, "ListeningTo" );
 		ezxml_free(xmli);
@@ -826,7 +814,7 @@ static void sttProcessPage( char* buf, unsigned len )
 	char* szMsg = ezxml_txt(ezxml_child(xmlbdy, "TEXT"));
 	char* szTel = ezxml_txt(ezxml_child(xmlbdy, "TEL"));
 
-	if (szTel != NULL && szMsg != NULL)
+	if (*szTel && *szMsg)
 	{
 		size_t lene = strlen(szTel) + 5;
 		char* szEmail = (char*)alloca(lene);
@@ -1154,53 +1142,13 @@ LBL_InvalidCommand:
 		}
 		case ' LHC':    //********* CHL: Query from Server on MSNP7
 		{
-			char authChallengeInfo[ 30 ];
-			if ( sscanf( params, "%30s", authChallengeInfo ) < 1 )
+			char* authChallengeInfo;
+			if (sttDivideWords( params, 1, &authChallengeInfo ) != 1)
 				goto LBL_InvalidCommand;
 
-			//Digest it
-			DWORD md5hash[ 4 ];
-			mir_md5_state_t context;
-			mir_md5_init( &context );
-			mir_md5_append( &context, ( BYTE* )authChallengeInfo, strlen( authChallengeInfo ));
-			mir_md5_append( &context, ( BYTE* )msnProtChallenge,  strlen( msnProtChallenge  ));
-			mir_md5_finish( &context, ( BYTE* )md5hash );
-
-		    LONGLONG hash1 = *( LONGLONG* )&md5hash[0], hash2 = *( LONGLONG* )&md5hash[2];
-			size_t i;
-			for ( i=0; i < 4; i++ )
-				md5hash[i] &= 0x7FFFFFFF;
-
-			char chlString[128];
-			_snprintf( chlString, sizeof( chlString ), "%s%s00000000", authChallengeInfo, msnProductID );
-			chlString[ (strlen(authChallengeInfo)+strlen(msnProductID)+7) & 0xF8 ] = 0;
-
-			LONGLONG high=0, low=0;
-			int* chlStringArray = ( int* )chlString;
-			for ( i=0; i < strlen( chlString )/4; i += 2) {
-				LONGLONG temp = chlStringArray[i];
-
-				temp = (0x0E79A9C1 * temp) % 0x7FFFFFFF;
-				temp += high;
-				temp = md5hash[0] * temp + md5hash[1];
-				temp = temp % 0x7FFFFFFF;
-
-				high = chlStringArray[i + 1];
-				high = (high + temp) % 0x7FFFFFFF;
-				high = md5hash[2] * high + md5hash[3];
-				high = high % 0x7FFFFFFF;
-
-				low = low + high + temp;
-			}
-			high = (high + md5hash[1]) % 0x7FFFFFFF;
-			low = (low + md5hash[3]) % 0x7FFFFFFF;
-
-			LONGLONG key = (low << 32) + high;
-			sttSwapInt64( &key );
-			sttSwapInt64( &hash1 );
-			sttSwapInt64( &hash2 );
-
-			info->sendPacket( "QRY", "%s 32\r\n%016I64x%016I64x", msnProductID, hash1 ^ key, hash2 ^ key );
+			char dgst[64];
+			MSN_MakeDigest(authChallengeInfo, dgst);
+			info->sendPacket( "QRY", "%s 32\r\n%s", msnProductID, dgst );
 			break;
 		}
 		case ' RVC':    //********* CVR: MSNP8

@@ -76,19 +76,16 @@ static void sttLogHeader( P2P_Header* hdrdata )
 	MSN_DebugLog( "------------------------" );
 }
 
-static char* getNewUuid()
+char* getNewUuid(void)
 {
 	BYTE* p;
 	UUID id;
 
 	UuidCreate( &id );
 	UuidToStringA( &id, &p );
-	int len = strlen(( const char* )p );
-	char* result = ( char* )mir_alloc( len+3 );
-	result[0]='{';
-	memcpy( result+1, p, len );
-	result[ len+1 ] = '}';
-	result[ len+2 ] = 0;
+	size_t len = strlen((char*)p) + 3;
+	char* result = (char*)mir_alloc(len);
+	mir_snprintf(result, len, "{%s}", p);
 	_strupr( result );
 	RpcStringFreeA( &p );
 	return result;

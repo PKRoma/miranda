@@ -263,6 +263,11 @@ void        InitCustomFolders(void);
 char*       httpParseHeader(char* buf, unsigned& status);
 int         sttDivideWords( char* parBuffer, int parMinItems, char** parDest );
 void		sttNotificationMessage( char* msgBody, bool isInitial );
+int			MSN_SendOIM(char* szEmail, char* msg);
+void		MSN_MakeDigest(const char* chl, char* dgst);
+int			MSN_GetPassportAuth( char* authChallengeInfo );
+char*		getNewUuid(void);
+
 
 TCHAR* EscapeChatTags(const TCHAR* pszText);
 TCHAR* UnEscapeChatTags(TCHAR* str_in);
@@ -289,8 +294,8 @@ typedef struct _tag_PopupData
 
 struct MimeHeader
 {
-	char* name;
-	char* value;
+	const char* name;
+	const char* value;
 	unsigned flags;
 };
 
@@ -773,7 +778,7 @@ struct SSL_Base
 	virtual	~SSL_Base();
 
 	virtual  int init(void) = 0;
-	virtual  char* getSslResult( char* parUrl, char* parAuthInfo, char* hdrs ) = 0;
+	virtual  char* getSslResult( const char* parUrl, const char* parAuthInfo, const char* hdrs ) = 0;
 };
 
 class SSLAgent
@@ -785,7 +790,7 @@ public:
 	SSLAgent();
 	~SSLAgent();
 
-	char* getSslResult( char* parUrl, char* parAuthInfo, char* hdrs );
+	char* getSslResult( const char* parUrl, const char* parAuthInfo, const char* hdrs );
 };
 
 

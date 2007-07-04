@@ -1372,3 +1372,62 @@ bool MSN_IsMyContact( HANDLE hContact )
 	const char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 );
 	return szProto != NULL && strcmp( msnProtocolName, szProto ) == 0;
 }
+
+
+static void sttSwapInt64( LONGLONG* parValue )
+{
+	BYTE* p = ( BYTE* )parValue;
+	for ( int i=0; i < 4; i++ ) {
+		BYTE temp = p[i];
+		p[i] = p[7-i];
+		p[7-i] = temp;
+}	}
+
+
+
+void MSN_MakeDigest(const char* chl, char* dgst)
+{
+	//Digest it
+	DWORD md5hash[ 4 ];
+	mir_md5_state_t context;
+	mir_md5_init( &context );
+	mir_md5_append( &context, ( BYTE* )chl, strlen( chl ));
+	mir_md5_append( &context, ( BYTE* )msnProtChallenge,  strlen( msnProtChallenge ));
+	mir_md5_finish( &context, ( BYTE* )md5hash );
+
+    LONGLONG hash1 = *( LONGLONG* )&md5hash[0], hash2 = *( LONGLONG* )&md5hash[2];
+	size_t i;
+	for ( i=0; i < 4; i++ )
+		md5hash[i] &= 0x7FFFFFFF;
+
+	char chlString[128];
+	_snprintf( chlString, sizeof( chlString ), "%s%s00000000", chl, msnProductID );
+	chlString[ (strlen(chl)+strlen(msnProductID)+7) & 0xF8 ] = 0;
+
+	LONGLONG high=0, low=0;
+	int* chlStringArray = ( int* )chlString;
+	for ( i=0; i < strlen( chlString )/4; i += 2) {
+		LONGLONG temp = chlStringArray[i];
+
+		temp = (0x0E79A9C1 * temp) % 0x7FFFFFFF;
+		temp += high;
+		temp = md5hash[0] * temp + md5hash[1];
+		temp = temp % 0x7FFFFFFF;
+
+		high = chlStringArray[i + 1];
+		high = (high + temp) % 0x7FFFFFFF;
+		high = md5hash[2] * high + md5hash[3];
+		high = high % 0x7FFFFFFF;
+
+		low = low + high + temp;
+	}
+	high = (high + md5hash[1]) % 0x7FFFFFFF;
+	low = (low + md5hash[3]) % 0x7FFFFFFF;
+
+	LONGLONG key = (low << 32) + high;
+	sttSwapInt64( &key );
+	sttSwapInt64( &hash1 );
+	sttSwapInt64( &hash2 );
+
+	mir_snprintf(dgst, 64, "%016I64x%016I64x", hash1 ^ key, hash2 ^ key );
+}

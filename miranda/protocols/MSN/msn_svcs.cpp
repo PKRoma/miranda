@@ -871,7 +871,7 @@ static void sttFakeAck( LPVOID param )
 static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 {
 	CCSDATA* ccs = ( CCSDATA* )lParam;
-	char *errMsg;
+	char *errMsg = NULL;
 
 	char tEmail[ MSN_MAX_EMAIL_LEN ];
 	if ( !MSN_GetStaticString( "e-mail", ccs->hContact, tEmail, sizeof( tEmail )) && !strcmp( tEmail, MyOptions.szEmail )) {
@@ -914,7 +914,6 @@ static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 
 	if ( strlen( msg ) > 1202 ) {
 		errMsg = MSN_Translate( "Message is too long: MSN messages are limited by 1202 UTF8 chars" );
-LBL_Error:
 		mir_free( msg );
 
 		mir_forkthread( sttFakeAck, new TFakeAckParams( ccs->hContact, 999999, errMsg ));
@@ -928,14 +927,18 @@ LBL_Error:
 	{
 		WORD wStatus = MSN_GetWord( ccs->hContact, "Status", ID_STATUS_OFFLINE );
 		if ( wStatus == ID_STATUS_OFFLINE || msnStatusMode == ID_STATUS_INVISIBLE ) {
-			errMsg = MSN_Translate( "MSN protocol does not support offline messages" );
-			goto LBL_Error;
+			seq = MSN_SendOIM(tEmail, msg);
+			if (seq == -1)
+				errMsg = MSN_Translate( "Offline messages could not be sent to this contact" );
+			mir_forkthread( sttFakeAck, new TFakeAckParams( ccs->hContact, seq, errMsg ));
 		}
+		else
+		{
+			if ( MSN_GetUnconnectedThread( ccs->hContact ) == NULL )
+				msnNsThread->sendPacket( "XFR", "SB" );
 
-		if ( MSN_GetUnconnectedThread( ccs->hContact ) == NULL )
-			msnNsThread->sendPacket( "XFR", "SB" );
-
-		seq = MsgQueue_Add( ccs->hContact, msgType, msg, 0, 0, rtlFlag );
+			seq = MsgQueue_Add( ccs->hContact, msgType, msg, 0, 0, rtlFlag );
+		}
 	}
 	else
 	{
@@ -1279,8 +1282,6 @@ static int MsnSetStatus( WPARAM wParam, LPARAM lParam )
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnUserIsTyping - notify another contact that we're typing a message
-
-extern char sttHeaderStart[];
 
 static int MsnUserIsTyping(WPARAM wParam, LPARAM lParam)
 {

@@ -105,7 +105,7 @@ class SSL_WinInet : public SSL_Base
 public:
 	virtual ~SSL_WinInet();
 
-	virtual  char* getSslResult( char* parUrl, char* parAuthInfo, char* hdrs );
+	virtual  char* getSslResult( const char* parUrl, const char* parAuthInfo, const char* hdrs );
 	virtual  int init(void);
 
 private:
@@ -208,7 +208,7 @@ char* SSL_WinInet::readData( HINTERNET hRequest )
 }
 
 
-char* SSL_WinInet::getSslResult( char* parUrl, char* parAuthInfo, char* hdrs )
+char* SSL_WinInet::getSslResult( const char* parUrl, const char* parAuthInfo, const char* hdrs )
 {
 	const DWORD tFlags =
 		INTERNET_FLAG_IGNORE_REDIRECT_TO_HTTPS |
@@ -297,9 +297,9 @@ char* SSL_WinInet::getSslResult( char* parUrl, char* parAuthInfo, char* hdrs )
 
 LBL_Restart:
 			MSN_DebugLog( "Sending request..." );
-//			MSN_DebugLog( parAuthInfo );
+			MSN_DebugLog( parAuthInfo );
 			DWORD tErrorCode = f_HttpSendRequest( tRequest, headers, strlen( headers ), 
-				parAuthInfo, strlen( parAuthInfo ));
+				(void*)parAuthInfo, strlen( parAuthInfo ));
 			if ( tErrorCode == 0 ) {
 				TWinErrorCode errCode;
 				MSN_DebugLog( "HttpSendRequest() failed with error %d: %s", errCode.mErrorCode, errCode.getText());
@@ -338,17 +338,8 @@ LBL_Restart:
 				DWORD tBufSize = sizeof( dwCode );
 				f_HttpQueryInfo( tRequest, HTTP_QUERY_STATUS_CODE | HTTP_QUERY_FLAG_NUMBER, &dwCode, &tBufSize, 0 );
 
-				switch( dwCode ) {
-					case HTTP_STATUS_REDIRECT:
-					case HTTP_STATUS_OK:
-						tSslAnswer = readData( tRequest );
-						break;
-
-					// else fall into the general error handling routine
-					default:
-						mir_free( readData( tRequest ));
-						tSslAnswer = NULL;
-			}	}
+				tSslAnswer = readData( tRequest );
+			}
 
 			f_InternetCloseHandle( tRequest );
 		}
@@ -367,7 +358,7 @@ LBL_Restart:
 class SSL_OpenSsl : public SSL_Base
 {
 public:
-	virtual  char* getSslResult( char* parUrl, char* parAuthInfo, char* hdrs );
+	virtual  char* getSslResult( const char* parUrl, const char* parAuthInfo, const char* hdrs );
 	virtual  int init(void);
 };
 
@@ -449,7 +440,7 @@ int SSL_OpenSsl::init(void)
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-char* SSL_OpenSsl::getSslResult( char* parUrl, char* parAuthInfo, char* hdrs )
+char* SSL_OpenSsl::getSslResult( const char* parUrl, const char* parAuthInfo, const char* hdrs )
 {
 	if ( _strnicmp( parUrl, "https://", 8 ) != 0 )
 		return NULL;
@@ -507,8 +498,11 @@ char* SSL_OpenSsl::getSslResult( char* parUrl, char* parAuthInfo, char* hdrs )
 			if ( pfn_SSL_connect( ssl ) > 0 ) {
 				MSN_DebugLog( "SSL connection succeeded" );
 
-				char headers[2560];
-				unsigned nBytes = mir_snprintf( headers, sizeof( headers ),
+				const char* chdrs = hdrs ? hdrs : "";
+				size_t hlen = strlen(chdrs) + 1024;
+				char *headers = (char*)alloca(hlen);
+				
+				unsigned nBytes = mir_snprintf( headers, hlen,
 					"POST /%s HTTP/1.1\r\n"
 					"Accept: text/xml\r\n"
 					"%s"
@@ -517,15 +511,16 @@ char* SSL_OpenSsl::getSslResult( char* parUrl, char* parAuthInfo, char* hdrs )
 					"Content-Type: text/xml; charset=utf-8\r\n"
 					"Host: %s\r\n"
 					"Connection: close\r\n"
-					"Cache-Control: no-cache\r\n\r\n", path, hdrs ? hdrs : "",
+					"Cache-Control: no-cache\r\n\r\n", path, chdrs,
 					MSN_USER_AGENT, strlen( parAuthInfo ), url+8 );
 
-//				MSN_DebugLog( "Sending SSL query:\n%s", buf );
+				MSN_DebugLog( "Sending SSL query:\n%s", headers );
+				MSN_DebugLog( "Sending SSL query:\n%s", parAuthInfo );
 				pfn_SSL_write( ssl, headers, strlen( headers ));
-				pfn_SSL_write( ssl, parAuthInfo, strlen( parAuthInfo ));
+				pfn_SSL_write( ssl, (void*)parAuthInfo, strlen( parAuthInfo ));
 				
 				nBytes = 0;
-				unsigned dwSize, dwTotSize = 8192;
+				size_t dwSize, dwTotSize = 8192;
 				result = ( char* )mir_alloc( dwTotSize );
 
 				do {
@@ -594,7 +589,7 @@ SSLAgent::~SSLAgent()
 }
 
 
-char* SSLAgent::getSslResult( char* parUrl, char* parAuthInfo, char* hdrs )
+char* SSLAgent::getSslResult( const char* parUrl, const char* parAuthInfo, const char* hdrs )
 {
 	return pAgent ? pAgent->getSslResult(parUrl, parAuthInfo, hdrs) : NULL;
 }
@@ -689,9 +684,8 @@ int MSN_GetPassportAuth( char* authChallengeInfo )
 					}
 					else
 					{
-						ezxml_t tokrdr = ezxml_get(xml, "S:Fault", 0, "faultcode", -1);
-						retVal = (tokrdr != NULL && strcmp( ezxml_txt(tokrdr), 
-							"wsse:FailedAuthentication" ) == 0) ? 3 : 5;
+						char* szFault = ezxml_txt(ezxml_get(xml, "S:Fault", 0, "faultcode", -1));
+						retVal = strcmp( szFault, "wsse:FailedAuthentication" ) == 0 ? 3 : 5;
 					}
 				}
 
