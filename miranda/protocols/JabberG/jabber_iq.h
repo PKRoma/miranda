@@ -32,7 +32,7 @@ Last change by : $Author$
 #include "jabber_xml.h"
 
 
-class CJabberIqRequestInfo;
+class CJabberIqInfo;
 
 
 typedef enum {
@@ -95,14 +95,15 @@ void JabberIqResultSetPassword( XmlNode *iqNode, void *userdata );
 void JabberIqResultSetRegister( XmlNode *iqNode, void *userdata );
 void JabberIqResultSetSearch( XmlNode *iqNode, void *userdata );
 void JabberIqResultSetVcard( XmlNode *iqNode, void *userdata );
-void JabberIqResultEntityTime( XmlNode *iqNode, void *userdata, CJabberIqRequestInfo* pInfo );
-void JabberIqResultLastActivity( XmlNode *iqNode, void *userdata, CJabberIqRequestInfo* pInfo );
+void JabberIqResultEntityTime( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo );
+void JabberIqResultLastActivity( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo );
 
 void JabberSetBookmarkRequest (XmlNodeIq& iqId);
 
 unsigned int  __stdcall JabberSerialNext( void );
 HANDLE        __stdcall JabberHContactFromJID( const TCHAR* jid );
 void          __stdcall JabberLog( const char* fmt, ... );
+TCHAR*        a2t( const char* str );
 
 void  __stdcall replaceStr( char*& dest, const char* src );
 void  __stdcall replaceStr( WCHAR*& dest, const WCHAR* src );
@@ -112,7 +113,7 @@ void  __stdcall replaceStr( WCHAR*& dest, const WCHAR* src );
 
 class CJabberIqRequestManager;
 
-typedef void ( *JABBER_IQ_HANDLER )( XmlNode *iqNode, void *usedata, CJabberIqRequestInfo* pInfo );
+typedef void ( *JABBER_IQ_HANDLER )( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo );
 
 #define JABBER_IQ_TYPE_FAIL						0
 #define JABBER_IQ_TYPE_RESULT					1
@@ -128,15 +129,16 @@ typedef void ( *JABBER_IQ_HANDLER )( XmlNode *iqNode, void *usedata, CJabberIqRe
 #define JABBER_IQ_PARSE_FROM					(1<<3)
 #define JABBER_IQ_PARSE_HCONTACT				((1<<4)|JABBER_IQ_PARSE_FROM)
 #define JABBER_IQ_PARSE_TO						(1<<5)
+#define JABBER_IQ_PARSE_ID_STR					(1<<6)
 
 #define JABBER_IQ_PARSE_DEFAULT					(JABBER_IQ_PARSE_CHILD_TAG_NODE|JABBER_IQ_PARSE_CHILD_TAG_NAME|JABBER_IQ_PARSE_CHILD_TAG_XMLNS)
 
-class CJabberIqRequestInfo
+class CJabberIqInfo
 {
 protected:
-	friend class CJabberIqRequestManager;
+	friend class CJabberIqManager;
 	JABBER_IQ_HANDLER m_pHandler;
-	CJabberIqRequestInfo* m_pNext;
+	CJabberIqInfo* m_pNext;
 	
 	int m_nIqId;
 	DWORD m_dwParamsToParse;
@@ -150,16 +152,17 @@ public:// parsed data
 	int m_nIqType;
 	TCHAR *m_szFrom;
 	TCHAR *m_szChildTagXmlns;
-	char *m_szChildTagName;
+	TCHAR *m_szChildTagName;
 	XmlNode *m_pChildNode;
 	HANDLE m_hContact; 
 	TCHAR *m_szTo;
+	TCHAR *m_szId;
 public:
-	CJabberIqRequestInfo()
+	CJabberIqInfo()
 	{
-		ZeroMemory(this, sizeof(CJabberIqRequestInfo));
+		ZeroMemory(this, sizeof(CJabberIqInfo));
 	}
-	~CJabberIqRequestInfo()
+	~CJabberIqInfo()
 	{
 		if (m_szReceiver)
 			mir_free(m_szReceiver);
@@ -196,6 +199,26 @@ public:
 	{
 		return m_pUserData;
 	}
+	TCHAR* GetFrom()
+	{
+		return m_szFrom;
+	}
+	TCHAR* GetIdStr()
+	{
+		return m_szId;
+	}
+	HANDLE GetHContact()
+	{
+		return m_hContact;
+	}
+	XmlNode* GetChildNode()
+	{
+		return m_pChildNode;
+	}
+	TCHAR* GetChildNodeName()
+	{
+		return m_szChildTagName;
+	}
 	char* GetCharIqType()
 	{
 		switch (m_nIqType)
@@ -209,21 +232,49 @@ public:
 	}
 };
 
-class CJabberIqRequestManager
+class CJabberIqPermanentInfo
+{
+	friend class CJabberIqManager;
+
+	CJabberIqPermanentInfo* m_pNext;
+
+	JABBER_IQ_HANDLER m_pHandler;
+	DWORD m_dwParamsToParse;
+	int m_nIqTypes;
+	TCHAR* m_szXmlns;
+	TCHAR* m_szTag;
+	BOOL m_bAllowPartialNs;
+public:
+	CJabberIqPermanentInfo()
+	{
+		ZeroMemory(this, sizeof(CJabberIqPermanentInfo));
+	}
+	~CJabberIqPermanentInfo()
+	{
+		mir_free(m_szXmlns);
+		mir_free(m_szTag);
+		if ( m_pNext )
+			delete m_pNext;
+	}
+};
+
+class CJabberIqManager
 {
 protected:
 	CRITICAL_SECTION m_cs;
 	DWORD m_dwLastUsedHandle;
-	CJabberIqRequestInfo* m_pIqs;
+	CJabberIqInfo* m_pIqs;
 	HANDLE m_hExpirerThread;
 	BOOL m_bExpirerThreadShutdownRequest;
 
-	CJabberIqRequestInfo* DetachInfo(int nIqId, DWORD dwGroupId)
+	CJabberIqPermanentInfo* m_pPermanentHandlers;
+
+	CJabberIqInfo* DetachInfo(int nIqId, DWORD dwGroupId)
 	{
 		if (!m_pIqs)
 			return NULL;
 
-		CJabberIqRequestInfo* pInfo = m_pIqs;
+		CJabberIqInfo* pInfo = m_pIqs;
 		if (nIqId == -1 ? m_pIqs->m_dwGroupId == dwGroupId : m_pIqs->m_nIqId == nIqId)
 		{
 			m_pIqs = pInfo->m_pNext;
@@ -235,7 +286,7 @@ protected:
 		{
 			if (nIqId == -1 ? pInfo->m_pNext->m_dwGroupId == dwGroupId : pInfo->m_pNext->m_nIqId == nIqId)
 			{
-				CJabberIqRequestInfo* pRetVal = pInfo->m_pNext;
+				CJabberIqInfo* pRetVal = pInfo->m_pNext;
 				pInfo->m_pNext = pInfo->m_pNext->m_pNext;
 				pRetVal->m_pNext = NULL;
 				return pRetVal;
@@ -244,12 +295,12 @@ protected:
 		}
 		return NULL;
 	}
-	CJabberIqRequestInfo* DetachInfo(void *pUserData)
+	CJabberIqInfo* DetachInfo(void *pUserData)
 	{
 		if (!m_pIqs)
 			return NULL;
 
-		CJabberIqRequestInfo* pInfo = m_pIqs;
+		CJabberIqInfo* pInfo = m_pIqs;
 		if (m_pIqs->m_pUserData == pUserData)
 		{
 			m_pIqs = pInfo->m_pNext;
@@ -261,7 +312,7 @@ protected:
 		{
 			if (pInfo->m_pNext->m_pUserData == pUserData)
 			{
-				CJabberIqRequestInfo* pRetVal = pInfo->m_pNext;
+				CJabberIqInfo* pRetVal = pInfo->m_pNext;
 				pInfo->m_pNext = pInfo->m_pNext->m_pNext;
 				pRetVal->m_pNext = NULL;
 				return pRetVal;
@@ -270,14 +321,14 @@ protected:
 		}
 		return NULL;
 	}
-	CJabberIqRequestInfo* DetachExpired()
+	CJabberIqInfo* DetachExpired()
 	{
 		if (!m_pIqs)
 			return NULL;
 
 		DWORD dwCurrentTime = GetTickCount();
 
-		CJabberIqRequestInfo* pInfo = m_pIqs;
+		CJabberIqInfo* pInfo = m_pIqs;
 		if (pInfo->m_dwRequestTime + pInfo->m_dwTimeout < dwCurrentTime)
 		{
 			m_pIqs = pInfo->m_pNext;
@@ -289,7 +340,7 @@ protected:
 		{
 			if (pInfo->m_pNext->m_dwRequestTime + pInfo->m_pNext->m_dwTimeout < dwCurrentTime)
 			{
-				CJabberIqRequestInfo* pRetVal = pInfo->m_pNext;
+				CJabberIqInfo* pRetVal = pInfo->m_pNext;
 				pInfo->m_pNext = pInfo->m_pNext->m_pNext;
 				pRetVal->m_pNext = NULL;
 				return pRetVal;
@@ -300,7 +351,7 @@ protected:
 	}
 	static DWORD WINAPI _ExpirerThread(LPVOID pParam)
 	{
-		CJabberIqRequestManager *pManager = ( CJabberIqRequestManager * )pParam;
+		CJabberIqManager *pManager = ( CJabberIqManager * )pParam;
 		pManager->ExpirerThread();
 		if ( !pManager->m_bExpirerThreadShutdownRequest ) {
 			CloseHandle( pManager->m_hExpirerThread );
@@ -313,7 +364,7 @@ protected:
 		while (!m_bExpirerThreadShutdownRequest)
 		{
 			Lock();
-			CJabberIqRequestInfo* pInfo = DetachExpired();
+			CJabberIqInfo* pInfo = DetachExpired();
 			Unlock();
 			if (!pInfo)
 			{
@@ -325,7 +376,7 @@ protected:
 			delete pInfo;
 		}
 	}
-	void ExpireInfo( CJabberIqRequestInfo* pInfo, void *pUserData = NULL )
+	void ExpireInfo( CJabberIqInfo* pInfo, void *pUserData = NULL )
 	{
 		if ( !pInfo )
 			return;
@@ -340,14 +391,14 @@ protected:
 		pInfo->m_nIqType = JABBER_IQ_TYPE_FAIL;
 		pInfo->m_pHandler( NULL, NULL, pInfo );
 	}
-	BOOL AppendIq(CJabberIqRequestInfo* pInfo)
+	BOOL AppendIq(CJabberIqInfo* pInfo)
 	{
 		Lock();
 		if (!m_pIqs)
 			m_pIqs = pInfo;
 		else
 		{
-			CJabberIqRequestInfo* pTmp = m_pIqs;
+			CJabberIqInfo* pTmp = m_pIqs;
 			while (pTmp->m_pNext)
 				pTmp = pTmp->m_pNext;
 			pTmp->m_pNext = pInfo;
@@ -356,16 +407,19 @@ protected:
 		return TRUE;
 	}
 public:
-	CJabberIqRequestManager()
+	CJabberIqManager()
 	{
 		InitializeCriticalSection(&m_cs);
 		m_dwLastUsedHandle = 0;
 		m_pIqs = NULL;
 		m_hExpirerThread = NULL;
+		m_pPermanentHandlers = NULL;
 	}
-	~CJabberIqRequestManager()
+	~CJabberIqManager()
 	{
 		ExpireAll();
+		if ( m_pPermanentHandlers )
+			delete m_pPermanentHandlers;
 		DeleteCriticalSection(&m_cs);
 	}
 	BOOL Start()
@@ -412,7 +466,7 @@ public:
 	{
 		Lock();
 		DWORD dwCount = 0;
-		CJabberIqRequestInfo* pInfo = m_pIqs;
+		CJabberIqInfo* pInfo = m_pIqs;
 		while (pInfo)
 		{
 			if (pInfo->m_dwGroupId == dwGroup)
@@ -423,9 +477,9 @@ public:
 		return dwCount;
 	}
 	// fucking params, maybe just return CJabberIqRequestInfo pointer ?
-	CJabberIqRequestInfo* AddHandler(JABBER_IQ_HANDLER pHandler, int nIqType = JABBER_IQ_TYPE_GET, TCHAR *szReceiver = NULL, DWORD dwParamsToParse = 0, int nIqId = -1, void *pUserData = NULL, DWORD dwGroupId = 0, DWORD dwTimeout = JABBER_DEFAULT_IQ_REQUEST_TIMEOUT)
+	CJabberIqInfo* AddHandler(JABBER_IQ_HANDLER pHandler, int nIqType = JABBER_IQ_TYPE_GET, TCHAR *szReceiver = NULL, DWORD dwParamsToParse = 0, int nIqId = -1, void *pUserData = NULL, DWORD dwGroupId = 0, DWORD dwTimeout = JABBER_DEFAULT_IQ_REQUEST_TIMEOUT)
 	{
-		CJabberIqRequestInfo* pInfo = new CJabberIqRequestInfo();
+		CJabberIqInfo* pInfo = new CJabberIqInfo();
 		if (!pInfo)
 			return NULL;
 
@@ -445,58 +499,146 @@ public:
 
 		return pInfo;
 	}
+	CJabberIqPermanentInfo* AddPermanentHandler(JABBER_IQ_HANDLER pHandler, int nIqTypes, DWORD dwParamsToParse, TCHAR* szXmlns, BOOL bAllowPartialNs, TCHAR* szTag)
+	{
+		CJabberIqPermanentInfo* pInfo = new CJabberIqPermanentInfo();
+		if (!pInfo)
+			return NULL;
+
+		pInfo->m_pHandler = pHandler;
+		pInfo->m_nIqTypes = nIqTypes;
+		replaceStr( pInfo->m_szXmlns, szXmlns );
+		pInfo->m_bAllowPartialNs = bAllowPartialNs;
+		replaceStr( pInfo->m_szTag, szTag );
+		pInfo->m_dwParamsToParse = dwParamsToParse;
+
+		Lock();
+		if (!m_pPermanentHandlers)
+			m_pPermanentHandlers = pInfo;
+		else
+		{
+			CJabberIqPermanentInfo* pTmp = m_pPermanentHandlers;
+			while (pTmp->m_pNext)
+				pTmp = pTmp->m_pNext;
+			pTmp->m_pNext = pInfo;
+		}
+		Unlock();
+
+		return pInfo;
+	}
 	BOOL HandleIq(int nIqId, XmlNode *pNode, void *pUserData)
 	{
 		if (nIqId == -1 || pNode == NULL)
 			return FALSE;
 
+		TCHAR *szType = JabberXmlGetAttrValue(pNode, "type");
+		if ( !szType )
+			return FALSE;
+
+		int nIqType = JABBER_IQ_TYPE_FAIL;
+		if (!_tcsicmp(szType, _T("result")))
+			nIqType = JABBER_IQ_TYPE_RESULT;
+		else if (!_tcsicmp(szType, _T("error")))
+			nIqType = JABBER_IQ_TYPE_ERROR;
+		else
+			return FALSE;
+
 		Lock();
-		CJabberIqRequestInfo* pInfo = DetachInfo(nIqId, 0);
+		CJabberIqInfo* pInfo = DetachInfo(nIqId, 0);
 		Unlock();
 		if (pInfo)
 		{
-			TCHAR *szType = JabberXmlGetAttrValue(pNode, "type");
-			pInfo->m_nIqType = JABBER_IQ_TYPE_FAIL;
-			if (szType)
-			{
-				if (!_tcsicmp(szType, _T("result")))
-					pInfo->m_nIqType = JABBER_IQ_TYPE_RESULT;
-				else if (!_tcsicmp(szType, _T("error")))
-					pInfo->m_nIqType = JABBER_IQ_TYPE_ERROR;
-				else if (!_tcsicmp(szType, _T("get")))
-					pInfo->m_nIqType = JABBER_IQ_TYPE_GET;
-				else if (!_tcsicmp(szType, _T("set")))
-					pInfo->m_nIqType = JABBER_IQ_TYPE_SET;
+			pInfo->m_nIqType = nIqType;
+			if (nIqType == JABBER_IQ_TYPE_RESULT) {
+				if (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_CHILD_TAG_NODE)
+					pInfo->m_pChildNode = JabberXmlGetFirstChild( pNode );
+				
+				if (pInfo->m_pChildNode && (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_CHILD_TAG_NAME))
+					pInfo->m_szChildTagName = a2t( pInfo->m_pChildNode->name );
+				if (pInfo->m_pChildNode && (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_CHILD_TAG_XMLNS))
+					pInfo->m_szChildTagXmlns = JabberXmlGetAttrValue( pInfo->m_pChildNode, "xmlns" );
 			}
-			if ((pInfo->m_nIqType & JABBER_IQ_TYPE_GOOD) && (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_CHILD_TAG_NODE))
-			{
-				pInfo->m_pChildNode = JabberXmlGetFirstChild( pNode );
-				if (!pInfo->m_pChildNode)
-					pInfo->m_nIqType = JABBER_IQ_TYPE_FAIL;
-			}
-			if ((pInfo->m_nIqType & JABBER_IQ_TYPE_GOOD) && (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_CHILD_TAG_NAME))
-				pInfo->m_szChildTagName = pInfo->m_pChildNode->name;
-			if ((pInfo->m_nIqType && JABBER_IQ_TYPE_GOOD) && (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_CHILD_TAG_XMLNS))
-				pInfo->m_szChildTagXmlns = JabberXmlGetAttrValue( pInfo->m_pChildNode, "xmlns" );
-			
+
 			if (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_TO)
 				pInfo->m_szTo = JabberXmlGetAttrValue( pNode, "to" );
 
 			if (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_FROM)
 				pInfo->m_szFrom = JabberXmlGetAttrValue( pNode, "from" );
-			if ((pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_HCONTACT) && (pInfo->m_szFrom))
+			if (pInfo->m_szFrom && (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_HCONTACT))
 				pInfo->m_hContact = JabberHContactFromJID( pInfo->m_szFrom );
 
+			if (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_ID_STR)
+				pInfo->m_szId = JabberXmlGetAttrValue( pNode, "id" );
+
 			pInfo->m_pHandler(pNode, pUserData, pInfo);
+			mir_free( pInfo->m_szChildTagName );
 			delete pInfo;
 			return TRUE;
 		}
 		return FALSE;
 	}
+	BOOL HandleIqPermanent(XmlNode *pNode, void *pUserData)
+	{
+		TCHAR *szType = JabberXmlGetAttrValue(pNode, "type");
+		if ( !szType )
+			return FALSE;
+		
+		CJabberIqInfo iqInfo;
+
+		iqInfo.m_nIqType = JABBER_IQ_TYPE_FAIL;
+		if ( !_tcsicmp( szType, _T("get")))
+			iqInfo.m_nIqType = JABBER_IQ_TYPE_GET;
+		else if ( !_tcsicmp( szType, _T("set")))
+			iqInfo.m_nIqType = JABBER_IQ_TYPE_SET;
+		else
+			return FALSE;
+
+		XmlNode *pFirstChild = JabberXmlGetFirstChild( pNode );
+		if ( !pFirstChild || !pFirstChild->name )
+			return FALSE;
+		
+		TCHAR *szTagName = a2t( pFirstChild->name );
+		TCHAR *szXmlns = JabberXmlGetAttrValue( pFirstChild, "xmlns" );
+
+		Lock();
+		CJabberIqPermanentInfo *pInfo = m_pPermanentHandlers;
+		while ( pInfo ) {
+			BOOL bAllow = TRUE;
+			if ( !(pInfo->m_nIqTypes & iqInfo.m_nIqType ))
+				bAllow = FALSE;
+			if ( bAllow && pInfo->m_szXmlns && ( !szXmlns || _tcscmp( pInfo->m_szXmlns, szXmlns )))
+				bAllow = FALSE;
+			if ( bAllow && pInfo->m_szTag && _tcscmp( pInfo->m_szTag, szTagName ))
+				bAllow = FALSE;
+			if ( bAllow ) {
+				iqInfo.m_pChildNode = pFirstChild;
+				iqInfo.m_szChildTagName = szTagName;
+				iqInfo.m_szChildTagXmlns = szXmlns;
+				iqInfo.m_szId = JabberXmlGetAttrValue( pNode, "id" );
+
+				if (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_TO)
+					iqInfo.m_szTo = JabberXmlGetAttrValue( pNode, "to" );
+
+				if (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_FROM)
+					iqInfo.m_szFrom = JabberXmlGetAttrValue( pNode, "from" );
+
+				if ((pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_HCONTACT) && (iqInfo.m_szFrom))
+					iqInfo.m_hContact = JabberHContactFromJID( iqInfo.m_szFrom );
+
+				JabberLog( "Handling iq id %S, type %S, from %S", iqInfo.m_szId, szType, iqInfo.m_szFrom );
+				pInfo->m_pHandler(pNode, pUserData, &iqInfo);
+			}
+			pInfo = pInfo->m_pNext;
+		}
+		Unlock();
+
+		mir_free( szTagName );
+		return FALSE;
+	}
 	BOOL ExpireIq(int nIqId, void *pUserData = NULL)
 	{
 		Lock();
-		CJabberIqRequestInfo* pInfo = DetachInfo(nIqId, 0);
+		CJabberIqInfo* pInfo = DetachInfo(nIqId, 0);
 		Unlock();
 		if (pInfo)
 		{
@@ -512,7 +654,7 @@ public:
 		while (1)
 		{
 			Lock();
-			CJabberIqRequestInfo* pInfo = DetachInfo(-1, dwGroupId);
+			CJabberIqInfo* pInfo = DetachInfo(-1, dwGroupId);
 			Unlock();
 			if (!pInfo)
 				break;
@@ -528,7 +670,7 @@ public:
 		while (1)
 		{
 			Lock();
-			CJabberIqRequestInfo* pInfo = DetachInfo(pUserData);
+			CJabberIqInfo* pInfo = DetachInfo(pUserData);
 			Unlock();
 			if (!pInfo)
 				break;
@@ -543,7 +685,7 @@ public:
 		while (1)
 		{
 			Lock();
-			CJabberIqRequestInfo* pInfo = m_pIqs;
+			CJabberIqInfo* pInfo = m_pIqs;
 			if (pInfo)
 				m_pIqs = m_pIqs->m_pNext;
 			Unlock();
@@ -555,9 +697,10 @@ public:
 		}
 		return TRUE;
 	}
+	BOOL FillPermanentHandlers();
 };
 
 
-extern CJabberIqRequestManager g_JabberIqRequestManager;
+extern CJabberIqManager g_JabberIqManager;
 
 #endif

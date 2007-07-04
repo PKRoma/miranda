@@ -105,7 +105,7 @@ static void JabberOnLoggedIn( ThreadData* info )
 
 //	iqId = JabberSerialNext();
 //	JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultPrivacyLists );
-	XmlNodeIq piq( g_JabberIqRequestManager.AddHandler( JabberIqResultPrivacyLists ));
+	XmlNodeIq piq( g_JabberIqManager.AddHandler( JabberIqResultPrivacyLists ));
 	piq.addQuery( JABBER_FEAT_PRIVACY_LISTS );
 	jabberThreadInfo->send( piq );
 
@@ -1725,7 +1725,7 @@ void JabberIqResultSetBookmarks( XmlNode *iqNode, void *userdata )
 }	}
 
 // last activity (XEP-0012) support
-void JabberIqResultLastActivity( XmlNode *iqNode, void *userdata, CJabberIqRequestInfo* pInfo )
+void JabberIqResultLastActivity( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo )
 {
 	JABBER_RESOURCE_STATUS *r = JabberResourceInfoFromJID( pInfo->m_szFrom );
 	if ( !r )
@@ -1749,7 +1749,7 @@ void JabberIqResultLastActivity( XmlNode *iqNode, void *userdata, CJabberIqReque
 }
 
 // entity time (XEP-0202) support
-void JabberIqResultEntityTime( XmlNode* pIqNode, void* pUserdata, CJabberIqRequestInfo* pInfo )
+void JabberIqResultEntityTime( XmlNode* pIqNode, void* pUserdata, CJabberIqInfo* pInfo )
 {
 	if ( !pInfo->m_hContact )
 		return;

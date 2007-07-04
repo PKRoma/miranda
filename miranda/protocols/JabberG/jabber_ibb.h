@@ -50,5 +50,6 @@ typedef struct {
 void __cdecl JabberIbbSendThread( JABBER_IBB_TRANSFER *jibb );
 void __cdecl JabberIbbReceiveThread( JABBER_IBB_TRANSFER *jibb );
 BOOL JabberIbbProcessRecvdData( TCHAR *data, TCHAR *sid, TCHAR *seq );
+void JabberFtHandleIbbIq( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo );
 
 #endif

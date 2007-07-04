@@ -34,22 +34,14 @@ Last change by : $Author: ghazan $
 
 CPrivacyListManager g_PrivacyListManager;
 
-void JabberProcessIqPrivacyLists( XmlNode* node )
+void JabberProcessIqPrivacyLists( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
-	if ( !node )
-		return;
-
-	TCHAR* type = JabberXmlGetAttrValue( node, "type" );
-	TCHAR* from = JabberXmlGetAttrValue( node, "from" );
-	if ( !type || !from )
-		return;
-
-	if ( !_tcscmp( type, _T("set"))) {
-		XmlNodeIq iq( "result", node, from );
+	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_SET ) {
+		XmlNodeIq iq( "result", pInfo );
 		jabberThreadInfo->send( iq );
 }	}
 
-void JabberIqResultPrivacyListModify( XmlNode* iqNode, void* userdata, CJabberIqRequestInfo* pInfo )
+void JabberIqResultPrivacyListModify( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	if ( !pInfo->m_pUserData )
 		return;
@@ -59,7 +51,7 @@ void JabberIqResultPrivacyListModify( XmlNode* iqNode, void* userdata, CJabberIq
 	if ( pInfo->m_nIqType != JABBER_IQ_TYPE_RESULT )
 		pParam->m_bAllOk = FALSE;
 
-	if ( !g_JabberIqRequestManager.GetGroupPendingIqCount( pInfo->m_dwGroupId )) {
+	if ( !g_JabberIqManager.GetGroupPendingIqCount( pInfo->m_dwGroupId )) {
 		if ( !pParam->m_bAllOk ) {
 			// FIXME: msg box with error message
 		}
@@ -255,7 +247,7 @@ void JabberIqResultPrivacyListDefault( XmlNode* iqNode, void* userdata )
 	g_PrivacyListManager.Unlock();
 }
 
-void JabberIqResultPrivacyLists( XmlNode* iqNode, void* userdata, CJabberIqRequestInfo* pInfo )
+void JabberIqResultPrivacyLists( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	if ( pInfo->m_nIqType != JABBER_IQ_TYPE_RESULT )
 		return;
@@ -589,7 +581,7 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		EnableWindow( GetDlgItem( hwndDlg, IDC_UP_RULE ), FALSE );
 		EnableWindow( GetDlgItem( hwndDlg, IDC_DOWN_RULE ), FALSE );
 		{
-			XmlNodeIq iq( g_JabberIqRequestManager.AddHandler( JabberIqResultPrivacyLists ));
+			XmlNodeIq iq( g_JabberIqManager.AddHandler( JabberIqResultPrivacyLists ));
 			XmlNode* query = iq.addQuery( JABBER_FEAT_PRIVACY_LISTS );
 			jabberThreadInfo->send( iq );
 		}
@@ -960,12 +952,12 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 						pList->SetModified( FALSE );
 
 						if ( !dwGroupId ) {
-							dwGroupId = g_JabberIqRequestManager.GetNextFreeGroupId();
+							dwGroupId = g_JabberIqManager.GetNextFreeGroupId();
 							pUserData = new CPrivacyListModifyUserParam;
 							pUserData->m_bAllOk = TRUE;
 						}
 
-						XmlNodeIq iq( g_JabberIqRequestManager.AddHandler( JabberIqResultPrivacyListModify, JABBER_IQ_TYPE_SET, NULL, 0, -1, pUserData, dwGroupId ));
+						XmlNodeIq iq( g_JabberIqManager.AddHandler( JabberIqResultPrivacyListModify, JABBER_IQ_TYPE_SET, NULL, 0, -1, pUserData, dwGroupId ));
 						XmlNode* query = iq.addQuery( JABBER_FEAT_PRIVACY_LISTS );
 						XmlNode* listTag = query->addChild( "list" );
 						listTag->addAttr( "name", pList->GetListName() );

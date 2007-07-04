@@ -29,8 +29,8 @@ Last change by : $Author: ghazan $
 #ifndef _JABBER_PRIVACY_H_
 #define _JABBER_PRIVACY_H_
 
-void JabberProcessIqPrivacyLists( XmlNode* node );
-void JabberIqResultPrivacyLists( XmlNode* iqNode, void* userdata, CJabberIqRequestInfo *pInfo );
+void JabberProcessIqPrivacyLists( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
+void JabberIqResultPrivacyLists( XmlNode* iqNode, void* userdata, CJabberIqInfo *pInfo );
 int JabberMenuHandlePrivacyLists( WPARAM wParam, LPARAM lParam );
 
 #define JABBER_PL_RULE_TYPE_MESSAGE			1

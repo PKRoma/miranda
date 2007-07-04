@@ -575,13 +575,23 @@ XmlNodeIq::XmlNodeIq( const char* type, int id, const char* to ) :
 }
 #endif
 
-XmlNodeIq::XmlNodeIq( CJabberIqRequestInfo* pInfo ) :
+XmlNodeIq::XmlNodeIq( CJabberIqInfo* pInfo ) :
 	XmlNode( "iq" )
 {
 	if ( pInfo ) {
 		if ( pInfo->GetCharIqType() != NULL ) addAttr( "type", pInfo->GetCharIqType() );
 		if ( pInfo->GetReceiver()   != NULL ) addAttr( "to", pInfo->GetReceiver() );
 		if ( pInfo->GetIqId()       != NOID ) addAttrID( pInfo->GetIqId() );
+	}
+}
+
+XmlNodeIq::XmlNodeIq( const char* type, CJabberIqInfo* pInfo ) :
+	XmlNode( "iq" )
+{
+	if ( type != NULL ) addAttr( "type", type );
+	if ( pInfo ) {
+		if ( pInfo->GetFrom()  != NULL ) addAttr( "to", pInfo->GetFrom() );
+		if ( pInfo->GetIdStr() != NULL ) addAttr( "id", pInfo->GetIdStr() );
 	}
 }
 

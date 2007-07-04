@@ -109,11 +109,17 @@ typedef unsigned __int64 JabberCapsBits;
 #define JABBER_CAPS_MESSAGE_EVENTS_NO_DELIVERY  ((JabberCapsBits)1<<60)
 
 #define JABBER_CAPS_MIRANDA_NODE                "http://miranda-im.org/caps"
-#define JABBER_CAPS_MIRANDA_ALL                 (JABBER_CAPS_DISCO_INFO|JABBER_CAPS_ENTITY_CAPS|JABBER_CAPS_MUC|JABBER_CAPS_ENTITY_CAPS|JABBER_CAPS_SI|JABBER_CAPS_SI_FT|JABBER_CAPS_BYTESTREAMS|JABBER_CAPS_IBB|JABBER_CAPS_OOB|JABBER_CAPS_CHATSTATES|JABBER_CAPS_AGENTS|JABBER_CAPS_BROWSE|JABBER_CAPS_VERSION|JABBER_CAPS_LAST_ACTIVITY|JABBER_CAPS_DATA_FORMS|JABBER_CAPS_MESSAGE_EVENTS|JABBER_CAPS_VCARD_TEMP|JABBER_CAPS_ENTITY_TIME|JABBER_CAPS_PING|JABBER_CAPS_USER_MOOD_NOTIFY|JABBER_CAPS_PRIVACY_LISTS|JABBER_CAPS_MESSAGE_RECEIPTS|JABBER_CAPS_SECUREIM)
+#define JABBER_CAPS_MIRANDA_ALL                 (JABBER_CAPS_DISCO_INFO|JABBER_CAPS_ENTITY_CAPS|JABBER_CAPS_MUC|JABBER_CAPS_ENTITY_CAPS|JABBER_CAPS_SI|JABBER_CAPS_SI_FT|JABBER_CAPS_BYTESTREAMS|JABBER_CAPS_IBB|JABBER_CAPS_OOB|JABBER_CAPS_CHATSTATES|JABBER_CAPS_AGENTS|JABBER_CAPS_BROWSE|JABBER_CAPS_VERSION|JABBER_CAPS_LAST_ACTIVITY|JABBER_CAPS_DATA_FORMS|JABBER_CAPS_MESSAGE_EVENTS|JABBER_CAPS_VCARD_TEMP|JABBER_CAPS_ENTITY_TIME|JABBER_CAPS_PING|JABBER_CAPS_USER_MOOD_NOTIFY|JABBER_CAPS_PRIVACY_LISTS|JABBER_CAPS_MESSAGE_RECEIPTS|JABBER_CAPS_SECUREIM|JABBER_CAPS_COMMANDS)
 
 #define JABBER_CAPS_MIRANDA_PARTIAL             (JABBER_CAPS_DISCO_INFO|JABBER_CAPS_ENTITY_CAPS|JABBER_CAPS_MUC|JABBER_CAPS_ENTITY_CAPS|JABBER_CAPS_SI|JABBER_CAPS_SI_FT|JABBER_CAPS_BYTESTREAMS|JABBER_CAPS_IBB|JABBER_CAPS_OOB|JABBER_CAPS_CHATSTATES|JABBER_CAPS_AGENTS|JABBER_CAPS_BROWSE|JABBER_CAPS_VERSION|JABBER_CAPS_LAST_ACTIVITY|JABBER_CAPS_DATA_FORMS|JABBER_CAPS_MESSAGE_EVENTS|JABBER_CAPS_VCARD_TEMP|JABBER_CAPS_ENTITY_TIME|JABBER_CAPS_PING|JABBER_CAPS_USER_MOOD_NOTIFY|JABBER_CAPS_PRIVACY_LISTS|JABBER_CAPS_MESSAGE_RECEIPTS)
 
 #define JABBER_EXT_SECUREIM                     "secureim"
+#define JABBER_EXT_COMMANDS						"cmds"
+
+#define JABBER_FEAT_RC_SET_STATUS               "http://jabber.org/protocol/rc#set-status"
+#define JABBER_FEAT_RC_SET_OPTIONS              "http://jabber.org/protocol/rc#set-options"
+
+#define JABBER_FEAT_IQ_ROSTER                   "jabber:iq:roster"
 
 
 class CJabberClientPartialCaps
@@ -177,69 +183,15 @@ public:
 	}
 };
 
-class CJabberClientCapsQuery;
-typedef void ( *JABBER_CAPS_QUERY_PFUNC )( CJabberClientCapsQuery *pQuery );
-class CJabberClientCapsQuery
-{
-protected:
-	TCHAR *m_szJid;
-	CJabberClientCapsQuery *m_pNext;
-	DWORD m_dwStartTime;
-	JABBER_CAPS_QUERY_PFUNC m_pFunc;
-	int m_nIqId;
-public:
-	CJabberClientCapsQuery(int nIqId, TCHAR *szJid, JABBER_CAPS_QUERY_PFUNC pFunc)
-	{
-		m_nIqId = nIqId;
-		m_szJid = mir_tstrdup( szJid );
-		m_pNext = NULL;
-		m_dwStartTime = GetTickCount();
-		m_pFunc = pFunc;
-	}
-	~CJabberClientCapsQuery()
-	{
-		mir_free( m_szJid );
-		if (m_pNext)
-			delete m_pNext;
-	}
-	CJabberClientCapsQuery* SetNext(CJabberClientCapsQuery *pNext)
-	{
-		CJabberClientCapsQuery* pRetVal = m_pNext;
-		m_pNext = pNext;
-		return pRetVal;
-	}
-	__inline CJabberClientCapsQuery* GetNext()
-	{	return m_pNext;
-	}
-	__inline BOOL IsExpired()
-	{	return GetTickCount() - m_dwStartTime > JABBER_RESOURCE_CAPS_QUERY_TIMEOUT;
-	}
-	__inline void Callback()
-	{	m_pFunc(this);
-	}
-	__inline int GetIqId()
-	{	return m_nIqId;
-	}
-	__inline TCHAR* GetJid()
-	{	return m_szJid;
-	}
-};
-
 class CJabberClientCapsManager
 {
 
 protected:
 	CRITICAL_SECTION m_cs;
 	CJabberClientCaps *m_pClients;
-	BOOL m_bResolverThreadStopRequest;
-	HANDLE m_hResolverThread;
-	CJabberClientCapsQuery *m_pQueries;
 
 protected:
 	CJabberClientCaps *FindClient( TCHAR *szNode );
-	static DWORD WINAPI _ResolverThread(LPVOID pParam);
-	void ResolverThread();
-	CJabberClientCapsQuery* FindExpiredQuery();
 
 public:
 	CJabberClientCapsManager();
@@ -251,13 +203,6 @@ public:
 	__inline void Unlock()
 	{	LeaveCriticalSection( &m_cs );
 	}
-
-	BOOL StartResolverThread();
-	BOOL StopResolverThread();
-	BOOL IsResolverThreadRunning();
-
-	BOOL AddQuery( int nIqId, TCHAR *szJid, JABBER_CAPS_QUERY_PFUNC pFunc );
-	BOOL DeleteQuery( int nIqId );
 
 	void AddDefaultCaps();
 

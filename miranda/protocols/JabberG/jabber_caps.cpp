@@ -30,6 +30,8 @@ Last change by : $Author: ghazan $
 #include "jabber_iq.h"
 #include "jabber_caps.h"
 
+void JabberProcessIqResultVersion( XmlNode* node, void* userdata, CJabberIqInfo *pInfo );
+
 JabberFeatCapPair g_JabberFeatCapPairs[] = {
 	{	_T(JABBER_FEAT_DISCO_INFO),       JABBER_CAPS_DISCO_INFO       },
 	{	_T(JABBER_FEAT_DISCO_ITEMS),      JABBER_CAPS_DISCO_ITEMS      },
@@ -67,29 +69,18 @@ JabberFeatCapPair g_JabberFeatCapPairs[] = {
 
 JabberFeatCapPair g_JabberFeatCapPairsExt[] = {
 	{	_T(JABBER_EXT_SECUREIM),          JABBER_CAPS_SECUREIM         },
+	{	_T(JABBER_EXT_COMMANDS),          JABBER_CAPS_COMMANDS         },
 	{	NULL,                             0                            }
 };
 
 CJabberClientCapsManager g_JabberClientCapsManager;
 
-static void JabberIqResultCapsDiscoInfo( XmlNode* iqNode, void* userdata )
+static void JabberIqResultCapsDiscoInfo( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
-	if ( !iqNode )
-		return;
+	JABBER_RESOURCE_STATUS *r = JabberResourceInfoFromJID( pInfo->GetFrom() );
 
-	TCHAR *from = JabberXmlGetAttrValue( iqNode, "from" );
-	TCHAR *type = JabberXmlGetAttrValue( iqNode, "type" );
-	int nIqId = JabberGetPacketID( iqNode );
-
-	if ( !type || !from || nIqId == -1 )
-		return;
-
-	JABBER_RESOURCE_STATUS *r = JabberResourceInfoFromJID( from );
-
-	if ( !_tcscmp( type, _T("result"))) {
-		XmlNode *query = JabberXmlGetChild( iqNode, "query" );
-		if ( !query )
-			return;
+	XmlNode* query = pInfo->GetChildNode();
+	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_RESULT && query ) {
 		JabberCapsBits jcbCaps = 0;
 		XmlNode *feature;
 		for ( int i = 1; ( feature = JabberXmlGetNthChild( query, "feature", i )) != NULL; i++ ) {
@@ -108,25 +99,16 @@ static void JabberIqResultCapsDiscoInfo( XmlNode* iqNode, void* userdata )
 			return;
 		}
 
-		g_JabberClientCapsManager.SetClientCaps( nIqId, jcbCaps );
+		g_JabberClientCapsManager.SetClientCaps( pInfo->GetIqId(), jcbCaps );
 	}
-	else if ( !_tcscmp( type, _T("error"))) {
+	else {
 		// no version info support and no XEP-0115 support?
 		if ( r && r->dwVersionRequestTime == -1 && !r->version && !r->software && !r->szCapsNode ) {
 			r->jcbCachedCaps = JABBER_RESOURCE_CAPS_NONE;
 			r->dwDiscoInfoRequestTime = -1;
 			return;
 		}
-		g_JabberClientCapsManager.SetClientCaps( nIqId, JABBER_RESOURCE_CAPS_ERROR );
-	}
-}
-
-static void JabberIqResultCapsVersionInfo( CJabberClientCapsQuery *pQuery )
-{
-	JABBER_RESOURCE_STATUS *r = JabberResourceInfoFromJID( pQuery->GetJid() );
-	if ( r != NULL ) {
-		r->dwVersionRequestTime = -1;
-		JabberGetResourceCapabilites( pQuery->GetJid() );
+		g_JabberClientCapsManager.SetClientCaps( pInfo->GetIqId(), JABBER_RESOURCE_CAPS_ERROR );
 	}
 }
 
@@ -152,15 +134,12 @@ JabberCapsBits JabberGetResourceCapabilites( TCHAR *jid, BOOL appendBestResource
 
 		if ( jcbMainCaps == JABBER_RESOURCE_CAPS_ERROR ) {
 			// send disco#info query
-			int iqId = JabberSerialNext();
 
-			g_JabberClientCapsManager.SetClientCaps( r->szCapsNode, r->szCapsVer, JABBER_RESOURCE_CAPS_IN_PROGRESS, iqId );
-
-			r->dwDiscoInfoRequestTime = GetTickCount();
-
-			JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultCapsDiscoInfo );
-
-			XmlNodeIq iq( "get", iqId, fullJid );
+			CJabberIqInfo *pInfo = g_JabberIqManager.AddHandler( JabberIqResultCapsDiscoInfo, JABBER_IQ_TYPE_GET, fullJid, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_CHILD_TAG_NODE, -1, NULL, 0, JABBER_RESOURCE_CAPS_QUERY_TIMEOUT );
+			g_JabberClientCapsManager.SetClientCaps( r->szCapsNode, r->szCapsVer, JABBER_RESOURCE_CAPS_IN_PROGRESS, pInfo->GetIqId() );
+			r->dwDiscoInfoRequestTime = pInfo->GetRequestTime();
+			
+			XmlNodeIq iq( pInfo );
 			XmlNode* query = iq.addQuery( JABBER_FEAT_DISCO_INFO );
 
 			TCHAR queryNode[512];
@@ -183,13 +162,11 @@ JabberCapsBits JabberGetResourceCapabilites( TCHAR *jid, BOOL appendBestResource
 				jcbExtCaps = g_JabberClientCapsManager.GetClientCaps( r->szCapsNode, token );
 				if ( jcbExtCaps == JABBER_RESOURCE_CAPS_ERROR ) {
 					// send disco#info query
-					int iqId = JabberSerialNext();
 
-					g_JabberClientCapsManager.SetClientCaps( r->szCapsNode, token, JABBER_RESOURCE_CAPS_IN_PROGRESS, iqId );
+					CJabberIqInfo* pInfo = g_JabberIqManager.AddHandler( JabberIqResultCapsDiscoInfo, JABBER_IQ_TYPE_GET, fullJid, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_CHILD_TAG_NODE, -1, NULL, 0, JABBER_RESOURCE_CAPS_QUERY_TIMEOUT );
+					g_JabberClientCapsManager.SetClientCaps( r->szCapsNode, token, JABBER_RESOURCE_CAPS_IN_PROGRESS, pInfo->GetIqId() );
 
-					JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultCapsDiscoInfo );
-
-					XmlNodeIq iq( "get", iqId, fullJid );
+					XmlNodeIq iq( pInfo );
 					XmlNode* query = iq.addQuery( JABBER_FEAT_DISCO_INFO );
 
 					TCHAR queryNode[512];
@@ -223,10 +200,11 @@ JabberCapsBits JabberGetResourceCapabilites( TCHAR *jid, BOOL appendBestResource
 		// version request not sent:
 		if ( !r->dwVersionRequestTime ) {
 			// send version query
-			r->dwVersionRequestTime = GetTickCount();
-			int iqId = JabberSerialNext();		
-			g_JabberClientCapsManager.AddQuery( iqId, fullJid, JabberIqResultCapsVersionInfo );
-			XmlNodeIq iq( "get", iqId, fullJid );
+
+			CJabberIqInfo *pInfo = g_JabberIqManager.AddHandler( JabberProcessIqResultVersion, JABBER_IQ_TYPE_GET, fullJid, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_HCONTACT | JABBER_IQ_PARSE_CHILD_TAG_NODE, -1, NULL, 0, JABBER_RESOURCE_CAPS_QUERY_TIMEOUT );
+			r->dwVersionRequestTime = pInfo->GetRequestTime();
+			
+			XmlNodeIq iq( pInfo );
 			XmlNode* query = iq.addQuery( JABBER_FEAT_VERSION );
 			jabberThreadInfo->send( iq );
 			return JABBER_RESOURCE_CAPS_IN_PROGRESS;
@@ -243,13 +221,11 @@ JabberCapsBits JabberGetResourceCapabilites( TCHAR *jid, BOOL appendBestResource
 		// no version information, try direct service discovery
 		if ( !r->dwDiscoInfoRequestTime ) {
 			// send disco#info query
-			int iqId = JabberSerialNext();
 
-			JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultCapsDiscoInfo );
+			CJabberIqInfo *pInfo = g_JabberIqManager.AddHandler( JabberIqResultCapsDiscoInfo, JABBER_IQ_TYPE_GET, fullJid, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_CHILD_TAG_NODE, -1, NULL, 0, JABBER_RESOURCE_CAPS_QUERY_TIMEOUT );
+			r->dwDiscoInfoRequestTime = pInfo->GetRequestTime();
 
-			r->dwDiscoInfoRequestTime = GetTickCount();
-
-			XmlNodeIq iq( "get", iqId, fullJid );
+			XmlNodeIq iq( pInfo );
 			XmlNode* query = iq.addQuery( JABBER_FEAT_DISCO_INFO );
 			jabberThreadInfo->send( iq );
 
@@ -287,11 +263,12 @@ JabberCapsBits JabberGetResourceCapabilites( TCHAR *jid, BOOL appendBestResource
 
 		if ( jcbMainCaps == JABBER_RESOURCE_CAPS_ERROR ) {
 			// send disco#info query
-			int iqId = JabberSerialNext();
-			g_JabberClientCapsManager.SetClientCaps( r->software, r->version, JABBER_RESOURCE_CAPS_IN_PROGRESS, iqId );
-			r->dwDiscoInfoRequestTime = GetTickCount();
-			JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultCapsDiscoInfo );
-			XmlNodeIq iq( "get", iqId, fullJid );
+
+			CJabberIqInfo *pInfo = g_JabberIqManager.AddHandler( JabberIqResultCapsDiscoInfo, JABBER_IQ_TYPE_GET, fullJid, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_CHILD_TAG_NODE, -1, NULL, 0, JABBER_RESOURCE_CAPS_QUERY_TIMEOUT );
+			g_JabberClientCapsManager.SetClientCaps( r->software, r->version, JABBER_RESOURCE_CAPS_IN_PROGRESS, pInfo->GetIqId() );
+			r->dwDiscoInfoRequestTime = pInfo->GetRequestTime();
+
+			XmlNodeIq iq( pInfo );
 			XmlNode* query = iq.addQuery( JABBER_FEAT_DISCO_INFO );
 			jabberThreadInfo->send( iq );
 
@@ -427,18 +404,12 @@ CJabberClientCapsManager::CJabberClientCapsManager()
 {
 	InitializeCriticalSection( &m_cs );
 	m_pClients = NULL;
-	m_bResolverThreadStopRequest = FALSE;
-	m_hResolverThread = NULL;
-	m_pQueries = NULL;
 }
 
 CJabberClientCapsManager::~CJabberClientCapsManager()
 {
-	StopResolverThread();
 	if ( m_pClients )
 		delete m_pClients;
-	if ( m_pQueries )
-		delete m_pQueries;
 	DeleteCriticalSection( &m_cs );
 }
 
@@ -520,148 +491,4 @@ BOOL CJabberClientCapsManager::SetClientCaps( int nIqId, JabberCapsBits jcbCaps 
 	}
 	Unlock();
 	return bOk;
-}
-
-BOOL CJabberClientCapsManager::StartResolverThread()
-{
-	if ( IsResolverThreadRunning() )
-		return TRUE;
-
-	m_bResolverThreadStopRequest = FALSE;
-	DWORD dwThreadId = 0;
-	m_hResolverThread = CreateThread( NULL, 0, _ResolverThread, this, NULL, &dwThreadId );
-	if (!m_hResolverThread)
-		return FALSE;
-
-	return TRUE;
-}
-
-BOOL CJabberClientCapsManager::IsResolverThreadRunning()
-{
-	return m_hResolverThread != NULL;
-}
-
-BOOL CJabberClientCapsManager::StopResolverThread()
-{
-	if ( !IsResolverThreadRunning() )
-		return TRUE;
-
-	m_bResolverThreadStopRequest = TRUE;
-	WaitForSingleObject( m_hResolverThread, INFINITE );
-	CloseHandle( m_hResolverThread );
-	m_hResolverThread = NULL;
-
-	return TRUE;
-}
-
-DWORD CJabberClientCapsManager::_ResolverThread(LPVOID pParam)
-{
-	CJabberClientCapsManager *pManager = ( CJabberClientCapsManager * )pParam;
-	pManager->ResolverThread();
-	if ( !pManager->m_bResolverThreadStopRequest ) {
-		CloseHandle( pManager->m_hResolverThread );
-		pManager->m_hResolverThread = NULL;
-	}
-	return 0;
-}
-
-void CJabberClientCapsManager::ResolverThread()
-{
-	JabberLog("ResolverThread started");
-	while (!m_bResolverThreadStopRequest) {
-		Sleep(100);
-		Lock();
-		if ( !m_pQueries ) {
-			Unlock();
-			break;
-		}
-		Unlock();
-		CJabberClientCapsQuery *pQuery = NULL;
-		while ( pQuery = FindExpiredQuery() ) {
-			JabberLog("Expire query %d, %S", pQuery->GetIqId(), pQuery->GetJid());
-			pQuery->Callback();
-			delete pQuery;
-		}
-	}
-	JabberLog("ResolverThread stopped");
-}
-
-BOOL CJabberClientCapsManager::AddQuery( int nIqId, TCHAR *szJid, JABBER_CAPS_QUERY_PFUNC pFunc )
-{
-	CJabberClientCapsQuery *pQuery = new CJabberClientCapsQuery( nIqId, szJid, pFunc );
-	if ( !pQuery )
-		return FALSE;
-
-	JabberLog("AddQuery %d, %S", nIqId, szJid);
-
-	Lock();
-	pQuery->SetNext( m_pQueries );
-	m_pQueries = pQuery;
-	Unlock();
-
-	StartResolverThread();
-
-	return TRUE;
-}
-
-CJabberClientCapsQuery* CJabberClientCapsManager::FindExpiredQuery()
-{
-	Lock();
-	if ( !m_pQueries ) {
-		Unlock();
-		return NULL;
-	}
-	CJabberClientCapsQuery *pQuery = m_pQueries;
-	if ( pQuery->IsExpired() ) {
-		m_pQueries = pQuery->GetNext();
-		pQuery->SetNext(NULL);
-		Unlock();
-		return pQuery;
-	}
-	while ( pQuery->GetNext() ) {
-		if ( pQuery->GetNext()->IsExpired() ) {
-			CJabberClientCapsQuery *pRetVal = pQuery->GetNext();
-			pQuery->SetNext(pQuery->GetNext()->GetNext());
-			pRetVal->SetNext(NULL);
-			Unlock();
-			return pRetVal;
-		}
-		pQuery = pQuery->GetNext();
-	}
-	Unlock();
-	return NULL;
-}
-
-BOOL CJabberClientCapsManager::DeleteQuery( int nIqId )
-{
-	Lock();
-	if ( !m_pQueries ) {
-		Unlock();
-		JabberLog("DeleteQuery %d", nIqId);
-		return FALSE;
-	}
-	CJabberClientCapsQuery *pQuery = m_pQueries;
-	if ( pQuery->GetIqId() == nIqId ) {
-		m_pQueries = pQuery->GetNext();
-		pQuery->SetNext(NULL);
-		JabberLog("DeleteQuery %d, %S", pQuery->GetIqId(), pQuery->GetJid());
-		delete pQuery;
-		Unlock();
-		return TRUE;
-	}
-	while ( pQuery->GetNext() ) {
-		if ( pQuery->GetNext()->GetIqId() == nIqId ) {
-			CJabberClientCapsQuery *pRetVal = pQuery->GetNext();
-			pQuery->SetNext(pQuery->GetNext()->GetNext());
-			pRetVal->SetNext(NULL);
-			JabberLog("DeleteQuery %d, %S", pQuery->GetIqId(), pQuery->GetJid());
-			delete pRetVal;
-			Unlock();
-			return TRUE;
-		}
-		pQuery = pQuery->GetNext();
-	}
-	Unlock();
-	JabberLog("DeleteQuery %d", nIqId);
-	return FALSE;
 }

@@ -29,11 +29,14 @@ Last change by : $Author$
 #include "jabber_iq.h"
 #include "jabber_xmlns.h"
 #include "jabber_caps.h"
+#include "jabber_iq_handlers.h"
+#include "jabber_privacy.h"
+#include "jabber_ibb.h"
 
-CJabberIqRequestManager g_JabberIqRequestManager;
+CJabberIqManager g_JabberIqManager;
 
 static JABBER_IQ_XMLNS_FUNC jabberXmlns[] = {
-	{ _T("http://jabber.org/protocol/disco"), JabberXmlnsDisco, TRUE },
+	{ _T("http://jabber.org/protocol/disco#info"), JabberXmlnsDisco, FALSE },
 	{ _T(JABBER_FEAT_BROWSE), JabberXmlnsBrowse, FALSE }
 };
 
@@ -173,4 +176,42 @@ JABBER_IQ_PFUNC JabberIqFetchXmlnsFunc( TCHAR* xmlns )
 		return jabberXmlns[i].func;
 
 	return NULL;
+}
+
+BOOL CJabberIqManager::FillPermanentHandlers()
+{
+	// version requests (XEP-0092)
+	AddPermanentHandler( JabberProcessIqVersion, JABBER_IQ_TYPE_GET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_ID_STR, _T(JABBER_FEAT_VERSION), FALSE, _T("query"));
+
+	// last activity (XEP-0012)
+	AddPermanentHandler( JabberProcessIqLast, JABBER_IQ_TYPE_GET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_ID_STR, _T(JABBER_FEAT_LAST_ACTIVITY), FALSE, _T("query"));
+
+	// ping requests (XEP-0199)
+	AddPermanentHandler( JabberProcessIqPing, JABBER_IQ_TYPE_GET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_ID_STR, _T(JABBER_FEAT_PING), FALSE, _T("ping"));
+
+	// entity time (XEP-0202)
+	AddPermanentHandler( JabberProcessIqTime202, JABBER_IQ_TYPE_GET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_ID_STR, _T(JABBER_FEAT_ENTITY_TIME), FALSE, _T("time"));
+
+	// old avatars support (deprecated XEP-0008)
+	AddPermanentHandler( JabberProcessIqAvatar, JABBER_IQ_TYPE_GET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_ID_STR, _T(JABBER_FEAT_AVATAR), FALSE, _T("query"));
+
+	// privacy lists (XEP-0016)
+	AddPermanentHandler( JabberProcessIqPrivacyLists, JABBER_IQ_TYPE_SET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_ID_STR, _T(JABBER_FEAT_PRIVACY_LISTS), FALSE, _T("query"));
+
+	// in band bytestreams (XEP-0047)
+	AddPermanentHandler( JabberFtHandleIbbIq, JABBER_IQ_TYPE_SET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_CHILD_TAG_NODE | JABBER_IQ_PARSE_CHILD_TAG_NAME | JABBER_IQ_PARSE_CHILD_TAG_XMLNS, _T(JABBER_FEAT_IBB), FALSE, NULL);
+
+	// socks5-bytestreams (XEP-0065)
+	AddPermanentHandler( JabberFtHandleBytestreamRequest, JABBER_IQ_TYPE_SET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_ID_STR | JABBER_IQ_PARSE_CHILD_TAG_NODE, _T(JABBER_FEAT_BYTESTREAMS), FALSE, _T("query"));
+
+	// session initiation (XEP-0095)
+	AddPermanentHandler( JabberHandleSiRequest, JABBER_IQ_TYPE_SET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_ID_STR | JABBER_IQ_PARSE_CHILD_TAG_NODE, _T(JABBER_FEAT_SI), FALSE, _T("si"));
+
+	// roster push requests
+	AddPermanentHandler( JabberHandleRosterPushRequest, JABBER_IQ_TYPE_SET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_ID_STR | JABBER_IQ_PARSE_CHILD_TAG_NODE, _T(JABBER_FEAT_IQ_ROSTER), FALSE, _T("query"));
+
+	// OOB file transfers
+	AddPermanentHandler( JabberHandleIqRequestOOB, JABBER_IQ_TYPE_SET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_HCONTACT | JABBER_IQ_PARSE_ID_STR | JABBER_IQ_PARSE_CHILD_TAG_NODE, _T(JABBER_FEAT_OOB), FALSE, _T("query"));
+
+	return TRUE;
 }

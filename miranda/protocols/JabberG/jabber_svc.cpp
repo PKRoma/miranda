@@ -846,6 +846,8 @@ int JabberGetCaps( WPARAM wParam, LPARAM lParam )
 ////////////////////////////////////////////////////////////////////////////////////////
 // JabberGetInfo - retrieves a contact info
 
+void JabberProcessIqResultVersion( XmlNode* node, void* userdata, CJabberIqInfo *pInfo );
+
 int JabberGetInfo( WPARAM wParam, LPARAM lParam )
 {
 	if ( !jabberOnline )
@@ -859,13 +861,13 @@ int JabberGetInfo( WPARAM wParam, LPARAM lParam )
 			TCHAR jid[ 256 ];
 			JabberGetClientJID( dbv.ptszVal, jid, SIZEOF( jid ));
 
-			XmlNodeIq iq( g_JabberIqRequestManager.AddHandler( JabberIqResultEntityTime, JABBER_IQ_TYPE_GET, jid, JABBER_IQ_PARSE_HCONTACT ));
+			XmlNodeIq iq( g_JabberIqManager.AddHandler( JabberIqResultEntityTime, JABBER_IQ_TYPE_GET, jid, JABBER_IQ_PARSE_HCONTACT ));
 			XmlNode* pReq = iq.addChild( "time" );
 			pReq->addAttr( "xmlns", JABBER_FEAT_ENTITY_TIME );
 			jabberThreadInfo->send( iq );
 
 			// XEP-0012, last logoff time
-			XmlNodeIq iq2( g_JabberIqRequestManager.AddHandler( JabberIqResultLastActivity, JABBER_IQ_TYPE_GET, dbv.ptszVal, JABBER_IQ_PARSE_FROM ));
+			XmlNodeIq iq2( g_JabberIqManager.AddHandler( JabberIqResultLastActivity, JABBER_IQ_TYPE_GET, dbv.ptszVal, JABBER_IQ_PARSE_FROM ));
 			iq2.addQuery( JABBER_FEAT_LAST_ACTIVITY );
 			jabberThreadInfo->send( iq2 );
 
@@ -881,18 +883,18 @@ int JabberGetInfo( WPARAM wParam, LPARAM lParam )
 						JabberStripJid( dbv.ptszVal, szp1, sizeof( szp1 ));
 						mir_sntprintf( jid, 256, _T("%s/%s"), szp1, item->resource[i].resourceName );
 
-						XmlNodeIq iq3( g_JabberIqRequestManager.AddHandler( JabberIqResultLastActivity, JABBER_IQ_TYPE_GET, jid, JABBER_IQ_PARSE_FROM ));
+						XmlNodeIq iq3( g_JabberIqManager.AddHandler( JabberIqResultLastActivity, JABBER_IQ_TYPE_GET, jid, JABBER_IQ_PARSE_FROM ));
 						iq3.addQuery( JABBER_FEAT_LAST_ACTIVITY );
 						jabberThreadInfo->send( iq3 );
 
 						if ( !item->resource[i].dwVersionRequestTime ) {
-							XmlNodeIq iq4( "get", JabberSerialNext(), jid );
+							XmlNodeIq iq4( g_JabberIqManager.AddHandler( JabberProcessIqResultVersion, JABBER_IQ_TYPE_GET, jid, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_HCONTACT | JABBER_IQ_PARSE_CHILD_TAG_NODE ));
 							XmlNode* query = iq4.addQuery( JABBER_FEAT_VERSION );
 							jabberThreadInfo->send( iq4 );
 					}	}
 				}
 				else if ( !item->itemResource.dwVersionRequestTime ) {
-					XmlNodeIq iq4( "get", JabberSerialNext(), item->jid );
+					XmlNodeIq iq4( g_JabberIqManager.AddHandler( JabberProcessIqResultVersion, JABBER_IQ_TYPE_GET, item->jid, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_HCONTACT | JABBER_IQ_PARSE_CHILD_TAG_NODE ));
 					XmlNode* query = iq4.addQuery( JABBER_FEAT_VERSION );
 					jabberThreadInfo->send( iq4 );
 		}	}	}

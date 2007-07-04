@@ -224,6 +224,10 @@ SOURCE=.\jabber_iq.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\jabber_iq_handlers.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\jabber_iqid.cpp
 # ADD CPP /Yu
 # End Source File
@@ -269,6 +273,10 @@ SOURCE=.\jabber_privacy.cpp
 
 SOURCE=.\jabber_proxy.cpp
 # ADD CPP /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\jabber_rc.cpp
 # End Source File
 # Begin Source File
 
@@ -369,6 +377,10 @@ SOURCE=.\jabber_iq.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\jabber_iq_handlers.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\jabber_list.h
 # End Source File
 # Begin Source File
@@ -378,6 +390,10 @@ SOURCE=.\jabber_privacy.h
 # Begin Source File
 
 SOURCE=.\jabber_proxy.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\jabber_rc.h
 # End Source File
 # Begin Source File
 

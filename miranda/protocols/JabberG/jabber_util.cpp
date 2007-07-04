@@ -864,8 +864,26 @@ void __stdcall JabberSendPresenceTo( int status, TCHAR* to, XmlNode* extra )
 	c->addAttr( "xmlns", JABBER_FEAT_ENTITY_CAPS );
 	c->addAttr( "node", JABBER_CAPS_MIRANDA_NODE );
 	c->addAttr( "ver", version );
-	if ( bSecureIM )
-		c->addAttr( "ext", JABBER_EXT_SECUREIM );
+
+	TCHAR szExtCaps[ 512 ];
+	szExtCaps[ 0 ] = _T('\0');
+	
+	if ( bSecureIM ) {
+		if ( _tcslen( szExtCaps ))
+			_tcscat( szExtCaps, _T(" "));
+		_tcscat( szExtCaps, _T(JABBER_EXT_SECUREIM) );
+	}
+
+	// FIXME: read settings from DB
+	if ( 1 ) {
+		if ( _tcslen( szExtCaps ))
+			_tcscat( szExtCaps, _T(" "));
+		_tcscat( szExtCaps, _T(JABBER_EXT_COMMANDS) );
+	}
+	
+	if ( _tcslen( szExtCaps ))
+		c->addAttr( "ext", szExtCaps );
+
 	mir_free( version );
 
 	if ( JGetByte( "EnableAvatars", TRUE )) {

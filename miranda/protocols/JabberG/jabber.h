@@ -500,7 +500,7 @@ void JabberFtInitiate( TCHAR* jid, filetransfer* ft );
 void JabberFtHandleSiRequest( XmlNode *iqNode );
 void JabberFtAcceptSiRequest( filetransfer* ft );
 void JabberFtAcceptIbbRequest( filetransfer* ft );
-BOOL JabberFtHandleBytestreamRequest( XmlNode *iqNode );
+void JabberFtHandleBytestreamRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
 BOOL JabberFtHandleIbbRequest( XmlNode *iqNode, BOOL bOpen );
 
 //---- jabber_groupchat.c -------------------------------------------

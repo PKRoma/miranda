@@ -590,6 +590,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\jabber_iq_handlers.cpp">
+			</File>
+			<File
 				RelativePath="jabber_iqid.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -858,6 +861,9 @@
 						Optimization="1"
 						AdditionalIncludeDirectories=""/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\jabber_rc.cpp">
 			</File>
 			<File
 				RelativePath=".\jabber_search.cpp">
@@ -1197,10 +1203,16 @@
 				RelativePath="jabber_iq.h">
 			</File>
 			<File
+				RelativePath=".\jabber_iq_handlers.h">
+			</File>
+			<File
 				RelativePath="jabber_list.h">
 			</File>
 			<File
 				RelativePath="jabber_proxy.h">
+			</File>
+			<File
+				RelativePath=".\jabber_rc.h">
 			</File>
 			<File
 				RelativePath=".\jabber_search.h">

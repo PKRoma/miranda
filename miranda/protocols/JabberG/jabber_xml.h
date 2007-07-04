@@ -96,7 +96,7 @@ struct XmlNode
 	BOOL dirtyHack;						// to allow generator to issue the unclosed tag
 };
 
-class CJabberIqRequestInfo;
+class CJabberIqInfo;
 
 struct XmlNodeIq : public XmlNode
 {
@@ -106,7 +106,10 @@ struct XmlNodeIq : public XmlNode
 	#if defined( _UNICODE )
 		XmlNodeIq( const char* type, int id, const char* to );
 	#endif
-	XmlNodeIq( CJabberIqRequestInfo* pInfo );
+	// new request
+	XmlNodeIq( CJabberIqInfo* pInfo );
+	// answer to request
+	XmlNodeIq( const char* type, CJabberIqInfo* pInfo );
 };
 
 typedef void ( *JABBER_XML_CALLBACK )( XmlNode*, void* );

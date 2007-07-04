@@ -42,9 +42,9 @@ static DWORD sttLastRefresh = 0;
 
 void JabberServiceDiscoveryShowMenu(CJabberSDNode *node, HTREELISTITEM hItem, POINT pt);
 
-void JabberIqResultServiceDiscoveryItems( XmlNode* iqNode, void* userdata, CJabberIqRequestInfo* pInfo );
+void JabberIqResultServiceDiscoveryItems( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
 
-void JabberIqResultServiceDiscoveryInfo( XmlNode* iqNode, void* userdata, CJabberIqRequestInfo* pInfo )
+void JabberIqResultServiceDiscoveryInfo( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	g_SDManager.Lock();
 	CJabberSDNode* pNode = g_SDManager.GetPrimaryNode()->FindByIqId( pInfo->GetIqId(), TRUE );
@@ -79,7 +79,7 @@ void JabberIqResultServiceDiscoveryInfo( XmlNode* iqNode, void* userdata, CJabbe
 		PostMessage( hwndServiceDiscovery, WM_JABBER_REFRESH, 0, 0 );
 }
 
-void JabberIqResultServiceDiscoveryItems( XmlNode* iqNode, void* userdata, CJabberIqRequestInfo* pInfo )
+void JabberIqResultServiceDiscoveryItems( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	g_SDManager.Lock();
 	CJabberSDNode* pNode = g_SDManager.GetPrimaryNode()->FindByIqId( pInfo->GetIqId(), FALSE );
@@ -144,7 +144,7 @@ BOOL SendBothRequests(CJabberSDNode* pNode, XmlNode* parent)
 
 	// disco#info
 	if ( !pNode->GetInfoRequestId() ) {
-		CJabberIqRequestInfo* pInfo = g_JabberIqRequestManager.AddHandler( JabberIqResultServiceDiscoveryInfo, JABBER_IQ_TYPE_GET, pNode->GetJid() );
+		CJabberIqInfo* pInfo = g_JabberIqManager.AddHandler( JabberIqResultServiceDiscoveryInfo, JABBER_IQ_TYPE_GET, pNode->GetJid() );
 		pInfo->SetTimeout( 30000 );
 		pNode->SetInfoRequestId( pInfo->GetIqId() );
 
@@ -162,7 +162,7 @@ BOOL SendBothRequests(CJabberSDNode* pNode, XmlNode* parent)
 
 	// disco#items
 	if ( !pNode->GetItemsRequestId() ) {
-		CJabberIqRequestInfo* pInfo = g_JabberIqRequestManager.AddHandler( JabberIqResultServiceDiscoveryItems, JABBER_IQ_TYPE_GET, pNode->GetJid() );
+		CJabberIqInfo* pInfo = g_JabberIqManager.AddHandler( JabberIqResultServiceDiscoveryItems, JABBER_IQ_TYPE_GET, pNode->GetJid() );
 		pInfo->SetTimeout( 30000 );
 		pNode->SetItemsRequestId( pInfo->GetIqId() );
 

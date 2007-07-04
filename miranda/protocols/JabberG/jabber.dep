@@ -196,6 +196,44 @@
 	".\jabber_xmlns.h"\
 	
 
+.\jabber_iq_handlers.cpp : \
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	"..\..\plugins\zlib\zconf.h"\
+	"..\..\plugins\zlib\zlib.h"\
+	".\jabber.h"\
+	".\jabber_byte.h"\
+	".\jabber_caps.h"\
+	".\jabber_ibb.h"\
+	".\jabber_iq.h"\
+	".\jabber_iq_handlers.h"\
+	".\jabber_list.h"\
+	".\jabber_xml.h"\
+	".\version.h"\
+	
+
 .\jabber_iqid.cpp : \
 	"..\..\include\m_clistint.h"\
 	"..\..\include\m_clui.h"\
@@ -312,6 +350,43 @@
 	".\jabber_ibb.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
+	
+
+.\jabber_rc.cpp : \
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	"..\..\plugins\zlib\zconf.h"\
+	"..\..\plugins\zlib\zlib.h"\
+	".\jabber.h"\
+	".\jabber_byte.h"\
+	".\jabber_caps.h"\
+	".\jabber_ibb.h"\
+	".\jabber_iq.h"\
+	".\jabber_list.h"\
+	".\jabber_rc.h"\
+	".\jabber_xml.h"\
 	
 
 .\jabber_search.cpp : \
