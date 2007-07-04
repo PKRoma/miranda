@@ -678,12 +678,14 @@ static BOOL CALLBACK DlgPluginOpt(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				}
 				SetWindowTextA(GetDlgItem(hwndDlg,IDC_PLUGINCPYR), sel ? dat->copyright : "" );
 				SetWindowTextA(GetDlgItem(hwndDlg,IDC_PLUGINURL), sel ? dat->homepage : "" );
+				if(equalUUID(miid_last, dat->uuid))
+					SetWindowText(GetDlgItem(hwndDlg,IDC_PLUGINPID), sel ? TranslateT("<none>") : _T(""));
+				else
 				{
 					char szUID[128];
 					uuidToString( dat->uuid, szUID, sizeof(szUID));
 					SetWindowTextA(GetDlgItem(hwndDlg,IDC_PLUGINPID), sel ? szUID : "" );
 				}
-				//else SetWindowText(GetDlgItem(hwndDlg,IDC_PLUGINPID), sel ? TranslateT("<unknown>") : _T(""));
 		}	}
 
 		if ( hdr && hdr->hdr.code == PSN_APPLY ) {
