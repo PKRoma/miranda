@@ -192,8 +192,6 @@ public:
 	{
 		m_nInfoRequestId = nId;
 		m_dwInfoRequestTime = GetTickCount();
-		if (m_hTreeItem)
-			TreeList_SetIcon(m_hTreeItem, -1, (nId < 0) ? -nId : 0);
 		return TRUE;
 	}
 	int GetInfoRequestId()

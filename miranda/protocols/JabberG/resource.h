@@ -62,6 +62,12 @@
 #define IDI_NAV_REFRESH                 197
 #define IDI_ICON8                       198
 #define IDI_FILTER_RESET                198
+#define IDI_DISCO_PROGRESS              199
+#define IDI_NODE_RSS                    200
+#define IDI_NODE_SERVER                 201
+#define IDI_NODE_STORE                  202
+#define IDI_ICON6                       203
+#define IDI_NODE_WEATHER                203
 #define IDC_EDIT_USERNAME               1000
 #define IDC_SAVE                        1000
 #define IDC_EDIT_PASSWORD               1001
@@ -221,6 +227,7 @@
 #define IDC_DISABLE_SASL                1182
 #define IDC_UNREGISTER                  1183
 #define IDC_VALIDATEADD                 1184
+#define IDC_UNREGISTER2                 1184
 #define IDC_GO                          1196
 #define IDC_RADIO1                      1215
 #define IDC_COMMANDS                    1216
@@ -254,6 +261,7 @@
 #define IDC_FRAME1                      1241
 #define IDC_FRAME2                      1242
 #define IDC_COMBO_JID                   1243
+#define IDC_TXT_JID                     1243
 #define IDC_COMBO_NODE                  1244
 #define IDC_BUTTON1                     1245
 #define IDC_BUTTON_BROWSE               1245
@@ -261,11 +269,16 @@
 #define IDC_TXT_FILTERTEXT              1247
 #define IDC_BTN_FILTERRESET             1248
 #define IDC_TXT_FILTER                  1249
-#define IDC_TXT_NODE                    1250
+#define IDC_TXT_NODELABEL               1250
+#define IDC_BTN_FAVORITE                1251
+#define IDC_RADIO2                      1251
+#define IDC_RADIO3                      1252
 #define IDC_BTN_REFRESH                 1253
 #define IDC_BTN_VIEWTREE                1254
 #define IDC_BTN_VIEWLIST                1255
+#define IDC_TXT_NODE                    1257
 #define IDC_BTN_FILTERAPPLY             1258
+#define IDC_COMBO2                      1260
 #define IDC_EMAILS                      1306
 #define IDC_PHONES                      1308
 #define IDC_UPDATE                      1313
@@ -321,9 +334,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        199
+#define _APS_NEXT_RESOURCE_VALUE        205
 #define _APS_NEXT_COMMAND_VALUE         40017
-#define _APS_NEXT_CONTROL_VALUE         1251
+#define _APS_NEXT_CONTROL_VALUE         1261
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

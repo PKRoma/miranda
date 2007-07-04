@@ -513,7 +513,7 @@ static BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 						}
 						else {	// everything else is a normal text field
 							TCHAR *name = a2t(n->name);
-							JabberFormAppendControl(hFrame, layout_info, JFORM_CTYPE_TEXT_PRIVATE, name, n->text);
+							JabberFormAppendControl(hFrame, layout_info, JFORM_CTYPE_TEXT_SINGLE, name, n->text);
 							mir_free(name);
 				}	}	}
 				JabberFormLayoutControls(hFrame, layout_info);

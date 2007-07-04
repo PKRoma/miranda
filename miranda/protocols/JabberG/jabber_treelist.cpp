@@ -56,7 +56,7 @@ struct TTreeList_ItemInfo
 	~TTreeList_ItemInfo()
 	{
 		int i;
-		for (i = subItems.getCount(); i--; )
+		for (i = text.getCount(); i--; )
 			mir_free(text[i]);
 		text.destroy();
 		for (i = subItems.getCount(); i--; )
@@ -179,19 +179,21 @@ HTREELISTITEM TreeList_GetActiveItem(HWND hwnd)
 	return (HTREELISTITEM)lvi.lParam;
 }
 
-HTREELISTITEM TreeList_AddItem(HWND hwnd, HTREELISTITEM hParent, TCHAR *text, LPARAM data)
+HTREELISTITEM TreeList_AddItem(HWND hwnd, HTREELISTITEM hParent, TCHAR *text, LPARAM nodeDdata)
 {
-	if (!hParent)
-	{
-		TTreeList_Data *data = (TTreeList_Data *)GetWindowLong(hwnd, GWL_USERDATA);
-		hParent = data->root;
-	}
+	TTreeList_Data *data = (TTreeList_Data *)GetWindowLong(hwnd, GWL_USERDATA);
+	if (!hParent) hParent = data->root;
 
 	TTreeList_ItemInfo *item = new TTreeList_ItemInfo;
-	item->data = data;
+	item->data = nodeDdata;
 	item->parent = hParent;
 	item->text.insert(mir_tstrdup(text));
 	item->flags |= TLIF_MODIFIED;
+	if (hParent->flags & TLIF_ROOT)
+	{
+		item->flags |= TLIF_EXPANDED;
+		data->hItemSelected = item;
+	}
 	item->indent = hParent->indent+1;
 	hParent->subItems.insert(item);
 	return item;
