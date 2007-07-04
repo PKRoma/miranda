@@ -1140,7 +1140,7 @@ static void sttInitDirectTransfer(
 	char szBody[ 512 ];
 	int  cbBodyLen = 0;
 
-	if (conType.weight > MyConnection.weight)
+	if (conType.weight <= MyConnection.weight)
 		cbBodyLen = sttCreateListener( ft, dc, szBody, sizeof( szBody ));
 
 	if ( !cbBodyLen ) {
