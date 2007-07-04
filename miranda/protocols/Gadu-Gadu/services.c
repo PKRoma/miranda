@@ -93,7 +93,7 @@ static int gg_getname(WPARAM wParam, LPARAM lParam)
 static int gg_loadicon(WPARAM wParam, LPARAM lParam)
 {
 	if((wParam & 0xffff) == PLI_PROTOCOL)
-		return (int) LoadIconEx(IDI_GG);
+		return (int) CopyIcon(LoadIconEx(IDI_GG));
 
 	return (int) (HICON) NULL;
 }
@@ -217,21 +217,7 @@ int gg_setstatus(WPARAM wParam, LPARAM lParam)
 // when messsage received
 int gg_recvmessage(WPARAM wParam, LPARAM lParam)
 {
-	DBEVENTINFO dbei;
-	CCSDATA *ccs = (CCSDATA *) lParam;
-	PROTORECVEVENT *pre = (PROTORECVEVENT *) ccs->lParam;
-
-	DBDeleteContactSetting(ccs->hContact, "CList", "Hidden");
-	ZeroMemory(&dbei, sizeof(dbei));
-	dbei.cbSize = sizeof(dbei);
-	dbei.szModule = GG_PROTO;
-	dbei.timestamp = pre->timestamp;
-	dbei.flags = pre->flags & (PREF_CREATEREAD ? DBEF_READ : 0);
-	dbei.eventType = EVENTTYPE_MESSAGE;
-	dbei.cbBlob = strlen(pre->szMessage) + 1;
-	dbei.pBlob = (PBYTE) pre->szMessage;
-	CallService(MS_DB_EVENT_ADD, (WPARAM) ccs->hContact, (LPARAM) & dbei);
-	return 0;
+	return CallService(MS_PROTO_RECVMSG, wParam, lParam);
 }
 
 //////////////////////////////////////////////////////////
