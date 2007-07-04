@@ -278,14 +278,14 @@ public:
 	{
 		if ( !szFeature )
 			return FALSE;
-		
+
 		CJabberSDFeature *pFeature = new CJabberSDFeature( szFeature );
 		if ( !pFeature )
 			return FALSE;
-		
+
 		pFeature->SetNext( m_pFeatures );
 		m_pFeatures = pFeature;
-		
+
 		return TRUE;
 	}
 	BOOL AddIdentity(TCHAR *szCategory, TCHAR *szType, TCHAR *szName)
@@ -345,7 +345,7 @@ public:
 		if ( m_pIdentities ) {
 			mir_sntprintf( szTmp, SIZEOF( szTmp ), _T("\r\nIdentities:\r\n"));
 			AppendString( &szBuffer, szTmp );
-			
+
 			CJabberSDIdentity *pIdentity = m_pIdentities;
 			while ( pIdentity ) {
 				if ( pIdentity->GetName() )
@@ -397,12 +397,12 @@ public:
 	}
 	BOOL Lock()
 	{
-//		EnterCriticalSection(&m_cs);
+		EnterCriticalSection(&m_cs);
 		return TRUE;
 	}
 	BOOL Unlock()
 	{
-//		LeaveCriticalSection(&m_cs);
+		LeaveCriticalSection(&m_cs);
 		return TRUE;
 	}
 	CJabberSDNode* GetPrimaryNode()

@@ -137,7 +137,7 @@ JABBER_RESOURCE_STATUS* __stdcall JabberResourceInfoFromJID( TCHAR* jid )
 	if ( item == NULL ) return NULL;
 
 	TCHAR* p = _tcschr( jid, '/' );
-	if ( p == NULL )    
+	if ( p == NULL )
 		return &item->itemResource;
 	if ( *++p == '\0' ) return NULL;
 
@@ -867,7 +867,7 @@ void __stdcall JabberSendPresenceTo( int status, TCHAR* to, XmlNode* extra )
 
 	TCHAR szExtCaps[ 512 ];
 	szExtCaps[ 0 ] = _T('\0');
-	
+
 	if ( bSecureIM ) {
 		if ( _tcslen( szExtCaps ))
 			_tcscat( szExtCaps, _T(" "));
@@ -875,12 +875,12 @@ void __stdcall JabberSendPresenceTo( int status, TCHAR* to, XmlNode* extra )
 	}
 
 	// FIXME: read settings from DB
-	if ( 1 ) {
+	if ( 0 ) {
 		if ( _tcslen( szExtCaps ))
 			_tcscat( szExtCaps, _T(" "));
 		_tcscat( szExtCaps, _T(JABBER_EXT_COMMANDS) );
 	}
-	
+
 	if ( _tcslen( szExtCaps ))
 		c->addAttr( "ext", szExtCaps );
 
