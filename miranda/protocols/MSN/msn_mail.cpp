@@ -197,11 +197,11 @@ void sttNotificationMessage( char* msgBody, bool isInitial )
 		int iDelta = atol(MsgDelta);
 		if (SrcFolder && strcmp(SrcFolder, "ACTIVE") == 0)
 			mUnreadMessages -= iDelta;
-		if (DestFolder && strcmp(DestFolder, "ACTIVE") == 0)
+		else if (DestFolder && strcmp(DestFolder, "ACTIVE") == 0)
 			mUnreadMessages += iDelta;
 		if (SrcFolder && strcmp(SrcFolder, "HM_BuLkMail_") == 0)
 			mUnreadJunkEmails -= iDelta;
-		if (DestFolder && strcmp(DestFolder, "HM_BuLkMail_") == 0)
+		else if (DestFolder && strcmp(DestFolder, "HM_BuLkMail_") == 0)
 			mUnreadJunkEmails += iDelta;
 	}
 
