@@ -44,6 +44,7 @@ typedef struct _GGIMAGEENTRY
 	char *lpData;
 	unsigned long nSize;
 	struct _GGIMAGEENTRY *lpNext;
+	uint32_t crc32;
 } GGIMAGEENTRY;
 
 typedef struct
@@ -52,7 +53,6 @@ typedef struct
 	HANDLE hEvent;
 	HWND hWnd;
 	uin_t uin;
-	int crc32;
 	int nImg, nImgTotal;
 	GGIMAGEENTRY *lpImages;
 	SIZE size, minSize;
@@ -668,7 +668,7 @@ static BOOL CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 							p->unknown1 = 0x109;
 							p->size = dat->lpImages->nSize;
 
-							p->crc32 = gg_fix32(gg_crc32(0, dat->lpImages->lpData, dat->lpImages->nSize));
+							dat->lpImages->crc32 = p->crc32 = gg_fix32(gg_crc32(0, dat->lpImages->lpData, dat->lpImages->nSize));
 
 							len = sizeof(struct gg_msg_richtext_format) + sizeof(struct gg_msg_richtext_image);
 							((struct gg_msg_richtext*)format)->length = len;
@@ -913,7 +913,7 @@ void *gg_img_loadpicture(struct gg_event* e, char *szFileName)
 			return NULL;
 		}
 		// Maximum Gadu-Gadu accepted image size
-		if(dat->nSize > 255 * 1024 * 1024)
+		if(dat->nSize > 255 * 1024)
 		{
 			fclose(fp);
 			free(dat);
@@ -1058,7 +1058,7 @@ int gg_img_remove(GGIMAGEDLGDATA *dat)
 
 ////////////////////////////////////////////////////////////////////////////
 //
-GGIMAGEDLGDATA *gg_img_find(uin_t uin, DWORD crc32)
+GGIMAGEDLGDATA *gg_img_find(uin_t uin, uint32_t crc32)
 {
 	int res = 0;
 	list_t l = gg_imagedlgs;
@@ -1082,7 +1082,7 @@ GGIMAGEDLGDATA *gg_img_find(uin_t uin, DWORD crc32)
 
 		c_uin = DBGetContactSettingDword(dat->hContact, GG_PROTO, GG_KEY_UIN, 0);
 
-		if (!dat->bReceiving && /*( f_dat->crc32 == crc32 ) &&*/ ( c_uin == uin ) )
+		if (!dat->bReceiving && dat->lpImages && dat->lpImages->crc32 == crc32 && c_uin == uin)
 		{
 			ReleaseMutex(hImgMutex);
 			return dat;
