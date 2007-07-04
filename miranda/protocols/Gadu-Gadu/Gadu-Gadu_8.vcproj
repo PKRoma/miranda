@@ -470,6 +470,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\libgadu\dcc7.c"
+				>
+			</File>
+			<File
 				RelativePath="dialogs.c"
 				>
 				<FileConfiguration
@@ -670,7 +674,11 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="image.cpp"
+				RelativePath=".\icolib.c"
+				>
+			</File>
+			<File
+				RelativePath="image.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -950,7 +958,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="token.cpp"
+				RelativePath="token.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"

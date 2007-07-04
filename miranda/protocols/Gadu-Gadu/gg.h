@@ -68,6 +68,7 @@ extern "C" {
 #include <m_clc.h>
 #include <m_message.h>
 #include <m_icolib.h>
+#include <m_imgsrvc.h>
 #ifdef DEBUGMODE
 #include <m_popup.h>
 #endif
@@ -126,6 +127,12 @@ typedef struct
 	char id[32];
 	BOOL ignore;
 } GGGC;
+
+typedef struct
+{
+	char id[256];
+	char val[256];
+} GGTOKEN;
 
 // Main strings
 extern char ggProto[];
@@ -359,12 +366,12 @@ int gg_sendfile(WPARAM wParam, LPARAM lParam);
 int gg_fileallow(WPARAM wParam, LPARAM lParam);
 int gg_filedeny(WPARAM wParam, LPARAM lParam);
 int gg_filecancel(WPARAM wParam, LPARAM lParam);
-int gg_gettoken();
+int gg_gettoken(GGTOKEN *token);
 void gg_parsecontacts(char *contacts);
 int gg_getinfo(WPARAM wParam, LPARAM lParam);
 void gg_remindpassword(uin_t uin, const char *email);
 void gg_dccwait(GGTHREAD *thread);
-void *gg_img_loadpicture(struct gg_event* e, HANDLE hContact, char *szFileName);
+void *gg_img_loadpicture(struct gg_event* e, char *szFileName);
 int gg_img_releasepicture(void *img);
 int gg_img_display(HANDLE hContact, void *img);
 

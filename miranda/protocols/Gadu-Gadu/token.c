@@ -19,17 +19,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "gg.h"
-#include <ocidl.h>
-#include <olectl.h>
-
-char strtokenid[255];
-char strtokenval[255];
-char *ggTokenid = NULL;
-char *ggTokenval = NULL;
-LPPICTURE tokenPicture = NULL;
-
-int tokenwidth = 0;
-int tokenheight = 0;
 
 #define MAX_LOADSTRING 100
 #define HIMETRIC_INCH 2540
@@ -37,16 +26,31 @@ int tokenheight = 0;
 
 ////////////////////////////////////////////////////////////////////////////////
 // User Util Dlg Page : Data
+
+typedef struct _GGTOKENDLGDATA
+{
+	int width;
+	int height;
+	char id[256];
+	char val[256];
+	HBITMAP hBitmap;
+} GGTOKENDLGDATA;
+
 BOOL CALLBACK gg_tokendlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	GGTOKENDLGDATA *dat = (GGTOKENDLGDATA *)GetWindowLongPtr(hwndDlg, GWL_USERDATA);
+
 	switch(msg)
 	{
 		case WM_INITDIALOG:
+		{
+			RECT rc;
 			TranslateDialogDefault(hwndDlg);
-			RECT rc; GetClientRect(GetDlgItem(hwndDlg, IDC_WHITERECT), &rc);
+			GetClientRect(GetDlgItem(hwndDlg, IDC_WHITERECT), &rc);
 			InvalidateRect(hwndDlg, &rc, TRUE);
+			SetWindowLongPtr(hwndDlg, GWL_USERDATA, lParam);
 			return TRUE;
-
+		}
 		case WM_CTLCOLORSTATIC:
 			/*
 			if((GetDlgItem(hwndDlg, IDC_WHITERECT) == (HWND)lParam) ||
@@ -62,7 +66,7 @@ BOOL CALLBACK gg_tokendlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			{
 				case IDOK:
 				{
-					GetDlgItemText(hwndDlg, IDC_TOKEN, strtokenval, sizeof(strtokenval));
+					GetDlgItemText(hwndDlg, IDC_TOKEN, dat->val, sizeof(dat->val));
 					EndDialog(hwndDlg, IDOK);
 					break;
 				}
@@ -78,23 +82,26 @@ BOOL CALLBACK gg_tokendlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 				RECT rc; GetClientRect(GetDlgItem(hwndDlg, IDC_WHITERECT), &rc);
 				FillRect(hdc, &rc, (HBRUSH)GetStockObject(WHITE_BRUSH));
 
-				if (tokenPicture)
+				if(dat && dat->hBitmap)
 				{
-					// get width and height of picture
-					long hmWidth;
-					long hmHeight;
-					tokenPicture->get_Width(&hmWidth);
-					tokenPicture->get_Height(&hmHeight);
+					HDC hdcBmp = NULL;
+					int nWidth, nHeight;
+					BITMAP bmp;
 
-					// convert himetric to pixels
-					int nWidth = MulDiv(hmWidth, GetDeviceCaps(hdc, LOGPIXELSX), HIMETRIC_INCH);
-					int nHeight = MulDiv(hmHeight, GetDeviceCaps(hdc, LOGPIXELSY), HIMETRIC_INCH);
+					GetObject(dat->hBitmap, sizeof(bmp), &bmp);
+					nWidth = bmp.bmWidth; nHeight = bmp.bmHeight;
 
-					// display picture using IPicture::Render
-					tokenPicture->Render(hdc,
-						(rc.right - tokenwidth) / 2,
-						(rc.bottom - rc.top - tokenheight) / 2,
-						nWidth, nHeight, 0, hmHeight, hmWidth, -hmHeight, &rc);
+					if(hdcBmp = CreateCompatibleDC(hdc))
+					{
+						SelectObject(hdcBmp, dat->hBitmap);
+						SetStretchBltMode(hdc, HALFTONE);
+						BitBlt(hdc,
+							(rc.left + rc.right - nWidth) / 2,
+							(rc.top + rc.bottom - nHeight) / 2,
+							nWidth, nHeight,
+							hdcBmp, 0, 0, SRCCOPY);
+						DeleteDC(hdcBmp);
+					}
 				}
 				EndPaint(hwndDlg, &paintStruct);
 				return 0;
@@ -109,14 +116,16 @@ BOOL CALLBACK gg_tokendlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 
 ////////////////////////////////////////////////////////////////////////////////
 // Gets GG token
-int gg_gettoken()
+int gg_gettoken(GGTOKEN *token)
 {
 	struct gg_http *h = NULL;
 	struct gg_token *t = NULL;
+	IMGSRVC_MEMIO memio = {0};
+	GGTOKENDLGDATA dat = {0};
 
 	// Zero tokens
-	ggTokenid = NULL;
-	ggTokenval = NULL;
+	strcpy(token->id, "");
+	strcpy(token->val, "");
 
 	if(!(h = gg_token(0)) || gg_token_watch_fd(h) || h->state == GG_STATE_ERROR || h->state != GG_STATE_DONE)
 	{
@@ -147,74 +156,35 @@ int gg_gettoken()
 	}
 
 	// Return token id
-	strncpy(strtokenid, t->tokenid, sizeof(strtokenid));
-	tokenwidth = t->width;
-	tokenheight = t->height;
+	strncpy(dat.id, t->tokenid, sizeof(dat.id));
+	dat.width = t->width;
+	dat.height = t->height;
+
 	// Load bitmap
-	HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE, h->body_size);
-	// Lock memory for reading
-	LPVOID pvData = GlobalLock(hGlobal);
-	if (pvData == NULL)
+	memio.iLen = h->body_size;
+	memio.pBuf = (void *)h->body;
+	memio.fif = -1; /* detect */
+	memio.flags = 0;
+	dat.hBitmap = (HBITMAP) CallService(MS_IMG_LOADFROMMEM, (WPARAM) &memio, 0);
+	if(dat.hBitmap == NULL)
 	{
-		GlobalUnlock(hGlobal);
 		MessageBox(
 				NULL,
-				Translate("Could not lock memory for token."),
+				Translate("Could not load token image."),
 				GG_PROTOERROR,
 				MB_OK | MB_ICONSTOP
 		);
 		gg_free_pubdir(h);
 		return FALSE;
 	}
-	memcpy(pvData, h->body, h->body_size);
-	GlobalUnlock(hGlobal);
-
-	// Create IStream* from global memory
-	LPSTREAM pstm = NULL;
-	HRESULT hr = CreateStreamOnHGlobal(hGlobal,TRUE, &pstm);
-	if (!(SUCCEEDED(hr)) || (pstm == NULL))
-	{
-		MessageBox(
-				NULL,
-				Translate("CreateStreamOnHGlobal() failed for token."),
-				GG_PROTOERROR,
-				MB_OK | MB_ICONSTOP
-		);
-
-		if (pstm != NULL) pstm->Release();
-		gg_free_pubdir(h);
-		return FALSE;
-	}
-
-	// Create IPicture from image file
-	if (tokenPicture) tokenPicture->Release();
-	hr = OleLoadPicture(pstm, h->body_size, FALSE, IID_IPicture,
-						  (LPVOID *)&tokenPicture);
-
-	// Free gg structs
-	gg_free_pubdir(h);
-	// Check results
-	if (!(SUCCEEDED(hr)) || (tokenPicture == NULL))
-	{
-		pstm->Release();
-		MessageBox(
-				NULL,
-				Translate("Could not load image (hr failure) for token."),
-				GG_PROTOERROR,
-				MB_OK | MB_ICONSTOP
-		);
-		return FALSE;
-	}
-	pstm->Release();
 
 	// Load token dialog
-	if(DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_TOKEN), NULL, gg_tokendlgproc, 0) == IDCANCEL)
-	{
+	if(DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_TOKEN), NULL, gg_tokendlgproc, (LPARAM)&dat) == IDCANCEL)
 		return FALSE;
-	}
 
 	// Fillup patterns
-	ggTokenid = strtokenid;
-	ggTokenval = strtokenval;
+	strncpy(token->id, dat.id, sizeof(token->id));
+	strncpy(token->val, dat.val, sizeof(token->val));
+
 	return TRUE;
 }

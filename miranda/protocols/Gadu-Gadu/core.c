@@ -871,14 +871,14 @@ start:
 				if(DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_IMGMETHOD, GG_KEYDEF_IMGMETHOD) || gg_img_opened(e->event.image_reply.sender))
 				{
 					HANDLE hContact = gg_getcontact(e->event.image_reply.sender, 1, 0, NULL);
-					void *img = (void *)gg_img_loadpicture(e, hContact, 0);
+					void *img = (void *)gg_img_loadpicture(e, 0);
 					if(img)
 						gg_img_display(hContact, img);
 				}
 				else
 				{
 					HANDLE hContact = gg_getcontact(e->event.image_reply.sender, 1, 0, NULL);
-					void *img = (void *)gg_img_loadpicture(e, hContact, 0);
+					void *img = (void *)gg_img_loadpicture(e, 0);
 					if(img)
 					{
 						CLISTEVENT cle;

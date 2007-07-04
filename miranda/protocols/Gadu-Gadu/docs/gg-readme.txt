@@ -60,6 +60,12 @@ Note: For secure connections this plugin requires OpenSSL DLL
 
 5. History
 ----------
+0.0.4.6: 2007-07-04
+ - Fix: Message doubling (i.e. with MetaContacts), thanks to Scott Ellis
+ - Fix: Default icon setting problem
+ - Rewritten image & token send & reception using Miranda Image services
+   (This requires latest Miranda version in order to run)
+ - Fix: Window size for big images on sending & reception
 0.0.4.5: 2007-06-20
  - Angeli-Ka icons are now default Gadu-Gadu icons
  - Protocol status icons are now built in the Plugin, so taken by default

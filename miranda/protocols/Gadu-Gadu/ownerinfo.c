@@ -35,6 +35,7 @@ static void *__stdcall gg_remindpasswordthread(void *empty)
 	// Connection handle
 	struct gg_http *h;
 	GG_REMIND_PASS *rp = (GG_REMIND_PASS *)empty;
+	GGTOKEN token;
 
 #ifdef DEBUGMODE
 	gg_netlog("gg_remindpasswordthread(): Starting.");
@@ -46,9 +47,9 @@ static void *__stdcall gg_remindpasswordthread(void *empty)
 	}
 
 	// Get token
-	if(!gg_gettoken()) return NULL;
+	if(!gg_gettoken(&token)) return NULL;
 
-	if (!(h = gg_remind_passwd3(rp->uin, rp->email, ggTokenid, ggTokenval, 0)))
+	if (!(h = gg_remind_passwd3(rp->uin, rp->email, token.id, token.val, 0)))
 	{
 		char error[128];
 		mir_snprintf(error, sizeof(error), Translate("Password could not be reminded because of error:\n\t%s"), strerror(errno));

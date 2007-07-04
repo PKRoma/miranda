@@ -25,8 +25,9 @@
 void *gg_doregister(char *newPass, char *newEmail)
 {
 	// Connection handles
-	struct gg_http *h;
-	struct gg_pubdir *s;
+	struct gg_http *h = NULL;
+	struct gg_pubdir *s = NULL;
+	GGTOKEN token;
 
 #ifdef DEBUGMODE
 	gg_netlog("gg_doregister(): Starting.");
@@ -34,9 +35,9 @@ void *gg_doregister(char *newPass, char *newEmail)
 	if(!newPass || !newEmail) return NULL;
 
 	// Load token
-	if(!gg_gettoken()) return NULL;
+	if(!gg_gettoken(&token)) return NULL;
 
-	if (!(h = gg_register3(newEmail, newPass, ggTokenid, ggTokenval, 0)) || !(s = h->data) || !s->success || !s->uin)
+	if (!(h = gg_register3(newEmail, newPass, token.id, token.val, 0)) || !(s = h->data) || !s->success || !s->uin)
 	{
 		char error[128];
 		mir_snprintf(error, sizeof(error), Translate("Cannot register new account because of error:\n\t%s"),
@@ -85,6 +86,7 @@ void *gg_dounregister(uin_t uin, char *password)
 	// Connection handles
 	struct gg_http *h;
 	struct gg_pubdir *s;
+	GGTOKEN token;
 
 #ifdef DEBUGMODE
 	gg_netlog("gg_dounregister(): Starting.");
@@ -92,9 +94,9 @@ void *gg_dounregister(uin_t uin, char *password)
 	if(!uin || !password) return NULL;
 
 	// Load token
-	if(!gg_gettoken()) return NULL;
+	if(!gg_gettoken(&token)) return NULL;
 
-	if (!(h = gg_unregister3(uin, password, ggTokenid, ggTokenval, 0)) || !(s = h->data) || !s->success || s->uin != uin)
+	if (!(h = gg_unregister3(uin, password, token.id, token.val, 0)) || !(s = h->data) || !s->success || s->uin != uin)
 	{
 		char error[128];
 		mir_snprintf(error, sizeof(error), Translate("Your account cannot be removed because of error:\n\t%s"),
@@ -143,6 +145,7 @@ void *gg_dochpass(uin_t uin, char *password, char *newPass)
 	// Connection handles
 	struct gg_http *h;
 	struct gg_pubdir *s;
+	GGTOKEN token;
 
 #ifdef DEBUGMODE
 	gg_netlog("gg_dochpass(): Starting.");
@@ -154,9 +157,9 @@ void *gg_dochpass(uin_t uin, char *password, char *newPass)
 	DBFreeVariant(&dbv_email);
 
 	// Load token
-	if(!gg_gettoken()) return NULL;
+	if(!gg_gettoken(&token)) return NULL;
 
-	if (!(h = gg_change_passwd4(uin, email, password, newPass, ggTokenid, ggTokenval, 0)) || !(s = h->data) || !s->success)
+	if (!(h = gg_change_passwd4(uin, email, password, newPass, token.id, token.val, 0)) || !(s = h->data) || !s->success)
 	{
 		char error[128];
 		mir_snprintf(error, sizeof(error), Translate("Your password cannot be changed because of error:\n\t%s"),
@@ -203,6 +206,7 @@ void *gg_dochemail(uin_t uin, char *password, char *email, char *newEmail)
 	// Connection handles
 	struct gg_http *h;
 	struct gg_pubdir *s;
+	GGTOKEN token;
 
 #ifdef DEBUGMODE
 	gg_netlog("gg_doemail(): Starting.");
@@ -210,9 +214,9 @@ void *gg_dochemail(uin_t uin, char *password, char *email, char *newEmail)
 	if(!uin || !email || !newEmail) return NULL;
 
 	// Load token
-	if(!gg_gettoken()) return NULL;
+	if(!gg_gettoken(&token)) return NULL;
 
-	if (!(h = gg_change_passwd4(uin, newEmail, password, password, ggTokenid, ggTokenval, 0)) || !(s = h->data) || !s->success)
+	if (!(h = gg_change_passwd4(uin, newEmail, password, password, token.id, token.val, 0)) || !(s = h->data) || !s->success)
 	{
 		char error[128];
 		mir_snprintf(error, sizeof(error), Translate("Your e-mail cannot be changed because of error:\n\t%s"),
@@ -316,6 +320,7 @@ BOOL CALLBACK gg_userutildlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 					GetDlgItemText(hwndDlg, IDC_PASSWORD, pass, sizeof(pass));
 					GetDlgItemText(hwndDlg, IDC_CPASSWORD, cpass, sizeof(cpass));
 					GetDlgItemText(hwndDlg, IDC_EMAIL, email, sizeof(email));
+					EndDialog(hwndDlg, IDOK);
 
 					// Check dialog box mode
 					if(dat && dat->mode == GG_USERUTIL_CREATE)
@@ -326,7 +331,6 @@ BOOL CALLBACK gg_userutildlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 						gg_dochpass(dat->uin, dat->pass, pass);
 					else if(dat && dat->mode == GG_USERUTIL_EMAIL)
 						gg_dochemail(dat->uin, dat->pass, dat->email, email);
-					EndDialog(hwndDlg, IDOK);
 					break;
 				}
 				case IDCANCEL:

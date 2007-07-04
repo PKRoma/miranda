@@ -276,6 +276,8 @@ Pliki obrazów (*.bmp,*.jpg,*.gif,*.png)
 Wybierz obrazek do wys³ania
 [Could not load image. Image might have unsupported file format.]
 Nie mo¿na za³adowaæ obrazka. Wybrany plik mo¿e mieæ nieznany format.
+[Image exceeds maximum allowed size of 255 KB.]
+Rozmiar pliku obrazka przekracza maksymalny dozwolony rozmiar 255 KB.
 
 ; Conferences
 [Open new conference]

@@ -19,8 +19,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "gg.h"
-#include <ocidl.h>
-#include <olectl.h>
 
 #define HIMETRIC_INCH 2540
 
@@ -42,11 +40,9 @@
 typedef struct _GGIMAGEENTRY
 {
 	HBITMAP hBitmap;
-	LPVOID lpDIBSection;
-	LPPICTURE lpPicture;
-	DWORD nSize;
 	char *lpszFileName;
-	HGLOBAL hPicture;
+	char *lpData;
+	unsigned long nSize;
 	struct _GGIMAGEENTRY *lpNext;
 } GGIMAGEENTRY;
 
@@ -66,8 +62,6 @@ typedef struct
 // List of image windows
 list_t gg_imagedlgs = NULL;
 
-HICON hIcons[5]; // icon handles
-
 // Mutex & Event
 HANDLE hImgMutex;
 
@@ -76,28 +70,15 @@ int gg_img_add(GGIMAGEDLGDATA *dat);
 int gg_img_remove(GGIMAGEDLGDATA *dat);
 int gg_img_sendimg(WPARAM wParam, LPARAM lParam);
 
-// Image decoder prototypes
-typedef DWORD (__stdcall *pfnImgNewDecoder)(void ** ppDecoder);
-typedef DWORD (__stdcall *pfnImgDeleteDecoder)(void * pDecoder);
-typedef DWORD (__stdcall *pfnImgNewDIBFromFile)(LPVOID /*in*/pDecoder, LPCSTR /*in*/pFileName, LPVOID /*out*/*pImg);
-typedef DWORD (__stdcall *pfnImgDeleteDIBSection)(LPVOID /*in*/pImg);
-typedef DWORD (__stdcall *pfnImgGetHandle)(LPVOID /*in*/pImg, HBITMAP /*out*/*pBitmap, LPVOID /*out*/*ppDIBBits);
-
-static pfnImgNewDecoder ImgNewDecoder = NULL;
-static pfnImgDeleteDecoder ImgDeleteDecoder = NULL;
-static pfnImgNewDIBFromFile ImgNewDIBFromFile = NULL;
-static pfnImgDeleteDIBSection ImgDeleteDIBSection = NULL;
-static pfnImgGetHandle ImgGetHandle = NULL;
-static HMODULE hImgDecoder = NULL;
-
 ////////////////////////////////////////////////////////////////////////////
 // Image Module : Adding item to contact menu, creating sync objects
 int gg_img_init()
 {
 	CLISTMENUITEM mi;
+	char service[64];
+
 	ZeroMemory(&mi,sizeof(mi));
 	mi.cbSize = sizeof(mi);
-	char service[64];
 
 	// Send image contact menu item
 	mir_snprintf(service, sizeof(service), GGS_SENDIMAGE, GG_PROTO);
@@ -113,30 +94,6 @@ int gg_img_init()
 	// Init mutex
 	hImgMutex = CreateMutex(NULL, FALSE, NULL);
 
-	hIcons[0] = (HICON) LoadImage(hInstance, MAKEINTRESOURCE(IDI_PREV), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-	hIcons[1] = (HICON) LoadImage(hInstance, MAKEINTRESOURCE(IDI_NEXT), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-	hIcons[2] = (HICON) LoadImage(hInstance, MAKEINTRESOURCE(IDI_DELETE), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-	hIcons[3] = (HICON) LoadImage(hInstance, MAKEINTRESOURCE(IDI_SAVE), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-	hIcons[4] = (HICON) LoadImage(hInstance, MAKEINTRESOURCE(IDI_SCALE), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-
-	// Init image decoder
-	if((hImgDecoder = LoadLibrary("imgdecoder.dll")) ||
-		(hImgDecoder = LoadLibrary("plugins\\imgdecoder.dll")))
-	{
-		ImgNewDecoder = (pfnImgNewDecoder )GetProcAddress(hImgDecoder, "ImgNewDecoder");
-		ImgDeleteDecoder = (pfnImgDeleteDecoder )GetProcAddress(hImgDecoder, "ImgDeleteDecoder");
-		ImgNewDIBFromFile = (pfnImgNewDIBFromFile)GetProcAddress(hImgDecoder, "ImgNewDIBFromFile");
-		ImgDeleteDIBSection = (pfnImgDeleteDIBSection)GetProcAddress(hImgDecoder, "ImgDeleteDIBSection");
-		ImgGetHandle = (pfnImgGetHandle)GetProcAddress(hImgDecoder, "ImgGetHandle");
-
-		// Fallback if some proc address is missing
-		if(!ImgNewDecoder || !ImgDeleteDecoder || !ImgNewDIBFromFile || !ImgDeleteDIBSection || !ImgGetHandle)
-		{
-			FreeLibrary(hImgDecoder);
-			hImgDecoder = NULL;
-		}
-	}
-
 	return FALSE;
 }
 
@@ -144,11 +101,11 @@ int gg_img_init()
 // Image Module : closing dialogs, sync objects
 int gg_img_shutdown()
 {
+	list_t l;
 #ifdef DEBUGMODE
 	gg_netlog("gg_img_shutdown(): Closing all dialogs...");
 #endif
 	// Rather destroy window instead of just removing structures
-	list_t l;
 	for(l = gg_imagedlgs; l;)
 	{
 		GGIMAGEDLGDATA *dat = (GGIMAGEDLGDATA *)l->data;
@@ -189,10 +146,6 @@ int gg_img_destroy()
 	// Close event & mutex
 	CloseHandle(hImgMutex);
 
-	// Free image decoder library
-	if(hImgDecoder)
-		FreeLibrary(hImgDecoder);
-
 	return FALSE;
 }
 
@@ -207,46 +160,26 @@ int gg_img_paint(HWND hwnd, GGIMAGEENTRY *dat)
 	ScreenToClient(hwnd, (POINT *)&rc.right);
 	FillRect(hdc, &rc, (HBRUSH)GetSysColorBrush(COLOR_WINDOW));
 
-	if(dat->lpPicture || dat->hBitmap)
+	if(dat->hBitmap)
 	{
 		// Get width and height of picture
 		HDC hdcBmp = NULL;
-		long hmWidth, hmHeight;
 		int nWidth, nHeight;
+		BITMAP bmp;
 
-		if(dat->lpPicture)
-		{
-			dat->lpPicture->get_Width(&hmWidth);
-			dat->lpPicture->get_Height(&hmHeight);
+		GetObject(dat->hBitmap, sizeof(bmp), &bmp);
+		nWidth = bmp.bmWidth; nHeight = bmp.bmHeight;
 
-			// Convert himetric to pixels
-			nWidth = MulDiv(hmWidth, GetDeviceCaps(hdc, LOGPIXELSX), HIMETRIC_INCH);
-			nHeight = MulDiv(hmHeight, GetDeviceCaps(hdc, LOGPIXELSY), HIMETRIC_INCH);
-		}
-		else
-		{
-			BITMAP bmp;
-			GetObject(dat->hBitmap, sizeof(bmp), &bmp);
-			nWidth = bmp.bmWidth; nHeight = bmp.bmHeight;
+		hdcBmp = CreateCompatibleDC(hdc);
+		SelectObject(hdcBmp, dat->hBitmap);
+		SetStretchBltMode(hdc, HALFTONE);
 
-			hdcBmp = CreateCompatibleDC(hdc);
-			SelectObject(hdcBmp, dat->hBitmap);
-			SetStretchBltMode(hdc, HALFTONE);
-		}
-
-		// Display picture using IPicture::Render
+		// Draw bitmap
 		if(nWidth > (rc.right-rc.left) || nHeight > (rc.bottom-rc.top))
 		{
 			if((double)nWidth / (double)nHeight > (double) (rc.right-rc.left) / (double)(rc.bottom-rc.top))
 			{
-				if(dat->lpPicture)
-					dat->lpPicture->Render(hdc,
-						rc.left,
-						((rc.top + rc.bottom) - (rc.right - rc.left) * nHeight / nWidth) / 2,
-						(rc.right - rc.left),
-						(rc.right - rc.left) * nHeight / nWidth,
-						0, hmHeight, hmWidth, -hmHeight, &rc);
-				else if(hdcBmp)
+				if(hdcBmp)
 					StretchBlt(hdc,
 						rc.left,
 						((rc.top + rc.bottom) - (rc.right - rc.left) * nHeight / nWidth) / 2,
@@ -256,14 +189,7 @@ int gg_img_paint(HWND hwnd, GGIMAGEENTRY *dat)
 			}
 			else
 			{
-				if(dat->lpPicture)
-					dat->lpPicture->Render(hdc,
-						((rc.left + rc.right) - (rc.bottom - rc.top) * nWidth / nHeight) / 2,
-						rc.top,
-						(rc.bottom - rc.top) * nWidth / nHeight,
-						(rc.bottom - rc.top),
-						0, hmHeight, hmWidth, -hmHeight, &rc);
-				else if(hdcBmp)
+				if(hdcBmp)
 					StretchBlt(hdc,
 						((rc.left + rc.right) - (rc.bottom - rc.top) * nWidth / nHeight) / 2,
 						rc.top,
@@ -274,13 +200,7 @@ int gg_img_paint(HWND hwnd, GGIMAGEENTRY *dat)
 		}
 		else
 		{
-			if(dat->lpPicture)
-				dat->lpPicture->Render(hdc,
-					(rc.left + rc.right - nWidth) / 2,
-					(rc.top + rc.bottom - nHeight) / 2,
-					nWidth, nHeight,
-					0, hmHeight, hmWidth, -hmHeight, &rc);
-			else if(hdcBmp)
+			if(hdcBmp)
 				BitBlt(hdc,
 					(rc.left + rc.right - nWidth) / 2,
 					(rc.top + rc.bottom - nHeight) / 2,
@@ -303,16 +223,8 @@ char *gg_img_getfilter(char *szFilter, int nSize)
 	char *pFilter = szFilter;
 
 	// Match relative to ImgDecoder presence
-	if(hImgDecoder)
-	{
-		szFilterName = Translate("Image files (*.bmp,*.jpg,*.gif,*.png)");
-		szFilterMask = "*.bmp;*.jpg;*.gif;*.png";
-	}
-	else
-	{
-		szFilterName = Translate("Image files (*.bmp,*.jpg,*.gif)");
-		szFilterMask = "*.bmp;*.jpg;*.gif";
-	}
+	szFilterName = Translate("Image files (*.bmp,*.jpg,*.gif,*.png)");
+	szFilterMask = "*.bmp;*.jpg;*.gif;*.png";
 
 	// Make up filter
 	strncpy(pFilter, szFilterName, nSize);
@@ -330,8 +242,6 @@ char *gg_img_getfilter(char *szFilter, int nSize)
 // Save specified image entry
 int gg_img_saveimage(HWND hwnd, GGIMAGEENTRY *dat)
 {
-	LPVOID pvData;
-
 	OPENFILENAME ofn;
 	char szFileName[MAX_PATH];
 	char szFilter[128];
@@ -354,10 +264,8 @@ int gg_img_saveimage(HWND hwnd, GGIMAGEENTRY *dat)
 		FILE *fp = fopen(szFileName, "w+b" );
 		if(fp)
 		{
-			pvData = GlobalLock(dat->hPicture);
-			fwrite(pvData, dat->nSize, 1, fp);
+			fwrite(dat->lpData, dat->nSize, 1, fp);
 			fclose(fp);
-			GlobalUnlock(dat->hPicture);
 #ifdef DEBUGMODE
 			gg_netlog("gg_img_saveimage(): Image saved to %s.", szFileName);
 #endif
@@ -367,7 +275,7 @@ int gg_img_saveimage(HWND hwnd, GGIMAGEENTRY *dat)
 #ifdef DEBUGMODE
 			gg_netlog("gg_img_saveimage(): Cannot save image to %s.", szFileName);
 #endif
-			MessageBox(hwnd, Translate("Image cannot be written to disk."), GG_PROTO, MB_ICONERROR);
+			MessageBox(hwnd, Translate("Image cannot be written to disk."), GG_PROTOERROR, MB_OK | MB_ICONERROR);
 		}
 	}
 
@@ -408,45 +316,33 @@ int gg_img_saveimage(HWND hwnd, GGIMAGEENTRY *dat)
 BOOL gg_img_fit(HWND hwndDlg)
 {
 	GGIMAGEDLGDATA *dat = (GGIMAGEDLGDATA *)GetWindowLong(hwndDlg, GWL_USERDATA);
-	RECT dlgRect, imgRect;
+	RECT dlgRect, imgRect, wrkRect;
+	int nWidth, nHeight;
+	int rWidth = 0, rHeight = 0;
+	int oWidth = 0, oHeight = 0;
+	BITMAP bmp;
+	GGIMAGEENTRY *img = NULL;
+	HDC hdc;
 
 	// Check if image is loaded
-	if(!dat || !dat->lpImages || (!dat->lpImages->lpPicture && !dat->lpImages->hBitmap))
+	if(!dat || !dat->lpImages || !dat->lpImages->hBitmap)
 		return FALSE;
 
-	GGIMAGEENTRY *img = dat->lpImages;
+	img = dat->lpImages;
 
 	// Go to last image
-	while(img->lpNext && (img->lpNext->lpPicture || dat->lpImages->hBitmap))
+	while(img->lpNext && dat->lpImages->hBitmap)
 		img = img->lpNext;
 
 	// Get rects of display
 	GetWindowRect(hwndDlg, &dlgRect);
 	GetClientRect(GetDlgItem(hwndDlg, IDC_IMG_IMAGE), &imgRect);
 
-	long hmWidth, hmHeight;
-	int nWidth, nHeight;
-	HDC hdc = GetDC(hwndDlg);
+	hdc = GetDC(hwndDlg);
 
-	if(img->lpPicture)
-	{
-		img->lpPicture->get_Width(&hmWidth);
-		img->lpPicture->get_Height(&hmHeight);
-		// Convert himetric to pixels
-		nWidth = MulDiv(hmWidth, GetDeviceCaps(hdc, LOGPIXELSX), HIMETRIC_INCH);
-		nHeight = MulDiv(hmHeight, GetDeviceCaps(hdc, LOGPIXELSY), HIMETRIC_INCH);
-	}
-	else
-	{
-		BITMAP bmp;
-		GetObject(img->hBitmap, sizeof(bmp), &bmp);
-		nWidth = bmp.bmWidth; nHeight = bmp.bmHeight;
-	}
-
-	int rWidth = 0;
-	int rHeight = 0;
-	int sWidth = GetDeviceCaps(hdc, HORZRES);
-	int sHeight = GetDeviceCaps(hdc, VERTRES);
+	GetObject(img->hBitmap, sizeof(bmp), &bmp);
+	nWidth = bmp.bmWidth; nHeight = bmp.bmHeight;
+	SystemParametersInfo(SPI_GETWORKAREA, 0, &wrkRect, 0);
 
 	ReleaseDC(hwndDlg, hdc);
 
@@ -459,11 +355,29 @@ BOOL gg_img_fit(HWND hwndDlg)
 	if(!rWidth && !rHeight)
 		return FALSE;
 
+	oWidth = dlgRect.right - dlgRect.left + rWidth;
+	oHeight = dlgRect.bottom - dlgRect.top + rHeight;
+
+	if(oHeight > wrkRect.bottom - wrkRect.top)
+	{
+		oWidth = (int)((double)(wrkRect.bottom - wrkRect.top + imgRect.bottom - imgRect.top - dlgRect.bottom + dlgRect.top) * nWidth / nHeight)
+			- imgRect.right + imgRect.left + dlgRect.right - dlgRect.left;
+		if(oWidth < dlgRect.right - dlgRect.left)
+			oWidth = dlgRect.right - dlgRect.left;
+		oHeight = wrkRect.bottom - wrkRect.top;
+	}
+	if(oWidth > wrkRect.right - wrkRect.left)
+	{
+		oHeight = (int)((double)(wrkRect.right - wrkRect.left + imgRect.right - imgRect.left - dlgRect.right + dlgRect.left) * nHeight / nWidth)
+			- imgRect.bottom + imgRect.top + dlgRect.bottom - dlgRect.top;
+		if(oHeight < dlgRect.bottom - dlgRect.top)
+			oHeight = dlgRect.bottom - dlgRect.top;
+		oWidth = wrkRect.right - wrkRect.left;
+	}
 	SetWindowPos(hwndDlg, NULL,
-		(dlgRect.left - rWidth / 2) > 0 ? (dlgRect.left - rWidth / 2) : 0,
-		(dlgRect.top - rHeight / 2) > 0 ? (dlgRect.top - rHeight / 2) : 0,
-		(dlgRect.right - dlgRect.left + rWidth > sWidth) ? sWidth : (dlgRect.right - dlgRect.left + rWidth),
-		(dlgRect.bottom - dlgRect.top + rHeight > sHeight) ? sHeight : (dlgRect.bottom - dlgRect.top + rHeight),
+		(wrkRect.left + wrkRect.right - oWidth) / 2,
+		(wrkRect.top + wrkRect.bottom - oHeight) / 2,
+		oWidth, oHeight,
 		SWP_SHOWWINDOW | SWP_NOZORDER /* | SWP_NOACTIVATE */);
 
 	return TRUE;
@@ -480,6 +394,9 @@ static BOOL CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 	{
 		case WM_INITDIALOG:
 			{
+				char *szName, szTitle[128];
+				RECT rect;
+
 				TranslateDialogDefault(hwndDlg);
 				// This should be already initialized
 				// InitCommonControls();
@@ -498,24 +415,23 @@ static BOOL CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 #endif
 
 				// Making buttons flat
-				SendDlgItemMessage(hwndDlg,IDC_IMG_SAVE,BUTTONSETASFLATBTN,0,0);
-				SendDlgItemMessage(hwndDlg,IDC_IMG_PREV,BUTTONSETASFLATBTN,0,0);
-				SendDlgItemMessage(hwndDlg,IDC_IMG_NEXT,BUTTONSETASFLATBTN,0,0);
-				SendDlgItemMessage(hwndDlg,IDC_IMG_SCALE,BUTTONSETASFLATBTN,0,0);
-				SendDlgItemMessage(hwndDlg,IDC_IMG_DELETE,BUTTONSETASFLATBTN,0,0);
+				SendDlgItemMessage(hwndDlg, IDC_IMG_SAVE,	BUTTONSETASFLATBTN, 0, 0);
+				SendDlgItemMessage(hwndDlg, IDC_IMG_PREV,	BUTTONSETASFLATBTN, 0, 0);
+				SendDlgItemMessage(hwndDlg, IDC_IMG_NEXT,	BUTTONSETASFLATBTN, 0, 0);
+				SendDlgItemMessage(hwndDlg, IDC_IMG_SCALE,	BUTTONSETASFLATBTN, 0, 0);
+				SendDlgItemMessage(hwndDlg, IDC_IMG_DELETE,	BUTTONSETASFLATBTN, 0, 0);
 
 				// Setting images for buttons
-				SendDlgItemMessage(hwndDlg,IDC_IMG_PREV,BM_SETIMAGE,IMAGE_ICON,(LPARAM)hIcons[0]);
-				SendDlgItemMessage(hwndDlg,IDC_IMG_NEXT,BM_SETIMAGE,IMAGE_ICON,(LPARAM)hIcons[1]);
-				SendDlgItemMessage(hwndDlg,IDC_IMG_DELETE,BM_SETIMAGE,IMAGE_ICON,(LPARAM)hIcons[2]);
-				SendDlgItemMessage(hwndDlg,IDC_IMG_SAVE,BM_SETIMAGE,IMAGE_ICON,(LPARAM)hIcons[3]);
-				SendDlgItemMessage(hwndDlg,IDC_IMG_SCALE,BM_SETIMAGE,IMAGE_ICON,(LPARAM)hIcons[4]);
+				SendDlgItemMessage(hwndDlg, IDC_IMG_PREV,	BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx(IDI_PREV));
+				SendDlgItemMessage(hwndDlg, IDC_IMG_NEXT,	BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx(IDI_NEXT));
+				SendDlgItemMessage(hwndDlg, IDC_IMG_DELETE,	BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx(IDI_DELETE));
+				SendDlgItemMessage(hwndDlg, IDC_IMG_SAVE,	BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx(IDI_SAVE));
+				SendDlgItemMessage(hwndDlg, IDC_IMG_SCALE,	BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx(IDI_SCALE));
 
 				// Set main window image
 				SendMessage(hwndDlg,WM_SETICON,ICON_BIG,(LPARAM)LoadIconEx(IDI_IMAGE));
-				char *szName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)dat->hContact, 0);
+				szName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)dat->hContact, 0);
 
-				char szTitle[128];
 				if(dat->bReceiving)
 					mir_snprintf(szTitle, sizeof(szTitle), Translate("Image from %s"), szName);
 				else
@@ -523,7 +439,7 @@ static BOOL CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				SetWindowText(hwndDlg, szTitle);
 
 				// Store client extents
-				RECT rect; GetClientRect(hwndDlg, &rect);
+				GetClientRect(hwndDlg, &rect);
 				dat->size.cx = rect.right - rect.left;
 				dat->size.cy = rect.bottom - rect.top;
 				dat->minSize = dat->size;
@@ -533,8 +449,10 @@ static BOOL CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		case WM_SIZE:
 			if(wParam == SIZE_RESTORED || wParam == SIZE_MAXIMIZED)
 			{
-				RECT rect; GetClientRect(hwndDlg, &rect);
+				RECT rect;
 				SIZE size = {LOWORD(lParam), HIWORD(lParam)};
+
+				GetClientRect(hwndDlg, &rect);
 
 				LockWindowUpdate(hwndDlg);
 				// Image area
@@ -602,8 +520,9 @@ static BOOL CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			if (dat->lpImages)
 			{
 				GGIMAGEENTRY *img = dat->lpImages;
+				int i;
 
-				for(int i = 1; img && (i < dat->nImg); i++)
+				for(i = 1; img && (i < dat->nImg); i++)
 					img = img->lpNext;
 
 				if(!img)
@@ -684,7 +603,8 @@ static BOOL CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 						}
 						else
 						{
-							for(int i = 1; img && (i < dat->nImg - 1); i++)
+							int i;
+							for(i = 1; img && (i < dat->nImg - 1); i++)
 								img = img->lpNext;
 							if(!img)
 							{
@@ -710,8 +630,9 @@ static BOOL CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				case IDC_IMG_SAVE:
 					{
 						GGIMAGEENTRY *img = dat->lpImages;
+						int i;
 
-						for(int i = 1; img && (i < dat->nImg); i++)
+						for(i = 1; img && (i < dat->nImg); i++)
 							img = img->lpNext;
 						if(!img)
 						{
@@ -732,22 +653,24 @@ static BOOL CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 						if (dat->lpImages && gg_isonline())
 						{
 							uin_t uin = (uin_t)DBGetContactSettingDword(dat->hContact, GG_PROTO, GG_KEY_UIN, 0);
+							struct gg_msg_richtext_format *r = NULL;
+							struct gg_msg_richtext_image *p = NULL;
+							LPVOID pvData = NULL;
+							int len;
 
 							((struct gg_msg_richtext*)format)->flag=2;
 
-							struct gg_msg_richtext_format * r = (struct gg_msg_richtext_format *)(format+sizeof(struct gg_msg_richtext));
+							r = (struct gg_msg_richtext_format *)(format + sizeof(struct gg_msg_richtext));
 							r->position = 0;
 							r->font = 0x80;
-							struct gg_msg_richtext_image * p = (struct gg_msg_richtext_image *)
-							(format + sizeof(struct gg_msg_richtext)+ sizeof(struct gg_msg_richtext_format));
+
+							p = (struct gg_msg_richtext_image *)(format + sizeof(struct gg_msg_richtext) + sizeof(struct gg_msg_richtext_format));
 							p->unknown1 = 0x109;
 							p->size = dat->lpImages->nSize;
-							LPVOID pvData = GlobalLock(dat->lpImages->hPicture);
 
-							p->crc32 = gg_fix32(gg_crc32(0, (unsigned char*)pvData, dat->lpImages->nSize ));
-							GlobalUnlock(dat->lpImages->hPicture);
+							p->crc32 = gg_fix32(gg_crc32(0, dat->lpImages->lpData, dat->lpImages->nSize));
 
-							int len = sizeof(struct gg_msg_richtext_format)+sizeof(struct gg_msg_richtext_image);
+							len = sizeof(struct gg_msg_richtext_format) + sizeof(struct gg_msg_richtext_image);
 							((struct gg_msg_richtext*)format)->length = len;
 
 							gg_send_message_richtext(ggThread->sess, GG_CLASS_CHAT, (uin_t)uin,(unsigned char*)msg,format,len+sizeof(struct gg_msg_richtext));
@@ -786,10 +709,11 @@ static BOOL CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		case WM_CHOOSEIMG:
 		{
 			char szFilter[128];
+			char szFileName[MAX_PATH];
+			OPENFILENAME ofn;
+
 			gg_img_getfilter(szFilter, sizeof(szFilter));
 
-			OPENFILENAME ofn;
-			char szFileName[MAX_PATH];
 			ZeroMemory(&ofn, sizeof(ofn));
 			*szFileName = 0;
 			ofn.lStructSize = sizeof(OPENFILENAME);
@@ -804,7 +728,7 @@ static BOOL CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			{
 				if(dat->lpImages)
 					gg_img_releasepicture(dat->lpImages);
-				if(!(dat->lpImages = (GGIMAGEENTRY *)gg_img_loadpicture(0, dat->hContact, szFileName)))
+				if(!(dat->lpImages = (GGIMAGEENTRY *)gg_img_loadpicture(0, szFileName)))
 				{
 					EndDialog(hwndDlg, 0);
 					return FALSE;
@@ -826,7 +750,7 @@ static BOOL CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 ////////////////////////////////////////////////////////////////////////////
 // Calls opening of the dialog
-extern "C" void gg_img_dlgcall(void *empty)
+void gg_img_dlgcall(void *empty)
 {
 	HWND hMIWnd = 0; //(HWND) CallService(MS_CLUI_GETHWND, 0, 0);
 
@@ -857,7 +781,7 @@ GGIMAGEDLGDATA *gg_img_recvdlg(HANDLE hContact)
 
 ////////////////////////////////////////////////////////////////////////////
 // Return if uin has it's window already opened
-extern "C" BOOL gg_img_opened(uin_t uin)
+BOOL gg_img_opened(uin_t uin)
 {
 	list_t l = gg_imagedlgs;
 	while(l)
@@ -872,8 +796,11 @@ extern "C" BOOL gg_img_opened(uin_t uin)
 
 ////////////////////////////////////////////////////////////////////////////
 // Image Module : Looking for window entry, create if not found
-extern "C" int gg_img_display(HANDLE hContact, void *img)
+gg_img_display(HANDLE hContact, void *img)
 {
+	list_t l = gg_imagedlgs;
+	GGIMAGEDLGDATA *dat;
+
 	if(!img)
 		return FALSE;
 	if(WaitForSingleObject(hImgMutex, 20000) == WAIT_TIMEOUT)
@@ -884,8 +811,6 @@ extern "C" int gg_img_display(HANDLE hContact, void *img)
 		return FALSE;
 	}
 
-	list_t l = gg_imagedlgs;
-	GGIMAGEDLGDATA *dat;
 	// Look for already open dialog
 	while(l)
 	{
@@ -935,7 +860,7 @@ extern "C" int gg_img_display(HANDLE hContact, void *img)
 
 ////////////////////////////////////////////////////////////////////////////
 // Image Window : Frees image entry structure
-extern "C" int gg_img_releasepicture(void *img)
+gg_img_releasepicture(void *img)
 {
 	if(!img)
 		return FALSE;
@@ -943,12 +868,8 @@ extern "C" int gg_img_releasepicture(void *img)
 		free(((GGIMAGEENTRY *)img)->lpszFileName);
 	if(((GGIMAGEENTRY *)img)->hBitmap)
 		DeleteObject(((GGIMAGEENTRY *)img)->hBitmap);
-	if(((GGIMAGEENTRY *)img)->lpDIBSection)
-		ImgDeleteDIBSection(((GGIMAGEENTRY *)img)->lpDIBSection);
-	if(((GGIMAGEENTRY *)img)->lpPicture)
-		((GGIMAGEENTRY *)img)->lpPicture->Release();
-	if(((GGIMAGEENTRY *)img)->hPicture)
-		GlobalFree(((GGIMAGEENTRY *)img)->hPicture);
+	if(((GGIMAGEENTRY *)img)->lpData)
+		free(((GGIMAGEENTRY *)img)->lpData);
 	free(img);
 
 	return TRUE;
@@ -956,174 +877,121 @@ extern "C" int gg_img_releasepicture(void *img)
 
 ////////////////////////////////////////////////////////////////////////////
 // Image Window : Loading picture and sending for display
-extern "C" void * gg_img_loadpicture(struct gg_event* e, HANDLE hContact, char *szFileName)
+void *gg_img_loadpicture(struct gg_event* e, char *szFileName)
 {
-	HANDLE hImageFile = NULL;
-
 	GGIMAGEENTRY *dat;
+
+	if(!szFileName
+		&& (!e || !e->event.image_reply.size || !e->event.image_reply.image || !e->event.image_reply.filename))
+		return NULL;
+
 	dat = (GGIMAGEENTRY *)malloc(sizeof(GGIMAGEENTRY));
-	memset(dat, 0, sizeof(GGIMAGEENTRY) );
+	memset(dat, 0, sizeof(GGIMAGEENTRY));
 	dat->lpNext = NULL;
 
+	// Copy the file name
 	if(szFileName)
 	{
-		hImageFile = CreateFile(szFileName, GENERIC_READ, 0, 0, OPEN_EXISTING, 0, 0);
-		if(hImageFile == INVALID_HANDLE_VALUE)
+		FILE *fp = fopen(szFileName, "rb");
+		if(!fp)
+		{
+			free(dat);
+#ifdef DEBUGMODE
+			gg_netlog("gg_img_loadpicture(): fopen(\"%s\", \"rb\") failed.", szFileName);
+#endif
 			return NULL;
+		}
+		fseek(fp, 0, SEEK_END);
+		dat->nSize = ftell(fp);
+		if(dat->nSize <= 0)
+		{
+			fclose(fp);
+			free(dat);
+#ifdef DEBUGMODE
+			gg_netlog("gg_img_loadpicture(): Zero file size \"%s\" failed.", szFileName);
+#endif
+			return NULL;
+		}
+		// Maximum Gadu-Gadu accepted image size
+		if(dat->nSize > 255 * 1024 * 1024)
+		{
+			fclose(fp);
+			free(dat);
+#ifdef DEBUGMODE
+			gg_netlog("gg_img_loadpicture(): Image size of \"%s\" exceeds 255 KB.", szFileName);
+#endif
+			MessageBox(NULL, Translate("Image exceeds maximum allowed size of 255 KB."), GG_PROTOERROR, MB_OK | MB_ICONEXCLAMATION);
+			return NULL;
+		}
+		fseek(fp, 0, SEEK_SET);
+		dat->lpData = malloc(dat->nSize);
+		if(fread(dat->lpData, 1, dat->nSize, fp) < dat->nSize)
+		{
+			free(dat->lpData);
+			fclose(fp);
+			free(dat);
+#ifdef DEBUGMODE
+			gg_netlog("gg_img_loadpicture(): Reading file \"%s\" failed.", szFileName);
+#endif
+			return NULL;
+		}
+		fclose(fp);
+		dat->lpszFileName = strdup(szFileName);
 	}
-
-	if(hImageFile)
-		dat->nSize = GetFileSize(hImageFile, 0);
-	// Check if it's valid nonzero size image
-	else if(e->event.image_reply.size && e->event.image_reply.image)
+	// Copy picture from packet
+	else if(e && e->event.image_reply.filename)
+	{
+		dat->lpszFileName = strdup(e->event.image_reply.filename);
 		dat->nSize = e->event.image_reply.size;
-	else
-		return NULL;
-
-	if(szFileName)
-	{
-		char szFileTitle[MAX_PATH];
-		GetFileTitle(szFileName, szFileTitle, MAX_PATH);
-		dat->lpszFileName = (char *)malloc(strlen(szFileTitle) + 1);
-		strcpy(dat->lpszFileName, szFileTitle);
-	}
-	else
-	{
-		dat->lpszFileName = (char *)malloc(strlen(e->event.image_reply.filename) + 1);
-		strcpy(dat->lpszFileName, e->event.image_reply.filename);
+		dat->lpData = malloc(dat->nSize);
+		memcpy(dat->lpData, e->event.image_reply.image, dat->nSize);
 	}
 
 	////////////////////////////////////////////////////////////////////
-	// Loding picture into memory
-	HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE, dat->nSize);
+	// Loading picture using Miranda Image services
 
-	dat->hPicture = hGlobal;
-
-	// Lock memory for reading
-	LPVOID pvData = GlobalLock(hGlobal);
-	if(pvData == NULL)
+	// Load image from memory
+	if(!szFileName)
 	{
-		GlobalUnlock(hGlobal);
+		IMGSRVC_MEMIO memio;
+		memio.iLen = dat->nSize;
+		memio.pBuf = (void *)dat->lpData;
+		memio.fif = -1; /* detect */
+		memio.flags = 0;
+		dat->hBitmap = (HBITMAP) CallService(MS_IMG_LOADFROMMEM, (WPARAM) &memio, 0);
+	}
+	// Load image from file
+	else
+		dat->hBitmap = (HBITMAP) CallService(MS_IMG_LOAD, (WPARAM) szFileName, 0);
+
+	// If everything is fine return the handle
+	if(dat->hBitmap) return dat;
+
 #ifdef DEBUGMODE
-		gg_netlog("gg_img_loadpicture(): GlobalLock(...) for image failed.");
+	gg_netlog("gg_img_loadpicture(): MS_IMG_LOAD(MEM) failed.");
 #endif
 
-		if(hImageFile) CloseHandle(hImageFile);
-		free(dat);
-		return NULL;
-	}
-
-	DWORD dwBytes;
-	if (hImageFile)
-		ReadFile(hImageFile, pvData, dat->nSize, &dwBytes, 0);
-	else
-		memcpy(pvData, e->event.image_reply.image, e->event.image_reply.size);
-
-	GlobalUnlock(hGlobal);
-
-	////////////////////////////////////////////////////////////////////
-	// Loading picture using ImgDecoder
-	if(hImgDecoder)
+	if(dat)
 	{
-		char *szTempFile = NULL;
-		int error = -1;
-		if(hImageFile) CloseHandle(hImageFile);
-		// Prepare temporary file for reading
-		if(!szFileName)
-		{
-			char *szTempPath = (char *)malloc(MAX_PATH);
-			szTempFile = (char *)malloc(MAX_PATH);
-			if(GetTempPath(MAX_PATH, szTempPath)
-				&& GetTempFileName(szTempPath, "miranda", 0, szTempFile)
-				&& (hImageFile = CreateFile(szTempFile, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL)) != INVALID_HANDLE_VALUE)
-			{
-				DWORD dwWritten = 0;
-				if(WriteFile(hImageFile, e->event.image_reply.image, e->event.image_reply.size, &dwWritten, NULL)
-					&& dwWritten == e->event.image_reply.size)
-					szFileName = szTempFile;
-				CloseHandle(hImageFile);
-				hImageFile = NULL;
-				szFileName = szTempFile;
-			}
-			free(szTempPath);
-		}
-		// Load image from file
-		if(szFileName)
-		{
-			LPVOID pDecoder = NULL,
-				pBits = NULL;
-
-			ImgNewDecoder(&pDecoder);
-			if(!ImgNewDIBFromFile(pDecoder, szFileName, &(dat->lpDIBSection)))
-				ImgGetHandle(dat->lpDIBSection, &(dat->hBitmap), (LPVOID *)&pBits);
-			ImgDeleteDecoder(pDecoder);
-		}
-		if(szTempFile)
-		{
-			// If there's temporary file.. delete it
-			if(szFileName) DeleteFile(szFileName);
-			free(szTempFile);
-		}
-
-		// If everything is fine return the handle
-		if(dat->hBitmap) return dat;
-	}
-
-	////////////////////////////////////////////////////////////////////
-	// Loding picture using OLE
-
-	// Create IStream* from global memory
-	LPSTREAM pstm = NULL;
-	HRESULT hr = CreateStreamOnHGlobal(hGlobal,FALSE, &pstm);
-	if (!(SUCCEEDED(hr)) || (pstm == NULL))
-	{
-#ifdef DEBUGMODE
-		gg_netlog("gg_img_loadpicture(): CreateStreamOnHGlobal(...) failed for token.");
-#endif
-		if(hImageFile > 0)
-			CloseHandle(hImageFile);
-		if(pstm != NULL)
-			pstm->Release();
+		if(dat->lpData)
+			free(dat->lpData);
+		if(dat->lpszFileName)
+			free(dat->lpszFileName);
 		free(dat);
-		return NULL;
 	}
-
-	// Create IPicture from image file
-	hr = OleLoadPicture(pstm, dat->nSize, FALSE, IID_IPicture,
-						(LPVOID *)&dat->lpPicture);
-
-	// Check results
-	if (!(SUCCEEDED(hr)) || (dat->lpPicture == NULL))
-	{
-		pstm->Release();
-		MessageBox(
-			NULL,
-			Translate("Could not load image. Image might have unsupported file format."),
-			GG_PROTOERROR,
-			MB_OK | MB_ICONSTOP
-		);
-		if (hImageFile>0) CloseHandle(hImageFile);
-		free(dat);
-		return NULL;
-	}
-
-	pstm->Release();
-
-	if(hImageFile > 0) CloseHandle(hImageFile);
-
-	return dat;
+	return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////
 // Image Recv : AddEvent proc
 int gg_img_recvimage(WPARAM wParam, LPARAM lParam)
 {
+	CLISTEVENT *cle = (CLISTEVENT *)lParam;
+	GGIMAGEENTRY *img = (GGIMAGEENTRY *)cle->lParam;
+
 #ifdef DEBUGMODE
 	gg_netlog("gg_img_recvimage(%x, %x): Popup new image.", wParam, lParam);
 #endif
-
-	CLISTEVENT *cle = (CLISTEVENT *)lParam;
-	GGIMAGEENTRY *img = (GGIMAGEENTRY *)cle->lParam;
 
 	if(!img) return FALSE;
 
@@ -1159,6 +1027,8 @@ int gg_img_add(GGIMAGEDLGDATA *dat)
 // Removes dat structure
 int gg_img_remove(GGIMAGEDLGDATA *dat)
 {
+	GGIMAGEENTRY *temp = NULL, *img = NULL;
+
 	if(!dat) return FALSE;
 
 	if(WaitForSingleObject(hImgMutex, 20000) == WAIT_TIMEOUT)
@@ -1170,7 +1040,7 @@ int gg_img_remove(GGIMAGEDLGDATA *dat)
 	}
 
 	// Remove the structure
-	GGIMAGEENTRY *temp, *img = dat->lpImages;
+	img = dat->lpImages;
 
 	// Destroy picture handle
 	while(temp = img)
@@ -1190,6 +1060,10 @@ int gg_img_remove(GGIMAGEDLGDATA *dat)
 //
 GGIMAGEDLGDATA *gg_img_find(uin_t uin, DWORD crc32)
 {
+	int res = 0;
+	list_t l = gg_imagedlgs;
+	GGIMAGEDLGDATA *dat;
+
 	if(WaitForSingleObject(hImgMutex, 20000) == WAIT_TIMEOUT)
 	{
 #ifdef DEBUGMODE
@@ -1199,17 +1073,14 @@ GGIMAGEDLGDATA *gg_img_find(uin_t uin, DWORD crc32)
 		return FALSE;
 	}
 
-	int res = 0;
-
-	list_t l = gg_imagedlgs;
-	GGIMAGEDLGDATA *dat;
-
 	while(l)
 	{
+		uin_t c_uin;
+
 		dat = (GGIMAGEDLGDATA *)l->data;
 		if(!dat) break;
 
-		uin_t c_uin = DBGetContactSettingDword(dat->hContact, GG_PROTO, GG_KEY_UIN, 0);
+		c_uin = DBGetContactSettingDword(dat->hContact, GG_PROTO, GG_KEY_UIN, 0);
 
 		if (!dat->bReceiving && /*( f_dat->crc32 == crc32 ) &&*/ ( c_uin == uin ) )
 		{
@@ -1237,9 +1108,7 @@ BOOL gg_img_sendonrequest(struct gg_event* e)
 
 	if(!dat || !gg_isonline()) return FALSE;
 
-	LPVOID pvData = GlobalLock(dat->lpImages->hPicture);
-	gg_image_reply(ggThread->sess, e->event.image_request.sender, dat->lpImages->lpszFileName, (char*)pvData, dat->lpImages->nSize);
-	GlobalUnlock(dat->lpImages->hPicture);
+	gg_image_reply(ggThread->sess, e->event.image_request.sender, dat->lpImages->lpszFileName, dat->lpImages->lpData, dat->lpImages->nSize);
 
 	gg_img_remove(dat);
 
@@ -1251,6 +1120,8 @@ BOOL gg_img_sendonrequest(struct gg_event* e)
 int gg_img_sendimg(WPARAM wParam, LPARAM lParam)
 {
 	pthread_t dwThreadID;
+	HANDLE hContact = (HANDLE)wParam;
+	GGIMAGEDLGDATA *dat = NULL;
 
 	if(WaitForSingleObject(hImgMutex, 20000) == WAIT_TIMEOUT)
 	{
@@ -1261,22 +1132,6 @@ int gg_img_sendimg(WPARAM wParam, LPARAM lParam)
 		return FALSE;
 	}
 
-	HANDLE hContact = (HANDLE)wParam;
-	//list_t l = gg_imagedlgs;
-	GGIMAGEDLGDATA *dat = NULL;
-
-	// Lookup for the sending window of specified uin
-	// Depreciated... one dialog for one sender
-	/*
-	while(l)
-	{
-		dat = (GGIMAGEDLGDATA *) l->data;
-		if(dat->hContact == hContact)
-			break;
-		l = l->next;
-	}
-	if(!l) dat = NULL;
-	*/
 	if(!dat)
 	{
 		dat = (GGIMAGEDLGDATA *)malloc(sizeof(GGIMAGEDLGDATA));

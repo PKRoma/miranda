@@ -25,7 +25,7 @@
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
 	"Gadu-Gadu Protocol",
-	PLUGIN_MAKE_VERSION(0, 0, 4, 5),
+	PLUGIN_MAKE_VERSION(0, 0, 4, 6),
 	"Provides support for Gadu-Gadu protocol",
 	"Adam Strzelecki",
 	"ono+miranda@java.pl",

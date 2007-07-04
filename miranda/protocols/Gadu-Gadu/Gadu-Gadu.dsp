@@ -174,7 +174,7 @@ SOURCE=.\icolib.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\image.cpp
+SOURCE=.\image.c
 # End Source File
 # Begin Source File
 
@@ -202,7 +202,7 @@ SOURCE=.\ssl.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\token.cpp
+SOURCE=.\token.c
 # End Source File
 # Begin Source File
 

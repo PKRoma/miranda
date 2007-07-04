@@ -370,7 +370,7 @@ SOURCE=.\icolib.c
 "$(INTDIR)\icolib.obj" : $(SOURCE) "$(INTDIR)"
 
 
-SOURCE=.\image.cpp
+SOURCE=.\image.c
 
 "$(INTDIR)\image.obj" : $(SOURCE) "$(INTDIR)"
 
@@ -405,7 +405,7 @@ SOURCE=.\ssl.c
 "$(INTDIR)\ssl.obj" : $(SOURCE) "$(INTDIR)"
 
 
-SOURCE=.\token.cpp
+SOURCE=.\token.c
 
 "$(INTDIR)\token.obj" : $(SOURCE) "$(INTDIR)"
 
