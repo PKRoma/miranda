@@ -352,43 +352,46 @@ static int serviceBmpFilterResizeBitmap(WPARAM wParam,LPARAM lParam)
 }
 
 
-/*--------------------------------------------------------------------------*\
-|| fiio_mem.cpp by Ryan Rubley <ryan@lostreality.org>                       ||
-||                                                                          ||
-|| (v1.02) 4-28-2004                                                        ||
-|| FreeImageIO to memory                                                    ||
-||                                                                          ||
-\*--------------------------------------------------------------------------*/
-
 FIBITMAP *
 FreeImage_LoadFromMem(FREE_IMAGE_FORMAT fif, fiio_mem_handle *handle, int flags) {
-	FreeImageIO io;
-	SetMemIO(&io);
+	//FreeImageIO io;
+	//SetMemIO(&io);
 
 	if (handle && handle->data) {
-		handle->curpos = 0;
-		return FreeImage_LoadFromHandle(fif, &io, (fi_handle)handle, flags);
+        FIMEMORY *hmem = FreeImage_OpenMemory((BYTE *)handle->data, handle->datalen);
+        FREE_IMAGE_FORMAT _fif = (fif != FIF_UNKNOWN) ? fif : FreeImage_GetFileTypeFromMemory(hmem, 0);
+        FIBITMAP *dib = FreeImage_LoadFromMemory(_fif, hmem, flags);
+        FreeImage_CloseMemory(hmem);
+		//handle->curpos = 0;
+		//return FreeImage_LoadFromHandle(fif, &io, (fi_handle)handle, flags);
 	}
 
 	return NULL;
 }
 
-BOOL
-FreeImage_SaveToMem(FREE_IMAGE_FORMAT fif, FIBITMAP *dib, fiio_mem_handle *handle, int flags) {
-	FreeImageIO io;
-	SetMemIO(&io);
+FIMEMORY 
+*FreeImage_SaveToMem(FREE_IMAGE_FORMAT fif, FIBITMAP *dib, fiio_mem_handle *handle, int flags) {
+	//FreeImageIO io;
+	//SetMemIO(&io);
 
 	if (handle) {
-		handle->filelen = 0;
-		handle->curpos = 0;
-		return FreeImage_SaveToHandle(fif, dib, &io, (fi_handle)handle, flags);
+        FIMEMORY *hmem = FreeImage_OpenMemory(NULL, 0);
+        if(fif == FIF_UNKNOWN)
+            fif = FIF_BMP;
+        handle->curpos = 0;
+        FreeImage_SaveToMemory(fif, dib, hmem, flags);
+        FreeImage_AcquireMemory(hmem, (BYTE **)&handle->data, (DWORD *)&handle->datalen);
+        return hmem;
+		//handle->filelen = 0;
+		//handle->curpos = 0;
+		//return FreeImage_SaveToHandle(fif, dib, &io, (fi_handle)handle, flags);
 	}
-
-	return FALSE;
+	return NULL;
 }
 
 // ----------------------------------------------------------
 
+/*
 void
 SetMemIO(FreeImageIO *io) {
 	io->read_proc  = fiio_mem_ReadProc;
@@ -483,6 +486,8 @@ long __stdcall fiio_mem_TellProc(fi_handle handle) {
 	return FIIOMEM(curpos);
 }
 
+*/
+
 extern "C" DWORD __declspec(dllexport) getver( void )
 {
 	return __VERSION_DWORD;
@@ -545,7 +550,7 @@ extern "C" BOOL __declspec(dllexport) mempng2dib(BYTE* pSource, DWORD cbSourceSi
 	png_uint_32				ulRowBytes;
 	png_byte*				pbImageData;
 	png_byte**				ppbRowPointers = NULL;
-	int                  i, j;
+	unsigned int			i, j;
 	int						wDIRowBytes;
 	BYTE*                pImageData;
 
@@ -893,16 +898,21 @@ static int serviceLoad(WPARAM wParam, LPARAM lParam)
 static int serviceLoadFromMem(WPARAM wParam, LPARAM lParam)
 {
 	IMGSRVC_MEMIO *mio = (IMGSRVC_MEMIO *)wParam;
-	fiio_mem_handle fiio;
+	//fiio_mem_handle fiio;
 
 	if(mio->iLen == 0 || mio->pBuf == NULL)
 		return 0;
 
-	fiio.curpos = 0;
-	fiio.data = mio->pBuf;
-	fiio.datalen = fiio.filelen = mio->iLen;
+	//fiio.curpos = 0;
+	//fiio.data = mio->pBuf;
+	//fiio.datalen = fiio.filelen = mio->iLen;
 
-	FIBITMAP *dib = FreeImage_LoadFromMem(mio->fif, &fiio, mio->flags);
+    FIMEMORY *hmem = FreeImage_OpenMemory((BYTE *)mio->pBuf, mio->iLen);
+    FREE_IMAGE_FORMAT fif = (mio->fif != FIF_UNKNOWN) ? mio->fif : mio->fif = FreeImage_GetFileTypeFromMemory(hmem, 0);
+    FIBITMAP *dib = FreeImage_LoadFromMemory(fif, hmem, mio->flags);
+    FreeImage_CloseMemory(hmem);
+
+	//FIBITMAP *dib = FreeImage_LoadFromMem(mio->fif, &fiio, mio->flags);
 
 	if(dib == NULL || (lParam & IMGL_RETURNDIB))
 		return (int)dib;
