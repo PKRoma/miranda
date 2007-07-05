@@ -317,6 +317,13 @@ int MSN_SendOIM(char* szEmail, char* msg)
 	ezxml_t from = ezxml_add_child(hdr, "From", 0);
 	ezxml_set_attr(from, "memberName", MyOptions.szEmail);
 
+	if (*oimUID == 0)
+	{
+		char* uid = getNewUuid();
+		mir_snprintf(oimUID, sizeof(oimUID), "%s", uid);
+		mir_free(uid);
+	}
+
 	{
 		DBVARIANT dbv;
 		char *mynick, *mynickenc;
