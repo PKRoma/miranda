@@ -347,7 +347,12 @@ int MSN_SendOIM(char* szEmail, char* msg)
 		ezxml_set_attr(from, "friendlyName", mynickenc);
 	}
 	
-	ezxml_set_attr(from, "xml:lang", "en-US");
+	char lang[5]="en", cntr[5]="US", langcd[15];
+	GetLocaleInfoA(LOCALE_USER_DEFAULT, LOCALE_SISO639LANGNAME, lang, sizeof(lang));
+	GetLocaleInfoA(LOCALE_USER_DEFAULT, LOCALE_SISO3166CTRYNAME, cntr, sizeof(cntr));
+	mir_snprintf(langcd, sizeof(langcd), "%s-%s", lang, cntr);
+
+	ezxml_set_attr(from, "xml:lang", langcd);
 	ezxml_set_attr(from, "proxy", "MSNMSGR");
 	ezxml_set_attr(from, "xmlns", "http://messenger.msn.com/ws/2004/09/oim/");
 	ezxml_set_attr(from, "msnpVer", "MSNP13");
@@ -392,13 +397,21 @@ int MSN_SendOIM(char* szEmail, char* msg)
 		size_t omlen = strlen(msg);
 		size_t emlen = Netlib_GetBase64EncodedBufferSize(omlen);
 
-		char* msgenc = (char*)alloca(mhdrs.getLength() + emlen + 20);
+		char* msgenc = (char*)alloca(mhdrs.getLength() + emlen + 20 + emlen / 38);
 		char* msgenc2 = mhdrs.writeToBuffer(msgenc);
 		
 		strcpy(msgenc2, "\r\n"); msgenc2 += 2;
 
 		NETLIBBASE64 nlb = { msgenc2, emlen, (PBYTE)msg, omlen };
 		MSN_CallService( MS_NETLIB_BASE64ENCODE, 0, LPARAM( &nlb ));
+
+		char *pos = msgenc2;
+		for (int i=0; i<nlb.cchEncoded; i+=76)
+		{
+			memmove(pos+2, pos, nlb.cchEncoded - i + 1);
+			memcpy(pos, "\r\n", 2);
+			pos += 78;
+		}
 
 		ezxml_set_txt(msgc, msgenc);
 	}
@@ -420,6 +433,7 @@ int MSN_SendOIM(char* szEmail, char* msg)
 
 		char* tResult = mAgent.getSslResult( "https://ows.messenger.msn.com/OimWS/oim.asmx", szData,
 			"SOAPAction: \"http://messenger.msn.com/ws/2004/09/oim/Store\"\r\n",
+//			"SOAPAction: \"http://messenger.live.com/ws/2006/09/oim/Store2\"\r\n",
 			status, httpInfo, htmlbody);
 
 		free(szData);
