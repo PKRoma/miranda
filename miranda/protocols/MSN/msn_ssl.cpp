@@ -297,7 +297,9 @@ char* SSL_WinInet::getSslResult( const char* parUrl, const char* parAuthInfo, co
 
 LBL_Restart:
 			MSN_DebugLog( "Sending request..." );
+#ifdef _DEBUG
 			MSN_DebugLog( parAuthInfo );
+#endif
 			DWORD tErrorCode = f_HttpSendRequest( tRequest, headers, strlen( headers ), 
 				(void*)parAuthInfo, strlen( parAuthInfo ));
 			if ( tErrorCode == 0 ) {
@@ -514,8 +516,10 @@ char* SSL_OpenSsl::getSslResult( const char* parUrl, const char* parAuthInfo, co
 					"Cache-Control: no-cache\r\n\r\n", path, chdrs,
 					MSN_USER_AGENT, strlen( parAuthInfo ), url+8 );
 
+#ifdef _DEBUG
 				MSN_DebugLog( "Sending SSL query:\n%s", headers );
 				MSN_DebugLog( "Sending SSL query:\n%s", parAuthInfo );
+#endif
 				pfn_SSL_write( ssl, headers, strlen( headers ));
 				pfn_SSL_write( ssl, (void*)parAuthInfo, strlen( parAuthInfo ));
 				
