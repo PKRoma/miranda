@@ -71,66 +71,62 @@ void getOIMs(ezxml_t xmli)
 		ezxml_set_txt(reqmid, szId);
 		char* szData = ezxml_toxml(xmlreq, true);
 
+		unsigned status;
+		MimeHeaders httpInfo;
+		char* htmlbody;
+
 		char* tResult = mAgent.getSslResult( "https://rsi.hotmail.com/rsi/rsi.asmx", szData,
-			"SOAPAction: \"http://www.hotmail.msn.com/ws/2004/09/oim/rsi/GetMessage\"\r\n" );
+			"SOAPAction: \"http://www.hotmail.msn.com/ws/2004/09/oim/rsi/GetMessage\"\r\n",
+			status, httpInfo, htmlbody);
 
 		free(szData);
 
-		if (tResult != NULL)
+		if (tResult != NULL && status == 200)
 		{
-			unsigned status;
-			char* htmlhdr = httpParseHeader( tResult, status );
-			if (status == 200)
+			ezxml_t xmlm = ezxml_parse_str(htmlbody, strlen(htmlbody));
+			ezxml_t tokm = ezxml_get(xmlm, "soap:Body", 0, "GetMessageResponse", 0, "GetMessageResult", -1);
+			
+			MimeHeaders mailInfo;
+			char* mailbody = (char*)mailInfo.readFromBuffer(ezxml_txt(tokm));
+
+			time_t evtm = time( NULL );
+			const char* arrTime = mailInfo["X-OriginalArrivalTime"];
+			if (arrTime != NULL)
 			{
-				MimeHeaders httpInfo;
-				char* htmlbody = (char*)httpInfo.readFromBuffer( htmlhdr );
+				char szTime[32], *p;
+				txtParseParam( arrTime, "FILETIME", "[", "]", szTime, sizeof( szTime ));
 
-				ezxml_t xmlm = ezxml_parse_str(htmlbody, strlen(htmlbody));
-				ezxml_t tokm = ezxml_get(xmlm, "soap:Body", 0, "GetMessageResponse", 0, "GetMessageResult", -1);
-				
-				MimeHeaders mailInfo;
-				char* mailbody = (char*)mailInfo.readFromBuffer(ezxml_txt(tokm));
-
-				time_t evtm = time( NULL );
-				const char* arrTime = mailInfo["X-OriginalArrivalTime"];
-				if (arrTime != NULL)
-				{
-					char szTime[32], *p;
-					txtParseParam( arrTime, "FILETIME", "[", "]", szTime, sizeof( szTime ));
-
-					unsigned filetimeLo = strtoul( szTime, &p, 16 );
-					if ( *p == ':' ) { 
-						unsigned __int64 filetime = strtoul( p+1, &p, 16 );
-						filetime <<= 32;
-						filetime |= filetimeLo;
-						filetime /= 10000000;
-						filetime -= 11644473600ui64;
-						evtm = ( time_t )filetime;
-					}
+				unsigned filetimeLo = strtoul( szTime, &p, 16 );
+				if ( *p == ':' ) { 
+					unsigned __int64 filetime = strtoul( p+1, &p, 16 );
+					filetime <<= 32;
+					filetime |= filetimeLo;
+					filetime /= 10000000;
+					filetime -= 11644473600ui64;
+					evtm = ( time_t )filetime;
 				}
-
-				char* szMsg = mailInfo.decodeMailBody( mailbody );
-
-				PROTORECVEVENT pre = {0};
-				pre.szMessage = szMsg;
-				pre.flags = PREF_UTF /*+ (( isRtl ) ? PREF_RTL : 0)*/;
-				pre.timestamp = evtm;
-
-				CCSDATA ccs = {0};
-				ccs.hContact = MSN_HContactFromEmail( szEmail, szEmail, 0, 0 );
-				ccs.szProtoService = PSR_MESSAGE;
-				ccs.lParam = ( LPARAM )&pre;
-				MSN_CallService( MS_PROTO_CHAINRECV, 0, ( LPARAM )&ccs );
-
-				ezxml_t delmid = ezxml_add_child(delmids, "messageId", 0);
-				ezxml_set_txt(delmid, szId);
-				
-				mir_free( szMsg );
-				ezxml_free(tokm);
 			}
-			mir_free( tResult );
 
+			char* szMsg = mailInfo.decodeMailBody( mailbody );
+
+			PROTORECVEVENT pre = {0};
+			pre.szMessage = szMsg;
+			pre.flags = PREF_UTF /*+ (( isRtl ) ? PREF_RTL : 0)*/;
+			pre.timestamp = evtm;
+
+			CCSDATA ccs = {0};
+			ccs.hContact = MSN_HContactFromEmail( szEmail, szEmail, 0, 0 );
+			ccs.szProtoService = PSR_MESSAGE;
+			ccs.lParam = ( LPARAM )&pre;
+			MSN_CallService( MS_PROTO_CHAINRECV, 0, ( LPARAM )&ccs );
+
+			ezxml_t delmid = ezxml_add_child(delmids, "messageId", 0);
+			ezxml_set_txt(delmid, szId);
+			
+			mir_free( szMsg );
+			ezxml_free(tokm);
 		}
+		mir_free( tResult );
 		toki = ezxml_next(toki);
 	}
 	ezxml_free(xmlreq);
@@ -139,8 +135,13 @@ void getOIMs(ezxml_t xmli)
 	{
 		char* szData = ezxml_toxml(xmldel, true);
 			
-		char* tResult = mAgent.getSslResult( "https://rsi.hotmail.com/rsi/rsi.asmx", szData,
-			"SOAPAction: \"http://www.hotmail.msn.com/ws/2004/09/oim/rsi/DeleteMessages\"\r\n" );
+		unsigned status;
+		MimeHeaders httpInfo;
+		char* htmlbody;
+
+		char* tResult = mAgent.getSslResult("https://rsi.hotmail.com/rsi/rsi.asmx", szData,
+			"SOAPAction: \"http://www.hotmail.msn.com/ws/2004/09/oim/rsi/DeleteMessages\"\r\n",
+			status, httpInfo, htmlbody);
 		mir_free( tResult );
 		free(szData);
 	}
@@ -406,21 +407,20 @@ int MSN_SendOIM(char* szEmail, char* msg)
 		mir_snprintf(szAuth, sizeof(szAuth), "t=%s&p=%s", tAuthToken, pAuthToken);
 		char* szData = ezxml_toxml(xmlp, true);
 		
+		unsigned status;
+		MimeHeaders httpInfo;
+		char* htmlbody;
+
 		char* tResult = mAgent.getSslResult( "https://ows.messenger.msn.com/OimWS/oim.asmx", szData,
-			"SOAPAction: \"http://messenger.msn.com/ws/2004/09/oim/Store\"\r\n" );
+			"SOAPAction: \"http://messenger.msn.com/ws/2004/09/oim/Store\"\r\n",
+			status, httpInfo, htmlbody);
 
 		free(szData);
 
 		if (tResult != NULL)
 		{
-			unsigned status;
-			char* htmlhdr = httpParseHeader( tResult, status );
-
 			if (status == 500)
 			{
-				MimeHeaders httpInfo;
-				char* htmlbody = (char*)httpInfo.readFromBuffer( htmlhdr );
-
 				ezxml_t xmlm = ezxml_parse_str(htmlbody, strlen(htmlbody));
 				ezxml_t det = ezxml_get(xmlm, "soap:Body", 0, "soap:Fault", 0, "detail", -1);
 				char* szTwChl = ezxml_txt(ezxml_child(det, "TweenerChallenge"));

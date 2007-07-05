@@ -292,19 +292,15 @@ typedef struct _tag_PopupData
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MIME headers processing
 
-struct MimeHeader
+class MimeHeaders
 {
-	const char* name;
-	const char* value;
-	unsigned flags;
-};
+public:
 
-struct MimeHeaders
-{
 	MimeHeaders();
 	MimeHeaders( unsigned );
 	~MimeHeaders();
 
+	void clear(void);
 	char*	readFromBuffer( char* pSrc );
 	const char* find( const char* fieldName );
 	const char* operator[]( const char* fieldName ) { return find( fieldName ); }
@@ -317,6 +313,14 @@ struct MimeHeaders
 
 	size_t  getLength( void );
 	char* writeToBuffer( char* pDest );
+
+private:
+	typedef struct tag_MimeHeader
+	{
+		const char* name;
+		const char* value;
+		unsigned flags;
+	} MimeHeader;
 
 	unsigned	mCount;
 	unsigned	mAllocCount;
@@ -790,7 +794,8 @@ public:
 	SSLAgent();
 	~SSLAgent();
 
-	char* getSslResult( const char* parUrl, const char* parAuthInfo, const char* hdrs );
+	char* getSslResult( const char* parUrl, const char* parAuthInfo, const char* hdrs,
+		unsigned& status, MimeHeaders& httpinfo, char*& htmlbody);
 };
 
 

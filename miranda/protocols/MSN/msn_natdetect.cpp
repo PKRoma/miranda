@@ -414,7 +414,9 @@ void MSNConnDetectThread( void* )
 					MSN_SetByte("AutoGetHost", 1);
 			}
 			MyConnection.intIP = MyConnection.extIP;
-			MyConnection.udpConType = (ConEnum)portsMapped;
+			if (MyConnection.extIP) 
+				MyConnection.udpConType = (ConEnum)portsMapped;
+
 			return;
 		}
 	}
@@ -474,7 +476,7 @@ void MyConnectionType::SetUdpCon(const char* str)
 
 void MyConnectionType::CalculateWeight(void)
 {
-	if (icf || extIP == 0) weight = 0;
+	if (icf) weight = 0;
 	else if (udpConType == conDirect) weight = 6;
 	else if (udpConType >= conPortRestrictNAT && udpConType <= conSymmetricNAT)
 		weight = upnpNAT ? 5 : 2;

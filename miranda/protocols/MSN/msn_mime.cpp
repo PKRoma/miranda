@@ -43,18 +43,20 @@ MimeHeaders::MimeHeaders( unsigned iInitCount ) :
 
 MimeHeaders::~MimeHeaders()
 {
-	if ( mCount == NULL )
-		return;
+	clear();
+	mir_free( mVals );
+}
 
-	for ( unsigned i=0; i < mCount; i++ ) {
+void MimeHeaders::clear(void)
+{
+	for ( unsigned i=0; i < mCount; i++ ) 
+	{
 		MimeHeader& H = mVals[ i ];
 		if (H.flags & 1) mir_free(( void* )H.name );
 		if (H.flags & 2) mir_free(( void* )H.value );
 	}
-
-	mir_free( mVals );
+	mCount = 0;
 }
-
 /////////////////////////////////////////////////////////////////////////////////////////
 // add various values
 
@@ -106,7 +108,7 @@ char* MimeHeaders::writeToBuffer( char* pDest )
 
 char* MimeHeaders::readFromBuffer( char* parString )
 {
-	mCount = 0;
+	clear();
 
 	while ( *parString ) {
 		if ( parString[0] == '\r' && parString[1] == '\n' ) {

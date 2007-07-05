@@ -589,9 +589,36 @@ SSLAgent::~SSLAgent()
 }
 
 
-char* SSLAgent::getSslResult( const char* parUrl, const char* parAuthInfo, const char* hdrs )
+char* SSLAgent::getSslResult(const char* parUrl, const char* parAuthInfo, const char* hdrs, 
+							 unsigned& status, MimeHeaders& httpinfo, char*& htmlbody)
 {
-	return pAgent ? pAgent->getSslResult(parUrl, parAuthInfo, hdrs) : NULL;
+	status = 0;
+	char* tResult = NULL;
+	if (pAgent != NULL)
+	{
+		char* url = mir_strdup(parUrl);
+
+lbl_retry:
+		tResult = pAgent->getSslResult(url, parAuthInfo, hdrs);
+		mir_free(url);
+		if (tResult != NULL)
+		{
+			char* htmlhdr = httpParseHeader( tResult, status );
+			htmlbody = httpinfo.readFromBuffer( htmlhdr );
+			if (status == 301 || status == 302)
+			{
+				const char* loc = httpinfo[ "Location" ];
+				if (loc != NULL)
+				{
+					MSN_DebugLog( "Redirected to '%s'", loc );
+					url = mir_strdup(loc);
+					mir_free(tResult);
+					goto lbl_retry;
+				}
+			}
+		}
+	}
+	return tResult;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -632,7 +659,11 @@ int MSN_GetPassportAuth( char* authChallengeInfo )
 
 	while (retVal == -1)
 	{
-		tResult = mAgent.getSslResult( szPassportHost, szAuthInfo, NULL );
+		unsigned status;
+		MimeHeaders httpInfo;
+		char* htmlbody;
+
+		tResult = mAgent.getSslResult( szPassportHost, szAuthInfo, NULL, status, httpInfo, htmlbody);
 		if ( tResult == NULL ) {
 			if ( defaultUrlAllow ) {
 				strcpy( szPassportHost, defaultPassportUrl );
@@ -644,15 +675,10 @@ int MSN_GetPassportAuth( char* authChallengeInfo )
 				break;
 		}	}
 
-		unsigned status;
-		char* htmlhdr = httpParseHeader( tResult, status );
 		switch ( status )
 		{
 			case 200: 
 			{
-				MimeHeaders httpInfo;
-				const char* htmlbody = httpInfo.readFromBuffer( htmlhdr );
-
 				ezxml_t xml = ezxml_parse_str((char*)htmlbody, strlen(htmlbody));
 
 				ezxml_t tokr = ezxml_get(xml, "S:Body", 0, 
@@ -691,18 +717,6 @@ int MSN_GetPassportAuth( char* authChallengeInfo )
 
 				ezxml_free(xml);
 				break;
-			}
-			case 302: // Handle redirect
-			{
-				MimeHeaders httpInfo;
-				httpInfo.readFromBuffer( htmlhdr );
-
-				const char* loc = httpInfo["Location"];
-				if (loc == NULL) break;
-				
-				strncpy(szPassportHost, loc, sizeof(szPassportHost));
-				szPassportHost[sizeof(szPassportHost)-1] = 0;
-				MSN_DebugLog( "Redirected to '%s'", szPassportHost );
 			}
 			default:
 				if ( defaultUrlAllow ) {
