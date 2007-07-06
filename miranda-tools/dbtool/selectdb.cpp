@@ -52,7 +52,7 @@ static int AddDatabaseToList(HWND hwndList, TCHAR* filename)
 		ListView_GetItem(hwndList,&lvi);
 		if( !_tcsicmp(( TCHAR* )lvi.lParam,filename)) return lvi.iItem;
 	}
-	hDbFile=CreateFile(filename,GENERIC_READ,FILE_SHARE_READ|FILE_SHARE_WRITE,NULL,OPEN_EXISTING,0,NULL);
+	hDbFile=CreateFile(filename,GENERIC_READ|GENERIC_WRITE,FILE_SHARE_READ,NULL,OPEN_EXISTING,0,NULL);
 	if ( hDbFile == INVALID_HANDLE_VALUE )
 		return -1;
 

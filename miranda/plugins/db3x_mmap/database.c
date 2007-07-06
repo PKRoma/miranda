@@ -137,7 +137,7 @@ int LoadDatabaseModule(void)
 	log0("DB logging running");
 	{
 		DWORD dummy=0;
-		hDbFile=CreateFile(szDbPath,GENERIC_READ|GENERIC_WRITE, 0, NULL, OPEN_ALWAYS, 0, NULL);
+		hDbFile=CreateFile(szDbPath,GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS, 0, NULL);
 		if ( hDbFile == INVALID_HANDLE_VALUE ) {
 			return 1;
 		}
