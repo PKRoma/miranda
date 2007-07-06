@@ -576,13 +576,7 @@ void  MSN_SendStatusMessage( const char* msg )
 
 LONG ThreadData::sendPacket( const char* cmd, const char* fmt,...)
 {
-	if ( this == NULL )  // :)
-		return 0;
-
-	va_list vararg;
-	va_start( vararg, fmt );
-
-	int strsize = 512;
+	size_t strsize = 512;
 	char* str = ( char* )mir_alloc( strsize );
 
 	LONG thisTrid = 0;
@@ -594,9 +588,14 @@ LONG ThreadData::sendPacket( const char* cmd, const char* fmt,...)
 		if ( fmt[0] == '\0' )
 			mir_snprintf( str, strsize, "%s %d", cmd, thisTrid );
 		else {
+			va_list vararg;
+			va_start( vararg, fmt );
+
 			int paramStart = mir_snprintf( str, strsize, "%s %d ", cmd, thisTrid );
 			while ( _vsnprintf( str+paramStart, strsize-paramStart-2, fmt, vararg ) == -1 )
 				str = (char*)mir_realloc( str, strsize += 512 );
+
+			va_end( vararg );
 		}
 	}
 
