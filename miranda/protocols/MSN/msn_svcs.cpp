@@ -63,7 +63,7 @@ static HANDLE AddToListByEmail( const char *email, DWORD flags )
 	MSN_SetString( hContact, "e-mail", email );
 
 	if ( flags & PALF_TEMPORARY ) {
-   	DBWriteContactSettingByte( hContact, "CList", "NotOnList", 1 );
+   		DBWriteContactSettingByte( hContact, "CList", "NotOnList", 1 );
 		DBWriteContactSettingByte( hContact, "CList", "Hidden", 1 );
 	}
 	else {
@@ -72,6 +72,11 @@ LBL_AddContact:
 			MSN_AddUser( hContact, email, LIST_FL );
 			MSN_AddUser( hContact, email, LIST_BL + LIST_REMOVE );
 			MSN_AddUser( hContact, email, LIST_AL );
+			if (strncmp(email, "tel:", 4) == 0 )
+			{
+				MSN_SetWord( hContact, "Status", ID_STATUS_ONTHEPHONE );
+				MSN_SetString( hContact, "MirVer", "SMS" );
+			}
 		}
 		else hContact = NULL;
 	}
