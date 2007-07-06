@@ -232,7 +232,7 @@ void MSN_AddServerGroup( const char* pszGroupName, HANDLE hContact )
 {
 	char szBuf[ 200 ];
 	UrlEncode( pszGroupName, szBuf, sizeof( szBuf ));
-	msnNsThread->sendPacket( "ADG", szBuf );
+	msnNsThread->sendPacket( "ADG", "%s", szBuf );
 	MSN_DeleteSetting( hContact, "GroupID" );
 }
 
