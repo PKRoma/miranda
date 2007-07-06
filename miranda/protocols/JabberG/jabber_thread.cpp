@@ -1553,7 +1553,6 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 	xmlns = JabberXmlGetAttrValue( queryNode, "xmlns" );
 
 
-
 	// new match by id
 	if ( g_JabberIqManager.HandleIq( id, node, userdata ))
 		return;
@@ -1562,21 +1561,19 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 	if ( g_JabberIqManager.HandleIqPermanent( node, userdata ))
 		return;
 
+
 	/////////////////////////////////////////////////////////////////////////
 	// OLD MATCH BY ID
 	/////////////////////////////////////////////////////////////////////////
 	if ( ( !_tcscmp( type, _T("result")) || !_tcscmp( type, _T("error")) ) && (( pfunc=JabberIqFetchFunc( id )) != NULL )) {
 		JabberLog( "Handling iq request for id=%d", id );
 		pfunc( node, userdata );
+		return;
 	}
-
-	/////////////////////////////////////////////////////////////////////////
-	// MORE GENERAL ROUTINES, WHEN ID DOES NOT MATCH
-	/////////////////////////////////////////////////////////////////////////
-
 	else if (( pfunc=JabberIqFetchXmlnsFunc( xmlns )) != NULL ) {
 		JabberLog( "Handling iq request for xmlns = " TCHAR_STR_PARAM, xmlns );
 		pfunc( node, userdata );
+		return;
 	}
 	// RECVED: <iq type='error'> ...
 	else if ( !_tcscmp( type, _T("error"))) {
@@ -1592,7 +1589,22 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 					SetEvent( item->ft->hFileEvent );	// Simulate the termination of file server connection
 			}
 			i++;
-}	}	}
+	}	}
+	else if (( !_tcscmp( type, _T("get")) || !_tcscmp( type, _T("set") ))) {
+		XmlNodeIq iq( "error", idStr, JabberXmlGetAttrValue( node, "from" ) );
+
+		// FIXME: commented out, because of fucking xml parser engine incoming/outgoing text encoding problems
+//		XmlNode *pFirstChild = JabberXmlGetFirstChild( node );
+//		if ( pFirstChild )
+//			iq.addChild( JabberXmlCopyNode( pFirstChild ) );
+		
+		XmlNode *errorNode = iq.addChild( "error" );
+		errorNode->addAttr( "type", "cancel" );
+		XmlNode *serviceNode = errorNode->addChild( "service-unavailable" );
+		serviceNode->addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
+		info->send( iq );
+	}
+}
 
 static void JabberProcessRegIq( XmlNode *node, void *userdata )
 {

@@ -600,6 +600,7 @@ public:
 		TCHAR *szTagName = a2t( pFirstChild->name );
 		TCHAR *szXmlns = JabberXmlGetAttrValue( pFirstChild, "xmlns" );
 
+		BOOL bHandled = FALSE;
 		Lock();
 		CJabberIqPermanentInfo *pInfo = m_pPermanentHandlers;
 		while ( pInfo ) {
@@ -627,13 +628,14 @@ public:
 
 				JabberLog( "Handling iq id %S, type %S, from %S", iqInfo.m_szId, szType, iqInfo.m_szFrom );
 				pInfo->m_pHandler(pNode, pUserData, &iqInfo);
+				bHandled = TRUE;
 			}
 			pInfo = pInfo->m_pNext;
 		}
 		Unlock();
 
 		mir_free( szTagName );
-		return FALSE;
+		return bHandled;
 	}
 	BOOL ExpireIq(int nIqId, void *pUserData = NULL)
 	{
