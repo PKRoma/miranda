@@ -227,7 +227,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		gcr.pColors = &crCols[0];
 		gcr.pszModuleDispName = msnProtocolName;
 		gcr.pszModule = msnProtocolName;
-		MSN_CallService( MS_GC_REGISTER, NULL, ( LPARAM )&gcr );
+		MSN_CallService( MS_GC_REGISTER, 0, ( LPARAM )&gcr );
 
 		arHooks.insert( HookEvent( ME_GC_EVENT, MSN_GCEventHook ));
 		arHooks.insert( HookEvent( ME_GC_BUILDMENU, MSN_GCMenuHook ));

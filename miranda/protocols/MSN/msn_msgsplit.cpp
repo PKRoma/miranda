@@ -39,14 +39,14 @@ public:
 };
 
 
-__forceinline chunkedmsg::chunkedmsg(const char* tid, const size_t totsz, const bool tbychunk)
+inline chunkedmsg::chunkedmsg(const char* tid, const size_t totsz, const bool tbychunk)
 	: bychunk(tbychunk), recvsz(0), size(totsz)
 {
 	id = mir_strdup(tid);
 	msg = tbychunk ? NULL : (char*)mir_alloc(totsz + 1); 
 }
 
-__forceinline chunkedmsg::~chunkedmsg()
+inline chunkedmsg::~chunkedmsg()
 {
 	mir_free(id);
 	mir_free(msg);

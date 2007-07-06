@@ -133,7 +133,7 @@ int MsnRebuildContactMenu( WPARAM wParam, LPARAM lParam )
 	if ( !MSN_GetStaticString( "e-mail", ( HANDLE )wParam, szEmail, sizeof( szEmail ))) {
 		CLISTMENUITEM clmi = { 0 };
 		clmi.cbSize = sizeof( clmi );
-		clmi.pszName = Lists_IsInList( LIST_BL, szEmail ) ? "&Unblock" : "&Block";
+		clmi.pszName = (char*)(Lists_IsInList( LIST_BL, szEmail ) ? "&Unblock" : "&Block");
 		clmi.flags = CMIM_NAME;
 		MSN_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )msnBlockMenuItem, ( LPARAM )&clmi );
 	}

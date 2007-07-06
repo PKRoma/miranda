@@ -47,6 +47,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <windows.h>
 #include <commctrl.h>
 
+#include <ctype.h>
 #include <process.h>
 #include <stdio.h>
 #include <time.h>
@@ -724,19 +725,17 @@ extern	bool		msnHaveChatDll;
 ///////////////////////////////////////////////////////////////////////////////
 // UTF8 encode helper
 
-class UTFEncoder {
+class UTFEncoder 
+{
+private:
 	char* m_body;
 
 public:
-	__forceinline UTFEncoder( const char* pSrc ) :
-		m_body( mir_utf8encode( pSrc ))
-		{}
+	UTFEncoder( const char* pSrc ) :
+		m_body( mir_utf8encode( pSrc )) {}
 
-	__forceinline ~UTFEncoder()
-		{  mir_free( m_body );
-		}
-
-	__forceinline const char* str() const { return m_body; }
+	~UTFEncoder() {  mir_free( m_body );	}
+	const char* str() const { return m_body; }
 };
 
 #define UTF8(A) UTFEncoder(A).str()

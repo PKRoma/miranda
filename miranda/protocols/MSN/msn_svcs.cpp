@@ -88,7 +88,7 @@ static int MsnAddToList(WPARAM wParam,LPARAM lParam)
 	PROTOSEARCHRESULT *psr=(PROTOSEARCHRESULT*)lParam;
 
 	if ( psr->cbSize != sizeof( PROTOSEARCHRESULT ))
-		return NULL;
+		return 0;
 
 	return ( int )AddToListByEmail( psr->email, wParam );
 }
@@ -785,7 +785,7 @@ static int MsnSendFile( WPARAM wParam, LPARAM lParam )
 
 	char tEmail[ MSN_MAX_EMAIL_LEN ];
 	if ( !MSN_GetStaticString( "e-mail", ccs->hContact, tEmail, sizeof( tEmail )) && !strcmp( tEmail, MyOptions.szEmail ))
-		return NULL;
+		return 0;
 
 	char** files = ( char** )ccs->lParam;
 
@@ -804,7 +804,7 @@ static int MsnSendFile( WPARAM wParam, LPARAM lParam )
 
 	if ( sft->openNext() == -1 ) {
 		delete sft;
-		return NULL;
+		return 0;
 	}
 
 	DWORD dwFlags = MSN_GetDword( ccs->hContact, "FlagBits", 0 );

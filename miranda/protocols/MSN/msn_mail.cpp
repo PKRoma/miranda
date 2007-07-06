@@ -37,7 +37,7 @@ ezxml_t oimRecvHdr(void)
 	ezxml_t pcook = ezxml_add_child(cook, "p", 0);
 	ezxml_set_txt(pcook, pAuthToken);
 
-	ezxml_t bdy = ezxml_add_child(xmlp, "soap:Body", 0);
+	ezxml_add_child(xmlp, "soap:Body", 0);
 
 	return xmlp;
 }

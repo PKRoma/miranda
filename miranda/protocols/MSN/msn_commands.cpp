@@ -468,7 +468,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 				mir_utf8decode(( char* )msgBody, NULL );
 				gce.ptszText = EscapeChatTags( msgBody );
 			#endif
-			MSN_CallService(MS_GC_EVENT, NULL, (LPARAM)&gce);
+			MSN_CallService(MS_GC_EVENT, 0, (LPARAM)&gce);
 			mir_free(( void* )gce.pszText);
 			mir_free(( void* )gce.ptszUID );
 		}
@@ -808,8 +808,8 @@ static void sttProcessPage( char* buf, unsigned len )
 	ezxml_t xmlnot = ezxml_parse_str(buf, len);
 
 	ezxml_t xmlbdy = ezxml_get(xmlnot, "MSG", 0, "BODY", -1);
-	char* szMsg = ezxml_txt(ezxml_child(xmlbdy, "TEXT"));
-	char* szTel = ezxml_txt(ezxml_child(xmlbdy, "TEL"));
+	const char* szMsg = ezxml_txt(ezxml_child(xmlbdy, "TEXT"));
+	const char* szTel = ezxml_txt(ezxml_child(xmlbdy, "TEL"));
 
 	if (*szTel && *szMsg)
 	{
@@ -818,7 +818,7 @@ static void sttProcessPage( char* buf, unsigned len )
 		mir_snprintf(szEmail, lene, "tel:%s", szTel);
 
 		PROTORECVEVENT pre = {0};
-		pre.szMessage = szMsg;
+		pre.szMessage = (char*)szMsg;
 		pre.flags = PREF_UTF /*+ (( isRtl ) ? PREF_RTL : 0)*/;
 		pre.timestamp = time(NULL);
 
@@ -848,8 +848,8 @@ static void sttProcessNotificationMessage( char* buf, unsigned len )
 			ezxml_attr(xmlact, "url"), ezxml_attr(xmlnot, "id"), ezxml_attr(xmlmsg, "id"));
 
 		wchar_t* alrtu;
-		char* txt = ezxml_txt(xmltxt);
-		mir_utf8decode( txt, &alrtu );
+		const char* txt = ezxml_txt(xmltxt);
+		mir_utf8decode( (char*)txt, &alrtu );
 		SkinPlaySound( alertsoundname );
 #ifdef _UNICODE
 		MSN_ShowPopup(TranslateT("MSN Alert"), alrtu, MSN_ALERT_POPUP | MSN_ALLOW_MSGBOX, fullurl);
@@ -1069,7 +1069,7 @@ LBL_InvalidCommand:
 				gce.ptszUID = a2t(data.userEmail);
 				gce.time = time( NULL );
 				gce.bIsMe = FALSE;
-				MSN_CallService( MS_GC_EVENT, NULL, ( LPARAM )&gce );
+				MSN_CallService( MS_GC_EVENT, 0, ( LPARAM )&gce );
 				mir_free(( void* )gce.pszUID );
 			}
 
@@ -1088,9 +1088,9 @@ LBL_InvalidCommand:
 				gce.bIsMe = FALSE;
 				gce.time = time(NULL);
 				gce.ptszText = TranslateT("This conversation has been inactive, participants will be removed.");
-				MSN_CallService( MS_GC_EVENT, NULL, ( LPARAM )&gce );
+				MSN_CallService( MS_GC_EVENT, 0, ( LPARAM )&gce );
 				gce.ptszText = TranslateT("To resume the conversation, please quit this session and start a new chat session.");
-				MSN_CallService( MS_GC_EVENT, NULL, ( LPARAM )&gce );
+				MSN_CallService( MS_GC_EVENT, 0, ( LPARAM )&gce );
 			}
 			else if ( personleft == 2 && lstrcmpA( data.isIdle, "1" ) ) {
 				if ( MessageBox( NULL, TranslateT( "There is only 1 person left in the chat, do you want to switch back to standard message window?"), TranslateT("MSN Chat"), MB_YESNO|MB_ICONQUESTION) == IDYES) {
@@ -1223,7 +1223,7 @@ LBL_InvalidCommand:
 						char szSavedContext[ 256 ];
 						int result = MSN_GetStaticString( "PictSavedContext", hContact, szSavedContext, sizeof( szSavedContext ));
 						if ( result || strcmp( szSavedContext, data.cmdstring ))
-							MSN_SendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, NULL );
+							MSN_SendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, 0 );
 				}	}
 				else {
 					MSN_DeleteSetting( hContact, "AvatarHash" );
@@ -1234,7 +1234,7 @@ LBL_InvalidCommand:
 					MSN_GetAvatarFileName( hContact, tFileName, sizeof( tFileName ));
 					remove( tFileName );
 
-					MSN_SendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, NULL );
+					MSN_SendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, 0 );
 			}	}
 			else {
 				if ( lastStatus == ID_STATUS_OFFLINE )
@@ -1343,7 +1343,7 @@ LBL_InvalidCommand:
 						gce.ptszStatus = TranslateT( "Others" );
 						gce.time = time(NULL);
 						gce.bIsMe = FALSE;
-						MSN_CallService( MS_GC_EVENT, NULL, ( LPARAM )&gce );
+						MSN_CallService( MS_GC_EVENT, 0, ( LPARAM )&gce );
 						mir_free(( void* )gce.ptszUID );
 					}
 					else MSN_ChatStart( info );

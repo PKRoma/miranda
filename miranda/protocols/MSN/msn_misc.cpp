@@ -458,7 +458,7 @@ static VOID CALLBACK TypingTimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWO
 void  MSN_StartStopTyping( ThreadData* info, bool start )
 {
 	if ( start && info->mTimerId == 0 ) {
-		info->mTimerId = SetTimer(NULL, NULL, 5000, TypingTimerProc);
+		info->mTimerId = SetTimer(NULL, 0, 5000, TypingTimerProc);
 		MSN_SendTyping( info );
 	}
 	else if ( !start && info->mTimerId != 0 ) {
@@ -818,7 +818,7 @@ void MSN_ShowPopup( const TCHAR* nickname, const TCHAR* msg, int flags, const ch
 
 void MSN_ShowPopup( const HANDLE hContact, const TCHAR* msg, int flags )
 {
-	TCHAR* nickname = hContact ? MSN_GetContactNameT( hContact ) : _T("Me");
+	const TCHAR* nickname = hContact ? MSN_GetContactNameT( hContact ) : _T("Me");
 	MSN_ShowPopup( nickname, msg, flags, NULL );
 }
 

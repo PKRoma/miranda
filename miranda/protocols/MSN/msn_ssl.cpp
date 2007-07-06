@@ -277,7 +277,7 @@ char* SSL_WinInet::getSslResult( const char* parUrl, const char* parAuthInfo, co
 	HINTERNET tUrlHandle = f_InternetConnect( tNetHandle, url, INTERNET_DEFAULT_HTTPS_PORT, "", "", INTERNET_SERVICE_HTTP, 0, 0 );
 	if ( tUrlHandle != NULL ) 
 	{
-		HINTERNET tRequest = f_HttpOpenRequest( tUrlHandle, "POST", tObjectName, NULL, NULL, NULL, tFlags, NULL );
+		HINTERNET tRequest = f_HttpOpenRequest( tUrlHandle, "POST", tObjectName, NULL, NULL, NULL, tFlags, 0 );
 		if ( tRequest != NULL ) {
 
 			unsigned tm = 6000;
@@ -448,7 +448,7 @@ char* SSL_OpenSsl::getSslResult( const char* parUrl, const char* parAuthInfo, co
 		return NULL;
 
 	char* url = NEWSTR_ALLOCA( parUrl );
-	char* path = strchr( url+9, '//' );
+	char* path = strchr( url+9, '/' );
 	if ( path == NULL ) {
 		MSN_DebugLog( "Invalid URL passed: '%s'", parUrl );
 		return NULL;
@@ -714,7 +714,7 @@ int MSN_GetPassportAuth( char* authChallengeInfo )
 					}
 					else
 					{
-						char* szFault = ezxml_txt(ezxml_get(xml, "S:Fault", 0, "faultcode", -1));
+						const char* szFault = ezxml_txt(ezxml_get(xml, "S:Fault", 0, "faultcode", -1));
 						retVal = strcmp( szFault, "wsse:FailedAuthentication" ) == 0 ? 3 : 5;
 					}
 				}

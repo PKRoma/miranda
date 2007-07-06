@@ -163,7 +163,7 @@ static int sttCreateListener(
 
 static void sttSavePicture2disk( filetransfer* ft )
 {
-	if ( ft->inmemTransfer == NULL )
+	if ( !ft->inmemTransfer )
 		return;
 
 	if ( ft->p2p_type == MSN_APPID_CUSTOMSMILEY || ft->p2p_type == MSN_APPID_CUSTOMANIMATEDSMILEY ) {
@@ -227,7 +227,7 @@ static void sttSavePicture2disk( filetransfer* ft )
 		_close( fileId );
 
 		MSN_SetString( ft->std.hContact, "PictSavedContext", tContext );
-		MSN_SendBroadcast( AI.hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS, &AI, NULL );
+		MSN_SendBroadcast( AI.hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS, &AI, 0 );
 
 		// Store also avatar hash
 		char* pshadEnd = strstr( pshad+7, "\"" );
@@ -237,7 +237,7 @@ static void sttSavePicture2disk( filetransfer* ft )
 	}
 	else {
 		MSN_DeleteSetting( ft->std.hContact, "AvatarHash" );
-		MSN_SendBroadcast( AI.hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, &AI, NULL );
+		MSN_SendBroadcast( AI.hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, &AI, 0 );
 }	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -652,7 +652,7 @@ LBL_Error:
 	if (( p = buf.surelyRead( 8 )) == NULL )
 		goto LBL_Error;
 
-	if ( memcmp( p, p2p_greeting, 8 ) != NULL ) {
+	if ( memcmp( p, p2p_greeting, 8 ) != 0 ) {
 		MSN_DebugLog( "Invalid input data, exiting" );
 		goto LBL_Error;
 	}
