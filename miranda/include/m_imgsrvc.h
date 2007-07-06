@@ -402,8 +402,8 @@ typedef struct _tagFI_interface {
 typedef struct _tagIMGSRVC_MEMIO {
     long iLen;					// length of the buffer
     void *pBuf;					// the buffer itself (you are responsible for allocating and free'ing it)
-    FREE_IMAGE_FORMAT fif;		// the FIF_* image format constant. Make sure to provide the right one.
-    UINT flags;                 // flags to pass to FreeImage_LoadFromMem()  (see freeimage docs)
+    FREE_IMAGE_FORMAT fif;		// -1 to detect the format or one of the FIF_* image format constants
+    UINT flags;                 // flags to pass to FreeImage_LoadFromMemory()  (see freeimage docs)
 } IMGSRVC_MEMIO;
 
 // load an image from a memory buffer
