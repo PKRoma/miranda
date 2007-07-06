@@ -1536,7 +1536,7 @@ static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	nlu.cbSize = sizeof(nlu);
 	nlu.flags = NUF_OUTGOING|NUF_INCOMING|NUF_HTTPCONNS;
 	nlu.szSettingsModule = IRCPROTONAME;
-	wsprintf(szTemp, Translate("%s server connection"), ALTIRCPROTONAME);
+	mir_snprintf(szTemp, sizeof(szTemp), Translate("%s server connection"), ALTIRCPROTONAME);
 	nlu.szDescriptiveName = szTemp;
 	hNetlib=(HANDLE)CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
 
@@ -1544,7 +1544,7 @@ static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	nlu.flags = NUF_OUTGOING|NUF_INCOMING|NUF_HTTPCONNS;
 	mir_snprintf(szTemp2, sizeof(szTemp2), "%s DCC", IRCPROTONAME);
 	nlu.szSettingsModule = szTemp2;
-	wsprintf(szTemp, Translate("%s client-to-client connections"), ALTIRCPROTONAME);
+	mir_snprintf(szTemp, sizeof(szTemp), Translate("%s client-to-client connections"), ALTIRCPROTONAME);
 	nlu.szDescriptiveName = szTemp;
 	hNetlibDCC=(HANDLE)CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
 

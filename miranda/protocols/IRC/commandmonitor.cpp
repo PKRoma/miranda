@@ -2671,7 +2671,7 @@ bool CMyMonitor::OnIrc_USERHOST_REPLY(const CIrcMessage* pmsg)
 }
 bool CMyMonitor::OnIrc_SUPPORT(const CIrcMessage* pmsg)
 {
-	static const char* lpszFmt = "Try server %[^ ,], port %s";
+	static const char* lpszFmt = "Try server %99[^ ,], port %19s";
 	char szAltServer[100];
 	char szAltPort[20];
 	if( pmsg->parameters.size() > 1 && sscanf(pmsg->parameters[1].c_str(), lpszFmt, &szAltServer, &szAltPort) == 2 )

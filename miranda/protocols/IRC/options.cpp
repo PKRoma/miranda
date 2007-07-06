@@ -1093,7 +1093,7 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 						EnableWindow(GetDlgItem(hwndDlg, IDC_DELETESERVER), false);
 						SERVER_INFO * pData = (SERVER_INFO *)SendMessage(GetDlgItem(hwndDlg, IDC_SERVERCOMBO), CB_GETITEMDATA, i, 0);
 						char * temp = new char [lstrlen(pData->Name)+24];
-						wsprintf(temp,Translate(	"Do you want to delete\r\n%s"	), pData->Name);
+						mir_snprintf(temp, sizeof(temp), Translate("Do you want to delete\r\n%s"), pData->Name);
 						if (MessageBox(hwndDlg, temp, Translate(	"Delete server"	), MB_YESNO|MB_ICONQUESTION) == IDYES) {
 							delete []pData->Name;
 							delete []pData->Address;

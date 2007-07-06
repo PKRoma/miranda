@@ -478,7 +478,7 @@ int CIrcSession::NLSend( const char* fmt, ...)
 	va_start(marker, fmt);
 
 	char szBuf[1024*4];
-	vsprintf(szBuf, fmt, marker);
+	mir_vsnprintf(szBuf, sizeof(szBuf), fmt, marker);
 
 	va_end(marker);
 
@@ -1014,14 +1014,14 @@ bool CIrcDefaultMonitor::OnIrc_NICK(const CIrcMessage* pmsg)
 bool CIrcDefaultMonitor::OnIrc_PING(const CIrcMessage* pmsg)
 {
 	char szResponse[100];
-	sprintf(szResponse, "PONG %s", pmsg->parameters[0].c_str());
+	mir_snprintf(szResponse, sizeof(szResponse), "PONG %s", pmsg->parameters[0].c_str());
 	m_session << CIrcMessage(szResponse);
 	return false;
 }
 
 bool CIrcDefaultMonitor::OnIrc_YOURHOST(const CIrcMessage* pmsg)
 {
-	static const char* lpszFmt = "Your host is %[^ \x5b,], running version %s";
+	static const char* lpszFmt = "Your host is %99[^ \x5b,], running version %99s";
 	char szHostName[100], szVersion[100];
 	if( sscanf(pmsg->parameters[1].c_str(), lpszFmt, &szHostName, &szVersion) > 0 )
 		m_session.m_info.sServerName = szHostName;
@@ -1856,7 +1856,7 @@ void DoIdent(HANDLE hConnection, DWORD dwRemoteIP, void* extra)
 	*p = '\0';
 
 	char buf[1024*4];
-	wsprintf(buf,"%s : USERID : %s : %s\r\n", szBuf, g_ircSession.GetInfo().sIdentServerType.c_str() , g_ircSession.GetInfo().sUserID.c_str());
+	mir_snprintf(buf, sizeof(buf), "%s : USERID : %s : %s\r\n", szBuf, g_ircSession.GetInfo().sIdentServerType.c_str() , g_ircSession.GetInfo().sUserID.c_str());
 	Netlib_Send(hConnection, (const char*)buf, strlen(buf), 0);
 	Netlib_CloseHandle(hConnection);
 
