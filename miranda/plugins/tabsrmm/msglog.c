@@ -822,7 +822,7 @@ nounicode:
         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\sl-1\\slmult0\\highlight%d\\cf%d\\-\\par\\sl0", H_MSGFONTID_DIVIDERS, H_MSGFONTID_DIVIDERS);
         dat->dwFlags &= ~MWF_DIVIDERWANTED;
     }
-    if(dwEffectiveFlags & MWF_LOG_GROUPMODE && (dbei.flags == LOWORD(dat->iLastEventType)) && dbei.eventType == EVENTTYPE_MESSAGE && HIWORD(dat->iLastEventType) == EVENTTYPE_MESSAGE && (dbei.timestamp - dat->lastEventTime) < 86400) {
+    if(dwEffectiveFlags & MWF_LOG_GROUPMODE && ((dbei.flags & (DBEF_SENT | DBEF_READ | DBEF_RTL)) == LOWORD(dat->iLastEventType)) && dbei.eventType == EVENTTYPE_MESSAGE && HIWORD(dat->iLastEventType) == EVENTTYPE_MESSAGE && (dbei.timestamp - dat->lastEventTime) < 86400) {
         g_groupBreak = FALSE;
         if((time_t)dbei.timestamp > today && dat->lastEventTime < today) {
             g_groupBreak = TRUE;
@@ -1403,7 +1403,7 @@ skip:
     if(streamData->dbei == 0)
         free(dbei.pBlob);
     
-    dat->iLastEventType = MAKELONG(dbei.flags, dbei.eventType);
+    dat->iLastEventType = MAKELONG((dbei.flags & (DBEF_SENT | DBEF_READ | DBEF_RTL)), dbei.eventType);
     dat->lastEventTime = dbei.timestamp;
     return buffer;
 }

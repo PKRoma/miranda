@@ -3995,12 +3995,18 @@ quote_from_last:
                             CallService(MS_DB_EVENT_GET,(WPARAM)hDBEvent,(LPARAM)&dbei);
 #ifdef _UNICODE
                             iSize = strlen((char *)dbei.pBlob) + 1;
-                            if(iSize != dbei.cbBlob)
-                                szConverted = (TCHAR *) &dbei.pBlob[iSize];
-                            else {
-                                szConverted = (TCHAR *)malloc(sizeof(TCHAR) * iSize);
+                            if(dbei.flags & DBEF_UTF) {
+                                szConverted = Utf8_Decode(szText);
                                 iAlloced = TRUE;
-                                MultiByteToWideChar(CP_ACP, 0, (char *) dbei.pBlob, -1, szConverted, iSize);
+                            }
+                            else {
+                                if(iSize != dbei.cbBlob)
+                                    szConverted = (TCHAR *) &dbei.pBlob[iSize];
+                                else {
+                                    szConverted = (TCHAR *)malloc(sizeof(TCHAR) * iSize);
+                                    iAlloced = TRUE;
+                                    MultiByteToWideChar(CP_ACP, 0, (char *) dbei.pBlob, -1, szConverted, iSize);
+                                }
                             }
 #endif
                             if (dbei.eventType==EVENTTYPE_URL) {
