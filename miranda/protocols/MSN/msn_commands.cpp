@@ -490,9 +490,6 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		replaceStr( MSPAuth,       tHeader[ "MSPAuth" ]  );
 		replaceStr( msnExternalIP, tHeader[ "ClientIP" ] );
 		langpref = atol(tHeader[ "lang_preference" ]);
-
-		if ( msnExternalIP != NULL && MSN_GetByte( "AutoGetHost", 1 ))
-			MSN_SetString( NULL, "YourHost", msnExternalIP );
 	}
 	else if ( !_strnicmp( tContentType, "text/x-msmsgscontrol", 20 )) {
 		const char* tTypingUser = tHeader[ "TypingUser" ];
@@ -1170,26 +1167,6 @@ LBL_InvalidCommand:
 		case ' CTG':    //********* GTC: section 7.6 List Retrieval And Property Management
 			break;
 
-		case ' FNI':	//********* INF: section 7.2 Server Policy Information
-		{
-			char security1[ 10 ];
-			//can be more security packages on the end, comma delimited
-			if ( sscanf( params, "%9s", security1 ) < 1 )
-				goto LBL_InvalidCommand;
-
-			//SEND USR I packet, section 7.3 Authentication
-			if ( !strcmp( security1, "MD5" ))
-				info->sendPacket( "USR", "MD5 I %s", MyOptions.szEmail );
-			else {
-				MSN_DebugLog( "Unknown security package '%s'", security1 );
-				if ( info->mType == SERVER_NOTIFICATION || info->mType == SERVER_DISPATCH ) {
-					MSN_SendBroadcast(NULL,ACKTYPE_LOGIN,ACKRESULT_FAILED,NULL,LOGINERR_WRONGPROTOCOL);
-					MSN_GoOffline();
-				}
-				return 1;
-			}
-			break;
-		}
 		case ' NLI':
 		case ' NLN':    //********* ILN/NLN: section 7.9 Notification Messages
 		{
@@ -1498,9 +1475,15 @@ LBL_InvalidCommand:
 				goto LBL_InvalidCommand;
 
 			UrlDecode( data.value );
-			if ( !_stricmp( data.name, "MFN" ))
+			if (_stricmp(data.name, "MFN") == 0)
+			{
 				if ( !sttIsSync || !MSN_GetByte( "NeverUpdateNickname", 0 ))
 					MSN_SetStringUtf( NULL, "Nick", data.value );
+			}
+			else if (_stricmp(data.name, "MBE") == 0)
+					MSN_SetByte( "MobileEnabled", *data.value == 'Y');
+			else if (_stricmp(data.name, "MOB") == 0)
+					MSN_SetByte( "MobileAllowed", *data.value == 'Y');
 			break;
 		}
 		case ' YRQ':   //********* QRY:

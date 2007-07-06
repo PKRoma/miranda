@@ -370,19 +370,17 @@ error:
 
 void MSNConnDetectThread( void* )
 {
-	char parBuf[512];
+	char parBuf[512] = "";
 
 	memset(&MyConnection, 0, sizeof(MyConnection));
 
 	MyConnection.icf = IsIcfEnabled();
 	bool portsMapped = MSN_GetByte("NLSpecifyIncomingPorts", 0) != 0;
 
-	if (MSN_GetByte("AutoGetHost", 1))
+	if (MSN_GetByte("AutoGetHost", 1) == 1)
 	{
 		if ( msnExternalIP != NULL )
-		{
-			strncpy( parBuf, msnExternalIP, sizeof( parBuf ));
-		}
+			MyConnection.extIP = inet_addr( msnExternalIP );
 		else
 		{
 			gethostname( parBuf, sizeof( parBuf ));
@@ -391,7 +389,6 @@ void MSNConnDetectThread( void* )
 				MyConnection.extIP = ((PIN_ADDR)myhost->h_addr)->S_un.S_addr;
 		}
 		MyConnection.intIP = MyConnection.extIP;
-		MSN_SetString( NULL, "YourHost", parBuf );
 	}
 	else
 	{
@@ -400,9 +397,8 @@ void MSNConnDetectThread( void* )
 		// User specified host by himself so check if it matches MSN information
 		// if it does, move to connection type autodetection,
 		// if it does not, guess connection type from available info
-		parBuf[0] = 0;
 		MSN_GetStaticString("YourHost", NULL, parBuf, sizeof(parBuf));
-		if (msnExternalIP != NULL && strcmp(msnExternalIP, parBuf) != 0)
+		if (msnExternalIP == NULL || strcmp(msnExternalIP, parBuf) != 0)
 		{
 			MyConnection.extIP = inet_addr( parBuf );
 			if ( MyConnection.extIP == INADDR_NONE )
@@ -413,11 +409,14 @@ void MSNConnDetectThread( void* )
 				else
 					MSN_SetByte("AutoGetHost", 1);
 			}
-			MyConnection.intIP = MyConnection.extIP;
-			if (MyConnection.extIP) 
-				MyConnection.udpConType = (ConEnum)portsMapped;
-
-			return;
+			if ( MyConnection.extIP != INADDR_NONE )
+			{
+				MyConnection.intIP = MyConnection.extIP;
+				MyConnection.udpConType = MyConnection.extIP ? (ConEnum)portsMapped : conUnknown;
+				return;
+			}
+			else
+				MyConnection.extIP = 0;
 		}
 	}
 

@@ -626,8 +626,11 @@ void  MSN_SetServerStatus( int newStatus )
 			 MSN_GetStaticString( "PictObject", NULL, szMsnObject, sizeof( szMsnObject )))
 			szMsnObject[ 0 ] = 0;
 
-		//here we say what functions can be used with this plugins : http://siebe.bot2k3.net/docs/?url=clientid.html
-		msnNsThread->sendPacket( "CHG", "%s 1342177312 %s", szStatusName, szMsnObject );
+		unsigned flags = 0x50000020;
+		if (MSN_GetByte( "MobileEnabled", 0) && MSN_GetByte( "MobileAllowed", 0))
+			flags |= 0x40;
+
+		msnNsThread->sendPacket( "CHG", "%s %u %s", szStatusName, flags, szMsnObject );
 
 		unsigned status = newStatus == ID_STATUS_IDLE ? ID_STATUS_ONLINE : newStatus;
 		for ( int i=0; i < MSN_NUM_MODES; i++ ) { 

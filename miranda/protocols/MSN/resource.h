@@ -39,8 +39,10 @@
 #define IDC_SLOWSEND                    1033
 #define IDC_MANAGEGROUPS                1034
 #define IDC_NOTIFY_ENDSESSION           1035
+#define IDC_MOBILESEND                  1035
 #define IDC_USEOPENSSL                  1036
 #define IDC_NOTIFY_CUSTOMSMILEY         1036
+#define IDC_HOSTOPT                     1038
 #define IDC_SENDFONTINFO                1046
 #define IDC_NICKNAME                    1048
 #define IDC_DISABLEHOTJUNK              1049
@@ -60,18 +62,17 @@
 #define IDC_MSNPORT                     1174
 #define IDC_USEGATEWAY                  1175
 #define IDC_DISABLEHOTMAIL              1301
-#define IDC_AUTOGETHOST                 1302
 #define IDC_NEWMSNACCOUNTLINK           1438
 #define IDC_RESETSERVER                 1472
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
-//
+// 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        133
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1038
+#define _APS_NEXT_CONTROL_VALUE         1039
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

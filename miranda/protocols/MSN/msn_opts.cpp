@@ -128,9 +128,11 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			SetWindowText( wnd, dbv.ptszVal );
 			MSN_FreeVariant( &dbv );
 		}
-		if ( !msnLoggedIn )
-			EnableWindow( wnd, FALSE );
+		EnableWindow(wnd, msnLoggedIn);
+		EnableWindow(GetDlgItem(hwndDlg, IDC_MOBILESEND), msnLoggedIn && 
+			(MSN_GetByte( "MobileEnabled", 0) || MSN_GetByte( "MobileAllowed", 0)));
 
+		CheckDlgButton( hwndDlg, IDC_MOBILESEND,        MSN_GetByte( "MobileAllowed", 0 ));
 		CheckDlgButton( hwndDlg, IDC_SENDFONTINFO,      MSN_GetByte( "SendFontInfo", 1 ));
 		CheckDlgButton( hwndDlg, IDC_USE_OWN_NICKNAME,  MSN_GetByte( "NeverUpdateNickname", 0 ));
 		CheckDlgButton( hwndDlg, IDC_AWAY_AS_BRB,       MSN_GetByte( "AwayAsBrb", 0 ));
@@ -170,7 +172,7 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			case IDC_SENDFONTINFO:
 			case IDC_DISABLE_ANOTHER_CONTACTS:	case IDC_USE_OWN_NICKNAME:
 			case IDC_AWAY_AS_BRB:
-			LBL_Apply:
+			case IDC_MOBILESEND:
 				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 				break;
 
@@ -180,13 +182,15 @@ static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 											TranslateT( "Server groups import may change your contact list layout after next login. Do you want to upload your groups to the server?" ),
 											TranslateT( "MSN Protocol" ), MB_YESNOCANCEL ))
 						MSN_UploadServerGroups( NULL );
-				goto LBL_Apply;
+				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
+				break;
 
 			case IDC_RUN_APP_ON_HOTMAIL: {
 				BOOL tIsChosen = IsDlgButtonChecked( hwndDlg, IDC_RUN_APP_ON_HOTMAIL );
 				EnableWindow( GetDlgItem( hwndDlg, IDC_MAILER_APP ), tIsChosen );
 				EnableWindow( GetDlgItem( hwndDlg, IDC_ENTER_MAILER_APP ), tIsChosen );
-				goto LBL_Apply;
+				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
+				break;
 			}
 
 			case IDC_ENTER_MAILER_APP: {
@@ -230,7 +234,7 @@ LBL_Continue:
 
 				SendMessage( tEditField, EM_SETSEL, 0, tSelectLen );
 				SendMessageA( tEditField, EM_REPLACESEL, TRUE, LPARAM( szFile ));
-				goto LBL_Apply;
+				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 		}	}
 
 		break;
@@ -270,6 +274,13 @@ LBL_Continue:
 				MSN_FreeVariant( &dbv );
 			}
 			MSN_SetStringT( NULL, "Nick", screenStr );
+
+			unsigned mblsnd = IsDlgButtonChecked( hwndDlg, IDC_MOBILESEND );
+			if (mblsnd != MSN_GetByte( "MobileAllowed", 0))
+			{
+				msnNsThread->sendPacket( "PRP", "MOB %c", mblsnd ? 'Y' : 'N' );
+				MSN_SetServerStatus( msnStatusMode );
+			}
 
 			unsigned tValue = IsDlgButtonChecked( hwndDlg, IDC_DISABLE_ANOTHER_CONTACTS );
 			if ( tValue != msnOtherContactsBlocked && msnLoggedIn ) {
@@ -325,7 +336,6 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				SetDlgItemInt( hwndDlg, IDC_MSNPORT, MSN_GetWord( NULL, "MSNMPort", 1863 ), FALSE );
 		}	}
 
-		CheckDlgButton( hwndDlg, IDC_AUTOGETHOST, MSN_GetByte( "AutoGetHost", 1 ));
 		CheckDlgButton( hwndDlg, IDC_USEIEPROXY,  MSN_GetByte( "UseIeProxy",  0 ));
 		CheckDlgButton( hwndDlg, IDC_SLOWSEND,    MSN_GetByte( "SlowSend",    0 ));
 
@@ -336,27 +346,30 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		else
 			EnableWindow( GetDlgItem( hwndDlg, IDC_USEOPENSSL ), FALSE);
 
-		if ( !DBGetContactSetting( NULL, msnProtocolName, "YourHost", &dbv )) {
-			if ( !MSN_GetByte( "AutoGetHost", 1 ))
-				SetDlgItemTextA( hwndDlg, IDC_YOURHOST, dbv.pszVal );
-			else {
-				if ( msnExternalIP == NULL ) {
-					char ipaddr[ 256 ];
-					gethostname( ipaddr, sizeof( ipaddr ));
-					SetDlgItemTextA( hwndDlg, IDC_YOURHOST, ipaddr );
-				}
-				else SetDlgItemTextA( hwndDlg, IDC_YOURHOST, msnExternalIP );
-			}
-			MSN_FreeVariant( &dbv );
-		}
-		else {
-			char ipaddr[256];
-			gethostname( ipaddr, sizeof( ipaddr ));
-			SetDlgItemTextA( hwndDlg, IDC_YOURHOST, ipaddr );
-		}
+		
+		SendDlgItemMessage( hwndDlg, IDC_HOSTOPT, CB_ADDSTRING, 0, (LPARAM)TranslateT("Automatically obtain host/port" ));
+		SendDlgItemMessage( hwndDlg, IDC_HOSTOPT, CB_ADDSTRING, 0, (LPARAM)TranslateT("Manually specify host/port" ));
+		SendDlgItemMessage( hwndDlg, IDC_HOSTOPT, CB_ADDSTRING, 0, (LPARAM)TranslateT("Disable" ));
 
-		if ( MSN_GetByte( "AutoGetHost", 1 ))
-			EnableWindow( GetDlgItem( hwndDlg, IDC_YOURHOST), FALSE );
+		{
+			unsigned gethst = MSN_GetByte( "AutoGetHost", 1 );
+			if (gethst < 2) gethst = !gethst;
+
+			char ipaddr[ 256 ] = "";
+			if (gethst == 1) 
+			{
+				if (!MSN_GetStaticString( "YourHost", NULL, ipaddr, sizeof( ipaddr )))
+					gethst = 0;
+			}
+			if (gethst == 0)
+			{
+				mir_snprintf(ipaddr, sizeof(ipaddr), "%s", msnLoggedIn ? 
+					MyConnection.GetMyExtIPStr() : MSN_Translate("IP info available only after login"));
+			}
+			SendDlgItemMessage( hwndDlg, IDC_HOSTOPT, CB_SETCURSEL, gethst, 0);
+			SetDlgItemTextA( hwndDlg, IDC_YOURHOST, ipaddr );
+			EnableWindow( GetDlgItem( hwndDlg, IDC_YOURHOST), gethst == 1 );
+		}
 
 		if ( MyOptions.UseGateway ) {
 			EnableWindow( GetDlgItem( hwndDlg, IDC_LOGINSERVER ), FALSE );
@@ -375,7 +388,8 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, MSN_DEFAULT_LOGIN_SERVER );
 				SetDlgItemInt(  hwndDlg, IDC_MSNPORT,  1863, FALSE );
 			}
-			goto LBL_Apply;
+			SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
+			break;
 		}
 
 		if ( HIWORD( wParam ) == EN_CHANGE && ( HWND )lParam == GetFocus())
@@ -385,41 +399,46 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 			}
 
+		if ( HIWORD( wParam ) == CBN_SELCHANGE && LOWORD( wParam ) == IDC_HOSTOPT )
+		{
+			unsigned gethst = SendMessage( (HWND)lParam, CB_GETCURSEL, 0, 0);
+			EnableWindow( GetDlgItem( hwndDlg, IDC_YOURHOST), gethst == 1 );
+		}
+
 		if ( HIWORD( wParam ) == BN_CLICKED )
-			switch( LOWORD( wParam )) {
-			case IDC_AUTOGETHOST:
-			{	int tValue = IsDlgButtonChecked( hwndDlg, IDC_AUTOGETHOST ) ? FALSE : TRUE;
-				EnableWindow( GetDlgItem( hwndDlg, IDC_YOURHOST), tValue );
-			}
+		{
+			switch( LOWORD( wParam )) 
+			{
+				case IDC_USEIEPROXY:		case IDC_SLOWSEND:
+				case IDC_USEOPENSSL:
+					SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
+					break;
 
-			case IDC_USEIEPROXY:		case IDC_SLOWSEND:
-			case IDC_USEOPENSSL:
-			LBL_Apply:
-				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
-				break;
+				case IDC_USEGATEWAY: {
+					bool tValue = !IsDlgButtonChecked( hwndDlg, IDC_USEGATEWAY );
 
-			case IDC_USEGATEWAY: {
-				bool tValue = !IsDlgButtonChecked( hwndDlg, IDC_USEGATEWAY );
-
-				HWND tWindow = GetDlgItem( hwndDlg, IDC_LOGINSERVER );
-				if ( !tValue ) {
-					SetWindowTextA( tWindow, MSN_DEFAULT_GATEWAY );
-					SetDlgItemInt( hwndDlg, IDC_MSNPORT, 80, FALSE );
-				}
-				else {
-					if ( !DBGetContactSetting( NULL, msnProtocolName, "LoginServer", &dbv )) {
-						SetWindowTextA( tWindow, dbv.pszVal );
-						MSN_FreeVariant( &dbv );
+					HWND tWindow = GetDlgItem( hwndDlg, IDC_LOGINSERVER );
+					if ( !tValue ) {
+						SetWindowTextA( tWindow, MSN_DEFAULT_GATEWAY );
+						SetDlgItemInt( hwndDlg, IDC_MSNPORT, 80, FALSE );
 					}
-					else SetWindowTextA( tWindow, MSN_DEFAULT_LOGIN_SERVER );
+					else {
+						if ( !DBGetContactSetting( NULL, msnProtocolName, "LoginServer", &dbv )) {
+							SetWindowTextA( tWindow, dbv.pszVal );
+							MSN_FreeVariant( &dbv );
+						}
+						else SetWindowTextA( tWindow, MSN_DEFAULT_LOGIN_SERVER );
 
-					SetDlgItemInt( hwndDlg, IDC_MSNPORT, MSN_GetWord( NULL, "MSNMPort", 1863 ), FALSE );
+						SetDlgItemInt( hwndDlg, IDC_MSNPORT, MSN_GetWord( NULL, "MSNMPort", 1863 ), FALSE );
+					}
+
+					EnableWindow( tWindow, tValue );
+					EnableWindow( GetDlgItem( hwndDlg, IDC_MSNPORT ), tValue );
+					SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
+					break;
 				}
-
-				EnableWindow( tWindow, tValue );
-				EnableWindow( GetDlgItem( hwndDlg, IDC_MSNPORT ), tValue );
-				goto LBL_Apply;
-		}	}
+			}	
+		}
 		break;
 
 	case WM_NOTIFY:
@@ -446,12 +465,20 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 					reconnectRequired = true;
 			}
 
-			MSN_SetByte( "UseIeProxy",    ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USEIEPROXY    ));
-			MSN_SetByte( "AutoGetHost",   ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_AUTOGETHOST   ));
-			MSN_SetByte( "SlowSend",      ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_SLOWSEND      ));
+			MSN_SetByte( "UseIeProxy",  ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USEIEPROXY  ));
+			MSN_SetByte( "SlowSend",    ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_SLOWSEND    ));
 
-			GetDlgItemTextA( hwndDlg, IDC_YOURHOST, str, sizeof( str ));
-			MSN_SetString( NULL, "YourHost", str );
+			unsigned gethst = SendMessage( (HWND)lParam, CB_GETCURSEL, 0, 0);
+			if (gethst < 2) gethst = !gethst;
+			MSN_SetByte( "AutoGetHost", ( BYTE )gethst );
+
+			if (gethst == 0)
+			{
+ 				GetDlgItemTextA( hwndDlg, IDC_YOURHOST, str, sizeof( str ));
+				MSN_SetString( NULL, "YourHost", str );
+			}
+			else
+				MSN_DeleteSetting( NULL, "YourHost" );
 
 			if ( restartRequired )
 				MessageBox( hwndDlg, TranslateT( "The changes you have made require you to restart Miranda IM before they take effect"), TranslateT( "MSN Options" ), MB_OK );

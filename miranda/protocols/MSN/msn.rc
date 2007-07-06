@@ -56,12 +56,15 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,9,139,288,10
     CONTROL         "Run the following application when new Hotmail arrives",
                     IDC_RUN_APP_ON_HOTMAIL,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,9,149,288,10
-    EDITTEXT        IDC_MAILER_APP,21,160,161,12,ES_AUTOHSCROLL
-    PUSHBUTTON      "...",IDC_ENTER_MAILER_APP,187,160,15,12
+                    WS_TABSTOP,9,158,288,10
+    EDITTEXT        IDC_MAILER_APP,21,170,161,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_ENTER_MAILER_APP,186,170,15,12
+    CONTROL         "Allow people on my contact list send messages to mobile device",
+                    IDC_MOBILESEND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,
+                    148,288,10
 END
 
-IDD_OPT_MSN_CONN DIALOGEX 0, 0, 304, 160
+IDD_OPT_MSN_CONN DIALOGEX 0, 0, 304, 169
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -83,12 +86,10 @@ BEGIN
                     IDC_USEOPENSSL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,
                     80,263,8
     GROUPBOX        "Incoming file transfers",IDC_STATIC,4,108,298,48
-    CONTROL         "Automatically obtain host/port for incoming file transfers",
-                    IDC_AUTOGETHOST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,
-                    120,264,10
-    LTEXT           "Your host (or router):",IDC_STATIC,12,136,72,8
-    EDITTEXT        IDC_YOURHOST,90,135,184,12,ES_AUTOHSCROLL
+    LTEXT           "Your host (or router):",IDC_STATIC,12,138,87,8
+    EDITTEXT        IDC_YOURHOST,105,136,169,12,ES_AUTOHSCROLL
     PUSHBUTTON      "Reset",IDC_RESETSERVER,244,16,34,12
+    COMBOBOX        IDC_HOSTOPT,11,120,261,30,CBS_DROPDOWNLIST | WS_TABSTOP
 END
 
 IDD_LISTSMGR DIALOGEX 0, 0, 304, 228

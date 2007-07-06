@@ -303,6 +303,12 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	mir_snprintf( path, sizeof( path ), "%s/p2pMsgId", protocolname );
 	MSN_CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
 
+	mir_snprintf( path, sizeof( path ), "%s/MobileEnabled", protocolname );
+	MSN_CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
+
+	mir_snprintf( path, sizeof( path ), "%s/MobileAllowed", protocolname );
+	MSN_CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
+
 	arHooks.insert( HookEvent( ME_SYSTEM_MODULESLOADED, OnModulesLoaded ));
 
 	srand(( unsigned int )time( NULL ));
@@ -334,6 +340,8 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 		}
 		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT,( WPARAM )hContact, 0 );
 	}
+	MSN_DeleteSetting( NULL, "MobileEnabled" );
+	MSN_DeleteSetting( NULL, "MobileAllowed" );
 
 	mailsoundname = ( char* )mir_alloc( 64 );
 	mir_snprintf(mailsoundname, 64, "%s:%s", protocolname, MSN_Translate( "Hotmail" ));
