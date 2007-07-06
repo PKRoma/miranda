@@ -454,18 +454,22 @@ enum { TLM_TREE, TLM_REPORT };
 
 void TreeList_Create(HWND hwnd);
 void TreeList_Destroy(HWND hwnd);
+void TreeList_Reset(HWND hwnd);
 void TreeList_SetMode(HWND hwnd, int mode);
 HTREELISTITEM TreeList_GetActiveItem(HWND hwnd);
 void TreeList_SetSortMode(HWND hwnd, int col, BOOL descending);
 void TreeList_SetFilter(HWND hwnd, TCHAR *filter);
 HTREELISTITEM TreeList_AddItem(HWND hwnd, HTREELISTITEM hParent, TCHAR *text, LPARAM data);
+void TreeList_ResetItem(HWND hwnd, HTREELISTITEM hParent);
 void TreeList_MakeFakeParent(HTREELISTITEM hItem, BOOL flag);
 void TreeList_AppendColumn(HTREELISTITEM hItem, TCHAR *text);
 int TreeList_AddIcon(HWND hwnd, HICON hIcon, int iOverlay);
 void TreeList_SetIcon(HTREELISTITEM hItem, int iIcon, int iOverlay);
 LPARAM TreeList_GetData(HTREELISTITEM hItem);
+HTREELISTITEM TreeList_GetRoot(HWND hwnd);
 int TreeList_GetChildrenCount(HTREELISTITEM hItem);
 HTREELISTITEM TreeList_GetChild(HTREELISTITEM hItem, int i);
+void sttTreeList_RecursiveApply(HTREELISTITEM hItem, void (*func)(HTREELISTITEM, LPARAM), LPARAM data);
 void TreeList_Update(HWND hwnd);
 BOOL TreeList_ProcessMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam, UINT idc, BOOL *result);
 

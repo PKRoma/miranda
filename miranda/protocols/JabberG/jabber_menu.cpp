@@ -55,6 +55,9 @@ static HANDLE hMenuAddBookmark = NULL;
 static HANDLE hMenuCommands = NULL;
 static HANDLE hMenuPrivacyLists = NULL;
 static HANDLE hMenuServiceDiscovery = NULL;
+static HANDLE hMenuSDMyTransports;
+static HANDLE hMenuSDTransports;
+static HANDLE hMenuSDConferences;
 
 
 
@@ -557,6 +560,30 @@ void JabberMenuInit()
 	mi.icolibItem = GetIconHandle( IDI_SERVICE_DISCOVERY );
 	hMenuServiceDiscovery = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuServiceDiscovery, ( LPARAM )&clmi );
+
+	strcpy( tDest, "/SD/MyTransports" );
+	CreateServiceFunction( text, JabberMenuHandleServiceDiscoveryMyTransports );
+	mi.pszName = "Registered Transports...";
+	mi.position = 2000050006;
+	mi.icolibItem = GetIconHandle( IDI_AGENTS );
+	hMenuSDMyTransports = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuSDMyTransports, ( LPARAM )&clmi );
+
+	strcpy( tDest, "/SD/Transports" );
+	CreateServiceFunction( text, JabberMenuHandleServiceDiscoveryTransports );
+	mi.pszName = "Local Transports...";
+	mi.position = 2000050006;
+	mi.icolibItem = GetIconHandle( IDI_AGENTS );
+	hMenuSDTransports = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuSDTransports, ( LPARAM )&clmi );
+
+	strcpy( tDest, "/SD/Conferences" );
+	CreateServiceFunction( text, JabberMenuHandleServiceDiscoveryConferences );
+	mi.pszName = "Browse Chatrooms...";
+	mi.position = 2000050006;
+	mi.icolibItem = GetIconHandle( IDI_GROUP );
+	hMenuSDConferences = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuSDConferences, ( LPARAM )&clmi );
 }
 
 void JabberEnableMenuItems( BOOL bEnable )
@@ -573,6 +600,9 @@ void JabberEnableMenuItems( BOOL bEnable )
 
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuPrivacyLists, ( LPARAM )&clmi );
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuServiceDiscovery, ( LPARAM )&clmi );
+	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuSDMyTransports, ( LPARAM )&clmi );
+	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuSDTransports, ( LPARAM )&clmi );
+	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuSDConferences, ( LPARAM )&clmi );
 
 	if ( jabberThreadInfo && !( jabberThreadInfo->caps & CAPS_BOOKMARK ))
 		clmi.flags |= CMIF_GRAYED;

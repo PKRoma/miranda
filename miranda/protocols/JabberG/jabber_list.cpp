@@ -37,7 +37,8 @@ static int compareListItems( const JABBER_LIST_ITEM* p1, const JABBER_LIST_ITEM*
 		return p1->list - p2->list;
 
 	// don't strip text after "/" for Bookmarks because JID contains URL
-	if ( p1->list == LIST_BOOKMARK || p1->list == LIST_VCARD_TEMP )
+	if ( p1->list == LIST_BOOKMARK || p1->list == LIST_VCARD_TEMP 
+		 || p1->bResourceSensitive==TRUE || p2->bResourceSensitive==TRUE )
 		return lstrcmpi( p1->jid, p2->jid );
 
 	TCHAR szp1[ JABBER_MAX_JID_LEN ], szp2[ JABBER_MAX_JID_LEN ];
@@ -125,10 +126,20 @@ int JabberListExist( JABBER_LIST list, const TCHAR* jid )
 	JABBER_LIST_ITEM tmp;
 	tmp.list = list;
 	tmp.jid  = (TCHAR*)jid;
+	tmp.bResourceSensitive = FALSE;
 
 	EnterCriticalSection( &csLists );
-
+	
+	if ( list == LIST_ROSTER )
+	{
+		tmp.list = LIST_CHATROOM;
+		int id = roster.getIndex( &tmp );
+		if ( id != -1) 
+			tmp.bResourceSensitive = TRUE;
+		tmp.list = list;
+	}
 	int idx = roster.getIndex( &tmp );
+
 	if ( idx == -1 ) {
 		LeaveCriticalSection( &csLists );
 		return 0;
@@ -141,7 +152,7 @@ int JabberListExist( JABBER_LIST list, const TCHAR* jid )
 JABBER_LIST_ITEM *JabberListAdd( JABBER_LIST list, const TCHAR* jid )
 {
 	JABBER_LIST_ITEM* item;
-
+	BOOL bResourceSensitive=FALSE;
 	EnterCriticalSection( &csLists );
 	if (( item = JabberListGetItemPtr( list, jid )) != NULL ) {
 		LeaveCriticalSection( &csLists );
@@ -149,14 +160,18 @@ JABBER_LIST_ITEM *JabberListAdd( JABBER_LIST list, const TCHAR* jid )
 	}
 
 	TCHAR *s = mir_tstrdup( jid );
+	
 	// strip resource name if any
-	if ( list != LIST_VCARD_TEMP ) {
-		TCHAR *p, *q;
-		if (( p = _tcschr( s, '@' )) != NULL )
-			if (( q = _tcschr( p, '/' )) != NULL )
-				*q = '\0';
+	if ( list!= LIST_ROSTER && !JabberListExist(LIST_CHATROOM, jid) ) { // but only if it is not chat room contact	
+		if ( list != LIST_VCARD_TEMP ) {
+			TCHAR *p, *q;
+			if (( p = _tcschr( s, '@' )) != NULL )
+				if (( q = _tcschr( p, '/' )) != NULL )
+					*q = '\0';
+		}
+	} else {
+		bResourceSensitive=TRUE;
 	}
-
 	item = ( JABBER_LIST_ITEM* )mir_alloc( sizeof( JABBER_LIST_ITEM ));
 	ZeroMemory( item, sizeof( JABBER_LIST_ITEM ));
 	item->list = list;
@@ -166,6 +181,7 @@ JABBER_LIST_ITEM *JabberListAdd( JABBER_LIST list, const TCHAR* jid )
 	item->resourceMode = RSMODE_LASTSEEN;
 	item->lastSeenResource = -1;
 	item->manualResource = -1;
+	item->bResourceSensitive = bResourceSensitive;
 	if ( list == LIST_ROSTER )
 		item->cap = CLIENT_CAP_CHATSTAT;
 

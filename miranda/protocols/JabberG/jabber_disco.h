@@ -31,7 +31,16 @@ Last change by : $Author: ghazan $
 
 #include "commctrl.h"
 
+#ifdef _UNICODE
+	#define	STR_BULLET	L" \u2022 "
+#else
+	#define	STR_BULLET	" - "
+#endif
+
 int JabberMenuHandleServiceDiscovery( WPARAM wParam, LPARAM lParam );
+int JabberMenuHandleServiceDiscoveryMyTransports( WPARAM wParam, LPARAM lParam );
+int JabberMenuHandleServiceDiscoveryTransports( WPARAM wParam, LPARAM lParam );
+int JabberMenuHandleServiceDiscoveryConferences( WPARAM wParam, LPARAM lParam );
 
 #define JABBER_DISCO_RESULT_NOT_REQUESTED			0
 #define JABBER_DISCO_RESULT_ERROR					-1
@@ -135,6 +144,8 @@ protected:
 	int m_nInfoRequestId;
 	int m_nItemsRequestId;
 	HTREELISTITEM m_hTreeItem;
+	TCHAR *m_szInfoError;
+	TCHAR *m_szItemsError;
 public:
 	CJabberSDNode(TCHAR *szJid = NULL, TCHAR *szNode = NULL, TCHAR *szName = NULL)
 	{
@@ -150,6 +161,8 @@ public:
 		m_nInfoRequestId = 0;
 		m_nItemsRequestId = 0;
 		m_hTreeItem = NULL;
+		m_szInfoError = NULL;
+		m_szItemsError = NULL;
 	}
 	~CJabberSDNode()
 	{
@@ -160,6 +173,8 @@ public:
 		replaceStr( m_szJid, NULL );
 		replaceStr( m_szNode, NULL );
 		replaceStr( m_szName, NULL );
+		replaceStr( m_szInfoError, NULL );
+		replaceStr( m_szItemsError, NULL );
 		if ( m_pIdentities )
 			delete m_pIdentities;
 		m_pIdentities = NULL;
@@ -177,6 +192,25 @@ public:
 		m_dwInfoRequestTime = 0;
 		m_dwItemsRequestTime = 0;
 		m_hTreeItem = NULL;
+		return TRUE;
+	}
+	BOOL ResetInfo()
+	{
+		replaceStr( m_szInfoError, NULL );
+		replaceStr( m_szItemsError, NULL );
+		if ( m_pIdentities )
+			delete m_pIdentities;
+		m_pIdentities = NULL;
+		if ( m_pFeatures )
+			delete m_pFeatures;
+		m_pFeatures = NULL;
+		if ( m_pChild )
+			delete m_pChild;
+		m_pChild = NULL;
+		m_nInfoRequestId = JABBER_DISCO_RESULT_NOT_REQUESTED;
+		m_nItemsRequestId = JABBER_DISCO_RESULT_NOT_REQUESTED;
+		m_dwInfoRequestTime = 0;
+		m_dwItemsRequestTime = 0;
 		return TRUE;
 	}
 	BOOL SetTreeItemHandle(HTREELISTITEM hItem)
@@ -326,6 +360,16 @@ public:
 
 		return TRUE;
 	}
+	BOOL SetItemsRequestErrorText(TCHAR *szError)
+	{
+		replaceStr(m_szItemsError, szError);
+		return TRUE;
+	}
+	BOOL SetInfoRequestErrorText(TCHAR *szError)
+	{
+		replaceStr(m_szInfoError, szError);
+		return TRUE;
+	}
 	BOOL GetTooltipText(TCHAR *szText, int nMaxLength)
 	{
 		TCHAR *szBuffer = NULL;
@@ -347,9 +391,9 @@ public:
 			CJabberSDIdentity *pIdentity = m_pIdentities;
 			while ( pIdentity ) {
 				if ( pIdentity->GetName() )
-					mir_sntprintf( szTmp, SIZEOF( szTmp ), _T("Identity category: %s, type: %s, name: %s\r\n"), pIdentity->GetCategory(), pIdentity->GetType(), pIdentity->GetName() );
+					mir_sntprintf( szTmp, SIZEOF( szTmp ), STR_BULLET _T("%s (category: %s, type: %s)\r\n"), pIdentity->GetName(), pIdentity->GetCategory(), pIdentity->GetType() );
 				else
-					mir_sntprintf( szTmp, SIZEOF( szTmp ), _T("Identity category: %s, type: %s\r\n"), pIdentity->GetCategory(), pIdentity->GetType() );
+					mir_sntprintf( szTmp, SIZEOF( szTmp ), STR_BULLET _T("Category: %s, Type: %s\r\n"), pIdentity->GetCategory(), pIdentity->GetType() );
 
 				AppendString( &szBuffer, szTmp );
 
@@ -363,7 +407,7 @@ public:
 
 			CJabberSDFeature *pFeature = m_pFeatures;
 			while ( pFeature ) {
-				mir_sntprintf( szTmp, SIZEOF( szTmp ), _T("%s\r\n"), pFeature->GetVar() );
+				mir_sntprintf( szTmp, SIZEOF( szTmp ), STR_BULLET _T("%s\r\n"), pFeature->GetVar() );
 
 				AppendString( &szBuffer, szTmp );
 
@@ -371,6 +415,17 @@ public:
 			}
 		}
 
+		if ( m_szInfoError ) {
+			mir_sntprintf( szTmp, SIZEOF( szTmp ), _T("\r\nInfo request error: %s\r\n"), m_szInfoError );
+			AppendString( &szBuffer, szTmp );
+		}
+
+		if ( m_szItemsError ) {
+			mir_sntprintf( szTmp, SIZEOF( szTmp ), _T("\r\nItems request error: %s\r\n"), m_szItemsError );
+			AppendString( &szBuffer, szTmp );
+		}
+
+		szBuffer[lstrlen(szBuffer)-2] = 0; // remove CR/LF
 		mir_sntprintf( szText, nMaxLength, _T("%s"), szBuffer );
 
 		mir_free( szBuffer );
@@ -383,15 +438,22 @@ class CJabberSDManager
 {
 protected:
 	CRITICAL_SECTION m_cs;
-	CJabberSDNode m_PrimaryNode;
+	CJabberSDNode *m_pPrimaryNodes;
 public:
 	CJabberSDManager()
 	{
+		m_pPrimaryNodes = NULL;
 		InitializeCriticalSection(&m_cs);
 	}
 	~CJabberSDManager()
 	{
 		DeleteCriticalSection(&m_cs);
+		RemoveAll();
+	}
+	void RemoveAll()
+	{
+		delete m_pPrimaryNodes;
+		m_pPrimaryNodes = NULL;
 	}
 	BOOL Lock()
 	{
@@ -405,8 +467,36 @@ public:
 	}
 	CJabberSDNode* GetPrimaryNode()
 	{
-		return &m_PrimaryNode;
+		return m_pPrimaryNodes;
+	}
+	CJabberSDNode* AddPrimaryNode(TCHAR *szJid, TCHAR *szNode, TCHAR *szName)
+	{
+		if ( !szJid )
+			return FALSE;
+
+		CJabberSDNode *pNode = new CJabberSDNode( szJid, szNode, szName );
+		if ( !pNode )
+			return NULL;
+
+		pNode->SetNext( m_pPrimaryNodes );
+		m_pPrimaryNodes = pNode;
+
+		return pNode;
+	}
+	CJabberSDNode* FindByIqId(int nIqId, BOOL bInfoId = TRUE)
+	{
+		CJabberSDNode *pNode = NULL;
+		CJabberSDNode *pTmpNode = NULL;
+		pNode = m_pPrimaryNodes;
+		while ( pNode ) {
+			if ( pTmpNode = pNode->FindByIqId( nIqId, bInfoId ) )
+				return pTmpNode;
+			pNode = pNode->GetNext();
+		}
+		return NULL;
 	}
 };
+
+#undef STR_BULLET // used for formatting
 
 #endif // _JABBER_DISCO_H_

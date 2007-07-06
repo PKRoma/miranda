@@ -177,6 +177,8 @@ struct JABBER_LIST_ITEM
 	// TCHAR * name   // name of the bookmark
 	TCHAR* password;	// password for room
 	BOOL bAutoJoin;
+
+	BOOL bResourceSensitive;
 };
 
 void JabberListInit( void );

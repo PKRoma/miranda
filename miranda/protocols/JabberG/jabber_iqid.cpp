@@ -500,6 +500,8 @@ void JabberIqResultGetRoster( XmlNode* iqNode, void* )
 
 	if ( hwndJabberAgents )
 		SendMessage( hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
+	if ( hwndServiceDiscovery )
+		SendMessage( hwndServiceDiscovery, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
 	if ( hwndJabberVcard )
 		SendMessage( hwndJabberVcard, WM_JABBER_CHECK_ONLINE, 0, 0 );
 }

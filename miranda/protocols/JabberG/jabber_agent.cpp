@@ -352,7 +352,7 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 						jabberThreadInfo->send( iq );
 					}
 					{
-                  XmlNodeIq iq( "set" );
+						XmlNodeIq iq( "set" );
 						XmlNode* query = iq.addQuery( "jabber:iq:roster" );
 						XmlNode* itm = query->addChild( "item" ); itm->addAttr( "jid", item->jid ); itm->addAttr( "subscription", "remove" );
 						jabberThreadInfo->send( iq );

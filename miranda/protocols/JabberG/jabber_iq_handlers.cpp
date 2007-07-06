@@ -324,6 +324,8 @@ void JabberHandleRosterPushRequest( XmlNode* node, void* userdata, CJabberIqInfo
 
 	if ( hwndJabberAgents )
 		SendMessage( hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
+	if ( hwndServiceDiscovery )
+		SendMessage( hwndServiceDiscovery, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
 }
 
 void JabberHandleIqRequestOOB( XmlNode* node, void* userdata, CJabberIqInfo *pInfo )

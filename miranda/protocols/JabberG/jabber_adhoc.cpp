@@ -410,7 +410,7 @@ static BOOL CALLBACK JabberAdHoc_CommandDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 	{
 	case WM_INITDIALOG:
 		{
-			dat=(JabberAdHocData *)malloc(sizeof(JabberAdHocData));
+			dat=(JabberAdHocData *)mir_alloc(sizeof(JabberAdHocData));
 			memset(dat,0,sizeof(JabberAdHocData));
 			SetWindowLong(hwndDlg,GWL_USERDATA,(LPARAM)dat);
 			SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )LoadIconEx( "adhoc" ));
@@ -550,6 +550,7 @@ static BOOL CALLBACK JabberAdHoc_CommandDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 			dat->ResponderJID = NULL;
 			if (dat->CommandsNode) delete dat->CommandsNode;
 			dat->CommandsNode=NULL;
+			mir_free(dat);
 			break;
 
 			dat=NULL;

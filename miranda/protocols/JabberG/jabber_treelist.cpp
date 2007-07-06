@@ -87,7 +87,6 @@ struct TTreeList_Data
 };
 
 // static utilities
-static void sttTreeList_RecursiveApply(HTREELISTITEM hItem, void (*func)(HTREELISTITEM, LPARAM), LPARAM data);
 static void sttTreeList_ResetIndex(HTREELISTITEM hItem, LPARAM data);
 static void sttTreeList_SortItems(HTREELISTITEM hItem, LPARAM data);
 static void sttTreeList_FilterItems(HTREELISTITEM hItem, LPARAM data);
@@ -99,6 +98,12 @@ static int CALLBACK sttTreeList_SortFunc(LPARAM lParam1, LPARAM lParam2, LPARAM 
 LPARAM TreeList_GetData(HTREELISTITEM hItem)
 {
 	return hItem->data;
+}
+
+HTREELISTITEM TreeList_GetRoot(HWND hwnd)
+{
+	TTreeList_Data *data = (TTreeList_Data *)GetWindowLong(hwnd, GWL_USERDATA);
+	return data->root;
 }
 
 int TreeList_GetChildrenCount(HTREELISTITEM hItem)
@@ -138,6 +143,17 @@ void TreeList_Destroy(HWND hwnd)
 	ListView_DeleteAllItems(hwnd);
 	TTreeList_Data *data = (TTreeList_Data *)GetWindowLong(hwnd, GWL_USERDATA);
 	delete data;
+}
+
+void TreeList_Reset(HWND hwnd)
+{
+	ListView_DeleteAllItems(hwnd);
+	TTreeList_Data *data = (TTreeList_Data *)GetWindowLong(hwnd, GWL_USERDATA);
+	delete data->root;
+	data->root = new TTreeList_ItemInfo;
+	data->root->flags = TLIF_EXPANDED|TLIF_VISIBLE|TLIF_ROOT;
+	data->root->indent = -1;
+	data->hItemSelected = data->root;
 }
 
 void TreeList_SetMode(HWND hwnd, int mode)
@@ -199,6 +215,18 @@ HTREELISTITEM TreeList_AddItem(HWND hwnd, HTREELISTITEM hParent, TCHAR *text, LP
 	return item;
 }
 
+void TreeList_ResetItem(HWND hwnd, HTREELISTITEM hParent)
+{
+	TTreeList_Data *data = (TTreeList_Data *)GetWindowLong(hwnd, GWL_USERDATA);
+
+	for (int i = hParent->subItems.getCount(); i--; )
+		delete hParent->subItems[i];
+	hParent->subItems.destroy();
+
+	data->hItemSelected = hParent;
+	ListView_DeleteAllItems(hwnd);
+}
+
 void TreeList_MakeFakeParent(HTREELISTITEM hItem, BOOL flag)
 {
 	if (flag)
@@ -229,6 +257,13 @@ void TreeList_SetIcon(HTREELISTITEM hItem, int iIcon, int iOverlay)
 	if ((iIcon >= 0) || (iOverlay >= 0)) hItem->flags |= TLIF_MODIFIED;
 }
 
+void TreeList_RecursiveApply(HTREELISTITEM hItem, void (*func)(HTREELISTITEM, LPARAM), LPARAM data)
+{
+	for ( int i = 0; i < hItem->subItems.getCount(); i++ ) {
+		func( hItem->subItems[i], data );
+		TreeList_RecursiveApply( hItem->subItems[i], func, data );
+}	}
+
 void TreeList_Update(HWND hwnd)
 {
 	TTreeList_Data *data = (TTreeList_Data *)GetWindowLong(hwnd, GWL_USERDATA);
@@ -238,10 +273,10 @@ void TreeList_Update(HWND hwnd)
 
 	SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
 	if (data->sortMode)
-		sttTreeList_RecursiveApply(hItem, sttTreeList_SortItems, (LPARAM)data->sortMode);
-	sttTreeList_RecursiveApply(hItem, sttTreeList_ResetIndex, (LPARAM)&sortIndex);
+		TreeList_RecursiveApply(hItem, sttTreeList_SortItems, (LPARAM)data->sortMode);
+	TreeList_RecursiveApply(hItem, sttTreeList_ResetIndex, (LPARAM)&sortIndex);
 	if (data->filter)
-		sttTreeList_RecursiveApply(hItem, sttTreeList_FilterItems, (LPARAM)data->filter);
+		TreeList_RecursiveApply(hItem, sttTreeList_FilterItems, (LPARAM)data->filter);
 	for ( int i = ListView_GetItemCount(hwnd); i--; ) {
 		LVITEM lvi = {0};
 		lvi.mask = LVIF_PARAM;
@@ -281,7 +316,7 @@ void TreeList_Update(HWND hwnd)
 		else ListView_DeleteItem(hwnd, i);
 	}
 	if (data->mode == TLM_TREE)
-		sttTreeList_RecursiveApply(hItem, sttTreeList_CreateItems, (LPARAM)hwnd);
+		TreeList_RecursiveApply(hItem, sttTreeList_CreateItems, (LPARAM)hwnd);
 	else
 	{
 		for (int i = data->hItemSelected->subItems.getCount(); i--; )
@@ -433,13 +468,6 @@ BOOL TreeList_ProcessMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam, 
 }
 
 ///////////////////////////////////////////////////////////////////////////
-static void sttTreeList_RecursiveApply(HTREELISTITEM hItem, void (*func)(HTREELISTITEM, LPARAM), LPARAM data)
-{
-	for ( int i = 0; i < hItem->subItems.getCount(); i++ ) {
-		func( hItem->subItems[i], data );
-		sttTreeList_RecursiveApply( hItem->subItems[i], func, data );
-}	}
-
 static int sttTreeList_SortItems_Cmp0(const void *p1, const void *p2) { return  lstrcmp((*(HTREELISTITEM *)p1)->text[0], (*(HTREELISTITEM *)p2)->text[0]); }
 static int sttTreeList_SortItems_Cmp1(const void *p1, const void *p2) { return -lstrcmp((*(HTREELISTITEM *)p1)->text[0], (*(HTREELISTITEM *)p2)->text[0]); }
 static int sttTreeList_SortItems_Cmp2(const void *p1, const void *p2) { return  lstrcmp((*(HTREELISTITEM *)p1)->text[1], (*(HTREELISTITEM *)p2)->text[1]); }

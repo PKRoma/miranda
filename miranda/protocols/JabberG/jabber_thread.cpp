@@ -1395,8 +1395,12 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 
 		JabberUpdateJidDbSettings( from );
 
-		if ( _tcschr( from, '@' )==NULL && hwndJabberAgents )
-			SendMessage( hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
+		if ( _tcschr( from, '@' )==NULL ) {
+			if ( hwndJabberAgents )
+				SendMessage( hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
+			if ( hwndServiceDiscovery )
+				SendMessage( hwndServiceDiscovery, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
+		}
 		JabberLog( TCHAR_STR_PARAM " ( " TCHAR_STR_PARAM " ) online, set contact status to %s", nick, from, JCallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,(WPARAM)status,0 ));
 		mir_free( nick );
 
@@ -1459,8 +1463,12 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 
 		JabberUpdateJidDbSettings( from );
 
-		if ( _tcschr( from, '@' )==NULL && hwndJabberAgents )
-			SendMessage( hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
+		if ( _tcschr( from, '@' )==NULL ) {
+			if ( hwndJabberAgents )
+				SendMessage( hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
+			if ( hwndServiceDiscovery )
+				SendMessage( hwndServiceDiscovery, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
+		}
 		JabberDBCheckIsTransportedContact(from, hContact);
 		return;
 	}
@@ -1487,9 +1495,12 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 			if ( item->subscription == SUB_FROM ) item->subscription = SUB_BOTH;
 			else if ( item->subscription == SUB_NONE ) {
 				item->subscription = SUB_TO;
-				if ( hwndJabberAgents && _tcschr( from, '@' )==NULL )
-					SendMessage( hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
-}	}	}	}
+				if ( _tcschr( from, '@' )==NULL ) {
+					if ( hwndJabberAgents )
+						SendMessage( hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
+					if ( hwndServiceDiscovery )
+						SendMessage( hwndServiceDiscovery, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
+}	}	}	}	}
 
 void JabberProcessIqResultVersion( XmlNode* node, void* userdata, CJabberIqInfo *pInfo )
 {
