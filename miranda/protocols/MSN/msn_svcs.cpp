@@ -274,13 +274,26 @@ int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 	{
 		if ( MyOptions.ManageServer && !strcmp( cws->szModule, "CListGroups" )) 
 		{
-			int iNumber = atol( cws->szSetting );
+			const char* szNewName = cws->value.pszVal + 1;
+			const int iNumber = atol( cws->szSetting );
+			const BYTE type = cws->value.type;
+			
+			if ( type == DBVT_UTF8 || type == DBVT_ASCIIZ )
+			{
+				LPCSTR szId = MSN_GetGroupByName( szNewName );
+				if ( szId != NULL )
+				{
+					MSN_SetGroupNumber( szId, iNumber );
+					return 0;
+				}
+			}
+
 			LPCSTR szId = MSN_GetGroupByNumber( iNumber );
 			if ( szId != NULL ) {
-				switch ( cws->value.type ) {
-					case DBVT_DELETED:	msnNsThread->sendPacket( "RMG", szId );								break;
-					case DBVT_UTF8:		MSN_RenameServerGroup( iNumber, szId, cws->value.pszVal+1 );		break;
-					case DBVT_ASCIIZ:	MSN_RenameServerGroup( iNumber, szId, UTF8( cws->value.pszVal+1 ));	break;
+				switch ( type ) {
+					case DBVT_DELETED:	msnNsThread->sendPacket( "RMG", szId );
+					case DBVT_UTF8:		MSN_RenameServerGroup( iNumber, szId, szNewName );			break;
+					case DBVT_ASCIIZ:	MSN_RenameServerGroup( iNumber, szId, UTF8( szNewName ));	break;
 				}
 			}
 		}
