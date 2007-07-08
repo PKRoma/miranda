@@ -291,7 +291,7 @@ int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 			LPCSTR szId = MSN_GetGroupByNumber( iNumber );
 			if ( szId != NULL ) {
 				switch ( type ) {
-					case DBVT_DELETED:	msnNsThread->sendPacket( "RMG", szId );
+					case DBVT_DELETED:	msnNsThread->sendPacket( "RMG", szId );						break;
 					case DBVT_UTF8:		MSN_RenameServerGroup( iNumber, szId, szNewName );			break;
 					case DBVT_ASCIIZ:	MSN_RenameServerGroup( iNumber, szId, UTF8( szNewName ));	break;
 				}
