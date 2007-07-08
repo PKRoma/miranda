@@ -270,19 +270,19 @@ int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 	if ( !msnLoggedIn )
 		return 0;
 
-	if ( hContact == NULL && MyOptions.ManageServer && !strcmp( cws->szModule, "CListGroups" )) {
-		int iNumber = atol( cws->szSetting );
-		LPCSTR szId = MSN_GetGroupByNumber( iNumber );
-		if ( szId == NULL ) {
-			if ( cws->value.type == DBVT_ASCIIZ )
-				MSN_AddServerGroup( cws->value.pszVal+1, hContact );
-			return 0;
-		}
-
-		switch ( cws->value.type ) {
-			case DBVT_DELETED:	msnNsThread->sendPacket( "RMG", szId );								break;
-			case DBVT_UTF8:		MSN_RenameServerGroup( iNumber, szId, cws->value.pszVal+1 );		break;
-			case DBVT_ASCIIZ:	MSN_RenameServerGroup( iNumber, szId, UTF8( cws->value.pszVal+1 ));	break;
+	if ( hContact == NULL )
+	{
+		if ( MyOptions.ManageServer && !strcmp( cws->szModule, "CListGroups" )) 
+		{
+			int iNumber = atol( cws->szSetting );
+			LPCSTR szId = MSN_GetGroupByNumber( iNumber );
+			if ( szId != NULL ) {
+				switch ( cws->value.type ) {
+					case DBVT_DELETED:	msnNsThread->sendPacket( "RMG", szId );								break;
+					case DBVT_UTF8:		MSN_RenameServerGroup( iNumber, szId, cws->value.pszVal+1 );		break;
+					case DBVT_ASCIIZ:	MSN_RenameServerGroup( iNumber, szId, UTF8( cws->value.pszVal+1 ));	break;
+				}
+			}
 		}
 		return 0;
 	}
