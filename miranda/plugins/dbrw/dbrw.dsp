@@ -43,7 +43,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DBRW_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /I "../../include" /D _WIN32_WINNT=0x0500 /D "SQLITE_OMIT_UTF16" /D "SQLITE_OMIT_LOAD_EXTENSION" /D "SQLITE_OMIT_PROGRESS_CALLBACK" /D "SQLITE_OMIT_AUTHORIZATION" /D "SQLITE_OMIT_ALTERTABLE" /D "SQLITE_OMIT_AUTOVACUUM" /D "DBRW_OLD_PLUGINAPI_SUPPORT" /D "NO_TCL" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DBRW_EXPORTS" /YX /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /I "../../include" /D _WIN32_WINNT=0x0500 /D "DBRW_OLD_PLUGINAPI_SUPPORT" /D "NO_TCL" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DBRW_EXPORTS" /YX /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -69,7 +69,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DBRW_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D _WIN32_WINNT=0x0500 /D "SQLITE_OMIT_UTF16" /D "SQLITE_OMIT_LOAD_EXTENSION" /D "SQLITE_OMIT_PROGRESS_CALLBACK" /D "SQLITE_OMIT_AUTHORIZATION" /D "SQLITE_OMIT_AUTOVACUUM" /D "SQLITE_OMIT_ALTERTABLE" /D "DBRW_OLD_PLUGINAPI_SUPPORT" /D "DBRW_DEBUG" /D "DBRW_LOGGING" /D "NO_TCL" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DBRW_EXPORTS" /YX /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D _WIN32_WINNT=0x0500 /D "DBRW_OLD_PLUGINAPI_SUPPORT" /D "DBRW_DEBUG" /D "DBRW_LOGGING" /D "NO_TCL" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DBRW_EXPORTS" /YX /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
@@ -140,11 +140,247 @@ SOURCE=.\resource.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\sqlite3\sqlite3.c
+SOURCE=.\sqlite3\alter.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\analyze.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\attach.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\auth.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\btree.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\btree.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\btreeInt.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\build.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\callback.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\complete.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\date.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\delete.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\expr.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\func.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\hash.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\hash.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\insert.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\keywordhash.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\legacy.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\limits.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\loadext.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\main.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\malloc.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\opcodes.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\opcodes.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\os.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\os.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\os_common.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\os_os2.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\os_os2.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\os_unix.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\os_win.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\pager.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\pager.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\parse.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\parse.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\pragma.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\prepare.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\printf.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\random.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\select.c
 # End Source File
 # Begin Source File
 
 SOURCE=.\sqlite3\sqlite3.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\sqlite3ext.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\sqliteInt.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\table.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\tokenize.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\trigger.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\update.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\utf.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\util.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\vacuum.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\vdbe.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\vdbe.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\vdbeapi.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\vdbeaux.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\vdbeblob.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\vdbefifo.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\vdbeInt.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\vdbemem.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\vtab.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sqlite3\where.c
 # End Source File
 # End Group
 # End Target

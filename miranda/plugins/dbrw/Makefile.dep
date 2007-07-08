@@ -26,4 +26,142 @@ utils.o: utils.c dbrw.h ../../include/newpluginapi.h \
   ../../include/m_plugins.h ../../include/m_system.h \
   ../../include/m_database.h ../../include/m_utils.h \
   ../../include/m_langpack.h sqlite3/sqlite3.h resource.h
-sqlite3.o: sqlite3/sqlite3.c
+alter.o: sqlite3/alter.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h
+analyze.o: sqlite3/analyze.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h
+attach.o: sqlite3/attach.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h
+auth.o: sqlite3/auth.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h
+btree.o: sqlite3/btree.c sqlite3/btreeInt.h sqlite3/sqliteInt.h \
+  sqlite3/limits.h sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h \
+  sqlite3/vdbe.h sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h \
+  sqlite3/os.h
+build.o: sqlite3/build.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h
+callback.o: sqlite3/callback.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h
+complete.o: sqlite3/complete.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h
+date.o: sqlite3/date.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h
+delete.o: sqlite3/delete.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h
+expr.o: sqlite3/expr.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h
+func.o: sqlite3/func.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h \
+  sqlite3/vdbeInt.h
+hash.o: sqlite3/hash.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h
+insert.o: sqlite3/insert.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h
+legacy.o: sqlite3/legacy.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h
+loadext.o: sqlite3/loadext.c sqlite3/sqlite3ext.h sqlite3/sqlite3.h \
+  sqlite3/sqliteInt.h sqlite3/limits.h sqlite3/hash.h sqlite3/parse.h \
+  sqlite3/vdbe.h sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h \
+  sqlite3/os.h
+main.o: sqlite3/main.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h
+malloc.o: sqlite3/malloc.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h
+opcodes.o: sqlite3/opcodes.c
+os.o: sqlite3/os.c sqlite3/sqliteInt.h sqlite3/limits.h sqlite3/sqlite3.h \
+  sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h sqlite3/opcodes.h \
+  sqlite3/btree.h sqlite3/pager.h sqlite3/os.h
+os_os2.o: sqlite3/os_os2.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h
+os_unix.o: sqlite3/os_unix.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h
+os_win.o: sqlite3/os_win.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h \
+  sqlite3/os_common.h
+pager.o: sqlite3/pager.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h
+parse.o: sqlite3/parse.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h
+pragma.o: sqlite3/pragma.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h
+prepare.o: sqlite3/prepare.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h
+printf.o: sqlite3/printf.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h
+random.o: sqlite3/random.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h
+select.o: sqlite3/select.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h
+table.o: sqlite3/table.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h
+trigger.o: sqlite3/trigger.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h
+update.o: sqlite3/update.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h
+utf.o: sqlite3/utf.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h \
+  sqlite3/vdbeInt.h
+util.o: sqlite3/util.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h
+vacuum.o: sqlite3/vacuum.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h \
+  sqlite3/vdbeInt.h
+vdbe.o: sqlite3/vdbe.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h \
+  sqlite3/vdbeInt.h
+vdbeapi.o: sqlite3/vdbeapi.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h \
+  sqlite3/vdbeInt.h
+vdbeaux.o: sqlite3/vdbeaux.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h \
+  sqlite3/vdbeInt.h
+vdbeblob.o: sqlite3/vdbeblob.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h \
+  sqlite3/vdbeInt.h
+vdbefifo.o: sqlite3/vdbefifo.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h \
+  sqlite3/vdbeInt.h
+vdbemem.o: sqlite3/vdbemem.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h \
+  sqlite3/vdbeInt.h
+where.o: sqlite3/where.c sqlite3/sqliteInt.h sqlite3/limits.h \
+  sqlite3/sqlite3.h sqlite3/hash.h sqlite3/parse.h sqlite3/vdbe.h \
+  sqlite3/opcodes.h sqlite3/btree.h sqlite3/pager.h sqlite3/os.h
