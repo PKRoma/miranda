@@ -71,6 +71,48 @@ void __stdcall JabberLog( const char* fmt, ... )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// JabberChatRoomHContactFromJID - looks for the char room HCONTACT with required JID
+
+HANDLE __stdcall JabberChatRoomHContactFromJID( const TCHAR* jid )
+{
+	if ( jid == NULL )
+		return ( HANDLE )NULL;
+
+	JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_CHATROOM, jid );
+	
+	HANDLE hContactMatched = NULL;
+	HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
+	while ( hContact != NULL ) {
+		char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
+		if ( szProto != NULL && !strcmp( jabberProtoName, szProto )) 
+		{
+			DBVARIANT dbv;
+			int result = JGetStringT( hContact, "ChatRoomID", &dbv );
+			if ( result )
+				result = JGetStringT( hContact, "jid", &dbv );	
+
+			if ( !result ) 
+			{
+				int result;
+				result = lstrcmpi( jid, dbv.ptszVal );
+				JFreeVariant( &dbv );
+				if ( !result && JGetByte( hContact, "ChatRoom", 0 )!=0 ) 
+				{
+
+					hContactMatched = hContact;
+					break;
+
+				}
+			}
+		}
+
+		hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 );
+	}
+
+	return hContactMatched;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // JabberHContactFromJID - looks for the HCONTACT with required JID
 
 HANDLE __stdcall JabberHContactFromJID( const TCHAR* jid )

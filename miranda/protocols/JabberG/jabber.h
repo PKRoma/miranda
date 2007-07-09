@@ -625,6 +625,7 @@ void          __stdcall JabberSerialInit( void );
 void          __stdcall JabberSerialUninit( void );
 unsigned int  __stdcall JabberSerialNext( void );
 HANDLE        __stdcall JabberHContactFromJID( const TCHAR* jid );
+HANDLE        __stdcall JabberChatRoomHContactFromJID( const TCHAR* jid );
 void          __stdcall JabberLog( const char* fmt, ... );
 TCHAR*        __stdcall JabberNickFromJID( const TCHAR* jid );
 JABBER_RESOURCE_STATUS* __stdcall JabberResourceInfoFromJID( TCHAR* jid );
