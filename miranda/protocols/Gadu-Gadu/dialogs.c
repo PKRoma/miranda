@@ -28,16 +28,15 @@ extern BOOL CALLBACK gg_userutildlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 
 ////////////////////////////////////////////////////////////////////////////////
 // SetValue
-#define SVS_NORMAL		  0
-#define SVS_GENDER		  1
-#define SVS_ZEROISUNSPEC  2
-#define SVS_IP			  3
-#define SVS_COUNTRY 	  4
-#define SVS_MONTH		  5
-#define SVS_SIGNED		  6
-#define SVS_TIMEZONE	  7
-#define SVS_ICQVERSION	  8
-#define SVS_GGVERSION			9
+#define SVS_NORMAL			0
+#define SVS_GENDER			1
+#define SVS_ZEROISUNSPEC	2
+#define SVS_IP				3
+#define SVS_COUNTRY 		4
+#define SVS_MONTH			5
+#define SVS_SIGNED			6
+#define SVS_TIMEZONE		7
+#define SVS_GGVERSION		9
 
 static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char *szSetting,int special,int disableIfUndef)
 {
@@ -79,15 +78,6 @@ static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char
 					if(special==SVS_COUNTRY) {
 							pstr=(char*)CallService(MS_UTILS_GETCOUNTRYBYNUMBER,dbv.wVal,0);
 							unspecified=pstr==NULL;
-					}
-					else if (special == SVS_ICQVERSION) {
-							if (dbv.wVal != 0)
-							{
-									static char *szVersionDescr[] = {"", "ICQ 1.x", "ICQ 2.x", "Unknown", "ICQ98", "Unknown", "ICQ99 / licq", "ICQ2000", "ICQ2001-2003, Miranda or Trillian", "ICQ Lite"};
-									pstr = str;
-									wsprintf(str, "%d: %s", dbv.wVal, dbv.wVal > 9 ? Translate("Unknown") : Translate(szVersionDescr[dbv.wVal]));
-							}
-							else unspecified = 1;
 					}
 					else {
 							unspecified=(special==SVS_ZEROISUNSPEC && dbv.wVal==0);
@@ -139,7 +129,7 @@ static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char
 #define ETDT_DISABLE		0x00000001
 #define ETDT_ENABLE 		0x00000002
 #define ETDT_USETABTEXTURE	0x00000004
-#define ETDT_ENABLETAB		(ETDT_ENABLE  | ETDT_USETABTEXTURE)
+#define ETDT_ENABLETAB		(ETDT_ENABLE | ETDT_USETABTEXTURE)
 #endif
 
 static HWND hwndGeneral = NULL, hwndConference = NULL, hwndAdvanced = NULL;
