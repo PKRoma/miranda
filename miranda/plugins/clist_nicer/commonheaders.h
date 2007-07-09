@@ -60,12 +60,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_clui.h>
 #include <m_plugins.h>
 #include <m_system.h>
+#include <m_utils.h>
 #include <m_database.h>
 #include <m_langpack.h>
 #include <m_button.h>
 #include <m_options.h>
 #include <m_protosvc.h>
-#include <m_utils.h>
 #include <m_skin.h>
 #include <m_contacts.h>
 #include <m_file.h>
@@ -86,24 +86,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_popup.h"
 #include "m_metacontacts.h"
 #include "m_fontservice.h"
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// NEEDS TO GO AWAY when we get REAL unicode
-//
-
-#if !defined(_UNICODE)
-
-#define ptszVal pszVal
-
-#define DBWriteContactSettingTString(a, b, c, d) DBWriteContactSettingString((a), (b), (c), (d))
-#define DBWriteContactSettingWString(a, b, c, d) DBWriteContactSettingString((a), (b), (c), (d))
-
-#undef DBGetContactSettingTString
-#undef DBGetContactSettingWString
-
-#define DBGetContactSettingTString(a,b,c,d) DBGetContactSetting(a,b,c,d)
-#define DBGetContactSettingWString(a,b,c,d) DBGetContactSetting(a,b,c,d)
-
-#endif
 
 // shared vars
 extern HINSTANCE g_hInst;
@@ -123,17 +105,6 @@ extern HINSTANCE g_hInst;
 extern struct LIST_INTERFACE li;
 typedef  int  (__cdecl *pfnDrawAvatar)(HDC hdcOrig, HDC hdcMem, RECT *rc, struct ClcContact *contact, int y, struct ClcData *dat, int selected, WORD cstatus, int rowHeight);
 typedef  void (__cdecl *pfnDrawAlpha)(HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWORD basecolor2, BOOL transparent, DWORD FLG_GRADIENT, DWORD FLG_CORNER, DWORD BORDERSTYLE, ImageItem *item);
-
-static char *DBGetString(HANDLE hContact,const char *szModule,const char *szSetting)
-{
-	char *str=NULL;
-	DBVARIANT dbv;
-	DBGetContactSetting(hContact,szModule,szSetting,&dbv);
-	if(dbv.type==DBVT_ASCIIZ)
-		str=mir_strdup(dbv.pszVal);
-	DBFreeVariant(&dbv);
-	return str;
-}
 
 #define safe_sizeof(a) (sizeof((a)) / sizeof((a)[0]))
 

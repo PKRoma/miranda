@@ -67,8 +67,8 @@ typedef struct tagFrameTitleBar{
 	HWND TitleBarbutt;
 	HWND hwndTip;
 
-	char *tbname;
-	char *tooltip;
+	LPTSTR tbname;
+	LPTSTR tooltip;
 	HMENU hmenu;
 	HICON hicon;
 
@@ -91,7 +91,7 @@ typedef struct _wndFrame{
 	int id;
 	HWND hWnd ;
 	RECT wndSize;
-	char *name;
+	LPTSTR name;
 	int align;
 	int height;
 	int dwFlags;
@@ -123,8 +123,8 @@ typedef struct _wndFrame{
 #define OFFSET_PROTOPOS 200
 #define OFFSET_VISIBLE 400
 
-#define CLUIFrameSubContainerClassName		    "CLUIFrameSubContainer"
-#define CLUIFrameTitleBarClassName				"CLUIFrameTitleBar"
+#define CLUIFrameSubContainerClassName			_T("CLUIFrameSubContainer")
+#define CLUIFrameTitleBarClassName				_T("CLUIFrameTitleBar")
 #define CLUIFrameModule							"CLUIFrames"
 
 //integrated menu module

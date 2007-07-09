@@ -53,12 +53,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <newpluginapi.h>
 #include <m_system.h>
+#include <m_utils.h>
 #include <m_database.h>
 #include <m_langpack.h>
 #include <m_button.h>
 #include <m_options.h>
 #include <m_protosvc.h>
-#include <m_utils.h>
 #include <m_clc.h>
 #include <m_clist.h>
 #include <m_clistint.h>
@@ -110,8 +110,6 @@ extern __inline void *mir_calloc( size_t num, size_t size );
 extern void *mir_calloc( size_t num, size_t size );
 extern char * mir_strdup(const char * src);
 
-extern char *DBGetStringA(HANDLE hContact,const char *szModule,const char *szSetting);
-extern wchar_t *DBGetStringW(HANDLE hContact,const char *szModule,const char *szSetting);
 extern DWORD exceptFunction(LPEXCEPTION_POINTERS EP);
 
 extern int     ( *saveIconFromStatusMode )( const char *szProto,int nStatus, HANDLE hContact);

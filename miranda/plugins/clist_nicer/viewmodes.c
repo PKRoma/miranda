@@ -1115,11 +1115,11 @@ void CreateViewModeFrame()
 
     ZeroMemory(&frame, sizeof(frame));
     frame.cbSize = sizeof(frame);
-    frame.name = "View modes";
+    frame.tname = _T("View modes");
+    frame.TBtname = TranslateT("View Modes");
     frame.hIcon = 0;
     frame.height = 22;
-    frame.TBname = "View modes";
-    frame.Flags=F_VISIBLE|F_SHOWTBTIP|F_NOBORDER;
+    frame.Flags=F_VISIBLE|F_SHOWTBTIP|F_NOBORDER|F_TCHAR;
     frame.align = alBottom;
     frame.hWnd = CreateWindowEx(0, _T("CLVMFrameWindow"), _T("CLVM"), WS_VISIBLE | WS_CHILD | WS_TABSTOP | WS_CLIPCHILDREN, 0, 0, 20, 20, pcli->hwndContactList, (HMENU) 0, g_hInst, NULL);
     g_hwndViewModeFrame = frame.hWnd;

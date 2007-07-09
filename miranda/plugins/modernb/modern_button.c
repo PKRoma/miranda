@@ -598,7 +598,7 @@ HWND CreateButtonWindow(ModernButtonCtrl * bct, HWND parent)
 #ifdef _UNICODE
   {
     TCHAR *UnicodeID;
-    UnicodeID=a2u(bct->ID);
+    UnicodeID=mir_a2u(bct->ID);
     hwnd=CreateWindow(_T(MODERNBUTTONCLASS),UnicodeID,WS_VISIBLE|WS_CHILD,bct->Left,bct->Top,bct->Right-bct->Left,bct->Bottom-bct->Top,parent,NULL,g_hInst,NULL);       
     mir_free_and_nill(UnicodeID);
   }

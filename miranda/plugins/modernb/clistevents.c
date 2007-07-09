@@ -378,9 +378,10 @@ int EventArea_Create(HWND hCluiWnd)
     Frame.hWnd=g_CluiData.hwndEventFrame;
     Frame.align=alBottom;
     Frame.hIcon=LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
-    Frame.Flags=(DBGetContactSettingByte(NULL,"CLUI","ShowEventArea",1)?F_VISIBLE:0)|F_LOCKED|F_NOBORDER|F_NO_SUBCONTAINER;
+    Frame.Flags=(DBGetContactSettingByte(NULL,"CLUI","ShowEventArea",1)?F_VISIBLE:0)|F_LOCKED|F_NOBORDER|F_NO_SUBCONTAINER|F_TCHAR;
     Frame.height=h;
-    Frame.name=("Event Area"); //do not translate
+    Frame.tname=_T("Event Area"); //do not translate
+    Frame.TBtname=TranslateT("Event Area");
     hNotifyFrame=(HANDLE)CallService(MS_CLIST_FRAMES_ADDFRAME,(WPARAM)&Frame,(LPARAM)0);
     CallService(MS_SKINENG_REGISTERPAINTSUB,(WPARAM)Frame.hWnd,(LPARAM)EventArea_PaintCallbackProc); //$$$$$ register sub for frame
     CallService(MS_CLIST_FRAMES_UPDATEFRAME,-1,0);

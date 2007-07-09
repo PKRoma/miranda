@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 UNICODE - done.
 
 */
+
 #define HCONTACT_ISGROUP    0x80000000
 #define HCONTACT_ISINFO     0xFFFF0000
 #define IsHContactGroup(h)  (((unsigned)(h)^HCONTACT_ISGROUP)<(HCONTACT_ISGROUP^HCONTACT_ISINFO))
@@ -568,9 +569,6 @@ int ClcOptInit(WPARAM wParam, LPARAM lParam);
 DWORD GetDefaultExStyle(void);
 void GetFontSetting(int i, LOGFONTA *lf, COLORREF *colour);
 void CluiProtocolStatusChanged( int parStatus, const char* szProto );
-//clistsettings.c
-char *u2a(wchar_t *src);
-wchar_t *a2u(char *src);
 
 // debugging support
 

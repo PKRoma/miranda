@@ -386,7 +386,7 @@ int AniAva_SetAvatarPos(HANDLE hContact, RECT * rc, int overlayIdx, BYTE bAlpha)
 						}
 					}
 #endif
-					tszName = a2t( szName );
+					tszName = mir_a2t( szName );
 					hwnd=_AniAva_CreateAvatarWindowSync(tszName);
 					mir_free( tszName );
 					parent=GetAncestor(pcli->hwndContactList,GA_PARENT);

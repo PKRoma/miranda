@@ -309,7 +309,7 @@ int RenameGroupT( WPARAM groupID, LPARAM newName )
 static int RenameGroup(WPARAM wParam,LPARAM lParam)
 {
 	#if defined( _UNICODE )
-		WCHAR* temp = a2u(( char* )lParam );
+		WCHAR* temp = mir_a2u(( char* )lParam );
 		int result = ( -1 != RenameGroupWithMove(wParam - 1, temp, 1));
 		mir_free( temp );
 		return result;

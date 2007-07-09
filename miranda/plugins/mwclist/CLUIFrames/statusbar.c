@@ -579,13 +579,14 @@ int CreateStatusBarFrame()
 	Frame.hWnd=helperhwnd;
 	Frame.align=alBottom;
 	Frame.hIcon=LoadSkinnedIcon (SKINICON_OTHER_MIRANDA);
-	Frame.Flags=(DBGetContactSettingByte(NULL,"CLUI","ShowSBar",1)?F_VISIBLE:0)|F_LOCKED|F_NOBORDER;
+	Frame.Flags=(DBGetContactSettingByte(NULL,"CLUI","ShowSBar",1)?F_VISIBLE:0)|F_LOCKED|F_NOBORDER|F_TCHAR;
 	GetWindowRect(helperhwnd,&rc);
 	h=rc.bottom-rc.top;
 	Frame.height=(h==0)?20:h;
 
 
-	Frame.name=(Translate("Status"));
+	Frame.tname=_T("Status");
+	Frame.TBtname=TranslateT("Status Bar");
 	hFrameHelperStatusBar=(HANDLE)CallService(MS_CLIST_FRAMES_ADDFRAME,(WPARAM)&Frame,(LPARAM)0);
 
 

@@ -125,8 +125,16 @@ typedef struct tagCLISTFrame {
 		int minSize;   //the actual meaning depends from type of frame
 	};
 	int Flags;	//F_flags below
-	char *name; //frame window name,will be shown in menu. DO NOT TRANSLATE IT will be used as Frame indentificator
-	char *TBname; //titlebar caption
+	union {
+		char *name; //frame window name indentifier (DO NOT TRANSLATE)
+		wchar_t *wname;
+		LPTSTR tname;
+	};
+	union {
+		char *TBname; //titlebar & menu caption
+		wchar_t *TBwname;
+		LPTSTR TBtname;
+	};
 } CLISTFrame;
 
 #define F_VISIBLE			1 //Frame visible
@@ -138,6 +146,12 @@ typedef struct tagCLISTFrame {
 #define F_CANBEVERTICAL		64 //frames can be vertical
 #define F_CANNOTBEHORIZONTAL 128 //frames can NOT be horizontal	F_CANBEVERTICAL have to be set 
 #define F_NO_SUBCONTAINER   1024   //Support skining no subcontainer needed
+#define F_UNICODE			32768 //Use unicode text
+#ifdef _UNICODE
+# define F_TCHAR			F_UNICODE
+#else
+# define F_TCHAR			0
+#endif
 
 // frame alignment
 #define alTop		0x00000001

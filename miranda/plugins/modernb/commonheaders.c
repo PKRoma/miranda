@@ -98,44 +98,6 @@ __inline char * strdupn(const char * src, int len)
     return p;
 }
 
-TCHAR *DBGetStringT(HANDLE hContact,const char *szModule,const char *szSetting)
-{
-	TCHAR *str=NULL;
-    DBVARIANT dbv={0};
-	if (!DBGetContactSettingTString(hContact,szModule,szSetting,&dbv))
-		str=mir_tstrdup(dbv.ptszVal);		
-	DBFreeVariant(&dbv);
-	return str;
-}
-char *DBGetStringA(HANDLE hContact,const char *szModule,const char *szSetting)
-{
-	char *str=NULL;
-    DBVARIANT dbv={0};
-	DBGetContactSetting(hContact,szModule,szSetting,&dbv);
-	if(dbv.type==DBVT_ASCIIZ)
-    {
-        str=mir_strdup(dbv.pszVal);
-        //mir_free_and_nill(dbv.pszVal);
-    }
-    DBFreeVariant(&dbv);
-	return str;
-}
-wchar_t *DBGetStringW(HANDLE hContact,const char *szModule,const char *szSetting)
-{
-	wchar_t *str=NULL;
-	DBVARIANT dbv={0};
-	DBGetContactSetting(hContact,szModule,szSetting,&dbv);
-	if(dbv.type==DBVT_WCHAR)
-	{
-		str=mir_strdupW(dbv.pwszVal);
-		//mir_free_and_nill(dbv.pwszVal);
-	}
-	//else  TODO if no unicode string (only ansi)
-	//
-	DBFreeVariant(&dbv);
-	return str;
-}
-
 DWORD exceptFunction(LPEXCEPTION_POINTERS EP) 
 { 
     //printf("1 ");                     // printed first 

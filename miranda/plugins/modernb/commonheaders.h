@@ -83,6 +83,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <newpluginapi.h>
 #include <m_system.h>
+#include <m_utils.h>
 #include <m_database.h>
 #include <m_langpack.h>
 #include <m_button.h>
@@ -90,7 +91,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_protosvc.h>
 #include <m_clist.h>
 #include <m_clistint.h>
-#include <m_utils.h>
 #include <m_skin.h>
 #include <m_contacts.h>
 #include <m_plugins.h>
@@ -146,9 +146,6 @@ extern int __cdecl mir_strcmpi(const char *a, const char *b);
 extern int __cdecl mir_tstrcmpi(const TCHAR *a, const TCHAR *b);
 //extern __inline void *mir_calloc( size_t num, size_t size );
 
-char *DBGetStringA(HANDLE hContact,const char *szModule,const char *szSetting);
-extern wchar_t *DBGetStringW(HANDLE hContact,const char *szModule,const char *szSetting);
-extern TCHAR *DBGetStringT(HANDLE hContact,const char *szModule,const char *szSetting);
 extern DWORD exceptFunction(LPEXCEPTION_POINTERS EP);
 
 #undef HookEvent
@@ -282,14 +279,6 @@ extern __inline char * strdupn(const char * src, int len);
 #define SORTBY_NOTHING	10
 
 #define DT_FORCENATIVERENDER   0x10000000
-
-#ifdef _UNICODE
-#define t2a(src) u2a(src)
-#define a2t(src) a2u(src)
-#else
-#define t2a(src) mir_strdup(src)
-#define a2t(src) mir_strdup(src)
-#endif
 
 #define _BOOL(a) (a != 0)
 

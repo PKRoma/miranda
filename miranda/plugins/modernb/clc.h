@@ -571,10 +571,6 @@ void    GetFontSetting(int i,LOGFONTA *lf,COLORREF *colour,BYTE *effect, COLORRE
 
 //clistsettings.c
 TCHAR * GetContactDisplayNameW( HANDLE hContact, int mode );
-char*   u2a( wchar_t* src );
-wchar_t* a2u( char* src );
-
-
 
 //groups.c
 TCHAR*  GetGroupNameTS( int idx, DWORD* pdwFlags );

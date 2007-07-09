@@ -33,7 +33,7 @@ extern "C"
 {
 	#include "newpluginapi.h"	//this is common header for miranda plugin api
 	#include "m_system.h"
-	wchar_t* a2u( char* src );
+	#include "m_utils.h"
 };
 
 
@@ -252,7 +252,7 @@ extern "C" BOOL GDIPlus_IsAnimatedGIF(TCHAR * szName)
 {
 	int nFrameCount=0;
 #ifndef _UNICODE
-	WCHAR * temp=a2u(szName);
+	WCHAR * temp=mir_a2u(szName);
 	Image image(temp);
 	mir_free(temp);
 #else
@@ -278,7 +278,7 @@ extern "C" void GDIPlus_ExtractAnimatedGIF(TCHAR * szName, int width, int height
 {
 	int nFrameCount=0;
 #ifndef _UNICODE
-	WCHAR * temp=a2u(szName);
+	WCHAR * temp=mir_a2u(szName);
 	Bitmap image(temp);
 	mir_free(temp);
 #else

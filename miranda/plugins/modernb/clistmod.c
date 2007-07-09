@@ -417,7 +417,7 @@ int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY) {
 						{
 							TCHAR buf[255];
 							GetClassName(hAux,buf,SIZEOF(buf));
-							if (!lstrcmp(buf,_T(CLUIFrameSubContainerClassName)))
+							if (!lstrcmp(buf,CLUIFrameSubContainerClassName))
 							{
 								hWndFound=TRUE;
 								break;

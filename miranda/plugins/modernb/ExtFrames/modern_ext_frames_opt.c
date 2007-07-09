@@ -138,7 +138,7 @@ static void _ExtFramesOptUtils_FillListOfFrames(HWND hwndDlg, SortedList * pFram
 	for (i=0; i<pFrameList->realCount; i++)
 	{
 		EXTFRAMEWND * pFrm=(EXTFRAMEWND *)pFrameList->items[i];
-		TCHAR * name=a2t(pFrm->efrm.szFrameNameID);
+		TCHAR * name=mir_a2t(pFrm->efrm.szFrameNameID);
 		int idx=SendDlgItemMessage(hwndDlg, IDC_EXTRAORDER, LB_ADDSTRING, 0, (LPARAM)TranslateTS(name));	
 		mir_free(name);
 		SendDlgItemMessage(hwndDlg, IDC_EXTRAORDER, LB_SETITEMDATA, idx, (LPARAM) pFrm);

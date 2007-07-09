@@ -1329,7 +1329,7 @@ void Cache_ProceedAvatarInList(struct ClcData *dat, struct ClcContact *contact)
 		}
 		if (wildcmpi(contact->avatar_data->szFilename,"*.gif"))
 		{
-			TCHAR *temp=a2t(contact->avatar_data->szFilename);
+			TCHAR *temp=mir_a2t(contact->avatar_data->szFilename);
 			int res;
 			if (old_pos==AVATAR_POS_ANIMATED)
 				AniAva_RemoveAvatar(contact->hContact);

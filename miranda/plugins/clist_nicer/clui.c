@@ -261,11 +261,11 @@ static int CreateCLC(HWND parent)
 	{
 		CLISTFrame frame = {0};
 		frame.cbSize = sizeof(frame);
-		frame.name = "EventArea";
+		frame.tname = _T("EventArea");
+		frame.TBtname = TranslateT("Event Area");
 		frame.hIcon = 0;
 		frame.height = 20;
-		frame.TBname = "Event Area";
-		frame.Flags=F_VISIBLE|F_SHOWTBTIP|F_NOBORDER;
+		frame.Flags=F_VISIBLE|F_SHOWTBTIP|F_NOBORDER|F_TCHAR;
 		frame.align = alBottom;
 		frame.hWnd = CreateWindowExA(0, "EventAreaClass", "evt", WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 20, 20, pcli->hwndContactList, (HMENU) 0, g_hInst, NULL);
         g_hwndEventArea = frame.hWnd;
@@ -284,8 +284,9 @@ static int CreateCLC(HWND parent)
 		Frame.hWnd=pcli->hwndContactTree;
 		Frame.align=alClient;
 		Frame.hIcon=LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
-		Frame.Flags=F_VISIBLE|F_SHOWTB|F_SHOWTBTIP|F_NOBORDER;
-		Frame.name=(Translate("My Contacts"));
+		Frame.Flags=F_VISIBLE|F_SHOWTB|F_SHOWTBTIP|F_NOBORDER|F_TCHAR;
+		Frame.tname=_T("My Contacts");
+		Frame.TBtname=TranslateT("My Contacts");
 		Frame.height = 200;
 		hFrameContactTree=(HWND)CallService(MS_CLIST_FRAMES_ADDFRAME,(WPARAM)&Frame,(LPARAM)0);
 		//free(Frame.name);

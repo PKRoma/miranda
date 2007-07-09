@@ -375,8 +375,8 @@ static int svcToolBarAddButton(WPARAM wParam, LPARAM lParam)
 			mtbi->szService=mir_strdup(bi->pszServiceName);
 			mtbi->szButtonID=mir_strdup(bi->pszButtonID);
 			mtbi->bPushButton=(bi->tbbFlags&TBBF_PUSHED)?TRUE:FALSE;
-			mtbi->szTooltip=a2t(Translate(bi->pszTooltipUp));
-			mtbi->szTooltipPressed=a2t(Translate(bi->pszTooltipDn));
+			mtbi->szTooltip=mir_a2t(Translate(bi->pszTooltipUp));
+			mtbi->szTooltipPressed=mir_a2t(Translate(bi->pszTooltipDn));
 			mtbi->bSeparator=SEPARATOR_NOT;
 			
 			//database pos read			
@@ -405,8 +405,8 @@ static int svcToolBarAddButton(WPARAM wParam, LPARAM lParam)
 				mtbi->szService=mir_strdup(bi->pszServiceName);
 				mtbi->szButtonID=mir_strdup(bi->pszButtonID);
 				mtbi->bPushButton=(bi->tbbFlags&TBBF_PUSHED)?TRUE:FALSE;
-				mtbi->szTooltip=a2t(Translate(bi->pszTooltipUp));
-				mtbi->szTooltipPressed=a2t(Translate(bi->pszTooltipDn));
+				mtbi->szTooltip=mir_a2t(Translate(bi->pszTooltipUp));
+				mtbi->szTooltipPressed=mir_a2t(Translate(bi->pszTooltipDn));
 				{
 					char * buttonId=_alloca(sizeof("ToolBar.")+strlen(mtbi->szButtonID)+2);
 					strcpy(buttonId,"ToolBar.");

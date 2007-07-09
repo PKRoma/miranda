@@ -18,18 +18,6 @@ int __cdecl MyStrCmp (const char *a, const char *b)
 	return (strcmp(a,b));
 }
 
-char *DBGetStringA(HANDLE hContact,const char *szModule,const char *szSetting)
-{
-	char *str=NULL;
-	DBVARIANT dbv={0};
-	DBGetContactSetting(hContact,szModule,szSetting,&dbv);
-	if(dbv.type==DBVT_ASCIIZ)
-		str=mir_strdup(dbv.pszVal);
-
-	DBFreeVariant(&dbv);
-	return str;
-}
-
 DWORD exceptFunction(LPEXCEPTION_POINTERS EP)
 {
     //printf("1 ");                     // printed first
