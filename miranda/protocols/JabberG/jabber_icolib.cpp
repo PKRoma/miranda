@@ -49,27 +49,32 @@ Last change by : $Author: rainwater $
 HIMAGELIST hAdvancedStatusIcon = NULL;
 struct
 {
-	char * mask;
-	char * proto;
-	int startIndex;
+    char * mask;
+    char * proto;
+    int startIndex;
 }
 static TransportProtoTable[] =
 {
-	{ "|icq*|jit*",  "ICQ",  -1},
-	{ "msn*",        "MSN",  -1},
-	{ "yahoo*",      "YAHOO",-1},
-	{ "mrim*",       "MRA",  -1},
-	{ "aim*",        "AIM",  -1},
-	//request #3094
-	{ "gg*",	 	"GaduGadu",  -1},
-	{ "tv*",          "TV",  -1},
-	{ "dict*",      "Dict",  -1},
-	{ "weather*","Weather",  -1},
-	{ "sms*",        "SMS",  -1},
-	{ "smtp*",       "SMTP", -1},
-	//j2j 
-	{ "gtalk*",     "GTalk", -1},
-	{ "xmpp*", "Jabber2Jabber", -1}
+    { "|icq*|jit*",  "ICQ",  -1},
+    { "msn*",        "MSN",  -1},
+    { "yahoo*",      "YAHOO",-1},
+    { "mrim*",       "MRA",  -1},
+    { "aim*",        "AIM",  -1},
+    //request #3094
+    { "gg*",        "GaduGadu",  -1},
+    { "tv*",          "TV",  -1},
+    { "dict*",      "Dictionary",  -1},
+    { "weather*","Weather",  -1},
+    { "sms*",        "SMS",  -1},
+    { "smtp*",       "SMTP", -1},
+    //j2j 
+    { "gtalk*",     "GTalk", -1},
+    { "xmpp*", "Jabber2Jabber", -1},
+    //jabbim.cz - services
+    { "disk*", "Jabber Disk", -1},
+    { "irc*", "IRC", -1},
+    { "rss*", "RSS", -1},
+    { "tlen*", "Tlen", -1}
 };
 
 static int skinIconStatusToResourceId[] = {IDI_OFFLINE,IDI_ONLINE,IDI_AWAY,IDI_DND,IDI_NA,IDI_NA,/*IDI_OCCUPIED,*/IDI_FREE4CHAT,IDI_INVISIBLE,IDI_ONTHEPHONE,IDI_OUTTOLUNCH};
@@ -80,79 +85,79 @@ static int skinStatusToJabberStatus[] = {0,1,2,3,4,4,6,7,2,2};
 
 struct
 {
-	char*  szDescr;
-	char*  szName;
-	int    defIconID;
-	HANDLE hIconLibItem;
+    char*  szDescr;
+    char*  szName;
+    int    defIconID;
+    HANDLE hIconLibItem;
 }
 static iconList[] =
 {
-	{	"Protocol icon",         "main",             IDI_JABBER            },
-	{	"Agents list",           "Agents",           IDI_AGENTS            },
-	{	"Change password",       "key",              IDI_KEYS              },
-	{	"Multi-User Conference", "group",            IDI_GROUP             },
-	{	"Personal vCard",        "vcard",            IDI_VCARD             },
-	{	"Request authorization", "Request",          IDI_REQUEST           },
-	{	"Grant authorization",   "Grant",            IDI_GRANT             },
-	{	"Revoke authorization",  "Revoke",           IDI_AUTHREVOKE        },
-	{	"Convert to room",       "convert",          IDI_USER2ROOM         },
-	{	"Add to roster",         "addroster",        IDI_ADDROSTER         },
-	{	"Login/logout",          "trlogonoff",       IDI_LOGIN             },
-	{	"Resolve nicks",         "trresolve",        IDI_REFRESH           },
-	{	"Bookmarks",             "bookmarks",        IDI_BOOKMARKS         }, 
-	{	"Privacy Lists",         "privacylists",     IDI_PRIVACY_LISTS     },
-	{	"Service Discovery",     "servicediscovery", IDI_SERVICE_DISCOVERY },
-	{	"View as tree",          "sd_view_tree",     IDI_VIEW_TREE         },
-	{	"View as list",          "sd_view_list",     IDI_VIEW_LIST         },
-	{	"Navigate home",         "sd_nav_home",      IDI_NAV_HOME          },
-	{	"Refresh node",          "sd_nav_refresh",   IDI_NAV_REFRESH       },
-	{	"Browse node",           "sd_browse",        IDI_BROWSE            },
-	{	"Apply filter",          "sd_filter_apply",  IDI_FILTER_APPLY      },
-	{	"Reset filter",          "sd_filter_reset",  IDI_FILTER_RESET      },
-	{	"Discovery succeeded",   "disco_ok",         IDI_DISCO_OK          },
-	{	"Discovery failed",      "disco_fail",       IDI_DISCO_FAIL        },
-	{	"Discovery in progress", "disco_progress",   IDI_DISCO_PROGRESS    },
-	{	"RSS service",           "node_rss",         IDI_NODE_RSS          },
-	{	"Server",                "node_server",      IDI_NODE_SERVER       },
-	{	"Storage service",       "node_store",       IDI_NODE_STORE        },
-	{	"Weather service",       "node_weather",     IDI_NODE_WEATHER      },
-	{	"AdHoc Command",         "adhoc",            IDI_COMMAND           },
+    {   "Protocol icon",         "main",             IDI_JABBER            },
+    {   "Agents list",           "Agents",           IDI_AGENTS            },
+    {   "Change password",       "key",              IDI_KEYS              },
+    {   "Multi-User Conference", "group",            IDI_GROUP             },
+    {   "Personal vCard",        "vcard",            IDI_VCARD             },
+    {   "Request authorization", "Request",          IDI_REQUEST           },
+    {   "Grant authorization",   "Grant",            IDI_GRANT             },
+    {   "Revoke authorization",  "Revoke",           IDI_AUTHREVOKE        },
+    {   "Convert to room",       "convert",          IDI_USER2ROOM         },
+    {   "Add to roster",         "addroster",        IDI_ADDROSTER         },
+    {   "Login/logout",          "trlogonoff",       IDI_LOGIN             },
+    {   "Resolve nicks",         "trresolve",        IDI_REFRESH           },
+    {   "Bookmarks",             "bookmarks",        IDI_BOOKMARKS         }, 
+    {   "Privacy Lists",         "privacylists",     IDI_PRIVACY_LISTS     },
+    {   "Service Discovery",     "servicediscovery", IDI_SERVICE_DISCOVERY },
+    {   "View as tree",          "sd_view_tree",     IDI_VIEW_TREE         },
+    {   "View as list",          "sd_view_list",     IDI_VIEW_LIST         },
+    {   "Navigate home",         "sd_nav_home",      IDI_NAV_HOME          },
+    {   "Refresh node",          "sd_nav_refresh",   IDI_NAV_REFRESH       },
+    {   "Browse node",           "sd_browse",        IDI_BROWSE            },
+    {   "Apply filter",          "sd_filter_apply",  IDI_FILTER_APPLY      },
+    {   "Reset filter",          "sd_filter_reset",  IDI_FILTER_RESET      },
+    {   "Discovery succeeded",   "disco_ok",         IDI_DISCO_OK          },
+    {   "Discovery failed",      "disco_fail",       IDI_DISCO_FAIL        },
+    {   "Discovery in progress", "disco_progress",   IDI_DISCO_PROGRESS    },
+    {   "RSS service",           "node_rss",         IDI_NODE_RSS          },
+    {   "Server",                "node_server",      IDI_NODE_SERVER       },
+    {   "Storage service",       "node_store",       IDI_NODE_STORE        },
+    {   "Weather service",       "node_weather",     IDI_NODE_WEATHER      },
+    {   "AdHoc Command",         "adhoc",            IDI_COMMAND           },
 };
 
 void JabberIconsInit( void )
 {
-	SKINICONDESC sid = {0};
-	char szFile[MAX_PATH];
-	GetModuleFileNameA(hInst, szFile, MAX_PATH);
+    SKINICONDESC sid = {0};
+    char szFile[MAX_PATH];
+    GetModuleFileNameA(hInst, szFile, MAX_PATH);
 
-	sid.cbSize = sizeof(SKINICONDESC);
-	sid.pszDefaultFile = szFile;
-	sid.cx = sid.cy = 16;
-	sid.pszSection = Translate( jabberProtoName );
+    sid.cbSize = sizeof(SKINICONDESC);
+    sid.pszDefaultFile = szFile;
+    sid.cx = sid.cy = 16;
+    sid.pszSection = Translate( jabberProtoName );
 
-	for ( int i = 0; i < SIZEOF(iconList); i++ ) {
-		char szSettingName[100];
-		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", jabberProtoName, iconList[i].szName );
-		sid.pszName = szSettingName;
-		sid.pszDescription = Translate( iconList[i].szDescr );
-		sid.iDefaultIndex = -iconList[i].defIconID;
-		iconList[i].hIconLibItem = ( HANDLE )CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-}	}
+    for ( int i = 0; i < SIZEOF(iconList); i++ ) {
+        char szSettingName[100];
+        mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", jabberProtoName, iconList[i].szName );
+        sid.pszName = szSettingName;
+        sid.pszDescription = Translate( iconList[i].szDescr );
+        sid.iDefaultIndex = -iconList[i].defIconID;
+        iconList[i].hIconLibItem = ( HANDLE )CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+    }   }
 
 HANDLE __stdcall GetIconHandle( int iconId )
 {
-	for ( int i=0; i < SIZEOF(iconList); i++ )
-		if ( iconList[i].defIconID == iconId )
-			return iconList[i].hIconLibItem;
+    for ( int i=0; i < SIZEOF(iconList); i++ )
+        if ( iconList[i].defIconID == iconId )
+            return iconList[i].hIconLibItem;
 
-	return NULL;
+    return NULL;
 }
 
 HICON LoadIconEx( const char* name )
 {
-	char szSettingName[100];
-	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", jabberProtoName, name );
-	return ( HICON )JCallService( MS_SKIN2_GETICON, 0, (LPARAM)szSettingName );
+    char szSettingName[100];
+    mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", jabberProtoName, name );
+    return ( HICON )JCallService( MS_SKIN2_GETICON, 0, (LPARAM)szSettingName );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -160,187 +165,187 @@ HICON LoadIconEx( const char* name )
 
 static inline BYTE qtoupper( BYTE c )
 {
-	return ( c >= 'a' && c <= 'z' ) ? c - 'a' + 'A' : c;
+    return ( c >= 'a' && c <= 'z' ) ? c - 'a' + 'A' : c;
 }
 
 static BOOL WildComparei(char * name, char * mask)
 {
-	char * last='\0';
-	for(;; mask++, name++) {
-		if(*mask != '?' && qtoupper(*mask) != qtoupper(*name)) break;
-		if(*name == '\0') return ((BOOL)!*mask);
-	}
+    char * last='\0';
+    for(;; mask++, name++) {
+        if(*mask != '?' && qtoupper(*mask) != qtoupper(*name)) break;
+        if(*name == '\0') return ((BOOL)!*mask);
+    }
 
-	if(*mask != '*') return FALSE;
-	for(;; mask++, name++)
-	{
-		while(*mask == '*') {
-			last = mask++;
-			if(*mask == '\0') return ((BOOL)!*mask);   /* true */
-		}
+    if(*mask != '*') return FALSE;
+    for(;; mask++, name++)
+    {
+        while(*mask == '*') {
+            last = mask++;
+            if(*mask == '\0') return ((BOOL)!*mask);   /* true */
+        }
 
-		if (*name == '\0') return ((BOOL)!*mask);      /* *mask == EOS */
-		if (*mask != '?' && qtoupper(*mask) != qtoupper(*name))
-			name -= (size_t)(mask - last) - 1, mask = last;
-}	}
+        if (*name == '\0') return ((BOOL)!*mask);      /* *mask == EOS */
+        if (*mask != '?' && qtoupper(*mask) != qtoupper(*name))
+            name -= (size_t)(mask - last) - 1, mask = last;
+    }   }
 
 static BOOL MatchMask( char* name, char* mask)
 {
-	if ( !mask || !name )
-		return mask == name;
+    if ( !mask || !name )
+        return mask == name;
 
-	if ( *mask != '|' )
-		return WildComparei( name, mask );
+    if ( *mask != '|' )
+        return WildComparei( name, mask );
 
-	char* temp = NEWSTR_ALLOCA(mask);
-	for ( int e=1; mask[e] != '\0'; e++ ) {
-		int s = e;
-		while ( mask[e] != '\0' && mask[e] != '|')
-			e++;
+    char* temp = NEWSTR_ALLOCA(mask);
+    for ( int e=1; mask[e] != '\0'; e++ ) {
+        int s = e;
+        while ( mask[e] != '\0' && mask[e] != '|')
+            e++;
 
-		memcpy( temp, mask+s, e-s );
-		temp[e-s] = '\0';
-		if ( WildComparei( name, temp ))
-			return TRUE;
+        memcpy( temp, mask+s, e-s );
+        temp[e-s] = '\0';
+        if ( WildComparei( name, temp ))
+            return TRUE;
 
-		if ( mask[e] == 0 )
-			return FALSE;
-	}
+        if ( mask[e] == 0 )
+            return FALSE;
+    }
 
-	return FALSE;
+    return FALSE;
 }
 
 static HICON ExtractIconFromPath(const char *path, BOOL * needFree)
 {
-	char *comma;
-	char file[MAX_PATH],fileFull[MAX_PATH];
-	int n;
-	HICON hIcon;
-	lstrcpynA(file,path,sizeof(file));
-	comma=strrchr(file,',');
-	if(comma==NULL) n=0;
-	else {n=atoi(comma+1); *comma=0;}
-	CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)file, (LPARAM)fileFull);
-	hIcon=NULL;
-	ExtractIconExA(fileFull,n,NULL,&hIcon,1);
-	if (needFree)
-		*needFree=(hIcon!=NULL);
+    char *comma;
+    char file[MAX_PATH],fileFull[MAX_PATH];
+    int n;
+    HICON hIcon;
+    lstrcpynA(file,path,sizeof(file));
+    comma=strrchr(file,',');
+    if(comma==NULL) n=0;
+    else {n=atoi(comma+1); *comma=0;}
+    CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)file, (LPARAM)fileFull);
+    hIcon=NULL;
+    ExtractIconExA(fileFull,n,NULL,&hIcon,1);
+    if (needFree)
+        *needFree=(hIcon!=NULL);
 
-	return hIcon;
+    return hIcon;
 }
 
 static HICON LoadTransportIcon(char *filename,int i,char *IconName,char *SectName,char *Description,int internalidx, BOOL * needFree)
 {
-	char szPath[MAX_PATH],szMyPath[MAX_PATH], szFullPath[MAX_PATH],*str;
-	HICON hIcon=NULL;
-	BOOL has_proto_icon=FALSE;
-	SKINICONDESC sid={0};
-	if (needFree) *needFree=FALSE;
-	GetModuleFileNameA(GetModuleHandle(NULL), szPath, MAX_PATH);
-	str=strrchr(szPath,'\\');
-	if(str!=NULL) *str=0;
-	_snprintf(szMyPath, sizeof(szMyPath), "%s\\Icons\\%s", szPath, filename);
-	_snprintf(szFullPath, sizeof(szFullPath), "%s\\Icons\\%s,%d", szPath, filename, i);
-	BOOL nf;
-	HICON hi=ExtractIconFromPath(szFullPath,&nf);
-	if (hi) has_proto_icon=TRUE;
-	if (hi && nf) DestroyIcon(hi);
-	if (!ServiceExists(MS_SKIN2_ADDICON)) {
-		hIcon=ExtractIconFromPath(szFullPath,needFree);
-		if (hIcon) return hIcon;
-		_snprintf(szFullPath, sizeof(szFullPath), "%s,%d", szMyPath, internalidx);
-		hIcon=ExtractIconFromPath(szFullPath,needFree);
-		if (hIcon) return hIcon;
-	}
-	else {
-		if ( IconName != NULL && SectName != NULL)	{
-			sid.cbSize = sizeof(sid);
-			sid.cx=16;
-			sid.cy=16;
-			sid.hDefaultIcon = (has_proto_icon)?NULL:(HICON)CallService(MS_SKIN_LOADPROTOICON,(WPARAM)NULL,(LPARAM)(-internalidx));
-			sid.pszSection = Translate(SectName);
-			sid.pszName=IconName;
-			sid.pszDescription=Description;
-			sid.pszDefaultFile=szMyPath;
-			sid.iDefaultIndex=i;
-			CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-		}
-		return ((HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)IconName));
-	}
-	return NULL;
+    char szPath[MAX_PATH],szMyPath[MAX_PATH], szFullPath[MAX_PATH],*str;
+    HICON hIcon=NULL;
+    BOOL has_proto_icon=FALSE;
+    SKINICONDESC sid={0};
+    if (needFree) *needFree=FALSE;
+    GetModuleFileNameA(GetModuleHandle(NULL), szPath, MAX_PATH);
+    str=strrchr(szPath,'\\');
+    if(str!=NULL) *str=0;
+    _snprintf(szMyPath, sizeof(szMyPath), "%s\\Icons\\%s", szPath, filename);
+    _snprintf(szFullPath, sizeof(szFullPath), "%s\\Icons\\%s,%d", szPath, filename, i);
+    BOOL nf;
+    HICON hi=ExtractIconFromPath(szFullPath,&nf);
+    if (hi) has_proto_icon=TRUE;
+    if (hi && nf) DestroyIcon(hi);
+    if (!ServiceExists(MS_SKIN2_ADDICON)) {
+        hIcon=ExtractIconFromPath(szFullPath,needFree);
+        if (hIcon) return hIcon;
+        _snprintf(szFullPath, sizeof(szFullPath), "%s,%d", szMyPath, internalidx);
+        hIcon=ExtractIconFromPath(szFullPath,needFree);
+        if (hIcon) return hIcon;
+    }
+    else {
+        if ( IconName != NULL && SectName != NULL)  {
+            sid.cbSize = sizeof(sid);
+            sid.cx=16;
+            sid.cy=16;
+            sid.hDefaultIcon = (has_proto_icon)?NULL:(HICON)CallService(MS_SKIN_LOADPROTOICON,(WPARAM)NULL,(LPARAM)(-internalidx));
+            sid.pszSection = Translate(SectName);
+            sid.pszName=IconName;
+            sid.pszDescription=Description;
+            sid.pszDefaultFile=szMyPath;
+            sid.iDefaultIndex=i;
+            CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+        }
+        return ((HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)IconName));
+    }
+    return NULL;
 }
 
 static HICON LoadSmallIcon(HINSTANCE hInstance, LPCTSTR lpIconName)
 {
-	HICON hIcon=NULL;				  // icon handle
-	int index=-(int)lpIconName;
-	TCHAR filename[MAX_PATH]={0};
-	GetModuleFileName(hInstance,filename,MAX_PATH);
-	ExtractIconEx(filename,index,NULL,&hIcon,1);
-	return hIcon;
+    HICON hIcon=NULL;                 // icon handle
+    int index=-(int)lpIconName;
+    TCHAR filename[MAX_PATH]={0};
+    GetModuleFileName(hInstance,filename,MAX_PATH);
+    ExtractIconEx(filename,index,NULL,&hIcon,1);
+    return hIcon;
 }
 
 static int LoadAdvancedIcons(int iID)
 {
-	int i;
-	char * proto=TransportProtoTable[iID].proto;
-	char * defFile[MAX_PATH]={0};
-	char * Group[255];
-	char * Uname[255];
-	int first=-1;
-	HICON empty=LoadSmallIcon(NULL,MAKEINTRESOURCE(102));
+    int i;
+    char * proto=TransportProtoTable[iID].proto;
+    char * defFile[MAX_PATH]={0};
+    char * Group[255];
+    char * Uname[255];
+    int first=-1;
+    HICON empty=LoadSmallIcon(NULL,MAKEINTRESOURCE(102));
 
-	_snprintf((char *)Group, sizeof(Group),"%s/%s/%s %s",Translate("Status Icons"), jabberModuleName, proto, Translate("transport"));
-	_snprintf((char *)defFile, sizeof(defFile),"proto_%s.dll",proto);
-	if (!hAdvancedStatusIcon)
-		hAdvancedStatusIcon=(HIMAGELIST)CallService(MS_CLIST_GETICONSIMAGELIST,0,0);
-	
-	EnterCriticalSection( &modeMsgMutex );
-	for (i=0; i<ID_STATUS_ONTHEPHONE-ID_STATUS_OFFLINE; i++) {
-		HICON hicon;
-		BOOL needFree;
-		int n=skinStatusToJabberStatus[i];
-		char * descr=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,n+ID_STATUS_OFFLINE,0);
-		_snprintf((char *)Uname, sizeof(Uname),"%s_Transport_%s_%d",jabberProtoName,proto,n);
-		hicon=(HICON)LoadTransportIcon((char*)defFile,-skinIconStatusToResourceId[i],(char*)Uname,(char*)Group,(char*)descr,-(n+ID_STATUS_OFFLINE),&needFree);
-		int index=(TransportProtoTable[iID].startIndex == -1)?-1:TransportProtoTable[iID].startIndex+n;
-		int added=ImageList_ReplaceIcon(hAdvancedStatusIcon,index,hicon?hicon:empty);
-		if (first == -1) first=added;
-		if (hicon && needFree) DestroyIcon(hicon);
-	}
+    _snprintf((char *)Group, sizeof(Group),"%s/%s/%s %s",Translate("Status Icons"), jabberModuleName, proto, Translate("transport"));
+    _snprintf((char *)defFile, sizeof(defFile),"proto_%s.dll",proto);
+    if (!hAdvancedStatusIcon)
+        hAdvancedStatusIcon=(HIMAGELIST)CallService(MS_CLIST_GETICONSIMAGELIST,0,0);
 
-	if ( TransportProtoTable[ iID ].startIndex == -1 )
-		TransportProtoTable[ iID ].startIndex = first;
-	LeaveCriticalSection( &modeMsgMutex );
-	return 0;
+    EnterCriticalSection( &modeMsgMutex );
+    for (i=0; i<ID_STATUS_ONTHEPHONE-ID_STATUS_OFFLINE; i++) {
+        HICON hicon;
+        BOOL needFree;
+        int n=skinStatusToJabberStatus[i];
+        char * descr=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,n+ID_STATUS_OFFLINE,0);
+        _snprintf((char *)Uname, sizeof(Uname),"%s_Transport_%s_%d",jabberProtoName,proto,n);
+        hicon=(HICON)LoadTransportIcon((char*)defFile,-skinIconStatusToResourceId[i],(char*)Uname,(char*)Group,(char*)descr,-(n+ID_STATUS_OFFLINE),&needFree);
+        int index=(TransportProtoTable[iID].startIndex == -1)?-1:TransportProtoTable[iID].startIndex+n;
+        int added=ImageList_ReplaceIcon(hAdvancedStatusIcon,index,hicon?hicon:empty);
+        if (first == -1) first=added;
+        if (hicon && needFree) DestroyIcon(hicon);
+    }
+
+    if ( TransportProtoTable[ iID ].startIndex == -1 )
+        TransportProtoTable[ iID ].startIndex = first;
+    LeaveCriticalSection( &modeMsgMutex );
+    return 0;
 }
 
 static int GetTransportProtoID(char * TransportDomain)
 {
-	for ( int i=0; i<SIZEOF(TransportProtoTable); i++ )
-		if ( MatchMask( TransportDomain, TransportProtoTable[i].mask ))
-			return i;
+    for ( int i=0; i<SIZEOF(TransportProtoTable); i++ )
+        if ( MatchMask( TransportDomain, TransportProtoTable[i].mask ))
+            return i;
 
-	return -1;
+    return -1;
 }
 
 static int GetTransportStatusIconIndex(int iID, int Status)
 {
-	if ( iID < 0 || iID >= SIZEOF( TransportProtoTable ))
-		return -1;
+    if ( iID < 0 || iID >= SIZEOF( TransportProtoTable ))
+        return -1;
 
-	//icons not loaded - loading icons
-	if ( TransportProtoTable[iID].startIndex == -1 )
-		LoadAdvancedIcons( iID );
+    //icons not loaded - loading icons
+    if ( TransportProtoTable[iID].startIndex == -1 )
+        LoadAdvancedIcons( iID );
 
-	//some fault on loading icons
-	if ( TransportProtoTable[ iID ].startIndex == -1 )
-		return -1;
+    //some fault on loading icons
+    if ( TransportProtoTable[ iID ].startIndex == -1 )
+        return -1;
 
-	if ( Status < ID_STATUS_OFFLINE )
-		Status = ID_STATUS_OFFLINE;
+    if ( Status < ID_STATUS_OFFLINE )
+        Status = ID_STATUS_OFFLINE;
 
-	return TransportProtoTable[iID].startIndex + skinStatusToJabberStatus[ Status - ID_STATUS_OFFLINE ];
+    return TransportProtoTable[iID].startIndex + skinStatusToJabberStatus[ Status - ID_STATUS_OFFLINE ];
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -348,11 +353,11 @@ static int GetTransportStatusIconIndex(int iID, int Status)
 
 int ReloadIconsEventHook(WPARAM wParam, LPARAM lParam)
 {
-	for ( int i=0; i < SIZEOF(TransportProtoTable); i++ )
-		if ( TransportProtoTable[i].startIndex != -1 )
-			LoadAdvancedIcons(i);
+    for ( int i=0; i < SIZEOF(TransportProtoTable); i++ )
+        if ( TransportProtoTable[i].startIndex != -1 )
+            LoadAdvancedIcons(i);
 
-	return 0;
+    return 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -366,25 +371,25 @@ int ReloadIconsEventHook(WPARAM wParam, LPARAM lParam)
 
 int JGetAdvancedStatusIcon(WPARAM wParam, LPARAM lParam)
 {
-	HANDLE hContact=(HANDLE) wParam;
-	DBVARIANT dbv={0};
-	char * Transport=NULL;
-	int res=-1;
-	int iID=-1;
-	if (!hContact) return -1;
-	if (!JGetByte(hContact,"IsTransported",0)) return -1;
-	if (JGetStringUtf(hContact,"Transport",&dbv)) return -1;
-	iID=GetTransportProtoID(dbv.pszVal);
-	if (iID>=0)
-	{
-		WORD Status=ID_STATUS_OFFLINE;
-		Status = JGetWord(hContact,"Status",ID_STATUS_OFFLINE);
-		if (Status<ID_STATUS_OFFLINE) Status = ID_STATUS_OFFLINE;
-		else if (Status>ID_STATUS_INVISIBLE) Status = ID_STATUS_ONLINE;
-		res = GetTransportStatusIconIndex(iID,Status);
-	}
-	DBFreeVariant(&dbv);
-	return res;
+    HANDLE hContact=(HANDLE) wParam;
+    DBVARIANT dbv={0};
+    char * Transport=NULL;
+    int res=-1;
+    int iID=-1;
+    if (!hContact) return -1;
+    if (!JGetByte(hContact,"IsTransported",0)) return -1;
+    if (JGetStringUtf(hContact,"Transport",&dbv)) return -1;
+    iID=GetTransportProtoID(dbv.pszVal);
+    if (iID>=0)
+    {
+        WORD Status=ID_STATUS_OFFLINE;
+        Status = JGetWord(hContact,"Status",ID_STATUS_OFFLINE);
+        if (Status<ID_STATUS_OFFLINE) Status = ID_STATUS_OFFLINE;
+        else if (Status>ID_STATUS_INVISIBLE) Status = ID_STATUS_ONLINE;
+        res = GetTransportStatusIconIndex(iID,Status);
+    }
+    DBFreeVariant(&dbv);
+    return res;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -392,60 +397,73 @@ int JGetAdvancedStatusIcon(WPARAM wParam, LPARAM lParam)
 
 static int PushIconLibRegistration( TCHAR* TransportDomain ) //need to push Imagelist addition to
 {
-	if ( ServiceExists( MS_SKIN2_ADDICON )) {
-		char* domain = t2a(TransportDomain);
-		int result = GetTransportStatusIconIndex(GetTransportProtoID(domain),ID_STATUS_OFFLINE);
-		mir_free( domain );
-		return result;
-	}
-	return 0;
+    if ( ServiceExists( MS_SKIN2_ADDICON )) {
+        char* domain = t2a(TransportDomain);
+        int result = GetTransportStatusIconIndex(GetTransportProtoID(domain),ID_STATUS_OFFLINE);
+        mir_free( domain );
+        return result;
+    }
+    return 0;
 }
 
 BOOL JabberDBCheckIsTransportedContact(const TCHAR* jid, HANDLE hContact)
 {
-	// check if transport is already set
-	if ( !jid || !hContact )
-		return FALSE;
+    // check if transport is already set
+    if ( !jid || !hContact )
+        return FALSE;
 
-	// strip domain part from jid
-	TCHAR* domain  = _tcschr(( TCHAR* )jid, '@' );
-	BOOL   isAgent = (domain == NULL) ? TRUE : FALSE;
-	if ( domain!=NULL )
-		domain = NEWTSTR_ALLOCA(domain+1);
-	else
-      domain = NEWTSTR_ALLOCA(jid);
+    // strip domain part from jid
+    TCHAR* domain  = _tcschr(( TCHAR* )jid, '@' );
+    BOOL   isAgent = (domain == NULL) ? TRUE : FALSE;
+    BOOL   isTransported = FALSE;
+    if ( domain!=NULL )
+        domain = NEWTSTR_ALLOCA(domain+1);
+    else
+        domain = NEWTSTR_ALLOCA(jid);
 
-	TCHAR* resourcepos = _tcschr( domain, '/' );
-	if ( resourcepos != NULL )
-		*resourcepos = '\0';
-	
-	if ( jabberTransports.getIndex( domain ) == -1 )
-	{
-		if (isAgent)
-		{
-			jabberTransports.insert( _tcsdup(domain) );	
-			JSetByte( hContact, "IsTransport", 1 );
-		}
-		else
-			return FALSE;
-	}
-	JSetStringT( hContact, "Transport", domain );
-	JSetByte( hContact, "IsTransported", 1 );
-	PushIconLibRegistration( domain );
-	return TRUE;
+    TCHAR* resourcepos = _tcschr( domain, '/' );
+    if ( resourcepos != NULL )
+        *resourcepos = '\0';
+
+    char * ansiDomain = t2a(domain);
+    for ( int i=0; i < SIZEOF(TransportProtoTable); i++ )
+    {
+        if ( MatchMask( ansiDomain, TransportProtoTable[i].mask ) )
+        {
+            PushIconLibRegistration( domain );
+            isTransported = TRUE;
+            break;
+        }
+    }
+    mir_free(ansiDomain);
+
+    if ( jabberTransports.getIndex( domain ) == -1 )
+    {
+        if (isAgent)
+        {
+            jabberTransports.insert( _tcsdup(domain) ); 
+            JSetByte( hContact, "IsTransport", 1 );
+        }
+    }
+    if ( isTransported )
+    {
+        JSetStringT( hContact, "Transport", domain );
+        JSetByte( hContact, "IsTransported", 1 );
+    }
+    return isTransported;
 }
 
 void JabberCheckAllContactsAreTransported()
 {
-	HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
-	while ( hContact != NULL ) {
-		char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-		if ( !lstrcmpA( jabberProtoName, szProto )) {
-			DBVARIANT dbv;
-			if ( !JGetStringT( hContact, "jid", &dbv )) {
-				JabberDBCheckIsTransportedContact( dbv.ptszVal, hContact );
-				JFreeVariant( &dbv );
-		}	}
+    HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
+    while ( hContact != NULL ) {
+        char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
+        if ( !lstrcmpA( jabberProtoName, szProto )) {
+            DBVARIANT dbv;
+            if ( !JGetStringT( hContact, "jid", &dbv )) {
+                JabberDBCheckIsTransportedContact( dbv.ptszVal, hContact );
+                JFreeVariant( &dbv );
+            }   }
 
-		hContact = ( HANDLE )JCallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 );
-}	}
+        hContact = ( HANDLE )JCallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 );
+    }   }
