@@ -49,7 +49,7 @@ DWORD __forceinline argb_from_cola(COLORREF col, UINT32 alpha)
 }
 
 
-static __forceinline DrawBorderStyle(HDC hdcwnd, RECT *rc, DWORD BORDERSTYLE)
+static void __forceinline DrawBorderStyle(HDC hdcwnd, RECT *rc, DWORD BORDERSTYLE)
 {
     if(BORDERSTYLE >= 0) {
         HPEN hPenOld = 0;
