@@ -399,7 +399,7 @@ int SSL_OpenSsl::init(void)
 			return 1;
 		}
 
-		if (( hLibSSL = LoadLibraryA( "LIBSSL32.DLL" )) == NULL ) {
+		if (( hLibSSL = LoadLibraryA( "SSLEAY32.DLL" )) == NULL ) {
 			MSN_ShowError( "Valid %s must be installed to perform the SSL login", "LIBSSL32.DLL" );
 			return 1;
 		}

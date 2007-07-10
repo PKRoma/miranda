@@ -82,7 +82,7 @@ BEGIN
     CONTROL         "Notify me when a message delivery has failed",
                     IDC_SLOWSEND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,69,
                     263,8
-    CONTROL         "Use OpenSSL encryption (requires LIBSSL32.DLL)",
+    CONTROL         "Use OpenSSL encryption (requires LIBEAY32.DLL)",
                     IDC_USEOPENSSL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,
                     80,263,8
     GROUPBOX        "Incoming file transfers",IDC_STATIC,4,108,298,48
