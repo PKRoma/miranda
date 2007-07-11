@@ -491,7 +491,7 @@ void JabberFormSetInstruction( HWND hwndForm, TCHAR *text );
 HJFORMLAYOUT JabberFormCreateLayout(HWND hwndStatic); // use mir_free to destroy
 HJFORMCTRL JabberFormAppendControl(HWND hwndStatic, HJFORMLAYOUT layout_info, TJabberFormControlType type, TCHAR *labelStr, TCHAR *valueStr);
 void JabberFormAddListItem(HJFORMCTRL item, TCHAR *text, bool selected);
-void JabberFormLayoutControls(HWND hwndStatic, HJFORMLAYOUT layout_info);
+void JabberFormLayoutControls(HWND hwndStatic, HJFORMLAYOUT layout_info, int *formHeight);
 
 void JabberFormCreateDialog( XmlNode *xNode, TCHAR* defTitle, JABBER_FORM_SUBMIT_FUNC pfnSubmit, void *userdata );
 

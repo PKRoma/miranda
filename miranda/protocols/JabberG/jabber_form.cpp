@@ -84,8 +84,10 @@ void JabberFormCenterContent(HWND hwndStatic)
 		  text=(TCHAR*)malloc(sizeof(TCHAR)*(len+1));
 		  GetWindowText(hWndChild,text,len+1);
 		  HDC hdc=GetDC(hWndChild);
+		  HFONT hfntSave = (HFONT)SelectObject(hdc, (HFONT)SendMessage(hWndChild, WM_GETFONT, 0, 0));
 		  DrawText(hdc,text,-1,&calcRect,DT_CALCRECT|DT_WORDBREAK);
 		  minX=min(minX, rc.right-(calcRect.right-calcRect.left));
+		  SelectObject(hdc, hfntSave);
 		  ReleaseDC(hWndChild,hdc);
 	   }
 	   else
@@ -119,6 +121,27 @@ void JabberFormSetInstruction( HWND hwndForm, TCHAR *text )
 {
 	if (!text) text = _T("");
 
+	int len = lstrlen(text);
+	int fixedLen = len;
+	for (int i = 1; i < len; ++i)
+		if ((text[i] == _T('\n')) && (text[i] != _T('\r')))
+			++fixedLen;
+	char *fixedText = NULL;
+	if (fixedLen != len) {
+		TCHAR *fixedText = (TCHAR *)mir_alloc(sizeof(TCHAR) * (fixedLen+1));
+		TCHAR *p = fixedText;
+		for (int i = 0; i < len; ++i) {
+			*p = text[i];
+			if (i && (text[i] == _T('\n')) && (text[i] != _T('\r'))) {
+				*p++ = _T('\r');
+				*p = _T('\n');
+			}
+			++p;
+		}
+		*p = 0;
+		text = fixedText;
+	}
+
 	SetDlgItemText( hwndForm, IDC_INSTRUCTION, text );
 
 	RECT rcText;
@@ -128,10 +151,21 @@ void JabberFormSetInstruction( HWND hwndForm, TCHAR *text )
 
 	SetRect(&rcText, 0, 0, rcText.right-rcText.left, 0);
 	HDC hdcEdit = GetDC(GetDlgItem(hwndForm, IDC_INSTRUCTION));
+	HFONT hfntSave = (HFONT)SelectObject(hdcEdit, (HFONT)SendDlgItemMessage(hwndForm, IDC_INSTRUCTION, WM_GETFONT, 0, 0));
 	DrawTextEx(hdcEdit, text, lstrlen(text), &rcText,
 		DT_CALCRECT|DT_EDITCONTROL|DT_TOP|DT_WORDBREAK, NULL);
+	SelectObject(hdcEdit, hfntSave);
 	ReleaseDC(GetDlgItem(hwndForm, IDC_INSTRUCTION), hdcEdit);
 
+	RECT rcWindow; GetClientRect(hwndForm, &rcWindow);
+	if (rcText.bottom-rcText.top > (rcWindow.bottom-rcWindow.top)/5) {
+		HWND hwndEdit = GetDlgItem(hwndForm, IDC_INSTRUCTION);
+		SetWindowLong(hwndEdit, GWL_STYLE, WS_VSCROLL | GetWindowLong(hwndEdit, GWL_STYLE));
+		rcText.bottom = rcText.top + (rcWindow.bottom-rcWindow.top)/5;
+	} else {
+		HWND hwndEdit = GetDlgItem(hwndForm, IDC_INSTRUCTION);
+		SetWindowLong(hwndEdit, GWL_STYLE, ~WS_VSCROLL & GetWindowLong(hwndEdit, GWL_STYLE));
+	}
 	deltaHeight += rcText.bottom-rcText.top;
 
 	SetWindowPos(GetDlgItem(hwndForm, IDC_INSTRUCTION), 0, 0, 0,
@@ -175,6 +209,8 @@ void JabberFormSetInstruction( HWND hwndForm, TCHAR *text )
 		rcText.right-rcText.left,
 		rcText.bottom-rcText.top,
 		SWP_NOZORDER);
+
+	if (fixedText) mir_free(fixedText);
 }
 
 static TJabberFormControlType JabberFormTypeNameToId(TCHAR *type)
@@ -204,7 +240,9 @@ void JabberFormLayoutSingleControl(TJabberFormControlInfo *item, TJabberFormLayo
 	{
 		SetRect(&rcLabel, 0, 0, layout_info->width, 0);
 		HDC hdc = GetDC( item->hLabel );
+		HFONT hfntSave = (HFONT)SelectObject(hdc, (HFONT)SendMessage(item->hLabel, WM_GETFONT, 0, 0));
 		DrawText( hdc, labelStr, -1, &rcLabel, DT_CALCRECT|DT_WORDBREAK );
+		SelectObject(hdc, hfntSave);
 		ReleaseDC(item->hLabel, hdc);
 	}
 
@@ -224,7 +262,9 @@ void JabberFormLayoutSingleControl(TJabberFormControlInfo *item, TJabberFormLayo
 	{
 		SetRect(&rcCtrl, 0, 0, layout_info->width-20, 0);
 		HDC hdc = GetDC( item->hCtrl );
+		HFONT hfntSave = (HFONT)SelectObject(hdc, (HFONT)SendMessage(item->hCtrl, WM_GETFONT, 0, 0));
 		DrawText( hdc, labelStr, -1, &rcCtrl, DT_CALCRECT|DT_RIGHT|DT_WORDBREAK );
+		SelectObject(hdc, hfntSave);
 		ReleaseDC(item->hCtrl, hdc);
 		rcCtrl.right += 20;
 	} else
@@ -232,9 +272,10 @@ void JabberFormLayoutSingleControl(TJabberFormControlInfo *item, TJabberFormLayo
 	{
 		SetRect(&rcCtrl, 0, 0, layout_info->width, 0);
 		HDC hdc = GetDC( item->hCtrl );
+		HFONT hfntSave = (HFONT)SelectObject(hdc, (HFONT)SendMessage(item->hCtrl, WM_GETFONT, 0, 0));
 		DrawText( hdc, valueStr, -1, &rcCtrl, DT_CALCRECT|DT_EDITCONTROL|DT_WORDBREAK );
+		SelectObject(hdc, hfntSave);
 		ReleaseDC(item->hCtrl, hdc);
-		rcCtrl.right += 20;
 	} else
 	{
 		SetRect(&rcCtrl, rcLabel.right+5, 0, layout_info->width, layout_info->ctrlHeight);
@@ -371,16 +412,16 @@ void JabberFormAddListItem(TJabberFormControlInfo *item, TCHAR *text, bool selec
 	{
 	case JFORM_CTYPE_LIST_MULTI:
 		dwIndex = SendMessage(item->hCtrl, LB_ADDSTRING, 0, (LPARAM)text);
-		if (selected) SendMessage(item->hCtrl, CB_SETCURSEL, dwIndex, 0);
+		if (selected) SendMessage(item->hCtrl, LB_SETSEL, TRUE, dwIndex);
 		break;
 	case JFORM_CTYPE_LIST_SINGLE:
 		dwIndex = SendMessage(item->hCtrl, CB_ADDSTRING, 0, (LPARAM)text);
-		if (selected) SendMessage(item->hCtrl, LB_SETSEL, TRUE, dwIndex);
+		if (selected) SendMessage(item->hCtrl, CB_SETCURSEL, dwIndex, 0);
 		break;
 	}
 }
 
-void JabberFormLayoutControls(HWND hwndStatic, TJabberFormLayoutInfo *layout_info)
+void JabberFormLayoutControls(HWND hwndStatic, TJabberFormLayoutInfo *layout_info, int *formHeight)
 {
 	TJabberFormControlList *controls = (TJabberFormControlList *)GetWindowLong(hwndStatic, GWL_USERDATA);
 	if (!controls) return;
@@ -399,6 +440,8 @@ void JabberFormLayoutControls(HWND hwndStatic, TJabberFormLayoutInfo *layout_inf
 		layout_info->y_pos += (*controls)[i]->szBlock.cy;
 		layout_info->y_pos += layout_info->y_spacing;
 	}
+
+	*formHeight = layout_info->y_pos + (layout_info->compact ? 0 : 9);
 }
 
 HJFORMLAYOUT JabberFormCreateLayout(HWND hwndStatic)
@@ -523,9 +566,7 @@ void JabberFormCreateUI( HWND hwndStatic, XmlNode *xNode, int *formHeight, BOOL 
 										mir_free( p );
 	}	}	}	}	}	}	}	}	}
 
-	JabberFormLayoutControls(hwndStatic, &layout_info);
-
-	*formHeight = layout_info.y_pos + (bCompact ? 0 : 9);
+	JabberFormLayoutControls(hwndStatic, &layout_info, formHeight);
 }
 
 void JabberFormDestroyUI(HWND hwndStatic)

@@ -538,7 +538,9 @@ static BOOL CALLBACK JabberAdHoc_CommandDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 
 					RedrawWindow(GetDlgItem( hwndDlg, IDC_FRAME ), NULL, NULL, RDW_UPDATENOW |RDW_ALLCHILDREN);
 					dat->curPos = pos;
-				}	}	}
+			}	}
+			break;
+		}
 	case WM_DESTROY:
 		{
 			JabberFormDestroyUI(GetDlgItem(hwndDlg, IDC_FRAME));
@@ -551,9 +553,9 @@ static BOOL CALLBACK JabberAdHoc_CommandDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 			if (dat->CommandsNode) delete dat->CommandsNode;
 			dat->CommandsNode=NULL;
 			mir_free(dat);
-			break;
-
 			dat=NULL;
+			SetWindowLong(hwndDlg, GWL_USERDATA, 0);
+			break;
 		}
 	}
 	return FALSE;

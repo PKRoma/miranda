@@ -1623,7 +1623,7 @@ void JabberIqResultDiscoBookmarks( XmlNode *iqNode, void *userdata )
 							if (( jid = JabberXmlGetAttrValue( itemNode, "url" )) != NULL ) {
 								JABBER_LIST_ITEM* item = JabberListAdd( LIST_BOOKMARK, jid );
 								item->name = mir_tstrdup( JabberXmlGetAttrValue( itemNode, "name" ));
-								item->type = _T("url");
+								item->type = mir_tstrdup( _T("url") );
 			}	}	}	}	}
 
 			if ( JGetByte( "AutoJoinBookmarks", FALSE ) == TRUE && !( info->caps & CAPS_BOOKMARKS_LOADED )) {

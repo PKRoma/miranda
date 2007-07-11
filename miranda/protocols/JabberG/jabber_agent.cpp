@@ -38,6 +38,13 @@ static BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 static BOOL CALLBACK JabberAgentRegDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
 static BOOL CALLBACK JabberAgentManualRegDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
 
+struct TJabberRegWndData
+{
+	int curPos;
+	int formHeight, frameHeight;
+	RECT frameRect;
+};
+
 int JabberMenuHandleAgents( WPARAM wParam, LPARAM lParam )
 {
 	if ( IsWindow( hwndJabberAgents ))
@@ -381,9 +388,13 @@ static BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 	int id, ypos, i;
 	TCHAR *from, *str, *str2;
 
+	TJabberRegWndData *dat = (TJabberRegWndData *)GetWindowLong(hwndDlg, GWL_USERDATA);
+
 	switch ( msg ) {
 	case WM_INITDIALOG:
 	{
+		SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)0);
+
 		EnableWindow( GetParent( hwndDlg ), FALSE );
 		TranslateDialogDefault( hwndDlg );
 		agentRegIqNode = NULL;
@@ -487,12 +498,23 @@ static BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 			if (( queryNode=JabberXmlGetChild( agentRegIqNode, "query" )) == NULL ) return TRUE;
 			id = 0;
 			ypos = 14;
+
+			RECT rect;
+			dat = (TJabberRegWndData *)mir_alloc(sizeof(TJabberRegWndData));
+			dat->curPos = 0;
+			GetClientRect( GetDlgItem( hwndDlg, IDC_FRAME ), &( dat->frameRect ));
+			GetClientRect( GetDlgItem( hwndDlg, IDC_VSCROLL ), &rect );
+			dat->frameRect.right -= ( rect.right - rect.left );
+			GetClientRect( GetDlgItem( hwndDlg, IDC_FRAME ), &rect );
+			dat->frameHeight = rect.bottom - rect.top;
+			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)dat);
+
 			if (( xNode=JabberXmlGetChild( queryNode, "x" )) != NULL ) {
 				// use new jabber:x:data form
 				if (( n=JabberXmlGetChild( xNode, "instructions" ))!=NULL && n->text!=NULL )
 					JabberFormSetInstruction( hwndDlg, n->text );
 
-				JabberFormCreateUI( hFrame, xNode, &i /*dummy*/ );
+				JabberFormCreateUI( hFrame, xNode, &dat->formHeight /*dummy*/ );
 			}
 			else {
 				// use old registration information form
@@ -516,8 +538,17 @@ static BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 							JabberFormAppendControl(hFrame, layout_info, JFORM_CTYPE_TEXT_SINGLE, name, n->text);
 							mir_free(name);
 				}	}	}
-				JabberFormLayoutControls(hFrame, layout_info);
+				JabberFormLayoutControls(hFrame, layout_info, &dat->formHeight);
 				mir_free(layout_info);
+			}
+
+			if ( dat->formHeight > dat->frameHeight ) {
+				HWND hwndScroll;
+
+				hwndScroll = GetDlgItem( hwndDlg, IDC_VSCROLL );
+				EnableWindow( hwndScroll, TRUE );
+				SetScrollRange( hwndScroll, SB_CTL, 0, dat->formHeight - dat->frameHeight, FALSE );
+				dat->curPos = 0;
 			}
 
 			EnableWindow( GetDlgItem( hwndDlg, IDC_SUBMIT ), TRUE );
@@ -527,11 +558,47 @@ static BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 			SetDlgItemText( hwndDlg, IDC_FRAME_TEXT, ( LPCTSTR ) lParam );
 		}
 		return TRUE;
+	case WM_VSCROLL:
+		{
+			int pos;
+
+			if ( dat != NULL ) {
+				pos = dat->curPos;
+				switch ( LOWORD( wParam )) {
+				case SB_LINEDOWN:
+					pos += 10;
+					break;
+				case SB_LINEUP:
+					pos -= 10;
+					break;
+				case SB_PAGEDOWN:
+					pos += ( dat->frameHeight - 10 );
+					break;
+				case SB_PAGEUP:
+					pos -= ( dat->frameHeight - 10 );
+					break;
+				case SB_THUMBTRACK:
+					pos = HIWORD( wParam );
+					break;
+				}
+				if ( pos > ( dat->formHeight - dat->frameHeight ))
+					pos = dat->formHeight - dat->frameHeight;
+				if ( pos < 0 )
+					pos = 0;
+				if ( dat->curPos != pos ) {
+					ScrollWindow( GetDlgItem( hwndDlg, IDC_FRAME ), 0, dat->curPos - pos, NULL, &( dat->frameRect ));
+					SetScrollPos( GetDlgItem( hwndDlg, IDC_VSCROLL ), SB_CTL, pos, TRUE );
+					dat->curPos = pos;
+				}
+			}
+		}
+		break;
 	case WM_DESTROY:
 		JabberFormDestroyUI(GetDlgItem(hwndDlg, IDC_FRAME));
 		hwndAgentRegInput = NULL;
 		EnableWindow( GetParent( hwndDlg ), TRUE );
 		SetActiveWindow( GetParent( hwndDlg ));
+		if (dat) mir_free(dat);
 		break;
 	}
 
