@@ -238,13 +238,13 @@ int MsnContactDeleted( WPARAM wParam, LPARAM lParam )
 		MSN_AddUser( hContact, tEmail, LIST_FL | LIST_REMOVE );
 		MSN_AddUser( hContact, tEmail, LIST_AL | LIST_REMOVE );
 
-		if ( !Lists_IsInList( LIST_RL, tEmail )) {
+		if ( !Lists_IsInList( LIST_RL, hContact )) {
 			MSN_AddUser( hContact, tEmail, LIST_BL | LIST_REMOVE );
-			Lists_Remove( 0xFF, tEmail );
+			Lists_Remove( 0xFF, hContact );
 		}
 		else {
 			MSN_AddUser( hContact, tEmail, LIST_BL );
-			Lists_Remove( LIST_FL, tEmail );
+			Lists_Remove( LIST_FL, hContact );
 		}
 	}
 
@@ -306,7 +306,7 @@ int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 
 		char tEmail[ MSN_MAX_EMAIL_LEN ];
 		if ( !MSN_GetStaticString( "e-mail", hContact, tEmail, sizeof( tEmail ))) {
-			int isBlocked = Lists_IsInList( LIST_BL, tEmail );
+			int isBlocked = Lists_IsInList( LIST_BL, hContact );
 
 			if ( !isBlocked && cws->value.wVal == ID_STATUS_OFFLINE ) {
 				MSN_AddUser( hContact, tEmail, LIST_AL + LIST_REMOVE );

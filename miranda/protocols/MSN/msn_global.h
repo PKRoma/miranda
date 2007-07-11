@@ -608,10 +608,10 @@ void     MsgQueue_Clear( HANDLE hContact = NULL );
 #define	IsValidListCode(n)  ((n)!=0)
 
 int		 Lists_NameToCode( const char* name );
-int		 Lists_Add( int list, const char* email, const char* nick );
-int		 Lists_IsInList( int list, const char* email );
-int		 Lists_GetMask( const char* email );
-void	 Lists_Remove( int list, const char* email );
+int		 Lists_Add( int list, HANDLE hContact );
+bool	 Lists_IsInList( int list, HANDLE hContact );
+int		 Lists_GetMask( HANDLE hContact );
+void	 Lists_Remove( int list, HANDLE hContact );
 void	 Lists_Wipe( void );
 
 /////////////////////////////////////////////////////////////////////////////////////////

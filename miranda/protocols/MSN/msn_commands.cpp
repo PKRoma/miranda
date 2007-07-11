@@ -570,7 +570,7 @@ HANDLE sttProcessAdd( int trid, int listId, char* userEmail, char* userNick )
 
 	HANDLE hContact = MSN_HContactFromEmail( userEmail, userNick, 1, 1 );
 	mir_utf8decode( userNick, NULL );
-	int mask = Lists_Add( listId, userEmail, userNick );
+	int mask = Lists_Add( listId, hContact );
 
 	if ( listId == LIST_RL && ( mask & ( LIST_FL+LIST_AL+LIST_BL )) == 0 )
 		MSN_AddAuthRequest( hContact, userEmail, userNick );
@@ -1399,7 +1399,7 @@ LBL_InvalidCommand:
 			sttListedContact = MSN_HContactFromEmail( userEmail, userNick, 1, 0 );
 
 			mir_utf8decode( userNick, NULL );
-			Lists_Add( listId, userEmail, userNick );
+			Lists_Add( listId, sttListedContact );
 
 			if (( listId & ( LIST_AL | LIST_BL | LIST_FL )) == LIST_BL ) {
 				DBDeleteContactSetting( sttListedContact, "CList", "NotOnList" );
@@ -1412,7 +1412,7 @@ LBL_InvalidCommand:
 			}
 
 			if ( listId & LIST_PL ) {
-				if ( !Lists_IsInList( LIST_RL, userEmail )) {
+				if ( !Lists_IsInList( LIST_RL, sttListedContact )) {
 					MSN_AddUser( sttListedContact, userEmail, LIST_PL + LIST_REMOVE );
 					MSN_AddUser( sttListedContact, userEmail, LIST_RL );
 				}
@@ -1528,16 +1528,13 @@ LBL_InvalidCommand:
 				if ( IsValidListCode( listId )) {
 					if ( listId == LIST_FL ) {
 						HANDLE hContact = MSN_HContactById( data.serial );
-						if ( hContact != NULL ) {
-							char tEmail[ MSN_MAX_EMAIL_LEN ];
-							if ( !MSN_GetStaticString( "e-mail", hContact, tEmail, sizeof tEmail ))
-								Lists_Remove( listId, tEmail );
-						}
+						if ( hContact != NULL )
+							Lists_Remove( listId, hContact );
 						MSN_RemoveEmptyGroups();
 					}
 					else {
-						UrlDecode( data.serial );
-						Lists_Remove( listId, data.serial );
+						HANDLE hContact = MSN_HContactById( data.serial );
+						Lists_Remove( listId, hContact );
 			}	}	}
 			break;
 		}

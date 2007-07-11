@@ -98,7 +98,7 @@ EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Server List Manager",IDC_STATIC,4,0,298,224
-    CONTROL         "",IDC_LIST,"CListControl",WS_TABSTOP | 0x191,9,12,287,
+    CONTROL         "",IDC_LIST,"CListControl",WS_TABSTOP | 0x1f1,9,12,287,
                     180,WS_EX_CLIENTEDGE
     ICON            "",IDC_ICON_FL,10,196,21,20,SS_REALSIZEIMAGE
     LTEXT           "Contact is included into your server list",IDC_STATIC,

@@ -45,8 +45,6 @@ int		LoadMsnServices( void );
 void    UnloadMsnServices( void );
 void	MsgQueue_Init( void );
 void	MsgQueue_Uninit( void );
-void	Lists_Init( void );
-void	Lists_Uninit( void );
 void	P2pSessions_Uninit( void );
 void	P2pSessions_Init( void );
 void	Threads_Uninit( void );
@@ -303,6 +301,9 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	mir_snprintf( path, sizeof( path ), "%s/p2pMsgId", protocolname );
 	MSN_CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
 
+	mir_snprintf( path, sizeof( path ), "%s/AccList", protocolname );
+	MSN_CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
+
 	mir_snprintf( path, sizeof( path ), "%s/MobileEnabled", protocolname );
 	MSN_CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
 
@@ -336,6 +337,7 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 			MSN_DeleteSetting( hContact, "Status" );
 			MSN_DeleteSetting( hContact, "IdleTS" );
 			MSN_DeleteSetting( hContact, "p2pMsgId" );
+			MSN_DeleteSetting( hContact, "AccList" );
 			DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
 		}
 		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT,( WPARAM )hContact, 0 );
@@ -356,7 +358,6 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	msnLoggedIn = false;
 	LoadMsnServices();
 	MsnInitIcons();
-	Lists_Init();
 	MsgQueue_Init();
 	P2pSessions_Init();
 	return 0;
@@ -388,7 +389,6 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	MSN_FreeGroups();
 	Threads_Uninit();
 	MsgQueue_Uninit();
-	Lists_Uninit();
 	P2pSessions_Uninit();
 	CachedMsg_Uninit();
 	Netlib_CloseHandle( hNetlibUser );

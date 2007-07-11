@@ -36,9 +36,7 @@ HANDLE menuItemsAll[ 6 ] = { 0 };
 static int MsnBlockCommand( WPARAM wParam, LPARAM lParam )
 {
 	if ( msnLoggedIn ) {
-		char tEmail[ MSN_MAX_EMAIL_LEN ];
-		if ( !MSN_GetStaticString( "e-mail", ( HANDLE )wParam, tEmail, sizeof( tEmail )))
-			MSN_SetWord(( HANDLE )wParam, "ApparentMode", ( Lists_IsInList( LIST_BL, tEmail )) ? 0 : ID_STATUS_OFFLINE );
+		MSN_SetWord(( HANDLE )wParam, "ApparentMode", ( Lists_IsInList( LIST_BL, ( HANDLE )wParam )) ? 0 : ID_STATUS_OFFLINE );
 	}
 	return 0;
 }
@@ -129,14 +127,11 @@ static int MsnInviteCommand( WPARAM wParam, LPARAM lParam )
 
 int MsnRebuildContactMenu( WPARAM wParam, LPARAM lParam )
 {
-	char szEmail[ MSN_MAX_EMAIL_LEN ];
-	if ( !MSN_GetStaticString( "e-mail", ( HANDLE )wParam, szEmail, sizeof( szEmail ))) {
-		CLISTMENUITEM clmi = { 0 };
-		clmi.cbSize = sizeof( clmi );
-		clmi.pszName = (char*)(Lists_IsInList( LIST_BL, szEmail ) ? "&Unblock" : "&Block");
-		clmi.flags = CMIM_NAME;
-		MSN_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )msnBlockMenuItem, ( LPARAM )&clmi );
-	}
+	CLISTMENUITEM clmi = { 0 };
+	clmi.cbSize = sizeof( clmi );
+	clmi.pszName = (char*)(Lists_IsInList( LIST_BL, ( HANDLE )wParam ) ? "&Unblock" : "&Block");
+	clmi.flags = CMIM_NAME;
+	MSN_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )msnBlockMenuItem, ( LPARAM )&clmi );
 	return 0;
 }
 

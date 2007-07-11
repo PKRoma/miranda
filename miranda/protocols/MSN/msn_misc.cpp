@@ -77,10 +77,10 @@ void  MSN_AddUser( HANDLE hContact, const char* email, int flags )
 {
 	if ( flags & LIST_REMOVE )
 	{
-		if ( !Lists_IsInList( flags & 0xFF, email ))
+		if ( !Lists_IsInList( flags & 0xFF, hContact ))
 			return;
 	}
-	else if ( Lists_IsInList( flags, email ))
+	else if ( Lists_IsInList( flags, hContact ))
 		return;
 
 	char* listName;
