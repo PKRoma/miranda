@@ -402,6 +402,7 @@ void MSNConnDetectThread( void* )
 				{
 					MyConnection.intIP = MyConnection.extIP;
 					MyConnection.udpConType = MyConnection.extIP ? (ConEnum)portsMapped : conUnknown;
+					MyConnection.CalculateWeight();
 					return;
 				}
 				else
@@ -424,6 +425,7 @@ void MSNConnDetectThread( void* )
 
 		case 2:
 			MyConnection.udpConType = conUnknown;
+			MyConnection.CalculateWeight();
 			return;
 	}
 
@@ -434,6 +436,7 @@ void MSNConnDetectThread( void* )
 		MyConnection.intIP = MyConnection.extIP;
 		MyConnection.udpConType = (ConEnum)portsMapped;
 		MyConnection.upnpNAT = false;
+		MyConnection.CalculateWeight();
 		return;
 	}
 
@@ -484,7 +487,7 @@ void MyConnectionType::CalculateWeight(void)
 {
 	if (icf) weight = 0;
 	else if (udpConType == conDirect) weight = 6;
-	else if (udpConType >= conPortRestrictNAT && udpConType <= conSymmetricNAT)
+	else if (udpConType >= conIPRestrictNAT && udpConType <= conSymmetricNAT)
 		weight = upnpNAT ? 5 : 2;
 	else if (udpConType == conUnknownNAT)
 		weight = upnpNAT ? 4 : 1;
