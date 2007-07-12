@@ -50,11 +50,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // with an API call that does translation automatically marked with
 // [TRANSLATED-BY-CORE] please wrap it with one of LPGEN macros in order to
 // generate proper language pack.
-#define LPGEN(s)			(s)
+#define LPGEN(s)			s
+#define LPGENW(s)			L ## s
 #ifdef _UNICODE
 	#define LPGENT(s)		_T(s)
 #else
-	#define LPGENT(s)		(s)
+	#define LPGENT(s)		s
 #endif
 //Those macros do NOTHING. They are just markers for lpgen.pl.
 
