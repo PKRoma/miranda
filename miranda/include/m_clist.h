@@ -69,10 +69,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //pszContactOwner is ignored for this service.
 //there is a #define PUTPOSITIONSINMENU in clistmenus.c which, when set, will
 //cause the position numbers to be placed in brackets after the menu items
+
+// WARNING: do not use Translate(TS) for p(t)szName or p(t)szPopupName as they
+// are translated by the core, which may lead to double translation.
+// Use LPGEN instead which are just dummy wrappers/markers for "lpgen.pl".
 typedef struct {
 	int cbSize;	            //size in bytes of this structure
 	union {
-      char*  pszName;      //text of the menu item
+      char*  pszName;      //[TRANSLATED-BY-CORE] text of the menu item
 		TCHAR* ptszName;     //Unicode text of the menu item
 	};
 	DWORD flags;            //set of CMIF_* flags
@@ -84,7 +88,7 @@ typedef struct {
 	};
 	char* pszService;       //name of service to call when the item gets selected
 	union {
-		char* pszPopupName;  //name of the popup menu that this item is on. If this
+		char* pszPopupName;  //[TRANSLATED-BY-CORE] name of the popup menu that this item is on. If this
 		TCHAR* ptszPopupName; //is NULL the item is on the root of the menu
 	};
 

@@ -39,7 +39,7 @@ typedef struct {
 	int cbSize;
 	char *shortName;
 	DWORD version;
-	char *description;
+	char *description; // [TRANSLATED-BY-CORE]
 	char *author;
 	char *authorEmail;
 	char *copyright;

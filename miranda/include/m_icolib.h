@@ -25,16 +25,19 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SKINICONDESC_SIZE_V2  0x1C                  // v0.0.0.2+
 #define SKINICONDESC_SIZE_V3  0x24                  // v0.0.0.3+
 
+// WARNING: do not use Translate(TS) for p(t)szSection or p(t)szDescription as they
+// are translated by the core, which may lead to double translation.
+// Use LPGEN instead which are just dummy wrappers/markers for "lpgen.pl".
 typedef struct {
   int cbSize;
   union {
     char *pszSection;         // section name used to group icons
-    TCHAR *ptszSection;
+    TCHAR *ptszSection;       // [TRANSLATED-BY-CORE]
     WCHAR *pwszSection;
   };
   union {
     char *pszDescription;     // description for options dialog
-    TCHAR *ptszDescription;
+    TCHAR *ptszDescription;   // [TRANSLATED-BY-CORE]
     WCHAR *pwszDescription;
   };
   char *pszName;              // name to refer to icon when playing and in db

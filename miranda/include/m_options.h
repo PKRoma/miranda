@@ -49,11 +49,15 @@ Prior to v0.1.2.1 the options dialog would resize to fit the largest page, but
 since then it is fixed in size. The largest page that fits neatly is 314x240
 DLUs.
 */
+
+// WARNING: do not use Translate(TS) for pszTitle, pszGroup or pszTab as they
+// are translated by the core, which may lead to double translation.
+// Use LPGEN instead which are just dummy wrappers/markers for "lpgen.pl".
 typedef struct {
 	int cbSize;
 	int position;        //a position number, lower numbers are topmost
 	union {
-		char* pszTitle;
+		char* pszTitle; // [TRANSLATED-BY-CORE]
 		TCHAR* ptszTitle;
 	};
 	DLGPROC pfnDlgProc;
@@ -61,7 +65,7 @@ typedef struct {
 	HINSTANCE hInstance;
 	HICON hIcon;		 //v0.1.0.1+
 	union {
-		char* pszGroup;		 //v0.1.0.1+
+		char* pszGroup;		 //v0.1.0.1+ [TRANSLATED-BY-CORE]
 		TCHAR* ptszGroup;		 //v0.1.0.1+
 	};
 	int groupPosition;	 //v0.1.0.1+
@@ -73,8 +77,8 @@ typedef struct {
 	int nExpertOnlyControls;    //v0.1.2.1+  these controls will be hidden in simple mode. Array must remain valid for duration of dlg.
 
 	#if MIRANDA_VER >= 0x0600
-   	union {
-			char* pszTab;		 //v0.6.0.0+
+	union {
+			char* pszTab;		 //v0.6.0.0+ [TRANSLATED-BY-CORE]
 			TCHAR* ptszTab;		 //v0.6.0.0+
 		};
 	#endif

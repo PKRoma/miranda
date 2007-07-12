@@ -53,10 +53,14 @@ typedef struct FontSettingsW_tag
 #endif
 
 // a font identifier structure - used for registering a font, and getting one out again
+
+// WARNING: do not use Translate(TS) for name or group as they
+// are translated by the core, which may lead to double translation.
+// Use LPGEN instead which are just dummy wrappers/markers for "lpgen.pl".
 typedef struct FontID_tag {
 	int   cbSize;
-	char  group[64];				// group the font belongs to - this is the 'Font Group' list in the options page
-	char  name[64];				// this is the name of the font setting - e.g. 'contacts' in the 'contact list' group
+	char  group[64];			// [TRANSLATED-BY-CORE] group the font belongs to - this is the 'Font Group' list in the options page
+	char  name[64];				// [TRANSLATED-BY-CORE] this is the name of the font setting - e.g. 'contacts' in the 'contact list' group
 	char  dbSettingsGroup[32];	// the 'module' in the database where the font data is stored
 	char  prefix[32];			// this is prepended to the settings used to store this font's data in the db
 	DWORD flags;				// bitwise OR of the FIDF_* flags above
@@ -70,8 +74,8 @@ typedef struct FontID_tag {
 
 typedef struct FontIDW_tag {
 	int cbSize;
-	wchar_t group[64];				// group the font belongs to - this is the 'Font Group' list in the options page
-	wchar_t name[64];				// this is the name of the font setting - e.g. 'contacts' in the 'contact list' group
+	wchar_t group[64];			// [TRANSLATED-BY-CORE] group the font belongs to - this is the 'Font Group' list in the options page
+	wchar_t name[64];			// [TRANSLATED-BY-CORE] this is the name of the font setting - e.g. 'contacts' in the 'contact list' group
 	char dbSettingsGroup[32];	// the 'module' in the database where the font data is stored
 	char prefix[32];			// this is prepended to the settings used to store this font's data in the db
 	DWORD flags;				// bitwise OR of the FIDF_* flags above
@@ -89,10 +93,13 @@ typedef struct FontIDW_tag {
   #define FontIDT FontID
 #endif
 
+// WARNING: do not use Translate(TS) for name or group as they
+// are translated by the core, which may lead to double translation.
+// Use LPGEN instead which are just dummy wrappers/markers for "lpgen.pl".
 typedef struct ColourID_tag {
 	int      cbSize;
-	char     group[64];
-	char     name[64];
+	char     group[64];	// [TRANSLATED-BY-CORE]
+	char     name[64];	// [TRANSLATED-BY-CORE]
 	char     dbSettingsGroup[32];
 	char     setting[32];
 	DWORD    flags;		// not used
@@ -104,8 +111,8 @@ typedef struct ColourID_tag {
 // a font identifier structure - used for registering a font, and getting one out again
 typedef struct ColourIDW_tag {
 	int cbSize;
-	wchar_t group[64];
-	wchar_t name[64];
+	wchar_t group[64];	// [TRANSLATED-BY-CORE]
+	wchar_t name[64];	// [TRANSLATED-BY-CORE]
 	char dbSettingsGroup[32];
 	char setting[32];
 	DWORD flags;		// not used
