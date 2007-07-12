@@ -186,6 +186,22 @@ Package=<4>
 
 ###############################################################################
 
+Project: "dbrw"=..\plugins\dbrw\dbrw.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+    begin source code control
+    "$/Miranda/miranda/plugins/dbrw", WKIAAAAA
+    ..\plugins\dbrw
+    end source code control
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "dbtool"="..\..\miranda-tools\dbtool\dbtool.dsp" - Package Owner=<4>
 
 Package=<5>
