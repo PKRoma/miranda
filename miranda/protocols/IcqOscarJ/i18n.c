@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/i18n.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -70,7 +70,7 @@ BOOL IsUSASCII(const unsigned char* pBuffer, int nSize)
 }
 
 // Returns true if the unicode buffer only contains 7-bit characters.
-BOOL IsUnicodeAscii(const wchar_t* pBuffer, int nSize)
+BOOL IsUnicodeAscii(const WCHAR* pBuffer, int nSize)
 {
   BOOL bResult = TRUE;
   int nIndex;
@@ -163,7 +163,7 @@ char* detect_decode_utf8(const char *from)
 /*
  * Convert a string between UTF-8 and the locale's charset.
  */
-unsigned char *make_utf8_string(const wchar_t *unicode)
+unsigned char *make_utf8_string(const WCHAR *unicode)
 {
   int size = 0;
   int index = 0;
@@ -218,10 +218,10 @@ unsigned char *make_utf8_string(const wchar_t *unicode)
 
 
 
-wchar_t *make_unicode_string(const unsigned char *utf8)
+WCHAR *make_unicode_string(const unsigned char *utf8)
 {
   int size = 0, index = 0, out_index = 0;
-  wchar_t *out;
+  WCHAR *out;
   unsigned char c;
 
   if (!utf8) return NULL;
@@ -246,7 +246,7 @@ wchar_t *make_unicode_string(const unsigned char *utf8)
     c = utf8[index++];
   }
 
-  out = (wchar_t*)SAFE_MALLOC((size + 1) * sizeof(wchar_t));
+  out = (WCHAR*)SAFE_MALLOC((size + 1) * sizeof(WCHAR));
   if (out == NULL)
     return NULL;
   index = 0;
@@ -283,7 +283,7 @@ wchar_t *make_unicode_string(const unsigned char *utf8)
 
 int utf8_encode(const char *from, char **to)
 {
-  wchar_t *unicode;
+  WCHAR *unicode;
   int wchars, err;
 
 
@@ -296,7 +296,7 @@ int utf8_encode(const char *from, char **to)
     return -1;
   }
 
-  unicode = (wchar_t*)_alloca((wchars + 1) * sizeof(unsigned short));
+  unicode = (WCHAR*)_alloca((wchars + 1) * sizeof(WCHAR));
   unicode[wchars] = 0;
 
   err = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, from,
@@ -335,11 +335,11 @@ char *ansi_to_utf8(const char *szAnsi)
 
 char *ansi_to_utf8_codepage(const char *szAnsi, WORD wCp)
 {
-  wchar_t *unicode;
+  WCHAR *unicode;
   int wchars = strlennull(szAnsi);
 
-  unicode = (wchar_t*)_alloca((wchars + 1) * sizeof(wchar_t));
-  ZeroMemory(unicode, (wchars + 1)*sizeof(wchar_t));
+  unicode = (WCHAR*)_alloca((wchars + 1) * sizeof(WCHAR));
+  ZeroMemory(unicode, (wchars + 1)*sizeof(WCHAR));
 
   MultiByteToWideChar(wCp, MB_PRECOMPOSED, szAnsi, wchars, unicode, wchars);
 
@@ -349,7 +349,7 @@ char *ansi_to_utf8_codepage(const char *szAnsi, WORD wCp)
 
 
 // Returns 0 on error, 1 on success
-int utf8_decode(const char *from, char **to)
+int utf8_decode_codepage(const char *from, char **to, WORD wCp)
 {
   int nResult = 0;
 
@@ -372,7 +372,7 @@ int utf8_decode(const char *from, char **to)
     {
       // Convert the UCS string to local ANSI codepage
       *to = (char*)SAFE_MALLOC(inlen+1);
-      if (WideCharToMultiByte(CP_ACP, 0, wszTemp, -1, *to, inlen+1, NULL, NULL))
+      if (WideCharToMultiByte(wCp, 0, wszTemp, -1, *to, inlen+1, NULL, NULL))
       {
         nResult = 1;
       }
@@ -384,7 +384,7 @@ int utf8_decode(const char *from, char **to)
   }
   else
   {
-    wchar_t *unicode;
+    WCHAR *unicode;
     int chars;
     int err;
 
@@ -395,7 +395,7 @@ int utf8_decode(const char *from, char **to)
       return 0;
     }
 
-    chars = WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK, unicode, -1, NULL, 0, NULL, NULL);
+    chars = WideCharToMultiByte(wCp, WC_COMPOSITECHECK, unicode, -1, NULL, 0, NULL, NULL);
 
     if(chars == 0)
     {
@@ -412,7 +412,7 @@ int utf8_decode(const char *from, char **to)
       return 0;
     }
 
-    err = WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK, unicode, -1, *to, chars, NULL, NULL);
+    err = WideCharToMultiByte(wCp, WC_COMPOSITECHECK, unicode, -1, *to, chars, NULL, NULL);
     if (err != chars)
     {
       fprintf(stderr, "Unicode translation error %d\n", GetLastError());
@@ -427,6 +427,14 @@ int utf8_decode(const char *from, char **to)
   }
 
   return nResult;
+}
+
+
+
+// Standard version with current codepage
+int utf8_decode(const char *from, char **to)
+{
+  return utf8_decode_codepage(from, to, CP_ACP);
 }
 
 
@@ -462,7 +470,7 @@ int utf8_decode_static(const char *from, char *to, int to_size)
   }
   else
   {
-    wchar_t *unicode = make_unicode_string(from);
+    WCHAR *unicode = make_unicode_string(from);
 
     if (unicode == NULL)
     {
