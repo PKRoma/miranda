@@ -86,21 +86,21 @@ int LoadHelpModule(void)
 
 	mi.icolibItem = GetSkinIconHandle(SKINICON_OTHER_HELP);
 	mi.position = -500050000;
-	mi.pszName = "&Support\tF1";
+	mi.pszName = LPGEN("&Support\tF1");
 	mi.hotKey = MAKELPARAM(0,VK_F1);
 	mi.pszService = "Help/IndexCommand";
 	CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
 
 	mi.icolibItem = GetSkinIconHandle(SKINICON_OTHER_MIRANDAWEB);
 	mi.position = 2000050000;
-	mi.pszName = "&Miranda IM Homepage";
+	mi.pszName = LPGEN("&Miranda IM Homepage");
 	mi.hotKey = 0;
 	mi.pszService = "Help/WebsiteCommand";
 	CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
 
 	mi.icolibItem = GetSkinIconHandle(SKINICON_EVENT_URL);
 	mi.position = 2000040000;
-	mi.pszName = "&Report Bug";
+	mi.pszName = LPGEN("&Report Bug");
 	mi.pszService = "Help/BugCommand";
 	CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
 	return 0;

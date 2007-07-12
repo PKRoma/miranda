@@ -829,7 +829,7 @@ int GenMenuOptInit(WPARAM wParam, LPARAM lParam)
 
 	odp.position = -1000000000;
 	odp.pszTemplate = MAKEINTRESOURCEA( IDD_OPT_GENMENU );
-	odp.pszTitle = "Menus";
+	odp.pszTitle = LPGEN("Menus");
 	odp.pfnDlgProc = GenMenuOpts;
 	odp.flags = ODPF_BOLDGROUPS;
 	CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
@@ -837,7 +837,7 @@ int GenMenuOptInit(WPARAM wParam, LPARAM lParam)
 	odp.position = -10000000;
 	odp.groupPosition = 1000000;
 	odp.pszTemplate = MAKEINTRESOURCEA( IDD_OPT_PROTOCOLORDER );
-	odp.pszTitle = "Protocols";
+	odp.pszTitle = LPGEN("Protocols");
 	odp.pfnDlgProc = ProtocolOrderOpts;
 	odp.flags = ODPF_BOLDGROUPS|ODPF_EXPERTONLY;
 	CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );

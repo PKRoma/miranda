@@ -134,7 +134,7 @@ sub csearch {
 		}
 		close(READ);
 		$_ = $all;
-		while (/(?:(?:Translate[A-Z]{0,2})|(?:LPGENT?))\s*\(\s*(\".*?\")\s*\)/g) {
+		while (/(?:(?:Translate[A-Z]{0,2})|(?:LPGENT?)|(?:ICQTranslateUtfStatic))\s*\(\s*(\".*?\")\s*[,\)]/g) {
 			$found += append_str($1, $found);
 		}
 		while (/Button_SetIcon_IcoLib\s*\([^\"]*(\".*?\")\s*\)/g) {
