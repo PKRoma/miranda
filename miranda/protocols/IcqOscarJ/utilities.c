@@ -1338,11 +1338,15 @@ void __fastcall SAFE_FREE(void** p)
 
 void* __fastcall SAFE_MALLOC(size_t size)
 {
-  void* p = malloc(size);
+  void* p = NULL;
 
-  if (p)
-    ZeroMemory(p, size);
+  if (size)
+  {
+    p = malloc(size);
 
+    if (p)
+      ZeroMemory(p, size);
+  }
   return p;
 }
 
