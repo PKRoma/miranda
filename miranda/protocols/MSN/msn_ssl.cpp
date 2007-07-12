@@ -524,11 +524,15 @@ char* SSL_OpenSsl::getSslResult( const char* parUrl, const char* parAuthInfo, co
 				pfn_SSL_write( ssl, (void*)parAuthInfo, strlen( parAuthInfo ));
 				
 				nBytes = 0;
-				size_t dwSize, dwTotSize = 8192;
+				size_t dwTotSize = 8192;
 				result = ( char* )mir_alloc( dwTotSize );
 
-				do {
-					dwSize = pfn_SSL_read( ssl, result+nBytes, dwTotSize - nBytes );
+				for (;;) 
+				{
+					int dwSize = pfn_SSL_read( ssl, result+nBytes, dwTotSize - nBytes );
+					if (dwSize  < 0) { nBytes = 0; break; }
+					if (dwSize == 0) break;
+
 					nBytes += dwSize;
 					if ( nBytes >= dwTotSize ) {
 						dwTotSize += 4096;
@@ -538,9 +542,7 @@ char* SSL_OpenSsl::getSslResult( const char* parUrl, const char* parAuthInfo, co
 						else 
 							result = rest;
 					}
-
 				}
-				while (dwSize != 0);
 				result[nBytes] = 0;
 
 				if ( nBytes > 0 ) {
