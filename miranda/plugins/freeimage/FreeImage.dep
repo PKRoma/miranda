@@ -207,7 +207,6 @@
 	"..\..\include\m_png.h"\
 	"..\..\include\newpluginapi.h"\
 	".\Miranda\include\m_freeimage.h"\
-	".\Miranda\include\m_imgsrvc.h"\
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
 	".\source\zlib\zconf.h"\

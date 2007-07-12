@@ -1862,8 +1862,6 @@
 	
 
 .\modules\srfile\fileexistsdlg.c : \
-	"..\..\..\vc\psdk\include\shldisp.h"\
-	"..\..\..\vc\psdk\include\shobjidl.h"\
 	"..\include\m_addcontact.h"\
 	"..\include\m_awaymsg.h"\
 	"..\include\m_button.h"\
@@ -1944,8 +1942,6 @@
 	
 
 .\modules\srfile\filerecvdlg.c : \
-	"..\..\..\vc\psdk\include\shldisp.h"\
-	"..\..\..\vc\psdk\include\shobjidl.h"\
 	"..\include\m_addcontact.h"\
 	"..\include\m_awaymsg.h"\
 	"..\include\m_button.h"\
@@ -2813,8 +2809,6 @@
 	
 
 .\modules\clist\clcfiledrop.c : \
-	"..\..\..\vc\psdk\include\shldisp.h"\
-	"..\..\..\vc\psdk\include\shobjidl.h"\
 	"..\include\m_addcontact.h"\
 	"..\include\m_awaymsg.h"\
 	"..\include\m_button.h"\
