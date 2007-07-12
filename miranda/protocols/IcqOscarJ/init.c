@@ -62,7 +62,7 @@ extern int bHideXStatusUI;
 PLUGININFOEX pluginInfo = {
   sizeof(PLUGININFOEX),
   NULL,
-  PLUGIN_MAKE_VERSION(0,3,10,4),
+  PLUGIN_MAKE_VERSION(0,3,10,5),
   "Support for ICQ network, enhanced.",
   "Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
   "jokusoftware@miranda-im.org",
@@ -145,8 +145,6 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 
   // Are we running under Unicode Windows version ?
   gbUnicodeAPI = (GetVersion() & 0x80000000) == 0;
-  // Do we have new LangPack module ready ?
-  gbUtfLangpack = ServiceExists(MS_LANGPACK_GETCODEPAGE);
   { // Are we running under unicode Miranda core ?
     char szVer[MAX_PATH];
 

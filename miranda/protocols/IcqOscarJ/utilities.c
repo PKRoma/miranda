@@ -1499,21 +1499,12 @@ char* __fastcall ICQTranslateUtf(const char* src)
     return null_strdup(src);
   }
 
-  if (gbUtfLangpack)
-  { // we can use unicode translate
+  { // we can use unicode translate (0.5+)
     wchar_t* usrc = make_unicode_string(src);
 
     szRes = make_utf8_string(TranslateW(usrc));
 
     SAFE_FREE(&usrc);
-  }
-  else
-  {
-    int size = strlennull(src)+2;
-    char* asrc = (char*)_alloca(size);
-
-    utf8_decode_static(src, asrc, size);
-    utf8_encode(Translate(asrc), &szRes);
   }
   return szRes;
 }
