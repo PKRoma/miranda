@@ -930,7 +930,7 @@ __inline static int DBFreeVariant(DBVARIANT *dbv)
 	return CallService(MS_DB_CONTACT_FREEVARIANT,0,(LPARAM)dbv);
 }
 
-#ifdef M_UTILS_H__
+#if defined(M_UTILS_H__) && defined(M_SYSTEM_H__)
 __inline static char *DBGetString(HANDLE hContact,const char *szModule,const char *szSetting)
 {
 	char *str=NULL;
@@ -960,7 +960,7 @@ __inline static wchar_t *DBGetStringW(HANDLE hContact,const char *szModule,const
 #else
 #define DBGetStringT DBGetString
 #endif
-#endif /* M_UTILS_H__ */
+#endif /* M_UTILS_H__ && M_SYSTEM_H__  */
 
 __inline static int DBDeleteContactSetting(HANDLE hContact,const char *szModule,const char *szSetting)
 {
