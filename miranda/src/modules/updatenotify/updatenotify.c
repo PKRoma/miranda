@@ -94,8 +94,8 @@ static int UpdateNotifyOptInit(WPARAM wParam, LPARAM lParam) {
     odp.position = 100000000;
     odp.hInstance = GetModuleHandle(NULL);
     odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_UPDATENOTIFY);
-    odp.pszGroup = "Events";
-    odp.pszTitle = "Update Notify";
+    odp.pszGroup = LPGEN("Events");
+    odp.pszTitle = LPGEN("Update Notify");
     odp.pfnDlgProc = UpdateNotifyOptsProc;
     odp.flags = ODPF_BOLDGROUPS;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM)&odp);

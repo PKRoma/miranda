@@ -346,8 +346,8 @@ static int IgnoreOptInitialise(WPARAM wParam,LPARAM lParam)
 	odp.position = 900000000;
 	odp.hInstance = GetModuleHandle(NULL);
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_IGNORE);
-	odp.pszTitle = "Ignore";
-	odp.pszGroup = "Events";
+	odp.pszTitle = LPGEN("Ignore");
+	odp.pszGroup = LPGEN("Events");
 	odp.pfnDlgProc = DlgProcIgnoreOpts;
 	odp.flags = ODPF_BOLDGROUPS;
 	odp.expertOnlyControls = expertOnlyControls;

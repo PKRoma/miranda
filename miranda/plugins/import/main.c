@@ -497,7 +497,7 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 	ZeroMemory(&mi, sizeof(mi));
 	mi.cbSize = sizeof(mi);
 	mi.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDI_IMPORT));
-	mi.pszName = Translate("&Import...");
+	mi.pszName = LPGEN("&Import...");
 	mi.position = 500050000;
 	mi.pszService = IMPORT_SERVICE;
 	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);

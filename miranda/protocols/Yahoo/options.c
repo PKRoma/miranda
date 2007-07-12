@@ -36,8 +36,8 @@ int YahooOptInit(WPARAM wParam,LPARAM lParam)
 	odp.position					= -790000000;
 	odp.hInstance					= hinstance;
 	odp.pszTemplate				    = MAKEINTRESOURCE(IDD_OPT_YAHOO);
-	odp.pszTitle					= Translate( yahooProtocolName );
-	odp.pszGroup					= Translate("Network");
+	odp.pszTitle					= yahooProtocolName;
+	odp.pszGroup					= LPGEN("Network");
 	odp.flags						= ODPF_BOLDGROUPS;
 	odp.nIDBottomSimpleControl      = IDC_STYAHOOGROUP;
 	odp.pfnDlgProc					= DlgProcYahooOpts;

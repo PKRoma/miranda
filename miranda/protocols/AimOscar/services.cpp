@@ -910,7 +910,7 @@ void CreateServices()
 	mi.position = 500090000;
     mi.hIcon = LoadIcon(conn.hInstance,MAKEINTRESOURCE( IDI_AIM ));
 	mi.pszContactOwner = AIM_PROTOCOL_NAME;
-    mi.pszName = Translate( "Manage Account" );
+    mi.pszName = LPGEN( "Manage Account" );
     mi.pszService = service_name;
 	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
@@ -923,7 +923,7 @@ void CreateServices()
 	mi.position = 500090000;
     mi.hIcon = LoadIcon(conn.hInstance,MAKEINTRESOURCE( IDI_AIM ));
 	mi.pszContactOwner = AIM_PROTOCOL_NAME;
-    mi.pszName = Translate( "Edit Profile" );
+    mi.pszName = LPGEN( "Edit Profile" );
     mi.pszService = service_name;
 	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
@@ -936,7 +936,7 @@ void CreateServices()
 	mi.position = 500090000;
     mi.hIcon = LoadIcon(conn.hInstance,MAKEINTRESOURCE( IDI_MAIL ));
 	mi.pszContactOwner = AIM_PROTOCOL_NAME;
-    mi.pszName = Translate( "Check Mail" );
+    mi.pszName = LPGEN( "Check Mail" );
     mi.pszService = service_name;
 	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
@@ -949,7 +949,7 @@ void CreateServices()
 	mi.position = 500090000;
     mi.hIcon = LoadIcon(conn.hInstance,MAKEINTRESOURCE( IDI_IDLE ));
 	mi.pszContactOwner = AIM_PROTOCOL_NAME;
-    mi.pszName = Translate( "Instant Idle" );
+    mi.pszName = LPGEN( "Instant Idle" );
     mi.pszService = service_name;
 	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
@@ -961,7 +961,7 @@ void CreateServices()
 	mi.popupPosition=-2000006000;
 	mi.position=-2000006000;
 	mi.hIcon=LoadIcon(conn.hInstance,MAKEINTRESOURCE( IDI_AWAY ));
-	mi.pszName=Translate("Read &HTML Away Message");
+	mi.pszName = LPGEN("Read &HTML Away Message");
 	mi.pszContactOwner = AIM_PROTOCOL_NAME;
 	mi.pszService=service_name;
 	mi.flags=CMIF_NOTOFFLINE|CMIF_HIDDEN;
@@ -975,7 +975,7 @@ void CreateServices()
 	mi.popupPosition=-2000006500;
 	mi.position=-2000006500;
 	mi.hIcon=LoadIcon(conn.hInstance,MAKEINTRESOURCE( IDI_PROFILE ));
-	mi.pszName=Translate("Read Profile");
+	mi.pszName = LPGEN("Read Profile");
 	mi.pszContactOwner = AIM_PROTOCOL_NAME;
 	mi.pszService=service_name;
 	mi.flags=CMIF_NOTOFFLINE;
@@ -989,7 +989,7 @@ void CreateServices()
 	mi.popupPosition=-2000006500;
 	mi.position=-2000006500;
 	mi.hIcon=LoadIcon(conn.hInstance,MAKEINTRESOURCE( IDI_ADD ));
-	mi.pszName=Translate("Add To Server List");
+	mi.pszName = LPGEN("Add To Server List");
 	mi.pszContactOwner = AIM_PROTOCOL_NAME;
 	mi.pszService=service_name;
 	mi.flags=CMIF_NOTONLINE|CMIF_HIDDEN;

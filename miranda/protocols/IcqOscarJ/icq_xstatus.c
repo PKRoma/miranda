@@ -699,7 +699,7 @@ void InitXStatusItems(BOOL bAllowStatus)
       CreateServiceFunctionParam(srvFce, menuXStatus, i);
 
     mi.flags = bXStatus == i?CMIF_CHECKED:0;
-    mi.pszName = ICQTranslate(i?nameXStatus[i-1]:"None");
+    mi.pszName = i?nameXStatus[i-1]:LPGEN("None");
     mi.pszService = srvFce;
     mi.pszContactOwner = gpszICQProtoName;
 

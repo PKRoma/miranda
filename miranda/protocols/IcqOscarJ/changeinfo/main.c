@@ -48,7 +48,7 @@ int InitChangeDetails(WPARAM wParam, LPARAM lParam)
   odp.pszTemplate = MAKEINTRESOURCE(IDD_INFO_CHANGEINFO);
   odp.pfnDlgProc = ChangeInfoDlgProc;
 
-  AddUserInfoPageUtf(&odp, wParam, "%s Details");
+  AddUserInfoPageUtf(&odp, wParam, LPGEN("%s Details"));
 
   return 0;
 }

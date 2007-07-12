@@ -77,10 +77,10 @@ int LoadHelpModule(void)
 	mi.cbSize = sizeof(mi);
 	mi.flags = CMIF_ICONFROMICOLIB;
 	mi.icolibItem = GetSkinIconHandle(SKINICON_OTHER_MIRANDA);
-	mi.pszPopupName = "&Help";
+	mi.pszPopupName = LPGEN("&Help");
 	mi.popupPosition = 2000090000;
 	mi.position = 2000090000;
-	mi.pszName = "&About...";
+	mi.pszName = LPGEN("&About...");
 	mi.pszService = "Help/AboutCommand";
 	CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
 

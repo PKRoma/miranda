@@ -153,7 +153,7 @@ int LoadAwayMsgModule(void)
 	mi.cbSize     = sizeof(mi);
 	mi.position   = -2000005000;
 	mi.flags      = CMIF_NOTOFFLINE;
-	mi.pszName    = "Re&ad Away Message";
+	mi.pszName    = LPGEN("Re&ad Away Message");
 	mi.pszService = MS_AWAYMSG_SHOWAWAYMSG;
 	hAwayMsgMenuItem = ( HANDLE )CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
 	HookEvent(ME_CLIST_PREBUILDCONTACTMENU,AwayMsgPreBuildMenu);

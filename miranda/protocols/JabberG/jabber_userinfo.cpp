@@ -464,7 +464,7 @@ int JabberUserInfoInit( WPARAM wParam, LPARAM lParam )
 			odp.pfnDlgProc = JabberUserPhotoDlgProc;
 			odp.position = 2000000000;
 			odp.pszTemplate = MAKEINTRESOURCEA( IDD_VCARD_PHOTO );
-			odp.pszTitle = JTranslate( "Photo" );
+			odp.pszTitle = LPGEN("Photo");
 			JCallService( MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp );
 	}	}
 	return 0;

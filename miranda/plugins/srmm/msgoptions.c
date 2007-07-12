@@ -41,16 +41,16 @@ struct FontOptionsList
 	char     size;
 }
 static fontOptionsList[] = {
-	{ _T("Outgoing messages"), RGB(106, 106, 106), _T("Arial"),    DEFAULT_CHARSET, 0, -12},
-	{ _T("Incoming messages"), RGB(0, 0, 0),       _T("Arial"),    DEFAULT_CHARSET, 0, -12},
-	{ _T("Outgoing name"),     RGB(89, 89, 89),    _T("Arial"),    DEFAULT_CHARSET, FONTF_BOLD, -12},
-	{ _T("Outgoing time"),     RGB(0, 0, 0),       _T("Terminal"), DEFAULT_CHARSET, FONTF_BOLD, -9},
-	{ _T("Outgoing colon"),    RGB(89, 89, 89),    _T("Arial"),    DEFAULT_CHARSET, 0, -11},
-	{ _T("Incoming name"),     RGB(215, 0, 0),     _T("Arial"),    DEFAULT_CHARSET, FONTF_BOLD, -12},
-	{ _T("Incoming time"),     RGB(0, 0, 0),       _T("Terminal"), DEFAULT_CHARSET, FONTF_BOLD, -9},
-	{ _T("Incoming colon"),    RGB(215, 0, 0),     _T("Arial"),    DEFAULT_CHARSET, 0, -11},
-	{ _T("Message area"),      RGB(0, 0, 0),       _T("Arial"),    DEFAULT_CHARSET, 0, -12},
-	{ _T("Notices"),           RGB(90, 90, 160),   _T("Arial"),    DEFAULT_CHARSET, 0, -12},
+	{ LPGENT("Outgoing messages"), RGB(106, 106, 106), _T("Arial"),    DEFAULT_CHARSET, 0, -12},
+	{ LPGENT("Incoming messages"), RGB(0, 0, 0),       _T("Arial"),    DEFAULT_CHARSET, 0, -12},
+	{ LPGENT("Outgoing name"),     RGB(89, 89, 89),    _T("Arial"),    DEFAULT_CHARSET, FONTF_BOLD, -12},
+	{ LPGENT("Outgoing time"),     RGB(0, 0, 0),       _T("Terminal"), DEFAULT_CHARSET, FONTF_BOLD, -9},
+	{ LPGENT("Outgoing colon"),    RGB(89, 89, 89),    _T("Arial"),    DEFAULT_CHARSET, 0, -11},
+	{ LPGENT("Incoming name"),     RGB(215, 0, 0),     _T("Arial"),    DEFAULT_CHARSET, FONTF_BOLD, -12},
+	{ LPGENT("Incoming time"),     RGB(0, 0, 0),       _T("Terminal"), DEFAULT_CHARSET, FONTF_BOLD, -9},
+	{ LPGENT("Incoming colon"),    RGB(215, 0, 0),     _T("Arial"),    DEFAULT_CHARSET, 0, -11},
+	{ LPGENT("Message area"),      RGB(0, 0, 0),       _T("Arial"),    DEFAULT_CHARSET, 0, -12},
+	{ LPGENT("Notices"),           RGB(90, 90, 160),   _T("Arial"),    DEFAULT_CHARSET, 0, -12},
 };
 
 const int msgDlgFontCount = SIZEOF(fontOptionsList);
@@ -134,15 +134,15 @@ struct CheckBoxValues_t
 }
 static const statusValues[] =
 {
-	{ PF2_ONLINE,     _T("Online")        },
-	{ PF2_SHORTAWAY,  _T("Away")          },
-	{ PF2_LONGAWAY,   _T("NA")            },
-	{ PF2_LIGHTDND,   _T("Occupied")      },
-	{ PF2_HEAVYDND,   _T("DND")           },
-	{ PF2_FREECHAT,   _T("Free for chat") },
-	{ PF2_INVISIBLE,  _T("Invisible")     },
-	{ PF2_OUTTOLUNCH, _T("Out to lunch")  },
-	{ PF2_ONTHEPHONE, _T("On the phone")  }
+	{ PF2_ONLINE,     LPGENT("Online")        },
+	{ PF2_SHORTAWAY,  LPGENT("Away")          },
+	{ PF2_LONGAWAY,   LPGENT("NA")            },
+	{ PF2_LIGHTDND,   LPGENT("Occupied")      },
+	{ PF2_HEAVYDND,   LPGENT("DND")           },
+	{ PF2_FREECHAT,   LPGENT("Free for chat") },
+	{ PF2_INVISIBLE,  LPGENT("Invisible")     },
+	{ PF2_OUTTOLUNCH, LPGENT("Out to lunch")  },
+	{ PF2_ONTHEPHONE, LPGENT("On the phone")  }
 };
 
 static void FillCheckBoxTree(HWND hwndTree, const struct CheckBoxValues_t *values, int nValues, DWORD style)
@@ -578,20 +578,20 @@ static int OptInitialise(WPARAM wParam, LPARAM lParam)
 	odp.position = 910000000;
 	odp.hInstance = g_hInst;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSGDLG);
-	odp.pszTitle = "Messaging";
-	odp.pszGroup = "Events";
+	odp.pszTitle = LPGEN("Messaging");
+	odp.pszGroup = LPGEN("Events");
 	odp.pfnDlgProc = DlgProcOptions;
 	odp.flags = ODPF_BOLDGROUPS;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
 
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSGLOG);
-	odp.pszTitle = "Messaging Log";
+	odp.pszTitle = LPGEN("Messaging Log");
 	odp.pfnDlgProc = DlgProcLogOptions;
 	odp.nIDBottomSimpleControl = IDC_STMSGLOGGROUP;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
 
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSGTYPE);
-	odp.pszTitle = "Typing Notify";
+	odp.pszTitle = LPGEN("Typing Notify");
 	odp.pfnDlgProc = DlgProcTypeOptions;
 	odp.nIDBottomSimpleControl = 0;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);

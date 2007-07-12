@@ -86,7 +86,7 @@ int gg_img_init()
 	mi.pszPopupName = GG_PROTONAME;
 	mi.position = -2000010000;
 	mi.hIcon = LoadIconEx(IDI_IMAGE);
-	mi.pszName = Translate("&Image");
+	mi.pszName = LPGEN("&Image");
 	mi.pszService = service;
 	mi.pszContactOwner = GG_PROTO;
 	CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) &mi);

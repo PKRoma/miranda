@@ -86,7 +86,7 @@ int gg_gc_init()
 		mi.popupPosition = 500090000;
 		mi.position = 500090000;
 		mi.hIcon = LoadIconEx(IDI_CONFERENCE);
-		mi.pszName = Translate("Open &conference...");
+		mi.pszName = LPGEN("Open &conference...");
 		mi.pszService = service;
 		CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
 
@@ -96,7 +96,7 @@ int gg_gc_init()
 		mi.popupPosition = 500090000;
 		mi.position = 500090000;
 		mi.hIcon = NULL;
-		mi.pszName = Translate("&Clear ignored conferences");
+		mi.pszName = LPGEN("&Clear ignored conferences");
 		mi.pszService = service;
 		CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
 	}

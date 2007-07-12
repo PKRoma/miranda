@@ -682,13 +682,13 @@ int getProfileManager(PROFILEMANAGERDATA * pd)
 		OPTIONSDIALOGPAGE odp;
 		ZeroMemory(&odp,sizeof(odp));
 		odp.cbSize      = sizeof(odp);
-		odp.pszTitle    = Translate( "My Profiles" );
+		odp.pszTitle    = LPGEN("My Profiles");
 		odp.pfnDlgProc  = DlgProfileSelect;
 		odp.pszTemplate = MAKEINTRESOURCEA(IDD_PROFILE_SELECTION);
 		odp.hInstance   = GetModuleHandle(NULL);
 		AddProfileManagerPage(&opi, &odp);
 
-		odp.pszTitle    = Translate( "New Profile" );
+		odp.pszTitle    = LPGEN("New Profile");
 		odp.pszTemplate = MAKEINTRESOURCEA(IDD_PROFILE_NEW);
 		odp.pfnDlgProc  = DlgProfileNew;
 		AddProfileManagerPage(&opi, &odp);

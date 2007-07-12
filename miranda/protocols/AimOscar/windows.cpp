@@ -89,8 +89,8 @@ int OptionsInit(WPARAM wParam,LPARAM /*lParam*/)
     odp.position = 1003000;
     odp.hInstance = conn.hInstance;
     odp.pszTemplate = MAKEINTRESOURCE(IDD_AIM);
-    odp.pszGroup = Translate("Network");
-    odp.pszTitle = Translate(AIM_PROTOCOL_NAME);
+    odp.pszGroup = LPGEN("Network");
+    odp.pszTitle = AIM_PROTOCOL_NAME;
     odp.pfnDlgProc = options_dialog;
     odp.flags = ODPF_BOLDGROUPS;
 	odp.nIDBottomSimpleControl=IDC_OPTIONS;
@@ -106,7 +106,7 @@ int UserInfoInit(WPARAM wParam,LPARAM lParam)
 		odp.position = -1900000000;
 		odp.hInstance = conn.hInstance;
 		odp.pszTemplate = MAKEINTRESOURCE(IDD_INFO);
-		odp.pszTitle = Translate(AIM_PROTOCOL_NAME);
+		odp.pszTitle = AIM_PROTOCOL_NAME;
 		odp.pfnDlgProc = userinfo_dialog;
 		CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM) & odp);
 	}

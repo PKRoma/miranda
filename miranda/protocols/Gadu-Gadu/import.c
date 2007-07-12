@@ -648,7 +648,7 @@ void gg_import_init()
 	mi.popupPosition = 500090000;
 	mi.position = 600090000;
 	mi.hIcon = LoadIconEx(IDI_IMPORT_SERVER);
-	mi.pszName = Translate("Import List From &Server");
+	mi.pszName = LPGEN("Import List From &Server");
 	mi.pszService = service;
 	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
 
@@ -659,7 +659,7 @@ void gg_import_init()
 	mi.popupPosition = 500090000;
 	mi.position = 600090000;
 	mi.hIcon = LoadIconEx(IDI_IMPORT_TEXT);
-	mi.pszName = Translate("Import List From &Text File...");
+	mi.pszName = LPGEN("Import List From &Text File...");
 	mi.pszService = service;
 	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
 
@@ -671,7 +671,7 @@ void gg_import_init()
 	mi.popupPosition = 500090000;
 	mi.position = 600090000;
 	mi.hIcon = LoadIconEx(IDI_REMOVE_SERVER);
-	mi.pszName = Translate("&Remove List From Server");
+	mi.pszName = LPGEN("&Remove List From Server");
 	mi.pszService = service;
 	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
 
@@ -682,7 +682,7 @@ void gg_import_init()
 	mi.popupPosition = 500090000;
 	mi.position = 700090000;
 	mi.hIcon = LoadIconEx(IDI_EXPORT_SERVER);
-	mi.pszName = Translate("Export List To &Server");
+	mi.pszName = LPGEN("Export List To &Server");
 	mi.pszService = service;
 	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
 
@@ -693,7 +693,7 @@ void gg_import_init()
 	mi.popupPosition = 500090000;
 	mi.position = 700090000;
 	mi.hIcon = LoadIconEx(IDI_EXPORT_TEXT);
-	mi.pszName = Translate("Export List To &Text File...");
+	mi.pszName = LPGEN("Export List To &Text File...");
 	mi.pszService = service;
 	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
 }

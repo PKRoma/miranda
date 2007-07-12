@@ -29,20 +29,20 @@ struct
 }
 static iconList[] =
 {
-	{ "Protocol icon",				"main",				IDI_GG				},
-	{ "Import list from server",	"importserver",		IDI_IMPORT_SERVER	},
-	{ "Import list from text file",	"importtext",		IDI_IMPORT_TEXT 	},
-	{ "Remove list from server",	"removeserver",		IDI_REMOVE_SERVER	},
-	{ "Export list to server",		"exportserver",		IDI_EXPORT_SERVER	},
-	{ "Export list to text file",	"exporttext",		IDI_EXPORT_TEXT 	},
-	{ "Account settings",			"settings",			IDI_SETTINGS		},
-	{ "Blocked to this contact",	"blocked",			IDI_STOP			},
-	{ "Previous image",				"previous",			IDI_PREV			},
-	{ "Next image",					"next",				IDI_NEXT			},
-	{ "Send image", 				"image",			IDI_IMAGE			},
-	{ "Save image",					"save",				IDI_SAVE			},
-	{ "Delete image",				"delete",			IDI_DELETE			},
-	{ "Open new conference",		"conference",		IDI_CONFERENCE		}
+	{ LPGEN("Protocol icon"),				"main",			IDI_GG				},
+	{ LPGEN("Import list from server"),		"importserver",	IDI_IMPORT_SERVER	},
+	{ LPGEN("Import list from text file"),	"importtext",	IDI_IMPORT_TEXT 	},
+	{ LPGEN("Remove list from server"),		"removeserver",	IDI_REMOVE_SERVER	},
+	{ LPGEN("Export list to server"),		"exportserver",	IDI_EXPORT_SERVER	},
+	{ LPGEN("Export list to text file"),	"exporttext",	IDI_EXPORT_TEXT 	},
+	{ LPGEN("Account settings"),			"settings",		IDI_SETTINGS		},
+	{ LPGEN("Blocked to this contact"),		"blocked",		IDI_STOP			},
+	{ LPGEN("Previous image"),				"previous",		IDI_PREV			},
+	{ LPGEN("Next image"),					"next",			IDI_NEXT			},
+	{ LPGEN("Send image"), 					"image",		IDI_IMAGE			},
+	{ LPGEN("Save image"),					"save",			IDI_SAVE			},
+	{ LPGEN("Delete image"),				"delete",		IDI_DELETE			},
+	{ LPGEN("Open new conference"),			"conference",	IDI_CONFERENCE		}
 };
 
 static int skinIconStatusToResourceId[] = 	{IDI_OFFLINE,	IDI_ONLINE,	IDI_AWAY,	IDI_INVISIBLE};

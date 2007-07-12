@@ -1036,9 +1036,9 @@ int OptInit(WPARAM wParam, LPARAM lParam)
 	odp.cbSize						= OPTIONPAGE_OLD_SIZE2;
 	odp.position					= -790000000;
 	odp.hInstance					= GetModuleHandle(NULL);;
-	odp.pszTemplate				= MAKEINTRESOURCEA(IDD_OPT_FONTS);
-	odp.pszTitle					= "Fonts";
-	odp.pszGroup					= "Customize";
+	odp.pszTemplate					= MAKEINTRESOURCEA(IDD_OPT_FONTS);
+	odp.pszTitle					= LPGEN("Fonts");
+	odp.pszGroup					= LPGEN("Customize");
 	odp.flags						= ODPF_BOLDGROUPS;
 	odp.nIDBottomSimpleControl	= 0;
 	odp.pfnDlgProc					= DlgProcLogOptions;

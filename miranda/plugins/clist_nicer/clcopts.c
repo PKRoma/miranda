@@ -1377,23 +1377,23 @@ int ClcOptInit(WPARAM wParam, LPARAM lParam)
     odp.cbSize = sizeof(odp);
     odp.position = 0;
     odp.hInstance = g_hInst;
-    odp.pszGroup = Translate("Contact List");
+    odp.pszGroup = LPGEN("Contact List");
 
     odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_DSPPROFILES);
-    odp.pszTitle = Translate("Display Profiles");
+    odp.pszTitle = LPGEN("Display Profiles");
     odp.pfnDlgProc = DlgProcDspProfiles;
     odp.flags = ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
 
     odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_FLOATING);
-    odp.pszTitle = Translate("Floating contacts");
+    odp.pszTitle = LPGEN("Floating contacts");
     odp.pfnDlgProc = DlgProcFloatingContacts;
     odp.flags = ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
 
     odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT);
-    odp.pszGroup = Translate("Customize");
-    odp.pszTitle = Translate("Contact list skin");
+    odp.pszGroup = LPGEN("Customize");
+    odp.pszTitle = LPGEN("Contact list skin");
     odp.flags = ODPF_BOLDGROUPS;
     odp.pfnDlgProc = OptionsDlgProc;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
@@ -1401,7 +1401,7 @@ int ClcOptInit(WPARAM wParam, LPARAM lParam)
     odp.position = -1000000000;
     odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPTIONSDIALOG);
     odp.pszGroup = NULL;
-    odp.pszTitle = Translate("Contact List");
+    odp.pszTitle = LPGEN("Contact List");
     odp.pfnDlgProc = TabOptionsDlgProc;
     odp.flags = ODPF_BOLDGROUPS;
     odp.nIDBottomSimpleControl = 0;
@@ -1409,8 +1409,8 @@ int ClcOptInit(WPARAM wParam, LPARAM lParam)
 
     odp.position = -900000000;
     odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_HOTKEY);
-    odp.pszTitle = Translate("Hotkeys");
-    odp.pszGroup = Translate("Events");
+    odp.pszTitle = LPGEN("Hotkeys");
+    odp.pszGroup = LPGEN("Events");
     odp.pfnDlgProc = DlgProcHotkeyOpts;
     odp.nIDBottomSimpleControl = 0;
     odp.nExpertOnlyControls = 0;

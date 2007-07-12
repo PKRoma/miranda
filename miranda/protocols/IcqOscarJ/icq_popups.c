@@ -65,7 +65,7 @@ void InitPopupOpts(WPARAM wParam)
     odp.pfnDlgProc = DlgProcIcqPopupOpts;
     odp.flags = ODPF_BOLDGROUPS;
     odp.nIDBottomSimpleControl = 0;
-    AddOptionsPageUtf(&odp, wParam, "Popups", gpszICQProtoName);
+    AddOptionsPageUtf(&odp, wParam, LPGEN("Popups"), gpszICQProtoName);
   }
 }
 

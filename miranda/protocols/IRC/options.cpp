@@ -189,22 +189,22 @@ struct
 }
 static iconList[] =
 {
-	{	"Main",              "main",    16, IDI_MAIN    },
-	{	"Add",               "add",     16, IDI_ADD     },
-	{	"Apply",             "go",      16, IDI_GO      },
-	{	"Edit",              "rename",  16, IDI_RENAME  },
-	{	"Cancel",            "delete",  16, IDI_DELETE  },
-	{	"Ignore",            "block",   16, IDI_BLOCK   },
-	{	"Channel list",      "list",    16, IDI_LIST    },
-	{	"Channel manager",   "manager", 16, IDI_MANAGER },
-	{	"Quick connect",     "quick",   16, IDI_QUICK   },
-	{	"Server window",     "server",  16, IDI_SERVER  },
-	{	"Show channel",      "show",    16, IDI_SHOW    },
-	{	"Join channel",      "join",    16, IDI_JOIN    },
-	{	"Leave Channel",     "part",    16, IDI_PART    },
-	{	"Question",          "whois",   16, IDI_WHOIS   },
-	{	"Incoming DCC Chat", "dcc",     16, IDI_DCC     },
-	{	"Logo (48x48)",      "logo",    48, IDI_LOGO    }
+	{ LPGEN("Main"),              "main",    16, IDI_MAIN    },
+	{ LPGEN("Add"),               "add",     16, IDI_ADD     },
+	{ LPGEN("Apply"),             "go",      16, IDI_GO      },
+	{ LPGEN("Edit"),              "rename",  16, IDI_RENAME  },
+	{ LPGEN("Cancel"),            "delete",  16, IDI_DELETE  },
+	{ LPGEN("Ignore"),            "block",   16, IDI_BLOCK   },
+	{ LPGEN("Channel list"),      "list",    16, IDI_LIST    },
+	{ LPGEN("Channel manager"),   "manager", 16, IDI_MANAGER },
+	{ LPGEN("Quick connect"),     "quick",   16, IDI_QUICK   },
+	{ LPGEN("Server window"),     "server",  16, IDI_SERVER  },
+	{ LPGEN("Show channel"),      "show",    16, IDI_SHOW    },
+	{ LPGEN("Join channel"),      "join",    16, IDI_JOIN    },
+	{ LPGEN("Leave Channel"),     "part",    16, IDI_PART    },
+	{ LPGEN("Question"),          "whois",   16, IDI_WHOIS   },
+	{ LPGEN("Incoming DCC Chat"), "dcc",     16, IDI_DCC     },
+	{ LPGEN("Logo (48x48)"),      "logo",    48, IDI_LOGO    }
 };
 
 void AddIcons(void)
@@ -1787,25 +1787,25 @@ int InitOptionsPages(WPARAM wParam,LPARAM lParam)
 	odp.hInstance = g_hInstance;
 	odp.pszTemplate = MAKEINTRESOURCE(IDD_PREFS_CONNECT);
 	odp.pszTitle = ALTIRCPROTONAME;
-	odp.pszGroup = "Network";
-	odp.pszTab = "Account";
+	odp.pszGroup = LPGEN("Network");
+	odp.pszTab = LPGEN("Account");
 	odp.flags = ODPF_BOLDGROUPS;
 	odp.pfnDlgProc = ConnectPrefsProc;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 
 	odp.flags = ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
 	odp.pszTemplate = MAKEINTRESOURCE(IDD_PREFS_CTCP);
-	odp.pszTab = "DCC'n CTCP";
+	odp.pszTab = LPGEN("DCC'n CTCP");
 	odp.pfnDlgProc = CtcpPrefsProc;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 
 	odp.pszTemplate = MAKEINTRESOURCE(IDD_PREFS_OTHER);
-	odp.pszTab = "Advanced";
+	odp.pszTab = LPGEN("Advanced");
 	odp.pfnDlgProc = OtherPrefsProc;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 
 	odp.pszTemplate = MAKEINTRESOURCE(IDD_PREFS_IGNORE);
-	odp.pszTab = "Ignore";
+	odp.pszTab = LPGEN("Ignore");
 	odp.pfnDlgProc = IgnorePrefsProc;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 	return 0;

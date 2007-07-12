@@ -152,7 +152,7 @@ int gg_options_init(WPARAM wParam, LPARAM lParam)
 	odp.position = 1003000;
 	odp.hInstance = hInstance;
 	odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_GG_MAIN);
-	odp.pszGroup = Translate("Network");
+	odp.pszGroup = LPGEN("Network");
 	odp.pszTitle = title;
 	odp.pfnDlgProc = gg_mainoptsdlgproc;
 	odp.flags = ODPF_BOLDGROUPS;

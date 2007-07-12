@@ -638,14 +638,14 @@ void InitTrayMenus(void)
 		mi.cbSize=sizeof(mi);
 		mi.position=900000;
 		mi.pszService="CloseAction";
-		mi.pszName="E&xit";
+		mi.pszName=LPGEN("E&xit");
 		AddTrayMenuItem((WPARAM)0,(LPARAM)&mi);
 
 		memset(&mi,0,sizeof(mi));
 		mi.cbSize=sizeof(mi);
 		mi.position=100000;
 		mi.pszService=MS_CLIST_SHOWHIDE;
-		mi.pszName="&Hide/Show";
+		mi.pszName=LPGEN("&Hide/Show");
 		hHideShowMainMenuItem=(HANDLE)AddTrayMenuItem((WPARAM)0,(LPARAM)&mi);
 
 		memset(&mi,0,sizeof(mi));
@@ -654,7 +654,7 @@ void InitTrayMenus(void)
 		mi.flags=CMIF_ICONFROMICOLIB;
 		mi.icolibItem=LoadSkinnedIconHandle(SKINICON_OTHER_FINDUSER);
 		mi.pszService="FindAdd/FindAddCommand";
-		mi.pszName="&Find/Add Contacts...";
+		mi.pszName=LPGEN("&Find/Add Contacts...");
 		AddTrayMenuItem((WPARAM)0,(LPARAM)&mi);
 		DestroyIcon_protect(mi.hIcon);
 
@@ -663,14 +663,14 @@ void InitTrayMenus(void)
 		mi.cbSize=sizeof(mi);
 		mi.position=300000;
 		mi.pszService="";
-		mi.pszName="&Main Menu";
+		mi.pszName=LPGEN("&Main Menu");
 		hTrayMainMenuItemProxy=(HANDLE)AddTrayMenuItem((WPARAM)0,(LPARAM)&mi);
 
 		memset(&mi,0,sizeof(mi));
 		mi.cbSize=sizeof(mi);
 		mi.position=300100;
 		mi.pszService="";
-		mi.pszName="&Status";
+		mi.pszName=LPGEN("&Status");
 		hTrayStatusMenuItemProxy=(HANDLE)AddTrayMenuItem((WPARAM)0,(LPARAM)&mi);
 
 		memset(&mi,0,sizeof(mi));
@@ -679,7 +679,7 @@ void InitTrayMenus(void)
 		mi.flags=CMIF_ICONFROMICOLIB;
 		mi.icolibItem=LoadSkinnedIconHandle(SKINICON_OTHER_OPTIONS);
 		mi.pszService="Options/OptionsCommand";
-		mi.pszName="&Options...";
+		mi.pszName=LPGEN("&Options...");
 		AddTrayMenuItem((WPARAM)0,(LPARAM)&mi);
 		DestroyIcon_protect(mi.hIcon);
 
@@ -689,7 +689,7 @@ void InitTrayMenus(void)
 		mi.flags=CMIF_ICONFROMICOLIB;
 		mi.icolibItem=LoadSkinnedIconHandle(SKINICON_OTHER_MIRANDA);
 		mi.pszService="Help/AboutCommand";
-		mi.pszName="&About";
+		mi.pszName=LPGEN("&About");
 		AddTrayMenuItem((WPARAM)0,(LPARAM)&mi);
 		DestroyIcon_protect(mi.hIcon);
 

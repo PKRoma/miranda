@@ -245,7 +245,7 @@ int IcqOptInit(WPARAM wParam, LPARAM lParam)
   odp.pfnDlgProc = DlgProcIcqMain;
   odp.flags = ODPF_BOLDGROUPS;
   odp.nIDBottomSimpleControl = 0;
-  AddOptionsPageUtf(&odp, wParam, "Network", gpszICQProtoName);
+  AddOptionsPageUtf(&odp, wParam, LPGEN("Network"), gpszICQProtoName);
 
   InitPopupOpts(wParam);
 

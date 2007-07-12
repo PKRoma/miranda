@@ -282,8 +282,8 @@ static int VisibilityOptInitialise(WPARAM wParam,LPARAM lParam)
 	odp.position = 850000000;
 	odp.hInstance = GetModuleHandle(NULL);
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_VISIBILITY);
-	odp.pszTitle = "Visibility";
-	odp.pszGroup = "Status";
+	odp.pszTitle = LPGEN("Visibility");
+	odp.pszGroup = LPGEN("Status");
 	odp.pfnDlgProc = DlgProcVisibilityOpts;
 	odp.flags = ODPF_BOLDGROUPS;
 	CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );

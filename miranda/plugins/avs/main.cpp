@@ -2149,9 +2149,9 @@ static int OptInit(WPARAM wParam, LPARAM lParam)
     odp.cbSize = sizeof(odp);
     odp.position = 0;
     odp.hInstance = g_hInst;
-    odp.pszGroup = Translate("Customize");
+    odp.pszGroup = LPGEN("Customize");
     odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPTIONS);
-    odp.pszTitle = Translate("Contact pictures");
+    odp.pszTitle = LPGEN("Contact pictures");
     odp.pfnDlgProc = DlgProcOptions;
     odp.flags = ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
@@ -2338,7 +2338,7 @@ static int OnDetailsInit(WPARAM wParam, LPARAM lParam)
 		odp.hInstance = g_hInst;
 		odp.pfnDlgProc = DlgProcAvatarProtoInfo;
 		odp.pszTemplate = MAKEINTRESOURCEA(IDD_PROTO_AVATARS);
-		odp.pszTitle = Translate("Avatar");
+		odp.pszTitle = LPGEN("Avatar");
 		CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
 	}
 	else
@@ -2351,7 +2351,7 @@ static int OnDetailsInit(WPARAM wParam, LPARAM lParam)
 		odp.pfnDlgProc = DlgProcAvatarUserInfo;
 		odp.position = -2000000000;
 		odp.pszTemplate = MAKEINTRESOURCEA(IDD_USER_AVATAR);
-		odp.pszTitle = Translate("Avatar");
+		odp.pszTitle = LPGEN("Avatar");
 		CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
 	}
 	return 0;

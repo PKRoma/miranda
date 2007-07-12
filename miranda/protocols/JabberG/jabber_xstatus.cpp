@@ -44,18 +44,18 @@ static BOOL   bXStatusMenuBuilt = FALSE;
 static HANDLE hXStatusItems[ NUM_XMODES+1 ];
 
 const char* arXStatusNames[ NUM_XMODES ] = {
-	"Afraid",      "Amazed",      "Angry",     "Annoyed",     "Anxious",      "Aroused",
-	"Ashamed",     "Bored",       "Brave",     "Calm",        "Cold",         "Confused",
-	"Contented",   "Cranky",      "Curious",   "Depressed",   "Disappointed", "Disgusted",
-	"Distracted",  "Embarrassed", "Excited",   "Flirtatious", "Frustrated",   "Grumpy",
-	"Guilty",      "Happy",       "Hot",       "Humbled",     "Humiliated",   "Hungry",
-	"Hurt",        "Impressed",   "In awe",    "In love",     "Indignant",    "Interested",
-	"Intoxicated", "Invincible",  "Jealous",   "Lonely",      "Mean",         "Moody",
-	"Nervous",     "Neutral",     "Offended",  "Playful",     "Proud",        "Relieved",
-	"Remorseful",  "Restless",    "Sad",       "Sarcastic",   "Serious",      "Shocked ",
-	"Shy",         "Sick",        "Sleepy",    "Stressed",    "Surprised",    "Thirsty",
-	"Worried"
-};	   
+	LPGEN("Afraid"),      LPGEN("Amazed"),      LPGEN("Angry"),     LPGEN("Annoyed"),     LPGEN("Anxious"),      LPGEN("Aroused"),
+	LPGEN("Ashamed"),     LPGEN("Bored"),       LPGEN("Brave"),     LPGEN("Calm"),        LPGEN("Cold"),         LPGEN("Confused"),
+	LPGEN("Contented"),   LPGEN("Cranky"),      LPGEN("Curious"),   LPGEN("Depressed"),   LPGEN("Disappointed"), LPGEN("Disgusted"),
+	LPGEN("Distracted"),  LPGEN("Embarrassed"), LPGEN("Excited"),   LPGEN("Flirtatious"), LPGEN("Frustrated"),   LPGEN("Grumpy"),
+	LPGEN("Guilty"),      LPGEN("Happy"),       LPGEN("Hot"),       LPGEN("Humbled"),     LPGEN("Humiliated"),   LPGEN("Hungry"),
+	LPGEN("Hurt"),        LPGEN("Impressed"),   LPGEN("In awe"),    LPGEN("In love"),     LPGEN("Indignant"),    LPGEN("Interested"),
+	LPGEN("Intoxicated"), LPGEN("Invincible"),  LPGEN("Jealous"),   LPGEN("Lonely"),      LPGEN("Mean"),         LPGEN("Moody"),
+	LPGEN("Nervous"),     LPGEN("Neutral"),     LPGEN("Offended"),  LPGEN("Playful"),     LPGEN("Proud"),        LPGEN("Relieved"),
+	LPGEN("Remorseful"),  LPGEN("Restless"),    LPGEN("Sad"),       LPGEN("Sarcastic"),   LPGEN("Serious"),      LPGEN("Shocked "),
+	LPGEN("Shy"),         LPGEN("Sick"),        LPGEN("Sleepy"),    LPGEN("Stressed"),    LPGEN("Surprised"),    LPGEN("Thirsty"),
+	LPGEN("Worried")
+};
 
 static HANDLE arXStatusIcons[ NUM_XMODES ];
 
@@ -204,7 +204,7 @@ int CListMW_BuildStatusItems( WPARAM wParam, LPARAM lParam )
 	HANDLE hXStatusRoot;
 	HANDLE hRoot = ( HANDLE )szItem;
 
-	mir_snprintf( szItem, sizeof(szItem), "%s Custom Status", jabberProtoName );
+	mir_snprintf( szItem, sizeof(szItem), LPGEN("%s Custom Status"), jabberProtoName );
 	mi.cbSize = sizeof(mi);
 	mi.popupPosition= 500084000;
 	mi.position = 2000040000;

@@ -1443,7 +1443,7 @@ int InitCustomMenus(void)
 		mi.cbSize = sizeof( mi );
 		mi.position = 0x7fffffff;
 		mi.pszService = "CloseAction";
-		mi.pszName = "E&xit";
+		mi.pszName = LPGEN("E&xit");
 		AddMainMenuItem( 0, ( LPARAM )&mi );
 	}
 

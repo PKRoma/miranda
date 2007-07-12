@@ -616,15 +616,15 @@ int JabberOptInit( WPARAM wParam, LPARAM lParam )
 
 	odp.cbSize      = sizeof( odp );
 	odp.hInstance   = hInst;
-	odp.pszGroup    = "Network";
-	odp.pszTab      = "Account";
+	odp.pszGroup    = LPGEN("Network");
+	odp.pszTab      = LPGEN("Account");
 	odp.pszTemplate = MAKEINTRESOURCEA( IDD_OPT_JABBER );
 	odp.pszTitle    = jabberModuleName;
 	odp.pfnDlgProc  = JabberOptDlgProc;
 	odp.flags       = ODPF_BOLDGROUPS;
 	JCallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
 
-	odp.pszTab      = "Advanced";
+	odp.pszTab      = LPGEN("Advanced");
 	odp.pszTemplate = MAKEINTRESOURCEA( IDD_OPT_JABBER2 );
 	odp.pfnDlgProc  = JabberAdvOptDlgProc;
 	JCallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );

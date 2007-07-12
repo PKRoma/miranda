@@ -1118,30 +1118,30 @@ static int OptInitialise(WPARAM wParam, LPARAM lParam)
     odp.position = 910000000;
     odp.hInstance = g_hInst;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPTIONSDIALOG);
-    odp.pszTitle = Translate("Message Sessions");
+    odp.pszTitle = LPGEN("Message Sessions");
     odp.pfnDlgProc = OptionsDlgProc;
     odp.pszGroup = NULL;//Translate("Message Sessions");
     odp.nIDBottomSimpleControl = 0;
     odp.flags = ODPF_BOLDGROUPS;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
     
-    odp.pszGroup = Translate("Message Sessions");
+    odp.pszGroup = LPGEN("Message Sessions");
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSGTYPE);
-    odp.pszTitle = Translate("Typing Notify");
+    odp.pszTitle = LPGEN("Typing Notify");
     odp.pfnDlgProc = DlgProcTypeOptions;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
 
     odp.pszTemplate = MAKEINTRESOURCEA(IDD_POPUP_OPT);
-    odp.pszTitle = Translate("Event notifications");
+    odp.pszTitle = LPGEN("Event notifications");
     odp.pfnDlgProc = DlgProcPopupOpts;
     odp.nIDBottomSimpleControl = 0;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
 
     odp.pszTemplate = MAKEINTRESOURCEA(IDD_SKINTABDIALOG);
-    odp.pszTitle = Translate("Message window skin");
+    odp.pszTitle = LPGEN("Message window skin");
     odp.pfnDlgProc = SkinOptionsDlgProc;
     odp.nIDBottomSimpleControl = 0;
-    odp.pszGroup = Translate("Customize");
+    odp.pszGroup = LPGEN("Customize");
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
 
     return 0;

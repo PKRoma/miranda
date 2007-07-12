@@ -366,7 +366,7 @@ int LoadCLUIModule(void)
 		mi.flags = CMIF_ICONFROMICOLIB;
 		mi.icolibItem = GetSkinIconHandle( SKINICON_OTHER_DELETE );
 		mi.pszContactOwner = NULL;      //on every contact
-		mi.pszName = "De&lete";
+		mi.pszName = LPGEN("De&lete");
 		mi.pszService = "CList/DeleteContactCommand";
 		CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
 
@@ -374,7 +374,7 @@ int LoadCLUIModule(void)
 		mi.position = 2000050000;
 		mi.icolibItem = GetSkinIconHandle( SKINICON_OTHER_RENAME );
 		mi.pszContactOwner = NULL;      //on every contact
-		mi.pszName = "&Rename";
+		mi.pszName = LPGEN("&Rename");
 		mi.pszService = "CList/RenameContactCommand";
 		hRenameMenuItem = (HANDLE) CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
 
@@ -382,7 +382,7 @@ int LoadCLUIModule(void)
 		mi.position = -2050000000;
 		mi.flags |= CMIF_NOTONLIST;
 		mi.icolibItem = GetSkinIconHandle( SKINICON_OTHER_ADDCONTACT );
-		mi.pszName = "&Add permanently to list";
+		mi.pszName = LPGEN("&Add permanently to list");
 		mi.pszService = "CList/AddToListContactCommand";
 		CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
 

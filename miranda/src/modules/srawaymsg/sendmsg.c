@@ -385,8 +385,8 @@ static int AwayMsgOptInitialise(WPARAM wParam,LPARAM lParam)
 	odp.position = 870000000;
 	odp.hInstance = GetModuleHandle(NULL);
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_AWAYMSG);
-	odp.pszTitle = "Messages";
-	odp.pszGroup = "Status";
+	odp.pszTitle = LPGEN("Messages");
+	odp.pszGroup = LPGEN("Status");
 	odp.pfnDlgProc = DlgProcAwayMsgOpts;
 	odp.flags = ODPF_BOLDGROUPS;
 	CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );

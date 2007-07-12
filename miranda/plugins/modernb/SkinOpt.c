@@ -61,15 +61,15 @@ int SkinOptInit(WPARAM wParam,LPARAM lParam)
 		odp.hInstance=g_hInst;
 		odp.pfnDlgProc=DlgSkinOpts;
 		odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_SKIN);
-		odp.pszGroup=Translate("Customize");
-		odp.pszTitle=Translate("Contact list skin");
+		odp.pszGroup=LPGEN("Customize");
+		odp.pszTitle=LPGEN("Contact list skin");
 		odp.flags=ODPF_BOLDGROUPS;
-		odp.pszTab=Translate("Load/Save");
+		odp.pszTab=LPGEN("Load/Save");
 		CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 
 		odp.pfnDlgProc=DlgSkinEditorOpts;
 		odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_SKINEDITOR);
-		odp.pszTab=Translate("Object Editor");
+		odp.pszTab=LPGEN("Object Editor");
 		CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 	}
 	return 0;

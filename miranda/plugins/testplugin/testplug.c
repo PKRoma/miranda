@@ -65,7 +65,7 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 	mi.position=-0x7FFFFFFF;
 	mi.flags=0;
 	mi.hIcon=LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
-	mi.pszName="&Test Plugin...";
+	mi.pszName=LPGEN("&Test Plugin...");
 	mi.pszService="TestPlug/MenuCommand";
 	CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
 	return 0;

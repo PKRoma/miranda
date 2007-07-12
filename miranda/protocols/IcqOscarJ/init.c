@@ -450,7 +450,7 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
     mi.flags = 0;
     mi.hIcon = IconLibGetIcon("req_auth");
     mi.pszContactOwner = gpszICQProtoName;
-    mi.pszName = ICQTranslate("Request authorization");
+    mi.pszName = LPGEN("Request authorization");
     mi.pszService = pszServiceName;
     hUserMenuAuth = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
     IconLibReleaseIcon("req_auth");
@@ -460,7 +460,7 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 
     mi.position = 1000029999;
     mi.hIcon = IconLibGetIcon("grant_auth");
-    mi.pszName = ICQTranslate("Grant authorization");
+    mi.pszName = LPGEN("Grant authorization");
     hUserMenuGrant = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
     IconLibReleaseIcon("grant_auth");
 
@@ -469,7 +469,7 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 
     mi.position = 1000029998;
     mi.hIcon = IconLibGetIcon("revoke_auth");
-    mi.pszName = ICQTranslate("Revoke authorization");
+    mi.pszName = LPGEN("Revoke authorization");
     hUserMenuRevoke = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
     IconLibReleaseIcon("revoke_auth");
 
@@ -478,7 +478,7 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 
     mi.position = -2049999999;
     mi.hIcon = IconLibGetIcon("add_to_server");
-    mi.pszName = ICQTranslate("Add to server list");
+    mi.pszName = LPGEN("Add to server list");
     hUserMenuAddServ = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
     IconLibReleaseIcon("add_to_server");
 
@@ -487,7 +487,7 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 
     mi.position = -2000004999;
     mi.hIcon = NULL; // dynamically updated
-    mi.pszName = ICQTranslate("Show custom status details");
+    mi.pszName = LPGEN("Show custom status details");
     mi.flags=CMIF_NOTOFFLINE;
     hUserMenuXStatus = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
   }

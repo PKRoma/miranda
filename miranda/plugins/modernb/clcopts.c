@@ -228,7 +228,7 @@ int ClcOptInit(WPARAM wParam,LPARAM lParam)
 	odp.hInstance=g_hInst;
 	//odp.ptszGroup=TranslateT("Contact List");
 	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_CLC);
-	odp.ptszTitle=TranslateT("Contact List");
+	odp.ptszTitle=LPGENT("Contact List");
 	odp.pfnDlgProc=DlgProcClcMainOpts;
 	odp.flags=ODPF_BOLDGROUPS|ODPF_TCHAR;
 	//CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);  

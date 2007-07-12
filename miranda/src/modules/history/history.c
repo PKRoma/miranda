@@ -65,7 +65,7 @@ int LoadHistoryModule(void)
 	mi.position = 1000090000;
 	mi.flags = CMIF_ICONFROMICOLIB;
 	mi.icolibItem = GetSkinIconHandle( SKINICON_OTHER_HISTORY );
-	mi.pszName = "View &History";
+	mi.pszName = LPGEN("View &History");
 	mi.pszService = MS_HISTORY_SHOWCONTACTHISTORY;
 	CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
 

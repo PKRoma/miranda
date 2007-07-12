@@ -114,41 +114,41 @@ static HBITMAP hbmLockedPoint = 0, hbmOldLockedPoint = 0;
 HICON overlayicons[10];
 
 struct CluiTopButton top_buttons[] = {
-	    0, 0, 0, IDC_TBTOPMENU, IDI_TBTOPMENU, 0,           "CLN_topmenu", NULL, TOPBUTTON_PUSH | TOPBUTTON_SENDONDOWN, 1, _T("Show menu"), 
-		0, 0, 0, IDC_TBHIDEOFFLINE, IDI_HIDEOFFLINE, 0,     "CLN_online", NULL, 0, 2, _T("Show / hide offline contacts"),
-		0, 0, 0, IDC_TBHIDEGROUPS, IDI_HIDEGROUPS, 0,       "CLN_groups", NULL, 0, 4, _T("Toggle group mode"),
-		0, 0, 0, IDC_TBFINDANDADD, IDI_FINDANDADD, 0,       "CLN_findadd", NULL, TOPBUTTON_PUSH, 8, _T("Find and add contacts"),
-		0, 0, 0, IDC_TBOPTIONS, IDI_TBOPTIONS, 0,           "CLN_options", NULL, TOPBUTTON_PUSH, 16, _T("Open preferences"),
-		0, 0, 0, IDC_TBSOUND, IDI_SOUNDSON, IDI_SOUNDSOFF,  "CLN_sound", "CLN_soundsoff", 0, 32, _T("Toggle sounds"),
-		0, 0, 0, IDC_TBMINIMIZE, IDI_MINIMIZE, 0,           "CLN_minimize", NULL, TOPBUTTON_PUSH, 64, _T("Minimize contact list"),
-		0, 0, 0, IDC_TBTOPSTATUS, 0, 0,                     "CLN_topstatus", NULL, TOPBUTTON_PUSH  | TOPBUTTON_SENDONDOWN, 128, _T("Status menu"),
-		0, 0, 0, IDC_TABSRMMSLIST, IDI_TABSRMMSESSIONLIST, 0, "CLN_slist", NULL, TOPBUTTON_PUSH | TOPBUTTON_SENDONDOWN, 256, _T("tabSRMM session list"),
-		0, 0, 0, IDC_TABSRMMMENU, IDI_TABSRMMMENU, 0,       "CLN_menu", NULL, TOPBUTTON_PUSH | TOPBUTTON_SENDONDOWN, 512, _T("tabSRMM Menu"),
+	    0, 0, 0, IDC_TBTOPMENU, IDI_TBTOPMENU, 0,           "CLN_topmenu", NULL, TOPBUTTON_PUSH | TOPBUTTON_SENDONDOWN, 1, LPGENT("Show menu"), 
+		0, 0, 0, IDC_TBHIDEOFFLINE, IDI_HIDEOFFLINE, 0,     "CLN_online", NULL, 0, 2, LPGENT("Show / hide offline contacts"),
+		0, 0, 0, IDC_TBHIDEGROUPS, IDI_HIDEGROUPS, 0,       "CLN_groups", NULL, 0, 4, LPGENT("Toggle group mode"),
+		0, 0, 0, IDC_TBFINDANDADD, IDI_FINDANDADD, 0,       "CLN_findadd", NULL, TOPBUTTON_PUSH, 8, LPGENT("Find and add contacts"),
+		0, 0, 0, IDC_TBOPTIONS, IDI_TBOPTIONS, 0,           "CLN_options", NULL, TOPBUTTON_PUSH, 16, LPGENT("Open preferences"),
+		0, 0, 0, IDC_TBSOUND, IDI_SOUNDSON, IDI_SOUNDSOFF,  "CLN_sound", "CLN_soundsoff", 0, 32, LPGENT("Toggle sounds"),
+		0, 0, 0, IDC_TBMINIMIZE, IDI_MINIMIZE, 0,           "CLN_minimize", NULL, TOPBUTTON_PUSH, 64, LPGENT("Minimize contact list"),
+		0, 0, 0, IDC_TBTOPSTATUS, 0, 0,                     "CLN_topstatus", NULL, TOPBUTTON_PUSH  | TOPBUTTON_SENDONDOWN, 128, LPGENT("Status menu"),
+		0, 0, 0, IDC_TABSRMMSLIST, IDI_TABSRMMSESSIONLIST, 0, "CLN_slist", NULL, TOPBUTTON_PUSH | TOPBUTTON_SENDONDOWN, 256, LPGENT("tabSRMM session list"),
+		0, 0, 0, IDC_TABSRMMMENU, IDI_TABSRMMMENU, 0,       "CLN_menu", NULL, TOPBUTTON_PUSH | TOPBUTTON_SENDONDOWN, 512, LPGENT("tabSRMM Menu"),
+		
+		0, 0, 0, IDC_TBSELECTVIEWMODE, IDI_CLVM_SELECT, 0,  "CLN_CLVM_select", NULL, TOPBUTTON_PUSH | TOPBUTTON_SENDONDOWN, 1024, LPGENT("Select view mode"),
+		0, 0, 0, IDC_TBCONFIGUREVIEWMODE, IDI_CLVM_OPTIONS, 0, "CLN_CLVM_options", NULL, TOPBUTTON_PUSH, 2048, LPGENT("Setup view modes"),
+		0, 0, 0, IDC_TBCLEARVIEWMODE, IDI_DELETE, 0,        "CLN_CLVM_reset", NULL, TOPBUTTON_PUSH, 4096, LPGENT("Clear view mode"),
 
-		0, 0, 0, IDC_TBSELECTVIEWMODE, IDI_CLVM_SELECT, 0,  "CLN_CLVM_select", NULL, TOPBUTTON_PUSH | TOPBUTTON_SENDONDOWN, 1024, _T("Select view mode"),
-		0, 0, 0, IDC_TBCONFIGUREVIEWMODE, IDI_CLVM_OPTIONS, 0, "CLN_CLVM_options", NULL, TOPBUTTON_PUSH, 2048, _T("Setup view modes"),
-		0, 0, 0, IDC_TBCLEARVIEWMODE, IDI_DELETE, 0,        "CLN_CLVM_reset", NULL, TOPBUTTON_PUSH, 4096, _T("Clear view mode"),
-
-		0, 0, 0, IDC_TBGLOBALSTATUS, 0, 0, "", NULL, TOPBUTTON_PUSH | TOPBUTTON_SENDONDOWN, 0, _T("Set status modes"),
-		0, 0, 0, IDC_TBMENU, IDI_MINIMIZE, 0, "", NULL, TOPBUTTON_PUSH | TOPBUTTON_SENDONDOWN, 0, _T("Open main menu"),
+		0, 0, 0, IDC_TBGLOBALSTATUS, 0, 0, "", NULL, TOPBUTTON_PUSH | TOPBUTTON_SENDONDOWN, 0, LPGENT("Set status modes"),
+		0, 0, 0, IDC_TBMENU, IDI_MINIMIZE, 0, "", NULL, TOPBUTTON_PUSH | TOPBUTTON_SENDONDOWN, 0, LPGENT("Open main menu"),
 		(HWND) - 1, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
 static struct IconDesc myIcons[] = {
-	"CLN_online", "Toggle show online/offline", -IDI_HIDEOFFLINE,
-		"CLN_groups", "Toggle groups", -IDI_HIDEGROUPS,
-		"CLN_findadd", "Find contacts", -IDI_FINDANDADD,
-		"CLN_options", "Open preferences", -IDI_TBOPTIONS,
-		"CLN_sound", "Toggle sounds", -IDI_SOUNDSON,
-		"CLN_minimize", "Minimize contact list", -IDI_MINIMIZE,
-		"CLN_slist", "Show tabSRMM session list", -IDI_TABSRMMSESSIONLIST,
-		"CLN_menu", "Show tabSRMM menu", -IDI_TABSRMMMENU,
-		"CLN_soundsoff", "Sounds are off", -IDI_SOUNDSOFF,
-		"CLN_CLVM_select", "Select view mode", -IDI_CLVM_SELECT,
-		"CLN_CLVM_reset", "Reset view mode", -IDI_DELETE,
-		"CLN_CLVM_options", "Configure view modes", -IDI_CLVM_OPTIONS,
-		"CLN_topmenu", "Show menu", -IDI_TBTOPMENU,
-		NULL, NULL, 0
+	"CLN_online", LPGEN("Toggle show online/offline"), -IDI_HIDEOFFLINE,
+	"CLN_groups", LPGEN("Toggle groups"), -IDI_HIDEGROUPS,
+	"CLN_findadd", LPGEN("Find contacts"), -IDI_FINDANDADD,
+	"CLN_options", LPGEN("Open preferences"), -IDI_TBOPTIONS,
+	"CLN_sound", LPGEN("Toggle sounds"), -IDI_SOUNDSON,
+	"CLN_minimize", LPGEN("Minimize contact list"), -IDI_MINIMIZE,
+	"CLN_slist", LPGEN("Show tabSRMM session list"), -IDI_TABSRMMSESSIONLIST,
+	"CLN_menu", LPGEN("Show tabSRMM menu"), -IDI_TABSRMMMENU,
+	"CLN_soundsoff", LPGEN("Sounds are off"), -IDI_SOUNDSOFF,
+	"CLN_CLVM_select", LPGEN("Select view mode"), -IDI_CLVM_SELECT,
+	"CLN_CLVM_reset", LPGEN("Reset view mode"), -IDI_DELETE,
+	"CLN_CLVM_options", LPGEN("Configure view modes"), -IDI_CLVM_OPTIONS,
+	"CLN_topmenu", LPGEN("Show menu"), -IDI_TBTOPMENU,
+	NULL, NULL, 0
 };
 
 static void Tweak_It(COLORREF clr)
@@ -2598,10 +2598,10 @@ void LoadCLUIModule(void)
 }
 
 static struct {UINT id; char *name;} _tagFSINFO[] = {
-        FONTID_STATUS, "Status mode",
-		FONTID_FRAMETITLE, "Frame titles",
-		FONTID_EVENTAREA, "Event area",
-		FONTID_TIMESTAMP, "Contact list local time",
+		FONTID_STATUS, LPGEN("Status mode"),
+		FONTID_FRAMETITLE, LPGEN("Frame titles"),
+		FONTID_EVENTAREA, LPGEN("Event area"),
+		FONTID_TIMESTAMP, LPGEN("Contact list local time"),
 		0, NULL
 };
 

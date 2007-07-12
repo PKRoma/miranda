@@ -982,7 +982,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 		mi.flags = 0;
 		mi.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
 	}
-	mi.pszName = "&Message";
+	mi.pszName = LPGEN("&Message");
 	mi.pszService = MS_MSG_SENDMESSAGE;
 	CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) & protoCount, (LPARAM) & protocol);
 	for (i = 0; i < protoCount; i++) {
@@ -1093,7 +1093,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	mi.position = -500050005;
 	mi.hIcon = myGlobals.g_iconContainer;
 	mi.pszContactOwner = NULL;
-	mi.pszName = Translate( "&tabSRMM settings" );
+	mi.pszName = LPGEN( "&tabSRMM settings" );
 	mi.pszService = MS_TABMSG_SETUSERPREFS;
 	myGlobals.m_UserMenuItem = ( HANDLE )CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 	PreTranslateDates();
@@ -1886,64 +1886,64 @@ int TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned in
 }
 
 static ICONDESC _toolbaricons[] = {
-    "tabSRMM_history", "Show History", &myGlobals.g_buttonBarIcons[1], -IDI_HISTORY, 1,
-    "tabSRMM_mlog", "Message Log Options", &myGlobals.g_buttonBarIcons[2], -IDI_MSGLOGOPT, 1,
-    "tabSRMM_add", "Add contact", &myGlobals.g_buttonBarIcons[0], -IDI_ADDCONTACT, 1,
-    "tabSRMM_multi", "Multisend indicator", &myGlobals.g_buttonBarIcons[3], -IDI_MULTISEND, 1,
-    //"tabSRMM_typing", "Contact is typing", &myGlobals.g_buttonBarIcons[5], -IDI_TYPING, 1,
-    "tabSRMM_quote", "Quote text", &myGlobals.g_buttonBarIcons[8], -IDI_QUOTE, 1,
-    "tabSRMM_save", "Save and close", &myGlobals.g_buttonBarIcons[7], -IDI_SAVE, 1,
-    "tabSRMM_send", "Send message", &myGlobals.g_buttonBarIcons[9], -IDI_SEND, 1,
-    "tabSRMM_avatar", "Avatar menu", &myGlobals.g_buttonBarIcons[10], -IDI_CONTACTPIC, 1,
-    "tabSRMM_close", "Close", &myGlobals.g_buttonBarIcons[6], -IDI_CLOSEMSGDLG, 1,
-    "tabSRMM_usermenu", "User menu", &myGlobals.g_buttonBarIcons[4], -IDI_USERMENU, 1,
+    "tabSRMM_history", LPGEN("Show History"), &myGlobals.g_buttonBarIcons[1], -IDI_HISTORY, 1,
+    "tabSRMM_mlog", LPGEN("Message Log Options"), &myGlobals.g_buttonBarIcons[2], -IDI_MSGLOGOPT, 1,
+    "tabSRMM_add", LPGEN("Add contact"), &myGlobals.g_buttonBarIcons[0], -IDI_ADDCONTACT, 1,
+    "tabSRMM_multi", LPGEN("Multisend indicator"), &myGlobals.g_buttonBarIcons[3], -IDI_MULTISEND, 1,
+    //"tabSRMM_typing", LPGEN("Contact is typing"), &myGlobals.g_buttonBarIcons[5], -IDI_TYPING, 1,
+    "tabSRMM_quote", LPGEN("Quote text"), &myGlobals.g_buttonBarIcons[8], -IDI_QUOTE, 1,
+    "tabSRMM_save", LPGEN("Save and close"), &myGlobals.g_buttonBarIcons[7], -IDI_SAVE, 1,
+    "tabSRMM_send", LPGEN("Send message"), &myGlobals.g_buttonBarIcons[9], -IDI_SEND, 1,
+    "tabSRMM_avatar", LPGEN("Avatar menu"), &myGlobals.g_buttonBarIcons[10], -IDI_CONTACTPIC, 1,
+    "tabSRMM_close", LPGEN("Close"), &myGlobals.g_buttonBarIcons[6], -IDI_CLOSEMSGDLG, 1,
+    "tabSRMM_usermenu", LPGEN("User menu"), &myGlobals.g_buttonBarIcons[4], -IDI_USERMENU, 1,
     NULL, NULL, NULL, 0, 0
 };
 
 static ICONDESC _exttoolbaricons[] = {
-    "tabSRMM_emoticon", "Smiley button", &myGlobals.g_buttonBarIcons[11], -IDI_SMILEYICON, 1,
-    "tabSRMM_bold", "Format bold", &myGlobals.g_buttonBarIcons[17], -IDI_FONTBOLD, 1,
-    "tabSRMM_italic", "Format italic", &myGlobals.g_buttonBarIcons[18], -IDI_FONTITALIC, 1,
-    "tabSRMM_underline", "Format underline", &myGlobals.g_buttonBarIcons[19], -IDI_FONTUNDERLINE, 1,
-    "tabSRMM_face", "Font face", &myGlobals.g_buttonBarIcons[20], -IDI_FONTFACE, 1,
-    "tabSRMM_color", "Font color", &myGlobals.g_buttonBarIcons[21], -IDI_FONTCOLOR, 1,
+    "tabSRMM_emoticon", LPGEN("Smiley button"), &myGlobals.g_buttonBarIcons[11], -IDI_SMILEYICON, 1,
+    "tabSRMM_bold", LPGEN("Format bold"), &myGlobals.g_buttonBarIcons[17], -IDI_FONTBOLD, 1,
+    "tabSRMM_italic", LPGEN("Format italic"), &myGlobals.g_buttonBarIcons[18], -IDI_FONTITALIC, 1,
+    "tabSRMM_underline", LPGEN("Format underline"), &myGlobals.g_buttonBarIcons[19], -IDI_FONTUNDERLINE, 1,
+    "tabSRMM_face", LPGEN("Font face"), &myGlobals.g_buttonBarIcons[20], -IDI_FONTFACE, 1,
+    "tabSRMM_color", LPGEN("Font color"), &myGlobals.g_buttonBarIcons[21], -IDI_FONTCOLOR, 1,
     NULL, NULL, NULL, 0, 0
 };
 
 static ICONDESC _logicons[] = {
-    "tabSRMM_error", "Message delivery error", &myGlobals.g_iconErr, -IDI_MSGERROR, 1,
-    "tabSRMM_in", "Incoming message", &myGlobals.g_iconIn, -IDI_ICONIN, 0,
-    "tabSRMM_out", "Outgoing message", &myGlobals.g_iconOut, -IDI_ICONOUT, 0,
-    "tabSRMM_status", "Statuschange", &myGlobals.g_iconStatus, -IDI_STATUSCHANGE, 0,
+    "tabSRMM_error", LPGEN("Message delivery error"), &myGlobals.g_iconErr, -IDI_MSGERROR, 1,
+    "tabSRMM_in", LPGEN("Incoming message"), &myGlobals.g_iconIn, -IDI_ICONIN, 0,
+    "tabSRMM_out", LPGEN("Outgoing message"), &myGlobals.g_iconOut, -IDI_ICONOUT, 0,
+    "tabSRMM_status", LPGEN("Statuschange"), &myGlobals.g_iconStatus, -IDI_STATUSCHANGE, 0,
     NULL, NULL, NULL, 0, 0
 };
 static ICONDESC _deficons[] = {
-    "tabSRMM_container", "Static container icon", &myGlobals.g_iconContainer, -IDI_CONTAINER, 1,
-    //"tabSRMM_mtn_on", "Sending typing notify is on", &myGlobals.g_buttonBarIcons[12], -IDI_SELFTYPING_ON, 1,
-    "tabSRMM_mtn_off", "Sending typing notify is off", &myGlobals.g_buttonBarIcons[13], -IDI_SELFTYPING_OFF, 1,
-    "tabSRMM_secureim_on", "RESERVED (currently not in use)", &myGlobals.g_buttonBarIcons[14], -IDI_SECUREIM_ENABLED, 1,
-    "tabSRMM_secureim_off", "RESERVED (currently not in use)", &myGlobals.g_buttonBarIcons[15], -IDI_SECUREIM_DISABLED, 1,
-    "tabSRMM_sounds_on", "Sounds are On", &myGlobals.g_buttonBarIcons[22], -IDI_SOUNDSON, 1,
-    "tabSRMM_sounds_off", "Sounds are off", &myGlobals.g_buttonBarIcons[23], -IDI_SOUNDSOFF, 1,
-    "tabSRMM_log_frozen", "Message Log frozen", &myGlobals.g_buttonBarIcons[24], -IDI_MSGERROR, 1,
-    "tabSRMM_undefined", "Default", &myGlobals.g_buttonBarIcons[27], -IDI_EMPTY, 1,
-    "tabSRMM_pulldown", "Pulldown Arrow", &myGlobals.g_buttonBarIcons[16], -IDI_PULLDOWNARROW, 1,
-    "tabSRMM_Leftarrow", "Left Arrow", &myGlobals.g_buttonBarIcons[25], -IDI_LEFTARROW, 1,
-    "tabSRMM_Rightarrow", "Right Arrow", &myGlobals.g_buttonBarIcons[28], -IDI_RIGHTARROW, 1,
-    "tabSRMM_Pulluparrow", "Up Arrow", &myGlobals.g_buttonBarIcons[26], -IDI_PULLUPARROW, 1,
-    "tabSRMM_sb_slist", "Session List", &myGlobals.g_sideBarIcons[0], -IDI_SESSIONLIST, 1,
-    "tabSRMM_sb_Favorites", "Favorite Contacts", &myGlobals.g_sideBarIcons[1], -IDI_FAVLIST, 1,
-    "tabSRMM_sb_Recent", "Recent Sessions", &myGlobals.g_sideBarIcons[2], -IDI_RECENTLIST, 1,
-    "tabSRMM_sb_Setup", "Setup Sidebar", &myGlobals.g_sideBarIcons[3], -IDI_CONFIGSIDEBAR, 1,
-    "tabSRMM_sb_Userprefs", "Contact Preferences", &myGlobals.g_sideBarIcons[4], -IDI_USERPREFS, 1,
+    "tabSRMM_container", LPGEN("Static container icon"), &myGlobals.g_iconContainer, -IDI_CONTAINER, 1,
+    //"tabSRMM_mtn_on", LPGEN("Sending typing notify is on"), &myGlobals.g_buttonBarIcons[12], -IDI_SELFTYPING_ON, 1,
+    "tabSRMM_mtn_off", LPGEN("Sending typing notify is off"), &myGlobals.g_buttonBarIcons[13], -IDI_SELFTYPING_OFF, 1,
+    "tabSRMM_secureim_on", LPGEN("RESERVED (currently not in use)"), &myGlobals.g_buttonBarIcons[14], -IDI_SECUREIM_ENABLED, 1,
+    "tabSRMM_secureim_off", LPGEN("RESERVED (currently not in use)"), &myGlobals.g_buttonBarIcons[15], -IDI_SECUREIM_DISABLED, 1,
+    "tabSRMM_sounds_on", LPGEN("Sounds are On"), &myGlobals.g_buttonBarIcons[22], -IDI_SOUNDSON, 1,
+    "tabSRMM_sounds_off", LPGEN("Sounds are off"), &myGlobals.g_buttonBarIcons[23], -IDI_SOUNDSOFF, 1,
+    "tabSRMM_log_frozen", LPGEN("Message Log frozen"), &myGlobals.g_buttonBarIcons[24], -IDI_MSGERROR, 1,
+    "tabSRMM_undefined", LPGEN("Default"), &myGlobals.g_buttonBarIcons[27], -IDI_EMPTY, 1,
+    "tabSRMM_pulldown", LPGEN("Pulldown Arrow"), &myGlobals.g_buttonBarIcons[16], -IDI_PULLDOWNARROW, 1,
+    "tabSRMM_Leftarrow", LPGEN("Left Arrow"), &myGlobals.g_buttonBarIcons[25], -IDI_LEFTARROW, 1,
+    "tabSRMM_Rightarrow", LPGEN("Right Arrow"), &myGlobals.g_buttonBarIcons[28], -IDI_RIGHTARROW, 1,
+    "tabSRMM_Pulluparrow", LPGEN("Up Arrow"), &myGlobals.g_buttonBarIcons[26], -IDI_PULLUPARROW, 1,
+    "tabSRMM_sb_slist", LPGEN("Session List"), &myGlobals.g_sideBarIcons[0], -IDI_SESSIONLIST, 1,
+    "tabSRMM_sb_Favorites", LPGEN("Favorite Contacts"), &myGlobals.g_sideBarIcons[1], -IDI_FAVLIST, 1,
+    "tabSRMM_sb_Recent", LPGEN("Recent Sessions"), &myGlobals.g_sideBarIcons[2], -IDI_RECENTLIST, 1,
+    "tabSRMM_sb_Setup", LPGEN("Setup Sidebar"), &myGlobals.g_sideBarIcons[3], -IDI_CONFIGSIDEBAR, 1,
+    "tabSRMM_sb_Userprefs", LPGEN("Contact Preferences"), &myGlobals.g_sideBarIcons[4], -IDI_USERPREFS, 1,
     NULL, NULL, NULL, 0, 0
 };
 
 static ICONDESC _trayIcon[] = {
-    "tabSRMM_frame1", "Frame 1", &myGlobals.m_AnimTrayIcons[0], -IDI_TRAYANIM1, 1,
-    "tabSRMM_frame2", "Frame 2", &myGlobals.m_AnimTrayIcons[1], -IDI_TRAYANIM2, 1,
-    "tabSRMM_frame3", "Frame 3", &myGlobals.m_AnimTrayIcons[2], -IDI_TRAYANIM3, 1,
-    "tabSRMM_frame4", "Frame 4", &myGlobals.m_AnimTrayIcons[3], -IDI_TRAYANIM4, 1,
+    "tabSRMM_frame1", LPGEN("Frame 1"), &myGlobals.m_AnimTrayIcons[0], -IDI_TRAYANIM1, 1,
+    "tabSRMM_frame2", LPGEN("Frame 2"), &myGlobals.m_AnimTrayIcons[1], -IDI_TRAYANIM2, 1,
+    "tabSRMM_frame3", LPGEN("Frame 3"), &myGlobals.m_AnimTrayIcons[2], -IDI_TRAYANIM3, 1,
+    "tabSRMM_frame4", LPGEN("Frame 4"), &myGlobals.m_AnimTrayIcons[3], -IDI_TRAYANIM4, 1,
     NULL, NULL, NULL, 0, 0
 };
 

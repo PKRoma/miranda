@@ -336,7 +336,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	mi.position = -2000090000;
 	mi.flags = CMIF_ICONFROMICOLIB;
 	mi.icolibItem = LoadSkinnedIconHandle( SKINICON_EVENT_MESSAGE );
-	mi.pszName = "&Message";
+	mi.pszName = LPGEN("&Message");
 	mi.pszService = MS_MSG_SENDMESSAGE;
 	CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) & protoCount, (LPARAM) & protocol);
 	for (i = 0; i < protoCount; i++) {

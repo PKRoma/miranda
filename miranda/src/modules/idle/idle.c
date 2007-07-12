@@ -372,8 +372,8 @@ static int IdleOptInit(WPARAM wParam, LPARAM lParam)
 	odp.position = 100000000;
 	odp.hInstance = GetModuleHandle(NULL);
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_IDLE);
-	odp.pszGroup = "Status";
-	odp.pszTitle = "Idle";
+	odp.pszGroup = LPGEN("Status");
+	odp.pszTitle = LPGEN("Idle");
 	odp.pfnDlgProc = IdleOptsDlgProc;
 	odp.flags = ODPF_BOLDGROUPS;
 	CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );

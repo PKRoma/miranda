@@ -44,7 +44,7 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
 	odp.position=-1000000000;
 	odp.hInstance=g_hInst;
 	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_CLIST);
-	odp.pszTitle=Translate("Contact List");
+	odp.pszTitle=LPGEN("Contact List");
 	odp.pfnDlgProc=DlgProcGenOpts;
 	odp.flags=ODPF_BOLDGROUPS;
 	odp.nIDBottomSimpleControl=IDC_STCLISTGROUP;
@@ -53,10 +53,10 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 
 	odp.cbSize=sizeof(odp);
-	odp.pszGroup=Translate("Events");
+	odp.pszGroup=LPGEN("Events");
 	odp.position=-200000000;
 	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_HOTKEYS);
-	odp.pszTitle=Translate("Hotkeys2");
+	odp.pszTitle=LPGEN("Hotkeys2");
 	odp.pfnDlgProc=DlgProcHotKeyOpts2;
 	odp.flags=ODPF_BOLDGROUPS;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);

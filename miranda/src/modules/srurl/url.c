@@ -122,7 +122,7 @@ static int SRUrlModulesLoaded(WPARAM wParam,LPARAM lParam)
 	mi.position = -2000040000;
 	mi.flags = CMIF_ICONFROMICOLIB;
 	mi.icolibItem = GetSkinIconHandle( SKINICON_EVENT_URL );
-	mi.pszName = "Web Page Address (&URL)";
+	mi.pszName = LPGEN("Web Page Address (&URL)");
 	mi.pszService = MS_URL_SENDURL;
 	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&protocol);
 	for ( i=0; i < protoCount; i++ ) {

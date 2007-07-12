@@ -204,7 +204,7 @@ static int SRFileModulesLoaded(WPARAM wParam,LPARAM lParam)
 	mi.cbSize = sizeof(mi);
 	mi.position = -2000020000;
 	mi.icolibItem = GetSkinIconHandle( SKINICON_EVENT_FILE );
-	mi.pszName = "&File";
+	mi.pszName = LPGEN("&File");
 	mi.pszService = MS_FILE_SENDFILE;
 	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&protocol);
 	for ( i=0; i <protoCount; i++ ) {

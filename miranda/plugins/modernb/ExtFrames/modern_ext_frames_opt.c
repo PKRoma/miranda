@@ -53,9 +53,9 @@ static int _ExtFrames_OptionsDlgInit(WPARAM wParam,LPARAM lParam)
 	odp.hInstance=g_hInst;
 	//odp.ptszGroup=TranslateT("Contact List");
 	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_EXTFRAMES);
-	odp.ptszTitle=TranslateT("Contact List");
+	odp.ptszTitle=LPGENT("Contact List");
 	odp.pfnDlgProc=_ExtFrames_DlgProcFrameOpts;
-	odp.ptszTab=TranslateT("Frames");
+	odp.ptszTab=LPGENT("Frames");
 	odp.flags=ODPF_BOLDGROUPS|ODPF_EXPERTONLY|ODPF_TCHAR;
 #ifdef _DEBUG
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);

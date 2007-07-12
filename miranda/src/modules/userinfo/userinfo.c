@@ -496,12 +496,12 @@ int LoadUserInfoModule(void)
 	mi.flags = CMIF_ICONFROMICOLIB;
 	mi.position = 1000050000;
 	mi.icolibItem = GetSkinIconHandle( SKINICON_OTHER_USERDETAILS );
-	mi.pszName = "User &Details";
+	mi.pszName = LPGEN("User &Details");
 	mi.pszService = MS_USERINFO_SHOWDIALOG;
 	CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);   
 
 	mi.position = 500050000;
-	mi.pszName = "View/Change My &Details...";
+	mi.pszName = LPGEN("View/Change My &Details...");
 	CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
 
 	hWindowList = (HANDLE)CallService(MS_UTILS_ALLOCWINDOWLIST,0,0);

@@ -32,13 +32,13 @@ struct
 	int   defIconID;
 }
 static iconList[] = {
-	{	"Main",         "yahoo",      IDI_YAHOO      },
-	{	"Mail",         "mail",       IDI_INBOX      },
-	{	"Profile",      "profile",    IDI_PROFILE    },
-	{	"Refresh",      "refresh",    IDI_REFRESH    },
-	{	"Address Book", "yab",        IDI_YAB    	   },
-	{	"Set Status",   "set_status", IDI_SET_STATUS },
-	{	"Calendar",     "calendar",   IDI_CALENDAR   }
+	{	LPGEN("Main"),         "yahoo",      IDI_YAHOO      },
+	{	LPGEN("Mail"),         "mail",       IDI_INBOX      },
+	{	LPGEN("Profile"),      "profile",    IDI_PROFILE    },
+	{	LPGEN("Refresh"),      "refresh",    IDI_REFRESH    },
+	{	LPGEN("Address Book"), "yab",        IDI_YAB        },
+	{	LPGEN("Set Status"),   "set_status", IDI_SET_STATUS },
+	{	LPGEN("Calendar"),     "calendar",   IDI_CALENDAR   }
 };
 
 void YahooIconsInit( void )

@@ -34,56 +34,56 @@ struct StandardIconDescription
 
 struct StandardIconDescription mainIcons[] =
 {
-	{ SKINICON_OTHER_MIRANDA,     "Miranda IM",      -IDI_MIRANDA        },
-	{ SKINICON_EVENT_MESSAGE,     "Message",         -IDI_RECVMSG        },
-	{ SKINICON_EVENT_URL,         "URL",             -IDI_URL            },
-	{ SKINICON_EVENT_FILE,        "File",            -IDI_FILE           },
-	{ SKINICON_OTHER_USERONLINE,  "User Online",     -IDI_USERONLINE     },
-	{ SKINICON_OTHER_GROUPOPEN,   "Group (Open)",    -IDI_GROUPOPEN      },
-	{ SKINICON_OTHER_GROUPSHUT,   "Group (Closed)",  -IDI_GROUPSHUT      },
-	{ SKINICON_OTHER_CONNECTING,  "Connecting",      -IDI_LOAD           },
-	{ SKINICON_OTHER_ADDCONTACT,  "Add Contact",     -IDI_ADDCONTACT     },
-	{ SKINICON_OTHER_USERDETAILS, "User Details",    -IDI_USERDETAILS    },
-	{ SKINICON_OTHER_HISTORY,     "History",         -IDI_HISTORY        },
-	{ SKINICON_OTHER_DOWNARROW,   "Down Arrow",      -IDI_DOWNARROW      },
-	{ SKINICON_OTHER_FINDUSER,    "Find User",       -IDI_FINDUSER       },
-	{ SKINICON_OTHER_OPTIONS,     "Options",         -IDI_OPTIONS        },
-	{ SKINICON_OTHER_SENDEMAIL,   "Send E-mail",     -IDI_SENDEMAIL      },
-	{ SKINICON_OTHER_DELETE,      "Delete",          -IDI_DELETE         },
-	{ SKINICON_OTHER_RENAME,      "Rename",          -IDI_RENAME         },
-	{ SKINICON_OTHER_SMS,         "SMS",             -IDI_SMS            },
-	{ SKINICON_OTHER_SEARCHALL,   "Search All",      -IDI_SEARCHALL      },
-	{ SKINICON_OTHER_TICK,        "Tick",            -IDI_TICK           },
-	{ SKINICON_OTHER_NOTICK,      "No Tick",         -IDI_NOTICK         },
-	{ SKINICON_OTHER_HELP,        "Help",            -IDI_HELP           },
-	{ SKINICON_OTHER_MIRANDAWEB,  "Miranda Website", -IDI_MIRANDAWEBSITE },
-	{ SKINICON_OTHER_TYPING,      "Typing",          -IDI_TYPING         },
-	{ SKINICON_OTHER_SMALLDOT,    "Small Dot",       -IDI_SMALLDOT       },
-	{ SKINICON_OTHER_FILLEDBLOB,  "Filled Blob",     -IDI_FILLEDBLOB     },
-	{ SKINICON_OTHER_EMPTYBLOB,   "Empty Blob",      -IDI_EMPTYBLOB      },
-	{ SKINICON_OTHER_UNICODE,     "Unicode plugin",  -IDI_UNICODE        },
-	{ SKINICON_OTHER_ANSI,        "ANSI plugin",     -IDI_ANSI           },
-	{ SKINICON_OTHER_LOADED,      "Running plugin",  -IDI_LOADED         },
-	{ SKINICON_OTHER_NOTLOADED,   "Unloaded plugin", -IDI_NOTLOADED      },
+	{ SKINICON_OTHER_MIRANDA,     LPGEN("Miranda IM"),      -IDI_MIRANDA        },
+	{ SKINICON_EVENT_MESSAGE,     LPGEN("Message"),         -IDI_RECVMSG        },
+	{ SKINICON_EVENT_URL,         LPGEN("URL"),             -IDI_URL            },
+	{ SKINICON_EVENT_FILE,        LPGEN("File"),            -IDI_FILE           },
+	{ SKINICON_OTHER_USERONLINE,  LPGEN("User Online"),     -IDI_USERONLINE     },
+	{ SKINICON_OTHER_GROUPOPEN,   LPGEN("Group (Open)"),    -IDI_GROUPOPEN      },
+	{ SKINICON_OTHER_GROUPSHUT,   LPGEN("Group (Closed)"),  -IDI_GROUPSHUT      },
+	{ SKINICON_OTHER_CONNECTING,  LPGEN("Connecting"),      -IDI_LOAD           },
+	{ SKINICON_OTHER_ADDCONTACT,  LPGEN("Add Contact"),     -IDI_ADDCONTACT     },
+	{ SKINICON_OTHER_USERDETAILS, LPGEN("User Details"),    -IDI_USERDETAILS    },
+	{ SKINICON_OTHER_HISTORY,     LPGEN("History"),         -IDI_HISTORY        },
+	{ SKINICON_OTHER_DOWNARROW,   LPGEN("Down Arrow"),      -IDI_DOWNARROW      },
+	{ SKINICON_OTHER_FINDUSER,    LPGEN("Find User"),       -IDI_FINDUSER       },
+	{ SKINICON_OTHER_OPTIONS,     LPGEN("Options"),         -IDI_OPTIONS        },
+	{ SKINICON_OTHER_SENDEMAIL,   LPGEN("Send E-mail"),     -IDI_SENDEMAIL      },
+	{ SKINICON_OTHER_DELETE,      LPGEN("Delete"),          -IDI_DELETE         },
+	{ SKINICON_OTHER_RENAME,      LPGEN("Rename"),          -IDI_RENAME         },
+	{ SKINICON_OTHER_SMS,         LPGEN("SMS"),             -IDI_SMS            },
+	{ SKINICON_OTHER_SEARCHALL,   LPGEN("Search All"),      -IDI_SEARCHALL      },
+	{ SKINICON_OTHER_TICK,        LPGEN("Tick"),            -IDI_TICK           },
+	{ SKINICON_OTHER_NOTICK,      LPGEN("No Tick"),         -IDI_NOTICK         },
+	{ SKINICON_OTHER_HELP,        LPGEN("Help"),            -IDI_HELP           },
+	{ SKINICON_OTHER_MIRANDAWEB,  LPGEN("Miranda Website"), -IDI_MIRANDAWEBSITE },
+	{ SKINICON_OTHER_TYPING,      LPGEN("Typing"),          -IDI_TYPING         },
+	{ SKINICON_OTHER_SMALLDOT,    LPGEN("Small Dot"),       -IDI_SMALLDOT       },
+	{ SKINICON_OTHER_FILLEDBLOB,  LPGEN("Filled Blob"),     -IDI_FILLEDBLOB     },
+	{ SKINICON_OTHER_EMPTYBLOB,   LPGEN("Empty Blob"),      -IDI_EMPTYBLOB      },
+	{ SKINICON_OTHER_UNICODE,     LPGEN("Unicode plugin"),  -IDI_UNICODE        },
+	{ SKINICON_OTHER_ANSI,        LPGEN("ANSI plugin"),     -IDI_ANSI           },
+	{ SKINICON_OTHER_LOADED,      LPGEN("Running plugin"),  -IDI_LOADED         },
+	{ SKINICON_OTHER_NOTLOADED,   LPGEN("Unloaded plugin"), -IDI_NOTLOADED      },
 };
 
 struct StandardIconDescription statusIcons[] =
 {
-	{ ID_STATUS_OFFLINE,         "Offline",          -IDI_OFFLINE,       0xFFFFFFFF     },
-	{ ID_STATUS_ONLINE,          "Online",           -IDI_ONLINE,        PF2_ONLINE     },
-	{ ID_STATUS_AWAY,            "Away",             -IDI_AWAY,          PF2_SHORTAWAY  },
-	{ ID_STATUS_NA,              "NA",               -IDI_NA,            PF2_LONGAWAY   },
-	{ ID_STATUS_OCCUPIED,        "Occupied",         -IDI_OCCUPIED,      PF2_LIGHTDND   },
-	{ ID_STATUS_DND,             "DND",              -IDI_DND,           PF2_HEAVYDND   },
-	{ ID_STATUS_FREECHAT,        "Free for chat",    -IDI_FREE4CHAT,     PF2_FREECHAT   },
-	{ ID_STATUS_INVISIBLE,       "Invisible",        -IDI_INVISIBLE,     PF2_INVISIBLE  },
-	{ ID_STATUS_ONTHEPHONE,      "On the phone",     -IDI_ONTHEPHONE,    PF2_ONTHEPHONE },
-	{ ID_STATUS_OUTTOLUNCH,      "Out to lunch",     -IDI_OUTTOLUNCH,    PF2_OUTTOLUNCH }
+	{ ID_STATUS_OFFLINE,         LPGEN("Offline"),          -IDI_OFFLINE,       0xFFFFFFFF     },
+	{ ID_STATUS_ONLINE,          LPGEN("Online"),           -IDI_ONLINE,        PF2_ONLINE     },
+	{ ID_STATUS_AWAY,            LPGEN("Away"),             -IDI_AWAY,          PF2_SHORTAWAY  },
+	{ ID_STATUS_NA,              LPGEN("NA"),               -IDI_NA,            PF2_LONGAWAY   },
+	{ ID_STATUS_OCCUPIED,        LPGEN("Occupied"),         -IDI_OCCUPIED,      PF2_LIGHTDND   },
+	{ ID_STATUS_DND,             LPGEN("DND"),              -IDI_DND,           PF2_HEAVYDND   },
+	{ ID_STATUS_FREECHAT,        LPGEN("Free for chat"),    -IDI_FREE4CHAT,     PF2_FREECHAT   },
+	{ ID_STATUS_INVISIBLE,       LPGEN("Invisible"),        -IDI_INVISIBLE,     PF2_INVISIBLE  },
+	{ ID_STATUS_ONTHEPHONE,      LPGEN("On the phone"),     -IDI_ONTHEPHONE,    PF2_ONTHEPHONE },
+	{ ID_STATUS_OUTTOLUNCH,      LPGEN("Out to lunch"),     -IDI_OUTTOLUNCH,    PF2_OUTTOLUNCH }
 };
 
 const char* mainIconsFmt   = "core_main_";
 const char* statusIconsFmt = "core_status_";
-const char* protoIconsFmt  = "%s Icons";
+const char* protoIconsFmt  = LPGEN("%s Icons");
 
 #define PROTOCOLS_PREFIX "Status Icons/"
 #define GLOBAL_PROTO_NAME "*"

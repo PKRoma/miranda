@@ -733,7 +733,7 @@ static int PluginOptionsInit(WPARAM wParam, LPARAM lParam)
 	odp.pfnDlgProc = DlgPluginOpt;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_PLUGINS);
 	odp.position = 1300000000;
-	odp.pszTitle = "Plugins";
+	odp.pszTitle = LPGEN("Plugins");
 	odp.flags = ODPF_BOLDGROUPS;
 	CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
 	return 0;

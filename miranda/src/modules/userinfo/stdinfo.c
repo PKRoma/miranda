@@ -500,37 +500,37 @@ int DetailsInit(WPARAM wParam,LPARAM lParam)
 	odp.pfnDlgProc = SummaryDlgProc;
 	odp.position = -2100000000;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_INFO_SUMMARY);
-	odp.pszTitle = "Summary";
+	odp.pszTitle = LPGEN("Summary");
 	CallService(MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp);
 
 	odp.pfnDlgProc = ContactDlgProc;
 	odp.position = -1800000000;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_INFO_CONTACT);
- 	odp.pszTitle = "Contact";
+ 	odp.pszTitle = LPGEN("Contact");
 	CallService(MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp );
 
 	odp.pfnDlgProc = LocationDlgProc;
 	odp.position = -1500000000;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_INFO_LOCATION);
-	odp.pszTitle = "Location";
+	odp.pszTitle = LPGEN("Location");
 	CallService(MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp);
 
 	odp.pfnDlgProc = WorkDlgProc;
 	odp.position = -1200000000;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_INFO_WORK);
-	odp.pszTitle = "Work";
+	odp.pszTitle = LPGEN("Work");
 	CallService(MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp);
 
 	odp.pfnDlgProc = BackgroundDlgProc;
 	odp.position = -900000000;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_INFO_BACKGROUND);
-	odp.pszTitle = "Background";
+	odp.pszTitle = LPGEN("Background");
 	CallService(MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp );
 
 	odp.pfnDlgProc = NotesDlgProc;
 	odp.position = 0;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_INFO_NOTES);
-	odp.pszTitle = "Notes";
+	odp.pszTitle = LPGEN("Notes");
 	CallService(MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp);
 	return 0;
 }

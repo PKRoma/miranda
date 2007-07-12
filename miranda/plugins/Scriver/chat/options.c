@@ -50,26 +50,26 @@ struct FontOptionsList
 
 //remeber to put these in the Translate( ) template file too
 static fontOptionsList[] = {
-	{_T("Timestamp"), RGB(50, 50, 240), _T("Terminal"), DEFAULT_CHARSET, 0, -8},
-	{_T("Others nicknames"), RGB(0, 0, 0), _T("Verdana"), DEFAULT_CHARSET, FONTF_BOLD, -13},
-	{_T("Your nickname"), RGB(0, 0, 0), _T("Verdana"), DEFAULT_CHARSET, FONTF_BOLD, -13},
-	{_T("User has joined"), RGB(90, 160, 90), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{_T("User has left"), RGB(160, 160, 90), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{_T("User has disconnected"), RGB(160, 90, 90), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{_T("User kicked ..."), RGB(100, 100, 100), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{_T("User is now known as ..."), RGB(90, 90, 160), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{_T("Notice from user"), RGB(160, 130, 60), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{_T("Incoming message"), RGB(90, 90, 90), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{_T("Outgoing message"), RGB(90, 90, 90), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{_T("The topic is ..."), RGB(70, 70, 160), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{_T("Information messages"), RGB(130, 130, 195), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{_T("User enables status for ..."), RGB(70, 150, 70), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{_T("User disables status for ..."), RGB(150, 70, 70), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{_T("Action message"), RGB(160, 90, 160), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{_T("Highlighted message"), RGB(180, 150, 80), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{_T("Message typing area"), RGB(0, 0, 40), _T("Verdana"), DEFAULT_CHARSET, 0, -14},
-	{_T("User list members (Online)"), RGB(0,0, 0), _T("Verdana"), DEFAULT_CHARSET, 0, -12},
-	{_T("User list members (away)"), RGB(170, 170, 170), _T("Verdana"), DEFAULT_CHARSET, 0, -12},
+	{LPGENT("Timestamp"), RGB(50, 50, 240), _T("Terminal"), DEFAULT_CHARSET, 0, -8},
+	{LPGENT("Others nicknames"), RGB(0, 0, 0), _T("Verdana"), DEFAULT_CHARSET, FONTF_BOLD, -13},
+	{LPGENT("Your nickname"), RGB(0, 0, 0), _T("Verdana"), DEFAULT_CHARSET, FONTF_BOLD, -13},
+	{LPGENT("User has joined"), RGB(90, 160, 90), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
+	{LPGENT("User has left"), RGB(160, 160, 90), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
+	{LPGENT("User has disconnected"), RGB(160, 90, 90), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
+	{LPGENT("User kicked ..."), RGB(100, 100, 100), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
+	{LPGENT("User is now known as ..."), RGB(90, 90, 160), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
+	{LPGENT("Notice from user"), RGB(160, 130, 60), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
+	{LPGENT("Incoming message"), RGB(90, 90, 90), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
+	{LPGENT("Outgoing message"), RGB(90, 90, 90), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
+	{LPGENT("The topic is ..."), RGB(70, 70, 160), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
+	{LPGENT("Information messages"), RGB(130, 130, 195), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
+	{LPGENT("User enables status for ..."), RGB(70, 150, 70), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
+	{LPGENT("User disables status for ..."), RGB(150, 70, 70), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
+	{LPGENT("Action message"), RGB(160, 90, 160), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
+	{LPGENT("Highlighted message"), RGB(180, 150, 80), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
+	{LPGENT("Message typing area"), RGB(0, 0, 40), _T("Verdana"), DEFAULT_CHARSET, 0, -14},
+	{LPGENT("User list members (Online)"), RGB(0,0, 0), _T("Verdana"), DEFAULT_CHARSET, 0, -12},
+	{LPGENT("User list members (away)"), RGB(170, 170, 170), _T("Verdana"), DEFAULT_CHARSET, 0, -12},
 };
 
 struct branch_t
@@ -82,91 +82,91 @@ struct branch_t
 };
 
 static struct branch_t branch1[] = {
-	{_T("Send message by pressing the Enter key"), "SendOnEnter", 0, 1, NULL},
-	{_T("Send message by pressing the Enter key twice"), "SendOnDblEnter", 0,0, NULL},
-	{_T("Flash window when someone speaks"), "FlashWindow", 0,0, NULL},
-	{_T("Flash window when a word is highlighted"), "FlashWindowHighlight", 0,1, NULL},
-	{_T("Show list of users in the chat room"), "ShowNicklist", 0,1, NULL},
-	{_T("Show button for sending messages"), "ShowSend", 0, 0, NULL},
-	{_T("Show buttons for controlling the chat room"), "ShowTopButtons", 0,1, NULL},
-	{_T("Show buttons for formatting the text you are typing"), "ShowFormatButtons", 0,1, NULL},
-	{_T("Show button menus when right clicking the buttons"), "RightClickFilter", 0,0, NULL},
-	{_T("Show new windows cascaded"), "CascadeWindows", 0,1, NULL},
-	{_T("Save the size and position of chat rooms"), "SavePosition", 0,0, NULL},
-	{_T("Show the topic of the room on your contact list (if supported)"), "TopicOnClist", 0, 0, NULL},
-	{_T("Do not play sounds when the chat room is focused"), "SoundsFocus", 0, 0, NULL},
-	{_T("Do not pop up the window when joining a chat room"), "PopupOnJoin", 0,0, NULL},
-	{_T("Toggle the visible state when double clicking in the contact list"), "ToggleVisibility", 0,0, NULL}
+	{LPGENT("Send message by pressing the Enter key"), "SendOnEnter", 0, 1, NULL},
+	{LPGENT("Send message by pressing the Enter key twice"), "SendOnDblEnter", 0,0, NULL},
+	{LPGENT("Flash window when someone speaks"), "FlashWindow", 0,0, NULL},
+	{LPGENT("Flash window when a word is highlighted"), "FlashWindowHighlight", 0,1, NULL},
+	{LPGENT("Show list of users in the chat room"), "ShowNicklist", 0,1, NULL},
+	{LPGENT("Show button for sending messages"), "ShowSend", 0, 0, NULL},
+	{LPGENT("Show buttons for controlling the chat room"), "ShowTopButtons", 0,1, NULL},
+	{LPGENT("Show buttons for formatting the text you are typing"), "ShowFormatButtons", 0,1, NULL},
+	{LPGENT("Show button menus when right clicking the buttons"), "RightClickFilter", 0,0, NULL},
+	{LPGENT("Show new windows cascaded"), "CascadeWindows", 0,1, NULL},
+	{LPGENT("Save the size and position of chat rooms"), "SavePosition", 0,0, NULL},
+	{LPGENT("Show the topic of the room on your contact list (if supported)"), "TopicOnClist", 0, 0, NULL},
+	{LPGENT("Do not play sounds when the chat room is focused"), "SoundsFocus", 0, 0, NULL},
+	{LPGENT("Do not pop up the window when joining a chat room"), "PopupOnJoin", 0,0, NULL},
+	{LPGENT("Toggle the visible state when double clicking in the contact list"), "ToggleVisibility", 0,0, NULL}
 };
 static struct branch_t branch2[] = {
-	{_T("Prefix all events with a timestamp"), "ShowTimeStamp", 0,1, NULL},
-	{_T("Only prefix with timestamp if it has changed"), "ShowTimeStampIfChanged", 0,0, NULL},
-	{_T("Timestamp has same colour as the event"), "TimeStampEventColour", 0,0, NULL},
-	{_T("Indent the second line of a message"), "LogIndentEnabled", 0,1, NULL},
-	{_T("Limit user names in the message log to 20 characters"), "LogLimitNames", 0,1, NULL},
-	{_T("Add \':\' to auto-completed user names"), "AddColonToAutoComplete", 0, 1, NULL},
-	{_T("Strip colors from messages in the log"), "StripFormatting", 0, 0, NULL},
-	{_T("Enable the \'event filter\' for new rooms"), "FilterEnabled", 0,0, NULL}
+	{LPGENT("Prefix all events with a timestamp"), "ShowTimeStamp", 0,1, NULL},
+	{LPGENT("Only prefix with timestamp if it has changed"), "ShowTimeStampIfChanged", 0,0, NULL},
+	{LPGENT("Timestamp has same colour as the event"), "TimeStampEventColour", 0,0, NULL},
+	{LPGENT("Indent the second line of a message"), "LogIndentEnabled", 0,1, NULL},
+	{LPGENT("Limit user names in the message log to 20 characters"), "LogLimitNames", 0,1, NULL},
+	{LPGENT("Add \':\' to auto-completed user names"), "AddColonToAutoComplete", 0, 1, NULL},
+	{LPGENT("Strip colors from messages in the log"), "StripFormatting", 0, 0, NULL},
+	{LPGENT("Enable the \'event filter\' for new rooms"), "FilterEnabled", 0,0, NULL}
 };
 static struct branch_t branch3[] = {
-	{_T("Show topic changes"), "FilterFlags", GC_EVENT_TOPIC, 0, NULL},
-	{_T("Show users joining"), "FilterFlags", GC_EVENT_JOIN, 0, NULL},
-	{_T("Show users disconnecting"), "FilterFlags", GC_EVENT_QUIT, 0, NULL},
-	{_T("Show messages"), "FilterFlags", GC_EVENT_MESSAGE, 1, NULL},
-	{_T("Show actions"), "FilterFlags", GC_EVENT_ACTION, 1, NULL},
-	{_T("Show users leaving"), "FilterFlags", GC_EVENT_PART, 0, NULL},
-	{_T("Show users being kicked"), "FilterFlags", GC_EVENT_KICK, 1, NULL},
-	{_T("Show notices"), "FilterFlags", GC_EVENT_NOTICE, 1, NULL},
-	{_T("Show users changing name"), "FilterFlags", GC_EVENT_NICK, 0, NULL},
-	{_T("Show information messages"), "FilterFlags", GC_EVENT_INFORMATION, 1, NULL},
-	{_T("Show status changes of users"), "FilterFlags", GC_EVENT_ADDSTATUS, 0, NULL},
+	{LPGENT("Show topic changes"), "FilterFlags", GC_EVENT_TOPIC, 0, NULL},
+	{LPGENT("Show users joining"), "FilterFlags", GC_EVENT_JOIN, 0, NULL},
+	{LPGENT("Show users disconnecting"), "FilterFlags", GC_EVENT_QUIT, 0, NULL},
+	{LPGENT("Show messages"), "FilterFlags", GC_EVENT_MESSAGE, 1, NULL},
+	{LPGENT("Show actions"), "FilterFlags", GC_EVENT_ACTION, 1, NULL},
+	{LPGENT("Show users leaving"), "FilterFlags", GC_EVENT_PART, 0, NULL},
+	{LPGENT("Show users being kicked"), "FilterFlags", GC_EVENT_KICK, 1, NULL},
+	{LPGENT("Show notices"), "FilterFlags", GC_EVENT_NOTICE, 1, NULL},
+	{LPGENT("Show users changing name"), "FilterFlags", GC_EVENT_NICK, 0, NULL},
+	{LPGENT("Show information messages"), "FilterFlags", GC_EVENT_INFORMATION, 1, NULL},
+	{LPGENT("Show status changes of users"), "FilterFlags", GC_EVENT_ADDSTATUS, 0, NULL},
 };
 
 static struct branch_t branch4[] = {
-	{_T("Show icon for topic changes"), "IconFlags", GC_EVENT_TOPIC, 0, NULL},
-	{_T("Show icon for users joining"), "IconFlags", GC_EVENT_JOIN, 1, NULL},
-	{_T("Show icon for users disconnecting"), "IconFlags", GC_EVENT_QUIT, 0, NULL},
-	{_T("Show icon for messages"), "IconFlags", GC_EVENT_MESSAGE, 0, NULL},
-	{_T("Show icon for actions"), "IconFlags", GC_EVENT_ACTION, 0, NULL},
-	{_T("Show icon for highlights"), "IconFlags", GC_EVENT_HIGHLIGHT, 0, NULL},
-	{_T("Show icon for users leaving"), "IconFlags", GC_EVENT_PART, 0, NULL},
-	{_T("Show icon for users kicking other user"), "IconFlags", GC_EVENT_KICK, 0, NULL},
-	{_T("Show icon for notices "), "IconFlags", GC_EVENT_NOTICE, 0, NULL},
-	{_T("Show icon for name changes"), "IconFlags", GC_EVENT_NICK, 0, NULL},
-	{_T("Show icon for information messages"), "IconFlags", GC_EVENT_INFORMATION, 0, NULL},
-	{_T("Show icon for status changes"), "IconFlags", GC_EVENT_ADDSTATUS, 0, NULL},
+	{LPGENT("Show icon for topic changes"), "IconFlags", GC_EVENT_TOPIC, 0, NULL},
+	{LPGENT("Show icon for users joining"), "IconFlags", GC_EVENT_JOIN, 1, NULL},
+	{LPGENT("Show icon for users disconnecting"), "IconFlags", GC_EVENT_QUIT, 0, NULL},
+	{LPGENT("Show icon for messages"), "IconFlags", GC_EVENT_MESSAGE, 0, NULL},
+	{LPGENT("Show icon for actions"), "IconFlags", GC_EVENT_ACTION, 0, NULL},
+	{LPGENT("Show icon for highlights"), "IconFlags", GC_EVENT_HIGHLIGHT, 0, NULL},
+	{LPGENT("Show icon for users leaving"), "IconFlags", GC_EVENT_PART, 0, NULL},
+	{LPGENT("Show icon for users kicking other user"), "IconFlags", GC_EVENT_KICK, 0, NULL},
+	{LPGENT("Show icon for notices "), "IconFlags", GC_EVENT_NOTICE, 0, NULL},
+	{LPGENT("Show icon for name changes"), "IconFlags", GC_EVENT_NICK, 0, NULL},
+	{LPGENT("Show icon for information messages"), "IconFlags", GC_EVENT_INFORMATION, 0, NULL},
+	{LPGENT("Show icon for status changes"), "IconFlags", GC_EVENT_ADDSTATUS, 0, NULL},
 };
 
 static struct branch_t branch5[] = {
-	{_T("Show icons in tray only when the chat room is not active"), "TrayIconInactiveOnly", 0, 1, NULL},
-	{_T("Show icon in tray for topic changes"), "TrayIconFlags", GC_EVENT_TOPIC, 0, NULL},
-	{_T("Show icon in tray for users joining"), "TrayIconFlags", GC_EVENT_JOIN, 0, NULL},
-	{_T("Show icon in tray for users disconnecting"), "TrayIconFlags", GC_EVENT_QUIT, 0, NULL},
-	{_T("Show icon in tray for messages"), "TrayIconFlags", GC_EVENT_MESSAGE, 0, NULL},
-	{_T("Show icon in tray for actions"), "TrayIconFlags", GC_EVENT_ACTION, 0, NULL},
-	{_T("Show icon in tray for highlights"), "TrayIconFlags", GC_EVENT_HIGHLIGHT, 1, NULL},
-	{_T("Show icon in tray for users leaving"), "TrayIconFlags", GC_EVENT_PART, 0, NULL},
-	{_T("Show icon in tray for users kicking other user"), "TrayIconFlags", GC_EVENT_KICK, 0, NULL},
-	{_T("Show icon in tray for notices "), "TrayIconFlags", GC_EVENT_NOTICE, 0, NULL},
-	{_T("Show icon in tray for name changes"), "TrayIconFlags", GC_EVENT_NICK, 0, NULL},
-	{_T("Show icon in tray for information messages"), "TrayIconFlags", GC_EVENT_INFORMATION, 0, NULL},
-	{_T("Show icon in tray for status changes"), "TrayIconFlags", GC_EVENT_ADDSTATUS, 0, NULL},
+	{LPGENT("Show icons in tray only when the chat room is not active"), "TrayIconInactiveOnly", 0, 1, NULL},
+	{LPGENT("Show icon in tray for topic changes"), "TrayIconFlags", GC_EVENT_TOPIC, 0, NULL},
+	{LPGENT("Show icon in tray for users joining"), "TrayIconFlags", GC_EVENT_JOIN, 0, NULL},
+	{LPGENT("Show icon in tray for users disconnecting"), "TrayIconFlags", GC_EVENT_QUIT, 0, NULL},
+	{LPGENT("Show icon in tray for messages"), "TrayIconFlags", GC_EVENT_MESSAGE, 0, NULL},
+	{LPGENT("Show icon in tray for actions"), "TrayIconFlags", GC_EVENT_ACTION, 0, NULL},
+	{LPGENT("Show icon in tray for highlights"), "TrayIconFlags", GC_EVENT_HIGHLIGHT, 1, NULL},
+	{LPGENT("Show icon in tray for users leaving"), "TrayIconFlags", GC_EVENT_PART, 0, NULL},
+	{LPGENT("Show icon in tray for users kicking other user"), "TrayIconFlags", GC_EVENT_KICK, 0, NULL},
+	{LPGENT("Show icon in tray for notices "), "TrayIconFlags", GC_EVENT_NOTICE, 0, NULL},
+	{LPGENT("Show icon in tray for name changes"), "TrayIconFlags", GC_EVENT_NICK, 0, NULL},
+	{LPGENT("Show icon in tray for information messages"), "TrayIconFlags", GC_EVENT_INFORMATION, 0, NULL},
+	{LPGENT("Show icon in tray for status changes"), "TrayIconFlags", GC_EVENT_ADDSTATUS, 0, NULL},
 };
 
 static struct branch_t branch6[] = {
-	{_T("Show pop-ups only when the chat room is not active"), "PopUpInactiveOnly", 0, 1, NULL},
-	{_T("Show pop-up for topic changes"), "PopupFlags", GC_EVENT_TOPIC, 0, NULL},
-	{_T("Show pop-up for users joining"), "PopupFlags", GC_EVENT_JOIN, 0, NULL},
-	{_T("Show pop-up for users disconnecting"), "PopupFlags", GC_EVENT_QUIT, 0, NULL},
-	{_T("Show pop-up for messages"), "PopupFlags", GC_EVENT_MESSAGE, 0, NULL},
-	{_T("Show pop-up for actions"), "PopupFlags", GC_EVENT_ACTION, 0, NULL},
-	{_T("Show pop-up for highlights"), "PopupFlags", GC_EVENT_HIGHLIGHT, 0, NULL},
-	{_T("Show pop-up for users leaving"), "PopupFlags", GC_EVENT_PART, 0, NULL},
-	{_T("Show pop-up for users kicking other user"), "PopupFlags", GC_EVENT_KICK, 0, NULL},
-	{_T("Show pop-up for notices "), "PopupFlags", GC_EVENT_NOTICE, 0, NULL},
-	{_T("Show pop-up for name changes"), "PopupFlags", GC_EVENT_NICK, 0, NULL},
-	{_T("Show pop-up for information messages"), "PopupFlags", GC_EVENT_INFORMATION, 0, NULL},
-	{_T("Show pop-up for status changes"), "PopupFlags", GC_EVENT_ADDSTATUS, 0, NULL},
+	{LPGENT("Show pop-ups only when the chat room is not active"), "PopUpInactiveOnly", 0, 1, NULL},
+	{LPGENT("Show pop-up for topic changes"), "PopupFlags", GC_EVENT_TOPIC, 0, NULL},
+	{LPGENT("Show pop-up for users joining"), "PopupFlags", GC_EVENT_JOIN, 0, NULL},
+	{LPGENT("Show pop-up for users disconnecting"), "PopupFlags", GC_EVENT_QUIT, 0, NULL},
+	{LPGENT("Show pop-up for messages"), "PopupFlags", GC_EVENT_MESSAGE, 0, NULL},
+	{LPGENT("Show pop-up for actions"), "PopupFlags", GC_EVENT_ACTION, 0, NULL},
+	{LPGENT("Show pop-up for highlights"), "PopupFlags", GC_EVENT_HIGHLIGHT, 0, NULL},
+	{LPGENT("Show pop-up for users leaving"), "PopupFlags", GC_EVENT_PART, 0, NULL},
+	{LPGENT("Show pop-up for users kicking other user"), "PopupFlags", GC_EVENT_KICK, 0, NULL},
+	{LPGENT("Show pop-up for notices "), "PopupFlags", GC_EVENT_NOTICE, 0, NULL},
+	{LPGENT("Show pop-up for name changes"), "PopupFlags", GC_EVENT_NICK, 0, NULL},
+	{LPGENT("Show pop-up for information messages"), "PopupFlags", GC_EVENT_INFORMATION, 0, NULL},
+	{LPGENT("Show pop-up for status changes"), "PopupFlags", GC_EVENT_ADDSTATUS, 0, NULL},
 };
 
 
@@ -380,23 +380,23 @@ void RegisterFonts( void )
 	strncpy(colourid.dbSettingsGroup, "Chat", sizeof(colourid.dbSettingsGroup));
 
 	strncpy(colourid.setting, "ColorLogBG", SIZEOF(colourid.setting));
-	_tcsncpy(colourid.name, _T("Background"), SIZEOF(colourid.name));
-	_tcsncpy(colourid.group, _T("Scriver/Group Chats"), SIZEOF(colourid.group));
+	_tcsncpy(colourid.name, LPGENT("Background"), SIZEOF(colourid.name));
+	_tcsncpy(colourid.group, LPGENT("Scriver/Group Chats"), SIZEOF(colourid.group));
 	colourid.defcolour = GetSysColor(COLOR_WINDOW);
 	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
 
 	strncpy(colourid.setting, "ColorMessageBG", SIZEOF(colourid.setting));
-	_tcsncpy(colourid.name, _T("Message Background"), SIZEOF(colourid.name));
+	_tcsncpy(colourid.name, LPGENT("Message Background"), SIZEOF(colourid.name));
 	colourid.defcolour = GetSysColor(COLOR_WINDOW);
 	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
 
 	strncpy(colourid.setting, "ColorNicklistBG", SIZEOF(colourid.setting));
-	_tcsncpy(colourid.name, _T("Userlist Background"), SIZEOF(colourid.name));
+	_tcsncpy(colourid.name, LPGENT("Userlist Background"), SIZEOF(colourid.name));
 	colourid.defcolour = GetSysColor(COLOR_WINDOW);
 	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
 
 	strncpy(colourid.setting, "ColorNicklistLines", SIZEOF(colourid.setting));
-	_tcsncpy(colourid.name, _T("Userlist Lines"), SIZEOF(colourid.name));
+	_tcsncpy(colourid.name, LPGENT("Userlist Lines"), SIZEOF(colourid.name));
 	colourid.defcolour = GetSysColor(COLOR_INACTIVEBORDER);
 	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
 }
@@ -1068,8 +1068,8 @@ static int OptionsInitialize(WPARAM wParam, LPARAM lParam)
 		odp.position = 910000002;
 		odp.hInstance = g_hInst;
 		odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPTIONSPOPUP);
-		odp.ptszTitle = _T("Chat");
-		odp.ptszGroup = _T("Popups");
+		odp.ptszTitle = LPGENT("Chat");
+		odp.ptszGroup = LPGENT("Popups");
 		odp.pfnDlgProc = DlgProcOptionsPopup;
 		odp.flags = ODPF_BOLDGROUPS | ODPF_TCHAR;
 		odp.ptszTab = NULL;

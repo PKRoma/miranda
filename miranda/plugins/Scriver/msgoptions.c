@@ -69,18 +69,18 @@ struct FontOptionsList
 	char size;
 }
 static fontOptionsList[] = {
-	{_T("Outgoing messages"), RGB(106, 106, 106), _T("Arial"), DEFAULT_CHARSET, 0, -12},
-	{_T("Incoming messages"), RGB(0, 0, 0), _T("Arial"), DEFAULT_CHARSET, 0, -12},
-	{_T("Outgoing name"), RGB(89, 89, 89), _T("Arial"), DEFAULT_CHARSET, FONTF_BOLD, -12},
-	{_T("Outgoing time"), RGB(0, 0, 0), _T("Terminal"), DEFAULT_CHARSET, FONTF_BOLD, -9},
-	{_T("Outgoing colon"), RGB(89, 89, 89), _T("Arial"), DEFAULT_CHARSET, 0, -11},
-	{_T("Incoming name"), RGB(215, 0, 0), _T("Arial"), DEFAULT_CHARSET, FONTF_BOLD, -12},
-	{_T("Incoming time"), RGB(0, 0, 0), _T("Terminal"), DEFAULT_CHARSET, FONTF_BOLD, -9},
-	{_T("Incoming colon"), RGB(215, 0, 0), _T("Arial"), DEFAULT_CHARSET, 0, -11},
-	{_T("Message area"), RGB(0, 0, 0), _T("Arial"), DEFAULT_CHARSET, 0, -12},
-	{_T("Notices"), RGB(90, 90, 160), _T("Arial"), DEFAULT_CHARSET, 0, -12},
-	{_T("Outgoing URL"), RGB(0, 0, 255), _T("Arial"), DEFAULT_CHARSET, 0, -12},
-	{_T("Incoming URL"), RGB(0, 0, 255), _T("Arial"), DEFAULT_CHARSET, 0, -12},
+	{LPGENT("Outgoing messages"), RGB(106, 106, 106), _T("Arial"), DEFAULT_CHARSET, 0, -12},
+	{LPGENT("Incoming messages"), RGB(0, 0, 0), _T("Arial"), DEFAULT_CHARSET, 0, -12},
+	{LPGENT("Outgoing name"), RGB(89, 89, 89), _T("Arial"), DEFAULT_CHARSET, FONTF_BOLD, -12},
+	{LPGENT("Outgoing time"), RGB(0, 0, 0), _T("Terminal"), DEFAULT_CHARSET, FONTF_BOLD, -9},
+	{LPGENT("Outgoing colon"), RGB(89, 89, 89), _T("Arial"), DEFAULT_CHARSET, 0, -11},
+	{LPGENT("Incoming name"), RGB(215, 0, 0), _T("Arial"), DEFAULT_CHARSET, FONTF_BOLD, -12},
+	{LPGENT("Incoming time"), RGB(0, 0, 0), _T("Terminal"), DEFAULT_CHARSET, FONTF_BOLD, -9},
+	{LPGENT("Incoming colon"), RGB(215, 0, 0), _T("Arial"), DEFAULT_CHARSET, 0, -11},
+	{LPGENT("Message area"), RGB(0, 0, 0), _T("Arial"), DEFAULT_CHARSET, 0, -12},
+	{LPGENT("Notices"), RGB(90, 90, 160), _T("Arial"), DEFAULT_CHARSET, 0, -12},
+	{LPGENT("Outgoing URL"), RGB(0, 0, 255), _T("Arial"), DEFAULT_CHARSET, 0, -12},
+	{LPGENT("Incoming URL"), RGB(0, 0, 255), _T("Arial"), DEFAULT_CHARSET, 0, -12},
 };
 
 int fontOptionsListSize = SIZEOF(fontOptionsList);
@@ -211,77 +211,77 @@ void RegisterIcoLibIcons() {
 		sid.cbSize = sizeof(SKINICONDESC);
 		sid.cx = sid.cy = 16;
 		sid.flags = SIDF_ALL_TCHAR;
-		sid.ptszSection = TranslateT("Scriver/Messaging");
+		sid.ptszSection = LPGENT("Scriver/Messaging");
 		sid.ptszDefaultFile = path;
 		sid.pszName = (char *) "scriver_ADD";
 		sid.iDefaultIndex = -IDI_ADDCONTACT;
-		sid.ptszDescription = TranslateT("Add contact");
+		sid.ptszDescription = LPGENT("Add contact");
 		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 		sid.pszName = (char *) "scriver_USERDETAILS";
 		sid.iDefaultIndex = -IDI_USERDETAILS;
-		sid.ptszDescription = TranslateT("User's details");
+		sid.ptszDescription = LPGENT("User's details");
 		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 		sid.pszName = (char *) "scriver_HISTORY";
 		sid.iDefaultIndex = -IDI_HISTORY;
-		sid.ptszDescription = TranslateT("User's history");
+		sid.ptszDescription = LPGENT("User's history");
 		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 		sid.pszName = (char *) "scriver_SEND";
 		sid.iDefaultIndex = -IDI_SEND;
-		sid.ptszDescription = TranslateT("Send message");
+		sid.ptszDescription = LPGENT("Send message");
 		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 		sid.pszName = (char *) "scriver_CANCEL";
 		sid.iDefaultIndex = -IDI_CANCEL;
-		sid.ptszDescription = TranslateT("Close session");
+		sid.ptszDescription = LPGENT("Close session");
 		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 		sid.pszName = (char *) "scriver_SMILEY";
 		sid.iDefaultIndex = -IDI_SMILEY;
-		sid.ptszDescription = TranslateT("Smiley button");
+		sid.ptszDescription = LPGENT("Smiley button");
 		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 		sid.pszName = (char *) "scriver_TYPING";
 		sid.iDefaultIndex = -IDI_TYPING;
-		sid.ptszDescription = TranslateT("User is typing");
+		sid.ptszDescription = LPGENT("User is typing");
 		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 
 		sid.pszName = (char *) "scriver_UNICODEON";
 		sid.iDefaultIndex = -IDI_UNICODEON;
-		sid.ptszDescription = TranslateT("Unicode is on");
+		sid.ptszDescription = LPGENT("Unicode is on");
 		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 		sid.pszName = (char *) "scriver_UNICODEOFF";
 		sid.iDefaultIndex = -IDI_UNICODEOFF;
-		sid.ptszDescription = TranslateT("Unicode is off");
+		sid.ptszDescription = LPGENT("Unicode is off");
 		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 
 		sid.pszName = (char *) "scriver_DELIVERING";
 		sid.iDefaultIndex = -IDI_TIMESTAMP;
-		sid.ptszDescription = TranslateT("Sending");
+		sid.ptszDescription = LPGENT("Sending");
 		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 
 		sid.pszName = (char *) "scriver_QUOTE";
 		sid.iDefaultIndex = -IDI_QUOTE;
-		sid.ptszDescription = TranslateT("Quote button");
+		sid.ptszDescription = LPGENT("Quote button");
 		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 
 		sid.pszName = (char *) "scriver_CLOSEX";
 		sid.iDefaultIndex = -IDI_CLOSEX;
-		sid.ptszDescription = TranslateT("Close button");
+		sid.ptszDescription = LPGENT("Close button");
 		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 
 		sid.pszName = (char *) "scriver_OVERLAY";
 		sid.iDefaultIndex = -IDI_OVERLAY;
-		sid.ptszDescription = TranslateT("Icon overlay");
+		sid.ptszDescription = LPGENT("Icon overlay");
 		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 
 		sid.pszName = (char *) "scriver_INCOMING";
 		sid.iDefaultIndex = -IDI_INCOMING;
-		sid.ptszDescription = TranslateT("Incoming message (10x10)");
+		sid.ptszDescription = LPGENT("Incoming message (10x10)");
 		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 		sid.pszName = (char *) "scriver_OUTGOING";
 		sid.iDefaultIndex = -IDI_OUTGOING;
-		sid.ptszDescription = TranslateT("Outgoing message (10x10)");
+		sid.ptszDescription = LPGENT("Outgoing message (10x10)");
 		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 		sid.pszName = (char *) "scriver_NOTICE";
 		sid.iDefaultIndex = -IDI_NOTICE;
-		sid.ptszDescription = TranslateT("Notice (10x10)");
+		sid.ptszDescription = LPGENT("Notice (10x10)");
 		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 	}
 }
@@ -332,16 +332,16 @@ struct CheckBoxValues_t
 
 static const statusValues[] =
 {
-	{ MODEF_OFFLINE,  _T("Offline")       },
-	{ PF2_ONLINE,     _T("Online")        },
-	{ PF2_SHORTAWAY,  _T("Away")          },
-	{ PF2_LONGAWAY,   _T("NA")            },
-	{ PF2_LIGHTDND,   _T("Occupied")      },
-	{ PF2_HEAVYDND,   _T("DND")           },
-	{ PF2_FREECHAT,   _T("Free for chat") },
-	{ PF2_INVISIBLE,  _T("Invisible")     },
-	{ PF2_OUTTOLUNCH, _T("Out to lunch")  },
-	{ PF2_ONTHEPHONE, _T("On the phone")  }
+	{ MODEF_OFFLINE,  LPGENT("Offline")       },
+	{ PF2_ONLINE,     LPGENT("Online")        },
+	{ PF2_SHORTAWAY,  LPGENT("Away")          },
+	{ PF2_LONGAWAY,   LPGENT("NA")            },
+	{ PF2_LIGHTDND,   LPGENT("Occupied")      },
+	{ PF2_HEAVYDND,   LPGENT("DND")           },
+	{ PF2_FREECHAT,   LPGENT("Free for chat") },
+	{ PF2_INVISIBLE,  LPGENT("Invisible")     },
+	{ PF2_OUTTOLUNCH, LPGENT("Out to lunch")  },
+	{ PF2_ONTHEPHONE, LPGENT("On the phone")  }
 };
 
 static void FillCheckBoxTree(HWND hwndTree, const struct CheckBoxValues_t *values, int nValues, DWORD style)
@@ -1270,8 +1270,8 @@ int OptInitialise(WPARAM wParam, LPARAM lParam)
 	odp.cbSize = sizeof(odp);
 	odp.position = 910000000;
 	odp.hInstance = g_hInst;
-	odp.ptszTitle = TranslateT("Messaging");
-	odp.ptszGroup = TranslateT("Message Sessions"); //Events
+	odp.ptszTitle = LPGENT("Messaging");
+	odp.ptszGroup = LPGENT("Message Sessions"); //Events
 	odp.flags = ODPF_BOLDGROUPS | ODPF_TCHAR;
 	odp.nIDBottomSimpleControl = 0;
 	for (i = 0; i < SIZEOF(tabPages); i++) {

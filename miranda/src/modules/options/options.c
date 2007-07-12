@@ -864,7 +864,7 @@ static int OptModulesLoaded(WPARAM wParam,LPARAM lParam)
 	mi.flags = CMIF_ICONFROMICOLIB;
 	mi.icolibItem = GetSkinIconHandle( SKINICON_OTHER_OPTIONS );
 	mi.position = 1900000000;
-	mi.pszName = "&Options...";
+	mi.pszName = LPGEN("&Options...");
 	mi.pszService = "Options/OptionsCommand";
 	CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 	return 0;

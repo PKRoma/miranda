@@ -69,8 +69,8 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
 	odp.hInstance=g_hInst;
 	//	odp.pfnDlgProc=DlgProcItemsOpts;
 	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_ITEMS);
-	odp.ptszGroup=TranslateT("Contact List");
-	odp.ptszTitle=TranslateT("Row items");
+	odp.ptszGroup=LPGENT("Contact List");
+	odp.ptszTitle=LPGENT("Row items");
 	odp.flags=ODPF_BOLDGROUPS|ODPF_TCHAR;
 	//	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 

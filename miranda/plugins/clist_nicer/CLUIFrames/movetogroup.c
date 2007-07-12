@@ -17,7 +17,7 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 		mi.position=200000;
 		mi.pszPopupName=(char *)-1;
 		mi.pszService="CList/SetContactFloating";
-		mi.pszName=Translate("&Floating Contact");
+		mi.pszName=LPGEN("&Floating Contact");
 		if (pcli) 
 		{
 			if (SendMessage(pcli->hwndContactTree, CLM_QUERYFLOATINGCONTACT, wParam, 0))
