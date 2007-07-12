@@ -378,14 +378,13 @@ void handleXtrazData(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char*
           PROTORECVEVENT pre = {0};
           int bAdded;
 
-          createMsgFromUtf8(&szWork, &pre.flags, bThruDC);
-
           ccs.szProtoService = PSR_MESSAGE;
           ccs.hContact = HContactFromUIN(dwUin, &bAdded);
           ccs.wParam = 0;
           ccs.lParam = (LPARAM)&pre;
           pre.timestamp = time(NULL);
           pre.szMessage = szWork;
+          pre.flags = PREF_UTF;
 
           CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
         }

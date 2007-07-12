@@ -523,7 +523,7 @@
 #define SSI_ITEM_IMPORTTIME         0x0013  // Item that contain roster import time (name: "Import time")
 #define SSI_ITEM_BUDDYICON          0x0014  // Buddy icon info. (names: from "0" and incrementing by one)
 
-#define SSI_TLV_AWAITING_AUTH       0x0066  // Contact not authorised in list
+#define SSI_TLV_AWAITING_AUTH       0x0066  // Contact not authorized in list
 #define SSI_TLV_UNKNOWN             0x006D  // WTF ?
 #define SSI_TLV_SUBITEMS            0x00C8  // List of sub-items IDs
 #define SSI_TLV_VISIBILITY          0x00CA
@@ -538,7 +538,7 @@
 
 
 // Internal Constants
-#define ICQ_PLUG_VERSION            0x80030A04
+#define ICQ_PLUG_VERSION            0x80030A05
 #define ICQ_VERSION                 8         // Protocol version
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_NICK_SIZE               32

@@ -85,8 +85,6 @@ int getPluginTypeIdLen(int nTypeID);
 void packPluginTypeId(icq_packet *packet, int nTypeID);
 int unpackPluginTypeId(BYTE** pBuffer, WORD* pwLen, int *pTypeId, WORD *pFunctionId, BOOL bThruDC);
 
-int createMsgFromUtf8(char** pszMsg, DWORD* preFlags, BOOL bThruDC);
-
 void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwMsgID2, WORD wCookie, WORD wVersion, int type, int flags, WORD wAckType, DWORD dwDataLen, WORD wMsgLen, char *pMsg, BOOL bThruDC, message_ack_params *pAckParams);
 
 #define BUL_ALLCONTACTS   0
