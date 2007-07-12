@@ -401,8 +401,6 @@
 #define IDC_ENABLEUPDATES               1700
 #define IDC_ENABLEALPHA                 1701
 #define IDC_RESETMENU                   1702
-#define IDC_MODULES                     1704
-#define IDC_STATIC_FILTERCAPTION        1705
 #define IDI_SEARCHALL                   32548
 #define ID_ICQ_EXIT                     40001
 #define IDM_COPY                        40001
@@ -435,7 +433,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        277
 #define _APS_NEXT_COMMAND_VALUE         40018
-#define _APS_NEXT_CONTROL_VALUE         1706
+#define _APS_NEXT_CONTROL_VALUE         1703
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
