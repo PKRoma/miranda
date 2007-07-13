@@ -83,7 +83,7 @@ int CLUI_ShowWindowMod(HWND hWnd, int nCmd)
 		&& nCmd==SW_HIDE 
 		&& !g_CluiData.fLayered 
 		&& IsWinVerXPPlus()
-		&& DBGetContactSettingByte(NULL,"CList","WindowShadow",0))
+		&& DBGetContactSettingByte(NULL,"CList","WindowShadow",SETTING_WINDOWSHADOW_DEFAULT))
 	{
 		ShowWindow(hWnd,SW_MINIMIZE); //removing of shadow
 		return ShowWindow(hWnd,nCmd);
@@ -97,7 +97,7 @@ int CLUI_ShowWindowMod(HWND hWnd, int nCmd)
 		&& !g_bTransparentFlag 
 		)	
 	{	
-		if(DBGetContactSettingByte(NULL,"CList","WindowShadow",0))
+		if(DBGetContactSettingByte(NULL,"CList","WindowShadow",SETTING_WINDOWSHADOW_DEFAULT))
 		{
 			CLUI_SmoothAlphaTransition(hWnd, 255, 1);
 		}
@@ -151,7 +151,7 @@ static BOOL CLUI_WaitThreadsCompletion(HWND hwnd)
 
 void CLUI_UpdateLayeredMode()
 {	
-	g_CluiData.fDisableSkinEngine=DBGetContactSettingByte(NULL,"ModernData","DisableEngine", 0);
+	g_CluiData.fDisableSkinEngine=DBGetContactSettingByte(NULL,"ModernData","DisableEngine", SETTING_DISABLESKIN_DEFAULT);
 	if (IsWinVer2000Plus())
 	{
 		BOOL tLayeredFlag=TRUE;
@@ -192,7 +192,7 @@ void CLUI_ChangeWindowMode()
 
 	g_mutex_bChangingMode=TRUE;
 	g_bTransparentFlag=IsWinVer2000Plus()&&DBGetContactSettingByte( NULL,"CList","Transparent",SETTING_TRANSPARENT_DEFAULT);
-	g_CluiData.fSmoothAnimation=IsWinVer2000Plus()&&DBGetContactSettingByte(NULL, "CLUI", "FadeInOut", 1);
+	g_CluiData.fSmoothAnimation=IsWinVer2000Plus()&&DBGetContactSettingByte(NULL, "CLUI", "FadeInOut", SETTING_FADEIN_DEFAULT);
 	if (g_bTransparentFlag==0 && g_CluiData.bCurrentAlpha!=0)
 		g_CluiData.bCurrentAlpha=255;
 	//2- Calculate STYLES and STYLESEX
@@ -200,9 +200,9 @@ void CLUI_ChangeWindowMode()
 	{
 		style=0;
 		styleEx=0;
-		if (DBGetContactSettingByte(NULL,"CList","ThinBorder",0) || (DBGetContactSettingByte(NULL,"CList","NoBorder",0)))
+		if (DBGetContactSettingByte(NULL,"CList","ThinBorder",SETTING_THINBORDER_DEFAULT) || (DBGetContactSettingByte(NULL,"CList","NoBorder",SETTING_NOBORDER_DEFAULT)))
 		{
-			style=WS_CLIPCHILDREN| (DBGetContactSettingByte(NULL,"CList","ThinBorder",0)?WS_BORDER:0);
+			style=WS_CLIPCHILDREN| (DBGetContactSettingByte(NULL,"CList","ThinBorder",SETTING_THINBORDER_DEFAULT)?WS_BORDER:0);
 			styleEx=WS_EX_TOOLWINDOW;
 		} 
 		else if (DBGetContactSettingByte(NULL,"CLUI","ShowCaption",SETTING_SHOWCAPTION_DEFAULT) && DBGetContactSettingByte(NULL,"CList","ToolWindow",SETTING_TOOLWINDOW_DEFAULT))
@@ -245,7 +245,7 @@ void CLUI_ChangeWindowMode()
 	//<->
 	//1- If visible store it and hide
 
-	if (g_CluiData.fLayered && (DBGetContactSettingByte(NULL,"CList","OnDesktop", 0)))// && !flag_bFirstTimeCall))
+	if (g_CluiData.fLayered && (DBGetContactSettingByte(NULL,"CList","OnDesktop", SETTING_ONDESKTOP_DEFAULT)))// && !flag_bFirstTimeCall))
 	{
 		SetParent(pcli->hwndContactList,NULL);
 		callProxied_CLUIFrames_SetParentForContainers(NULL);
@@ -276,10 +276,10 @@ void CLUI_ChangeWindowMode()
 	else
 		SetMenu(pcli->hwndContactList,g_hMenuMain);
 
-	if (g_CluiData.fLayered&&(DBGetContactSettingByte(NULL,"CList","OnDesktop", 0)))
+	if (g_CluiData.fLayered&&(DBGetContactSettingByte(NULL,"CList","OnDesktop", SETTING_ONDESKTOP_DEFAULT)))
 		ske_UpdateWindowImage();
 	//6- Pin to desktop mode
-	if (DBGetContactSettingByte(NULL,"CList","OnDesktop", 0)) 
+	if (DBGetContactSettingByte(NULL,"CList","OnDesktop", SETTING_ONDESKTOP_DEFAULT))
 	{
 		HWND hProgMan=FindWindow(TEXT("Progman"),NULL);
 		if (IsWindow(hProgMan)) 
@@ -319,7 +319,7 @@ void CLUI_ChangeWindowMode()
 		v=(r.bottom-r.top)>(w*2)?w:(r.bottom-r.top);
 		h=(h<v)?h:v;
 		hRgn1=CreateRoundRectRgn(0,0,(r.right-r.left+1),(r.bottom-r.top+1),h,h);
-		if ((DBGetContactSettingByte(NULL,"CLC","RoundCorners",0)) && (!CallService(MS_CLIST_DOCKINGISDOCKED,0,0)))
+		if ((DBGetContactSettingByte(NULL,"CLC","RoundCorners",SETTING_ROUNDCORNERS_DEFAULT)) && (!CallService(MS_CLIST_DOCKINGISDOCKED,0,0)))
 			SetWindowRgn(pcli->hwndContactList,hRgn1,1); 
 		else 
 		{
@@ -372,7 +372,7 @@ int CLUI_HideBehindEdge()
 	int method=g_CluiData.bBehindEdgeSettings;
 	if (method)
 	{
-		// if (DBGetContactSettingByte(NULL, "ModernData", "BehindEdge", 0)==0)
+		// if (DBGetContactSettingByte(NULL, "ModernData", "BehindEdge", SETTING_BEHINDEDGE_DEFAULT)==0)
 		{
 			RECT rcScreen;
 			RECT rcWindow;
@@ -419,7 +419,7 @@ int CLUI_ShowFromBehindEdge()
 		g_mutex_bOnTrayRightClick=0;
 		return 0;
 	}
-	if (method)// && (DBGetContactSettingByte(NULL, "ModernData", "BehindEdge", 0)==0))
+	if (method)// && (DBGetContactSettingByte(NULL, "ModernData", "BehindEdge", SETTING_BEHINDEDGE_DEFAULT)==0))
 	{
 		RECT rcScreen;
 		RECT rcWindow;
@@ -830,10 +830,10 @@ extern HANDLE hEventBkgrChanged;
 int CLUI_ReloadCLUIOptions()
 {
 	KillTimer(pcli->hwndContactList,TM_UPDATEBRINGTIMER);
-	g_CluiData.bBehindEdgeSettings=DBGetContactSettingByte(NULL, "ModernData", "HideBehind", 0);
-	wBehindEdgeShowDelay=DBGetContactSettingWord(NULL,"ModernData","ShowDelay",3);
-	wBehindEdgeHideDelay=DBGetContactSettingWord(NULL,"ModernData","HideDelay",3);
-	wBehindEdgeBorderSize=DBGetContactSettingWord(NULL,"ModernData","HideBehindBorderSize",1);
+	g_CluiData.bBehindEdgeSettings=DBGetContactSettingByte(NULL, "ModernData", "HideBehind", SETTING_HIDEBEHIND_DEFAULT);
+	wBehindEdgeShowDelay=DBGetContactSettingWord(NULL,"ModernData","ShowDelay",SETTING_SHOWDELAY_DEFAULT);
+	wBehindEdgeHideDelay=DBGetContactSettingWord(NULL,"ModernData","HideDelay",SETTING_HIDEDELAY_DEFAULT);
+	wBehindEdgeBorderSize=DBGetContactSettingWord(NULL,"ModernData","HideBehindBorderSize",SETTING_HIDEBEHINDBORDERSIZE_DEFAULT);
 
 	//window borders
 	if (g_CluiData.fDisableSkinEngine) {
@@ -843,10 +843,10 @@ int CLUI_ReloadCLUIOptions()
 		g_CluiData.BottomClientMargin=0;
 	} else {
 		//window borders
-		g_CluiData.LeftClientMargin=(int)DBGetContactSettingByte(NULL,"CLUI","LeftClientMargin",0);
-		g_CluiData.RightClientMargin=(int)DBGetContactSettingByte(NULL,"CLUI","RightClientMargin",0); 
-		g_CluiData.TopClientMargin=(int)DBGetContactSettingByte(NULL,"CLUI","TopClientMargin",0);
-		g_CluiData.BottomClientMargin=(int)DBGetContactSettingByte(NULL,"CLUI","BottomClientMargin",0);
+		g_CluiData.LeftClientMargin=(int)DBGetContactSettingByte(NULL,"CLUI","LeftClientMargin",SETTING_LEFTCLIENTMARIGN_DEFAULT);
+		g_CluiData.RightClientMargin=(int)DBGetContactSettingByte(NULL,"CLUI","RightClientMargin",SETTING_RIGHTCLIENTMARIGN_DEFAULT); 
+		g_CluiData.TopClientMargin=(int)DBGetContactSettingByte(NULL,"CLUI","TopClientMargin",SETTING_TOPCLIENTMARIGN_DEFAULT);
+		g_CluiData.BottomClientMargin=(int)DBGetContactSettingByte(NULL,"CLUI","BottomClientMargin",SETTING_BOTTOMCLIENTMARIGN_DEFAULT);
 	}			
 	BroadCastMessageToChild(pcli->hwndContactList, WM_THEMECHANGED, 0, 0);
 
@@ -987,7 +987,7 @@ static int CLUI_DrawMenuBackGround(HWND hwnd, HDC hdc, int item, int state)
 		GetMenuBarInfo(hwnd,OBJID_MENU, 0, &mbi);
 		if (!(mbi.rcBar.right-mbi.rcBar.left>0 && mbi.rcBar.bottom-mbi.rcBar.top>0)) return 1;
 		r1=mbi.rcBar;  
-		r1.bottom+= !DBGetContactSettingByte(NULL,"CLUI","LineUnderMenu",0);
+		r1.bottom+= !DBGetContactSettingByte(NULL,"CLUI","LineUnderMenu",SETTING_LINEUNDERMENU_DEFAULT);
 		if (item<1)
 		{           
 			treg=CreateRectRgn(mbi.rcBar.left,mbi.rcBar.top,mbi.rcBar.right,r1.bottom);
@@ -1007,7 +1007,7 @@ static int CLUI_DrawMenuBackGround(HWND hwnd, HDC hdc, int item, int state)
 		else
 		{
 			GetMenuBarInfo(hwnd,OBJID_MENU, item, &mbi);
-			treg=CreateRectRgn(mbi.rcBar.left,mbi.rcBar.top,mbi.rcBar.right,mbi.rcBar.bottom+!DBGetContactSettingByte(NULL,"CLUI","LineUnderMenu",0));
+			treg=CreateRectRgn(mbi.rcBar.left,mbi.rcBar.top,mbi.rcBar.right,mbi.rcBar.bottom+!DBGetContactSettingByte(NULL,"CLUI","LineUnderMenu",SETTING_LINEUNDERMENU_DEFAULT));
 		}
 		OffsetRgn(treg,-ra.left,-ra.top);
 		r1.left-=ra.left;
@@ -1139,7 +1139,7 @@ static void CLUI_SnappingToEdge(HWND hwnd, WINDOWPOS * wp) //by ZORG
 	if ( MyMonitorFromWindow == NULL || MyGetMonitorInfo == NULL )
 		return;
 
-	if (DBGetContactSettingByte(NULL,"CLUI","SnapToEdges",0))
+	if (DBGetContactSettingByte(NULL,"CLUI","SnapToEdges",SETTING_SNAPTOEDGES_DEFAULT))
 	{
 		RECT* dr;
 		MONITORINFO monInfo;
@@ -1376,7 +1376,7 @@ int CLUI_OnSizingMoving(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 					v=(r.bottom-r.top)>(w*2)?w:(r.bottom-r.top);
 					h=(h<v)?h:v;
 					hRgn1=CreateRoundRectRgn(0,0,(r.right-r.left+1),(r.bottom-r.top+1),h,h);
-					if ((DBGetContactSettingByte(NULL,"CLC","RoundCorners",0)) && (!CallService(MS_CLIST_DOCKINGISDOCKED,0,0)))
+					if ((DBGetContactSettingByte(NULL,"CLC","RoundCorners",SETTING_ROUNDCORNERS_DEFAULT)) && (!CallService(MS_CLIST_DOCKINGISDOCKED,0,0)))
 						SetWindowRgn(hwnd,hRgn1,FALSE); 
 					else
 					{
@@ -1551,7 +1551,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 			ValidateRect(hwnd,NULL);
 
 		}
-		if (0&&(DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenFrames",1) || DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenTitleBar",1)))
+		if (0&&(DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenFrames",SETTING_GAPFRAMES_DEFAULT) || DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenTitleBar",SETTING_GAPTITLEBAR_DEFAULT)))
 		{
 			if (IsWindowVisible(hwnd))
 				if (g_CluiData.fLayered)
@@ -1618,7 +1618,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 
 	case M_CREATECLC:
 		CLUI_CreateCLC(hwnd);
-		if (DBGetContactSettingByte(NULL,"CList","ShowOnStart",0)) cliShowHide((WPARAM)hwnd,(LPARAM)1); 
+		if (DBGetContactSettingByte(NULL,"CList","ShowOnStart",SETTING_SHOWONSTART_DEFAULT)) cliShowHide((WPARAM)hwnd,(LPARAM)1);
 		PostMessage(pcli->hwndContactTree,CLM_AUTOREBUILD,0,0);
 		return 0;
 
@@ -1673,7 +1673,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 			BOOL IsOption=FALSE;
 			SetCursor(LoadCursor(NULL, IDC_ARROW));
 			SendMessage(pcli->hwndContactTree, WM_ACTIVATE, wParam, lParam);
-			if (DBGetContactSettingByte(NULL, "ModernData", "HideBehind", 0))
+			if (DBGetContactSettingByte(NULL, "ModernData", "HideBehind", SETTING_HIDEBEHIND_DEFAULT))
 			{
 				if(wParam==WA_INACTIVE && ((HWND)lParam!=hwnd) && GetParent((HWND)lParam)!=hwnd && !IsOption) 
 				{
@@ -1784,7 +1784,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 			result=DefWindowProc(hwnd,WM_NCHITTEST,wParam,lParam);
 			if(result==HTSIZE || result==HTTOP || result==HTTOPLEFT || result==HTTOPRIGHT ||
 				result==HTBOTTOM || result==HTBOTTOMRIGHT || result==HTBOTTOMLEFT)
-				if(DBGetContactSettingByte(NULL,"CLUI","AutoSize",0)) return HTCLIENT;
+				if(DBGetContactSettingByte(NULL,"CLUI","AutoSize",SETTING_AUTOSIZE_DEFAULT)) return HTCLIENT;
 			if (result==HTMENU) 
 			{
 				int t;
@@ -1956,7 +1956,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 
 				if (!wParam) gAlpha=0;
 				else 
-					gAlpha=(DBGetContactSettingByte(NULL,"CList","Transparent",0)?DBGetContactSettingByte(NULL,"CList","Alpha",SETTING_ALPHA_DEFAULT):255);
+					gAlpha=(DBGetContactSettingByte(NULL,"CList","Transparent",SETTING_TRANSPARENT_DEFAULT)?DBGetContactSettingByte(NULL,"CList","Alpha",SETTING_ALPHA_DEFAULT):255);
 				if (wParam) 
 				{
 					g_CluiData.bCurrentAlpha=0;
@@ -1971,7 +1971,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 		if(wParam==SC_MAXIMIZE) return 0;
 
 		DefWindowProc(hwnd, msg, wParam, lParam);
-		if (DBGetContactSettingByte(NULL,"CList","OnDesktop",0))
+		if (DBGetContactSettingByte(NULL,"CList","OnDesktop",SETTING_ONDESKTOP_DEFAULT))
 			callProxied_CLUIFrames_ActivateSubContainers(TRUE);
 		return 0;
 
@@ -1982,7 +1982,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 
 	case WM_GETMINMAXINFO:
 		DefWindowProc(hwnd,msg,wParam,lParam);
-		((LPMINMAXINFO)lParam)->ptMinTrackSize.x=max(DBGetContactSettingWord(NULL,"CLUI","MinWidth",18),max(18,DBGetContactSettingByte(NULL,"CLUI","LeftClientMargin",0)+DBGetContactSettingByte(NULL,"CLUI","RightClientMargin",0)+18));
+		((LPMINMAXINFO)lParam)->ptMinTrackSize.x=max(DBGetContactSettingWord(NULL,"CLUI","MinWidth",SETTING_MINWIDTH_DEFAULT),max(18,DBGetContactSettingByte(NULL,"CLUI","LeftClientMargin",SETTING_LEFTCLIENTMARIGN_DEFAULT)+DBGetContactSettingByte(NULL,"CLUI","RightClientMargin",SETTING_RIGHTCLIENTMARIGN_DEFAULT)+18));
 		if (nRequiredHeight==0)
 		{
 			((LPMINMAXINFO)lParam)->ptMinTrackSize.y=CLUIFramesGetMinHeight();
@@ -2023,10 +2023,10 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 				rcWindow=rcSizingRect;
 			else					
 				GetWindowRect(hwnd,&rcWindow);
-			if(!DBGetContactSettingByte(NULL,"CLUI","AutoSize",0)){return 0;}
+			if(!DBGetContactSettingByte(NULL,"CLUI","AutoSize",SETTING_AUTOSIZE_DEFAULT)){return 0;}
 			if(CallService(MS_CLIST_DOCKINGISDOCKED,0,0)) return 0;
 			if (hFrameContactTree==0)return 0;
-			maxHeight=DBGetContactSettingByte(NULL,"CLUI","MaxSizeHeight",75);
+			maxHeight=DBGetContactSettingByte(NULL,"CLUI","MaxSizeHeight",SETTING_MAXSIZEHEIGHT_DEFAULT);
 			rcOld=rcWindow;
 			GetWindowRect(pcli->hwndContactTree,&rcTree);
 			//
@@ -2056,7 +2056,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 			if(newHeight>(rcWorkArea.bottom-rcWorkArea.top)*maxHeight/100)
 				newHeight=(rcWorkArea.bottom-rcWorkArea.top)*maxHeight/100;
 
-			if(DBGetContactSettingByte(NULL,"CLUI","AutoSizeUpward",0)) {
+			if(DBGetContactSettingByte(NULL,"CLUI","AutoSizeUpward",SETTING_AUTOSIZEUPWARD_DEFAULT)) {
 				rcWindow.top=rcWindow.bottom-newHeight;
 				if(rcWindow.top<rcWorkArea.top) rcWindow.top=rcWorkArea.top;
 			}
@@ -2144,7 +2144,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 			return res;
 		}
 		/*===================*/
-		if (DBGetContactSettingByte(NULL,"CLUI","DragToScroll",0) && !DBGetContactSettingByte(NULL,"CLUI","ClientAreaDrag",1)) 
+		if (DBGetContactSettingByte(NULL,"CLUI","DragToScroll",SETTING_DRAGTOSCROLL_DEFAULT) && !DBGetContactSettingByte(NULL,"CLUI","ClientAreaDrag",SETTING_CLIENTDRAG_DEFAULT))
 			return CLC_EnterDragToScroll(pcli->hwndContactTree,nm->pt.y);
 		/*===================*/
 		return 0;
@@ -2290,11 +2290,11 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 			pcli->hwndContactTree=NULL;
 			pcli->hwndStatus=NULL;
 			{
-				if(DBGetContactSettingByte(NULL,"CLUI","AutoSize",0))
+				if(DBGetContactSettingByte(NULL,"CLUI","AutoSize",SETTING_AUTOSIZE_DEFAULT))
 				{
 					RECT r;
 					GetWindowRect(pcli->hwndContactList,&r);
-					if(DBGetContactSettingByte(NULL,"CLUI","AutoSizeUpward",0))
+					if(DBGetContactSettingByte(NULL,"CLUI","AutoSizeUpward",SETTING_AUTOSIZEUPWARD_DEFAULT))
 						r.top=r.bottom-CLUIFrames_GetTotalHeight();
 					else 
 						r.bottom=r.top+CLUIFrames_GetTotalHeight();
@@ -2354,7 +2354,7 @@ static int CLUI_MenuItem_PreBuild(WPARAM wParam, LPARAM lParam)
 	}
 	CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hRenameMenuItem, (LPARAM)&mi);
 
-	if (!hItem || !IsHContactContact(hItem) || !DBGetContactSettingByte(NULL,"CList","AvatarsShow",0)) 
+	if (!hItem || !IsHContactContact(hItem) || !DBGetContactSettingByte(NULL,"CList","AvatarsShow",SETTINGS_SHOWAVATARS_DEFAULT))
 	{
 		mi.flags = CMIM_FLAGS | CMIF_HIDDEN;
 		CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hShowAvatarMenuItem, (LPARAM)&mi);
@@ -2449,12 +2449,12 @@ void CLUI_cli_LoadCluiGlobalOpts()
 
 	if(tLayeredFlag)
 	{
-		if (DBGetContactSettingByte(NULL,"CList","WindowShadow",0)==1)
+		if (DBGetContactSettingByte(NULL,"CList","WindowShadow",SETTING_WINDOWSHADOW_DEFAULT)==1)
 			DBWriteContactSettingByte(NULL,"CList","WindowShadow",2);    
 	}
 	else
 	{
-		if (DBGetContactSettingByte(NULL,"CList","WindowShadow",0)==2)
+		if (DBGetContactSettingByte(NULL,"CList","WindowShadow",SETTING_WINDOWSHADOW_DEFAULT)==2)
 			DBWriteContactSettingByte(NULL,"CList","WindowShadow",1); 
 	}
 	saveLoadCluiGlobalOpts();
@@ -2468,9 +2468,9 @@ void CLUI_cliOnCreateClc(void)
 	if (hUserDll)
 	{
 		g_proc_UpdateLayeredWindow = (BOOL (WINAPI *)(HWND,HDC,POINT*,SIZE*,HDC,POINT*,COLORREF,BLENDFUNCTION*,DWORD))GetProcAddress(hUserDll, "UpdateLayeredWindow");
-		g_CluiData.fLayered=(g_proc_UpdateLayeredWindow!=NULL) && !DBGetContactSettingByte(NULL,"ModernData","DisableEngine", 0);
-		g_CluiData.fSmoothAnimation=IsWinVer2000Plus()&&DBGetContactSettingByte(NULL, "CLUI", "FadeInOut", 1);
-		g_CluiData.fLayered=(g_CluiData.fLayered*DBGetContactSettingByte(NULL, "ModernData", "EnableLayering", g_CluiData.fLayered))&&!DBGetContactSettingByte(NULL,"ModernData","DisableEngine", 0);
+		g_CluiData.fLayered=(g_proc_UpdateLayeredWindow!=NULL) && !DBGetContactSettingByte(NULL,"ModernData","DisableEngine", SETTING_DISABLESKIN_DEFAULT);
+		g_CluiData.fSmoothAnimation=IsWinVer2000Plus()&&DBGetContactSettingByte(NULL, "CLUI", "FadeInOut", SETTING_FADEIN_DEFAULT);
+		g_CluiData.fLayered=(g_CluiData.fLayered*DBGetContactSettingByte(NULL, "ModernData", "EnableLayering", g_CluiData.fLayered))&&!DBGetContactSettingByte(NULL,"ModernData","DisableEngine", SETTING_DISABLESKIN_DEFAULT);
 		g_proc_SetLayeredWindowAttributesNew = (BOOL (WINAPI *)(HWND,COLORREF,BYTE,DWORD))GetProcAddress(hUserDll, "SetLayeredWindowAttributes");
 		g_proc_AnimateWindow=(BOOL (WINAPI*)(HWND,DWORD,DWORD))GetProcAddress(hUserDll,"AnimateWindow");
 	}
@@ -2568,10 +2568,10 @@ int CLUI_TestCursorOnBorders()
 	/*
 	*  Size borders offset (contract)
 	*/
-	r.top+=DBGetContactSettingDword(NULL,"ModernSkin","SizeMarginOffset_Top",0);
-	r.bottom-=DBGetContactSettingDword(NULL,"ModernSkin","SizeMarginOffset_Bottom",0);
-	r.left+=DBGetContactSettingDword(NULL,"ModernSkin","SizeMarginOffset_Left",0);
-	r.right-=DBGetContactSettingDword(NULL,"ModernSkin","SizeMarginOffset_Right",0);
+	r.top+=DBGetContactSettingDword(NULL,"ModernSkin","SizeMarginOffset_Top",SKIN_OFFSET_TOP_DEFAULT);
+	r.bottom-=DBGetContactSettingDword(NULL,"ModernSkin","SizeMarginOffset_Bottom",SKIN_OFFSET_BOTTOM_DEFAULT);
+	r.left+=DBGetContactSettingDword(NULL,"ModernSkin","SizeMarginOffset_Left",SKIN_OFFSET_LEFT_DEFAULT);
+	r.right-=DBGetContactSettingDword(NULL,"ModernSkin","SizeMarginOffset_Right",SKIN_OFFSET_RIGHT_DEFAULT);
 
 	if (r.right<r.left) r.right=r.left;
 	if (r.bottom<r.top) r.bottom=r.top;
@@ -2593,14 +2593,14 @@ int CLUI_TestCursorOnBorders()
 	{
 		//ScreenToClient(hwnd,&pt);
 		//GetClientRect(hwnd,&r);
-		if (pt.y<=r.bottom && pt.y>=r.bottom-SIZING_MARGIN && !DBGetContactSettingByte(NULL,"CLUI","AutoSize",0)) k=6;
-		else if (pt.y>=r.top && pt.y<=r.top+SIZING_MARGIN && !DBGetContactSettingByte(NULL,"CLUI","AutoSize",0)) k=3;
+		if (pt.y<=r.bottom && pt.y>=r.bottom-SIZING_MARGIN && !DBGetContactSettingByte(NULL,"CLUI","AutoSize",SETTING_AUTOSIZE_DEFAULT)) k=6;
+		else if (pt.y>=r.top && pt.y<=r.top+SIZING_MARGIN && !DBGetContactSettingByte(NULL,"CLUI","AutoSize",SETTING_AUTOSIZE_DEFAULT)) k=3;
 		if (pt.x<=r.right && pt.x>=r.right-SIZING_MARGIN && g_CluiData.bBehindEdgeSettings!=2) k+=2;
 		else if (pt.x>=r.left && pt.x<=r.left+SIZING_MARGIN && g_CluiData.bBehindEdgeSettings!=1) k+=1;
 		if (!(pt.x>=r.left && pt.x<=r.right && pt.y>=r.top && pt.y<=r.bottom)) k=0;
 		k*=mouse_in_window;
 		hCurs1 = LoadCursor(NULL, IDC_ARROW);
-		if(g_CluiData.nBehindEdgeState<=0 && (!(DBGetContactSettingByte(NULL,"CLUI","LockSize",0))))
+		if(g_CluiData.nBehindEdgeState<=0 && (!(DBGetContactSettingByte(NULL,"CLUI","LockSize",SETTING_LOCKSIZE_DEFAULT))))
 			switch(k)
 		{
 			case 1: 
@@ -2622,7 +2622,7 @@ int CLUI_TestCursorOnBorders()
 
 int CLUI_SizingOnBorder(POINT pt, int PerformSize)
 {
-	if (!(DBGetContactSettingByte(NULL,"CLUI","LockSize",0)))
+	if (!(DBGetContactSettingByte(NULL,"CLUI","LockSize",SETTING_LOCKSIZE_DEFAULT)))
 	{
 		RECT r;
 		HWND hwnd=pcli->hwndContactList;
@@ -2631,10 +2631,10 @@ int CLUI_SizingOnBorder(POINT pt, int PerformSize)
 		/*
 		*  Size borders offset (contract)
 		*/
-		r.top+=DBGetContactSettingDword(NULL,"ModernSkin","SizeMarginOffset_Top",0);
-		r.bottom-=DBGetContactSettingDword(NULL,"ModernSkin","SizeMarginOffset_Bottom",0);
-		r.left+=DBGetContactSettingDword(NULL,"ModernSkin","SizeMarginOffset_Left",0);
-		r.right-=DBGetContactSettingDword(NULL,"ModernSkin","SizeMarginOffset_Right",0);
+		r.top+=DBGetContactSettingDword(NULL,"ModernSkin","SizeMarginOffset_Top",SKIN_OFFSET_TOP_DEFAULT);
+		r.bottom-=DBGetContactSettingDword(NULL,"ModernSkin","SizeMarginOffset_Bottom",SKIN_OFFSET_BOTTOM_DEFAULT);
+		r.left+=DBGetContactSettingDword(NULL,"ModernSkin","SizeMarginOffset_Left",SKIN_OFFSET_LEFT_DEFAULT);
+		r.right-=DBGetContactSettingDword(NULL,"ModernSkin","SizeMarginOffset_Right",SKIN_OFFSET_RIGHT_DEFAULT);
 
 		if (r.right<r.left) r.right=r.left;
 		if (r.bottom<r.top) r.bottom=r.top;
@@ -2643,8 +2643,8 @@ int CLUI_SizingOnBorder(POINT pt, int PerformSize)
 		*  End of size borders offset (contract)
 		*/
 		//ScreenToClient(hwnd,&pt);
-		if (pt.y<=r.bottom && pt.y>=r.bottom-SIZING_MARGIN && !DBGetContactSettingByte(NULL,"CLUI","AutoSize",0)) k=6;
-		else if (pt.y>=r.top && pt.y<=r.top+SIZING_MARGIN && !DBGetContactSettingByte(NULL,"CLUI","AutoSize",0)) k=3;
+		if (pt.y<=r.bottom && pt.y>=r.bottom-SIZING_MARGIN && !DBGetContactSettingByte(NULL,"CLUI","AutoSize",SETTING_AUTOSIZE_DEFAULT)) k=6;
+		else if (pt.y>=r.top && pt.y<=r.top+SIZING_MARGIN && !DBGetContactSettingByte(NULL,"CLUI","AutoSize",SETTING_AUTOSIZE_DEFAULT)) k=3;
 		if (pt.x<=r.right && pt.x>=r.right-SIZING_MARGIN) k+=2;
 		else if (pt.x>=r.left && pt.x<=r.left+SIZING_MARGIN)k+=1;
 		if (!(pt.x>=r.left && pt.x<=r.right && pt.y>=r.top && pt.y<=r.bottom)) k=0;

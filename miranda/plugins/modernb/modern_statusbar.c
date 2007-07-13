@@ -51,21 +51,21 @@ COLORREF sttGetColor(char * module, char * color, COLORREF defColor);
 
 int LoadStatusBarData()
 {
-    g_StatusBarData.showStatusName=DBGetContactSettingByte(NULL,"CLUI","SBarShow",7)&4;
-    g_StatusBarData.showProtoName=DBGetContactSettingByte(NULL,"CLUI","SBarShow",7)&2;
-    g_StatusBarData.rectBorders.left=DBGetContactSettingDword(NULL,"CLUI","LeftOffset",0);
-    g_StatusBarData.rectBorders.right=DBGetContactSettingDword(NULL,"CLUI","RightOffset",0);
-    g_StatusBarData.extraspace=(BYTE)DBGetContactSettingDword(NULL,"CLUI","SpaceBetween",0);
-    g_StatusBarData.xStatusMode=(BYTE)(DBGetContactSettingByte(NULL,"CLUI","ShowXStatus",6));
-    g_StatusBarData.Align=DBGetContactSettingByte(NULL,"CLUI","Align",0);
-    g_StatusBarData.sameWidth=DBGetContactSettingByte(NULL,"CLUI","EqualSections",0);
-    g_StatusBarData.connectingIcon=DBGetContactSettingByte(NULL,"CLUI","UseConnectingIcon",1);
-    g_StatusBarData.nProtosPerLine=DBGetContactSettingByte(NULL,"Protocols","ProtosPerLine",0);
-    g_StatusBarData.showProtoEmails=DBGetContactSettingByte(NULL,"CLUI","ShowUnreadEmails",0);
+    g_StatusBarData.showStatusName=DBGetContactSettingByte(NULL,"CLUI","SBarShow",SETTING_SBARSHOW_DEFAULT)&4;
+    g_StatusBarData.showProtoName=DBGetContactSettingByte(NULL,"CLUI","SBarShow",SETTING_SBARSHOW_DEFAULT)&2;
+    g_StatusBarData.rectBorders.left=DBGetContactSettingDword(NULL,"CLUI","LeftOffset",SETTING_LEFTOFFSET_DEFAULT);
+    g_StatusBarData.rectBorders.right=DBGetContactSettingDword(NULL,"CLUI","RightOffset",SETTING_RIGHTOFFSET_DEFAULT);
+    g_StatusBarData.extraspace=(BYTE)DBGetContactSettingDword(NULL,"CLUI","SpaceBetween",SETTING_SPACEBETWEEN_DEFAULT);
+    g_StatusBarData.xStatusMode=(BYTE)(DBGetContactSettingByte(NULL,"CLUI","ShowXStatus",SETTING_SHOWXSTATUS_DEFAULT));
+    g_StatusBarData.Align=DBGetContactSettingByte(NULL,"CLUI","Align",SETTING_ALIGN_DEFAULT);
+    g_StatusBarData.sameWidth=DBGetContactSettingByte(NULL,"CLUI","EqualSections",SETTING_EQUALSECTIONS_DEFAULT);
+    g_StatusBarData.connectingIcon=DBGetContactSettingByte(NULL,"CLUI","UseConnectingIcon",SETTING_USECONNECTINGICON_DEFAULT);
+    g_StatusBarData.nProtosPerLine=DBGetContactSettingByte(NULL,"Protocols","ProtosPerLine",SETTING_PROTOSPERLINE_DEFAULT);
+    g_StatusBarData.showProtoEmails=DBGetContactSettingByte(NULL,"CLUI","ShowUnreadEmails",SETTING_SHOWUNREADEMAILS_DEFAULT);
     if (g_StatusBarData.BarFont) DeleteObject(g_StatusBarData.BarFont);
     g_StatusBarData.BarFont=NULL;//LoadFontFromDB("ModernData","StatusBar",&g_StatusBarData.fontColor);
     {
-        int vis=DBGetContactSettingByte(NULL,"CLUI","ShowSBar",1);
+        int vis=DBGetContactSettingByte(NULL,"CLUI","ShowSBar",SETTING_SHOWSBAR_DEFAULT);
         int frameopt;
         int frameID=callProxied_FindFrameID(hModernStatusBar);
         frameopt=CallService(MS_CLIST_FRAMES_GETFRAMEOPTIONS,MAKEWPARAM(FO_FLAGS,frameID),0);
@@ -81,9 +81,9 @@ int LoadStatusBarData()
         };
         CallService(MS_CLIST_FRAMES_SETFRAMEOPTIONS,MAKEWPARAM(FO_FLAGS,frameID),frameopt);
     }
-    g_StatusBarData.TextEffectID=DBGetContactSettingByte(NULL,"StatusBar","TextEffectID",0xFF);
-    g_StatusBarData.TextEffectColor1=DBGetContactSettingDword(NULL,"StatusBar","TextEffectColor1",0);
-    g_StatusBarData.TextEffectColor2=DBGetContactSettingDword(NULL,"StatusBar","TextEffectColor2",0);
+    g_StatusBarData.TextEffectID=DBGetContactSettingByte(NULL,"StatusBar","TextEffectID",SETTING_TEXTEFFECTID_DEFAULT);
+    g_StatusBarData.TextEffectColor1=DBGetContactSettingDword(NULL,"StatusBar","TextEffectColor1",SETTING_TEXTEFFECTCOLOR1_DEFAULT);
+    g_StatusBarData.TextEffectColor2=DBGetContactSettingDword(NULL,"StatusBar","TextEffectColor2",SETTING_TEXTEFFECTCOLOR2_DEFAULT);
 
     if(g_StatusBarData.hBmpBackground) {DeleteObject(g_StatusBarData.hBmpBackground); g_StatusBarData.hBmpBackground=NULL;}
 
@@ -165,7 +165,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
     {
         SkinDrawGlyph(hDC,&rc,&rc,"Main,ID=StatusBar"); //TBD
     }
-    g_StatusBarData.nProtosPerLine=DBGetContactSettingByte(NULL,"Protocols","ProtosPerLine",0);
+    g_StatusBarData.nProtosPerLine=DBGetContactSettingByte(NULL,"Protocols","ProtosPerLine",SETTING_PROTOSPERLINE_DEFAULT);
     hOldFont=CLCPaint_ChangeToFont(hDC,NULL,FONTID_STATUSBAR_PROTONAME,NULL);
     //  hOldFont=SelectObject(hDC,g_StatusBarData.BarFont);
     //  SetTextColor(hDC,g_StatusBarData.fontColor);
@@ -686,7 +686,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
                         if(PtInRect(&rc,pt))
                         {
                             NotifyEventHooks(hStatusBarShowToolTipEvent,(WPARAM)ProtosData[i].ProtoName,0);
-                            CLUI_SafeSetTimer(hwnd,TM_STATUSBARHIDE,DBGetContactSettingWord(NULL,"CLUIFrames","HideToolTipTime",5000),0);
+                            CLUI_SafeSetTimer(hwnd,TM_STATUSBARHIDE,DBGetContactSettingWord(NULL,"CLUIFrames","HideToolTipTime",SETTING_HIDETOOLTIPTIME_DEFAULT),0);
                             tooltipshoing=TRUE;
                             ClientToScreen(hwnd,&pt);
                             ptToolTipShow=pt;
@@ -734,7 +734,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
                         ReleaseCapture();
                     };
                 KillTimer(hwnd,TM_STATUSBAR);
-                CLUI_SafeSetTimer(hwnd,TM_STATUSBAR,DBGetContactSettingWord(NULL,"CLC","InfoTipHoverTime",750),0);
+                CLUI_SafeSetTimer(hwnd,TM_STATUSBAR,DBGetContactSettingWord(NULL,"CLC","InfoTipHoverTime",CLCDEFAULT_INFOTIPTIME),0);
 
                 return(CLUI_TestCursorOnBorders());
             }
@@ -796,7 +796,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
                     {
                         if (msg==WM_RBUTTONDOWN)
                         {
-                            if( DBGetContactSettingByte(NULL,"CLUI","SBarRightClk",0))
+                            if( DBGetContactSettingByte(NULL,"CLUI","SBarRightClk",SETTING_SBARRIGHTCLK_DEFAULT))
                                 hMenu=(HMENU)CallService(MS_CLIST_MENUGETMAIN,0,0);
                             else
                                 hMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
@@ -857,7 +857,7 @@ int StatusBar_Create(HWND parent)
         Frame.hWnd=hModernStatusBar;
         Frame.align=alBottom;
         Frame.hIcon=LoadSkinnedIcon (SKINICON_OTHER_MIRANDA);
-        Frame.Flags=(DBGetContactSettingByte(NULL,"CLUI","ShowSBar",1)?F_VISIBLE:0)|F_LOCKED|F_NOBORDER|F_NO_SUBCONTAINER|F_TCHAR;
+        Frame.Flags=(DBGetContactSettingByte(NULL,"CLUI","ShowSBar",SETTING_SHOWSBAR_DEFAULT)?F_VISIBLE:0)|F_LOCKED|F_NOBORDER|F_NO_SUBCONTAINER|F_TCHAR;
         Frame.height=h;
         Frame.tname=_T("Status Bar");
         Frame.TBtname=TranslateT("Status Bar");

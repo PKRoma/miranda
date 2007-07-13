@@ -113,7 +113,7 @@ int cliHitTest(HWND hwnd,struct ClcData *dat,int testx,int testy,struct ClcConta
 		}
 	}
 
-	if (DBGetContactSettingByte(NULL,"CLC","HiLightMode",0)==1) // || DBGetContactSettingByte(NULL,"CLC","HiLightMode",0)==2)
+	if (dat->HiLightMode==1)
 	{
 		if(flags) *flags|=CLCHT_ONITEMLABEL;
 		return hit;
@@ -463,7 +463,7 @@ COLORREF sttGetColor(char * module, char * color, COLORREF defColor)
 void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 { 
 	int i;
-	g_CluiData.fDisableSkinEngine=DBGetContactSettingByte(NULL,"ModernData","DisableEngine", 0);
+	g_CluiData.fDisableSkinEngine=DBGetContactSettingByte(NULL,"ModernData","DisableEngine", SETTING_DISABLESKIN_DEFAULT);
 	{	
 
 		LOGFONTA lf;
@@ -502,21 +502,24 @@ void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 
 	// Row
 	dat->row_min_heigh = DBGetContactSettingWord(NULL,"CList","MinRowHeight",CLCDEFAULT_ROWHEIGHT);
-	dat->row_border = DBGetContactSettingWord(NULL,"CList","RowBorder",1);
-	dat->row_before_group_space =((hwnd!=pcli->hwndContactTree&&pcli->hwndContactTree!=NULL) || !DBGetContactSettingByte(NULL,"ModernData","UseAdvancedRowLayout",0))?0:DBGetContactSettingWord(NULL,"ModernSkin","SpaceBeforeGroup",0);
-	dat->row_variable_height = DBGetContactSettingByte(NULL,"CList","VariableRowHeight",1);
-	dat->row_align_left_items_to_left = DBGetContactSettingByte(NULL,"CList","AlignLeftItemsToLeft",1);
-	dat->row_hide_group_icon = DBGetContactSettingByte(NULL,"CList","HideGroupsIcon",0);
-	dat->row_align_right_items_to_right = DBGetContactSettingByte(NULL,"CList","AlignRightItemsToRight",1);
+	dat->row_border = DBGetContactSettingWord(NULL,"CList","RowBorder",SETTING_ROWBORDER_DEFAULT);
+	dat->row_before_group_space =((hwnd!=pcli->hwndContactTree&&pcli->hwndContactTree!=NULL) 
+		|| !DBGetContactSettingByte(NULL,"ModernData","UseAdvancedRowLayout",SETTING_ROW_ADVANCEDLAYOUT_DEFAULT))?0:DBGetContactSettingWord(NULL,"ModernSkin","SpaceBeforeGroup",SKIN_SPACEBEFOREGROUP_DEFAULT);
+	dat->row_variable_height = DBGetContactSettingByte(NULL,"CList","VariableRowHeight",SETTING_VARIABLEROWHEIGHT_DEFAULT);
+	dat->row_align_left_items_to_left = DBGetContactSettingByte(NULL,"CList","AlignLeftItemsToLeft",SETTING_ALIGNLEFTTOLEFT_DEFAULT);
+	dat->row_hide_group_icon = DBGetContactSettingByte(NULL,"CList","HideGroupsIcon",SETTING_HIDEGROUPSICON_DEFAULT);
+	dat->row_align_right_items_to_right = DBGetContactSettingByte(NULL,"CList","AlignRightItemsToRight",SETTING_ALIGNRIGHTORIGHT_DEFAULT);
 	//TODO: Add to settings
-	dat->row_align_group_mode=DBGetContactSettingByte(NULL,"CList","AlignGroupCaptions",0);
+	dat->row_align_group_mode=DBGetContactSettingByte(NULL,"CList","AlignGroupCaptions",SETTING_ALIGNGROPCAPTION_DEFAULT);
 	if (pcli->hwndContactTree==NULL || dat->hWnd==pcli->hwndContactTree)
 	{
+
+		int defItemsOrder[NUM_ITEM_TYPE] = SETTINS_ROWITEMORDER_DEFAULT;
 		for (i = 0 ; i < NUM_ITEM_TYPE ; i++)
 		{
 			char tmp[128];
 			mir_snprintf(tmp, sizeof(tmp), "RowPos%d", i);
-			dat->row_items[i] = DBGetContactSettingWord(NULL, "CList", tmp, i);
+			dat->row_items[i] = DBGetContactSettingWord(NULL, "CList", tmp, defItemsOrder[i]);
 		}
 	}
 	else
@@ -529,17 +532,17 @@ void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 	// Avatar
 	if (pcli->hwndContactTree == hwnd  || pcli->hwndContactTree==NULL)
 	{
-		dat->avatars_show = DBGetContactSettingByte(NULL,"CList","AvatarsShow",0);
-		dat->avatars_draw_border = DBGetContactSettingByte(NULL,"CList","AvatarsDrawBorders",0);
-		dat->avatars_border_color = (COLORREF)DBGetContactSettingDword(NULL,"CList","AvatarsBorderColor",0);
-		dat->avatars_round_corners = DBGetContactSettingByte(NULL,"CList","AvatarsRoundCorners",1);
-		dat->avatars_use_custom_corner_size = DBGetContactSettingByte(NULL,"CList","AvatarsUseCustomCornerSize",0);
-		dat->avatars_custom_corner_size = DBGetContactSettingWord(NULL,"CList","AvatarsCustomCornerSize",4);
-		dat->avatars_ignore_size_for_row_height = DBGetContactSettingByte(NULL,"CList","AvatarsIgnoreSizeForRow",0);
-		dat->avatars_draw_overlay = DBGetContactSettingByte(NULL,"CList","AvatarsDrawOverlay",0);
-		dat->avatars_overlay_type = DBGetContactSettingByte(NULL,"CList","AvatarsOverlayType",SETTING_AVATAR_OVERLAY_TYPE_NORMAL);
-		dat->avatars_maxheight_size = DBGetContactSettingWord(NULL,"CList","AvatarsSize",30);
-		dat->avatars_maxwidth_size = DBGetContactSettingWord(NULL,"CList","AvatarsWidth",0);
+		dat->avatars_show = DBGetContactSettingByte(NULL,"CList","AvatarsShow",SETTINGS_SHOWAVATARS_DEFAULT);
+		dat->avatars_draw_border = DBGetContactSettingByte(NULL,"CList","AvatarsDrawBorders",SETTINGS_AVATARDRAWBORDER_DEFAULT);
+		dat->avatars_border_color = (COLORREF)DBGetContactSettingDword(NULL,"CList","AvatarsBorderColor",SETTINGS_AVATARBORDERCOLOR_DEFAULT);
+		dat->avatars_round_corners = DBGetContactSettingByte(NULL,"CList","AvatarsRoundCorners",SETTINGS_AVATARROUNDCORNERS_DEFAULT);
+		dat->avatars_use_custom_corner_size = DBGetContactSettingByte(NULL,"CList","AvatarsUseCustomCornerSize",SETTINGS_AVATARUSECUTOMCORNERSIZE_DEFAULT);
+		dat->avatars_custom_corner_size = DBGetContactSettingWord(NULL,"CList","AvatarsCustomCornerSize",SETTINGS_AVATARCORNERSIZE_DEFAULT);
+		dat->avatars_ignore_size_for_row_height = DBGetContactSettingByte(NULL,"CList","AvatarsIgnoreSizeForRow",SETTINGS_AVATARIGNORESIZEFORROW_DEFAULT);
+		dat->avatars_draw_overlay = DBGetContactSettingByte(NULL,"CList","AvatarsDrawOverlay",SETTINGS_AVATARDRAWOVERLAY_DEFAULT);
+		dat->avatars_overlay_type = DBGetContactSettingByte(NULL,"CList","AvatarsOverlayType",SETTINGS_AVATAROVERLAYTYPE_DEFAULT);
+		dat->avatars_maxheight_size = DBGetContactSettingWord(NULL,"CList","AvatarsSize",SETTING_AVATARHEIGHT_DEFAULT);
+		dat->avatars_maxwidth_size = DBGetContactSettingWord(NULL,"CList","AvatarsWidth",SETTING_AVATARWIDTH_DEFAULT);
 	}
 	else
 	{
@@ -559,9 +562,9 @@ void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 	// Icon
 	if (pcli->hwndContactTree == hwnd|| pcli->hwndContactTree==NULL)
 	{
-		dat->icon_hide_on_avatar = DBGetContactSettingByte(NULL,"CList","IconHideOnAvatar",0);
-		dat->icon_draw_on_avatar_space = DBGetContactSettingByte(NULL,"CList","IconDrawOnAvatarSpace",0);
-		dat->icon_ignore_size_for_row_height = DBGetContactSettingByte(NULL,"CList","IconIgnoreSizeForRownHeight",0);
+		dat->icon_hide_on_avatar = DBGetContactSettingByte(NULL,"CList","IconHideOnAvatar",SETTING_HIDEICONONAVATAR_DEFAULT);
+		dat->icon_draw_on_avatar_space = DBGetContactSettingByte(NULL,"CList","IconDrawOnAvatarSpace",SETTING_ICONONAVATARPLACE_DEFAULT);
+		dat->icon_ignore_size_for_row_height = DBGetContactSettingByte(NULL,"CList","IconIgnoreSizeForRownHeight",SETTING_ICONIGNORESIZE_DEFAULT);
 	}
 	else
 	{
@@ -573,8 +576,8 @@ void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 	// Contact time
 	if (pcli->hwndContactTree == hwnd|| pcli->hwndContactTree==NULL)
 	{
-		dat->contact_time_show = DBGetContactSettingByte(NULL,"CList","ContactTimeShow",0);
-		dat->contact_time_show_only_if_different = DBGetContactSettingByte(NULL,"CList","ContactTimeShowOnlyIfDifferent",1);
+		dat->contact_time_show = DBGetContactSettingByte(NULL,"CList","ContactTimeShow",SETTING_SHOWTIME_DEFAULT);
+		dat->contact_time_show_only_if_different = DBGetContactSettingByte(NULL,"CList","ContactTimeShowOnlyIfDifferent",SETTING_SHOWTIMEIFDIFF_DEFAULT);
 	}
 	else
 	{
@@ -591,16 +594,16 @@ void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 		dat->local_gmt_diff=dat->local_gmt_diff_dst=(DWORD)nOffset;
 	}
 	// Text
-	dat->text_rtl = DBGetContactSettingByte(NULL,"CList","TextRTL",0);
-	dat->text_align_right = DBGetContactSettingByte(NULL,"CList","TextAlignToRight",0);
-	dat->text_replace_smileys = DBGetContactSettingByte(NULL,"CList","TextReplaceSmileys",1);
-	dat->text_resize_smileys = DBGetContactSettingByte(NULL,"CList","TextResizeSmileys",1);
+	dat->text_rtl = DBGetContactSettingByte(NULL,"CList","TextRTL",SETTING_TEXT_RTL_DEFAULT);
+	dat->text_align_right = DBGetContactSettingByte(NULL,"CList","TextAlignToRight",SETTING_TEXT_RIGHTALIGN_DEFAULT);
+	dat->text_replace_smileys = DBGetContactSettingByte(NULL,"CList","TextReplaceSmileys",SETTING_TEXT_SMILEY_DEFAULT);
+	dat->text_resize_smileys = DBGetContactSettingByte(NULL,"CList","TextResizeSmileys",SETTING_TEXT_RESIZESMILEY_DEFAULT);
 	dat->text_smiley_height = 0;
-	dat->text_use_protocol_smileys = DBGetContactSettingByte(NULL,"CList","TextUseProtocolSmileys",1);
+	dat->text_use_protocol_smileys = DBGetContactSettingByte(NULL,"CList","TextUseProtocolSmileys",SETTING_TEXT_PROTOSMILEY_DEFAULT);
 
 	if (pcli->hwndContactTree == hwnd|| pcli->hwndContactTree==NULL)
 	{
-		dat->text_ignore_size_for_row_height = DBGetContactSettingByte(NULL,"CList","TextIgnoreSizeForRownHeight",0);
+		dat->text_ignore_size_for_row_height = DBGetContactSettingByte(NULL,"CList","TextIgnoreSizeForRownHeight",SETTING_TEXT_IGNORESIZE_DEFAULT);
 	}
 	else
 	{
@@ -608,44 +611,44 @@ void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 	}
 
 	// First line
-	dat->first_line_draw_smileys = DBGetContactSettingByte(NULL,"CList","FirstLineDrawSmileys",1);
-	dat->first_line_append_nick = DBGetContactSettingByte(NULL,"CList","FirstLineAppendNick",0);
-	gl_TrimText=DBGetContactSettingByte(NULL,"CList","TrimText",1);
+	dat->first_line_draw_smileys = DBGetContactSettingByte(NULL,"CList","FirstLineDrawSmileys",SETTING_FIRSTLINE_SMILEYS_DEFAULT);
+	dat->first_line_append_nick = DBGetContactSettingByte(NULL,"CList","FirstLineAppendNick",SETTING_FIRSTLINE_APPENDNICK_DEFAULT);
+	gl_TrimText=DBGetContactSettingByte(NULL,"CList","TrimText",SETTING_FIRSTLINE_TRIMTEXT_DEFAULT);
 
 	// Second line
 	if (pcli->hwndContactTree == hwnd || pcli->hwndContactTree==NULL)
 	{
-		dat->second_line_show = DBGetContactSettingByte(NULL,"CList","SecondLineShow",1);
-		dat->second_line_top_space = DBGetContactSettingWord(NULL,"CList","SecondLineTopSpace",2);
-		dat->second_line_draw_smileys = DBGetContactSettingByte(NULL,"CList","SecondLineDrawSmileys",1);
-		dat->second_line_type = DBGetContactSettingWord(NULL,"CList","SecondLineType",TEXT_STATUS_MESSAGE);
+		dat->second_line_show = DBGetContactSettingByte(NULL,"CList","SecondLineShow",SETTING_SECONDLINE_SHOW_DEFAULT);
+		dat->second_line_top_space = DBGetContactSettingWord(NULL,"CList","SecondLineTopSpace",SETTING_SECONDLINE_TOPSPACE_DEFAULT);
+		dat->second_line_draw_smileys = DBGetContactSettingByte(NULL,"CList","SecondLineDrawSmileys",SETTING_SECONDLINE_SMILEYS_DEFAULT);
+		dat->second_line_type = DBGetContactSettingWord(NULL,"CList","SecondLineType",SETTING_SECONDLINE_TYPE_DEFAULT);
 		{
 			DBVARIANT dbv={0};
 
 			if (!DBGetContactSettingTString(NULL, "CList","SecondLineText", &dbv))
 			{
 				lstrcpyn(dat->second_line_text, dbv.ptszVal, SIZEOF(dat->second_line_text)-1);
-				dat->second_line_text[SIZEOF(dat->second_line_text)-1] = '\0';
+				dat->second_line_text[SIZEOF(dat->second_line_text)-1] = _T('\0');
 				DBFreeVariant(&dbv);
 			}
 			else
 			{
-				dat->second_line_text[0] = '\0';
+				dat->second_line_text[0] = _T('\0');
 			}
 		}
-		dat->second_line_xstatus_has_priority = DBGetContactSettingByte(NULL,"CList","SecondLineXStatusHasPriority",1);
-		dat->second_line_show_status_if_no_away=DBGetContactSettingByte(NULL,"CList","SecondLineShowStatusIfNoAway",0);
-		dat->second_line_show_listening_if_no_away=DBGetContactSettingByte(NULL,"CList","SecondLineShowListeningIfNoAway",1);
-		dat->second_line_use_name_and_message_for_xstatus = DBGetContactSettingByte(NULL,"CList","SecondLineUseNameAndMessageForXStatus",0);
+		dat->second_line_xstatus_has_priority = DBGetContactSettingByte(NULL,"CList","SecondLineXStatusHasPriority",SETTING_SECONDLINE_XSTATUS_DEFAULT);
+		dat->second_line_show_status_if_no_away=DBGetContactSettingByte(NULL,"CList","SecondLineShowStatusIfNoAway",SETTING_SECONDLINE_STATUSIFNOAWAY_DEFAULT);
+		dat->second_line_show_listening_if_no_away=DBGetContactSettingByte(NULL,"CList","SecondLineShowListeningIfNoAway",SETTING_SECONDLINE_LISTENINGIFNOAWAY_DEFAULT);
+		dat->second_line_use_name_and_message_for_xstatus = DBGetContactSettingByte(NULL,"CList","SecondLineUseNameAndMessageForXStatus",SETTING_SECONDLINE_XSTATUSNAMETEXT_DEFAULT);
 	}
 	else
 	{
 		dat->second_line_show = 0;
 		dat->second_line_top_space = 0;
 		dat->second_line_draw_smileys = 0;
-		dat->second_line_type = TEXT_STATUS_MESSAGE;
-		dat->second_line_text[0] = '\0';
-		dat->second_line_xstatus_has_priority = 1;
+		dat->second_line_type = 0;
+		dat->second_line_text[0] = _T('\0');
+		dat->second_line_xstatus_has_priority = 0;
 		dat->second_line_use_name_and_message_for_xstatus = 0;
 	}
 
@@ -653,28 +656,28 @@ void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 	// Third line
 	if (pcli->hwndContactTree == hwnd || pcli->hwndContactTree==NULL)
 	{
-		dat->third_line_show = DBGetContactSettingByte(NULL,"CList","ThirdLineShow",0);
-		dat->third_line_top_space = DBGetContactSettingWord(NULL,"CList","ThirdLineTopSpace",2);
-		dat->third_line_draw_smileys = DBGetContactSettingByte(NULL,"CList","ThirdLineDrawSmileys",0);
-		dat->third_line_type = DBGetContactSettingWord(NULL,"CList","ThirdLineType",TEXT_STATUS);
+		dat->third_line_show = DBGetContactSettingByte(NULL,"CList","ThirdLineShow",SETTING_THIRDLINE_SHOW_DEFAULT);
+		dat->third_line_top_space = DBGetContactSettingWord(NULL,"CList","ThirdLineTopSpace",SETTING_THIRDLINE_TOPSPACE_DEFAULT);
+		dat->third_line_draw_smileys = DBGetContactSettingByte(NULL,"CList","ThirdLineDrawSmileys",SETTING_THIRDLINE_SMILEYS_DEFAULT);
+		dat->third_line_type = DBGetContactSettingWord(NULL,"CList","ThirdLineType",SETTING_THIRDLINE_TYPE_DEFAULT);
 		{
 			DBVARIANT dbv={0};
 
 			if (!DBGetContactSettingTString(NULL, "CList","ThirdLineText", &dbv))
 			{
 				lstrcpyn(dat->third_line_text, dbv.ptszVal, SIZEOF(dat->third_line_text)-1);
-				dat->third_line_text[SIZEOF(dat->third_line_text)-1] = '\0';
+				dat->third_line_text[SIZEOF(dat->third_line_text)-1] = _T('\0');
 				DBFreeVariant(&dbv);
 			}
 			else
 			{
-				dat->third_line_text[0] = '\0';
+				dat->third_line_text[0] = _T('\0');
 			}
 		}
-		dat->third_line_xstatus_has_priority = DBGetContactSettingByte(NULL,"CList","ThirdLineXStatusHasPriority",1);
-		dat->third_line_show_status_if_no_away=DBGetContactSettingByte(NULL,"CList","ThirdLineShowStatusIfNoAway",0);
-		dat->third_line_show_listening_if_no_away=DBGetContactSettingByte(NULL,"CList","ThirdLineShowListeningIfNoAway",1);
-		dat->third_line_use_name_and_message_for_xstatus = DBGetContactSettingByte(NULL,"CList","ThirdLineUseNameAndMessageForXStatus",0);
+		dat->third_line_xstatus_has_priority = DBGetContactSettingByte(NULL,"CList","ThirdLineXStatusHasPriority",SETTING_THIRDLINE_XSTATUS_DEFAULT);
+		dat->third_line_show_status_if_no_away=DBGetContactSettingByte(NULL,"CList","ThirdLineShowStatusIfNoAway",SETTING_THIRDLINE_STATUSIFNOAWAY_DEFAULT);
+		dat->third_line_show_listening_if_no_away=DBGetContactSettingByte(NULL,"CList","ThirdLineShowListeningIfNoAway",SETTING_THIRDLINE_LISTENINGIFNOAWAY_DEFAULT);
+		dat->third_line_use_name_and_message_for_xstatus = DBGetContactSettingByte(NULL,"CList","ThirdLineUseNameAndMessageForXStatus",SETTING_THIRDLINE_XSTATUSNAMETEXT_DEFAULT);
 	}
 	else
 	{
@@ -682,7 +685,7 @@ void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 		dat->third_line_top_space = 0;
 		dat->third_line_draw_smileys = 0;
 		dat->third_line_type = TEXT_STATUS_MESSAGE;
-		dat->third_line_text[0] = '\0';
+		dat->third_line_text[0] = _T('\0');
 		dat->third_line_xstatus_has_priority = 1;
 		dat->third_line_use_name_and_message_for_xstatus = 0;
 	}
@@ -696,7 +699,7 @@ void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 	dat->subIndent=DBGetContactSettingByte(NULL,"CLC","SubIndent",CLCDEFAULT_GROUPINDENT);
 	dat->gammaCorrection=DBGetContactSettingByte(NULL,"CLC","GammaCorrect",CLCDEFAULT_GAMMACORRECT);
 	dat->showIdle=DBGetContactSettingByte(NULL,"CLC","ShowIdle",CLCDEFAULT_SHOWIDLE);
-	dat->noVScrollbar=DBGetContactSettingByte(NULL,"CLC","NoVScrollBar",0);
+	dat->noVScrollbar=DBGetContactSettingByte(NULL,"CLC","NoVScrollBar",CLCDEFAULT_NOVSCROLL);
 	SendMessage(hwnd,INTM_SCROLLBARCHANGED,0,0);
 	
 	if (dat->hBmpBackground) {DeleteObject(dat->hBmpBackground); dat->hBmpBackground=NULL;}
@@ -746,16 +749,16 @@ void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 	dat->quickSearchColour=DBGetContactSettingDword(NULL,"CLC","QuickSearchColour",CLCDEFAULT_QUICKSEARCHCOLOUR);
 	dat->IsMetaContactsEnabled=(!(GetWindowLong(hwnd,GWL_STYLE)&CLS_MANUALUPDATE)) &&
 		DBGetContactSettingByte(NULL,"MetaContacts","Enabled",1) && ServiceExists(MS_MC_GETDEFAULTCONTACT);
-	dat->MetaIgnoreEmptyExtra=DBGetContactSettingByte(NULL,"CLC","MetaIgnoreEmptyExtra",1);
-	dat->expandMeta=DBGetContactSettingByte(NULL,"CLC","MetaExpanding",1);
-	dat->useMetaIcon=DBGetContactSettingByte(NULL,"CLC","Meta",0);
+	dat->MetaIgnoreEmptyExtra=DBGetContactSettingByte(NULL,"CLC","MetaIgnoreEmptyExtra",SETTING_METAIGNOREEMPTYEXTRA_DEFAULT);
+	dat->expandMeta=DBGetContactSettingByte(NULL,"CLC","MetaExpanding",SETTING_METAEXPANDING_DEFAULT);
+	dat->useMetaIcon=DBGetContactSettingByte(NULL,"CLC","Meta",SETTING_USEMETAICON_DEFAULT);
 	
-	dat->drawOverlayedStatus=DBGetContactSettingByte(NULL,"CLC","DrawOverlayedStatus",3);
+	dat->drawOverlayedStatus=DBGetContactSettingByte(NULL,"CLC","DrawOverlayedStatus",SETTING_DRAWOVERLAYEDSTATUS_DEFAULT);
 
-	dat->dbbMetaHideExtra=DBGetContactSettingByte(NULL,"CLC","MetaHideExtra",0);
-	dat->dbbBlendInActiveState=DBGetContactSettingByte(NULL,"CLC","BlendInActiveState",0);
-	dat->dbbBlend25=DBGetContactSettingByte(NULL,"CLC","Blend25%",1);
-	dat->bCompactMode=DBGetContactSettingByte(NULL,"CLC","CompactMode",0);
+	dat->dbbMetaHideExtra=DBGetContactSettingByte(NULL,"CLC","MetaHideExtra",SETTING_METAHIDEEXTRA_DEFAULT);
+	dat->dbbBlendInActiveState=DBGetContactSettingByte(NULL,"CLC","BlendInActiveState",SETTING_BLENDINACTIVESTATE_DEFAULT);
+	dat->dbbBlend25=DBGetContactSettingByte(NULL,"CLC","Blend25%",SETTING_BLENDINACTIVESTATE_DEFAULT);
+	dat->bCompactMode=DBGetContactSettingByte(NULL,"CLC","CompactMode",SETTING_COMPACTMODE_DEFAULT);
 	if ((pcli->hwndContactTree == hwnd || pcli->hwndContactTree==NULL))
 	{
 		IvalidateDisplayNameCache(16);

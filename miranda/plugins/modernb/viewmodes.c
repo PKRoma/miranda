@@ -1510,7 +1510,7 @@ void ApplyViewMode(const char *Name)
         g_CluiData.bFilterEffective |= CLVM_STICKY_CONTACTS;
     
     if(g_CluiData.boldHideOffline == (BYTE)-1)
-        g_CluiData.boldHideOffline = DBGetContactSettingByte(NULL, "CList", "HideOffline", 0);
+        g_CluiData.boldHideOffline = DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT);
     
     CallService(MS_CLIST_SETHIDEOFFLINE, 0, 0);
 

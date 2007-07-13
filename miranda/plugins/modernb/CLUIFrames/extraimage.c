@@ -41,16 +41,16 @@ boolean isColumnVisible(int extra)
 		{
 			switch(i+1)
 			{
-				case EXTRA_ICON_EMAIL:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_EMAIL",1));
-				case EXTRA_ICON_PROTO:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_PROTO",1));
-				case EXTRA_ICON_SMS:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_SMS",1));
-				case EXTRA_ICON_ADV1:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_ADV1",1));
-				case EXTRA_ICON_ADV2:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_ADV2",1));	
-				case EXTRA_ICON_WEB:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_WEB",1));
-				case EXTRA_ICON_CLIENT:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_CLIENT",1));
-				case EXTRA_ICON_VISMODE:	return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_VISMODE",1));
-				case EXTRA_ICON_ADV3:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_ADV3",0));
-				case EXTRA_ICON_ADV4:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_ADV4",0));			
+				case EXTRA_ICON_EMAIL:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_EMAIL",SETTING_EXTRA_ICON_EMAIL_DEFAULT));
+				case EXTRA_ICON_PROTO:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_PROTO",SETTING_EXTRA_ICON_PROTO_DEFAULT));
+				case EXTRA_ICON_SMS:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_SMS",SETTING_EXTRA_ICON_SMS_DEFAULT));
+				case EXTRA_ICON_ADV1:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_ADV1",SETTING_EXTRA_ICON_ADV1_DEFAULT));
+				case EXTRA_ICON_ADV2:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_ADV2",SETTING_EXTRA_ICON_ADV2_DEFAULT));	
+				case EXTRA_ICON_WEB:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_WEB",SETTING_EXTRA_ICON_WEB_DEFAULT));
+				case EXTRA_ICON_CLIENT:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_CLIENT",SETTING_EXTRA_ICON_CLIENT_DEFAULT));
+				case EXTRA_ICON_VISMODE:	return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_VISMODE",SETTING_EXTRA_ICON_VISMODE_DEFAULT));
+				case EXTRA_ICON_ADV3:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_ADV3",SETTING_EXTRA_ICON_ADV3_DEFAULT));
+				case EXTRA_ICON_ADV4:		return(DBGetContactSettingByte(NULL,CLUIFrameModule,"EXTRA_ICON_ADV4",SETTING_EXTRA_ICON_ADV4_DEFAULT));			
 			}
 			break;
 		}
@@ -403,7 +403,7 @@ void ExtraImage_SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 							locApparentModeProto=szProto;
 							locApparentMode=CallProtoService(locApparentModeProto,PS_GETSTATUS,0,0);
 						}
-						if(locApparentMode == ID_STATUS_INVISIBLE || DBGetContactSettingByte(NULL,"CList","AlwaysShowAlwaysVisIcon",0) == 1)
+						if(locApparentMode == ID_STATUS_INVISIBLE || DBGetContactSettingByte(NULL,"CList","AlwaysShowAlwaysVisIcon",SETTING_ALWAYSVISICON_DEFAULT) == 1)
  							iconIndex=ExtraImageIconsIndex[3];						}
 				}
 				else 

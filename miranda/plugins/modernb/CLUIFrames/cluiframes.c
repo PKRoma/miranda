@@ -251,7 +251,7 @@ static int CLUIFrames_ActivateSubContainers(BOOL active)
 			// BringWindowToTop(hwnd);
 			//SetWindowPos(hwnd,GetWindowParent(),0,0,0,0,SWP_NOSIZE/*|SWP_NOACTIVATE*/|SWP_NOMOVE); 
 			hwnd=Frames[i].hWnd;//OwnerWindow;
-			if (DBGetContactSettingByte(NULL,"CList","OnDesktop",0))
+			if (DBGetContactSettingByte(NULL,"CList","OnDesktop",SETTING_ONDESKTOP_DEFAULT))
 			{
 				SetWindowPos(Frames[i].OwnerWindow,HWND_TOP,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE|SWP_NOACTIVATE);
 				SetWindowPos(Frames[i].OwnerWindow,HWND_TOPMOST,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE|SWP_NOACTIVATE);
@@ -304,7 +304,7 @@ static int CLUIFrames_OnShowHide(HWND hwnd, int mode)
 			if (mode!=SW_HIDE)
 			{
 				SetWindowPos(Frames[i].OwnerWindow,HWND_TOP,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE|SWP_NOACTIVATE);
-				if (DBGetContactSettingByte(NULL,"CList","OnDesktop",0)) 
+				if (DBGetContactSettingByte(NULL,"CList","OnDesktop",SETTING_ONDESKTOP_DEFAULT)) 
 				{
 					SetWindowPos(Frames[i].OwnerWindow,HWND_TOP,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE|SWP_NOACTIVATE);
 					SetWindowPos(Frames[i].OwnerWindow,HWND_TOPMOST,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE|SWP_NOACTIVATE);
@@ -1704,7 +1704,7 @@ static int CLUIFramesCollapseUnCollapseFrame(WPARAM wParam,LPARAM lParam)
 		{
 			RECT rc;
 			if(CallService(MS_CLIST_DOCKINGISDOCKED,0,0)) {return 0;};
-			if(DBGetContactSettingByte(NULL,"CLUI","AutoSize",0)) {return 0;};
+			if(DBGetContactSettingByte(NULL,"CLUI","AutoSize",SETTING_AUTOSIZE_DEFAULT)) {return 0;};
 			GetWindowRect(pcli->hwndContactList,&rc);
 
 			if(Frames[FrameId].collapsed==TRUE)	{
@@ -2107,7 +2107,7 @@ static int CLUIFramesAddFrame(WPARAM wParam,LPARAM lParam)
 		if (mainHeight<minHeight)
 		{
 			BOOL Upward=FALSE;
-			Upward=DBGetContactSettingByte(NULL,"CLUI","AutoSize",0)&&DBGetContactSettingByte(NULL,"CLUI","AutoSizeUpward",0);
+			Upward=DBGetContactSettingByte(NULL,"CLUI","AutoSize",SETTING_AUTOSIZE_DEFAULT)&&DBGetContactSettingByte(NULL,"CLUI","AutoSizeUpward",SETTING_AUTOSIZEUPWARD_DEFAULT);
 
 			if (Upward)
 				mainRect.top=mainRect.bottom-minHeight;
@@ -2277,7 +2277,7 @@ static BOOLEAN CLUIFramesFitInSize(void)
 			sumheight+=(Frames[i].height)+(g_nTitleBarHeight*btoint(Frames[i].TitleBar.ShowTitleBar))+2/*+btoint(Frames[i].UseBorder)*2*/;
 			if(sumheight>ContactListHeight-tbh-2)
 			{
-				if (DBGetContactSettingByte(NULL, "CLUI", "AutoSize", 0))
+				if (DBGetContactSettingByte(NULL, "CLUI", "AutoSize", SETTING_AUTOSIZE_DEFAULT))
 				{
 					return TRUE; //Can be required to enlarge
 				}
@@ -2311,7 +2311,7 @@ int CLUIFrames_GetTotalHeight()
 	//TODO minsize
 	sumheight+=g_CluiData.TopClientMargin;
 	sumheight+=g_CluiData.BottomClientMargin; 
-	return  max(DBGetContactSettingWord(NULL,"CLUI","MinHeight",0),
+	return  max(DBGetContactSettingWord(NULL,"CLUI","MinHeight",SETTING_MINHEIGTH_DEFAULT),
 		(sumheight+border.top+border.bottom+3)       );
 }
 
@@ -2351,7 +2351,7 @@ int CLUIFramesGetMinHeight()
 	//TODO minsize
 	sumheight+=g_CluiData.TopClientMargin;
 	sumheight+=g_CluiData.BottomClientMargin; 
-	return  max(DBGetContactSettingWord(NULL,"CLUI","MinHeight",0),
+	return  max(DBGetContactSettingWord(NULL,"CLUI","MinHeight",SETTING_MINHEIGTH_DEFAULT),
 		(sumheight+border.top+border.bottom+allbord+tbh+3)       );
 }
 
@@ -2372,8 +2372,8 @@ static int CLUIFramesResizeFrames(const RECT newsize)
 	SortData *sdarray;
 
 
-	g_nGapBetweenTitlebar=(int)DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenTitleBar",1);
-	GapBetweenFrames=DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenFrames",1);
+	g_nGapBetweenTitlebar=(int)DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenTitleBar",SETTING_GAPTITLEBAR_DEFAULT);
+	GapBetweenFrames=DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenFrames",SETTING_GAPFRAMES_DEFAULT);
 	sepw=GapBetweenFrames;
 
 	if(nFramescount<1) return 0; 
@@ -2419,7 +2419,7 @@ static int CLUIFramesResizeFrames(const RECT newsize)
 				sumheight+=(Frames[i].height)+curfrmtbh+(i > 0 ? sepw : 0)+(Frames[i].UseBorder?2:0);
 				if(sumheight>newheight-tbh) {
 					sumheight-=(Frames[i].height)+curfrmtbh + (i > 0 ? sepw : 0);
-					Frames[i].needhide=DBGetContactSettingByte(NULL,"CLUI","AutoSize",0)?FALSE:TRUE;
+					Frames[i].needhide=DBGetContactSettingByte(NULL,"CLUI","AutoSize",SETTING_AUTOSIZE_DEFAULT)?FALSE:TRUE;
 					drawitems--;
 					break;
 				}
@@ -2562,8 +2562,8 @@ static int CLUIFrames_OnClistResize_mod(WPARAM wParam,LPARAM mode)
 {
 	RECT nRect;
 	int tick;
-	GapBetweenFrames=DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenFrames",1);
-	g_nGapBetweenTitlebar=DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenTitleBar",1);
+	GapBetweenFrames=DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenFrames",SETTING_GAPFRAMES_DEFAULT);
+	g_nGapBetweenTitlebar=DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenTitleBar",SETTING_GAPTITLEBAR_DEFAULT);
 	if (FramesSysNotStarted) return -1;
 
 	GetClientRect(pcli->hwndContactList,&nRect);
@@ -2592,8 +2592,8 @@ int SizeFramesByWindowRect(RECT *r, HDWP * PosBatch, int mode)
 	RECT nRect;
 	if (FramesSysNotStarted) return -1;
 
-	g_nGapBetweenTitlebar=(int)DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenTitleBar",1);
-	GapBetweenFrames=DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenFrames",1);
+	g_nGapBetweenTitlebar=(int)DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenTitleBar",SETTING_GAPTITLEBAR_DEFAULT);
+	GapBetweenFrames=DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenFrames",SETTING_GAPFRAMES_DEFAULT);
 	nRect.left=0;
 	nRect.top=0;
 	nRect.right=r->right-r->left;
@@ -2679,8 +2679,8 @@ int CheckFramesPos(RECT *wr)
 	//CALLED only FROM MainWindow procedure at CLUI.c
 	int i;
 	if (FramesSysNotStarted) return -1;
-	g_nGapBetweenTitlebar=(int)DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenTitleBar",1);
-	GapBetweenFrames=DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenFrames",1);
+	g_nGapBetweenTitlebar=(int)DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenTitleBar",SETTING_GAPTITLEBAR_DEFAULT);
+	GapBetweenFrames=DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenFrames",SETTING_GAPFRAMES_DEFAULT);
 
 	for(i=0;i<nFramescount;i++)
 	{
@@ -2718,8 +2718,8 @@ static int CLUIFramesOnClistResize(WPARAM wParam,LPARAM lParam)
 {
 	RECT nRect;
 	int tick;
-	GapBetweenFrames=DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenFrames",1);
-	g_nGapBetweenTitlebar=DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenTitleBar",1);
+	GapBetweenFrames=DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenFrames",SETTING_GAPFRAMES_DEFAULT);
+	g_nGapBetweenTitlebar=DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenTitleBar",SETTING_GAPTITLEBAR_DEFAULT);
 
 	if (FramesSysNotStarted) return -1;
 
@@ -2733,7 +2733,7 @@ static int CLUIFramesOnClistResize(WPARAM wParam,LPARAM lParam)
 		if (mainHeight<minHeight)
 		{
 			BOOL Upward=FALSE;
-			Upward=DBGetContactSettingByte(NULL,"CLUI","AutoSize",0)&&DBGetContactSettingByte(NULL,"CLUI","AutoSizeUpward",0);
+			Upward=DBGetContactSettingByte(NULL,"CLUI","AutoSize",SETTING_AUTOSIZE_DEFAULT)&&DBGetContactSettingByte(NULL,"CLUI","AutoSizeUpward",SETTING_AUTOSIZEUPWARD_DEFAULT);
 
 			if (Upward)
 				mainRect.top=mainRect.bottom-minHeight;
@@ -2769,7 +2769,7 @@ static int CLUIFramesOnClistResize(WPARAM wParam,LPARAM lParam)
 	}
 
 
-	//if(DBGetContactSettingByte(NULL,"CLUI","ShowSBar",1))GetWindowRect(pcli->hwndStatus,&rcStatus);
+	//if(DBGetContactSettingByte(NULL,"CLUI","ShowSBar",SETTING_SHOWSBAR_DEFAULT))GetWindowRect(pcli->hwndStatus,&rcStatus);
 	//else rcStatus.top=rcStatus.bottom=0;
 	// nRect.top--;
 	/* $$$	rcStatus.top=rcStatus.bottom=0;
@@ -2831,7 +2831,7 @@ int OnFrameTitleBarBackgroundChange(WPARAM wParam,LPARAM lParam)
 	{	
 		DBVARIANT dbv={0};
 
-		AlignCOLLIconToLeft=DBGetContactSettingByte(NULL,"FrameTitleBar","AlignCOLLIconToLeft",0);
+		AlignCOLLIconToLeft=DBGetContactSettingByte(NULL,"FrameTitleBar","AlignCOLLIconToLeft",CLCDEFAULT_COLLICONTOLEFT);
 
 		bkColour=sttGetColor("FrameTitleBar","BkColour",CLCDEFAULT_BKCOLOUR);
 		bkUseWinColours=DBGetContactSettingByte(NULL,"FrameTitleBar","UseWinColours",CLCDEFAULT_USEWINDOWSCOLOURS);
@@ -3273,7 +3273,7 @@ static LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam
 
 			if ((!(wParam&MK_CONTROL))&&Frames[framepos].Locked&&(!(Frames[framepos].floating)))
 			{
-				if (DBGetContactSettingByte(NULL,"CLUI","ClientAreaDrag",0)) {
+				if (DBGetContactSettingByte(NULL,"CLUI","ClientAreaDrag",SETTING_CLIENTDRAG_DEFAULT)) {
 					POINT pt;
 					int res;
 					//pt=nm->pt;
@@ -4127,7 +4127,7 @@ int LoadCLUIFramesModule(void)
 	RegisterClass(&cntclass);
 	//end container helper
 
-	GapBetweenFrames=DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenFrames",1);
+	GapBetweenFrames=DBGetContactSettingDword(NULL,"CLUIFrames","GapBetweenFrames",SETTING_GAPFRAMES_DEFAULT);
 
 	nFramescount=0;
 

@@ -35,7 +35,7 @@ void AddSubcontacts(struct ClcData *dat, struct ClcContact * cont, BOOL showOffl
 	HANDLE hsub;
 	pdisplayNameCacheEntry cacheEntry;
 	cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(cont->hContact);
-	cont->SubExpanded=(DBGetContactSettingByte(cont->hContact,"CList","Expanded",0) && (DBGetContactSettingByte(NULL,"CLC","MetaExpanding",1)));
+	cont->SubExpanded=(DBGetContactSettingByte(cont->hContact,"CList","Expanded",0) && (DBGetContactSettingByte(NULL,"CLC","MetaExpanding",SETTING_METAEXPANDING_DEFAULT)));
 	subcount=(int)CallService(MS_MC_GETNUMCONTACTS,(WPARAM)cont->hContact,0);
 
 	if (subcount <= 0) {
@@ -53,7 +53,7 @@ void AddSubcontacts(struct ClcData *dat, struct ClcContact * cont, BOOL showOffl
 	for (j=0; j<subcount; j++) {
 		hsub=(HANDLE)CallService(MS_MC_GETSUBCONTACT,(WPARAM)cont->hContact,j);
 		cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(hsub);		
-		if (showOfflineHereGroup||(!(DBGetContactSettingByte(NULL,"CLC","MetaHideOfflineSub",1) && DBGetContactSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT) ) ||
+		if (showOfflineHereGroup||(!(DBGetContactSettingByte(NULL,"CLC","MetaHideOfflineSub",SETTING_METAHIDEOFFLINESUB_DEFAULT) && DBGetContactSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT) ) ||
 			cacheEntry->status!=ID_STATUS_OFFLINE )
 			//&&
 			//(!cacheEntry->Hidden || style&CLS_SHOWHIDDEN)
@@ -332,7 +332,7 @@ void cliRebuildEntireList(HWND hwnd,struct ClcData *dat)
 	struct ClcGroup *group;
     static int rebuildCounter=0;
 
-    BOOL PlaceOfflineToRoot=DBGetContactSettingByte(NULL,"CList","PlaceOfflineToRoot",0);
+    BOOL PlaceOfflineToRoot=DBGetContactSettingByte(NULL,"CList","PlaceOfflineToRoot",SETTING_PLACEOFFLINETOROOT_DEFAULT);
 	KillTimer(hwnd,TIMERID_REBUILDAFTER);
 	
 	ClearRowByIndexCache();
@@ -342,12 +342,12 @@ void cliRebuildEntireList(HWND hwnd,struct ClcData *dat)
     TRACEVAR("Rebuild Entire List %d times\n",++rebuildCounter);
   
 	dat->list.expanded=1;
-	dat->list.hideOffline=DBGetContactSettingByte(NULL,"CLC","HideOfflineRoot",0) && style&CLS_USEGROUPS;
+	dat->list.hideOffline=DBGetContactSettingByte(NULL,"CLC","HideOfflineRoot",SETTING_HIDEOFFLINEATROOT_DEFAULT) && style&CLS_USEGROUPS;
 	dat->list.cl.count = dat->list.cl.limit = 0;
 	dat->list.cl.increment = 50;
 	dat->NeedResort=1;
 	dat->selection=-1;
-	dat->HiLightMode=DBGetContactSettingByte(NULL,"CLC","HiLightMode",0);
+	dat->HiLightMode=DBGetContactSettingByte(NULL,"CLC","HiLightMode",SETTING_HILIGHTMODE_DEFAULT);
 	{
 		int i;
 		TCHAR *szGroupName;

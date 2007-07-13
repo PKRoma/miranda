@@ -195,9 +195,11 @@ static int _MTB_OnBackgroundSettingsChanged(WPARAM wParam, LPARAM lParam)
 
 void InitTBModule()
 {
+/*
 #ifndef SELFBUILD
 	return;
 #endif
+*/
 	tbdat.hehModulesLoaded=HookEvent(ME_SYSTEM_MODULESLOADED, ehhModulesLoaded);
 	tbdat.hehSystemShutdown=HookEvent(ME_SYSTEM_SHUTDOWN, ehhSystemShutdown);
 	{	//create window class
@@ -242,10 +244,9 @@ static int ehhModulesLoaded(WPARAM wParam, LPARAM lParam)
 	//Create bar ???
 	{
 		HWND hwndClist=(HWND) CallService(MS_CLUI_GETHWND,0,0);
-		sttCreateToolBarFrame( hwndClist, "ToolBar #1", 24);
+		sttCreateToolBarFrame( hwndClist, "ToolBar", 24);
 	}
-	mtbDefButtonRegistration();
-	
+	//mtbDefButtonRegistration();
 
 	NotifyEventHooks(ME_TB_MODULELOADED, 0, 0);	
 	return 0;
@@ -293,7 +294,7 @@ static void sttUpdateButtonState(MTBBUTTONINFO * mtbi)
 	_snprintf(iconId, bufsize,TOOLBARBUTTON_ICONIDPREFIX"%s%s",mtbi->szButtonID, (mtbi->bPushButton)?TOOLBARBUTTON_ICONIDSECONDARYSUFFIX:TOOLBARBUTTON_ICONIDPRIMARYSUFFIX);
 	_snprintf(iconName, namebufsize,"%s %s",translatedName, (mtbi->bPushButton)?Translate(TOOLBARBUTTON_ICONNAMEPRESSEDSUFFIX):"");	
 
-	ilIcon=RegisterIcolibIconHandle(iconId, "ToolBar", iconName, _T("toolbar.dll"),1, g_hInst, IDI_RESETVIEW );
+	ilIcon=RegisterIcolibIconHandle(iconId, "ToolBar", iconName, _T("icons\\toolbar_icons.dll"),1, g_hInst, IDI_RESETVIEW );
 	SendMessage(mtbi->hWindow, MBM_SETICOLIBHANDLE, 0, (LPARAM) ilIcon );	
 	SendMessage(mtbi->hWindow, BUTTONADDTOOLTIP, (WPARAM)((mtbi->bPushButton) ? mtbi->szTooltipPressed : mtbi->szTooltip), 0);
 	
@@ -361,11 +362,13 @@ void sttReposButtons(MTBINFO * mti)
 static int svcToolBarAddButton(WPARAM wParam, LPARAM lParam)
 {
 	int result=0;
-
+	TBButton * bi=(TBButton *)lParam;
+	if (!ServiceExists(bi->pszServiceName))
+		return 0;
 	tbcheck 0;
 	tblock;
 	{	
-		TBButton * bi=(TBButton *)lParam;
+		
 		MTBBUTTONINFO * mtbi=mir_alloc(sizeof(MTBBUTTONINFO));
 		li.List_InsertPtr(tbdat.listOfButtons,mtbi);
 		memset(mtbi,0,sizeof(MTBBUTTONINFO));
@@ -516,7 +519,7 @@ static LRESULT CALLBACK ToolBarProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lPar
 			Frame.hWnd=hwnd;
 			Frame.align=alTop;
 			Frame.hIcon=LoadSkinnedIcon (SKINICON_OTHER_MIRANDA);
-			Frame.Flags=(DBGetContactSettingByte(NULL,"CLUI","ShowSBar",1)?F_VISIBLE:0)|F_LOCKED|F_NOBORDER|F_NO_SUBCONTAINER;
+			Frame.Flags=(DBGetContactSettingByte(NULL,"CLUI","ShowButtonBar",SETTINGS_SHOWBUTTONBAR_DEFAULT)?F_VISIBLE:0)|F_LOCKED|F_NOBORDER|F_NO_SUBCONTAINER;
 			Frame.height=lpcs->cy;
 			Frame.name=(char*) lpcs->lpCreateParams;
 			hFrame=(HANDLE)CallService(MS_CLIST_FRAMES_ADDFRAME,(WPARAM)&Frame,(LPARAM)0);
@@ -530,7 +533,29 @@ static LRESULT CALLBACK ToolBarProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lPar
 			//add self to window list
 			WindowList_Add(tbdat.hToolBarWindowList, hwnd, NULL);
 			pMTBInfo->mtbXPTheme=xpt_AddThemeHandle(hwnd,L"TOOLBAR");
+			SetTimer(hwnd,123,1000,NULL);
 			return 0;
+		}
+	case WM_TIMER:
+		{
+			
+			KillTimer(hwnd,123);
+			mtbDefButtonRegistration();
+			return 0;
+		}
+	case WM_SHOWWINDOW:
+		{
+			{
+				int res;
+				int ID;
+				ID=callProxied_FindFrameID(hwnd);
+				if (ID)
+				{
+					res=CallService(MS_CLIST_FRAMES_GETFRAMEOPTIONS, MAKEWPARAM(FO_FLAGS,ID),0);
+					if (res>=0) DBWriteContactSettingByte(0,"CLUI","ShowButtonBar",(BYTE)(wParam/*(res&F_VISIBLE)*/?1:0));
+				}
+			}
+			break;
 		}
 	case WM_DESTROY:
 		{
@@ -678,14 +703,14 @@ static HANDLE _sttRegisterButton(char * pszButtonID, char * pszButtonName, char 
 		tbb.pszTooltipDn=pszTooltipDn;
 		{
 			char buf[255];
-			_snprintf(buf,sizeof(buf),"%s%s%s",TOOLBARBUTTON_ICONIDPREFIX, pszTooltipUp, TOOLBARBUTTON_ICONIDPRIMARYSUFFIX);
-			RegisterIcolibIconHandle( buf, "ToolBar", pszButtonName , _T("toolbar.dll"),icoDefIdx, g_hInst, defResource );
+			_snprintf(buf,sizeof(buf),"%s%s%s",TOOLBARBUTTON_ICONIDPREFIX, pszButtonID, TOOLBARBUTTON_ICONIDPRIMARYSUFFIX);
+			RegisterIcolibIconHandle( buf, "ToolBar", pszButtonName , _T("icons\\toolbar_icons.dll"),icoDefIdx, g_hInst, defResource );
 		}
 		if (pszTooltipDn)
 		{
 			char buf[255];
 			_snprintf(buf,sizeof(buf),"%s%s%s",TOOLBARBUTTON_ICONIDPREFIX, pszButtonID, TOOLBARBUTTON_ICONIDSECONDARYSUFFIX);
-			RegisterIcolibIconHandle( buf, "ToolBar", pszTooltipDn , _T("toolbar.dll"),icoDefIdx+1, g_hInst, defResource2 );
+			RegisterIcolibIconHandle( buf, "ToolBar", pszTooltipDn , _T("icons\\toolbar_icons.dll"),icoDefIdx+1, g_hInst, defResource2 );
 		}
 	}
 	else 
@@ -701,33 +726,42 @@ static void sttSetButtonPressed( HANDLE hButton, BOOL bPressed )
 {
 	CallService(MS_TB_SETBUTTONSTATE, (WPARAM) hButton, (LPARAM) (bPressed ? TBST_PUSHED : TBST_RELEASED) );
 }
+static void _sttAddStaticSeparator()
+{
+	_sttRegisterButton( NULL, (char*)FALSE, NULL, NULL, NULL, 0, 0, 0 );
+}
+static void _sttAddDynamicSeparator()
+{
+	_sttRegisterButton( NULL, (char*)TRUE, NULL, NULL, NULL, 0, 0, 0 );
+}
 
 static void mtbDefButtonRegistration()
 {
 	
-	_sttRegisterButton( NULL, (char*)FALSE, NULL, NULL, NULL, 0, 0, 0 );
-
 	_sttRegisterButton( "MainMenu", "Main Menu", MS_CLUI_SHOWMAINMENU,
 		"Main menu", NULL,  2 , IDI_RESETVIEW, IDI_RESETVIEW  );
 
+	/*
+	_sttRegisterButton( "StatusMenu", "Status Menu", MS_CLUI_SHOWSTATUSMENU,
+		"Status menu", NULL,  7 , IDI_RESETVIEW, IDI_RESETVIEW  );
+	*/
 	tbdat.hHideOfflineButton=_sttRegisterButton( "ShowHideOffline","Show/Hide offline contacts", MS_CLIST_TOGGLEHIDEOFFLINE,
 					    "Hide offline contacts", "Show offline contacts", 1 , IDI_RESETVIEW, IDI_RESETVIEW  );
 	
 	sttSetButtonPressed(tbdat.hHideOfflineButton, (BOOL) DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT) );
 
+
     _sttRegisterButton( "JabberBookmarks","Jabber Bookmarks", MS_JABBER_SHOWBOOKMARK,
 		"Jabber Bookmark", NULL,  3 , IDI_RESETVIEW, IDI_RESETVIEW  );
 
-	_sttRegisterButton( NULL, (char*)TRUE, NULL, NULL, NULL, 0, 0, 0 );
+	_sttRegisterButton( "DatabaseEditor","DBEditor++", "DBEditorpp/MenuCommand",
+		"Database Editor", NULL,  4 , IDI_RESETVIEW, IDI_RESETVIEW  );
 
 	_sttRegisterButton( "FindUser","Find User", "FindAdd/FindAddCommand",
-		"Find User", NULL,  4 , IDI_RESETVIEW, IDI_RESETVIEW  );
-	
-	_sttRegisterButton( NULL, (char*)TRUE, NULL, NULL, NULL, 0, 0, 0 );
+		"Find User", NULL,  5 , IDI_RESETVIEW, IDI_RESETVIEW  );
 	
 	_sttRegisterButton( "Options","Options", "Options/OptionsCommand",
-		"Options", NULL,  5 , IDI_RESETVIEW, IDI_RESETVIEW  );
+		"Options", NULL,  6 , IDI_RESETVIEW, IDI_RESETVIEW  );
 
-	_sttRegisterButton( NULL, (char*)FALSE, NULL, NULL, NULL, 0, 0, 0 );
 
 }

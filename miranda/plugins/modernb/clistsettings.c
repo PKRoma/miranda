@@ -561,7 +561,7 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 					//InvalidateDisplayNameCacheEntryByPDNE((HANDLE)wParam,pdnce,cws->value.type);
 					if (pcli->hwndContactTree && g_flag_bOnModulesLoadedCalled) 
 						res=PostAutoRebuidMessage(pcli->hwndContactTree);
-					if ((DBGetContactSettingWord(NULL,"CList","SecondLineType",0)==TEXT_STATUS_MESSAGE||DBGetContactSettingWord(NULL,"CList","ThirdLineType",0)==TEXT_STATUS_MESSAGE) &&pdnce->hContact && pdnce->szProto)
+					if ((DBGetContactSettingWord(NULL,"CList","SecondLineType",SETTING_SECONDLINE_TYPE_DEFAULT)==TEXT_STATUS_MESSAGE||DBGetContactSettingWord(NULL,"CList","ThirdLineType",SETTING_THIRDLINE_TYPE_DEFAULT)==TEXT_STATUS_MESSAGE) &&pdnce->hContact && pdnce->szProto)
 					{
 						//	if (pdnce->status!=ID_STATUS_OFFLINE)  
 						Cache_ReAskAwayMsg((HANDLE)wParam);  
@@ -574,8 +574,8 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 					pdnce->status=cws->value.wVal;
 					if (cws->value.wVal == ID_STATUS_OFFLINE) 
 					{
-						//if (DBGetContactSettingByte(NULL,"ModernData","InternalAwayMsgDiscovery",0)
-						if (DBGetContactSettingByte(NULL,"ModernData","RemoveAwayMessageForOffline",0))
+						//if (DBGetContactSettingByte(NULL,"ModernData","InternalAwayMsgDiscovery",SETTING_INTERNALAWAYMSGREQUEST_DEFAULT)
+						if (DBGetContactSettingByte(NULL,"ModernData","RemoveAwayMessageForOffline",SETTING_REMOVEAWAYMSGFOROFFLINE_DEFAULT))
 						{
 							char a='\0';
 							DBWriteContactSettingString((HANDLE)wParam,"CList","StatusMsg",&a);

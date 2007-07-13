@@ -244,7 +244,7 @@ static int Cache_AskAwayMsgThreadProc(HWND hwnd)
 void Cache_ReAskAwayMsg(HANDLE wParam)
 {
     int res;
-    if (!DBGetContactSettingByte(NULL,"ModernData","InternalAwayMsgDiscovery",0)) return;
+    if (!DBGetContactSettingByte(NULL,"ModernData","InternalAwayMsgDiscovery",SETTING_INTERNALAWAYMSGREQUEST_DEFAULT)) return;
     {//Do not re-ask if it is IRC protocol    
         char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) wParam, 0);
         if (szProto != NULL) 
@@ -556,7 +556,7 @@ void Cache_ReplaceSmileys(struct SHORTDATA *dat, PDNCE pdnce, TCHAR *text, int t
     {
         sp.Protocolname = pdnce->szProto;
 
-        if (DBGetContactSettingByte(NULL,"CLC","Meta",0) != 1 && pdnce->szProto != NULL && strcmp(pdnce->szProto, "MetaContacts") == 0)
+        if (DBGetContactSettingByte(NULL,"CLC","Meta",SETTING_USEMETAICON_DEFAULT) != 1 && pdnce->szProto != NULL && strcmp(pdnce->szProto, "MetaContacts") == 0)
         {
             HANDLE hContact = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT, (UINT)pdnce->hContact, 0);
             if (hContact != 0)
@@ -672,7 +672,7 @@ int GetStatusName(TCHAR *text, int text_size, PDNCE pdnce, BOOL xstatus_has_prio
     BOOL noAwayMsg=FALSE;
     BOOL noXstatus=FALSE;
     // Hide status text if Offline  /// no offline		
-    if ((pdnce->status==ID_STATUS_OFFLINE || pdnce->status==0) && DBGetContactSettingByte(NULL,"ModernData","RemoveAwayMessageForOffline",0)) noAwayMsg=TRUE;
+    if ((pdnce->status==ID_STATUS_OFFLINE || pdnce->status==0) && DBGetContactSettingByte(NULL,"ModernData","RemoveAwayMessageForOffline",SETTING_REMOVEAWAYMSGFOROFFLINE_DEFAULT)) noAwayMsg=TRUE;
     if (pdnce->status==ID_STATUS_OFFLINE || pdnce->status==0) noXstatus=TRUE;
     text[0] = '\0';
     // Get XStatusName

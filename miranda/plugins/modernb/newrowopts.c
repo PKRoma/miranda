@@ -178,7 +178,7 @@ BOOL CALLBACK DlgProcItemNewRowOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			if (RemoveNode(res1)) res1=0;
 			TRACE("*********** Nodes DUMP 2 ***********\n");
 			TraceTreeLevel(RootNode);
-			//CheckDlgButton(hwndDlg, IDC_HIDE_ICON_ON_AVATAR, DBGetContactSettingByte(NULL,"CList","IconHideOnAvatar",0) == 1 ? BST_CHECKED : BST_UNCHECKED );
+			//CheckDlgButton(hwndDlg, IDC_HIDE_ICON_ON_AVATAR, DBGetContactSettingByte(NULL,"CList","IconHideOnAvatar",SETTING_HIDEICONONAVATAR_DEFAULT) == 1 ? BST_CHECKED : BST_UNCHECKED );
 			MessageBox(hwndDlg,TEXT("Init NewRow Dialog"),TEXT("Notify"),MB_OK);
 			break;
 		}

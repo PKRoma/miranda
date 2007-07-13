@@ -695,13 +695,13 @@ case WM_CREATE:
 		RowHeights_Initialize(dat);
 
 		dat->NeedResort=1;
-		dat->MetaIgnoreEmptyExtra=DBGetContactSettingByte(NULL,"CLC","MetaIgnoreEmptyExtra",1);
+		dat->MetaIgnoreEmptyExtra=DBGetContactSettingByte(NULL,"CLC","MetaIgnoreEmptyExtra",SETTING_METAIGNOREEMPTYEXTRA_DEFAULT);
 		dat->IsMetaContactsEnabled=(!(GetWindowLong(hwnd,GWL_STYLE)&CLS_MANUALUPDATE)) 
 			//&& (GetWindowLong(hwnd,GWL_STYLE)&CLS_USEGROUPS)
 			&& DBGetContactSettingByte(NULL,"MetaContacts","Enabled",1) && ServiceExists(MS_MC_GETDEFAULTCONTACT);
-		dat->expandMeta=DBGetContactSettingByte(NULL,"CLC","MetaExpanding",1);		
-		dat->useMetaIcon=DBGetContactSettingByte(NULL,"CLC","Meta",0);
-		dat->drawOverlayedStatus=DBGetContactSettingByte(NULL,"CLC","DrawOverlayedStatus",3);
+		dat->expandMeta=DBGetContactSettingByte(NULL,"CLC","MetaExpanding",SETTING_METAEXPANDING_DEFAULT);		
+		dat->useMetaIcon=DBGetContactSettingByte(NULL,"CLC","Meta",SETTING_USEMETAICON_DEFAULT);
+		dat->drawOverlayedStatus=DBGetContactSettingByte(NULL,"CLC","DrawOverlayedStatus",SETTING_DRAWOVERLAYEDSTATUS_DEFAULT);
 		g_CluiData.bSortByOrder[0]=DBGetContactSettingByte(NULL,"CList","SortBy1",SETTING_SORTBY1_DEFAULT);
 		g_CluiData.bSortByOrder[1]=DBGetContactSettingByte(NULL,"CList","SortBy2",SETTING_SORTBY2_DEFAULT);
 		g_CluiData.bSortByOrder[2]=DBGetContactSettingByte(NULL,"CList","SortBy3",SETTING_SORTBY3_DEFAULT);
@@ -1071,7 +1071,7 @@ case INTM_STATUSCHANGED:
 				}
 			}
 		}
-		if (DBGetContactSettingByte(NULL,"CList","PlaceOfflineToRoot",0) )
+		if (DBGetContactSettingByte(NULL,"CList","PlaceOfflineToRoot",SETTING_PLACEOOFLINETOROOT_DEFAULT) )
 		{
 			SendMessage(hwnd,CLM_AUTOREBUILD,0,0);	
 		}
@@ -1451,7 +1451,7 @@ case WM_LBUTTONDOWN:
 			}
 			if(hit!=-1 && !(hitFlags&CLCHT_NOWHERE) && contact->type==CLCIT_CONTACT && contact->SubAllocated && !contact->isSubcontact)
 				if(hitFlags&CLCHT_ONITEMICON && dat->expandMeta) {
-					BYTE doubleClickExpand=DBGetContactSettingByte(NULL,"CLC","MetaDoubleClick",0);
+					BYTE doubleClickExpand=DBGetContactSettingByte(NULL,"CLC","MetaDoubleClick",SETTING_METAAVOIDDBLCLICK_DEFAULT);
 
 					hitcontact=contact;				
 					HitPoint.x= (short)LOWORD(lParam);
@@ -1766,7 +1766,7 @@ case WM_LBUTTONUP:
 		mUpped=1;
 		if (hitcontact!=NULL && dat->expandMeta)
 		{ 
-			BYTE doubleClickExpand=DBGetContactSettingByte(NULL,"CLC","MetaDoubleClick",0);
+			BYTE doubleClickExpand=DBGetContactSettingByte(NULL,"CLC","MetaDoubleClick",SETTING_METAAVOIDDBLCLICK_DEFAULT);
 			CLUI_SafeSetTimer(hwnd,TIMERID_SUBEXPAND,GetDoubleClickTime()*doubleClickExpand,NULL);
 		}
 		else if (dat->iHotTrack==-1 && dat->iDragItem==-1)

@@ -87,9 +87,9 @@ ROWCELL *cppInitModernRow(ROWCELL	** tabAccess)
   ROWCELL * RowRoot=NULL; 
 	FILE * hFile;
 	int i=0;
-	if (!DBGetContactSettingByte(NULL,"ModernData","UseAdvancedRowLayout",0)) return NULL;
+	if (!DBGetContactSettingByte(NULL,"ModernData","UseAdvancedRowLayout",SETTING_ROW_ADVANCEDLAYOUT_DEFAULT)) return NULL;
   tmplbuf=NULL;
-    if (DBGetContactSettingByte(NULL,"ModernData","UseAdvancedRowLayout",0)==1)
+    if (DBGetContactSettingByte(NULL,"ModernData","UseAdvancedRowLayout",SETTING_ROW_ADVANCEDLAYOUT_DEFAULT)==1)
 	tmplbuf=DBGetStringA(NULL,"ModernData","RowTemplate");
   if (tmplbuf) 
   {

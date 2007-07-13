@@ -187,7 +187,7 @@ void cliTrayIconUpdateBase(const char *szChangedProto)
 			else
 			{
 				if(DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)==SETTING_TRAYICON_SINGLE
-					&& DBGetContactSettingByte(NULL,"CList","AlwaysPrimary",0))
+					&& DBGetContactSettingByte(NULL,"CList","AlwaysPrimary",SETTING_ALWAYSPRIMARY_DEFAULT))
 				{
 					DBVARIANT dbv={DBVT_DELETED};
 					char *szProto;

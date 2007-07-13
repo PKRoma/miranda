@@ -69,7 +69,7 @@ HICON cliGetIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
 	HICON hIcon=NULL;
 	HICON hXIcon=NULL;
 	// check if options is turned on
-	BYTE trayOption=DBGetContactSettingByte(NULL,"CLUI","XStatusTray",15);
+	BYTE trayOption=DBGetContactSettingByte(NULL,"CLUI","XStatusTray",SETTING_TRAYOPTION_DEFAULT);
 	if (trayOption&3 && szProto!=NULL)
 	{
 		// check service exists
@@ -141,7 +141,7 @@ int cli_IconFromStatusMode(const char *szProto,int nStatus, HANDLE hContact)
        char AdvancedService[255]={0};
        int  nActStatus=nStatus;
        HANDLE hActContact=hContact;
-       if (!DBGetContactSettingByte(NULL,"CLC","Meta",0) && !mir_strcmp(szActProto,"MetaContacts"))
+       if (!DBGetContactSettingByte(NULL,"CLC","Meta",SETTING_USEMETAICON_DEFAULT) && !mir_strcmp(szActProto,"MetaContacts"))
        {
             // substitute params by mostonline contact datas
            HANDLE hMostOnlineContact=(HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT,(UINT)hActContact,0);
@@ -453,10 +453,10 @@ int cliShowHide(WPARAM wParam,LPARAM lParam)
 
 	int iVisibleState = GetWindowVisibleState(pcli->hwndContactList,0,0);
 	int method;
-	method=DBGetContactSettingByte(NULL, "ModernData", "HideBehind", 0);; //(0-none, 1-leftedge, 2-rightedge);
+	method=DBGetContactSettingByte(NULL, "ModernData", "HideBehind", SETTING_HIDEBEHIND_DEFAULT);; //(0-none, 1-leftedge, 2-rightedge);
 	if (method)
 	{
-		if (DBGetContactSettingByte(NULL, "ModernData", "BehindEdge", 0)==0 && lParam!=1)
+		if (DBGetContactSettingByte(NULL, "ModernData", "BehindEdge", SETTING_BEHINDEDGE_DEFAULT)==0 && lParam!=1)
 		{
 			//hide
 			CLUI_HideBehindEdge();
@@ -469,9 +469,9 @@ int cliShowHide(WPARAM wParam,LPARAM lParam)
 		iVisibleState=GWVS_HIDDEN;
 	}
 
-	if (!method && DBGetContactSettingByte(NULL, "ModernData", "BehindEdge", 0)>0)
+	if (!method && DBGetContactSettingByte(NULL, "ModernData", "BehindEdge", SETTING_BEHINDEDGE_DEFAULT)>0)
 	{
-		g_CluiData.bBehindEdgeSettings=DBGetContactSettingByte(NULL, "ModernData", "BehindEdge", 0);
+		g_CluiData.bBehindEdgeSettings=DBGetContactSettingByte(NULL, "ModernData", "BehindEdge", SETTING_BEHINDEDGE_DEFAULT);
 		CLUI_ShowFromBehindEdge();
 		g_CluiData.bBehindEdgeSettings=0;
 		g_CluiData.nBehindEdgeState=0;
@@ -483,7 +483,7 @@ int cliShowHide(WPARAM wParam,LPARAM lParam)
 		case GWVS_PARTIALLY_COVERED:
 			//If we don't want to bring it to top, we can use a simple break. This goes against readability ;-) but the comment explains it.
 		case GWVS_COVERED: //Fall through (and we're already falling)
-			if (DBGetContactSettingByte(NULL,"CList","OnDesktop",0) || !DBGetContactSettingByte(NULL, "CList", "BringToFront", SETTING_BRINGTOFRONT_DEFAULT)) break;
+			if (DBGetContactSettingByte(NULL,"CList","OnDesktop",SETTING_ONDESKTOP_DEFAULT) || !DBGetContactSettingByte(NULL, "CList", "BringToFront", SETTING_BRINGTOFRONT_DEFAULT)) break;
 		case GWVS_HIDDEN:
 			bShow = TRUE; break;
 		case GWVS_VISIBLE: //This is not needed, but goes for readability.
@@ -502,7 +502,7 @@ int cliShowHide(WPARAM wParam,LPARAM lParam)
 		callProxied_CLUIFrames_ActivateSubContainers(TRUE);
 		CLUI_ShowWindowMod(pcli->hwndContactList, SW_RESTORE);
 
-		if (!DBGetContactSettingByte(NULL,"CList","OnDesktop",0))
+		if (!DBGetContactSettingByte(NULL,"CList","OnDesktop",SETTING_ONDESKTOP_DEFAULT))
 		{
 			callProxied_CLUIFrames_OnShowHide(pcli->hwndContactList,1);	//TO BE PROXIED
 			SetWindowPos(pcli->hwndContactList, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE |SWP_NOACTIVATE);
@@ -546,7 +546,7 @@ int cliShowHide(WPARAM wParam,LPARAM lParam)
 			else if(rcWindow.right<=rcScreen.left) OffsetRect(&rcWindow,rcScreen.left-rcWindow.left,0);
 			SetWindowPos(pcli->hwndContactList,0,rcWindow.left,rcWindow.top,rcWindow.right-rcWindow.left,rcWindow.bottom-rcWindow.top,SWP_NOZORDER);
 		}
-		//if (DBGetContactSettingByte(NULL,"CList","OnDesktop",0))
+		//if (DBGetContactSettingByte(NULL,"CList","OnDesktop",SETTING_ONDESKTOP_DEFAULT))
 		//    SetWindowPos(pcli->hwndContactList, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
 	}
@@ -555,7 +555,7 @@ int cliShowHide(WPARAM wParam,LPARAM lParam)
 		CListMod_HideWindow(pcli->hwndContactList, SW_HIDE);
 
 		DBWriteContactSettingByte(NULL,"CList","State",SETTING_STATE_HIDDEN);
-		if(MySetProcessWorkingSetSize!=NULL && DBGetContactSettingByte(NULL,"CList","DisableWorkingSet",1)) MySetProcessWorkingSetSize(GetCurrentProcess(),-1,-1);
+		if(MySetProcessWorkingSetSize!=NULL && DBGetContactSettingByte(NULL,"CList","DisableWorkingSet",SETTING_DISABLEWORKINGSET_DEFAULT)) MySetProcessWorkingSetSize(GetCurrentProcess(),-1,-1);
 	}
 	return 0;
 }
