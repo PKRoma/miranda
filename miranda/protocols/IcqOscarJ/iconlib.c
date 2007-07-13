@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/iconlib.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -45,10 +45,11 @@ void InitIconLib()
 
 
 
-void IconLibDefine(const char* desc, const char* section, const char* ident, HICON icon, const char* def_file, int def_idx)
+HANDLE IconLibDefine(const char* desc, const char* section, const char* ident, HICON icon, const char* def_file, int def_idx)
 {
   SKINICONDESC sid = {0};
   char szTemp[MAX_PATH + 128];
+  HANDLE hIcon;
 
   sid.cbSize = SKINICONDESC_SIZE;
   sid.pwszSection = make_unicode_string(section);
@@ -62,10 +63,12 @@ void IconLibDefine(const char* desc, const char* section, const char* ident, HIC
   sid.hDefaultIcon = icon;
   sid.cx = sid.cy = 16;
 
-  CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+  hIcon = (HANDLE)CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 
   SAFE_FREE(&sid.pwszSection);
   SAFE_FREE(&sid.pwszDescription);
+
+  return hIcon;
 }
 
 

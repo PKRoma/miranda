@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/iconlib.h,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -40,7 +40,7 @@
 
 void InitIconLib();
 
-void IconLibDefine(const char* desc, const char* section, const char* ident, HICON icon, const char* def_file, int def_idx);
+HANDLE IconLibDefine(const char* desc, const char* section, const char* ident, HICON icon, const char* def_file, int def_idx);
 HICON IconLibGetIcon(const char* ident);
 void IconLibReleaseIcon(const char* ident);
 HANDLE IconLibHookIconsChanged(MIRANDAHOOK hook);

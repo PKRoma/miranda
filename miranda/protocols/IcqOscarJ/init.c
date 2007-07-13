@@ -370,6 +370,7 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
   char pszSrvGroupsName[MAX_PATH+10];
   char szBuffer[MAX_PATH+64];
   char* modules[5] = {0,0,0,0,0};
+  HANDLE hIconMenuAuth, hIconMenuGrant, hIconMenuRevoke, hIconMenuAddServ;
 
   strcpy(pszP2PName, gpszICQProtoName);
   strcat(pszP2PName, "P2P");
@@ -426,10 +427,10 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 
     GetModuleFileName(hInst, lib, MAX_PATH);
 
-    IconLibDefine(ICQTranslateUtfStatic("Request authorization", str), proto, "req_auth", NULL, lib, -IDI_AUTH_ASK);
-    IconLibDefine(ICQTranslateUtfStatic("Grant authorization", str), proto, "grant_auth", NULL, lib, -IDI_AUTH_GRANT);
-    IconLibDefine(ICQTranslateUtfStatic("Revoke authorization", str), proto, "revoke_auth", NULL, lib, -IDI_AUTH_REVOKE);
-    IconLibDefine(ICQTranslateUtfStatic("Add to server list", str), proto, "add_to_server", NULL, lib, -IDI_SERVLIST_ADD);
+    hIconMenuAuth = IconLibDefine(ICQTranslateUtfStatic("Request authorization", str), proto, "req_auth", NULL, lib, -IDI_AUTH_ASK);
+    hIconMenuGrant = IconLibDefine(ICQTranslateUtfStatic("Grant authorization", str), proto, "grant_auth", NULL, lib, -IDI_AUTH_GRANT);
+    hIconMenuRevoke = IconLibDefine(ICQTranslateUtfStatic("Revoke authorization", str), proto, "revoke_auth", NULL, lib, -IDI_AUTH_REVOKE);
+    hIconMenuAddServ = IconLibDefine(ICQTranslateUtfStatic("Add to server list", str), proto, "add_to_server", NULL, lib, -IDI_SERVLIST_ADD);
   }
 
   // Initialize IconLib icons
@@ -447,40 +448,36 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
     ZeroMemory(&mi, sizeof(mi));
     mi.cbSize = sizeof(mi);
     mi.position = 1000030000;
-    mi.flags = 0;
-    mi.hIcon = IconLibGetIcon("req_auth");
+    mi.flags = CMIF_ICONFROMICOLIB;
+    mi.icolibItem = hIconMenuAuth;
     mi.pszContactOwner = gpszICQProtoName;
     mi.pszName = LPGEN("Request authorization");
     mi.pszService = pszServiceName;
     hUserMenuAuth = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
-    IconLibReleaseIcon("req_auth");
 
     strcpy(pszServiceName, gpszICQProtoName);
     strcat(pszServiceName, MS_GRANT_AUTH);
 
     mi.position = 1000029999;
-    mi.hIcon = IconLibGetIcon("grant_auth");
+    mi.icolibItem = hIconMenuGrant;
     mi.pszName = LPGEN("Grant authorization");
     hUserMenuGrant = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
-    IconLibReleaseIcon("grant_auth");
 
     strcpy(pszServiceName, gpszICQProtoName);
     strcat(pszServiceName, MS_REVOKE_AUTH);
 
     mi.position = 1000029998;
-    mi.hIcon = IconLibGetIcon("revoke_auth");
+    mi.icolibItem = hIconMenuRevoke;
     mi.pszName = LPGEN("Revoke authorization");
     hUserMenuRevoke = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
-    IconLibReleaseIcon("revoke_auth");
 
     strcpy(pszServiceName, gpszICQProtoName);
     strcat(pszServiceName, MS_ICQ_ADDSERVCONTACT);
 
     mi.position = -2049999999;
-    mi.hIcon = IconLibGetIcon("add_to_server");
+    mi.icolibItem = hIconMenuAddServ;
     mi.pszName = LPGEN("Add to server list");
     hUserMenuAddServ = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
-    IconLibReleaseIcon("add_to_server");
 
     strcpy(pszServiceName, gpszICQProtoName);
     strcat(pszServiceName, MS_XSTATUS_SHOWDETAILS);
@@ -488,7 +485,7 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
     mi.position = -2000004999;
     mi.hIcon = NULL; // dynamically updated
     mi.pszName = LPGEN("Show custom status details");
-    mi.flags=CMIF_NOTOFFLINE;
+    mi.flags = CMIF_NOTOFFLINE;
     hUserMenuXStatus = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
   }
 
@@ -573,15 +570,6 @@ static int icq_PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
 
 static int IconLibIconsChanged(WPARAM wParam, LPARAM lParam)
 {
-  CListSetMenuItemIcon(hUserMenuAuth, IconLibGetIcon("req_auth"));
-  IconLibReleaseIcon("req_auth");
-  CListSetMenuItemIcon(hUserMenuGrant, IconLibGetIcon("grant_auth"));
-  IconLibReleaseIcon("grant_auth");
-  CListSetMenuItemIcon(hUserMenuRevoke, IconLibGetIcon("revoke_auth"));
-  IconLibReleaseIcon("revoke_auth");
-  CListSetMenuItemIcon(hUserMenuAddServ, IconLibGetIcon("add_to_server"));
-  IconLibReleaseIcon("add_to_server");
-
   ChangedIconsXStatus();
 
   return 0;
