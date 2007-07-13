@@ -39,7 +39,7 @@ extern BOOL GDIPlus_IsAnimatedGIF(TCHAR * szName);
 
 /* Next is module */
 #define ANIAVAWINDOWCLASS _T("MirandaModernAniAvatar")
-#define aacheck if (!AniAva.bModuleStarted) return 
+#define aacheck if (!AniAva.bModuleStarted) return
 #define aalock EnterCriticalSection(&AniAva.CS)
 #define aaunlock LeaveCriticalSection(&AniAva.CS)
 
@@ -52,12 +52,12 @@ enum {
 	AAM_FIRST = WM_USER,
 	AAM_SETAVATAR ,					//sync		WPARAM: TCHAR * filename, LPARAM: SIZE * size, RESULT: actual size
 	AAM_SETPOSITION,				//async		LPARAM: pointer to set pos info - the handler will empty it, RESULT: 0
-	AAM_REDRAW,						//async		
+	AAM_REDRAW,						//async
 	AAM_STOP,						//async		stops animation, timer, hide window - prepeare for deleting
 	AAM_PAUSE,						//sync		keep timer and window, but do not process painting -need before graphics change
 	AAM_RESUME,						//async		remobe previous flag. repaints if required
 	AAM_REMOVEAVATAR,				//sync		WPARAM: if y more then wParam, LPARAM: shift up to lParam( remove if values is same)
-	AAM_SETPARENT,					//async	    WPARAM: handle of new parent window 
+	AAM_SETPARENT,					//async	    WPARAM: handle of new parent window
 	AAM_SELFDESTROY,				//sync
 	AAM_LAST,
 };
@@ -67,7 +67,7 @@ typedef struct _tagAniAva_Object
 	HANDLE  hContact;
 	HWND	hWindow;
 	BOOL	bInvalidPos;
-	BOOL	bToBeDeleted;	
+	BOOL	bToBeDeleted;
 	DWORD	dwAvatarUniqId;
 	SIZE	ObjectSize;
 } ANIAVA_OBJECT;
@@ -75,7 +75,7 @@ typedef struct _tagAniAva_Object
 typedef struct _tagAniAva_Info
 {
 	DWORD	dwAvatarUniqId;
-	TCHAR * tcsFilename;	
+	TCHAR * tcsFilename;
 	int		nRefCount;
 	int		nStripTop;
 	int		nFrameCount;
@@ -116,7 +116,7 @@ typedef struct _tagAniAvaSyncCallItem
 	LPARAM  lParam;
 	int     nResult;
 	HANDLE  hDoneEvent;
-	PSYNCCALLBACKPROC pfnProc;    
+	PSYNCCALLBACKPROC pfnProc;
 } ANIAVA_SYNCCALLITEM;
 typedef struct _tagAniAvatarImageInfo
 {
@@ -127,15 +127,15 @@ typedef struct _tagAniAvatarImageInfo
 } ANIAVATARIMAGEINFO;
 
 //main structure to handle global
-typedef struct _tagAniAva 
+typedef struct _tagAniAva
 {
 	//protection
 	BOOL bModuleStarted;
 	CRITICAL_SECTION CS;
 	//options
-	BYTE		bFlags;				// 0x1 has border, 0x2 has round corners, 0x4 has overlay, 0x8 background color	
-	COLORREF	borderColor;			
-	BYTE		cornerRadius;	
+	BYTE		bFlags;				// 0x1 has border, 0x2 has round corners, 0x4 has overlay, 0x8 background color
+	COLORREF	borderColor;
+	BYTE		cornerRadius;
 	COLORREF	bkgColor;
 	HIMAGELIST	overlayIconImageList;
 	//animations
@@ -148,7 +148,7 @@ typedef struct _tagAniAva
 	DWORD AnimationThreadID;
 	HANDLE AnimationThreadHandle;
 	HANDLE hExitEvent;
-	//Objects 
+	//Objects
 	SortedList * Objects;
 } ANIAVA;
 
@@ -181,11 +181,11 @@ static ANIAVA AniAva={0};
 int AniAva_InitModule()
 {
 	memset(&AniAva,0,sizeof(AniAva));
-	if (g_CluiData.fGDIPlusFail) return 0;	
-	if (!( DBGetContactSettingByte(NULL,"CList","AvatarsAnimated",(ServiceExists(MS_AV_GETAVATARBITMAP)&&!g_CluiData.fGDIPlusFail)) 
+	if (g_CluiData.fGDIPlusFail) return 0;
+	if (!( DBGetContactSettingByte(NULL,"CList","AvatarsAnimated",(ServiceExists(MS_AV_GETAVATARBITMAP)&&!g_CluiData.fGDIPlusFail))
 		&& DBGetContactSettingByte(NULL,"CList","AvatarsShow",0) ) ) return 0;
 	{
-		WNDCLASSEX wc;	
+		WNDCLASSEX wc;
 		ZeroMemory(&wc, sizeof(wc));
 		wc.cbSize         = sizeof(wc);
 		wc.lpszClassName  = ANIAVAWINDOWCLASS;
@@ -219,7 +219,7 @@ int AniAva_UnloadModule()
 		AniAva.bModuleStarted=FALSE;
 		for (i=0; i<AniAva.Objects->realCount; i++)
 		{
-			if (AniAva.Objects->items[i]) 
+			if (AniAva.Objects->items[i])
 			{
 				_AniAva_DestroyAvatarWindow(((ANIAVA_OBJECT*)AniAva.Objects->items[i])->hWindow);
 			}
@@ -240,15 +240,15 @@ int AniAva_UnloadModule()
 		CloseHandle(AniAva.hExitEvent);
 	}
 	aaunlock;
-	DeleteCriticalSection(&AniAva.CS);	
+	DeleteCriticalSection(&AniAva.CS);
 	return 1;
 }
 // Update options
 int AniAva_UpdateOptions()
 {
 	BOOL bReloadAvatars=FALSE;
-	BOOL bBeEnabled=(!g_CluiData.fGDIPlusFail 
-		&& DBGetContactSettingByte(NULL,"CList","AvatarsAnimated",(ServiceExists(MS_AV_GETAVATARBITMAP)&&!g_CluiData.fGDIPlusFail)) 
+	BOOL bBeEnabled=(!g_CluiData.fGDIPlusFail
+		&& DBGetContactSettingByte(NULL,"CList","AvatarsAnimated",(ServiceExists(MS_AV_GETAVATARBITMAP)&&!g_CluiData.fGDIPlusFail))
 		&& DBGetContactSettingByte(NULL,"CList","AvatarsShow",0) );
 	if (bBeEnabled && !AniAva.bModuleStarted)
 	{
@@ -270,8 +270,8 @@ int AniAva_AddAvatar(HANDLE hContact, TCHAR * szFilename, int width, int heigth)
 {
 	int res=0;
 	aacheck 0;
-	if (!GDIPlus_IsAnimatedGIF(szFilename)) 
-		return 0; 
+	if (!GDIPlus_IsAnimatedGIF(szFilename))
+		return 0;
 	aalock;
 	{
 		//first try to find window for contact avatar
@@ -284,11 +284,11 @@ int AniAva_AddAvatar(HANDLE hContact, TCHAR * szFilename, int width, int heigth)
 		{
 			pavi=(ANIAVA_OBJECT *)AniAva.Objects->items[i];
 			if (pavi->hContact==hContact)
-			{ 
+			{
 				if (pavi->ObjectSize.cx==width && pavi->ObjectSize.cy==heigth)
 				{
-					hwnd=pavi->hWindow; 
-					break; 
+					hwnd=pavi->hWindow;
+					break;
 				}
 				else
 				{
@@ -300,10 +300,10 @@ int AniAva_AddAvatar(HANDLE hContact, TCHAR * szFilename, int width, int heigth)
 					break;
 				}
 			}
-		}		
+		}
 		if (i==AniAva.Objects->realCount)
 		{
-			pavi = (ANIAVA_OBJECT *) mir_alloc( sizeof(ANIAVA_OBJECT) );					
+			pavi = (ANIAVA_OBJECT *) mir_alloc( sizeof(ANIAVA_OBJECT) );
 			memset( pavi,0,sizeof(ANIAVA_OBJECT) );  //not need due to further set all field but to be sure
 			pavi->hWindow		= NULL;
 			pavi->hContact		= hContact;
@@ -318,7 +318,7 @@ int AniAva_AddAvatar(HANDLE hContact, TCHAR * szFilename, int width, int heigth)
 			_AniAva_GetAvatarImageInfo(pavi->dwAvatarUniqId,&avii);
 		else
 			pavi->dwAvatarUniqId=_AniAva_LoadAvatarFromImage(szFilename, width, heigth, &avii);
-		if (hwnd) 
+		if (hwnd)
 			SendMessage(hwnd, AAM_SETAVATAR, (WPARAM)&avii, (LPARAM) 0);
 		pavi->ObjectSize=avii.szSize;
 		res=MAKELONG(avii.szSize.cx, avii.szSize.cy);
@@ -331,7 +331,7 @@ int AniAva_AddAvatar(HANDLE hContact, TCHAR * szFilename, int width, int heigth)
 void AniAva_UpdateParent()
 {
 	aacheck;
-	aalock;	
+	aalock;
 	{
 		int i;
 		HWND parent = GetAncestor(pcli->hwndContactList,GA_PARENT);
@@ -344,7 +344,7 @@ void AniAva_UpdateParent()
 	aaunlock;
 }
 
-// update avatars pos	
+// update avatars pos
 int AniAva_SetAvatarPos(HANDLE hContact, RECT * rc, int overlayIdx, BYTE bAlpha)
 {
 	aacheck 0;
@@ -360,10 +360,10 @@ int AniAva_SetAvatarPos(HANDLE hContact, RECT * rc, int overlayIdx, BYTE bAlpha)
 		for (i=0; i<AniAva.Objects->realCount; i++)
 		{
 			ANIAVA_OBJECT * pai=(ANIAVA_OBJECT *)AniAva.Objects->items[i];
-			if (pai->hContact==hContact) 
-			{	
+			if (pai->hContact==hContact)
+			{
 				ANIAVA_POSINFO * api=(ANIAVA_POSINFO *)malloc(sizeof(ANIAVA_POSINFO));
-				if (!pai->hWindow) 
+				if (!pai->hWindow)
 				{
 					HWND hwnd;
 					HWND parent;
@@ -379,7 +379,7 @@ int AniAva_SetAvatarPos(HANDLE hContact, RECT * rc, int overlayIdx, BYTE bAlpha)
 
 						if (pdnce && pdnce->name)
 						{
-							temp=t2a(pdnce->name);
+							temp=mir_t2a(pdnce->name);
 							strcat(szName,"_");
 							strcat(szName,temp);
 							mir_free(temp);
@@ -393,13 +393,13 @@ int AniAva_SetAvatarPos(HANDLE hContact, RECT * rc, int overlayIdx, BYTE bAlpha)
 					pai->hWindow=hwnd;
 					SendMessage(hwnd,AAM_SETPARENT,(WPARAM)parent,0);
 					if (_AniAva_GetAvatarImageInfo(pai->dwAvatarUniqId,&avii))
-						SendMessage(pai->hWindow, AAM_SETAVATAR, (WPARAM)&avii, (LPARAM) 0);				
-				}				
+						SendMessage(pai->hWindow, AAM_SETAVATAR, (WPARAM)&avii, (LPARAM) 0);
+				}
 				api->bAlpha=bAlpha;
 				api->idxOverlay=overlayIdx;
 				api->rcPos=*rc;
 				SendNotifyMessage(pai->hWindow, AAM_SETPOSITION, (WPARAM)0, (LPARAM) api);
-				// the AAM_SETPOSITION is responsible to destroy memory under api 
+				// the AAM_SETPOSITION is responsible to destroy memory under api
 				pai->bInvalidPos=FALSE;
 				pai->bToBeDeleted=FALSE;
 				break;
@@ -409,7 +409,7 @@ int AniAva_SetAvatarPos(HANDLE hContact, RECT * rc, int overlayIdx, BYTE bAlpha)
 	aaunlock;
 	return 1;
 }
-// remove avatar	
+// remove avatar
 int AniAva_RemoveAvatar(HANDLE hContact)
 {
 	aacheck 0;
@@ -429,7 +429,7 @@ int AniAva_RemoveAvatar(HANDLE hContact)
 	aaunlock;
 	return 1;
 }
-// reset positions of avatars to be drawn (still be painted at same place)	
+// reset positions of avatars to be drawn (still be painted at same place)
 int AniAva_InvalidateAvatarPositions(HANDLE hContact)
 {
 	int i;
@@ -438,7 +438,7 @@ int AniAva_InvalidateAvatarPositions(HANDLE hContact)
 	for (i=0; i<AniAva.Objects->realCount; i++)
 	{
 		ANIAVA_OBJECT * pai=(ANIAVA_OBJECT *)AniAva.Objects->items[i];
-		if (pai->hContact==hContact || !hContact) 
+		if (pai->hContact==hContact || !hContact)
 		{
 			pai->bInvalidPos++;
 			if (hContact) break;
@@ -446,7 +446,7 @@ int AniAva_InvalidateAvatarPositions(HANDLE hContact)
 	}
 	aaunlock;
 	return 1;
-}	   
+}
 // all avatars without validated position will be stop painted and probably removed
 int AniAva_RemoveInvalidatedAvatars()
 {
@@ -475,7 +475,7 @@ int AniAva_RemoveInvalidatedAvatars()
 			{
 				if (pai->hWindow) _AniAva_DestroyAvatarWindow(pai->hWindow);
 				pai->hWindow=NULL;
-				if (!keepAvatar) _AniAva_RealRemoveAvatar(pai->dwAvatarUniqId);				
+				if (!keepAvatar) _AniAva_RealRemoveAvatar(pai->dwAvatarUniqId);
 				mir_free(pai);
 				li.List_Remove(AniAva.Objects,i);
 				i--;
@@ -524,7 +524,7 @@ static HWND _AniAva_CreateAvatarWindowSync(TCHAR *szFileName)
 	ANIAVA_SYNCCALLITEM item={0};
 	int res=0;
 	if (!AniAva.AnimationThreadHandle) return NULL;
-	if (AniAva.AnimationThreadID==0) return NULL;   
+	if (AniAva.AnimationThreadID==0) return NULL;
 	item.wParam = (WPARAM) szFileName;
 	item.lParam = 0;
 	item.pfnProc = _AniAva_CreateAvatarWindowSync_Worker;
@@ -547,16 +547,16 @@ static void _AniAva_RealRemoveAvatar(DWORD UniqueID)
 		if (aai->dwAvatarUniqId==UniqueID)
 		{
 			aai->nRefCount--;
-			if (aai->nRefCount==0) 
+			if (aai->nRefCount==0)
 			{
 				_AniAva_PausePainting();
 				#ifdef _DEBUG
 					__AniAva_DebugRenderStrip();
 				#endif
 				if (aai->tcsFilename) mir_free(aai->tcsFilename);
-				if (aai->pFrameDelays) free(aai->pFrameDelays);					
+				if (aai->pFrameDelays) free(aai->pFrameDelays);
 				_AniAva_ReduceAvatarImages(aai->nStripTop,aai->FrameSize.cx*aai->nFrameCount, FALSE);
-				for (k=0; k<AniAva.AniAvatarList->realCount; k++)	
+				for (k=0; k<AniAva.AniAvatarList->realCount; k++)
 					if (k!=j)	{
 						ANIAVA_INFO * taai=(ANIAVA_INFO *) AniAva.AniAvatarList->items[k];
 						if (taai->nStripTop>aai->nStripTop)
@@ -572,9 +572,9 @@ static void _AniAva_RealRemoveAvatar(DWORD UniqueID)
 					int newHeight=0;
 					int i;
 					for (i=0; i<AniAva.AniAvatarList->realCount; i++)
-						if (i!=j) 
+						if (i!=j)
 						{
-							newHeight=max(newHeight,((ANIAVA_INFO *) AniAva.AniAvatarList->items[i])->FrameSize.cy);				
+							newHeight=max(newHeight,((ANIAVA_INFO *) AniAva.AniAvatarList->items[i])->FrameSize.cy);
 						}
 
 					hNewDC=CreateCompatibleDC(NULL);
@@ -585,19 +585,19 @@ static void _AniAva_RealRemoveAvatar(DWORD UniqueID)
 						BitBlt(hNewDC,0,0,aai->nStripTop,newHeight,AniAva.hAniAvaDC,0,0, SRCCOPY);
 					if (aai->nStripTop+aai->FrameSize.cx*aai->nFrameCount<AniAva.width)
 						BitBlt(hNewDC,aai->nStripTop,0,AniAva.width-(aai->nStripTop+aai->FrameSize.cx*aai->nFrameCount),newHeight,AniAva.hAniAvaDC,aai->nStripTop+aai->FrameSize.cx*aai->nFrameCount,0, SRCCOPY);
-					
+
 					_AniAva_RemoveAniAvaDC(&AniAva);
 					AniAva.hAniAvaDC		=hNewDC;
 					AniAva.hAniAvaBitmap	=hNewBmp;
 					AniAva.hAniAvaOldBitmap	=hNewOldBmp;
 					AniAva.width			=newWidth;
 					AniAva.height			=newHeight;
-					
+
 				}
 				else
 				{
 					_AniAva_RemoveAniAvaDC(&AniAva);
-				}				
+				}
 				#ifdef _DEBUG
 					__AniAva_DebugRenderStrip();
 				#endif
@@ -681,7 +681,7 @@ static int	_AniAva_LoadAvatarFromImage(TCHAR * szFileName, int width, int height
 
 		paai->nStripTop=AniAva.width;
 
-		//remove temp DC	
+		//remove temp DC
 		SelectObject(hTempDC,hOldBitmap);
 		DeleteObject(hNewBmp);
 		DeleteDC(hTempDC);
@@ -747,7 +747,7 @@ static void _AniAva_Clear_ANIAVA_WINDOWINFO(ANIAVA_WINDOWINFO * pavwi )
 	pavwi->nFramesCount=0;
 	KillTimer(pavwi->hWindow,2);
 	pavwi->bPlaying =FALSE;
-	pavwi->TimerId=0;	
+	pavwi->TimerId=0;
 }
 static void __AniAva_DebugRenderStrip()
 {
@@ -789,10 +789,10 @@ static void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat)
 		if ( AniAva.bFlags == 0 ) //simple and fastest method - no borders, round corners and etc. just copy
 		{
 			pt_from.x=dat->ptFromPoint.x+dat->currentFrame*dat->sizeAvatar.cx;
-			pt_from.y=dat->ptFromPoint.y;	
+			pt_from.y=dat->ptFromPoint.y;
 			copyFromDC=AniAva.hAniAvaDC;
 		}
-		else 
+		else
 		{
 			// ... need to create additional hDC_animation
 			HRGN hRgn=NULL;
@@ -805,7 +805,7 @@ static void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat)
 				if (!cornerRadius)  //auto radius
 					cornerRadius = min(szWnd.cx, szWnd.cy )/5;
 			}
-			if ( AniAva.bFlags & AAO_HAS_BORDER )            
+			if ( AniAva.bFlags & AAO_HAS_BORDER )
 			{
 				// if has borders - create region (round corners) and fill it, remember internal as clipping
 				HBRUSH hBrush = CreateSolidBrush( AniAva.borderColor );
@@ -830,7 +830,7 @@ static void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat)
 			{
 				// if back color - fill clipping area
 				HBRUSH hBrush = CreateSolidBrush( AniAva.bkgColor );
-				HBRUSH hOldBrush = SelectObject( tempDC, hBrush );				
+				HBRUSH hOldBrush = SelectObject( tempDC, hBrush );
 				FillRgn( tempDC, hRgn, hBrush );
 				ske_SetRgnOpaqueOpt( tempDC, hRgn, TRUE );
 			}
@@ -838,7 +838,7 @@ static void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat)
 			if ( !(AniAva.bFlags & AAO_OPAQUE) )
 				BitBlt(tempDC,0, 0, szWnd.cx, szWnd.cy , AniAva.hAniAvaDC , dat->ptFromPoint.x+dat->sizeAvatar.cx*dat->currentFrame, dat->ptFromPoint.y, SRCCOPY);
 			else
-			{ 	
+			{
 				BLENDFUNCTION abf={AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
 				ske_AlphaBlend(tempDC,0, 0, szWnd.cx, szWnd.cy , AniAva.hAniAvaDC, dat->ptFromPoint.x+dat->sizeAvatar.cx*dat->currentFrame, dat->ptFromPoint.y, szWnd.cx, szWnd.cy, abf);
 			}
@@ -851,7 +851,7 @@ static void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat)
 				DeleteObject(hRgn);
 			}
 
-			if (	(AniAva.bFlags & AAO_HAS_OVERLAY) 
+			if (	(AniAva.bFlags & AAO_HAS_OVERLAY)
 				&&(dat->overlayIconIdx!=-1)
 				&&(AniAva.overlayIconImageList) )
 			{
@@ -867,7 +867,7 @@ static void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat)
 			copyFromDC=tempDC;
 		}
 		// intersect visible area
-		// update layered window 
+		// update layered window
 		GetWindowRect(pcli->hwndContactTree, &clistRect);
 		if (dat->rcPos.top<0)
 		{
@@ -875,9 +875,9 @@ static void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat)
 			szWnd.cy+=dat->rcPos.top;
 		}
 		if (dat->rcPos.bottom>clistRect.bottom-clistRect.top)
-		{	
+		{
 			szWnd.cy-=(dat->rcPos.bottom-(clistRect.bottom-clistRect.top));
-		}	
+		}
 		ptWnd.x=dat->rcPos.left+clistRect.left;
 		ptWnd.y=(dat->rcPos.top>0 ? dat->rcPos.top :0)+clistRect.top;
 		if (szWnd.cy>0)
@@ -895,7 +895,7 @@ static void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat)
 		{
 			dat->bPlaying=FALSE;
 		}
-		DeleteDC(hDC_animation);	
+		DeleteDC(hDC_animation);
 		if (tempDC)
 		{
 			SelectObject(tempDC, hOldBmp);
@@ -952,7 +952,7 @@ static void _AniAva_LoadOptions()
 	aalock;
 	{
 		AniAva.bFlags= (DBGetContactSettingByte(NULL,"CList","AvatarsDrawBorders",0)?	AAO_HAS_BORDER		:0) |
-			(DBGetContactSettingByte(NULL,"CList","AvatarsRoundCorners",1)?	AAO_ROUND_CORNERS	:0) |	
+			(DBGetContactSettingByte(NULL,"CList","AvatarsRoundCorners",1)?	AAO_ROUND_CORNERS	:0) |
 			(DBGetContactSettingByte(NULL,"CList","AvatarsDrawOverlay",0)?	AAO_HAS_OVERLAY		:0) |
 			((0)?																AAO_OPAQUE			:0);
 
@@ -972,10 +972,10 @@ static void _AniAva_LoadOptions()
 			case SETTING_AVATAR_OVERLAY_TYPE_PROTOCOL:
 			case SETTING_AVATAR_OVERLAY_TYPE_CONTACT:
 				AniAva.overlayIconImageList=himlCListClc;
-				break;										
+				break;
 			default:
 				AniAva.overlayIconImageList=NULL;
-			}				
+			}
 		}
 		if (AniAva.bFlags & AAO_OPAQUE)
 			AniAva.bkgColor=0;
@@ -990,20 +990,20 @@ static void _AniAva_AnimationTreadProc(HANDLE hExitEvent)
 	DuplicateHandle(GetCurrentProcess(),GetCurrentThread(),GetCurrentProcess(),&hThread,THREAD_SET_CONTEXT,FALSE,0);
 	AniAva.AnimationThreadHandle=hThread;
 	SetThreadPriority(hThread,THREAD_PRIORITY_LOWEST);
-	for (;;) 
+	for (;;)
 	{
 		rc = MsgWaitForMultipleObjectsEx(1,&hExitEvent, INFINITE, QS_ALLINPUT, MWMO_ALERTABLE );
-		if ( rc == WAIT_OBJECT_0 + 1 ) 
+		if ( rc == WAIT_OBJECT_0 + 1 )
 		{
 			MSG msg;
-			while ( PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) ) 
+			while ( PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) )
 			{
 				if ( IsDialogMessage(msg.hwnd, &msg) ) continue;
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);
 			}
-		} 
-		else if ( rc==WAIT_OBJECT_0 ) 
+		}
+		else if ( rc==WAIT_OBJECT_0 )
 		{
 			break;
 		}
@@ -1017,12 +1017,12 @@ static int	_AniAva_SortAvatarInfo(void * first, void * last)
 	int res=0;
 	ANIAVA_INFO * aai1=(ANIAVA_INFO *)first;
 	ANIAVA_INFO * aai2=(ANIAVA_INFO *)last;
-	if (aai1 && aai1->tcsFilename && 
-		aai2 && aai2->tcsFilename)	
+	if (aai1 && aai1->tcsFilename &&
+		aai2 && aai2->tcsFilename)
 	{
-		res=_tcsicmp(aai2->tcsFilename, aai1->tcsFilename);	
+		res=_tcsicmp(aai2->tcsFilename, aai1->tcsFilename);
 	}
-	else 
+	else
 	{
 		int a1=(aai1 && aai1->tcsFilename)? 1:0;
 		int a2=(aai2 && aai2->tcsFilename)? 1:0;
@@ -1036,7 +1036,7 @@ static int	_AniAva_SortAvatarInfo(void * first, void * last)
 		else
 			return 1;
 	}
-	else 
+	else
 		return res;
 }
 static LRESULT CALLBACK _AniAva_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -1073,9 +1073,9 @@ static LRESULT CALLBACK _AniAva_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 		return 0;
 
 	case AAM_SETAVATAR:
-		{	
+		{
 			ANIAVATARIMAGEINFO *paaii=(ANIAVATARIMAGEINFO*)wParam;
-			_AniAva_Clear_ANIAVA_WINDOWINFO(dat);					
+			_AniAva_Clear_ANIAVA_WINDOWINFO(dat);
 			dat->nFramesCount=paaii->nFramesCount;
 			dat->delaysInterval=paaii->pFrameDelays;
 			dat->sizeAvatar=paaii->szSize;
@@ -1100,7 +1100,7 @@ static LRESULT CALLBACK _AniAva_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 				ShowWindow(hwnd,SW_SHOWNA);
 				dat->currentFrame=0;
 				KillTimer(hwnd,2);
-				SetTimer(hwnd,2,dat->delaysInterval[0],NULL);			  
+				SetTimer(hwnd,2,dat->delaysInterval[0],NULL);
 			}
 			_AniAva_RenderAvatar(dat);
 			return 0;
@@ -1129,9 +1129,9 @@ static LRESULT CALLBACK _AniAva_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 		return DestroyWindow(hwnd);
 
 	case WM_CREATE:
-		{	
+		{
 			LONG exStyle;
-			ANIAVA_WINDOWINFO * dat = (ANIAVA_WINDOWINFO *) mir_alloc(sizeof (ANIAVA_WINDOWINFO));			
+			ANIAVA_WINDOWINFO * dat = (ANIAVA_WINDOWINFO *) mir_alloc(sizeof (ANIAVA_WINDOWINFO));
 			SetWindowLong(hwnd,GWL_USERDATA,(LONG)dat);
 			memset(dat,0, sizeof(ANIAVA_WINDOWINFO));
 			dat->hWindow=hwnd;
@@ -1147,7 +1147,7 @@ static LRESULT CALLBACK _AniAva_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 			break;
 		}
 	case WM_TIMER:
-		{		
+		{
 			if (!IsWindowVisible(hwnd))
 			{
 				DestroyWindow(hwnd);
@@ -1155,10 +1155,10 @@ static LRESULT CALLBACK _AniAva_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 			}
 			dat->currentFrame++;
 			if (dat->currentFrame>=dat->nFramesCount)
-				dat->currentFrame=0; 	
+				dat->currentFrame=0;
 			_AniAva_RenderAvatar(dat);
 			KillTimer(hwnd,2);
-			SetTimer(hwnd,2,dat->delaysInterval[dat->currentFrame]+1,NULL);			
+			SetTimer(hwnd,2,dat->delaysInterval[dat->currentFrame]+1,NULL);
 			return 0;
 		}
 	case WM_DESTROY:
@@ -1169,7 +1169,7 @@ static LRESULT CALLBACK _AniAva_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 			break;
 		}
 
-	}	
+	}
 	return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
@@ -1187,7 +1187,7 @@ v Render borders
 v Render round corners
 v Option to disable animation
 v Render 'idle' avatars and not in list.
-v Options tune - enable check if animation available (gdi+ and loadavatars presents)		
+v Options tune - enable check if animation available (gdi+ and loadavatars presents)
 - Flash avatars support
 - Remove transparance (render background)
 - Remove loadavatars.dll dependance
@@ -1199,13 +1199,13 @@ Optimizations:
 v Disable blinking on flash icons
 v do not flash avatar on option saving (delay before real delete avatar)
 v MADE ADD AVATAR THREAD SAFE ( CALL ONLY FROM MAIN WINDOW THREAD )
-v Read setting for painting only once			
+v Read setting for painting only once
 v Resource usage:
 v Load images only when they are realy needed and unload it accordingly. (images was remove invalidated for 3 times)
 v Store images on single image
 v Remove unneccessary windows
 - optimize rendring (made hDC_animation outside, create regions outside etc)
-- Avatars outside from clist on 'show offline'	
+- Avatars outside from clist on 'show offline'
 
 Completeness: 8/10
 
