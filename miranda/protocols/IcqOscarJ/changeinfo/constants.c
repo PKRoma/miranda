@@ -3,7 +3,7 @@
 //                ________________________________________
 //
 // Copyright © 2001,2002,2003,2004 Richard Hughes, Martin Öberg
-// Copyright © 2004,2005,2006 Joe Kucera, Bio
+// Copyright © 2004,2005,2006,2007 Joe Kucera, Bio
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -21,7 +21,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/changeinfo/constants.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -578,8 +578,8 @@ SettingItem setting[]={
   {LPGEN("Nickname"),       LI_STRING,     DBVT_ASCIIZ, "Nick"},
   {LPGEN("First name"),     LI_STRING,     DBVT_ASCIIZ, "FirstName"},
   {LPGEN("Last name"),      LI_STRING,     DBVT_ASCIIZ, "LastName"},
-  {LPGEN("Age"),            LI_NUMBER,     DBVT_WORD,   "Age"),        (void*)ageRange},
-  {LPGEN("Gender"),         LI_LIST,       DBVT_BYTE,   "Gender"),     genders, sizeof(genders)/sizeof(genders[0])},
+  {LPGEN("Age"),            LI_NUMBER,     DBVT_WORD,   "Age",        (void*)ageRange},
+  {LPGEN("Gender"),         LI_LIST,       DBVT_BYTE,   "Gender",     genders, sizeof(genders)/sizeof(genders[0])},
   {LPGEN("About"),          LI_LONGSTRING, DBVT_ASCIIZ, "About"},
   //password
   {LPGEN("Password"),       LI_DIVIDER},
@@ -594,25 +594,25 @@ SettingItem setting[]={
   {LPGEN("City"),           LI_STRING,     DBVT_ASCIIZ, "City"},
   {LPGEN("State"),          LI_STRING,     DBVT_ASCIIZ, "State"},
   {LPGEN("ZIP/postcode"),   LI_STRING,     DBVT_ASCIIZ, "ZIP"},
-  {LPGEN("Country"),        LI_LIST,       DBVT_WORD,   "Country"),    countries, sizeof(countries)/sizeof(countries[0])},
+  {LPGEN("Country"),        LI_LIST,       DBVT_WORD,   "Country",    countries, sizeof(countries)/sizeof(countries[0])},
   {LPGEN("Phone number"),   LI_STRING,     DBVT_ASCIIZ, "Phone"},
   {LPGEN("Fax number"),     LI_STRING,     DBVT_ASCIIZ, "Fax"},
   {LPGEN("Cellular number"),LI_STRING,     DBVT_ASCIIZ, "Cellular"},
   //more
   {LPGEN("Personal Detail"),LI_DIVIDER},
-  {LPGEN("Timezone"),       LI_LIST|LIF_ZEROISVALID|LIF_SIGNED,DBVT_BYTE,   "Timezone"), timezones, sizeof(timezones)/sizeof(timezones[0])},
-  {LPGEN("Year of birth"),  LI_NUMBER,     DBVT_WORD,   "BirthYear"),  (void*)yearRange},
-  {LPGEN("Month of birth"), LI_LIST,       DBVT_BYTE,   "BirthMonth"), months, sizeof(months)/sizeof(months[0])},
-  {LPGEN("Day of birth"),   LI_NUMBER,     DBVT_BYTE,   "BirthDay"),   (void*)dayRange},
-  {LPGEN("Marital Status"), LI_LIST,       DBVT_BYTE,   "MaritalStatus"), maritalstatuses, sizeof(maritalstatuses)/sizeof(maritalstatuses[0])},
-  {LPGEN("Spoken language 1"), LI_LIST,    DBVT_ASCIIZ, "Language1"),  languages, sizeof(languages)/sizeof(languages[0])},
-  {LPGEN("Spoken language 2"), LI_LIST,    DBVT_ASCIIZ, "Language2"),  languages, sizeof(languages)/sizeof(languages[0])},
-  {LPGEN("Spoken language 3"), LI_LIST,    DBVT_ASCIIZ, "Language3"),  languages, sizeof(languages)/sizeof(languages[0])},
+  {LPGEN("Timezone"),       LI_LIST|LIF_ZEROISVALID|LIF_SIGNED,DBVT_BYTE,   "Timezone", timezones, sizeof(timezones)/sizeof(timezones[0])},
+  {LPGEN("Year of birth"),  LI_NUMBER,     DBVT_WORD,   "BirthYear",  (void*)yearRange},
+  {LPGEN("Month of birth"), LI_LIST,       DBVT_BYTE,   "BirthMonth", months, sizeof(months)/sizeof(months[0])},
+  {LPGEN("Day of birth"),   LI_NUMBER,     DBVT_BYTE,   "BirthDay",   (void*)dayRange},
+  {LPGEN("Marital Status"), LI_LIST,       DBVT_BYTE,   "MaritalStatus", maritalstatuses, sizeof(maritalstatuses)/sizeof(maritalstatuses[0])},
+  {LPGEN("Spoken language 1"), LI_LIST,    DBVT_ASCIIZ, "Language1",  languages, sizeof(languages)/sizeof(languages[0])},
+  {LPGEN("Spoken language 2"), LI_LIST,    DBVT_ASCIIZ, "Language2",  languages, sizeof(languages)/sizeof(languages[0])},
+  {LPGEN("Spoken language 3"), LI_LIST,    DBVT_ASCIIZ, "Language3",  languages, sizeof(languages)/sizeof(languages[0])},
   //more
   {LPGEN("Originally from"),LI_DIVIDER},
   {LPGEN("City"),           LI_STRING,     DBVT_ASCIIZ, "OriginCity"},
   {LPGEN("State"),          LI_STRING,     DBVT_ASCIIZ, "OriginState"},
-  {LPGEN("Country"),        LI_LIST,       DBVT_WORD,   "OriginCountry"),    countries, sizeof(countries)/sizeof(countries[0])},
+  {LPGEN("Country"),        LI_LIST,       DBVT_WORD,   "OriginCountry",    countries, sizeof(countries)/sizeof(countries[0])},
   //work
   {LPGEN("Work"),           LI_DIVIDER},
   {LPGEN("Company name"),   LI_STRING,     DBVT_ASCIIZ, "Company"},
@@ -623,35 +623,35 @@ SettingItem setting[]={
   {LPGEN("Company phone"),  LI_STRING,     DBVT_ASCIIZ, "CompanyPhone"},
   {LPGEN("Company fax"),    LI_STRING,     DBVT_ASCIIZ, "CompanyFax"},
   {LPGEN("Company ZIP/postcode"),LI_STRING,DBVT_ASCIIZ, "CompanyZIP"},
-  {LPGEN("Company country"),LI_LIST,       DBVT_WORD,   "CompanyCountry"),countries, sizeof(countries)/sizeof(countries[0])},
+  {LPGEN("Company country"),LI_LIST,       DBVT_WORD,   "CompanyCountry",countries, sizeof(countries)/sizeof(countries[0])},
   {LPGEN("Company department"),LI_STRING,  DBVT_ASCIIZ, "CompanyDepartment"},
   {LPGEN("Company position"),LI_STRING,    DBVT_ASCIIZ, "CompanyPosition"},
-  {LPGEN("Company occupation"),LI_LIST,    DBVT_WORD,   "CompanyOccupation"), occupations, sizeof(occupations)/sizeof(occupations[0])},
+  {LPGEN("Company occupation"),LI_LIST,    DBVT_WORD,   "CompanyOccupation", occupations, sizeof(occupations)/sizeof(occupations[0])},
   //interests
   {LPGEN("Personal Interests"),            LI_DIVIDER},
-  {LPGEN("Interest category 1"),LI_LIST,   DBVT_ASCIIZ, "Interest0Cat"), interests, sizeof(interests)/sizeof(interests[0])},
+  {LPGEN("Interest category 1"),LI_LIST,   DBVT_ASCIIZ, "Interest0Cat", interests, sizeof(interests)/sizeof(interests[0])},
   {LPGEN("Interest areas 1"),LI_STRING,    DBVT_ASCIIZ, "Interest0Text"},
-  {LPGEN("Interest category 2"),LI_LIST,   DBVT_ASCIIZ, "Interest1Cat"), interests, sizeof(interests)/sizeof(interests[0])},
+  {LPGEN("Interest category 2"),LI_LIST,   DBVT_ASCIIZ, "Interest1Cat", interests, sizeof(interests)/sizeof(interests[0])},
   {LPGEN("Interest areas 2"),LI_STRING,    DBVT_ASCIIZ, "Interest1Text"},
-  {LPGEN("Interest category 3"),LI_LIST,   DBVT_ASCIIZ, "Interest2Cat"), interests, sizeof(interests)/sizeof(interests[0])},
+  {LPGEN("Interest category 3"),LI_LIST,   DBVT_ASCIIZ, "Interest2Cat", interests, sizeof(interests)/sizeof(interests[0])},
   {LPGEN("Interest areas 3"),LI_STRING,    DBVT_ASCIIZ, "Interest2Text"},
-  {LPGEN("Interest category 4"),LI_LIST,   DBVT_ASCIIZ, "Interest3Cat"), interests, sizeof(interests)/sizeof(interests[0])},
+  {LPGEN("Interest category 4"),LI_LIST,   DBVT_ASCIIZ, "Interest3Cat", interests, sizeof(interests)/sizeof(interests[0])},
   {LPGEN("Interest areas 4"),LI_STRING,    DBVT_ASCIIZ, "Interest3Text"},
   //pastbackground
   {LPGEN("Past Background"),               LI_DIVIDER},
-  {LPGEN("Category 1"),LI_LIST,            DBVT_ASCIIZ, "Past0"), pastbackground, sizeof(pastbackground)/sizeof(pastbackground[0])},
+  {LPGEN("Category 1"),LI_LIST,            DBVT_ASCIIZ, "Past0", pastbackground, sizeof(pastbackground)/sizeof(pastbackground[0])},
   {LPGEN("Past Background 1"),LI_STRING,   DBVT_ASCIIZ, "Past0Text"},
-  {LPGEN("Category 2"),LI_LIST,            DBVT_ASCIIZ, "Past1"), pastbackground, sizeof(pastbackground)/sizeof(pastbackground[0])},
+  {LPGEN("Category 2"),LI_LIST,            DBVT_ASCIIZ, "Past1", pastbackground, sizeof(pastbackground)/sizeof(pastbackground[0])},
   {LPGEN("Past Background 2"),LI_STRING,   DBVT_ASCIIZ, "Past1Text"},
-  {LPGEN("Category 3"),LI_LIST,            DBVT_ASCIIZ, "Past2"), pastbackground, sizeof(pastbackground)/sizeof(pastbackground[0])},
+  {LPGEN("Category 3"),LI_LIST,            DBVT_ASCIIZ, "Past2", pastbackground, sizeof(pastbackground)/sizeof(pastbackground[0])},
   {LPGEN("Past Background 3"),LI_STRING,   DBVT_ASCIIZ, "Past2Text"},
   //affiliation
   {LPGEN("Affiliations"),                  LI_DIVIDER},
-  {LPGEN("Affiliation category 1"),LI_LIST,DBVT_ASCIIZ, "Affiliation0"), affiliation, sizeof(affiliation)/sizeof(affiliation[0])},
+  {LPGEN("Affiliation category 1"),LI_LIST,DBVT_ASCIIZ, "Affiliation0", affiliation, sizeof(affiliation)/sizeof(affiliation[0])},
   {LPGEN("Affiliation 1"),LI_STRING,       DBVT_ASCIIZ, "Affiliation0Text"},
-  {LPGEN("Affiliation category 2"),LI_LIST,DBVT_ASCIIZ, "Affiliation1"), affiliation, sizeof(affiliation)/sizeof(affiliation[0])},
+  {LPGEN("Affiliation category 2"),LI_LIST,DBVT_ASCIIZ, "Affiliation1", affiliation, sizeof(affiliation)/sizeof(affiliation[0])},
   {LPGEN("Affiliation 2"),LI_STRING,       DBVT_ASCIIZ, "Affiliation1Text"},
-  {LPGEN("Affiliation category 3"),LI_LIST,DBVT_ASCIIZ, "Affiliation2"), affiliation, sizeof(affiliation)/sizeof(affiliation[0])},
+  {LPGEN("Affiliation category 3"),LI_LIST,DBVT_ASCIIZ, "Affiliation2", affiliation, sizeof(affiliation)/sizeof(affiliation[0])},
   {LPGEN("Affiliation 3"),LI_STRING,       DBVT_ASCIIZ, "Affiliation2Text"}
 };
 
