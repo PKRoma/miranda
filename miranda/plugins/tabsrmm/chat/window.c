@@ -1832,6 +1832,10 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				height = DBGetContactSettingByte(NULL, "Chat", "NicklistRowDist", 12);
 				font = ih > ih2?ih:ih2;
 
+				// make sure we have space for icon!
+				if (g_Settings.ShowContactStatus)
+					font = font > 18 ? font : 18;
+
 				SendMessage(GetDlgItem(hwndDlg, IDC_LIST), LB_SETITEMHEIGHT, 0, (LPARAM)height > font ? height : font);
 				InvalidateRect(GetDlgItem(hwndDlg, IDC_LIST), NULL, TRUE);
 			}
@@ -2028,6 +2032,11 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			int height = DBGetContactSettingByte(NULL, "Chat", "NicklistRowDist", 12);
 
 			mis->itemHeight = height > font?height:font;
+
+			// make sure we have enough space for icon!
+			if (g_Settings.ShowContactStatus)
+				(mis->itemHeight > 18) ? mis->itemHeight : 18;
+
 			return TRUE;
 		}
 
@@ -2098,6 +2107,14 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					FrameRect(dis->hDC, &dis->rcItem, hListBkgBrush);
 					*/
 
+					x_offset = 2;
+
+					if (g_Settings.ShowContactStatus && g_Settings.ContactStatusFirst && ui->ContactStatus) {
+						HICON hIcon = LoadSkinnedProtoIcon(si->pszModule, ui->ContactStatus);
+						DrawIconEx(dis->hDC, x_offset, dis->rcItem.top+offset-3,hIcon,16,16,0,NULL, DI_NORMAL);
+						x_offset += 18;
+					}
+
 					if (g_Settings.ClassicIndicators) {
 						char szTemp[3];
 						SIZE szUmode;
@@ -2106,18 +2123,28 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 						szTemp[0] = szIndicator;
 						if (szTemp[0]) {
 							GetTextExtentPoint32A(dis->hDC, szTemp, 1, &szUmode);
-							x_offset = szUmode.cx + 4;
-							TextOutA(dis->hDC, 2, dis->rcItem.top, szTemp, 1);
+							TextOutA(dis->hDC, x_offset, dis->rcItem.top, szTemp, 1);
+							x_offset += szUmode.cx + 2;
 						}
-						else x_offset = 10;
+						else x_offset += 8;
 					}
 					else {
-						x_offset = 14;
-						DrawIconEx(dis->hDC,2, dis->rcItem.top + offset,hIcon,10,10,0,NULL, DI_NORMAL);
+						DrawIconEx(dis->hDC, x_offset, dis->rcItem.top + offset,hIcon,10,10,0,NULL, DI_NORMAL);
+						x_offset += 12;
 					}
 
-					TextOut(dis->hDC, x_offset, dis->rcItem.top, ui->pszNick, lstrlen(ui->pszNick));
-					SelectObject(dis->hDC, hOldFont);
+					if (g_Settings.ShowContactStatus && !g_Settings.ContactStatusFirst && ui->ContactStatus) {
+						HICON hIcon = LoadSkinnedProtoIcon(si->pszModule, ui->ContactStatus);
+						DrawIconEx(dis->hDC, x_offset, dis->rcItem.top+offset-3,hIcon,16,16,0,NULL, DI_NORMAL);
+						x_offset += 18;
+					}
+
+					{
+						SIZE sz;
+						GetTextExtentPoint32(dis->hDC, ui->pszNick, lstrlen(ui->pszNick), &sz);
+						TextOut(dis->hDC, x_offset, (dis->rcItem.top+dis->rcItem.bottom-sz.cy)/2, ui->pszNick, lstrlen(ui->pszNick));
+						SelectObject(dis->hDC, hOldFont);
+					}
 				}
 				return TRUE;
 		}	}

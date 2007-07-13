@@ -208,6 +208,7 @@ typedef struct  USERINFO_TYPE
 	TCHAR* pszUID;
 	WORD   Status;	
 	int    iStatusEx;
+	WORD   ContactStatus;
 	struct USERINFO_TYPE *next;
 }
 	USERINFO;
@@ -347,6 +348,10 @@ struct GlobalLogSettings_t {
     BYTE        MathMod;
 	COLORREF    nickColors[7];
 	HBRUSH      SelectionBGBrush;
+	BOOL		DoubleClick4Privat;
+	BOOL		ShowContactStatus;
+	BOOL		ContactStatusFirst;
+
 };
 extern struct GlobalLogSettings_t g_Settings;
 

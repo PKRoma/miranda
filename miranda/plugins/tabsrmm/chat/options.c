@@ -135,7 +135,9 @@ static struct branch_t branch1[] = {
 	{LPGENT("Do not play sounds when the chat room is focused"), "SoundsFocus", 0, 0, NULL},
 	{LPGENT("Do not pop up the window when joining a chat room"), "PopupOnJoin", 0,0, NULL},
 	{LPGENT("Toggle the visible state when double clicking in the contact list"), "ToggleVisibility", 0,0, NULL},
-    {LPGENT("Sync splitter position with standard IM sessions"), "SyncSplitter", 0,0, NULL}
+    {LPGENT("Sync splitter position with standard IM sessions"), "SyncSplitter", 0,0, NULL},
+    {LPGENT("Show contact statuses if protocol supports them"), "ShowContactStatus", 0,1, NULL},
+    {LPGENT("Display contact status icon before user role icon"), "ContactStatusFirst", 0,0, NULL},
 };
 static struct branch_t branch2[] = {
 	{LPGENT("Prefix all events with a timestamp"), "ShowTimeStamp", 0,1, NULL},
@@ -144,6 +146,7 @@ static struct branch_t branch2[] = {
 	{LPGENT("Indent the second line of a message"), "LogIndentEnabled", 0,1, NULL},
 	{LPGENT("Limit user names in the message log to 20 characters"), "LogLimitNames", 0,1, NULL},
 	{LPGENT("Add \':\' to auto-completed user names"), "AddColonToAutoComplete", 0, 1, NULL},
+	{LPGENT("Start private conversaton on doubleclick in nick list (insert nick if unchecked)"), "DoubleClick4Privat", 0, 1, NULL},
 	{LPGENT("Strip colors from messages in the log"), "StripFormatting", 0, 0, NULL},
 	{LPGENT("Enable the \'event filter\' for new rooms"), "FilterEnabled", 0,0, NULL},
     {LPGENT("Use IRC style status indicators in the nicklist (@, %, + etc.)"), "ClassicIndicators", 0,1, NULL},
@@ -1388,6 +1391,11 @@ void LoadGlobalSettings(void)
 	g_Settings.UseDividers = DBGetContactSettingByte(NULL, "Chat", "UseDividers", 1);
 	g_Settings.DividersUsePopupConfig = DBGetContactSettingByte(NULL, "Chat", "DividersUsePopupConfig", 1);
     g_Settings.MathMod = ServiceExists(MATH_RTF_REPLACE_FORMULAE) && DBGetContactSettingByte(NULL, "Chat", "MathModSupport", 0);
+
+	g_Settings.DoubleClick4Privat = (BOOL)DBGetContactSettingByte(NULL, "Chat", "DoubleClick4Privat", 1);
+	g_Settings.ShowContactStatus = DBGetContactSettingByte(NULL, "Chat", "ShowContactStatus", 1);
+	g_Settings.ContactStatusFirst = DBGetContactSettingByte(NULL, "Chat", "ContactStatusFirst", 0);	
+
 
 	if (hListBkgBrush)
 		DeleteObject(hListBkgBrush);

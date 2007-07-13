@@ -3996,7 +3996,7 @@ quote_from_last:
 #ifdef _UNICODE
                             iSize = strlen((char *)dbei.pBlob) + 1;
                             if(dbei.flags & DBEF_UTF) {
-                                szConverted = Utf8_Decode(szText);
+                                szConverted = Utf8_Decode((char*)szText);
                                 iAlloced = TRUE;
                             }
                             else {

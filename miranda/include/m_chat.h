@@ -427,6 +427,11 @@ typedef struct {
 
 #define GC_EVENT_SETSTATUSEX	0x1009
 
+//	GC_EVENT_SETCONTACTSTATUS - sets status icon for contact
+//	pszUID		- Unique identifier of the one who receives a new status
+//	pszStatus	- (char *)(DWORD)ID_STATUS_* or zero to remove status icon
+#define GC_EVENT_SETCONTACTSTATUS	0x100A
+
 //	GC_EVENT_CONTROL  - not shown in the log (Control window associated to a session and the session itself)
 //	NOTE 1: No members of GCEVENT are used, send one of the below flags in wParam instead,
 //		Ex CallService(GC_EVENT_CONTROL, SESSION_INITDONE, (LPARAM)&gce);

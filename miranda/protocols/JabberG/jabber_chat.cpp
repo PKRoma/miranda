@@ -196,6 +196,11 @@ void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, TCHAR* nick, TCHAR* 
 			gce.dwItemData = 1;
 		gcd.iType = GC_EVENT_SETSTATUSEX;
 		JCallService( MS_GC_EVENT, NULL, ( LPARAM )&gce );
+
+		gce.ptszUID = nick;
+		gce.dwItemData = statusToSet;
+		gcd.iType = GC_EVENT_SETCONTACTSTATUS;
+		JCallService( MS_GC_EVENT, NULL, ( LPARAM )&gce );
 	}
 
 	mir_free( myNick );

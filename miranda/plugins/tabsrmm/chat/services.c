@@ -446,6 +446,7 @@ static int DoControl(GCEVENT * gce, WPARAM wp)
 	{
 		SM_SetStatusEx( gce->pDest->ptszID, gce->pDest->pszModule, gce->ptszText, gce->dwItemData);
 	}
+
 	else return 1;
 
 	return 0;
@@ -689,6 +690,10 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 	case GC_EVENT_SENDMESSAGE :
 	case GC_EVENT_SETSTATUSEX :
 		iRetVal = DoControl(gce, wParam);
+		goto LBL_Exit;
+
+	case GC_EVENT_SETCONTACTSTATUS:
+		iRetVal = SM_SetContactStatus( gce->pDest->ptszID, gce->pDest->pszModule, gce->ptszUID, (WORD)gce->dwItemData );
 		goto LBL_Exit;
 
 	case GC_EVENT_TOPIC:
