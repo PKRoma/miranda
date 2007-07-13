@@ -2694,7 +2694,7 @@ LABEL_SHOWWINDOW:
 				ui = UM_FindUserFromIndex(si->pUsers, item);
 				//ui = SM_GetUserFromIndex(si->pszID, si->pszModule, item);
 				if (ui) {
-					if (GetKeyState(VK_SHIFT) & 0x8000) {
+					if (g_Settings.DoubleClick4Privat ? GetKeyState(VK_SHIFT) & 0x8000 : !(GetKeyState(VK_SHIFT) & 0x8000) ) {
 						LRESULT lResult = (LRESULT)SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), EM_GETSEL, (WPARAM)NULL, (LPARAM)NULL);
 						int start = LOWORD(lResult);
 						TCHAR* pszName = (TCHAR*)alloca(sizeof(TCHAR)*(lstrlen(ui->pszUID) + 3));
