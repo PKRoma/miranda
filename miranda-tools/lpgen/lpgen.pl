@@ -165,10 +165,7 @@ sub rcsearch {
 		while (/\s*PUSHBUTTON\s*(\".*?\")/g) {
 			$found += append_str($1, $found);
 		}
-		while (/\s*LTEXT\s*(\".*?\")/g) {
-			$found += append_str($1, $found);
-		}
-		while (/\s*RTEXT\s*(\".*?\")/g) {
+		while (/\s*[LRC]TEXT\s*(\".*?\")/g) {
 			$found += append_str($1, $found);
 		}
 		while (/\s*GROUPBOX\s*(\".*?\")/g) {

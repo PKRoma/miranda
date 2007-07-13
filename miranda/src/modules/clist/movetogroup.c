@@ -83,7 +83,7 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 	if ( !hMoveToGroupItem ) {
 		mi.pszPopupName = ( char* )-1;
 		mi.position = 100000;
-		mi.pszName = "&Move to Group";
+		mi.pszName = LPGEN("&Move to Group");
 		mi.flags = CMIF_ROOTPOPUP;
 		hMoveToGroupItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
 	}
