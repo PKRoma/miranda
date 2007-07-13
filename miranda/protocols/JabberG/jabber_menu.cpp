@@ -607,6 +607,8 @@ void JabberEnableMenuItems( BOOL bEnable )
 	if ( jabberThreadInfo && !( jabberThreadInfo->caps & CAPS_BOOKMARK ))
 		clmi.flags |= CMIF_GRAYED;
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuBookmarks, ( LPARAM )&clmi );
+
+	JabberUpdateDialogs( bEnable );
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -607,6 +607,666 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 	return FALSE;
 }
 
+
+
+//////////////////////////////////////////////////////////////////////////
+// roster editor
+//
+#include <io.h>
+#define JM_STATUSCHANGED WM_USER+0x0001
+#ifdef UNICODE
+#define fputtc(str, file) fputw(str, file)
+#define fopent(name, mode) _wfopen(name, mode)
+#else
+#define fputtc(str, file) fputc(str, file)
+#define fopent(name, mode) fopen(name, mode)
+#endif
+
+static void _RosterSendRequest(HWND hwndDlg, BYTE rrAction);
+
+enum {
+	RRA_FILLLIST = 0,
+	RRA_SYNCROSTER,
+	RRA_SYNCDONE
+};
+typedef struct _tag_RosterRequestUserdata {
+	HWND hwndDlg;
+	BYTE bRRAction;
+	BOOL bReadyToDownload;
+	BOOL bReadyToUpload;
+} ROSTERREQUSERDATA;
+typedef struct _tag_RosterhEditDat{
+	WNDPROC OldEditProc;
+	HWND hList;
+	int index;
+	int subindex;
+} ROSTEREDITDAT; 
+static ROSTERREQUSERDATA rrud={0};
+static WNDPROC _RosterOldListProc=NULL;
+
+static int	_RosterInsertListItem(HWND hList, TCHAR * jid, TCHAR * nick, TCHAR * group, TCHAR * subscr, BOOL bChecked)
+{
+	LVITEM item={0};
+	int index;
+	item.mask=LVIF_TEXT|LVIF_STATE;
+
+	item.iItem=ListView_GetItemCount(hList);
+	item.iSubItem=0;
+	item.pszText=jid;
+	
+	index=ListView_InsertItem(hList, &item);
+
+	if ( index<0 )
+		return index;
+	
+	ListView_SetCheckState(hList, index, bChecked);
+
+	ListView_SetItemText(hList, index, 0, jid);
+	ListView_SetItemText(hList, index, 1, nick);
+	ListView_SetItemText(hList, index, 2, group);
+	ListView_SetItemText(hList, index, 3, subscr);
+
+	return index;
+}
+
+static void _RosterListClear(HWND hwndDlg)
+{
+	HWND hList=GetDlgItem(hwndDlg, IDC_ROSTER);
+	if (!hList)	return;
+	ListView_DeleteAllItems(hList);
+	while (	ListView_DeleteColumn( hList, 0) );
+	
+	LV_COLUMN column={0};
+	column.mask=LVCF_TEXT;
+	column.cx=500;
+	
+	column.pszText=_T("JID");
+	int ret=ListView_InsertColumn(hList, 1, &column);
+
+	column.pszText=_T("Nick Name");
+	ListView_InsertColumn(hList, 2, &column);
+
+	column.pszText=_T("Group");
+	ListView_InsertColumn(hList, 3, &column);
+	
+	column.pszText=_T("Subscription");
+	ListView_InsertColumn(hList, 4, &column);
+
+	RECT rc;
+	GetClientRect(hList, &rc);
+	int width=rc.right-rc.left;
+
+	ListView_SetColumnWidth(hList,0,width*40/100);
+	ListView_SetColumnWidth(hList,1,width*30/100);
+	ListView_SetColumnWidth(hList,2,width*20/100);
+	ListView_SetColumnWidth(hList,3,width*10/100);
+}
+
+
+static void _RosterHandleGetRequest( XmlNode* node, void* userdata )
+{
+	HWND hList=GetDlgItem(rrud.hwndDlg, IDC_ROSTER);
+	if (rrud.bRRAction==RRA_FILLLIST)
+	{
+		_RosterListClear(rrud.hwndDlg);
+		XmlNode * query=JabberXmlGetChild(node, "query");
+		if (!query) return;
+		int i=1;
+		while (TRUE) 
+		{
+			XmlNode *item=JabberXmlGetNthChild(query, "item", i++);
+			if (!item) break;
+			TCHAR *jid=JabberXmlGetAttrValue(item,"jid");
+			if (!jid) continue;
+			TCHAR *name=JabberXmlGetAttrValue(item,"name");
+			TCHAR *subscription=JabberXmlGetAttrValue(item,"subscription");
+			TCHAR *group=NULL;
+			XmlNode * groupNode=JabberXmlGetChild(item, "group");
+			if (groupNode) group=groupNode->text;
+			_RosterInsertListItem(hList, jid, name, group, subscription, TRUE);
+		}
+		// now it is require to process whole contact list to add not in roster contacts
+		{
+			HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
+			while ( hContact != NULL ) 
+			{
+				char* str = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
+				if ( str != NULL && !strcmp( str, jabberProtoName )) 
+				{
+					DBVARIANT dbv;
+					if ( !JGetStringT( hContact, "jid", &dbv )) 
+					{
+						LVFINDINFO lvfi={0};
+						lvfi.flags=LVFI_STRING | LVFI_PARTIAL;
+						lvfi.psz=dbv.ptszVal;
+						TCHAR *p=_tcschr(dbv.ptszVal,_T('@'));
+						if (p) 
+						{
+							p=_tcschr(dbv.ptszVal,_T('\\'));
+							if (p) *p=_T('\0');
+						}
+						if ( ListView_FindItem(hList, -1, &lvfi) == -1)
+						{
+							TCHAR *jid=mir_tstrdup(dbv.ptszVal);
+							TCHAR *name=NULL;
+							TCHAR *group=NULL;
+							DBVARIANT dbvtemp;
+							if ( !DBGetContactSettingTString( hContact, "CList", "MyHandle", &dbvtemp ) )
+							{
+								name=mir_tstrdup(dbv.ptszVal);
+								DBFreeVariant(&dbvtemp);
+							}
+							if ( !DBGetContactSettingTString( hContact, "CList", "Group", &dbvtemp ) )
+							{
+								group=mir_tstrdup(dbv.ptszVal);
+								DBFreeVariant(&dbvtemp);
+							}
+							_RosterInsertListItem(hList, jid, name, group, NULL, FALSE);
+							if (jid) mir_free(jid);
+							if (name) mir_free(name);
+							if (group) mir_free(group);
+						}
+						DBFreeVariant(&dbv);
+
+					}
+				}
+				hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 );
+			}
+		}
+		rrud.bReadyToDownload=FALSE;
+		rrud.bReadyToUpload=TRUE;
+		SetDlgItemText(rrud.hwndDlg,IDC_DOWNLOAD,TranslateT("Download"));
+		SetDlgItemText(rrud.hwndDlg,IDC_UPLOAD,TranslateT("Upload"));
+		SendMessage(rrud.hwndDlg, JM_STATUSCHANGED,0,0);
+        return;
+	}
+	else if (rrud.bRRAction==RRA_SYNCROSTER)
+	{	
+		SetDlgItemText(rrud.hwndDlg,IDC_UPLOAD,TranslateT("Uploading..."));
+		XmlNode * queryRoster=JabberXmlGetChild(node, "query");
+		if (!queryRoster) return;
+
+		int iqId = JabberSerialNext();
+		JabberIqAdd( iqId, IQ_PROC_NONE, (JABBER_IQ_PFUNC) _RosterHandleGetRequest );
+
+		XmlNode iq( "iq" ); 
+		iq.addAttr( "type", "set" ); 
+		iq.addAttrID( iqId );
+		XmlNode* query = iq.addChild( "query" ); 
+		query->addAttr( "xmlns", "jabber:iq:roster" );
+		int itemCount=0;
+		int ListItemCount=ListView_GetItemCount(hList);
+		for (int index=0; index<ListItemCount; index++)
+		{
+			TCHAR jid[260]={0};
+			TCHAR name[260]={0};
+			TCHAR group[260]={0};
+			TCHAR subscr[260]={0};
+			ListView_GetItemText(hList, index, 0, jid, SIZEOF(jid));
+			ListView_GetItemText(hList, index, 1, name, SIZEOF(name));
+			ListView_GetItemText(hList, index, 2, group, SIZEOF(group));
+			ListView_GetItemText(hList, index, 3, subscr, SIZEOF(subscr));
+			XmlNode *itemRoster=JabberXmlGetChildWithGivenAttrValue(queryRoster, "item", "jid", jid);
+			BOOL bRemove = !ListView_GetCheckState(hList,index);
+			if (itemRoster && bRemove)
+			{
+				//delete item
+				XmlNode* item = query->addChild( "item" ); 
+				item->addAttr( "jid", jid );
+				item->addAttr( "subscription","remove"); 
+				itemCount++;
+			}
+			else if ( !bRemove )
+			{
+				BOOL bPushed=FALSE;
+				{
+					TCHAR *rosterName=JabberXmlGetAttrValue(itemRoster,"name");
+					if ( (rosterName!=NULL || name[0]!=_T('\0')) && lstrcmpi(rosterName,name) )
+						bPushed=TRUE;
+					if ( !bPushed)
+					{
+						rosterName=JabberXmlGetAttrValue(itemRoster,"subscription");
+						if ((rosterName!=NULL || subscr[0]!=_T('\0')) && lstrcmpi(rosterName,subscr) )
+							bPushed=TRUE;
+					}
+					if ( !bPushed)
+					{
+						XmlNode * groupNode=JabberXmlGetChild(itemRoster,"group");
+						TCHAR * rosterGroup=NULL;
+						if (groupNode!=NULL)
+							rosterGroup=groupNode->text;
+						if ((rosterGroup!=NULL || group[0]!=_T('\0')) && lstrcmpi(rosterGroup,group) )
+							bPushed=TRUE;
+					}
+
+				}
+				if (bPushed)
+				{
+					XmlNode* item = query->addChild( "item" ); 
+					if (group)item->addChild("group", group);
+					item->addAttr( "name", name );
+					item->addAttr( "jid", jid );
+					item->addAttr( "subscription",subscr[0] ? subscr : _T("none")); 
+					itemCount++;
+				}
+			}	
+		}
+		rrud.bRRAction=RRA_SYNCDONE;
+		if (itemCount)
+			jabberThreadInfo->send( iq );
+		else
+			_RosterSendRequest(rrud.hwndDlg,RRA_FILLLIST);
+	}
+	else 
+	{
+		SetDlgItemText(rrud.hwndDlg,IDC_UPLOAD,TranslateT("Upload"));
+		rrud.bReadyToUpload=FALSE;
+		rrud.bReadyToDownload=FALSE;
+		SendMessage(rrud.hwndDlg, JM_STATUSCHANGED,0,0);
+		SetDlgItemText(rrud.hwndDlg,IDC_DOWNLOAD,TranslateT("Downloading..."));
+		_RosterSendRequest(rrud.hwndDlg,RRA_FILLLIST);
+
+	}
+}
+
+static void _RosterSendRequest(HWND hwndDlg, BYTE rrAction)
+{
+	rrud.bRRAction=rrAction;
+	rrud.hwndDlg=hwndDlg;
+	
+	int iqId = JabberSerialNext();
+	JabberIqAdd( iqId, IQ_PROC_NONE, (JABBER_IQ_PFUNC) _RosterHandleGetRequest );
+
+	XmlNode iq( "iq" ); 
+	iq.addAttr( "type", "get" ); 
+	iq.addAttrID( iqId );
+	XmlNode* query = iq.addChild( "query" ); 
+	query->addAttr( "xmlns", "jabber:iq:roster" );
+	jabberThreadInfo->send( iq );
+}
+
+
+
+
+static void _RosterItemEditEnd( HWND hEditor, ROSTEREDITDAT * edat, BOOL bCancel )
+{
+	if (!bCancel)
+	{
+		TCHAR *buff;
+		int len=GetWindowTextLength(hEditor)+1;
+		buff=(TCHAR*)malloc(len*sizeof(TCHAR));
+		GetWindowText(hEditor,buff,len);
+		ListView_SetItemText(edat->hList,edat->index, edat->subindex,buff);
+		free(buff);
+	}
+	DestroyWindow(hEditor);
+	
+}
+
+static BOOL CALLBACK _RosterItemNewEditProc( HWND hEditor, UINT msg, WPARAM wParam, LPARAM lParam )
+{
+	ROSTEREDITDAT * edat = (ROSTEREDITDAT *) GetWindowLong(hEditor,GWL_USERDATA);
+	if (!edat) return 0;
+	switch(msg) 
+	{
+
+	case WM_KEYDOWN:
+		switch(wParam) 
+		{
+		case VK_RETURN:
+			_RosterItemEditEnd(hEditor, edat, FALSE);
+			return 0;
+		case VK_ESCAPE:
+			_RosterItemEditEnd(hEditor, edat, TRUE);
+			return 0;
+		}
+		break;
+	case WM_GETDLGCODE:
+		if(lParam) 
+		{
+			MSG *msg=(MSG*)lParam;
+			if(msg->message==WM_KEYDOWN && msg->wParam==VK_TAB) return 0;
+			if(msg->message==WM_CHAR && msg->wParam=='\t') return 0;
+		}
+		return DLGC_WANTMESSAGE;
+	case WM_KILLFOCUS:
+		_RosterItemEditEnd(hEditor, edat, FALSE);
+		return 0;
+	}
+
+	if (msg==WM_DESTROY)
+	{
+		SetWindowLong(hEditor, GWL_WNDPROC, (LONG) edat->OldEditProc);
+		SetWindowLong(hEditor, GWL_USERDATA, (LONG) 0);
+		free(edat);
+		return 0;
+	}
+	else return CallWindowProc( edat->OldEditProc, hEditor, msg, wParam, lParam);
+}
+
+#ifdef UNICODE
+void fputw( TCHAR ch, FILE * fp)
+{
+	TCHAR buf[2]={0};
+	char utf[10]={0};
+	char *str=utf;
+	buf[0]=ch;
+	WideCharToMultiByte(CP_UTF8,0,buf,-1,utf,sizeof(utf),NULL, NULL);
+	while ( *str!='\0' )
+	{
+		fputc(*str,fp);
+		str++;
+	}
+	
+}
+#endif
+
+static void _RosterSaveString(FILE * fp, TCHAR * str, BOOL quotes=FALSE)
+{
+	if (quotes) fputtc(_T('\"'),fp);
+	while ( *str!=_T('\0') )
+	{
+		fputtc(*str,fp);
+		if (quotes && *str==_T('\"')) fputtc(*str,fp);
+		str++;
+	}
+	if (quotes) fputtc(_T('\"'),fp);
+}
+static void _RosterExportToFile(HWND hwndDlg)
+{
+	TCHAR filename[MAX_PATH]={0};
+	
+	TCHAR *filter=_T("XML for MS Excel (UTF-8 encoded)(*.xml)\0*.xml\0\0");
+	OPENFILENAME ofn={0};
+	ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
+	ofn.hwndOwner = hwndDlg;
+	ofn.hInstance = NULL;
+	ofn.lpstrFilter = filter;
+	ofn.lpstrFile = filename;
+	ofn.Flags = OFN_HIDEREADONLY;
+	ofn.nMaxFile = SIZEOF(filename);
+	ofn.nMaxFileTitle = MAX_PATH;
+	ofn.lpstrDefExt = _T("xml");
+	if(!GetSaveFileName(&ofn)) return;
+
+	FILE * fp=fopent(filename,_T("w"));
+	if (!fp) return;
+	HWND hList=GetDlgItem(hwndDlg, IDC_ROSTER);
+	int ListItemCount=ListView_GetItemCount(hList);
+	TCHAR *xmlExcelHeader=												
+		_T(			"<?xml version=\"1.0\"?>	\n"											)									
+		_T(			"<?mso-application progid=\"Excel.Sheet\"?> \n"							)
+		_T(			"<Workbook xmlns=\"urn:schemas-microsoft-com:office:spreadsheet\" \n"	)
+		_T("\t\t\txmlns:o=\"urn:schemas-microsoft-com:office:office\"\n"					)
+		_T("\t\t\txmlns:x=\"urn:schemas-microsoft-com:office:excel\"\n"					)
+		_T("\t\t\txmlns:ss=\"urn:schemas-microsoft-com:office:spreadsheet\"\n"			)	
+		_T("\t\t\txmlns:html=\"http://www.w3.org/TR/REC-html40\">\n"						)	
+		_T("\t<ExcelWorkbook xmlns=\"urn:schemas-microsoft-com:office:excel\">\n"	)	
+		_T("\t</ExcelWorkbook>\n"													)	
+		_T("\t<Worksheet ss:Name=\"Exported roster\">\n"								)	
+		_T("\t\t<Table>\n"																);
+
+	TCHAR *xmlExcelFooter=												
+		_T("\t\t</Table>\n")
+		_T("\t</Worksheet>\n")
+		_T("</Workbook>\n");
+
+	_RosterSaveString(fp,xmlExcelHeader);
+	for (int index=0; index<ListItemCount; index++)
+	{
+		TCHAR jid[260]={0};
+		TCHAR name[260]={0};
+		TCHAR group[260]={0};
+		TCHAR subscr[260]={0};
+		ListView_GetItemText(hList, index, 0, jid, SIZEOF(jid));
+		ListView_GetItemText(hList, index, 1, name, SIZEOF(name));
+		ListView_GetItemText(hList, index, 2, group, SIZEOF(group));
+		ListView_GetItemText(hList, index, 3, subscr, SIZEOF(subscr));		
+		_RosterSaveString(fp,_T("\t\t\t<Row>\n"));
+		_RosterSaveString(fp,_T("\t\t\t\t<Cell><Data ss:Type=\"String\">+</Data></Cell>\n"));
+		_RosterSaveString(fp,_T("\t\t\t\t<Cell><Data ss:Type=\"String\">"));
+		_RosterSaveString(fp,jid);
+		_RosterSaveString(fp,_T("</Data></Cell>\n"));
+
+		_RosterSaveString(fp,_T("\t\t\t\t<Cell><Data ss:Type=\"String\">"));
+		_RosterSaveString(fp,name);
+		_RosterSaveString(fp,_T("</Data></Cell>\n"));
+		
+		_RosterSaveString(fp,_T("\t\t\t\t<Cell><Data ss:Type=\"String\">"));
+		_RosterSaveString(fp,group);
+		_RosterSaveString(fp,_T("</Data></Cell>\n"));
+
+		_RosterSaveString(fp,_T("\t\t\t\t<Cell><Data ss:Type=\"String\">"));
+		_RosterSaveString(fp,subscr);
+		_RosterSaveString(fp,_T("</Data></Cell>\n"));
+
+		_RosterSaveString(fp,_T("\t\t\t</Row>\n"));
+	}
+	_RosterSaveString(fp,xmlExcelFooter);
+	fclose(fp);
+}
+
+static void _RosterParseXmlWorkbook( XmlNode *node, void *userdata )
+{
+	HWND hList=(HWND)userdata;
+	if (!lstrcmpiA(node->name,"Workbook"))
+	{
+		XmlNode * Worksheet=JabberXmlGetChild(node,"Worksheet");
+		if (Worksheet)
+		{
+			XmlNode * Table=JabberXmlGetChild(Worksheet,"Table");
+			if (Table)
+			{
+				int index=1;
+				XmlNode *Row;
+				while (TRUE)
+				{
+					Row=JabberXmlGetNthChild(Table,"Row",index++);
+					if (!Row) break;
+					BOOL bAdd=FALSE;
+					TCHAR * jid=NULL;
+					TCHAR * name=NULL;
+					TCHAR * group=NULL;
+					TCHAR * subscr=NULL;
+					XmlNode * Cell;
+					XmlNode * Data;
+					Cell=JabberXmlGetNthChild(Row,"Cell",1);
+					if (Cell) Data=JabberXmlGetChild(Cell,"Data");
+					else Data=NULL;
+					if (Data) 
+					{
+						if (!lstrcmpi(Data->text,_T("+"))) bAdd=TRUE;
+						else if (lstrcmpi(Data->text,_T("-"))) continue;
+
+						Cell=JabberXmlGetNthChild(Row,"Cell",2);
+						if (Cell) Data=JabberXmlGetChild(Cell,"Data");
+						else Data=NULL;
+						if (Data) 
+						{
+							jid=Data->text;
+							if (!jid || lstrlen(jid)==0) continue;
+						}
+
+						Cell=JabberXmlGetNthChild(Row,"Cell",3);
+						if (Cell) Data=JabberXmlGetChild(Cell,"Data");
+						else Data=NULL;
+						if (Data) name=Data->text; 
+
+						Cell=JabberXmlGetNthChild(Row,"Cell",4);
+						if (Cell) Data=JabberXmlGetChild(Cell,"Data");
+						else Data=NULL;
+						if (Data) group=Data->text; 
+
+						Cell=JabberXmlGetNthChild(Row,"Cell",5);
+						if (Cell) Data=JabberXmlGetChild(Cell,"Data");
+						else Data=NULL;
+						if (Data) subscr=Data->text; 
+					}
+					_RosterInsertListItem(hList,jid,name,group,subscr,bAdd);
+				}
+
+			}
+		}
+	}
+
+}
+static void _RosterImportFromFile(HWND hwndDlg)
+{
+	char filename[MAX_PATH]={0};
+	char *filter="XML for MS Excel (UTF-8 encoded)(*.xml)\0*.xml\0\0";
+	OPENFILENAMEA ofn={0};
+	ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
+	ofn.hwndOwner = hwndDlg;
+	ofn.hInstance = NULL;
+	ofn.lpstrFilter = filter;
+	ofn.lpstrFile = filename;
+	ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
+	ofn.nMaxFile = sizeof(filename);
+	ofn.nMaxFileTitle = MAX_PATH;
+	ofn.lpstrDefExt = "xml";
+	if(!GetOpenFileNameA(&ofn)) return;
+
+	FILE * fp=fopen(filename,"r");
+	if (!fp) return;
+	HWND hList=GetDlgItem(hwndDlg, IDC_ROSTER);
+	char * buffer;
+	DWORD bufsize=filelength(fileno(fp));
+	if (bufsize>0) 
+		buffer=(char*)malloc(bufsize);
+	fread(buffer,1,bufsize,fp);
+	fclose(fp);
+	_RosterListClear(hwndDlg);	
+	XmlState xmlstate;
+	JabberXmlInitState(&xmlstate);
+	JabberXmlSetCallback( &xmlstate, 2, ELEM_CLOSE, _RosterParseXmlWorkbook, (void*)hList );
+	JabberXmlParse(&xmlstate,buffer);
+	xmlstate=xmlstate;
+	JabberXmlDestroyState(&xmlstate);
+	free(buffer);
+	SendMessage(hwndDlg,JM_STATUSCHANGED, 0 , 0);
+}
+
+
+static BOOL CALLBACK _RosterNewListProc( HWND hList, UINT msg, WPARAM wParam, LPARAM lParam )
+{
+	if (msg==WM_MOUSEWHEEL || msg==WM_NCLBUTTONDOWN || msg==WM_NCRBUTTONDOWN)
+	{
+		SetFocus(hList);
+	}
+
+	if (msg==WM_LBUTTONDOWN)
+	{
+		POINT pt;
+		GetCursorPos(&pt);
+		ScreenToClient(hList, &pt);
+
+		LVHITTESTINFO lvhti={0};
+		lvhti.pt=pt;
+		ListView_SubItemHitTest(hList,&lvhti);
+		if 	(lvhti.flags&LVHT_ONITEM && lvhti.iSubItem !=0)
+		{
+			RECT rc;
+			TCHAR buff[260];
+			ListView_GetSubItemRect(hList, lvhti.iItem, lvhti.iSubItem, LVIR_BOUNDS,&rc);	
+			ListView_GetItemText(hList, lvhti.iItem, lvhti.iSubItem, buff, SIZEOF(buff) );
+			HWND hEditor=CreateWindow(TEXT("EDIT"),buff,WS_CHILD|ES_AUTOHSCROLL,rc.left+3, rc.top+2, rc.right-rc.left-3, rc.bottom - rc.top-3,hList, NULL, hInst, NULL);
+			SendMessage(hEditor,WM_SETFONT,(WPARAM)SendMessage(hList,WM_GETFONT,0,0),0);
+			ShowWindow(hEditor,SW_SHOW);
+			SetWindowText(hEditor, buff);
+			ClientToScreen(hList, &pt);
+			ScreenToClient(hEditor, &pt);
+			INPUT inp[2]={0};
+			inp[0].type=INPUT_MOUSE;
+			inp[0].mi.dwFlags=MOUSEEVENTF_LEFTDOWN;
+			inp[1].type=INPUT_MOUSE;
+			inp[1].mi.dwFlags=MOUSEEVENTF_LEFTUP;
+			SendInput(2, inp, sizeof(inp[0]));
+
+
+			ROSTEREDITDAT * edat=(ROSTEREDITDAT *)malloc(sizeof(ROSTEREDITDAT));
+			edat->OldEditProc=(WNDPROC)GetWindowLong(hEditor, GWL_WNDPROC);
+			SetWindowLong(hEditor,GWL_WNDPROC,(LONG)_RosterItemNewEditProc);
+			edat->hList=hList;
+			edat->index=lvhti.iItem;
+			edat->subindex=lvhti.iSubItem;
+			SetWindowLong(hEditor,GWL_USERDATA,(LONG)edat);
+		}
+	}
+	return _RosterOldListProc ( hList, msg, wParam, lParam );
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// JabberRosterOptDlgProc - advanced options dialog procedure
+
+static BOOL CALLBACK JabberRosterOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+{
+	switch ( msg ) 
+	{
+	case JM_STATUSCHANGED:
+		{
+			int count=ListView_GetItemCount(GetDlgItem(hwndDlg,IDC_ROSTER));
+			EnableWindow( GetDlgItem( hwndDlg, IDC_DOWNLOAD ), rrud.bReadyToDownload && jabberConnected );
+			EnableWindow( GetDlgItem( hwndDlg, IDC_UPLOAD ),   rrud.bReadyToUpload && count && jabberConnected );
+			EnableWindow( GetDlgItem( hwndDlg, IDC_EXPORT ), count > 0);
+			break;
+		}
+	case WM_DESTROY:
+		{
+			rrud.hwndDlg=NULL;
+			break;
+		}
+	case WM_INITDIALOG:
+		{
+			TranslateDialogDefault( hwndDlg );
+			ListView_SetExtendedListViewStyle(GetDlgItem(hwndDlg,IDC_ROSTER),  LVS_EX_CHECKBOXES | LVS_EX_BORDERSELECT /*| LVS_EX_FULLROWSELECT*/ | LVS_EX_GRIDLINES /*| LVS_EX_HEADERDRAGDROP*/ );
+			_RosterOldListProc=(WNDPROC) GetWindowLong(GetDlgItem(hwndDlg,IDC_ROSTER), GWL_WNDPROC);
+			SetWindowLong(GetDlgItem(hwndDlg,IDC_ROSTER), GWL_WNDPROC, (LONG) _RosterNewListProc);
+			_RosterListClear(hwndDlg);
+			rrud.hwndDlg=hwndDlg;
+			rrud.bReadyToDownload=TRUE;
+			rrud.bReadyToUpload=FALSE;
+			SendMessage(hwndDlg, JM_STATUSCHANGED,0,0);
+			return TRUE;
+		}
+	case WM_COMMAND:
+		{
+			switch ( LOWORD( wParam )) 
+			{
+			case IDC_DOWNLOAD:
+				{
+					rrud.bReadyToUpload=FALSE;
+					rrud.bReadyToDownload=FALSE;
+					SendMessage(rrud.hwndDlg, JM_STATUSCHANGED,0,0);
+					SetDlgItemText(rrud.hwndDlg,IDC_DOWNLOAD,TranslateT("Downloading..."));
+					_RosterSendRequest(hwndDlg,RRA_FILLLIST);
+					break;
+				}
+			case IDC_UPLOAD:
+				{
+					rrud.bReadyToUpload=FALSE;
+					SendMessage(rrud.hwndDlg, JM_STATUSCHANGED,0,0);
+					SetDlgItemText(rrud.hwndDlg,IDC_UPLOAD,TranslateT("Connecting..."));
+					_RosterSendRequest(hwndDlg,RRA_SYNCROSTER);
+					break;
+				}
+			case IDC_EXPORT:
+				{
+					_RosterExportToFile(hwndDlg);
+					break;
+				}
+			case IDC_IMPORT:
+				{
+					_RosterImportFromFile(hwndDlg);
+					break;
+				}
+
+			}
+			break;
+		}
+	}
+	return FALSE;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberOptInit - initializes all options dialogs
 
@@ -628,5 +1288,18 @@ int JabberOptInit( WPARAM wParam, LPARAM lParam )
 	odp.pszTemplate = MAKEINTRESOURCEA( IDD_OPT_JABBER2 );
 	odp.pfnDlgProc  = JabberAdvOptDlgProc;
 	JCallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
+
+	odp.pszTab      = "Roster control";
+	odp.flags	   |= ODPF_EXPERTONLY;
+	odp.pszTemplate = MAKEINTRESOURCEA( IDD_OPT_JABBER3 );
+	odp.pfnDlgProc  = JabberRosterOptDlgProc;
+	JCallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
+
 	return 0;
+}
+
+void JabberUpdateDialogs( BOOL bEnable )
+{
+	if (rrud.hwndDlg)
+		SendMessage(rrud.hwndDlg, JM_STATUSCHANGED, 0,0);
 }

@@ -763,7 +763,7 @@ static BOOL CALLBACK JabberFormDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, L
 			(GetWindowLong((HWND)lParam, GWL_ID) == IDC_INSTRUCTION) ||
 			(GetWindowLong((HWND)lParam, GWL_ID) == IDC_TITLE))
 		{
-			MessageBeep(MB_ICONSTOP);
+			//MessageBeep(MB_ICONSTOP);
 			return (BOOL)GetStockObject(WHITE_BRUSH);
 		} else
 		{

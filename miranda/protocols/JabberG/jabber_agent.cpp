@@ -423,7 +423,7 @@ static BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 			(GetWindowLong((HWND)lParam, GWL_ID) == IDC_INSTRUCTION) ||
 			(GetWindowLong((HWND)lParam, GWL_ID) == IDC_TITLE))
 		{
-			MessageBeep(MB_ICONSTOP);
+			//MessageBeep(MB_ICONSTOP);
 			return (BOOL)GetStockObject(WHITE_BRUSH);
 		} else
 		{

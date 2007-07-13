@@ -435,6 +435,8 @@ extern LIST<TCHAR> jabberTransports;
  * Function declarations
  *******************************************************************/
 
+void JabberUpdateDialogs( BOOL bEnable );
+
 //---- jabber_chat.cpp ----------------------------------------------
 
 void JabberGcLogCreate( JABBER_LIST_ITEM* item );

@@ -265,9 +265,13 @@
 #define IDC_COMBO_NODE                  1244
 #define IDC_BUTTON1                     1245
 #define IDC_BUTTON_BROWSE               1245
+#define IDC_DOWNLOAD                    1245
 #define IDC_BTN_NAVHOME                 1246
+#define IDC_UPLOAD                      1246
 #define IDC_TXT_FILTERTEXT              1247
+#define IDC_IMPORT                      1247
 #define IDC_BTN_FILTERRESET             1248
+#define IDC_EXPORT                      1248
 #define IDC_TXT_FILTER                  1249
 #define IDC_TXT_NODELABEL               1250
 #define IDC_BTN_FAVORITE                1251
@@ -279,6 +283,7 @@
 #define IDC_TXT_NODE                    1257
 #define IDC_BTN_FILTERAPPLY             1258
 #define IDC_COMBO2                      1260
+#define IDC_ROSTER                      1261
 #define IDC_EMAILS                      1306
 #define IDC_PHONES                      1308
 #define IDC_UPDATE                      1313
@@ -336,7 +341,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        205
 #define _APS_NEXT_COMMAND_VALUE         40017
-#define _APS_NEXT_CONTROL_VALUE         1261
+#define _APS_NEXT_CONTROL_VALUE         1262
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
