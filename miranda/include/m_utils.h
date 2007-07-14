@@ -428,7 +428,7 @@ static __inline int mir_vsntprintf(TCHAR *buffer, size_t count, const TCHAR* fmt
 	#define TCHAR_STR_PARAM "%s"
 #endif
 
-static __inline wchar_t* mir_a2u( char* src )
+static __inline wchar_t* mir_a2u( const char* src )
 {
 	int codepage = CallService("LangPack/GetCodePage", 0, 0 );
 
@@ -442,7 +442,7 @@ static __inline wchar_t* mir_a2u( char* src )
 	return result;
 }
 
-static __inline char* mir_u2a( wchar_t* src )
+static __inline char* mir_u2a( const wchar_t* src )
 {
 	int codepage = CallService("LangPack/GetCodePage", 0, 0 );
 
