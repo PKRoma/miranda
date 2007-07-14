@@ -848,7 +848,7 @@ static char *GetPreviewW(UINT eventType, DBEVENTINFO* dbe, BOOL *isWstring)
     //now get text
     switch (eventType) {
         case EVENTTYPE_MESSAGE:
-			   if ( ServiceExists( MS_DB_EVENT_GETTEXT )) {
+			   if ( pBlob && ServiceExists( MS_DB_EVENT_GETTEXT )) {
 					WCHAR* buf = DbGetEventTextW( dbe, CP_ACP );
 					wcsncpy(( WCHAR* )szPreviewHelp, buf, sizeof(szPreviewHelp) / sizeof(WCHAR));
 					mir_free( buf );
