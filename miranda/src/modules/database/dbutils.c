@@ -72,6 +72,8 @@ static int DbEventGetText(WPARAM wParam, LPARAM lParam)
 	mir_snprintf( szServiceName, sizeof(szServiceName), "%s/GetEventText%d", dbei->szModule, dbei->eventType );
 	if ( ServiceExists( szServiceName ))
 		return CallService( szServiceName, wParam, lParam );
+
+	if ( !dbei->pBlob ) return 0;
 	
 	if ( dbei->eventType == EVENTTYPE_FILE ) {
 		char* filename = ((char *)dbei->pBlob) + sizeof(DWORD);
