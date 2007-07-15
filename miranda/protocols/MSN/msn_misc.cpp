@@ -1395,5 +1395,9 @@ void MSN_MakeDigest(const char* chl, char* dgst)
 	sttSwapInt64( &hash1 );
 	sttSwapInt64( &hash2 );
 
+#ifndef __GNUC__
 	mir_snprintf(dgst, 64, "%016I64x%016I64x", hash1 ^ key, hash2 ^ key );
+#else
+	mir_snprintf(dgst, 64, "%016llx%016llx", hash1 ^ key, hash2 ^ key );
+#endif
 }

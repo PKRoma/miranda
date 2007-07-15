@@ -65,8 +65,8 @@ void getOIMs(ezxml_t xmli)
 
 	while (toki != NULL)
 	{
-		char* szId    = ezxml_txt(ezxml_child(toki, "I"));
-		char* szEmail = ezxml_txt(ezxml_child(toki, "E"));
+		const char* szId    = ezxml_txt(ezxml_child(toki, "I"));
+		const char* szEmail = ezxml_txt(ezxml_child(toki, "E"));
 
 		ezxml_set_txt(reqmid, szId);
 		char* szData = ezxml_toxml(xmlreq, true);
@@ -87,7 +87,7 @@ void getOIMs(ezxml_t xmli)
 			ezxml_t tokm = ezxml_get(xmlm, "soap:Body", 0, "GetMessageResponse", 0, "GetMessageResult", -1);
 			
 			MimeHeaders mailInfo;
-			char* mailbody = (char*)mailInfo.readFromBuffer(ezxml_txt(tokm));
+			const char* mailbody = mailInfo.readFromBuffer((char*)ezxml_txt(tokm));
 
 			time_t evtm = time( NULL );
 			const char* arrTime = mailInfo["X-OriginalArrivalTime"];
@@ -102,12 +102,16 @@ void getOIMs(ezxml_t xmli)
 					filetime <<= 32;
 					filetime |= filetimeLo;
 					filetime /= 10000000;
+#ifndef __GNUC__
 					filetime -= 11644473600ui64;
+#else
+					filetime -= 11644473600ull;
+#endif
 					evtm = ( time_t )filetime;
 				}
 			}
 
-			char* szMsg = mailInfo.decodeMailBody( mailbody );
+			char* szMsg = mailInfo.decodeMailBody((char*)mailbody);
 
 			PROTORECVEVENT pre = {0};
 			pre.szMessage = szMsg;
@@ -444,11 +448,11 @@ int MSN_SendOIM(char* szEmail, char* msg)
 			{
 				ezxml_t xmlm = ezxml_parse_str(htmlbody, strlen(htmlbody));
 				ezxml_t det = ezxml_get(xmlm, "soap:Body", 0, "soap:Fault", 0, "detail", -1);
-				char* szTwChl = ezxml_txt(ezxml_child(det, "TweenerChallenge"));
-				char* szChl   = ezxml_txt(ezxml_child(det, "LockKeyChallenge"));
+				const char* szTwChl = ezxml_txt(ezxml_child(det, "TweenerChallenge"));
+				const char* szChl   = ezxml_txt(ezxml_child(det, "LockKeyChallenge"));
 
 				if (*szTwChl) 
-					MSN_GetPassportAuth(szTwChl);
+					MSN_GetPassportAuth((char*)szTwChl);
 				if (*szChl)
 				{
 					MSN_MakeDigest(szChl, oimDigest);

@@ -66,13 +66,22 @@ static void sttLogHeader( P2P_Header* hdrdata )
 	MSN_DebugLog( "--- Printing message header" );
 	MSN_DebugLog( "    SessionID = %08X", hdrdata->mSessionID );
 	MSN_DebugLog( "    MessageID = %08X", hdrdata->mID );
+#ifndef __GNUC__
 	MSN_DebugLog( "    Offset of data = %I64u", hdrdata->mOffset );
 	MSN_DebugLog( "    Total amount of data = %I64u", hdrdata->mTotalSize );
+#else
+	MSN_DebugLog( "    Offset of data = %llu", hdrdata->mOffset );
+	MSN_DebugLog( "    Total amount of data = %llu", hdrdata->mTotalSize );
+#endif
 	MSN_DebugLog( "    Data in packet = %lu bytes", hdrdata->mPacketLen );
 	MSN_DebugLog( "    Flags = %08X", hdrdata->mFlags );
 	MSN_DebugLog( "    Acknowledged session ID: %08X", hdrdata->mAckSessionID );
 	MSN_DebugLog( "    Acknowledged message ID: %08X", hdrdata->mAckUniqueID );
+#ifndef __GNUC__
 	MSN_DebugLog( "    Acknowledged data size: %I64u", hdrdata->mAckDataSize );
+#else
+	MSN_DebugLog( "    Acknowledged data size: %llu", hdrdata->mAckDataSize );
+#endif
 	MSN_DebugLog( "------------------------" );
 }
 
