@@ -141,7 +141,7 @@ typedef struct{
 #ifndef FOLDERS_NO_HELPER_FUNCTIONS
 
 #ifndef M_UTILS_H__
-#error The helper functions require that m_utils.h be included in the project. Please include that file if you want to use the helper functions. If you don't want to use the functions just define FOLDERS_NO_HELPER_FUNCTIONS.
+#error The helper functions require that m_utils.h be included in the project. Please include that file if you want to use the helper functions. If you don''t want to use the functions just define FOLDERS_NO_HELPER_FUNCTIONS.
 #endif
 //#include "../../../include/newpluginapi.h"
 
