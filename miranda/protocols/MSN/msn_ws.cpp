@@ -219,11 +219,12 @@ char* ThreadData::httpTransact(char* szCommand, size_t cmdsz, size_t& ressz)
 							ackSize -= hdrSize;
 							memmove(szResult, szResult + hdrSize, ackSize+1);
 							szBody = NULL;
+							mir_free(tbuf);
 							continue;
 						}
 
 						const char* contLenHdr = tHeaders[ "Content-Length" ];
-						ressz = hdrSize + atol( contLenHdr );
+						ressz = hdrSize + (contLenHdr ? atol( contLenHdr ) : 0);
 						if (bufSize <= ressz)
 						{
 							bufSize = ressz + 1;
