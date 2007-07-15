@@ -204,20 +204,21 @@ static void sttSavePicture2disk( filetransfer* ft )
 	AI.cbSize = sizeof( AI );
 	AI.hContact = ft->std.hContact;
 	MSN_GetAvatarFileName( AI.hContact, AI.filename, sizeof( AI.filename ));
+	char* end = strchr(AI.filename, '\0');
 
 	if ( *(unsigned short*)ft->fileBuffer == 0xd8ff )
 	{
 		AI.format =  PA_FORMAT_JPEG;
-		strcat( AI.filename, "png" );
+		strcpy( end, "png" );
 		remove( AI.filename );
-		strcpy( strrchr(AI.filename, '.') + 1, "jpg" ); 
+		strcpy( end, "jpg" ); 
 	}
 	else
 	{
 		AI.format =  PA_FORMAT_PNG;
-		strcat( AI.filename, "jpg" ); 
+		strcpy( end, "jpg" );
 		remove( AI.filename );
-		strcpy( strrchr(AI.filename, '.') + 1, "png" ); 
+		strcpy( end, "png" ); 
 	}
 
 	MSN_DebugLog( "Avatar for contact %08x saved to file '%s'", AI.hContact, AI.filename );
@@ -1142,6 +1143,7 @@ static void sttInitDirectTransfer(
 	char szBody[ 512 ];
 	int  cbBodyLen = 0;
 
+	MSN_DebugLog( "Connection weight His: %d mine: %d", conType.weight, MyConnection.weight);
 	if (conType.weight <= MyConnection.weight)
 		cbBodyLen = sttCreateListener( ft, dc, szBody, sizeof( szBody ));
 
