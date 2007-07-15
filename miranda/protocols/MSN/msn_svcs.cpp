@@ -259,7 +259,7 @@ int MsnContactDeleted( WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
-
+/*
 int MsnGroupChange(WPARAM wParam,LPARAM lParam)
 {
 	if (!msnLoggedIn || !MyOptions.ManageServer) return 0;
@@ -297,7 +297,7 @@ int MsnGroupChange(WPARAM wParam,LPARAM lParam)
 	}
 	return 0;
 }
-
+*/
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnDbSettingChanged - look for contact's settings changes

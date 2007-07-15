@@ -399,6 +399,7 @@ void  p2p_sendRedirect( filetransfer* ft )
 
 	p2p_sendMsg( ft->std.hContact, 0, tHdr, NULL, 0 );
 
+	ft->tType = MSN_GetP2PThreadByContact( ft->std.hContact ) ? SERVER_P2P_DIRECT : SERVER_SWITCHBOARD;
 	ft->ts = time( NULL );
 	ft->p2p_waitack = true;
 }
@@ -1286,10 +1287,13 @@ LBL_Close:
 
 		ThreadData* T = MSN_GetP2PThreadByContact( ft->std.hContact );
 		if ( T != NULL && T->mType == SERVER_P2P_DIRECT )
+		{
+			MSN_StartP2PTransferByContact( ft->std.hContact );
 			return;
+		}
 
-		if ( MyOptions.UseGateway )
-			return;
+		if ( MyOptions.UseGateway || MyOptions.UseProxy)
+			MSN_StartP2PTransferByContact( ft->std.hContact );
 
 		directconnection* dc = new directconnection( ft );
 		p2p_registerDC( dc );

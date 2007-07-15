@@ -138,7 +138,7 @@ char* ThreadData::httpTransact(char* szCommand, size_t cmdsz, size_t& ressz)
 {
 	NETLIBSELECT tSelect = {0};
 	tSelect.cbSize = sizeof( tSelect );
-	tSelect.dwTimeout = 5000;
+	tSelect.dwTimeout = 8000;
 	tSelect.hReadConns[ 0 ] = s;
 
 	size_t bufSize = 4096;
@@ -147,7 +147,6 @@ char* ThreadData::httpTransact(char* szCommand, size_t cmdsz, size_t& ressz)
 
 	for (unsigned rc=0; rc<3; ++rc)
 	{
-		MSN_DebugLog( "Retry rc: %d ", rc );
 		if (s == NULL)
 		{
 			NETLIBOPENCONNECTION tConn = { 0 };

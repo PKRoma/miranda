@@ -403,6 +403,7 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		{
 			unsigned gethst = SendMessage( (HWND)lParam, CB_GETCURSEL, 0, 0);
 			EnableWindow( GetDlgItem( hwndDlg, IDC_YOURHOST), gethst == 1 );
+			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 		}
 
 		if ( HIWORD( wParam ) == BN_CLICKED )
@@ -468,7 +469,7 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			MSN_SetByte( "UseIeProxy",  ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USEIEPROXY  ));
 			MSN_SetByte( "SlowSend",    ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_SLOWSEND    ));
 
-			unsigned gethst = SendMessage( (HWND)lParam, CB_GETCURSEL, 0, 0);
+			unsigned gethst = SendDlgItemMessage(hwndDlg, IDC_HOSTOPT, CB_GETCURSEL, 0, 0);
 			if (gethst < 2) gethst = !gethst;
 			MSN_SetByte( "AutoGetHost", ( BYTE )gethst );
 

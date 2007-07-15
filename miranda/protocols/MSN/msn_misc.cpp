@@ -256,6 +256,8 @@ void  MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, size_t cbLen,
 		tPathLen = strlen( pszDest );
 	}
 
+	_mkdir( pszDest );
+
 	if ( hContact != NULL ) {
 		char szEmail[ MSN_MAX_EMAIL_LEN ];
 		if ( MSN_GetStaticString( "e-mail", hContact, szEmail, sizeof( szEmail )))

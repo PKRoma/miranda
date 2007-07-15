@@ -295,7 +295,7 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	mir_snprintf( path, sizeof( path ), "%s/Status", protocolname );
 	MSN_CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
 
-	MSN_CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )"CList/StatusMsg" );
+//	MSN_CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )"CList/StatusMsg" );
 
 	mir_snprintf( path, sizeof( path ), "%s/IdleTS", protocolname );
 	MSN_CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
@@ -340,7 +340,7 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 			MSN_DeleteSetting( hContact, "IdleTS" );
 			MSN_DeleteSetting( hContact, "p2pMsgId" );
 			MSN_DeleteSetting( hContact, "AccList" );
-			DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
+//			DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
 		}
 		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT,( WPARAM )hContact, 0 );
 	}
@@ -439,5 +439,3 @@ extern "C" __declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
 {
 	return interfaces;
 }
-
-
