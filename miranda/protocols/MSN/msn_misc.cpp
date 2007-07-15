@@ -395,43 +395,6 @@ LONG ThreadData::sendRawMessage( int msgType, const char* data, int datLen )
 	return thisTrid;
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////
-// MSN_RenameServerGroup - renames a group at the server
-
-void MSN_RenameServerGroup( int iNumber, LPCSTR szId, const char* newName )
-{
-	LPCSTR oldId = MSN_GetGroupByName( newName );
-	if ( oldId == NULL ) {
-		char szNewName[ 256 ];
-		UrlEncode( newName, szNewName, sizeof szNewName );
-		msnNsThread->sendPacket( "REG", "%s %s", szId, szNewName );
-	}
-	else MSN_SetGroupNumber( oldId, iNumber );
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// Msn_SendNickname - update our own nickname on the server
-
-int  MSN_SendNickname(char *nickname)
-{
-	char urlNick[ 387 ];
-	UrlEncode( UTF8(nickname), urlNick,  sizeof( urlNick ));
-	msnNsThread->sendPacket( "PRP", "MFN %s", urlNick );
-	return 0;
-}
-
-int  MSN_SendNicknameW( WCHAR* nickname)
-{
-	char* nickutf = mir_utf8encodeW( nickname );
-
-	char urlNick[ 387 ];
-	UrlEncode( nickutf, urlNick,  sizeof( urlNick ));
-	msnNsThread->sendPacket( "PRP", "MFN %s", urlNick );
-
-	mir_free( nickutf );
-	return 0;
-}
-
 // Typing notifications support
 
 void MSN_SendTyping( ThreadData* info  )
@@ -640,6 +603,7 @@ void  MSN_SetServerStatus( int newStatus )
 	}
 	else msnNsThread->sendPacket( "CHG", szStatusName );
 }
+
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Display Hotmail Inbox thread

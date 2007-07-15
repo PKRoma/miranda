@@ -304,3 +304,37 @@ void MSN_SyncContactToServerGroup( HANDLE hContact, char* userId, char* groupId 
 
 	if ( dbv.pszVal != NULL ) MSN_FreeVariant( &dbv );
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// MSN_RenameServerGroup - renames a group at the server
+
+void MSN_RenameServerGroup( LPCSTR szId, const char* newName )
+{
+	char szNewName[ 256 ];
+	UrlEncode( newName, szNewName, sizeof szNewName );
+	msnNsThread->sendPacket( "REG", "%s %s", szId, szNewName );
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// Msn_SendNickname - update our own nickname on the server
+
+int  MSN_SendNickname(char *nickname)
+{
+	char urlNick[ 387 ];
+	UrlEncode( UTF8(nickname), urlNick,  sizeof( urlNick ));
+	msnNsThread->sendPacket( "PRP", "MFN %s", urlNick );
+	return 0;
+}
+
+int  MSN_SendNicknameW( WCHAR* nickname)
+{
+	char* nickutf = mir_utf8encodeW( nickname );
+
+	char urlNick[ 387 ];
+	UrlEncode( nickutf, urlNick,  sizeof( urlNick ));
+	msnNsThread->sendPacket( "PRP", "MFN %s", urlNick );
+
+	mir_free( nickutf );
+	return 0;
+}
+

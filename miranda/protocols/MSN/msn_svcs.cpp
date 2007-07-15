@@ -259,6 +259,46 @@ int MsnContactDeleted( WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
+
+int MsnGroupChange(WPARAM wParam,LPARAM lParam)
+{
+	if (!msnLoggedIn || !MyOptions.ManageServer) return 0;
+
+	const HANDLE hContact = (HANDLE)wParam;
+	const CLISTGROUPCHANGE* grpchg = (CLISTGROUPCHANGE*)lParam;
+
+	if (hContact == NULL)
+	{
+		if (grpchg->pszNewName == NULL && grpchg->pszOldName != NULL)
+		{
+			char* szOldName = mir_utf8encodeT(grpchg->pszOldName);
+			LPCSTR szId = MSN_GetGroupByName(szOldName);
+			if (szId != NULL) msnNsThread->sendPacket("RMG", szId);	
+			mir_free(szOldName);
+		}
+		else if (grpchg->pszNewName != NULL && grpchg->pszOldName != NULL)
+		{
+			char* szNewName = mir_utf8encodeT(grpchg->pszNewName);
+			char* szOldName = mir_utf8encodeT(grpchg->pszOldName);
+			LPCSTR szId = MSN_GetGroupByName(szOldName);
+			if (szId != NULL) MSN_RenameServerGroup(szId, szNewName);
+			mir_free(szOldName);
+			mir_free(szNewName);
+		}
+	}
+	else
+	{
+		if (MSN_IsMyContact(hContact))
+		{
+			char* szNewName = grpchg->pszNewName ? mir_utf8encodeT(grpchg->pszNewName) : NULL;
+			MSN_MoveContactToGroup(hContact, szNewName);
+			mir_free(szNewName);
+		}
+	}
+	return 0;
+}
+
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnDbSettingChanged - look for contact's settings changes
 
@@ -291,9 +331,9 @@ int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 			LPCSTR szId = MSN_GetGroupByNumber( iNumber );
 			if ( szId != NULL ) {
 				switch ( type ) {
-					case DBVT_DELETED:	msnNsThread->sendPacket( "RMG", szId );						break;
-					case DBVT_UTF8:		MSN_RenameServerGroup( iNumber, szId, szNewName );			break;
-					case DBVT_ASCIIZ:	MSN_RenameServerGroup( iNumber, szId, UTF8( szNewName ));	break;
+					case DBVT_DELETED:	msnNsThread->sendPacket( "RMG", szId );				break;
+					case DBVT_UTF8:		MSN_RenameServerGroup( szId, szNewName );			break;
+					case DBVT_ASCIIZ:	MSN_RenameServerGroup( szId, UTF8( szNewName ));	break;
 				}
 			}
 		}
@@ -1276,7 +1316,7 @@ static int MsnSetStatus( WPARAM wParam, LPARAM lParam )
 
 		ThreadData* newThread = new ThreadData;
 
-		WORD tServerPort = MSN_GetWord( NULL, "MSNMPort", 1863 );
+		WORD tServerPort = MSN_GetWord( NULL, "MSNMPort", MSN_DEFAULT_PORT );
 
 		char tServer[ sizeof( newThread->mServer ) ];
 		if ( MSN_GetStaticString( "LoginServer", NULL, tServer, sizeof( tServer )))

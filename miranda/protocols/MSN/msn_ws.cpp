@@ -134,196 +134,223 @@ bool ThreadData::isTimeout( void )
 //=======================================================================================
 // Receving data
 //=======================================================================================
+char* ThreadData::httpTransact(char* szCommand, size_t cmdsz, size_t& ressz)
+{
+	NETLIBSELECT tSelect = {0};
+	tSelect.cbSize = sizeof( tSelect );
+	tSelect.dwTimeout = 5000;
+	tSelect.hReadConns[ 0 ] = s;
+
+	size_t bufSize = 4096;
+	char* szResult = (char*)mir_alloc(bufSize);
+	char* szBody = NULL; 
+
+	for (unsigned rc=0; rc<3; ++rc)
+	{
+		MSN_DebugLog( "Retry rc: %d ", rc );
+		if (s == NULL)
+		{
+			NETLIBOPENCONNECTION tConn = { 0 };
+			tConn.cbSize = sizeof( tConn );
+			tConn.flags = NLOCF_V2;
+			tConn.szHost = mGatewayIP;
+			tConn.wPort = MSN_DEFAULT_GATEWAY_PORT;
+			s = ( HANDLE )MSN_CallService( MS_NETLIB_OPENCONNECTION, ( WPARAM )hNetlibUser, ( LPARAM )&tConn );
+			tSelect.hReadConns[ 0 ] = s;
+		}
+
+		szBody = NULL;
+		int lstRes = Netlib_Send(s, szCommand, cmdsz, 0);
+		if (lstRes != SOCKET_ERROR)
+		{
+			size_t ackSize = 0;
+
+			ressz = 0;
+			for(;;)
+			{
+				// Wait for the next packet
+				lstRes = MSN_CallService( MS_NETLIB_SELECT, 0, ( LPARAM )&tSelect );
+				if ( lstRes <= 0 ) { 
+					lstRes = SOCKET_ERROR; 
+					break; }
+
+				lstRes = Netlib_Recv(s, szResult + ackSize, bufSize - ackSize, 0);
+				if ( lstRes == 0 ) 
+					MSN_DebugLog( "Connection closed gracefully" );
+
+				if ( lstRes < 0 )
+					MSN_DebugLog( "Connection abortively closed, error %d", WSAGetLastError() );
+				
+				// Connection closed or aborted, all data received
+				if ( lstRes <= 0 )break;
+
+				ackSize += lstRes;
+
+				if ((bufSize-1) <= ackSize)
+				{
+					bufSize += 4096;
+					szResult = (char*)mir_realloc(szResult, bufSize);
+				}
+
+				// Insert null terminator to use string functions
+				szResult[ackSize] = 0;
+
+				// HTTP header found?
+				if (szBody == NULL)
+				{
+					// Find HTTP header end
+					szBody = strstr(szResult, "\r\n\r\n");
+					if (szBody != NULL)
+					{
+						szBody += 4;
+						size_t hdrSize = szBody - szResult;
+
+						unsigned status; 
+						MimeHeaders tHeaders;
+
+						char* tbuf = (char*)mir_alloc(hdrSize + 1);
+						memcpy(tbuf, szResult, hdrSize);
+						tbuf[hdrSize] = 0;
+
+						char* p = httpParseHeader( tbuf, status );
+						tHeaders.readFromBuffer( p );
+
+						if (status == 100)
+						{
+							ackSize -= hdrSize;
+							memmove(szResult, szResult + hdrSize, ackSize+1);
+							szBody = NULL;
+							continue;
+						}
+
+						const char* contLenHdr = tHeaders[ "Content-Length" ];
+						ressz = hdrSize + atol( contLenHdr );
+						if (bufSize <= ressz)
+						{
+							bufSize = ressz + 1;
+							szResult = (char*)mir_realloc(szResult, bufSize);
+						}
+						mir_free(tbuf);
+					}
+				}
+
+				// Content-Length bytes reached, all data received
+				if (ackSize >= ressz) break;
+			}
+		}
+		else
+			MSN_DebugLog( "Send failed: %d", WSAGetLastError() );
+
+		if (lstRes > 0) break;
+		ressz = 0;
+		Netlib_CloseHandle(s);
+		s = NULL;
+
+		if (Miranda_Terminated()) break; 
+	}
+	if (ressz == 0)
+	{
+		mir_free(szResult);
+		szResult = NULL;
+	}
+	
+	return szResult;
+}
+
 
 int ThreadData::recv_dg( char* data, long datalen )
 {
-	if ( mReadAheadBuffer != NULL ) {
-		int tBytesToCopy = ( datalen >= mEhoughData ) ? mEhoughData : datalen;
-		memcpy( data, mReadAheadBuffer, tBytesToCopy );
-		mEhoughData -= tBytesToCopy;
-		if ( mEhoughData == 0 ) {
-			mir_free( mReadAheadBuffer );
-			mReadAheadBuffer = NULL;
-		}
-		else memmove( mReadAheadBuffer, mReadAheadBuffer + tBytesToCopy, mEhoughData );
-
-		return tBytesToCopy;
-	}
-
-	bool bCanPeekMsg = true;
-
-LBL_RecvAgain:
-	int ret = 0;
+	for(;;)
 	{
-		NETLIBSELECT tSelect = {0};
-		tSelect.cbSize = sizeof( tSelect );
-		tSelect.dwTimeout = 1000;
-		tSelect.hReadConns[ 0 ] = ( HANDLE )s;
+		if ( mReadAheadBuffer != NULL ) {
+			int datasent = mEhoughData - (mReadAheadBufferPtr - mReadAheadBuffer);
+			int tBytesToCopy = ( datalen >= datasent ) ? datasent : datalen;
 
-		for ( int i=0; i < mGatewayTimeout || !bCanPeekMsg; i++ ) {
-			if ( bCanPeekMsg && numQueueItems > 0) {
-				unsigned np = 0, dlen = 0;
-				
-				WaitForSingleObject( hQueueMutex, INFINITE );
-				TQueueItem* QI = mFirstQueueItem;
-				while ( QI != NULL && np < 5) { ++np; dlen += QI->datalen;  QI = QI->next;}
-
-				if ( np == 0 ) { 
-					ReleaseMutex( hQueueMutex );
-					continue;
-				}
-
-				char szHttpPostUrl[300];
-				getGatewayUrl( szHttpPostUrl, sizeof( szHttpPostUrl ), mFirstQueueItem->datalen == 0 );
-
-				char* tBuffer = ( char* )alloca( 8192 );
-				int cbBytes = mir_snprintf( tBuffer, 8192, sttGatewayHeader,
-					szHttpPostUrl, dlen, MSN_USER_AGENT, mGatewayIP);
-				
-				QI = mFirstQueueItem;
-				for ( unsigned i=0; i<np; ++i ) {
-					memcpy( tBuffer+cbBytes, QI->data, QI->datalen );
-					cbBytes += QI->datalen;
-					QI = QI->next;
-				}
-				ReleaseMutex( hQueueMutex );
-
-				tBuffer[ cbBytes ] = 0;
-
-				NETLIBBUFFER nlb = { tBuffer, cbBytes, 0 };
-				ret = MSN_CallService( MS_NETLIB_SEND, ( WPARAM )s, ( LPARAM )&nlb );
-				if ( ret == SOCKET_ERROR ) {
-					MSN_DebugLog( "Send failed: %d", WSAGetLastError() );
-					return 0;
-				}
-
-				WaitForSingleObject( hQueueMutex, INFINITE );
-				for ( unsigned j=0; j<np && mFirstQueueItem != NULL; ++j ) {
-					QI = mFirstQueueItem;
-					mFirstQueueItem = QI->next;
-					mir_free( QI );
-					--numQueueItems;
-				}
-
-				ReleaseMutex( hQueueMutex );
-
-				ret = 1;
-				break;
+			if ( tBytesToCopy == 0 ) {
+				mir_free( mReadAheadBuffer );
+				mReadAheadBuffer = NULL;
+				mReadAheadBufferPtr = NULL;
+				if (sessionClosed) return 0;
 			}
+			else 
+			{
+				memcpy( data, mReadAheadBufferPtr, tBytesToCopy );
+				mReadAheadBufferPtr += tBytesToCopy;
+				return tBytesToCopy;
+			}
+		}
 
-			ret = MSN_CallService( MS_NETLIB_SELECT, 0, ( LPARAM )&tSelect );
-			if ( ret != 0 )
-				break;
+		char* tBuffer = NULL;
+		size_t cbBytes = 0;
+		for ( int i=0; i < mGatewayTimeout; i++ ) {
+			if ( numQueueItems > 0 ) break;
+
+			Sleep(1000);
 			
 			// Timeout switchboard session if inactive
 			if ( isTimeout() ) return 0;
 		}	
-	}
 
-	bCanPeekMsg = false;
-
-	if ( ret == 0 ) {
-		mGatewayTimeout += 2;
-		if ( mGatewayTimeout > 8 ) 
-			mGatewayTimeout = 8;
+		unsigned np = 0, dlen = 0;
+		
+		WaitForSingleObject( hQueueMutex, INFINITE );
+		TQueueItem* QI = mFirstQueueItem;
+		while ( QI != NULL && np < 5) { ++np; dlen += QI->datalen;  QI = QI->next;}
 
 		char szHttpPostUrl[300];
-		getGatewayUrl( szHttpPostUrl, sizeof( szHttpPostUrl ), true );
+		getGatewayUrl( szHttpPostUrl, sizeof( szHttpPostUrl ), dlen == 0 );
 
-		char szCommand[ 400 ];
-		int cbBytes = mir_snprintf( szCommand, sizeof( szCommand ),
-			sttGatewayHeader, szHttpPostUrl, 0, MSN_USER_AGENT, mGatewayIP);
-
-		NETLIBBUFFER nlb = { szCommand, cbBytes, 0 };
-		MSN_CallService( MS_NETLIB_SEND, ( WPARAM )s, ( LPARAM )&nlb );
-		goto LBL_RecvAgain;
-	}
-
-	NETLIBBUFFER nlb = { data, datalen, 0 };
-	ret = MSN_CallService( MS_NETLIB_RECV, ( WPARAM )s, ( LPARAM )&nlb );
-	if ( ret == 0 ) {
-		MSN_DebugLog( "Connection closed gracefully");
-		return 0;
-	}
-
-	if ( ret < 0 ) {
-		MSN_DebugLog( "Connection abortively closed, error %d", WSAGetLastError() );
-		return ret;
-	}
-
-	bCanPeekMsg = true;
-
-	unsigned status;
-	char* p = httpParseHeader( data, status );
-	switch  (status)
-	{
-		case 0:
-			MSN_DebugLog( "ACHTUNG! it's not a valid header: '%s'", data );
-			goto LBL_RecvAgain;
-
-		case 100:
-			goto LBL_RecvAgain;
-	}
-	
-	int   tContentLength = 0, hdrLen;
-	{
-		MimeHeaders tHeaders;
-		const char* rest = tHeaders.readFromBuffer( p );
-
-		const char* contLenHdr = tHeaders[ "Content-Length" ];
-		if ( contLenHdr != NULL ) 
-			tContentLength = atol( contLenHdr );
-
-		const char* xMsnHdr = tHeaders[ "X-MSN-Messenger" ];
-		if ( xMsnHdr != NULL ) {
-			if ( tContentLength == 0 && strstr( xMsnHdr, "Session=close" ) != NULL )
-				return 0;
-			processSessionData( xMsnHdr );
-		}
+		tBuffer = ( char* )alloca( dlen + 512 );
+		cbBytes = mir_snprintf( tBuffer, dlen + 512, sttGatewayHeader,
+			szHttpPostUrl, dlen, MSN_USER_AGENT, mGatewayIP);
 		
-		hdrLen = int( rest - data );
+		for ( unsigned j=0; j<np; ++j ) {
+			QI = mFirstQueueItem;
+			memcpy( tBuffer+cbBytes, QI->data, QI->datalen );
+			cbBytes += QI->datalen;
+
+			mFirstQueueItem = QI->next;
+			mir_free( QI );
+			--numQueueItems;
+		}
+		ReleaseMutex( hQueueMutex );
+
+		if ( dlen == 0 ) {
+			mGatewayTimeout += 2;
+			if ( mGatewayTimeout > 8 ) 
+				mGatewayTimeout = 8;
+		}
+
+		size_t ressz;
+		char* tResult = httpTransact(tBuffer, cbBytes, ressz);
+
+		if (tResult == NULL) return SOCKET_ERROR;
+
+		unsigned status;
+		MimeHeaders tHeaders;
+
+		char* tBody = httpParseHeader( tResult, status );
+		tBody = tHeaders.readFromBuffer( tBody );
+
+		const char* xMsnHdr = tHeaders[ "X-MSN-Messenger" ]; 
+		if ( status != 200 || xMsnHdr == NULL ) {
+			mir_free(tResult);
+			return SOCKET_ERROR;
+		}
+
+		sessionClosed = strstr( xMsnHdr, "Session=close" ) != NULL;
+		processSessionData( xMsnHdr );
+
+		if ( ressz > (size_t)(tBody - tResult) )
+		{
+			mGatewayTimeout = 1;
+			mWaitPeriod = mJoinedCount ? 60 : 30;
+		}
+
+		mReadAheadBuffer = tResult;
+		mReadAheadBufferPtr = tBody;
+		mEhoughData = ressz;
 	}
-
-	if ( tContentLength == 0 )
-		goto LBL_RecvAgain;
-	else
-	{
-		mGatewayTimeout = 1;
-		mWaitPeriod = mJoinedCount ? 60 : 30;
-	}
-
-	ret -= hdrLen;
-	if ( ret <= 0 ) {
-		nlb.buf = data;
-		nlb.len = datalen;
-		ret = MSN_CallService( MS_NETLIB_RECV, ( WPARAM )s, ( LPARAM )&nlb );
-		if ( ret <= 0 )
-			return ret;
-	}
-	else memmove( data, data+hdrLen, ret );
-
-	if ( tContentLength > ret ) {
-		tContentLength -= ret;
-
-		mReadAheadBuffer = ( char* )mir_calloc( tContentLength+1 );
-		mReadAheadBuffer[ tContentLength ] = 0;
-		mEhoughData = tContentLength;
-		nlb.buf = mReadAheadBuffer;
-
-		while ( tContentLength > 0 ) {
-			nlb.len = tContentLength;
-			int ret2 = MSN_CallService( MS_NETLIB_RECV, ( WPARAM )s, ( LPARAM )&nlb );
-			if ( ret2 <= 0 )
-			{	mir_free( mReadAheadBuffer );
-				mReadAheadBuffer = NULL;
-				return ret2;
-			}
-
-			tContentLength -= ret2;
-			nlb.buf += ret2;
-	}	}
-
-	return ret;
 }
 
 int ThreadData::recv( char* data, long datalen )

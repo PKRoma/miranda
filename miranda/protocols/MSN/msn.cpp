@@ -117,6 +117,7 @@ static LIST<void> arHooks( 20, CompareHandles );
 
 int MsnContactDeleted( WPARAM wParam, LPARAM lParam );
 int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam);
+int MsnGroupChange(WPARAM wParam,LPARAM lParam);
 int MsnOnDetailsInit( WPARAM wParam, LPARAM lParam );
 int MsnRebuildContactMenu( WPARAM wParam, LPARAM lParam );
 int MsnIdleChanged( WPARAM wParam, LPARAM lParam );
@@ -244,6 +245,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	arHooks.insert( HookEvent( ME_DB_CONTACT_DELETED, MsnContactDeleted ));
 	arHooks.insert( HookEvent( ME_DB_CONTACT_SETTINGCHANGED, MsnDbSettingChanged ));
 	arHooks.insert( HookEvent( ME_CLIST_PREBUILDCONTACTMENU, MsnRebuildContactMenu ));
+//	arHooks.insert( HookEvent( ME_CLIST_GROUPCHANGE, MsnGroupChange ));
 
 	InitCustomFolders();
 

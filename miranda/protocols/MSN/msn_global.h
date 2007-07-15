@@ -139,6 +139,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MSN_GUID_LEN			  40
 
 #define MSN_DEFAULT_PORT         1863
+#define MSN_DEFAULT_GATEWAY_PORT   80
 #define MSN_DEFAULT_LOGIN_SERVER "messenger.hotmail.com"
 #define MSN_DEFAULT_GATEWAY      "gateway.messenger.hotmail.com"
 #define MSN_USER_AGENT           "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)"
@@ -457,7 +458,9 @@ struct ThreadData
 	char           mGatewayIP[ 80 ]; // Gateway IP address
 	int            mGatewayTimeout;
 	char*          mReadAheadBuffer;
+	char*          mReadAheadBufferPtr;
 	int            mEhoughData;
+	bool           sessionClosed;
 
 	TQueueItem*	   mFirstQueueItem;
 	unsigned       numQueueItems;
@@ -490,6 +493,7 @@ struct ThreadData
 	int            recv( char* data, long datalen );
 	int            recv_dg( char* data, long datalen );
 	bool           isTimeout( void );
+	char*          httpTransact(char* szCommand, size_t cmdsz, size_t& bdysz);
 
 	void           sendCaps( void );
 	LONG           sendMessage( int msgType, const char* msg, int parFlags );
@@ -626,7 +630,7 @@ LPCSTR MSN_GetGroupByName( const char* pName );
 LPCSTR MSN_GetGroupByNumber( int pNumber );
 void   MSN_MoveContactToGroup( HANDLE hContact, const char* grpName );
 void   MSN_RemoveEmptyGroups( void );
-void   MSN_RenameServerGroup( int iNumber, LPCSTR szId, const char* newName );
+void   MSN_RenameServerGroup( LPCSTR szId, const char* newName );
 void   MSN_SetGroupName( const char* pId, const char* pName );
 void   MSN_SetGroupNumber( const char* pId, int pNumber );
 void   MSN_SyncContactToServerGroup( HANDLE hContact, char* userId, char* groupId );

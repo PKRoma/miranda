@@ -98,10 +98,6 @@ static void ResetListOptions(HWND hwndList)
 
 static void SetAllContactIcons( HWND hwndList )
 {
-	LARGE_INTEGER freq, strt, end;
-	QueryPerformanceFrequency(&freq);
-	QueryPerformanceCounter(&strt);
-
 	for ( HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 		hContact != NULL; 
 		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 )) 
@@ -129,13 +125,6 @@ static void SetAllContactIcons( HWND hwndList )
 		if ( SendMessage( hwndList, CLM_GETEXTRAIMAGE, ( WPARAM )hItem, MAKELPARAM(3,0)) == 0xFF )
 			SendMessage( hwndList, CLM_SETEXTRAIMAGE,( WPARAM )hItem, MAKELPARAM(3,( dwMask & LIST_RL )?4:0));
 	}
-
-	QueryPerformanceCounter(&end);
-	unsigned dif = (unsigned)((end.QuadPart - strt.QuadPart)/(freq.QuadPart/1000));
-	TCHAR mess[300];
-	wsprintf(mess, _T("Time elapsed: %u\n"), dif);
-	OutputDebugString(mess);
-//	MessageBox(NULL, mess, _T(""), MB_OK|MB_TASKMODAL);
 }
 
 static void SaveListItem( HANDLE hContact, const char* szEmail, int list, int iPrevValue, int iNewValue )

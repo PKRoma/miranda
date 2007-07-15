@@ -88,14 +88,14 @@ void __cdecl MSNServerThread( ThreadData* info )
 
 	if ( MyOptions.UseGateway && !MyOptions.UseProxy ) {
 		tConn.szHost = MSN_DEFAULT_GATEWAY;
-		tConn.wPort = 80;
+		tConn.wPort = MSN_DEFAULT_GATEWAY_PORT;
 		info->hQueueMutex = CreateMutex( NULL, FALSE, NULL );
 	}
 	else {
 		tConn.szHost = info->mServer;
 		tConn.wPort = MSN_DEFAULT_PORT;
 
-		if ( tPortDelim != NULL ) {
+		if ( tPortDelim != NULL) {
 			int tPortNumber;
 			if ( sscanf( tPortDelim+1, "%d", &tPortNumber ) == 1 )
 				tConn.wPort = ( WORD )tPortNumber;
@@ -440,6 +440,25 @@ ThreadData*  MSN_GetUnconnectedThread( HANDLE hContact )
 	return result;
 }
 
+/*
+void MSN_StartSB(HANDLE hContact)
+{
+	ThreadData* thread = MSN_GetThreadByContact( hContact );
+
+	if ( thread == NULL ) {
+		if ( MSN_GetUnconnectedThread( hContact ) == NULL )
+		{
+			msnNsThread->sendPacket( "XFR", "SB" );
+
+			ThreadData* newThread = new ThreadData;
+			newThread->mType = SERVER_SWITCHBOARD;
+			newThread->mTrid;
+		sttRegisterThread( info );
+
+}
+*/
+
+
 int  MSN_GetActiveThreads( ThreadData** parResult )
 {
 	int tCount = 0;
@@ -600,6 +619,11 @@ void ThreadData::processSessionData( const char* str )
 		return;
 
 //	MSN_DebugLog( "msn_httpGatewayUnwrapRecv printed '%s','%s' to %08X (%08X)", tSessionID, tGateIP, s, this );
+	if (strcmp(mGatewayIP, tGateIP) != 0 && MyOptions.UseGateway && !MyOptions.UseProxy)
+	{
+		Netlib_CloseHandle(s);
+		s = NULL;
+	}
 	strcpy( mGatewayIP, tGateIP );
 	strcpy( mSessionID, tSessionID );
 }

@@ -324,7 +324,7 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			CheckDlgButton( hwndDlg, IDC_USEGATEWAY, tUseGateway );
 			if ( tUseGateway ) {
 				SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, MSN_DEFAULT_GATEWAY );
-				SetDlgItemInt( hwndDlg, IDC_MSNPORT, 80, FALSE );
+				SetDlgItemInt( hwndDlg, IDC_MSNPORT, MSN_DEFAULT_GATEWAY_PORT, FALSE );
 			}
 			else {
 				if ( !DBGetContactSetting( NULL, msnProtocolName, "LoginServer", &dbv )) {
@@ -333,7 +333,7 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				}
 				else SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, MSN_DEFAULT_LOGIN_SERVER );
 
-				SetDlgItemInt( hwndDlg, IDC_MSNPORT, MSN_GetWord( NULL, "MSNMPort", 1863 ), FALSE );
+				SetDlgItemInt( hwndDlg, IDC_MSNPORT, MSN_GetWord( NULL, "MSNMPort", MSN_DEFAULT_PORT ), FALSE );
 		}	}
 
 		CheckDlgButton( hwndDlg, IDC_USEIEPROXY,  MSN_GetByte( "UseIeProxy",  0 ));
@@ -382,7 +382,7 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		case IDC_RESETSERVER:
 			if ( IsDlgButtonChecked( hwndDlg, IDC_USEGATEWAY )) {
 				SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, MSN_DEFAULT_GATEWAY );
-				SetDlgItemInt( hwndDlg, IDC_MSNPORT, 80, FALSE );
+				SetDlgItemInt( hwndDlg, IDC_MSNPORT, MSN_DEFAULT_GATEWAY_PORT, FALSE );
 			}
 			else {
 				SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, MSN_DEFAULT_LOGIN_SERVER );
@@ -420,7 +420,7 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 					HWND tWindow = GetDlgItem( hwndDlg, IDC_LOGINSERVER );
 					if ( !tValue ) {
 						SetWindowTextA( tWindow, MSN_DEFAULT_GATEWAY );
-						SetDlgItemInt( hwndDlg, IDC_MSNPORT, 80, FALSE );
+						SetDlgItemInt( hwndDlg, IDC_MSNPORT, MSN_DEFAULT_GATEWAY_PORT, FALSE );
 					}
 					else {
 						if ( !DBGetContactSetting( NULL, msnProtocolName, "LoginServer", &dbv )) {
@@ -429,7 +429,7 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 						}
 						else SetWindowTextA( tWindow, MSN_DEFAULT_LOGIN_SERVER );
 
-						SetDlgItemInt( hwndDlg, IDC_MSNPORT, MSN_GetWord( NULL, "MSNMPort", 1863 ), FALSE );
+						SetDlgItemInt( hwndDlg, IDC_MSNPORT, MSN_GetWord( NULL, "MSNMPort", MSN_DEFAULT_PORT ), FALSE );
 					}
 
 					EnableWindow( tWindow, tValue );
