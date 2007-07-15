@@ -391,6 +391,7 @@ void fnRebuildEntireList(HWND hwnd, struct ClcData *dat)
 				group = &dat->list;
 			else {
 				group = cli.pfnAddGroup(hwnd, dat, dbv.ptszVal, (DWORD) - 1, 0, 0);
+				if (group == NULL && style & CLS_SHOWHIDDEN) group = &dat->list;
 				mir_free(dbv.ptszVal);
 			}
 
