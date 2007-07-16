@@ -26,6 +26,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <tchar.h>
 
+#if !defined(M_SYSTEM_H__)
+#include "m_system.h"
+#endif
+
 //this entire module is v0.1.0.1+
 //this module cannot be redefined by a plugin, because it's not useful for it
 //to be possible
@@ -433,7 +437,7 @@ static __inline wchar_t* mir_a2u( const char* src )
 	int codepage = CallService("LangPack/GetCodePage", 0, 0 );
 
 	int cbLen = MultiByteToWideChar( codepage, 0, src, -1, NULL, 0 );
-	wchar_t* result = ( wchar_t* )malloc( sizeof( wchar_t )*(cbLen+1));
+	wchar_t* result = ( wchar_t* )mir_alloc( sizeof( wchar_t )*(cbLen+1));
 	if ( result == NULL )
 		return NULL;
 
@@ -447,7 +451,7 @@ static __inline char* mir_u2a( const wchar_t* src )
 	int codepage = CallService("LangPack/GetCodePage", 0, 0 );
 
 	int cbLen = WideCharToMultiByte( codepage, 0, src, -1, NULL, 0, NULL, NULL );
-	char* result = ( char* )malloc( cbLen+1 );
+	char* result = ( char* )mir_alloc( cbLen+1 );
 	if ( result == NULL )
 		return NULL;
 
