@@ -1526,15 +1526,11 @@ LBL_InvalidCommand:
 			else { // remove a user from a list
 				int listId = Lists_NameToCode( data.list );
 				if ( IsValidListCode( listId )) {
-					if ( listId == LIST_FL ) {
-						HANDLE hContact = MSN_HContactById( data.serial );
-						if ( hContact != NULL )
-							Lists_Remove( listId, hContact );
-						MSN_RemoveEmptyGroups();
-					}
-					else {
-						HANDLE hContact = MSN_HContactById( data.serial );
+					HANDLE hContact = MSN_HContactFromEmail( data.serial, data.serial, 0, 0 );
+					if ( hContact != NULL ) {
 						Lists_Remove( listId, hContact );
+						if ( listId == LIST_FL )
+							MSN_RemoveEmptyGroups();
 			}	}	}
 			break;
 		}

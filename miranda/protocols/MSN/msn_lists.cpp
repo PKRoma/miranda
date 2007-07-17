@@ -77,6 +77,7 @@ void  Lists_Remove( int list, HANDLE hContact )
 {
 	int i = MSN_GetDword(hContact, "AccList", 0) & ~list;
 	if (i == 0) MSN_DeleteSetting(hContact, "AccList");
+	else MSN_SetDword(hContact, "AccList", i);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
