@@ -78,6 +78,11 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 				if ( jabberOnline ) {
 					if (( item = JabberListGetItemPtr( LIST_VCARD_TEMP, dbv.ptszVal )) == NULL)
 						item = JabberListGetItemPtr( LIST_ROSTER, dbv.ptszVal );
+					if (item !=NULL && item->resource==NULL && item->bResourceSensitive && item->list == LIST_ROSTER)
+					{
+						item = JabberListAdd( LIST_VCARD_TEMP, item->jid );
+						JabberListAddResource( LIST_VCARD_TEMP, item->jid, ID_STATUS_OFFLINE, NULL, 0 );
+					}
 					if ( item != NULL )
 					{
 						if (( r=item->resource ) != NULL ) {
@@ -88,7 +93,8 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 								int index = SendMessage( hwndList, LB_ADDSTRING, 0, ( LPARAM )displayResource );
 								SendMessage( hwndList, LB_SETITEMDATA, index, ( LPARAM )r[i].resourceName );
 						}	}
-						else {
+						else
+						{
 							int index = SendMessage( hwndList, LB_ADDSTRING, 0, ( LPARAM )item->jid );
 							SendMessage( hwndList, LB_SETITEMDATA, index, 0);
 						}

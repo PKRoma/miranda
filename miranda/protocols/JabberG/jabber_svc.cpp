@@ -856,7 +856,12 @@ int JabberGetInfo( WPARAM wParam, LPARAM lParam )
 	CCSDATA *ccs = ( CCSDATA * ) lParam;
 	int result = 1;
 	DBVARIANT dbv;
-	if ( !JGetStringT( ccs->hContact, "jid", &dbv )) {
+	if ( JGetByte( ccs->hContact, "ChatRoom" , 0) )
+	{
+		// process chat room request
+
+	} 
+	else if ( !JGetStringT( ccs->hContact, "jid", &dbv )) {
 		if ( jabberThreadInfo ) {
 			TCHAR jid[ 256 ];
 			JabberGetClientJID( dbv.ptszVal, jid, SIZEOF( jid ));

@@ -1461,10 +1461,19 @@ void JabberServiceDiscoveryShowMenu(CJabberSDNode *pNode, HTREELISTITEM hItem, P
 
 		case SD_ACT_VCARD:
 		{
+			TCHAR * jid = pNode->GetJid();
 			HANDLE hContact = JabberHContactFromJID(pNode->GetJid());
-			if (!hContact) {
-				hContact = JabberDBCreateContact(pNode->GetJid(), pNode->GetName(), TRUE, FALSE);
-				JabberListAdd( LIST_VCARD_TEMP, pNode->GetJid() );
+			if (!hContact) {	
+				JABBER_SEARCH_RESULT jsr={0};
+				mir_sntprintf(jsr.jid, SIZEOF(jsr.jid), _T("%s"), jid );
+				jsr.hdr.cbSize = sizeof( JABBER_SEARCH_RESULT );
+				hContact = ( HANDLE )CallProtoService( jabberProtoName, PS_ADDTOLIST, PALF_TEMPORARY, ( LPARAM )&jsr );
+			}
+			if (JabberListGetItemPtr( LIST_VCARD_TEMP, pNode->GetJid()) == NULL )
+			{
+				JABBER_LIST_ITEM *item=JabberListAdd( LIST_VCARD_TEMP, pNode->GetJid() );
+				if (item->resource == NULL)
+					JabberListAddResource( LIST_VCARD_TEMP, jid, ID_STATUS_OFFLINE, NULL, 0);
 			}
 			CallService(MS_USERINFO_SHOWDIALOG, (WPARAM)hContact, 0);
 			break;
