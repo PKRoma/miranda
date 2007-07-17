@@ -168,7 +168,7 @@ JABBER_LIST_ITEM *JabberListAdd( JABBER_LIST list, const TCHAR* jid )
 	TCHAR *q = NULL;
 	// strip resource name if any
 	//fyr
-	if ( !(list== LIST_ROSTER && JabberListExist(LIST_CHATROOM, jid)) ) { // but only if it is not chat room contact	
+	if ( !((list== LIST_ROSTER )  && JabberListExist(LIST_CHATROOM, jid))) { // but only if it is not chat room contact	
 		if ( list != LIST_VCARD_TEMP ) {
 			TCHAR *p;
 			if (( p = _tcschr( s, '@' )) != NULL )
@@ -178,7 +178,7 @@ JABBER_LIST_ITEM *JabberListAdd( JABBER_LIST list, const TCHAR* jid )
 	} else {
 		bResourceSensitive=TRUE;
 	}
-
+	
 	if ( !bResourceSensitive && list== LIST_ROSTER )
 	{
 		//if it is a chat room keep resource and made it resource sensitive

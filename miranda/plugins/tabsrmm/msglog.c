@@ -751,6 +751,11 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 
 	 if ( bNewDbApi ) {
 		 msg = DbGetEventTextT( &dbei, dat->codePage );
+		 if (!msg) {
+			 free(dbei.pBlob);
+			 free(buffer);
+			 return NULL;
+		 }
 		 TrimMessage(msg);
        formatted = FormatRaw(dat->dwFlags, msg, dwFormattingParams, szProto, dat->hContact, &dat->clr_added);
 		 mir_free(msg);
@@ -1974,4 +1979,5 @@ char *Utf8_Encode(const WCHAR *str)
 }
 
 #endif
+
 

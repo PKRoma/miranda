@@ -197,9 +197,15 @@ struct EventData *getEventFromDB(struct MessageWindowData *dat, HANDLE hContact,
 		if ( *descr != 0 ) {
 			event->pszText2W = a2t(descr);//dat->codePage);
 		}
-	} else if ( bNewDbApi && event->eventType == EVENTTYPE_MESSAGE ) {
+	} else if ( bNewDbApi ) {
 		DBEVENTGETTEXT egt = { &dbei, DBVT_WCHAR + ((dat->flags & SMF_DISABLE_UNICODE) ? DBVTF_DENYUNICODE : 0), dat->codePage };
 		event->pszTextW = ( WCHAR* )CallService( MS_DB_EVENT_GETTEXT, 0, (LPARAM)&egt );
+		if ( !event->pszTextW ) {
+			mir_free(event->pszNickW);
+			mir_free(dbei.pBlob);
+			mir_free(event);
+			return NULL;
+		}
 	} else {
 		int msglen = strlen((char *) dbei.pBlob) + 1;
 		if (msglen != (int) dbei.cbBlob && !(dat->flags & SMF_DISABLE_UNICODE)) {

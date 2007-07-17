@@ -92,6 +92,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define JABBER_IQID "mir_"
 #define JABBER_MAX_JID_LEN  256
 
+// registered db event types
+#define JABBER_DB_EVENT_TYPE_CHATSTATES          25368
+#define JS_DB_GETEVENTTEXT_CHATSTATES            "/GetEventText25368"
+#define JABBER_DB_EVENT_CHATSTATES_GONE          1
+
 // User-defined message
 #define WM_JABBER_REGDLG_UPDATE        WM_USER + 100
 #define WM_JABBER_AGENT_REFRESH        WM_USER + 101
@@ -558,6 +563,7 @@ TCHAR* EscapeChatTags(TCHAR* pszText);
 char*  UnEscapeChatTags(char* str_in);
 void   JabberUpdateMirVer(JABBER_LIST_ITEM *item);
 void   JabberUpdateMirVer(HANDLE hContact, JABBER_RESOURCE_STATUS *resource);
+int    JabberGetEventTextChatStates( WPARAM wParam, LPARAM lParam );
 
 //---- jabber_adhoc.cpp	---------------------------------------------
 int JabberContactMenuRunCommands(WPARAM wParam, LPARAM lParam);
@@ -626,7 +632,7 @@ struct TStringPairs
 void          __stdcall JabberSerialInit( void );
 void          __stdcall JabberSerialUninit( void );
 unsigned int  __stdcall JabberSerialNext( void );
-HANDLE        __stdcall JabberHContactFromJID( const TCHAR* jid );
+HANDLE        __stdcall JabberHContactFromJID( const TCHAR* jid , BOOL bStripResource = 3);
 HANDLE        __stdcall JabberChatRoomHContactFromJID( const TCHAR* jid );
 void          __stdcall JabberLog( const char* fmt, ... );
 TCHAR*        __stdcall JabberNickFromJID( const TCHAR* jid );

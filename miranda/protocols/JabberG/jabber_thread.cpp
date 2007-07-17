@@ -1076,6 +1076,21 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 		info->send( m );
 	}
 
+	n = JabberXmlGetChild( node, "gone" );
+	if ( n != NULL && !lstrcmp( JabberXmlGetAttrValue( n, "xmlns" ), _T(JABBER_FEAT_CHATSTATES)))
+		if (( hContact = JabberHContactFromJID( from )) != NULL ) {
+			DBEVENTINFO dbei;
+			BYTE bEventType = JABBER_DB_EVENT_CHATSTATES_GONE; // gone event
+			dbei.cbSize = sizeof(dbei);
+			dbei.pBlob = &bEventType;
+			dbei.cbBlob = 1;
+			dbei.eventType = JABBER_DB_EVENT_TYPE_CHATSTATES;
+			dbei.flags = 0;
+			dbei.timestamp = time(NULL);
+			dbei.szModule = jabberProtoName;
+			CallService(MS_DB_EVENT_ADD, (WPARAM)hContact, (LPARAM)&dbei);
+		}
+
 	for ( int i = 1; ( xNode = JabberXmlGetNthChild( node, "x", i )) != NULL; i++ ) {
 		TCHAR* ptszXmlns = JabberXmlGetAttrValue( xNode, "xmlns" );
 		if ( ptszXmlns == NULL )

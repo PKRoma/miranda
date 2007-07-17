@@ -1117,6 +1117,24 @@ int JabberSendFile( WPARAM wParam, LPARAM lParam )
 ////////////////////////////////////////////////////////////////////////////////////////
 // JabberSendMessage - sends a message
 
+int JabberGetEventTextChatStates( WPARAM wParam, LPARAM lParam )
+{
+	DBEVENTGETTEXT *pdbEvent = ( DBEVENTGETTEXT * )lParam;
+
+	int nRetVal = 0;
+
+	if ( pdbEvent->dbei->cbBlob > 0 ) {
+		if ( pdbEvent->dbei->pBlob[0] == JABBER_DB_EVENT_CHATSTATES_GONE ) {
+			if ( pdbEvent->datatype == DBVT_WCHAR )
+				nRetVal = (int)mir_tstrdup(TranslateTS(_T("closed chat session")));
+			else if ( pdbEvent->datatype == DBVT_ASCIIZ )
+				nRetVal = (int)mir_strdup(Translate("closed chat session"));
+		}
+	}
+	
+	return nRetVal;
+}
+
 static void __cdecl JabberSendMessageAckThread( HANDLE hContact )
 {
 	SleepEx( 10, TRUE );

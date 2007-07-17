@@ -27,6 +27,7 @@ int SplitmsgShutdown(void);
 
 PLUGINLINK* pluginLink;
 HINSTANCE   g_hInst;
+int bNewDbApi = FALSE;
 
 struct MM_INTERFACE mmi;
 struct UTF8_INTERFACE utfi;
@@ -73,6 +74,10 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 	pluginLink = link;
 	mir_getMMI( &mmi );
 	mir_getUTFI( &utfi );
+
+	if ( ServiceExists( MS_DB_EVENT_GETTEXT ))
+		bNewDbApi = TRUE;
+
 	return LoadSendRecvMessageModule();
 }
 

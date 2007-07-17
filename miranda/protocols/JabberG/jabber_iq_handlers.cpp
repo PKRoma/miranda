@@ -273,10 +273,10 @@ void JabberHandleRosterPushRequest( XmlNode* node, void* userdata, CJabberIqInfo
 					XmlNode* groupNode = JabberXmlGetChild( itemNode, "group" );
 					replaceStr( item->group, ( groupNode ) ? groupNode->text : NULL );
 
-					if (( hContact=JabberHContactFromJID( jid )) == NULL ) {
+					if (( hContact=JabberHContactFromJID( jid, 0 )) == NULL ) {
 						// Received roster has a new JID.
 						// Add the jid ( with empty resource ) to Miranda contact list.
-						hContact = JabberDBCreateContact( jid, nick, FALSE, TRUE );
+						hContact = JabberDBCreateContact( jid, nick, FALSE, FALSE );
 					}
 					else JSetStringT( hContact, "jid", jid );
 

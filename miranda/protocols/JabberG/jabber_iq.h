@@ -101,7 +101,7 @@ void JabberIqResultLastActivity( XmlNode *iqNode, void *userdata, CJabberIqInfo*
 void JabberSetBookmarkRequest (XmlNodeIq& iqId);
 
 unsigned int  __stdcall JabberSerialNext( void );
-HANDLE        __stdcall JabberHContactFromJID( const TCHAR* jid );
+HANDLE        __stdcall JabberHContactFromJID( const TCHAR* jid , BOOL bStripResource );
 void          __stdcall JabberLog( const char* fmt, ... );
 TCHAR*        a2t( const char* str );
 
@@ -384,7 +384,7 @@ protected:
 		if ( pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_FROM )
 			pInfo->m_szFrom = pInfo->m_szReceiver;
 		if (( pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_HCONTACT ) && ( pInfo->m_szFrom ))
-			pInfo->m_hContact = JabberHContactFromJID( pInfo->m_szFrom );
+			pInfo->m_hContact = JabberHContactFromJID( pInfo->m_szFrom , 3);
 
 		JabberLog( "Expiring iq id %d, sent to %S", pInfo->m_nIqId, pInfo->m_szReceiver ? pInfo->m_szReceiver : _T("unknown") );
 
@@ -565,7 +565,7 @@ public:
 			if (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_FROM)
 				pInfo->m_szFrom = JabberXmlGetAttrValue( pNode, "from" );
 			if (pInfo->m_szFrom && (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_HCONTACT))
-				pInfo->m_hContact = JabberHContactFromJID( pInfo->m_szFrom );
+				pInfo->m_hContact = JabberHContactFromJID( pInfo->m_szFrom, 3 );
 
 			if (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_ID_STR)
 				pInfo->m_szId = JabberXmlGetAttrValue( pNode, "id" );
@@ -624,7 +624,7 @@ public:
 					iqInfo.m_szFrom = JabberXmlGetAttrValue( pNode, "from" );
 
 				if ((pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_HCONTACT) && (iqInfo.m_szFrom))
-					iqInfo.m_hContact = JabberHContactFromJID( iqInfo.m_szFrom );
+					iqInfo.m_hContact = JabberHContactFromJID( iqInfo.m_szFrom, 3 );
 
 				JabberLog( "Handling iq id %S, type %S, from %S", iqInfo.m_szId, szType, iqInfo.m_szFrom );
 				pInfo->m_pHandler(pNode, pUserData, &iqInfo);

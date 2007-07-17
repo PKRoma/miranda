@@ -50,5 +50,6 @@ void FreeGlobals();
 void ReloadGlobals();
 
 extern struct GlobalMessageData *g_dat;
+extern int bNewDbApi;
 
 #endif

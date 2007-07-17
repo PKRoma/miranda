@@ -352,16 +352,25 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", SetToStyle(MSGFONTID_NOTICE));
 			AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, szName);
 			AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, _T(" "));
-			#if defined( _UNICODE )
-			{
-				int msglen = strlen((char *) dbei.pBlob) + 1;
-				msg = ( TCHAR* )alloca(sizeof(TCHAR) * msglen);
-				MultiByteToWideChar(CP_ACP, 0, (char *) dbei.pBlob, -1, msg, msglen);
+			if ( bNewDbApi ) {
+				TCHAR* msg = DbGetEventTextT( &dbei, CP_ACP );
+				if ( msg ) {
+					AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, msg);
+					mir_free( msg );
+				}
 			}
-			#else
-				msg = (BYTE *) dbei.pBlob;
-			#endif
-			AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, msg);
+			else {
+				#if defined( _UNICODE )
+				{
+					int msglen = strlen((char *) dbei.pBlob) + 1;
+					msg = ( TCHAR* )alloca(sizeof(TCHAR) * msglen);
+					MultiByteToWideChar(CP_ACP, 0, (char *) dbei.pBlob, -1, msg, msglen);
+				}
+				#else
+					msg = (BYTE *) dbei.pBlob;
+				#endif
+				AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, msg);
+			}
 			if (ci.pszVal)
 				mir_free(ci.pszVal);
 			break;

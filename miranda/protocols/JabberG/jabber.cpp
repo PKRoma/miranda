@@ -289,6 +289,15 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 			hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 );
 	}	}
 
+	DBEVENTTYPEDESCR dbEventType = {0};
+	dbEventType.cbSize = sizeof(DBEVENTTYPEDESCR);
+	dbEventType.eventType = JABBER_DB_EVENT_TYPE_CHATSTATES;
+	dbEventType.module = jabberProtoName;
+	dbEventType.descr = "Chat state notifications";
+
+	JCallService( MS_DB_EVENT_REGISTERTYPE, 0, (LPARAM)&dbEventType );
+	JCreateServiceFunction( JS_DB_GETEVENTTEXT_CHATSTATES, JabberGetEventTextChatStates );
+
 	JabberCheckAllContactsAreTransported();
 	return 0;
 }

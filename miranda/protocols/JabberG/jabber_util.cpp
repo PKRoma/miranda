@@ -115,7 +115,7 @@ HANDLE __stdcall JabberChatRoomHContactFromJID( const TCHAR* jid )
 ///////////////////////////////////////////////////////////////////////////////
 // JabberHContactFromJID - looks for the HCONTACT with required JID
 
-HANDLE __stdcall JabberHContactFromJID( const TCHAR* jid )
+HANDLE __stdcall JabberHContactFromJID( const TCHAR* jid , BOOL bStripResource )
 {
 	if ( jid == NULL )
 		return ( HANDLE )NULL;
@@ -137,7 +137,22 @@ HANDLE __stdcall JabberHContactFromJID( const TCHAR* jid )
 				if ( item != NULL )
 					result = lstrcmpi( jid, dbv.ptszVal );
 				else
-					result = JabberCompareJids( jid, dbv.ptszVal );
+				{
+					//if (bStripResource == 3)
+					if (bStripResource==3)
+					{
+						if (JGetByte(hContact, "ChatRoom", 0))
+							result = lstrcmpi( jid, dbv.ptszVal );  // for chat room we have to have full contact matched
+						else if ( TRUE )
+							result = _tcsnicmp( jid, dbv.ptszVal, _tcslen(dbv.ptszVal));
+						else
+							result = JabberCompareJids( jid, dbv.ptszVal );
+					}
+					// most probably it should just look full matching contact
+					else
+						result = lstrcmpi( jid, dbv.ptszVal );
+
+				}
 				JFreeVariant( &dbv );
 				if ( !result ) {
 					hContactMatched = hContact;

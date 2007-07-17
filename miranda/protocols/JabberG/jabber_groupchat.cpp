@@ -751,6 +751,7 @@ void JabberGroupchatProcessMessage( XmlNode *node, void *userdata )
 				nick++;
 		}
 		else nick = NULL;
+		replaceStr(item->itemResource.statusMessage, msgText);
 	}
 	else {
 		if (( n = JabberXmlGetChild( node, "body" )) == NULL ) return;

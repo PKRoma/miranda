@@ -36,7 +36,9 @@ extern HANDLE hInitChat;
 // One string entry dialog
 
 struct JabberEnterStringParams
-{	TCHAR* result;
+{
+	TCHAR* caption;
+	TCHAR* result;
 	size_t resultLen;
 };
 
@@ -45,13 +47,21 @@ BOOL CALLBACK JabberEnterStringDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, L
 	switch ( msg ) {
 	case WM_INITDIALOG:
 	{
+		//SetWindowPos( hwndDlg, HWND_TOPMOST ,0,0,0,0,SWP_NOSIZE|SWP_NOMOVE );
 		TranslateDialogDefault( hwndDlg );
 		JabberEnterStringParams* params = ( JabberEnterStringParams* )lParam;
 		SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG )params );
-		SetWindowText( hwndDlg, params->result );
+		SetWindowText( hwndDlg, params->caption );
+		SetDlgItemText( hwndDlg, IDC_TOPIC, params->result );
+		SetTimer(hwndDlg, 1000, 50, NULL);
 		return TRUE;
 	}
-
+	case WM_TIMER:
+	{
+		KillTimer(hwndDlg,1000);
+		EnableWindow(GetParent(hwndDlg), TRUE);
+		return TRUE;
+	}
 	case WM_COMMAND:
 		switch ( LOWORD( wParam )) {
 		case IDOK:
@@ -69,10 +79,20 @@ BOOL CALLBACK JabberEnterStringDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, L
 	return FALSE;
 }
 
+BOOL JabberEnterString( TCHAR* caption, TCHAR* result, size_t resultLen )
+{
+	JabberEnterStringParams params = { caption, result, resultLen };
+	return DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_GROUPCHAT_INPUT ), GetForegroundWindow(), JabberEnterStringDlgProc, LPARAM( &params ));
+}
+
 BOOL JabberEnterString( TCHAR* result, size_t resultLen )
 {
-	JabberEnterStringParams params = { result, resultLen };
-	return DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_GROUPCHAT_INPUT ), NULL, JabberEnterStringDlgProc, LPARAM( &params ));
+	TCHAR *szCaption = mir_tstrdup( result );
+	result[ 0 ] = _T('\0');
+	JabberEnterStringParams params = { szCaption, result, resultLen };
+	BOOL bRetVal = DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_GROUPCHAT_INPUT ), NULL, JabberEnterStringDlgProc, LPARAM( &params ));
+	mir_free( szCaption );
+	return bRetVal;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -628,6 +648,8 @@ static void sttNickListHook( JABBER_LIST_ITEM* item, GCHOOK* gch )
 static void sttLogListHook( JABBER_LIST_ITEM* item, GCHOOK* gch )
 {
 	TCHAR szBuffer[ 1024 ];
+	TCHAR szCaption[ 1024 ];
+	szBuffer[ 0 ] = _T('\0');
 
 	switch( gch->dwData ) {
 	case IDM_VOICE:
@@ -655,17 +677,35 @@ static void sttLogListHook( JABBER_LIST_ITEM* item, GCHOOK* gch )
 		break;
 
 	case IDM_TOPIC:
-		mir_sntprintf( szBuffer, SIZEOF(szBuffer), _T("%s %s"), TranslateT( "Set topic for" ), gch->pDest->ptszID );
-		if ( JabberEnterString( szBuffer, SIZEOF(szBuffer))) {
+		mir_sntprintf( szCaption, SIZEOF(szCaption), _T("%s %s"), TranslateT( "Set topic for" ), gch->pDest->ptszID );
+		TCHAR szTmpBuff[ SIZEOF(szBuffer) * 2 ];
+		if ( item->itemResource.statusMessage ) {
+			int j = 0;
+			for ( int i = 0; i < SIZEOF(szTmpBuff); i++ ) {
+				if ( item->itemResource.statusMessage[ i ] != _T('\n') || ( i && item->itemResource.statusMessage[ i - 1 ] == _T('\r')))
+					szTmpBuff[ j++ ] = item->itemResource.statusMessage[ i ];
+				else {
+					szTmpBuff[ j++ ] = _T('\r');
+					szTmpBuff[ j++ ] = _T('\n');
+				}
+				if ( !item->itemResource.statusMessage[ i ] )
+					break;
+			}
+		}
+		else
+			szTmpBuff[ 0 ] = _T('\0');
+		if ( JabberEnterString( szCaption, szTmpBuff, SIZEOF(szTmpBuff))) {
 			XmlNode msg( "message" ); msg.addAttr( "to", gch->pDest->ptszID ); msg.addAttr( "type", "groupchat" );
-			msg.addChild( "subject", szBuffer );
+			msg.addChild( "subject", szTmpBuff );
 			jabberThreadInfo->send( msg );
 		}
 		break;
 
 	case IDM_NICK:
-		mir_sntprintf( szBuffer, SIZEOF(szBuffer), _T("%s %s"), TranslateT( "Change nickname in" ), gch->pDest->ptszID );
-		if ( JabberEnterString( szBuffer, SIZEOF(szBuffer))) {
+		mir_sntprintf( szCaption, SIZEOF(szCaption), _T("%s %s"), TranslateT( "Change nickname in" ), gch->pDest->ptszID );
+		if ( item->nick )
+			mir_sntprintf( szBuffer, SIZEOF(szBuffer), _T("%s"), item->nick );
+		if ( JabberEnterString( szCaption, szBuffer, SIZEOF(szBuffer))) {
 			JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_CHATROOM, gch->pDest->ptszID );
 			if ( item != NULL ) {
 				TCHAR text[ 1024 ];
