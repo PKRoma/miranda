@@ -676,24 +676,23 @@ BOOL CALLBACK OtherPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					char * Group = new char[p2-p1+1];
 					lstrcpynA(Group, p1, p2-p1+1);
 					int i = SendDlgItemMessage(hwndDlg, IDC_PERFORMCOMBO, CB_FINDSTRINGEXACT, (WPARAM)-1, (LPARAM)Group);
-					if (i ==CB_ERR) {
+					if (i ==CB_ERR)
 						int index = SendMessageA(GetDlgItem(hwndDlg, IDC_PERFORMCOMBO), CB_ADDSTRING, 0, (LPARAM) Group);
-						//						SendDlgItemMessage(hwndDlg, IDC_PERFORMCOMBO, CB_SETITEMDATA, index, 0);
-					}
+
 					delete []Group;
 			}	}
 
-			SendDlgItemMessage(hwndDlg, IDC_PERFORMCOMBO, CB_INSERTSTRING, 0, (LPARAM)"Event: Available"	);
-			SendDlgItemMessage(hwndDlg, IDC_PERFORMCOMBO, CB_INSERTSTRING, 1, (LPARAM)"Event: Away"	);
-			SendDlgItemMessage(hwndDlg, IDC_PERFORMCOMBO, CB_INSERTSTRING, 2, (LPARAM)"Event: N/A"	);
-			SendDlgItemMessage(hwndDlg, IDC_PERFORMCOMBO, CB_INSERTSTRING, 3, (LPARAM)"Event: Occupied"	);
-			SendDlgItemMessage(hwndDlg, IDC_PERFORMCOMBO, CB_INSERTSTRING, 4, (LPARAM)"Event: DND"	);
-			SendDlgItemMessage(hwndDlg, IDC_PERFORMCOMBO, CB_INSERTSTRING, 5, (LPARAM)"Event: Free for chat"	);
-			SendDlgItemMessage(hwndDlg, IDC_PERFORMCOMBO, CB_INSERTSTRING, 6, (LPARAM)"Event: On the phone"	);
-			SendDlgItemMessage(hwndDlg, IDC_PERFORMCOMBO, CB_INSERTSTRING, 7, (LPARAM)"Event: Out for lunch"	);
-			SendDlgItemMessage(hwndDlg, IDC_PERFORMCOMBO, CB_INSERTSTRING, 8, (LPARAM)"Event: Disconnect"	);
-			SendDlgItemMessage(hwndDlg, IDC_PERFORMCOMBO, CB_INSERTSTRING, 9, (LPARAM)"ALL NETWORKS"	);
-			SendDlgItemMessage(hwndDlg, IDC_PERFORMCOMBO, CB_SETITEMDATA, -1, 0);
+			SendDlgItemMessageA(hwndDlg, IDC_PERFORMCOMBO, CB_INSERTSTRING, 0, (LPARAM)"Event: Available"	);
+			SendDlgItemMessageA(hwndDlg, IDC_PERFORMCOMBO, CB_INSERTSTRING, 1, (LPARAM)"Event: Away"	);
+			SendDlgItemMessageA(hwndDlg, IDC_PERFORMCOMBO, CB_INSERTSTRING, 2, (LPARAM)"Event: N/A"	);
+			SendDlgItemMessageA(hwndDlg, IDC_PERFORMCOMBO, CB_INSERTSTRING, 3, (LPARAM)"Event: Occupied"	);
+			SendDlgItemMessageA(hwndDlg, IDC_PERFORMCOMBO, CB_INSERTSTRING, 4, (LPARAM)"Event: DND"	);
+			SendDlgItemMessageA(hwndDlg, IDC_PERFORMCOMBO, CB_INSERTSTRING, 5, (LPARAM)"Event: Free for chat"	);
+			SendDlgItemMessageA(hwndDlg, IDC_PERFORMCOMBO, CB_INSERTSTRING, 6, (LPARAM)"Event: On the phone"	);
+			SendDlgItemMessageA(hwndDlg, IDC_PERFORMCOMBO, CB_INSERTSTRING, 7, (LPARAM)"Event: Out for lunch"	);
+			SendDlgItemMessageA(hwndDlg, IDC_PERFORMCOMBO, CB_INSERTSTRING, 8, (LPARAM)"Event: Disconnect"	);
+			SendDlgItemMessageA(hwndDlg, IDC_PERFORMCOMBO, CB_INSERTSTRING, 9, (LPARAM)"ALL NETWORKS"	);
+			SendDlgItemMessageA(hwndDlg, IDC_PERFORMCOMBO, CB_SETITEMDATA, -1, 0);
 
 			if ( pszPerformFile ) {
 				char* p1 = pszPerformFile;
@@ -718,7 +717,7 @@ BOOL CALLBACK OtherPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 						*p2 = 0;
 						PERFORM_INFO * pPref = new PERFORM_INFO;
 						pPref->Perform = mir_strdup( p1 );
-						SendDlgItemMessage(hwndDlg, IDC_PERFORMCOMBO, CB_SETITEMDATA, index, (LPARAM)pPref);
+						SendDlgItemMessageA(hwndDlg, IDC_PERFORMCOMBO, CB_SETITEMDATA, index, (LPARAM)pPref);
 					}
 
 					delete [] szNetwork;
@@ -844,10 +843,12 @@ BOOL CALLBACK OtherPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		case 0:
 			switch (((LPNMHDR)lParam)->code) {
 			case PSN_APPLY:
-				delete [] prefs->Alias;
-				prefs->Alias = new char[GetWindowTextLength(GetDlgItem(hwndDlg, IDC_ALIASEDIT))+1];
-				GetDlgItemTextA(hwndDlg,IDC_ALIASEDIT,prefs->Alias, GetWindowTextLength(GetDlgItem(hwndDlg, IDC_ALIASEDIT))+1);
-				DBWriteContactSettingString(NULL,IRCPROTONAME,"Alias",prefs->Alias);
+				mir_free( prefs->Alias );
+				{	int len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_ALIASEDIT));
+					prefs->Alias = ( char* )mir_alloc( len+1 );
+               GetDlgItemTextA( hwndDlg, IDC_ALIASEDIT, prefs->Alias, len+1 );
+				}
+				DBWriteContactSettingString( NULL, IRCPROTONAME, "Alias", prefs->Alias );
 
 				GetDlgItemText(hwndDlg,IDC_QUITMESSAGE,prefs->QuitMessage, 399);
 				DBWriteContactSettingTString(NULL,IRCPROTONAME,"QuitMessage",prefs->QuitMessage);
