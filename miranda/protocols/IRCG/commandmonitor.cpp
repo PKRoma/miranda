@@ -118,7 +118,7 @@ VOID CALLBACK KeepAliveTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime)
 		mir_sntprintf(temp2, SIZEOF(temp2), _T("PING %u"), time(0));
 
 	if (g_ircSession)
-		g_ircSession << CIrcMessage(temp2, false, false);
+		g_ircSession << CIrcMessage(temp2, g_ircSession.getCodepage(), false, false);
 }
 
 VOID CALLBACK OnlineNotifTimerProc3(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime)
@@ -131,7 +131,7 @@ VOID CALLBACK OnlineNotifTimerProc3(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTim
 	}
 
 	TString name = GetWord( ChannelsToWho.c_str(), 0 );
-	if ( name == _T("")) {
+	if ( name.empty()) {
 		ChannelsToWho = _T("");
 		int count = (int)CallService(MS_GC_GETSESSIONCOUNT, 0, (LPARAM)IRCPROTONAME);
 		for ( int i = 0; i < count; i++ ) {
@@ -164,7 +164,7 @@ VOID CALLBACK OnlineNotifTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime
 	if ( OldStatus == ID_STATUS_OFFLINE || OldStatus == ID_STATUS_CONNECTING || (!prefs->AutoOnlineNotification && !bTempForceCheck) || bTempDisableCheck) 
 	{
 		KillChatTimer(OnlineNotifTimer);
-		NamesToWho == _T("");
+		NamesToWho = _T("");
 		return;
 	}
 
@@ -367,7 +367,7 @@ CMyMonitor::~CMyMonitor()
 {
 }
 
-bool CMyMonitor::OnIrc_WELCOME(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_WELCOME( const CIrcMessage* pmsg )
 {
 	CIrcDefaultMonitor::OnIrc_WELCOME(pmsg);
 
@@ -394,7 +394,7 @@ bool CMyMonitor::OnIrc_WELCOME(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_WHOTOOLONG(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_WHOTOOLONG( const CIrcMessage* pmsg )
 {
 	TString command = GetNextUserhostReason(2);
 	if ( command[0] == 'U' )
@@ -403,7 +403,7 @@ bool CMyMonitor::OnIrc_WHOTOOLONG(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_BACKFROMAWAY(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_BACKFROMAWAY( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming ) {
 		int Temp = OldStatus;
@@ -418,7 +418,7 @@ bool CMyMonitor::OnIrc_BACKFROMAWAY(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_SETAWAY(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_SETAWAY( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming ) {
 		int Temp = OldStatus;
@@ -449,7 +449,7 @@ bool CMyMonitor::OnIrc_SETAWAY(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_JOIN(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_JOIN( const CIrcMessage* pmsg )
 {
 	if (pmsg->parameters.size() > 0 && pmsg->m_bIncoming && pmsg->prefix.sNick != g_ircSession.GetInfo().sNick) {
 		TString host = pmsg->prefix.sUser + _T("@") + pmsg->prefix.sHost;
@@ -460,7 +460,7 @@ bool CMyMonitor::OnIrc_JOIN(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_QUIT(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_QUIT( const CIrcMessage* pmsg )
 {
 	if (pmsg->m_bIncoming) 
 	{
@@ -485,7 +485,7 @@ bool CMyMonitor::OnIrc_QUIT(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_PART(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_PART( const CIrcMessage* pmsg )
 {
 	if ( pmsg->parameters.size() > 0 && pmsg->m_bIncoming ) {
 		TString host = pmsg->prefix.sUser + _T("@") + pmsg->prefix.sHost;
@@ -509,7 +509,7 @@ bool CMyMonitor::OnIrc_PART(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_KICK(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_KICK( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming && pmsg->parameters.size() > 1 )
 		DoEvent( GC_EVENT_KICK, pmsg->parameters[0].c_str(), pmsg->parameters[1].c_str(), pmsg->parameters.size()>2?pmsg->parameters[2].c_str():NULL, pmsg->prefix.sNick.c_str(), NULL, NULL, true, false); 
@@ -540,7 +540,7 @@ bool CMyMonitor::OnIrc_KICK(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_MODEQUERY(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_MODEQUERY( const CIrcMessage* pmsg )
 {
 	if ( pmsg->parameters.size() > 2 && pmsg->m_bIncoming && IsChannel( pmsg->parameters[1] )) {
 		TString sPassword = _T("");
@@ -664,7 +664,7 @@ bool CMyMonitor::OnIrc_MODE( const CIrcMessage* pmsg )
 	return true;
 }
 
-bool CMyMonitor::OnIrc_NICK(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_NICK( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming && pmsg->parameters.size() > 0 ) {
 		bool bIsMe = pmsg->prefix.sNick.c_str() == g_ircSession.GetInfo().sNick ? true : false;
@@ -688,7 +688,7 @@ bool CMyMonitor::OnIrc_NICK(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_NOTICE(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_NOTICE( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming && pmsg->parameters.size() > 1 ) {
 		if ( IsCTCP( pmsg ))
@@ -730,7 +730,7 @@ bool CMyMonitor::OnIrc_NOTICE(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_YOURHOST(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_YOURHOST( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming ) 
 		CIrcDefaultMonitor::OnIrc_YOURHOST( pmsg );
@@ -739,7 +739,7 @@ bool CMyMonitor::OnIrc_YOURHOST(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_INVITE(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_INVITE( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming && ( prefs->Ignore && IsIgnored( pmsg->prefix.sNick, pmsg->prefix.sUser, pmsg->prefix.sHost, 'i' )))
 		return true;
@@ -751,7 +751,7 @@ bool CMyMonitor::OnIrc_INVITE(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_PINGPONG(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_PINGPONG( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming && pmsg->sCommand == _T("PING"))
 		CIrcDefaultMonitor::OnIrc_PING(pmsg);
@@ -759,7 +759,7 @@ bool CMyMonitor::OnIrc_PINGPONG(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_PRIVMSG(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_PRIVMSG( const CIrcMessage* pmsg )
 {
 	if ( pmsg->parameters.size() > 1 ) {
 		if ( IsCTCP( pmsg ))
@@ -818,7 +818,7 @@ bool CMyMonitor::OnIrc_PRIVMSG(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::IsCTCP(const CIrcMessage* pmsg)
+bool CMyMonitor::IsCTCP( const CIrcMessage* pmsg )
 {
 	// is it a ctcp command, i e is the first and last characer of a PRIVMSG or NOTICE text ASCII 1
 	if ( pmsg->parameters[1].length() > 3 && pmsg->parameters[1][0] == 1 && pmsg->parameters[1][pmsg->parameters[1].length()-1] == 1 ) {
@@ -973,12 +973,12 @@ bool CMyMonitor::IsCTCP(const CIrcMessage* pmsg)
 						}	}	}
 					}
 					// ... or try another method of separating the dcc command
-					else if ( GetWord(mess.c_str(), (bIsChat) ? 4 : 5 ) != _T("")) {
+					else if ( !GetWord(mess.c_str(), (bIsChat) ? 4 : 5 ).empty() ) {
 						int index = (bIsChat) ? 4 : 5;
 						bool bFlag = false;
 
 						// look for the part of the ctcp command that contains adress, port and size
-						while ( !bFlag && GetWord(mess.c_str(), index) != _T("")) {
+						while ( !bFlag && !GetWord(mess.c_str(), index).empty() ) {
 							TString sTemp;
 							
 							if ( type == _T("chat"))
@@ -994,7 +994,7 @@ bool CMyMonitor::IsCTCP(const CIrcMessage* pmsg)
 								ind++;
 							}
 							
-							if ( sTemp[ind] == '\0' && GetWord( mess.c_str(), index + ((bIsChat)?1:2)) == _T(""))
+							if ( sTemp[ind] == '\0' && GetWord( mess.c_str(), index + ((bIsChat) ? 1 : 2 )).empty() )
 								bFlag = true;
 							index++;
 						}
@@ -1042,12 +1042,12 @@ bool CMyMonitor::IsCTCP(const CIrcMessage* pmsg)
 						}	}	}
 					}
 					// ... or try another method of separating the dcc command
-					else if ( GetWord(mess.c_str(), 4) != _T("")) {
+					else if ( !GetWord(mess.c_str(), 4).empty() ) {
 						int index = 4;
 						bool bFlag = false;
 
 						// look for the part of the ctcp command that contains adress, port and size
-						while ( !bFlag && GetWord(mess.c_str(), index) != _T("")) {
+						while ( !bFlag && !GetWord(mess.c_str(), index).empty() ) {
 							TString sTemp = GetWord(mess.c_str(), index-1) + GetWord(mess.c_str(), index);
 							
 							// if all characters are number it indicates we have found the adress, port and size parameters
@@ -1059,7 +1059,7 @@ bool CMyMonitor::IsCTCP(const CIrcMessage* pmsg)
 								ind++;
 							}
 							
-							if ( sTemp[ind] == '\0' && GetWord(mess.c_str(), index + 2) == _T(""))
+							if ( sTemp[ind] == '\0' && GetWord(mess.c_str(), index + 2).empty() )
 								bFlag = true;
 							index++;
 						}
@@ -1234,7 +1234,7 @@ bool CMyMonitor::IsCTCP(const CIrcMessage* pmsg)
 							di->bSender = false;
 							di->bTurbo = bTurbo;
 							di->bSSL = false;
-							di->bReverse = (iPort == 0 && sToken != _T("")) ? true : false;
+							di->bReverse = (iPort == 0 && !sToken.empty() ) ? true : false;
 							if( di->bReverse )
 								di->sToken = sTokenBackup;
 
@@ -1311,7 +1311,7 @@ bool CMyMonitor::IsCTCP(const CIrcMessage* pmsg)
 	return false;
 }
 
-bool CMyMonitor::OnIrc_NAMES(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_NAMES( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming && pmsg->parameters.size() > 3 )
 		sNamesList += pmsg->parameters[3] + _T(" ");
@@ -1320,7 +1320,7 @@ bool CMyMonitor::OnIrc_NAMES(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_ENDNAMES(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_ENDNAMES( const CIrcMessage* pmsg )
 {
 	HWND hActiveWindow = GetActiveWindow();
 	if ( pmsg->m_bIncoming && pmsg->parameters.size() > 1 ) {
@@ -1329,10 +1329,10 @@ bool CMyMonitor::OnIrc_ENDNAMES(const CIrcMessage* pmsg)
 		BOOL bFlag = false;
 
 		// Is the user on the names list?
-		while ( name != _T("")) {
+		while ( !name.empty() ) {
 			name = GetWord( sNamesList.c_str(), i );
 			i++;
-			if ( name != _T("")) {
+			if ( !name.empty() ) {
 				int index = 0;
 				while ( _tcschr( sUserModePrefixes.c_str(), name[index] ))
 					index++;
@@ -1393,7 +1393,7 @@ bool CMyMonitor::OnIrc_ENDNAMES(const CIrcMessage* pmsg)
 				sTemp = GetWord(sNamesList.c_str(), i);
 
 				// Fill the nicklist
-				while ( sTemp != _T("")) {
+				while ( !sTemp.empty() ) {
 					TString sStat;
 					TString sTemp2 = sTemp;
 					sStat = PrefixToStatus(sTemp[0]);
@@ -1463,10 +1463,10 @@ bool CMyMonitor::OnIrc_ENDNAMES(const CIrcMessage* pmsg)
 					TString save = _T("");
 					int i = 0;
 
-					while ( command != _T("")) {
+					while ( !command.empty() ) {
 						command = GetWord( dbv.ptszVal, i );
 						i++;
-						if ( command != _T("")) {
+						if ( !command.empty() ) {
 							TString S = command.substr(1, command.length());
 							if ( !lstrcmpi( sChanName.c_str(), S.c_str()))
 								break;
@@ -1475,7 +1475,7 @@ bool CMyMonitor::OnIrc_ENDNAMES(const CIrcMessage* pmsg)
 							save += _T(" ");
 					}	}
 
-					if ( command != _T("")) {
+					if ( !command.empty() ) {
 						save += GetWordAddress( dbv.ptszVal, i );
 						switch ( command[0] ) {
 						case 'M':
@@ -1509,7 +1509,7 @@ bool CMyMonitor::OnIrc_ENDNAMES(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_INITIALTOPIC(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_INITIALTOPIC( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming && pmsg->parameters.size() > 2 ) {
 		AddWindowItemData( pmsg->parameters[1].c_str(), 0, 0, 0, pmsg->parameters[2].c_str());
@@ -1520,7 +1520,7 @@ bool CMyMonitor::OnIrc_INITIALTOPIC(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_INITIALTOPICNAME(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_INITIALTOPICNAME( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming && pmsg->parameters.size() > 2 )
 		sTopicName = pmsg->parameters[2];
@@ -1529,7 +1529,7 @@ bool CMyMonitor::OnIrc_INITIALTOPICNAME(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_TOPIC(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_TOPIC( const CIrcMessage* pmsg )
 {
 	if ( pmsg->parameters.size() > 1 && pmsg->m_bIncoming ) {
 		DoEvent( GC_EVENT_TOPIC, pmsg->parameters[0].c_str(), pmsg->prefix.sNick.c_str(), pmsg->parameters[1].c_str(), NULL, NULL, NULL, true, false);
@@ -1540,7 +1540,7 @@ bool CMyMonitor::OnIrc_TOPIC(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_LISTSTART(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_LISTSTART( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming ) {
 		if ( list_hWnd == NULL )
@@ -1552,7 +1552,7 @@ bool CMyMonitor::OnIrc_LISTSTART(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_LIST(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_LIST( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming == 1 && list_hWnd && pmsg->parameters.size() > 2 ) {
 		ChannelNumber++;
@@ -1609,7 +1609,7 @@ bool CMyMonitor::OnIrc_LIST(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_LISTEND(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_LISTEND( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming && list_hWnd ) {
 		EnableWindow(GetDlgItem(list_hWnd, IDC_JOIN), true);
@@ -1634,7 +1634,7 @@ bool CMyMonitor::OnIrc_LISTEND(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_BANLIST(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_BANLIST( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming && pmsg->parameters.size() > 2 ) {
 		if ( manager_hWnd && (
@@ -1662,7 +1662,7 @@ bool CMyMonitor::OnIrc_BANLIST(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_BANLISTEND(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_BANLISTEND( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming && pmsg->parameters.size() > 1 ) {
 		if ( manager_hWnd && 
@@ -1685,7 +1685,7 @@ bool CMyMonitor::OnIrc_BANLISTEND(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_WHOIS_NAME(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_WHOIS_NAME( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming && pmsg->parameters.size() > 5 && ManualWhoisCount > 0 ) {
 		if ( whois_hWnd == NULL )
@@ -1736,7 +1736,7 @@ bool CMyMonitor::OnIrc_WHOIS_AWAY( const CIrcMessage* pmsg )
 	return true;
 }
 
-bool CMyMonitor::OnIrc_WHOIS_OTHER(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_WHOIS_OTHER( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming && whois_hWnd && pmsg->parameters.size() > 2 && ManualWhoisCount > 0 ) {
 		TCHAR temp[1024], temp2[1024];
@@ -1749,7 +1749,7 @@ bool CMyMonitor::OnIrc_WHOIS_OTHER(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_WHOIS_END(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_WHOIS_END( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming && pmsg->parameters.size() > 1 && ManualWhoisCount < 1 ) {
 		CONTACT_TYPE user = { (TCHAR*)pmsg->parameters[1].c_str(), NULL, NULL, false, false, true};
@@ -1765,7 +1765,7 @@ bool CMyMonitor::OnIrc_WHOIS_END(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_WHOIS_IDLE(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_WHOIS_IDLE( const CIrcMessage* pmsg )
 {
 	int D = 0;
 	int H = 0;
@@ -1799,7 +1799,7 @@ bool CMyMonitor::OnIrc_WHOIS_IDLE(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_WHOIS_SERVER(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_WHOIS_SERVER( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming && whois_hWnd && pmsg->parameters.size() > 2 && ManualWhoisCount > 0 )
 		SetDlgItemText( whois_hWnd, IDC_INFO_SERVER, pmsg->parameters[2].c_str());
@@ -1807,7 +1807,7 @@ bool CMyMonitor::OnIrc_WHOIS_SERVER(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_WHOIS_AUTH(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_WHOIS_AUTH( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming && whois_hWnd && pmsg->parameters.size() > 2 && ManualWhoisCount > 0 ) {
 		if ( pmsg->sCommand == _T("330"))
@@ -1821,7 +1821,7 @@ bool CMyMonitor::OnIrc_WHOIS_AUTH(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_WHOIS_NO_USER(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_WHOIS_NO_USER( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming && pmsg->parameters.size() > 2 && !IsChannel( pmsg->parameters[1] )) {
 		if ( whois_hWnd ) {
@@ -1867,7 +1867,7 @@ bool CMyMonitor::OnIrc_WHOIS_NO_USER(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_NICK_ERR(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_NICK_ERR( const CIrcMessage* pmsg )
 {
 	if (( nickflag || prefs->AlternativeNick[0] == 0) && pmsg->m_bIncoming && pmsg->parameters.size() > 2 ) {
 		if ( nick_hWnd == NULL )
@@ -1882,7 +1882,7 @@ bool CMyMonitor::OnIrc_NICK_ERR(const CIrcMessage* pmsg)
 		TCHAR m[200];
 		mir_sntprintf( m, SIZEOF(m), _T("NICK %s"), prefs->AlternativeNick );
 		if ( g_ircSession )
-			g_ircSession << irc::CIrcMessage( m );
+			g_ircSession << irc::CIrcMessage( m, g_ircSession.getCodepage() );
 
 		nickflag = true;
 	}
@@ -1891,7 +1891,7 @@ bool CMyMonitor::OnIrc_NICK_ERR(const CIrcMessage* pmsg)
  	return true;
 }
 
-bool CMyMonitor::OnIrc_JOINERROR(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_JOINERROR( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming ) {
 		DBVARIANT dbv;
@@ -1900,7 +1900,7 @@ bool CMyMonitor::OnIrc_JOINERROR(const CIrcMessage* pmsg)
 			TString save = _T("");
 			int i = 0;
 
-			while ( command != _T("")) {
+			while ( !command.empty() ) {
 				command = GetWord( dbv.ptszVal, i );
 				i++;
 
@@ -1921,7 +1921,7 @@ bool CMyMonitor::OnIrc_JOINERROR(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_UNKNOWN(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_UNKNOWN( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming && pmsg->parameters.size() > 0 ) {
 		if ( pmsg->parameters[0] == _T("WHO") && GetNextUserhostReason(2) != _T("U"))
@@ -1933,7 +1933,7 @@ bool CMyMonitor::OnIrc_UNKNOWN(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_ENDMOTD(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_ENDMOTD( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming && !bPerformDone )
 		DoOnConnect( pmsg );
@@ -1941,7 +1941,7 @@ bool CMyMonitor::OnIrc_ENDMOTD(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_NOOFCHANNELS(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_NOOFCHANNELS( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming && pmsg->parameters.size() > 1 )
 		NoOfChannels = StrToInt( pmsg->parameters[1].c_str());
@@ -1953,7 +1953,7 @@ bool CMyMonitor::OnIrc_NOOFCHANNELS(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_ERROR(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_ERROR( const CIrcMessage* pmsg )
 {
 	if	( pmsg->m_bIncoming && !prefs->DisableErrorPopups ) {
 		MIRANDASYSTRAYNOTIFY msn;
@@ -1976,7 +1976,7 @@ bool CMyMonitor::OnIrc_ERROR(const CIrcMessage* pmsg)
 	return true;	
 }
 
-bool CMyMonitor::OnIrc_WHO_END(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_WHO_END( const CIrcMessage* pmsg )
 {
 	TString command = GetNextUserhostReason(2);
 	if ( command[0] == 'S' ) {
@@ -2085,7 +2085,7 @@ LBL_Exit:
 	return true;
 }
 
-bool CMyMonitor::OnIrc_WHO_REPLY(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_WHO_REPLY( const CIrcMessage* pmsg )
 {
 	TString command = PeekAtReasons(2);
 	if ( pmsg->m_bIncoming && pmsg->parameters.size() > 6 && command[0] == 'S' ) {
@@ -2104,7 +2104,7 @@ bool CMyMonitor::OnIrc_WHO_REPLY(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_TRYAGAIN(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_TRYAGAIN( const CIrcMessage* pmsg )
 {
 	TString command = _T("");
 	if ( pmsg->m_bIncoming && pmsg->parameters.size() > 1 ) {
@@ -2119,12 +2119,12 @@ bool CMyMonitor::OnIrc_TRYAGAIN(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_USERHOST_REPLY(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_USERHOST_REPLY( const CIrcMessage* pmsg )
 {
 	TString command = _T("");
 	if ( pmsg->m_bIncoming ) {
 		command = GetNextUserhostReason(1);
-		if ( command != _T("") && command != _T("U") && pmsg->parameters.size() > 1 ) {
+		if ( !command.empty() && command != _T("U") && pmsg->parameters.size() > 1 ) {
 			CONTACT finduser = {NULL, NULL, NULL, false, false, false};
 			TCHAR* params = NULL;
 			TCHAR* next = NULL;
@@ -2159,7 +2159,7 @@ bool CMyMonitor::OnIrc_USERHOST_REPLY(const CIrcMessage* pmsg)
 //			for(p1 = GetWordAddress(params, 0); *p1; p1 = next)
 			j = 0;
 			sTemp = GetWord( pmsg->parameters[1].c_str(), j );
-			while ( sTemp != _T("")) {
+			while ( !sTemp.empty() ) {
 //				p2 = next = GetWordAddress(p1, 1);
 //				while(*(p2 - 1) == ' ') p2--;
 //				*p2 = '\0';
@@ -2265,7 +2265,7 @@ bool CMyMonitor::OnIrc_USERHOST_REPLY(const CIrcMessage* pmsg)
 	return true;
 }
 
-bool CMyMonitor::OnIrc_SUPPORT(const CIrcMessage* pmsg)
+bool CMyMonitor::OnIrc_SUPPORT( const CIrcMessage* pmsg )
 {
 	static const TCHAR* lpszFmt = _T("Try server %99[^ ,], port %19s");
 	TCHAR szAltServer[100];
@@ -2341,7 +2341,7 @@ bool CMyMonitor::OnIrc_SUPPORT(const CIrcMessage* pmsg)
 	return true;
 }
 
-void CMyMonitor::OnIrcDefault(const CIrcMessage* pmsg)
+void CMyMonitor::OnIrcDefault( const CIrcMessage* pmsg )
 {
 	CIrcDefaultMonitor::OnIrcDefault(pmsg);
 	ShowMessage( pmsg );
@@ -2548,13 +2548,13 @@ char* IsIgnored( String user, char type )
 			if ( !bUserContainsWild && WCCmp( GetWord(p3, 0).c_str(), tuser.c_str())  
 				|| bUserContainsWild && !lstrcmpi(tuser.c_str(), GetWord(p3, 0).c_str()))
 			{
-				if ( GetWord(p3, 1) == _T("") || GetWord(p3, 1)[0] != '+' )
+				if ( GetWord(p3, 1).empty() || GetWord(p3, 1)[0] != '+' )
 					goto IGNORELABEL;
 
 				if ( !_tcschr( GetWord( p3, 1).c_str(), type ))
 					goto IGNORELABEL;
 
-				if ( GetWord(p3, 2) == _T("")) {
+				if ( GetWord(p3, 2).empty() ) {
 					mir_free( p3 );
 					return p1;
 				}

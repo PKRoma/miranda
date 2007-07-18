@@ -208,7 +208,7 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 
 	else if (command == _T("/clear")) {
 		TString S;
-		if ( one != _T("")) {
+		if ( !one.empty() ) {
 			if ( one == _T("server"))
 				S = _T("Network log");
 			else
@@ -234,7 +234,7 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 		if ( g_ircSession ) {
 			String IgnoreFlags = "";
 			TCHAR temp[500];
-			if ( one == _T("")) {
+			if ( one.empty() ) {
 				if ( prefs->Ignore )
 					DoEvent( GC_EVENT_INFORMATION, NULL, g_ircSession.GetInfo().sNick.c_str(), TranslateT("Ignore system is enabled"), NULL, NULL, NULL, true, false); 
 				else
@@ -254,7 +254,7 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 			if ( !_tcschr( one.c_str(), '!' ) && !_tcschr( one.c_str(), '@' ))
 				one += _T("!*@*");
 			
-			if ( two != _T("") && two[0] == '+' ) {
+			if ( !two.empty() && two[0] == '+' ) {
 				if ( _tcschr( two.c_str(), 'q'))
 					IgnoreFlags += "q";
 				if ( _tcschr( two.c_str(), 'n'))
@@ -770,6 +770,9 @@ bool PostIrcMessageWnd( TCHAR* window, HANDLE hContact, const TCHAR* szBuf )
 	if ( Message.empty())
 		return 0;
 	
+	CHANNELINFO* wi = (CHANNELINFO *)DoEvent(GC_EVENT_GETITEMDATA, windowname, NULL, NULL, NULL, NULL, NULL, FALSE, FALSE, 0);
+	int codepage = ( wi ) ? wi->codepage : (( g_ircSession ) ? g_ircSession.getCodepage() : IRC_DEFAULT_CODEPAGE );
+
 	// process the message
 	while ( !Message.empty()) {
 		// split the text into lines, and do an automatic textsplit on long lies as well
@@ -792,14 +795,14 @@ bool PostIrcMessageWnd( TCHAR* window, HANDLE hContact, const TCHAR* szBuf )
 				continue;
 			
 			DoThis = ReplaceString( DoThis, _T("%"), _T("%%"));
-			TString S = GetWordAddress(DoThis.c_str(), 1);
-			g_ircSession << irc::CIrcMessage(S.c_str());
+			TString S = GetWordAddress( DoThis.c_str(), 1 );
+			g_ircSession << CIrcMessage( S.c_str(), codepage );
 			continue;
 		}
 
 		// Do this if the message is not a command
 		if ( GetWord( DoThis.c_str(), 0)[0] != '/' || hContact) {
-			if ( lstrcmpi(window, _T("Network log")) == 0 && g_ircSession.GetInfo().sServerName != _T(""))
+			if ( lstrcmpi(window, _T("Network log")) == 0 && !g_ircSession.GetInfo().sServerName.empty() )
 				DoThis = (TString)_T("/PRIVMSG ") + g_ircSession.GetInfo().sServerName + _T(" ") + DoThis;
 			else
 				DoThis = (TString)_T("/PRIVMSG ") + windowname + _T(" ") + DoThis;
@@ -807,34 +810,38 @@ bool PostIrcMessageWnd( TCHAR* window, HANDLE hContact, const TCHAR* szBuf )
 		}
 
 		// and here we send it unless the command was a hardcoded one that should not be sent
-		if ( !DoHardcodedCommand( DoThis, windowname, hContact )) {
-			if ( g_ircSession || bDCC ) {
-				if (!flag && g_ircSession )
-					DoThis = DoIdentifiers(DoThis, windowname);
+		if ( DoHardcodedCommand( DoThis, windowname, hContact ))
+			continue;
+
+		if ( !g_ircSession && !bDCC )
+			continue;
+
+		if ( !flag && g_ircSession )
+			DoThis = DoIdentifiers(DoThis, windowname);
 				
-				if ( hContact ) {
-					if ( flag && bDCC ) {
-						CDccSession* dcc = g_ircSession.FindDCCSession( hContact );
-						if ( dcc ) {
-							DoThis = FormatMsg( DoThis );
-							TString mess = GetWordAddress(DoThis.c_str(), 2);
-							if ( mess[0] == ':' )
-								mess.erase(0,1);
-							mess += '\n';
-							dcc->SendStuff( mess.c_str());
-						}
-					}
-					else if( g_ircSession ) {
-						DoThis = ReplaceString( DoThis, _T("%"), _T("%%"));
-						DoThis = FormatMsg( DoThis );
-						g_ircSession << irc::CIrcMessage( DoThis.c_str(), false, false );
-					}
-				}
-				else {
-					DoThis = ReplaceString( DoThis, _T("%"), _T("%%"));
+		if ( hContact ) {
+			if ( flag && bDCC ) {
+				CDccSession* dcc = g_ircSession.FindDCCSession( hContact );
+				if ( dcc ) {
 					DoThis = FormatMsg( DoThis );
-					g_ircSession << irc::CIrcMessage( DoThis.c_str(), false, true );
-	}	}	}	}
+					TString mess = GetWordAddress(DoThis.c_str(), 2);
+					if ( mess[0] == ':' )
+						mess.erase(0,1);
+					mess += '\n';
+					dcc->SendStuff( mess.c_str());
+				}
+			}
+			else if( g_ircSession ) {
+				DoThis = ReplaceString( DoThis, _T("%"), _T("%%"));
+				DoThis = FormatMsg( DoThis );
+				g_ircSession << CIrcMessage( DoThis.c_str(), false, false );
+			}
+		}
+		else {
+			DoThis = ReplaceString( DoThis, _T("%"), _T("%%"));
+			DoThis = FormatMsg( DoThis );
+			g_ircSession << CIrcMessage( DoThis.c_str(), false, true );
+	}	}
 
 	return 1;
 }

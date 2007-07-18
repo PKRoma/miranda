@@ -261,7 +261,7 @@ int Scripting_GetIrcData(WPARAM wparam, LPARAM lparam)
 					j++;
 			}	}
 			
-			if ( S != _T(""))
+			if ( !S.empty() )
 				sOutput = ( TCHAR* )S.c_str();
 		}
 		// send it to mbot

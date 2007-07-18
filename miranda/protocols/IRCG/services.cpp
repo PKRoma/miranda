@@ -251,7 +251,7 @@ static int Service_FileSend(WPARAM wParam,LPARAM lParam)
 		}
 
 		DBVARIANT dbv;
-		if (!DBGetContactSetting(ccs->hContact, IRCPROTONAME, "Nick", &dbv) && dbv.type == DBVT_ASCIIZ) {
+		if ( !DBGetContactSettingTString( ccs->hContact, IRCPROTONAME, "Nick", &dbv )) {
 			// set up a basic DCCINFO struct and pass it to a DCC object
 			dci = new DCCINFO;
 			dci->sFileAndPath = files[index];
@@ -328,7 +328,7 @@ static int Service_FileSend(WPARAM wParam,LPARAM lParam)
 				index++;
 			}
 
-			DBFreeVariant(&dbv);
+			DBFreeVariant( &dbv );
 	}	}
 
 	if (dci)
@@ -430,20 +430,19 @@ static int Service_EventDoubleclicked(WPARAM wParam,LPARAM lParam)
 
 int Service_UserDeletedContact(WPARAM wp, LPARAM lp)
 {
-	DBVARIANT dbv;
-	HANDLE hContact = (HANDLE) wp;
-
-	if (!hContact)
+	HANDLE hContact = ( HANDLE )wp;
+	if ( !hContact )
 		return 0;
 
-	if (!DBGetContactSettingTString((HANDLE)wp, IRCPROTONAME, "Nick", &dbv) && dbv.type == DBVT_ASCIIZ ) {
-		int type = DBGetContactSettingByte(hContact, IRCPROTONAME, "ChatRoom", 0);
-		if ( type != 0) {
+	DBVARIANT dbv;
+	if ( !DBGetContactSettingTString( hContact, IRCPROTONAME, "Nick", &dbv )) {
+		int type = DBGetContactSettingByte( hContact, IRCPROTONAME, "ChatRoom", 0 );
+		if ( type != 0 ) {
 			GCEVENT gce = {0};
 			GCDEST gcd = {0};
 			TString S = _T("");
 			if (type == GCW_CHATROOM)
-				S = MakeWndID(dbv.ptszVal);
+				S = MakeWndID( dbv.ptszVal );
 			if (type == GCW_SERVER)
 				S = _T("Network log");
 			gce.cbSize = sizeof(GCEVENT);
@@ -472,20 +471,19 @@ int Service_UserDeletedContact(WPARAM wp, LPARAM lp)
 
 static int Service_Menu1Command(WPARAM wp, LPARAM lp)
 {
-	DBVARIANT dbv;
-
-	if (!wp )
+	if ( !wp )
 		return 0;
 
-	if (!DBGetContactSetting((HANDLE)wp, IRCPROTONAME, "Nick", &dbv) && dbv.type == DBVT_ASCIIZ ) {
+	DBVARIANT dbv;
+	if ( !DBGetContactSettingTString(( HANDLE )wp, IRCPROTONAME, "Nick", &dbv )) {
 		int type = DBGetContactSettingByte((HANDLE)wp, IRCPROTONAME, "ChatRoom", 0);
 		if ( type != 0) {
 			GCEVENT gce = {0};
 			GCDEST gcd = {0};
 			TString S = _T("");
-			if (type == GCW_CHATROOM)
-				S = MakeWndID(dbv.ptszVal);
-			if (type == GCW_SERVER)
+			if ( type == GCW_CHATROOM)
+				S = MakeWndID( dbv.ptszVal );
+			if ( type == GCW_SERVER )
 				S = _T("Network log");
 			gcd.iType = GC_EVENT_CONTROL;
 			gcd.ptszID = ( TCHAR* )S.c_str();
@@ -739,8 +737,8 @@ int Service_GCEventHook(WPARAM wParam,LPARAM lParam)
 
 			// first see if the scripting module should modify or stop this event
 			if (bMbotInstalled && prefs->ScriptingEnabled && wParam == NULL) {
-				gchtemp = (GCHOOK *)mmi.mmi_malloc(sizeof(GCHOOK));
-				gchtemp->pDest = (GCDEST *)mmi.mmi_malloc(sizeof(GCDEST));
+				gchtemp = (GCHOOK *)mir_alloc(sizeof(GCHOOK));
+				gchtemp->pDest = (GCDEST *)mir_alloc(sizeof(GCDEST));
 				gchtemp->pDest->iType = gchook->pDest->iType;
 				gchtemp->dwData = gchook->dwData;
 
@@ -1005,18 +1003,16 @@ static int Service_SystemPreShutdown(WPARAM wParam,LPARAM lParam)
 static int Service_MenuPreBuild(WPARAM wParam,LPARAM lParam)
 {
 	DBVARIANT dbv;
-	char *szProto;
-	CLISTMENUITEM clmi;
-	HANDLE hContact = (HANDLE) wParam;
 
-	if (!hContact)
+	HANDLE hContact = ( HANDLE )wParam;
+	if ( !hContact )
 		return 0;
 
-	memset( &clmi, 0, sizeof( clmi ));
+	CLISTMENUITEM clmi = { 0 };
 	clmi.cbSize = sizeof( clmi );
 	clmi.flags = CMIM_FLAGS | CMIM_NAME | CMIM_ICON;
 
-	szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) wParam, 0);
+	char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) wParam, 0);
 	if (szProto && !lstrcmpiA(szProto, IRCPROTONAME)) {
 		if (DBGetContactSettingByte(hContact, IRCPROTONAME, "ChatRoom", 0) == GCW_CHATROOM) {
 			clmi.icolibItem = GetIconHandle(IDI_PART);
@@ -1040,22 +1036,22 @@ static int Service_MenuPreBuild(WPARAM wParam,LPARAM lParam)
 			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hContactMenu2, ( LPARAM )&clmi );
 			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hContactMenu3, ( LPARAM )&clmi );
 		}
-		else if (!DBGetContactSetting((void *)wParam, IRCPROTONAME, "Default", &dbv)&& dbv.type == DBVT_ASCIIZ) {
-			BYTE bDcc = DBGetContactSettingByte((HANDLE) wParam, IRCPROTONAME, "DCC", 0) ;
+		else if ( !DBGetContactSettingTString( hContact, IRCPROTONAME, "Default", &dbv )) {
+			BYTE bDcc = DBGetContactSettingByte( hContact, IRCPROTONAME, "DCC", 0) ;
 
 			clmi.flags = CMIM_FLAGS | CMIF_HIDDEN;
 			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hContactMenu1, ( LPARAM )&clmi );
 
 			clmi.flags = CMIM_NAME | CMIM_ICON | CMIM_FLAGS;
-			if (bDcc) {
-				if (DBGetContactSettingWord((void *)wParam, IRCPROTONAME, "Status", ID_STATUS_OFFLINE) == ID_STATUS_OFFLINE)
+			if ( bDcc ) {
+				if (DBGetContactSettingWord( hContact, IRCPROTONAME, "Status", ID_STATUS_OFFLINE) == ID_STATUS_OFFLINE)
 					clmi.flags = CMIM_NAME|CMIM_ICON | CMIM_FLAGS |CMIF_HIDDEN;
 				clmi.icolibItem = GetIconHandle(IDI_DELETE);
 				clmi.pszName = LPGEN("Di&sconnect");
 				CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hContactMenu2, ( LPARAM )&clmi );
 			}
 			else {
-				if (!g_ircSession)
+				if ( !g_ircSession )
 					clmi.flags = CMIM_NAME | CMIM_ICON | CMIM_FLAGS |CMIF_HIDDEN;
 				clmi.icolibItem = GetIconHandle(IDI_WHOIS);
 				clmi.pszName = LPGEN("&WhoIs info");
@@ -1068,10 +1064,10 @@ static int Service_MenuPreBuild(WPARAM wParam,LPARAM lParam)
 				clmi.flags = CMIM_NAME | CMIM_ICON | CMIM_FLAGS;
 
 			clmi.icolibItem = GetIconHandle(IDI_BLOCK);
-			if (DBGetContactSettingWord((HANDLE)wParam, IRCPROTONAME, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE) {
+			if (DBGetContactSettingWord( hContact, IRCPROTONAME, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE) {
 				char * host = NULL;
 				DBVARIANT dbv3;
-				if ( !DBGetContactSetting((HANDLE) wParam, IRCPROTONAME, "Host", &dbv3) && dbv3.type == DBVT_ASCIIZ ) {
+				if ( !DBGetContactSetting( hContact, IRCPROTONAME, "Host", &dbv3) && dbv3.type == DBVT_ASCIIZ ) {
 					host = dbv3.pszVal;
 					clmi.pszName = LPGEN("&Add to ignore list");
 					DBFreeVariant( &dbv3 );
@@ -1081,7 +1077,7 @@ static int Service_MenuPreBuild(WPARAM wParam,LPARAM lParam)
 			else clmi.flags = CMIM_NAME | CMIM_ICON | CMIM_FLAGS |CMIF_HIDDEN;
 
 			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hContactMenu3, ( LPARAM )&clmi );
-			DBFreeVariant(&dbv);
+			DBFreeVariant( &dbv );
 	}	}
 
 	return 0;
@@ -1473,22 +1469,21 @@ static int Service_GetAwayMessage(WPARAM wParam, LPARAM lParam)
 
 static int Service_InitUserInfo(WPARAM wParam, LPARAM lParam)
 {
-	char *szProto;
-	szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, lParam, 0);
-	DBVARIANT dbv;
+	char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, lParam, 0);
 	HANDLE hContact = (HANDLE) lParam;
-	if (!hContact || !szProto || lstrcmpiA(szProto, IRCPROTONAME))
+	if ( !hContact || !szProto || lstrcmpiA( szProto, IRCPROTONAME ))
 		return 0;
 
-	if ( DBGetContactSettingByte(hContact, IRCPROTONAME, "ChatRoom", 0) != 0 )
+	if ( DBGetContactSettingByte( hContact, IRCPROTONAME, "ChatRoom", 0) != 0 )
 		return 0;
 
-	if ( DBGetContactSettingByte(hContact, IRCPROTONAME, "DCC", 0) != 0 )
+	if ( DBGetContactSettingByte( hContact, IRCPROTONAME, "DCC", 0) != 0 )
 		return 0;
 
-	if (!DBGetContactSetting(hContact, IRCPROTONAME, "Default", &dbv) && dbv.type == DBVT_ASCIIZ) {
-		if (IsChannel(dbv.pszVal)) {
-			DBFreeVariant(&dbv);
+	DBVARIANT dbv;
+	if ( !DBGetContactSettingTString( hContact, IRCPROTONAME, "Default", &dbv )) {
+		if ( IsChannel( dbv.ptszVal )) {
+			DBFreeVariant( &dbv );
 			return 0;
 		}
 		DBFreeVariant(&dbv);

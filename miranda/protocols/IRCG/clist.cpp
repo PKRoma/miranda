@@ -24,7 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern PREFERENCES *prefs;
 extern char * IRCPROTONAME;
 
-
 BOOL CList_AddDCCChat(TString name, TString hostmask, unsigned long adr, int port) 
 {
 	HANDLE hContact;
@@ -124,56 +123,45 @@ HANDLE CList_AddContact(CONTACT_TYPE * user, bool InList, bool SetOnline)
 HANDLE CList_SetOffline(struct CONTACT_TYPE * user)
 {
 	DBVARIANT dbv;
-    HANDLE hContact = CList_FindContact(user);
-	if (hContact ) 
-	{
-		if (!DBGetContactSetting(hContact, IRCPROTONAME, "Default", &dbv) && dbv.type == DBVT_ASCIIZ)
-		{
+	HANDLE hContact = CList_FindContact(user);
+	if ( hContact ) {
+		if ( !DBGetContactSettingTString( hContact, IRCPROTONAME, "Default", &dbv )) {
 			DBWriteContactSettingString(hContact, IRCPROTONAME, "User", "");
 			DBWriteContactSettingString(hContact, IRCPROTONAME, "Host", "");
-			DBWriteContactSettingString(hContact, IRCPROTONAME, "Nick", dbv.pszVal);
+			DBWriteContactSettingTString(hContact, IRCPROTONAME, "Nick", dbv.ptszVal);
 			DBWriteContactSettingWord(hContact, IRCPROTONAME, "Status", ID_STATUS_OFFLINE);
 			DBFreeVariant(&dbv);
 			return hContact;
-		}
-	}
+	}	}
 
 	return 0;
 }
+
 bool CList_SetAllOffline(BYTE ChatsToo)
 {
-    HANDLE hContact;
-    char *szProto;
 	DBVARIANT dbv;
-
 
 	g_ircSession.DisconnectAllDCCSessions(false);
 
-
-    hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-    while (hContact) 
-	{
-       szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-       if (szProto != NULL && !lstrcmpiA(szProto, IRCPROTONAME)) 
-	   {
-			if(DBGetContactSettingByte(hContact, IRCPROTONAME, "ChatRoom", 0) == 0)
-			{
-				if (DBGetContactSettingByte(hContact, IRCPROTONAME, "DCC", 0) != 0)
-				{
-					if(ChatsToo)
+	HANDLE hContact = (HANDLE) CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
+	while ( hContact ) {
+		char* szProto = (char *) CallService( MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0 );
+		if ( szProto != NULL && !lstrcmpiA( szProto, IRCPROTONAME )) {
+			if ( DBGetContactSettingByte( hContact, IRCPROTONAME, "ChatRoom", 0 ) == 0 ) {
+				if ( DBGetContactSettingByte(hContact, IRCPROTONAME, "DCC", 0 ) != 0 ) {
+					if ( ChatsToo )
 						DBWriteContactSettingWord(hContact, IRCPROTONAME, "Status", ID_STATUS_OFFLINE);
 				}
-				else if (!DBGetContactSetting(hContact, IRCPROTONAME, "Default", &dbv) && dbv.type == DBVT_ASCIIZ)
-				{
-					DBWriteContactSettingString(hContact, IRCPROTONAME, "Nick", dbv.pszVal);
-					DBWriteContactSettingWord(hContact, IRCPROTONAME, "Status", ID_STATUS_OFFLINE);
-					DBFreeVariant(&dbv);
+				else if ( !DBGetContactSettingTString( hContact, IRCPROTONAME, "Default", &dbv )) {
+					DBWriteContactSettingTString( hContact, IRCPROTONAME, "Nick", dbv.ptszVal);
+					DBWriteContactSettingWord( hContact, IRCPROTONAME, "Status", ID_STATUS_OFFLINE );
+					DBFreeVariant( &dbv );
 				}
-				DBDeleteContactSetting(hContact, IRCPROTONAME, "IP");
-				DBWriteContactSettingString(hContact, IRCPROTONAME, "User", "");
-				DBWriteContactSettingString(hContact, IRCPROTONAME, "Host", "");
-			}
-		}
+				DBDeleteContactSetting( hContact, IRCPROTONAME, "IP" );
+				DBWriteContactSettingString( hContact, IRCPROTONAME, "User", "" );
+				DBWriteContactSettingString( hContact, IRCPROTONAME, "Host", "" );
+		}	}
+
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
 	return true;

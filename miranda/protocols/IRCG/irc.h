@@ -97,6 +97,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define IRC_MENU2CHANNEL      "/Menu2ChannelMenu"
 #define IRC_MENU3CHANNEL      "/Menu3ChannelMenu"
 
+#if defined( _UNICODE )
+	#define IRC_DEFAULT_CODEPAGE CP_UTF8
+#else
+	#define IRC_DEFAULT_CODEPAGE CP_ACP
+#endif
+
 #define STR_QUITMESSAGE  "\002Miranda IM!\002 Smaller, Faster, Easier. http://miranda-im.org"
 #define STR_USERINFO     "I'm a happy Miranda IM user! Get it here: http://miranda-im.org"
 #define STR_AWAYMESSAGE  "I'm away from the computer." // Default away
@@ -174,7 +180,8 @@ typedef struct IPRESOLVE_INFO_TYPE			// Contains info about the channels
 {
 	int iType;
 	char* pszAdr;
-} IPRESOLVE;
+}
+	IPRESOLVE;
 
 typedef struct WINDOW_INFO_TYPE			// Contains info about the channels
 {
@@ -182,7 +189,9 @@ typedef struct WINDOW_INFO_TYPE			// Contains info about the channels
 	TCHAR* pszMode;
 	TCHAR* pszPassword;
 	TCHAR* pszLimit;
-} CHANNELINFO;
+	int    codepage;
+}
+	CHANNELINFO;
 
 typedef struct SERVER_INFO_TYPE			// Contains info about different servers
 {
@@ -192,15 +201,14 @@ typedef struct SERVER_INFO_TYPE			// Contains info about different servers
 	char* PortStart;
 	char* PortEnd;	
 	int iSSL;
-} SERVER_INFO;
-
-
+}
+	SERVER_INFO;
 
 typedef struct PERFORM_INFO_TYPE		// Contains 'Perform buffer' for different networks
 {
 	char* Perform;
-
-} PERFORM_INFO;
+}
+	PERFORM_INFO;
 
 typedef struct CONTACT_TYPE			// Contains info about users
 {

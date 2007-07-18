@@ -94,8 +94,10 @@ public :
 	std::vector<TString> parameters;
 	bool m_bIncoming;
 	bool m_bNotify;
-	CIrcMessage() : m_bIncoming(false), m_bNotify(true) {} // default constructor
-	CIrcMessage(const TCHAR* lpszCmdLine, bool bIncoming=false, bool bNotify = true); // parser constructor
+	int  m_codePage;
+
+	CIrcMessage(); // default constructor
+	CIrcMessage(const TCHAR* lpszCmdLine, int codepage, bool bIncoming=false, bool bNotify = true); // parser constructor
 	CIrcMessage(const CIrcMessage& m); // copy constructor
 
 	void Reset();
@@ -219,10 +221,14 @@ public :
 	// send-to-stream operators
 	CIrcSession& operator << (const CIrcMessage& m);
 
+	__inline int getCodepage() const
+	{	return codepage;
+	}
+
 protected :
+	int codepage;
 	CIrcSessionInfo m_info;
 	CSSLSession sslSession;
-	int codepage;
 	HANDLE con;
 	HANDLE hBindPort;
 	void DoReceive();
@@ -383,8 +389,4 @@ public:
 }; // end of namespace irc
 ////////////////////////////////////////////////////////////////////
 
-
-
 #endif // _IRC_H_
-
-

@@ -1585,7 +1585,7 @@ BOOL CALLBACK IgnorePrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 
 					*pTemp = 0;
 					TCHAR* p3 = mir_a2t( p1 );
-					if ( GetWord(p3, 0) != _T("") && GetWord(p3, 0) != _T("")) {
+					if ( !GetWord(p3, 0).empty() && !GetWord(p3, 0).empty()) {
 						TString mask = GetWord(p3, 0);
 						TString flags = GetWord(p3, 1);
 						TString network = GetWordAddress(p3, 2);

@@ -707,7 +707,7 @@ BOOL CALLBACK QuickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			DeleteObject(hFont);				
 			
 			int j = (int) SendMessage(GetDlgItem(hwndDlg, IDC_SERVERCOMBO), CB_GETCOUNT, 0, 0);
-			for (int index2 = 0; index2 < j; index2++) {
+			for ( int index2 = 0; index2 < j; index2++ ) {
 				SERVER_INFO * pData = (SERVER_INFO *)SendMessage(GetDlgItem(hwndDlg, IDC_SERVERCOMBO), CB_GETITEMDATA, index2, 0);
 				delete []pData->Name;
 				delete []pData->Address;
@@ -771,7 +771,7 @@ BOOL CALLBACK UserDetailsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 		{
 			DBVARIANT dbv;
 			hContact = (HANDLE) lParam;
-			BYTE bAdvanced = DBGetContactSettingByte(hContact, IRCPROTONAME, "AdvancedMode", 0);
+			BYTE bAdvanced = DBGetContactSettingByte( hContact, IRCPROTONAME, "AdvancedMode", 0);
 
 			TranslateDialogDefault(hwndDlg);
 
@@ -783,24 +783,24 @@ BOOL CALLBACK UserDetailsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 
 			if ( !bAdvanced ) {
 				SetDlgItemTextA(hwndDlg, IDC_DEFAULT, STR_BASIC);
-				if ( !DBGetContactSettingTString(hContact, IRCPROTONAME, "Default", &dbv)) {
+				if ( !DBGetContactSettingTString( hContact, IRCPROTONAME, "Default", &dbv)) {
 					SetDlgItemText(hwndDlg, IDC_WILDCARD, dbv.ptszVal);
 					DBFreeVariant(&dbv);
 				}
 			}
 			else {
 				SetDlgItemTextA(hwndDlg, IDC_DEFAULT, STR_ADVANCED);
-				if ( !DBGetContactSettingTString(hContact, IRCPROTONAME, "UWildcard", &dbv)) {
+				if ( !DBGetContactSettingTString( hContact, IRCPROTONAME, "UWildcard", &dbv)) {
 					SetDlgItemText(hwndDlg, IDC_WILDCARD, dbv.ptszVal);
 					DBFreeVariant(&dbv);
 			}	}
 
-			if ( !DBGetContactSettingTString(hContact, IRCPROTONAME, "UUser", &dbv)) {
+			if ( !DBGetContactSettingTString( hContact, IRCPROTONAME, "UUser", &dbv)) {
 				SetDlgItemText(hwndDlg, IDC_USER, dbv.ptszVal);
 				DBFreeVariant(&dbv);
 			}
 
-			if (!DBGetContactSettingTString(hContact, IRCPROTONAME, "UHost", &dbv)) {
+			if (!DBGetContactSettingTString( hContact, IRCPROTONAME, "UHost", &dbv)) {
 				SetDlgItemText(hwndDlg, IDC_HOST, dbv.ptszVal);
 				DBFreeVariant(&dbv);
 			}
@@ -831,36 +831,36 @@ BOOL CALLBACK UserDetailsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 					return FALSE;
 				}
 
-				if ( !DBGetContactSetting( hContact, IRCPROTONAME, "Default", &dbv) && dbv.type == DBVT_ASCIIZ ) {
+				if ( !DBGetContactSettingTString( hContact, IRCPROTONAME, "Default", &dbv )) {
 					TString S = _T(STR_ERROR) + (TString)_T(" (") + dbv.ptszVal + (TString)_T(")");
 					if (( lstrlen(temp) < 4 && lstrlen(temp)) || !WCCmp(CharLower(temp), CharLower(dbv.ptszVal))) {
 						MessageBox( NULL, TranslateTS( S.c_str()), TranslateT( "IRC error" ), MB_OK | MB_ICONERROR );
-						DBFreeVariant(&dbv);
+						DBFreeVariant( &dbv );
 						return FALSE;
 					}
-					DBFreeVariant(&dbv);
+					DBFreeVariant( &dbv );
 				}
 				
 				GetDlgItemText( hwndDlg, IDC_WILDCARD, temp, SIZEOF(temp));
 				if ( lstrlen( GetWord(temp, 0).c_str()))
-					DBWriteContactSettingTString(hContact, IRCPROTONAME, "UWildcard", GetWord(temp, 0).c_str());
+					DBWriteContactSettingTString( hContact, IRCPROTONAME, "UWildcard", GetWord(temp, 0).c_str());
 				else
-					DBDeleteContactSetting(hContact, IRCPROTONAME, "UWildcard");
+					DBDeleteContactSetting( hContact, IRCPROTONAME, "UWildcard");
 			}
 
-			DBWriteContactSettingByte(hContact, IRCPROTONAME, "AdvancedMode", bAdvanced);
+			DBWriteContactSettingByte( hContact, IRCPROTONAME, "AdvancedMode", bAdvanced);
 
 			GetDlgItemText(hwndDlg, IDC_USER, temp, SIZEOF(temp));
 			if (lstrlen(GetWord(temp, 0).c_str()))
-				DBWriteContactSettingTString(hContact, IRCPROTONAME, "UUser", GetWord(temp, 0).c_str());
+				DBWriteContactSettingTString( hContact, IRCPROTONAME, "UUser", GetWord(temp, 0).c_str());
 			else
-				DBDeleteContactSetting(hContact, IRCPROTONAME, "UUser");
+				DBDeleteContactSetting( hContact, IRCPROTONAME, "UUser");
 
 			GetDlgItemText(hwndDlg, IDC_HOST, temp, SIZEOF(temp));
 			if (lstrlen(GetWord(temp, 0).c_str()))
-				DBWriteContactSettingTString(hContact, IRCPROTONAME, "UHost", GetWord(temp, 0).c_str());
+				DBWriteContactSettingTString( hContact, IRCPROTONAME, "UHost", GetWord(temp, 0).c_str());
 			else
-				DBDeleteContactSetting(hContact, IRCPROTONAME, "UHost");
+				DBDeleteContactSetting( hContact, IRCPROTONAME, "UHost");
 
 			EnableWindow(GetDlgItem(hwndDlg, IDC_BUTTON), FALSE);
 		}
@@ -870,9 +870,9 @@ BOOL CALLBACK UserDetailsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				SetDlgItemTextA( hwndDlg, IDC_WILDCARD, "");
 			SetDlgItemTextA( hwndDlg, IDC_HOST, "" );
 			SetDlgItemTextA( hwndDlg, IDC_USER, "" );
-			DBDeleteContactSetting(hContact, IRCPROTONAME, "UWildcard");
-			DBDeleteContactSetting(hContact, IRCPROTONAME, "UUser");
-			DBDeleteContactSetting(hContact, IRCPROTONAME, "UHost");
+			DBDeleteContactSetting( hContact, IRCPROTONAME, "UWildcard");
+			DBDeleteContactSetting( hContact, IRCPROTONAME, "UUser");
+			DBDeleteContactSetting( hContact, IRCPROTONAME, "UHost");
 			EnableWindow(GetDlgItem(hwndDlg, IDC_BUTTON), FALSE );
 			EnableWindow(GetDlgItem(hwndDlg, IDC_BUTTON2), FALSE );
 		}		
@@ -881,12 +881,11 @@ BOOL CALLBACK UserDetailsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			SetDlgItemTextA( hwndDlg, IDC_DEFAULT, STR_BASIC );
 
 			DBVARIANT dbv;
-			if ( !DBGetContactSettingTString(hContact, IRCPROTONAME, "Default", &dbv )) {
+			if ( !DBGetContactSettingTString( hContact, IRCPROTONAME, "Default", &dbv )) {
 				SetDlgItemText( hwndDlg, IDC_WILDCARD, dbv.ptszVal );
 				DBFreeVariant( &dbv );
 			}
 			EnableWindow(GetDlgItem(hwndDlg, IDC_WILDCARD), FALSE );
-
 		}	
 		
 		if ( HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDC_RADIO2 ) {
@@ -1511,7 +1510,7 @@ BOOL CALLBACK ManagerWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					S += ReplaceString( temp, _T(" "), _T("%¤"));
 			}	}
 
-			if ( S != _T("") && g_ircSession ) {
+			if ( !S.empty() && g_ircSession ) {
 				mir_sntprintf( temp, SIZEOF(temp), _T("Topic%s%s"), window, g_ircSession.GetInfo().sNetwork.c_str());
 				#if defined( _UNICODE )
 					char* p = mir_t2a(temp);
