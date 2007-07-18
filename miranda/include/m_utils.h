@@ -432,10 +432,8 @@ static __inline int mir_vsntprintf(TCHAR *buffer, size_t count, const TCHAR* fmt
 	#define TCHAR_STR_PARAM "%s"
 #endif
 
-static __inline wchar_t* mir_a2u( const char* src )
+static __inline wchar_t* mir_a2u_cp( const char* src, int codepage )
 {
-	int codepage = CallService("LangPack/GetCodePage", 0, 0 );
-
 	int cbLen = MultiByteToWideChar( codepage, 0, src, -1, NULL, 0 );
 	wchar_t* result = ( wchar_t* )mir_alloc( sizeof( wchar_t )*(cbLen+1));
 	if ( result == NULL )
@@ -446,10 +444,13 @@ static __inline wchar_t* mir_a2u( const char* src )
 	return result;
 }
 
-static __inline char* mir_u2a( const wchar_t* src )
+static __inline wchar_t* mir_a2u( const char* src )
 {
-	int codepage = CallService("LangPack/GetCodePage", 0, 0 );
+	return mir_a2u_cp( src, CallService("LangPack/GetCodePage", 0, 0 ));
+}
 
+static __inline char* mir_u2a_cp( const wchar_t* src, int codepage )
+{
 	int cbLen = WideCharToMultiByte( codepage, 0, src, -1, NULL, 0, NULL, NULL );
 	char* result = ( char* )mir_alloc( cbLen+1 );
 	if ( result == NULL )
@@ -458,6 +459,11 @@ static __inline char* mir_u2a( const wchar_t* src )
 	WideCharToMultiByte( codepage, 0, src, -1, result, cbLen, NULL, NULL );
 	result[ cbLen ] = 0;
 	return result;
+}
+
+static __inline char* mir_u2a( const wchar_t* src )
+{
+	return mir_u2a_cp( src, CallService("LangPack/GetCodePage", 0, 0 ));
 }
 
 #ifdef _UNICODE
