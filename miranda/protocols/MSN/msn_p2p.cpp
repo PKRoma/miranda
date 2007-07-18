@@ -1755,6 +1755,7 @@ void  p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft )
 			if ( ft->create() == -1 ) {
 				MSN_DebugLog( "Avatar creation failed for MSNCTX=\'%s\'", pContext );
 				free(pContext);
+				delete ft;
 				return;
 			}
 
