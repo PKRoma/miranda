@@ -991,7 +991,7 @@ LBL_InvalidCommand:
 						MSN_StartStopTyping( info, true );
 
 					if ( MSN_GetByte( "EnableDeliveryPopup", 0 ))
-							MSN_ShowPopup( hContact, TranslateT( "Chat session established by my request" ), 0 );
+						MSN_ShowPopup( hContact, TranslateT( "Chat session established by contact request" ), 0 );
 			}	}
 
 			break;
@@ -1322,7 +1322,7 @@ LBL_InvalidCommand:
 					MSN_StartStopTyping( info, true );
 
 				if ( MSN_GetByte( "EnableDeliveryPopup", 0 ))
-					MSN_ShowPopup( hContact, TranslateT( "Chat session established by contact request" ), 0 );
+					MSN_ShowPopup( hContact, TranslateT( "Chat session established by my request" ), 0 );
 			}
 			else {
 				bool chatCreated = info->mChatID[0] != 0;
