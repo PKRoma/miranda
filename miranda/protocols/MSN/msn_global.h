@@ -461,6 +461,7 @@ struct ThreadData
 	char*          mReadAheadBufferPtr;
 	int            mEhoughData;
 	bool           sessionClosed;
+	bool		   termPending;
 
 	TQueueItem*	   mFirstQueueItem;
 	unsigned       numQueueItems;

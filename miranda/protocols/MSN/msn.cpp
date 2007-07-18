@@ -372,9 +372,6 @@ extern "C" int __declspec( dllexport ) Unload( void )
 {
 	int i;
 
-	if ( msnLoggedIn )
-		msnNsThread->sendPacket( "OUT", NULL );
-
 	for ( i=0; i < arHooks.getCount(); i++ )
 		UnhookEvent( arHooks[i] );
 	arHooks.destroy();

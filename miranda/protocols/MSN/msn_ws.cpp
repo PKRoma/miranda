@@ -111,10 +111,11 @@ bool ThreadData::isTimeout( void )
 	}
 
 	if ( res ) {
+
 		bool sbsess = mType == SERVER_SWITCHBOARD;
 
 		MSN_DebugLog( "Dropping the idle %s due to inactivity", sbsess ? "switchboard" : "p2p");
-		if ( !sbsess ) return true;
+		if (!sbsess || termPending) return true;
 
 		if ( MSN_GetByte( "EnableSessionPopup", 0 )) {
 			HANDLE hContact = mJoinedCount ? mJoinedContacts[0] : mInitialContact;
@@ -122,7 +123,8 @@ bool ThreadData::isTimeout( void )
 		}
 
 		sendPacket( "OUT", NULL );
-		mWaitPeriod = 15;
+		termPending = true;
+		mWaitPeriod = 10;
 	}
 	else
 		mWaitPeriod = 60;

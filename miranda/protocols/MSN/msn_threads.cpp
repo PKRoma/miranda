@@ -200,7 +200,10 @@ void __cdecl MSNServerThread( ThreadData* info )
 						handlerResult = MSN_HandleCommands( info, msg );
 
 					if ( handlerResult )
+					{
 						info->sendPacket( "OUT", NULL );
+						info->termPending = true;
+					}
 				}
 				else 
 					if ( MSN_HandleMSNFTP( info, msg ))
@@ -268,7 +271,10 @@ void  MSN_CloseConnections()
 				if (res > 0)
 					res = MSN_CallService( MS_NETLIB_RECV, ( WPARAM )T->s, ( LPARAM )&nlb ) <= 0;
 				if ( res == 0)
+				{
 					T->sendPacket( "OUT", NULL );
+					T->termPending = true;
+				}
 			}
 			break;
 
