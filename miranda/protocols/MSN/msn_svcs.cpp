@@ -472,10 +472,7 @@ int MsnFileAllow(WPARAM wParam, LPARAM lParam)
 	CCSDATA* ccs = ( CCSDATA* )lParam;
 	filetransfer* ft = ( filetransfer* )ccs->wParam;
 
-	if ( !msnLoggedIn || ft == NULL )
-		return 0;
-
-	if ( ft->szInvcookie == NULL && !p2p_sessionRegistered( ft ))
+	if ( !msnLoggedIn || !p2p_sessionRegistered( ft ) )
 		return 0;
 
 	if (( ft->std.workingDir = mir_strdup(( char* )ccs->lParam )) == NULL ) {

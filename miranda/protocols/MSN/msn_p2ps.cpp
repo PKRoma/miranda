@@ -115,6 +115,9 @@ filetransfer*  p2p_getSessionByUniqueID( unsigned id )
 
 bool  p2p_sessionRegistered( filetransfer* ft )
 {
+	if ( ft != NULL && ft->p2p_appID == 0)
+		return true;
+
 	EnterCriticalSection( &sessionLock );
 	int idx = sessionList.getIndex( ft );
 	LeaveCriticalSection( &sessionLock );
