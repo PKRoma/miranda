@@ -27,6 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 void __cdecl MSNServerThread( ThreadData* info );
 
 void msnftp_sendAcceptReject( filetransfer *ft, bool acc );
+void msnftp_invite( filetransfer *ft );
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnAddToList - adds contact to the server list
@@ -471,7 +472,10 @@ int MsnFileAllow(WPARAM wParam, LPARAM lParam)
 	CCSDATA* ccs = ( CCSDATA* )lParam;
 	filetransfer* ft = ( filetransfer* )ccs->wParam;
 
-	if ( !msnLoggedIn || !p2p_sessionRegistered( ft ))
+	if ( !msnLoggedIn || ft == NULL )
+		return 0;
+
+	if ( ft->szInvcookie == NULL && !p2p_sessionRegistered( ft ))
 		return 0;
 
 	if (( ft->std.workingDir = mir_strdup(( char* )ccs->lParam )) == NULL ) {
@@ -863,37 +867,8 @@ static int MsnSendFile( WPARAM wParam, LPARAM lParam )
 	DWORD dwFlags = MSN_GetDword( ccs->hContact, "FlagBits", 0 );
 	if ( dwFlags & 0xf0000000 )
 		p2p_invite( ccs->hContact, MSN_APPID_FILE, sft );
-	else {
-		ThreadData* thread = MSN_GetThreadByContact( ccs->hContact );
-		if ( thread != NULL ) {
-			thread->mMsnFtp = sft;
-		}
-		else {
-			if ( MSN_GetUnconnectedThread( ccs->hContact ) == NULL )
-				msnNsThread->sendPacket( "XFR", "SB" );
-		}
-
-		char* pszFiles = strrchr( *files, '\\' ), msg[ 1024 ];
-		if ( pszFiles )
-			pszFiles++;
-		else
-			pszFiles = *files;
-
-		mir_snprintf( msg, sizeof( msg ),
-			"Content-Type: text/x-msmsgsinvite; charset=UTF-8\r\n\r\n"
-			"Application-Name: File Transfer\r\n"
-			"Application-GUID: {5D3E02AB-6190-11d3-BBBB-00C04F795683}\r\n"
-			"Invitation-Command: INVITE\r\n"
-			"Invitation-Cookie: %i\r\n"
-			"Application-File: %s\r\n"
-			"Application-FileSize: %i\r\n\r\n",
-			rand() << 16 | rand(), UTF8(pszFiles), sft->std.currentFileSize );
-
-		if ( thread == NULL )
-			MsgQueue_Add( ccs->hContact, 'S', msg, -1, sft );
-		else
-			thread->sendMessage( 'S', msg, MSG_DISABLE_HDR );
-	}
+	else
+		msnftp_invite( sft );
 
 	MSN_SendBroadcast( ccs->hContact, ACKTYPE_FILE, ACKRESULT_SENTREQUEST, sft, 0 );
 	return (int)(HANDLE)sft;

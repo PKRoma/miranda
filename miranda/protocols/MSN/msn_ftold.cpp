@@ -54,6 +54,39 @@ void msnftp_sendAcceptReject( filetransfer *ft, bool acc )
 	}
 }
 
+void msnftp_invite( filetransfer *ft )
+{
+	ThreadData* thread = MSN_GetThreadByContact( ft->std.hContact );
+	if ( thread != NULL ) {
+		thread->mMsnFtp = ft;
+	}
+	else {
+		if ( MSN_GetUnconnectedThread( ft->std.hContact ) == NULL )
+			msnNsThread->sendPacket( "XFR", "SB" );
+	}
+
+	char* pszFiles = strrchr( *ft->std.files, '\\' ), msg[ 1024 ];
+	if ( pszFiles )
+		pszFiles++;
+	else
+		pszFiles = *ft->std.files;
+
+	mir_snprintf( msg, sizeof( msg ),
+		"Content-Type: text/x-msmsgsinvite; charset=UTF-8\r\n\r\n"
+		"Application-Name: File Transfer\r\n"
+		"Application-GUID: {5D3E02AB-6190-11d3-BBBB-00C04F795683}\r\n"
+		"Invitation-Command: INVITE\r\n"
+		"Invitation-Cookie: %i\r\n"
+		"Application-File: %s\r\n"
+		"Application-FileSize: %i\r\n\r\n",
+		rand() << 16 | rand(), UTF8(pszFiles), ft->std.currentFileSize );
+
+	if ( thread == NULL )
+		MsgQueue_Add( ft->std.hContact, 'S', msg, -1, ft );
+	else
+		thread->sendMessage( 'S', msg, MSG_DISABLE_HDR );
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN File Transfer Protocol commands processing
