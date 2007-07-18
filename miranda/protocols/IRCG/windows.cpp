@@ -1518,7 +1518,7 @@ BOOL CALLBACK ManagerWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					DBWriteContactSettingTString(NULL, IRCPROTONAME, p, S.c_str());
 					mir_free(p);
 				#else
-					DBWriteContactSettingTString(NULL, IRCPROTONAME, p, S.c_str());
+					DBWriteContactSettingString(NULL, IRCPROTONAME, temp, S.c_str());
 				#endif
 			}
 			DestroyWindow(hwndDlg);

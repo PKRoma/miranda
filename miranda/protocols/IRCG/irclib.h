@@ -28,10 +28,22 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <map>
 #include <set>
 
-//#ifdef IRC_SSL
+// OpenSSL stuff
 #include <openssl/ssl.h>
-//#include "../../openssl-0.9.7d/include/openssl/err.h"
-//#endif
+
+typedef int			(*tSSL_library_init)		(void);
+typedef SSL_CTX*	(*tSSL_CTX_new)				(SSL_METHOD *meth);
+typedef SSL*		(*tSSL_new)					(SSL_CTX *ctx);
+typedef int			(*tSSL_set_fd)				(SSL *ssl, int fd);
+typedef int			(*tSSL_connect)				(SSL *ssl);
+typedef int			(*tSSL_read)				(SSL *ssl, void *buf, int num);
+typedef int			(*tSSL_write)				(SSL *ssl, const void *buf, int num);
+typedef SSL_METHOD*	(*tSSLv23_method)			(void);
+typedef int			(*tSSL_get_error)			(SSL *s, int retcode);
+typedef void		(*tSSL_load_error_strings)	(void);
+typedef int			(*tSSL_shutdown)			(SSL *ssl);
+typedef void		(*tSSL_CTX_free)			(SSL_CTX *ctx);
+typedef void		(*tSSL_free)				(SSL *ssl);
 
 void DoIdent(HANDLE hConnection, DWORD dwRemoteIP, void* extra);
 void DoIncomingDcc(HANDLE hConnection, DWORD dwRemoteIP, void* extra);
@@ -68,33 +80,6 @@ typedef struct {
 	TString sContactName;
 }
 	DCCINFO;
-
-//#ifdef IRC_SSL
-// OpenSSL stuff
-typedef int			(*tSSL_library_init)		(void);
-typedef SSL_CTX*	(*tSSL_CTX_new)				(SSL_METHOD *meth);
-typedef SSL*		(*tSSL_new)					(SSL_CTX *ctx);
-typedef int			(*tSSL_set_fd)				(SSL *ssl, int fd);
-typedef int			(*tSSL_connect)				(SSL *ssl);
-typedef int			(*tSSL_read)				(SSL *ssl, void *buf, int num);
-typedef int			(*tSSL_write)				(SSL *ssl, const void *buf, int num);
-typedef SSL_METHOD*	(*tSSLv23_method)			(void);
-typedef int			(*tSSL_get_error)			(SSL *s, int retcode);
-typedef void		(*tSSL_load_error_strings)	(void);
-typedef int			(*tSSL_shutdown)			(SSL *ssl);
-typedef void		(*tSSL_CTX_free)			(SSL_CTX *ctx);
-typedef void		(*tSSL_free)				(SSL *ssl);
-
-//typedef char		(*tERR_error_string)		(unsigned long e, char *buf);
-//typedef const char*	(*tERR_lib_error_string)	(unsigned long e);
-//typedef const char*	(*tERR_func_error_string)	(unsigned long e);
-//typedef const char*	(*tERR_reason_error_string)	(unsigned long e);
-
-//static tERR_error_string			pERR_error_string;
-//static tERR_lib_error_string		pERR_lib_error_string;
-//static tERR_func_error_string		pERR_func_error_string;
-//static tERR_reason_error_string		pERR_reason_error_string;
-//#endif 
 
 class CIrcMessage
 {
@@ -220,8 +205,11 @@ public :
 	CIrcSessionInfo& GetInfo() const
 				{ return (CIrcSessionInfo&)m_info; }
 
+	#if defined( _UNICODE )
+		int NLSend(const TCHAR* fmt, ...);
+	#endif
+	int NLSend(const char* fmt, ...);
 	int NLSend(const unsigned char* buf, int cbBuf);
-	int NLSend(const TCHAR* fmt, ...);
 	int NLSendNoScript( const unsigned char* buf, int cbBuf);
 	int NLReceive(unsigned char* buf, int cbBuf);
 	void InsertIncomingEvent(TCHAR* pszRaw);
@@ -229,43 +217,26 @@ public :
 	operator bool() const { return con!= NULL; }
 
 	// send-to-stream operators
-	friend CIrcSession& operator << (CIrcSession& os, const CIrcMessage& m);
-
+	CIrcSession& operator << (const CIrcMessage& m);
 
 protected :
-//	Socket m_socket;
 	CIrcSessionInfo m_info;
-//#ifdef IRC_SSL
 	CSSLSession sslSession;
-//#endif
+	int codepage;
 	HANDLE con;
 	HANDLE hBindPort;
 	void DoReceive();
 	DccSessionMap m_dcc_chats;
 	DccSessionMap m_dcc_xfers;
 
-
 private :
 	std::set<IIrcSessionMonitor*> m_monitors;
-//	HANDLE m_hThread;
 	CRITICAL_SECTION m_cs; // protect m_monitors
 	CRITICAL_SECTION m_dcc; // protect the dcc objects
 
 	void Notify(const CIrcMessage* pmsg);
 	static void __cdecl ThreadProc(void *pparam);
 };
-
-
-__inline CIrcSession& operator << (CIrcSession& os, const CIrcMessage& m)
-{
-	if( os )
-	{
-		os.NLSend(m.AsString().c_str());
-		if (!m.sCommand.empty() && m.sCommand != _T("QUIT") && m.m_bNotify)
-			os.Notify(&m);
-	}
-	return os;
-}
 
 ////////////////////////////////////////////////////////////////////
 typedef struct			

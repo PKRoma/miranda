@@ -118,6 +118,7 @@ TString RemoveLinebreaks(TString Message)
 	return Message;
 }
 
+#if defined( _UNICODE )
 String ReplaceString (String text, const char* replaceme, const char* newword)
 {
 	if ( text != "" && replaceme != NULL) {
@@ -130,6 +131,7 @@ String ReplaceString (String text, const char* replaceme, const char* newword)
 
 	return text;
 }
+#endif
 
 TString ReplaceString (TString text, const TCHAR* replaceme, const TCHAR* newword)
 {
@@ -505,21 +507,21 @@ int CallChatEvent(WPARAM wParam, LPARAM lParam)
 		if (gcetemp)
 		{
 			if(gcetemp->pszNick)
-				mmi.mmi_free((void *)gcetemp->pszNick);
+				mir_free((void *)gcetemp->pszNick);
 			if(gcetemp->pszUID)
-				mmi.mmi_free((void *)gcetemp->pszUID);
+				mir_free((void *)gcetemp->pszUID);
 			if(gcetemp->pszStatus)
-				mmi.mmi_free((void *)gcetemp->pszStatus);
+				mir_free((void *)gcetemp->pszStatus);
 			if(gcetemp->pszUserInfo)
-				mmi.mmi_free((void *)gcetemp->pszUserInfo);
+				mir_free((void *)gcetemp->pszUserInfo);
 			if(gcetemp->pszText)
-				mmi.mmi_free((void *)gcetemp->pszText);
+				mir_free((void *)gcetemp->pszText);
 			if(gcetemp->pDest->pszID)
-				mmi.mmi_free((void *)gcetemp->pDest->pszID);
+				mir_free((void *)gcetemp->pDest->pszID);
 			if(gcetemp->pDest->pszModule)
-				mmi.mmi_free((void *)gcetemp->pDest->pszModule);
-			mmi.mmi_free((void *)gcetemp->pDest);
-			mmi.mmi_free((void *)gcetemp);
+				mir_free((void *)gcetemp->pDest->pszModule);
+			mir_free((void *)gcetemp->pDest);
+			mir_free((void *)gcetemp);
 		}
 
 		return iVal;

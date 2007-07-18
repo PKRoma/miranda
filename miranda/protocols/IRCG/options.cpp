@@ -62,6 +62,7 @@ static int GetPrefsString(const char *szSetting, char * prefstoset, int n, char 
 	return FALSE;
 }
 
+#if defined( _UNICODE )
 static int GetPrefsString(const char *szSetting, TCHAR* prefstoset, int n, TCHAR* defaulttext)
 {
 	DBVARIANT dbv;
@@ -74,6 +75,7 @@ static int GetPrefsString(const char *szSetting, TCHAR* prefstoset, int n, TCHAR
 	lstrcpyn(prefstoset, defaulttext, n);
 	return FALSE;
 }
+#endif
 
 static int GetSetting(const char *szSetting, DBVARIANT *dbv)
 {

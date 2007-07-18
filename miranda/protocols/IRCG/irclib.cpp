@@ -184,7 +184,6 @@ TString CIrcMessage::AsString() const
 }
 
 ////////////////////////////////////////////////////////////////////
-//#ifdef IRC_SSL
 
 tSSL_library_init       pSSL_library_init;
 tSSL_CTX_new            pSSL_CTX_new;
@@ -296,12 +295,16 @@ int CSSLSession::SSLDisconnect(void) {
 //#endif
 ////////////////////////////////////////////////////////////////////
 
-CIrcSession::CIrcSession(IIrcSessionMonitor* pMonitor)	
+CIrcSession::CIrcSession(IIrcSessionMonitor* pMonitor)
 {
+	#if defined( _UNICODE )
+		codepage = CP_UTF8;
+	#else
+		codepage = CP_ACP;
+	#endif
 	InitializeCriticalSection(&m_cs);
 	InitializeCriticalSection(&m_resolve);
 	InitializeCriticalSection(&m_dcc);
-
 }
 
 CIrcSession::~CIrcSession()
@@ -314,6 +317,18 @@ CIrcSession::~CIrcSession()
 	KillChatTimer(OnlineNotifTimer3);
 }
 
+CIrcSession& CIrcSession::operator << (const CIrcMessage& m)
+{
+	if ( this ) {
+		char* str = mir_utf8encodeT( m.AsString().c_str() );
+		NLSend(( const BYTE* )str, strlen( str ));
+		mir_free( str );
+		
+		if ( !m.sCommand.empty() && m.sCommand != _T("QUIT") && m.m_bNotify )
+			Notify( &m );
+	}
+	return *this;
+}
 
 bool CIrcSession::Connect(const CIrcSessionInfo& info)
 {
@@ -330,8 +345,6 @@ bool CIrcSession::Connect(const CIrcSessionInfo& info)
 
 		FindLocalIP(con); // get the local ip used for filetransfers etc
 
-//#ifdef IRC_SSL
-
 		if(info.iSSL > 0)
 		{
 			sslSession.SSLConnect(con); // Establish SSL connection
@@ -344,7 +357,6 @@ bool CIrcSession::Connect(const CIrcSessionInfo& info)
 				return false;
 			}
 		}
-//#endif
 
 		if(Miranda_Terminated())
 		{
@@ -358,7 +370,7 @@ bool CIrcSession::Connect(const CIrcSessionInfo& info)
 		mir_forkthread(ThreadProc, this  );
 		Sleep(100);
 		if( info.sPassword.length() )
-			NLSend( _T("PASS ") _T(TCHAR_STR_PARAM) _T("\r\n"), info.sPassword.c_str()); //!!!!
+			NLSend( "PASS %s\r\n", info.sPassword.c_str());
 		NLSend( _T("NICK %s\r\n"), info.sNick.c_str());
 
 		TString UserID = GetWord(info.sUserID.c_str(), 0);
@@ -394,28 +406,20 @@ void CIrcSession::Disconnect(void)
 	if ( prefs->QuitMessage && lstrlen(prefs->QuitMessage) > 0 )
 		NLSend( _T("QUIT :%s\r\n"), prefs->QuitMessage);
 	else
-		NLSend( _T("QUIT \r\n"));
-
-
+		NLSend( "QUIT \r\n" );
 
 	int i = 0;
-	while(
-//#ifdef IRC_SSL
-		
-		sslSession.nSSLConnected && sslSession.m_ssl || !sslSession.nSSLConnected && 
-//#endif		
-		con)
+	while( sslSession.nSSLConnected && sslSession.m_ssl || !sslSession.nSSLConnected && con)
 	{
 		Sleep(50);
 		if (i == 20)
 			break;
 		i++;
 	}
-//#ifdef IRC_SSL
-	sslSession.SSLDisconnect(); // Close SSL connection
-//#endif
 
-	if(con)
+	sslSession.SSLDisconnect(); // Close SSL connection
+
+	if ( con )
 		Netlib_CloseHandle(con);
 
 	con = NULL;
@@ -447,38 +451,25 @@ int CIrcSession::NLSend( const unsigned char* buf, int cbBuf)
 		pszTemp = (char *) mmi.mmi_malloc( lstrlenA((const char *) buf ) + 1);
 		lstrcpynA(pszTemp, (const char *)buf, lstrlenA ((const char *)buf) + 1);
 
-		if(	Scripting_TriggerMSPRawOut(&pszTemp) && pszTemp )
-		{
-//#ifdef IRC_SSL
-			if(sslSession.nSSLConnected == 1) 
-			{
+		if ( Scripting_TriggerMSPRawOut(&pszTemp) && pszTemp ) {
+			if ( sslSession.nSSLConnected == 1 ) 
 				iVal = pSSL_write(sslSession.m_ssl, pszTemp, lstrlenA(pszTemp));	
-			} 
-			else 
-//#endif
-				if (con)
-					iVal = Netlib_Send(con, (const char*)pszTemp, lstrlenA(pszTemp), MSG_DUMPASTEXT);
+			else if (con)
+				iVal = Netlib_Send(con, (const char*)pszTemp, lstrlenA(pszTemp), MSG_DUMPASTEXT);
 		}
-		if(pszTemp)
-			mmi.mmi_free ( pszTemp );
+		if ( pszTemp )
+			mir_free( pszTemp );
 
 		return iVal;
 	}
-	else
-	{
+	
+	if ( sslSession.nSSLConnected == 1 ) 
+		return pSSL_write(sslSession.m_ssl, buf, cbBuf);	
 
-//#ifdef IRC_SSL
-		if(sslSession.nSSLConnected == 1) 
-		{
-			return pSSL_write(sslSession.m_ssl, buf, cbBuf);	
-		} 
-		else 
-//#endif
-			if (con)
-				return Netlib_Send(con, (const char*)buf, cbBuf, MSG_DUMPASTEXT);
-	}
+	if (con)
+		return Netlib_Send(con, (const char*)buf, cbBuf, MSG_DUMPASTEXT);
+
 	return 0;
-
 }
 
 int CIrcSession::NLSend( const TCHAR* fmt, ...)
@@ -498,33 +489,37 @@ int CIrcSession::NLSend( const TCHAR* fmt, ...)
 	return result;
 }
 
+#if defined( _UNICODE )
+int CIrcSession::NLSend( const char* fmt, ...)
+{
+	va_list marker;
+	va_start(marker, fmt);
+
+	char szBuf[1024*4];
+	int cbLen = mir_vsnprintf(szBuf, SIZEOF(szBuf), fmt, marker);
+	va_end(marker);
+
+	return NLSend((unsigned char*)szBuf, cbLen );
+}
+#endif
+
 int CIrcSession::NLSendNoScript( const unsigned char* buf, int cbBuf)
 {
-
-//#ifdef IRC_SSL
-	if(sslSession.nSSLConnected == 1) 
-	{
+	if ( sslSession.nSSLConnected == 1 ) 
 		return pSSL_write(sslSession.m_ssl, buf, cbBuf);	
-	} 
-	else 
-//#endif
-		if (con)
-			return Netlib_Send(con, (const char*)buf, cbBuf, MSG_DUMPASTEXT);
+
+	if ( con )
+		return Netlib_Send(con, (const char*)buf, cbBuf, MSG_DUMPASTEXT);
 
 	return 0;
-
 }
+
 int CIrcSession::NLReceive(unsigned char* buf, int cbBuf)
 {
-	int n = 0;
-//#ifdef IRC_SSL
-	if(sslSession.nSSLConnected == 1) 
-		n = pSSL_read(sslSession.m_ssl, buf, cbBuf);
-	 else 
-//#endif
-		 n = Netlib_Recv(con, (char*)buf, cbBuf, MSG_DUMPASTEXT);
-	
-	return n;
+	if ( sslSession.nSSLConnected == 1 ) 
+		return pSSL_read( sslSession.m_ssl, buf, cbBuf );
+
+	return Netlib_Recv( con, (char*)buf, cbBuf, MSG_DUMPASTEXT );
 }
 
 void CIrcSession::KillIdent()
@@ -885,24 +880,26 @@ void CIrcSession::RemoveMonitor(IIrcSessionMonitor* pMonitor)
 
 ////////////////////////////////////////////////////////////////////
 
-CIrcSessionInfo::CIrcSessionInfo()
-	:	iPort(0), bIdentServer(false), iIdentServerPort(0)
+CIrcSessionInfo::CIrcSessionInfo() :
+	iPort(0),
+	bIdentServer(false),
+	iIdentServerPort(0)
 {
 }
 
-CIrcSessionInfo::CIrcSessionInfo(const CIrcSessionInfo& si)
-	:	sServer(si.sServer),
-		sServerName(si.sServerName),
-		iPort(si.iPort),
-		sNick(si.sNick),
-		sUserID(si.sUserID),
-		sFullName(si.sFullName),
-		sPassword(si.sPassword),
-		bIdentServer(si.bIdentServer),
-		iSSL(si.iSSL),
-		sIdentServerType(si.sIdentServerType),
-		sNetwork(si.sNetwork),
-		iIdentServerPort(si.iIdentServerPort)
+CIrcSessionInfo::CIrcSessionInfo(const CIrcSessionInfo& si) :
+	sServer(si.sServer),
+	sServerName(si.sServerName),
+	iPort(si.iPort),
+	sNick(si.sNick),
+	sUserID(si.sUserID),
+	sFullName(si.sFullName),
+	sPassword(si.sPassword),
+	bIdentServer(si.bIdentServer),
+	iSSL(si.iSSL),
+	sIdentServerType(si.sIdentServerType),
+	sNetwork(si.sNetwork),
+	iIdentServerPort(si.iIdentServerPort)
 {
 }
 
@@ -922,8 +919,6 @@ void CIrcSessionInfo::Reset()
 	iIdentServerPort = 0;
 	sNetwork = _T("");
 }
-
-
 
 ////////////////////////////////////////////////////////////////////
 CIrcMonitor::HandlersMap CIrcMonitor::m_handlers;

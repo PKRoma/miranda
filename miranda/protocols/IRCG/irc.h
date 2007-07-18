@@ -338,7 +338,6 @@ HANDLE CList_SetOffline(struct CONTACT_TYPE * user);
 
 bool   CList_AddEvent(struct CONTACT_TYPE * user, HICON Icon, HANDLE event, const char * tooltip, int type ) ;
 HANDLE CList_FindContact (struct CONTACT_TYPE * user);
-int    WCCmp(char* wild, char *string);
 BOOL   CList_AddDCCChat(TString name, TString hostmask, unsigned long adr, int port) ;
 
 //input.cpp
