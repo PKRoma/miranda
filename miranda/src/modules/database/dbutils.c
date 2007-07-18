@@ -123,10 +123,32 @@ static int DbEventGetText(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+static int CompareEventTypes( const DBEVENTTYPEDESCR* p1, const DBEVENTTYPEDESCR* p2 )
+{
+	int result = strcmp( p1->module, p2->module );
+	if ( result )
+		return result;
+
+	return p1->eventType - p2->eventType;
+}
+
 int InitUtils()
 {
+	eventTypes.increment = 10;
+	eventTypes.sortFunc = CompareEventTypes;
+
 	CreateServiceFunction(MS_DB_EVENT_REGISTERTYPE, DbEventTypeRegister);
 	CreateServiceFunction(MS_DB_EVENT_GETTYPE, DbEventTypeGet);
 	CreateServiceFunction(MS_DB_EVENT_GETTEXT, DbEventGetText);
 	return 0;
 }
+
+
+
+
+
+
+
+
+
+
