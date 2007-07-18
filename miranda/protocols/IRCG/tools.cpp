@@ -19,11 +19,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "irc.h"
-extern char * IRCPROTONAME;
-extern PREFERENCES * prefs;
+
 extern GETEVENTFUNC			pfnAddEvent;
-extern bool bMbotInstalled;
-extern MM_INTERFACE		mmi;
 
 std::vector<TString> vUserhostReasons;
 std::vector<TString> vWhoInProgress;

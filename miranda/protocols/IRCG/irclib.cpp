@@ -20,13 +20,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "irc.h"
 #include "tchar.h"
 #include <stdio.h>
-extern char * IRCPROTONAME;
+
 extern HANDLE hNetlib;
 extern HANDLE hNetlibDCC;
 extern UINT_PTR	OnlineNotifTimer;	
 extern UINT_PTR	OnlineNotifTimer3;	
 extern HMODULE m_ssleay32;
-extern PREFERENCES * prefs;
 extern MM_INTERFACE mmi;
 extern bool bMbotInstalled;
 UINT_PTR	DCCTimer;	

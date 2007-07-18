@@ -284,10 +284,28 @@ typedef struct PREFERENCES_TYPE			// Preferences structure
 } PREFERENCES;
 
 //main.cpp
+extern char* IRCPROTONAME; 
+extern char* ALTIRCPROTONAME;
+extern char* pszServerFile;
+extern char* pszPerformFile;
+extern char* pszIgnoreFile;
+extern char  mirandapath[MAX_PATH];
+extern DWORD mirVersion;
+
+extern CIrcSession  g_ircSession;
+extern CMyMonitor*  monitor;
+
+extern CRITICAL_SECTION  cs;
+extern CRITICAL_SECTION  m_gchook;
+
+extern HINSTANCE    g_hInstance;	
+extern PREFERENCES* prefs;	
+
 void   UpgradeCheck(void);
 
 //services.cpp
 extern TString StatusMessage;
+extern bool bMbotInstalled;
 
 void   HookEvents(void);
 void   UnhookEvents(void);

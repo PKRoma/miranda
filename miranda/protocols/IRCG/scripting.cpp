@@ -21,10 +21,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "irc.h"
 #include <algorithm>
 
-extern char*        IRCPROTONAME;
-extern bool         bMbotInstalled;
-extern PREFERENCES* prefs;
-
 int Scripting_InsertRawIn(WPARAM wParam,LPARAM lParam)
 {
 	char* pszRaw = (char *) lParam;

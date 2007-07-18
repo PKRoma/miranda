@@ -21,9 +21,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "irc.h"
 
-extern PREFERENCES *prefs;
-extern char * IRCPROTONAME;
-
 BOOL CList_AddDCCChat(TString name, TString hostmask, unsigned long adr, int port) 
 {
 	HANDLE hContact;

@@ -65,9 +65,6 @@ extern int     iTempCheckTime ;
 extern int     OldStatus;
 extern int     GlobalStatus;
 
-extern PREFERENCES *prefs;
-extern CIrcSession g_ircSession;
-extern char *	IRCPROTONAME;
 extern UINT_PTR	OnlineNotifTimer;
 extern UINT_PTR	OnlineNotifTimer3;
 extern UINT_PTR	KeepAliveTimer = 0;

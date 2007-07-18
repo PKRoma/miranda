@@ -20,13 +20,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "irc.h"
 
-extern PREFERENCES *prefs;
 extern HWND nick_hWnd;
 extern HWND list_hWnd;
 extern HWND whois_hWnd;
 extern HWND join_hWnd;
 extern HWND quickconn_hWnd;
-extern char * IRCPROTONAME;
 extern char * pszServerFile;
 static WNDPROC OldMgrEditProc;
 extern HWND manager_hWnd;

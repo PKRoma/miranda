@@ -64,18 +64,7 @@ extern bool bTempDisableCheck ;
 extern bool bTempForceCheck ;
 extern bool bPerformDone;
 
-extern CIrcSession		g_ircSession;
-extern char*			IRCPROTONAME;
-extern char*			ALTIRCPROTONAME;
-extern char*			pszServerFile;
-extern char*			pszPerformFile;
-extern char*			pszIgnoreFile;
-extern PREFERENCES*		prefs;
-extern CRITICAL_SECTION	cs;
-extern CRITICAL_SECTION	m_gchook;
 extern bool				nickflag;
-extern char				mirandapath[MAX_PATH];
-extern MM_INTERFACE		mmi;
 GETEVENTFUNC			pfnAddEvent = 0;
 
 VOID CALLBACK RetryTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime);

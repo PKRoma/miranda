@@ -19,12 +19,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "irc.h"
-extern PREFERENCES *	prefs;
-extern char *			IRCPROTONAME;
+
 extern PLUGININFOEX		pluginInfo;
 extern HWND				list_hWnd;
 extern int				NoOfChannels;
-extern DWORD			mirVersion;
 bool					bEcho = true;
 extern int				ManualWhoisCount ;
 bool					bTempDisableCheck = false;

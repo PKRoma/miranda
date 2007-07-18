@@ -28,24 +28,17 @@ UINT_PTR				OnlineNotifTimer = 0;
 UINT_PTR				OnlineNotifTimer3 = 0;	
 
 
-extern PREFERENCES *	prefs;
-extern char *			IRCPROTONAME;
-extern char *			ALTIRCPROTONAME;
-extern char *			pszServerFile;
-extern char *			pszIgnoreFile;
-extern char *			pszPerformFile;
-extern char				mirandapath[MAX_PATH];
 HWND					connect_hWnd = NULL;
 HWND					addserver_hWnd = NULL;
 extern HWND				IgnoreWndHwnd;
 bool					ServerlistModified = false;
 bool					PerformlistModified = false;
-extern bool				bMbotInstalled;
 extern bool				bTempDisableCheck ;
 extern bool				bTempForceCheck ;
 extern int				iTempCheckTime ;
 extern HMODULE			m_ssleay32;
 extern HANDLE			hMenuServer;
+
 static WNDPROC			OldProc;
 static WNDPROC			OldListViewProc;
 
