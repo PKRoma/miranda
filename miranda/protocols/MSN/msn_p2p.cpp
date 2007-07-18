@@ -1670,11 +1670,6 @@ void  p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft )
 	ft->p2p_sessionid = sessionID;
 	ft->p2p_callID = getNewUuid();
 
-	if ( !p2p_sessionRegistered( ft )) {
-		ft->p2p_dest = mir_strdup( szEmail );
-		p2p_registerSession( ft );
-	}
-
 	char* pContext;
 	int   cbContext;
 
@@ -1764,6 +1759,11 @@ void  p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft )
 			}
 
 			break;
+	}
+
+	if ( !p2p_sessionRegistered( ft )) {
+		ft->p2p_dest = mir_strdup( szEmail );
+		p2p_registerSession( ft );
 	}
 
 	size_t cbBody = Netlib_GetBase64EncodedBufferSize(cbContext) + 1000;
