@@ -23,6 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "clc.h"
 
+HANDLE hGroupChangeEvent;
+
 static int RenameGroup(WPARAM wParam, LPARAM lParam);
 static int MoveGroupBefore(WPARAM wParam, LPARAM lParam);
 
@@ -55,7 +57,7 @@ static int GroupNameExists(const TCHAR *name, int skipGroup)
 			break;
 		if (!_tcscmp(dbv.ptszVal + 1, name)) {
 			DBFreeVariant(&dbv);
-			return 1;
+			return i+1;
 		}
 		DBFreeVariant(&dbv);
 	}
@@ -70,25 +72,39 @@ static int CreateGroup(WPARAM wParam, LPARAM lParam)
 	int i;
 	DBVARIANT dbv;
 
+	const TCHAR* grpName = lParam ? (TCHAR*)lParam : TranslateT("New Group");
 	if (wParam) {
 		itoa(wParam - 1, str, 10);
 		if (DBGetContactSettingTString(NULL, "CListGroups", str, &dbv))
 			return 0;
 
-		mir_sntprintf( newBaseName, SIZEOF(newBaseName), _T("%s\\%s"), dbv.ptszVal + 1, TranslateT("New Group"));
+		mir_sntprintf( newBaseName, SIZEOF(newBaseName), _T("%s\\%s"), dbv.ptszVal + 1, grpName );
 		mir_free(dbv.pszVal);
 	}
-	else lstrcpyn( newBaseName, TranslateT( "New Group" ), SIZEOF( newBaseName ));
+	else lstrcpyn( newBaseName, grpName, SIZEOF( newBaseName ));
 
 	itoa(newId, str, 10);
-	i = 1;
 	lstrcpyn( newName + 1, newBaseName, SIZEOF(newName) - 1);
-	while (GroupNameExists(newName + 1, -1))
-		mir_sntprintf( newName + 1, SIZEOF(newName) - 1, _T("%s (%d)"), newBaseName, ++i );
+	if (lParam) {
+		i = GroupNameExists(newBaseName, -1);
+		if (i) newId = i - 1;
+		i = !i;
+	}
+	else {
+		i = 1;
+		while (GroupNameExists(newName + 1, -1))
+			mir_sntprintf( newName + 1, SIZEOF(newName) - 1, _T("%s (%d)"), newBaseName, ++i );
+	}
+	if (i) {
+		const CLISTGROUPCHANGE grpChg = { sizeof(CLISTGROUPCHANGE), NULL, newName };
+	
+		newName[0] = 1 | GROUPF_EXPANDED;   //1 is required so we never get '\0'
+		DBWriteContactSettingTString(NULL, "CListGroups", str, newName);
+		CallService(MS_CLUI_GROUPADDED, newId + 1, 1);
 
-	newName[0] = 1 | GROUPF_EXPANDED;   //1 is required so we never get '\0'
-	DBWriteContactSettingTString(NULL, "CListGroups", str, newName);
-	CallService(MS_CLUI_GROUPADDED, newId + 1, 1);
+		NotifyEventHooks(hGroupChangeEvent, 0, (LPARAM)&grpChg);
+	}
+
 	return newId + 1;
 }
 
@@ -207,6 +223,11 @@ static int DeleteGroup(WPARAM wParam, LPARAM lParam)
 	}
 	SetCursor(LoadCursor(NULL, IDC_ARROW));
 	cli.pfnLoadContactTree();
+
+	{
+		const CLISTGROUPCHANGE grpChg = { sizeof(CLISTGROUPCHANGE), name, NULL };
+		NotifyEventHooks(hGroupChangeEvent, 0, (LPARAM)&grpChg);
+	}
 	return 0;
 }
 
@@ -272,21 +293,25 @@ static int RenameGroupWithMove(int groupId, const TCHAR *szName, int move)
 
 		lstrcpyn(str, szName, SIZEOF(str));
 		pszLastBackslash = _tcsrchr(str, '\\');
-		if (pszLastBackslash == NULL)
-			return 0;
-		*pszLastBackslash = '\0';
-		for (i = 0;; i++) {
-			itoa(i, idstr, 10);
-			if (DBGetContactSettingTString(NULL, "CListGroups", idstr, &dbv))
-				break;
-			if (!lstrcmp(dbv.ptszVal + 1, str)) {
-				if (i < groupId)
-					break;      //is OK
-				MoveGroupBefore(groupId + 1, i + 2);
-				break;
+		if (pszLastBackslash != NULL) {
+			*pszLastBackslash = '\0';
+			for (i = 0;; i++) {
+				itoa(i, idstr, 10);
+				if (DBGetContactSettingTString(NULL, "CListGroups", idstr, &dbv))
+					break;
+				if (!lstrcmp(dbv.ptszVal + 1, str)) {
+					if (i < groupId)
+						break;      //is OK
+					MoveGroupBefore(groupId + 1, i + 2);
+					break;
+				}
+				DBFreeVariant(&dbv);
 			}
-			DBFreeVariant(&dbv);
 		}
+	}
+	{
+		const CLISTGROUPCHANGE grpChg = { sizeof(CLISTGROUPCHANGE), oldName, (TCHAR*)szName };
+		NotifyEventHooks(hGroupChangeEvent, 0, (LPARAM)&grpChg);
 	}
 	return 0;
 }
@@ -510,5 +535,7 @@ int InitGroupServices(void)
 	CreateServiceFunction(MS_CLIST_GROUPSETFLAGS, SetGroupFlags);
 	CreateServiceFunction(MS_CLIST_GROUPMOVEBEFORE, MoveGroupBefore);
 	CreateServiceFunction(MS_CLIST_GROUPBUILDMENU, BuildGroupMenu);
+	
+	hGroupChangeEvent = CreateHookableEvent( ME_CLIST_GROUPCHANGE );
 	return 0;
 }

@@ -97,9 +97,11 @@ BOOL CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lparam)
 			for ( groupId = 0; groupId < 999; groupId++ ) {
 				DBVARIANT dbv;
 				char idstr[4];
+				int id;
 				_itoa(groupId,idstr,10);
 				if(DBGetContactSettingTString(NULL,"CListGroups",idstr,&dbv)) break;
-				SendDlgItemMessage(hdlg,IDC_GROUP,CB_ADDSTRING,0,(LPARAM)(dbv.ptszVal+1));
+				id = SendDlgItemMessage(hdlg,IDC_GROUP,CB_ADDSTRING,0,(LPARAM)(dbv.ptszVal+1));
+				SendDlgItemMessage(hdlg,IDC_GROUP,CB_SETITEMDATA ,id,groupId+1);
 				DBFreeVariant(&dbv);
 		}	}
 
@@ -165,13 +167,15 @@ BOOL CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lparam)
 				if ( hcontact == NULL )
 					break;
 
-				{	TCHAR szHandle[256];
+				{	TCHAR szHandle[256]; int item;
 					if ( GetDlgItemText( hdlg, IDC_MYHANDLE, szHandle, SIZEOF(szHandle)))
 						DBWriteContactSettingTString( hcontact, "CList", "MyHandle", szHandle );
 
-					GetDlgItemText( hdlg, IDC_GROUP, szHandle, SIZEOF(szHandle));
-					if ( lstrcmp( szHandle, TranslateT( "None" )))
-						DBWriteContactSettingTString( hcontact, "CList", "Group", szHandle );
+					item = SendDlgItemMessage(hdlg, IDC_GROUP, CB_GETCURSEL, 0, 0);
+					if (item > 0) {
+						item = SendDlgItemMessage(hdlg, IDC_GROUP, CB_GETITEMDATA, item, 0);
+						CallService(MS_CLIST_CONTACTCHANGEGROUP, (WPARAM)hcontact, item);
+					}
 				}
 
 				if ( IsDlgButtonChecked( hdlg, IDC_ADDED ))

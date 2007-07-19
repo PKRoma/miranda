@@ -420,12 +420,26 @@ typedef struct {
 //this function each time
 #define MS_CLIST_PAUSEAUTOHIDE        "CList/PauseAutoHide"
 
+//sent when the group get modified (created, renamed or deleted)
+//or contact is moving from group to group 
+//wParam=hContact - NULL if operation on group 
+//lParam=pointer to CLISTGROUPCHANGE
+typedef struct {
+	int cbSize;	            //size in bytes of this structure
+    TCHAR*  pszOldName;     //old group name
+    TCHAR*  pszNewName;     //new group name
+} CLISTGROUPCHANGE;
+
+#define ME_CLIST_GROUPCHANGE       "CList/GroupChange"
+
 //creates a new group and calls CLUI to display it          v0.1.1.0+
 //wParam=hParentGroup
-//lParam=0
+//lParam=groupName
 //returns a handle to the new group
 //hParentGroup is NULL to create the new group at the root, or can be the
 //handle of the group of which the new group should be a subgroup.
+//groupName is a TCHAR* pointing to the group name to create or NULL for 
+//API to create unique name by itself
 #define MS_CLIST_GROUPCREATE   "CList/GroupCreate"
 
 //deletes a group and calls CLUI to display the change      v0.1.1.0+

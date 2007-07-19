@@ -1144,17 +1144,16 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 				break;
 			case DROPTARGET_ONGROUP:
 			{
-				struct ClcContact *contact;
-				TCHAR *szGroup;
-				cli.pfnGetRowByIndex(dat, dat->selection, &contact, NULL);
-				szGroup = cli.pfnGetGroupName(contact->groupId, NULL);
-				cli.pfnGetRowByIndex(dat, dat->iDragItem, &contact, NULL);
-				if (contact->type == CLCIT_CONTACT) //dropee is a contact
-					DBWriteContactSettingTString(contact->hContact, "CList", "Group", szGroup);
-				else if (contact->type == CLCIT_GROUP) { //dropee is a group
+				struct ClcContact *contactn, *contacto;
+				cli.pfnGetRowByIndex(dat, dat->selection, &contactn, NULL);
+				cli.pfnGetRowByIndex(dat, dat->iDragItem, &contacto, NULL);
+				if (contacto->type == CLCIT_CONTACT) //dropee is a contact
+					CallService(MS_CLIST_CONTACTCHANGEGROUP, (WPARAM)contacto->hContact, contactn->groupId);
+				else if (contacto->type == CLCIT_GROUP) { //dropee is a group
 					TCHAR szNewName[120];
-					mir_sntprintf(szNewName, SIZEOF(szNewName), _T("%s\\%s"), szGroup, contact->szText);
-					cli.pfnRenameGroup( contact->groupId, szNewName );
+					TCHAR* szGroup = cli.pfnGetGroupName(contactn->groupId, NULL);
+					mir_sntprintf(szNewName, SIZEOF(szNewName), _T("%s\\%s"), szGroup, contacto->szText);
+					cli.pfnRenameGroup( contacto->groupId, szNewName );
 				}
 				break;
 			}
