@@ -86,17 +86,16 @@ static void __cdecl RunVirusScannerThread(struct virusscanthreadstartinfo *info)
 static void SetFilenameControls(HWND hwndDlg,PROTOFILETRANSFERSTATUS *fts)
 {
 	char str[MAX_PATH];
-	HWND hwndFilename;
+	HWND hwndFilename = GetDlgItem(hwndDlg,IDC_FILENAME);
+
+	GetWindowTextA(hwndFilename, str, SIZEOF(str));
+	if (lstrcmpA(str, fts->currentFile) == 0) return;
 
 	{	TCHAR msg[MAX_PATH];
-		GetDlgItemText(hwndDlg,IDC_FILENAME,msg,SIZEOF(msg));
-		if(msg[0]) return;
-
 		wsprintf(msg,TranslateT("Current file (%d of %d)"),fts->currentFileNumber+1,fts->totalFiles);
 		SetDlgItemText(hwndDlg,IDC_CURRENTFILEGROUP,msg);
 	}
 
-	hwndFilename=GetDlgItem(hwndDlg,IDC_FILENAME);
 	lstrcpynA(str,fts->currentFile,SIZEOF(str));
 	if(strchr(str,'\\')) {
 		RECT rcFilename;
