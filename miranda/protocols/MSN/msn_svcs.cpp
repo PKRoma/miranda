@@ -260,7 +260,7 @@ int MsnContactDeleted( WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
-/*
+
 int MsnGroupChange(WPARAM wParam,LPARAM lParam)
 {
 	if (!msnLoggedIn || !MyOptions.ManageServer) return 0;
@@ -298,7 +298,7 @@ int MsnGroupChange(WPARAM wParam,LPARAM lParam)
 	}
 	return 0;
 }
-*/
+
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnDbSettingChanged - look for contact's settings changes
@@ -311,35 +311,7 @@ int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 	if ( !msnLoggedIn )
 		return 0;
 
-	if ( hContact == NULL )
-	{
-		if ( MyOptions.ManageServer && !strcmp( cws->szModule, "CListGroups" )) 
-		{
-			const char* szNewName = cws->value.pszVal + 1;
-			const int iNumber = atol( cws->szSetting );
-			const BYTE type = cws->value.type;
-			
-			if ( type == DBVT_UTF8 || type == DBVT_ASCIIZ )
-			{
-				LPCSTR szId = MSN_GetGroupByName( szNewName );
-				if ( szId != NULL )
-				{
-					MSN_SetGroupNumber( szId, iNumber );
-					return 0;
-				}
-			}
-
-			LPCSTR szId = MSN_GetGroupByNumber( iNumber );
-			if ( szId != NULL ) {
-				switch ( type ) {
-					case DBVT_DELETED:	msnNsThread->sendPacket( "RMG", szId );				break;
-					case DBVT_UTF8:		MSN_RenameServerGroup( szId, szNewName );			break;
-					case DBVT_ASCIIZ:	MSN_RenameServerGroup( szId, UTF8( szNewName ));	break;
-				}
-			}
-		}
-		return 0;
-	}
+	if ( hContact == NULL ) return 0;
 
 	if ( !strcmp( cws->szSetting, "ApparentMode" )) {
 		if ( !MSN_IsMyContact( hContact ))
@@ -361,15 +333,6 @@ int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 	if ( !strcmp( cws->szModule, "CList" )) {
 		if ( !MSN_IsMyContact( hContact ))
 			return 0;
-
-		if ( !strcmp( cws->szSetting, "Group" )) {
-			switch( cws->value.type ) {
-				case DBVT_DELETED:	MSN_MoveContactToGroup( hContact, NULL );						break;
-				case DBVT_ASCIIZ:   MSN_MoveContactToGroup( hContact, UTF8(cws->value.pszVal));		break;
-				case DBVT_UTF8:		MSN_MoveContactToGroup( hContact, cws->value.pszVal );			break;
-			}
-			return 0;
-		}
 
 		if ( !strcmp( cws->szSetting, "MyHandle" )) {
 			char szContactID[ 100 ], szNewNick[ 387 ];

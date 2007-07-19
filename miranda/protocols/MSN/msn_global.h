@@ -628,12 +628,10 @@ void   MSN_DeleteGroup( const char* pId );
 void   MSN_FreeGroups( void );
 LPCSTR MSN_GetGroupById( const char* pId );
 LPCSTR MSN_GetGroupByName( const char* pName );
-LPCSTR MSN_GetGroupByNumber( int pNumber );
 void   MSN_MoveContactToGroup( HANDLE hContact, const char* grpName );
 void   MSN_RemoveEmptyGroups( void );
 void   MSN_RenameServerGroup( LPCSTR szId, const char* newName );
 void   MSN_SetGroupName( const char* pId, const char* pName );
-void   MSN_SetGroupNumber( const char* pId, int pNumber );
 void   MSN_SyncContactToServerGroup( HANDLE hContact, char* userId, char* groupId );
 void   MSN_UploadServerGroups( char* group );
 

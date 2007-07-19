@@ -631,35 +631,22 @@ static bool sttAddGroup( char* params, bool isFromBoot )
 	UrlDecode( data.grpName );
 	MSN_AddGroup( data.grpName, data.grpId );
 
-	int i = 0;
-	char str[ 10 ];
+	if ( !MyOptions.ManageServer ) return true; 
 
-	for ( ;; ) {
-		_ltoa( i, str, 10 );
+	if ( isFromBoot )
+	{
 
-		DBVARIANT dbv;
-		if ( DBGetContactSettingStringUtf( NULL, "CListGroups", str, &dbv ))
-			break;
-
-		bool result = !_stricmp( dbv.pszVal+1, data.grpName );
-		MSN_FreeVariant( &dbv );
-		if ( result ) {
-			MSN_SetGroupNumber( data.grpId, i );
-			if ( !isFromBoot ) MSN_UploadServerGroups( data.grpName );
-			return true;
-		}
-		 ++i;
+		wchar_t* szNewName;
+		mir_utf8decode(data.grpName, &szNewName);
+#ifdef _UNICODE
+		CallService(MS_CLIST_GROUPCREATE, 0, (LPARAM)szNewName);
+#else
+		CallService(MS_CLIST_GROUPCREATE, 0, (LPARAM)data.grpName);
+#endif
+		mir_free(szNewName);
 	}
-
-	if ( isFromBoot ) {
-		MSN_SetGroupNumber( data.grpId, i );
-
-		if ( MyOptions.ManageServer ) {
-			char szNewName[ 128 ];
-			mir_snprintf( szNewName, sizeof szNewName, "%c%s",  1 | GROUPF_EXPANDED, data.grpName );
-			DBWriteContactSettingStringUtf( NULL, "CListGroups", str, szNewName );
-			CallService( MS_CLUI_GROUPADDED, i, 0 );
-	}	}
+	else
+		MSN_UploadServerGroups( data.grpName );
 
 	return true;
 }

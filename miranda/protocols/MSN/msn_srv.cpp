@@ -28,7 +28,6 @@ struct ServerGroupItem
 {
 	char* id;
 	char* name; // in UTF8
-	int   number;
 
 	ServerGroupItem* next;
 };
@@ -44,7 +43,6 @@ bool MSN_AddGroup( const char* pName, const char* pId )
 	if ( p == NULL )
 		return false;
 
-	p->number = -1;
 	p->id = mir_strdup( pId );
 	p->name = mir_strdup( pName );
 	p->next = sttFirst;
@@ -115,18 +113,6 @@ LPCSTR MSN_GetGroupByName( const char* pName )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// MSN_GetGroupByNumber - tries to return a group UUID associated with the given id 
-
-LPCSTR MSN_GetGroupByNumber( int pNumber )
-{
-	for ( ServerGroupItem* p = sttFirst; p != NULL; p = p->next )
-		if ( p->number == pNumber )
-			return p->id;
-
-	return NULL;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
 // MSN_MoveContactToGroup - sends a contact to the specified group 
 
 void MSN_MoveContactToGroup( HANDLE hContact, const char* grpName )
@@ -173,17 +159,6 @@ void MSN_SetGroupName( const char* pId, const char* pNewName )
 		if ( strcmp( p->id, pId ) == 0 ) {
 			mir_free( p->name );
 			p->name = mir_strdup( pNewName );
-			return;
-}	}	}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// MSN_SetGroupNumber - associate a server group with Miranda's group number 
-
-void MSN_SetGroupNumber( const char* pId, int pNumber )
-{
-	for ( ServerGroupItem* p = sttFirst; p != NULL; p = p->next ) {
-		if ( strcmp( p->id, pId ) == 0 ) {
-			p->number = pNumber;
 			return;
 }	}	}
 

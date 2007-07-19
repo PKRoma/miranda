@@ -245,7 +245,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	arHooks.insert( HookEvent( ME_DB_CONTACT_DELETED, MsnContactDeleted ));
 	arHooks.insert( HookEvent( ME_DB_CONTACT_SETTINGCHANGED, MsnDbSettingChanged ));
 	arHooks.insert( HookEvent( ME_CLIST_PREBUILDCONTACTMENU, MsnRebuildContactMenu ));
-//	arHooks.insert( HookEvent( ME_CLIST_GROUPCHANGE, MsnGroupChange ));
+	arHooks.insert( HookEvent( ME_CLIST_GROUPCHANGE, MsnGroupChange ));
 
 	InitCustomFolders();
 
