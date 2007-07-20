@@ -1178,7 +1178,7 @@ TStringPairs::TStringPairs( char* buffer ) :
 		if ( p == NULL )
 			break;
 
-		tempElem[ numElems ].name = buffer;
+		tempElem[ numElems ].name = rtrim( buffer );
 		*p = 0;
 		if (( p = strchr( ++p, '\"' )) == NULL )
 			break;
@@ -1188,11 +1188,12 @@ TStringPairs::TStringPairs( char* buffer ) :
 			break;
 
 		*p1++ = 0;
-		tempElem[ numElems ].value = p+1;
+		tempElem[ numElems ].value = rtrim( p+1 );
+		p1 = skipSpaces( p1 );
 		if ( *p1 == ',' )
 			p1++;
-
-		buffer = p1;
+		
+		buffer = skipSpaces( p1 );
 	}
 
 	if ( numElems ) {

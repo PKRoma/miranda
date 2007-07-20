@@ -108,7 +108,7 @@ BOOL JabberXmlSetCallback( XmlState *xmlState, int depth, XmlElemType type, JABB
 #define TAG_MAX_LEN 50
 #define ATTR_MAX_LEN 1024
 
-static char* skipSpaces( char* p, int* num = NULL )
+char* skipSpaces( char* p, int* num )
 {
 	int i;
 

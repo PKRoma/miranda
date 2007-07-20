@@ -684,6 +684,10 @@ JABBER_SOCKET JabberWsConnect( char* host, WORD port );
 int           JabberWsSend( JABBER_SOCKET s, char* data, int datalen, int flags );
 int           JabberWsRecv( JABBER_SOCKET s, char* data, long datalen, int flags );
 
+//---- jabber_xml.c ------------------------------------------------
+
+char* skipSpaces( char* p, int* num = NULL );
+
 //---- jabber_xstatus.c --------------------------------------------
 
 void JabberXStatusInit( void );
