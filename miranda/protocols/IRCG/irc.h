@@ -34,7 +34,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #pragma warning( disable : 4996 ) 
 
 #define WIN32_LEAN_AND_MEAN	
-//#include "AggressiveOptimize.h"
 #include <tchar.h>
 #include <windows.h>
 #include <shlwapi.h>

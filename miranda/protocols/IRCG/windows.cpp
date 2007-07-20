@@ -598,7 +598,7 @@ BOOL CALLBACK QuickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 						p2 = strchr(p1, '\0');
 					pData->Group = new char[p2-p1+1];
 					lstrcpynA(pData->Group, p1, p2-p1+1);
-					int iItem = SendDlgItemMessage( hwndDlg, IDC_SERVERCOMBO, CB_ADDSTRING,0,(LPARAM) pData->Name);
+					int iItem = SendDlgItemMessageA( hwndDlg, IDC_SERVERCOMBO, CB_ADDSTRING,0,(LPARAM) pData->Name);
 					SendDlgItemMessage( hwndDlg, IDC_SERVERCOMBO, CB_SETITEMDATA, iItem,(LPARAM) pData);
 				}
 				else
