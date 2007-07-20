@@ -833,13 +833,13 @@ bool PostIrcMessageWnd( TCHAR* window, HANDLE hContact, const TCHAR* szBuf )
 			else if( g_ircSession ) {
 				DoThis = ReplaceString( DoThis, _T("%"), _T("%%"));
 				DoThis = FormatMsg( DoThis );
-				g_ircSession << CIrcMessage( DoThis.c_str(), false, false );
+				g_ircSession << CIrcMessage( DoThis.c_str(), codepage, false, false );
 			}
 		}
 		else {
 			DoThis = ReplaceString( DoThis, _T("%"), _T("%%"));
 			DoThis = FormatMsg( DoThis );
-			g_ircSession << CIrcMessage( DoThis.c_str(), false, true );
+			g_ircSession << CIrcMessage( DoThis.c_str(), codepage, false, true );
 	}	}
 
 	return 1;

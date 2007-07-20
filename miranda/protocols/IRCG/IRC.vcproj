@@ -98,7 +98,8 @@
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="irc.h"
 				WarningLevel="3"
-				SuppressStartupBanner="TRUE"/>
+				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
@@ -107,6 +108,7 @@
 				AdditionalDependencies="odbc32.lib odbccp32.lib shlwapi.lib wsock32.lib"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
+				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"
 				BaseAddress="0x54010000"
 				TargetMachine="1"/>
@@ -224,7 +226,8 @@
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="irc.h"
 				WarningLevel="3"
-				SuppressStartupBanner="TRUE"/>
+				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
@@ -233,6 +236,7 @@
 				AdditionalDependencies="odbc32.lib odbccp32.lib shlwapi.lib wsock32.lib"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
+				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"
 				BaseAddress="0x54010000"
 				TargetMachine="1"/>
@@ -671,10 +675,10 @@
 				RelativePath="Icons\hide.ico">
 			</File>
 			<File
-				RelativePath="Icons\irc.ico">
+				RelativePath="Icons\Icons\irc.ico">
 			</File>
 			<File
-				RelativePath="Icons\Icons\irc.ico">
+				RelativePath="Icons\irc.ico">
 			</File>
 			<File
 				RelativePath="IRC.rc">
