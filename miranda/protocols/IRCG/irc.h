@@ -1,7 +1,8 @@
 /*
 IRC plugin for Miranda IM
 
-Copyright (C) 2003 Jörgen Persson
+Copyright (C) 2003-2005 Jurgen Persson
+Copyright (C) 2007 George Hazan
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -40,6 +41,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <shlobj.h>
 #include <objbase.h>
 #include <shellapi.h>
+#include <malloc.h>
 #include <stdio.h>
 #include <process.h>
 #include <math.h>

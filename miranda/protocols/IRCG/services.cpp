@@ -1,7 +1,8 @@
 /*
 IRC plugin for Miranda IM
 
-Copyright (C) 2003 Jörgen Persson
+Copyright (C) 2003-2005 Jurgen Persson
+Copyright (C) 2007 George Hazan
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -406,12 +407,13 @@ static int Service_EventDoubleclicked(WPARAM wParam,LPARAM lParam)
 	CLISTEVENT* pcle = (CLISTEVENT*)lParam;
 
 	if (DBGetContactSettingByte((HANDLE) pcle->hContact, IRCPROTONAME, "DCC", 0) != 0) {
-		char szTemp[500];
-		DCCINFO * pdci = (DCCINFO *) pcle->lParam;
+		DCCINFO* pdci = (DCCINFO *) pcle->lParam;
 		HWND hWnd = CreateDialogParam(g_hInstance,MAKEINTRESOURCE(IDD_MESSAGEBOX),NULL,MessageboxWndProc, (LPARAM)pdci);
-		mir_snprintf(szTemp, sizeof(szTemp), Translate("%s (%s) is requesting a client-to-client chat connection."), pdci->sContactName.c_str(), pdci->sHostmask.c_str() );
-		SetDlgItemTextA(hWnd,IDC_TEXT, szTemp);
-		ShowWindow(hWnd, SW_SHOW);
+		TCHAR szTemp[500];
+		mir_sntprintf( szTemp, SIZEOF(szTemp), TranslateT("%s (%s) is requesting a client-to-client chat connection."), 
+			pdci->sContactName.c_str(), (TCHAR*)_A2T(pdci->sHostmask.c_str()));
+		SetDlgItemText( hWnd, IDC_TEXT, szTemp );
+		ShowWindow( hWnd, SW_SHOW );
 		return 1;
 	}
 	return 0;
@@ -580,12 +582,12 @@ static int Service_QuickConnectMenuCommand(WPARAM wp, LPARAM lp)
 	if (!quickconn_hWnd)
 		quickconn_hWnd = CreateDialog(g_hInstance, MAKEINTRESOURCE(IDD_QUICKCONN), NULL, QuickWndProc);
 
-	SetWindowTextA(quickconn_hWnd, Translate("Quick connect"));
-	SetWindowTextA(GetDlgItem(quickconn_hWnd, IDC_TEXT), Translate("Please select IRC network and enter the password if needed"));
-	SetWindowTextA(GetDlgItem(quickconn_hWnd, IDC_CAPTION), Translate("Quick connect"));
-	SendMessage(quickconn_hWnd, WM_SETICON, ICON_BIG,(LPARAM)LoadIconEx(IDI_QUICK));
-	ShowWindow(quickconn_hWnd, SW_SHOW);
-	SetActiveWindow(quickconn_hWnd);
+	SetWindowText( quickconn_hWnd, TranslateT( "Quick connect" ));
+	SetDlgItemText( quickconn_hWnd, IDC_TEXT, TranslateT( "Please select IRC network and enter the password if needed" ));
+	SetDlgItemText( quickconn_hWnd, IDC_CAPTION, TranslateT( "Quick connect" ));
+	SendMessage( quickconn_hWnd, WM_SETICON, ICON_BIG, ( LPARAM )LoadIconEx( IDI_QUICK ));
+	ShowWindow( quickconn_hWnd, SW_SHOW );
+	SetActiveWindow( quickconn_hWnd );
 	return 0;
 }
 

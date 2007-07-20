@@ -2,7 +2,8 @@
 /*
 IRC plugin for Miranda IM
 
-Copyright (C) 2003 Jörgen Persson
+Copyright (C) 2003-2005 Jurgen Persson
+Copyright (C) 2007 George Hazan
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License

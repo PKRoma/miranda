@@ -1,7 +1,8 @@
 /*
 IRC plugin for Miranda IM
 
-Copyright (C) 2003 Jörgen Persson
+Copyright (C) 2003-2005 Jurgen Persson
+Copyright (C) 2007 George Hazan
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -119,13 +120,12 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK *link )
 	pluginLink=link;
 
 	if ( !mirVersion || mirVersion<PLUGIN_MAKE_VERSION( 0, 4, 0 ,0 )) {
-		char szVersion[] = "0.4"; // minimum required version
-		char szText[] = "The IRC protocol could not be loaded as it is dependant on Miranda IM version %s or later.\n\nDo you want to download an update from the Miranda website now?";
-		char * szTemp = new char[ lstrlenA(szVersion) + lstrlenA(szText) + 10];
-		mir_snprintf(szTemp, lstrlenA(szVersion) + lstrlenA(szText) + 10, szText, szVersion);
-		if (IDYES == MessageBoxA(0,Translate(szTemp),Translate("Information"),MB_YESNO|MB_ICONINFORMATION))
+		TCHAR szVersion[] = _T("0.7"); // minimum required version
+		TCHAR szText[] = _T("The IRC protocol could not be loaded as it is dependant on Miranda IM version %s or later.\n\nDo you want to download an update from the Miranda website now?");
+		TCHAR* szTemp = ( TCHAR* )alloca( sizeof( TCHAR )*( lstrlen(szVersion) + lstrlen(szText) + 10 ));
+		mir_sntprintf(szTemp, lstrlen(szVersion) + lstrlen(szText) + 10, szText, szVersion);
+		if ( IDYES == MessageBox( NULL, TranslateTS(szTemp), TranslateT( "Information" ), MB_YESNO | MB_ICONINFORMATION ))
 			CallService(MS_UTILS_OPENURL, 1, (LPARAM) "http://miranda-im.org/");
-		delete[] szTemp;
 		return 1;
 	}
 
