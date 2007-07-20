@@ -467,15 +467,25 @@ static __inline char* mir_u2a( const wchar_t* src )
 }
 
 #ifdef _UNICODE
-#define mir_t2a(s) mir_u2a(s)
-#define mir_a2t(s) mir_a2u(s)
-#define mir_t2u(s) mir_wstrdup(s)
-#define mir_u2t(s) mir_wstrdup(s)
+	#define mir_t2a(s) mir_u2a(s)
+	#define mir_a2t(s) mir_a2u(s)
+	#define mir_t2u(s) mir_wstrdup(s)
+	#define mir_u2t(s) mir_wstrdup(s)
+
+	#define mir_t2a_cp(s,c) mir_u2a_cp(s,c)
+	#define mir_a2t_cp(s,c) mir_a2u_cp(s,c)
+	#define mir_t2u_cp(s,c) mir_wstrdup(s)
+	#define mir_u2t_cp(s,c) mir_wstrdup(s)
 #else
-#define mir_t2a(s) mir_strdup(s)
-#define mir_a2t(s) mir_strdup(s)
-#define mir_t2u(s) mir_a2u(s)
-#define mir_u2t(s) mir_u2a(s)
+	#define mir_t2a(s) mir_strdup(s)
+	#define mir_a2t(s) mir_strdup(s)
+	#define mir_t2u(s) mir_a2u(s)
+	#define mir_u2t(s) mir_u2a(s)
+
+	#define mir_t2a_cp(s,c) mir_strdup(s)
+	#define mir_a2t_cp(s,c) mir_strdup(s)
+	#define mir_t2u_cp(s,c) mir_a2u_cp(s,c)
+	#define mir_u2t_cp(s,c) mir_u2a_cp(s,c)
 #endif
 
 #endif // M_UTILS_H__
