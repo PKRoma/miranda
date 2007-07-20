@@ -625,6 +625,32 @@ BOOL CALLBACK CtcpPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 }
 
 // Callback for the 'Advanced preferences' dialog
+char* rtrim( char *string )
+{
+   char* p = string + strlen( string ) - 1;
+
+   while ( p >= string )
+   {  if ( *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r' )
+         break;
+
+		*p-- = 0;
+   }
+   return string;
+}
+
+static char* sttEventNames[] = {
+	"Event: Available",
+	"Event: Away",
+	"Event: N/A",
+	"Event: Occupied",
+	"Event: DND",
+	"Event: Free for chat",
+	"Event: On the phone",
+	"Event: Out for lunch",
+	"Event: Disconnect",
+	"ALL NETWORKS"
+};
+
 BOOL CALLBACK OtherPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
 	switch (uMsg) {
@@ -672,48 +698,47 @@ BOOL CALLBACK OtherPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					delete []Group;
 			}	}
 
-			SendDlgItemMessageA( hwndDlg, IDC_PERFORMCOMBO, CB_INSERTSTRING, 0, (LPARAM)"Event: Available"	);
-			SendDlgItemMessageA( hwndDlg, IDC_PERFORMCOMBO, CB_INSERTSTRING, 1, (LPARAM)"Event: Away"	);
-			SendDlgItemMessageA( hwndDlg, IDC_PERFORMCOMBO, CB_INSERTSTRING, 2, (LPARAM)"Event: N/A"	);
-			SendDlgItemMessageA( hwndDlg, IDC_PERFORMCOMBO, CB_INSERTSTRING, 3, (LPARAM)"Event: Occupied"	);
-			SendDlgItemMessageA( hwndDlg, IDC_PERFORMCOMBO, CB_INSERTSTRING, 4, (LPARAM)"Event: DND"	);
-			SendDlgItemMessageA( hwndDlg, IDC_PERFORMCOMBO, CB_INSERTSTRING, 5, (LPARAM)"Event: Free for chat"	);
-			SendDlgItemMessageA( hwndDlg, IDC_PERFORMCOMBO, CB_INSERTSTRING, 6, (LPARAM)"Event: On the phone"	);
-			SendDlgItemMessageA( hwndDlg, IDC_PERFORMCOMBO, CB_INSERTSTRING, 7, (LPARAM)"Event: Out for lunch"	);
-			SendDlgItemMessageA( hwndDlg, IDC_PERFORMCOMBO, CB_INSERTSTRING, 8, (LPARAM)"Event: Disconnect"	);
-			SendDlgItemMessageA( hwndDlg, IDC_PERFORMCOMBO, CB_INSERTSTRING, 9, (LPARAM)"ALL NETWORKS"	);
-			SendDlgItemMessageA( hwndDlg, IDC_PERFORMCOMBO, CB_SETITEMDATA, -1, 0);
+			HWND hwndPerform = GetDlgItem( hwndDlg, IDC_PERFORMCOMBO );
+			{
+				for ( int i=0; i < SIZEOF(sttEventNames); i++ )
+					SendMessage( hwndPerform, CB_INSERTSTRING, i, (LPARAM)TranslateTS(( TCHAR* )_A2T( sttEventNames[i] )));
+				SendMessage( hwndPerform, CB_SETITEMDATA, -1, 0);
+			}
 
 			if ( pszPerformFile ) {
 				char* p1 = pszPerformFile;
 				char* p2 = pszPerformFile;
 
-				while(strstr(p2, "NETWORK: ")) {
-					p1 = strstr(p2, "NETWORK: ");
+				while ( strstr( p2, "NETWORK: " )) {
+					p1 = strstr( p2, "NETWORK: " );
 					p1 = p1+9;
 					p2 = strchr(p1, '\n');
-					char * szNetwork = new char[p2-p1];
-					lstrcpynA(szNetwork, p1, p2-p1);
+					char* szNetwork = new char[ p2-p1 ];
+					lstrcpynA( szNetwork, p1, p2-p1 );
 					p1 = p2;
 					p1++;
-					p2 = strstr(p1, "\nNETWORK: ");
+					p2 = strstr( p1, "\nNETWORK: " );
 					if ( !p2 )
-						p2= p1 + lstrlenA(p1)-1;
+						p2 = p1 + lstrlenA(p1)-1;
 					if ( p1 == p2 )
 						break;
 
-					int index = SendDlgItemMessage( hwndDlg, IDC_PERFORMCOMBO, CB_FINDSTRINGEXACT, -1, (LPARAM) szNetwork);
-					if (index != CB_ERR) {
+					int i;
+					for ( i=0; i < SIZEOF(sttEventNames); i++ )
+						if ( !strcmp( sttEventNames[i], szNetwork ))
+							break;
+
+					if ( i != SIZEOF(sttEventNames)) {
 						*p2 = 0;
-						PERFORM_INFO * pPref = new PERFORM_INFO;
-						pPref->Perform = mir_strdup( p1 );
-						SendDlgItemMessageA( hwndDlg, IDC_PERFORMCOMBO, CB_SETITEMDATA, index, (LPARAM)pPref);
+						PERFORM_INFO* pPref = new PERFORM_INFO;
+						pPref->Perform = mir_strdup( rtrim( p1 ));
+						SendMessageA( hwndPerform, CB_SETITEMDATA, i, ( LPARAM )pPref );
 					}
 
 					delete [] szNetwork;
 			}	}
 
-			SendDlgItemMessage( hwndDlg, IDC_PERFORMCOMBO, CB_SETCURSEL, 0, 0);				
+			SendMessage( hwndPerform, CB_SETCURSEL, 0, 0);				
 			SendMessage( hwndDlg, WM_COMMAND, MAKEWPARAM(IDC_PERFORMCOMBO, CBN_SELCHANGE), 0);
 			PerformlistModified = false;
 		}	
@@ -816,14 +841,14 @@ BOOL CALLBACK OtherPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		break;
 
 	case WM_DESTROY:
+		PerformlistModified = false;
 		{
-			PerformlistModified = false;
 			int i = SendMessage(GetDlgItem( hwndDlg, IDC_PERFORMCOMBO), CB_GETCOUNT, 0, 0);
 			if ( i != CB_ERR && i != 0 ) {
 				for (int index = 0; index < i; index++) {
-					PERFORM_INFO * pPerf = (PERFORM_INFO *)SendMessage(GetDlgItem( hwndDlg, IDC_PERFORMCOMBO), CB_GETITEMDATA, index, 0);
-					if ( (const int)pPerf != CB_ERR && pPerf != 0) {
-						delete []pPerf->Perform;
+					PERFORM_INFO* pPerf = (PERFORM_INFO *)SendMessage(GetDlgItem( hwndDlg, IDC_PERFORMCOMBO), CB_GETITEMDATA, index, 0);
+					if (( const int )pPerf != CB_ERR && pPerf != 0) {
+						mir_free( pPerf->Perform );
 						delete pPerf;
 		}	}	}	}
 		break;
@@ -850,28 +875,26 @@ BOOL CALLBACK OtherPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				if (IsWindowEnabled(GetDlgItem( hwndDlg, IDC_ADD)))
 					SendMessage( hwndDlg, WM_COMMAND, MAKEWPARAM(IDC_ADD, BN_CLICKED), 0);
 
-				if (PerformlistModified) {
+				if ( PerformlistModified ) {
 					PerformlistModified = false;
-					char filepath[MAX_PATH];
-					mir_snprintf(filepath, sizeof(filepath), "%s\\%s_perform.ini", mirandapath, IRCPROTONAME);
-					int i = SendMessage(GetDlgItem( hwndDlg, IDC_PERFORMCOMBO), CB_GETCOUNT, 0, 0);
-					FILE *hFile = fopen(filepath,"wb");
-					if (hFile && i != CB_ERR && i != 0) {
-						for (int index = 0; index < i; index++) {
-							PERFORM_INFO * pPerf = (PERFORM_INFO *)SendMessage(GetDlgItem( hwndDlg, IDC_PERFORMCOMBO), CB_GETITEMDATA, index, 0);
-							if ( (const int)pPerf != CB_ERR && pPerf != 0) {
-								int k = SendMessage(GetDlgItem( hwndDlg, IDC_PERFORMCOMBO), CB_GETLBTEXTLEN, index, 0);
-								char * temp = new char[k+1];
-								SendMessage(GetDlgItem( hwndDlg, IDC_PERFORMCOMBO), CB_GETLBTEXT, index, (LPARAM)temp);
-								fputs("NETWORK: ", hFile);
-								fputs(temp, hFile);
-								fputs("\r\n", hFile);
-								fputs(pPerf->Perform, hFile);
-								fputs("\r\n", hFile);
-								delete []temp;
-						}	}
 
-						fclose(hFile);
+					char filepath[ MAX_PATH ];
+					mir_snprintf( filepath, sizeof( filepath ), "%s\\%s_perform.ini", mirandapath, IRCPROTONAME );
+					FILE* hFile = fopen( filepath, "wb" );
+					if ( hFile ) {
+						for ( int i = 0; i < SIZEOF(sttEventNames); i++ ) {
+							PERFORM_INFO* pPerf = ( PERFORM_INFO* )SendMessage( GetDlgItem( hwndDlg, IDC_PERFORMCOMBO), CB_GETITEMDATA, i, 0 );
+							if (( const int )pPerf == CB_ERR || pPerf == NULL )
+								continue;
+
+							int k = SendDlgItemMessageA( hwndDlg, IDC_PERFORMCOMBO, CB_GETLBTEXTLEN, i, 0);
+							char* temp = new char[ k+1 ];
+							SendDlgItemMessageA( hwndDlg, IDC_PERFORMCOMBO, CB_GETLBTEXT, i, (LPARAM)temp);
+							fprintf( hFile, "NETWORK: %s\r\n%s\r\n", sttEventNames[i], pPerf->Perform );
+							delete []temp;
+						}
+
+						fclose( hFile );
 						delete [] pszPerformFile;
 						pszPerformFile = IrcLoadFile(filepath);
 				}	}
