@@ -86,20 +86,34 @@ void __cdecl MSNServerThread( ThreadData* info )
 	if ( tPortDelim != NULL )
 		*tPortDelim = '\0';
 
-	if ( MyOptions.UseGateway && !MyOptions.UseProxy ) {
-		tConn.szHost = MSN_DEFAULT_GATEWAY;
+	if ( MyOptions.UseGateway && !MyOptions.UseProxy ) 
+	{
+		tConn.szHost = info->mGatewayIP;
 		tConn.wPort = MSN_DEFAULT_GATEWAY_PORT;
-		info->hQueueMutex = CreateMutex( NULL, FALSE, NULL );
+		info->hQueueMutex = CreateMutex(NULL, FALSE, NULL);
+		if (*info->mServer == 0)
+			strcpy(info->mServer, MSN_DEFAULT_LOGIN_SERVER); 
 	}
-	else {
+	else 
+	{
 		tConn.szHost = info->mServer;
 		tConn.wPort = MSN_DEFAULT_PORT;
 
-		if ( tPortDelim != NULL) {
+		if (tPortDelim != NULL) 
+		{
 			int tPortNumber;
-			if ( sscanf( tPortDelim+1, "%d", &tPortNumber ) == 1 )
+			if (sscanf( tPortDelim+1, "%d", &tPortNumber ) == 1)
 				tConn.wPort = ( WORD )tPortNumber;
-	}	}
+		}	
+	}
+
+	if ( *tConn.szHost == 0 )
+	{
+		if (MSN_GetStaticString("LoginServer", NULL, (char*)tConn.szHost, 80))
+			strcpy((char*)tConn.szHost, 
+			tConn.wPort == MSN_DEFAULT_PORT ? MSN_DEFAULT_LOGIN_SERVER : MSN_DEFAULT_GATEWAY);
+	}
+
 
 	MSN_DebugLog( "Thread started: server='%s', type=%d", tConn.szHost, info->mType );
 
@@ -587,12 +601,8 @@ void ThreadData::getGatewayUrl( char* dest, int destlen, bool isPoll )
 	static const char cmdFmtStr[]  = "http://%s/gateway/gateway.dll?SessionID=%s";
 
 	if ( mSessionID[0] == 0 ) {
-		strcpy( mGatewayIP, MSN_DEFAULT_GATEWAY );
-
-		if ( mType == SERVER_NOTIFICATION || mType == SERVER_DISPATCH )
-			mir_snprintf( dest, destlen, openFmtStr, mGatewayIP, "NS", "messenger.hotmail.com" );
-		else
-			mir_snprintf( dest, destlen, openFmtStr, mGatewayIP, "SB", mServer );
+		const char* svr = mType == SERVER_NOTIFICATION || mType == SERVER_DISPATCH ? "NS" : "SB";
+		mir_snprintf( dest, destlen, openFmtStr, mGatewayIP, svr, mServer );
 	}
 	else
 		mir_snprintf( dest, destlen, isPoll ? pollFmtStr : cmdFmtStr, mGatewayIP, mSessionID );

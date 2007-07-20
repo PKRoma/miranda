@@ -347,6 +347,11 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	MSN_DeleteSetting( NULL, "MobileEnabled" );
 	MSN_DeleteSetting( NULL, "MobileAllowed" );
 
+	if (MSN_GetStaticString( "LoginServer", NULL, evtname, sizeof( evtname )) == 0 &&
+		(strcmp(evtname, MSN_DEFAULT_LOGIN_SERVER) == 0 ||
+		strcmp(evtname, MSN_DEFAULT_GATEWAY) == 0))
+		MSN_DeleteSetting( NULL, "LoginServer" );
+
 	mailsoundname = ( char* )mir_alloc( 64 );
 	mir_snprintf(mailsoundname, 64, "%s:%s", protocolname, MSN_Translate( "Hotmail" ));
 	SkinAddNewSound( mailsoundname, mailsoundname, "<not specified>" );

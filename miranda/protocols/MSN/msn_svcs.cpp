@@ -1251,15 +1251,6 @@ static int MsnSetStatus( WPARAM wParam, LPARAM lParam )
 
 		ThreadData* newThread = new ThreadData;
 
-		WORD tServerPort = MSN_GetWord( NULL, "MSNMPort", MSN_DEFAULT_PORT );
-
-		char tServer[ sizeof( newThread->mServer ) ];
-		if ( MSN_GetStaticString( "LoginServer", NULL, tServer, sizeof( tServer )))
-			strcpy( tServer, MSN_DEFAULT_LOGIN_SERVER );
-
-		mir_snprintf( newThread->mServer, sizeof( newThread->mServer ), "%s:%i", tServer, tServerPort );
-		newThread->mServer[ sizeof(newThread->mServer)-1 ] = 0;
-
 		newThread->mType = SERVER_DISPATCH;
 		newThread->mIsMainThread = true;
 		{	int oldMode = msnStatusMode;

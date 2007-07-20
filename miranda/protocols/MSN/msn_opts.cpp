@@ -322,19 +322,14 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		{
 			int tUseGateway = MSN_GetByte( "UseGateway", 0 );
 			CheckDlgButton( hwndDlg, IDC_USEGATEWAY, tUseGateway );
-			if ( tUseGateway ) {
-				SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, MSN_DEFAULT_GATEWAY );
-				SetDlgItemInt( hwndDlg, IDC_MSNPORT, MSN_DEFAULT_GATEWAY_PORT, FALSE );
+			if ( !DBGetContactSetting( NULL, msnProtocolName, "LoginServer", &dbv )) {
+				SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, dbv.pszVal );
+				MSN_FreeVariant( &dbv );
 			}
-			else {
-				if ( !DBGetContactSetting( NULL, msnProtocolName, "LoginServer", &dbv )) {
-					SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, dbv.pszVal );
-					MSN_FreeVariant( &dbv );
-				}
-				else SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, MSN_DEFAULT_LOGIN_SERVER );
-
-				SetDlgItemInt( hwndDlg, IDC_MSNPORT, MSN_GetWord( NULL, "MSNMPort", MSN_DEFAULT_PORT ), FALSE );
-		}	}
+			else 
+				SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, tUseGateway ? MSN_DEFAULT_GATEWAY : MSN_DEFAULT_LOGIN_SERVER );
+			SetDlgItemInt( hwndDlg, IDC_MSNPORT, tUseGateway ? MSN_DEFAULT_GATEWAY_PORT : MSN_DEFAULT_PORT, FALSE );
+		}
 
 		CheckDlgButton( hwndDlg, IDC_USEIEPROXY,  MSN_GetByte( "UseIeProxy",  0 ));
 		CheckDlgButton( hwndDlg, IDC_SLOWSEND,    MSN_GetByte( "SlowSend",    0 ));
@@ -371,10 +366,7 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			EnableWindow( GetDlgItem( hwndDlg, IDC_YOURHOST), gethst == 1 );
 		}
 
-		if ( MyOptions.UseGateway ) {
-			EnableWindow( GetDlgItem( hwndDlg, IDC_LOGINSERVER ), FALSE );
-			EnableWindow( GetDlgItem( hwndDlg, IDC_MSNPORT ), FALSE );
-		}
+		EnableWindow( GetDlgItem( hwndDlg, IDC_MSNPORT ), FALSE );
 		return TRUE;
 
 	case WM_COMMAND:
@@ -394,7 +386,7 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 
 		if ( HIWORD( wParam ) == EN_CHANGE && ( HWND )lParam == GetFocus())
 			switch( LOWORD( wParam )) {
-			case IDC_LOGINSERVER:		case IDC_MSNPORT:
+			case IDC_LOGINSERVER:
 			case IDC_YOURHOST:
 				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 			}
@@ -430,11 +422,8 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 						}
 						else SetWindowTextA( tWindow, MSN_DEFAULT_LOGIN_SERVER );
 
-						SetDlgItemInt( hwndDlg, IDC_MSNPORT, MSN_GetWord( NULL, "MSNMPort", MSN_DEFAULT_PORT ), FALSE );
+						SetDlgItemInt( hwndDlg, IDC_MSNPORT, MSN_DEFAULT_PORT, FALSE );
 					}
-
-					EnableWindow( tWindow, tValue );
-					EnableWindow( GetDlgItem( hwndDlg, IDC_MSNPORT ), tValue );
 					SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 					break;
 				}
@@ -452,12 +441,12 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				MSN_SetByte( "UseGateway", tValue );
 				reconnectRequired = true;
 			}
-			if ( !tValue ) {
-				GetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, str, sizeof( str ));
+			
+			GetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, str, sizeof( str ));
+			if (strcmp(str, MSN_DEFAULT_LOGIN_SERVER) && strcmp(str, MSN_DEFAULT_GATEWAY))
 				MSN_SetString( NULL, "LoginServer", str );
-
-				MSN_SetWord( NULL, "MSNMPort", (WORD)GetDlgItemInt( hwndDlg, IDC_MSNPORT, NULL, FALSE ));
-			}
+			else
+				MSN_DeleteSetting( NULL, "LoginServer" );
 
 			tValue = ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USEOPENSSL );
 			if ( MSN_GetByte( "UseOpenSSL", 0 ) != tValue ) {
