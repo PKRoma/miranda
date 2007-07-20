@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 using namespace irc;
 
 bool	DoOnConnect(const CIrcMessage *pmsg);
-int	DoPerform(char * event);
+int	DoPerform(const char* event);
 char*	IsIgnored(TString nick, TString address, TString host, char type) ;
 char*	IsIgnored(String user, char type) ;
 bool	AddIgnore(String mask, String mode, String network) ;

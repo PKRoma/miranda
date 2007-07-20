@@ -52,7 +52,6 @@ TString        ChannelsToWho = _T("");
 TString        NamesToUserhost = _T("");
 
 extern char*   pszIgnoreFile;
-extern char*   pszPerformFile;
 extern char    mirandapath[MAX_PATH];
 extern HANDLE  hMenuQuick ;			
 extern HANDLE  hMenuServer ;			
@@ -439,7 +438,7 @@ bool CMyMonitor::OnIrc_SETAWAY( const CIrcMessage* pmsg )
 				break;
 			default:
 				GlobalStatus = ID_STATUS_AWAY;
-				DoPerform("Event: Away"	);
+				DoPerform( "Event: Away" );
 				break;
 	}	}	}	
 		
@@ -2407,7 +2406,7 @@ bool DoOnConnect(const CIrcMessage *pmsg)
 
 	int Temp = OldStatus;
 	OldStatus = ID_STATUS_ONLINE;
-	ProtoBroadcastAck(IRCPROTONAME,NULL,ACKTYPE_STATUS,ACKRESULT_SUCCESS,(HANDLE)Temp,ID_STATUS_ONLINE);
+	ProtoBroadcastAck( IRCPROTONAME, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE )Temp, ID_STATUS_ONLINE );
 
 	if ( !StatusMessage.empty()) {
 		TString S = _T("/AWAY ");
@@ -2417,9 +2416,9 @@ bool DoOnConnect(const CIrcMessage *pmsg)
 	}
 	
 	if ( prefs->Perform ) {
-		DoPerform("ALL NETWORKS");
+		DoPerform( "ALL NETWORKS" );
 		if ( g_ircSession )
-			DoPerform((char*)g_ircSession.GetInfo().sNetwork.c_str());
+			DoPerform( _T2A( g_ircSession.GetInfo().sNetwork.c_str()));
 	}
 
 	if ( prefs->RejoinChannels ) {
@@ -2469,43 +2468,18 @@ static void __cdecl AwayWarningThread(LPVOID di)
 	MessageBox(NULL, TranslateT("The usage of /AWAY in your perform buffer is restricted\n as IRC sends this command automatically."), TranslateT("IRC Error"), MB_OK);
 }
 
-int DoPerform( char* event )
+int DoPerform( const char* event )
 {
-	if ( !pszPerformFile )
-		return 0;
-
-	char* search = new char[ lstrlenA (event)+14 ];
-	mir_snprintf( search, lstrlenA(event)+13, "NETWORK: %s", event );
-	char* p1 = my_strstri( pszPerformFile, search );
-	if ( p1 != NULL ) {
-		char* p2 = strchr(p1, '\n');
-		if ( !p2 )
-			return 0;
-		
-		p2++;
-		p1 = strstr ( p2, "\nNETWORK: " );
-		if ( !p1 )
-			p1 = strchr( p2, '\0' );
+	String sSetting = String("PERFORM:") + event;
+	DBVARIANT dbv;
+	if ( !DBGetContactSettingTString( NULL, IRCPROTONAME, sSetting.c_str(), &dbv )) {
+		if ( !my_strstri( dbv.ptszVal, _T("/away")))
+			PostIrcMessageWnd( NULL, NULL, dbv.ptszVal );
 		else
-			p1--;
-		while(p1 > p2 && ( p1[-1] == ' ' || p1[-1] == '\n' || p1[-1] == '\r' || p1[-1] == '\0'))
-			p1--;
-		
-		if ( p2 >= p1 )
-			return 0;
-
-		*p1 = 0;
-		TCHAR* DoThis = mir_a2t( p2 );
-
-		if ( !my_strstri( DoThis, _T("/away")))
-			PostIrcMessageWnd( NULL, NULL, DoThis );
-		else
-			mir_forkthread(AwayWarningThread, NULL  );
-		mir_free( DoThis );
-		delete [] search;
+			mir_forkthread( AwayWarningThread, NULL  );
+		DBFreeVariant( &dbv );
 		return 1;
 	}
-	delete [] search;
 	return 0;
 }
 

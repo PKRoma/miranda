@@ -972,11 +972,11 @@ static int Service_SystemPreShutdown(WPARAM wParam,LPARAM lParam)
 {
 	EnterCriticalSection(&cs);
 
-	if (prefs->Perform && g_ircSession)
-		if (DoPerform("Event: Disconnect"))
-			Sleep(200);
+	if ( prefs->Perform && g_ircSession )
+		if ( DoPerform( "Event: Disconnect" ))
+			Sleep( 200 );
 
-	g_ircSession.DisconnectAllDCCSessions(true);
+	g_ircSession.DisconnectAllDCCSessions( true );
 
 	if (g_ircSession)
 		g_ircSession.Disconnect();
@@ -1266,8 +1266,8 @@ void DisconnectFromServer(void)
 	GCEVENT gce = {0};
 	GCDEST gcd = {0};
 
-	if (prefs->Perform && g_ircSession)
-		DoPerform("Event: Disconnect");
+	if ( prefs->Perform && g_ircSession )
+		DoPerform( "Event: Disconnect" );
 
 	gcd.iType = GC_EVENT_CONTROL;
 	gcd.ptszID = NULL; // all windows
@@ -1318,15 +1318,15 @@ static int Service_SetStatus(WPARAM wParam,LPARAM lParam)
 		return 0;
 	}
 
-	if (wParam == ID_STATUS_FREECHAT && prefs->Perform && g_ircSession)
-		DoPerform("Event: Free for chat"	);
-	if (wParam == ID_STATUS_ONTHEPHONE && prefs->Perform && g_ircSession)
-		DoPerform("Event: On the phone");
-	if (wParam == ID_STATUS_OUTTOLUNCH && prefs->Perform && g_ircSession)
-		DoPerform("Event: Out for lunch");
-	if (wParam == ID_STATUS_ONLINE && prefs->Perform && g_ircSession && (GlobalStatus ==ID_STATUS_ONTHEPHONE ||GlobalStatus  ==ID_STATUS_OUTTOLUNCH) && OldStatus  !=ID_STATUS_AWAY)
-		DoPerform("Event: Available"	);
-	if (lParam != 1)
+	if ( wParam == ID_STATUS_FREECHAT && prefs->Perform && g_ircSession )
+		DoPerform( "Event: Free for chat" );
+	if ( wParam == ID_STATUS_ONTHEPHONE && prefs->Perform && g_ircSession )
+		DoPerform( "Event: On the phone" );
+	if ( wParam == ID_STATUS_OUTTOLUNCH && prefs->Perform && g_ircSession )
+		DoPerform( "Event: Out for lunch" );
+	if ( wParam == ID_STATUS_ONLINE && prefs->Perform && g_ircSession && (GlobalStatus ==ID_STATUS_ONTHEPHONE ||GlobalStatus  ==ID_STATUS_OUTTOLUNCH) && OldStatus  !=ID_STATUS_AWAY)
+		DoPerform( "Event: Available" );
+	if ( lParam != 1 )
 		GlobalStatus = wParam;
 
 	if ((wParam == ID_STATUS_ONLINE || wParam == ID_STATUS_AWAY || wParam == ID_STATUS_FREECHAT) && !g_ircSession ) //go from offline to online
@@ -1580,7 +1580,26 @@ static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	pszServerFile = IrcLoadFile(szTemp);
 
 	mir_snprintf(szTemp, sizeof(szTemp), "%s\\%s_perform.ini", mirandapath, IRCPROTONAME);
-	pszPerformFile = IrcLoadFile(szTemp);
+	char* pszPerformData = IrcLoadFile( szTemp );
+	if ( pszPerformData != NULL ) {
+		char *p1 = pszPerformData, *p2 = pszPerformData;
+		while (( p1 = strstr( p2, "NETWORK: " )) != NULL ) {
+			p1 += 9;
+			p2 = strchr(p1, '\n');
+			String sNetwork( p1, int( p2-p1-1 ));
+			p1 = p2;
+			p2 = strstr( ++p1, "\nNETWORK: " );
+			if ( !p2 )
+				p2 = p1 + lstrlenA( p1 )-1;
+			if ( p1 == p2 )
+				break;
+
+			*p2 = 0;
+			DBWriteContactSettingString( NULL, IRCPROTONAME, ("PERFORM:" + sNetwork).c_str(), p1 );
+		}
+		delete[] pszPerformData;
+		::remove( szTemp );
+	}
 
 	mir_snprintf(szTemp, sizeof(szTemp), "%s\\%s_ignore.ini", mirandapath, IRCPROTONAME);
 	pszIgnoreFile = IrcLoadFile(szTemp);

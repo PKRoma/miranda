@@ -601,8 +601,7 @@ BOOL CALLBACK QuickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					int iItem = SendDlgItemMessageA( hwndDlg, IDC_SERVERCOMBO, CB_ADDSTRING,0,(LPARAM) pData->Name);
 					SendDlgItemMessage( hwndDlg, IDC_SERVERCOMBO, CB_SETITEMDATA, iItem,(LPARAM) pData);
 				}
-				else
-					EnableWindow(GetDlgItem( hwndDlg, IDNOK), false);
+				else EnableWindow(GetDlgItem( hwndDlg, IDNOK), false);
 					
 				SendMessage(GetDlgItem( hwndDlg, IDC_SERVER), EM_SETREADONLY, true, 0);
 				SendMessage(GetDlgItem( hwndDlg, IDC_PORT), EM_SETREADONLY, true, 0);
@@ -799,7 +798,7 @@ BOOL CALLBACK UserDetailsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				DBFreeVariant(&dbv);
 			}
 
-			if (!DBGetContactSettingTString( hContact, IRCPROTONAME, "UHost", &dbv)) {
+			if ( !DBGetContactSettingTString( hContact, IRCPROTONAME, "UHost", &dbv)) {
 				SetDlgItemText( hwndDlg, IDC_HOST, dbv.ptszVal);
 				DBFreeVariant(&dbv);
 			}

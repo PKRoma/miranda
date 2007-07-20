@@ -205,7 +205,16 @@ struct SERVER_INFO  // Contains info about different servers
 
 struct PERFORM_INFO  // Contains 'Perform buffer' for different networks
 {
-	char* Perform;
+	PERFORM_INFO( const char* szSetting, const TCHAR* value ) :
+		mSetting( szSetting ),
+		mText( value )
+	{}
+
+	~PERFORM_INFO()
+	{}
+
+	String mSetting;
+	TString mText;
 };
 
 struct CONTACT // Contains info about users
