@@ -258,7 +258,7 @@ BOOL CALLBACK AddServerProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			TranslateDialogDefault( hwndDlg);
 			int i = SendMessage(GetDlgItem(connect_hWnd, IDC_SERVERCOMBO), CB_GETCOUNT, 0, 0);
 			for (int index = 0; index <i; index++) {
-				SERVER_INFO * pData = (SERVER_INFO *)SendMessage(GetDlgItem(connect_hWnd, IDC_SERVERCOMBO), CB_GETITEMDATA, index, 0);
+				SERVER_INFO* pData = ( SERVER_INFO* )SendMessage(GetDlgItem(connect_hWnd, IDC_SERVERCOMBO), CB_GETITEMDATA, index, 0);
 				if (SendMessage(GetDlgItem( hwndDlg, IDC_ADD_COMBO), CB_FINDSTRINGEXACT, -1,(LPARAM) pData->Group) == CB_ERR)
 					SendMessageA(GetDlgItem( hwndDlg, IDC_ADD_COMBO), CB_ADDSTRING, 0, (LPARAM) pData->Group);
 			}
@@ -283,7 +283,7 @@ BOOL CALLBACK AddServerProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				switch (LOWORD(wParam)) {	
 				case IDN_ADD_OK:
 					if (GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_SERVER)) && GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_ADDRESS)) && GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_PORT)) && GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_PORT2)) && GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_COMBO))) {
-						SERVER_INFO * pData = new SERVER_INFO;
+						SERVER_INFO* pData = new SERVER_INFO;
 						pData->iSSL = 0;
 						if(IsDlgButtonChecked( hwndDlg, IDC_ON))
 							pData->iSSL = 2;
@@ -347,12 +347,12 @@ BOOL CALLBACK EditServerProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			TranslateDialogDefault( hwndDlg);
 			int i = SendMessage(GetDlgItem(connect_hWnd, IDC_SERVERCOMBO), CB_GETCOUNT, 0, 0);
 			for (int index = 0; index <i; index++) {
-				SERVER_INFO * pData = (SERVER_INFO *)SendMessage(GetDlgItem(connect_hWnd, IDC_SERVERCOMBO), CB_GETITEMDATA, index, 0);
+				SERVER_INFO* pData = ( SERVER_INFO* )SendMessage(GetDlgItem(connect_hWnd, IDC_SERVERCOMBO), CB_GETITEMDATA, index, 0);
 				if (SendMessage(GetDlgItem( hwndDlg, IDC_ADD_COMBO), CB_FINDSTRINGEXACT, -1,(LPARAM) pData->Group) == CB_ERR)
 					SendMessageA(GetDlgItem( hwndDlg, IDC_ADD_COMBO), CB_ADDSTRING, 0, (LPARAM) pData->Group);
 			}
 			int j = SendMessage(GetDlgItem(connect_hWnd, IDC_SERVERCOMBO), CB_GETCURSEL, 0, 0);
-			SERVER_INFO * pData = (SERVER_INFO *)SendMessage(GetDlgItem(connect_hWnd, IDC_SERVERCOMBO), CB_GETITEMDATA, j, 0);
+			SERVER_INFO* pData = ( SERVER_INFO* )SendMessage(GetDlgItem(connect_hWnd, IDC_SERVERCOMBO), CB_GETITEMDATA, j, 0);
 			SetDlgItemTextA( hwndDlg, IDC_ADD_ADDRESS, pData->Address);
 			SetDlgItemTextA( hwndDlg, IDC_ADD_COMBO, pData->Group);
 			SetDlgItemTextA( hwndDlg, IDC_ADD_PORT, pData->PortStart);
@@ -389,7 +389,7 @@ BOOL CALLBACK EditServerProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				if (GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_SERVER)) && GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_ADDRESS)) && GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_PORT)) && GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_PORT2)) && GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_COMBO))) {
 					int i = SendMessage(GetDlgItem(connect_hWnd, IDC_SERVERCOMBO), CB_GETCURSEL, 0, 0);
 
-					SERVER_INFO * pData1 = (SERVER_INFO *)SendMessage(GetDlgItem(connect_hWnd, IDC_SERVERCOMBO), CB_GETITEMDATA, i, 0);
+					SERVER_INFO* pData1 = ( SERVER_INFO* )SendMessage(GetDlgItem(connect_hWnd, IDC_SERVERCOMBO), CB_GETITEMDATA, i, 0);
 					delete []pData1->Name;
 					delete []pData1->Address;
 					delete []pData1->PortStart;
@@ -398,7 +398,7 @@ BOOL CALLBACK EditServerProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					delete pData1;	
 					SendMessage(GetDlgItem(connect_hWnd, IDC_SERVERCOMBO), CB_DELETESTRING, i, 0);
 
-					SERVER_INFO * pData = new SERVER_INFO;
+					SERVER_INFO* pData = new SERVER_INFO;
 					pData->iSSL = 0;
 					if(IsDlgButtonChecked( hwndDlg, IDC_ON))
 						pData->iSSL = 2;
@@ -914,7 +914,7 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 			char* p1 = pszServerFile;
 			char* p2 = pszServerFile;
 			while (strchr(p2, 'n')) {
-				SERVER_INFO * pData = new SERVER_INFO;
+				SERVER_INFO* pData = new SERVER_INFO;
 				p1 = strchr(p2, '=');
 				++p1;
 				p2 = strstr(p1, "SERVER:");
@@ -983,7 +983,7 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 		else SetDlgItemText( hwndDlg, IDC_SSL, TranslateT( "N/A" ));
 
 		if ( prefs->ServerComboSelection != -1 ) {
-			SERVER_INFO * pData = (SERVER_INFO *)SendDlgItemMessage( hwndDlg, IDC_SERVERCOMBO, CB_GETITEMDATA, prefs->ServerComboSelection, 0);
+			SERVER_INFO* pData = ( SERVER_INFO* )SendDlgItemMessage( hwndDlg, IDC_SERVERCOMBO, CB_GETITEMDATA, prefs->ServerComboSelection, 0);
 			if ((int)pData != CB_ERR) {
 				SetDlgItemTextA( hwndDlg, IDC_SERVER, pData->Address   );
 				SetDlgItemTextA( hwndDlg, IDC_PORT,   pData->PortStart );
@@ -1063,7 +1063,7 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 
 		if (HIWORD(wParam) == CBN_SELCHANGE && LOWORD(wParam) == IDC_SERVERCOMBO) {
 			int i = SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_GETCURSEL, 0, 0);
-			SERVER_INFO * pData = (SERVER_INFO *)SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_GETITEMDATA, i, 0);
+			SERVER_INFO* pData = ( SERVER_INFO* )SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_GETITEMDATA, i, 0);
 			if (pData && (int)pData != CB_ERR ) {
 				SetDlgItemTextA( hwndDlg,IDC_SERVER,pData->Address);
 				SetDlgItemTextA( hwndDlg,IDC_PORT,pData->PortStart);
@@ -1095,7 +1095,7 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 						EnableWindow(GetDlgItem( hwndDlg, IDC_EDITSERVER), false);
 						EnableWindow(GetDlgItem( hwndDlg, IDC_DELETESERVER), false);
 						
-						SERVER_INFO* pData = (SERVER_INFO *)SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_GETITEMDATA, i, 0);
+						SERVER_INFO* pData = ( SERVER_INFO* )SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_GETITEMDATA, i, 0);
 						TCHAR temp[200];
 						mir_sntprintf( temp, SIZEOF(temp), TranslateT("Do you want to delete\r\n%s"), (TCHAR*)_A2T(pData->Name));
 						if ( MessageBox( hwndDlg, temp, TranslateT("Delete server"), MB_YESNO | MB_ICONQUESTION ) == IDYES ) {
@@ -1302,7 +1302,7 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 					}
 
 					int i = SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_GETCURSEL, 0, 0);
-					SERVER_INFO * pData = (SERVER_INFO *)SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_GETITEMDATA, i, 0);
+					SERVER_INFO* pData = ( SERVER_INFO* )SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_GETITEMDATA, i, 0);
 					if ( pData && (int)pData != CB_ERR ) {
 						if(IsDlgButtonChecked( hwndDlg, IDC_STARTUP)== BST_CHECKED)
 							lstrcpyA(prefs->Network, pData->Group); 
@@ -1322,7 +1322,7 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 							int j = (int) SendDlgItemMessage( hwndDlg, IDC_SERVERCOMBO, CB_GETCOUNT, 0, 0);
 							if (j !=CB_ERR && j !=0) {
 								for (int index2 = 0; index2 < j; index2++) {
-									SERVER_INFO * pData = (SERVER_INFO *)SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_GETITEMDATA, index2, 0);
+									SERVER_INFO* pData = ( SERVER_INFO* )SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_GETITEMDATA, index2, 0);
 									if (pData != NULL && (int)pData != CB_ERR) {
 										char TextLine[512];
 										if(pData->iSSL > 0)
@@ -1346,7 +1346,7 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 			int j = (int) SendDlgItemMessage( hwndDlg, IDC_SERVERCOMBO, CB_GETCOUNT, 0, 0);
 			if (j !=CB_ERR && j !=0 ) {
 				for (int index2 = 0; index2 < j; index2++) {
-					SERVER_INFO * pData = (SERVER_INFO *)SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_GETITEMDATA, index2, 0);
+					SERVER_INFO* pData = ( SERVER_INFO* )SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_GETITEMDATA, index2, 0);
 					if (pData != NULL && (int)pData != CB_ERR) {
 						delete []pData->Name;
 						delete []pData->Address;

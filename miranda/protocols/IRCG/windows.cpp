@@ -643,7 +643,7 @@ BOOL CALLBACK QuickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			GetDlgItemTextA( hwndDlg, IDC_PASS,   prefs->Password,   SIZEOF(prefs->Password));
 			
 			int i = SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_GETCURSEL, 0, 0);
-			SERVER_INFO* pData = (SERVER_INFO *)SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_GETITEMDATA, i, 0);
+			SERVER_INFO* pData = ( SERVER_INFO* )SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_GETITEMDATA, i, 0);
 			if ( pData && (int)pData != CB_ERR ) {
 				lstrcpyA( prefs->Network, pData->Group ); 
 				if( m_ssleay32 )
@@ -675,7 +675,7 @@ BOOL CALLBACK QuickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 		if ( HIWORD(wParam) == CBN_SELCHANGE && LOWORD(wParam) == IDC_SERVERCOMBO ) {
 			int i = SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_GETCURSEL, 0, 0);
-			SERVER_INFO* pData = (SERVER_INFO *)SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_GETITEMDATA, i, 0);
+			SERVER_INFO* pData = ( SERVER_INFO* )SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_GETITEMDATA, i, 0);
 			if ( i != CB_ERR ) {
 				SetDlgItemTextA( hwndDlg,IDC_SERVER,pData->Address);
 				SetDlgItemTextA( hwndDlg,IDC_PORT,pData->PortStart);
@@ -707,7 +707,7 @@ BOOL CALLBACK QuickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			
 			int j = (int) SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_GETCOUNT, 0, 0);
 			for ( int index2 = 0; index2 < j; index2++ ) {
-				SERVER_INFO * pData = (SERVER_INFO *)SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_GETITEMDATA, index2, 0);
+				SERVER_INFO* pData = ( SERVER_INFO* )SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_GETITEMDATA, index2, 0);
 				delete []pData->Name;
 				delete []pData->Address;
 				delete []pData->PortStart;
