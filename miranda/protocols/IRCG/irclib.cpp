@@ -582,7 +582,7 @@ void CIrcSession::DoReceive()
 							*p1++;
 						}
 
-						TCHAR* p = mir_a2u_cp( pszTemp, codepage );
+						TCHAR* p = mir_a2t_cp( pszTemp, codepage );
 						CIrcMessage msg( p, 0, true );
 						Notify( &msg );
 						mir_free( p );
@@ -591,7 +591,7 @@ void CIrcSession::DoReceive()
 					mir_free( pszTemp );
 				}
 				else {
-					TCHAR* p = mir_a2u_cp( pStart, codepage );
+					TCHAR* p = mir_a2t_cp( pStart, codepage );
 					CIrcMessage msg( p, 0, true );
 					Notify( &msg );
 					mir_free( p );

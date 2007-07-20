@@ -26,12 +26,14 @@
 	"..\..\include\openssl\asn1.h"\
 	"..\..\include\openssl\bio.h"\
 	"..\..\include\openssl\bn.h"\
+	"..\..\include\openssl\buffer.h"\
 	"..\..\include\openssl\comp.h"\
 	"..\..\include\openssl\crypto.h"\
 	"..\..\include\openssl\dh.h"\
 	"..\..\include\openssl\dsa.h"\
 	"..\..\include\openssl\dtls1.h"\
 	"..\..\include\openssl\e_os2.h"\
+	"..\..\include\openssl\ebcdic.h"\
 	"..\..\include\openssl\ec.h"\
 	"..\..\include\openssl\ecdh.h"\
 	"..\..\include\openssl\ecdsa.h"\
@@ -66,15 +68,6 @@
 	".\irc.h"\
 	".\irclib.h"\
 	".\m_ircscript.h"\
-	"c:\vc\sdk\include\basetsd.h"\
-	"c:\vc\sdk\include\guiddef.h"\
-	"c:\vc\sdk\include\propidl.h"\
-	"c:\vc\sdk\include\reason.h"\
-	"c:\vc\sdk\include\shldisp.h"\
-	"c:\vc\sdk\include\shobjidl.h"\
-	"c:\vc\sdk\include\shtypes.h"\
-	"c:\vc\sdk\include\stralign.h"\
-	"c:\vc\sdk\include\tvout.h"\
 	
 
 .\commandmonitor.cpp : \
@@ -103,12 +96,14 @@
 	"..\..\include\openssl\asn1.h"\
 	"..\..\include\openssl\bio.h"\
 	"..\..\include\openssl\bn.h"\
+	"..\..\include\openssl\buffer.h"\
 	"..\..\include\openssl\comp.h"\
 	"..\..\include\openssl\crypto.h"\
 	"..\..\include\openssl\dh.h"\
 	"..\..\include\openssl\dsa.h"\
 	"..\..\include\openssl\dtls1.h"\
 	"..\..\include\openssl\e_os2.h"\
+	"..\..\include\openssl\ebcdic.h"\
 	"..\..\include\openssl\ec.h"\
 	"..\..\include\openssl\ecdh.h"\
 	"..\..\include\openssl\ecdsa.h"\
@@ -143,15 +138,6 @@
 	".\irc.h"\
 	".\irclib.h"\
 	".\m_ircscript.h"\
-	"c:\vc\sdk\include\basetsd.h"\
-	"c:\vc\sdk\include\guiddef.h"\
-	"c:\vc\sdk\include\propidl.h"\
-	"c:\vc\sdk\include\reason.h"\
-	"c:\vc\sdk\include\shldisp.h"\
-	"c:\vc\sdk\include\shobjidl.h"\
-	"c:\vc\sdk\include\shtypes.h"\
-	"c:\vc\sdk\include\stralign.h"\
-	"c:\vc\sdk\include\tvout.h"\
 	
 
 .\input.cpp : \
@@ -180,12 +166,14 @@
 	"..\..\include\openssl\asn1.h"\
 	"..\..\include\openssl\bio.h"\
 	"..\..\include\openssl\bn.h"\
+	"..\..\include\openssl\buffer.h"\
 	"..\..\include\openssl\comp.h"\
 	"..\..\include\openssl\crypto.h"\
 	"..\..\include\openssl\dh.h"\
 	"..\..\include\openssl\dsa.h"\
 	"..\..\include\openssl\dtls1.h"\
 	"..\..\include\openssl\e_os2.h"\
+	"..\..\include\openssl\ebcdic.h"\
 	"..\..\include\openssl\ec.h"\
 	"..\..\include\openssl\ecdh.h"\
 	"..\..\include\openssl\ecdsa.h"\
@@ -220,15 +208,6 @@
 	".\irc.h"\
 	".\irclib.h"\
 	".\m_ircscript.h"\
-	"c:\vc\sdk\include\basetsd.h"\
-	"c:\vc\sdk\include\guiddef.h"\
-	"c:\vc\sdk\include\propidl.h"\
-	"c:\vc\sdk\include\reason.h"\
-	"c:\vc\sdk\include\shldisp.h"\
-	"c:\vc\sdk\include\shobjidl.h"\
-	"c:\vc\sdk\include\shtypes.h"\
-	"c:\vc\sdk\include\stralign.h"\
-	"c:\vc\sdk\include\tvout.h"\
 	
 
 .\irclib.cpp : \
@@ -257,12 +236,14 @@
 	"..\..\include\openssl\asn1.h"\
 	"..\..\include\openssl\bio.h"\
 	"..\..\include\openssl\bn.h"\
+	"..\..\include\openssl\buffer.h"\
 	"..\..\include\openssl\comp.h"\
 	"..\..\include\openssl\crypto.h"\
 	"..\..\include\openssl\dh.h"\
 	"..\..\include\openssl\dsa.h"\
 	"..\..\include\openssl\dtls1.h"\
 	"..\..\include\openssl\e_os2.h"\
+	"..\..\include\openssl\ebcdic.h"\
 	"..\..\include\openssl\ec.h"\
 	"..\..\include\openssl\ecdh.h"\
 	"..\..\include\openssl\ecdsa.h"\
@@ -297,15 +278,6 @@
 	".\irc.h"\
 	".\irclib.h"\
 	".\m_ircscript.h"\
-	"c:\vc\sdk\include\basetsd.h"\
-	"c:\vc\sdk\include\guiddef.h"\
-	"c:\vc\sdk\include\propidl.h"\
-	"c:\vc\sdk\include\reason.h"\
-	"c:\vc\sdk\include\shldisp.h"\
-	"c:\vc\sdk\include\shobjidl.h"\
-	"c:\vc\sdk\include\shtypes.h"\
-	"c:\vc\sdk\include\stralign.h"\
-	"c:\vc\sdk\include\tvout.h"\
 	
 
 .\main.cpp : \
@@ -334,12 +306,14 @@
 	"..\..\include\openssl\asn1.h"\
 	"..\..\include\openssl\bio.h"\
 	"..\..\include\openssl\bn.h"\
+	"..\..\include\openssl\buffer.h"\
 	"..\..\include\openssl\comp.h"\
 	"..\..\include\openssl\crypto.h"\
 	"..\..\include\openssl\dh.h"\
 	"..\..\include\openssl\dsa.h"\
 	"..\..\include\openssl\dtls1.h"\
 	"..\..\include\openssl\e_os2.h"\
+	"..\..\include\openssl\ebcdic.h"\
 	"..\..\include\openssl\ec.h"\
 	"..\..\include\openssl\ecdh.h"\
 	"..\..\include\openssl\ecdsa.h"\
@@ -374,15 +348,6 @@
 	".\irc.h"\
 	".\irclib.h"\
 	".\m_ircscript.h"\
-	"c:\vc\sdk\include\basetsd.h"\
-	"c:\vc\sdk\include\guiddef.h"\
-	"c:\vc\sdk\include\propidl.h"\
-	"c:\vc\sdk\include\reason.h"\
-	"c:\vc\sdk\include\shldisp.h"\
-	"c:\vc\sdk\include\shobjidl.h"\
-	"c:\vc\sdk\include\shtypes.h"\
-	"c:\vc\sdk\include\stralign.h"\
-	"c:\vc\sdk\include\tvout.h"\
 	
 
 .\options.cpp : \
@@ -453,7 +418,6 @@
 	".\irc.h"\
 	".\irclib.h"\
 	".\m_ircscript.h"\
-	{$(INCLUDE)}"uxtheme.h"\
 	
 
 .\output.cpp : \
@@ -482,12 +446,14 @@
 	"..\..\include\openssl\asn1.h"\
 	"..\..\include\openssl\bio.h"\
 	"..\..\include\openssl\bn.h"\
+	"..\..\include\openssl\buffer.h"\
 	"..\..\include\openssl\comp.h"\
 	"..\..\include\openssl\crypto.h"\
 	"..\..\include\openssl\dh.h"\
 	"..\..\include\openssl\dsa.h"\
 	"..\..\include\openssl\dtls1.h"\
 	"..\..\include\openssl\e_os2.h"\
+	"..\..\include\openssl\ebcdic.h"\
 	"..\..\include\openssl\ec.h"\
 	"..\..\include\openssl\ecdh.h"\
 	"..\..\include\openssl\ecdsa.h"\
@@ -522,15 +488,6 @@
 	".\irc.h"\
 	".\irclib.h"\
 	".\m_ircscript.h"\
-	"c:\vc\sdk\include\basetsd.h"\
-	"c:\vc\sdk\include\guiddef.h"\
-	"c:\vc\sdk\include\propidl.h"\
-	"c:\vc\sdk\include\reason.h"\
-	"c:\vc\sdk\include\shldisp.h"\
-	"c:\vc\sdk\include\shobjidl.h"\
-	"c:\vc\sdk\include\shtypes.h"\
-	"c:\vc\sdk\include\stralign.h"\
-	"c:\vc\sdk\include\tvout.h"\
 	
 
 .\scripting.cpp : \
@@ -559,12 +516,14 @@
 	"..\..\include\openssl\asn1.h"\
 	"..\..\include\openssl\bio.h"\
 	"..\..\include\openssl\bn.h"\
+	"..\..\include\openssl\buffer.h"\
 	"..\..\include\openssl\comp.h"\
 	"..\..\include\openssl\crypto.h"\
 	"..\..\include\openssl\dh.h"\
 	"..\..\include\openssl\dsa.h"\
 	"..\..\include\openssl\dtls1.h"\
 	"..\..\include\openssl\e_os2.h"\
+	"..\..\include\openssl\ebcdic.h"\
 	"..\..\include\openssl\ec.h"\
 	"..\..\include\openssl\ecdh.h"\
 	"..\..\include\openssl\ecdsa.h"\
@@ -599,15 +558,6 @@
 	".\irc.h"\
 	".\irclib.h"\
 	".\m_ircscript.h"\
-	"c:\vc\sdk\include\basetsd.h"\
-	"c:\vc\sdk\include\guiddef.h"\
-	"c:\vc\sdk\include\propidl.h"\
-	"c:\vc\sdk\include\reason.h"\
-	"c:\vc\sdk\include\shldisp.h"\
-	"c:\vc\sdk\include\shobjidl.h"\
-	"c:\vc\sdk\include\shtypes.h"\
-	"c:\vc\sdk\include\stralign.h"\
-	"c:\vc\sdk\include\tvout.h"\
 	
 
 .\services.cpp : \
@@ -636,12 +586,14 @@
 	"..\..\include\openssl\asn1.h"\
 	"..\..\include\openssl\bio.h"\
 	"..\..\include\openssl\bn.h"\
+	"..\..\include\openssl\buffer.h"\
 	"..\..\include\openssl\comp.h"\
 	"..\..\include\openssl\crypto.h"\
 	"..\..\include\openssl\dh.h"\
 	"..\..\include\openssl\dsa.h"\
 	"..\..\include\openssl\dtls1.h"\
 	"..\..\include\openssl\e_os2.h"\
+	"..\..\include\openssl\ebcdic.h"\
 	"..\..\include\openssl\ec.h"\
 	"..\..\include\openssl\ecdh.h"\
 	"..\..\include\openssl\ecdsa.h"\
@@ -676,15 +628,6 @@
 	".\irc.h"\
 	".\irclib.h"\
 	".\m_ircscript.h"\
-	"c:\vc\sdk\include\basetsd.h"\
-	"c:\vc\sdk\include\guiddef.h"\
-	"c:\vc\sdk\include\propidl.h"\
-	"c:\vc\sdk\include\reason.h"\
-	"c:\vc\sdk\include\shldisp.h"\
-	"c:\vc\sdk\include\shobjidl.h"\
-	"c:\vc\sdk\include\shtypes.h"\
-	"c:\vc\sdk\include\stralign.h"\
-	"c:\vc\sdk\include\tvout.h"\
 	
 
 .\tools.cpp : \
