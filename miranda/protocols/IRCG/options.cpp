@@ -71,12 +71,6 @@ static int GetPrefsString(const char *szSetting, TCHAR* prefstoset, int n, TCHAR
 }
 #endif
 
-static int GetSetting(const char *szSetting, DBVARIANT *dbv)
-{
-	int rv = !DBGetContactSettingTString(NULL, IRCPROTONAME, szSetting, dbv );
-	return rv;
-}
-
 static void removeSpaces( TCHAR* p )
 {
 	while ( *p ) {
@@ -90,36 +84,36 @@ void InitPrefs(void)
 	DBVARIANT dbv;
 
 	prefs = new PREFERENCES;
-	GetPrefsString("ServerName", prefs->ServerName, 101, "");
-	GetPrefsString("PortStart", prefs->PortStart, 6, "");
-	GetPrefsString("PortEnd", prefs->PortEnd, 6, "");
-	GetPrefsString("Password", prefs->Password, 499, "");
+	GetPrefsString( "ServerName", prefs->ServerName, 101, "");
+	GetPrefsString( "PortStart", prefs->PortStart, 6, "");
+	GetPrefsString( "PortEnd", prefs->PortEnd, 6, "");
+	GetPrefsString( "Password", prefs->Password, 499, "");
 	CallService(MS_DB_CRYPT_DECODESTRING, 499, (LPARAM)prefs->Password);
-	if (!GetPrefsString("PNick", prefs->Nick, 30, _T(""))) {
-		GetPrefsString("Nick", prefs->Nick, 30, _T(""));
+	if (!GetPrefsString( "PNick", prefs->Nick, 30, _T(""))) {
+		GetPrefsString( "Nick", prefs->Nick, 30, _T(""));
 		if ( lstrlen(prefs->Nick) > 0)
 			DBWriteContactSettingTString(NULL, IRCPROTONAME, "PNick", prefs->Nick);
 	}
-	GetPrefsString("AlernativeNick", prefs->AlternativeNick, 31, _T(""));
-	GetPrefsString("Name", prefs->Name, 199, _T(""));
-	GetPrefsString("UserID", prefs->UserID, 199, _T("Miranda"));
-	GetPrefsString("IdentSystem", prefs->IdentSystem, 10, _T("UNIX"));
-	GetPrefsString("IdentPort", prefs->IdentPort, 6, _T("113"));
-	GetPrefsString("RetryWait", prefs->RetryWait, 4, _T("30"));
-	GetPrefsString("RetryCount", prefs->RetryCount, 4, _T("10"));
-	GetPrefsString("Network", prefs->Network, 31, "");
-	GetPrefsString("QuitMessage", prefs->QuitMessage, 399, _T(STR_QUITMESSAGE));
-	GetPrefsString("UserInfo", prefs->UserInfo, 499, _T(STR_USERINFO));
-	GetPrefsString("SpecHost", prefs->MySpecifiedHost, 499, "");
-	GetPrefsString("MyLocalHost", prefs->MyLocalHost, 49, "");
+	GetPrefsString( "AlernativeNick", prefs->AlternativeNick, 31, _T(""));
+	GetPrefsString( "Name", prefs->Name, 199, _T(""));
+	GetPrefsString( "UserID", prefs->UserID, 199, _T("Miranda"));
+	GetPrefsString( "IdentSystem", prefs->IdentSystem, 10, _T("UNIX"));
+	GetPrefsString( "IdentPort", prefs->IdentPort, 6, _T("113"));
+	GetPrefsString( "RetryWait", prefs->RetryWait, 4, _T("30"));
+	GetPrefsString( "RetryCount", prefs->RetryCount, 4, _T("10"));
+	GetPrefsString( "Network", prefs->Network, 31, "");
+	GetPrefsString( "QuitMessage", prefs->QuitMessage, 399, _T(STR_QUITMESSAGE));
+	GetPrefsString( "UserInfo", prefs->UserInfo, 499, _T(STR_USERINFO));
+	GetPrefsString( "SpecHost", prefs->MySpecifiedHost, 499, "");
+	GetPrefsString( "MyLocalHost", prefs->MyLocalHost, 49, "");
 
-	lstrcpyA(prefs->MySpecifiedHostIP, "");
+	lstrcpyA( prefs->MySpecifiedHostIP, "" );
 
-	if ( GetSetting("Alias", &dbv )) {
-		prefs->Alias = mir_strdup( dbv.pszVal);
-		DBFreeVariant(&dbv);
+	if ( !DBGetContactSettingTString( NULL, IRCPROTONAME, "Alias", &dbv )) {
+		prefs->Alias = mir_tstrdup( dbv.ptszVal);
+		DBFreeVariant( &dbv );
 	}
-	else prefs->Alias = mir_strdup( "/op /mode ## +ooo $1 $2 $3\r\n/dop /mode ## -ooo $1 $2 $3\r\n/voice /mode ## +vvv $1 $2 $3\r\n/dvoice /mode ## -vvv $1 $2 $3\r\n/j /join #$1 $2-\r\n/p /part ## $1-\r\n/w /whois $1\r\n/k /kick ## $1 $2-\r\n/q /query $1\r\n/logon /log on ##\r\n/logoff /log off ##\r\n/save /log buffer $1\r\n/slap /me slaps $1 around a bit with a large trout" );
+	else prefs->Alias = mir_tstrdup( _T("/op /mode ## +ooo $1 $2 $3\r\n/dop /mode ## -ooo $1 $2 $3\r\n/voice /mode ## +vvv $1 $2 $3\r\n/dvoice /mode ## -vvv $1 $2 $3\r\n/j /join #$1 $2-\r\n/p /part ## $1-\r\n/w /whois $1\r\n/k /kick ## $1 $2-\r\n/q /query $1\r\n/logon /log on ##\r\n/logoff /log off ##\r\n/save /log buffer $1\r\n/slap /me slaps $1 around a bit with a large trout" ));
 
 	prefs->ScriptingEnabled = DBGetContactSettingByte(NULL,IRCPROTONAME, "ScriptingEnabled", 0);
 	prefs->ForceVisible = DBGetContactSettingByte(NULL,IRCPROTONAME, "ForceVisible", 0);
@@ -647,10 +641,10 @@ BOOL CALLBACK OtherPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SendMessage(GetDlgItem( hwndDlg,IDC_ADD), BUTTONADDTOOLTIP, (WPARAM)LPGEN("Click to set commands that will be performed for this event"), 0);
 			SendMessage(GetDlgItem( hwndDlg,IDC_DELETE), BUTTONADDTOOLTIP, (WPARAM)LPGEN("Click to delete the commands for this event"), 0);
 
-			SetDlgItemTextA( hwndDlg,IDC_ALIASEDIT,prefs->Alias);
-			SetDlgItemText( hwndDlg,IDC_QUITMESSAGE,prefs->QuitMessage);
-			CheckDlgButton( hwndDlg,IDC_PERFORM, ((prefs->Perform) ? (BST_CHECKED) : (BST_UNCHECKED)));
-			CheckDlgButton( hwndDlg,IDC_SCRIPT, ((prefs->ScriptingEnabled) ? (BST_CHECKED) : (BST_UNCHECKED)));
+			SetDlgItemText( hwndDlg, IDC_ALIASEDIT, prefs->Alias );
+			SetDlgItemText( hwndDlg, IDC_QUITMESSAGE, prefs->QuitMessage );
+			CheckDlgButton( hwndDlg, IDC_PERFORM, ((prefs->Perform) ? (BST_CHECKED) : (BST_UNCHECKED)));
+			CheckDlgButton( hwndDlg, IDC_SCRIPT, ((prefs->ScriptingEnabled) ? (BST_CHECKED) : (BST_UNCHECKED)));
 			EnableWindow(GetDlgItem( hwndDlg, IDC_SCRIPT), bMbotInstalled);
 			EnableWindow(GetDlgItem( hwndDlg, IDC_PERFORMCOMBO), prefs->Perform);
 			EnableWindow(GetDlgItem( hwndDlg, IDC_PERFORMEDIT), prefs->Perform);
@@ -841,10 +835,10 @@ BOOL CALLBACK OtherPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			case PSN_APPLY:
 				mir_free( prefs->Alias );
 				{	int len = GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ALIASEDIT));
-					prefs->Alias = ( char* )mir_alloc( len+1 );
-               GetDlgItemTextA( hwndDlg, IDC_ALIASEDIT, prefs->Alias, len+1 );
+					prefs->Alias = ( TCHAR* )mir_alloc( sizeof( TCHAR )*( len+1 ));
+               GetDlgItemText( hwndDlg, IDC_ALIASEDIT, prefs->Alias, len+1 );
 				}
-				DBWriteContactSettingString( NULL, IRCPROTONAME, "Alias", prefs->Alias );
+				DBWriteContactSettingTString( NULL, IRCPROTONAME, "Alias", prefs->Alias );
 
 				GetDlgItemText( hwndDlg,IDC_QUITMESSAGE,prefs->QuitMessage, 399);
 				DBWriteContactSettingTString(NULL,IRCPROTONAME,"QuitMessage",prefs->QuitMessage);
@@ -1816,7 +1810,7 @@ int InitOptionsPages(WPARAM wParam,LPARAM lParam)
 
 void UnInitOptions(void)
 {
-	mir_free(prefs->Alias);
+	mir_free( prefs->Alias );
 	delete prefs;
 	delete []pszServerFile;
 	delete []pszPerformFile;

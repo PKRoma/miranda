@@ -464,7 +464,7 @@ bool CMyMonitor::OnIrc_QUIT( const CIrcMessage* pmsg )
 	{
 		TString host = pmsg->prefix.sUser + _T("@") + pmsg->prefix.sHost;
 		DoEvent(GC_EVENT_QUIT, NULL, pmsg->prefix.sNick.c_str(), pmsg->parameters.size()>0?pmsg->parameters[0].c_str():NULL, NULL, host.c_str(), NULL, true, false);
-		struct CONTACT_TYPE user = { (LPTSTR)pmsg->prefix.sNick.c_str(), (LPTSTR)pmsg->prefix.sUser.c_str(), (LPTSTR)pmsg->prefix.sHost.c_str(), false, false, false};
+		struct CONTACT user = { (LPTSTR)pmsg->prefix.sNick.c_str(), (LPTSTR)pmsg->prefix.sUser.c_str(), (LPTSTR)pmsg->prefix.sHost.c_str(), false, false, false};
 		CList_SetOffline( &user );
 		if ( pmsg->prefix.sNick == g_ircSession.GetInfo().sNick ) {
 			GCDEST gcd = {0};
@@ -671,7 +671,7 @@ bool CMyMonitor::OnIrc_NICK( const CIrcMessage* pmsg )
 		DoEvent(GC_EVENT_NICK, NULL, pmsg->prefix.sNick.c_str(), pmsg->parameters[0].c_str(), NULL, host.c_str(), NULL, true, bIsMe); 
 		DoEvent(GC_EVENT_CHUID, NULL, pmsg->prefix.sNick.c_str(), pmsg->parameters[0].c_str(), NULL, NULL, NULL, true, false); 
 		
-		struct CONTACT_TYPE user = { (TCHAR*)pmsg->prefix.sNick.c_str(), (TCHAR*)pmsg->prefix.sUser.c_str(), (TCHAR*)pmsg->prefix.sHost.c_str(), false, false, false};
+		struct CONTACT user = { (TCHAR*)pmsg->prefix.sNick.c_str(), (TCHAR*)pmsg->prefix.sUser.c_str(), (TCHAR*)pmsg->prefix.sHost.c_str(), false, false, false};
 		HANDLE hContact = CList_FindContact(&user);
 		if (hContact) {
 			if (DBGetContactSettingWord(hContact,IRCPROTONAME, "Status", ID_STATUS_OFFLINE) == ID_STATUS_OFFLINE)
@@ -773,7 +773,7 @@ bool CMyMonitor::OnIrc_PRIVMSG( const CIrcMessage* pmsg )
 			mess = DoColorCodes( mess.c_str(), TRUE, FALSE );
 			ccs.szProtoService = PSR_MESSAGE;
 
-			struct CONTACT_TYPE user = { (TCHAR*)pmsg->prefix.sNick.c_str(), (TCHAR*)pmsg->prefix.sUser.c_str(), (TCHAR*)pmsg->prefix.sHost.c_str(), false, false, false};
+			struct CONTACT user = { (TCHAR*)pmsg->prefix.sNick.c_str(), (TCHAR*)pmsg->prefix.sUser.c_str(), (TCHAR*)pmsg->prefix.sHost.c_str(), false, false, false};
 
 			if ( CallService( MS_IGNORE_ISIGNORED, NULL, IGNOREEVENT_MESSAGE )) 
 				if ( !CList_FindContact( &user ))
@@ -1211,7 +1211,7 @@ bool CMyMonitor::IsCTCP( const CIrcMessage* pmsg )
 						}
 					}
 					else {
-						struct CONTACT_TYPE user = { (TCHAR*)pmsg->prefix.sNick.c_str(), (TCHAR*)pmsg->prefix.sUser.c_str(), (TCHAR*)pmsg->prefix.sHost.c_str(), false, false, false};
+						struct CONTACT user = { (TCHAR*)pmsg->prefix.sNick.c_str(), (TCHAR*)pmsg->prefix.sUser.c_str(), (TCHAR*)pmsg->prefix.sHost.c_str(), false, false, false};
 						if ( CallService( MS_IGNORE_ISIGNORED, NULL, IGNOREEVENT_FILE )) 
 							if ( !CList_FindContact( &user ))
 								return true;
@@ -1750,7 +1750,7 @@ bool CMyMonitor::OnIrc_WHOIS_OTHER( const CIrcMessage* pmsg )
 bool CMyMonitor::OnIrc_WHOIS_END( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming && pmsg->parameters.size() > 1 && ManualWhoisCount < 1 ) {
-		CONTACT_TYPE user = { (TCHAR*)pmsg->parameters[1].c_str(), NULL, NULL, false, false, true};
+		CONTACT user = { (TCHAR*)pmsg->parameters[1].c_str(), NULL, NULL, false, false, true};
 		HANDLE hContact = CList_FindContact( &user );
 		if ( hContact )
 			ProtoBroadcastAck( IRCPROTONAME, hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, (HANDLE) 1, (LPARAM) WhoisAwayReply.c_str());
@@ -1837,7 +1837,7 @@ bool CMyMonitor::OnIrc_WHOIS_NO_USER( const CIrcMessage* pmsg )
 			EnableWindow(GetDlgItem(whois_hWnd, ID_INFO_QUERY), false);
 		}
 		
-		CONTACT_TYPE user = { (TCHAR*)pmsg->parameters[1].c_str(), NULL, NULL, false, false, false};
+		CONTACT user = { (TCHAR*)pmsg->parameters[1].c_str(), NULL, NULL, false, false, false};
 		HANDLE hContact = CList_FindContact( &user );
 		if ( hContact ) {
 			AddOutgoingMessageToDB( hContact, (TCHAR*)((TString)_T("> ") + pmsg->parameters[2] + (TString)_T(": ") + pmsg->parameters[1]).c_str() );
@@ -2004,7 +2004,7 @@ bool CMyMonitor::OnIrc_WHO_END( const CIrcMessage* pmsg )
 			TCHAR* UserList = mir_tstrdup( WhoReply.c_str() );
 			TCHAR* p1= UserList;
 			WhoReply = _T("");
-			CONTACT_TYPE user = { (TCHAR*)pmsg->parameters[1].c_str(), NULL, NULL, false, true, false};
+			CONTACT user = { (TCHAR*)pmsg->parameters[1].c_str(), NULL, NULL, false, true, false};
 			HANDLE hContact = CList_FindContact( &user );
 
 			if ( hContact && DBGetContactSettingByte( hContact, IRCPROTONAME, "AdvancedMode", 0 ) == 1 ) {

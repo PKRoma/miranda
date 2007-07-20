@@ -84,7 +84,7 @@ BOOL CList_AddDCCChat(TString name, TString hostmask, unsigned long adr, int por
 	return TRUE;
 }
 
-HANDLE CList_AddContact(CONTACT_TYPE * user, bool InList, bool SetOnline)
+HANDLE CList_AddContact(CONTACT * user, bool InList, bool SetOnline)
 {
 	if (user->name == NULL)
 		return 0;
@@ -118,7 +118,7 @@ HANDLE CList_AddContact(CONTACT_TYPE * user, bool InList, bool SetOnline)
 	return false;
 }
 
-HANDLE CList_SetOffline(struct CONTACT_TYPE * user)
+HANDLE CList_SetOffline(struct CONTACT * user)
 {
 	DBVARIANT dbv;
 	HANDLE hContact = CList_FindContact(user);
@@ -165,7 +165,7 @@ bool CList_SetAllOffline(BYTE ChatsToo)
 	return true;
 }
 
-HANDLE CList_FindContact (CONTACT_TYPE* user) 
+HANDLE CList_FindContact (CONTACT* user) 
 {
 	if ( !user || !user->name )
 		return 0;

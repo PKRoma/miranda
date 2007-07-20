@@ -89,7 +89,7 @@ static TString DoAlias( const TCHAR *text, TCHAR *window)
 			delete [] line;
 			line = new TCHAR[S.length()+2]; 
 			lstrcpyn(line, S.c_str(), S.length()+1);
-			TString alias( _A2T(prefs->Alias));
+			TString alias( prefs->Alias );
 			const TCHAR* p3 = _tcsstr( alias.c_str(), (GetWord(line, 0)+ _T(" ")).c_str());
 			if ( p3 != alias.c_str()) {
 				p3 = _tcsstr( alias.c_str(), (TString(_T("\r\n")) + GetWord(line, 0) + _T(" ")).c_str());
@@ -512,7 +512,7 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 		if ( one.empty() || IsChannel(one.c_str()))
 			return true;
 
-		CONTACT_TYPE user = { (TCHAR*)one.c_str(), NULL, NULL, false, false, false};
+		CONTACT user = { (TCHAR*)one.c_str(), NULL, NULL, false, false, false};
 		HANDLE hContact2 = CList_AddContact(&user, false, false);
 		if ( hContact2 ) {
 			if ( DBGetContactSettingByte( hContact, IRCPROTONAME, "AdvancedMode", 0 ) == 0 )
@@ -577,7 +577,7 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 				ulAdr = ConvertIPToInteger( prefs->IPFromServer ? prefs->MyHost : prefs->MyLocalHost );
 
 			if ( ulAdr ) {
-				CONTACT_TYPE user = { (TCHAR*)two.c_str(), NULL, NULL, false, false, true };
+				CONTACT user = { (TCHAR*)two.c_str(), NULL, NULL, false, false, true };
 				HANDLE hContact = CList_AddContact( &user, false, false );
 				if ( hContact ) {
 					TString s;
@@ -622,7 +622,7 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 
 			if ( ulAdr ) {
 				TString contact = two + _T(DCCSTRING);
-				CONTACT_TYPE user = { (TCHAR*)contact.c_str(), NULL, NULL, false, false, true};
+				CONTACT user = { (TCHAR*)contact.c_str(), NULL, NULL, false, false, true};
 				HANDLE hContact = CList_AddContact( &user, false, false );
 				DBWriteContactSettingByte(hContact, IRCPROTONAME, "DCC", 1);
 

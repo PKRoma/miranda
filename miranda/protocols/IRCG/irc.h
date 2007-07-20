@@ -173,29 +173,28 @@ struct _T2A
 typedef int (*GETEVENTFUNC)(WPARAM wParam, LPARAM lParam);
 typedef struct  {
 	GETEVENTFUNC pfnAddEvent;
-}GCPTRS;
+}
+	GCPTRS;
 
-#define IP_AUTO			1
-#define IP_MANUAL		2
+#define IP_AUTO       1
+#define IP_MANUAL     2
 
-typedef struct IPRESOLVE_INFO_TYPE			// Contains info about the channels
+struct IPRESOLVE      // Contains info about the channels
 {
 	int iType;
 	char* pszAdr;
-}
-	IPRESOLVE;
+};
 
-typedef struct WINDOW_INFO_TYPE			// Contains info about the channels
+struct CHANNELINFO   // Contains info about the channels
 {
 	TCHAR* pszTopic;
 	TCHAR* pszMode;
 	TCHAR* pszPassword;
 	TCHAR* pszLimit;
 	int    codepage;
-}
-	CHANNELINFO;
+};
 
-typedef struct SERVER_INFO_TYPE			// Contains info about different servers
+struct SERVER_INFO  // Contains info about different servers
 {
 	char* Group;
 	char* Address;
@@ -203,16 +202,14 @@ typedef struct SERVER_INFO_TYPE			// Contains info about different servers
 	char* PortStart;
 	char* PortEnd;	
 	int iSSL;
-}
-	SERVER_INFO;
+};
 
-typedef struct PERFORM_INFO_TYPE		// Contains 'Perform buffer' for different networks
+struct PERFORM_INFO  // Contains 'Perform buffer' for different networks
 {
 	char* Perform;
-}
-	PERFORM_INFO;
+};
 
-typedef struct CONTACT_TYPE			// Contains info about users
+struct CONTACT // Contains info about users
 {
 	TCHAR* name;
 	TCHAR* user;
@@ -220,70 +217,69 @@ typedef struct CONTACT_TYPE			// Contains info about users
 	bool ExactOnly;
 	bool ExactWCOnly;
 	bool ExactNick;
-} CONTACT;
+};
 
-typedef struct PREFERENCES_TYPE			// Preferences structure
+struct PREFERENCES  // Preferences structure
 {
-	char  ServerName[100];
-	char  Password [500];
-	TCHAR IdentSystem[10];
-	char  Network[30];
-	char  PortStart[10];
-	char  PortEnd[10];
-	int   IdentTimer;
-	int   iSSL;
-	TCHAR IdentPort[10];
-	TCHAR RetryWait[10];
-	TCHAR RetryCount[10];
-
-	TCHAR Nick[30];
-	TCHAR AlternativeNick[30];
-	TCHAR Name[200];
-	TCHAR UserID[200];
-	TCHAR QuitMessage[400];
-	TCHAR UserInfo[500];
-	char  MyHost[50];
-	char  MySpecifiedHost[500];
-	char  MySpecifiedHostIP[50];
-	char  MyLocalHost[50];
-	char* Alias;
-	int   ServerComboSelection;
-	int   QuickComboSelection;
-	int   OnlineNotificationTime;
-	int   OnlineNotificationLimit;
-	BYTE  ScriptingEnabled;
-	BYTE  IPFromServer;
-	BYTE  ShowAddresses;
-	BYTE  DisconnectDCCChats;
-	BYTE  DisableErrorPopups;
-	BYTE  RejoinChannels;
-	BYTE  RejoinIfKicked;
-	BYTE  HideServerWindow;
-	BYTE  Ident;
-	BYTE  Retry;
-	BYTE  DisableDefaultServer;
-	BYTE  AutoOnlineNotification;
-	BYTE  SendKeepAlive;
-	BYTE  JoinOnInvite;
-	BYTE  Perform;
-	BYTE  ForceVisible;
-	BYTE  Ignore;
-	BYTE  IgnoreChannelDefault;
-	BYTE  UseServer;
-	BYTE  DCCFileEnabled;
-	BYTE  DCCChatEnabled;
-	BYTE  DCCChatAccept;
-	BYTE  DCCChatIgnore;
-	BYTE  DCCPassive;
-	BYTE  ManualHost;
-	BYTE  OldStyleModes;
-	BYTE  ChannelAwayNotification;
-	BYTE  SendNotice;
-	POINT ListSize;
+	char     ServerName[100];
+	char     Password [500];
+	TCHAR    IdentSystem[10];
+	char     Network[30];
+	char     PortStart[10];
+	char     PortEnd[10];
+	int      IdentTimer;
+	int      iSSL;
+	TCHAR    IdentPort[10];
+	TCHAR    RetryWait[10];
+	TCHAR    RetryCount[10];
+			 
+	TCHAR    Nick[30];
+	TCHAR    AlternativeNick[30];
+	TCHAR    Name[200];
+	TCHAR    UserID[200];
+	TCHAR    QuitMessage[400];
+	TCHAR    UserInfo[500];
+	char     MyHost[50];
+	char     MySpecifiedHost[500];
+	char     MySpecifiedHostIP[50];
+	char     MyLocalHost[50];
+	TCHAR*   Alias;
+	int      ServerComboSelection;
+	int      QuickComboSelection;
+	int      OnlineNotificationTime;
+	int      OnlineNotificationLimit;
+	BYTE     ScriptingEnabled;
+	BYTE     IPFromServer;
+	BYTE     ShowAddresses;
+	BYTE     DisconnectDCCChats;
+	BYTE     DisableErrorPopups;
+	BYTE     RejoinChannels;
+	BYTE     RejoinIfKicked;
+	BYTE     HideServerWindow;
+	BYTE     Ident;
+	BYTE     Retry;
+	BYTE     DisableDefaultServer;
+	BYTE     AutoOnlineNotification;
+	BYTE     SendKeepAlive;
+	BYTE     JoinOnInvite;
+	BYTE     Perform;
+	BYTE     ForceVisible;
+	BYTE     Ignore;
+	BYTE     IgnoreChannelDefault;
+	BYTE     UseServer;
+	BYTE     DCCFileEnabled;
+	BYTE     DCCChatEnabled;
+	BYTE     DCCChatAccept;
+	BYTE     DCCChatIgnore;
+	BYTE     DCCPassive;
+	BYTE     ManualHost;
+	BYTE     OldStyleModes;
+	BYTE     ChannelAwayNotification;
+	BYTE     SendNotice;
+	POINT    ListSize;
 	COLORREF colors[16];
-	HICON hIcon[13];
-
-} PREFERENCES;
+	HICON    hIcon[13];
+};
 
 //main.cpp
 extern char* IRCPROTONAME; 
@@ -360,12 +356,12 @@ char*   GetWordAddress(const char* text, int index);
 #endif
 
 //clist.cpp
-HANDLE CList_AddContact(struct CONTACT_TYPE * user, bool InList, bool SetOnline);
+HANDLE CList_AddContact(struct CONTACT * user, bool InList, bool SetOnline);
 bool   CList_SetAllOffline(BYTE ChatsToo);
-HANDLE CList_SetOffline(struct CONTACT_TYPE * user);
+HANDLE CList_SetOffline(struct CONTACT * user);
 
-bool   CList_AddEvent(struct CONTACT_TYPE * user, HICON Icon, HANDLE event, const char * tooltip, int type ) ;
-HANDLE CList_FindContact (struct CONTACT_TYPE * user);
+bool   CList_AddEvent(struct CONTACT * user, HICON Icon, HANDLE event, const char * tooltip, int type ) ;
+HANDLE CList_FindContact (struct CONTACT * user);
 BOOL   CList_AddDCCChat(TString name, TString hostmask, unsigned long adr, int port) ;
 
 //input.cpp

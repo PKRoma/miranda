@@ -905,9 +905,9 @@ static int Service_GCMenuHook(WPARAM wParam,LPARAM lParam)
 			if (gcmi->Type == MENU_ON_LOG) {
 				if (lstrcmpi(gcmi->pszID, _T("Network log"))) {
 					static gc_item Item[] = {
-						{TranslateT("Channel &settings"), 1, MENU_ITEM, FALSE},
-						{TranslateT("&Leave the channel"), 2, MENU_ITEM, FALSE},
-						{TranslateT("Show the server &window"), 3, MENU_ITEM, FALSE}};
+						{ TranslateT("Channel &settings" ), 1, MENU_ITEM, FALSE},
+						{ TranslateT("&Leave the channel" ), 2, MENU_ITEM, FALSE},
+						{ TranslateT("Show the server &window" ), 3, MENU_ITEM, FALSE}};
 						gcmi->nItems = SIZEOF(Item);
 						gcmi->Item = &Item[0];
 				}
@@ -915,7 +915,7 @@ static int Service_GCMenuHook(WPARAM wParam,LPARAM lParam)
 			}
 
 			if (gcmi->Type == MENU_ON_NICKLIST) {
-				CONTACT_TYPE user ={ (TCHAR*)gcmi->pszUID, NULL, NULL, false, false, false};
+				CONTACT user ={ (TCHAR*)gcmi->pszUID, NULL, NULL, false, false, false};
 				HANDLE hContact = CList_FindContact(&user);
 				BOOL bFlag = FALSE;
 
