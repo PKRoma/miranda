@@ -12,7 +12,7 @@
 ** This file contains code to implement the "sqlite" command line
 ** utility for accessing SQLite databases.
 **
-** $Id: shell.c,v 1.162 2007/05/04 13:15:56 drh Exp $
+** $Id: shell.c,v 1.164 2007/07/03 05:31:16 danielk1977 Exp $
 */
 #include <stdlib.h>
 #include <string.h>
@@ -1590,7 +1590,7 @@ static int _is_command_terminator(const char *zLine){
 ** Return the number of errors.
 */
 static int process_input(struct callback_data *p, FILE *in){
-  char *zLine;
+  char *zLine = 0;
   char *zSql = 0;
   int nSql = 0;
   char *zErrMsg;
@@ -1601,6 +1601,7 @@ static int process_input(struct callback_data *p, FILE *in){
 
   while( errCnt==0 || !bail_on_error || (in==0 && stdin_is_interactive) ){
     fflush(p->out);
+    free(zLine);
     zLine = one_input_line(zSql, in);
     if( zLine==0 ){
       break;  /* We have reached EOF */
@@ -1614,7 +1615,6 @@ static int process_input(struct callback_data *p, FILE *in){
     if( (zSql==0 || zSql[0]==0) && _all_whitespace(zLine) ) continue;
     if( zLine && zLine[0]=='.' && nSql==0 ){
       rc = do_meta_command(zLine, p);
-      free(zLine);
       if( rc==2 ){
         break;
       }else if( rc ){
@@ -1649,7 +1649,6 @@ static int process_input(struct callback_data *p, FILE *in){
       memcpy(&zSql[nSql], zLine, len+1);
       nSql += len;
     }
-    free(zLine);
     if( zSql && _ends_with_semicolon(zSql, nSql) && sqlite3_complete(zSql) ){
       p->cnt = 0;
       open_db(p);
@@ -1680,6 +1679,7 @@ static int process_input(struct callback_data *p, FILE *in){
     if( !_all_whitespace(zSql) ) printf("Incomplete SQL: %s\n", zSql);
     free(zSql);
   }
+  free(zLine);
   return errCnt;
 }
 
@@ -1754,6 +1754,7 @@ static void process_sqliterc(
   const char *sqliterc = sqliterc_override;
   char *zBuf = 0;
   FILE *in = NULL;
+  int nBuf;
 
   if (sqliterc == NULL) {
     home_dir = find_home_dir();
@@ -1761,12 +1762,13 @@ static void process_sqliterc(
       fprintf(stderr,"%s: cannot locate your home directory!\n", Argv0);
       return;
     }
-    zBuf = malloc(strlen(home_dir) + 15);
+    nBuf = strlen(home_dir) + 16;
+    zBuf = malloc( nBuf );
     if( zBuf==0 ){
       fprintf(stderr,"%s: out of memory!\n", Argv0);
       exit(1);
     }
-    sqlite3_snprintf(sizeof(zBuf), zBuf,"%s/.sqliterc",home_dir);
+    sqlite3_snprintf(nBuf, zBuf,"%s/.sqliterc",home_dir);
     free(home_dir);
     sqliterc = (const char*)zBuf;
   }
