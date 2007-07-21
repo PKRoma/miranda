@@ -1256,7 +1256,7 @@ void ConnectToServer(void)
 		InterlockedIncrement((long *) &bConnectRequested);
 
 	TCHAR szTemp[300];
-	mir_sntprintf(szTemp, SIZEOF(szTemp), _T("\0033%s \002%s\002 (%s: %u)"), 
+	mir_sntprintf(szTemp, SIZEOF(szTemp), _T("\0033%s \002%s\002 (") _T(TCHAR_STR_PARAM) _T(": %u)"), 
 		TranslateT("Connecting to"), si.sNetwork.c_str(), si.sServer.c_str(), si.iPort);
 	DoEvent(GC_EVENT_INFORMATION, _T("Network log"), NULL, szTemp, NULL, NULL, NULL, true, false);
 }
@@ -1555,6 +1555,7 @@ static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 		gcw.ptszID = _T("Network log");
 		gcw.pszModule = IRCPROTONAME;
 		gcw.ptszName = TranslateT("Offline");
+		gcw.dwFlags = GC_TCHAR;
 		CallService(MS_GC_NEWSESSION, 0, (LPARAM)&gcw);
 
 		gce.cbSize = sizeof(GCEVENT);
@@ -1706,7 +1707,7 @@ VOID CALLBACK RetryTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime)
 		si.iPort = PortCount;
 
 		TCHAR szTemp[300];
-		mir_sntprintf(szTemp, SIZEOF(szTemp), _T("\0033%s \002%s\002 (%s: %u, try %u)"),
+		mir_sntprintf(szTemp, SIZEOF(szTemp), _T("\0033%s \002%s\002 (") _T(TCHAR_STR_PARAM) _T(": %u, try %u)"),
 			TranslateT("Reconnecting to"), si.sNetwork.c_str(), si.sServer.c_str(), si.iPort, RetryCount);
 
 		DoEvent(GC_EVENT_INFORMATION, _T("Network log"), NULL, szTemp, NULL, NULL, NULL, true, false);
