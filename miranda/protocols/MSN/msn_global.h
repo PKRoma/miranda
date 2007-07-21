@@ -381,6 +381,7 @@ struct filetransfer
 	HANDLE		hLockHandle;
 
 	TInfoType	tType;
+	TInfoType	tTypeReq;
 	time_t		ts;
 
 	unsigned    p2p_sessionid;	// session id

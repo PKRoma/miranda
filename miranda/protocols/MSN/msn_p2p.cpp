@@ -399,7 +399,7 @@ void  p2p_sendRedirect( filetransfer* ft )
 
 	p2p_sendMsg( ft->std.hContact, 0, tHdr, NULL, 0 );
 
-	ft->tType = MSN_GetP2PThreadByContact( ft->std.hContact ) ? SERVER_P2P_DIRECT : SERVER_SWITCHBOARD;
+	ft->tTypeReq = MSN_GetP2PThreadByContact( ft->std.hContact ) ? SERVER_P2P_DIRECT : SERVER_SWITCHBOARD;
 	ft->ts = time( NULL );
 	ft->p2p_waitack = true;
 }
@@ -848,6 +848,8 @@ void p2p_sendRecvFileDirectly( ThreadData* info )
 
 	MSN_ContactJoined( info, info->mInitialContact );
 	info->mInitialContact = NULL;
+
+	Sleep(6000);
 
 	MSN_StartP2PTransferByContact( info->mJoinedContacts[0] );
 	p2p_redirectSessions( info->mJoinedContacts[0] );
@@ -1593,7 +1595,7 @@ void  p2p_processMsg( ThreadData* info,  char* msgbody )
 		if ( hdrdata->mOffset + hdrdata->mPacketLen > hdrdata->mTotalSize )
 			hdrdata->mPacketLen = DWORD( hdrdata->mTotalSize - hdrdata->mOffset );
 
-		if ( ft->p2p_sendmsgid == 0 ) {
+		if ( ft->tTypeReq == 0 || ft->tTypeReq == info->mType) {
 			ft->tType = info->mType;
 			ft->p2p_sendmsgid = hdrdata->mID;
 		}
