@@ -215,7 +215,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug Unicode|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
+			OutputDirectory="C:\Program Files\Miranda IM\plugins"
 			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
@@ -228,6 +228,8 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
+				CommandLine="xcopy &quot;$(OutDir)\$(ProjectName).dll&quot; &quot;$(OutDir)\$(ProjectName)-hot.dll&quot; /i /Y&#x0D;&#x0A;"
+				Outputs="&quot;$(OutDir)\$(ProjectName)-hot.dll&quot;"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -276,6 +278,7 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="wsock32.lib comctl32.lib Rpcrt4.lib"
+				OutputFile="$(OutDir)\$(ProjectName).dll"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"

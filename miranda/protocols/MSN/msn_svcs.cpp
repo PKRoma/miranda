@@ -730,20 +730,13 @@ static int MsnGetCaps(WPARAM wParam,LPARAM lParam)
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnGetInfo - nothing to do, cause we cannot obtain information from the server
-
-static void sttInfoAck( HANDLE hContact )
-{
-	Sleep( 150 );
-	MSN_SendBroadcast( hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, ( HANDLE )1, 0 );
-}
-
+/*
 static int MsnGetInfo( WPARAM wParam, LPARAM lParam )
 {
 	CCSDATA *ccs = ( CCSDATA* )lParam;
-	mir_forkthread( sttInfoAck, ccs->hContact );
 	return 1;
 }
-
+*/
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnGetName - obtain the protocol name
 
@@ -1339,7 +1332,7 @@ int LoadMsnServices( void )
 	arServices.insert( MSN_CreateProtoServiceFunction( PSS_FILEALLOW,       MsnFileAllow ));
 	arServices.insert( MSN_CreateProtoServiceFunction( PSS_FILECANCEL,      MsnFileCancel ));
 	arServices.insert( MSN_CreateProtoServiceFunction( PSS_FILEDENY,        MsnFileDeny ));
-	arServices.insert( MSN_CreateProtoServiceFunction( PSS_GETINFO,         MsnGetInfo ));
+//	arServices.insert( MSN_CreateProtoServiceFunction( PSS_GETINFO,         MsnGetInfo ));
 	arServices.insert( MSN_CreateProtoServiceFunction( PSS_MESSAGE,         MsnSendMessage ));
 	arServices.insert( MSN_CreateProtoServiceFunction( PSS_SETAPPARENTMODE, MsnSetApparentMode ));
 	arServices.insert( MSN_CreateProtoServiceFunction( PSS_USERISTYPING,    MsnUserIsTyping ));

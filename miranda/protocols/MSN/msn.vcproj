@@ -3,11 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="msn"
-	ProjectGUID="{5088F15E-E7EF-4037-BD9F-402E3C5A9A8B}"
-	SccProjectName="SAK"
-	SccAuxPath="SAK"
-	SccLocalPath="SAK"
-	SccProvider="SAK">
+	ProjectGUID="{5088F15E-E7EF-4037-BD9F-402E3C5A9A8B}">
 	<Platforms>
 		<Platform
 			Name="Win32"/>
@@ -89,7 +85,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
+			OutputDirectory="C:\Program Files\Miranda IM\Plugins"
 			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
@@ -129,7 +125,8 @@
 				TypeLibraryName=".\Debug/msn.tlb"
 				HeaderFileName=""/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCPostBuildEventTool"
+				CommandLine="xcopy &quot;$(OutDir)\$(ProjectName).dll&quot; &quot;$(OutDir)\$(ProjectName)-hot.dll&quot; /Y "/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -151,7 +148,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug Unicode|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
+			OutputDirectory="C:\Program Files\Miranda IM\plugins"
 			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
@@ -193,7 +190,8 @@
 				TypeLibraryName=".\Debug/msn.tlb"
 				HeaderFileName=""/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCPostBuildEventTool"
+				CommandLine="xcopy &quot;$(OutDir)\$(ProjectName).dll&quot; &quot;$(OutDir)\$(ProjectName)-hot.dll&quot; /Y"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
