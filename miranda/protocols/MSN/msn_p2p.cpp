@@ -849,8 +849,6 @@ void p2p_sendRecvFileDirectly( ThreadData* info )
 	MSN_ContactJoined( info, info->mInitialContact );
 	info->mInitialContact = NULL;
 
-	Sleep(6000);
-
 	MSN_StartP2PTransferByContact( info->mJoinedContacts[0] );
 	p2p_redirectSessions( info->mJoinedContacts[0] );
 
