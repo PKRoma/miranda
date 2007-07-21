@@ -487,6 +487,7 @@ int NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 	{
 		BYTE portsMask[0x2000];
 		int startPort,portNum,i,j,portsCount;
+		int portNotFound = 1;
 
 		sin.sin_family=AF_INET;
 		sin.sin_addr.s_addr=htonl(INADDR_ANY);
@@ -510,12 +511,17 @@ int NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 				startPort=portNum;
 				do {
 					sin.sin_port=htons((WORD)portNum);					
-					if(bind(nlc->s,(SOCKADDR*)&sin,sizeof(sin))==0) break;
+					if(bind(nlc->s,(SOCKADDR*)&sin,sizeof(sin))==0) {
+						portNotFound = 0;
+						break;
+					}
 					for(portNum++;!PortInMask(portsMask,portNum);portNum++)
 					if(portNum==0xFFFF) portNum=0;
 				} while (portNum!=startPort);				
 			} //if
 		} //if
+		if (portNotFound)
+			Netlib_Logf(nlu,"Netlib connect: Not enough ports for outgoing connections specified");
 	} 
 	InitializeCriticalSection(&nlc->csHttpSequenceNums);
 	nlc->hOkToCloseEvent=CreateEvent(NULL,TRUE,TRUE,NULL);

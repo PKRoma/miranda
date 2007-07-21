@@ -34,7 +34,7 @@ int StringToPortsMask(const char *szPorts,BYTE *mask)
 
 	ZeroMemory(mask,8192);
 	for(psz=szPorts;*psz;) {
-		while(*psz==' ' && *psz==',') psz++;
+		while(*psz==' ' || *psz==',') psz++;
 		portMin=strtol(psz,&pszEnd,0);
 		if(pszEnd==psz) break;
 		while(*pszEnd==' ') pszEnd++;
