@@ -39,6 +39,7 @@
 #include "m_updater.h"
 
 PLUGINLINK* pluginLink;
+struct MM_INTERFACE mmi;
 struct MD5_INTERFACE md5i;
 HANDLE hHookUserInfoInit = NULL;
 HANDLE hHookOptionInit = NULL;
@@ -117,12 +118,9 @@ __declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
 {
-  hInst = hinstDLL;
-
-  return TRUE;
+	hInst = hinstDLL;
+	return TRUE;
 }
-
-
 
 static HANDLE ICQCreateServiceFunction(const char* szService,  MIRANDASERVICE serviceProc)
 {
@@ -139,6 +137,7 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
   PROTOCOLDESCRIPTOR pd = {0};
 
   pluginLink = link;
+  mir_getMMI( &mmi );
   mir_getMD5I( &md5i );
 
   ghServerNetlibUser = NULL;

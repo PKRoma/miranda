@@ -1542,8 +1542,8 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
         pCookieData = CreateMsgCookieData(MTYPE_PLAIN, ccs->hContact, dwUin);
 
 #ifdef _DEBUG
-        NetLog_Server("Send %s message - Message cap is %u", pwszText ? "unicode" : "", CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY));
-        NetLog_Server("Send %s message - Contact status is %u", pwszText ? "unicode" : "", wRecipientStatus);
+        NetLog_Server("Send %s message - Message cap is %u", puszText ? "unicode" : "", CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY));
+        NetLog_Server("Send %s message - Contact status is %u", puszText ? "unicode" : "", wRecipientStatus);
 #endif
         if (dwUin && gbDCMsgEnabled && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD, 0))
         { // send thru direct

@@ -118,8 +118,10 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK *link )
 	#endif
 
 	pluginLink=link;
+	mir_getMMI( &mmi );
+	mir_getUTFI( &utfi );
 
-	if ( !mirVersion || mirVersion<PLUGIN_MAKE_VERSION( 0, 4, 0 ,0 )) {
+	if ( !mirVersion || mirVersion < PLUGIN_MAKE_VERSION( 0, 7, 0 ,0 )) {
 		TCHAR szVersion[] = _T("0.7"); // minimum required version
 		TCHAR szText[] = _T("The IRC protocol could not be loaded as it is dependant on Miranda IM version %s or later.\n\nDo you want to download an update from the Miranda website now?");
 		TCHAR* szTemp = ( TCHAR* )alloca( sizeof( TCHAR )*( lstrlen(szVersion) + lstrlen(szText) + 10 ));
@@ -130,9 +132,6 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK *link )
 	}
 
 	GetModuleName();
-
-	mir_getMMI( &mmi );
-	mir_getUTFI( &utfi );
 
 	InitializeCriticalSection(&cs);
 	InitializeCriticalSection(&m_gchook);
