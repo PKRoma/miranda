@@ -392,22 +392,20 @@ static int IdleGetInfo(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int UnloadIdleModule(WPARAM wParam, LPARAM lParam)
-{
-	IdleObject_Destroy(&gIdleObject);
-	DestroyHookableEvent(hIdleEvent);
-	hIdleEvent=NULL;
-	return 0;
-}
-
 int LoadIdleModule(void)
 {
 	bIsWTSApiPresent = InitWTSAPI();
 	MyGetLastInputInfo=(BOOL (WINAPI *)(LASTINPUTINFO*))GetProcAddress(GetModuleHandleA("user32"), "GetLastInputInfo");
 	hIdleEvent=CreateHookableEvent(ME_IDLE_CHANGED);
 	IdleObject_Create(&gIdleObject);
-    CreateServiceFunction(MS_IDLE_GETIDLEINFO, IdleGetInfo);
-	HookEvent(ME_SYSTEM_SHUTDOWN, UnloadIdleModule);
+	CreateServiceFunction(MS_IDLE_GETIDLEINFO, IdleGetInfo);
 	HookEvent(ME_OPT_INITIALISE, IdleOptInit);
 	return 0;
+}
+
+void UnloadIdleModule()
+{
+	IdleObject_Destroy(&gIdleObject);
+	DestroyHookableEvent(hIdleEvent);
+	hIdleEvent=NULL;
 }

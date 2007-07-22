@@ -29,7 +29,19 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 int InitialiseModularEngine(void);
 void DestroyModularEngine(void);
+void FreeWindowList(void);
 int UnloadNewPluginsModule(void);
+void UnloadButtonModule(void);
+void UnloadClcModule(void);
+void UnloadContactListModule(void);
+void UnloadEventsModule(void);
+void UnloadIdleModule(void);
+void UnloadLangPackModule(void);
+void UnloadNetlibModule(void);
+void UnloadNewPlugins(void);
+void UnloadUpdateNotifyModule(void);
+void UninitSkin2Icons(void);
+void UninitSkinSounds(void);
 
 HINSTANCE GetInstByAddress( void* codePtr );
 
@@ -363,14 +375,11 @@ static DWORD dwEventTime=0;
 void checkIdle(MSG * msg)
 {
 	switch(msg->message) {
-		case WM_MOUSEACTIVATE:
-		case WM_MOUSEMOVE:
-		case WM_CHAR:
-		{
-			dwEventTime = GetTickCount();
-		}
-	}
-}
+	case WM_MOUSEACTIVATE:
+	case WM_MOUSEMOVE:
+	case WM_CHAR:
+		dwEventTime = GetTickCount();
+}	}
 
 static int SystemGetIdle(WPARAM wParam, LPARAM lParam)
 {
@@ -462,6 +471,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 static int SystemShutdownProc(WPARAM wParam,LPARAM lParam)
 {
+	UnloadNewPlugins();
+
+	UninitSkin2Icons();
+	UninitSkinSounds();
+	FreeWindowList();
+
+	UnloadButtonModule();
+	UnloadClcModule();
+	UnloadContactListModule();
+	UnloadEventsModule();
+	UnloadIdleModule();
+	UnloadUpdateNotifyModule();
+
+	UnloadLangPackModule();
 	return 0;
 }
 

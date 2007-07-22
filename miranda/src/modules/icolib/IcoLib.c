@@ -30,12 +30,6 @@ int InitSkin2Icons(void);
 void UninitSkin2Icons(void);
 BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
-static int SkinSystemShutdown(WPARAM wParam,LPARAM lParam)
-{
-	UninitSkin2Icons();
-	return 0;
-}
-
 static UINT iconsExpertOnlyControls[]={IDC_IMPORT};
 static int SkinOptionsInit(WPARAM wParam,LPARAM lParam)
 {
@@ -68,7 +62,6 @@ static int SkinSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 int LoadIcoLibModule( void )
 {
 	HookEvent(ME_SYSTEM_MODULESLOADED, SkinSystemModulesLoaded);
-	HookEvent(ME_SYSTEM_SHUTDOWN, SkinSystemShutdown);
 
 	if (InitSkin2Icons()) return 1;
 

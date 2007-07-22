@@ -24,16 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 int InitSkinIcons(void);
 int InitSkinSounds(void);
-void UninitSkinSounds(void);
 
 BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-
-static int SkinSystemShutdown(WPARAM wParam,LPARAM lParam)
-{
-	UninitSkinSounds();
-//	UninitSkinIcons();
-	return 0;
-}
 
 static UINT iconsExpertOnlyControls[]={IDC_IMPORT};
 static int SkinOptionsInit(WPARAM wParam,LPARAM lParam)
@@ -60,7 +52,6 @@ static int SkinSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 int LoadSkinModule(void)
 {
 	HookEvent(ME_SYSTEM_MODULESLOADED,SkinSystemModulesLoaded);
-	HookEvent(ME_SYSTEM_SHUTDOWN,SkinSystemShutdown);
 	if(InitSkinIcons()) return 1;
 	if(InitSkinSounds()) return 1;
 	return 0;

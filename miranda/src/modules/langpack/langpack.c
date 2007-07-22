@@ -320,22 +320,6 @@ TCHAR* LangPackPcharToTchar( const char* pszStr )
 	#endif
 }
 
-static int LangPackShutdown(WPARAM wParam,LPARAM lParam)
-{
-	int i;
-	for(i=0;i<langPack.entryCount;i++) {
-		if(langPack.entry[i].english!=NULL) mir_free(langPack.entry[i].english);
-		if(langPack.entry[i].local!=NULL) { mir_free(langPack.entry[i].local); }
-		if(langPack.entry[i].wlocal!=NULL) { mir_free(langPack.entry[i].wlocal); }
-	}
-	if(langPack.entryCount) {
-		mir_free(langPack.entry);
-		langPack.entry=0;
-		langPack.entryCount=0;
-	}
-	return 0;
-}
-
 int LoadLangPackModule(void)
 {
 	HANDLE hFind;
@@ -343,7 +327,6 @@ int LoadLangPackModule(void)
 	WIN32_FIND_DATA fd;
 
 	ZeroMemory(&langPack,sizeof(langPack));
-	HookEvent(ME_SYSTEM_SHUTDOWN,LangPackShutdown);
 	LoadLangPackServices();
 	GetModuleFileName(GetModuleHandle(NULL),szSearch,SIZEOF(szSearch));
 	str2=_tcsrchr(szSearch,'\\');
@@ -359,6 +342,20 @@ int LoadLangPackModule(void)
 	}
 	return 0;
 }
+
+void UnloadLangPackModule()
+{
+	int i;
+	for ( i=0; i < langPack.entryCount; i++ ) {
+		mir_free(langPack.entry[i].english);
+		mir_free(langPack.entry[i].local);
+		mir_free(langPack.entry[i].wlocal);
+	}
+	if ( langPack.entryCount ) {
+		mir_free(langPack.entry);
+		langPack.entry=0;
+		langPack.entryCount=0;
+}	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Langpack ANSI <-> UNICODE transformation routines

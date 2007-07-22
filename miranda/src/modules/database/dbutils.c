@@ -143,12 +143,15 @@ int InitUtils()
 	return 0;
 }
 
+void UnloadEventsModule()
+{
+	int i;
+	for ( i=0; i < eventTypes.count; i++ ) {
+		DBEVENTTYPEDESCR* p = eventTypes.items[i];
+		mir_free( p->module );
+		mir_free( p->descr );
+		mir_free( p );
+	}
 
-
-
-
-
-
-
-
-
+	List_Destroy(( SortedList* )&eventTypes );
+}

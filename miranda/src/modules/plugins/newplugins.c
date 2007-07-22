@@ -459,7 +459,7 @@ static pluginEntry* getCListModule(char * exe, char * slice, int useWhiteList)
 //   Event hook to unload all non-core plugins
 //   hooked very late, after all the internal plugins, blah
 
-static int UnloadNewPlugins(WPARAM wParam, LPARAM lParam)
+void UnloadNewPlugins(void)
 {
 	int i;
 
@@ -468,10 +468,7 @@ static int UnloadNewPlugins(WPARAM wParam, LPARAM lParam)
 		pluginEntry* p = pluginList.items[i];
 		if ( !(p->pclass & PCLASS_LAST) && (p->pclass & PCLASS_OK))
 			Plugin_Uninit( p );
-	}
-
-	return 0;
-}
+}	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -823,10 +820,11 @@ int LoadNewPluginsModule(void)
 				}
 			}
 			else p->pclass |= PCLASS_FAILED;
-	}	}
+		}
+		else if ( p->bpi.hInst != NULL )
+			List_InsertPtr( &pluginListAddr, p );
+	}
 
-	// hook shutdown after everything
-	HookEvent(ME_SYSTEM_SHUTDOWN, UnloadNewPlugins);
 	HookEvent(ME_OPT_INITIALISE, PluginOptionsInit);
 	return 0;
 }

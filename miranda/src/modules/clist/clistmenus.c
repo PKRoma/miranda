@@ -1345,16 +1345,6 @@ static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
 	return menuHandle;
 }
 
-int MenuModulesShutdown(WPARAM wParam,LPARAM lParam)
-{
-	RecursiveDeleteMenu(hStatusMenu);
-	RecursiveDeleteMenu(hMainMenu);
-	DestroyMenu(hMainMenu);
-	DestroyMenu(hStatusMenu);
-	UnhookEvent(hAckHook);
-	return 0;
-}
-
 int InitCustomMenus(void)
 {
 	CreateServiceFunction("MainMenuExecService",MainMenuExecService);
@@ -1452,16 +1442,11 @@ int InitCustomMenus(void)
 
 	if ( IsWinVer98Plus() )
 		HookEvent(ME_SKIN_ICONSCHANGED, MenuIconsChanged );
-
-	HookEvent( ME_SYSTEM_SHUTDOWN, MenuModulesShutdown );
 	return 0;
 }
 
 void UninitCustomMenus(void)
 {
-	UnloadMoveToGroup();
-	FreeMenuProtos();
-
 	if (hStatusMainMenuHandles!=NULL)
 		mir_free(hStatusMainMenuHandles);
 
@@ -1473,4 +1458,13 @@ void UninitCustomMenus(void)
 
 	if ( hMainMenuObject   ) CallService( MO_REMOVEMENUOBJECT, hMainMenuObject, 0 );
 	if ( hStatusMenuObject ) CallService( MO_REMOVEMENUOBJECT, hMainMenuObject, 0 );
+
+	UnloadMoveToGroup();
+	FreeMenuProtos();
+
+	RecursiveDeleteMenu(hStatusMenu);
+	RecursiveDeleteMenu(hMainMenu);
+	DestroyMenu(hMainMenu);
+	DestroyMenu(hStatusMenu);
+	UnhookEvent(hAckHook);
 }

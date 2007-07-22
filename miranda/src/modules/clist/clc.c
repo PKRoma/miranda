@@ -194,22 +194,6 @@ static int GetInfoTipHoverTime(WPARAM wParam, LPARAM lParam)
 	return DBGetContactSettingWord(NULL, "CLC", "InfoTipHoverTime", 750);
 }
 
-static int ClcShutdown(WPARAM wParam, LPARAM lParam)
-{
-	UnhookEvent(hAckHook);
-	UnhookEvent(hClcSettingsChanged);
-
-	if (cli.clcProto) mir_free(cli.clcProto);
-
-	FreeFileDropping();
-	FreeDisplayNameCache();
-
-	UninitCustomMenus();
-	UnitGenMenu();	
-
-	return 0;
-}
-
 static void SortClcByTimer( HWND hwnd )
 {
 	KillTimer( hwnd, TIMERID_DELAYEDRESORTCLC );
@@ -236,10 +220,23 @@ int LoadCLCModule(void)
 	HookEvent(ME_CLIST_CONTACTICONCHANGED, ClcContactIconChanged);
 	HookEvent(ME_SKIN_ICONSCHANGED, ClcIconsChanged);
 	hAckHook = (HANDLE) HookEvent(ME_PROTO_ACK, ClcProtoAck);
-	HookEvent(ME_SYSTEM_SHUTDOWN, ClcShutdown);
 
 	InitCustomMenus();
 	return 0;
+}
+
+void UnloadClcModule()
+{
+	UnhookEvent(hAckHook);
+	UnhookEvent(hClcSettingsChanged);
+
+	if (cli.clcProto) mir_free(cli.clcProto);
+
+	FreeFileDropping();
+	FreeDisplayNameCache();
+
+	UninitCustomMenus();
+	UnitGenMenu();	
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

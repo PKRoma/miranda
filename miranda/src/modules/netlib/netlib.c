@@ -469,11 +469,10 @@ static int NetlibModulesLoaded(WPARAM wParam, LPARAM lParam)
 int LoadNetlibModule(void)
 {
 	WSADATA wsadata;
+	WSAStartup(MAKEWORD(1,1), &wsadata);
 
-	//HookEvent(ME_SYSTEM_SHUTDOWN,NetlibShutdown); // hooked later to be called last after plugins
 	HookEvent(ME_SYSTEM_MODULESLOADED, NetlibModulesLoaded);
 	HookEvent(ME_OPT_INITIALISE,NetlibOptInitialise);
-	WSAStartup(MAKEWORD(1,1), &wsadata);
 	InitializeCriticalSection(&csNetlibUser);
 	hConnectionHeaderMutex=CreateMutex(NULL,FALSE,NULL);
 	g_LastConnectionTick=GetTickCount();

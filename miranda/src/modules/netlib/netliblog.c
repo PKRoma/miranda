@@ -44,6 +44,7 @@ struct {
 	CRITICAL_SECTION cs;
 } logOptions;
 static __int64 mirandaStartTime,perfCounterFreq;
+static int bIsActive = TRUE;
 
 static const TCHAR* szTimeFormats[] = 
 {
@@ -251,7 +252,10 @@ static int NetlibLog(WPARAM wParam,LPARAM lParam)
 	size_t cbBufLen;
 	int bNeedsFree = FALSE;
 
-	if( (nlu != NULL && GetNetlibHandleType(nlu)!=NLH_USER) || pszMsg==NULL) {
+	if ( !bIsActive )
+		return 0;
+
+	if ((nlu != NULL && GetNetlibHandleType(nlu)!=NLH_USER) || pszMsg==NULL) {
 		SetLastError(ERROR_INVALID_PARAMETER);
 		return 0;
 	}
@@ -450,5 +454,5 @@ void NetlibLogShutdown(void)
 	if(IsWindow(logOptions.hwndOpts)) DestroyWindow(logOptions.hwndOpts);
 	DeleteCriticalSection(&logOptions.cs);
 	if(logOptions.szFile) mir_free(logOptions.szFile);
+	bIsActive = FALSE;
 }
-

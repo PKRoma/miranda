@@ -201,27 +201,6 @@ static int GetContactIcon(WPARAM wParam, LPARAM lParam)
 		szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE), hContact);
 }
 
-static int ContactListShutdownProc(WPARAM wParam, LPARAM lParam)
-{
-	HANDLE hContact, hNext;
-
-	//remove transitory contacts
-	hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-	while (hContact != NULL) {
-		hNext = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
-		if (DBGetContactSettingByte(hContact, "CList", "NotOnList", 0))
-			CallService(MS_DB_CONTACT_DELETE, (WPARAM) hContact, 0);
-		hContact = hNext;
-	}
-	ImageList_Destroy(hCListImages);
-	UnhookEvent(hProtoAckHook);
-	UninitCListEvents();
-	mir_free(protoIconIndex);
-	DestroyHookableEvent(hContactDoubleClicked);
-	UnhookEvent(hContactSettingChanged);
-	return 0;
-}
-
 static int ContactListModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
 	int i, protoCount, j, iImg;
@@ -489,7 +468,6 @@ static int HotkeysProcessMessageStub( WPARAM wParam, LPARAM lParam ) { return cl
 
 int LoadContactListModule2(void)
 {
-	HookEvent(ME_SYSTEM_SHUTDOWN, ContactListShutdownProc);
 	HookEvent(ME_SYSTEM_MODULESLOADED, ContactListModulesLoaded);
 	hContactSettingChanged = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, ContactSettingChanged);
 	HookEvent(ME_DB_CONTACT_ADDED, ContactAdded);
@@ -545,4 +523,24 @@ int LoadContactListModule2(void)
 	ImageList_AddIcon_IconLibLoaded(hCListImages, SKINICON_OTHER_GROUPOPEN );
 	ImageList_AddIcon_IconLibLoaded(hCListImages, SKINICON_OTHER_GROUPSHUT );
 	return 0;
+}
+
+void UnloadContactListModule()
+{
+	HANDLE hContact, hNext;
+
+	//remove transitory contacts
+	hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+	while (hContact != NULL) {
+		hNext = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
+		if (DBGetContactSettingByte(hContact, "CList", "NotOnList", 0))
+			CallService(MS_DB_CONTACT_DELETE, (WPARAM) hContact, 0);
+		hContact = hNext;
+	}
+	ImageList_Destroy(hCListImages);
+	UnhookEvent(hProtoAckHook);
+	UninitCListEvents();
+	mir_free(protoIconIndex);
+	DestroyHookableEvent(hContactDoubleClicked);
+	UnhookEvent(hContactSettingChanged);
 }
