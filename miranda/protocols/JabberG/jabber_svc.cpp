@@ -292,17 +292,8 @@ int JabberBasicSearch( WPARAM wParam, LPARAM lParam )
 	}
 	else strncpy( jsb->jid, szJid, SIZEOF(jsb->jid));
 
-	if ( JGetByte( "ValidateAddition", TRUE )) {
-		JabberLog( "Sending basic search validation request for '%s'", jsb->jid );
-		TCHAR* ptszJid = a2t( jsb->jid );
-		jabberSearchID = JabberSendGetVcard( ptszJid );
-		mir_free( ptszJid );
-		mir_free( jsb );
-		return jabberSearchID;
-	}
-
 	JabberLog( "Adding '%s' without validation", jsb->jid );
-   jsb->hSearch = JabberSerialNext();
+	jsb->hSearch = JabberSerialNext();
 	mir_forkthread(( pThreadFunc )JabberBasicSearchThread, jsb );
 	return jsb->hSearch;
 }
@@ -873,11 +864,37 @@ int JabberGetInfo( WPARAM wParam, LPARAM lParam )
 			if (( item = JabberListGetItemPtr( LIST_VCARD_TEMP, dbv.ptszVal )) == NULL)
 				item = JabberListGetItemPtr( LIST_ROSTER, dbv.ptszVal );
 
+			if ( !item ) {
+				TCHAR szBareJid[ 1024 ];
+				_tcsncpy( szBareJid, dbv.ptszVal, 1023 );
+				TCHAR* pDelimiter = _tcschr( szBareJid, _T('/') );
+				if ( pDelimiter ) {
+					*pDelimiter = 0;
+					pDelimiter++;
+					if ( !*pDelimiter )
+						pDelimiter = NULL;
+				}
+				JABBER_LIST_ITEM *tmpItem = NULL;;
+				if ( pDelimiter && ( tmpItem  = JabberListGetItemPtr( LIST_CHATROOM, szBareJid ))) {
+					JABBER_RESOURCE_STATUS *him = NULL;
+					for ( int i=0; i < tmpItem->resourceCount; i++ ) {
+						JABBER_RESOURCE_STATUS& p = tmpItem->resource[i];
+						if ( !lstrcmp( p.resourceName, pDelimiter )) him = &p;
+					}
+					if ( him ) {
+						item = JabberListAdd( LIST_VCARD_TEMP, dbv.ptszVal );
+						JabberListAddResource( LIST_VCARD_TEMP, dbv.ptszVal, him->status, him->statusMessage, him->priority );
+					}
+				}
+				else
+					item = JabberListAdd( LIST_VCARD_TEMP, dbv.ptszVal );
+			}
+
 			if ( item ) {
 				if ( item->resource ) {
 					for ( int i = 0; i < item->resourceCount; i++ ) {
 						TCHAR szp1[ JABBER_MAX_JID_LEN ];
-						JabberStripJid( dbv.ptszVal, szp1, sizeof( szp1 ));
+						JabberStripJid( dbv.ptszVal, szp1, SIZEOF( szp1 ));
 						mir_sntprintf( jid, 256, _T("%s/%s"), szp1, item->resource[i].resourceName );
 
 						XmlNodeIq iq3( g_JabberIqManager.AddHandler( JabberIqResultLastActivity, JABBER_IQ_TYPE_GET, jid, JABBER_IQ_PARSE_FROM ));
@@ -1155,6 +1172,10 @@ int JabberSendMessage( WPARAM wParam, LPARAM lParam )
 		return 0;
 	}
 
+	// temporary fix for bug with fast sending 2 messages on slow connections
+	// previous message marked as delivered without waiting for real delivery ack
+	JSendBroadcast( ccs->hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE ) 1, 0 );
+
 	char* pszSrc = ( char* )ccs->lParam, *msg;
 	int  isEncrypted;
 
@@ -1227,7 +1248,10 @@ int JabberSendMessage( WPARAM wParam, LPARAM lParam )
 		}
 		else {
 			id = JabberSerialNext();
-			if (( item=JabberListGetItemPtr( LIST_ROSTER, dbv.ptszVal )) != NULL )
+			item = JabberListGetItemPtr( LIST_ROSTER, dbv.ptszVal );
+			if ( !item )
+				item = JabberListGetItemPtr( LIST_VCARD_TEMP, dbv.ptszVal );
+			if ( item )
 				item->idMsgAckPending = id;
 
 			m.addAttr( "to", szClientJid ); m.addAttrID( id );

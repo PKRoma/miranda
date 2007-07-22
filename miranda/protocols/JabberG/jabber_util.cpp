@@ -209,6 +209,18 @@ JABBER_RESOURCE_STATUS* __stdcall JabberResourceInfoFromJID( TCHAR* jid )
 	return r;
 }
 
+TCHAR* JabberPrepareJid( TCHAR *jid )
+{
+	if ( !jid ) return NULL;
+	TCHAR* szNewJid = mir_tstrdup( jid );
+	if ( !szNewJid ) return NULL;
+	TCHAR* pDelimiter = _tcschr( szNewJid, _T('/') );
+	if ( pDelimiter ) *pDelimiter = _T('\0');
+	CharLower( szNewJid );
+	if ( pDelimiter ) *pDelimiter = _T('/');
+	return szNewJid;
+}
+
 char* __stdcall JabberUrlDecode( char* str )
 {
 	char* p, *q;
@@ -905,7 +917,7 @@ void __stdcall JabberSendPresenceTo( int status, TCHAR* to, XmlNode* extra )
 	EnterCriticalSection( &modeMsgMutex );
 
 	char szPriority[40];
-	itoa( JGetWord( NULL, "Priority", 0 ), szPriority, 10 );
+	itoa( (short)JGetWord( NULL, "Priority", 0 ), szPriority, 10 );
 
 	XmlNode p( "presence" ); p.addChild( "priority", szPriority );
 	if ( to != NULL )
@@ -931,8 +943,7 @@ void __stdcall JabberSendPresenceTo( int status, TCHAR* to, XmlNode* extra )
 		_tcscat( szExtCaps, _T(JABBER_EXT_SECUREIM) );
 	}
 
-	// FIXME: read settings from DB
-	if ( 0 ) {
+	if ( JGetByte( "EnableRemoteControl", FALSE )) {
 		if ( _tcslen( szExtCaps ))
 			_tcscat( szExtCaps, _T(" "));
 		_tcscat( szExtCaps, _T(JABBER_EXT_COMMANDS) );
@@ -947,9 +958,12 @@ void __stdcall JabberSendPresenceTo( int status, TCHAR* to, XmlNode* extra )
 		char hashValue[ 50 ];
 		if ( !JGetStaticString( "AvatarHash", NULL, hashValue, sizeof( hashValue ))) {
 			XmlNode* x;
-			x = p.addChild( "x" ); x->addAttr( "xmlns", "jabber:x:avatar" );
-			x->addChild( "hash", hashValue );
 
+			// deprecated XEP-0008
+//			x = p.addChild( "x" ); x->addAttr( "xmlns", "jabber:x:avatar" );
+//			x->addChild( "hash", hashValue );
+
+			// XEP-0153: vCard-Based Avatars
 			x = p.addChild( "x" ); x->addAttr( "xmlns", "vcard-temp:x:update" );
 			x->addChild( "photo", hashValue );
 	}	}

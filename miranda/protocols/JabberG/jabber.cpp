@@ -30,6 +30,7 @@ Last change by : $Author$
 #include "jabber_ssl.h"
 #include "jabber_iq.h"
 #include "jabber_caps.h"
+#include "jabber_rc.h"
 #include "resource.h"
 #include "version.h"
 #include "sdk/m_icolib.h"
@@ -392,6 +393,7 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	JabberXStatusInit();
 	g_JabberIqManager.FillPermanentHandlers();
 	g_JabberIqManager.Start();
+	g_JabberAdhocManager.FillDefaultNodes();
 	g_JabberClientCapsManager.AddDefaultCaps();
 	return 0;
 }

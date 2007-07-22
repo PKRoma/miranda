@@ -27,90 +27,60 @@ Last change by : $Author$
 */
 
 #include "jabber.h"
-#include "jabber_caps.h"
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// JabberXmlnsBrowse
-
-void JabberXmlnsBrowse( XmlNode *iqNode, void *userdata )
-{
-	XmlNode *queryNode;
-	TCHAR *xmlns, *iqFrom, *iqType;
-
-	if ( iqNode == NULL ) return;
-	if (( iqFrom=JabberXmlGetAttrValue( iqNode, "from" )) == NULL ) return;
-	if (( iqType=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
-	if (( queryNode=JabberXmlGetChild( iqNode, "query" )) == NULL ) return;
-	if (( xmlns=JabberXmlGetAttrValue( queryNode, "xmlns" )) == NULL ) return;
-
-	if ( !_tcscmp( iqType, _T("get"))) {
-		XmlNodeIq iq( "result", iqNode, iqFrom );
-		XmlNode* user = iq.addChild( "user" ); user->addAttr( "jid", jabberJID ); user->addAttr( "type", "client" ); user->addAttr( "xmlns", xmlns );
-		user->addChild( "ns", "http://jabber.org/protocol/disco#info" );
-		user->addChild( "ns", "http://jabber.org/protocol/muc" );
-		user->addChild( "ns", "jabber:iq:agents" );
-		user->addChild( "ns", "jabber:iq:browse" );
-		user->addChild( "ns", "jabber:iq:oob" );
-		user->addChild( "ns", "jabber:iq:version" );
-		user->addChild( "ns", "jabber:x:data" );
-		user->addChild( "ns", "jabber:x:event" );
-		user->addChild( "ns", "vcard-temp" );
-		jabberThreadInfo->send( iq );
-}	}
+#include "jabber_rc.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberXmlnsDisco
 
-void sttAddFeature( XmlNode* n, TCHAR* text )
+void JabberHandleDiscoInfoRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
-	XmlNode* f = n->addChild( "feature" ); f->addAttr( "var", text );
-}
-
-void JabberXmlnsDisco( XmlNode *iqNode, void *userdata )
-{
-	XmlNode *queryNode;
-	TCHAR *xmlns, *p, *discoType;
-	TCHAR *iqFrom, *iqType, *discoNode;
-
-	if ( iqNode == NULL ) return;
-	if (( iqFrom = JabberXmlGetAttrValue( iqNode, "from" )) == NULL ) return;
-	if (( iqType = JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
-	if (( queryNode = JabberXmlGetChild( iqNode, "query" )) == NULL ) return;
-	if (( xmlns = JabberXmlGetAttrValue( queryNode, "xmlns" )) == NULL ) return;
-
-	discoNode = JabberXmlGetAttrValue( queryNode, "node" );
-
-	p = _tcsrchr( xmlns, '/' );
-	discoType = _tcsrchr( xmlns, '#' );
-
-	if ( p==NULL || discoType==NULL || discoType < p )
+	if ( !pInfo->GetChildNode() )
 		return;
 
-	if ( !_tcscmp( iqType, _T("get"))) {
-		XmlNodeIq iq( "result", iqNode, iqFrom );
+	TCHAR* szNode = JabberXmlGetAttrValue( pInfo->GetChildNode(), "node" );
+	// caps hack
+	if ( g_JabberClientCapsManager.HandleInfoRequest( iqNode, userdata, pInfo, szNode ))
+		return;
 
-		if ( !_tcscmp( discoType, _T("#info"))) {
-			XmlNode* query = iq.addChild( "query" ); query->addAttr( "xmlns", xmlns );
-			XmlNode* ident = query->addChild( "identity" ); ident->addAttr( "category", "client" );
-			ident->addAttr( "type", "pc" ); ident->addAttr( "name", "Miranda" );
-			
-			JabberCapsBits jcb = JABBER_CAPS_MIRANDA_PARTIAL;
+	// ad-hoc hack:
+	if ( szNode && g_JabberAdhocManager.HandleInfoRequest( iqNode, userdata, pInfo, szNode ))
+		return;
 
-			if ( discoNode ) {
-				query->addAttr( "node", discoNode );
-				TCHAR *szExtCap = _tcschr( discoNode, '#' );
-				if ( szExtCap && *++szExtCap != '\0' ) {
-					for ( int i = 0; g_JabberFeatCapPairsExt[i].szFeature; i++ ) {
-						if ( !_tcscmp( g_JabberFeatCapPairsExt[i].szFeature, szExtCap )) {
-							jcb = g_JabberFeatCapPairsExt[i].jcbCap;
-							break;
-			}	}	}	}
-			else
-				jcb = JABBER_CAPS_MIRANDA_ALL;
+	// another request, send empty result
+	XmlNodeIq iq( "error", pInfo );
 
-			for ( int i = 0; g_JabberFeatCapPairs[i].szFeature; i++ )
-				if ( jcb & g_JabberFeatCapPairs[i].jcbCap )
-					sttAddFeature( query, g_JabberFeatCapPairs[i].szFeature );
-		}
-		jabberThreadInfo->send( iq );
-}	}
+	XmlNode *errorNode = iq.addChild( "error" );
+	errorNode->addAttr( "code", "404" );
+	errorNode->addAttr( "type", "cancel" );
+	XmlNode *notfoundNode = errorNode->addChild( "item-not-found" );
+	notfoundNode->addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
+
+	jabberThreadInfo->send( iq );
+}
+
+void JabberHandleDiscoItemsRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
+{
+	if ( !pInfo->GetChildNode() )
+		return;
+
+	// ad-hoc commands check:
+	TCHAR* szNode = JabberXmlGetAttrValue( pInfo->GetChildNode(), "node" );
+	if ( szNode && g_JabberAdhocManager.HandleItemsRequest( iqNode, userdata, pInfo, szNode ))
+		return;
+
+	// another request, send empty result
+	XmlNodeIq iq( "result", pInfo );
+	XmlNode* resultQuery = iq.addChild( "query" );
+	resultQuery->addAttr( "xmlns", _T(JABBER_FEAT_DISCO_ITEMS));
+	if ( szNode )
+		resultQuery->addAttr( "node", szNode );
+
+	if ( !szNode && JGetByte( "EnableRemoteControl", FALSE )) {
+		XmlNode* item = resultQuery->addChild( "item" );
+		item->addAttr( "jid", jabberThreadInfo->fullJID );
+		item->addAttr( "node", _T(JABBER_FEAT_COMMANDS) );
+		item->addAttr( "name", "Ad-hoc commands" );
+	}
+
+	jabberThreadInfo->send( iq );
+}

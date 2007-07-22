@@ -28,7 +28,7 @@ Last change by : $Author$
 #ifndef _JABBER_XMLNS_H_
 #define _JABBER_XMLNS_H_
 
-void JabberXmlnsBrowse( XmlNode *iqNode, void *userdata );
-void JabberXmlnsDisco( XmlNode *iqNode, void *userdata );
+void JabberHandleDiscoInfoRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
+void JabberHandleDiscoItemsRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
 
 #endif

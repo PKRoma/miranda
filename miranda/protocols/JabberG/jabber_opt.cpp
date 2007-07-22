@@ -191,10 +191,10 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			}
 			else SetDlgItemTextA( hwndDlg, IDC_COMBO_RESOURCE, "Miranda" );
 
-			SendMessage( GetDlgItem( hwndDlg, IDC_PRIORITY_SPIN ), UDM_SETRANGE, 0, ( LPARAM )MAKELONG( 100, 0 ));
+			SendMessage( GetDlgItem( hwndDlg, IDC_PRIORITY_SPIN ), UDM_SETRANGE, 0, ( LPARAM )MAKELONG( 127, -128 ));
 
 			char text[256];
-			sprintf( text, "%d", JGetWord( NULL, "Priority", 5 ));
+			sprintf( text, "%d", (short)JGetWord( NULL, "Priority", 5 ));
 			SetDlgItemTextA( hwndDlg, IDC_PRIORITY, text );
 			CheckDlgButton( hwndDlg, IDC_SAVEPASSWORD, JGetByte( "SavePassword", TRUE ));
 			if ( !DBGetContactSetting( NULL, jabberProtoName, "LoginServer", &dbv )) {
@@ -401,12 +401,12 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			JSetStringT( NULL, "Resource", textT );
 
 			GetDlgItemTextA( hwndDlg, IDC_PRIORITY, text, sizeof( text ));
-			WORD port = ( WORD )atoi( text );
-			if ( port > 100 ) port = 100;
-			if ( port < 0 ) port = 0;
-			if ( JGetWord( NULL, "Priority", 0 ) != port )
+			int nPriority = atoi( text );
+			if ( nPriority > 127) nPriority = 127;
+			if ( nPriority < -128) nPriority = -128;
+			if ( JGetWord( NULL, "Priority", 5 ) != ( WORD )nPriority )
 				reconnectRequired = TRUE;
-			JSetWord( NULL, "Priority", ( WORD )port );
+			JSetWord( NULL, "Priority", ( WORD )nPriority );
 
 			JSetByte( "SavePassword", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_SAVEPASSWORD ));
 
@@ -422,7 +422,7 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			userName[ sizeof(userName)-1 ] = 0;
 			JSetString( NULL, "jid", userName );
 
-			port = ( WORD )GetDlgItemInt( hwndDlg, IDC_PORT, NULL, FALSE );
+			WORD port = ( WORD )GetDlgItemInt( hwndDlg, IDC_PORT, NULL, FALSE );
 			if ( JGetWord( NULL, "Port", JABBER_DEFAULT_PORT ) != port )
 				reconnectRequired = TRUE;
 			JSetWord( NULL, "Port", port );
@@ -519,7 +519,7 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 		CheckDlgButton( hwndDlg, IDC_AUTO_ACCEPT_MUC, JGetByte( "AutoAcceptMUC", FALSE ));
 		CheckDlgButton( hwndDlg, IDC_AUTOJOIN, JGetByte( "AutoJoinConferences", FALSE ));
 		CheckDlgButton( hwndDlg, IDC_DISABLE_SASL, JGetByte( "Disable3920auth", FALSE ));
-		CheckDlgButton( hwndDlg, IDC_VALIDATEADD, JGetByte( "ValidateAddition", TRUE ));
+		CheckDlgButton( hwndDlg, IDC_ENABLE_RC, JGetByte( "EnableRemoteControl", FALSE ));
 		CheckDlgButton( hwndDlg, IDC_ROSTER2BOOKMARK, JGetByte( "AddRoster2Bookmarks", FALSE ));
 		CheckDlgButton( hwndDlg, IDC_AUTOJOIN_BOOKMARKS, JGetByte( "AutoJoinBookmarks", FALSE ));
 		CheckDlgButton( hwndDlg, IDC_ZLIB, JGetByte( "EnableZlib", FALSE ));
@@ -595,7 +595,7 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			JSetByte( "EnableAvatars",       ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_ENABLE_AVATARS ));
 			JSetByte( "AutoAcceptMUC",       ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_AUTO_ACCEPT_MUC ));
 			JSetByte( "AutoJoinConferences", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_AUTOJOIN ));
-			JSetByte( "ValidateAddition",    ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_VALIDATEADD ));
+			JSetByte( "EnableRemoteControl", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_ENABLE_RC ));
 			JSetByte( "AddRoster2Bookmarks", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_ROSTER2BOOKMARK));
 			JSetByte( "AutoJoinBookmarks",   ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_AUTOJOIN_BOOKMARKS));
 			JSetByte( "EnableZlib",          ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_ZLIB));

@@ -41,18 +41,6 @@ static int JabberByteSendParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char* b
 static int JabberByteSendProxyParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char* buffer, int datalen );
 void JabberByteSendViaProxy( JABBER_BYTE_TRANSFER *jbt );
 
-TCHAR* PrepareJid(TCHAR *jid)
-{
-	if ( !jid ) return NULL;
-	TCHAR* szNewJid = mir_tstrdup(jid);
-	if ( !szNewJid ) return NULL;
-	TCHAR* pDelimiter = _tcschr( szNewJid, _T('/') );
-	if ( pDelimiter ) *pDelimiter = _T('\0');
-	CharLower( szNewJid );
-	if ( pDelimiter ) *pDelimiter = _T('/');
-	return szNewJid;
-}
-
 void JabberByteFreeJbt( JABBER_BYTE_TRANSFER *jbt )
 {
 	if ( jbt )  {
@@ -387,8 +375,8 @@ static int JabberByteSendParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char* b
 		if ( datalen == 47 && *(( DWORD* )buffer )==0x03000105 && buffer[4]==40 && *(( WORD* )( buffer+45 ))==0 ) {
 			TCHAR text[256];
 
-			TCHAR *szInitiatorJid = PrepareJid(jbt->srcJID);
-			TCHAR *szTargetJid = PrepareJid(jbt->dstJID);
+			TCHAR *szInitiatorJid = JabberPrepareJid(jbt->srcJID);
+			TCHAR *szTargetJid = JabberPrepareJid(jbt->dstJID);
 			mir_sntprintf( text, SIZEOF( text ), _T("%s%s%s"), jbt->sid, szInitiatorJid, szTargetJid );
 			mir_free(szInitiatorJid);
 			mir_free(szTargetJid);
@@ -543,8 +531,8 @@ static int JabberByteSendProxyParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, ch
 
 			TCHAR text[256];
 
-			TCHAR *szInitiatorJid = PrepareJid(jbt->srcJID);
-			TCHAR *szTargetJid = PrepareJid(jbt->dstJID);
+			TCHAR *szInitiatorJid = JabberPrepareJid(jbt->srcJID);
+			TCHAR *szTargetJid = JabberPrepareJid(jbt->dstJID);
 			mir_sntprintf( text, SIZEOF( text ), _T("%s%s%s"), jbt->sid, szInitiatorJid, szTargetJid );
 			mir_free(szInitiatorJid);
 			mir_free(szTargetJid);
@@ -752,8 +740,8 @@ static int JabberByteReceiveParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char
 			data[4] = 40;
 
 			TCHAR text[256];
-			TCHAR *szInitiatorJid = PrepareJid(jbt->srcJID);
-			TCHAR *szTargetJid = PrepareJid(jbt->dstJID);
+			TCHAR *szInitiatorJid = JabberPrepareJid(jbt->srcJID);
+			TCHAR *szTargetJid = JabberPrepareJid(jbt->dstJID);
 			mir_sntprintf( text, SIZEOF( text ), _T("%s%s%s"), jbt->sid, szInitiatorJid, szTargetJid );
 			mir_free(szInitiatorJid);
 			mir_free(szTargetJid);

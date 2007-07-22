@@ -32,13 +32,9 @@ Last change by : $Author$
 #include "jabber_iq_handlers.h"
 #include "jabber_privacy.h"
 #include "jabber_ibb.h"
+#include "jabber_rc.h"
 
 CJabberIqManager g_JabberIqManager;
-
-static JABBER_IQ_XMLNS_FUNC jabberXmlns[] = {
-	{ _T("http://jabber.org/protocol/disco#info"), JabberXmlnsDisco, FALSE },
-	{ _T(JABBER_FEAT_BROWSE), JabberXmlnsBrowse, FALSE }
-};
 
 typedef struct {
 	int iqId;                  // id to match IQ get/set with IQ result
@@ -145,39 +141,6 @@ void JabberIqAdd( unsigned int iqId, JABBER_IQ_PROCID procId, JABBER_IQ_PFUNC fu
 	LeaveCriticalSection( &csIqList );
 }
 
-JABBER_IQ_PFUNC JabberIqFetchXmlnsFunc( TCHAR* xmlns )
-{
-	unsigned int len, count, i;
-	TCHAR* p, *q;
-
-	if ( xmlns == NULL )
-		return NULL;
-
-	p = _tcsrchr( xmlns, '/' );
-	q = _tcsrchr( xmlns, '#' );
-	if ( p!=NULL && q!=NULL && q>p )
-		len = q - xmlns;
-	else
-		len = _tcslen( xmlns );
-
-	count = sizeof( jabberXmlns ) / sizeof( jabberXmlns[0] );
-	for ( i=0; i<count; i++ ) {
-		if ( jabberXmlns[i].allowSubNs ) {
-			if ( _tcslen( jabberXmlns[i].xmlns ) == len && !_tcsncmp( jabberXmlns[i].xmlns, xmlns, len ))
-				break;
-		}
-		else {
-			if ( !_tcscmp( jabberXmlns[i].xmlns, xmlns ))
-				break;
-		}
-	}
-
-	if ( i < count )
-		return jabberXmlns[i].func;
-
-	return NULL;
-}
-
 BOOL CJabberIqManager::FillPermanentHandlers()
 {
 	// version requests (XEP-0092)
@@ -213,5 +176,36 @@ BOOL CJabberIqManager::FillPermanentHandlers()
 	// OOB file transfers
 	AddPermanentHandler( JabberHandleIqRequestOOB, JABBER_IQ_TYPE_SET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_HCONTACT | JABBER_IQ_PARSE_ID_STR | JABBER_IQ_PARSE_CHILD_TAG_NODE, _T(JABBER_FEAT_OOB), FALSE, _T("query"));
 
+	// disco#items requests (XEP-0030, XEP-0050)
+	AddPermanentHandler( JabberHandleDiscoItemsRequest, JABBER_IQ_TYPE_GET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_TO | JABBER_IQ_PARSE_ID_STR | JABBER_IQ_PARSE_CHILD_TAG_NODE, _T(JABBER_FEAT_DISCO_ITEMS), FALSE, _T("query"));
+
+	// disco#info requests (XEP-0030, XEP-0050, XEP-0115)
+	AddPermanentHandler( JabberHandleDiscoInfoRequest, JABBER_IQ_TYPE_GET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_TO | JABBER_IQ_PARSE_ID_STR | JABBER_IQ_PARSE_CHILD_TAG_NODE, _T(JABBER_FEAT_DISCO_INFO), FALSE, _T("query"));
+
+	// ad-hoc commands (XEP-0050) for remote controlling (XEP-0146)
+	AddPermanentHandler( JabberHandleAdhocCommandRequest, JABBER_IQ_TYPE_SET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_TO | JABBER_IQ_PARSE_ID_STR | JABBER_IQ_PARSE_CHILD_TAG_NODE, _T(JABBER_FEAT_COMMANDS), FALSE, _T("command"));
+
 	return TRUE;
+}
+
+void CJabberIqManager::ExpirerThread()
+{
+	while (!m_bExpirerThreadShutdownRequest)
+	{
+		Lock();
+		CJabberIqInfo* pInfo = DetachExpired();
+		Unlock();
+		if (!pInfo)
+		{
+			for (int i = 0; !m_bExpirerThreadShutdownRequest && (i < 10); i++)
+				Sleep(50);
+
+			// -1 thread :)
+			g_JabberAdhocManager.ExpireSessions();
+
+			continue;
+		}
+		ExpireInfo(pInfo);
+		delete pInfo;
+	}
 }

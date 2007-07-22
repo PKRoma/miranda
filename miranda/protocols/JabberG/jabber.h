@@ -637,6 +637,7 @@ HANDLE        __stdcall JabberChatRoomHContactFromJID( const TCHAR* jid );
 void          __stdcall JabberLog( const char* fmt, ... );
 TCHAR*        __stdcall JabberNickFromJID( const TCHAR* jid );
 JABBER_RESOURCE_STATUS* __stdcall JabberResourceInfoFromJID( TCHAR* jid );
+TCHAR*                  JabberPrepareJid( TCHAR *jid );
 char*         __stdcall JabberUrlDecode( char* str );
 void          __stdcall JabberUrlDecodeW( WCHAR* str );
 char*         __stdcall JabberUrlEncode( const char* str );

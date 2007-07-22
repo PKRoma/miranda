@@ -29,6 +29,7 @@ Last change by : $Author: ghazan $
 #include "jabber.h"
 #include "jabber_iq.h"
 #include "jabber_caps.h"
+#include "version.h"
 
 void JabberProcessIqResultVersion( XmlNode* node, void* userdata, CJabberIqInfo *pInfo );
 
@@ -70,6 +71,7 @@ JabberFeatCapPair g_JabberFeatCapPairs[] = {
 JabberFeatCapPair g_JabberFeatCapPairsExt[] = {
 	{	_T(JABBER_EXT_SECUREIM),          JABBER_CAPS_SECUREIM         },
 	{	_T(JABBER_EXT_COMMANDS),          JABBER_CAPS_COMMANDS         },
+	{	_T(__VERSION_STRING),             JABBER_CAPS_MIRANDA_PARTIAL  },
 	{	NULL,                             0                            }
 };
 
@@ -491,4 +493,47 @@ BOOL CJabberClientCapsManager::SetClientCaps( int nIqId, JabberCapsBits jcbCaps 
 	}
 	Unlock();
 	return bOk;
+}
+
+BOOL CJabberClientCapsManager::HandleInfoRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo, TCHAR* szNode )
+{
+	JabberCapsBits jcb = 0;
+
+	if ( szNode ) {
+		for ( int i = 0; g_JabberFeatCapPairsExt[i].szFeature; i++ ) {
+			TCHAR szExtCap[ 512 ];
+			mir_sntprintf( szExtCap, SIZEOF(szExtCap), _T("%s#%s"), _T(JABBER_CAPS_MIRANDA_NODE), g_JabberFeatCapPairsExt[i].szFeature );
+			if ( !_tcscmp( szNode, szExtCap )) {
+				jcb = g_JabberFeatCapPairsExt[i].jcbCap;
+				break;
+			}
+		}
+		// unknown node, not XEP-0115 request
+		if ( !jcb )
+			return FALSE;
+	}
+	else
+		jcb = JABBER_CAPS_MIRANDA_ALL;
+
+	XmlNodeIq iq( "result", pInfo );
+
+	XmlNode* query = iq.addChild( "query" );
+	query->addAttr( "xmlns", _T(JABBER_FEAT_DISCO_INFO) );
+	if ( szNode )
+		query->addAttr( "node", szNode );
+
+	XmlNode* identity = query->addChild( "identity" );
+	identity->addAttr( "category", "client" );
+	identity->addAttr( "type", "pc" );
+	identity->addAttr( "name", "Miranda" );
+
+	for ( int i = 0; g_JabberFeatCapPairs[i].szFeature; i++ ) 
+		if ( jcb & g_JabberFeatCapPairs[i].jcbCap ) {
+			XmlNode* feature = query->addChild( "feature" );
+			feature->addAttr( "var", g_JabberFeatCapPairs[i].szFeature );
+		}
+
+	jabberThreadInfo->send( iq );
+	
+	return TRUE;
 }

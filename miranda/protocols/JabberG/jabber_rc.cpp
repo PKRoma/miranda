@@ -31,49 +31,630 @@ Last change by : $Author: ghazan $
 #include "jabber.h"
 #include "jabber_iq.h"
 #include "jabber_rc.h"
+#include "m_awaymsg.h"
 
-void JabberRcProcessItemsRequest( TCHAR* idStr, XmlNode* node )
+CJabberAdhocManager g_JabberAdhocManager;
+
+BOOL IsRcRequestAllowedByACL( CJabberIqInfo* pInfo )
 {
-	if ( !idStr || !node)
-		return;
+	if ( !pInfo || !pInfo->GetFrom() )
+		return FALSE;
 
-	TCHAR* szTo = JabberXmlGetAttrValue( node, "to" );
-	TCHAR* szFrom = JabberXmlGetAttrValue( node, "from" );
-	if ( !szTo || !szFrom )
-		return;
+	TCHAR* szFrom = JabberPrepareJid( pInfo->GetFrom() );
+	if ( !szFrom )
+		return FALSE;
 
-	// FIXME: check ACL
+	TCHAR* szTo = JabberPrepareJid( jabberThreadInfo->fullJID );
+	if ( !szTo ) {
+		mir_free( szFrom );
+		return FALSE;
+	}
 
-	XmlNodeIq iq( "result", node, szFrom );
-	XmlNode* query = iq.addChild( "query" );
-	query->addAttr( "xmlns", _T(JABBER_FEAT_DISCO_ITEMS) );
-	query->addAttr( "node", _T(JABBER_FEAT_COMMANDS) );
+	TCHAR* pDelimiter = _tcschr( szFrom, _T('/') );
+	if ( pDelimiter ) *pDelimiter = _T('\0');
 
-	XmlNode* item = query->addChild( "item" );
-	item->addAttr( "jid", szTo );
-	item->addAttr( "node", _T(JABBER_FEAT_RC_SET_STATUS) );
-	item->addAttr( "name", "Set status" );
+	pDelimiter = _tcschr( szTo, _T('/') );
+	if ( pDelimiter ) *pDelimiter = _T('\0');
 
-	item = query->addChild( "item" );
-	item->addAttr( "jid", szTo );
-	item->addAttr( "node", _T(JABBER_FEAT_RC_SET_OPTIONS) );
-	item->addAttr( "name", "Set options" );
-
-	jabberThreadInfo->send( iq );
+	BOOL bRetVal = _tcscmp( szFrom, szTo ) == 0;
+	
+	mir_free( szFrom );
+	mir_free( szTo );
+	
+	return bRetVal;
 }
 
-void JabberRcProcessCommand( TCHAR* idStr, XmlNode* node, XmlNode* command )
+void JabberHandleAdhocCommandRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
-	if ( !idStr || !node || !command )
+	if ( !pInfo->GetChildNode() )
 		return;
 
-	TCHAR* szTo = JabberXmlGetAttrValue( node, "to" );
-	TCHAR* szFrom = JabberXmlGetAttrValue( node, "from" );
-	if ( !szTo || !szFrom )
+	if ( !JGetByte( "EnableRemoteControl", FALSE ) || !IsRcRequestAllowedByACL( pInfo )) {
+		// FIXME: send error and return
+		return;
+	}
+
+	TCHAR* szNode = JabberXmlGetAttrValue( pInfo->GetChildNode(), "node" );
+	if ( !szNode )
 		return;
 
-	// FIXME: check ACL
+	g_JabberAdhocManager.HandleCommandRequest( iqNode, userdata, pInfo, szNode );
+}
 
-	TCHAR* szNode = JabberXmlGetAttrValue( command, "node" );
-	TCHAR* szAction = JabberXmlGetAttrValue( command, "action" );
+BOOL CJabberAdhocManager::HandleItemsRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo, TCHAR* szNode )
+{
+	if ( !szNode || !JGetByte( "EnableRemoteControl", FALSE ) || !IsRcRequestAllowedByACL( pInfo ))
+		return FALSE;
+
+	if ( !_tcscmp( szNode, _T(JABBER_FEAT_COMMANDS)))
+	{
+		XmlNodeIq iq( "result", pInfo );
+		XmlNode* resultQuery = iq.addChild( "query" );
+		resultQuery->addAttr( "xmlns", _T(JABBER_FEAT_DISCO_ITEMS) );
+		resultQuery->addAttr( "node", _T(JABBER_FEAT_COMMANDS) );
+
+		Lock();
+		CJabberAdhocNode* pNode = GetFirstNode();
+		while ( pNode ) {
+			XmlNode* item = resultQuery->addChild( "item" );
+			TCHAR* szJid = pNode->GetJid();
+			if ( !szJid )
+				szJid = jabberThreadInfo->fullJID;
+			item->addAttr( "jid", szJid );
+			item->addAttr( "node", pNode->GetNode() );
+			item->addAttr( "name", pNode->GetName() );
+
+			pNode = pNode->GetNext();
+		}
+		Unlock();
+
+		jabberThreadInfo->send( iq );
+		return TRUE;
+	}
+	return FALSE;
+}
+
+BOOL CJabberAdhocManager::HandleInfoRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo, TCHAR* szNode )
+{
+	if ( !szNode || !JGetByte( "EnableRemoteControl", FALSE ) || !IsRcRequestAllowedByACL( pInfo ))
+		return FALSE;
+
+	// FIXME: same code twice
+	if ( !_tcscmp( szNode, _T(JABBER_FEAT_COMMANDS))) {
+		XmlNodeIq iq( "result", pInfo );
+		XmlNode* resultQuery = iq.addChild( "query" );
+		resultQuery->addAttr( "xmlns", _T(JABBER_FEAT_DISCO_INFO) );
+		resultQuery->addAttr( "node", _T(JABBER_FEAT_COMMANDS) );
+
+		XmlNode* identity = resultQuery->addChild( "identity" );
+		identity->addAttr( "name", "Ad-hoc commands" );
+		identity->addAttr( "category", "automation" );
+		identity->addAttr( "type", "command-node" );
+
+		XmlNode* feature = resultQuery->addChild( "feature" );
+		feature->addAttr( "var", _T(JABBER_FEAT_COMMANDS) );
+
+		feature = resultQuery->addChild( "feature" );
+		feature->addAttr( "var", _T(JABBER_FEAT_DATA_FORMS) );
+
+		feature = resultQuery->addChild( "feature" );
+		feature->addAttr( "var", _T(JABBER_FEAT_DISCO_INFO) );
+
+		feature = resultQuery->addChild( "feature" );
+		feature->addAttr( "var", _T(JABBER_FEAT_DISCO_ITEMS) );
+
+		jabberThreadInfo->send( iq );
+		return TRUE;
+	}
+
+	Lock();
+	CJabberAdhocNode *pNode = FindNode( szNode );
+	if ( pNode ) {
+		XmlNodeIq iq( "result", pInfo );
+		XmlNode* resultQuery = iq.addChild( "query" );
+		resultQuery->addAttr( "xmlns", _T(JABBER_FEAT_DISCO_INFO) );
+		resultQuery->addAttr( "node", szNode );
+
+		XmlNode* identity = resultQuery->addChild( "identity" );
+		identity->addAttr( "name", pNode->GetName() );
+		identity->addAttr( "category", "automation" );
+		identity->addAttr( "type", "command-node" );
+
+		XmlNode* feature = resultQuery->addChild( "feature" );
+		feature->addAttr( "var", _T(JABBER_FEAT_COMMANDS) );
+
+		feature = resultQuery->addChild( "feature" );
+		feature->addAttr( "var", _T(JABBER_FEAT_DATA_FORMS) );
+
+		feature = resultQuery->addChild( "feature" );
+		feature->addAttr( "var", _T(JABBER_FEAT_DISCO_INFO) );
+
+		Unlock();
+		jabberThreadInfo->send( iq );
+		return TRUE;
+	}
+	Unlock();
+	return FALSE;
+}
+
+BOOL CJabberAdhocManager::HandleCommandRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo, TCHAR* szNode )
+{
+	// ATTN: ACL and db settings checked in calling function
+
+	XmlNode* commandNode = pInfo->GetChildNode();
+
+	Lock();
+	CJabberAdhocNode* pNode = FindNode( szNode );
+	if ( !pNode ) {
+		Unlock();
+
+		XmlNodeIq iq( "error", pInfo );
+
+		XmlNode *errorNode = iq.addChild( "error" );
+		errorNode->addAttr( "type", "cancel" );
+		XmlNode *typeNode = errorNode->addChild( "item-not-found" );
+		typeNode->addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
+
+		jabberThreadInfo->send( iq );
+		return FALSE;
+	}
+
+	TCHAR* szSessionId = JabberXmlGetAttrValue( commandNode, "sessionid" );
+
+	CJabberAdhocSession* pSession = NULL;
+	if ( szSessionId ) {
+		pSession = FindSession( szSessionId );
+		if ( !pSession ) {
+			Unlock();
+
+			XmlNodeIq iq( "error", pInfo );
+
+			XmlNode *errorNode = iq.addChild( "error" );
+			errorNode->addAttr( "type", "modify" );
+			XmlNode *typeNode = errorNode->addChild( "bad-request" );
+			typeNode->addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
+
+			typeNode = errorNode->addChild( "bad-sessionid" );
+			typeNode->addAttr( "xmlns", JABBER_FEAT_COMMANDS );
+
+			jabberThreadInfo->send( iq );
+			return FALSE;
+		}
+	}
+	else
+		pSession = AddNewSession();
+
+	if ( !pSession ) {
+		Unlock();
+
+		XmlNodeIq iq( "error", pInfo );
+
+		XmlNode *errorNode = iq.addChild( "error" );
+		errorNode->addAttr( "type", "cancel" );
+		XmlNode *typeNode = errorNode->addChild( "forbidden" );
+		typeNode->addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
+
+		jabberThreadInfo->send( iq );
+		return FALSE;
+	}
+
+	// session id and node exits here, call handler
+
+	int nResultCode = pNode->CallHandler( iqNode, userdata, pInfo, pSession );
+
+	if ( nResultCode == JABBER_ADHOC_HANDLER_STATUS_COMPLETED ) {
+		XmlNodeIq iq( "result", pInfo );
+		XmlNode* commandNode = iq.addChild( "command" );
+		commandNode->addAttr( "xmlns", JABBER_FEAT_COMMANDS );
+		commandNode->addAttr( "node", szNode );
+		commandNode->addAttr( "sessionid", pSession->GetSessionId() );
+		commandNode->addAttr( "status", "completed" );
+
+		XmlNode* noteNode = commandNode->addChild( "note", "Command completed successfully" );
+		noteNode->addAttr( "type", "info" );
+
+		jabberThreadInfo->send( iq );
+
+		RemoveSession( pSession );
+		pSession = NULL;
+	}
+	else if ( nResultCode == JABBER_ADHOC_HANDLER_STATUS_CANCEL ) {
+		XmlNodeIq iq( "result", pInfo );
+		XmlNode* commandNode = iq.addChild( "command" );
+		commandNode->addAttr( "xmlns", JABBER_FEAT_COMMANDS );
+		commandNode->addAttr( "node", szNode );
+		commandNode->addAttr( "sessionid", pSession->GetSessionId() );
+		commandNode->addAttr( "status", "canceled" );
+
+		XmlNode* noteNode = commandNode->addChild( "note", "Error occured during processing command" );
+		noteNode->addAttr( "type", "error" );
+
+		jabberThreadInfo->send( iq );
+
+		RemoveSession( pSession );
+		pSession = NULL;
+	}
+	else if ( nResultCode == JABBER_ADHOC_HANDLER_STATUS_REMOVE_SESSION ) {
+		RemoveSession( pSession );
+		pSession = NULL;
+	}
+	Unlock();
+	return TRUE;
+}
+
+int JabberSetAwayMsg( WPARAM wParam, LPARAM lParam );
+
+static char *StatusModeToDbSetting(int status,const char *suffix)
+{
+	char *prefix;
+	static char str[64];
+
+	switch(status) {
+		case ID_STATUS_AWAY: prefix="Away";	break;
+		case ID_STATUS_NA: prefix="Na";	break;
+		case ID_STATUS_DND: prefix="Dnd"; break;
+		case ID_STATUS_OCCUPIED: prefix="Occupied"; break;
+		case ID_STATUS_FREECHAT: prefix="FreeChat"; break;
+		case ID_STATUS_ONLINE: prefix="On"; break;
+		case ID_STATUS_OFFLINE: prefix="Off"; break;
+		case ID_STATUS_INVISIBLE: prefix="Inv"; break;
+		case ID_STATUS_ONTHEPHONE: prefix="Otp"; break;
+		case ID_STATUS_OUTTOLUNCH: prefix="Otl"; break;
+		case ID_STATUS_IDLE: prefix="Idl"; break;
+		default: return NULL;
+	}
+	lstrcpyA(str,prefix); lstrcatA(str,suffix);
+	return str;
+}
+
+int JabberAdhocSetStatusHandler( XmlNode* iqNode, void* usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
+{
+	if ( pSession->GetStage() == 0 ) {
+		// first form
+		pSession->SetStage( 1 );
+
+		XmlNodeIq iq( "result", pInfo );
+		XmlNode* commandNode = iq.addChild( "command" );
+		commandNode->addAttr( "xmlns", JABBER_FEAT_COMMANDS );
+		commandNode->addAttr( "node", JABBER_FEAT_RC_SET_STATUS );
+		commandNode->addAttr( "sessionid", pSession->GetSessionId() );
+		commandNode->addAttr( "status", "executing" );
+
+		XmlNode* xNode = commandNode->addChild( "x" );
+		xNode->addAttr( "xmlns", JABBER_FEAT_DATA_FORMS );
+		xNode->addAttr( "type", "form" );
+
+		xNode->addChild( "title", "Change Status" );
+		xNode->addChild( "instructions", "Choose the status and status message" );
+
+		XmlNode* fieldNode = NULL;
+
+		fieldNode = xNode->addChild( "field" );
+		fieldNode->addAttr( "type", "hidden" );
+		fieldNode->addAttr( "var", "FORM_TYPE" );
+		fieldNode->addChild( "value", JABBER_FEAT_RC );
+
+		// status
+		fieldNode = xNode->addChild( "field" );
+		fieldNode->addAttr( "label", "Status" );
+		fieldNode->addAttr( "type", "list-single" );
+		fieldNode->addAttr( "var", "status" );
+
+		fieldNode->addChild( "required" );
+		int status = JCallService( MS_CLIST_GETSTATUSMODE, 0, 0 );
+		switch ( status ) {
+		case ID_STATUS_INVISIBLE:
+			fieldNode->addChild( "value", "invisible" );
+			break;
+		case ID_STATUS_AWAY:
+		case ID_STATUS_ONTHEPHONE:
+		case ID_STATUS_OUTTOLUNCH:
+			fieldNode->addChild( "value", "away" );
+			break;
+		case ID_STATUS_NA:
+			fieldNode->addChild( "value", "xa" );
+			break;
+		case ID_STATUS_DND:
+		case ID_STATUS_OCCUPIED:
+			fieldNode->addChild( "value", "dnd" );
+			break;
+		case ID_STATUS_FREECHAT:
+			fieldNode->addChild( "value", "chat" );
+			break;
+		case ID_STATUS_ONLINE:
+		default:
+			fieldNode->addChild( "value", "online" );
+			break;
+		}
+
+		XmlNode* optionNode = NULL;
+		optionNode = fieldNode->addChild( "option" );
+		optionNode->addAttr( "label", "Free for chat" );
+		optionNode->addChild( "value", "chat" );
+
+		optionNode = fieldNode->addChild( "option" );
+		optionNode->addAttr( "label", "Online" );
+		optionNode->addChild( "value", "online" );
+
+		optionNode = fieldNode->addChild( "option" );
+		optionNode->addAttr( "label", "Away" );
+		optionNode->addChild( "value", "away" );
+
+		optionNode = fieldNode->addChild( "option" );
+		optionNode->addAttr( "label", "Extended Away (N/A)" );
+		optionNode->addChild( "value", "xa" );
+
+		optionNode = fieldNode->addChild( "option" );
+		optionNode->addAttr( "label", "Do Not Disturb" );
+		optionNode->addChild( "value", "dnd" );
+
+		optionNode = fieldNode->addChild( "option" );
+		optionNode->addAttr( "label", "Invisible" );
+		optionNode->addChild( "value", "invisible" );
+
+		optionNode = fieldNode->addChild( "option" );
+		optionNode->addAttr( "label", "Offline" );
+		optionNode->addChild( "value", "offline" );
+
+		// priority
+		fieldNode = xNode->addChild( "field" );
+		fieldNode->addAttr( "label", "Priority" );
+		fieldNode->addAttr( "type", "text-single" );
+		fieldNode->addAttr( "var", "status-priority" );
+		TCHAR szPriority[ 256 ];
+		mir_sntprintf( szPriority, SIZEOF(szPriority), _T("%d"), (short)JGetWord( NULL, "Priority", 5 ));
+		fieldNode->addChild( "value", szPriority );
+
+		// status message text
+		fieldNode = xNode->addChild( "field" );
+		fieldNode->addAttr( "label", "Status message" );
+		fieldNode->addAttr( "type", "text-multi" );
+		fieldNode->addAttr( "var", "status-message" );
+
+		char* szStatusMsg = (char *)JCallService( MS_AWAYMSG_GETSTATUSMSG, status, 0 );
+		if ( szStatusMsg ) {
+			fieldNode->addChild( "value", szStatusMsg );
+			mir_free( szStatusMsg );
+		}
+
+		jabberThreadInfo->send( iq );
+		return JABBER_ADHOC_HANDLER_STATUS_EXECUTING;
+	}
+	else if ( pSession->GetStage() == 1 ) {
+		// result form here
+		XmlNode* commandNode = pInfo->GetChildNode();
+		XmlNode* xNode = JabberXmlGetChildWithGivenAttrValue( commandNode, "x", "xmlns", _T(JABBER_FEAT_DATA_FORMS) );
+		if ( !xNode )
+			return JABBER_ADHOC_HANDLER_STATUS_CANCEL;
+
+		XmlNode* fieldNode = JabberXmlGetChildWithGivenAttrValue( xNode, "field", "var", _T("status") );
+		if ( !xNode )
+			return JABBER_ADHOC_HANDLER_STATUS_CANCEL;
+
+		XmlNode* valueNode = JabberXmlGetChild( fieldNode, "value" );
+		if ( !valueNode || !valueNode->text )
+			return JABBER_ADHOC_HANDLER_STATUS_CANCEL;
+
+		int status = 0;
+
+		if ( !_tcscmp( valueNode->text, _T("away"))) status = ID_STATUS_AWAY;
+			else if ( !_tcscmp( valueNode->text, _T("xa"))) status = ID_STATUS_NA;
+			else if ( !_tcscmp( valueNode->text, _T("dnd"))) status = ID_STATUS_DND;
+			else if ( !_tcscmp( valueNode->text, _T("chat"))) status = ID_STATUS_FREECHAT;
+			else if ( !_tcscmp( valueNode->text, _T("online"))) status = ID_STATUS_ONLINE;
+			else if ( !_tcscmp( valueNode->text, _T("invisible"))) status = ID_STATUS_INVISIBLE;
+			else if ( !_tcscmp( valueNode->text, _T("offline"))) status = ID_STATUS_OFFLINE;
+
+		if ( !status )
+			return JABBER_ADHOC_HANDLER_STATUS_CANCEL;
+
+		int priority = -9999;
+
+		fieldNode = JabberXmlGetChildWithGivenAttrValue( xNode, "field", "var", _T("status-priority") );
+		if ( fieldNode && (valueNode = JabberXmlGetChild( fieldNode, "value" ))) {
+			if ( valueNode->text )
+				priority = _ttoi( valueNode->text );
+		}
+
+		if ( priority >= -128 && priority <= 127 )
+			JSetWord( NULL, "Priority", (WORD)priority );
+
+		char* szStatusMessage = NULL;
+		fieldNode = JabberXmlGetChildWithGivenAttrValue( xNode, "field", "var", _T("status-message") );
+		if ( fieldNode && (valueNode = JabberXmlGetChild( fieldNode, "value" ))) {
+			if ( valueNode->text )
+				szStatusMessage = t2a(valueNode->text);
+		}
+
+		// skip f...ng away dialog
+		int nNoDlg = DBGetContactSettingByte( NULL, "SRAway", StatusModeToDbSetting( status, "NoDlg" ), 0 );
+		DBWriteContactSettingByte( NULL, "SRAway", StatusModeToDbSetting( status, "NoDlg" ), 1 );
+
+		DBWriteContactSettingString( NULL, "SRAway", StatusModeToDbSetting( status, "Msg" ), szStatusMessage );
+		JCallService( MS_CLIST_SETSTATUSMODE, status, NULL );
+		JabberSetAwayMsg( status, (LPARAM)szStatusMessage );
+
+		// return NoDlg setting
+		DBWriteContactSettingByte( NULL, "SRAway", StatusModeToDbSetting( status, "NoDlg" ), (BYTE)nNoDlg );
+
+		if ( szStatusMessage )
+			mir_free( szStatusMessage );
+
+		return JABBER_ADHOC_HANDLER_STATUS_COMPLETED;
+	}
+	return JABBER_ADHOC_HANDLER_STATUS_CANCEL;
+}
+
+int JabberAdhocOptionsHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
+{
+	if ( pSession->GetStage() == 0 ) {
+		// first form
+		pSession->SetStage( 1 );
+
+		XmlNodeIq iq( "result", pInfo );
+		XmlNode* commandNode = iq.addChild( "command" );
+		commandNode->addAttr( "xmlns", JABBER_FEAT_COMMANDS );
+		commandNode->addAttr( "node", JABBER_FEAT_RC_SET_OPTIONS );
+		commandNode->addAttr( "sessionid", pSession->GetSessionId() );
+		commandNode->addAttr( "status", "executing" );
+
+		XmlNode* xNode = commandNode->addChild( "x" );
+		xNode->addAttr( "xmlns", JABBER_FEAT_DATA_FORMS );
+		xNode->addAttr( "type", "form" );
+
+		xNode->addChild( "title", "Set Options" );
+		xNode->addChild( "instructions", "Set the desired options" );
+
+		XmlNode* fieldNode = NULL;
+		TCHAR szTmpBuff[ 1024 ];
+
+		fieldNode = xNode->addChild( "field" );
+		fieldNode->addAttr( "type", "hidden" );
+		fieldNode->addAttr( "var", "FORM_TYPE" );
+		fieldNode->addChild( "value", JABBER_FEAT_RC );
+
+		// Automatically Accept File Transfers
+		fieldNode = xNode->addChild( "field" );
+		fieldNode->addAttr( "label", "Automatically Accept File Transfers" );
+		fieldNode->addAttr( "type", "boolean" );
+		fieldNode->addAttr( "var", "auto-files" );
+		mir_sntprintf( szTmpBuff, SIZEOF(szTmpBuff), _T("%d"), DBGetContactSettingByte( NULL, "SRFile", "AutoAccept", 0 ));
+		fieldNode->addChild( "value", szTmpBuff );
+
+		// Use sounds
+		fieldNode = xNode->addChild( "field" );
+		fieldNode->addAttr( "label", "Play sounds" );
+		fieldNode->addAttr( "type", "boolean" );
+		fieldNode->addAttr( "var", "sounds" );
+		mir_sntprintf( szTmpBuff, SIZEOF(szTmpBuff), _T("%d"), DBGetContactSettingByte( NULL, "Skin", "UseSound", 0 ));
+		fieldNode->addChild( "value", szTmpBuff );
+
+		// Disable remote controlling
+		fieldNode = xNode->addChild( "field" );
+		fieldNode->addAttr( "label", "Disable remote controlling (check twice what are you doing)" );
+		fieldNode->addAttr( "type", "boolean" );
+		fieldNode->addAttr( "var", "enable-rc" );
+		fieldNode->addChild( "value", "0" );
+
+		jabberThreadInfo->send( iq );
+		return JABBER_ADHOC_HANDLER_STATUS_EXECUTING;
+	}
+	else if ( pSession->GetStage() == 1 ) {
+		// result form here
+		XmlNode* commandNode = pInfo->GetChildNode();
+		XmlNode* xNode = JabberXmlGetChildWithGivenAttrValue( commandNode, "x", "xmlns", _T(JABBER_FEAT_DATA_FORMS) );
+		if ( !xNode )
+			return JABBER_ADHOC_HANDLER_STATUS_CANCEL;
+
+		XmlNode* fieldNode = NULL;
+		XmlNode* valueNode = NULL;
+
+		// Automatically Accept File Transfers
+		fieldNode = JabberXmlGetChildWithGivenAttrValue( xNode, "field", "var", _T("auto-files") );
+		if ( fieldNode && (valueNode = JabberXmlGetChild( fieldNode, "value" ))) {
+			if ( valueNode->text )
+				DBWriteContactSettingByte( NULL, "SRFile", "AutoAccept", (BYTE)_ttoi( valueNode->text ) );
+		}
+
+		// Use sounds
+		fieldNode = JabberXmlGetChildWithGivenAttrValue( xNode, "field", "var", _T("sounds") );
+		if ( fieldNode && (valueNode = JabberXmlGetChild( fieldNode, "value" ))) {
+			if ( valueNode->text )
+				DBWriteContactSettingByte( NULL, "Skin", "UseSound", (BYTE)_ttoi( valueNode->text ) );
+		}
+
+		// Disable remote controlling
+		fieldNode = JabberXmlGetChildWithGivenAttrValue( xNode, "field", "var", _T("enable-rc") );
+		if ( fieldNode && (valueNode = JabberXmlGetChild( fieldNode, "value" ))) {
+			if ( valueNode->text && _ttoi( valueNode->text ))
+				JSetByte( "EnableRemoteControl", 0 );
+		}
+
+		return JABBER_ADHOC_HANDLER_STATUS_COMPLETED;
+	}
+	return JABBER_ADHOC_HANDLER_STATUS_CANCEL;
+}
+
+int JabberAdhocForwardHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
+{
+	int nEventsSent = 0;
+	HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
+	while ( hContact != NULL ) {
+		char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
+		if ( szProto != NULL && !strcmp( szProto, jabberProtoName )) {
+			DBVARIANT dbv;
+			if ( !JGetStringT( hContact, "jid", &dbv )) {
+				
+				HANDLE hDbEvent = (HANDLE)JCallService( MS_DB_EVENT_FINDFIRSTUNREAD, (WPARAM)hContact, 0 );
+				while ( hDbEvent ) {
+					DBEVENTINFO dbei = { 0 };
+					dbei.cbSize = sizeof(dbei);
+					dbei.cbBlob = CallService( MS_DB_EVENT_GETBLOBSIZE, (WPARAM)hDbEvent, 0 );
+					if ( dbei.cbBlob != -1 ) {
+						dbei.pBlob = (PBYTE)mir_alloc( dbei.cbSize + 1 );
+						JCallService( MS_DB_EVENT_GET, (WPARAM)hDbEvent, (LPARAM)&dbei );
+						if (dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & DBEF_READ) && !(dbei.flags & DBEF_SENT)) {
+							TCHAR* szEventText = DbGetEventTextT( &dbei, CP_ACP );
+							if ( szEventText ) {
+								XmlNode msg( "message" );
+								msg.addAttr( "to", pInfo->GetFrom() );
+								msg.addAttrID( JabberSerialNext() );
+
+								XmlNode* bodyNode = msg.addChild( "body", szEventText );
+								XmlNode* addressesNode = msg.addChild( "addresses" );
+								addressesNode->addAttr( "xmlns", JABBER_FEAT_EXT_ADDRESSING );
+
+								XmlNode* addressNode = addressesNode->addChild( "address" );
+								addressNode->addAttr( "type", "ofrom" );
+								addressNode->addAttr( "jid", dbv.ptszVal );
+
+								addressNode = addressesNode->addChild( "address" );
+								addressNode->addAttr( "type", "oto" );
+								addressNode->addAttr( "jid", jabberThreadInfo->fullJID );
+
+								time_t ltime = ( time_t )dbei.timestamp;
+								struct tm *gmt = gmtime( &ltime );
+								char stime[ 512 ];
+								sprintf(stime, "%.4i-%.2i-%.2iT%.2i:%.2i:%.2iZ", gmt->tm_year + 1900, gmt->tm_mon, gmt->tm_mday,
+									gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
+
+								XmlNode* delayNode = msg.addChild( "delay" );
+								delayNode->addAttr( "xmlns", "urn:xmpp:delay" );
+								delayNode->addAttr( "stamp", stime );
+
+								jabberThreadInfo->send( msg );
+
+								nEventsSent++;
+
+								JCallService( MS_DB_EVENT_MARKREAD, (WPARAM)hContact, (LPARAM)hDbEvent );
+								JCallService( MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM)hDbEvent );
+
+								mir_free( szEventText );
+							}
+						}
+						mir_free( dbei.pBlob );
+					}
+					hDbEvent = (HANDLE)JCallService( MS_DB_EVENT_FINDNEXT, (WPARAM)hDbEvent, 0 );
+				}
+				JFreeVariant( &dbv );
+			}
+		}
+		hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 );
+	}
+
+	XmlNodeIq iq( "result", pInfo );
+	XmlNode* commandNode = iq.addChild( "command" );
+	commandNode->addAttr( "xmlns", JABBER_FEAT_COMMANDS );
+	commandNode->addAttr( "node", JABBER_FEAT_RC_FORWARD );
+	commandNode->addAttr( "sessionid", pSession->GetSessionId() );
+	commandNode->addAttr( "status", "completed" );
+
+	TCHAR szMsg[ 1024 ];
+	mir_sntprintf( szMsg, SIZEOF(szMsg), _T("%d message(s) forwarded"), nEventsSent );
+	XmlNode* noteNode = commandNode->addChild( "note", szMsg );
+	noteNode->addAttr( "type", "info" );
+
+	jabberThreadInfo->send( iq );
+
+	return JABBER_ADHOC_HANDLER_STATUS_REMOVE_SESSION;
 }

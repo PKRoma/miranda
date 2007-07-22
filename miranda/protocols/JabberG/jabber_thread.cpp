@@ -1022,9 +1022,6 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 	}
 	BOOL isRss = !lstrcmp( type, _T("headline"));
 
-	// If message is from a stranger ( not in roster ), item is NULL
-	JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, from );
-
 	TCHAR* szMessage = NULL;
 	XmlNode* bodyNode = JabberXmlGetChild( node, "body" );
 	if ( bodyNode != NULL ) {
@@ -1037,6 +1034,25 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 		}
 		else szMessage = ptszBody;
 	}
+
+	if ( szMessage && (n = JabberXmlGetChildWithGivenAttrValue( node, "addresses", "xmlns", _T(JABBER_FEAT_EXT_ADDRESSING)))) {
+		XmlNode* addressNode = JabberXmlGetChildWithGivenAttrValue( n, "address", "type", _T("ofrom") );
+		if ( addressNode ) {
+			TCHAR* szJid = JabberXmlGetAttrValue( addressNode, "jid" );
+			if ( szJid ) {
+				int cbLen = _tcslen( szMessage ) + 1000;
+				TCHAR* p = ( TCHAR* )alloca( sizeof( TCHAR ) * cbLen );
+				mir_sntprintf( p, cbLen, TranslateT("Message redirected from: %s\r\n%s"), from, szMessage );
+				szMessage = p;
+				from = szJid;
+			}
+		}
+	}
+
+	// If message is from a stranger ( not in roster ), item is NULL
+	JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, from );
+	if ( !item )
+		item = JabberListGetItemPtr( LIST_VCARD_TEMP, from );
 
 	time_t msgTime = 0;
 	BOOL  isChatRoomInvitation = FALSE;
@@ -1074,6 +1090,25 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 		if ( idStr )
 			m.addAttr( "id", idStr );
 		info->send( m );
+	}
+
+	// XEP-0203 support
+	if ( n = JabberXmlGetChildWithGivenAttrValue( node, "delay", "xmlns", _T("urn:xmpp:delay") ) ) {
+		TCHAR* ptszTimeStamp = JabberXmlGetAttrValue( n, "stamp" );
+		if ( ptszTimeStamp != NULL ) {
+			// skip '-' chars
+			TCHAR* szStamp = mir_tstrdup( ptszTimeStamp );
+			int si = 0, sj = 0;
+			while (1) {
+				if ( szStamp[si] == _T('-') )
+					si++;
+				else
+					if ( !( szStamp[sj++] = szStamp[si++] ))
+						break;
+			};
+			msgTime = JabberIsoToUnixTime( szStamp );
+			mir_free( szStamp );
+		}
 	}
 
 	n = JabberXmlGetChild( node, "gone" );
@@ -1248,7 +1283,7 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 		}	}
 
 		time_t now = time( NULL );
-		if ( msgTime == 0 || now - jabberLoggedInTime > 60 )
+		if ( msgTime == 0 || now - jabberLoggedInTime < 60 )
 			msgTime = now;
 
 		PROTORECVEVENT recv;
@@ -1582,11 +1617,6 @@ static void JabberProcessIq( XmlNode *node, void *userdata )
 	/////////////////////////////////////////////////////////////////////////
 	if ( ( !_tcscmp( type, _T("result")) || !_tcscmp( type, _T("error")) ) && (( pfunc=JabberIqFetchFunc( id )) != NULL )) {
 		JabberLog( "Handling iq request for id=%d", id );
-		pfunc( node, userdata );
-		return;
-	}
-	else if (( pfunc=JabberIqFetchXmlnsFunc( xmlns )) != NULL ) {
-		JabberLog( "Handling iq request for xmlns = " TCHAR_STR_PARAM, xmlns );
 		pfunc( node, userdata );
 		return;
 	}

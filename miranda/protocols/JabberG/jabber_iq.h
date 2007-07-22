@@ -31,9 +31,7 @@ Last change by : $Author$
 
 #include "jabber_xml.h"
 
-
 class CJabberIqInfo;
-
 
 typedef enum {
 	IQ_PROC_NONE,
@@ -65,7 +63,6 @@ void JabberIqInit();
 void JabberIqUninit();
 JABBER_IQ_PFUNC JabberIqFetchFunc( int iqId );
 void JabberIqAdd( unsigned int iqId, JABBER_IQ_PROCID procId, JABBER_IQ_PFUNC func );
-JABBER_IQ_PFUNC JabberIqFetchXmlnsFunc( TCHAR* xmlns );
 
 void JabberIqResultBind( XmlNode *iqNode, void *userdata );
 void JabberIqResultBrowseRooms( XmlNode *iqNode, void *userdata );
@@ -202,6 +199,10 @@ public:
 	TCHAR* GetFrom()
 	{
 		return m_szFrom;
+	}
+	TCHAR* GetTo()
+	{
+		return m_szTo;
 	}
 	TCHAR* GetIdStr()
 	{
@@ -359,23 +360,7 @@ protected:
 		}
 		return 0;
 	}
-	void ExpirerThread()
-	{
-		while (!m_bExpirerThreadShutdownRequest)
-		{
-			Lock();
-			CJabberIqInfo* pInfo = DetachExpired();
-			Unlock();
-			if (!pInfo)
-			{
-				for (int i = 0; !m_bExpirerThreadShutdownRequest && (i < 10); i++)
-					Sleep(50);
-				continue;
-			}
-			ExpireInfo(pInfo);
-			delete pInfo;
-		}
-	}
+	void ExpirerThread();
 	void ExpireInfo( CJabberIqInfo* pInfo, void *pUserData = NULL )
 	{
 		if ( !pInfo )

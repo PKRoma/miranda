@@ -228,6 +228,7 @@
 #define IDC_UNREGISTER                  1183
 #define IDC_VALIDATEADD                 1184
 #define IDC_UNREGISTER2                 1184
+#define IDC_ENABLE_RC                   1184
 #define IDC_GO                          1196
 #define IDC_RADIO1                      1215
 #define IDC_COMMANDS                    1216
