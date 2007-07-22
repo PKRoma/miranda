@@ -2,6 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
+
+Copyright 2007 Artem Shpynov
 Copyright 2000-2007 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
@@ -26,68 +28,57 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_skinbutton.h"
 #include "m_toolbar.h"
 
+//external definition
+COLORREF sttGetColor(char * module, char * color, COLORREF defColor);
+
 #define MS_CLUI_SHOWMAINMENU    "CList/ShowMainMenu"
 #define MS_CLUI_SHOWSTATUSMENU  "CList/ShowStatusMenu"
 #define MS_JABBER_SHOWBOOKMARK  "JABBER/Bookmarks"
-
 #define MS_TTB_TOGGLEHIDEOFFLINE  "CList/ToggleHideOffline"
 
-/*
-1. Init module
-1.1 Create services
-1.2 Register hooks
-1.3 Call Creative
+#define MIRANDATOOLBARCLASSNAME "MirandaToolBar"
 
-2. Creative
-2.1. create bars
-2.2. create custom buttons
+#define tbcheck if (!tbdat.hehTBModuleLoaded) return
+#define tblock EnterCriticalSection(&tbdat.cs)
+#define tbunlock LeaveCriticalSection(&tbdat.cs)
 
-3. listening and creating of module side buttons 
+enum {
+	MTBM_FIRST = WM_USER,
+	MTBM_ADDBUTTON,				// will be broad casted thought bars to add button
+	MTBM_REPOSBUTTONS,
+	MTBM_LAYEREDPAINT,
+	MTBM_SETBUTTONSTATE,
+	MTBM_GETBUTTONSTATE,
+	MTBM_REMOVE_ALL_BUTTONS,
+	MTBM_LAST
+};
 
-4. Runtime
-4.1	Positioning
-4.2. Hiding
-4.3. Painting (probably it will be auto repainted)
+enum {
+	SEPARATOR_NOT=0,
+	SEPARATOR_FIXED,
+	SEPARATOR_FLEX
+};
 
-5. OPTIONS // I hate this
-
-Button icons will be customize thought ico lib
-
-Icon id is TBB_szButtonName_Primary or TBB_szButtonName_Secondary
-the section will be. 
-
-'ToolBars/ButtonName' or	'ToolBars/ButtonName Pressed'
-
-The custom executed icons should be 
-
-*/
-
-typedef struct _tagMTBButtonInfo
+typedef struct _tag_MTB_BUTTONINFO
 {
-	HWND   hWindow;
-	HWND   hwndToolBar;
-	char * szButtonID;						//
-	char * szButtonName;					// The name of button (untranslated)
-	char * szService;						// Service to be executed
+	HWND    hWindow;
+	HWND    hwndToolBar;
+	char *  szButtonID;						//
+	char *  szButtonName;					// The name of button (untranslated)
+	char *  szService;						// Service to be executed
 	TCHAR * szTooltip;
 	TCHAR * szTooltipPressed;
-	int	    nOrderValue;						// Order of button
+	int	    nOrderValue;					// Order of button
 	BYTE    position;
-	BOOL    bPushButton;						// 2 icon state button.
+	BOOL    bPushButton;					// 2 icon state button.
 	BYTE	bSeparator;						//0 - No, 2- flex, 1 -fixed
-}MTBBUTTONINFO;
-
-#define mir_safe_free(a) if(a) mir_free(a);
-void sttMTBButtonInfoDestructor(void * input)
-{
-   MTBBUTTONINFO * mtbi=(MTBBUTTONINFO *)input;
-   mir_safe_free(mtbi->szButtonID);
-   mir_safe_free(mtbi->szButtonName);
-   mir_safe_free(mtbi->szService);
-   mir_safe_free(mtbi->szTooltip);
-   mir_safe_free(mtbi->szTooltipPressed);
-   mir_safe_free(mtbi);
-}
+	HANDLE	hPrimaryIconHandle;
+	HANDLE  hSecondaryIconHandle;
+	BOOL	bVisible;
+	BYTE	bPanelID;
+	LPARAM  lParam;
+	void (*ParamDestructor)(void *);		//will be called on parameters deletion
+}MTB_BUTTONINFO;
 
 typedef struct _tagMTBInfo
 {
@@ -101,25 +92,7 @@ typedef struct _tagMTBInfo
 	XPTHANDLE	mtbXPTheme;
 }MTBINFO;
 
-
-#define MIRANDATOOLBARCLASSNAME "MirandaToolBar"
-enum {
-	MTBM_FIRST = WM_USER,
-	MTBM_ADDBUTTON,				// will be broad casted thought bars to add button
-	MTBM_REPOSBUTTONS,
-	MTBM_LAYEREDPAINT,
-	MTBM_SETBUTTONSTATE,
-	MTBM_GETBUTTONSTATE,
-	MTBM_LAST
-};
-
-enum {
-	SEPARATOR_NOT=0,
-	SEPARATOR_FIXED,
-	SEPARATOR_FLEX
-};
-
-typedef struct _tagTBGlobalDat
+typedef struct _tag_MTB_GLOBALDAT
 {
 	HANDLE hToolBarWindowList;
 
@@ -141,34 +114,133 @@ typedef struct _tagTBGlobalDat
 
 	SortedList * listOfButtons;
 	CRITICAL_SECTION cs;
-} TBGlobalDat;
+} MTB_GLOBALDAT;
 
-static TBGlobalDat tbdat ={0};
-
-#define tbcheck if (!tbdat.hehTBModuleLoaded) return
-#define tblock EnterCriticalSection(&tbdat.cs)
-#define tbunlock LeaveCriticalSection(&tbdat.cs)
-
-COLORREF sttGetColor(char * module, char * color, COLORREF defColor);
-
-static LRESULT CALLBACK ToolBarProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
-static int ToolBarLayeredPaintProc(HWND hWnd, HDC hDC, RECT * rcPaint, HRGN rgn, DWORD dFlags, void * CallBackData);
 
 static int svcToolBarAddButton(WPARAM wParam, LPARAM lParam);
 static int svcToolBarRemoveButton(WPARAM wParam, LPARAM lParam);
 static int svcToolBarGetButtonState(WPARAM wParam, LPARAM lParam);
 static int svcToolBarSetButtonState(WPARAM wParam, LPARAM lParam);
 
-static int ehhModulesLoaded(WPARAM wParam, LPARAM lParam);
-static int ehhSystemShutdown(WPARAM wParam, LPARAM lParam);
-static int ehhSettingsChanged( WPARAM wParam, LPARAM lParam );
+static int ehhToolbarModulesLoaded(WPARAM wParam, LPARAM lParam);
+static int ehhToolBarSystemShutdown(WPARAM wParam, LPARAM lParam);
+static int ehhToolBarSettingsChanged( WPARAM wParam, LPARAM lParam );
+static int ehhToolBarBackgroundSettingsChanged(WPARAM wParam, LPARAM lParam);
 
-static void mtbDefButtonRegistration();
+static MTB_BUTTONINFO * ToolBar_AddButtonToBars(MTB_BUTTONINFO * mtbi);
+static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
+static int				ToolBar_LayeredPaintProc(HWND hWnd, HDC hDC, RECT * rcPaint, HRGN rgn, DWORD dFlags, void * CallBackData);
+static void				ToolBar_DefaultButtonRegistration();
 
-static void sttSetButtonPressed( HANDLE hButton, BOOL bPressed );
+
+static void sttSetButtonPressed( char * szButton, BOOL bPressed );
 static HWND sttCreateToolBarFrame( HWND hwndParent, char * szCaption, int nHeight );
+static void sttGetButtonSettings(char * ID, BYTE * pbVisible, DWORD * pdwOrder, BYTE * pbPanelID);
+static void sttReloadButtons();
+static void sttTBButton2MTBBUTTONINFO(TBButton * bi, MTB_BUTTONINFO * mtbi);
 
-static int _MTB_OnBackgroundSettingsChanged(WPARAM wParam, LPARAM lParam)
+
+
+static MTB_GLOBALDAT tbdat ={0};
+
+//destructor for MTB_BUTTONINFO
+static void   delete_MTB_BUTTONINFO(void * input)
+{
+	MTB_BUTTONINFO * mtbi=(MTB_BUTTONINFO *)input;
+	if (mtbi->hWindow && IsWindow(mtbi->hWindow)) DestroyWindow(mtbi->hWindow);   
+	mir_safe_free(mtbi->szButtonID);
+	mir_safe_free(mtbi->szButtonName);
+	mir_safe_free(mtbi->szService);
+	mir_safe_free(mtbi->szTooltip);
+	mir_safe_free(mtbi->szTooltipPressed);
+	mir_safe_free(mtbi);
+}
+
+void          InitToolBarModule()
+{
+
+	tbdat.hehModulesLoaded=HookEvent(ME_SYSTEM_MODULESLOADED, ehhToolbarModulesLoaded);
+	tbdat.hehSystemShutdown=HookEvent(ME_SYSTEM_SHUTDOWN, ehhToolBarSystemShutdown);
+	{	//create window class
+		WNDCLASS wndclass={0};
+		if (GetClassInfo(g_hInst,_T(MIRANDATOOLBARCLASSNAME),&wndclass) ==0)
+		{
+			wndclass.style         = 0;
+			wndclass.lpfnWndProc   = ToolBar_WndProc;
+			wndclass.cbClsExtra    = 0;
+			wndclass.cbWndExtra    = 0;
+			wndclass.hInstance     = g_hInst;
+			wndclass.hIcon         = NULL;
+			wndclass.hCursor       = LoadCursor (NULL, IDC_ARROW);
+			wndclass.hbrBackground = GetSysColorBrush(COLOR_3DFACE);
+			wndclass.lpszMenuName  = NULL;
+			wndclass.lpszClassName = _T(MIRANDATOOLBARCLASSNAME);
+			RegisterClass(&wndclass);
+		}	  
+	}
+	tbdat.listOfButtons=li.List_Create(0,1);
+	InitializeCriticalSection(&tbdat.cs);
+	tbdat.hehTBModuleLoaded=CreateHookableEvent(ME_TB_MODULELOADED);
+}
+
+static int    ehhToolbarModulesLoaded(WPARAM wParam, LPARAM lParam)
+{
+	CallService(MS_BACKGROUNDCONFIG_REGISTER,(WPARAM)"ToolBar Background/ToolBar",0);
+	HookEvent(ME_BACKGROUNDCONFIG_CHANGED,ehhToolBarBackgroundSettingsChanged);
+	ehhToolBarBackgroundSettingsChanged(0,0);
+
+	tbdat.hToolBarWindowList=(HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST,0,0);
+	
+	CreateServiceFunction(MS_TB_ADDBUTTON,svcToolBarAddButton);
+	CreateServiceFunction(MS_TB_SETBUTTONSTATE, svcToolBarSetButtonState);
+	
+	tbdat.hehSettingsChanged=HookEvent(ME_DB_CONTACT_SETTINGCHANGED, ehhToolBarSettingsChanged );
+	//CreateSubFrames
+	//toggle the 'hide offline contacts' flag and call CLUI   
+	//wParam=0
+	//lParam=0
+
+	//Create bar ???
+	{
+		HWND hwndClist=(HWND) CallService(MS_CLUI_GETHWND,0,0);
+		sttCreateToolBarFrame( hwndClist, "ToolBar", 24);
+	}
+	//ToolBar_DefaultButtonRegistration();
+
+	NotifyEventHooks(ME_TB_MODULELOADED, 0, 0);	
+	return 0;
+}
+
+static int    ehhToolBarSystemShutdown(WPARAM wParam, LPARAM lParam)
+{
+	//Remove services;
+	UnhookEvent(tbdat.hehSettingsChanged);
+	UnhookEvent(tbdat.hehModulesLoaded);
+	UnhookEvent(tbdat.hehSystemShutdown);	
+	EnterCriticalSection(&tbdat.cs);
+	tbdat.hehTBModuleLoaded=NULL;
+
+	li_ListDestruct(tbdat.listOfButtons,delete_MTB_BUTTONINFO);
+
+	LeaveCriticalSection(&tbdat.cs);
+	DeleteCriticalSection(&tbdat.cs);
+
+	return 0;
+}
+
+
+static int    ehhToolBarSettingsChanged( WPARAM wParam, LPARAM lParam )
+{
+	DBCONTACTWRITESETTING *cws=(DBCONTACTWRITESETTING*)lParam;
+	if ((HANDLE)wParam!=NULL) return 0;
+	if (!mir_strcmp(cws->szModule,"CList"))
+	{
+		if (!mir_strcmp(cws->szSetting,"HideOffline"))
+			sttSetButtonPressed("ShowHideOffline", (BOOL) DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT) );
+	}
+	return 0;
+}
+static int    ehhToolBarBackgroundSettingsChanged(WPARAM wParam, LPARAM lParam)
 {
 	if(tbdat.mtb_hBmpBackground) 
 	{
@@ -192,116 +264,93 @@ static int _MTB_OnBackgroundSettingsChanged(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-
-void InitTBModule()
+static int    svcToolBarAddButton(WPARAM wParam, LPARAM lParam)
 {
-/*
-#ifndef SELFBUILD
-	return;
-#endif
-*/
-	tbdat.hehModulesLoaded=HookEvent(ME_SYSTEM_MODULESLOADED, ehhModulesLoaded);
-	tbdat.hehSystemShutdown=HookEvent(ME_SYSTEM_SHUTDOWN, ehhSystemShutdown);
-	{	//create window class
-		WNDCLASS wndclass={0};
-		if (GetClassInfo(g_hInst,_T(MIRANDATOOLBARCLASSNAME),&wndclass) ==0)
-		{
-			wndclass.style         = 0;
-			wndclass.lpfnWndProc   = ToolBarProc;
-			wndclass.cbClsExtra    = 0;
-			wndclass.cbWndExtra    = 0;
-			wndclass.hInstance     = g_hInst;
-			wndclass.hIcon         = NULL;
-			wndclass.hCursor       = LoadCursor (NULL, IDC_ARROW);
-			wndclass.hbrBackground = GetSysColorBrush(COLOR_3DFACE);
-			wndclass.lpszMenuName  = NULL;
-			wndclass.lpszClassName = _T(MIRANDATOOLBARCLASSNAME);
-			RegisterClass(&wndclass);
-		}	  
-	}
-	tbdat.listOfButtons=li.List_Create(0,1);
-	InitializeCriticalSection(&tbdat.cs);
-	tbdat.hehTBModuleLoaded=CreateHookableEvent(ME_TB_MODULELOADED);
-}
+	int result=0;
+	BYTE bVisible;
+	BYTE bPanel;
+	DWORD dwOrder;
+	TBButton * bi=(TBButton *)lParam;
+	if (!ServiceExists(bi->pszServiceName))
+		return 0;
+	tbcheck 0;
+	tblock;
+	{	
 
-static int ehhModulesLoaded(WPARAM wParam, LPARAM lParam)
-{
-	CallService(MS_BACKGROUNDCONFIG_REGISTER,(WPARAM)"ToolBar Background/ToolBar",0);
-	HookEvent(ME_BACKGROUNDCONFIG_CHANGED,_MTB_OnBackgroundSettingsChanged);
-	_MTB_OnBackgroundSettingsChanged(0,0);
-
-	tbdat.hToolBarWindowList=(HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST,0,0);
+		MTB_BUTTONINFO * mtbi=mir_alloc(sizeof(MTB_BUTTONINFO));
+		memset(mtbi,0,sizeof(MTB_BUTTONINFO));
+		sttTBButton2MTBBUTTONINFO(bi,mtbi);
 	
-	CreateServiceFunction(MS_TB_ADDBUTTON,svcToolBarAddButton);
-	CreateServiceFunction(MS_TB_SETBUTTONSTATE, svcToolBarSetButtonState);
+		sttGetButtonSettings(mtbi->szButtonID, &bVisible, &dwOrder, &bPanel);
+		mtbi->nOrderValue = dwOrder ? dwOrder : bi->defPos;
+		mtbi->bVisible = bVisible;
+		mtbi->bPanelID = bPanel;
 	
-	tbdat.hehSettingsChanged=HookEvent(ME_DB_CONTACT_SETTINGCHANGED, ehhSettingsChanged );
-	//CreateSubFrames
-	//toggle the 'hide offline contacts' flag and call CLUI   
-	//wParam=0
-	//lParam=0
-
-	//Create bar ???
-	{
-		HWND hwndClist=(HWND) CallService(MS_CLUI_GETHWND,0,0);
-		sttCreateToolBarFrame( hwndClist, "ToolBar", 24);
-	}
-	//mtbDefButtonRegistration();
-
-	NotifyEventHooks(ME_TB_MODULELOADED, 0, 0);	
-	return 0;
+		li.List_InsertPtr(tbdat.listOfButtons,mtbi);
+		
+		if (mtbi->bVisible)
+			result=(int)ToolBar_AddButtonToBars(mtbi);
+	}	
+	tbunlock;
+	return result;
 }
-
-static int ehhSystemShutdown(WPARAM wParam, LPARAM lParam)
+static int    svcToolBarRemoveButton(WPARAM wParam, LPARAM lParam)
 {
-	//Remove services;
-	UnhookEvent(tbdat.hehSettingsChanged);
-	UnhookEvent(tbdat.hehModulesLoaded);
-	UnhookEvent(tbdat.hehSystemShutdown);	
-	EnterCriticalSection(&tbdat.cs);
-	tbdat.hehTBModuleLoaded=NULL;
-
-	li_ListDestruct(tbdat.listOfButtons,sttMTBButtonInfoDestructor);  //TO DO li_destruct call
-
-	LeaveCriticalSection(&tbdat.cs);
-	DeleteCriticalSection(&tbdat.cs);
-
 	return 0;
 }
-
-
-static int ehhSettingsChanged( WPARAM wParam, LPARAM lParam )
+static int    svcToolBarGetButtonState(WPARAM wParam, LPARAM lParam)
 {
-	DBCONTACTWRITESETTING *cws=(DBCONTACTWRITESETTING*)lParam;
-	if ((HANDLE)wParam!=NULL) return 0;
-	if (tbdat.hHideOfflineButton==NULL) return 0;	
-	if (!mir_strcmp(cws->szModule,"CList"))
-	{
-		if (!mir_strcmp(cws->szSetting,"HideOffline"))
-			sttSetButtonPressed(tbdat.hHideOfflineButton, (BOOL) DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT) );
-	}
+	int res=-1;
+	WindowList_Broadcast(tbdat.hToolBarWindowList, MTBM_GETBUTTONSTATE, wParam, (LPARAM) &res);
+	return res;
+}
+static int    svcToolBarSetButtonState(WPARAM wParam, LPARAM lParam)
+{
+	WindowList_Broadcast(tbdat.hToolBarWindowList, MTBM_SETBUTTONSTATE, wParam, lParam);
 	return 0;
 }
-static void sttUpdateButtonState(MTBBUTTONINFO * mtbi)
+
+
+static void	  sttTBButton2MTBBUTTONINFO(TBButton * bi, MTB_BUTTONINFO * mtbi)
+{
+	// Convert TBButton struct to MTB_BUTTONINFO
+	if (!bi || !mtbi) return;
+	if (!(bi->tbbFlags&TBBF_ISSEPARATOR))
+	{
+		mtbi->szButtonName=mir_strdup(bi->pszButtonName);
+		mtbi->szService=mir_strdup(bi->pszServiceName);
+		mtbi->szButtonID=mir_strdup(bi->pszButtonID);
+		mtbi->bPushButton=(bi->tbbFlags&TBBF_PUSHED)?TRUE:FALSE;
+		mtbi->szTooltip=_mir_a2t(Translate(bi->pszTooltipUp));
+		mtbi->szTooltipPressed=_mir_a2t(Translate(bi->pszTooltipDn));
+		mtbi->bSeparator=SEPARATOR_NOT;
+		mtbi->hPrimaryIconHandle=bi->hPrimaryIconHandle;
+		mtbi->hSecondaryIconHandle=bi->hSecondaryIconHandle;
+	}		
+	else
+	{
+		mtbi->bVisible = 1;
+		mtbi->nOrderValue=bi->defPos;
+		mtbi->bSeparator= (((bi->tbbFlags & TBBF_FLEXSIZESEPARATOR) == TBBF_FLEXSIZESEPARATOR)? 	SEPARATOR_FLEX :
+		((bi->tbbFlags & TBBF_ISSEPARATOR) == TBBF_ISSEPARATOR)? SEPARATOR_FIXED : SEPARATOR_NOT);
+	}
+}
+static void   sttUpdateButtonState(MTB_BUTTONINFO * mtbi)
 {
 	HANDLE ilIcon;
-	int bufsize = strlen(mtbi->szButtonID)+max(sizeof(TOOLBARBUTTON_ICONIDPREFIX""TOOLBARBUTTON_ICONIDPRIMARYSUFFIX),sizeof(TOOLBARBUTTON_ICONIDPREFIX""TOOLBARBUTTON_ICONIDSECONDARYSUFFIX)) +2;
-	char *iconId=(char*)_alloca(bufsize);
-	char * translatedName=Translate(mtbi->szButtonName);
-	int namebufsize=strlen(translatedName)+strlen(Translate(TOOLBARBUTTON_ICONNAMEPRESSEDSUFFIX))+2;
-	char * iconName=(char*)_alloca(namebufsize);
-    
-	_snprintf(iconId, bufsize,TOOLBARBUTTON_ICONIDPREFIX"%s%s",mtbi->szButtonID, (mtbi->bPushButton)?TOOLBARBUTTON_ICONIDSECONDARYSUFFIX:TOOLBARBUTTON_ICONIDPRIMARYSUFFIX);
-	_snprintf(iconName, namebufsize,"%s %s",translatedName, (mtbi->bPushButton)?Translate(TOOLBARBUTTON_ICONNAMEPRESSEDSUFFIX):"");	
-
-	ilIcon=RegisterIcolibIconHandle(iconId, "ToolBar", iconName, _T("icons\\toolbar_icons.dll"),1, g_hInst, IDI_RESETVIEW );
+	ilIcon=(mtbi->bPushButton)?mtbi->hSecondaryIconHandle:mtbi->hPrimaryIconHandle;
 	SendMessage(mtbi->hWindow, MBM_SETICOLIBHANDLE, 0, (LPARAM) ilIcon );	
 	SendMessage(mtbi->hWindow, BUTTONADDTOOLTIP, (WPARAM)((mtbi->bPushButton) ? mtbi->szTooltipPressed : mtbi->szTooltip), 0);
 	
 }
-/*UNSAFE SHOULDBE CALLED FROM TOOLBAR WINDOW PROC ONLY */ 
+static int    sttSortButtons(const void * vmtbi1, const void * vmtbi2)
+{
+	MTB_BUTTONINFO * mtbi1=(MTB_BUTTONINFO *)*((MTB_BUTTONINFO ** )vmtbi1);
+	MTB_BUTTONINFO * mtbi2=(MTB_BUTTONINFO *)*((MTB_BUTTONINFO ** )vmtbi2);
+	return mtbi1->nOrderValue-mtbi2->nOrderValue;
+}
 
-void sttReposButtons(MTBINFO * mti)
+static void   sttReposButtons(MTBINFO * mti)
 {
 	RECT rcClient;
 	HDWP hdwp;
@@ -312,13 +361,16 @@ void sttReposButtons(MTBINFO * mti)
 	int  nextX=0;
 	int  nFreeSpace;
 
+//  firstly let sort it by order
+	qsort(mti->pButtonList->items,mti->pButtonList->realCount,sizeof(MTB_BUTTONINFO *),sttSortButtons);
+
 	GetClientRect(mti->hWnd, &rcClient);
     nBarSize=rcClient.right-rcClient.left;
 
 	//calculating count of visible buttons and separators
 	for (i=0; i<mti->pButtonList->realCount; i++)
 	{
-		MTBBUTTONINFO * mtbi=(MTBBUTTONINFO *)mti->pButtonList->items[i];
+		MTB_BUTTONINFO * mtbi=(MTB_BUTTONINFO *)mti->pButtonList->items[i];
 		if ( mtbi->bSeparator==2 )
 			nFlexSeparatorsCount++;
 		else
@@ -333,7 +385,7 @@ void sttReposButtons(MTBINFO * mti)
 	hdwp=BeginDeferWindowPos( mti->pButtonList->realCount );
 	for (i=0; i<mti->pButtonList->realCount; i++)
 	{
-		MTBBUTTONINFO * mtbi=(MTBBUTTONINFO *)mti->pButtonList->items[i];
+		MTB_BUTTONINFO * mtbi=(MTB_BUTTONINFO *)mti->pButtonList->items[i];
 		if (mtbi->hWindow)
 		{
 			if (hdwp)
@@ -359,101 +411,14 @@ void sttReposButtons(MTBINFO * mti)
 	if (hdwp) EndDeferWindowPos(hdwp);
 }
 
-static int svcToolBarAddButton(WPARAM wParam, LPARAM lParam)
-{
-	int result=0;
-	TBButton * bi=(TBButton *)lParam;
-	if (!ServiceExists(bi->pszServiceName))
-		return 0;
-	tbcheck 0;
-	tblock;
-	{	
-		
-		MTBBUTTONINFO * mtbi=mir_alloc(sizeof(MTBBUTTONINFO));
-		li.List_InsertPtr(tbdat.listOfButtons,mtbi);
-		memset(mtbi,0,sizeof(MTBBUTTONINFO));
-		if (!(bi->tbbFlags&TBBF_ISSEPARATOR))
-		{
-			mtbi->szButtonName=mir_strdup(bi->pszButtonName);
-			mtbi->szService=mir_strdup(bi->pszServiceName);
-			mtbi->szButtonID=mir_strdup(bi->pszButtonID);
-			mtbi->bPushButton=(bi->tbbFlags&TBBF_PUSHED)?TRUE:FALSE;
-			mtbi->szTooltip=mir_a2t(Translate(bi->pszTooltipUp));
-			mtbi->szTooltipPressed=mir_a2t(Translate(bi->pszTooltipDn));
-			mtbi->bSeparator=SEPARATOR_NOT;
-			
-			//database pos read			
-			mtbi->nOrderValue=0;//read order (defPos)
-			//check visibility
 
-		}		
-		else
-		{
-			mtbi->nOrderValue=bi->defPos;
-			mtbi->bSeparator= (((bi->tbbFlags & TBBF_FLEXSIZESEPARATOR) == TBBF_FLEXSIZESEPARATOR)? 	SEPARATOR_FLEX :
-					   		  ((bi->tbbFlags & TBBF_ISSEPARATOR) == TBBF_ISSEPARATOR)? SEPARATOR_FIXED : SEPARATOR_NOT);
-		}
-	}	
-	// then call adding of such button to toolbar
-	{
-		MTBBUTTONINFO * mtbi;
-		WindowList_Broadcast(tbdat.hToolBarWindowList, MTBM_ADDBUTTON, (WPARAM)&mtbi, lParam);
-		if (mtbi)
-		{
-			HWND hwndButton=(HWND)mtbi->hWindow;
-			TBButton * bi=(TBButton *)lParam;
-			if (hwndButton)
-			{			
-				mtbi->szButtonName=mir_strdup(bi->pszButtonName);
-				mtbi->szService=mir_strdup(bi->pszServiceName);
-				mtbi->szButtonID=mir_strdup(bi->pszButtonID);
-				mtbi->bPushButton=(bi->tbbFlags&TBBF_PUSHED)?TRUE:FALSE;
-				mtbi->szTooltip=mir_a2t(Translate(bi->pszTooltipUp));
-				mtbi->szTooltipPressed=mir_a2t(Translate(bi->pszTooltipDn));
-				{
-					char * buttonId=_alloca(sizeof("ToolBar.")+strlen(mtbi->szButtonID)+2);
-					strcpy(buttonId,"ToolBar.");
-					strcat(buttonId,mtbi->szButtonID);
-					SendMessage(hwndButton, BUTTONSETID, 0 ,(LPARAM) buttonId );
-				}
-				sttUpdateButtonState( mtbi );
-			}
-			else
-			{
-				mtbi->bSeparator= (((bi->tbbFlags & TBBF_FLEXSIZESEPARATOR) == TBBF_FLEXSIZESEPARATOR)? 2 : 
-									((bi->tbbFlags & TBBF_ISSEPARATOR) == TBBF_ISSEPARATOR)? 1 : 0); 
-			}
-			SendMessage( mtbi->hwndToolBar, MTBM_REPOSBUTTONS, 0, 0);
-			result=(int)hwndButton;
-		}
-	}
-	tbunlock;
-	return result;
-}
-static int svcToolBarRemoveButton(WPARAM wParam, LPARAM lParam)
-{
-	return 0;
-}
-static int svcToolBarGetButtonState(WPARAM wParam, LPARAM lParam)
-{
-	int res=-1;
-	WindowList_Broadcast(tbdat.hToolBarWindowList, MTBM_GETBUTTONSTATE, wParam, (LPARAM) &res);
-	return res;
-}
-static int svcToolBarSetButtonState(WPARAM wParam, LPARAM lParam)
-{
-	WindowList_Broadcast(tbdat.hToolBarWindowList, MTBM_SETBUTTONSTATE, wParam, lParam);
-	return 0;
-}
-
-static HWND sttCreateToolBarFrame( HWND hwndParent, char * szCaption, int nHeight )
+static HWND   sttCreateToolBarFrame( HWND hwndParent, char * szCaption, int nHeight )
 {
 	return CreateWindow(_T(MIRANDATOOLBARCLASSNAME), _T(MIRANDATOOLBARCLASSNAME), WS_CHILD|WS_VISIBLE|WS_CLIPCHILDREN,0,0,0,nHeight,hwndParent,NULL,g_hInst, (void*) szCaption);
 }
-
-int sttButtonPressed(MTBINFO * pMTBInfo, HWND hwndbutton)
+static int    sttButtonPressed(MTBINFO * pMTBInfo, HWND hwndbutton)
 {
-    MTBBUTTONINFO * mtbi=(MTBBUTTONINFO *)GetWindowLong(hwndbutton, GWL_USERDATA);
+	MTB_BUTTONINFO * mtbi=(MTB_BUTTONINFO *)GetWindowLong(hwndbutton, GWL_USERDATA);
 	if (mtbi && mtbi->hWindow==hwndbutton && mtbi->hwndToolBar==pMTBInfo->hWnd)
 	{
 		if (mtbi->szService && ServiceExists(mtbi->szService))
@@ -461,13 +426,13 @@ int sttButtonPressed(MTBINFO * pMTBInfo, HWND hwndbutton)
 	}
 	return 0;
 }
-static BOOL _MTB_DrawBackground(HWND hwnd, HDC hdc, RECT * rect, MTBINFO * pMTBInfo)
+static BOOL   sttDrawToolBarBackground(HWND hwnd, HDC hdc, RECT * rect, MTBINFO * pMTBInfo)
 {
 	if (g_CluiData.fDisableSkinEngine || !g_CluiData.fLayered)
 	{	
 		RECT rc;
 		HBRUSH hbr;
-		
+
 		if (rect) 
 			rc=*rect;
 		else
@@ -498,7 +463,152 @@ static BOOL _MTB_DrawBackground(HWND hwnd, HDC hdc, RECT * rect, MTBINFO * pMTBI
 	}
 	return TRUE;
 }
-static LRESULT CALLBACK ToolBarProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
+static void   sttRegisterToolBarButton(char * pszButtonID, char * pszButtonName, char * pszServiceName,
+									   char * pszTooltipUp, char * pszTooltipDn, int icoDefIdx, int defResource, int defResource2)
+{
+	TBButton tbb;
+	static int defPos=0;
+	defPos+=100;
+	memset(&tbb,0, sizeof(TBButton));
+	tbb.cbSize=sizeof(TBButton);
+	if (pszButtonID) 	
+	{
+		tbb.defPos=defPos;
+		tbb.pszButtonID=pszButtonID;
+		tbb.pszButtonName=pszButtonName;
+		tbb.pszServiceName=pszServiceName;
+		tbb.pszTooltipUp=pszTooltipUp;
+		tbb.pszTooltipDn=pszTooltipDn;
+		{
+			char buf[255];
+			_snprintf(buf,sizeof(buf),"%s%s%s",TOOLBARBUTTON_ICONIDPREFIX, pszButtonID, TOOLBARBUTTON_ICONIDPRIMARYSUFFIX);
+			tbb.hPrimaryIconHandle=RegisterIcolibIconHandle( buf, "ToolBar", pszButtonName , _T("icons\\toolbar_icons.dll"),-icoDefIdx, g_hInst, defResource );
+		}
+		if (pszTooltipDn)
+		{
+			char buf[255];
+			_snprintf(buf,sizeof(buf),"%s%s%s",TOOLBARBUTTON_ICONIDPREFIX, pszButtonID, TOOLBARBUTTON_ICONIDSECONDARYSUFFIX);
+			tbb.hSecondaryIconHandle=RegisterIcolibIconHandle( buf, "ToolBar", pszTooltipDn , _T("icons\\toolbar_icons.dll"),-(icoDefIdx+1), g_hInst, defResource2 );
+		}
+	}
+	else 
+	{		
+		if ((BYTE)pszButtonName) tbb.tbbFlags=TBBF_FLEXSIZESEPARATOR;
+		else tbb.tbbFlags=TBBF_ISSEPARATOR;
+	}
+
+	CallService(MS_TB_ADDBUTTON,0, (LPARAM)&tbb);
+}
+
+static void   sttSetButtonPressed( char * hButton, BOOL bPressed )
+{
+	CallService(MS_TB_SETBUTTONSTATE, (WPARAM) hButton, (LPARAM) (bPressed ? TBST_PUSHED : TBST_RELEASED) );
+}
+static void   sttAddStaticSeparator()
+{
+	sttRegisterToolBarButton( NULL, (char*)FALSE, NULL, NULL, NULL, 0, 0, 0 );
+}
+static void   sttAddDynamicSeparator()
+{
+	sttRegisterToolBarButton( NULL, (char*)TRUE, NULL, NULL, NULL, 0, 0, 0 );
+}
+static void   sttGetButtonSettings(char * ID, BYTE * pbVisible, DWORD * pdwOrder, BYTE * pbPanelID)
+{
+	char key[255]={0};
+	BYTE vis;
+	DWORD ord;
+	BYTE panel;
+
+	_snprintf(key, sizeof(key), "visible_%s", ID);
+	vis=DBGetContactSettingByte(NULL,"ModernToolBar", key, 1);
+
+	_snprintf(key, sizeof(key), "order_%s", ID);
+	ord=DBGetContactSettingDword(NULL,"ModernToolBar", key, 0);
+
+	_snprintf(key, sizeof(key), "panel_%s", ID);
+	panel=DBGetContactSettingByte(NULL,"ModernToolBar", key, 0);
+
+	if (pbVisible)	*pbVisible=vis;
+	if (pdwOrder)	*pdwOrder=ord;
+	if (pbPanelID)	*pbPanelID=panel;
+}
+static void   sttReloadButtons()
+{
+	int i=0;
+	tbcheck ;
+	tblock;
+	WindowList_Broadcast(tbdat.hToolBarWindowList, MTBM_REMOVE_ALL_BUTTONS, 0,0);
+	for (i=0; i<tbdat.listOfButtons->realCount; i++)
+	{	
+		BYTE bVisible;
+		BYTE bPanel;
+		DWORD dwOrder;
+
+		MTB_BUTTONINFO * mtbi = (MTB_BUTTONINFO *)tbdat.listOfButtons->items[i];
+
+		sttGetButtonSettings(mtbi->szButtonID, &bVisible, &dwOrder, &bPanel);
+		
+		mtbi->nOrderValue = dwOrder ? dwOrder : mtbi->nOrderValue;
+		mtbi->bVisible = bVisible;
+		mtbi->bPanelID = bPanel;
+		
+		if (mtbi->bVisible) 
+			ToolBar_AddButtonToBars(mtbi);
+	}
+	tbunlock;
+	sttSetButtonPressed("ShowHideOffline", (BOOL) DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT) );
+}
+static MTB_BUTTONINFO * ToolBar_AddButtonToBars(MTB_BUTTONINFO * mtbi)
+{	
+	int result=0;
+	if (!mtbi->bVisible) return 0;
+	WindowList_Broadcast(tbdat.hToolBarWindowList, MTBM_ADDBUTTON, (WPARAM)mtbi, 0);
+	if (mtbi->hWindow) 
+		sttUpdateButtonState( mtbi );
+	if (mtbi->hwndToolBar) 
+		SendMessage( mtbi->hwndToolBar, MTBM_REPOSBUTTONS, 0, 0);
+	return mtbi;
+}
+
+static int				ToolBar_LayeredPaintProc(HWND hWnd, HDC hDC, RECT * rcPaint, HRGN rgn, DWORD dFlags, void * CallBackData)
+{
+	return SendMessage(hWnd, MTBM_LAYEREDPAINT,(WPARAM)hDC,0);
+}
+
+
+
+static void				ToolBar_DefaultButtonRegistration()
+{
+	
+	sttRegisterToolBarButton( "MainMenu", "Main Menu", MS_CLUI_SHOWMAINMENU,
+		"Main menu", NULL,  100 , IDI_RESETVIEW, IDI_RESETVIEW  );
+
+	
+	sttRegisterToolBarButton( "StatusMenu", "Status Menu", MS_CLUI_SHOWSTATUSMENU,
+		"Status menu", NULL,  105 , IDI_RESETVIEW, IDI_RESETVIEW  );
+	
+	sttRegisterToolBarButton( "ShowHideOffline","Show/Hide offline contacts", MS_CLIST_TOGGLEHIDEOFFLINE,
+					    "Hide offline contacts", "Show offline contacts", 110 /*and 111 */ , IDI_RESETVIEW, IDI_RESETVIEW  );
+	
+	sttSetButtonPressed( "ShowHideOffline", (BOOL) DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT) );
+
+
+    sttRegisterToolBarButton( "JabberBookmarks","Jabber Bookmarks", MS_JABBER_SHOWBOOKMARK,
+		"Jabber Bookmark", NULL,  120 , IDI_RESETVIEW, IDI_RESETVIEW  );
+
+	sttRegisterToolBarButton( "DatabaseEditor","DBEditor++", "DBEditorpp/MenuCommand",
+		"Database Editor", NULL,  130 , IDI_RESETVIEW, IDI_RESETVIEW  );
+
+	sttRegisterToolBarButton( "FindUser","Find User", "FindAdd/FindAddCommand",
+		"Find User", NULL,  140 , IDI_RESETVIEW, IDI_RESETVIEW  );
+	
+	sttRegisterToolBarButton( "Options","Options", "Options/OptionsCommand",
+		"Options", NULL,  150 , IDI_RESETVIEW, IDI_RESETVIEW  );
+
+	sttReloadButtons();
+}
+
+static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 {
 	MTBINFO * pMTBInfo=(MTBINFO *)GetWindowLong(hwnd, GWL_USERDATA);
 	switch (msg) 
@@ -523,7 +633,7 @@ static LRESULT CALLBACK ToolBarProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lPar
 			Frame.height=lpcs->cy;
 			Frame.name=(char*) lpcs->lpCreateParams;
 			hFrame=(HANDLE)CallService(MS_CLIST_FRAMES_ADDFRAME,(WPARAM)&Frame,(LPARAM)0);
-			CallService(MS_SKINENG_REGISTERPAINTSUB,(WPARAM)Frame.hWnd,(LPARAM)ToolBarLayeredPaintProc); //$$$$$ register sub for frame		
+			CallService(MS_SKINENG_REGISTERPAINTSUB,(WPARAM)Frame.hWnd,(LPARAM)ToolBar_LayeredPaintProc); //$$$$$ register sub for frame		
 			pMTBInfo->hFrame = hFrame;
 			pMTBInfo->hWnd = hwnd;
 
@@ -540,7 +650,7 @@ static LRESULT CALLBACK ToolBarProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lPar
 		{
 			
 			KillTimer(hwnd,123);
-			mtbDefButtonRegistration();
+			ToolBar_DefaultButtonRegistration();
 			return 0;
 		}
 	case WM_SHOWWINDOW:
@@ -561,9 +671,10 @@ static LRESULT CALLBACK ToolBarProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lPar
 		{
 			xpt_FreeThemeForWindow(hwnd);
 			WindowList_Remove( tbdat.hToolBarWindowList, hwnd );
+			SendMessage(hwnd, MTBM_REMOVE_ALL_BUTTONS, 0, 0 );
+			li.List_Destroy( pMTBInfo->pButtonList );
 			SetWindowLong( hwnd, GWL_USERDATA, (LONG) 0 );
-			li_ListDestruct( pMTBInfo->pButtonList, sttMTBButtonInfoDestructor );  //TODO Create buttonlist destructor
-			mir_free( pMTBInfo );
+				mir_free( pMTBInfo );
 			return 0;
 		}
 	case WM_COMMAND:
@@ -575,24 +686,21 @@ static LRESULT CALLBACK ToolBarProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lPar
 	case MTBM_ADDBUTTON:
 		{
 			//Adding button
-			MTBBUTTONINFO * mtbi;
-			MTBBUTTONINFO ** retMTBI=(MTBBUTTONINFO **)wParam;
-			TBButton * pButton=(TBButton *)lParam;
+			MTB_BUTTONINFO * mtbi=(MTB_BUTTONINFO * )wParam;
 			HWND hwndButton = NULL;
-			if (!(pButton->tbbFlags & TBBF_ISSEPARATOR))
-			{
+			if (!(mtbi->bSeparator))
 				hwndButton= CreateWindow(SKINBUTTONCLASS /*MIRANDABUTTONCLASS*/, _T(""), BS_PUSHBUTTON | WS_VISIBLE | WS_CHILD | WS_TABSTOP , 0, 0, pMTBInfo->nButtonWidth, pMTBInfo->nButtonHeight, 
-											hwnd, (HMENU) IDC_SELECTMODE, g_hInst, NULL);
-			}
-			mtbi=mir_alloc(sizeof(MTBBUTTONINFO));
-			memset(mtbi,0,sizeof(MTBBUTTONINFO));
+											hwnd, (HMENU) NULL, g_hInst, NULL);
 			mtbi->hWindow=hwndButton;
 			mtbi->hwndToolBar=hwnd;
 
-			li.List_Insert(pMTBInfo->pButtonList,mtbi,pMTBInfo->pButtonList->realCount);
-			if (retMTBI) *retMTBI=mtbi;
+			li.List_Insert(pMTBInfo->pButtonList, mtbi, pMTBInfo->pButtonList->realCount);  //just insert pointer. such object are managed in global tbbutton list
 			if (hwndButton) 
 			{	
+				char * buttonId=_alloca(sizeof("ToolBar.")+strlen(mtbi->szButtonID)+2);
+				strcpy(buttonId,"ToolBar.");
+				strcat(buttonId,mtbi->szButtonID);					
+				SendMessage(hwndButton, BUTTONSETID, 0 ,(LPARAM) buttonId );
 				if (pMTBInfo->bFlatButtons)			
 					SendMessage(hwndButton, BUTTONSETASFLATBTN, 0, 1 );
 				SetWindowLong(hwndButton,GWL_USERDATA,(LONG)mtbi);
@@ -601,6 +709,23 @@ static LRESULT CALLBACK ToolBarProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lPar
 			return (LRESULT)hwndButton;			
 		}
 
+	case MTBM_REMOVE_ALL_BUTTONS:
+		{
+			int i;
+			for (i=0; i<pMTBInfo->pButtonList->realCount; i++ )
+			{
+				MTB_BUTTONINFO * mtbi=(MTB_BUTTONINFO *)pMTBInfo->pButtonList->items[i];
+				if (mtbi->hWindow && mtbi->hwndToolBar==hwnd)
+				{
+					DestroyWindow(mtbi->hWindow);
+					mtbi->hWindow = NULL;
+					mtbi->hwndToolBar = NULL;
+				}
+			}
+			li.List_Destroy( pMTBInfo->pButtonList );
+			pMTBInfo->pButtonList=li.List_Create(0,1);
+			break;
+		}
 	case WM_SIZE: //fall through
 	case MTBM_REPOSBUTTONS:
 		{
@@ -612,7 +737,7 @@ static LRESULT CALLBACK ToolBarProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lPar
 			break;
 		}
 	case WM_ERASEBKGND:
-			return _MTB_DrawBackground(hwnd, (HDC)wParam, NULL, pMTBInfo);
+			return sttDrawToolBarBackground(hwnd, (HDC)wParam, NULL, pMTBInfo);
 	
 	case WM_NCPAINT:				
 	case WM_PAINT:
@@ -623,16 +748,10 @@ static LRESULT CALLBACK ToolBarProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lPar
 			{
 				HBRUSH hbr=CreateSolidBrush(RGB(255,0,255));
 				BeginPaint(hwnd,&ps);
-				ret=_MTB_DrawBackground(hwnd, ps.hdc, &ps.rcPaint, pMTBInfo);	
+				ret=sttDrawToolBarBackground(hwnd, ps.hdc, &ps.rcPaint, pMTBInfo);	
 				EndPaint(hwnd,&ps);
 			}
-			/*if (!ret)
-			{
-				ValidateRect(hwnd, NULL);
-				return TRUE;
-			}  */
 			return DefWindowProc(hwnd, msg, wParam, lParam);
-			//return TRUE;
 		}
 	case WM_NOTIFY:
 		{
@@ -651,7 +770,7 @@ static LRESULT CALLBACK ToolBarProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lPar
 			{
 				RECT childRect;
 				POINT Offset;
-				MTBBUTTONINFO * mtbi=(MTBBUTTONINFO *)pMTBInfo->pButtonList->items[i];
+				MTB_BUTTONINFO * mtbi=(MTB_BUTTONINFO *)pMTBInfo->pButtonList->items[i];
 				GetWindowRect(mtbi->hWindow,&childRect);
 				Offset.x=childRect.left-MyRect.left;;
 				Offset.y=childRect.top-MyRect.top;
@@ -661,14 +780,13 @@ static LRESULT CALLBACK ToolBarProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lPar
 		}
 	case MTBM_SETBUTTONSTATE:
 		{
-			HWND hButton = (HWND)wParam;
-			MTBBUTTONINFO *mtbi=NULL;
+			char * hButton=(char *) wParam;
+			MTB_BUTTONINFO *mtbi=NULL;
 			int i;
-			if (!hButton) return 0;
 			for (i=0; i<pMTBInfo->pButtonList->realCount; i++)
 			{
-				mtbi=(MTBBUTTONINFO*)pMTBInfo->pButtonList->items[i];
-				if (mtbi->hWindow == hButton)
+				mtbi=(MTB_BUTTONINFO*)pMTBInfo->pButtonList->items[i];
+				if (!strcmp(mtbi->szButtonID, hButton))
 				{
 					mtbi->bPushButton=(BOOL)lParam;
 				    sttUpdateButtonState(mtbi);
@@ -683,85 +801,3 @@ static LRESULT CALLBACK ToolBarProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lPar
 	return TRUE;
 }
 
-static int ToolBarLayeredPaintProc(HWND hWnd, HDC hDC, RECT * rcPaint, HRGN rgn, DWORD dFlags, void * CallBackData)
-{
-	return SendMessage(hWnd, MTBM_LAYEREDPAINT,(WPARAM)hDC,0);
-}
-
-static HANDLE _sttRegisterButton(char * pszButtonID, char * pszButtonName, char * pszServiceName,
-					   char * pszTooltipUp, char * pszTooltipDn, int icoDefIdx, int defResource, int defResource2)
-{
-	TBButton tbb;
-	memset(&tbb,0, sizeof(TBButton));
-	tbb.cbSize=sizeof(TBButton);
-	if (pszButtonID) 	
-	{
-		tbb.pszButtonID=pszButtonID;
-		tbb.pszButtonName=pszButtonName;
-		tbb.pszServiceName=pszServiceName;
-		tbb.pszTooltipUp=pszTooltipUp;
-		tbb.pszTooltipDn=pszTooltipDn;
-		{
-			char buf[255];
-			_snprintf(buf,sizeof(buf),"%s%s%s",TOOLBARBUTTON_ICONIDPREFIX, pszButtonID, TOOLBARBUTTON_ICONIDPRIMARYSUFFIX);
-			RegisterIcolibIconHandle( buf, "ToolBar", pszButtonName , _T("icons\\toolbar_icons.dll"),icoDefIdx, g_hInst, defResource );
-		}
-		if (pszTooltipDn)
-		{
-			char buf[255];
-			_snprintf(buf,sizeof(buf),"%s%s%s",TOOLBARBUTTON_ICONIDPREFIX, pszButtonID, TOOLBARBUTTON_ICONIDSECONDARYSUFFIX);
-			RegisterIcolibIconHandle( buf, "ToolBar", pszTooltipDn , _T("icons\\toolbar_icons.dll"),icoDefIdx+1, g_hInst, defResource2 );
-		}
-	}
-	else 
-	{		
-		if ((BYTE)pszButtonName) tbb.tbbFlags=TBBF_FLEXSIZESEPARATOR;
-		else tbb.tbbFlags=TBBF_ISSEPARATOR;
-	}
-	
-	return (HANDLE)CallService(MS_TB_ADDBUTTON,0, (LPARAM)&tbb);
-}
-
-static void sttSetButtonPressed( HANDLE hButton, BOOL bPressed )
-{
-	CallService(MS_TB_SETBUTTONSTATE, (WPARAM) hButton, (LPARAM) (bPressed ? TBST_PUSHED : TBST_RELEASED) );
-}
-static void _sttAddStaticSeparator()
-{
-	_sttRegisterButton( NULL, (char*)FALSE, NULL, NULL, NULL, 0, 0, 0 );
-}
-static void _sttAddDynamicSeparator()
-{
-	_sttRegisterButton( NULL, (char*)TRUE, NULL, NULL, NULL, 0, 0, 0 );
-}
-
-static void mtbDefButtonRegistration()
-{
-	
-	_sttRegisterButton( "MainMenu", "Main Menu", MS_CLUI_SHOWMAINMENU,
-		"Main menu", NULL,  2 , IDI_RESETVIEW, IDI_RESETVIEW  );
-
-	/*
-	_sttRegisterButton( "StatusMenu", "Status Menu", MS_CLUI_SHOWSTATUSMENU,
-		"Status menu", NULL,  7 , IDI_RESETVIEW, IDI_RESETVIEW  );
-	*/
-	tbdat.hHideOfflineButton=_sttRegisterButton( "ShowHideOffline","Show/Hide offline contacts", MS_CLIST_TOGGLEHIDEOFFLINE,
-					    "Hide offline contacts", "Show offline contacts", 1 , IDI_RESETVIEW, IDI_RESETVIEW  );
-	
-	sttSetButtonPressed(tbdat.hHideOfflineButton, (BOOL) DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT) );
-
-
-    _sttRegisterButton( "JabberBookmarks","Jabber Bookmarks", MS_JABBER_SHOWBOOKMARK,
-		"Jabber Bookmark", NULL,  3 , IDI_RESETVIEW, IDI_RESETVIEW  );
-
-	_sttRegisterButton( "DatabaseEditor","DBEditor++", "DBEditorpp/MenuCommand",
-		"Database Editor", NULL,  4 , IDI_RESETVIEW, IDI_RESETVIEW  );
-
-	_sttRegisterButton( "FindUser","Find User", "FindAdd/FindAddCommand",
-		"Find User", NULL,  5 , IDI_RESETVIEW, IDI_RESETVIEW  );
-	
-	_sttRegisterButton( "Options","Options", "Options/OptionsCommand",
-		"Options", NULL,  6 , IDI_RESETVIEW, IDI_RESETVIEW  );
-
-
-}

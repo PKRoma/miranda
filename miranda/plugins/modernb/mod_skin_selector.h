@@ -43,8 +43,13 @@ typedef struct tagMODERNMASK
 {
   MASKPARAM*	    pl_Params;
   DWORD				dwParamCnt;
-  void*				pObject;
+  union
+  {
+	void*			pObject;
+	char*			szObjectName;
+  };
   DWORD				dwMaskId;
+  BOOL				bObjectFound;
 } MODERNMASK;
 
 typedef struct tagLISTMODERNMASK

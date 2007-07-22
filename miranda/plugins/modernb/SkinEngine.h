@@ -23,8 +23,9 @@ typedef struct tagSKINOBJECTSLIST
     DWORD               dwObjLPReserved;
     DWORD               dwObjLPAlocated;
     char              * szSkinPlace;
-    LISTMODERNMASK  * pMaskList;
-    SKINOBJECTDESCRIPTOR  * pObjects;   
+    LISTMODERNMASK		* pMaskList;
+    SKINOBJECTDESCRIPTOR  * pObjects;
+	SortedList	*		pTextList;
 } SKINOBJECTSLIST;
 
 typedef struct tagGLYPHIMAGE

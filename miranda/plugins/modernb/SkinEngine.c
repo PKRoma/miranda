@@ -93,7 +93,7 @@ static int  ske_DeleteAllSettingInSection(char * SectionName);
 static int  ske_GetSkinFromDB(char * szSection, SKINOBJECTSLIST * Skin);
 static LPSKINOBJECTDESCRIPTOR ske_FindObject(const char * szName, BYTE objType,SKINOBJECTSLIST* Skin);
 static HBITMAP ske_LoadGlyphImageByDecoders(char * szFileName);
-static int  ske_LoadSkinFromResource();
+static int  ske_LoadSkinFromResource(BOOL bOnlyObjects);
 static void ske_PreMultiplyChanells(HBITMAP hbmp,BYTE Mult);
 static int  ske_ValidateSingleFrameImage(wndFrame * Frame, BOOL SkipBkgBlitting);
 static int ske_Service_UpdateFrameImage(WPARAM wParam, LPARAM lParam);
@@ -1852,73 +1852,117 @@ int ske_UnloadSkin(SKINOBJECTSLIST * Skin)
 
 	}
 	mir_free_and_nill(Skin->pObjects);
+	Skin->pTextList=NULL;
 	Skin->dwObjLPAlocated=0;
 	Skin->dwObjLPReserved=0;
 	ske_UnlockSkin();
 	return 0;
 }
 
+static void RegisterMaskByParce(const char * szSetting, char * szValue, SKINOBJECTSLIST * pSkin)
+{
+	int i;
+	DWORD ID=atoi(szSetting+1);
+	for (i=0; i<mir_strlen(szValue); i++)  if (szValue[i]==':') break;
+	if (i<mir_strlen(szValue))
+	{
+		char * Obj, *Mask;
+		int res;
+		Mask=szValue+i+1;
+		Obj=mir_alloc(i+1);
+		strncpy(Obj,szValue,i);
+		Obj[i]='\0';
+		res=AddStrModernMaskToList(ID,Mask,Obj,pSkin->pMaskList,pSkin);
+		mir_free_and_nill(Obj);
+	}
+}
+
+static int ske_ProcessLoadindString(const char * szSetting, char *szValue)
+{	
+	if (!pCurrentSkin) return 0;
+	if (szSetting[0]=='$')
+		RegisterObjectByParce((char *)szSetting, szValue);
+	else if (szSetting[0]=='#')
+		RegisterButtonByParce((char *)szSetting,szValue);
+	else if (szSetting[0]=='@')
+		RegisterMaskByParce((char *)szSetting,  szValue, pCurrentSkin); ///
+	else if (szSetting[0]=='t')
+		ske_AddParseTextGlyphObject((char*)szSetting,szValue,pCurrentSkin);
+	else if (szSetting[0]=='f')
+		ske_AddParseSkinFont((char*)szSetting,szValue,pCurrentSkin);
+	else return 0;
+	return 1;
+}
 static int ske_enumdb_SkinObjectsProc (const char *szSetting,LPARAM lParam)
 {   
-	if (wildcmp((char *)szSetting,"$*",0))
-	{
-		char * value;
-		value=DBGetStringA(NULL,SKIN,szSetting);
-		RegisterObjectByParce((char *)szSetting,value);
-		mir_free_and_nill(value);
-	}
-	else if (wildcmp((char *)szSetting,"#*",0))
-	{
-		char * value;
-		value=DBGetStringA(NULL,SKIN,szSetting);
-		RegisterButtonByParce((char *)szSetting,value);
-		mir_free_and_nill(value);
-	}
+	char *value;
+	value=DBGetStringA(NULL,SKIN,szSetting);
+	ske_ProcessLoadindString(szSetting,value);
+	mir_free_and_nill(value);
+
 	return 0;
 }
-static int ske_enumdb_SkinMasksProc(const char *szSetting,LPARAM lParam)
+
+static int ske_SortTextGlyphObjectFunc(void * first, void * second)
 {
-	if (wildcmp((char *)szSetting,"@*",0) && pCurrentSkin)
-	{
-		DWORD ID=atoi(szSetting+1);
-		int i=0;
-		char * value;
-		value=DBGetStringA(NULL,SKIN,szSetting);
-		if (value)
-		{
-			for (i=0; i<mir_strlen(value); i++)  if (value[i]==':') break;
-			if (i<mir_strlen(value))
-			{
-				char * Obj, *Mask;
-				int res;
-				Mask=value+i+1;
-				Obj=mir_alloc(i+1);
-				strncpy(Obj,value,i);
-				Obj[i]='\0';
-				res=AddStrModernMaskToList(ID,Mask,Obj,pCurrentSkin->pMaskList,pCurrentSkin);
-				mir_free_and_nill(Obj);
-			}
-			mir_free_and_nill(value);
-		}
-
-	}
-	else if (wildcmp((char *)szSetting,"t*",0) && pCurrentSkin)
-	{
-		char * value;
-		value=DBGetStringA(NULL,SKIN,szSetting);
-		ske_AddParseTextGlyphObject((char*)szSetting,value,pCurrentSkin);
-		mir_free_and_nill(value);
-	}
-	else if (wildcmp((char *)szSetting,"f*",0) && pCurrentSkin)
-	{
-		char * value;
-		value=DBGetStringA(NULL,SKIN,szSetting);
-		ske_AddParseSkinFont((char*)szSetting,value,pCurrentSkin);
-		mir_free_and_nill(value);
-	}
-	return 0;
+	return strcmp(((GLYPHTEXT*)(((int*)first)[0]))->szGlyphTextID,((GLYPHTEXT*)(((int*)second)[0]))->szGlyphTextID);
 }
 
+static void ske_LinkSkinObjects(SKINOBJECTSLIST * pObjectList)
+{
+	DWORD i;
+	// LINK Mask with objects
+	for (i=0; i<pObjectList->pMaskList->dwMaskCnt; i++)
+	{
+		MODERNMASK *mm=&(pObjectList->pMaskList->pl_Masks[i]);
+		void * pObject=(void*) ske_FindObjectByName(mm->szObjectName, OT_ANY, (SKINOBJECTSLIST*) pObjectList);
+		mir_free_and_nill(mm->szObjectName);
+		mm->bObjectFound=TRUE;
+		mm->pObject=pObject;
+	}	
+
+	if (pObjectList->pTextList)
+	{
+		int i;
+		// LINK Text with objects
+		for (i=0; i<pObjectList->pTextList->realCount; i++)
+		{
+			GLYPHTEXT * glText;
+			GLYPHOBJECT *globj=NULL;
+			SKINOBJECTDESCRIPTOR * lpobj;
+			glText=(GLYPHTEXT *)pObjectList->pTextList->items[i];
+			lpobj=ske_FindObjectByName(glText->szObjectName,OT_GLYPHOBJECT, pObjectList);
+			mir_free_and_nill(glText->szObjectName);
+			if (lpobj)
+				globj=(GLYPHOBJECT*)lpobj->Data;
+			if (globj)
+			{
+				if (!globj->plTextList)
+				{
+					globj->plTextList=li.List_Create(0,1);
+					globj->plTextList->sortFunc=ske_SortTextGlyphObjectFunc;
+				}
+				li.List_Insert(globj->plTextList,(void*)glText,globj->plTextList->realCount);     
+				qsort(globj->plTextList->items,globj->plTextList->realCount,sizeof(void*),(int(*)(const void*, const void*))globj->plTextList->sortFunc);
+				pObjectList->pTextList->items[i]=NULL;
+			}
+			else
+			{
+				GLYPHTEXT * gt=glText;
+				if (gt)
+				{
+					if (gt->stText)       mir_free_and_nill(gt->stText);
+					if (gt->stValueText)  mir_free_and_nill(gt->stValueText);
+					if (gt->szFontID)     mir_free_and_nill(gt->szFontID);
+					if (gt->szGlyphTextID)mir_free_and_nill(gt->szGlyphTextID);
+					mir_free_and_nill(gt);
+				}
+			}
+		}
+		li.List_Destroy(pObjectList->pTextList);
+		pObjectList->pTextList=NULL;
+	}
+}
 // Getting skin objects and masks from DB
 static int ske_GetSkinFromDB(char * szSection, SKINOBJECTSLIST * Skin)
 {
@@ -1947,7 +1991,7 @@ static int ske_GetSkinFromDB(char * szSection, SKINOBJECTSLIST * Skin)
 	if (!Skin->szSkinPlace || (strchr(Skin->szSkinPlace, '%') && !DBGetContactSettingByte(NULL,SKIN,"Modified",0)) ) 
 	{
 		Skin->szSkinPlace=mir_strdup("%Default%");
-		ske_LoadSkinFromResource();
+		ske_LoadSkinFromResource( FALSE );
 	}
 	//Load objects
 	{
@@ -1958,11 +2002,7 @@ static int ske_GetSkinFromDB(char * szSection, SKINOBJECTSLIST * Skin)
 		dbces.ofsSettings=0;
 		CallService(MS_DB_CONTACT_ENUMSETTINGS,0,(LPARAM)&dbces);
 
-		dbces.pfnEnumProc=ske_enumdb_SkinMasksProc;
-		dbces.ofsSettings=0;
-		CallService(MS_DB_CONTACT_ENUMSETTINGS,0,(LPARAM)&dbces);
-		SortMaskList(Skin->pMaskList);
-		pCurrentSkin=NULL;
+		ske_LinkSkinObjects(pCurrentSkin);
 	}
 	//Load Masks
 	return 0;
@@ -2060,7 +2100,7 @@ static void ske_WriteParamToDatabase(char *cKey, char* cName, char* cVal, BOOL S
 	}
 }
 
-static BOOL ske_ParseLineOfIniFile(char * Line)
+static BOOL ske_ParseLineOfIniFile(char * Line, BOOL bOnlyObjects)
 {
 	DWORD i=0;
 	DWORD len=strlen(Line);
@@ -2123,7 +2163,7 @@ static BOOL ske_ParseLineOfIniFile(char * Line)
 	return FALSE;
 }
 
-static int ske_LoadSkinFromResource()
+static int ske_LoadSkinFromResource(BOOL bOnlyObjects)
 {
 	DWORD size=0;
 	char * mem;
@@ -2151,7 +2191,7 @@ static int ske_LoadSkinFromResource()
 				line[i]='\0';
 			}
 			TRACE(line); TRACE("\n");
-			ske_ParseLineOfIniFile(line);
+			ske_ParseLineOfIniFile(line, bOnlyObjects);
 			pos++;
 		}
 	}
@@ -2160,14 +2200,14 @@ static int ske_LoadSkinFromResource()
 }
 
 //Load data from ini file
-int ske_LoadSkinFromIniFile(char * szFileName)
+int ske_LoadSkinFromIniFile(char * szFileName, BOOL bOnlyObjects)
 {
 	FILE *stream=NULL;
 	char line[512]={0};
 	char skinFolder[MAX_PATH]={0};
 	char skinFile[MAX_PATH]={0};
 	if (strchr(szFileName,'%')) 
-		return ske_LoadSkinFromResource();
+		return ske_LoadSkinFromResource( bOnlyObjects );
 
 	ske_DeleteAllSettingInSection("ModernSkin");
 	ske_GetSkinFolder(szFileName,skinFolder);
@@ -2180,7 +2220,7 @@ int ske_LoadSkinFromIniFile(char * szFileName)
 		szFileName=szFileName;
 		while (fgets( line, SIZEOF(line),stream ) != NULL)
 		{
-			ske_ParseLineOfIniFile(line);
+			ske_ParseLineOfIniFile(line, bOnlyObjects);
 		}
 		fclose( stream );
 		szFileName=NULL;
@@ -2891,10 +2931,10 @@ static int ske_AlphaTextOut (HDC hDC, LPCTSTR lpstring, int nCount, RECT * lpRec
 BOOL ske_DrawTextA(HDC hdc, char * lpString, int nCount, RECT * lpRect, UINT format)
 {
 #ifdef UNICODE
-	TCHAR *buf=mir_a2u(lpString);
+	TCHAR *buf=_mir_a2u(lpString);
 	BOOL res;
 	res=ske_DrawText(hdc,buf,nCount,lpRect,format);
-	mir_free_and_nill(buf);
+	mir_free(buf);
 	return res;
 #else
 	return ske_DrawText(hdc,lpString,nCount,lpRect,format);
@@ -4127,12 +4167,6 @@ HBITMAP ske_GetCurrentWindowImage()
 *  Glyph text routine
 */
 
-
-static int ske_SortTextGlyphObjectFunc(void * first, void * second)
-{
-	return strcmp(((GLYPHTEXT*)(((int*)first)[0]))->szGlyphTextID,((GLYPHTEXT*)(((int*)second)[0]))->szGlyphTextID);
-}
-
 static DWORD ske_HexToARGB(char * Hex)
 {
 	char buf[10]={0};
@@ -4180,7 +4214,7 @@ TCHAR* ske_ReplaceVar(TCHAR *var)
 		}
 		mir_free_and_nill(var);
 #ifdef UNICODE
-		return mir_a2u(buf);
+		return _mir_a2u(buf);
 #else
 		return mir_strdup(buf);
 #endif
@@ -4245,7 +4279,7 @@ TCHAR *ske_ParseText(TCHAR *stzText)
 *   szGlyphTextID and Define string is:
 *   t[szGlyphTextID]=s[HostObjectID],[Left],[Top],[Right],[Bottom],[LTRBHV],[FontID],[Color1],[reservedforColor2],[Text]
 */
-static void ske_AddParseTextGlyphObject(char * szGlyphTextID,char * szDefineString,SKINOBJECTSLIST *Skin)
+static void OLDske_AddParseTextGlyphObject(char * szGlyphTextID,char * szDefineString,SKINOBJECTSLIST *Skin)
 {
 
 	GLYPHOBJECT *globj=NULL;
@@ -4271,7 +4305,7 @@ static void ske_AddParseTextGlyphObject(char * szGlyphTextID,char * szDefineStri
 			glText=(GLYPHTEXT*)mir_alloc(sizeof(GLYPHTEXT));
 			memset(glText,0,sizeof(GLYPHTEXT));
 			glText->szGlyphTextID=mir_strdup(szGlyphTextID);
-
+			glText->szObjectName=mir_strdup(buf);
 			glText->iLeft=atoi(GetParamN(szDefineString,buf,sizeof(buf),1,',',TRUE));
 			glText->iTop=atoi(GetParamN(szDefineString,buf,sizeof(buf),2,',',TRUE));
 			glText->iRight=atoi(GetParamN(szDefineString,buf,sizeof(buf),3,',',TRUE));
@@ -4293,7 +4327,7 @@ static void ske_AddParseTextGlyphObject(char * szGlyphTextID,char * szDefineStri
 			glText->dwColor=ske_HexToARGB(GetParamN(szDefineString,buf,sizeof(buf),7,',',TRUE));
 			glText->dwShadow=ske_HexToARGB(GetParamN(szDefineString,buf,sizeof(buf),8,',',TRUE));
 #ifdef _UNICODE
-			glText->stValueText=mir_a2u(GetParamN(szDefineString,buf,sizeof(buf),9,',',TRUE));
+			glText->stValueText=_mir_a2u(GetParamN(szDefineString,buf,sizeof(buf),9,',',TRUE));
 			glText->stText=ske_ParseText(glText->stValueText);
 #else
 			glText->stValueText=mir_strdup(GetParamN(szDefineString,buf,sizeof(buf),9,',',TRUE));
@@ -4302,6 +4336,51 @@ static void ske_AddParseTextGlyphObject(char * szGlyphTextID,char * szDefineStri
 			li.List_Insert(globj->plTextList,(void*)glText,globj->plTextList->realCount);     
 			qsort(globj->plTextList->items,globj->plTextList->realCount,sizeof(void*),(int(*)(const void*, const void*))globj->plTextList->sortFunc);
 		}
+	}
+}
+
+
+static void ske_AddParseTextGlyphObject(char * szGlyphTextID,char * szDefineString,SKINOBJECTSLIST *Skin)
+{
+	char buf[255]={0};
+	GetParamN(szDefineString,buf,sizeof(buf),0,',',TRUE);
+	if (strlen(buf))
+	{
+		GLYPHTEXT * glText;
+		glText=(GLYPHTEXT*)mir_alloc(sizeof(GLYPHTEXT));
+		memset(glText,0,sizeof(GLYPHTEXT));
+		glText->szGlyphTextID=mir_strdup(szGlyphTextID);
+		glText->szObjectName=mir_strdup(buf);
+		glText->iLeft=atoi(GetParamN(szDefineString,buf,sizeof(buf),1,',',TRUE));
+		glText->iTop=atoi(GetParamN(szDefineString,buf,sizeof(buf),2,',',TRUE));
+		glText->iRight=atoi(GetParamN(szDefineString,buf,sizeof(buf),3,',',TRUE));
+		glText->iBottom=atoi(GetParamN(szDefineString,buf,sizeof(buf),4,',',TRUE));
+		{
+			memset(buf,0,6);
+			GetParamN(szDefineString,buf,sizeof(buf),5,',',TRUE);
+			buf[0]&=95; buf[1]&=95; buf[2]&=95; buf[3]&=95; buf[4]&=95; buf[5]&=95;   //to uppercase: &01011111 (0-95)
+			glText->RelativeFlags=
+				(buf[0]=='C'?1:((buf[0]=='R')?2:0))       //[BC][RC][BC][RC] --- Left relative
+				|(buf[1]=='C'?4:((buf[1]=='B')?8:0))       //  |   |   |--------- Top relative   
+				|(buf[2]=='C'?16:((buf[2]=='R')?32:0))     //  |   |--------------Right relative 
+				|(buf[3]=='C'?64:((buf[3]=='B')?128:0));   //  |------------------Bottom relative          
+			glText->dwFlags=(buf[4]=='C'?DT_CENTER:((buf[4]=='R')?DT_RIGHT:DT_LEFT))
+				|(buf[5]=='C'?DT_VCENTER:((buf[5]=='B')?DT_BOTTOM:DT_TOP));
+		}
+		glText->szFontID=mir_strdup(GetParamN(szDefineString,buf,sizeof(buf),6,',',TRUE));
+
+		glText->dwColor=ske_HexToARGB(GetParamN(szDefineString,buf,sizeof(buf),7,',',TRUE));
+		glText->dwShadow=ske_HexToARGB(GetParamN(szDefineString,buf,sizeof(buf),8,',',TRUE));
+#ifdef _UNICODE
+		glText->stValueText=_mir_a2u(GetParamN(szDefineString,buf,sizeof(buf),9,',',TRUE));
+		glText->stText=ske_ParseText(glText->stValueText);
+#else
+		glText->stValueText=mir_strdup(GetParamN(szDefineString,buf,sizeof(buf),9,',',TRUE));
+		glText->stText=ske_ParseText(glText->stValueText);
+#endif
+		if (!Skin->pTextList)
+			Skin->pTextList=li.List_Create(0,1);
+		li.List_InsertPtr(Skin->pTextList,glText);
 	}
 }
 

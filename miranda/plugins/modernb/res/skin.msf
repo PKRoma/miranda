@@ -1,5 +1,5 @@
 [Skin_Description_Section]
-  Name=reVista v0.2
+  Name=reVista Remixed v0.5
   SubStyle=Normal
   Author=Fyr(basic skin)&Angeli-Ka(images, layout, size tuning)
   Contact=angil@nm.ru
@@ -12,62 +12,69 @@
 ==================================================================================================                     
 [ModernSkin]
 
-fPoweredFont=sSmall Font,7,---
-tPowered1=s$$Window,10,-20,-10,-4,LBRBRB,fPoweredFont,0x88AAAABB,0,Powered by Miranda IM v.7
+fProfFont=sVerdana,12,---
 
-$$Window=sGlyph,Fragment,%back%.tga,0,0,100,50,StretchBoth,11,24,12,12,247
-$$Group/Closed/Hot=sGlyph,Fragment,%back%.tga,48,50,4,20,StretchBoth,1,3,1,3,255
-$$Group/Closed/Selected=sGlyph,Fragment,%back%.tga,48,50,4,20,StretchBoth,1,3,1,3,150
-$$SubGroup/Open=sGlyph,Fragment,%back%.tga,72,66,14,14,StretchBoth,6,6,6,6,255
-$$SubGroup/Open/Hot=sGlyph,Fragment,%back%.tga,86,66,14,14,StretchBoth,6,6,6,6,255
-$$SubGroup/Open/Selected=sGlyph,Fragment,%back%.tga,86,66,14,14,StretchBoth,6,6,6,6,255
-$$SubGroup/Closed=sGlyph,Fragment,%back%.tga,158,0,4,4,StretchBoth,0,0,0,0,255
-$$SubGroup/Closed/Hot=sGlyph,Fragment,%back%.tga,48,50,4,20,StretchBoth,1,3,1,3,255
-$$SubGroup/Closed/Selected=sGlyph,Fragment,%back%.tga,48,50,4,20,StretchBoth,1,3,1,3,150
-$$Contact/Hot=sGlyph,Fragment,%back%.tga,52,50,4,20,StretchBoth,1,6,1,6,255
-$$Contact/Selected=sGlyph,Fragment,%back%.tga,52,50,4,20,StretchBoth,1,3,1,3,255
-$$Contact/Normal=sGlyph,Fragment,%back%.tga,0,78,2,2,StretchBoth,0,0,0,2,255
-$$Contact/Last=sGlyph,Fragment,%back%.tga,0,78,2,2,StretchBoth,0,0,0,2,255
-$$Contact/First=sGlyph,Fragment,%back%.tga,0,78,2,2,StretchBoth,0,0,0,2,255
-$$Scroll/BtnUp=sGlyph,Fragment,%back%.tga,72,50,16,16,StretchBoth,0,13,13,0,100
-$$Scroll/BtnDn=sGlyph,Fragment,%back%.tga,56,50,16,16,StretchBoth,0,0,13,13,100
-$$Scroll/Thumb=sGlyph,Fragment,%back%.tga,24,50,7,22,StretchBoth,3,4,2,5,100
-$$Scroll/Back=sGlyph,Fragment,%back%.tga,2,76,16,4,StretchBoth,2,0,2,0,255
-$$FrameTitleBar=sGlyph,Fragment,%back%.tga,31,50,4,20,StretchBoth,1,2,1,2,255
-$$ViewMode/CurrentMode=sGlyph,Fragment,%back%.tga,42,50,6,20,StretchBoth,3,4,2,5,255
-$$ViewMode/CurrentMode/Hot=sGlyph,Fragment,%back%.tga,25,50,6,20,StretchBoth,3,4,2,5,255
-$$ViewMode/CurrentMode/Pressed=sGlyph,Fragment,%back%.tga,24,49,7,20,StretchBoth,3,4,2,5,255
-$$ViewMode/SetupMode=sGlyph,Fragment,%back%.tga,41,50,7,20,StretchBoth,3,4,2,5,255
-$$ViewMode/SetupMode/Hot=sGlyph,Fragment,%back%.tga,24,50,7,20,StretchBoth,3,4,2,5,255
-$$ViewMode/SetupMode/Pressed=sGlyph,Fragment,%back%.tga,24,49,7,20,StretchBoth,3,4,2,5,255
-$$ViewMode/ResetMode=sGlyph,Fragment,%back%.tga,41,50,7,20,StretchBoth,3,4,2,5,255
-$$ViewMode/ResetMode/Hot=sGlyph,Fragment,%back%.tga,24,50,7,20,StretchBoth,3,4,2,5,255
-$$ViewMode/ResetMode/Pressed=sGlyph,Fragment,%back%.tga,24,49,7,20,StretchBoth,3,4,2,5,255
-$$Button/Close/Normal=sGlyph,Fragment,%back%.tga,100,0,19,16,StretchBoth,0,0,0,0,255
-$$Button/Close/Hovered=sGlyph,Fragment,%back%.tga,138,0,19,16,StretchBoth,0,0,0,0,255
-$$Button/Close/Down=sGlyph,Fragment,%back%.tga,119,0,19,16,StretchBoth,0,0,0,0,255
-$$Button/Minimize/Normal=sGlyph,Fragment,%back%.tga,100,16,20,16,StretchBoth,0,3,0,3,255
-$$Button/Minimize/Hovered=sGlyph,Fragment,%back%.tga,140,16,20,16,StretchBoth,0,3,0,3,255
-$$Button/Minimize/Down=sGlyph,Fragment,%back%.tga,120,16,20,16,StretchBoth,0,3,0,3,255
-$$Button/Menu/Normal=sGlyph,Fragment,%back%.tga,100,32,20,16,StretchBoth,0,0,0,0,255
-$$Button/Menu/Hovered=sGlyph,Fragment,%back%.tga,140,32,20,16,StretchBoth,0,0,0,0,255
-$$Button/Menu/Down=sGlyph,Fragment,%back%.tga,120,32,20,16,StretchBoth,0,0,0,0,255
-$$Button/Options/Normal=sGlyph,Fragment,%back%.tga,100,48,18,16,StretchBoth,0,0,0,0,255
-$$Button/Options/Hovered=sGlyph,Fragment,%back%.tga,136,48,18,16,StretchBoth,0,0,0,0,255
-$$Button/Options/Down=sGlyph,Fragment,%back%.tga,118,48,18,16,StretchBoth,0,0,0,0,255
-$$Button/Status/Normal=sGlyph,Fragment,%back%.tga,100,64,19,16,StretchBoth,0,0,0,0,255
-$$Button/Status/Hovered=sGlyph,Fragment,%back%.tga,138,64,19,16,StretchBoth,0,0,0,0,255
-$$Button/Status/Down=sGlyph,Fragment,%back%.tga,119,64,19,16,StretchBoth,0,0,0,0,255
-$$Group/Open=sGlyph,Fragment,%back%.tga,48,50,4,20,StretchBoth,1,1,1,1,128
-$$Group/Open/Hot=sGlyph,Fragment,%back%.tga,48,50,4,20,StretchBoth,1,3,1,3,255
-$$Group/Open/Selected=sGlyph,Fragment,%back%.tga,48,50,4,20,StretchBoth,1,1,1,1,200
-$$Group/Closed=sGlyph,Fragment,%back%.tga,48,50,4,20,StretchBoth,1,1,1,1,50
+
+tProfile0=s$$Window,26,4,-32,19,LTRTCC,fProfFont,0x80535666,0,Miranda IM
+tProfile1=s$$Window,28,6,-30,21,LTRTCC,fProfFont,0x80FFFFFF,0,Miranda IM
+tProfile2=s$$Window,27,5,-31,20,LTRTCC,fProfFont,0x395C7E,0,Miranda IM
+
+$$Window=sGlyph,Fragment,back%.tga,0,0,100,50,StretchBoth,11,24,12,12,255
+
+$$Group/Open=sGlyph,Fragment,back%.tga,0,50,7,20,StretchBoth,3,2,3,2,255
+$$Group/Open/Hot=sGlyph,Fragment,back%.tga,7,50,7,20,StretchBoth,3,2,3,2,255
+$$Group/Open/Selected=sGlyph,Fragment,back%.tga,7,50,7,20,StretchBoth,3,2,3,2,255
+
+$$Group/Closed=sGlyph,Fragment,back%.tga,66,66,4,4,StretchBoth,0,0,0,0,255
+$$Group/Closed/Hot=sGlyph,Fragment,back%.tga,38,50,4,20,StretchBoth,1,3,1,3,255
+$$Group/Closed/Selected=sGlyph,Fragment,back%.tga,38,50,4,20,StretchBoth,1,3,1,3,150
+
+$$SubGroup/Open=sGlyph,Fragment,back%.tga,0,50,7,20,StretchBoth,3,2,3,2,255
+$$SubGroup/Open/Hot=sGlyph,Fragment,back%.tga,7,50,7,20,StretchBoth,3,2,3,2,255
+$$SubGroup/Open/Selected=sGlyph,Fragment,back%.tga,7,50,7,20,StretchBoth,3,2,3,2,255
+
+$$SubGroup/Closed=sGlyph,Fragment,back%.tga,66,66,4,4,StretchBoth,0,0,0,0,255
+$$SubGroup/Closed/Hot=sGlyph,Fragment,back%.tga,38,50,4,20,StretchBoth,1,3,1,3,255
+$$SubGroup/Closed/Selected=sGlyph,Fragment,back%.tga,38,50,4,20,StretchBoth,1,3,1,3,150
+
+$$Contact/Hot=sGlyph,Fragment,back%.tga,42,50,4,20,StretchBoth,1,6,1,6,255
+$$Contact/Selected=sGlyph,Fragment,back%.tga,42,50,4,20,StretchBoth,1,3,1,3,250
+$$Contact/Normal=sGlyph,Fragment,back%.tga,46,68,2,2,StretchBoth,0,0,0,2,255
+$$Contact/Last=sGlyph,Fragment,back%.tga,46,68,2,2,StretchBoth,0,0,0,2,255
+$$Contact/First=sGlyph,Fragment,back%.tga,46,68,2,2,StretchBoth,0,0,0,2,255
+
+$$Scroll/BtnUp=sGlyph,Fragment,back%.tga,62,50,16,16,StretchBoth,0,0,0,0,255
+$$Scroll/BtnDn=sGlyph,Fragment,back%.tga,46,50,16,16,StretchBoth,0,0,0,0,255
+$$Scroll/Thumb=sGlyph,Fragment,back%.tga,24,50,7,22,StretchBoth,3,4,2,5,150
+$$Scroll/Back=sGlyph,Fragment,back%.tga,48,66,16,4,StretchBoth,2,0,2,0,255
+
+$$FrameTitleBar=sGlyph,Fragment,back%.tga,14,50,4,20,StretchBoth,1,2,1,2,255
+
+$$StatusBar=sGlyph,Fragment,back%.tga,18,50,6,20,StretchBoth,2,2,2,2,255
+
+$$ViewMode/CurrentMode=sGlyph,Fragment,back%.tga,32,50,6,20,StretchBoth,3,4,2,5,255
+$$ViewMode/CurrentMode/Hot=sGlyph,Fragment,back%.tga,25,50,6,20,StretchBoth,3,4,2,5,255
+$$ViewMode/CurrentMode/Pressed=sGlyph,Fragment,back%.tga,24,49,7,20,StretchBoth,3,4,2,5,255
+$$ViewMode/SetupMode=sGlyph,Fragment,back%.tga,31,50,7,20,StretchBoth,3,4,2,5,255
+$$ViewMode/SetupMode/Hot=sGlyph,Fragment,back%.tga,24,50,7,20,StretchBoth,3,4,2,5,255
+$$ViewMode/SetupMode/Pressed=sGlyph,Fragment,back%.tga,24,49,7,20,StretchBoth,3,4,2,5,255
+$$ViewMode/ResetMode=sGlyph,Fragment,back%.tga,31,50,7,20,StretchBoth,3,4,2,5,255
+$$ViewMode/ResetMode/Hot=sGlyph,Fragment,back%.tga,24,50,7,20,StretchBoth,3,4,2,5,255
+$$ViewMode/ResetMode/Pressed=sGlyph,Fragment,back%.tga,24,49,7,20,StretchBoth,3,4,2,5,255
+
+$$Button/Minimize/Normal=sGlyph,Fragment,back%.tga,100,0,26,15,StretchBoth,0,3,0,3,255
+$$Button/Minimize/Hovered=sGlyph,Fragment,back%.tga,100,15,26,15,StretchBoth,0,3,0,3,255
+$$Button/Minimize/Down=sGlyph,Fragment,back%.tga,100,30,26,15,StretchBoth,0,3,0,3,255
+$$Button/Menu/Normal=sGlyph,Fragment,back%.tga,101,50,24,16,StretchBoth,0,0,0,0,180
+$$Button/Menu/Hovered=sGlyph,Fragment,back%.tga,101,50,24,16,StretchBoth,0,0,0,0,255
+$$Button/Menu/Down=sGlyph,Fragment,back%.tga,77,50,24,16,StretchBoth,0,0,0,0,255
+
 $$Background=sGlyph,Skip
-$$StatusBar=sGlyph,Skip
 
-$$BarButton=sGlyph,Fragment,%back%.tga,41,50,7,20,StretchBoth,3,4,2,5,150
-$$BarButton/Hot=sGlyph,Fragment,%back%.tga,24,50,7,20,StretchBoth,3,4,2,5,200
-$$BarButton/Pressed=sGlyph,Fragment,%back%.tga,24,49,7,20,StretchBoth,3,4,2,5,255
+
+$$BarButton=sGlyph,Fragment,back%.tga,31,50,7,20,StretchBoth,3,4,2,5,150
+$$BarButton/Hot=sGlyph,Fragment,back%.tga,24,50,7,20,StretchBoth,3,4,2,5,200
+$$BarButton/Pressed=sGlyph,Fragment,back%.tga,24,49,7,20,StretchBoth,3,4,2,5,255
 
 @0=s$$Window:Main,ID=Background
 @1=s$$Background:CL,ID=Background
@@ -118,12 +125,7 @@ $$BarButton/Pressed=sGlyph,Fragment,%back%.tga,24,49,7,20,StretchBoth,3,4,2,5,25
 @200=s$$Button/Menu/Down:MButton,ID=mainmenu,Down=1
 @210=s$$Button/Menu/Hovered:MButton,ID=mainmenu,Hovered=1
 @220=s$$Button/Menu/Normal:MButton,ID=mainmenu
-@260=s$$Button/Options/Down:MButton,ID=optionsmenu,Down=1
-@270=s$$Button/Options/Hovered:MButton,ID=optionsmenu,Hovered=1
-@280=s$$Button/Options/Normal:MButton,ID=optionsmenu
-@281=s$$Button/Status/Down:MButton,ID=statusmenu,Down=1
-@282=s$$Button/Status/Hovered:MButton,ID=statusmenu,Hovered=1
-@283=s$$Button/Status/Normal:MButton,ID=statusmenu
+
 @300=s$$ViewMode:ViewMode,ID=Background
 @301=s$$ViewMode/CurrentMode/Pressed:Button,ID=ViewMode.Select,Pressed=True
 @302=s$$ViewMode/CurrentMode/Hot:Button,ID=ViewMode.Select,Hovered=True
@@ -138,8 +140,8 @@ $$BarButton/Pressed=sGlyph,Fragment,%back%.tga,24,49,7,20,StretchBoth,3,4,2,5,25
 @1620=s$$BarButton/Hot:Button,Hovered=True
 @1630=s$$BarButton:Button
 
-
-#minimize=sPush,CList/ShowHide,-28,2,-9,18,R-R--,0,0,Minimize Miranda
+#mainmenu=sPush,CList/ShowMainMenu,10,5,34,21,-----,0,0,Show Main Menu
+#minimize=sPush,CList/ShowHide,-36,3,-10,18,R-R--,0,0,Minimize Miranda
 
 [CLUI]
 ;Another setting for CLUI section

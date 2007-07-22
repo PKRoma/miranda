@@ -186,7 +186,7 @@ int     ske_JustUpdateWindowImageRect(RECT * rty);
 HBITMAP ske_LoadGlyphImage(char * szFileName);
 int     ske_LoadModule();
 void	ske_LoadSkinFromDB(void);
-int		ske_LoadSkinFromIniFile(char*);
+int		ske_LoadSkinFromIniFile(char*, BOOL);
 TCHAR*	ske_ParseText(TCHAR *stzText);
 int		ske_PrepeareImageButDontUpdateIt(RECT * r);
 int     ske_ReCreateBackImage(BOOL Erase,RECT *w);
@@ -338,5 +338,7 @@ extern LRESULT ( CALLBACK *saveContactListControlWndProc )(HWND hwnd, UINT msg, 
 /* SkinEngine.c */
 
 BYTE SkinDBGetContactSettingByte(HANDLE hContact, const char* szSection, const char*szKey, BYTE bDefault);
+
+wchar_t* _mir_a2u( char* src );
 
 #endif

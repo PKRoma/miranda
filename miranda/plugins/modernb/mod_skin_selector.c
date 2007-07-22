@@ -419,8 +419,10 @@ int AddStrModernMaskToList(DWORD maskID, char * szStr, char * objectName,  LISTM
     MODERNMASK mm={0};
     if (!szStr || !mmTemplateList) return -1;
     if (ParseToModernMask(&mm,szStr)) return -1;
-    mm.pObject=(void*) ske_FindObjectByName(objectName, OT_ANY, (SKINOBJECTSLIST*) pObjectList);
-        mm.dwMaskId=maskID;
+	mm.bObjectFound=FALSE;
+	mm.szObjectName=mir_strdup(objectName);
+    //mm.pObject=(void*) ske_FindObjectByName(objectName, OT_ANY, (SKINOBJECTSLIST*) pObjectList);
+    mm.dwMaskId=maskID;
     return AddModernMaskToList(&mm,mmTemplateList);
 }
 

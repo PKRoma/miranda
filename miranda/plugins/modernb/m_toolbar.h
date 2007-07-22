@@ -25,6 +25,8 @@ typedef struct _tagTBButton
 	DWORD defPos;			 // default order pos of button (less values are nearer to edge).. please use values greater that 100. the default buttons has pos: 10,20..90
 	DWORD tbbFlags;			 // combine of TBBF_ flags above
 	void (*ParamDestructor)(void *); //will be called on parameters deletion
+	HANDLE hPrimaryIconHandle;
+	HANDLE hSecondaryIconHandle;
 }TBButton;
 
 //////////////////////////////////////////////////////////////////////////
@@ -55,7 +57,7 @@ typedef struct _tagTBButton
 
 //////////////////////////////////////////////////////////////////////////
 // SetState
-// WPARAM = (HANLDE) hButton;
+// WPARAM = (char *) szButtonID;
 // LPARAM = one of below TBST_ states 
 // LRESULT= old state
 #define TBST_PUSHED			1

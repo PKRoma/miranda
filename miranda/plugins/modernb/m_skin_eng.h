@@ -150,6 +150,7 @@ typedef struct s_GLYPHTEXT
   BYTE          RelativeFlags;
   char        * szFontID;
   HFONT         hFont;
+  char		  * szObjectName;
 }GLYPHTEXT,*LPGLYPHTEXT;
 
 /* SKINTEXTDESCRIPTOR opbject descriptor structure */

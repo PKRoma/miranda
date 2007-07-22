@@ -67,10 +67,14 @@ int SkinOptInit(WPARAM wParam,LPARAM lParam)
 		odp.pszTab=LPGEN("Load/Save");
 		CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 
-		odp.pfnDlgProc=DlgSkinEditorOpts;
-		odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_SKINEDITOR);
-		odp.pszTab=LPGEN("Object Editor");
-		CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+		if (DBGetContactSettingByte(NULL, "ModernData", "EnableSkinEditor",SETTING_ENABLESKINEDITOR_DEFAULT))
+		{
+			odp.flags|=ODPF_EXPERTONLY;
+			odp.pfnDlgProc=DlgSkinEditorOpts;
+			odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_SKINEDITOR);
+			odp.pszTab=LPGEN("Object Editor");
+			CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+		}
 	}
 	return 0;
 }
@@ -156,7 +160,12 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 					else
 					{
 						_snprintf(text,sizeof(text),Translate("%s\n\n%s\n\nAuthor(s): %s\nContact:\t %s\nWeb:\t %s\n\nFile:\t %s"),
-							"Luna v0.4",Translate("This is default Modern Contact list skin based on 'Luna' theme"),"Angeli-Ka (graphics), FYR (template)","JID: fyr@jabber.ru","modern.saopp.info",Translate("Inside library"));
+							"reVista for Modern v0.5",
+							Translate("This is second default Modern Contact list skin in Vista Aero style"),
+							"Angeli-Ka (graphics), FYR (template)",
+							"JID: fyr@jabber.ru",
+							"fyr.mirandaim.ru",
+							Translate("Inside library"));
 					}
 					MessageBoxA(hwndDlg,text,"Skin Information",MB_OK|MB_ICONINFORMATION);
 				}
@@ -184,7 +193,7 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 							res=MessageBoxA(hwndDlg,Translate("Current skin was not saved to file.\n\nAll changes will be lost.\n\n Continue to load new skin?"),Translate("Warning!"),MB_OKCANCEL|MB_ICONWARNING|MB_DEFBUTTON2|MB_TOPMOST);
 						if (res!=IDOK) return 0;
 					}
-					ske_LoadSkinFromIniFile(sd->File);
+					ske_LoadSkinFromIniFile(sd->File, FALSE);
 					ske_LoadSkinFromDB();	
 					glOtherSkinWasLoaded=TRUE;
 					pcli->pfnClcBroadcast( INTM_RELOADOPTIONS,0,0);
@@ -384,11 +393,11 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 							else
 							{
 								_snprintf(text,sizeof(text),Translate("%s\n\n%s\n\nAUTHORS:\n%s\n\nCONTACT:\n%s\n\nWEB:\n%s\n\n\n"),
-									"Luna v0.4",
-									Translate("This is default Modern Contact list skin based on 'Luna' theme"),
+									"reVista for Modern v0.5",
+									Translate("This is second default Modern Contact list skin in Vista Aero style"),
 									"graphics by Angeli-Ka\ntemplate by FYR",
 									"JID: fyr@jabber.ru",
-									"modern.saopp.info"
+									"fyr.mirandaim.ru"
 									);
 							}
 							ShowWindow(GetDlgItem(hwndDlg,IDC_PREVIEW),SW_HIDE);

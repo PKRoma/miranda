@@ -213,7 +213,7 @@ int SetDrawer(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-void InitTBModule();
+void InitToolBarModule();
 int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 {
 	int rc=0;
@@ -371,7 +371,7 @@ LBL_Error:
 	if (rc==0) rc=LoadCLCModule();
 	BGModuleLoad();
 	LoadSkinButtonModule();
-	InitTBModule();
+	InitToolBarModule();
 	TRACE("CListInitialise ClistMW...Done\r\n");
 	return rc;
 }

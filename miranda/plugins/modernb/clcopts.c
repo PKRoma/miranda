@@ -36,6 +36,131 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SAMEASF_COLOUR 8
 #define SAMEASF_EFFECT 128
 
+#include "m_fontservice.h"
+
+#define FONTF_NORMAL 0
+#define FONTF_BOLD   1
+#define FONTF_ITALIC 2
+#define FONTF_UNDERLINE  4
+
+struct FontOptionsList
+{
+	int		 fontID;
+	TCHAR*   szGroup;
+	TCHAR*   szDescr;
+	COLORREF defColour;
+	TCHAR*   szDefFace;
+	BYTE     defCharset, defStyle;
+	char     defSize;
+	COLORREF colour;
+	TCHAR    szFace[LF_FACESIZE];
+	BYTE     charset, style;
+	char     size;
+};
+
+#define CLCGROUP			LPGENT("Contact List")
+#define DEFAULT_COLOUR		RGB(0, 0, 0)
+#define DEFAULT_FAMILY		_T("Arial")
+#define DEFAULT_FONT_STYLE	FONTF_NORMAL
+#define DEFAULT_SIZE		-8
+#define DEFAULT_SMALLSIZE	-6
+
+static struct FontOptionsList fontOptionsList[] = {
+		{ FONTID_CONTACTS, CLCGROUP, LPGENT( "Standard contacts"), DEFAULT_COLOUR, DEFAULT_FAMILY, DEFAULT_CHARSET, DEFAULT_FONT_STYLE, DEFAULT_SIZE },
+		{ FONTID_AWAY, CLCGROUP, LPGENT( "Away contacts"), DEFAULT_COLOUR, DEFAULT_FAMILY, DEFAULT_CHARSET, DEFAULT_FONT_STYLE, DEFAULT_SIZE },
+		{ FONTID_DND, CLCGROUP, LPGENT( "DND contacts"), DEFAULT_COLOUR, DEFAULT_FAMILY, DEFAULT_CHARSET, DEFAULT_FONT_STYLE, DEFAULT_SIZE },
+		{ FONTID_NA, CLCGROUP, LPGENT( "NA contacts"), DEFAULT_COLOUR, DEFAULT_FAMILY, DEFAULT_CHARSET, DEFAULT_FONT_STYLE, DEFAULT_SIZE },
+		{ FONTID_OCCUPIED, CLCGROUP, LPGENT( "Occupied contacts"), DEFAULT_COLOUR, DEFAULT_FAMILY, DEFAULT_CHARSET, DEFAULT_FONT_STYLE, DEFAULT_SIZE },
+		{ FONTID_CHAT, CLCGROUP, LPGENT( "Free for chat contacts"), DEFAULT_COLOUR, DEFAULT_FAMILY, DEFAULT_CHARSET, DEFAULT_FONT_STYLE, DEFAULT_SIZE },
+		{ FONTID_INVISIBLE, CLCGROUP, LPGENT( "Invisible contacts"), DEFAULT_COLOUR, DEFAULT_FAMILY, DEFAULT_CHARSET, DEFAULT_FONT_STYLE, DEFAULT_SIZE },
+		{ FONTID_PHONE, CLCGROUP, LPGENT( "On the phone contacts"), DEFAULT_COLOUR, DEFAULT_FAMILY, DEFAULT_CHARSET, DEFAULT_FONT_STYLE, DEFAULT_SIZE },
+		{ FONTID_LUNCH, CLCGROUP, LPGENT( "Out to lunch contacts"), DEFAULT_COLOUR, DEFAULT_FAMILY, DEFAULT_CHARSET, DEFAULT_FONT_STYLE, DEFAULT_SIZE },
+		{ FONTID_OFFLINE, CLCGROUP, LPGENT( "Offline contacts"), DEFAULT_COLOUR, DEFAULT_FAMILY, DEFAULT_CHARSET, DEFAULT_FONT_STYLE, DEFAULT_SIZE },
+		{ FONTID_INVIS, CLCGROUP, LPGENT( "Online contacts to whom you have a different visibility"), DEFAULT_COLOUR, DEFAULT_FAMILY, DEFAULT_CHARSET, DEFAULT_FONT_STYLE, DEFAULT_SIZE },		
+		{ FONTID_OFFINVIS, CLCGROUP, LPGENT( "Offline contacts to whom you have a different visibility"), DEFAULT_COLOUR, DEFAULT_FAMILY, DEFAULT_CHARSET, DEFAULT_FONT_STYLE, DEFAULT_SIZE },
+		{ FONTID_NOTONLIST, CLCGROUP, LPGENT( "Contacts who are 'not on list'"), DEFAULT_COLOUR, DEFAULT_FAMILY, DEFAULT_CHARSET, DEFAULT_FONT_STYLE, DEFAULT_SIZE },
+		{ FONTID_OPENGROUPS, CLCGROUP, LPGENT( "Open groups"), DEFAULT_COLOUR, DEFAULT_FAMILY, DEFAULT_CHARSET, DEFAULT_FONT_STYLE, DEFAULT_SIZE },
+		{ FONTID_OPENGROUPCOUNTS, CLCGROUP, LPGENT( "Open group member counts"), DEFAULT_COLOUR, DEFAULT_FAMILY, DEFAULT_CHARSET, DEFAULT_FONT_STYLE, DEFAULT_SIZE },
+		{ FONTID_CLOSEDGROUPS, CLCGROUP, LPGENT( "Closed groups"), DEFAULT_COLOUR, DEFAULT_FAMILY, DEFAULT_CHARSET, DEFAULT_FONT_STYLE, DEFAULT_SIZE },
+		{ FONTID_CLOSEDGROUPCOUNTS, CLCGROUP, LPGENT( "Closed group member counts"), DEFAULT_COLOUR, DEFAULT_FAMILY, DEFAULT_CHARSET, DEFAULT_FONT_STYLE, DEFAULT_SIZE },
+		{ FONTID_DIVIDERS, CLCGROUP, LPGENT( "Dividers"), DEFAULT_COLOUR, DEFAULT_FAMILY, DEFAULT_CHARSET, DEFAULT_FONT_STYLE, DEFAULT_SIZE },
+		{ FONTID_SECONDLINE, CLCGROUP, LPGENT( "Second line"), DEFAULT_COLOUR, DEFAULT_FAMILY, DEFAULT_CHARSET, DEFAULT_FONT_STYLE, DEFAULT_SIZE },
+		{ FONTID_THIRDLINE, CLCGROUP, LPGENT( "Third line"), DEFAULT_COLOUR, DEFAULT_FAMILY, DEFAULT_CHARSET, DEFAULT_FONT_STYLE, DEFAULT_SIZE },
+		{ FONTID_CONTACT_TIME, CLCGROUP, LPGENT( "Contact time"), DEFAULT_COLOUR, DEFAULT_FAMILY, DEFAULT_CHARSET, DEFAULT_FONT_STYLE, DEFAULT_SIZE },
+		{ FONTID_STATUSBAR_PROTONAME, CLCGROUP, LPGENT( "Status bar text"), DEFAULT_COLOUR, DEFAULT_FAMILY, DEFAULT_CHARSET, DEFAULT_FONT_STYLE, DEFAULT_SIZE },
+		{ FONTID_EVENTAREA, CLCGROUP, LPGENT( "Event area text"), DEFAULT_COLOUR, DEFAULT_FAMILY, DEFAULT_CHARSET, DEFAULT_FONT_STYLE, DEFAULT_SIZE },
+		{ FONTID_VIEMODES, CLCGROUP, LPGENT( "Current view mode text"), DEFAULT_COLOUR, DEFAULT_FAMILY, DEFAULT_CHARSET, DEFAULT_FONT_STYLE, DEFAULT_SIZE },
+};
+
+const int msgDlgFontCount = SIZEOF(fontOptionsList);
+/*
+void LoadMsgDlgFont(int i, LOGFONT* lf, COLORREF * colour)
+{
+	char str[32];
+	int style;
+	DBVARIANT dbv;
+
+	if ( colour ) {
+		wsprintfA(str, "SRMFont%dCol", i);
+		*colour = DBGetContactSettingDword(NULL, SRMMMOD, str, fontOptionsList[i].defColour);
+	}
+	if ( lf ) {
+		wsprintfA(str, "SRMFont%dSize", i);
+		lf->lfHeight = (char) DBGetContactSettingByte(NULL, SRMMMOD, str, fontOptionsList[i].defSize);
+		lf->lfWidth = 0;
+		lf->lfEscapement = 0;
+		lf->lfOrientation = 0;
+		wsprintfA(str, "SRMFont%dSty", i);
+		style = DBGetContactSettingByte(NULL, SRMMMOD, str, fontOptionsList[i].defStyle);
+		lf->lfWeight = style & FONTF_BOLD ? FW_BOLD : FW_NORMAL;
+		lf->lfItalic = style & FONTF_ITALIC ? 1 : 0;
+		lf->lfUnderline = 0;
+		lf->lfStrikeOut = 0;
+		wsprintfA(str, "SRMFont%dSet", i);
+		lf->lfCharSet = DBGetContactSettingByte(NULL, SRMMMOD, str, fontOptionsList[i].defCharset);
+		lf->lfOutPrecision = OUT_DEFAULT_PRECIS;
+		lf->lfClipPrecision = CLIP_DEFAULT_PRECIS;
+		lf->lfQuality = DEFAULT_QUALITY;
+		lf->lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
+		wsprintfA(str, "SRMFont%d", i);
+		if (DBGetContactSettingTString(NULL, SRMMMOD, str, &dbv))
+			lstrcpy(lf->lfFaceName, fontOptionsList[i].szDefFace);
+		else {
+			lstrcpyn(lf->lfFaceName, dbv.ptszVal, SIZEOF(lf->lfFaceName));
+			DBFreeVariant(&dbv);
+}	}	}
+
+*/
+void RegisterCLUIFonts( void )
+{
+	FontIDT fontid = {0};
+	ColourIDT colourid = {0};
+	char idstr[10];
+	int i, index = 0;
+
+	fontid.cbSize = FontID_SIZEOF_V2;
+	fontid.flags =  FIDF_DEFAULTVALID | FIDF_APPENDNAME | FIDF_SAVEPOINTSIZE | FIDF_ALLOWEFFECTS;
+	for ( i = 0; i < msgDlgFontCount; i++, index++ ) 
+	{
+		strncpy(fontid.dbSettingsGroup, "_CList", sizeof(fontid.dbSettingsGroup));
+		_tcsncpy(fontid.group, fontOptionsList[i].szGroup, SIZEOF(fontid.group));
+		_tcsncpy(fontid.name, fontOptionsList[i].szDescr, SIZEOF(fontid.name));
+		sprintf(idstr, "Font%d", fontOptionsList[i].fontID);
+		strncpy(fontid.prefix, idstr, SIZEOF(fontid.prefix));
+		fontid.order = i+1;
+
+		fontid.deffontsettings.charset = fontOptionsList[i].defCharset;
+		fontid.deffontsettings.colour = fontOptionsList[i].defColour;
+		fontid.deffontsettings.size = fontOptionsList[i].defSize;
+		fontid.deffontsettings.style = fontOptionsList[i].defStyle;
+		_tcsncpy(fontid.deffontsettings.szFace, fontOptionsList[i].szDefFace, SIZEOF(fontid.deffontsettings.szFace));
+		CallService(MS_FONT_REGISTERT, (WPARAM)&fontid, 0);
+	}
+}
+
+
+
+
 static WORD fontSameAsDefault[]={0x00FF,0x8B00,0x8F00,0x8700,0x8B00,0x8104,0x8D00,0x8B02,0x8900,0x8D00,
 0x8F00,0x8F00,0x8F00,0x8F00,0x8F00,0x8F00,0x8F00,0x8F00,0x8F00,0x8104,0x8D00,0x00FF,0x8F00,0x8F00};
 static TCHAR *fontSizes[]={_T("6"),_T("7"),_T("8"),_T("9"),_T("10"),_T("12"),_T("14"),_T("16"),_T("18"),_T("20"),_T("24"),_T("28")};
@@ -261,7 +386,7 @@ int ClcOptInit(WPARAM wParam,LPARAM lParam)
 		odp.flags = ODPF_BOLDGROUPS|ODPF_TCHAR;
 		CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
 	}
-
+	//RegisterCLUIFonts();
 	return 0;
 }
 
@@ -2052,7 +2177,7 @@ static BOOL CALLBACK DlgProcCluiOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		TranslateDialogDefault(hwndDlg);
 		CheckDlgButton(hwndDlg, IDC_CLIENTDRAG, DBGetContactSettingByte(NULL,"CLUI","ClientAreaDrag",SETTING_CLIENTDRAG_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
 		CheckDlgButton(hwndDlg, IDC_DRAGTOSCROLL, (DBGetContactSettingByte(NULL,"CLUI","DragToScroll",SETTING_DRAGTOSCROLL_DEFAULT)&&!DBGetContactSettingByte(NULL,"CLUI","ClientAreaDrag",SETTING_CLIENTDRAG_DEFAULT)) ? BST_CHECKED : BST_UNCHECKED);
-		CheckDlgButton(hwndDlg, IDC_AUTOSIZE, DBGetContactSettingByte(NULL,"CLUI","AutoSize",SETTING_AUTOSIZE_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);			
+		CheckDlgButton(hwndDlg, IDC_AUTOSIZE, g_CluiData.fAutoSize ? BST_CHECKED : BST_UNCHECKED);			
 		CheckDlgButton(hwndDlg, IDC_LOCKSIZING, DBGetContactSettingByte(NULL,"CLUI","LockSize",SETTING_LOCKSIZE_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);			   
 		CheckDlgButton(hwndDlg, IDC_BRINGTOFRONT, DBGetContactSettingByte(NULL,"CList","BringToFront",SETTING_BRINGTOFRONT_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);			   		
 

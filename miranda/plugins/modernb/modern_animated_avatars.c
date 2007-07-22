@@ -379,14 +379,14 @@ int AniAva_SetAvatarPos(HANDLE hContact, RECT * rc, int overlayIdx, BYTE bAlpha)
 
 						if (pdnce && pdnce->name)
 						{
-							temp=mir_t2a(pdnce->name);
+							temp=_mir_t2a(pdnce->name);
 							strcat(szName,"_");
 							strcat(szName,temp);
 							mir_free(temp);
 						}
 					}
 #endif
-					tszName = mir_a2t( szName );
+					tszName = _mir_a2t( szName );
 					hwnd=_AniAva_CreateAvatarWindowSync(tszName);
 					mir_free( tszName );
 					parent=GetAncestor(pcli->hwndContactList,GA_PARENT);

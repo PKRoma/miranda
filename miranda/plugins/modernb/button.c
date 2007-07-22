@@ -233,7 +233,8 @@ static LRESULT CALLBACK SkinButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam, L
 			}
 		case BUTTONDRAWINPARENT:
 			{
-				PaintWorker(lpSBData, (HDC) wParam, (POINT*) lParam);
+				if (IsWindowVisible(hwndDlg))
+					PaintWorker(lpSBData, (HDC) wParam, (POINT*) lParam);
 				return 0;
 			}
 		case WM_NCPAINT:

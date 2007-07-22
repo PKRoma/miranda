@@ -242,7 +242,7 @@ void cliCheckCacheItem(pdisplayNameCacheEntry pdnce)
 		{
 			if (!pdnce->name) pdnce->name=GetNameForContact(pdnce->hContact,0,&pdnce->isUnknown);
 #ifdef _UNICODE
-			if (!pdnce->szName) pdnce->szName=mir_t2a(pdnce->name);
+			if (!pdnce->szName) pdnce->szName=_mir_t2a(pdnce->name);
 #endif
 			return;
 		}

@@ -41,6 +41,7 @@ typedef struct tagCLUIDATA
 	BOOL	fDocked;
 	BOOL	fGDIPlusFail;
 	BOOL	fSortNoOfflineBottom;
+	BOOL    fAutoSize;
 
 	BOOL	mutexPreventDockMoving;
 	BOOL    mutexOnEdgeSizing;

@@ -298,9 +298,25 @@ void AniAva_UpdateParent();
 /* move to list module */
 typedef void (*ItemDestuctor)(void*);
 
+
 void li_ListDestruct(SortedList *pList, ItemDestuctor pItemDestructor);
 void li_RemoveDestruct(SortedList *pList, int index, ItemDestuctor pItemDestructor);
 void li_RemovePtrDestruct(SortedList *pList, void * ptr, ItemDestuctor pItemDestructor);
 void li_SortList(SortedList *pList, FSortFunc pSortFunct);
+
+#define mir_safe_free(a) if(a) mir_free(a)
+char* _mir_u2a( wchar_t* src );
+
+#ifdef _UNICODE
+#define _mir_t2a(s) _mir_u2a(s)
+#define _mir_a2t(s) _mir_a2u(s)
+#define _mir_t2u(s) mir_wstrdup(s)
+#define _mir_u2t(s) mir_wstrdup(s)
+#else
+#define _mir_t2a(s) mir_strdup(s)
+#define _mir_a2t(s) mir_strdup(s)
+#define _mir_t2u(s) mir_a2u(s)
+#define _mir_u2t(s) mir_u2a(s)
+#endif
 
 #endif // commonheaders_h__

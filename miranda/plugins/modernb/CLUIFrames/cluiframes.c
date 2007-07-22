@@ -1368,7 +1368,7 @@ static int CLUIFramesSetFrameOptions(WPARAM wParam,LPARAM lParam)
 
 	case FO_TBTIPNAME:
 		if(lParam==(LPARAM)NULL) { return(-1);}
-		if(Frames[pos].TitleBar.tooltip!=NULL) free(Frames[pos].TitleBar.tooltip);
+		if(Frames[pos].TitleBar.tooltip!=NULL) mir_free_and_nill(Frames[pos].TitleBar.tooltip);
 		Frames[pos].TitleBar.tooltip=mir_tstrdup((LPTSTR)lParam);
 		UpdateTBToolTip(pos);
 
@@ -1704,7 +1704,7 @@ static int CLUIFramesCollapseUnCollapseFrame(WPARAM wParam,LPARAM lParam)
 		{
 			RECT rc;
 			if(CallService(MS_CLIST_DOCKINGISDOCKED,0,0)) {return 0;};
-			if(DBGetContactSettingByte(NULL,"CLUI","AutoSize",SETTING_AUTOSIZE_DEFAULT)) {return 0;};
+			if(!g_CluiData.fDocked && g_CluiData.fAutoSize) {return 0;};
 			GetWindowRect(pcli->hwndContactList,&rc);
 
 			if(Frames[FrameId].collapsed==TRUE)	{
@@ -2009,12 +2009,12 @@ static int CLUIFramesAddFrame(WPARAM wParam,LPARAM lParam)
         GetClassName(Frames[nFramescount].hWnd,Frames[nFramescount].name,255);
     }
     else
-        Frames[nFramescount].name=(clfrm->Flags&F_UNICODE) ? mir_u2t(clfrm->wname) : mir_a2t(clfrm->name);
+        Frames[nFramescount].name=(clfrm->Flags&F_UNICODE) ? _mir_u2t(clfrm->wname) : _mir_a2t(clfrm->name);
     if (IsBadCodePtr((FARPROC)clfrm->TBname) || clfrm->TBname==NULL
         || ((clfrm->Flags&F_UNICODE) ? lstrlenW(clfrm->TBwname) : lstrlenA(clfrm->TBname)) == 0)
         Frames[nFramescount].TitleBar.tbname=mir_tstrdup(Frames[nFramescount].name);
     else
-        Frames[nFramescount].TitleBar.tbname=(clfrm->Flags&F_UNICODE) ? mir_u2t(clfrm->TBwname) : mir_a2t(clfrm->TBname);
+        Frames[nFramescount].TitleBar.tbname=(clfrm->Flags&F_UNICODE) ? _mir_u2t(clfrm->TBwname) : _mir_a2t(clfrm->TBname);
 	Frames[nFramescount].needhide=FALSE;
 	Frames[nFramescount].TitleBar.ShowTitleBar=(clfrm->Flags&F_SHOWTB?TRUE:FALSE);
 	Frames[nFramescount].TitleBar.ShowTitleBarTip=(clfrm->Flags&F_SHOWTBTIP?TRUE:FALSE);
@@ -2107,7 +2107,7 @@ static int CLUIFramesAddFrame(WPARAM wParam,LPARAM lParam)
 		if (mainHeight<minHeight)
 		{
 			BOOL Upward=FALSE;
-			Upward=DBGetContactSettingByte(NULL,"CLUI","AutoSize",SETTING_AUTOSIZE_DEFAULT)&&DBGetContactSettingByte(NULL,"CLUI","AutoSizeUpward",SETTING_AUTOSIZEUPWARD_DEFAULT);
+			Upward=!g_CluiData.fDocked&&g_CluiData.fAutoSize&&DBGetContactSettingByte(NULL,"CLUI","AutoSizeUpward",SETTING_AUTOSIZEUPWARD_DEFAULT);
 
 			if (Upward)
 				mainRect.top=mainRect.bottom-minHeight;
@@ -2148,9 +2148,9 @@ static int CLUIFramesRemoveFrame(WPARAM wParam,LPARAM lParam)
 
 	if (pos<0||pos>nFramescount){return(-1);};
 
-	if (Frames[pos].name!=NULL) free(Frames[pos].name);
-	if (Frames[pos].TitleBar.tbname!=NULL) free(Frames[pos].TitleBar.tbname);
-	if (Frames[pos].TitleBar.tooltip!=NULL) free(Frames[pos].TitleBar.tooltip);
+	if (Frames[pos].name!=NULL) mir_free_and_nill(Frames[pos].name);
+	if (Frames[pos].TitleBar.tbname!=NULL) mir_free_and_nill(Frames[pos].TitleBar.tbname);
+	if (Frames[pos].TitleBar.tooltip!=NULL) mir_free_and_nill(Frames[pos].TitleBar.tooltip);
 	DestroyWindow(Frames[pos].hWnd);
 	Frames[pos].hWnd=(HWND)-1;
 	DestroyWindow(Frames[pos].TitleBar.hwnd);
@@ -2277,7 +2277,7 @@ static BOOLEAN CLUIFramesFitInSize(void)
 			sumheight+=(Frames[i].height)+(g_nTitleBarHeight*btoint(Frames[i].TitleBar.ShowTitleBar))+2/*+btoint(Frames[i].UseBorder)*2*/;
 			if(sumheight>ContactListHeight-tbh-2)
 			{
-				if (DBGetContactSettingByte(NULL, "CLUI", "AutoSize", SETTING_AUTOSIZE_DEFAULT))
+				if (!g_CluiData.fDocked && g_CluiData.fAutoSize)
 				{
 					return TRUE; //Can be required to enlarge
 				}
@@ -2419,7 +2419,7 @@ static int CLUIFramesResizeFrames(const RECT newsize)
 				sumheight+=(Frames[i].height)+curfrmtbh+(i > 0 ? sepw : 0)+(Frames[i].UseBorder?2:0);
 				if(sumheight>newheight-tbh) {
 					sumheight-=(Frames[i].height)+curfrmtbh + (i > 0 ? sepw : 0);
-					Frames[i].needhide=DBGetContactSettingByte(NULL,"CLUI","AutoSize",SETTING_AUTOSIZE_DEFAULT)?FALSE:TRUE;
+					Frames[i].needhide=!g_CluiData.fDocked && g_CluiData.fAutoSize?FALSE:TRUE;
 					drawitems--;
 					break;
 				}
@@ -2733,7 +2733,7 @@ static int CLUIFramesOnClistResize(WPARAM wParam,LPARAM lParam)
 		if (mainHeight<minHeight)
 		{
 			BOOL Upward=FALSE;
-			Upward=DBGetContactSettingByte(NULL,"CLUI","AutoSize",SETTING_AUTOSIZE_DEFAULT)&&DBGetContactSettingByte(NULL,"CLUI","AutoSizeUpward",SETTING_AUTOSIZEUPWARD_DEFAULT);
+			Upward=!g_CluiData.fDocked && g_CluiData.fAutoSize&&DBGetContactSettingByte(NULL,"CLUI","AutoSizeUpward",SETTING_AUTOSIZEUPWARD_DEFAULT);
 
 			if (Upward)
 				mainRect.top=mainRect.bottom-minHeight;
@@ -4214,8 +4214,8 @@ int UnLoadCLUIFramesModule(void)
 			DestroyWindow(Frames[i].OwnerWindow );
 		Frames[i].OwnerWindow=(HWND)-2;
 
-		if (Frames[i].name!=NULL) free(Frames[i].name);
-		if (Frames[i].TitleBar.tbname!=NULL) free(Frames[i].TitleBar.tbname);
+		if (Frames[i].name!=NULL) mir_free_and_nill(Frames[i].name);
+		if (Frames[i].TitleBar.tbname!=NULL) mir_free_and_nill(Frames[i].TitleBar.tbname);
 	}
 	if(Frames) free(Frames);
 	Frames=NULL;
