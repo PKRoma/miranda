@@ -407,11 +407,12 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         unsigned ver1 = (*capId)[0xC];
         unsigned ver2 = (*capId)[0xD];
         unsigned ver3 = (*capId)[0xE];
+        unsigned ver4 = (*capId)[0xF];
 
-        makeClientVersion(szClientBuf, "SIM ", ver1, ver2, ver3, 0);
-        if ((*capId)[0xF] & 0x80) 
+        makeClientVersion(szClientBuf, "SIM ", ver1, ver2, ver3, ver4 & 0x0F);
+        if (ver4 & 0x80) 
           strcat(szClientBuf,"/Win32");
-        else if ((*capId)[0xF] & 0x40) 
+        else if (ver4 & 0x40) 
           strcat(szClientBuf,"/MacOS X");
 
         szClient = szClientBuf;
