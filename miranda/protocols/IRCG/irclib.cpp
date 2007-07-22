@@ -24,8 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern HANDLE hNetlib;
 extern HANDLE hNetlibDCC;
-extern UINT_PTR	OnlineNotifTimer;	
-extern UINT_PTR	OnlineNotifTimer3;	
 extern HMODULE m_ssleay32;
 extern MM_INTERFACE mmi;
 extern bool bMbotInstalled;

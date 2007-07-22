@@ -321,6 +321,9 @@ void   DisconnectFromServer(void);
 int    Service_GCEventHook(WPARAM wParam,LPARAM lParam);
 
 //options.cpp
+extern UINT_PTR	OnlineNotifTimer;
+extern UINT_PTR	OnlineNotifTimer3;
+
 void    InitPrefs(void);
 void    UnInitOptions(void);
 int     InitOptionsPages(WPARAM wParam,LPARAM lParam);

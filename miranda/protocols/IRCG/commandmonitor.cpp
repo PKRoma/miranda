@@ -65,15 +65,11 @@ extern int     iTempCheckTime ;
 extern int     OldStatus;
 extern int     GlobalStatus;
 
-extern UINT_PTR	OnlineNotifTimer;
-extern UINT_PTR	OnlineNotifTimer3;
-extern UINT_PTR	KeepAliveTimer = 0;
 extern CRITICAL_SECTION m_resolve;
 extern GETEVENTFUNC			pfnAddEvent;
-HWND			IgnoreWndHwnd = NULL;
 
-extern HANDLE					hNetlib;	
-
+HWND     IgnoreWndHwnd = NULL;
+UINT_PTR	KeepAliveTimer = 0;
 
 static VOID CALLBACK IdentTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime)
 {
@@ -86,7 +82,6 @@ static VOID CALLBACK IdentTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTim
 
 	return;
 }
-
 
 static VOID CALLBACK TimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime)
 {

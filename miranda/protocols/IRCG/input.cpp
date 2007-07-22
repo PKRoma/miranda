@@ -29,8 +29,6 @@ extern int				ManualWhoisCount ;
 bool					bTempDisableCheck = false;
 bool					bTempForceCheck = false;
 extern int				iTempCheckTime ;
-extern UINT_PTR			OnlineNotifTimer;
-extern UINT_PTR			OnlineNotifTimer3;
 extern HWND				manager_hWnd;
 
 static TString FormatMsg(TString text)

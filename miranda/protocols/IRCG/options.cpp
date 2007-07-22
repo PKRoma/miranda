@@ -23,24 +23,23 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <uxtheme.h>
 #include <win2k.h>
 
-HANDLE					OptionsInitHook = NULL;	
-extern UINT_PTR			KeepAliveTimer;	
-UINT_PTR				OnlineNotifTimer = 0;	
-UINT_PTR				OnlineNotifTimer3 = 0;	
+UINT_PTR OnlineNotifTimer = 0;	
+UINT_PTR OnlineNotifTimer3 = 0;	
 
+HWND connect_hWnd = NULL;
+HWND addserver_hWnd = NULL;
 
-HWND					connect_hWnd = NULL;
-HWND					addserver_hWnd = NULL;
-extern HWND				IgnoreWndHwnd;
-bool					ServerlistModified = false;
-extern bool				bTempDisableCheck ;
-extern bool				bTempForceCheck ;
-extern int				iTempCheckTime ;
-extern HMODULE			m_ssleay32;
-extern HANDLE			hMenuServer;
+static bool     ServerlistModified = false;
+static WNDPROC  OldProc;
+static WNDPROC  OldListViewProc;
 
-static WNDPROC			OldProc;
-static WNDPROC			OldListViewProc;
+extern UINT_PTR KeepAliveTimer;	
+extern HWND     IgnoreWndHwnd;
+extern bool     bTempDisableCheck;
+extern bool     bTempForceCheck;
+extern int      iTempCheckTime;
+extern HMODULE  m_ssleay32;
+extern HANDLE   hMenuServer;
 
 static int GetPrefsString(const char *szSetting, char * prefstoset, int n, char * defaulttext)
 {
@@ -167,9 +166,6 @@ void InitPrefs(void)
 	prefs->OnlineNotificationTime = DBGetContactSettingWord(NULL, IRCPROTONAME, "OnlineNotificationTime", 30);
 	prefs->OnlineNotificationLimit = DBGetContactSettingWord(NULL, IRCPROTONAME, "OnlineNotificationLimit", 50);
 	prefs->ChannelAwayNotification = DBGetContactSettingByte(NULL,IRCPROTONAME, "ChannelAwayNotification", 1);
-
-	//	DBFreeVariant(&dbv);
-	return;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -242,7 +238,62 @@ HANDLE GetIconHandle( int iconId )
 	return NULL;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
+// code page handler
+
+struct { UINT cpId; TCHAR *cpName; } static cpTable[] =
+{
+	{	874,	_T("Thai") },
+	{	932,	_T("Japanese") },
+	{	936,	_T("Simplified Chinese") },
+	{	949,	_T("Korean") },
+	{	950,	_T("Traditional Chinese") },
+	{	1250,	_T("Central European") },
+	{	1251,	_T("Cyrillic") },
+	{	1252,	_T("Latin I") },
+	{	1253,	_T("Greek") },
+	{	1254,	_T("Turkish") },
+	{	1255,	_T("Hebrew") },
+	{	1256,	_T("Arabic") },
+	{	1257,	_T("Baltic") },
+	{	1258,	_T("Vietnamese") },
+	{	1361,	_T("Korean (Johab)") }
+};
+
+static HWND sttCombo;
+
+static BOOL CALLBACK sttLangAddCallback( CHAR* str )
+{
+	UINT cp = atoi(str);
+	int i;
+	for ( i=0; i < SIZEOF(cpTable) && cpTable[i].cpId != cp; i++ );
+	if ( i < SIZEOF(cpTable)) {
+		int idx = SendMessage( sttCombo, CB_ADDSTRING, 0, (LPARAM)TranslateTS( cpTable[i].cpName ));
+		SendMessage( sttCombo, CB_SETITEMDATA, idx, cp );
+	}
+	return TRUE;
+}
+
+static void FillCodePageCombo( HWND hWnd, int defValue )
+{
+	int idx = SendMessage( hWnd, CB_ADDSTRING, 0, (LPARAM)TranslateT("Default ANSI codepage"));
+	SendMessage( hWnd, CB_SETITEMDATA, idx, CP_ACP );
+
+	idx = SendMessage( hWnd, CB_ADDSTRING, 0, (LPARAM)TranslateT("UTF-8"));
+	SendMessage( hWnd, CB_SETITEMDATA, idx, CP_UTF8 );
+
+	sttCombo = hWnd;
+	EnumSystemCodePagesA(sttLangAddCallback, CP_INSTALLED);
+
+	for ( int i = SendMessage( hWnd, CB_GETCOUNT, 0, 0 )-1; i >= 0; i-- ) {
+		if ( SendMessage( hWnd, CB_GETITEMDATA, i, 0 ) == defValue ) {
+			SendMessage( hWnd, CB_SETCURSEL, i, 0 );
+			break;
+}	}	}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 // Callback for the 'Add server' dialog
+
 BOOL CALLBACK AddServerProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
 	switch (uMsg) {
@@ -331,7 +382,9 @@ BOOL CALLBACK AddServerProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 	return false;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
 // Callback for the 'Edit server' dialog
+
 BOOL CALLBACK EditServerProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
 	switch (uMsg) {
@@ -446,30 +499,9 @@ BOOL CALLBACK EditServerProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 	return false;
 }
 
-static LRESULT CALLBACK EditSubclassProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam) 
-{ 
-	switch(msg) { 
-	case WM_CHAR :
-		if (wParam == 21 || wParam == 11 || wParam == 2) {
-			char w[2];
-			w[1] = '\0';
-			if (wParam == 11)
-				w[0] = 3;
-			if (wParam == 2)
-				w[0] = 2;
-			if (wParam == 21)
-				w[0] = 31;
-			SendMessage( hwndDlg, EM_REPLACESEL, false, (LPARAM) w);
-			SendMessage( hwndDlg, EM_SCROLLCARET, 0,0);
-			return 0;
-		}
-		break;
-	} 
-
-	return CallWindowProc(OldProc, hwndDlg, msg, wParam, lParam); 
-} 
-
+/////////////////////////////////////////////////////////////////////////////////////////
 // Callback for the 'CTCP preferences' dialog
+
 BOOL CALLBACK CtcpPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
 	switch (uMsg) {
@@ -666,6 +698,29 @@ static void addPerformComboValue( HWND hWnd, int idx, const char* szValueName )
 	SendMessage( hWnd, CB_SETITEMDATA, idx, ( LPARAM )pPref );
 }
 
+static LRESULT CALLBACK EditSubclassProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam) 
+{ 
+	switch(msg) { 
+	case WM_CHAR :
+		if (wParam == 21 || wParam == 11 || wParam == 2) {
+			char w[2];
+			w[1] = '\0';
+			if (wParam == 11)
+				w[0] = 3;
+			if (wParam == 2)
+				w[0] = 2;
+			if (wParam == 21)
+				w[0] = 31;
+			SendMessage( hwndDlg, EM_REPLACESEL, false, (LPARAM) w);
+			SendMessage( hwndDlg, EM_SCROLLCARET, 0,0);
+			return 0;
+		}
+		break;
+	} 
+
+	return CallWindowProc(OldProc, hwndDlg, msg, wParam, lParam); 
+} 
+
 BOOL CALLBACK OtherPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
 	switch (uMsg) {
@@ -691,6 +746,12 @@ BOOL CALLBACK OtherPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			EnableWindow(GetDlgItem( hwndDlg, IDC_PERFORMEDIT), prefs->Perform);
 			EnableWindow(GetDlgItem( hwndDlg, IDC_ADD), prefs->Perform);
 			EnableWindow(GetDlgItem( hwndDlg, IDC_DELETE), prefs->Perform);
+
+			#if defined( _UNICODE )
+				FillCodePageCombo( GetDlgItem( hwndDlg, IDC_CODEPAGE ), DBGetContactSettingDword( NULL, IRCPROTONAME, "Codepage", IRC_DEFAULT_CODEPAGE ));
+			#else
+				EnableWindow(GetDlgItem( hwndDlg, IDC_CODEPAGE ), FALSE;
+			#endif
 
 			HWND hwndPerform = GetDlgItem( hwndDlg, IDC_PERFORMCOMBO );
 
@@ -842,8 +903,13 @@ BOOL CALLBACK OtherPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				}
 				DBWriteContactSettingTString( NULL, IRCPROTONAME, "Alias", prefs->Alias );
 
-				GetDlgItemText( hwndDlg,IDC_QUITMESSAGE,prefs->QuitMessage, 399);
-				DBWriteContactSettingTString(NULL,IRCPROTONAME,"QuitMessage",prefs->QuitMessage);
+				GetDlgItemText( hwndDlg,IDC_QUITMESSAGE,prefs->QuitMessage, 399 );
+				DBWriteContactSettingTString( NULL, IRCPROTONAME, "QuitMessage", prefs->QuitMessage );
+				{
+					int curSel = SendDlgItemMessage( hwndDlg, IDC_CODEPAGE, CB_GETCURSEL, 0, 0 );
+					DBWriteContactSettingDword( NULL, IRCPROTONAME, "Codepage", 
+						SendDlgItemMessage( hwndDlg, IDC_CODEPAGE, CB_GETITEMDATA, curSel, 0 ));
+				}
 
 				prefs->Perform = IsDlgButtonChecked( hwndDlg,IDC_PERFORM)== BST_CHECKED;
 				DBWriteContactSettingByte(NULL,IRCPROTONAME,"Perform",prefs->Perform);
