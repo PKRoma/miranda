@@ -400,6 +400,8 @@ struct filetransfer
 	//---- receiving a file
 	wchar_t*    wszFileName;	// file name in Unicode, for receiving
 	char*       szInvcookie;	// cookie for receiving
+	
+	unsigned __int64 lstFilePtr;
 };
 
 struct directconnection

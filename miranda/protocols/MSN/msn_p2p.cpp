@@ -1606,8 +1606,9 @@ void  p2p_processMsg( ThreadData* info,  char* msgbody )
 				if ( ft->inmemTransfer )
 					memcpy( ft->fileBuffer + hdrdata->mOffset, msgbody, (size_t)dsz );
 				else {
-					::_lseeki64( ft->fileId, hdrdata->mOffset, SEEK_SET );
-					::_write( ft->fileId, msgbody, (unsigned int)dsz );
+					if (ft->lstFilePtr != hdrdata->mOffset)
+						_lseeki64( ft->fileId, hdrdata->mOffset, SEEK_SET );
+					_write( ft->fileId, msgbody, (unsigned int)dsz );
 				}
 
 				__int64 dp = hdrdata->mOffset + dsz - ft->std.currentFileProgress;
