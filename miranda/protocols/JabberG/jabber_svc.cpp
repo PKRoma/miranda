@@ -321,22 +321,13 @@ int JabberContactDeleted( WPARAM wParam, LPARAM lParam )
 
 	DBVARIANT dbv;
 	if ( !JGetStringT(( HANDLE ) wParam, JGetByte( (HANDLE ) wParam, "ChatRoom", 0 )?(char*)"ChatRoomID":(char*)"jid", &dbv )) {
-		TCHAR* jid, *p, *q = NULL;
-
-		jid = dbv.ptszVal;
-		// thr contact is getted from db it is should be stored there same as in roster - no need to remove resource
-		/*if (( p = _tcschr( jid, '@' )) != NULL )
-			if (( q = _tcschr( p, '/' )) != NULL )
-				*q = '\0';
-		*/
-		if ( !JabberListExist( LIST_CHATROOM, jid ) || q == NULL )
-			if ( JabberListExist( LIST_ROSTER, jid )) {
-				// Remove from roster, server also handles the presence unsubscription process.
-				XmlNodeIq iq( "set" ); iq.addAttrID( JabberSerialNext());
-				XmlNode* query = iq.addQuery( "jabber:iq:roster" );
-				XmlNode* item = query->addChild( "item" ); item->addAttr( "jid", jid ); item->addAttr( "subscription", "remove" );
-				jabberThreadInfo->send( iq );
-			}
+		if ( JabberListExist( LIST_ROSTER, dbv.ptszVal )) {
+			// Remove from roster, server also handles the presence unsubscription process.
+			XmlNodeIq iq( "set" ); iq.addAttrID( JabberSerialNext());
+			XmlNode* query = iq.addQuery( "jabber:iq:roster" );
+			XmlNode* item = query->addChild( "item" ); item->addAttr( "jid", dbv.ptszVal ); item->addAttr( "subscription", "remove" );
+			jabberThreadInfo->send( iq );
+		}
 
 		JFreeVariant( &dbv );
 	}

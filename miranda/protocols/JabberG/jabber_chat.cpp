@@ -586,6 +586,7 @@ static void sttNickListHook( JABBER_LIST_ITEM* item, GCHOOK* gch )
 	case IDM_LEAVE:
 		JabberGcQuit( item, 0, 0 );
 		break;
+
 	case IDM_VCARD:
 	{
 		HANDLE hContact;
@@ -594,6 +595,7 @@ static void sttNickListHook( JABBER_LIST_ITEM* item, GCHOOK* gch )
 		jsr.hdr.cbSize = sizeof( JABBER_SEARCH_RESULT );
 		
 		JABBER_LIST_ITEM* item = JabberListAdd( LIST_VCARD_TEMP, jsr.jid );
+		item->bUseResource = TRUE;
 		JabberListAddResource( LIST_VCARD_TEMP, jsr.jid, him->status, him->statusMessage, him->priority );
 
 		hContact = ( HANDLE )CallProtoService( jabberProtoName, PS_ADDTOLIST, PALF_TEMPORARY, ( LPARAM )&jsr );

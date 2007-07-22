@@ -178,7 +178,7 @@ struct JABBER_LIST_ITEM
 	TCHAR* password;	// password for room
 	BOOL bAutoJoin;
 
-	BOOL bResourceSensitive;
+	BOOL bUseResource;
 };
 
 void JabberListInit( void );

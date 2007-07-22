@@ -36,12 +36,10 @@ static int compareListItems( const JABBER_LIST_ITEM* p1, const JABBER_LIST_ITEM*
 	if ( p1->list != p2->list )
 		return p1->list - p2->list;
 
-	// don't strip text after "/" for Bookmarks because JID contains URL
-	if ( p1->list == LIST_BOOKMARK || p1->list == LIST_VCARD_TEMP 
-		//)
-		
-		//fyr 
-		|| (p1->list == LIST_ROSTER && p1->bResourceSensitive==TRUE) ||  (p2->list == LIST_ROSTER && p2->bResourceSensitive==TRUE ))
+	// for bookmarks, temporary contacts & groupchat members
+	// resource must be used in the comparison
+	if (( p1->list == LIST_ROSTER && p1->bUseResource == TRUE ) ||
+		 ( p2->list == LIST_ROSTER && p2->bUseResource == TRUE ))
 		return lstrcmpi( p1->jid, p2->jid );
 
 	TCHAR szp1[ JABBER_MAX_JID_LEN ], szp2[ JABBER_MAX_JID_LEN ];
@@ -129,7 +127,7 @@ int JabberListExist( JABBER_LIST list, const TCHAR* jid )
 	JABBER_LIST_ITEM tmp;
 	tmp.list = list;
 	tmp.jid  = (TCHAR*)jid;
-	tmp.bResourceSensitive = FALSE;
+	tmp.bUseResource = FALSE;
 
 	EnterCriticalSection( &csLists );
 	
@@ -139,7 +137,7 @@ int JabberListExist( JABBER_LIST list, const TCHAR* jid )
 		tmp.list = LIST_CHATROOM;
 		int id = roster.getIndex( &tmp );
 		if ( id != -1) 
-			tmp.bResourceSensitive = TRUE;
+			tmp.bUseResource = TRUE;
 		tmp.list = list;
 	}
 	
@@ -157,7 +155,7 @@ int JabberListExist( JABBER_LIST list, const TCHAR* jid )
 JABBER_LIST_ITEM *JabberListAdd( JABBER_LIST list, const TCHAR* jid )
 {
 	JABBER_LIST_ITEM* item;
-	BOOL bResourceSensitive=FALSE;
+	BOOL bUseResource=FALSE;
 	EnterCriticalSection( &csLists );
 	if (( item = JabberListGetItemPtr( list, jid )) != NULL ) {
 		LeaveCriticalSection( &csLists );
@@ -176,16 +174,16 @@ JABBER_LIST_ITEM *JabberListAdd( JABBER_LIST list, const TCHAR* jid )
 					*q = '\0';
 		}
 	} else {
-		bResourceSensitive=TRUE;
+		bUseResource=TRUE;
 	}
 	
-	if ( !bResourceSensitive && list== LIST_ROSTER )
+	if ( !bUseResource && list== LIST_ROSTER )
 	{
 		//if it is a chat room keep resource and made it resource sensitive
 		if ( JabberChatRoomHContactFromJID( s ) )
 		{
 			if (q != NULL)	*q='/';
-			bResourceSensitive=TRUE;
+			bUseResource=TRUE;
 		}
 	}
 	item = ( JABBER_LIST_ITEM* )mir_alloc( sizeof( JABBER_LIST_ITEM ));
@@ -197,7 +195,7 @@ JABBER_LIST_ITEM *JabberListAdd( JABBER_LIST list, const TCHAR* jid )
 	item->resourceMode = RSMODE_LASTSEEN;
 	item->lastSeenResource = -1;
 	item->manualResource = -1;
-	item->bResourceSensitive = bResourceSensitive;
+	item->bUseResource = bUseResource;
 	if ( list == LIST_ROSTER )
 		item->cap = CLIENT_CAP_CHATSTAT;
 

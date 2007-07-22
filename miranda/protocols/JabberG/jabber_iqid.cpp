@@ -687,8 +687,10 @@ LBL_Ret:
 	}
 	else if ( !JGetStringT( hContact, "jid", &dbv )) {
 		item = JabberListGetItemPtr( LIST_ROSTER, jid );
-		if ( item == NULL )
+		if ( item == NULL ) {
 			item = JabberListAdd( LIST_VCARD_TEMP, jid ); // adding to the temp list to store information about photo
+			item->bUseResource = TRUE;
+		}
 		if (item != NULL ) {
 			hasPhoto = TRUE;
 			if ( item->photoFileName )
@@ -1609,6 +1611,7 @@ void JabberIqResultDiscoBookmarks( XmlNode *iqNode, void *userdata )
 								JABBER_LIST_ITEM* item = JabberListAdd( LIST_BOOKMARK, jid );
 								item->name = mir_tstrdup( JabberXmlGetAttrValue( itemNode, "name" ));
 								item->type = mir_tstrdup( _T( "conference" ));
+								item->bUseResource = TRUE;
 								if ( JabberXmlGetAttrValue( itemNode, "autojoin" ) != NULL ) {
 									TCHAR* autoJ = JabberXmlGetAttrValue( itemNode, "autojoin" );
 									item->bAutoJoin = ( !lstrcmp( autoJ, _T("true")) || !lstrcmp( autoJ, _T("1"))) ? true : false;
@@ -1622,6 +1625,7 @@ void JabberIqResultDiscoBookmarks( XmlNode *iqNode, void *userdata )
 						if ( !strcmp( itemNode->name, "url" )) {
 							if (( jid = JabberXmlGetAttrValue( itemNode, "url" )) != NULL ) {
 								JABBER_LIST_ITEM* item = JabberListAdd( LIST_BOOKMARK, jid );
+								item->bUseResource = TRUE;
 								item->name = mir_tstrdup( JabberXmlGetAttrValue( itemNode, "name" ));
 								item->type = mir_tstrdup( _T("url") );
 			}	}	}	}	}

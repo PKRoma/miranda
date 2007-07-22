@@ -78,9 +78,10 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 				if ( jabberOnline ) {
 					if (( item = JabberListGetItemPtr( LIST_VCARD_TEMP, dbv.ptszVal )) == NULL)
 						item = JabberListGetItemPtr( LIST_ROSTER, dbv.ptszVal );
-					if (item !=NULL && item->resource==NULL && item->bResourceSensitive && item->list == LIST_ROSTER)
-					{
+					
+					if ( item != NULL && item->resource == NULL && item->bUseResource && item->list == LIST_ROSTER ) {
 						item = JabberListAdd( LIST_VCARD_TEMP, item->jid );
+						item->bUseResource = TRUE;
 						JabberListAddResource( LIST_VCARD_TEMP, item->jid, ID_STATUS_OFFLINE, NULL, 0 );
 					}
 					if ( item != NULL )

@@ -125,7 +125,8 @@ static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 				mir_free( currJID );
 				SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG ) NULL );
 			}
-			item = JabberListAdd(LIST_BOOKMARK, roomJID);
+			item = JabberListAdd( LIST_BOOKMARK, roomJID );
+			item->bUseResource = TRUE;
 
 			if ( SendDlgItemMessage(hwndDlg, IDC_URL_RADIO, BM_GETCHECK,0, 0) == BST_CHECKED )
 				replaceStr( item->type, _T( "url" ));
@@ -184,7 +185,7 @@ static int CALLBACK BookmarkCompare( LPARAM lParam1, LPARAM lParam2, LPARAM lPar
 	int res = 0;
 	item1 = JabberListGetItemPtr( LIST_BOOKMARK, ( TCHAR* )lParam1 );
 	item2 = JabberListGetItemPtr( LIST_BOOKMARK, ( TCHAR* )lParam2 );
-	if ( item1!=NULL && item2!=NULL ) {
+	if ( item1 != NULL && item2 != NULL ) {
 		switch ( lParamSort ) {
 		case 1:	// sort by JID column
 			res = lstrcmp( item1->jid, item2->jid );
