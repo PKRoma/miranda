@@ -263,8 +263,8 @@ static void  p2p_sendMsg( HANDLE hContact, unsigned appId, P2P_Header& hdrdata, 
 	if ( info == NULL )
 	{
 		msgType = 0;
-		if ( MSN_GetUnconnectedThread( hContact ) == NULL )
-			msnNsThread->sendPacket( "XFR", "SB" );
+		bool isOffline;
+		info = MSN_StartSB(hContact, isOffline);
 	}
 	else if ( info->mType == SERVER_P2P_DIRECT ) msgType = 1;
 	else msgType = 2;

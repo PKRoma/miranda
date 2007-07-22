@@ -519,6 +519,7 @@ ThreadData*  MSN_GetUnconnectedThread( HANDLE hContact );
 ThreadData*  MSN_GetOtherContactThread( ThreadData* thread );
 ThreadData*  MSN_GetThreadByTimer( UINT timerId );
 void		 MSN_StartStopTyping( ThreadData* info, bool start );
+ThreadData*	 MSN_StartSB(HANDLE hContact, bool& isOffline);
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN P2P session support
@@ -590,15 +591,15 @@ struct MsgQueueEntry
 	filetransfer*	ft;
 	int				seq;
 	int				allocatedToThread;
-	int				timeout;
+	time_t			ts;
 	int				flags;
 };
 
 int		 MsgQueue_Add( HANDLE hContact, int msgType, const char* msg, int msglen, filetransfer* ft = NULL, int flags = 0 );
-HANDLE	 MsgQueue_CheckContact( HANDLE hContact );
+HANDLE	 MsgQueue_CheckContact( HANDLE hContact, time_t tsc = 0 );
 HANDLE	 MsgQueue_GetNextRecipient( void );
 int		 MsgQueue_GetNext( HANDLE hContact, MsgQueueEntry& retVal );
-void     MsgQueue_Clear( HANDLE hContact = NULL );
+void     MsgQueue_Clear( HANDLE hContact = NULL, bool msg = false );
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	User lists

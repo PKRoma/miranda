@@ -460,23 +460,25 @@ ThreadData*  MSN_GetUnconnectedThread( HANDLE hContact )
 	return result;
 }
 
-/*
-void MSN_StartSB(HANDLE hContact)
+
+ThreadData* MSN_StartSB(HANDLE hContact, bool& isOffline)
 {
-	ThreadData* thread = MSN_GetThreadByContact( hContact );
-
-	if ( thread == NULL ) {
-		if ( MSN_GetUnconnectedThread( hContact ) == NULL )
+	isOffline = false;
+	ThreadData* thread = MSN_GetThreadByContact(hContact);
+	if (thread == NULL)
+	{
+		WORD wStatus = MSN_GetWord(hContact, "Status", ID_STATUS_OFFLINE);
+		if (wStatus != ID_STATUS_OFFLINE && msnStatusMode != ID_STATUS_INVISIBLE)
 		{
-			msnNsThread->sendPacket( "XFR", "SB" );
-
-			ThreadData* newThread = new ThreadData;
-			newThread->mType = SERVER_SWITCHBOARD;
-			newThread->mTrid;
-		sttRegisterThread( info );
-
+			if (MSN_GetUnconnectedThread(hContact) == NULL && MsgQueue_CheckContact(hContact, 5) == NULL)
+				msnNsThread->sendPacket( "XFR", "SB" );
+		}
+		else
+			isOffline = true;
+	}
+	return thread;
 }
-*/
+
 
 
 int  MSN_GetActiveThreads( ThreadData** parResult )
@@ -576,6 +578,14 @@ ThreadData::~ThreadData()
 		ReleaseMutex( hQueueMutex );
 		CloseHandle( hQueueMutex );
 	}
+
+	if (mInitialContact != NULL && mType == SERVER_SWITCHBOARD && 
+		MSN_GetThreadByContact(mInitialContact) == NULL &&
+		MSN_GetUnconnectedThread(mInitialContact) == NULL)
+	{
+		MsgQueue_Clear(mInitialContact, true);
+	}
+
 }
 
 void ThreadData::applyGatewayData( HANDLE hConn, bool isPoll )

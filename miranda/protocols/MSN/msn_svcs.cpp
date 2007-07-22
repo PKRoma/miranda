@@ -381,19 +381,15 @@ int MsnWindowEvent(WPARAM wParam, LPARAM lParam)
 	if ( msgEvData->uType == MSG_WINDOW_EVT_OPENING ) {
 		if ( !MSN_IsMyContact( msgEvData->hContact )) return 0;
 
-		WORD wStatus = MSN_GetWord( msgEvData->hContact, "Status", ID_STATUS_OFFLINE );
-		if ( wStatus == ID_STATUS_OFFLINE || msnStatusMode == ID_STATUS_INVISIBLE ) return 0;
-
 		char tEmail[ MSN_MAX_EMAIL_LEN ];
 		if ( !MSN_GetStaticString( "e-mail", msgEvData->hContact, tEmail, sizeof( tEmail )) &&
 			!strcmp( tEmail, MyOptions.szEmail )) return 0;
 
-		if ( MSN_GetThreadByContact( msgEvData->hContact )   == NULL &&
-				MSN_GetUnconnectedThread( msgEvData->hContact ) == NULL )
-		{
-			msnNsThread->sendPacket( "XFR", "SB" );
+		bool isOffline;
+		ThreadData* thread = MSN_StartSB(msgEvData->hContact, isOffline);
+		
+		if (thread == NULL && !isOffline)
 			MsgQueue_Add( msgEvData->hContact, 'X', NULL, 0, NULL );
-		}
 	}
 	return 0;
 }
@@ -908,33 +904,26 @@ static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 
 	int seq, msgType = ( MyOptions.SlowSend ) ? 'A' : 'N';
 	int rtlFlag = ( ccs->wParam & PREF_RTL ) ? MSG_RTL : 0;
-	ThreadData* thread = MSN_GetThreadByContact( ccs->hContact );
-	if ( thread == NULL || thread->mJoinedCount == 0 )
+	
+	
+	bool isOffline;
+	ThreadData* thread = MSN_StartSB(ccs->hContact, isOffline);
+	if ( thread == NULL )
 	{
-		WORD wStatus = MSN_GetWord( ccs->hContact, "Status", ID_STATUS_OFFLINE );
-		if ( wStatus == ID_STATUS_OFFLINE || msnStatusMode == ID_STATUS_INVISIBLE ) {
+		if ( isOffline ) 
+		{
 			seq = MSN_SendOIM(tEmail, msg);
 			if (seq == -1)
 				errMsg = MSN_Translate( "Offline messages could not be sent to this contact" );
 			mir_forkthread( sttFakeAck, new TFakeAckParams( ccs->hContact, seq, errMsg ));
 		}
 		else
-		{
-			if ( MSN_GetUnconnectedThread( ccs->hContact ) == NULL )
-				msnNsThread->sendPacket( "XFR", "SB" );
-
 			seq = MsgQueue_Add( ccs->hContact, msgType, msg, 0, 0, rtlFlag );
-		}
 	}
 	else
 	{
 		seq = thread->sendMessage( msgType, msg, rtlFlag );
-
-		if ( seq == -1 ) {
-			seq = MsgQueue_Add( ccs->hContact, msgType, msg, 0, 0, rtlFlag );
-			msnNsThread->sendPacket( "XFR", "SB" );
-		}
-		else if ( !MyOptions.SlowSend )
+		if ( !MyOptions.SlowSend )
 			mir_forkthread( sttFakeAck, new TFakeAckParams( ccs->hContact, seq, 0 ));
 	}
 
@@ -960,11 +949,11 @@ static int MsnSendNudge( WPARAM wParam, LPARAM lParam )
 				"Content-Type: text/x-msnmsgr-datacast\r\n\r\n"
 				"ID: 1\r\n\r\n");
 
-	ThreadData* thread = MSN_GetThreadByContact( hContact );
-
-	if ( thread == NULL ) {
-		if ( MSN_GetUnconnectedThread( hContact ) == NULL )
-			msnNsThread->sendPacket( "XFR", "SB" );
+	bool isOffline;
+	ThreadData* thread = MSN_StartSB(hContact, isOffline);
+	if ( thread == NULL )
+	{
+		if (isOffline) return 0; 
 		MsgQueue_Add( hContact, 'N', msg, -1 );
 	}
 	else
@@ -1271,22 +1260,18 @@ static int MsnUserIsTyping(WPARAM wParam, LPARAM lParam)
 	if ( !MSN_GetStaticString( "e-mail", hContact, tEmail, sizeof( tEmail )) && !strcmp( tEmail, MyOptions.szEmail ))
 		return 0;
 
-	ThreadData* T = MSN_GetThreadByContact( hContact );
-
 	bool typing = lParam == PROTOTYPE_SELFTYPING_ON;
 
-	if ( T == NULL ) {
-		WORD wStatus = MSN_GetWord( hContact, "Status", ID_STATUS_OFFLINE );
-		if ( wStatus == ID_STATUS_OFFLINE || msnStatusMode == ID_STATUS_INVISIBLE )
-			return 0;
+	bool isOffline;
+	ThreadData* thread = MSN_StartSB(hContact, isOffline);
 
-		if ( typing && MsgQueue_CheckContact( hContact ) == NULL )
-			msnNsThread->sendPacket( "XFR", "SB" );
-
+	if ( thread == NULL ) 
+	{
+		if (isOffline) return 0;
 		MsgQueue_Add( hContact, 2571, NULL, 0, NULL, typing );
 	}
 	else
-		MSN_StartStopTyping( T, typing );
+		MSN_StartStopTyping( thread, typing );
 
 	return 0;
 }

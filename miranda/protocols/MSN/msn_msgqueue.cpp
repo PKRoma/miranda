@@ -32,18 +32,18 @@ static int msgQueueCount;
 static CRITICAL_SECTION csMsgQueue;
 static int msgQueueSeq;
 
-void MsgQueue_Init( void )
+void MsgQueue_Init(void)
 {
 	msgQueueCount = 0;
 	msgQueue = NULL;
 	msgQueueSeq = 1;
-	InitializeCriticalSection( &csMsgQueue );
+	InitializeCriticalSection(&csMsgQueue);
 }
 
-void MsgQueue_Uninit( void )
+void MsgQueue_Uninit(void)
 {
-	MsgQueue_Clear( NULL );
-	DeleteCriticalSection( &csMsgQueue );
+	MsgQueue_Clear();
+	DeleteCriticalSection(&csMsgQueue);
 }
 
 int  MsgQueue_Add( HANDLE hContact, int msgType, const char* msg, int msgSize, filetransfer* ft, int flags )
@@ -65,26 +65,29 @@ int  MsgQueue_Add( HANDLE hContact, int msgType, const char* msg, int msgSize, f
 	E.seq = seq;
 	E.flags = flags;
 	E.allocatedToThread = 0;
-	E.timeout = DBGetContactSettingDword(NULL, "SRMM", "MessageTimeout", 10000)/1000;
+	E.ts = time(NULL);
 
 	LeaveCriticalSection( &csMsgQueue );
 	return seq;
 }
 
 // shall we create another session?
-HANDLE  MsgQueue_CheckContact( HANDLE hContact )
+HANDLE  MsgQueue_CheckContact(HANDLE hContact, time_t tsc)
 {
-	EnterCriticalSection( &csMsgQueue );
+	EnterCriticalSection(&csMsgQueue);
 
+	time_t ts = time(NULL);
 	HANDLE ret = NULL;
-	for( int i=0; i < msgQueueCount; i++ )
+	for(int i=0; i < msgQueueCount; i++)
 	{
-		if ( msgQueue[ i ].hContact == hContact )
-		{	ret = hContact;
+		if (msgQueue[i].hContact == hContact && (tsc == 0 || (ts - msgQueue[i].ts) < tsc))
+		{	
+			ret = hContact;
 			break;
-	}	}
+		}	
+	}
 
-	LeaveCriticalSection( &csMsgQueue );
+	LeaveCriticalSection(&csMsgQueue);
 	return ret;
 }
 
@@ -132,32 +135,46 @@ int  MsgQueue_GetNext( HANDLE hContact, MsgQueueEntry& retVal )
 
 	msgQueueCount--;
 	memmove( msgQueue+i, msgQueue+i+1, sizeof( MsgQueueEntry )*( msgQueueCount-i ));
-	msgQueue = ( MsgQueueEntry* )mir_realloc( msgQueue, sizeof( MsgQueueEntry )*msgQueueCount );
 	LeaveCriticalSection( &csMsgQueue );
 	return i+1;
 }
 
-void  MsgQueue_Clear( HANDLE hContact )
+void  MsgQueue_Clear( HANDLE hContact, bool msg )
 {
 	int i;
 
+	EnterCriticalSection( &csMsgQueue );
 	if (hContact == NULL)
 	{
-		EnterCriticalSection( &csMsgQueue );
 
-		for( i=0; i < msgQueueCount; i++ )
-			mir_free( msgQueue[ i ].message );
+		for(i=0; i < msgQueueCount; i++ )
+		{
+			const MsgQueueEntry& E = msgQueue[ i ];
+			if ( E.msgSize == 0 )
+				MSN_SendBroadcast( E.hContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, ( HANDLE )E.seq, 0 );
+			mir_free( E.message );
+		}
 		mir_free( msgQueue );
 
 		msgQueueCount = 0;
 		msgQueue = NULL;
 		msgQueueSeq = 1;
-		LeaveCriticalSection( &csMsgQueue );
 	}
 	else
 	{
-		MsgQueueEntry E;
-		while (MsgQueue_GetNext(hContact, E) != 0)
-			mir_free( E.message );
+		for(i=0; i < msgQueueCount; i++)
+		{
+			const MsgQueueEntry& E = msgQueue[i];
+			if (E.hContact == hContact && (!msg || E.msgSize == 0))
+			{
+				if ( E.msgSize == 0 )
+					MSN_SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, ( HANDLE )E.seq, 0 );
+				mir_free( E.message );
+
+				msgQueueCount--;
+				memmove( msgQueue+i, msgQueue+i+1, sizeof( MsgQueueEntry )*( msgQueueCount-i ));
+			}
+		}
 	}
+	LeaveCriticalSection(&csMsgQueue);
 }

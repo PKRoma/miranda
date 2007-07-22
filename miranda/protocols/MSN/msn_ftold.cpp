@@ -56,14 +56,10 @@ void msnftp_sendAcceptReject( filetransfer *ft, bool acc )
 
 void msnftp_invite( filetransfer *ft )
 {
-	ThreadData* thread = MSN_GetThreadByContact( ft->std.hContact );
-	if ( thread != NULL ) {
-		thread->mMsnFtp = ft;
-	}
-	else {
-		if ( MSN_GetUnconnectedThread( ft->std.hContact ) == NULL )
-			msnNsThread->sendPacket( "XFR", "SB" );
-	}
+	bool isOffline;
+	ThreadData* thread = MSN_StartSB(ft->std.hContact, isOffline);
+	if (isOffline) return; 
+	if (thread != NULL) thread->mMsnFtp = ft;
 
 	char* pszFiles = strrchr( *ft->std.files, '\\' ), msg[ 1024 ];
 	if ( pszFiles )
