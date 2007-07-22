@@ -527,20 +527,19 @@ int LoadContactListModule2(void)
 
 void UnloadContactListModule()
 {
-	HANDLE hContact, hNext;
-
-	//remove transitory contacts
-	hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-	while (hContact != NULL) {
-		hNext = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
-		if (DBGetContactSettingByte(hContact, "CList", "NotOnList", 0))
-			CallService(MS_DB_CONTACT_DELETE, (WPARAM) hContact, 0);
-		hContact = hNext;
-	}
-	ImageList_Destroy(hCListImages);
-	UnhookEvent(hProtoAckHook);
-	UninitCListEvents();
-	mir_free(protoIconIndex);
-	DestroyHookableEvent(hContactDoubleClicked);
-	UnhookEvent(hContactSettingChanged);
-}
+	if ( hCListImages ) {
+		//remove transitory contacts
+		HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+		while (hContact != NULL) {
+			HANDLE hNext = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
+			if (DBGetContactSettingByte(hContact, "CList", "NotOnList", 0))
+				CallService(MS_DB_CONTACT_DELETE, (WPARAM) hContact, 0);
+			hContact = hNext;
+		}
+		ImageList_Destroy(hCListImages);
+		UnhookEvent(hProtoAckHook);
+		UninitCListEvents();
+		mir_free(protoIconIndex);
+		DestroyHookableEvent(hContactDoubleClicked);
+		UnhookEvent(hContactSettingChanged);
+}	}

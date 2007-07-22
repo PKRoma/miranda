@@ -1345,12 +1345,13 @@ int InitGenMenu()
 
 int UnitGenMenu()
 {
-	EnterCriticalSection( &csMenuHook );
-	MO_RemoveAllObjects();
-	isGenMenuInited=FALSE;
+	if ( isGenMenuInited ) {
+		EnterCriticalSection( &csMenuHook );
+		MO_RemoveAllObjects();
+		isGenMenuInited=FALSE;
 
-	LeaveCriticalSection( &csMenuHook );
-
-	DeleteCriticalSection(&csMenuHook);
+		LeaveCriticalSection( &csMenuHook );
+		DeleteCriticalSection(&csMenuHook);
+	}
 	return 0;
 }
