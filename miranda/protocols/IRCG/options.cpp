@@ -806,7 +806,7 @@ BOOL CALLBACK OtherPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 					PERFORM_INFO* pPerf = (PERFORM_INFO*)SendMessage(GetDlgItem( hwndDlg, IDC_PERFORMCOMBO), CB_GETITEMDATA, i, 0);
 					if ( pPerf != NULL ) {
-						pPerf->mText.clear();
+						pPerf->mText = _T("");
 						SetDlgItemTextA( hwndDlg, IDC_PERFORMEDIT, "");
 						EnableWindow(GetDlgItem( hwndDlg, IDC_DELETE), false);
 						EnableWindow(GetDlgItem( hwndDlg, IDC_ADD), false);
