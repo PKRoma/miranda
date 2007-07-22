@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #endif
 
 #define _USE_32BIT_TIME_T
+#define MIRANDA_VER 0x0700
 
 #include <tchar.h>
 
