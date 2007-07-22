@@ -27,13 +27,23 @@ rem ---------------------------------------------------------------------------
 rem Protocols
 rem ---------------------------------------------------------------------------
 
+pushd ..\..\miranda\protocols\AimOscar
+call :Nmake aimoscar.mak "aim - Win32 Release"
+popd
+if errorlevel 1 goto :Error
+
+pushd ..\..\miranda\protocols\Gadu-Gadu
+call :Nmake Gadu-Gadu.mak "GG - Win32 Release"
+popd
+if errorlevel 1 goto :Error
+
 pushd ..\..\miranda\protocols\IcqOscarJ
 call :Nmake IcqOscar8.mak "icqoscar8 - Win32 Release"
 popd
 if errorlevel 1 goto :Error
 
-pushd ..\..\miranda\protocols\MSN
-call :Nmake MSN.mak "msn - Win32 Release Unicode"
+pushd ..\..\miranda\protocols\IRCG
+call :Nmake irc.mak "IRC - Win32 Release Unicode"
 popd
 if errorlevel 1 goto :Error
 
@@ -42,23 +52,13 @@ call :Nmake jabber.mak "jabberg - Win32 Release Unicode"
 popd
 if errorlevel 1 goto :Error
 
-pushd ..\..\miranda\protocols\AimOscar
-call :Nmake aimoscar.mak "aim - Win32 Release"
+pushd ..\..\miranda\protocols\MSN
+call :Nmake MSN.mak "msn - Win32 Release Unicode"
 popd
 if errorlevel 1 goto :Error
 
 pushd ..\..\miranda\protocols\YAHOO
 call :Nmake Yahoo.mak "Yahoo - Win32 Release"
-popd
-if errorlevel 1 goto :Error
-
-pushd ..\..\miranda\protocols\IRC
-call :Nmake IRC.mak "IRC - Win32 Release"
-popd
-if errorlevel 1 goto :Error
-
-pushd ..\..\miranda\protocols\Gadu-Gadu
-call :Nmake Gadu-Gadu.mak "GG - Win32 Release"
 popd
 if errorlevel 1 goto :Error
 
@@ -128,7 +128,6 @@ copy ..\release\Plugins\advaimg.dll      Plugins
 copy ..\release\Plugins\GG.dll           Plugins
 copy ..\release\Plugins\ICQ.dll          Plugins
 copy ..\release\Plugins\import.dll       Plugins
-copy ..\release\Plugins\IRC.dll          Plugins
 copy ..\release\Plugins\Yahoo.dll        Plugins
 
 dir /B /S *.dll | rebaser /NOCRC
@@ -255,7 +254,7 @@ copy ..\..\..\miranda-tools\dbtool\Release\dbtool.pdb          %Temp%\pdbw
 rem  Protocols
 copy ..\..\protocols\AimOscar\Release\Aim.pdb                  %Temp%\pdbw\plugins
 copy ..\..\protocols\IcqOscarJ\Release\ICQ.pdb                 %Temp%\pdbw\plugins
-copy ..\..\protocols\IRC\Release\IRC.pdb                       %Temp%\pdbw\plugins
+copy ..\..\protocols\IRC\Release_Unicode\IRC.pdb               %Temp%\pdbw\plugins
 copy ..\..\protocols\JabberG\Release_Unicode\jabber.pdb        %Temp%\pdbw\plugins
 copy ..\..\protocols\MSN\Release_Unicode\MSN.pdb               %Temp%\pdbw\plugins
 copy ..\..\protocols\Yahoo\Release\Yahoo.pdb                   %Temp%\pdbw\plugins
