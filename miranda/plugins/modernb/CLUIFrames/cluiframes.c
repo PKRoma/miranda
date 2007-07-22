@@ -2009,12 +2009,12 @@ static int CLUIFramesAddFrame(WPARAM wParam,LPARAM lParam)
         GetClassName(Frames[nFramescount].hWnd,Frames[nFramescount].name,255);
     }
     else
-        Frames[nFramescount].name=(clfrm->Flags&F_UNICODE) ? _mir_u2t(clfrm->wname) : _mir_a2t(clfrm->name);
+        Frames[nFramescount].name=(clfrm->Flags&F_UNICODE) ? mir_u2t(clfrm->wname) : mir_a2t(clfrm->name);
     if (IsBadCodePtr((FARPROC)clfrm->TBname) || clfrm->TBname==NULL
         || ((clfrm->Flags&F_UNICODE) ? lstrlenW(clfrm->TBwname) : lstrlenA(clfrm->TBname)) == 0)
         Frames[nFramescount].TitleBar.tbname=mir_tstrdup(Frames[nFramescount].name);
     else
-        Frames[nFramescount].TitleBar.tbname=(clfrm->Flags&F_UNICODE) ? _mir_u2t(clfrm->TBwname) : _mir_a2t(clfrm->TBname);
+        Frames[nFramescount].TitleBar.tbname=(clfrm->Flags&F_UNICODE) ? mir_u2t(clfrm->TBwname) : mir_a2t(clfrm->TBname);
 	Frames[nFramescount].needhide=FALSE;
 	Frames[nFramescount].TitleBar.ShowTitleBar=(clfrm->Flags&F_SHOWTB?TRUE:FALSE);
 	Frames[nFramescount].TitleBar.ShowTitleBarTip=(clfrm->Flags&F_SHOWTBTIP?TRUE:FALSE);

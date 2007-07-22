@@ -237,7 +237,7 @@ void * AddTempGroup(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWORD flag
 	TCHAR * szGroupName;
 	DWORD groupFlags;
 #ifdef UNICODE
-	char *mbuf=_mir_u2a((TCHAR *)szName);
+	char *mbuf=mir_u2a((TCHAR *)szName);
 #else
 	char *mbuf=mir_strdup((char *)szName);
 #endif

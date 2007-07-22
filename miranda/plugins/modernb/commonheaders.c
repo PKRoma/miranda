@@ -115,33 +115,6 @@ DWORD exceptFunction(LPEXCEPTION_POINTERS EP)
     
 	return EXCEPTION_EXECUTE_HANDLER; 
 } 
-wchar_t* _mir_a2u( char* src )
-{
-	int codepage = CallService("LangPack/GetCodePage", 0, 0 );
-
-	int cbLen = MultiByteToWideChar( codepage, 0, src, -1, NULL, 0 );
-	wchar_t* result = ( wchar_t* )mir_alloc( sizeof( wchar_t )*(cbLen+1));
-	if ( result == NULL )
-		return NULL;
-
-	MultiByteToWideChar( codepage, 0, src, -1, result, cbLen );
-	result[ cbLen ] = 0;
-	return result;
-}
-
-char* _mir_u2a( wchar_t* src )
-{
-	int codepage = CallService("LangPack/GetCodePage", 0, 0 );
-
-	int cbLen = WideCharToMultiByte( codepage, 0, src, -1, NULL, 0, NULL, NULL );
-	char* result = ( char* )mir_alloc( cbLen+1 );
-	if ( result == NULL )
-		return NULL;
-
-	WideCharToMultiByte( codepage, 0, src, -1, result, cbLen, NULL, NULL );
-	result[ cbLen ] = 0;
-	return result;
-}
 
 #ifdef _DEBUG
 #undef DeleteObject

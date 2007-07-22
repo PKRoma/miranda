@@ -339,6 +339,4 @@ extern LRESULT ( CALLBACK *saveContactListControlWndProc )(HWND hwnd, UINT msg, 
 
 BYTE SkinDBGetContactSettingByte(HANDLE hContact, const char* szSection, const char*szKey, BYTE bDefault);
 
-wchar_t* _mir_a2u( char* src );
-
 #endif

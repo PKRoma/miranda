@@ -335,8 +335,8 @@ static void	  sttTBButton2MTBBUTTONINFO(TBButton * bi, MTB_BUTTONINFO * mtbi)
 		mtbi->szService=mir_strdup(bi->pszServiceName);
 		mtbi->szButtonID=mir_strdup(bi->pszButtonID);
 		mtbi->bPushButton=(bi->tbbFlags&TBBF_PUSHED)?TRUE:FALSE;
-		mtbi->szTooltip=_mir_a2t(Translate(bi->pszTooltipUp));
-		mtbi->szTooltipPressed=_mir_a2t(Translate(bi->pszTooltipDn));
+		mtbi->szTooltip=mir_a2t(Translate(bi->pszTooltipUp));
+		mtbi->szTooltipPressed=mir_a2t(Translate(bi->pszTooltipDn));
 		mtbi->bSeparator=SEPARATOR_NOT;
 		mtbi->hPrimaryIconHandle=bi->hPrimaryIconHandle;
 		mtbi->hSecondaryIconHandle=bi->hSecondaryIconHandle;
@@ -860,7 +860,7 @@ static LRESULT CALLBACK ToolBar_OptDlgProc(HWND hwndDlg,UINT msg,WPARAM wParam,L
 					TVINSERTSTRUCT tvis={0};
 					HTREEITEM hti;
 					MTB_BUTTONINFO * mtbi = (MTB_BUTTONINFO*) tbdat.listOfButtons->items[i];
-					TCHAR * szTempName=_mir_a2t(mtbi->szButtonName);
+					TCHAR * szTempName=mir_a2t(mtbi->szButtonName);
 					int index=ImageList_AddIcon(himlButtonIcons,(HICON)CallService(MS_SKIN2_GETICONBYHANDLE,0, (LPARAM) mtbi->hPrimaryIconHandle));
 					tvis.hParent=NULL;
 					tvis.hInsertAfter=TVI_LAST;
