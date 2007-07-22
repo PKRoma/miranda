@@ -293,8 +293,6 @@ struct PREFERENCES  // Preferences structure
 extern char* IRCPROTONAME; 
 extern char* ALTIRCPROTONAME;
 extern char* pszServerFile;
-extern char* pszPerformFile;
-extern char* pszIgnoreFile;
 extern char  mirandapath[MAX_PATH];
 extern DWORD mirVersion;
 
@@ -330,6 +328,8 @@ int     InitOptionsPages(WPARAM wParam,LPARAM lParam);
 void    AddIcons(void);
 HICON   LoadIconEx(int iIndex);
 HANDLE  GetIconHandle(int iconId);
+void    RewriteIgnoreSettings( void );
+void    InitIgnore(void);
 
 //tools.cpp
 int     WCCmp(const TCHAR* wild, const TCHAR* string);
@@ -361,7 +361,6 @@ TString PeekAtReasons(int type);
 #if defined( _UNICODE )
 String  ReplaceString (String text, const char* replaceme, const char* newword);
 bool    IsChannel(String sName); 
-char*   my_strstri(const char* s1, const char* s2);
 String  GetWord(const char* text, int index);
 char*   GetWordAddress(const char* text, int index);
 #endif

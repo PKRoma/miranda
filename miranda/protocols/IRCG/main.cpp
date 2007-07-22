@@ -26,8 +26,6 @@ CMyMonitor*       monitor;               // Object that processes data from the 
 char*             IRCPROTONAME = NULL; 
 char*             ALTIRCPROTONAME = NULL;
 char*             pszServerFile = NULL;
-char*             pszPerformFile = NULL;
-char*             pszIgnoreFile = NULL;
 char              mirandapath[MAX_PATH];
 DWORD             mirVersion = NULL;
 CRITICAL_SECTION  cs;

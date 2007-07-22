@@ -51,7 +51,6 @@ TString        NamesToWho = _T("");
 TString        ChannelsToWho = _T("");
 TString        NamesToUserhost = _T("");
 
-extern char*   pszIgnoreFile;
 extern char    mirandapath[MAX_PATH];
 extern HANDLE  hMenuQuick ;			
 extern HANDLE  hMenuServer ;			
@@ -2478,123 +2477,59 @@ int DoPerform( const char* event )
 	return 0;
 }
 
-char* IsIgnored( TString nick, TString address, TString host, char type) 
+int IsIgnored( TString nick, TString address, TString host, char type) 
 { 
-	return IsIgnored( _T2A(( nick + _T("!") + address + _T("@") + host).c_str()), type );
+	return IsIgnored( nick + _T("!") + address + _T("@") + host, type );
 }
 
-char* IsIgnored( String user, char type ) 
-{ 
-	if ( pszIgnoreFile ) {
-		char* p1 = pszIgnoreFile;
-		char* p2 = p1;
-		char* pTemp = NULL;
-		while (*p1 != '\0') {
-			while(*p1 == '\r' || *p1 == '\n')
-				p1++;
-			if (*p1 == '\0')
-				return 0;
-			p2 = strstr(p1, "\r\n");
-			if (!p2)
-				p2 = strchr(p1, '\0');
-			pTemp = p2;
-			while (pTemp > p1 && (*pTemp == '\r' || *pTemp == '\n' ||*pTemp == '\0' || *pTemp == ' '))
-				pTemp--;
-			*pTemp++ = 0;
+int IsIgnored( TString mask, char type ) 
+{
+	for ( size_t i=0; i < g_ignoreItems.size(); i++ ) {
+		CIrcIgnoreItem& C = g_ignoreItems[i];
 
-			TCHAR* p3 = mir_a2t( p1 );
-			TString tuser = _A2T( user );
-
-			if ( type == '\0' ) {	
-				if ( !lstrcmpi( tuser.c_str(), GetWord(p3, 0).c_str())) {
-					mir_free( p3 );
-					return p1;
-			}	}
+      if ( type == '\0' )	
+			if ( !lstrcmpi( mask.c_str(), C.mask.c_str()))
+				return i+1;
 			
-			bool bUserContainsWild = ( _tcschr(tuser.c_str(), '*') == NULL) || (_tcschr(tuser.c_str(), '?') == NULL);
-			if ( !bUserContainsWild && WCCmp( GetWord(p3, 0).c_str(), tuser.c_str())  
-				|| bUserContainsWild && !lstrcmpi(tuser.c_str(), GetWord(p3, 0).c_str()))
-			{
-				if ( GetWord(p3, 1).empty() || GetWord(p3, 1)[0] != '+' )
-					goto IGNORELABEL;
+		bool bUserContainsWild = ( _tcschr( mask.c_str(), '*') != NULL || _tcschr( mask.c_str(), '?' ) != NULL );
+		if ( bUserContainsWild && WCCmp( C.mask.c_str(), mask.c_str()) || 
+			  !bUserContainsWild && !lstrcmpi( mask.c_str(), C.mask.c_str()))
+		{
+			if ( C.flags.empty() || C.flags[0] != '+' )
+				continue;
 
-				if ( !_tcschr( GetWord( p3, 1).c_str(), type ))
-					goto IGNORELABEL;
+			if ( !_tcschr( C.flags.c_str(), type ))
+				continue;
 
-				if ( GetWord(p3, 2).empty() ) {
-					mir_free( p3 );
-					return p1;
-				}
-				if ( g_ircSession && !lstrcmpi(GetWordAddress(p3, 2), g_ircSession.GetInfo().sNetwork.c_str())) {
-					mir_free( p3 );
-					return p1;
-			}	}
-IGNORELABEL:
-			mir_free( p3 );
-			p1 = p2;
+			if ( C.network.empty() )
+				return i+1;
+
+			if ( g_ircSession && !lstrcmpi( C.network.c_str(), g_ircSession.GetInfo().sNetwork.c_str()))
+				return i+1;
 	}	}
-	
-	return NULL; 
+
+	return 0; 
 }
 
-bool AddIgnore( String mask, String mode, String network ) 
+bool AddIgnore( const TCHAR* mask, const TCHAR* flags, const TCHAR* network ) 
 { 
 	RemoveIgnore( mask );
-	String S = mask + " +" + mode + " " + network + "\r\n";
-	if ( pszIgnoreFile )
-		S += pszIgnoreFile;
+	g_ignoreItems.push_back( CIrcIgnoreItem( mask, (_T("+") + TString(flags)).c_str(), network ));
+	RewriteIgnoreSettings();
 
-	char filepath[ MAX_PATH ];
-	mir_snprintf( filepath, sizeof(filepath), "%s\\%s_ignore.ini", mirandapath, IRCPROTONAME);
-	FILE* hFile = fopen(filepath,"wb");
-	if ( hFile ) {
-		fputs(S.c_str(), hFile);
-		fclose(hFile);
-	}
-	if (pszIgnoreFile)
-		delete [] pszIgnoreFile;
-	pszIgnoreFile = IrcLoadFile(filepath);
-	if(IgnoreWndHwnd)
+	if ( IgnoreWndHwnd )
 		SendMessage(IgnoreWndHwnd, IRC_REBUILDIGNORELIST, 0, 0);
 	return true;
 }  
 
-bool RemoveIgnore(String mask) 
+bool RemoveIgnore( const TCHAR* mask ) 
 { 
-	char* p1 = IsIgnored(mask, '\0');
-	if ( !p1 )
-		return false;
+	int idx;
+	while (( idx = IsIgnored( mask, '\0')) != 0 )
+		g_ignoreItems.erase( g_ignoreItems.begin()+idx-1 );
 
-	while (p1) {
-		char* p2 = strstr(p1, "\r\n");
-		if (!p2)
-			p2 = strchr(p1, '\0');
-		else
-			p2 +=2;
-		
-		for (int i=0;;i++)
-		{
-			p1[i] = p2[i];
-			if (p1[i] == '\0')
-				break;
-		}
-
-		char filepath[MAX_PATH];
-		mir_snprintf(filepath, sizeof(filepath), "%s\\%s_ignore.ini", mirandapath, IRCPROTONAME);
-		FILE *hFile = fopen(filepath,"wb");
-		if (hFile)
-		{
-			fputs(pszIgnoreFile, hFile);
-			fclose(hFile);
-
-		}
-		if (pszIgnoreFile)
-			delete [] pszIgnoreFile;
-		pszIgnoreFile = IrcLoadFile(filepath);
-		p1 = IsIgnored(mask, '\0');
-
-	}
-	if(IgnoreWndHwnd)
+	RewriteIgnoreSettings();
+	if ( IgnoreWndHwnd )
 		SendMessage(IgnoreWndHwnd, IRC_REBUILDIGNORELIST, 0, 0);
 	return true; 
 } 

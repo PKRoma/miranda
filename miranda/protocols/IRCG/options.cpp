@@ -29,6 +29,8 @@ UINT_PTR OnlineNotifTimer3 = 0;
 HWND connect_hWnd = NULL;
 HWND addserver_hWnd = NULL;
 
+std::vector<CIrcIgnoreItem> irc::g_ignoreItems;
+
 static bool     ServerlistModified = false;
 static WNDPROC  OldProc;
 static WNDPROC  OldListViewProc;
@@ -289,7 +291,12 @@ static void FillCodePageCombo( HWND hWnd, int defValue )
 		if ( SendMessage( hWnd, CB_GETITEMDATA, i, 0 ) == defValue ) {
 			SendMessage( hWnd, CB_SETCURSEL, i, 0 );
 			break;
-}	}	}
+	}	}
+
+	#if !defined( _UNICODE )
+		EnableWindow( hWnd, FALSE );
+	#endif
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Callback for the 'Add server' dialog
@@ -747,11 +754,7 @@ BOOL CALLBACK OtherPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			EnableWindow(GetDlgItem( hwndDlg, IDC_ADD), prefs->Perform);
 			EnableWindow(GetDlgItem( hwndDlg, IDC_DELETE), prefs->Perform);
 
-			#if defined( _UNICODE )
-				FillCodePageCombo( GetDlgItem( hwndDlg, IDC_CODEPAGE ), DBGetContactSettingDword( NULL, IRCPROTONAME, "Codepage", IRC_DEFAULT_CODEPAGE ));
-			#else
-				EnableWindow(GetDlgItem( hwndDlg, IDC_CODEPAGE ), FALSE;
-			#endif
+			FillCodePageCombo( GetDlgItem( hwndDlg, IDC_CODEPAGE ), DBGetContactSettingDword( NULL, IRCPROTONAME, "Codepage", IRC_DEFAULT_CODEPAGE ));
 
 			HWND hwndPerform = GetDlgItem( hwndDlg, IDC_PERFORMCOMBO );
 
@@ -940,7 +943,9 @@ BOOL CALLBACK OtherPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 	return false;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
 // Callback for the 'Connect preferences' dialog
+
 BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
 	switch (uMsg) {
@@ -1412,30 +1417,34 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 	return false;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
+// Callback for the 'Ignore' preferences dialog
+
 static int CALLBACK IgnoreListSort(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
 {
 	if ( !IgnoreWndHwnd )
 		return 1;
 
-	char temp1[512];
-	char temp2[512];
-	LVITEMA lvm;
+	TCHAR temp1[512];
+	TCHAR temp2[512];
+
+	LVITEM lvm;
 	lvm.mask = LVIF_TEXT;
-	lvm.iItem = lParam1;
 	lvm.iSubItem = lParamSort;
+	lvm.cchTextMax = SIZEOF(temp1);
+
+	lvm.iItem = lParam1;
 	lvm.pszText = temp1;
-	lvm.cchTextMax = 511;
-	SendMessage(GetDlgItem(IgnoreWndHwnd, IDC_INFO_LISTVIEW), LVM_GETITEM, 0, (LPARAM)&lvm);
+	ListView_GetItem( GetDlgItem(IgnoreWndHwnd, IDC_INFO_LISTVIEW), &lvm );
+
 	lvm.iItem = lParam2;
 	lvm.pszText = temp2;
-	SendMessage(GetDlgItem(IgnoreWndHwnd, IDC_INFO_LISTVIEW), LVM_GETITEM, 0, (LPARAM)&lvm);
-	if ( lstrlenA(temp1) !=0 && lstrlenA(temp2) != 0 )
-		return lstrcmpiA(temp1, temp2);
+	ListView_GetItem( GetDlgItem(IgnoreWndHwnd, IDC_INFO_LISTVIEW), &lvm );
+	
+	if ( temp1[0] && temp2[0] )
+		return lstrcmpi( temp1, temp2 );
 
-	if ( lstrlenA(temp1) == 0 )
-		return 1;
-	else
-		return -1;
+	return ( temp1[0] == 0 ) ? 1 : -1;
 }
 
 static LRESULT CALLBACK ListviewSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
@@ -1462,10 +1471,80 @@ static LRESULT CALLBACK ListviewSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 	return CallWindowProc(OldListViewProc, hwnd, msg, wParam, lParam); 
 }
 
-// Callback for the 'Add server' dialog
+void InitIgnore( void )
+{
+	char szTemp[ MAX_PATH ];
+	mir_snprintf(szTemp, sizeof(szTemp), "%s\\%s_ignore.ini", mirandapath, IRCPROTONAME);
+	char* pszIgnoreData = IrcLoadFile(szTemp);
+	if ( pszIgnoreData != NULL ) {
+      char *p1 = pszIgnoreData;
+		while ( *p1 != '\0' ) {
+         while ( *p1 == '\r' || *p1 == '\n' )
+				p1++;
+			if ( *p1 == '\0' )
+				break;
+
+			char* p2 = strstr( p1, "\r\n" );
+			if ( !p2 )
+				p2 = strchr( p1, '\0' );
+
+			char* pTemp = p2;
+			while ( pTemp > p1 && (*pTemp == '\r' || *pTemp == '\n' ||*pTemp == '\0' || *pTemp == ' ' ))
+				pTemp--;
+			*++pTemp = 0;
+
+			String mask = GetWord(p1, 0);
+			String flags = GetWord(p1, 1);
+			String network = GetWord(p1, 2);
+			if ( !mask.empty() )
+				g_ignoreItems.push_back( CIrcIgnoreItem( mask.c_str(), flags.c_str(), network.c_str()));
+
+			p1 = p2;
+		}
+
+		RewriteIgnoreSettings();
+		delete[] pszIgnoreData;
+		::remove( szTemp );
+	}
+
+	int idx = 0;
+	char settingName[40];
+	while ( TRUE ) {
+      mir_snprintf( settingName, sizeof(settingName), "IGNORE:%d", idx++ );
+
+		DBVARIANT dbv;
+		if ( DBGetContactSettingTString( NULL, IRCPROTONAME, settingName, &dbv ))
+			break;
+		
+		TString mask = GetWord( dbv.ptszVal, 0 );
+		TString flags = GetWord( dbv.ptszVal, 1 );
+		TString network = GetWord( dbv.ptszVal, 2 );
+		g_ignoreItems.push_back( CIrcIgnoreItem( mask.c_str(), flags.c_str(), network.c_str()));
+		DBFreeVariant( &dbv );
+}	}
+
+void RewriteIgnoreSettings( void )
+{
+	char settingName[ 40 ];
+
+	size_t i=0;
+	while ( TRUE ) {
+		mir_snprintf( settingName, sizeof(settingName), "IGNORE:%d", i++ );
+		if ( DBDeleteContactSetting( NULL, IRCPROTONAME, settingName ))
+			break;
+	}
+
+	for ( i=0; i < g_ignoreItems.size(); i++ ) {
+		mir_snprintf( settingName, sizeof(settingName), "IGNORE:%d", i );
+
+		CIrcIgnoreItem& C = g_ignoreItems[i];
+		DBWriteContactSettingTString( NULL, IRCPROTONAME, settingName, ( C.mask + _T(" ") + C.flags + _T(" ") + C.network ).c_str());
+}	}
+
+// Callback for the 'Add ignore' dialog
 BOOL CALLBACK AddIgnoreWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
-	static char szOldMask[500];
+	static TCHAR szOldMask[500];
 	switch (uMsg) {
 	case WM_INITDIALOG:
 		{
@@ -1478,53 +1557,47 @@ BOOL CALLBACK AddIgnoreWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 				CheckDlgButton( hwndDlg, IDC_I, BST_CHECKED);
 				CheckDlgButton( hwndDlg, IDC_D, BST_CHECKED);
 				CheckDlgButton( hwndDlg, IDC_C, BST_CHECKED);
-				lstrcpynA(szOldMask, (char *) "\0", 499);
+				szOldMask[0] = 0;
 			}
-			else lstrcpynA(szOldMask, (char *) lParam, 499);
+			else lstrcpyn( szOldMask, (TCHAR*)lParam, SIZEOF(szOldMask));
 		}
 		return TRUE;
 
 	case WM_COMMAND:
-		if (HIWORD(wParam) == BN_CLICKED)
-			switch (LOWORD(wParam)) {	
+		if ( HIWORD(wParam) == BN_CLICKED )
+			switch ( LOWORD( wParam )) {	
 			case IDN_YES:
 				{
-					char szMask[500];
-					char szNetwork[500];
-					String flags = "";
-					if(IsDlgButtonChecked( hwndDlg, IDC_Q) == BST_CHECKED)
-						flags += "q";
-					if(IsDlgButtonChecked( hwndDlg, IDC_N) == BST_CHECKED)
-						flags += "n";
-					if(IsDlgButtonChecked( hwndDlg, IDC_I) == BST_CHECKED)
-						flags += "i";
-					if(IsDlgButtonChecked( hwndDlg, IDC_D) == BST_CHECKED)
-						flags += "d";
-					if(IsDlgButtonChecked( hwndDlg, IDC_C) == BST_CHECKED)
-						flags += "c";
-					if(IsDlgButtonChecked( hwndDlg, IDC_M) == BST_CHECKED)
-						flags += "m";
+					TCHAR szMask[500];
+					TCHAR szNetwork[500];
+					TString flags;
+					if ( IsDlgButtonChecked( hwndDlg, IDC_Q ) == BST_CHECKED ) flags += 'q';
+					if ( IsDlgButtonChecked( hwndDlg, IDC_N ) == BST_CHECKED ) flags += 'n';
+					if ( IsDlgButtonChecked( hwndDlg, IDC_I ) == BST_CHECKED ) flags += 'i';
+					if ( IsDlgButtonChecked( hwndDlg, IDC_D ) == BST_CHECKED ) flags += 'd';
+					if ( IsDlgButtonChecked( hwndDlg, IDC_C ) == BST_CHECKED ) flags += 'c';
+					if ( IsDlgButtonChecked( hwndDlg, IDC_M ) == BST_CHECKED ) flags += 'm';
 
-					GetWindowTextA(GetDlgItem( hwndDlg, IDC_MASK), szMask, 499);
-					GetWindowTextA(GetDlgItem( hwndDlg, IDC_NETWORK), szNetwork, 499);
+					GetWindowText( GetDlgItem( hwndDlg, IDC_MASK), szMask, SIZEOF(szMask));
+					GetWindowText( GetDlgItem( hwndDlg, IDC_NETWORK), szNetwork, SIZEOF(szNetwork));
 
-					String Mask = GetWord(szMask, 0);
-					if(Mask.length() != 0) {
-						if (!strchr(Mask.c_str(), '!') && !strchr(Mask.c_str(), '@'))
-							Mask += "!*@*";
+					TString Mask = GetWord(szMask, 0);
+					if ( Mask.length() != 0 ) {
+						if ( !_tcschr(Mask.c_str(), '!') && !_tcschr(Mask.c_str(), '@'))
+							Mask += _T("!*@*");
 
-						if ( flags != "" ) {
+						if ( !flags.empty() ) {
 							if ( *szOldMask )
-								RemoveIgnore(szOldMask);
-							AddIgnore(Mask, flags, szNetwork);
+								RemoveIgnore( szOldMask );
+							AddIgnore(Mask.c_str(), flags.c_str(), szNetwork);
 					}	}
 
-					PostMessage ( hwndDlg, WM_CLOSE, 0,0);
+					PostMessage( hwndDlg, WM_CLOSE, 0,0);
 				}
 				break;
 
 			case IDN_NO:
-				PostMessage ( hwndDlg, WM_CLOSE, 0,0);
+				PostMessage( hwndDlg, WM_CLOSE, 0,0);
 				break;
 			}
 		break;
@@ -1538,7 +1611,6 @@ BOOL CALLBACK AddIgnoreWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 	return false;
 }
 
-// Callback for the 'Connect preferences' dialog
 BOOL CALLBACK IgnorePrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
 	switch (uMsg) {
@@ -1566,16 +1638,15 @@ BOOL CALLBACK IgnorePrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 			SendMessage(GetDlgItem( hwndDlg,IDC_EDIT), BUTTONADDTOOLTIP, (WPARAM)LPGEN("Edit this ignore"), 0);
 			SendMessage(GetDlgItem( hwndDlg,IDC_DELETE), BUTTONADDTOOLTIP, (WPARAM)LPGEN("Delete this ignore"), 0);
 
+			static int COLUMNS_SIZES[3] = {195, 60, 80};
 			LV_COLUMN lvC;
-			int COLUMNS_SIZES[3] ={195, 60,80};
-			TCHAR* text;
-
 			lvC.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
 			lvC.fmt = LVCFMT_LEFT;
 			for ( int index=0; index < 3; index++ ) {
 				lvC.iSubItem = index;
 				lvC.cx = COLUMNS_SIZES[index];
 
+				TCHAR* text;
 				switch (index) {
 					case 0: text = TranslateT("Ignore mask"); break;
 					case 1: text = TranslateT("Flags"); break;
@@ -1607,61 +1678,35 @@ BOOL CALLBACK IgnorePrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 	case IRC_REBUILDIGNORELIST:
 		{
 			IgnoreWndHwnd = hwndDlg;
-			ListView_DeleteAllItems	(GetDlgItem( hwndDlg, IDC_LIST));
+			HWND hListView = GetDlgItem( hwndDlg, IDC_LIST);
+			ListView_DeleteAllItems( hListView );
 
-			if (pszIgnoreFile) {
-				char * p1 = pszIgnoreFile;
-				char * p2 = NULL;
-				char * pTemp = NULL;
-				while(*p1 != '\0')
-				{
-					while(*p1 == '\r' || *p1 == '\n')
-						p1++;
-					if (*p1 == '\0')
-						break;
-					p2 = strstr(p1, "\r\n");
-					if (!p2)
-						p2 = strchr(p1, '\0');
+			for ( size_t i=0; i < g_ignoreItems.size(); i++ ) {
+				CIrcIgnoreItem& C = g_ignoreItems[i];
+				if ( C.mask.empty() || C.flags[0] != '+' )
+					continue;
 
-					pTemp = p2;
+				LVITEM lvItem;
+				lvItem.iItem = ListView_GetItemCount(hListView); 
+				lvItem.mask = LVIF_TEXT|LVIF_PARAM ;
+				lvItem.iSubItem = 0;
+				lvItem.lParam = lvItem.iItem;
+				lvItem.pszText = (TCHAR*)C.mask.c_str();
+				lvItem.iItem = ListView_InsertItem(hListView,&lvItem);
 
-					while (pTemp > p1 && (*pTemp == '\r' || *pTemp == '\n' ||*pTemp == '\0' || *pTemp == ' '))
-						pTemp--;
-					pTemp++;
+				lvItem.mask = LVIF_TEXT;
+				lvItem.iSubItem =1;
+				lvItem.pszText = (TCHAR*)C.flags.c_str();
+				ListView_SetItem(hListView,&lvItem);
 
-					*pTemp = 0;
-					TCHAR* p3 = mir_a2t( p1 );
-					if ( !GetWord(p3, 0).empty() && !GetWord(p3, 0).empty()) {
-						TString mask = GetWord(p3, 0);
-						TString flags = GetWord(p3, 1);
-						TString network = GetWordAddress(p3, 2);
-						if ( flags[0] == '+' ) {
-							LVITEM lvItem;
-							HWND hListView = GetDlgItem( hwndDlg, IDC_LIST);
-							lvItem.iItem = ListView_GetItemCount(hListView); 
-							lvItem.mask = LVIF_TEXT|LVIF_PARAM ;
-							lvItem.iSubItem = 0;
-							lvItem.lParam = lvItem.iItem;
-							lvItem.pszText = (TCHAR*)mask.c_str();
-							lvItem.iItem = ListView_InsertItem(hListView,&lvItem);
-
-							lvItem.mask = LVIF_TEXT;
-							lvItem.iSubItem =1;
-							lvItem.pszText = (TCHAR*)flags.c_str();
-							ListView_SetItem(hListView,&lvItem);
-
-							lvItem.mask = LVIF_TEXT;
-							lvItem.iSubItem =2;
-							lvItem.pszText = (TCHAR*)network.c_str();
-							ListView_SetItem(hListView,&lvItem);
-					}	}
-
-					mir_free( p3 );
-					p1 = p2;
-			}	}
+				lvItem.mask = LVIF_TEXT;
+				lvItem.iSubItem =2;
+				lvItem.pszText = (TCHAR*)C.network.c_str();
+				ListView_SetItem(hListView,&lvItem);
+			}
 
 			SendMessage( hwndDlg, IRC_UPDATEIGNORELIST, 0, 0);
-			SendMessage(GetDlgItem( hwndDlg, IDC_LIST), LVM_SORTITEMS, (WPARAM)0, (LPARAM)IgnoreListSort);
+			SendMessage( hListView, LVM_SORTITEMS, (WPARAM)0, (LPARAM)IgnoreListSort);
 			SendMessage( hwndDlg, IRC_UPDATEIGNORELIST, 0, 0);
 
 			PostMessage( hwndDlg, IRC_FIXIGNOREBUTTONS, 0, 0);
@@ -1669,7 +1714,7 @@ BOOL CALLBACK IgnorePrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 		break;
 
 	case IRC_FIXIGNOREBUTTONS:
-		EnableWindow(GetDlgItem( hwndDlg, IDC_ADD), true);
+		EnableWindow( GetDlgItem( hwndDlg, IDC_ADD), IsDlgButtonChecked( hwndDlg,IDC_ENABLEIGNORE ));
 		if(ListView_GetSelectionMark(GetDlgItem( hwndDlg, IDC_LIST)) != -1) {
 			EnableWindow(GetDlgItem( hwndDlg, IDC_EDIT), true);
 			EnableWindow(GetDlgItem( hwndDlg, IDC_DELETE), true);
@@ -1682,12 +1727,6 @@ BOOL CALLBACK IgnorePrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 
 	case WM_COMMAND:
 		SendMessage(GetParent( hwndDlg), PSM_CHANGED,0,0);
-
-		if ( HIWORD(wParam) == STN_CLICKED ) 
-		{ 
-			if ( LOWORD(wParam) == IDC_CUSTOM )
-				CallService(MS_UTILS_OPENURL,0,(LPARAM) "http://members.chello.se/matrix/troubleshooting.html" );
-		}
 
 		if (HIWORD(wParam) == BN_CLICKED)
 		{
@@ -1747,10 +1786,10 @@ BOOL CALLBACK IgnorePrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 
 			case IDC_DELETE:
 				if ( IsWindowEnabled(GetDlgItem( hwndDlg, IDC_DELETE))) {
-					char szMask[512];
-					int i = ListView_GetSelectionMark(GetDlgItem( hwndDlg, IDC_LIST));
-					ListView_GetItemText(GetDlgItem( hwndDlg, IDC_LIST), i, 0, (TCHAR*)szMask, 511); // !!!! 
-					RemoveIgnore(szMask);
+					TCHAR szMask[512];
+					int i = ListView_GetSelectionMark(GetDlgItem( hwndDlg, IDC_LIST ));
+					ListView_GetItemText( GetDlgItem( hwndDlg, IDC_LIST), i, 0, szMask, SIZEOF(szMask));
+					RemoveIgnore( szMask );
 				}
 				break;
 		}	}
@@ -1800,31 +1839,19 @@ BOOL CALLBACK IgnorePrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 
 	case WM_DESTROY:
 		{
-			int i = ListView_GetItemCount(GetDlgItem( hwndDlg, IDC_LIST));
-			String S = "";
-			for (int j = 0; j<i; j++) {
-				char szItem[512];
-				ListView_GetItemText(GetDlgItem( hwndDlg, IDC_LIST), j, 0, (TCHAR*)szItem, 511); // !!!! 
-				S += szItem;
-				S += " ";
-				ListView_GetItemText(GetDlgItem( hwndDlg, IDC_LIST), j, 1, (TCHAR*)szItem, 511); // !!!!
-				S += szItem;
-				S += " ";
-				ListView_GetItemText(GetDlgItem( hwndDlg, IDC_LIST), j, 2, (TCHAR*)szItem, 511); // !!!!
-				S += szItem;
-				S += "\r\n";
-			}
-			char filepath[MAX_PATH];
-			mir_snprintf(filepath, sizeof(filepath), "%s\\%s_ignore.ini", mirandapath, IRCPROTONAME);
-			FILE *hFile = fopen(filepath,"wb");
-			if ( hFile ) {
-				fputs(S.c_str(), hFile);
-				fclose(hFile);
-			}
-			if (pszIgnoreFile)
-				delete [] pszIgnoreFile;
-			pszIgnoreFile = IrcLoadFile(filepath);
+			g_ignoreItems.clear();
 
+			HWND hListView = GetDlgItem( hwndDlg, IDC_LIST );
+			int i = ListView_GetItemCount(GetDlgItem( hwndDlg, IDC_LIST));
+			for ( int j = 0;  j < i; j++ ) {
+				TCHAR szMask[512], szFlags[40], szNetwork[100];
+				ListView_GetItemText( hListView, j, 0, szMask, SIZEOF(szMask));
+				ListView_GetItemText( hListView, j, 1, szFlags, SIZEOF(szFlags));
+				ListView_GetItemText( hListView, j, 2, szNetwork, SIZEOF(szNetwork));
+				g_ignoreItems.push_back( CIrcIgnoreItem( szMask, szFlags, szNetwork ));
+			}
+         
+			RewriteIgnoreSettings();
 			SetWindowLong(GetDlgItem( hwndDlg,IDC_LIST),GWL_WNDPROC,(LONG)OldListViewProc);
 			IgnoreWndHwnd = NULL;
 		}
@@ -1870,6 +1897,4 @@ void UnInitOptions(void)
 	mir_free( prefs->Alias );
 	delete prefs;
 	delete []pszServerFile;
-	delete []pszPerformFile;
-	delete []pszIgnoreFile;
 }

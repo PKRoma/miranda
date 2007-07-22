@@ -839,6 +839,28 @@ void CIrcSession::RemoveMonitor(IIrcSessionMonitor* pMonitor)
 
 ////////////////////////////////////////////////////////////////////
 
+CIrcIgnoreItem::CIrcIgnoreItem( const TCHAR* _mask, const TCHAR* _flags, const TCHAR* _network ) :
+	mask( _mask ),
+	flags( _flags ),
+	network( _network )
+{
+}
+
+#if defined( _UNICODE )
+CIrcIgnoreItem::CIrcIgnoreItem( const char* _mask, const char* _flags, const char* _network ) :
+	mask( _A2T(_mask)),
+	flags( _A2T( _flags )),
+	network( _A2T( _network ))
+{
+}
+#endif
+
+CIrcIgnoreItem::~CIrcIgnoreItem()
+{
+}
+
+////////////////////////////////////////////////////////////////////
+
 CIrcSessionInfo::CIrcSessionInfo() :
 	iPort(0),
 	bIdentServer(false),
@@ -1737,4 +1759,3 @@ void DoIdent(HANDLE hConnection, DWORD dwRemoteIP, void* extra)
 	Netlib_Send(hConnection, (const char*)buf, strlen(buf), 0);
 	Netlib_CloseHandle(hConnection);
 }
-

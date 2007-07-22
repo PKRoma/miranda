@@ -1602,9 +1602,7 @@ static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 		::remove( szTemp );
 	}
 
-	mir_snprintf(szTemp, sizeof(szTemp), "%s\\%s_ignore.ini", mirandapath, IRCPROTONAME);
-	pszIgnoreFile = IrcLoadFile(szTemp);
-
+	InitIgnore();
 	InitMenus();
 
 	g_hUserInfoInit =	HookEvent(ME_USERINFO_INITIALISE, Service_InitUserInfo);

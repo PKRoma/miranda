@@ -250,17 +250,6 @@ bool IsChannel(String sName)
 {
 	return ( sChannelPrefixes.find(( char )sName[0] ) != string::npos );
 }
-
-char* my_strstri(const char* s1, const char* s2) 
-{ 
-	int i,j,k; 
-	for(i=0;s1[i];i++) 
-		for(j=i,k=0; _totlower(s1[j]) == _totlower(s2[k]);j++,k++) 
-			if(!s2[k+1]) 
-				return ( char* )(s1+i);
-
-	return NULL; 
-} 
 #endif
 
 TCHAR* my_strstri(const TCHAR* s1, const TCHAR* s2) 

@@ -287,11 +287,6 @@ public :
 	virtual void OnIrcAll(const CIrcMessage* pmsg) {}
 	virtual void OnIrcDefault(const CIrcMessage* pmsg) {}
 	virtual void OnIrcDisconnected() {}
-protected :
-
-
-private :
-
 };
 
 // define an IRC command-to-member map.
@@ -335,6 +330,20 @@ protected :
 
 ////////////////////////////////////////////////////////////////////
 
+struct CIrcIgnoreItem
+{
+	CIrcIgnoreItem( const TCHAR*, const TCHAR*, const TCHAR* );
+	#if defined( _UNICODE )
+		CIrcIgnoreItem( const char*, const char*, const char* );
+	#endif
+	~CIrcIgnoreItem();
+
+   TString mask, flags, network;
+};
+
+extern std::vector<CIrcIgnoreItem> g_ignoreItems;
+
+////////////////////////////////////////////////////////////////////
 
 class CDccSession{
 protected:

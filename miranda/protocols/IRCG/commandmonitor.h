@@ -21,13 +21,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 using namespace irc;
 
-bool	DoOnConnect(const CIrcMessage *pmsg);
-int	DoPerform(const char* event);
-char*	IsIgnored(TString nick, TString address, TString host, char type) ;
-char*	IsIgnored(String user, char type) ;
-bool	AddIgnore(String mask, String mode, String network) ;
-bool	RemoveIgnore(String mask) ;
-void __cdecl ResolveIPThread(LPVOID di);
+bool  DoOnConnect(const CIrcMessage *pmsg);
+int   DoPerform(const char* event);
+int   IsIgnored(TString nick, TString address, TString host, char type) ;
+int   IsIgnored(TString mask, char type);
+bool  AddIgnore(const TCHAR* mask, const TCHAR* mode, const TCHAR* network) ;
+bool  RemoveIgnore(const TCHAR* mask) ;
+void  ResolveIPThread(LPVOID di);
 
 class CMyMonitor :  public CIrcDefaultMonitor
 {

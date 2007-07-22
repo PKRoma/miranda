@@ -229,7 +229,7 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 	}
 	else if ( command == _T("/ignore")) {
 		if ( g_ircSession ) {
-			String IgnoreFlags = "";
+			TString IgnoreFlags;
 			TCHAR temp[500];
 			if ( one.empty() ) {
 				if ( prefs->Ignore )
@@ -253,19 +253,19 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 			
 			if ( !two.empty() && two[0] == '+' ) {
 				if ( _tcschr( two.c_str(), 'q'))
-					IgnoreFlags += "q";
+					IgnoreFlags += 'q';
 				if ( _tcschr( two.c_str(), 'n'))
-					IgnoreFlags += "n";
+					IgnoreFlags += 'n';
 				if ( _tcschr( two.c_str(), 'i'))
-					IgnoreFlags += "i";
+					IgnoreFlags += 'i';
 				if ( _tcschr( two.c_str(), 'd'))
-					IgnoreFlags += "d";
+					IgnoreFlags += 'd';
 				if ( _tcschr( two.c_str(), 'c'))
-					IgnoreFlags += "c";
+					IgnoreFlags += 'c';
 				if ( _tcschr( two.c_str(), 'm'))
-					IgnoreFlags += "m";
+					IgnoreFlags += 'm';
 			}
-			else IgnoreFlags = "qnidc";
+			else IgnoreFlags = _T("qnidc");
 
 			TString Network;
 			if ( three.empty() )
@@ -273,7 +273,7 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 			else
 				Network = three;
 
-			AddIgnore( _T2A(one), IgnoreFlags.c_str(), _T2A(Network));
+			AddIgnore( one.c_str(), IgnoreFlags.c_str(), Network.c_str() );
 			
 			mir_sntprintf(temp, SIZEOF(temp), TranslateT("%s on %s is now ignored (+%s)"), one.c_str(), Network.c_str(), IgnoreFlags.c_str());
 			DoEvent( GC_EVENT_INFORMATION, NULL, g_ircSession.GetInfo().sNick.c_str(), temp, NULL, NULL, NULL, true, false); 
@@ -285,7 +285,7 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 			one += _T("!*@*");
 		
 		TCHAR temp[500];
-		if ( RemoveIgnore( _T2A(one)))
+		if ( RemoveIgnore( one.c_str()))
 			mir_sntprintf(temp, SIZEOF(temp), TranslateT("%s is not ignored now"), one.c_str());
 		else
 			mir_sntprintf(temp, SIZEOF(temp), TranslateT("%s was not ignored"), one.c_str());
