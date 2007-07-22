@@ -32,6 +32,16 @@ void   mir_free( void* ptr );
 char*  mir_strdup( const char* str );
 WCHAR* mir_wstrdup( const WCHAR* str );
 
+int    mir_snprintf(char *buffer, size_t count, const char* fmt, ...);
+int    mir_sntprintf(TCHAR *buffer, size_t count, const TCHAR* fmt, ...);
+int    mir_vsnprintf(char *buffer, size_t count, const char* fmt, va_list va);
+int    mir_vsntprintf(TCHAR *buffer, size_t count, const TCHAR* fmt, va_list va);
+
+WCHAR* mir_a2u_cp(const char* src, int codepage);
+WCHAR* mir_a2u(const char* src);
+char*  mir_u2a_cp(const wchar_t* src, int codepage);
+char*  mir_u2a( const wchar_t* src);
+
 /**** utf.c ****************************************************************************/
 
 char* Utf8Decode( char* str, wchar_t** ucs2 );

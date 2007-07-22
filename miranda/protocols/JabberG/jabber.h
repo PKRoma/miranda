@@ -24,8 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _JABBER_H_
 #define _JABBER_H_
 
-// this plugin is for Miranda 0.6 only
-#define MIRANDA_VER 0x0600
+// this plugin is for Miranda 0.7 only
+#define MIRANDA_VER 0x0700
 
 #if defined(UNICODE) && !defined(_UNICODE)
 	#define _UNICODE
@@ -229,7 +229,7 @@ struct ThreadData
 	bool     zRecvReady;
 	int      zRecvDatalen;
 	char*    zRecvData;
-	
+
 	BOOL     zlibInit( void );
 	void     zlibUninit();
    int      zlibSend( char* data, int datalen );
@@ -615,7 +615,7 @@ void __cdecl JabberServerThread( ThreadData* info );
 
 struct TStringPairsElem
 {
-	const char *name, *value; 
+	const char *name, *value;
 };
 
 struct TStringPairs

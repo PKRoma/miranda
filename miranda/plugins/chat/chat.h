@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _CHAT_H_
 #define _CHAT_H_
 
-#define MIRANDA_VER 0x0600
+#define MIRANDA_VER 0x0700
 
 #pragma warning( disable : 4786 ) // limitation in MSVC's debugger.
 #pragma warning( disable : 4996 ) // limitation in MSVC's debugger.

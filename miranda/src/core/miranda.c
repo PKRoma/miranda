@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 
 #define MMI_SIZE_V1 (4*sizeof(void*))
+#define MMI_SIZE_V2 (7*sizeof(void*))
 
 int InitialiseModularEngine(void);
 void DestroyModularEngine(void);
@@ -548,6 +549,17 @@ int GetMemoryManagerInterface(WPARAM wParam, LPARAM lParam)
 
 	switch( mmi->cbSize ) {
 	case sizeof(struct MM_INTERFACE):
+		mmi->mir_snprintf = mir_snprintf;
+		mmi->mir_sntprintf = mir_sntprintf;
+		mmi->mir_vsnprintf = mir_vsnprintf;
+		mmi->mir_vsntprintf = mir_vsntprintf;
+		mmi->mir_a2u_cp = mir_a2u_cp;
+		mmi->mir_a2u = mir_a2u;
+		mmi->mir_u2a_cp = mir_u2a_cp;
+		mmi->mir_u2a = mir_u2a;
+		// fall through
+
+	case MMI_SIZE_V2:
 		mmi->mmi_calloc = mir_calloc;
 		mmi->mmi_strdup = mir_strdup;
 		mmi->mmi_wstrdup = mir_wstrdup;

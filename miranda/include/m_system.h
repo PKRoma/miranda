@@ -23,6 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef M_SYSTEM_H__
 #define M_SYSTEM_H__ 1
 
+#include <tchar.h>
+
 #ifndef MIRANDANAME
 	#define MIRANDANAME		"Miranda IM"
 #endif
@@ -143,6 +145,17 @@ struct MM_INTERFACE
 		char*    (*mmi_strdup) (const char *src);
 		wchar_t* (*mmi_wstrdup) (const wchar_t *src);
 	#endif
+	#if MIRANDA_VER >= 0x0700
+      int      (*mir_snprintf) (char *buffer, size_t count, const char* fmt, ...);
+		int      (*mir_sntprintf) (TCHAR *buffer, size_t count, const TCHAR* fmt, ...);
+		int      (*mir_vsnprintf) (char *buffer, size_t count, const char* fmt, va_list va);
+		int      (*mir_vsntprintf) (TCHAR *buffer, size_t count, const TCHAR* fmt, va_list va);
+
+		wchar_t* (*mir_a2u_cp) (const char* src, int codepage);
+		wchar_t* (*mir_a2u)(const char* src);
+		char*    (*mir_u2a_cp)(const wchar_t* src, int codepage);
+		char*    (*mir_u2a)( const wchar_t* src);
+	#endif
 };
 
 #define MS_SYSTEM_GET_MMI  "Miranda/System/GetMMI"
@@ -171,6 +184,17 @@ __forceinline int mir_getMMI( struct MM_INTERFACE* dest )
 		__forceinline WCHAR* mir_wstrdup(const WCHAR *src)
 		{	return (src == NULL) ? NULL : wcscpy(( WCHAR* )mir_alloc(( wcslen(src)+1 )*sizeof( WCHAR )), src );
 		}
+	#endif
+	#if MIRANDA_VER >= 0x0700
+		#define mir_snprintf   mmi.mir_snprintf
+		#define mir_sntprintf  mmi.mir_sntprintf 
+		#define mir_vsnprintf  mmi.mir_vsnprintf
+		#define mir_vsntprintf mmi.mir_vsntprintf
+
+		#define mir_a2u_cp(src,cp) mmi.mir_a2u_cp(src,cp) 
+		#define mir_a2u(src)       mmi.mir_a2u(src)
+		#define mir_u2a_cp(src,cp) mmi.mir_u2a_cp(src,cp)
+		#define mir_u2a(src)       mmi.mir_u2a(src)
 	#endif
 #endif
 

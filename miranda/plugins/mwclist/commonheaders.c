@@ -2,14 +2,6 @@
 
 #define SAFE_PTR(a) a?(IsBadReadPtr(a,1)?a=NULL:a):a
 
-void *mir_calloc( size_t num, size_t size )
-{
- 	void *p=mir_alloc(num*size);
-	if (p==NULL) return NULL;
-	memset(p,0,num*size);
-	return p;
-}
-
 int __cdecl MyStrCmp (const char *a, const char *b)
 {
 	SAFE_PTR(a);

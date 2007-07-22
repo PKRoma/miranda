@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _COMMON_HEADERS_H_
 #define _COMMON_HEADERS_H_ 1
 
-//#include "AggressiveOptimize.h"
+#define MIRANDA_VER 0x0700
 
 #if defined( UNICODE ) && !defined( _UNICODE )
 #define _UNICODE
@@ -105,10 +105,6 @@ extern int __cdecl MyStrCmp (const char *a, const char *b);
 extern int __cdecl MyStrLen (const char *a);
 extern int __cdecl MyStrCmpi(const char *a, const char *b);
 extern int __cdecl MyStrCmpiT(const TCHAR *a, const TCHAR *b);
-extern __inline void *mir_calloc( size_t num, size_t size );
-
-extern void *mir_calloc( size_t num, size_t size );
-extern char * mir_strdup(const char * src);
 
 extern DWORD exceptFunction(LPEXCEPTION_POINTERS EP);
 

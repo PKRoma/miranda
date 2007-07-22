@@ -24,8 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef M_UTILS_H__
 #define M_UTILS_H__ 1
 
-#include <tchar.h>
-
 #if !defined(M_SYSTEM_H__)
 #include "m_system.h"
 #endif
@@ -387,6 +385,7 @@ extern struct SHA1_INTERFACE sha1i;
 // Added in 0.4.0.1
 // Here are some string wrappers that are more safe than the win32 versions
 
+#if MIRANDA_VER < 0x0700
 static __inline int mir_snprintf(char *buffer, size_t count, const char* fmt, ...) {
 	va_list va;
 	int len;
@@ -424,6 +423,7 @@ static __inline int mir_vsntprintf(TCHAR *buffer, size_t count, const TCHAR* fmt
 	buffer[count-1] = 0;
 	return len;
 }
+#endif
 
 // allows to include TCHAR* strings into mir_snprintf and NetLib_Logf calls
 #if defined( _UNICODE )
@@ -432,6 +432,7 @@ static __inline int mir_vsntprintf(TCHAR *buffer, size_t count, const TCHAR* fmt
 	#define TCHAR_STR_PARAM "%s"
 #endif
 
+#if MIRANDA_VER < 0x0700
 static __inline wchar_t* mir_a2u_cp( const char* src, int codepage )
 {
 	int cbLen = MultiByteToWideChar( codepage, 0, src, -1, NULL, 0 );
@@ -465,6 +466,7 @@ static __inline char* mir_u2a( const wchar_t* src )
 {
 	return mir_u2a_cp( src, CallService("LangPack/GetCodePage", 0, 0 ));
 }
+#endif
 
 #ifdef _UNICODE
 	#define mir_t2a(s) mir_u2a(s)

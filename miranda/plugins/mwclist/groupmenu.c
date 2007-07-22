@@ -115,7 +115,7 @@ static int AddGroupMenuItem(WPARAM wParam,LPARAM lParam)
 	
 	{
 		lpGroupMenuExecParam mmep;
-		mmep=(lpGroupMenuExecParam)mir_calloc(1,sizeof(GroupMenuExecParam));
+		mmep=(lpGroupMenuExecParam)mir_calloc(sizeof(GroupMenuExecParam));
 		if(mmep==NULL){return(0);}
 		
 		//we need just one parametr.
@@ -536,7 +536,7 @@ static int AddSubGroupMenuItem(WPARAM wParam,LPARAM lParam)
 
 	tmi.ownerdata=NULL;
 	
-	{	lpSubGroupMenuExecParam mmep = (lpSubGroupMenuExecParam)mir_calloc(1,sizeof(SubGroupMenuExecParam));
+	{	lpSubGroupMenuExecParam mmep = (lpSubGroupMenuExecParam)mir_calloc(sizeof(SubGroupMenuExecParam));
 		if ( mmep == NULL)
 			return 0;
 		
