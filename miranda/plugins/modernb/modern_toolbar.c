@@ -101,6 +101,7 @@ typedef struct _tag_MTB_GLOBALDAT
 	HANDLE hehSystemShutdown;
 	HANDLE hehTBModuleLoaded;
 	HANDLE hehSettingsChanged;
+	HANDLE hehOptInit;
 	HANDLE hsvcToolBarAddButton;
 	HANDLE hsvcToolBarRemoveButton;
 	HANDLE hsvcToolBarGetButtonState;
@@ -126,9 +127,11 @@ static int ehhToolbarModulesLoaded(WPARAM wParam, LPARAM lParam);
 static int ehhToolBarSystemShutdown(WPARAM wParam, LPARAM lParam);
 static int ehhToolBarSettingsChanged( WPARAM wParam, LPARAM lParam );
 static int ehhToolBarBackgroundSettingsChanged(WPARAM wParam, LPARAM lParam);
+static int ehhToolbarOptInit(WPARAM wParam, LPARAM lParam);
 
 static MTB_BUTTONINFO * ToolBar_AddButtonToBars(MTB_BUTTONINFO * mtbi);
 static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
+static LRESULT CALLBACK ToolBar_OptDlgProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lParam);
 static int				ToolBar_LayeredPaintProc(HWND hWnd, HDC hDC, RECT * rcPaint, HRGN rgn, DWORD dFlags, void * CallBackData);
 static void				ToolBar_DefaultButtonRegistration();
 
@@ -161,6 +164,7 @@ void          InitToolBarModule()
 
 	tbdat.hehModulesLoaded=HookEvent(ME_SYSTEM_MODULESLOADED, ehhToolbarModulesLoaded);
 	tbdat.hehSystemShutdown=HookEvent(ME_SYSTEM_SHUTDOWN, ehhToolBarSystemShutdown);
+	
 	{	//create window class
 		WNDCLASS wndclass={0};
 		if (GetClassInfo(g_hInst,_T(MIRANDATOOLBARCLASSNAME),&wndclass) ==0)
@@ -187,6 +191,7 @@ static int    ehhToolbarModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
 	CallService(MS_BACKGROUNDCONFIG_REGISTER,(WPARAM)"ToolBar Background/ToolBar",0);
 	HookEvent(ME_BACKGROUNDCONFIG_CHANGED,ehhToolBarBackgroundSettingsChanged);
+	tbdat.hehOptInit=HookEvent(ME_OPT_INITIALISE,ehhToolbarOptInit);
 	ehhToolBarBackgroundSettingsChanged(0,0);
 
 	tbdat.hToolBarWindowList=(HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST,0,0);
@@ -195,17 +200,10 @@ static int    ehhToolbarModulesLoaded(WPARAM wParam, LPARAM lParam)
 	CreateServiceFunction(MS_TB_SETBUTTONSTATE, svcToolBarSetButtonState);
 	
 	tbdat.hehSettingsChanged=HookEvent(ME_DB_CONTACT_SETTINGCHANGED, ehhToolBarSettingsChanged );
-	//CreateSubFrames
-	//toggle the 'hide offline contacts' flag and call CLUI   
-	//wParam=0
-	//lParam=0
-
-	//Create bar ???
 	{
 		HWND hwndClist=(HWND) CallService(MS_CLUI_GETHWND,0,0);
 		sttCreateToolBarFrame( hwndClist, "ToolBar", 24);
 	}
-	//ToolBar_DefaultButtonRegistration();
 
 	NotifyEventHooks(ME_TB_MODULELOADED, 0, 0);	
 	return 0;
@@ -217,6 +215,7 @@ static int    ehhToolBarSystemShutdown(WPARAM wParam, LPARAM lParam)
 	UnhookEvent(tbdat.hehSettingsChanged);
 	UnhookEvent(tbdat.hehModulesLoaded);
 	UnhookEvent(tbdat.hehSystemShutdown);	
+	UnhookEvent(tbdat.hehOptInit);
 	EnterCriticalSection(&tbdat.cs);
 	tbdat.hehTBModuleLoaded=NULL;
 
@@ -264,6 +263,21 @@ static int    ehhToolBarBackgroundSettingsChanged(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+static int	  ehhToolbarOptInit(WPARAM wParam, LPARAM lParam)
+{
+	OPTIONSDIALOGPAGE odp;
+	ZeroMemory(&odp,sizeof(odp));
+	odp.cbSize=sizeof(odp);
+	odp.position=0;
+	odp.hInstance=g_hInst;
+	odp.ptszGroup=LPGENT("Customize");
+	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_TOOLBAR);
+	odp.ptszTitle=LPGENT("ToolBar");
+	odp.pfnDlgProc=ToolBar_OptDlgProc;
+	odp.flags=ODPF_BOLDGROUPS|ODPF_TCHAR;
+	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp); 
+	return 0;
+}
 static int    svcToolBarAddButton(WPARAM wParam, LPARAM lParam)
 {
 	int result=0;
@@ -558,6 +572,22 @@ static void   sttReloadButtons()
 	tbunlock;
 	sttSetButtonPressed("ShowHideOffline", (BOOL) DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT) );
 }
+static int	  sttDBEnumProc (const char *szSetting,LPARAM lParam)
+{
+
+	if (szSetting==NULL) return 0;
+	if (!strncmp(szSetting,"order_",6))
+		DBDeleteContactSetting(NULL, "ModernToolBar", szSetting);
+	return 0;
+};
+static void   sttDeleteOrderSettings()
+{
+	DBCONTACTENUMSETTINGS dbces;
+	dbces.pfnEnumProc=sttDBEnumProc;
+	dbces.szModule="ToolBar";
+	dbces.ofsSettings=0;
+	CallService(MS_DB_CONTACT_ENUMSETTINGS,0,(LPARAM)&dbces);
+}
 static MTB_BUTTONINFO * ToolBar_AddButtonToBars(MTB_BUTTONINFO * mtbi)
 {	
 	int result=0;
@@ -801,3 +831,189 @@ static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 	return TRUE;
 }
 
+static LRESULT CALLBACK ToolBar_OptDlgProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lParam)
+{
+	static HIMAGELIST himlButtonIcons=NULL;
+	static BOOL dragging=FALSE;
+	static HANDLE hDragItem=NULL;
+	switch (msg)
+	{
+	case WM_DESTROY:
+		ImageList_Destroy(himlButtonIcons);
+		break;
+	case WM_INITDIALOG:
+		{
+			HWND hTree=GetDlgItem(hwndDlg,IDC_BTNORDER);
+			TranslateDialogDefault(hwndDlg);
+			SetWindowLong(hTree,GWL_STYLE,GetWindowLong(hTree,GWL_STYLE)|TVS_NOHSCROLL);
+			{	
+				
+				himlButtonIcons=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,2,2);
+				TreeView_SetImageList(hTree,himlButtonIcons,TVSIL_NORMAL);
+			}
+			TreeView_DeleteAllItems(hTree);
+			tblock;
+			{				
+				int i=0;
+				for (i=0; i<tbdat.listOfButtons->realCount; i++)
+				{
+					TVINSERTSTRUCT tvis={0};
+					HTREEITEM hti;
+					MTB_BUTTONINFO * mtbi = (MTB_BUTTONINFO*) tbdat.listOfButtons->items[i];
+					TCHAR * szTempName=_mir_a2t(mtbi->szButtonName);
+					int index=ImageList_AddIcon(himlButtonIcons,(HICON)CallService(MS_SKIN2_GETICONBYHANDLE,0, (LPARAM) mtbi->hPrimaryIconHandle));
+					tvis.hParent=NULL;
+					tvis.hInsertAfter=TVI_LAST;
+					tvis.item.mask=TVIF_PARAM|TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE|TVIF_STATE;	
+					tvis.item.lParam=(LPARAM)(mtbi);
+					tvis.item.pszText=TranslateTS(szTempName);
+					tvis.item.iImage=tvis.item.iSelectedImage=index;
+					hti=TreeView_InsertItem(hTree,&tvis);
+					TreeView_SetCheckState(hTree, hti, mtbi->bVisible );
+					mir_free(szTempName);
+				}				
+			}
+			tbunlock;
+			return TRUE;
+		}
+
+	case WM_NOTIFY:
+		{
+			switch(((LPNMHDR)lParam)->idFrom) 
+			{		
+			case 0: 
+				{
+					switch (((LPNMHDR)lParam)->code)
+					{
+					case PSN_APPLY:
+						{
+							int order=100;
+							HWND hTree=GetDlgItem(hwndDlg,IDC_BTNORDER);
+							int count=TreeView_GetCount(hTree);
+							HTREEITEM hItem;
+							sttDeleteOrderSettings();
+							hItem=TreeView_GetRoot(hTree);
+							do
+							{
+								TVITEM tvi={0};
+								MTB_BUTTONINFO *mtbi;
+								tvi.mask=TBIF_LPARAM|TVIF_HANDLE;
+								tvi.hItem=hItem;
+								TreeView_GetItem(hTree, &tvi);
+								mtbi=(MTB_BUTTONINFO *)tvi.lParam;
+								if (mtbi)
+								{
+									char szTempSetting[200];
+									_snprintf(szTempSetting, sizeof(szTempSetting), "order_%s", mtbi->szButtonID);
+									DBWriteContactSettingDword(NULL, "ModernToolBar", szTempSetting, order);
+									order+=10;
+									_snprintf(szTempSetting, sizeof(szTempSetting), "visible_%s", mtbi->szButtonID);
+									DBWriteContactSettingByte(NULL, "ModernToolBar", szTempSetting, TreeView_GetCheckState(hTree,hItem));
+								}
+								hItem=TreeView_GetNextSibling(hTree,hItem);
+							} while (hItem!=NULL);
+							sttReloadButtons();
+							return TRUE;
+						}
+					}
+					break;
+				}
+			case IDC_BTNORDER:
+				{
+					switch (((LPNMHDR)lParam)->code) 
+					{
+					case TVN_BEGINDRAGA:
+					case TVN_BEGINDRAGW:
+						SetCapture(hwndDlg);
+						dragging=TRUE;
+						hDragItem=((LPNMTREEVIEWA)lParam)->itemNew.hItem;
+						TreeView_SelectItem(GetDlgItem(hwndDlg,IDC_BTNORDER),hDragItem);
+						break;
+					case NM_CLICK:
+						{						
+							TVHITTESTINFO hti;
+							hti.pt.x=(short)LOWORD(GetMessagePos());
+							hti.pt.y=(short)HIWORD(GetMessagePos());
+							ScreenToClient(((LPNMHDR)lParam)->hwndFrom,&hti.pt);
+							if(TreeView_HitTest(((LPNMHDR)lParam)->hwndFrom,&hti))
+								if(hti.flags&TVHT_ONITEMSTATEICON) 
+									SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
+						};
+					}
+					break;
+				}
+			} 
+			break;
+		}
+	case WM_MOUSEMOVE:
+		{
+			if(!dragging) break;
+			{	
+				TVHITTESTINFO hti;
+				hti.pt.x=(short)LOWORD(lParam);
+				hti.pt.y=(short)HIWORD(lParam);
+				ClientToScreen(hwndDlg,&hti.pt);
+				ScreenToClient(GetDlgItem(hwndDlg,IDC_BTNORDER),&hti.pt);
+				TreeView_HitTest(GetDlgItem(hwndDlg,IDC_BTNORDER),&hti);
+				if(hti.flags&(TVHT_ONITEM|TVHT_ONITEMRIGHT))
+				{
+					HTREEITEM it=hti.hItem;
+					hti.pt.y-=TreeView_GetItemHeight(GetDlgItem(hwndDlg,IDC_BTNORDER))/2;
+					TreeView_HitTest(GetDlgItem(hwndDlg,IDC_BTNORDER),&hti);
+					if (!(hti.flags&TVHT_ABOVE))
+						TreeView_SetInsertMark(GetDlgItem(hwndDlg,IDC_BTNORDER),hti.hItem,1);
+					else 
+						TreeView_SetInsertMark(GetDlgItem(hwndDlg,IDC_BTNORDER),it,0);
+				}
+				else 
+				{
+					if(hti.flags&TVHT_ABOVE) SendDlgItemMessage(hwndDlg,IDC_BTNORDER,WM_VSCROLL,MAKEWPARAM(SB_LINEUP,0),0);
+					if(hti.flags&TVHT_BELOW) SendDlgItemMessage(hwndDlg,IDC_BTNORDER,WM_VSCROLL,MAKEWPARAM(SB_LINEDOWN,0),0);
+					TreeView_SetInsertMark(GetDlgItem(hwndDlg,IDC_BTNORDER),NULL,0);
+				}
+			}	
+		}
+		break;
+	case WM_LBUTTONUP:
+		{
+			if(!dragging) break;
+			TreeView_SetInsertMark(GetDlgItem(hwndDlg,IDC_BTNORDER),NULL,0);
+			dragging=0;
+			ReleaseCapture();
+			{	
+				TVHITTESTINFO hti;
+				TVITEM tvi;
+				hti.pt.x=(short)LOWORD(lParam);
+				hti.pt.y=(short)HIWORD(lParam);
+				ClientToScreen(hwndDlg,&hti.pt);
+				ScreenToClient(GetDlgItem(hwndDlg,IDC_BTNORDER),&hti.pt);
+				hti.pt.y-=TreeView_GetItemHeight(GetDlgItem(hwndDlg,IDC_BTNORDER))/2;
+				TreeView_HitTest(GetDlgItem(hwndDlg,IDC_BTNORDER),&hti);
+				if(hDragItem==hti.hItem) break;
+				if (hti.flags&TVHT_ABOVE) hti.hItem=TVI_FIRST;
+				tvi.mask=TVIF_HANDLE|TVIF_PARAM;
+				tvi.hItem=hDragItem;
+				TreeView_GetItem(GetDlgItem(hwndDlg,IDC_BTNORDER),&tvi);
+				if(hti.flags&(TVHT_ONITEM|TVHT_ONITEMRIGHT)||(hti.hItem==TVI_FIRST)) 
+				{
+					TVINSERTSTRUCT tvis;
+					TCHAR name[128];
+					tvis.item.mask=TVIF_HANDLE|TVIF_PARAM|TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
+					tvis.item.stateMask=0xFFFFFFFF;
+					tvis.item.pszText=name;
+					tvis.item.cchTextMax=sizeof(name);
+					tvis.item.hItem=hDragItem;
+					tvis.item.iImage=tvis.item.iSelectedImage=((MTB_BUTTONINFO *)tvi.lParam)->bVisible;				
+					TreeView_GetItem(GetDlgItem(hwndDlg,IDC_BTNORDER),&tvis.item);				
+					TreeView_DeleteItem(GetDlgItem(hwndDlg,IDC_BTNORDER),hDragItem);
+					tvis.hParent=NULL;
+					tvis.hInsertAfter=hti.hItem;
+					TreeView_SelectItem(GetDlgItem(hwndDlg,IDC_BTNORDER),TreeView_InsertItem(GetDlgItem(hwndDlg,IDC_BTNORDER),&tvis));
+					SendMessage((GetParent(hwndDlg)), PSM_CHANGED, (WPARAM)hwndDlg, 0);
+				}
+			}
+		}
+		break; 
+	}
+	return FALSE;
+}
