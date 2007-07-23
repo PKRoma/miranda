@@ -44,7 +44,7 @@ typedef struct {
 } yahoo_authorize_data;
 
 yahoo_idlabel yahoo_status_codes[] = {
-	{YAHOO_STATUS_AVAILABLE, "Available"},
+	{YAHOO_STATUS_AVAILABLE, ""},
 	{YAHOO_STATUS_BRB, "BRB"},
 	{YAHOO_STATUS_BUSY, "Busy"},
 	{YAHOO_STATUS_NOTATHOME, "Not At Home"},
