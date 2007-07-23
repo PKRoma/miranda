@@ -353,7 +353,7 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			char ipaddr[ 256 ] = "";
 			if (gethst == 1) 
 			{
-				if (!MSN_GetStaticString( "YourHost", NULL, ipaddr, sizeof( ipaddr )))
+				if (MSN_GetStaticString( "YourHost", NULL, ipaddr, sizeof( ipaddr )))
 					gethst = 0;
 			}
 			if (gethst == 0)
