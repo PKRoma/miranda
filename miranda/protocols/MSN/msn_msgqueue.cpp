@@ -80,7 +80,7 @@ HANDLE  MsgQueue_CheckContact(HANDLE hContact, time_t tsc)
 	HANDLE ret = NULL;
 	for(int i=0; i < msgQueueCount; i++)
 	{
-		if (msgQueue[i].hContact == hContact && (tsc == 0 || (ts - msgQueue[i].ts) > tsc))
+	if (msgQueue[i].hContact == hContact && (tsc == 0 || (ts - msgQueue[i].ts) < tsc))
 		{	
 			ret = hContact;
 			break;
