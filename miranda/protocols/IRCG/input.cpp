@@ -798,7 +798,7 @@ bool PostIrcMessageWnd( TCHAR* window, HANDLE hContact, const TCHAR* szBuf )
 		}
 
 		// Do this if the message is not a command
-		if ( GetWord( DoThis.c_str(), 0)[0] != '/' || hContact) {
+		if ( GetWord( DoThis.c_str(), 0)[0] != '/' || hContact ) {
 			if ( lstrcmpi(window, _T("Network log")) == 0 && !g_ircSession.GetInfo().sServerName.empty() )
 				DoThis = (TString)_T("/PRIVMSG ") + g_ircSession.GetInfo().sServerName + _T(" ") + DoThis;
 			else

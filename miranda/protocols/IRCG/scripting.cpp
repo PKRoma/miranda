@@ -77,7 +77,7 @@ int Scripting_InsertGuiIn(WPARAM wParam,LPARAM lParam)
 //helper functions
 static void __stdcall OnHook(void * pi)
 {
-	GCHOOK * gch = (GCHOOK *) pi;
+	GCHOOK* gch = ( GCHOOK* )pi;
 
 	Service_GCEventHook(1, (LPARAM) gch);
 
@@ -94,32 +94,30 @@ static void __stdcall OnHook(void * pi)
 }
 static void __cdecl GuiOutThread(LPVOID di)
 {	
-	GCHOOK * gch = (GCHOOK *) di;
-	CallFunctionAsync(OnHook, (void *)gch);
+	GCHOOK* gch = ( GCHOOK* )di;
+	CallFunctionAsync( OnHook, ( void* )gch );
 }
 
-int Scripting_InsertGuiOut(WPARAM wParam,LPARAM lParam)
+int Scripting_InsertGuiOut( WPARAM wParam,LPARAM lParam )
 {
+	GCHOOK* gch = ( GCHOOK* )lParam;
 
-	GCHOOK * gch = (GCHOOK *) lParam;
-
-	if(bMbotInstalled && prefs->ScriptingEnabled && gch)
-	{	
-		GCHOOK * gchook = new GCHOOK;
+	if ( bMbotInstalled && prefs->ScriptingEnabled && gch ) {	
+		GCHOOK* gchook = new GCHOOK;
 		gchook->pDest = new GCDEST;
 
 		gchook->dwData = gch->dwData;
 		gchook->pDest->iType = gch->pDest->iType;
-		if(gch->ptszText)
-			gchook->ptszText = _tcsdup(gch->ptszText);
+		if ( gch->ptszText )
+			gchook->ptszText = _tcsdup( gch->ptszText );
 		else gchook->pszText = NULL;
 
 		if ( gch->ptszUID )
-			gchook->ptszUID = _tcsdup(gch->ptszUID);
+			gchook->ptszUID = _tcsdup( gch->ptszUID );
 		else gchook->pszUID = NULL;
 
 		if ( gch->pDest->ptszID ) {
-			TString S = MakeWndID(gch->pDest->ptszID);
+			TString S = MakeWndID( gch->pDest->ptszID );
 			gchook->pDest->ptszID = _tcsdup( S.c_str());
 		}
 		else gchook->pDest->ptszID = NULL;
@@ -128,30 +126,29 @@ int Scripting_InsertGuiOut(WPARAM wParam,LPARAM lParam)
 			gchook->pDest->pszModule = strdup(gch->pDest->pszModule);
 		else gchook->pDest->pszModule = NULL;
 
-		mir_forkthread(GuiOutThread, gchook);
+		mir_forkthread( GuiOutThread, gchook );
 		return 0;
 	}
 
 	return 1;
 }
 
-
-BOOL Scripting_TriggerMSPRawIn(char ** pszRaw)
+BOOL Scripting_TriggerMSPRawIn( char** pszRaw )
 {
 	int iVal = CallService(MS_MBOT_IRC_RAW_IN, (WPARAM)IRCPROTONAME, (LPARAM)pszRaw);
-	if (iVal == 0)
+	if ( iVal == 0 )
 		return TRUE;
-	return iVal > 0?FALSE:TRUE;
 
+	return iVal > 0 ? FALSE : TRUE;
 }
 
 BOOL Scripting_TriggerMSPRawOut(char ** pszRaw)
 {
-
 	int iVal =  CallService(MS_MBOT_IRC_RAW_OUT, (WPARAM)IRCPROTONAME, (LPARAM)pszRaw);
-	if (iVal == 0)
+	if ( iVal == 0 )
 		return TRUE;
-	return iVal > 0?FALSE:TRUE;
+
+	return iVal > 0 ? FALSE : TRUE;
 }
 
 BOOL Scripting_TriggerMSPGuiIn(WPARAM * wparam, GCEVENT * gce)
@@ -164,22 +161,21 @@ BOOL Scripting_TriggerMSPGuiIn(WPARAM * wparam, GCEVENT * gce)
 		gce->time = time(0);
 
 	int iVal =  CallService(MS_MBOT_IRC_GUI_IN, (WPARAM)&wgi, (LPARAM)gce);
-	if (iVal == 0)
-	{
+	if ( iVal == 0 ) {
 		*wparam = wgi.wParam;
 		return TRUE;
 	}
 
-	return iVal > 0?FALSE:TRUE;
+	return iVal > 0 ? FALSE : TRUE;
 }
 
-BOOL Scripting_TriggerMSPGuiOut(GCHOOK * gch)
+BOOL Scripting_TriggerMSPGuiOut(GCHOOK* gch)
 {
-
 	int iVal =  CallService(MS_MBOT_IRC_GUI_OUT, (WPARAM)IRCPROTONAME, (LPARAM)gch);
-	if (iVal == 0)
+	if ( iVal == 0 )
 		return TRUE;
-	return iVal > 0?FALSE:TRUE;
+
+	return iVal > 0 ? FALSE : TRUE;
 }
 
 int Scripting_GetIrcData(WPARAM wparam, LPARAM lparam)

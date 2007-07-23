@@ -723,7 +723,7 @@ int Service_GCEventHook(WPARAM wParam,LPARAM lParam)
 	EnterCriticalSection(&m_gchook);
 
 	// handle the hook
-	if (gchook) {
+	if ( gchook ) {
 		if (!lstrcmpiA(gchook->pDest->pszModule, IRCPROTONAME)) {
 
 			// first see if the scripting module should modify or stop this event
@@ -754,11 +754,11 @@ int Service_GCEventHook(WPARAM wParam,LPARAM lParam)
 
 			if ( gch ) {
 				TCHAR* p1 = mir_tstrdup( gch->pDest->ptszID );
-				TCHAR* p2 = _tcsstr(p1, _T(" - "));
+				TCHAR* p2 = _tcsstr( p1, _T(" - "));
 				if ( p2 )
 					*p2 = '\0';
 
-				switch (gch->pDest->iType) {
+				switch( gch->pDest->iType ) {
 				case GC_SESSION_TERMINATE:
 					FreeWindowItemData(p1, (CHANNELINFO*)gch->dwData);
 					break;
@@ -780,7 +780,7 @@ int Service_GCEventHook(WPARAM wParam,LPARAM lParam)
 				case GC_USER_PRIVMESS:
 					{
 						TCHAR szTemp[4000];
-						mir_sntprintf(szTemp, SIZEOF(szTemp), _T("/QUERY %s"), gch->ptszUID);
+						mir_sntprintf(szTemp, SIZEOF(szTemp), _T("/QUERY %s"), gch->ptszUID );
 						PostIrcMessageWnd(p1, NULL, szTemp);
 					}
 					break;
@@ -814,56 +814,56 @@ int Service_GCEventHook(WPARAM wParam,LPARAM lParam)
 				case GC_USER_NICKLISTMENU:
 					switch(gch->dwData) {
 					case 1:
-						PostIrcMessage( _T("/MODE %s +o %s"), p1, gch->ptszUID);
+						PostIrcMessage( _T("/MODE %s +o %s"), p1, gch->ptszUID );
 						break;
 					case 2:
-						PostIrcMessage( _T("/MODE %s -o %s"), p1, gch->ptszUID);
+						PostIrcMessage( _T("/MODE %s -o %s"), p1, gch->ptszUID );
 						break;
 					case 3:
-						PostIrcMessage( _T("/MODE %s +v %s"), p1, gch->ptszUID);
+						PostIrcMessage( _T("/MODE %s +v %s"), p1, gch->ptszUID );
 						break;
 					case 4:
-						PostIrcMessage( _T("/MODE %s -v %s"), p1, gch->ptszUID);
+						PostIrcMessage( _T("/MODE %s -v %s"), p1, gch->ptszUID );
 						break;
 					case 5:
-						PostIrcMessage( _T("/KICK %s %s"), p1, gch->ptszUID);
+						PostIrcMessage( _T("/KICK %s %s"), p1, gch->ptszUID );
 						break;
 					case 6:
 						PostIrcMessage( _T("/KICK %s %s %%question=\"%s\",\"%s\",\"%s\""), 
 							p1, gch->ptszUID, TranslateT("Please enter the reason"), TranslateT("Kick"), TranslateT("Jerk") );
 						break;
 					case 7:
-						DoUserhostWithReason(1, _T("B") + (TString)p1, true, _T("%s"), gch->ptszUID);
+						DoUserhostWithReason(1, _T("B") + (TString)p1, true, _T("%s"), gch->ptszUID );
 						break;
 					case 8:
-						DoUserhostWithReason(1, _T("K") + (TString)p1, true, _T("%s"), gch->ptszUID);
+						DoUserhostWithReason(1, _T("K") + (TString)p1, true, _T("%s"), gch->ptszUID );
 						break;
 					case 9:
-						DoUserhostWithReason(1, _T("L") + (TString)p1, true, _T("%s"), gch->ptszUID);
+						DoUserhostWithReason(1, _T("L") + (TString)p1, true, _T("%s"), gch->ptszUID );
 						break;
 					case 10:
-						PostIrcMessage( _T("/WHOIS %s"), gch->ptszUID);
+						PostIrcMessage( _T("/WHOIS %s"), gch->ptszUID );
 						break;
-						//					case 11:
-						//						DoUserhostWithReason(1, "I", true, "%s", gch->ptszUID);
-						//						break;
-						//					case 12:
-						//						DoUserhostWithReason(1, "J", true, "%s", gch->ptszUID);
-						//						break;
+				//	case 11:
+				//		DoUserhostWithReason(1, "I", true, "%s", gch->ptszUID );
+				//		break;
+				//	case 12:
+				//		DoUserhostWithReason(1, "J", true, "%s", gch->ptszUID );
+				//		break;
 					case 13:
-						PostIrcMessage( _T("/DCC CHAT %s"), gch->ptszUID);
+						PostIrcMessage( _T("/DCC CHAT %s"), gch->ptszUID );
 						break;
 					case 14:
-						PostIrcMessage( _T("/DCC SEND %s"), gch->ptszUID);
+						PostIrcMessage( _T("/DCC SEND %s"), gch->ptszUID );
 						break;
 					case 15:
-						DoUserhostWithReason(1, _T("I"), true, _T("%s"), gch->ptszUID);
+						DoUserhostWithReason(1, _T("I"), true, _T("%s"), gch->ptszUID );
 						break;
 					case 16:
-						PostIrcMessage( _T("/MODE %s +h %s"), p1, gch->ptszUID);
+						PostIrcMessage( _T("/MODE %s +h %s"), p1, gch->ptszUID );
 						break;
 					case 17:
-						PostIrcMessage( _T("/MODE %s -h %s"), p1, gch->ptszUID);
+						PostIrcMessage( _T("/MODE %s -h %s"), p1, gch->ptszUID );
 						break;
 					case 30:
 						{
@@ -1460,15 +1460,15 @@ static int Service_GetAwayMessage(WPARAM wParam, LPARAM lParam)
 
 static int Service_InitUserInfo(WPARAM wParam, LPARAM lParam)
 {
-	char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, lParam, 0);
+	char* szProto = ( char* )CallService(MS_PROTO_GETCONTACTBASEPROTO, lParam, 0);
 	HANDLE hContact = (HANDLE) lParam;
 	if ( !hContact || !szProto || lstrcmpiA( szProto, IRCPROTONAME ))
 		return 0;
 
-	if ( DBGetContactSettingByte( hContact, IRCPROTONAME, "ChatRoom", 0) != 0 )
+	if ( DBGetContactSettingByte( hContact, IRCPROTONAME, "ChatRoom", 0 ) != 0 )
 		return 0;
 
-	if ( DBGetContactSettingByte( hContact, IRCPROTONAME, "DCC", 0) != 0 )
+	if ( DBGetContactSettingByte( hContact, IRCPROTONAME, "DCC", 0 ) != 0 )
 		return 0;
 
 	DBVARIANT dbv;
@@ -1499,7 +1499,7 @@ static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	char szTemp3[256];
 	NETLIBUSER nlu = {0};
 
-	DBDeleteContactSetting(NULL, IRCPROTONAME, "JTemp");
+	DBDeleteContactSetting( NULL, IRCPROTONAME, "JTemp" );
 
 	AddIcons();
 
@@ -1613,16 +1613,16 @@ static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 		CreateDialog(g_hInstance,MAKEINTRESOURCE(IDD_INIT),NULL, InitWndProc);
 	else {
 		TCHAR szBuf[ 40 ];
-		if (lstrlen(prefs->AlternativeNick) == 0) {
-			mir_sntprintf(szBuf, SIZEOF(szBuf), _T("%s%u"), prefs->Nick, rand()%9999);
+		if ( lstrlen( prefs->AlternativeNick ) == 0 ) {
+			mir_sntprintf( szBuf, SIZEOF(szBuf), _T("%s%u"), prefs->Nick, rand()%9999);
 			DBWriteContactSettingTString(NULL, IRCPROTONAME, "AlernativeNick", szBuf);
 			lstrcpyn(prefs->AlternativeNick, szBuf, 30);
 		}
 
-		if (lstrlen(prefs->Name) == 0) {
-			mir_sntprintf(szBuf, SIZEOF(szBuf), _T("Miranda%u"), rand()%9999);
+		if ( lstrlen( prefs->Name ) == 0 ) {
+			mir_sntprintf( szBuf, SIZEOF(szBuf), _T("Miranda%u"), rand()%9999);
 			DBWriteContactSettingTString(NULL, IRCPROTONAME, "Name", szBuf);
-			lstrcpyn(prefs->Name, szBuf, 200);
+			lstrcpyn( prefs->Name, szBuf, 200 );
 	}	}
 
 	return 0;

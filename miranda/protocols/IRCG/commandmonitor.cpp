@@ -1426,6 +1426,7 @@ bool CMyMonitor::OnIrc_ENDNAMES( const CIrcMessage* pmsg )
 					wi->pszMode = 0;
 					wi->pszPassword = 0;
 					wi->pszTopic = 0;
+					wi->codepage = ( g_ircSession ) ? g_ircSession.getCodepage() : IRC_DEFAULT_CODEPAGE;
 					DoEvent(GC_EVENT_SETITEMDATA, sChanName.c_str(), NULL, NULL, NULL, NULL, (DWORD)wi, false, false, 0);
 
 					if ( !sTopic.empty() && !lstrcmpi(GetWord(sTopic.c_str(), 0).c_str(), sChanName.c_str())) {
