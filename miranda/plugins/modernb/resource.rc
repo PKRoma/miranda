@@ -422,16 +422,33 @@ BEGIN
                     WS_BORDER | WS_TABSTOP,18,36,182,107
 END
 
-IDD_OPT_TOOLBAR DIALOGEX 0, 0, 307, 222
+IDD_OPT_TOOLBAR DIALOGEX 0, 0, 307, 216
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Toolbar buttons",IDC_STATIC,7,5,290,210
+    GROUPBOX        "Toolbar settings",IDC_STATIC,7,5,290,204
     CONTROL         "",IDC_BTNORDER,"SysTreeView32",TVS_NOTOOLTIPS | 
-                    TVS_CHECKBOXES | WS_BORDER | WS_TABSTOP,18,20,120,140
+                    TVS_CHECKBOXES | WS_BORDER | WS_TABSTOP,29,39,120,123
     LTEXT           "Hints:\n* Use Drag&&Drop feature to change buttons order.\n* You can change button icons at Customize->Icons Toolbar section",
-                    IDC_STATIC,18,165,278,40
+                    IDC_STATIC,18,174,278,29
+    CONTROL         "Show Toolbar with next buttons:",IDC_TBSHOW,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,18,20,268,10
+    EDITTEXT        IDC_TEXT_W,240,118,35,12,ES_NUMBER
+    CONTROL         "",IDC_SPIN_W,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS | UDS_HOTTRACK,276,118,11,12
+    RTEXT           "Button width",IDC_STATIC_W,174,120,60,10
+    EDITTEXT        IDC_TEXT_S,240,148,35,12,ES_NUMBER
+    CONTROL         "",IDC_SPIN_S,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS | UDS_HOTTRACK,276,148,11,12
+    RTEXT           "Space between",IDC_STATIC_S,156,151,77,10
+    EDITTEXT        IDC_TEXT_H,240,133,35,12,ES_NUMBER
+    CONTROL         "",IDC_SPIN_H,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS | UDS_HOTTRACK,276,133,11,12
+    RTEXT           "Height",IDC_STATIC_H,156,136,77,10
 END
 
 
@@ -460,7 +477,7 @@ BEGIN
         VERTGUIDE, 18
         VERTGUIDE, 296
         TOPMARGIN, 5
-        BOTTOMMARGIN, 215
+        BOTTOMMARGIN, 209
     END
 END
 #endif    // APSTUDIO_INVOKED

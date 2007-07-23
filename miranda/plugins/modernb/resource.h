@@ -896,6 +896,16 @@
 #define IDC_USEWINCOL                   2004
 #define IDC_MINIMODE                    2005
 #define IDC_BTNORDER                    2006
+#define IDC_TBSHOW                      2007
+#define IDC_STATIC_W                    2008
+#define IDC_STATIC_H                    2009
+#define IDC_STATIC_S                    2010
+#define IDC_TEXT_W                      2011
+#define IDC_TEXT_H                      2012
+#define IDC_TEXT_S                      2013
+#define IDC_SPIN_W                      2014
+#define IDC_SPIN_H                      2015
+#define IDC_SPIN_S                      2016
 #define IDC_CLSORT1                     6666
 #define IDC_CLSORT2                     6667
 #define IDC_CLSORT3                     6668
@@ -994,7 +1004,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        508
 #define _APS_NEXT_COMMAND_VALUE         40022
-#define _APS_NEXT_CONTROL_VALUE         2007
+#define _APS_NEXT_CONTROL_VALUE         2017
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

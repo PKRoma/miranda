@@ -50,6 +50,7 @@ enum {
 	MTBM_SETBUTTONSTATE,
 	MTBM_GETBUTTONSTATE,
 	MTBM_REMOVE_ALL_BUTTONS,
+	MTBM_UPDATEFRAMEVISIBILITY,
 	MTBM_LAST
 };
 
@@ -88,6 +89,7 @@ typedef struct _tagMTBInfo
 	SortedList * pButtonList;
 	int		nButtonWidth;
 	int     nButtonHeight;
+	int		nButtonSpace;
 	BOOL	bFlatButtons;
 	XPTHANDLE	mtbXPTheme;
 }MTBINFO;
@@ -389,7 +391,7 @@ static void   sttReposButtons(MTBINFO * mti)
 			nFlexSeparatorsCount++;
 		else
 		{
-			int width=(mtbi->bSeparator==1)? 4 : mti->nButtonWidth+1;
+			int width=(mtbi->bSeparator==1)? 4 : mti->nButtonWidth+mti->nButtonSpace;
 			if (nUsedWidth+width>=nBarSize) break;
 			nUsedWidth+=width;
 		}
@@ -404,12 +406,12 @@ static void   sttReposButtons(MTBINFO * mti)
 		{
 			if (hdwp)
 			{
-				if (nextX+mti->nButtonWidth +1 <= nBarSize)
+				if (nextX+mti->nButtonWidth +mti->nButtonSpace <= nBarSize)
 					hdwp=DeferWindowPos(hdwp, mtbi->hWindow, NULL, nextX, 0, 0,	0,	SWP_NOSIZE|SWP_NOZORDER|SWP_SHOWWINDOW);
 				else
 					hdwp=DeferWindowPos(hdwp, mtbi->hWindow, NULL, nextX, 0, 0,	0,	SWP_NOSIZE|SWP_NOZORDER|SWP_HIDEWINDOW);
 			}
-			nextX+=mti->nButtonWidth+1;
+			nextX+=mti->nButtonWidth+mti->nButtonSpace;
 		}
 		else if ( mtbi->bSeparator==1 )
 		{
@@ -551,6 +553,11 @@ static void   sttReloadButtons()
 	int i=0;
 	tbcheck ;
 	tblock;
+	{
+		int vis=DBGetContactSettingByte(NULL,"CLUI","ShowButtonBar",SETTINGS_SHOWBUTTONBAR_DEFAULT);
+		WindowList_Broadcast(tbdat.hToolBarWindowList,MTBM_UPDATEFRAMEVISIBILITY,(WPARAM)DBGetContactSettingByte(NULL,"CLUI","ShowButtonBar",SETTINGS_SHOWBUTTONBAR_DEFAULT),0);
+	}
+
 	WindowList_Broadcast(tbdat.hToolBarWindowList, MTBM_REMOVE_ALL_BUTTONS, 0,0);
 	for (i=0; i<tbdat.listOfButtons->realCount; i++)
 	{	
@@ -660,15 +667,17 @@ static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 			Frame.align=alTop;
 			Frame.hIcon=LoadSkinnedIcon (SKINICON_OTHER_MIRANDA);
 			Frame.Flags=(DBGetContactSettingByte(NULL,"CLUI","ShowButtonBar",SETTINGS_SHOWBUTTONBAR_DEFAULT)?F_VISIBLE:0)|F_LOCKED|F_NOBORDER|F_NO_SUBCONTAINER;
-			Frame.height=lpcs->cy;
+			Frame.height=DBGetContactSettingByte(NULL, "ModernToolBar", "option_Bar0_BtnHeight", SETTINGS_BARBTNHEIGHT_DEFAULT);
 			Frame.name=(char*) lpcs->lpCreateParams;
 			hFrame=(HANDLE)CallService(MS_CLIST_FRAMES_ADDFRAME,(WPARAM)&Frame,(LPARAM)0);
 			CallService(MS_SKINENG_REGISTERPAINTSUB,(WPARAM)Frame.hWnd,(LPARAM)ToolBar_LayeredPaintProc); //$$$$$ register sub for frame		
 			pMTBInfo->hFrame = hFrame;
 			pMTBInfo->hWnd = hwnd;
 
-			pMTBInfo->nButtonHeight	= Frame.height; //TODO: replace to option specified
-			pMTBInfo->nButtonWidth	= Frame.height;
+			pMTBInfo->nButtonWidth = DBGetContactSettingByte(NULL, "ModernToolBar", "option_Bar0_BtnWidth",  SETTINGS_BARBTNWIDTH_DEFAULT);
+			pMTBInfo->nButtonHeight= DBGetContactSettingByte(NULL, "ModernToolBar", "option_Bar0_BtnHeight", SETTINGS_BARBTNHEIGHT_DEFAULT);
+			pMTBInfo->nButtonSpace = DBGetContactSettingByte(NULL, "ModernToolBar", "option_Bar0_BtnSpace",  SETTINGS_BARBTNSPACE_DEFAULT);
+
 			pMTBInfo->pButtonList=li.List_Create(0,1);
 			//add self to window list
 			WindowList_Add(tbdat.hToolBarWindowList, hwnd, NULL);
@@ -694,6 +703,34 @@ static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 					res=CallService(MS_CLIST_FRAMES_GETFRAMEOPTIONS, MAKEWPARAM(FO_FLAGS,ID),0);
 					if (res>=0) DBWriteContactSettingByte(0,"CLUI","ShowButtonBar",(BYTE)(wParam/*(res&F_VISIBLE)*/?1:0));
 				}
+			}
+			break;
+		}
+	case MTBM_UPDATEFRAMEVISIBILITY:
+		{
+			BOOL vis=(BOOL)wParam;
+			DWORD frameopt; 
+			BOOL curvis=IsWindowVisible(hwnd);
+			BOOL bResize=FALSE;
+			int frameID=callProxied_FindFrameID(hwnd);
+			pMTBInfo->nButtonWidth = DBGetContactSettingByte(NULL, "ModernToolBar", "option_Bar0_BtnWidth",  SETTINGS_BARBTNWIDTH_DEFAULT);
+			pMTBInfo->nButtonHeight= DBGetContactSettingByte(NULL, "ModernToolBar", "option_Bar0_BtnHeight", SETTINGS_BARBTNHEIGHT_DEFAULT);
+			pMTBInfo->nButtonSpace = DBGetContactSettingByte(NULL, "ModernToolBar", "option_Bar0_BtnSpace",  SETTINGS_BARBTNSPACE_DEFAULT);
+			frameopt=CallService(MS_CLIST_FRAMES_GETFRAMEOPTIONS, MAKEWPARAM(FO_HEIGHT,frameID),0);
+			
+			if (pMTBInfo->nButtonHeight!=frameopt)
+			{
+				frameopt=pMTBInfo->nButtonHeight;
+				CallService(MS_CLIST_FRAMES_SETFRAMEOPTIONS,MAKEWPARAM(FO_HEIGHT,frameID),frameopt);
+				bResize=TRUE;
+			}
+
+			if (curvis!=vis || bResize)
+			{				
+				frameopt=CallService(MS_CLIST_FRAMES_GETFRAMEOPTIONS, MAKEWPARAM(FO_FLAGS,frameID),0);
+				frameopt&=~F_VISIBLE;
+				frameopt|=vis ? F_VISIBLE : 0;
+				CallService(MS_CLIST_FRAMES_SETFRAMEOPTIONS,MAKEWPARAM(FO_FLAGS,frameID),frameopt);
 			}
 			break;
 		}
@@ -794,6 +831,7 @@ static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 			int i;
 			RECT MyRect={0};
 			HDC hDC=(HDC)wParam;
+			if (!pMTBInfo->pButtonList) return TRUE;
 			GetWindowRect(hwnd,&MyRect);
 			SkinDrawGlyph(hDC,&MyRect,&MyRect,"Bar,ID=ToolBar,Part=Background");
 			for (i=0; i<pMTBInfo->pButtonList->realCount; i++)
@@ -830,7 +868,7 @@ static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 	}		
 	return TRUE;
 }
-
+static int ControlIDS[]={IDC_TEXT_W, IDC_SPIN_W, IDC_STATIC_W, IDC_TEXT_H, IDC_SPIN_H, IDC_STATIC_H,IDC_TEXT_S, IDC_SPIN_S, IDC_STATIC_S, IDC_BTNORDER };
 static LRESULT CALLBACK ToolBar_OptDlgProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lParam)
 {
 	static HIMAGELIST himlButtonIcons=NULL;
@@ -846,8 +884,7 @@ static LRESULT CALLBACK ToolBar_OptDlgProc(HWND hwndDlg,UINT msg,WPARAM wParam,L
 			HWND hTree=GetDlgItem(hwndDlg,IDC_BTNORDER);
 			TranslateDialogDefault(hwndDlg);
 			SetWindowLong(hTree,GWL_STYLE,GetWindowLong(hTree,GWL_STYLE)|TVS_NOHSCROLL);
-			{	
-				
+			{					
 				himlButtonIcons=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,2,2);
 				TreeView_SetImageList(hTree,himlButtonIcons,TVSIL_NORMAL);
 			}
@@ -874,6 +911,23 @@ static LRESULT CALLBACK ToolBar_OptDlgProc(HWND hwndDlg,UINT msg,WPARAM wParam,L
 				}				
 			}
 			tbunlock;
+
+			SendDlgItemMessage(hwndDlg,IDC_SPIN_W,UDM_SETRANGE,0,MAKELONG(50,10));
+			SendDlgItemMessage(hwndDlg,IDC_SPIN_W,UDM_SETPOS,0,MAKELONG(DBGetContactSettingByte(NULL, "ModernToolBar", "option_Bar0_BtnWidth",  SETTINGS_BARBTNWIDTH_DEFAULT),0));
+
+			SendDlgItemMessage(hwndDlg,IDC_SPIN_H,UDM_SETRANGE,0,MAKELONG(50,10));
+			SendDlgItemMessage(hwndDlg,IDC_SPIN_H,UDM_SETPOS,0,MAKELONG(DBGetContactSettingByte(NULL, "ModernToolBar", "option_Bar0_BtnHeight", SETTINGS_BARBTNHEIGHT_DEFAULT),0));
+
+			SendDlgItemMessage(hwndDlg,IDC_SPIN_S,UDM_SETRANGE,0,MAKELONG(20,0));
+			SendDlgItemMessage(hwndDlg,IDC_SPIN_S,UDM_SETPOS,0,MAKELONG(DBGetContactSettingByte(NULL, "ModernToolBar", "option_Bar0_BtnSpace",  SETTINGS_BARBTNSPACE_DEFAULT),0));
+
+			CheckDlgButton(hwndDlg, IDC_TBSHOW, DBGetContactSettingByte(NULL,"CLUI","ShowButtonBar",SETTINGS_SHOWBUTTONBAR_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
+			{
+				int i;
+				BOOL en=IsDlgButtonChecked(hwndDlg,IDC_TBSHOW);
+				for (i=0; i<SIZEOF(ControlIDS); i++)
+					EnableWindow(GetDlgItem(hwndDlg,ControlIDS[i]), en);
+			}
 			return TRUE;
 		}
 
@@ -912,6 +966,10 @@ static LRESULT CALLBACK ToolBar_OptDlgProc(HWND hwndDlg,UINT msg,WPARAM wParam,L
 								}
 								hItem=TreeView_GetNextSibling(hTree,hItem);
 							} while (hItem!=NULL);
+							DBWriteContactSettingByte(NULL,"CLUI","ShowButtonBar",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_TBSHOW));
+							DBWriteContactSettingByte(NULL,"ModernToolBar","option_Bar0_BtnWidth", (BYTE)SendDlgItemMessage(hwndDlg,IDC_SPIN_W,UDM_GETPOS,0,0));
+							DBWriteContactSettingByte(NULL,"ModernToolBar","option_Bar0_BtnHeight",(BYTE)SendDlgItemMessage(hwndDlg,IDC_SPIN_H,UDM_GETPOS,0,0));
+							DBWriteContactSettingByte(NULL,"ModernToolBar","option_Bar0_BtnSpace", (BYTE)SendDlgItemMessage(hwndDlg,IDC_SPIN_S,UDM_GETPOS,0,0));
 							sttReloadButtons();
 							return TRUE;
 						}
@@ -1014,6 +1072,21 @@ static LRESULT CALLBACK ToolBar_OptDlgProc(HWND hwndDlg,UINT msg,WPARAM wParam,L
 			}
 		}
 		break; 
+	case WM_COMMAND:
+		if (LOWORD(wParam)==IDC_TBSHOW) {
+			{
+				int i;
+				BOOL en=IsDlgButtonChecked(hwndDlg,IDC_TBSHOW);
+				for (i=0; i<SIZEOF(ControlIDS); i++)
+					EnableWindow(GetDlgItem(hwndDlg,ControlIDS[i]), en);
+			}
+			SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
+		} else if ( (LOWORD(wParam)==IDC_TEXT_W || 
+			         LOWORD(wParam)==IDC_TEXT_H ||
+					 LOWORD(wParam)==IDC_TEXT_S ) 
+					&& HIWORD(wParam) != EN_CHANGE || (HWND)lParam != GetFocus()) return 0; // dont make apply enabled during buddy set crap 
+		SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
+		break;
 	}
 	return FALSE;
 }
