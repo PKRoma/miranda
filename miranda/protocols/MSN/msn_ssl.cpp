@@ -400,7 +400,7 @@ int SSL_OpenSsl::init(void)
 		}
 
 		if (( hLibSSL = LoadLibraryA( "SSLEAY32.DLL" )) == NULL ) {
-			MSN_ShowError( "Valid %s must be installed to perform the SSL login", "LIBSSL32.DLL" );
+			MSN_ShowError( "Valid %s must be installed to perform the SSL login", "SSLEAY32.DLL" );
 			return 1;
 		}
 
@@ -428,7 +428,7 @@ int SSL_OpenSsl::init(void)
 
 		if ( retVal ) {
 			FreeLibrary( hLibSSL );
-			MSN_ShowError( "Valid %s must be installed to perform the SSL login", "LIBSSL32.DLL" );
+			MSN_ShowError( "Valid %s must be installed to perform the SSL login", "SSLEAY32.DLL" );
 			return 1;
 		}
 
