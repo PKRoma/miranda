@@ -1595,7 +1595,7 @@ static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 			if ( p1 == p2 )
 				break;
 
-			*p2 = 0;
+			*p2++ = 0;
 			DBWriteContactSettingString( NULL, IRCPROTONAME, ("PERFORM:" + sNetwork).c_str(), p1 );
 		}
 		delete[] pszPerformData;
