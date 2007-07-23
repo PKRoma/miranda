@@ -23,7 +23,6 @@
 #include <m_skin.h>
 #include <m_popup.h>
 #include <m_message.h>
-#include <m_system.h>
 
 #include "avatar.h"
 #include "chat.h"

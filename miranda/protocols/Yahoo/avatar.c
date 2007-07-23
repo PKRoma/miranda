@@ -16,16 +16,10 @@
 #include <io.h>
 
 #include "yahoo.h"
-#include "resource.h"
-
 #include <m_langpack.h>
-#include <m_options.h>
-#include <m_userinfo.h>
-#include <m_png.h>
-#include <m_system.h>
-
 #include "avatar.h"
 #include "file_transfer.h"
+#include "resource.h"
 
 extern yahoo_local_account *ylad;
 

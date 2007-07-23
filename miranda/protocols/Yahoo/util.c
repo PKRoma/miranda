@@ -10,15 +10,9 @@
  * I want to thank Robert Rainwater and George Hazan for their code and support
  * and for answering some of my questions during development of this plugin.
  */
-#include <windows.h>
-#include <windowsx.h>
-#include <stdio.h>
-#include <shlwapi.h>
-#include <malloc.h>
-
 #include "yahoo.h"
+#include <windowsx.h>
 #include <m_popup.h>
-#include <m_system.h>
 #include <m_protomod.h>
 #include <m_protosvc.h>
 #include <m_langpack.h>

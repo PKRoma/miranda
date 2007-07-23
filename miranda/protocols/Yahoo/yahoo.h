@@ -24,6 +24,7 @@
 #include "libyahoo2/yahoo_util.h"
 
 #include <newpluginapi.h>
+#include <m_system.h>
 #include <m_database.h>
 #include <m_protomod.h>
 #include <m_netlib.h>

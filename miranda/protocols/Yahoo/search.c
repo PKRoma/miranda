@@ -13,8 +13,6 @@
 #include "yahoo.h"
 #include <m_protosvc.h>
 #include <m_langpack.h>
-#include <m_message.h>
-#include <m_system.h>
 
 extern yahoo_local_account * ylad;
 

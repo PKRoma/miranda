@@ -10,16 +10,7 @@
  * I want to thank Robert Rainwater and George Hazan for their code and support
  * and for answering some of my questions during development of this plugin.
  */
-#include <time.h>
-#include <malloc.h>
-#include <sys/stat.h>
-
 #include "yahoo.h"
-
-#include <m_langpack.h>
-#include <m_protosvc.h>
-#include <m_system.h>
-
 #include "ignore.h"
 
 extern yahoo_local_account *ylad;

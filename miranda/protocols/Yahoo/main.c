@@ -15,11 +15,8 @@
 #include "version.h"
 #include "resource.h"
 
-#include <m_system.h>
 #include <m_langpack.h>
-#include <m_options.h>
 #include <m_skin.h>
-#include <m_message.h>
 #include <m_idle.h>
 #include <m_userinfo.h>
 

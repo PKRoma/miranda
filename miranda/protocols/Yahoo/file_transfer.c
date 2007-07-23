@@ -15,7 +15,6 @@
 
 #include "yahoo.h"
 #include <m_protosvc.h>
-#include <m_system.h>
 #include "file_transfer.h"
 
 extern yahoo_local_account * ylad;

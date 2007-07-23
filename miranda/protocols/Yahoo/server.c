@@ -12,7 +12,6 @@
  */
 #include <windows.h>
 #include "yahoo.h"
-#include <m_system.h>
 #include <time.h>
 
 int poll_loop = 1;

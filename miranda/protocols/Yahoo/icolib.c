@@ -10,16 +10,8 @@
  * I want to thank Robert Rainwater and George Hazan for their code and support
  * and for answering some of my questions during development of this plugin.
  */
-#include <windows.h>
-#include <windowsx.h>
-
 #include "yahoo.h"
-#include <m_system.h>
-#include <m_protomod.h>
-#include <m_protosvc.h>
 #include <m_langpack.h>
-#include <m_skin.h>
-#include <m_utils.h>
 #include <win2k.h>
 #include "m_icolib.h"
 
