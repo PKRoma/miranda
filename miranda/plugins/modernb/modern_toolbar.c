@@ -644,7 +644,36 @@ static void				ToolBar_DefaultButtonRegistration()
 
 	sttReloadButtons();
 }
-
+static void sttDrawNonLayeredSkinedBar(HWND hwnd, HDC hdc)
+{
+		HDC hdc2;
+		HBITMAP hbmp,hbmpo;
+		RECT rc={0};
+		GetClientRect(hwnd,&rc);
+		rc.right++;
+		rc.bottom++;
+		hdc2=CreateCompatibleDC(hdc);
+		hbmp=ske_CreateDIB32(rc.right,rc.bottom);
+		hbmpo=SelectObject(hdc2,hbmp);		
+		if (GetParent(hwnd)!=pcli->hwndContactList)
+		{
+			HBRUSH br=GetSysColorBrush(COLOR_3DFACE);
+			FillRect(hdc2,&rc,br);
+		}
+		else
+			ske_BltBackImage(hwnd,hdc2,&rc);
+		SendMessage(hwnd,MTBM_LAYEREDPAINT, (WPARAM)hdc2, 0);
+		BitBlt(hdc,rc.left,rc.top,rc.right-rc.left,rc.bottom-rc.top,
+			hdc2,rc.left,rc.top,SRCCOPY);
+		SelectObject(hdc2,hbmpo);
+		DeleteObject(hbmp);
+		mod_DeleteDC(hdc2);
+		{
+			HFONT hf=GetStockObject(DEFAULT_GUI_FONT);
+			SelectObject(hdc,hf);
+		}
+		ValidateRect(hwnd,NULL);		        							
+}
 static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 {
 	MTBINFO * pMTBInfo=(MTBINFO *)GetWindowLong(hwnd, GWL_USERDATA);
@@ -804,20 +833,29 @@ static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 			break;
 		}
 	case WM_ERASEBKGND:
+		if (g_CluiData.fDisableSkinEngine)
 			return sttDrawToolBarBackground(hwnd, (HDC)wParam, NULL, pMTBInfo);
+		else
+			return 0;
 	
 	case WM_NCPAINT:				
 	case WM_PAINT:
 		{
 			BOOL ret=FALSE;
 			PAINTSTRUCT ps;
-			if (g_CluiData.fDisableSkinEngine || !g_CluiData.fLayered)
+			if (g_CluiData.fDisableSkinEngine|| !g_CluiData.fLayered)
 			{
 				HBRUSH hbr=CreateSolidBrush(RGB(255,0,255));
 				BeginPaint(hwnd,&ps);
-				ret=sttDrawToolBarBackground(hwnd, ps.hdc, &ps.rcPaint, pMTBInfo);	
+				if (!g_CluiData.fLayered && !g_CluiData.fDisableSkinEngine)
+				{
+					sttDrawNonLayeredSkinedBar(hwnd, ps.hdc);
+				}
+				else
+					ret=sttDrawToolBarBackground(hwnd, ps.hdc, &ps.rcPaint, pMTBInfo);	
 				EndPaint(hwnd,&ps);
 			}
+			
 			return DefWindowProc(hwnd, msg, wParam, lParam);
 		}
 	case WM_NOTIFY:

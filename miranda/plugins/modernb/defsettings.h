@@ -141,7 +141,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define SETTING_DISABLESKIN_DEFAULT              0 //"ModernData","DisableEngine"
 #define SETTING_ENABLELAYERING_DEFAULT           1 //! "ModernData","EnableLayering"
-#define SETTING_COMPACTMODE_DEFAULT              1 //"CLC","CompactMode"
+#define SETTING_COMPACTMODE_DEFAULT              0 //"CLC","CompactMode"
 
 #define SETTING_EVENTAREAMODE_DEFAULT            1 //autohide todo replace by const //"CLUI","EventArea"
 #define SETTING_SHOWEVENTAREAFRAME_DEFAULT       1 //"CLUI","ShowEventArea"
