@@ -183,8 +183,8 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			// fill predefined resources
 			TCHAR* szResources[] = { _T("Home"), _T("Work"), _T("Office"), _T("Miranda") };
 			for ( int i = 0; i < SIZEOF(szResources); i++ )
-				SendDlgItemMessage( hwndDlg, IDC_COMBO_RESOURCE, CB_ADDSTRING, 0, (LPARAM)TranslateTS( szResources[i] ));
-			
+				SendDlgItemMessage( hwndDlg, IDC_COMBO_RESOURCE, CB_ADDSTRING, 0, (LPARAM)szResources[i] );
+
 			if ( !DBGetContactSettingTString( NULL, jabberProtoName, "Resource", &dbv )) {
 				SetDlgItemText( hwndDlg, IDC_COMBO_RESOURCE, dbv.ptszVal );
 				JFreeVariant( &dbv );
@@ -416,7 +416,7 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				reconnectRequired = TRUE;
 			if ( dbv.pszVal != NULL )	JFreeVariant( &dbv );
 			JSetString( NULL, "LoginServer", text );
-			
+
 			strcat( userName, "@" );
 			strncat( userName, text, sizeof( userName ));
 			userName[ sizeof(userName)-1 ] = 0;
@@ -640,7 +640,7 @@ typedef struct _tag_RosterhEditDat{
 	HWND hList;
 	int index;
 	int subindex;
-} ROSTEREDITDAT; 
+} ROSTEREDITDAT;
 static ROSTERREQUSERDATA rrud={0};
 static WNDPROC _RosterOldListProc=NULL;
 
@@ -653,12 +653,12 @@ static int	_RosterInsertListItem(HWND hList, TCHAR * jid, TCHAR * nick, TCHAR * 
 	item.iItem=ListView_GetItemCount(hList);
 	item.iSubItem=0;
 	item.pszText=jid;
-	
+
 	index=ListView_InsertItem(hList, &item);
 
 	if ( index<0 )
 		return index;
-	
+
 	ListView_SetCheckState(hList, index, bChecked);
 
 	ListView_SetItemText(hList, index, 0, jid);
@@ -675,11 +675,11 @@ static void _RosterListClear(HWND hwndDlg)
 	if (!hList)	return;
 	ListView_DeleteAllItems(hList);
 	while (	ListView_DeleteColumn( hList, 0) );
-	
+
 	LV_COLUMN column={0};
 	column.mask=LVCF_TEXT;
 	column.cx=500;
-	
+
 	column.pszText=_T("JID");
 	int ret=ListView_InsertColumn(hList, 1, &column);
 
@@ -688,7 +688,7 @@ static void _RosterListClear(HWND hwndDlg)
 
 	column.pszText=_T("Group");
 	ListView_InsertColumn(hList, 3, &column);
-	
+
 	column.pszText=_T("Subscription");
 	ListView_InsertColumn(hList, 4, &column);
 
@@ -712,7 +712,7 @@ static void _RosterHandleGetRequest( XmlNode* node, void* userdata )
 		XmlNode * query=JabberXmlGetChild(node, "query");
 		if (!query) return;
 		int i=1;
-		while (TRUE) 
+		while (TRUE)
 		{
 			XmlNode *item=JabberXmlGetNthChild(query, "item", i++);
 			if (!item) break;
@@ -728,19 +728,19 @@ static void _RosterHandleGetRequest( XmlNode* node, void* userdata )
 		// now it is require to process whole contact list to add not in roster contacts
 		{
 			HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
-			while ( hContact != NULL ) 
+			while ( hContact != NULL )
 			{
 				char* str = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-				if ( str != NULL && !strcmp( str, jabberProtoName )) 
+				if ( str != NULL && !strcmp( str, jabberProtoName ))
 				{
 					DBVARIANT dbv;
-					if ( !JGetStringT( hContact, "jid", &dbv )) 
+					if ( !JGetStringT( hContact, "jid", &dbv ))
 					{
 						LVFINDINFO lvfi={0};
 						lvfi.flags=LVFI_STRING | LVFI_PARTIAL;
 						lvfi.psz=dbv.ptszVal;
 						TCHAR *p=_tcschr(dbv.ptszVal,_T('@'));
-						if (p) 
+						if (p)
 						{
 							p=_tcschr(dbv.ptszVal,_T('\\'));
 							if (p) *p=_T('\0');
@@ -781,7 +781,7 @@ static void _RosterHandleGetRequest( XmlNode* node, void* userdata )
         return;
 	}
 	else if (rrud.bRRAction==RRA_SYNCROSTER)
-	{	
+	{
 		SetDlgItemText(rrud.hwndDlg,IDC_UPLOAD,TranslateT("Uploading..."));
 		XmlNode * queryRoster=JabberXmlGetChild(node, "query");
 		if (!queryRoster) return;
@@ -789,10 +789,10 @@ static void _RosterHandleGetRequest( XmlNode* node, void* userdata )
 		int iqId = JabberSerialNext();
 		JabberIqAdd( iqId, IQ_PROC_NONE, (JABBER_IQ_PFUNC) _RosterHandleGetRequest );
 
-		XmlNode iq( "iq" ); 
-		iq.addAttr( "type", "set" ); 
+		XmlNode iq( "iq" );
+		iq.addAttr( "type", "set" );
 		iq.addAttrID( iqId );
-		XmlNode* query = iq.addChild( "query" ); 
+		XmlNode* query = iq.addChild( "query" );
 		query->addAttr( "xmlns", "jabber:iq:roster" );
 		int itemCount=0;
 		int ListItemCount=ListView_GetItemCount(hList);
@@ -811,9 +811,9 @@ static void _RosterHandleGetRequest( XmlNode* node, void* userdata )
 			if (itemRoster && bRemove)
 			{
 				//delete item
-				XmlNode* item = query->addChild( "item" ); 
+				XmlNode* item = query->addChild( "item" );
 				item->addAttr( "jid", jid );
-				item->addAttr( "subscription","remove"); 
+				item->addAttr( "subscription","remove");
 				itemCount++;
 			}
 			else if ( !bRemove )
@@ -842,14 +842,14 @@ static void _RosterHandleGetRequest( XmlNode* node, void* userdata )
 				}
 				if (bPushed)
 				{
-					XmlNode* item = query->addChild( "item" ); 
+					XmlNode* item = query->addChild( "item" );
 					if (group)item->addChild("group", group);
 					item->addAttr( "name", name );
 					item->addAttr( "jid", jid );
-					item->addAttr( "subscription",subscr[0] ? subscr : _T("none")); 
+					item->addAttr( "subscription",subscr[0] ? subscr : _T("none"));
 					itemCount++;
 				}
-			}	
+			}
 		}
 		rrud.bRRAction=RRA_SYNCDONE;
 		if (itemCount)
@@ -857,7 +857,7 @@ static void _RosterHandleGetRequest( XmlNode* node, void* userdata )
 		else
 			_RosterSendRequest(rrud.hwndDlg,RRA_FILLLIST);
 	}
-	else 
+	else
 	{
 		SetDlgItemText(rrud.hwndDlg,IDC_UPLOAD,TranslateT("Upload"));
 		rrud.bReadyToUpload=FALSE;
@@ -873,14 +873,14 @@ static void _RosterSendRequest(HWND hwndDlg, BYTE rrAction)
 {
 	rrud.bRRAction=rrAction;
 	rrud.hwndDlg=hwndDlg;
-	
+
 	int iqId = JabberSerialNext();
 	JabberIqAdd( iqId, IQ_PROC_NONE, (JABBER_IQ_PFUNC) _RosterHandleGetRequest );
 
-	XmlNode iq( "iq" ); 
-	iq.addAttr( "type", "get" ); 
+	XmlNode iq( "iq" );
+	iq.addAttr( "type", "get" );
 	iq.addAttrID( iqId );
-	XmlNode* query = iq.addChild( "query" ); 
+	XmlNode* query = iq.addChild( "query" );
 	query->addAttr( "xmlns", "jabber:iq:roster" );
 	jabberThreadInfo->send( iq );
 }
@@ -900,18 +900,18 @@ static void _RosterItemEditEnd( HWND hEditor, ROSTEREDITDAT * edat, BOOL bCancel
 		free(buff);
 	}
 	DestroyWindow(hEditor);
-	
+
 }
 
 static BOOL CALLBACK _RosterItemNewEditProc( HWND hEditor, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	ROSTEREDITDAT * edat = (ROSTEREDITDAT *) GetWindowLong(hEditor,GWL_USERDATA);
 	if (!edat) return 0;
-	switch(msg) 
+	switch(msg)
 	{
 
 	case WM_KEYDOWN:
-		switch(wParam) 
+		switch(wParam)
 		{
 		case VK_RETURN:
 			_RosterItemEditEnd(hEditor, edat, FALSE);
@@ -922,7 +922,7 @@ static BOOL CALLBACK _RosterItemNewEditProc( HWND hEditor, UINT msg, WPARAM wPar
 		}
 		break;
 	case WM_GETDLGCODE:
-		if(lParam) 
+		if(lParam)
 		{
 			MSG *msg=(MSG*)lParam;
 			if(msg->message==WM_KEYDOWN && msg->wParam==VK_TAB) return 0;
@@ -957,7 +957,7 @@ void fputw( TCHAR ch, FILE * fp)
 		fputc(*str,fp);
 		str++;
 	}
-	
+
 }
 #endif
 
@@ -975,7 +975,7 @@ static void _RosterSaveString(FILE * fp, TCHAR * str, BOOL quotes=FALSE)
 static void _RosterExportToFile(HWND hwndDlg)
 {
 	TCHAR filename[MAX_PATH]={0};
-	
+
 	TCHAR *filter=_T("XML for MS Excel (UTF-8 encoded)(*.xml)\0*.xml\0\0");
 	OPENFILENAME ofn={0};
 	ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
@@ -993,20 +993,20 @@ static void _RosterExportToFile(HWND hwndDlg)
 	if (!fp) return;
 	HWND hList=GetDlgItem(hwndDlg, IDC_ROSTER);
 	int ListItemCount=ListView_GetItemCount(hList);
-	TCHAR *xmlExcelHeader=												
-		_T(			"<?xml version=\"1.0\"?>	\n"											)									
+	TCHAR *xmlExcelHeader=
+		_T(			"<?xml version=\"1.0\"?>	\n"											)
 		_T(			"<?mso-application progid=\"Excel.Sheet\"?> \n"							)
 		_T(			"<Workbook xmlns=\"urn:schemas-microsoft-com:office:spreadsheet\" \n"	)
 		_T("\t\t\txmlns:o=\"urn:schemas-microsoft-com:office:office\"\n"					)
 		_T("\t\t\txmlns:x=\"urn:schemas-microsoft-com:office:excel\"\n"					)
-		_T("\t\t\txmlns:ss=\"urn:schemas-microsoft-com:office:spreadsheet\"\n"			)	
-		_T("\t\t\txmlns:html=\"http://www.w3.org/TR/REC-html40\">\n"						)	
-		_T("\t<ExcelWorkbook xmlns=\"urn:schemas-microsoft-com:office:excel\">\n"	)	
-		_T("\t</ExcelWorkbook>\n"													)	
-		_T("\t<Worksheet ss:Name=\"Exported roster\">\n"								)	
+		_T("\t\t\txmlns:ss=\"urn:schemas-microsoft-com:office:spreadsheet\"\n"			)
+		_T("\t\t\txmlns:html=\"http://www.w3.org/TR/REC-html40\">\n"						)
+		_T("\t<ExcelWorkbook xmlns=\"urn:schemas-microsoft-com:office:excel\">\n"	)
+		_T("\t</ExcelWorkbook>\n"													)
+		_T("\t<Worksheet ss:Name=\"Exported roster\">\n"								)
 		_T("\t\t<Table>\n"																);
 
-	TCHAR *xmlExcelFooter=												
+	TCHAR *xmlExcelFooter=
 		_T("\t\t</Table>\n")
 		_T("\t</Worksheet>\n")
 		_T("</Workbook>\n");
@@ -1021,7 +1021,7 @@ static void _RosterExportToFile(HWND hwndDlg)
 		ListView_GetItemText(hList, index, 0, jid, SIZEOF(jid));
 		ListView_GetItemText(hList, index, 1, name, SIZEOF(name));
 		ListView_GetItemText(hList, index, 2, group, SIZEOF(group));
-		ListView_GetItemText(hList, index, 3, subscr, SIZEOF(subscr));		
+		ListView_GetItemText(hList, index, 3, subscr, SIZEOF(subscr));
 		_RosterSaveString(fp,_T("\t\t\t<Row>\n"));
 		_RosterSaveString(fp,_T("\t\t\t\t<Cell><Data ss:Type=\"String\">+</Data></Cell>\n"));
 		_RosterSaveString(fp,_T("\t\t\t\t<Cell><Data ss:Type=\"String\">"));
@@ -1031,7 +1031,7 @@ static void _RosterExportToFile(HWND hwndDlg)
 		_RosterSaveString(fp,_T("\t\t\t\t<Cell><Data ss:Type=\"String\">"));
 		_RosterSaveString(fp,name);
 		_RosterSaveString(fp,_T("</Data></Cell>\n"));
-		
+
 		_RosterSaveString(fp,_T("\t\t\t\t<Cell><Data ss:Type=\"String\">"));
 		_RosterSaveString(fp,group);
 		_RosterSaveString(fp,_T("</Data></Cell>\n"));
@@ -1073,7 +1073,7 @@ static void _RosterParseXmlWorkbook( XmlNode *node, void *userdata )
 					Cell=JabberXmlGetNthChild(Row,"Cell",1);
 					if (Cell) Data=JabberXmlGetChild(Cell,"Data");
 					else Data=NULL;
-					if (Data) 
+					if (Data)
 					{
 						if (!lstrcmpi(Data->text,_T("+"))) bAdd=TRUE;
 						else if (lstrcmpi(Data->text,_T("-"))) continue;
@@ -1081,7 +1081,7 @@ static void _RosterParseXmlWorkbook( XmlNode *node, void *userdata )
 						Cell=JabberXmlGetNthChild(Row,"Cell",2);
 						if (Cell) Data=JabberXmlGetChild(Cell,"Data");
 						else Data=NULL;
-						if (Data) 
+						if (Data)
 						{
 							jid=Data->text;
 							if (!jid || lstrlen(jid)==0) continue;
@@ -1090,17 +1090,17 @@ static void _RosterParseXmlWorkbook( XmlNode *node, void *userdata )
 						Cell=JabberXmlGetNthChild(Row,"Cell",3);
 						if (Cell) Data=JabberXmlGetChild(Cell,"Data");
 						else Data=NULL;
-						if (Data) name=Data->text; 
+						if (Data) name=Data->text;
 
 						Cell=JabberXmlGetNthChild(Row,"Cell",4);
 						if (Cell) Data=JabberXmlGetChild(Cell,"Data");
 						else Data=NULL;
-						if (Data) group=Data->text; 
+						if (Data) group=Data->text;
 
 						Cell=JabberXmlGetNthChild(Row,"Cell",5);
 						if (Cell) Data=JabberXmlGetChild(Cell,"Data");
 						else Data=NULL;
-						if (Data) subscr=Data->text; 
+						if (Data) subscr=Data->text;
 					}
 					_RosterInsertListItem(hList,jid,name,group,subscr,bAdd);
 				}
@@ -1131,11 +1131,11 @@ static void _RosterImportFromFile(HWND hwndDlg)
 	HWND hList=GetDlgItem(hwndDlg, IDC_ROSTER);
 	char * buffer;
 	DWORD bufsize=filelength(fileno(fp));
-	if (bufsize>0) 
+	if (bufsize>0)
 		buffer=(char*)malloc(bufsize);
 	fread(buffer,1,bufsize,fp);
 	fclose(fp);
-	_RosterListClear(hwndDlg);	
+	_RosterListClear(hwndDlg);
 	XmlState xmlstate;
 	JabberXmlInitState(&xmlstate);
 	JabberXmlSetCallback( &xmlstate, 2, ELEM_CLOSE, _RosterParseXmlWorkbook, (void*)hList );
@@ -1167,7 +1167,7 @@ static BOOL CALLBACK _RosterNewListProc( HWND hList, UINT msg, WPARAM wParam, LP
 		{
 			RECT rc;
 			TCHAR buff[260];
-			ListView_GetSubItemRect(hList, lvhti.iItem, lvhti.iSubItem, LVIR_BOUNDS,&rc);	
+			ListView_GetSubItemRect(hList, lvhti.iItem, lvhti.iSubItem, LVIR_BOUNDS,&rc);
 			ListView_GetItemText(hList, lvhti.iItem, lvhti.iSubItem, buff, SIZEOF(buff) );
 			HWND hEditor=CreateWindow(TEXT("EDIT"),buff,WS_CHILD|ES_AUTOHSCROLL,rc.left+3, rc.top+2, rc.right-rc.left-3, rc.bottom - rc.top-3,hList, NULL, hInst, NULL);
 			SendMessage(hEditor,WM_SETFONT,(WPARAM)SendMessage(hList,WM_GETFONT,0,0),0);
@@ -1200,7 +1200,7 @@ static BOOL CALLBACK _RosterNewListProc( HWND hList, UINT msg, WPARAM wParam, LP
 
 static BOOL CALLBACK JabberRosterOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
-	switch ( msg ) 
+	switch ( msg )
 	{
 	case JM_STATUSCHANGED:
 		{
@@ -1230,7 +1230,7 @@ static BOOL CALLBACK JabberRosterOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 		}
 	case WM_COMMAND:
 		{
-			switch ( LOWORD( wParam )) 
+			switch ( LOWORD( wParam ))
 			{
 			case IDC_DOWNLOAD:
 				{
