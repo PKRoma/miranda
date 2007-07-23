@@ -15,7 +15,6 @@
 
 #include "yahoo.h"
 
-#include <m_system.h>
 #include <m_protomod.h>
 #include <m_protosvc.h>
 #include <m_langpack.h>
@@ -538,16 +537,14 @@ static void __cdecl yahoo_get_statusthread(HANDLE hContact)
 		DBFreeVariant( &dbv );
 	}
 	
-	//if ( DBGetContactSetting(( HANDLE )hContact, yahooProtocolName, "YMsg", &dbv )) {
-	if ( DBGetContactSetting(( HANDLE )hContact, "CList", "StatusMsg", &dbv )) {
-		sm = yahoo_status_code(DBGetContactSettingWord(hContact, yahooProtocolName, "YStatus", YAHOO_STATUS_OFFLINE));
-	} else {
-		if (lstrlen(dbv.pszVal) < 1)
-			sm = yahoo_status_code(DBGetContactSettingWord(hContact, yahooProtocolName, "YStatus", YAHOO_STATUS_OFFLINE));
-		else
+	if (! DBGetContactSetting(( HANDLE )hContact, "CList", "StatusMsg", &dbv )) {
+		if (lstrlen(dbv.pszVal) >= 1)
 			sm = strdup(dbv.pszVal);
 		
 		DBFreeVariant( &dbv );
+	} else {
+		sm = yahoo_status_code(DBGetContactSettingWord(hContact, yahooProtocolName, "YStatus", YAHOO_STATUS_OFFLINE));
+		if (sm) sm = strdup(sm); /* we need this to go global FREE later */
 	}
 
 	l = 0;
@@ -569,14 +566,19 @@ static void __cdecl yahoo_get_statusthread(HANDLE hContact)
 		} else
 			lstrcpy(fm, gm);
 		
-		lstrcat(fm, ": ");
-		lstrcat(fm, sm);
+		if (sm) {
+			lstrcat(fm, ": ");
+			lstrcat(fm, sm);
+		}
 		
 		if (c != NULL)
 			lstrcat(fm, c);
-	} else {
+	} else if (sm) {
 		lstrcat(fm, sm);
 	}
+	
+	FREE(sm);
+	
 	ccs1.szProtoService = PSR_AWAYMSG;
 	ccs1.hContact = hContact;
 	ccs1.wParam = status;
@@ -597,25 +599,15 @@ int YahooGetAwayMessage(WPARAM wParam,LPARAM lParam)
     YAHOO_DebugLog("YahooGetAwayMessage");
 	if (lParam && yahooLoggedIn) {
 	    CCSDATA *ccs = (CCSDATA *) lParam;
-		 DBVARIANT dbv;
-		 int status;
-		 
-		status = DBGetContactSettingWord(( HANDLE )ccs->hContact, yahooProtocolName, "Status", ID_STATUS_OFFLINE);
-
-		if (status == ID_STATUS_OFFLINE)
-			   return 0; /* user offline, what Status message? */
-
-		 if ( DBGetContactSetting(( HANDLE )ccs->hContact, yahooProtocolName, YAHOO_LOGINID, &dbv )) {
-		 	 YAHOO_DebugLog("YAHOOGetAwayMessage Can't retrieve buddy id.");
-		 	return 0;
-	 	}
-	 		YAHOO_DebugLog("Buddy %s ", dbv.pszVal);
-   				
-   			DBFreeVariant( &dbv );
-
-            mir_forkthread(yahoo_get_statusthread, ccs->hContact);
-            return 1; //Success		
 		
+		if (DBGetContactSettingWord(( HANDLE )ccs->hContact, 
+									yahooProtocolName, 
+									"Status", 
+									ID_STATUS_OFFLINE) == ID_STATUS_OFFLINE)
+			return 0; /* user offline, what Status message? */
+
+        mir_forkthread(yahoo_get_statusthread, ccs->hContact);
+        return 1; //Success		
 	}
 	
 	return 0; // Failure

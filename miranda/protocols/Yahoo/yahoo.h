@@ -29,6 +29,7 @@
 #include <m_protomod.h>
 #include <m_netlib.h>
 #include <m_clist.h>
+#include <m_langpack.h>
 
 //=======================================================
 //	Definitions
