@@ -843,7 +843,7 @@ static void sttFakeAck( LPVOID param )
 {
 	TFakeAckParams* tParam = ( TFakeAckParams* )param;
 
-	Sleep( 100 );
+	Sleep( 150 );
 	MSN_SendBroadcast( tParam->hContact, ACKTYPE_MESSAGE, tParam->msg ? ACKRESULT_FAILED : ACKRESULT_SUCCESS,
 		( HANDLE )tParam->id, LPARAM( tParam->msg ));
 
