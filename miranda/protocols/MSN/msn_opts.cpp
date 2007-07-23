@@ -458,6 +458,7 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			MSN_SetByte( "UseIeProxy",  ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USEIEPROXY  ));
 			MSN_SetByte( "SlowSend",    ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_SLOWSEND    ));
 
+			unsigned gethst2 = MSN_GetByte( "AutoGetHost", 1 );
 			unsigned gethst = SendDlgItemMessage(hwndDlg, IDC_HOSTOPT, CB_GETCURSEL, 0, 0);
 			if (gethst < 2) gethst = !gethst;
 			MSN_SetByte( "AutoGetHost", ( BYTE )gethst );
@@ -469,6 +470,12 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			}
 			else
 				MSN_DeleteSetting( NULL, "YourHost" );
+
+			if (gethst != gethst2)
+			{
+				void MSNConnDetectThread( void* );
+				mir_forkthread( MSNConnDetectThread, NULL );
+			}
 
 			if ( restartRequired )
 				MessageBox( hwndDlg, TranslateT( "The changes you have made require you to restart Miranda IM before they take effect"), TranslateT( "MSN Options" ), MB_OK );
