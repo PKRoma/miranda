@@ -204,6 +204,23 @@ static int CALLBACK BookmarkCompare( LPARAM lParam1, LPARAM lParam2, LPARAM lPar
 	return res;
 }
 
+int JabberBookmarksDlgResizer(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
+{
+	switch ( urc->wId ) {
+		case IDC_BM_LIST:
+			return RD_ANCHORX_WIDTH|RD_ANCHORY_HEIGHT;
+
+		case IDCLOSE:
+			return RD_ANCHORX_RIGHT|RD_ANCHORY_BOTTOM;
+
+		case IDC_ADD:
+		case IDC_EDIT:
+		case IDC_REMOVE:
+			return RD_ANCHORX_LEFT|RD_ANCHORY_BOTTOM;
+	}
+	return RD_ANCHORX_LEFT|RD_ANCHORY_TOP;
+}
+
 static BOOL CALLBACK JabberBookmarksDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	HWND lv;
@@ -239,18 +256,17 @@ static BOOL CALLBACK JabberBookmarksDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 		// Add columns
 		lvCol.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
 		lvCol.pszText = TranslateT( "Bookmark Name" );
-		lvCol.cx = 120;
+		lvCol.cx = DBGetContactSettingWord( NULL, jabberProtoName, "bookmarksWnd_cx0", 120 );
 		lvCol.iSubItem = 0;
 		ListView_InsertColumn( lv, 0, &lvCol );
 
-
 		lvCol.pszText = TranslateT( "Room JID / URL" );
-		lvCol.cx = 210;
+		lvCol.cx = DBGetContactSettingWord( NULL, jabberProtoName, "bookmarksWnd_cx1", 210 );
 		lvCol.iSubItem = 1;
 		ListView_InsertColumn( lv, 1, &lvCol );
 
 		lvCol.pszText = TranslateT( "Nick" );
-		lvCol.cx = 90;
+		lvCol.cx = DBGetContactSettingWord( NULL, jabberProtoName, "bookmarksWnd_cx2", 90 );
 		lvCol.iSubItem = 2;
 		ListView_InsertColumn( lv, 2, &lvCol );
 		if ( jabberOnline ) {
@@ -267,7 +283,29 @@ static BOOL CALLBACK JabberBookmarksDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			}
 			else SendMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0);
 		}
+		Utils_RestoreWindowPosition( hwndDlg, NULL, jabberProtoName, "bookmarksWnd_" );
 		return TRUE;
+
+	case WM_GETMINMAXINFO:
+		{
+			LPMINMAXINFO lpmmi = (LPMINMAXINFO)lParam;
+			lpmmi->ptMinTrackSize.x = 451;
+			lpmmi->ptMinTrackSize.y = 320;
+			return 0;
+		}
+
+	case WM_SIZE:
+		{
+			UTILRESIZEDIALOG urd;
+			urd.cbSize = sizeof(urd);
+			urd.hwndDlg = hwndDlg;
+			urd.hInstance = hInst;
+			urd.lpTemplate = MAKEINTRESOURCEA( IDD_BOOKMARKS );
+			urd.lParam = 0;
+			urd.pfnResizer = JabberBookmarksDlgResizer;
+			CallService( MS_UTILS_RESIZEDIALOG, 0, (LPARAM)&urd );
+			return TRUE;
+		}
 
 	case WM_JABBER_ACTIVATE:
 		ListView_DeleteAllItems( GetDlgItem( hwndDlg, IDC_BM_LIST));
@@ -484,14 +522,27 @@ static BOOL CALLBACK JabberBookmarksDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 
 		case IDCLOSE:
 		case IDCANCEL:
-			DestroyWindow( hwndDlg );
+			PostMessage( hwndDlg, WM_CLOSE, 0, 0 );
 			return TRUE;
 		}
 		break;
 
 	case WM_CLOSE:
-		DestroyWindow( hwndDlg );
-		break;
+		{
+			HWND hwndList = GetDlgItem( hwndDlg, IDC_BM_LIST );
+			LVCOLUMN lvc = { 0 };
+			lvc.mask = LVCF_WIDTH;
+			ListView_GetColumn( hwndList, 0, &lvc );
+			DBWriteContactSettingWord( NULL, jabberProtoName, "bookmarksWnd_cx0", lvc.cx );
+			ListView_GetColumn( hwndList, 1, &lvc );
+			DBWriteContactSettingWord( NULL, jabberProtoName, "bookmarksWnd_cx1", lvc.cx );
+			ListView_GetColumn( hwndList, 2, &lvc );
+			DBWriteContactSettingWord( NULL, jabberProtoName, "bookmarksWnd_cx2", lvc.cx );
+
+			Utils_SaveWindowPosition( hwndDlg, NULL, jabberProtoName, "bookmarksWnd_" );
+			DestroyWindow( hwndDlg );
+			break;
+		}
 
 	case WM_DESTROY:
 		hwndJabberBookmarks= NULL;
