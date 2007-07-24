@@ -265,9 +265,8 @@ TCHAR* my_strstri(const TCHAR* s1, const TCHAR* s2)
 
 TCHAR* DoColorCodes (const TCHAR* text, bool bStrip, bool bReplacePercent)
 {
-	static TCHAR szTemp[4000];
-	szTemp[0] = '\0';
-	TCHAR* p = &szTemp[0];
+	static TCHAR szTemp[4000]; szTemp[0] = '\0';
+	TCHAR* p = szTemp;
 	bool bBold = false;
 	bool bUnderline = false;
 	bool bItalics = false;
@@ -275,38 +274,31 @@ TCHAR* DoColorCodes (const TCHAR* text, bool bStrip, bool bReplacePercent)
 	if ( !text )
 		return szTemp;
 
-	while (*text != '\0') {
+	while ( *text != '\0' ) {
 		int iFG = -1;
 		int iBG = -1;
 
 		switch( *text ) {
 		case '%': //escape
-			*p = '%'; 
-			p++;
-			if ( bReplacePercent ) {
-				*p = '%'; 
-				p++;
-			}
+			*p++ = '%'; 
+			if ( bReplacePercent )
+				*p++ = '%'; 
 			text++;
 			break;
 
 		case 2: //bold
 			if ( !bStrip ) {
-				*p = '%'; 
-				p++;
-				*p = bBold ? 'B' : 'b'; 
-				p++;
+				*p++ = '%'; 
+				*p++ = bBold ? 'B' : 'b'; 
 			}
 			bBold = !bBold;
 			text++;
 			break;
 
 		case 15: //reset
-			if( !bStrip ) {
-				*p = '%'; 
-				p++;
-				*p = 'r'; 
-				p++;
+			if ( !bStrip ) {
+				*p++ = '%'; 
+				*p++ = 'r'; 
 			}
 			bUnderline = false;
 			bBold = false;
@@ -314,22 +306,18 @@ TCHAR* DoColorCodes (const TCHAR* text, bool bStrip, bool bReplacePercent)
 			break;
 
 		case 22: //italics
-			if( !bStrip ) {
-				*p = '%'; 
-				p++;
-				*p = bItalics?'I':'i'; 
-				p++;
+			if ( !bStrip ) {
+				*p++ = '%'; 
+				*p++ = bItalics ? 'I' : 'i'; 
 			}
 			bItalics = !bItalics;
 			text++;
 			break;
 
 		case 31: //underlined
-			if( !bStrip ) {
-				*p = '%'; 
-				p++;
-				*p = bUnderline?'U':'u'; 
-				p++;
+			if ( !bStrip ) {
+				*p++ = '%'; 
+				*p++ = bUnderline ? 'U' : 'u'; 
 			}
 			bUnderline = !bUnderline;
 			text++;
@@ -341,77 +329,75 @@ TCHAR* DoColorCodes (const TCHAR* text, bool bStrip, bool bReplacePercent)
 			// do this if the colors should be reset to default
 			if ( *text <= 47 || *text >= 58 || *text == '\0' ) {
 				if ( !bStrip ) {
-					*p = '%'; p++;
-					*p = 'C'; p++;
-					*p = '%'; p++;
-					*p = 'F'; p++;
+					*p++ = '%';
+					*p++ = 'C';
+					*p++ = '%';
+					*p++ = 'F';
 				}
 				break;
 			}
 			else { // some colors should be set... need to find out who
-				TCHAR szTemp[3];
+				TCHAR buf[3];
 
 				// fix foreground index
-				if(text[1] > 47 && text[1] < 58 && text[1] != '\0')
-					lstrcpyn(szTemp, text, 3);
+				if ( text[1] > 47 && text[1] < 58 && text[1] != '\0')
+					lstrcpyn( buf, text, 3 );
 				else
-					lstrcpyn(szTemp, text, 2);
-				text += lstrlen(szTemp); 
-				iFG = _ttoi(szTemp);
+					lstrcpyn( buf, text, 2 );
+				text += lstrlen( buf );
+				iFG = _ttoi( buf );
 
 				// fix background color
 				if ( *text == ',' && text[1] > 47 && text[1] < 58 && text[1] != '\0' ) {
 					text++;
 
-					if(text[1] > 47 && text[1] < 58 && text[1] != '\0')
-						lstrcpyn(szTemp, text, 3);
+					if ( text[1] > 47 && text[1] < 58 && text[1] != '\0' )
+						lstrcpyn( buf, text, 3 );
 					else
-						lstrcpyn(szTemp, text, 2);
-					text += lstrlen(szTemp); 
-					iBG = _ttoi(szTemp);
+						lstrcpyn( buf, text, 2 );
+					text += lstrlen( szTemp );
+					iBG = _ttoi( szTemp );
 			}	}
 			
-			if( iFG >= 0 && iFG != 99)
-				while( iFG > 15)
+			if ( iFG >= 0 && iFG != 99 )
+				while( iFG > 15 )
 					iFG -= 16;
-			if( iBG >= 0 && iBG != 99)
+			if ( iBG >= 0 && iBG != 99 )
 				while( iBG > 15 )
 					iBG -= 16;
 
 			// create tag for chat.dll
 			if ( !bStrip ) {
-				TCHAR szTemp[10];
+				TCHAR buf[10];
 				if ( iFG >= 0 && iFG != 99 ) {
-					*p = '%'; p++;
-					*p = 'c';p++;
+					*p++ = '%';
+					*p++ = 'c';
 
-					mir_sntprintf(szTemp, SIZEOF(szTemp), _T("%02u"), iFG );
+					mir_sntprintf( buf, SIZEOF(buf), _T("%02u"), iFG );
 					for (int i = 0; i<2; i++)
-						*p = szTemp[i]; p++;
+						*p++ = buf[i];
 				}
 				else if (iFG == 99) {
-					*p = '%'; p++;
-					*p = 'C';p++;
+					*p++ = '%';
+					*p++ = 'C';
 				}
 				
 				if ( iBG >= 0 && iBG != 99 ) {
-					*p = '%'; p++;
-					*p = 'f';p++;
+					*p++ = '%';
+					*p++ = 'f';
 
-					mir_sntprintf(szTemp, SIZEOF(szTemp), _T("%02u"), iBG );
-					for (int i = 0; i<2; i++)
-						*p = szTemp[i]; p++;
+					mir_sntprintf( buf, SIZEOF(buf), _T("%02u"), iBG );
+					for ( int i = 0; i<2; i++ )
+						*p++ = szTemp[i];
 				}
 				else if ( iBG == 99 ) {
-					*p = '%'; p++;
-					*p = 'F';p++;
+					*p++ = '%';
+					*p++ = 'F';
 			}	}
 			break;
 
 		default:
-			*p = *text;
-			p++;
-			text++;
+			*p++ = *text++;
 			break;
 	}	}
 	
