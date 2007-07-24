@@ -419,6 +419,8 @@ BOOL Scripting_TriggerMSPGuiOut(GCHOOK * gch);
 #define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
 #endif
 
+#define NEWSTR_ALLOCA(A) (A==NULL)?NULL:strcpy((char*)alloca(strlen(A)+1),A)
+
 #pragma comment(lib,"comctl32.lib")
 
 #endif

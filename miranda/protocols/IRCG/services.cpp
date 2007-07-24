@@ -1431,7 +1431,7 @@ static int Service_GetMessFromSRMM(WPARAM wParam, LPARAM lParam)
 		}
 		else if ( ccs->wParam & PREF_UTF ) {
 			#if defined( _UNICODE )
-				mir_utf8decode( msg, &result );
+				mir_utf8decode( NEWSTR_ALLOCA(msg), &result );
 			#else
 				result = mir_strdup( msg );
 				mir_utf8decodecp( result, NULL, codepage );
