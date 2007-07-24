@@ -355,8 +355,8 @@ TCHAR* DoColorCodes (const TCHAR* text, bool bStrip, bool bReplacePercent)
 						lstrcpyn( buf, text, 3 );
 					else
 						lstrcpyn( buf, text, 2 );
-					text += lstrlen( szTemp );
-					iBG = _ttoi( szTemp );
+					text += lstrlen( buf );
+					iBG = _ttoi( buf );
 			}	}
 			
 			if ( iFG >= 0 && iFG != 99 )
@@ -388,7 +388,7 @@ TCHAR* DoColorCodes (const TCHAR* text, bool bStrip, bool bReplacePercent)
 
 					mir_sntprintf( buf, SIZEOF(buf), _T("%02u"), iBG );
 					for ( int i = 0; i<2; i++ )
-						*p++ = szTemp[i];
+						*p++ = buf[i];
 				}
 				else if ( iBG == 99 ) {
 					*p++ = '%';
