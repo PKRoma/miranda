@@ -915,6 +915,10 @@ static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 			seq = MSN_SendOIM(tEmail, msg);
 			if (seq == -1)
 				errMsg = MSN_Translate( "Offline messages could not be sent to this contact" );
+			else if (seq == -2)
+				errMsg = MSN_Translate( "You sent too many offline messages and have been locked out" );
+			else if (seq == -3)
+				errMsg = MSN_Translate( "You are not allowed to send offline messages to this user" );
 			mir_forkthread( sttFakeAck, new TFakeAckParams( ccs->hContact, seq, errMsg ));
 		}
 		else

@@ -422,7 +422,7 @@ int MSN_SendOIM(char* szEmail, char* msg)
 
 	SSLAgent mAgent;
 
-	bool success = false;
+	int success = -1;
 	bool retry = true;
 	for (unsigned i=0; i<2 && retry; ++i)
 	{
@@ -447,21 +447,32 @@ int MSN_SendOIM(char* szEmail, char* msg)
 			if (status == 500)
 			{
 				ezxml_t xmlm = ezxml_parse_str(htmlbody, strlen(htmlbody));
-				ezxml_t det = ezxml_get(xmlm, "soap:Body", 0, "soap:Fault", 0, "detail", -1);
-				const char* szTwChl = ezxml_txt(ezxml_child(det, "TweenerChallenge"));
-				const char* szChl   = ezxml_txt(ezxml_child(det, "LockKeyChallenge"));
-
-				if (*szTwChl) 
-					MSN_GetPassportAuth((char*)szTwChl);
-				if (*szChl)
+				ezxml_t flt = ezxml_get(xmlm, "soap:Body", 0, "soap:Fault", -1);
+				const char* szFltCode = ezxml_txt(ezxml_child(flt, "faultcode"));
+				
+				if (strcmp(szFltCode, "q0:AuthenticationFailed") == 0)
 				{
-					MSN_MakeDigest(szChl, oimDigest);
-					retry = true;
+					ezxml_t det = ezxml_child(flt, "detail");
+					const char* szTwChl = ezxml_txt(ezxml_child(det, "TweenerChallenge"));
+					const char* szChl   = ezxml_txt(ezxml_child(det, "LockKeyChallenge"));
+
+					if (*szTwChl) 
+						MSN_GetPassportAuth((char*)szTwChl);
+					if (*szChl)
+					{
+						MSN_MakeDigest(szChl, oimDigest);
+						retry = true;
+					}
 				}
+				else if (strcmp(szFltCode, "q0:SenderThrottleLimitExceeded") == 0)
+					success = -2;
+				else if (strcmp(szFltCode, "q0:SystemUnavailable") == 0)
+					success = -3;
+
 				ezxml_free(xmlm);
 			}
 			else if (status == 200)
-				success = true;
+				success = 0;
 
 			mir_free(tResult);
 		}
@@ -469,5 +480,5 @@ int MSN_SendOIM(char* szEmail, char* msg)
 
 	ezxml_free(xmlp);
 
-	return success ? oimMsgNum : -1;
+	return success ? success : oimMsgNum;
 }
