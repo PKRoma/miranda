@@ -1392,21 +1392,7 @@ static int Service_SetAwayMsg(WPARAM wParam, LPARAM lParam)
 
 static int Service_AddIncMessToDB(WPARAM wParam, LPARAM lParam)
 {
-	DBEVENTINFO dbei;
-	CCSDATA *ccs = (CCSDATA *) lParam;
-	PROTORECVEVENT *pre = (PROTORECVEVENT *) ccs->lParam;
-
-	DBDeleteContactSetting(ccs->hContact, "CList", "Hidden");
-	ZeroMemory(&dbei, sizeof(dbei));
-	dbei.cbSize = sizeof(dbei);
-	dbei.szModule = IRCPROTONAME;
-	dbei.timestamp = pre->timestamp;
-	dbei.flags = pre->flags & (PREF_CREATEREAD ? DBEF_READ : 0);
-	dbei.eventType = EVENTTYPE_MESSAGE;
-	dbei.cbBlob = strlen(pre->szMessage) + 1;
-	dbei.pBlob = (PBYTE) pre->szMessage;
-	CallService(MS_DB_EVENT_ADD, (WPARAM) ccs->hContact, (LPARAM) & dbei);
-	return 0;
+	return CallService( MS_PROTO_RECVMSG, wParam, lParam );
 }
 
 static void __cdecl AckMessageFail(void * lParam)
