@@ -86,13 +86,24 @@ void __cdecl MSNServerThread( ThreadData* info )
 	if ( tPortDelim != NULL )
 		*tPortDelim = '\0';
 
+	if (MyOptions.UseGateway) 
+	{
+		if (*info->mGatewayIP == 0 && MSN_GetStaticString("LoginServer", NULL, info->mGatewayIP, sizeof(info->mGatewayIP)))
+			strcpy(info->mGatewayIP, MSN_DEFAULT_GATEWAY);
+		if (*info->mServer == 0)
+			strcpy(info->mServer, MSN_DEFAULT_LOGIN_SERVER); 
+	}
+	else
+	{
+		if (*info->mServer == 0 && MSN_GetStaticString("LoginServer", NULL, info->mServer, sizeof(info->mServer)))
+			strcpy(info->mServer, MSN_DEFAULT_LOGIN_SERVER);
+	}
+
 	if ( MyOptions.UseGateway && !MyOptions.UseProxy ) 
 	{
 		tConn.szHost = info->mGatewayIP;
 		tConn.wPort = MSN_DEFAULT_GATEWAY_PORT;
 		info->hQueueMutex = CreateMutex(NULL, FALSE, NULL);
-		if (*info->mServer == 0)
-			strcpy(info->mServer, MSN_DEFAULT_LOGIN_SERVER); 
 	}
 	else 
 	{
@@ -101,19 +112,11 @@ void __cdecl MSNServerThread( ThreadData* info )
 
 		if (tPortDelim != NULL) 
 		{
-			int tPortNumber;
-			if (sscanf( tPortDelim+1, "%d", &tPortNumber ) == 1)
+			int tPortNumber = atoi(tPortDelim+1);
+			if (tPortNumber)
 				tConn.wPort = ( WORD )tPortNumber;
 		}	
 	}
-
-	if ( *tConn.szHost == 0 )
-	{
-		if (MSN_GetStaticString("LoginServer", NULL, (char*)tConn.szHost, 80))
-			strcpy((char*)tConn.szHost, 
-			tConn.wPort == MSN_DEFAULT_PORT ? MSN_DEFAULT_LOGIN_SERVER : MSN_DEFAULT_GATEWAY);
-	}
-
 
 	MSN_DebugLog( "Thread started: server='%s', type=%d", tConn.szHost, info->mType );
 
