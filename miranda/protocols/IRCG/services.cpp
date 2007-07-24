@@ -1076,20 +1076,29 @@ static int Service_MenuPreBuild(WPARAM wParam,LPARAM lParam)
 
 static int Service_GetCaps(WPARAM wParam,LPARAM lParam)
 {
-	if (wParam==PFLAGNUM_1)
+	switch( wParam ) {
+	case PFLAGNUM_1:
 		return PF1_BASICSEARCH | PF1_MODEMSG | PF1_FILE | PF1_CHAT | PF1_CANRENAMEFILE | PF1_PEER2PEER | PF1_IM;
-	if (wParam==PFLAGNUM_2)
-		return PF2_ONLINE|PF2_SHORTAWAY;
-	if (wParam==PFLAGNUM_3)
+
+	case PFLAGNUM_2:
+		return PF2_ONLINE | PF2_SHORTAWAY;
+
+	case PFLAGNUM_3:
 		return PF2_SHORTAWAY;
-	if (wParam==PFLAGNUM_4)
-		return PF4_NOCUSTOMAUTH;
-	if (wParam==PFLAG_UNIQUEIDTEXT)
+
+	case PFLAGNUM_4:
+		return PF4_NOCUSTOMAUTH | PF4_IMSENDUTF;
+
+	case PFLAG_UNIQUEIDTEXT:
 		return (int) Translate("Nickname");
-	if (wParam==PFLAG_MAXLENOFMESSAGE)
+
+	case PFLAG_MAXLENOFMESSAGE:
 		return 400;
-	if (wParam==PFLAG_UNIQUEIDSETTING)
+
+	case PFLAG_UNIQUEIDSETTING:
 		return (int) "Default";
+	}
+
 	return 0;
 }
 
@@ -1421,12 +1430,35 @@ static int Service_GetMessFromSRMM(WPARAM wParam, LPARAM lParam)
 
 	BYTE bDcc = DBGetContactSettingByte(ccs->hContact, IRCPROTONAME, "DCC", 0) ;
 	WORD wStatus = DBGetContactSettingWord(ccs->hContact, IRCPROTONAME, "Status", ID_STATUS_OFFLINE) ;
-	if (OldStatus !=ID_STATUS_OFFLINE && OldStatus !=ID_STATUS_CONNECTING && !bDcc || bDcc && wStatus == ID_STATUS_ONLINE) {
-		PostIrcMessageWnd(NULL, ccs->hContact, ( TCHAR*) ccs->lParam); // !!!!
+	if ( OldStatus != ID_STATUS_OFFLINE && OldStatus != ID_STATUS_CONNECTING && !bDcc || bDcc && wStatus == ID_STATUS_ONLINE ) {
+		int codepage = ( g_ircSession ) ? g_ircSession.getCodepage() : IRC_DEFAULT_CODEPAGE;
+		char*  msg = ( char* )ccs->lParam;
+		TCHAR* result;
+		if ( ccs->wParam & PREF_UNICODE ) {
+			char* p = strchr( msg, '\0' );
+			if ( p != msg ) {
+				while ( *(++p) == '\0' )
+					;
+				result = mir_u2t_cp(( wchar_t* )p, codepage );
+			}
+			else result = mir_a2t_cp( msg, codepage );
+		}
+		else if ( ccs->wParam & PREF_UTF ) {
+			#if defined( _UNICODE )
+				mir_utf8decode( msg, &result );
+			#else
+				result = mir_strdup( msg );
+				mir_utf8decodecp( result, NULL, codepage );
+			#endif
+		}
+		else result = mir_a2t_cp( msg, codepage );
+
+		PostIrcMessageWnd(NULL, ccs->hContact, result );
+		mir_free( result );
 		mir_forkthread(AckMessageSuccess, ccs->hContact);
 	}
 	else {
-		if (bDcc)
+		if ( bDcc )
 			mir_forkthread(AckMessageFailDcc, ccs->hContact);
 		else
 			mir_forkthread(AckMessageFail, ccs->hContact);
