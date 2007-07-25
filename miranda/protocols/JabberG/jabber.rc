@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (Neutral) resources
+// English (U.S.) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -613,6 +613,16 @@ BEGIN
     COMBOBOX        IDC_COMBO_NODE,240,6,87,70,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
 END
 
+IDD_SETMOODMSG DIALOGEX 0, 0, 187, 72
+STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_CONTROLPARENT
+CAPTION "Change %s Message"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Closing in %d",IDOK,61,53,65,14
+    EDITTEXT        IDC_MSG_MOOD,5,5,177,43,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -631,6 +641,14 @@ BEGIN
     IDD_OPT_JABBER3, DIALOG
     BEGIN
         HORZGUIDE, 209
+    END
+
+    IDD_SETMOODMSG, DIALOG
+    BEGIN
+        LEFTMARGIN, 5
+        RIGHTMARGIN, 182
+        TOPMARGIN, 5
+        BOTTOMMARGIN, 67
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -704,7 +722,7 @@ END
 
 #endif    // APSTUDIO_INVOKED
 
-#endif    // English (Neutral) resources
+#endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
@@ -718,6 +736,4 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
-
-
 

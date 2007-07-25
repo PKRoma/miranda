@@ -331,10 +331,6 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 
 	mir_snprintf( text, sizeof( text ), "%s/Status", jabberProtoName );
 	JCallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )text );
-	mir_snprintf( text, sizeof( text ), "%s/XStatusName", jabberProtoName );
-	JCallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )text );
-	mir_snprintf( text, sizeof( text ), "%s/XStatusMsg", jabberProtoName );
-	JCallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )text );
 
 	jabberModuleName = mir_strdup( jabberProtoName );
 	_strlwr( jabberModuleName );

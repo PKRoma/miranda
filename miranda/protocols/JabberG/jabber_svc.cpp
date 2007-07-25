@@ -874,7 +874,7 @@ int JabberGetInfo( WPARAM wParam, LPARAM lParam )
 					if ( !*pDelimiter )
 						pDelimiter = NULL;
 				}
-				JABBER_LIST_ITEM *tmpItem = NULL;;
+				JABBER_LIST_ITEM *tmpItem = NULL;
 				if ( pDelimiter && ( tmpItem  = JabberListGetItemPtr( LIST_CHATROOM, szBareJid ))) {
 					JABBER_RESOURCE_STATUS *him = NULL;
 					for ( int i=0; i < tmpItem->resourceCount; i++ ) {
