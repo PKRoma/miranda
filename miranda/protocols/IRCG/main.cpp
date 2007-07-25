@@ -44,15 +44,15 @@ PLUGININFOEX pluginInfo =
 {						
 	sizeof( PLUGININFOEX ),
 	"IRC Protocol",
-	PLUGIN_MAKE_VERSION( 0,6,4,0 ),
+	PLUGIN_MAKE_VERSION( 0,7,0,1 ),
 	"IRC protocol for Miranda IM.",
 	"Miranda team",
-	"i_am_matrix@users.sourceforge.net",
-	"© 2003-2007 Miranda team",
+	"ghazan@miranda-im.org",
+	"© 2003-2007 Jurgen Persson, George Hazan",
 	"http://www.miranda-im.org",
 	0,	
-    0,
-    {0xb529402b, 0x53ba, 0x4c81, { 0x9e, 0x27, 0xd4, 0x31, 0xeb, 0xe8, 0xec, 0x36 }} //{B529402B-53BA-4c81-9E27-D431EBE8EC36}
+	0,
+	{0xb529402b, 0x53ba, 0x4c81, { 0x9e, 0x27, 0xd4, 0x31, 0xeb, 0xe8, 0xec, 0x36 }} //{B529402B-53BA-4c81-9E27-D431EBE8EC36}
 }; 
 
 extern "C" BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
@@ -63,8 +63,8 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvRese
 
 extern "C" __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0, 6, 0, 0 )) {
-		MessageBox( NULL, _T("The IRC protocol plugin cannot be loaded. It requires Miranda IM 0.6.0.0 or later."), _T("IRC Protocol Plugin"), MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
+	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0, 7, 0, 0 )) {
+		MessageBox( NULL, LPGENT("The IRC protocol plugin cannot be loaded. It requires Miranda IM 0.7.0.0 or later."), LPGENT("IRC Protocol Plugin"), MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 		return NULL;
 	}
 	mirVersion = mirandaVersion;
@@ -72,6 +72,7 @@ extern "C" __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD miranda
 }
 
 static const MUUID interfaces[] = {MIID_PROTOCOL, MIID_LAST};
+
 extern "C" __declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
 {
 	return interfaces;
@@ -79,20 +80,15 @@ extern "C" __declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
 
 static void GetModuleName( void )	 // ripped from msn
 {
-	char * p = NULL;
-	char * p1 = NULL;
-
 	GetModuleFileNameA(g_hInstance, mirandapath, MAX_PATH);
-	p = strrchr( mirandapath, '\\' );
+	char* p = strrchr( mirandapath, '\\' );
 	if ( p ) {
-		char * p2;
-		*p = '\0';
-		p++;
-		p1 = strrchr( p, '.' );
+		*p++ = '\0';
+		char* p1 = strrchr( p, '.' );
 		*p1 = '\0';
-		p2 = p;
-		while( *p2 ) {
-			if (*p2 == ' ')
+		char* p2 = p;
+		while ( *p2 ) {
+			if ( *p2 == ' ' )
 				*p2 = '_';
 			p2++;
 		}
@@ -101,18 +97,18 @@ static void GetModuleName( void )	 // ripped from msn
 		ALTIRCPROTONAME = new char[lstrlenA( IRCPROTONAME ) + 7 ];
 		CharUpperA(IRCPROTONAME);
 
-		if (lstrcmpiA(IRCPROTONAME, "IRC"))
-			mir_snprintf(ALTIRCPROTONAME, lstrlenA( IRCPROTONAME ) + 7 , "IRC (%s)", IRCPROTONAME);
+		if ( lstrcmpiA( IRCPROTONAME, "IRC" ))
+			mir_snprintf( ALTIRCPROTONAME, lstrlenA( IRCPROTONAME ) + 7 , "IRC (%s)", IRCPROTONAME );
 		else
-			mir_snprintf(ALTIRCPROTONAME, lstrlenA( IRCPROTONAME ) + 7 , "%s", IRCPROTONAME);
+			mir_snprintf( ALTIRCPROTONAME, lstrlenA( IRCPROTONAME ) + 7 , "%s", IRCPROTONAME );
 }	}
 
 extern "C" int __declspec(dllexport) Load( PLUGINLINK *link )
 {
-	#ifndef NDEBUG //mem leak detector :-) Thanks Tornado!
-	int flag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG); // Get current flag
-	flag |= _CRTDBG_LEAK_CHECK_DF; // Turn on leak-checking bit
-	_CrtSetDbgFlag(flag); // Set flag to the new value
+	#ifndef NDEBUG
+		int flag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
+		flag |= _CRTDBG_LEAK_CHECK_DF;
+		_CrtSetDbgFlag(flag);
 	#endif
 
 	pluginLink=link;
@@ -121,7 +117,7 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK *link )
 
 	if ( !mirVersion || mirVersion < PLUGIN_MAKE_VERSION( 0, 7, 0 ,0 )) {
 		TCHAR szVersion[] = _T("0.7"); // minimum required version
-		TCHAR szText[] = _T("The IRC protocol could not be loaded as it is dependant on Miranda IM version %s or later.\n\nDo you want to download an update from the Miranda website now?");
+		TCHAR szText[] = LPGENT("The IRC protocol could not be loaded as it is dependant on Miranda IM version %s or later.\n\nDo you want to download an update from the Miranda website now?");
 		TCHAR* szTemp = ( TCHAR* )alloca( sizeof( TCHAR )*( lstrlen(szVersion) + lstrlen(szText) + 10 ));
 		mir_sntprintf(szTemp, lstrlen(szVersion) + lstrlen(szText) + 10, szText, szVersion);
 		if ( IDYES == MessageBox( NULL, TranslateTS(szTemp), TranslateT( "Information" ), MB_YESNO | MB_ICONINFORMATION ))
@@ -157,13 +153,13 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK *link )
 
 extern "C" int __declspec(dllexport) Unload(void)
 {
-	CList_SetAllOffline(TRUE);
+	CList_SetAllOffline( TRUE );
 
-	DeleteCriticalSection(&cs);
-	DeleteCriticalSection(&m_gchook);
+	DeleteCriticalSection( &cs );
+	DeleteCriticalSection( &m_gchook );
 
-	if (m_ssleay32)
-		FreeLibrary(m_ssleay32);
+	if ( m_ssleay32 )
+		FreeLibrary( m_ssleay32 );
 
 	UnhookEvents();
 	UnInitOptions();

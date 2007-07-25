@@ -1298,7 +1298,7 @@ int CDccSession::SetupConnection()
 				hBindPort = (HANDLE)CallService(MS_NETLIB_BINDPORT, (WPARAM)hNetlibDCC,(LPARAM) &nb);
 
 				if ( hBindPort == NULL ) {
-					DoEvent(GC_EVENT_INFORMATION, 0, g_ircSession.GetInfo().sNick.c_str(), _T("DCC ERROR: Unable to bind local port for passive filetransfer"), NULL, NULL, NULL, true, false); 
+					DoEvent(GC_EVENT_INFORMATION, 0, g_ircSession.GetInfo().sNick.c_str(), LPGENT("DCC ERROR: Unable to bind local port for passive filetransfer"), NULL, NULL, NULL, true, false); 
 					delete this; // dcc objects destroy themselves when the connection has been closed or failed for some reasson.
 					return 0;
 				}

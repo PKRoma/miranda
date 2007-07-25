@@ -1212,7 +1212,7 @@ BOOL CALLBACK ManagerWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					lstrcpyn(temp, TranslateT( "Remove exception?" ), 100 );
 				}
 				
-				if ( MessageBox( hwndDlg, user.c_str(), temp, MB_YESNO|MB_ICONQUESTION|MB_DEFBUTTON2 ) == IDYES ) {
+				if ( MessageBox( hwndDlg, user.c_str(), temp, MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2 ) == IDYES ) {
 					PostIrcMessage( _T("/MODE %s %s %s"), window, mode, user.c_str());
 					SendMessage( hwndDlg, IRC_QUESTIONAPPLY, 0, 0);
 				}
