@@ -295,9 +295,9 @@ __forceinline int mir_getUTFI( struct UTF8_INTERFACE* dest )
 extern struct UTF8_INTERFACE utfi;
 
 #define mir_utf8decode(A,B)     utfi.utf8_decode(A,B)
-#define mir_utf8decodecp(A,B,C) utfi.utf8_decode(A,B,C)
+#define mir_utf8decodecp(A,B,C) utfi.utf8_decodecp(A,B,C)
 #define mir_utf8encode(A)       utfi.utf8_encode(A)
-#define mir_utf8encodecp(A,B)   utfi.utf8_encode(A,B)
+#define mir_utf8encodecp(A,B)   utfi.utf8_encodecp(A,B)
 #define mir_utf8encodeW(A)      utfi.utf8_encodeW(A)
 
 #if defined( _UNICODE )

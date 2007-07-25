@@ -1434,7 +1434,7 @@ static int Service_GetMessFromSRMM(WPARAM wParam, LPARAM lParam)
 				mir_utf8decode( NEWSTR_ALLOCA(msg), &result );
 			#else
 				result = mir_strdup( msg );
-				mir_utf8decodecp( result, NULL, codepage );
+				mir_utf8decodecp( result, codepage, NULL );
 			#endif
 		}
 		else result = mir_a2t_cp( msg, codepage );
