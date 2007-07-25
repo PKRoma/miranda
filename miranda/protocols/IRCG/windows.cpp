@@ -1050,21 +1050,21 @@ BOOL CALLBACK ManagerWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 			SendDlgItemMessage( hwndDlg,IDC_LIST,LB_SETHORIZONTALEXTENT,750,NULL);
 			CheckDlgButton( hwndDlg, IDC_RADIO1, BST_CHECKED);
-			if ( strchr(sChannelModes.c_str(), 't'))
+			if ( !strchr(sChannelModes.c_str(), 't'))
 				EnableWindow(GetDlgItem( hwndDlg, IDC_CHECK1), false);
-			if ( strchr(sChannelModes.c_str(), 'n'))
+			if ( !strchr(sChannelModes.c_str(), 'n'))
 				EnableWindow(GetDlgItem( hwndDlg, IDC_CHECK2), false);
-			if ( strchr(sChannelModes.c_str(), 'i'))
+			if ( !strchr(sChannelModes.c_str(), 'i'))
 				EnableWindow(GetDlgItem( hwndDlg, IDC_CHECK3), false);
-			if ( strchr(sChannelModes.c_str(), 'm'))
+			if ( !strchr(sChannelModes.c_str(), 'm'))
 				EnableWindow(GetDlgItem( hwndDlg, IDC_CHECK4), false);
-			if ( strchr(sChannelModes.c_str(), 'k'))
+			if ( !strchr(sChannelModes.c_str(), 'k'))
 				EnableWindow(GetDlgItem( hwndDlg, IDC_CHECK5), false);
-			if ( strchr(sChannelModes.c_str(), 'l'))
+			if ( !strchr(sChannelModes.c_str(), 'l'))
 				EnableWindow(GetDlgItem( hwndDlg, IDC_CHECK6), false);
-			if ( strchr(sChannelModes.c_str(), 'p'))
+			if ( !strchr(sChannelModes.c_str(), 'p'))
 				EnableWindow(GetDlgItem( hwndDlg, IDC_CHECK7), false);
-			if ( strchr(sChannelModes.c_str(), 's'))
+			if ( !strchr(sChannelModes.c_str(), 's'))
 				EnableWindow(GetDlgItem( hwndDlg, IDC_CHECK8), false);
 		}
 		break;
