@@ -274,7 +274,7 @@ void __cdecl ResolveIPThread(LPVOID di)
 
 	IPRESOLVE * ipr = (IPRESOLVE *) di;
 	if ( ipr != NULL && (ipr->iType == IP_AUTO && lstrlenA(prefs->MyHost) == 0 || ipr->iType == IP_MANUAL )) {
-		hostent* myhost = gethostbyname( ipr->pszAdr );
+		hostent* myhost = gethostbyname( ipr->sAddr.c_str() );
 		if ( myhost ) {
 			IN_ADDR in;
 			memcpy( &in, myhost->h_addr, 4 );
@@ -370,13 +370,9 @@ bool CMyMonitor::OnIrc_WELCOME( const CIrcMessage* pmsg )
 			if ( _tcschr( word.c_str(), '!') && _tcschr( word.c_str(), '@' )) {
 				lstrcpyn( host, word.c_str(), SIZEOF(host));
 				TCHAR* p1 = _tcschr( host, '@' );
-				if ( p1 ) {
-					p1++;
-					IPRESOLVE* ipr = new IPRESOLVE;
-					ipr->iType = IP_AUTO;
-					ipr->pszAdr = mir_t2a( p1 );
-					mir_forkthread(ResolveIPThread, ipr);
-			}	}
+				if ( p1 )
+					mir_forkthread( ResolveIPThread, new IPRESOLVE( _T2A(p1+1), IP_AUTO ));
+			}
 			
 			word = GetWord(pmsg->parameters[1].c_str(), ++i);
 	}	}			
@@ -2091,10 +2087,7 @@ bool CMyMonitor::OnIrc_WHO_REPLY( const CIrcMessage* pmsg )
 		if ( lstrcmpi( pmsg->parameters[5].c_str(), m_session.GetInfo().sNick.c_str()) == 0 ) {
 			TCHAR host[1024];
 			lstrcpyn( host, pmsg->parameters[3].c_str(), 1024 );
-			IPRESOLVE* ipr = new IPRESOLVE;
-			ipr->iType = IP_AUTO;
-			ipr->pszAdr = mir_t2a( host );
-			mir_forkthread(ResolveIPThread, ipr);
+			mir_forkthread( ResolveIPThread, new IPRESOLVE( _T2A(host), IP_AUTO ));
 	}	}
 
 	if ( command[0] == 'U' )

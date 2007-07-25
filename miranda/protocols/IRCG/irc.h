@@ -188,8 +188,16 @@ typedef struct  {
 
 struct IPRESOLVE      // Contains info about the channels
 {
-	int iType;
-	char* pszAdr;
+	IPRESOLVE( const char* _addr, int _type ) :
+		sAddr( _addr ),
+		iType( _type )
+	{}
+
+	~IPRESOLVE()
+	{}
+
+	String sAddr;
+	int    iType;
 };
 
 struct CHANNELINFO   // Contains info about the channels

@@ -1203,14 +1203,10 @@ static void __cdecl ConnectServerThread(LPVOID di)
 		Sleep(100);
 		g_ircSession.Connect(si);
 		if (g_ircSession) {
-			KillChatTimer(RetryTimer);
+			KillChatTimer( RetryTimer );
 
-			if (lstrlenA(prefs->MySpecifiedHost)) {
-				IPRESOLVE * ipr = new IPRESOLVE;
-				ipr->iType = IP_MANUAL;
-				ipr->pszAdr = prefs->MySpecifiedHost;
-				mir_forkthread(ResolveIPThread, ipr);
-			}
+			if ( lstrlenA( prefs->MySpecifiedHost ))
+				mir_forkthread( ResolveIPThread, new IPRESOLVE( prefs->MySpecifiedHost, IP_MANUAL ));
 		}
 		else {
 			Temp = OldStatus;

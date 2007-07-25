@@ -642,12 +642,9 @@ BOOL CALLBACK CtcpPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 						GetDlgItemTextA( hwndDlg,IDC_IP,szTemp, 499);
 						lstrcpynA(prefs->MySpecifiedHost, GetWord(szTemp, 0).c_str(), 499);
 						DBWriteContactSettingString(NULL,IRCPROTONAME,"SpecHost",prefs->MySpecifiedHost);
-						if ( lstrlenA( prefs->MySpecifiedHost )) {
-							IPRESOLVE * ipr = new IPRESOLVE;
-							ipr->iType = IP_MANUAL;
-							ipr->pszAdr = prefs->MySpecifiedHost;
-							mir_forkthread(ResolveIPThread, ipr);
-					}	}
+						if ( lstrlenA( prefs->MySpecifiedHost ))
+							mir_forkthread( ResolveIPThread, new IPRESOLVE( prefs->MySpecifiedHost, IP_MANUAL ));
+					}
 
 					if(IsDlgButtonChecked( hwndDlg, IDC_RADIO1) == BST_CHECKED)
 						prefs->DCCChatAccept = 1;

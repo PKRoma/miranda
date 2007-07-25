@@ -316,6 +316,7 @@ CIrcSession& CIrcSession::operator << (const CIrcMessage& msg)
 	if ( this ) {
 		char* str = mir_t2a_cp( msg.AsString().c_str(), msg.m_codePage );
 		NLSend(( const BYTE* )str, strlen( str ));
+		mir_free( str );
 		
 		if ( !msg.sCommand.empty() && msg.sCommand != _T("QUIT") && msg.m_bNotify )
 			Notify( &msg );
