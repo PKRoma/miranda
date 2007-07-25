@@ -433,7 +433,7 @@ int CIrcSession::NLSend( const unsigned char* buf, int cbBuf)
 	if ( bMbotInstalled && prefs->ScriptingEnabled ) {
 		int iVal = NULL;
 		char * pszTemp = 0;
-		pszTemp = (char *) mir_alloc( lstrlenA((const char *) buf ) + 1);
+		pszTemp = ( char* ) mir_alloc( lstrlenA((const char *) buf ) + 1);
 		lstrcpynA(pszTemp, (const char *)buf, lstrlenA ((const char *)buf) + 1);
 
 		if ( Scripting_TriggerMSPRawOut(&pszTemp) && pszTemp ) {
@@ -640,7 +640,7 @@ void CIrcSession::AddDCCSession(HANDLE hContact, CDccSession* dcc)
 	LeaveCriticalSection(&m_dcc);
 }
 
-void CIrcSession::AddDCCSession(DCCINFO * pdci, CDccSession* dcc)
+void CIrcSession::AddDCCSession(DCCINFO* pdci, CDccSession* dcc)
 {
 	EnterCriticalSection(&m_dcc);
 
@@ -660,7 +660,7 @@ void CIrcSession::RemoveDCCSession(HANDLE hContact)
 	LeaveCriticalSection(&m_dcc);
 }
 
-void CIrcSession::RemoveDCCSession(DCCINFO * pdci)
+void CIrcSession::RemoveDCCSession(DCCINFO* pdci)
 {
 	EnterCriticalSection(&m_dcc);
 
@@ -685,7 +685,7 @@ CDccSession* CIrcSession::FindDCCSession(HANDLE hContact)
 	return 0;
 }
 
-CDccSession* CIrcSession::FindDCCSession(DCCINFO * pdci)
+CDccSession* CIrcSession::FindDCCSession(DCCINFO* pdci)
 {
 	EnterCriticalSection(&m_dcc);
 
@@ -846,9 +846,9 @@ CIrcIgnoreItem::CIrcIgnoreItem( const TCHAR* _mask, const TCHAR* _flags, const T
 
 #if defined( _UNICODE )
 CIrcIgnoreItem::CIrcIgnoreItem( const char* _mask, const char* _flags, const char* _network ) :
-	mask( _A2T(_mask)),
-	flags( _A2T( _flags )),
-	network( _A2T( _network ))
+	mask( _A2T( _mask, g_ircSession.getCodepage())),
+	flags( _A2T( _flags, g_ircSession.getCodepage())),
+	network( _A2T( _network, g_ircSession.getCodepage()))
 {
 }
 #endif
@@ -1056,7 +1056,16 @@ unsigned long ConvertIPToInteger( char* IP )
 ////////////////////////////////////////////////////////////////////
 
 // initialize basic stuff needed for the dcc objects, also start a timer for checking the status of connections (timeouts)
-CDccSession::CDccSession(DCCINFO * pdci) : NewFileName(0), dwWhatNeedsDoing(0), tLastPercentageUpdate(0), iTotal(0), iGlobalToken(), dwResumePos(0), hEvent(0), con(0), hBindPort(0)
+CDccSession::CDccSession( DCCINFO* pdci ) :
+	NewFileName(0),
+	dwWhatNeedsDoing(0),
+	tLastPercentageUpdate(0),
+	iTotal(0),
+	iGlobalToken(),
+	dwResumePos(0),
+	hEvent(0),
+	con(0),
+	hBindPort(0)
 {
 	tLastActivity = time(0);
 
@@ -1082,6 +1091,10 @@ CDccSession::CDccSession(DCCINFO * pdci) : NewFileName(0), dwWhatNeedsDoing(0), 
 
 	if ( di->dwAdr )
 		DBWriteContactSettingDword(di->hContact, IRCPROTONAME, "IP", di->dwAdr); // mtooltip stuff
+
+	#if defined( _UNICODE )
+		szFullPath = szWorkingDir = NULL;
+	#endif
 }
 
 CDccSession::~CDccSession() // destroy all that needs destroying
@@ -1118,6 +1131,11 @@ CDccSession::~CDccSession() // destroy all that needs destroying
 
 	if ( nDcc == 0 )
 		KillChatTimer( DCCTimer ); // destroy the timer when no dcc objects remain
+
+	#if defined( _UNICODE )
+		mir_free( szFullPath );
+		mir_free( szWorkingDir );
+	#endif
 }
 
 int CDccSession::NLSend(const unsigned char* buf, int cbBuf) 
@@ -1143,7 +1161,7 @@ int CDccSession::NLReceive(const unsigned char* buf, int cbBuf)
 
 int CDccSession::SendStuff(const TCHAR* fmt)
 {
-	String buf = _T2A( fmt );
+	String buf = _T2A( fmt, g_ircSession.getCodepage() );
 	return NLSend(( const unsigned char* )buf.c_str(), buf.size());
 }
 
@@ -1189,21 +1207,27 @@ int CDccSession::SetupConnection()
 
 		// Set up stuff needed for the filetransfer dialog (if it is a filetransfer)
 		if ( di->iType == DCC_SEND ) {
-			file[0] = (char *)di->sFileAndPath.c_str();
+			file[0] = ( char* )di->sFileAndPath.c_str();
 			file[1] = 0;
 
-			pfts.hContact =				di->hContact;
-			pfts.sending =				di->bSender?true:false;
-			pfts.totalFiles =			1;
-			pfts.currentFileNumber =	0;
-			pfts.currentFile =			(char *)di->sFileAndPath.c_str();
-			pfts.totalBytes =			di->dwSize;
-			pfts.currentFileSize =		pfts.totalBytes;
-			pfts.workingDir =			(char *)di->sPath.c_str();
-			pfts.files =				file;
-			pfts.totalProgress =		0;
+			#if defined( _UNICODE )
+				pfts.currentFile = szFullPath = mir_strdup( _T2A( di->sFileAndPath.c_str(), g_ircSession.getCodepage() ));
+				pfts.workingDir =	szWorkingDir = mir_strdup( _T2A( di->sPath.c_str(), g_ircSession.getCodepage() ));
+			#else
+				pfts.currentFile = ( char* )di->sFileAndPath.c_str();
+				pfts.workingDir =	( char* )di->sPath.c_str();
+			#endif
+
+			pfts.hContact = di->hContact;
+			pfts.sending = di->bSender ? true : false;
+			pfts.totalFiles =	1;
+			pfts.currentFileNumber = 0;
+			pfts.totalBytes =	di->dwSize;
+			pfts.currentFileSize = pfts.totalBytes;
+			pfts.files = file;
+			pfts.totalProgress = 0;
 			pfts.currentFileProgress =	0;
-			pfts.currentFileTime =		(unsigned long)time(0);
+			pfts.currentFileTime = (unsigned long)time(0);
 		}
 
 		// create a listening socket for outgoing chat/send requests. The remote computer connects to this computer. Used for both chat and filetransfer.
@@ -1255,17 +1279,24 @@ int CDccSession::SetupConnection()
 					if ( NewFileName) { // the user has chosen to rename the new incoming file.
 						di->sFileAndPath = NewFileName;
 
-						int i = di->sFileAndPath.rfind("\\", di->sFileAndPath.length());
+						int i = di->sFileAndPath.rfind( _T("\\"), di->sFileAndPath.length());
 						if ( i != string::npos ) {
 							di->sPath = di->sFileAndPath.substr(0, i+1);
 							di->sFile = di->sFileAndPath.substr(i+1, di->sFileAndPath.length());
 						}
 
-						pfts.currentFile = (char *)di->sFileAndPath.c_str();
+						#if defined( _UNICODE )
+							mir_free( szFullPath );
+							pfts.currentFile = szFullPath = mir_strdup( _T2A( di->sFileAndPath.c_str(), g_ircSession.getCodepage() ));
+							mir_free( szWorkingDir );
+							pfts.workingDir =	szWorkingDir = mir_strdup( _T2A( di->sPath.c_str(), g_ircSession.getCodepage() ));
+						#else
+							pfts.currentFile = ( char* )di->sFileAndPath.c_str();
+							pfts.workingDir =	( char* )di->sPath.c_str();
+						#endif
 						pfts.totalBytes = di->dwSize;
 						pfts.currentFileSize = pfts.totalBytes;
-						pfts.workingDir = (char *)di->sPath.c_str();
-						file[0] = (char *)di->sFileAndPath.c_str();
+						file[0] = pfts.currentFile;
 						
 						delete []NewFileName;
 						NewFileName = NULL;
@@ -1303,12 +1334,12 @@ int CDccSession::SetupConnection()
 
 				di->iPort = nb.wPort; // store the port internally so it is possible to search for it (for resuming of filetransfers purposes)
 
-				String sFileWithQuotes = di->sFile;
+				TString sFileWithQuotes = di->sFile;
 
 				// if spaces in the filename surround with quotes
-				if ( sFileWithQuotes.find(' ', 0) != string::npos ) {
-					sFileWithQuotes.insert(0, "\"");
-					sFileWithQuotes.insert(sFileWithQuotes.length(), "\"");
+				if ( sFileWithQuotes.find( ' ', 0 ) != string::npos ) {
+					sFileWithQuotes.insert( 0, _T("\""));
+					sFileWithQuotes.insert( sFileWithQuotes.length(), _T("\""));
 				}
 
 				// send out DCC RECV command for passive filetransfers
@@ -1426,7 +1457,7 @@ void CDccSession::DoSendFile()
 	// is there a connection?
 	if ( con ) {
 		// open the file for reading
-		FILE * hFile = fopen(di->sFileAndPath.c_str(),"rb");
+		FILE* hFile = _tfopen( di->sFileAndPath.c_str(), _T("rb"));
 		if ( hFile ) {	
 			DWORD iLastAck = 0;
 
@@ -1569,7 +1600,7 @@ void CDccSession::DoReceiveFile()
 	ProtoBroadcastAck(IRCPROTONAME, di->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, (void *)di, 0);
 
 	// open the file for writing (and reading in case it is a resume)
-	FILE* hFile = fopen(di->sFileAndPath.c_str(),dwWhatNeedsDoing == FILERESUME_RESUME?"rb+":"wb");
+	FILE* hFile = _tfopen( di->sFileAndPath.c_str(), dwWhatNeedsDoing == FILERESUME_RESUME ? _T("rb+"): _T("wb"));
 	if ( hFile ) {	
 		DWORD iLastAck = 0;
 

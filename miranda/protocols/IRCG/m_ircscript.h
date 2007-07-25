@@ -52,7 +52,7 @@
 	allocate from the same heap. Do not free the data.
 
   	wParam=  Module name
-	lParam=  (LPARAM)(char *)pszRaw
+	lParam=  (LPARAM)( char* )pszRaw
 	returns nonzero if the message should be dropped
 */
 

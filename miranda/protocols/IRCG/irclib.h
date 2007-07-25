@@ -73,10 +73,10 @@ typedef struct {
 	BOOL    bSSL;
 	BOOL    bSender;
 	BOOL    bReverse;
-	String  sPath;
-	String  sFile;
-	String  sFileAndPath;
-	String  sHostmask;
+	TString sPath;
+	TString sFile;
+	TString sFileAndPath;
+	TString sHostmask;
 	HANDLE  hContact;
 	TString sContactName;
 }
@@ -186,8 +186,8 @@ public :
 	void AddIrcMonitor(IIrcSessionMonitor* pMonitor);
 	void RemoveMonitor(IIrcSessionMonitor* pMonitor);
 
-	void AddDCCSession(HANDLE hContact, CDccSession * dcc);
-	void AddDCCSession(DCCINFO*  pdci, CDccSession * dcc);
+	void AddDCCSession(HANDLE hContact, CDccSession* dcc);
+	void AddDCCSession(DCCINFO*  pdci, CDccSession* dcc);
 	void RemoveDCCSession(HANDLE hContact);
 	void RemoveDCCSession(DCCINFO*  pdci);
 	
@@ -349,8 +349,6 @@ class CDccSession{
 protected:
 	HANDLE con;			// connection handle	
 	HANDLE hBindPort;	// handle for listening port
-
-
 	static int nDcc;	// number of dcc objects
 	DWORD iTotal;		// total bytes sent/received
 
@@ -358,7 +356,12 @@ protected:
 	int iGlobalToken;
 
 	PROTOFILETRANSFERSTATUS pfts; // structure used to setup and update the filetransfer dialogs of miranda
-	char * file[2];		// used with the PROTOFILETRANSFER struct
+	char* file[2];		// used with the PROTOFILETRANSFER struct
+
+	#if defined( _UNICODE )
+		char* szFullPath;
+		char* szWorkingDir;
+	#endif
 
 	int SetupConnection();	
 	void DoSendFile();
@@ -371,30 +374,29 @@ protected:
 
 public:
 	
-	CDccSession(DCCINFO * pdci); // constructor
-	~CDccSession();					// destructor
+	CDccSession(DCCINFO* pdci);  // constructor
+	~CDccSession();               // destructor, что характерно
 
-	time_t tLastPercentageUpdate;	// time of last update of the filetransfer dialog
-	time_t tLastActivity;			// time of last in/out activity of the object
-	time_t tLastAck;				// last acked filesize
+	time_t tLastPercentageUpdate; // time of last update of the filetransfer dialog
+	time_t tLastActivity;         // time of last in/out activity of the object
+	time_t tLastAck;              // last acked filesize
 
-	HANDLE hEvent;					// Manual object
-	long dwWhatNeedsDoing;	// Set to indicate what FILERESUME_ action is chosen by the user
-	char * NewFileName;				// contains new file name if FILERESUME_RENAME chosen
-	long dwResumePos;		// position to resume from if FILERESUME_RESUME
+	HANDLE hEvent;                // Manual object
+	long   dwWhatNeedsDoing;      // Set to indicate what FILERESUME_ action is chosen by the user
+	TCHAR* NewFileName;           // contains new file name if FILERESUME_RENAME chosen
+	long   dwResumePos;           // position to resume from if FILERESUME_RESUME
 
-	int iToken;						// used to identify (find) objects in reverse dcc filetransfers
+	int iToken;                   // used to identify (find) objects in reverse dcc filetransfers
 
-	DCCINFO * di;	// details regarding the filetrasnfer
+	DCCINFO* di;	// details regarding the filetrasnfer
 
 	int Connect();					
-	void SetupPassive(DWORD adr, DWORD port);
+	void SetupPassive( DWORD adr, DWORD port );
 	int SendStuff(const TCHAR* fmt);
 	int IncomingConnection(HANDLE hConnection, DWORD dwIP);
 	int Disconnect();
-
-
 };
+
 ////////////////////////////////////////////////////////////////////
 }; // end of namespace irc
 ////////////////////////////////////////////////////////////////////

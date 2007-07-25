@@ -38,7 +38,7 @@ BOOL CALLBACK MessageboxWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPar
 	switch ( uMsg ) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault( hwndDlg);
-		pdci = (DCCINFO *) lParam;
+		pdci = ( DCCINFO* )lParam;
 		SendMessage(GetDlgItem( hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadImage(NULL,IDI_QUESTION,IMAGE_ICON,48, 48,LR_SHARED), 0);
 		break;
 		
@@ -47,9 +47,9 @@ BOOL CALLBACK MessageboxWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPar
 			switch ( LOWORD( wParam )) {
 			case IDN_YES:
 				{
-					CDccSession * dcc = new CDccSession(pdci);
+					CDccSession* dcc = new CDccSession(pdci);
 
-					CDccSession * olddcc = g_ircSession.FindDCCSession(pdci->hContact);
+					CDccSession* olddcc = g_ircSession.FindDCCSession(pdci->hContact);
 					if (olddcc)
 						olddcc->Disconnect();
 					g_ircSession.AddDCCSession(pdci->hContact, dcc);

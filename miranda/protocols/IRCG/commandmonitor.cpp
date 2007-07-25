@@ -785,7 +785,7 @@ bool CMyMonitor::OnIrc_PRIVMSG( const CIrcMessage* pmsg )
 				pre.flags = PREF_UTF;
 				pre.szMessage = mir_utf8encodeW( mess.c_str());
 			#else
-				pre.szMessage = (char *)mess.c_str();
+				pre.szMessage = ( char* )mess.c_str();
 			#endif
 			DBWriteContactSettingTString(ccs.hContact, IRCPROTONAME, "User", pmsg->prefix.sUser.c_str());
 			DBWriteContactSettingTString(ccs.hContact, IRCPROTONAME, "Host", pmsg->prefix.sHost.c_str());
@@ -1222,7 +1222,7 @@ bool CMyMonitor::IsCTCP( const CIrcMessage* pmsg )
 							DCCINFO* di = new DCCINFO;
 							ZeroMemory(di, sizeof(DCCINFO));
 							di->hContact = hContact;
-							di->sFile = szFileName;
+							di->sFile = sFile;
 							di->dwSize = dwSize;
 							di->sContactName = pmsg->prefix.sNick;
 							di->dwAdr = dwAdr;
@@ -1241,7 +1241,7 @@ bool CMyMonitor::IsCTCP( const CIrcMessage* pmsg )
 							pre.flags = 0;
 							pre.timestamp = (DWORD)time(NULL);
 
-							char* szBlob = (char *) malloc(sizeof(DWORD) + strlen(szFileName) + 3);
+							char* szBlob = ( char* ) malloc(sizeof(DWORD) + strlen(szFileName) + 3);
 							*((PDWORD) szBlob) = (DWORD) di;
 							strcpy(szBlob + sizeof(DWORD), szFileName );
 							strcpy(szBlob + sizeof(DWORD) + strlen(szFileName) + 1, " ");
@@ -1753,7 +1753,7 @@ bool CMyMonitor::OnIrc_WHOIS_END( const CIrcMessage* pmsg )
 		CONTACT user = { (TCHAR*)pmsg->parameters[1].c_str(), NULL, NULL, false, false, true};
 		HANDLE hContact = CList_FindContact( &user );
 		if ( hContact )
-			ProtoBroadcastAck( IRCPROTONAME, hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, (HANDLE) 1, (LPARAM)( char* )_T2A( WhoisAwayReply.c_str()));
+			ProtoBroadcastAck( IRCPROTONAME, hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, (HANDLE) 1, (LPARAM)( char* )_T2A( WhoisAwayReply.c_str(), m_session.getCodepage()));
 	}
 
 	ManualWhoisCount--;
@@ -1965,7 +1965,7 @@ bool CMyMonitor::OnIrc_ERROR( const CIrcMessage* pmsg )
 		else
 			S = TranslateT("Unknown");
 
-		msn.szInfo = (char *)S.c_str();
+		msn.szInfo = ( char* )S.c_str();
 		msn.dwInfoFlags = NIIF_ERROR | NIIF_INTERN_UNICODE;
 		msn.uTimeout = 15000;
 		CallService( MS_CLIST_SYSTRAY_NOTIFY, (WPARAM)NULL, (LPARAM)&msn);
@@ -2295,7 +2295,7 @@ bool CMyMonitor::OnIrc_SUPPORT( const CIrcMessage* pmsg )
 				TCHAR* p1 = _tcschr( temp, '=' );
 				p1++;
 				if ( lstrlen( p1 ) > 0)
-					sChannelModes = ( char* )_T2A(p1);
+					sChannelModes = ( char* )_T2A( p1 );
 			}
 			if ( _tcsstr( temp, _T("PREFIX="))) {
 				TCHAR* p1 = _tcschr( temp, '(' );
@@ -2303,7 +2303,7 @@ bool CMyMonitor::OnIrc_SUPPORT( const CIrcMessage* pmsg )
 				if ( p1 && p2 ) {
 					p1++;
 					if ( p1 != p2 )
-						sUserModes = ( char* )_T2A(p1);
+						sUserModes = ( char* )_T2A( p1 );
 					sUserModes = sUserModes.substr(0, p2-p1);
 					p2++;
 					if ( *p2 != '\0' )

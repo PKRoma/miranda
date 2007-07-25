@@ -430,38 +430,38 @@ int CallChatEvent(WPARAM wParam, LPARAM lParam)
 
 		if(gcevent->pDest->pszModule)
 		{
-			gcetemp->pDest->pszModule = (char *)mir_alloc(lstrlenA(gcevent->pDest->pszModule) + 1);
+			gcetemp->pDest->pszModule = ( char* )mir_alloc(lstrlenA(gcevent->pDest->pszModule) + 1);
 			lstrcpynA(gcetemp->pDest->pszModule, gcevent->pDest->pszModule, lstrlenA(gcevent->pDest->pszModule) + 1);
 		}else gcetemp->pDest->pszModule = NULL;
 
 		if(gcevent->pszText)
 		{
-			gcetemp->pszText = (char *)mir_alloc(lstrlenA(gcevent->pszText) + 1);
-			lstrcpynA((char *)gcetemp->pszText, gcevent->pszText, lstrlenA(gcevent->pszText) + 1);
+			gcetemp->pszText = ( char* )mir_alloc(lstrlenA(gcevent->pszText) + 1);
+			lstrcpynA(( char* )gcetemp->pszText, gcevent->pszText, lstrlenA(gcevent->pszText) + 1);
 		}else gcetemp->pszText = NULL;
 
 		if(gcevent->pszUID)
 		{
-			gcetemp->pszUID = (char *)mir_alloc(lstrlenA(gcevent->pszUID) + 1);
-			lstrcpynA((char *)gcetemp->pszUID, gcevent->pszUID, lstrlenA(gcevent->pszUID) + 1);
+			gcetemp->pszUID = ( char* )mir_alloc(lstrlenA(gcevent->pszUID) + 1);
+			lstrcpynA(( char* )gcetemp->pszUID, gcevent->pszUID, lstrlenA(gcevent->pszUID) + 1);
 		}else gcetemp->pszUID = NULL;
 
 		if(gcevent->pszNick)
 		{
-			gcetemp->pszNick = (char *)mir_alloc(lstrlenA(gcevent->pszNick) + 1);
-			lstrcpynA((char *)gcetemp->pszNick, gcevent->pszNick, lstrlenA(gcevent->pszNick) + 1);
+			gcetemp->pszNick = ( char* )mir_alloc(lstrlenA(gcevent->pszNick) + 1);
+			lstrcpynA(( char* )gcetemp->pszNick, gcevent->pszNick, lstrlenA(gcevent->pszNick) + 1);
 		}else gcetemp->pszNick = NULL;
 
 		if(gcevent->pszStatus)
 		{
-			gcetemp->pszStatus = (char *)mir_alloc(lstrlenA(gcevent->pszStatus) + 1);
-			lstrcpynA((char *)gcetemp->pszStatus, gcevent->pszStatus, lstrlenA(gcevent->pszStatus) + 1);
+			gcetemp->pszStatus = ( char* )mir_alloc(lstrlenA(gcevent->pszStatus) + 1);
+			lstrcpynA(( char* )gcetemp->pszStatus, gcevent->pszStatus, lstrlenA(gcevent->pszStatus) + 1);
 		}else gcetemp->pszStatus = NULL;
 
 		if(gcevent->pszUserInfo)
 		{
-			gcetemp->pszUserInfo = (char *)mir_alloc(lstrlenA(gcevent->pszUserInfo) + 1);
-			lstrcpynA((char *)gcetemp->pszUserInfo, gcevent->pszUserInfo, lstrlenA(gcevent->pszUserInfo) + 1);
+			gcetemp->pszUserInfo = ( char* )mir_alloc(lstrlenA(gcevent->pszUserInfo) + 1);
+			lstrcpynA(( char* )gcetemp->pszUserInfo, gcevent->pszUserInfo, lstrlenA(gcevent->pszUserInfo) + 1);
 		}else gcetemp->pszUserInfo = NULL;
 
 		if(	Scripting_TriggerMSPGuiIn(&wp, gcetemp) && gcetemp)

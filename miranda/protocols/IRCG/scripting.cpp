@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 int Scripting_InsertRawIn(WPARAM wParam,LPARAM lParam)
 {
-	char* pszRaw = (char *) lParam;
+	char* pszRaw = ( char* ) lParam;
 
 	if ( bMbotInstalled && prefs->ScriptingEnabled && pszRaw && g_ircSession ) {
 		TCHAR* p = mir_a2t( pszRaw );
@@ -38,7 +38,7 @@ int Scripting_InsertRawIn(WPARAM wParam,LPARAM lParam)
  
 int Scripting_InsertRawOut( WPARAM wParam, LPARAM lParam )
 {
-	char* pszRaw = (char *) lParam;
+	char* pszRaw = ( char* ) lParam;
 	if ( bMbotInstalled && prefs->ScriptingEnabled && pszRaw && g_ircSession ) {	
 		String S = ReplaceString(pszRaw, "%", "%%%%");
 		g_ircSession.NLSendNoScript((const unsigned char *)S.c_str(), lstrlenA(S.c_str()));
@@ -181,7 +181,7 @@ BOOL Scripting_TriggerMSPGuiOut(GCHOOK* gch)
 int Scripting_GetIrcData(WPARAM wparam, LPARAM lparam)
 {
 	if ( bMbotInstalled && prefs->ScriptingEnabled && lparam ) {
-		String sString = (char *) lparam, sRequest;
+		String sString = ( char* ) lparam, sRequest;
 		TString sOutput, sChannel; 
 
 		int i = sString.find("|",0);

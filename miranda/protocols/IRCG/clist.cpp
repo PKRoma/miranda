@@ -46,7 +46,7 @@ BOOL CList_AddDCCChat(TString name, TString hostmask, unsigned long adr, int por
 
 	DCCINFO* pdci = new DCCINFO;
 	ZeroMemory(pdci, sizeof(DCCINFO));
-	pdci->sHostmask = (char*)_T2A(hostmask);
+	pdci->sHostmask = hostmask;
 	pdci->hContact = hContact;
 	pdci->dwAdr = (DWORD) adr;
 	pdci->iPort = port;
@@ -143,7 +143,7 @@ bool CList_SetAllOffline(BYTE ChatsToo)
 
 	HANDLE hContact = (HANDLE) CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact ) {
-		char* szProto = (char *) CallService( MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0 );
+		char* szProto = ( char* ) CallService( MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0 );
 		if ( szProto != NULL && !lstrcmpiA( szProto, IRCPROTONAME )) {
 			if ( DBGetContactSettingByte( hContact, IRCPROTONAME, "ChatRoom", 0 ) == 0 ) {
 				if ( DBGetContactSettingByte(hContact, IRCPROTONAME, "DCC", 0 ) != 0 ) {
@@ -181,7 +181,7 @@ HANDLE CList_FindContact (CONTACT* user)
 	DBVARIANT dbv5;	
 	HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 	while (hContact) {
-		szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
+		szProto = ( char* ) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 		if ( szProto != NULL && !lstrcmpiA( szProto, IRCPROTONAME )) {
 			if ( DBGetContactSettingByte( hContact, IRCPROTONAME, "ChatRoom", 0) == 0) {
 				HANDLE hContact_temp = NULL;

@@ -151,18 +151,17 @@ static void InitMenus(void)
 
 static int Service_FileAllow(WPARAM wParam,LPARAM lParam)
 {
-	CCSDATA *ccs = (CCSDATA *) lParam;
-	DCCINFO * di = (DCCINFO *) ccs->wParam;;
+	CCSDATA* ccs = ( CCSDATA* )lParam;
+	DCCINFO* di = ( DCCINFO* )ccs->wParam;;
 
-	if (g_ircSession) {
-		String sFile = (String)(char *)ccs->lParam + di->sFile;
-		di->sFileAndPath = sFile;
-		di->sPath = (char *)ccs->lParam;
+	if ( g_ircSession ) {
+		TCHAR* ptszFileName = mir_a2t_cp(( char* )ccs->lParam, g_ircSession.getCodepage());
+		di->sPath = ptszFileName;
+		di->sFileAndPath = di->sPath + di->sFile;
+		mir_free( ptszFileName );
 
-		CDccSession * dcc = new CDccSession(di);
-
-		g_ircSession.AddDCCSession(di, dcc);
-
+		CDccSession* dcc = new CDccSession( di );
+		g_ircSession.AddDCCSession( di, dcc );
 		dcc->Connect();
 	}
 	else delete di;
@@ -172,8 +171,8 @@ static int Service_FileAllow(WPARAM wParam,LPARAM lParam)
 
 static int Service_FileDeny(WPARAM wParam,LPARAM lParam)
 {
-	CCSDATA *ccs = (CCSDATA *) lParam;
-	DCCINFO * di = (DCCINFO *) ccs->wParam;
+	CCSDATA* ccs = ( CCSDATA* )lParam;
+	DCCINFO* di = ( DCCINFO* )ccs->wParam;
 
 	delete di;
 	return 0;
@@ -181,10 +180,10 @@ static int Service_FileDeny(WPARAM wParam,LPARAM lParam)
 
 static int Service_FileCancel(WPARAM wParam,LPARAM lParam)
 {
-	CCSDATA *ccs = (CCSDATA *) lParam;
-	DCCINFO *di = (DCCINFO *) ccs->wParam;
+	CCSDATA* ccs = ( CCSDATA* )lParam;
+	DCCINFO* di = ( DCCINFO* )ccs->wParam;
 
-	CDccSession * dcc = g_ircSession.FindDCCSession(di);
+	CDccSession* dcc = g_ircSession.FindDCCSession(di);
 
 	if (dcc) {
 		InterlockedExchange(&dcc->dwWhatNeedsDoing, (long)FILERESUME_CANCEL);
@@ -196,9 +195,9 @@ static int Service_FileCancel(WPARAM wParam,LPARAM lParam)
 
 static int Service_FileSend(WPARAM wParam,LPARAM lParam)
 {
-	CCSDATA *ccs = (CCSDATA *) lParam;
+	CCSDATA* ccs = ( CCSDATA* )lParam;
 	char **files = (char **) ccs->lParam;
-	DCCINFO * dci = NULL;
+	DCCINFO* dci = NULL;
 	int iPort = 0;
 	int index= 0;
 	DWORD size = 0;
@@ -244,20 +243,20 @@ static int Service_FileSend(WPARAM wParam,LPARAM lParam)
 		if ( !DBGetContactSettingTString( ccs->hContact, IRCPROTONAME, "Nick", &dbv )) {
 			// set up a basic DCCINFO struct and pass it to a DCC object
 			dci = new DCCINFO;
-			dci->sFileAndPath = files[index];
+			dci->sFileAndPath = (TString)_A2T( files[index], g_ircSession.getCodepage());
 
-			int i = dci->sFileAndPath.rfind("\\", dci->sFileAndPath.length());
+			int i = dci->sFileAndPath.rfind( _T("\\"), dci->sFileAndPath.length());
 			if (i != string::npos) {
 				dci->sPath = dci->sFileAndPath.substr(0, i+1);
 				dci->sFile = dci->sFileAndPath.substr(i+1, dci->sFileAndPath.length());
 			}
 
-			String sFileWithQuotes = dci->sFile;
+			TString sFileWithQuotes = dci->sFile;
 
 			// if spaces in the filename surround witrh quotes
-			if (sFileWithQuotes.find(' ', 0) != string::npos) {
-				sFileWithQuotes.insert(0, "\"");
-				sFileWithQuotes.insert(sFileWithQuotes.length(), "\"");
+			if ( sFileWithQuotes.find( ' ', 0 ) != string::npos ) {
+				sFileWithQuotes.insert( 0, _T("\""));
+				sFileWithQuotes.insert( sFileWithQuotes.length(), _T("\""));
 			}
 
 			dci->hContact = ccs->hContact;
@@ -268,42 +267,52 @@ static int Service_FileSend(WPARAM wParam,LPARAM lParam)
 			dci->dwSize = size;
 
 			// create new dcc object
-			CDccSession * dcc = new CDccSession(dci);
+			CDccSession* dcc = new CDccSession(dci);
 
 			// keep track of all objects created
 			g_ircSession.AddDCCSession(dci, dcc);
 
 			// need to make sure that %'s are doubled to avoid having chat interpret as color codes
-			String sFileCorrect = ReplaceString(dci->sFile, "%", "%%" );
+			TString sFileCorrect = ReplaceString(dci->sFile, _T("%"), _T("%%"));
 
 			// is it an reverse filetransfer (receiver acts as server)
 			if (dci->bReverse) {
 				TCHAR szTemp[256];
-				PostIrcMessage( _T("/CTCP %s DCC SEND %s 200 0 %u %u"), dci->sContactName.c_str(), sFileWithQuotes.c_str(), dci->dwSize, dcc->iToken);
+				PostIrcMessage( _T("/CTCP %s DCC SEND ") _T(TCHAR_STR_PARAM) _T(" 200 0 %u %u"), dci->sContactName.c_str(), sFileWithQuotes.c_str(), dci->dwSize, dcc->iToken);
 
-				mir_sntprintf(szTemp, SIZEOF(szTemp), TranslateT("DCC reversed file transfer request sent to %s [%s]"), dci->sContactName.c_str(), sFileCorrect.c_str());
+				mir_sntprintf(szTemp, SIZEOF(szTemp), 
+					TranslateT("DCC reversed file transfer request sent to %s [%s]"), 
+					dci->sContactName.c_str(), sFileCorrect.c_str());
 				DoEvent(GC_EVENT_INFORMATION, 0, g_ircSession.GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false);
 
-				mir_sntprintf(szTemp, SIZEOF(szTemp), _T("/NOTICE %s I am sending the file \'\002%s\002\' (%u kB) to you, please accept it. [Reverse transfer]"), dci->sContactName.c_str(), sFileCorrect.c_str(), dci->dwSize/1024);
-				if (prefs->SendNotice)
+				if (prefs->SendNotice) {
+					mir_sntprintf(szTemp, SIZEOF(szTemp), 
+						_T("/NOTICE %s I am sending the file \'\002%s\002\' (%u kB) to you, please accept it. [Reverse transfer]"),
+						dci->sContactName.c_str(), sFileCorrect.c_str(), dci->dwSize/1024);
 					PostIrcMessage(szTemp);
+				}
 			}
 			else { // ... normal filetransfer.
 				iPort = dcc->Connect();
-
-				if (iPort) {
+				if ( iPort ) {
 					TCHAR szTemp[256];
-					PostIrcMessage( _T("/CTCP %s DCC SEND %s %u %u %u"), dci->sContactName.c_str(), sFileWithQuotes.c_str(), ulAdr, iPort, dci->dwSize);
+					PostIrcMessage( _T("/CTCP %s DCC SEND %s %u %u %u"), 
+						dci->sContactName.c_str(), sFileWithQuotes.c_str(), ulAdr, iPort, dci->dwSize);
 
-					mir_sntprintf(szTemp, SIZEOF(szTemp), TranslateT("DCC file transfer request sent to %s [%s]"), dci->sContactName.c_str(), sFileCorrect.c_str());
+					mir_sntprintf(szTemp, SIZEOF(szTemp), 
+						TranslateT("DCC file transfer request sent to %s [%s]"), 
+						dci->sContactName.c_str(), sFileCorrect.c_str());
 					DoEvent(GC_EVENT_INFORMATION, 0, g_ircSession.GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false);
 
-					mir_sntprintf(szTemp, SIZEOF(szTemp), _T("/NOTICE %s I am sending the file \'\002%s\002\' (%u kB) to you, please accept it. [IP: %s]"), dci->sContactName.c_str(), sFileCorrect.c_str(), dci->dwSize/1024, ConvertIntegerToIP(ulAdr));
-
-					if ( prefs->SendNotice )
+					if ( prefs->SendNotice ) {
+						mir_sntprintf(szTemp, SIZEOF(szTemp), 
+							_T("/NOTICE %s I am sending the file \'\002%s\002\' (%u kB) to you, please accept it. [IP: %s]"),
+							dci->sContactName.c_str(), sFileCorrect.c_str(), dci->dwSize/1024, ConvertIntegerToIP(ulAdr));
 						PostIrcMessage(szTemp);
+					}
 				}
-				else DoEvent(GC_EVENT_INFORMATION, 0, g_ircSession.GetInfo().sNick.c_str(), TranslateT("DCC ERROR: Unable to bind local port"), NULL, NULL, NULL, true, false);
+				else DoEvent(GC_EVENT_INFORMATION, 0, g_ircSession.GetInfo().sNick.c_str(), 
+					TranslateT("DCC ERROR: Unable to bind local port"), NULL, NULL, NULL, true, false);
 			}
 
 			// fix for sending multiple files
@@ -329,7 +338,7 @@ static int Service_FileSend(WPARAM wParam,LPARAM lParam)
 static int Service_FileReceive(WPARAM wParam,LPARAM lParam)
 {
 	DBEVENTINFO dbei;
-	CCSDATA *ccs = (CCSDATA *) lParam;
+	CCSDATA* ccs = ( CCSDATA* )lParam;
 	PROTORECVEVENT *pre = (PROTORECVEVENT *) ccs->lParam;
 	char *szDesc, *szFile;
 
@@ -350,12 +359,12 @@ static int Service_FileReceive(WPARAM wParam,LPARAM lParam)
 
 static int Service_FileResume(WPARAM wParam,LPARAM lParam)
 {
-	DCCINFO * di = (DCCINFO *) wParam;
+	DCCINFO* di = ( DCCINFO* )wParam;
 	PROTOFILERESUME * pfr = (PROTOFILERESUME *) lParam;
 
 	long i = (long)pfr->action;
 
-	CDccSession * dcc = g_ircSession.FindDCCSession(di);
+	CDccSession* dcc = g_ircSession.FindDCCSession(di);
 	if (dcc) {
 		InterlockedExchange(&dcc->dwWhatNeedsDoing, i);
 		if (pfr->action == FILERESUME_RENAME) {
@@ -369,7 +378,7 @@ static int Service_FileResume(WPARAM wParam,LPARAM lParam)
 			char * pszTemp = NULL;;
 			FILE * hFile = NULL;
 
-			hFile = fopen(di->sFileAndPath.c_str(), "rb");
+			hFile = _tfopen(di->sFileAndPath.c_str(), _T("rb"));
 			if (hFile) {
 				fseek(hFile,0,SEEK_END);
 				dwPos = ftell(hFile);
@@ -377,12 +386,12 @@ static int Service_FileResume(WPARAM wParam,LPARAM lParam)
 				fclose(hFile); hFile = NULL;
 			}
 
-			String sFileWithQuotes = di->sFile;
+			TString sFileWithQuotes = di->sFile;
 
 			// if spaces in the filename surround witrh quotes
-			if (sFileWithQuotes.find(' ', 0) != string::npos) {
-				sFileWithQuotes.insert(0, "\"");
-				sFileWithQuotes.insert(sFileWithQuotes.length(), "\"");
+			if (sFileWithQuotes.find( ' ', 0 ) != string::npos ) {
+				sFileWithQuotes.insert( 0, _T("\""));
+				sFileWithQuotes.insert( sFileWithQuotes.length(), _T("\""));
 			}
 
 			if (di->bReverse)
@@ -407,11 +416,11 @@ static int Service_EventDoubleclicked(WPARAM wParam,LPARAM lParam)
 	CLISTEVENT* pcle = (CLISTEVENT*)lParam;
 
 	if (DBGetContactSettingByte((HANDLE) pcle->hContact, IRCPROTONAME, "DCC", 0) != 0) {
-		DCCINFO* pdci = (DCCINFO *) pcle->lParam;
+		DCCINFO* pdci = ( DCCINFO* )pcle->lParam;
 		HWND hWnd = CreateDialogParam(g_hInstance,MAKEINTRESOURCE(IDD_MESSAGEBOX),NULL,MessageboxWndProc, (LPARAM)pdci);
 		TCHAR szTemp[500];
 		mir_sntprintf( szTemp, SIZEOF(szTemp), TranslateT("%s (%s) is requesting a client-to-client chat connection."), 
-			pdci->sContactName.c_str(), (TCHAR*)_A2T(pdci->sHostmask.c_str()));
+			pdci->sContactName.c_str(), pdci->sHostmask.c_str());
 		SetDlgItemText( hWnd, IDC_TEXT, szTemp );
 		ShowWindow( hWnd, SW_SHOW );
 		return 1;
@@ -870,7 +879,7 @@ int Service_GCEventHook(WPARAM wParam,LPARAM lParam)
 							PROTOSEARCHRESULT psr;
 							ZeroMemory(&psr, sizeof(psr));
 							psr.cbSize = sizeof(psr);
-							psr.nick = (char *)gch->ptszUID;
+							psr.nick = ( char* )gch->ptszUID;
 							ADDCONTACTSTRUCT acs;
 							ZeroMemory(&acs, sizeof(acs));
 							acs.handleType = HANDLE_SEARCHRESULT;
@@ -1003,7 +1012,7 @@ static int Service_MenuPreBuild(WPARAM wParam,LPARAM lParam)
 	clmi.cbSize = sizeof( clmi );
 	clmi.flags = CMIM_FLAGS | CMIM_NAME | CMIM_ICON;
 
-	char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) wParam, 0);
+	char *szProto = ( char* ) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) wParam, 0);
 	if (szProto && !lstrcmpiA(szProto, IRCPROTONAME)) {
 		if (DBGetContactSettingByte(hContact, IRCPROTONAME, "ChatRoom", 0) == GCW_CHATROOM) {
 			clmi.icolibItem = GetIconHandle(IDI_PART);
@@ -1104,7 +1113,7 @@ static int Service_GetCaps(WPARAM wParam,LPARAM lParam)
 
 static int Service_GetName(WPARAM wParam,LPARAM lParam)
 {
-	lstrcpynA((char *) lParam, ALTIRCPROTONAME, wParam);
+	lstrcpynA(( char* ) lParam, ALTIRCPROTONAME, wParam);
 	return 0;
 }
 
@@ -1123,7 +1132,7 @@ static void __cdecl AckBasicSearch(void * pszNick)
 	PROTOSEARCHRESULT psr;
 	ZeroMemory(&psr, sizeof(psr));
 	psr.cbSize = sizeof(psr);
-	psr.nick = (char *)pszNick;
+	psr.nick = ( char* )pszNick;
 	ProtoBroadcastAck(IRCPROTONAME, NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);
 	ProtoBroadcastAck(IRCPROTONAME, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 }
@@ -1377,7 +1386,7 @@ static int Service_GetStatus(WPARAM wParam,LPARAM lParam)
 static int Service_SetAwayMsg(WPARAM wParam, LPARAM lParam)
 {
 	if ( wParam != ID_STATUS_ONLINE && wParam != ID_STATUS_INVISIBLE && wParam != ID_STATUS_FREECHAT && wParam != ID_STATUS_CONNECTING && wParam != ID_STATUS_OFFLINE) {
-		TString newStatus = _A2T((char *)lParam);
+		TString newStatus = _A2T(( char* )lParam, g_ircSession.getCodepage());
 		if ( StatusMessage.empty() || lParam == NULL || StatusMessage != ReplaceString( newStatus, _T("\r\n"), _T(" "))) {
 			if (lParam == NULL ||  *(char*)lParam == '\0')
 				StatusMessage = _T(STR_AWAYMESSAGE);
@@ -1412,7 +1421,7 @@ static void __cdecl AckMessageSuccess(void * lParam)
 
 static int Service_GetMessFromSRMM(WPARAM wParam, LPARAM lParam)
 {
-	CCSDATA *ccs = (CCSDATA *) lParam;
+	CCSDATA* ccs = ( CCSDATA* )lParam;
 
 	BYTE bDcc = DBGetContactSettingByte(ccs->hContact, IRCPROTONAME, "DCC", 0) ;
 	WORD wStatus = DBGetContactSettingWord(ccs->hContact, IRCPROTONAME, "Status", ID_STATUS_OFFLINE) ;
@@ -1455,7 +1464,7 @@ static int Service_GetMessFromSRMM(WPARAM wParam, LPARAM lParam)
 
 static int Service_GetAwayMessage(WPARAM wParam, LPARAM lParam)
 {
-	CCSDATA *ccs = (CCSDATA *) lParam;
+	CCSDATA* ccs = ( CCSDATA* )lParam;
 	WhoisAwayReply = _T("");
 	DBVARIANT dbv;
 

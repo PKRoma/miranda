@@ -120,11 +120,15 @@ using namespace irc;
 struct _A2T
 {
 	_A2T( const char* s ) :
-		buf( mir_a2t(s) )
+		buf( mir_a2t( s ))
+		{}
+
+	_A2T( const char* s, int cp ) :
+		buf( mir_a2t_cp( s, cp ))
 		{}
 
 	_A2T( const String& s ) :
-		buf( mir_a2t(s.c_str()))
+		buf( mir_a2t( s.c_str() ))
 		{}
 
 	~_A2T()
@@ -146,6 +150,10 @@ struct _T2A
 {
 	_T2A( const TCHAR* s ) :
 		buf( mir_t2a(s) )
+		{}
+
+	_T2A( const TCHAR* s, int cp ) :
+		buf( mir_t2a_cp( s, cp ))
 		{}
 
 	_T2A( const TString& s ) :

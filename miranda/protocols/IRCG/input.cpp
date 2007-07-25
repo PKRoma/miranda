@@ -633,8 +633,8 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 					dci->iType = DCC_CHAT;
 					dci->bSender = true;
 
-					CDccSession * dcc = new CDccSession(dci);
-					CDccSession * olddcc = g_ircSession.FindDCCSession(hContact);
+					CDccSession* dcc = new CDccSession(dci);
+					CDccSession* olddcc = g_ircSession.FindDCCSession(hContact);
 					if ( olddcc )
 						olddcc->Disconnect();
 					g_ircSession.AddDCCSession(hContact, dcc);
