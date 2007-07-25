@@ -464,11 +464,9 @@ int CIrcSession::NLSend( const TCHAR* fmt, ...)
 
 	TCHAR szBuf[1024*4];
 	mir_vsntprintf(szBuf, SIZEOF(szBuf), fmt, marker);
-	//!!!!!!!!!!!!!!!!!!!!
-	char* buf = mir_t2a( szBuf );
-
 	va_end(marker);
 
+	char* buf = mir_t2a_cp( szBuf, getCodepage());
 	int result = NLSend((unsigned char*)buf, strlen(buf));
 	mir_free( buf );
 	return result;
