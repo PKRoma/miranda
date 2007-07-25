@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 CIrcSession       g_ircSession = NULL;   // Representation of the IRC-connection
 CMyMonitor*       monitor;               // Object that processes data from the IRC server
-char*             IRCPROTONAME = NULL; 
+char*             IRCPROTONAME = NULL;
 char*             ALTIRCPROTONAME = NULL;
 char*             pszServerFile = NULL;
 char              mirandapath[MAX_PATH];
@@ -31,8 +31,8 @@ DWORD             mirVersion = NULL;
 CRITICAL_SECTION  cs;
 CRITICAL_SECTION  m_gchook;
 PLUGINLINK*       pluginLink;
-HINSTANCE         g_hInstance = NULL;	
-PREFERENCES*      prefs;	
+HINSTANCE         g_hInstance = NULL;
+PREFERENCES*      prefs;
 
 HMODULE				m_ssleay32 = NULL;
 
@@ -41,7 +41,7 @@ MM_INTERFACE		mmi;
 
 // Information about the plugin
 PLUGININFOEX pluginInfo =
-{						
+{
 	sizeof( PLUGININFOEX ),
 	"IRC Protocol",
 	PLUGIN_MAKE_VERSION( 0,7,0,1 ),
@@ -50,10 +50,10 @@ PLUGININFOEX pluginInfo =
 	"ghazan@miranda-im.org",
 	"© 2003-2007 Jurgen Persson, George Hazan",
 	"http://www.miranda-im.org",
-	0,	
+	UNICODE_AWARE,
 	0,
 	{0xb529402b, 0x53ba, 0x4c81, { 0x9e, 0x27, 0xd4, 0x31, 0xeb, 0xe8, 0xec, 0x36 }} //{B529402B-53BA-4c81-9E27-D431EBE8EC36}
-}; 
+};
 
 extern "C" BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
 {
