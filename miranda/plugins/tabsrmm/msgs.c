@@ -36,9 +36,8 @@ $Id$
 
 static char *relnotes[] = {
     "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
-    "\\par\t\\b\\ul1 Release notes for version 1.1.1.0\\b0\\ul0\\par ",
-    "*\tSupport for new UTF-8 message storage added.\\par",
-    "*\tNew event filter for group chats (per channel settings for popups and tray notifications added).\\par",
+    "\\par\t\\b\\ul1 Release notes for version 1.1.1.2\\b0\\ul0\\par ",
+    "*\tBugfixes (quoting, message grouping).\\par",
     NULL
 };
 

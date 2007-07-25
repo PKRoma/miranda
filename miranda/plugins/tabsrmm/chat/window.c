@@ -77,7 +77,7 @@ static struct _tagbtns { int id; TCHAR *szTip;} _btns[] = {
 		IDC_CHAT_HISTORY, _T("Show history"),
 		IDC_SHOWNICKLIST, _T("Toggle nick list"),
 		IDC_CHANMGR, _T("Channel manager"),
-		IDC_FILTER, _T("Event filter"),
+		IDC_FILTER, _T("Event filter - right click to setup, left click to activate/deactivate"),
 		IDC_CHAT_CLOSE, _T("Close session"),
 		IDOK, _T("Send message"),
 		-1, NULL

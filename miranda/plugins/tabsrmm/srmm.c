@@ -55,7 +55,7 @@ PLUGININFOEX pluginInfo = {
         "tabSRMsg",
     #endif    
 #endif
-    PLUGIN_MAKE_VERSION(1, 1, 1, 0),
+    PLUGIN_MAKE_VERSION(1, 1, 1, 2),
     "Chat module for instant messaging and group chat, offering a tabbed interface and many advanced features.",
     "The Miranda developers team",
     "silvercircle@gmail.com",
@@ -85,7 +85,7 @@ PLUGININFO oldPluginInfo = {
         "tabSRMsg",
     #endif    
 #endif
-    PLUGIN_MAKE_VERSION(1, 1, 1, 0),
+    PLUGIN_MAKE_VERSION(1, 1, 1, 2),
     "Chat module for instant messaging and group chat, offering a tabbed interface and many advanced features.",
     "The Miranda developers team",
     "silvercircle@gmail.com",
@@ -105,7 +105,7 @@ __declspec(dllexport)
      PLUGININFOEX *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
     g_mirandaVersion = mirandaVersion;
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 0))
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 6, 0, 0))
         return NULL;
     return &pluginInfo;
 }
@@ -114,7 +114,7 @@ __declspec(dllexport)
      PLUGININFO *MirandaPluginInfo(DWORD mirandaVersion)
 {
     g_mirandaVersion = mirandaVersion;
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 0))
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 6, 0, 0))
         return NULL;
     return &oldPluginInfo;
 }
