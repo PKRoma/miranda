@@ -885,7 +885,13 @@ bool CMyMonitor::IsCTCP( const CIrcMessage* pmsg )
 
 			// incoming VERSION
 			else if (pmsg->m_bIncoming && command == _T("version")) {
-				PostIrcMessage( _T("/NOTICE %s \001VERSION Miranda IM %s (IRC v %s), (c) J Persson 2003 - 2005\001"), pmsg->prefix.sNick.c_str(), _T("%mirver"), _T("%version"));
+				PostIrcMessage( _T("/NOTICE %s \001VERSION Miranda IM %s (IRC v.%s%s), (c) 2003-07 J.Persson, G.Hazan\001"), 
+					pmsg->prefix.sNick.c_str(), _T("%mirver"), _T("%version"),
+					#if defined( _UNICODE )
+						_T(" Unicode"));
+					#else
+						"" );
+					#endif
 
 				TCHAR temp[300];
 				mir_sntprintf( temp, SIZEOF(temp), TranslateT("CTCP VERSION requested by %s"), pmsg->prefix.sNick.c_str());
