@@ -164,8 +164,4 @@ BOOL ShowMessage (const CIrcMessage* pmsg)
 		return true;
 	}
 	return false;
-
 }
-
-
-

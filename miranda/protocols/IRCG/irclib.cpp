@@ -131,7 +131,7 @@ end_of_prefix :
 		++p2;
 
 	sCommand.assign(p1, p2 - p1);
-	strupr(( char* )sCommand.c_str());
+	_tcsupr(( TCHAR* )sCommand.c_str());
 	while( *p2 && *p2 == ' ' )
 		++p2;
 	p1 = p2;
