@@ -48,24 +48,27 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="3"
-				InlineFunctionExpansion="1"
+				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="2"
+				OmitFramePointers="true"
 				EnableFiberSafeOptimizations="false"
+				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS;_USE_32BIT_TIME_T"
 				StringPooling="true"
 				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="false"
+				EnableFunctionLevelLinking="true"
 				EnableEnhancedInstructionSet="0"
 				DefaultCharIsUnsigned="true"
+				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
-				AssemblerOutput="2"
+				AssemblerListingLocation=""
 				BrowseInformation="0"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
-				DebugInformationFormat="1"
+				DebugInformationFormat="3"
 				CompileAs="0"
 				DisableSpecificWarnings="4996"
 			/>
@@ -85,17 +88,16 @@
 				IgnoreImportLibrary="true"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib"
-				OutputFile="../../bin/release/ansi/Plugins/$(ProjectName).dll"
-				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				IgnoreAllDefaultLibraries="false"
 				DelayLoadDLLs="gdiplus.dll"
 				GenerateDebugInformation="true"
-				GenerateMapFile="true"
+				GenerateMapFile="false"
+				MapFileName=""
 				MapExports="false"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				OptimizeForWindows98="1"
+				LinkTimeCodeGeneration="1"
 				BaseAddress=""
 			/>
 			<Tool
@@ -162,10 +164,13 @@
 				GeneratePreprocessedFile="0"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
+				EnableFunctionLevelLinking="true"
 				DefaultCharIsUnsigned="true"
+				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
-				BrowseInformation="1"
+				AssemblerListingLocation=""
+				BrowseInformation="0"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
@@ -188,12 +193,12 @@
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib"
 				ShowProgress="0"
-				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories=""
 				DelayLoadDLLs="gdiplus.dll"
 				GenerateDebugInformation="true"
 				GenerateMapFile="false"
+				MapFileName=""
 				BaseAddress=""
 			/>
 			<Tool
@@ -258,11 +263,17 @@
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS;_USE_32BIT_TIME_T"
 				GeneratePreprocessedFile="0"
+				StringPooling="false"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
+				EnableFunctionLevelLinking="true"
+				FloatingPointModel="0"
 				DefaultCharIsUnsigned="true"
+				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
+				AssemblerListingLocation=""
+				BrowseInformation="0"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
@@ -285,12 +296,13 @@
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib"
 				ShowProgress="0"
-				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories=""
 				DelayLoadDLLs="gdiplus.dll"
 				GenerateDebugInformation="true"
+				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
 				GenerateMapFile="false"
+				MapFileName=""
 				BaseAddress=""
 			/>
 			<Tool
@@ -352,7 +364,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="3"
-				InlineFunctionExpansion="1"
+				InlineFunctionExpansion="2"
 				FavorSizeOrSpeed="2"
 				OmitFramePointers="true"
 				WholeProgramOptimization="true"
@@ -360,15 +372,17 @@
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS;_USE_32BIT_TIME_T"
 				StringPooling="true"
 				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="false"
+				EnableFunctionLevelLinking="true"
 				EnableEnhancedInstructionSet="0"
 				DefaultCharIsUnsigned="true"
+				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
-				AssemblerOutput="2"
+				AssemblerListingLocation=""
+				BrowseInformation="0"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
-				DebugInformationFormat="1"
+				DebugInformationFormat="3"
 				CompileAs="0"
 				DisableSpecificWarnings="4996"
 			/>
@@ -388,17 +402,18 @@
 				IgnoreImportLibrary="true"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib"
-				LinkIncremental="0"
 				SuppressStartupBanner="true"
 				AdditionalManifestDependencies="type=&apos;Win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;X86&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
 				IgnoreAllDefaultLibraries="false"
 				DelayLoadDLLs="gdiplus.dll"
 				GenerateDebugInformation="true"
-				GenerateMapFile="true"
+				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
+				GenerateMapFile="false"
+				MapFileName=""
 				MapExports="false"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				OptimizeForWindows98="1"
+				LinkTimeCodeGeneration="1"
 				BaseAddress=""
 			/>
 			<Tool
@@ -568,6 +583,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="2"
 						PrecompiledHeaderThrough="commonheaders.h"
 					/>
 				</FileConfiguration>
@@ -576,6 +592,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="2"
 						PrecompiledHeaderThrough="commonheaders.h"
 					/>
 				</FileConfiguration>
@@ -588,7 +605,6 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="2"
 						PrecompiledHeaderThrough="commonheaders.h"
 					/>
 				</FileConfiguration>
@@ -597,7 +613,6 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="2"
 						PrecompiledHeaderThrough="commonheaders.h"
 					/>
 				</FileConfiguration>

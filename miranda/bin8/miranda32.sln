@@ -48,7 +48,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FreeImage", "..\plugins\fre
 		{E2A369CD-EDA3-414F-8AD0-E732CD7EE68C} = {E2A369CD-EDA3-414F-8AD0-E732CD7EE68C}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IRC", "..\protocols\IRCG\IRC_8.vcproj", "{3A12F777-56A8-42EC-BD17-8F325524241E}"
+EndProject
 Global
+	GlobalSection(DPCodeReviewSolutionGUID) = preSolution
+		DPCodeReviewSolutionGUID = {00000000-0000-0000-0000-000000000000}
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug Unicode|Win32 = Debug Unicode|Win32
 		Debug|Win32 = Debug|Win32
@@ -224,11 +229,16 @@ Global
 		{D0C4EACD-F264-4CFA-9AFC-3918FEC31A9A}.Release Unicode|Win32.Build.0 = Release Unicode|Win32
 		{D0C4EACD-F264-4CFA-9AFC-3918FEC31A9A}.Release|Win32.ActiveCfg = Release|Win32
 		{D0C4EACD-F264-4CFA-9AFC-3918FEC31A9A}.Release|Win32.Build.0 = Release|Win32
+		{3A12F777-56A8-42EC-BD17-8F325524241E}.Debug Unicode|Win32.ActiveCfg = Debug Unicode|Win32
+		{3A12F777-56A8-42EC-BD17-8F325524241E}.Debug Unicode|Win32.Build.0 = Debug Unicode|Win32
+		{3A12F777-56A8-42EC-BD17-8F325524241E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3A12F777-56A8-42EC-BD17-8F325524241E}.Debug|Win32.Build.0 = Debug|Win32
+		{3A12F777-56A8-42EC-BD17-8F325524241E}.Release Unicode|Win32.ActiveCfg = Release Unicode|Win32
+		{3A12F777-56A8-42EC-BD17-8F325524241E}.Release Unicode|Win32.Build.0 = Release Unicode|Win32
+		{3A12F777-56A8-42EC-BD17-8F325524241E}.Release|Win32.ActiveCfg = Release|Win32
+		{3A12F777-56A8-42EC-BD17-8F325524241E}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(DPCodeReviewSolutionGUID) = preSolution
-		DPCodeReviewSolutionGUID = {00000000-0000-0000-0000-000000000000}
 	EndGlobalSection
 EndGlobal
