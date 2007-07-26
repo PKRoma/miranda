@@ -1295,18 +1295,19 @@ void DisconnectFromServer(void)
 
 static int Service_SetStatus(WPARAM wParam,LPARAM lParam)
 {
-	if (!bChatInstalled) {
+	if ( !bChatInstalled ) {
 		MIRANDASYSTRAYNOTIFY msn;
 		msn.cbSize = sizeof(MIRANDASYSTRAYNOTIFY);
 		msn.szProto = IRCPROTONAME;
-		msn.szInfoTitle = Translate("Information");
-		msn.szInfo = Translate("This protocol is dependent on another plugin named \'Chat\'\nPlease download it from the Miranda IM website!");
-		msn.dwInfoFlags = NIIF_ERROR;
+		msn.tszInfoTitle = TranslateT( "Information" );
+		msn.tszInfo = TranslateT( "This protocol is dependent on another plugin named \'Chat\'\nPlease download it from the Miranda IM website!" );
+		msn.dwInfoFlags = NIIF_ERROR | NIIF_INTERN_UNICODE;
 		msn.uTimeout = 15000;
-		CallService(MS_CLIST_SYSTRAY_NOTIFY, (WPARAM)NULL,(LPARAM) &msn);
+		CallService( MS_CLIST_SYSTRAY_NOTIFY, 0, ( LPARAM )&msn );
 		return 0;
 	}
-	if (wParam != ID_STATUS_OFFLINE && lstrlenA(prefs->Network) <1) {
+
+	if ( wParam != ID_STATUS_OFFLINE && lstrlenA(prefs->Network) < 1 ) {
 		if (lstrlen(prefs->Nick) > 0 && !prefs->DisableDefaultServer) {
 			HWND hwnd=CreateDialog(g_hInstance,MAKEINTRESOURCE(IDD_QUICKCONN),NULL,QuickWndProc);
 			SetWindowTextA(hwnd, "Miranda IRC");
@@ -1322,11 +1323,11 @@ static int Service_SetStatus(WPARAM wParam,LPARAM lParam)
 
 	if (wParam != ID_STATUS_OFFLINE && (lstrlen(prefs->Nick) <1 || lstrlen(prefs->UserID) < 1 || lstrlen(prefs->Name) < 1)) {
 		MIRANDASYSTRAYNOTIFY msn;
-		msn.cbSize = sizeof(MIRANDASYSTRAYNOTIFY);
+		msn.cbSize = sizeof( MIRANDASYSTRAYNOTIFY );
 		msn.szProto = IRCPROTONAME;
-		msn.szInfoTitle = Translate("IRC error");
-		msn.szInfo = Translate("Connection can not be established! You have not completed all necessary fields (Nickname, User ID and Name)." );
-		msn.dwInfoFlags = NIIF_ERROR;
+		msn.tszInfoTitle = TranslateT( "IRC error" );
+		msn.tszInfo = TranslateT( "Connection can not be established! You have not completed all necessary fields (Nickname, User ID and Name)." );
+		msn.dwInfoFlags = NIIF_ERROR | NIIF_INTERN_UNICODE;
 		msn.uTimeout = 15000;
 		CallService(MS_CLIST_SYSTRAY_NOTIFY, (WPARAM)NULL,(LPARAM) &msn);
 		return 0;

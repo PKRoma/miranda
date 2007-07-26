@@ -1953,18 +1953,18 @@ bool CMyMonitor::OnIrc_ERROR( const CIrcMessage* pmsg )
 		MIRANDASYSTRAYNOTIFY msn;
 		msn.cbSize = sizeof(MIRANDASYSTRAYNOTIFY);
 		msn.szProto = IRCPROTONAME;
-		msn.szInfoTitle = Translate("IRC error");
+		msn.tszInfoTitle = TranslateT("IRC error");
 		
 		TString S;
 		if ( pmsg->parameters.size() > 0 ) 
 			S = DoColorCodes( pmsg->parameters[0].c_str(), TRUE, FALSE );
 		else
-			S = TranslateT("Unknown");
+			S = TranslateT( "Unknown" );
 
-		msn.szInfo = ( char* )S.c_str();
+		msn.tszInfo = ( TCHAR* )S.c_str();
 		msn.dwInfoFlags = NIIF_ERROR | NIIF_INTERN_UNICODE;
 		msn.uTimeout = 15000;
-		CallService( MS_CLIST_SYSTRAY_NOTIFY, (WPARAM)NULL, (LPARAM)&msn);
+		CallService( MS_CLIST_SYSTRAY_NOTIFY, 0, ( LPARAM )&msn );
 	}
 	ShowMessage( pmsg );
 	return true;	
