@@ -989,9 +989,9 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 		// we check if is message delivery failure
 		int id = JabberGetPacketID( node );
 		JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, from );
-		if ( item != NULL && id == item->idMsgAckPending ) { // yes, it is
+		if ( item != NULL ) { // yes, it is
 			char *errText = t2a(JabberErrorMsg(errorNode));
-			JSendBroadcast( JabberHContactFromJID( from ), ACKTYPE_MESSAGE, ACKRESULT_FAILED, ( HANDLE ) 1, (LPARAM)errText );
+			JSendBroadcast( JabberHContactFromJID( from ), ACKTYPE_MESSAGE, ACKRESULT_FAILED, ( HANDLE ) id, (LPARAM)errText );
 			mir_free(errText);
 		}
 		return;
@@ -1160,9 +1160,8 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 						if ( !_tcsncmp( idNode->text, _T(JABBER_IQID), strlen( JABBER_IQID )) )
 							id = _ttoi(( idNode->text )+strlen( JABBER_IQID ));
 
-					if ( item != NULL )
-						if ( id == item->idMsgAckPending )
-							JSendBroadcast( JabberHContactFromJID( from ), ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE ) 1, 0 );
+					if ( id != -1 )
+						JSendBroadcast( JabberHContactFromJID( from ), ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE ) id, 0 );
 				}
 
 				if ( JabberXmlGetChild( xNode, "composing" ) != NULL )

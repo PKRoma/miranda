@@ -234,6 +234,7 @@ protected:
 				delete pSession;
 				return TRUE;
 			}
+			pTmp = pTmp->GetNext();
 		}
 		return FALSE;
 	}
@@ -257,7 +258,7 @@ protected:
 				pSession->SetNext( pSession->GetNext()->GetNext() );
 				pRetVal->SetNext( NULL );
 				delete pRetVal;
-				return TRUE;;
+				return TRUE;
 			}
 			pSession = pSession->GetNext();
 		}

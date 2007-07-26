@@ -1163,7 +1163,6 @@ static char PGP_EPILOG[] = "\r\n-----END PGP MESSAGE-----\r\n";
 int JabberSendMessage( WPARAM wParam, LPARAM lParam )
 {
 	CCSDATA *ccs = ( CCSDATA * ) lParam;
-	JABBER_LIST_ITEM *item;
 	int id;
 
 	DBVARIANT dbv;
@@ -1171,10 +1170,6 @@ int JabberSendMessage( WPARAM wParam, LPARAM lParam )
 		JSendBroadcast( ccs->hContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, ( HANDLE ) 1, 0 );
 		return 0;
 	}
-
-	// temporary fix for bug with fast sending 2 messages on slow connections
-	// previous message marked as delivered without waiting for real delivery ack
-	JSendBroadcast( ccs->hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE ) 1, 0 );
 
 	char* pszSrc = ( char* )ccs->lParam, *msg;
 	int  isEncrypted;
@@ -1198,6 +1193,8 @@ int JabberSendMessage( WPARAM wParam, LPARAM lParam )
 		msg = JabberTextEncodeW(( wchar_t* )&pszSrc[ strlen( pszSrc )+1 ] );
 	else
 		msg = JabberTextEncode( pszSrc );
+
+	int nSentMsgId = 0;
 
 	if ( msg != NULL ) {
 		char msgType[ 16 ];
@@ -1245,24 +1242,20 @@ int JabberSendMessage( WPARAM wParam, LPARAM lParam )
 
 			jabberThreadInfo->send( m );
 			mir_forkthread( JabberSendMessageAckThread, ccs->hContact );
+			nSentMsgId = 1;
 		}
 		else {
 			id = JabberSerialNext();
-			item = JabberListGetItemPtr( LIST_ROSTER, dbv.ptszVal );
-			if ( !item )
-				item = JabberListGetItemPtr( LIST_VCARD_TEMP, dbv.ptszVal );
-			if ( item )
-				item->idMsgAckPending = id;
-
 			m.addAttr( "to", szClientJid ); m.addAttrID( id );
 
 			XmlNode* x = m.addChild( "x" ); x->addAttr( "xmlns", JABBER_FEAT_MESSAGE_EVENTS );
 			x->addChild( "composing" ); x->addChild( "delivered" ); x->addChild( "offline" );
 			jabberThreadInfo->send( m );
+			nSentMsgId = id;
 	}	}
 
 	JFreeVariant( &dbv );
-	return 1;
+	return nSentMsgId;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

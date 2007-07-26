@@ -131,7 +131,6 @@ struct JABBER_LIST_ITEM
 	JABBER_SUBSCRIPTION subscription;
 	TCHAR* group;
 	char* photoFileName;
-	int idMsgAckPending;
 	TCHAR* messageEventIdStr;
 	BOOL wantComposingEvent;
 	WORD cap;	// See CLIENT_CAP_* above
