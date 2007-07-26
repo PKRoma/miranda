@@ -35,14 +35,20 @@
 #include <errno.h>
 #endif
 
-#undef EINPROGRESS
-#undef ENOTCONN
-#undef EINTR
+#ifdef EINPROGRESS
+# undef EINPROGRESS
+#endif
+#ifdef ENOTCONN
+# undef ENOTCONN
+#endif
+#ifdef EINTR
+# undef EINTR
+#endif
 #define EINPROGRESS WSAEINPROGRESS
 #define ENOTCONN    WSAENOTCONN
 #define EINTR       WSAEINTR
 #define ECONNRESET  WSAECONNRESET
-#define ENOTCONN	WSAENOTCONN
+#define ETIMEDOUT   WSAETIMEDOUT
 
 #define WNOHANG     WHOHANG
 #define SHUT_RDWR 2

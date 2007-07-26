@@ -1,4 +1,5 @@
-/* $Id: sha1.c,v 1.2 2007-03-19 23:16:24 wojtekka Exp $ */
+/* coding: UTF-8 */
+/* $Id: sha1.c,v 1.4 2007-07-20 23:00:50 wojtekka Exp $ */
 
 /*
  *  (C) Copyright 2007 Wojtek Kaniewski <wojtekka@irc.pl>
@@ -18,7 +19,15 @@
  *  USA.
  */
 
+/**
+ * \file sha1.c
+ *
+ * \brief Funkcje wyznaczania skrĂłtu SHA1
+ */
+#include "libgadu-config.h"
 #include "libgadu.h"
+
+/** \cond ignore */
 
 #if defined(GG_CONFIG_HAVE_OPENSSL) && !defined(GG_CONFIG_MIRANDA)
 
@@ -47,6 +56,19 @@ A million repetitions of "a"
 /* #define SHA1HANDSOFF * Copies data before messing with it. */
 
 #include <string.h>
+
+/* GG_CONFIG_MIRANDA // defined in "libgadu.h"
+typedef struct {
+    unsigned long state[5];
+    unsigned long count[2];
+    unsigned char buffer[64];
+} SHA_CTX;
+
+static void SHA1_Transform(unsigned long state[5], const unsigned char buffer[64]);
+static void SHA1_Init(SHA_CTX* context);
+static void SHA1_Update(SHA_CTX* context, const unsigned char* data, unsigned int len);
+static void SHA1_Final(unsigned char digest[20], SHA_CTX* context);
+*/
 
 #define rol(value, bits) (((value) << (bits)) | ((value) >> (32 - (bits))))
 
@@ -189,12 +211,16 @@ unsigned char finalcount[8];
 
 #endif /* GG_CONFIG_HAVE_OPENSSL */
 
+/** \endcond */
+
+/** \cond internal */
+
 /**
- * Liczy skrót SHA1 z ziarna i hasła.
+ * \internal Liczy skrĂłt SHA1 z ziarna i hasĹa.
  *
- * \param password Hasło
+ * \param password HasĹo
  * \param seed Ziarno
- * \param result Bufor na wynik funkcji skrótu (20 bajtów)
+ * \param result Bufor na wynik funkcji skrĂłtu (20 bajtĂłw)
  */
 void gg_login_hash_sha1(const char *password, uint32_t seed, uint8_t *result)
 {
@@ -209,9 +235,10 @@ void gg_login_hash_sha1(const char *password, uint32_t seed, uint8_t *result)
 }
 
 /**
- * \brief Liczy skrót SHA1 z pliku.
+ * \internal Liczy skrĂłt SHA1 z pliku.
  *
  * \param fd Deskryptor pliku
+ * \param result WskaĹşnik na skrĂłt
  *
  * \return 0 lub -1
  */
@@ -255,6 +282,6 @@ int gg_file_hash_sha1(int fd, uint8_t *result)
 		return -1;
 
 	return 0;
-
 }
 
+/** \endcond */
