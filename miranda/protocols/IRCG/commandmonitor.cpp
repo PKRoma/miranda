@@ -1693,12 +1693,12 @@ bool CMyMonitor::OnIrc_WHOIS_NAME( const CIrcMessage* pmsg )
 		SetWindowText(GetDlgItem(whois_hWnd, IDC_INFO_NAME), pmsg->parameters[5].c_str());	
 		SetWindowText(GetDlgItem(whois_hWnd, IDC_INFO_ADDRESS), pmsg->parameters[3].c_str());
 		SetWindowText(GetDlgItem(whois_hWnd, IDC_INFO_ID), pmsg->parameters[2].c_str());
-		SetWindowTextA(GetDlgItem(whois_hWnd, IDC_INFO_CHANNELS), '\0');
-		SetWindowTextA(GetDlgItem(whois_hWnd, IDC_INFO_SERVER), '\0');
-		SetWindowTextA(GetDlgItem(whois_hWnd, IDC_INFO_AWAY2), '\0');
-		SetWindowTextA(GetDlgItem(whois_hWnd, IDC_INFO_AUTH), '\0');
-		SetWindowTextA(GetDlgItem(whois_hWnd, IDC_INFO_OTHER), '\0');
-		SetWindowTextA(GetDlgItem(whois_hWnd, IDC_REPLY), '\0');
+		SetWindowTextA(GetDlgItem(whois_hWnd, IDC_INFO_CHANNELS), "");
+		SetWindowTextA(GetDlgItem(whois_hWnd, IDC_INFO_SERVER), "");
+		SetWindowTextA(GetDlgItem(whois_hWnd, IDC_INFO_AWAY2), "");
+		SetWindowTextA(GetDlgItem(whois_hWnd, IDC_INFO_AUTH), "");
+		SetWindowTextA(GetDlgItem(whois_hWnd, IDC_INFO_OTHER), "");
+		SetWindowTextA(GetDlgItem(whois_hWnd, IDC_REPLY), "");
 		SetWindowText(whois_hWnd, TranslateT("User information"));
 		EnableWindow(GetDlgItem(whois_hWnd, ID_INFO_QUERY), true);
 		ShowWindow(whois_hWnd, SW_SHOW);
@@ -1822,14 +1822,14 @@ bool CMyMonitor::OnIrc_WHOIS_NO_USER( const CIrcMessage* pmsg )
 			SetWindowText(GetDlgItem(whois_hWnd, IDC_INFO_NICK), pmsg->parameters[2].c_str());
 			SendMessage(GetDlgItem(whois_hWnd, IDC_INFO_NICK), CB_SETEDITSEL, 0,MAKELPARAM(0,-1));
 			SetWindowText(GetDlgItem(whois_hWnd, IDC_CAPTION), pmsg->parameters[2].c_str());	
-			SetWindowTextA(GetDlgItem(whois_hWnd, IDC_INFO_NAME), '\0');	
-			SetWindowTextA(GetDlgItem(whois_hWnd, IDC_INFO_ADDRESS), '\0');
-			SetWindowTextA(GetDlgItem(whois_hWnd, IDC_INFO_ID), '\0');
-			SetWindowTextA(GetDlgItem(whois_hWnd, IDC_INFO_CHANNELS), '\0');
-			SetWindowTextA(GetDlgItem(whois_hWnd, IDC_INFO_SERVER), '\0');
-			SetWindowTextA(GetDlgItem(whois_hWnd, IDC_INFO_AWAY2), '\0');
-			SetWindowTextA(GetDlgItem(whois_hWnd, IDC_INFO_AUTH), '\0');
-			SetWindowTextA(GetDlgItem(whois_hWnd, IDC_REPLY), '\0');
+			SetWindowTextA(GetDlgItem(whois_hWnd, IDC_INFO_NAME), "");	
+			SetWindowTextA(GetDlgItem(whois_hWnd, IDC_INFO_ADDRESS), "");
+			SetWindowTextA(GetDlgItem(whois_hWnd, IDC_INFO_ID), "");
+			SetWindowTextA(GetDlgItem(whois_hWnd, IDC_INFO_CHANNELS), "");
+			SetWindowTextA(GetDlgItem(whois_hWnd, IDC_INFO_SERVER), "");
+			SetWindowTextA(GetDlgItem(whois_hWnd, IDC_INFO_AWAY2), "");
+			SetWindowTextA(GetDlgItem(whois_hWnd, IDC_INFO_AUTH), "");
+			SetWindowTextA(GetDlgItem(whois_hWnd, IDC_REPLY), "");
 			EnableWindow(GetDlgItem(whois_hWnd, ID_INFO_QUERY), false);
 		}
 		

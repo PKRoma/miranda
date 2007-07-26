@@ -534,9 +534,9 @@ BOOL CALLBACK CtcpPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			int j = DBGetContactSettingWord(NULL, IRCPROTONAME, "DCCPacketSize", 1024*4);
 			char szTemp[10];
 			mir_snprintf(szTemp, sizeof(szTemp), "%u", j);
-			int i = SendDlgItemMessage( hwndDlg, IDC_COMBO, CB_SELECTSTRING, (WPARAM)-1,(LPARAM) szTemp);
+			int i = SendDlgItemMessageA( hwndDlg, IDC_COMBO, CB_SELECTSTRING, (WPARAM)-1,(LPARAM) szTemp);
 			if ( i == CB_ERR)
-				int i = SendDlgItemMessage( hwndDlg, IDC_COMBO, CB_SELECTSTRING, (WPARAM)-1,(LPARAM) "4096");
+				int i = SendDlgItemMessageA( hwndDlg, IDC_COMBO, CB_SELECTSTRING, (WPARAM)-1,(LPARAM) "4096");
 
 			if(prefs->DCCChatAccept == 1)
 				CheckDlgButton( hwndDlg, IDC_RADIO1, BST_CHECKED);

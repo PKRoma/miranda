@@ -39,7 +39,7 @@ BOOL CALLBACK MessageboxWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPar
 	case WM_INITDIALOG:
 		TranslateDialogDefault( hwndDlg);
 		pdci = ( DCCINFO* )lParam;
-		SendMessage(GetDlgItem( hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadImage(NULL,IDI_QUESTION,IMAGE_ICON,48, 48,LR_SHARED), 0);
+		SendDlgItemMessage( hwndDlg, IDC_LOGO,STM_SETICON,(LPARAM)(HICON)LoadImage(NULL,IDI_QUESTION,IMAGE_ICON,48, 48,LR_SHARED), 0);
 		break;
 		
 	case WM_COMMAND:
@@ -89,15 +89,15 @@ BOOL CALLBACK InfoWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			hFont = CreateFontIndirect( &lf );
 			SendDlgItemMessage( hwndDlg, IDC_CAPTION, WM_SETFONT, ( WPARAM )hFont, 0 );
 		}
-		SendMessage(GetDlgItem( hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO), 0);
-		SendMessage(GetDlgItem( hwndDlg, IDC_INFO_NAME), EM_SETREADONLY, true, 0);
-		SendMessage(GetDlgItem( hwndDlg, IDC_INFO_ID), EM_SETREADONLY, true, 0);
-		SendMessage(GetDlgItem( hwndDlg, IDC_INFO_ADDRESS), EM_SETREADONLY, true, 0);
-		SendMessage(GetDlgItem( hwndDlg, IDC_INFO_CHANNELS), EM_SETREADONLY, true, 0);
-		SendMessage(GetDlgItem( hwndDlg, IDC_INFO_AUTH), EM_SETREADONLY, true, 0);
-		SendMessage(GetDlgItem( hwndDlg, IDC_INFO_SERVER), EM_SETREADONLY, true, 0);
-		SendMessage(GetDlgItem( hwndDlg, IDC_INFO_AWAY2), EM_SETREADONLY, true, 0);
-		SendMessage(GetDlgItem( hwndDlg, IDC_INFO_OTHER), EM_SETREADONLY, true, 0);
+		SendDlgItemMessage( hwndDlg, IDC_LOGO, STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO), 0);
+		SendDlgItemMessage( hwndDlg, IDC_INFO_NAME, EM_SETREADONLY, true, 0);
+		SendDlgItemMessage( hwndDlg, IDC_INFO_ID, EM_SETREADONLY, true, 0);
+		SendDlgItemMessage( hwndDlg, IDC_INFO_ADDRESS, EM_SETREADONLY, true, 0);
+		SendDlgItemMessage( hwndDlg, IDC_INFO_CHANNELS, EM_SETREADONLY, true, 0);
+		SendDlgItemMessage( hwndDlg, IDC_INFO_AUTH, EM_SETREADONLY, true, 0);
+		SendDlgItemMessage( hwndDlg, IDC_INFO_SERVER, EM_SETREADONLY, true, 0);
+		SendDlgItemMessage( hwndDlg, IDC_INFO_AWAY2, EM_SETREADONLY, true, 0);
+		SendDlgItemMessage( hwndDlg, IDC_INFO_OTHER, EM_SETREADONLY, true, 0);
 		SendMessage( hwndDlg,WM_SETICON,ICON_BIG,(LPARAM)LoadIconEx(IDI_WHOIS)); // Tell the dialog to use it
 		break;
 
@@ -180,7 +180,7 @@ BOOL CALLBACK NickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			lf.lfWeight=FW_BOLD;
 			hFont=CreateFontIndirect(&lf);
 			SendDlgItemMessage( hwndDlg,IDC_CAPTION,WM_SETFONT,(WPARAM)hFont,0);
-			SendMessage(GetDlgItem( hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO), 0);
+			SendDlgItemMessage( hwndDlg, IDC_LOGO,STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO), 0);
 
 			DBVARIANT dbv;
   			if ( !DBGetContactSettingTString(NULL, IRCPROTONAME, "RecentNicks", &dbv)) {
@@ -344,7 +344,7 @@ BOOL CALLBACK ListWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		case LVN_COLUMNCLICK:
 			{
 				LPNMLISTVIEW lv = (LPNMLISTVIEW)lParam;
-				SendMessage(GetDlgItem( hwndDlg, IDC_INFO_LISTVIEW), LVM_SORTITEMS, (WPARAM)lv->iSubItem, (LPARAM)ListViewSort);
+				SendDlgItemMessage( hwndDlg, IDC_INFO_LISTVIEW, LVM_SORTITEMS, (WPARAM)lv->iSubItem, (LPARAM)ListViewSort);
 				SendMessage(list_hWnd, IRC_UPDATELIST, 0, 0);
 			}
 			break;
@@ -377,7 +377,7 @@ BOOL CALLBACK JoinWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			lf.lfWeight=FW_BOLD;
 			hFont=CreateFontIndirect(&lf);
 			SendDlgItemMessage( hwndDlg,IDC_CAPTION,WM_SETFONT,(WPARAM)hFont,0);
-			SendMessage(GetDlgItem( hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO), 0);
+			SendDlgItemMessage( hwndDlg, IDC_LOGO,STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO), 0);
 
 			DBVARIANT dbv;
   			if ( !DBGetContactSettingTString( NULL, IRCPROTONAME, "RecentChannels", &dbv)) {
@@ -464,7 +464,7 @@ BOOL CALLBACK InitWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			lf.lfWeight=FW_BOLD;
 			hFont=CreateFontIndirect(&lf);
 			SendDlgItemMessage( hwndDlg,IDC_CAPTION,WM_SETFONT,(WPARAM)hFont,0);
-			SendMessage(GetDlgItem( hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO), 0);
+			SendDlgItemMessage( hwndDlg, IDC_LOGO,STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO), 0);
 		}
 		break;
 
@@ -540,7 +540,7 @@ BOOL CALLBACK QuickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			lf.lfWeight=FW_BOLD;
 			hFont=CreateFontIndirect(&lf);
 			SendDlgItemMessage( hwndDlg,IDC_CAPTION,WM_SETFONT,(WPARAM)hFont,0);
-			SendMessage(GetDlgItem( hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO), 0);
+			SendDlgItemMessage( hwndDlg, IDC_LOGO,STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO), 0);
 			
 			char * p1 = pszServerFile;
 			char * p2 = pszServerFile;
@@ -603,13 +603,12 @@ BOOL CALLBACK QuickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				}
 				else EnableWindow(GetDlgItem( hwndDlg, IDNOK), false);
 					
-				SendMessage(GetDlgItem( hwndDlg, IDC_SERVER), EM_SETREADONLY, true, 0);
-				SendMessage(GetDlgItem( hwndDlg, IDC_PORT), EM_SETREADONLY, true, 0);
-				SendMessage(GetDlgItem( hwndDlg, IDC_PORT2), EM_SETREADONLY, true, 0);
+				SendDlgItemMessage( hwndDlg, IDC_SERVER, EM_SETREADONLY, true, 0);
+				SendDlgItemMessage( hwndDlg, IDC_PORT,   EM_SETREADONLY, true, 0);
+				SendDlgItemMessage( hwndDlg, IDC_PORT2,  EM_SETREADONLY, true, 0);
 
-				if (prefs->QuickComboSelection != -1)
-				{
-					SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_SETCURSEL, prefs->QuickComboSelection,0);				
+				if ( prefs->QuickComboSelection != -1 ) {
+					SendDlgItemMessage( hwndDlg, IDC_SERVERCOMBO, CB_SETCURSEL, prefs->QuickComboSelection,0);				
 					SendMessage( hwndDlg, WM_COMMAND, MAKEWPARAM(IDC_SERVERCOMBO, CBN_SELCHANGE), 0);
 				}
 				else
@@ -641,8 +640,8 @@ BOOL CALLBACK QuickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			GetDlgItemTextA( hwndDlg, IDC_PORT2,  prefs->PortEnd,    SIZEOF(prefs->PortEnd));
 			GetDlgItemTextA( hwndDlg, IDC_PASS,   prefs->Password,   SIZEOF(prefs->Password));
 			
-			int i = SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_GETCURSEL, 0, 0);
-			SERVER_INFO* pData = ( SERVER_INFO* )SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_GETITEMDATA, i, 0);
+			int i = SendDlgItemMessage( hwndDlg, IDC_SERVERCOMBO, CB_GETCURSEL, 0, 0);
+			SERVER_INFO* pData = ( SERVER_INFO* )SendDlgItemMessage( hwndDlg, IDC_SERVERCOMBO, CB_GETITEMDATA, i, 0);
 			if ( pData && (int)pData != CB_ERR ) {
 				lstrcpyA( prefs->Network, pData->Group ); 
 				if( m_ssleay32 )
@@ -654,7 +653,7 @@ BOOL CALLBACK QuickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			TCHAR windowname[20];
 			GetWindowText( hwndDlg, windowname, 20);
 			if ( lstrcmpi(windowname, _T("Miranda IRC")) == 0 ) {
-				prefs->ServerComboSelection = SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_GETCURSEL, 0, 0);
+				prefs->ServerComboSelection = SendDlgItemMessage( hwndDlg, IDC_SERVERCOMBO, CB_GETCURSEL, 0, 0);
 				DBWriteContactSettingDword(NULL,IRCPROTONAME,"ServerComboSelection",prefs->ServerComboSelection);
 				DBWriteContactSettingString(NULL,IRCPROTONAME,"ServerName",prefs->ServerName);
 				DBWriteContactSettingString(NULL,IRCPROTONAME,"PortStart",prefs->PortStart);
@@ -665,7 +664,7 @@ BOOL CALLBACK QuickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				DBWriteContactSettingString(NULL,IRCPROTONAME,"Network",prefs->Network);
 				DBWriteContactSettingByte(NULL,IRCPROTONAME,"UseSSL",prefs->iSSL);
 			}
-			prefs->QuickComboSelection = SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_GETCURSEL, 0, 0);
+			prefs->QuickComboSelection = SendDlgItemMessage( hwndDlg, IDC_SERVERCOMBO, CB_GETCURSEL, 0, 0);
 			DBWriteContactSettingDword(NULL,IRCPROTONAME,"QuickComboSelection",prefs->QuickComboSelection);
 			DisconnectFromServer();
 			ConnectToServer();
@@ -673,8 +672,8 @@ BOOL CALLBACK QuickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		}
 
 		if ( HIWORD(wParam) == CBN_SELCHANGE && LOWORD(wParam) == IDC_SERVERCOMBO ) {
-			int i = SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_GETCURSEL, 0, 0);
-			SERVER_INFO* pData = ( SERVER_INFO* )SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_GETITEMDATA, i, 0);
+			int i = SendDlgItemMessage( hwndDlg, IDC_SERVERCOMBO, CB_GETCURSEL, 0, 0);
+			SERVER_INFO* pData = ( SERVER_INFO* )SendDlgItemMessage( hwndDlg, IDC_SERVERCOMBO, CB_GETITEMDATA, i, 0);
 			if ( i != CB_ERR ) {
 				SetDlgItemTextA( hwndDlg,IDC_SERVER,pData->Address);
 				SetDlgItemTextA( hwndDlg,IDC_PORT,pData->PortStart);
@@ -704,9 +703,9 @@ BOOL CALLBACK QuickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SendDlgItemMessage( hwndDlg,IDC_CAPTION,WM_SETFONT,SendDlgItemMessage( hwndDlg,IDNOK,WM_GETFONT,0,0),0);
 			DeleteObject(hFont);				
 			
-			int j = (int) SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_GETCOUNT, 0, 0);
+			int j = (int) SendDlgItemMessage( hwndDlg, IDC_SERVERCOMBO, CB_GETCOUNT, 0, 0);
 			for ( int index2 = 0; index2 < j; index2++ ) {
-				SERVER_INFO* pData = ( SERVER_INFO* )SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_GETITEMDATA, index2, 0);
+				SERVER_INFO* pData = ( SERVER_INFO* )SendDlgItemMessage( hwndDlg, IDC_SERVERCOMBO, CB_GETITEMDATA, index2, 0);
 				delete []pData->Name;
 				delete []pData->Address;
 				delete []pData->PortStart;
@@ -736,10 +735,10 @@ int CALLBACK ListViewSort(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
 	lvm.iSubItem = lParamSort;
 	lvm.pszText = temp1;
 	lvm.cchTextMax = 511;
-	SendMessage(GetDlgItem(list_hWnd, IDC_INFO_LISTVIEW), LVM_GETITEM, 0, (LPARAM)&lvm);
+	SendDlgItemMessage(list_hWnd, IDC_INFO_LISTVIEW, LVM_GETITEM, 0, (LPARAM)&lvm);
 	lvm.iItem = lParam2;
 	lvm.pszText = temp2;
-	SendMessage(GetDlgItem(list_hWnd, IDC_INFO_LISTVIEW), LVM_GETITEM, 0, (LPARAM)&lvm);
+	SendDlgItemMessage(list_hWnd, IDC_INFO_LISTVIEW, LVM_GETITEM, 0, (LPARAM)&lvm);
 	if (lParamSort != 1){
 		if (lstrlen(temp1) != 0 && lstrlen(temp2) !=0)
 			return lstrcmpi(temp1, temp2);
@@ -914,7 +913,7 @@ BOOL CALLBACK QuestionWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 			lf.lfWeight=FW_BOLD;
 			hFont=CreateFontIndirect(&lf);
 			SendDlgItemMessage( hwndDlg,IDC_CAPTION,WM_SETFONT,(WPARAM)hFont,0);
-			SendMessage(GetDlgItem( hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO), 0);
+			SendDlgItemMessage( hwndDlg, IDC_LOGO,STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO), 0);
 		}
 		break;
 		
@@ -1037,16 +1036,16 @@ BOOL CALLBACK ManagerWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SendDlgItemMessage( hwndDlg,IDC_ADD,BM_SETIMAGE,IMAGE_ICON,(LPARAM)(HICON)LoadIconEx(IDI_ADD));
 			SendDlgItemMessage( hwndDlg,IDC_REMOVE,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_DELETE));
 			SendDlgItemMessage( hwndDlg,IDC_EDIT,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_RENAME));
-			SendMessage(GetDlgItem( hwndDlg,IDC_ADD), BUTTONADDTOOLTIP, (WPARAM)LPGEN("Add ban/invite/exception"), 0);
-			SendMessage(GetDlgItem( hwndDlg,IDC_EDIT), BUTTONADDTOOLTIP, (WPARAM)LPGEN("Edit selected ban/invite/exception"), 0);
-			SendMessage(GetDlgItem( hwndDlg,IDC_REMOVE), BUTTONADDTOOLTIP, (WPARAM)LPGEN("Delete selected ban/invite/exception"), 0);
+			SendDlgItemMessage( hwndDlg,IDC_ADD, BUTTONADDTOOLTIP, (WPARAM)LPGEN("Add ban/invite/exception"), 0);
+			SendDlgItemMessage( hwndDlg,IDC_EDIT, BUTTONADDTOOLTIP, (WPARAM)LPGEN("Edit selected ban/invite/exception"), 0);
+			SendDlgItemMessage( hwndDlg,IDC_REMOVE, BUTTONADDTOOLTIP, (WPARAM)LPGEN("Delete selected ban/invite/exception"), 0);
 
 			SendMessage( hwndDlg,WM_SETICON,ICON_BIG,(LPARAM)LoadIconEx(IDI_MANAGER));
-			SendMessage(GetDlgItem( hwndDlg, IDC_LOGO),STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO), 0);
+			SendDlgItemMessage( hwndDlg, IDC_LOGO,STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO), 0);
 			SendDlgItemMessage( hwndDlg,IDC_APPLYTOPIC,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx( IDI_GO ));
 			SendDlgItemMessage( hwndDlg,IDC_APPLYMODES,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx( IDI_GO ));
-			SendMessage(GetDlgItem( hwndDlg,IDC_APPLYTOPIC), BUTTONADDTOOLTIP, (WPARAM)LPGEN("Set this topic for the channel"), 0);
-			SendMessage(GetDlgItem( hwndDlg,IDC_APPLYMODES), BUTTONADDTOOLTIP, (WPARAM)LPGEN("Set these modes for the channel"), 0);
+			SendDlgItemMessage( hwndDlg,IDC_APPLYTOPIC, BUTTONADDTOOLTIP, (WPARAM)LPGEN("Set this topic for the channel"), 0);
+			SendDlgItemMessage( hwndDlg,IDC_APPLYMODES, BUTTONADDTOOLTIP, (WPARAM)LPGEN("Set these modes for the channel"), 0);
 
 			SendDlgItemMessage( hwndDlg,IDC_LIST,LB_SETHORIZONTALEXTENT,750,NULL);
 			CheckDlgButton( hwndDlg, IDC_RADIO1, BST_CHECKED);
