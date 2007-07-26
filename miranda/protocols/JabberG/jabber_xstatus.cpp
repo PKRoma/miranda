@@ -159,40 +159,40 @@ BOOL JabberSendPepMood( int nMoodNumber, TCHAR* szMoodText )
 	return TRUE;
 }
 
-BOOL JabberSendPepTune( TCHAR* szArtist, TCHAR* szLength, TCHAR* szSource, TCHAR* szTitle, TCHAR* szTrack, TCHAR* szUri )
-{
-	if ( !jabberOnline || !jabberPepSupported )
-		return FALSE;
-	
-	XmlNodeIq iq( "set", JabberSerialNext() );
-	XmlNode* pubsubNode = iq.addChild( "pubsub" );
-	pubsubNode->addAttr( "xmlns", JABBER_FEAT_PUBSUB );
-
-	if ( !szArtist && !szLength && !szSource && !szTitle && !szUri ) {
-		XmlNode* retractNode = pubsubNode->addChild( "retract" );
-		retractNode->addAttr( "node", JABBER_FEAT_USER_TUNE );
-		retractNode->addAttr( "notify", 1 );
-		XmlNode* itemNode = retractNode->addChild( "item" );
-		itemNode->addAttr( "id", "current" );
-	}
-	else {
-		XmlNode* publishNode = pubsubNode->addChild( "publish" );
-		publishNode->addAttr( "node", JABBER_FEAT_USER_TUNE );
-		XmlNode* itemNode = publishNode->addChild( "item" );
-		itemNode->addAttr( "id", "current" );
-		XmlNode* tuneNode = itemNode->addChild( "tune" );
-		tuneNode->addAttr( "xmlns", JABBER_FEAT_USER_TUNE );
-		if ( szArtist ) tuneNode->addChild( "artist", szArtist );
-		if ( szLength ) tuneNode->addChild( "length", szLength );
-		if ( szSource ) tuneNode->addChild( "length", szSource );
-		if ( szTitle ) tuneNode->addChild( "length", szTitle );
-		if ( szTrack ) tuneNode->addChild( "track", szTrack );
-		if ( szUri ) tuneNode->addChild( "uri", szUri );
-	}
-	jabberThreadInfo->send( iq );
-
-	return TRUE;
-}
+// BOOL JabberSendPepTune( TCHAR* szArtist, TCHAR* szLength, TCHAR* szSource, TCHAR* szTitle, TCHAR* szTrack, TCHAR* szUri )
+// {
+// 	if ( !jabberOnline || !jabberPepSupported )
+// 		return FALSE;
+// 	
+// 	XmlNodeIq iq( "set", JabberSerialNext() );
+// 	XmlNode* pubsubNode = iq.addChild( "pubsub" );
+// 	pubsubNode->addAttr( "xmlns", JABBER_FEAT_PUBSUB );
+// 
+// 	if ( !szArtist && !szLength && !szSource && !szTitle && !szUri ) {
+// 		XmlNode* retractNode = pubsubNode->addChild( "retract" );
+// 		retractNode->addAttr( "node", JABBER_FEAT_USER_TUNE );
+// 		retractNode->addAttr( "notify", 1 );
+// 		XmlNode* itemNode = retractNode->addChild( "item" );
+// 		itemNode->addAttr( "id", "current" );
+// 	}
+// 	else {
+// 		XmlNode* publishNode = pubsubNode->addChild( "publish" );
+// 		publishNode->addAttr( "node", JABBER_FEAT_USER_TUNE );
+// 		XmlNode* itemNode = publishNode->addChild( "item" );
+// 		itemNode->addAttr( "id", "current" );
+// 		XmlNode* tuneNode = itemNode->addChild( "tune" );
+// 		tuneNode->addAttr( "xmlns", JABBER_FEAT_USER_TUNE );
+// 		if ( szArtist ) tuneNode->addChild( "artist", szArtist );
+// 		if ( szLength ) tuneNode->addChild( "length", szLength );
+// 		if ( szSource ) tuneNode->addChild( "length", szSource );
+// 		if ( szTitle ) tuneNode->addChild( "length", szTitle );
+// 		if ( szTrack ) tuneNode->addChild( "track", szTrack );
+// 		if ( szUri ) tuneNode->addChild( "uri", szUri );
+// 	}
+// 	jabberThreadInfo->send( iq );
+// 
+// 	return TRUE;
+// }
 
 
 /////////////////////////////////////////////////////////////////////////////////////////
