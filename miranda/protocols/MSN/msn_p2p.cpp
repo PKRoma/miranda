@@ -559,41 +559,38 @@ bool p2p_connectTo( ThreadData* info )
 	NETLIBOPENCONNECTION tConn = { 0 };
 	tConn.cbSize = sizeof( tConn );
 	tConn.flags = NLOCF_V2;
-	tConn.szHost = info->mServer;
 	tConn.timeout = 5;
+
+	char* tPortDelim = strrchr( info->mServer, ':' );
+	if ( tPortDelim != NULL ) {
+		*tPortDelim = '\0';
+		tConn.wPort = ( WORD )atol( tPortDelim+1 );
+	}
+
+	tConn.szHost = info->mServer;
+	for( ;; ) 
 	{
- 		char* tPortDelim = strrchr( info->mServer, ':' );
-		if ( tPortDelim != NULL ) {
-			*tPortDelim = '\0';
-			tConn.wPort = ( WORD )atol( tPortDelim+1 );
-	}	}
+		char* pSpace = (char*)strchr( tConn.szHost, ' ' );
+		if ( pSpace != NULL ) *pSpace = 0;
 
-	char *svr = info->mServer;
-	for( ;; ) {
-
-		char* pSpace = strchr( svr, ' ' );
-		if ( pSpace != NULL )
-			*pSpace = 0;
-
-		MSN_DebugLog( "Connecting to %s:%d", info->mServer, tConn.wPort );
+		MSN_DebugLog( "Connecting to %s:%d", tConn.szHost, tConn.wPort );
 
 		HANDLE h = ( HANDLE )MSN_CallService( MS_NETLIB_OPENCONNECTION, ( WPARAM )hNetlibUser, ( LPARAM )&tConn );
 		if ( h != NULL ) {
 			info->s = h;
 			break;
 		}
-		{	TWinErrorCode err;
-			MSN_DebugLog( "Connection Failed (%d): %s", err.mErrorCode, err.getText() );
-		}
+		
+		TWinErrorCode err;
+		MSN_DebugLog( "Connection Failed (%d): %s", err.mErrorCode, err.getText() );
 
 		if ( pSpace == NULL ) {
 			MSN_StartP2PTransferByContact( info->mInitialContact );
 			return false;
 		}
-
-		svr = ++pSpace;
+		tConn.szHost = ++pSpace;
 	}
-	memmove(info->mServer, svr, strlen(svr)+1);
+	memmove(info->mServer, tConn.szHost, strlen(tConn.szHost)+1);
 
 	info->send( p2p_greeting, sizeof( p2p_greeting ));
 
