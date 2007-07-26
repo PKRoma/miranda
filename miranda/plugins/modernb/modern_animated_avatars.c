@@ -226,6 +226,7 @@ int AniAva_UnloadModule()
 			mir_free(AniAva.Objects->items[i]);
 		}
 		li.List_Destroy(AniAva.Objects);
+		mir_free(AniAva.Objects);
 
 		for (i=0; i<AniAva.AniAvatarList->realCount; i++)
 		{
@@ -235,6 +236,7 @@ int AniAva_UnloadModule()
 			mir_free(aai);
 		}
 		li.List_Destroy(AniAva.AniAvatarList);
+		mir_free(AniAva.AniAvatarList);
 		_AniAva_RemoveAniAvaDC(&AniAva);
 		SetEvent(AniAva.hExitEvent);
 		CloseHandle(AniAva.hExitEvent);

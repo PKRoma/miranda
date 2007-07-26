@@ -769,8 +769,9 @@ static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 			WindowList_Remove( tbdat.hToolBarWindowList, hwnd );
 			SendMessage(hwnd, MTBM_REMOVE_ALL_BUTTONS, 0, 0 );
 			li.List_Destroy( pMTBInfo->pButtonList );
+			mir_free( pMTBInfo->pButtonList );
 			SetWindowLong( hwnd, GWL_USERDATA, (LONG) 0 );
-				mir_free( pMTBInfo );
+			mir_free( pMTBInfo );
 			return 0;
 		}
 	case WM_COMMAND:
@@ -819,6 +820,7 @@ static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 				}
 			}
 			li.List_Destroy( pMTBInfo->pButtonList );
+			mir_free( pMTBInfo->pButtonList );
 			pMTBInfo->pButtonList=li.List_Create(0,1);
 			break;
 		}

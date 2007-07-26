@@ -1810,6 +1810,8 @@ int ske_UnloadSkin(SKINOBJECTSLIST * Skin)
 	}
 
 	if (Skin->szSkinPlace) mir_free_and_nill(Skin->szSkinPlace);
+	if (Skin->pTextList) li.List_Destroy(Skin->pTextList);
+	mir_free_and_nill(Skin->pTextList);
 	DeleteButtons();
 	if (Skin->dwObjLPAlocated==0) { ske_UnlockSkin(); return 0;}
 	for (i=0; i<Skin->dwObjLPAlocated; i++)
@@ -1960,7 +1962,7 @@ static void ske_LinkSkinObjects(SKINOBJECTSLIST * pObjectList)
 			}
 		}
 		li.List_Destroy(pObjectList->pTextList);
-		pObjectList->pTextList=NULL;
+		mir_free_and_nill(pObjectList->pTextList);
 	}
 }
 // Getting skin objects and masks from DB
@@ -1990,6 +1992,7 @@ static int ske_GetSkinFromDB(char * szSection, SKINOBJECTSLIST * Skin)
 	Skin->szSkinPlace=DBGetStringA(NULL,SKIN,"SkinFolder");
 	if (!Skin->szSkinPlace || (strchr(Skin->szSkinPlace, '%') && !DBGetContactSettingByte(NULL,SKIN,"Modified",0)) ) 
 	{
+		mir_free(Skin->szSkinPlace);
 		Skin->szSkinPlace=mir_strdup("%Default%");
 		ske_LoadSkinFromResource( FALSE );
 	}
@@ -2195,6 +2198,7 @@ static int ske_LoadSkinFromResource(BOOL bOnlyObjects)
 			pos++;
 		}
 	}
+	mir_free_and_nill(iniCurrentSection);
 	FreeResource(hRes);	
 	return 0;
 }
@@ -2224,6 +2228,7 @@ int ske_LoadSkinFromIniFile(char * szFileName, BOOL bOnlyObjects)
 		}
 		fclose( stream );
 		szFileName=NULL;
+		mir_free_and_nill(iniCurrentSection);
 	}
 	return 0;
 }
