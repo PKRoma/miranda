@@ -558,6 +558,7 @@ bool p2p_connectTo( ThreadData* info )
 {
 	NETLIBOPENCONNECTION tConn = {0};
 	tConn.cbSize = sizeof(tConn);
+	tConn.szHost = info->mServer;
 	tConn.flags = NLOCF_V2;
 	tConn.timeout = 5;
 
@@ -568,29 +569,15 @@ bool p2p_connectTo( ThreadData* info )
 		tConn.wPort = (WORD)atol(tPortDelim + 1);
 	}
 
-	tConn.szHost = info->mServer;
-	for (;;) 
+	MSN_DebugLog("Connecting to %s:%d", tConn.szHost, tConn.wPort);
+
+	info->s = (HANDLE)MSN_CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)hNetlibUser, (LPARAM)&tConn);
+	if (info->s == NULL)
 	{
-		char* pSpace = (char*)strchr(tConn.szHost, ' ');
-		if (pSpace != NULL) *pSpace = 0;
-
-		MSN_DebugLog("Connecting to %s:%d", tConn.szHost, tConn.wPort);
-
-		info->s = (HANDLE)MSN_CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)hNetlibUser, (LPARAM)&tConn);
-		if (info->s != NULL) break;
-		
 		TWinErrorCode err;
 		MSN_DebugLog("Connection Failed (%d): %s", err.mErrorCode, err.getText());
-
-		if (pSpace == NULL) 
-		{
-			MSN_StartP2PTransferByContact(info->mInitialContact);
-			return false;
-		}
-		tConn.szHost = ++pSpace;
+		return false;
 	}
-	memmove(info->mServer, tConn.szHost, strlen(tConn.szHost)+1);
-
 	info->send( p2p_greeting, sizeof( p2p_greeting ));
 
 	P2P_Header reply = {0};
@@ -1174,6 +1161,29 @@ static void sttInitDirectTransfer(
 	p2p_getMsgId( ft->std.hContact, 1 );
 }
 
+
+void p2p_startConnect(HANDLE hContact, const char* szCallID, const char* addr, const char* port)
+{
+	if (port == NULL) return;
+
+	while (addr != NULL) 
+	{
+		char* pSpace = (char*)strchr(addr, ' ');
+		if (pSpace != NULL) *(pSpace++) = 0;
+
+		ThreadData* newThread = new ThreadData;
+
+		newThread->mType = SERVER_P2P_DIRECT;
+		newThread->mInitialContact = hContact;
+		mir_snprintf( newThread->mCookie, sizeof( newThread->mCookie ), "%s", szCallID );
+		mir_snprintf( newThread->mServer, sizeof( newThread->mServer ), "%s:%s", addr, port );
+
+		newThread->startThread(( pThreadFunc )p2p_fileActiveThread );
+
+		addr = pSpace;
+	}
+}
+
 static void sttInitDirectTransfer2(
 	P2P_Header*  hdrdata,
 	MimeHeaders& tFileInfo,
@@ -1211,27 +1221,10 @@ static void sttInitDirectTransfer2(
 	p2p_sendAck( ft->std.hContact, hdrdata );
 
 
-	if ( !strcmp( szListening, "true" ) && strcmp( dc->xNonce, sttVoidNonce )) {
-		bool extOk = szExternalAddress != NULL && szExternalPort != NULL;
-		bool intOk = szInternalAddress != NULL && szInternalPort != NULL;
-
-		ThreadData* newThread = new ThreadData;
-
-		if ( extOk && ( strcmp( szExternalAddress, MyConnection.GetMyExtIPStr()) || !intOk ))
-			mir_snprintf( newThread->mServer, sizeof( newThread->mServer ), "%s:%s", szExternalAddress, szExternalPort );
-		else if ( intOk )
-			mir_snprintf( newThread->mServer, sizeof( newThread->mServer ), "%s:%s", szInternalAddress, szInternalPort );
-		else {
-			MSN_DebugLog( "Invalid data packet, exiting..." );
-			delete newThread;
-			return;
-		}
-
-		newThread->mType = SERVER_P2P_DIRECT;
-		newThread->mInitialContact = ft->std.hContact;
-
-		strncpy( newThread->mCookie, szCallID, sizeof( newThread->mCookie ));
-		newThread->startThread(( pThreadFunc )p2p_fileActiveThread );
+	if ( !strcmp( szListening, "true" ) && strcmp( dc->xNonce, sttVoidNonce )) 
+	{
+		p2p_startConnect(ft->std.hContact, szCallID, szInternalAddress, szInternalPort);
+		p2p_startConnect(ft->std.hContact, szCallID, szExternalAddress, szExternalPort);
 	}
 }
 
@@ -1328,27 +1321,10 @@ LBL_Close:
 		dc->xNonce = mir_strdup( szHashedNonce ? szHashedNonce : szNonce );
 
 		// another side reported that it will be a server.
-		if ( !strcmp( szListening, "true" ) && ( szNonce == NULL || strcmp( szNonce, sttVoidNonce ))) {
-			bool extOk = szExternalAddress != NULL && szExternalPort != NULL;
-			bool intOk = szInternalAddress != NULL && szInternalPort != NULL;
-
-			ThreadData* newThread = new ThreadData;
-
-			if ( extOk && ( strcmp( szExternalAddress, MyConnection.GetMyExtIPStr()) || !intOk ))
-				mir_snprintf( newThread->mServer, sizeof( newThread->mServer ), "%s:%s", szExternalAddress, szExternalPort );
-			else if ( intOk )
-				mir_snprintf( newThread->mServer, sizeof( newThread->mServer ), "%s:%s", szInternalAddress, szInternalPort );
-			else {
-				MSN_DebugLog( "Invalid data packet, exiting..." );
-				delete newThread;
-				return;
-			}
-
-			newThread->mType = SERVER_P2P_DIRECT;
-			strncpy( newThread->mCookie, szCallID, sizeof( newThread->mCookie ));
-			newThread->mCookie[sizeof( newThread->mCookie )-1] = 0;
-			newThread->mInitialContact = ft->std.hContact;
-			newThread->startThread(( pThreadFunc )p2p_fileActiveThread );
+		if ( !strcmp( szListening, "true" ) && ( szNonce == NULL || strcmp( szNonce, sttVoidNonce ))) 
+		{
+			p2p_startConnect(ft->std.hContact, szCallID, szInternalAddress, szInternalPort);
+			p2p_startConnect(ft->std.hContact, szCallID, szExternalAddress, szExternalPort);
 			return;
 		}
 
