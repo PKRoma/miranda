@@ -791,7 +791,6 @@ bool PostIrcMessageWnd( TCHAR* window, HANDLE hContact, const TCHAR* szBuf )
 			if ( GetWord( DoThis.c_str(), 1 ).empty())
 				continue;
 			
-			DoThis = ReplaceString( DoThis, _T("%"), _T("%%"));
 			TString S = GetWordAddress( DoThis.c_str(), 1 );
 			g_ircSession << CIrcMessage( S.c_str(), codepage );
 			continue;
@@ -829,13 +828,11 @@ bool PostIrcMessageWnd( TCHAR* window, HANDLE hContact, const TCHAR* szBuf )
 				}
 			}
 			else if( g_ircSession ) {
-				DoThis = ReplaceString( DoThis, _T("%"), _T("%%"));
 				DoThis = FormatMsg( DoThis );
 				g_ircSession << CIrcMessage( DoThis.c_str(), codepage, false, false );
 			}
 		}
 		else {
-			DoThis = ReplaceString( DoThis, _T("%"), _T("%%"));
 			DoThis = FormatMsg( DoThis );
 			g_ircSession << CIrcMessage( DoThis.c_str(), codepage, false, true );
 	}	}
