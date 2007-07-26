@@ -263,8 +263,10 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 				lvItem.pszText = text;
 				lvItem.cchTextMax = SIZEOF( text );
 				ListView_GetItem( lv, &lvItem );				
-				if (( item=JabberListGetItemPtr( LIST_AGENT, lvItem.pszText )) != NULL )
-					JabberContactMenuRunCommands(0, LPARAM(item->jid) );
+				if (( item=JabberListGetItemPtr( LIST_AGENT, lvItem.pszText )) != NULL ) {
+					CJabberAdhocStartupParams* pStartupParams = new CJabberAdhocStartupParams( item->jid, NULL );
+					JabberContactMenuRunCommands(0, LPARAM(pStartupParams) );
+				}
 			}
 			return TRUE;
 

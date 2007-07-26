@@ -137,27 +137,24 @@ static int JabberAdHoc_ExecuteCommand( HWND hwndDlg, TCHAR * jid, JabberAdHocDat
 			XmlNode *itemNode = JabberXmlGetNthChild( dat->CommandsNode, "item", i );
 			if ( itemNode ) {
 				TCHAR * node = JabberXmlGetAttrValue( itemNode, "node" );
-				if (node)	{
+				if ( node ) {
 					TCHAR * jid			= JabberXmlGetAttrValue( itemNode, "jid" );
-					TCHAR * action		= _T( "execute" );
-					TCHAR * description = JabberXmlGetAttrValue( itemNode,"name" );
-					if ( !description )	description = node;   
 
 					int iqId = (int)hwndDlg;
 					XmlNodeIq iq( "set", iqId, jid );
 					XmlNode* query = iq.addChild( "command" );
 					query->addAttr( "xmlns", JABBER_FEAT_COMMANDS );
 					query->addAttr( "node", node );
-					query->addAttr( "action", action );
+					query->addAttr( "action", _T("execute"));
 					JabberIqAdd( iqId, IQ_PROC_EXECCOMMANDS, JabberIqResult_CommandExecution );
 					jabberThreadInfo->send( iq );
 
 					EnableDlgItem( hwndDlg, IDC_SUBMIT, FALSE );
 					SetDlgItemText( hwndDlg, IDC_SUBMIT, TranslateT( "OK" ) );
 		}	}	}
-		if ( dat->CommandsNode ) delete dat->CommandsNode;
-		dat->CommandsNode = NULL;
-		return (TRUE);
+	if ( dat->CommandsNode ) delete dat->CommandsNode;
+	dat->CommandsNode = NULL;
+	return (TRUE);
 }
 
 //Messages handlers
@@ -436,14 +433,38 @@ static BOOL CALLBACK JabberAdHoc_CommandDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 			SetDlgItemText(hwndDlg,IDC_SUBMIT, TranslateT("Execute"));
 			JabberFormSetInstruction(hwndDlg,TranslateT("Requesting command list. Please wait..."));
 
-			TCHAR *jid=(TCHAR *)lParam;
-			JabberAdHoc_RequestListOfCommands(jid, hwndDlg);
+			CJabberAdhocStartupParams* pStartupParams = (CJabberAdhocStartupParams *)lParam;
+			
 			if (dat->ResponderJID) mir_free(dat->ResponderJID);
-			dat->ResponderJID=mir_tstrdup(jid);
+			dat->ResponderJID=mir_tstrdup(pStartupParams->m_szJid);
 
-			TCHAR Caption[200];
-			_sntprintf(Caption,SIZEOF(Caption),_T("%s %s"), TranslateT("Jabber Ad-Hoc commands at"), dat->ResponderJID );
-			SetWindowText(hwndDlg, Caption);
+			if ( !pStartupParams->m_szNode ) {
+				JabberAdHoc_RequestListOfCommands(pStartupParams->m_szJid, hwndDlg);
+
+				TCHAR Caption[ 512 ];
+				_sntprintf(Caption, SIZEOF(Caption), _T("%s %s"), TranslateT("Jabber Ad-Hoc commands at"), dat->ResponderJID );
+				SetWindowText(hwndDlg, Caption);
+			}
+			else
+			{
+				int iqId = (int)hwndDlg;
+				XmlNodeIq iq( "set", iqId, pStartupParams->m_szJid );
+				XmlNode* query = iq.addChild( "command" );
+				query->addAttr( "xmlns", JABBER_FEAT_COMMANDS );
+				query->addAttr( "node", pStartupParams->m_szNode );
+				query->addAttr( "action", _T("execute"));
+				JabberIqAdd( iqId, IQ_PROC_EXECCOMMANDS, JabberIqResult_CommandExecution );
+				jabberThreadInfo->send( iq );
+
+				EnableDlgItem( hwndDlg, IDC_SUBMIT, FALSE );
+				SetDlgItemText( hwndDlg, IDC_SUBMIT, TranslateT( "OK" ) );
+
+				TCHAR Caption[ 512 ];
+				_sntprintf(Caption, SIZEOF(Caption), _T("%s %s"), TranslateT("Sending Ad-Hoc command to"), dat->ResponderJID );
+				SetWindowText(hwndDlg, Caption);
+			}
+
+			delete pStartupParams;
 
 			return TRUE;
 		}
@@ -573,8 +594,8 @@ int JabberContactMenuRunCommands(WPARAM wParam, LPARAM lParam)
 	
 	if ((( hContact=( HANDLE ) wParam )!=NULL || (lParam!=0)) && jabberOnline ) {
 		if ( wParam && !JGetStringT( hContact, "jid", &dbv )) {
-			TCHAR jid[200];
-			int selected=0;
+			TCHAR jid[ 512 ];
+			int selected = 0;
 			_tcsncpy(jid, dbv.ptszVal, SIZEOF(jid));
 
 			JabberListLock();
@@ -612,8 +633,10 @@ int JabberContactMenuRunCommands(WPARAM wParam, LPARAM lParam)
 			}
 			JabberListUnlock();
 			
-			if (!item || selected)
-				CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_FORM ), NULL, JabberAdHoc_CommandDlgProc, ( LPARAM )(jid) );
+			if (!item || selected) {
+				CJabberAdhocStartupParams* pStartupParams = new CJabberAdhocStartupParams( jid, NULL );
+				CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_FORM ), NULL, JabberAdHoc_CommandDlgProc, ( LPARAM )(pStartupParams) );
+			}
 			JFreeVariant( &dbv );
 			
 		}

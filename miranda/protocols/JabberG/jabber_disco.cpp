@@ -1407,8 +1407,11 @@ void JabberServiceDiscoveryShowMenu(CJabberSDNode *pNode, HTREELISTITEM hItem, P
 			break;
 
 		case SD_ACT_ADHOC:
-			JabberContactMenuRunCommands(0, (LPARAM)pNode->GetJid());
-			break;
+			{
+				CJabberAdhocStartupParams* pStartupParams = new CJabberAdhocStartupParams( pNode->GetJid(), pNode->GetNode() );
+				JabberContactMenuRunCommands(0, (LPARAM)pStartupParams);
+				break;
+			}
 
 		case SD_ACT_ADDDIRECTORY:
 			JabberSearchAddToRecent(pNode->GetJid());

@@ -566,6 +566,26 @@ void   JabberUpdateMirVer(HANDLE hContact, JABBER_RESOURCE_STATUS *resource);
 int    JabberGetEventTextChatStates( WPARAM wParam, LPARAM lParam );
 
 //---- jabber_adhoc.cpp	---------------------------------------------
+
+struct CJabberAdhocStartupParams
+{
+	TCHAR* m_szJid;
+	TCHAR* m_szNode;
+
+	CJabberAdhocStartupParams( TCHAR* szJid, TCHAR* szNode = NULL )
+	{
+		m_szJid = mir_tstrdup( szJid );
+		m_szNode = szNode ? mir_tstrdup( szNode ) : NULL;
+	}
+	~CJabberAdhocStartupParams()
+	{
+		if ( m_szJid )
+			mir_free( m_szJid );
+		if ( m_szNode )
+			mir_free( m_szNode );
+	}
+};
+
 int JabberContactMenuRunCommands(WPARAM wParam, LPARAM lParam);
 
 //---- jabber_svc.c -------------------------------------------------
