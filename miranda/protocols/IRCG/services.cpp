@@ -703,7 +703,7 @@ static void DoChatFormatting( TCHAR* pszText )
 				break;
 
 			case '%':
-				lstrcpy(InsertThis, _T("%%"));
+				lstrcpy(InsertThis, _T("%"));
 				iRemoveChars = 2;
 				break;
 
