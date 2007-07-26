@@ -498,17 +498,13 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 		if ( !bDirect || !bManualDirect )
 			EnableWindow( GetDlgItem( hwndDlg, IDC_DIRECT_ADDR ), FALSE );
 
-		BOOL bProxy = JGetByte( "BsProxy", FALSE );
 		BOOL bManualProxy = JGetByte( "BsProxyManual", FALSE );
-		CheckDlgButton( hwndDlg, IDC_PROXY, bProxy );
 		CheckDlgButton( hwndDlg, IDC_PROXY_MANUAL, bManualProxy );
 		if ( !DBGetContactSetting( NULL, jabberProtoName, "BsProxyServer", &dbv )) {
 			SetDlgItemTextA( hwndDlg, IDC_PROXY_ADDR, dbv.pszVal );
 			JFreeVariant( &dbv );
 		}
-		if ( !bProxy )
-			EnableWindow( GetDlgItem( hwndDlg, IDC_PROXY_MANUAL ), FALSE );
-		if ( !bProxy || !bManualProxy )
+		if ( !bManualProxy )
 			EnableWindow( GetDlgItem( hwndDlg, IDC_PROXY_ADDR ), FALSE );
 
 		// Miscellaneous options
@@ -520,9 +516,9 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 		CheckDlgButton( hwndDlg, IDC_AUTOJOIN, JGetByte( "AutoJoinConferences", FALSE ));
 		CheckDlgButton( hwndDlg, IDC_DISABLE_SASL, JGetByte( "Disable3920auth", FALSE ));
 		CheckDlgButton( hwndDlg, IDC_ENABLE_RC, JGetByte( "EnableRemoteControl", FALSE ));
-		CheckDlgButton( hwndDlg, IDC_ROSTER2BOOKMARK, JGetByte( "AddRoster2Bookmarks", FALSE ));
 		CheckDlgButton( hwndDlg, IDC_AUTOJOIN_BOOKMARKS, JGetByte( "AutoJoinBookmarks", FALSE ));
 		CheckDlgButton( hwndDlg, IDC_ZLIB, JGetByte( "EnableZlib", FALSE ));
+		CheckDlgButton( hwndDlg, IDC_LOG_CHATSTATES, JGetByte( "LogChatstates", FALSE ));
 		return TRUE;
 	}
 	case WM_COMMAND:
@@ -542,11 +538,6 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			bChecked = IsDlgButtonChecked( hwndDlg, IDC_DIRECT_MANUAL );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_DIRECT_ADDR ), bChecked );
 			goto LBL_Apply;
-		case IDC_PROXY:
-			bChecked = IsDlgButtonChecked( hwndDlg, IDC_PROXY );
-			EnableWindow( GetDlgItem( hwndDlg, IDC_PROXY_MANUAL ), bChecked );
-			EnableWindow( GetDlgItem( hwndDlg, IDC_PROXY_ADDR ), ( bChecked && IsDlgButtonChecked( hwndDlg, IDC_PROXY_MANUAL )) );
-			goto LBL_Apply;
 		case IDC_PROXY_MANUAL:
 			bChecked = IsDlgButtonChecked( hwndDlg, IDC_PROXY_MANUAL );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_PROXY_ADDR ), bChecked );
@@ -564,7 +555,6 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			JSetByte( "BsDirectManual", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_DIRECT_MANUAL ));
 			GetDlgItemTextA( hwndDlg, IDC_DIRECT_ADDR, text, sizeof( text ));
 			JSetString( NULL, "BsDirectAddr", text );
-			JSetByte( "BsProxy", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_PROXY ));
 			JSetByte( "BsProxyManual", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_PROXY_MANUAL ));
 			GetDlgItemTextA( hwndDlg, IDC_PROXY_ADDR, text, sizeof( text ));
 			JSetString( NULL, "BsProxyServer", text );
@@ -596,9 +586,9 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			JSetByte( "AutoAcceptMUC",       ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_AUTO_ACCEPT_MUC ));
 			JSetByte( "AutoJoinConferences", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_AUTOJOIN ));
 			JSetByte( "EnableRemoteControl", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_ENABLE_RC ));
-			JSetByte( "AddRoster2Bookmarks", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_ROSTER2BOOKMARK));
-			JSetByte( "AutoJoinBookmarks",   ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_AUTOJOIN_BOOKMARKS));
-			JSetByte( "EnableZlib",          ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_ZLIB));
+			JSetByte( "AutoJoinBookmarks",   ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_AUTOJOIN_BOOKMARKS ));
+			JSetByte( "EnableZlib",          ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_ZLIB ));
+			JSetByte( "LogChatstates",       ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_LOG_CHATSTATES ));
 			return TRUE;
 		}
 		break;

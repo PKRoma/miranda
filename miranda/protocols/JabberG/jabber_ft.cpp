@@ -125,7 +125,7 @@ void JabberFtInitiate( TCHAR* jid, filetransfer* ft )
 	XmlNode* field = x->addChild( "field" ); field->addAttr( "var", "stream-method" ); field->addAttr( "type", "list-single" );
 
 	BOOL bDirect = JGetByte( "BsDirect", TRUE );
-	BOOL bProxy = JGetByte( "BsProxy", TRUE );
+	BOOL bProxy = JGetByte( "BsProxyManual", TRUE );
 	
 	// bytestreams support?
 	if ( bDirect || bProxy ) {
@@ -146,7 +146,7 @@ static void JabberFtSiResult( XmlNode *iqNode, void *userdata, CJabberIqInfo* pI
 
 			// fix for very smart clients, like gajim
 			BOOL bDirect = JGetByte( "BsDirect", FALSE );
-			BOOL bProxy = JGetByte( "BsProxy", FALSE );
+			BOOL bProxy = JGetByte( "BsProxyManual", FALSE );
 
 			if (( featureNode=JabberXmlGetChild( siNode, "feature" )) != NULL ) {
 				if (( xNode=JabberXmlGetChildWithGivenAttrValue( featureNode, "x", "xmlns", _T(JABBER_FEAT_DATA_FORMS))) != NULL ) {

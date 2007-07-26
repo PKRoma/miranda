@@ -87,7 +87,7 @@ static void JabberIqResultProxyDiscovery( XmlNode* iqNode, void* userdata, CJabb
 
 void __cdecl JabberByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 {
-	BOOL bDirect, bProxy;
+	BOOL bDirect;
 	char* localAddr;
 	struct in_addr in;
 	DBVARIANT dbv;
@@ -101,10 +101,8 @@ void __cdecl JabberByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 	JabberLog( "Thread started: type=bytestream_send" );
 
 	bDirect = JGetByte( "BsDirect", TRUE );
-	bProxy = JGetByte( "BsProxy", TRUE );
 
-	BOOL bProxyManual = JGetByte( "BsProxyManual" , FALSE );
-	if ( bProxy && bProxyManual ) {
+	if ( JGetByte( "BsProxyManual" , FALSE ) ) {
 		proxyJid = NULL;
 		if ( !DBGetContactSetting( NULL, jabberProtoName, "BsProxyServer", &dbv )) {
 			proxyJid = a2t( dbv.pszVal );

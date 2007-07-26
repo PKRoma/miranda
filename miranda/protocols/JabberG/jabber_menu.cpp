@@ -495,76 +495,42 @@ void JabberMenuInit()
 	clmi.cbSize = sizeof( CLISTMENUITEM );
 	clmi.flags = CMIM_FLAGS | CMIF_GRAYED;
 
-	// "Agents..."
-	strcpy( tDest, "/Agents" );
-	CreateServiceFunction( text, JabberMenuHandleAgents );
 
 	mi.pszPopupName = jabberModuleName;
 	mi.popupPosition = 500090000;
-	mi.pszName = LPGEN("Agents...");
-	mi.position = 2000050000;
-	mi.icolibItem = GetIconHandle( IDI_JABBER );
 	mi.pszService = text;
+	
+	// "Agents..."
+	strcpy( tDest, "/Agents" );
+	CreateServiceFunction( text, JabberMenuHandleAgents );
+	mi.pszName = LPGEN("Agents...");
+	mi.position = 2000050005;
+	mi.icolibItem = GetIconHandle( IDI_JABBER );
 	hMenuAgent = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuAgent, ( LPARAM )&clmi );
-
-	// "Change Password..."
-	strcpy( tDest, "/ChangePassword" );
-	CreateServiceFunction( text, JabberMenuHandleChangePassword );
-	mi.pszName = LPGEN("Change Password...");
-	mi.position = 2000050001;
-	mi.icolibItem = GetIconHandle( IDI_KEYS );
-	hMenuChangePassword = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
-	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuChangePassword, ( LPARAM )&clmi );
-
-	// "Multi-User Conference..."
-	strcpy( tDest, "/Groupchat" );
-	CreateServiceFunction( text, JabberMenuHandleGroupchat );
-	mi.pszName = LPGEN("Multi-User Conference...");
-	mi.position = 2000050002;
-	mi.icolibItem = GetIconHandle( IDI_GROUP );
-	hMenuGroupchat = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
-	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuGroupchat, ( LPARAM )&clmi );
-
-	// "Personal vCard..."
-	strcpy( tDest,  "/Vcard" );
-	CreateServiceFunction( text, JabberMenuHandleVcard );
-	mi.pszName = LPGEN("Personal vCard...");
-	mi.position = 2000050003;
-	mi.icolibItem = GetIconHandle( IDI_VCARD );
-	JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
-
-	// "Bookmarks..."
-	strcpy( tDest, "/Bookmarks" );
-	CreateServiceFunction( text, JabberMenuHandleBookmarks );
-	mi.pszName = LPGEN("Bookmarks...");
-	mi.position = 2000050004;
-	mi.icolibItem = GetIconHandle( IDI_BOOKMARKS );
-	hMenuBookmarks = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
-	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuBookmarks, ( LPARAM )&clmi );
-
-	// "Privacy lists..."
-	strcpy( tDest, "/PrivacyLists" );
-	CreateServiceFunction( text, JabberMenuHandlePrivacyLists );
-	mi.pszName = LPGEN("Privacy Lists...");
-	mi.position = 2000050005;
-	mi.icolibItem = GetIconHandle( IDI_PRIVACY_LISTS );
-	hMenuPrivacyLists = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
-	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuPrivacyLists, ( LPARAM )&clmi );
 
 	// "Service Discovery..."
 	strcpy( tDest, "/ServiceDiscovery" );
 	CreateServiceFunction( text, JabberMenuHandleServiceDiscovery );
 	mi.pszName = LPGEN("Service Discovery...");
-	mi.position = 2000050006;
+	mi.position = 2000050000;
 	mi.icolibItem = GetIconHandle( IDI_SERVICE_DISCOVERY );
 	hMenuServiceDiscovery = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuServiceDiscovery, ( LPARAM )&clmi );
 
+	// "Bookmarks..."
+	strcpy( tDest, "/Bookmarks" );
+	CreateServiceFunction( text, JabberMenuHandleBookmarks );
+	mi.pszName = LPGEN("Bookmarks...");
+	mi.position = 2000050001;
+	mi.icolibItem = GetIconHandle( IDI_BOOKMARKS );
+	hMenuBookmarks = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuBookmarks, ( LPARAM )&clmi );
+
 	strcpy( tDest, "/SD/MyTransports" );
 	CreateServiceFunction( text, JabberMenuHandleServiceDiscoveryMyTransports );
 	mi.pszName = LPGEN("Registered Transports...");
-	mi.position = 2000050006;
+	mi.position = 2000050002;
 	mi.icolibItem = GetIconHandle( IDI_AGENTS );
 	hMenuSDMyTransports = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuSDMyTransports, ( LPARAM )&clmi );
@@ -572,7 +538,7 @@ void JabberMenuInit()
 	strcpy( tDest, "/SD/Transports" );
 	CreateServiceFunction( text, JabberMenuHandleServiceDiscoveryTransports );
 	mi.pszName = LPGEN("Local Transports...");
-	mi.position = 2000050006;
+	mi.position = 2000050003;
 	mi.icolibItem = GetIconHandle( IDI_AGENTS );
 	hMenuSDTransports = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuSDTransports, ( LPARAM )&clmi );
@@ -580,10 +546,45 @@ void JabberMenuInit()
 	strcpy( tDest, "/SD/Conferences" );
 	CreateServiceFunction( text, JabberMenuHandleServiceDiscoveryConferences );
 	mi.pszName = LPGEN("Browse Chatrooms...");
-	mi.position = 2000050006;
+	mi.position = 2000050004;
 	mi.icolibItem = GetIconHandle( IDI_GROUP );
 	hMenuSDConferences = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuSDConferences, ( LPARAM )&clmi );
+
+	// "Multi-User Conference..."
+	strcpy( tDest, "/Groupchat" );
+	CreateServiceFunction( text, JabberMenuHandleGroupchat );
+	mi.pszName = LPGEN("Multi-User Conference...");
+	mi.position = 2000050006;
+	mi.icolibItem = GetIconHandle( IDI_GROUP );
+	hMenuGroupchat = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuGroupchat, ( LPARAM )&clmi );
+
+	// "Change Password..."
+	strcpy( tDest, "/ChangePassword" );
+	CreateServiceFunction( text, JabberMenuHandleChangePassword );
+	mi.pszName = LPGEN("Change Password...");
+	mi.position = 2000050007;
+	mi.icolibItem = GetIconHandle( IDI_KEYS );
+	hMenuChangePassword = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuChangePassword, ( LPARAM )&clmi );
+
+	// "Personal vCard..."
+	strcpy( tDest,  "/Vcard" );
+	CreateServiceFunction( text, JabberMenuHandleVcard );
+	mi.pszName = LPGEN("Personal vCard...");
+	mi.position = 2000050008;
+	mi.icolibItem = GetIconHandle( IDI_VCARD );
+	JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+
+	// "Privacy lists..."
+	strcpy( tDest, "/PrivacyLists" );
+	CreateServiceFunction( text, JabberMenuHandlePrivacyLists );
+	mi.pszName = LPGEN("Privacy Lists...");
+	mi.position = 2000050009;
+	mi.icolibItem = GetIconHandle( IDI_PRIVACY_LISTS );
+	hMenuPrivacyLists = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuPrivacyLists, ( LPARAM )&clmi );
 }
 
 void JabberEnableMenuItems( BOOL bEnable )

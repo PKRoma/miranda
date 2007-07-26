@@ -100,39 +100,37 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "File Transfer",IDC_STATIC,8,3,290,81
+    GROUPBOX        "File Transfer",IDC_STATIC,4,3,295,71
     CONTROL         "Allow file sending through direct peer-to-peer connection",IDC_DIRECT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,14,202,10
-    CONTROL         "Specify proxy server",IDC_PROXY_MANUAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,50,102,10
-    CONTROL         "Allow file sending through bytestream proxy server",IDC_PROXY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,38,277,10
-    EDITTEXT        IDC_PROXY_ADDR,124,49,81,12,ES_AUTOHSCROLL | WS_GROUP
-    CONTROL         "Specify external address",IDC_DIRECT_MANUAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,26,101,10
-    EDITTEXT        IDC_DIRECT_ADDR,124,25,81,12,ES_AUTOHSCROLL
-    GROUPBOX        "Miscellaneous",IDC_STATIC,8,85,290,142
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,14,202,10
+    CONTROL         "Allow file sending through bytestream proxy server:",IDC_PROXY_MANUAL,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,41,183,10
+    EDITTEXT        IDC_PROXY_ADDR,200,39,91,12,ES_AUTOHSCROLL | WS_GROUP
+    CONTROL         "Specify external address:",IDC_DIRECT_MANUAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,27,101,10
+    EDITTEXT        IDC_DIRECT_ADDR,200,25,91,12,ES_AUTOHSCROLL
+    GROUPBOX        "Miscellaneous",IDC_STATIC,4,76,295,149
     CONTROL         "Automatically add contact when accept authorization",IDC_AUTO_ADD,
-                    "Button",BS_AUTOCHECKBOX | BS_TOP | WS_TABSTOP,16,95,280,12
+                    "Button",BS_AUTOCHECKBOX | BS_TOP | WS_TABSTOP,9,90,282,12
     CONTROL         "Automatically join conferences on login",IDC_AUTOJOIN,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,107,280,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,102,282,10
     CONTROL         "Autoaccept multiuser chat invitations",IDC_AUTO_ACCEPT_MUC,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,119,280,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,125,282,10
     CONTROL         "Send messages slower, but with full acknowledgement",IDC_MSG_ACK,
-                    "Button",BS_AUTOCHECKBOX | BS_TOP | WS_TABSTOP,16,131,269,10
+                    "Button",BS_AUTOCHECKBOX | BS_TOP | WS_TABSTOP,9,136,282,10
     CONTROL         "Show transport agents on contact list",IDC_SHOW_TRANSPORT,
-                    "Button",BS_AUTOCHECKBOX | BS_TOP | WS_TABSTOP,16,144,280,10
-    CONTROL         "Enable avatars",IDC_ENABLE_AVATARS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,169,280,10
+                    "Button",BS_AUTOCHECKBOX | BS_TOP | WS_TABSTOP,9,147,282,10
+    CONTROL         "Enable avatars",IDC_ENABLE_AVATARS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,170,282,10
     CONTROL         "Disable SASL authentication (for old servers)",IDC_DISABLE_SASL,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,181,279,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,182,282,10
     CONTROL         "Enable remote controlling (from another resource of same JID only)",IDC_ENABLE_RC,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,157,280,10
-    CONTROL         "Add room to Bookmarks when adding to roster",IDC_ROSTER2BOOKMARK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,192,279,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,158,282,10
     CONTROL         "Automatically join Bookmarks on login",IDC_AUTOJOIN_BOOKMARKS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,203,279,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,114,282,10
     CONTROL         "Enable stream compression (if possible)",IDC_ZLIB,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,214,279,10
-    LTEXT           "Try to uncheck all checkmarks above if you're experiencing troubles with filetransfer. But it can cause problems with transfer of large files.",IDC_STATIC,46,63,248,16
-    RTEXT           "Hint:",IDC_STATIC,15,63,27,14
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,194,282,10
+    LTEXT           "Try to uncheck all checkmarks above if you're experiencing troubles with sending files. But it can cause problems with transfer of large files.",IDC_STATIC,46,53,245,16
+    RTEXT           "Hint:",IDC_STATIC,23,56,16,8
+    CONTROL         "Log chat state changes",IDC_LOG_CHATSTATES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,206,282,10
 END
 
 IDD_INFO_JABBER DIALOGEX 0, 0, 221, 152
@@ -641,6 +639,14 @@ BEGIN
     IDD_OPT_JABBER3, DIALOG
     BEGIN
         HORZGUIDE, 209
+    END
+
+    IDD_OPT_JABBER2, DIALOG
+    BEGIN
+        LEFTMARGIN, 4
+        VERTGUIDE, 9
+        VERTGUIDE, 291
+        VERTGUIDE, 299
     END
 
     IDD_SETMOODMSG, DIALOG

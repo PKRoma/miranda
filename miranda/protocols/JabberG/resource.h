@@ -181,7 +181,6 @@
 #define IDC_EXT_ADDRESS_LABEL           1118
 #define IDC_PASS_PORT_LABEL             1119
 #define IDC_USE_PASS                    1120
-#define IDC_PROXY                       1120
 #define IDC_USE_EXT_ADDRESS             1121
 #define IDC_DIRECT_MANUAL               1121
 #define IDC_REG_STATUS                  1122
@@ -321,6 +320,8 @@
 #define IDC_CHECK_BM_AUTOJOIN           3014
 #define IDC_ZLIB                        3015
 #define IDI_PRIVACY_LISTS               3016
+#define IDC_ZLIB2                       3016
+#define IDC_LOG_CHATSTATES              3016
 #define IDI_SERVICE_DISCOVERY           3017
 #define IDM_MESSAGE                     10002
 #define IDM_CLEAR                       10003

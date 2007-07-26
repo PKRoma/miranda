@@ -65,6 +65,8 @@ JabberFeatCapPair g_JabberFeatCapPairs[] = {
 	{	_T(JABBER_FEAT_SECUREIM),         JABBER_CAPS_SECUREIM,        },
 	{	_T(JABBER_FEAT_PRIVACY_LISTS),	  JABBER_CAPS_PRIVACY_LISTS,   },
 	{	_T(JABBER_FEAT_MESSAGE_RECEIPTS), JABBER_CAPS_MESSAGE_RECEIPTS,},
+	{	_T(JABBER_FEAT_USER_TUNE),        JABBER_CAPS_USER_TUNE,       },
+	{	_T(JABBER_FEAT_USER_TUNE_NOTIFY), JABBER_CAPS_USER_TUNE_NOTIFY,},
 	{	NULL,                             0                            }
 };
 
