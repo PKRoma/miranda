@@ -307,7 +307,7 @@ static int Service_FileSend(WPARAM wParam,LPARAM lParam)
 					if ( prefs->SendNotice ) {
 						mir_sntprintf(szTemp, SIZEOF(szTemp), 
 							_T("/NOTICE %s I am sending the file \'\002%s\002\' (%u kB) to you, please accept it. [IP: %s]"),
-							dci->sContactName.c_str(), sFileCorrect.c_str(), dci->dwSize/1024, ConvertIntegerToIP(ulAdr));
+							dci->sContactName.c_str(), sFileCorrect.c_str(), dci->dwSize/1024, (TCHAR*)_A2T(ConvertIntegerToIP(ulAdr)));
 						PostIrcMessage(szTemp);
 					}
 				}
