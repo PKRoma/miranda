@@ -5,10 +5,10 @@
 	Name="tabSRMM"
 	ProjectGUID="{99D26CA1-BFD4-4E77-9A1E-919E54CF33F7}"
 	RootNamespace="srmm"
-	SccProjectName=""
-	SccAuxPath=""
-	SccLocalPath=""
-	SccProvider="">
+	SccProjectName="SAK"
+	SccAuxPath="SAK"
+	SccLocalPath="SAK"
+	SccProvider="SAK">
 	<Platforms>
 		<Platform
 			Name="Win32"/>
@@ -837,46 +837,7 @@
 				RelativePath=".\generic_msghandlers.h">
 			</File>
 			<File
-				RelativePath="IcoLib.h">
-			</File>
-			<File
 				RelativePath="ImageDataObject.h">
-			</File>
-			<File
-				RelativePath="m_avatars.h">
-			</File>
-			<File
-				RelativePath="m_fontservice.h">
-			</File>
-			<File
-				RelativePath="m_ieview.h">
-			</File>
-			<File
-				RelativePath="m_MathModule.h">
-			</File>
-			<File
-				RelativePath="m_message.h">
-			</File>
-			<File
-				RelativePath="m_metacontacts.h">
-			</File>
-			<File
-				RelativePath=".\m_popup.h">
-			</File>
-			<File
-				RelativePath="m_smileyadd.h">
-			</File>
-			<File
-				RelativePath="m_Snapping_windows.h">
-			</File>
-			<File
-				RelativePath="m_tabsrmm.h">
-			</File>
-			<File
-				RelativePath="m_toptoolbar.h">
-			</File>
-			<File
-				RelativePath="m_updater.h">
 			</File>
 			<File
 				RelativePath="msgdlgutils.h">
@@ -910,9 +871,6 @@
 				RelativePath=".\res\angeli-icons\Add.ico">
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\addcontact.ico">
-			</File>
-			<File
 				RelativePath=".\res\angeli-icons\AddXP.ico">
 			</File>
 			<File
@@ -943,46 +901,13 @@
 				RelativePath="res\Details8.ico">
 			</File>
 			<File
-				RelativePath="..\..\src\res\dragcopy.cur">
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\dragcopy.cur">
-			</File>
-			<File
-				RelativePath="..\..\src\res\dropuser.cur">
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\dropuser.cur">
-			</File>
-			<File
 				RelativePath=".\res\error.ico">
 			</File>
 			<File
 				RelativePath=".\res\expand.ico">
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\history.ico">
-			</File>
-			<File
-				RelativePath=".\res\angeli-icons\History.ico">
-			</File>
-			<File
-				RelativePath="res\History32.ico">
-			</File>
-			<File
-				RelativePath="res\History8.ico">
-			</File>
-			<File
 				RelativePath=".\res\angeli-icons\HistoryXP.ico">
-			</File>
-			<File
-				RelativePath="..\..\src\res\hyperlin.cur">
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\hyperlin.cur">
-			</File>
-			<File
-				RelativePath="..\..\src\res\icon1.ico">
 			</File>
 			<File
 				RelativePath=".\res\in.ico">
@@ -1001,9 +926,6 @@
 			</File>
 			<File
 				RelativePath=".\res\angeli-icons\Multi.ico">
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\multisend.ico">
 			</File>
 			<File
 				RelativePath="res\Multisend32.ico">
@@ -1060,19 +982,16 @@
 				RelativePath=".\res\angeli-icons\Quote02.ico">
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\rename.ico">
-			</File>
-			<File
 				RelativePath=".\resource.rc">
 			</File>
 			<File
 				RelativePath=".\res\rightarrow.ico">
 			</File>
 			<File
-				RelativePath=".\res\save.ico">
+				RelativePath=".\res\angeli-icons\Save.ico">
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\Save.ico">
+				RelativePath=".\res\save.ico">
 			</File>
 			<File
 				RelativePath=".\res\angeli-icons\SaveXP.ico">
@@ -1097,9 +1016,6 @@
 			</File>
 			<File
 				RelativePath=".\res\unchecked.ico">
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\viewdetails.ico">
 			</File>
 			<File
 				RelativePath=".\res\visible.ico">
