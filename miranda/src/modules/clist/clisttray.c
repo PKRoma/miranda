@@ -777,87 +777,64 @@ int fnTrayIconProcessMessage(WPARAM wParam, LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 // processes tray icon's notifications
 
-int fnCListTrayNotify(MIRANDASYSTRAYNOTIFY *msn)
+int fnCListTrayNotify( MIRANDASYSTRAYNOTIFY* msn )
 {
- #if defined(_UNICODE)
-	if ( msn->dwInfoFlags & NIIF_INTERN_UNICODE ) {
-		if (msn && msn->cbSize == sizeof(MIRANDASYSTRAYNOTIFY) && msn->szInfo && msn->szInfoTitle) {
-			if (cli.trayIcon) {
-				NOTIFYICONDATAW nid = {0};
-				nid.cbSize = ( cli.shellVersion >= 5 ) ? sizeof(nid) : NOTIFYICONDATAW_V1_SIZE;
-				nid.hWnd = cli.hwndContactList;
-				if (msn->szProto) {
-					int j;
-					for (j = 0; j < cli.trayIconCount; j++) {
-						if (cli.trayIcon[j].szProto != NULL) {
-							if (strcmp(msn->szProto, cli.trayIcon[j].szProto) == 0) {
-								nid.uID = cli.trayIcon[j].id;
-								j = cli.trayIconCount;
-								continue;
-							}
-						} else {
-							if (cli.trayIcon[j].isBase) {
-								nid.uID = cli.trayIcon[j].id;
-								j = cli.trayIconCount;
-								continue;
-							}
-						}
-					} //for
-				} else {
-					nid.uID = cli.trayIcon[0].id;
+	UINT iconId = 0;
+
+	if ( msn == NULL )
+		return 1;
+	
+	if ( msn->cbSize != sizeof(MIRANDASYSTRAYNOTIFY) || msn->szInfo == NULL || msn->szInfoTitle == NULL )
+		return 1;
+
+	if ( cli.trayIcon == NULL )
+		return 2;
+
+	if ( msn->szProto ) {
+		int j;
+		for ( j = 0; j < cli.trayIconCount; j++ ) {
+			if ( cli.trayIcon[j].szProto != NULL ) {
+				if ( !strcmp( msn->szProto, cli.trayIcon[j].szProto )) {
+					iconId = cli.trayIcon[j].id;
+					break;
 				}
-				nid.uFlags = NIF_INFO;
-				lstrcpynW(nid.szInfo, (WCHAR *)msn->szInfo, SIZEOF(nid.szInfo));
-				lstrcpynW(nid.szInfoTitle, (WCHAR *)msn->szInfoTitle, SIZEOF(nid.szInfoTitle));
-				nid.szInfo[SIZEOF(nid.szInfo) - 1] = 0;
-				nid.szInfoTitle[SIZEOF(nid.szInfoTitle) - 1] = 0;
-				nid.uTimeout = msn->uTimeout;
-				nid.dwInfoFlags = (msn->dwInfoFlags & ~NIIF_INTERN_UNICODE);
-				return Shell_NotifyIconW(NIM_MODIFY, (void*) &nid) == 0;
-			}
-			return 2;
-		}
+			} 
+			else if ( cli.trayIcon[j].isBase ) {
+				iconId = cli.trayIcon[j].id;
+				break;
+		}	}
 	}
-	else 
-	#endif
-		if (msn && msn->cbSize == sizeof(MIRANDASYSTRAYNOTIFY) && msn->szInfo && msn->szInfoTitle) {
-			if (cli.trayIcon) {
-				NOTIFYICONDATAA nid = { 0 };
-				nid.cbSize = ( cli.shellVersion >= 5 ) ? sizeof(nid) : NOTIFYICONDATAA_V1_SIZE;
-				nid.hWnd = cli.hwndContactList;
-				if (msn->szProto) {
-					int j;
-					for (j = 0; j < cli.trayIconCount; j++) {
-						if (cli.trayIcon[j].szProto != NULL) {
-							if (strcmp(msn->szProto, cli.trayIcon[j].szProto) == 0) {
-								nid.uID = cli.trayIcon[j].id;
-								j = cli.trayIconCount;
-								continue;
-							}
-						}
-						else {
-							if (cli.trayIcon[j].isBase) {
-								nid.uID = cli.trayIcon[j].id;
-								j = cli.trayIconCount;
-								continue;
-							}
-						}
-					}               //for
-				}
-				else {
-					nid.uID = cli.trayIcon[0].id;
-				}
-				nid.uFlags = NIF_INFO;
-				lstrcpynA(nid.szInfo, msn->szInfo, sizeof(nid.szInfo));
-				lstrcpynA(nid.szInfoTitle, msn->szInfoTitle, sizeof(nid.szInfoTitle));
-				nid.uTimeout = msn->uTimeout;
-				nid.dwInfoFlags = msn->dwInfoFlags;
-				return Shell_NotifyIconA(NIM_MODIFY, (void *) &nid) == 0;
-			}
-			return 2;
-		}
-	return 1;
-}
+	else iconId = cli.trayIcon[0].id;
+
+#if defined(_UNICODE)
+	if ( msn->dwInfoFlags & NIIF_INTERN_UNICODE ) {
+		NOTIFYICONDATAW nid = {0};
+		nid.cbSize = ( cli.shellVersion >= 5 ) ? sizeof(nid) : NOTIFYICONDATAW_V1_SIZE;
+		nid.hWnd = cli.hwndContactList;
+		nid.uID = iconId;
+		nid.uFlags = NIF_INFO;
+		lstrcpynW( nid.szInfo, msn->tszInfo, SIZEOF( nid.szInfo ));
+		lstrcpynW( nid.szInfoTitle, msn->tszInfoTitle, SIZEOF( nid.szInfoTitle ));
+		nid.szInfo[ SIZEOF(nid.szInfo)-1 ] = 0;
+		nid.szInfoTitle[ SIZEOF(nid.szInfoTitle)-1 ] = 0;
+		nid.uTimeout = msn->uTimeout;
+		nid.dwInfoFlags = (msn->dwInfoFlags & ~NIIF_INTERN_UNICODE);
+		return Shell_NotifyIconW( NIM_MODIFY, ( void* )&nid ) == 0;
+	}
+	else
+#endif
+	{
+		NOTIFYICONDATAA nid = { 0 };
+		nid.cbSize = ( cli.shellVersion >= 5 ) ? sizeof(nid) : NOTIFYICONDATAA_V1_SIZE;
+		nid.hWnd = cli.hwndContactList;
+		nid.uID = iconId;
+		nid.uFlags = NIF_INFO;
+		lstrcpynA( nid.szInfo, msn->szInfo, sizeof( nid.szInfo ));
+		lstrcpynA( nid.szInfoTitle, msn->szInfoTitle, sizeof( nid.szInfoTitle ));
+		nid.uTimeout = msn->uTimeout;
+		nid.dwInfoFlags = msn->dwInfoFlags;
+		return Shell_NotifyIconA( NIM_MODIFY, ( void* )&nid ) == 0;
+}	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 

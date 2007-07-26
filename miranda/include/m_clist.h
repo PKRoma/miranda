@@ -571,8 +571,14 @@ typedef struct {
 typedef struct {
 	int cbSize;			// sizeof(MIRANDASYSTRAY)
 	char *szProto;		// protocol to show under (may have no effect)
-	char *szInfoTitle;	// only 64chars of it will be used
-	char *szInfo;		// only 256chars of it will be used
+	union {
+		char *szInfoTitle;	// only 64chars of it will be used
+		TCHAR *tszInfoTitle; // used if NIIF_INTERN_UNICODE is specified
+	};
+	union {
+      char *szInfo;		// only 256chars of it will be used
+		TCHAR *tszInfo;   // used if NIIF_INTERN_UNICODE is specified
+	};
 	DWORD dwInfoFlags;	// see NIIF_* stuff
 	UINT uTimeout;		// how long to show the tip for
 } MIRANDASYSTRAYNOTIFY;
