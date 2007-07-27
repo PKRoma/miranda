@@ -277,12 +277,12 @@ char* __stdcall JabberUrlEncode( const char* str )
 
 	for ( c=0,p=( char* )str; *p!='\0'; p++ ) {
 		switch ( *p ) {
-		case '&': c += 5; break;
-		case '\'': c += 6; break;
-		case '>': c += 4; break;
-		case '<': c += 4; break;
-		case '"': c += 6; break;
-		default: c++; break;
+			case '&': c += 5; break;
+			case '\'': c += 6; break;
+			case '>': c += 4; break;
+			case '<': c += 4; break;
+			case '"': c += 6; break;
+			default: c++; break;
 		}
 	}
 	if (( s=( char* )mir_alloc( c+1 )) != NULL ) {
@@ -293,7 +293,21 @@ char* __stdcall JabberUrlEncode( const char* str )
 			case '>': strcpy( q, "&gt;" ); q += 4; break;
 			case '<': strcpy( q, "&lt;" ); q += 4; break;
 			case '"': strcpy( q, "&quot;" ); q += 6; break;
-			default: *q = *p; q++; break;
+			default:
+				if ( *p > 0 && *p < 32 ) {
+					switch( *p ) {
+					case '\r':
+					case '\n':
+					case '\t':
+						*q = *p;
+						break;
+					default:
+						*q = '?';
+					}
+				}
+				else *q = *p; 
+				q++; 
+				break;
 			}
 		}
 		*q = '\0';
