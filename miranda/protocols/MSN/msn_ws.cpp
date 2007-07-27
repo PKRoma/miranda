@@ -85,33 +85,39 @@ bool ThreadData::isTimeout( void )
 	if ( --mWaitPeriod > 0 ) return false;
 
 	if ( !mIsMainThread && ( mJoinedCount <= 1 || mChatID[0] == 0 )) {
-		if ( mJoinedCount == 0 )
+		if ( mJoinedCount == 0 || termPending )
 			res = true;
 		else if ( p2p_getThreadSession( mJoinedContacts[0], mType ) != NULL )
 			res = false;
-		else if ( mType == SERVER_SWITCHBOARD ) {
-			MessageWindowInputData msgWinInData = { 
-				sizeof( MessageWindowInputData ), mJoinedContacts[0], MSG_WINDOW_UFLAG_MSG_BOTH 
-			};
+		else if ( mType == SERVER_SWITCHBOARD ) 
+		{
+			MessageWindowInputData msgWinInData = 
+				{ sizeof( MessageWindowInputData ), mJoinedContacts[0], MSG_WINDOW_UFLAG_MSG_BOTH };
 			MessageWindowData msgWinData = {0};
 			msgWinData.cbSize = sizeof( MessageWindowData );
 
 			res = MSN_CallService( MS_MSG_GETWINDOWDATA, ( WPARAM )&msgWinInData, ( LPARAM )&msgWinData ) != 0;
-			res = res || msgWinData.hwndWindow == NULL;
-			if ( res ) {	
+			res |= msgWinData.hwndWindow == NULL;
+			if ( res ) 
+			{	
 				msgWinInData.hContact = ( HANDLE )MSN_CallService( MS_MC_GETMETACONTACT, ( WPARAM )mJoinedContacts[0], 0 );
 				if ( msgWinInData.hContact != NULL ) {
 					res = MSN_CallService( MS_MSG_GETWINDOWDATA, ( WPARAM )&msgWinInData, ( LPARAM )&msgWinData ) != 0;
-					res = res || msgWinData.hwndWindow == NULL;
+					res |=  msgWinData.hwndWindow == NULL;
 				}
+			}
+			if ( res ) 
+			{	
+				WORD status = MSN_GetWord(mJoinedContacts[0], "Status", ID_STATUS_OFFLINE);
+				res &= status != ID_STATUS_OFFLINE && status != ID_STATUS_INVISIBLE;
 			}
 		}
 		else
 			res = true;
 	}
 
-	if ( res ) {
-
+	if ( res ) 
+	{
 		bool sbsess = mType == SERVER_SWITCHBOARD;
 
 		MSN_DebugLog( "Dropping the idle %s due to inactivity", sbsess ? "switchboard" : "p2p");
