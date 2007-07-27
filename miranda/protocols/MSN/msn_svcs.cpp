@@ -768,6 +768,10 @@ int MsnRecvFile( WPARAM wParam, LPARAM lParam )
 
 static int MsnRecvMessage(WPARAM wParam,LPARAM lParam)
 {
+	CCSDATA *ccs = ( CCSDATA* )lParam;
+	if (Lists_IsInList( LIST_FL, ( HANDLE )ccs->hContact ))
+		DBDeleteContactSetting( ccs->hContact, "CList", "Hidden" );
+
 	return MSN_CallService( MS_PROTO_RECVMSG, wParam, lParam );
 }
 
