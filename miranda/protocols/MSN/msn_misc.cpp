@@ -1341,6 +1341,17 @@ bool MSN_IsMyContact( HANDLE hContact )
 	return szProto != NULL && strcmp( msnProtocolName, szProto ) == 0;
 }
 
+bool MSN_IsMeByContact( HANDLE hContact, char* szEmail )
+{
+	char tEmail[ MSN_MAX_EMAIL_LEN ];
+	char *emailPtr = szEmail ? szEmail : tEmail;
+
+	*emailPtr = 0;
+	if (MSN_GetStaticString( "e-mail", hContact, emailPtr, sizeof( tEmail ))) 
+		return false;
+	
+	return strcmp(emailPtr, MyOptions.szEmail) == 0;
+}
 
 static void sttSwapInt64( LONGLONG* parValue )
 {

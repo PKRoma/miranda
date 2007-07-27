@@ -194,6 +194,7 @@ HANDLE      MSN_HContactFromEmailT( const TCHAR* msnEmail );
 HANDLE      MSN_HContactById( const char* szGuid );
 
 bool		MSN_IsMyContact( HANDLE hContact );
+bool		MSN_IsMeByContact( HANDLE hContact, char* szEmail  = NULL );
 int         MSN_AddContact( char* uhandle,char* nick ); //returns clist ID
 void        MSN_AddUser( HANDLE hContact, const char* email, int flags );
 void        MSN_AddAuthRequest( HANDLE hContact, const char *email, const char *nick );
@@ -265,7 +266,7 @@ void        InitCustomFolders(void);
 char*       httpParseHeader(char* buf, unsigned& status);
 int         sttDivideWords( char* parBuffer, int parMinItems, char** parDest );
 void		sttNotificationMessage( char* msgBody, bool isInitial );
-int			MSN_SendOIM(char* szEmail, char* msg);
+int			MSN_SendOIM(const char* szEmail, const char* msg);
 void		MSN_MakeDigest(const char* chl, char* dgst);
 int			MSN_GetPassportAuth( char* authChallengeInfo );
 char*		getNewUuid(void);

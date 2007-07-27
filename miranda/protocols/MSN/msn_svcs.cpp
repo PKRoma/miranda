@@ -380,10 +380,7 @@ int MsnWindowEvent(WPARAM wParam, LPARAM lParam)
 
 	if ( msgEvData->uType == MSG_WINDOW_EVT_OPENING ) {
 		if ( !MSN_IsMyContact( msgEvData->hContact )) return 0;
-
-		char tEmail[ MSN_MAX_EMAIL_LEN ];
-		if ( !MSN_GetStaticString( "e-mail", msgEvData->hContact, tEmail, sizeof( tEmail )) &&
-			!strcmp( tEmail, MyOptions.szEmail )) return 0;
+		if ( MSN_IsMeByContact( msgEvData->hContact )) return 0;
 
 		bool isOffline;
 		ThreadData* thread = MSN_StartSB(msgEvData->hContact, isOffline);
@@ -579,10 +576,7 @@ static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 	if (( MSN_GetDword( AI->hContact, "FlagBits", 0 ) & 0xf0000000 ) == 0 )
 		return GAIR_NOAVATAR;
 
-	char tEmail[ MSN_MAX_EMAIL_LEN ];
-	if ( !MSN_GetStaticString( "e-mail", AI->hContact, tEmail, sizeof( tEmail )) &&
-		!strcmp( tEmail, MyOptions.szEmail ))
-		return GAIR_NOAVATAR;
+	if ( MSN_IsMeByContact( AI->hContact )) return GAIR_NOAVATAR;
 
 	char szContext[ MAX_PATH ];
 	if ( MSN_GetStaticString(( AI->hContact == NULL ) ? "PictObject" : "PictContext", AI->hContact,
@@ -789,9 +783,7 @@ static int MsnSendFile( WPARAM wParam, LPARAM lParam )
 	if ( MSN_GetWord( ccs->hContact, "Status", ID_STATUS_OFFLINE ) == ID_STATUS_OFFLINE )
 		return 0;
 
-	char tEmail[ MSN_MAX_EMAIL_LEN ];
-	if ( !MSN_GetStaticString( "e-mail", ccs->hContact, tEmail, sizeof( tEmail )) && !strcmp( tEmail, MyOptions.szEmail ))
-		return 0;
+	if ( MSN_IsMeByContact( ccs->hContact )) return 0;
 
 	char** files = ( char** )ccs->lParam;
 
@@ -828,15 +820,15 @@ static int MsnSendFile( WPARAM wParam, LPARAM lParam )
 
 struct TFakeAckParams
 {
-	inline TFakeAckParams( HANDLE p2, LONG p3, LPCSTR p4 ) :
+	inline TFakeAckParams( HANDLE p2, long p3, const char* p4 ) :
 		hContact( p2 ),
 		id( p3 ),
 		msg( p4 )
 		{}
 
 	HANDLE	hContact;
-	LONG		id;
-	LPCSTR	msg;
+	long	id;
+	const char*	msg;
 };
 
 static void sttFakeAck( LPVOID param )
@@ -850,13 +842,45 @@ static void sttFakeAck( LPVOID param )
 	delete tParam;
 }
 
+static void sttSendOim( LPVOID param )
+{
+	const TFakeAckParams* tParam = ( TFakeAckParams* )param;
+
+	char tEmail[ MSN_MAX_EMAIL_LEN ];
+	MSN_GetStaticString( "e-mail", tParam->hContact, tEmail, sizeof( tEmail ));
+
+	int seq = MSN_SendOIM(tEmail, tParam->msg);
+
+	char* errMsg = NULL;
+	switch (seq)
+	{
+		case -1:
+			errMsg = MSN_Translate( "Offline messages could not be sent to this contact" );
+			break;
+
+		case -2:
+			errMsg = MSN_Translate( "You sent too many offline messages and have been locked out" );
+			break;
+
+		case -3:
+			errMsg = MSN_Translate( "You are not allowed to send offline messages to this user" );
+			break;
+	}
+	MSN_SendBroadcast( tParam->hContact, ACKTYPE_MESSAGE, errMsg ? ACKRESULT_FAILED : ACKRESULT_SUCCESS,
+		( HANDLE )tParam->id, ( LPARAM )errMsg );
+
+	mir_free(( void* )tParam->msg );
+	delete tParam;
+}
+
 static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 {
 	CCSDATA* ccs = ( CCSDATA* )lParam;
 	char *errMsg = NULL;
 
 	char tEmail[ MSN_MAX_EMAIL_LEN ];
-	if ( !MSN_GetStaticString( "e-mail", ccs->hContact, tEmail, sizeof( tEmail )) && !strcmp( tEmail, MyOptions.szEmail )) {
+	if ( MSN_IsMeByContact( ccs->hContact, tEmail )) 
+	{
 		errMsg = MSN_Translate( "You cannot send message to yourself" );
 		mir_forkthread( sttFakeAck, new TFakeAckParams( ccs->hContact, 999999, errMsg ));
 		return 999999;
@@ -912,14 +936,9 @@ static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 	{
 		if ( isOffline ) 
 		{
-			seq = MSN_SendOIM(tEmail, msg);
-			if (seq == -1)
-				errMsg = MSN_Translate( "Offline messages could not be sent to this contact" );
-			else if (seq == -2)
-				errMsg = MSN_Translate( "You sent too many offline messages and have been locked out" );
-			else if (seq == -3)
-				errMsg = MSN_Translate( "You are not allowed to send offline messages to this user" );
-			mir_forkthread( sttFakeAck, new TFakeAckParams( ccs->hContact, seq, errMsg ));
+			seq = rand();
+			mir_forkthread( sttSendOim, new TFakeAckParams( ccs->hContact, seq, msg ));
+			return seq;
 		}
 		else
 			seq = MsgQueue_Add( ccs->hContact, msgType, msg, 0, 0, rtlFlag );
@@ -945,9 +964,7 @@ static int MsnSendNudge( WPARAM wParam, LPARAM lParam )
 	HANDLE hContact = ( HANDLE )wParam;
 	char msg[ 1024 ];
 
-	char tEmail[ MSN_MAX_EMAIL_LEN ];
-	if ( !MSN_GetStaticString( "e-mail", hContact, tEmail, sizeof( tEmail )) && !strcmp( tEmail, MyOptions.szEmail ))
-		return 0;
+	if ( MSN_IsMeByContact( hContact )) return 0;
 
 	mir_snprintf( msg, sizeof( msg ),"N 69\r\nMIME-Version: 1.0\r\n"
 				"Content-Type: text/x-msnmsgr-datacast\r\n\r\n"
@@ -1260,9 +1277,7 @@ static int MsnUserIsTyping(WPARAM wParam, LPARAM lParam)
 
 	HANDLE hContact = ( HANDLE )wParam;
 
-	char tEmail[ MSN_MAX_EMAIL_LEN ];
-	if ( !MSN_GetStaticString( "e-mail", hContact, tEmail, sizeof( tEmail )) && !strcmp( tEmail, MyOptions.szEmail ))
-		return 0;
+	if ( MSN_IsMeByContact( hContact )) return 0;
 
 	bool typing = lParam == PROTOTYPE_SELFTYPING_ON;
 

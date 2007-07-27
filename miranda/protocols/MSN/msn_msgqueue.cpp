@@ -151,7 +151,8 @@ void  MsgQueue_Clear( HANDLE hContact, bool msg )
 		{
 			const MsgQueueEntry& E = msgQueue[ i ];
 			if ( E.msgSize == 0 )
-				MSN_SendBroadcast( E.hContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, ( HANDLE )E.seq, 0 );
+				MSN_SendBroadcast( E.hContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, 
+					( HANDLE )E.seq, ( LPARAM )MSN_Translate( "Message delivery failed" ));
 			mir_free( E.message );
 		}
 		mir_free( msgQueue );
@@ -168,7 +169,8 @@ void  MsgQueue_Clear( HANDLE hContact, bool msg )
 			if (E.hContact == hContact && (!msg || E.msgSize == 0))
 			{
 				if ( E.msgSize == 0 )
-					MSN_SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, ( HANDLE )E.seq, 0 );
+					MSN_SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, ( HANDLE )E.seq, 
+						( LPARAM )MSN_Translate( "Message delivery failed" ));
 				mir_free( E.message );
 
 				msgQueueCount--;

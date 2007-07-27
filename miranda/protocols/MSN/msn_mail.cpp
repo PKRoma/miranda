@@ -306,7 +306,7 @@ static char oimDigest[64] = "";
 static unsigned oimMsgNum = 0;
 static char oimUID[64] = "";
 
-int MSN_SendOIM(char* szEmail, char* msg)
+int MSN_SendOIM(const char* szEmail, const char* msg)
 {
 	char szAuth[530];
 	char num[32];

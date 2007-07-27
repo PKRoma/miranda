@@ -103,10 +103,9 @@ static int MsnInviteCommand( WPARAM wParam, LPARAM lParam )
 	}
 
 	char tEmail[ MSN_MAX_EMAIL_LEN ];
-	if ( !MSN_GetStaticString( "e-mail", ( HANDLE )wParam, tEmail, sizeof( tEmail ))) {
-		if ( !strcmp( tEmail, MyOptions.szEmail ))
-			return 0;
-
+	if ( MSN_IsMeByContact(( HANDLE )wParam, tEmail )) return 0;
+	if ( *tEmail ) 
+	{
 		for ( int j=0; j < tActiveThreads[ tChosenThread ]->mJoinedCount; j++ ) {
 			// if the user is already in the chat session
 			if ( tActiveThreads[ tChosenThread ]->mJoinedContacts[j] == ( HANDLE )wParam ) {
@@ -144,9 +143,7 @@ static int MsnSendNetMeeting( WPARAM wParam, LPARAM lParam )
 
 	HANDLE hContact = HANDLE(wParam);
 
-	char tEmail[ MSN_MAX_EMAIL_LEN ];
-	if ( !MSN_GetStaticString( "e-mail", hContact, tEmail, sizeof( tEmail )) && !strcmp( tEmail, MyOptions.szEmail ))
-		return 0;
+	if ( MSN_IsMeByContact( hContact )) return 0;
 
 	ThreadData* thread = MSN_GetThreadByContact( hContact );
 

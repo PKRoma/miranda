@@ -1429,6 +1429,9 @@ LBL_InvalidCommand:
 			break;
 
 		case ' KAN':   //********* NAK: section 8.7 Instant Messages
+			if ( info->mJoinedCount > 0 && MyOptions.SlowSend )
+				MSN_SendBroadcast( info->mJoinedContacts[0], ACKTYPE_MESSAGE, ACKRESULT_FAILED, 
+					( HANDLE )trid, ( LPARAM )MSN_Translate( "Message delivery failed" ));
 			MSN_DebugLog( "Message send failed (trid=%d)", trid );
 			break;
 
