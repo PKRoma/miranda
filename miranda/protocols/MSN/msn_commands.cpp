@@ -1175,12 +1175,16 @@ LBL_InvalidCommand:
 
 			WORD lastStatus = ID_STATUS_OFFLINE;
 			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, NULL, 0, 0 );
-			if ( hContact != NULL) {
+			if ( hContact != NULL ) 
+			{
 				MSN_SetStringUtf( hContact, "Nick", data.userNick );
-				lastStatus = MSN_GetWord( hContact, "Status", ID_STATUS_OFFLINE);
-				MSN_SetWord( hContact, "Status", ( WORD )MSNStatusToMiranda( data.userStatus ));
+				lastStatus = MSN_GetWord( hContact, "Status", ID_STATUS_OFFLINE );
+				MSN_SetWord( hContact, "Status", MSNStatusToMiranda( data.userStatus ));
 				MSN_SetDword( hContact, "IdleTS", strcmp( data.userStatus, "IDL" ) ? 0 : time( NULL ));
+				if ( lastStatus == ID_STATUS_OFFLINE || lastStatus == ID_STATUS_INVISIBLE )
+					DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
 			}
+
 
 			if ( tArgs > 3 && tArgs <= 5 ) {
 				UrlDecode( data.cmdstring );

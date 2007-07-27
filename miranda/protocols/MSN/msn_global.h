@@ -174,7 +174,7 @@ void  MSN_ShowPopup( const HANDLE hContact, const TCHAR* msg, int flags );
 
 LONG		MSN_SendPacket( HANDLE, const char* cmd, const char* params, ... );
 char*		MirandaStatusToMSN( int status );
-int			MSNStatusToMiranda( const char* status );
+WORD		MSNStatusToMiranda( const char* status );
 void        HtmlDecode( char* str );
 char*       HtmlEncode( const char* str );
 WCHAR*      HtmlEncodeW( const WCHAR* str );

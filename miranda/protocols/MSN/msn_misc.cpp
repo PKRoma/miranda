@@ -56,7 +56,7 @@ char*  MirandaStatusToMSN( int status )
 		default:					return "NLN";
 }	}
 
-int  MSNStatusToMiranda(const char *status)
+WORD  MSNStatusToMiranda(const char *status)
 {
 	switch((*(PDWORD)status&0x00FFFFFF)|0x20000000) {
 		case ' LDI': return ID_STATUS_ONLINE;
