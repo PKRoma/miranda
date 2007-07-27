@@ -1992,9 +1992,12 @@ static int ske_GetSkinFromDB(char * szSection, SKINOBJECTSLIST * Skin)
 	Skin->szSkinPlace=DBGetStringA(NULL,SKIN,"SkinFolder");
 	if (!Skin->szSkinPlace || (strchr(Skin->szSkinPlace, '%') && !DBGetContactSettingByte(NULL,SKIN,"Modified",0)) ) 
 	{
+		BOOL bOnlyObjects=FALSE;
+		if (Skin->szSkinPlace && strchr(Skin->szSkinPlace, '%'))
+			bOnlyObjects=TRUE;
 		mir_free(Skin->szSkinPlace);
 		Skin->szSkinPlace=mir_strdup("%Default%");
-		ske_LoadSkinFromResource( FALSE );
+		ske_LoadSkinFromResource( bOnlyObjects );
 	}
 	//Load objects
 	{

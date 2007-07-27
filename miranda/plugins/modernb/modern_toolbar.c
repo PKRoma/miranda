@@ -407,9 +407,9 @@ static void   sttReposButtons(MTBINFO * mti)
 			if (hdwp)
 			{
 				if (nextX+mti->nButtonWidth +mti->nButtonSpace <= nBarSize)
-					hdwp=DeferWindowPos(hdwp, mtbi->hWindow, NULL, nextX, 0, 0,	0,	SWP_NOSIZE|SWP_NOZORDER|SWP_SHOWWINDOW);
+					hdwp=DeferWindowPos(hdwp, mtbi->hWindow, NULL, nextX, 0, 0,	0,	SWP_NOSIZE|SWP_NOZORDER|SWP_SHOWWINDOW|SWP_NOREDRAW);
 				else
-					hdwp=DeferWindowPos(hdwp, mtbi->hWindow, NULL, nextX, 0, 0,	0,	SWP_NOSIZE|SWP_NOZORDER|SWP_HIDEWINDOW);
+					hdwp=DeferWindowPos(hdwp, mtbi->hWindow, NULL, nextX, 0, 0,	0,	SWP_NOSIZE|SWP_NOZORDER|SWP_HIDEWINDOW|SWP_NOREDRAW);
 			}
 			nextX+=mti->nButtonWidth+mti->nButtonSpace;
 		}
