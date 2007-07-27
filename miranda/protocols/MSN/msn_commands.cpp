@@ -1063,6 +1063,11 @@ LBL_InvalidCommand:
 			// in here, the first contact is the chat ID, starting from the second will be actual contact
 			// if only 1 person left in conversation
 			int personleft = MSN_ContactLeft( info, hContact );
+
+			int temp_status = MSN_GetWord(hContact, "Status", ID_STATUS_OFFLINE);
+			if (temp_status == ID_STATUS_INVISIBLE && MSN_GetThreadByContact(hContact) == NULL)
+				MSN_SetWord( hContact, "Status", ID_STATUS_OFFLINE);
+
 			// see if the session is quit due to idleness
 			if ( personleft == 1 && !lstrcmpA( data.isIdle, "1" ) ) {
 				GCDEST gcd = { msnProtocolName, NULL, GC_EVENT_INFORMATION };
@@ -1191,10 +1196,6 @@ LBL_InvalidCommand:
 				}
 
 				if (( dwValue & 0xf0000000 ) && data.cmdstring[0] && strcmp( data.cmdstring, "0" )) {
-					int temp_status = MSN_GetWord(hContact, "Status", ID_STATUS_OFFLINE);
-					if (temp_status == (WORD)ID_STATUS_OFFLINE)
-						MSN_SetWord( hContact, "Status", (WORD)ID_STATUS_INVISIBLE);
-
 					MSN_SetString( hContact, "PictContext", data.cmdstring );
 
 					char* tmpbuf = NEWSTR_ALLOCA(data.cmdstring);
@@ -1249,6 +1250,10 @@ LBL_InvalidCommand:
 				MSN_SetDword( hContact, "FlagBits", strtoul( data.flags, NULL, 10 ));
 
 			MSN_ContactJoined( info, hContact );
+
+			int temp_status = MSN_GetWord(hContact, "Status", ID_STATUS_OFFLINE);
+			if (temp_status == ID_STATUS_OFFLINE)
+				MSN_SetWord( hContact, "Status", ID_STATUS_INVISIBLE);
 
 			int thisContact = atol( data.strThisContact );
 			if ( thisContact != 1 )

@@ -568,6 +568,17 @@ ThreadData::~ThreadData()
 
 	p2p_clearDormantSessions();
 
+	if (mType == SERVER_SWITCHBOARD)
+	{
+		for (int i=0; i<mJoinedCount; ++i)
+		{
+			const HANDLE hContact = mJoinedContacts[i];
+			int temp_status = MSN_GetWord(hContact, "Status", ID_STATUS_OFFLINE);
+			if (temp_status == ID_STATUS_INVISIBLE && MSN_GetThreadByContact(hContact) == NULL)
+				MSN_SetWord( hContact, "Status", ID_STATUS_OFFLINE);
+		}
+	}
+
 	mir_free( mJoinedContacts );
 
 	if ( hQueueMutex ) WaitForSingleObject( hQueueMutex, INFINITE );
