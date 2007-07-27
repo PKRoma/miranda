@@ -715,6 +715,9 @@ void JabberXStatusInit( void );
 void JabberXStatusUninit( void );
 
 void JabberSetContactMood( HANDLE hContact, const char* moodName, const TCHAR* moodText );
+void JabberSetContactTune( HANDLE hContact,  TCHAR* szArtist, TCHAR* szLength, TCHAR* szSource, TCHAR* szTitle, TCHAR* szTrack, TCHAR* szUri );
+
+int JabberSetListeningTo( WPARAM wParam, LPARAM lParam );
 
 ///////////////////////////////////////////////////////////////////////////////
 // UTF encode helper

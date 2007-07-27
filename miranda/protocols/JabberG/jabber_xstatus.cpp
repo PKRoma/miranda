@@ -33,6 +33,8 @@ Last change by : $Author: ghazan $
 #include "m_icolib.h"
 #include "resource.h"
 
+#include "sdk/m_proto_listeningto.h"
+
 #define NUM_XMODES 61
 
 static BOOL CALLBACK SetMoodMsgDlgProc( HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lParam );
@@ -159,40 +161,140 @@ BOOL JabberSendPepMood( int nMoodNumber, TCHAR* szMoodText )
 	return TRUE;
 }
 
-// BOOL JabberSendPepTune( TCHAR* szArtist, TCHAR* szLength, TCHAR* szSource, TCHAR* szTitle, TCHAR* szTrack, TCHAR* szUri )
-// {
-// 	if ( !jabberOnline || !jabberPepSupported )
-// 		return FALSE;
-// 	
-// 	XmlNodeIq iq( "set", JabberSerialNext() );
-// 	XmlNode* pubsubNode = iq.addChild( "pubsub" );
-// 	pubsubNode->addAttr( "xmlns", JABBER_FEAT_PUBSUB );
-// 
-// 	if ( !szArtist && !szLength && !szSource && !szTitle && !szUri ) {
-// 		XmlNode* retractNode = pubsubNode->addChild( "retract" );
-// 		retractNode->addAttr( "node", JABBER_FEAT_USER_TUNE );
-// 		retractNode->addAttr( "notify", 1 );
-// 		XmlNode* itemNode = retractNode->addChild( "item" );
-// 		itemNode->addAttr( "id", "current" );
-// 	}
-// 	else {
-// 		XmlNode* publishNode = pubsubNode->addChild( "publish" );
-// 		publishNode->addAttr( "node", JABBER_FEAT_USER_TUNE );
-// 		XmlNode* itemNode = publishNode->addChild( "item" );
-// 		itemNode->addAttr( "id", "current" );
-// 		XmlNode* tuneNode = itemNode->addChild( "tune" );
-// 		tuneNode->addAttr( "xmlns", JABBER_FEAT_USER_TUNE );
-// 		if ( szArtist ) tuneNode->addChild( "artist", szArtist );
-// 		if ( szLength ) tuneNode->addChild( "length", szLength );
-// 		if ( szSource ) tuneNode->addChild( "length", szSource );
-// 		if ( szTitle ) tuneNode->addChild( "length", szTitle );
-// 		if ( szTrack ) tuneNode->addChild( "track", szTrack );
-// 		if ( szUri ) tuneNode->addChild( "uri", szUri );
-// 	}
-// 	jabberThreadInfo->send( iq );
-// 
-// 	return TRUE;
-// }
+BOOL JabberSendPepTune( TCHAR* szArtist, TCHAR* szLength, TCHAR* szSource, TCHAR* szTitle, TCHAR* szTrack, TCHAR* szUri )
+{
+	if ( !jabberOnline || !jabberPepSupported )
+		return FALSE;
+
+	XmlNodeIq iq( "set", JabberSerialNext() );
+	XmlNode* pubsubNode = iq.addChild( "pubsub" );
+	pubsubNode->addAttr( "xmlns", JABBER_FEAT_PUBSUB );
+
+	// uncomment then pep services will support node retraction
+
+//	if ( !szArtist && !szLength && !szSource && !szTitle && !szUri ) {
+//		XmlNode* retractNode = pubsubNode->addChild( "retract" );
+//		retractNode->addAttr( "node", JABBER_FEAT_USER_TUNE );
+//		retractNode->addAttr( "notify", 1 );
+//		XmlNode* itemNode = retractNode->addChild( "item" );
+//		itemNode->addAttr( "id", "current" );
+//	}
+//	else 
+	{
+		XmlNode* publishNode = pubsubNode->addChild( "publish" );
+		publishNode->addAttr( "node", JABBER_FEAT_USER_TUNE );
+		XmlNode* itemNode = publishNode->addChild( "item" );
+		itemNode->addAttr( "id", "current" );
+		XmlNode* tuneNode = itemNode->addChild( "tune" );
+		tuneNode->addAttr( "xmlns", JABBER_FEAT_USER_TUNE );
+		if ( szArtist ) tuneNode->addChild( "artist", szArtist );
+		if ( szLength ) tuneNode->addChild( "length", szLength );
+		if ( szSource ) tuneNode->addChild( "source", szSource );
+		if ( szTitle ) tuneNode->addChild( "title", szTitle );
+		if ( szTrack ) tuneNode->addChild( "track", szTrack );
+		if ( szUri ) tuneNode->addChild( "uri", szUri );
+	}
+	jabberThreadInfo->send( iq );
+
+	return TRUE;
+}
+
+void JabberSetContactTune( HANDLE hContact,  TCHAR* szArtist, TCHAR* szLength, TCHAR* szSource, TCHAR* szTitle, TCHAR* szTrack, TCHAR* szUri )
+{
+	if ( !szArtist && !szTitle ) {
+		JDeleteSetting( hContact, "ListeningTo" );
+		return;
+	}
+
+	TCHAR *szListeningTo;
+	if ( ServiceExists( MS_LISTENINGTO_GETPARSEDTEXT )) {
+		LISTENINGTOINFO li;
+		ZeroMemory( &li, sizeof( li ));
+		li.cbSize = sizeof( li );
+		li.dwFlags = LTI_TCHAR;
+		li.ptszArtist = szArtist;
+		li.ptszLength = szLength;
+		li.ptszAlbum = szSource;
+		li.ptszTitle = szTitle;
+		li.ptszTrack = szTrack;
+		szListeningTo = (TCHAR *)CallService( MS_LISTENINGTO_GETPARSEDTEXT, (WPARAM)_T("%title% - %artist%"), (LPARAM)&li );
+	}
+	else {
+		szListeningTo = (TCHAR *) mir_alloc( 2048 * sizeof( TCHAR ));
+		mir_sntprintf( szListeningTo, 2047, _T("%s - %s"), szTitle ? szTitle : _T(""), szArtist ? szArtist : _T("") );
+	}
+	JSetStringT( hContact, "ListeningTo", szListeningTo );
+	mir_free( szListeningTo );
+}
+
+TCHAR* a2tf( const TCHAR* str, BOOL unicode )
+{
+	if ( str == NULL )
+		return NULL;
+
+#if defined( _UNICODE )
+	if ( unicode )
+		return mir_tstrdup( str );
+	else {
+		int codepage = CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
+
+		int cbLen = MultiByteToWideChar( codepage, 0, (char*)str, -1, 0, 0 );
+		TCHAR* result = ( TCHAR* )mir_alloc( sizeof(TCHAR)*( cbLen+1 ));
+		if ( result == NULL )
+			return NULL;
+
+		MultiByteToWideChar( codepage, 0, (char*)str, -1, result, cbLen );
+		result[ cbLen ] = 0;
+		return result;
+	}
+#else
+	return mir_strdup( str );
+#endif
+}
+
+void overrideStr( TCHAR*& dest, const TCHAR* src, BOOL unicode, const TCHAR* def = NULL )
+{
+	if ( dest != NULL )
+	{
+		mir_free( dest );
+		dest = NULL;
+	}
+
+	if ( src != NULL )
+		dest = a2tf( src, unicode );
+	else if ( def != NULL )
+		dest = mir_tstrdup( def );
+}
+
+int JabberSetListeningTo( WPARAM wParam, LPARAM lParam )
+{
+	LISTENINGTOINFO *cm = (LISTENINGTOINFO *)lParam;
+	if ( !cm || cm->cbSize != sizeof(LISTENINGTOINFO) ) {
+		JabberSendPepTune( NULL, NULL, NULL, NULL, NULL, NULL );
+		JDeleteSetting( NULL, "ListeningTo" );
+	}
+	else {
+		TCHAR *szArtist = NULL, *szLength = NULL, *szSource = NULL;
+		TCHAR *szTitle = NULL, *szTrack = NULL;
+
+		BOOL unicode = cm->dwFlags & LTI_UNICODE;
+
+		overrideStr( szArtist, cm->ptszArtist, unicode );
+		overrideStr( szSource, cm->ptszAlbum, unicode );
+		overrideStr( szTitle, cm->ptszTitle, unicode );
+		overrideStr( szTrack, cm->ptszTrack, unicode );
+		overrideStr( szLength, cm->ptszLength, unicode );
+
+		JabberSendPepTune( szArtist, szLength, szSource, szTitle, szTrack, NULL );
+		JabberSetContactTune( NULL, szArtist, szLength, szSource, szTitle, szTrack, NULL );
+		mir_free( szArtist );
+		mir_free( szLength );
+		mir_free( szSource );
+		mir_free( szTitle );
+		mir_free( szTrack );
+	}
+	return 0;
+}
 
 
 /////////////////////////////////////////////////////////////////////////////////////////

@@ -37,6 +37,8 @@ Last change by : $Author$
 #include "jabber_list.h"
 #include "jabber_iq.h"
 #include "jabber_caps.h"
+#include "sdk/m_proto_listeningto.h"
+
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // JabberAddToList - adds a contact to the contact list
@@ -1623,6 +1625,8 @@ int JabberSvcInit( void )
 	JCreateServiceFunction( PS_GETSTATUS, JabberGetStatus );
 	JCreateServiceFunction( PS_SETAWAYMSG, JabberSetAwayMsg );
 	JCreateServiceFunction( PS_FILERESUME, JabberFileResume );
+
+	JCreateServiceFunction( PS_SET_LISTENINGTO, JabberSetListeningTo );
 
 	JCreateServiceFunction( PSS_GETINFO, JabberGetInfo );
 	JCreateServiceFunction( PSS_SETAPPARENTMODE, JabberSetApparentMode );

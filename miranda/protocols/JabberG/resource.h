@@ -320,9 +320,10 @@
 #define IDC_CHECK_BM_AUTOJOIN           3014
 #define IDC_ZLIB                        3015
 #define IDI_PRIVACY_LISTS               3016
-#define IDC_ZLIB2                       3016
 #define IDC_LOG_CHATSTATES              3016
 #define IDI_SERVICE_DISCOVERY           3017
+#define IDC_ENABLE_USER_MOOD            3017
+#define IDC_ENABLE_USER_TUNE            3018
 #define IDM_MESSAGE                     10002
 #define IDM_CLEAR                       10003
 #define IDM_VOICE                       10005

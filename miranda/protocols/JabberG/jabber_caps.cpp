@@ -73,6 +73,8 @@ JabberFeatCapPair g_JabberFeatCapPairs[] = {
 JabberFeatCapPair g_JabberFeatCapPairsExt[] = {
 	{	_T(JABBER_EXT_SECUREIM),          JABBER_CAPS_SECUREIM         },
 	{	_T(JABBER_EXT_COMMANDS),          JABBER_CAPS_COMMANDS         },
+	{	_T(JABBER_EXT_USER_MOOD),         JABBER_CAPS_USER_MOOD_NOTIFY },
+	{	_T(JABBER_EXT_USER_TUNE),         JABBER_CAPS_USER_TUNE_NOTIFY },
 	{	_T(__VERSION_STRING),             JABBER_CAPS_MIRANDA_PARTIAL  },
 	{	NULL,                             0                            }
 };

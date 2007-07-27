@@ -519,6 +519,8 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 		CheckDlgButton( hwndDlg, IDC_AUTOJOIN_BOOKMARKS, JGetByte( "AutoJoinBookmarks", FALSE ));
 		CheckDlgButton( hwndDlg, IDC_ZLIB, JGetByte( "EnableZlib", FALSE ));
 		CheckDlgButton( hwndDlg, IDC_LOG_CHATSTATES, JGetByte( "LogChatstates", FALSE ));
+		CheckDlgButton( hwndDlg, IDC_ENABLE_USER_MOOD, JGetByte( "EnableUserMood", TRUE ));
+		CheckDlgButton( hwndDlg, IDC_ENABLE_USER_TUNE, JGetByte( "EnableUserTune", FALSE ));
 		return TRUE;
 	}
 	case WM_COMMAND:
@@ -589,6 +591,9 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			JSetByte( "AutoJoinBookmarks",   ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_AUTOJOIN_BOOKMARKS ));
 			JSetByte( "EnableZlib",          ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_ZLIB ));
 			JSetByte( "LogChatstates",       ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_LOG_CHATSTATES ));
+			JSetByte( "EnableUserMood",      ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_ENABLE_USER_MOOD ));
+			JSetByte( "EnableUserTune",      ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_ENABLE_USER_TUNE ));
+			JabberSendPresence( jabberStatus, true );
 			return TRUE;
 		}
 		break;

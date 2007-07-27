@@ -941,34 +941,73 @@ static void JabberProcessCompressed( XmlNode *node, void *userdata )
 
 static void JabberProcessPubsubEvent( XmlNode *node )
 {
- 	XmlNode *eventNode = JabberXmlGetChildWithGivenAttrValue( node, "event", "xmlns", _T(JABBER_FEAT_PUBSUB_EVENT));
- 	XmlNode *itemsNode = JabberXmlGetChildWithGivenAttrValue( eventNode, "items", "node", _T(JABBER_FEAT_USER_MOOD));
- 	if ( !itemsNode )
-		return;
-
- 	XmlNode *itemNode = JabberXmlGetChild( itemsNode, "item" );
- 	if ( !itemNode )
-		return;
-
-   XmlNode *moodNode = JabberXmlGetChildWithGivenAttrValue( itemNode, "mood", "xmlns", _T(JABBER_FEAT_USER_MOOD));
- 	if ( !moodNode )
-		return;
-
-	char*  moodType = NULL;
- 	TCHAR* moodText = NULL;
- 	for ( int i=0; i<moodNode->numChild; i++ ) {
- 		if ( !strcmp( moodNode->child[i]->name, "text" ))
- 			moodText = moodNode->child[i]->text;
- 		else
- 			moodType = moodNode->child[i]->name;
- 	}
-
 	TCHAR* from = JabberXmlGetAttrValue( node, "from" );
-	if ( from ) {
- 		HANDLE hContact = JabberHContactFromJID( from );
- 		if ( hContact )
-			JabberSetContactMood( hContact, moodType, moodText );
-}	}
+	if ( !from )
+		return;
+
+	HANDLE hContact = JabberHContactFromJID( from );
+	if ( !hContact )
+		return;
+
+	XmlNode *eventNode = JabberXmlGetChildWithGivenAttrValue( node, "event", "xmlns", _T(JABBER_FEAT_PUBSUB_EVENT));
+	if ( !eventNode )
+		return;
+
+	XmlNode *itemsNode = JabberXmlGetChildWithGivenAttrValue( eventNode, "items", "node", _T(JABBER_FEAT_USER_MOOD));
+	if ( itemsNode && JGetByte( "EnableUserMood", TRUE )) {
+		XmlNode *itemNode = JabberXmlGetChild( itemsNode, "item" );
+		if ( !itemNode )
+			return;
+
+		XmlNode *moodNode = JabberXmlGetChildWithGivenAttrValue( itemNode, "mood", "xmlns", _T(JABBER_FEAT_USER_MOOD));
+		if ( !moodNode )
+			return;
+
+		char*  moodType = NULL;
+		TCHAR* moodText = NULL;
+		for ( int i=0; i<moodNode->numChild; i++ ) {
+			if ( !strcmp( moodNode->child[i]->name, "text" ))
+				moodText = moodNode->child[i]->text;
+			else
+				moodType = moodNode->child[i]->name;
+		}
+		JabberSetContactMood( hContact, moodType, moodText );
+	}
+	else if ( JGetByte( "EnableUserTune", FALSE ) && (itemsNode = JabberXmlGetChildWithGivenAttrValue( eventNode, "items", "node", _T(JABBER_FEAT_USER_TUNE)))) {
+		XmlNode *itemNode = JabberXmlGetChild( itemsNode, "item" );
+		if ( !itemNode )
+			return;
+
+		XmlNode *tuneNode = JabberXmlGetChildWithGivenAttrValue( itemNode, "tune", "xmlns", _T(JABBER_FEAT_USER_TUNE));
+		if ( !tuneNode )
+			return;
+
+		TCHAR *szArtist = NULL, *szLength = NULL, *szSource = NULL;
+		TCHAR *szTitle = NULL, *szTrack = NULL, *szUri = NULL;
+		XmlNode* childNode;
+
+		childNode = JabberXmlGetChild( tuneNode, "artist" );
+		if ( childNode && childNode->text )
+			szArtist = childNode->text;
+		childNode = JabberXmlGetChild( tuneNode, "length" );
+		if ( childNode && childNode->text )
+			szLength = childNode->text;
+		childNode = JabberXmlGetChild( tuneNode, "source" );
+		if ( childNode && childNode->text )
+			szSource = childNode->text;
+		childNode = JabberXmlGetChild( tuneNode, "title" );
+		if ( childNode && childNode->text )
+			szTitle = childNode->text;
+		childNode = JabberXmlGetChild( tuneNode, "track" );
+		if ( childNode && childNode->text )
+			szTrack = childNode->text;
+		childNode = JabberXmlGetChild( tuneNode, "uri" );
+		if ( childNode && childNode->text )
+			szUri = childNode->text;
+
+		JabberSetContactTune( hContact, szArtist, szLength, szSource, szTitle, szTrack, szUri );
+	}
+}
 
 static void JabberProcessMessage( XmlNode *node, void *userdata )
 {

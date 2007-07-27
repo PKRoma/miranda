@@ -963,6 +963,18 @@ void __stdcall JabberSendPresenceTo( int status, TCHAR* to, XmlNode* extra )
 		_tcscat( szExtCaps, _T(JABBER_EXT_COMMANDS) );
 	}
 
+	if ( JGetByte( "EnableUserMood", TRUE )) {
+		if ( _tcslen( szExtCaps ))
+			_tcscat( szExtCaps, _T(" "));
+		_tcscat( szExtCaps, _T(JABBER_EXT_USER_MOOD) );
+	}
+
+	if ( JGetByte( "EnableUserTune", FALSE )) {
+		if ( _tcslen( szExtCaps ))
+			_tcscat( szExtCaps, _T(" "));
+		_tcscat( szExtCaps, _T(JABBER_EXT_USER_TUNE) );
+	}
+
 	if ( _tcslen( szExtCaps ))
 		c->addAttr( "ext", szExtCaps );
 
