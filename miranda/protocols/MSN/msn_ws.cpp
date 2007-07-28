@@ -97,19 +97,19 @@ bool ThreadData::isTimeout( void )
 			msgWinData.cbSize = sizeof( MessageWindowData );
 
 			res = MSN_CallService( MS_MSG_GETWINDOWDATA, ( WPARAM )&msgWinInData, ( LPARAM )&msgWinData ) != 0;
-			res |= msgWinData.hwndWindow == NULL;
+			res |= (msgWinData.hwndWindow == NULL);
 			if ( res ) 
 			{	
 				msgWinInData.hContact = ( HANDLE )MSN_CallService( MS_MC_GETMETACONTACT, ( WPARAM )mJoinedContacts[0], 0 );
 				if ( msgWinInData.hContact != NULL ) {
 					res = MSN_CallService( MS_MSG_GETWINDOWDATA, ( WPARAM )&msgWinInData, ( LPARAM )&msgWinData ) != 0;
-					res |=  msgWinData.hwndWindow == NULL;
+					res |= (msgWinData.hwndWindow == NULL);
 				}
 			}
 			if ( res ) 
 			{	
 				WORD status = MSN_GetWord(mJoinedContacts[0], "Status", ID_STATUS_OFFLINE);
-				res &= status != ID_STATUS_OFFLINE && status != ID_STATUS_INVISIBLE;
+				res &= (status != ID_STATUS_OFFLINE && status != ID_STATUS_INVISIBLE);
 			}
 		}
 		else

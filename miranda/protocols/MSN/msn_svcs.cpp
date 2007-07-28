@@ -848,7 +848,7 @@ static void sttFakeAck( LPVOID param )
 
 static void sttSendOim( LPVOID param )
 {
-	const TFakeAckParams* tParam = ( TFakeAckParams* )param;
+	TFakeAckParams* tParam = ( TFakeAckParams* )param;
 
 	char tEmail[ MSN_MAX_EMAIL_LEN ];
 	MSN_GetStaticString( "e-mail", tParam->hContact, tEmail, sizeof( tEmail ));
