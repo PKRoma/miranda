@@ -779,14 +779,14 @@ BOOL CALLBACK UserDetailsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			EnableWindow(GetDlgItem( hwndDlg, IDC_WILDCARD), bAdvanced);
 
 			if ( !bAdvanced ) {
-				SetDlgItemTextA( hwndDlg, IDC_DEFAULT, STR_BASIC);
+				SetDlgItemText( hwndDlg, IDC_DEFAULT, TranslateT(STR_BASIC));
 				if ( !DBGetContactSettingTString( hContact, IRCPROTONAME, "Default", &dbv)) {
 					SetDlgItemText( hwndDlg, IDC_WILDCARD, dbv.ptszVal);
 					DBFreeVariant(&dbv);
 				}
 			}
 			else {
-				SetDlgItemTextA( hwndDlg, IDC_DEFAULT, STR_ADVANCED);
+				SetDlgItemText( hwndDlg, IDC_DEFAULT, TranslateT(STR_ADVANCED));
 				if ( !DBGetContactSettingTString( hContact, IRCPROTONAME, "UWildcard", &dbv)) {
 					SetDlgItemText( hwndDlg, IDC_WILDCARD, dbv.ptszVal);
 					DBFreeVariant(&dbv);
@@ -875,7 +875,7 @@ BOOL CALLBACK UserDetailsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 		}		
 
 		if ( HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDC_RADIO1 ) {
-			SetDlgItemTextA( hwndDlg, IDC_DEFAULT, STR_BASIC );
+			SetDlgItemText( hwndDlg, IDC_DEFAULT, TranslateT(STR_BASIC));
 
 			DBVARIANT dbv;
 			if ( !DBGetContactSettingTString( hContact, IRCPROTONAME, "Default", &dbv )) {
@@ -887,7 +887,7 @@ BOOL CALLBACK UserDetailsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 		
 		if ( HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDC_RADIO2 ) {
 			DBVARIANT dbv;
-			SetDlgItemTextA( hwndDlg, IDC_DEFAULT, STR_ADVANCED );
+			SetDlgItemText( hwndDlg, IDC_DEFAULT, TranslateT(STR_ADVANCED));
 			if ( !DBGetContactSettingTString( hContact, IRCPROTONAME, "UWildcard", &dbv )) {
 				SetDlgItemText( hwndDlg, IDC_WILDCARD, dbv.ptszVal );
 				DBFreeVariant( &dbv );
