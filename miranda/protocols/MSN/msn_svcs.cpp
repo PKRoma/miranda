@@ -662,14 +662,25 @@ static int MsnGetAvatarCaps(WPARAM wParam, LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnGetAwayMsg - reads the current status message for a user
 
-static void __cdecl MsnGetAwayMsgThread( HANDLE hContact )
+typedef struct AwayMsgInfo_tag
 {
+	int id;
+	HANDLE hContact;
+} AwayMsgInfo;
+
+static void __cdecl MsnGetAwayMsgThread( void* param )
+{
+	Sleep( 150 );
+
+	AwayMsgInfo *inf = ( AwayMsgInfo* )param;
 	DBVARIANT dbv;
-	if ( !DBGetContactSetting( hContact, "CList", "StatusMsg", &dbv )) {
-		MSN_SendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE )1, ( LPARAM )dbv.pszVal );
+	if ( !DBGetContactSetting( inf->hContact, "CList", "StatusMsg", &dbv )) {
+		MSN_SendBroadcast( inf->hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE )inf->id, ( LPARAM )dbv.pszVal );
 		MSN_FreeVariant( &dbv );
 	}
-	else MSN_SendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE )1, ( LPARAM )0 );
+	else MSN_SendBroadcast( inf->hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE )inf->id, ( LPARAM )0 );
+
+	mir_free( inf );
 }
 
 static int MsnGetAwayMsg(WPARAM wParam,LPARAM lParam)
@@ -677,9 +688,13 @@ static int MsnGetAwayMsg(WPARAM wParam,LPARAM lParam)
 	CCSDATA* ccs = ( CCSDATA* )lParam;
 	if ( ccs == NULL )
 		return 0;
+	
+	AwayMsgInfo *inf = (AwayMsgInfo*)mir_alloc( sizeof( AwayMsgInfo ));
+	inf->hContact = ccs->hContact;
+	inf->id = rand();
 
-	mir_forkthread( MsnGetAwayMsgThread, ccs->hContact );
-	return 1;
+	mir_forkthread( MsnGetAwayMsgThread, inf );
+	return inf->id;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
