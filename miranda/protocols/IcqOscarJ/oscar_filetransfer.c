@@ -270,6 +270,7 @@ void SafeReleaseFileTransfer(void **ft)
       SAFE_FREE(&oft->rawFileName);
       SAFE_FREE(&oft->szPath);
       SAFE_FREE(&oft->szThisFile);
+      SAFE_FREE(&oft->szThisPath);
       if (oft->files)
       {
         int i;
@@ -524,38 +525,42 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
           oscar_tlv* tlv = getTLV(chain, 0x2711, 1);
           BYTE* tBuf = tlv->pData;
           WORD tLen = tlv->wLen;
+          WORD wFlag;
 
-          tBuf += 2; // FT flag
+          unpackWord(&tBuf, &wFlag); // FT flag
           unpackWord(&tBuf, &ft->wFilesCount);
           unpackDWord(&tBuf, (DWORD*)&ft->qwTotalSize);
           tLen -= 8;
-          if (ft->wFilesCount == 1)
-          { // Filename
-            wFilenameLength = tLen - 1;
-            pszFileName = (char*)_alloca(tLen);
-            unpackString(&tBuf, pszFileName, wFilenameLength);
-            pszFileName[wFilenameLength] = '\0';
-            { // apply Filename encoding
-              oscar_tlv* charset = getTLV(chain, 0x2712, 1);
+          // Filename / Directory Name
+          wFilenameLength = tLen - 1;
+          pszFileName = (char*)_alloca(tLen);
+          unpackString(&tBuf, pszFileName, wFilenameLength);
+          pszFileName[wFilenameLength] = '\0';
+          { // apply Filename / Directory Name encoding
+            oscar_tlv* charset = getTLV(chain, 0x2712, 1);
 
-              if (charset)
-              {
-                char* szEnc = (char*)_alloca(charset->wLen + 1);
-                char* szAnsi;
+            if (charset)
+            {
+              char* szEnc = (char*)_alloca(charset->wLen + 1);
 
-                strncpy(szEnc, charset->pData, charset->wLen);
-                szEnc[charset->wLen] = '\0';
-                pszFileName = ApplyEncoding(pszFileName, szEnc);
-                // DB event is ansi only!
-                szAnsi = (char*)_alloca(strlennull(pszFileName) + 2);
-                utf8_decode_static(pszFileName, szAnsi, strlennull(pszFileName) + 1);
-                SAFE_FREE(&pszFileName);
-                pszFileName = szAnsi;
-              }
+              strncpy(szEnc, charset->pData, charset->wLen);
+              szEnc[charset->wLen] = '\0';
+              pszFileName = ApplyEncoding(pszFileName, szEnc);
             }
+            else
+              pszFileName = ansi_to_utf8(pszFileName);
+          }
+          if (ft->wFilesCount == 1)
+          { // Filename - use for DB event (convert to Ansi - File DB events does not support Unicode)
+            char* szAnsi = (char*)_alloca(strlennull(pszFileName) + 2);
+            utf8_decode_static(pszFileName, szAnsi, strlennull(pszFileName) + 1);
+            SAFE_FREE(&pszFileName);
+            pszFileName = szAnsi;
           }
           else
-          { // for multi-file transfer we do not display "folder" name, but create only a simple notice
+          { // Save Directory name for future use
+            ft->szThisPath = pszFileName;
+            // for multi-file transfer we do not display "folder" name, but create only a simple notice
             pszFileName = (char*)_alloca(64);
 
             null_snprintf(pszFileName, 64, ICQTranslate("%d Files"), ft->wFilesCount);
@@ -966,7 +971,13 @@ DWORD oftFileAllow(HANDLE hContact, WPARAM wParam, LPARAM lParam)
     return 0; // Invalid contact
 
   ft->szPath = ansi_to_utf8((char *)lParam);
-
+  if (ft->szThisPath)
+  { // Append Directory name to the save path, when transfering a directory
+    ft->szPath = (char*)realloc(ft->szPath, strlennull(ft->szPath) + strlennull(ft->szThisPath) + 4);
+    NormalizeBackslash(ft->szPath);
+    strcat(ft->szPath, ft->szThisPath);
+    NormalizeBackslash(ft->szPath);
+  }
 #ifdef _DEBUG
   NetLog_Direct("OFT: Request accepted, saving to '%s'.", ft->szPath);
 #endif
@@ -1993,8 +2004,6 @@ static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBu
         SAFE_FREE(&ft->szThisPath); // release previous path
         if (szFile)
         {
-          char *szNewDir;
-
           ft->szThisPath = ft->szThisFile;
           szFile[0] = '\0'; // split that strings
           ft->szThisFile = null_strdup(szFile + 1);
@@ -2006,11 +2015,6 @@ static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBu
             NetLog_Direct("Invalid path information");
             break;
           }
-          szNewDir = (char*)_alloca(strlennull(ft->szPath)+strlennull(ft->szThisPath)+2);
-          strcpy(szNewDir, ft->szPath);
-          NormalizeBackslash(szNewDir);
-          strcat(szNewDir, ft->szThisPath);
-          MakeDirUtf(szNewDir); // create directory
         }
         else
           ft->szThisPath = null_strdup("");
@@ -2029,6 +2033,10 @@ static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBu
       NormalizeBackslash(szFullPath);
       strcat(szFullPath, ft->szThisPath);
       NormalizeBackslash(szFullPath);
+      // make sure the dest dir exists
+      if (MakeDirUtf(szFullPath))
+        NetLog_Direct("Failed to create destination directory!");
+
       strcat(szFullPath, ft->szThisFile);
       // we joined the full path to dest file
       SAFE_FREE(&ft->szThisFile);
