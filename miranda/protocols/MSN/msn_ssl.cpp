@@ -549,16 +549,19 @@ char* SSL_OpenSsl::getSslResult( const char* parUrl, const char* parAuthInfo, co
 				}
 				result[nBytes] = 0;
 
-				if ( nBytes > 0 ) {
-					if ( strncmp( result, "HTTP/1.1 100", 12 ) == 0 ) {
-						char* rest = strstr( result + 12, "HTTP/1.1" );
-						memmove(result, rest, nBytes + 1 - ( rest - result )); 
-					}
-
+				if ( nBytes > 0 ) 
+				{
 					MSN_DebugLog( "SSL read successfully read %d bytes:", nBytes );
 					MSN_CallService( MS_NETLIB_LOG, ( WPARAM )hNetlibUser, ( LPARAM )result );
+
+					if ( strncmp( result, "HTTP/1.1 100", 12 ) == 0 ) 
+					{
+						char* rest = strstr( result + 12, "HTTP/1.1" );
+						if (rest) memmove(result, rest, nBytes + 1 - ( rest - result )); 
+						else nBytes = 0;
+					}
 				}
-				else
+				if (nBytes == 0)
 				{
 					mir_free( result );
 					result = NULL;
