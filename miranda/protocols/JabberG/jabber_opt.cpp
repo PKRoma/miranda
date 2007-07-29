@@ -404,8 +404,6 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			int nPriority = atoi( text );
 			if ( nPriority > 127) nPriority = 127;
 			if ( nPriority < -128) nPriority = -128;
-			if ( JGetWord( NULL, "Priority", 5 ) != ( WORD )nPriority )
-				reconnectRequired = TRUE;
 			JSetWord( NULL, "Priority", ( WORD )nPriority );
 
 			JSetByte( "SavePassword", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_SAVEPASSWORD ));
@@ -460,6 +458,8 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 			if ( reconnectRequired && jabberConnected )
 				MessageBox( hwndDlg, TranslateT( "These changes will take effect the next time you connect to the Jabber network." ), TranslateT( "Jabber Protocol Option" ), MB_OK|MB_SETFOREGROUND );
+
+			JabberSendPresence( jabberStatus, true );
 
 			return TRUE;
 		}
