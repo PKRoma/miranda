@@ -280,14 +280,14 @@ static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 				{	GCSESSION gcw = {0};
 					gcw.cbSize = sizeof(GCSESSION);
 					gcw.iType = GCW_CHATROOM;
-					gcw.pszID = t2a(jid);
+					gcw.ptszID = jid;
 					gcw.pszModule = jabberProtoName;
-					gcw.pszName = NEWSTR_ALLOCA(gcw.pszID);
-					char* p = ( char* )strchr( gcw.pszName, '@' );
+					gcw.dwFlags = GC_TCHAR;
+					gcw.ptszName = NEWTSTR_ALLOCA(gcw.ptszID);
+					TCHAR* p = ( TCHAR* )_tcschr( gcw.ptszName, '@' );
 					if ( p != NULL )
 						*p = 0;
 					CallService( MS_GC_NEWSESSION, 0, ( LPARAM )&gcw );
-					mir_free((void*)gcw.pszID);
 				}
 				{	XmlNodeIq iq( "set" );
 					XmlNode* query = iq.addQuery( "jabber:iq:roster" );

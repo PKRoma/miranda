@@ -105,7 +105,7 @@ void __cdecl JabberByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 	if ( JGetByte( "BsProxyManual" , FALSE ) ) {
 		proxyJid = NULL;
 		if ( !DBGetContactSetting( NULL, jabberProtoName, "BsProxyServer", &dbv )) {
-			proxyJid = a2t( dbv.pszVal );
+			proxyJid = mir_a2t( dbv.pszVal );
 			JFreeVariant( &dbv );
 		}
 
@@ -462,16 +462,11 @@ void JabberByteSendViaProxy( JABBER_BYTE_TRANSFER *jbt )
 
 	NETLIBOPENCONNECTION nloc = { 0 };
 	nloc.cbSize = sizeof( nloc );
-	#if defined( _UNICODE )
-		nloc.szHost = u2a(szHost);
-	#else
-		nloc.szHost = szHost;
-	#endif
+	nloc.szHost = mir_t2a(szHost);
 	nloc.wPort = port;
 	hConn = ( HANDLE ) JCallService( MS_NETLIB_OPENCONNECTION, ( WPARAM ) hNetlibUser, ( LPARAM )&nloc );
-	#if defined( _UNICODE )
-		mir_free((void*)nloc.szHost);
-	#endif
+	mir_free((void*)nloc.szHost);
+
 	if ( hConn != NULL ) {
 		jbt->hConn = hConn;
 
@@ -659,16 +654,11 @@ void __cdecl JabberByteReceiveThread( JABBER_BYTE_TRANSFER *jbt )
 				JabberLog( "bytestream_recv connecting to " TCHAR_STR_PARAM ":%d", szHost, port );
 				NETLIBOPENCONNECTION nloc = { 0 };
 				nloc.cbSize = sizeof( nloc );
-				#if defined( _UNICODE )
-					nloc.szHost = u2a(szHost);
-				#else
-					nloc.szHost = szHost;
-				#endif
+				nloc.szHost = mir_t2a(szHost);
 				nloc.wPort = port;
 				hConn = ( HANDLE ) JCallService( MS_NETLIB_OPENCONNECTION, ( WPARAM ) hNetlibUser, ( LPARAM )&nloc );
-				#if defined( _UNICODE )
-					mir_free((void*)nloc.szHost);
-				#endif
+				mir_free((void*)nloc.szHost);
+
 				if ( hConn == NULL ) {
 					JabberLog( "bytestream_recv_connection connection failed ( %d ), try next streamhost", WSAGetLastError());
 					continue;

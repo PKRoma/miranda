@@ -908,7 +908,7 @@ int __stdcall JabberCountryNameToId( TCHAR* ptszCountryName )
 		JCallService( MS_UTILS_GETCOUNTRYLIST, ( WPARAM )&ctryCount, ( LPARAM )&countries );
 
 		#if defined ( _UNICODE )
-			const char* p = ( const char* )t2a( ptszCountryName );
+			const char* p = ( const char* )mir_t2a( ptszCountryName );
 			szName = NEWSTR_ALLOCA( p );
 			mir_free(( void* )p );
 		#else
@@ -1151,58 +1151,6 @@ int __stdcall JabberGetPictureType( const char* buf )
 	}
 
 	return PA_FORMAT_UNKNOWN;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// Unicode functions
-
-TCHAR* a2t( const char* str )
-{
-	if ( str == NULL )
-		return NULL;
-
-	#if defined( _UNICODE )
-		return a2u( str );
-	#else
-		return mir_strdup( str );
-	#endif
-}
-
-char* t2a( const TCHAR* src )
-{
-	#if defined( _UNICODE )
-		return u2a( src );
-	#else
-		return mir_strdup( src );
-	#endif
-}
-
-char* u2a( const wchar_t* src )
-{
-	int codepage = CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
-
-	int cbLen = WideCharToMultiByte( codepage, 0, src, -1, NULL, 0, NULL, NULL );
-	char* result = ( char* )mir_alloc( cbLen+1 );
-	if ( result == NULL )
-		return NULL;
-
-	WideCharToMultiByte( codepage, 0, src, -1, result, cbLen, NULL, NULL );
-	result[ cbLen ] = 0;
-	return result;
-}
-
-wchar_t* a2u( const char* src )
-{
-	int codepage = CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
-
-	int cbLen = MultiByteToWideChar( codepage, 0, src, -1, NULL, 0 );
-	wchar_t* result = ( wchar_t* )mir_alloc( sizeof( wchar_t )*(cbLen+1));
-	if ( result == NULL )
-		return NULL;
-
-	MultiByteToWideChar( codepage, 0, src, -1, result, cbLen );
-	result[ cbLen ] = 0;
-	return result;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

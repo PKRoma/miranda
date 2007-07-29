@@ -129,11 +129,7 @@ int JabberAddToListByEvent( WPARAM wParam, LPARAM lParam )
 	lastName = firstName + strlen( firstName ) + 1;
 	jid = lastName + strlen( lastName ) + 1;
 
-	#if defined( _UNICODE )
-		TCHAR* newJid = a2u( jid );
-	#else
-		TCHAR* newJid = mir_strdup( jid );
-	#endif
+	TCHAR* newJid = mir_a2t( jid );
 	hContact = ( HANDLE ) AddToListByJID( newJid, wParam );
 	mir_free( newJid );
 	return ( int ) hContact;
@@ -173,11 +169,7 @@ int JabberAuthAllow( WPARAM wParam, LPARAM lParam )
 	XmlNode presence( "presence" ); presence.addAttr( "to", jid ); presence.addAttr( "type", "subscribed" );
 	jabberThreadInfo->send( presence );
 
-	#if defined( _UNICODE )
-		TCHAR* newJid = a2u( jid );
-	#else
-		TCHAR* newJid = mir_strdup( jid );
-	#endif
+	TCHAR* newJid = mir_a2t( jid );
 
 	// Automatically add this user to my roster if option is enabled
 	if ( JGetByte( "AutoAdd", TRUE ) == TRUE ) {
@@ -259,13 +251,11 @@ static void __cdecl JabberBasicSearchThread( JABBER_SEARCH_BASIC *jsb )
 	jsr.hdr.firstName = "";
 	jsr.hdr.lastName = "";
 	jsr.hdr.email = jsb->jid;
-	#if defined( _UNICODE )
-		TCHAR* jid = a2u(jsb->jid);
-		_tcsncpy( jsr.jid, jid, SIZEOF( jsr.jid ));
-		mir_free( jid );
-	#else
-		strncpy( jsr.jid, jsb->jid, SIZEOF( jsr.jid ));
-	#endif
+
+	TCHAR* jid = mir_a2t(jsb->jid);
+	_tcsncpy( jsr.jid, jid, SIZEOF( jsr.jid ));
+	mir_free( jid );
+
 	jsr.jid[SIZEOF( jsr.jid )-1] = '\0';
 	JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, ( HANDLE ) jsb->hSearch, ( LPARAM )&jsr );
 	JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, ( HANDLE ) jsb->hSearch, 0 );
@@ -356,7 +346,7 @@ static TCHAR* sttSettingToTchar( DBCONTACTWRITESETTING* cws )
 	switch( cws->value.type ) {
 	case DBVT_ASCIIZ:
 		#if defined( _UNICODE )
-			return a2u( cws->value.pszVal );
+			return mir_a2u( cws->value.pszVal );
 		#else
 			return mir_strdup( cws->value.pszVal );
 		#endif
@@ -764,28 +754,16 @@ static void __cdecl JabberGetAwayMsgThread( HANDLE hContact )
 						_tcscat( str, r[i].statusMessage );
 				}	}
 
-				#if defined( _UNICODE )
-					char* msg = u2a(str);
-				#else
-					char* msg = str;
-				#endif
+				char* msg = mir_t2a(str);
 				JSendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE ) 1, ( LPARAM )msg );
-				#if defined( _UNICODE )
-					mir_free(msg);
-				#endif
+				mir_free(msg);
 				return;
 			}
 
 			if ( item->itemResource.statusMessage != NULL ) {
-				#if defined( _UNICODE )
-					char* msg = u2a(item->itemResource.statusMessage);
-				#else
-					char* msg = item->itemResource.statusMessage;
-				#endif
+				char* msg = mir_t2a(item->itemResource.statusMessage);
 				JSendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE ) 1, ( LPARAM )msg );
-				#if defined( _UNICODE )
-					mir_free(msg);
-				#endif
+				mir_free(msg);
 				return;
 			}
 		}

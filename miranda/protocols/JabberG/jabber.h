@@ -719,12 +719,4 @@ void JabberSetContactTune( HANDLE hContact,  TCHAR* szArtist, TCHAR* szLength, T
 
 int JabberSetListeningTo( WPARAM wParam, LPARAM lParam );
 
-///////////////////////////////////////////////////////////////////////////////
-// UTF encode helper
-
-char*    t2a( const TCHAR* src );
-char*    u2a( const wchar_t* src );
-wchar_t* a2u( const char* src );
-TCHAR*   a2t( const char* src );
-
 #endif

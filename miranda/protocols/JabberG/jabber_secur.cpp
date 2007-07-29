@@ -63,9 +63,9 @@ char* TNtlmAuth::getChallenge( const TCHAR* challenge )
 	if ( !hProvider )
 		return NULL;
 
-	char *text = ( !lstrcmp( challenge, _T("="))) ? mir_strdup( "" ) : t2a( challenge ), *result;
+	char *text = ( !lstrcmp( challenge, _T("="))) ? mir_strdup( "" ) : mir_t2a( challenge ), *result;
 	if ( info->password[0] != 0 ) {
-		char* user = t2a( info->username );
+		char* user = mir_t2a( info->username );
 		result = Netlib_NtlmCreateResponse( hProvider, text, user, info->password );
 		mir_free( user );
 	}
@@ -182,7 +182,7 @@ TPlainAuth::~TPlainAuth()
 
 char* TPlainAuth::getInitialRequest()
 {
-	char *temp = t2a(info->username);
+	char *temp = mir_t2a(info->username);
 	int size = strlen(temp)*2+strlen(info->server)+strlen(info->password)+3;
 	char *toEncode = ( char* )alloca( size+1 );
 	mir_snprintf( toEncode, size+1, "%s@%s%c%s%c%s", temp, info->server, 0, temp, 0, info->password );

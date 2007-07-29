@@ -166,11 +166,11 @@ static void JabberIqResultGetSearchFields( XmlNode *iqNode, void *userdata )
 					Data *MyData=(Data*)malloc(sizeof(Data));
 					memset(MyData,0,sizeof(Data));
 
-					MyData->Label=a2t(chNode->name);
-					MyData->Var=a2t(chNode->name);
-					MyData->defValue=mir_tstrdup(chNode->text);
-					MyData->Order=Order;
-					if (MyData->defValue) MyData->bReadOnly=TRUE;
+					MyData->Label = mir_a2t(chNode->name);
+					MyData->Var = mir_a2t(chNode->name);
+					MyData->defValue = mir_tstrdup(chNode->text);
+					MyData->Order = Order;
+					if (MyData->defValue) MyData->bReadOnly = TRUE;
 					PostMessage(searchHandleDlg,WM_USER+10,(WPARAM)FALSE,(LPARAM)MyData);
 					Order++;
 		}	}	}
@@ -271,7 +271,7 @@ static void JabberSearchReturnResults( HANDLE  id, void * pvUsersInfo /*LIST<voi
 			   _sntprintf(buff,SIZEOF(buff),_T("%s ( %s )"),nick, Results.jsr.jid);
 		   else
 				_tcsncpy(buff, nick, SIZEOF(buff));	   
-		   Results.jsr.hdr.nick=nick ? t2a(buff): NULL;
+		   Results.jsr.hdr.nick=nick ? mir_t2a(buff): NULL;
 	   }
 	   JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SEARCHRESULT, id, (LPARAM) &Results );
 	   if (Results.jsr.hdr.nick) mir_free(Results.jsr.hdr.nick);
@@ -353,7 +353,7 @@ static void JabberIqResultAdvancedSearch( XmlNode *iqNode, void *userdata )
 				for ( int j=0; j < itemNode->numChild; j++ ) {
 					XmlNode* child = itemNode->child[j];
 					if ( child->name ) {
-						TCHAR * szColumnName=a2t(child->name);
+						TCHAR* szColumnName = mir_a2t(child->name);
 						if ( child->text && child->text[0] != _T('\0')) {
 							TCHAR *keyReturned;
 							mColumnsNames.insertCopyKey(szColumnName,_T(""),&keyReturned, CopyKey, DestroyKey);
@@ -757,7 +757,7 @@ int JabberSearchByAdvanced( WPARAM wParam, LPARAM lParam )
 			TCHAR szFieldValue[100];
 			GetWindowText(dat->pJSInf[i].hwndValueItem, szFieldValue, SIZEOF(szFieldValue));
 			if ( szFieldValue[0] != _T('\0')) {
-				char* szTemp=t2a(dat->pJSInf[i].szFieldName);
+				char* szTemp = mir_t2a(dat->pJSInf[i].szFieldName);
 				field = query->addChild( szTemp, szFieldValue );
 				mir_free(szTemp);
 				fRequestNotEmpty=TRUE;

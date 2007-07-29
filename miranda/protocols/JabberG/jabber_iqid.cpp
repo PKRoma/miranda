@@ -715,7 +715,7 @@ static char* sttGetText( XmlNode* node, char* tag )
 	if ( n == NULL )
 		return NULL;
 
-	return t2a( n->text );
+	return mir_t2a( n->text );
 }
 
 void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
@@ -1226,19 +1226,19 @@ void JabberIqResultSetSearch( XmlNode *iqNode, void *userdata )
 					jsr.jid[ SIZEOF( jsr.jid )-1] = '\0';
 					JabberLog( "Result jid = " TCHAR_STR_PARAM, jid );
 					if (( n=JabberXmlGetChild( itemNode, "nick" ))!=NULL && n->text!=NULL )
-						jsr.hdr.nick = t2a( n->text );
+						jsr.hdr.nick = mir_t2a( n->text );
 					else
 						jsr.hdr.nick = mir_strdup( "" );
 					if (( n=JabberXmlGetChild( itemNode, "first" ))!=NULL && n->text!=NULL )
-						jsr.hdr.firstName = t2a( n->text );
+						jsr.hdr.firstName = mir_t2a( n->text );
 					else
 						jsr.hdr.firstName = mir_strdup( "" );
 					if (( n=JabberXmlGetChild( itemNode, "last" ))!=NULL && n->text!=NULL )
-						jsr.hdr.lastName = t2a( n->text );
+						jsr.hdr.lastName = mir_t2a( n->text );
 					else
 						jsr.hdr.lastName = mir_strdup( "" );
 					if (( n=JabberXmlGetChild( itemNode, "email" ))!=NULL && n->text!=NULL )
-						jsr.hdr.email = t2a( n->text );
+						jsr.hdr.email = mir_t2a( n->text );
 					else
 						jsr.hdr.email = mir_strdup( "" );
 					JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, ( HANDLE ) id, ( LPARAM )&jsr );
@@ -1295,19 +1295,19 @@ void JabberIqResultExtSearch( XmlNode *iqNode, void *userdata )
 					JabberLog( "Result jid = " TCHAR_STR_PARAM, jsr.jid );
 				}
 				else if ( !lstrcmp( fieldName, _T("nickname")))
-					jsr.hdr.nick = ( n->text != NULL ) ? t2a( n->text ) : mir_strdup( "" );
+					jsr.hdr.nick = ( n->text != NULL ) ? mir_t2a( n->text ) : mir_strdup( "" );
 				else if ( !lstrcmp( fieldName, _T("fn"))) {
 					mir_free( jsr.hdr.firstName );
-					jsr.hdr.firstName = ( n->text != NULL ) ? t2a(n->text) : mir_strdup( "" );
+					jsr.hdr.firstName = ( n->text != NULL ) ? mir_t2a(n->text) : mir_strdup( "" );
 				}
 				else if ( !lstrcmp( fieldName, _T("given"))) {
 					mir_free( jsr.hdr.firstName );
-					jsr.hdr.firstName = ( n->text != NULL ) ? t2a(n->text) : mir_strdup( "" );
+					jsr.hdr.firstName = ( n->text != NULL ) ? mir_t2a(n->text) : mir_strdup( "" );
 				}
 				else if ( !lstrcmp( fieldName, _T("family")))
-					jsr.hdr.lastName = ( n->text != NULL ) ? t2a(n->text) : mir_strdup( "" );
+					jsr.hdr.lastName = ( n->text != NULL ) ? mir_t2a(n->text) : mir_strdup( "" );
 				else if ( !lstrcmp( fieldName, _T("email")))
-					jsr.hdr.email = ( n->text != NULL ) ? t2a(n->text) : mir_strdup( "" );
+					jsr.hdr.email = ( n->text != NULL ) ? mir_t2a(n->text) : mir_strdup( "" );
 			}
 
 			JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, ( HANDLE ) id, ( LPARAM )&jsr );

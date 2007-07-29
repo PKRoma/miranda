@@ -463,7 +463,7 @@ int JabberAdhocSetStatusHandler( XmlNode* iqNode, void* usedata, CJabberIqInfo* 
 		fieldNode = JabberXmlGetChildWithGivenAttrValue( xNode, "field", "var", _T("status-message") );
 		if ( fieldNode && (valueNode = JabberXmlGetChild( fieldNode, "value" ))) {
 			if ( valueNode->text )
-				szStatusMessage = t2a(valueNode->text);
+				szStatusMessage = mir_t2a(valueNode->text);
 		}
 
 		// skip f...ng away dialog

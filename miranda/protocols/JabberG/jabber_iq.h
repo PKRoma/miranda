@@ -100,7 +100,6 @@ void JabberSetBookmarkRequest (XmlNodeIq& iqId);
 unsigned int  __stdcall JabberSerialNext( void );
 HANDLE        __stdcall JabberHContactFromJID( const TCHAR* jid , BOOL bStripResource );
 void          __stdcall JabberLog( const char* fmt, ... );
-TCHAR*        a2t( const char* str );
 
 void  __stdcall replaceStr( char*& dest, const char* src );
 void  __stdcall replaceStr( WCHAR*& dest, const WCHAR* src );
@@ -539,7 +538,7 @@ public:
 					pInfo->m_pChildNode = JabberXmlGetFirstChild( pNode );
 				
 				if (pInfo->m_pChildNode && (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_CHILD_TAG_NAME))
-					pInfo->m_szChildTagName = a2t( pInfo->m_pChildNode->name );
+					pInfo->m_szChildTagName = mir_a2t( pInfo->m_pChildNode->name );
 				if (pInfo->m_pChildNode && (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_CHILD_TAG_XMLNS))
 					pInfo->m_szChildTagXmlns = JabberXmlGetAttrValue( pInfo->m_pChildNode, "xmlns" );
 			}
@@ -582,7 +581,7 @@ public:
 		if ( !pFirstChild || !pFirstChild->name )
 			return FALSE;
 		
-		TCHAR *szTagName = a2t( pFirstChild->name );
+		TCHAR *szTagName = mir_a2t( pFirstChild->name );
 		TCHAR *szXmlns = JabberXmlGetAttrValue( pFirstChild, "xmlns" );
 
 		BOOL bHandled = FALSE;

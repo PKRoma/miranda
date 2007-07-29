@@ -445,7 +445,7 @@ static void sttPerformBrowse(HWND hwndDlg)
 		}	}
 		else if (!lstrcmp(szJid, _T(SD_FAKEJID_CONFERENCES))) {
 			sttBrowseMode = SD_BROWSE_CONFERENCES;
-			TCHAR *szServerJid = a2t(jabberThreadInfo->server);
+			TCHAR *szServerJid = mir_a2t(jabberThreadInfo->server);
 			CJabberIqInfo* pInfo = g_JabberIqManager.AddHandler( JabberIqResultServiceDiscoveryRootItems, JABBER_IQ_TYPE_GET, szServerJid );
 			pInfo->m_pUserData = _T(JABBER_FEAT_MUC);
 			pInfo->SetTimeout( 30000 );
@@ -457,7 +457,7 @@ static void sttPerformBrowse(HWND hwndDlg)
 		}
 		else if (!lstrcmp(szJid, _T(SD_FAKEJID_AGENTS))) {
 			sttBrowseMode = SD_BROWSE_AGENTS;
-			TCHAR *szServerJid = a2t(jabberThreadInfo->server);
+			TCHAR *szServerJid = mir_a2t(jabberThreadInfo->server);
 			CJabberIqInfo* pInfo = g_JabberIqManager.AddHandler( JabberIqResultServiceDiscoveryRootItems, JABBER_IQ_TYPE_GET, szServerJid );
 			pInfo->m_pUserData = _T("jabber:iq:gateway");
 			pInfo->SetTimeout( 30000 );
@@ -1422,9 +1422,7 @@ void JabberServiceDiscoveryShowMenu(CJabberSDNode *pNode, HTREELISTITEM hItem, P
 			JSetByte( "BsDirect", FALSE );
 			JSetByte( "BsProxy", TRUE );
 			JSetByte( "BsProxyManual", TRUE );
-			char *ansiJid = t2a(pNode->GetJid());
-			JSetString( NULL, "BsProxyServer", ansiJid );
-			mir_free(ansiJid);
+			JSetStringT( NULL, "BsProxyServer", pNode->GetJid());
 			break;
 		}
 

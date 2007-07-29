@@ -613,7 +613,7 @@ static void JabberProcessStreamOpening( XmlNode *node, void *userdata )
 	if ( info->type == JABBER_SESSION_NORMAL ) {
 		TCHAR* sid = JabberXmlGetAttrValue( node, "id" );
 		if ( sid != NULL ) {
-			char* pszSid = t2a( sid );
+			char* pszSid = mir_t2a( sid );
 			replaceStr( streamId, pszSid );
 			mir_free( pszSid );
 	}	}
@@ -1029,7 +1029,7 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 		int id = JabberGetPacketID( node );
 		JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, from );
 		if ( item != NULL ) { // yes, it is
-			char *errText = t2a(JabberErrorMsg(errorNode));
+			char *errText = mir_t2a(JabberErrorMsg(errorNode));
 			JSendBroadcast( JabberHContactFromJID( from ), ACKTYPE_MESSAGE, ACKRESULT_FAILED, ( HANDLE ) id, (LPARAM)errText );
 			mir_free(errText);
 		}

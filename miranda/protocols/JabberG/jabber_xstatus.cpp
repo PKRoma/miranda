@@ -486,7 +486,7 @@ static BOOL CALLBACK SetMoodMsgDlgProc( HWND hwndDlg, UINT message, WPARAM wPara
 
 			TCHAR str[256], format[128];
 			GetWindowText( hwndDlg, format, SIZEOF( format ));
-			TCHAR* szMood = a2t( Translate(arXStatusNames[ lParam - 1 ]));
+			TCHAR* szMood = mir_a2t( Translate(arXStatusNames[ lParam - 1 ]));
 			mir_sntprintf( str, SIZEOF(str), format, szMood );
 			mir_free( szMood );
 			SetWindowText( hwndDlg, str );

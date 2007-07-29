@@ -136,13 +136,8 @@ void JabberDBAddAuthRequest( TCHAR* jid, TCHAR* nick )
 	JDeleteSetting( hContact, "Hidden" );
 	//JSetStringT( hContact, "Nick", nick );
 
-	#if defined( _UNICODE )
-		char* szJid = u2a( jid );
-		char* szNick = u2a( nick );
-	#else
-		char* szJid = jid;
-		char* szNick = nick;
-	#endif
+	char* szJid = mir_t2a( jid );
+	char* szNick = mir_t2a( nick );
 
 	//blob is: uin( DWORD ), hContact( HANDLE ), nick( ASCIIZ ), first( ASCIIZ ), last( ASCIIZ ), email( ASCIIZ ), reason( ASCIIZ )
 	//blob is: 0( DWORD ), hContact( HANDLE ), nick( ASCIIZ ), ""( ASCIIZ ), ""( ASCIIZ ), email( ASCIIZ ), ""( ASCIIZ )
@@ -165,10 +160,8 @@ void JabberDBAddAuthRequest( TCHAR* jid, TCHAR* nick )
 	JCallService( MS_DB_EVENT_ADD, ( WPARAM ) ( HANDLE ) NULL, ( LPARAM )&dbei );
 	JabberLog( "Setup DBAUTHREQUEST with nick='" TCHAR_STR_PARAM "' jid='" TCHAR_STR_PARAM "'", szNick, szJid );
 
-	#if defined( _UNICODE )
-		mir_free( szJid );
-		mir_free( szNick );
-	#endif
+	mir_free( szJid );
+	mir_free( szNick );
 }
 
 ///////////////////////////////////////////////////////////////////////////////

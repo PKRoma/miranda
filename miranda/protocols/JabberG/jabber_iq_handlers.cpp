@@ -360,8 +360,8 @@ void JabberHandleIqRequestOOB( XmlNode* node, void* userdata, CJabberIqInfo *pIn
 					ft->httpPort = ( WORD )_ttoi( p+1 );
 					*p = '\0';
 				}
-				ft->httpHostName = t2a( text );
-				ft->httpPath = t2a( ++q );
+				ft->httpHostName = mir_t2a( text );
+				ft->httpPath = mir_t2a( ++q );
 	}	}	}
 
 	if ( pInfo->GetIdStr() )
@@ -374,7 +374,7 @@ void JabberHandleIqRequestOOB( XmlNode* node, void* userdata, CJabberIqInfo *pIn
 
 		JabberLog( "Host=%s Port=%d Path=%s", ft->httpHostName, ft->httpPort, ft->httpPath );
 		if (( n=JabberXmlGetChild( pInfo->GetChildNode(), "desc" ))!=NULL && n->text!=NULL )
-			desc = t2a( n->text );
+			desc = mir_t2a( n->text );
 		else
 			desc = mir_strdup( "" );
 

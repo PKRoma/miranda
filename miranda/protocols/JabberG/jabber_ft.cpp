@@ -367,8 +367,8 @@ void JabberFtHandleSiRequest( XmlNode *iqNode )
 				CCSDATA ccs;
 				PROTORECVEVENT pre;
 
-				char *localFilename = t2a( filename );
-				char *desc = (( n=JabberXmlGetChild( fileNode, "desc" ))!=NULL && n->text!=NULL ) ? t2a( n->text ) : mir_strdup( "" );
+				char *localFilename = mir_t2a( filename );
+				char *desc = (( n=JabberXmlGetChild( fileNode, "desc" ))!=NULL && n->text!=NULL ) ? mir_t2a( n->text ) : mir_strdup( "" );
 
 				filetransfer* ft = new filetransfer;
 				ft->dwExpectedRecvFileSize = (DWORD)filesize;

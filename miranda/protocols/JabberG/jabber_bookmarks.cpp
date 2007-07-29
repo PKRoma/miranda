@@ -439,9 +439,7 @@ static BOOL CALLBACK JabberBookmarksDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 						}
 						else JabberChatDllError();
 					}
-					else {
-						JCallService(MS_UTILS_OPENURL, 1, (LPARAM)t2a((TCHAR*) lvItem.lParam));
-					}
+					else JCallService(MS_UTILS_OPENURL, 1, (LPARAM)mir_t2a((TCHAR*) lvItem.lParam));
 				}
 				return TRUE;
 			}
