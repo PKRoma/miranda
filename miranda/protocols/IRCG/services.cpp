@@ -1423,7 +1423,7 @@ static int Service_GetMessFromSRMM(WPARAM wParam, LPARAM lParam)
 	BYTE bDcc = DBGetContactSettingByte(ccs->hContact, IRCPROTONAME, "DCC", 0) ;
 	WORD wStatus = DBGetContactSettingWord(ccs->hContact, IRCPROTONAME, "Status", ID_STATUS_OFFLINE) ;
 	if ( OldStatus != ID_STATUS_OFFLINE && OldStatus != ID_STATUS_CONNECTING && !bDcc || bDcc && wStatus == ID_STATUS_ONLINE ) {
-		int codepage = ( g_ircSession ) ? g_ircSession.getCodepage() : IRC_DEFAULT_CODEPAGE;
+		int codepage = g_ircSession.getCodepage();
 		char*  msg = ( char* )ccs->lParam;
 		TCHAR* result;
 		if ( ccs->wParam & PREF_UNICODE ) {
@@ -1475,7 +1475,7 @@ static int Service_GetAwayMessage(WPARAM wParam, LPARAM lParam)
 			}
 			TString S = _T("WHOIS ") + (TString)dbv.ptszVal;
 			if (g_ircSession)
-				g_ircSession << CIrcMessage(S.c_str(), false, false);
+				g_ircSession << CIrcMessage(S.c_str(), g_ircSession.getCodepage(), false, false);
 			DBFreeVariant( &dbv);
 	}	}
 

@@ -43,7 +43,7 @@ CIrcMessage::CIrcMessage() :
 	m_bIncoming(false),
 	m_bNotify(true)
 {
-	m_codePage = ( g_ircSession ) ? g_ircSession.getCodepage() : IRC_DEFAULT_CODEPAGE;
+	m_codePage = g_ircSession.getCodepage();
 }
 
 CIrcMessage::CIrcMessage(const TCHAR* lpszCmdLine, int codepage, bool bIncoming, bool bNotify) :
@@ -309,6 +309,11 @@ CIrcSession::~CIrcSession()
 	DeleteCriticalSection(&m_dcc);
 	KillChatTimer(OnlineNotifTimer);
 	KillChatTimer(OnlineNotifTimer3);
+}
+
+int CIrcSession::getCodepage() const
+{
+	return ( con != NULL ) ? codepage : IRC_DEFAULT_CODEPAGE;
 }
 
 CIrcSession& CIrcSession::operator << (const CIrcMessage& msg)

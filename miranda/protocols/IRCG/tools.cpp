@@ -697,7 +697,7 @@ void DoUserhostWithReason(int type, TString reason, bool bSendCommand, TString u
 
 	// Do command
 	if ( g_ircSession && bSendCommand )
-		g_ircSession << CIrcMessage(temp, false, false);
+		g_ircSession << CIrcMessage(temp, g_ircSession.getCodepage(), false, false);
 }
 
 TString GetNextUserhostReason(int type)

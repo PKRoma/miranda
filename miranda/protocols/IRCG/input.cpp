@@ -778,7 +778,7 @@ bool PostIrcMessageWnd( TCHAR* window, HANDLE hContact, const TCHAR* szBuf )
 		return 0;
 	
 	CHANNELINFO* wi = (CHANNELINFO *)DoEvent(GC_EVENT_GETITEMDATA, windowname, NULL, NULL, NULL, NULL, NULL, FALSE, FALSE, 0);
-	int codepage = ( wi ) ? wi->codepage : (( g_ircSession ) ? g_ircSession.getCodepage() : IRC_DEFAULT_CODEPAGE );
+	int codepage = ( wi ) ? wi->codepage : g_ircSession.getCodepage();
 
 	// process the message
 	while ( !Message.empty()) {

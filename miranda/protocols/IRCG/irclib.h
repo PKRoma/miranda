@@ -217,14 +217,12 @@ public :
 	int NLReceive(unsigned char* buf, int cbBuf);
 	void InsertIncomingEvent(TCHAR* pszRaw);
 
-	operator bool() const { return con!= NULL; }
+	operator bool() const { return con != NULL; }
 
 	// send-to-stream operators
 	CIrcSession& operator << (const CIrcMessage& m);
 
-	__inline int getCodepage() const
-	{	return codepage;
-	}
+	int getCodepage() const;
 
 protected :
 	int codepage;
