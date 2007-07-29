@@ -254,7 +254,7 @@ copy ..\..\..\miranda-tools\dbtool\Release\dbtool.pdb          %Temp%\pdbw
 rem  Protocols
 copy ..\..\protocols\AimOscar\Release\Aim.pdb                  %Temp%\pdbw\plugins
 copy ..\..\protocols\IcqOscarJ\Release\ICQ.pdb                 %Temp%\pdbw\plugins
-copy ..\..\protocols\IRC\Release_Unicode\IRC.pdb               %Temp%\pdbw\plugins
+copy ..\..\protocols\IRCG\Release_Unicode\IRC.pdb              %Temp%\pdbw\plugins
 copy ..\..\protocols\JabberG\Release_Unicode\jabber.pdb        %Temp%\pdbw\plugins
 copy ..\..\protocols\MSN\Release_Unicode\MSN.pdb               %Temp%\pdbw\plugins
 copy ..\..\protocols\Yahoo\Release\Yahoo.pdb                   %Temp%\pdbw\plugins

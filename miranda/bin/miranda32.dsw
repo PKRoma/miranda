@@ -46,14 +46,10 @@ Package=<4>
 
 ###############################################################################
 
-Project: "IRC"=..\protocols\IRC\IRC.dsp - Package Owner=<4>
+Project: "IRC"=..\protocols\IRCG\IRC.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
-    begin source code control
-    "$/Miranda/miranda/protocols/IRC", IDQAAAAA
-    ..\protocols\irc
-    end source code control
 }}}
 
 Package=<4>
