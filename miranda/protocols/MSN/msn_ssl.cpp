@@ -194,7 +194,11 @@ char* SSL_WinInet::readData( HINTERNET hRequest )
 
 		DWORD dwOffset = tBufSize;
 		do {
-			f_InternetReadFile( hRequest, tSslAnswer+dwOffset, dwSize - dwOffset, &tBufSize);
+			if (!f_InternetReadFile( hRequest, tSslAnswer+dwOffset, dwSize - dwOffset, &tBufSize))
+			{
+				mir_free( tSslAnswer );
+				return NULL;
+			}
 			dwOffset += tBufSize;
 		}
 		while (tBufSize != 0 && dwOffset < dwSize);
