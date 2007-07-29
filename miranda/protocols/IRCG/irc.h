@@ -373,6 +373,7 @@ void    DoUserhostWithReason(int type, TString reason, bool bSendCommand, TStrin
 TString GetNextUserhostReason(int type);
 void    ClearUserhostReasons(int type);
 TString PeekAtReasons(int type);
+char*   rtrim( char *string );
 
 #if defined( _UNICODE )
 String  ReplaceString (String text, const char* replaceme, const char* newword);

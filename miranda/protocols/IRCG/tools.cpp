@@ -37,6 +37,18 @@ void AddToJTemp(TString sCommand)
 	DBWriteContactSettingTString(NULL, IRCPROTONAME, "JTemp", sCommand.c_str());
 }
 
+char* rtrim( char *string )
+{
+   char* p = string + strlen( string ) - 1;
+   while ( p >= string ) {
+		if ( *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r' )
+         break;
+
+		*p-- = 0;
+   }
+   return string;
+}
+
 TString GetWord(const TCHAR* text, int index)
 {
 	if (!text || !lstrlen( text ))
@@ -427,83 +439,46 @@ int CallChatEvent(WPARAM wParam, LPARAM lParam)
 		gcetemp->dwItemData = gcevent->dwItemData;
 		gcetemp->time = gcevent->time;
 		gcetemp->pDest->ptszID = mir_tstrdup( gcevent->pDest->ptszID );
+		gcetemp->pDest->pszModule = mir_strdup( gcevent->pDest->pszModule );
+		gcetemp->ptszText = mir_tstrdup( gcevent->ptszText );
+		gcetemp->ptszUID = mir_tstrdup( gcevent->ptszUID );
+		gcetemp->ptszNick = mir_tstrdup( gcevent->ptszNick );
+		gcetemp->ptszStatus = mir_tstrdup( gcevent->ptszStatus );
+		gcetemp->ptszUserInfo = mir_tstrdup( gcevent->ptszUserInfo );
 
-		if(gcevent->pDest->pszModule)
-		{
-			gcetemp->pDest->pszModule = ( char* )mir_alloc(lstrlenA(gcevent->pDest->pszModule) + 1);
-			lstrcpynA(gcetemp->pDest->pszModule, gcevent->pDest->pszModule, lstrlenA(gcevent->pDest->pszModule) + 1);
-		}else gcetemp->pDest->pszModule = NULL;
-
-		if(gcevent->pszText)
-		{
-			gcetemp->pszText = ( char* )mir_alloc(lstrlenA(gcevent->pszText) + 1);
-			lstrcpynA(( char* )gcetemp->pszText, gcevent->pszText, lstrlenA(gcevent->pszText) + 1);
-		}else gcetemp->pszText = NULL;
-
-		if(gcevent->pszUID)
-		{
-			gcetemp->pszUID = ( char* )mir_alloc(lstrlenA(gcevent->pszUID) + 1);
-			lstrcpynA(( char* )gcetemp->pszUID, gcevent->pszUID, lstrlenA(gcevent->pszUID) + 1);
-		}else gcetemp->pszUID = NULL;
-
-		if(gcevent->pszNick)
-		{
-			gcetemp->pszNick = ( char* )mir_alloc(lstrlenA(gcevent->pszNick) + 1);
-			lstrcpynA(( char* )gcetemp->pszNick, gcevent->pszNick, lstrlenA(gcevent->pszNick) + 1);
-		}else gcetemp->pszNick = NULL;
-
-		if(gcevent->pszStatus)
-		{
-			gcetemp->pszStatus = ( char* )mir_alloc(lstrlenA(gcevent->pszStatus) + 1);
-			lstrcpynA(( char* )gcetemp->pszStatus, gcevent->pszStatus, lstrlenA(gcevent->pszStatus) + 1);
-		}else gcetemp->pszStatus = NULL;
-
-		if(gcevent->pszUserInfo)
-		{
-			gcetemp->pszUserInfo = ( char* )mir_alloc(lstrlenA(gcevent->pszUserInfo) + 1);
-			lstrcpynA(( char* )gcetemp->pszUserInfo, gcevent->pszUserInfo, lstrlenA(gcevent->pszUserInfo) + 1);
-		}else gcetemp->pszUserInfo = NULL;
-
-		if(	Scripting_TriggerMSPGuiIn(&wp, gcetemp) && gcetemp)
-		{
-			if(gcetemp && gcetemp->pDest && gcetemp->pDest->ptszID)
-			{
-				TString sTempId = MakeWndID(gcetemp->pDest->ptszID);
-				mmi.mmi_realloc(gcetemp->pDest->ptszID, sizeof(TCHAR)*(sTempId.length() + 1));
+		if ( Scripting_TriggerMSPGuiIn( &wp, gcetemp ) && gcetemp ) {
+			if ( gcetemp && gcetemp->pDest && gcetemp->pDest->ptszID ) {
+				TString sTempId = MakeWndID( gcetemp->pDest->ptszID );
+				mir_realloc( gcetemp->pDest->ptszID, sizeof(TCHAR)*(sTempId.length() + 1));
 				lstrcpyn(gcetemp->pDest->ptszID, sTempId.c_str(), sTempId.length()+1); 
 			}
-			if(pfnAddEvent)
+			if ( pfnAddEvent )
 				iVal = pfnAddEvent(wp, (LPARAM) gcetemp);
 			else
 				iVal = CallService(MS_GC_EVENT, wp, (LPARAM) gcetemp);
 		}
-		if (gcetemp)
-		{
-			if(gcetemp->pszNick)
-				mir_free((void *)gcetemp->pszNick);
-			if(gcetemp->pszUID)
-				mir_free((void *)gcetemp->pszUID);
-			if(gcetemp->pszStatus)
-				mir_free((void *)gcetemp->pszStatus);
-			if(gcetemp->pszUserInfo)
-				mir_free((void *)gcetemp->pszUserInfo);
-			if(gcetemp->pszText)
-				mir_free((void *)gcetemp->pszText);
-			if(gcetemp->pDest->pszID)
-				mir_free((void *)gcetemp->pDest->pszID);
-			if(gcetemp->pDest->pszModule)
-				mir_free((void *)gcetemp->pDest->pszModule);
-			mir_free((void *)gcetemp->pDest);
-			mir_free((void *)gcetemp);
+
+		if ( gcetemp ) {
+			mir_free(( void* )gcetemp->pszNick);
+			mir_free(( void* )gcetemp->pszUID);
+			mir_free(( void* )gcetemp->pszStatus);
+			mir_free(( void* )gcetemp->pszUserInfo);
+			mir_free(( void* )gcetemp->pszText);
+			mir_free(( void* )gcetemp->pDest->pszID);
+			mir_free(( void* )gcetemp->pDest->pszModule);
+			mir_free(( void* )gcetemp->pDest);
+			mir_free(( void* )gcetemp);
 		}
 
 		return iVal;
 	}
 
-	if(pfnAddEvent)
-		iVal = pfnAddEvent(wParam, (LPARAM) gce);
+	if ( wParam == WINDOW_VISIBLE || wParam == WINDOW_HIDDEN || wParam == SESSION_INITDONE )
+		CallServiceSync( MS_GC_EVENT, wParam, lParam );
+	else if ( pfnAddEvent )
+		iVal = pfnAddEvent( wParam, ( LPARAM )gce);
 	else
-		iVal = CallService(MS_GC_EVENT, wParam, (LPARAM) gce);
+		iVal = CallService( MS_GC_EVENT, wParam, ( LPARAM )gce );
 
 	return iVal;
 }
@@ -777,3 +752,4 @@ void ClearUserhostReasons(int type)
 		vWhoInProgress.clear();
 		break;
 }	}
+

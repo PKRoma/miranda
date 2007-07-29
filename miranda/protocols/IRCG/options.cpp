@@ -665,18 +665,6 @@ BOOL CALLBACK CtcpPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 bool PerformlistModified = false;
 
-char* rtrim( char *string )
-{
-   char* p = string + strlen( string ) - 1;
-   while ( p >= string ) {
-		if ( *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r' )
-         break;
-
-		*p-- = 0;
-   }
-   return string;
-}
-
 static char* sttPerformEvents[] = {
 	"Event: Available",
 	"Event: Away",

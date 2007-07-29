@@ -177,6 +177,21 @@ static TString DoIdentifiers( TString text, const TCHAR* window )
 	return text;
 }
 
+static void __stdcall sttSetTimerOn( void* )
+{
+	DoEvent( GC_EVENT_INFORMATION, NULL, g_ircSession.GetInfo().sNick.c_str(), TranslateT(	"The buddy check function is enabled"), NULL, NULL, NULL, true, false); 
+	SetChatTimer( OnlineNotifTimer, 500, OnlineNotifTimerProc );
+	if ( prefs->ChannelAwayNotification )
+		SetChatTimer( OnlineNotifTimer3, 1500, OnlineNotifTimerProc3 );
+}
+
+static void __stdcall sttSetTimerOff( void* )
+{
+	DoEvent( GC_EVENT_INFORMATION, NULL, g_ircSession.GetInfo().sNick.c_str(), TranslateT("The buddy check function is disabled"), NULL, NULL, NULL, true, false); 
+	KillChatTimer( OnlineNotifTimer );
+	KillChatTimer( OnlineNotifTimer3 );
+}
+
 static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 {
 	TCHAR temp[30];
@@ -361,17 +376,12 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 		if ( !lstrcmpi( one.c_str(), _T("on"))) {
 			bTempForceCheck = true;
 			bTempDisableCheck = false;
-			DoEvent( GC_EVENT_INFORMATION, NULL, g_ircSession.GetInfo().sNick.c_str(), TranslateT(	"The buddy check function is enabled"), NULL, NULL, NULL, true, false); 
-			SetChatTimer( OnlineNotifTimer, 500, OnlineNotifTimerProc );
-			if ( prefs->ChannelAwayNotification )
-				SetChatTimer( OnlineNotifTimer3, 1500, OnlineNotifTimerProc3 );
+			CallFunctionAsync( sttSetTimerOn, NULL );
 		}
 		if ( !lstrcmpi( one.c_str(), _T("off"))) {
 			bTempForceCheck = false;
 			bTempDisableCheck = true;
-			DoEvent( GC_EVENT_INFORMATION, NULL, g_ircSession.GetInfo().sNick.c_str(), TranslateT("The buddy check function is disabled"), NULL, NULL, NULL, true, false); 
-			KillChatTimer( OnlineNotifTimer );
-			KillChatTimer( OnlineNotifTimer3 );
+			CallFunctionAsync( sttSetTimerOff, NULL );
 		}
 		if ( !lstrcmpi( one.c_str(), _T("time")) && !two.empty()) {
 			iTempCheckTime = StrToInt( two.c_str());

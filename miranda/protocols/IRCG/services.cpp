@@ -1566,7 +1566,7 @@ static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 		gcr.pColors = prefs->colors;
 		gcr.pszModuleDispName = IRCPROTONAME;
 		gcr.pszModule = IRCPROTONAME;
-		CallService(MS_GC_REGISTER, NULL, (LPARAM)&gcr);
+		CallServiceSync(MS_GC_REGISTER, NULL, (LPARAM)&gcr);
 		g_hGCUserEvent = HookEvent(ME_GC_EVENT, Service_GCEventHook);
 		g_hGCMenuBuild = HookEvent(ME_GC_BUILDMENU, Service_GCMenuHook );
 
@@ -1580,7 +1580,7 @@ static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 		gcw.pszModule = IRCPROTONAME;
 		gcw.ptszName = TranslateT("Offline");
 		gcw.dwFlags = GC_TCHAR;
-		CallService(MS_GC_NEWSESSION, 0, (LPARAM)&gcw);
+		CallServiceSync(MS_GC_NEWSESSION, 0, (LPARAM)&gcw);
 
 		gce.cbSize = sizeof(GCEVENT);
 		gce.dwFlags = GC_TCHAR;
@@ -1590,7 +1590,7 @@ static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 		gcd.iType = GC_EVENT_CONTROL;
 
 		gce.pDest = &gcd;
-		if (prefs->UseServer && !prefs->HideServerWindow)
+		if ( prefs->UseServer && !prefs->HideServerWindow )
 			CallChatEvent( WINDOW_VISIBLE, (LPARAM)&gce);
 		else
 			CallChatEvent( WINDOW_HIDDEN, (LPARAM)&gce);

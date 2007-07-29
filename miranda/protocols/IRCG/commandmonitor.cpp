@@ -1350,7 +1350,7 @@ bool CMyMonitor::OnIrc_ENDNAMES( const CIrcMessage* pmsg )
 			gcw.ptszID = sID.c_str();
 			gcw.pszModule = IRCPROTONAME;
 			gcw.ptszName = sChanName.c_str();
-			if ( !CallService( MS_GC_NEWSESSION, 0, ( LPARAM )&gcw )) {
+			if ( !CallServiceSync( MS_GC_NEWSESSION, 0, ( LPARAM )&gcw )) {
 				DBVARIANT dbv;
 				GCDEST gcd = {0};
 				GCEVENT gce = {0};
@@ -1534,11 +1534,16 @@ bool CMyMonitor::OnIrc_TOPIC( const CIrcMessage* pmsg )
 	return true;
 }
 
+static void __stdcall sttShowDlgList( void* )
+{
+	if ( list_hWnd == NULL )
+		list_hWnd = CreateDialog( g_hInstance, MAKEINTRESOURCE(IDD_LIST), NULL, ListWndProc );
+}
+
 bool CMyMonitor::OnIrc_LISTSTART( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming ) {
-		if ( list_hWnd == NULL )
-			list_hWnd = CreateDialog( g_hInstance, MAKEINTRESOURCE(IDD_LIST), NULL, ListWndProc );
+		CallFunctionAsync( sttShowDlgList, NULL );
 		ChannelNumber = 0;
 	}
 	
@@ -1679,34 +1684,41 @@ bool CMyMonitor::OnIrc_BANLISTEND( const CIrcMessage* pmsg )
 	return true;
 }
 
+static void __stdcall sttShowWhoisWnd( void* param )
+{
+	CIrcMessage* pmsg = ( CIrcMessage* )param;
+
+	if ( whois_hWnd == NULL )
+		whois_hWnd = CreateDialog( g_hInstance, MAKEINTRESOURCE(IDD_INFO), NULL, InfoWndProc );
+	if ( SendMessage( GetDlgItem(whois_hWnd, IDC_INFO_NICK), CB_FINDSTRINGEXACT, -1, (LPARAM) pmsg->parameters[1].c_str()) == CB_ERR)	
+		SendMessage( GetDlgItem( whois_hWnd, IDC_INFO_NICK), CB_ADDSTRING, 0, (LPARAM) pmsg->parameters[1].c_str());	
+	int i = SendMessage(GetDlgItem(whois_hWnd, IDC_INFO_NICK), CB_FINDSTRINGEXACT, -1, (LPARAM) pmsg->parameters[1].c_str());
+	SendMessage(GetDlgItem(whois_hWnd, IDC_INFO_NICK), CB_SETCURSEL, i, 0);	
+	SetWindowText(GetDlgItem(whois_hWnd, IDC_CAPTION), pmsg->parameters[1].c_str());	
+
+	SetWindowText(GetDlgItem(whois_hWnd, IDC_INFO_NAME), pmsg->parameters[5].c_str());	
+	SetWindowText(GetDlgItem(whois_hWnd, IDC_INFO_ADDRESS), pmsg->parameters[3].c_str());
+	SetWindowText(GetDlgItem(whois_hWnd, IDC_INFO_ID), pmsg->parameters[2].c_str());
+	SetWindowTextA(GetDlgItem(whois_hWnd, IDC_INFO_CHANNELS), "");
+	SetWindowTextA(GetDlgItem(whois_hWnd, IDC_INFO_SERVER), "");
+	SetWindowTextA(GetDlgItem(whois_hWnd, IDC_INFO_AWAY2), "");
+	SetWindowTextA(GetDlgItem(whois_hWnd, IDC_INFO_AUTH), "");
+	SetWindowTextA(GetDlgItem(whois_hWnd, IDC_INFO_OTHER), "");
+	SetWindowTextA(GetDlgItem(whois_hWnd, IDC_REPLY), "");
+	SetWindowText(whois_hWnd, TranslateT("User information"));
+	EnableWindow(GetDlgItem(whois_hWnd, ID_INFO_QUERY), true);
+	ShowWindow(whois_hWnd, SW_SHOW);
+	if ( IsIconic( whois_hWnd ))
+		ShowWindow( whois_hWnd, SW_SHOWNORMAL );
+	SendMessage(whois_hWnd, WM_SETREDRAW, TRUE, 0);
+	InvalidateRect(whois_hWnd, NULL, TRUE);
+	delete pmsg;
+}
+
 bool CMyMonitor::OnIrc_WHOIS_NAME( const CIrcMessage* pmsg )
 {
-	if ( pmsg->m_bIncoming && pmsg->parameters.size() > 5 && ManualWhoisCount > 0 ) {
-		if ( whois_hWnd == NULL )
-			whois_hWnd = CreateDialog( g_hInstance, MAKEINTRESOURCE(IDD_INFO), NULL, InfoWndProc );
-		if ( SendMessage( GetDlgItem(whois_hWnd, IDC_INFO_NICK), CB_FINDSTRINGEXACT, -1, (LPARAM) pmsg->parameters[1].c_str()) == CB_ERR)	
-			SendMessage( GetDlgItem( whois_hWnd, IDC_INFO_NICK), CB_ADDSTRING, 0, (LPARAM) pmsg->parameters[1].c_str());	
-		int i = SendMessage(GetDlgItem(whois_hWnd, IDC_INFO_NICK), CB_FINDSTRINGEXACT, -1, (LPARAM) pmsg->parameters[1].c_str());
-		SendMessage(GetDlgItem(whois_hWnd, IDC_INFO_NICK), CB_SETCURSEL, i, 0);	
-		SetWindowText(GetDlgItem(whois_hWnd, IDC_CAPTION), pmsg->parameters[1].c_str());	
-
-		SetWindowText(GetDlgItem(whois_hWnd, IDC_INFO_NAME), pmsg->parameters[5].c_str());	
-		SetWindowText(GetDlgItem(whois_hWnd, IDC_INFO_ADDRESS), pmsg->parameters[3].c_str());
-		SetWindowText(GetDlgItem(whois_hWnd, IDC_INFO_ID), pmsg->parameters[2].c_str());
-		SetWindowTextA(GetDlgItem(whois_hWnd, IDC_INFO_CHANNELS), "");
-		SetWindowTextA(GetDlgItem(whois_hWnd, IDC_INFO_SERVER), "");
-		SetWindowTextA(GetDlgItem(whois_hWnd, IDC_INFO_AWAY2), "");
-		SetWindowTextA(GetDlgItem(whois_hWnd, IDC_INFO_AUTH), "");
-		SetWindowTextA(GetDlgItem(whois_hWnd, IDC_INFO_OTHER), "");
-		SetWindowTextA(GetDlgItem(whois_hWnd, IDC_REPLY), "");
-		SetWindowText(whois_hWnd, TranslateT("User information"));
-		EnableWindow(GetDlgItem(whois_hWnd, ID_INFO_QUERY), true);
-		ShowWindow(whois_hWnd, SW_SHOW);
-		if ( IsIconic( whois_hWnd ))
-			ShowWindow( whois_hWnd, SW_SHOWNORMAL );
-		SendMessage(whois_hWnd, WM_SETREDRAW, TRUE, 0);
-		InvalidateRect(whois_hWnd, NULL, TRUE);
-	}
+	if ( pmsg->m_bIncoming && pmsg->parameters.size() > 5 && ManualWhoisCount > 0 )
+		CallFunctionAsync( sttShowWhoisWnd, new CIrcMessage( *pmsg ));
 
 	ShowMessage( pmsg );
 	return true;
@@ -1861,16 +1873,24 @@ bool CMyMonitor::OnIrc_WHOIS_NO_USER( const CIrcMessage* pmsg )
 	return true;
 }
 
+static void __stdcall sttShowNickWnd( void* param )
+{
+	CIrcMessage* pmsg = ( CIrcMessage* )param;
+
+	if ( nick_hWnd == NULL )
+		nick_hWnd = CreateDialog( g_hInstance, MAKEINTRESOURCE( IDD_NICK ), NULL, NickWndProc );
+
+	SetWindowText( GetDlgItem( nick_hWnd, IDC_CAPTION ), TranslateT("Change nickname"));
+	SetWindowText( GetDlgItem( nick_hWnd, IDC_TEXT    ), pmsg->parameters[2].c_str());
+	SetWindowText( GetDlgItem( nick_hWnd, IDC_ENICK   ), pmsg->parameters[1].c_str());
+	SendMessage( GetDlgItem(nick_hWnd, IDC_ENICK), CB_SETEDITSEL, 0,MAKELPARAM(0,-1));
+	delete pmsg;
+}
+
 bool CMyMonitor::OnIrc_NICK_ERR( const CIrcMessage* pmsg )
 {
 	if (( nickflag || prefs->AlternativeNick[0] == 0) && pmsg->m_bIncoming && pmsg->parameters.size() > 2 ) {
-		if ( nick_hWnd == NULL )
-			nick_hWnd = CreateDialog( g_hInstance, MAKEINTRESOURCE( IDD_NICK ), NULL, NickWndProc );
-
-		SetWindowText( GetDlgItem( nick_hWnd, IDC_CAPTION ), TranslateT("Change nickname"));
-		SetWindowText( GetDlgItem( nick_hWnd, IDC_TEXT    ), pmsg->parameters[2].c_str());
-		SetWindowText( GetDlgItem( nick_hWnd, IDC_ENICK   ), pmsg->parameters[1].c_str());
-		SendMessage(GetDlgItem(nick_hWnd, IDC_ENICK), CB_SETEDITSEL, 0,MAKELPARAM(0,-1));
+		CallFunctionAsync( sttShowNickWnd, new CIrcMessage( *pmsg ));
 	}
 	else if ( pmsg->m_bIncoming ) {
 		TCHAR m[200];
@@ -2386,7 +2406,23 @@ void CMyMonitor::OnIrcDisconnected()
 	CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuNick, ( LPARAM )&clmi );
 }
 
-bool DoOnConnect(const CIrcMessage *pmsg)
+/////////////////////////////////////////////////////////////////////////////////////////
+// OnConnect
+
+static void __stdcall sttMainThrdOnConnect( void* )
+{
+	SetChatTimer( InitTimer, 1*1000, TimerProc );
+	if ( prefs->IdentTimer )
+		SetChatTimer( IdentTimer, 60*1000, IdentTimerProc );
+	if ( prefs->SendKeepAlive )
+		SetChatTimer( KeepAliveTimer, 60*1000, KeepAliveTimerProc );
+	if ( prefs->AutoOnlineNotification && !bTempDisableCheck || bTempForceCheck ) {
+		SetChatTimer( OnlineNotifTimer, 1000, OnlineNotifTimerProc );
+		if ( prefs->ChannelAwayNotification )
+			SetChatTimer(OnlineNotifTimer3, 3000, OnlineNotifTimerProc3);
+}	}
+
+bool DoOnConnect( const CIrcMessage* pmsg )
 {
 	bPerformDone = true;
 	nickflag = true;	
@@ -2444,16 +2480,7 @@ bool DoOnConnect(const CIrcMessage *pmsg)
 		CallChatEvent( SESSION_ONLINE, (LPARAM)&gce);
 	}
 
-	SetChatTimer( InitTimer, 1*1000, TimerProc );
-	if ( prefs->IdentTimer )
-		SetChatTimer( IdentTimer, 60*1000, IdentTimerProc );
-	if ( prefs->SendKeepAlive )
-		SetChatTimer( KeepAliveTimer, 60*1000, KeepAliveTimerProc );
-	if ( prefs->AutoOnlineNotification && !bTempDisableCheck || bTempForceCheck ) {
-		SetChatTimer( OnlineNotifTimer, 1000, OnlineNotifTimerProc );
-		if ( prefs->ChannelAwayNotification )
-			SetChatTimer(OnlineNotifTimer3, 3000, OnlineNotifTimerProc3);
-	}
+	CallFunctionAsync( sttMainThrdOnConnect, NULL );
 	return 0;
 }
 

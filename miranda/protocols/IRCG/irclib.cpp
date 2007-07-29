@@ -528,7 +528,7 @@ void CIrcSession::DoReceive()
 	if ( m_info.bIdentServer && m_info.iIdentServerPort != NULL ) {
 		NETLIBBIND nb = {0};
 		nb.cbSize = sizeof(NETLIBBIND);
-		nb.pfnNewConnectionV2 =  DoIdent;
+		nb.pfnNewConnectionV2 = DoIdent;
 		nb.wPort = m_info.iIdentServerPort;
 		hBindPort= (HANDLE)CallService(MS_NETLIB_BINDPORT, (WPARAM)hNetlib,(LPARAM) &nb);
 		if ( !hBindPort || nb.wPort != m_info.iIdentServerPort ) {
@@ -917,43 +917,20 @@ CIrcMonitor::~CIrcMonitor()
 
 void CIrcMonitor::OnIrcMessage(const CIrcMessage* pmsg)
 {
-	XTHREADS * xthread = NULL;
-	xthread = new XTHREADS;
-	xthread->pthis = (void *)this;
-	xthread->pmsg = NULL;
+	if ( pmsg != NULL ) {
+		OnIrcAll(pmsg);
 
-	if ( pmsg )
-		xthread->pmsg = new CIrcMessage(*pmsg);
-
-	CallFunctionAsync(OnCrossThreadsMessage, (void *)xthread);
-}
-
-void CIrcMonitor::OnCrossThreadsMessage(void * p)
-{
-	XTHREADS* xthread = (XTHREADS *)p;
-	if ( !xthread )
-		return;
-
-	CIrcMonitor* pmon = (CIrcMonitor *)xthread->pthis;
-
-	if ( xthread->pmsg ) {
-		pmon->OnIrcAll(xthread->pmsg);
-
-		PfnIrcMessageHandler pfn = pmon->FindMethod(xthread->pmsg->sCommand.c_str());
+		PfnIrcMessageHandler pfn = FindMethod( pmsg->sCommand.c_str() );
 		if ( pfn ) {
 			// call member function. if it returns 'false',
 			// call the default handling
-			if( !(pmon->*pfn)(xthread->pmsg) )
-				pmon->OnIrcDefault(xthread->pmsg);
+			if ( !(this->*pfn)( pmsg ))
+				OnIrcDefault( pmsg );
 		}
 		else // handler not found. call default handler
-			pmon->OnIrcDefault(xthread->pmsg);
-
-		delete xthread->pmsg;
+			OnIrcDefault( pmsg );
 	}
-	else pmon->OnIrcDisconnected();
-
-	delete xthread;
+	else OnIrcDisconnected();
 }
 
 CIrcMonitor::PfnIrcMessageHandler CIrcMonitor::FindMethod(const TCHAR* lpszName)
@@ -1773,19 +1750,16 @@ void DoIncomingDcc(HANDLE hConnection, DWORD dwRemoteIP, void * p1)
 void DoIdent(HANDLE hConnection, DWORD dwRemoteIP, void* extra)
 {
 	char szBuf[1024];
-	char* p;
 	int cbRead = Netlib_Recv(hConnection, szBuf, sizeof(szBuf)-1, 0);
 	if( cbRead == SOCKET_ERROR || cbRead == 0)
 		return ;
-	szBuf[cbRead] = '\0';
 
-	// strip CRLF from query
-	for(p = szBuf; *p && *p != '\r' && *p != '\n'; ++p)
-		;
-	*p = '\0';
+	szBuf[cbRead] = '\0';
+	rtrim( szBuf );
 
 	char buf[1024*4];
-	mir_snprintf(buf, sizeof(buf), "%s : USERID : %s : %s\r\n", szBuf, g_ircSession.GetInfo().sIdentServerType.c_str() , g_ircSession.GetInfo().sUserID.c_str());
+	mir_snprintf(buf, SIZEOF(buf), "%s : USERID : " TCHAR_STR_PARAM " : " TCHAR_STR_PARAM "\r\n", 
+		szBuf, g_ircSession.GetInfo().sIdentServerType.c_str() , g_ircSession.GetInfo().sUserID.c_str());
 	Netlib_Send(hConnection, (const char*)buf, strlen(buf), 0);
 	Netlib_CloseHandle(hConnection);
 }
