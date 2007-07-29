@@ -67,7 +67,7 @@ int MSN_ChatInit( WPARAM wParam, LPARAM lParam )
 
 	gcd.iType = GC_EVENT_JOIN;
 	gce.ptszNick = dbv.ptszVal;
-	gce.ptszUID = a2t(MyOptions.szEmail);
+	gce.ptszUID = mir_a2t(MyOptions.szEmail);
 	gce.time = 0;
 	gce.bIsMe = TRUE;
 	MSN_CallService(MS_GC_EVENT, 0, (LPARAM)&gce);
@@ -200,29 +200,28 @@ int MSN_GCEventHook(WPARAM wParam,LPARAM lParam) {
 			break;
 		}
 		case GC_USER_MESSAGE:
-			if ( gch && gch->pszText && lstrlenA( gch->pszText ) > 0 ) {
+			if ( gch && gch->pszText && strlen( gch->pszText ) > 0 ) {
 				rtrim( gch->ptszText ); // remove the ending linebreak
-				{	
-					TCHAR* pszMsg = UnEscapeChatTags( NEWTSTR_ALLOCA( gch->ptszText ));
 
-					CCSDATA ccs = {0};
-					ccs.hContact = (HANDLE)-_ttoi(gch->pDest->ptszID);
-					ccs.wParam = PREF_TCHAR;
+				TCHAR* pszMsg = UnEscapeChatTags( NEWTSTR_ALLOCA( gch->ptszText ));
 
-					#if defined( _UNICODE )
-						int cbLen = WideCharToMultiByte( CP_ACP, 0, pszMsg, -1, NULL, 0, 0, 0 );
-						int cbLenW = lstrlen( pszMsg );
-						char* msgBuf = ( char* )alloca( --cbLen+1 + (cbLenW+1)*sizeof( TCHAR ));
-						WideCharToMultiByte( CP_ACP, 0, pszMsg, -1, msgBuf, cbLen+1, 0, 0 );
-						msgBuf[ cbLen ] = 0;
-						memcpy( msgBuf+cbLen+1, pszMsg, (cbLenW+1)*sizeof( TCHAR ));
-						ccs.lParam = (LPARAM)msgBuf;
-					#else
-						ccs.lParam = (LPARAM)pszMsg;
-					#endif
+				CCSDATA ccs = {0};
+				ccs.hContact = (HANDLE)-_ttoi(gch->pDest->ptszID);
+				ccs.wParam = PREF_TCHAR;
 
-					CallProtoService(msnProtocolName, PSS_MESSAGE, 0, (LPARAM)&ccs);
-				}
+				#if defined( _UNICODE )
+					int cbLen = WideCharToMultiByte( CP_ACP, 0, pszMsg, -1, NULL, 0, 0, 0 );
+					int cbLenW = lstrlen( pszMsg );
+					char* msgBuf = ( char* )alloca( --cbLen+1 + (cbLenW+1)*sizeof( TCHAR ));
+					WideCharToMultiByte( CP_ACP, 0, pszMsg, -1, msgBuf, cbLen+1, 0, 0 );
+					msgBuf[ cbLen ] = 0;
+					memcpy( msgBuf+cbLen+1, pszMsg, (cbLenW+1)*sizeof( TCHAR ));
+					ccs.lParam = (LPARAM)msgBuf;
+				#else
+					ccs.lParam = (LPARAM)pszMsg;
+				#endif
+
+				CallProtoService(msnProtocolName, PSS_MESSAGE, 0, (LPARAM)&ccs);
 
 				DBVARIANT dbv;
 				int bError = DBGetContactSettingTString( NULL, msnProtocolName, "Nick", &dbv );
@@ -237,7 +236,7 @@ int MSN_GCEventHook(WPARAM wParam,LPARAM lParam) {
 				gce.dwFlags = GC_TCHAR | GCEF_ADDTOLOG;
 				gce.pDest = &gcd;
 				gce.ptszNick = dbv.ptszVal;
-				gce.ptszUID = a2t(MyOptions.szEmail);
+				gce.ptszUID = mir_a2t(MyOptions.szEmail);
 				gce.time = time(NULL);
 				gce.ptszText = gch->ptszText;
 				gce.bIsMe = TRUE;

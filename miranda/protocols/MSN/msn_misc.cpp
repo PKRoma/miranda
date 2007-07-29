@@ -667,8 +667,8 @@ void MSN_ShowError( const char* msgtext, ... )
 	mir_vsnprintf( tBuffer, sizeof( tBuffer ), MSN_Translate( msgtext ), tArgs );
 	va_end( tArgs );
 
-	TCHAR* buf1 = a2t( msnProtocolName );
-	TCHAR* buf2 = a2t( tBuffer );
+	TCHAR* buf1 = mir_a2t( msnProtocolName );
+	TCHAR* buf2 = mir_a2t( tBuffer );
 
 	if ( MyOptions.ShowErrorsAsPopups )
 		MSN_ShowPopup( buf1, buf2, MSN_ALLOW_MSGBOX | MSN_SHOW_ERROR, NULL );

@@ -454,7 +454,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 			gce.cbSize = sizeof(GCEVENT);
 			gce.dwFlags = GC_TCHAR | GCEF_ADDTOLOG;
 			gce.pDest = &gcd;
-			gce.ptszUID = a2t(data.fromEmail);
+			gce.ptszUID = mir_a2t(data.fromEmail);
 			gce.ptszNick = MSN_GetContactNameT( tContact );
 			gce.time = time( NULL );
 			gce.bIsMe = FALSE;
@@ -1059,7 +1059,7 @@ LBL_InvalidCommand:
 				gce.dwFlags = GC_TCHAR | GCEF_ADDTOLOG;
 				gce.pDest = &gcd;
 				gce.ptszNick = MSN_GetContactNameT( hContact );
-				gce.ptszUID = a2t(data.userEmail);
+				gce.ptszUID = mir_a2t(data.userEmail);
 				gce.time = time( NULL );
 				gce.bIsMe = FALSE;
 				MSN_CallService( MS_GC_EVENT, 0, ( LPARAM )&gce );
@@ -1344,7 +1344,7 @@ LBL_InvalidCommand:
 						gce.dwFlags = GC_TCHAR | GCEF_ADDTOLOG;
 						gce.pDest = &gcd;
 						gce.ptszNick = MSN_GetContactNameT( hContact );
-						gce.ptszUID = a2t(data.userEmail);
+						gce.ptszUID = mir_a2t(data.userEmail);
 						gce.ptszStatus = TranslateT( "Others" );
 						gce.time = time(NULL);
 						gce.bIsMe = FALSE;

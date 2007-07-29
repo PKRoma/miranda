@@ -137,6 +137,18 @@ bool  MsgQueue_GetNext( HANDLE hContact, MsgQueueEntry& retVal )
 	return res;
 }
 
+int  MsgQueue_NumMsg( HANDLE hContact )
+{
+	int res = 0;
+	EnterCriticalSection( &csMsgQueue );
+
+	for( int i=0; i < msgQueueCount; i++ )
+		res += msgQueue[ i ].hContact == hContact;
+	
+	LeaveCriticalSection( &csMsgQueue );
+	return res;
+}
+
 void  MsgQueue_Clear( HANDLE hContact, bool msg )
 {
 	int i;

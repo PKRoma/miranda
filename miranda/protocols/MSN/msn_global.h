@@ -275,8 +275,6 @@ char*		getNewUuid(void);
 TCHAR* EscapeChatTags(const TCHAR* pszText);
 TCHAR* UnEscapeChatTags(TCHAR* str_in);
 
-TCHAR* a2t( const char* str );
-TCHAR* a2tf( const TCHAR* str, BOOL unicode );
 void   overrideStr( TCHAR*& dest, const TCHAR* src, BOOL unicode, const TCHAR* def = NULL );
 void   replaceStr( char*& dest, const char* src );
 char*  rtrim( char* string );
@@ -602,6 +600,7 @@ int		 MsgQueue_Add( HANDLE hContact, int msgType, const char* msg, int msglen, f
 HANDLE	 MsgQueue_CheckContact( HANDLE hContact, time_t tsc = 0 );
 HANDLE	 MsgQueue_GetNextRecipient( void );
 bool	 MsgQueue_GetNext( HANDLE hContact, MsgQueueEntry& retVal );
+int		 MsgQueue_NumMsg( HANDLE hContact );
 void     MsgQueue_Clear( HANDLE hContact = NULL, bool msg = false );
 
 /////////////////////////////////////////////////////////////////////////////////////////
