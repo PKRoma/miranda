@@ -144,8 +144,8 @@ int MakeDirUtf(const char *dir);
 int OpenFileUtf(const char *filename, int oflag, int pmode);
 
 /* Unicode UI utility functions */
-wchar_t* GetWindowTextUcs(HWND hWnd);
-void SetWindowTextUcs(HWND hWnd, wchar_t *text);
+WCHAR* GetWindowTextUcs(HWND hWnd);
+void SetWindowTextUcs(HWND hWnd, WCHAR *text);
 char* GetWindowTextUtf(HWND hWnd);
 char* GetDlgItemTextUtf(HWND hwndDlg, int iItem);
 void SetWindowTextUtf(HWND hWnd, const char* szText);
