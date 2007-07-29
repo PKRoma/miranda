@@ -591,9 +591,9 @@ int JabberAdhocForwardHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pI
 					dbei.cbSize = sizeof(dbei);
 					dbei.cbBlob = CallService( MS_DB_EVENT_GETBLOBSIZE, (WPARAM)hDbEvent, 0 );
 					if ( dbei.cbBlob != -1 ) {
-						dbei.pBlob = (PBYTE)mir_alloc( dbei.cbSize + 1 );
-						JCallService( MS_DB_EVENT_GET, (WPARAM)hDbEvent, (LPARAM)&dbei );
-						if (dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & DBEF_READ) && !(dbei.flags & DBEF_SENT)) {
+						dbei.pBlob = (PBYTE)mir_alloc( dbei.cbBlob + 1 );
+						int nGetTextResult = JCallService( MS_DB_EVENT_GET, (WPARAM)hDbEvent, (LPARAM)&dbei );
+						if ( !nGetTextResult && dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & DBEF_READ) && !(dbei.flags & DBEF_SENT)) {
 							TCHAR* szEventText = DbGetEventTextT( &dbei, CP_ACP );
 							if ( szEventText ) {
 								XmlNode msg( "message" );
