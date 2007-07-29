@@ -68,15 +68,15 @@ void JabberFtCancel( filetransfer* ft )
 			Netlib_CloseHandle( jbt->hConn );
 			jbt->hConn = NULL;
 		}
+		if ( jbt->hSendEvent ) SetEvent( jbt->hSendEvent );
 		if ( jbt->hEvent ) SetEvent( jbt->hEvent );
 		if ( jbt->hProxyEvent ) SetEvent( jbt->hProxyEvent );
-		if ( jbt->hSendEvent ) SetEvent( jbt->hSendEvent );
 	}
 	// For file transfer through IBB
 	if (( jibb=ft->jibb ) != NULL ) {
 		JabberLog( "Canceling IBB session" );
 		jibb->state = JIBB_ERROR;
-		if ( jibb->hEvent ) SetEvent( jibb->hEvent );
+		g_JabberIqManager.ExpireByUserData( jibb );
 	}
 }
 
@@ -273,6 +273,7 @@ static BOOL JabberFtIbbSend( int blocksize, void *userdata )
 			mir_free( encoded );
 
 			if ( ft->jibb->state == JIBB_ERROR || ft->jibb->bStreamClosed || jabberThreadInfo->send( msg ) == SOCKET_ERROR ) {
+				JabberLog( "JabberFtIbbSend unsuccessful exit" );
 				mir_free( buffer );
 				_close( fd );
 				return FALSE;

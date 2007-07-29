@@ -155,6 +155,7 @@ void __cdecl JabberByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 		if ( jbt->hConn == NULL ) {
 			JabberLog( "Cannot allocate port for bytestream_send thread, thread ended." );
 			JabberByteFreeJbt( jbt );
+			mir_free( localAddr );
 			return;
 		}
 
@@ -187,7 +188,7 @@ void __cdecl JabberByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 	jbt->hProxyEvent = NULL;
 
 	if ( !jbt->szStreamhostUsed ) {
-		if (bDirect) {
+		if ( bDirect ) {
 			SetEvent( jbt->hSendEvent );
 			CloseHandle( jbt->hSendEvent );
 			CloseHandle( hEvent );
@@ -197,6 +198,8 @@ void __cdecl JabberByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 				Netlib_CloseHandle( jbt->hConn );
 			JabberListRemove( LIST_BYTE, szPort );
 		}
+		// stupid fix: wait for listening thread exit
+		Sleep( 100 );
 		JabberByteFreeJbt( jbt );
 		return;
 	}
@@ -226,6 +229,8 @@ void __cdecl JabberByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 		JabberListRemove( LIST_BYTE, szPort );
 	}
 
+	// stupid fix: wait for listening connection thread exit
+	Sleep( 100 );
 	JabberByteFreeJbt( jbt );
 	JabberLog( "Thread ended: type=bytestream_send" );
 }
@@ -393,6 +398,9 @@ static int JabberByteSendParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char* b
 
 				// wait stream activation
 				WaitForSingleObject( jbt->hSendEvent, INFINITE );
+
+				if ( jbt->state == JBT_ERROR )
+					break;
 
 				if ( i>=20 && jbt->pfnSend( hConn, jbt->userdata )==TRUE )
 					jbt->state = JBT_DONE;
