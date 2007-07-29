@@ -950,32 +950,38 @@ LBL_InvalidCommand:
 
 		case ' SNA':    //********* ANS: section 8.4 Getting Invited to a Switchboard Session
 			if ( strcmp( params, "OK" ) == 0 ) {
-				info->mInitialContact = NULL;
 				info->sendCaps();
 				if ( info->mJoinedCount == 1 ) {
 					MsgQueueEntry E;
 					bool typing = false;
 					HANDLE hContact = info->mJoinedContacts[0];
 
-					while (MsgQueue_GetNext( hContact, E ) != 0 )
+					for (int i=3; --i; )
 					{
-						if ( E.msgType == 'X' ) ;
-						else if ( E.msgType == 2571 )
-							typing = E.flags != 0;
-						else if ( E.msgSize == 0 ) {
-							info->sendMessage( E.msgType, E.message, E.flags );
-							MSN_SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )E.seq, 0 );
+						while (MsgQueue_GetNext( hContact, E ))
+						{
+							if ( E.msgType == 'X' ) ;
+							else if ( E.msgType == 2571 )
+								typing = E.flags != 0;
+							else if ( E.msgSize == 0 ) {
+								info->sendMessage( E.msgType, E.message, E.flags );
+								MSN_SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )E.seq, 0 );
+							}
+							else info->sendRawMessage( E.msgType, E.message, E.msgSize );
+
+							mir_free( E.message );
+
+							if ( E.ft != NULL )
+								info->mMsnFtp = E.ft;
 						}
-						else info->sendRawMessage( E.msgType, E.message, E.msgSize );
-
-						mir_free( E.message );
-
-						if ( E.ft != NULL )
-							info->mMsnFtp = E.ft;
+						info->mInitialContact = NULL;
+						Sleep( 100 );
 					}
 
 					if ( typing )
 						MSN_StartStopTyping( info, true );
+
+
 
 					if ( MSN_GetByte( "EnableDeliveryPopup", 0 ))
 						MSN_ShowPopup( hContact, TranslateT( "Chat session established by contact request" ), 0 );
@@ -1289,29 +1295,32 @@ LBL_InvalidCommand:
 			mir_utf8decode( data.userNick, NULL );
 			MSN_DebugLog( "New contact in channel %s %s", data.userEmail, data.userNick );
 
-			info->mInitialContact = NULL;
-
 			if ( MSN_ContactJoined( info, hContact ) == 1 ) {
 				info->sendCaps();
 				MsgQueueEntry E;
 
 				bool typing = false;
 
-				while (MsgQueue_GetNext( hContact, E ) != 0 )
+				for (int i=3; --i; )
 				{
-					if ( E.msgType == 'X' ) ;
-					else if ( E.msgType == 2571 )
-						typing = E.flags != 0;
-					else if ( E.msgSize == 0 ) {
-						info->sendMessage( E.msgType, E.message, E.flags );
-						MSN_SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )E.seq, 0 );
+					while (MsgQueue_GetNext( hContact, E ))
+					{
+						if ( E.msgType == 'X' ) ;
+						else if ( E.msgType == 2571 )
+							typing = E.flags != 0;
+						else if ( E.msgSize == 0 ) {
+							info->sendMessage( E.msgType, E.message, E.flags );
+							MSN_SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )E.seq, 0 );
+						}
+						else info->sendRawMessage( E.msgType, E.message, E.msgSize );
+
+						mir_free( E.message );
+
+						if ( E.ft != NULL )
+							info->mMsnFtp = E.ft;
 					}
-					else info->sendRawMessage( E.msgType, E.message, E.msgSize );
-
-					mir_free( E.message );
-
-					if ( E.ft != NULL )
-						info->mMsnFtp = E.ft;
+					info->mInitialContact = NULL;
+					Sleep( 100 );
 				}
 
 				if ( typing )

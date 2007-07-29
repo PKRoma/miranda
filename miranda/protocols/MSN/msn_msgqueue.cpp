@@ -80,7 +80,7 @@ HANDLE  MsgQueue_CheckContact(HANDLE hContact, time_t tsc)
 	HANDLE ret = NULL;
 	for(int i=0; i < msgQueueCount; i++)
 	{
-	if (msgQueue[i].hContact == hContact && (tsc == 0 || (ts - msgQueue[i].ts) < tsc))
+		if (msgQueue[i].hContact == hContact && (tsc == 0 || (ts - msgQueue[i].ts) < tsc))
 		{	
 			ret = hContact;
 			break;
@@ -117,7 +117,7 @@ HANDLE  MsgQueue_GetNextRecipient(void)
 }
 
 //deletes from list. Must mir_free() return value
-int  MsgQueue_GetNext( HANDLE hContact, MsgQueueEntry& retVal )
+bool  MsgQueue_GetNext( HANDLE hContact, MsgQueueEntry& retVal )
 {
 	int i;
 
@@ -125,18 +125,16 @@ int  MsgQueue_GetNext( HANDLE hContact, MsgQueueEntry& retVal )
 	for( i=0; i < msgQueueCount; i++ )
 		if ( msgQueue[ i ].hContact == hContact )
 			break;
-
-	if ( i == msgQueueCount )
-	{	LeaveCriticalSection(&csMsgQueue);
-		return 0;
+	
+	bool res = i != msgQueueCount;
+	if ( res )
+	{	
+		retVal = msgQueue[ i ];
+		msgQueueCount--;
+		memmove( msgQueue+i, msgQueue+i+1, sizeof( MsgQueueEntry )*( msgQueueCount-i ));
 	}
-
-	retVal = msgQueue[ i ];
-
-	msgQueueCount--;
-	memmove( msgQueue+i, msgQueue+i+1, sizeof( MsgQueueEntry )*( msgQueueCount-i ));
 	LeaveCriticalSection( &csMsgQueue );
-	return i+1;
+	return res;
 }
 
 void  MsgQueue_Clear( HANDLE hContact, bool msg )

@@ -601,7 +601,7 @@ struct MsgQueueEntry
 int		 MsgQueue_Add( HANDLE hContact, int msgType, const char* msg, int msglen, filetransfer* ft = NULL, int flags = 0 );
 HANDLE	 MsgQueue_CheckContact( HANDLE hContact, time_t tsc = 0 );
 HANDLE	 MsgQueue_GetNextRecipient( void );
-int		 MsgQueue_GetNext( HANDLE hContact, MsgQueueEntry& retVal );
+bool	 MsgQueue_GetNext( HANDLE hContact, MsgQueueEntry& retVal );
 void     MsgQueue_Clear( HANDLE hContact = NULL, bool msg = false );
 
 /////////////////////////////////////////////////////////////////////////////////////////

@@ -38,9 +38,6 @@ static char sttGatewayHeader[] =
 
 int ThreadData::send( char* data, int datalen )
 {
-	if ( this == NULL )
-		return 0;
-
 	NETLIBBUFFER nlb = { data, datalen, 0 };
 
 	mWaitPeriod = mJoinedCount ? 60 : 30;
