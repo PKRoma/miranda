@@ -228,6 +228,7 @@ typedef struct  USERINFO_TYPE
 	TCHAR* pszUID;
 	WORD   Status;
 	int    iStatusEx;
+	WORD   ContactStatus;
 	struct USERINFO_TYPE *next;
 }
 	USERINFO;
@@ -368,6 +369,8 @@ struct GlobalLogSettings_t {
 	COLORREF    crUserListHeadingsColor;
 	COLORREF    crPUTextColour;
 	COLORREF    crPUBkgColour;
+	BOOL		ShowContactStatus;
+	BOOL		ContactStatusFirst;
 };
 extern struct GlobalLogSettings_t g_Settings;
 
@@ -447,6 +450,7 @@ BOOL          SM_PostMessage(const TCHAR* pszID, const char* pszModule, UINT msg
 BOOL          SM_BroadcastMessage(const char* pszModule, UINT msg, WPARAM wParam, LPARAM lParam, BOOL bAsync);
 BOOL          SM_RemoveAll (void);
 BOOL          SM_GiveStatus(const TCHAR* pszID, const char* pszModule, const TCHAR* pszUID, const TCHAR* pszStatus);
+BOOL          SM_SetContactStatus(const TCHAR* pszID, const char* pszModule, const TCHAR* pszUID, WORD pszStatus);
 BOOL          SM_TakeStatus(const TCHAR* pszID, const char* pszModule, const TCHAR* pszUID, const TCHAR* pszStatus);
 BOOL          SM_MoveUser(const TCHAR* pszID, const char* pszModule, const TCHAR* pszUID);
 void          SM_AddCommand(const TCHAR* pszID, const char* pszModule, const char* lpNewCommand);
@@ -475,6 +479,7 @@ USERINFO*     UM_SortUser(USERINFO** ppUserList, const TCHAR* pszUID);
 USERINFO*     UM_FindUser(USERINFO* pUserList, const TCHAR* pszUID);
 USERINFO*     UM_FindUserFromIndex(USERINFO* pUserList, int index);
 USERINFO*     UM_GiveStatus(USERINFO* pUserList, const TCHAR* pszUID, WORD status);
+USERINFO*     UM_SetContactStatus(USERINFO* pUserList, const TCHAR* pszUID, WORD status);
 USERINFO*     UM_TakeStatus(USERINFO* pUserList, const TCHAR* pszUID, WORD status);
 TCHAR*        UM_FindUserAutoComplete(USERINFO* pUserList, const TCHAR* pszOriginal, const TCHAR* pszCurrent);
 BOOL          UM_RemoveUser(USERINFO** pUserList, const TCHAR* pszUID);
@@ -506,6 +511,7 @@ UINT          CreateGCMenu(HWND hwndDlg, HMENU *hMenu, int iIndex, POINT pt, SES
 void          DestroyGCMenu(HMENU *hMenu, int iIndex);
 BOOL          DoEventHookAsync(HWND hwnd, const TCHAR* pszID, const char* pszModule, int iType, TCHAR* pszUID, TCHAR* pszText, DWORD dwItem);
 BOOL          DoEventHook(const TCHAR* pszID, const char* pszModule, int iType, const TCHAR* pszUID, const TCHAR* pszText, DWORD dwItem);
+BOOL          IsEventSupported(int eventType);
 BOOL          LogToFile(SESSION_INFO* si, GCEVENT * gce);
 
 // message.c

@@ -96,7 +96,9 @@ static struct branch_t branch1[] = {
 	{LPGENT("Show the topic of the room on your contact list (if supported)"), "TopicOnClist", 0, 0, NULL},
 	{LPGENT("Do not play sounds when the chat room is focused"), "SoundsFocus", 0, 0, NULL},
 	{LPGENT("Do not pop up the window when joining a chat room"), "PopupOnJoin", 0,0, NULL},
-	{LPGENT("Toggle the visible state when double clicking in the contact list"), "ToggleVisibility", 0,0, NULL}
+	{LPGENT("Toggle the visible state when double clicking in the contact list"), "ToggleVisibility", 0,0, NULL},
+    {LPGENT("Show contact statuses if protocol supports them"), "ShowContactStatus", 0,0, NULL},
+    {LPGENT("Display contact status icon before user role icon"), "ContactStatusFirst", 0,0, NULL},
 };
 static struct branch_t branch2[] = {
 	{LPGENT("Prefix all events with a timestamp"), "ShowTimeStamp", 0,1, NULL},
@@ -1108,6 +1110,8 @@ void LoadGlobalSettings(void)
 	g_Settings.iPopupTimeout = DBGetContactSettingWord(NULL, "Chat", "PopupTimeout", 3);
 	g_Settings.crPUBkgColour = DBGetContactSettingDword(NULL, "Chat", "PopupColorBG", GetSysColor(COLOR_WINDOW));
 	g_Settings.crPUTextColour = DBGetContactSettingDword(NULL, "Chat", "PopupColorText", 0);
+	g_Settings.ShowContactStatus = DBGetContactSettingByte(NULL, "Chat", "ShowContactStatus", 0);
+	g_Settings.ContactStatusFirst = DBGetContactSettingByte(NULL, "Chat", "ContactStatusFirst", 0);	
 
 	InitSetting( &g_Settings.pszTimeStamp, "HeaderTime", _T("[%H:%M]"));
 	InitSetting( &g_Settings.pszTimeStampLog, "LogTimestamp", _T("[%d %b %y %H:%M]"));
@@ -1227,4 +1231,5 @@ int OptionsUnInit(void)
 	DeleteObject(g_Settings.NameFont);
 	return 0;
 }
+
 

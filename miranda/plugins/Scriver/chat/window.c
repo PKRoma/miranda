@@ -1257,6 +1257,9 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
             ih2 = GetTextPixelSize( _T("AQGglo'"), g_Settings.UserListHeadingsFont,FALSE);
             height = DBGetContactSettingByte(NULL, "Chat", "NicklistRowDist", 12);
             font = ih > ih2?ih:ih2;
+			// make sure we have space for icon!
+			if (DBGetContactSettingByte(NULL, "Chat", "ShowContactStatus", 0))
+				font = font > 16 ? font : 16;
 
             SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_LIST), LB_SETITEMHEIGHT, 0, (LPARAM)height > font ? height : font);
             InvalidateRect(GetDlgItem(hwndDlg, IDC_CHAT_LIST), NULL, TRUE);
@@ -1488,6 +1491,9 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
          int ih2 = GetTextPixelSize( _T("AQGg'"), g_Settings.UserListHeadingsFont,FALSE);
          int font = ih > ih2?ih:ih2;
          int height = DBGetContactSettingByte(NULL, "Chat", "NicklistRowDist", 12);
+		// make sure we have space for icon!
+		if (DBGetContactSettingByte(NULL, "Chat", "ShowContactStatus", 0))
+			font = font > 16 ? font : 16;
 
          mis->itemHeight = height > font?height:font;
          return TRUE;
@@ -1504,7 +1510,9 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
             int index = dis->itemID;
             USERINFO * ui = SM_GetUserFromIndex(si->ptszID, si->pszModule, index);
             if (ui) {
-               height = dis->rcItem.bottom - dis->rcItem.top;
+				int x_offset = 2;
+
+				height = dis->rcItem.bottom - dis->rcItem.top;
 
                if (height&1)
                   height++;
@@ -1521,10 +1529,22 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
                   FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_HIGHLIGHT));
                else //if (dis->itemState & ODS_INACTIVE)
                   FillRect(dis->hDC, &dis->rcItem, hListBkgBrush);
-               DrawIconEx(dis->hDC,2, dis->rcItem.top + offset,hIcon,10,10,0,NULL, DI_NORMAL);
+
+		   		if (g_Settings.ShowContactStatus && g_Settings.ContactStatusFirst && ui->ContactStatus) {
+					HICON hIcon = LoadSkinnedProtoIcon(si->pszModule, ui->ContactStatus);
+					DrawIconEx(dis->hDC, x_offset, dis->rcItem.top+offset-3,hIcon,16,16,0,NULL, DI_NORMAL);
+					x_offset += 18;
+				}
+				DrawIconEx(dis->hDC,x_offset, dis->rcItem.top + offset,hIcon,10,10,0,NULL, DI_NORMAL);
+				x_offset += 12;
+				if (g_Settings.ShowContactStatus && !g_Settings.ContactStatusFirst && ui->ContactStatus) {
+					HICON hIcon = LoadSkinnedProtoIcon(si->pszModule, ui->ContactStatus);
+					DrawIconEx(dis->hDC, x_offset, dis->rcItem.top+offset-3,hIcon,16,16,0,NULL, DI_NORMAL);
+					x_offset += 18;
+				}
 
                SetTextColor(dis->hDC, ui->iStatusEx == 0?g_Settings.crUserListColor:g_Settings.crUserListHeadingsColor);
-               TextOut(dis->hDC, dis->rcItem.left+14, dis->rcItem.top, ui->pszNick, lstrlen(ui->pszNick));
+               TextOut(dis->hDC, dis->rcItem.left+x_offset, dis->rcItem.top, ui->pszNick, lstrlen(ui->pszNick));
                SelectObject(dis->hDC, hOldFont);
             }
             return TRUE;

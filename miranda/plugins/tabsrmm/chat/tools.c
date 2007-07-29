@@ -1053,6 +1053,41 @@ BOOL DoEventHook(const TCHAR* pszID, const char* pszModule, int iType, const TCH
 	return TRUE;
 }
 
+BOOL IsEventSupported(int eventType)
+{
+	switch (eventType)
+	{
+		// Supported events
+		case GC_EVENT_JOIN:
+		case GC_EVENT_PART:
+		case GC_EVENT_QUIT:
+		case GC_EVENT_KICK:
+		case GC_EVENT_NICK:
+		case GC_EVENT_NOTICE:
+		case GC_EVENT_MESSAGE:
+		case GC_EVENT_TOPIC:
+		case GC_EVENT_INFORMATION:
+		case GC_EVENT_ACTION:
+		case GC_EVENT_ADDSTATUS:
+		case GC_EVENT_REMOVESTATUS:
+		case GC_EVENT_CHUID:
+		case GC_EVENT_CHANGESESSIONAME:
+		case GC_EVENT_ADDGROUP:
+		case GC_EVENT_SETITEMDATA:
+		case GC_EVENT_GETITEMDATA:
+		case GC_EVENT_SETSBTEXT:
+		case GC_EVENT_ACK:
+		case GC_EVENT_SENDMESSAGE:
+		case GC_EVENT_SETSTATUSEX:
+		case GC_EVENT_CONTROL:
+		case GC_EVENT_SETCONTACTSTATUS:
+			return TRUE;
+	}
+
+	// Other events
+	return FALSE;
+}
+
 void ValidateFilename (char * filename)
 {
 	char *p1 = filename;
@@ -1184,4 +1219,5 @@ void Chat_SetFilters(SESSION_INFO *si)
     if(si->iLogFilterFlags == 0)
         si->bFilterEnabled = 0;
 }
+
 

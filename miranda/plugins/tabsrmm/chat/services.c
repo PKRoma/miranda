@@ -651,6 +651,9 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 	if ( gce->cbSize != SIZEOF_STRUCT_GCEVENT_V1 && gce->cbSize != SIZEOF_STRUCT_GCEVENT_V2 )
 		return GC_EVENT_WRONGVER;
 
+	if ( !IsEventSupported( gcd->iType ) )
+		return GC_EVENT_ERROR;
+
 	EnterCriticalSection(&cs);
 
 	#if defined( _UNICODE )

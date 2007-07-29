@@ -478,6 +478,30 @@ BOOL SM_GiveStatus(const TCHAR* pszID, const char* pszModule, const TCHAR* pszUI
 	return FALSE;
 }
 
+BOOL SM_SetContactStatus(const TCHAR* pszID, const char* pszModule, const TCHAR* pszUID, WORD wStatus)
+{
+	SESSION_INFO* pTemp = m_WndList, *pLast = NULL;
+
+	if ( !pszID || !pszModule )
+		return FALSE;
+
+	while ( pTemp != NULL ) {
+		if ( !lstrcmpi( pTemp->ptszID, pszID ) && !lstrcmpiA( pTemp->pszModule, pszModule )) {
+			USERINFO * ui = UM_SetContactStatus(pTemp->pUsers, pszUID, wStatus);
+			if (ui) {
+				SM_MoveUser( pTemp->ptszID, pTemp->pszModule, ui->pszUID );
+				if ( pTemp->hWnd )
+					SendMessage(pTemp->hWnd, GC_UPDATENICKLIST, (WPARAM)0, (LPARAM)0);
+			}
+			return TRUE;
+		}
+		pLast = pTemp;
+		pTemp = pTemp->next;
+	}
+
+	return FALSE;
+}
+
 BOOL SM_TakeStatus(const TCHAR* pszID, const char* pszModule, const TCHAR* pszUID, const TCHAR* pszStatus)
 {
 	SESSION_INFO *pTemp = m_WndList, *pLast = NULL;
@@ -1385,6 +1409,24 @@ USERINFO* UM_GiveStatus(USERINFO* pUserList, const TCHAR* pszUID, WORD status)
 	while ( pTemp != NULL ) {
 		if ( !lstrcmpi( pTemp->pszUID, pszUID )) {
 			pTemp->Status |= status;
+			return pTemp;
+		}
+		pLast = pTemp;
+		pTemp = pTemp->next;
+	}
+	return 0;
+}
+
+USERINFO* UM_SetContactStatus(USERINFO* pUserList, const TCHAR* pszUID, WORD status)
+{
+	USERINFO *pTemp = pUserList, *pLast = NULL;
+
+	if (!pUserList || !pszUID)
+		return NULL;
+
+	while ( pTemp != NULL ) {
+		if ( !lstrcmpi( pTemp->pszUID, pszUID )) {
+			pTemp->ContactStatus = status;
 			return pTemp;
 		}
 		pLast = pTemp;

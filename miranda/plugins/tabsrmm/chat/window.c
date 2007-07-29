@@ -1834,7 +1834,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 				// make sure we have space for icon!
 				if (g_Settings.ShowContactStatus)
-					font = font > 18 ? font : 18;
+					font = font > 16 ? font : 16;
 
 				SendMessage(GetDlgItem(hwndDlg, IDC_LIST), LB_SETITEMHEIGHT, 0, (LPARAM)height > font ? height : font);
 				InvalidateRect(GetDlgItem(hwndDlg, IDC_LIST), NULL, TRUE);
@@ -2035,7 +2035,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 			// make sure we have enough space for icon!
 			if (g_Settings.ShowContactStatus)
-				(mis->itemHeight > 18) ? mis->itemHeight : 18;
+				mis->itemHeight = (mis->itemHeight > 16) ? mis->itemHeight : 16;
 
 			return TRUE;
 		}

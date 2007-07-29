@@ -429,7 +429,7 @@ typedef struct {
 
 //	GC_EVENT_SETCONTACTSTATUS - sets status icon for contact
 //	pszUID		- Unique identifier of the one who receives a new status
-//	pszStatus	- (char *)(DWORD)ID_STATUS_* or zero to remove status icon
+//	dwItemData	- (DWORD)ID_STATUS_* or zero to remove status icon
 #define GC_EVENT_SETCONTACTSTATUS	0x100A
 
 //	GC_EVENT_CONTROL  - not shown in the log (Control window associated to a session and the session itself)
