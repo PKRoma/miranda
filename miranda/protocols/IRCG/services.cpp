@@ -1620,7 +1620,7 @@ static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 				break;
 
 			*p2++ = 0;
-			DBWriteContactSettingString( NULL, IRCPROTONAME, ("PERFORM:" + sNetwork).c_str(), p1 );
+			DBWriteContactSettingString( NULL, IRCPROTONAME, ("PERFORM:" + sNetwork).c_str(), rtrim( p1 ));
 		}
 		delete[] pszPerformData;
 		::remove( szTemp );

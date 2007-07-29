@@ -690,9 +690,9 @@ void DoUserhostWithReason(int type, TString reason, bool bSendCommand, TString u
 	va_end(ap);
 
 	// Add reason
-	if (type ==1)
+	if ( type == 1 )
 		vUserhostReasons.push_back(reason);
-	else if (type == 2)
+	else if ( type == 2 )
 		vWhoInProgress.push_back(reason);
 
 	// Do command
