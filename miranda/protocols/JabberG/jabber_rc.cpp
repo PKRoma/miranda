@@ -658,3 +658,37 @@ int JabberAdhocForwardHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pI
 
 	return JABBER_ADHOC_HANDLER_STATUS_REMOVE_SESSION;
 }
+
+typedef BOOL (WINAPI *LWS )( VOID );
+
+int JabberAdhocLockWSHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
+{
+	BOOL bOk = FALSE;
+	HMODULE hLibrary = LoadLibrary( _T("user32.dll") );
+	if ( hLibrary ) {
+		LWS pLws = GetProcAddress( hLibrary, "LockWorkStation" );
+		if ( pLws )
+			bOk = pLws();
+		FreeLibrary( hLibrary );
+	}
+
+	XmlNodeIq iq( "result", pInfo );
+	XmlNode* commandNode = iq.addChild( "command" );
+	commandNode->addAttr( "xmlns", JABBER_FEAT_COMMANDS );
+	commandNode->addAttr( "node", JABBER_FEAT_RC_WS_LOCK );
+	commandNode->addAttr( "sessionid", pSession->GetSessionId() );
+	commandNode->addAttr( "status", "completed" );
+
+	TCHAR szMsg[ 1024 ];
+	if ( bOk )
+		mir_sntprintf( szMsg, SIZEOF(szMsg), _T("Workstation successfully locked") );
+	else
+		mir_sntprintf( szMsg, SIZEOF(szMsg), _T("Error %d occured during workstation lock"), GetLastError() );
+
+	XmlNode* noteNode = commandNode->addChild( "note", szMsg );
+	noteNode->addAttr( "type", bOk ? "info" : "error" );
+
+	jabberThreadInfo->send( iq );
+
+	return JABBER_ADHOC_HANDLER_STATUS_REMOVE_SESSION;
+}

@@ -37,6 +37,7 @@ void JabberHandleAdhocCommandRequest( XmlNode* iqNode, void* userdata, CJabberIq
 int JabberAdhocSetStatusHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
 int JabberAdhocOptionsHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
 int JabberAdhocForwardHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
+int JabberAdhocLockWSHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
 
 #define JABBER_ADHOC_HANDLER_STATUS_EXECUTING            1
 #define JABBER_ADHOC_HANDLER_STATUS_COMPLETED            2
@@ -292,6 +293,7 @@ public:
 		AddNode( NULL, _T(JABBER_FEAT_RC_SET_STATUS), _T("Set status"), JabberAdhocSetStatusHandler );
 		AddNode( NULL, _T(JABBER_FEAT_RC_SET_OPTIONS), _T("Set options"), JabberAdhocOptionsHandler );
 		AddNode( NULL, _T(JABBER_FEAT_RC_FORWARD), _T("Forward unread messages"), JabberAdhocForwardHandler );
+		AddNode( NULL, _T(JABBER_FEAT_RC_WS_LOCK), _T("Lock workstation"), JabberAdhocLockWSHandler );
 		return TRUE;
 	}
 	BOOL AddNode( TCHAR* szJid, TCHAR* szNode, TCHAR* szName, JABBER_ADHOC_HANDLER pHandler )

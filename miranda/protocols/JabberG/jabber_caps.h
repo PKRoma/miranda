@@ -118,15 +118,17 @@ typedef unsigned __int64 JabberCapsBits;
 #define JABBER_CAPS_MIRANDA_PARTIAL             (JABBER_CAPS_DISCO_INFO|JABBER_CAPS_DISCO_ITEMS|JABBER_CAPS_ENTITY_CAPS|JABBER_CAPS_MUC|JABBER_CAPS_ENTITY_CAPS|JABBER_CAPS_SI|JABBER_CAPS_SI_FT|JABBER_CAPS_BYTESTREAMS|JABBER_CAPS_IBB|JABBER_CAPS_OOB|JABBER_CAPS_CHATSTATES|JABBER_CAPS_AGENTS|JABBER_CAPS_BROWSE|JABBER_CAPS_VERSION|JABBER_CAPS_LAST_ACTIVITY|JABBER_CAPS_DATA_FORMS|JABBER_CAPS_MESSAGE_EVENTS|JABBER_CAPS_VCARD_TEMP|JABBER_CAPS_ENTITY_TIME|JABBER_CAPS_PING|JABBER_CAPS_PRIVACY_LISTS|JABBER_CAPS_MESSAGE_RECEIPTS)
 
 #define JABBER_EXT_SECUREIM                     "secureim"
-#define JABBER_EXT_COMMANDS						"cmds"
+#define JABBER_EXT_COMMANDS                     "cmds"
 #define JABBER_EXT_USER_MOOD                    "mood"
 #define JABBER_EXT_USER_TUNE                    "tune"
 
 #define JABBER_FEAT_EXT_ADDRESSING              "http://jabber.org/protocol/address"
+
 #define JABBER_FEAT_RC                          "http://jabber.org/protocol/rc"
 #define JABBER_FEAT_RC_SET_STATUS               "http://jabber.org/protocol/rc#set-status"
 #define JABBER_FEAT_RC_SET_OPTIONS              "http://jabber.org/protocol/rc#set-options"
 #define JABBER_FEAT_RC_FORWARD                  "http://jabber.org/protocol/rc#forward"
+#define JABBER_FEAT_RC_WS_LOCK                  "http://miranda-im.org/rc#lock_workstation"
 
 #define JABBER_FEAT_IQ_ROSTER                   "jabber:iq:roster"
 #define JABBER_FEAT_DELAY                       "jabber:x:delay"
