@@ -702,7 +702,7 @@ static int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 	}
 	else if ( gcd->iType == GC_EVENT_NOTICE || gcd->iType == GC_EVENT_INFORMATION ) {
 		SESSION_INFO* si = GetActiveSession();
-		if ( si ) {
+		if ( si && !lstrcmpA( si->pszModule, gcd->pszModule )) {
 			pWnd = si->ptszID;
 			pMod = si->pszModule;
 		}

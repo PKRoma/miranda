@@ -679,7 +679,7 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 			STATUSINFO* si = SM_AddStatus( gce->pDest->ptszID, gce->pDest->pszModule, gce->ptszStatus);
 			if ( si && gce->dwItemData)
 				si->hIcon = CopyIcon((HICON)gce->dwItemData);
-		}		
+		}
 		iRetVal = 0;
 		goto LBL_Exit;
 
@@ -763,7 +763,7 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 	}
 	else if ( gcd->iType == GC_EVENT_NOTICE || gcd->iType == GC_EVENT_INFORMATION ) {
 		SESSION_INFO* si = GetActiveSession();
-		if ( si ) {
+		if ( si && !lstrcmpA( si->pszModule, gcd->pszModule )) {
 			pWnd = si->ptszID;
 			pMod = si->pszModule;
 		}
