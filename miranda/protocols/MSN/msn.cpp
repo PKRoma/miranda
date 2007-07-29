@@ -353,11 +353,11 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 		MSN_DeleteSetting( NULL, "LoginServer" );
 
 	mailsoundname = ( char* )mir_alloc( 64 );
-	mir_snprintf(mailsoundname, 64, "%s:%s", protocolname, MSN_Translate( "Hotmail" ));
-	SkinAddNewSound( mailsoundname, mailsoundname, "<not specified>" );
+	mir_snprintf(mailsoundname, 64, "%s:mail", protocolname);
+	SkinAddNewSoundEx(mailsoundname, protocolname, MSN_Translate( "Live Mail" ));
 	alertsoundname = ( char* )mir_alloc( 64 );
-	mir_snprintf(alertsoundname, 64, "%s:%s", protocolname, MSN_Translate( "Alerts" ));
-	SkinAddNewSound( alertsoundname, alertsoundname, "<not specified>" );
+	mir_snprintf(alertsoundname, 64, "%s:alert", protocolname);
+	SkinAddNewSoundEx(alertsoundname, protocolname, MSN_Translate( "Live Alert" ));
 
 	msnStatusMode = msnDesiredStatus = ID_STATUS_OFFLINE;
 	memset(&msnCurrentMedia, 0, sizeof(msnCurrentMedia));
