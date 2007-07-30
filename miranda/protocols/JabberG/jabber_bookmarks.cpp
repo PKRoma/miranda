@@ -105,14 +105,8 @@ static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 
 		switch ( LOWORD( wParam )) {
 		case IDC_ROOM_JID:
-			if (( HWND )lParam==GetFocus() && HIWORD( wParam )==EN_CHANGE ) {
-				GetDlgItemText( hwndDlg, IDC_ROOM_JID, text, SIZEOF( text ));
-				roomJID = mir_tstrdup( text );
-
-				if (roomJID == NULL || roomJID[0] == _T('\0')) EnableWindow( GetDlgItem( hwndDlg, IDOK ), FALSE );
-				else EnableWindow( GetDlgItem( hwndDlg, IDOK ), TRUE );
-			}
-
+			if (( HWND )lParam==GetFocus() && HIWORD( wParam )==EN_CHANGE )
+				EnableWindow( GetDlgItem( hwndDlg, IDOK ), GetDlgItemText( hwndDlg, IDC_ROOM_JID, text, SIZEOF( text )));
 			break;
 
 		case IDOK:
@@ -228,8 +222,8 @@ static BOOL CALLBACK JabberBookmarksDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 	LVITEM lvItem;
 	JABBER_LIST_ITEM *item;
 	HIMAGELIST hIml;    // A handle to the image list.
-	TCHAR room[256], *server, *p, *ItemNick;
-	TCHAR text[128];
+	TCHAR room[ 512 ], *server, *p;
+	TCHAR text[ 512 ];
 
 	switch ( msg ) {
 	case WM_INITDIALOG:
@@ -421,7 +415,6 @@ static BOOL CALLBACK JabberBookmarksDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 							lvItem.pszText = text;
 
 							ListView_GetItem( lv, &lvItem );
-							ItemNick = mir_tstrdup(text);
 
 							ListView_SetItemState( lv, lvItem.iItem, 0, LVIS_SELECTED ); // Unselect the item
 							/* some hack for using bookmark to transport not under XEP-0048 */
@@ -429,13 +422,15 @@ static BOOL CALLBACK JabberBookmarksDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 								JabberRegisterAgent( NULL, room );
 							}
 							else {
-								TCHAR *pass;
-								if (item->password && item->password[0]!=_T('\0')) {pass = mir_tstrdup(item->password);}
-								else pass = _T("");
-								if (ItemNick && ItemNick[0]!=_T('\0')) {JabberGroupchatJoinRoom( server, p, ItemNick, pass );}
-								else JabberGroupchatJoinRoom( server, p, JabberNickFromJID(jabberJID), pass );
+								if ( text[0] != _T('\0') )
+									JabberGroupchatJoinRoom( server, p, text, item->password );
+								else
+								{
+									TCHAR* nick = JabberNickFromJID( jabberJID );
+									JabberGroupchatJoinRoom( server, p, nick, item->password );
+									mir_free( nick );
+								}
 							}
-
 						}
 						else JabberChatDllError();
 					}

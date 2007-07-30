@@ -1639,20 +1639,17 @@ void JabberIqResultDiscoBookmarks( XmlNode *iqNode, void *userdata )
 								if ( jabberChatDllPresent ) {
 									TCHAR room[256], *server, *p;
 									TCHAR text[128];
-									TCHAR* pass;
 									_tcsncpy( text, item->jid, SIZEOF( text ));
 									_tcsncpy( room, text, SIZEOF( room ));
 									p = _tcstok( room, _T( "@" ));
 									server = _tcstok( NULL, _T( "@" ));
-									pass = mir_tstrdup(( item->password && item->password[0] != 0 ) ? item->password : _T(""));
 									if ( item->nick && item->nick[0] != 0 )
-										JabberGroupchatJoinRoom( server, p, item->nick, pass );
+										JabberGroupchatJoinRoom( server, p, item->nick, item->password );
 									else {
 										TCHAR* nick = JabberNickFromJID( jabberJID );
-										JabberGroupchatJoinRoom( server, p, nick, pass );
+										JabberGroupchatJoinRoom( server, p, nick, item->password );
 										mir_free( nick );
 									}
-									mir_free(pass);
 			}	}	}	}	}	}
 
 			if ( hwndJabberBookmarks != NULL )
