@@ -25,9 +25,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include <stdio.h>
 #include <m_png.h> 
-#include "m_skin_eng.h"
-#include "mod_skin_selector.h"
-#include "CLUIFRAMES\cluiframes.h"
+#include "./m_api/m_skin_eng.h"
+#include "./hdr/modern_skinselector.h"
+#include "hdr/cluiframes.h"
 
 
 #define _EFFECTENUM_FULL_H
@@ -2196,7 +2196,7 @@ static int ske_LoadSkinFromResource(BOOL bOnlyObjects)
 				pos++;
 				line[i]='\0';
 			}
-			TRACE(line); TRACE("\n");
+			//TRACE(line); TRACE("\n");
 			ske_ParseLineOfIniFile(line, bOnlyObjects);
 			pos++;
 		}

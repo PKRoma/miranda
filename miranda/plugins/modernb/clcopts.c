@@ -554,6 +554,7 @@ static BOOL CALLBACK DlgProcClcMetaOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 
 				DBWriteContactSettingByte(NULL,"CLC","SubIndent",(BYTE)SendDlgItemMessage(hwndDlg,IDC_SUBINDENTSPIN,UDM_GETPOS,0,0));
 				ClcOptionsChanged();
+				CLUI_ReloadCLUIOptions();
 				PostMessage(pcli->hwndContactList,WM_SIZE,0,0);
 
 				return TRUE;

@@ -181,7 +181,7 @@
 				RuntimeLibrary="3"
 				BufferSecurityCheck="TRUE"
 				DefaultCharIsUnsigned="TRUE"
-				UsePrecompiledHeader="3"
+				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
 				BrowseInformation="1"
 				WarningLevel="3"
@@ -195,6 +195,7 @@
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib"
+				OutputFile="c:\program files\Miranda IM\plugins/$(ProjectName).dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories=""
@@ -269,6 +270,7 @@
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib  gdiplus.lib Delayimp.lib"
+				OutputFile="C:\ashpynov\Private\Miranda IM\plugins/$(ProjectName).dll"
 				IgnoreAllDefaultLibraries="FALSE"
 				IgnoreDefaultLibraryNames=""
 				DelayLoadDLLs="gdiplus.dll"
@@ -326,344 +328,123 @@
 			</File>
 			<File
 				RelativePath=".\clcidents.c">
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="3"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="3"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\clcitems.c">
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="3"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="3"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\clcmsgs.c">
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="3"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="3"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\clcopts.c">
 			</File>
 			<File
 				RelativePath=".\clcpaint.c">
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="3"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="3"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\clcutils.c">
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="3"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="3"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\clistevents.c">
 			</File>
 			<File
 				RelativePath=".\clistmenus.c">
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="3"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="3"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\clistmod.c">
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="3"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="3"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\clistopts.c">
 			</File>
 			<File
 				RelativePath=".\clistsettings.c">
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="3"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="3"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\clisttray.c">
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="3"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="3"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\clui.c">
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="3"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="3"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\cluiframes.c">
 			</File>
 			<File
 				RelativePath=".\cluiservices.c">
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="3"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="3"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\commonheaders.c">
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\contact.c">
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="3"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="3"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\Docking.c">
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="3"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="3"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="groupmenu.c">
+				RelativePath=".\extraimage.c">
+			</File>
+			<File
+				RelativePath=".\framesmenu.c">
+			</File>
+			<File
+				RelativePath=".\gdiplus.cpp">
+			</File>
+			<File
+				RelativePath=".\groupmenu.c">
 			</File>
 			<File
 				RelativePath=".\image_array.c">
 			</File>
 			<File
 				RelativePath=".\init.c">
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="3"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="3"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\keyboard.c">
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="3"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="3"
-						PrecompiledHeaderThrough="commonheaders.h"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\log.c">
 			</File>
 			<File
-				RelativePath=".\mod_skin_selector.c">
+				RelativePath=".\modern_animated_avatars.c">
 			</File>
 			<File
-				RelativePath=".\modern_animated_avatars.c">
+				RelativePath=".\modern_awaymsg.c">
 			</File>
 			<File
 				RelativePath=".\modern_button.c">
 			</File>
 			<File
 				RelativePath=".\modern_row.cpp">
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\modern_skinselector.c">
+			</File>
+			<File
+				RelativePath=".\modern_statusbar.c">
 			</File>
 			<File
 				RelativePath=".\modern_toolbar.c">
 			</File>
 			<File
+				RelativePath=".\newrowopts.c">
+			</File>
+			<File
+				RelativePath=".\popup.c">
+			</File>
+			<File
 				RelativePath=".\rowheight_funcs.c">
 			</File>
 			<File
-				RelativePath="SkinEngine.c">
+				RelativePath=".\rowtemplateopt.c">
+			</File>
+			<File
+				RelativePath=".\SkinEditor.c">
+			</File>
+			<File
+				RelativePath=".\SkinEngine.c">
+			</File>
+			<File
+				RelativePath=".\SkinOpt.c">
 			</File>
 			<File
 				RelativePath=".\utf.c">
@@ -674,474 +455,6 @@
 			<File
 				RelativePath=".\xpTheme.c">
 			</File>
-			<Filter
-				Name="CLUIFrames"
-				Filter="">
-				<File
-					RelativePath=".\CLUIFrames\cluiframes.c">
-					<FileConfiguration
-						Name="Release|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug Unicode|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release Unicode|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath=".\CLUIFrames\cluiframes.h">
-				</File>
-				<File
-					RelativePath=".\CLUIFrames\extraimage.c">
-					<FileConfiguration
-						Name="Release|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug Unicode|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release Unicode|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath=".\CLUIFrames\framesmenu.c">
-					<FileConfiguration
-						Name="Release|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug Unicode|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release Unicode|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath=".\CLUIFrames\m_cluiframes.h">
-				</File>
-				<File
-					RelativePath=".\modern_statusbar.c">
-				</File>
-			</Filter>
-			<Filter
-				Name="Settings"
-				Filter="">
-				<File
-					RelativePath=".\clcopts.c">
-					<FileConfiguration
-						Name="Release|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="3"
-							PrecompiledHeaderThrough="commonheaders.h"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release Unicode|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="3"
-							PrecompiledHeaderThrough="commonheaders.h"/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath=".\clistopts.c">
-					<FileConfiguration
-						Name="Release|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="3"
-							PrecompiledHeaderThrough="commonheaders.h"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release Unicode|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="3"
-							PrecompiledHeaderThrough="commonheaders.h"/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath=".\newrowopts.c">
-				</File>
-				<File
-					RelativePath=".\rowtemplateopt.c">
-				</File>
-				<File
-					RelativePath=".\SkinEditor.c">
-				</File>
-				<File
-					RelativePath=".\SkinOpt.c">
-				</File>
-			</Filter>
-			<Filter
-				Name="CPP files"
-				Filter="">
-				<File
-					RelativePath=".\gdiplus.cpp">
-					<FileConfiguration
-						Name="Release|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-							CompileAs="2"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-							CompileAs="2"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug Unicode|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-							CompileAs="2"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release Unicode|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-							CompileAs="2"/>
-					</FileConfiguration>
-				</File>
-			</Filter>
-			<Filter
-				Name="SkinPPEngine"
-				Filter="">
-				<Filter
-					Name="Headers"
-					Filter="">
-					<File
-						RelativePath=".\skinpp.h">
-						<FileConfiguration
-							Name="Release|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCustomBuildTool"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release Unicode|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCustomBuildTool"/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath=".\skinpp_object.h">
-						<FileConfiguration
-							Name="Release|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCustomBuildTool"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release Unicode|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCustomBuildTool"/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath=".\skinpp_object_glyph.h">
-						<FileConfiguration
-							Name="Release|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCustomBuildTool"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release Unicode|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCustomBuildTool"/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath=".\skinpp_private.h">
-						<FileConfiguration
-							Name="Release|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCustomBuildTool"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release Unicode|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCustomBuildTool"/>
-						</FileConfiguration>
-					</File>
-				</Filter>
-				<Filter
-					Name="Sources"
-					Filter="">
-					<File
-						RelativePath=".\skinpp.cpp">
-						<FileConfiguration
-							Name="Release|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCLCompilerTool"
-								UsePrecompiledHeader="0"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Debug|Win32">
-							<Tool
-								Name="VCCLCompilerTool"
-								UsePrecompiledHeader="0"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Debug Unicode|Win32">
-							<Tool
-								Name="VCCLCompilerTool"
-								UsePrecompiledHeader="0"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release Unicode|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCLCompilerTool"
-								UsePrecompiledHeader="0"/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath=".\skinpp_object.cpp">
-						<FileConfiguration
-							Name="Release|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCLCompilerTool"
-								UsePrecompiledHeader="0"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Debug|Win32">
-							<Tool
-								Name="VCCLCompilerTool"
-								UsePrecompiledHeader="0"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Debug Unicode|Win32">
-							<Tool
-								Name="VCCLCompilerTool"
-								UsePrecompiledHeader="0"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release Unicode|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCLCompilerTool"
-								UsePrecompiledHeader="0"/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath=".\skinpp_object_glyph.cpp">
-						<FileConfiguration
-							Name="Release|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCLCompilerTool"
-								UsePrecompiledHeader="0"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Debug|Win32">
-							<Tool
-								Name="VCCLCompilerTool"
-								UsePrecompiledHeader="0"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Debug Unicode|Win32">
-							<Tool
-								Name="VCCLCompilerTool"
-								UsePrecompiledHeader="0"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release Unicode|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCLCompilerTool"
-								UsePrecompiledHeader="0"/>
-						</FileConfiguration>
-					</File>
-				</Filter>
-				<Filter
-					Name="Docs"
-					Filter="">
-					<File
-						RelativePath=".\skinpp.txt">
-					</File>
-				</Filter>
-				<Filter
-					Name="XMLParser"
-					Filter="">
-					<File
-						RelativePath=".\XMLParser\XMLDocument.cpp">
-						<FileConfiguration
-							Name="Release|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCLCompilerTool"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Debug Unicode|Win32">
-							<Tool
-								Name="VCCLCompilerTool"
-								UsePrecompiledHeader="0"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release Unicode|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCLCompilerTool"/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath=".\XMLParser\XMLDocument.h">
-						<FileConfiguration
-							Name="Release|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCustomBuildTool"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release Unicode|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCustomBuildTool"/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath=".\XMLParser\XMLNode.cpp">
-						<FileConfiguration
-							Name="Release|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCLCompilerTool"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Debug Unicode|Win32">
-							<Tool
-								Name="VCCLCompilerTool"
-								UsePrecompiledHeader="0"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release Unicode|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCLCompilerTool"/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath=".\XMLParser\XMLNode.h">
-						<FileConfiguration
-							Name="Release|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCustomBuildTool"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release Unicode|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCustomBuildTool"/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath=".\XMLParser\XMLParser.h">
-						<FileConfiguration
-							Name="Release|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCustomBuildTool"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release Unicode|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCustomBuildTool"/>
-						</FileConfiguration>
-					</File>
-				</Filter>
-			</Filter>
-			<Filter
-				Name="ExtFrames"
-				Filter="">
-				<File
-					RelativePath=".\ExtFrames\modern_ext_frames.c">
-					<FileConfiguration
-						Name="Release|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug Unicode|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							PrecompiledHeaderThrough="../commonheaders.h"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release Unicode|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							UsePrecompiledHeader="0"
-							PrecompiledHeaderThrough="../commonheaders.h"/>
-					</FileConfiguration>
-				</File>
-			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -1165,43 +478,19 @@
 				RelativePath=".\commonprototypes.h">
 			</File>
 			<File
+				RelativePath=".\defsettings.h">
+			</File>
+			<File
+				RelativePath=".\effectenum.h">
+			</File>
+			<File
 				RelativePath=".\image_array.h">
 			</File>
 			<File
 				RelativePath=".\log.h">
 			</File>
 			<File
-				RelativePath=".\m_clc.h">
-			</File>
-			<File
-				RelativePath=".\m_clist.h">
-			</File>
-			<File
-				RelativePath=".\m_clui.h">
-			</File>
-			<File
-				RelativePath="m_metacontacts.h">
-			</File>
-			<File
-				RelativePath=".\m_skin_eng.h">
-			</File>
-			<File
-				RelativePath=".\m_skinbutton.h">
-			</File>
-			<File
-				RelativePath=".\m_toolbar.h">
-			</File>
-			<File
-				RelativePath=".\m_xpTheme.h">
-			</File>
-			<File
 				RelativePath=".\menuSubsystem.h">
-			</File>
-			<File
-				RelativePath=".\mod_skin_selector.h">
-			</File>
-			<File
-				RelativePath=".\modern_global_structure.h">
 			</File>
 			<File
 				RelativePath=".\modern_row.h">
@@ -1210,13 +499,13 @@
 				RelativePath=".\modern_statusbar.h">
 			</File>
 			<File
-				RelativePath=".\resource.h">
+				RelativePath=".\popup.h">
 			</File>
 			<File
 				RelativePath=".\rowheight_funcs.h">
 			</File>
 			<File
-				RelativePath="SkinEngine.h">
+				RelativePath=".\SkinEngine.h">
 			</File>
 			<File
 				RelativePath=".\statusmodes.h">
@@ -1226,149 +515,334 @@
 			</File>
 			<File
 				RelativePath=".\version.h">
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCustomBuildTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32">
-					<Tool
-						Name="VCCustomBuildTool"/>
-				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 			<File
-				RelativePath=".\res\1.ico">
-			</File>
-			<File
-				RelativePath=".\res\2.ico">
-			</File>
-			<File
-				RelativePath=".\res\3.ico">
-			</File>
-			<File
-				RelativePath=".\res\4.ico">
-			</File>
-			<File
-				RelativePath=".\res\5.ico">
-			</File>
-			<File
-				RelativePath=".\res\6.ico">
-			</File>
-			<File
-				RelativePath=".\res\7.ico">
-			</File>
-			<File
-				RelativePath=".\res\8.ico">
-			</File>
-			<File
-				RelativePath=".\res\addgoupp.ico">
-			</File>
-			<File
-				RelativePath=".\res\AlwaysVis.ico">
-			</File>
-			<File
-				RelativePath=".\res\away.ico">
-			</File>
-			<File
-				RelativePath=".\res\Back.tga">
-			</File>
-			<File
-				RelativePath=".\res\chat.ico">
-			</File>
-			<File
-				RelativePath=".\res\Chatchannel.ico">
-			</File>
-			<File
-				RelativePath=".\res\dnd.ico">
-			</File>
-			<File
-				RelativePath=".\res\hide_avatar.ico">
-			</File>
-			<File
-				RelativePath=".\res\invisible.ico">
-			</File>
-			<File
-				RelativePath=".\res\listening_to.ico">
-			</File>
-			<File
-				RelativePath=".\res\lunch.ico">
-			</File>
-			<File
-				RelativePath=".\res\MicroAway.ico">
-			</File>
-			<File
-				RelativePath=".\res\MicroChat.ico">
-			</File>
-			<File
-				RelativePath=".\res\MicroDnd.ico">
-			</File>
-			<File
-				RelativePath=".\res\MicroInvisible.ico">
-			</File>
-			<File
-				RelativePath=".\res\MicroLunch.ico">
-			</File>
-			<File
-				RelativePath=".\res\MicroNa.ico">
-			</File>
-			<File
-				RelativePath=".\res\MicroOccupied.ico">
-			</File>
-			<File
-				RelativePath=".\res\MicroOffline.ico">
-			</File>
-			<File
-				RelativePath=".\res\MicroPhone.ico">
-			</File>
-			<File
-				RelativePath=".\res\NA.ico">
-			</File>
-			<File
-				RelativePath=".\res\neo_meta_create.cur">
-			</File>
-			<File
-				RelativePath=".\res\neo_meta_default.cur">
-			</File>
-			<File
-				RelativePath=".\res\neo_meta_move.cur">
-			</File>
-			<File
-				RelativePath=".\res\NeverVis.ico">
-			</File>
-			<File
-				RelativePath=".\res\occupied.ico">
-			</File>
-			<File
-				RelativePath=".\res\offline.ico">
-			</File>
-			<File
-				RelativePath=".\res\phone.ico">
-			</File>
-			<File
-				RelativePath=".\res\rate_high.ico">
-			</File>
-			<File
-				RelativePath=".\res\rate_low.ico">
-			</File>
-			<File
-				RelativePath=".\res\rate_med.ico">
-			</File>
-			<File
-				RelativePath=".\res\rate_none.ico">
+				RelativePath=".\resource.h">
 			</File>
 			<File
 				RelativePath=".\resource.rc">
 			</File>
+			<Filter
+				Name="res"
+				Filter="">
+				<File
+					RelativePath=".\res\1.ico">
+				</File>
+				<File
+					RelativePath=".\res\2.ico">
+				</File>
+				<File
+					RelativePath=".\res\3.ico">
+				</File>
+				<File
+					RelativePath=".\res\4.ico">
+				</File>
+				<File
+					RelativePath=".\res\5.ico">
+				</File>
+				<File
+					RelativePath=".\res\6.ico">
+				</File>
+				<File
+					RelativePath=".\res\7.ico">
+				</File>
+				<File
+					RelativePath=".\res\8.ico">
+				</File>
+				<File
+					RelativePath=".\res\addgoupp.ico">
+				</File>
+				<File
+					RelativePath=".\res\AlwaysVis.ico">
+				</File>
+				<File
+					RelativePath=".\res\away.ico">
+				</File>
+				<File
+					RelativePath=".\res\back.tga">
+				</File>
+				<File
+					RelativePath=".\res\chat.ico">
+				</File>
+				<File
+					RelativePath=".\res\Chatchannel.ico">
+				</File>
+				<File
+					RelativePath=".\res\dnd.ico">
+				</File>
+				<File
+					RelativePath=".\res\hide_avatar.ico">
+				</File>
+				<File
+					RelativePath=".\res\invisible.ico">
+				</File>
+				<File
+					RelativePath=".\res\listening_to.ico">
+				</File>
+				<File
+					RelativePath=".\res\lunch.ico">
+				</File>
+				<File
+					RelativePath=".\res\MicroAway.ico">
+				</File>
+				<File
+					RelativePath=".\res\MicroChat.ico">
+				</File>
+				<File
+					RelativePath=".\res\MicroDnd.ico">
+				</File>
+				<File
+					RelativePath=".\res\MicroInvisible.ico">
+				</File>
+				<File
+					RelativePath=".\res\MicroLunch.ico">
+				</File>
+				<File
+					RelativePath=".\res\MicroNa.ico">
+				</File>
+				<File
+					RelativePath=".\res\MicroOccupied.ico">
+				</File>
+				<File
+					RelativePath=".\res\MicroOffline.ico">
+				</File>
+				<File
+					RelativePath=".\res\MicroPhone.ico">
+				</File>
+				<File
+					RelativePath=".\res\NA.ico">
+				</File>
+				<File
+					RelativePath=".\res\neo_meta_create.cur">
+				</File>
+				<File
+					RelativePath=".\res\neo_meta_default.cur">
+				</File>
+				<File
+					RelativePath=".\res\neo_meta_move.cur">
+				</File>
+				<File
+					RelativePath=".\res\NeverVis.ico">
+				</File>
+				<File
+					RelativePath=".\res\occupied.ico">
+				</File>
+				<File
+					RelativePath=".\res\offline.ico">
+				</File>
+				<File
+					RelativePath=".\res\phone.ico">
+				</File>
+				<File
+					RelativePath=".\res\rate_high.ico">
+				</File>
+				<File
+					RelativePath=".\res\rate_low.ico">
+				</File>
+				<File
+					RelativePath=".\res\rate_med.ico">
+				</File>
+				<File
+					RelativePath=".\res\rate_none.ico">
+				</File>
+				<File
+					RelativePath=".\res\reset_view.ico">
+				</File>
+				<File
+					RelativePath=".\res\set_view.ico">
+				</File>
+				<File
+					RelativePath=".\res\show_avatar.ico">
+				</File>
+				<File
+					RelativePath=".\res\skin.msf">
+				</File>
+			</Filter>
+		</Filter>
+		<Filter
+			Name="m_api"
+			Filter="">
 			<File
-				RelativePath=".\res\show_avatar.ico">
+				RelativePath="..\..\include\m_addcontact.h">
 			</File>
 			<File
-				RelativePath=".\res\skin.msf">
+				RelativePath="..\..\include\m_avatars.h">
+			</File>
+			<File
+				RelativePath=".\m_api\m_avatars.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_awaymsg.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_button.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_chat.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_clc.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_clist.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_clistint.h">
+			</File>
+			<File
+				RelativePath=".\m_api\m_clui.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_clui.h">
+			</File>
+			<File
+				RelativePath=".\m_api\m_cluiframes.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_cluiframes.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_contactdir.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_contacts.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_database.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_email.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_file.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_findadd.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_fontservice.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_fuse.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_genmenu.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_history.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_icolib.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_icq.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_idle.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_ignore.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_imgsrvc.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_langpack.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_message.h">
+			</File>
+			<File
+				RelativePath=".\m_api\m_metacontacts.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_netlib.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_options.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_plugins.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_png.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_popup.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_protocols.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_protomod.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_protosvc.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_skin.h">
+			</File>
+			<File
+				RelativePath=".\m_api\m_skin_eng.h">
+			</File>
+			<File
+				RelativePath=".\m_api\m_skinbutton.h">
+			</File>
+			<File
+				RelativePath=".\m_api\m_smileyadd.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_system.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_system_cpp.h">
+			</File>
+			<File
+				RelativePath=".\m_api\m_toolbar.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_url.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_userinfo.h">
+			</File>
+			<File
+				RelativePath="..\..\include\m_utils.h">
+			</File>
+			<File
+				RelativePath=".\m_api\m_variables.h">
+			</File>
+			<File
+				RelativePath=".\m_api\m_xpTheme.h">
+			</File>
+			<File
+				RelativePath="..\..\include\newpluginapi.h">
+			</File>
+			<File
+				RelativePath="..\..\include\statusmodes.h">
+			</File>
+			<File
+				RelativePath="..\..\include\win2k.h">
+			</File>
+		</Filter>
+		<Filter
+			Name="hdr"
+			Filter="">
+			<File
+				RelativePath=".\hdr\cluiframes.h">
+			</File>
+			<File
+				RelativePath=".\hdr\modern_awaymsg.h">
+			</File>
+			<File
+				RelativePath=".\hdr\modern_global_structure.h">
+			</File>
+			<File
+				RelativePath=".\hdr\modern_skinselector.h">
 			</File>
 		</Filter>
 	</Files>

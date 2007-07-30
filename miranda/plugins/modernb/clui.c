@@ -120,7 +120,7 @@ static BOOL CLUI_WaitThreadsCompletion(HWND hwnd)
 	if (bEntersCount<bcMAX_AWAITING_RETRY
 		&&( g_mutex_nCalcRowHeightLock ||
 		g_CluiData.mutexPaintLock || 
-		g_dwAskAwayMsgThreadID || 
+		g_dwAwayMsgThreadID || 
 		g_dwGetTextThreadID || 
 		g_dwSmoothAnimationThreadID || 
 		g_dwFillFontListThreadID) 
@@ -129,7 +129,7 @@ static BOOL CLUI_WaitThreadsCompletion(HWND hwnd)
 		TRACE("Waiting threads");
 		TRACEVAR("g_mutex_nCalcRowHeightLock: %x",g_mutex_nCalcRowHeightLock);
 		TRACEVAR("g_CluiData.mutexPaintLock: %x",g_CluiData.mutexPaintLock);
-		TRACEVAR("g_dwAskAwayMsgThreadID: %x",g_dwAskAwayMsgThreadID);
+		TRACEVAR("g_dwAwayMsgThreadID: %x",g_dwAwayMsgThreadID);
 		TRACEVAR("g_dwGetTextThreadID: %x",g_dwGetTextThreadID);
 		TRACEVAR("g_dwSmoothAnimationThreadID: %x",g_dwSmoothAnimationThreadID);
 		TRACEVAR("g_dwFillFontListThreadID: %x",g_dwFillFontListThreadID);
@@ -141,7 +141,7 @@ static BOOL CLUI_WaitThreadsCompletion(HWND hwnd)
 
 	if (bEntersCount==bcMAX_AWAITING_RETRY)
 	{   //force to terminate threads after max times repeating of awaiting
-		if (g_dwAskAwayMsgThreadID)      TerminateThread((HANDLE)g_dwAskAwayMsgThreadID,0);
+		if (g_dwAwayMsgThreadID)      TerminateThread((HANDLE)g_dwAwayMsgThreadID,0);
 		if (g_dwGetTextThreadID)         TerminateThread((HANDLE)g_dwGetTextThreadID,0);
 		if (g_dwSmoothAnimationThreadID) TerminateThread((HANDLE)g_dwSmoothAnimationThreadID,0);
 		if (g_dwFillFontListThreadID)    TerminateThread((HANDLE)g_dwFillFontListThreadID,0);
@@ -835,6 +835,8 @@ int CLUI_ReloadCLUIOptions()
 	wBehindEdgeHideDelay=DBGetContactSettingWord(NULL,"ModernData","HideDelay",SETTING_HIDEDELAY_DEFAULT);
 	wBehindEdgeBorderSize=DBGetContactSettingWord(NULL,"ModernData","HideBehindBorderSize",SETTING_HIDEBEHINDBORDERSIZE_DEFAULT);
 	g_CluiData.fAutoSize=DBGetContactSettingByte(NULL,"CLUI","AutoSize",SETTING_AUTOSIZE_DEFAULT);
+	g_CluiData.bInternalAwayMsgDiscovery = DBGetContactSettingByte(NULL,"ModernData","InternalAwayMsgDiscovery",SETTING_INTERNALAWAYMSGREQUEST_DEFAULT);
+	g_CluiData.bRemoveAwayMessageForOffline =   DBGetContactSettingByte(NULL,"ModernData","RemoveAwayMessageForOffline",SETTING_REMOVEAWAYMSGFOROFFLINE_DEFAULT);
 	//window borders
 	if (g_CluiData.fDisableSkinEngine) {
 		g_CluiData.LeftClientMargin=0;
@@ -2303,7 +2305,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 				}
 			}
 			UnLoadCLUIFramesModule();
-			ExtFrames_Uninit();
+			//ExtFrames_Uninit();
 			TRACE("CLUI.c: WM_DESTROY - UnLoadCLUIFramesModule DONE\n");
 			ImageList_Destroy(himlMirandaIcon);
 			DBWriteContactSettingByte(NULL,"CList","State",(BYTE)state);
@@ -2498,7 +2500,7 @@ void CLUI_cliOnCreateClc(void)
 	CLUI_PreCreateCLC(pcli->hwndContactList);
 
 	LoadCLUIFramesModule();
-	ExtFrames_Init();
+	//ExtFrames_Init();
 	ExtraImage_LoadModule();	
 
 	g_hMenuMain=GetMenu(pcli->hwndContactList);

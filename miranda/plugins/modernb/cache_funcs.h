@@ -40,6 +40,6 @@ int Cache_GetLineText(PDNCE pdnce, int type, LPTSTR text, int text_size, TCHAR *
 					  BOOL show_status_if_no_away, BOOL show_listening_if_no_away, BOOL use_name_and_message_for_xstatus, 
 					  BOOL pdnce_time_show_only_if_different);
 
-void Cache_ReAskAwayMsg(HANDLE hContact);
+void amRequestAwayMsg(HANDLE hContact);
 
 #endif // __CACHE_FUNCS_H__

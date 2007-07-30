@@ -1,7 +1,7 @@
 #ifndef ske_H_INC
 #define ske_H_INC
 
-#include "mod_skin_selector.h"
+#include "hdr/modern_skinselector.h"
 #include "commonprototypes.h"
 
 /* Definitions */

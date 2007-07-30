@@ -79,7 +79,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <win2k.h>
 
 
-#include "modern_global_structure.h"
+#include "hdr/modern_global_structure.h"
 
 #include <newpluginapi.h>
 #include <m_system.h>
@@ -101,10 +101,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "clist.h"
 #include "m_icolib.h"
 #include <m_userinfo.h>
-#include ".\CLUIFrames\cluiframes.h"
-#include ".\CLUIFrames\m_cluiframes.h"
-#include  "m_metacontacts.h"
-#include "m_skin_eng.h"
+#include "./hdr/cluiframes.h"
+#include "./m_api/m_cluiframes.h"
+#include "./m_api/m_metacontacts.h"
+#include "./m_api/m_skin_eng.h"
 #include <m_file.h>
 #include <m_addcontact.h>
 
@@ -114,11 +114,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "log.h"
 
 #include "richedit.h"
-#include "m_variables.h"
-#include "m_avatars.h"
-#include "m_smileyadd.h"
+#include "./m_api/m_variables.h"
+#include "./m_api/m_avatars.h"
+#include "./m_api/m_smileyadd.h"
 
-#include "m_xpTheme.h"
+#include "./m_api/m_xpTheme.h"
 
 //macros to free data and set it pointer to NULL
 #define mir_free_and_nill(x) {mir_free(x); x=NULL;}
@@ -294,6 +294,10 @@ int AniAva_RemoveInvalidatedAvatars();					   // all avatars without validated p
 int AniAva_RemoveAvatar(HANDLE hContact);				   // remove avatar	
 int AniAva_RedrawAllAvatars(BOOL updateZOrder);			   // request to repaint all
 void AniAva_UpdateParent();
+
+
+void CListSettings_FreeCacheItemData(pdisplayNameCacheEntry pDst);
+int CLUI_SyncGetPDNCE(WPARAM wParam, LPARAM lParam);
 
 /* move to list module */
 typedef void (*ItemDestuctor)(void*);

@@ -1,6 +1,6 @@
 #include "commonheaders.h"
 #include "modern_statusbar.h"
-#include "m_skin_eng.h"
+#include "./m_api/m_skin_eng.h"
 #include "commonprototypes.h"
 
 HANDLE  hStatusBarShowToolTipEvent;

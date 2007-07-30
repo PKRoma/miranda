@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 #include "clist.h"
-#include "m_skin_eng.h"
+#include "./m_api/m_skin_eng.h"
 #include "commonprototypes.h"
 
 #define WM_DOCKCALLBACK   (WM_USER+121)

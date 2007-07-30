@@ -3,10 +3,10 @@
 
 #include "commonheaders.h"  //TO DO: Move contents of this file to commonheaders.h
 #include "clist.h"
-#include "CLUIFRAMES\cluiframes.h"
+#include "hdr/cluiframes.h"
 #include "modern_row.h"
 #include "SkinEngine.h"
-#include "mod_skin_selector.h"
+#include "./hdr/modern_skinselector.h"
 #include "modern_statusbar.h"
 
 #define SKIN  "ModernSkin"
@@ -71,7 +71,7 @@ extern HFONT TitleBarFont;
 extern BOOL g_mutex_bChangingMode;
 extern HANDLE g_hMainThread;
 extern DWORD g_dwMainThreadID;
-extern DWORD g_dwAskAwayMsgThreadID;
+extern DWORD g_dwAwayMsgThreadID;
 extern DWORD g_dwGetTextThreadID;
 extern DWORD g_dwSmoothAnimationThreadID;
 extern DWORD g_dwFillFontListThreadID;
@@ -102,10 +102,10 @@ typedef int (*PSYNCCALLBACKPROC)(WPARAM,LPARAM);
 /************************************************************************/
 
 /* modern_ext_frames.c */
-int ExtFrames_Init();
-int ExtFrames_Uninit();
-int ExtFrames_GetMinWindowSize( OUT SIZE * size );
-int ExtFrames_GetMaxCLCHeight( IN int iMaxDueDesk );
+//int ExtFrames_Init();
+//int ExtFrames_Uninit();
+//int ExtFrames_GetMinWindowSize( OUT SIZE * size );
+//int ExtFrames_GetMaxCLCHeight( IN int iMaxDueDesk );
 
 /* CLCItems */
 BOOL	CLCItems_IsShowOfflineGroup(struct ClcGroup* group);

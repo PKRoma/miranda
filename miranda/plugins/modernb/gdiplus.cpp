@@ -40,7 +40,7 @@ extern "C"
 #undef Translate
 #include "gdiplus.h"
 
-#include "modern_global_structure.h"
+#include "hdr/modern_global_structure.h"
 
 extern "C" BYTE saved_alpha;
 extern "C" DWORD g_gdiplusToken;

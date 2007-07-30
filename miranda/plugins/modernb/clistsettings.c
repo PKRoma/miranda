@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_clc.h"
 #include "clist.h"
 #include "commonprototypes.h"
+#include "hdr/modern_awaymsg.h"
 
 void InsertContactIntoTree(HANDLE hContact,int status);
 static displayNameCacheEntry *displayNameCache;
@@ -81,20 +82,19 @@ static int handleCompare( void* c1, void* c2 )
 //}	}
 
 extern CRITICAL_SECTION LockCacheChain;   //TODO move initialization to cache_func.c module
-extern CRITICAL_SECTION AAMLockChain;
 
 void InitDisplayNameCache(void)
 {
 	int i=0;
     InitializeCriticalSection(&LockCacheChain);  //TODO move initialization to cache_func.c module
-    InitializeCriticalSection(&AAMLockChain);
+	InitAwayMsgModule();
 	clistCache = li.List_Create( 0, 50 );
 	clistCache->sortFunc = handleCompare;
 }
 void FreeDisplayNameCache()
 {
     DeleteCriticalSection(&LockCacheChain);
-    DeleteCriticalSection(&AAMLockChain);
+	UninitAwayMsgModule();
 	if ( clistCache != NULL ) {
 		int i;
 		for ( i = 0; i < clistCache->realCount; i++) {
@@ -564,7 +564,7 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 					if ((DBGetContactSettingWord(NULL,"CList","SecondLineType",SETTING_SECONDLINE_TYPE_DEFAULT)==TEXT_STATUS_MESSAGE||DBGetContactSettingWord(NULL,"CList","ThirdLineType",SETTING_THIRDLINE_TYPE_DEFAULT)==TEXT_STATUS_MESSAGE) &&pdnce->hContact && pdnce->szProto)
 					{
 						//	if (pdnce->status!=ID_STATUS_OFFLINE)  
-						Cache_ReAskAwayMsg((HANDLE)wParam);  
+						amRequestAwayMsg((HANDLE)wParam);  
 					}
 					DBFreeVariant(&dbv);
 					return 0;
@@ -574,8 +574,7 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 					pdnce->status=cws->value.wVal;
 					if (cws->value.wVal == ID_STATUS_OFFLINE) 
 					{
-						//if (DBGetContactSettingByte(NULL,"ModernData","InternalAwayMsgDiscovery",SETTING_INTERNALAWAYMSGREQUEST_DEFAULT)
-						if (DBGetContactSettingByte(NULL,"ModernData","RemoveAwayMessageForOffline",SETTING_REMOVEAWAYMSGFOROFFLINE_DEFAULT))
+						if (g_CluiData.bRemoveAwayMessageForOffline)
 						{
 							char a='\0';
 							DBWriteContactSettingString((HANDLE)wParam,"CList","StatusMsg",&a);
@@ -584,7 +583,7 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 					if ((DBGetContactSettingWord(NULL,"CList","SecondLineType",0)==TEXT_STATUS_MESSAGE||DBGetContactSettingWord(NULL,"CList","ThirdLineType",0)==TEXT_STATUS_MESSAGE) &&pdnce->hContact && pdnce->szProto)
 					{
 						//	if (pdnce->status!=ID_STATUS_OFFLINE)  
-						Cache_ReAskAwayMsg((HANDLE)wParam);  
+						amRequestAwayMsg((HANDLE)wParam);  
 					}
 					pcli->pfnClcBroadcast( INTM_STATUSCHANGED,wParam,0);
 					cli_ChangeContactIcon((HANDLE)wParam, ExtIconFromStatusMode((HANDLE)wParam,cws->szModule, cws->value.wVal), 0); //by FYR

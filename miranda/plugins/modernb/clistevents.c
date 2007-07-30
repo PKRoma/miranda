@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "m_clui.h"
 #include "clist.h"
-#include "cluiframes/cluiframes.h"
+#include "./hdr/cluiframes.h"
 #include "commonprototypes.h"
 
 HFONT CLCPaint_ChangeToFont(HDC hdc,struct ClcData *dat,int id,int *fontHeight);

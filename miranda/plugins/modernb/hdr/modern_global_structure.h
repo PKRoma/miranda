@@ -63,6 +63,9 @@ typedef struct tagCLUIDATA
 	int		TopClientMargin;
 	int		BottomClientMargin;
 
+	BOOL	bInternalAwayMsgDiscovery;
+	BOOL	bRemoveAwayMessageForOffline;
+
 } CluiData;
 
 EXTERN_C CluiData g_CluiData;

@@ -51,28 +51,6 @@ static int CopySkipUnprintableChars(TCHAR *to, TCHAR * buf, DWORD size);
 static BOOL ExecuteOnAllContacts(struct ClcData *dat, ExecuteOnAllContactsFuncPtr func, void *param);
 static BOOL ExecuteOnAllContactsOfGroup(struct ClcGroup *group, ExecuteOnAllContactsFuncPtr func, void *param);
 
-static int		cache_AskAwayMsg_AddHandleToChain(HANDLE hContact);
-static HANDLE	cache_AskAwayMsg_GetCurrentChain();
-static int Cache_AskAwayMsgThreadProc(HWND hwnd);
-/*
-*	Module global variables to implement away messages requests queue
-*  need to avoid disconnection from server (ICQ)
-*/
-typedef struct _ASK_AWAYMSG_CHAIN {
-    HANDLE ContactRequest;
-    struct ASK_AWAYMSG_CHAIN *Next;
-} ASK_AWAYMSG_CHAIN;
-
-ASK_AWAYMSG_CHAIN * mpAskAwayMsgFirstChain = NULL;
-ASK_AWAYMSG_CHAIN * mpAskAwayMsgLastChain  = NULL;
-
-CRITICAL_SECTION AAMLockChain;
-
-
-DWORD dwRequestTick		= 0;
-
-const DWORD const_AskPeriod = 3000;
-
 SortedList *CopySmileyString(SortedList *plInput);
 
 typedef struct tagSYNCCALLITEM
@@ -90,6 +68,7 @@ static void CALLBACK SyncCallerUserAPCProc(DWORD dwParam)
     item->nResult = item->pfnProc(item->wParam, item->lParam);
     SetEvent(item->hDoneEvent);
 }
+void CListSettings_FreeCacheItemData(pdisplayNameCacheEntry pDst);
 int cache_CallProcSync(PSYNCCALLBACKPROC pfnProc, WPARAM wParam, LPARAM lParam)
 {  
     SYNCCALLITEM item={0};
@@ -109,155 +88,6 @@ int cache_CallProcSync(PSYNCCALLBACKPROC pfnProc, WPARAM wParam, LPARAM lParam)
     }
     else 
         return pfnProc(wParam, lParam);
-}
-
-
-/*
-*  Add contact handle to requests queue
-*/
-static int cache_AskAwayMsg_AddHandleToChain(HANDLE hContact)
-{
-    ASK_AWAYMSG_CHAIN * workChain;
-    EnterCriticalSection(&AAMLockChain);
-    {
-        //check that handle is present
-        ASK_AWAYMSG_CHAIN * wChain;
-        wChain=mpAskAwayMsgFirstChain;
-        if (wChain)
-        {
-            do {
-                if (wChain->ContactRequest==hContact)
-                {
-                    LeaveCriticalSection(&AAMLockChain);
-                    return 0;
-                }
-            } while(wChain=(ASK_AWAYMSG_CHAIN *)wChain->Next);
-        }
-    }
-    if (!mpAskAwayMsgFirstChain)  
-    {
-        mpAskAwayMsgFirstChain=mir_alloc(sizeof(ASK_AWAYMSG_CHAIN));
-        workChain=mpAskAwayMsgFirstChain;
-
-    }
-    else 
-    {
-        mpAskAwayMsgLastChain->Next=mir_alloc(sizeof(ASK_AWAYMSG_CHAIN));
-        workChain=(ASK_AWAYMSG_CHAIN *)mpAskAwayMsgLastChain->Next;
-    }
-    mpAskAwayMsgLastChain=workChain;
-    workChain->Next=NULL;
-    workChain->ContactRequest=hContact;
-    LeaveCriticalSection(&AAMLockChain);
-    return 1;
-}
-
-
-/*
-*	Gets handle from queue for request
-*/
-static HANDLE cache_AskAwayMsg_GetCurrentChain()
-{
-    struct ASK_AWAYMSG_CHAIN * workChain;
-    HANDLE res=NULL;
-    EnterCriticalSection(&AAMLockChain);
-    if (mpAskAwayMsgFirstChain)
-    {
-        res=mpAskAwayMsgFirstChain->ContactRequest;
-        workChain=mpAskAwayMsgFirstChain->Next;
-        mir_free_and_nill(mpAskAwayMsgFirstChain);
-        mpAskAwayMsgFirstChain=(ASK_AWAYMSG_CHAIN *)workChain;
-    }
-    LeaveCriticalSection(&AAMLockChain);
-    return res;
-}
-
-void CListSettings_FreeCacheItemData(pdisplayNameCacheEntry pDst);
-/*
-*	Tread sub to ask protocol to retrieve away message
-*/
-static int Cache_AskAwayMsgThreadProc(HWND hwnd)
-{
-    __try
-    {
-        DWORD time;
-        HANDLE hContact;
-        HANDLE ACK=0;
-        displayNameCacheEntry dnce={0};
-        hContact=cache_AskAwayMsg_GetCurrentChain(); 
-        if (!hContact) return 0;
-        while (hContact)
-        { 
-            time=GetTickCount();
-            if ((time-dwRequestTick)<const_AskPeriod)
-            {
-                SleepEx(const_AskPeriod-(time-dwRequestTick)+10,TRUE);
-                if (MirandaExiting()) return 0; 
-            }
-            CListSettings_FreeCacheItemData(&dnce);
-            dnce.hContact=(HANDLE)hContact;
-            cache_CallProcSync(CLUI_SyncGetPDNCE,0,(LPARAM)&dnce);            
-            if (dnce.ApparentMode!=ID_STATUS_OFFLINE) //don't ask if contact is always invisible (should be done with protocol)
-                ACK=(HANDLE)CallContactService(hContact,PSS_GETAWAYMSG,0,0);		
-            if (!ACK)
-            {
-                ACKDATA ack;
-                ack.hContact=hContact;
-                ack.type=ACKTYPE_AWAYMSG;
-                ack.result=ACKRESULT_FAILED;
-                if (dnce.szProto)
-                    ack.szModule=dnce.szProto;
-                else
-                    ack.szModule=NULL;
-                ClcProtoAck((WPARAM)hContact,(LPARAM) &ack);
-            }
-            CListSettings_FreeCacheItemData(&dnce);
-            dwRequestTick=time;
-            hContact=cache_AskAwayMsg_GetCurrentChain();
-            if (hContact) 
-            {
-                DWORD i=0;
-                do 
-                {
-                    i++;
-                    SleepEx(50,TRUE);
-                } while (i<const_AskPeriod/50&&!MirandaExiting());
-
-            }
-            else break;
-            if (MirandaExiting()) return 0;
-        }
-
-    }
-    __finally
-    {
-        g_dwAskAwayMsgThreadID=0;
-    }
-    return 1;
-}
-
-
-
-/*
-*	Sub to be called outside on status changing to retrieve away message
-*/
-void Cache_ReAskAwayMsg(HANDLE wParam)
-{
-    int res;
-    if (!DBGetContactSettingByte(NULL,"ModernData","InternalAwayMsgDiscovery",SETTING_INTERNALAWAYMSGREQUEST_DEFAULT)) return;
-    {//Do not re-ask if it is IRC protocol    
-        char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) wParam, 0);
-        if (szProto != NULL) 
-        {
-            if(DBGetContactSettingByte(wParam, szProto, "ChatRoom", 0) != 0) return;
-        }
-        else return;
-    }
-    res=cache_AskAwayMsg_AddHandleToChain(wParam); 
-    if ( res && !g_dwAskAwayMsgThreadID) 
-        g_dwAskAwayMsgThreadID=(DWORD)mir_forkthread(Cache_AskAwayMsgThreadProc,0);
-
-    return;
 }
 
 /*
@@ -291,7 +121,7 @@ void Cache_GetTimezone(struct ClcData *dat, HANDLE hContact)
 */
 
 typedef struct _CacheAskChain {
-    HANDLE ContactRequest;
+    HANDLE hContact;
     struct ClcData *dat;
     struct CacheAskChain *Next;
 } CacheAskChain;
@@ -352,7 +182,7 @@ int Cache_GetTextThreadProc(void * lpParam)
                 if (!MirandaExiting())
                 {
                     displayNameCacheEntry cacheEntry={0};
-                    cacheEntry.hContact=mpChain.ContactRequest;
+                    cacheEntry.hContact=mpChain.hContact;
                     if (!cache_CallProcSync(CLUI_SyncGetPDNCE,0,(LPARAM)&cacheEntry))
                     {
                         if (!MirandaExiting()) 
@@ -377,12 +207,12 @@ int Cache_GetTextThreadProc(void * lpParam)
     }    
     return 1;
 }
-int AddToCacheChain(struct ClcData *dat,struct ClcContact *contact,HANDLE ContactRequest)
+int AddToCacheChain(struct ClcData *dat,struct ClcContact *contact,HANDLE hContact)
 {
     EnterCriticalSection(&LockCacheChain);    
     {
         CacheAskChain * mpChain=(CacheAskChain *)mir_alloc(sizeof(CacheAskChain));
-        mpChain->ContactRequest=ContactRequest;
+        mpChain->hContact=hContact;
         mpChain->dat=dat;
         mpChain->Next=NULL;
         if (LastCacheChain) 
@@ -672,7 +502,7 @@ int GetStatusName(TCHAR *text, int text_size, PDNCE pdnce, BOOL xstatus_has_prio
     BOOL noAwayMsg=FALSE;
     BOOL noXstatus=FALSE;
     // Hide status text if Offline  /// no offline		
-    if ((pdnce->status==ID_STATUS_OFFLINE || pdnce->status==0) && DBGetContactSettingByte(NULL,"ModernData","RemoveAwayMessageForOffline",SETTING_REMOVEAWAYMSGFOROFFLINE_DEFAULT)) noAwayMsg=TRUE;
+    if ((pdnce->status==ID_STATUS_OFFLINE || pdnce->status==0) && g_CluiData.bRemoveAwayMessageForOffline) noAwayMsg=TRUE;
     if (pdnce->status==ID_STATUS_OFFLINE || pdnce->status==0) noXstatus=TRUE;
     text[0] = '\0';
     // Get XStatusName

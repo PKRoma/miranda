@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _CLC_H_
 #define _CLC_H_
 #include "image_array.h"
-#include "m_xpTheme.h"
+#include "m_api/m_xpTheme.h"
 
 #include "defsettings.h"
 

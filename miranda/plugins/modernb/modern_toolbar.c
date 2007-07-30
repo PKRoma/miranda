@@ -25,8 +25,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 #include "commonprototypes.h"
-#include "m_skinbutton.h"
-#include "m_toolbar.h"
+#include "./m_api/m_skinbutton.h"
+#include "./m_api/m_toolbar.h"
 
 //external definition
 COLORREF sttGetColor(char * module, char * color, COLORREF defColor);
