@@ -144,25 +144,7 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 
 static int MTG_DOMOVE(WPARAM wParam,LPARAM lParam)
 {
-	TCHAR* grpname;
-	char* intname;
-
-	lParam--;
-
-	//root level
-	if ( lParam == -2 ) {
-		DBDeleteContactSetting((HANDLE)wParam, "CList", "Group");
-		return 0;
-	}
-
-	intname=(char *)_alloca(20);
-	_itoa(lParam,intname,10);
-	grpname = DBGetString(0,"CListGroups",intname);
-	if ( grpname ) {
-		DBWriteContactSettingTString((HANDLE)wParam,"CList","Group",grpname + 1);
-		mir_free(grpname);
-	}
-
+	CallService(MS_CLIST_CONTACTCHANGEGROUP, wParam, lParam < 0 ? NULL : lParam);
 	return 0;
 }
 
