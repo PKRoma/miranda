@@ -541,6 +541,8 @@ void  MSN_SendStatusMessage( const char* msg )
 
 LONG ThreadData::sendPacket( const char* cmd, const char* fmt,...)
 {
+	if (this == NULL) return 0;
+
 	size_t strsize = 512;
 	char* str = ( char* )mir_alloc( strsize );
 
