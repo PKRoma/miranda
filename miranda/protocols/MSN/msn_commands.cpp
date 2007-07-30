@@ -1262,7 +1262,7 @@ LBL_InvalidCommand:
 			MSN_ContactJoined( info, hContact );
 
 			int temp_status = MSN_GetWord(hContact, "Status", ID_STATUS_OFFLINE);
-			if (temp_status == ID_STATUS_OFFLINE)
+			if (temp_status == ID_STATUS_OFFLINE && Lists_IsInList(LIST_FL, hContact))
 				MSN_SetWord( hContact, "Status", ID_STATUS_INVISIBLE);
 
 			int thisContact = atol( data.strThisContact );
