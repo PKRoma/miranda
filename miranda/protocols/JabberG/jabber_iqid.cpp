@@ -1651,7 +1651,9 @@ void JabberIqResultDiscoBookmarks( XmlNode *iqNode, void *userdata )
 										TCHAR* nick = JabberNickFromJID( jabberJID );
 										JabberGroupchatJoinRoom( server, p, nick, pass );
 										mir_free( nick );
-			}	}	}	}	}	}	}
+									}
+									mir_free(pass);
+			}	}	}	}	}	}
 
 			if ( hwndJabberBookmarks != NULL )
 				SendMessage( hwndJabberBookmarks, WM_JABBER_REFRESH, 0, 0);
