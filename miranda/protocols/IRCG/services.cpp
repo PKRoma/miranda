@@ -59,12 +59,6 @@ int       GlobalStatus = ID_STATUS_OFFLINE;
 UINT_PTR  RetryTimer = 0;
 TString   StatusMessage = _T("");
 
-extern HWND nick_hWnd;
-extern HWND list_hWnd ;
-extern bool bTempDisableCheck ;
-extern bool bTempForceCheck ;
-extern bool bPerformDone;
-
 extern bool				nickflag;
 GETEVENTFUNC			pfnAddEvent = 0;
 

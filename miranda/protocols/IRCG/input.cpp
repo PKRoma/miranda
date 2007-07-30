@@ -21,15 +21,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "irc.h"
 
-extern PLUGININFOEX		pluginInfo;
-extern HWND				list_hWnd;
-extern int				NoOfChannels;
-bool					bEcho = true;
-extern int				ManualWhoisCount ;
-bool					bTempDisableCheck = false;
-bool					bTempForceCheck = false;
-extern int				iTempCheckTime ;
-extern HWND				manager_hWnd;
+bool bEcho = true;
+bool bTempDisableCheck = false;
+bool bTempForceCheck = false;
 
 static TString FormatMsg(TString text)
 {

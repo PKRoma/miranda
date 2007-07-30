@@ -20,8 +20,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "irc.h"
-extern char *			IRCPROTONAME;
-extern bool				bEcho;
 
 static TString FormatOutput (const CIrcMessage* pmsg)
 {
@@ -146,8 +144,7 @@ BOOL ShowMessage (const CIrcMessage* pmsg)
 	int iTemp = StrToInt( pmsg->sCommand.c_str() );
 
 	//To active window
-	if ((iTemp >400			//all error messages	
-		|| iTemp <500) && pmsg->sCommand[0] =='4'		
+	if (( iTemp > 400 || iTemp < 500 ) && pmsg->sCommand[0] == '4' //all error messages	
 		|| pmsg->sCommand == _T("303")		//ISON command
 		|| pmsg->sCommand == _T("INVITE")
 		|| pmsg->sCommand == _T("NOTICE")
@@ -157,7 +154,7 @@ BOOL ShowMessage (const CIrcMessage* pmsg)
 		return TRUE;
 	}
 
-	if (prefs->UseServer) {
+	if ( prefs->UseServer ) {
 		DoEvent( GC_EVENT_INFORMATION, _T("Network log"), 
 			( pmsg->m_bIncoming ) ? pmsg->prefix.sNick.c_str() : g_ircSession.GetInfo().sNick.c_str(),
 			mess.c_str(), NULL, NULL, NULL, true, pmsg->m_bIncoming ? false : true ); 

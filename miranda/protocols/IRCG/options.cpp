@@ -35,14 +35,6 @@ static bool     ServerlistModified = false;
 static WNDPROC  OldProc;
 static WNDPROC  OldListViewProc;
 
-extern UINT_PTR KeepAliveTimer;	
-extern HWND     IgnoreWndHwnd;
-extern bool     bTempDisableCheck;
-extern bool     bTempForceCheck;
-extern int      iTempCheckTime;
-extern HMODULE  m_ssleay32;
-extern HANDLE   hMenuServer;
-
 static int GetPrefsString(const char *szSetting, char * prefstoset, int n, char * defaulttext)
 {
 	DBVARIANT dbv;

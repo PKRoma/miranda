@@ -315,17 +315,22 @@ extern DWORD mirVersion;
 extern CIrcSession  g_ircSession;
 extern CMyMonitor*  monitor;
 
-extern CRITICAL_SECTION  cs;
-extern CRITICAL_SECTION  m_gchook;
+extern CRITICAL_SECTION cs;
+extern CRITICAL_SECTION m_gchook;
 
+extern HMODULE      m_ssleay32;
 extern HINSTANCE    g_hInstance;	
 extern PREFERENCES* prefs;	
+extern PLUGININFOEX pluginInfo;
 
 void   UpgradeCheck(void);
 
 //services.cpp
 extern TString StatusMessage;
-extern bool bMbotInstalled;
+extern bool    bMbotInstalled;
+extern int     iTempCheckTime;
+extern HANDLE  hMenuQuick, hMenuServer, hMenuJoin, hMenuNick, hMenuList;
+extern HANDLE  hNetlib, hNetlibDCC;
 
 void   HookEvents(void);
 void   UnhookEvents(void);
@@ -392,6 +397,8 @@ HANDLE CList_FindContact (struct CONTACT * user);
 BOOL   CList_AddDCCChat(TString name, TString hostmask, unsigned long adr, int port) ;
 
 //input.cpp
+extern bool  bTempDisableCheck, bTempForceCheck, bEcho;
+
 bool   PostIrcMessageWnd(TCHAR* pszWindow, HANDLE hContact,const TCHAR* szBuf);
 bool   PostIrcMessage( const TCHAR* fmt, ...);
 
@@ -413,8 +420,13 @@ int     CALLBACK ListViewSort(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
 LRESULT CALLBACK MgrEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) ;
 
 //commandmonitor.cpp
-extern  String  sChannelModes, sUserModes;
-extern  TString sChannelPrefixes, sUserModePrefixes, WhoisAwayReply;
+extern	bool     bPerformDone;
+extern	HWND     join_hWnd, list_hWnd, manager_hWnd, nick_hWnd, whois_hWnd, quickconn_hWnd;
+extern   HWND     IgnoreWndHwnd;
+extern	int      NoOfChannels, ManualWhoisCount;
+extern   UINT_PTR KeepAliveTimer;	
+extern	String   sChannelModes, sUserModes;
+extern	TString  sChannelPrefixes, sUserModePrefixes, WhoisAwayReply;
 
 VOID    CALLBACK KeepAliveTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime); 
 VOID    CALLBACK OnlineNotifTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime);

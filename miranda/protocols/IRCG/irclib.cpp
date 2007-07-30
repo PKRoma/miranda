@@ -23,14 +23,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stdio.h>
 #include <algorithm>
 
-extern HANDLE hNetlib;
-extern HANDLE hNetlibDCC;
-extern HMODULE m_ssleay32;
-extern MM_INTERFACE mmi;
-extern bool bMbotInstalled;
 UINT_PTR	DCCTimer;	
 CRITICAL_SECTION m_resolve;
 int i = 0;
+
 #define DCCCHATTIMEOUT 300
 #define DCCSENDTIMEOUT 120
 

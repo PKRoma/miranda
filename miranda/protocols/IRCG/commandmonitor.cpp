@@ -51,16 +51,6 @@ TString        NamesToWho = _T("");
 TString        ChannelsToWho = _T("");
 TString        NamesToUserhost = _T("");
 
-extern char    mirandapath[MAX_PATH];
-extern HANDLE  hMenuQuick ;			
-extern HANDLE  hMenuServer ;			
-extern HANDLE  hMenuJoin ;			
-extern HANDLE  hMenuNick ;				
-extern HANDLE  hMenuList ;	
-extern int     ManualWhoisCount;	
-extern bool    bTempDisableCheck ;
-extern bool    bTempForceCheck ;
-extern int     iTempCheckTime ;
 extern int     OldStatus;
 extern int     GlobalStatus;
 
@@ -152,7 +142,7 @@ VOID CALLBACK OnlineNotifTimerProc3(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTim
 
 VOID CALLBACK OnlineNotifTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime)
 {
-	if ( OldStatus == ID_STATUS_OFFLINE || OldStatus == ID_STATUS_CONNECTING || (!prefs->AutoOnlineNotification && !bTempForceCheck) || bTempDisableCheck) 
+	if ( OldStatus == ID_STATUS_OFFLINE || OldStatus == ID_STATUS_CONNECTING || (!prefs->AutoOnlineNotification && !bTempForceCheck) || bTempDisableCheck ) 
 	{
 		KillChatTimer(OnlineNotifTimer);
 		NamesToWho = _T("");
