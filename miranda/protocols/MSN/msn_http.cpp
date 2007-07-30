@@ -63,27 +63,29 @@ PBYTE msn_httpGatewayUnwrapRecv( NETLIBHTTPREQUEST* nlhr, PBYTE buf, int len, in
 	*outBufLen = len;
 
 	ThreadData* T = MSN_GetThreadByConnection( nlhr->nlc );
-	if ( T == NULL )
-		return buf;
+	if ( T == NULL ) return buf;
 
-	bool tIsSessionClosed = false;
+	bool tIsSessionClosed = true;
 
-	for ( int i=0; i < nlhr->headersCount; i++ )
+	if ( nlhr->resultCode == 200)
 	{
-		NETLIBHTTPHEADER& tHeader = nlhr->headers[ i ];
-		if ( _stricmp( tHeader.szName, "X-MSN-Messenger" ) != 0 )
-			continue;
+		for ( int i=0; i < nlhr->headersCount; i++ )
+		{
+			NETLIBHTTPHEADER& tHeader = nlhr->headers[ i ];
+			if ( _stricmp( tHeader.szName, "X-MSN-Messenger" ) != 0 )
+				continue;
 
-		if ( strstr( tHeader.szValue, "Session=close" ) != 0 )
-		{	tIsSessionClosed = true;
-			break;
+			if ( strstr( tHeader.szValue, "Session=close" ) == 0 )
+				tIsSessionClosed = false;
+			else
+				break;
+
+			T->processSessionData( tHeader.szValue );
+			T->applyGatewayData( nlhr->nlc, false );
 		}
-
-		T->processSessionData( tHeader.szValue );
-		T->applyGatewayData( nlhr->nlc, false );
 	}
 
-	if ( tIsSessionClosed || nlhr->resultCode != 200)
+	if ( tIsSessionClosed )
 	{	*outBufLen = 0;
 		buf = ( PBYTE )mir_alloc( 1 );
 		*buf = 0;
@@ -93,6 +95,5 @@ PBYTE msn_httpGatewayUnwrapRecv( NETLIBHTTPREQUEST* nlhr, PBYTE buf, int len, in
 		buf = ( PBYTE )mir_alloc( 1 );
 		*buf = 0;
 	}
-
 	return buf;
 }
