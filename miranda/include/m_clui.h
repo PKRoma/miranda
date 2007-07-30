@@ -125,6 +125,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //lParam=0
 //returns the requested value, 0 if wParam is an unknown value
 //If this service is not implemented, it is assumed to return 0 to all input
+
 #define CLUICAPS_FLAGS1   0
 #define CLUIF_HIDEEMPTYGROUPS   1   //the clist has a checkbox in its options
           //to set this, which will be hidden if this flag is not set. It is
@@ -140,7 +141,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define CLUIF_HASAUTOHIDEOPTION 8   //the clui options page provides a way to
           //change the list auto hide options. It should read and write the
 		  //byte "CList"/"AutoHide" and the word "CList"/"HideTime". No other
-		  //action is needed.
+		  //action is needed. 
+
+//LPARAMS for CLUICAPS_FLAGS1 
+#define CLUIF2_PLUGININFO			1	//returns pointer to plugininfo
+#define CLUIF2_CLISTTYPE			2	// the genaration of list in chronologic 
+// modern layered return 0x07 (assuming classic, mw, meta, nicer1, modern1, nicer++, modernLayered)
+// +0x0100 for unicode
+#define CLUIF2_EXTRACOLUMNCOUNT		3   // return max number of extra icon available to be set in main window
+#define CLUIF2_USEREXTRASTART		4   // return index of first 'advanced' image except Adv1 and Adv2
+
 #define MS_CLUI_GETCAPS         "CLUI/GetCaps"
 
 //a contact is being dragged outside the main window     v0.1.2.0+
@@ -161,6 +171,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //lParam=0
 //return zero
 #define ME_CLUI_CONTACTDRAGSTOP     "CLUI/ContactDragStop"
+
+// return TRUE if Clist Module Support Metacontacts
+#define MS_CLUI_METASUPPORT         "CLUI/MetaContactSupport"
+
 
 #endif // M_CLUI_H__
 
