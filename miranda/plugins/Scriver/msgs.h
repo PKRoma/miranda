@@ -34,12 +34,27 @@ extern PSLWA pSetLayeredWindowAttributes;
 extern BOOL (WINAPI *pfnEnableThemeDialogTexture)(HANDLE, DWORD);
 extern BOOL (WINAPI *pfnIsAppThemed)(VOID);
 
+typedef struct MessageSendQueueItemStruct
+{
+	HWND	hwndSender;
+	HANDLE  hContact;
+	char *	proto;
+	HANDLE 	hSendId;
+	int		timeout;
+	char *	sendBuffer;
+	int		sendBufferSize;
+	int		flags;
+	HWND	hwndErrorDlg;
+	struct MessageSendQueueItemStruct *prev;
+	struct MessageSendQueueItemStruct *next;
+}MessageSendQueueItem;
+
 typedef struct ErrorWindowDataStruct
 {
 	TCHAR*	szName;
 	TCHAR*	szDescription;
 	TCHAR*	szText;
-	int		sendIdx;
+	MessageSendQueueItem* queueItem;
 	HWND	hwndParent;
 } ErrorWindowData;
 
@@ -102,17 +117,6 @@ typedef struct NewMessageWindowLParamStruct
 	int		flags;
 } NewMessageWindowLParam;
 
-struct MessageSendInfo
-{
-	HANDLE 	hSendId;
-	int		timeout;
-	char *	sendBuffer;
-	int		sendBufferSize;
-	int		flags;
-	HWND	hwndErrorDlg;
-};
-
-
 struct MessageWindowData
 {
 	HWND hwnd;
@@ -122,10 +126,8 @@ struct MessageWindowData
 	HWND hwndParent;
 	HWND hwndLog;
 	HANDLE hDbEventFirst, hDbEventLast;
-	struct MessageSendInfo *sendInfo;
 	int sendCount;
 	int splitterPos;
-//	char *sendBuffer;
 	SIZE minEditBoxSize;
 	SIZE minTopSize;
 	RECT minEditInit;
@@ -182,9 +184,9 @@ struct MessageWindowData
 #define HM_AVATARACK         (WM_USER+28)
 #define HM_ACKEVENT          (WM_USER+29)
 
-#define DM_UPDATEICON		 (WM_USER+31)
+#define DM_STOPMESSAGESENDING (WM_USER+30)
 
-#define DM_RESENDMESSAGE	 (WM_USER+32)
+#define DM_UPDATEICON		 (WM_USER+31)
 
 #define DM_CLEARLOG			 (WM_USER+46)
 #define DM_SWITCHSTATUSBAR	 (WM_USER+47)

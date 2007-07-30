@@ -189,7 +189,7 @@ BEGIN
     EDITTEXT        IDC_LIMITCHATSTABSNUM,212,99,20,12,ES_RIGHT | ES_NUMBER
 
 	CONTROL         "Cascade new windows",IDC_CASCADE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,111,260,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,111,200,10
     CONTROL         "Save size and location for each contact",
                     IDC_SAVEPERCONTACT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     8,122,260,10
@@ -425,7 +425,7 @@ IDI_INCOMING            ICON    DISCARDABLE     "res/message.ico"
 IDI_OUTGOING            ICON    DISCARDABLE     "res/messageout.ico"
 IDI_NOTICE              ICON    DISCARDABLE     "res/highlight.ico"
 IDI_CLOSEX              ICON    DISCARDABLE     "res/closex.ico"
-// chat icons 
+// chat icons
 IDI_BUNDERLINE          ICON                    "res/chat/underline.ico"
 IDI_BBOLD               ICON                    "res/chat/bold.ico"
 IDI_BITALICS            ICON                    "res/chat/italics.ico"

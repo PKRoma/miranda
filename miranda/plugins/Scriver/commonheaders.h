@@ -80,6 +80,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "msgs.h"
 #include "msgwindow.h"
 #include "utils.h"
+#include "sendqueue.h"
 
 #include "m_smileyadd.h"
 #include "m_metacontacts.h"

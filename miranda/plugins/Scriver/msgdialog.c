@@ -68,7 +68,7 @@ static DWORD CALLBACK EditStreamCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG
 */
 static DWORD CALLBACK StreamOutCallback(DWORD dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
 {
-	struct MessageSendInfo * msi = (struct MessageSendInfo *) dwCookie;
+	MessageSendQueueItem * msi = (MessageSendQueueItem *) dwCookie;
 	msi->sendBuffer = (char *)mir_realloc(msi->sendBuffer, msi->sendBufferSize + cb + 2);
 	memcpy (msi->sendBuffer + msi->sendBufferSize, pbBuff, cb);
 	msi->sendBufferSize += cb;
@@ -81,7 +81,7 @@ TCHAR *GetRichEditSelection(HWND hwnd) {
 	CHARRANGE sel;
 	SendMessage(hwnd, EM_EXGETSEL, 0, (LPARAM)&sel);
 	if (sel.cpMin!=sel.cpMax) {
-		struct MessageSendInfo msi;
+		MessageSendQueueItem msi;
 		EDITSTREAM stream;
 		DWORD dwFlags = 0;
 		ZeroMemory(&stream, sizeof(stream));
@@ -206,42 +206,6 @@ static void saveDraftMessage(struct MessageWindowData *dat) {
 	}
 }
 
-
-static TCHAR * GetSendBufferMsg(struct MessageWindowData *dat, int i) {
-    TCHAR *szMsg = NULL;
-    int len = strlen(dat->sendInfo[i].sendBuffer);
-#if defined( _UNICODE )
-    if (dat->sendInfo[i].flags & PREF_UTF) {
-        mir_utf8decode(dat->sendInfo[i].sendBuffer, &szMsg);
-    } else {
-        szMsg = (TCHAR *)mir_alloc(dat->sendInfo[i].sendBufferSize - len - 1);
-        memcpy(szMsg, dat->sendInfo[i].sendBuffer + len + 1, dat->sendInfo[i].sendBufferSize - len - 1);
-    }
-#else
-    szMsg = (char *)mir_alloc(dat->sendInfo[i].sendBufferSize);
-    memcpy(szMsg, dat->sendInfo[i].sendBuffer, len + 1);
-#endif
-    return szMsg;
-}
-
-static void RemoveSendBuffer(struct MessageWindowData *dat, int i) {
-	if (dat->sendInfo[i].sendBuffer) {
- 		mir_free(dat->sendInfo[i].sendBuffer);
-		dat->sendInfo[i].sendBuffer = NULL;
-		dat->sendInfo[i].hSendId = NULL;
-		for (i = 0; i < dat->sendCount; i++)
-			if (dat->sendInfo[i].sendBuffer)
-				break;
-		if (i == dat->sendCount) {
-			//all messages sent
-			KillTimer(dat->hwnd, TIMERID_MSGSEND);
-			dat->sendCount = 0;
-			mir_free(dat->sendInfo);
-			dat->sendInfo = NULL;
-		}
-	}
-}
-
 void NotifyLocalWinEvent(HANDLE hContact, HWND hwnd, unsigned int type) {
 	MessageWindowEventData mwe = { 0 };
 	BOOL bChat = FALSE;
@@ -256,21 +220,6 @@ void NotifyLocalWinEvent(HANDLE hContact, HWND hwnd, unsigned int type) {
 	mwe.hwndInput = GetDlgItem(hwnd, bChat ? IDC_CHAT_MESSAGE : IDC_MESSAGE);
 	mwe.hwndLog = GetDlgItem(hwnd, bChat ? IDC_CHAT_LOG : IDC_LOG);
 	NotifyEventHooks(hHookWinEvt, 0, (LPARAM)&mwe);
-}
-
-static char *MsgServiceName(HANDLE hContact)
-{
-#ifdef _UNICODE
-    char szServiceName[100];
-    char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-    if (szProto == NULL)
-        return PSS_MESSAGE;
-
-    mir_snprintf(szServiceName, sizeof(szServiceName), "%s%sW", szProto, PSS_MESSAGE);
-    if (ServiceExists(szServiceName))
-        return PSS_MESSAGE "W";
-#endif
-    return PSS_MESSAGE;
 }
 
 static BOOL IsUtfSendAvailable(HANDLE hContact)
@@ -645,7 +594,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 				SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATENEXT, 0, (LPARAM)GetParent(hwnd));
 				return 0;
 			}
-		}			
+		}
 		break;
 	case WM_SYSKEYUP:
 		{
@@ -1104,7 +1053,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			else
 				dat->wStatus = ID_STATUS_OFFLINE;
 			dat->wOldStatus = dat->wStatus;
-			dat->sendInfo = NULL;
 			dat->hDbEventFirst = NULL;
 			dat->hDbEventLast = NULL;
 //			dat->sendBuffer = NULL;
@@ -2137,38 +2085,18 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		dat->hDbEventFirst = NULL;
 		dat->lastEventType = -1;
 		break;
+	case DM_STOPMESSAGESENDING:
+		if (dat->messagesInProgress>0) {
+			dat->messagesInProgress--;
+			if (g_dat->flags & SMF_SHOWPROGRESS) {
+				SendMessage(dat->hwnd, DM_UPDATESTATUSBAR, 0, 0);
+			}
+		}
+		break;
 	case WM_TIMER:
 		if (wParam == TIMERID_MSGSEND) {
-			int i;
-			int timeout = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT);
-			for (i = 0; i < dat->sendCount; i++) {
-				if (dat->sendInfo[i].sendBuffer && dat->sendInfo[i].hwndErrorDlg == NULL) {
-					if (dat->sendInfo[i].timeout < timeout) {
-						dat->sendInfo[i].timeout+=1000;
-						if (dat->sendInfo[i].timeout >= timeout) {
-							ErrorWindowData *ewd = (ErrorWindowData *) mir_alloc(sizeof(ErrorWindowData));
-							ewd->szName = GetNickname(dat->hContact, dat->szProto);
-							ewd->szDescription = mir_tstrdup(TranslateT("The message send timed out."));
-							ewd->szText = GetSendBufferMsg(dat, i);
-							ewd->hwndParent = hwndDlg;
-							ewd->sendIdx = i;
-							if (dat->messagesInProgress>0) {
-								dat->messagesInProgress--;
-								if (g_dat->flags & SMF_SHOWPROGRESS) {
-									SendMessage(hwndDlg, DM_UPDATESTATUSBAR, 0, 0);
-								}
-							}
-							dat->sendInfo[i].hwndErrorDlg = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSENDERROR), hwndDlg, ErrorDlgProc, (LPARAM) ewd);
-						}
-					}
-				}
-			}
-		}/*
-		else if (wParam == TIMERID_FLASHWND) {
-			dat->showUnread++;
-			SendMessage(hwndDlg, DM_UPDATEICON, 0, 0);
-		}*/
-		else if (wParam == TIMERID_TYPE) {
+			ReportSendQueueTimeouts(hwndDlg);
+		} else if (wParam == TIMERID_TYPE) {
 			if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON && GetTickCount() - dat->nLastTyping > TIMEOUT_TYPEOFF) {
 				NotifyTyping(dat, PROTOTYPE_SELFTYPING_OFF);
 			}
@@ -2193,51 +2121,40 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		break;
 	case DM_SENDMESSAGE:
 			if (lParam) {
-				HANDLE hSendId;
-				struct MessageSendInfo *msi = (struct MessageSendInfo *)lParam;
-				dat->sendCount ++;
-				dat->sendInfo = (struct MessageSendInfo *) mir_realloc(dat->sendInfo, sizeof(struct MessageSendInfo) * dat->sendCount);
-				dat->sendInfo[dat->sendCount-1].sendBufferSize = msi->sendBufferSize;
-				dat->sendInfo[dat->sendCount-1].sendBuffer = (char *) mir_alloc(msi->sendBufferSize);
-				dat->sendInfo[dat->sendCount-1].flags = msi->flags;
-				dat->sendInfo[dat->sendCount-1].timeout = 0;
-				dat->sendInfo[dat->sendCount-1].hwndErrorDlg = NULL;
-				memcpy(dat->sendInfo[dat->sendCount-1].sendBuffer, msi->sendBuffer, dat->sendInfo[dat->sendCount-1].sendBufferSize);
+				MessageSendQueueItem *msi = (MessageSendQueueItem *)lParam;
+				MessageSendQueueItem *item = CreateSendQueueItem(hwndDlg);
+				item->hContact = dat->hContact;
+				item->proto = mir_strdup(dat->szProto);
+				item->sendBufferSize = msi->sendBufferSize;
+				item->sendBuffer = (char *) mir_alloc(msi->sendBufferSize);
+				item->flags = msi->flags;
+				memcpy(item->sendBuffer, msi->sendBuffer, msi->sendBufferSize);
 				SetTimer(hwndDlg, TIMERID_MSGSEND, 1000, NULL);
 				dat->messagesInProgress++;
 				if (g_dat->flags & SMF_SHOWPROGRESS) {
 					SendMessage(hwndDlg, DM_UPDATESTATUSBAR, 0, 0);
 				}
-				hSendId = (HANDLE) CallContactService(dat->hContact, MsgServiceName(dat->hContact), dat->sendInfo[dat->sendCount-1].flags, (LPARAM) dat->sendInfo[dat->sendCount-1].sendBuffer);
-				if (dat->sendCount>0) {
-					dat->sendInfo[dat->sendCount-1].hSendId = hSendId;
-				}
+				SendSendQueueItem(item);
 			}
-
-		break;
-	case DM_RESENDMESSAGE:
-		{
-			int sendIdx = (int) lParam;
-			dat->sendInfo[dat->sendCount-1].timeout = 0;
-			SetTimer(hwndDlg, TIMERID_MSGSEND, 1000, NULL);
-			dat->messagesInProgress++;
-			if (g_dat->flags & SMF_SHOWPROGRESS) {
-				SendMessage(hwndDlg, DM_UPDATESTATUSBAR, 0, 0);
-			}
-			dat->sendInfo[sendIdx].hSendId = (HANDLE) CallContactService(dat->hContact, MsgServiceName(dat->hContact), dat->sendInfo[sendIdx].flags, (LPARAM) dat->sendInfo[sendIdx].sendBuffer);
-		}
 		break;
 	case DM_ERRORDECIDED:
 		{
-			int sendIdx = (int) lParam;
-			dat->sendInfo[sendIdx].hwndErrorDlg = NULL;
+			MessageSendQueueItem *item = (MessageSendQueueItem *) lParam;
+			item->hwndErrorDlg = NULL;
 			switch (wParam) {
 			case MSGERROR_CANCEL:
-				RemoveSendBuffer(dat, (int)lParam);
+				if (RemoveSendQueueItem(item)) {
+					KillTimer(hwndDlg, TIMERID_MSGSEND);
+				}
 				SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
 				break;
 			case MSGERROR_RETRY:
-				SendMessage(hwndDlg, DM_RESENDMESSAGE, 0, lParam);
+				SetTimer(hwndDlg, TIMERID_MSGSEND, 1000, NULL);
+				dat->messagesInProgress++;
+				if (g_dat->flags & SMF_SHOWPROGRESS) {
+					SendMessage(hwndDlg, DM_UPDATESTATUSBAR, 0, 0);
+				}
+				SendSendQueueItem(item);
 				break;
 			}
 		}
@@ -2321,7 +2238,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					//SendMessage(hwndDlg, DM_USERNAMETOCLIP, 0, 0);
 			//}
 			if (dat->hContact != NULL) {
-				struct MessageSendInfo msi = { 0 };
+				MessageSendQueueItem msi = { 0 };
 				int bufSize = GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE)) + 1;
 
 				PARAFORMAT2 pf2;
@@ -2730,16 +2647,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			ACKDATA *ack = (ACKDATA *) lParam;
 			DBEVENTINFO dbei = { 0 };
 			HANDLE hNewEvent;
-			int i;
+			MessageSendQueueItem * item;
 
 			if (ack->type != ACKTYPE_MESSAGE)
 				break;
-			if (dat->sendCount==0)
-				break;
-			for (i = 0; i < dat->sendCount; i++) {
-				if (ack->hProcess == dat->sendInfo[i].hSendId && ack->hContact == dat->hContact)
-					break;
-			}
+
+			item = FindSendQueueItem(ack->hProcess);
+
 			if (dat->messagesInProgress>0) {
 				dat->messagesInProgress--;
 				if (g_dat->flags & SMF_SHOWPROGRESS) {
@@ -2747,50 +2661,48 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				}
 			}
 			if (ack->result == ACKRESULT_FAILED) {
-				if (i == dat->sendCount) {
-					for (i = 0; i < dat->sendCount; i++) {
-						if (dat->sendInfo[i].sendBuffer) {
-							break;
-						}
-					}
+				if (item == NULL) {
+					item = FindOldestSendQueueItem(hwndDlg);
 				}
-				if (i < dat->sendCount) {
+				if (item != NULL) {
 					ErrorWindowData *ewd = (ErrorWindowData *) mir_alloc(sizeof(ErrorWindowData));
 					ewd->szName = GetNickname(dat->hContact, dat->szProto);
 					ewd->szDescription = a2t((char *) ack->lParam);
-					ewd->szText = GetSendBufferMsg(dat, i);
+					ewd->szText = GetSendBufferMsg(item);
 					ewd->hwndParent = hwndDlg;
-					ewd->sendIdx = i;
-					dat->sendInfo[i].hwndErrorDlg = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSENDERROR), hwndDlg, ErrorDlgProc, (LPARAM) ewd);//hwndDlg
+					ewd->queueItem = item;
+					item->hwndErrorDlg = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSENDERROR), hwndDlg, ErrorDlgProc, (LPARAM) ewd);//hwndDlg
 				}
 				return 0;
 			}
-			if (i == dat->sendCount)
+			if (item == NULL)
 				break;
 			dbei.cbSize = sizeof(dbei);
 			dbei.eventType = EVENTTYPE_MESSAGE;
-			dbei.flags = DBEF_SENT | (( dat->sendInfo[i].flags & PREF_RTL) ? DBEF_RTL : 0 );
-			if ( dat->sendInfo[i].flags & PREF_UTF )
+			dbei.flags = DBEF_SENT | (( item->flags & PREF_RTL) ? DBEF_RTL : 0 );
+			if ( item->flags & PREF_UTF )
 				dbei.flags |= DBEF_UTF;
 			dbei.szModule = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) dat->hContact, 0);
 			dbei.timestamp = time(NULL);
-			dbei.cbBlob = lstrlenA(dat->sendInfo[i].sendBuffer) + 1;
+			dbei.cbBlob = lstrlenA(item->sendBuffer) + 1;
 	#if defined( _UNICODE )
-			if ( !( dat->sendInfo[i].flags & PREF_UTF ))
+			if ( !( item->flags & PREF_UTF ))
 				dbei.cbBlob *= sizeof(TCHAR) + 1;
 	#endif
-			dbei.pBlob = (PBYTE) dat->sendInfo[i].sendBuffer;
+			dbei.pBlob = (PBYTE) item->sendBuffer;
 			hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM) dat->hContact, (LPARAM) & dbei);
+
+
 			SkinPlaySound("SendMsg");
 			if (dat->hDbEventFirst == NULL) {
 				dat->hDbEventFirst = hNewEvent;
 				SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
 			}
-			if (dat->sendInfo[i].hwndErrorDlg != NULL) {
-				DestroyWindow(dat->sendInfo[i].hwndErrorDlg);
+			if (item->hwndErrorDlg != NULL) {
+				DestroyWindow(item->hwndErrorDlg);
 			}
-			RemoveSendBuffer(dat, i);
-			if (dat->sendCount == 0) {
+			if (RemoveSendQueueItem(item)) {
+				KillTimer(hwndDlg, TIMERID_MSGSEND);
 				if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE))
 					DestroyWindow(hwndDlg);
 			}
@@ -2804,6 +2716,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		if (dat->userMenuIcon != NULL) DestroyIcon(dat->userMenuIcon);
 		//CallService(MS_SKIN2_RELEASEICON,(WPARAM)dat->userMenuIcon, 0);
 		dat->userMenuIcon = NULL;
+		/*
 		if (dat->sendInfo) {
 			int i;
 			for (i = 0; i < dat->sendCount; i++) {
@@ -2811,6 +2724,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			}
 			mir_free(dat->sendInfo);
 		}
+		*/
 		if (g_dat->flags & SMF_SAVEDRAFTS) {
 			saveDraftMessage(dat);
 		} else {

@@ -184,6 +184,10 @@ SOURCE=.\msgwindow.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\sendqueue.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\srmm.c
 # End Source File
 # Begin Source File
@@ -237,6 +241,10 @@ SOURCE=.\multimon.h
 # Begin Source File
 
 SOURCE=.\resource.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sendqueue.h
 # End Source File
 # Begin Source File
 
