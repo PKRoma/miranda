@@ -99,7 +99,7 @@ LINK32=link.exe
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "Release_Unicode"
 # PROP Intermediate_Dir "Release_Unicode"
-# PROP Ignore_Export_Lib 0
+# PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "avs_EXPORTS" /FD /c
 # SUBTRACT BASE CPP /YX /Yc /Yu
