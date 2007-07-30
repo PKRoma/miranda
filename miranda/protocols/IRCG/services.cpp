@@ -874,6 +874,26 @@ int Service_GCEventHook(WPARAM wParam,LPARAM lParam)
 					case 17:
 						PostIrcMessage( _T("/MODE %s -h %s"), p1, gch->ptszUID );
 						break;
+					case 18:
+						PostIrcMessage( _T("/MODE %s +q %s"), p1, gch->ptszUID );
+						break;
+					case 19:
+						PostIrcMessage( _T("/MODE %s -q %s"), p1, gch->ptszUID );
+						break;
+					case 20:
+						PostIrcMessage( _T("/MODE %s +a %s"), p1, gch->ptszUID );
+						break;
+					case 21:
+						PostIrcMessage( _T("/MODE %s -a %s"), p1, gch->ptszUID );
+						break;
+					case 22:
+						PostIrcMessage( _T("/NOTICE %s %%question=\"%s\",\"%s\""), 
+							gch->ptszUID, TranslateT("Please enter the notice text"), TranslateT("Send notice") );
+						break;
+					case 23:
+						PostIrcMessage( _T("/INVITE %s %%question=\"%s\",\"%s\""), 
+							gch->ptszUID, TranslateT("Please enter the channel name to invite to"), TranslateT("Invite to channel") );
+						break;
 					case 30:
 						{
 							PROTOSEARCHRESULT psr;
@@ -933,7 +953,13 @@ static int Service_GCMenuHook(WPARAM wParam,LPARAM lParam)
 
 				static gc_item Item[] = {
 					{ TranslateT("&WhoIs info"),         10, MENU_ITEM,           FALSE },
+					{ TranslateT("&Invite to channel"),  23, MENU_ITEM,           FALSE },
+					{ TranslateT("Send &notice"),        22, MENU_ITEM,           FALSE },
 					{ TranslateT("&Control"),             0, MENU_NEWPOPUP,       FALSE },
+					{ TranslateT("Give Owner"),          18, MENU_POPUPITEM,      FALSE },
+					{ TranslateT("Take Owner"),          19, MENU_POPUPITEM,      FALSE },
+					{ TranslateT("Give Admin"),          20, MENU_POPUPITEM,      FALSE },
+					{ TranslateT("Take Admin"),          21, MENU_POPUPITEM,      FALSE },
 					{ TranslateT("Give &Op"),             1, MENU_POPUPITEM,      FALSE },
 					{ TranslateT("Take O&p"),             2, MENU_POPUPITEM,      FALSE },
 					{ TranslateT("Give &Halfop"),        16, MENU_POPUPITEM,      FALSE },

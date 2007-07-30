@@ -1065,6 +1065,8 @@ BOOL CALLBACK ManagerWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				EnableWindow(GetDlgItem( hwndDlg, IDC_CHECK7), false);
 			if ( !strchr(sChannelModes.c_str(), 's'))
 				EnableWindow(GetDlgItem( hwndDlg, IDC_CHECK8), false);
+			if ( !strchr(sChannelModes.c_str(), 'c'))
+				EnableWindow(GetDlgItem( hwndDlg, IDC_CHECK9), false);
 		}
 		break;
 
@@ -1137,6 +1139,8 @@ BOOL CALLBACK ManagerWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 							CheckDlgButton( hwndDlg, IDC_CHECK7, add?(BST_CHECKED) : (BST_UNCHECKED));
 						if (*p1 == 's')
 							CheckDlgButton( hwndDlg, IDC_CHECK8, add?(BST_CHECKED) : (BST_UNCHECKED));
+						if (*p1 == 'c')
+							CheckDlgButton( hwndDlg, IDC_CHECK9, add?(BST_CHECKED) : (BST_UNCHECKED));
 						if (*p1 == 'k' && add) {
 							CheckDlgButton( hwndDlg, IDC_CHECK5, add?(BST_CHECKED) : (BST_UNCHECKED));
 							EnableWindow(GetDlgItem( hwndDlg, IDC_KEY), add?(true) : (false));
@@ -1151,16 +1155,17 @@ BOOL CALLBACK ManagerWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 						}
 						p1++;
 						if (wParam == 0 ) {
-							EnableWindow(GetDlgItem( hwndDlg, IDC_LIMIT), (false));
-							EnableWindow(GetDlgItem( hwndDlg, IDC_KEY), (false));
-							EnableWindow(GetDlgItem( hwndDlg, IDC_CHECK1),  (false));
-							EnableWindow(GetDlgItem( hwndDlg, IDC_CHECK2),  (false));
+							EnableWindow(GetDlgItem( hwndDlg, IDC_LIMIT),  (false));
+							EnableWindow(GetDlgItem( hwndDlg, IDC_KEY),    (false));
+							EnableWindow(GetDlgItem( hwndDlg, IDC_CHECK1), (false));
+							EnableWindow(GetDlgItem( hwndDlg, IDC_CHECK2), (false));
 							EnableWindow(GetDlgItem( hwndDlg, IDC_CHECK3), (false));
 							EnableWindow(GetDlgItem( hwndDlg, IDC_CHECK4), (false));
-							EnableWindow(GetDlgItem( hwndDlg, IDC_CHECK5),  (false));
-							EnableWindow(GetDlgItem( hwndDlg, IDC_CHECK6),  (false));
-							EnableWindow(GetDlgItem( hwndDlg, IDC_CHECK7),  (false));
+							EnableWindow(GetDlgItem( hwndDlg, IDC_CHECK5), (false));
+							EnableWindow(GetDlgItem( hwndDlg, IDC_CHECK6), (false));
+							EnableWindow(GetDlgItem( hwndDlg, IDC_CHECK7), (false));
 							EnableWindow(GetDlgItem( hwndDlg, IDC_CHECK8), (false));
+							EnableWindow(GetDlgItem( hwndDlg, IDC_CHECK9), (false));
 							EnableWindow(GetDlgItem( hwndDlg, IDC_ADD), (false));
 							if(IsDlgButtonChecked( hwndDlg, IDC_CHECK1))
 								EnableWindow(GetDlgItem( hwndDlg, IDC_TOPIC), (false));
@@ -1330,7 +1335,7 @@ BOOL CALLBACK ManagerWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 		if ( HIWORD(wParam) == BN_CLICKED && (LOWORD(wParam) == IDC_CHECK1
 				|| LOWORD(wParam) == IDC_CHECK2 || LOWORD(wParam) == IDC_CHECK3 || LOWORD(wParam) == IDC_CHECK4
-				|| LOWORD(wParam) == IDC_CHECK7 || LOWORD(wParam) == IDC_CHECK8))
+				|| LOWORD(wParam) == IDC_CHECK7 || LOWORD(wParam) == IDC_CHECK8 || LOWORD(wParam) == IDC_CHECK9))
 			EnableWindow(GetDlgItem( hwndDlg, IDC_APPLYMODES), true);				
 
 		if ( HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDC_APPLYMODES ) {
@@ -1381,6 +1386,13 @@ BOOL CALLBACK ManagerWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				}
 				else if ( IsDlgButtonChecked( hwndDlg, IDC_CHECK8 ))
 					lstrcat( toadd, _T("s"));
+
+				if ( wi->pszMode && _tcschr( wi->pszMode, 'c' )) {
+					if ( !IsDlgButtonChecked( hwndDlg, IDC_CHECK9 ))
+						lstrcat( toremove, _T("c"));
+				}
+				else if ( IsDlgButtonChecked( hwndDlg, IDC_CHECK9 ))
+					lstrcat( toadd, _T("c"));
 
 				TString Key = _T("");
 				TString Limit = _T("");

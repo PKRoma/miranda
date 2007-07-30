@@ -173,6 +173,7 @@
 #define IDC_SPIN2                       1220
 #define IDC_CODEPAGE                    1222
 #define IDC_COMBO1                      1223
+#define IDC_CHECK9                      1224
 #define ID_MENU1_OP                     40013
 #define ID_MENU1_DEOP                   40014
 #define ID_MENU1_VOICE                  40015
@@ -199,14 +200,20 @@
 #define ID_MENU1_BANKICKREASON          40037
 #define ID_MENU1_IGNORE_ON              40038
 #define ID_MENU1_IGNORE_OFF             40039
+#define ID_MENU1_OWNER                  40040
+#define ID_MENU1_DEOWNER                40041
+#define ID_MENU1_ADMIN                  40042
+#define ID_MENU1_DEADMIN                40043
+#define ID_MENU1_SENDNOTICE             40044
+#define ID_MENU1_INVITETOCHANNEL        40045
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        199
-#define _APS_NEXT_COMMAND_VALUE         40040
-#define _APS_NEXT_CONTROL_VALUE         1224
+#define _APS_NEXT_COMMAND_VALUE         40046
+#define _APS_NEXT_CONTROL_VALUE         1225
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

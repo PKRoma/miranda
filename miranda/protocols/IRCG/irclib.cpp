@@ -535,7 +535,7 @@ void CIrcSession::DoReceive()
 		nb.cbSize = sizeof(NETLIBBIND);
 		nb.pfnNewConnectionV2 = DoIdent;
 		nb.wPort = m_info.iIdentServerPort;
-		hBindPort= (HANDLE)CallService(MS_NETLIB_BINDPORT, (WPARAM)hNetlib,(LPARAM) &nb);
+		hBindPort = (HANDLE)CallService(MS_NETLIB_BINDPORT, (WPARAM)hNetlib,(LPARAM) &nb);
 		if ( !hBindPort || nb.wPort != m_info.iIdentServerPort ) {
 			char szTemp[200];
 			mir_snprintf(szTemp, sizeof(szTemp), "Error: unable to bind local port %u", m_info.iIdentServerPort);
@@ -544,10 +544,9 @@ void CIrcSession::DoReceive()
 	}	}
 
 	while( con ) {
-		int cbRead;
 		int nLinesProcessed = 0;
 
-		cbRead = NLReceive((unsigned char*)chBuf+cbInBuf, sizeof(chBuf)-cbInBuf-1);
+		int cbRead = NLReceive((unsigned char*)chBuf+cbInBuf, sizeof(chBuf)-cbInBuf-1);
 		if( cbRead <= 0 )
 			break;
 

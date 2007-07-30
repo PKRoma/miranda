@@ -156,8 +156,8 @@ LINK32_OBJS= \
 
 !ELSEIF  "$(CFG)" == "IRC - Win32 Debug Unicode"
 
-OUTDIR=.\IRC___Win32_Debug_Unicode
-INTDIR=.\IRC___Win32_Debug_Unicode
+OUTDIR=.\Debug_Unicode
+INTDIR=.\Debug_Unicode
 
 ALL : "..\..\bin\debug\plugins\IRC.dll"
 
