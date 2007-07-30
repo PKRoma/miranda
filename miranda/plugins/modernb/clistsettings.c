@@ -81,19 +81,21 @@ static int handleCompare( void* c1, void* c2 )
 //		i++;
 //}	}
 
-extern CRITICAL_SECTION LockCacheChain;   //TODO move initialization to cache_func.c module
+
+void InitCacheAsync();
+void UninitCacheAsync();
 
 void InitDisplayNameCache(void)
 {
 	int i=0;
-    InitializeCriticalSection(&LockCacheChain);  //TODO move initialization to cache_func.c module
+    InitCacheAsync();
 	InitAwayMsgModule();
 	clistCache = li.List_Create( 0, 50 );
 	clistCache->sortFunc = handleCompare;
 }
 void FreeDisplayNameCache()
 {
-    DeleteCriticalSection(&LockCacheChain);
+    UninitCacheAsync();
 	UninitAwayMsgModule();
 	if ( clistCache != NULL ) {
 		int i;
@@ -261,7 +263,8 @@ void cliCheckCacheItem(pdisplayNameCacheEntry pdnce)
 				{
 					if(pdnce->szProto&&pdnce->name) 
 					{
-						if (!pdnce->isUnknown && pdnce->name!=UnknownConctactTranslatedName) mir_free_and_nill(pdnce->name);
+						if (!pdnce->isUnknown && pdnce->name!=UnknownConctactTranslatedName) 
+							mir_free_and_nill(pdnce->name);
 						pdnce->name=NULL;
 					}
 				}
@@ -292,8 +295,6 @@ void cliCheckCacheItem(pdisplayNameCacheEntry pdnce)
 				if (CallService(MS_PROTO_ISPROTOCOLLOADED,0,(LPARAM)pdnce->szProto)==(int)NULL)
 				{
 					pdnce->protoNotExists=FALSE;						
-
-					//mir_free_and_nill(pdnce->name);
 					pdnce->name= GetNameForContact(pdnce->hContact,0,&pdnce->isUnknown); //TODO UNICODE
 				}
 			}

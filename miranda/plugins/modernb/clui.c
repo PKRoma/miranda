@@ -121,7 +121,7 @@ static BOOL CLUI_WaitThreadsCompletion(HWND hwnd)
 		&&( g_mutex_nCalcRowHeightLock ||
 		g_CluiData.mutexPaintLock || 
 		g_dwAwayMsgThreadID || 
-		g_dwGetTextThreadID || 
+		g_dwGetTextAsyncThreadID || 
 		g_dwSmoothAnimationThreadID || 
 		g_dwFillFontListThreadID) 
 		&&!Miranda_Terminated())
@@ -130,7 +130,7 @@ static BOOL CLUI_WaitThreadsCompletion(HWND hwnd)
 		TRACEVAR("g_mutex_nCalcRowHeightLock: %x",g_mutex_nCalcRowHeightLock);
 		TRACEVAR("g_CluiData.mutexPaintLock: %x",g_CluiData.mutexPaintLock);
 		TRACEVAR("g_dwAwayMsgThreadID: %x",g_dwAwayMsgThreadID);
-		TRACEVAR("g_dwGetTextThreadID: %x",g_dwGetTextThreadID);
+		TRACEVAR("g_dwGetTextAsyncThreadID: %x",g_dwGetTextAsyncThreadID);
 		TRACEVAR("g_dwSmoothAnimationThreadID: %x",g_dwSmoothAnimationThreadID);
 		TRACEVAR("g_dwFillFontListThreadID: %x",g_dwFillFontListThreadID);
 		bEntersCount++;
@@ -142,7 +142,7 @@ static BOOL CLUI_WaitThreadsCompletion(HWND hwnd)
 	if (bEntersCount==bcMAX_AWAITING_RETRY)
 	{   //force to terminate threads after max times repeating of awaiting
 		if (g_dwAwayMsgThreadID)      TerminateThread((HANDLE)g_dwAwayMsgThreadID,0);
-		if (g_dwGetTextThreadID)         TerminateThread((HANDLE)g_dwGetTextThreadID,0);
+		if (g_dwGetTextAsyncThreadID)         TerminateThread((HANDLE)g_dwGetTextAsyncThreadID,0);
 		if (g_dwSmoothAnimationThreadID) TerminateThread((HANDLE)g_dwSmoothAnimationThreadID,0);
 		if (g_dwFillFontListThreadID)    TerminateThread((HANDLE)g_dwFillFontListThreadID,0);
 	}

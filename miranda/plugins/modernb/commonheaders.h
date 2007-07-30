@@ -130,7 +130,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern struct LIST_INTERFACE li;
 extern struct MM_INTERFACE memoryManagerInterface;
 
-#define alloc(n) mir_alloc(n)
+//#define alloc(n) mir_alloc(n)
 
 #define MAX_REGS(_A_) (sizeof(_A_)/sizeof(_A_[0]))
 

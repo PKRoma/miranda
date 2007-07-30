@@ -391,7 +391,7 @@ HICON GetMainStatusOverlay(int STATUS)
 /*
 *	Proto ack hook
 */
-void Cache_RenewText(HANDLE hContact);
+void gtaRenewText(HANDLE hContact);
 
 int ExtraImage_ExtraIDToColumnNum(int extra);
 int ClcProtoAck(WPARAM wParam,LPARAM lParam)
@@ -429,7 +429,7 @@ int ClcProtoAck(WPARAM wParam,LPARAM lParam)
 					if (!mir_bool_strcmpi(val,(const char *)ack->lParam))
 						DBWriteContactSettingString(ack->hContact,"CList","StatusMsg",(const char *)ack->lParam);
 					else
-						Cache_RenewText(ack->hContact);
+						gtaRenewText(ack->hContact);
 					mir_free_and_nill(val);
 				}
 				else 
@@ -455,7 +455,7 @@ int ClcProtoAck(WPARAM wParam,LPARAM lParam)
 					if (!mir_bool_strcmpi(val,""))
 						DBWriteContactSettingString(ack->hContact,"CList","StatusMsg","");
 					else
-						Cache_RenewText(ack->hContact);
+						gtaRenewText(ack->hContact);
 					mir_free_and_nill(val);
 				}
 			}
@@ -1055,7 +1055,7 @@ case INTM_STATUSCHANGED:
 					(dat->second_line_show)// && dat->second_line_type==TEXT_STATUS)
 					|| (dat->third_line_show)// && dat->third_line_type==TEXT_STATUS)
 					))
-					Cache_RenewText(pdnce->hContact);
+					gtaRenewText(pdnce->hContact);
 				SendMessage(hwnd,INTM_ICONCHANGED, wParam, (LPARAM) CallService(MS_CLIST_GETCONTACTICON, wParam, 1));
 				if(FindItem(hwnd,dat,(HANDLE)wParam,&contact,NULL,NULL,TRUE))
 				{

@@ -120,6 +120,7 @@ static int amThreadProc(HWND hwnd)
 	HANDLE hContact;
 	HANDLE ACK=0;
 	displayNameCacheEntry dnce={0};
+
 	while (!MirandaExiting())
 	{
 		hContact=amGetCurrentChain(); 
@@ -210,5 +211,8 @@ void UninitAwayMsgModule()
 {
 	SetEvent(hamProcessEvent);
 	CloseHandle(hamProcessEvent);
+	amlock;
+	while (amGetCurrentChain());
+	amunlock;
 	DeleteCriticalSection(&amLockChain);
 }

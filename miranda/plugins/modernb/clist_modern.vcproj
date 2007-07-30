@@ -39,7 +39,7 @@
 				EnableFunctionLevelLinking="FALSE"
 				EnableEnhancedInstructionSet="0"
 				DefaultCharIsUnsigned="TRUE"
-				UsePrecompiledHeader="0"
+				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
 				AssemblerOutput="2"
 				BrowseInformation="0"
@@ -53,6 +53,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib  gdiplus.lib Delayimp.lib"
+				OutputFile="$(OutDir)/$(ProjectName).dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				IgnoreAllDefaultLibraries="FALSE"
@@ -112,7 +113,7 @@
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				DefaultCharIsUnsigned="TRUE"
-				UsePrecompiledHeader="3"
+				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
 				BrowseInformation="1"
 				WarningLevel="3"
@@ -126,6 +127,7 @@
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib"
 				ShowProgress="0"
+				OutputFile="$(OutDir)/$(ProjectName).dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories=""
@@ -195,7 +197,7 @@
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib"
-				OutputFile="c:\program files\Miranda IM\plugins/$(ProjectName).dll"
+				OutputFile="$(OutDir)/$(ProjectName).dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories=""
@@ -255,7 +257,7 @@
 				BufferSecurityCheck="TRUE"
 				EnableEnhancedInstructionSet="0"
 				DefaultCharIsUnsigned="TRUE"
-				UsePrecompiledHeader="3"
+				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
 				AssemblerOutput="2"
 				BrowseInformation="0"
@@ -270,7 +272,7 @@
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib  gdiplus.lib Delayimp.lib"
-				OutputFile="C:\ashpynov\Private\Miranda IM\plugins/$(ProjectName).dll"
+				OutputFile="$(OutDir)/$(ProjectName).dll"
 				IgnoreAllDefaultLibraries="FALSE"
 				IgnoreDefaultLibraryNames=""
 				DelayLoadDLLs="gdiplus.dll"
@@ -412,6 +414,9 @@
 			</File>
 			<File
 				RelativePath=".\modern_button.c">
+			</File>
+			<File
+				RelativePath=".\modern_gettextasync.c">
 			</File>
 			<File
 				RelativePath=".\modern_row.cpp">
@@ -670,10 +675,10 @@
 				RelativePath="..\..\include\m_addcontact.h">
 			</File>
 			<File
-				RelativePath="..\..\include\m_avatars.h">
+				RelativePath=".\m_api\m_avatars.h">
 			</File>
 			<File
-				RelativePath=".\m_api\m_avatars.h">
+				RelativePath="..\..\include\m_avatars.h">
 			</File>
 			<File
 				RelativePath="..\..\include\m_awaymsg.h">
@@ -694,16 +699,16 @@
 				RelativePath="..\..\include\m_clistint.h">
 			</File>
 			<File
-				RelativePath=".\m_api\m_clui.h">
-			</File>
-			<File
 				RelativePath="..\..\include\m_clui.h">
 			</File>
 			<File
-				RelativePath=".\m_api\m_cluiframes.h">
+				RelativePath=".\m_api\m_clui.h">
 			</File>
 			<File
 				RelativePath="..\..\include\m_cluiframes.h">
+			</File>
+			<File
+				RelativePath=".\m_api\m_cluiframes.h">
 			</File>
 			<File
 				RelativePath="..\..\include\m_contactdir.h">
@@ -837,6 +842,9 @@
 			</File>
 			<File
 				RelativePath=".\hdr\modern_awaymsg.h">
+			</File>
+			<File
+				RelativePath=".\hdr\modern_gettextasync.h">
 			</File>
 			<File
 				RelativePath=".\hdr\modern_global_structure.h">

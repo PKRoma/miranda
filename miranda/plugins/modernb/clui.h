@@ -120,7 +120,7 @@ HANDLE  g_hMainThread=NULL;
 
 DWORD   g_dwMainThreadID=0,
         g_dwAwayMsgThreadID=0,
-        g_dwGetTextThreadID=0,
+        g_dwGetTextAsyncThreadID=0,
         g_dwSmoothAnimationThreadID=0,
         g_dwFillFontListThreadID=0;
         

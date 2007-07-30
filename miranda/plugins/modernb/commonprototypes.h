@@ -72,7 +72,7 @@ extern BOOL g_mutex_bChangingMode;
 extern HANDLE g_hMainThread;
 extern DWORD g_dwMainThreadID;
 extern DWORD g_dwAwayMsgThreadID;
-extern DWORD g_dwGetTextThreadID;
+extern DWORD g_dwGetTextAsyncThreadID;
 extern DWORD g_dwSmoothAnimationThreadID;
 extern DWORD g_dwFillFontListThreadID;
 extern HWND  g_hwndViewModeFrame;

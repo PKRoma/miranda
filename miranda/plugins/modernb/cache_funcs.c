@@ -34,12 +34,11 @@ Modified by FYR
 #include "commonheaders.h"
 #include "cache_funcs.h"
 #include "newpluginapi.h"
+#include "./hdr/modern_gettextasync.h"
 
 typedef BOOL (* ExecuteOnAllContactsFuncPtr) (struct ClcContact *contact, BOOL subcontact, void *param);
 
-int CLUI_SyncGetPDNCE(WPARAM wParam, LPARAM lParam);
-int CLUI_SyncSetPDNCE(WPARAM wParam, LPARAM lParam);
-int CLUI_SyncGetShortData(WPARAM wParam, LPARAM lParam);
+
 /***********************************/
 /**   Module static declarations  **/
 /***********************************/
@@ -50,7 +49,7 @@ static int CopySkipUnprintableChars(TCHAR *to, TCHAR * buf, DWORD size);
 
 static BOOL ExecuteOnAllContacts(struct ClcData *dat, ExecuteOnAllContactsFuncPtr func, void *param);
 static BOOL ExecuteOnAllContactsOfGroup(struct ClcGroup *group, ExecuteOnAllContactsFuncPtr func, void *param);
-
+int CLUI_SyncGetShortData(WPARAM wParam, LPARAM lParam);
 SortedList *CopySmileyString(SortedList *plInput);
 
 typedef struct tagSYNCCALLITEM
@@ -68,6 +67,8 @@ static void CALLBACK SyncCallerUserAPCProc(DWORD dwParam)
     item->nResult = item->pfnProc(item->wParam, item->lParam);
     SetEvent(item->hDoneEvent);
 }
+
+
 void CListSettings_FreeCacheItemData(pdisplayNameCacheEntry pDst);
 int cache_CallProcSync(PSYNCCALLBACKPROC pfnProc, WPARAM wParam, LPARAM lParam)
 {  
@@ -117,125 +118,6 @@ void Cache_GetTimezone(struct ClcData *dat, HANDLE hContact)
 }
 
 /*
-*		Pooling 
-*/
-
-typedef struct _CacheAskChain {
-    HANDLE hContact;
-    struct ClcData *dat;
-    struct CacheAskChain *Next;
-} CacheAskChain;
-
-CacheAskChain * FirstCacheChain=NULL;
-CacheAskChain * LastCacheChain=NULL;
-CRITICAL_SECTION LockCacheChain;
-
-
-BOOL GetCacheChain(CacheAskChain * mpChain)
-{
-    EnterCriticalSection(&LockCacheChain);
-    if (!FirstCacheChain)
-    {
-        LeaveCriticalSection(&LockCacheChain);
-        return FALSE;
-    }
-    else if (mpChain)
-    {
-        CacheAskChain * ch;
-        ch=FirstCacheChain;
-        *mpChain=*ch;
-        FirstCacheChain=(CacheAskChain *)ch->Next;
-        if (!FirstCacheChain) LastCacheChain=NULL;
-        mir_free_and_nill(ch);
-        LeaveCriticalSection(&LockCacheChain);
-        return TRUE;
-    }
-    LeaveCriticalSection(&LockCacheChain);
-    return FALSE;
-}
-
-int Cache_GetTextThreadProc(void * lpParam)
-{
-    __try
-    {
-        BOOL exit=FALSE;
-		  HWND hwnd=pcli->hwndContactList;
-        struct SHORTDATA data={0};
-        struct SHORTDATA * dat;
-        cache_CallProcSync(CLUI_SyncGetShortData,(WPARAM)pcli->hwndContactTree,(LPARAM)&data);       
-        do
-        {
-            if (!MirandaExiting()) 
-                SleepEx(0,TRUE); //1000 contacts per second
-            if (MirandaExiting()) return 0;
-            else
-            {
-                CacheAskChain mpChain={0};
-                struct SHORTDATA dat2={0};
-                if (!GetCacheChain(&mpChain)) break;
-                if (mpChain.dat==NULL || (!IsBadReadPtr(mpChain.dat,sizeof(mpChain.dat)) && mpChain.dat->hWnd==data.hWnd))	dat=&data;
-                else
-                {        
-                    cache_CallProcSync(CLUI_SyncGetShortData,(WPARAM)mpChain.dat->hWnd,(LPARAM)&dat2);       
-                    dat=&dat2;
-                }
-                if (!MirandaExiting())
-                {
-                    displayNameCacheEntry cacheEntry={0};
-                    cacheEntry.hContact=mpChain.hContact;
-                    if (!cache_CallProcSync(CLUI_SyncGetPDNCE,0,(LPARAM)&cacheEntry))
-                    {
-                        if (!MirandaExiting()) 
-                            Cache_GetSecondLineText(dat, &cacheEntry);
-                        if (!MirandaExiting()) 
-                            Cache_GetThirdLineText(dat, &cacheEntry);
-                        if (!MirandaExiting()) 
-                            cache_CallProcSync(CLUI_SyncSetPDNCE,0,(LPARAM)&cacheEntry);  
-                        CListSettings_FreeCacheItemData(&cacheEntry);
-                    }
-                }
-                else return 0;
-                KillTimer(dat->hWnd,TIMERID_INVALIDATE_FULL);
-                CLUI_SafeSetTimer(dat->hWnd,TIMERID_INVALIDATE_FULL,500,NULL);
-            }
-        }
-        while (!exit);
-    }
-    __finally
-    {
-        g_dwGetTextThreadID=0;
-    }    
-    return 1;
-}
-int AddToCacheChain(struct ClcData *dat,struct ClcContact *contact,HANDLE hContact)
-{
-    EnterCriticalSection(&LockCacheChain);    
-    {
-        CacheAskChain * mpChain=(CacheAskChain *)mir_alloc(sizeof(CacheAskChain));
-        mpChain->hContact=hContact;
-        mpChain->dat=dat;
-        mpChain->Next=NULL;
-        if (LastCacheChain) 
-        {
-            LastCacheChain->Next=(struct CacheAskChain *)mpChain;
-            LastCacheChain=mpChain;
-        }
-        else 
-        {
-            FirstCacheChain=mpChain;
-            LastCacheChain=mpChain;
-            if ( !g_dwGetTextThreadID)
-            {
-                //StartThreadHere();
-                g_dwGetTextThreadID=(DWORD)mir_forkthread(Cache_GetTextThreadProc,0);
-            }
-        }
-    }
-    LeaveCriticalSection(&LockCacheChain);
-    return FALSE;
-}
-
-/*
 *	Get all lines of text
 */ 
 
@@ -243,10 +125,7 @@ int AddToCacheChain(struct ClcData *dat,struct ClcContact *contact,HANDLE hConta
 //{
 //
 //}
-void Cache_RenewText(HANDLE hContact)
-{
-    AddToCacheChain(NULL,NULL, hContact);
-}
+
 
 void Cache_GetText(struct ClcData *dat, struct ClcContact *contact, BOOL forceRenew)
 {
@@ -257,7 +136,7 @@ void Cache_GetText(struct ClcData *dat, struct ClcContact *contact, BOOL forceRe
         if (  (dat->second_line_show&&(forceRenew||pdnce->szSecondLineText==NULL))
             ||(dat->third_line_show&&(forceRenew||pdnce->szThirdLineText==NULL))  )
         {
-            AddToCacheChain(dat,contact, contact->hContact);
+            gtaAddRequest(dat,contact, contact->hContact);
         }
     }
 }
