@@ -21,6 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "irc.h"
 #include "tchar.h"
 #include <stdio.h>
+#include <algorithm>
 
 extern HANDLE hNetlib;
 extern HANDLE hNetlibDCC;
@@ -131,7 +132,7 @@ end_of_prefix :
 		++p2;
 
 	sCommand.assign(p1, p2 - p1);
-	_tcsupr(( TCHAR* )sCommand.c_str());
+	transform( sCommand.begin(), sCommand.end(), sCommand.begin(), toupper );
 	while( *p2 && *p2 == ' ' )
 		++p2;
 	p1 = p2;
