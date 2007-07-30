@@ -45,6 +45,8 @@ $Id$
 */
 
 #include "commonheaders.h"
+#include "sendqueue.h"
+
 #pragma hdrstop
 
 #ifdef __MATHMOD_SUPPORT
@@ -2968,8 +2970,31 @@ panel_found:
                 char *szSetting = "CNT_";
 #endif
                 if (lParam == 0 && TabCtrl_GetItemCount(GetDlgItem(hwndDlg, IDC_MSGTABS)) > 0) {    // dont ask if container is empty (no tabs)
+                    int    clients = TabCtrl_GetItemCount(hwndTab), i;
+                    TCITEM item = {0};
+                    int    iOpenJobs = 0;
+
                     if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "warnonexit", 0)) {
                         if (MessageBox(hwndDlg, TranslateTS(szWarnClose), _T("Miranda"), MB_YESNO | MB_ICONQUESTION) == IDNO)
+                            return TRUE;
+                    }
+                    item.mask = TCIF_PARAM;
+                    for(i = 0; i < clients; i++) {
+                        TabCtrl_GetItem(hwndTab, i, &item);
+                        if(item.lParam && IsWindow((HWND)item.lParam)) {
+                            SendMessage((HWND)item.lParam, DM_CHECKQUEUEFORCLOSE, 0, (LPARAM)&iOpenJobs);
+                        }
+                    }
+                    if(iOpenJobs && pContainer) {
+                        LRESULT result;
+
+                        if(pContainer->exFlags & CNT_EX_CLOSEWARN)
+                            return TRUE;
+
+                        pContainer->exFlags |= CNT_EX_CLOSEWARN;
+                        result = WarnPendingJobs(iOpenJobs);
+                        pContainer->exFlags &= ~CNT_EX_CLOSEWARN;
+                        if(result == IDNO)
                             return TRUE;
                     }
                 }

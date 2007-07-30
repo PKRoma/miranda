@@ -5044,134 +5044,9 @@ quote_from_last:
              * *_MESSAGE and *_AVATAR and dispatches them to the owner windows).
              */
         case HM_EVENTSENT:
-            {
-                ACKDATA *ack = (ACKDATA *) lParam;
-                DBEVENTINFO dbei = { 0};
-                HANDLE hNewEvent;
-                int i, iFound = NR_SENDJOBS, iNextFailed;
+            AckMessage(hwndDlg, dat, wParam, lParam);
+            return 0;
 
-                iFound = (int)(LOWORD(wParam));
-                i = (int)(HIWORD(wParam));
-
-                if(iFound < 0 || iFound >= NR_SENDJOBS || i < 0 || i >= SENDJOBS_MAX_SENDS) {       // sanity checks (unlikely to happen).
-                    _DebugPopup(dat->hContact, "Warning: HM_EVENTSENT with invalid data (sq-index = %d, sendId-index = %d", iFound, i);
-                    break;
-                }
-                if (ack->type != ACKTYPE_MESSAGE) {
-                    _DebugPopup(dat->hContact, "Warning: HM_EVENTSENT received unknown/invalid ACKTYPE (%d)", ack->type);
-                    break;                                       // should not happen, but who knows...
-                }
-
-                if(sendJobs[iFound].iStatus == SQ_ERROR) {       // received ack for a job which is already in error state...
-                    if(dat->iCurrentQueueError == iFound) {
-                        dat->iCurrentQueueError = -1;
-                        ShowErrorControls(hwndDlg, dat, FALSE);
-                    }
-                }
-
-                if(ack->result == ACKRESULT_FAILED) {
-                    /*
-                     * "hard" errors are handled differently in multisend. There is no option to retry - once failed, they
-                     * are discarded and the user is notified with a small log message.
-                     */
-                    if(!nen_options.iNoSounds && !(m_pContainer->dwFlags & CNT_NOSOUND))
-                        SkinPlaySound("SendError");
-                    if(sendJobs[iFound].sendCount > 1) {         // multisend is different...
-                        char szErrMsg[256];
-                        mir_snprintf(szErrMsg, sizeof(szErrMsg), Translate("Multisend: failed sending to: %s"), dat->szProto);
-#if defined(_UNICODE)
-                        {
-                            wchar_t wszErrMsg[256];
-                            MultiByteToWideChar(myGlobals.m_LangPackCP, 0, szErrMsg, -1, wszErrMsg, 256);
-                            wszErrMsg[255] = 0;
-                            LogErrorMessage(hwndDlg, dat, -1, wszErrMsg);
-                        }
-#else
-                        LogErrorMessage(hwndDlg, dat, -1, szErrMsg);
-#endif
-                        goto verify;
-                    }
-                    else {
-                        mir_snprintf(sendJobs[iFound].szErrorMsg, sizeof(sendJobs[iFound].szErrorMsg), Translate("Delivery failure: %s"), (char *)ack->lParam);
-                        sendJobs[iFound].iStatus = SQ_ERROR;
-                        KillTimer(hwndDlg, TIMERID_MSGSEND + iFound);
-                        if(!(dat->dwFlags & MWF_ERRORSTATE))
-                            HandleQueueError(hwndDlg, dat, iFound);
-                    }
-                    return 0;
-                }
-
-                dbei.cbSize = sizeof(dbei);
-                dbei.eventType = EVENTTYPE_MESSAGE;
-                dbei.flags = DBEF_SENT;
-                dbei.szModule = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) sendJobs[iFound].hContact[i], 0);
-                dbei.timestamp = time(NULL);
-                dbei.cbBlob = lstrlenA(sendJobs[iFound].sendBuffer) + 1;
-                dat->stats.iSentBytes += (dbei.cbBlob - 1);
-                dat->stats.iSent++;
-
-#if defined( _UNICODE )
-                if(sendJobs[iFound].dwFlags & PREF_UNICODE)
-                    dbei.cbBlob *= sizeof(TCHAR) + 1;
-                if(sendJobs[iFound].dwFlags & PREF_RTL)
-                    dbei.flags |= DBEF_RTL;
-                if(sendJobs[iFound].dwFlags & PREF_UTF)
-                    dbei.flags |= DBEF_UTF;
-#endif
-                dbei.pBlob = (PBYTE) sendJobs[iFound].sendBuffer;
-                hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM) sendJobs[iFound].hContact[i], (LPARAM) & dbei);
-                if(!nen_options.iNoSounds && !(m_pContainer->dwFlags & CNT_NOSOUND))
-                    SkinPlaySound("SendMsg");
-
-                /*
-                 * if this is a multisend job, AND the ack was from a different contact (not the session "owner" hContact)
-                 * then we print a small message telling the user that the message has been delivered to *foo*
-                 */
-
-                if(sendJobs[iFound].hContact[i] != sendJobs[iFound].hOwner) {
-                    TCHAR szErrMsg[256];
-                    TCHAR *szReceiver = (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)sendJobs[iFound].hContact[i], GCDNF_TCHAR);
-                    mir_sntprintf(szErrMsg, safe_sizeof(szErrMsg), TranslateT("Multisend: successfully sent to: %s"), szReceiver);
-                    LogErrorMessage(hwndDlg, dat, -1, szErrMsg);
-                }
-
-                if (sendJobs[iFound].hContact[i] == dat->hContact) {
-                    if (dat->hDbEventFirst == NULL) {
-                        dat->hDbEventFirst = hNewEvent;
-                        SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
-                    }
-                }
-verify:
-                sendJobs[iFound].hSendId[i] = NULL;
-                sendJobs[iFound].hContact[i] = NULL;
-                sendJobs[iFound].iAcksNeeded--;
-
-                if(sendJobs[iFound].iAcksNeeded == 0) {               // everything sent
-                    if(sendJobs[iFound].sendCount > 1)
-                        EnableSending(hwndDlg, dat, TRUE);
-                    ClearSendJob(iFound);
-                    KillTimer(hwndDlg, TIMERID_MSGSEND + iFound);
-                    dat->iOpenJobs--;
-                    myGlobals.iSendJobCurrent--;
-                }
-                CheckSendQueue(hwndDlg, dat);
-                if((iNextFailed = FindNextFailedMsg(hwndDlg, dat)) >= 0 && !(dat->dwFlags & MWF_ERRORSTATE))
-                    HandleQueueError(hwndDlg, dat, iNextFailed);
-                return 0;
-            }
-            /*
-             * save the current content of the input box to the history stack...
-             * increase stack
-             * wParam = special mode to store it at a special position without caring about the
-             * stack pointer and stuff..
-             *
-             * if lParam == 0 it will obtain the length from the input box, otherwise
-             * lParam will be the length of the required ANSI buffer in bytes and the message will
-             * be taken from dat->sendBuffer
-             * lParam must then provide the length of the string *INCLUDING* the terminating \0
-             *
-             * updated to use RTF streaming and save rich text in utf8 format
-             */
         case DM_SAVEPERCONTACT:
             if (dat->hContact) {
                 if(DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "mwoverride", 0) != 0)
@@ -5636,6 +5511,15 @@ verify:
         }
         return 0;
 
+        case DM_CHECKQUEUEFORCLOSE:
+        {
+            int *uOpen = (int *)lParam;
+
+            if(uOpen)
+                *uOpen += dat->iOpenJobs;
+            return 0;
+        }
+
         case WM_CLOSE:
         {
             int iTabs, i;
@@ -5658,12 +5542,17 @@ verify:
             if(dat->iOpenJobs > 0 && lParam != 2) {
                 if(dat->dwFlags & MWF_ERRORSTATE)
                     SendMessage(hwndDlg, DM_ERRORDECIDED, MSGERROR_CANCEL, 1);
-                else {
-                    TCHAR szBuffer[256];
-                    _sntprintf(szBuffer, safe_sizeof(szBuffer), TranslateT("Message delivery in progress (%d unsent). You cannot close the session right now"), dat->iOpenJobs);
-                    szBuffer[safe_sizeof(szBuffer) - 1] = 0;
-                    SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, IDC_MESSAGE, (LPARAM)szBuffer);
-                    return TRUE;
+                else if(dat) {
+					LRESULT result;
+
+                    if(dat->dwFlagsEx & MWF_EX_WARNCLOSE)
+                        return TRUE;
+
+                    dat->dwFlagsEx |= MWF_EX_WARNCLOSE;
+                    result = WarnPendingJobs(0);
+                    dat->dwFlagsEx &= ~MWF_EX_WARNCLOSE;
+                    if(result == IDNO)
+                        return TRUE;
                 }
             }
 
@@ -5815,12 +5704,18 @@ verify:
                     free(dat->history);
                 }
                 /*
-                 * search the sendqueue for unfinished send jobs and free them...
+                 * search the sendqueue for unfinished send jobs and free them. Leave unsent messages in the queue as they can be acked later
                  */
                 for(i = 0; i < NR_SENDJOBS; i++) {
-                    if(sendJobs[i].hOwner == dat->hContact && sendJobs[i].iStatus != 0) {
-                        //_DebugPopup(dat->hContact, "SendQueue: Clearing orphaned send job (%d)", i);
-                        ClearSendJob(i);
+                    if(sendJobs[i].hOwner == dat->hContact) { 
+                        if(sendJobs[i].iStatus > SQ_INPROGRESS) {
+                            //_DebugPopup(dat->hContact, "Deleting failed send job...");
+                            ClearSendJob(i);
+                        }
+                        if(sendJobs[i].iStatus == SQ_INPROGRESS) {
+                            //_DebugPopup(dat->hContact, "Marking job for delayed ack...");
+                            sendJobs[i].hwndOwner = 0;
+                        }
                     }
                 }
                 if(dat->hQueuedEvents)

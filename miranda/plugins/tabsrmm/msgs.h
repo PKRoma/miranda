@@ -186,6 +186,7 @@ typedef struct _settextex {
 #define MWF_SHOW_USELOCALTIME 16384
 #define MWF_EX_DELAYEDSPLITTER 32768
 #define MWF_EX_AVATARCHANGED 65536
+#define MWF_EX_WARNCLOSE     0x20000
 
 #define SMODE_DEFAULT 0
 #define SMODE_MULTIPLE 1
@@ -283,6 +284,7 @@ struct ContainerWindowData {
     HWND    hwndSaved;
     ButtonItem *buttonItems;
     RECT    rcSaved;
+    DWORD   exFlags;
 };
 
 #define STICK_ICON_MSG 10
@@ -302,6 +304,7 @@ struct SendJob {
     int     iAcksNeeded;
     HANDLE  hEventSplit;
     int     chunkSize;
+    DWORD   dwTime;
 };
 
 struct MessageSessionStats {
@@ -689,6 +692,8 @@ struct NewMessageWindowLParam {
 #define CNT_CREATEFLAG_CLONED 1
 #define CNT_CREATEFLAG_MINIMIZED 2
 
+#define CNT_EX_CLOSEWARN 1
+
 #define MWF_LOG_ALL (MWF_LOG_NORMALTEMPLATES | MWF_LOG_SHOWTIME | MWF_LOG_SHOWSECONDS | \
         MWF_LOG_SHOWDATES | MWF_LOG_INDENT | MWF_LOG_TEXTFORMAT | MWF_LOG_SYMBOLS | MWF_LOG_INOUTICONS | \
         MWF_LOG_SHOWICONS | MWF_LOG_GRID | MWF_LOG_INDIVIDUALBKG | MWF_LOG_GROUPMODE)
@@ -769,7 +774,7 @@ struct ProtocolData {
 #define DM_UPDATEMETACONTACTINFO (WM_USER+67)
 #define DM_SETICON           (WM_USER+68)
 #define DM_MULTISENDTHREADCOMPLETE (WM_USER+69)
-//#define DM_SECURE_CHANGED    (WM_USER+70) **free**
+#define DM_CHECKQUEUEFORCLOSE (WM_USER+70)
 #define DM_QUERYSTATUS       (WM_USER+71)
 #define DM_SETPARENTDIALOG   (WM_USER+72)
 #define DM_HANDLECLISTEVENT  (WM_USER+73)
@@ -864,7 +869,7 @@ extern const int msgDlgFontCount;
 #define SRMSGSET_SENDONENTER       "SendOnEnter"
 #define SRMSGDEFSET_SENDONENTER    0
 #define SRMSGSET_MSGTIMEOUT        "MessageTimeout"
-#define SRMSGDEFSET_MSGTIMEOUT     10000
+#define SRMSGDEFSET_MSGTIMEOUT     30000
 #define SRMSGSET_MSGTIMEOUT_MIN    4000 // minimum value (4 seconds)
 
 #define SRMSGSET_LOADHISTORY       "LoadHistory"

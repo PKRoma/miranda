@@ -62,7 +62,8 @@ void ShowMultipleControls(HWND hwndDlg, const UINT * controls, int cControls, in
 void HandleIconFeedback(HWND hwndDlg, struct MessageWindowData *dat, HICON iIcon);
 int GetProtoIconFromList(const char *szProto, int iStatus);
 int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild);
-
+LRESULT WarnPendingJobs(unsigned int uNrMessages);
+int AckMessage(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
 static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 char *MsgServiceName(HANDLE hContact, struct MessageWindowData *dat, int isUnicode);

@@ -29,6 +29,7 @@ $Id$
 #include "m_updater.h"
 #include "m_avatars.h"
 #include "chat/chat.h"
+#include "sendqueue.h"
 
 #ifdef __MATHMOD_SUPPORT
     #include "m_MathModule.h"
@@ -339,13 +340,16 @@ static int ProtoAck(WPARAM wParam, LPARAM lParam)
         for(j = 0; j < NR_SENDJOBS; j++) {
             for (i = 0; i < sendJobs[j].sendCount; i++) {
                 if (pAck->hProcess == sendJobs[j].hSendId[i] && pAck->hContact == sendJobs[j].hContact[i]) {
-                    struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(sendJobs[j].hwndOwner, GWL_USERDATA);
+                    struct MessageWindowData *dat = sendJobs[j].hwndOwner ? (struct MessageWindowData *)GetWindowLong(sendJobs[j].hwndOwner, GWL_USERDATA) : NULL;
                     if(dat) {
                         if(dat->hContact == sendJobs[j].hOwner) {
                             iFound = j;
                             break;
                         }
-                        
+                    }
+                    else {       // ack message w/o an open window...
+                        AckMessage(0, NULL, (WPARAM)MAKELONG(j, i), lParam);
+                        return 0;
                     }
                 }
             }

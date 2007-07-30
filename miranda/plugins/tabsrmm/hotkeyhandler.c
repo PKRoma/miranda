@@ -636,7 +636,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                 if(IsWindow(job->hwndOwner))
                     SendMessage(job->hwndOwner, HM_EVENTSENT, (WPARAM)MAKELONG(wParam, 0), (LPARAM)&ack);
                 else
-                    ClearSendJob((int)wParam);                                  // window already gone, clear and forget the job
+                    AckMessage(0, NULL, (WPARAM)MAKELONG(wParam, 0), (LPARAM)&ack);
             }
             return 0;
         }
