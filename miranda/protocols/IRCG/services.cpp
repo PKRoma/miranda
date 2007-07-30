@@ -1166,7 +1166,7 @@ static void __cdecl AckBasicSearch(void * pszNick)
 static int Service_BasicSearch(WPARAM wParam,LPARAM lParam)
 {
 	static char buf[50];
-	if (lParam) {
+	if ( lParam ) {
 		lstrcpynA(buf, (const char *)lParam, 50);
 		if (OldStatus != ID_STATUS_OFFLINE && OldStatus != ID_STATUS_CONNECTING && lstrlenA(buf) >0 && !IsChannel(buf)) {
 			mir_forkthread(AckBasicSearch, &buf );
@@ -1178,33 +1178,27 @@ static int Service_BasicSearch(WPARAM wParam,LPARAM lParam)
 
 static int Service_AddToList(WPARAM wParam,LPARAM lParam)
 {
-	HANDLE hContact;
-	PROTOSEARCHRESULT *psr = (PROTOSEARCHRESULT *) lParam;
-	CONTACT user = { (TCHAR *)psr->nick, NULL, NULL, true, false, false};
-
-	if (OldStatus == ID_STATUS_OFFLINE || OldStatus == ID_STATUS_CONNECTING)
+	if ( OldStatus == ID_STATUS_OFFLINE || OldStatus == ID_STATUS_CONNECTING )
 		return 0;
-	hContact = CList_AddContact(&user, true, false);
+
+	PROTOSEARCHRESULT *psr = ( PROTOSEARCHRESULT* ) lParam;
+	CONTACT user = { mir_a2t( psr->nick ), NULL, NULL, true, false, false };
+	HANDLE hContact = CList_AddContact( &user, true, false );
 
 	if ( hContact ) {
 		DBVARIANT dbv1;
 
-		if (DBGetContactSettingByte(hContact, IRCPROTONAME, "AdvancedMode", 0) == 0) {
-			TCHAR* p = mir_a2t( psr->nick );
-			DoUserhostWithReason( 1, ((TString)_T("S") + p).c_str(), true, p );
-			mir_free( p );
-		}
+		if ( DBGetContactSettingByte( hContact, IRCPROTONAME, "AdvancedMode", 0 ) == 0 )
+			DoUserhostWithReason( 1, ((TString)_T("S") + user.name).c_str(), true, user.name );
 		else {
-			if (!DBGetContactSettingTString(hContact, IRCPROTONAME, "UWildcard", &dbv1)) {
+			if ( !DBGetContactSettingTString(hContact, IRCPROTONAME, "UWildcard", &dbv1 )) {
 				DoUserhostWithReason(2, ((TString)_T("S") + dbv1.ptszVal).c_str(), true, dbv1.ptszVal);
-				DBFreeVariant(&dbv1);
+				DBFreeVariant( &dbv1 );
 			}
-			else {
-				TCHAR* p = mir_a2t( psr->nick );
-				DoUserhostWithReason( 2, ((TString)_T("S") + p).c_str(), true, p );
-				mir_free( p );
-	}	}	}
+			else DoUserhostWithReason( 2, ((TString)_T("S") + user.name).c_str(), true, user.name );
+	}	}
 
+	mir_free( user.name );
 	return (int) hContact;
 }
 
