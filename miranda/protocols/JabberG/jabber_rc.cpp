@@ -531,7 +531,7 @@ int JabberAdhocOptionsHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pI
 
 		// Disable remote controlling
 		fieldNode = xNode->addChild( "field" );
-		fieldNode->addAttr( "label", "Disable remote controlling (check twice what are you doing)" );
+		fieldNode->addAttr( "label", "Disable remote controlling (check twice what you are doing)" );
 		fieldNode->addAttr( "type", "boolean" );
 		fieldNode->addAttr( "var", "enable-rc" );
 		fieldNode->addChild( "value", "0" );
@@ -575,7 +575,7 @@ int JabberAdhocOptionsHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pI
 	return JABBER_ADHOC_HANDLER_STATUS_CANCEL;
 }
 
-int JabberAdhocForwardHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
+int JabberRcGetUnreadEventsCount()
 {
 	int nEventsSent = 0;
 	HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
@@ -584,7 +584,6 @@ int JabberAdhocForwardHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pI
 		if ( szProto != NULL && !strcmp( szProto, jabberProtoName )) {
 			DBVARIANT dbv;
 			if ( !JGetStringT( hContact, "jid", &dbv )) {
-				
 				HANDLE hDbEvent = (HANDLE)JCallService( MS_DB_EVENT_FINDFIRSTUNREAD, (WPARAM)hContact, 0 );
 				while ( hDbEvent ) {
 					DBEVENTINFO dbei = { 0 };
@@ -596,39 +595,7 @@ int JabberAdhocForwardHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pI
 						if ( !nGetTextResult && dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & DBEF_READ) && !(dbei.flags & DBEF_SENT)) {
 							TCHAR* szEventText = DbGetEventTextT( &dbei, CP_ACP );
 							if ( szEventText ) {
-								XmlNode msg( "message" );
-								msg.addAttr( "to", pInfo->GetFrom() );
-								msg.addAttrID( JabberSerialNext() );
-
-								XmlNode* bodyNode = msg.addChild( "body", szEventText );
-								XmlNode* addressesNode = msg.addChild( "addresses" );
-								addressesNode->addAttr( "xmlns", JABBER_FEAT_EXT_ADDRESSING );
-
-								XmlNode* addressNode = addressesNode->addChild( "address" );
-								addressNode->addAttr( "type", "ofrom" );
-								addressNode->addAttr( "jid", dbv.ptszVal );
-
-								addressNode = addressesNode->addChild( "address" );
-								addressNode->addAttr( "type", "oto" );
-								addressNode->addAttr( "jid", jabberThreadInfo->fullJID );
-
-								time_t ltime = ( time_t )dbei.timestamp;
-								struct tm *gmt = gmtime( &ltime );
-								char stime[ 512 ];
-								sprintf(stime, "%.4i-%.2i-%.2iT%.2i:%.2i:%.2iZ", gmt->tm_year + 1900, gmt->tm_mon, gmt->tm_mday,
-									gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
-
-								XmlNode* delayNode = msg.addChild( "delay" );
-								delayNode->addAttr( "xmlns", "urn:xmpp:delay" );
-								delayNode->addAttr( "stamp", stime );
-
-								jabberThreadInfo->send( msg );
-
 								nEventsSent++;
-
-								JCallService( MS_DB_EVENT_MARKREAD, (WPARAM)hContact, (LPARAM)hDbEvent );
-								JCallService( MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM)hDbEvent );
-
 								mir_free( szEventText );
 							}
 						}
@@ -641,22 +608,169 @@ int JabberAdhocForwardHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pI
 		}
 		hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 );
 	}
+	return nEventsSent;
+}
 
-	XmlNodeIq iq( "result", pInfo );
-	XmlNode* commandNode = iq.addChild( "command" );
-	commandNode->addAttr( "xmlns", JABBER_FEAT_COMMANDS );
-	commandNode->addAttr( "node", JABBER_FEAT_RC_FORWARD );
-	commandNode->addAttr( "sessionid", pSession->GetSessionId() );
-	commandNode->addAttr( "status", "completed" );
-
+int JabberAdhocForwardHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
+{
 	TCHAR szMsg[ 1024 ];
-	mir_sntprintf( szMsg, SIZEOF(szMsg), _T("%d message(s) forwarded"), nEventsSent );
-	XmlNode* noteNode = commandNode->addChild( "note", szMsg );
-	noteNode->addAttr( "type", "info" );
+	if ( pSession->GetStage() == 0 ) {
+		int nUnreadEvents = JabberRcGetUnreadEventsCount();
+		if ( !nUnreadEvents ) {
+			XmlNodeIq iq( "result", pInfo );
+			XmlNode* commandNode = iq.addChild( "command" );
+			commandNode->addAttr( "xmlns", JABBER_FEAT_COMMANDS );
+			commandNode->addAttr( "node", JABBER_FEAT_RC_FORWARD );
+			commandNode->addAttr( "sessionid", pSession->GetSessionId() );
+			commandNode->addAttr( "status", "completed" );
 
-	jabberThreadInfo->send( iq );
+			mir_sntprintf( szMsg, SIZEOF(szMsg), _T("There is no messages to forward") );
+			XmlNode* noteNode = commandNode->addChild( "note", szMsg );
+			noteNode->addAttr( "type", "info" );
 
-	return JABBER_ADHOC_HANDLER_STATUS_REMOVE_SESSION;
+			jabberThreadInfo->send( iq );
+
+			return JABBER_ADHOC_HANDLER_STATUS_REMOVE_SESSION;
+		}
+
+		// first form
+		pSession->SetStage( 1 );
+
+		XmlNodeIq iq( "result", pInfo );
+		XmlNode* commandNode = iq.addChild( "command" );
+		commandNode->addAttr( "xmlns", JABBER_FEAT_COMMANDS );
+		commandNode->addAttr( "node", JABBER_FEAT_RC_FORWARD );
+		commandNode->addAttr( "sessionid", pSession->GetSessionId() );
+		commandNode->addAttr( "status", "executing" );
+
+		XmlNode* xNode = commandNode->addChild( "x" );
+		xNode->addAttr( "xmlns", JABBER_FEAT_DATA_FORMS );
+		xNode->addAttr( "type", "form" );
+
+		xNode->addChild( "title", "Forward options" );
+		mir_sntprintf( szMsg, SIZEOF(szMsg), _T("%d message(s) to be forwarded"), nUnreadEvents );
+		xNode->addChild( "instructions", szMsg );
+
+		XmlNode* fieldNode = NULL;
+
+		fieldNode = xNode->addChild( "field" );
+		fieldNode->addAttr( "type", "hidden" );
+		fieldNode->addAttr( "var", "FORM_TYPE" );
+		fieldNode->addChild( "value", JABBER_FEAT_RC );
+
+		// remove clist events
+		fieldNode = xNode->addChild( "field" );
+		fieldNode->addAttr( "label", "Mark messages as read" );
+		fieldNode->addAttr( "type", "boolean" );
+		fieldNode->addAttr( "var", "remove-clist-events" );
+		fieldNode->addChild( "value", "1" );
+
+		jabberThreadInfo->send( iq );
+		return JABBER_ADHOC_HANDLER_STATUS_EXECUTING;
+	}
+	else if ( pSession->GetStage() == 1 ) {
+		// result form here
+		XmlNode* commandNode = pInfo->GetChildNode();
+		XmlNode* xNode = JabberXmlGetChildWithGivenAttrValue( commandNode, "x", "xmlns", _T(JABBER_FEAT_DATA_FORMS) );
+		if ( !xNode )
+			return JABBER_ADHOC_HANDLER_STATUS_CANCEL;
+
+		XmlNode* fieldNode = NULL;
+		XmlNode* valueNode = NULL;
+
+		BOOL bRemoveCListEvents = TRUE;
+
+		// remove clist events
+		fieldNode = JabberXmlGetChildWithGivenAttrValue( xNode, "field", "var", _T("remove-clist-events") );
+		if ( fieldNode && (valueNode = JabberXmlGetChild( fieldNode, "value" ))) {
+			if ( valueNode->text && !_ttoi( valueNode->text ) ) {
+				bRemoveCListEvents = FALSE;
+			}
+		}
+
+		int nEventsSent = 0;
+		HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
+		while ( hContact != NULL ) {
+			char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
+			if ( szProto != NULL && !strcmp( szProto, jabberProtoName )) {
+				DBVARIANT dbv;
+				if ( !JGetStringT( hContact, "jid", &dbv )) {
+					
+					HANDLE hDbEvent = (HANDLE)JCallService( MS_DB_EVENT_FINDFIRSTUNREAD, (WPARAM)hContact, 0 );
+					while ( hDbEvent ) {
+						DBEVENTINFO dbei = { 0 };
+						dbei.cbSize = sizeof(dbei);
+						dbei.cbBlob = CallService( MS_DB_EVENT_GETBLOBSIZE, (WPARAM)hDbEvent, 0 );
+						if ( dbei.cbBlob != -1 ) {
+							dbei.pBlob = (PBYTE)mir_alloc( dbei.cbBlob + 1 );
+							int nGetTextResult = JCallService( MS_DB_EVENT_GET, (WPARAM)hDbEvent, (LPARAM)&dbei );
+							if ( !nGetTextResult && dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & DBEF_READ) && !(dbei.flags & DBEF_SENT)) {
+								TCHAR* szEventText = DbGetEventTextT( &dbei, CP_ACP );
+								if ( szEventText ) {
+									XmlNode msg( "message" );
+									msg.addAttr( "to", pInfo->GetFrom() );
+									msg.addAttrID( JabberSerialNext() );
+
+									XmlNode* bodyNode = msg.addChild( "body", szEventText );
+									XmlNode* addressesNode = msg.addChild( "addresses" );
+									addressesNode->addAttr( "xmlns", JABBER_FEAT_EXT_ADDRESSING );
+
+									XmlNode* addressNode = addressesNode->addChild( "address" );
+									addressNode->addAttr( "type", "ofrom" );
+									addressNode->addAttr( "jid", dbv.ptszVal );
+
+									addressNode = addressesNode->addChild( "address" );
+									addressNode->addAttr( "type", "oto" );
+									addressNode->addAttr( "jid", jabberThreadInfo->fullJID );
+
+									time_t ltime = ( time_t )dbei.timestamp;
+									struct tm *gmt = gmtime( &ltime );
+									char stime[ 512 ];
+									sprintf(stime, "%.4i-%.2i-%.2iT%.2i:%.2i:%.2iZ", gmt->tm_year + 1900, gmt->tm_mon, gmt->tm_mday,
+										gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
+
+									XmlNode* delayNode = msg.addChild( "delay" );
+									delayNode->addAttr( "xmlns", "urn:xmpp:delay" );
+									delayNode->addAttr( "stamp", stime );
+
+									jabberThreadInfo->send( msg );
+
+									nEventsSent++;
+
+									JCallService( MS_DB_EVENT_MARKREAD, (WPARAM)hContact, (LPARAM)hDbEvent );
+									if ( bRemoveCListEvents )
+										JCallService( MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM)hDbEvent );
+
+									mir_free( szEventText );
+								}
+							}
+							mir_free( dbei.pBlob );
+						}
+						hDbEvent = (HANDLE)JCallService( MS_DB_EVENT_FINDNEXT, (WPARAM)hDbEvent, 0 );
+					}
+					JFreeVariant( &dbv );
+				}
+			}
+			hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 );
+		}
+
+		XmlNodeIq iq( "result", pInfo );
+		commandNode = iq.addChild( "command" );
+		commandNode->addAttr( "xmlns", JABBER_FEAT_COMMANDS );
+		commandNode->addAttr( "node", JABBER_FEAT_RC_FORWARD );
+		commandNode->addAttr( "sessionid", pSession->GetSessionId() );
+		commandNode->addAttr( "status", "completed" );
+
+		mir_sntprintf( szMsg, SIZEOF(szMsg), _T("%d message(s) forwarded"), nEventsSent );
+		XmlNode* noteNode = commandNode->addChild( "note", szMsg );
+		noteNode->addAttr( "type", "info" );
+
+		jabberThreadInfo->send( iq );
+
+		return JABBER_ADHOC_HANDLER_STATUS_REMOVE_SESSION;
+	}
+
+	return JABBER_ADHOC_HANDLER_STATUS_CANCEL;
 }
 
 typedef BOOL (WINAPI *LWS )( VOID );
@@ -691,4 +805,72 @@ int JabberAdhocLockWSHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pIn
 	jabberThreadInfo->send( iq );
 
 	return JABBER_ADHOC_HANDLER_STATUS_REMOVE_SESSION;
+}
+
+static void __cdecl JabberQuitMirandaIMThread( void* pParam )
+{
+	JabberLog( "JabberQuitMirandaIMThread start" );
+	SleepEx( 2000, TRUE );
+	JCallService( "CloseAction", 0, 0 );
+	JabberLog( "JabberQuitMirandaIMThread exit" );
+}
+
+int JabberAdhocQuitMirandaHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
+{
+	if ( pSession->GetStage() == 0 ) {
+		// first form
+		pSession->SetStage( 1 );
+
+		XmlNodeIq iq( "result", pInfo );
+		XmlNode* commandNode = iq.addChild( "command" );
+		commandNode->addAttr( "xmlns", JABBER_FEAT_COMMANDS );
+		commandNode->addAttr( "node", JABBER_FEAT_RC_QUIT_MIRANDA );
+		commandNode->addAttr( "sessionid", pSession->GetSessionId() );
+		commandNode->addAttr( "status", "executing" );
+
+		XmlNode* xNode = commandNode->addChild( "x" );
+		xNode->addAttr( "xmlns", JABBER_FEAT_DATA_FORMS );
+		xNode->addAttr( "type", "form" );
+
+		xNode->addChild( "title", "Confirmation needed" );
+		xNode->addChild( "instructions", "Please confirm Miranda IM shutdown" );
+
+		XmlNode* fieldNode = NULL;
+
+		fieldNode = xNode->addChild( "field" );
+		fieldNode->addAttr( "type", "hidden" );
+		fieldNode->addAttr( "var", "FORM_TYPE" );
+		fieldNode->addChild( "value", JABBER_FEAT_RC );
+
+		// I Agree checkbox
+		fieldNode = xNode->addChild( "field" );
+		fieldNode->addAttr( "label", "I agree" );
+		fieldNode->addAttr( "type", "boolean" );
+		fieldNode->addAttr( "var", "allow-shutdown" );
+		fieldNode->addChild( "value", "0" );
+
+		jabberThreadInfo->send( iq );
+		return JABBER_ADHOC_HANDLER_STATUS_EXECUTING;
+	}
+	else if ( pSession->GetStage() == 1 ) {
+		// result form here
+		XmlNode* commandNode = pInfo->GetChildNode();
+		XmlNode* xNode = JabberXmlGetChildWithGivenAttrValue( commandNode, "x", "xmlns", _T(JABBER_FEAT_DATA_FORMS) );
+		if ( !xNode )
+			return JABBER_ADHOC_HANDLER_STATUS_CANCEL;
+
+		XmlNode* fieldNode = NULL;
+		XmlNode* valueNode = NULL;
+
+		// I Agree checkbox
+		fieldNode = JabberXmlGetChildWithGivenAttrValue( xNode, "field", "var", _T("allow-shutdown") );
+		if ( fieldNode && (valueNode = JabberXmlGetChild( fieldNode, "value" ))) {
+			if ( valueNode->text && _ttoi( valueNode->text ) ) {
+				mir_forkthread( JabberQuitMirandaIMThread, NULL );
+			}
+		}
+
+		return JABBER_ADHOC_HANDLER_STATUS_COMPLETED;
+	}
+	return JABBER_ADHOC_HANDLER_STATUS_CANCEL;
 }
