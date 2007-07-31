@@ -762,6 +762,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\jabber_opttree.cpp"
+				>
+			</File>
+			<File
 				RelativePath="jabber_iq.cpp"
 				>
 				<FileConfiguration
@@ -1564,6 +1568,10 @@
 			>
 			<File
 				RelativePath="jabber.h"
+				>
+			</File>
+			<File
+				RelativePath=".\jabber_opttree.h"
 				>
 			</File>
 			<File

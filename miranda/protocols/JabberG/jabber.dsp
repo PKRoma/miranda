@@ -215,6 +215,10 @@ SOURCE=.\jabber_ibb.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\jabber_opttree.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\jabber_icolib.cpp
 # End Source File
 # Begin Source File
@@ -394,6 +398,10 @@ SOURCE=.\jabber_proxy.h
 # Begin Source File
 
 SOURCE=.\jabber_rc.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\jabber_opttree.h
 # End Source File
 # Begin Source File
 

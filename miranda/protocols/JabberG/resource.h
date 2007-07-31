@@ -286,6 +286,7 @@
 #define IDC_COMBO2                      1260
 #define IDC_ROSTER                      1261
 #define IDC_MSG_MOOD                    1262
+#define IDC_OPTTREE                     1263
 #define IDC_EMAILS                      1306
 #define IDC_PHONES                      1308
 #define IDC_UPDATE                      1313
@@ -346,7 +347,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        205
 #define _APS_NEXT_COMMAND_VALUE         40017
-#define _APS_NEXT_CONTROL_VALUE         1263
+#define _APS_NEXT_CONTROL_VALUE         1264
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

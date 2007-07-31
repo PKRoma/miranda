@@ -413,6 +413,9 @@
 				RelativePath=".\jabber_caps.cpp">
 			</File>
 			<File
+				RelativePath=".\jabber_opttree.cpp">
+			</File>
+			<File
 				RelativePath=".\jabber_chat.cpp">
 			</File>
 			<File
@@ -1216,6 +1219,9 @@
 			</File>
 			<File
 				RelativePath=".\jabber_search.h">
+			</File>
+			<File
+				RelativePath=".\jabber_opttree.h">
 			</File>
 			<File
 				RelativePath=".\jabber_secur.h">

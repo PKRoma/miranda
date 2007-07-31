@@ -33,6 +33,7 @@ Last change by : $Author$
 #include "resource.h"
 #include <uxtheme.h>
 #include "jabber_caps.h"
+#include "jabber_opttree.h"
 
 extern BOOL jabberSendKeepAlive;
 extern UINT jabberCodePage;
@@ -477,10 +478,48 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 	char text[256];
 	BOOL bChecked;
 
+	static OPTTREE_OPTION options[] =
+	{
+		{0,	LPGENT("Messaging") _T("/") LPGENT("Send messages slower, but with full acknowledgement"),
+				OPTTREE_CHECK,	1,	NULL,	"MsgAck"},
+		{0,	LPGENT("Messaging") _T("/") LPGENT("Enable avatars"),
+				OPTTREE_CHECK,	1,	NULL,	"EnableAvatars"},
+		{0,	LPGENT("Messaging") _T("/") LPGENT("Log chat state changes"),
+				OPTTREE_CHECK,	1,	NULL,	"LogChatstates"},
+		{0,	LPGENT("Messaging") _T("/") LPGENT("Enable user moods receiving"),
+				OPTTREE_CHECK,	1,	NULL,	"EnableUserMood"},
+		{0,	LPGENT("Messaging") _T("/") LPGENT("Enable user tunes receiving"),
+				OPTTREE_CHECK,	1,	NULL,	"EnableUserTune"},
+
+		{0,	LPGENT("Conferences") _T("/") LPGENT("Autoaccept multiuser chat invitations"),
+				OPTTREE_CHECK,	1,	NULL,	"AutoAcceptMUC"},
+		{0,	LPGENT("Conferences") _T("/") LPGENT("Automatically join Bookmarks on login"),
+				OPTTREE_CHECK,	1,	NULL,	"AutoJoinBookmarks"},
+		{0,	LPGENT("Conferences") _T("/") LPGENT("Automatically join conferences on login"),
+				OPTTREE_CHECK,	1,	NULL,	"AutoJoinConferences"},
+
+		{0,	LPGENT("Server options") _T("/") LPGENT("Disable SASL authentication (for old servers)"),
+				OPTTREE_CHECK,	1,	NULL,	"Disable3920auth"},
+		{0,	LPGENT("Server options") _T("/") LPGENT("Enable stream compression (if possible)"),
+				OPTTREE_CHECK,	1,	NULL,	"EnableZlib"},
+
+		{0,	LPGENT("Other") _T("/") LPGENT("Enable remote controlling (from another resource of same JID only)"),
+				OPTTREE_CHECK,	1,	NULL,	"EnableRemoteControl"},
+		{0,	LPGENT("Other") _T("/") LPGENT("Show transport agents on contact list"),
+				OPTTREE_CHECK,	1,	NULL,	"ShowTransport"},
+		{0,	LPGENT("Other") _T("/") LPGENT("Automatically add contact when accept authorization"),
+				OPTTREE_CHECK,	1,	NULL,	"AutoAdd"},
+	};
+
+	BOOL result;
+	if (OptTree_ProcessMessage(hwndDlg, msg, wParam, lParam, &result, IDC_OPTTREE, options, SIZEOF(options)))
+		return result;
+
 	switch ( msg ) {
 	case WM_INITDIALOG:
 	{
 		TranslateDialogDefault( hwndDlg );
+		OptTree_Translate(GetDlgItem(hwndDlg, IDC_OPTTREE));
 
 		// File transfer options
 		BOOL bDirect = JGetByte( "BsDirect", TRUE );
@@ -508,19 +547,32 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			EnableWindow( GetDlgItem( hwndDlg, IDC_PROXY_ADDR ), FALSE );
 
 		// Miscellaneous options
-		CheckDlgButton( hwndDlg, IDC_SHOW_TRANSPORT, JGetByte( "ShowTransport", TRUE ));
-		CheckDlgButton( hwndDlg, IDC_AUTO_ADD, JGetByte( "AutoAdd", TRUE ));
-		CheckDlgButton( hwndDlg, IDC_MSG_ACK, JGetByte( "MsgAck", FALSE ));
-		CheckDlgButton( hwndDlg, IDC_ENABLE_AVATARS, JGetByte( "EnableAvatars", TRUE ));
-		CheckDlgButton( hwndDlg, IDC_AUTO_ACCEPT_MUC, JGetByte( "AutoAcceptMUC", FALSE ));
-		CheckDlgButton( hwndDlg, IDC_AUTOJOIN, JGetByte( "AutoJoinConferences", FALSE ));
-		CheckDlgButton( hwndDlg, IDC_DISABLE_SASL, JGetByte( "Disable3920auth", FALSE ));
-		CheckDlgButton( hwndDlg, IDC_ENABLE_RC, JGetByte( "EnableRemoteControl", FALSE ));
-		CheckDlgButton( hwndDlg, IDC_AUTOJOIN_BOOKMARKS, JGetByte( "AutoJoinBookmarks", FALSE ));
-		CheckDlgButton( hwndDlg, IDC_ZLIB, JGetByte( "EnableZlib", FALSE ));
-		CheckDlgButton( hwndDlg, IDC_LOG_CHATSTATES, JGetByte( "LogChatstates", FALSE ));
-		CheckDlgButton( hwndDlg, IDC_ENABLE_USER_MOOD, JGetByte( "EnableUserMood", TRUE ));
-		CheckDlgButton( hwndDlg, IDC_ENABLE_USER_TUNE, JGetByte( "EnableUserTune", FALSE ));
+		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
+			JGetByte("ShowTransport", TRUE)?1:0,		"ShowTransport");
+		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
+			JGetByte("AutoAdd", TRUE)?1:0,				"AutoAdd");
+		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
+			JGetByte("MsgAck", FALSE)?1:0,				"MsgAck");
+		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
+			JGetByte("EnableAvatars", TRUE)?1:0,		"EnableAvatars");
+		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
+			JGetByte("AutoAcceptMUC", FALSE)?1:0,		"AutoAcceptMUC");
+		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
+			JGetByte("AutoJoinConferences", FALSE)?1:0, "AutoJoinConferences");
+		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
+			JGetByte("Disable3920auth", FALSE)?1:0,		"Disable3920auth");
+		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
+			JGetByte("EnableRemoteControl", FALSE)?1:0, "EnableRemoteControl");
+		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
+			JGetByte("AutoJoinBookmarks", FALSE)?1:0,	"AutoJoinBookmarks");
+		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
+			JGetByte("EnableZlib", FALSE)?1:0,			"EnableZlib");
+		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
+			JGetByte("LogChatstates", FALSE)?1:0,		"LogChatstates");
+		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
+			JGetByte("EnableUserMood", TRUE)?1:0,		"EnableUserMood");
+		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
+			JGetByte("EnableUserTune", FALSE)?1:0,		"EnableUserTune");
 		return TRUE;
 	}
 	case WM_COMMAND:
@@ -562,7 +614,7 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			JSetString( NULL, "BsProxyServer", text );
 
 			// Miscellaneous options
-			bChecked = IsDlgButtonChecked( hwndDlg, IDC_SHOW_TRANSPORT );
+			bChecked = (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "ShowTransport");
 			JSetByte( "ShowTransport", ( BYTE ) bChecked );
 			int index = 0;
 			while (( index=JabberListFindNext( LIST_ROSTER, index )) >= 0 ) {
@@ -581,18 +633,18 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 				index++;
 			}
 
-			JSetByte( "AutoAdd",             ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_AUTO_ADD ));
-			JSetByte( "MsgAck",              ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_MSG_ACK ));
-			JSetByte( "Disable3920auth",     ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_DISABLE_SASL ));
-			JSetByte( "EnableAvatars",       ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_ENABLE_AVATARS ));
-			JSetByte( "AutoAcceptMUC",       ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_AUTO_ACCEPT_MUC ));
-			JSetByte( "AutoJoinConferences", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_AUTOJOIN ));
-			JSetByte( "EnableRemoteControl", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_ENABLE_RC ));
-			JSetByte( "AutoJoinBookmarks",   ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_AUTOJOIN_BOOKMARKS ));
-			JSetByte( "EnableZlib",          ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_ZLIB ));
-			JSetByte( "LogChatstates",       ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_LOG_CHATSTATES ));
-			JSetByte( "EnableUserMood",      ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_ENABLE_USER_MOOD ));
-			JSetByte( "EnableUserTune",      ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_ENABLE_USER_TUNE ));
+			JSetByte("AutoAdd",             (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoAdd"));
+			JSetByte("MsgAck",              (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "MsgAck"));
+			JSetByte("Disable3920auth",     (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "Disable3920auth"));
+			JSetByte("EnableAvatars",       (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableAvatars"));
+			JSetByte("AutoAcceptMUC",       (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoAcceptMUC"));
+			JSetByte("AutoJoinConferences", (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoJoinConferences"));
+			JSetByte("EnableRemoteControl", (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableRemoteControl"));
+			JSetByte("AutoJoinBookmarks",   (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoJoinBookmarks"));
+			JSetByte("EnableZlib",          (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableZlib"));
+			JSetByte("LogChatstates",       (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "LogChatstates"));
+			JSetByte("EnableUserMood",      (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableUserMood"));
+			JSetByte("EnableUserTune",      (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableUserTune"));
 			JabberSendPresence( jabberStatus, true );
 			return TRUE;
 		}

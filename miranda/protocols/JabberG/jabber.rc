@@ -106,35 +106,12 @@ BEGIN
     CONTROL         "Allow file sending through bytestream proxy server:",IDC_PROXY_MANUAL,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,41,183,10
     EDITTEXT        IDC_PROXY_ADDR,200,39,91,12,ES_AUTOHSCROLL | WS_GROUP
-    CONTROL         "Specify external address:",IDC_DIRECT_MANUAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,27,101,10
+    CONTROL         "Specify external address:",IDC_DIRECT_MANUAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,27,156,10
     EDITTEXT        IDC_DIRECT_ADDR,200,25,91,12,ES_AUTOHSCROLL
     GROUPBOX        "Miscellaneous",IDC_STATIC,4,76,295,149
-    CONTROL         "Automatically add contact when accept authorization",IDC_AUTO_ADD,
-                    "Button",BS_AUTOCHECKBOX | BS_TOP | WS_TABSTOP,9,88,282,12
-    CONTROL         "Automatically join conferences on login",IDC_AUTOJOIN,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,98,282,10
-    CONTROL         "Autoaccept multiuser chat invitations",IDC_AUTO_ACCEPT_MUC,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,119,282,10
-    CONTROL         "Send messages slower, but with full acknowledgement",IDC_MSG_ACK,
-                    "Button",BS_AUTOCHECKBOX | BS_TOP | WS_TABSTOP,9,129,282,10
-    CONTROL         "Show transport agents on contact list",IDC_SHOW_TRANSPORT,
-                    "Button",BS_AUTOCHECKBOX | BS_TOP | WS_TABSTOP,9,140,282,10
-    CONTROL         "Enable avatars",IDC_ENABLE_AVATARS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,161,282,10
-    CONTROL         "Disable SASL authentication (for old servers)",IDC_DISABLE_SASL,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,172,282,10
-    CONTROL         "Enable remote controlling (from another resource of same JID only)",IDC_ENABLE_RC,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,150,282,10
-    CONTROL         "Automatically join Bookmarks on login",IDC_AUTOJOIN_BOOKMARKS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,109,282,10
-    CONTROL         "Enable stream compression (if possible)",IDC_ZLIB,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,182,282,10
     LTEXT           "Try to uncheck all checkmarks above if you're experiencing troubles with sending files. But it can cause problems with transfer of large files.",IDC_STATIC,46,53,245,16
     RTEXT           "Hint:",IDC_STATIC,23,56,16,8
-    CONTROL         "Log chat state changes",IDC_LOG_CHATSTATES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,192,282,10
-    CONTROL         "Enable user moods receiving",IDC_ENABLE_USER_MOOD,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,203,282,10
-    CONTROL         "Enable user tunes receiving",IDC_ENABLE_USER_TUNE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,213,282,10
+    CONTROL         "",IDC_OPTTREE,"SysTreeView32",TVS_DISABLEDRAGDROP | WS_BORDER | WS_TABSTOP,9,88,282,132
 END
 
 IDD_INFO_JABBER DIALOGEX 0, 0, 221, 152
@@ -497,8 +474,8 @@ BEGIN
     EDITTEXT        IDC_NICK,89,89,132,12,ES_AUTOHSCROLL
 END
 
-IDD_BOOKMARKS DIALOGEX 0, 0, 295, 180
-STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+IDD_BOOKMARKS DIALOGEX 0, 0, 296, 180
+STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Jabber Bookmarks"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -751,4 +728,5 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
+
 
