@@ -68,8 +68,8 @@ static TransportProtoTable[] =
 	{ _T("sms*"),       "SMS",        -1},
 	{ _T("smtp*"),      "SMTP",       -1},
 	//j2j 
-	{ _T("gtalk*"),     "GTalk", -1},
-	{ _T("xmpp*"),   "Jabber2Jabber", -1},
+	{ _T("gtalk.*.*"),     "GTalk", -1},
+	{ _T("xmpp.*.*"),   "Jabber2Jabber", -1},
 	//jabbim.cz - services
 	{ _T("disk*"),      "Jabber Disk", -1},
 	{ _T("irc*"),       "IRC", -1},
@@ -208,9 +208,8 @@ static BOOL MatchMask( const TCHAR* name, const TCHAR* mask)
 		while ( mask[e] != '\0' && mask[e] != '|')
 			e++;
 
-		memcpy( temp, mask+s, e-s );
-		temp[e-s] = '\0';
-		if ( WildComparei( name, temp ))
+		temp[e]= _T('\0');
+		if ( WildComparei( name, temp+s ))
 			return TRUE;
 
 		if ( mask[e] == 0 )
