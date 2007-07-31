@@ -115,7 +115,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "richedit.h"
 #include "./m_api/m_variables.h"
-#include "./m_api/m_avatars.h"
+#include "m_avatars.h"
 #include "./m_api/m_smileyadd.h"
 
 #include "./m_api/m_xpTheme.h"
@@ -206,10 +206,6 @@ extern int CLUI_ShowWindowMod(HWND hwnd, int cmd);
 #else
 	#define GCMDF_TCHAR_MY 0
 #endif
-
-extern char* Utf8EncodeUcs2( const wchar_t* src );
-extern void Utf8Decode( char* str, wchar_t** ucs2 );
-
 
 #ifndef LWA_COLORKEY
 #define LWA_COLORKEY            0x00000001

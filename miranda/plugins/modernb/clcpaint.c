@@ -732,9 +732,9 @@ static __inline MODERNMASK * CLCPaint_GetCLCContactRowBackModernMask(struct ClcG
             if (b2[i]==TEXT(',')) b2[i]=TEXT('.');
 #ifdef UNICODE
         {
-            char* b3=Utf8EncodeUcs2(b2);
+            char* b3=mir_utf8encodeT(b2);
             CLCPaint_AddParam(mpModernMask,dwQuickHash[hi_Name],b3,0);
-            free(b3);
+            mir_free(b3);
         }
 
 #else
@@ -751,9 +751,9 @@ static __inline MODERNMASK * CLCPaint_GetCLCContactRowBackModernMask(struct ClcG
             if (b2[i]==TEXT(',')) b2[i]=TEXT('.');
 #ifdef UNICODE
         {
-            char * b3=Utf8EncodeUcs2(b2);
+            char * b3=mir_utf8encodeT(b2);
             CLCPaint_AddParam(mpModernMask,dwQuickHash[hi_Group],b3,0);
-            free(b3);
+            mir_free(b3);
         }
 #else
         CLCPaint_AddParam(mpModernMask,dwQuickHash[hi_Group],b2,0);
@@ -1515,7 +1515,7 @@ static void CLCPaint_ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct C
 
                         // Draw avatar
                         if (dat->use_avatar_service)
-                            if (ServiceExists(MS_AV_BLENDDRAWAVATAR))
+                            /*if (ServiceExists(MS_AV_BLENDDRAWAVATAR))
                             {
                                 AVATARDRAWREQUEST adr;
 
@@ -1533,6 +1533,7 @@ static void CLCPaint_ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct C
                                 CallService(MS_AV_DRAWAVATAR, 0, (LPARAM) &adr);
                             }
                             else
+							*/
                             {
                                 int w=width;
                                 int h=height;

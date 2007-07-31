@@ -62,6 +62,7 @@ PLUGINLINK * pluginLink;
 CLIST_INTERFACE *pcli;
 struct MM_INTERFACE memoryManagerInterface;
 struct LIST_INTERFACE li;
+struct UTF8_INTERFACE utfi;
 
 //current module private variables
 HANDLE hCListShutdown = 0;
@@ -224,7 +225,9 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	memset(&memoryManagerInterface,0,sizeof(memoryManagerInterface));
 	memoryManagerInterface.cbSize = sizeof(memoryManagerInterface);
 	CallService(MS_SYSTEM_GET_MMI, 0, (LPARAM)&memoryManagerInterface);
-
+    
+	mir_getUTFI(&utfi);
+	
 	/* Global data initialization */
 	{
 		g_CluiData.fOnDesktop=FALSE;

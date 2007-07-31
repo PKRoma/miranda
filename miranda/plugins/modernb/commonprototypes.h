@@ -14,6 +14,7 @@
 extern PLUGININFOEX pluginInfo;
 extern struct LIST_INTERFACE li;
 extern CLIST_INTERFACE * pcli;
+extern struct UTF8_INTERFACE utfi;
 
 //Global variables
 extern HANDLE g_hSkinLoadedEvent;

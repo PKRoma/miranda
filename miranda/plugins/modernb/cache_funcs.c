@@ -1059,7 +1059,7 @@ void Cache_ProceedAvatarInList(struct ClcData *dat, struct ClcContact *contact)
 		//need to draw avatar bitmap here
 		{
 			RECT real_rc={0,0,width_clip, height_clip};
-
+			/*
 			if (ServiceExists(MS_AV_BLENDDRAWAVATAR))
 			{
 				AVATARDRAWREQUEST adr;
@@ -1073,6 +1073,7 @@ void Cache_ProceedAvatarInList(struct ClcData *dat, struct ClcContact *contact)
 				CallService(MS_AV_BLENDDRAWAVATAR, 0, (LPARAM) &adr);
 			}
 			else
+			*/
 			{
 				int w=width_clip;
 				int h=height_clip;

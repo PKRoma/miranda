@@ -117,11 +117,11 @@ int FillModes(char *szsetting)
 	{	
 		TCHAR * temp;
 		//temp=alloca((strlen(szSetting)+1)*sizeof(TCHAR));
-		Utf8Decode(szsetting,&temp);
+		mir_utf8decode(szsetting,&temp);
 		if(temp)
 			{
 				SendDlgItemMessage(clvmHwnd, IDC_VIEWMODES, LB_INSERTSTRING, -1, (LPARAM)temp);
-				free(temp);
+				mir_free(temp);
 			}
 	}
 #else
@@ -465,7 +465,7 @@ void SaveState()
         DWORD dwGlobalMask, dwLocalMask;
 		BOOL translated;
 
-        szTempModeName = ( TCHAR* )malloc((iLen + 1)*sizeof(TCHAR));
+        szTempModeName = ( TCHAR* )mir_alloc((iLen + 1)*sizeof(TCHAR));
         if(szTempModeName) 
 		{
             DWORD options, lmdat;
@@ -478,7 +478,7 @@ void SaveState()
             SendDlgItemMessage(clvmHwnd, IDC_VIEWMODES, LB_GETTEXT, clvm_curItem, (LPARAM)szTempModeName);
 #ifdef _UNICODE
 			{
-				szModeName=Utf8EncodeUcs2(szTempModeName);
+				szModeName=mir_utf8encodeT(szTempModeName);
 			}
 #else
 			szModeName=szTempModeName;
@@ -519,9 +519,9 @@ void SaveState()
                          stickies, operators, lmdat);
             //free(vastring);
 			if (szModeName && szModeName!=(char*)szTempModeName)	
-				free(szModeName);
+				mir_free(szModeName);
 			if (szTempModeName) 
-				free(szTempModeName);
+				mir_free(szTempModeName);
 			szTempModeName=NULL;
 			szModeName=NULL;
         }
@@ -555,12 +555,12 @@ void UpdateFilters()
     if(iLen == 0)
         return;
     
-	szTempBuf=(TCHAR *)malloc((iLen + 1)*sizeof(TCHAR));
+	szTempBuf=(TCHAR *)mir_alloc((iLen + 1)*sizeof(TCHAR));
     SendDlgItemMessage(clvmHwnd, IDC_VIEWMODES, LB_GETTEXT, clvm_curItem, (LPARAM)szTempBuf);
 #ifdef _UNICODE
-	szBuf=Utf8EncodeUcs2(szTempBuf);
+	szBuf=mir_utf8encodeT(szTempBuf);
 #else
-	szBuf=strdup(szTempBuf);
+	szBuf=mir_strdup(szTempBuf);
 #endif
     strncpy(g_szModename, szBuf, sizeof(g_szModename));
     g_szModename[sizeof(g_szModename) - 1] = 0;
@@ -668,8 +668,8 @@ void UpdateFilters()
 cleanup:
     DBFreeVariant(&dbv_pf);
     DBFreeVariant(&dbv_gf);    
-    free(szBuf);
-	free(szTempBuf);
+    mir_free(szBuf);
+	mir_free(szTempBuf);
 }
 #define IDI_SMALLDOT  211  //from miranda.exe
 BOOL CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -793,7 +793,7 @@ BOOL CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                                 
                                 SendDlgItemMessage(hwndDlg, IDC_VIEWMODES, LB_GETTEXT, SendDlgItemMessage(hwndDlg, IDC_VIEWMODES, LB_GETCURSEL, 0, 0), (LPARAM)szTempBuf);
 #ifdef _UNICODE
-								szBuf=Utf8EncodeUcs2(szTempBuf);
+								szBuf=mir_utf8encodeT(szTempBuf);
 #else
 								szBuf=szTempBuf;
 #endif
@@ -829,7 +829,7 @@ BOOL CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                                 }
                                 else 
                                     clvm_curItem = -1;
-								if (szBuf && szBuf!=(char*)szTempBuf) free(szBuf);
+								if (szBuf && szBuf!=(char*)szTempBuf) mir_free(szBuf);
 								if (szTempBuf) free(szTempBuf);
 								szTempBuf = NULL;
 								szBuf = NULL;
@@ -851,7 +851,7 @@ BOOL CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					{
 						char  *szUTF8Buf=NULL;
 #ifdef UNICODE
-						szUTF8Buf=Utf8EncodeUcs2(szBuf);
+						szUTF8Buf=mir_utf8encodeT(szBuf);
 #else
 						szUTF8Buf=strdup(szBuf);
 #endif
@@ -871,7 +871,7 @@ BOOL CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                             }
                         }
                         SetDlgItemText(hwndDlg, IDC_NEWVIEMODE, _T(""));
-						free(szUTF8Buf);
+						mir_free(szUTF8Buf);
                     }
                     EnableWindow(GetDlgItem(hwndDlg, IDC_ADDVIEWMODE), FALSE);
                     break;
@@ -997,11 +997,11 @@ static int FillMenuCallback(char *szSetting)
 	{	
 		TCHAR * temp;
 		//temp=alloca((strlen(szSetting)+1)*sizeof(TCHAR));
-		Utf8Decode(szSetting,&temp);
+		mir_utf8decode(szSetting,&temp);
 		if(temp)
 		{
 			AppendMenu(hViewModeMenu, MFT_STRING, menuCounter++, temp);
-			free(temp);
+			mir_free(temp);
 		}
 	}
 #else
@@ -1113,11 +1113,11 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			{
 				TCHAR * temp;
 				//temp=alloca((strlen(szSetting)+1)*sizeof(TCHAR));
-				Utf8Decode(g_CluiData.current_viewmode,&temp);
+				mir_utf8decode(g_CluiData.current_viewmode,&temp);
 				if(temp)
 				{
 					SetWindowText(GetDlgItem(hwnd, IDC_SELECTMODE), temp );
-					free(temp);
+					mir_free(temp);
 				}
 			}
 #else
@@ -1265,9 +1265,9 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
                         GetMenuItemInfo(hViewModeMenu, selection, FALSE, &mii);
 #ifdef _UNICODE
 						{
-							char * temp=Utf8EncodeUcs2(szTemp);
+							char * temp=mir_utf8encodeT(szTemp);
 							ApplyViewMode(temp);
-							if (temp) free(temp);
+							if (temp) mir_free(temp);
 						}
 #else
                         ApplyViewMode(szTemp);
@@ -1517,9 +1517,9 @@ void ApplyViewMode(const char *Name)
 #ifdef _UNICODE
 	{
 		TCHAR * temp;
-		Utf8Decode((char*)name, &temp);
+		mir_utf8decode((char*)name, &temp);
 		SetWindowText(hwndSelector, temp);
-		free(temp);
+		mir_free(temp);
 	}	
 #else
 	SetWindowText(hwndSelector, name);

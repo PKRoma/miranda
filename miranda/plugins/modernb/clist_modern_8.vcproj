@@ -452,9 +452,6 @@
 				RelativePath=".\SkinOpt.c">
 			</File>
 			<File
-				RelativePath=".\utf.c">
-			</File>
-			<File
 				RelativePath=".\viewmodes.c">
 			</File>
 			<File
@@ -675,9 +672,6 @@
 				RelativePath="..\..\include\m_addcontact.h">
 			</File>
 			<File
-				RelativePath=".\m_api\m_avatars.h">
-			</File>
-			<File
 				RelativePath="..\..\include\m_avatars.h">
 			</File>
 			<File
@@ -703,9 +697,6 @@
 			</File>
 			<File
 				RelativePath=".\m_api\m_clui.h">
-			</File>
-			<File
-				RelativePath="..\..\include\m_cluiframes.h">
 			</File>
 			<File
 				RelativePath=".\m_api\m_cluiframes.h">

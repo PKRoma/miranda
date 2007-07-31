@@ -320,10 +320,6 @@ SOURCE=.\SkinOpt.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\utf.c
-# End Source File
-# Begin Source File
-
 SOURCE=.\viewmodes.c
 # End Source File
 # Begin Source File
@@ -612,10 +608,6 @@ SOURCE=..\..\include\m_addcontact.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\m_api\m_avatars.h
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\include\m_avatars.h
 # End Source File
 # Begin Source File
@@ -649,10 +641,6 @@ SOURCE=..\..\include\m_clui.h
 # Begin Source File
 
 SOURCE=.\m_api\m_clui.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\include\m_cluiframes.h
 # End Source File
 # Begin Source File
 
