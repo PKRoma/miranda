@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern HINSTANCE g_hInst;
 
 static MessageSendQueueItem *global_sendQueue = NULL;
-
+static CRITICAL_SECTION queueMutex;
 static char *MsgServiceName(HANDLE hContact)
 {
 #ifdef _UNICODE
@@ -58,41 +58,53 @@ TCHAR * GetSendBufferMsg(MessageSendQueueItem *item) {
     return szMsg;
 }
 
+void InitSendQueue() {
+	InitializeCriticalSection(&queueMutex);
+}
+
+void DestroySendQueue() {
+	DeleteCriticalSection(&queueMutex);
+}
+
 MessageSendQueueItem* CreateSendQueueItem(HWND hwndSender) {
-	/*TODO: Make it synchronized */
 	MessageSendQueueItem *item = (MessageSendQueueItem *) mir_alloc(sizeof(MessageSendQueueItem));
+	EnterCriticalSection(&queueMutex);
 	ZeroMemory(item, sizeof(MessageSendQueueItem));
 	item->hwndSender = hwndSender;
 	item->next = global_sendQueue;
 	global_sendQueue = item;
+	LeaveCriticalSection(&queueMutex);
 	return item;
 }
 
 MessageSendQueueItem* FindOldestSendQueueItem(HWND hwndSender) {
-	/*TODO: Make it synchronized */
-	MessageSendQueueItem *item, *found = NULL;
+	MessageSendQueueItem *item;
+	EnterCriticalSection(&queueMutex);
 	for (item = global_sendQueue; item != NULL; item = item->next) {
 		if (item->hwndSender == hwndSender) {
-			found = item;
+			break;
 		}
 	}
-	return found;
+	LeaveCriticalSection(&queueMutex);
+	return item;
 }
 
 MessageSendQueueItem* FindSendQueueItem(HANDLE hSendId) {
-	/*TODO: Make it synchronized */
 	MessageSendQueueItem *item;
+	EnterCriticalSection(&queueMutex);
 	for (item = global_sendQueue; item != NULL; item = item->next) {
 		if (item->hSendId == hSendId) {
-			return item;
+			break;
 		}
 	}
-	return NULL;
+	LeaveCriticalSection(&queueMutex);
+	return item;
 }
 
 BOOL RemoveSendQueueItem(MessageSendQueueItem* item) {
-	/*TODO: Make it synchronized */
+	BOOL result = TRUE;
 	HWND hwndSender = item->hwndSender;
+	EnterCriticalSection(&queueMutex);
 	if (item->prev != NULL) {
 		item->prev->next = item->next;
 	} else {
@@ -108,15 +120,18 @@ BOOL RemoveSendQueueItem(MessageSendQueueItem* item) {
  		mir_free(item->proto);
 	}
 	for (item = global_sendQueue; item != NULL; item = item->next) {
-		if (item->hwndSender == hwndSender) return FALSE;
+		if (item->hwndSender == hwndSender) {
+			result = FALSE;
+		}
 	}
-	return TRUE;
+	LeaveCriticalSection(&queueMutex);
+	return result;
 }
 
 void ReportSendQueueTimeouts(HWND hwnd) {
-	/*TODO: Make it synchronized */
 	MessageSendQueueItem *item;
 	int timeout = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT);
+	EnterCriticalSection(&queueMutex);
 	for (item = global_sendQueue; item != NULL; item = item->next) {
 		if (item->hwndErrorDlg == NULL && item->timeout < timeout && item->hwndSender == hwnd) {
 			item->timeout += 1000;
@@ -134,30 +149,31 @@ void ReportSendQueueTimeouts(HWND hwnd) {
 			}
 		}
 	}
+	LeaveCriticalSection(&queueMutex);
 }
 
 void ReleaseSendQueueItems(HWND hwndSender) {
-	/*TODO: Make it synchronized */
 	MessageSendQueueItem *item;
+	EnterCriticalSection(&queueMutex);
 	for (item = global_sendQueue; item != NULL; item = item->next) {
 		if (item->hwndSender == hwndSender) {
 			item->hwndSender = NULL;
 		}
 	}
+	LeaveCriticalSection(&queueMutex);
 }
 
 void RemoveAllSendQueueItems() {
-	/*TODO: Make it synchronized */
 	MessageSendQueueItem *item, *item2;
+	EnterCriticalSection(&queueMutex);
 	for (item = global_sendQueue; item != NULL; item = item2) {
 		item2 = item->next;
 		RemoveSendQueueItem(item);
 	}
+	LeaveCriticalSection(&queueMutex);
 }
 
 void SendSendQueueItem(MessageSendQueueItem* item) {
 	item->timeout = 0;
 	item->hSendId = (HANDLE) CallContactService(item->hContact, MsgServiceName(item->hContact), item->flags, (LPARAM) item->sendBuffer);
 }
-
-

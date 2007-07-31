@@ -84,7 +84,7 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 
 	if ( ServiceExists( MS_DB_EVENT_GETTEXT ))
 		bNewDbApi = TRUE;
-
+	InitSendQueue();
 	Chat_Load(link);
 	return LoadSendRecvMessageModule();
 }
@@ -92,5 +92,6 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 int __declspec(dllexport) Unload(void)
 {
 	Chat_Unload();
+	DestroySendQueue();
 	return SplitmsgShutdown();
 }

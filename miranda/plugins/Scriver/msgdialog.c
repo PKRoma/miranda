@@ -2664,7 +2664,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				if (item == NULL) {
 					item = FindOldestSendQueueItem(hwndDlg);
 				}
-				if (item != NULL) {
+				if (item != NULL && item->hwndErrorDlg != NULL) {
 					ErrorWindowData *ewd = (ErrorWindowData *) mir_alloc(sizeof(ErrorWindowData));
 					ewd->szName = GetNickname(dat->hContact, dat->szProto);
 					ewd->szDescription = a2t((char *) ack->lParam);
@@ -2714,17 +2714,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			NotifyTyping(dat, PROTOTYPE_SELFTYPING_OFF);
 		}
 		if (dat->userMenuIcon != NULL) DestroyIcon(dat->userMenuIcon);
-		//CallService(MS_SKIN2_RELEASEICON,(WPARAM)dat->userMenuIcon, 0);
 		dat->userMenuIcon = NULL;
-		/*
-		if (dat->sendInfo) {
-			int i;
-			for (i = 0; i < dat->sendCount; i++) {
-				RemoveSendBuffer(dat, i);
-			}
-			mir_free(dat->sendInfo);
-		}
-		*/
+		ReleaseSendQueueItems(hwndDlg);
 		if (g_dat->flags & SMF_SAVEDRAFTS) {
 			saveDraftMessage(dat);
 		} else {
@@ -2732,7 +2723,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		}
 		tcmdlist_free(dat->cmdList);
 		WindowList_Remove(g_dat->hMessageWindowList, hwndDlg);
-		//if (!(g_dat->flags&SMF_AVATAR)||!dat->avatarPic)
 		SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_WNDPROC, (LONG) OldSplitterProc);
 		UnsubclassMessageEdit(GetDlgItem(hwndDlg, IDC_MESSAGE));
 		UnsubclassLogEdit(GetDlgItem(hwndDlg, IDC_LOG));
