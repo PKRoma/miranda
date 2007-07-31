@@ -1,194 +1,147 @@
-# Microsoft Developer Studio Project File - Name="modernb" - Package Owner=<4>
+# Microsoft Developer Studio Project File - Name="clist_modern" - Package Owner=<4>
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
 # ** DO NOT EDIT **
 
 # TARGTYPE "Win32 (x86) Dynamic-Link Library" 0x0102
 
-CFG=modernb - Win32 Debug Unicode
+CFG=clist_modern - Win32 Release
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
-!MESSAGE NMAKE /f "modernb.mak".
+!MESSAGE NMAKE /f "clist_modern.mak".
 !MESSAGE 
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "modernb.mak" CFG="modernb - Win32 Debug Unicode"
+!MESSAGE NMAKE /f "clist_modern.mak" CFG="clist_modern - Win32 Release"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
-!MESSAGE "modernb - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "modernb - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "modernb - Win32 Release Unicode" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "modernb - Win32 Debug Unicode" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "clist_modern - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "clist_modern - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "clist_modern - Win32 Debug Unicode" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "clist_modern - Win32 Release Unicode" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE 
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
-# PROP Scc_ProjName ""$/Miranda32/Plugins/modernb", DSEAAAAA"
-# PROP Scc_LocalPath "."
+# PROP Scc_ProjName "SAK"
+# PROP Scc_LocalPath "SAK"
 CPP=cl.exe
 MTL=midl.exe
 RSC=rc.exe
 
-!IF  "$(CFG)" == "modernb - Win32 Release"
+!IF  "$(CFG)" == "clist_modern - Win32 Release"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "Release"
-# PROP BASE Intermediate_Dir "Release"
+# PROP BASE Output_Dir "$(SolutionDir)$(ConfigurationName)/Plugins"
+# PROP BASE Intermediate_Dir "$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "Release"
-# PROP Intermediate_Dir "Release"
-# PROP Ignore_Export_Lib 1
+# PROP Output_Dir "$(SolutionDir)$(ConfigurationName)/Plugins"
+# PROP Intermediate_Dir "$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "modernb_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "modernb_EXPORTS" /Yu"commonheaders.h" /FD /c
-# ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
-# ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
-# ADD BASE RSC /l 0x809 /d "NDEBUG"
-# ADD RSC /l 0x809 /d "NDEBUG"
+# ADD BASE CPP /nologo /MD /I "../../include" /Zi /W3 /Ox /Og /Ob1 /Oi /Os /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "CLIST_EXPORTS" /D "_MBCS" /GF /EHsc /J /YX /FAcs /Fa"" /c /GX 
+# ADD CPP /nologo /MD /I "../../include" /Zi /W3 /Ox /Og /Ob1 /Oi /Os /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "CLIST_EXPORTS" /D "_MBCS" /GF /EHsc /J /YX /FAcs /Fa"" /c /GX 
+# ADD BASE MTL /nologo /D"NDEBUG" /mktyplib203 /tlb".\Release\mwclist.tlb" /win32 
+# ADD MTL /nologo /D"NDEBUG" /mktyplib203 /tlb".\Release\mwclist.tlb" /win32 
+# ADD BASE RSC /l 2057 /d "NDEBUG" 
+# ADD RSC /l 2057 /d "NDEBUG" 
 BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
-# ADD BSC32 /nologo
+# ADD BASE BSC32 /nologo 
+# ADD BSC32 /nologo 
 LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib delayimp.lib gdiplus.lib msimg32.lib shlwapi.lib /nologo /base:"0x6590000" /dll /map /debug /machine:I386 /out:"../../bin/release/plugins/clist_modern.dll" /delayload:gdiplus.dll
-# SUBTRACT LINK32 /pdb:none
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib MSImg32.Lib comctl32.lib shlwapi.lib  gdiplus.lib Delayimp.lib /nologo /dll /out:"$(SolutionDir)$(ConfigurationName)\Plugins\$(ProjectName).dll" /incremental:no /delayload:"gdiplus.dll" /debug /pdbtype:sept /map /mapinfo:lines /subsystem:windows /opt:ref /opt:icf /MACHINE:I386
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib MSImg32.Lib comctl32.lib shlwapi.lib  gdiplus.lib Delayimp.lib /nologo /dll /out:"$(SolutionDir)$(ConfigurationName)\Plugins\$(ProjectName).dll" /incremental:no /delayload:"gdiplus.dll" /debug /pdbtype:sept /map /mapinfo:lines /subsystem:windows /opt:ref /opt:icf /MACHINE:I386
 
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug"
+!ELSEIF  "$(CFG)" == "clist_modern - Win32 Debug"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "Debug"
-# PROP BASE Intermediate_Dir "Debug"
+# PROP BASE Output_Dir "$(SolutionDir)$(ConfigurationName)/Plugins"
+# PROP BASE Intermediate_Dir "$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "Debug"
-# PROP Intermediate_Dir "Debug"
-# PROP Ignore_Export_Lib 1
+# PROP Output_Dir "$(SolutionDir)$(ConfigurationName)/Plugins"
+# PROP Intermediate_Dir "$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "modernb_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "modernb_EXPORTS" /Yu"commonheaders.h" /FD /GZ /c
-# ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
-# ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
-# ADD BASE RSC /l 0x809 /d "_DEBUG"
-# ADD RSC /l 0x809 /d "_DEBUG"
+# ADD BASE CPP /nologo /MDd /I "../../include" /ZI /W3 /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "CLIST_EXPORTS" /D "_MBCS" /EHsc /J /YX /FR /GZ /c /GX 
+# ADD CPP /nologo /MDd /I "../../include" /ZI /W3 /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "CLIST_EXPORTS" /D "_MBCS" /EHsc /J /YX /FR /GZ /c /GX 
+# ADD BASE MTL /nologo /D"_DEBUG" /mktyplib203 /tlb".\Debug\mwclist.tlb" /win32 
+# ADD MTL /nologo /D"_DEBUG" /mktyplib203 /tlb".\Debug\mwclist.tlb" /win32 
+# ADD BASE RSC /l 1033 /d "_DEBUG" 
+# ADD RSC /l 1033 /d "_DEBUG" 
 BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
-# ADD BSC32 /nologo
+# ADD BASE BSC32 /nologo 
+# ADD BSC32 /nologo 
 LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib delayimp.lib gdiplus.lib msimg32.lib shlwapi.lib /nologo /base:"0x6590000" /dll /debug /machine:I386 /out:"../../bin/debug/plugins/clist_modern.dll" /pdbtype:sept
-# SUBTRACT LINK32 /pdb:none /incremental:no
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib /nologo /dll /out:"$(SolutionDir)$(ConfigurationName)\Plugins\$(ProjectName).dll" /incremental:yes /delayload:"gdiplus.dll" /debug /pdbtype:sept /subsystem:windows /MACHINE:I386
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib /nologo /dll /out:"$(SolutionDir)$(ConfigurationName)\Plugins\$(ProjectName).dll" /incremental:yes /delayload:"gdiplus.dll" /debug /pdbtype:sept /subsystem:windows /MACHINE:I386
 
-!ELSEIF  "$(CFG)" == "modernb - Win32 Release Unicode"
+!ELSEIF  "$(CFG)" == "clist_modern - Win32 Debug Unicode"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "$(SolutionDir)$(ConfigurationName)/Plugins"
+# PROP BASE Intermediate_Dir "$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "$(SolutionDir)$(ConfigurationName)/Plugins"
+# PROP Intermediate_Dir "$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MDd /I "../../include" /ZI /W3 /Od /D "_DEBUG_LOG" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "CLIST_EXPORTS" /D "_UNICODE" /EHsc /J /YX /FR /GZ /c /GX 
+# ADD CPP /nologo /MDd /I "../../include" /ZI /W3 /Od /D "_DEBUG_LOG" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "CLIST_EXPORTS" /D "_UNICODE" /EHsc /J /YX /FR /GZ /c /GX 
+# ADD BASE MTL /nologo /D"_DEBUG" /mktyplib203 /tlb".\Debug\mwclist.tlb" /win32 
+# ADD MTL /nologo /D"_DEBUG" /mktyplib203 /tlb".\Debug\mwclist.tlb" /win32 
+# ADD BASE RSC /l 1033 /d "_DEBUG" 
+# ADD RSC /l 1033 /d "_DEBUG" 
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo 
+# ADD BSC32 /nologo 
+LINK32=link.exe
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib /nologo /dll /out:"$(SolutionDir)$(ConfigurationName)\Plugins\$(ProjectName).dll" /incremental:yes /delayload:"gdiplus.dll" /debug /pdbtype:sept /subsystem:windows /MACHINE:I386
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib /nologo /dll /out:"$(SolutionDir)$(ConfigurationName)\Plugins\$(ProjectName).dll" /incremental:yes /delayload:"gdiplus.dll" /debug /pdbtype:sept /subsystem:windows /MACHINE:I386
+
+!ELSEIF  "$(CFG)" == "clist_modern - Win32 Release Unicode"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "modernb___Win32_Release_Unicode"
-# PROP BASE Intermediate_Dir "modernb___Win32_Release_Unicode"
-# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Output_Dir "$(SolutionDir)$(ConfigurationName)/Plugins"
+# PROP BASE Intermediate_Dir "$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "./Release_Unicode"
-# PROP Intermediate_Dir "./Release_Unicode"
-# PROP Ignore_Export_Lib 1
+# PROP Output_Dir "$(SolutionDir)$(ConfigurationName)/Plugins"
+# PROP Intermediate_Dir "$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MD /W3 /O2 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "modernb_EXPORTS" /Yu"commonheaders.h" /FD /c
-# ADD CPP /nologo /MD /W3 /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "modernb_EXPORTS" /Yu"commonheaders.h" /FD /c
-# SUBTRACT CPP /Fr
-# ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
-# ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
-# ADD BASE RSC /l 0x809 /d "NDEBUG"
-# ADD RSC /l 0x809 /d "NDEBUG"
+# ADD BASE CPP /nologo /MD /I "../../include" /Zi /W3 /Ox /Og /Os /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "CLIST_EXPORTS" /D "_UNICODE" /GF /EHsc /J /YX /FAcs /Fa"" /c /GX 
+# ADD CPP /nologo /MD /I "../../include" /Zi /W3 /Ox /Og /Os /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "CLIST_EXPORTS" /D "_UNICODE" /GF /EHsc /J /YX /FAcs /Fa"" /c /GX 
+# ADD BASE MTL /nologo /D"NDEBUG" /mktyplib203 /tlb".\Release\mwclist.tlb" /win32 
+# ADD MTL /nologo /D"NDEBUG" /mktyplib203 /tlb".\Release\mwclist.tlb" /win32 
+# ADD BASE RSC /l 2057 /d "NDEBUG" 
+# ADD RSC /l 2057 /d "NDEBUG" 
 BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
-# ADD BSC32 /nologo
+# ADD BASE BSC32 /nologo 
+# ADD BSC32 /nologo 
 LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib /nologo /base:"0x6590000" /dll /machine:I386 /out:"../../bin/release/plugins/clist_mw.dll"
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib delayimp.lib gdiplus.lib msimg32.lib shlwapi.lib /nologo /base:"0x6590000" /dll /map /debug /machine:I386 /out:"../../bin/release Unicode/plugins/clist_modern.dll" /delayload:gdiplus.dll
-# SUBTRACT LINK32 /pdb:none
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib MSImg32.Lib comctl32.lib shlwapi.lib  gdiplus.lib Delayimp.lib /nologo /dll /out:"$(SolutionDir)$(ConfigurationName)\Plugins\$(ProjectName).dll" /delayload:"gdiplus.dll" /debug /pdbtype:sept /map /mapinfo:lines /subsystem:windows /opt:ref /opt:icf /MACHINE:I386
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib MSImg32.Lib comctl32.lib shlwapi.lib  gdiplus.lib Delayimp.lib /nologo /dll /out:"$(SolutionDir)$(ConfigurationName)\Plugins\$(ProjectName).dll" /delayload:"gdiplus.dll" /debug /pdbtype:sept /map /mapinfo:lines /subsystem:windows /opt:ref /opt:icf /MACHINE:I386
 
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug Unicode"
-
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "modernb___Win32_Debug_Unicode"
-# PROP BASE Intermediate_Dir "modernb___Win32_Debug_Unicode"
-# PROP BASE Ignore_Export_Lib 0
-# PROP BASE Target_Dir ""
-# PROP Use_MFC 0
-# PROP Use_Debug_Libraries 1
-# PROP Output_Dir "./Debug_Unicode"
-# PROP Intermediate_Dir "./Debug_Unicode"
-# PROP Ignore_Export_Lib 1
-# PROP Target_Dir ""
-# ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "modernb_EXPORTS" /Yu"commonheaders.h" /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "modernb_EXPORTS" /Yu"commonheaders.h" /FD /GZ /c
-# ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
-# ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
-# ADD BASE RSC /l 0x809 /d "_DEBUG"
-# ADD RSC /l 0x809 /d "_DEBUG"
-BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
-# ADD BSC32 /nologo
-LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib /nologo /base:"0x6590000" /dll /debug /machine:I386 /out:"../../bin/debug/plugins/clist_mw.dll" /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib delayimp.lib gdiplus.lib msimg32.lib shlwapi.lib /nologo /base:"0x6590000" /dll /debug /machine:I386 /out:"../../bin/debug Unicode/plugins/clist_modern.dll" /pdbtype:sept
-# SUBTRACT LINK32 /pdb:none /incremental:no
-
-!ENDIF 
+!ENDIF
 
 # Begin Target
 
-# Name "modernb - Win32 Release"
-# Name "modernb - Win32 Debug"
-# Name "modernb - Win32 Release Unicode"
-# Name "modernb - Win32 Debug Unicode"
+# Name "clist_modern - Win32 Release"
+# Name "clist_modern - Win32 Debug"
+# Name "clist_modern - Win32 Debug Unicode"
+# Name "clist_modern - Win32 Release Unicode"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
-# Begin Group "CLUIFrames"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\CLUIFrames\cluiframes.c
-# ADD CPP /Yu"../commonheaders.h"
-# End Source File
-# Begin Source File
-
-SOURCE=.\CLUIFrames\cluiframes.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\CLUIFrames\extraimage.c
-# ADD CPP /Yu"../commonheaders.h"
-# End Source File
-# Begin Source File
-
-SOURCE=.\CLUIFrames\framesmenu.c
-# ADD CPP /Yu"../commonheaders.h"
-# End Source File
-# Begin Source File
-
-SOURCE=.\CLUIFrames\m_cluiframes.h
-# End Source File
-# End Group
-# Begin Group "ExtFrames"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\ExtFrames\modern_ext_frames.c
-# ADD CPP /Yu"..\commonheaders.h"
-# End Source File
-# End Group
 # Begin Source File
 
 SOURCE=.\button.c
@@ -200,62 +153,14 @@ SOURCE=.\cache_funcs.c
 # Begin Source File
 
 SOURCE=.\clc.c
-
-!IF  "$(CFG)" == "modernb - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug Unicode"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\clcidents.c
-
-!IF  "$(CFG)" == "modernb - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug Unicode"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\clcitems.c
-
-!IF  "$(CFG)" == "modernb - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug Unicode"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -264,62 +169,14 @@ SOURCE=.\clcmsgs.c
 # Begin Source File
 
 SOURCE=.\clcopts.c
-
-!IF  "$(CFG)" == "modernb - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug Unicode"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\clcpaint.c
-
-!IF  "$(CFG)" == "modernb - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug Unicode"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\clcutils.c
-
-!IF  "$(CFG)" == "modernb - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug Unicode"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -328,167 +185,42 @@ SOURCE=.\clistevents.c
 # Begin Source File
 
 SOURCE=.\clistmenus.c
-
-!IF  "$(CFG)" == "modernb - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug Unicode"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\clistmod.c
-
-!IF  "$(CFG)" == "modernb - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug Unicode"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\clistopts.c
-
-!IF  "$(CFG)" == "modernb - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug Unicode"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\clistsettings.c
-
-!IF  "$(CFG)" == "modernb - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug Unicode"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\clisttray.c
-
-!IF  "$(CFG)" == "modernb - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug Unicode"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\clui.c
+# End Source File
+# Begin Source File
 
-!IF  "$(CFG)" == "modernb - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug Unicode"
-
-!ENDIF 
-
+SOURCE=.\cluiframes.c
 # End Source File
 # Begin Source File
 
 SOURCE=.\cluiservices.c
-
-!IF  "$(CFG)" == "modernb - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug Unicode"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\commonheaders.c
-# ADD CPP /Yc"commonheaders.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\contact.c
-
-!IF  "$(CFG)" == "modernb - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug Unicode"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -496,8 +228,15 @@ SOURCE=.\Docking.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\extraimage.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\framesmenu.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\gdiplus.cpp
-# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
@@ -510,46 +249,14 @@ SOURCE=.\image_array.c
 # Begin Source File
 
 SOURCE=.\init.c
-
-!IF  "$(CFG)" == "modernb - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug Unicode"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\keyboard.c
-
-!IF  "$(CFG)" == "modernb - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug Unicode"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
-SOURCE=.\mod_skin_selector.c
+SOURCE=.\log.c
 # End Source File
 # Begin Source File
 
@@ -557,12 +264,23 @@ SOURCE=.\modern_animated_avatars.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\modern_awaymsg.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\modern_button.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\modern_gettextasync.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\modern_row.cpp
-# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\modern_skinselector.c
 # End Source File
 # Begin Source File
 
@@ -571,6 +289,14 @@ SOURCE=.\modern_statusbar.c
 # Begin Source File
 
 SOURCE=.\modern_toolbar.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\newrowopts.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\popup.c
 # End Source File
 # Begin Source File
 
@@ -610,7 +336,7 @@ SOURCE=.\xpTheme.c
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
-SOURCE=.\BkgrCfg.h
+SOURCE=.\cache_funcs.h
 # End Source File
 # Begin Source File
 
@@ -622,23 +348,67 @@ SOURCE=.\clist.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\clui.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\commonheaders.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\forkthread.h
+SOURCE=.\commonprototypes.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\IcoLib.h
+SOURCE=.\defsettings.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\resource.h
+SOURCE=.\effectenum.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\image_array.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\log.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\menuSubsystem.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\modern_row.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\modern_statusbar.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\popup.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\rowheight_funcs.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\SkinEngine.h
 # End Source File
 # Begin Source File
 
 SOURCE=.\statusmodes.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\stdafx.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\version.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"
@@ -646,8 +416,15 @@ SOURCE=.\statusmodes.h
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # Begin Source File
 
-SOURCE=".\res\&RQ.ico"
+SOURCE=.\resource.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\resource.rc
+# End Source File
+# Begin Group "res"
+
+# PROP Default_Filter ""
 # Begin Source File
 
 SOURCE=.\res\1.ico
@@ -682,11 +459,11 @@ SOURCE=.\res\8.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\addcontact.ico
+SOURCE=.\res\addgoupp.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\addgoupp.ico
+SOURCE=.\res\AlwaysVis.ico
 # End Source File
 # Begin Source File
 
@@ -694,23 +471,15 @@ SOURCE=.\res\away.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\blank.ico
+SOURCE=.\res\back.tga
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\blank1.ico
+SOURCE=.\res\chat.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\changefont.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\delete.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\detailsl.ico
+SOURCE=.\res\Chatchannel.ico
 # End Source File
 # Begin Source File
 
@@ -718,99 +487,7 @@ SOURCE=.\res\dnd.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\downarrow.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\dragcopy.cur
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\dropuser.cur
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\emptyblo.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\file.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\filledbl.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\finduser.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\freechat.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\Gaim.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\globus.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\groupope.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\groupshu.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\help.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\history.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\hyperlin.cur
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\Icq2000.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\Icq2001.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\Icq2003.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\Icq2gof.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\Icq2goJ.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\IcqL4.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\IcqL5.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\IcqLite.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\IM2.ico
+SOURCE=.\res\hide_avatar.ico
 # End Source File
 # Begin Source File
 
@@ -818,35 +495,67 @@ SOURCE=.\res\invisible.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\Kopete.ico
+SOURCE=.\res\listening_to.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\Licq.ico
+SOURCE=.\res\lunch.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\message.ico
+SOURCE=.\res\MicroAway.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\miranda.ico
+SOURCE=.\res\MicroChat.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\mirandaclassic.ico
+SOURCE=.\res\MicroDnd.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\mirandaw.ico
+SOURCE=.\res\MicroInvisible.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\multisend.ico
+SOURCE=.\res\MicroLunch.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\na2.ico
+SOURCE=.\res\MicroNa.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\MicroOccupied.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\MicroOffline.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\MicroPhone.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\NA.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\neo_meta_create.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\neo_meta_default.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\neo_meta_move.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\NeverVis.ico
 # End Source File
 # Begin Source File
 
@@ -854,88 +563,290 @@ SOURCE=.\res\occupied.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\offline2.ico
+SOURCE=.\res\offline.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\online2.ico
+SOURCE=.\res\phone.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\onthepho.ico
+SOURCE=.\res\rate_high.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\options.ico
+SOURCE=.\res\rate_low.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\outtolun.ico
+SOURCE=.\res\rate_med.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\QIP.ico
+SOURCE=.\res\rate_none.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\rename.ico
+SOURCE=.\res\reset_view.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\reply.ico
+SOURCE=.\res\set_view.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\resource.rc
+SOURCE=.\res\show_avatar.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\searchal.ico
+SOURCE=.\res\skin.msf
+# End Source File
+# End Group
+# End Group
+# Begin Group "m_api"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=..\..\include\m_addcontact.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\sendmail.ico
+SOURCE=.\m_api\m_avatars.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\Sim.ico
+SOURCE=..\..\include\m_avatars.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\smalldot.ico
+SOURCE=..\..\include\m_awaymsg.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\sms.ico
+SOURCE=..\..\include\m_button.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\sortcold.bmp
+SOURCE=..\..\include\m_chat.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\sortcolu.bmp
+SOURCE=..\..\include\m_clc.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\timestamp.ico
+SOURCE=..\..\include\m_clist.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\Trillian.ico
+SOURCE=..\..\include\m_clistint.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\url.ico
+SOURCE=..\..\include\m_clui.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\useronli.ico
+SOURCE=.\m_api\m_clui.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\viewdetails.ico
+SOURCE=..\..\include\m_cluiframes.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\m_api\m_cluiframes.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\m_contactdir.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\m_contacts.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\m_database.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\m_email.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\m_file.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\m_findadd.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\m_fontservice.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\m_fuse.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\m_genmenu.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\m_history.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\m_icolib.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\m_icq.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\m_idle.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\m_ignore.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\m_imgsrvc.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\m_langpack.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\m_message.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\m_api\m_metacontacts.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\m_netlib.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\m_options.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\m_plugins.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\m_png.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\m_popup.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\m_protocols.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\m_protomod.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\m_protosvc.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\m_skin.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\m_api\m_skin_eng.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\m_api\m_skinbutton.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\m_api\m_smileyadd.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\m_system.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\m_system_cpp.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\m_api\m_toolbar.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\m_url.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\m_userinfo.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\m_utils.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\m_api\m_variables.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\m_api\m_xpTheme.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\newpluginapi.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\statusmodes.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\include\win2k.h
+# End Source File
+# End Group
+# Begin Group "hdr"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\hdr\cluiframes.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\hdr\modern_awaymsg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\hdr\modern_gettextasync.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\hdr\modern_global_structure.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\hdr\modern_skinselector.h
 # End Source File
 # End Group
 # End Target
 # End Project
+
