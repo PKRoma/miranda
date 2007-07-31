@@ -906,6 +906,8 @@ static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 	}
 
 	char *msg = ( char* )ccs->lParam;
+	if ( msg == NULL ) return 0;
+
 	if ( ccs->wParam & PREF_UNICODE ) {
 		char* p = strchr(msg, '\0');
 		if (p != msg) {
@@ -925,7 +927,7 @@ static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 		long id;
 		if ( strlen( msg ) > 133 ) {
 			errMsg = MSN_Translate( "Message is too long: SMS page limited to 133 UTF8 chars" );
-			id = 999999;
+			id = 999997;
 		}
 		else
 		{
@@ -942,7 +944,7 @@ static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 		mir_free( msg );
 
 		mir_forkthread( sttFakeAck, new TFakeAckParams( ccs->hContact, 999999, errMsg ));
-		return 999999;
+		return 999996;
 	}
 
 	int seq, msgType = ( MyOptions.SlowSend ) ? 'A' : 'N';
