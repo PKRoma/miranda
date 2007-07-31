@@ -551,6 +551,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\sendqueue.c">
+			</File>
+			<File
 				RelativePath="srmm.c">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -947,6 +950,9 @@
 			</File>
 			<File
 				RelativePath="richutil.h">
+			</File>
+			<File
+				RelativePath=".\sendqueue.h">
 			</File>
 			<File
 				RelativePath=".\statusicon.h">

@@ -1,35 +1,31 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on scriver.dsp
 !IF "$(CFG)" == ""
-CFG=scriver - Win32 Debug Unicode
-!MESSAGE No configuration specified. Defaulting to scriver - Win32 Debug Unicode.
-!ENDIF 
+CFG=scriver - Win32 Release Unicode
+!MESSAGE No configuration specified. Defaulting to scriver - Win32 Release Unicode.
+!ENDIF
 
 !IF "$(CFG)" != "scriver - Win32 Release" && "$(CFG)" != "scriver - Win32 Debug" && "$(CFG)" != "scriver - Win32 Release Unicode" && "$(CFG)" != "scriver - Win32 Debug Unicode"
 !MESSAGE Invalid configuration "$(CFG)" specified.
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
-!MESSAGE 
+!MESSAGE
 !MESSAGE NMAKE /f "scriver.mak" CFG="scriver - Win32 Debug Unicode"
-!MESSAGE 
+!MESSAGE
 !MESSAGE Possible choices for configuration are:
-!MESSAGE 
+!MESSAGE
 !MESSAGE "scriver - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "scriver - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "scriver - Win32 Release Unicode" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "scriver - Win32 Debug Unicode" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE 
+!MESSAGE
 !ERROR An invalid configuration is specified.
-!ENDIF 
+!ENDIF
 
 !IF "$(OS)" == "Windows_NT"
 NULL=
-!ELSE 
+!ELSE
 NULL=nul
-!ENDIF 
-
-CPP=cl.exe
-MTL=midl.exe
-RSC=rc.exe
+!ENDIF
 
 !IF  "$(CFG)" == "scriver - Win32 Release"
 
@@ -56,6 +52,7 @@ CLEAN :
 	-@erase "$(INTDIR)\msgwindow.obj"
 	-@erase "$(INTDIR)\options.obj"
 	-@erase "$(INTDIR)\resource.res"
+	-@erase "$(INTDIR)\sendqueue.obj"
 	-@erase "$(INTDIR)\services.obj"
 	-@erase "$(INTDIR)\srmm.obj"
 	-@erase "$(INTDIR)\statusicon.obj"
@@ -71,15 +68,49 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SRMM_EXPORTS" /Fp"$(INTDIR)\scriver.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
-RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /i "../../include" /d "NDEBUG" 
+CPP=cl.exe
+CPP_PROJ=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SRMM_EXPORTS" /Fp"$(INTDIR)\scriver.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+MTL=midl.exe
+MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
+RSC=rc.exe
+RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /i "../../include" /d "NDEBUG"
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\scriver.bsc" 
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\scriver.bsc"
 BSC32_SBRS= \
-	
+
 LINK32=link.exe
-LINK32_FLAGS=comctl32.lib kernel32.lib user32.lib gdi32.lib shell32.lib ole32.lib comdlg32.lib shlwapi.lib Version.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\scriver.pdb" /debug /machine:I386 /out:"../../bin/Release/plugins/scriver.dll" /implib:"$(OUTDIR)\scriver.lib" 
+LINK32_FLAGS=comctl32.lib kernel32.lib user32.lib gdi32.lib shell32.lib ole32.lib comdlg32.lib shlwapi.lib Version.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\scriver.pdb" /debug /machine:I386 /out:"../../bin/Release/plugins/scriver.dll" /implib:"$(OUTDIR)\scriver.lib"
 LINK32_OBJS= \
 	"$(INTDIR)\cmdlist.obj" \
 	"$(INTDIR)\globals.obj" \
@@ -89,6 +120,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\msgs.obj" \
 	"$(INTDIR)\msgtimedout.obj" \
 	"$(INTDIR)\msgwindow.obj" \
+	"$(INTDIR)\sendqueue.obj" \
 	"$(INTDIR)\srmm.obj" \
 	"$(INTDIR)\statusicon.obj" \
 	"$(INTDIR)\utils.obj" \
@@ -134,6 +166,7 @@ CLEAN :
 	-@erase "$(INTDIR)\msgwindow.obj"
 	-@erase "$(INTDIR)\options.obj"
 	-@erase "$(INTDIR)\resource.res"
+	-@erase "$(INTDIR)\sendqueue.obj"
 	-@erase "$(INTDIR)\services.obj"
 	-@erase "$(INTDIR)\srmm.obj"
 	-@erase "$(INTDIR)\statusicon.obj"
@@ -150,15 +183,49 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SRMM_EXPORTS" /Fp"$(INTDIR)\scriver.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
-MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
-RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /i "../../include" /d "_DEBUG" 
+CPP=cl.exe
+CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SRMM_EXPORTS" /Fp"$(INTDIR)\scriver.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+MTL=midl.exe
+MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
+RSC=rc.exe
+RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /i "../../include" /d "_DEBUG"
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\scriver.bsc" 
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\scriver.bsc"
 BSC32_SBRS= \
-	
+
 LINK32=link.exe
-LINK32_FLAGS=comctl32.lib kernel32.lib user32.lib gdi32.lib shell32.lib ole32.lib comdlg32.lib shlwapi.lib Version.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\scriver.pdb" /debug /machine:I386 /out:"../../bin/Debug/plugins/scriver.dll" /implib:"$(OUTDIR)\scriver.lib" /pdbtype:sept 
+LINK32_FLAGS=comctl32.lib kernel32.lib user32.lib gdi32.lib shell32.lib ole32.lib comdlg32.lib shlwapi.lib Version.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\scriver.pdb" /debug /machine:I386 /out:"../../bin/Debug/plugins/scriver.dll" /implib:"$(OUTDIR)\scriver.lib" /pdbtype:sept
 LINK32_OBJS= \
 	"$(INTDIR)\cmdlist.obj" \
 	"$(INTDIR)\globals.obj" \
@@ -168,6 +235,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\msgs.obj" \
 	"$(INTDIR)\msgtimedout.obj" \
 	"$(INTDIR)\msgwindow.obj" \
+	"$(INTDIR)\sendqueue.obj" \
 	"$(INTDIR)\srmm.obj" \
 	"$(INTDIR)\statusicon.obj" \
 	"$(INTDIR)\utils.obj" \
@@ -213,6 +281,7 @@ CLEAN :
 	-@erase "$(INTDIR)\msgwindow.obj"
 	-@erase "$(INTDIR)\options.obj"
 	-@erase "$(INTDIR)\resource.res"
+	-@erase "$(INTDIR)\sendqueue.obj"
 	-@erase "$(INTDIR)\services.obj"
 	-@erase "$(INTDIR)\srmm.obj"
 	-@erase "$(INTDIR)\statusicon.obj"
@@ -228,15 +297,49 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "UNICODE" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_WIN32_IE 0x0500" /Fp"$(INTDIR)\scriver.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
-RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /i "../../include" /d "NDEBUG" /d "UNICODE" 
+CPP=cl.exe
+CPP_PROJ=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "UNICODE" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_WIN32_IE 0x0500" /Fp"$(INTDIR)\scriver.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+MTL=midl.exe
+MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
+RSC=rc.exe
+RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /i "../../include" /d "NDEBUG" /d "UNICODE"
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\scriver.bsc" 
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\scriver.bsc"
 BSC32_SBRS= \
-	
+
 LINK32=link.exe
-LINK32_FLAGS=comctl32.lib kernel32.lib user32.lib gdi32.lib shell32.lib ole32.lib comdlg32.lib shlwapi.lib Version.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\scriver.pdb" /debug /machine:I386 /out:"../../bin/Release Unicode/plugins/scriver.dll" /implib:"$(OUTDIR)\scriver.lib" 
+LINK32_FLAGS=comctl32.lib kernel32.lib user32.lib gdi32.lib shell32.lib ole32.lib comdlg32.lib shlwapi.lib Version.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\scriver.pdb" /debug /machine:I386 /out:"../../bin/Release Unicode/plugins/scriver.dll" /implib:"$(OUTDIR)\scriver.lib"
 LINK32_OBJS= \
 	"$(INTDIR)\cmdlist.obj" \
 	"$(INTDIR)\globals.obj" \
@@ -246,6 +349,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\msgs.obj" \
 	"$(INTDIR)\msgtimedout.obj" \
 	"$(INTDIR)\msgwindow.obj" \
+	"$(INTDIR)\sendqueue.obj" \
 	"$(INTDIR)\srmm.obj" \
 	"$(INTDIR)\statusicon.obj" \
 	"$(INTDIR)\utils.obj" \
@@ -291,6 +395,7 @@ CLEAN :
 	-@erase "$(INTDIR)\msgwindow.obj"
 	-@erase "$(INTDIR)\options.obj"
 	-@erase "$(INTDIR)\resource.res"
+	-@erase "$(INTDIR)\sendqueue.obj"
 	-@erase "$(INTDIR)\services.obj"
 	-@erase "$(INTDIR)\srmm.obj"
 	-@erase "$(INTDIR)\statusicon.obj"
@@ -307,15 +412,49 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "UNICODE" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SRMM_EXPORTS" /Fp"$(INTDIR)\scriver.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
-MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
-RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /i "../../include" /d "_DEBUG" /d "UNICODE" 
+CPP=cl.exe
+CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "UNICODE" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SRMM_EXPORTS" /Fp"$(INTDIR)\scriver.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+MTL=midl.exe
+MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
+RSC=rc.exe
+RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /i "../../include" /d "_DEBUG" /d "UNICODE"
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\scriver.bsc" 
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\scriver.bsc"
 BSC32_SBRS= \
-	
+
 LINK32=link.exe
-LINK32_FLAGS=comctl32.lib kernel32.lib user32.lib gdi32.lib shell32.lib ole32.lib comdlg32.lib shlwapi.lib Version.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\scriver.pdb" /debug /machine:I386 /out:"../../bin/Debug Unicode/plugins/scriver.dll" /implib:"$(OUTDIR)\scriver.lib" /pdbtype:sept 
+LINK32_FLAGS=comctl32.lib kernel32.lib user32.lib gdi32.lib shell32.lib ole32.lib comdlg32.lib shlwapi.lib Version.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\scriver.pdb" /debug /machine:I386 /out:"../../bin/Debug Unicode/plugins/scriver.dll" /implib:"$(OUTDIR)\scriver.lib" /pdbtype:sept
 LINK32_OBJS= \
 	"$(INTDIR)\cmdlist.obj" \
 	"$(INTDIR)\globals.obj" \
@@ -325,6 +464,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\msgs.obj" \
 	"$(INTDIR)\msgtimedout.obj" \
 	"$(INTDIR)\msgwindow.obj" \
+	"$(INTDIR)\sendqueue.obj" \
 	"$(INTDIR)\srmm.obj" \
 	"$(INTDIR)\statusicon.obj" \
 	"$(INTDIR)\utils.obj" \
@@ -345,46 +485,16 @@ LINK32_OBJS= \
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
 
-!ENDIF 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
+!ENDIF
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
 !IF EXISTS("scriver.dep")
 !INCLUDE "scriver.dep"
-!ELSE 
+!ELSE
 !MESSAGE Warning: cannot find "scriver.dep"
-!ENDIF 
-!ENDIF 
+!ENDIF
+!ENDIF
 
 
 !IF "$(CFG)" == "scriver - Win32 Release" || "$(CFG)" == "scriver - Win32 Debug" || "$(CFG)" == "scriver - Win32 Release Unicode" || "$(CFG)" == "scriver - Win32 Debug Unicode"
@@ -426,6 +536,11 @@ SOURCE=.\msgtimedout.c
 SOURCE=.\msgwindow.c
 
 "$(INTDIR)\msgwindow.obj" : $(SOURCE) "$(INTDIR)"
+
+
+SOURCE=.\sendqueue.c
+
+"$(INTDIR)\sendqueue.obj" : $(SOURCE) "$(INTDIR)"
 
 
 SOURCE=.\srmm.c
@@ -511,5 +626,4 @@ SOURCE=.\chat\window.c
 
 
 
-!ENDIF 
-
+!ENDIF
