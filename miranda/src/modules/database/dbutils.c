@@ -87,7 +87,12 @@ static int DbEventGetText(WPARAM wParam, LPARAM lParam)
 		return 0;
 	}
 
-   egt->datatype &= ~DBVTF_DENYUNICODE;
+	// temporary fix for bug with event types conflict between jabber chat states notifications
+	// and srmm's status changes, must be commented out in future releases
+	if ( dbei->eventType == 25368 && dbei->cbBlob == 1 && dbei->pBlob[0] == 1 )
+		return 0;
+
+	egt->datatype &= ~DBVTF_DENYUNICODE;
 	if ( egt->datatype == DBVT_WCHAR )
 	{
 		WCHAR* msg;

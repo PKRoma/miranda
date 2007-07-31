@@ -143,6 +143,7 @@ int DbEventIsShown(DBEVENTINFO * dbei, struct MessageWindowData *dat)
 		case EVENTTYPE_MESSAGE:
 			return 1;
 		case EVENTTYPE_STATUSCHANGE:
+		case EVENTTYPE_JABBER_CHATSTATES:
 			if (!DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWSTATUSCH, SRMSGDEFSET_SHOWSTATUSCH)) {
 //			if (dbei->flags & DBEF_READ)
 				return 0;
@@ -173,7 +174,7 @@ struct EventData *getEventFromDB(struct MessageWindowData *dat, HANDLE hContact,
 		CallService(MS_DB_EVENT_MARKREAD, (WPARAM) hContact, (LPARAM) hDbEvent);
 		CallService(MS_CLIST_REMOVEEVENT, (WPARAM) hContact, (LPARAM) hDbEvent);
 	}
-	else if (dbei.eventType == EVENTTYPE_STATUSCHANGE) {
+	else if (dbei.eventType == EVENTTYPE_STATUSCHANGE || dbei.eventType == EVENTTYPE_JABBER_CHATSTATES) {
 		CallService(MS_DB_EVENT_MARKREAD, (WPARAM) hContact, (LPARAM) hDbEvent);
 	}
 	event = (struct EventData *) mir_alloc(sizeof(struct EventData));
@@ -785,6 +786,7 @@ static char *CreateRTFFromDbEvent2(struct MessageWindowData *dat, struct EventDa
 					i = LOGICON_MSG_IN;
 				}
 				break;
+			case EVENTTYPE_JABBER_CHATSTATES:
 			case EVENTTYPE_STATUSCHANGE:
 			case EVENTTYPE_URL:
 			case EVENTTYPE_FILE:
@@ -822,7 +824,7 @@ static char *CreateRTFFromDbEvent2(struct MessageWindowData *dat, struct EventDa
 		}
 		showColon = 1;
 	}
-	if ((!(g_dat->flags&SMF_HIDENAMES) && event->eventType == EVENTTYPE_MESSAGE && isGroupBreak) || event->eventType == EVENTTYPE_STATUSCHANGE) {
+	if ((!(g_dat->flags&SMF_HIDENAMES) && event->eventType == EVENTTYPE_MESSAGE && isGroupBreak) || event->eventType == EVENTTYPE_STATUSCHANGE || event->eventType == EVENTTYPE_JABBER_CHATSTATES) {
 		if (event->eventType == EVENTTYPE_MESSAGE) {
 			if (showColon) {
 				AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", SetToStyle(event->dwFlags & IEEDF_SENT ? MSGFONTID_MYNAME : MSGFONTID_YOURNAME));
@@ -881,6 +883,7 @@ static char *CreateRTFFromDbEvent2(struct MessageWindowData *dat, struct EventDa
 		}
 		*/
 		break;
+		case EVENTTYPE_JABBER_CHATSTATES:
 		case EVENTTYPE_STATUSCHANGE:
 		case EVENTTYPE_URL:
 		case EVENTTYPE_FILE:

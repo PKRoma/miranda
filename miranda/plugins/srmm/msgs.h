@@ -94,7 +94,8 @@ struct MessageWindowData
 #define DM_GETWINDOWSTATE    (WM_USER+30)
 #define DM_STATUSICONCHANGE  (WM_USER+31)
 
-#define EVENTTYPE_STATUSCHANGE 25368
+#define EVENTTYPE_JABBER_CHATSTATES     2000
+#define EVENTTYPE_STATUSCHANGE          25368
 
 struct CREOleCallback
 {

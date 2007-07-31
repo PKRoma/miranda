@@ -93,8 +93,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define JABBER_MAX_JID_LEN  256
 
 // registered db event types
-#define JABBER_DB_EVENT_TYPE_CHATSTATES          25368
-#define JS_DB_GETEVENTTEXT_CHATSTATES            "/GetEventText25368"
+#define JABBER_DB_EVENT_TYPE_CHATSTATES          2000
+#define JS_DB_GETEVENTTEXT_CHATSTATES            "/GetEventText2000"
 #define JABBER_DB_EVENT_CHATSTATES_GONE          1
 
 // User-defined message
