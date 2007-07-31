@@ -329,15 +329,27 @@ BOOL  OptTree_ProcessMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam, 
 					break;
 				}
 				
-				case TVN_ITEMEXPANDED:
+				case TVN_ITEMEXPANDEDW:
 				{
-					LPNMTREEVIEW lpnmtv = (LPNMTREEVIEW)lparam;
+					LPNMTREEVIEWW lpnmtv = (LPNMTREEVIEWW)lparam;
 					TVITEM tvi;
 					tvi.mask=TVIF_HANDLE|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
 					tvi.hItem = lpnmtv->itemNew.hItem;
 					tvi.iImage = tvi.iSelectedImage =
 						(lpnmtv->itemNew.state & TVIS_EXPANDED) ? IMG_GRPOPEN : IMG_GRPCLOSED;
-					TreeView_SetItem(lpnmhdr->hwndFrom,&tvi);
+					SendMessageW(lpnmhdr->hwndFrom, TVM_SETITEMW, 0, (LPARAM)&tvi);
+					break;
+				}
+				
+				case TVN_ITEMEXPANDEDA:
+				{
+					LPNMTREEVIEWA lpnmtv = (LPNMTREEVIEWA)lparam;
+					TVITEM tvi;
+					tvi.mask=TVIF_HANDLE|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
+					tvi.hItem = lpnmtv->itemNew.hItem;
+					tvi.iImage = tvi.iSelectedImage =
+						(lpnmtv->itemNew.state & TVIS_EXPANDED) ? IMG_GRPOPEN : IMG_GRPCLOSED;
+					SendMessageA(lpnmhdr->hwndFrom, TVM_SETITEMA, 0, (LPARAM)&tvi);
 					break;
 				}
 			}
