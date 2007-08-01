@@ -430,8 +430,8 @@ static void   sttReposButtons(MTBINFO * mti)
 
 static HWND   sttCreateToolBarFrame( HWND hwndParent, char * szCaption, int nHeight )
 {
-	TCHAR Caption=mir_a2t(szCaption);
-	HWND hwnd=CreateWindow(_T(MIRANDATOOLBARCLASSNAME), TranslateT(Caption), WS_CHILD|WS_VISIBLE|WS_CLIPCHILDREN,0,0,0,nHeight,hwndParent,NULL,g_hInst, (void*) szCaption);
+	TCHAR * Caption=mir_a2t(szCaption);
+	HWND hwnd=CreateWindow(_T(MIRANDATOOLBARCLASSNAME), TranslateTS(Caption), WS_CHILD|WS_VISIBLE|WS_CLIPCHILDREN,0,0,0,nHeight,hwndParent,NULL,g_hInst, (void*) szCaption);
 	mir_free(Caption);
 	return hwnd;
 }
