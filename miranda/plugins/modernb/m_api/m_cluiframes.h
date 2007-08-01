@@ -179,6 +179,14 @@ typedef struct tagCLISTFrame {
 #define FO_TBTIPNAME	0x0009 //Change TB tooltip
 #define FO_FLOATING		0x000a //Change floating mode
 
+#define FO_UNICODETEXT	0x8000 // flag for	FO_NAME,FO_TBNAME, FO_TBTIPNAME set/get lPAram as unicode wchar_t
+#ifdef _UNICODE
+	#define FO_TCHAR FO_UNICODETEXT
+#else
+	#define FO_TCHAR 0x0000
+#endif
+
+
 //////////////////////////////////////////////////////////////////////////
 //want show tooltip for statusbar
 //wparam=(char *)protocolname

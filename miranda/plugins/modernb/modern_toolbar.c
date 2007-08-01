@@ -204,7 +204,7 @@ static int    ehhToolbarModulesLoaded(WPARAM wParam, LPARAM lParam)
 	tbdat.hehSettingsChanged=HookEvent(ME_DB_CONTACT_SETTINGCHANGED, ehhToolBarSettingsChanged );
 	{
 		HWND hwndClist=(HWND) CallService(MS_CLUI_GETHWND,0,0);
-		sttCreateToolBarFrame( hwndClist, "ToolBar", 24);
+		sttCreateToolBarFrame( hwndClist, ("ToolBar"), 24);
 	}
 
 	NotifyEventHooks(ME_TB_MODULELOADED, 0, 0);	
@@ -430,7 +430,10 @@ static void   sttReposButtons(MTBINFO * mti)
 
 static HWND   sttCreateToolBarFrame( HWND hwndParent, char * szCaption, int nHeight )
 {
-	return CreateWindow(_T(MIRANDATOOLBARCLASSNAME), _T(MIRANDATOOLBARCLASSNAME), WS_CHILD|WS_VISIBLE|WS_CLIPCHILDREN,0,0,0,nHeight,hwndParent,NULL,g_hInst, (void*) szCaption);
+	TCHAR Caption=mir_a2t(szCaption);
+	HWND hwnd=CreateWindow(_T(MIRANDATOOLBARCLASSNAME), TranslateT(Caption), WS_CHILD|WS_VISIBLE|WS_CLIPCHILDREN,0,0,0,nHeight,hwndParent,NULL,g_hInst, (void*) szCaption);
+	mir_free(Caption);
+	return hwnd;
 }
 static int    sttButtonPressed(MTBINFO * pMTBInfo, HWND hwndbutton)
 {

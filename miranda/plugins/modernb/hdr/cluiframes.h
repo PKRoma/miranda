@@ -67,8 +67,12 @@ typedef struct tagFrameTitleBar{
 	HWND TitleBarbutt;
 	HWND hwndTip;
 
-	LPTSTR tbname;
-	LPTSTR tooltip;
+	TCHAR* tbname;
+	TCHAR* tooltip;
+
+	char * sztbname;
+	char * sztooltip;
+
 	HMENU hmenu;
 	HICON hicon;
 
@@ -91,7 +95,8 @@ typedef struct _wndFrame{
 	int id;
 	HWND hWnd ;
 	RECT wndSize;
-	LPTSTR name;
+	TCHAR * Name;
+	char  * szName;
 	int align;
 	int height;
 	int dwFlags;

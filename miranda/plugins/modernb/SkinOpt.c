@@ -197,14 +197,14 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 					ske_LoadSkinFromDB();	
 					glOtherSkinWasLoaded=TRUE;
 					pcli->pfnClcBroadcast( INTM_RELOADOPTIONS,0,0);
-					callProxied_CLUIFrames_OnClistResize_mod(0,0);
+					sync2(CLUIFrames_OnClistResize_mod,0,0);
 					ske_RedrawCompleteWindow();        
-					callProxied_CLUIFrames_OnClistResize_mod(0,0);
+					sync2(CLUIFrames_OnClistResize_mod,0,0);
 					{
 						HWND hwnd=pcli->hwndContactList;
 						RECT rc={0};
 						GetWindowRect(hwnd, &rc);
-						callProxied_CLUIFrames_OnMoving(hwnd,&rc);
+						sync2(CLUIFrames_OnMoving,hwnd,&rc);
 					}
 					if (g_hCLUIOptionsWnd)
 					{

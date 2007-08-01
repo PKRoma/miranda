@@ -207,14 +207,14 @@ int     ske_ValidateFrameImageProc(RECT * r);
 
 /* CLUIFrames.c PROXIED */
 
-int callProxied_OnFrameTitleBarBackgroundChange(WPARAM wParam,LPARAM lParam);
-int callProxied_CLUIFrames_ActivateSubContainers(BOOL wParam);
-int callProxied_CLUIFrames_OnClistResize_mod(WPARAM wParam,LPARAM lParam);
-int callProxied_CLUIFrames_OnMoving(HWND hwnd,RECT *lParam);
-int callProxied_CLUIFrames_OnShowHide(HWND hwnd, int mode);
-int callProxied_CLUIFrames_SetLayeredMode(BOOL fLayeredMode,HWND hwnd);
-int callProxied_CLUIFrames_SetParentForContainers(HWND parent);
-int callProxied_CLUIFramesOnClistResize(WPARAM wParam,LPARAM lParam);
+int CLUIFrames_ActivateSubContainers(WPARAM wParam);
+int CLUIFrames_OnClistResize_mod(WPARAM wParam,LPARAM lParam);
+int CLUIFrames_OnMoving(WPARAM wParam,LPARAM lParam);
+int CLUIFrames_OnShowHide(WPARAM wParam,LPARAM lParam);
+int CLUIFrames_SetLayeredMode(WPARAM wParam,LPARAM lParam);
+int CLUIFrames_SetParentForContainers(WPARAM wParam);
+int CLUIFramesOnClistResize(WPARAM wParam,LPARAM lParam);
+
 int callProxied_DrawTitleBar(HDC hdcMem2,RECT * rect,int Frameid);
 int callProxied_FindFrameID(HWND FrameHwnd);
 int callProxied_QueueAllFramesUpdating(BYTE queue);
@@ -338,6 +338,17 @@ extern LRESULT ( CALLBACK *saveContactListControlWndProc )(HWND hwnd, UINT msg, 
 
 /* SkinEngine.c */
 
+
 BYTE SkinDBGetContactSettingByte(HANDLE hContact, const char* szSection, const char*szKey, BYTE bDefault);
+
+
+#define sync(a) SyncCall((void*) a, 0)
+#define sync1(a, b1) SyncCall((void*) a, 1, (LPARAM)b1 )
+#define sync2(a, b1, b2) doCLUIFramesProxyCall( a,  (WPARAM)b1, (LPARAM)b2 )
+#define sync3(a, b1, b2, b3) SyncCall((void*) a, 3, (LPARAM)b1, (LPARAM)b2, (LPARAM)b3 )
+#define sync4(a, b1, b2, b3, b4) SyncCall((void*) a, 4, (LPARAM)b1, (LPARAM)b2, (LPARAM)b3,(LPARAM)b4 )
+
+int doCLUIFramesProxyCall(PSYNCCALLBACKPROC pfnProc, WPARAM wParam, LPARAM lParam);
+int SyncCall(void * vproc, int count, ... );
 
 #endif

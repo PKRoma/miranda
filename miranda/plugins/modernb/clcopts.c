@@ -2585,7 +2585,7 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				if (IsWindow(hProgMan)) 
 				{
 					SetParent(pcli->hwndContactList,hProgMan);
-					callProxied_CLUIFrames_SetParentForContainers(hProgMan);
+					sync1(CLUIFrames_SetParentForContainers, hProgMan);
 					g_CluiData.fOnDesktop=1;
 				}
 			} 
@@ -2594,7 +2594,7 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				if (GetParent(pcli->hwndContactList))
 				{
 					SetParent(pcli->hwndContactList,NULL);
-					callProxied_CLUIFrames_SetParentForContainers(NULL);
+					sync1(CLUIFrames_SetParentForContainers, NULL);
 				}
 				g_CluiData.fOnDesktop=0;
 			}
@@ -2616,7 +2616,7 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
 				DBWriteContactSettingDword(NULL,"CLUIFrames","GapBetweenFrames",(DWORD)i1);
 				DBWriteContactSettingDword(NULL,"CLUIFrames","GapBetweenTitleBar",(DWORD)i2);
-				callProxied_CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,(LPARAM)0);
+				sync2(CLUIFramesOnClistResize, (WPARAM)pcli->hwndContactList,(LPARAM)0);
 			}
 			//DBWriteContactSettingByte(NULL,"CLUI","AutoSizeUpward",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOSIZEUPWARD));
 			//DBWriteContactSettingByte(NULL,"CLUI","SnapToEdges",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SNAPTOEDGES));
