@@ -1404,7 +1404,7 @@ static int Service_SetAwayMsg(WPARAM wParam, LPARAM lParam)
 			else
 				StatusMessage =  ReplaceString( newStatus, _T("\r\n"), _T(" "));
 
-			PostIrcMessage( _T("/AWAY ") _T(TCHAR_STR_PARAM), StatusMessage.substr(0,450).c_str());
+			PostIrcMessage( _T("/AWAY %s"), StatusMessage.substr(0,450).c_str());
 	}	}
 
 	return 0;
