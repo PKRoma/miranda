@@ -314,6 +314,7 @@ typedef struct {
 #define NLOCF_HTTP  0x0001  //this connection will be used for HTTP communications. If configured for an HTTP/HTTPS proxy the connection is opened as if there was no proxy.
 #define NLOCF_STICKYHEADERS 0x0002 //this connection should send the sticky headers associated with NetLib user apart of any HTTP request
 #define NLOCF_V2 0x0004 //this connection understands the newer structure, newer cbSize isnt enough
+#define NLOCF_UDP 0x0008 // this connection is UDP
 
 /* Added during 0.4.0+ development!! (2004/11/29) prior to this, connect() blocks til a connection is made or
 a hard timeout is reached, this can be anywhere between 30-60 seconds, and it stops Miranda from unloading whilst
