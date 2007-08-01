@@ -234,7 +234,7 @@ static int NetlibInitSocks5Connection(struct NetlibConnection *nlc,struct Netlib
 		}
 		pInit=(PBYTE)mir_alloc(6+nHostLen);
 		pInit[0]=5;   //SOCKS5
-		pInit[1]=1;   //connect
+		pInit[1]= nloc->flags & NLOCF_UDP ? 3 : 1; //connect or UDP
 		pInit[2]=0;   //reserved
 		if(hostIP==INADDR_NONE) {		 //DNS lookup through proxy
 			pInit[3]=3;
@@ -477,7 +477,7 @@ int NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 	nlc=(struct NetlibConnection*)mir_calloc(sizeof(struct NetlibConnection));
 	nlc->handleType=NLH_CONNECTION;
 	nlc->nlu=nlu;
-	nlc->s=socket(AF_INET,SOCK_STREAM,0);
+	nlc->s=socket(AF_INET,nloc->flags & NLOCF_UDP ? SOCK_DGRAM : SOCK_STREAM, 0);
 	if(nlc->s==INVALID_SOCKET) {
 		Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"socket",WSAGetLastError());
 		mir_free(nlc);

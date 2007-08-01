@@ -149,7 +149,7 @@ void NetlibDestroySecurityProvider(char* provider, HANDLE hSecurity)
 	ReleaseMutex(hSecMutex);
 }
 
-char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, char *szChallenge, char* login, char* psw)
+char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, char *szChallenge, const char* login, const char* psw)
 {
 	SECURITY_STATUS sc;
 	SecBufferDesc outputBufferDescriptor,inputBufferDescriptor;
@@ -180,38 +180,57 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, char *szChallenge, char*
 		inputSecurityToken.pvBuffer=nlb64.pbDecoded;
 
 		// try to decode the domain name from the NTLM challenge
-		if ( login != NULL ) {
-			NtlmType2packet* pkt = ( NtlmType2packet* )nlb64.pbDecoded;
-			if ( !strcmp( pkt->sign, "NTLMSSP" ) && pkt->type == 2 ) {
-				char* domainName = ( char* )&nlb64.pbDecoded[ pkt->targetName.offset ];
-				int domainLen = pkt->targetName.len;
+		if ( login != NULL && login[0] != '\0' ) {
+			const char* loginName = login;
+			const char* domainName = strchr(login,'\\');
+			int domainLen = 0;
+			int loginLen = lstrlenA(loginName);
+			if(domainName != NULL) {
+				loginName = domainName + 1;
+				loginLen = lstrlenA(loginName);
+				domainLen = domainName - login;
+				domainName = login;
+			}
+			else if((domainName = strchr(login,'@')) != NULL) {
+				loginName = login;
+				loginLen = domainName - login;
+				domainLen = lstrlenA(++domainName);
+			}
+			else {
+				NtlmType2packet* pkt = ( NtlmType2packet* )nlb64.pbDecoded;
+				if ( !strcmp( pkt->sign, "NTLMSSP" ) && pkt->type == 2 ) {
+					domainName = ( char* )&nlb64.pbDecoded[ pkt->targetName.offset ];
+					domainLen = pkt->targetName.len;
 
-				// Negotiate Unicode? if yes, convert the unicode name to ANSI
-				if ( pkt->flags & 1 ) {
-					char* buf = ( char* )alloca( domainLen ); // trailing '\0' is not needed
-					WideCharToMultiByte( CP_ACP, 0, ( WCHAR* )domainName, domainLen, buf, domainLen, NULL, NULL );
-					domainLen /= 2;
-					domainName = buf;
+					// Negotiate Unicode? if yes, convert the unicode name to ANSI
+					if ( pkt->flags & 1 ) {
+						char* buf = ( char* )alloca( domainLen ); // trailing '\0' is not needed
+						WideCharToMultiByte( CP_ACP, 0, ( WCHAR* )domainName, domainLen, buf, domainLen, NULL, NULL );
+						domainLen /= 2;
+						domainName = buf;
+					}
 				}
-
+			}
+			if(domainName != NULL) {
 				// remove old credentials and reinitialize the security context using new data
 				if ( hNtlm->stage != 0 ) {
 					g_pSSPI->DeleteSecurityContext(&hNtlm->hClientContext);
 					g_pSSPI->FreeCredentialsHandle(&hNtlm->hClientCredential);
-				}
+				} 
 				{
 					SEC_WINNT_AUTH_IDENTITY_A auth = { 0 };
-					auth.User = login;
-					auth.UserLength = lstrlenA(login);
-					auth.Password = psw;
+					auth.User = (unsigned char*)loginName;
+					auth.UserLength = loginLen;
+					auth.Password = (unsigned char*)psw;
 					auth.PasswordLength = lstrlenA(psw);
 					auth.Flags = SEC_WINNT_AUTH_IDENTITY_ANSI;
-					auth.Domain = domainName;
+					auth.Domain = (unsigned char*)domainName;
 					auth.DomainLength = domainLen;
 
 					g_pSSPI->AcquireCredentialsHandleA(NULL, "NTLM", SECPKG_CRED_BOTH,
 						NULL, &auth, NULL, NULL, &hNtlm->hClientCredential, &tokenExpiration);
-			}	}
+				}	
+			}
 
 			outputBufferDescriptor.cBuffers = 1;
 			outputBufferDescriptor.pBuffers = &outputSecurityToken;

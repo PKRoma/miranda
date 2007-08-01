@@ -348,11 +348,9 @@ static BOOL CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 						else {
 							enableAuth=1;
 							if(tempSettings[i].settings.useProxyAuth) {
-								if(tempSettings[i].settings.proxyType==PROXYTYPE_HTTP || tempSettings[i].settings.proxyType==PROXYTYPE_HTTPS) {
+								if(tempSettings[i].settings.proxyType==PROXYTYPE_HTTP || tempSettings[i].settings.proxyType==PROXYTYPE_HTTPS)
 									enableNtlm=1;
-									if(!tempSettings[i].settings.useProxyAuthNtlm) enableUser=enablePass=1;
-								}
-								else enableUser=enablePass=1;
+								enableUser=enablePass=1;
 							}
 						}
 					}
