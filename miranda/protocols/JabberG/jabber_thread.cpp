@@ -1029,9 +1029,11 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 		int id = JabberGetPacketID( node );
 		JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, from );
 		if ( item != NULL ) { // yes, it is
-			char *errText = mir_t2a(JabberErrorMsg(errorNode));
+			TCHAR *szErrText = JabberErrorMsg(errorNode);
+			char *errText = mir_t2a(szErrText);
 			JSendBroadcast( JabberHContactFromJID( from ), ACKTYPE_MESSAGE, ACKRESULT_FAILED, ( HANDLE ) id, (LPARAM)errText );
 			mir_free(errText);
+			mir_free(szErrText);
 		}
 		return;
 	}

@@ -736,12 +736,15 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
     else {
         dbei.cbSize = sizeof(dbei);
         dbei.cbBlob = CallService(MS_DB_EVENT_GETBLOBSIZE, (WPARAM) hDbEvent, 0);
-        if (dbei.cbBlob == -1)
+        if (dbei.cbBlob == -1) {
+            free(buffer);
             return NULL;
+        }
         dbei.pBlob = (PBYTE) malloc(dbei.cbBlob);
         CallService(MS_DB_EVENT_GET, (WPARAM) hDbEvent, (LPARAM) & dbei);
         if (!DbEventIsShown(dat, &dbei)) {
             free(dbei.pBlob);
+            free(buffer);
             return NULL;
         }
     }
@@ -1421,12 +1424,14 @@ static DWORD CALLBACK LogStreamInEvents(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG 
         dat->bufferOffset = 0;
         switch (dat->stage) {
             case STREAMSTAGE_HEADER:
+                if (dat->buffer) free(dat->buffer);
                 dat->buffer = CreateRTFHeader(dat->dlgDat);
                 dat->stage = STREAMSTAGE_EVENTS;
                 break;
             case STREAMSTAGE_EVENTS:
                 if (dat->eventsToInsert) {
                     do {
+                        if (dat->buffer) free(dat->buffer);
                         dat->buffer = Template_CreateRTFFromDbEvent(dat->dlgDat, dat->hContact, dat->hDbEvent, !dat->isEmpty, dat);
                         if (dat->buffer)
                             dat->hDbEventLast = dat->hDbEvent;
@@ -1442,6 +1447,7 @@ static DWORD CALLBACK LogStreamInEvents(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG 
                 dat->stage = STREAMSTAGE_TAIL;
                 //fall through
             case STREAMSTAGE_TAIL:{
+                if (dat->buffer) free(dat->buffer);
                 dat->buffer = CreateRTFTail(dat->dlgDat);
                 dat->stage = STREAMSTAGE_STOP;
                 break;
@@ -1667,7 +1673,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
     InvalidateRect(GetDlgItem(hwndDlg, IDC_LOG), NULL, FALSE);
     //SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
     EnableWindow(GetDlgItem(hwndDlg, IDC_QUOTE), dat->hDbEventLast != NULL);
-
+    if (streamData.buffer) free(streamData.buffer);
 }
 
 static void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int fAppend)
