@@ -43,8 +43,27 @@ static BOOL CALLBACK ReadAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,
 			dat=(struct AwayMsgDlgData*)mir_alloc(sizeof(struct AwayMsgDlgData));
 			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)dat);
 			dat->hContact=(HANDLE)lParam;
-			dat->hAwayMsgEvent=HookEventMessage(ME_PROTO_ACK,hwndDlg,HM_AWAYMSG);
-			dat->hSeq=(HANDLE)CallContactService(dat->hContact,PSS_GETAWAYMSG,0,0);
+			{
+#ifdef _UNICODE
+				DBVARIANT dbv;
+				int unicode = !DBGetContactSetting(dat->hContact, "CList", "StatusMsg", &dbv) && 
+					(dbv.type & (DBVT_UTF8 | DBVT_WCHAR));
+				DBFreeVariant(&dbv);
+				if (unicode) {
+					DBGetContactSettingWString(dat->hContact, "CList", "StatusMsg", &dbv);
+					SetDlgItemText(hwndDlg, IDC_MSG, dbv.pwszVal);
+					DBFreeVariant(&dbv);
+					ShowWindow(GetDlgItem(hwndDlg,IDC_RETRIEVING),SW_HIDE);
+					ShowWindow(GetDlgItem(hwndDlg,IDC_MSG),SW_SHOW);
+					SetDlgItemText(hwndDlg,IDOK,TranslateT("&Close"));
+				}
+				else 
+#endif	
+				{
+					dat->hAwayMsgEvent=HookEventMessage(ME_PROTO_ACK,hwndDlg,HM_AWAYMSG);
+					dat->hSeq=(HANDLE)CallContactService(dat->hContact,PSS_GETAWAYMSG,0,0);
+				}
+			}
 			WindowList_Add(hWindowList,hwndDlg,dat->hContact);
 			{	TCHAR  str[256],format[128];
 				TCHAR* contactName=(TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)dat->hContact,GCDNF_TCHAR);
