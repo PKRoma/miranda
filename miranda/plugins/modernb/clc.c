@@ -422,22 +422,29 @@ int ClcProtoAck(WPARAM wParam,LPARAM lParam)
 				if (ack->szModule!= NULL) 
 					if(DBGetContactSettingByte(ack->hContact, ack->szModule, "ChatRoom", 0) != 0) return 0;
 			}
+			
 			{
-				char * val=DBGetStringA(ack->hContact,"CList","StatusMsg");
-				if (val) 
+				DBVARIANT dbv={0};
+				BOOL bUnicode = (!DBGetContactSetting(ack->hContact, "CList", "StatusMsg", &dbv) && (dbv.type & DBVT_ASCIIZ) == 0);
+				DBFreeVariant(&dbv);
+				if (!bUnicode)
 				{
-					if (!mir_bool_strcmpi(val,(const char *)ack->lParam))
+					char * val=DBGetStringA(ack->hContact,"CList","StatusMsg");
+					if (val) 
+					{
+						if (!mir_bool_strcmpi(val,(const char *)ack->lParam))
+							DBWriteContactSettingString(ack->hContact,"CList","StatusMsg",(const char *)ack->lParam);
+						else
+							gtaRenewText(ack->hContact);
+						mir_free_and_nill(val);
+					}
+					else 
 						DBWriteContactSettingString(ack->hContact,"CList","StatusMsg",(const char *)ack->lParam);
-					else
-						gtaRenewText(ack->hContact);
-					mir_free_and_nill(val);
+	
+					//pcli->pfnClcBroadcast( INTM_STATUSMSGCHANGED,(WPARAM)ack->hContact,(LPARAM)ack->lParam);      
 				}
-				else 
-					DBWriteContactSettingString(ack->hContact,"CList","StatusMsg",(const char *)ack->lParam);
-
-				//pcli->pfnClcBroadcast( INTM_STATUSMSGCHANGED,(WPARAM)ack->hContact,(LPARAM)ack->lParam);      
+				gtaRenewText(ack->hContact);
 			}
-
 		} 
 		else
 		{

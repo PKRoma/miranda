@@ -577,8 +577,7 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 					{
 						if (g_CluiData.bRemoveAwayMessageForOffline)
 						{
-							char a='\0';
-							DBWriteContactSettingString((HANDLE)wParam,"CList","StatusMsg",&a);
+							DBWriteContactSettingString((HANDLE)wParam,"CList","StatusMsg","");
 						}
 					}
 					if ((DBGetContactSettingWord(NULL,"CList","SecondLineType",0)==TEXT_STATUS_MESSAGE||DBGetContactSettingWord(NULL,"CList","ThirdLineType",0)==TEXT_STATUS_MESSAGE) &&pdnce->hContact && pdnce->szProto)
