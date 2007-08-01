@@ -1111,7 +1111,7 @@ int CLUIFramesSetFrameOptions(WPARAM wParam,LPARAM lParam)
 		return -1;
 	}
 
-	switch(LOWORD(wParam))
+	switch(LOWORD(wParam) & ~FO_UNICODETEXT)
 	{
 		case FO_FLAGS:{
 			int flag=lParam;
@@ -1149,7 +1149,7 @@ int CLUIFramesSetFrameOptions(WPARAM wParam,LPARAM lParam)
 
 		case FO_NAME:
 			if(lParam==(LPARAM)NULL) {ulockfrm(); return -1;}
-			if(Frames[pos].name!=NULL) free(Frames[pos].name);
+			mir_free(Frames[pos].name);
 			Frames[pos].name=mir_tstrdup((LPTSTR)lParam);
 			ulockfrm();
 			return 0;
@@ -1824,7 +1824,6 @@ static int CLUIFramesRemoveFrame(WPARAM wParam,LPARAM lParam)
 	pos=id2pos(wParam);
 
 	if (pos<0||pos>nFramescount){ulockfrm();return(-1);}
-
 
 	if (Frames[pos].name!=NULL) free(Frames[pos].name);
 	if (Frames[pos].TitleBar.tbname!=NULL) free(Frames[pos].TitleBar.tbname);
@@ -3411,8 +3410,9 @@ int UnLoadCLUIFramesModule(void)
 		Frames[i].ContainerWnd=(HWND)-1;
 		DestroyMenu(Frames[i].TitleBar.hmenu);
 
-		if (Frames[i].name!=NULL) free(Frames[i].name);
-		if (Frames[i].TitleBar.tbname!=NULL) free(Frames[i].TitleBar.tbname);
+		mir_free(Frames[i].name);
+		mir_free(Frames[i].TitleBar.tbname);
+		mir_free(Frames[i].TitleBar.tooltip);
 	}
 	if(Frames) free(Frames);
 	Frames=NULL;

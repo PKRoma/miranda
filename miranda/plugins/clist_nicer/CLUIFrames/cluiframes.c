@@ -600,15 +600,15 @@ int CLUIFramesLoadFrameSettings(int Frameid)
 
     if (FramesSysNotStarted) return -1;
 
-    if (Frameid<0||Frameid>=nFramescount) 
+    if (Frameid<0||Frameid>=nFramescount)
 		return -1;
 
     maxstored = DBGetContactSettingWord(0,CLUIFrameModule,"StoredFrames", -1);
-    if (maxstored == -1) 
+    if (maxstored == -1)
         return 0;
 
     storpos=LocateStorePosition(Frameid,maxstored);
-    if (storpos==-1) 
+    if (storpos==-1)
         return 0;
 
     DBLoadFrameSettingsAtPos(storpos,Frameid);
@@ -619,19 +619,19 @@ int CLUIFramesStoreFrameSettings(int Frameid)
 {
     int maxstored,storpos;
 
-    if (FramesSysNotStarted) 
+    if (FramesSysNotStarted)
 		return -1;
 
-    if (Frameid<0||Frameid>=nFramescount) 
+    if (Frameid<0||Frameid>=nFramescount)
 		return -1;
 
     maxstored=DBGetContactSettingWord(0,CLUIFrameModule,"StoredFrames",-1);
-    if (maxstored==-1) 
+    if (maxstored==-1)
 		maxstored=0;
 
     storpos=LocateStorePosition(Frameid,maxstored);
 	if (storpos==-1) {
-        storpos=maxstored; 
+        storpos=maxstored;
 		maxstored++;
 	}
 
@@ -643,10 +643,10 @@ int CLUIFramesStoreFrameSettings(int Frameid)
 int CLUIFramesStoreAllFrames()
 {
     int i;
-    
-	if (FramesSysNotStarted) 
+
+	if (FramesSysNotStarted)
 		return -1;
-    
+
 	if(g_shutDown)
         return -1;
 
@@ -661,7 +661,7 @@ int CLUIFramesStoreAllFrames()
 int CLUIFramesGetalClientFrame(void)
 {
     int i;
-    if (FramesSysNotStarted) 
+    if (FramesSysNotStarted)
         return -1;
 
     if (alclientFrame!=-1)
@@ -891,7 +891,7 @@ static int CLUIFramesModifyContextMenuForFrame(WPARAM wParam,LPARAM lParam)
     int pos;
     CLISTMENUITEM mi;
 
-    if (FramesSysNotStarted) 
+    if (FramesSysNotStarted)
 		return -1;
 
     lockfrm();
@@ -955,7 +955,7 @@ int CLUIFramesModifyMainMenuItems(WPARAM wParam,LPARAM lParam)
     int pos;
     CLISTMENUITEM mi;
 
-    if (FramesSysNotStarted) 
+    if (FramesSysNotStarted)
 		return -1;
 
     lockfrm();
@@ -1086,7 +1086,7 @@ int CLUIFramesSetFrameOptions(WPARAM wParam,LPARAM lParam)
     int pos;
     int retval; // value to be returned
 
-    if (FramesSysNotStarted) 
+    if (FramesSysNotStarted)
 		return -1;
 
     lockfrm();
@@ -1096,7 +1096,7 @@ int CLUIFramesSetFrameOptions(WPARAM wParam,LPARAM lParam)
         return -1;
     }
 
-    switch (LOWORD(wParam)) {
+    switch (LOWORD(wParam) & ~FO_UNICODETEXT) {
         case FO_FLAGS:{
                 int flag=lParam;
                 int style;
@@ -1127,7 +1127,7 @@ int CLUIFramesSetFrameOptions(WPARAM wParam,LPARAM lParam)
                 style|=CLS_SKINNEDFRAME;
 
 				if (flag&F_NOBORDER)
-                    style&=(~WS_BORDER);
+                style&=(~WS_BORDER);
 
                 Frames[pos].Skinned = FALSE;
                 if(flag & F_SKINNED)
@@ -1147,22 +1147,21 @@ int CLUIFramesSetFrameOptions(WPARAM wParam,LPARAM lParam)
 
         case FO_NAME:
             if (lParam==(LPARAM)NULL) {
-                ulockfrm(); 
-				return -1;
+                ulockfrm();
+				    return -1;
             }
 				mir_free(Frames[pos].name);
-            Frames[pos].name=mir_tstrdup((LPTSTR)lParam);
+            Frames[pos].name = (wParam & FO_UNICODETEXT) ? mir_u2t((LPWSTR)lParam) : mir_a2t((LPSTR)lParam);
             ulockfrm();
             return 0;
 
         case FO_TBNAME:
             if (lParam==(LPARAM)NULL) {
-                ulockfrm(); 
-				return(-1);
+                ulockfrm();
+				    return(-1);
             }
-            if (Frames[pos].TitleBar.tbname!=NULL) 
-				free(Frames[pos].TitleBar.tbname);
-            Frames[pos].TitleBar.tbname=mir_tstrdup((LPTSTR)lParam);
+            mir_free(Frames[pos].TitleBar.tbname);
+				Frames[pos].TitleBar.tbname = (wParam & FO_UNICODETEXT) ? mir_u2t((LPWSTR)lParam) : mir_a2t((LPSTR)lParam);
             ulockfrm();
             if (Frames[pos].floating&&(Frames[pos].TitleBar.tbname!=NULL))
                 SetWindowText(Frames[pos].ContainerWnd,Frames[pos].TitleBar.tbname);
@@ -1170,12 +1169,11 @@ int CLUIFramesSetFrameOptions(WPARAM wParam,LPARAM lParam)
 
         case FO_TBTIPNAME:
             if (lParam==(LPARAM)NULL) {
-                ulockfrm(); 
-				return(-1);
+                ulockfrm();
+				    return(-1);
             }
-            if (Frames[pos].TitleBar.tooltip!=NULL) 
-					mir_free(Frames[pos].TitleBar.tooltip);
-            Frames[pos].TitleBar.tooltip = mir_tstrdup((LPTSTR)lParam);
+            mir_free(Frames[pos].TitleBar.tooltip);
+            Frames[pos].TitleBar.tooltip = (wParam & FO_UNICODETEXT) ? mir_u2t((LPWSTR)lParam) : mir_a2t((LPSTR)lParam);
             UpdateTBToolTip(pos);
             ulockfrm();
             return 0;
@@ -1197,12 +1195,12 @@ int CLUIFramesSetFrameOptions(WPARAM wParam,LPARAM lParam)
 
         case FO_HEIGHT:
             if (lParam<0) {
-                ulockfrm(); 
+                ulockfrm();
 				return -1;
             }
             retval=Frames[pos].height;
             Frames[pos].height=lParam;
-            if (!CLUIFramesFitInSize()) 
+            if (!CLUIFramesFitInSize())
 				Frames[pos].height=retval;
             retval=Frames[pos].height;
             ulockfrm();
@@ -1210,7 +1208,7 @@ int CLUIFramesSetFrameOptions(WPARAM wParam,LPARAM lParam)
 
         case FO_FLOATING:
             if (lParam<0) {
-                ulockfrm(); 
+                ulockfrm();
 				return -1;
             }
             {
@@ -1288,7 +1286,7 @@ int CLUIFramesShowHideFrame(WPARAM wParam,LPARAM lParam)
 {
     int pos;
 
-    if (FramesSysNotStarted) 
+    if (FramesSysNotStarted)
 		return -1;
 
     lockfrm();
@@ -1302,7 +1300,7 @@ int CLUIFramesShowHideFrame(WPARAM wParam,LPARAM lParam)
 			CLUIFrameResizeFloatingFrame(pos);
 	}
     ulockfrm();
-    if (!Frames[pos].floating) 
+    if (!Frames[pos].floating)
 		CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,(LPARAM)0);
     RedrawWindow(pcli->hwndContactList,NULL,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_FRAME|RDW_UPDATENOW|RDW_ALLCHILDREN);
     return 0;
@@ -1313,7 +1311,7 @@ int CLUIFramesShowHideFrameTitleBar(WPARAM wParam,LPARAM lParam)
 {
     int pos;
 
-    if (FramesSysNotStarted) 
+    if (FramesSysNotStarted)
 		return -1;
 
     lockfrm();
@@ -1335,7 +1333,7 @@ int CLUIFramesMoveUpDown(WPARAM wParam,LPARAM lParam)
 {
     int pos,i,curpos,curalign,v,tmpval;
 
-    if (FramesSysNotStarted) 
+    if (FramesSysNotStarted)
 		return -1;
 
     lockfrm();
@@ -1431,7 +1429,7 @@ int CLUIFramesLockUnlockFrame(WPARAM wParam,LPARAM lParam)
 {
     int pos;
 
-    if (FramesSysNotStarted) 
+    if (FramesSysNotStarted)
 		return -1;
 
     lockfrm();
@@ -1452,7 +1450,7 @@ int CLUIFramesSetUnSetBorder(WPARAM wParam,LPARAM lParam)
     HWND hw;
     boolean flt;
 
-    if (FramesSysNotStarted) 
+    if (FramesSysNotStarted)
 		return -1;
 
     lockfrm();
@@ -1484,7 +1482,7 @@ int CLUIFramesSetUnSetSkinned(WPARAM wParam,LPARAM lParam)
     HWND hw;
     boolean flt;
 
-    if (FramesSysNotStarted) 
+    if (FramesSysNotStarted)
 		return -1;
 
     lockfrm();
@@ -1513,7 +1511,7 @@ int CLUIFramesCollapseUnCollapseFrame(WPARAM wParam,LPARAM lParam)
 {
     int FrameId;
 
-    if (FramesSysNotStarted) 
+    if (FramesSysNotStarted)
 		return -1;
 
     TitleBarH = g_CluiData.titleBarHeight;
@@ -1557,7 +1555,7 @@ int CLUIFramesCollapseUnCollapseFrame(WPARAM wParam,LPARAM lParam)
         }
 		if (Frames[FrameId].Locked||(!Frames[FrameId].visible)) {
 			ulockfrm();
-			return 0;  
+			return 0;
 		}
 
         oldHeight=Frames[FrameId].height;
@@ -1638,7 +1636,7 @@ static int CLUIFramesLoadMainMenu()
     CLISTMENUITEM mi;
     int i,separator;
 
-    if (FramesSysNotStarted) 
+    if (FramesSysNotStarted)
 		return -1;
 
     if (MainMIRoot!=(HANDLE)-1) {
@@ -1915,7 +1913,7 @@ int CLUIFramesAddFrame(WPARAM wParam,LPARAM lParam)
 
     lockfrm();
     if (nFramescount>=MAX_FRAMES) {
-        ulockfrm(); 
+        ulockfrm();
 		return -1;
     }
     if(Frames == NULL) {
@@ -1934,7 +1932,7 @@ int CLUIFramesAddFrame(WPARAM wParam,LPARAM lParam)
 
     if (clfrm->Flags & F_NO_SUBCONTAINER)
         Frames[nFramescount].OwnerWindow = (HWND)-2;
-    else 
+    else
         Frames[nFramescount].OwnerWindow = pcli->hwndContactList;
 
     SetClassLong(clfrm->hWnd, GCL_STYLE, GetClassLong(clfrm->hWnd, GCL_STYLE) & ~(CS_VREDRAW | CS_HREDRAW));
@@ -1957,12 +1955,12 @@ int CLUIFramesAddFrame(WPARAM wParam,LPARAM lParam)
     Frames[nFramescount].dwFlags=clfrm->Flags;
 
     if (clfrm->name==NULL||((clfrm->Flags&F_UNICODE) ? lstrlenW(clfrm->wname) : lstrlenA(clfrm->name))==0) {
-        TCHAR ptszClassName[ 256 ]; 
+        TCHAR ptszClassName[ 256 ];
         GetClassName(Frames[nFramescount].hWnd, ptszClassName, SIZEOF(ptszClassName));
 		  Frames[nFramescount].name = mir_tstrdup(ptszClassName);
     }
     else Frames[nFramescount].name=(clfrm->Flags&F_UNICODE) ? mir_u2t(clfrm->wname) : mir_a2t(clfrm->name);
-    
+
 	 if (IsBadCodePtr((FARPROC)clfrm->TBname) || clfrm->TBname==NULL
         || ((clfrm->Flags&F_UNICODE) ? lstrlenW(clfrm->TBwname) : lstrlenA(clfrm->TBname)) == 0)
         Frames[nFramescount].TitleBar.tbname=mir_tstrdup(Frames[nFramescount].name);
@@ -1980,7 +1978,7 @@ int CLUIFramesAddFrame(WPARAM wParam,LPARAM lParam)
     Frames[nFramescount].Skinned=(clfrm->Flags&F_SKINNED)?TRUE:FALSE;
 
     // create frame
-    Frames[nFramescount].TitleBar.hwnd = 
+    Frames[nFramescount].TitleBar.hwnd =
         CreateWindow(CLUIFrameTitleBarClassName,Frames[nFramescount].name,
                       (DBGetContactSettingByte(0, CLUIFrameModule, "RemoveAllTitleBarBorders", 1) ? 0 : WS_BORDER)
                       | WS_CHILD|WS_CLIPCHILDREN | (Frames[nFramescount].TitleBar.ShowTitleBar?WS_VISIBLE:0) |
@@ -2047,9 +2045,9 @@ int CLUIFramesAddFrame(WPARAM wParam,LPARAM lParam)
 static int CLUIFramesRemoveFrame(WPARAM wParam,LPARAM lParam)
 {
     int pos;
-    if (FramesSysNotStarted) 
+    if (FramesSysNotStarted)
 		return -1;
-    
+
 	lockfrm();
     pos=id2pos(wParam);
 
@@ -2081,7 +2079,7 @@ static int CLUIFramesRemoveFrame(WPARAM wParam,LPARAM lParam)
 
 int CLUIFramesForceUpdateTB(const wndFrame *Frame)
 {
-    if (Frame->TitleBar.hwnd!=0) 
+    if (Frame->TitleBar.hwnd!=0)
 		RedrawWindow(Frame->TitleBar.hwnd,NULL,NULL,RDW_ALLCHILDREN|RDW_UPDATENOW|RDW_ERASE|RDW_INVALIDATE|RDW_FRAME);
     return 0;
 }
@@ -2149,10 +2147,10 @@ int CLUIFramesGetMinHeight()
     int i,tbh,clientfrm,sumheight=0;
     RECT border;
     int allbord=0;
-    
-	if (pcli->hwndContactList==NULL) 
+
+	if (pcli->hwndContactList==NULL)
 		return 0;
-    
+
 	lockfrm();
 
     TitleBarH = g_CluiData.titleBarHeight;
@@ -2215,7 +2213,7 @@ int CLUIFramesResize(const RECT newsize)
     GapBetweenFrames=g_CluiData.gapBetweenFrames;
     sepw=GapBetweenFrames;
 
-    if (nFramescount<1 || g_shutDown) 
+    if (nFramescount<1 || g_shutDown)
         return 0;
 
     newheight=newsize.bottom-newsize.top;
@@ -2331,24 +2329,24 @@ int CLUIFramesResize(const RECT newsize)
 
 int CLUIFramesUpdateFrame(WPARAM wParam,LPARAM lParam)
 {
-    if (FramesSysNotStarted) 
+    if (FramesSysNotStarted)
 		return -1;
     if (wParam==-1) {
-        CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,(LPARAM)0); 
+        CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,(LPARAM)0);
 		return 0;
     }
     if (lParam&FU_FMPOS)
         CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,1);
-    
+
 	lockfrm();
     wParam=id2pos(wParam);
     if (wParam<0||(int)wParam>=nFramescount) {
-        ulockfrm(); 
+        ulockfrm();
 		return -1;
     }
-    if (lParam&FU_TBREDRAW)  
+    if (lParam&FU_TBREDRAW)
 		CLUIFramesForceUpdateTB(&Frames[wParam]);
-    if (lParam&FU_FMREDRAW)  
+    if (lParam&FU_FMREDRAW)
 		CLUIFramesForceUpdateFrame(&Frames[wParam]);
     ulockfrm();
     return 0;
@@ -2382,7 +2380,7 @@ int SizeFramesByWindowRect(RECT *r)
 
     if (FramesSysNotStarted)
         return -1;
-    
+
     TitleBarH = g_CluiData.titleBarHeight;
     lockfrm();
     GapBetweenFrames = g_CluiData.gapBetweenFrames;
@@ -2406,7 +2404,7 @@ int SizeFramesByWindowRect(RECT *r)
             if (!Frames[i].floating) {
                 if (Frames[i].OwnerWindow && Frames[i].OwnerWindow != (HWND)-2) {
                     /*
-                    if(Frames[i].wndSize.right - Frames[i].wndSize.left == Frames[i].oldWndSize.right - Frames[i].oldWndSize.left && 
+                    if(Frames[i].wndSize.right - Frames[i].wndSize.left == Frames[i].oldWndSize.right - Frames[i].oldWndSize.left &&
                        Frames[i].wndSize.bottom - Frames[i].wndSize.top == Frames[i].oldWndSize.bottom - Frames[i].oldWndSize.top)
                         noSize = SWP_NOSIZE;
                     else {
@@ -2460,7 +2458,7 @@ int CLUIFramesOnClistResize(WPARAM wParam,LPARAM lParam)
 
     if (FramesSysNotStarted || g_shutDown)
         return -1;
-    
+
 	lockfrm();
 
     GetClientRect(pcli->hwndContactList,&nRect);
@@ -2499,9 +2497,9 @@ int CLUIFramesOnClistResize(WPARAM wParam,LPARAM lParam)
     ulockfrm();
     tick=GetTickCount()-tick;
 
-    if (pcli->hwndContactList!=0) 
+    if (pcli->hwndContactList!=0)
 		InvalidateRect(pcli->hwndContactList,NULL,TRUE);
-    if (pcli->hwndContactList!=0) 
+    if (pcli->hwndContactList!=0)
 		UpdateWindow(pcli->hwndContactList);
 
     Sleep(0);
@@ -2785,7 +2783,7 @@ LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
                 }
                 else {
                     int framepos=id2pos(Frameid);
-                    
+
 					lockfrm();
                     if (framepos==-1) {
                         ulockfrm();
@@ -3107,7 +3105,7 @@ LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 					RECT rcWindow, rc;
 					HBRUSH brold;
 
-					CallWindowProc(DefWindowProc, hwnd, msg, wParam, lParam);					
+					CallWindowProc(DefWindowProc, hwnd, msg, wParam, lParam);
 					GetWindowRect(hwnd, &rcWindow);
 					rc.left = rc.top = 0;
 					rc.right = rcWindow.right - rcWindow.left;
@@ -3306,7 +3304,7 @@ if ((msg == WM_MOVE) || (msg == WM_MOVING) || (msg == WM_NCLBUTTONDOWN) || (msg 
                 int framepos;
                 RECT rect;
                 lockfrm();
-             
+
 				framepos=id2pos(Frameid);
 
                 if (framepos<0||framepos>=nFramescount) {
@@ -3662,7 +3660,7 @@ int UnLoadCLUIFramesModule(void)
         if (Frames[i].name!=NULL) mir_free(Frames[i].name);
         if (Frames[i].TitleBar.tbname!=NULL) mir_free(Frames[i].TitleBar.tbname);
     }
-    if (Frames) 
+    if (Frames)
 		free(Frames);
     Frames=NULL;
     nFramescount=0;

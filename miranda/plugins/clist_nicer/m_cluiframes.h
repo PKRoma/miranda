@@ -1,5 +1,5 @@
 /*
-Miranda ICQ: the free icq client for MS Windows 
+Miranda ICQ: the free icq client for MS Windows
 Copyright (C) 2000-2  Richard Hughes, Roland Rabien & Tristan Van de Vreede
 
 This program is free software; you can redistribute it and/or
@@ -52,7 +52,7 @@ HANDLE hImage;		//return value from MS_CLIST_EXTRA_ADD_ICON
 //See above for supported columns
 #define MS_CLIST_EXTRA_SET_ICON			"CListFrames/SetIconForExraColumn"
 
-//Adding icon to extra image list. 
+//Adding icon to extra image list.
 //Call this in ME_CLIST_EXTRA_LIST_REBUILD event
 //
 //wparam=hIcon
@@ -130,7 +130,7 @@ typedef struct tagCLISTFrame {
 // frame alignment
 #define alTop		0x00000001
 #define alBottom	0x00000002
-#define alClient	0x00000004 //only one alClient frame 
+#define alClient	0x00000004 //only one alClient frame
 #define MS_CLIST_FRAMES_ADDFRAME			"CListFrames/AddFrame"
 
 #define MS_CLIST_FRAMES_REMOVEFRAME			"CListFrames/RemoveFrame"
@@ -213,6 +213,13 @@ typedef struct tagCLISTFrame {
 #define FO_TBTIPNAME	0x0009 //Change TB tooltip
 #define FO_FLOATING		0x000a //Change floating mode
 
+#define FO_UNICODETEXT	0x8000 // flag for	FO_NAME,FO_TBNAME, FO_TBTIPNAME set/get lPAram as unicode wchar_t
+#ifdef _UNICODE
+	#define FO_TCHAR FO_UNICODETEXT
+#else
+	#define FO_TCHAR 0x0000
+#endif
+
 #define MS_CLIST_FRAMES_GETFRAMEOPTIONS			"CListFrame/GetFrameOptions"
 
 //sets the frame options
@@ -247,14 +254,14 @@ typedef struct tagCLISTFrame {
 
 /*
 //the frame menu is about to be built
-wparam=frameid 
+wparam=frameid
 lparam=
 -1 for build from titlebar,
 		use
-					MS_CLIST_ADDCONTEXTFRAMEMENUITEM 
+					MS_CLIST_ADDCONTEXTFRAMEMENUITEM
 					MS_CLIST_REMOVECONTEXTFRAMEMENUITEM
 
->0 for build in main menu, 
+>0 for build in main menu,
 must be popupname=lparam to place your items in right popup of main menu.
 		use
 					MS_CLIST_ADDMAINMENUITEM
