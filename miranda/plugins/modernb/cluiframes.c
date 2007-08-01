@@ -1204,8 +1204,8 @@ static int CLUIFramesGetFrameOptions(WPARAM wParam,LPARAM lParam)
 {
 	int pos;
 	int retval;
-	BOOL bUnicodeText=(LOWORD(wParam)&FO_TCHAR)!=0;
-	wParam=MAKEWPARAM((LOWORD(wParam))&~FO_TCHAR, HIWORD(wParam));
+	BOOL bUnicodeText=(LOWORD(wParam) & FO_UNICODETEXT)!=0;
+	wParam=MAKEWPARAM((LOWORD(wParam)) & ~FO_UNICODETEXT, HIWORD(wParam));
 
 	if (FramesSysNotStarted) return -1;
 
@@ -1291,8 +1291,8 @@ static int CLUIFramesSetFrameOptions(WPARAM wParam,LPARAM lParam)
 {
 	int pos;
 	int retval; // value to be returned
-	BOOL bUnicodeText=(LOWORD(wParam)&FO_TCHAR)!=0;
-	wParam=MAKEWPARAM((LOWORD(wParam))&~FO_TCHAR, HIWORD(wParam));
+	BOOL bUnicodeText=(LOWORD(wParam) & FO_UNICODETEXT)!=0;
+	wParam=MAKEWPARAM((LOWORD(wParam))& ~FO_UNICODETEXT, HIWORD(wParam));
 	if (FramesSysNotStarted) return -1;
 
 
