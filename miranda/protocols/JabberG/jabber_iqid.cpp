@@ -305,22 +305,6 @@ void sttGroupchatJoinByHContact( HANDLE hContact )
 	mir_free( roomjid );
 }
 
-void CALLBACK sttCreateRoom( ULONG dwParam )
-{
-	GCSESSION gcw = {0};
-	gcw.cbSize = sizeof(GCSESSION);
-	gcw.iType = GCW_CHATROOM;
-	gcw.pszModule = jabberProtoName;
-	gcw.dwFlags = GC_TCHAR;
-	gcw.ptszID = ( TCHAR* )dwParam;
-	gcw.ptszName = NEWTSTR_ALLOCA(( TCHAR* )dwParam );
-
-	TCHAR* p = (TCHAR*)_tcschr( gcw.ptszName, '@' );
-	if ( p ) *p = 0;
-
-	CallService( MS_GC_NEWSESSION, 0, ( LPARAM )&gcw );
-}
-
 void JabberIqResultGetRoster( XmlNode* iqNode, void* )
 {
 	JabberLog( "<iq/> iqIdGetRoster" );
@@ -416,7 +400,20 @@ void JabberIqResultGetRoster( XmlNode* iqNode, void* )
 		else DBDeleteContactSetting( hContact, "CList", "MyHandle" );
 
 		if ( JGetByte( hContact, "ChatRoom", 0 )) {
-			QueueUserAPC( sttCreateRoom, hMainThread, ( unsigned long )jid );
+			GCSESSION gcw = {0};
+			gcw.cbSize = sizeof(GCSESSION);
+			gcw.iType = GCW_CHATROOM;
+			gcw.pszModule = jabberProtoName;
+			gcw.dwFlags = GC_TCHAR;
+			gcw.ptszID = jid;
+			gcw.ptszName = NEWTSTR_ALLOCA( jid );
+
+			TCHAR* p = (TCHAR*)_tcschr( gcw.ptszName, '@' );
+			if ( p ) 
+				*p = 0;
+
+			CallServiceSync( MS_GC_NEWSESSION, 0, ( LPARAM )&gcw );
+
 			DBDeleteContactSetting( hContact, "CList", "Hidden" );
 			li.List_Insert( &chatRooms, hContact, chatRooms.realCount );
 		}
@@ -1631,25 +1628,23 @@ void JabberIqResultDiscoBookmarks( XmlNode *iqNode, void *userdata )
 			}	}	}	}	}
 
 			if ( JGetByte( "AutoJoinBookmarks", FALSE ) == TRUE && !( info->caps & CAPS_BOOKMARKS_LOADED )) {
-				if ( LIST_BOOKMARK != NULL ) {
-					JABBER_LIST_ITEM* item;
-					for ( int i=0; ( i = JabberListFindNext( LIST_BOOKMARK, i )) >= 0; i++ ) {
-						if ((( item = JabberListGetItemPtrFromIndex( i )) != NULL ) && !lstrcmp( item->type, _T("conference") )) {
-							if ( item->bAutoJoin && JabberListGetItemPtr( LIST_ROOM, item->jid ) == NULL ) {
-								if ( jabberChatDllPresent ) {
-									TCHAR room[256], *server, *p;
-									TCHAR text[128];
-									_tcsncpy( text, item->jid, SIZEOF( text ));
-									_tcsncpy( room, text, SIZEOF( room ));
-									p = _tcstok( room, _T( "@" ));
-									server = _tcstok( NULL, _T( "@" ));
-									if ( item->nick && item->nick[0] != 0 )
-										JabberGroupchatJoinRoom( server, p, item->nick, item->password );
-									else {
-										TCHAR* nick = JabberNickFromJID( jabberJID );
-										JabberGroupchatJoinRoom( server, p, nick, item->password );
-										mir_free( nick );
-									}
+				JABBER_LIST_ITEM* item;
+				for ( int i=0; ( i = JabberListFindNext( LIST_BOOKMARK, i )) >= 0; i++ ) {
+					if ((( item = JabberListGetItemPtrFromIndex( i )) != NULL ) && !lstrcmp( item->type, _T("conference") )) {
+						if ( item->bAutoJoin && JabberListGetItemPtr( LIST_ROOM, item->jid ) == NULL ) {
+							if ( jabberChatDllPresent ) {
+								TCHAR room[256], *server, *p;
+								TCHAR text[128];
+								_tcsncpy( text, item->jid, SIZEOF( text ));
+								_tcsncpy( room, text, SIZEOF( room ));
+								p = _tcstok( room, _T( "@" ));
+								server = _tcstok( NULL, _T( "@" ));
+								if ( item->nick && item->nick[0] != 0 )
+									JabberGroupchatJoinRoom( server, p, item->nick, item->password );
+								else {
+									TCHAR* nick = JabberNickFromJID( jabberJID );
+									JabberGroupchatJoinRoom( server, p, nick, item->password );
+									mir_free( nick );
 			}	}	}	}	}	}
 
 			if ( hwndJabberBookmarks != NULL )
