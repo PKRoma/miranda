@@ -170,17 +170,14 @@ BOOL JabberSendPepTune( TCHAR* szArtist, TCHAR* szLength, TCHAR* szSource, TCHAR
 	XmlNode* pubsubNode = iq.addChild( "pubsub" );
 	pubsubNode->addAttr( "xmlns", JABBER_FEAT_PUBSUB );
 
-	// uncomment then pep services will support node retraction
-
-//	if ( !szArtist && !szLength && !szSource && !szTitle && !szUri ) {
-//		XmlNode* retractNode = pubsubNode->addChild( "retract" );
-//		retractNode->addAttr( "node", JABBER_FEAT_USER_TUNE );
-//		retractNode->addAttr( "notify", 1 );
-//		XmlNode* itemNode = retractNode->addChild( "item" );
-//		itemNode->addAttr( "id", "current" );
-//	}
-//	else 
-	{
+	if ( !szArtist && !szLength && !szSource && !szTitle && !szUri ) {
+		XmlNode* retractNode = pubsubNode->addChild( "retract" );
+		retractNode->addAttr( "node", JABBER_FEAT_USER_TUNE );
+		retractNode->addAttr( "notify", 1 );
+		XmlNode* itemNode = retractNode->addChild( "item" );
+		itemNode->addAttr( "id", "current" );
+	}
+	else {
 		XmlNode* publishNode = pubsubNode->addChild( "publish" );
 		publishNode->addAttr( "node", JABBER_FEAT_USER_TUNE );
 		XmlNode* itemNode = publishNode->addChild( "item" );
