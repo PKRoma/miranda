@@ -67,14 +67,14 @@ static int DbEventGetText(WPARAM wParam, LPARAM lParam)
 	BOOL bIsDenyUnicode = (egt->datatype & DBVTF_DENYUNICODE);
 
 	DBEVENTINFO* dbei = egt->dbei;
-	
+
 	char szServiceName[100];
 	mir_snprintf( szServiceName, sizeof(szServiceName), "%s/GetEventText%d", dbei->szModule, dbei->eventType );
 	if ( ServiceExists( szServiceName ))
 		return CallService( szServiceName, wParam, lParam );
 
 	if ( !dbei->pBlob ) return 0;
-	
+
 	if ( dbei->eventType == EVENTTYPE_FILE ) {
 		char* filename = ((char *)dbei->pBlob) + sizeof(DWORD);
 		char* descr = filename + lstrlenA( filename ) + 1;
@@ -97,7 +97,7 @@ static int DbEventGetText(WPARAM wParam, LPARAM lParam)
 	{
 		WCHAR* msg;
 		if ( dbei->flags & DBEF_UTF )
-			Utf8DecodeCP( dbei->pBlob, egt->codepage, &msg );
+			Utf8DecodeCP( NEWSTR_ALLOCA(dbei->pBlob), egt->codepage, &msg );
 		else {
 			// ушлепкам типа скотта торжественно посвящается
 			int msglen = strlen(( char* )dbei->pBlob) + 1, msglenW = 0;
