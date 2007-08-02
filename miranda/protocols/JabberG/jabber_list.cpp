@@ -362,6 +362,17 @@ TCHAR* JabberListGetBestResourceNamePtr( const TCHAR* jid )
 			res = LI->resource[ LI->lastSeenResource ].resourceName;
 		else if (LI->resourceMode == RSMODE_MANUAL && LI->manualResource>=0 && LI->manualResource < LI->resourceCount )
 			res = LI->resource[ LI->manualResource ].resourceName;
+		else {
+			int nBestPos = -1, nBestPri = -200, j;
+			for ( j = 0; j < LI->resourceCount; j++ ) {
+				if ( LI->resource[ j ].priority > nBestPri ) {
+					nBestPri = LI->resource[ j ].priority;
+					nBestPos = j;
+				}
+			}
+			if ( nBestPos != -1 )
+				res = LI->resource[ nBestPos ].resourceName;
+		}
 	}
 
 	if ( !res && LI->resource)
