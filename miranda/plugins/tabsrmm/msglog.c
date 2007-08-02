@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -160,7 +160,7 @@ void CacheLogFonts()
     }
     //wsprintfA(rtfFontsGlobal[MSGDLGFONTCOUNT], "\\f%u\\cf%u\\b%d\\i%d\\ul%d\\fs%u", MSGDLGFONTCOUNT, MSGDLGFONTCOUNT, 0, 0, 0, 0);
     wsprintfA(rtfFontsGlobal[MSGDLGFONTCOUNT], "\\f%u\\cf%u\\b%d\\i%d\\fs%u", MSGDLGFONTCOUNT, MSGDLGFONTCOUNT, 0, 0, 0);
-    
+
     _tcsncpy(szToday, TranslateT("Today"), 20);
     _tcsncpy(szYesterday, TranslateT("Yesterday"), 20);
     szToday[19] = szYesterday[19] = 0;
@@ -170,11 +170,11 @@ void CacheLogFonts()
      */
 
     myGlobals.ipConfig.isValid = 1;
-    
+
     if(myGlobals.ipConfig.isValid) {
         COLORREF clr;
         LOGFONTA lf;
-        
+
         for(i = 0; i < IPFONTCOUNT; i++) {
             if(myGlobals.ipConfig.hFonts[i])
                 DeleteObject(myGlobals.ipConfig.hFonts[i]);
@@ -189,7 +189,7 @@ void CacheLogFonts()
 
     if(myGlobals.ipConfig.bkgBrush)
         DeleteObject(myGlobals.ipConfig.bkgBrush);
-    
+
     myGlobals.ipConfig.clrBackground = DBGetContactSettingDword(NULL, FONTMODULE, "ipfieldsbg", GetSysColor(COLOR_3DFACE));
     myGlobals.ipConfig.clrClockSymbol = DBGetContactSettingDword(NULL, FONTMODULE, "col_clock", GetSysColor(COLOR_WINDOWTEXT));
 
@@ -318,7 +318,7 @@ void PreTranslateDates()
 {
     int i;
     TCHAR *szTemp;
-    
+
     for(i = 0; i <= 6; i++) {
         szTemp = TranslateTS(weekDays[i]);
         mir_sntprintf(weekDays_translated[i], 28, _T("%s"), szTemp);
@@ -332,7 +332,7 @@ void PreTranslateDates()
 static int GetColorIndex(char *rtffont)
 {
     char *p;
-    
+
     if((p = strstr(rtffont, "\\cf")) != NULL)
         return atoi(p + 3);
     return 0;
@@ -373,7 +373,7 @@ static int AppendUnicodeToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferA
     d += 6;
 
     for (; *line; line++, textCharsCount++) {
-        
+
         if(1) {
             if(*line == 127 && line[1] != 0) {
                 TCHAR code = line[2];
@@ -477,7 +477,7 @@ static int AppendToBufferWithRTF(int mode, char **buffer, int *cbBufferEnd, int 
             if((*buffer)[i] == '' && (*buffer)[i + 1] != 0) {
                 char code = (*buffer)[i + 2];
                 char tag = (*buffer)[i + 1];
-                
+
                 if(((code == '0' || code == '1') && (*buffer)[i + 3] == ' ') || (tag == 'c' && (code == 'x' || code == '0'))) {
                     int begin = (code == '1');
 
@@ -521,7 +521,7 @@ static int AppendToBufferWithRTF(int mode, char **buffer, int *cbBufferEnd, int 
                 }
             }
         }
-        
+
         if ((*buffer)[i] == '\r' && (*buffer)[i + 1] == '\n') {
             if (*cbBufferEnd + 5 > *cbBufferAlloced) {
                 *cbBufferAlloced += 1024;
@@ -570,9 +570,9 @@ static void Build_RTF_Header(char **buffer, int *bufferEnd, int *bufferAlloced, 
     char     szTemp[30];
 
     // rtl
-    if (dat->dwFlags & MWF_LOG_RTL) 
+    if (dat->dwFlags & MWF_LOG_RTL)
         AppendToBuffer(buffer, bufferEnd, bufferAlloced, "{\\rtf1\\ansi\\deff0{\\fonttbl");
-    else 
+    else
         AppendToBuffer(buffer, bufferEnd, bufferAlloced, "{\\rtf1\\ansi\\deff0{\\fonttbl");
 
     for (i = 0; i < MSGDLGFONTCOUNT; i++)
@@ -613,8 +613,8 @@ static void Build_RTF_Header(char **buffer, int *bufferEnd, int *bufferAlloced, 
     for(i = 0; i < myGlobals.rtf_ctablesize; i++)
         AppendToBuffer(buffer, bufferEnd, bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(rtf_ctable[i].clr), GetGValue(rtf_ctable[i].clr), GetBValue(rtf_ctable[i].clr));
 
-    /*                                                              
-     * paragraph header                                                                
+    /*
+     * paragraph header
     */
     //AppendToBuffer(buffer, bufferEnd, bufferAlloced, "}\\pard");
     AppendToBuffer(buffer, bufferEnd, bufferAlloced, "}");
@@ -643,7 +643,7 @@ static char *CreateRTFHeader(struct MessageWindowData *dat)
 {
     char *buffer;
     int bufferAlloced, bufferEnd;
-    
+
     bufferEnd = 0;
     bufferAlloced = 1024;
     buffer = (char *) malloc(bufferAlloced);
@@ -708,7 +708,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
     TCHAR ci, cc;
 #if !defined(_UNICODE)
     char *szName;
-#endif    
+#endif
     TCHAR *szFinalTimestamp;
     int bufferAlloced, bufferEnd, iTemplateLen;
     DBEVENTINFO dbei = { 0 };
@@ -731,8 +731,12 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
     buffer = (char *) malloc(bufferAlloced);
     buffer[0] = '\0';
 
-    if(streamData->dbei != 0)
+    if(streamData->dbei != 0) {
+        // make local copy of data to play with
         dbei = *(streamData->dbei);
+        dbei.pBlob = (char*)alloca(dbei.cbBlob);
+        memcpy(dbei.pBlob, streamData->dbei->pBlob, dbei.cbBlob);
+    }
     else {
         dbei.cbSize = sizeof(dbei);
         dbei.cbBlob = CallService(MS_DB_EVENT_GETBLOBSIZE, (WPARAM) hDbEvent, 0);
@@ -814,7 +818,7 @@ nounicode:
     dat->isHistory = (dbei.timestamp < (DWORD)dat->stats.started && (dbei.flags & DBEF_READ || dbei.flags & DBEF_SENT));
     iFontIDOffset = dat->isHistory ? 8 : 0;     // offset into the font table for either history (old) or new events... (# of fonts per configuration set)
     isSent = (dbei.flags & DBEF_SENT);
-    
+
     if(!isSent && (fIsStatusChangeEvent || dbei.eventType==EVENTTYPE_MESSAGE || dbei.eventType==EVENTTYPE_URL)) {
 		CallService(MS_DB_EVENT_MARKREAD,(WPARAM)hContact,(LPARAM)hDbEvent);
 		CallService(MS_CLIST_REMOVEEVENT,(WPARAM)hContact,(LPARAM)hDbEvent);
@@ -875,14 +879,14 @@ nounicode:
         event_time = *localtime(&final_time);
     }
     this_templateset = dbei.flags & DBEF_RTL ? dat->rtl_templates : dat->ltr_templates;
-    
+
     if(fIsStatusChangeEvent)
         szTemplate = this_templateset->szTemplates[TMPL_STATUSCHG];
     else if(dbei.eventType == EVENTTYPE_ERRMSG)
         szTemplate = this_templateset->szTemplates[TMPL_ERRMSG];
     else {
         if(dwEffectiveFlags & MWF_LOG_GROUPMODE)
-            szTemplate = isSent ? (g_groupBreak ? this_templateset->szTemplates[TMPL_GRPSTARTOUT] : this_templateset->szTemplates[TMPL_GRPINNEROUT]) : 
+            szTemplate = isSent ? (g_groupBreak ? this_templateset->szTemplates[TMPL_GRPSTARTOUT] : this_templateset->szTemplates[TMPL_GRPINNEROUT]) :
                                   (g_groupBreak ? this_templateset->szTemplates[TMPL_GRPSTARTIN] : this_templateset->szTemplates[TMPL_GRPINNERIN]);
         else
             szTemplate = isSent ? this_templateset->szTemplates[TMPL_MSGOUT] : this_templateset->szTemplates[TMPL_MSGIN];
@@ -1193,7 +1197,7 @@ nounicode:
                 {
 #if !defined(_UNICODE)
                     szName = isSent ? szMyName : szYourName;
-#endif                        
+#endif
                     if(!skipFont)
                         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", GetRTFFont(isSent ? MSGFONTID_MYNAME + iFontIDOffset : MSGFONTID_YOURNAME + iFontIDOffset));
 #if defined(_UNICODE)
@@ -1204,7 +1208,7 @@ nounicode:
                         AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, szYourName, MAKELONG(isSent, dat->isHistory));
 #else
                     AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", szName);
-#endif                        
+#endif
                     break;
                 }
                 case 'U':            // UIN
@@ -1381,7 +1385,7 @@ nounicode:
                     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\ltrmark\\ltrch ");
                     break;
             }
-skip:            
+skip:
             if(skipToNext) {
                 i++;
                 while(szTemplate[i] != '%' && i < iTemplateLen) i++;
@@ -1396,7 +1400,7 @@ skip:
             AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, temp);
 #else
             AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%c", ci);
-#endif            
+#endif
             i++;
         }
     }
@@ -1410,16 +1414,16 @@ skip:
 
     if(streamData->dbei == 0)
         free(dbei.pBlob);
-    
+
     dat->iLastEventType = MAKELONG((dbei.flags & (DBEF_SENT | DBEF_READ | DBEF_RTL)), dbei.eventType);
     dat->lastEventTime = dbei.timestamp;
     return buffer;
 }
-    
+
 static DWORD CALLBACK LogStreamInEvents(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
 {
     struct LogStreamData *dat = (struct LogStreamData *) dwCookie;
-    
+
     if (dat->buffer == NULL) {
         dat->bufferOffset = 0;
         switch (dat->stage) {
@@ -1521,7 +1525,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
 
     if (dat->hwndIEView != 0) {
         IEVIEWEVENT event;
-        
+
         event.cbSize = sizeof(IEVIEWEVENT);
         event.hwnd = dat->hwndIEView;
         event.hContact = dat->hContact;
@@ -1536,7 +1540,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
 #else
         event.dwFlags = ((dat->dwFlags & MWF_LOG_RTL) ? IEEF_RTL : 0) | IEEF_NO_UNICODE;
         event.codepage = 0;
-#endif        
+#endif
         if (!fAppend) {
             event.iType = IEE_CLEAR_LOG;
             CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&event);
@@ -1570,7 +1574,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
 #else
         event.dwFlags = ((dat->dwFlags & MWF_LOG_RTL) ? IEEF_RTL : 0) | IEEF_NO_UNICODE;
         event.codepage = 0;
-#endif        
+#endif
         if (!fAppend) {
             event.iType = IEE_CLEAR_LOG;
             CallService(MS_HPP_EG_EVENT, 0, (LPARAM)&event);
@@ -1618,7 +1622,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
 #else
         gtxl.codepage = CP_ACP;
         gtxl.flags = GTL_DEFAULT | GTL_PRECISE;
-#endif        
+#endif
         fi.chrg.cpMin = SendDlgItemMessage(hwndDlg, IDC_LOG, EM_GETTEXTLENGTHEX, (WPARAM)&gtxl, 0);
         sel.cpMin = sel.cpMax = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_LOG));
         SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXSETSEL, 0, (LPARAM) & sel);
@@ -1640,14 +1644,14 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
     SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXSETSEL, 0, (LPARAM) & oldSel);
     SendDlgItemMessage(hwndDlg, IDC_LOG, EM_HIDESELECTION, FALSE, 0);
     dat->hDbEventLast = streamData.hDbEventLast;
-    
+
     if(dat->isAutoRTL & 1) {
         if(dat->dwFlags & MWF_LOG_INDIVIDUALBKG)
             SendMessage(hwndrtf, EM_SETBKGNDCOLOR, 0, LOWORD(dat->iLastEventType) & DBEF_SENT ? dat->theme.outbg : dat->theme.inbg);
         else
             SendMessage(hwndrtf, EM_SETBKGNDCOLOR, 0, dat->theme.bg);
     }
-    
+
     if (!(dat->isAutoRTL & 1)) {
         GETTEXTLENGTHEX gtxl = {0};
         PARAFORMAT2 pf2 = {0};
@@ -1658,13 +1662,13 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
 #else
         gtxl.codepage = CP_ACP;
         gtxl.flags = GTL_DEFAULT | GTL_PRECISE;
-#endif        
+#endif
         sel.cpMax = SendDlgItemMessage(hwndDlg, IDC_LOG, EM_GETTEXTLENGTHEX, (WPARAM)&gtxl, 0);
         sel.cpMin = sel.cpMax - 1;
         SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXSETSEL, 0, (LPARAM) & sel);
         SendDlgItemMessage(hwndDlg, IDC_LOG, EM_REPLACESEL, FALSE, (LPARAM)_T(""));
         dat->isAutoRTL |= 2;
-    } 
+    }
     ReplaceIcons(hwndDlg, dat, startAt, fAppend);
     dat->clr_added = FALSE;
 
@@ -1737,7 +1741,7 @@ static void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG start
             cr.cpMin = fi.chrgText.cpMin;
             cr.cpMax = fi.chrgText.cpMax + 2;
             SendMessage(hwndrtf, EM_EXSETSEL, 0, (LPARAM)&cr);
-            
+
             tr.chrg.cpMin = fi.chrgText.cpMin + 3;
             tr.chrg.cpMax = fi.chrgText.cpMin + 5;
             SendMessageA(hwndrtf, EM_GETTEXTRANGE, 0, (LPARAM)&tr);
@@ -1773,7 +1777,7 @@ static void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG start
         smadd.hwndRichEditControl = GetDlgItem(hwndDlg, IDC_LOG);
         smadd.Protocolname = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
         smadd.hContact = dat->bIsMeta ? dat->hSubContact : dat->hContact;
-        
+
         if(startAt > 0)
             smadd.rangeToReplace = &sel;
         else
@@ -1783,8 +1787,8 @@ static void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG start
         if(dat->doSmileys)
             CallService(MS_SMILEYADD_REPLACESMILEYS, TABSRMM_SMILEYADD_BKGCOLORMODE, (LPARAM)&smadd);
     }
-    
-#ifdef __MATHMOD_SUPPORT    
+
+#ifdef __MATHMOD_SUPPORT
 	if (myGlobals.m_MathModAvail)
 	{
 			 TMathRicheditInfo mathReplaceInfo;
@@ -1796,7 +1800,7 @@ static void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG start
 			 mathReplaceInfo.disableredraw = TRUE;
 			 CallService(MATH_RTF_REPLACE_FORMULAE,0, (LPARAM)&mathReplaceInfo);
 	}
-#endif    
+#endif
 
 	if(dat->hHistoryEvents && dat->curHistory == dat->maxHistory) {
 		char szPattern[50];
@@ -1816,7 +1820,7 @@ static void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG start
 	}
 }
 
-/* 
+/*
  * NLS functions (for unicode version only) encoding stuff..
  */
 
@@ -1850,7 +1854,7 @@ static TCHAR *Template_MakeRelativeDate(struct MessageWindowData *dat, time_t ch
     szResult[0] = 0;
     dbtts.cbDest = 70;;
     dbtts.szDest = szResult;
-    
+
     if((code == (TCHAR)'R' || code == (TCHAR)'r') && check >= today) {
         lstrcpy(szResult, szToday);
     }
@@ -1869,7 +1873,7 @@ static TCHAR *Template_MakeRelativeDate(struct MessageWindowData *dat, time_t ch
         CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, check, (LPARAM)&dbtts);
     }
     return szResult;
-}   
+}
 #else
 static char *Template_MakeRelativeDate(struct MessageWindowData *dat, time_t check, int groupBreak, char code)
 {
@@ -1897,7 +1901,7 @@ static char *Template_MakeRelativeDate(struct MessageWindowData *dat, time_t che
         CallService(MS_DB_TIME_TIMESTAMPTOSTRING, check, (LPARAM)&dbtts);
     }
     return szResult;
-}   
+}
 #endif
 /*
  * decodes UTF-8 to unicode
@@ -1949,8 +1953,8 @@ char *Utf8_Encode(const WCHAR *str)
 	unsigned char *szOut = NULL;
 	int len, i;
 	const WCHAR *wszTemp, *w;
-    
-	if (str == NULL) 
+
+	if (str == NULL)
         return NULL;
 
     wszTemp = str;
@@ -1985,5 +1989,3 @@ char *Utf8_Encode(const WCHAR *str)
 }
 
 #endif
-
-
