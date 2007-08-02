@@ -28,7 +28,8 @@ Changes
 
 1.3
  - Event cache table initialized improperly
-
+ - Performance improvements
+ 
 
 Author
 ------

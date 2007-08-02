@@ -131,7 +131,7 @@ int utils_private_setting_get_int(const char *setting, int defval) {
     if (setting==NULL) 
         return rc;
     sql_prepare(g_sqlite, "SELECT val FROM dbrw_core where setting = ?;", &stmt);
-    sqlite3_bind_text(stmt, 1, setting, (int)strlen(setting), SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 1, setting, -1, SQLITE_STATIC);
     if (sql_step(stmt)==SQLITE_ROW) {
         rc = sqlite3_column_int(stmt, 0);
     }
@@ -146,7 +146,7 @@ int utils_private_setting_set_int(const char *setting, int val) {
     if (setting==NULL)
         return rc;
     sql_prepare(g_sqlite, "REPLACE INTO dbrw_core VALUES(?,?);", &stmt);
-    sqlite3_bind_text(stmt, 1, setting, (int)strlen(setting), SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 1, setting, -1, SQLITE_STATIC);
     sqlite3_bind_int(stmt, 2, val);
     if (sql_step(stmt)==SQLITE_DONE) {
         rc = 1;
@@ -162,7 +162,7 @@ static time_t utils_private_setting_get_time(const char *setting, time_t defval)
     if (setting==NULL) 
         return rc;
     sql_prepare(g_sqlite, "SELECT val FROM dbrw_core where setting = ?;", &stmt);
-    sqlite3_bind_text(stmt, 1, setting, (int)strlen(setting), SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 1, setting, -1, SQLITE_STATIC);
     if (sql_step(stmt)==SQLITE_ROW) {
         rc = (time_t)sqlite3_column_int(stmt, 0);
     }
@@ -177,7 +177,7 @@ static int utils_private_setting_set_time(const char *setting, time_t val) {
     if (setting==NULL)
         return rc;
     sql_prepare(g_sqlite, "REPLACE INTO dbrw_core VALUES(?,?);", &stmt);
-    sqlite3_bind_text(stmt, 1, setting, (int)strlen(setting), SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 1, setting, -1, SQLITE_STATIC);
     sqlite3_bind_int(stmt, 2, val);
     if (sql_step(stmt)==SQLITE_DONE) {
         rc = 1;

@@ -150,7 +150,6 @@ static int dbrw_grokHeader(char *profile, int *error) {
             dbrw_free(szPath);
             if (rc==SQLITE_OK) {
                 sqlite3_stmt *stmt;
-                rc = 1;
                 err = EGROKPRF_UNKHEADER;
             
                 sqlite3_prepare_v2(sqlcheck, "select * from sqlite_master where type = 'table' and name = 'dbrw_core';", -1, &stmt, NULL);
@@ -164,6 +163,10 @@ static int dbrw_grokHeader(char *profile, int *error) {
                         sVersion = sqlite3_column_int(stmt, 0);
                         if (sVersion==atoi(DBRW_SCHEMA_VERSION))
                             rc = 0;
+                        else {
+                            // TODO: Return as valid and upgrade in 
+                            // dbrw_Load() if schema version is upgradable
+                        }
                     }
                 }
                 sqlite3_finalize(stmt);

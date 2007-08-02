@@ -205,7 +205,7 @@ int events_add(WPARAM wParam, LPARAM lParam) {
 	sqlite3_bind_blob(evt_stmts_prep[SQL_EVT_STMT_ADD], 4, dbei->pBlob, (int)dbei->cbBlob, SQLITE_STATIC);
 	sqlite3_bind_int(evt_stmts_prep[SQL_EVT_STMT_ADD], 5, (int)dbei->cbBlob);
 	sqlite3_bind_int(evt_stmts_prep[SQL_EVT_STMT_ADD], 6, (int)hContact);
-	sqlite3_bind_text(evt_stmts_prep[SQL_EVT_STMT_ADD], 7, dbei->szModule?dbei->szModule:NULL, dbei->szModule?(int)strlen(dbei->szModule):0, SQLITE_STATIC);
+	sqlite3_bind_text(evt_stmts_prep[SQL_EVT_STMT_ADD], 7, dbei->szModule?dbei->szModule:NULL, -1, SQLITE_STATIC);
 	sqlite3_bind_int(evt_stmts_prep[SQL_EVT_STMT_ADD], 8, time(NULL));
 	if (sql_step(evt_stmts_prep[SQL_EVT_STMT_ADD])==SQLITE_DONE) {
 		rc = (int)sqlite3_last_insert_rowid(g_sqlite);

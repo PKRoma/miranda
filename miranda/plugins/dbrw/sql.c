@@ -153,6 +153,7 @@ static void CALLBACK sql_server_sync_apc(DWORD dwParam) {
         	msg->retCode = sqlite3_finalize(msg->pStmt);
             break;
         default:
+            log1("Invalid op code in sql server (msg->op=%d)", msg->op);
             return;
     }
     SetEvent(msg->hDoneEvent);

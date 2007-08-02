@@ -301,8 +301,8 @@ static DBVARIANT *settings_getCachedValue(HANDLE hContact, char *szSetting, int 
 static void settings_writeToDB(HANDLE hContact, const char *szModule, const char *szSetting, DBVARIANT *value) {
 	// TODO: Check the parameters
 	sqlite3_bind_int(settings_stmts_prep[SQL_SET_STMT_REPLACE], 1, (int)hContact);
-	sqlite3_bind_text(settings_stmts_prep[SQL_SET_STMT_REPLACE], 2, szModule, (int)strlen(szModule), SQLITE_STATIC);
-	sqlite3_bind_text(settings_stmts_prep[SQL_SET_STMT_REPLACE], 3, szSetting, (int)strlen(szSetting), SQLITE_STATIC);
+	sqlite3_bind_text(settings_stmts_prep[SQL_SET_STMT_REPLACE], 2, szModule, -1, SQLITE_STATIC);
+	sqlite3_bind_text(settings_stmts_prep[SQL_SET_STMT_REPLACE], 3, szSetting, -1, SQLITE_STATIC);
 	sqlite3_bind_int(settings_stmts_prep[SQL_SET_STMT_REPLACE], 4, (int)value->type);
 	switch (value->type) {
 		case DBVT_BYTE:
@@ -317,7 +317,7 @@ static void settings_writeToDB(HANDLE hContact, const char *szModule, const char
 		case DBVT_UTF8:
 		case DBVT_ASCIIZ:
 			if (value->pszVal)
-				sqlite3_bind_text(settings_stmts_prep[SQL_SET_STMT_REPLACE], 5, value->pszVal, (int)strlen(value->pszVal), SQLITE_STATIC);
+				sqlite3_bind_text(settings_stmts_prep[SQL_SET_STMT_REPLACE], 5, value->pszVal, -1, SQLITE_STATIC);
 			break;
 		case DBVT_BLOB:
             if (value->pbVal) {
@@ -453,8 +453,8 @@ static int settings_getContactSettingWorker(HANDLE hContact, DBCONTACTGETSETTING
         return 1;
     }
 	// Read from db
-	sqlite3_bind_text(settings_stmts_prep[SQL_SET_STMT_READ], 1, dbcgs->szSetting, (int)strlen(dbcgs->szSetting), SQLITE_STATIC);
-	sqlite3_bind_text(settings_stmts_prep[SQL_SET_STMT_READ], 2, dbcgs->szModule, (int)strlen(dbcgs->szModule), SQLITE_STATIC);
+	sqlite3_bind_text(settings_stmts_prep[SQL_SET_STMT_READ], 1, dbcgs->szSetting, -1, SQLITE_STATIC);
+	sqlite3_bind_text(settings_stmts_prep[SQL_SET_STMT_READ], 2, dbcgs->szModule, -1, SQLITE_STATIC);
 	sqlite3_bind_int(settings_stmts_prep[SQL_SET_STMT_READ], 3, (int)hContact);
 	if (sql_step(settings_stmts_prep[SQL_SET_STMT_READ])!=SQLITE_ROW) {
 		if (dbcgs->pValue->type!=DBVT_BLOB) {
@@ -725,8 +725,8 @@ int setting_deleteSetting(WPARAM wParam, LPARAM lParam) {
 			settings_getCachedValue(hContact, szCachedSettingName, -1);
         
         // check if exists
-		sqlite3_bind_text(settings_stmts_prep[SQL_SET_STMT_SETTINGCHECK], 1, dbcgs->szSetting, (int)strlen(dbcgs->szSetting), SQLITE_STATIC);
-		sqlite3_bind_text(settings_stmts_prep[SQL_SET_STMT_SETTINGCHECK], 2, dbcgs->szModule, (int)strlen(dbcgs->szModule), SQLITE_STATIC);
+		sqlite3_bind_text(settings_stmts_prep[SQL_SET_STMT_SETTINGCHECK], 1, dbcgs->szSetting, -1, SQLITE_STATIC);
+		sqlite3_bind_text(settings_stmts_prep[SQL_SET_STMT_SETTINGCHECK], 2, dbcgs->szModule, -1, SQLITE_STATIC);
 		sqlite3_bind_int(settings_stmts_prep[SQL_SET_STMT_SETTINGCHECK], 3, (int)hContact);
         if (sql_step(settings_stmts_prep[SQL_SET_STMT_SETTINGCHECK])==SQLITE_ROW)
             rc = sqlite3_column_int(settings_stmts_prep[SQL_SET_STMT_SETTINGCHECK], 0);
@@ -738,8 +738,8 @@ int setting_deleteSetting(WPARAM wParam, LPARAM lParam) {
         sql_reset(settings_stmts_prep[SQL_SET_STMT_SETTINGCHECK]);
 
 		// Delete from db
-		sqlite3_bind_text(settings_stmts_prep[SQL_SET_STMT_DELETE], 1, dbcgs->szSetting, (int)strlen(dbcgs->szSetting), SQLITE_STATIC);
-		sqlite3_bind_text(settings_stmts_prep[SQL_SET_STMT_DELETE], 2, dbcgs->szModule, (int)strlen(dbcgs->szModule), SQLITE_STATIC);
+		sqlite3_bind_text(settings_stmts_prep[SQL_SET_STMT_DELETE], 1, dbcgs->szSetting, -1, SQLITE_STATIC);
+		sqlite3_bind_text(settings_stmts_prep[SQL_SET_STMT_DELETE], 2, dbcgs->szModule, -1, SQLITE_STATIC);
 		sqlite3_bind_int(settings_stmts_prep[SQL_SET_STMT_DELETE], 3, (int)hContact);
 		if (sql_step(settings_stmts_prep[SQL_SET_STMT_DELETE])!=SQLITE_DONE) {
 			sql_reset(settings_stmts_prep[SQL_SET_STMT_DELETE]);
@@ -769,7 +769,7 @@ int setting_enumSettings(WPARAM wParam, LPARAM lParam) {
     settings_writeUpdatedSettings();
 	EnterCriticalSection(&csSettingsDb);
 	sqlite3_bind_int(settings_stmts_prep[SQL_SET_STMT_ENUM], 1, (int)hContact);
-	sqlite3_bind_text(settings_stmts_prep[SQL_SET_STMT_ENUM], 2, dbces->szModule, (int)strlen(dbces->szModule), SQLITE_STATIC);
+	sqlite3_bind_text(settings_stmts_prep[SQL_SET_STMT_ENUM], 2, dbces->szModule, -1, SQLITE_STATIC);
 	while (sql_step(settings_stmts_prep[SQL_SET_STMT_ENUM])==SQLITE_ROW) {
 		const char *sczSetting = sqlite3_column_text(settings_stmts_prep[SQL_SET_STMT_ENUM], 0);
 		if (sczSetting) {
