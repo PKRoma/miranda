@@ -461,8 +461,10 @@ void LoadFavoritesAndRecent()
             }
             hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
         }
-        if(iIndex == 0)
+        if(iIndex == 0) {
+            free(recentEntries);
             return;
+        }
 
         for(i = 0; i < iIndex - 1; i++) {
             for(j = 0; j < iIndex - 1; j++) {
