@@ -731,12 +731,8 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
     buffer = (char *) malloc(bufferAlloced);
     buffer[0] = '\0';
 
-    if(streamData->dbei != 0) {
-        // make local copy of data to play with
+    if(streamData->dbei != 0)
         dbei = *(streamData->dbei);
-        dbei.pBlob = (char*)alloca(dbei.cbBlob);
-        memcpy(dbei.pBlob, streamData->dbei->pBlob, dbei.cbBlob);
-    }
     else {
         dbei.cbSize = sizeof(dbei);
         dbei.cbBlob = CallService(MS_DB_EVENT_GETBLOBSIZE, (WPARAM) hDbEvent, 0);
