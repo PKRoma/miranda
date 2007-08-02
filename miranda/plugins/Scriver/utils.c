@@ -35,20 +35,20 @@ HANDLE HookEvent_Ex(const char *name, MIRANDAHOOK hook) {
 	hHooks = (HANDLE *) mir_realloc(hHooks, sizeof(HANDLE) * (hookNum));
 	hHooks[hookNum - 1] = HookEvent(name, hook);
 	return hHooks[hookNum - 1] ;
-} 
-	  
+}
+
 HANDLE CreateServiceFunction_Ex(const char *name, MIRANDASERVICE service) {
 	serviceNum++;
 	hServices = (HANDLE *) mir_realloc(hServices, sizeof(HANDLE) * (serviceNum));
 	hServices[serviceNum - 1] = CreateServiceFunction(name, service);
 	return hServices[serviceNum - 1] ;
-} 
+}
 
 void UnhookEvents_Ex() {
 	int i;
 	for (i=0; i<hookNum ; ++i) {
 		if (hHooks[i] != NULL) {
-			UnhookEvent(hHooks[i]);	
+			UnhookEvent(hHooks[i]);
 		}
 	}
 	mir_free(hHooks);
@@ -161,3 +161,26 @@ int IsUnicodeMIM() {
 	return (mimFlags & MIM_UNICODE) != 0;
 }
 
+const char *filename = "scriver.log";
+
+void logInfo(const char *fmt, ...) {
+#ifndef JLOGGER_DISABLE_LOGS
+	SYSTEMTIME time;
+	char *str;
+	va_list vararg;
+	int strsize;
+	FILE *flog=fopen(filename,"at");
+	if (flog!=NULL) {
+		GetLocalTime(&time);
+    	va_start(vararg, fmt);
+    	str = (char *) malloc(strsize=2048);
+    	while (_vsnprintf(str, strsize, fmt, vararg) == -1)
+    		str = (char *) realloc(str, strsize+=2048);
+    	va_end(vararg);
+    	fprintf(flog,"%04d-%02d-%02d %02d:%02d:%02d,%03d [%s]",time.wYear,time.wMonth,time.wDay,time.wHour,time.wMinute,time.wSecond,time.wMilliseconds, "INFO");
+		fprintf(flog,"  %s\n",str);
+    	free(str);
+		fclose(flog);
+	}
+#endif
+}

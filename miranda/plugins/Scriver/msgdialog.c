@@ -2085,14 +2085,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		dat->hDbEventFirst = NULL;
 		dat->lastEventType = -1;
 		break;
-	case DM_STOPMESSAGESENDING:
-		if (dat->messagesInProgress>0) {
-			dat->messagesInProgress--;
-			if (g_dat->flags & SMF_SHOWPROGRESS) {
-				SendMessage(dat->hwnd, DM_UPDATESTATUSBAR, 0, 0);
-			}
-		}
-		break;
 	case WM_TIMER:
 		if (wParam == TIMERID_MSGSEND) {
 			ReportSendQueueTimeouts(hwndDlg);
@@ -2120,22 +2112,62 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		}
 		break;
 	case DM_SENDMESSAGE:
-			if (lParam) {
-				MessageSendQueueItem *msi = (MessageSendQueueItem *)lParam;
-				MessageSendQueueItem *item = CreateSendQueueItem(hwndDlg);
-				item->hContact = dat->hContact;
-				item->proto = mir_strdup(dat->szProto);
+		if (lParam) {
+			MessageSendQueueItem *msi = (MessageSendQueueItem *)lParam;
+			MessageSendQueueItem *item = CreateSendQueueItem(hwndDlg);
+			item->hContact = dat->hContact;
+			item->proto = mir_strdup(dat->szProto);
+			item->flags = msi->flags;
+			if ( IsUtfSendAvailable( dat->hContact )) {
+				char* szMsgUtf;
+				#if defined( _UNICODE )
+					szMsgUtf = mir_utf8encodeW( (TCHAR *)&msi->sendBuffer[strlen(msi->sendBuffer) + 1] );
+				#else
+					szMsgUtf = mir_utf8encodecp(temp, dat->codePage);
+				#endif
+				if (!szMsgUtf) {
+					break;
+				}
+				if  (*szMsgUtf == 0) {
+					mir_free(szMsgUtf);
+					break;
+				}
+				item->sendBufferSize = strlen(szMsgUtf) + 1;
+				item->sendBuffer = szMsgUtf;
+				item->flags |= PREF_UTF;
+			} else {
 				item->sendBufferSize = msi->sendBufferSize;
 				item->sendBuffer = (char *) mir_alloc(msi->sendBufferSize);
-				item->flags = msi->flags;
 				memcpy(item->sendBuffer, msi->sendBuffer, msi->sendBufferSize);
-				SetTimer(hwndDlg, TIMERID_MSGSEND, 1000, NULL);
-				dat->messagesInProgress++;
-				if (g_dat->flags & SMF_SHOWPROGRESS) {
-					SendMessage(hwndDlg, DM_UPDATESTATUSBAR, 0, 0);
-				}
-				SendSendQueueItem(item);
 			}
+			SendMessage(hwndDlg, DM_STARTMESSAGESENDING, 0, 0);
+			SendSendQueueItem(item);
+		}
+		break;
+	case DM_STARTMESSAGESENDING:
+		SetTimer(hwndDlg, TIMERID_MSGSEND, 1000, NULL);
+		dat->messagesInProgress++;
+		if (g_dat->flags & SMF_SHOWPROGRESS) {
+			SendMessage(dat->hwnd, DM_UPDATESTATUSBAR, 0, 0);
+		}
+		break;
+	case DM_STOPMESSAGESENDING:
+		if (dat->messagesInProgress>0) {
+			dat->messagesInProgress--;
+			if (g_dat->flags & SMF_SHOWPROGRESS) {
+				SendMessage(dat->hwnd, DM_UPDATESTATUSBAR, 0, 0);
+			}
+		}
+		if (dat->messagesInProgress == 0) {
+			KillTimer(hwndDlg, TIMERID_MSGSEND);
+		}
+		break;
+	case DM_SHOWERRORMESSAGE:
+		if (lParam) {
+			ErrorWindowData *ewd = (ErrorWindowData *) lParam;
+			SendMessage(hwndDlg, DM_STOPMESSAGESENDING, 0, 0);
+			ewd->queueItem->hwndErrorDlg = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSENDERROR), hwndDlg, ErrorDlgProc, (LPARAM) ewd);//hwndDlg
+		}
 		break;
 	case DM_ERRORDECIDED:
 		{
@@ -2143,17 +2175,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			item->hwndErrorDlg = NULL;
 			switch (wParam) {
 			case MSGERROR_CANCEL:
-				if (RemoveSendQueueItem(item)) {
-					KillTimer(hwndDlg, TIMERID_MSGSEND);
-				}
+				if (RemoveSendQueueItem(item));
 				SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
 				break;
 			case MSGERROR_RETRY:
-				SetTimer(hwndDlg, TIMERID_MSGSEND, 1000, NULL);
-				dat->messagesInProgress++;
-				if (g_dat->flags & SMF_SHOWPROGRESS) {
-					SendMessage(hwndDlg, DM_UPDATESTATUSBAR, 0, 0);
-				}
+				SendMessage(hwndDlg, DM_STARTMESSAGESENDING, 0, 0);
 				SendSendQueueItem(item);
 				break;
 			}
@@ -2249,66 +2275,31 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				if (pf2.wEffects & PFE_RTLPARA)
 					msi.flags |= PREF_RTL;
 
-				if ( IsUtfSendAvailable( dat->hContact )) {
-					char* szMsgUtf;
-					msi.flags |= PREF_UTF;
-					#if defined( _UNICODE )
-					{	WCHAR* temp = ( WCHAR* )alloca( bufSize * sizeof( TCHAR ));
-						GETTEXTEX gt;
+				msi.sendBufferSize = bufSize * (sizeof(TCHAR) + 1);
+				msi.sendBuffer = (char *) mir_alloc(msi.sendBufferSize);
+				msi.flags |= PREF_TCHAR;
+				GetDlgItemTextA(hwndDlg, IDC_MESSAGE, msi.sendBuffer, bufSize);
+				#if defined( _UNICODE )
+					{
+						GETTEXTEX  gt;
 						gt.cb = bufSize * sizeof(TCHAR);
 						gt.flags = GT_USECRLF;
 						gt.codepage = 1200;
-						SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETTEXTEX, (WPARAM)&gt, (LPARAM)temp );
-						if ( *temp == 0 )
-							break;
-
-						szMsgUtf = mir_utf8encodeW( temp );
-						dat->cmdList = tcmdlist_append(dat->cmdList, temp);
-						if ( RTL_Detect( temp ))
-							msi.flags |= PREF_RTL;
+						SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETTEXTEX, (WPARAM) &gt, (LPARAM) &msi.sendBuffer[bufSize]);
 					}
-					#else
-					{	char* temp = ( char* )alloca( bufSize );
-						GetDlgItemTextA(hwndDlg, IDC_MESSAGE, temp, bufSize);
-						if ( *temp == 0 )
-							break;
 
-						szMsgUtf = mir_utf8encodecp(temp, dat->codePage);
-						dat->cmdList = tcmdlist_append(dat->cmdList, temp);
-					}
-					#endif
-					if (!szMsgUtf || *szMsgUtf == 0)
-						break;
-
-					msi.sendBufferSize = strlen(szMsgUtf)+1;
-					msi.sendBuffer = szMsgUtf;
+					if ( RTL_Detect((wchar_t *)&msi.sendBuffer[bufSize] ))
+						msi.flags |= PREF_RTL;
+				#endif
+				if (msi.sendBuffer[0] == 0) {
+					mir_free (msi.sendBuffer);
+					break;
 				}
-				else {
-					msi.sendBufferSize = bufSize * (sizeof(TCHAR) + 1);
-					msi.sendBuffer = (char *) mir_alloc(msi.sendBufferSize);
-					msi.flags |= PREF_TCHAR;
-					GetDlgItemTextA(hwndDlg, IDC_MESSAGE, msi.sendBuffer, bufSize);
-
-					#if defined( _UNICODE )
-						{
-							GETTEXTEX  gt;
-							gt.cb = bufSize * sizeof(TCHAR);
-							gt.flags = GT_USECRLF;
-							gt.codepage = 1200;
-							SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETTEXTEX, (WPARAM) &gt, (LPARAM) &msi.sendBuffer[bufSize]);
-						}
-
-						if ( RTL_Detect((wchar_t *)&msi.sendBuffer[bufSize] ))
-							msi.flags |= PREF_RTL;
-					#endif
-					if (msi.sendBuffer[0] == 0)
-						break;
-					#if defined( _UNICODE )
-						dat->cmdList = tcmdlist_append(dat->cmdList, (TCHAR *) &msi.sendBuffer[bufSize]);
-					#else
-						dat->cmdList = tcmdlist_append(dat->cmdList, msi.sendBuffer);
-					#endif
-				}
+				#if defined( _UNICODE )
+					dat->cmdList = tcmdlist_append(dat->cmdList, (TCHAR *) &msi.sendBuffer[bufSize]);
+				#else
+					dat->cmdList = tcmdlist_append(dat->cmdList, msi.sendBuffer);
+				#endif
 				dat->cmdListCurrent = 0;
 				if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON)
 					NotifyTyping(dat, PROTOTYPE_SELFTYPING_OFF);
@@ -2648,41 +2639,38 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			DBEVENTINFO dbei = { 0 };
 			HANDLE hNewEvent;
 			MessageSendQueueItem * item;
+			HWND hwndSender;
 
-			if (ack->type != ACKTYPE_MESSAGE)
+			item = FindSendQueueItem(hwndDlg, dat->hContact, ack->hProcess);
+			if (item == NULL) {
 				break;
-
-			item = FindSendQueueItem(ack->hProcess);
-
-			if (dat->messagesInProgress>0) {
-				dat->messagesInProgress--;
-				if (g_dat->flags & SMF_SHOWPROGRESS) {
-					SendMessage(hwndDlg, DM_UPDATESTATUSBAR, 0, 0);
+			}
+			hwndSender = item->hwndSender;
+			if (hwndSender != NULL) {
+				SendMessage(hwndSender, DM_STOPMESSAGESENDING, 0, 0);
+				if (ack->result == ACKRESULT_FAILED) {
+					if (item->hwndErrorDlg != NULL) {
+						item = FindOldestPendingSendQueueItem(hwndDlg, dat->hContact);
+					}
+					if (item != NULL && item->hwndErrorDlg == NULL) {
+						ErrorWindowData *ewd = (ErrorWindowData *) mir_alloc(sizeof(ErrorWindowData));
+						ewd->szName = GetNickname(item->hContact, item->proto);
+						ewd->szDescription = a2t((char *) ack->lParam);
+						ewd->szText = GetSendBufferMsg(item);
+						ewd->hwndParent = hwndSender;
+						ewd->queueItem = item;
+						SendMessage(hwndSender, DM_SHOWERRORMESSAGE, 0, (LPARAM)ewd);
+					}
+					return 0;
 				}
 			}
-			if (ack->result == ACKRESULT_FAILED) {
-				if (item == NULL) {
-					item = FindOldestSendQueueItem(hwndDlg);
-				}
-				if (item != NULL && item->hwndErrorDlg != NULL) {
-					ErrorWindowData *ewd = (ErrorWindowData *) mir_alloc(sizeof(ErrorWindowData));
-					ewd->szName = GetNickname(dat->hContact, dat->szProto);
-					ewd->szDescription = a2t((char *) ack->lParam);
-					ewd->szText = GetSendBufferMsg(item);
-					ewd->hwndParent = hwndDlg;
-					ewd->queueItem = item;
-					item->hwndErrorDlg = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSENDERROR), hwndDlg, ErrorDlgProc, (LPARAM) ewd);//hwndDlg
-				}
-				return 0;
-			}
-			if (item == NULL)
-				break;
+
 			dbei.cbSize = sizeof(dbei);
 			dbei.eventType = EVENTTYPE_MESSAGE;
 			dbei.flags = DBEF_SENT | (( item->flags & PREF_RTL) ? DBEF_RTL : 0 );
 			if ( item->flags & PREF_UTF )
 				dbei.flags |= DBEF_UTF;
-			dbei.szModule = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) dat->hContact, 0);
+			dbei.szModule = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) item->hContact, 0);
 			dbei.timestamp = time(NULL);
 			dbei.cbBlob = lstrlenA(item->sendBuffer) + 1;
 	#if defined( _UNICODE )
@@ -2690,9 +2678,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				dbei.cbBlob *= sizeof(TCHAR) + 1;
 	#endif
 			dbei.pBlob = (PBYTE) item->sendBuffer;
-			hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM) dat->hContact, (LPARAM) & dbei);
+			hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM) item->hContact, (LPARAM) & dbei);
 
-
+			/* assume wParam = item, lParam = event*/
 			SkinPlaySound("SendMsg");
 			if (dat->hDbEventFirst == NULL) {
 				dat->hDbEventFirst = hNewEvent;
@@ -2702,9 +2690,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				DestroyWindow(item->hwndErrorDlg);
 			}
 			if (RemoveSendQueueItem(item)) {
-				KillTimer(hwndDlg, TIMERID_MSGSEND);
 				if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE))
-					DestroyWindow(hwndDlg);
+					DestroyWindow(hwndSender);
 			}
 			break;
 		}
