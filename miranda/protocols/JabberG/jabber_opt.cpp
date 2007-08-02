@@ -1239,7 +1239,7 @@ static BOOL CALLBACK _RosterNewListProc( HWND hList, UINT msg, WPARAM wParam, LP
 			SetWindowLong(hEditor,GWL_USERDATA,(LONG)edat);
 		}
 	}
-	return _RosterOldListProc ( hList, msg, wParam, lParam );
+	return CallWindowProc(_RosterOldListProc, hList, msg, wParam, lParam );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
