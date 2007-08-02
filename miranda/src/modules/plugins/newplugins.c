@@ -170,6 +170,8 @@ static int isPluginBanned(MUUID u1) {
 #define CHECKAPI_CLIST  2
 
 static char* modulesToSkip[] = { "autoloadavatars.dll", "multiwindow.dll", "fontservice.dll", "icolib.dll" };
+// The following plugins will be checked for a valid MUUID or they will not be loaded
+static char* expiredModulesToSkip[] = { "scriver.dll", "nconvers.dll", "tabsrmm.dll", "nhistory.dll", "historypp.dll", "help.dll" };
 
 static int checkAPI(char * plugin, BASIC_PLUGIN_INFO * bpi, DWORD mirandaVersion, int checkTypeAPI, int * exports)
 {
@@ -201,6 +203,21 @@ static int checkAPI(char * plugin, BASIC_PLUGIN_INFO * bpi, DWORD mirandaVersion
 			pi = bpi->InfoEx(mirandaVersion);
 		else
 			pi = (PLUGININFOEX*)bpi->Info(mirandaVersion);
+        {
+            // similar to the above hack but these plugins are checked for a valid interface first (in case there are updates to the plugin later)
+            char * p = strrchr(plugin,'\\');
+            if ( p != NULL && ++p ) {
+                if (!bpi->InfoEx||!pi->cbSize==sizeof(PLUGININFOEX)) {
+                    int i;
+                    for ( i = 0; i < SIZEOF(expiredModulesToSkip); i++ ) {
+                        if ( lstrcmpiA( p, expiredModulesToSkip[i] ) == 0 ) {
+                            FreeLibrary(h);
+                            return 0;
+                        }
+                    }   
+                }
+            }
+        }
 		if ( pi && ((bpi->Info&&pi->cbSize==sizeof(PLUGININFO))||(bpi->InfoEx&&pi->cbSize==sizeof(PLUGININFOEX)&&validInterfaceList(bpi->Interfaces)&&!isPluginBanned(pi->uuid))) && pi->shortName && pi->description
 				&& pi->author && pi->authorEmail && pi->copyright && pi->homepage
 				&& pi->replacesDefaultModule <= DEFMOD_HIGHEST
