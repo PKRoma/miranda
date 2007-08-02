@@ -174,6 +174,7 @@
 #define IDC_CODEPAGE                    1222
 #define IDC_COMBO1                      1223
 #define IDC_CHECK9                      1224
+#define IDC_UTF_AUTODETECT              1225
 #define ID_MENU1_OP                     40013
 #define ID_MENU1_DEOP                   40014
 #define ID_MENU1_VOICE                  40015
@@ -213,7 +214,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        199
 #define _APS_NEXT_COMMAND_VALUE         40046
-#define _APS_NEXT_CONTROL_VALUE         1225
+#define _APS_NEXT_CONTROL_VALUE         1226
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

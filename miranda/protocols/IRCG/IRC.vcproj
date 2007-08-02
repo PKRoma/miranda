@@ -675,10 +675,10 @@
 				RelativePath="Icons\hide.ico">
 			</File>
 			<File
-				RelativePath="Icons\Icons\irc.ico">
+				RelativePath="Icons\irc.ico">
 			</File>
 			<File
-				RelativePath="Icons\irc.ico">
+				RelativePath="Icons\Icons\irc.ico">
 			</File>
 			<File
 				RelativePath="IRC.rc">
@@ -709,6 +709,9 @@
 			</File>
 			<File
 				RelativePath="Icons\show.ico">
+			</File>
+			<File
+				RelativePath=".\version.rc">
 			</File>
 			<File
 				RelativePath="Icons\world.ico">

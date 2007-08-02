@@ -300,6 +300,8 @@ struct PREFERENCES  // Preferences structure
 	BYTE     OldStyleModes;
 	BYTE     ChannelAwayNotification;
 	BYTE     SendNotice;
+	BYTE     UtfAutodetect;
+	int      Codepage;
 	POINT    ListSize;
 	COLORREF colors[16];
 	HICON    hIcon[13];

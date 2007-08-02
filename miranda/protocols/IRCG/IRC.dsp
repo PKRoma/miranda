@@ -281,10 +281,6 @@ SOURCE=.\Icons\irc.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\IRC.rc
-# End Source File
-# Begin Source File
-
 SOURCE=.\Icons\join.ico
 # End Source File
 # Begin Source File
@@ -310,6 +306,10 @@ SOURCE=.\Icons\quick.ico
 # Begin Source File
 
 SOURCE=.\Icons\rename.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\resource.rc
 # End Source File
 # Begin Source File
 

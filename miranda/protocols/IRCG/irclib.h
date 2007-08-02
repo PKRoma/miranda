@@ -223,6 +223,7 @@ public :
 	CIrcSession& operator << (const CIrcMessage& m);
 
 	int getCodepage() const;
+	__inline void setCodepage( int aPage ) { codepage = aPage; }
 
 protected :
 	int codepage;
@@ -239,6 +240,7 @@ private :
 	CRITICAL_SECTION m_cs; // protect m_monitors
 	CRITICAL_SECTION m_dcc; // protect the dcc objects
 
+	void createMessageFromPchar( const char* p );
 	void Notify(const CIrcMessage* pmsg);
 	static void __cdecl ThreadProc(void *pparam);
 };

@@ -328,7 +328,7 @@ CIrcSession& CIrcSession::operator << (const CIrcMessage& msg)
 
 bool CIrcSession::Connect(const CIrcSessionInfo& info)
 {
-	codepage = DBGetContactSettingDword( NULL, IRCPROTONAME, "Codepage", IRC_DEFAULT_CODEPAGE );
+	codepage = prefs->Codepage;
 
 	try
 	{
@@ -522,6 +522,21 @@ void CIrcSession::InsertIncomingEvent(TCHAR* pszRaw)
 	return;
 }
 
+void CIrcSession::createMessageFromPchar( const char* p )
+{
+	TCHAR* ptszMsg;
+	if ( codepage != CP_UTF8 && prefs->UtfAutodetect ) {
+		if ( MultiByteToWideChar( CP_UTF8, 0, p, -1, NULL, NULL ) == ERROR_NO_UNICODE_TRANSLATION )
+			ptszMsg = mir_a2t_cp( p, codepage );
+		else
+			mir_utf8decode( NEWSTR_ALLOCA(p), &ptszMsg );
+	}
+	else ptszMsg = mir_a2t_cp( p, codepage );
+	CIrcMessage msg( ptszMsg, codepage, true );
+	Notify( &msg );
+	mir_free( ptszMsg );
+}
+
 void CIrcSession::DoReceive()
 {
 	char chBuf[1024*4+1];
@@ -580,20 +595,13 @@ void CIrcSession::DoReceive()
 							*p1++;
 						}
 
-						TCHAR* p = mir_a2t_cp( pszTemp, codepage );
-						CIrcMessage msg( p, 0, true );
-						Notify( &msg );
-						mir_free( p );
+						createMessageFromPchar( pszTemp );
 					}
 
 					mir_free( pszTemp );
 				}
-				else {
-					TCHAR* p = mir_a2t_cp( pStart, codepage );
-					CIrcMessage msg( p, 0, true );
-					Notify( &msg );
-					mir_free( p );
-			}	}
+				else createMessageFromPchar( pStart );
+			}
 
 			cbInBuf -= pEnd - pStart;
 			pStart = pEnd;

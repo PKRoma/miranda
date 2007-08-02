@@ -44,11 +44,11 @@ CLEAN :
 	-@erase "$(INTDIR)\commandmonitor.obj"
 	-@erase "$(INTDIR)\input.obj"
 	-@erase "$(INTDIR)\IRC.pch"
-	-@erase "$(INTDIR)\IRC.res"
 	-@erase "$(INTDIR)\irclib.obj"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\options.obj"
 	-@erase "$(INTDIR)\output.obj"
+	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\scripting.obj"
 	-@erase "$(INTDIR)\services.obj"
 	-@erase "$(INTDIR)\tools.obj"
@@ -66,7 +66,7 @@ CLEAN :
 
 CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "IRC_EXPORTS" /Fp"$(INTDIR)\IRC.pch" /Yu"irc.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x41d /fo"$(INTDIR)\IRC.res" /d "NDEBUG"
+RSC_PROJ=/l 0x41d /fo"$(INTDIR)\resource.res" /d "NDEBUG"
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\IRC.bsc"
 BSC32_SBRS= \
@@ -85,7 +85,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\tools.obj" \
 	"$(INTDIR)\windows.obj" \
-	"$(INTDIR)\IRC.res"
+	"$(INTDIR)\resource.res"
 
 "..\..\bin\release\plugins\IRC.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -105,11 +105,11 @@ CLEAN :
 	-@erase "$(INTDIR)\commandmonitor.obj"
 	-@erase "$(INTDIR)\input.obj"
 	-@erase "$(INTDIR)\IRC.pch"
-	-@erase "$(INTDIR)\IRC.res"
 	-@erase "$(INTDIR)\irclib.obj"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\options.obj"
 	-@erase "$(INTDIR)\output.obj"
+	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\scripting.obj"
 	-@erase "$(INTDIR)\services.obj"
 	-@erase "$(INTDIR)\tools.obj"
@@ -128,7 +128,7 @@ CLEAN :
 
 CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "IRC_EXPORTS" /Fp"$(INTDIR)\IRC.pch" /Yu"irc.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x41d /fo"$(INTDIR)\IRC.res" /d "_DEBUG"
+RSC_PROJ=/l 0x41d /fo"$(INTDIR)\resource.res" /d "_DEBUG"
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\IRC.bsc"
 BSC32_SBRS= \
@@ -147,7 +147,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\tools.obj" \
 	"$(INTDIR)\windows.obj" \
-	"$(INTDIR)\IRC.res"
+	"$(INTDIR)\resource.res"
 
 "..\..\bin\debug\plugins\IRC.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -167,11 +167,11 @@ CLEAN :
 	-@erase "$(INTDIR)\commandmonitor.obj"
 	-@erase "$(INTDIR)\input.obj"
 	-@erase "$(INTDIR)\IRC.pch"
-	-@erase "$(INTDIR)\IRC.res"
 	-@erase "$(INTDIR)\irclib.obj"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\options.obj"
 	-@erase "$(INTDIR)\output.obj"
+	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\scripting.obj"
 	-@erase "$(INTDIR)\services.obj"
 	-@erase "$(INTDIR)\tools.obj"
@@ -190,7 +190,7 @@ CLEAN :
 
 CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "IRC_EXPORTS" /Fp"$(INTDIR)\IRC.pch" /Yu"irc.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x41d /fo"$(INTDIR)\IRC.res" /d "_DEBUG"
+RSC_PROJ=/l 0x41d /fo"$(INTDIR)\resource.res" /d "_DEBUG"
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\IRC.bsc"
 BSC32_SBRS= \
@@ -209,7 +209,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\tools.obj" \
 	"$(INTDIR)\windows.obj" \
-	"$(INTDIR)\IRC.res"
+	"$(INTDIR)\resource.res"
 
 "..\..\bin\debug\plugins\IRC.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -229,11 +229,11 @@ CLEAN :
 	-@erase "$(INTDIR)\commandmonitor.obj"
 	-@erase "$(INTDIR)\input.obj"
 	-@erase "$(INTDIR)\IRC.pch"
-	-@erase "$(INTDIR)\IRC.res"
 	-@erase "$(INTDIR)\irclib.obj"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\options.obj"
 	-@erase "$(INTDIR)\output.obj"
+	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\scripting.obj"
 	-@erase "$(INTDIR)\services.obj"
 	-@erase "$(INTDIR)\tools.obj"
@@ -241,7 +241,6 @@ CLEAN :
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(INTDIR)\windows.obj"
 	-@erase "$(OUTDIR)\IRC.exp"
-	-@erase "$(OUTDIR)\IRC.lib"
 	-@erase "$(OUTDIR)\IRC.map"
 	-@erase "$(OUTDIR)\IRC.pdb"
 	-@erase "..\..\bin\release unicode\plugins\IRC.dll"
@@ -251,7 +250,7 @@ CLEAN :
 
 CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "IRC_EXPORTS" /Fp"$(INTDIR)\IRC.pch" /Yu"irc.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x41d /fo"$(INTDIR)\IRC.res" /d "NDEBUG"
+RSC_PROJ=/l 0x41d /fo"$(INTDIR)\resource.res" /d "NDEBUG"
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\IRC.bsc"
 BSC32_SBRS= \
@@ -270,7 +269,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\tools.obj" \
 	"$(INTDIR)\windows.obj" \
-	"$(INTDIR)\IRC.res"
+	"$(INTDIR)\resource.res"
 
 "..\..\bin\release unicode\plugins\IRC.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -414,9 +413,9 @@ SOURCE=.\windows.cpp
 "$(INTDIR)\windows.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\IRC.pch"
 
 
-SOURCE=.\IRC.rc
+SOURCE=.\resource.rc
 
-"$(INTDIR)\IRC.res" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\resource.res" : $(SOURCE) "$(INTDIR)"
 	$(RSC) $(RSC_PROJ) $(SOURCE)
 
 

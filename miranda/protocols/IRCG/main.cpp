@@ -20,6 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "irc.h"
+#include "version.h"
 
 CIrcSession       g_ircSession = NULL;   // Representation of the IRC-connection
 CMyMonitor*       monitor;               // Object that processes data from the IRC server
@@ -43,13 +44,13 @@ MM_INTERFACE		mmi;
 PLUGININFOEX pluginInfo =
 {
 	sizeof( PLUGININFOEX ),
-	"IRC Protocol",
-	PLUGIN_MAKE_VERSION( 0,7,0,1 ),
-	"IRC protocol for Miranda IM.",
-	"Miranda team",
-	"ghazan@miranda-im.org",
-	"© 2003-2007 Jurgen Persson, George Hazan",
-	"http://www.miranda-im.org",
+	__PLUGIN_NAME,
+	__VERSION_DWORD,
+	__DESC,
+	__AUTHOR,
+	__AUTHOREMAIL,
+	__COPYRIGHT,
+	__AUTHORWEB,
 	UNICODE_AWARE,
 	0,
 	{0xb529402b, 0x53ba, 0x4c81, { 0x9e, 0x27, 0xd4, 0x31, 0xeb, 0xe8, 0xec, 0x36 }} //{B529402B-53BA-4c81-9E27-D431EBE8EC36}

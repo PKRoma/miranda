@@ -107,39 +107,41 @@ void InitPrefs(void)
 	}
 	else prefs->Alias = mir_tstrdup( _T("/op /mode ## +ooo $1 $2 $3\r\n/dop /mode ## -ooo $1 $2 $3\r\n/voice /mode ## +vvv $1 $2 $3\r\n/dvoice /mode ## -vvv $1 $2 $3\r\n/j /join #$1 $2-\r\n/p /part ## $1-\r\n/w /whois $1\r\n/k /kick ## $1 $2-\r\n/q /query $1\r\n/logon /log on ##\r\n/logoff /log off ##\r\n/save /log buffer $1\r\n/slap /me slaps $1 around a bit with a large trout" ));
 
-	prefs->ScriptingEnabled = DBGetContactSettingByte(NULL,IRCPROTONAME, "ScriptingEnabled", 0);
-	prefs->ForceVisible = DBGetContactSettingByte(NULL,IRCPROTONAME, "ForceVisible", 0);
-	prefs->DisableErrorPopups = DBGetContactSettingByte(NULL,IRCPROTONAME, "DisableErrorPopups", 0);
-	prefs->RejoinChannels = DBGetContactSettingByte(NULL,IRCPROTONAME, "RejoinChannels", 0);
-	prefs->RejoinIfKicked = DBGetContactSettingByte(NULL,IRCPROTONAME, "RejoinIfKicked", 1);
-	prefs->Ident = DBGetContactSettingByte(NULL,IRCPROTONAME, "Ident", 0);
-	prefs->IdentTimer = (int)DBGetContactSettingByte(NULL,IRCPROTONAME, "IdentTimer", 0);
-	prefs->Retry = DBGetContactSettingByte(NULL,IRCPROTONAME, "Retry", 0);
-	prefs->DisableDefaultServer = DBGetContactSettingByte(NULL,IRCPROTONAME, "DisableDefaultServer", 0);
-	prefs->HideServerWindow = DBGetContactSettingByte(NULL,IRCPROTONAME, "HideServerWindow", 1);
-	prefs->UseServer = DBGetContactSettingByte(NULL,IRCPROTONAME, "UseServer", 1);
-	prefs->JoinOnInvite = DBGetContactSettingByte(NULL,IRCPROTONAME, "JoinOnInvite", 0);
-	prefs->Perform = DBGetContactSettingByte(NULL,IRCPROTONAME, "Perform", 0);
-	prefs->ShowAddresses = DBGetContactSettingByte(NULL,IRCPROTONAME, "ShowAddresses", 0);
-	prefs->AutoOnlineNotification = DBGetContactSettingByte(NULL,IRCPROTONAME, "AutoOnlineNotification", 1);
-	prefs->Ignore = DBGetContactSettingByte(NULL,IRCPROTONAME, "Ignore", 0);;
-	prefs->IgnoreChannelDefault = DBGetContactSettingByte(NULL,IRCPROTONAME, "IgnoreChannelDefault", 0);;
-	prefs->ServerComboSelection = DBGetContactSettingDword(NULL,IRCPROTONAME, "ServerComboSelection", -1);
-	prefs->QuickComboSelection = DBGetContactSettingDword(NULL,IRCPROTONAME, "QuickComboSelection", prefs->ServerComboSelection);
-	prefs->SendKeepAlive = (int)DBGetContactSettingByte(NULL,IRCPROTONAME, "SendKeepAlive", 0);
-	prefs->ListSize.y = DBGetContactSettingDword(NULL,IRCPROTONAME, "SizeOfListBottom", 400);
-	prefs->ListSize.x = DBGetContactSettingDword(NULL,IRCPROTONAME, "SizeOfListRight", 600);
-	prefs->iSSL = DBGetContactSettingByte(NULL,IRCPROTONAME, "UseSSL", 0);
-	prefs->DCCFileEnabled = DBGetContactSettingByte(NULL,IRCPROTONAME, "EnableCtcpFile", 1);
-	prefs->DCCChatEnabled = DBGetContactSettingByte(NULL,IRCPROTONAME, "EnableCtcpChat", 1);
-	prefs->DCCChatAccept = DBGetContactSettingByte(NULL,IRCPROTONAME, "CtcpChatAccept", 1);
-	prefs->DCCChatIgnore = DBGetContactSettingByte(NULL,IRCPROTONAME, "CtcpChatIgnore", 1);
-	prefs->DCCPassive = DBGetContactSettingByte(NULL,IRCPROTONAME, "DccPassive", 0);
-	prefs->ManualHost = DBGetContactSettingByte(NULL,IRCPROTONAME, "ManualHost", 0);
-	prefs->IPFromServer = DBGetContactSettingByte(NULL,IRCPROTONAME, "IPFromServer", 0);
-	prefs->DisconnectDCCChats = DBGetContactSettingByte(NULL,IRCPROTONAME, "DisconnectDCCChats", 1);
-	prefs->OldStyleModes = DBGetContactSettingByte(NULL,IRCPROTONAME, "OldStyleModes", 0);
-	prefs->SendNotice = DBGetContactSettingByte(NULL,IRCPROTONAME, "SendNotice", 1);
+	prefs->ScriptingEnabled = DBGetContactSettingByte( NULL, IRCPROTONAME, "ScriptingEnabled", 0);
+	prefs->ForceVisible = DBGetContactSettingByte( NULL, IRCPROTONAME, "ForceVisible", 0);
+	prefs->DisableErrorPopups = DBGetContactSettingByte( NULL, IRCPROTONAME, "DisableErrorPopups", 0);
+	prefs->RejoinChannels = DBGetContactSettingByte( NULL, IRCPROTONAME, "RejoinChannels", 0);
+	prefs->RejoinIfKicked = DBGetContactSettingByte( NULL, IRCPROTONAME, "RejoinIfKicked", 1);
+	prefs->Ident = DBGetContactSettingByte( NULL, IRCPROTONAME, "Ident", 0);
+	prefs->IdentTimer = (int)DBGetContactSettingByte( NULL, IRCPROTONAME, "IdentTimer", 0);
+	prefs->Retry = DBGetContactSettingByte( NULL, IRCPROTONAME, "Retry", 0);
+	prefs->DisableDefaultServer = DBGetContactSettingByte( NULL, IRCPROTONAME, "DisableDefaultServer", 0);
+	prefs->HideServerWindow = DBGetContactSettingByte( NULL, IRCPROTONAME, "HideServerWindow", 1);
+	prefs->UseServer = DBGetContactSettingByte( NULL, IRCPROTONAME, "UseServer", 1);
+	prefs->JoinOnInvite = DBGetContactSettingByte( NULL, IRCPROTONAME, "JoinOnInvite", 0);
+	prefs->Perform = DBGetContactSettingByte( NULL, IRCPROTONAME, "Perform", 0);
+	prefs->ShowAddresses = DBGetContactSettingByte( NULL, IRCPROTONAME, "ShowAddresses", 0);
+	prefs->AutoOnlineNotification = DBGetContactSettingByte( NULL, IRCPROTONAME, "AutoOnlineNotification", 1);
+	prefs->Ignore = DBGetContactSettingByte( NULL, IRCPROTONAME, "Ignore", 0);;
+	prefs->IgnoreChannelDefault = DBGetContactSettingByte( NULL, IRCPROTONAME, "IgnoreChannelDefault", 0);;
+	prefs->ServerComboSelection = DBGetContactSettingDword( NULL, IRCPROTONAME, "ServerComboSelection", -1);
+	prefs->QuickComboSelection = DBGetContactSettingDword( NULL, IRCPROTONAME, "QuickComboSelection", prefs->ServerComboSelection);
+	prefs->SendKeepAlive = (int)DBGetContactSettingByte( NULL, IRCPROTONAME, "SendKeepAlive", 0);
+	prefs->ListSize.y = DBGetContactSettingDword( NULL, IRCPROTONAME, "SizeOfListBottom", 400);
+	prefs->ListSize.x = DBGetContactSettingDword( NULL, IRCPROTONAME, "SizeOfListRight", 600);
+	prefs->iSSL = DBGetContactSettingByte( NULL, IRCPROTONAME, "UseSSL", 0);
+	prefs->DCCFileEnabled = DBGetContactSettingByte( NULL, IRCPROTONAME, "EnableCtcpFile", 1);
+	prefs->DCCChatEnabled = DBGetContactSettingByte( NULL, IRCPROTONAME, "EnableCtcpChat", 1);
+	prefs->DCCChatAccept = DBGetContactSettingByte( NULL, IRCPROTONAME, "CtcpChatAccept", 1);
+	prefs->DCCChatIgnore = DBGetContactSettingByte( NULL, IRCPROTONAME, "CtcpChatIgnore", 1);
+	prefs->DCCPassive = DBGetContactSettingByte( NULL, IRCPROTONAME, "DccPassive", 0);
+	prefs->ManualHost = DBGetContactSettingByte( NULL, IRCPROTONAME, "ManualHost", 0);
+	prefs->IPFromServer = DBGetContactSettingByte( NULL, IRCPROTONAME, "IPFromServer", 0);
+	prefs->DisconnectDCCChats = DBGetContactSettingByte( NULL, IRCPROTONAME, "DisconnectDCCChats", 1);
+	prefs->OldStyleModes = DBGetContactSettingByte( NULL, IRCPROTONAME, "OldStyleModes", 0);
+	prefs->SendNotice = DBGetContactSettingByte( NULL, IRCPROTONAME, "SendNotice", 1);
+	prefs->Codepage = DBGetContactSettingDword( NULL, IRCPROTONAME, "Codepage", IRC_DEFAULT_CODEPAGE );
+	prefs->UtfAutodetect = DBGetContactSettingByte( NULL, IRCPROTONAME, "Autodetect", 1);
 	prefs->MyHost[0] = '\0';
 	prefs->colors[0] = RGB(255,255,255);
 	prefs->colors[1] = RGB(0,0,0);
@@ -159,7 +161,7 @@ void InitPrefs(void)
 	prefs->colors[15] = RGB(210,210,210);
 	prefs->OnlineNotificationTime = DBGetContactSettingWord(NULL, IRCPROTONAME, "OnlineNotificationTime", 30);
 	prefs->OnlineNotificationLimit = DBGetContactSettingWord(NULL, IRCPROTONAME, "OnlineNotificationLimit", 50);
-	prefs->ChannelAwayNotification = DBGetContactSettingByte(NULL,IRCPROTONAME, "ChannelAwayNotification", 1);
+	prefs->ChannelAwayNotification = DBGetContactSettingByte( NULL, IRCPROTONAME, "ChannelAwayNotification", 1);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -615,7 +617,7 @@ BOOL CALLBACK CtcpPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					prefs->SendNotice = IsDlgButtonChecked( hwndDlg,IDC_SENDNOTICE)== BST_CHECKED?1:0;
 					DBWriteContactSettingByte(NULL,IRCPROTONAME,"SendNotice",prefs->SendNotice);
 
-					if(IsDlgButtonChecked( hwndDlg,IDC_SLOW)== BST_CHECKED)
+					if ( IsDlgButtonChecked( hwndDlg,IDC_SLOW)== BST_CHECKED)
 						DBWriteContactSettingByte(NULL,IRCPROTONAME,"DCCMode",0);
 					else 
 						DBWriteContactSettingByte(NULL,IRCPROTONAME,"DCCMode",1);
@@ -629,7 +631,7 @@ BOOL CALLBACK CtcpPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					prefs->DisconnectDCCChats = IsDlgButtonChecked( hwndDlg,IDC_DISC)== BST_CHECKED?1:0;
 					DBWriteContactSettingByte(NULL,IRCPROTONAME,"DisconnectDCCChats",prefs->DisconnectDCCChats);
 
-					if(IsDlgButtonChecked( hwndDlg, IDC_ENABLEIP) == BST_CHECKED) {
+					if ( IsDlgButtonChecked( hwndDlg, IDC_ENABLEIP) == BST_CHECKED) {
 						char szTemp[500];
 						GetDlgItemTextA( hwndDlg,IDC_IP,szTemp, 499);
 						lstrcpynA(prefs->MySpecifiedHost, GetWord(szTemp, 0).c_str(), 499);
@@ -732,7 +734,9 @@ BOOL CALLBACK OtherPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			EnableWindow(GetDlgItem( hwndDlg, IDC_ADD), prefs->Perform);
 			EnableWindow(GetDlgItem( hwndDlg, IDC_DELETE), prefs->Perform);
 
-			FillCodePageCombo( GetDlgItem( hwndDlg, IDC_CODEPAGE ), DBGetContactSettingDword( NULL, IRCPROTONAME, "Codepage", IRC_DEFAULT_CODEPAGE ));
+			FillCodePageCombo( GetDlgItem( hwndDlg, IDC_CODEPAGE ), prefs->Codepage );
+			if ( prefs->Codepage == CP_UTF8 )
+				EnableWindow( GetDlgItem( hwndDlg, IDC_UTF_AUTODETECT ), FALSE );
 
 			HWND hwndPerform = GetDlgItem( hwndDlg, IDC_PERFORMCOMBO );
 
@@ -768,6 +772,7 @@ BOOL CALLBACK OtherPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 			SendMessage( hwndPerform, CB_SETCURSEL, 0, 0);				
 			SendMessage( hwndDlg, WM_COMMAND, MAKEWPARAM(IDC_PERFORMCOMBO, CBN_SELCHANGE), 0);
+			CheckDlgButton( hwndDlg, IDC_UTF_AUTODETECT, (prefs->UtfAutodetect) ? BST_CHECKED : BST_UNCHECKED );
 			PerformlistModified = false;
 		}	
 		return TRUE;
@@ -793,12 +798,18 @@ BOOL CALLBACK OtherPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				SetDlgItemText( hwndDlg, IDC_PERFORMEDIT, pPerf->mText.c_str());
 			EnableWindow(GetDlgItem( hwndDlg, IDC_ADD), false);
 			if ( GetWindowTextLength(GetDlgItem( hwndDlg, IDC_PERFORMEDIT)) != 0)
-				EnableWindow(GetDlgItem( hwndDlg, IDC_DELETE), true);
+				EnableWindow(GetDlgItem( hwndDlg, IDC_DELETE), true );
 			else
-				EnableWindow(GetDlgItem( hwndDlg, IDC_DELETE), false);
+				EnableWindow(GetDlgItem( hwndDlg, IDC_DELETE), false );
 			return false;
 		}
 		SendMessage(GetParent( hwndDlg), PSM_CHANGED,0,0);
+
+		if ( HIWORD(wParam) == CBN_SELCHANGE && LOWORD(wParam) == IDC_CODEPAGE) {
+			int curSel = SendDlgItemMessage( hwndDlg, IDC_CODEPAGE, CB_GETCURSEL, 0, 0 );
+			EnableWindow( GetDlgItem( hwndDlg, IDC_UTF_AUTODETECT ),
+				SendDlgItemMessage( hwndDlg, IDC_CODEPAGE, CB_GETITEMDATA, curSel, 0 ) != CP_UTF8 );
+		}
 
 		if ( HIWORD(wParam) == EN_CHANGE && LOWORD(wParam) == IDC_PERFORMEDIT) {
 			EnableWindow(GetDlgItem( hwndDlg, IDC_ADD), true);
@@ -888,17 +899,21 @@ BOOL CALLBACK OtherPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				DBWriteContactSettingTString( NULL, IRCPROTONAME, "QuitMessage", prefs->QuitMessage );
 				{
 					int curSel = SendDlgItemMessage( hwndDlg, IDC_CODEPAGE, CB_GETCURSEL, 0, 0 );
-					DBWriteContactSettingDword( NULL, IRCPROTONAME, "Codepage", 
-						SendDlgItemMessage( hwndDlg, IDC_CODEPAGE, CB_GETITEMDATA, curSel, 0 ));
+					prefs->Codepage = SendDlgItemMessage( hwndDlg, IDC_CODEPAGE, CB_GETITEMDATA, curSel, 0 );
+					DBWriteContactSettingDword( NULL, IRCPROTONAME, "Codepage", prefs->Codepage );
+					if ( g_ircSession )
+						g_ircSession.setCodepage( prefs->Codepage );
 				}
 
+				prefs->UtfAutodetect = IsDlgButtonChecked( hwndDlg,IDC_UTF_AUTODETECT)== BST_CHECKED;
+				DBWriteContactSettingByte(NULL,IRCPROTONAME,"UtfAutodetect",prefs->Perform);
 				prefs->Perform = IsDlgButtonChecked( hwndDlg,IDC_PERFORM)== BST_CHECKED;
 				DBWriteContactSettingByte(NULL,IRCPROTONAME,"Perform",prefs->Perform);
 				prefs->ScriptingEnabled = IsDlgButtonChecked( hwndDlg,IDC_SCRIPT)== BST_CHECKED;
 				DBWriteContactSettingByte(NULL,IRCPROTONAME,"ScriptingEnabled",prefs->ScriptingEnabled);
 				if (IsWindowEnabled(GetDlgItem( hwndDlg, IDC_ADD)))
 					SendMessage( hwndDlg, WM_COMMAND, MAKEWPARAM(IDC_ADD, BN_CLICKED), 0);
-
+            
 				if ( PerformlistModified ) {
 					PerformlistModified = false;
 
