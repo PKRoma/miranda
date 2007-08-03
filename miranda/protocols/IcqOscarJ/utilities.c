@@ -1607,7 +1607,7 @@ int IsValidRelativePath(const char *filename)
       filename[0] == '\\' || filename[0] == '/')
     return 0; // Contains malicious chars, Failure
 
-  return 0; // Success
+  return 1; // Success
 }
 
 
