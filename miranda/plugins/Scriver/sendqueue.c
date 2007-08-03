@@ -92,11 +92,11 @@ MessageSendQueueItem* FindOldestPendingSendQueueItem(HWND hwndSender, HANDLE hCo
 	return found;
 }
 
-MessageSendQueueItem* FindSendQueueItem(HWND hwndSender, HANDLE hContact, HANDLE hSendId) {
+MessageSendQueueItem* FindSendQueueItem(HANDLE hContact, HANDLE hSendId) {
 	MessageSendQueueItem *item;
 	EnterCriticalSection(&queueMutex);
 	for (item = global_sendQueue; item != NULL; item = item->next) {
-		if (item->hwndSender == hwndSender && item->hContact == hContact && item->hSendId == hSendId) {
+		if (item->hContact == hContact && item->hSendId == hSendId) {
 			break;
 		}
 	}
@@ -134,10 +134,11 @@ BOOL RemoveSendQueueItem(MessageSendQueueItem* item) {
 }
 
 void ReportSendQueueTimeouts(HWND hwndSender) {
-	MessageSendQueueItem *item;
+	MessageSendQueueItem *item, *item2;
 	int timeout = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT);
 	EnterCriticalSection(&queueMutex);
-	for (item = global_sendQueue; item != NULL; item = item->next) {
+	for (item = global_sendQueue; item != NULL; item = item2) {
+		item2 = item->next;
 //		logInfo(" item in the queue [%s] next: [%s] prev: [%s]", item->sendBuffer, item->next != NULL ? item->next->sendBuffer : "", item->prev != NULL ? item->prev->sendBuffer : "");
 		if (item->timeout < timeout) {
 			item->timeout += 1000;
@@ -152,6 +153,8 @@ void ReportSendQueueTimeouts(HWND hwndSender) {
 						ewd->queueItem = item;
 						PostMessage(hwndSender, DM_SHOWERRORMESSAGE, 0, (LPARAM)ewd);
 					} else {
+						/* TODO: Handle errors outside messaging window in a better way */
+						RemoveSendQueueItem(item);
 					}
 				}
 			}

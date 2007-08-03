@@ -2633,68 +2633,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			}
 		}
 		break;
-	case HM_EVENTSENT:
-		{
-			ACKDATA *ack = (ACKDATA *) lParam;
-			DBEVENTINFO dbei = { 0 };
-			HANDLE hNewEvent;
-			MessageSendQueueItem * item;
-			HWND hwndSender;
-
-			item = FindSendQueueItem(hwndDlg, dat->hContact, ack->hProcess);
-			if (item == NULL) {
-				break;
-			}
-			hwndSender = item->hwndSender;
-			if (hwndSender != NULL) {
-				SendMessage(hwndSender, DM_STOPMESSAGESENDING, 0, 0);
-				if (ack->result == ACKRESULT_FAILED) {
-					if (item->hwndErrorDlg != NULL) {
-						item = FindOldestPendingSendQueueItem(hwndDlg, dat->hContact);
-					}
-					if (item != NULL && item->hwndErrorDlg == NULL) {
-						ErrorWindowData *ewd = (ErrorWindowData *) mir_alloc(sizeof(ErrorWindowData));
-						ewd->szName = GetNickname(item->hContact, item->proto);
-						ewd->szDescription = a2t((char *) ack->lParam);
-						ewd->szText = GetSendBufferMsg(item);
-						ewd->hwndParent = hwndSender;
-						ewd->queueItem = item;
-						SendMessage(hwndSender, DM_SHOWERRORMESSAGE, 0, (LPARAM)ewd);
-					}
-					return 0;
-				}
-			}
-
-			dbei.cbSize = sizeof(dbei);
-			dbei.eventType = EVENTTYPE_MESSAGE;
-			dbei.flags = DBEF_SENT | (( item->flags & PREF_RTL) ? DBEF_RTL : 0 );
-			if ( item->flags & PREF_UTF )
-				dbei.flags |= DBEF_UTF;
-			dbei.szModule = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) item->hContact, 0);
-			dbei.timestamp = time(NULL);
-			dbei.cbBlob = lstrlenA(item->sendBuffer) + 1;
-	#if defined( _UNICODE )
-			if ( !( item->flags & PREF_UTF ))
-				dbei.cbBlob *= sizeof(TCHAR) + 1;
-	#endif
-			dbei.pBlob = (PBYTE) item->sendBuffer;
-			hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM) item->hContact, (LPARAM) & dbei);
-
-			/* assume wParam = item, lParam = event*/
-			SkinPlaySound("SendMsg");
-			if (dat->hDbEventFirst == NULL) {
-				dat->hDbEventFirst = hNewEvent;
-				SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
-			}
-			if (item->hwndErrorDlg != NULL) {
-				DestroyWindow(item->hwndErrorDlg);
-			}
-			if (RemoveSendQueueItem(item)) {
-				if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE))
-					DestroyWindow(hwndSender);
-			}
-			break;
-		}
 	case WM_DESTROY:
 		NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSING);
 		if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON) {

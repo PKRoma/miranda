@@ -31,7 +31,7 @@ void DestroySendQueue();
 MessageSendQueueItem* CreateSendQueueItem(HWND hwndSender);
 TCHAR * GetSendBufferMsg(MessageSendQueueItem *item);
 MessageSendQueueItem* FindOldestPendingSendQueueItem(HWND hwndSender, HANDLE hContact);
-MessageSendQueueItem* FindSendQueueItem(HWND hwndSender, HANDLE hContact, HANDLE hSendId);
+MessageSendQueueItem* FindSendQueueItem(HANDLE hContact, HANDLE hSendId);
 BOOL RemoveSendQueueItem(MessageSendQueueItem* item);
 void ReportSendQueueTimeouts(HWND hwndSender);
 void ReleaseSendQueueItems(HWND hwndSender);

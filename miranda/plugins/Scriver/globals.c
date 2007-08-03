@@ -371,8 +371,64 @@ static int ackevent(WPARAM wParam, LPARAM lParam) {
 		if(h) SendMessage(h, HM_AVATARACK, wParam, lParam);
 	}
 	else if (pAck->type==ACKTYPE_MESSAGE) {
-		HWND h = WindowList_Find(g_dat->hMessageWindowList, (HANDLE)pAck->hContact);
-		if(h) SendMessage(h, HM_EVENTSENT, wParam, lParam);
+		ACKDATA *ack = (ACKDATA *) lParam;
+		DBEVENTINFO dbei = { 0 };
+		HANDLE hNewEvent;
+		MessageSendQueueItem * item;
+		HWND hwndSender;
+
+		item = FindSendQueueItem((HANDLE)pAck->hContact, (HANDLE)pAck->hProcess);
+		if (item != NULL) {
+			hwndSender = item->hwndSender;
+			if (ack->result == ACKRESULT_FAILED) {
+				if (item->hwndErrorDlg != NULL) {
+					item = FindOldestPendingSendQueueItem(hwndSender, (HANDLE)pAck->hContact);
+				}
+				if (item != NULL && item->hwndErrorDlg == NULL) {
+					if (hwndSender != NULL) {
+						ErrorWindowData *ewd = (ErrorWindowData *) mir_alloc(sizeof(ErrorWindowData));
+						ewd->szName = GetNickname(item->hContact, item->proto);
+						ewd->szDescription = a2t((char *) ack->lParam);
+						ewd->szText = GetSendBufferMsg(item);
+						ewd->hwndParent = hwndSender;
+						ewd->queueItem = item;
+						SendMessage(hwndSender, DM_STOPMESSAGESENDING, 0, 0);
+						SendMessage(hwndSender, DM_SHOWERRORMESSAGE, 0, (LPARAM)ewd);
+					} else {
+						RemoveSendQueueItem(item);
+					}
+				}
+				return 0;
+			}
+
+			dbei.cbSize = sizeof(dbei);
+			dbei.eventType = EVENTTYPE_MESSAGE;
+			dbei.flags = DBEF_SENT | (( item->flags & PREF_RTL) ? DBEF_RTL : 0 );
+			if ( item->flags & PREF_UTF )
+				dbei.flags |= DBEF_UTF;
+			dbei.szModule = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) item->hContact, 0);
+			dbei.timestamp = time(NULL);
+			dbei.cbBlob = lstrlenA(item->sendBuffer) + 1;
+	#if defined( _UNICODE )
+			if ( !( item->flags & PREF_UTF ))
+				dbei.cbBlob *= sizeof(TCHAR) + 1;
+	#endif
+			dbei.pBlob = (PBYTE) item->sendBuffer;
+			hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM) item->hContact, (LPARAM) & dbei);
+
+			if (item->hwndErrorDlg != NULL) {
+				DestroyWindow(item->hwndErrorDlg);
+			}
+
+			if (RemoveSendQueueItem(item) && DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE)) {
+				if (hwndSender != NULL) {
+					DestroyWindow(hwndSender);
+				}
+			} else if (hwndSender != NULL) {
+				SendMessage(hwndSender, DM_STOPMESSAGESENDING, 0, 0);
+				SkinPlaySound("SendMsg");
+			}
+		}
 	}
 	return 0;
 }
