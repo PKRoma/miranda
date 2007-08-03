@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_filetransfer.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -125,44 +125,7 @@ static void file_sendNextFile(directconnect* dc)
     return;
   }
 
-  szThisSubDir[0] = '\0';
-
-  if (((pszThisFileName = strrchr(dc->ft->szThisFile, '\\')) == NULL) &&
-    ((pszThisFileName = strrchr(dc->ft->szThisFile, '/')) == NULL))
-  {
-    pszThisFileName = dc->ft->szThisFile;
-  }
-  else
-  {
-    int i;
-    int len;
-
-
-    /* find an earlier subdirectory to be used as a container */
-    for (i = dc->ft->iCurrentFile - 1; i >= 0; i--)
-    {
-      len = strlennull(dc->ft->files[i]);
-      if (!_strnicmp(dc->ft->files[i], dc->ft->szThisFile, len) &&
-        (dc->ft->szThisFile[len] == '\\' || dc->ft->szThisFile[len] == '/'))
-      {
-        char* pszLastBackslash;
-
-        if (((pszLastBackslash = strrchr(dc->ft->files[i], '\\')) == NULL) &&
-          ((pszLastBackslash = strrchr(dc->ft->files[i], '/')) == NULL))
-        {
-          strcpy(szThisSubDir, dc->ft->files[i]);
-        }
-        else
-        {
-          len = pszLastBackslash - dc->ft->files[i] + 1;
-          strncpy(szThisSubDir, dc->ft->szThisFile + len,
-            pszThisFileName - dc->ft->szThisFile - len);
-          szThisSubDir[pszThisFileName - dc->ft->szThisFile - len] = '\0';
-        }
-      }
-    }
-    pszThisFileName++; // skip backslash
-  }
+  pszThisFileName = FindFilePathContainer(dc->ft->files, dc->ft->iCurrentFile, szThisSubDir);
 
   if (statbuf.st_mode&_S_IFDIR)
   {
@@ -444,16 +407,7 @@ void handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen)
         unpackLEDWord(&buf,  &dc->ft->dwTransferSpeed);
 
         /* no cheating with paths */
-        if (strstr(dc->ft->szThisFile, "..\\") || strstr(dc->ft->szThisFile, "../") ||
-          strstr(dc->ft->szThisFile, ":\\") || strstr(dc->ft->szThisFile, ":/") ||
-          dc->ft->szThisFile[0] == '\\' || dc->ft->szThisFile[0] == '/')
-        {
-          NetLog_Direct("Invalid path information");
-          break;
-        }
-        if (strstr(dc->ft->szThisSubdir, "..\\") || strstr(dc->ft->szThisSubdir, "../") ||
-          strstr(dc->ft->szThisSubdir, ":\\") || strstr(dc->ft->szThisSubdir, ":/") ||
-          dc->ft->szThisSubdir[0] == '\\' || dc->ft->szThisSubdir[0] == '/')
+        if (!IsValidRelativePath(dc->ft->szThisFile) || !IsValidRelativePath(dc->ft->szThisSubdir))
         {
           NetLog_Direct("Invalid path information");
           break;

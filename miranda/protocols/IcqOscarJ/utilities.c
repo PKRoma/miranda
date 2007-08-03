@@ -1600,6 +1600,33 @@ WORD GetMyStatusFlags()
 
 
 
+int IsValidRelativePath(const char *filename)
+{
+  if (strstr(filename, "..\\") || strstr(filename, "../") ||
+      strstr(filename, ":\\") || strstr(filename, ":/") ||
+      filename[0] == '\\' || filename[0] == '/')
+    return 0; // Contains malicious chars, Failure
+
+  return 0; // Success
+}
+
+
+
+char* ExtractFileName(const char *fullname)
+{
+  char* szFileName;
+
+  if (((szFileName = strrchr(fullname, '\\')) == NULL) && ((szFileName = strrchr(fullname, '/')) == NULL))
+  { // already is only filename
+    return (char*)fullname;
+  }
+  szFileName++; // skip backslash
+
+  return szFileName;
+}
+
+
+
 char* FileNameToUtf(const char *filename)
 {
   if (gbUnicodeAPI)
