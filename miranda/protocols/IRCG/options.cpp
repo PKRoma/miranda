@@ -141,7 +141,7 @@ void InitPrefs(void)
 	prefs->OldStyleModes = DBGetContactSettingByte( NULL, IRCPROTONAME, "OldStyleModes", 0);
 	prefs->SendNotice = DBGetContactSettingByte( NULL, IRCPROTONAME, "SendNotice", 1);
 	prefs->Codepage = DBGetContactSettingDword( NULL, IRCPROTONAME, "Codepage", IRC_DEFAULT_CODEPAGE );
-	prefs->UtfAutodetect = DBGetContactSettingByte( NULL, IRCPROTONAME, "Autodetect", 1);
+	prefs->UtfAutodetect = DBGetContactSettingByte( NULL, IRCPROTONAME, "UtfAutodetect", 1);
 	prefs->MyHost[0] = '\0';
 	prefs->colors[0] = RGB(255,255,255);
 	prefs->colors[1] = RGB(0,0,0);
@@ -906,7 +906,7 @@ BOOL CALLBACK OtherPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				}
 
 				prefs->UtfAutodetect = IsDlgButtonChecked( hwndDlg,IDC_UTF_AUTODETECT)== BST_CHECKED;
-				DBWriteContactSettingByte(NULL,IRCPROTONAME,"UtfAutodetect",prefs->Perform);
+				DBWriteContactSettingByte(NULL,IRCPROTONAME,"UtfAutodetect",prefs->UtfAutodetect);
 				prefs->Perform = IsDlgButtonChecked( hwndDlg,IDC_PERFORM)== BST_CHECKED;
 				DBWriteContactSettingByte(NULL,IRCPROTONAME,"Perform",prefs->Perform);
 				prefs->ScriptingEnabled = IsDlgButtonChecked( hwndDlg,IDC_SCRIPT)== BST_CHECKED;
