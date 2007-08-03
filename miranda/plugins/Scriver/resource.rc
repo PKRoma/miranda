@@ -170,19 +170,19 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,20,34,252,10
     CONTROL         "Limit names on tabs to",IDC_LIMITNAMES,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,45,126,10
-    EDITTEXT        IDC_LIMITNAMESLEN,148,44,20,12,ES_RIGHT | ES_NUMBER
-    LTEXT           "characters",IDC_CHARS,172,45,90,8,WS_DISABLED
+    EDITTEXT        IDC_LIMITNAMESLEN,212,44,20,12,ES_RIGHT | ES_NUMBER
+    LTEXT           "characters",IDC_CHARS,236,45,65,8,WS_DISABLED
 	CONTROL         "Show close button on each tab ",IDC_TABCLOSEBUTTON,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,56,252,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,56,192,10
 	CONTROL         "Automatically switch to active tab",IDC_SWITCHTOACTIVE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,67,252,10
 
     CONTROL         "Limit number of tabs per container to",IDC_LIMITTABS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,78,180,10
-    EDITTEXT        IDC_LIMITTABSNUM,200,77,20,12,ES_RIGHT | ES_NUMBER
+    EDITTEXT        IDC_LIMITTABSNUM,212,77,20,12,ES_RIGHT | ES_NUMBER
 
 	CONTROL         "Use separate containers for chats",IDC_SEPARATECHATSCONTAINERS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,89,252,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,89,192,10
 
     CONTROL         "Limit number of chats tabs per container to",IDC_LIMITCHATSTABS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,32,100,180,10
