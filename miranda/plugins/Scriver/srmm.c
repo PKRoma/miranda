@@ -38,7 +38,7 @@ int bNewDbApi = FALSE;
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
 	"Scriver",
-	PLUGIN_MAKE_VERSION(2, 5, 9, 18),
+	PLUGIN_MAKE_VERSION(2, 6, 9, 9),
 	"Scriver - send and receive instant messages",
 	"Miranda IM Development Team",
 	"the_leech@users.berlios.de",
