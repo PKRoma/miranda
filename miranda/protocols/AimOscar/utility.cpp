@@ -586,6 +586,7 @@ void execute_cmd(char* type,char* arg)
 			mir_snprintf(quote_arg,lstrlen(arg)+3,"%s%s%s","\"",arg,"\"");
 			ShellExecute(NULL,"open",szCommandName,quote_arg, NULL, SW_SHOW);
 		}
+		RegCloseKey(hKey);
 	}
 }
 void create_group(char *group)
