@@ -949,9 +949,11 @@ LBL_InvalidCommand:
 			break;
 
 		case ' SNA':    //********* ANS: section 8.4 Getting Invited to a Switchboard Session
-			if ( strcmp( params, "OK" ) == 0 ) {
+			if ( strcmp( params, "OK" ) == 0 ) 
+			{
 				info->sendCaps();
-				if ( info->mJoinedCount == 1 ) {
+				if ( info->mJoinedCount == 1 ) 
+				{
 					MsgQueueEntry E;
 					bool typing = false;
 					HANDLE hContact = info->mJoinedContacts[0];
@@ -967,7 +969,8 @@ LBL_InvalidCommand:
 								info->sendMessage( E.msgType, E.message, E.flags );
 								MSN_SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )E.seq, 0 );
 							}
-							else info->sendRawMessage( E.msgType, E.message, E.msgSize );
+							else 
+								info->sendRawMessage( E.msgType, E.message, E.msgSize );
 
 							mir_free( E.message );
 
@@ -981,12 +984,15 @@ LBL_InvalidCommand:
 					if ( typing )
 						MSN_StartStopTyping( info, true );
 
-
-
 					if ( MSN_GetByte( "EnableDeliveryPopup", 0 ))
 						MSN_ShowPopup( hContact, TranslateT( "Chat session established by contact request" ), 0 );
-			}	}
-
+				}
+				else {
+					if (MsgQueue_CheckContact(info->mInitialContact))
+						msnNsThread->sendPacket( "XFR", "SB" );
+					info->mInitialContact = NULL;
+				}
+			}
 			break;
 
 		case ' PLB':    //********* BLP: section 7.6 List Retrieval And Property Management
@@ -1573,7 +1579,7 @@ LBL_InvalidCommand:
 			ThreadData* newThread = new ThreadData;
 			strcpy( newThread->mServer, data.newServer );
 			newThread->mType = SERVER_SWITCHBOARD;
-			newThread->mInitialContact = MSN_HContactFromEmail( data.callerEmail, data.callerNick, false, true );
+			newThread->mInitialContact = MSN_HContactFromEmail( data.callerEmail, data.callerNick, true, true );
 			mir_snprintf( newThread->mCookie, sizeof( newThread->mCookie ), "%s %d", data.authChallengeInfo, trid );
 
 			ReleaseSemaphore( newThread->hWaitEvent, 5, NULL );
