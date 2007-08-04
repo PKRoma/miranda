@@ -988,7 +988,7 @@ LBL_InvalidCommand:
 						MSN_ShowPopup( hContact, TranslateT( "Chat session established by contact request" ), 0 );
 				}
 				else {
-					if (MsgQueue_CheckContact(info->mInitialContact))
+					if (info->mInitialContact != NULL && MsgQueue_CheckContact(info->mInitialContact))
 						msnNsThread->sendPacket( "XFR", "SB" );
 					info->mInitialContact = NULL;
 				}
