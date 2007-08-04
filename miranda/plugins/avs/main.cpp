@@ -27,17 +27,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 HINSTANCE g_hInst = 0;
 PLUGINLINK  *pluginLink;
 
-static int      g_shutDown = FALSE;
 static          PROTOCOLDESCRIPTOR **g_protocols = NULL;
 static char     g_szDBPath[MAX_PATH];		// database profile path (read at startup only)
-static DWORD    dwMainThreadID;
 static BOOL     g_MetaAvail = FALSE;
 BOOL            g_AvatarHistoryAvail = FALSE;
 static long     hwndSetMyAvatar = 0;
 static HANDLE   hMyAvatarsFolder = 0;
 static HANDLE   hGlobalAvatarFolder = 0;
 static HANDLE   hLoaderEvent = 0;
-static HANDLE  hLoaderThread = 0;
+static HANDLE   hLoaderThread = 0;
 
 int g_protocount = 0;
 
@@ -767,11 +765,15 @@ static int ProtocolAck(WPARAM wParam, LPARAM lParam)
 		// Ignore metacontacts
 		&& (!g_MetaAvail || strcmp(ack->szModule, g_szMetaName)))
 	{
-        if (ack->result == ACKRESULT_SUCCESS || ack->result == ACKRESULT_FAILED)
+        if (ack->result == ACKRESULT_SUCCESS)
 		{
-			ProcessAvatarInfo(ack->hContact, ack->result, (PROTO_AVATAR_INFORMATION *) ack->hProcess);
+			ProcessAvatarInfo(ack->hContact, GAIR_SUCCESS, (PROTO_AVATAR_INFORMATION *) ack->hProcess);
         }
-		else if(ack->result == ACKRESULT_STATUS)
+		else if (ack->result == ACKRESULT_FAILED)
+		{
+			ProcessAvatarInfo(ack->hContact, GAIR_FAILED, (PROTO_AVATAR_INFORMATION *) ack->hProcess);
+		}
+		else if (ack->result == ACKRESULT_STATUS)
 		{
 			char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)ack->hContact, 0);
 			if (szProto == NULL || Proto_NeedDelaysForAvatars(szProto))
@@ -1814,7 +1816,7 @@ int ChangeAvatar(HANDLE hContact, BOOL fLoad, BOOL fNotifyHist, int pa_format)
  * its waken up by the event and tries to lock the cache only when absolutely necessary.
  */
 
-static DWORD WINAPI PicLoader(LPVOID param)
+static void PicLoader(LPVOID param)
 {
     DWORD dwDelay = DBGetContactSettingDword(NULL, AVS_MODULE, "picloader_sleeptime", 80);
 
@@ -1826,7 +1828,7 @@ static DWORD WINAPI PicLoader(LPVOID param)
     while(!g_shutDown) {
         struct CacheNode *node = g_Cache;
 
-        while(node) {
+        while(!g_shutDown && node) {
             if(node->mustLoad > 0 && node->ace.hContact) {
                 node->mustLoad = 0;
                 AVATARCACHEENTRY ace_temp;
@@ -1865,9 +1867,7 @@ static DWORD WINAPI PicLoader(LPVOID param)
                         DeleteObject(oldPic);
                     NotifyMetaAware(node->ace.hContact, node);
                 }
-                if(g_shutDown)
-                    break;
-                Sleep(dwDelay);
+                mir_sleep(dwDelay);
             }
             else if(node->mustLoad < 0 && node->ace.hContact) {         // delete this picture
                 HANDLE hContact = node->ace.hContact;
@@ -1893,7 +1893,6 @@ static DWORD WINAPI PicLoader(LPVOID param)
         //_DebugTrace(0, "pic loader awake...");
         ResetEvent(hLoaderEvent);
     }
-    return 0;
 }
 
 static int MetaChanged(WPARAM wParam, LPARAM lParam)
@@ -1953,8 +1952,6 @@ static int DestroyServicesAndEvents()
 	return 0;
 }
 
-static DWORD dwPicLoaderID;
-
 static int ModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
     int i, j;
@@ -1966,7 +1963,7 @@ static int ModulesLoaded(WPARAM wParam, LPARAM lParam)
 
     mir_sntprintf(szEventName, 100, _T("avs_loaderthread_%d"), GetCurrentThreadId());
     hLoaderEvent = CreateEvent(NULL, TRUE, FALSE, szEventName);
-    hLoaderThread = CreateThread(NULL, 0, PicLoader, 0, 0, &dwPicLoaderID);
+	hLoaderThread = (HANDLE) mir_forkthread(PicLoader, 0);
     SetThreadPriority(hLoaderThread, THREAD_PRIORITY_IDLE);
 
     // Folders plugin support
@@ -2076,8 +2073,8 @@ static void ReloadMyAvatar(LPVOID lpParam)
 {
 	char *szProto = (char *)lpParam;
 
-    Sleep(1000);
-    for(int i = 0; i < g_protocount + 1; i++) {
+    mir_sleep(1000);
+	for(int i = 0; !g_shutDown && i < g_protocount + 1; i++) {
 		if(!strcmp(g_MyAvatars[i].szProtoname, szProto)) {
 			if(g_MyAvatars[i].hbmPic)
 				DeleteObject(g_MyAvatars[i].hbmPic);
@@ -2089,7 +2086,6 @@ static void ReloadMyAvatar(LPVOID lpParam)
 		}
 	}
 	free(lpParam);
-	_endthread();
 }
 
 static int ReportMyAvatarChanged(WPARAM wParam, LPARAM lParam)
@@ -2104,7 +2100,7 @@ static int ReportMyAvatarChanged(WPARAM wParam, LPARAM lParam)
 		if(!strcmp(g_MyAvatars[i].szProtoname, proto)) {
 			LPVOID lpParam = (void *)malloc(lstrlenA(g_MyAvatars[i].szProtoname) + 2);
 			strcpy((char *)lpParam, g_MyAvatars[i].szProtoname);
-			_beginthread(ReloadMyAvatar, 0, lpParam);
+			mir_forkthread(ReloadMyAvatar, lpParam);
 			return 0;
 		}
 	}
@@ -2169,8 +2165,8 @@ static int OkToExitProc(WPARAM wParam, LPARAM lParam)
     LeaveCriticalSection(&cachecs);
 
     SetEvent(hLoaderEvent);
-    WaitForSingleObject(hLoaderThread, 1000);
-    CloseHandle(hLoaderThread);
+//    WaitForSingleObject(hLoaderThread, 1000);
+//    CloseHandle(hLoaderThread);
     CloseHandle(hLoaderEvent);
 	FreePolls();
 
@@ -2362,6 +2358,7 @@ static int LoadAvatarModule()
 {
 	init_mir_malloc();
 	init_list_interface();
+	init_mir_thread();
 
 	InitializeCriticalSection(&cachecs);
     InitializeCriticalSection(&alloccs);
@@ -2431,7 +2428,6 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK * link)
 	int result = CALLSERVICE_NOTFOUND;
 
     pluginLink = link;
-    dwMainThreadID = GetCurrentThreadId();
 
 	if(ServiceExists(MS_IMG_GETINTERFACE))
 		result = CallService(MS_IMG_GETINTERFACE, FI_IF_VERSION, (LPARAM)&fei);
@@ -2584,3 +2580,6 @@ int Proto_GetAvatarMaxFileSize(char *proto)
 
 	return 0;
 }
+
+
+

@@ -182,6 +182,10 @@ SOURCE=.\mir_memory.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\mir_thread.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\options.cpp
 # End Source File
 # Begin Source File
@@ -243,6 +247,10 @@ SOURCE=.\mir_dblists.h
 # Begin Source File
 
 SOURCE=.\mir_memory.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\mir_thread.h
 # End Source File
 # Begin Source File
 

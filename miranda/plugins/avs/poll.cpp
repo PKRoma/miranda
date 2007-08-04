@@ -28,6 +28,12 @@ A queue to request items. One request is done at a time, REQUEST_WAIT_TIME milis
 
 #define REQUEST_WAIT_TIME 3000
 
+// Time to wait before re-requesting an avatar that failed
+#define REQUEST_FAIL_WAIT_TIME (3 * 60 * 60 * 1000)
+
+// Time to wait before re-requesting an avatar that received an wait for
+#define REQUEST_WAITFOR_WAIT_TIME (30 * 60 * 1000)
+
 // Number of mileseconds the threads wait until take a look if it is time to request another item
 #define POOL_DELAY 1000
 
@@ -41,6 +47,7 @@ ThreadQueue requestQueue = {0};
 
 static void RequestThread(void *vParam);
 
+extern HANDLE hShutdownEvent;
 extern char *g_szMetaName;
 extern int ChangeAvatar(HANDLE hContact, BOOL fLoad, BOOL fNotifyHist = FALSE, int pa_format = 0);
 extern int DeleteAvatar(HANDLE hContact);
@@ -56,50 +63,6 @@ extern FI_INTERFACE *fei;
 int _DebugTrace(const char *fmt, ...);
 int _DebugTrace(HANDLE hContact, const char *fmt, ...);
 #endif
-
-
-// Forkthread ///////////////////////////////////////////////////////////////////////////
-
-struct FORK_ARG {
-	HANDLE hEvent;
-	void (__cdecl *threadcode)(void*);
-	unsigned (__stdcall *threadcodeex)(void*);
-	void *arg;
-};
-
-void __cdecl forkthread_r(void * arg)
-{	
-	struct FORK_ARG * fa = (struct FORK_ARG *) arg;
-	void (*callercode)(void*)=fa->threadcode;
-	void * cookie=fa->arg;
-	CallService(MS_SYSTEM_THREAD_PUSH,0,0);
-	SetEvent(fa->hEvent);
-	__try {
-		callercode(cookie);
-	} __finally {
-		CallService(MS_SYSTEM_THREAD_POP,0,0);
-	} 
-	return;
-}
-
-unsigned long forkthread (
-	void (__cdecl *threadcode)(void*),
-	unsigned long stacksize,
-	void *arg
-)
-{
-	unsigned long rc;
-	struct FORK_ARG fa;
-	fa.hEvent=CreateEvent(NULL,FALSE,FALSE,NULL);
-	fa.threadcode=threadcode;
-	fa.arg=arg;
-	rc=_beginthread(forkthread_r,stacksize,&fa);
-	if ((unsigned long)-1L != rc) {
-		WaitForSingleObject(fa.hEvent,INFINITE);
-	} //if
-	CloseHandle(fa.hEvent);
-	return rc;
-}
 
 
 // Functions ////////////////////////////////////////////////////////////////////////////
@@ -120,7 +83,7 @@ void InitPolls()
 	requestQueue.queue->sortFunc = QueueSortItems;
 	requestQueue.waitTime = REQUEST_WAIT_TIME;
     InitializeCriticalSection(&requestQueue.cs);
-	forkthread(RequestThread, 0, NULL);
+	mir_forkthread(RequestThread, NULL);
 }
 
 
@@ -163,6 +126,8 @@ static BOOL PollCheckContact(HANDLE hContact, const char *szProto)
 
 static void QueueRemove(ThreadQueue &queue, HANDLE hContact)
 {
+    EnterCriticalSection(&queue.cs);
+
 	if (queue.queue->items != NULL)
 	{
 		for (int i = queue.queue->realCount - 1 ; i >= 0 ; i-- )
@@ -176,17 +141,18 @@ static void QueueRemove(ThreadQueue &queue, HANDLE hContact)
 			}
 		}
 	}
+
+	LeaveCriticalSection(&queue.cs);
 }
 
-// Add an contact to a queue
-void QueueAdd(ThreadQueue &queue, HANDLE hContact)
+static void QueueAdd(ThreadQueue &queue, HANDLE hContact, int waitTime)
 {
     if(fei == NULL)
         return;
 
     EnterCriticalSection(&queue.cs);
 
-	// Only add if not exists yeat
+	// Only add if not exists yet
 	int i;
 	for (i = queue.queue->realCount - 1; i >= 0; i--)
 	{
@@ -201,7 +167,7 @@ void QueueAdd(ThreadQueue &queue, HANDLE hContact)
 		if (item != NULL) 
 		{
 			item->hContact = hContact;
-			item->check_time = GetTickCount() + queue.waitTime;
+			item->check_time = GetTickCount() + waitTime;
 
 			List_InsertOrdered(queue.queue, item);
 		}
@@ -210,12 +176,20 @@ void QueueAdd(ThreadQueue &queue, HANDLE hContact)
 	LeaveCriticalSection(&queue.cs);
 }
 
+// Add an contact to a queue
+void QueueAdd(ThreadQueue &queue, HANDLE hContact)
+{
+	QueueAdd(queue, hContact, queue.waitTime);
+}
+
 void ProcessAvatarInfo(HANDLE hContact, int type, PROTO_AVATAR_INFORMATION *pai = NULL)
 {
 	if (type == GAIR_SUCCESS) 
 	{
 		if (pai == NULL)
 			return;
+
+		QueueRemove(requestQueue, hContact);
 
 		// Fix settings in DB
 		DBDeleteContactSetting(hContact, "ContactPhoto", "NeedUpdate");
@@ -241,6 +215,8 @@ void ProcessAvatarInfo(HANDLE hContact, int type, PROTO_AVATAR_INFORMATION *pai 
 	}
 	else if (type == GAIR_NOAVATAR) 
 	{
+		QueueRemove(requestQueue, hContact);
+
 		DBDeleteContactSetting(hContact, "ContactPhoto", "NeedUpdate");
 
 		if (DBGetContactSettingByte(NULL, AVS_MODULE, "RemoveAvatarWhenContactRemoves", 1)) 
@@ -255,6 +231,14 @@ void ProcessAvatarInfo(HANDLE hContact, int type, PROTO_AVATAR_INFORMATION *pai 
 			// Fix cache
 			ChangeAvatar(hContact, FALSE, TRUE, 0);
 		}
+	}
+	else if (type == GAIR_FAILED) 
+	{
+		// Reschedule to request after 3 hours (and avoid requests before that)
+	    EnterCriticalSection(&requestQueue.cs);
+		QueueRemove(requestQueue, hContact);
+		QueueAdd(requestQueue, hContact, REQUEST_FAIL_WAIT_TIME);
+		LeaveCriticalSection(&requestQueue.cs);
 	}
 }
 
@@ -298,7 +282,7 @@ int FetchAvatarFor(HANDLE hContact, char *szProto = NULL)
 
 static void RequestThread(void *vParam)
 {
-	while (!Miranda_Terminated())
+	while (!g_shutDown)
 	{
 		EnterCriticalSection(&requestQueue.cs);
 
@@ -307,7 +291,7 @@ static void RequestThread(void *vParam)
 			// No items, so supend thread
 			LeaveCriticalSection(&requestQueue.cs);
 
-			SleepEx(POOL_DELAY, TRUE);
+			mir_sleep(POOL_DELAY);
 		}
 		else
 		{
@@ -319,7 +303,7 @@ static void RequestThread(void *vParam)
 				// Not time to request yeat, wait...
 				LeaveCriticalSection(&requestQueue.cs);
 
-				SleepEx(POOL_DELAY, TRUE);
+				mir_sleep(POOL_DELAY);
 			}
 			else
 			{
@@ -332,13 +316,17 @@ static void RequestThread(void *vParam)
 
                 LeaveCriticalSection(&requestQueue.cs);
 
-				if (Miranda_Terminated())
-					break;
-
 				if (FetchAvatarFor(hContact) == GAIR_WAITFOR)
 				{
+printf(" ****  WAITING FOR\n");
+					// Mark to not request this contact avatar for more 30 min
+				    EnterCriticalSection(&requestQueue.cs);
+					QueueRemove(requestQueue, hContact);
+					QueueAdd(requestQueue, hContact, REQUEST_WAITFOR_WAIT_TIME);
+					LeaveCriticalSection(&requestQueue.cs);
+
 					// Wait a little until requesting again
-					SleepEx(REQUEST_DELAY, TRUE);
+					mir_sleep(REQUEST_DELAY);
 				}
 			}
 		}
@@ -347,6 +335,4 @@ static void RequestThread(void *vParam)
 	DeleteCriticalSection(&requestQueue.cs);
 	List_DestroyFreeContents(requestQueue.queue);
 	mir_free(requestQueue.queue);
-
-	return;
 }

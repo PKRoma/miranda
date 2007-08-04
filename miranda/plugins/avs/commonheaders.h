@@ -84,6 +84,7 @@ extern "C"
 #include "image_utils.h"
 #include "mir_dblists.h"
 #include "mir_memory.h"
+#include "mir_thread.h"
 #include "poll.h"
 #include "m_acc.h"
 #include "acc.h"
@@ -120,3 +121,6 @@ struct protoPicCacheEntry {
 int SetAvatarAttribute(HANDLE hContact, DWORD attrib, int mode);
 
 #define MAX_REGS(_A_) ( sizeof(_A_) / sizeof(_A_[0]) )
+
+
+#define GAIR_FAILED 1000
