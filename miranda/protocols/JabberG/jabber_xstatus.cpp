@@ -229,24 +229,11 @@ TCHAR* a2tf( const TCHAR* str, BOOL unicode )
 	if ( str == NULL )
 		return NULL;
 
-#if defined( _UNICODE )
-	if ( unicode )
-		return mir_tstrdup( str );
-	else {
-		int codepage = CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
-
-		int cbLen = MultiByteToWideChar( codepage, 0, (char*)str, -1, 0, 0 );
-		TCHAR* result = ( TCHAR* )mir_alloc( sizeof(TCHAR)*( cbLen+1 ));
-		if ( result == NULL )
-			return NULL;
-
-		MultiByteToWideChar( codepage, 0, (char*)str, -1, result, cbLen );
-		result[ cbLen ] = 0;
-		return result;
-	}
-#else
-	return mir_strdup( str );
-#endif
+	#if defined( _UNICODE )
+		return ( unicode ) ? mir_tstrdup( str ) : mir_a2t(( char* )str );
+	#else
+		return mir_strdup( str );
+	#endif
 }
 
 void overrideStr( TCHAR*& dest, const TCHAR* src, BOOL unicode, const TCHAR* def = NULL )
@@ -389,7 +376,7 @@ int CListMW_BuildStatusItems( WPARAM wParam, LPARAM lParam )
 
 		mi.position++;
 		mi.pszPopupName = ( char* )hRoot;
-		mi.flags = CMIF_ICONFROMICOLIB + ( jabberXStatus == i ) ? CMIF_CHECKED : 0;
+		mi.flags = CMIF_ICONFROMICOLIB + (( jabberXStatus == i ) ? CMIF_CHECKED : 0 );
 		mi.pszService = srvFce;
 		hXStatusItems[ i ] = ( HANDLE )CallService( MS_CLIST_ADDSTATUSMENUITEM, ( WPARAM )&hXStatusRoot, ( LPARAM )&mi );
 	}
@@ -506,29 +493,29 @@ static BOOL CALLBACK SetMoodMsgDlgProc( HWND hwndDlg, UINT message, WPARAM wPara
 		return TRUE;
 
 	case WM_TIMER:
-		{
-			if ( gnCountdown == -1 ) { DestroyWindow( hwndDlg ); break; }
+		if ( gnCountdown == -1 )
+			DestroyWindow( hwndDlg );
+		else {
 			TCHAR str[ 512 ];
 			mir_sntprintf( str, SIZEOF(str), gszOkBuffonFormat, gnCountdown );
 			SetDlgItemText( hwndDlg, IDOK, str );
 			gnCountdown--;
-			break;
 		}
+		break;
 
 	case WM_COMMAND:
-		{
-			switch ( LOWORD( wParam )) {
-			case IDOK:
-			case IDCANCEL:
-				DestroyWindow( hwndDlg );
-				break;
-			case IDC_MSG_MOOD:
-				KillTimer( hwndDlg, 1 );
-				SetDlgItemText( hwndDlg, IDOK, TranslateT( "OK" ));
-				break;
-			}
+		switch ( LOWORD( wParam )) {
+		case IDOK:
+		case IDCANCEL:
+			DestroyWindow( hwndDlg );
+			break;
+		case IDC_MSG_MOOD:
+			KillTimer( hwndDlg, 1 );
+			SetDlgItemText( hwndDlg, IDOK, TranslateT( "OK" ));
 			break;
 		}
+		break;
+
 	case DM_MOOD_SHUTDOWN:
 		DestroyWindow( hwndDlg );
 		break;
