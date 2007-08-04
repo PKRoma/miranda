@@ -395,8 +395,7 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				{
 					PROTOFILETRANSFERSTATUS *fts=(PROTOFILETRANSFERSTATUS*)ack->lParam;
 
-					FreeProtoFileTransferStatus(&dat->transferStatus);
-					CopyProtoFileTransferStatus(&dat->transferStatus,fts);
+          UpdateProtoFileTransferStatus(&dat->transferStatus,fts);
 					SetFilenameControls(hwndDlg,fts);
 					if(_access(fts->currentFile,0)!=0) break;
 					SetDlgItemText(hwndDlg,IDC_STATUS,TranslateT("File already exists"));
@@ -421,22 +420,23 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					TCHAR str[256],szSizeDone[32],szSizeTotal[32],*contactName;
 					int units;
 
-					/* HACK: for 0.3.3, limit updates to around 1.1 ack per second */
-					if (fts->totalProgress!=fts->totalBytes && GetTickCount() - dat->dwTicks < 650) break; // the last update was less than a second ago!
-					dat->dwTicks=GetTickCount();
-
-/* FIXME: There is a major performance issue  with creating and freeing this list EVERY DAMN ACK! */
-					FreeProtoFileTransferStatus(&dat->transferStatus);
-					CopyProtoFileTransferStatus(&dat->transferStatus,fts);
 					if ( dat->fileVirusScanned==NULL )
 						dat->fileVirusScanned=(int*)mir_calloc(sizeof(int) * fts->totalFiles);
+
+          // This needs to be here - otherwise we get holes in the files array
 					if ( !dat->send ) {
 						if ( dat->files == NULL )
 							dat->files = ( char** )mir_calloc(( fts->totalFiles+1 )*sizeof( char* ));
 						if ( fts->currentFileNumber < fts->totalFiles && dat->files[ fts->currentFileNumber ] == NULL )
 							dat->files[ fts->currentFileNumber ] = mir_strdup( fts->currentFile );
 					}
-/* FIXME: There is a performance issue of creating this list here if it does not exist */
+
+					/* HACK: for 0.3.3, limit updates to around 1.1 ack per second */
+					if (fts->totalProgress!=fts->totalBytes && GetTickCount() - dat->dwTicks < 650) break; // the last update was less than a second ago!
+					dat->dwTicks=GetTickCount();
+
+          // Update local transfer status with data from protocol
+					UpdateProtoFileTransferStatus(&dat->transferStatus,fts);
 
 					SetDlgItemText(hwndDlg,IDC_STATUS,TranslateTS(fts->sending?_T("Sending..."):_T("Receiving...")));
 					SetFilenameControls(hwndDlg,fts);

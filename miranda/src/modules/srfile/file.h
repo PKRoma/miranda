@@ -71,6 +71,7 @@ void GetSensiblyFormattedSize(DWORD size,TCHAR *szOut,int cchOut,int unitsOverri
 void FreeFilesMatrix(char ***files);	  //loving that triple indirection
 void FreeProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *fts);
 void CopyProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *dest,PROTOFILETRANSFERSTATUS *src);
+void UpdateProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *dest,PROTOFILETRANSFERSTATUS *src);
 int SRFile_GetRegValue(HKEY hKeyBase,const char *szSubKey,const char *szValue,char *szOutput,int cbOutput);
 //filesenddlg.c
 BOOL CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);

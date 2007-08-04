@@ -175,6 +175,47 @@ void CopyProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *dest,PROTOFILETRANSFER
 	if(src->workingDir) dest->workingDir=mir_strdup(src->workingDir);
 }
 
+void UpdateProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *dest,PROTOFILETRANSFERSTATUS *src)
+{
+  dest->hContact = src->hContact;
+  dest->sending = src->sending;
+  if (dest->totalFiles != src->totalFiles) {
+    int i;
+    for(i=0;i<dest->totalFiles;i++) mir_free(dest->files[i]);
+    mir_free(dest->files);
+    dest->files = NULL;
+	  dest->totalFiles = src->totalFiles;
+  }
+  if (src->files) {
+    int i;
+    if (!dest->files) dest->files = (char**)mir_calloc(sizeof(char*)*src->totalFiles);
+    for(i=0;i<src->totalFiles;i++)
+      if(!dest->files[i] || !src->files[i] || strcmp(dest->files[i],src->files[i])) {
+        mir_free(dest->files[i]);
+        if(src->files[i]) dest->files[i]=mir_strdup(src->files[i]); else dest->files[i]=NULL;
+      }
+  } else if (dest->files) {
+    int i;
+    for(i=0;i<dest->totalFiles;i++) mir_free(dest->files[i]);
+    mir_free(dest->files);
+    dest->files = NULL;
+  }
+	dest->currentFileNumber = src->currentFileNumber;
+	dest->totalBytes = src->totalBytes;
+	dest->totalProgress = src->totalProgress;
+  if (src->workingDir && (!dest->workingDir || strcmp(dest->workingDir, src->workingDir))) {
+    mir_free(dest->workingDir);
+    if(src->workingDir) dest->workingDir=mir_strdup(src->workingDir); else dest->workingDir = NULL;
+  }
+  if (!dest->currentFile || !src->currentFile || strcmp(dest->currentFile, src->currentFile)) {
+    mir_free(dest->currentFile);
+    if(src->currentFile) dest->currentFile=mir_strdup(src->currentFile); else dest->currentFile = NULL;
+  }
+	dest->currentFileSize = src->currentFileSize;
+	dest->currentFileProgress = src->currentFileProgress;
+	dest->currentFileTime = src->currentFileTime;
+}
+
 static void RemoveUnreadFileEvents(void)
 {
 	DBEVENTINFO dbei={0};
