@@ -27,7 +27,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "version.h"
 
 typedef LONG ( WINAPI pIncrementFunc )( PLONG );
-
 static pIncrementFunc  MyInterlockedIncrement95;
 static pIncrementFunc  MyInterlockedIncrementInit;
 
@@ -196,6 +195,28 @@ void InitCustomFolders(void)
 	InitCstFldRan = true;
 }
 
+
+char* MSN_GetAvatarHash(char* szContext)
+{
+	char* res  = NULL;
+
+	ezxml_t xmli = ezxml_parse_str(szContext, strlen(szContext));
+	const char* szAvatarHash = ezxml_attr(xmli, "SHA1D");
+	if (szAvatarHash != NULL)
+	{
+		BYTE szActHash[MIR_SHA1_HASH_SIZE+2];
+		const size_t len = strlen( szAvatarHash );
+
+		NETLIBBASE64 nlb = { (char*)szAvatarHash, len, szActHash, sizeof(szActHash) };
+		int decod = MSN_CallService( MS_NETLIB_BASE64DECODE, 0, LPARAM( &nlb ));
+		if (decod != 0 && nlb.cbDecoded > 0)
+			res = arrayToHex(szActHash, MIR_SHA1_HASH_SIZE);
+	}
+	ezxml_free(xmli);
+
+	return res;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_GetAvatarFileName - gets a file name for an contact's avatar
 
@@ -220,16 +241,18 @@ void  MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, size_t cbLen )
 
 	_mkdir(pszDest);
 
-	if ( hContact != NULL ) {
-		char szEmail[ MSN_MAX_EMAIL_LEN ];
-		if ( MSN_GetStaticString( "e-mail", hContact, szEmail, sizeof( szEmail )))
-			_ltoa(( long )hContact, szEmail, 10 );
+	if ( hContact != NULL ) 
+	{
+		char tContext[ 256 ];
+		if ( MSN_GetStaticString( "PictContext", hContact, tContext, sizeof( tContext )))
+			return;
 
-		long digest[ 4 ];
-		mir_md5_hash(( BYTE* )szEmail, strlen( szEmail ), ( BYTE* )digest );
-
-		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%08lX%08lX%08lX%08lX.", 
-			digest[0], digest[1], digest[2], digest[3]);
+		char* szAvatarHash = MSN_GetAvatarHash(tContext);
+		if (szAvatarHash != NULL)
+		{
+			tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s.", szAvatarHash );
+			mir_free(szAvatarHash);
+		}
 	}
 	else 
 		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s avatar.png", msnProtocolName );
@@ -792,165 +815,6 @@ void MSN_ShowPopup( const HANDLE hContact, const TCHAR* msg, int flags )
 
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// UrlDecode - converts URL chars like %20 into printable characters
-
-static int SingleHexToDecimal(char c)
-{
-	if ( c >= '0' && c <= '9' ) return c-'0';
-	if ( c >= 'a' && c <= 'f' ) return c-'a'+10;
-	if ( c >= 'A' && c <= 'F' ) return c-'A'+10;
-	return -1;
-}
-
-void  UrlDecode( char* str )
-{
-	char* s = str, *d = str;
-
-	while( *s )
-	{
-		if ( *s == '%' ) {
-			int digit1 = SingleHexToDecimal( s[1] );
-			if ( digit1 != -1 ) {
-				int digit2 = SingleHexToDecimal( s[2] );
-				if ( digit2 != -1 ) {
-					s += 3;
-					*d++ = (char)(( digit1 << 4 ) | digit2);
-					continue;
-		}	}	}
-		*d++ = *s++;
-	}
-
-	*d = 0;
-}
-
-void  HtmlDecode( char* str )
-{
-	char* p, *q;
-
-	if ( str == NULL )
-		return;
-
-	for ( p=q=str; *p!='\0'; p++,q++ ) {
-		if ( *p == '&' ) {
-			if ( !strncmp( p, "&amp;", 5 )) {	*q = '&'; p += 4; }
-			else if ( !strncmp( p, "&apos;", 6 )) { *q = '\''; p += 5; }
-			else if ( !strncmp( p, "&gt;", 4 )) { *q = '>'; p += 3; }
-			else if ( !strncmp( p, "&lt;", 4 )) { *q = '<'; p += 3; }
-			else if ( !strncmp( p, "&quot;", 6 )) { *q = '"'; p += 5; }
-			else { *q = *p;	}
-		}
-		else {
-			*q = *p;
-		}
-	}
-	*q = '\0';
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// HtmlEncode - replaces special HTML chars
-
-WCHAR*  HtmlEncodeW( const WCHAR* str )
-{
-	WCHAR* s, *p, *q;
-	int c;
-
-	if ( str == NULL )
-		return NULL;
-
-	for ( c=0,p=( WCHAR* )str; *p!=L'\0'; p++ ) {
-		switch ( *p ) {
-		case L'&': c += 5; break;
-		case L'\'': c += 6; break;
-		case L'>': c += 4; break;
-		case L'<': c += 4; break;
-		case L'"': c += 6; break;
-		default: c++; break;
-		}
-	}
-	if (( s=( WCHAR* )mir_alloc( (c+1) * sizeof(WCHAR) )) != NULL ) {
-		for ( p=( WCHAR* )str,q=s; *p!=L'\0'; p++ ) {
-			switch ( *p ) {
-			case L'&': wcscpy( q, L"&amp;" ); q += 5; break;
-			case L'\'': wcscpy( q, L"&apos;" ); q += 6; break;
-			case L'>': wcscpy( q, L"&gt;" ); q += 4; break;
-			case L'<': wcscpy( q, L"&lt;" ); q += 4; break;
-			case L'"': wcscpy( q, L"&quot;" ); q += 6; break;
-			default: *q = *p; q++; break;
-			}
-		}
-		*q = L'\0';
-	}
-
-	return s;
-}
-
-char*  HtmlEncode( const char* str )
-{
-	char* s, *p, *q;
-	int c;
-
-	if ( str == NULL )
-		return NULL;
-
-	for ( c=0,p=( char* )str; *p!='\0'; p++ ) {
-		switch ( *p ) {
-		case '&': c += 5; break;
-		case '\'': c += 6; break;
-		case '>': c += 4; break;
-		case '<': c += 4; break;
-		case '"': c += 6; break;
-		default: c++; break;
-		}
-	}
-	if (( s=( char* )mir_alloc( c+1 )) != NULL ) {
-		for ( p=( char* )str,q=s; *p!='\0'; p++ ) {
-			switch ( *p ) {
-			case '&': strcpy( q, "&amp;" ); q += 5; break;
-			case '\'': strcpy( q, "&apos;" ); q += 6; break;
-			case '>': strcpy( q, "&gt;" ); q += 4; break;
-			case '<': strcpy( q, "&lt;" ); q += 4; break;
-			case '"': strcpy( q, "&quot;" ); q += 6; break;
-			default: *q = *p; q++; break;
-			}
-		}
-		*q = '\0';
-	}
-
-	return s;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// UrlEncode - converts printable characters into URL chars like %20
-
-void  UrlEncode( const char* src,char* dest, int cbDest )
-{
-	BYTE* d = ( BYTE* )dest;
-	int   i = 0;
-
-	for( const BYTE* s = ( const BYTE* )src; *s; s++ ) {
-		if (( *s < '0' && *s != '.' && *s != '-' ) ||
-			 ( *s >= ':' && *s <= '?' ) ||
-			 ( *s >= '[' && *s <= '`' && *s != '_' ))
-		{
-			if ( i >= cbDest-4 )
-				break;
-
-			*d++ = '%';
-			_itoa( *s, ( char* )d, 16 );
-			d += 2;
-			i += 3;
-		}
-		else
-		{
-			*d++ = *s;
-			if ( i++ == cbDest-1 )
-				break;
-	}	}
-
-	*d = '\0';
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
 // filetransfer class members
 
 filetransfer::filetransfer()
@@ -1273,43 +1137,6 @@ TCHAR* UnEscapeChatTags(TCHAR* str_in)
 	*d = 0;
 	return str_in;
 }
-
-bool txtParseParam (const char* szData, const char* presearch, const char* start, const char* finish, char* param, const int size)
-{
-	const char *cp, *cp1;
-	int len;
-	
-	if (szData == NULL) return false;
-
-	if (presearch != NULL)
-	{
-		cp1 = strstr(szData, presearch);
-		if (cp1 == NULL) return false;
-	}
-	else
-		cp1 = szData;
-
-	cp = strstr(cp1, start);
-	if (cp == NULL) return false;
-	cp += strlen(start);
-	while (*cp == ' ') ++cp;
-
-	if (finish)
-	{
-		cp1 = strstr(cp, finish);
-		if (cp1 == NULL) return FALSE;
-		while (*(cp1-1) == ' ' && cp1 > cp) --cp1;
-	}
-	else
-		cp1 = strchr(cp, '\0');
-
-	len = min(cp1 - cp, size - 1);
-	memmove(param, cp, len);
-	param[len] = 0;
-
-	return true;
-} 
-
 
 char* MSN_Base64Decode( const char* str )
 {

@@ -204,6 +204,7 @@ void        MSN_HandleFromContact( unsigned long uin, char* uhandle );
 
 void     __cdecl     MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP, void* );
 void        MSN_GoOffline( void );
+char*		MSN_GetAvatarHash(char* szContext);
 void        MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, size_t cbLen );
 void        MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, size_t cbLen, char* SmileyName, int Type);
 LPTSTR      MSN_GetErrorText( DWORD parErrorCode );
@@ -279,6 +280,8 @@ void   overrideStr( TCHAR*& dest, const TCHAR* src, BOOL unicode, const TCHAR* d
 void   replaceStr( char*& dest, const char* src );
 char*  rtrim( char* string );
 wchar_t* rtrim( wchar_t* string );
+char* arrayToHex(BYTE* data, size_t datasz);
+
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // PNG library interface

@@ -192,63 +192,60 @@ static void sttSavePicture2disk( filetransfer* ft )
 	if ( MSN_GetStaticString( "PictContext", ft->std.hContact, tContext, sizeof( tContext )))
 		return;
 
-	char* pshad = strstr( tContext, "SHA1D=\"" );
-	if ( pshad == NULL )
-		return;
+	char* szAvatarHash = MSN_GetAvatarHash(tContext);
+	if (szAvatarHash == NULL) return;
 
 	mir_sha1_ctx sha1ctx;
 	BYTE sha[ MIR_SHA1_HASH_SIZE ];
-	char szSha[ 40 ];
-	NETLIBBASE64 nlb = { szSha, sizeof( szSha ), ( PBYTE )sha, sizeof( sha ) };
 
 	mir_sha1_init( &sha1ctx );
 	mir_sha1_append( &sha1ctx, ( BYTE* )ft->fileBuffer, ft->std.currentFileSize );
 	mir_sha1_finish( &sha1ctx, sha );
 
-	MSN_CallService( MS_NETLIB_BASE64ENCODE, 0, LPARAM( &nlb ));
-	if ( strncmp( pshad + 7, szSha, strlen( szSha )) != 0 )
-		return;
-
-	PROTO_AVATAR_INFORMATION AI;
-	AI.cbSize = sizeof( AI );
-	AI.hContact = ft->std.hContact;
-	MSN_GetAvatarFileName( AI.hContact, AI.filename, sizeof( AI.filename ));
-	char* end = strchr(AI.filename, '\0');
-
-	if ( *(unsigned short*)ft->fileBuffer == 0xd8ff )
+	char *szSha = arrayToHex(sha, MIR_SHA1_HASH_SIZE);
+	if ( strcmp( szAvatarHash, szSha ) == 0 )
 	{
-		AI.format =  PA_FORMAT_JPEG;
-		strcpy( end, "png" );
-		remove( AI.filename );
-		strcpy( end, "jpg" ); 
-	}
-	else
-	{
-		AI.format =  PA_FORMAT_PNG;
-		strcpy( end, "jpg" );
-		remove( AI.filename );
-		strcpy( end, "png" ); 
-	}
+		PROTO_AVATAR_INFORMATION AI = {0};
+		AI.cbSize = sizeof( AI );
+		AI.hContact = ft->std.hContact;
+		MSN_GetAvatarFileName( AI.hContact, AI.filename, sizeof( AI.filename ) - 3);
+		char* end = strchr(AI.filename, '\0');
 
-	MSN_DebugLog( "Avatar for contact %08x saved to file '%s'", AI.hContact, AI.filename );
-	int fileId = _open( AI.filename, _O_CREAT | _O_TRUNC | _O_WRONLY | O_BINARY,  _S_IREAD | _S_IWRITE );
-	if ( fileId > -1 ) {
-		_write( fileId, ft->fileBuffer, ft->std.currentFileSize );
-		_close( fileId );
+		if ( *(unsigned short*)ft->fileBuffer == 0xd8ff )
+		{
+			AI.format =  PA_FORMAT_JPEG;
+		//		strcpy( end, "png" );
+		//		remove( AI.filename );
+			strcpy( end, "jpg" ); 
+		}
+		else
+		{
+			AI.format =  PA_FORMAT_PNG;
+		//		strcpy( end, "jpg" );
+		//		remove( AI.filename );
+			strcpy( end, "png" ); 
+		}
 
-		MSN_SetString( ft->std.hContact, "PictSavedContext", tContext );
-		MSN_SendBroadcast( AI.hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS, &AI, 0 );
+		MSN_DebugLog( "Avatar for contact %08x saved to file '%s'", AI.hContact, AI.filename );
+		int fileId = _open( AI.filename, _O_CREAT | _O_TRUNC | _O_WRONLY | O_BINARY,  _S_IREAD | _S_IWRITE );
+		if ( fileId > -1 ) {
+			_write( fileId, ft->fileBuffer, ft->std.currentFileSize );
+			_close( fileId );
 
-		// Store also avatar hash
-		char* pshadEnd = strstr( pshad+7, "\"" );
-		if ( pshadEnd != NULL )
-			*pshadEnd = '\0';
-		MSN_SetString( ft->std.hContact, "AvatarSavedHash", pshad+7 );
+			MSN_SetString( ft->std.hContact, "PictSavedContext", tContext );
+			MSN_SendBroadcast( AI.hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS, &AI, 0 );
+
+			// Store also avatar hash
+			MSN_SetString( ft->std.hContact, "AvatarSavedHash", szAvatarHash );
+		}
+		else {
+			MSN_DeleteSetting( ft->std.hContact, "AvatarHash" );
+			MSN_SendBroadcast( AI.hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, &AI, 0 );
+		}	
 	}
-	else {
-		MSN_DeleteSetting( ft->std.hContact, "AvatarHash" );
-		MSN_SendBroadcast( AI.hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, &AI, 0 );
-}	}
+	mir_free(szSha);
+	mir_free(szAvatarHash);
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // p2p_sendAck - sends MSN P2P acknowledgement to the received message

@@ -783,7 +783,7 @@ void ezxml_free(ezxml_t xml)
         }            
         if (root->pi[0]) free(root->pi); // free processing instructions
 
-        if (root->len == -1) free(root->m); // malloced xml data
+        if (root->len == SIZE_MAX) free(root->m); // malloced xml data
         if (root->u) free(root->u); // utf8 conversion
     }
 

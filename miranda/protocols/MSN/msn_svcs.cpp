@@ -605,8 +605,19 @@ static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 	if ( AI->format != PA_FORMAT_UNKNOWN ) {
 		char szSavedContext[ 256 ];
 		if ( !MSN_GetStaticString( "PictSavedContext", AI->hContact, szSavedContext, sizeof( szSavedContext )))
-			if ( !strcmp( szSavedContext, szContext ))
+			if ( strcmp( szSavedContext, szContext ) == 0)
 				return GAIR_SUCCESS;
+
+		MSN_SetString( AI->hContact, "PictSavedContext", szContext );
+
+		// Store also avatar hash
+		char* szAvatarHash = MSN_GetAvatarHash(szContext);
+		if (szAvatarHash != NULL)
+		{
+			MSN_SetString( AI->hContact, "AvatarSavedHash", szAvatarHash );
+			mir_free(szAvatarHash);
+		}
+		return GAIR_SUCCESS;
 	}
 
 	if (( wParam & GAIF_FORCE ) != 0 && AI->hContact != NULL )
