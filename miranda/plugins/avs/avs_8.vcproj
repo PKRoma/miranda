@@ -436,6 +436,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\mir_thread.cpp"
+				>
+			</File>
+			<File
 				RelativePath="options.cpp"
 				>
 			</File>
@@ -498,6 +502,10 @@
 			</File>
 			<File
 				RelativePath="mir_memory.h"
+				>
+			</File>
+			<File
+				RelativePath=".\mir_thread.h"
 				>
 			</File>
 			<File

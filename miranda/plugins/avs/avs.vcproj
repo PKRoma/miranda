@@ -435,6 +435,37 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\mir_thread.cpp">
+				<FileConfiguration
+					Name="Debug Unicode|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="options.cpp">
 				<FileConfiguration
 					Name="Debug Unicode|Win32">
@@ -538,6 +569,9 @@
 			</File>
 			<File
 				RelativePath="mir_memory.h">
+			</File>
+			<File
+				RelativePath=".\mir_thread.h">
 			</File>
 			<File
 				RelativePath="poll.h">
