@@ -28,8 +28,6 @@ int MSN_HandleCommands(ThreadData *info,char *cmdString);
 int MSN_HandleErrors(ThreadData *info,char *cmdString);
 int MSN_HandleMSNFTP( ThreadData *info, char *cmdString );
 
-extern LONG (WINAPI *MyInterlockedIncrement)(PLONG pVal);
-
 HANDLE hKeepAliveThreadEvt = NULL;
 
 /////////////////////////////////////////////////////////////////////////////////////////

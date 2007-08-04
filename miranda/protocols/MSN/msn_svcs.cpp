@@ -694,15 +694,15 @@ static void __cdecl MsnGetAwayMsgThread( void* param )
 	mir_free( inf );
 }
 
+static long awayCnt = 0;
 static int MsnGetAwayMsg(WPARAM wParam,LPARAM lParam)
 {
 	CCSDATA* ccs = ( CCSDATA* )lParam;
-	if ( ccs == NULL )
-		return 0;
+	if ( ccs == NULL ) return 0;
 	
 	AwayMsgInfo *inf = (AwayMsgInfo*)mir_alloc( sizeof( AwayMsgInfo ));
 	inf->hContact = ccs->hContact;
-	inf->id = rand();
+	inf->id = MyInterlockedIncrement( &awayCnt );
 
 	mir_forkthread( MsnGetAwayMsgThread, inf );
 	return inf->id;

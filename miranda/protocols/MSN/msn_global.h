@@ -282,6 +282,7 @@ char*  rtrim( char* string );
 wchar_t* rtrim( wchar_t* string );
 char* arrayToHex(BYTE* data, size_t datasz);
 
+extern LONG (WINAPI *MyInterlockedIncrement)(PLONG pVal);
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // PNG library interface
