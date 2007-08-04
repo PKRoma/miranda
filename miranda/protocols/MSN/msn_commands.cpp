@@ -1208,14 +1208,12 @@ LBL_InvalidCommand:
 				if (( dwValue & 0xf0000000 ) && data.cmdstring[0] && strcmp( data.cmdstring, "0" )) {
 					MSN_SetString( hContact, "PictContext", data.cmdstring );
 
-					char* tmpbuf = NEWSTR_ALLOCA(data.cmdstring);
-					ezxml_t xmli = ezxml_parse_str(tmpbuf, strlen(tmpbuf));
-					const char* szAvatarHash = ezxml_attr(xmli, "SHA1D");
-					if (szAvatarHash == NULL || szAvatarHash[0] == '\0')
+					char* szAvatarHash = MSN_GetAvatarHash(NEWSTR_ALLOCA(data.cmdstring));
+					if (szAvatarHash == NULL)
 						MSN_DeleteSetting( hContact, "AvatarHash" );
 					else
 						MSN_SetString( hContact, "AvatarHash", szAvatarHash );
-					ezxml_free(xmli);
+					mir_free(szAvatarHash);
 
 					if ( hContact != NULL ) {
 						char szSavedContext[ 256 ];
@@ -1225,12 +1223,13 @@ LBL_InvalidCommand:
 				}	}
 				else {
 					MSN_DeleteSetting( hContact, "AvatarHash" );
+					MSN_DeleteSetting( hContact, "AvatarSavedHash" );
 					MSN_DeleteSetting( hContact, "PictContext" );
 					MSN_DeleteSetting( hContact, "PictSavedContext" );
 
-					char tFileName[ MAX_PATH ];
-					MSN_GetAvatarFileName( hContact, tFileName, sizeof( tFileName ));
-					remove( tFileName );
+//					char tFileName[ MAX_PATH ];
+//					MSN_GetAvatarFileName( hContact, tFileName, sizeof( tFileName ));
+//					remove( tFileName );
 
 					MSN_SendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, 0 );
 			}	}
