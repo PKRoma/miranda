@@ -63,17 +63,17 @@ static int  OkToExitProc(WPARAM wParam, LPARAM lParam);
 static int  OnDetailsInit(WPARAM wParam, LPARAM lParam);
 static int  GetFileHash(char* filename);
 
-void ProcessAvatarInfo(int type, PROTO_AVATAR_INFORMATION *pai);
-void ProcessAvatarInfo(HANDLE hContact, int type, PROTO_AVATAR_INFORMATION *pai = NULL);
+void ProcessAvatarInfo(HANDLE hContact, int type, PROTO_AVATAR_INFORMATION *pai, const char *szProto);
 int FetchAvatarFor(HANDLE hContact, char *szProto = NULL);
 static int ReportMyAvatarChanged(WPARAM wParam, LPARAM lParam);
 
-BOOL Proto_IsAvatarsEnabled(char *proto);
-BOOL Proto_IsAvatarFormatSupported(char *proto, int format);
-void Proto_GetAvatarMaxSize(char *proto, int *width, int *height);
-int Proto_AvatarImageProportion(char *proto);
-BOOL Proto_NeedDelaysForAvatars(char *proto);
-int Proto_GetAvatarMaxFileSize(char *proto);
+BOOL Proto_IsAvatarsEnabled(const char *proto);
+BOOL Proto_IsAvatarFormatSupported(const char *proto, int format);
+void Proto_GetAvatarMaxSize(const char *proto, int *width, int *height);
+int Proto_AvatarImageProportion(const char *proto);
+BOOL Proto_NeedDelaysForAvatars(const char *proto);
+int Proto_GetAvatarMaxFileSize(const char *proto);
+int Proto_GetDelayAfterFail(const char *proto);
 
 FI_INTERFACE *fei = 0;
 
@@ -767,11 +767,11 @@ static int ProtocolAck(WPARAM wParam, LPARAM lParam)
 	{
         if (ack->result == ACKRESULT_SUCCESS)
 		{
-			ProcessAvatarInfo(ack->hContact, GAIR_SUCCESS, (PROTO_AVATAR_INFORMATION *) ack->hProcess);
+			ProcessAvatarInfo(ack->hContact, GAIR_SUCCESS, (PROTO_AVATAR_INFORMATION *) ack->hProcess, ack->szModule);
         }
 		else if (ack->result == ACKRESULT_FAILED)
 		{
-			ProcessAvatarInfo(ack->hContact, GAIR_FAILED, (PROTO_AVATAR_INFORMATION *) ack->hProcess);
+			ProcessAvatarInfo(ack->hContact, GAIR_FAILED, (PROTO_AVATAR_INFORMATION *) ack->hProcess, ack->szModule);
 		}
 		else if (ack->result == ACKRESULT_STATUS)
 		{
@@ -2433,7 +2433,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK * link)
 		result = CallService(MS_IMG_GETINTERFACE, FI_IF_VERSION, (LPARAM)&fei);
 
 	if(fei == NULL || result != S_OK) {
-		MessageBox(0, _T("Fatal error, image services not found. Avatar service will be disabled"), _T("Loadavatars"), MB_OK);
+		MessageBox(0, _T("Fatal error, image services not found. Avatar service will be disabled.\nYou may also need C runtime (msvcp60.dll)"), _T("Loadavatars"), MB_OK);
 		return 1;
 	}
 	LoadACC();
@@ -2495,7 +2495,7 @@ return = 1 (supported) or 0 (not supported)
 
 
 
-BOOL Proto_IsAvatarsEnabled(char *proto)
+BOOL Proto_IsAvatarsEnabled(const char *proto)
 {
 	if (ProtoServiceExists(proto, PS_GETAVATARCAPS))
 		return CallProtoService(proto, PS_GETAVATARCAPS, AF_ENABLED, 0);
@@ -2503,7 +2503,7 @@ BOOL Proto_IsAvatarsEnabled(char *proto)
 	return TRUE;
 }
 
-BOOL Proto_IsAvatarFormatSupported(char *proto, int format)
+BOOL Proto_IsAvatarFormatSupported(const char *proto, int format)
 {
 	if (ProtoServiceExists(proto, PS_GETAVATARCAPS))
 		return CallProtoService(proto, PS_GETAVATARCAPS, AF_FORMATSUPPORTED, format);
@@ -2517,7 +2517,7 @@ BOOL Proto_IsAvatarFormatSupported(char *proto, int format)
 	return TRUE;
 }
 
-int Proto_AvatarImageProportion(char *proto)
+int Proto_AvatarImageProportion(const char *proto)
 {
 	if (ProtoServiceExists(proto, PS_GETAVATARCAPS))
 		return CallProtoService(proto, PS_GETAVATARCAPS, AF_PROPORTION, 0);
@@ -2528,7 +2528,7 @@ int Proto_AvatarImageProportion(char *proto)
 	return 0;
 }
 
-void Proto_GetAvatarMaxSize(char *proto, int *width, int *height)
+void Proto_GetAvatarMaxSize(const char *proto, int *width, int *height)
 {
 	if (ProtoServiceExists(proto, PS_GETAVATARCAPS))
 	{
@@ -2558,7 +2558,7 @@ void Proto_GetAvatarMaxSize(char *proto, int *width, int *height)
 		*height = 300;
 }
 
-BOOL Proto_NeedDelaysForAvatars(char *proto)
+BOOL Proto_NeedDelaysForAvatars(const char *proto)
 {
 	if (ProtoServiceExists(proto, PS_GETAVATARCAPS))
 	{
@@ -2573,13 +2573,25 @@ BOOL Proto_NeedDelaysForAvatars(char *proto)
 }
 
 
-int Proto_GetAvatarMaxFileSize(char *proto)
+int Proto_GetAvatarMaxFileSize(const char *proto)
 {
 	if (ProtoServiceExists(proto, PS_GETAVATARCAPS))
 		return CallProtoService(proto, PS_GETAVATARCAPS, AF_MAXFILESIZE, 0);
 
 	return 0;
 }
+
+
+int Proto_GetDelayAfterFail(const char *proto)
+{
+	if (ProtoServiceExists(proto, PS_GETAVATARCAPS))
+		return CallProtoService(proto, PS_GETAVATARCAPS, AF_DELAYAFTERFAIL, 0);
+
+	return 0;
+}
+
+
+
 
 
 

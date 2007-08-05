@@ -52,6 +52,7 @@ extern char *g_szMetaName;
 extern int ChangeAvatar(HANDLE hContact, BOOL fLoad, BOOL fNotifyHist = FALSE, int pa_format = 0);
 extern int DeleteAvatar(HANDLE hContact);
 extern void MakePathRelative(HANDLE hContact, char *path);
+int Proto_GetDelayAfterFail(const char *proto);
 
 struct CacheNode *FindAvatarInCache(HANDLE hContact, BOOL add, BOOL findAny = FALSE);
 
@@ -182,14 +183,14 @@ void QueueAdd(ThreadQueue &queue, HANDLE hContact)
 	QueueAdd(queue, hContact, queue.waitTime);
 }
 
-void ProcessAvatarInfo(HANDLE hContact, int type, PROTO_AVATAR_INFORMATION *pai = NULL)
+void ProcessAvatarInfo(HANDLE hContact, int type, PROTO_AVATAR_INFORMATION *pai, const char *szProto)
 {
+	QueueRemove(requestQueue, hContact);
+
 	if (type == GAIR_SUCCESS) 
 	{
 		if (pai == NULL)
 			return;
-
-		QueueRemove(requestQueue, hContact);
 
 		// Fix settings in DB
 		DBDeleteContactSetting(hContact, "ContactPhoto", "NeedUpdate");
@@ -215,8 +216,6 @@ void ProcessAvatarInfo(HANDLE hContact, int type, PROTO_AVATAR_INFORMATION *pai 
 	}
 	else if (type == GAIR_NOAVATAR) 
 	{
-		QueueRemove(requestQueue, hContact);
-
 		DBDeleteContactSetting(hContact, "ContactPhoto", "NeedUpdate");
 
 		if (DBGetContactSettingByte(NULL, AVS_MODULE, "RemoveAvatarWhenContactRemoves", 1)) 
@@ -234,20 +233,16 @@ void ProcessAvatarInfo(HANDLE hContact, int type, PROTO_AVATAR_INFORMATION *pai 
 	}
 	else if (type == GAIR_FAILED) 
 	{
-		// Reschedule to request after 3 hours (and avoid requests before that)
-	    EnterCriticalSection(&requestQueue.cs);
-		QueueRemove(requestQueue, hContact);
-		QueueAdd(requestQueue, hContact, REQUEST_FAIL_WAIT_TIME);
-		LeaveCriticalSection(&requestQueue.cs);
+		int wait = Proto_GetDelayAfterFail(szProto);
+		if (wait > 0)
+		{
+			// Reschedule to request after needed time (and avoid requests before that)
+			EnterCriticalSection(&requestQueue.cs);
+			QueueRemove(requestQueue, hContact);
+			QueueAdd(requestQueue, hContact, wait);
+			LeaveCriticalSection(&requestQueue.cs);
+		}
 	}
-}
-
-void ProcessAvatarInfo(int type, PROTO_AVATAR_INFORMATION *pai)
-{
-	if (pai == NULL)
-		return;
-
-	ProcessAvatarInfo(pai->hContact, type, pai);
 }
 
 int FetchAvatarFor(HANDLE hContact, char *szProto = NULL)
@@ -272,7 +267,7 @@ int FetchAvatarFor(HANDLE hContact, char *szProto = NULL)
 			pai_s.format = PA_FORMAT_UNKNOWN;
             //_DebugTrace(hContact, "schedule request");
 			result = CallProtoService(szProto, PS_GETAVATARINFO, GAIF_FORCE, (LPARAM)&pai_s);
-			ProcessAvatarInfo(result, &pai_s);
+			ProcessAvatarInfo(pai_s.hContact, result, &pai_s, szProto);
 		}
 	}
 

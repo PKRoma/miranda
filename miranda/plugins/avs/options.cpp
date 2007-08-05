@@ -49,7 +49,7 @@ extern int AVS_pathToAbsolute(const char *pSrc, char *pOut);
 extern void MakePathRelative(HANDLE hContact, char *path);
 
 extern int ProtoServiceExists(const char *szModule,const char *szService);
-extern BOOL Proto_IsAvatarsEnabled(char *proto);
+extern BOOL Proto_IsAvatarsEnabled(const char *proto);
 extern BOOL ScreenToClient(HWND hWnd, LPRECT lpRect);
 
 static BOOL dialoginit = TRUE;
