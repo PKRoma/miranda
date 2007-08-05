@@ -526,8 +526,15 @@ void CIrcSession::createMessageFromPchar( const char* p )
 {
 	TCHAR* ptszMsg;
 	if ( codepage != CP_UTF8 && prefs->UtfAutodetect ) {
-		if ( mir_utf8decodecp( NEWSTR_ALLOCA(p), codepage, &ptszMsg ) == NULL )
-			ptszMsg = mir_a2t_cp( p, codepage );
+		#if defined( _UNICODE )
+			if ( mir_utf8decodecp( NEWSTR_ALLOCA(p), codepage, &ptszMsg ) == NULL )
+				ptszMsg = mir_a2t_cp( p, codepage );
+		#else
+			if ( mir_utf8decodecp( NEWSTR_ALLOCA(p), codepage, NULL ) == NULL )
+				ptszMsg = mir_a2t_cp( p, codepage );
+			else
+				ptszMsg = mir_strdup( p );
+		#endif
 	}
 	else ptszMsg = mir_a2t_cp( p, codepage );
 	CIrcMessage msg( ptszMsg, codepage, true );
