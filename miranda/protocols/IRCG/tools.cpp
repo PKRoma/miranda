@@ -603,7 +603,7 @@ int SetChannelSBText(TString sWindow, CHANNELINFO * wi)
 TString MakeWndID(const TCHAR* sWindow)
 {
 	TCHAR buf[200];
-	mir_sntprintf( buf, SIZEOF(buf), _T("%s - %s"), sWindow), ((g_ircSession) ? g_ircSession.GetInfo().sNetwork.c_str() : TranslateT("Offline"));
+	mir_sntprintf( buf, SIZEOF(buf), _T("%s - %s"), sWindow, (g_ircSession) ? g_ircSession.GetInfo().sNetwork.c_str() : TranslateT("Offline"));
 	return TString(buf);
 }
 

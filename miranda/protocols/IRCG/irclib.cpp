@@ -526,10 +526,8 @@ void CIrcSession::createMessageFromPchar( const char* p )
 {
 	TCHAR* ptszMsg;
 	if ( codepage != CP_UTF8 && prefs->UtfAutodetect ) {
-		if ( MultiByteToWideChar( CP_UTF8, 0, p, -1, NULL, NULL ) == ERROR_NO_UNICODE_TRANSLATION )
+		if ( mir_utf8decodecp( NEWSTR_ALLOCA(p), codepage, &ptszMsg ) == NULL )
 			ptszMsg = mir_a2t_cp( p, codepage );
-		else
-			mir_utf8decode( NEWSTR_ALLOCA(p), &ptszMsg );
 	}
 	else ptszMsg = mir_a2t_cp( p, codepage );
 	CIrcMessage msg( ptszMsg, codepage, true );
