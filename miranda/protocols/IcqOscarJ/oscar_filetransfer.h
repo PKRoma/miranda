@@ -48,6 +48,14 @@ void UninitOscarFileTransfer();
 #define OFT_BUFFER_SIZE 8192
 
 typedef struct {
+  char* szContainer;
+  char* szFile;
+} oft_file_record;
+
+char* FindFilePathContainer(const char** files, int iFile, char* szContainer);
+
+
+typedef struct {
   message_cookie_data pMessage;
   BYTE ft_magic;
 } basic_filetransfer;
@@ -58,7 +66,10 @@ typedef struct {
   HANDLE hContact;
   int initialized;
   int sending;
-  char **files, **files_ansi; // sending only 
+  int containerCount;
+  char **file_containers;
+  oft_file_record* files;
+  char **files_ansi; // sending only 
   int iCurrentFile;
   int currentIsDir;
   int bUseProxy;
@@ -66,7 +77,7 @@ typedef struct {
   DWORD dwRemoteInternalIP;
   DWORD dwRemoteExternalIP;
   WORD wRemotePort;
-  char *szPath;
+  char *szSavePath;
   char *szDescription;
   char *szThisFile; 
   char *szThisPath;

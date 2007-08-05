@@ -1650,6 +1650,33 @@ WORD GetMyStatusFlags()
 
 
 
+int IsValidRelativePath(const char *filename)
+{
+  if (strstr(filename, "..\\") || strstr(filename, "../") ||
+      strstr(filename, ":\\") || strstr(filename, ":/") ||
+      filename[0] == '\\' || filename[0] == '/')
+    return 0; // Contains malicious chars, Failure
+
+  return 1; // Success
+}
+
+
+
+char* ExtractFileName(const char *fullname)
+{
+  char* szFileName;
+
+  if (((szFileName = strrchr(fullname, '\\')) == NULL) && ((szFileName = strrchr(fullname, '/')) == NULL))
+  { // already is only filename
+    return (char*)fullname;
+  }
+  szFileName++; // skip backslash
+
+  return szFileName;
+}
+
+
+
 char* FileNameToUtf(const char *filename)
 {
   if (gbUnicodeAPI)
@@ -1720,11 +1747,14 @@ int MakeDirUtf(const char *dir)
 
   if (gbUnicodeAPI)
   {
-    wchar_t* usDir = make_unicode_string(dir);
-
+    WCHAR* usDir = make_unicode_string(dir);
+    // _wmkdir can created only one dir at once
     wRes = _wmkdir(usDir);
-    if (wRes)
-    {
+    // check if dir not already existed - return success if yes
+    if (wRes == -1 && errno == 17 /* EEXIST */)
+      wRes = 0;
+    else if (wRes && errno == 2 /* ENOENT */)
+    { // failed, try one directory less first
       szLast = strrchr(dir, '\\');
       if (!szLast) szLast = strrchr(dir, '/');
       if (szLast)
@@ -1745,9 +1775,12 @@ int MakeDirUtf(const char *dir)
     char* szAnsiDir = (char*)_alloca(size);
 
     if (utf8_decode_static(dir, szAnsiDir, size))
-    { // _mkdir can created only one dir at once
+    { // _mkdir can create only one dir at once
       wRes = _mkdir(szAnsiDir);
-      if (wRes)
+      // check if dir not already existed - return success if yes
+      if (wRes == -1 && errno == 17 /* EEXIST */)
+        wRes = 0;
+      else if (wRes && errno == 2 /* ENOENT */)
       { // failed, try one directory less first
         szLast = strrchr(dir, '\\');
         if (!szLast) szLast = strrchr(dir, '/');
@@ -1925,7 +1958,7 @@ static int ControlAddStringUtf(HWND ctrl, DWORD msg, const char* szString)
 {
   char str[MAX_PATH];
   char *szItem = ICQTranslateUtfStatic(szString, str);
-  int item;
+  int item = -1;
 
   if (gbUnicodeAPI)
   {
@@ -1939,8 +1972,8 @@ static int ControlAddStringUtf(HWND ctrl, DWORD msg, const char* szString)
     int size = strlennull(szItem) + 2;
     char *aItem = (char*)_alloca(size);
 
-    utf8_decode_static(szItem, aItem, size);
-    item = SendMessageA(ctrl, msg, 0, (LPARAM)aItem);
+    if (utf8_decode_static(szItem, aItem, size))
+      item = SendMessageA(ctrl, msg, 0, (LPARAM)aItem);
   }
   return item;
 }

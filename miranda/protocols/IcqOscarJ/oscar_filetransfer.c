@@ -78,6 +78,46 @@ static oscar_filetransfer* FindOscarTransfer(HANDLE hContact, DWORD dwID1, DWORD
 
 
 //
+// Common functions
+/////////////////////////////
+
+char* FindFilePathContainer(const char** files, int iFile, char* szContainer)
+{
+  int i;
+  const char* szThisFile = files[iFile];
+  char* szFileName = ExtractFileName(szThisFile);
+
+  szContainer[0] = '\0';
+
+  if (szThisFile != szFileName)
+  { // find an earlier subdirectory to be used as a container
+    for (i = iFile - 1; i >= 0; i--)
+    {
+      int len = strlennull(files[i]);
+
+      if (!_strnicmp(files[i], szThisFile, len) && (szThisFile[len] == '\\' || szThisFile[len] == '/'))
+      {
+        char* pszLastBackslash;
+
+        if (((pszLastBackslash = strrchr(files[i], '\\')) == NULL) &&
+          ((pszLastBackslash = strrchr(files[i], '/')) == NULL))
+        {
+          strcpy(szContainer, files[i]);
+        }
+        else
+        {
+          len = pszLastBackslash - files[i] + 1;
+          strncpy(szContainer, szThisFile + len,  szFileName - szThisFile - len);
+          szContainer[szFileName - szThisFile - len] = '\0';
+        }
+      }
+    }
+  }
+  return szFileName;
+}
+
+
+//
 // Utility functions
 /////////////////////////////
 
@@ -268,15 +308,16 @@ void SafeReleaseFileTransfer(void **ft)
         FreeCookie(oft->dwCookie);
       // Release all dynamic members
       SAFE_FREE(&oft->rawFileName);
-      SAFE_FREE(&oft->szPath);
+      SAFE_FREE(&oft->szSavePath);
       SAFE_FREE(&oft->szThisFile);
+      SAFE_FREE(&oft->szThisPath);
       if (oft->files)
       {
         int i;
 
         for (i = 0; i < oft->wFilesCount; i++)
-          SAFE_FREE(&oft->files[i]);
-        SAFE_FREE((char**)&oft->files);
+          SAFE_FREE(&oft->files[i].szFile);
+        SAFE_FREE((void**)&oft->files);
       }
       if (oft->files_ansi)
       {
@@ -284,7 +325,15 @@ void SafeReleaseFileTransfer(void **ft)
 
         for (i = 0; i < oft->wFilesCount; i++)
           SAFE_FREE(&oft->files_ansi[i]);
-        SAFE_FREE((char**)&oft->files_ansi);
+        SAFE_FREE((void**)&oft->files_ansi);
+      }
+      if (oft->file_containers)
+      {
+        int i;
+
+        for (i = 0; i < oft->containerCount; i++)
+          SAFE_FREE(&oft->file_containers[i]);
+        SAFE_FREE((void**)&oft->file_containers);
       }
       if (oft->fileId != -1)
       {
@@ -524,38 +573,42 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
           oscar_tlv* tlv = getTLV(chain, 0x2711, 1);
           BYTE* tBuf = tlv->pData;
           WORD tLen = tlv->wLen;
+          WORD wFlag;
 
-          tBuf += 2; // FT flag
+          unpackWord(&tBuf, &wFlag); // FT flag
           unpackWord(&tBuf, &ft->wFilesCount);
           unpackDWord(&tBuf, (DWORD*)&ft->qwTotalSize);
           tLen -= 8;
-          if (ft->wFilesCount == 1)
-          { // Filename
-            wFilenameLength = tLen - 1;
-            pszFileName = (char*)_alloca(tLen);
-            unpackString(&tBuf, pszFileName, wFilenameLength);
-            pszFileName[wFilenameLength] = '\0';
-            { // apply Filename encoding
-              oscar_tlv* charset = getTLV(chain, 0x2712, 1);
+          // Filename / Directory Name
+          wFilenameLength = tLen - 1;
+          pszFileName = (char*)_alloca(tLen);
+          unpackString(&tBuf, pszFileName, wFilenameLength);
+          pszFileName[wFilenameLength] = '\0';
+          { // apply Filename / Directory Name encoding
+            oscar_tlv* charset = getTLV(chain, 0x2712, 1);
 
-              if (charset)
-              {
-                char* szEnc = (char*)_alloca(charset->wLen + 1);
-                char* szAnsi;
+            if (charset)
+            {
+              char* szEnc = (char*)_alloca(charset->wLen + 1);
 
-                strncpy(szEnc, charset->pData, charset->wLen);
-                szEnc[charset->wLen] = '\0';
-                pszFileName = ApplyEncoding(pszFileName, szEnc);
-                // DB event is ansi only!
-                szAnsi = (char*)_alloca(strlennull(pszFileName) + 2);
-                utf8_decode_static(pszFileName, szAnsi, strlennull(pszFileName) + 1);
-                SAFE_FREE(&pszFileName);
-                pszFileName = szAnsi;
-              }
+              strncpy(szEnc, charset->pData, charset->wLen);
+              szEnc[charset->wLen] = '\0';
+              pszFileName = ApplyEncoding(pszFileName, szEnc);
             }
+            else
+              pszFileName = ansi_to_utf8(pszFileName);
+          }
+          if (ft->wFilesCount == 1)
+          { // Filename - use for DB event (convert to Ansi - File DB events does not support Unicode)
+            char* szAnsi = (char*)_alloca(strlennull(pszFileName) + 2);
+            utf8_decode_static(pszFileName, szAnsi, strlennull(pszFileName) + 1);
+            SAFE_FREE(&pszFileName);
+            pszFileName = szAnsi;
           }
           else
-          { // for multi-file transfer we do not display "folder" name, but create only a simple notice
+          { // Save Directory name for future use
+            ft->szThisPath = pszFileName;
+            // for multi-file transfer we do not display "folder" name, but create only a simple notice
             pszFileName = (char*)_alloca(64);
 
             null_snprintf(pszFileName, 64, ICQTranslate("%d Files"), ft->wFilesCount);
@@ -811,11 +864,36 @@ void handleRecvServResponseOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char 
 
 
 
+static char* oftGetFileContainer(oscar_filetransfer* oft, const char** files, int iFile)
+{
+  char szPath[MAX_PATH];
+  char* szFileName = FindFilePathContainer(files, iFile, szPath);
+  char* szPathUtf = ansi_to_utf8(szPath);
+  int i;
+
+  // try to find existing container
+  for (i = 0; i < oft->containerCount; i++)
+    if (!strcmp(szPathUtf, oft->file_containers[i]))
+    {
+      SAFE_FREE(&szPathUtf);
+
+      return oft->file_containers[i];
+    }
+
+  // create new container
+  i = oft->containerCount++;
+  oft->file_containers = (char**)realloc(oft->file_containers, (sizeof(char*) * oft->containerCount));
+  oft->file_containers[i] = szPathUtf;
+
+  return oft->file_containers[i];
+}
+
+
+
 int oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, char** files, char* pszDesc)
 {
   oscar_filetransfer *ft;
   int i, filesCount;
-  char* szMasterDir = NULL;
   struct _stati64 statbuf;
 
   // Initialize filetransfer struct
@@ -827,9 +905,10 @@ int oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, char** files, cha
   InitMessageCookie(&ft->pMessage);
 
   for (filesCount = 0; files[filesCount]; filesCount++);
-  ft->files = (char **)SAFE_MALLOC(sizeof(char *) * filesCount);
+  ft->files = (oft_file_record *)SAFE_MALLOC(sizeof(oft_file_record) * filesCount);
   ft->files_ansi = (char **)SAFE_MALLOC(sizeof(char *) * filesCount);
   ft->qwTotalSize = 0;
+  // Prepare files arrays
   for (i = 0; i < filesCount; i++)
   {
     if (_stati64(files[i], &statbuf))
@@ -838,29 +917,8 @@ int oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, char** files, cha
     {
       if (!(statbuf.st_mode&_S_IFDIR))
       { // take only files
-        if (!szMasterDir)
-        {
-          char* szBack;
-
-          szMasterDir = (char*)_alloca(strlennull(files[i]));
-          strcpy(szMasterDir, files[i]);
-          szBack = strrchr(szMasterDir, '\\');
-          if (!szBack) szBack = strrchr(szMasterDir, '/');
-          if (szBack) szBack[1] = '\0'; else szMasterDir[0] = '\0'; // keep only directory
-        }
-        else
-        {
-          while (strncmp(szMasterDir, files[i], strlennull(szMasterDir)))
-          { // cut one sub-dir
-            char* szBack;
-
-            szMasterDir[strlennull(szMasterDir)-1] = '\0'; // kill trailing backslash
-            szBack = strrchr(szMasterDir, '\\');
-            if (!szBack) szBack = strrchr(szMasterDir, '/');
-            if (szBack) szBack[1] = '\0'; else szMasterDir[0] = '\0';
-          }
-        }
-        ft->files[ft->wFilesCount] = FileNameToUtf(files[i]);
+        ft->files[ft->wFilesCount].szFile = FileNameToUtf(files[i]);
+        ft->files[ft->wFilesCount].szContainer = oftGetFileContainer(ft, files, i);
         ft->files_ansi[ft->wFilesCount] = null_strdup(files[i]);
 
         ft->wFilesCount++;
@@ -879,8 +937,7 @@ int oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, char** files, cha
     return 0; // Failure
   }
 
-  ft->szPath = ansi_to_utf8(szMasterDir);
-  NetLog_Server("OFT: %d files in '%s'", ft->wFilesCount, szMasterDir);
+  NetLog_Server("OFT: Found %d files.", ft->wFilesCount);
 
   ft->szDescription = ansi_to_utf8(pszDesc);
   ft->sending = 1;
@@ -908,32 +965,42 @@ int oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, char** files, cha
     char* pszFiles;
 
     if (ft->wFilesCount == 1)
-    {
-      pszFiles = strrchr(ft->files[0], '\\');
-      if (pszFiles)
-        pszFiles++;
-      else
-        pszFiles = ft->files[0];
+    { // transfering single file, give filename
+      pszFiles = ExtractFileName(ft->files[0].szFile);
     }
     else
-    {
-      // we need to prepare some filename - normal clients use that as root directory
-      if (strlennull(szMasterDir))
-      {
-        char* szLast = strrchr(szMasterDir, '\\');
+    { // check if transfering one directory
+      char *szFirstDiv, *szFirstDir = ft->file_containers[0];
+      int nFirstDirLen;
 
-        if (szLast && strlennull(szLast) == 1)
-        { // kill trailing backslash
-          szLast[0] = '\0';
-          szLast = strrchr(szMasterDir, '\\');
-        }
-        if (szLast && strlennull(szLast + 1))
-          pszFiles = szLast + 1;
-        else
-          pszFiles = "Miranda IM";
-      }
+      // default is no root dir
+      pszFiles = "";
+
+      if ((szFirstDiv = strstr(szFirstDir, "\\")) || (szFirstDiv = strstr(szFirstDir, "/")))
+        nFirstDirLen = szFirstDiv - szFirstDir;
       else
-        pszFiles = "Miranda IM";
+        nFirstDirLen = strlennull(szFirstDir);
+
+      if (nFirstDirLen)
+      { // got root dir from first container, check if others are only sub-dirs
+        for (i = 0; i < ft->containerCount; i++)
+        {
+          if (strnicmp(ft->file_containers[i], szFirstDir, nFirstDirLen))
+          {
+            szFirstDir = NULL;
+            break;
+          }
+        }
+        if (szFirstDir)
+        { // fine, we are sending only one directory
+          pszFiles = szFirstDir;
+          if (szFirstDiv) szFirstDiv[0] = '\0';
+          nFirstDirLen++; // include backslash
+          // cut all files container by root dir - it is transferred as root separately
+          for (i = 0; i < ft->wFilesCount; i++)
+            ft->files[i].szContainer += nFirstDirLen;
+        }
+      }
     }
 
     // Create listener
@@ -965,10 +1032,16 @@ DWORD oftFileAllow(HANDLE hContact, WPARAM wParam, LPARAM lParam)
   if (ICQGetContactSettingUID(hContact, &dwUin, &szUid))
     return 0; // Invalid contact
 
-  ft->szPath = ansi_to_utf8((char *)lParam);
-
+  ft->szSavePath = ansi_to_utf8((char *)lParam);
+  if (ft->szThisPath)
+  { // Append Directory name to the save path, when transfering a directory
+    ft->szSavePath = (char*)realloc(ft->szSavePath, strlennull(ft->szSavePath) + strlennull(ft->szThisPath) + 4);
+    NormalizeBackslash(ft->szSavePath);
+    strcat(ft->szSavePath, ft->szThisPath);
+    NormalizeBackslash(ft->szSavePath);
+  }
 #ifdef _DEBUG
-  NetLog_Direct("OFT: Request accepted, saving to '%s'.", ft->szPath);
+  NetLog_Direct("OFT: Request accepted, saving to '%s'.", ft->szSavePath);
 #endif
 
   // Create cookie
@@ -1161,7 +1234,7 @@ static void oft_buildProtoFileTransferStatus(oscar_filetransfer* ft, PROTOFILETR
   pfts->currentFileNumber = ft->iCurrentFile;
   pfts->totalBytes = (DWORD)ft->qwTotalSize; // FIXME
   pfts->totalProgress = (DWORD)ft->qwBytesDone; // FIXME
-  utf8_decode(ft->szPath, &pfts->workingDir);
+//  utf8_decode(ft->szPath, &pfts->workingDir); // not used by the UI anyway
   utf8_decode(ft->szThisFile, &pfts->currentFile); 
   pfts->currentFileSize = (DWORD)ft->qwThisFileSize; // FIXME
   pfts->currentFileTime = ft->dwThisFileDate;
@@ -1816,12 +1889,8 @@ static int oft_handleFileData(oscar_connection *oc, unsigned char *buf, int len)
       { // Notify UI
         char *pszMsg = ICQTranslateUtf("The checksum of file \"%s\" does not match, the file is probably damaged.");
         char szBuf[MAX_PATH];
-        char *pszFileName = strrchr(ft->szThisFile, '\\');
 
-        if (!pszFileName) pszFileName = strrchr(ft->szThisFile, '/');
-        if (!pszFileName) pszFileName = ft->szThisFile; else pszFileName++;
-
-        null_snprintf(szBuf, MAX_PATH, pszMsg, pszFileName);
+        null_snprintf(szBuf, MAX_PATH, pszMsg, ExtractFileName(ft->szThisFile));
         icq_LogMessage(LOG_ERROR, szBuf);
 
         SAFE_FREE(&pszMsg);
@@ -1997,42 +2066,35 @@ static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBu
         SAFE_FREE(&ft->szThisPath); // release previous path
         if (szFile)
         {
-          char *szNewDir;
-
           ft->szThisPath = ft->szThisFile;
           szFile[0] = '\0'; // split that strings
           ft->szThisFile = null_strdup(szFile + 1);
           // no cheating with paths
-          if (strstr(ft->szThisPath, "..\\") || strstr(ft->szThisPath, "../") ||
-              strstr(ft->szThisPath, ":\\") || strstr(ft->szThisPath, ":/") ||
-              ft->szThisPath[0] == '\\' || ft->szThisPath[0] == '/')
+          if (!IsValidRelativePath(ft->szThisPath))
           {
             NetLog_Direct("Invalid path information");
             break;
           }
-          szNewDir = (char*)_alloca(strlennull(ft->szPath)+strlennull(ft->szThisPath)+2);
-          strcpy(szNewDir, ft->szPath);
-          NormalizeBackslash(szNewDir);
-          strcat(szNewDir, ft->szThisPath);
-          MakeDirUtf(szNewDir); // create directory
         }
         else
           ft->szThisPath = null_strdup("");
       }
 
       /* no cheating with paths */
-      if (strstr(ft->szThisFile, "..\\") || strstr(ft->szThisFile, "../") ||
-        strstr(ft->szThisFile, ":\\") || strstr(ft->szThisFile, ":/") ||
-        ft->szThisFile[0] == '\\' || ft->szThisFile[0] == '/')
+      if (!IsValidRelativePath(ft->szThisFile))
       {
         NetLog_Direct("Invalid path information");
         break;
       }
-      szFullPath = (char*)SAFE_MALLOC(strlennull(ft->szPath)+strlennull(ft->szThisPath)+strlennull(ft->szThisFile)+3);
-      strcpy(szFullPath, ft->szPath);
+      szFullPath = (char*)SAFE_MALLOC(strlennull(ft->szSavePath)+strlennull(ft->szThisPath)+strlennull(ft->szThisFile)+3);
+      strcpy(szFullPath, ft->szSavePath);
       NormalizeBackslash(szFullPath);
       strcat(szFullPath, ft->szThisPath);
       NormalizeBackslash(szFullPath);
+      // make sure the dest dir exists
+      if (MakeDirUtf(szFullPath))
+        NetLog_Direct("Failed to create destination directory!");
+
       strcat(szFullPath, ft->szThisFile);
       // we joined the full path to dest file
       SAFE_FREE(&ft->szThisFile);
@@ -2050,6 +2112,7 @@ static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBu
           oc->status = OCS_WAITING;
 
           SAFE_FREE(&pfts.currentFile);
+          SAFE_FREE(&pfts.workingDir);
           break; /* UI supports resume: it will call PS_FILERESUME */
         }
         SAFE_FREE(&pfts.currentFile);
@@ -2322,7 +2385,7 @@ static void oft_sendPeerInit(oscar_connection *oc)
   }
 
   SAFE_FREE(&ft->szThisFile);
-  ft->szThisFile = null_strdup(ft->files[ft->iCurrentFile]);
+  ft->szThisFile = null_strdup(ft->files[ft->iCurrentFile].szFile);
   if (FileStatUtf(ft->szThisFile, &statbuf))
   {
     icq_LogMessage(LOG_ERROR, "Your file transfer has been aborted because one of the files that you selected to send is no longer readable from the disk. You may have deleted or moved it.");
@@ -2333,7 +2396,14 @@ static void oft_sendPeerInit(oscar_connection *oc)
     return;
   }
 
-  pszThisFileName = null_strdup(ft->szThisFile + strlennull(ft->szPath));
+  { // create full relative filename
+    char* szThisContainer = ft->files[ft->iCurrentFile].szContainer;
+
+    pszThisFileName = (char*)SAFE_MALLOC(strlennull(ft->szThisFile) + strlennull(szThisContainer) + 4);
+    strcpy(pszThisFileName, szThisContainer);
+    NormalizeBackslash(pszThisFileName);
+    strcat(pszThisFileName, ExtractFileName(ft->szThisFile));
+  }
   { // convert backslashes to dir markings
     DWORD i;
 

@@ -251,7 +251,7 @@ int IcqGetAvatarCaps(WPARAM wParam, LPARAM lParam)
   }
   else if (wParam == AF_FORMATSUPPORTED)
   {
-    if (lParam == PA_FORMAT_JPEG || lParam == PA_FORMAT_GIF || lParam == PA_FORMAT_XML)
+    if (lParam == PA_FORMAT_JPEG || lParam == PA_FORMAT_GIF || lParam == PA_FORMAT_XML || lParam == PA_FORMAT_BMP)
       return 1;
     else
       return 0;
@@ -263,7 +263,19 @@ int IcqGetAvatarCaps(WPARAM wParam, LPARAM lParam)
     else
       return 0;
   }
-  return -1;
+  else if (wParam == AF_DONTNEEDDELAYS)
+  {
+    return 0;
+  }
+  else if (wParam == AF_MAXFILESIZE)
+  { // server accepts images of 7168 bytees, not bigger
+    return 7168;
+  }
+  else if (wParam == AF_DELAYAFTERFAIL)
+  { // do not request avatar again if server gave an error
+    return 1 * 60 * 60 * 1000; // one hour
+  }
+  return 0;
 }
 
 

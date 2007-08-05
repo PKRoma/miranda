@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_xstatus.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -351,10 +351,14 @@ void handleXStatusCaps(HANDLE hContact, char* caps, int capsize)
     {
       if (MatchCap(caps, capsize, (const capstr*)capXStatus[i], 0x10))
       {
+        BYTE bXStatusId = (BYTE)(i+1);
         char str[MAX_PATH];
 
-        ICQWriteContactSettingByte(hContact, DBSETTING_XSTATUSID, (BYTE)(i+1));
-        ICQWriteContactSettingUtf(hContact, DBSETTING_XSTATUSNAME, ICQTranslateUtfStatic(nameXStatus[i], str));
+        if (ICQGetContactSettingByte(hContact, DBSETTING_XSTATUSID, -1) != bXStatusId)
+        { // only write default name when it is really needed, i.e. on Custom Status change
+          ICQWriteContactSettingByte(hContact, DBSETTING_XSTATUSID, bXStatusId);
+          ICQWriteContactSettingUtf(hContact, DBSETTING_XSTATUSNAME, ICQTranslateUtfStatic(nameXStatus[i], str));
+        }
 
         if (ICQGetContactSettingByte(NULL, "XStatusAuto", DEFAULT_XSTATUS_AUTO))
           requestXStatusDetails(hContact, TRUE);
@@ -1125,8 +1129,10 @@ int IcqGetXStatusEx(WPARAM wParam, LPARAM lParam)
       {
         DBVARIANT dbv = {0};
       
-        ICQGetContactSetting(hContact, DBSETTING_XSTATUSNAME, &dbv);
-        strcpy(pData->pszName, dbv.pszVal);
+        if (!ICQGetContactSetting(hContact, DBSETTING_XSTATUSNAME, &dbv) && dbv.pszVal)
+          strcpy(pData->pszName, dbv.pszVal);
+        else
+          strcpy(pData->pszName, "");
 
         ICQFreeVariant(&dbv);
       }
@@ -1148,8 +1154,10 @@ int IcqGetXStatusEx(WPARAM wParam, LPARAM lParam)
     {
       DBVARIANT dbv = {0};
       
-      ICQGetContactSetting(hContact, DBSETTING_XSTATUSMSG, &dbv);
-      strcpy(pData->pszMessage, dbv.pszVal);
+      if (!ICQGetContactSetting(hContact, DBSETTING_XSTATUSMSG, &dbv) && dbv.pszVal)
+        strcpy(pData->pszMessage, dbv.pszVal);
+      else
+        strcpy(pData->pszMessage, "");
 
       ICQFreeVariant(&dbv);
     }
