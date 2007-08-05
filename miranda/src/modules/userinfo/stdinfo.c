@@ -32,7 +32,6 @@ BOOL CALLBACK ContactDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 #define SVS_MONTH         5
 #define SVS_SIGNED        6
 #define SVS_TIMEZONE      7
-#define SVS_ICQVERSION    8
 
 static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char *szSetting,int special)
 {
@@ -75,14 +74,6 @@ static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char
 				if(special==SVS_COUNTRY) {
 					pstr=(char*)CallService(MS_UTILS_GETCOUNTRYBYNUMBER,dbv.wVal,0);
 					unspecified=pstr==NULL;
-				}
-				else if (special == SVS_ICQVERSION) {
-					if (dbv.wVal != 0) {
-						static char *szVersionDescr[] = {"", "ICQ 1.x", "ICQ 2.x", "Unknown", "ICQ98", "Unknown", "ICQ99 / licq", "ICQ2000", "ICQ2001-2003, Miranda or Trillian", "ICQ Lite"};
-						pstr = str;
-						wsprintfA(str, "%d: %s", dbv.wVal, dbv.wVal > 9 ? Translate("Unknown") : Translate(szVersionDescr[dbv.wVal]));
-					}
-					else unspecified = 1;
 				}
 				else {
 					unspecified=(special==SVS_ZEROISUNSPEC && dbv.wVal==0);
