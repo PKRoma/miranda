@@ -279,7 +279,11 @@ int IcqGetAvatarCaps(WPARAM wParam, LPARAM lParam)
   { // server accepts images of 7168 bytees, not bigger
     return 7168;
   }
-  return -1;
+  else if (wParam == AF_DELAYAFTERFAIL)
+  { // do not request avatar again if server gave an error
+    return 1 * 60 * 60 * 1000; // one hour
+  }
+  return 0;
 }
 
 
