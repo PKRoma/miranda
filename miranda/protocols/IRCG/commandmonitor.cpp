@@ -471,7 +471,7 @@ bool CMyMonitor::OnIrc_PART( const CIrcMessage* pmsg )
 			GCDEST gcd = {0};
 			GCEVENT gce = {0};
 
-			TString S = MakeWndID(pmsg->parameters[0]);
+			TString S = MakeWndID( pmsg->parameters[0].c_str());
 			gce.cbSize = sizeof(GCEVENT);
 			gcd.ptszID = ( TCHAR* )S.c_str();
 			gce.dwFlags = GC_TCHAR;
@@ -497,7 +497,7 @@ bool CMyMonitor::OnIrc_KICK( const CIrcMessage* pmsg )
 		GCDEST gcd = {0};
 		GCEVENT gce = {0};
 
-		TString S = MakeWndID(pmsg->parameters[0]);
+		TString S = MakeWndID( pmsg->parameters[0].c_str() );
 		gce.cbSize = sizeof(GCEVENT);
 		gce.dwFlags = GC_TCHAR;
 		gcd.ptszID = ( TCHAR* )S.c_str();
@@ -690,7 +690,7 @@ bool CMyMonitor::OnIrc_NOTICE( const CIrcMessage* pmsg )
 				if ( S3[0] == '[' && S3[1] == '#' && S3[S3.length()-1] == ']' ) {
 					S3.erase(S3.length()-1, 1);
 					S3.erase(0,1);
-					TString Wnd = MakeWndID( S3 );
+					TString Wnd = MakeWndID( S3.c_str());
 					gci.pszID = ( TCHAR* )Wnd.c_str();
 					if ( !CallService( MS_GC_GETINFO, 0, (LPARAM)&gci ) && gci.iType == GCW_CHATROOM )
 						S2 = GetWord( gci.pszID, 0 );
@@ -1326,20 +1326,20 @@ bool CMyMonitor::OnIrc_ENDNAMES( const CIrcMessage* pmsg )
 		}	}	}
 
 		if ( bFlag ) {
-			TString sChanName = pmsg->parameters[1];
+			const TCHAR* sChanName = pmsg->parameters[1].c_str();
 			if ( sChanName[0] == '@' || sChanName[0] == '*' || sChanName[0] == '=' )
-				sChanName.erase( 0, 1 );
+				sChanName++;
 
 			// Add a new chat window
 			GCSESSION gcw = {0};
-			TString sID = MakeWndID(sChanName) ;
+			TString sID = MakeWndID( sChanName );
 
 			gcw.cbSize = sizeof(GCSESSION);
 			gcw.iType = GCW_CHATROOM;
 			gcw.dwFlags = GC_TCHAR;
 			gcw.ptszID = sID.c_str();
 			gcw.pszModule = IRCPROTONAME;
-			gcw.ptszName = sChanName.c_str();
+			gcw.ptszName = sChanName;
 			if ( !CallServiceSync( MS_GC_NEWSESSION, 0, ( LPARAM )&gcw )) {
 				DBVARIANT dbv;
 				GCDEST gcd = {0};
@@ -1347,7 +1347,7 @@ bool CMyMonitor::OnIrc_ENDNAMES( const CIrcMessage* pmsg )
 				TString sTemp;
 				int i = 0;
 
-				PostIrcMessage( _T("/MODE %s"), sChanName.c_str());
+				PostIrcMessage( _T("/MODE %s"), sChanName );
 
 				gcd.ptszID = ( TCHAR* )sID.c_str();
 				gcd.pszModule = IRCPROTONAME;
@@ -1419,10 +1419,10 @@ bool CMyMonitor::OnIrc_ENDNAMES( const CIrcMessage* pmsg )
 					wi->pszPassword = 0;
 					wi->pszTopic = 0;
 					wi->codepage = g_ircSession.getCodepage();
-					DoEvent(GC_EVENT_SETITEMDATA, sChanName.c_str(), NULL, NULL, NULL, NULL, (DWORD)wi, false, false, 0);
+					DoEvent(GC_EVENT_SETITEMDATA, sChanName, NULL, NULL, NULL, NULL, (DWORD)wi, false, false, 0);
 
-					if ( !sTopic.empty() && !lstrcmpi(GetWord(sTopic.c_str(), 0).c_str(), sChanName.c_str())) {
-						DoEvent(GC_EVENT_TOPIC, sChanName.c_str(), sTopicName.empty() ? NULL : sTopicName.c_str(), GetWordAddress(sTopic.c_str(), 1), NULL, NULL, NULL, true, false);
+					if ( !sTopic.empty() && !lstrcmpi(GetWord(sTopic.c_str(), 0).c_str(), sChanName )) {
+						DoEvent(GC_EVENT_TOPIC, sChanName, sTopicName.empty() ? NULL : sTopicName.c_str(), GetWordAddress(sTopic.c_str(), 1), NULL, NULL, NULL, true, false);
 						AddWindowItemData(sChanName, 0, 0, 0, GetWordAddress(sTopic.c_str(), 1));
 						sTopic = _T("");
 						sTopicName = _T("");
@@ -1452,7 +1452,7 @@ bool CMyMonitor::OnIrc_ENDNAMES( const CIrcMessage* pmsg )
 						i++;
 						if ( !command.empty() ) {
 							TString S = command.substr(1, command.length());
-							if ( !lstrcmpi( sChanName.c_str(), S.c_str()))
+							if ( !lstrcmpi( sChanName, S.c_str()))
 								break;
 
 							save += command;

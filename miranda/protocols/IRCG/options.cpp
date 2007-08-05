@@ -305,7 +305,7 @@ BOOL CALLBACK AddServerProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			int i = SendMessage(GetDlgItem(connect_hWnd, IDC_SERVERCOMBO), CB_GETCOUNT, 0, 0);
 			for (int index = 0; index <i; index++) {
 				SERVER_INFO* pData = ( SERVER_INFO* )SendMessage(GetDlgItem(connect_hWnd, IDC_SERVERCOMBO), CB_GETITEMDATA, index, 0);
-				if (SendMessage(GetDlgItem( hwndDlg, IDC_ADD_COMBO), CB_FINDSTRINGEXACT, -1,(LPARAM) pData->Group) == CB_ERR)
+				if (SendMessageA(GetDlgItem( hwndDlg, IDC_ADD_COMBO), CB_FINDSTRINGEXACT, -1,(LPARAM) pData->Group) == CB_ERR)
 					SendMessageA(GetDlgItem( hwndDlg, IDC_ADD_COMBO), CB_ADDSTRING, 0, (LPARAM) pData->Group);
 			}
 

@@ -218,7 +218,7 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 			if ( one == _T("server"))
 				S = _T("Network log");
 			else
-				S = MakeWndID( one );
+				S = MakeWndID( one.c_str() );
 		}
 		else if ( lstrcmpi( window, _T("Network log")) == 0 )
 			S = window;

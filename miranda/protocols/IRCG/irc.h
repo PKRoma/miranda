@@ -372,7 +372,7 @@ TString PrefixToStatus(int cPrefix);
 void    SetChatTimer(UINT_PTR &nIDEvent,UINT uElapse,TIMERPROC lpTimerFunc);
 void    KillChatTimer(UINT_PTR &nIDEvent);
 int     SetChannelSBText(TString sWindow, CHANNELINFO * wi);
-TString MakeWndID(TString sWindow);
+TString MakeWndID(const TCHAR* sWindow);
 bool    FreeWindowItemData(TString window, CHANNELINFO* wis);
 bool    AddWindowItemData(TString window, const TCHAR* pszLimit, const TCHAR* pszMode, const TCHAR* pszPassword, const TCHAR* pszTopic);
 void    FindLocalIP(HANDLE con);

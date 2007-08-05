@@ -212,7 +212,7 @@ int Scripting_GetIrcData(WPARAM wparam, LPARAM lparam)
 										( prefs->IPFromServer ) ? prefs->MyHost : prefs->MyLocalHost);
 
 		else if (sRequest == "usercount" && !sChannel.empty()) {
-			TString S = MakeWndID(sChannel);
+			TString S = MakeWndID(sChannel.c_str());
 			GC_INFO gci = {0};
 			gci.Flags = BYID|COUNT;
 			gci.pszModule = IRCPROTONAME;
@@ -224,7 +224,7 @@ int Scripting_GetIrcData(WPARAM wparam, LPARAM lparam)
 			}
 		}
 		else if (sRequest == "userlist" && !sChannel.empty()) {
-			TString S = MakeWndID(sChannel);
+			TString S = MakeWndID(sChannel.c_str());
 			GC_INFO gci = {0};
 			gci.Flags = BYID|USERS;
 			gci.pszModule = IRCPROTONAME;

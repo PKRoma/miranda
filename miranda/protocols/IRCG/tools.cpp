@@ -600,16 +600,11 @@ int SetChannelSBText(TString sWindow, CHANNELINFO * wi)
 	return DoEvent(GC_EVENT_SETSBTEXT, sWindow.c_str(), NULL, sTemp.c_str(), NULL, NULL, NULL, FALSE, FALSE, 0);
 }
 
-TString MakeWndID(TString sWindow)
+TString MakeWndID(const TCHAR* sWindow)
 {
-	TString sTemp = sWindow;
-	sTemp += _T(" - ");
-	if(g_ircSession)
-		sTemp += g_ircSession.GetInfo().sNetwork;
-	else
-		sTemp += TranslateT("Offline");
-
-	return sTemp;
+	TCHAR buf[200];
+	mir_sntprintf( buf, SIZEOF(buf), _T("%s - %s"), sWindow), ((g_ircSession) ? g_ircSession.GetInfo().sNetwork.c_str() : TranslateT("Offline"));
+	return TString(buf);
 }
 
 bool FreeWindowItemData(TString window, CHANNELINFO* wis)

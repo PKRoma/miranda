@@ -222,9 +222,11 @@
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;IRC_EXPORTS"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
+				BufferSecurityCheck="FALSE"
 				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="irc.h"
+				AssemblerOutput="4"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
@@ -675,10 +677,10 @@
 				RelativePath="Icons\hide.ico">
 			</File>
 			<File
-				RelativePath="Icons\irc.ico">
+				RelativePath="Icons\Icons\irc.ico">
 			</File>
 			<File
-				RelativePath="Icons\Icons\irc.ico">
+				RelativePath="Icons\irc.ico">
 			</File>
 			<File
 				RelativePath="IRC.rc">
