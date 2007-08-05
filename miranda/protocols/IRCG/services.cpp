@@ -893,13 +893,14 @@ int Service_GCEventHook(WPARAM wParam,LPARAM lParam)
 							PROTOSEARCHRESULT psr;
 							ZeroMemory(&psr, sizeof(psr));
 							psr.cbSize = sizeof(psr);
-							psr.nick = ( char* )gch->ptszUID;
+							psr.nick = mir_t2a_cp( gch->ptszUID, g_ircSession.getCodepage());
 							ADDCONTACTSTRUCT acs;
 							ZeroMemory(&acs, sizeof(acs));
 							acs.handleType = HANDLE_SEARCHRESULT;
 							acs.szProto = IRCPROTONAME;
 							acs.psr = &psr;
 							CallService(MS_ADDCONTACT_SHOW, (WPARAM)NULL, (LPARAM)&acs);
+							mir_free( psr.nick );
 						}
 						break;
 					}
