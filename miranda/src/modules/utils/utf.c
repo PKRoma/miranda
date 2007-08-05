@@ -65,13 +65,16 @@ char* Utf8DecodeCP( char* str, int codepage, wchar_t** ucs2 )
 				continue;
 			}
 
-			if (( s[0] & 0xE0 ) == 0xE0 && ( s[1] & 0xC0 ) == 0x80 && ( s[2] & 0xC0 ) == 0x80 ) {
+			if (( s[0] & 0xE0 ) == 0xE0 ) {
+				if ( s[1] == 0 || ( s[1] & 0xC0 ) != 0x80 ) { errFlag = 1; goto LBL_Exit; }
+				if ( s[2] == 0 || ( s[2] & 0xC0 ) != 0x80 ) { errFlag = 1; goto LBL_Exit; }
 				*d++ = (( WORD )( s[0] & 0x0F) << 12 ) + ( WORD )(( s[1] & 0x3F ) << 6 ) + ( WORD )( s[2] & 0x3F );
 				s += 3;
 				continue;
 			}
 
-			if (( s[0] & 0xE0 ) == 0xC0 && ( s[1] & 0xC0 ) == 0x80 ) {
+			if (( s[0] & 0xE0 ) == 0xC0 ) {
+				if ( s[1] == 0 || ( s[1] & 0xC0 ) != 0x80 ) { errFlag = 1; goto LBL_Exit; }
 				*d++ = ( WORD )(( s[0] & 0x1F ) << 6 ) + ( WORD )( s[1] & 0x3F );
 				s += 2;
 				continue;
@@ -91,6 +94,7 @@ char* Utf8DecodeCP( char* str, int codepage, wchar_t** ucs2 )
 
 	WideCharToMultiByte( codepage, 0, tempBuf, -1, str, len, "?", &errFlag );
 
+LBL_Exit:
    if ( needs_free )
 		mir_free( tempBuf );
 
