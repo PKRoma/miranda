@@ -125,23 +125,26 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 			int i,countryCount;
 			struct CountryListEntry *countries;
 			if ( !DBGetContactSetting( ci->hContact, ci->szProto, (ci->dwFlag & 0x7F)==CNF_COUNTRY ? "Country" : "CompanyCountry", &dbv )) {
-				CallService(MS_UTILS_GETCOUNTRYLIST,(WPARAM)&countryCount,(LPARAM)&countries);
-				for(i=0;i<countryCount;i++) {
-					if(countries[i].id!=dbv.wVal) continue;
+				if ( dbv.type == DBVT_WORD ) {
+					CallService(MS_UTILS_GETCOUNTRYLIST,(WPARAM)&countryCount,(LPARAM)&countries);
+					for(i=0;i<countryCount;i++) {
+						if(countries[i].id!=dbv.wVal) continue;
 
-					if ( ci->dwFlag & CNF_UNICODE ) {
-						int cbLen = MultiByteToWideChar( CP_ACP, 0, ( LPCSTR )countries[i].szName, -1, NULL, 0 );
-						WCHAR* buf = ( WCHAR* )mir_alloc( sizeof( WCHAR )*(cbLen+1) );
-						if ( buf != NULL )
-							MultiByteToWideChar( CP_ACP, 0, ( LPCSTR )countries[i].szName, -1, buf, cbLen );
-						ci->pszVal = ( TCHAR* )buf;
+						if ( ci->dwFlag & CNF_UNICODE ) {
+							int cbLen = MultiByteToWideChar( CP_ACP, 0, ( LPCSTR )countries[i].szName, -1, NULL, 0 );
+							WCHAR* buf = ( WCHAR* )mir_alloc( sizeof( WCHAR )*(cbLen+1) );
+							if ( buf != NULL )
+								MultiByteToWideChar( CP_ACP, 0, ( LPCSTR )countries[i].szName, -1, buf, cbLen );
+							ci->pszVal = ( TCHAR* )buf;
+						}
+						else ci->pszVal = ( TCHAR* )mir_strdup(countries[i].szName);
+
+						ci->type = CNFT_ASCIIZ;
+						DBFreeVariant(&dbv);
+						return 0;
 					}
-					else ci->pszVal = ( TCHAR* )mir_strdup(countries[i].szName);
-
-					ci->type = CNFT_ASCIIZ;
-					DBFreeVariant(&dbv);
-					return 0;
 				}
+				else return ProcessDatabaseValueDefault( ci, (ci->dwFlag & 0x7F)==CNF_COUNTRY ? "Country" : "CompanyCountry" );
 				DBFreeVariant(&dbv);
 			}
 			break;
