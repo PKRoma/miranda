@@ -315,12 +315,9 @@ static void parseOfflineMessage(unsigned char *databuf, WORD wPacketLen)
           
           if (hEvent)
           { // contact has events
-            DBEVENTINFO dbei;
-            DWORD dummy;
+            DBEVENTINFO dbei = {0};
             
-            dbei.cbSize = sizeof (DBEVENTINFO);
-            dbei.pBlob = (char*)&dummy;
-            dbei.cbBlob = 2;
+            dbei.cbSize = sizeof(DBEVENTINFO);
             if (!CallService(MS_DB_EVENT_GET, (WPARAM)hEvent, (LPARAM)&dbei))
             { // got that event, if newer than ts then reset to current time
               if (dwTimestamp<dbei.timestamp) dwTimestamp = time(NULL);
