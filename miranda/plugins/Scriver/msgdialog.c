@@ -1020,6 +1020,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			NewMessageWindowLParam *newData = (NewMessageWindowLParam *) lParam;
 			//TranslateDialogDefault(hwndDlg);
 			dat = (struct MessageWindowData *) mir_alloc(sizeof(struct MessageWindowData));
+			ZeroMemory(dat, sizeof(struct MessageWindowData));
 			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) dat);
 			dat->hContact = newData->hContact;
 			NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPENING);
@@ -1055,8 +1056,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			dat->wOldStatus = dat->wStatus;
 			dat->hDbEventFirst = NULL;
 			dat->hDbEventLast = NULL;
-//			dat->sendBuffer = NULL;
-			dat->sendCount = 0;
 			dat->messagesInProgress = 0;
 			dat->nTypeSecs = 0;
 			dat->nLastTyping = 0;
@@ -1066,7 +1065,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			dat->cmdListCurrent = 0;
 			dat->cmdListNew = 0;
 			dat->sendAllConfirm = 0;
-			dat->messagesInProgress = 0;
 			dat->nTypeMode = PROTOTYPE_SELFTYPING_OFF;
 			SetTimer(hwndDlg, TIMERID_TYPE, 1000, NULL);
 			dat->lastMessage = 0;
@@ -1277,6 +1275,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					//SetTimer(hwndDlg, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
 				}
 				SendMessage(dat->hwndParent, CM_STARTFLASHING, 0, 0);
+			}
+			dat->messagesInProgress = ReattachSendQueueItems(hwndDlg, dat->hContact);
+			if (dat->messagesInProgress > 0) {
+				SendMessage(hwndDlg, DM_SHOWMESSAGESENDING, 0, 0);
 			}
 			return TRUE;
 		}
@@ -2145,8 +2147,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		}
 		break;
 	case DM_STARTMESSAGESENDING:
-		SetTimer(hwndDlg, TIMERID_MSGSEND, 1000, NULL);
 		dat->messagesInProgress++;
+	case DM_SHOWMESSAGESENDING:
+		SetTimer(hwndDlg, TIMERID_MSGSEND, 1000, NULL);
 		if (g_dat->flags & SMF_SHOWPROGRESS) {
 			SendMessage(dat->hwnd, DM_UPDATESTATUSBAR, 0, 0);
 		}

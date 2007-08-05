@@ -126,7 +126,6 @@ struct MessageWindowData
 	HWND hwndParent;
 	HWND hwndLog;
 	HANDLE hDbEventFirst, hDbEventLast;
-	int sendCount;
 	int splitterPos;
 	SIZE minEditBoxSize;
 	SIZE minTopSize;
@@ -183,9 +182,10 @@ struct MessageWindowData
 #define HM_ACKEVENT          (WM_USER+29)
 
 #define DM_SENDMESSAGE		 (WM_USER+30)
-#define DM_STOPMESSAGESENDING (WM_USER+31)
-#define DM_STARTMESSAGESENDING (WM_USER+32)
-#define DM_SHOWERRORMESSAGE  (WM_USER+33)
+#define DM_STARTMESSAGESENDING (WM_USER+31)
+#define DM_SHOWMESSAGESENDING (WM_USER+32)
+#define DM_STOPMESSAGESENDING (WM_USER+33)
+#define DM_SHOWERRORMESSAGE  (WM_USER+34)
 
 #define DM_CLEARLOG			 (WM_USER+46)
 #define DM_SWITCHSTATUSBAR	 (WM_USER+47)

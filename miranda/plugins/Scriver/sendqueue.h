@@ -35,6 +35,7 @@ MessageSendQueueItem* FindSendQueueItem(HANDLE hContact, HANDLE hSendId);
 BOOL RemoveSendQueueItem(MessageSendQueueItem* item);
 void ReportSendQueueTimeouts(HWND hwndSender);
 void ReleaseSendQueueItems(HWND hwndSender);
+int ReattachSendQueueItems(HWND hwndSender, HANDLE hContact);
 void RemoveAllSendQueueItems();
 void SendSendQueueItem(MessageSendQueueItem* item);
 

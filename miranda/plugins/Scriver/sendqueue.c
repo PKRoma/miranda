@@ -175,6 +175,23 @@ void ReleaseSendQueueItems(HWND hwndSender) {
 	LeaveCriticalSection(&queueMutex);
 }
 
+int ReattachSendQueueItems(HWND hwndSender, HANDLE hContact) {
+	int count = 0;
+	MessageSendQueueItem *item;
+	EnterCriticalSection(&queueMutex);
+	for (item = global_sendQueue; item != NULL; item = item->next) {
+		if (item->hContact == hContact && item->hwndSender == NULL) {
+			item->hwndSender = hwndSender;
+			item->timeout = 0;
+			count++;
+//			logInfo(" reattaching [%s]", item->sendBuffer);
+		}
+	}
+	LeaveCriticalSection(&queueMutex);
+	return count;
+}
+
+
 void RemoveAllSendQueueItems() {
 	MessageSendQueueItem *item, *item2;
 	EnterCriticalSection(&queueMutex);
