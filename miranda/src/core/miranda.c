@@ -80,14 +80,19 @@ void __cdecl forkthread_r(void * arg)
 	struct FORK_ARG * fa = (struct FORK_ARG *) arg;
 	void (*callercode)(void*)=fa->threadcode;
 	void * cookie=fa->arg;
-	CallService(MS_SYSTEM_THREAD_PUSH,0,0);
+	CallService(MS_SYSTEM_THREAD_PUSH,0,(LPARAM)&callercode);
 	SetEvent(fa->hEvent);
-	__try {
+	__try
+	{
 		callercode(cookie);
-	} __finally {
-		SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
-		CallService(MS_SYSTEM_THREAD_POP,0,0);
 	}
+	__except( EXCEPTION_EXECUTE_HANDLER )
+	{
+		Netlib_Logf( NULL, "Unhandled exception in thread %x", GetCurrentThreadId());
+	}
+
+	SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
+	CallService(MS_SYSTEM_THREAD_POP,0,0);
 	return;
 }
 
@@ -125,14 +130,19 @@ unsigned __stdcall forkthreadex_r(void * arg)
 	void *cookie=fa->arg;
 	unsigned long rc;
 
-	CallService(MS_SYSTEM_THREAD_PUSH,0,0);
+	CallService(MS_SYSTEM_THREAD_PUSH,0,(LPARAM)&threadcode);
 	SetEvent(fa->hEvent);
-	__try {
+	__try
+	{
 		rc=threadcode(cookie);
-	} __finally {
-		SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
-		CallService(MS_SYSTEM_THREAD_POP,0,0);
 	}
+	__except( EXCEPTION_EXECUTE_HANDLER )
+	{
+		Netlib_Logf( NULL, "Unhandled exception in thread %x", GetCurrentThreadId());
+	}
+
+	SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
+	CallService(MS_SYSTEM_THREAD_POP,0,0);
 	return rc;
 }
 
@@ -271,15 +281,9 @@ int UnwindThreadPush(WPARAM wParam,LPARAM lParam)
 		WaitingThreads=mir_realloc(WaitingThreads,sizeof(struct THREAD_WAIT_ENTRY)*(WaitingThreadsCount+1));
 		WaitingThreads[WaitingThreadsCount].hThread=hThread;
 		WaitingThreads[WaitingThreadsCount].dwThreadId=GetCurrentThreadId();
-		WaitingThreads[WaitingThreadsCount].hOwner=GetInstByAddress( GetCurrentThreadEntryPoint() );
+		WaitingThreads[WaitingThreadsCount].hOwner=GetInstByAddress(( void* )lParam );
 		WaitingThreadsCount++;
-#ifdef _DEBUG
-		{
-			char szBuf[64];
-			mir_snprintf(szBuf,SIZEOF(szBuf),"*** pushing thread (%x)\n",GetCurrentThreadId());
-			OutputDebugStringA(szBuf);
-		}
-#endif
+ 		//Netlib_Logf( NULL, "*** pushing thread %x[%x] (%d)", hThread, GetCurrentThreadId(), WaitingThreadsCount );
 		ReleaseMutex(hStackMutex);
 	} //if
 	return 0;
@@ -291,6 +295,7 @@ int UnwindThreadPop(WPARAM wParam,LPARAM lParam)
 	{
 		DWORD dwThreadId=GetCurrentThreadId();
 		int j;
+		//Netlib_Logf( NULL, "*** popping thread %x, %d threads left", dwThreadId, WaitingThreadsCount);
 		for (j=0;j<WaitingThreadsCount;j++) {
 			if (WaitingThreads[j].dwThreadId == dwThreadId) {
 				SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
