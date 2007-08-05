@@ -324,11 +324,17 @@ return=0 for sucess
 // return size in bytes (0 for no limit)
 #define AF_MAXFILESIZE 6
 
+// The amount of time avs should wait after a download avatar failed for a contact
+// lParam = 0
+// return = the time, in ms
+#define AF_DELAYAFTERFAIL 7
+
 
 /*
 Query avatar caps for a protocol
 wParam = One of AF_*
 lParam = See descr of each AF_*
+return = See descr of each AF_*. Return 0 by default
 */
 #define PS_GETAVATARCAPS "/GetAvatarCaps"
 
