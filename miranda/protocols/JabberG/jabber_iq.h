@@ -349,7 +349,7 @@ protected:
 		}
 		return NULL;
 	}
-	static DWORD WINAPI _ExpirerThread(LPVOID pParam)
+	static unsigned WINAPI _ExpirerThread(LPVOID pParam)
 	{
 		CJabberIqManager *pManager = ( CJabberIqManager * )pParam;
 		pManager->ExpirerThread();
@@ -411,9 +411,9 @@ public:
 		if ( m_hExpirerThread || m_bExpirerThreadShutdownRequest )
 			return FALSE;
 
-		DWORD dwThreadId = 0;
-		m_hExpirerThread = CreateThread( NULL, 0, _ExpirerThread, this, NULL, &dwThreadId );
-		if (!m_hExpirerThread)
+		unsigned dwThreadID;
+		m_hExpirerThread = (HANDLE)mir_forkthreadex( _ExpirerThread, this, 0, &dwThreadID );
+		if ( !m_hExpirerThread )
 			return FALSE;
 
 		return TRUE;
