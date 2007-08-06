@@ -2126,7 +2126,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					szMsgUtf = mir_utf8encodeW( (TCHAR *)&msi->sendBuffer[strlen(msi->sendBuffer) + 1] );
 					item->flags &= ~PREF_UNICODE;
 				#else
-					szMsgUtf = mir_utf8encodecp(temp, dat->codePage);
+					szMsgUtf = mir_utf8encodecp(msi->sendBuffer, dat->codePage);
 				#endif
 				if (!szMsgUtf) {
 					break;

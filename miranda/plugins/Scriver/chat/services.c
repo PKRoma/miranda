@@ -681,12 +681,11 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 		}
 
 		if (si && (si->bInitDone || gce->pDest->iType == GC_EVENT_TOPIC || (gce->pDest->iType == GC_EVENT_JOIN && gce->bIsMe))) {
-			if (SM_AddEvent(pWnd, pMod, gce, bIsHighlighted) && si->hWnd) {
-				SendMessage(si->hWnd, GC_ADDLOG, 0, 0);
-			}
-			else if (si->hWnd) {
-				SendMessage(si->hWnd, GC_REDRAWLOG2, 0, 0);
-			}
+			if (SM_AddEvent(pWnd, pMod, gce, bIsHighlighted) && si->hWnd)
+				PostMessage(si->hWnd, GC_ADDLOG, 0, 0);
+			else if (si->hWnd)
+				PostMessage(si->hWnd, GC_REDRAWLOG2, 0, 0);
+
 			DoSoundsFlashPopupTrayStuff(si, gce, bIsHighlighted, 0);
 			if ((gce->dwFlags & GCEF_ADDTOLOG) && g_Settings.LoggingEnabled)
 				LogToFile(si, gce);
