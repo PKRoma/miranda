@@ -133,6 +133,26 @@ static struct _buttonicons { int id; HICON *pIcon; } buttonicons[] = {
 struct SendJob *sendJobs = NULL;
 static int splitterEdges = -1;
 
+static BOOL IsStringValidLinkA( char* pszText )
+{
+    char *p = pszText;
+
+    if (pszText == NULL)
+		return FALSE;
+	if (lstrlenA(pszText) < 5)
+		return FALSE;
+
+    while(*p) {
+        if(*p == '"')
+            return FALSE;
+        p++;
+    }
+    if (tolower(pszText[0]) == 'w' && tolower(pszText[1]) == 'w' && tolower(pszText[2]) == 'w' && pszText[3] == '.' && isalnum(pszText[4]))
+		return TRUE;
+
+	return( strstr(pszText, "://") == NULL ? FALSE : TRUE);
+}
+
 static BOOL IsUtfSendAvailable(HANDLE hContact)
 {
 	char* szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
@@ -4948,48 +4968,49 @@ quote_from_last:
                                         SendDlgItemMessageA(hwndDlg, IDC_LOG, EM_GETTEXTRANGE, 0, (LPARAM) & tr);
                                         if (strchr(tr.lpstrText, '@') != NULL && strchr(tr.lpstrText, ':') == NULL && strchr(tr.lpstrText, '/') == NULL) {
                                             MoveMemory(tr.lpstrText + 7, tr.lpstrText, tr.chrg.cpMax - tr.chrg.cpMin + 1);
-                                            CopyMemory(tr.lpstrText, "mailto:", 7);
+                                            CopyMemory(tr.lpstrText, _T("mailto:"), 7);
                                         }
-                                        if (((ENLINK *) lParam)->msg == WM_RBUTTONDOWN) {
-                                            HMENU hMenu, hSubMenu;
-                                            POINT pt;
+                                        if(IsStringValidLinkA(tr.lpstrText)) {
+                                            if (((ENLINK *) lParam)->msg == WM_RBUTTONDOWN) {
+                                                HMENU hMenu, hSubMenu;
+                                                POINT pt;
 
-                                            hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CONTEXT));
-                                            hSubMenu = GetSubMenu(hMenu, 1);
-                                            CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hSubMenu, 0);
-                                            pt.x = (short) LOWORD(((ENLINK *) lParam)->lParam);
-                                            pt.y = (short) HIWORD(((ENLINK *) lParam)->lParam);
-                                            ClientToScreen(((NMHDR *) lParam)->hwndFrom, &pt);
-                                            switch (TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL)) {
-                                                case IDM_OPENNEW:
-                                                    CallService(MS_UTILS_OPENURL, 1, (LPARAM) tr.lpstrText);
-                                                    break;
-                                                case IDM_OPENEXISTING:
-                                                    CallService(MS_UTILS_OPENURL, 0, (LPARAM) tr.lpstrText);
-                                                    break;
-                                                case IDM_COPYLINK:
-                                                    {
-                                                        HGLOBAL hData;
-                                                        if (!OpenClipboard(hwndDlg))
-                                                            break;
-                                                        EmptyClipboard();
-                                                        hData = GlobalAlloc(GMEM_MOVEABLE, lstrlenA(tr.lpstrText) + 1);
-                                                        lstrcpyA(GlobalLock(hData), tr.lpstrText);
-                                                        GlobalUnlock(hData);
-                                                        SetClipboardData(CF_TEXT, hData);
-                                                        CloseClipboard();
+                                                hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CONTEXT));
+                                                hSubMenu = GetSubMenu(hMenu, 1);
+                                                CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hSubMenu, 0);
+                                                pt.x = (short) LOWORD(((ENLINK *) lParam)->lParam);
+                                                pt.y = (short) HIWORD(((ENLINK *) lParam)->lParam);
+                                                ClientToScreen(((NMHDR *) lParam)->hwndFrom, &pt);
+                                                switch (TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL)) {
+                                                    case IDM_OPENNEW:
+                                                        CallService(MS_UTILS_OPENURL, 1, (LPARAM) tr.lpstrText);
                                                         break;
-                                                    }
+                                                    case IDM_OPENEXISTING:
+                                                        CallService(MS_UTILS_OPENURL, 0, (LPARAM) tr.lpstrText);
+                                                        break;
+                                                    case IDM_COPYLINK:
+                                                        {
+                                                            HGLOBAL hData;
+                                                            if (!OpenClipboard(hwndDlg))
+                                                                break;
+                                                            EmptyClipboard();
+                                                            hData = GlobalAlloc(GMEM_MOVEABLE, lstrlenA(tr.lpstrText) + 1);
+                                                            lstrcpyA(GlobalLock(hData), tr.lpstrText);
+                                                            GlobalUnlock(hData);
+                                                            SetClipboardData(CF_TEXT, hData);
+                                                            CloseClipboard();
+                                                            break;
+                                                        }
+                                                }
+                                                free(tr.lpstrText);
+                                                DestroyMenu(hMenu);
+                                                SetWindowLong(hwndDlg, DWL_MSGRESULT, TRUE);
+                                                return TRUE;
+                                            } else {
+                                                CallService(MS_UTILS_OPENURL, 1, (LPARAM) tr.lpstrText);
+                                                SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
                                             }
-                                            free(tr.lpstrText);
-                                            DestroyMenu(hMenu);
-                                            SetWindowLong(hwndDlg, DWL_MSGRESULT, TRUE);
-                                            return TRUE;
-                                        } else {
-                                            CallService(MS_UTILS_OPENURL, 1, (LPARAM) tr.lpstrText);
-                                            SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
                                         }
-
                                         free(tr.lpstrText);
                                         break;
                                     }

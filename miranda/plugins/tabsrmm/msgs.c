@@ -1050,7 +1050,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 
 	myGlobals.m_hwndClist = (HWND)CallService(MS_CLUI_GETHWND, 0, 0);
 #ifdef __MATHMOD_SUPPORT    		
-	myGlobals.m_MathModAvail = ServiceExists(MATH_RTF_REPLACE_FORMULAE) && DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantmathmod", 1);
+	myGlobals.m_MathModAvail = ServiceExists(MATH_RTF_REPLACE_FORMULAE);
 	if(myGlobals.m_MathModAvail) {
 		char *szDelim = (char *)CallService(MATH_GET_STARTDELIMITER, 0, 0);
 		if(szDelim) {

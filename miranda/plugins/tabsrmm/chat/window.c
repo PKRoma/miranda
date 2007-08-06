@@ -85,12 +85,19 @@ static struct _tagbtns { int id; TCHAR *szTip;} _btns[] = {
 
 static BOOL IsStringValidLink( TCHAR* pszText )
 {
-	if (pszText == NULL)
+    TCHAR *p = pszText;
+
+    if (pszText == NULL)
 		return FALSE;
 	if (lstrlen(pszText) < 5)
 		return FALSE;
 
-	if (_totlower(pszText[0]) == 'w' && _totlower(pszText[1]) == 'w' && _totlower(pszText[2]) == 'w' && pszText[3] == '.' && _istalnum(pszText[4]))
+    while(*p) {
+        if(*p == (TCHAR)'"')
+            return FALSE;
+        p++;
+    }
+    if (_totlower(pszText[0]) == 'w' && _totlower(pszText[1]) == 'w' && _totlower(pszText[2]) == 'w' && pszText[3] == '.' && _istalnum(pszText[4]))
 		return TRUE;
 
 	return( _tcsstr(pszText, _T("://")) == NULL ? FALSE : TRUE);
@@ -2500,7 +2507,7 @@ LABEL_SHOWWINDOW:
 							tr.lpstrText = mir_alloc(sizeof(TCHAR)*(tr.chrg.cpMax - tr.chrg.cpMin + 2));
                             SendMessage(pNmhdr->hwndFrom, EM_GETTEXTRANGE, 0, (LPARAM) & tr);
 
-							isLink = g_Settings.ClickableNicks ? IsStringValidLink(tr.lpstrText) : TRUE;
+							isLink = IsStringValidLink(tr.lpstrText);
 
 							if (isLink) {
 								char* pszUrl = t2a(tr.lpstrText, 0);
@@ -2551,7 +2558,7 @@ LABEL_SHOWWINDOW:
                                     return TRUE;
 								}
 							}
-							else {                      // clicked a nick name
+							else if(g_Settings.ClickableNicks) {                      // clicked a nick name
                                 CHARRANGE chr;
                                 TEXTRANGE tr2;
                                 TCHAR tszAplTmpl[] = _T("%s:"),
