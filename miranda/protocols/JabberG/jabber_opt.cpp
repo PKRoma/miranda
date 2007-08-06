@@ -744,7 +744,7 @@ static void _RosterListClear(HWND hwndDlg)
 	int width=rc.right-rc.left;
 
 	ListView_SetColumnWidth(hList,0,width*40/100);
-	ListView_SetColumnWidth(hList,1,width*30/100);
+	ListView_SetColumnWidth(hList,1,width*25/100);
 	ListView_SetColumnWidth(hList,2,width*20/100);
 	ListView_SetColumnWidth(hList,3,width*10/100);
 }
