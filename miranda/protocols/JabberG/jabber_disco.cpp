@@ -1420,7 +1420,6 @@ void JabberServiceDiscoveryShowMenu(CJabberSDNode *pNode, HTREELISTITEM hItem, P
 		case SD_ACT_PROXY:
 		{
 			JSetByte( "BsDirect", FALSE );
-			JSetByte( "BsProxy", TRUE );
 			JSetByte( "BsProxyManual", TRUE );
 			JSetStringT( NULL, "BsProxyServer", pNode->GetJid());
 			break;

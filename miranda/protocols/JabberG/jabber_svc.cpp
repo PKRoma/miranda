@@ -1057,7 +1057,7 @@ int JabberSendFile( WPARAM wParam, LPARAM lParam )
 	JabberCapsBits jcb = JabberGetResourceCapabilites( item->jid );
 
 	// fix for very smart clients, like gajim
-	if ( !JGetByte( "BsDirect", FALSE ) && !JGetByte( "BsProxy", FALSE ) ) {
+	if ( !JGetByte( "BsDirect", FALSE ) && !JGetByte( "BsProxyManual", FALSE ) ) {
 		// disable bytestreams
 		jcb &= ~JABBER_CAPS_BYTESTREAMS;
 	}
