@@ -214,6 +214,9 @@ static int OnPreShutdown( WPARAM wParam, LPARAM lParam )
 	hwndPrivacyLists = NULL;
 	hwndPrivacyRule = NULL;
 	hwndServiceDiscovery = NULL;
+
+	g_JabberIqManager.ExpireAll();
+	g_JabberIqManager.Shutdown();
 	return 0;
 }
 
@@ -407,8 +410,6 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	if ( hInitChat )
 		DestroyHookableEvent( hInitChat );
 
-	g_JabberIqManager.ExpireAll();
-	g_JabberIqManager.Shutdown();
 	JabberXStatusUninit();
 	JabberSvcUninit();
 	JabberSslUninit();
