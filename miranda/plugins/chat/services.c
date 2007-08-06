@@ -738,12 +738,12 @@ static int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 			if (SM_AddEvent(pWnd, pMod, gce, bIsHighlighted) && si->hWnd) {
 				g_TabSession.pLog = si->pLog;
 				g_TabSession.pLogEnd = si->pLogEnd;
-				PostMessage(si->hWnd, GC_ADDLOG, 0, 0);
+				SendMessage(si->hWnd, GC_ADDLOG, 0, 0);
 			}
 			else if (si->hWnd) {
 				g_TabSession.pLog = si->pLog;
 				g_TabSession.pLogEnd = si->pLogEnd;
-				PostMessage(si->hWnd, GC_REDRAWLOG2, 0, 0);
+				SendMessage(si->hWnd, GC_REDRAWLOG2, 0, 0);
 			}
 			DoSoundsFlashPopupTrayStuff(si, gce, bIsHighlighted, 0);
 			if ((gce->dwFlags & GCEF_ADDTOLOG) && g_Settings.LoggingEnabled)
