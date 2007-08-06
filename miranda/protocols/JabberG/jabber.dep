@@ -33,6 +33,7 @@
 	".\jabber_ibb.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
+	".\jabber_rc.h"\
 	".\jabber_ssl.h"\
 	".\jabber_xml.h"\
 	".\sdk\m_icolib.h"\
@@ -92,6 +93,7 @@
 	".\jabber_ibb.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
+	".\version.h"\
 	
 
 .\jabber_chat.cpp : \
@@ -192,37 +194,16 @@
 	".\jabber_caps.h"\
 	".\jabber_ibb.h"\
 	".\jabber_iq.h"\
+	".\jabber_iq_handlers.h"\
 	".\jabber_list.h"\
+	".\jabber_privacy.h"\
+	".\jabber_rc.h"\
 	".\jabber_xmlns.h"\
 	
 
 .\jabber_iq_handlers.cpp : \
-	"..\..\include\m_avatars.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_chat.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_idle.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
-	"..\..\include\m_netlib.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protomod.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_system_cpp.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	"..\..\plugins\zlib\zconf.h"\
-	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_caps.h"\
@@ -230,7 +211,6 @@
 	".\jabber_iq.h"\
 	".\jabber_iq_handlers.h"\
 	".\jabber_list.h"\
-	".\jabber_xml.h"\
 	".\version.h"\
 	
 
@@ -315,7 +295,20 @@
 	".\jabber_ibb.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
+	".\jabber_opttree.h"\
 	".\jabber_ssl.h"\
+	
+
+.\jabber_opttree.cpp : \
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_protocols.h"\
+	".\jabber.h"\
+	".\jabber_byte.h"\
+	".\jabber_caps.h"\
+	".\jabber_ibb.h"\
+	".\jabber_iq.h"\
+	".\jabber_list.h"\
+	".\jabber_opttree.h"\
 	
 
 .\jabber_password.cpp : \
@@ -353,32 +346,9 @@
 	
 
 .\jabber_rc.cpp : \
-	"..\..\include\m_avatars.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_chat.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
+	"..\..\include\m_awaymsg.h"\
 	"..\..\include\m_clui.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_idle.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
-	"..\..\include\m_netlib.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protomod.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_system_cpp.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	"..\..\plugins\zlib\zconf.h"\
-	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_caps.h"\
@@ -386,7 +356,6 @@
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_rc.h"\
-	".\jabber_xml.h"\
 	
 
 .\jabber_search.cpp : \
@@ -445,9 +414,11 @@
 	".\jabber_ibb.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
+	".\sdk\m_proto_listeningto.h"\
 	
 
 .\jabber_thread.cpp : \
+	"..\..\..\..\vc\psdk\include\windns.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
@@ -457,9 +428,9 @@
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
+	".\jabber_rc.h"\
 	".\jabber_secur.h"\
 	".\jabber_ssl.h"\
-	".\version.h"\
 	
 
 .\jabber_treelist.cpp : \
@@ -538,6 +509,7 @@
 	".\jabber_ibb.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
+	".\jabber_rc.h"\
 	
 
 .\jabber_xstatus.cpp : \
@@ -551,6 +523,7 @@
 	".\jabber_ibb.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
+	".\sdk\m_proto_listeningto.h"\
 	
 
 .\jabber_zstream.cpp : \
@@ -572,6 +545,7 @@
 	".\icos\command.ico"\
 	".\icos\delete.ico"\
 	".\icos\disco_fail.ico"\
+	".\icos\disco_in_progress.ico"\
 	".\icos\disco_ok.ico"\
 	".\icos\filter.ico"\
 	".\icos\go.ico"\
@@ -590,11 +564,15 @@
 	".\icos\request.ico"\
 	".\icos\reset_filter.ico"\
 	".\icos\roster.ico"\
+	".\icos\rss.ico"\
 	".\icos\save.ico"\
+	".\icos\server.ico"\
 	".\icos\service_discovery.ico"\
+	".\icos\store.ico"\
 	".\icos\user2room.ico"\
 	".\icos\view_as_list.ico"\
 	".\icos\view_as_tree.ico"\
+	".\icos\weather.ico"\
 	".\jabber.rc"\
 	".\version.h"\
 	".\version.rc"\

@@ -25,6 +25,7 @@ extern "C" {            /* Assume C declarations for C++ */
 #endif
 
 #ifndef SM_CMONITORS
+#ifndef MONITORINFOF_PRIMARY
 
 #define SM_XVIRTUALSCREEN       76
 #define SM_YVIRTUALSCREEN       77
@@ -87,6 +88,7 @@ typedef struct {
 #define DISPLAY_DEVICE_PRIMARY_DEVICE      0x00000004
 #define DISPLAY_DEVICE_MIRRORING_DRIVER    0x00000008
 
+#endif
 #endif
 #define DISPLAY_DEVICE_VGA                 0x00000010
 

@@ -37,6 +37,7 @@
 	".\m_updater.h"\
 	".\mir_dblists.h"\
 	".\mir_memory.h"\
+	".\mir_thread.h"\
 	".\poll.h"\
 	
 
@@ -77,6 +78,7 @@
 	".\m_updater.h"\
 	".\mir_dblists.h"\
 	".\mir_memory.h"\
+	".\mir_thread.h"\
 	".\poll.h"\
 	
 
@@ -117,7 +119,9 @@
 	".\m_updater.h"\
 	".\mir_dblists.h"\
 	".\mir_memory.h"\
+	".\mir_thread.h"\
 	".\poll.h"\
+	".\version.h"\
 	
 
 .\mir_dblists.cpp : \
@@ -157,6 +161,7 @@
 	".\m_updater.h"\
 	".\mir_dblists.h"\
 	".\mir_memory.h"\
+	".\mir_thread.h"\
 	".\poll.h"\
 	
 
@@ -197,6 +202,48 @@
 	".\m_updater.h"\
 	".\mir_dblists.h"\
 	".\mir_memory.h"\
+	".\mir_thread.h"\
+	".\poll.h"\
+	
+
+.\mir_thread.cpp : \
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_imgsrvc.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_png.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	"..\freeimage\Miranda\include\m_freeimage.h"\
+	".\acc.h"\
+	".\commonheaders.h"\
+	".\image_utils.h"\
+	".\m_acc.h"\
+	".\m_avatarhistory.h"\
+	".\m_flash.h"\
+	".\m_folders.h"\
+	".\m_metacontacts.h"\
+	".\m_updater.h"\
+	".\mir_dblists.h"\
+	".\mir_memory.h"\
+	".\mir_thread.h"\
 	".\poll.h"\
 	
 
@@ -237,6 +284,7 @@
 	".\m_updater.h"\
 	".\mir_dblists.h"\
 	".\mir_memory.h"\
+	".\mir_thread.h"\
 	".\poll.h"\
 	
 
@@ -277,6 +325,7 @@
 	".\m_updater.h"\
 	".\mir_dblists.h"\
 	".\mir_memory.h"\
+	".\mir_thread.h"\
 	".\poll.h"\
 	
 

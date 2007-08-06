@@ -1,7 +1,7 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on avs.dsp
 !IF "$(CFG)" == ""
 CFG=avs - Win32 Release Unicode
-!MESSAGE No configuration specified. Defaulting to avs - Win32 Debug Unicode.
+!MESSAGE No configuration specified. Defaulting to avs - Win32 Release Unicode.
 !ENDIF
 
 !IF "$(CFG)" != "avs - Win32 Release" && "$(CFG)" != "avs - Win32 Debug" && "$(CFG)" != "avs - Win32 Release Unicode" && "$(CFG)" != "avs - Win32 Debug Unicode"
@@ -27,10 +27,6 @@ NULL=
 NULL=nul
 !ENDIF
 
-CPP=cl.exe
-MTL=midl.exe
-RSC=rc.exe
-
 !IF  "$(CFG)" == "avs - Win32 Release"
 
 OUTDIR=.\Release
@@ -46,6 +42,7 @@ CLEAN :
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\mir_dblists.obj"
 	-@erase "$(INTDIR)\mir_memory.obj"
+	-@erase "$(INTDIR)\mir_thread.obj"
 	-@erase "$(INTDIR)\options.obj"
 	-@erase "$(INTDIR)\poll.obj"
 	-@erase "$(INTDIR)\vc60.idb"
@@ -59,8 +56,42 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
+CPP=cl.exe
 CPP_PROJ=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "MBCS" /D "_USRDLL" /D "AVS_EXPORTS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+MTL=midl.exe
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
+RSC=rc.exe
 RSC_PROJ=/l 0x809 /fo"$(INTDIR)\avs.res" /d "NDEBUG"
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\avs.bsc"
@@ -74,6 +105,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\main.obj" \
 	"$(INTDIR)\mir_dblists.obj" \
 	"$(INTDIR)\mir_memory.obj" \
+	"$(INTDIR)\mir_thread.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\poll.obj" \
 	"$(INTDIR)\avs.res"
@@ -106,6 +138,8 @@ CLEAN :
 	-@erase "$(INTDIR)\mir_dblists.sbr"
 	-@erase "$(INTDIR)\mir_memory.obj"
 	-@erase "$(INTDIR)\mir_memory.sbr"
+	-@erase "$(INTDIR)\mir_thread.obj"
+	-@erase "$(INTDIR)\mir_thread.sbr"
 	-@erase "$(INTDIR)\options.obj"
 	-@erase "$(INTDIR)\options.sbr"
 	-@erase "$(INTDIR)\poll.obj"
@@ -123,8 +157,42 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
+CPP=cl.exe
 CPP_PROJ=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "AVS_EXPORTS" /Fr"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+MTL=midl.exe
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
+RSC=rc.exe
 RSC_PROJ=/l 0x809 /fo"$(INTDIR)\avs.res" /d "_DEBUG"
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\avs.bsc"
@@ -134,6 +202,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\main.sbr" \
 	"$(INTDIR)\mir_dblists.sbr" \
 	"$(INTDIR)\mir_memory.sbr" \
+	"$(INTDIR)\mir_thread.sbr" \
 	"$(INTDIR)\options.sbr" \
 	"$(INTDIR)\poll.sbr"
 
@@ -150,6 +219,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\main.obj" \
 	"$(INTDIR)\mir_dblists.obj" \
 	"$(INTDIR)\mir_memory.obj" \
+	"$(INTDIR)\mir_thread.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\poll.obj" \
 	"$(INTDIR)\avs.res"
@@ -174,12 +244,12 @@ CLEAN :
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\mir_dblists.obj"
 	-@erase "$(INTDIR)\mir_memory.obj"
+	-@erase "$(INTDIR)\mir_thread.obj"
 	-@erase "$(INTDIR)\options.obj"
 	-@erase "$(INTDIR)\poll.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(OUTDIR)\avs.exp"
-	-@erase "$(OUTDIR)\avs.lib"
 	-@erase "$(OUTDIR)\avs.map"
 	-@erase "$(OUTDIR)\avs.pdb"
 	-@erase "..\..\bin\release Unicode\plugins\avs.dll"
@@ -187,8 +257,42 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
+CPP=cl.exe
 CPP_PROJ=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "AVS_EXPORTS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+MTL=midl.exe
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
+RSC=rc.exe
 RSC_PROJ=/l 0x809 /fo"$(INTDIR)\avs.res" /d "NDEBUG" /d "UNICODE"
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\avs.bsc"
@@ -202,6 +306,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\main.obj" \
 	"$(INTDIR)\mir_dblists.obj" \
 	"$(INTDIR)\mir_memory.obj" \
+	"$(INTDIR)\mir_thread.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\poll.obj" \
 	"$(INTDIR)\avs.res"
@@ -234,6 +339,8 @@ CLEAN :
 	-@erase "$(INTDIR)\mir_dblists.sbr"
 	-@erase "$(INTDIR)\mir_memory.obj"
 	-@erase "$(INTDIR)\mir_memory.sbr"
+	-@erase "$(INTDIR)\mir_thread.obj"
+	-@erase "$(INTDIR)\mir_thread.sbr"
 	-@erase "$(INTDIR)\options.obj"
 	-@erase "$(INTDIR)\options.sbr"
 	-@erase "$(INTDIR)\poll.obj"
@@ -251,43 +358,8 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
+CPP=cl.exe
 CPP_PROJ=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "AVS_EXPORTS" /Fr"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
-MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x809 /fo"$(INTDIR)\avs.res" /d "_DEBUG" /d "UNICODE"
-BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\avs.bsc"
-BSC32_SBRS= \
-	"$(INTDIR)\acc.sbr" \
-	"$(INTDIR)\image_utils.sbr" \
-	"$(INTDIR)\main.sbr" \
-	"$(INTDIR)\mir_dblists.sbr" \
-	"$(INTDIR)\mir_memory.sbr" \
-	"$(INTDIR)\options.sbr" \
-	"$(INTDIR)\poll.sbr"
-
-"$(OUTDIR)\avs.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
-    $(BSC32) @<<
-  $(BSC32_FLAGS) $(BSC32_SBRS)
-<<
-
-LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib gdiplus.lib delayimp.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\avs.pdb" /map:"$(INTDIR)\avs.map" /debug /machine:I386 /out:"../../bin/debug Unicode/plugins/avs.dll" /implib:"$(OUTDIR)\avs.lib" /pdbtype:sept
-LINK32_OBJS= \
-	"$(INTDIR)\acc.obj" \
-	"$(INTDIR)\image_utils.obj" \
-	"$(INTDIR)\main.obj" \
-	"$(INTDIR)\mir_dblists.obj" \
-	"$(INTDIR)\mir_memory.obj" \
-	"$(INTDIR)\options.obj" \
-	"$(INTDIR)\poll.obj" \
-	"$(INTDIR)\avs.res"
-
-"..\..\bin\debug Unicode\plugins\avs.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
-    $(LINK32) @<<
-  $(LINK32_FLAGS) $(LINK32_OBJS)
-<<
-
-!ENDIF
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
@@ -318,6 +390,47 @@ LINK32_OBJS= \
    $(CPP) @<<
    $(CPP_PROJ) $<
 <<
+
+MTL=midl.exe
+MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
+RSC=rc.exe
+RSC_PROJ=/l 0x809 /fo"$(INTDIR)\avs.res" /d "_DEBUG" /d "UNICODE"
+BSC32=bscmake.exe
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\avs.bsc"
+BSC32_SBRS= \
+	"$(INTDIR)\acc.sbr" \
+	"$(INTDIR)\image_utils.sbr" \
+	"$(INTDIR)\main.sbr" \
+	"$(INTDIR)\mir_dblists.sbr" \
+	"$(INTDIR)\mir_memory.sbr" \
+	"$(INTDIR)\mir_thread.sbr" \
+	"$(INTDIR)\options.sbr" \
+	"$(INTDIR)\poll.sbr"
+
+"$(OUTDIR)\avs.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
+    $(BSC32) @<<
+  $(BSC32_FLAGS) $(BSC32_SBRS)
+<<
+
+LINK32=link.exe
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib gdiplus.lib delayimp.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\avs.pdb" /map:"$(INTDIR)\avs.map" /debug /machine:I386 /out:"../../bin/debug Unicode/plugins/avs.dll" /implib:"$(OUTDIR)\avs.lib" /pdbtype:sept
+LINK32_OBJS= \
+	"$(INTDIR)\acc.obj" \
+	"$(INTDIR)\image_utils.obj" \
+	"$(INTDIR)\main.obj" \
+	"$(INTDIR)\mir_dblists.obj" \
+	"$(INTDIR)\mir_memory.obj" \
+	"$(INTDIR)\mir_thread.obj" \
+	"$(INTDIR)\options.obj" \
+	"$(INTDIR)\poll.obj" \
+	"$(INTDIR)\avs.res"
+
+"..\..\bin\debug Unicode\plugins\avs.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+    $(LINK32) @<<
+  $(LINK32_FLAGS) $(LINK32_OBJS)
+<<
+
+!ENDIF
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
@@ -466,6 +579,34 @@ SOURCE=.\mir_memory.cpp
 
 
 "$(INTDIR)\mir_memory.obj"	"$(INTDIR)\mir_memory.sbr" : $(SOURCE) "$(INTDIR)"
+
+
+!ENDIF
+
+SOURCE=.\mir_thread.cpp
+
+!IF  "$(CFG)" == "avs - Win32 Release"
+
+
+"$(INTDIR)\mir_thread.obj" : $(SOURCE) "$(INTDIR)"
+
+
+!ELSEIF  "$(CFG)" == "avs - Win32 Debug"
+
+
+"$(INTDIR)\mir_thread.obj"	"$(INTDIR)\mir_thread.sbr" : $(SOURCE) "$(INTDIR)"
+
+
+!ELSEIF  "$(CFG)" == "avs - Win32 Release Unicode"
+
+
+"$(INTDIR)\mir_thread.obj" : $(SOURCE) "$(INTDIR)"
+
+
+!ELSEIF  "$(CFG)" == "avs - Win32 Debug Unicode"
+
+
+"$(INTDIR)\mir_thread.obj"	"$(INTDIR)\mir_thread.sbr" : $(SOURCE) "$(INTDIR)"
 
 
 !ENDIF
