@@ -360,11 +360,8 @@ static BOOL CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					else {
 						enableAuth=1;
 						if(IsDlgButtonChecked(hwndDlg,IDC_PROXYAUTH)!=BST_UNCHECKED) {
-							if(selectedProxyType==PROXYTYPE_HTTP || selectedProxyType==PROXYTYPE_HTTPS) {
-								enableNtlm=1;
-								if(IsDlgButtonChecked(hwndDlg,IDC_PROXYAUTHNTLM)!=BST_CHECKED) enableUser=enablePass=1;
-							}
-							else enableUser=enablePass=1;
+							enableNtlm=selectedProxyType==PROXYTYPE_HTTP || selectedProxyType==PROXYTYPE_HTTPS;
+							enableUser=enablePass=1;
 						}
 					}
 				}
