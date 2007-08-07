@@ -210,11 +210,8 @@ int NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 	if(useProxyHttpAuth) {
 		if(nlc->nlu->settings.useProxyAuthNtlm) {
 			char *pszNtlmAuth;
-			if (nlc->nlu->settings.useProxyAuth)
-				pszNtlmAuth=NtlmCreateResponseFromChallenge(nlc->hNtlmSecurity, "", 
-					nlc->nlu->settings.szProxyAuthUser, nlc->nlu->settings.szProxyAuthPassword);
-			else
-				pszNtlmAuth=NtlmCreateResponseFromChallenge(nlc->hNtlmSecurity, "", NULL, NULL);
+			pszNtlmAuth=NtlmCreateResponseFromChallenge(nlc->hNtlmSecurity, "", 
+				nlc->nlu->settings.szProxyAuthUser, nlc->nlu->settings.szProxyAuthPassword);
 
 			if(pszNtlmAuth==NULL) {useProxyHttpAuth=0; pszProxyAuthorizationHeader=NULL;}
 			else {
@@ -312,12 +309,8 @@ int NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 			for(i=0;i<nlhrReply->headersCount;i++) {
 				if(!lstrcmpiA(nlhrReply->headers[i].szName,"Proxy-Authenticate")) {
 					if(!_strnicmp(nlhrReply->headers[i].szValue,"NTLM ",5)) {
-						if (nlc->nlu->settings.useProxyAuth)
-							pszProxyAuthorizationHeader=NtlmCreateResponseFromChallenge(nlc->hNtlmSecurity, nlhrReply->headers[i].szValue+5,
-								nlc->nlu->settings.szProxyAuthUser, nlc->nlu->settings.szProxyAuthPassword);
-						else
-							pszProxyAuthorizationHeader=NtlmCreateResponseFromChallenge(nlc->hNtlmSecurity, nlhrReply->headers[i].szValue+5,
-								NULL, NULL);
+						pszProxyAuthorizationHeader=NtlmCreateResponseFromChallenge(nlc->hNtlmSecurity, nlhrReply->headers[i].szValue+5,
+							nlc->nlu->settings.szProxyAuthUser, nlc->nlu->settings.szProxyAuthPassword);
 					}
 					else error=ERROR_ACCESS_DENIED;
 				}
