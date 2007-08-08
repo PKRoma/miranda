@@ -1364,7 +1364,7 @@ void JabberProcessPresenceCapabilites( XmlNode *node )
 	TCHAR* from;
 	if (( from = JabberXmlGetAttrValue( node, "from" )) == NULL ) return;
 
-	JabberLog("presence: for jid %S", from);
+	JabberLog("presence: for jid " TCHAR_STR_PARAM, from);
 
 	JABBER_RESOURCE_STATUS *r = JabberResourceInfoFromJID( from );
 	if ( r == NULL ) return;
@@ -1415,7 +1415,7 @@ void JabberUpdateJidDbSettings( TCHAR *jid )
 			r = i;
 	item->itemResource.status = status;
 	if ( r != -1 ) {
-		JabberLog("JabberUpdateJidDbSettings: updating jid %S to rc %S", item->jid, item->resource[r].resourceName );
+		JabberLog("JabberUpdateJidDbSettings: updating jid " TCHAR_STR_PARAM " to rc " TCHAR_STR_PARAM, item->jid, item->resource[r].resourceName );
 		if ( item->resource[r].statusMessage )
 			DBWriteContactSettingTString( hContact, "CList", "StatusMsg", item->resource[r].statusMessage );
 		else

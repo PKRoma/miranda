@@ -397,7 +397,7 @@ void   JabberUpdateMirVer(JABBER_LIST_ITEM *item)
 	if (!hContact)
 		return;
 
-	JabberLog("JabberUpdateMirVer: for jid %S", item->jid);
+	JabberLog("JabberUpdateMirVer: for jid " TCHAR_STR_PARAM, item->jid);
 
 	int resource = -1;
 	if (item->resourceMode == RSMODE_LASTSEEN)
@@ -414,19 +414,19 @@ void JabberUpdateMirVer(HANDLE hContact, JABBER_RESOURCE_STATUS *resource)
 {
 	// jabber:iq:version info requested and exists?
 	if ( resource->dwVersionRequestTime && resource->software ) {
-		JabberLog("JabberUpdateMirVer: for iq:version rc %S: %S", resource->resourceName, resource->software);
+		JabberLog("JabberUpdateMirVer: for iq:version rc " TCHAR_STR_PARAM ": " TCHAR_STR_PARAM, resource->resourceName, resource->software);
 		JSetStringT( hContact, "MirVer", resource->software );
 		return;
 	}
 
 	// no version info and no caps info? set MirVer = resource name
 	if ( !resource->szCapsNode || !resource->szCapsVer ) {
-		JabberLog("JabberUpdateMirVer: for rc %S: %S", resource->resourceName, resource->resourceName);
+		JabberLog("JabberUpdateMirVer: for rc " TCHAR_STR_PARAM ": " TCHAR_STR_PARAM, resource->resourceName, resource->resourceName);
 		if ( resource->resourceName )
 			JSetStringT( hContact, "MirVer", resource->resourceName );
 		return;
 	}
-	JabberLog("JabberUpdateMirVer: for rc %S: %S#%S", resource->resourceName, resource->szCapsNode, resource->szCapsVer);
+	JabberLog("JabberUpdateMirVer: for rc " TCHAR_STR_PARAM ": " TCHAR_STR_PARAM "#" TCHAR_STR_PARAM, resource->resourceName, resource->szCapsNode, resource->szCapsVer);
 
 	// XEP-0115 caps mode
 	TCHAR szMirVer[ 512 ];

@@ -370,7 +370,7 @@ protected:
 		if (( pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_HCONTACT ) && ( pInfo->m_szFrom ))
 			pInfo->m_hContact = JabberHContactFromJID( pInfo->m_szFrom , 3);
 
-		JabberLog( "Expiring iq id %d, sent to %S", pInfo->m_nIqId, pInfo->m_szReceiver ? pInfo->m_szReceiver : _T("unknown") );
+		JabberLog( "Expiring iq id %d, sent to " TCHAR_STR_PARAM, pInfo->m_nIqId, pInfo->m_szReceiver ? pInfo->m_szReceiver : _T("unknown") );
 
 		pInfo->m_nIqType = JABBER_IQ_TYPE_FAIL;
 		pInfo->m_pHandler( NULL, NULL, pInfo );
@@ -610,7 +610,7 @@ public:
 				if ((pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_HCONTACT) && (iqInfo.m_szFrom))
 					iqInfo.m_hContact = JabberHContactFromJID( iqInfo.m_szFrom, 3 );
 
-				JabberLog( "Handling iq id %S, type %S, from %S", iqInfo.m_szId, szType, iqInfo.m_szFrom );
+				JabberLog( "Handling iq id " TCHAR_STR_PARAM ", type " TCHAR_STR_PARAM ", from " TCHAR_STR_PARAM, iqInfo.m_szId, szType, iqInfo.m_szFrom );
 				pInfo->m_pHandler(pNode, pUserData, &iqInfo);
 				bHandled = TRUE;
 			}
