@@ -144,22 +144,27 @@ static int getProfileCmdLineArgs(char * szProfile, size_t cch)
 // returns 1 if a valid filename (incl. dat) is found, includes fully qualified path
 static int getProfileCmdLine(char * szProfile, size_t cch, char * profiledir)
 {
-	char buf[MAX_PATH];
+	char buf[MAX_PATH], *cwd;
 	HANDLE hFile;
-	int rc;
+	int rc = 0;
 	if ( getProfileCmdLineArgs(buf, SIZEOF(buf)) ) {
 		// have something that looks like a .dat, with or without .dat in the filename
 		if ( !isValidProfileName(buf) ) mir_snprintf(buf, SIZEOF(buf)-5,"%s.dat",buf);
-		// expand the relative to a full path , which might fail
+		// change cwd for the moment to profiledir
+		if ( cwd = _getcwd(NULL, 0) )
+			_chdir(profiledir);
+		// expand the relative to a full path, which might fail
 		if ( _fullpath(szProfile, buf, cch) != 0 ) {
 			hFile=CreateFileA(szProfile, GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL);
 			rc=hFile != INVALID_HANDLE_VALUE;
 			CloseHandle(hFile);
-			return rc;
 		}
-		return 0;
+		if( cwd ) {
+			_chdir(cwd);
+			free(cwd);
+		}
 	}
-	return 0;
+	return rc;
 }
 
 // returns 1 if the profile manager should be shown
@@ -200,7 +205,7 @@ static int getProfile(char * szProfile, size_t cch)
 	getProfilePath(profiledir,SIZEOF(profiledir));
 	if ( getProfileCmdLine(szProfile, cch, profiledir) ) return 1;
 	if ( getProfileAutoRun(szProfile, cch, profiledir) ) return 1;
-	if ( !showProfileManager() && getProfile1(szProfile, cch, profiledir, &pd.noProfiles) ) return 1;
+	if ( !*szProfile && !showProfileManager() && getProfile1(szProfile, cch, profiledir, &pd.noProfiles) ) return 1;
 	else {		
 		pd.szProfile=szProfile;
 		pd.szProfileDir=profiledir;
