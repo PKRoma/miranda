@@ -172,7 +172,9 @@ static int amThreadProc(HWND hwnd)
 				return 0;			
 			}
 		}
-		MsgWaitForMultipleObjectsEx(1,&hamProcessEvent, INFINITE, QS_ALLINPUT, MWMO_ALERTABLE );
+		//MsgWaitForMultipleObjectsEx(1,&hamProcessEvent, INFINITE, 0, 0 );
+		WaitForSingleObjectEx(hamProcessEvent, INFINITE, FALSE);
+		ResetEvent(hamProcessEvent);
 		if (MirandaExiting()) 
 		{
 			g_dwAwayMsgThreadID=0;

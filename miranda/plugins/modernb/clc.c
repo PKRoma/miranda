@@ -1750,9 +1750,9 @@ case DROPTARGET_OUTSIDE:
 	}
 default:
 	{	
-		struct ClcGroup *group;
+		struct ClcGroup *group=NULL;
 		cliGetRowByIndex(dat,dat->iDragItem,NULL,&group);
-		if(group->parent) 
+		if(group && group->parent) 
 		{
 			struct ClcContact *contSour;
 			cliGetRowByIndex(dat,dat->iDragItem,&contSour,NULL);

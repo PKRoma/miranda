@@ -995,6 +995,7 @@ static void _AniAva_AnimationTreadProc(HANDLE hExitEvent)
 	for (;;)
 	{
 		rc = MsgWaitForMultipleObjectsEx(1,&hExitEvent, INFINITE, QS_ALLINPUT, MWMO_ALERTABLE );
+		ResetEvent(hExitEvent);
 		if ( rc == WAIT_OBJECT_0 + 1 )
 		{
 			MSG msg;

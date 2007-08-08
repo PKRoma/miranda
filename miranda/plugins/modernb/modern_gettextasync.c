@@ -131,7 +131,9 @@ static int gtaThreadProc(void * lpParam)
 			}
 		}
 		while (!exit);
-		MsgWaitForMultipleObjectsEx(1,&hgtaWakeupEvent, INFINITE, QS_ALLINPUT, MWMO_ALERTABLE );
+//		MsgWaitForMultipleObjectsEx(1,&hgtaWakeupEvent, INFINITE, 0, MWMO_ALERTABLE );
+		WaitForSingleObjectEx(hgtaWakeupEvent, INFINITE, FALSE );
+		ResetEvent(hgtaWakeupEvent);
 	}
 	g_dwGetTextAsyncThreadID=0;
 	return 1;
