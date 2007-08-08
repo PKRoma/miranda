@@ -334,7 +334,7 @@ void 	MSN_GoOffline()
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_SendMessage - formats and sends a MSG packet through the server
 
-char sttHeaderStart[] = "MIME-Version: 1.0\r\n";
+static const char sttHeaderStart[] = "MIME-Version: 1.0\r\n";
 
 LONG ThreadData::sendMessage( int msgType, const char* parMsg, int parFlags )
 {

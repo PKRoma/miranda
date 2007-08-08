@@ -31,7 +31,7 @@ extern HANDLE hInitChat;
 int MSN_ChatInit( WPARAM wParam, LPARAM lParam )
 {
 	ThreadData *info = (ThreadData*)wParam;
-	InterlockedIncrement( &sttChatID );
+	MyInterlockedIncrement( &sttChatID );
 	_ltot( sttChatID, info->mChatID, 10 );
 
 	info->mJoinedContacts = ( HANDLE* )mir_realloc(info->mJoinedContacts, sizeof(HANDLE)*(++info->mJoinedCount));

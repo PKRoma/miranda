@@ -1761,8 +1761,15 @@ LBL_InvalidCommand:
 				return 1;
 			}
 
-            if ( !strcmp( protocol1, "MSNP12" )) {
-				info->sendPacket( "CVR","0x0409 winnt 5.1 i386 MSNMSGR 7.5.0324 msmsgs %s", MyOptions.szEmail );
+            if ( !strcmp( protocol1, "MSNP12" )) 
+			{
+				OSVERSIONINFO osvi = {0};
+				osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+			    GetVersionEx(&osvi);
+
+				info->sendPacket( "CVR","0x0409 %s %d.%d i386 MSNMSGR 7.5.0324 msmsgs %s",
+					osvi.dwPlatformId >= 2 ? "winnt" : "win", osvi.dwMajorVersion, osvi.dwMinorVersion, 
+					MyOptions.szEmail );
 				msnProtChallenge = "YMM8C_H7KCQ2S_KL";
 				msnProductID = "PROD0090YUAUV{2B";
 			}
