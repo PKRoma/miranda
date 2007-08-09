@@ -66,10 +66,11 @@ void JabberProcessIqVersion( XmlNode* node, void* userdata, CJabberIqInfo* pInfo
 	char* version = JabberGetVersionText();
 	TCHAR* os = NULL;
 
-	OSVERSIONINFO osvi = { 0 };
-	osvi.dwOSVersionInfoSize = sizeof( OSVERSIONINFO );
-	if ( GetVersionEx( &osvi )) {
-		switch ( osvi.dwPlatformId ) {
+	if ( JGetByte( "ShowOSVersion", TRUE )) {
+		OSVERSIONINFO osvi = { 0 };
+		osvi.dwOSVersionInfoSize = sizeof( OSVERSIONINFO );
+		if ( GetVersionEx( &osvi )) {
+			switch ( osvi.dwPlatformId ) {
 		case VER_PLATFORM_WIN32_NT:
 			if ( osvi.dwMajorVersion == 6 )
 				os = TranslateT( "Windows Vista" );
@@ -91,7 +92,8 @@ void JabberProcessIqVersion( XmlNode* node, void* userdata, CJabberIqInfo* pInfo
 			break;
 		}	}
 
-	if ( os == NULL ) os = TranslateT( "Windows" );
+		if ( os == NULL ) os = TranslateT( "Windows" );
+	}
 
 	char mversion[100];
 	JCallService( MS_SYSTEM_GETVERSIONTEXT, sizeof( mversion ), ( LPARAM )mversion );
@@ -105,7 +107,9 @@ void JabberProcessIqVersion( XmlNode* node, void* userdata, CJabberIqInfo* pInfo
 
 	XmlNodeIq iq( "result", pInfo );
 	XmlNode* query = iq.addQuery( JABBER_FEAT_VERSION );
-	query->addChild( "name", fullVer ); query->addChild( "version", version ); query->addChild( "os", os );
+	query->addChild( "name", fullVer );
+	query->addChild( "version", version );
+	if (os) query->addChild( "os", os );
 	jabberThreadInfo->send( iq );
 
 	if ( version ) mir_free( version );
