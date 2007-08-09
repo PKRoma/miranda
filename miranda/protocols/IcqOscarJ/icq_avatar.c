@@ -173,7 +173,7 @@ void InitAvatars()
   { // do it only once
     bAvatarsFolderInited = TRUE;
 
-    if (ServiceExists(MS_FOLDERS_REGISTER_PATH)
+    if (ServiceExists(MS_FOLDERS_REGISTER_PATH))
     { // check if it does make sense
       char szPath[MAX_PATH];
 
