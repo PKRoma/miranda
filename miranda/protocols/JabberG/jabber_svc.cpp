@@ -755,8 +755,10 @@ static void __cdecl JabberGetAwayMsgThread( HANDLE hContact )
 				}	}
 
 				char* msg = mir_t2a(str);
-				JSendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE ) 1, ( LPARAM )msg );
+				char* msg2 = JabberUnixToDos(msg);
+				JSendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE ) 1, ( LPARAM )msg2 );
 				mir_free(msg);
+				mir_free(msg2);
 				return;
 			}
 
