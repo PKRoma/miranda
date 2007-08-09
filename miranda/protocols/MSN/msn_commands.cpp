@@ -662,6 +662,8 @@ static void sttProcessStatusMessage( char* buf, unsigned len, HANDLE hContact )
 	else
 		DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
 
+	CallProtoService(msnProtocolName, PSS_GETAWAYMSG, 0, 0);
+
 	// Process current media info
 	const char* szCrntMda = ezxml_txt(ezxml_child(xmli, "CurrentMedia"));
 	if (!*szCrntMda)
