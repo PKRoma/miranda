@@ -1073,19 +1073,23 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 		JabberGroupchatProcessMessage( node, userdata );
 		return;
 	}
-	BOOL isRss = !lstrcmp( type, _T("headline"));
 
 	TCHAR* szMessage = NULL;
 	XmlNode* bodyNode = JabberXmlGetChild( node, "body" );
-	if ( bodyNode != NULL ) {
-		TCHAR* ptszBody = (bodyNode) ? bodyNode->text : _T("");
-		if (( subjectNode=JabberXmlGetChild( node, "subject" ))!=NULL && subjectNode->text!=NULL && subjectNode->text[0]!='\0' && !isRss ) {
-			int cbLen = _tcslen( subjectNode->text ) + _tcslen( bodyNode->text ) + 24;
-			TCHAR* p = ( TCHAR* )alloca( sizeof( TCHAR ) * cbLen );
-			mir_sntprintf( p, cbLen, _T("Subject: %s\r\n%s"), subjectNode->text, ptszBody );
-			szMessage = p;
+	if ( bodyNode != NULL && bodyNode->text )
+		szMessage = bodyNode->text;
+	if (( subjectNode = JabberXmlGetChild( node, "subject" )) && subjectNode->text && subjectNode->text[0] != _T('\0')) {
+		int cbLen = (szMessage ? _tcslen( szMessage ) : 0) + _tcslen( subjectNode->text ) + 128;
+		TCHAR* szTmp = ( TCHAR * )alloca( sizeof(TCHAR) * cbLen );
+		szTmp[0] = _T('\0');
+		if ( szMessage )
+			_tcscat( szTmp, _T("Subject: "));
+		_tcscat( szTmp, subjectNode->text );
+		if ( szMessage ) {
+			_tcscat( szTmp, _T("\r\n"));
+			_tcscat( szTmp, szMessage );
 		}
-		else szMessage = ptszBody;
+		szMessage = szTmp;
 	}
 
 	if ( szMessage && (n = JabberXmlGetChildWithGivenAttrValue( node, "addresses", "xmlns", _T(JABBER_FEAT_EXT_ADDRESSING)))) {
@@ -1243,19 +1247,17 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 					item->messageEventIdStr = ( idStr==NULL )?NULL:mir_tstrdup( idStr );
 			}	}
 		}
-		else if ( !_tcscmp( ptszXmlns, _T("jabber:x:oob")) && isRss) {
-			XmlNode* rssUrlNode;
-			if ( (rssUrlNode = JabberXmlGetNthChild( xNode, "url", 1 )) != NULL) {
-				TCHAR* ptszBody = (bodyNode) ? bodyNode->text : _T("");
-				TCHAR* ptszSubject = (subjectNode) ? subjectNode->text : _T("");
-				int cbLen = lstrlen( ptszBody ) + lstrlen( ptszSubject ) + lstrlen( rssUrlNode->text ) + 32;
-				szMessage = ( TCHAR* )alloca( sizeof(TCHAR) * cbLen );
-				mir_sntprintf( szMessage, cbLen, _T("Subject: %s\r\n"), ptszSubject );
-				if ( rssUrlNode->text ) {
-					_tcscat( szMessage, rssUrlNode->text );
-					_tcscat( szMessage, _T("\r\n" ));
+		else if ( !_tcscmp( ptszXmlns, _T("jabber:x:oob"))) {
+			XmlNode* urlNode;
+			if ( ((urlNode = JabberXmlGetChild( xNode, "url" )) != NULL) && urlNode->text && urlNode->text[0] != _T('\0')) {
+				int cbLen = (szMessage ? _tcslen( szMessage ) : 0) + _tcslen( urlNode->text ) + 32;
+				TCHAR* szTmp = ( TCHAR * )alloca( sizeof(TCHAR) * cbLen );
+				_tcscpy( szTmp, urlNode->text );
+				if ( szMessage ) {
+					_tcscat( szTmp, _T("\r\n"));
+					_tcscat( szTmp, szMessage );
 				}
-				_tcscat( szMessage, ptszBody );
+				szMessage = szTmp;
 			}
 		}
 		else if ( !_tcscmp( ptszXmlns, _T("http://jabber.org/protocol/muc#user"))) {
@@ -1281,10 +1283,7 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 		return;
 	}
 
-	if ( bodyNode != NULL ) {
-		if ( bodyNode->text == NULL )
-			return;
-
+	if ( szMessage ) {
 		if (( szMessage = JabberUnixToDosT( szMessage )) == NULL )
 			szMessage = mir_tstrdup( _T(""));
 
