@@ -2451,7 +2451,7 @@ LABEL_SHOWWINDOW:
 					EnableWindow(GetDlgItem(hwndDlg,IDC_MESSAGE),FALSE);
 					SendDlgItemMessage(hwndDlg,IDC_MESSAGE,EM_SETREADONLY,TRUE,0);
 				}
-				else SendDlgItemMessage(hwndDlg,IDC_MESSAGE,WM_SETTEXT,0,(LPARAM)"");
+				else SendDlgItemMessage(hwndDlg,IDC_MESSAGE,WM_SETTEXT,0,(LPARAM)_T(""));
 
 				EnableWindow(GetDlgItem(hwndDlg,IDOK),FALSE);
 
