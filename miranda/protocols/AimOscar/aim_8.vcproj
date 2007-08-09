@@ -184,6 +184,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalOptions="wsock32.lib"
 				OutputFile="../../bin/debug/plugins/Aim.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"

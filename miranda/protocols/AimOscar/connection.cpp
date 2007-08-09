@@ -69,7 +69,7 @@ void __cdecl aim_connection_authorization()
 	conn.hServerPacketRecver=NULL;
 	conn.hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)conn.hServerConn, 2048 * 4);
 	packetRecv.cbSize = sizeof(packetRecv);
-	packetRecv.dwTimeout = INFINITE;
+	packetRecv.dwTimeout = 5000;
 	#if _MSC_VER
 	#pragma warning( disable: 4127)
 	#endif
