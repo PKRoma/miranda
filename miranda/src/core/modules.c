@@ -338,7 +338,7 @@ int SetHookDefaultForHookableEvent(HANDLE hEvent, MIRANDAHOOK pfnHook)
 	return 0;
 }
 
-static int CallHookSubscribers( HANDLE hEvent, WPARAM wParam, LPARAM lParam )
+int CallHookSubscribers( HANDLE hEvent, WPARAM wParam, LPARAM lParam )
 {
 	int i, returnVal = 0;
 	THook* p = ( THook* )hEvent; 

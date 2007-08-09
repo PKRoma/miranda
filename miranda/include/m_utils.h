@@ -281,6 +281,7 @@ __inline static int Utils_RestoreWindowPositionNoMove(HWND hwnd,HANDLE hContact,
 //pszPath is the path to convert and pszNewPath is the buffer that
 //the new path is copied too.  pszNewPath MUST be of the size MAX_PATH.
 //Returns numbers of chars copied.
+//Unicode version is available since 0.6.2
 #define MS_UTILS_PATHTORELATIVE "Utils/PathToRelative"
 
 //Saves a path to a absolute path (from the miranda directory)
@@ -289,18 +290,28 @@ __inline static int Utils_RestoreWindowPositionNoMove(HWND hwnd,HANDLE hContact,
 //pszPath is the path to convert and pszNewPath is the buffer that
 //the new path is copied too.  pszNewPath MUST be of the size MAX_PATH.
 //Returns numbers of chars copied.
+//Unicode version is available since 0.6.2
 #define MS_UTILS_PATHTOABSOLUTE "Utils/PathToAbsolute"
 
-//Unicode versions (0.6.2+)
-#ifdef _UNICODE
-  #define MS_UTILS_PATHTORELATIVEW "Utils/PathToRelativeW"
-  #define MS_UTILS_PATHTOABSOLUTEW "Utils/PathToAbsoluteW"
+//Creates a directory tree (even more than one directories levels are missing) 0.7.0+
+//wParam=0 (unused)
+//lParam=(LPARAM)(char*)pszPath - directory to be created
+//Always returns 0
+//Unicode version is available since 0.7.0
+#define MS_UTILS_CREATEDIRTREE "Utils/CreateDirTree"
 
-  #define MS_UTILS_PATHTORELATIVET MS_UTILS_PATHTORELATIVEW
-  #define MS_UTILS_PATHTOABSOLUTET MS_UTILS_PATHTOABSOLUTEW
+#ifdef _UNICODE
+	#define MS_UTILS_PATHTORELATIVEW "Utils/PathToRelativeW"
+	#define MS_UTILS_PATHTOABSOLUTEW "Utils/PathToAbsoluteW"
+	#define MS_UTILS_CREATEDIRTREEW "Utils/CreateDirTreeW"
+
+	#define MS_UTILS_PATHTORELATIVET MS_UTILS_PATHTORELATIVEW
+	#define MS_UTILS_PATHTOABSOLUTET MS_UTILS_PATHTOABSOLUTEW
+	#define MS_UTILS_CREATEDIRTREET  MS_UTILS_CREATEDIRTREEW
 #else
-  #define MS_UTILS_PATHTORELATIVET MS_UTILS_PATHTORELATIVE
-  #define MS_UTILS_PATHTOABSOLUTET MS_UTILS_PATHTOABSOLUTE
+	#define MS_UTILS_PATHTORELATIVET MS_UTILS_PATHTORELATIVE
+	#define MS_UTILS_PATHTOABSOLUTET MS_UTILS_PATHTOABSOLUTE
+	#define MS_UTILS_CREATEDIRTREET  MS_UTILS_CREATEDIRTREE
 #endif
 
 /*

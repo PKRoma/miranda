@@ -84,21 +84,6 @@ static int FileEventAdded(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-void CreateDirectoryTree(char *szDir)
-{
-	DWORD dwAttributes;
-	char *pszLastBackslash,szTestDir[MAX_PATH];
-
-	lstrcpynA(szTestDir,szDir,SIZEOF(szTestDir));
-	if((dwAttributes=GetFileAttributesA(szTestDir))!=0xffffffff
-	   && dwAttributes&FILE_ATTRIBUTE_DIRECTORY) return;
-	pszLastBackslash=strrchr(szTestDir,'\\');
-	if(pszLastBackslash==NULL) {GetCurrentDirectoryA(MAX_PATH,szDir); return;}
-	*pszLastBackslash='\0';
-	CreateDirectoryTree(szTestDir);
-	CreateDirectoryA(szTestDir,NULL);
-}
-
 int SRFile_GetRegValue(HKEY hKeyBase,const char *szSubKey,const char *szValue,char *szOutput,int cbOutput)
 {
 	HKEY hKey;

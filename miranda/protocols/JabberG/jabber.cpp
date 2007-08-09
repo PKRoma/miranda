@@ -34,6 +34,7 @@ Last change by : $Author$
 #include "resource.h"
 #include "version.h"
 #include "sdk/m_icolib.h"
+#include "sdk/m_folders.h"
 
 HINSTANCE hInst;
 PLUGINLINK *pluginLink;
@@ -67,6 +68,8 @@ DWORD jabberMainThreadId;
 char* jabberProtoName;	// "JABBER"
 char* jabberModuleName;	// "Jabber"
 HANDLE hNetlibUser;
+HANDLE hJabberAvatarsFolder = NULL;
+
 // Main jabber server connection thread global variables
 ThreadData* jabberThreadInfo = NULL;
 BOOL   jabberConnected = FALSE;
@@ -303,6 +306,13 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	JCreateServiceFunction( JS_DB_GETEVENTTEXT_CHATSTATES, JabberGetEventTextChatStates );
 
 	JabberCheckAllContactsAreTransported();
+
+	if ( ServiceExists( MS_FOLDERS_REGISTER_PATH )) {
+		char AvatarsFolder[MAX_PATH]; AvatarsFolder[0] = 0;
+		CallService( MS_DB_GETPROFILEPATH, ( WPARAM )MAX_PATH, ( LPARAM )AvatarsFolder );
+		strcat( AvatarsFolder, "\\Jabber" );
+		hJabberAvatarsFolder = FoldersRegisterCustomPath(jabberProtoName, "Avatars", AvatarsFolder);
+	}
 	return 0;
 }
 

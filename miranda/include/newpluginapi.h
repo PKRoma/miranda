@@ -153,6 +153,7 @@ typedef struct {
 	int (*CallFunctionAsync) (void (__stdcall *)(void *), void *);	//v0.3.4+
 	int (*SetHookDefaultForHookableEvent) (HANDLE, MIRANDAHOOK); // v0.3.4 (2004/09/15)
 	HANDLE (*CreateServiceFunctionParam)(const char *,MIRANDASERVICEPARAM,LPARAM); // v0.7+ (2007/04/24)
+	int (*NotifyEventHooksDirect)(HANDLE,WPARAM,LPARAM); // v0.7+
 } PLUGINLINK;
 
 #ifndef MODULES_H_
@@ -171,9 +172,10 @@ extern PLUGINLINK *pluginLink;
 #define CallService(a,b,c)                   pluginLink->CallService(a,b,c)
 #define ServiceExists(a)                     pluginLink->ServiceExists(a)
 #define CallServiceSync(a,b,c)               pluginLink->CallServiceSync(a,b,c)
-#define CallFunctionAsync(a,b)				 pluginLink->CallFunctionAsync(a,b)
+#define CallFunctionAsync(a,b)               pluginLink->CallFunctionAsync(a,b)
 #define SetHookDefaultForHookableEvent(a,b)  pluginLink->SetHookDefaultForHookableEvent(a,b)
 #define CreateServiceFunctionParam(a,b,c)    pluginLink->CreateServiceFunctionParam(a,b,c)
+#define NotifyEventHooksDirect(a,b,c)        pluginLink->NotifyEventHooksDirect(a,b,c)
 #endif
 #endif
 

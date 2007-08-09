@@ -226,20 +226,6 @@ void NetlibLogShowOptions(void)
 	SetForegroundWindow(logOptions.hwndOpts);
 }
 
-static void CreateDirectoryTree( TCHAR* szDir)
-{
-	DWORD  dwAttributes;
-	TCHAR* pszLastBackslash,szTestDir[MAX_PATH];
-
-	lstrcpyn(szTestDir, szDir, SIZEOF(szTestDir));
-	if ((dwAttributes = GetFileAttributes(szTestDir))!=0xffffffff && dwAttributes&FILE_ATTRIBUTE_DIRECTORY) return;
-	pszLastBackslash = _tcsrchr( szTestDir, '\\' );
-	if ( pszLastBackslash == NULL ) return;
-	*pszLastBackslash = '\0';
-	CreateDirectoryTree( szTestDir );
-	CreateDirectory( szTestDir, NULL );
-}
-
 static int NetlibLog(WPARAM wParam,LPARAM lParam)
 {
 	struct NetlibUser *nlu=(struct NetlibUser*)wParam;

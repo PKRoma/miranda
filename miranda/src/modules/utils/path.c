@@ -21,58 +21,85 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
+#include "../srfile/file.h"
 
 static char szMirandaPath[MAX_PATH];
 static char szMirandaPathLower[MAX_PATH];
 
 static int pathIsAbsolute(char *path)
 {
-    if (!path||!strlen(path)>2) return 0;
-    if ((path[1]==':'&&path[2]=='\\')||(path[0]=='\\'&&path[1]=='\\')) return 1;
-    return 0;
+	if (!path||!strlen(path)>2) return 0;
+	if ((path[1]==':'&&path[2]=='\\')||(path[0]=='\\'&&path[1]=='\\')) return 1;
+	return 0;
 }
 
 static int pathToRelative(WPARAM wParam, LPARAM lParam)
 {
-    char *pSrc = (char*)wParam;
-    char *pOut = (char*)lParam;
-    if (!pSrc||!strlen(pSrc)||strlen(pSrc)>MAX_PATH) return 0;
-    if (!pathIsAbsolute(pSrc)) {
-        mir_snprintf(pOut, MAX_PATH, "%s", pSrc);
-        return strlen(pOut);
-    }
-    else {
-        char szTmp[MAX_PATH];
+	char *pSrc = (char*)wParam;
+	char *pOut = (char*)lParam;
+	if (!pSrc||!strlen(pSrc)||strlen(pSrc)>MAX_PATH) return 0;
+	if (!pathIsAbsolute(pSrc)) {
+		mir_snprintf(pOut, MAX_PATH, "%s", pSrc);
+		return strlen(pOut);
+	}
+	else {
+		char szTmp[MAX_PATH];
 
-        mir_snprintf(szTmp, SIZEOF(szTmp), "%s", pSrc);
-        _strlwr(szTmp);
-        if (strstr(szTmp, szMirandaPathLower)) {
-            mir_snprintf(pOut, MAX_PATH, "%s", pSrc+strlen(szMirandaPathLower));
-            return strlen(pOut);
-        }
-        else {
-            mir_snprintf(pOut, MAX_PATH, "%s", pSrc);
-            return strlen(pOut);
-        }
-    }
+		mir_snprintf(szTmp, SIZEOF(szTmp), "%s", pSrc);
+		_strlwr(szTmp);
+		if (strstr(szTmp, szMirandaPathLower)) {
+			mir_snprintf(pOut, MAX_PATH, "%s", pSrc+strlen(szMirandaPathLower));
+			return strlen(pOut);
+		}
+		else {
+			mir_snprintf(pOut, MAX_PATH, "%s", pSrc);
+			return strlen(pOut);
+		}
+	}
 }
 
 static int pathToAbsolute(WPARAM wParam, LPARAM lParam) {
-    char *pSrc = (char*)wParam;
-    char *pOut = (char*)lParam;
-    if (!pSrc||!strlen(pSrc)||strlen(pSrc)>MAX_PATH) return 0;
-    if (pathIsAbsolute(pSrc)||(!isalnum(pSrc[0]) && pSrc[0]!='\\' )) {
-        mir_snprintf(pOut, MAX_PATH, "%s", pSrc);
-        return strlen(pOut);
-    }
-    else if (pSrc[0]!='\\') {
-        mir_snprintf(pOut, MAX_PATH, "%s%s", szMirandaPath, pSrc);
-        return strlen(pOut);
-    }
+	char *pSrc = (char*)wParam;
+	char *pOut = (char*)lParam;
+	if (!pSrc||!strlen(pSrc)||strlen(pSrc)>MAX_PATH) return 0;
+	if (pathIsAbsolute(pSrc)||(!isalnum(pSrc[0]) && pSrc[0]!='\\' )) {
+		mir_snprintf(pOut, MAX_PATH, "%s", pSrc);
+		return strlen(pOut);
+	}
+	else if (pSrc[0]!='\\') {
+		mir_snprintf(pOut, MAX_PATH, "%s%s", szMirandaPath, pSrc);
+		return strlen(pOut);
+	}
 	else {
 		mir_snprintf(pOut, MAX_PATH, "%s%s", szMirandaPath, pSrc+1);
 		return strlen(pOut);
 	}
+}
+
+int CreateDirectoryTree( const char *szDir )
+{
+	DWORD dwAttributes;
+	char *pszLastBackslash, szTestDir[ MAX_PATH ];
+
+	lstrcpynA( szTestDir, szDir, SIZEOF( szTestDir ));
+	if (( dwAttributes = GetFileAttributesA( szTestDir )) != 0xffffffff && ( dwAttributes & FILE_ATTRIBUTE_DIRECTORY ))
+		return ERROR_ACCESS_DENIED;
+
+	pszLastBackslash = strrchr( szTestDir, '\\' );
+	if ( pszLastBackslash == NULL )
+		return 0;
+
+	*pszLastBackslash = '\0';
+	CreateDirectoryTree( szTestDir );
+	return ( CreateDirectoryA( szTestDir, NULL ) == 0 ) ? GetLastError() : 0;
+}
+
+static int createDirTree(WPARAM wParam, LPARAM lParam)
+{
+	if ( lParam == 0 )
+		return 1;
+
+	return CreateDirectoryTree(( char* )lParam );
 }
 
 #ifdef _UNICODE
@@ -81,52 +108,80 @@ static TCHAR szMirandaPathWLower[MAX_PATH];
 
 static int pathIsAbsoluteW(TCHAR *path)
 {
-    if (!path||!lstrlen(path)>2) return 0;
-    if ((path[1]==':'&&path[2]=='\\')||(path[0]=='\\'&&path[1]=='\\')) return 1;
-    return 0;
+	if (!path||!lstrlen(path)>2) return 0;
+	if ((path[1]==':'&&path[2]=='\\')||(path[0]=='\\'&&path[1]=='\\')) return 1;
+	return 0;
 }
 
 static int pathToRelativeW(WPARAM wParam, LPARAM lParam)
 {
-    TCHAR *pSrc = (TCHAR*)wParam;
-    TCHAR *pOut = (TCHAR*)lParam;
-    if (!pSrc||!lstrlen(pSrc)||lstrlen(pSrc)>MAX_PATH) return 0;
-    if (!pathIsAbsoluteW(pSrc)) {
-        mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc);
-        return lstrlen(pOut);
-    }
-    else {
-        TCHAR szTmp[MAX_PATH];
+	TCHAR *pSrc = (TCHAR*)wParam;
+	TCHAR *pOut = (TCHAR*)lParam;
+	if (!pSrc||!lstrlen(pSrc)||lstrlen(pSrc)>MAX_PATH) return 0;
+	if (!pathIsAbsoluteW(pSrc)) {
+		mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc);
+		return lstrlen(pOut);
+	}
+	else {
+		TCHAR szTmp[MAX_PATH];
 
-        mir_sntprintf(szTmp, SIZEOF(szTmp), _T("%s"), pSrc);
-        _tcslwr(szTmp);
-        if (_tcsstr(szTmp, szMirandaPathWLower)) {
-            mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc+lstrlen(szMirandaPathWLower));
-            return lstrlen(pOut);
-        }
-        else {
-            mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc);
-            return lstrlen(pOut);
-        }
-    }
+		mir_sntprintf(szTmp, SIZEOF(szTmp), _T("%s"), pSrc);
+		_tcslwr(szTmp);
+		if (_tcsstr(szTmp, szMirandaPathWLower)) {
+			mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc+lstrlen(szMirandaPathWLower));
+			return lstrlen(pOut);
+		}
+		else {
+			mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc);
+			return lstrlen(pOut);
+		}
+	}
 }
 
-static int pathToAbsoluteW(WPARAM wParam, LPARAM lParam) {
-    TCHAR *pSrc = (TCHAR*)wParam;
-    TCHAR *pOut = (TCHAR*)lParam;
-    if (!pSrc||!lstrlen(pSrc)||lstrlen(pSrc)>MAX_PATH) return 0;
-    if (pathIsAbsoluteW(pSrc)||(!isalnum(pSrc[0]) && pSrc[0]!='\\' )) {
-        mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc);
-        return lstrlen(pOut);
-    }
-    else if (pSrc[0]!='\\') {
-        mir_sntprintf(pOut, MAX_PATH, _T("%s%s"), szMirandaPathW, pSrc);
-        return lstrlen(pOut);
-    }
+static int pathToAbsoluteW(WPARAM wParam, LPARAM lParam)
+{
+	TCHAR *pSrc = (TCHAR*)wParam;
+	TCHAR *pOut = (TCHAR*)lParam;
+	if (!pSrc||!lstrlen(pSrc)||lstrlen(pSrc)>MAX_PATH) return 0;
+	if (pathIsAbsoluteW(pSrc)||(!isalnum(pSrc[0]) && pSrc[0]!='\\' )) {
+		mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc);
+		return lstrlen(pOut);
+	}
+	else if (pSrc[0]!='\\') {
+		mir_sntprintf(pOut, MAX_PATH, _T("%s%s"), szMirandaPathW, pSrc);
+		return lstrlen(pOut);
+	}
 	else {
 		mir_sntprintf(pOut, MAX_PATH, _T("%s%s"), szMirandaPathW, pSrc+1);
 		return lstrlen(pOut);
 	}
+}
+
+int CreateDirectoryTreeW( const WCHAR* szDir )
+{
+	DWORD  dwAttributes;
+	WCHAR* pszLastBackslash, szTestDir[ MAX_PATH ];
+
+	lstrcpynW( szTestDir, szDir, SIZEOF( szTestDir ));
+	if (( dwAttributes = GetFileAttributesW( szTestDir )) != 0xffffffff && ( dwAttributes & FILE_ATTRIBUTE_DIRECTORY ))
+		return ERROR_ACCESS_DENIED;
+
+	pszLastBackslash = wcsrchr( szTestDir, '\\' );
+	if ( pszLastBackslash == NULL )
+		return 0;
+
+	*pszLastBackslash = '\0';
+	CreateDirectoryTreeW( szTestDir );
+	return ( CreateDirectoryW( szTestDir, NULL ) == 0 ) ? GetLastError() : 0;
+}
+
+static int createDirTreeW(WPARAM wParam, LPARAM lParam)
+{
+	if ( lParam == 0 )
+		return 1;
+
+	CreateDirectoryTreeW(( WCHAR* )lParam );
+	return 0;
 }
 
 int InitPathUtilsW(void)
@@ -135,11 +190,12 @@ int InitPathUtilsW(void)
 	GetModuleFileName(GetModuleHandle(NULL), szMirandaPathW, SIZEOF(szMirandaPathW));
 	p=_tcsrchr(szMirandaPathW,'\\');
 	if (p&&p+1) *(p+1)=0;
-    mir_sntprintf(szMirandaPathWLower, MAX_PATH, _T("%s"), szMirandaPathW);
-    _tcslwr(szMirandaPathWLower);
-    CreateServiceFunction(MS_UTILS_PATHTORELATIVEW, pathToRelativeW);
-    CreateServiceFunction(MS_UTILS_PATHTOABSOLUTEW, pathToAbsoluteW);
-    return 0;
+	mir_sntprintf(szMirandaPathWLower, MAX_PATH, _T("%s"), szMirandaPathW);
+	_tcslwr(szMirandaPathWLower);
+	CreateServiceFunction(MS_UTILS_PATHTORELATIVEW, pathToRelativeW);
+	CreateServiceFunction(MS_UTILS_PATHTOABSOLUTEW, pathToAbsoluteW);
+	CreateServiceFunction(MS_UTILS_CREATEDIRTREEW, createDirTreeW);
+	return 0;
 }
 #endif
 
@@ -149,13 +205,14 @@ int InitPathUtils(void)
 	GetModuleFileNameA(GetModuleHandle(NULL), szMirandaPath, SIZEOF(szMirandaPath));
 	p=strrchr(szMirandaPath,'\\');
 	if (p&&p+1) *(p+1)=0;
-    mir_snprintf(szMirandaPathLower, MAX_PATH, "%s", szMirandaPath);
-    _strlwr(szMirandaPathLower);
-    CreateServiceFunction(MS_UTILS_PATHTORELATIVE, pathToRelative);
-    CreateServiceFunction(MS_UTILS_PATHTOABSOLUTE, pathToAbsolute);
+	mir_snprintf(szMirandaPathLower, MAX_PATH, "%s", szMirandaPath);
+	_strlwr(szMirandaPathLower);
+	CreateServiceFunction(MS_UTILS_PATHTORELATIVE, pathToRelative);
+	CreateServiceFunction(MS_UTILS_PATHTOABSOLUTE, pathToAbsolute);
+	CreateServiceFunction(MS_UTILS_CREATEDIRTREE, createDirTree);
 #ifdef _UNICODE
-    return InitPathUtilsW();
+	return InitPathUtilsW();
 #else
-    return 0;
+	return 0;
 #endif
 }

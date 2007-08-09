@@ -62,11 +62,19 @@ struct FileDlgData {
 };
 
 //file.c
-void CreateDirectoryTree(char *szDir);
+int CreateDirectoryTree(const char *szDir);
+int CreateDirectoryTreeW(const WCHAR *szDir);
+#if defined( _UNICODE )
+	#define CreateDirectoryTreeT CreateDirectoryTreeW
+#else
+	#define CreateDirectoryTreeT CreateDirectoryTree
+#endif
+
 #define UNITS_BYTES     1   // 0<=size<1000: "%d bytes"
 #define UNITS_KBPOINT1	2	// 1000<=size<100*1024: "%.1f KB"
 #define UNITS_KBPOINT0  3   // 100*1024<=size<1024*1024: "%d KB"
 #define UNITS_MBPOINT2  4   // 1024*1024<=size: "%.2f MB"
+
 void GetSensiblyFormattedSize(DWORD size,TCHAR *szOut,int cchOut,int unitsOverride,int appendUnits,int *unitsUsed);
 void FreeFilesMatrix(char ***files);	  //loving that triple indirection
 void FreeProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *fts);

@@ -30,6 +30,8 @@ Last change by : $Author$
 #include "jabber_list.h"
 #include "jabber_caps.h"
 
+#include "sdk/m_folders.h"
+
 ///////////////////////////////////////////////////////////////////////////////
 // JabberAddContactToRoster() - adds a contact to the roster
 
@@ -225,13 +227,26 @@ HANDLE JabberDBCreateContact( TCHAR* jid, TCHAR* nick, BOOL temporary, BOOL stri
 ///////////////////////////////////////////////////////////////////////////////
 // JabberGetAvatarFileName() - gets a file name for the avatar image
 
+extern HANDLE hJabberAvatarsFolder;
+
 void JabberGetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen )
 {
-	JCallService( MS_DB_GETPROFILEPATH, cbLen, LPARAM( pszDest ));
+	size_t tPathLen;
 
-	int tPathLen = strlen( pszDest );
-	tPathLen += mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "\\Jabber\\"  );
-	CreateDirectoryA( pszDest, NULL );
+	char* path = ( char* )alloca( cbLen );
+	if ( hJabberAvatarsFolder == NULL || FoldersGetCustomPath( hJabberAvatarsFolder, path, cbLen, "" )) {
+		JCallService( MS_DB_GETPROFILEPATH, cbLen, LPARAM( pszDest ));
+		
+		tPathLen = strlen( pszDest );
+		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\Jabber" );
+	}
+	else tPathLen = mir_snprintf( pszDest, cbLen, "%s", path );
+
+	DWORD dwAttributes = GetFileAttributesA( pszDest );
+	if ( dwAttributes == 0xffffffff || ( dwAttributes & FILE_ATTRIBUTE_DIRECTORY ) == 0 )
+		JCallService( MS_UTILS_CREATEDIRTREE, 0, ( LPARAM )pszDest );
+
+	pszDest[ tPathLen++ ] = '\\';
 
 	char* szFileType;
 	switch( JGetByte( hContact, "AvatarType", PA_FORMAT_PNG )) {
@@ -256,7 +271,8 @@ void JabberGetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen )
 		mir_free( hash );
 	}
 	else if ( jabberThreadInfo != NULL ) {
-		mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, TCHAR_STR_PARAM"@%s avatar.%s", jabberThreadInfo->username, jabberThreadInfo->server, szFileType );
+		mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, TCHAR_STR_PARAM "@%s avatar.%s", 
+			jabberThreadInfo->username, jabberThreadInfo->server, szFileType );
 	}
 	else {
 		DBVARIANT dbv1, dbv2;

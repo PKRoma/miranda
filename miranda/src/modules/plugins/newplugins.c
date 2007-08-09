@@ -96,6 +96,8 @@ void UninitIni(void);
 void KillModuleEventHooks( HINSTANCE );
 void KillModuleServices( HINSTANCE );
 
+int CallHookSubscribers( HANDLE hEvent, WPARAM wParam, LPARAM lParam );
+
 int LoadDatabaseModule(void);
 void ListView_SetItemTextA( HWND hwndLV, int i, int iSubItem, char* pszText );
 
@@ -889,6 +891,7 @@ int LoadNewPluginsModuleInfos(void)
 	pluginCoreLink.SetHookDefaultForHookableEvent=SetHookDefaultForHookableEvent;
 	pluginCoreLink.CallServiceSync=CallServiceSync;
 	pluginCoreLink.CallFunctionAsync=CallFunctionAsync;
+	pluginCoreLink.NotifyEventHooksDirect=CallHookSubscribers;
 	// remember where the mirandaboot.ini goes
 	{
 		char exe[MAX_PATH];

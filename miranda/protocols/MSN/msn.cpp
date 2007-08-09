@@ -36,18 +36,18 @@ SHA1_INTERFACE sha1i;
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Initialization routines
-int		MsnOnDetailsInit( WPARAM, LPARAM );
-int		MsnWindowEvent(WPARAM wParam, LPARAM lParam);
+int   MsnOnDetailsInit( WPARAM, LPARAM );
+int   MsnWindowEvent(WPARAM wParam, LPARAM lParam);
 
-int		LoadMsnServices( void );
-void    UnloadMsnServices( void );
-void	MsgQueue_Init( void );
-void	MsgQueue_Uninit( void );
-void	P2pSessions_Uninit( void );
-void	P2pSessions_Init( void );
-void	Threads_Uninit( void );
-int		MsnOptInit( WPARAM wParam, LPARAM lParam );
-void	UninitSsl( void );
+int   LoadMsnServices( void );
+void  UnloadMsnServices( void );
+void  MsgQueue_Init( void );
+void  MsgQueue_Uninit( void );
+void  P2pSessions_Uninit( void );
+void  P2pSessions_Init( void );
+void  Threads_Uninit( void );
+int   MsnOptInit( WPARAM wParam, LPARAM lParam );
+void  UninitSsl( void );
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Global variables
@@ -58,7 +58,7 @@ char*    msnPreviousUUX = NULL;
 HANDLE   msnMainThread;
 unsigned msnOtherContactsBlocked = 0;
 HANDLE   hMSNNudge = NULL;
-bool	 msnHaveChatDll = false;
+bool     msnHaveChatDll = false;
 
 MYOPTIONS MyOptions;
 
@@ -105,8 +105,12 @@ ThreadData*	msnNsThread = NULL;
 
 unsigned	msnStatusMode,
 			msnDesiredStatus;
-HANDLE		hNetlibUser = NULL;
-HANDLE		hInitChat = NULL;
+
+HANDLE hNetlibUser = NULL;
+HANDLE hInitChat = NULL;
+
+HANDLE hMSNAvatarsFolder = NULL;
+HANDLE hCustomSmileyFolder = NULL;
 
 int CompareHandles( const void* p1, const void* p2 )
 {	return (long)p1 - (long)p2;
@@ -245,7 +249,14 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	arHooks.insert( HookEvent( ME_CLIST_PREBUILDCONTACTMENU, MsnRebuildContactMenu ));
 	arHooks.insert( HookEvent( ME_CLIST_GROUPCHANGE, MsnGroupChange ));
 
-	InitCustomFolders();
+	if ( ServiceExists( MS_FOLDERS_REGISTER_PATH )) {
+		char AvatarsFolder[MAX_PATH];  AvatarsFolder[0] = 0;
+		CallService( MS_DB_GETPROFILEPATH, ( WPARAM )MAX_PATH, ( LPARAM )AvatarsFolder );
+		strcat( AvatarsFolder, "\\MSN" );
+		hMSNAvatarsFolder = FoldersRegisterCustomPath( msnProtocolName, "Avatars", AvatarsFolder );
+		strcat( AvatarsFolder, "\\CustomSmiley" );
+		hCustomSmileyFolder = FoldersRegisterCustomPath(msnProtocolName, "Custom Smiley", AvatarsFolder );
+	}
 
 	return 0;
 }
