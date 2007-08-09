@@ -1398,7 +1398,7 @@ void  p2p_processMsg( ThreadData* info,  char* msgbody )
 		if ( hdrdata->mPacketLen < hdrdata->mTotalSize )
 		{
 			char msgid[32];
-			sprintf(msgid, "%08x_%08x", info->mJoinedContacts[0], hdrdata->mID );
+			mir_snprintf(msgid, sizeof(msgid), "%08p_%08x", info->mJoinedContacts[0], hdrdata->mID );
 			int idx = addCachedMsg(msgid, msgbody, (size_t)hdrdata->mOffset, hdrdata->mPacketLen, 
 				(size_t)hdrdata->mTotalSize, false );
 

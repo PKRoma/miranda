@@ -140,9 +140,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define MSN_DEFAULT_PORT         1863
 #define MSN_DEFAULT_GATEWAY_PORT   80
-#define MSN_DEFAULT_LOGIN_SERVER "messenger.hotmail.com"
-#define MSN_DEFAULT_GATEWAY      "gateway.messenger.hotmail.com"
-#define MSN_USER_AGENT           "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)"
+const char MSN_DEFAULT_LOGIN_SERVER[] = "messenger.hotmail.com";
+const char MSN_DEFAULT_GATEWAY[] =      "gateway.messenger.hotmail.com";
+const char MSN_USER_AGENT[] =           "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)";
 
 #define MSN_BLOCK        "/BlockCommand"
 #define MSN_INVITE       "/InviteCommand"
@@ -495,7 +495,7 @@ struct ThreadData
 	void           processSessionData( const char* );
 	void           startThread( pThreadFunc );
 
-	int            send( char* data, int datalen );
+	int            send( char data[], int datalen );
 	int            recv( char* data, long datalen );
 	int            recv_dg( char* data, long datalen );
 	bool           isTimeout( void );

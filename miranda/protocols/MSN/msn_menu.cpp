@@ -338,7 +338,7 @@ void  MSN_EnableMenuItems( bool parEnable )
 	if ( !parEnable )
 		clmi.flags |= CMIF_GRAYED;
 
-	for ( int i=0; i < SIZEOF(msnMenuItems); i++ )
+	for ( unsigned i=0; i < SIZEOF(msnMenuItems); i++ )
 		if ( msnMenuItems[i] != NULL )
 			MSN_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )msnMenuItems[i], ( LPARAM )&clmi );
 

@@ -447,7 +447,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		MSN_CallService( MS_PROTO_CONTACTISTYPING, WPARAM( tContact ), 0 );
 
 		if ( info->mChatID[0] ) {
-			GCDEST gcd = { msnProtocolName, NULL, GC_EVENT_MESSAGE };
+			GCDEST gcd = { msnProtocolName, { NULL }, GC_EVENT_MESSAGE };
 			gcd.ptszID = info->mChatID;
 
 			GCEVENT gce = {0};
@@ -1057,7 +1057,7 @@ LBL_InvalidCommand:
 
 			// modified for chat
 			if ( msnHaveChatDll ) {
-				GCDEST gcd = { msnProtocolName, NULL, GC_EVENT_QUIT };
+				GCDEST gcd = { msnProtocolName, { NULL }, GC_EVENT_QUIT };
 				gcd.ptszID = info->mChatID;
 
 				GCEVENT gce = {0};
@@ -1082,7 +1082,7 @@ LBL_InvalidCommand:
 
 			// see if the session is quit due to idleness
 			if ( personleft == 1 && !lstrcmpA( data.isIdle, "1" ) ) {
-				GCDEST gcd = { msnProtocolName, NULL, GC_EVENT_INFORMATION };
+				GCDEST gcd = { msnProtocolName, { NULL }, GC_EVENT_INFORMATION };
 				gcd.ptszID = info->mChatID;
 
 				GCEVENT gce = {0};
@@ -1341,7 +1341,7 @@ LBL_InvalidCommand:
 
 				if ( msnHaveChatDll ) {
 					if ( chatCreated ) {
-						GCDEST gcd = { msnProtocolName, NULL, GC_EVENT_JOIN };
+						GCDEST gcd = { msnProtocolName, { NULL }, GC_EVENT_JOIN };
 						gcd.ptszID = info->mChatID;
 
 						GCEVENT gce = {0};

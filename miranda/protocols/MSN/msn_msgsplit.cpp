@@ -40,7 +40,7 @@ public:
 
 
 inline chunkedmsg::chunkedmsg(const char* tid, const size_t totsz, const bool tbychunk)
-	: bychunk(tbychunk), recvsz(0), size(totsz)
+	: size(totsz), recvsz(0), bychunk(tbychunk)
 {
 	id = mir_strdup(tid);
 	msg = tbychunk ? NULL : (char*)mir_alloc(totsz + 1); 

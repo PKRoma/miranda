@@ -51,7 +51,7 @@ int MSN_ChatInit( WPARAM wParam, LPARAM lParam )
 	gcw.ptszID = info->mChatID;
 	MSN_CallService(MS_GC_NEWSESSION, 0, (LPARAM)&gcw);
 
-	GCDEST gcd = { msnProtocolName, NULL, GC_EVENT_ADDGROUP };
+	GCDEST gcd = { msnProtocolName, { NULL }, GC_EVENT_ADDGROUP };
 	gcd.ptszID = info->mChatID;
 	GCEVENT gce = {0};
 	gce.cbSize = sizeof(GCEVENT);
@@ -97,7 +97,7 @@ void MSN_ChatStart(ThreadData* info)
 	NotifyEventHooks( hInitChat, (WPARAM)info, 0 );
 
 	// add all participants onto the list
-	GCDEST gcd = { msnProtocolName, NULL, GC_EVENT_JOIN };
+	GCDEST gcd = { msnProtocolName, { NULL }, GC_EVENT_JOIN };
 	gcd.ptszID = info->mChatID;
 
 	GCEVENT gce = {0};
@@ -122,7 +122,7 @@ void MSN_ChatStart(ThreadData* info)
 
 void MSN_KillChatSession( TCHAR* id )
 {
-	GCDEST gcd = { msnProtocolName, NULL, GC_EVENT_CONTROL };
+	GCDEST gcd = { msnProtocolName, { NULL }, GC_EVENT_CONTROL };
 	gcd.ptszID = id;
 	GCEVENT gce = {0};
 	gce.cbSize = sizeof(GCEVENT);
@@ -228,7 +228,7 @@ int MSN_GCEventHook(WPARAM wParam,LPARAM lParam) {
 				if ( bError )
 					dbv.ptszVal = _T("");
 
-				GCDEST gcd = { msnProtocolName, 0, GC_EVENT_MESSAGE };
+				GCDEST gcd = { msnProtocolName, { NULL }, GC_EVENT_MESSAGE };
 				gcd.ptszID = gch->pDest->ptszID;
 
 				GCEVENT gce = {0};

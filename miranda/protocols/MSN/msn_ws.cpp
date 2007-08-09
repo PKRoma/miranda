@@ -36,7 +36,7 @@ static char sttGatewayHeader[] =
 
 //=======================================================================================
 
-int ThreadData::send( char* data, int datalen )
+int ThreadData::send( char data[], int datalen )
 {
 	NETLIBBUFFER nlb = { data, datalen, 0 };
 

@@ -162,7 +162,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 
 	if ( MyOptions.UseGateway ) {
 		nlu.flags |= NUF_HTTPGATEWAY;
-		nlu.szHttpGatewayUserAgent = MSN_USER_AGENT;
+		nlu.szHttpGatewayUserAgent = (char*)MSN_USER_AGENT;
 		nlu.pfnHttpGatewayInit = msn_httpGatewayInit;
 		nlu.pfnHttpGatewayWrapSend = msn_httpGatewayWrapSend;
 		nlu.pfnHttpGatewayUnwrapRecv = msn_httpGatewayUnwrapRecv;
@@ -204,7 +204,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 
 			rtrim( tValue );
 			nls.szProxyServer = tValue;
-			MyOptions.UseProxy = nls.useProxy = tValue[0] != 0;
+			nls.useProxy = MyOptions.UseProxy = tValue[0] != 0;
 			nls.proxyType = PROXYTYPE_HTTP;
 			nls.szIncomingPorts = NEWSTR_ALLOCA(nls.szIncomingPorts);
 			nls.szOutgoingPorts = NEWSTR_ALLOCA(nls.szOutgoingPorts);
