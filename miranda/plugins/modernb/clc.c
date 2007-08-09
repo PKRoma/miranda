@@ -425,7 +425,7 @@ int ClcProtoAck(WPARAM wParam,LPARAM lParam)
 			
 			{
 				DBVARIANT dbv={0};
-				BOOL bUnicode = (!DBGetContactSetting(ack->hContact, "CList", "StatusMsg", &dbv) && (dbv.type & DBVT_ASCIIZ) == 0);
+				BOOL bUnicode = (!DBGetContactSetting(ack->hContact, "CList", "StatusMsg", &dbv) && (dbv.type !=DBVT_ASCIIZ) );
 				DBFreeVariant(&dbv);
 				if (!bUnicode)
 				{
