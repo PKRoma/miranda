@@ -234,7 +234,7 @@ BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			break;
 		}
 		if ( LOWORD( wParam ) == IDC_CHANGE ) {
-			char str[MAX_PATH], strFull[MAX_PATH];
+			char str[MAX_PATH] = "", strFull[MAX_PATH], strdir[MAX_PATH]="";
 			OPENFILENAMEA ofn;
 			TVITEM tvi;
 			HTREEITEM hti;
@@ -247,7 +247,6 @@ BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			tvi.hItem = hti;
 			if (TreeView_GetItem(hwndTree, &tvi)==FALSE) break;
 			if (tvi.lParam==-1) break;
-			str[0] = 0;
 			if (soundList[tvi.lParam].tempFile)
 				mir_snprintf(strFull, SIZEOF(strFull), "%s", soundList[tvi.lParam].tempFile);
 			else {
@@ -255,19 +254,25 @@ BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 					DBVARIANT dbv;
 
 					if (DBGetContactSetting(NULL, "SkinSounds", soundList[tvi.lParam].name, &dbv)==0) {                           
-						CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)str);
+						CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)strdir);
 						DBFreeVariant(&dbv);
 			}	}	}
 
 			mir_snprintf(strFull, SIZEOF(strFull), "%s", soundList[tvi.lParam].tempFile?soundList[tvi.lParam].tempFile:"");
-			CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)strFull, (LPARAM)str);
+			CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)strFull, (LPARAM)strdir);
 			ZeroMemory(&ofn, sizeof(ofn));
 			ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
 			ofn.hwndOwner = GetParent(hwndDlg);
 			ofn.hInstance = NULL;
 			ofn.lpstrFilter = "Wave Files (*.wav)\0*.WAV\0All Files (*)\0*\0";
+			{   char* slash = strrchr(strdir, '\\');
+				if (slash) {
+					*slash = 0;
+					ofn.lpstrInitialDir = strdir;
+				}
+			}
 			ofn.lpstrFile = str;
-			ofn.Flags = OFN_FILEMUSTEXIST|OFN_HIDEREADONLY;
+			ofn.Flags = OFN_FILEMUSTEXIST|OFN_HIDEREADONLY|OFN_EXPLORER|OFN_LONGNAMES|OFN_NOCHANGEDIR;
 			ofn.nMaxFile = SIZEOF(str);
 			ofn.nMaxFileTitle = MAX_PATH;
 			ofn.lpstrDefExt = "wav";
