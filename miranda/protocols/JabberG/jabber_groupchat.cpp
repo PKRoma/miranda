@@ -341,6 +341,7 @@ static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			}
 			return TRUE;
 		}
+		case IDCANCEL:
 		case IDCLOSE:
 			DestroyWindow( hwndDlg );
 			return TRUE;
