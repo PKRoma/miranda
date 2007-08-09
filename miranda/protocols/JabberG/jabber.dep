@@ -418,7 +418,6 @@
 	
 
 .\jabber_thread.cpp : \
-	"..\..\..\..\vc\psdk\include\windns.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
