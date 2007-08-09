@@ -47,7 +47,7 @@ static BOOL CALLBACK ReadAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,
 #ifdef _UNICODE
 				DBVARIANT dbv;
 				int unicode = !DBGetContactSetting(dat->hContact, "CList", "StatusMsg", &dbv) && 
-					(dbv.type & (DBVT_UTF8 | DBVT_WCHAR));
+					(dbv.type == DBVT_UTF8 || dbv.type == DBVT_WCHAR);
 				DBFreeVariant(&dbv);
 				if (unicode) {
 					DBGetContactSettingWString(dat->hContact, "CList", "StatusMsg", &dbv);
