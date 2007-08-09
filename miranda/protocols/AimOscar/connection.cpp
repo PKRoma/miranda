@@ -22,6 +22,7 @@ HANDLE aim_connect(char* server)
     ncon.szHost = host;
     ncon.wPort =(short)atoi(port);
 	conn.port=ncon.wPort;
+	ncon.timeout=5;
     HANDLE con = (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM) conn.hNetlib, (LPARAM) & ncon);
 	delete[] server_dup;
 	return con;

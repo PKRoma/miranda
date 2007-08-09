@@ -191,20 +191,32 @@ int PreBuildContactMenu(WPARAM wParam,LPARAM /*lParam*/)
 int PreShutdown(WPARAM /*wParam*/,LPARAM /*lParam*/)
 {
 	conn.shutting_down=1;
+	if(conn.hDirectBoundPort)
+	{
+		conn.freeing_DirectBoundPort=1;
+		SOCKET s = CallService(MS_NETLIB_GETSOCKET, LPARAM(conn.hDirectBoundPort), 0);
+		if (s != INVALID_SOCKET) shutdown(s, 2);
+	}
+	if(conn.hServerConn)
+	{
+		SOCKET s = CallService(MS_NETLIB_GETSOCKET, LPARAM(conn.hServerConn), 0);
+		if (s != INVALID_SOCKET) shutdown(s, 2);
+	}
+	return 0;
+}
+extern "C" int __declspec(dllexport) Unload(void)
+{
+	if(conn.hDirectBoundPort)
+		Netlib_CloseHandle(conn.hDirectBoundPort);
 	if(conn.hServerConn)
 		Netlib_CloseHandle(conn.hServerConn);
 	conn.hServerConn=0;
-	if(conn.hDirectBoundPort&&!conn.freeing_DirectBoundPort)
-	{
-		conn.freeing_DirectBoundPort=1;
-		Netlib_CloseHandle(conn.hDirectBoundPort);
-	}
-	conn.freeing_DirectBoundPort=0;
-	conn.hDirectBoundPort=0;
+
 	Netlib_CloseHandle(conn.hNetlib);
 	conn.hNetlib=0;
 	Netlib_CloseHandle(conn.hNetlibPeer);
 	conn.hNetlibPeer=0;
+
 	for(unsigned int i=0;i<conn.hookEvent_size;i++)
 		UnhookEvent(conn.hookEvent[i]);
 	DeleteCriticalSection(&modeMsgsMutex);
@@ -212,10 +224,7 @@ int PreShutdown(WPARAM /*wParam*/,LPARAM /*lParam*/)
 	DeleteCriticalSection(&connectionMutex);
 	DeleteCriticalSection(&SendingMutex);
 	DeleteCriticalSection(&avatarMutex);
-	return 0;
-}
-extern "C" int __declspec(dllexport) Unload(void)
-{
+
 	aim_links_destroy();
 	delete[] CWD;
 	delete[] conn.szModeMsg;
