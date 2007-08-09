@@ -87,6 +87,7 @@ int pendingAvatarsStart = 1;
 static avatarrequest* pendingRequests = NULL;
 
 HANDLE hAvatarsFolder;
+int bAvatarsFolderInited = FALSE;
 
 extern CRITICAL_SECTION cookieMutex;
 
@@ -168,11 +169,19 @@ static avatarrequest *ReleaseAvatarRequestInQueue(avatarrequest *request)
 
 void InitAvatars()
 {
-  char szPath[MAX_PATH];
+  if (!bAvatarsFolderInited)
+  { // do it only once
+    bAvatarsFolderInited = TRUE;
 
-  null_snprintf(szPath, MAX_PATH, "%s\\%s\\", PROFILE_PATH, gpszICQProtoName);
+    if (ServiceExists(MS_FOLDERS_REGISTER_PATH)
+    { // check if it does make sense
+      char szPath[MAX_PATH];
 
-  hAvatarsFolder = FoldersRegisterCustomPath(gpszICQProtoName, "Avatars Cache", szPath);
+      null_snprintf(szPath, MAX_PATH, "%s\\%s\\", PROFILE_PATH, gpszICQProtoName);
+
+      hAvatarsFolder = FoldersRegisterCustomPath(gpszICQProtoName, "Avatars Cache", szPath);
+    }
+  }
 }
 
 
@@ -217,6 +226,8 @@ void GetAvatarFileName(int dwUin, char* szUid, char* pszDest, int cbLen)
   int tPathLen;
   FOLDERSGETDATA fgd = {0};
 
+  InitAvatars();
+
   fgd.cbSize = sizeof(FOLDERSGETDATA);
   fgd.nMaxPathSize = cbLen;
   fgd.szPath = pszDest;
@@ -226,12 +237,17 @@ void GetAvatarFileName(int dwUin, char* szUid, char* pszDest, int cbLen)
 
     tPathLen = strlennull(pszDest);
     tPathLen += null_snprintf(pszDest + tPathLen, cbLen-tPathLen, "\\%s\\", gpszICQProtoName);
-    CreateDirectory(pszDest, NULL);
   }
   else
   {
     strcat(pszDest, "\\");
     tPathLen = strlennull(pszDest);
+  }
+  { // make sure the avatar cache directory exists
+    char* szDir = ansi_to_utf8(pszDest);
+
+    MakeDirUtf(szDir);
+    SAFE_FREE(&szDir);
   }
 
   if (dwUin != 0) 
