@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 #include "netlib.h"
+#include "../srfile/file.h"
 
 #define MS_NETLIB_LOGWIN "Netlib/Log/Win"
 
@@ -287,7 +288,7 @@ static int NetlibLog(WPARAM wParam,LPARAM lParam)
 		FILE *fp;
 		fp = _tfopen(logOptions.szFile, _T("at"));
 		if(!fp) {
-			CreateDirectoryTree(logOptions.szFile);
+			CreateDirectoryTreeT(logOptions.szFile);
 			fp = _tfopen(logOptions.szFile, _T("at"));
 		}
 		if(fp) {			
