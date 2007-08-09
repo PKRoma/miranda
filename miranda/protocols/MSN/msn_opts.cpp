@@ -96,17 +96,12 @@ void  ReleaseIconEx( const char* name )
 	MSN_CallService( MS_SKIN2_RELEASEICON, 0, (LPARAM)szSettingName );
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////
-// External data declarations
-
-static BOOL (WINAPI *pfnEnableThemeDialogTexture)(HANDLE, DWORD) = 0;
-
-BOOL CALLBACK DlgProcMsnServLists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK DlgProcMsnServLists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN Options dialog procedure
 
-static BOOL CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch ( msg ) {
 	case WM_INITDIALOG: {
@@ -312,7 +307,7 @@ LBL_Continue:
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN Connection Options dialog procedure
 
-static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	DBVARIANT dbv;
 
@@ -437,7 +432,7 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			char str[ MAX_PATH ];
 
 			BYTE tValue = ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USEGATEWAY );
-			if ( MyOptions.UseGateway != tValue ) {
+			if (( BYTE )MyOptions.UseGateway != tValue ) {
 				MSN_SetByte( "UseGateway", tValue );
 				reconnectRequired = true;
 			}
@@ -492,7 +487,7 @@ static BOOL CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 /////////////////////////////////////////////////////////////////////////////////////////
 // PopUp Options Dialog: style, position, color, font...
 
-static BOOL CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+static INT_PTR CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	static bool bEnabled;
 
@@ -536,12 +531,9 @@ static BOOL CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM wPa
 		switch( LOWORD( wParam )) {
 		case IDC_DISABLEHOTMAIL: {
 			HWND wnd = GetDlgItem( hwndDlg, IDC_DISABLEHOTJUNK );
-			BOOL toSet;
-			if ( SendMessage( HWND( lParam ), BM_GETCHECK, 0, 0 ) == BST_CHECKED ) {
+			bool toSet = SendMessage( HWND( lParam ), BM_GETCHECK, 0, 0 ) != BST_CHECKED;
+			if ( !toSet )
 				SendMessage( wnd, BM_GETCHECK, BST_CHECKED, 0 );
-				toSet = FALSE;
-			}
-			else toSet = TRUE;
 
 			EnableWindow( wnd, toSet );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_POPUP_TIMEOUT ), toSet );
@@ -569,7 +561,7 @@ static BOOL CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM wPa
 			break;
 
 		case IDC_USEWINCOLORS:
-			MyOptions.UseWinColors = IsDlgButtonChecked( hwndDlg, IDC_USEWINCOLORS );
+			MyOptions.UseWinColors = IsDlgButtonChecked( hwndDlg, IDC_USEWINCOLORS ) != 0;
 
 			EnableWindow( GetDlgItem( hwndDlg, IDC_BGCOLOUR ), !( MyOptions.UseWinColors ));
 			EnableWindow( GetDlgItem( hwndDlg, IDC_TEXTCOLOUR ), !( MyOptions.UseWinColors ));
@@ -609,7 +601,7 @@ static BOOL CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM wPa
 					MSN_SetDword( NULL, "PopupTimeoutOther", MyOptions.PopupTimeoutOther );
 				}
 
-				MyOptions.ShowErrorsAsPopups = IsDlgButtonChecked( hwndDlg, IDC_ERRORS_USING_POPUPS );
+				MyOptions.ShowErrorsAsPopups = IsDlgButtonChecked( hwndDlg, IDC_ERRORS_USING_POPUPS ) != 0;
 				MSN_SetByte( "ShowErrorsAsPopups", ( BYTE )MyOptions.ShowErrorsAsPopups );
 
 				MSN_SetByte( "UseWinColors",	( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USEWINCOLORS ));
@@ -677,15 +669,15 @@ void  LoadOptions()
 	MyOptions.TextColour =
 		DBGetContactSettingDword( NULL, ModuleName, "TextColour", GetSysColor( COLOR_WINDOWTEXT ));
 
-	MyOptions.AwayAsBrb = MSN_GetByte( "AwayAsBrb", FALSE );
-	MyOptions.ManageServer = MSN_GetByte( "ManageServer", TRUE );
-	MyOptions.PopupTimeoutHotmail = MSN_GetDword( NULL, "PopupTimeout", 3 );
-	MyOptions.PopupTimeoutOther = MSN_GetDword( NULL, "PopupTimeoutOther", MyOptions.PopupTimeoutHotmail );
-	MyOptions.ShowErrorsAsPopups = MSN_GetByte( "ShowErrorsAsPopups", FALSE );
-	MyOptions.SlowSend = MSN_GetByte( "SlowSend", FALSE );
-	MyOptions.UseProxy = MSN_GetByte( "NLUseProxy", FALSE );
-	MyOptions.UseGateway = MSN_GetByte( "UseGateway", FALSE );
-	MyOptions.UseWinColors = MSN_GetByte( "UseWinColors", FALSE );
+	MyOptions.AwayAsBrb = MSN_GetByte( "AwayAsBrb", FALSE ) != 0;
+	MyOptions.ManageServer = MSN_GetByte( "ManageServer", TRUE ) != 0;
+	MyOptions.PopupTimeoutHotmail = MSN_GetDword( NULL, "PopupTimeout", 3 ) != 0;
+	MyOptions.PopupTimeoutOther = MSN_GetDword( NULL, "PopupTimeoutOther", MyOptions.PopupTimeoutHotmail ) != 0;
+	MyOptions.ShowErrorsAsPopups = MSN_GetByte( "ShowErrorsAsPopups", FALSE ) != 0;
+	MyOptions.SlowSend = MSN_GetByte( "SlowSend", FALSE ) != 0;
+	MyOptions.UseProxy = MSN_GetByte( "NLUseProxy", FALSE ) != 0;
+	MyOptions.UseGateway = MSN_GetByte( "UseGateway", FALSE ) != 0;
+	MyOptions.UseWinColors = MSN_GetByte( "UseWinColors", FALSE ) != 0;
 	if ( MSN_GetStaticString( "e-mail", NULL, MyOptions.szEmail, sizeof( MyOptions.szEmail )))
 		MyOptions.szEmail[0] = 0;
 }

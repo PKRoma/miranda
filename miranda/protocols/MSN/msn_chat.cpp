@@ -145,10 +145,10 @@ void InviteUser(ThreadData* info) {
 		if ( MSN_IsMyContact( hContact )) {
 			if (DBGetContactSettingByte(hContact, msnProtocolName, "ChatRoom", 0) == 0) {
 				if (MSN_GetWord(hContact, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE) {
-					BOOL alreadyInSession = FALSE;
+					bool alreadyInSession = false;
 					for ( int j=0; j < info->mJoinedCount; j++ ) {
 						if (info->mJoinedContacts[j] == hContact) {
-							alreadyInSession = TRUE;
+							alreadyInSession = true;
 							break;
 						}
 					}

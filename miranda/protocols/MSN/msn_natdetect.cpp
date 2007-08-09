@@ -20,6 +20,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "msn_global.h"
 #include "SDK/netfw.h"
 
+#ifndef CLSID_NetFwMgr
+#define MDEF_CLSID(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
+	const CLSID name = { l, w1, w2, { b1, b2,  b3,  b4,  b5,  b6,  b7,  b8 } }
+
+	MDEF_CLSID(CLSID_NetFwMgr, 0x304ce942, 0x6e39, 0x40d8, 0x94, 0x3a, 0xb9, 0x13, 0xc4, 0x0c, 0x9c, 0xd4);
+	MDEF_CLSID(IID_INetFwMgr, 0xf7898af5, 0xcac4, 0x4632, 0xa2, 0xec, 0xda ,0x06, 0xe5, 0x11, 0x1a, 0xf2);
+#endif
+
 
 MyConnectionType MyConnection;
 
@@ -302,8 +310,8 @@ static bool IsIcfEnabled(void)
     if (FAILED(hr)) return false;
 
 	// Create an instance of the firewall settings manager.
-    hr = CoCreateInstance(__uuidof(NetFwMgr), NULL, CLSCTX_INPROC_SERVER,
-            __uuidof(INetFwMgr), (void**)&fwMgr );
+    hr = CoCreateInstance(CLSID_NetFwMgr, NULL, CLSCTX_INPROC_SERVER,
+            IID_INetFwMgr, (void**)&fwMgr );
     if (FAILED(hr)) goto error;
 
     // Retrieve the local firewall policy.

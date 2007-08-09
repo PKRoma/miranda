@@ -229,7 +229,7 @@ int         MSN_CallService( const char* szSvcName, WPARAM wParam, LPARAM lParam
 
 HANDLE      MSN_CreateProtoServiceFunction( const char*, MIRANDASERVICE );
 void        MSN_DeleteSetting( HANDLE hContact, const char* valueName );
-void        MSN_EnableMenuItems( BOOL );
+void        MSN_EnableMenuItems( bool );
 void		MSN_FreeVariant( DBVARIANT* dbv );
 char*       MSN_GetContactName( HANDLE hContact );
 TCHAR*      MSN_GetContactNameT( HANDLE hContact );
@@ -272,11 +272,10 @@ void		MSN_MakeDigest(const char* chl, char* dgst);
 int			MSN_GetPassportAuth( char* authChallengeInfo );
 char*		getNewUuid(void);
 
-
 TCHAR* EscapeChatTags(const TCHAR* pszText);
 TCHAR* UnEscapeChatTags(TCHAR* str_in);
 
-void   overrideStr( TCHAR*& dest, const TCHAR* src, BOOL unicode, const TCHAR* def = NULL );
+void   overrideStr( TCHAR*& dest, const TCHAR* src, bool unicode, const TCHAR* def = NULL );
 void   replaceStr( char*& dest, const char* src );
 char*  rtrim( char* string );
 wchar_t* rtrim( wchar_t* string );
@@ -650,19 +649,19 @@ typedef struct _tag_MYOPTIONS
 {
 	COLORREF	BGColour;
 	COLORREF	TextColour;
-	BOOL		UseWinColors;
+	bool		UseWinColors;
 
-	BOOL		EnableSounds;
+	bool		EnableSounds;
+
+	bool		UseGateway;
+	bool		UseProxy;
+	bool		ShowErrorsAsPopups;
+	bool		AwayAsBrb;
+	bool		SlowSend;
+	bool		ManageServer;
 
 	DWORD		PopupTimeoutHotmail;
 	DWORD		PopupTimeoutOther;
-
-	BOOL		UseGateway;
-	BOOL		UseProxy;
-	BOOL		ShowErrorsAsPopups;
-	BOOL		AwayAsBrb;
-	BOOL		SlowSend;
-	BOOL		ManageServer;
 
 	char		szEmail[MSN_MAX_EMAIL_LEN];
 }

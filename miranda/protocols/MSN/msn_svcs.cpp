@@ -699,7 +699,7 @@ static int MsnGetAwayMsg(WPARAM wParam,LPARAM lParam)
 	CCSDATA* ccs = ( CCSDATA* )lParam;
 	if ( ccs == NULL ) return 0;
 	
-	AwayMsgInfo *inf = (AwayMsgInfo*)mir_alloc( sizeof( AwayMsgInfo ));
+	AwayMsgInfo* inf = (AwayMsgInfo*)mir_alloc( sizeof( AwayMsgInfo ));
 	inf->hContact = ccs->hContact;
 	inf->id = rand();
 
@@ -757,7 +757,7 @@ static int MsnGetInfo( WPARAM wParam, LPARAM lParam )
 
 static int MsnGetName( WPARAM wParam, LPARAM lParam )
 {
-	lstrcpynA(( char* )lParam, msnProtocolName, wParam );
+	mir_snprintf(( char* )lParam, wParam, "%s", msnProtocolName );
 	return 0;
 }
 
@@ -1206,7 +1206,7 @@ static int MsnSetCurrentMedia(WPARAM wParam, LPARAM lParam)
 	LISTENINGTOINFO *cm = (LISTENINGTOINFO *)lParam;
 	if (cm != NULL && cm->cbSize == sizeof(LISTENINGTOINFO) && (cm->ptszArtist != NULL || cm->ptszTitle != NULL))
 	{
-		BOOL unicode = cm->dwFlags & LTI_UNICODE;
+		bool unicode = (cm->dwFlags & LTI_UNICODE) != 0;
 
 		msnCurrentMedia.cbSize = sizeof(msnCurrentMedia);	// Marks that there is info set
 		msnCurrentMedia.dwFlags = LTI_TCHAR;
@@ -1281,7 +1281,7 @@ static int MsnSetStatus( WPARAM wParam, LPARAM lParam )
 			return 0;
 		}	
 
-		MyOptions.UseProxy = MSN_GetByte( "NLUseProxy", FALSE );
+		MyOptions.UseProxy = MSN_GetByte( "NLUseProxy", FALSE ) != 0;
 
 		ThreadData* newThread = new ThreadData;
 

@@ -154,7 +154,7 @@ void __cdecl MSNServerThread( ThreadData* info )
 	}
 
 	if ( info->mIsMainThread ) {
-		MSN_EnableMenuItems( TRUE );
+		MSN_EnableMenuItems( true );
 		msnNsThread = info;
 	}
 
@@ -531,8 +531,6 @@ ThreadData*  MSN_GetThreadByPort( WORD wPort )
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // class ThreadData members
-
-static LONG sttThreadID = 1;
 
 ThreadData::ThreadData()
 {

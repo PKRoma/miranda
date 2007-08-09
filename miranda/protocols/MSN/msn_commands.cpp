@@ -695,10 +695,10 @@ static void sttProcessStatusMessage( char* buf, unsigned len, HANDLE hContact )
 	}
 
 	// Check if there is any info in the string
-	BOOL foundUsefullInfo = FALSE;
+	bool foundUsefullInfo = false;
 	for (unsigned i = 4; i < pCount; i++) {
 		if ( parts[i][0] != '\0' )  {
-			foundUsefullInfo = TRUE;
+			foundUsefullInfo = true;
 			break;
 		}
 	}

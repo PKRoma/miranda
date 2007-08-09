@@ -313,7 +313,7 @@ void 	MSN_GoOffline()
 	msnPreviousUUX = NULL;
 
 	if ( !Miranda_Terminated() )
-		MSN_EnableMenuItems( FALSE );
+		MSN_EnableMenuItems( false );
 	MSN_CloseConnections();
 	MSN_FreeGroups();
 	MsgQueue_Clear();
@@ -1182,34 +1182,25 @@ bool MSN_IsMeByContact( HANDLE hContact, char* szEmail )
 	return strcmp(emailPtr, MyOptions.szEmail) == 0;
 }
 
-static void sttSwapInt64( LONGLONG* parValue )
-{
-	BYTE* p = ( BYTE* )parValue;
-	for ( int i=0; i < 4; i++ ) {
-		BYTE temp = p[i];
-		p[i] = p[7-i];
-		p[7-i] = temp;
-}	}
-
-
 
 void MSN_MakeDigest(const char* chl, char* dgst)
 {
 	//Digest it
-	DWORD md5hash[ 4 ];
+	DWORD md5hash[ 4 ], md5hashOr[ 4 ];
 	mir_md5_state_t context;
 	mir_md5_init( &context );
 	mir_md5_append( &context, ( BYTE* )chl, strlen( chl ));
 	mir_md5_append( &context, ( BYTE* )msnProtChallenge,  strlen( msnProtChallenge ));
 	mir_md5_finish( &context, ( BYTE* )md5hash );
 
-    LONGLONG hash1 = *( LONGLONG* )&md5hash[0], hash2 = *( LONGLONG* )&md5hash[2];
+	memcpy(md5hashOr, md5hash, sizeof(md5hash));
+
 	size_t i;
 	for ( i=0; i < 4; i++ )
 		md5hash[i] &= 0x7FFFFFFF;
 
 	char chlString[128];
-	_snprintf( chlString, sizeof( chlString ), "%s%s00000000", chl, msnProductID );
+	mir_snprintf( chlString, sizeof( chlString ), "%s%s00000000", chl, msnProductID );
 	chlString[ (strlen(chl)+strlen(msnProductID)+7) & 0xF8 ] = 0;
 
 	LONGLONG high=0, low=0;
@@ -1232,14 +1223,12 @@ void MSN_MakeDigest(const char* chl, char* dgst)
 	high = (high + md5hash[1]) % 0x7FFFFFFF;
 	low = (low + md5hash[3]) % 0x7FFFFFFF;
 
-	LONGLONG key = (low << 32) + high;
-	sttSwapInt64( &key );
-	sttSwapInt64( &hash1 );
-	sttSwapInt64( &hash2 );
+	md5hashOr[0] ^= high;
+	md5hashOr[2] ^= high;
+	md5hashOr[1] ^= low;
+	md5hashOr[3] ^= low;
 
-#ifndef __GNUC__
-	mir_snprintf(dgst, 64, "%016I64x%016I64x", hash1 ^ key, hash2 ^ key );
-#else
-	mir_snprintf(dgst, 64, "%016llx%016llx", hash1 ^ key, hash2 ^ key );
-#endif
+	char* str = arrayToHex((PBYTE)md5hashOr, sizeof(md5hashOr));
+	strcpy(dgst, str);
+	mir_free(str);
 }

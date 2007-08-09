@@ -30,7 +30,7 @@ void replaceStr( char*& dest, const char* src )
 		dest = mir_strdup( src );
 }	}
 
-static TCHAR* a2tf( const TCHAR* str, BOOL unicode )
+static TCHAR* a2tf( const TCHAR* str, bool unicode )
 {
 	if ( str == NULL )
 		return NULL;
@@ -38,7 +38,7 @@ static TCHAR* a2tf( const TCHAR* str, BOOL unicode )
 	return unicode ? mir_tstrdup( str ) : mir_a2t(( char* )str );
 }
 
-void overrideStr( TCHAR*& dest, const TCHAR* src, BOOL unicode, const TCHAR* def )
+void overrideStr( TCHAR*& dest, const TCHAR* src, bool unicode, const TCHAR* def )
 {
 	if ( dest != NULL )
 	{

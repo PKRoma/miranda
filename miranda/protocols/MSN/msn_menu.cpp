@@ -171,7 +171,7 @@ static int MsnSendNetMeeting( WPARAM wParam, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 //	SetNicknameCommand - sets nick name
 
-static BOOL CALLBACK DlgProcSetNickname(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProcSetNickname(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch ( msg )
 	{
@@ -327,10 +327,10 @@ void MsnInitMenus( void )
 	mi.pszName = LPGEN("&View Profile");
 	menuItemsAll[ 5 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi );
 
-	MSN_EnableMenuItems( FALSE );
+	MSN_EnableMenuItems( false );
 }
 
-void  MSN_EnableMenuItems( BOOL parEnable )
+void  MSN_EnableMenuItems( bool parEnable )
 {
 	CLISTMENUITEM clmi = { 0 };
 	clmi.cbSize = sizeof( clmi );
