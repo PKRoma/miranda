@@ -227,13 +227,29 @@ HANDLE JabberDBCreateContact( TCHAR* jid, TCHAR* nick, BOOL temporary, BOOL stri
 ///////////////////////////////////////////////////////////////////////////////
 // JabberGetAvatarFileName() - gets a file name for the avatar image
 
-extern HANDLE hJabberAvatarsFolder;
+static HANDLE hJabberAvatarsFolder = NULL;
+static bool bInitDone = false;
+
+void InitCustomFolders( void )
+{
+	if ( bInitDone )
+		return;
+
+	bInitDone = true;
+	if ( ServiceExists( MS_FOLDERS_REGISTER_PATH )) {
+		char AvatarsFolder[MAX_PATH]; AvatarsFolder[0] = 0;
+		CallService( MS_DB_GETPROFILEPATH, ( WPARAM )MAX_PATH, ( LPARAM )AvatarsFolder );
+		strcat( AvatarsFolder, "\\Jabber" );
+		hJabberAvatarsFolder = FoldersRegisterCustomPath(jabberProtoName, "Avatars", AvatarsFolder);
+}	}
 
 void JabberGetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen )
 {
 	size_t tPathLen;
-
 	char* path = ( char* )alloca( cbLen );
+
+	InitCustomFolders();
+
 	if ( hJabberAvatarsFolder == NULL || FoldersGetCustomPath( hJabberAvatarsFolder, path, cbLen, "" )) {
 		JCallService( MS_DB_GETPROFILEPATH, cbLen, LPARAM( pszDest ));
 		

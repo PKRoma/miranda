@@ -112,6 +112,8 @@ HANDLE hInitChat = NULL;
 HANDLE hMSNAvatarsFolder = NULL;
 HANDLE hCustomSmileyFolder = NULL;
 
+void InitCustomFolders( void );
+
 int CompareHandles( const void* p1, const void* p2 )
 {	return (long)p1 - (long)p2;
 }
@@ -249,15 +251,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	arHooks.insert( HookEvent( ME_CLIST_PREBUILDCONTACTMENU, MsnRebuildContactMenu ));
 	arHooks.insert( HookEvent( ME_CLIST_GROUPCHANGE, MsnGroupChange ));
 
-	if ( ServiceExists( MS_FOLDERS_REGISTER_PATH )) {
-		char AvatarsFolder[MAX_PATH];  AvatarsFolder[0] = 0;
-		CallService( MS_DB_GETPROFILEPATH, ( WPARAM )MAX_PATH, ( LPARAM )AvatarsFolder );
-		strcat( AvatarsFolder, "\\MSN" );
-		hMSNAvatarsFolder = FoldersRegisterCustomPath( msnProtocolName, "Avatars", AvatarsFolder );
-		strcat( AvatarsFolder, "\\CustomSmiley" );
-		hCustomSmileyFolder = FoldersRegisterCustomPath(msnProtocolName, "Custom Smiley", AvatarsFolder );
-	}
-
+	InitCustomFolders();
 	return 0;
 }
 

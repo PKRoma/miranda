@@ -202,11 +202,31 @@ char* MSN_GetAvatarHash(char* szContext)
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_GetAvatarFileName - gets a file name for an contact's avatar
 
+static bool bInitDone = false;
+
+void InitCustomFolders()
+{
+	if ( bInitDone )
+		return;
+
+	bInitDone = true;
+
+	if ( ServiceExists( MS_FOLDERS_REGISTER_PATH )) {
+		char AvatarsFolder[MAX_PATH];  AvatarsFolder[0] = 0;
+		CallService( MS_DB_GETPROFILEPATH, ( WPARAM )MAX_PATH, ( LPARAM )AvatarsFolder );
+		strcat( AvatarsFolder, "\\MSN" );
+		hMSNAvatarsFolder = FoldersRegisterCustomPath( msnProtocolName, "Avatars", AvatarsFolder );
+		strcat( AvatarsFolder, "\\CustomSmiley" );
+		hCustomSmileyFolder = FoldersRegisterCustomPath(msnProtocolName, "Custom Smiley", AvatarsFolder );
+}	}
+
 void  MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, size_t cbLen )
 {
 	size_t tPathLen;
-
 	char* path = ( char* )alloca( cbLen );
+
+	InitCustomFolders();
+
 	if ( hMSNAvatarsFolder == NULL || FoldersGetCustomPath( hMSNAvatarsFolder, path, cbLen, "" )) {
 		MSN_CallService( MS_DB_GETPROFILEPATH, cbLen, LPARAM( pszDest ));
 		
@@ -242,10 +262,11 @@ void  MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, size_t cbLen )
 void  MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, size_t cbLen, char* SmileyName, int type )
 {
 	size_t tPathLen;
-
 	char* path = ( char* )alloca( cbLen );
-	if ( hCustomSmileyFolder == NULL || FoldersGetCustomPath(hCustomSmileyFolder, path, cbLen, "" )) 
-	{
+
+	InitCustomFolders();
+
+	if ( hCustomSmileyFolder == NULL || FoldersGetCustomPath(hCustomSmileyFolder, path, cbLen, "" )) {
 		CallService(MS_DB_GETPROFILEPATH, (WPARAM) cbLen, (LPARAM)pszDest);
 		tPathLen = strlen( pszDest );
 		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s\\CustomSmiley", msnProtocolName);
