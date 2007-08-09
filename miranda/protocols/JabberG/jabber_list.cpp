@@ -42,6 +42,9 @@ static int compareListItems( const JABBER_LIST_ITEM* p1, const JABBER_LIST_ITEM*
 		 ( p2->list == LIST_ROSTER && p2->bUseResource == TRUE ))
 		return lstrcmpi( p1->jid, p2->jid );
 
+	if ( p1->list == LIST_BOOKMARK )
+		return lstrcmpi( p1->jid, p2->jid );
+
 	TCHAR szp1[ JABBER_MAX_JID_LEN ], szp2[ JABBER_MAX_JID_LEN ];
 	JabberStripJid( p1->jid, szp1, SIZEOF( szp1 ));
 	JabberStripJid( p2->jid, szp2, SIZEOF( szp2 ));
