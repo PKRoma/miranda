@@ -479,6 +479,7 @@ char* SSL_OpenSsl::getSslResult( const char* parUrl, const char* parAuthInfo, co
 	tConn.cbSize = sizeof( tConn );
 	tConn.szHost = url+8;
 	tConn.wPort = 443;
+	tConn.timeout = 5;
 	HANDLE h = ( HANDLE )MSN_CallService( MS_NETLIB_OPENCONNECTION, ( WPARAM )hNetlibUser, ( LPARAM )&tConn );
 	
 	if (nls.useProxy && cpType == PROXYTYPE_HTTP)

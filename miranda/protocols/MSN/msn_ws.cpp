@@ -161,6 +161,7 @@ char* ThreadData::httpTransact(char* szCommand, size_t cmdsz, size_t& ressz)
 			tConn.flags = NLOCF_V2;
 			tConn.szHost = mGatewayIP;
 			tConn.wPort = MSN_DEFAULT_GATEWAY_PORT;
+			tConn.timeout = 5;
 			s = ( HANDLE )MSN_CallService( MS_NETLIB_OPENCONNECTION, ( WPARAM )hNetlibUser, ( LPARAM )&tConn );
 			tSelect.hReadConns[ 0 ] = s;
 		}
