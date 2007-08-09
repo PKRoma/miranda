@@ -658,6 +658,7 @@ void MsnInvokeMyURL( bool ismail, char* url )
 	//Digest it
 	unsigned char digest[16];
 	mir_md5_hash(( BYTE* )hippy, challen, digest );
+	char* hexdgst = arrayToHex(digest, sizeof(digest));
 
 	if ( rru && passport )
 	{
@@ -666,16 +667,15 @@ void MsnInvokeMyURL( bool ismail, char* url )
 		UrlEncode(prru, rruenc, sizeof(rruenc));
 
 		mir_snprintf(hippy, sizeof(hippy),
-			"%s&auth=%s&creds=%08x%08x%08x%08x&sl=%d&username=%s&mode=ttl"
+			"%s&auth=%s&creds=%s&sl=%d&username=%s&mode=ttl"
 			"&sid=%s&id=%s&rru=%s%s&js=yes",
-			passport, MSPAuth, htonl(*(PDWORD)(digest+0)),htonl(*(PDWORD)(digest+4)),
-			htonl(*(PDWORD)(digest+8)),htonl(*(PDWORD)(digest+12)),
-			tm, email, sid, 
+			passport, MSPAuth, hexdgst, tm, email, sid, 
 			ismail ? urlId : profileURLId, rruenc, ismail ? "&svc=mail" : "" );
 	}
 	else
 		strcpy( hippy, ismail ? "http://login.live.com" : "http://spaces.live.com/PersonalSpaceSignup.aspx" );
 
+	mir_free(hexdgst);
 	MSN_DebugLog( "Starting URL: '%s'", hippy );
 	MSN_CallService( MS_UTILS_OPENURL, 1, ( LPARAM )hippy );
 }
@@ -1224,8 +1224,8 @@ void MSN_MakeDigest(const char* chl, char* dgst)
 	low = (low + md5hash[3]) % 0x7FFFFFFF;
 
 	md5hashOr[0] ^= high;
-	md5hashOr[2] ^= high;
 	md5hashOr[1] ^= low;
+	md5hashOr[2] ^= high;
 	md5hashOr[3] ^= low;
 
 	char* str = arrayToHex((PBYTE)md5hashOr, sizeof(md5hashOr));
