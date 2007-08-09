@@ -233,18 +233,8 @@ char* MirandaStatusToString(int mirandaStatus)
 
 
 char* MirandaStatusToStringUtf(int mirandaStatus)
-{
-  char* szRes;
-
-  if (gbUnicodeCore)
-  { // we can get unicode version, request, give utf-8
-    szRes = make_utf8_string((WCHAR*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, mirandaStatus, GCMDF_UNICODE));
-  }
-  else
-  { // we are ansi only, get it, convert to utf-8
-    szRes = ansi_to_utf8(MirandaStatusToString(mirandaStatus));
-  }
-  return szRes;
+{ // return miranda status description in utf-8, use unicode service is possible
+  return mtchar_to_utf8((TCHAR*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, mirandaStatus, gbUnicodeCore ? GCMDF_UNICODE : 0));
 }
 
 
@@ -689,10 +679,7 @@ char *NickFromHandleUtf(HANDLE hContact)
   if (hContact == INVALID_HANDLE_VALUE)
     return ICQTranslateUtf("<invalid>");
 
-  if (gbUnicodeCore)
-    return make_utf8_string((WCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_UNICODE));
-  else
-    return ansi_to_utf8((char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0));
+  return mtchar_to_utf8((TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, gbUnicodeCore ? GCDNF_UNICODE : 0));
 }
 
 
@@ -1827,24 +1814,23 @@ void SetWindowTextUcs(HWND hWnd, WCHAR *text)
 
 char* GetWindowTextUtf(HWND hWnd)
 {
+  TCHAR* szText;
+  
   if (gbUnicodeAPI)
   {
-    WCHAR* usText;
     int nLen = GetWindowTextLengthW(hWnd);
 
-    usText = (WCHAR*)_alloca((nLen+2)*sizeof(WCHAR));
-    GetWindowTextW(hWnd, usText, nLen + 1);
-    return make_utf8_string(usText);
+    szText = (TCHAR*)_alloca((nLen+2)*sizeof(WCHAR));
+    GetWindowTextW(hWnd, (WCHAR*)szText, nLen + 1);
   }
   else
   {
-    char* szAnsi;
     int nLen = GetWindowTextLengthA(hWnd);
 
-    szAnsi = (char*)_alloca(nLen+2);
-    GetWindowTextA(hWnd, szAnsi, nLen + 1);
-    return ansi_to_utf8(szAnsi);
+    szText = (TCHAR*)_alloca(nLen+2);
+    GetWindowTextA(hWnd, (char*)szText, nLen + 1);
   }
+  return tchar_to_utf8(szText);
 }
 
 

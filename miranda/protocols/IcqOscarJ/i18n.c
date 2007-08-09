@@ -487,3 +487,23 @@ int utf8_decode_static(const char *from, char *to, int to_size)
 
   return nResult;
 }
+
+
+
+char *tchar_to_utf8(const TCHAR *szTxt)
+{
+  if (gbUnicodeAPI)
+    return make_utf8_string((WCHAR*)szTxt);
+  else
+    return ansi_to_utf8((char*)szTxt);
+}
+
+
+
+char *mtchar_to_utf8(const TCHAR *szTxt)
+{
+  if (gbUnicodeCore)
+    return make_utf8_string((WCHAR*)szTxt);
+  else
+    return ansi_to_utf8((char*)szTxt);
+}
