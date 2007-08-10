@@ -1358,7 +1358,8 @@ LBL_Close:
 
 		tResult.addString( "Content-Type", "application/x-msnmsgr-transrespbody" );
 	}
-	else goto LBL_Close;
+	else 
+		return;
 
 	p2p_getMsgId( ft->std.hContact, -2 );
 	p2p_sendSlp( ft, tResult, -2, szBody, cbBody );
