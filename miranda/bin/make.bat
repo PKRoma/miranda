@@ -256,7 +256,7 @@ if %2 == 00 (
    set FileVer=v%1%2a%3.zip
 )
 
-del "%Temp%\miranda-%FileVer%" >nul
+del /Q /F "%Temp%\miranda-%FileVer%"
 7z.exe a -tzip -r -mx=9 "%Temp%\miranda-%FileVer%" ./* ..\ChangeLog.txt
 
 rd /Q /S %Temp%\pdba >nul
@@ -288,7 +288,7 @@ copy ..\..\plugins\scriver\Release\scriver.pdb         %Temp%\pdba\plugins
 copy ..\..\plugins\srmm\Release\srmm.pdb               %Temp%\pdba\plugins
 copy ..\..\plugins\tabSRMM\Release\tabSRMM.pdb         %Temp%\pdba\plugins
 
-del "%Temp%\miranda-pdb-%FileVer%"
+del /Q /F "%Temp%\miranda-pdb-%FileVer%"
 7z.exe a -tzip -r -mx=9 "%Temp%\miranda-pdb-%FileVer%" %Temp%\pdba/*
 rd /Q /S %Temp%\pdba
 goto :eof

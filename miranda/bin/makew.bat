@@ -242,7 +242,7 @@ if %2 == 00 (
    set FileVer=v%1%2a%3w.zip
 )
 
-del "%Temp%\miranda-%FileVer%" >nul
+del /Q /F "%Temp%\miranda-%FileVer%"
 7z.exe a -tzip -r -mx=9 "%Temp%\miranda-%FileVer%" ./* ..\ChangeLog.txt
 
 rd /Q /S %Temp%\pdbw >nul
@@ -275,7 +275,7 @@ copy ..\..\plugins\db3x_mmap\Release\dbx_mmap.pdb              %Temp%\pdbw\plugi
 copy ..\..\plugins\import\Release\import.pdb                   %Temp%\pdbw\plugins
 copy ..\..\plugins\freeimage\Release\freeimage.pdb             %Temp%\pdbw\plugins
 
-del "%Temp%\miranda-pdb-%FileVer%"
+del /Q /F "%Temp%\miranda-pdb-%FileVer%"
 7z.exe a -tzip -r -mx=9 "%Temp%\miranda-pdb-%FileVer%" %Temp%\pdbw/*
 rd /Q /S %Temp%\pdbw
 goto :eof
