@@ -91,6 +91,7 @@ int CreateDirectoryTree( const char *szDir )
 
 	*pszLastBackslash = '\0';
 	CreateDirectoryTree( szTestDir );
+	*pszLastBackslash = '\\';
 	return ( CreateDirectoryA( szTestDir, NULL ) == 0 ) ? GetLastError() : 0;
 }
 
@@ -172,6 +173,7 @@ int CreateDirectoryTreeW( const WCHAR* szDir )
 
 	*pszLastBackslash = '\0';
 	CreateDirectoryTreeW( szTestDir );
+	*pszLastBackslash = '\\';
 	return ( CreateDirectoryW( szTestDir, NULL ) == 0 ) ? GetLastError() : 0;
 }
 
