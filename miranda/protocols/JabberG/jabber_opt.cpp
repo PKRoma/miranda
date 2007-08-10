@@ -509,8 +509,11 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 				OPTTREE_CHECK,	1,	NULL,	"ShowTransport"},
 		{0,	LPGENT("Other") _T("/") LPGENT("Automatically add contact when accept authorization"),
 				OPTTREE_CHECK,	1,	NULL,	"AutoAdd"},
-		{0, LPGENT("Other") _T("/") LPGENT("Show information about operating system in version replies"),
+		
+		{0, LPGENT("Security") _T("/") LPGENT("Show information about operating system in version replies"),
 				OPTTREE_CHECK,	1,	NULL,	"ShowOSVersion"},
+		{0, LPGENT("Security") _T("/") LPGENT("Accept only in band incoming filetransfers (don't disclose own IP)"),
+				OPTTREE_CHECK,	1,	NULL,	"BsOnlyIBB"},
 	};
 
 	BOOL result;
@@ -577,6 +580,8 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			JGetByte("EnableUserTune", FALSE)?1:0,		"EnableUserTune");
 		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
 			JGetByte("ShowOSVersion", TRUE)?1:0,		"ShowOSVersion");
+		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
+			JGetByte("BsOnlyIBB", FALSE)?1:0,			"BsOnlyIBB");
 		return TRUE;
 	}
 	case WM_COMMAND:
@@ -650,6 +655,7 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			JSetByte("EnableUserMood",      (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableUserMood"));
 			JSetByte("EnableUserTune",      (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableUserTune"));
 			JSetByte("ShowOSVersion",       (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "ShowOSVersion"));
+			JSetByte("BsOnlyIBB",           (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "BsOnlyIBB"));
 			JabberSendPresence( jabberStatus, true );
 			return TRUE;
 		}

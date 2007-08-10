@@ -343,17 +343,20 @@ void JabberFtHandleSiRequest( XmlNode *iqNode )
 			( xNode=JabberXmlGetChildWithGivenAttrValue( featureNode, "x", "xmlns", _T(JABBER_FEAT_DATA_FORMS)))!=NULL &&
 			( fieldNode=JabberXmlGetChildWithGivenAttrValue( xNode, "field", "var", _T("stream-method")))!=NULL ) {
 
-			for ( i=0; i<fieldNode->numChild; i++ ) {
-				optionNode = fieldNode->child[i];
-				if ( optionNode->name && !strcmp( optionNode->name, "option" )) {
-					if (( n=JabberXmlGetChild( optionNode, "value" ))!=NULL && n->text ) {
-						if ( !_tcscmp( n->text, _T(JABBER_FEAT_BYTESTREAMS))) {
-							ftType = FT_BYTESTREAM;
-							break;
-			}	}	}	}
+			BOOL bIbbOnly = JGetByte( "BsOnlyIBB", FALSE );
 
-			// try IBB only if bytestreams support not found
-			if ( i >= fieldNode->numChild ) {
+			if ( !bIbbOnly ) {
+				for ( i=0; i<fieldNode->numChild; i++ ) {
+					optionNode = fieldNode->child[i];
+					if ( optionNode->name && !strcmp( optionNode->name, "option" )) {
+						if (( n=JabberXmlGetChild( optionNode, "value" ))!=NULL && n->text ) {
+							if ( !_tcscmp( n->text, _T(JABBER_FEAT_BYTESTREAMS))) {
+								ftType = FT_BYTESTREAM;
+								break;
+			}	}	}	}	}
+
+			// try IBB only if bytestreams support not found or BsOnlyIBB flag exists
+			if ( bIbbOnly || (i >= fieldNode->numChild) ) {
 				for ( i=0; i<fieldNode->numChild; i++ ) {
 					optionNode = fieldNode->child[i];
 					if ( optionNode->name && !strcmp( optionNode->name, "option" )) {

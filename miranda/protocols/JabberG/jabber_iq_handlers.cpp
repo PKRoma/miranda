@@ -340,6 +340,14 @@ void JabberHandleIqRequestOOB( XmlNode* node, void* userdata, CJabberIqInfo *pIn
 	if ( !n || !n->text)
 		return;
 
+	if ( JGetByte( "BsOnlyIBB", FALSE )) {
+		// reject
+		XmlNodeIq iq( "error", pInfo );
+		XmlNode* e = iq.addChild( "error", "File transfer refused" ); e->addAttr( "code", 406 );
+		jabberThreadInfo->send( iq );
+		return;
+	}
+
 	TCHAR text[ 1024 ];
 	TCHAR *str, *p, *q;
 	
