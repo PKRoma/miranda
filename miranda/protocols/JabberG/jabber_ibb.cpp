@@ -36,6 +36,10 @@ Last change by : $Author: ghazan $
 void JabberIbbFreeJibb( JABBER_IBB_TRANSFER *jibb )
 {
 	if ( jibb )  {
+		filetransfer* pft = (filetransfer *)jibb->userdata;
+		if ( pft )
+			pft->jibb = NULL;
+
 		mir_free( jibb->srcJID );
 		mir_free( jibb->dstJID );
 		mir_free( jibb->sid );
@@ -138,6 +142,7 @@ void __cdecl JabberIbbSendThread( JABBER_IBB_TRANSFER *jibb )
 	}
 
 	jibb->pfnFinal(( jibb->state==JIBB_DONE )?TRUE:FALSE, jibb->userdata );
+	jibb->userdata = NULL;
 	JabberIbbFreeJibb( jibb );
 }
 
@@ -173,6 +178,7 @@ void __cdecl JabberIbbReceiveThread( JABBER_IBB_TRANSFER *jibb )
 		jibb->state = JIBB_DONE;
 
 	jibb->pfnFinal(( jibb->state==JIBB_DONE )?TRUE:FALSE, jibb->userdata );
+	jibb->userdata = NULL;
 
 	JabberListRemove( LIST_FTRECV, jibb->sid );
 
