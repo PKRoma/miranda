@@ -262,6 +262,8 @@ void        CachedMsg_Uninit( void );
 void        MsnInitIcons( void );
 void        MsnInitMenus( void );
 
+void        InitCustomFolders(void);
+
 char*       httpParseHeader(char* buf, unsigned& status);
 int         sttDivideWords( char* parBuffer, int parMinItems, char** parDest );
 void		sttNotificationMessage( char* msgBody, bool isInitial );
