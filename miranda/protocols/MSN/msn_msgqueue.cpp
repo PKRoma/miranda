@@ -28,13 +28,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //connection is established
 
 static MsgQueueEntry* msgQueue;
-static int msgQueueCount;
+static size_t msgQueueCount, msgQueueAllocCount;
 static CRITICAL_SECTION csMsgQueue;
 static int msgQueueSeq;
 
 void MsgQueue_Init(void)
 {
 	msgQueueCount = 0;
+	msgQueueAllocCount = 0;
 	msgQueue = NULL;
 	msgQueueSeq = 1;
 	InitializeCriticalSection(&csMsgQueue);
@@ -49,7 +50,8 @@ void MsgQueue_Uninit(void)
 int  MsgQueue_Add( HANDLE hContact, int msgType, const char* msg, int msgSize, filetransfer* ft, int flags )
 {
 	EnterCriticalSection( &csMsgQueue );
-	msgQueue = ( MsgQueueEntry* )mir_realloc( msgQueue, sizeof( MsgQueueEntry )*( msgQueueCount+1 ));
+	if (msgQueueCount >= msgQueueAllocCount)
+		msgQueue = ( MsgQueueEntry* )mir_realloc( msgQueue, sizeof( MsgQueueEntry )*( ++msgQueueAllocCount ));
 
 	int seq = msgQueueSeq++;
 
@@ -78,7 +80,7 @@ HANDLE  MsgQueue_CheckContact(HANDLE hContact, time_t tsc)
 
 	time_t ts = time(NULL);
 	HANDLE ret = NULL;
-	for(int i=0; i < msgQueueCount; i++)
+	for(unsigned i=0; i < msgQueueCount; i++)
 	{
 		if (msgQueue[i].hContact == hContact && (tsc == 0 || (ts - msgQueue[i].ts) < tsc))
 		{	
@@ -97,7 +99,7 @@ HANDLE  MsgQueue_GetNextRecipient(void)
 	EnterCriticalSection( &csMsgQueue );
 
 	HANDLE ret = NULL;
-	for( int i=0; i < msgQueueCount; i++ )
+	for( unsigned i=0; i < msgQueueCount; i++ )
 	{
 		MsgQueueEntry& E = msgQueue[ i ];
 		if ( !E.allocatedToThread )
@@ -119,7 +121,7 @@ HANDLE  MsgQueue_GetNextRecipient(void)
 //deletes from list. Must mir_free() return value
 bool  MsgQueue_GetNext( HANDLE hContact, MsgQueueEntry& retVal )
 {
-	int i;
+	unsigned i;
 
 	EnterCriticalSection( &csMsgQueue );
 	for( i=0; i < msgQueueCount; i++ )
@@ -142,7 +144,7 @@ int  MsgQueue_NumMsg( HANDLE hContact )
 	int res = 0;
 	EnterCriticalSection( &csMsgQueue );
 
-	for( int i=0; i < msgQueueCount; i++ )
+	for( unsigned i=0; i < msgQueueCount; i++ )
 		res += msgQueue[ i ].hContact == hContact;
 	
 	LeaveCriticalSection( &csMsgQueue );
@@ -151,7 +153,7 @@ int  MsgQueue_NumMsg( HANDLE hContact )
 
 void  MsgQueue_Clear( HANDLE hContact, bool msg )
 {
-	int i;
+	unsigned i;
 
 	EnterCriticalSection( &csMsgQueue );
 	if (hContact == NULL)
@@ -173,18 +175,26 @@ void  MsgQueue_Clear( HANDLE hContact, bool msg )
 	}
 	else
 	{
+		time_t ts = time(NULL);
 		for(i=0; i < msgQueueCount; i++)
 		{
 			const MsgQueueEntry& E = msgQueue[i];
 			if (E.hContact == hContact && (!msg || E.msgSize == 0))
 			{
-				if ( E.msgSize == 0 )
-					MSN_SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, ( HANDLE )E.seq, 
-						( LPARAM )MSN_Translate( "Message delivery failed" ));
+				bool msgfnd = E.msgSize == 0 && E.ts < ts;
+				int seq = E.seq;
+				
 				mir_free( E.message );
-
 				msgQueueCount--;
 				memmove( msgQueue+i, msgQueue+i+1, sizeof( MsgQueueEntry )*( msgQueueCount-i ));
+
+				if ( msgfnd ) {
+					LeaveCriticalSection(&csMsgQueue);
+					MSN_SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, ( HANDLE )seq, 
+						( LPARAM )MSN_Translate( "Message delivery failed" ));
+					i = 0;
+					EnterCriticalSection( &csMsgQueue );
+				}
 			}
 		}
 	}
