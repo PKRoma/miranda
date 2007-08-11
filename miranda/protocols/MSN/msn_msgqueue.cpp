@@ -170,6 +170,7 @@ void  MsgQueue_Clear( HANDLE hContact, bool msg )
 		mir_free( msgQueue );
 
 		msgQueueCount = 0;
+		msgQueueAllocCount = 0;
 		msgQueue = NULL;
 		msgQueueSeq = 1;
 	}
