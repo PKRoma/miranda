@@ -176,9 +176,9 @@ void 	MSN_DebugLog( const char *fmt, ... )
 	va_end( vararg );
 }
 
-HANDLE	 hMSNAvatarsFolder = NULL;
-HANDLE	 hCustomSmileyFolder = NULL;
-bool InitCstFldRan = false;
+static HANDLE	 hMSNAvatarsFolder = NULL;
+static HANDLE	 hCustomSmileyFolder = NULL;
+static bool InitCstFldRan = false;
 
 void InitCustomFolders(void)
 {

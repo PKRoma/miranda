@@ -312,8 +312,10 @@ public:
 
 	static wchar_t* decode(const char* val);
 
-	void  addString( const char* name, const char* szValue );
-	void	addLong( const char* name, long lValue );
+	void  addString( const char* name, const char* szValue, unsigned flags = 0 );
+	void    addLong( const char* name, long lValue );
+	void   addULong( const char* name, unsigned lValue );
+	void	addBool( const char* name, bool lValue );
 
 	size_t  getLength( void );
 	char* writeToBuffer( char* pDest );
@@ -329,6 +331,8 @@ private:
 	unsigned	mCount;
 	unsigned	mAllocCount;
 	MimeHeader* mVals;
+
+	unsigned allocSlot(void);
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -775,7 +779,8 @@ typedef struct _tag_MyConnectionType
 	bool upnpNAT;
 	bool icf;
 
-	const char* GetMyExtIPStr(void) { return inet_ntoa(*((PIN_ADDR)&extIP)); }
+	const IN_ADDR GetMyExtIP(void) { return *((PIN_ADDR)&extIP); }
+	const char* GetMyExtIPStr(void) { return inet_ntoa(GetMyExtIP()); }
 	const char* GetMyUdpConStr(void) { return conStr[udpConType]; }
 	void SetUdpCon(const char* str);
 	void CalculateWeight(void);

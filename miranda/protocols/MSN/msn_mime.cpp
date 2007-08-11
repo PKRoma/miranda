@@ -57,26 +57,58 @@ void MimeHeaders::clear(void)
 	}
 	mCount = 0;
 }
+
+unsigned MimeHeaders::allocSlot(void)
+{
+	if ( ++mCount >= mAllocCount ) 
+	{
+		mAllocCount += 10;
+		mVals = ( MimeHeader* )mir_realloc( mVals, sizeof( MimeHeader ) * mAllocCount );
+	}
+	return mCount - 1; 
+}
+
+
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // add various values
 
-void MimeHeaders::addString( const char* name, const char* szValue )
+void MimeHeaders::addString( const char* name, const char* szValue, unsigned flags )
 {
-	MimeHeader& H = mVals[ mCount++ ];
+	MimeHeader& H = mVals[ allocSlot() ];
 	H.name = name;
 	H.value = szValue; 
-	H.flags = 0;
+	H.flags = flags;
 }
 
 void MimeHeaders::addLong( const char* name, long lValue )
 {
-	MimeHeader& H = mVals[ mCount++ ];
+	MimeHeader& H = mVals[ allocSlot() ];
 	H.name = name;
 
 	char szBuffer[ 20 ];
 	_ltoa( lValue, szBuffer, 10 );
 	H.value = mir_strdup( szBuffer ); 
 	H.flags = 2;
+}
+
+void MimeHeaders::addULong( const char* name, unsigned lValue )
+{
+	MimeHeader& H = mVals[ allocSlot() ];
+	H.name = name;
+
+	char szBuffer[ 20 ];
+	_ultoa( lValue, szBuffer, 10 );
+	H.value = mir_strdup( szBuffer ); 
+	H.flags = 2;
+}
+
+void MimeHeaders::addBool( const char* name, bool lValue )
+{
+	MimeHeader& H = mVals[ allocSlot() ];
+	H.name = name;
+	H.value = lValue ? "true" : "false"; 
+	H.flags = 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -135,19 +167,12 @@ char* MimeHeaders::readFromBuffer( char* parString )
 		while ( *delim == ' ' || *delim == '\t' )
 			delim++;
 		
-		if ( mCount >= mAllocCount ) 
-		{
-			mAllocCount += 10;
-			mVals = ( MimeHeader* )mir_realloc( mVals, sizeof( MimeHeader ) * mAllocCount );
-		}
-
-		MimeHeader& H = mVals[ mCount ];
+		MimeHeader& H = mVals[ allocSlot() ];
 
 		H.name = parString;
 		H.value = delim;
 		H.flags = 0;
 
-		mCount++;
 		parString = peol;
 	}
 

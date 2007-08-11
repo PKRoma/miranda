@@ -110,10 +110,10 @@ unsigned p2p_getMsgId( HANDLE hContact, int inc )
 }
 
 
-static int sttCreateListener(
+static bool sttCreateListener(
 	filetransfer* ft,
 	directconnection *dc,
-	char* szBody, size_t cbBody )
+	MimeHeaders& chdrs )
 {
 	if (MyConnection.extIP == 0) return 0;
 	
@@ -123,7 +123,7 @@ static int sttCreateListener(
 	HANDLE sb = (HANDLE) MSN_CallService(MS_NETLIB_BINDPORT, (WPARAM) hNetlibUser, ( LPARAM )&nlb);
 	if ( sb == NULL ) {
 		MSN_DebugLog( "Unable to bind the port for incoming transfers" );
-		return 0;
+		return false;
 	}
 
 	ThreadData* newThread = new ThreadData;
@@ -142,29 +142,36 @@ static int sttCreateListener(
 	PHOSTENT he = gethostbyname( hostname );
 
 	hostname[0] = 0;
-	for( unsigned i=0; i<sizeof( hostname )/16 && he->h_addr_list[i] ; ++i ) {
-		if ( i != 0 ) strcat( hostname, " " );
-		strcat( hostname, inet_ntoa( *( PIN_ADDR )he->h_addr_list[i] ));
+	bool ipInt = false;
+	for( unsigned i=0; i<sizeof( hostname )/16; ++i ) 
+	{
+		const PIN_ADDR addr = (PIN_ADDR)he->h_addr_list[i];
+
+		if (addr == NULL) break;
+		if (i != 0) strcat(hostname, " ");
+		ipInt |= (addr->S_un.S_addr == MyConnection.extIP);
+		strcat(hostname, inet_ntoa(*addr));
 	}
 
-	char* szUuid = dc->useHashedNonce ? dc->mNonceToHash() : dc->mNonceToText();
+	chdrs.addString("Bridge", "TCPv1");
+	chdrs.addBool("Listening", true);
 
-	int cbBodyLen = mir_snprintf( szBody, cbBody,
-		"Bridge: TCPv1\r\n"
-		"Listening: true\r\n"
-		"%s: %s\r\n"
-		"IPv4External-Addrs: %s\r\n"
-		"IPv4External-Port: %u\r\n"
-		"IPv4Internal-Addrs: %s\r\n"
-		"IPv4Internal-Port: %u\r\n"
-		"SessionID: %lu\r\n"
-		"SChannelState: 0\r\n\r\n%c",
-		dc->useHashedNonce ? "Hashed-Nonce" : "Nonce", szUuid,
-		MyConnection.GetMyExtIPStr(), nlb.wExPort, hostname, nlb.wPort, ft->p2p_sessionid, 0 );
+	if (dc->useHashedNonce)
+		chdrs.addString("Hashed-Nonce", dc->mNonceToHash(), 2);
+	else
+		chdrs.addString("Nonce", dc->mNonceToText(), 2);
 
-	mir_free( szUuid );
+	if (!ipInt)
+	{
+		chdrs.addString("IPv4External-Addrs", mir_strdup(MyConnection.GetMyExtIPStr()), 2);
+		chdrs.addLong("IPv4External-Port", nlb.wExPort);
+	}
+	chdrs.addString("IPv4Internal-Addrs", mir_strdup(hostname), 2);
+	chdrs.addLong("IPv4Internal-Port", nlb.wPort);
+	chdrs.addULong("SessionID", ft->p2p_sessionid);
+	chdrs.addLong("SChannelState", 0);
 
-	return cbBodyLen;
+	return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -1130,31 +1137,35 @@ static void sttInitDirectTransfer(
 	conType.icf = strcmp(szICF, "true") == 0;
 	conType.CalculateWeight();
 
-	char szBody[ 512 ];
-	int  cbBodyLen = 0;
+	MimeHeaders chdrs(12);
+	bool listen = false;
 
 	MSN_DebugLog( "Connection weight His: %d mine: %d", conType.weight, MyConnection.weight);
 	if (conType.weight <= MyConnection.weight)
-		cbBodyLen = sttCreateListener( ft, dc, szBody, sizeof( szBody ));
+		listen = sttCreateListener( ft, dc, chdrs);
 
-	if ( !cbBodyLen ) {
-		const char* szUuid = dc->useHashedNonce ? dc->mNonceToHash() : sttVoidNonce;
+	if ( !listen ) 
+	{
+		chdrs.addString("Bridge", "TCPv1");
+		chdrs.addBool("Listening", false);
 
-		cbBodyLen = mir_snprintf( szBody, sizeof( szBody ),
-			"Bridge: TCPv1\r\n"
-			"Listening: false\r\n"
-			"%s: %s\r\n"
-			"SessionID: %u\r\n"
-			"SChannelState: 0\r\n\r\n%c",
-			dc->useHashedNonce ? "Hashed-Nonce" : "Nonce", szUuid, ft->p2p_sessionid, 0 );
+		if (dc->useHashedNonce)
+			chdrs.addString("Hashed-Nonce", dc->mNonceToHash(), 2);
+		else
+			chdrs.addString("Nonce", sttVoidNonce);
 
-		if ( dc->useHashedNonce ) mir_free(( void* )szUuid );
+		chdrs.addULong("SessionID", ft->p2p_sessionid);
+		chdrs.addLong("SChannelState", 0);
 	}
 
 	tResult.addString( "Content-Type", "application/x-msnmsgr-transrespbody" );
 
+	size_t cbBody = chdrs.getLength() + 1;
+	char* szBody = (char*)alloca(cbBody);
+	*chdrs.writeToBuffer(szBody) = 0;
+
 	p2p_getMsgId( ft->std.hContact, -2 );
-	p2p_sendSlp( ft, tResult, 200, szBody, cbBodyLen );
+	p2p_sendSlp( ft, tResult, 200, szBody, cbBody );
 	p2p_getMsgId( ft->std.hContact, 1 );
 }
 
@@ -1266,8 +1277,8 @@ LBL_Close:
 	tResult.addString( "Call-ID", ft->p2p_callID );
 	tResult.addLong( "Max-Forwards", 0 );
 
-	char* szBody = ( char* )alloca( 1024 );
-	int   cbBody = 0;
+	MimeHeaders chdrs(12);
+
 	if ( !strcmp( szOldContentType, "application/x-msnmsgr-sessionreqbody" )) {
 		p2p_sendFeedStart( ft );
 
@@ -1284,19 +1295,14 @@ LBL_Close:
 		directconnection* dc = new directconnection( ft );
 		p2p_registerDC( dc );
 
-		char* hn = dc->mNonceToHash();
-		char* szNonce = ( char* )alloca( 256 );
-		mir_snprintf( szNonce, 256, "Hashed-Nonce: %s\r\n", hn );
-
-		mir_free( hn );
-
 		tResult.addString( "Content-Type", "application/x-msnmsgr-transreqbody" );
-		cbBody = mir_snprintf( szBody, 1024,
-			"Bridges: TCPv1\r\nNetID: %i\r\nConn-Type: %s\r\nUPnPNat: %s\r\nICF: %s\r\n%s\r\n%c",
-			MyConnection.extIP, MyConnection.GetMyUdpConStr(), 
-			MyConnection.upnpNAT ? "true" : "false", MyConnection.icf ? "true" : "false", 
-			szNonce, 0 );
 
+		chdrs.addString("Bridges", "TCPv1");
+		chdrs.addLong("NetID", MyConnection.extIP);
+		chdrs.addString("Conn-Type", MyConnection.GetMyUdpConStr());
+		chdrs.addBool("UPnPNat", MyConnection.upnpNAT);
+		chdrs.addBool("ICF", MyConnection.icf);
+		chdrs.addString("Hashed-Nonce", dc->mNonceToHash(), 2);
 	}
 	else if ( !strcmp( szOldContentType, "application/x-msnmsgr-transrespbody" )) {
 		const char	*szListening       = tFileInfo2[ "Listening" ],
@@ -1325,10 +1331,8 @@ LBL_Close:
 			return;
 		}
 
-		cbBody = sttCreateListener( ft, dc, szBody, 1024 );
-
 		// no, send a file via server
-		if ( cbBody == 0 ) {
+		if ( !sttCreateListener( ft, dc, chdrs )) {
 			MSN_StartP2PTransferByContact( ft->std.hContact );
 			return;
 		}
@@ -1348,10 +1352,8 @@ LBL_Close:
 		dc->useHashedNonce = szHashedNonce != NULL;
 		dc->xNonce = mir_strdup( szHashedNonce ? szHashedNonce : szNonce );
 
-		cbBody = sttCreateListener( ft, dc, szBody, 1024 );
-
 		// no, send a file via server
-		if ( cbBody == 0 ) {
+		if ( !sttCreateListener( ft, dc, chdrs )) {
 			MSN_StartP2PTransferByContact( ft->std.hContact );
 			return;
 		}
@@ -1360,6 +1362,10 @@ LBL_Close:
 	}
 	else 
 		return;
+
+	size_t cbBody = chdrs.getLength() + 1;
+	char* szBody = (char*)alloca(cbBody);
+	*chdrs.writeToBuffer(szBody) = 0;
 
 	p2p_getMsgId( ft->std.hContact, -2 );
 	p2p_sendSlp( ft, tResult, -2, szBody, cbBody );
