@@ -262,6 +262,7 @@ __forceinline int mir_getLI( struct LIST_INTERFACE* dest )
 	Contains functions for utf8-strings encoding & decoding
 */
 
+#define UTF8_INTERFACE_SIZEOF_V1 24
 struct UTF8_INTERFACE
 {
 	int cbSize;
@@ -282,6 +283,9 @@ struct UTF8_INTERFACE
 	// encodes an WCHAR string into a utf8 format
 	// the resulting string should be freed using mir_free
 	char* ( *utf8_encodeW )( const wchar_t* src );
+	// decodes utf8 and returns the result as wchar_t* that should be freed using mir_free()
+	// the input buffer remains unchanged
+	wchar_t* ( *utf8_decodeW )( const char* str );
 };
 
 #define MS_SYSTEM_GET_UTFI  "Miranda/System/GetUTFI"
@@ -296,6 +300,7 @@ extern struct UTF8_INTERFACE utfi;
 
 #define mir_utf8decode(A,B)     utfi.utf8_decode(A,B)
 #define mir_utf8decodecp(A,B,C) utfi.utf8_decodecp(A,B,C)
+#define mir_utf8decodeW(A)		utfi.utf8_decodeW(A)
 #define mir_utf8encode(A)       utfi.utf8_encode(A)
 #define mir_utf8encodecp(A,B)   utfi.utf8_encodecp(A,B)
 #define mir_utf8encodeW(A)      utfi.utf8_encodeW(A)

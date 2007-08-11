@@ -106,6 +106,16 @@ char* Utf8Decode( char* str, wchar_t** ucs2 )
 	return Utf8DecodeCP( str, LangPackGetDefaultCodePage(), ucs2 );
 }
 
+wchar_t* Utf8DecodeUcs2( const char* str )
+{
+	wchar_t* ucs2;
+	char *tempBuffer = mir_strdup(str);
+	Utf8Decode( tempBuffer, &ucs2 );
+	mir_free(tempBuffer);
+	return ucs2;
+
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // Utf8Encode - converts MBCS string to the UTF8-encoded format
 

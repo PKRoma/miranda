@@ -635,7 +635,7 @@ int GetUtfInterface(WPARAM wParam, LPARAM lParam)
 	struct UTF8_INTERFACE *utfi = (struct UTF8_INTERFACE*) lParam;
 	if ( utfi == NULL )
 		return 1;
-	if ( utfi->cbSize != sizeof( struct UTF8_INTERFACE ))
+	if ( utfi->cbSize != UTF8_INTERFACE_SIZEOF_V1 && utfi->cbSize != sizeof( struct UTF8_INTERFACE ))
 		return 1;
 
 	utfi->utf8_decode   = Utf8Decode;
@@ -643,6 +643,9 @@ int GetUtfInterface(WPARAM wParam, LPARAM lParam)
 	utfi->utf8_encode   = Utf8Encode;
 	utfi->utf8_encodecp = Utf8EncodeCP;
 	utfi->utf8_encodeW  = Utf8EncodeUcs2;
+	if (utfi->cbSize > UTF8_INTERFACE_SIZEOF_V1) {
+		utfi->utf8_decodeW  = Utf8DecodeUcs2;
+	}
 	return 0;
 }
 

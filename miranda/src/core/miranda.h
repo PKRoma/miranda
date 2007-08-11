@@ -47,6 +47,8 @@ char*  mir_u2a( const wchar_t* src);
 char* Utf8Decode( char* str, wchar_t** ucs2 );
 char* Utf8DecodeCP( char* str, int codepage, wchar_t** ucs2 );
 
+wchar_t* Utf8DecodeUcs2( const char* str );
+
 char* Utf8Encode( const char* str );
 char* Utf8EncodeCP( const char* src, int codepage );
 
