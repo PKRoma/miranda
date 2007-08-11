@@ -196,7 +196,7 @@ JabberCapsBits JabberGetResourceCapabilites( TCHAR *jid, BOOL appendBestResource
 		if ( bRequestSent )
 			return JABBER_RESOURCE_CAPS_IN_PROGRESS;
 
-		return jcbCaps;
+		return jcbCaps | r->jcbManualDiscoveredCaps;
 	}
 
 	// capability mode (version request + service discovery)
@@ -238,7 +238,7 @@ JabberCapsBits JabberGetResourceCapabilites( TCHAR *jid, BOOL appendBestResource
 			return JABBER_RESOURCE_CAPS_IN_PROGRESS;
 		}
 		else if ( r->dwDiscoInfoRequestTime == -1 )
-			return r->jcbCachedCaps;
+			return r->jcbCachedCaps | r->jcbManualDiscoveredCaps;
 		else if ( GetTickCount() - r->dwDiscoInfoRequestTime < JABBER_RESOURCE_CAPS_QUERY_TIMEOUT )
 			return JABBER_RESOURCE_CAPS_IN_PROGRESS;
 		else
@@ -280,7 +280,7 @@ JabberCapsBits JabberGetResourceCapabilites( TCHAR *jid, BOOL appendBestResource
 
 			jcbMainCaps = JABBER_RESOURCE_CAPS_IN_PROGRESS;
 		}
-		return jcbMainCaps;
+		return jcbMainCaps | r->jcbManualDiscoveredCaps;
 	}
 
 	return JABBER_RESOURCE_CAPS_NONE;

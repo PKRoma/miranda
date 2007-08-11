@@ -1111,18 +1111,23 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 	if ( !item )
 		item = JabberListGetItemPtr( LIST_VCARD_TEMP, from );
 
+	JABBER_RESOURCE_STATUS *resourceStatus = JabberResourceInfoFromJID( from );
+
 	time_t msgTime = 0;
 	BOOL  isChatRoomInvitation = FALSE;
 	TCHAR* inviteRoomJid = NULL;
 	TCHAR* inviteFromJid = NULL;
 	TCHAR* inviteReason = NULL;
 	TCHAR* invitePassword = NULL;
-	BOOL delivered = FALSE, composing = FALSE;
+	BOOL delivered = FALSE;
 
 	n = JabberXmlGetChild( node, "active" );
 	if ( item != NULL && bodyNode != NULL ) {
-		if ( n != NULL && !lstrcmp( JabberXmlGetAttrValue( n, "xmlns" ), _T(JABBER_FEAT_CHATSTATES)))
+		if ( n != NULL && !lstrcmp( JabberXmlGetAttrValue( n, "xmlns" ), _T(JABBER_FEAT_CHATSTATES))) {
+			if ( resourceStatus )
+				resourceStatus->jcbManualDiscoveredCaps |= JABBER_CAPS_CHATSTATES;
 			item->cap |= CLIENT_CAP_CHATSTAT;
+		}
 		else
 			item->cap &= ~CLIENT_CAP_CHATSTAT;
 	}
@@ -1147,6 +1152,9 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 		if ( idStr )
 			m.addAttr( "id", idStr );
 		info->send( m );
+
+		if ( resourceStatus )
+			resourceStatus->jcbManualDiscoveredCaps |= JABBER_CAPS_MESSAGE_RECEIPTS;
 	}
 
 	// XEP-0203 support
@@ -1209,6 +1217,14 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 				msgTime = JabberIsoToUnixTime( ptszTimeStamp );
 		}
 		else if ( !_tcscmp( ptszXmlns, _T(JABBER_FEAT_MESSAGE_EVENTS))) {
+			
+			// set events support only if we discovered caps and if events not already set
+			JabberCapsBits jcbCaps = JabberGetResourceCapabilites( from );
+			if ( jcbCaps & JABBER_RESOURCE_CAPS_ERROR )
+				jcbCaps = JABBER_RESOURCE_CAPS_NONE;
+			if ( jcbCaps && resourceStatus && (!(jcbCaps & JABBER_CAPS_MESSAGE_EVENTS)) )
+				resourceStatus->jcbManualDiscoveredCaps |= (JABBER_CAPS_MESSAGE_EVENTS | JABBER_CAPS_MESSAGE_EVENTS_NO_DELIVERY);
+
 			if ( bodyNode == NULL ) {
 				idNode = JabberXmlGetChild( xNode, "id" );
 				if ( JabberXmlGetChild( xNode, "delivered" ) != NULL || JabberXmlGetChild( xNode, "offline" ) != NULL ) {
@@ -1241,7 +1257,6 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 					info->send( m );
 				}
 				if ( item != NULL && JabberXmlGetChild( xNode, "composing" ) != NULL ) {
-					composing = TRUE;
 					if ( item->messageEventIdStr )
 						mir_free( item->messageEventIdStr );
 					item->messageEventIdStr = ( idStr==NULL )?NULL:mir_tstrdup( idStr );
@@ -1296,9 +1311,7 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 		HANDLE hContact = JabberHContactFromJID( from );
 
 		if ( item != NULL ) {
-			JABBER_RESOURCE_STATUS *r = JabberResourceInfoFromJID( from );
-			if ( r ) r->bMessageSessionActive = TRUE;
-			item->wantComposingEvent = composing;
+			if ( resourceStatus ) resourceStatus->bMessageSessionActive = TRUE;
 			if ( hContact != NULL )
 				JCallService( MS_PROTO_CONTACTISTYPING, ( WPARAM ) hContact, PROTOTYPE_CONTACTTYPING_OFF );
 

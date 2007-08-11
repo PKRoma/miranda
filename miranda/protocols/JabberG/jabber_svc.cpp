@@ -1464,7 +1464,7 @@ int JabberUserIsTyping( WPARAM wParam, LPARAM lParam )
 				break;
 			}
 		}
-		else if ( item->wantComposingEvent == TRUE && ( jcb & JABBER_CAPS_MESSAGE_EVENTS )) {
+		else if ( jcb & JABBER_CAPS_MESSAGE_EVENTS ) {
 			XmlNode* x = m.addChild( "x" ); x->addAttr( "xmlns", JABBER_FEAT_MESSAGE_EVENTS );
 			if ( item->messageEventIdStr != NULL )
 				x->addChild( "id", item->messageEventIdStr );

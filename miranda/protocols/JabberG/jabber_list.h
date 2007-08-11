@@ -108,6 +108,7 @@ struct JABBER_RESOURCE_STATUS
 	DWORD dwVersionRequestTime;
 	DWORD dwDiscoInfoRequestTime;
 	JabberCapsBits jcbCachedCaps;
+	JabberCapsBits jcbManualDiscoveredCaps;
 
 	// XEP-0085 gone event support
 	BOOL bMessageSessionActive;
@@ -132,7 +133,6 @@ struct JABBER_LIST_ITEM
 	TCHAR* group;
 	char* photoFileName;
 	TCHAR* messageEventIdStr;
-	BOOL wantComposingEvent;
 	WORD cap;	// See CLIENT_CAP_* above
 
 	// LIST_AGENT
