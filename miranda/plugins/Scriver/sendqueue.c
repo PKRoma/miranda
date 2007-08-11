@@ -46,7 +46,9 @@ TCHAR * GetSendBufferMsg(MessageSendQueueItem *item) {
     int len = strlen(item->sendBuffer);
 #if defined( _UNICODE )
     if (item->flags & PREF_UTF) {
-        mir_utf8decode(item->sendBuffer, &szMsg);
+    	char *tempBuffer = mir_strdup(item->sendBuffer);
+        mir_utf8decode(tempBuffer, &szMsg);
+        mir_free(tempBuffer);
     } else {
         szMsg = (TCHAR *)mir_alloc(item->sendBufferSize - len - 1);
         memcpy(szMsg, item->sendBuffer + len + 1, item->sendBufferSize - len - 1);
@@ -169,6 +171,9 @@ void ReleaseSendQueueItems(HWND hwndSender) {
 	for (item = global_sendQueue; item != NULL; item = item->next) {
 		if (item->hwndSender == hwndSender) {
 			item->hwndSender = NULL;
+			if (item->hwndErrorDlg != NULL) {
+				DestroyWindow(item->hwndErrorDlg);
+			}
 			item->hwndErrorDlg = NULL;
 		}
 	}
