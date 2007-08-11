@@ -197,9 +197,19 @@ int PreShutdown(WPARAM /*wParam*/,LPARAM /*lParam*/)
 		SOCKET s = CallService(MS_NETLIB_GETSOCKET, LPARAM(conn.hDirectBoundPort), 0);
 		if (s != INVALID_SOCKET) shutdown(s, 2);
 	}
+	if(conn.hServerPacketRecver)
+	{
+		SOCKET s = CallService(MS_NETLIB_GETSOCKET, LPARAM(conn.hServerPacketRecver), 0);
+		if (s != INVALID_SOCKET) shutdown(s, 2);
+	}
 	if(conn.hServerConn)
 	{
 		SOCKET s = CallService(MS_NETLIB_GETSOCKET, LPARAM(conn.hServerConn), 0);
+		if (s != INVALID_SOCKET) shutdown(s, 2);
+	}
+	if(conn.hMailConn)
+	{
+		SOCKET s = CallService(MS_NETLIB_GETSOCKET, LPARAM(conn.hMailConn), 0);
 		if (s != INVALID_SOCKET) shutdown(s, 2);
 	}
 	return 0;
