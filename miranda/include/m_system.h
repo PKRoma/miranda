@@ -272,7 +272,6 @@ struct UTF8_INTERFACE
 	// this string should be freed using mir_free()
 	char* ( *utf8_decode )( char* str, wchar_t** ucs2 );
 	char* ( *utf8_decodecp )( char* str, int codepage, wchar_t** ucs2 );
-	wchar_t* ( *utf8_decodeW )( char* str );
 
 	// encodes an ANSI string into a utf8 format using the current langpack code page,
 	// or CP_ACP, if lanpack is missing
@@ -297,7 +296,6 @@ extern struct UTF8_INTERFACE utfi;
 
 #define mir_utf8decode(A,B)     utfi.utf8_decode(A,B)
 #define mir_utf8decodecp(A,B,C) utfi.utf8_decodecp(A,B,C)
-#define mir_utf8decodeW(A)      utfi.utf8_decodeW(A)
 #define mir_utf8encode(A)       utfi.utf8_encode(A)
 #define mir_utf8encodecp(A,B)   utfi.utf8_encodecp(A,B)
 #define mir_utf8encodeW(A)      utfi.utf8_encodeW(A)
