@@ -157,12 +157,19 @@ void JabberGcLogCreate( JABBER_LIST_ITEM* item )
 	NotifyEventHooks( hInitChat, (WPARAM)item, 0 );
 }
 
-void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, TCHAR* nick, TCHAR* jid, int action, XmlNode* reason )
+void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, TCHAR* nick, TCHAR* jid, int action, XmlNode* reason, int nStatusCode )
 {
 	int statusToSet = 0;
 	TCHAR* szReason = NULL;
 	if ( reason != NULL && reason->text != NULL )
 		szReason = reason->text;
+
+	if ( !szReason ) {
+		if ( nStatusCode == 322 )
+			szReason = TranslateT( "because room is now members-only" );
+		else if ( nStatusCode == 301 )
+			szReason = TranslateT( "user banned" );
+	}
 
 	TCHAR* myNick = (item->nick == NULL) ? NULL : mir_tstrdup( item->nick );
 	if ( myNick == NULL )
@@ -186,7 +193,9 @@ void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, TCHAR* nick, TCHAR* 
 
 	switch( gcd.iType = action ) {
 	case GC_EVENT_PART:  break;
-	case GC_EVENT_KICK:  gce.ptszStatus = TranslateT( "Moderator" );  break;
+	case GC_EVENT_KICK:
+		gce.ptszStatus = TranslateT( "Moderator" );
+		break;
 	default:
 		for ( int i=0; i < item->resourceCount; i++ ) {
 			JABBER_RESOURCE_STATUS& JS = item->resource[i];

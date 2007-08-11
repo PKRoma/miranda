@@ -666,10 +666,11 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 			itemNode = JabberXmlGetChild( xNode, "item" );
 			XmlNode* reasonNode = JabberXmlGetChild( itemNode, "reason" );
 			str = JabberXmlGetAttrValue( itemNode, "jid" );
+			int iStatus = sttGetStatusCode( xNode );
 			if ( !lstrcmp( nick, item->nick )) {
-				int iStatus = sttGetStatusCode( xNode );
 				switch( iStatus ) {
-				case 301:	case 307:
+				case 301:
+				case 307:
 					JabberGcQuit( item, iStatus, reasonNode );
 					break;
 
@@ -678,15 +679,16 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 					return;
 			}	}
 			else {
-				switch( sttGetStatusCode( xNode )) {
+				switch( iStatus ) {
 				case 303:
 					sttRenameParticipantNick( item, nick, itemNode );
 					return;
 
 				case 301:
 				case 307:
+				case 322:
 					JabberListRemoveResource( LIST_CHATROOM, from );
-					JabberGcLogUpdateMemberStatus( item, nick, str, GC_EVENT_KICK, reasonNode );
+					JabberGcLogUpdateMemberStatus( item, nick, str, GC_EVENT_KICK, reasonNode, iStatus );
 					return;
 		}	}	}
 
