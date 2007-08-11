@@ -671,11 +671,11 @@ static void sttLogListHook( JABBER_LIST_ITEM* item, GCHOOK* gch )
 		break;
 
 	case IDM_ADMIN:
-		JabberAdminGet( gch->pDest->ptszID, xmlnsOwner, "affiliation", _T("admin"), JabberIqResultMucGetAdminList );
+		JabberAdminGet( gch->pDest->ptszID, xmlnsAdmin, "affiliation", _T("admin"), JabberIqResultMucGetAdminList );
 		break;
 
 	case IDM_OWNER:
-		JabberAdminGet( gch->pDest->ptszID, xmlnsOwner, "affiliation", _T("owner"), JabberIqResultMucGetOwnerList );
+		JabberAdminGet( gch->pDest->ptszID, xmlnsAdmin, "affiliation", _T("owner"), JabberIqResultMucGetOwnerList );
 		break;
 
 	case IDM_TOPIC:
@@ -861,12 +861,12 @@ void JabberAddMucListItem( JABBER_MUC_JIDLIST_INFO* jidListInfo, TCHAR* str )
 		JabberAdminGet( roomJid, xmlnsAdmin, "affiliation", _T("outcast"), JabberIqResultMucGetBanList);
 		break;
 	case MUC_ADMINLIST:
-		JabberAdminSet( roomJid, xmlnsOwner, field, str, "affiliation", _T("admin"));
-		JabberAdminGet( roomJid, xmlnsOwner, "affiliation", _T("admin"), JabberIqResultMucGetAdminList);
+		JabberAdminSet( roomJid, xmlnsAdmin, field, str, "affiliation", _T("admin"));
+		JabberAdminGet( roomJid, xmlnsAdmin, "affiliation", _T("admin"), JabberIqResultMucGetAdminList);
 		break;
 	case MUC_OWNERLIST:
-		JabberAdminSet( roomJid, xmlnsOwner, field, str, "affiliation", _T("owner"));
-		JabberAdminGet( roomJid, xmlnsOwner, "affiliation", _T("owner"), JabberIqResultMucGetOwnerList);
+		JabberAdminSet( roomJid, xmlnsAdmin, field, str, "affiliation", _T("owner"));
+		JabberAdminGet( roomJid, xmlnsAdmin, "affiliation", _T("owner"), JabberIqResultMucGetOwnerList);
 		break;
 }	}
 
@@ -886,9 +886,9 @@ void JabberDeleteMucListItem( JABBER_MUC_JIDLIST_INFO* jidListInfo, TCHAR* jid )
 		JabberAdminSet( roomJid, xmlnsAdmin, "jid", jid, "role", _T("participant"));
 		break;
 	case MUC_ADMINLIST:		// change affiliation to member ( from admin )
-		JabberAdminSet( roomJid, xmlnsOwner, "jid", jid, "affiliation", _T("member"));
+		JabberAdminSet( roomJid, xmlnsAdmin, "jid", jid, "affiliation", _T("member"));
 		break;
 	case MUC_OWNERLIST:		// change affiliation to admin ( from owner )
-		JabberAdminSet( roomJid, xmlnsOwner, "jid", jid, "affiliation", _T("admin"));
+		JabberAdminSet( roomJid, xmlnsAdmin, "jid", jid, "affiliation", _T("admin"));
 		break;
 }	}
