@@ -223,26 +223,28 @@ char* ThreadData::httpTransact(char* szCommand, size_t cmdsz, size_t& ressz)
 						szBody += 4;
 						hdrSize = szBody - szResult;
 
+						// Make a copy of response headers for processing
 						tbuf = (char*)mir_alloc(hdrSize + 1);
 						memcpy(tbuf, szResult, hdrSize);
 						tbuf[hdrSize] = 0;
 
 						hdrs = httpParseHeader( tbuf, status );
-						if (status == 100)
-						{
-							ackSize -= hdrSize;
-							memmove(szResult, szResult + hdrSize, ackSize+1);
-							mir_free(tbuf);
-						}
-						else break;
+						if (status != 100) break;
+
+						// Remove 100 status response from response buffer
+						ackSize -= hdrSize;
+						memmove(szResult, szResult + hdrSize, ackSize+1);
+						mir_free(tbuf);
 					}
 					
 					if (szBody != NULL)
 					{
 						tHeaders.readFromBuffer( hdrs );
 
+						// Calculate the size of the response packet
 						const char* contLenHdr = tHeaders[ "Content-Length" ];
 						ressz = hdrSize + (contLenHdr ? atol( contLenHdr ) : 0);
+						// Adjust the buffer to hold complete response
 						if (bufSize <= ressz)
 						{
 							bufSize = ressz + 1;
@@ -251,7 +253,6 @@ char* ThreadData::httpTransact(char* szCommand, size_t cmdsz, size_t& ressz)
 						mir_free(tbuf);
 					}
 				}
-
 				// Content-Length bytes reached, all data received
 				if (ackSize >= ressz) break;
 			}
