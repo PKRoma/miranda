@@ -256,8 +256,10 @@ static void AddEventToBuffer(char **buffer, int *bufferEnd, int *bufferAlloced, 
 				Log_AppendRTF( streamData, FALSE, buffer, bufferEnd, bufferAlloced, _T("%s"), streamData->lin->ptszText );
 			break;
 		case GC_EVENT_ACTION:
-			if ( streamData->lin->ptszNick && streamData->lin->ptszText)
-				Log_AppendRTF(streamData, TRUE, buffer, bufferEnd, bufferAlloced, TranslateT("%s %s"), streamData->lin->ptszNick, streamData->lin->ptszText);
+			if ( streamData->lin->ptszNick && streamData->lin->ptszText) {
+				Log_AppendRTF(streamData, TRUE, buffer, bufferEnd, bufferAlloced, _T("%s "), streamData->lin->ptszNick);
+				Log_AppendRTF(streamData, FALSE, buffer, bufferEnd, bufferAlloced, _T("%s"), streamData->lin->ptszText);
+			}
 			break;
 		case GC_EVENT_JOIN:
 			if (pszNick) {

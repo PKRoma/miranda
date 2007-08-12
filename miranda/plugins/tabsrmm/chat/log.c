@@ -114,7 +114,7 @@ static int EventToIcon(LOGINFO * lin)
 }
 
 /* replace pattern `ptrn' with the string `rplc' in string `src' points to */
-static TCHAR * _tcsrplc(TCHAR **src, const TCHAR *ptrn, const TCHAR *rplc) 
+static TCHAR * _tcsrplc(TCHAR **src, const TCHAR *ptrn, const TCHAR *rplc)
 {
 	size_t lSrc, lPtrn, lRplc;
 	TCHAR *tszFound, *tszTail;
@@ -124,9 +124,9 @@ static TCHAR * _tcsrplc(TCHAR **src, const TCHAR *ptrn, const TCHAR *rplc)
 	lRplc = _tcslen(rplc);
 	if (lPtrn && lSrc && lSrc >= lPtrn && (tszFound = _tcsstr(*src, ptrn)) != NULL) {
 		if (lRplc > lPtrn)
-			*src = (TCHAR *) realloc((void *) *src, 
+			*src = (TCHAR *) realloc((void *) *src,
 				sizeof(TCHAR) * (lSrc + lRplc - lPtrn + 1));
-		if (tszTail = (TCHAR *) malloc(sizeof(TCHAR) * 
+		if (tszTail = (TCHAR *) malloc(sizeof(TCHAR) *
 			(lSrc - (tszFound - *src) - lPtrn + 1))) {
 				/* save tail */
 				_tcscpy(tszTail, tszFound + lPtrn);
@@ -140,10 +140,10 @@ static TCHAR * _tcsrplc(TCHAR **src, const TCHAR *ptrn, const TCHAR *rplc)
 	return *src;
 }
 
-/* replace pattern `ptrn' with the string `rplc' in string `src', 
+/* replace pattern `ptrn' with the string `rplc' in string `src',
    `src' is supposed to be `n' character long (or no checking is done if n < 0).
    This function is useful for statically allocated buffers */
-static TCHAR * _tcsnrplc(TCHAR *src, size_t n, const TCHAR *ptrn, const TCHAR *rplc) 
+static TCHAR * _tcsnrplc(TCHAR *src, size_t n, const TCHAR *ptrn, const TCHAR *rplc)
 {
 	size_t lSrc, lPtrn, lRplc;
 	TCHAR *tszFound, *tszTail;
@@ -154,7 +154,7 @@ static TCHAR * _tcsnrplc(TCHAR *src, size_t n, const TCHAR *ptrn, const TCHAR *r
 	if (lPtrn && lSrc && lSrc >= lPtrn && /* lengths are ok */
 		(tszFound = _tcsstr(src, ptrn)) != NULL && /* pattern was found in string */
 		(n < 0 || lSrc - lPtrn + lRplc < n) && /* there is enough room in the string */
-		(tszTail = (TCHAR *) malloc(sizeof(TCHAR) *  
+		(tszTail = (TCHAR *) malloc(sizeof(TCHAR) *
 			(lSrc - (tszFound - src) - lPtrn + 1))) != NULL) {
 				/* save tail */
 				_tcscpy(tszTail, tszFound + lPtrn);
@@ -163,7 +163,7 @@ static TCHAR * _tcsnrplc(TCHAR *src, size_t n, const TCHAR *ptrn, const TCHAR *r
 				/* write tail */
 				_tcscpy(tszFound + lRplc, tszTail);
 				free((void *) tszTail);
-			} 
+			}
 	return src;
 }
 
@@ -339,18 +339,20 @@ static void AddEventToBuffer(char **buffer, int *bufferEnd, int *bufferAlloced, 
 				Log_AppendRTF( streamData, FALSE, buffer, bufferEnd, bufferAlloced, _T("%s"), streamData->lin->ptszText );
 			break;
 		case GC_EVENT_ACTION:
-			if ( streamData->lin->ptszNick && streamData->lin->ptszText)
-				Log_AppendRTF(streamData, TRUE, buffer, bufferEnd, bufferAlloced, TranslateT("%s %s"), streamData->lin->ptszNick, streamData->lin->ptszText);
+			if ( streamData->lin->ptszNick && streamData->lin->ptszText) {
+				Log_AppendRTF(streamData, TRUE, buffer, bufferEnd, bufferAlloced, _T("%s "), streamData->lin->ptszNick);
+				Log_AppendRTF(streamData, FALSE, buffer, bufferEnd, bufferAlloced, _T("%s"), streamData->lin->ptszText);
+			}
 			break;
 		case GC_EVENT_JOIN:
 			if (pszNick) {
 				if (!streamData->lin->bIsMe) {
 					/* replace nick of a newcomer with a link */
 					if (g_Settings.ClickableNicks)
-						_sntprintf(szTemp2, SIZEOF(szTemp2), 
+						_sntprintf(szTemp2, SIZEOF(szTemp2),
 							TranslateT("%s has joined"), _T("~~++#%s#++~~"));
-					Log_AppendRTF(streamData, TRUE, buffer, bufferEnd, bufferAlloced, 
-						g_Settings.ClickableNicks ? szTemp2 : TranslateT("%s has joined"), 
+					Log_AppendRTF(streamData, TRUE, buffer, bufferEnd, bufferAlloced,
+						g_Settings.ClickableNicks ? szTemp2 : TranslateT("%s has joined"),
 						pszNick);
 				} else
 					Log_AppendRTF(streamData, TRUE, buffer, bufferEnd, bufferAlloced, TranslateT("You have joined %s"), streamData->si->ptszName);
@@ -372,11 +374,11 @@ static void AddEventToBuffer(char **buffer, int *bufferEnd, int *bufferAlloced, 
 			if (pszNick && streamData->lin->ptszText) {
 				if (!streamData->lin->bIsMe) {
 					if (g_Settings.ClickableNicks)
-						_sntprintf(szTemp2, SIZEOF(szTemp2), 
-							TranslateT("%s is now known as %s"), 
+						_sntprintf(szTemp2, SIZEOF(szTemp2),
+							TranslateT("%s is now known as %s"),
 							_T("%s"), _T("~~++#%s#++~~"));
-					Log_AppendRTF(streamData, TRUE, buffer, bufferEnd, bufferAlloced, 
-						g_Settings.ClickableNicks ? szTemp2 : TranslateT("%s is now known as %s"), 
+					Log_AppendRTF(streamData, TRUE, buffer, bufferEnd, bufferAlloced,
+						g_Settings.ClickableNicks ? szTemp2 : TranslateT("%s is now known as %s"),
 						pszNick, streamData->lin->ptszText);
 				} else
 					Log_AppendRTF(streamData, TRUE, buffer, bufferEnd, bufferAlloced, TranslateT("You are now known as %s"), streamData->lin->ptszText);
@@ -386,10 +388,10 @@ static void AddEventToBuffer(char **buffer, int *bufferEnd, int *bufferAlloced, 
 			if (streamData->lin->ptszNick && streamData->lin->ptszStatus) {
 				/* make moderator nick clickable */
 				if (g_Settings.ClickableNicks)
-					_sntprintf(szTemp2, SIZEOF(szTemp2), 
+					_sntprintf(szTemp2, SIZEOF(szTemp2),
 						TranslateT("%s kicked %s"), _T("~~++#%s#++~~"), _T("%s"));
-				Log_AppendRTF(streamData, TRUE, buffer, bufferEnd, bufferAlloced, 
-					g_Settings.ClickableNicks ? szTemp2 : TranslateT("%s kicked %s"), 
+				Log_AppendRTF(streamData, TRUE, buffer, bufferEnd, bufferAlloced,
+					g_Settings.ClickableNicks ? szTemp2 : TranslateT("%s kicked %s"),
 					streamData->lin->ptszStatus, streamData->lin->ptszNick);
 			}
 			if (streamData->lin->ptszText)
@@ -397,12 +399,12 @@ static void AddEventToBuffer(char **buffer, int *bufferEnd, int *bufferAlloced, 
 			break;
 		case GC_EVENT_NOTICE:
 			if (streamData->lin->ptszNick && streamData->lin->ptszText) {
-				if (g_Settings.ClickableNicks) 
-					_sntprintf(szTemp2, SIZEOF(szTemp2), 
+				if (g_Settings.ClickableNicks)
+					_sntprintf(szTemp2, SIZEOF(szTemp2),
 						TranslateT("Notice from %s: %s"),
 						_T("~~++#%s#++~~"), _T("%s"));
-				Log_AppendRTF(streamData, TRUE, buffer, bufferEnd, bufferAlloced, 
-					g_Settings.ClickableNicks ? szTemp2 : TranslateT("Notice from %s: "), 
+				Log_AppendRTF(streamData, TRUE, buffer, bufferEnd, bufferAlloced,
+					g_Settings.ClickableNicks ? szTemp2 : TranslateT("Notice from %s: "),
 					streamData->lin->ptszNick, streamData->lin->ptszText);
 				Log_AppendRTF(streamData, FALSE, buffer, bufferEnd, bufferAlloced, _T("%s"), streamData->lin->ptszText);
 			}
@@ -412,11 +414,11 @@ static void AddEventToBuffer(char **buffer, int *bufferEnd, int *bufferAlloced, 
 				Log_AppendRTF(streamData, FALSE, buffer, bufferEnd, bufferAlloced, TranslateT("The topic is \'%s%s\'"), streamData->lin->ptszText, _T("%r"));
 			if (streamData->lin->ptszNick) {
 				/*make nick of a person who's changed topic clickable */
-				if (g_Settings.ClickableNicks) 
-					_sntprintf(szTemp2, SIZEOF(szTemp2), 
+				if (g_Settings.ClickableNicks)
+					_sntprintf(szTemp2, SIZEOF(szTemp2),
 						TranslateT(" (set by %s)"), _T("~~++#%s#++~~"));
-				Log_AppendRTF(streamData, TRUE, buffer, bufferEnd, bufferAlloced, 
-					g_Settings.ClickableNicks ? szTemp2 : TranslateT(" (set by %s)"), 
+				Log_AppendRTF(streamData, TRUE, buffer, bufferEnd, bufferAlloced,
+					g_Settings.ClickableNicks ? szTemp2 : TranslateT(" (set by %s)"),
 					streamData->lin->ptszNick);
 			}
 			break;
@@ -426,23 +428,23 @@ static void AddEventToBuffer(char **buffer, int *bufferEnd, int *bufferAlloced, 
 			break;
 		case GC_EVENT_ADDSTATUS:
 			if (streamData->lin->ptszNick && streamData->lin->ptszText && streamData->lin->ptszStatus) {
-				if (g_Settings.ClickableNicks) 
-					_sntprintf(szTemp2, SIZEOF(szTemp2), 
+				if (g_Settings.ClickableNicks)
+					_sntprintf(szTemp2, SIZEOF(szTemp2),
 						TranslateT("%s enables \'%s\' status for %s"),
 						_T("~~++#%s#++~~"), _T("%s"), _T("~~++#%s#++~~"));
-				Log_AppendRTF(streamData, TRUE, buffer, bufferEnd, bufferAlloced, 
-					g_Settings.ClickableNicks ? szTemp2 : TranslateT("%s enables \'%s\' status for %s"), 
+				Log_AppendRTF(streamData, TRUE, buffer, bufferEnd, bufferAlloced,
+					g_Settings.ClickableNicks ? szTemp2 : TranslateT("%s enables \'%s\' status for %s"),
 					streamData->lin->ptszText, streamData->lin->ptszStatus, streamData->lin->ptszNick);
 			}
 			break;
 		case GC_EVENT_REMOVESTATUS:
 			if (streamData->lin->ptszNick && streamData->lin->ptszText && streamData->lin->ptszStatus) {
-				if (g_Settings.ClickableNicks) 
-					_sntprintf(szTemp2, SIZEOF(szTemp2), 
+				if (g_Settings.ClickableNicks)
+					_sntprintf(szTemp2, SIZEOF(szTemp2),
 						TranslateT("%s disables \'%s\' status for %s"),
 						_T("~~++#%s#++~~"), _T("%s"), _T("~~++#%s#++~~"));
-				Log_AppendRTF(streamData, TRUE, buffer, bufferEnd, bufferAlloced, 
-					g_Settings.ClickableNicks ? szTemp2 : TranslateT("%s disables \'%s\' status for %s"), 
+				Log_AppendRTF(streamData, TRUE, buffer, bufferEnd, bufferAlloced,
+					g_Settings.ClickableNicks ? szTemp2 : TranslateT("%s disables \'%s\' status for %s"),
 					streamData->lin->ptszText , streamData->lin->ptszStatus, streamData->lin->ptszNick);
 			}
 			break;
@@ -773,9 +775,9 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 
             mathReplaceInfo.hwndRichEditControl = hwndRich;
 
-            if (!bRedraw) 
-                mathReplaceInfo.sel = &mathNewSel; 
-            else 
+            if (!bRedraw)
+                mathReplaceInfo.sel = &mathNewSel;
+            else
                 mathReplaceInfo.sel=0;
 
             mathReplaceInfo.disableredraw = TRUE;
@@ -819,7 +821,7 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 					SendMessage(hwndRich, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf2);
 				}
 				fi.chrg.cpMin = fi.chrgText.cpMax;
-            }	
+            }
             SendMessage(hwndRich, EM_SETSEL, -1, -1);
         }
 
