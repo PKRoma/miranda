@@ -150,10 +150,13 @@ char* ThreadData::httpTransact(char* szCommand, size_t cmdsz, size_t& ressz)
 
 	size_t bufSize = 4096;
 	char* szResult = (char*)mir_alloc(bufSize);
-	char* szBody = NULL; 
+	char* szBody;
 
 	for (unsigned rc=0; rc<3; ++rc)
 	{
+		ressz = 0;
+		szBody = NULL;
+
 		if (s == NULL)
 		{
 			NETLIBOPENCONNECTION tConn = { 0 };
@@ -164,16 +167,14 @@ char* ThreadData::httpTransact(char* szCommand, size_t cmdsz, size_t& ressz)
 			tConn.timeout = 5;
 			MSN_DebugLog("Connecting to gateway: %s:%d", tConn.szHost, tConn.wPort);
 			s = ( HANDLE )MSN_CallService( MS_NETLIB_OPENCONNECTION, ( WPARAM )hNetlibUser, ( LPARAM )&tConn );
+			if (s == NULL) break;
 			tSelect.hReadConns[ 0 ] = s;
 		}
 
-		szBody = NULL;
 		int lstRes = Netlib_Send(s, szCommand, cmdsz, 0);
 		if (lstRes != SOCKET_ERROR)
 		{
 			size_t ackSize = 0;
-
-			ressz = 0;
 			for(;;)
 			{
 				// Wait for the next packet
@@ -231,7 +232,6 @@ char* ThreadData::httpTransact(char* szCommand, size_t cmdsz, size_t& ressz)
 						{
 							ackSize -= hdrSize;
 							memmove(szResult, szResult + hdrSize, ackSize+1);
-							szBody = NULL;
 							mir_free(tbuf);
 						}
 						else break;
