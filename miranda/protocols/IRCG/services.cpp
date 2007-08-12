@@ -1221,6 +1221,8 @@ static void __cdecl ConnectServerThread(LPVOID di)
 
 			if ( lstrlenA( prefs->MySpecifiedHost ))
 				mir_forkthread( ResolveIPThread, new IPRESOLVE( prefs->MySpecifiedHost, IP_MANUAL ));
+
+			DoEvent(GC_EVENT_CHANGESESSIONAME, _T("Network log"), NULL, g_ircSession.GetInfo().sNetwork.c_str(), NULL, NULL, NULL, FALSE, TRUE); 
 		}
 		else {
 			Temp = OldStatus;
@@ -1585,11 +1587,10 @@ static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 
 		gcw.cbSize = sizeof(GCSESSION);
 		gcw.iType = GCW_SERVER;
-		gcw.ptszID = _T("Network log");
+		gcw.pszID = "Network log";
 		gcw.pszModule = IRCPROTONAME;
-		gcw.ptszName = TranslateT("Offline");
-		gcw.dwFlags = GC_TCHAR;
-		CallServiceSync(MS_GC_NEWSESSION, 0, (LPARAM)&gcw);
+		gcw.pszName = prefs->Network;
+		CallServiceSync( MS_GC_NEWSESSION, 0, (LPARAM)&gcw );
 
 		gce.cbSize = sizeof(GCEVENT);
 		gce.dwFlags = GC_TCHAR;

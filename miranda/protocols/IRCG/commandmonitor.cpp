@@ -2366,7 +2366,6 @@ void CMyMonitor::OnIrcDisconnected()
 	KillChatTimer( IdentTimer );
 	OldStatus = ID_STATUS_OFFLINE;
 	ProtoBroadcastAck(IRCPROTONAME,NULL,ACKTYPE_STATUS,ACKRESULT_SUCCESS,(HANDLE)Temp, ID_STATUS_OFFLINE);
-	DoEvent(GC_EVENT_CHANGESESSIONAME, _T("Network log"), NULL, TranslateT("Offline"), NULL, NULL, NULL, FALSE, TRUE); 
 
 	TString sDisconn = _T("\0035\002");
 	sDisconn += TranslateT("*Disconnected*");
@@ -2455,12 +2454,12 @@ bool DoOnConnect( const CIrcMessage* pmsg )
 					PostIrcMessage( _T("/JOIN %s"), gci.pszName);
 	}	}	}
 
-	DoEvent( GC_EVENT_CHANGESESSIONAME, _T("Network log"), NULL, g_ircSession.GetInfo().sNetwork.c_str(), NULL, NULL, NULL, FALSE, TRUE); 
 	DoEvent( GC_EVENT_ADDGROUP, _T("Network log"), NULL, NULL, _T("Normal"), NULL, NULL, FALSE, TRUE); 
 	{
 		GCDEST gcd = {0};
 		GCEVENT gce = {0};
 
+		gce.dwFlags = GC_TCHAR;
 		gce.cbSize = sizeof(GCEVENT);
 		gcd.ptszID = _T("Network log");
 		gcd.pszModule = IRCPROTONAME;
