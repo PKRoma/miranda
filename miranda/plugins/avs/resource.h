@@ -4,6 +4,7 @@
 //
 #define ID_USE_DEFAULTS                 3
 #define IDD_OPTIONS                     101
+#define IDD_OPTIONS_PICTS               101
 #define IDD_OPENSUBCLASS                102
 #define IDD_AVATAROPTIONS               103
 #define IDI_AVATAR                      104
@@ -11,6 +12,8 @@
 #define IDD_DIALOG1                     106
 #define IDD_USER_AVATAR                 106
 #define IDD_PROTO_AVATARS               107
+#define IDD_OPTIONS_AVATARS             109
+#define IDD_OPTIONS_OWN                 110
 #define IDC_PROTOCOLS                   1001
 #define IDC_CLIST                       1002
 #define IDC_SETPROTOPIC                 1003

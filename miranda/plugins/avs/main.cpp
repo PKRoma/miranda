@@ -118,7 +118,9 @@ PLUGININFOEX pluginInfoEx = {
 #endif
 };
 
-extern BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern BOOL CALLBACK DlgProcOptionsAvatars(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern BOOL CALLBACK DlgProcOptionsProtos(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern BOOL CALLBACK DlgProcOptionsOwn(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcAvatarOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcAvatarUserInfo(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcAvatarProtoInfo(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -2146,12 +2148,25 @@ static int OptInit(WPARAM wParam, LPARAM lParam)
     odp.cbSize = sizeof(odp);
     odp.position = 0;
     odp.hInstance = g_hInst;
-    odp.pszGroup = LPGEN("Customize");
-    odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPTIONS);
-    odp.pszTitle = LPGEN("Contact pictures");
-    odp.pfnDlgProc = DlgProcOptions;
     odp.flags = ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
+    odp.pszGroup = LPGEN("Customize");
+    odp.pszTitle = LPGEN("Avatars");
+
+    odp.pszTab = LPGEN("Protocols");
+    odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPTIONS_PICTS);
+    odp.pfnDlgProc = DlgProcOptionsProtos;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
+
+    odp.pszTab = LPGEN("Contact Avatars");
+    odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPTIONS_AVATARS);
+    odp.pfnDlgProc = DlgProcOptionsAvatars;
+    CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
+
+    odp.pszTab = LPGEN("Own Avatars");
+    odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPTIONS_OWN);
+    odp.pfnDlgProc = DlgProcOptionsOwn;
+    CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
+
     return 0;
 }
 
