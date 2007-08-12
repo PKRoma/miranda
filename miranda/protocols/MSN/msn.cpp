@@ -218,13 +218,13 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 
 		GCREGISTER gcr = {0};
 		gcr.cbSize = sizeof( GCREGISTER );
-		gcr.dwFlags = GC_TYPNOTIF|GC_CHANMGR;
+		gcr.dwFlags = GC_TYPNOTIF | GC_CHANMGR;
 		gcr.iMaxText = 0;
 		gcr.nColors = 16;
 		gcr.pColors = &crCols[0];
 		gcr.pszModuleDispName = msnProtocolName;
 		gcr.pszModule = msnProtocolName;
-		MSN_CallService( MS_GC_REGISTER, 0, ( LPARAM )&gcr );
+		CallServiceSync( MS_GC_REGISTER, 0, ( LPARAM )&gcr );
 
 		arHooks.insert( HookEvent( ME_GC_EVENT, MSN_GCEventHook ));
 		arHooks.insert( HookEvent( ME_GC_BUILDMENU, MSN_GCMenuHook ));

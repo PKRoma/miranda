@@ -258,7 +258,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		gcr.pColors = &crCols[0];
 		gcr.pszModuleDispName = jabberProtoName;
 		gcr.pszModule = jabberProtoName;
-		JCallService( MS_GC_REGISTER, NULL, ( LPARAM )&gcr );
+		CallServiceSync( MS_GC_REGISTER, NULL, ( LPARAM )&gcr );
 
 		arHooks.insert( HookEvent( ME_GC_EVENT, JabberGcEventHook ));
 		arHooks.insert( HookEvent( ME_GC_BUILDMENU, JabberGcMenuHook ));

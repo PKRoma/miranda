@@ -77,8 +77,8 @@ BOOL CList_AddDCCChat(TString name, TString hostmask, unsigned long adr, int por
 		cle.ptszTooltip = szNick;
 		cle.lParam = (LPARAM)pdci;
 
-		if ( CallService(MS_CLIST_GETEVENT, (WPARAM)hContact, (LPARAM)0))
-			CallService(MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM)"dccchat");
+		if ( CallService( MS_CLIST_GETEVENT, (WPARAM)hContact, (LPARAM)0))
+			CallService( MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM)"dccchat");
 		CallService( MS_CLIST_ADDEVENT,(WPARAM) hContact,(LPARAM) &cle);
 	}
 	return TRUE;
@@ -101,7 +101,7 @@ HANDLE CList_AddContact(CONTACT * user, bool InList, bool SetOnline)
 	}
 	
 	// here we create a new one since no one is to be found
-	hContact = (HANDLE) CallService(MS_DB_CONTACT_ADD, 0, 0);
+	hContact = (HANDLE) CallService( MS_DB_CONTACT_ADD, 0, 0);
 	if ( hContact ) {
 		CallService( MS_PROTO_ADDTOCONTACT, (WPARAM) hContact, (LPARAM)IRCPROTONAME );
 
@@ -160,7 +160,7 @@ bool CList_SetAllOffline(BYTE ChatsToo)
 				DBWriteContactSettingString( hContact, IRCPROTONAME, "Host", "" );
 		}	}
 
-		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
+		hContact = (HANDLE) CallService( MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
 	return true;
 }
@@ -179,9 +179,9 @@ HANDLE CList_FindContact (CONTACT* user)
 	DBVARIANT dbv3;	
 	DBVARIANT dbv4;	
 	DBVARIANT dbv5;	
-	HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+	HANDLE hContact = (HANDLE) CallService( MS_DB_CONTACT_FINDFIRST, 0, 0);
 	while (hContact) {
-		szProto = ( char* ) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
+		szProto = ( char* ) CallService( MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 		if ( szProto != NULL && !lstrcmpiA( szProto, IRCPROTONAME )) {
 			if ( DBGetContactSettingByte( hContact, IRCPROTONAME, "ChatRoom", 0) == 0) {
 				HANDLE hContact_temp = NULL;
@@ -237,7 +237,7 @@ HANDLE CList_FindContact (CONTACT* user)
 					return 0;
 		}	}	}
 		
-		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
+		hContact = (HANDLE) CallService( MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
 	mir_free(lowercasename);
 	return 0;

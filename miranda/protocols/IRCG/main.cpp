@@ -122,7 +122,7 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK *link )
 		TCHAR* szTemp = ( TCHAR* )alloca( sizeof( TCHAR )*( lstrlen(szVersion) + lstrlen(szText) + 10 ));
 		mir_sntprintf(szTemp, lstrlen(szVersion) + lstrlen(szText) + 10, szText, szVersion);
 		if ( IDYES == MessageBox( NULL, TranslateTS(szTemp), TranslateT( "Information" ), MB_YESNO | MB_ICONINFORMATION ))
-			CallService(MS_UTILS_OPENURL, 1, (LPARAM) "http://miranda-im.org/");
+			CallService( MS_UTILS_OPENURL, 1, (LPARAM) "http://miranda-im.org/");
 		return 1;
 	}
 

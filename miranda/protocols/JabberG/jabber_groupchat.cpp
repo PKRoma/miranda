@@ -529,13 +529,13 @@ void sttRenameParticipantNick( JABBER_LIST_ITEM* item, TCHAR* oldNick, XmlNode *
 				gce.ptszUserInfo = jid;
 			gce.time = time(0);
 			gce.dwFlags = GC_TCHAR;
-			JCallService( MS_GC_EVENT, NULL, ( LPARAM )&gce );
+			CallServiceSync( MS_GC_EVENT, NULL, ( LPARAM )&gce );
 
 			gcd.iType = GC_EVENT_NICK;
 			gce.ptszNick = oldNick;
 			gce.ptszUID = newNick;
 			gce.ptszText = newNick;
-			JCallService( MS_GC_EVENT, NULL, ( LPARAM )&gce );
+			CallServiceSync( MS_GC_EVENT, NULL, ( LPARAM )&gce );
 			break;
 }	}	}
 
@@ -798,14 +798,14 @@ void JabberGroupchatProcessMessage( XmlNode *node, void *userdata )
 	gce.ptszText = EscapeChatTags( msgText );
 	gce.bIsMe = lstrcmp( nick, item->nick ) == 0;
 	gce.dwFlags = GC_TCHAR | GCEF_ADDTOLOG;
-	JCallService(MS_GC_EVENT, NULL, (LPARAM)&gce);
+	CallServiceSync( MS_GC_EVENT, NULL, (LPARAM)&gce );
 
 	item->bChatActive = 2;
 
 	if ( gcd.iType == GC_EVENT_TOPIC ) {
 		gce.dwFlags &= ~GCEF_ADDTOLOG;
 		gcd.iType = GC_EVENT_SETSBTEXT;
-		JCallService(MS_GC_EVENT, NULL, (LPARAM)&gce);
+		CallServiceSync( MS_GC_EVENT, NULL, (LPARAM)&gce );
 	}
 
 	mir_free( (void*)gce.pszText ); // Since we processed msgText and created a new string

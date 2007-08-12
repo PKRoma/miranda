@@ -336,7 +336,7 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 		gci.Flags = BYID|NAME|COUNT;
 		gci.pszModule = IRCPROTONAME;
 		gci.pszID = (TCHAR*)S.c_str();
-		if ( !CallService( MS_GC_GETINFO, 0, ( LPARAM )&gci ))
+		if ( !CallServiceSync( MS_GC_GETINFO, 0, ( LPARAM )&gci ))
 			mir_sntprintf( szTemp, SIZEOF(szTemp), _T("users: %u"), gci.iCount);
 
 		DoEvent( GC_EVENT_INFORMATION, NULL, g_ircSession.GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 

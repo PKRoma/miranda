@@ -650,9 +650,9 @@ BOOL CALLBACK QuickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				DBWriteContactSettingString(NULL,IRCPROTONAME,"ServerName",prefs->ServerName);
 				DBWriteContactSettingString(NULL,IRCPROTONAME,"PortStart",prefs->PortStart);
 				DBWriteContactSettingString(NULL,IRCPROTONAME,"PortEnd",prefs->PortEnd);
-				CallService(MS_DB_CRYPT_ENCODESTRING, 499, (LPARAM)prefs->Password);
+				CallService( MS_DB_CRYPT_ENCODESTRING, 499, (LPARAM)prefs->Password);
 				DBWriteContactSettingString(NULL,IRCPROTONAME,"Password",prefs->Password);
-				CallService(MS_DB_CRYPT_DECODESTRING, 499, (LPARAM)prefs->Password);
+				CallService( MS_DB_CRYPT_DECODESTRING, 499, (LPARAM)prefs->Password);
 				DBWriteContactSettingString(NULL,IRCPROTONAME,"Network",prefs->Network);
 				DBWriteContactSettingByte(NULL,IRCPROTONAME,"UseSSL",prefs->iSSL);
 			}

@@ -60,7 +60,6 @@ UINT_PTR  RetryTimer = 0;
 TString   StatusMessage = _T("");
 
 extern bool				nickflag;
-GETEVENTFUNC			pfnAddEvent = 0;
 
 VOID CALLBACK RetryTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime);
 
@@ -80,35 +79,35 @@ static void InitMenus(void)
 		strcpy( d, IRC_QUICKCONNECT );
 		mi.popupPosition = 500090000;
 		mi.pszPopupName = ALTIRCPROTONAME;
-		hMenuQuick= (void *)CallService(MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
+		hMenuQuick= (void *)CallService( MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
 
 		mi.pszName = LPGEN("&Join a channel");
 		mi.icolibItem = GetIconHandle(IDI_JOIN);
 		strcpy( d, IRC_JOINCHANNEL );
 		mi.popupPosition = 500090001;
 		mi.pszPopupName = ALTIRCPROTONAME;
-		hMenuJoin = (void *)CallService(MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
+		hMenuJoin = (void *)CallService( MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
 
 		mi.pszName = LPGEN("&Change your nickname");
 		mi.icolibItem = GetIconHandle(IDI_WHOIS);
 		strcpy( d, IRC_CHANGENICK );
 		mi.popupPosition = 500090002;
 		mi.pszPopupName = ALTIRCPROTONAME;
-		hMenuNick = (void *)CallService(MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
+		hMenuNick = (void *)CallService( MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
 
 		mi.pszName = LPGEN("Show the &list of available channels");
 		mi.icolibItem = GetIconHandle(IDI_LIST);
 		strcpy( d, IRC_SHOWLIST );
 		mi.popupPosition = 500090003;
 		mi.pszPopupName = ALTIRCPROTONAME;
-		hMenuList = (void *)CallService(MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
+		hMenuList = (void *)CallService( MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
 
 		mi.pszName = LPGEN("&Show the server window");
 		mi.icolibItem = GetIconHandle(IDI_SERVER);
 		strcpy( d, IRC_SHOWSERVER );
 		mi.popupPosition = 500090004;
 		mi.pszPopupName = ALTIRCPROTONAME;
-		hMenuServer = (void *)CallService(MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
+		hMenuServer = (void *)CallService( MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
 	}
 
 	mi.pszName = LPGEN("&Leave the channel");
@@ -116,21 +115,21 @@ static void InitMenus(void)
 	strcpy( d, IRC_MENU1CHANNEL );
 	mi.pszContactOwner = IRCPROTONAME;
 	mi.popupPosition = 500090000;
-	hContactMenu1 = (void *)CallService(MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
+	hContactMenu1 = (void *)CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
 
 	mi.pszName = LPGEN("&User details");
 	mi.icolibItem = GetIconHandle(IDI_WHOIS);
 	strcpy( d, IRC_MENU2CHANNEL );
 	mi.pszContactOwner = IRCPROTONAME;
 	mi.popupPosition = 500090001;
-	hContactMenu2 = (void *)CallService(MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
+	hContactMenu2 = (void *)CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
 
 	mi.pszName = LPGEN("&Ignore");
 	mi.icolibItem = GetIconHandle(IDI_BLOCK);
 	strcpy( d, IRC_MENU3CHANNEL );
 	mi.pszContactOwner = IRCPROTONAME;
 	mi.popupPosition = 500090002;
-	hContactMenu3 = (void *)CallService(MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
+	hContactMenu3 = (void *)CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
 
 	CLISTMENUITEM clmi;
 	memset( &clmi, 0, sizeof( clmi ));
@@ -347,7 +346,7 @@ static int Service_FileReceive(WPARAM wParam,LPARAM lParam)
 	dbei.eventType = EVENTTYPE_FILE;
 	dbei.cbBlob = sizeof(DWORD) + strlen(szFile) + strlen(szDesc) + 2;
 	dbei.pBlob = (PBYTE) pre->szMessage;
-	CallService(MS_DB_EVENT_ADD, (WPARAM) ccs->hContact, (LPARAM) &dbei);
+	CallService( MS_DB_EVENT_ADD, (WPARAM) ccs->hContact, (LPARAM) &dbei);
 	return 0;
 }
 
@@ -487,7 +486,7 @@ static int Service_Menu1Command(WPARAM wp, LPARAM lp)
 			gce.pDest = &gcd;
 			CallChatEvent( WINDOW_VISIBLE, (LPARAM)&gce);
 		}
-		else CallService(MS_MSG_SENDMESSAGE, (WPARAM)wp, 0);
+		else CallService( MS_MSG_SENDMESSAGE, (WPARAM)wp, 0);
 	}
 	return 0;
 }
@@ -899,7 +898,7 @@ int Service_GCEventHook(WPARAM wParam,LPARAM lParam)
 							acs.handleType = HANDLE_SEARCHRESULT;
 							acs.szProto = IRCPROTONAME;
 							acs.psr = &psr;
-							CallService(MS_ADDCONTACT_SHOW, (WPARAM)NULL, (LPARAM)&acs);
+							CallService( MS_ADDCONTACT_SHOW, (WPARAM)NULL, (LPARAM)&acs);
 							mir_free( psr.nick );
 						}
 						break;
@@ -1033,7 +1032,7 @@ static int Service_MenuPreBuild(WPARAM wParam,LPARAM lParam)
 	clmi.cbSize = sizeof( clmi );
 	clmi.flags = CMIM_FLAGS | CMIM_NAME | CMIM_ICON;
 
-	char *szProto = ( char* ) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) wParam, 0);
+	char *szProto = ( char* ) CallService( MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) wParam, 0);
 	if (szProto && !lstrcmpiA(szProto, IRCPROTONAME)) {
 		if (DBGetContactSettingByte(hContact, IRCPROTONAME, "ChatRoom", 0) == GCW_CHATROOM) {
 			clmi.icolibItem = GetIconHandle(IDI_PART);
@@ -1344,7 +1343,7 @@ static int Service_SetStatus(WPARAM wParam,LPARAM lParam)
 		msn.tszInfo = TranslateT( "Connection can not be established! You have not completed all necessary fields (Nickname, User ID and Name)." );
 		msn.dwInfoFlags = NIIF_ERROR | NIIF_INTERN_UNICODE;
 		msn.uTimeout = 15000;
-		CallService(MS_CLIST_SYSTRAY_NOTIFY, (WPARAM)NULL,(LPARAM) &msn);
+		CallService( MS_CLIST_SYSTRAY_NOTIFY, (WPARAM)NULL,(LPARAM) &msn);
 		return 0;
 	}
 
@@ -1499,7 +1498,7 @@ static int Service_GetAwayMessage(WPARAM wParam, LPARAM lParam)
 
 static int Service_InitUserInfo(WPARAM wParam, LPARAM lParam)
 {
-	char* szProto = ( char* )CallService(MS_PROTO_GETCONTACTBASEPROTO, lParam, 0);
+	char* szProto = ( char* )CallService( MS_PROTO_GETCONTACTBASEPROTO, lParam, 0);
 	HANDLE hContact = (HANDLE) lParam;
 	if ( !hContact || !szProto || lstrcmpiA( szProto, IRCPROTONAME ))
 		return 0;
@@ -1528,7 +1527,7 @@ static int Service_InitUserInfo(WPARAM wParam, LPARAM lParam)
 	odp.pfnDlgProc = UserDetailsDlgProc;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_USERINFO);
 	odp.pszTitle = ALTIRCPROTONAME;
-	CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM) & odp);
+	CallService( MS_USERINFO_ADDPAGE, wParam, (LPARAM) & odp);
 	return 0;
 }
 
@@ -1547,7 +1546,7 @@ static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	nlu.szSettingsModule = IRCPROTONAME;
 	mir_snprintf(szTemp, sizeof(szTemp), Translate("%s server connection"), ALTIRCPROTONAME);
 	nlu.szDescriptiveName = szTemp;
-	hNetlib=(HANDLE)CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
+	hNetlib=(HANDLE)CallService( MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
 
 	char szTemp2[256];
 	nlu.flags = NUF_OUTGOING|NUF_INCOMING|NUF_HTTPCONNS;
@@ -1555,25 +1554,20 @@ static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	nlu.szSettingsModule = szTemp2;
 	mir_snprintf(szTemp, sizeof(szTemp), Translate("%s client-to-client connections"), ALTIRCPROTONAME);
 	nlu.szDescriptiveName = szTemp;
-	hNetlibDCC=(HANDLE)CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
+	hNetlibDCC=(HANDLE)CallService( MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
 
 	//add as a known module in DB Editor ++
-	CallService("DBEditorpp/RegisterSingleModule",(WPARAM)IRCPROTONAME,0);
+	CallService( "DBEditorpp/RegisterSingleModule",(WPARAM)IRCPROTONAME,0);
 	mir_snprintf(szTemp3, sizeof(szTemp3), "%s DCC", IRCPROTONAME);
-	CallService("DBEditorpp/RegisterSingleModule",(WPARAM)szTemp3,0);
+	CallService( "DBEditorpp/RegisterSingleModule",(WPARAM)szTemp3,0);
 
 	if ( ServiceExists("MBot/GetFcnTable")) {
-		CallService(MS_MBOT_REGISTERIRC, 0, (LPARAM)IRCPROTONAME);
+		CallService( MS_MBOT_REGISTERIRC, 0, (LPARAM)IRCPROTONAME);
 		bMbotInstalled = TRUE;
 	}
 
 	if ( ServiceExists( MS_GC_REGISTER )) {
 		GCREGISTER gcr = {0};
-
-		GCPTRS gp = {0};
-		CallService(MS_GC_GETEVENTPTR, 0, (LPARAM)&gp);
-		pfnAddEvent = gp.pfnAddEvent;
-
 		gcr.cbSize = sizeof(GCREGISTER);
 		gcr.dwFlags = GC_CHANMGR|GC_BOLD|GC_ITALICS|GC_UNDERLINE|GC_COLOR|GC_BKGCOLOR;
 		gcr.iMaxText = 0;
@@ -1613,7 +1607,7 @@ static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	}
 	else {
 		if ( IDYES == MessageBox(0,TranslateT("The IRC protocol depends on another plugin called \'Chat\'\n\nDo you want to download it from the Miranda IM web site now?"),TranslateT("Information"),MB_YESNO|MB_ICONINFORMATION ))
-			CallService(MS_UTILS_OPENURL, 1, (LPARAM) "http://www.miranda-im.org/download/details.php?action=viewfile&id=1309");
+			CallService( MS_UTILS_OPENURL, 1, (LPARAM) "http://www.miranda-im.org/download/details.php?action=viewfile&id=1309");
 	}
 
 	mir_snprintf(szTemp, sizeof(szTemp), "%s\\%s_servers.ini", mirandapath, IRCPROTONAME);

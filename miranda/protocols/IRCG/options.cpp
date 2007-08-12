@@ -80,7 +80,7 @@ void InitPrefs(void)
 	GetPrefsString( "PortStart", prefs->PortStart, 6, "");
 	GetPrefsString( "PortEnd", prefs->PortEnd, 6, "");
 	GetPrefsString( "Password", prefs->Password, 499, "");
-	CallService(MS_DB_CRYPT_DECODESTRING, 499, (LPARAM)prefs->Password);
+	CallService( MS_DB_CRYPT_DECODESTRING, 499, (LPARAM)prefs->Password);
 	if (!GetPrefsString( "PNick", prefs->Nick, 30, _T(""))) {
 		GetPrefsString( "Nick", prefs->Nick, 30, _T(""));
 		if ( lstrlen(prefs->Nick) > 0)
@@ -220,7 +220,7 @@ HICON LoadIconEx( int iconId )
 {
 	for ( int i=0; i < SIZEOF(iconList); i++ )
 		if ( iconList[i].defIconID == iconId )
-			return ( HICON )CallService(MS_SKIN2_GETICONBYHANDLE, 0, (LPARAM)iconList[i].hIconLibItem );
+			return ( HICON )CallService( MS_SKIN2_GETICONBYHANDLE, 0, (LPARAM)iconList[i].hIconLibItem );
 
 	return NULL;
 }
@@ -787,7 +787,7 @@ BOOL CALLBACK OtherPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 		if ( HIWORD(wParam) == STN_CLICKED ) 
 			if ( LOWORD(wParam) == IDC_CUSTOM )
-				CallService(MS_UTILS_OPENURL,0,(LPARAM) "http://members.chello.se/matrix/index.html" );
+				CallService( MS_UTILS_OPENURL,0,(LPARAM) "http://members.chello.se/matrix/index.html" );
 
 		if ( HIWORD(wParam) == CBN_SELCHANGE && LOWORD(wParam) == IDC_PERFORMCOMBO) {
 			int i = SendMessage(GetDlgItem( hwndDlg, IDC_PERFORMCOMBO), CB_GETCURSEL, 0, 0);
@@ -1247,9 +1247,9 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 						GetDlgItemTextA( hwndDlg,IDC_PORT2, prefs->PortEnd, 6);
 						DBWriteContactSettingString(NULL,IRCPROTONAME,"PortEnd",prefs->PortEnd);
 						GetDlgItemTextA( hwndDlg,IDC_PASS, prefs->Password, 500);
-						CallService(MS_DB_CRYPT_ENCODESTRING, 499, (LPARAM)prefs->Password);
+						CallService( MS_DB_CRYPT_ENCODESTRING, 499, (LPARAM)prefs->Password);
 						DBWriteContactSettingString(NULL,IRCPROTONAME,"Password",prefs->Password);
-						CallService(MS_DB_CRYPT_DECODESTRING, 499, (LPARAM)prefs->Password);
+						CallService( MS_DB_CRYPT_DECODESTRING, 499, (LPARAM)prefs->Password);
 					}
 					else {
 						lstrcpyA(prefs->ServerName, "");
@@ -1865,23 +1865,23 @@ int InitOptionsPages(WPARAM wParam,LPARAM lParam)
 	odp.pszTab = LPGEN("Account");
 	odp.flags = ODPF_BOLDGROUPS;
 	odp.pfnDlgProc = ConnectPrefsProc;
-	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+	CallService( MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 
 	odp.flags = ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_PREFS_CTCP);
 	odp.pszTab = LPGEN("DCC'n CTCP");
 	odp.pfnDlgProc = CtcpPrefsProc;
-	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+	CallService( MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_PREFS_OTHER);
 	odp.pszTab = LPGEN("Advanced");
 	odp.pfnDlgProc = OtherPrefsProc;
-	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+	CallService( MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_PREFS_IGNORE);
 	odp.pszTab = LPGEN("Ignore");
 	odp.pfnDlgProc = IgnorePrefsProc;
-	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+	CallService( MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 	return 0;
 }
 

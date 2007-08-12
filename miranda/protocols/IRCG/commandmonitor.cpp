@@ -55,7 +55,6 @@ extern int     OldStatus;
 extern int     GlobalStatus;
 
 extern CRITICAL_SECTION m_resolve;
-extern GETEVENTFUNC			pfnAddEvent;
 
 HWND     IgnoreWndHwnd = NULL;
 UINT_PTR	KeepAliveTimer = 0;
@@ -114,13 +113,13 @@ VOID CALLBACK OnlineNotifTimerProc3(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTim
 	TString name = GetWord( ChannelsToWho.c_str(), 0 );
 	if ( name.empty()) {
 		ChannelsToWho = _T("");
-		int count = (int)CallService(MS_GC_GETSESSIONCOUNT, 0, (LPARAM)IRCPROTONAME);
+		int count = (int)CallServiceSync(MS_GC_GETSESSIONCOUNT, 0, (LPARAM)IRCPROTONAME);
 		for ( int i = 0; i < count; i++ ) {
 			GC_INFO gci = {0};
 			gci.Flags = BYINDEX | NAME | TYPE | COUNT;
 			gci.iItem = i;
 			gci.pszModule = IRCPROTONAME;
-			if ( !CallService( MS_GC_GETINFO, 0, (LPARAM)&gci ) && gci.iType == GCW_CHATROOM )
+			if ( !CallServiceSync( MS_GC_GETINFO, 0, (LPARAM)&gci ) && gci.iType == GCW_CHATROOM )
 				if ( gci.iCount <= prefs->OnlineNotificationLimit )
 					ChannelsToWho += (TString)gci.pszName + _T(" ");
 	}	}
@@ -156,9 +155,9 @@ VOID CALLBACK OnlineNotifTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime
 		DBVARIANT dbv;
 		char* szProto;
 
-		HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+		HANDLE hContact = (HANDLE) CallService( MS_DB_CONTACT_FINDFIRST, 0, 0);
 		while ( hContact ) {
-		   szProto = ( char* )CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
+		   szProto = ( char* )CallService( MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 		   if ( szProto != NULL && !lstrcmpiA( szProto, IRCPROTONAME )) {
 			   BYTE bRoom = DBGetContactSettingByte(hContact, IRCPROTONAME, "ChatRoom", 0);
 			   if ( bRoom == 0 ) {
@@ -194,7 +193,7 @@ VOID CALLBACK OnlineNotifTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime
                         if ( DBWildcard ) DBFreeVariant(&dbv2);
 			}	}	}	}	}
 
-			hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
+			hContact = (HANDLE) CallService( MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}	}
 
 	if ( NamesToWho.empty() && NamesToUserhost.empty()) {
@@ -251,7 +250,7 @@ static int AddOutgoingMessageToDB(HANDLE hContact, TCHAR* msg)
 		dbei.pBlob = ( PBYTE )S.c_str();
 	#endif
 	dbei.cbBlob = strlen(( char* )dbei.pBlob) + 1;
-	CallService(MS_DB_EVENT_ADD, (WPARAM) hContact, (LPARAM) & dbei);
+	CallService( MS_DB_EVENT_ADD, (WPARAM) hContact, (LPARAM) & dbei);
 	#if defined( _UNICODE )
 		mir_free( dbei.pBlob );
 	#endif
@@ -692,7 +691,7 @@ bool CMyMonitor::OnIrc_NOTICE( const CIrcMessage* pmsg )
 					S3.erase(0,1);
 					TString Wnd = MakeWndID( S3.c_str());
 					gci.pszID = ( TCHAR* )Wnd.c_str();
-					if ( !CallService( MS_GC_GETINFO, 0, (LPARAM)&gci ) && gci.iType == GCW_CHATROOM )
+					if ( !CallServiceSync( MS_GC_GETINFO, 0, (LPARAM)&gci ) && gci.iType == GCW_CHATROOM )
 						S2 = GetWord( gci.pszID, 0 );
 					else
 						S2 = _T("");
@@ -1238,7 +1237,7 @@ bool CMyMonitor::IsCTCP( const CIrcMessage* pmsg )
 							pre.szMessage = szBlob;
 							ccs.hContact = hContact;
 							ccs.lParam = (LPARAM) & pre;
-							CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs );
+							CallService( MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs );
 
 							mir_free( szFileName );
 				}	}	}
@@ -2442,13 +2441,13 @@ bool DoOnConnect( const CIrcMessage* pmsg )
 	}
 
 	if ( prefs->RejoinChannels ) {
-		int count = CallService(MS_GC_GETSESSIONCOUNT, 0, (LPARAM)IRCPROTONAME);
+		int count = CallServiceSync( MS_GC_GETSESSIONCOUNT, 0, (LPARAM)IRCPROTONAME);
 		for ( int i = 0; i < count ; i++ ) {
 			GC_INFO gci = {0};
 			gci.Flags = BYINDEX | DATA | NAME | TYPE;
 			gci.iItem = i;
 			gci.pszModule = IRCPROTONAME;
-			if ( !CallService(MS_GC_GETINFO, 0, (LPARAM)&gci) && gci.iType == GCW_CHATROOM ) {
+			if ( !CallServiceSync( MS_GC_GETINFO, 0, (LPARAM)&gci) && gci.iType == GCW_CHATROOM ) {
 				CHANNELINFO* wi = ( CHANNELINFO* )gci.dwItemData;
 				if ( wi && wi->pszPassword )
 					PostIrcMessage( _T("/JOIN %s %s"), gci.pszName, wi->pszPassword);

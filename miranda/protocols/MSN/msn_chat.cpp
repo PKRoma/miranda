@@ -49,7 +49,7 @@ int MSN_ChatInit( WPARAM wParam, LPARAM lParam )
 	gcw.pszModule = msnProtocolName;
 	gcw.ptszName = szName;
 	gcw.ptszID = info->mChatID;
-	MSN_CallService(MS_GC_NEWSESSION, 0, (LPARAM)&gcw);
+	CallServiceSync( MS_GC_NEWSESSION, 0, (LPARAM)&gcw );
 
 	GCDEST gcd = { msnProtocolName, { NULL }, GC_EVENT_ADDGROUP };
 	gcd.ptszID = info->mChatID;
@@ -58,7 +58,7 @@ int MSN_ChatInit( WPARAM wParam, LPARAM lParam )
 	gce.dwFlags = GC_TCHAR;
 	gce.pDest = &gcd;
 	gce.ptszStatus = TranslateT("Me");
-	MSN_CallService(MS_GC_EVENT, 0, (LPARAM)&gce);
+	CallServiceSync( MS_GC_EVENT, 0, (LPARAM)&gce );
 
 	DBVARIANT dbv;
 	int bError = MSN_GetStringT( "Nick", NULL, &dbv );
@@ -70,16 +70,16 @@ int MSN_ChatInit( WPARAM wParam, LPARAM lParam )
 	gce.ptszUID = mir_a2t(MyOptions.szEmail);
 	gce.time = 0;
 	gce.bIsMe = TRUE;
-	MSN_CallService(MS_GC_EVENT, 0, (LPARAM)&gce);
+	CallServiceSync( MS_GC_EVENT, 0, (LPARAM)&gce );
 
 	gcd.iType = GC_EVENT_ADDGROUP;
 	gce.ptszStatus = TranslateT("Others");
-	MSN_CallService(MS_GC_EVENT, 0, (LPARAM)&gce);
+	CallServiceSync( MS_GC_EVENT, 0, (LPARAM)&gce );
 
 	gcd.iType = GC_EVENT_CONTROL;
-	MSN_CallService(MS_GC_EVENT, SESSION_INITDONE, (LPARAM)&gce);
-	MSN_CallService(MS_GC_EVENT, SESSION_ONLINE, (LPARAM)&gce);
-	MSN_CallService(MS_GC_EVENT, WINDOW_VISIBLE, (LPARAM)&gce);
+	CallServiceSync( MS_GC_EVENT, SESSION_INITDONE, (LPARAM)&gce );
+	CallServiceSync( MS_GC_EVENT, SESSION_ONLINE, (LPARAM)&gce );
+	CallServiceSync( MS_GC_EVENT, WINDOW_VISIBLE, (LPARAM)&gce );
 
 	if ( !bError )
 		MSN_FreeVariant( &dbv );
@@ -117,7 +117,7 @@ void MSN_ChatStart(ThreadData* info)
 		DBVARIANT dbv;
 		if ( !MSN_GetStringT( "e-mail", info->mJoinedContacts[j], &dbv )) {
 			gce.ptszUID = dbv.ptszVal;
-			MSN_CallService( MS_GC_EVENT, 0, ( LPARAM )&gce );
+			CallServiceSync( MS_GC_EVENT, 0, ( LPARAM )&gce );
 }	}	}
 
 void MSN_KillChatSession( TCHAR* id )
@@ -128,8 +128,8 @@ void MSN_KillChatSession( TCHAR* id )
 	gce.cbSize = sizeof(GCEVENT);
 	gce.dwFlags = GC_TCHAR;
 	gce.pDest = &gcd;
-	MSN_CallService(MS_GC_EVENT, SESSION_OFFLINE, (LPARAM)&gce);
-	MSN_CallService(MS_GC_EVENT, SESSION_TERMINATE, (LPARAM)&gce);
+	CallServiceSync( MS_GC_EVENT, SESSION_OFFLINE, (LPARAM)&gce );
+	CallServiceSync( MS_GC_EVENT, SESSION_TERMINATE, (LPARAM)&gce );
 }
 
 void InviteUser(ThreadData* info) {
@@ -240,7 +240,7 @@ int MSN_GCEventHook(WPARAM wParam,LPARAM lParam) {
 				gce.time = time(NULL);
 				gce.ptszText = gch->ptszText;
 				gce.bIsMe = TRUE;
-				MSN_CallService(MS_GC_EVENT, 0, (LPARAM)&gce);
+				CallServiceSync( MS_GC_EVENT, 0, (LPARAM)&gce );
 
 				if ( !bError )
 					MSN_FreeVariant( &dbv );

@@ -64,7 +64,7 @@ int Scripting_InsertGuiIn(WPARAM wParam,LPARAM lParam)
 		}
 		gce->cbSize = sizeof(GCEVENT);
 
-		CallService(MS_GC_EVENT, wgi?wgi->wParam:0, (LPARAM)gce);
+		CallServiceSync( MS_GC_EVENT, wgi?wgi->wParam:0, (LPARAM)gce);
 
 		if ( p1 )
 			gce->pDest->ptszID = p1;
@@ -135,7 +135,7 @@ int Scripting_InsertGuiOut( WPARAM wParam,LPARAM lParam )
 
 BOOL Scripting_TriggerMSPRawIn( char** pszRaw )
 {
-	int iVal = CallService(MS_MBOT_IRC_RAW_IN, (WPARAM)IRCPROTONAME, (LPARAM)pszRaw);
+	int iVal = CallService( MS_MBOT_IRC_RAW_IN, (WPARAM)IRCPROTONAME, (LPARAM)pszRaw);
 	if ( iVal == 0 )
 		return TRUE;
 
@@ -144,7 +144,7 @@ BOOL Scripting_TriggerMSPRawIn( char** pszRaw )
 
 BOOL Scripting_TriggerMSPRawOut(char ** pszRaw)
 {
-	int iVal =  CallService(MS_MBOT_IRC_RAW_OUT, (WPARAM)IRCPROTONAME, (LPARAM)pszRaw);
+	int iVal =  CallService( MS_MBOT_IRC_RAW_OUT, (WPARAM)IRCPROTONAME, (LPARAM)pszRaw);
 	if ( iVal == 0 )
 		return TRUE;
 
@@ -160,7 +160,7 @@ BOOL Scripting_TriggerMSPGuiIn(WPARAM * wparam, GCEVENT * gce)
 	if (gce->time == 0)
 		gce->time = time(0);
 
-	int iVal =  CallService(MS_MBOT_IRC_GUI_IN, (WPARAM)&wgi, (LPARAM)gce);
+	int iVal =  CallService( MS_MBOT_IRC_GUI_IN, (WPARAM)&wgi, (LPARAM)gce);
 	if ( iVal == 0 ) {
 		*wparam = wgi.wParam;
 		return TRUE;
@@ -171,7 +171,7 @@ BOOL Scripting_TriggerMSPGuiIn(WPARAM * wparam, GCEVENT * gce)
 
 BOOL Scripting_TriggerMSPGuiOut(GCHOOK* gch)
 {
-	int iVal =  CallService(MS_MBOT_IRC_GUI_OUT, (WPARAM)IRCPROTONAME, (LPARAM)gch);
+	int iVal =  CallService( MS_MBOT_IRC_GUI_OUT, (WPARAM)IRCPROTONAME, (LPARAM)gch);
 	if ( iVal == 0 )
 		return TRUE;
 
@@ -217,7 +217,7 @@ int Scripting_GetIrcData(WPARAM wparam, LPARAM lparam)
 			gci.Flags = BYID|COUNT;
 			gci.pszModule = IRCPROTONAME;
 			gci.pszID = (TCHAR*)S.c_str();
-			if ( !CallService(MS_GC_GETINFO, 0, (LPARAM)&gci )) {
+			if ( !CallServiceSync( MS_GC_GETINFO, 0, (LPARAM)&gci )) {
 				TCHAR szTemp[40];
 				_sntprintf( szTemp, 35, _T("%u"), gci.iCount);
 				sOutput = szTemp;
@@ -229,12 +229,12 @@ int Scripting_GetIrcData(WPARAM wparam, LPARAM lparam)
 			gci.Flags = BYID|USERS;
 			gci.pszModule = IRCPROTONAME;
 			gci.pszID = ( TCHAR* )S.c_str();
-			if ( !CallService( MS_GC_GETINFO, 0, (LPARAM)&gci ))
+			if ( !CallServiceSync( MS_GC_GETINFO, 0, (LPARAM)&gci ))
 				return (int)mir_strdup( gci.pszUsers );
 		}
 		else if (sRequest == "channellist") {
 			TString S = _T("");
-			int i = CallService(MS_GC_GETSESSIONCOUNT, 0, (LPARAM)IRCPROTONAME);
+			int i = CallServiceSync( MS_GC_GETSESSIONCOUNT, 0, (LPARAM)IRCPROTONAME);
 			if ( i >= 0 ) {
 				int j = 0;
 				while (j < i) {
@@ -242,7 +242,7 @@ int Scripting_GetIrcData(WPARAM wparam, LPARAM lparam)
 					gci.Flags = BYINDEX|ID;
 					gci.pszModule = IRCPROTONAME;
 					gci.iItem = j;
-					if ( !CallService( MS_GC_GETINFO, 0, ( LPARAM )&gci )) {
+					if ( !CallServiceSync( MS_GC_GETINFO, 0, ( LPARAM )&gci )) {
 						if ( lstrcmpi( gci.pszID, _T("network log"))) {
 							TString S1 = gci.pszID;
 							int k = S1.find(_T(" "), 0);

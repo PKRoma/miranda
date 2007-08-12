@@ -21,8 +21,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "irc.h"
 
-extern GETEVENTFUNC			pfnAddEvent;
-
 std::vector<TString> vUserhostReasons;
 std::vector<TString> vWhoInProgress;
 
@@ -452,10 +450,7 @@ int CallChatEvent(WPARAM wParam, LPARAM lParam)
 				mir_realloc( gcetemp->pDest->ptszID, sizeof(TCHAR)*(sTempId.length() + 1));
 				lstrcpyn(gcetemp->pDest->ptszID, sTempId.c_str(), sTempId.length()+1); 
 			}
-			if ( pfnAddEvent )
-				iVal = pfnAddEvent(wp, (LPARAM) gcetemp);
-			else
-				iVal = CallService(MS_GC_EVENT, wp, (LPARAM) gcetemp);
+			iVal = CallServiceSync(MS_GC_EVENT, wp, (LPARAM) gcetemp);
 		}
 
 		if ( gcetemp ) {
@@ -473,14 +468,7 @@ int CallChatEvent(WPARAM wParam, LPARAM lParam)
 		return iVal;
 	}
 
-	if ( wParam == WINDOW_VISIBLE || wParam == WINDOW_HIDDEN || wParam == SESSION_INITDONE )
-		CallServiceSync( MS_GC_EVENT, wParam, lParam );
-	else if ( pfnAddEvent )
-		iVal = pfnAddEvent( wParam, ( LPARAM )gce);
-	else
-		iVal = CallService( MS_GC_EVENT, wParam, ( LPARAM )gce );
-
-	return iVal;
+	return CallServiceSync( MS_GC_EVENT, wParam, ( LPARAM )gce );
 }
 
 int DoEvent(int iEvent, const TCHAR* pszWindow, const TCHAR* pszNick, 
@@ -655,7 +643,7 @@ bool AddWindowItemData(TString window, const TCHAR* pszLimit, const TCHAR* pszMo
 void FindLocalIP(HANDLE con) // inspiration from jabber
 {
 	// Determine local IP
-	int socket = CallService(MS_NETLIB_GETSOCKET, (WPARAM) con, 0);
+	int socket = CallService( MS_NETLIB_GETSOCKET, (WPARAM) con, 0);
 	if ( socket != INVALID_SOCKET ) {
 		struct sockaddr_in saddr;
 		int len = sizeof(saddr);

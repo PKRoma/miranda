@@ -468,7 +468,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 				mir_utf8decode(( char* )msgBody, NULL );
 				gce.ptszText = EscapeChatTags( msgBody );
 			#endif
-			MSN_CallService(MS_GC_EVENT, 0, (LPARAM)&gce);
+			CallServiceSync( MS_GC_EVENT, 0, (LPARAM)&gce );
 			mir_free(( void* )gce.pszText);
 			mir_free(( void* )gce.ptszUID );
 		}
@@ -1070,7 +1070,7 @@ LBL_InvalidCommand:
 				gce.ptszUID = mir_a2t(data.userEmail);
 				gce.time = time( NULL );
 				gce.bIsMe = FALSE;
-				MSN_CallService( MS_GC_EVENT, 0, ( LPARAM )&gce );
+				CallServiceSync( MS_GC_EVENT, 0, ( LPARAM )&gce );
 				mir_free(( void* )gce.pszUID );
 			}
 
@@ -1094,9 +1094,9 @@ LBL_InvalidCommand:
 				gce.bIsMe = FALSE;
 				gce.time = time(NULL);
 				gce.ptszText = TranslateT("This conversation has been inactive, participants will be removed.");
-				MSN_CallService( MS_GC_EVENT, 0, ( LPARAM )&gce );
+				CallServiceSync( MS_GC_EVENT, 0, ( LPARAM )&gce );
 				gce.ptszText = TranslateT("To resume the conversation, please quit this session and start a new chat session.");
-				MSN_CallService( MS_GC_EVENT, 0, ( LPARAM )&gce );
+				CallServiceSync( MS_GC_EVENT, 0, ( LPARAM )&gce );
 			}
 			else if ( personleft == 2 && lstrcmpA( data.isIdle, "1" ) ) {
 				if ( MessageBox( NULL, TranslateT( "There is only 1 person left in the chat, do you want to switch back to standard message window?"), TranslateT("MSN Chat"), MB_YESNO|MB_ICONQUESTION) == IDYES) {
@@ -1355,7 +1355,7 @@ LBL_InvalidCommand:
 						gce.ptszStatus = TranslateT( "Others" );
 						gce.time = time(NULL);
 						gce.bIsMe = FALSE;
-						MSN_CallService( MS_GC_EVENT, 0, ( LPARAM )&gce );
+						CallServiceSync( MS_GC_EVENT, 0, ( LPARAM )&gce );
 						mir_free(( void* )gce.ptszUID );
 					}
 					else MSN_ChatStart( info );

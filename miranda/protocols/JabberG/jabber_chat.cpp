@@ -113,7 +113,7 @@ int JabberGcInit( WPARAM wParam, LPARAM lParam )
 	gcw.ptszName = szNick;
 	gcw.ptszID = item->jid;
 	gcw.dwFlags = GC_TCHAR;
-	JCallService( MS_GC_NEWSESSION, NULL, (LPARAM)&gcw );
+	CallServiceSync( MS_GC_NEWSESSION, NULL, (LPARAM)&gcw );
 
 	HANDLE hContact = JabberHContactFromJID( item->jid );
 	if ( hContact != NULL ) {
@@ -138,14 +138,14 @@ int JabberGcInit( WPARAM wParam, LPARAM lParam )
 	gce.dwFlags = GC_TCHAR;
 	for ( int i = SIZEOF(sttRoles)-1; i >= 0; i-- ) {
 		gce.ptszStatus = TranslateTS( sttRoles[i] );
-		JCallService(MS_GC_EVENT, NULL, ( LPARAM )&gce );
+		CallServiceSync( MS_GC_EVENT, NULL, ( LPARAM )&gce );
 	}
 
 	gce.cbSize = sizeof(GCEVENT);
 	gce.pDest = &gcd;
 	gcd.iType = GC_EVENT_CONTROL;
-	JCallService(MS_GC_EVENT, SESSION_INITDONE, (LPARAM)&gce);
-	JCallService(MS_GC_EVENT, SESSION_ONLINE, (LPARAM)&gce);
+	CallServiceSync( MS_GC_EVENT, SESSION_INITDONE, (LPARAM)&gce );
+	CallServiceSync( MS_GC_EVENT, SESSION_ONLINE, (LPARAM)&gce );
 	return 0;
 }
 
@@ -215,7 +215,7 @@ void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, TCHAR* nick, TCHAR* 
 				break;
 	}	}	}
 
-	JCallService( MS_GC_EVENT, NULL, ( LPARAM )&gce );
+	CallServiceSync( MS_GC_EVENT, NULL, ( LPARAM )&gce );
 
 	if ( statusToSet != 0 ) {
 		gce.ptszText = nick;
@@ -224,12 +224,12 @@ void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, TCHAR* nick, TCHAR* 
 		else
 			gce.dwItemData = 1;
 		gcd.iType = GC_EVENT_SETSTATUSEX;
-		JCallService( MS_GC_EVENT, NULL, ( LPARAM )&gce );
+		CallServiceSync( MS_GC_EVENT, NULL, ( LPARAM )&gce );
 
 		gce.ptszUID = nick;
 		gce.dwItemData = statusToSet;
 		gcd.iType = GC_EVENT_SETCONTACTSTATUS;
-		JCallService( MS_GC_EVENT, NULL, ( LPARAM )&gce );
+		CallServiceSync( MS_GC_EVENT, NULL, ( LPARAM )&gce );
 	}
 
 	mir_free( myNick );
@@ -251,14 +251,14 @@ void JabberGcQuit( JABBER_LIST_ITEM* item, int code, XmlNode* reason )
 	gce.pDest = &gcd;
 
 	if ( code != 307 ) {
-		JCallService( MS_GC_EVENT, SESSION_TERMINATE, ( LPARAM )&gce );
-		JCallService( MS_GC_EVENT, WINDOW_CLEARLOG, ( LPARAM )&gce );
+		CallServiceSync( MS_GC_EVENT, SESSION_TERMINATE, ( LPARAM )&gce );
+		CallServiceSync( MS_GC_EVENT, WINDOW_CLEARLOG, ( LPARAM )&gce );
 	}
 	else {
 		TCHAR* myNick = JabberNickFromJID( jabberJID );
 		JabberGcLogUpdateMemberStatus( item, myNick, NULL, GC_EVENT_KICK, reason );
 		mir_free( myNick );
-		JCallService( MS_GC_EVENT, SESSION_OFFLINE, ( LPARAM )&gce );
+		CallServiceSync( MS_GC_EVENT, SESSION_OFFLINE, ( LPARAM )&gce );
 	}
 
 	DBDeleteContactSetting( JabberHContactFromJID( item->jid ), "CList", "Hidden" );
