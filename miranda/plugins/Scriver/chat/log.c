@@ -291,7 +291,7 @@ static void AddEventToBuffer(char **buffer, int *bufferEnd, int *bufferAlloced, 
 			if (pszNick)
 				Log_AppendRTF(streamData, TRUE, buffer, bufferEnd, bufferAlloced, TranslateT("%s has left"), pszNick);
 			if (streamData->lin->ptszText)
-				Log_AppendRTF(streamData, TRUE, buffer, bufferEnd, bufferAlloced, _T(": %s"), streamData->lin->ptszText);
+				Log_AppendRTF(streamData, FALSE, buffer, bufferEnd, bufferAlloced, _T(": %s"), streamData->lin->ptszText);
 			break;
 		case GC_EVENT_QUIT:
 			if (pszNick)
