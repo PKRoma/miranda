@@ -79,7 +79,7 @@ void __cdecl MSNServerThread( ThreadData* info )
 	NETLIBOPENCONNECTION tConn = { 0 };
 	tConn.cbSize = sizeof( tConn );
 	tConn.flags = NLOCF_V2;
-	tConn.timeout = 5;
+	tConn.timeout = 8;
 
  	char* tPortDelim = strrchr( info->mServer, ':' );
 	if ( tPortDelim != NULL )

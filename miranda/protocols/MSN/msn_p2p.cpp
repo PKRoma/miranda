@@ -564,7 +564,7 @@ bool p2p_connectTo( ThreadData* info )
 	tConn.cbSize = sizeof(tConn);
 	tConn.szHost = info->mServer;
 	tConn.flags = NLOCF_V2;
-	tConn.timeout = 5;
+	tConn.timeout = 8;
 
 	char* tPortDelim = strrchr(info->mServer, ':');
 	if (tPortDelim != NULL) 
