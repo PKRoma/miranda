@@ -136,9 +136,14 @@ static VOID CALLBACK IconFlashTimer(HWND hwnd, UINT message, UINT idEvent, DWORD
 			cli.pfnChangeContactIcon(cli.events.items[i]->cle.hContact, iconsOn || disableIconFlash ? cli.events.items[i]->imlIconIndex : 0, 0);
 		//decrease eflashes in any case - no need to collect all events
 		if (cli.events.items[i]->cle.flags & CLEF_ONLYAFEW) {
-			if (0 == --cli.events.items[i]->flashesDone)
+			if (0 >= --cli.events.items[i]->flashesDone)
 				cli.pfnRemoveEvent( cli.events.items[i]->cle.hContact, cli.events.items[i]->cle.hDbEvent);
 	}	}
+
+	if (cli.events.count == 0) {
+		KillTimer(NULL, idEvent);
+		cli.pfnTrayIconSetToBase( NULL );
+	}
 
 	iconsOn = !iconsOn;
 }
