@@ -48,7 +48,7 @@ PLUGININFOEX pluginInfo = {
 	"Jabber protocol plugin for Miranda IM ( "__DATE__" )",
 	"George Hazan, Maxim Mluhov, Victor Pavlychko, Artem Shpynov, Michael Stepura",
 	"ghazan@miranda-im.org",
-	"( c ) 2005-07 George Hazan, Maxim Mluhov, Victor Pavlychko, Artem Shpynov, Michael Stepura",
+	"(c) 2005-07 George Hazan, Maxim Mluhov, Victor Pavlychko, Artem Shpynov, Michael Stepura",
 	"http://miranda-im.org",
 	UNICODE_AWARE,
 	0,
