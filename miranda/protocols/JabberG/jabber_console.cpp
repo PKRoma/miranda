@@ -174,11 +174,14 @@ static void sttRtfAppendXml(StringBuf *buf, XmlNode *node, DWORD flags, int inde
 		sttAppendBuf(buf, RTF_BEGINATTRVAL);
 		if (flags & JCPF_UTF8)
 		{
-			TCHAR *tmp;
-			char *szTmp2 = mir_strdup(node->attr[i]->sendValue);
-			mir_utf8decode(szTmp2, &tmp);
-			mir_free(szTmp2);
+			wchar_t *tmp = mir_utf8decodeW(node->attr[i]->sendValue);
+#if defined( _UNICODE )
 			sttAppendBufT(buf, tmp);
+#else
+			char *szTmp2 = mir_u2a(tmp);
+			sttAppendBufT(buf, szTmp2);
+			mir_free(szTmp2);
+#endif
 			mir_free(tmp);
 		} else
 		{
@@ -207,11 +210,14 @@ static void sttRtfAppendXml(StringBuf *buf, XmlNode *node, DWORD flags, int inde
 
 		if (flags & JCPF_UTF8)
 		{
-			TCHAR *tmp;
-			char *szTmp2 = mir_strdup(node->sendText);
-			mir_utf8decode(szTmp2, &tmp);
-			mir_free(szTmp2);
+			wchar_t *tmp = mir_utf8decodeW(node->sendText);
+#if defined( _UNICODE )
 			sttAppendBufT(buf, tmp);
+#else
+			char *szTmp2 = mir_u2a(tmp);
+			sttAppendBufT(buf, szTmp2);
+			mir_free(szTmp2);
+#endif
 			mir_free(tmp);
 		} else
 		{
