@@ -577,7 +577,7 @@ char* SSL_OpenSsl::getSslResult( const char* parUrl, const char* parAuthInfo, co
 	}
 	else MSN_DebugLog( "pfn_SSL_new failed" );
 
-	MSN_CallService( MS_NETLIB_CLOSEHANDLE, ( WPARAM )h, 0 );
+	Netlib_CloseHandle( h );
 	return result;
 }
 

@@ -161,7 +161,8 @@ char* ThreadData::httpTransact(char* szCommand, size_t cmdsz, size_t& ressz)
 			tConn.flags = NLOCF_V2;
 			tConn.szHost = mGatewayIP;
 			tConn.wPort = MSN_DEFAULT_GATEWAY_PORT;
-			tConn.timeout = 5;
+			tConn.timeout = 10;
+			MSN_DebugLog("Connecting to gateway: %s:%d", tConn.szHost, tConn.wPort);
 			s = ( HANDLE )MSN_CallService( MS_NETLIB_OPENCONNECTION, ( WPARAM )hNetlibUser, ( LPARAM )&tConn );
 			tSelect.hReadConns[ 0 ] = s;
 		}
@@ -178,8 +179,10 @@ char* ThreadData::httpTransact(char* szCommand, size_t cmdsz, size_t& ressz)
 				// Wait for the next packet
 				lstRes = MSN_CallService( MS_NETLIB_SELECT, 0, ( LPARAM )&tSelect );
 				if ( lstRes <= 0 ) { 
+					MSN_DebugLog( "Receive Timeout. Bytes received: %u", ackSize );
 					lstRes = SOCKET_ERROR; 
-					break; }
+					break; 
+				}
 
 				lstRes = Netlib_Recv(s, szResult + ackSize, bufSize - ackSize, 0);
 				if ( lstRes == 0 ) 
@@ -250,7 +253,9 @@ char* ThreadData::httpTransact(char* szCommand, size_t cmdsz, size_t& ressz)
 			MSN_DebugLog( "Send failed: %d", WSAGetLastError() );
 
 		if (lstRes > 0) break;
+
 		ressz = 0;
+		MSN_DebugLog( "Connection closed due to HTTP transaction failure" );
 		Netlib_CloseHandle(s);
 		s = NULL;
 

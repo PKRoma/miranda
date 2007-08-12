@@ -658,6 +658,7 @@ void ThreadData::processSessionData( const char* str )
 //	MSN_DebugLog( "msn_httpGatewayUnwrapRecv printed '%s','%s' to %08X (%08X)", tSessionID, tGateIP, s, this );
 	if (strcmp(mGatewayIP, tGateIP) != 0 && MyOptions.UseGateway && !MyOptions.UseProxy)
 	{
+		MSN_DebugLog("IP Changed %s %s", mGatewayIP, tGateIP);
 		Netlib_CloseHandle(s);
 		s = NULL;
 	}
