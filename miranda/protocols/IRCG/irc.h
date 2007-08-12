@@ -315,7 +315,6 @@ extern char  mirandapath[MAX_PATH];
 extern DWORD mirVersion;
 
 extern CIrcSession  g_ircSession;
-extern CMyMonitor*  monitor;
 
 extern CRITICAL_SECTION cs;
 extern CRITICAL_SECTION m_gchook;

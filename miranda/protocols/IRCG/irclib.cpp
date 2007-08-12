@@ -290,22 +290,24 @@ int CSSLSession::SSLDisconnect(void)
 
 ////////////////////////////////////////////////////////////////////
 
-CIrcSession::CIrcSession(IIrcSessionMonitor* pMonitor) :
+CIrcSession::CIrcSession() :
 	codepage( IRC_DEFAULT_CODEPAGE )
 {
-	InitializeCriticalSection(&m_cs);
 	InitializeCriticalSection(&m_resolve);
 	InitializeCriticalSection(&m_dcc);
+
+	m_monitor = new CMyMonitor();
 }
 
 CIrcSession::~CIrcSession()
 {
 	//	Disconnect();
-	DeleteCriticalSection(&m_cs);
 	DeleteCriticalSection(&m_resolve);
 	DeleteCriticalSection(&m_dcc);
 	KillChatTimer(OnlineNotifTimer);
 	KillChatTimer(OnlineNotifTimer3);
+
+	delete m_monitor;
 }
 
 int CIrcSession::getCodepage() const
@@ -422,13 +424,7 @@ void CIrcSession::Disconnect(void)
 
 void CIrcSession::Notify(const CIrcMessage* pmsg)
 {
-	// forward message to monitor objects
-	EnterCriticalSection( &m_cs );
-	
-	for ( std::set<IIrcSessionMonitor*>::iterator it = m_monitors.begin(); it != m_monitors.end(); it++ )
-		(*it)->OnIrcMessage(pmsg);
-
-	LeaveCriticalSection(&m_cs);
+	m_monitor->OnIrcMessage(pmsg);
 }
 
 int CIrcSession::NLSend( const unsigned char* buf, int cbBuf)
@@ -834,20 +830,6 @@ void CIrcSession::CheckDCCTimeout(void)
 
 	LeaveCriticalSection(&m_dcc);
 	return;
-}
-
-void CIrcSession::AddIrcMonitor(IIrcSessionMonitor* pMonitor)
-{
-	EnterCriticalSection(&m_cs);
-	m_monitors.insert( pMonitor );
-	LeaveCriticalSection(&m_cs);
-}
-
-void CIrcSession::RemoveMonitor(IIrcSessionMonitor* pMonitor)
-{
-	EnterCriticalSection(&m_cs);
-	m_monitors.erase( pMonitor );
-	LeaveCriticalSection(&m_cs);
 }
 
 ////////////////////////////////////////////////////////////////////

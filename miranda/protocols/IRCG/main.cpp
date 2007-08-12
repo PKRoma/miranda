@@ -22,8 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "irc.h"
 #include "version.h"
 
-CIrcSession       g_ircSession = NULL;   // Representation of the IRC-connection
-CMyMonitor*       monitor;               // Object that processes data from the IRC server
+CIrcSession       g_ircSession;          // Representation of the IRC-connection
 char*             IRCPROTONAME = NULL;
 char*             ALTIRCPROTONAME = NULL;
 char*             pszServerFile = NULL;
@@ -133,9 +132,6 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK *link )
 
 	m_ssleay32 = LoadLibraryA("ssleay32.dll");
 
-	monitor = new CMyMonitor;
-	g_ircSession.AddIrcMonitor(monitor);
-
 	// register protocol
 	{	PROTOCOLDESCRIPTOR pd;
 		ZeroMemory( &pd, sizeof( pd ) );
@@ -166,6 +162,5 @@ extern "C" int __declspec(dllexport) Unload(void)
 	UnInitOptions();
 	free( IRCPROTONAME );
 	delete [] ALTIRCPROTONAME;
-	delete monitor;
 	return 0;
 }

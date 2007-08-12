@@ -170,8 +170,6 @@ public:
 class CIrcDefaultMonitor; // foreward
 class CDccSession; // forward
 
-//#include <string.h>
-
 typedef std::map<HANDLE, CDccSession*> DccSessionMap;
 typedef std::pair<HANDLE, CDccSession*> DccSessionPair;
 
@@ -180,11 +178,8 @@ class CIrcSession
 public :
 	friend class CIrcDefaultMonitor;
 
-	CIrcSession(IIrcSessionMonitor* pMonitor = NULL);
+	CIrcSession( void );
 	virtual ~CIrcSession();
-
-	void AddIrcMonitor(IIrcSessionMonitor* pMonitor);
-	void RemoveMonitor(IIrcSessionMonitor* pMonitor);
 
 	void AddDCCSession(HANDLE hContact, CDccSession* dcc);
 	void AddDCCSession(DCCINFO*  pdci, CDccSession* dcc);
@@ -236,9 +231,8 @@ protected :
 	DccSessionMap m_dcc_xfers;
 
 private :
-	std::set<IIrcSessionMonitor*> m_monitors;
-	CRITICAL_SECTION m_cs; // protect m_monitors
-	CRITICAL_SECTION m_dcc; // protect the dcc objects
+	CRITICAL_SECTION    m_dcc;      // protect the dcc objects
+	CIrcDefaultMonitor *m_monitor;  // Object that processes data from the IRC server
 
 	void createMessageFromPchar( const char* p );
 	void Notify(const CIrcMessage* pmsg);
