@@ -145,7 +145,7 @@ char* ThreadData::httpTransact(char* szCommand, size_t cmdsz, size_t& ressz)
 {
 	NETLIBSELECT tSelect = {0};
 	tSelect.cbSize = sizeof( tSelect );
-	tSelect.dwTimeout = 5000;
+	tSelect.dwTimeout = 10000;
 	tSelect.hReadConns[ 0 ] = s;
 
 	size_t bufSize = 4096;
@@ -180,7 +180,7 @@ char* ThreadData::httpTransact(char* szCommand, size_t cmdsz, size_t& ressz)
 				// Wait for the next packet
 				lstRes = MSN_CallService( MS_NETLIB_SELECT, 0, ( LPARAM )&tSelect );
 				if ( lstRes <= 0 ) { 
-					MSN_DebugLog( "Receive Timeout. Bytes received: %u", ackSize );
+					MSN_DebugLog( "Receive Timeout. Bytes received: %u %u", ackSize, ressz );
 					lstRes = SOCKET_ERROR; 
 					break; 
 				}
@@ -231,6 +231,7 @@ char* ThreadData::httpTransact(char* szCommand, size_t cmdsz, size_t& ressz)
 						hdrs = httpParseHeader( tbuf, status );
 						if (status != 100) break;
 
+						MSN_DebugLog( "Response 100 detected: %d", ackSize );
 						// Remove 100 status response from response buffer
 						ackSize -= hdrSize;
 						memmove(szResult, szResult + hdrSize, ackSize+1);
@@ -262,7 +263,6 @@ char* ThreadData::httpTransact(char* szCommand, size_t cmdsz, size_t& ressz)
 
 		if (lstRes > 0) break;
 
-		ressz = 0;
 		MSN_DebugLog( "Connection closed due to HTTP transaction failure" );
 		Netlib_CloseHandle(s);
 		s = NULL;
@@ -274,7 +274,6 @@ char* ThreadData::httpTransact(char* szCommand, size_t cmdsz, size_t& ressz)
 		mir_free(szResult);
 		szResult = NULL;
 	}
-	
 	return szResult;
 }
 
