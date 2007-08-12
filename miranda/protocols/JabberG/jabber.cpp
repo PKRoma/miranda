@@ -35,6 +35,8 @@ Last change by : $Author$
 #include "version.h"
 #include "sdk/m_icolib.h"
 #include "sdk/m_folders.h"
+#include "sdk/m_wizard.h"
+#include "sdk/m_modernopt.h"
 
 HINSTANCE hInst;
 PLUGINLINK *pluginLink;
@@ -139,12 +141,16 @@ static int sttCompareHandles( const void* p1, const void* p2 )
 LIST<void> arHooks( 20, sttCompareHandles );
 
 int JabberOptInit( WPARAM wParam, LPARAM lParam );
+int JabberWizardInit( WPARAM wParam, LPARAM lParam );
+int JabberModernOptInit( WPARAM wParam, LPARAM lParam );
 int JabberUserInfoInit( WPARAM wParam, LPARAM lParam );
 int JabberMsgUserTyping( WPARAM wParam, LPARAM lParam );
 void JabberMenuInit( void );
 int JabberSvcInit( void );
 int JabberSvcUninit( void );
 void InitCustomFolders( void );
+void JabberConsoleInit();
+void JabberConsoleUninit();
 
 int bSecureIM;
 extern "C" BOOL WINAPI DllMain( HINSTANCE hModule, DWORD dwReason, LPVOID lpvReserved )
@@ -238,6 +244,8 @@ void JabberMenuHideSrmmIcon(HANDLE hContact);
 int JabberMenuProcessSrmmIconClick( WPARAM wParam, LPARAM lParam );
 int JabberMenuProcessSrmmEvent( WPARAM wParam, LPARAM lParam );
 
+int JabberMenuHandleConsole(WPARAM,LPARAM);
+
 static COLORREF crCols[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 
 static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
@@ -307,6 +315,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 
 	JabberCheckAllContactsAreTransported();
 	InitCustomFolders();
+
 	return 0;
 }
 
@@ -349,6 +358,8 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	jabberMainThreadId = GetCurrentThreadId();
 
 	arHooks.insert( HookEvent( ME_OPT_INITIALISE, JabberOptInit ));
+	arHooks.insert( HookEvent( ME_WIZARD_INITIALISE, JabberWizardInit ));
+	arHooks.insert( HookEvent( ME_MODERNOPT_INITIALIZE, JabberModernOptInit ));
 	arHooks.insert( HookEvent( ME_SYSTEM_MODULESLOADED, OnModulesLoaded ));
 	arHooks.insert( HookEvent( ME_SYSTEM_PRESHUTDOWN, OnPreShutdown ));
 
@@ -392,6 +403,7 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	JabberIqInit();
 	JabberListInit();
 	JabberIconsInit();
+	JabberConsoleInit();
 	JabberSvcInit();
 	JabberXStatusInit();
 	g_JabberIqManager.FillPermanentHandlers();
@@ -421,6 +433,7 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	JabberIqUninit();
 	JabberSerialUninit();
 	JabberWsUninit();
+	JabberConsoleUninit();
 	DeleteCriticalSection( &modeMsgMutex );
 	mir_free( modeMsgs.szOnline );
 	mir_free( modeMsgs.szAway );

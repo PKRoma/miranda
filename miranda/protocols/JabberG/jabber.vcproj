@@ -419,6 +419,9 @@
 				RelativePath=".\jabber_chat.cpp">
 			</File>
 			<File
+				RelativePath=".\jabber_console.cpp">
+			</File>
+			<File
 				RelativePath=".\jabber_disco.cpp">
 			</File>
 			<File

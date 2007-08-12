@@ -187,6 +187,10 @@ SOURCE=.\jabber_chat.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\jabber_console.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\jabber_disco.cpp
 # End Source File
 # Begin Source File

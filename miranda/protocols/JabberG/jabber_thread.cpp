@@ -57,6 +57,13 @@ static void JabberProcessRegIq( XmlNode *node, void *userdata );
 void JabberMenuHideSrmmIcon(HANDLE hContact);
 void JabberMenuUpdateSrmmIcon(JABBER_LIST_ITEM *item);
 
+// XML Console
+#define JCPF_IN			0x01UL
+#define JCPF_OUT		0x02UL
+#define JCPF_ERROR		0x04UL
+#define JCPF_UTF8		0x08UL
+void JabberConsoleProcessXml(XmlNode *node, DWORD flags);
+
 //extern int bSecureIM;
 static VOID CALLBACK JabberDummyApcFunc( DWORD param )
 {
@@ -842,6 +849,8 @@ static void JabberProcessChallenge( XmlNode *node, void *userdata )
 
 static void JabberProcessProtocol( XmlNode *node, void *userdata )
 {
+	JabberConsoleProcessXml(node, JCPF_IN);
+
 	ThreadData* info = ( ThreadData* ) userdata;
 	if ( !strcmp( node->name, "proceed" )) {
 		JabberProcessProceed( node, userdata );
@@ -1847,6 +1856,8 @@ int ThreadData::send( XmlNode& node )
 {
 	if ( this == NULL )
 		return 0;
+
+	JabberConsoleProcessXml(&node, JCPF_OUT|JCPF_UTF8);
 
 	char* str = node.getText();
 	int result = send( str, strlen( str ));

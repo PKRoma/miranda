@@ -34,6 +34,8 @@ Last change by : $Author$
 #include <uxtheme.h>
 #include "jabber_caps.h"
 #include "jabber_opttree.h"
+#include "sdk/m_wizard.h"
+#include "sdk/m_modernopt.h"
 
 extern BOOL jabberSendKeepAlive;
 extern UINT jabberCodePage;
@@ -1360,4 +1362,335 @@ void JabberUpdateDialogs( BOOL bEnable )
 {
 	if (rrud.hwndDlg)
 		SendMessage(rrud.hwndDlg, JM_STATUSCHANGED, 0,0);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// JabberWizardInit - initializes wizard
+
+static BOOL CALLBACK JabberWizardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+{
+	enum { ACC_PUBLIC, ACC_SECURE, ACC_GTALK, ACC_LJTALK };
+	int accType = ACC_SECURE;
+	static struct
+	{
+		TCHAR *title;
+		char *server;
+		WORD port;
+		BOOL fixedPort;
+		BOOL useSSL;
+		BOOL useTLS;
+		BOOL canRegister;
+		char *loginServer;
+	} jabberPresets[] = 
+	{	// Order must be as in enum
+		// Title						server				port	fPort	SSL		TLS		Reg		Login
+		{_T("Public Jabber network"),	NULL,				5222,	FALSE,	FALSE,	FALSE,	TRUE,	NULL},
+		{_T("Secure Jabber network"),	NULL,				5223,	FALSE,	TRUE,	FALSE,	TRUE,	NULL},
+		{_T("Google Talk"),				"gmail.com",		5222,	TRUE,	FALSE,	TRUE,	FALSE,	"talk.google.com"},
+		{_T("LJ Talk"),					"livejournal.com",	5222,	TRUE,	FALSE,	TRUE,	FALSE,	NULL},
+	};
+
+	switch ( msg ) {
+	case WM_INITDIALOG:
+		{
+			int i;
+			DBVARIANT dbv;
+			BOOL enableRegister = TRUE;
+			BOOL gotSSL = JabberSslInit();
+
+			TranslateDialogDefault( hwndDlg );
+
+			// find current account type
+			if ( !DBGetContactSetting( NULL, jabberProtoName, "LoginServer", &dbv )) {
+				if (!lstrcmpA(dbv.pszVal, "gmail.com"))
+					accType = ACC_GTALK;
+				else if (!lstrcmpA(dbv.pszVal, "livejournal.com"))
+					accType = ACC_LJTALK;
+				else if (JGetByte("UseSSL", FALSE) || JGetByte("UseTLS", FALSE))
+					accType = ACC_SECURE;
+				else
+					accType = ACC_PUBLIC;
+				JFreeVariant( &dbv );
+			}
+			if ((jabberPresets[accType].useSSL || jabberPresets[accType].useTLS) && !gotSSL)
+				accType = ACC_PUBLIC;
+
+			// fill combo box
+			for ( i = 0; i < SIZEOF(jabberPresets); ++i )
+			{
+				if ((jabberPresets[i].useSSL || jabberPresets[i].useTLS) && !gotSSL)
+					continue;
+
+				DWORD dwItem = SendDlgItemMessage(hwndDlg, IDC_COMBO_ACCTYPE, CB_ADDSTRING, 0, (LPARAM)TranslateTS(jabberPresets[i].title));
+				SendDlgItemMessage(hwndDlg, IDC_COMBO_ACCTYPE, CB_SETITEMDATA, dwItem, i);
+				if (i == accType)
+					SendDlgItemMessage(hwndDlg, IDC_COMBO_ACCTYPE, CB_SETCURSEL, dwItem, 0);
+			}
+
+			// setup preset-related controls
+			EnableWindow(GetDlgItem(hwndDlg, IDC_BUTTON_REGISTER),	jabberPresets[accType].canRegister);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_PORT),				!jabberPresets[accType].fixedPort);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_EDIT_LOGIN_SERVER),!jabberPresets[accType].server);
+
+			// fill defaults
+			SetDlgItemTextA( hwndDlg, IDC_SIMPLE, jabberModuleName );
+			if ( !DBGetContactSetting( NULL, jabberProtoName, "LoginName", &dbv )) {
+				SetDlgItemTextA( hwndDlg, IDC_EDIT_USERNAME, dbv.pszVal );
+				if ( !dbv.pszVal[0] ) enableRegister = FALSE;
+				JFreeVariant( &dbv );
+			}
+			if ( !DBGetContactSetting( NULL, jabberProtoName, "Password", &dbv )) {
+				JCallService( MS_DB_CRYPT_DECODESTRING, strlen( dbv.pszVal )+1, ( LPARAM )dbv.pszVal );
+				SetDlgItemTextA( hwndDlg, IDC_EDIT_PASSWORD, dbv.pszVal );
+				if ( !dbv.pszVal[0] ) enableRegister = FALSE;
+				JFreeVariant( &dbv );
+			}
+
+			// fill predefined resources
+			TCHAR* szResources[] = { _T("Home"), _T("Work"), _T("Office"), _T("Miranda") };
+			for ( i = 0; i < SIZEOF(szResources); i++ )
+				SendDlgItemMessage( hwndDlg, IDC_COMBO_RESOURCE, CB_ADDSTRING, 0, (LPARAM)TranslateTS( szResources[i] ));
+			
+			if ( !DBGetContactSettingTString( NULL, jabberProtoName, "Resource", &dbv )) {
+				SetDlgItemText( hwndDlg, IDC_COMBO_RESOURCE, dbv.ptszVal );
+				JFreeVariant( &dbv );
+			}
+			else SetDlgItemTextA( hwndDlg, IDC_COMBO_RESOURCE, "Miranda" );
+
+			if ( !DBGetContactSetting( NULL, jabberProtoName, "LoginServer", &dbv )) {
+				if (!lstrcmpA(dbv.pszVal, "gmail.com"))
+					accType = ACC_GTALK;
+				SetDlgItemTextA( hwndDlg, IDC_EDIT_LOGIN_SERVER, dbv.pszVal );
+				if ( !dbv.pszVal[0] ) enableRegister = FALSE;
+				JFreeVariant( &dbv );
+			}
+			else SetDlgItemTextA( hwndDlg, IDC_EDIT_LOGIN_SERVER, "jabber.org" );
+
+			WORD port = ( WORD )JGetWord( NULL, "Port", JABBER_DEFAULT_PORT );
+			SetDlgItemInt( hwndDlg, IDC_PORT, port, FALSE );
+			if ( port <= 0 ) enableRegister = FALSE;
+
+			if ( !JabberSslInit() ) {
+				EnableWindow(GetDlgItem( hwndDlg, IDC_DOWNLOAD_OPENSSL ), TRUE );
+			}
+			else {
+				EnableWindow(GetDlgItem( hwndDlg, IDC_DOWNLOAD_OPENSSL ), FALSE );
+			}
+
+			EnableWindow( GetDlgItem( hwndDlg, IDC_BUTTON_REGISTER ), enableRegister );
+
+			WNDPROC oldProc = ( WNDPROC ) GetWindowLong( GetDlgItem( hwndDlg, IDC_EDIT_USERNAME ), GWL_WNDPROC );
+			SetWindowLong( GetDlgItem( hwndDlg, IDC_EDIT_USERNAME ), GWL_USERDATA, ( LONG ) oldProc );
+			SetWindowLong( GetDlgItem( hwndDlg, IDC_EDIT_USERNAME ), GWL_WNDPROC, ( LONG ) JabberValidateUsernameWndProc );
+			return TRUE;
+		}
+	case WM_COMMAND:
+		switch ( LOWORD( wParam )) {
+		case IDC_EDIT_USERNAME:
+		case IDC_EDIT_PASSWORD:
+		case IDC_COMBO_RESOURCE:
+		case IDC_EDIT_LOGIN_SERVER:
+		case IDC_PORT:
+		{
+			WORD wHiParam = HIWORD( wParam );
+			if ( ((HWND)lParam==GetFocus() && wHiParam==EN_CHANGE) || ((HWND)lParam==GetParent(GetFocus()) && (wHiParam == CBN_EDITCHANGE || wHiParam == CBN_SELCHANGE)) )
+				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
+
+			if (SendDlgItemMessage(hwndDlg, IDC_COMBO_ACCTYPE, CB_GETCURSEL, 0, 0) == 0)
+			{
+				ThreadData regInfo( JABBER_SESSION_NORMAL );
+				GetDlgItemText( hwndDlg, IDC_EDIT_USERNAME, regInfo.username, SIZEOF( regInfo.username ));
+				GetDlgItemTextA( hwndDlg, IDC_EDIT_PASSWORD, regInfo.password, SIZEOF( regInfo.password ));
+				GetDlgItemTextA( hwndDlg, IDC_EDIT_LOGIN_SERVER, regInfo.server, SIZEOF( regInfo.server ));
+				regInfo.port = ( WORD )GetDlgItemInt( hwndDlg, IDC_PORT, NULL, FALSE );
+				regInfo.manualHost[0] = '\0';
+				if ( regInfo.username[0] && regInfo.password[0] && regInfo.server[0] && regInfo.port>0 && ( !IsDlgButtonChecked( hwndDlg, IDC_MANUAL ) || regInfo.manualHost[0] ))
+					EnableWindow( GetDlgItem( hwndDlg, IDC_BUTTON_REGISTER ), TRUE );
+				else
+					EnableWindow( GetDlgItem( hwndDlg, IDC_BUTTON_REGISTER ), FALSE );
+			}
+			else
+				EnableWindow( GetDlgItem( hwndDlg, IDC_BUTTON_REGISTER ), FALSE );
+			break;
+		}
+		case IDC_COMBO_ACCTYPE:
+		{
+			DWORD dwItem = SendDlgItemMessage(hwndDlg, IDC_COMBO_ACCTYPE, CB_GETCURSEL, 0, 0);
+			accType = (int)SendDlgItemMessage(hwndDlg, IDC_COMBO_ACCTYPE, CB_GETITEMDATA, dwItem, 0);
+
+			SetDlgItemInt(hwndDlg, IDC_PORT, jabberPresets[accType].port, FALSE);
+			if (jabberPresets[accType].server)
+				SetDlgItemTextA(hwndDlg, IDC_EDIT_LOGIN_SERVER, jabberPresets[accType].server);
+
+			EnableWindow(GetDlgItem(hwndDlg, IDC_BUTTON_REGISTER),	jabberPresets[accType].canRegister);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_PORT),				!jabberPresets[accType].fixedPort);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_EDIT_LOGIN_SERVER),!jabberPresets[accType].server);
+
+			SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
+			break;
+		}
+		case IDC_LINK_PUBLIC_SERVER:
+			ShellExecuteA( hwndDlg, "open", "http://www.jabber.org/user/publicservers.shtml", "", "", SW_SHOW );
+			return TRUE;
+		case IDC_DOWNLOAD_OPENSSL:
+			ShellExecuteA( hwndDlg, "open", "http://www.slproweb.com/products/Win32OpenSSL.html", "", "", SW_SHOW );
+			return TRUE;
+		case IDC_BUTTON_REGISTER:
+		{
+			ThreadData regInfo( JABBER_SESSION_NORMAL );
+			GetDlgItemText( hwndDlg, IDC_EDIT_USERNAME, regInfo.username, SIZEOF( regInfo.username ));
+			GetDlgItemTextA( hwndDlg, IDC_EDIT_PASSWORD, regInfo.password, SIZEOF( regInfo.password ));
+			GetDlgItemTextA( hwndDlg, IDC_EDIT_LOGIN_SERVER, regInfo.server, SIZEOF( regInfo.server ));
+			if ( IsDlgButtonChecked( hwndDlg, IDC_MANUAL )) {
+				GetDlgItemTextA( hwndDlg, IDC_HOST, regInfo.manualHost, SIZEOF( regInfo.manualHost ));
+				regInfo.port = ( WORD )GetDlgItemInt( hwndDlg, IDC_HOSTPORT, NULL, FALSE );
+			}
+			else {
+				regInfo.manualHost[0] = '\0';
+				regInfo.port = ( WORD )GetDlgItemInt( hwndDlg, IDC_PORT, NULL, FALSE );
+			}
+			regInfo.useSSL = IsDlgButtonChecked( hwndDlg, IDC_USE_SSL );
+
+			if ( regInfo.username[0] && regInfo.password[0] && regInfo.server[0] && regInfo.port>0 && ( !IsDlgButtonChecked( hwndDlg, IDC_MANUAL ) || regInfo.manualHost[0] ))
+				DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_OPT_REGISTER ), hwndDlg, JabberRegisterDlgProc, ( LPARAM )&regInfo );
+
+			return TRUE;
+		}
+		default:
+			return 0;
+		}
+		break;
+	case WM_NOTIFY:
+		if (( ( LPNMHDR ) lParam )->code == PSN_APPLY ) {
+			BOOL reconnectRequired = FALSE;
+			DBVARIANT dbv;
+
+			char userName[256], text[256];
+			TCHAR textT [256];
+			GetDlgItemTextA( hwndDlg, IDC_EDIT_USERNAME, userName, sizeof( userName ));
+			if ( DBGetContactSetting( NULL, jabberProtoName, "LoginName", &dbv ) || strcmp( userName, dbv.pszVal ))
+				reconnectRequired = TRUE;
+			if ( dbv.pszVal != NULL )	JFreeVariant( &dbv );
+			JSetString( NULL, "LoginName", userName );
+
+			GetDlgItemTextA( hwndDlg, IDC_EDIT_PASSWORD, text, sizeof( text ));
+			JCallService( MS_DB_CRYPT_ENCODESTRING, sizeof( text ), ( LPARAM )text );
+			if ( DBGetContactSetting( NULL, jabberProtoName, "Password", &dbv ) || strcmp( text, dbv.pszVal ))
+				reconnectRequired = TRUE;
+			if ( dbv.pszVal != NULL )	JFreeVariant( &dbv );
+			JSetString( NULL, "Password", text );
+
+			GetDlgItemText( hwndDlg, IDC_COMBO_RESOURCE, textT, SIZEOF( textT ));
+			if ( !JGetStringT( NULL, "Resource", &dbv )) {
+				if ( _tcscmp( textT, dbv.ptszVal ))
+					reconnectRequired = TRUE;
+				JFreeVariant( &dbv );
+			}
+			else reconnectRequired = TRUE;
+			JSetStringT( NULL, "Resource", textT );
+
+			GetDlgItemTextA( hwndDlg, IDC_EDIT_LOGIN_SERVER, text, sizeof( text ));
+			rtrim( text );
+			if ( DBGetContactSetting( NULL, jabberProtoName, "LoginServer", &dbv ) || strcmp( text, dbv.pszVal ))
+				reconnectRequired = TRUE;
+			if ( dbv.pszVal != NULL )	JFreeVariant( &dbv );
+			JSetString( NULL, "LoginServer", text );
+			
+			strcat( userName, "@" );
+			strncat( userName, text, sizeof( userName ));
+			userName[ sizeof(userName)-1 ] = 0;
+			JSetString( NULL, "jid", userName );
+
+			WORD port = ( WORD )GetDlgItemInt( hwndDlg, IDC_PORT, NULL, FALSE );
+			if ( JGetWord( NULL, "Port", JABBER_DEFAULT_PORT ) != port )
+				reconnectRequired = TRUE;
+			JSetWord( NULL, "Port", port );
+
+			DWORD dwItem = SendDlgItemMessage(hwndDlg, IDC_COMBO_ACCTYPE, CB_GETCURSEL, 0, 0);
+			accType = (int)SendDlgItemMessage(hwndDlg, IDC_COMBO_ACCTYPE, CB_GETITEMDATA, dwItem, 0);
+
+			JSetByte( "UseSSL", jabberPresets[accType].useSSL );
+			JSetByte( "UseTLS", jabberPresets[accType].useTLS );
+
+			if (jabberPresets[accType].loginServer)
+			{
+				JSetByte( "ManualConnect", TRUE );
+
+				if ( DBGetContactSetting( NULL, jabberProtoName, "ManualHost", &dbv ) || lstrcmpA( jabberPresets[accType].loginServer, dbv.pszVal ))
+					reconnectRequired = TRUE;
+				if ( dbv.pszVal != NULL )	JFreeVariant( &dbv );
+				JSetString( NULL, "ManualHost", jabberPresets[accType].loginServer );
+
+				port = ( WORD )GetDlgItemInt( hwndDlg, IDC_PORT, NULL, FALSE );
+				if ( JGetWord( NULL, "ManualPort", JABBER_DEFAULT_PORT ) != port )
+					reconnectRequired = TRUE;
+				JSetWord( NULL, "ManualPort", port );
+			} else
+			{
+				JSetByte( "ManualConnect", FALSE );
+			}
+
+			if ( reconnectRequired && jabberConnected )
+				MessageBox( hwndDlg, TranslateT( "These changes will take effect the next time you connect to the Jabber network." ), TranslateT( "Jabber Protocol Option" ), MB_OK|MB_SETFOREGROUND );
+
+			return TRUE;
+		}
+		break;
+	}
+
+	return FALSE;
+}
+
+int JabberWizardInit( WPARAM wParam, LPARAM lParam )
+{
+	WIZARDINFO *wizardInfo = (WIZARDINFO *)lParam;
+	if (!lstrcmpA(wizardInfo->pszWizardName, MW_MIRANDA_STARTUP))
+	{
+		DBVARIANT dbv = {0};
+		if (!DBGetContactSetting(NULL, jabberProtoName, "LoginName", &dbv))
+		{
+			JFreeVariant(&dbv);
+			return 0;
+		}
+	}
+
+	OPTIONSDIALOGPAGE odp;
+	odp.cbSize = sizeof(odp);
+	odp.hIcon = NULL;
+	odp.hInstance = hInst;
+	odp.flags = ODPF_BOLDGROUPS;
+	odp.pfnDlgProc = JabberWizardDlgProc;
+	odp.position = -2100000000;
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_WIZARD);
+	odp.pszTitle = jabberProtoName;
+	odp.pszGroup = "Setup your Jabber account";
+	odp.hIcon = LoadIconEx("main");
+	CallService(MS_WIZARD_ADDPAGE, wParam, (LPARAM)&odp);
+	return 0;
+}
+
+int JabberModernOptInit( WPARAM wParam, LPARAM lParam )
+{
+	static int iBoldControls[] =
+	{
+		IDC_TITLE1, MODERNOPT_CTRL_LAST
+	};
+
+	MODERNOPTOBJECT obj = {0};
+	obj.cbSize = sizeof(obj);
+	obj.dwFlags = MODEROPT_FLG_TCHAR;
+	obj.hIcon = LoadIconEx("main");
+	obj.hInstance = hInst;
+	obj.iSection = MODERNOPT_PAGE_ACCOUNTS;
+	obj.iType = MODERNOPT_TYPE_SUBSECTIONPAGE;
+	obj.lptzSubsection = mir_a2t(jabberProtoName);
+	obj.lpzTemplate = MAKEINTRESOURCEA(IDD_MODERNOPT);
+	obj.iBoldControls = iBoldControls;
+	obj.pfnDlgProc = JabberWizardDlgProc;
+	obj.lpszClassicGroup = "Network";
+	obj.lpszClassicPage = jabberProtoName;
+	obj.lpszHelpUrl = "http://forums.miranda-im.org/showthread.php?t=14294";
+	CallService(MS_MODERNOPT_ADDOBJECT, wParam, (LPARAM)&obj);
+	mir_free(obj.lptzSubsection);
+	return 0;
 }

@@ -68,6 +68,8 @@
 #define IDI_NODE_STORE                  202
 #define IDI_ICON6                       203
 #define IDI_NODE_WEATHER                203
+#define IDD_CONSOLE                     205
+#define IDI_CONSOLE                     207
 #define IDD_SETMOODMSG                  216
 #define IDC_EDIT_USERNAME               1000
 #define IDC_SAVE                        1000
@@ -170,6 +172,9 @@
 #define IDC_IDLE_SINCE                  1105
 #define IDC_PRIORITY_LABEL              1106
 #define IDC_NEWPASSWD                   1107
+#define IDC_COMBO_ACCTYPE               1108
+#define IDD_WIZARD                      1109
+#define IDD_MODERNOPT                   1110
 #define IDC_PASS_SERVER                 1112
 #define IDC_PROXY_ADDR                  1112
 #define IDC_PASS_PORT                   1113
@@ -287,6 +292,12 @@
 #define IDC_ROSTER                      1261
 #define IDC_MSG_MOOD                    1262
 #define IDC_OPTTREE                     1263
+#define IDC_LIST1                       1264
+#define IDC_LV_INFO                     1264
+#define IDC_TITLE1                      1265
+#define IDC_CONSOLE                     1266
+#define IDC_CONSOLEIN                   1267
+#define IDC_RESET                       1268
 #define IDC_EMAILS                      1306
 #define IDC_PHONES                      1308
 #define IDC_UPDATE                      1313
@@ -345,9 +356,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        205
+#define _APS_NEXT_RESOURCE_VALUE        208
 #define _APS_NEXT_COMMAND_VALUE         40017
-#define _APS_NEXT_CONTROL_VALUE         1264
+#define _APS_NEXT_CONTROL_VALUE         1270
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

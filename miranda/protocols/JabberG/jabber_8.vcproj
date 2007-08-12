@@ -582,6 +582,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\jabber_console.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\jabber_disco.cpp"
 				>
 			</File>

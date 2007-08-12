@@ -66,6 +66,7 @@ int JabberMenuHandleChangePassword( WPARAM wParam, LPARAM lParam );
 int JabberMenuHandleVcard( WPARAM wParam, LPARAM lParam );
 int JabberMenuHandleRequestAuth( WPARAM wParam, LPARAM lParam );
 int JabberMenuHandleGrantAuth( WPARAM wParam, LPARAM lParam );
+int JabberMenuHandleConsole(WPARAM wParam, LPARAM lParam);
 
 static int sttCompareHandles( const void* p1, const void* p2 )
 {	return (long)p1 - (long)p2;
@@ -585,6 +586,14 @@ void JabberMenuInit()
 	mi.icolibItem = GetIconHandle( IDI_PRIVACY_LISTS );
 	hMenuPrivacyLists = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuPrivacyLists, ( LPARAM )&clmi );
+
+	// "XML Console"
+	strcpy( tDest, "/XMLConsole" );
+	CreateServiceFunction( text, JabberMenuHandleConsole );
+	mi.pszName = LPGEN("XML Console");
+	mi.position = 2000050010;
+	mi.icolibItem = GetIconHandle( IDI_CONSOLE );
+	JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 }
 
 void JabberEnableMenuItems( BOOL bEnable )

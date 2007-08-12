@@ -122,6 +122,7 @@ static iconList[] =
 	{   LPGEN("Storage service"),       "node_store",       IDI_NODE_STORE        },
 	{   LPGEN("Weather service"),       "node_weather",     IDI_NODE_WEATHER      },
 	{   LPGEN("AdHoc Command"),         "adhoc",            IDI_COMMAND           },
+	{   LPGEN("XML Console"),           "xmlconsole",       IDI_CONSOLE           },
 };
 
 void JabberIconsInit( void )
