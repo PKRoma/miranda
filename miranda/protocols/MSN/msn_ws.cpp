@@ -145,7 +145,7 @@ char* ThreadData::httpTransact(char* szCommand, size_t cmdsz, size_t& ressz)
 {
 	NETLIBSELECT tSelect = {0};
 	tSelect.cbSize = sizeof( tSelect );
-	tSelect.dwTimeout = 8000;
+	tSelect.dwTimeout = 5000;
 	tSelect.hReadConns[ 0 ] = s;
 
 	size_t bufSize = 4096;
@@ -161,7 +161,7 @@ char* ThreadData::httpTransact(char* szCommand, size_t cmdsz, size_t& ressz)
 			tConn.flags = NLOCF_V2;
 			tConn.szHost = mGatewayIP;
 			tConn.wPort = MSN_DEFAULT_GATEWAY_PORT;
-			tConn.timeout = 10;
+			tConn.timeout = 5;
 			MSN_DebugLog("Connecting to gateway: %s:%d", tConn.szHost, tConn.wPort);
 			s = ( HANDLE )MSN_CallService( MS_NETLIB_OPENCONNECTION, ( WPARAM )hNetlibUser, ( LPARAM )&tConn );
 			tSelect.hReadConns[ 0 ] = s;
@@ -208,31 +208,38 @@ char* ThreadData::httpTransact(char* szCommand, size_t cmdsz, size_t& ressz)
 				// HTTP header found?
 				if (szBody == NULL)
 				{
-					// Find HTTP header end
-					szBody = strstr(szResult, "\r\n\r\n");
-					if (szBody != NULL)
+					unsigned status; 
+					MimeHeaders tHeaders;
+					char *tbuf, *hdrs;
+					size_t hdrSize;
+
+					for (;;) 
 					{
+						// Find HTTP header end
+						szBody = strstr(szResult, "\r\n\r\n");
+						if (szBody == NULL) break;
+
 						szBody += 4;
-						size_t hdrSize = szBody - szResult;
+						hdrSize = szBody - szResult;
 
-						unsigned status; 
-						MimeHeaders tHeaders;
-
-						char* tbuf = (char*)mir_alloc(hdrSize + 1);
+						tbuf = (char*)mir_alloc(hdrSize + 1);
 						memcpy(tbuf, szResult, hdrSize);
 						tbuf[hdrSize] = 0;
 
-						char* p = httpParseHeader( tbuf, status );
-						tHeaders.readFromBuffer( p );
-
+						hdrs = httpParseHeader( tbuf, status );
 						if (status == 100)
 						{
 							ackSize -= hdrSize;
 							memmove(szResult, szResult + hdrSize, ackSize+1);
 							szBody = NULL;
 							mir_free(tbuf);
-							continue;
 						}
+						else break;
+					}
+					
+					if (szBody != NULL)
+					{
+						tHeaders.readFromBuffer( hdrs );
 
 						const char* contLenHdr = tHeaders[ "Content-Length" ];
 						ressz = hdrSize + (contLenHdr ? atol( contLenHdr ) : 0);
