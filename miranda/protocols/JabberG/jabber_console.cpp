@@ -54,12 +54,13 @@ struct StringBuf
 	int streamOffset;
 };
 
-static void sttAppendBuf(StringBuf *buf, char *str);
+static void sttAppendBufRaw(StringBuf *buf, char *str);
+static void sttAppendBufA(StringBuf *buf, char *str);
 #ifdef UNICODE
 	static void sttAppendBufW(StringBuf *buf, WCHAR *str);
 	#define sttAppendBufT(a,b)		(sttAppendBufW((a),(b)))
 #else
-	#define sttAppendBufT(a,b)		(sttAppendBuf((a),(b)))
+	#define sttAppendBufT(a,b)		(sttAppendBufA((a),(b)))
 #endif
 static void sttEmptyBuf(StringBuf *buf);
 
@@ -70,6 +71,7 @@ static void sttEmptyBuf(StringBuf *buf);
 				"\\red245\\green255\\blue245;"	\
 				"\\red245\\green245\\blue255;"	\
 				"\\red128\\green128\\blue128;"	\
+				"\\red255\\green235\\blue235;"	\
 			"}"
 #define RTF_FOOTER			"}"
 #define RTF_BEGINTAG		"\\pard "
@@ -84,6 +86,8 @@ static void sttEmptyBuf(StringBuf *buf);
 #define RTF_BEGINTEXT		"\\pard "
 #define RTF_TEXTINDENT_FMT	"\\fi0\\li%d "
 #define RTF_ENDTEXT			"\\par"
+#define RTF_BEGINPLAINXML	"\\pard\\fi0\\li100\\highlight6\\cf0 "
+#define RTF_ENDPLAINXML		"\\par"
 #define RTF_SEPARATOR		"\\sl-1\\slmult0\\highlight5\\cf5\\-\\par\\sl0"
 
 static void sttRtfAppendXml(StringBuf *buf, XmlNode *node, DWORD flags, int indent);
@@ -96,16 +100,16 @@ void JabberConsoleProcessXml(XmlNode *node, DWORD flags)
 	if (hwndJabberConsole)
 	{
 		StringBuf buf = {0};
-		sttAppendBuf(&buf, RTF_HEADER);
+		sttAppendBufRaw(&buf, RTF_HEADER);
 		sttRtfAppendXml(&buf, node, flags, 1);
-		sttAppendBuf(&buf, RTF_SEPARATOR);
-		sttAppendBuf(&buf, RTF_FOOTER);
+		sttAppendBufRaw(&buf, RTF_SEPARATOR);
+		sttAppendBufRaw(&buf, RTF_FOOTER);
 		SendMessage(hwndJabberConsole, WM_JABBER_REFRESH, 0, (LPARAM)&buf);
 		sttEmptyBuf(&buf);
 	}
 }
 
-static void sttAppendBuf(StringBuf *buf, char *str)
+static void sttAppendBufRaw(StringBuf *buf, char *str)
 {
 	int length = lstrlenA(str);
 	if (buf->size - buf->offset < length+1)
@@ -117,14 +121,40 @@ static void sttAppendBuf(StringBuf *buf, char *str)
 	buf->offset += length;
 }
 
+static void sttAppendBufA(StringBuf *buf, char *str)
+{
+	char tmp[32];
+
+	for (char *p = str; *p; ++p)
+	{
+		if ((*p == '\\') || (*p == '{') || (*p == '}'))
+		{
+			tmp[0] = '\\';
+			tmp[1] = (char)*p;
+			tmp[2] = 0;
+		} else
+		{
+			tmp[0] = (char)*p;
+			tmp[1] = 0;
+		}
+		sttAppendBufRaw(buf, tmp);
+	}
+}
+
 #ifdef UNICODE
 static void sttAppendBufW(StringBuf *buf, WCHAR *str)
 {
 	char tmp[32];
 
-	sttAppendBuf(buf, "{\\uc1 ");
+	sttAppendBufRaw(buf, "{\\uc1 ");
 	for (WCHAR *p = str; *p; ++p)
 	{
+		if ((*p == '\\') || (*p == '{') || (*p == '}'))
+		{
+			tmp[0] = '\\';
+			tmp[1] = (char)*p;
+			tmp[2] = 0;
+		} else
 		if (*p < 128)
 		{
 			tmp[0] = (char)*p;
@@ -133,9 +163,9 @@ static void sttAppendBufW(StringBuf *buf, WCHAR *str)
 		{
 			mir_snprintf(tmp, sizeof(tmp), "\\u%d ?", (int)*p);
 		}
-		sttAppendBuf(buf, tmp);
+		sttAppendBufRaw(buf, tmp);
 	}
-	sttAppendBuf(buf, "}");
+	sttAppendBufRaw(buf, "}");
 }
 #endif
 
@@ -155,31 +185,31 @@ static void sttRtfAppendXml(StringBuf *buf, XmlNode *node, DWORD flags, int inde
 		(int)(indent*200)
 		);
 
-	sttAppendBuf(buf, RTF_BEGINTAG);
-	sttAppendBuf(buf, indentLevel);
-	if (flags&JCPF_IN)	sttAppendBuf(buf, "\\highlight3 ");
-	if (flags&JCPF_OUT)	sttAppendBuf(buf, "\\highlight4 ");
-	sttAppendBuf(buf, "<");
-	sttAppendBuf(buf, RTF_BEGINTAGNAME);
-	sttAppendBuf(buf, node->name);
-	sttAppendBuf(buf, RTF_ENDTAGNAME);
+	sttAppendBufRaw(buf, RTF_BEGINTAG);
+	sttAppendBufRaw(buf, indentLevel);
+	if (flags&JCPF_IN)	sttAppendBufRaw(buf, "\\highlight3 ");
+	if (flags&JCPF_OUT)	sttAppendBufRaw(buf, "\\highlight4 ");
+	sttAppendBufRaw(buf, "<");
+	sttAppendBufRaw(buf, RTF_BEGINTAGNAME);
+	sttAppendBufA(buf, node->name);
+	sttAppendBufRaw(buf, RTF_ENDTAGNAME);
 
 	for (i = 0; i < node->numAttr; ++i)
 	{
-		sttAppendBuf(buf, " ");
-		sttAppendBuf(buf, RTF_BEGINATTRNAME);
-		sttAppendBuf(buf, node->attr[i]->name);
-		sttAppendBuf(buf, RTF_ENDATTRNAME);
-		sttAppendBuf(buf, "=\"");
-		sttAppendBuf(buf, RTF_BEGINATTRVAL);
+		sttAppendBufRaw(buf, " ");
+		sttAppendBufRaw(buf, RTF_BEGINATTRNAME);
+		sttAppendBufA(buf, node->attr[i]->name);
+		sttAppendBufRaw(buf, RTF_ENDATTRNAME);
+		sttAppendBufRaw(buf, "=\"");
+		sttAppendBufRaw(buf, RTF_BEGINATTRVAL);
 		if (flags & JCPF_UTF8)
 		{
 			wchar_t *tmp = mir_utf8decodeW(node->attr[i]->sendValue);
 #if defined( _UNICODE )
-			sttAppendBufT(buf, tmp);
+			sttAppendBufW(buf, tmp);
 #else
 			char *szTmp2 = mir_u2a(tmp);
-			sttAppendBufT(buf, szTmp2);
+			sttAppendBufA(buf, szTmp2);
 			mir_free(szTmp2);
 #endif
 			mir_free(tmp);
@@ -187,35 +217,35 @@ static void sttRtfAppendXml(StringBuf *buf, XmlNode *node, DWORD flags, int inde
 		{
 			sttAppendBufT(buf, node->attr[i]->value);
 		}
-		sttAppendBuf(buf, "\"");
-		sttAppendBuf(buf, RTF_ENDATTRVAL);
+		sttAppendBufRaw(buf, "\"");
+		sttAppendBufRaw(buf, RTF_ENDATTRVAL);
 	}
 
 	if (node->numChild || node->text)
 	{
-		sttAppendBuf(buf, ">");
-		sttAppendBuf(buf, RTF_ENDTAG);
+		sttAppendBufRaw(buf, ">");
+		sttAppendBufRaw(buf, RTF_ENDTAG);
 	}
 
 	if (node->text)
 	{
-		sttAppendBuf(buf, RTF_BEGINTEXT);
+		sttAppendBufRaw(buf, RTF_BEGINTEXT);
 
 		char *indentTextLevel = (char *)mir_alloc(128);
 		mir_snprintf(indentTextLevel, 128, RTF_TEXTINDENT_FMT,
 			(int)((indent+1)*200)
 			);
-		sttAppendBuf(buf, indentTextLevel);
+		sttAppendBufRaw(buf, indentTextLevel);
 		mir_free(indentTextLevel);
 
 		if (flags & JCPF_UTF8)
 		{
 			wchar_t *tmp = mir_utf8decodeW(node->sendText);
 #if defined( _UNICODE )
-			sttAppendBufT(buf, tmp);
+			sttAppendBufW(buf, tmp);
 #else
 			char *szTmp2 = mir_u2a(tmp);
-			sttAppendBufT(buf, szTmp2);
+			sttAppendBufA(buf, szTmp2);
 			mir_free(szTmp2);
 #endif
 			mir_free(tmp);
@@ -223,7 +253,7 @@ static void sttRtfAppendXml(StringBuf *buf, XmlNode *node, DWORD flags, int inde
 		{
 			sttAppendBufT(buf, node->text);
 		}
-		sttAppendBuf(buf, RTF_ENDTEXT);
+		sttAppendBufRaw(buf, RTF_ENDTEXT);
 	}
 
 	for (i = 0; i < node->numChild; ++i)
@@ -231,19 +261,19 @@ static void sttRtfAppendXml(StringBuf *buf, XmlNode *node, DWORD flags, int inde
 
 	if (node->numChild || node->text)
 	{
-		sttAppendBuf(buf, RTF_BEGINTAG);
-		sttAppendBuf(buf, indentLevel);
-		sttAppendBuf(buf, "</");
-		sttAppendBuf(buf, RTF_BEGINTAGNAME);
-		sttAppendBuf(buf, node->name);
-		sttAppendBuf(buf, RTF_ENDTAGNAME);
-		sttAppendBuf(buf, ">");
+		sttAppendBufRaw(buf, RTF_BEGINTAG);
+		sttAppendBufRaw(buf, indentLevel);
+		sttAppendBufRaw(buf, "</");
+		sttAppendBufRaw(buf, RTF_BEGINTAGNAME);
+		sttAppendBufA(buf, node->name);
+		sttAppendBufRaw(buf, RTF_ENDTAGNAME);
+		sttAppendBufRaw(buf, ">");
 	} else
 	{
-		sttAppendBuf(buf, " />");
+		sttAppendBufRaw(buf, " />");
 	}
 
-	sttAppendBuf(buf, RTF_ENDTAG);
+	sttAppendBufRaw(buf, RTF_ENDTAG);
 	mir_free(indentLevel);
 }
 
@@ -362,11 +392,27 @@ static BOOL CALLBACK JabberConsoleDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam
 			{
 				case IDOK:
 				{
+					if (!jabberOnline)
+					{
+						MessageBox(hwndDlg, TranslateT("Can't send data while you are offline."), TranslateT("Jabber Error"), MB_ICONSTOP|MB_OK);
+						break;
+					}
+
 					int length = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_CONSOLEIN)) + 1;
 					TCHAR *textToSend = (TCHAR *)mir_alloc(length * sizeof(TCHAR));
 					GetWindowText(GetDlgItem(hwndDlg, IDC_CONSOLEIN), textToSend, length);
 					char *tmp = mir_utf8encodeT(textToSend);
 					jabberThreadInfo->send(tmp, lstrlenA(tmp));
+
+					StringBuf buf = {0};
+					sttAppendBufRaw(&buf, RTF_HEADER);
+					sttAppendBufRaw(&buf, RTF_BEGINPLAINXML);
+					sttAppendBufT(&buf, textToSend);
+					sttAppendBufRaw(&buf, RTF_ENDPLAINXML);
+					sttAppendBufRaw(&buf, RTF_SEPARATOR);
+					sttAppendBufRaw(&buf, RTF_FOOTER);
+					SendMessage(hwndDlg, WM_JABBER_REFRESH, 0, (LPARAM)&buf);
+					sttEmptyBuf(&buf);
 
 					XmlState xmlstate;
 					JabberXmlInitState(&xmlstate);
