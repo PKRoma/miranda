@@ -46,16 +46,18 @@ TCHAR * GetSendBufferMsg(MessageSendQueueItem *item) {
     int len = strlen(item->sendBuffer);
 #if defined( _UNICODE )
     if (item->flags & PREF_UTF) {
-    	char *tempBuffer = mir_strdup(item->sendBuffer);
-        mir_utf8decode(tempBuffer, &szMsg);
-        mir_free(tempBuffer);
+        szMsg = mir_utf8decodeW(item->sendBuffer);
     } else {
         szMsg = (TCHAR *)mir_alloc(item->sendBufferSize - len - 1);
         memcpy(szMsg, item->sendBuffer + len + 1, item->sendBufferSize - len - 1);
     }
 #else
-    szMsg = (char *)mir_alloc(item->sendBufferSize);
-    memcpy(szMsg, item->sendBuffer, len + 1);
+    if (item->flags & PREF_UTF) {
+        szMsg = mir_utf8decodecp(mir_strdup(item->sendBuffer), item->codepage, NULL);
+    } else {
+		szMsg = (char *)mir_alloc(item->sendBufferSize);
+		memcpy(szMsg, item->sendBuffer, len + 1);
+    }
 #endif
     return szMsg;
 }

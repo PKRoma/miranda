@@ -164,7 +164,6 @@ int IsUnicodeMIM() {
 const char *filename = "scriver.log";
 
 void logInfo(const char *fmt, ...) {
-#ifndef JLOGGER_DISABLE_LOGS
 	SYSTEMTIME time;
 	char *str;
 	va_list vararg;
@@ -182,5 +181,4 @@ void logInfo(const char *fmt, ...) {
     	free(str);
 		fclose(flog);
 	}
-#endif
 }

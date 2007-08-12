@@ -186,19 +186,17 @@ static void saveDraftMessage(struct MessageWindowData *dat) {
 	int textBufferSize;
 	textBufferSize = (GetWindowTextLengthA(GetDlgItem(dat->hwnd, IDC_MESSAGE)) + 1);
 	if (textBufferSize > 1) {
+		GETTEXTEX  gt = {0};
 		textBufferSize *= sizeof(TCHAR);
 		textBuffer = (TCHAR *) mir_alloc(textBufferSize);
 #if defined( _UNICODE )
-		{
-			GETTEXTEX  gt;
-			gt.cb = textBufferSize;
-			gt.flags = GT_USECRLF;
-			gt.codepage = 1200;
-			SendDlgItemMessage(dat->hwnd, IDC_MESSAGE, EM_GETTEXTEX, (WPARAM) &gt, (LPARAM) textBuffer);
-		}
+		gt.codepage = 1200;
 #else
-		GetDlgItemTextA(dat->hwnd, IDC_MESSAGE, textBuffer, textBufferSize);
+		gt.codepage = dat->codePage;
 #endif
+		gt.cb = textBufferSize;
+		gt.flags = GT_USECRLF;
+		SendDlgItemMessage(dat->hwnd, IDC_MESSAGE, EM_GETTEXTEX, (WPARAM) &gt, (LPARAM) textBuffer);
 		g_dat->draftList = tcmdlist_append2(g_dat->draftList, dat->hContact, (TCHAR *) textBuffer);
 		mir_free(textBuffer);
 	} else {
@@ -401,14 +399,14 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 	struct MessageWindowData *pdat;
 	SETTEXTEX  st;
 	st.flags = ST_DEFAULT;
+	pdat=(struct MessageWindowData *)GetWindowLong(GetParent(hwnd),GWL_USERDATA);
+	dat = (struct MsgEditSubclassData *) GetWindowLong(hwnd, GWL_USERDATA);
 	#ifdef _UNICODE
 		st.codepage = 1200;
 	#else
-		st.codepage = CP_ACP;
+		st.codepage = pdat->codePage;
 	#endif
 
-	pdat=(struct MessageWindowData *)GetWindowLong(GetParent(hwnd),GWL_USERDATA);
-	dat = (struct MsgEditSubclassData *) GetWindowLong(hwnd, GWL_USERDATA);
 	switch (msg) {
 	case EM_SUBCLASSED:
 		dat = (struct MsgEditSubclassData *) mir_alloc(sizeof(struct MsgEditSubclassData));
@@ -1026,23 +1024,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPENING);
 //			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTMODE, TM_PLAINTEXT, 0);
 
-			if (newData->szInitialText) {
-	#if defined(_UNICODE)
-				if(newData->isWchar)
-					SetDlgItemText(hwndDlg, IDC_MESSAGE, (TCHAR *)newData->szInitialText);
-				else
-					SetDlgItemTextA(hwndDlg, IDC_MESSAGE, newData->szInitialText);
-	#else
-				SetDlgItemTextA(hwndDlg, IDC_MESSAGE, newData->szInitialText);
-	#endif
-			} else if (g_dat->flags & SMF_SAVEDRAFTS) {
-				TCmdList *draft = tcmdlist_get2(g_dat->draftList, dat->hContact);
-				if (draft != NULL) {
-					SetDlgItemText(hwndDlg, IDC_MESSAGE, draft->szCmd);
-				}
-				len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
-				PostMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SETSEL, len, len);
-			}
 			dat->hwnd = hwndDlg;
 			dat->hwndParent = GetParent(hwndDlg);
 			dat->parent = (ParentWindowData *) GetWindowLong(dat->hwndParent, GWL_USERDATA);
@@ -1122,6 +1103,31 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				dat->splitterPos = dat->minEditBoxHeight;
 			}
 			WindowList_Add(g_dat->hMessageWindowList, hwndDlg, dat->hContact);
+
+			if (newData->szInitialText) {
+	#if defined(_UNICODE)
+				if(newData->isWchar)
+					SetDlgItemText(hwndDlg, IDC_MESSAGE, (TCHAR *)newData->szInitialText);
+				else
+					SetDlgItemTextA(hwndDlg, IDC_MESSAGE, newData->szInitialText);
+	#else
+				SetDlgItemTextA(hwndDlg, IDC_MESSAGE, newData->szInitialText);
+	#endif
+			} else if (g_dat->flags & SMF_SAVEDRAFTS) {
+				TCmdList *draft = tcmdlist_get2(g_dat->draftList, dat->hContact);
+				if (draft != NULL) {
+					SETTEXTEX  st = {0};
+					st.flags = ST_DEFAULT;
+					#ifdef _UNICODE
+						st.codepage = 1200;
+					#else
+						st.codepage = dat->codePage;
+					#endif
+					SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM) &st, (LPARAM)draft->szCmd);
+				}
+				len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
+				PostMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SETSEL, len, len);
+			}
 
 			SendMessage(hwndDlg, DM_CHANGEICONS, 0, 0);
 			// Make them flat buttons
@@ -2120,6 +2126,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			item->hContact = dat->hContact;
 			item->proto = mir_strdup(dat->szProto);
 			item->flags = msi->flags;
+			item->codepage = dat->codePage;
 			if ( IsUtfSendAvailable( dat->hContact )) {
 				char* szMsgUtf;
 				#if defined( _UNICODE )
@@ -2268,10 +2275,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					//SendMessage(hwndDlg, DM_USERNAMETOCLIP, 0, 0);
 			//}
 			if (dat->hContact != NULL) {
+				GETTEXTEX  gt = {0};
+				PARAFORMAT2 pf2;
 				MessageSendQueueItem msi = { 0 };
 				int bufSize = GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE)) + 1;
 
-				PARAFORMAT2 pf2;
 				ZeroMemory((void *)&pf2, sizeof(pf2));
 				pf2.cbSize = sizeof(pf2);
 				pf2.dwMask = PFM_RTLPARA;
@@ -2282,15 +2290,16 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				msi.sendBufferSize = bufSize * (sizeof(TCHAR) + 1);
 				msi.sendBuffer = (char *) mir_alloc(msi.sendBufferSize);
 				msi.flags |= PREF_TCHAR;
-				GetDlgItemTextA(hwndDlg, IDC_MESSAGE, msi.sendBuffer, bufSize);
+
+				gt.flags = GT_USECRLF;
+				gt.cb = bufSize;
+				gt.codepage = dat->codePage;
+				SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETTEXTEX, (WPARAM) &gt, (LPARAM) msi.sendBuffer);
+//				GetDlgItemTextA(hwndDlg, IDC_MESSAGE, msi.sendBuffer, bufSize);
 				#if defined( _UNICODE )
-					{
-						GETTEXTEX  gt;
-						gt.cb = bufSize * sizeof(TCHAR);
-						gt.flags = GT_USECRLF;
-						gt.codepage = 1200;
-						SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETTEXTEX, (WPARAM) &gt, (LPARAM) &msi.sendBuffer[bufSize]);
-					}
+					gt.cb = bufSize * sizeof(TCHAR);
+					gt.codepage = 1200;
+					SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETTEXTEX, (WPARAM) &gt, (LPARAM) &msi.sendBuffer[bufSize]);
 
 					if ( RTL_Detect((wchar_t *)&msi.sendBuffer[bufSize] ))
 						msi.flags |= PREF_RTL;

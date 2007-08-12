@@ -26,6 +26,22 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "msgs.h"
 
+typedef struct MessageSendQueueItemStruct
+{
+	HWND	hwndSender;
+	HANDLE  hContact;
+	char *	proto;
+	HANDLE 	hSendId;
+	int		timeout;
+	char *	sendBuffer;
+	int		sendBufferSize;
+	int		codepage;
+	int		flags;
+	HWND	hwndErrorDlg;
+	struct MessageSendQueueItemStruct *prev;
+	struct MessageSendQueueItemStruct *next;
+}MessageSendQueueItem;
+
 void InitSendQueue();
 void DestroySendQueue();
 MessageSendQueueItem* CreateSendQueueItem(HWND hwndSender);
