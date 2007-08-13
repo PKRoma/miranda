@@ -15,7 +15,6 @@
 
 #include "yahoo.h"
 
-#include <m_system.h>
 #include <m_protomod.h>
 #include <m_protosvc.h>
 #include <m_langpack.h>
@@ -77,7 +76,8 @@ int GetCaps(WPARAM wParam,LPARAM lParam)
             break;
             
         case PFLAGNUM_4:
-            ret = PF4_FORCEAUTH|PF4_FORCEADDED|PF4_SUPPORTTYPING|PF4_SUPPORTIDLE|PF4_AVATARS|PF4_OFFLINEFILES;
+            ret = PF4_FORCEAUTH | PF4_FORCEADDED | PF4_SUPPORTTYPING | PF4_SUPPORTIDLE
+					|PF4_AVATARS | PF4_OFFLINEFILES | PF4_IMSENDUTF;
             break;
         case PFLAG_UNIQUEIDTEXT:
             ret = (int) Translate("ID");
@@ -111,7 +111,7 @@ int YahooLoadIcon(WPARAM wParam,LPARAM lParam)
 	UINT id;
 
 	switch(wParam&0xFFFF) {
-		case PLI_PROTOCOL: id=IDI_MAIN; break; // IDI_MAIN is the main icon for the protocol
+		case PLI_PROTOCOL: id=IDI_YAHOO; break; // IDI_MAIN is the main icon for the protocol
 		default: return (int)(HICON)NULL;	
 	}
 	return (int)LoadImage(hinstance,MAKEINTRESOURCE(id),IMAGE_ICON,GetSystemMetrics(wParam&PLIF_SMALL?SM_CXSMICON:SM_CXICON),GetSystemMetrics(wParam&PLIF_SMALL?SM_CYSMICON:SM_CYICON),0);
@@ -144,8 +144,8 @@ int SetStatus(WPARAM wParam,LPARAM lParam)
     if (status == ID_STATUS_OFFLINE) {
 		yahoo_logout();
 		
-        yahoo_util_broadcaststatus(ID_STATUS_OFFLINE);
-        yahoo_logoff_buddies();
+        /*yahoo_util_broadcaststatus(ID_STATUS_OFFLINE);
+        yahoo_logoff_buddies();*/
     }
     else if (!yahooLoggedIn) {
 		DBVARIANT dbv;
@@ -157,8 +157,6 @@ int SetStatus(WPARAM wParam,LPARAM lParam)
 
 		YAHOO_utils_logversion();
 		
-		ylad = y_new0(yahoo_local_account, 1);
-
 		/*
 		 * Load Yahoo ID form the database.
 		 */
@@ -168,8 +166,10 @@ int SetStatus(WPARAM wParam,LPARAM lParam)
 			} else
 				err++;
 			DBFreeVariant(&dbv);
-		} else 
+		} else {
+			ProtoBroadcastAck(yahooProtocolName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_BADUSERID);
 			err++;
+		}
 		
 		if (err) {
 			lstrcpyn(errmsg, Translate("Please enter your yahoo id in Options/Network/Yahoo"), 80);
@@ -182,8 +182,10 @@ int SetStatus(WPARAM wParam,LPARAM lParam)
 					err++;
 				
 				DBFreeVariant(&dbv);
-			}  else 
+			}  else  {
+				ProtoBroadcastAck(yahooProtocolName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD);
 				err++;
+			}
 			
 			if (err) {
 				lstrcpyn(errmsg, Translate("Please enter your yahoo password in Options/Network/Yahoo"), 80);
@@ -191,8 +193,6 @@ int SetStatus(WPARAM wParam,LPARAM lParam)
 		}
 
 		if (err != 0){
-			FREE(ylad);
-			ylad = NULL;
 			yahoo_util_broadcaststatus(ID_STATUS_OFFLINE);
         
 			YAHOO_ShowError(Translate("Yahoo Login Error"), errmsg);
@@ -208,7 +208,7 @@ int SetStatus(WPARAM wParam,LPARAM lParam)
 		yahoo_util_broadcaststatus(ID_STATUS_CONNECTING);
 		
 		status = (status == ID_STATUS_INVISIBLE) ? YAHOO_STATUS_INVISIBLE: YAHOO_STATUS_AVAILABLE;
-        pthread_create(yahoo_server_main,  (void *) status );
+        mir_forkthread(yahoo_server_main,  (void *) status );
 
 		//start_timer();
     } else if (status == ID_STATUS_INVISIBLE){ /* other normal away statuses are set via setaway */
@@ -217,10 +217,11 @@ int SetStatus(WPARAM wParam,LPARAM lParam)
     } else {
 		/* clear out our message just in case, STUPID AA! */
 		FREE(szStartMsg);
-
+			
 		/* now tell miranda that we are Online, don't tell Yahoo server yet though! */
 		yahoo_util_broadcaststatus(status);
 	}
+	
     return 0;
 }
 
@@ -326,8 +327,6 @@ int YahooAddToList(WPARAM wParam,LPARAM lParam)
 		YAHOO_DebugLog("[YahooAddToList] Empty data passed?");
 		return 0;
 	}
-
-	
 	
 	hContact = getbuddyH(psr->nick);
 	if (hContact != NULL) {
@@ -349,13 +348,11 @@ int YahooAddToList(WPARAM wParam,LPARAM lParam)
 int YahooAddToListByEvent(WPARAM wParam,LPARAM lParam)
 {
     DBEVENTINFO dbei;
-    char* nick;
 	HANDLE hContact;
     
     YAHOO_DebugLog("[YahooAddToListByEvent]");
 	if ( !yahooLoggedIn )
 		return 0;
-
 	
 	memset( &dbei, 0, sizeof( dbei ));
 	dbei.cbSize = sizeof( dbei );
@@ -373,7 +370,7 @@ int YahooAddToListByEvent(WPARAM wParam,LPARAM lParam)
 	}
 
 	if ( dbei.eventType != EVENTTYPE_AUTHREQUEST ) {
-		YAHOO_DebugLog("[YahooAddToListByEvent] ERROR: Not authorization.");
+		YAHOO_DebugLog("[YahooAddToListByEvent] ERROR: Not an authorization request.");
 		return 0;
 	}
 
@@ -400,34 +397,21 @@ int YahooAddToListByEvent(WPARAM wParam,LPARAM lParam)
 		blob is: uin(DWORD), hcontact(HANDLE), nick(ASCIIZ), first(ASCIIZ), 
 		last(ASCIIZ), email(ASCIIZ), reason(ASCIIZ)
 	*/
-	//hContact = (HANDLE) ( dbei.pBlob + sizeof( DWORD ));
+	memcpy(&hContact,( char* )( dbei.pBlob + sizeof( DWORD ) ), sizeof(HANDLE)); 
 	
-	nick = ( char* )( dbei.pBlob + sizeof( DWORD )*2 );
-	{
-		char* firstName = nick + lstrlen(nick) + 1;
-		char* lastName = firstName + lstrlen(firstName) + 1;
-		char* email = lastName + lstrlen(lastName) + 1;
-		char* reason = email + lstrlen(email) + 1;
-			
-		 YAHOO_DebugLog("buddy:%s first:%s last:%s e-mail:%s", nick,
-						firstName, lastName, email);
-		YAHOO_DebugLog("reason:%s ", reason);
-	}
-	
-	/* we need to send out a packet to request an add */
-	//YAHOO_add_buddy(nick, "miranda", reason);
-	//return 0;
-	hContact = getbuddyH(nick);
 	if (hContact != NULL) {
 		YAHOO_DebugLog("Temp Buddy found at: %p ", hContact);
-	}
+	} else
+		YAHOO_DebugLog("hContact NULL???");
+	
 	return (int)hContact;
 }
 
 int YahooAuthAllow(WPARAM wParam,LPARAM lParam)
 {
-    //DBEVENTINFO dbei;
-    //char* nick;
+    DBEVENTINFO dbei;
+	HANDLE hContact;
+	DBVARIANT dbv;
     
     YAHOO_DebugLog("[YahooAuthAllow]");
 	if ( !yahooLoggedIn ) {
@@ -435,8 +419,7 @@ int YahooAuthAllow(WPARAM wParam,LPARAM lParam)
 		return 1;
 	}
 
-	
-	/*memset( &dbei, 0, sizeof( dbei ));
+	memset( &dbei, 0, sizeof( dbei ));
 	dbei.cbSize = sizeof( dbei );
 
 	if (( dbei.cbBlob = YAHOO_CallService( MS_DB_EVENT_GETBLOBSIZE, wParam, 0 )) == -1 )
@@ -452,21 +435,24 @@ int YahooAuthAllow(WPARAM wParam,LPARAM lParam)
 	if ( strcmp( dbei.szModule, yahooProtocolName ))
 		return 1;
 
-	//nick = ( char* )( dbei.pBlob + sizeof( DWORD )*2 );
+	memcpy(&hContact,( char* )( dbei.pBlob + sizeof( DWORD ) ), sizeof(HANDLE)); 
+    
+    /* Need to remove the buddy from our Miranda Lists */
+    if (hContact != NULL && !DBGetContactSetting( hContact, yahooProtocolName, YAHOO_LOGINID, &dbv )){
+		YAHOO_DebugLog("Accepting buddy:%s", dbv.pszVal);    
+	    YAHOO_accept(dbv.pszVal);
+		DBFreeVariant(&dbv);
+	}
 
-    //YAHOO_DebugLog("Adding buddy:%s ", nick);
-	//YAHOO_add_buddy(nick, "miranda", NULL);
-	*/
 	return 0;
 }
 
 int YahooAuthDeny(WPARAM wParam,LPARAM lParam)
 {
     DBEVENTINFO dbei;
-    char* nick;
-	char *handle;
-	char* reason;
+	DBVARIANT dbv;
 	HANDLE hContact;
+	char* reason= (char*)lParam;
 	
     YAHOO_DebugLog("[YahooAuthDeny]");
 	if ( !yahooLoggedIn )
@@ -496,17 +482,15 @@ int YahooAuthDeny(WPARAM wParam,LPARAM lParam)
 		return 1;
 	}
 
-	nick = ( char* )( dbei.pBlob + sizeof( DWORD )*2 );
-	handle = ( char* )( dbei.pBlob + sizeof( DWORD ) );
-	reason = (char*)lParam;
-		
-    memcpy(&hContact,handle, sizeof(HANDLE)); 
+    memcpy(&hContact,( char* )( dbei.pBlob + sizeof( DWORD ) ), sizeof(HANDLE)); 
     
     /* Need to remove the buddy from our Miranda Lists */
-    YAHOO_DebugLog("Rejecting buddy:%s msg: %s", nick, reason);    
-    YAHOO_reject(nick,reason);
-    
-    YAHOO_CallService( MS_DB_CONTACT_DELETE, (WPARAM) hContact, 0);
+    if (hContact != NULL && !DBGetContactSetting( hContact, yahooProtocolName, YAHOO_LOGINID, &dbv )){
+		YAHOO_DebugLog("Rejecting buddy:%s msg: %s", dbv.pszVal, reason);    
+	    YAHOO_reject(dbv.pszVal,reason);
+		DBFreeVariant(&dbv);
+		YAHOO_CallService( MS_DB_CONTACT_DELETE, (WPARAM) hContact, 0);
+	}
 	return 0;
 }
 
@@ -553,16 +537,14 @@ static void __cdecl yahoo_get_statusthread(HANDLE hContact)
 		DBFreeVariant( &dbv );
 	}
 	
-	//if ( DBGetContactSetting(( HANDLE )hContact, yahooProtocolName, "YMsg", &dbv )) {
-	if ( DBGetContactSetting(( HANDLE )hContact, "CList", "StatusMsg", &dbv )) {
-		sm = yahoo_status_code(DBGetContactSettingWord(hContact, yahooProtocolName, "YStatus", YAHOO_STATUS_OFFLINE));
-	} else {
-		if (lstrlen(dbv.pszVal) < 1)
-			sm = yahoo_status_code(DBGetContactSettingWord(hContact, yahooProtocolName, "YStatus", YAHOO_STATUS_OFFLINE));
-		else
+	if (! DBGetContactSetting(( HANDLE )hContact, "CList", "StatusMsg", &dbv )) {
+		if (lstrlen(dbv.pszVal) >= 1)
 			sm = strdup(dbv.pszVal);
 		
 		DBFreeVariant( &dbv );
+	} else {
+		sm = yahoo_status_code(DBGetContactSettingWord(hContact, yahooProtocolName, "YStatus", YAHOO_STATUS_OFFLINE));
+		if (sm) sm = strdup(sm); /* we need this to go global FREE later */
 	}
 
 	l = 0;
@@ -584,14 +566,19 @@ static void __cdecl yahoo_get_statusthread(HANDLE hContact)
 		} else
 			lstrcpy(fm, gm);
 		
-		lstrcat(fm, ": ");
-		lstrcat(fm, sm);
+		if (sm) {
+			lstrcat(fm, ": ");
+			lstrcat(fm, sm);
+		}
 		
 		if (c != NULL)
 			lstrcat(fm, c);
-	} else {
+	} else if (sm) {
 		lstrcat(fm, sm);
 	}
+	
+	FREE(sm);
+	
 	ccs1.szProtoService = PSR_AWAYMSG;
 	ccs1.hContact = hContact;
 	ccs1.wParam = status;
@@ -612,25 +599,15 @@ int YahooGetAwayMessage(WPARAM wParam,LPARAM lParam)
     YAHOO_DebugLog("YahooGetAwayMessage");
 	if (lParam && yahooLoggedIn) {
 	    CCSDATA *ccs = (CCSDATA *) lParam;
-		 DBVARIANT dbv;
-		 int status;
-		 
-		status = DBGetContactSettingWord(( HANDLE )ccs->hContact, yahooProtocolName, "Status", ID_STATUS_OFFLINE);
-
-		if (status == ID_STATUS_OFFLINE)
-			   return 0; /* user offline, what Status message? */
-
-		 if ( DBGetContactSetting(( HANDLE )ccs->hContact, yahooProtocolName, YAHOO_LOGINID, &dbv )) {
-		 	 YAHOO_DebugLog("YAHOOGetAwayMessage Can't retrieve buddy id.");
-		 	return 0;
-	 	}
-	 		YAHOO_DebugLog("Buddy %s ", dbv.pszVal);
-   				
-   			DBFreeVariant( &dbv );
-
-            pthread_create(yahoo_get_statusthread, ccs->hContact);
-            return 1; //Success		
 		
+		if (DBGetContactSettingWord(( HANDLE )ccs->hContact, 
+									yahooProtocolName, 
+									"Status", 
+									ID_STATUS_OFFLINE) == ID_STATUS_OFFLINE)
+			return 0; /* user offline, what Status message? */
+
+        mir_forkthread(yahoo_get_statusthread, ccs->hContact);
+        return 1; //Success		
 	}
 	
 	return 0; // Failure
@@ -712,7 +689,7 @@ static void __cdecl yahoo_get_infothread(HANDLE hContact)
 int YahooGetInfo(WPARAM wParam,LPARAM lParam)
 {
 	CCSDATA *ccs = (CCSDATA *) lParam;
-	pthread_create(yahoo_get_infothread, ccs->hContact);
+	mir_forkthread(yahoo_get_infothread, ccs->hContact);
 	return 0;
 }
 
@@ -729,7 +706,7 @@ static BOOL CALLBACK DlgProcSetCustStat(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		case WM_INITDIALOG:
 		{
 			TranslateDialogDefault( hwndDlg );
-			SendMessage( hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon( hinstance, MAKEINTRESOURCE( IDI_YAHOO )));
+			SendMessage( hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIconEx( "yahoo" ) );
 
 		    if ( !DBGetContactSetting( NULL, yahooProtocolName, YAHOO_CUSTSTATDB, &dbv ))
 				    {
@@ -888,7 +865,10 @@ static int YahooShowMyProfileCommand( WPARAM wParam, LPARAM lParam )
 //=======================================================
 int YahooGotoMailboxCommand( WPARAM wParam, LPARAM lParam )
 {
-	YahooOpenURL("http://mail.yahoo.com/", 1);
+	if (YAHOO_GetByte( "YahooJapan", 0 ))
+		YahooOpenURL("http://mail.yahoo.co.jp/", 1);
+	else
+		YahooOpenURL("http://mail.yahoo.com/", 1);
 	
 	return 0;
 }
@@ -981,98 +961,105 @@ int YahooSetApparentMode(WPARAM wParam, LPARAM lParam)
     return 1;
 }
 
+int YahooGetUnreadEmailCount(WPARAM wParam, LPARAM lParam)
+{
+    if ( !yahooLoggedIn )
+        return 0;
+	
+    return mUnreadMessages;
+}
 extern HANDLE   hHookContactDeleted;
 extern HANDLE   hHookIdle;
 
+void YahooMenuInit( void )
+{
+	char servicefunction[ 100 ];
+	char* tDest;
+	CLISTMENUITEM mi;
+	
+	lstrcpy( servicefunction, yahooProtocolName );
+	tDest = servicefunction + lstrlen( servicefunction );
+	
+	// Show custom status menu    
+	lstrcpy( tDest, YAHOO_SET_CUST_STAT );
+	CreateServiceFunction( servicefunction, SetCustomStatCommand );
+	memset( &mi, 0, sizeof( mi ));
+	mi.pszPopupName = yahooProtocolName;
+	mi.cbSize = sizeof( mi );
+	mi.popupPosition = 500090000;
+	mi.position = 500090000;
+	mi.hIcon = LoadIconEx( "set_status" );
+	mi.pszName = LPGEN( "Set &Custom Status" );
+	mi.pszService = servicefunction;
+	YahooMenuItems [ 0 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
+
+	// Show My profile
+	lstrcpy( tDest, YAHOO_SHOW_MY_PROFILE );
+	CreateServiceFunction( servicefunction, YahooShowMyProfileCommand );
+	mi.position = 500090005;
+	mi.hIcon = LoadIconEx( "profile" );
+	mi.pszName = LPGEN( "&My Profile" );
+	mi.pszService = servicefunction;
+	YahooMenuItems [ 1 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+
+	// Show Yahoo mail 
+	strcpy( tDest, YAHOO_YAHOO_MAIL );
+	CreateServiceFunction( servicefunction, YahooGotoMailboxCommand );
+	mi.position = 500090010;
+	mi.hIcon = LoadIconEx( "mail" );
+	mi.pszName = LPGEN( "&Yahoo Mail" );
+	mi.pszService = servicefunction;
+	YahooMenuItems [ 2 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+
+	// Show Address Book    
+	strcpy( tDest, YAHOO_AB );
+	CreateServiceFunction( servicefunction, YahooABCommand );
+	mi.position = 500090015;
+	mi.hIcon = LoadIconEx( "yab" );
+	mi.pszName = LPGEN( "&Address Book" );
+	mi.pszService = servicefunction;
+	YahooMenuItems [ 3 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+
+	// Show Calendar
+	strcpy( tDest, YAHOO_CALENDAR );
+	CreateServiceFunction( servicefunction, YahooCalendarCommand );
+	mi.position = 500090015;
+	mi.hIcon = LoadIconEx( "calendar" );
+	mi.pszName = LPGEN( "&Calendar" );
+	mi.pszService = servicefunction;
+	YahooMenuItems [ 4 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+
+	// Show Refresh     
+	strcpy( tDest, YAHOO_REFRESH );
+	CreateServiceFunction( servicefunction, YahooRefreshCommand );
+	mi.position = 500090015;
+	mi.hIcon = LoadIconEx( "refresh" );
+	mi.pszName = LPGEN( "&Refresh" );
+	mi.pszService = servicefunction;
+	YahooMenuItems [ 5 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+	
+	// Show Profile 
+	strcpy( tDest, YAHOO_SHOW_PROFILE );
+	CreateServiceFunction( servicefunction, YahooShowProfileCommand );
+	mi.position = -2000006000;
+	mi.hIcon = LoadIconEx( "profile" );
+	mi.pszName = LPGEN( "&Show Profile" );
+	mi.pszService = servicefunction;
+	mi.pszContactOwner = yahooProtocolName;
+	YahooMenuItems [ 6 ] = ( HANDLE )CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
+}
 //=======================================================
 //Load the yahoo service/plugin
 //=======================================================
 int LoadYahooServices( void )
 {
-    if (!YAHOO_GetByte( "DisableMainMenu", 0 ))
-        {
-        char servicefunction[ 100 ];
-        char* tDest;
-        CLISTMENUITEM mi;
-        
-        lstrcpy( servicefunction, yahooProtocolName );
-    	tDest = servicefunction + lstrlen( servicefunction );
-    	
-    	// Show custom status menu    
-    	lstrcpy( tDest, YAHOO_SET_CUST_STAT );
-    	CreateServiceFunction( servicefunction, SetCustomStatCommand );
-    	memset( &mi, 0, sizeof( mi ));
-    	mi.pszPopupName = yahooProtocolName;
-    	mi.cbSize = sizeof( mi );
-    	mi.popupPosition = 500090000;
-    	mi.position = 500090000;
-    	mi.hIcon = LoadIcon( hinstance, MAKEINTRESOURCE( IDI_SET_STATUS ));
-    	mi.pszName = Translate( "Set &Custom Status" );
-    	mi.pszService = servicefunction;
-        YahooMenuItems [ 0 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
-
-    	// Show My profile menu    
-    	lstrcpy( tDest, YAHOO_SHOW_MY_PROFILE );
-    	CreateServiceFunction( servicefunction, YahooShowMyProfileCommand );
-    	mi.position = 500090005;
-    	mi.hIcon = LoadIcon( hinstance, MAKEINTRESOURCE( IDI_PROFILE ));
-    	mi.pszName = Translate( "&My Profile" );
-    	mi.pszService = servicefunction;
-    	YahooMenuItems [ 1 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
-    
-   	    // Show Yahoo mail menu
-    	strcpy( tDest, YAHOO_YAHOO_MAIL );
-    	CreateServiceFunction( servicefunction, YahooGotoMailboxCommand );
-    	mi.position = 500090010;
-    	mi.hIcon = LoadIcon( hinstance, MAKEINTRESOURCE( IDI_INBOX ));
-    	mi.pszName = Translate( "&Yahoo Mail" );
-    	mi.pszService = servicefunction;
-    	YahooMenuItems [ 2 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
-
-        // Show refresh menu    
-    	strcpy( tDest, YAHOO_AB );
-    	CreateServiceFunction( servicefunction, YahooABCommand );
-    	mi.position = 500090015;
-    	mi.hIcon = LoadIcon( hinstance, MAKEINTRESOURCE( IDI_YAB ));
-    	mi.pszName = Translate( "&Address Book" );
-    	mi.pszService = servicefunction;
-    	YahooMenuItems [ 3 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
-
-        // Show refresh menu    
-    	strcpy( tDest, YAHOO_CALENDAR );
-    	CreateServiceFunction( servicefunction, YahooCalendarCommand );
-    	mi.position = 500090015;
-    	mi.hIcon = LoadIcon( hinstance, MAKEINTRESOURCE( IDI_CALENDAR ));
-    	mi.pszName = Translate( "&Calendar" );
-    	mi.pszService = servicefunction;
-    	YahooMenuItems [ 4 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
-
-		// Show refresh menu    
-    	strcpy( tDest, YAHOO_REFRESH );
-    	CreateServiceFunction( servicefunction, YahooRefreshCommand );
-    	mi.position = 500090015;
-    	mi.hIcon = LoadIcon( hinstance, MAKEINTRESOURCE( IDI_REFRESH ));
-    	mi.pszName = Translate( "&Refresh" );
-    	mi.pszService = servicefunction;
-    	YahooMenuItems [ 5 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
-		
-        // Show show profile menu    
-    	strcpy( tDest, YAHOO_SHOW_PROFILE );
-    	CreateServiceFunction( servicefunction, YahooShowProfileCommand );
-    	mi.position = -2000006000;
-    	mi.hIcon = LoadIcon( hinstance, MAKEINTRESOURCE( IDI_PROFILE ));
-    	mi.pszName = Translate( "&Show Profile" );
-    	mi.pszService = servicefunction;
-		mi.pszContactOwner = yahooProtocolName;
-    	YahooMenuItems [ 6 ] = ( HANDLE )CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
-    
-    	}
-	
 	//----| Service creation |------------------------------------------------------------
 	hHookContactDeleted = HookEvent( ME_DB_CONTACT_DELETED, YahooContactDeleted );
 
 	// Send Nudge
 	YAHOO_CreateProtoServiceFunction( YAHOO_SEND_NUDGE, 	YahooSendNudge );
+	
+	YAHOO_CreateProtoServiceFunction( YAHOO_GETUNREAD_EMAILCOUNT, YahooGetUnreadEmailCount);
 		
 	YAHOO_CreateProtoServiceFunction( PS_GETCAPS,	GetCaps );
 	YAHOO_CreateProtoServiceFunction( PS_GETNAME,	GetName );
@@ -1094,8 +1081,6 @@ int LoadYahooServices( void )
 	YAHOO_CreateProtoServiceFunction( PSS_AUTHREQUEST,	YahooSendAuthRequest);
 	///
 	YAHOO_CreateProtoServiceFunction( PSS_MESSAGE,	YahooSendMessage );
-	YAHOO_CreateProtoServiceFunction( PSS_MESSAGE"W",	YahooSendMessageW );
-	
 	YAHOO_CreateProtoServiceFunction( PSR_MESSAGE,	YahooRecvMessage );
 	
 	YAHOO_CreateProtoServiceFunction( PSS_GETAWAYMSG,	YahooGetAwayMessage );
@@ -1122,10 +1107,10 @@ int LoadYahooServices( void )
 	YAHOO_CreateProtoServiceFunction( PSS_SETAPPARENTMODE,	YahooSetApparentMode);
 	
 	YAHOO_CreateProtoServiceFunction( PS_GETAVATARINFO,	YahooGetAvatarInfo);
-	YAHOO_CreateProtoServiceFunction( PS_GETMYAVATARMAXSIZE, YahooGetAvatarSize);
+	YAHOO_CreateProtoServiceFunction( PS_GETAVATARCAPS, YahooGetAvatarCaps);
 	YAHOO_CreateProtoServiceFunction( PS_GETMYAVATAR, YahooGetMyAvatar);
 	YAHOO_CreateProtoServiceFunction( PS_SETMYAVATAR, YahooSetMyAvatar);
-	YAHOO_CreateProtoServiceFunction( PS_ISAVATARFORMATSUPPORTED, YahooAvatarFormatSupported);
+	
 	return 0;
 }
 

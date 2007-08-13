@@ -65,7 +65,7 @@ int ShutdownHelpModule(WPARAM wParam, LPARAM lParam)
 
 int LoadHelpModule(void)
 {
-	CLISTMENUITEM mi;
+	CLISTMENUITEM mi = { 0 };
 
 	HookEvent(ME_SYSTEM_PRESHUTDOWN,ShutdownHelpModule);
 
@@ -73,32 +73,35 @@ int LoadHelpModule(void)
 	CreateServiceFunction("Help/IndexCommand",IndexCommand);
 	CreateServiceFunction("Help/WebsiteCommand",WebsiteCommand);
 	CreateServiceFunction("Help/BugCommand",BugCommand);
-	ZeroMemory(&mi,sizeof(mi));
-	mi.cbSize=sizeof(mi);
-	mi.hIcon=LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_MIRANDA));
-	mi.pszPopupName=Translate("&Help");
-	mi.popupPosition=2000090000;
-	mi.position=2000090000;
-	mi.pszName=Translate("&About...");
-	mi.pszService="Help/AboutCommand";
+
+	mi.cbSize = sizeof(mi);
+	mi.flags = CMIF_ICONFROMICOLIB;
+	mi.icolibItem = GetSkinIconHandle(SKINICON_OTHER_MIRANDA);
+	mi.pszPopupName = LPGEN("&Help");
+	mi.popupPosition = 2000090000;
+	mi.position = 2000090000;
+	mi.pszName = LPGEN("&About...");
+	mi.pszService = "Help/AboutCommand";
 	CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
-	mi.hIcon=LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_HELP));
-	mi.position=-500050000;
-	mi.pszName=Translate("&Support\tF1");
-	mi.hotKey=MAKELPARAM(0,VK_F1);
-	mi.pszService="Help/IndexCommand";
+
+	mi.icolibItem = GetSkinIconHandle(SKINICON_OTHER_HELP);
+	mi.position = -500050000;
+	mi.pszName = LPGEN("&Support\tF1");
+	mi.hotKey = MAKELPARAM(0,VK_F1);
+	mi.pszService = "Help/IndexCommand";
 	CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
-	mi.hIcon=LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_MIRANDAWEBSITE));
-	mi.position=2000050000;
-	mi.pszName=Translate("&Miranda IM Homepage");
-	mi.hotKey=0;
-	mi.pszService="Help/WebsiteCommand";
+
+	mi.icolibItem = GetSkinIconHandle(SKINICON_OTHER_MIRANDAWEB);
+	mi.position = 2000050000;
+	mi.pszName = LPGEN("&Miranda IM Homepage");
+	mi.hotKey = 0;
+	mi.pszService = "Help/WebsiteCommand";
 	CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
-	mi.hIcon=LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_URL));
-	mi.position=2000040000;
-	mi.pszName=Translate("&Report Bug");
-	mi.hotKey=0;
-	mi.pszService="Help/BugCommand";
+
+	mi.icolibItem = GetSkinIconHandle(SKINICON_EVENT_URL);
+	mi.position = 2000040000;
+	mi.pszName = LPGEN("&Report Bug");
+	mi.pszService = "Help/BugCommand";
 	CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
 	return 0;
 }

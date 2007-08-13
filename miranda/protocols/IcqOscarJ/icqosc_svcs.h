@@ -62,7 +62,6 @@ int IcqGetInfo(WPARAM wParam, LPARAM lParam);
 int IcqSendSms(WPARAM wParam, LPARAM lParam);
 int IcqSetApparentMode(WPARAM wParam, LPARAM lParam);
 int IcqSendMessage(WPARAM wParam, LPARAM lParam);
-int IcqSendMessageW(WPARAM wParam, LPARAM lParam);
 int IcqSendUrl(WPARAM wParam, LPARAM lParam);
 int IcqSendContacts(WPARAM wParam, LPARAM lParam);
 int IcqSendFile(WPARAM wParam, LPARAM lParam);
@@ -79,7 +78,6 @@ int IcqAddServerContact(WPARAM wParam, LPARAM lParam);
 
 
 int IcqRecvMessage(WPARAM wParam, LPARAM lParam);
-int IcqRecvUrl(WPARAM wParam, LPARAM lParam);
 int IcqRecvContacts(WPARAM wParam, LPARAM lParam);
 int IcqRecvFile(WPARAM wParam, LPARAM lParam);
 int IcqRecvAuth(WPARAM wParam, LPARAM lParam);
@@ -88,8 +86,6 @@ int IcqIdleChanged(WPARAM wParam, LPARAM lParam);
 
 int IcqGetAvatarInfo(WPARAM wParam, LPARAM lParam);
 int IcqGetAvatarCaps(WPARAM wParam, LPARAM lParam);
-int IcqGetMaxAvatarSize(WPARAM wParam, LPARAM lParam);
-int IcqAvatarFormatSupported(WPARAM wParam, LPARAM lParam);
 int IcqGetMyAvatar(WPARAM wParam, LPARAM lParam);
 int IcqSetMyAvatar(WPARAM wParam, LPARAM lParam);
 

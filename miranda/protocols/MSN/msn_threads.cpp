@@ -1,5 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
+Copyright (c) 2006-7 Boris Krasnovskiy.
 Copyright (c) 2003-5 George Hazan.
 Copyright (c) 2002-3 Richard Hughes (original version).
 
@@ -22,16 +23,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "msn_global.h"
-#include <m_system_cpp.h>
-
-#include <direct.h>
 
 int MSN_HandleCommands(ThreadData *info,char *cmdString);
 int MSN_HandleErrors(ThreadData *info,char *cmdString);
 int MSN_HandleMSNFTP( ThreadData *info, char *cmdString );
-
-extern LONG (WINAPI *MyInterlockedIncrement)(PLONG pVal);
-extern unsigned long sl;
 
 HANDLE hKeepAliveThreadEvt = NULL;
 
@@ -57,7 +52,7 @@ void __cdecl msn_keepAliveThread( void* )
 				if ( MyOptions.UseGateway )
 					msnPingTimeout = 45;
 				else {
-					msnPingTimeout = 3;
+					msnPingTimeout = 20;
 					keepFlag = keepFlag && msnNsThread->send( "PNG\r\n", 5 );
 				}
 				p2p_clearDormantSessions();
@@ -77,48 +72,50 @@ void __cdecl msn_keepAliveThread( void* )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-//	MSN redirector detection thread - refreshes the information about the redirector
-
-static bool sttRedirectorWasChecked = false;
-
-void __cdecl msn_RedirectorThread( ThreadData* info )
-{
-	extern int MSN_CheckRedirector();
-	MSN_CheckRedirector();
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
 //	MSN server thread - read and process commands from a server
 
 void __cdecl MSNServerThread( ThreadData* info )
 {
-	if ( !sttRedirectorWasChecked ) {
-		sttRedirectorWasChecked = true;
-		mir_forkthread(( pThreadFunc )msn_RedirectorThread, NULL );
-	}
-
 	NETLIBOPENCONNECTION tConn = { 0 };
 	tConn.cbSize = sizeof( tConn );
 	tConn.flags = NLOCF_V2;
+	tConn.timeout = 5;
 
  	char* tPortDelim = strrchr( info->mServer, ':' );
 	if ( tPortDelim != NULL )
 		*tPortDelim = '\0';
 
-	if ( MyOptions.UseGateway && !MyOptions.UseProxy ) {
-		tConn.szHost = MSN_DEFAULT_GATEWAY;
-		tConn.wPort = 80;
-		info->hQueueMutex = CreateMutex( NULL, FALSE, NULL );
+	if (MyOptions.UseGateway) 
+	{
+		if (*info->mGatewayIP == 0 && MSN_GetStaticString("LoginServer", NULL, info->mGatewayIP, sizeof(info->mGatewayIP)))
+			strcpy(info->mGatewayIP, MSN_DEFAULT_GATEWAY);
+		if (*info->mServer == 0)
+			strcpy(info->mServer, MSN_DEFAULT_LOGIN_SERVER); 
 	}
-	else {
+	else
+	{
+		if (*info->mServer == 0 && MSN_GetStaticString("LoginServer", NULL, info->mServer, sizeof(info->mServer)))
+			strcpy(info->mServer, MSN_DEFAULT_LOGIN_SERVER);
+	}
+
+	if ( MyOptions.UseGateway && !MyOptions.UseProxy ) 
+	{
+		tConn.szHost = info->mGatewayIP;
+		tConn.wPort = MSN_DEFAULT_GATEWAY_PORT;
+		info->hQueueMutex = CreateMutex(NULL, FALSE, NULL);
+	}
+	else 
+	{
 		tConn.szHost = info->mServer;
 		tConn.wPort = MSN_DEFAULT_PORT;
 
-		if ( tPortDelim != NULL ) {
-			int tPortNumber;
-			if ( sscanf( tPortDelim+1, "%d", &tPortNumber ) == 1 )
+		if (tPortDelim != NULL) 
+		{
+			int tPortNumber = atoi(tPortDelim+1);
+			if (tPortNumber)
 				tConn.wPort = ( WORD )tPortNumber;
-	}	}
+		}	
+	}
 
 	MSN_DebugLog( "Thread started: server='%s', type=%d", tConn.szHost, info->mType );
 
@@ -127,11 +124,16 @@ void __cdecl MSNServerThread( ThreadData* info )
 		MSN_DebugLog( "Connection Failed (%d)", WSAGetLastError() );
 
 		switch ( info->mType ) {
-		case SERVER_NOTIFICATION:
-		case SERVER_DISPATCH:
-			MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER );
-			MSN_GoOffline();
-			break;
+			case SERVER_NOTIFICATION:
+			case SERVER_DISPATCH:
+				MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER );
+				MSN_GoOffline();
+				msnNsThread = NULL;
+				if ( hKeepAliveThreadEvt ) {
+					msnPingTimeout *= -1;
+					SetEvent( hKeepAliveThreadEvt );
+				}
+				break;
 		}
 
 		return;
@@ -143,10 +145,7 @@ void __cdecl MSNServerThread( ThreadData* info )
 	MSN_DebugLog( "Connected with handle=%08X", info->s );
 
 	if ( info->mType == SERVER_DISPATCH || info->mType == SERVER_NOTIFICATION ) {
-		if ( MyOptions.UseMSNP11 )
-			info->sendPacket( "VER", "MSNP12 MSNP11 MSNP10 CVR0" );
-		else
-			info->sendPacket( "VER", "MSNP10 MSNP9 CVR0" );
+		info->sendPacket( "VER", "MSNP12 MSNP11 MSNP10 CVR0" );
 	}
 	else if ( info->mType == SERVER_SWITCHBOARD ) {
 		info->sendPacket( info->mCaller ? "USR" : "ANS", "%s %s", MyOptions.szEmail, info->mCookie );
@@ -156,18 +155,13 @@ void __cdecl MSNServerThread( ThreadData* info )
 	}
 
 	if ( info->mIsMainThread ) {
-		MSN_EnableMenuItems( TRUE );
+		MSN_EnableMenuItems( true );
 		msnNsThread = info;
 	}
 
-	if ( info->mType == SERVER_DISPATCH )
-		mir_forkthread(( pThreadFunc )msn_keepAliveThread, NULL );
-
 	MSN_DebugLog( "Entering main recv loop" );
 	info->mBytesInData = 0;
-	while ( TRUE ) {
-		int handlerResult;
-
+	for ( ;; ) {
 		int recvResult = info->recv( info->mData + info->mBytesInData, sizeof( info->mData ) - info->mBytesInData );
 		if ( recvResult == SOCKET_ERROR ) {
 			MSN_DebugLog( "Connection %08p [%08X] was abortively closed", info->s, GetCurrentThreadId());
@@ -182,12 +176,11 @@ void __cdecl MSNServerThread( ThreadData* info )
 		info->mBytesInData += recvResult;
 
 		if ( info->mCaller == 1 && info->mType == SERVER_FILETRANS ) {
-			handlerResult = MSN_HandleMSNFTP( info, info->mData );
-			if ( handlerResult )
+			if ( MSN_HandleMSNFTP( info, info->mData ))
 				break;
 		}
 		else {
-			while( TRUE ) {
+			for( ;; ) {
 				char* peol = strchr(info->mData,'\r');
 				if ( peol == NULL )
 					break;
@@ -216,15 +209,21 @@ void __cdecl MSNServerThread( ThreadData* info )
 					if ( info->mType == SERVER_NOTIFICATION )
 						SetEvent( hKeepAliveThreadEvt );
 
+					int handlerResult;
 					if ( isdigit(msg[0]) && isdigit(msg[1]) && isdigit(msg[2]))   //all error messages
 						handlerResult = MSN_HandleErrors( info, msg );
 					else
 						handlerResult = MSN_HandleCommands( info, msg );
-				}
-				else handlerResult = MSN_HandleMSNFTP( info, msg );
 
-				if ( handlerResult )
-					goto LBL_Exit;
+					if ( handlerResult )
+					{
+						info->sendPacket( "OUT", NULL );
+						info->termPending = true;
+					}
+				}
+				else 
+					if ( MSN_HandleMSNFTP( info, msg ))
+						goto LBL_Exit;
 		}	}
 
 		if ( info->mBytesInData == sizeof( info->mData )) {
@@ -236,6 +235,7 @@ LBL_Exit:
 	if ( info->mIsMainThread ) {
 		MSN_GoOffline();
 		msnNsThread = NULL;
+
 		if ( hKeepAliveThreadEvt ) {
 			msnPingTimeout *= -1;
 			SetEvent( hKeepAliveThreadEvt );
@@ -257,26 +257,41 @@ static int CompareThreads( const ThreadData* p1, const ThreadData* p2 )
 static LIST<ThreadData> sttThreads( 10, CompareThreads );
 static CRITICAL_SECTION	sttLock;
 
-void __stdcall MSN_InitThreads()
+void  MSN_InitThreads()
 {
 	InitializeCriticalSection( &sttLock );
 }
 
-void __stdcall MSN_CloseConnections()
+void  MSN_CloseConnections()
 {
-	int i;
-
 	EnterCriticalSection( &sttLock );
 
-	for ( i=0; i < sttThreads.getCount(); i++ ) {
+	NETLIBSELECT nls = {0};
+	nls.cbSize = sizeof(nls);
+
+	unsigned data;
+	NETLIBBUFFER nlb = { (char*)&data, 1, MSG_PEEK };
+
+	for ( int i=0; i < sttThreads.getCount(); i++ ) {
 		ThreadData* T = sttThreads[ i ];
 
-		switch (T->mType) {
+		switch (T->mType) 
+		{
 		case SERVER_DISPATCH :
 		case SERVER_NOTIFICATION :
 		case SERVER_SWITCHBOARD :
 			if (T->s != NULL)
-				T->sendPacket( "OUT", NULL );
+			{
+				nls.hReadConns[0] = T->s;
+				int res = MSN_CallService( MS_NETLIB_SELECT, 0, ( LPARAM )&nls );
+				if (res > 0)
+					res = MSN_CallService( MS_NETLIB_RECV, ( WPARAM )T->s, ( LPARAM )&nlb ) <= 0;
+				if ( res == 0)
+				{
+					T->sendPacket( "OUT", NULL );
+					T->termPending = true;
+				}
+			}
 			break;
 
 		case SERVER_P2P_DIRECT :
@@ -291,18 +306,37 @@ void __stdcall MSN_CloseConnections()
 	LeaveCriticalSection( &sttLock );
 }
 
-void __stdcall MSN_CloseThreads()
+void  MSN_CloseThreads()
 {
+	for (unsigned j=6; --j; )
+	{	
+		EnterCriticalSection( &sttLock );
+
+		bool opcon = false;
+		for ( int i=0; i < sttThreads.getCount(); i++ )
+			opcon |= (sttThreads[ i ]->s != NULL);
+
+		LeaveCriticalSection( &sttLock );
+		
+		if (!opcon) break;
+		
+		Sleep(250);
+	}
+
 	EnterCriticalSection( &sttLock );
 
-	for ( int i=0; i < sttThreads.getCount(); i++ ) {
-		ThreadData* T = sttThreads[ i ];
-		if ( T->s == NULL )
-			continue;
+	for ( int i=0; i < sttThreads.getCount(); i++ ) 
+	{
+		const ThreadData* T = sttThreads[ i ];
+		
+		if ( T->s != NULL )
+		{
+			SOCKET s = MSN_CallService( MS_NETLIB_GETSOCKET, LPARAM( T->s ), 0 );
+			if ( s != INVALID_SOCKET ) {
 
-		SOCKET s = MSN_CallService( MS_NETLIB_GETSOCKET, LPARAM( T->s ), 0 );
-		if ( s != INVALID_SOCKET )
-			shutdown( s, 2 );
+				shutdown( s, 2 );
+			}
+		}
 	}
 
 	LeaveCriticalSection( &sttLock );
@@ -314,7 +348,7 @@ void Threads_Uninit( void )
 	sttThreads.destroy();
 }
 
-ThreadData* __stdcall MSN_GetThreadByContact( HANDLE hContact, TInfoType type )
+ThreadData*  MSN_GetThreadByContact( HANDLE hContact, TInfoType type )
 {
 	ThreadData* result = NULL;
 	EnterCriticalSection( &sttLock );
@@ -332,7 +366,7 @@ ThreadData* __stdcall MSN_GetThreadByContact( HANDLE hContact, TInfoType type )
 	return result;
 }
 
-ThreadData* __stdcall MSN_GetThreadByTimer( UINT timerId )
+ThreadData*  MSN_GetThreadByTimer( UINT timerId )
 {
 	ThreadData* result = NULL;
 	EnterCriticalSection( &sttLock );
@@ -348,7 +382,7 @@ ThreadData* __stdcall MSN_GetThreadByTimer( UINT timerId )
 	return result;
 }
 
-ThreadData* __stdcall MSN_GetP2PThreadByContact( HANDLE hContact )
+ThreadData*  MSN_GetP2PThreadByContact( HANDLE hContact )
 {
 	ThreadData *p2pT = NULL, *sbT = NULL;
 	EnterCriticalSection( &sttLock );
@@ -375,7 +409,7 @@ ThreadData* __stdcall MSN_GetP2PThreadByContact( HANDLE hContact )
 }
 
 
-void __stdcall MSN_StartP2PTransferByContact( HANDLE hContact )
+void  MSN_StartP2PTransferByContact( HANDLE hContact )
 {
 	EnterCriticalSection( &sttLock );
 
@@ -386,14 +420,14 @@ void __stdcall MSN_StartP2PTransferByContact( HANDLE hContact )
 
 		if ( T->mJoinedContacts[0] == hContact && T->mType == SERVER_FILETRANS
 			  && T->hWaitEvent != INVALID_HANDLE_VALUE )
-			SetEvent( T->hWaitEvent );
+			ReleaseSemaphore( T->hWaitEvent, 1, NULL );
 	}
 
 	LeaveCriticalSection( &sttLock );
 }
 
 
-ThreadData* __stdcall MSN_GetOtherContactThread( ThreadData* thread )
+ThreadData*  MSN_GetOtherContactThread( ThreadData* thread )
 {
 	ThreadData* result = NULL;
 	EnterCriticalSection( &sttLock );
@@ -412,7 +446,7 @@ ThreadData* __stdcall MSN_GetOtherContactThread( ThreadData* thread )
 	return result;
 }
 
-ThreadData* __stdcall MSN_GetUnconnectedThread( HANDLE hContact )
+ThreadData*  MSN_GetUnconnectedThread( HANDLE hContact )
 {
 	ThreadData* result = NULL;
 	EnterCriticalSection( &sttLock );
@@ -428,7 +462,28 @@ ThreadData* __stdcall MSN_GetUnconnectedThread( HANDLE hContact )
 	return result;
 }
 
-int __stdcall MSN_GetActiveThreads( ThreadData** parResult )
+
+ThreadData* MSN_StartSB(HANDLE hContact, bool& isOffline)
+{
+	isOffline = false;
+	ThreadData* thread = MSN_GetThreadByContact(hContact);
+	if (thread == NULL)
+	{
+		WORD wStatus = MSN_GetWord(hContact, "Status", ID_STATUS_OFFLINE);
+		if (wStatus != ID_STATUS_OFFLINE && msnStatusMode != ID_STATUS_INVISIBLE)
+		{
+			if (MSN_GetUnconnectedThread(hContact) == NULL && MsgQueue_CheckContact(hContact, 5) == NULL)
+				msnNsThread->sendPacket( "XFR", "SB" );
+		}
+		else
+			isOffline = true;
+	}
+	return thread;
+}
+
+
+
+int  MSN_GetActiveThreads( ThreadData** parResult )
 {
 	int tCount = 0;
 	EnterCriticalSection( &sttLock );
@@ -443,7 +498,7 @@ int __stdcall MSN_GetActiveThreads( ThreadData** parResult )
 	return tCount;
 }
 
-ThreadData* __stdcall MSN_GetThreadByConnection( HANDLE s )
+ThreadData*  MSN_GetThreadByConnection( HANDLE s )
 {
 	ThreadData* tResult = NULL;
 	EnterCriticalSection( &sttLock );
@@ -459,7 +514,7 @@ ThreadData* __stdcall MSN_GetThreadByConnection( HANDLE s )
 	return tResult;
 }
 
-ThreadData* __stdcall MSN_GetThreadByPort( WORD wPort )
+ThreadData*  MSN_GetThreadByPort( WORD wPort )
 {
 	ThreadData* result = NULL;
 	EnterCriticalSection( &sttLock );
@@ -478,15 +533,12 @@ ThreadData* __stdcall MSN_GetThreadByPort( WORD wPort )
 /////////////////////////////////////////////////////////////////////////////////////////
 // class ThreadData members
 
-static LONG sttThreadID = 1;
-
 ThreadData::ThreadData()
 {
 	memset( this, 0, sizeof( ThreadData ));
 	mGatewayTimeout = 2;
-	mWaitPeriod = 15;
-	mIsMainThread = false;
-	hWaitEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
+	mWaitPeriod = 30;
+	hWaitEvent = CreateSemaphore( NULL, 0, 5, NULL );
 }
 
 ThreadData::~ThreadData()
@@ -513,6 +565,17 @@ ThreadData::~ThreadData()
 
 	p2p_clearDormantSessions();
 
+	if (mType == SERVER_SWITCHBOARD)
+	{
+		for (int i=0; i<mJoinedCount; ++i)
+		{
+			const HANDLE hContact = mJoinedContacts[i];
+			int temp_status = MSN_GetWord(hContact, "Status", ID_STATUS_OFFLINE);
+			if (temp_status == ID_STATUS_INVISIBLE && MSN_GetThreadByContact(hContact) == NULL)
+				MSN_SetWord( hContact, "Status", ID_STATUS_OFFLINE);
+		}
+	}
+
 	mir_free( mJoinedContacts );
 
 	if ( hQueueMutex ) WaitForSingleObject( hQueueMutex, INFINITE );
@@ -526,6 +589,14 @@ ThreadData::~ThreadData()
 		ReleaseMutex( hQueueMutex );
 		CloseHandle( hQueueMutex );
 	}
+
+	if (mInitialContact != NULL && mType == SERVER_SWITCHBOARD && 
+		MSN_GetThreadByContact(mInitialContact) == NULL &&
+		MSN_GetUnconnectedThread(mInitialContact) == NULL)
+	{
+		MsgQueue_Clear(mInitialContact, true);
+	}
+
 }
 
 void ThreadData::applyGatewayData( HANDLE hConn, bool isPoll )
@@ -551,12 +622,8 @@ void ThreadData::getGatewayUrl( char* dest, int destlen, bool isPoll )
 	static const char cmdFmtStr[]  = "http://%s/gateway/gateway.dll?SessionID=%s";
 
 	if ( mSessionID[0] == 0 ) {
-		strcpy( mGatewayIP, MSN_DEFAULT_GATEWAY );
-
-		if ( mType == SERVER_NOTIFICATION || mType == SERVER_DISPATCH )
-			mir_snprintf( dest, destlen, openFmtStr, mGatewayIP, "NS", "messenger.hotmail.com" );
-		else
-			mir_snprintf( dest, destlen, openFmtStr, mGatewayIP, "SB", mServer );
+		const char* svr = mType == SERVER_NOTIFICATION || mType == SERVER_DISPATCH ? "NS" : "SB";
+		mir_snprintf( dest, destlen, openFmtStr, mGatewayIP, svr, mServer );
 	}
 	else
 		mir_snprintf( dest, destlen, isPoll ? pollFmtStr : cmdFmtStr, mGatewayIP, mSessionID );
@@ -589,6 +656,12 @@ void ThreadData::processSessionData( const char* str )
 		return;
 
 //	MSN_DebugLog( "msn_httpGatewayUnwrapRecv printed '%s','%s' to %08X (%08X)", tSessionID, tGateIP, s, this );
+	if (strcmp(mGatewayIP, tGateIP) != 0 && MyOptions.UseGateway && !MyOptions.UseProxy)
+	{
+		MSN_DebugLog("IP Changed %s %s", mGatewayIP, tGateIP);
+		Netlib_CloseHandle(s);
+		s = NULL;
+	}
 	strcpy( mGatewayIP, tGateIP );
 	strcpy( mSessionID, tSessionID );
 }

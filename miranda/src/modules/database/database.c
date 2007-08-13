@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 #include "profilemanager.h"
-
+#include "../srfile/file.h"
 
 // from the plugin loader, hate extern but the db frontend is pretty much tied
 extern PLUGINLINK pluginCoreLink;
@@ -44,14 +44,13 @@ int getProfilePath(char * buf, size_t cch)
 	GetPrivateProfileStringA("Database", "ProfileDir", ".", profiledir, SIZEOF(profiledir), mirandabootini);
 	// get the string containing envars and maybe relative paths
 	// get rid of the vars 
-	ExpandEnvironmentStringsA(profiledir, exprofiledir, SIZEOF(exprofiledir));
-	if ( _fullpath(profiledir, exprofiledir, SIZEOF(profiledir)) != 0 ) {
-		/* XXX: really use CreateDirectory()? it only creates the last dir given a\b\c, SHCreateDirectory() 
-		does what we want however thats 2000+ only  */
-		DWORD dw = INVALID_FILE_ATTRIBUTES;
-		CreateDirectoryA(profiledir, NULL);
-		dw=GetFileAttributesA(profiledir);
-		if ( dw != INVALID_FILE_ATTRIBUTES && dw&FILE_ATTRIBUTE_DIRECTORY )  {
+	ExpandEnvironmentStringsA( profiledir, exprofiledir, SIZEOF( exprofiledir ));
+	if ( _fullpath( profiledir, exprofiledir, SIZEOF( profiledir )) != 0 ) {
+		DWORD dw;
+		CreateDirectoryTree( profiledir );
+		CreateDirectoryA( profiledir, NULL );
+		dw = GetFileAttributesA( profiledir );
+		if ( dw != INVALID_FILE_ATTRIBUTES && dw & FILE_ATTRIBUTE_DIRECTORY ) {
 			strncpy(buf, profiledir, cch);
 			p = strrchr(buf, '\\');
 			// if the char after '\' is null then change '\' to null
@@ -145,22 +144,27 @@ static int getProfileCmdLineArgs(char * szProfile, size_t cch)
 // returns 1 if a valid filename (incl. dat) is found, includes fully qualified path
 static int getProfileCmdLine(char * szProfile, size_t cch, char * profiledir)
 {
-	char buf[MAX_PATH];
+	char buf[MAX_PATH], *cwd;
 	HANDLE hFile;
-	int rc;
+	int rc = 0;
 	if ( getProfileCmdLineArgs(buf, SIZEOF(buf)) ) {
 		// have something that looks like a .dat, with or without .dat in the filename
 		if ( !isValidProfileName(buf) ) mir_snprintf(buf, SIZEOF(buf)-5,"%s.dat",buf);
-		// expand the relative to a full path , which might fail
+		// change cwd for the moment to profiledir
+		if ( cwd = _getcwd(NULL, 0) )
+			_chdir(profiledir);
+		// expand the relative to a full path, which might fail
 		if ( _fullpath(szProfile, buf, cch) != 0 ) {
 			hFile=CreateFileA(szProfile, GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL);
 			rc=hFile != INVALID_HANDLE_VALUE;
 			CloseHandle(hFile);
-			return rc;
 		}
-		return 0;
+		if( cwd ) {
+			_chdir(cwd);
+			free(cwd);
+		}
 	}
-	return 0;
+	return rc;
 }
 
 // returns 1 if the profile manager should be shown
@@ -201,7 +205,7 @@ static int getProfile(char * szProfile, size_t cch)
 	getProfilePath(profiledir,SIZEOF(profiledir));
 	if ( getProfileCmdLine(szProfile, cch, profiledir) ) return 1;
 	if ( getProfileAutoRun(szProfile, cch, profiledir) ) return 1;
-	if ( !showProfileManager() && getProfile1(szProfile, cch, profiledir, &pd.noProfiles) ) return 1;
+	if ( !*szProfile && !showProfileManager() && getProfile1(szProfile, cch, profiledir, &pd.noProfiles) ) return 1;
 	else {		
 		pd.szProfile=szProfile;
 		pd.szProfileDir=profiledir;
@@ -324,6 +328,7 @@ int LoadDatabaseModule(void)
 
 	// load the older basic services of the db
 	InitTime();
+	InitUtils();
 
 	// find out which profile to load
 	if ( getProfile(szProfile, SIZEOF(szProfile)) )
@@ -374,4 +379,3 @@ int LoadDatabaseModule(void)
 
 	return iReturn;
 }
-

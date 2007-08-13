@@ -33,32 +33,3 @@ int GetContactStatusMessage(WPARAM wParam, LPARAM lParam)
 		return((int)SendMessage(pcli->hwndContactTree, CLM_GETSTATUSMSG, wParam, lParam));
 	return 0;
 }
-
-wchar_t* a2u( char* src )
-{
-	int codepage = CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
-
-	int cbLen = MultiByteToWideChar( codepage, 0, src, -1, NULL, 0 );
-	wchar_t* result = ( wchar_t* )malloc( sizeof( wchar_t )*(cbLen+1));
-	if ( result == NULL )
-		return NULL;
-
-	MultiByteToWideChar( codepage, 0, src, -1, result, cbLen );
-	result[ cbLen ] = 0;
-	return result;
-}
-
-char* u2a( wchar_t* src )
-{
-	int codepage = CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
-
-	int cbLen = WideCharToMultiByte( codepage, 0, src, -1, NULL, 0, NULL, NULL );
-	char* result = ( char* )malloc( cbLen+1 );
-	if ( result == NULL )
-		return NULL;
-
-	WideCharToMultiByte( codepage, 0, src, -1, result, cbLen, NULL, NULL );
-	result[ cbLen ] = 0;
-	return result;
-}
-

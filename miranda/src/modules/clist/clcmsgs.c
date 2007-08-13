@@ -22,7 +22,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 #include "clc.h"
-#include "../database/dblists.h"
 
 //processing of all the CLM_ messages incoming
 
@@ -62,16 +61,16 @@ LRESULT fnProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPAR
 				return (LRESULT) (HANDLE) NULL;
 			group = groupContact->group;
 		}
-#if defined( _UNICODE )
-		if ( msg == CLM_ADDINFOITEMA )
-		{	WCHAR* wszText = a2u(( char* )cii->pszText );
-			i = cli.pfnAddInfoItemToGroup(group, cii->flags, wszText);
-			mir_free( wszText );
-		}
-		else i = cli.pfnAddInfoItemToGroup(group, cii->flags, cii->pszText);
-#else
-		i = cli.pfnAddInfoItemToGroup(group, cii->flags, cii->pszText);
-#endif
+		#if defined( _UNICODE )
+			if ( msg == CLM_ADDINFOITEMA )
+			{	WCHAR* wszText = a2u(( char* )cii->pszText );
+				i = cli.pfnAddInfoItemToGroup(group, cii->flags, wszText);
+				mir_free( wszText );
+			}
+			else i = cli.pfnAddInfoItemToGroup(group, cii->flags, cii->pszText);
+		#else
+			i = cli.pfnAddInfoItemToGroup(group, cii->flags, cii->pszText);
+		#endif
 		cli.pfnRecalcScrollBar(hwnd, dat);
 		return (LRESULT) group->cl.items[i]->hContact | HCONTACT_ISINFO;
 	}

@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "../../core/commonheaders.h"
-//#include "database.h"
+#include "../srfile/file.h"
 
 static HANDLE hIniChangeNotification;
 extern char mirandabootini[MAX_PATH];
@@ -71,7 +71,8 @@ void GetProfileDirectory(char *szPath,int cbPath)
 		lstrcpynA(szPath,szMirandaDir,cbPath);
 	if(szPath[lstrlenA(szPath)-1]=='\\') szPath[lstrlenA(szPath)-1]='\0';
 	if((dwAttributes=GetFileAttributesA(szPath))!=0xffffffff&&dwAttributes&FILE_ATTRIBUTE_DIRECTORY) return;
-	CreateDirectoryA(szPath,NULL);
+	CreateDirectoryTree(szPath);
+	CreateDirectoryA(szPath, NULL);
 }
 
 int ShouldAutoCreate(void)
@@ -120,9 +121,7 @@ int GetDefaultProfilePath(char *szPath,int cbPath,int *specified)
 				hFile=CreateFileA(szPath,GENERIC_WRITE,FILE_SHARE_READ,NULL,OPEN_ALWAYS,0,NULL);
 				CloseHandle(hFile);
 				return 0;
-			}
-		}
-	}
+	}	}	}
 
 	if(szSingleExistingPath[0]) {
 		if(specified && szExpandedDefaultName[0]=='\0') *specified=1;
@@ -141,11 +140,10 @@ int ShouldShowProfileManager(void)
 	if(GetAsyncKeyState(VK_CONTROL)&0x8000) return 1;
 	GetPrivateProfileStringA("Database","ShowProfileMgr","smart",szShowValue,sizeof(szShowValue),mirandabootini);
 	if(!lstrcmpiA(szShowValue,"always")) return 1;
-	if(!lstrcmpiA(szShowValue,"never")) {
+	if(!lstrcmpiA(szShowValue,"never"))
 		return GetDefaultProfilePath(szDefaultProfile,sizeof(szDefaultProfile),NULL);
-	}
-	return GetDefaultProfilePath(szDefaultProfile,sizeof(szDefaultProfile),&defaultProfileSpecified)
-	       || !defaultProfileSpecified;
+
+	return GetDefaultProfilePath(szDefaultProfile,sizeof(szDefaultProfile),&defaultProfileSpecified) || !defaultProfileSpecified;
 }
 
 static BOOL CALLBACK InstallIniDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)

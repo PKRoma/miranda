@@ -89,8 +89,9 @@
 				Name="VCCLCompilerTool"
 				Optimization="3"
 				GlobalOptimizations="TRUE"
-				InlineFunctionExpansion="1"
 				FavorSizeOrSpeed="2"
+				OmitFramePointers="FALSE"
+				OptimizeForProcessor="0"
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SRMM_EXPORTS;UNICODE"
 				StringPooling="TRUE"
@@ -584,6 +585,36 @@
 			Name="Resource Files"
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 			<File
+				RelativePath=".\res\add.ico">
+			</File>
+			<File
+				RelativePath=".\res\details.ico">
+			</File>
+			<File
+				RelativePath=".\res\downarrow.ico">
+			</File>
+			<File
+				RelativePath="..\..\src\res\dragcopy.cur">
+			</File>
+			<File
+				RelativePath="..\..\src\res\dropuser.cur">
+			</File>
+			<File
+				RelativePath=".\res\history.ico">
+			</File>
+			<File
+				RelativePath="..\..\src\res\hyperlin.cur">
+			</File>
+			<File
+				RelativePath=".\res\incoming.ico">
+			</File>
+			<File
+				RelativePath=".\res\notice.ico">
+			</File>
+			<File
+				RelativePath=".\res\outgoing.ico">
+			</File>
+			<File
 				RelativePath="resource.rc">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -613,6 +644,9 @@
 						PreprocessorDefinitions=""
 						AdditionalIncludeDirectories=""/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\res\typing.ico">
 			</File>
 		</Filter>
 	</Files>

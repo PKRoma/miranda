@@ -97,6 +97,14 @@ SOURCE=.\aim.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\avatars.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\away.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\client.cpp
 # End Source File
 # Begin Source File
@@ -129,10 +137,6 @@ SOURCE=.\links.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\md5.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\packets.cpp
 # End Source File
 # Begin Source File
@@ -161,6 +165,10 @@ SOURCE=.\strl.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\theme.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\thread.cpp
 # End Source File
 # Begin Source File
@@ -182,6 +190,14 @@ SOURCE=.\windows.cpp
 # Begin Source File
 
 SOURCE=.\aim.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\avatars.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\away.h
 # End Source File
 # Begin Source File
 
@@ -221,10 +237,6 @@ SOURCE=.\links.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\md5.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\packets.h
 # End Source File
 # Begin Source File
@@ -254,6 +266,10 @@ SOURCE=.\snac.h
 # Begin Source File
 
 SOURCE=.\strl.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\theme.h
 # End Source File
 # Begin Source File
 

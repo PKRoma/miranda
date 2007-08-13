@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
+// Microsoft Developer Studio generated include file.
 // Used by chat.rc
 //
 #define IDR_MENU                        151
@@ -27,6 +27,7 @@
 #define IDC_CHAT_CLOSE                  1023
 #define IDC_NICKROW                     1024
 #define IDC_LOGLIMIT                    1024
+#define IDC_NICKROW2                    1025
 #define IDC_CHAT_SPIN1                  1028
 #define IDC_CHAT_SPIN2                  1029
 #define IDC_CHAT_SPIN3                  1030
@@ -54,6 +55,8 @@
 #define IDC_TEXTO                       1069
 #define IDC_LOGGING                     1069
 #define IDC_COLORTEXT                   1070
+#define IDC_TEXTO2                      1070
+#define IDC_TEXTO3                      1071
 #define IDC_LIST                        1072
 #define IDC_1                           1075
 #define IDC_2                           1076
@@ -68,9 +71,35 @@
 #define IDC_7                           1081
 #define IDC_STATIC_MESSAGE              1081
 #define IDC_8                           1082
+#define IDC_STATIC110                   1082
 #define IDC_9                           1083
 #define IDC_10                          1084
+#define IDC_STATIC112                   1085
 #define IDC_11                          1085
+#define IDC_P1                          1087
+#define IDC_P2                          1088
+#define IDC_P3                          1089
+#define IDC_P4                          1090
+#define IDC_P5                          1091
+#define IDC_P6                          1092
+#define IDC_P7                          1093
+#define IDC_P8                          1094
+#define IDC_P9                          1095
+#define IDC_P10                         1096
+#define IDC_P11                         1097
+
+#define IDC_T1                          1100
+#define IDC_T2                          1101
+#define IDC_T3                          1102
+#define IDC_T4                          1103
+#define IDC_T5                          1104
+#define IDC_T6                          1105
+#define IDC_T7                          1106
+#define IDC_T8                          1107
+#define IDC_T9                          1108
+#define IDC_T10                         1109
+#define IDC_T11                         1110
+
 #define IDC_CHAT_HISTORY                1111
 #define IDC_INFOPANELBG                 1124
 #define IDC_BKGOUTGOING                 1125
@@ -100,15 +129,13 @@
 #define ID_SEARCH_WIKIPEDIA             40028
 #define ID_WIKIPEDIA_                   40029
 
-#define IDC_STATIC                      -1
-
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        163
 #define _APS_NEXT_COMMAND_VALUE         40030
-#define _APS_NEXT_CONTROL_VALUE         1082
+#define _APS_NEXT_CONTROL_VALUE         1084
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

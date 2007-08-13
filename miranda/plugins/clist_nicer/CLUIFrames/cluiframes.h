@@ -34,7 +34,7 @@ typedef struct tagProtocolData {
 #define OFFSET_PROTOPOS 200
 #define OFFSET_VISIBLE 400
 
-#define CLUIFrameTitleBarClassName				"CLUIFrameTitleBar"
+#define CLUIFrameTitleBarClassName				_T("CLUIFrameTitleBar")
 #define CLUIFrameModule							"CLUIFrames"
 
 //integrated menu module
@@ -61,8 +61,8 @@ typedef struct tagFrameTitleBar {
     HWND TitleBarbutt;
     HWND hwndTip;
 
-    char *tbname;
-    char *tooltip;
+    LPTSTR tbname;
+    LPTSTR tooltip;
     HMENU hmenu;
     HICON hicon;
 
@@ -78,7 +78,7 @@ typedef struct {
     HWND hWnd ;
     RECT wndSize;
     RECT oldWndSize;
-    char *name;
+    LPTSTR name;
     int align;
     int height;
     int dwFlags;

@@ -16,12 +16,13 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)/Release"
-			IntermediateDirectory="$(SolutionDir)/Release/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -47,8 +48,10 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="3"
-				InlineFunctionExpansion="1"
+				InlineFunctionExpansion="2"
 				FavorSizeOrSpeed="2"
+				OmitFramePointers="true"
+				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="../include"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_NOSDK;_USE_32BIT_TIME_T;_STATIC"
 				StringPooling="true"
@@ -57,9 +60,9 @@
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
-				AssemblerOutput="3"
-				BrowseInformation="1"
-				BrowseInformationFile="$(IntDir)/"
+				AssemblerListingLocation=""
+				BrowseInformation="0"
+				BrowseInformationFile=""
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -81,15 +84,15 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="wsock32.lib comctl32.lib winmm.lib version.lib odbc32.lib odbccp32.lib"
-				LinkIncremental="1"
 				SuppressStartupBanner="true"
+				AdditionalManifestDependencies="type=&apos;win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;*&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
 				GenerateDebugInformation="true"
-				GenerateMapFile="true"
-				MapFileName="$(OutDir)/$(ProjectName).map"
+				GenerateMapFile="false"
+				MapFileName=""
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				OptimizeForWindows98="1"
+				LinkTimeCodeGeneration="1"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
@@ -120,8 +123,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)/Debug"
-			IntermediateDirectory="$(SolutionDir)/Debug/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -155,10 +158,12 @@
 				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_NOSDK;_USE_32BIT_TIME_T;_STATIC"
 				ExceptionHandling="0"
 				RuntimeLibrary="3"
+				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
-				BrowseInformation="1"
-				BrowseInformationFile="$(IntDir)/"
+				AssemblerListingLocation=""
+				BrowseInformation="0"
+				BrowseInformationFile=""
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
@@ -180,7 +185,10 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="wsock32.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib"
 				SuppressStartupBanner="true"
+				AdditionalManifestDependencies="type=&apos;win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;*&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
 				GenerateDebugInformation="true"
+				GenerateMapFile="false"
+				MapFileName=""
 				SubSystem="2"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
@@ -212,8 +220,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release Unicode|Win32"
-			OutputDirectory="$(SolutionDir)/Release"
-			IntermediateDirectory="$(SolutionDir)/Release/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -245,7 +253,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="3"
-				InlineFunctionExpansion="1"
+				InlineFunctionExpansion="2"
 				FavorSizeOrSpeed="2"
 				OmitFramePointers="true"
 				WholeProgramOptimization="true"
@@ -257,7 +265,9 @@
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
-				AssemblerOutput="3"
+				AssemblerListingLocation=""
+				BrowseInformation="0"
+				BrowseInformationFile=""
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -279,16 +289,16 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="wsock32.lib comctl32.lib winmm.lib version.lib odbc32.lib odbccp32.lib"
-				LinkIncremental="0"
 				SuppressStartupBanner="true"
-				AdditionalManifestDependencies="type=&apos;Win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;X86&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
+				AdditionalManifestDependencies="type=&apos;win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;*&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
 				GenerateDebugInformation="true"
-				GenerateMapFile="true"
-				MapFileName="$(OutDir)/$(ProjectName).map"
+				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
+				GenerateMapFile="false"
+				MapFileName=""
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				OptimizeForWindows98="1"
+				LinkTimeCodeGeneration="1"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
@@ -319,8 +329,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug Unicode|Win32"
-			OutputDirectory="$(SolutionDir)/Debug"
-			IntermediateDirectory="$(SolutionDir)/Debug/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -353,10 +363,16 @@
 				Optimization="0"
 				AdditionalIncludeDirectories="../include"
 				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_NOSDK;_USE_32BIT_TIME_T;_STATIC"
+				StringPooling="false"
 				ExceptionHandling="0"
 				RuntimeLibrary="3"
+				EnableFunctionLevelLinking="true"
+				FloatingPointModel="0"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
+				AssemblerListingLocation=""
+				BrowseInformation="0"
+				BrowseInformationFile=""
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
@@ -378,7 +394,11 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="wsock32.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib"
 				SuppressStartupBanner="true"
+				AdditionalManifestDependencies="type=&apos;win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;*&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
 				GenerateDebugInformation="true"
+				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
+				GenerateMapFile="false"
+				MapFileName=""
 				SubSystem="2"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
@@ -1056,6 +1076,10 @@
 				</File>
 				<File
 					RelativePath=".\modules\database\dbtime.c"
+					>
+				</File>
+				<File
+					RelativePath=".\modules\database\dbutils.c"
 					>
 				</File>
 				<File
@@ -2872,6 +2896,14 @@
 				</File>
 			</Filter>
 			<Filter
+				Name="updater"
+				>
+				<File
+					RelativePath=".\modules\updatenotify\updatenotify.c"
+					>
+				</File>
+			</Filter>
+			<Filter
 				Name="userinfo"
 				>
 				<File
@@ -2939,7 +2971,6 @@
 							Optimization="0"
 							AdditionalIncludeDirectories=""
 							PreprocessorDefinitions=""
-							BrowseInformation="1"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
@@ -3192,6 +3223,10 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath=".\modules\utils\md5.c"
+					>
+				</File>
+				<File
 					RelativePath="modules\utils\openurl.c"
 					>
 					<FileConfiguration
@@ -3322,6 +3357,10 @@
 							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\modules\utils\sha1.c"
+					>
 				</File>
 				<File
 					RelativePath=".\modules\utils\utf.c"
@@ -3504,6 +3543,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\modules\clist\clistmenus.c"
+					>
+				</File>
+				<File
 					RelativePath=".\modules\clist\clistmod.c"
 					>
 				</File>
@@ -3532,11 +3575,111 @@
 					>
 				</File>
 				<File
+					RelativePath=".\modules\clist\genmenu.c"
+					>
+				</File>
+				<File
+					RelativePath=".\modules\clist\genmenu.h"
+					>
+				</File>
+				<File
+					RelativePath=".\modules\clist\genmenuopt.c"
+					>
+				</File>
+				<File
 					RelativePath=".\modules\clist\groups.c"
 					>
 				</File>
 				<File
 					RelativePath=".\modules\clist\keyboard.c"
+					>
+				</File>
+				<File
+					RelativePath=".\modules\clist\movetogroup.c"
+					>
+				</File>
+				<File
+					RelativePath=".\modules\clist\protocolorder.c"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="fonts"
+				>
+				<File
+					RelativePath=".\modules\fonts\FontOptions.c"
+					>
+				</File>
+				<File
+					RelativePath=".\modules\fonts\FontService.c"
+					>
+				</File>
+				<File
+					RelativePath=".\modules\fonts\FontService.h"
+					>
+				</File>
+				<File
+					RelativePath=".\modules\fonts\module_fonts.c"
+					>
+				</File>
+				<File
+					RelativePath=".\modules\fonts\module_fonts.h"
+					>
+				</File>
+				<File
+					RelativePath=".\modules\fonts\services.c"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="icolib"
+				>
+				<File
+					RelativePath=".\modules\icolib\extracticon.c"
+					>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\modules\icolib\IcoLib.c"
+					>
+				</File>
+				<File
+					RelativePath=".\modules\icolib\IcoLib.h"
+					>
+				</File>
+				<File
+					RelativePath=".\modules\icolib\skin2icons.c"
 					>
 				</File>
 			</Filter>
@@ -3545,99 +3688,7 @@
 			Name="Resources"
 			>
 			<File
-				RelativePath="res\addcontact.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\away.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\blank.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\changefont.ico"
-				>
-			</File>
-			<File
 				RelativePath="..\docs\credits.txt"
-				>
-			</File>
-			<File
-				RelativePath="res\delete.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\detailsl.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\dnd.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\downarrow.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\dragcopy.cur"
-				>
-			</File>
-			<File
-				RelativePath="res\dropuser.cur"
-				>
-			</File>
-			<File
-				RelativePath="res\emptyblo.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\file.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\filledbl.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\finduser.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\freechat.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\groupope.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\groupshu.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\help.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\history.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\hyperlin.cur"
-				>
-			</File>
-			<File
-				RelativePath="res\invisible.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\message.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\miranda.ico"
 				>
 			</File>
 			<File
@@ -3677,58 +3728,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="res\mirandaw.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\multisend.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\na2.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\notick.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\notick1.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\occupied.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\offline2.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\online2.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\onthepho.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\options.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\outtolun.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\rename.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\reply.ico"
-				>
-			</File>
-			<File
 				RelativePath="resource.h"
 				>
 			</File>
@@ -3737,43 +3736,7 @@
 				>
 			</File>
 			<File
-				RelativePath="res\searchal.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\sendmail.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\smalldot.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\sms.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\sortcold.bmp"
-				>
-			</File>
-			<File
-				RelativePath="res\sortcolu.bmp"
-				>
-			</File>
-			<File
-				RelativePath="res\timestamp.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\url.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\useronli.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\viewdetails.ico"
+				RelativePath=".\version.rc"
 				>
 			</File>
 		</Filter>

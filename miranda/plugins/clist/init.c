@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2005 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2005 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -27,20 +27,16 @@ HINSTANCE g_hInst = 0;
 PLUGINLINK *pluginLink;
 CLIST_INTERFACE* pcli = NULL;
 HIMAGELIST himlCListClc = NULL;
-HANDLE hStatusModeChangeEvent;
 
 extern int currentDesiredStatusMode;
 
-struct MM_INTERFACE memoryManagerInterface;
+struct MM_INTERFACE mmi;
 BOOL(WINAPI * MySetLayeredWindowAttributes) (HWND, COLORREF, BYTE, DWORD) = NULL;
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // external functions
 
-int MenuProcessCommand(WPARAM wParam, LPARAM lParam);
-int InitCustomMenus(void);
-void UninitCustomMenus(void);
-
+void InitCustomMenus( void );
 void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT * rcPaint);
 
 int ClcOptInit(WPARAM wParam, LPARAM lParam);
@@ -60,29 +56,36 @@ BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD dwReason, LPVOID reserved)
 /////////////////////////////////////////////////////////////////////////////////////////
 // returns the plugin information
 
-PLUGININFO pluginInfo = {
-	sizeof(PLUGININFO),
-	#if defined( _UNICODE )
-		"Classic contact list (Unicode)",
-	#else
-		"Classic contact list",
-	#endif
+PLUGININFOEX pluginInfo = {
+	sizeof(PLUGININFOEX),
+	"Classic contact list",
 	PLUGIN_MAKE_VERSION(0, 5, 1, 1),
-		
 	"Display contacts, event notifications, protocol status",
 	"Miranda IM project",
 	"ghazan@miranda-im.org",
 	"Copyright 2000-2006 Miranda IM project",
 	"http://www.miranda-im.org",
 	UNICODE_AWARE,
-	DEFMOD_CLISTALL
+	DEFMOD_CLISTALL,
+	#if defined( _UNICODE )
+    {0x240a91dc, 0x9464, 0x457a, { 0x97, 0x87, 0xff, 0x1e, 0xa8, 0x8e, 0x77, 0xe3 }} //{240A91DC-9464-457a-9787-FF1EA88E77E3}
+	#else
+    {0x552cf71a, 0x249f, 0x4650, { 0xbb, 0x2b, 0x7c, 0xdb, 0x1f, 0xe7, 0xd1, 0x78 }} //{552CF71A-249F-4650-BB2B-7CDB1FE7D178}
+	#endif
 };
 
-__declspec(dllexport) PLUGININFO *MirandaPluginInfo(DWORD mirandaVersion)
+__declspec(dllexport) PLUGININFOEX *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
 	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 3, 0))
 		return NULL;
 	return &pluginInfo;
+}
+
+
+static const MUUID interfaces[] = {MIID_CLIST, MIID_LAST};
+__declspec(dllexport) const MUUID * MirandaPluginInterfaces(void)
+{
+	return interfaces;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -108,16 +111,9 @@ static int OnOptsInit(WPARAM wParam, LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 // menu status services
 
-static int SetStatusMode(WPARAM wParam, LPARAM lParam)
-{
-	//todo: check wParam is valid so people can't use this to run random menu items
-	MenuProcessCommand(MAKEWPARAM(LOWORD(wParam), MPCF_MAINMENU), 0);
-	return 0;
-}
-
 static int GetStatusMode(WPARAM wParam, LPARAM lParam)
 {
-	return currentDesiredStatusMode;
+	return pcli->currentDesiredStatusMode;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -132,28 +128,28 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	#endif
 
 	// get the internal malloc/free()
-	memset(&memoryManagerInterface, 0, sizeof(memoryManagerInterface));
-	memoryManagerInterface.cbSize = sizeof(memoryManagerInterface);
-	CallService(MS_SYSTEM_GET_MMI, 0, (LPARAM) & memoryManagerInterface);
+	mir_getMMI( &mmi );
 
 	pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);
 	if ( (int)pcli == CALLSERVICE_NOTFOUND ) {
-		MessageBoxA( NULL, "This version of plugin requires Miranda IM 0.5 or later", "Fatal error", MB_OK );
+LBL_Error:
+		MessageBoxA( NULL, "This version of plugin requires Miranda IM 0.7.0.8 or later", "Fatal error", MB_OK );
 		return 1;
 	}
+	if ( pcli->version < 4 )
+		goto LBL_Error;
+
 	pcli->pfnPaintClc = PaintClc;
 
 	MySetLayeredWindowAttributes = (BOOL(WINAPI *) (HWND, COLORREF, BYTE, DWORD)) GetProcAddress(
 		LoadLibraryA("user32.dll"), "SetLayeredWindowAttributes");
 
+	CreateServiceFunction(MS_CLIST_GETSTATUSMODE, GetStatusMode);
+
 	HookEvent(ME_SYSTEM_MODULESLOADED, OnModulesLoaded);
 	HookEvent(ME_OPT_INITIALISE, OnOptsInit);
 
-	hStatusModeChangeEvent = CreateHookableEvent(ME_CLIST_STATUSMODECHANGE);
-
 	InitCustomMenus();
-	CreateServiceFunction(MS_CLIST_SETSTATUSMODE, SetStatusMode);
-	CreateServiceFunction(MS_CLIST_GETSTATUSMODE, GetStatusMode);
 	return 0;
 }
 
@@ -170,6 +166,5 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 
 int __declspec(dllexport) Unload(void)
 {
-	UninitCustomMenus();
 	return 0;
 }

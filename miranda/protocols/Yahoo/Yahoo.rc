@@ -51,23 +51,20 @@ BEGIN
 	CONTROL         "Disable UTF8 encoding",IDC_DISABLE_UTF8,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,16,148,140,10 					
 
-    CONTROL         "Disable main menu (needs restart)",IDC_DISMAINMENU,"Button",
+	CONTROL         "Use Yahoo Address Book (YAB)",IDC_USE_YAB,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,16,158,140,10
 	
-	CONTROL         "Use Yahoo Address Book (YAB)",IDC_USE_YAB,"Button",
+	CONTROL         "Show Avatars",IDC_SHOW_AVATARS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,16,168,140,10 					
 
-	CONTROL         "Show Avatars",IDC_SHOW_AVATARS,"Button",
+	CONTROL         "AutoLogin to Yahoo ",IDC_MAIL_AUTOLOGIN,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,16,178,120,10 					
 
-	CONTROL         "AutoLogin to Yahoo ",IDC_MAIL_AUTOLOGIN,"Button",
+	CONTROL         "Display Yahoo notifications", IDC_DISABLEYAHOOMAIL,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,16,188,120,10 					
 
-	CONTROL         "Display Yahoo notifications", IDC_DISABLEYAHOOMAIL,"Button",
-					BS_AUTOCHECKBOX | WS_TABSTOP,16,198,120,10
-					
 	CONTROL         "Show Errors",IDC_SHOW_ERRORS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,16,208,120,10 					
+					BS_AUTOCHECKBOX | WS_TABSTOP,16,198,120,10
 					
     GROUPBOX        "Yahoo Ignore List",IDC_STIGNGROUP,158,84,130,136,WS_GROUP
 	
@@ -93,20 +90,6 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,102,34,50,14
 END
 
-IDD_INFO_AVATAR DIALOGEX 0, 0, 222, 131
-STYLE DS_3DLOOK | DS_FIXEDSYS | WS_CHILD
-EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    CONTROL         "",IDC_AVATAR,"Static",SS_BITMAP | SS_CENTERIMAGE | 
-                    SS_SUNKEN,9,11,96,96
-    PUSHBUTTON      "Set",IDC_SETAVATAR,9,112,45,13,WS_VISIBLE
-    PUSHBUTTON      "Delete",IDC_DELETEAVATAR,61,112,45,13,WS_VISIBLE
-	
-	CONTROL         "Share Avatar",IDC_SHARE_AVATAR,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,16,130,120,10 					
-END
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // Icon
@@ -114,7 +97,6 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_MAIN                ICON         "icos\\yahoo.ico"
 IDI_YAHOO               ICON         "icos\\yahoo.ico"
 IDI_INBOX               ICON         "icos\\inbox.ico"
 IDI_PROFILE             ICON         "icos\\profile.ico"

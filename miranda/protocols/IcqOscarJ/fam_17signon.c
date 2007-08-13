@@ -129,16 +129,16 @@ void sendClientAuth(const char* szKey, WORD wKeyLen, BOOL bSecure)
     packTLV(&packet, 0x0002, wKeyLen, hash);
   }
 
-  // Pack client identification details. We identify ourselves as icq5.1 english
-  packTLV(&packet, 0x0003, (WORD)sizeof(CLIENT_ID_STRING)-1, CLIENT_ID_STRING); // Client ID string
-  packTLVWord(&packet, 0x0016, 0x010a);               // Client ID
-  packTLVWord(&packet, 0x0017, 0x0014);               // Client major version
-  packTLVWord(&packet, 0x0018, 0x0034);               // Client minor version
-  packTLVWord(&packet, 0x0019, 0x0000);               // Client lesser version
-  packTLVWord(&packet, 0x001a, 0x0c18);               // Client build number
-  packTLVDWord(&packet, 0x0014, 0x0000043d);          // Client distribution number
-  packTLV(&packet, 0x000f, 0x0002, "en");             // Client language
-  packTLV(&packet, 0x000e, 0x0002, "us");             // Client country
+  // Pack client identification details.
+  packTLV(&packet, 0x0003, (WORD)sizeof(CLIENT_ID_STRING)-1, CLIENT_ID_STRING);
+  packTLVWord(&packet, 0x0016, CLIENT_ID_CODE);
+  packTLVWord(&packet, 0x0017, CLIENT_VERSION_MAJOR);
+  packTLVWord(&packet, 0x0018, CLIENT_VERSION_MINOR);
+  packTLVWord(&packet, 0x0019, CLIENT_VERSION_LESSER);
+  packTLVWord(&packet, 0x001a, CLIENT_VERSION_BUILD);
+  packTLVDWord(&packet, 0x0014, CLIENT_DISTRIBUTION);
+  packTLV(&packet, 0x000f, 0x0002, CLIENT_LANGUAGE);
+  packTLV(&packet, 0x000e, 0x0002, CLIENT_LANGUAGE);
 
   sendServPacket(&packet);
 }
@@ -149,8 +149,8 @@ static void handleAuthKeyResponse(BYTE *buf, WORD wPacketLen, serverthread_info 
 {
   WORD wKeyLen;
   char szKey[64] = {0};
-	md5_state_t state;
-  md5_byte_t digest[16];
+	mir_md5_state_t state;
+  mir_md5_byte_t digest[16];
 
 #ifdef _DEBUG
   NetLog_Server("Received %s", "ICQ_SIGNON_AUTH_KEY");
@@ -180,16 +180,16 @@ static void handleAuthKeyResponse(BYTE *buf, WORD wPacketLen, serverthread_info 
   {
     char *pwd = info->szAuthKey;
 
-    md5_init(&state);
-    md5_append(&state, (const md5_byte_t*)pwd, info->wAuthKeyLen);
-    md5_finish(&state, digest);
+    mir_md5_init(&state);
+    mir_md5_append(&state, (const mir_md5_byte_t*)pwd, info->wAuthKeyLen);
+    mir_md5_finish(&state, digest);
   }
 
-  md5_init(&state);
-	md5_append(&state, szKey, wKeyLen);
-	md5_append(&state, digest, 16);
-	md5_append(&state, CLIENT_MD5_STRING, sizeof(CLIENT_MD5_STRING)-1);
-	md5_finish(&state, digest);
+  mir_md5_init(&state);
+  mir_md5_append(&state, szKey, wKeyLen);
+  mir_md5_append(&state, digest, 16);
+  mir_md5_append(&state, CLIENT_MD5_STRING, sizeof(CLIENT_MD5_STRING)-1);
+  mir_md5_finish(&state, digest);
 
 #ifdef _DEBUG
 	NetLog_Server("Sending ICQ_SIGNON_LOGIN_REQUEST to login server");

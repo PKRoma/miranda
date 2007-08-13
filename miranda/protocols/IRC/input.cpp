@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern PREFERENCES *	prefs;
 extern String			StatusMessage;
 extern char *			IRCPROTONAME;
-extern PLUGININFO		pluginInfo;
+extern PLUGININFOEX		pluginInfo;
 extern HWND				list_hWnd;
 extern int				NoOfChannels;
 extern DWORD			mirVersion;
@@ -818,7 +818,7 @@ bool PostIrcMessage(const char * fmt, ...)
 	va_list marker;
 	va_start(marker, fmt);
 	static char szBuf[4*1024];
-	vsprintf(szBuf, fmt, marker);
+	mir_vsnprintf(szBuf, sizeof(szBuf), fmt, marker);
 	va_end(marker);
 
 	return PostIrcMessageWnd(NULL, NULL, szBuf);

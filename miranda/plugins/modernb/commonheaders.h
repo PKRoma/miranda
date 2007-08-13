@@ -1,8 +1,11 @@
+#ifndef commonheaders_h__
+#define commonheaders_h__
+
 /*
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2006 Miranda ICQ/IM project,
+Copyright 2000-2007 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -20,10 +23,8 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
-#ifndef _COMMON_HEADERS_H_
-#define _COMMON_HEADERS_H_ 1
 
-
+#define MIRANDA_VER 0x0700
 
 #if defined(UNICODE)
 #define _UNICODE 1
@@ -39,7 +40,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifdef _DEBUG
 #	define _CRTDBG_MAP_ALLOC
 #	include <stdlib.h>
-//#	include <crtdbg.h>
+#	include <crtdbg.h>
 #endif
 
 #if defined (_DEBUG)
@@ -77,8 +78,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "resource.h"
 #include <win2k.h>
 
+
+#include "hdr/modern_global_structure.h"
+
 #include <newpluginapi.h>
 #include <m_system.h>
+#include <m_utils.h>
 #include <m_database.h>
 #include <m_langpack.h>
 #include <m_button.h>
@@ -86,23 +91,20 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_protosvc.h>
 #include <m_clist.h>
 #include <m_clistint.h>
-#include <m_utils.h>
 #include <m_skin.h>
 #include <m_contacts.h>
 #include <m_plugins.h>
 #include "m_genmenu.h"
-#include "genmenu.h"
 #include "m_clui.h"
 #include "m_clc.h"
 #include "clc.h"
 #include "clist.h"
 #include "m_icolib.h"
 #include <m_userinfo.h>
-#include ".\CLUIFrames\cluiframes.h"
-#include ".\CLUIFrames\m_cluiframes.h"
-#include  "m_metacontacts.h"
-#include "m_skin_eng.h"
-//#include "BkgrCfg.h"
+#include "./hdr/cluiframes.h"
+#include "./m_api/m_cluiframes.h"
+#include "./m_api/m_metacontacts.h"
+#include "./m_api/m_skin_eng.h"
 #include <m_file.h>
 #include <m_addcontact.h>
 
@@ -112,49 +114,23 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "log.h"
 
 #include "richedit.h"
-#include "m_variables.h"
+#include "./m_api/m_variables.h"
 #include "m_avatars.h"
-#include "m_smileyadd.h"
+#include "./m_api/m_smileyadd.h"
+
+#include "./m_api/m_xpTheme.h"
 
 //macros to free data and set it pointer to NULL
 #define mir_free_and_nill(x) {mir_free(x); x=NULL;}
 // shared vars
-extern HINSTANCE g_hInst;
-
-typedef  struct _menuProto 
-{
-  char *szProto;
-  HANDLE menuID;
-  HANDLE hasAdded;
-} MenuProto;
 
 #define CLUI_FRAME_AUTOHIDENOTIFY  512
 #define CLUI_FRAME_SHOWALWAYS      1024
 
-struct CluiData
-{
-	/************************************ 
-	 **         Global variables       **
-	 ************************************/
-
-	/*         NotifyArea menu          */
-	HANDLE		hMenuNotify;             
-	WORD		wNextMenuID;	
-	int			iIconNotify;
-	BOOL		bEventAreaEnabled;
-	BOOL		bNotifyActive;
-    DWORD       dwFlags;
-    TCHAR *     szNoEvents;
-    int         hIconNotify;
-    HANDLE      hUpdateContact;
-};
-
-
-
 extern struct LIST_INTERFACE li;
 extern struct MM_INTERFACE memoryManagerInterface;
 
-#define alloc(n) mir_alloc(n)
+//#define alloc(n) mir_alloc(n)
 
 #define MAX_REGS(_A_) (sizeof(_A_)/sizeof(_A_[0]))
 
@@ -168,11 +144,8 @@ extern int __cdecl mir_strcmp (const char *a, const char *b);
 extern int __cdecl mir_strlen (const char *a);
 extern int __cdecl mir_strcmpi(const char *a, const char *b);
 extern int __cdecl mir_tstrcmpi(const TCHAR *a, const TCHAR *b);
-extern __inline void *mir_calloc( size_t num, size_t size );
+//extern __inline void *mir_calloc( size_t num, size_t size );
 
-char *DBGetStringA(HANDLE hContact,const char *szModule,const char *szSetting);
-extern wchar_t *DBGetStringW(HANDLE hContact,const char *szModule,const char *szSetting);
-extern TCHAR *DBGetStringT(HANDLE hContact,const char *szModule,const char *szSetting);
 extern DWORD exceptFunction(LPEXCEPTION_POINTERS EP);
 
 #undef HookEvent
@@ -210,17 +183,20 @@ extern int UnhookAll();
 //               "Status bar background/StatusBar"
 //  lParam = (LPARAM)dwFlags
 //
-//#define MS_BACKGROUNDCONFIG_REGISTER "BkgrCfg/Register"
+#define MS_BACKGROUNDCONFIG_REGISTER "ModernBkgrCfg/Register"
 
 //
 //  Notification about changed background
 //  wParam = ModuleName
 //  lParam = 0
-#define ME_BACKGROUNDCONFIG_CHANGED "BkgrCfg/Changed"
+#define ME_BACKGROUNDCONFIG_CHANGED "ModernBkgrCfg/Changed"
 
 
 
-HBITMAP SkinEngine_CreateDIB32(int cx, int cy);
+HBITMAP ske_CreateDIB32(int cx, int cy);
+BOOL ske_SetRectOpaqueOpt(HDC memdc,RECT *fr, BOOL force);
+BOOL ske_SetRgnOpaqueOpt(HDC memdc,HRGN hrgn, BOOL force);
+
 extern void InitDisplayNameCache(void);
 extern void FreeDisplayNameCache();
 extern int CLUI_ShowWindowMod(HWND hwnd, int cmd);
@@ -231,10 +207,6 @@ extern int CLUI_ShowWindowMod(HWND hwnd, int cmd);
 	#define GCMDF_TCHAR_MY 0
 #endif
 
-extern char* Utf8EncodeUcs2( const wchar_t* src );
-extern void Utf8Decode( char* str, wchar_t** ucs2 );
-#endif
-
 #ifndef LWA_COLORKEY
 #define LWA_COLORKEY            0x00000001
 #endif
@@ -243,9 +215,9 @@ extern void Utf8Decode( char* str, wchar_t** ucs2 );
 #define AC_SRC_ALPHA            0x01
 #endif
 
-#ifdef _DEBUG
-#define DeleteObject(a) DebugDeleteObject(a)
-#endif 
+//#ifdef _DEBUG
+//#define DeleteObject(a) DebugDeleteObject(a)
+//#endif 
 
 #define strsetA(a,b) {if (a) mir_free_and_nill(a); a=mir_strdup(b);}
 #define strsetT(a,b) {if (a) mir_free_and_nill(a); a=mir_tstrdup(b);}
@@ -253,10 +225,12 @@ extern void Utf8Decode( char* str, wchar_t** ucs2 );
 extern void TRACE_ERROR();
 extern BOOL DebugDeleteObject(HGDIOBJ a);
 extern BOOL mod_DeleteDC(HDC hdc);
-extern BOOL SkinEngine_ResetTextEffect(HDC hdc);
-extern BOOL SkinEngine_SelectTextEffect(HDC hdc, BYTE EffectID, DWORD FirstColor, DWORD SecondColor);
+extern BOOL ske_ResetTextEffect(HDC hdc);
+extern BOOL ske_SelectTextEffect(HDC hdc, BYTE EffectID, DWORD FirstColor, DWORD SecondColor);
 #define GLOBAL_PROTO_NAME "global_connect"
 extern void IvalidateDisplayNameCache(DWORD mode);
+
+void FreeAndNil( void **p );
 
 extern SortedList *clistCache;
 
@@ -280,20 +254,68 @@ extern BOOL (WINAPI *pfEnableThemeDialogTexture)(HANDLE, DWORD);
 #define TreeView_GetItemA(hwnd, pitem) \
 	(BOOL)SendMessageA((hwnd), TVM_GETITEMA, 0, (LPARAM)(TV_ITEM *)(pitem))
 
-extern DWORD g_dwAskAwayMsgThreadID;
-extern DWORD g_dwGetTextThreadID;
-extern DWORD g_dwSmoothAnimationThreadID;
-extern DWORD g_dwFillFontListThreadID;
-
-extern HANDLE hSmileyAddOptionsChangedHook,hAvatarChanged,hIconChangedHook;
 
 #define STATE_NORMAL 0
 #define STATE_PREPEARETOEXIT 1
 #define STATE_EXITING 2
-extern BYTE g_bSTATE;
-#define MirandaExiting() ((g_bSTATE>STATE_NORMAL))
-extern BYTE gl_TrimText;
+#define MirandaExiting() ((g_CluiData.bSTATE>STATE_NORMAL))
 
-extern struct CluiData g_CluiData;
-extern void UnLoadContactListModule();
+
+
 extern __inline char * strdupn(const char * src, int len);
+
+#define SKINBUTTONCLASS _T("MirandaSkinButtonClass")
+
+#define SORTBY_NAME	   0
+#define SORTBY_STATUS  1
+#define SORTBY_LASTMSG 2
+#define SORTBY_PROTO   3
+#define SORTBY_RATE    4
+#define SORTBY_NAME_LOCALE 5
+#define SORTBY_NOTHING	10
+
+#define DT_FORCENATIVERENDER   0x10000000
+
+#define _BOOL(a) (a != 0)
+
+/* modern_animated_avatars.c */
+int AniAva_InitModule();								   // HAVE TO BE AFTER GDI+ INITIALIZED	
+int AniAva_UnloadModule();
+int AniAva_UpdateOptions();								   //reload options, //hot enable/disable engine
+
+int AniAva_AddAvatar(HANDLE hContact, TCHAR * szFilename, int width, int heigth);  // adds avatars to be displayed
+int AniAva_SetAvatarPos(HANDLE hContact, RECT * rc, int overlayIdx, BYTE bAlpha);	   // update avatars pos	
+int AniAva_InvalidateAvatarPositions(HANDLE hContact);	   // reset positions of avatars to be drawn (still be painted at same place)	
+int AniAva_RemoveInvalidatedAvatars();					   // all avatars without validated position will be stop painted and probably removed
+int AniAva_RemoveAvatar(HANDLE hContact);				   // remove avatar	
+int AniAva_RedrawAllAvatars(BOOL updateZOrder);			   // request to repaint all
+void AniAva_UpdateParent();
+
+
+void CListSettings_FreeCacheItemData(pdisplayNameCacheEntry pDst);
+int CLUI_SyncGetPDNCE(WPARAM wParam, LPARAM lParam);
+
+/* move to list module */
+typedef void (*ItemDestuctor)(void*);
+
+
+void li_ListDestruct(SortedList *pList, ItemDestuctor pItemDestructor);
+void li_RemoveDestruct(SortedList *pList, int index, ItemDestuctor pItemDestructor);
+void li_RemovePtrDestruct(SortedList *pList, void * ptr, ItemDestuctor pItemDestructor);
+void li_SortList(SortedList *pList, FSortFunc pSortFunct);
+
+#define mir_safe_free(a) if(a) mir_free(a)
+
+#ifdef _UNICODE
+#define mir_t2a(s) mir_u2a(s)
+#define mir_a2t(s) mir_a2u(s)
+#define mir_t2u(s) mir_wstrdup(s)
+#define mir_u2t(s) mir_wstrdup(s)
+#else
+#define mir_t2a(s) mir_strdup(s)
+#define mir_a2t(s) mir_strdup(s)
+#define mir_t2u(s) mir_a2u(s)
+#define mir_u2t(s) mir_u2a(s)
+#endif
+
+#endif // commonheaders_h__

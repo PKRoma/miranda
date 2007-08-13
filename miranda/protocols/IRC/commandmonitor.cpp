@@ -2671,7 +2671,7 @@ bool CMyMonitor::OnIrc_USERHOST_REPLY(const CIrcMessage* pmsg)
 }
 bool CMyMonitor::OnIrc_SUPPORT(const CIrcMessage* pmsg)
 {
-	static const char* lpszFmt = "Try server %[^ ,], port %s";
+	static const char* lpszFmt = "Try server %99[^ ,], port %19s";
 	char szAltServer[100];
 	char szAltPort[20];
 	if( pmsg->parameters.size() > 1 && sscanf(pmsg->parameters[1].c_str(), lpszFmt, &szAltServer, &szAltPort) == 2 )
@@ -2803,7 +2803,6 @@ void CMyMonitor::OnIrcDisconnected()
 		gcd.iType = GC_EVENT_CONTROL;
 		gce.pDest = &gcd;
 		CallChatEvent( SESSION_OFFLINE, (LPARAM)&gce);
-
 	}
 
 	if(!Miranda_Terminated())
@@ -2813,13 +2812,11 @@ void CMyMonitor::OnIrcDisconnected()
 	CLISTMENUITEM clmi;
 	memset( &clmi, 0, sizeof( clmi ));
 	clmi.cbSize = sizeof( clmi );
-	clmi.flags = CMIM_FLAGS|CMIF_GRAYED;
+	clmi.flags = CMIM_FLAGS | CMIF_GRAYED;
 	CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuJoin, ( LPARAM )&clmi );
 	CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuList, ( LPARAM )&clmi );
 	CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuNick, ( LPARAM )&clmi );
-
 }
-
 
 bool DoOnConnect(const CIrcMessage *pmsg)
 {

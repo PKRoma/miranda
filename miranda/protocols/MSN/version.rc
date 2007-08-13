@@ -19,12 +19,12 @@ BEGIN
     BEGIN
         BLOCK "000004b0"
         BEGIN
-            VALUE "CompanyName", " "
-            VALUE "FileDescription", "Miranda MSN Messenger plugin"
+            VALUE "CompanyName", "Boris Krasnovskiy, George Hazan, Richard Hughes"
+            VALUE "FileDescription", "Miranda IM MSN Messenger plugin"
             VALUE "FileVersion", __VERSION_STRING
             VALUE "InternalName", "msn"
-            VALUE "LegalCopyright", "Copyright c 2002-2005 George Hazan"
-            VALUE "OriginalFilename", "msn.dll"
+            VALUE "LegalCopyright", "Copyright (c) 2001-2007 Boris Krasnovskiy, George Hazan, Richard Hughes"
+			VALUE "OriginalFilename", "msn.dll"
             VALUE "ProductName", "Miranda"
             VALUE "ProductVersion", __VERSION_STRING
         END

@@ -38,8 +38,9 @@
 
 #include "m_updater.h"
 
-
 PLUGINLINK* pluginLink;
+struct MM_INTERFACE mmi;
+struct MD5_INTERFACE md5i;
 HANDLE hHookUserInfoInit = NULL;
 HANDLE hHookOptionInit = NULL;
 HANDLE hHookUserMenu = NULL;
@@ -59,17 +60,18 @@ HANDLE hxstatusiconchanged;
 
 extern int bHideXStatusUI;
 
-PLUGININFO pluginInfo = {
-  sizeof(PLUGININFO),
+PLUGININFOEX pluginInfo = {
+  sizeof(PLUGININFOEX),
   NULL,
-  PLUGIN_MAKE_VERSION(0,3,9,1),
+  PLUGIN_MAKE_VERSION(0,3,10,5),
   "Support for ICQ network, enhanced.",
   "Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
   "jokusoftware@miranda-im.org",
   "(C) 2000-2007 M.Öberg, R.Hughes, J.Keating, Bio, Angeli-Ka, J.Kucera",
   "http://addons.miranda-im.org/details.php?action=viewfile&id=1683",
   0,  //not transient
-  0   //doesn't replace anything built-in
+  0,   //doesn't replace anything built-in
+  {0x847bb03c, 0x408c, 0x4f9b, { 0xaa, 0x5a, 0xf5, 0xc0, 0xb7, 0xb5, 0x60, 0x1e }} //{847BB03C-408C-4f9b-AA5A-F5C0B7B5601E}
 };
 
 static char pluginName[64];
@@ -81,12 +83,14 @@ static int IconLibIconsChanged(WPARAM wParam, LPARAM lParam);
 
 static BOOL bInited = FALSE;
 
-PLUGININFO __declspec(dllexport) *MirandaPluginInfo(DWORD mirandaVersion)
+PLUGININFOEX __declspec(dllexport) *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-  // Only load for 0.4.0.1 or greater
-  // Miranda IM v0.4.0.1 contained important DB bug fix
-  if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 1)) 
+  // Only load for 0.7.0.30 or greater
+  // We need support for UTF-8 messages
+  if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 7, 0, 30)) 
   {
+    MessageBox( NULL, "ICQ plugin cannot be loaded. It requires Miranda IM 0.7.0.30 or later.", "ICQ Plugin", 
+      MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
     return NULL;
   }
   else if (!bInited)
@@ -96,8 +100,7 @@ PLUGININFO __declspec(dllexport) *MirandaPluginInfo(DWORD mirandaVersion)
     strcpy(pluginName, "IcqOscarJ Protocol");
     if (gbUnicodeAPI)
     {
-      strcat(pluginName, " (Unicode)");
-      pluginInfo.isTransient = 1; // UNICODE_AWARE
+      pluginInfo.flags = 1; // UNICODE_AWARE
     }
     pluginInfo.shortName = pluginName;
     MIRANDA_VERSION = mirandaVersion;
@@ -107,16 +110,17 @@ PLUGININFO __declspec(dllexport) *MirandaPluginInfo(DWORD mirandaVersion)
   return &pluginInfo;
 }
 
-
+static const MUUID interfaces[] = {MIID_PROTOCOL, MIID_LAST};
+__declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
+{
+	return interfaces;
+}
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
 {
-  hInst = hinstDLL;
-
-  return TRUE;
+	hInst = hinstDLL;
+	return TRUE;
 }
-
-
 
 static HANDLE ICQCreateServiceFunction(const char* szService,  MIRANDASERVICE serviceProc)
 {
@@ -133,13 +137,13 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
   PROTOCOLDESCRIPTOR pd = {0};
 
   pluginLink = link;
+  mir_getMMI( &mmi );
+  mir_getMD5I( &md5i );
 
   ghServerNetlibUser = NULL;
 
   // Are we running under Unicode Windows version ?
   gbUnicodeAPI = (GetVersion() & 0x80000000) == 0;
-  // Do we have new LangPack module ready ?
-  gbUtfLangpack = ServiceExists(MS_LANGPACK_GETCODEPAGE);
   { // Are we running under unicode Miranda core ?
     char szVer[MAX_PATH];
 
@@ -235,7 +239,6 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
   ICQCreateServiceFunction(PS_SET_NICKNAME, IcqSetNickName);
   ICQCreateServiceFunction(PSS_GETINFO, IcqGetInfo);
   ICQCreateServiceFunction(PSS_MESSAGE, IcqSendMessage);
-  ICQCreateServiceFunction(PSS_MESSAGE"W", IcqSendMessageW);
   ICQCreateServiceFunction(PSS_URL, IcqSendUrl);
   ICQCreateServiceFunction(PSS_CONTACTS, IcqSendContacts);
   ICQCreateServiceFunction(PSS_SETAPPARENTMODE, IcqSetApparentMode);
@@ -247,7 +250,6 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
   ICQCreateServiceFunction(PSR_AWAYMSG, IcqRecvAwayMsg);
   ICQCreateServiceFunction(PSR_FILE, IcqRecvFile);
   ICQCreateServiceFunction(PSR_MESSAGE, IcqRecvMessage);
-  ICQCreateServiceFunction(PSR_URL, IcqRecvUrl);
   ICQCreateServiceFunction(PSR_CONTACTS, IcqRecvContacts);
   ICQCreateServiceFunction(PSR_AUTH, IcqRecvAuth);
   ICQCreateServiceFunction(PSS_AUTHREQUEST, IcqSendAuthRequest);
@@ -260,8 +262,6 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
   // Avatar API
   ICQCreateServiceFunction(PS_GETAVATARINFO, IcqGetAvatarInfo);
   ICQCreateServiceFunction(PS_GETAVATARCAPS, IcqGetAvatarCaps);
-  ICQCreateServiceFunction(PS_ICQ_GETMYAVATARMAXSIZE, IcqGetMaxAvatarSize);
-  ICQCreateServiceFunction(PS_ICQ_ISAVATARFORMATSUPPORTED, IcqAvatarFormatSupported);
   ICQCreateServiceFunction(PS_GETMYAVATAR, IcqGetMyAvatar);
   ICQCreateServiceFunction(PS_SETMYAVATAR, IcqSetMyAvatar);
   // Custom Status API
@@ -271,6 +271,7 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
   ICQCreateServiceFunction(PS_ICQ_GETCUSTOMSTATUSEX, IcqGetXStatusEx);
   ICQCreateServiceFunction(PS_ICQ_GETCUSTOMSTATUSICON, IcqGetXStatusIcon);
   ICQCreateServiceFunction(PS_ICQ_REQUESTCUSTOMSTATUS, IcqRequestXStatusDetails);
+  ICQCreateServiceFunction(PS_ICQ_GETADVANCEDSTATUSICON, IcqRequestAdvStatusIconIdx);
 
   {
     char pszServiceName[MAX_PATH + 32];
@@ -368,6 +369,7 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
   char pszSrvGroupsName[MAX_PATH+10];
   char szBuffer[MAX_PATH+64];
   char* modules[5] = {0,0,0,0,0};
+  HANDLE hIconMenuAuth, hIconMenuGrant, hIconMenuRevoke, hIconMenuAddServ;
 
   strcpy(pszP2PName, gpszICQProtoName);
   strcat(pszP2PName, "P2P");
@@ -424,10 +426,10 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 
     GetModuleFileName(hInst, lib, MAX_PATH);
 
-    IconLibDefine(ICQTranslateUtfStatic("Request authorization", str), proto, "req_auth", NULL, lib, -IDI_AUTH_ASK);
-    IconLibDefine(ICQTranslateUtfStatic("Grant authorization", str), proto, "grant_auth", NULL, lib, -IDI_AUTH_GRANT);
-    IconLibDefine(ICQTranslateUtfStatic("Revoke authorization", str), proto, "revoke_auth", NULL, lib, -IDI_AUTH_REVOKE);
-    IconLibDefine(ICQTranslateUtfStatic("Add to server list", str), proto, "add_to_server", NULL, lib, -IDI_SERVLIST_ADD);
+    hIconMenuAuth = IconLibDefine(ICQTranslateUtfStatic("Request authorization", str), proto, "req_auth", NULL, lib, -IDI_AUTH_ASK);
+    hIconMenuGrant = IconLibDefine(ICQTranslateUtfStatic("Grant authorization", str), proto, "grant_auth", NULL, lib, -IDI_AUTH_GRANT);
+    hIconMenuRevoke = IconLibDefine(ICQTranslateUtfStatic("Revoke authorization", str), proto, "revoke_auth", NULL, lib, -IDI_AUTH_REVOKE);
+    hIconMenuAddServ = IconLibDefine(ICQTranslateUtfStatic("Add to server list", str), proto, "add_to_server", NULL, lib, -IDI_SERVLIST_ADD);
   }
 
   // Initialize IconLib icons
@@ -445,60 +447,44 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
     ZeroMemory(&mi, sizeof(mi));
     mi.cbSize = sizeof(mi);
     mi.position = 1000030000;
-    mi.flags = 0;
-    if (IconLibInstalled())
-      mi.hIcon = IconLibGetIcon("req_auth");
-    else
-      mi.hIcon = LoadImage(hInst,MAKEINTRESOURCE(IDI_AUTH_ASK),IMAGE_ICON,0,0,LR_SHARED);
+    mi.flags = CMIF_ICONFROMICOLIB;
+    mi.icolibItem = hIconMenuAuth;
     mi.pszContactOwner = gpszICQProtoName;
-    mi.pszName = ICQTranslate("Request authorization");
+    mi.pszName = LPGEN("Request authorization");
     mi.pszService = pszServiceName;
     hUserMenuAuth = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
-    IconLibReleaseIcon("req_auth");
 
     strcpy(pszServiceName, gpszICQProtoName);
     strcat(pszServiceName, MS_GRANT_AUTH);
 
     mi.position = 1000029999;
-    if (IconLibInstalled())
-      mi.hIcon = IconLibGetIcon("grant_auth");
-    else
-      mi.hIcon = LoadImage(hInst,MAKEINTRESOURCE(IDI_AUTH_GRANT),IMAGE_ICON,0,0,LR_SHARED);
-    mi.pszName = ICQTranslate("Grant authorization");
+    mi.icolibItem = hIconMenuGrant;
+    mi.pszName = LPGEN("Grant authorization");
     hUserMenuGrant = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
-    IconLibReleaseIcon("grant_auth");
 
     strcpy(pszServiceName, gpszICQProtoName);
     strcat(pszServiceName, MS_REVOKE_AUTH);
 
     mi.position = 1000029998;
-    if (IconLibInstalled())
-      mi.hIcon = IconLibGetIcon("revoke_auth");
-    else
-      mi.hIcon = LoadImage(hInst,MAKEINTRESOURCE(IDI_AUTH_REVOKE),IMAGE_ICON,0,0,LR_SHARED);
-    mi.pszName = ICQTranslate("Revoke authorization");
+    mi.icolibItem = hIconMenuRevoke;
+    mi.pszName = LPGEN("Revoke authorization");
     hUserMenuRevoke = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
-    IconLibReleaseIcon("revoke_auth");
 
     strcpy(pszServiceName, gpszICQProtoName);
     strcat(pszServiceName, MS_ICQ_ADDSERVCONTACT);
 
     mi.position = -2049999999;
-    if (IconLibInstalled())
-      mi.hIcon = IconLibGetIcon("add_to_server");
-    else
-      mi.hIcon = NULL;
-    mi.pszName = ICQTranslate("Add to server list");
+    mi.icolibItem = hIconMenuAddServ;
+    mi.pszName = LPGEN("Add to server list");
     hUserMenuAddServ = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
-    IconLibReleaseIcon("add_to_server");
 
     strcpy(pszServiceName, gpszICQProtoName);
     strcat(pszServiceName, MS_XSTATUS_SHOWDETAILS);
 
     mi.position = -2000004999;
     mi.hIcon = NULL; // dynamically updated
-    mi.pszName = ICQTranslate("Show custom status details");
-    mi.flags=CMIF_NOTOFFLINE;
+    mi.pszName = LPGEN("Show custom status details");
+    mi.flags = CMIF_NOTOFFLINE;
     hUserMenuXStatus = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
   }
 
@@ -583,15 +569,6 @@ static int icq_PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
 
 static int IconLibIconsChanged(WPARAM wParam, LPARAM lParam)
 {
-  CListSetMenuItemIcon(hUserMenuAuth, IconLibGetIcon("req_auth"));
-  IconLibReleaseIcon("req_auth");
-  CListSetMenuItemIcon(hUserMenuGrant, IconLibGetIcon("grant_auth"));
-  IconLibReleaseIcon("grant_auth");
-  CListSetMenuItemIcon(hUserMenuRevoke, IconLibGetIcon("revoke_auth"));
-  IconLibReleaseIcon("revoke_auth");
-  CListSetMenuItemIcon(hUserMenuAddServ, IconLibGetIcon("add_to_server"));
-  IconLibReleaseIcon("add_to_server");
-
   ChangedIconsXStatus();
 
   return 0;

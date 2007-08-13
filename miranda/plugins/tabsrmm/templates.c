@@ -377,7 +377,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                     SetTextColor(dis->hDC, GetSysColor(COLOR_WINDOWTEXT));
             }
 				{
-		            TextOutA(dis->hDC, dis->rcItem.left, dis->rcItem.top, Translate(TemplateNames[iItem]), lstrlenA(Translate(TemplateNames[iItem])));
+		            TextOutA(dis->hDC, dis->rcItem.left, dis->rcItem.top, TemplateNames[iItem], lstrlenA(TemplateNames[iItem]));
 				}
             return TRUE;
         }
@@ -408,6 +408,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             dat->dwFlags = MWF_LOG_ALL;
             dat->dwFlags |= (teInfo->rtl ? MWF_LOG_RTL : 0);
             dat->dwFlags = (iIndex == 0 || iIndex == 1) ? dat->dwFlags & ~MWF_LOG_GROUPMODE : dat->dwFlags | MWF_LOG_GROUPMODE;
+            mir_sntprintf(dat->szMyNickname, safe_sizeof(dat->szMyNickname), _T("My Nickname"));
             StreamInEvents(hwndDlg, 0, 1, 1, &dbei);
             SendDlgItemMessage(hwndDlg, IDC_PREVIEW, EM_SETSEL, -1, -1);
             if(teInfo->changed)
@@ -471,7 +472,7 @@ static char *var_helptxt[] = {
     "%cX:\tuse one of the predefined colors for the following text output (X is a number from 0 to 4, referring to the color index). Only useful together with the & modifier (see below) and maybe the %fX variable.",
     "\\line\\ul\\b About modifiers:\\ul0\\b0\\line\\line Currently, there are 3 different modifiers which can be used to alter the \\b behaviour\\b0  of most variables. Modifiers have to follow the % character immediately, however, their order is not important. Multiple modifiers are possible, but please note that some combinations don't make much sense.\
 \\line\\line The ? character means that the variable will be skipped when the message log is switched to \\b Simple Templates.\\b0 \
-\\line\\line The \\ character means that the variable will be skipped when the message log is using the normal template variable set. \
+\\line\\line The backslash character means that the variable will be skipped when the message log is using the normal template variable set. \
 \\line\\line The # character means that the variable does only apply to \\b old\\b0  events and will be ignored for new (unread events).\\line Contrary, the $ character does the opposite - the variable will only show up in new events. You can use these modifiers to get different message formatting for old and new events.\
 \\line\\line The & modifier means \\b skip font\\b0  . If being used, the variable will be printed without setting the font for the variables context. Effectively, the font which is currently selected remains valid.",
     "\\line \\ul\\b Some examples:\\ul0\\b0\\line\\par \\b %&N\\b0 -\tprints the nickname, but does not use the font which is configured for nicknames.\\par\

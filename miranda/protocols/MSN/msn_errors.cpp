@@ -44,6 +44,7 @@ int MSN_HandleErrors( ThreadData* info, char* cmdString )
 		MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER );
 		return 1;
 
+	case ERR_SERVER_BUSY:
 	case ERR_SERVER_UNAVAILABLE:
 		MSN_ShowError( "MSN Services are too busy, please try to connect later" );
 		MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER );
@@ -63,7 +64,7 @@ int MSN_HandleErrors( ThreadData* info, char* cmdString )
 
 	case ERR_NOT_ONLINE:
 		MSN_SendBroadcast( info->mInitialContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, 
-			( HANDLE )999999, ( LPARAM )Translate("User not online"));
+			( HANDLE )999999, ( LPARAM )MSN_Translate("User not online"));
 		return 1;
 
 	case ERR_NOT_EXPECTED:

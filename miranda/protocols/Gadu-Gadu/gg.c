@@ -22,29 +22,30 @@
 #include <errno.h>
 
 // Plugin info
-PLUGININFO pluginInfo = {
-    sizeof(PLUGININFO),
-    "Gadu-Gadu Protocol",
-    PLUGIN_MAKE_VERSION(0, 0, 3, 7),
-    "Provides support for Gadu-Gadu protocol",
-    "Adam Strzelecki",
-    "ono+miranda@java.pl",
-    "Copyright © 2003-2006 Adam Strzelecki",
-    "http://www.miranda.kom.pl/",
-    0,
-    0
+PLUGININFOEX pluginInfo = {
+	sizeof(PLUGININFOEX),
+	"Gadu-Gadu Protocol",
+	PLUGIN_MAKE_VERSION(0, 0, 4, 7),
+	"Provides support for Gadu-Gadu protocol",
+	"Adam Strzelecki",
+	"ono+miranda@java.pl",
+	"Copyright © 2003-2007 Adam Strzelecki",
+	"http://www.miranda-im.pl/",
+	0,
+	0,
+	// {F3FF65F3-250E-416A-BEE9-58C93F85AB33}
+	{ 0xf3ff65f3, 0x250e, 0x416a, { 0xbe, 0xe9, 0x58, 0xc9, 0x3f, 0x85, 0xab, 0x33 } }
 };
+static const MUUID interfaces[] = {MIID_PROTOCOL, MIID_LAST};
 
 // Other variables
 PLUGINLINK *pluginLink;
 HINSTANCE hInstance;
-int ggStatus = ID_STATUS_OFFLINE;           // gadu-gadu status
-int ggDesiredStatus = ID_STATUS_OFFLINE;    // gadu-gadu desired status
-HANDLE hNetlib;                             // used just for logz
-HANDLE hLibSSL;								// SSL main library handle
-HANDLE hLibEAY;								// SSL/EAY misc library handle
-char ggProto[64] = GGDEF_PROTO;		        // proto id get from DLL name   (def GG from GG.dll or GGdebug.dll)
-                                            // (static variable because may be needed after destroy)
+int ggStatus = ID_STATUS_OFFLINE;			// gadu-gadu status
+int ggDesiredStatus = ID_STATUS_OFFLINE;	// gadu-gadu desired status
+HANDLE hNetlib; 							// used just for logz
+char ggProto[64] = GGDEF_PROTO;				// proto id get from DLL name	(def GG from GG.dll or GGdebug.dll)
+											// (static variable because may be needed after destroy)
 char *ggProtoName = NULL;					// proto name get from DLL name (def Gadu-Gadu from GG.dll or GGdebug.dll)
 char *ggProtoError = NULL;					// proto error get from DLL name (def Gadu-Gadu from GG.dll or GGdebug.dll)
 
@@ -52,12 +53,13 @@ char *ggProtoError = NULL;					// proto error get from DLL name (def Gadu-Gadu f
 struct gg_status_msgs ggModeMsg;
 
 // Event hooks
-static HANDLE hHookOptsInit;
-static HANDLE hHookUserInfoInit;
-static HANDLE hHookModulesLoaded;
-static HANDLE hHookPreShutdown;
-static HANDLE hHookSettingDeleted;
-static HANDLE hHookSettingChanged;
+static HANDLE hHookOptsInit = NULL;
+static HANDLE hHookUserInfoInit = NULL;
+static HANDLE hHookModulesLoaded = NULL;
+static HANDLE hHookPreShutdown = NULL;
+static HANDLE hHookSettingDeleted = NULL;
+static HANDLE hHookSettingChanged = NULL;
+static HANDLE hHookIconsChanged = NULL;
 
 static unsigned long crc_table[256];
 
@@ -65,68 +67,58 @@ static unsigned long crc_table[256];
 // Extra winsock function for error description
 char *ws_strerror(int code)
 {
-    static char err_desc[160];
+	static char err_desc[160];
 
-    // Not a windows error display WinSock
-    if(code == 0)
-    {
-        char buff[128];
-        int len;
-        len = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM,
-                  NULL, WSAGetLastError(), 0, buff,
-                  sizeof(buff), NULL);
-        if(len == 0)
-            snprintf(err_desc, sizeof(err_desc), "WinSock %u: Unknown error.", WSAGetLastError());
-        else
-            snprintf(err_desc, sizeof(err_desc), "WinSock %d: %s", WSAGetLastError(), buff);
-        return err_desc;
-    }
+	// Not a windows error display WinSock
+	if(code == 0)
+	{
+		char buff[128];
+		int len;
+		len = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM,
+				  NULL, WSAGetLastError(), 0, buff,
+				  sizeof(buff), NULL);
+		if(len == 0)
+			mir_snprintf(err_desc, sizeof(err_desc), "WinSock %u: Unknown error.", WSAGetLastError());
+		else
+			mir_snprintf(err_desc, sizeof(err_desc), "WinSock %d: %s", WSAGetLastError(), buff);
+		return err_desc;
+	}
 
-    // Return normal error
-    return strerror(code);
+	// Return normal error
+	return strerror(code);
 }
 
 //////////////////////////////////////////////////////////
 // Build the crc table
 void crc_gentable(void)
 {
-    unsigned long crc, poly;
-    int	i, j;
+	unsigned long crc, poly;
+	int	i, j;
 
-    poly = 0xEDB88320L;
-    for (i = 0; i < 256; i++)
-    {
-        crc = i;
-        for (j = 8; j > 0; j--)
-        {
-            if (crc & 1)
-                crc = (crc >> 1) ^ poly;
-            else
-                crc >>= 1;
-        }
-        crc_table[i] = crc;
-    }
+	poly = 0xEDB88320L;
+	for (i = 0; i < 256; i++)
+	{
+		crc = i;
+		for (j = 8; j > 0; j--)
+		{
+			if (crc & 1)
+				crc = (crc >> 1) ^ poly;
+			else
+				crc >>= 1;
+		}
+		crc_table[i] = crc;
+	}
 }
 
 //////////////////////////////////////////////////////////
 // Calculate the crc value
 unsigned long crc_get(char *mem)
 {
-    register unsigned long crc = 0xFFFFFFFF;
-    while(mem && *mem)
-        crc = ((crc>>8) & 0x00FFFFFF) ^ crc_table[(crc ^ *(mem++)) & 0xFF];
+	register unsigned long crc = 0xFFFFFFFF;
+	while(mem && *mem)
+		crc = ((crc>>8) & 0x00FFFFFF) ^ crc_table[(crc ^ *(mem++)) & 0xFF];
 
-    return (crc ^ 0xFFFFFFFF);
-}
-
-void gg_refreshblockedicon()
-{
-    // Store blocked icon
-    char strFmt1[MAX_PATH], strFmt2[MAX_PATH];
-    GetModuleFileName(hInstance, strFmt1, sizeof(strFmt1));
-    snprintf(strFmt2, sizeof(strFmt2), "%s,-%d", strFmt1, IDI_STOP);
-    snprintf(strFmt1, sizeof(strFmt1), "%s%d", GG_PROTO, ID_STATUS_DND);
-    DBWriteContactSettingString(NULL, "Icons", strFmt1, strFmt2);
+	return (crc ^ 0xFFFFFFFF);
 }
 
 //////////////////////////////////////////////////////////
@@ -155,17 +147,28 @@ const char *http_error_string(int h)
 //////////////////////////////////////////////////////////
 // Gets plugin info
 DWORD gMirandaVersion = 0;
+// For compatibility with old versions
 __declspec(dllexport) PLUGININFO *MirandaPluginInfo(DWORD mirandaVersion)
 {
-    gMirandaVersion = mirandaVersion;
-    return &pluginInfo;
+	pluginInfo.cbSize = sizeof(PLUGININFO);
+	gMirandaVersion = mirandaVersion;
+	return (PLUGININFO *)&pluginInfo;
 }
-
+__declspec(dllexport) PLUGININFOEX *MirandaPluginInfoEx(DWORD mirandaVersion)
+{
+	pluginInfo.cbSize = sizeof(PLUGININFOEX);
+	gMirandaVersion = mirandaVersion;
+	return &pluginInfo;
+}
+__declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
+{
+	return interfaces;
+}
 //////////////////////////////////////////////////////////
 // Cleanups from last plugin
 void gg_cleanuplastplugin(DWORD version)
 {
-    HANDLE hContact;
+	HANDLE hContact;
 	char *szProto;
 
 	// Remove bad e-mail and phones from
@@ -217,10 +220,10 @@ void gg_cleanuplastplugin(DWORD version)
 // When miranda loaded its modules
 int gg_modulesloaded(WPARAM wParam, LPARAM lParam)
 {
-    NETLIBUSER nlu = { 0 };
+	NETLIBUSER nlu = { 0 };
 	char *szTitle = NULL,
-         *szError = NULL,
-         *szConnection = NULL;
+		 *szError = NULL,
+		 *szConnection = NULL;
 	DWORD dwVersion = 0;
 
 	szConnection = Translate("connection");
@@ -229,28 +232,30 @@ int gg_modulesloaded(WPARAM wParam, LPARAM lParam)
 	strcat(szTitle, " ");
 	strcat(szTitle, szConnection);
 
-    nlu.cbSize = sizeof(nlu);
-    nlu.flags = NUF_OUTGOING | NUF_INCOMING | NUF_HTTPCONNS;
-    nlu.szSettingsModule = GG_PROTO;
-    nlu.szDescriptiveName = szTitle;
-    hNetlib = (HANDLE) CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM) & nlu);
-    hHookOptsInit = HookEvent(ME_OPT_INITIALISE, gg_options_init);
-    hHookUserInfoInit = HookEvent(ME_USERINFO_INITIALISE, gg_details_init);
-    hHookSettingDeleted = HookEvent(ME_DB_CONTACT_DELETED, gg_userdeleted);
-    hHookSettingChanged = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, gg_dbsettingchanged);
+	nlu.cbSize = sizeof(nlu);
+	nlu.flags = NUF_OUTGOING | NUF_INCOMING | NUF_HTTPCONNS;
+	nlu.szSettingsModule = GG_PROTO;
+	nlu.szDescriptiveName = szTitle;
+	hNetlib = (HANDLE) CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM) & nlu);
+	hHookOptsInit = HookEvent(ME_OPT_INITIALISE, gg_options_init);
+	hHookUserInfoInit = HookEvent(ME_USERINFO_INITIALISE, gg_details_init);
+	hHookSettingDeleted = HookEvent(ME_DB_CONTACT_DELETED, gg_userdeleted);
+	hHookSettingChanged = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, gg_dbsettingchanged);
+	hHookIconsChanged = HookEvent(ME_SKIN2_ICONSCHANGED, gg_iconschanged);
 
-    free(szTitle);
+	free(szTitle);
 
 	// Init SSL library
 	gg_ssl_init();
 
 	// Init misc thingies
-    /* gg_userinfo_init(); DEPRECATED */
-    gg_keepalive_init();
-    gg_import_init();
-    /* gg_chpass_init(); DEPRECATED */
-    gg_img_init();
-    gg_gc_init();
+	gg_icolib_init();
+	gg_gc_init();
+	/* gg_userinfo_init(); DEPRECATED */
+	gg_keepalive_init();
+	gg_import_init();
+	/* gg_chpass_init(); DEPRECATED */
+	gg_img_init();
 
 	// Make error message
 	szError = Translate("Error");
@@ -263,7 +268,7 @@ int gg_modulesloaded(WPARAM wParam, LPARAM lParam)
 	if((dwVersion = DBGetContactSettingDword(NULL, GG_PROTO, GG_PLUGINVERSION, 0)) < pluginInfo.version)
 		gg_cleanuplastplugin(dwVersion);
 
-    return 0;
+	return 0;
 }
 
 //////////////////////////////////////////////////////////
@@ -271,12 +276,12 @@ int gg_modulesloaded(WPARAM wParam, LPARAM lParam)
 int gg_preshutdown(WPARAM wParam, LPARAM lParam)
 {
 #ifdef DEBUGMODE
-    gg_netlog("gg_preshutdown(): signalling shutdown...");
+	gg_netlog("gg_preshutdown(): signalling shutdown...");
 #endif
 	// Shutdown some modules before unload
 	gg_img_shutdown();
 
-    return 0;
+	return 0;
 }
 
 //////////////////////////////////////////////////////////
@@ -284,21 +289,21 @@ int gg_preshutdown(WPARAM wParam, LPARAM lParam)
 void init_protonames()
 {
 	char text[MAX_PATH], *p, *q;
-    WIN32_FIND_DATA ffd;
-    HANDLE hFind;
+	WIN32_FIND_DATA ffd;
+	HANDLE hFind;
 
-    // Try to find name of the file having original letter sizes
+	// Try to find name of the file having original letter sizes
 	GetModuleFileName(hInstance, text, sizeof(text));
-    if((hFind = FindFirstFile(text, &ffd)) != INVALID_HANDLE_VALUE)
-    {
-        strncpy(text, ffd.cFileName, sizeof(text));
-        FindClose(hFind);
-    }
-    // Check if we have relative or full path
+	if((hFind = FindFirstFile(text, &ffd)) != INVALID_HANDLE_VALUE)
+	{
+		strncpy(text, ffd.cFileName, sizeof(text));
+		FindClose(hFind);
+	}
+	// Check if we have relative or full path
 	if(p = strrchr(text, '\\'))
-        p++;
-    else
-        p = text;
+		p++;
+	else
+		p = text;
 	if(q = strrchr(p, '.'))	*q = '\0';
 	if((q = strstr(p, "debug")) && strlen(q) == 5)
 		*q = '\0';
@@ -317,89 +322,91 @@ void init_protonames()
 // When plugin is loaded
 int __declspec(dllexport) Load(PLUGINLINK * link)
 {
-    WSADATA wsaData;
-    PROTOCOLDESCRIPTOR pd;
+	WSADATA wsaData;
+	PROTOCOLDESCRIPTOR pd;
 
-    // Init winsock
-    if (WSAStartup(MAKEWORD( 1, 1 ), &wsaData))
-        return 1;
+	// Init winsock
+	if (WSAStartup(MAKEWORD( 1, 1 ), &wsaData))
+		return 1;
 
 	// Init proto names
 	init_protonames();
 
-    pluginLink = link;
+	pluginLink = link;
 
-    // Hook system events
-    hHookModulesLoaded = HookEvent(ME_SYSTEM_MODULESLOADED, gg_modulesloaded);
-    hHookPreShutdown = HookEvent(ME_SYSTEM_PRESHUTDOWN, gg_preshutdown);
+	// Hook system events
+	hHookModulesLoaded = HookEvent(ME_SYSTEM_MODULESLOADED, gg_modulesloaded);
+	hHookPreShutdown = HookEvent(ME_SYSTEM_PRESHUTDOWN, gg_preshutdown);
 
-    // Prepare protocol name
-    ZeroMemory(&pd, sizeof(pd));
-    ZeroMemory(&ggModeMsg, sizeof(ggModeMsg));
-    pd.cbSize = sizeof(pd);
-    pd.szName = GG_PROTO;
-    pd.type = PROTOTYPE_PROTOCOL;
+	// Prepare protocol name
+	ZeroMemory(&pd, sizeof(pd));
+	ZeroMemory(&ggModeMsg, sizeof(ggModeMsg));
+	pd.cbSize = sizeof(pd);
+	pd.szName = GG_PROTO;
+	pd.type = PROTOTYPE_PROTOCOL;
 
-    // Register module
-    CallService(MS_PROTO_REGISTERMODULE, 0, (LPARAM) & pd);
+	// Register module
+	CallService(MS_PROTO_REGISTERMODULE, 0, (LPARAM) & pd);
 
-    // Init mutex
-    pthread_mutex_init(&threadMutex, NULL);
-    pthread_mutex_init(&modeMsgsMutex, NULL);
+	// Init mutex
+	pthread_mutex_init(&threadMutex, NULL);
+	pthread_mutex_init(&modeMsgsMutex, NULL);
 
-    // Register services
-    gg_registerservices();
-    gg_setalloffline();
-    gg_refreshblockedicon();
-    return 0;
+	// Register services
+	gg_registerservices();
+	gg_setalloffline();
+	gg_refreshblockedicon();
+	return 0;
 }
 
 //////////////////////////////////////////////////////////
 // when plugin is unloaded
 int __declspec(dllexport) Unload()
 {
-    // Log off
-    if(gg_isonline()) gg_disconnect();
-    // Check threads
-    gg_cleanupthreads();
+	// Log off
+	if(gg_isonline()) gg_disconnect();
+	// Check threads
+	gg_cleanupthreads();
 #ifdef DEBUGMODE
-    gg_netlog("Unload(): destroying plugin");
+	gg_netlog("Unload(): destroying plugin");
 #endif
-    /* gg_userinfo_destroy(); */
-    gg_keepalive_destroy();
-    gg_img_destroy();
-    gg_gc_destroy();
+	/* gg_userinfo_destroy(); */
+	gg_keepalive_destroy();
+	gg_img_destroy();
+	gg_gc_destroy();
 
-    pthread_mutex_destroy(&threadMutex);
-    pthread_mutex_destroy(&modeMsgsMutex);
+	pthread_mutex_destroy(&threadMutex);
+	pthread_mutex_destroy(&modeMsgsMutex);
 
-    LocalEventUnhook(hHookModulesLoaded);
-    LocalEventUnhook(hHookPreShutdown);
+	LocalEventUnhook(hHookModulesLoaded);
+	LocalEventUnhook(hHookPreShutdown);
 
-    LocalEventUnhook(hHookOptsInit);
-    LocalEventUnhook(hHookSettingDeleted);
-    LocalEventUnhook(hHookSettingChanged);
+	LocalEventUnhook(hHookOptsInit);
+	LocalEventUnhook(hHookSettingDeleted);
+	LocalEventUnhook(hHookSettingChanged);
+	LocalEventUnhook(hHookIconsChanged);
 #ifdef DEBUGMODE
-    gg_netlog("Unload(): closing hNetlib");
+	gg_netlog("Unload(): closing hNetlib");
 #endif
-    Netlib_CloseHandle(hNetlib);
+	Netlib_CloseHandle(hNetlib);
 
-    // Free status messages
-    if(ggModeMsg.szOnline)      free(ggModeMsg.szOnline);
-    if(ggModeMsg.szAway)        free(ggModeMsg.szAway);
-    if(ggModeMsg.szInvisible)   free(ggModeMsg.szInvisible);
-    if(ggModeMsg.szOffline)     free(ggModeMsg.szOffline);
+	// Free status messages
+	if(ggModeMsg.szOnline)		free(ggModeMsg.szOnline);
+	if(ggModeMsg.szAway)		free(ggModeMsg.szAway);
+	if(ggModeMsg.szInvisible)	free(ggModeMsg.szInvisible);
+	if(ggModeMsg.szOffline) 	free(ggModeMsg.szOffline);
+
+	// Uninit SSL library
+	gg_ssl_uninit();
+
+	// Cleanup WinSock
+	WSACleanup();
 
 	// Cleanup protonames
 	if(ggProtoName) free(ggProtoName);
 	if(ggProtoError) free(ggProtoError);
 
-	// Uninit SSL library
-	gg_ssl_uninit();
-
-    // Cleanup WinSock
-    WSACleanup();
-    return 0;
+	return 0;
 }
 
 
@@ -431,16 +438,16 @@ struct
 	{GG_EVENT_DCC_NEED_FILE_INFO,	"GG_EVENT_DCC_NEED_FILE_INFO"},
 	{GG_EVENT_DCC_NEED_FILE_ACK,	"GG_EVENT_DCC_NEED_FILE_ACK"},
 	{GG_EVENT_DCC_NEED_VOICE_ACK,	"GG_EVENT_DCC_NEED_VOICE_ACK"},
-	{GG_EVENT_DCC_VOICE_DATA, 		"GG_EVENT_DCC_VOICE_DATA"},
+	{GG_EVENT_DCC_VOICE_DATA,		"GG_EVENT_DCC_VOICE_DATA"},
 	{GG_EVENT_PUBDIR50_SEARCH_REPLY,"GG_EVENT_PUBDIR50_SEARCH_REPLY"},
 	{GG_EVENT_PUBDIR50_READ,		"GG_EVENT_PUBDIR50_READ"},
 	{GG_EVENT_PUBDIR50_WRITE,		"GG_EVENT_PUBDIR50_WRITE"},
-	{GG_EVENT_STATUS60,		        "GG_EVENT_STATUS60"},
-	{GG_EVENT_NOTIFY60,		        "GG_EVENT_NOTIFY60"},
-	{GG_EVENT_USERLIST,		        "GG_EVENT_USERLIST"},
+	{GG_EVENT_STATUS60,				"GG_EVENT_STATUS60"},
+	{GG_EVENT_NOTIFY60,				"GG_EVENT_NOTIFY60"},
+	{GG_EVENT_USERLIST,				"GG_EVENT_USERLIST"},
 	{GG_EVENT_IMAGE_REQUEST,		"GG_EVENT_IMAGE_REQUEST"},
-	{GG_EVENT_IMAGE_REPLY,		    "GG_EVENT_IMAGE_REPLY"},
-	{GG_EVENT_DCC_ACK,		        "GG_EVENT_DCC_ACK"},
+	{GG_EVENT_IMAGE_REPLY,			"GG_EVENT_IMAGE_REPLY"},
+	{GG_EVENT_DCC_ACK,				"GG_EVENT_DCC_ACK"},
 	{-1,							"<unknown event>"}
 };
 
@@ -455,16 +462,16 @@ const char *ggdebug_eventtype(struct gg_event *e)
 
 void gg_debughandler(int level, const char *format, va_list ap)
 {
-    char szText[1024], *szFormat = strdup(format);
+	char szText[1024], *szFormat = strdup(format);
 	// Kill end line
 	char *nl = strrchr(szFormat, '\n');
 	if(nl) *nl = 0;
 
 	strncpy(szText, GG_PROTO, sizeof(szText));
-	strncat(szText, "      >> libgadu << \0", sizeof(szText) - strlen(szText));
+	strncat(szText, "	   >> libgadu << \0", sizeof(szText) - strlen(szText));
 
-    _vsnprintf(szText + strlen(szText), sizeof(szText) - strlen(szText), szFormat, ap);
-    CallService(MS_NETLIB_LOG, (WPARAM) hNetlib, (LPARAM) szText);
+	mir_vsnprintf(szText + strlen(szText), sizeof(szText) - strlen(szText), szFormat, ap);
+	CallService(MS_NETLIB_LOG, (WPARAM) hNetlib, (LPARAM) szText);
 	free(szFormat);
 }
 
@@ -472,15 +479,15 @@ void gg_debughandler(int level, const char *format, va_list ap)
 // Log funcion
 int gg_netlog(const char *fmt, ...)
 {
-    va_list va;
-    char szText[1024];
+	va_list va;
+	char szText[1024];
 	strncpy(szText, GG_PROTO, sizeof(szText));
 	strncat(szText, "::\0", sizeof(szText) - strlen(szText));
 
-    va_start(va, fmt);
-    _vsnprintf(szText + strlen(szText), sizeof(szText) - strlen(szText), fmt, va);
-    va_end(va);
-    return CallService(MS_NETLIB_LOG, (WPARAM) hNetlib, (LPARAM) szText);
+	va_start(va, fmt);
+	mir_vsnprintf(szText + strlen(szText), sizeof(szText) - strlen(szText), fmt, va);
+	va_end(va);
+	return CallService(MS_NETLIB_LOG, (WPARAM) hNetlib, (LPARAM) szText);
 }
 
 #endif
@@ -490,19 +497,18 @@ int gg_netlog(const char *fmt, ...)
 void gg_img_dlgcall(void *empty);
 void *__stdcall gg_img_dlgthread(void *empty)
 {
-    gg_img_dlgcall(empty);
-    return NULL;
+	gg_img_dlgcall(empty);
+	return NULL;
 }
 
 //////////////////////////////////////////////////////////
 // main DLL function
 BOOL APIENTRY DllMain(HINSTANCE hInst, DWORD reason, LPVOID reserved)
 {
-    crc_gentable();
-    hInstance = hInst;
+	crc_gentable();
+	hInstance = hInst;
 #ifdef DEBUGMODE
-    gg_debug_handler = gg_debughandler;
+	gg_debug_handler = gg_debughandler;
 #endif
-    return TRUE;
+	return TRUE;
 }
-

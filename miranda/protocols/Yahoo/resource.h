@@ -1,9 +1,9 @@
 /*
  * $Id$
  *
- * myYahoo Miranda Plugin 
+ * myYahoo Miranda Plugin
  *
- * Authors: Gennady Feldman (aka Gena01) 
+ * Authors: Gennady Feldman (aka Gena01)
  *          Laurent Marechal (aka Peorth)
  *
  * This code is under GPL and is based on AIM, MSN and Miranda source code.
@@ -11,15 +11,13 @@
  * and for answering some of my questions during development of this plugin.
  */
 
-//#define IDI_ICON1                       101
-#define IDI_MAIN                        101
-#define IDI_YAHOO                       102
-#define IDI_INBOX                       103
-#define IDI_PROFILE                     104
-#define IDI_REFRESH                     105
-#define IDI_YAB		                    106
-#define IDI_SET_STATUS                  107
-#define IDI_CALENDAR                    108
+#define IDI_YAHOO                       10101
+#define IDI_INBOX                       10102
+#define IDI_PROFILE                     10103
+#define IDI_REFRESH                     10104
+#define IDI_YAB		                   	10105
+#define IDI_SET_STATUS                  10106
+#define IDI_CALENDAR                    10107
 
 #define IDD_OPT_YAHOO                   185
 #define IDD_SETCUSTSTAT                 186
@@ -45,8 +43,7 @@
 #define IDC_DISABLEYAHOOMAIL            1301
 #define IDC_NEWYAHOOACCOUNTLINK         1438
 #define IDC_RESETSERVER                 1472
-#define IDC_DISMAINMENU                 1475
-#define IDC_DISABLE_UTF8                1476 
+#define IDC_DISABLE_UTF8                1476
 #define IDC_USE_YAB		                1477
 #define IDC_SHOW_ERRORS	                1478
 #define IDC_SHOW_AVATARS                1479
@@ -59,14 +56,7 @@
 #define IDC_IGN_ADD						204
 #define IDC_IGN_REMOVE					205
 
-#define IDD_INFO_AVATAR					300
-#define IDC_AVATAR						301
-#define IDC_SETAVATAR					302
-#define IDC_DELETEAVATAR				303
-#define IDC_SHARE_AVATAR				304
-
 /*
  *
  */
 #define IDC_STATIC                      -1
-

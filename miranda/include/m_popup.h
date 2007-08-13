@@ -85,8 +85,8 @@ typedef struct
 	};
 	union
 	{
-		WCHAR lptzText[MAX_CONTACTNAME];
-		WCHAR lpwzText[MAX_CONTACTNAME];
+		WCHAR lptzText[MAX_SECONDLINE];
+		WCHAR lpwzText[MAX_SECONDLINE];
 	};
 	COLORREF colorBack;
 	COLORREF colorText;
@@ -330,9 +330,95 @@ Returns: 0 if the popup was shown, -1 in case of failure.
 #define SM_WARNING	0x01	//Triangle icon.
 #define SM_NOTIFY	0x02	//Exclamation mark icon.
 #define MS_POPUP_SHOWMESSAGE "PopUp/ShowMessage"
+#define MS_POPUP_SHOWMESSAGEW "PopUp/ShowMessageW"
 
 static int __inline PUShowMessage(char *lpzText, BYTE kind) {
 	return (int)CallService(MS_POPUP_SHOWMESSAGE, (WPARAM)lpzText,(LPARAM)kind);
 }
+
+static int __inline PUShowMessageW(wchar_t *lpwzText, BYTE kind) {
+	return (int)CallService(MS_POPUP_SHOWMESSAGEW, (WPARAM)lpwzText,(LPARAM)kind);
+}
+
+#ifdef _UNICODE
+#define PUShowMessageT	PUShowMessageW
+#else
+#define PUShowMessageT	PUShowMessage
+#endif
+
+//------------- Class API ----------------//
+
+typedef struct {
+	int cbSize;
+	int flags;
+	char *pszName;
+	union {
+		char *pszDescription;
+		wchar_t *pwszDescription;
+		TCHAR *ptszDescription;
+	};
+
+	HICON hIcon;
+
+	COLORREF colorBack;
+	COLORREF colorText;
+
+	WNDPROC PluginWindowProc;
+
+	int iSeconds;
+} POPUPCLASS;
+
+#define PCF_UNICODE			0x0001
+
+#ifdef _UNICODE
+#define PCF_TCHAR			PCF_UNICODE
+#else
+#define PCF_TCHAR			0
+#endif
+
+// wParam = 0
+// lParam = (POPUPCLASS *)&pc
+#define MS_POPUP_REGISTERCLASS	"PopUp/RegisterClass"
+
+typedef struct {
+	int cbSize;
+	char *pszClassName;
+	union {
+		const char *pszTitle;
+		const wchar_t *pwszTitle;
+		const TCHAR *ptszTitle;
+	};
+	union {
+		const char *pszText;
+		const wchar_t *pwszText;
+		const TCHAR *ptszText;
+	};
+	void *PluginData;
+	HANDLE hContact;
+} POPUPDATACLASS;
+
+// wParam = 0
+// lParam = (POPUPDATACLASS *)&pdc
+#define MS_POPUP_ADDPOPUPCLASS	"PopUp/AddPopupClass"
+
+static int __inline ShowClassPopup(char *name, char *title, char *text) {
+	POPUPDATACLASS d = {sizeof(d), name};
+	d.pszTitle = title;
+	d.pszText = text;
+	return CallService(MS_POPUP_ADDPOPUPCLASS, 0, (LPARAM)&d);
+}
+
+static int __inline ShowClassPopupW(char *name, wchar_t *title, wchar_t *text) {
+	POPUPDATACLASS d = {sizeof(d), name};
+	d.pwszTitle = title;
+	d.pwszText = text;
+	return CallService(MS_POPUP_ADDPOPUPCLASS, 0, (LPARAM)&d);
+}
+
+#ifdef _UNICODE
+#define ShowClassPopupT		ShowClassPopupW
+#else
+#define ShowClassPopupT		ShowClassPopup
+#endif
 
 #endif // __m_popup_h__

@@ -46,11 +46,11 @@ typedef struct {
 
 static BOOL bErrorVisible = FALSE;
 
-static void __cdecl icq_LogMessageThread(void* arg) 
+static DWORD __stdcall icq_LogMessageThread(void* arg) 
 {
   LogMessageInfo *err = (LogMessageInfo*)arg;
 
-  if (!err) return;
+  if (!err) return 0;
   bErrorVisible = TRUE;
   if (err->szMsg&&err->szTitle)
     MessageBoxUtf(NULL, err->szMsg, err->szTitle, MB_OK);
@@ -58,6 +58,8 @@ static void __cdecl icq_LogMessageThread(void* arg)
   SAFE_FREE(&err->szTitle);
   SAFE_FREE(&err);
   bErrorVisible = FALSE;
+
+  return 0;
 }
 
 
@@ -83,7 +85,7 @@ void icq_LogMessage(int level, const char *szMsg)
       lmi = (LogMessageInfo*)SAFE_MALLOC(sizeof(LogMessageInfo));
       lmi->szMsg = ICQTranslateUtf(szMsg);
       lmi->szTitle = ICQTranslateUtf(szLevelDescr[level]);
-      forkthread(icq_LogMessageThread, 0, lmi);
+      ICQCreateThread(icq_LogMessageThread, lmi);
     }
   }
 }
@@ -142,7 +144,7 @@ void icq_LogUsingErrorCode(int level, DWORD dwError, const char *szMsg)
 
   null_snprintf(szBuf, sizeof(szBuf), "%s%s%s (%s %d)", szMsg?ICQTranslateUtfStatic(szMsg, str):"", szMsg?"\r\n\r\n":"", ICQTranslateUtfStatic(pszErrorMsgUtf, szErrorMsg), ICQTranslateUtfStatic("error", str2), dwError);
   SAFE_FREE(&pszErrorMsgUtf);
-
+  
   icq_LogMessage(level, szBuf);
 }
 

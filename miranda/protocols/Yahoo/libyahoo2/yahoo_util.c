@@ -55,7 +55,7 @@ char * y_string_append(char * string, char * append)
 	return new_string;
 }
 
-char * y_str_to_utf8(const char *in)
+/*char * y_str_to_utf8(const char *in)
 {
 	unsigned int n, i = 0;
 	char *result = NULL;
@@ -65,7 +65,7 @@ char * y_str_to_utf8(const char *in)
 	
 	result = y_new(char, strlen(in) * 2 + 1);
 
-	/* convert a string to UTF-8 Format */
+	// convert a string to UTF-8 Format 
 	for (n = 0; n < strlen(in); n++) {
 		unsigned char c = (unsigned char)in[n];
 
@@ -91,7 +91,7 @@ char * y_utf8_to_str(const char *in)
 	
 	result = y_new(char, strlen(in) + 1);
 
-	/* convert a string from UTF-8 Format */
+	// convert a string from UTF-8 Format 
 	for (n = 0; n < strlen(in); n++) {
 		unsigned char c = in[n];
 
@@ -103,7 +103,7 @@ char * y_utf8_to_str(const char *in)
 	}
 	result[i] = '\0';
 	return result;
-}
+} */
 
 #if !HAVE_GLIB
 

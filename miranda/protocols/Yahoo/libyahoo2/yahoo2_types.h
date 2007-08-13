@@ -187,8 +187,38 @@ enum yahoo_log_level {
 };
 
 /* Yahoo Protocol versions. Thanks to GAIM devs.*/
-#define YAHOO_WEBMESSENGER_PROTO_VER 0x0065
-#define YAHOO_PROTO_VER 0x000c
+//#define YAHOO_WEBMESSENGER_PROTO_VER 0x0065
+#define YAHOO_WEBMESSENGER_PROTO_VER 0x000D
+//#define YAHOO_PROTO_VER 0x000c
+
+/*
+  Yahoo Protocol Versions and Client mappings
+   11		Yahoo 5.0
+   12		Yahoo 6.0
+   13       Yahoo 7.0
+   14		Yahoo 7.5
+   15       Yahoo 8.0
+
+ per some post:
+Messenger
+
+Version 5.6
+YMSG11, 12
+
+6.0
+YMSG12
+
+Version 7.0
+YMSG12 and YMSG13
+
+Version 7.5
+YMSG14 Encrypted
+
+Version 8.0
+YMSG15 Encrypted
+
+ */
+#define YAHOO_PROTO_VER 0x000d
 
 /* Yahoo style/color directives */
 #define YAHOO_COLOR_BLACK "\033[30m"
@@ -267,6 +297,7 @@ struct yahoo_data {
 	char  *cookie_y;
 	char  *cookie_t;
 	char  *cookie_c;
+	char  *cookie_b;
 	char  *login_cookie;
 
 	YList *buddies;
@@ -281,6 +312,7 @@ struct yahoo_data {
 	int   session_id;
 
 	int   client_id;
+	long session_timestamp;
 
 	char  *rawbuddylist;
 	char  *rawstealthlist;

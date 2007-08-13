@@ -2,7 +2,8 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-06  George Hazan
+Copyright ( C ) 2005-07  George Hazan
+Copyright ( C ) 2007     Maxim Mluhov
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -28,6 +29,8 @@ Last change by : $Author$
 #ifndef _JABBER_LIST_H_
 #define _JABBER_LIST_H_
 
+#include "jabber_caps.h"
+
 typedef enum {
 	LIST_ROSTER,        // Roster list
 	LIST_AGENT,         // Agent list to show on the Jabber Agents dialog
@@ -35,8 +38,10 @@ typedef enum {
 	LIST_ROOM,          // Groupchat room list to show on the Jabber groupchat dialog
 	LIST_FILE,          // Current file transfer session
 	LIST_BYTE,          // Bytestream sending connection
-	LIST_FTSEND,
-	LIST_FTRECV
+	LIST_FTRECV,
+	LIST_BOOKMARK,
+	LIST_VCARD_TEMP,
+	LIST_FTIQID
 } JABBER_LIST;
 
 typedef enum {
@@ -71,11 +76,13 @@ typedef enum {			// initial default to RSMODE_LASTSEEN
 #define CLIENT_CAP_SI			( 1<<1 )		// stream initiation ( si ) profile
 #define CLIENT_CAP_SIFILE		( 1<<2 )		// file transfer si profile
 #define CLIENT_CAP_BYTESTREAM	( 1<<3 )		// socks5 bytestream
-#define CLIENT_CAP_CHATSTAT	( 1<<4 )		// http://jabber.org/protocol/chatstates support (JEP-0085)
+#define CLIENT_CAP_CHATSTAT		( 1<<4 )		// http://jabber.org/protocol/chatstates support (JEP-0085)
 
+#define AGENT_CAP_ADHOC			( 1<<12 )		// AdHoc Command support XEP-0050
 #define AGENT_CAP_REGISTER		( 1<<13 )
 #define AGENT_CAP_SEARCH		( 1<<14 )
 #define AGENT_CAP_GROUPCHAT		( 1<<15 )
+
 
 #define CLIENT_CAP_FILE			( CLIENT_CAP_SI | CLIENT_CAP_SIFILE )
 
@@ -87,9 +94,24 @@ struct JABBER_RESOURCE_STATUS
 	TCHAR* software;
 	TCHAR* version;
 	TCHAR* system;
+	signed char priority; // resource priority, -128..+127
+	time_t idleStartTime;// XEP-0012 support
 	unsigned int cap;					// 0 = haven't done disco#info yet, see CLIENT_CAP_*
 	JABBER_GC_AFFILIATION affiliation;
 	JABBER_GC_ROLE role;
+	TCHAR* szRealJid; // real jid for jabber conferences
+
+	// XEP-0115 support
+	TCHAR* szCapsNode;
+	TCHAR* szCapsVer;
+	TCHAR* szCapsExt;
+	DWORD dwVersionRequestTime;
+	DWORD dwDiscoInfoRequestTime;
+	JabberCapsBits jcbCachedCaps;
+	JabberCapsBits jcbManualDiscoveredCaps;
+
+	// XEP-0085 gone event support
+	BOOL bMessageSessionActive;
 };
 
 struct JABBER_LIST_ITEM
@@ -101,18 +123,16 @@ struct JABBER_LIST_ITEM
 	// jid = jid of the contact
 	TCHAR* nick;
 	int resourceCount;
-	int status;	// Main status, currently useful for transport where no resource information is kept.
-				// On normal contact, this is the same status as shown on contact list.
 	JABBER_RESOURCE_STATUS *resource;
-	int defaultResource;	// index to resource[x] which is the default, negative ( -1 ) means no resource is chosen yet
+	JABBER_RESOURCE_STATUS itemResource; // resource for jids without /resource node
+	int lastSeenResource;	// index to resource[x] which was last seen active
+	int manualResource;	// manually set index to resource[x]
+//	int defaultResource;	// index to resource[x] which is the default, negative ( -1 ) means no resource is chosen yet
 	JABBER_RESOURCE_MODE resourceMode;
 	JABBER_SUBSCRIPTION subscription;
-	TCHAR* statusMessage;	// Status message when the update is to JID with no resource specified ( e.g. transport user )
 	TCHAR* group;
 	char* photoFileName;
-	int idMsgAckPending;
 	TCHAR* messageEventIdStr;
-	BOOL wantComposingEvent;
 	WORD cap;	// See CLIENT_CAP_* above
 
 	// LIST_AGENT
@@ -144,20 +164,30 @@ struct JABBER_LIST_ITEM
 	// jid = string representation of port number
 	JABBER_BYTE_TRANSFER *jbt;
 
-	// LIST_FTSEND
-	// jid = string representation of iq id
-	// ft = file transfer data
-	// jbt
+	JABBER_IBB_TRANSFER *jibb;
 
 	// LIST_FTRECV
 	// jid = string representation of stream id ( sid )
 	// ft = file transfer data
+
+	//LIST_BOOKMARKS
+	// jid = room JID
+	// TCHAR* nick;	// my nick in this chat room
+	// TCHAR * name   // name of the bookmark
+	TCHAR* password;	// password for room
+	BOOL bAutoJoin;
+
+	BOOL bUseResource;
 };
 
 void JabberListInit( void );
 void JabberListUninit( void );
 void JabberListWipe( void );
 int JabberListExist( JABBER_LIST list, const TCHAR* jid );
+
+BOOL JabberListLock();
+BOOL JabberListUnlock();
+
 JABBER_LIST_ITEM *JabberListAdd( JABBER_LIST list, const TCHAR* jid );
 void JabberListRemove( JABBER_LIST list, const TCHAR* jid );
 void JabberListRemoveList( JABBER_LIST list );
@@ -166,7 +196,7 @@ int JabberListFindNext( JABBER_LIST list, int fromOffset );
 JABBER_LIST_ITEM *JabberListGetItemPtr( JABBER_LIST list, const TCHAR* jid );
 JABBER_LIST_ITEM *JabberListGetItemPtrFromIndex( int index );
 
-int    JabberListAddResource( JABBER_LIST list, const TCHAR* jid, int status, const TCHAR* statusMessage );
+int    JabberListAddResource( JABBER_LIST list, const TCHAR* jid, int status, const TCHAR* statusMessage, char priority = 0 );
 void   JabberListRemoveResource( JABBER_LIST list, const TCHAR* jid );
 TCHAR* JabberListGetBestResourceNamePtr( const TCHAR* jid );
 TCHAR* JabberListGetBestClientResourceNamePtr( const TCHAR* jid );

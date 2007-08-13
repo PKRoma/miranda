@@ -233,18 +233,8 @@ char* MirandaStatusToString(int mirandaStatus)
 
 
 char* MirandaStatusToStringUtf(int mirandaStatus)
-{
-  char* szRes = NULL;
-
-  if (gbUnicodeCore)
-  { // we can get unicode version, request, give utf-8
-    szRes = make_utf8_string((wchar_t *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, mirandaStatus, GCMDF_UNICODE));
-  }
-  else
-  { // we are ansi only, get it, convert to utf-8
-    utf8_encode(MirandaStatusToString(mirandaStatus), &szRes);
-  }
-  return szRes;
+{ // return miranda status description in utf-8, use unicode service is possible
+  return mtchar_to_utf8((TCHAR*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, mirandaStatus, gbUnicodeCore ? GCMDF_UNICODE : 0));
 }
 
 
@@ -689,15 +679,7 @@ char *NickFromHandleUtf(HANDLE hContact)
   if (hContact == INVALID_HANDLE_VALUE)
     return ICQTranslateUtf("<invalid>");
 
-  if (gbUnicodeCore)
-    return make_utf8_string((wchar_t*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_UNICODE));
-  else
-  {
-    unsigned char *utf = NULL;
-
-    utf8_encode((char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0), &utf);
-    return utf;
-  }
+  return mtchar_to_utf8((TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, gbUnicodeCore ? GCDNF_UNICODE : 0));
 }
 
 
@@ -918,8 +900,8 @@ char* ApplyEncoding(const char *string, const char* pszEncoding)
     }
     else if (!strnicmp(pszEncoding, "unicode-2-0", 11))
     { // it is UCS-2 encoded
-      int wLen = wcslen((wchar_t*)string) + 1;
-      wchar_t *szStr = (wchar_t*)_alloca(wLen*2);
+      int wLen = wcslen((WCHAR*)string) + 1;
+      WCHAR *szStr = (WCHAR*)_alloca(wLen*2);
       char *tmp = (char*)string;
 
       unpackWideString(&tmp, szStr, (WORD)(wLen*2));
@@ -928,16 +910,12 @@ char* ApplyEncoding(const char *string, const char* pszEncoding)
     }
     else if (!strnicmp(pszEncoding, "iso-8859-1", 10))
     { // we use "Latin I" instead - it does the job
-      char *szRes = ansi_to_utf8_codepage(string, 1252);
-      
-      return szRes;
+      return ansi_to_utf8_codepage(string, 1252);
     }
   }
   if (string)
   { // consider it CP_ACP
-    char *szRes = ansi_to_utf8(string);
-
-    return szRes;
+    return ansi_to_utf8(string);
   }
 
   return NULL;
@@ -1060,7 +1038,7 @@ BOOL IsStringUIN(char* pszString)
 
 
 
-void __cdecl icq_ProtocolAckThread(icq_ack_args* pArguments)
+static DWORD __stdcall icq_ProtocolAckThread(icq_ack_args* pArguments)
 {
   ICQBroadcastAck(pArguments->hContact, pArguments->nAckType, pArguments->nAckResult, pArguments->hSequence, pArguments->pszMessage);
 
@@ -1072,7 +1050,7 @@ void __cdecl icq_ProtocolAckThread(icq_ack_args* pArguments)
   SAFE_FREE((char **)&pArguments->pszMessage);
   SAFE_FREE(&pArguments);
 
-  return;
+  return 0;
 }
 
 
@@ -1090,7 +1068,7 @@ void icq_SendProtoAck(HANDLE hContact, DWORD dwCookie, int nAckResult, int nAckT
   pArgs->nAckType = nAckType;
   pArgs->pszMessage = (LPARAM)null_strdup(pszMessage);
 
-  forkthread(icq_ProtocolAckThread, 0, pArgs);
+  ICQCreateThread(icq_ProtocolAckThread, pArgs);
 }
 
 
@@ -1338,76 +1316,16 @@ void __fastcall SAFE_FREE(void** p)
 
 void* __fastcall SAFE_MALLOC(size_t size)
 {
-  void* p = malloc(size);
+  void* p = NULL;
 
-  if (p)
-    ZeroMemory(p, size);
-
-  return p;
-}
-
-
-static int bPhotoLock = 0;
-
-void LinkContactPhotoToFile(HANDLE hContact, char* szFile)
-{ // set contact photo if linked if no photo set link
-  if (ICQGetContactSettingByte(NULL, "AvatarsAutoLink", DEFAULT_LINK_AVATARS))
+  if (size)
   {
-    bPhotoLock = 1;
-    {
-      if (DBGetContactSettingByte(hContact, "ContactPhoto", "ICQLink", 0))
-      { // we are linked update DB
-        if (szFile)
-        {
-          DBDeleteContactSetting(hContact, "ContactPhoto", "File"); // delete that setting
-          DBDeleteContactSetting(hContact, "ContactPhoto", "Link");
-          if (DBWriteContactSettingString(hContact, "ContactPhoto", "File", szFile))
-            NetLog_Server("Avatar file could not be linked to ContactPhoto.");
-        }
-        else
-        { // no file, unlink
-          DBDeleteContactSetting(hContact, "ContactPhoto", "File");
-          DBDeleteContactSetting(hContact, "ContactPhoto", "ICQLink");
-        }
-      }
-      else if (szFile)
-      { // link only if file valid
-        DBVARIANT dbv;
-        if (DBGetContactSetting(hContact, "ContactPhoto", "File", &dbv))
-        {
-          if (DBGetContactSetting(hContact, "ContactPhoto", "Link", &dbv))
-          { // no photo defined
-            DBWriteContactSettingString(hContact, "ContactPhoto", "File", szFile);
-            DBWriteContactSettingByte(hContact, "ContactPhoto", "ICQLink", 1);
-          }
-          ICQFreeVariant(&dbv);
-        }
-        else
-        { // some file already defined, check if it is not the same, if yes, set link
-          if (!strcmpnull(dbv.pszVal, szFile))
-          {
-            DBWriteContactSettingByte(hContact, "ContactPhoto", "ICQLink", 1);
-          }
-          ICQFreeVariant(&dbv);
-        }
-      }
-    }
-    bPhotoLock = 0;
+    p = malloc(size);
+
+    if (p)
+      ZeroMemory(p, size);
   }
-}
-
-
-static int bNoChanging = 0;
-
-void ContactPhotoSettingChanged(HANDLE hContact)
-{ // the setting was changed - if it is done externaly unlink...
-  if (bNoChanging) return;
-  bNoChanging = 1;
-
-  if (!bPhotoLock && ICQGetContactSettingByte(NULL, "AvatarsAutoLink", DEFAULT_LINK_AVATARS))
-    DBDeleteContactSetting(hContact, "ContactPhoto", "ICQLink");
-
-  bNoChanging = 0;
+  return p;
 }
 
 
@@ -1559,21 +1477,12 @@ char* __fastcall ICQTranslateUtf(const char* src)
     return null_strdup(src);
   }
 
-  if (gbUtfLangpack)
-  { // we can use unicode translate
-    wchar_t* usrc = make_unicode_string(src);
+  { // we can use unicode translate (0.5+)
+    WCHAR* usrc = make_unicode_string(src);
 
     szRes = make_utf8_string(TranslateW(usrc));
 
     SAFE_FREE(&usrc);
-  }
-  else
-  {
-    int size = strlennull(src)+2;
-    char* asrc = (char*)_alloca(size);
-
-    utf8_decode_static(src, asrc, size);
-    utf8_encode(Translate(asrc), &szRes);
   }
   return szRes;
 }
@@ -1594,6 +1503,34 @@ char* __fastcall ICQTranslateUtfStatic(const char* src, char* buf)
     buf[0] = '\0';
 
   return buf;
+}
+
+
+
+HANDLE ICQCreateThreadEx(pThreadFuncEx AFunc, void* arg, DWORD* pThreadID)
+{
+  FORK_THREADEX_PARAMS params;
+  DWORD dwThreadId;
+  HANDLE hThread;
+
+  params.pFunc      = AFunc;
+  params.arg        = arg;
+  params.iStackSize = 0;
+  params.threadID   = &dwThreadId;
+  hThread = (HANDLE)CallService(MS_SYSTEM_FORK_THREAD_EX, 0, (LPARAM)&params);
+  if (pThreadID)
+    *pThreadID = dwThreadId;
+
+  return hThread;
+}
+
+
+
+void ICQCreateThread(pThreadFuncEx AFunc, void* arg)
+{
+  HANDLE hThread = ICQCreateThreadEx(AFunc, arg, NULL);
+
+  CloseHandle(hThread);
 }
 
 
@@ -1689,20 +1626,20 @@ char* FileNameToUtf(const char *filename)
 
     if (RealGetLongPathName)
     { // the function is available (it is not on old NT systems)
-      wchar_t *unicode, *usFileName = NULL;
+      WCHAR *unicode, *usFileName = NULL;
       int wchars;
 
       wchars = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, filename,
         strlennull(filename), NULL, 0);
 
-      unicode = (wchar_t*)_alloca((wchars + 1) * sizeof(wchar_t));
+      unicode = (WCHAR*)_alloca((wchars + 1) * sizeof(WCHAR));
       unicode[wchars] = 0;
 
       MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, filename,
         strlennull(filename), unicode, wchars);
 
       wchars = RealGetLongPathName(unicode, usFileName, 0);
-      usFileName = (wchar_t*)_alloca((wchars + 1) * sizeof(wchar_t));
+      usFileName = (WCHAR*)_alloca((wchars + 1) * sizeof(WCHAR));
       RealGetLongPathName(unicode, usFileName, wchars);
 
       return make_utf8_string(usFileName);
@@ -1722,7 +1659,7 @@ int FileStatUtf(const char *path, struct _stati64 *buffer)
 
   if (gbUnicodeAPI)
   {
-    wchar_t* usPath = make_unicode_string(path);
+    WCHAR* usPath = make_unicode_string(path);
 
     wRes = _wstati64(usPath, buffer);
     SAFE_FREE(&usPath);
@@ -1807,7 +1744,7 @@ int OpenFileUtf(const char *filename, int oflag, int pmode)
 
   if (gbUnicodeAPI)
   {
-    wchar_t* usFile = make_unicode_string(filename);
+    WCHAR* usFile = make_unicode_string(filename);
 
     hFile = _wopen(usFile, oflag, pmode);
     SAFE_FREE(&usFile);
@@ -1825,15 +1762,15 @@ int OpenFileUtf(const char *filename, int oflag, int pmode)
 
 
 
-wchar_t *GetWindowTextUcs(HWND hWnd)
+WCHAR *GetWindowTextUcs(HWND hWnd)
 {
-  wchar_t *utext;
+  WCHAR *utext;
 
   if (gbUnicodeAPI)
   {
     int nLen = GetWindowTextLengthW(hWnd);
 
-    utext = (wchar_t*)SAFE_MALLOC((nLen+2)*sizeof(wchar_t));
+    utext = (WCHAR*)SAFE_MALLOC((nLen+2)*sizeof(WCHAR));
     GetWindowTextW(hWnd, utext, nLen + 1);
   }
   else
@@ -1847,7 +1784,7 @@ wchar_t *GetWindowTextUcs(HWND hWnd)
     wchars = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, text,
       strlennull(text), NULL, 0);
 
-    utext = (wchar_t*)SAFE_MALLOC((wchars + 1)*sizeof(unsigned short));
+    utext = (WCHAR*)SAFE_MALLOC((wchars + 1)*sizeof(WCHAR));
 
     MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, text,
       strlennull(text), utext, wchars);
@@ -1857,7 +1794,7 @@ wchar_t *GetWindowTextUcs(HWND hWnd)
 
 
 
-void SetWindowTextUcs(HWND hWnd, wchar_t *text)
+void SetWindowTextUcs(HWND hWnd, WCHAR *text)
 {
   if (gbUnicodeAPI)
   {
@@ -1877,24 +1814,23 @@ void SetWindowTextUcs(HWND hWnd, wchar_t *text)
 
 char* GetWindowTextUtf(HWND hWnd)
 {
+  TCHAR* szText;
+  
   if (gbUnicodeAPI)
   {
-    wchar_t* usText;
     int nLen = GetWindowTextLengthW(hWnd);
 
-    usText = (wchar_t*)_alloca((nLen+2)*sizeof(wchar_t));
-    GetWindowTextW(hWnd, usText, nLen + 1);
-    return make_utf8_string(usText);
+    szText = (TCHAR*)_alloca((nLen+2)*sizeof(WCHAR));
+    GetWindowTextW(hWnd, (WCHAR*)szText, nLen + 1);
   }
   else
   {
-    char* szAnsi;
     int nLen = GetWindowTextLengthA(hWnd);
 
-    szAnsi = (char*)_alloca(nLen+2);
-    GetWindowTextA(hWnd, szAnsi, nLen + 1);
-    return ansi_to_utf8(szAnsi);
+    szText = (TCHAR*)_alloca(nLen+2);
+    GetWindowTextA(hWnd, (char*)szText, nLen + 1);
   }
+  return tchar_to_utf8(szText);
 }
 
 
@@ -1910,7 +1846,7 @@ void SetWindowTextUtf(HWND hWnd, const char* szText)
 {
   if (gbUnicodeAPI)
   {
-    wchar_t* usText = make_unicode_string(szText);
+    WCHAR* usText = make_unicode_string(szText);
 
     SetWindowTextW(hWnd, usText);
     SAFE_FREE(&usText);
@@ -1962,7 +1898,7 @@ static int ControlAddStringUtf(HWND ctrl, DWORD msg, const char* szString)
 
   if (gbUnicodeAPI)
   {
-    wchar_t *wItem = make_unicode_string(szItem);
+    WCHAR *wItem = make_unicode_string(szItem);
 
     item = SendMessageW(ctrl, msg, 0, (LPARAM)wItem);
     SAFE_FREE(&wItem);
@@ -2035,8 +1971,8 @@ int MessageBoxUtf(HWND hWnd, const char* szText, const char* szCaption, UINT uTy
 
   if (gbUnicodeAPI)
   {
-    wchar_t *text = make_unicode_string(ICQTranslateUtfStatic(szText, str));
-    wchar_t *caption = make_unicode_string(ICQTranslateUtfStatic(szCaption, cap));
+    WCHAR *text = make_unicode_string(ICQTranslateUtfStatic(szText, str));
+    WCHAR *caption = make_unicode_string(ICQTranslateUtfStatic(szCaption, cap));
     res = MessageBoxW(hWnd, text, caption, uType);
     SAFE_FREE(&caption);
     SAFE_FREE(&text);

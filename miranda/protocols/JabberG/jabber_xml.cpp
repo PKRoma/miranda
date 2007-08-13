@@ -2,7 +2,8 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-06  George Hazan
+Copyright ( C ) 2005-07  George Hazan
+Copyright ( C ) 2007     Maxim Mluhov
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -107,7 +108,7 @@ BOOL JabberXmlSetCallback( XmlState *xmlState, int depth, XmlElemType type, JABB
 #define TAG_MAX_LEN 50
 #define ATTR_MAX_LEN 1024
 
-static char* skipSpaces( char* p, int* num = NULL )
+char* skipSpaces( char* p, int* num )
 {
 	int i;
 
@@ -427,6 +428,13 @@ XmlNode *JabberXmlGetChild( XmlNode *node, char* tag )
 	return JabberXmlGetNthChild( node, tag, 1 );
 }
 
+XmlNode *JabberXmlGetFirstChild( XmlNode *node )
+{
+	if ( node==NULL || node->numChild<=0 )
+		return NULL;
+	return node->child[0];
+}
+
 XmlNode *JabberXmlGetNthChild( XmlNode *node, char* tag, int nth )
 {
 	int i, num;
@@ -546,6 +554,17 @@ XmlNodeIq::XmlNodeIq( const char* type, const TCHAR* idStr, const TCHAR* to ) :
 	if ( idStr != NULL ) addAttr( "id",   idStr );
 }
 
+XmlNodeIq::XmlNodeIq( const char* type, XmlNode *node, const TCHAR* to ) :
+	XmlNode( "iq" )
+{
+	if ( type  != NULL ) addAttr( "type", type  );
+	if ( to    != NULL ) addAttr( "to",   to    );
+	if ( node  != NULL ) {
+		TCHAR *iqId = JabberXmlGetAttrValue( node, "id" );
+		if ( iqId != NULL) addAttr( "id", iqId );
+	}
+}
+
 #if defined( _UNICODE )
 XmlNodeIq::XmlNodeIq( const char* type, int id, const char* to ) :
 	XmlNode( "iq" )
@@ -555,6 +574,26 @@ XmlNodeIq::XmlNodeIq( const char* type, int id, const char* to ) :
 	if ( id   != NOID ) addAttrID( id );
 }
 #endif
+
+XmlNodeIq::XmlNodeIq( CJabberIqInfo* pInfo ) :
+	XmlNode( "iq" )
+{
+	if ( pInfo ) {
+		if ( pInfo->GetCharIqType() != NULL ) addAttr( "type", pInfo->GetCharIqType() );
+		if ( pInfo->GetReceiver()   != NULL ) addAttr( "to", pInfo->GetReceiver() );
+		if ( pInfo->GetIqId()       != NOID ) addAttrID( pInfo->GetIqId() );
+	}
+}
+
+XmlNodeIq::XmlNodeIq( const char* type, CJabberIqInfo* pInfo ) :
+	XmlNode( "iq" )
+{
+	if ( type != NULL ) addAttr( "type", type );
+	if ( pInfo ) {
+		if ( pInfo->GetFrom()  != NULL ) addAttr( "to", pInfo->GetFrom() );
+		if ( pInfo->GetIdStr() != NULL ) addAttr( "id", pInfo->GetIdStr() );
+	}
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // XmlNode class members
@@ -695,8 +734,10 @@ static char* sttCopyNode( const XmlNode* n, char* dest )
 		lstrcpyA( dest, n->props ); dest += lstrlenA( n->props );
 	}
 
-	*dest++ = '<';
-	lstrcpyA( dest, n->name ); dest += lstrlenA( n->name );
+	if ( n->name != NULL ) {
+		*dest++ = '<';
+		lstrcpyA( dest, n->name ); dest += lstrlenA( n->name );
+	}
 
 	for ( int i=0; i < n->numAttr; i++ ) {
 		*dest++ = ' ';
@@ -718,14 +759,15 @@ static char* sttCopyNode( const XmlNode* n, char* dest )
 		for ( int i=0; i < n->numChild; i++ )
 			dest = sttCopyNode( n->child[i], dest );
 
-	if ( n->numChild != 0 || n->sendText != NULL ) {
-		*dest++ = '<';
-		*dest++ = '/';
-		lstrcpyA( dest, n->name ); dest += lstrlenA( n->name );
+	if ( n->name != NULL ) {
+		if ( n->numChild != 0 || n->sendText != NULL ) {
+			*dest++ = '<';
+			*dest++ = '/';
+			lstrcpyA( dest, n->name ); dest += lstrlenA( n->name );
+		}
+		else if ( !n->dirtyHack ) *dest++ = '/';
+		*dest++ = '>';
 	}
-	else if ( !n->dirtyHack ) *dest++ = '/';
-
-	*dest++ = '>';
 	*dest = 0;
 	return dest;
 }

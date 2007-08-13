@@ -69,7 +69,7 @@ LINK32=link.exe
 # PROP Use_Debug_Libraries 1
 # PROP Output_Dir "Debug"
 # PROP Intermediate_Dir "Debug"
-# PROP Ignore_Export_Lib 0
+# PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /YX /FD /GZ /c
 # ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /YX /FD /GZ /c
@@ -344,35 +344,11 @@ SOURCE=.\resource.h
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # Begin Source File
 
-SOURCE=.\res\addcontact.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\away.ico
-# End Source File
-# Begin Source File
-
 SOURCE=.\res\blank.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\changefont.ico
-# End Source File
-# Begin Source File
-
 SOURCE=.\res\delete.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\detailsl.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\dnd.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\downarrow.ico
 # End Source File
 # Begin Source File
 
@@ -384,99 +360,7 @@ SOURCE=.\res\dropuser.cur
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\emptyblo.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\file.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\filledbl.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\finduser.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\freechat.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\groupope.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\groupshu.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\help.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\history.ico
-# End Source File
-# Begin Source File
-
 SOURCE=.\res\hyperlin.cur
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\invisible.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\message.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\miranda.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\mirandaw.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\multisend.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\na2.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\notick.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\notick1.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\occupied.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\offline2.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\online2.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\onthepho.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\options.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\outtolun.ico
 # End Source File
 # Begin Source File
 
@@ -484,51 +368,7 @@ SOURCE=.\res\rename.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\reply.ico
-# End Source File
-# Begin Source File
-
 SOURCE=.\resource.rc
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\searchal.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\sendmail.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\smalldot.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\sms.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\sortcold.bmp
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\sortcolu.bmp
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\timestamp.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\url.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\useronli.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\viewdetails.ico
 # End Source File
 # End Group
 # End Target

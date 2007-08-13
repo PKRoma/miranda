@@ -1,5 +1,5 @@
 /*
-MirandaPluginInfo IM: the free IM client for Microsoft* Windows*
+Miranda IM: the free IM client for Microsoft* Windows*
 
 Copyright 2000-2003 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
@@ -59,9 +59,10 @@ LRESULT CALLBACK NewStatusBarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
             }
             ptMouse = pt;
             if (tooltip_active){
-                    KillTimer(hwnd, TIMERID_HOVER);				
-                    CallService("mToolTip/HideTip", 0, 0);
-                    tooltip_active = FALSE;		
+				KillTimer(hwnd, TIMERID_HOVER);				
+				if(!NotifyEventHooks(hStatusBarHideToolTipEvent, 0, 0))
+					CallService("mToolTip/HideTip", 0, 0);
+				tooltip_active = FALSE;		
             }
             KillTimer(hwnd, TIMERID_HOVER);
             SetTimer(hwnd, TIMERID_HOVER, 750, 0);
@@ -82,7 +83,8 @@ LRESULT CALLBACK NewStatusBarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
         case WM_LBUTTONDOWN:
         case WM_RBUTTONDOWN:
             KillTimer(hwnd, TIMERID_HOVER);				
-            CallService("mToolTip/HideTip", 0, 0);
+			if(!NotifyEventHooks(hStatusBarHideToolTipEvent, 0, 0))
+	            CallService("mToolTip/HideTip", 0, 0);
             tooltip_active = FALSE;		
             break;
         case WM_PAINT:
@@ -165,21 +167,24 @@ LRESULT CALLBACK NewStatusBarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
                             ProtocolData *PD;
                             PD = (ProtocolData *)SendMessageA(hwnd, SB_GETTEXTA, i, 0);
 
-                            if(PD && DBGetContactSettingDword(NULL, "mToolTip", "ShowStatusTip", 0)) {
-                                CLCINFOTIP ti = {0};
-                                BYTE isLocked = 0;
-                                char szTipText[256], *szStatus = NULL;
-                                WORD wStatus;
+							if(PD) {
+								if(NotifyEventHooks(hStatusBarShowToolTipEvent, (WPARAM)PD->RealName, 0) > 0) { // a plugin handled this event
+									tooltip_active = TRUE;
+								} else if(DBGetContactSettingDword(NULL, "mToolTip", "ShowStatusTip", 0)) {
+									CLCINFOTIP ti = {0};
+									BYTE isLocked = 0;
+									char szTipText[256], *szStatus = NULL;
+									WORD wStatus;
 
-                                ti.cbSize = sizeof(ti);
-                                ti.isTreeFocused = GetFocus() == pcli->hwndContactList ? 1 : 0;
-                                wStatus = (WORD)CallProtoService(PD->RealName, PS_GETSTATUS, 0, 0);
-                                isLocked = DBGetContactSettingByte(NULL, PD->RealName, "LockMainStatus", 0);
-                                szStatus = (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)wStatus, 0);
-                                mir_snprintf(szTipText, 256, "<b>%s</b>: %s%s", PD->RealName, szStatus, isLocked ? "  (LOCKED)" : "");
-                                CallService("mToolTip/ShowTip", (WPARAM)szTipText, (LPARAM)&ti);
-                                tooltip_active = TRUE;
-                            }
+									ti.cbSize = sizeof(ti);
+									ti.isTreeFocused = GetFocus() == pcli->hwndContactList ? 1 : 0;
+									wStatus = (WORD)CallProtoService(PD->RealName, PS_GETSTATUS, 0, 0);
+									isLocked = DBGetContactSettingByte(NULL, PD->RealName, "LockMainStatus", 0);
+									szStatus = (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)wStatus, 0);
+									mir_snprintf(szTipText, 256, "<b>%s</b>: %s%s", PD->RealName, szStatus, isLocked ? "  (LOCKED)" : "");
+									CallService("mToolTip/ShowTip", (WPARAM)szTipText, (LPARAM)&ti);
+								}
+							}
                             break;
                         }
                     }

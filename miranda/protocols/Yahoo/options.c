@@ -22,6 +22,7 @@
 #include <m_popup.h>
 
 #include "options.h"
+#include "ignore.h"
 
 /*
  * YahooOptInit - initialize/register our Options w/ Miranda.
@@ -35,8 +36,8 @@ int YahooOptInit(WPARAM wParam,LPARAM lParam)
 	odp.position					= -790000000;
 	odp.hInstance					= hinstance;
 	odp.pszTemplate				    = MAKEINTRESOURCE(IDD_OPT_YAHOO);
-	odp.pszTitle					= Translate( yahooProtocolName );
-	odp.pszGroup					= Translate("Network");
+	odp.pszTitle					= yahooProtocolName;
+	odp.pszGroup					= LPGEN("Network");
 	odp.flags						= ODPF_BOLDGROUPS;
 	odp.nIDBottomSimpleControl      = IDC_STYAHOOGROUP;
 	odp.pfnDlgProc					= DlgProcYahooOpts;
@@ -83,7 +84,6 @@ BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 		SetDlgItemInt( hwndDlg, IDC_YAHOOPORT, YAHOO_GetWord( NULL, YAHOO_LOGINPORT, 5050 ), FALSE );
 		
 		SetButtonCheck( hwndDlg, IDC_YAHOO_JAPAN, YAHOO_GetByte( "YahooJapan", 0 ) );
-		SetButtonCheck( hwndDlg, IDC_DISMAINMENU, YAHOO_GetByte( "DisableMainMenu", 0 ) );
 		SetButtonCheck( hwndDlg, IDC_DISABLE_UTF8, YAHOO_GetByte( "DisableUTF8", 0 )); 
 		SetButtonCheck( hwndDlg, IDC_USE_YAB, YAHOO_GetByte( "UseYAB", 1 )); 
 		SetButtonCheck( hwndDlg, IDC_SHOW_AVATARS, YAHOO_GetByte( "ShowAvatars", 0 )); 
@@ -176,7 +176,6 @@ BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 										:YAHOO_DEFAULT_LOGIN_SERVER );
 					// fall through and enable apply button
 				
-    		case IDC_DISMAINMENU:
 			case IDC_DISABLE_UTF8: 
 			case IDC_USE_YAB:	
 			case IDC_SHOW_AVATARS:
@@ -238,7 +237,6 @@ BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			YAHOO_SetWord( NULL, YAHOO_LOGINPORT, GetDlgItemInt( hwndDlg, IDC_YAHOOPORT, NULL, FALSE ));
 
 			YAHOO_SetByte("YahooJapan", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_YAHOO_JAPAN ));
-	        YAHOO_SetByte("DisableMainMenu", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_DISMAINMENU ));
 			YAHOO_SetByte("DisableUTF8", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_DISABLE_UTF8 )); 
 			YAHOO_SetByte("UseYAB", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USE_YAB )); 
 			YAHOO_SetByte("ShowAvatars", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_SHOW_AVATARS )); 

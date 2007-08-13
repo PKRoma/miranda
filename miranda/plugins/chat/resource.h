@@ -66,9 +66,11 @@
 #define IDC_CLOSE                       1023
 #define IDC_NICKROW                     1024
 #define IDC_LOGLIMIT                    1024
+#define IDC_NICKROW2                    1025
 #define IDC_SPIN1                       1028
 #define IDC_SPIN2                       1029
 #define IDC_SPIN3                       1030
+#define IDC_SPIN4                       1031
 #define IDC_FONTLIST                    1032
 #define IDC_CHOOSEFONT                  1034
 #define IDC_FONTCOLOR                   1035

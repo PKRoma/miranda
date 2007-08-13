@@ -388,9 +388,9 @@ void SFL_Destroy()
 
 static HICON sfl_hIcon = (HICON)-1;
 static int sfl_iIcon = -1;
-static char sfl_statustext[100] = "";
+static TCHAR sfl_statustext[100] = _T("");
 
-void SFL_Update(HICON hIcon, int iIcon, HIMAGELIST hIml, const char *szText, BOOL refresh)
+void SFL_Update(HICON hIcon, int iIcon, HIMAGELIST hIml, const TCHAR *szText, BOOL refresh)
 {
 	RECT rcClient, rcWindow;
 	POINT ptDest, ptSrc = {0};
@@ -434,7 +434,7 @@ void SFL_Update(HICON hIcon, int iIcon, HIMAGELIST hIml, const char *szText, BOO
 	cy = rcStatusArea.bottom - rcStatusArea.top;
 
 	if(szText != NULL && refresh) {
-		strncpy(sfl_statustext, szText, 100);
+		_tcsncpy(sfl_statustext, szText, 100);
 		sfl_statustext[99] = 0;
 	}
 
@@ -458,8 +458,8 @@ void SFL_Update(HICON hIcon, int iIcon, HIMAGELIST hIml, const char *szText, BOO
 
 	hOldFont = SelectObject(g_SFLCachedDC, GetStockObject(DEFAULT_GUI_FONT));
 	SetBkMode(g_SFLCachedDC, TRANSPARENT);
-	GetTextExtentPoint32A(g_SFLCachedDC, sfl_statustext, lstrlenA(sfl_statustext), &szT);
-	TextOutA(g_SFLCachedDC, 24, (cy - szT.cy) / 2, sfl_statustext, lstrlenA(sfl_statustext));
+	GetTextExtentPoint32(g_SFLCachedDC, sfl_statustext, lstrlen(sfl_statustext), &szT);
+	TextOut(g_SFLCachedDC, 24, (cy - szT.cy) / 2, sfl_statustext, lstrlen(sfl_statustext));
 
 	if(g_CluiData.bUseFloater & CLUI_FLOATER_EVENTS) {
 		RECT rcNA = rcClient;
@@ -676,19 +676,19 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
 
 	if(FindItem(pcli->hwndContactTree, dat, contact->hContact, &newContact, &group, 0)) {
 		DWORD oldFlags = g_CluiData.dwFlags;
-		DWORD oldExtraImageMask = g_CluiData.dwExtraImageMask;
+		DWORD oldExtraImageMask = g_ExtraCache[contact->extraCacheEntry].dwXMask;
 		struct avatarCacheEntry *ace_old = contact->ace;
-		BYTE oldDualRow = g_CluiData.dualRowMode;
+		BYTE oldDualRow = contact->bSecondLine;
 
 		if(!(g_floatoptions.dwFlags & FLT_AVATARS))
 			contact->ace = 0;
 
 		if(!(g_floatoptions.dwFlags & FLT_DUALROW))
-			g_CluiData.dualRowMode = MULTIROW_NEVER;
+			contact->bSecondLine = MULTIROW_NEVER;
 
 		if(!(g_floatoptions.dwFlags & FLT_EXTRAICONS)) {
 			g_CluiData.dwFlags &= ~CLUI_SHOWCLIENTICONS;
-			g_CluiData.dwExtraImageMask = 0;
+			g_ExtraCache[contact->extraCacheEntry].dwXMask = 0;
 		}
 
 		g_HDC = hdc;
@@ -707,8 +707,8 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
 
 		g_CluiData.dwFlags = oldFlags;
 		contact->ace = ace_old;
-		g_CluiData.dualRowMode = oldDualRow;
-		g_CluiData.dwExtraImageMask = oldExtraImageMask;
+		contact->bSecondLine = oldDualRow;
+		g_ExtraCache[contact->extraCacheEntry].dwXMask = oldExtraImageMask;
 	}
 	DeleteObject(rgn);
 	if(MyUpdateLayeredWindow)

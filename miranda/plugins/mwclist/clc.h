@@ -55,7 +55,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define INTM_STATUSMSGCHANGED	(WM_USER+26)
 
-#define CLS_SHOWSTATUSMESSAGES 0x0400
+#define CLS_SHOWSTATUSMESSAGES 0x800
 
 #define CLS_EX_MULTICOLUMNALIGNLEFT		0x00001000
 
@@ -199,5 +199,7 @@ typedef struct {
 ExternDrawer SED;
 
 #define CLM_SETEXTRACOLUMNSSPACE   (CLM_FIRST+73)   //wParam=extra space between icons
+
+void FreeAndNil( void** p );
 
 #endif _CLC_H_

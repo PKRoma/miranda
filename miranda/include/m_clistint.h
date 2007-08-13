@@ -24,12 +24,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef M_CLISTINT_H__
 #define M_CLISTINT_H__ 1
 
+#include "m_genmenu.h"
+#include "m_protocols.h"
+
 #define HCONTACT_ISGROUP    0x80000000
 #define HCONTACT_ISINFO     0xFFFF0000
 #define IsHContactGroup(h)  (((unsigned)(h)^HCONTACT_ISGROUP)<(HCONTACT_ISGROUP^HCONTACT_ISINFO))
 #define IsHContactInfo(h)   (((unsigned)(h)&HCONTACT_ISINFO)==HCONTACT_ISINFO)
 #define IsHContactContact(h) (((unsigned)(h)&HCONTACT_ISGROUP)==0)
 #define MAXEXTRACOLUMNS     16
+
+#define MAX_TIP_SIZE 2048
 
 #define INTM_NAMECHANGED     (WM_USER+10)
 #define INTM_ICONCHANGED     (WM_USER+11)
@@ -53,6 +58,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define TIMERID_INFOTIP          13
 #define TIMERID_REBUILDAFTER     14
 #define TIMERID_DELAYEDRESORTCLC 15
+#define TIMERID_TRAYHOVER        16
+#define TIMERID_TRAYHOVER_2      17
+
 
 #define GROUP_ALLOCATE_STEP  8
 
@@ -78,7 +86,8 @@ typedef struct
 }
 	EventList;
 
-struct ClcGroup {
+struct ClcGroup
+{
 	ContactList cl;
 	int expanded,hideOffline,groupId;
 	struct ClcGroup *parent;
@@ -86,11 +95,49 @@ struct ClcGroup {
 	int totalMembers;
 };
 
-struct ClcFontInfo {
+struct ClcFontInfo
+{
 	HFONT hFont;
 	int fontHeight,changed;
 	COLORREF colour;
 };
+
+struct trayIconInfo_t
+{
+	int    id;
+	char*  szProto;
+	HICON  hBaseIcon;
+	int    isBase;
+	TCHAR* ptszToolTip;
+};
+
+/* genmenu structs */
+
+typedef struct
+{
+	int          id;
+	int          globalid;
+	int          iconId;          // icon index in the section's image list
+	TMO_MenuItem mi;              // user-defined data
+	BOOL         OverrideShow;
+	char*        UniqName;        // uniqie name
+	TCHAR*       CustomName;
+	HANDLE       hIcolibItem;     // handle of iconlib item
+	HMENU        hSubMenu;
+	int          originalPosition;
+}
+	TMO_IntMenuItem,*PMO_IntMenuItem;
+
+typedef struct _menuProto
+{
+	char*  szProto;             //This is DLL-based unique name
+	HANDLE menuID;
+	HANDLE hasAdded;
+	HICON  hIcon;
+}
+	MenuProto;
+
+/* constants */
 
 #define DRAGSTAGE_NOTMOVED  0
 #define DRAGSTAGE_ACTIVE    1
@@ -130,6 +177,10 @@ struct ClcFontInfo {
 #define CLCDEFAULT_GAMMACORRECT  1
 #define CLCDEFAULT_SHOWIDLE      0
 #define CLCDEFAULT_USEWINDOWSCOLOURS 0
+
+#define TRAYICON_ID_BASE    100
+#define TIM_CALLBACK   (WM_USER+1857)
+#define TIM_CREATE     (WM_USER+1858)
 
 // Miranda 0.4.3.0+
 // retrieves the pointer to a CLIST_INTERFACE structure
@@ -246,7 +297,7 @@ typedef struct
 
 	/* clistevents.c */
 	int   ( *pfnEventsProcessContactDoubleClick )( HANDLE hContact );
-	int   ( *pfnEventsProcessTrayDoubleClick )( void );
+	int   ( *pfnEventsProcessTrayDoubleClick )( int );
 
 	/* clistmod.c */
 	int    ( *pfnIconFromStatusMode )( const char *szProto, int status, HANDLE hContact );
@@ -320,6 +371,53 @@ typedef struct
 	 *************************************************************************************/
 
 	int   ( *pfnGetWindowVisibleState )( HWND hWnd, int iStepX, int iStepY );
+
+	/*************************************************************************************
+	 * version 4 additions (0.7.0.x) - genmenu
+	 *************************************************************************************/
+
+	MenuProto* menuProtos;
+	int        menuProtoCount;
+
+	HANDLE hPreBuildStatusMenuEvent;
+	int    currentStatusMenuItem, currentDesiredStatusMode;
+	BOOL   bDisplayLocked;
+
+	PMO_IntMenuItem ( *pfnMOGetIntMenuItem )( int );
+	PMO_IntMenuItem ( *pfnMOGetMenuItemByGlobalID )( int globalMenuID );
+
+	int   ( *pfnGetProtocolVisibility )( const char* );
+	int   ( *pfnGetProtoIndexByPos )( PROTOCOLDESCRIPTOR** proto, int protoCnt, int Pos);
+	void  ( *pfnReloadProtoMenus )( void );
+
+	/*************************************************************************************
+	 * version 5 additions (0.7.0.x) - tray icons
+	 *************************************************************************************/
+
+	struct trayIconInfo_t* trayIcon;
+	int    trayIconCount;
+	int    shellVersion;
+	int    cycleTimerId, cycleStep;
+	TCHAR* szTip;
+	BOOL   bTrayMenuOnScreen;
+
+	HICON ( *pfnGetIconFromStatusMode )( HANDLE hContact, const char *szProto, int status );
+
+	void   ( *pfnInitTray )( void );
+	int    ( *pfnTrayIconAdd )( HWND hwnd, const char *szProto, const char *szIconProto, int status );
+	int    ( *pfnTrayIconDestroy )( HWND hwnd );
+	int    ( *pfnTrayIconInit )( HWND hwnd );
+	TCHAR* ( *pfnTrayIconMakeTooltip )( const TCHAR *szPrefix, const char *szProto );
+	void   ( *pfnTrayIconRemove )( HWND hwnd, const char *szProto );
+	int    ( *pfnTrayIconSetBaseInfo )( HICON hIcon, const char *szPreferredProto );
+	void   ( *pfnTrayIconTaskbarCreated )( HWND hwnd );
+	int    ( *pfnTrayIconUpdate )( HICON hNewIcon, const TCHAR *szNewTip, const char *szPreferredProto, int isBase );
+	
+	void   ( *pfnUninitTray )( void );
+	void   ( *pfnLockTray )( void );
+	void   ( *pfnUnlockTray )( void );
+
+	VOID ( CALLBACK *pfnTrayCycleTimerProc )( HWND hwnd, UINT message, UINT idEvent, DWORD dwTime );
 }
 	CLIST_INTERFACE;
 

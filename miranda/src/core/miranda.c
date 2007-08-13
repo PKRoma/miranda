@@ -23,14 +23,25 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "commonheaders.h"
-#include "../modules/database/dblists.h"
 
 #define MMI_SIZE_V1 (4*sizeof(void*))
+#define MMI_SIZE_V2 (7*sizeof(void*))
 
 int InitialiseModularEngine(void);
-void DestroyingModularEngine(void);
 void DestroyModularEngine(void);
+void FreeWindowList(void);
 int UnloadNewPluginsModule(void);
+void UnloadButtonModule(void);
+void UnloadClcModule(void);
+void UnloadContactListModule(void);
+void UnloadEventsModule(void);
+void UnloadIdleModule(void);
+void UnloadLangPackModule(void);
+void UnloadNetlibModule(void);
+void UnloadNewPlugins(void);
+void UnloadUpdateNotifyModule(void);
+void UninitSkin2Icons(void);
+void UninitSkinSounds(void);
 
 HINSTANCE GetInstByAddress( void* codePtr );
 
@@ -69,14 +80,19 @@ void __cdecl forkthread_r(void * arg)
 	struct FORK_ARG * fa = (struct FORK_ARG *) arg;
 	void (*callercode)(void*)=fa->threadcode;
 	void * cookie=fa->arg;
-	CallService(MS_SYSTEM_THREAD_PUSH,0,0);
+	CallService(MS_SYSTEM_THREAD_PUSH,0,(LPARAM)&callercode);
 	SetEvent(fa->hEvent);
-	__try {
+	__try
+	{
 		callercode(cookie);
-	} __finally {
-		SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
-		CallService(MS_SYSTEM_THREAD_POP,0,0);
 	}
+	__except( EXCEPTION_EXECUTE_HANDLER )
+	{
+		Netlib_Logf( NULL, "Unhandled exception in thread %x", GetCurrentThreadId());
+	}
+
+	SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
+	CallService(MS_SYSTEM_THREAD_POP,0,0);
 	return;
 }
 
@@ -114,14 +130,19 @@ unsigned __stdcall forkthreadex_r(void * arg)
 	void *cookie=fa->arg;
 	unsigned long rc;
 
-	CallService(MS_SYSTEM_THREAD_PUSH,0,0);
+	CallService(MS_SYSTEM_THREAD_PUSH,0,(LPARAM)&threadcode);
 	SetEvent(fa->hEvent);
-	__try {
+	__try
+	{
 		rc=threadcode(cookie);
-	} __finally {
-		SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
-		CallService(MS_SYSTEM_THREAD_POP,0,0);
 	}
+	__except( EXCEPTION_EXECUTE_HANDLER )
+	{
+		Netlib_Logf( NULL, "Unhandled exception in thread %x", GetCurrentThreadId());
+	}
+
+	SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
+	CallService(MS_SYSTEM_THREAD_POP,0,0);
 	return rc;
 }
 
@@ -260,15 +281,9 @@ int UnwindThreadPush(WPARAM wParam,LPARAM lParam)
 		WaitingThreads=mir_realloc(WaitingThreads,sizeof(struct THREAD_WAIT_ENTRY)*(WaitingThreadsCount+1));
 		WaitingThreads[WaitingThreadsCount].hThread=hThread;
 		WaitingThreads[WaitingThreadsCount].dwThreadId=GetCurrentThreadId();
-		WaitingThreads[WaitingThreadsCount].hOwner=GetInstByAddress( GetCurrentThreadEntryPoint() );
+		WaitingThreads[WaitingThreadsCount].hOwner=GetInstByAddress(( void* )lParam );
 		WaitingThreadsCount++;
-#ifdef _DEBUG
-		{
-			char szBuf[64];
-			mir_snprintf(szBuf,SIZEOF(szBuf),"*** pushing thread (%x)\n",GetCurrentThreadId());
-			OutputDebugStringA(szBuf);
-		}
-#endif
+ 		//Netlib_Logf( NULL, "*** pushing thread %x[%x] (%d)", hThread, GetCurrentThreadId(), WaitingThreadsCount );
 		ReleaseMutex(hStackMutex);
 	} //if
 	return 0;
@@ -280,6 +295,7 @@ int UnwindThreadPop(WPARAM wParam,LPARAM lParam)
 	{
 		DWORD dwThreadId=GetCurrentThreadId();
 		int j;
+		//Netlib_Logf( NULL, "*** popping thread %x, %d threads left", dwThreadId, WaitingThreadsCount);
 		for (j=0;j<WaitingThreadsCount;j++) {
 			if (WaitingThreads[j].dwThreadId == dwThreadId) {
 				SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
@@ -364,14 +380,11 @@ static DWORD dwEventTime=0;
 void checkIdle(MSG * msg)
 {
 	switch(msg->message) {
-		case WM_MOUSEACTIVATE:
-		case WM_MOUSEMOVE:
-		case WM_CHAR:
-		{
-			dwEventTime = GetTickCount();
-		}
-	}
-}
+	case WM_MOUSEACTIVATE:
+	case WM_MOUSEMOVE:
+	case WM_CHAR:
+		dwEventTime = GetTickCount();
+}	}
 
 static int SystemGetIdle(WPARAM wParam, LPARAM lParam)
 {
@@ -441,7 +454,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				dying++;
 				SetEvent(hMirandaShutdown);
 				NotifyEventHooks(hPreShutdownEvent, 0, 0);
-				DestroyingModularEngine();
+				
 				// this spins and processes the msg loop, objects and APC.
 				UnwindThreadWait();
 				NotifyEventHooks(hShutdownEvent, 0, 0);
@@ -463,6 +476,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 static int SystemShutdownProc(WPARAM wParam,LPARAM lParam)
 {
+	UnloadNewPlugins();
+
+	UninitSkin2Icons();
+	UninitSkinSounds();
+	FreeWindowList();
+
+	UnloadButtonModule();
+	UnloadClcModule();
+	UnloadContactListModule();
+	UnloadEventsModule();
+	UnloadIdleModule();
+	UnloadUpdateNotifyModule();
+
+	UnloadLangPackModule();
 	return 0;
 }
 
@@ -550,6 +577,17 @@ int GetMemoryManagerInterface(WPARAM wParam, LPARAM lParam)
 
 	switch( mmi->cbSize ) {
 	case sizeof(struct MM_INTERFACE):
+		mmi->mir_snprintf = mir_snprintf;
+		mmi->mir_sntprintf = mir_sntprintf;
+		mmi->mir_vsnprintf = mir_vsnprintf;
+		mmi->mir_vsntprintf = mir_vsntprintf;
+		mmi->mir_a2u_cp = mir_a2u_cp;
+		mmi->mir_a2u = mir_a2u;
+		mmi->mir_u2a_cp = mir_u2a_cp;
+		mmi->mir_u2a = mir_u2a;
+		// fall through
+
+	case MMI_SIZE_V2:
 		mmi->mmi_calloc = mir_calloc;
 		mmi->mmi_strdup = mir_strdup;
 		mmi->mmi_wstrdup = mir_wstrdup;
@@ -597,7 +635,7 @@ int GetUtfInterface(WPARAM wParam, LPARAM lParam)
 	struct UTF8_INTERFACE *utfi = (struct UTF8_INTERFACE*) lParam;
 	if ( utfi == NULL )
 		return 1;
-	if ( utfi->cbSize != sizeof( struct UTF8_INTERFACE ))
+	if ( utfi->cbSize != UTF8_INTERFACE_SIZEOF_V1 && utfi->cbSize != sizeof( struct UTF8_INTERFACE ))
 		return 1;
 
 	utfi->utf8_decode   = Utf8Decode;
@@ -605,6 +643,9 @@ int GetUtfInterface(WPARAM wParam, LPARAM lParam)
 	utfi->utf8_encode   = Utf8Encode;
 	utfi->utf8_encodecp = Utf8EncodeCP;
 	utfi->utf8_encodeW  = Utf8EncodeUcs2;
+	if (utfi->cbSize > UTF8_INTERFACE_SIZEOF_V1) {
+		utfi->utf8_decodeW  = Utf8DecodeUcs2;
+	}
 	return 0;
 }
 

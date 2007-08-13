@@ -24,7 +24,8 @@ UNICODE done
 
 */
 #include "commonheaders.h"
-#include "../../include/m_findadd.h"
+#include <m_findadd.h>
+#include <m_icq.h>
 #include "m_updater.h"
 #include "cluiframes/cluiframes.h"
 #include "coolsb/coolscroll.h"
@@ -42,13 +43,12 @@ static LONG g_CLUI_x_off, g_CLUI_y_off, g_CLUI_y1_off, g_CLUI_x1_off;
 static RECT rcWPC;
 
 static HMODULE hUserDll;
-HMENU hMenuMain;
 static int transparentFocus = 1;
 static byte oldhideoffline;
 static int disableautoupd=1;
 HANDLE hFrameContactTree;
 extern HIMAGELIST hCListImages;
-extern PLUGININFO pluginInfo;
+extern PLUGININFOEX pluginInfo;
 extern WNDPROC OldStatusBarProc;
 extern RECT old_window_rect, new_window_rect;
 extern pfnDrawAlpha pDrawAlpha;
@@ -60,9 +60,7 @@ extern HWND g_hwndViewModeFrame, g_hwndEventArea;
 struct ClcData *g_clcData = NULL;
 struct ExtraCache *g_ExtraCache = NULL;
 int g_nextExtraCacheEntry = 0;
-int g_maxExtraCacheEntry = 0;
 
-extern HANDLE hPreBuildStatusMenuEvent;
 extern ImageItem *g_CLUIImageItem;
 extern HBRUSH g_CLUISkinnedBkColor;
 extern StatusItems_t *StatusItems;
@@ -90,11 +88,9 @@ BOOL (WINAPI *MyUpdateLayeredWindow)(HWND hwnd, HDC hdcDst, POINT *pptDst,SIZE *
 extern LRESULT CALLBACK EventAreaWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern HANDLE hNotifyFrame;
 
-int CluiOptInit(WPARAM wParam, LPARAM lParam);
 int SortList(WPARAM wParam, LPARAM lParam);
 int LoadCluiServices(void);
 void InitGroupMenus();
-void InitGdiPlus(void);//, InitImgCache();
 void ReloadExtraIcons();
 void FS_RegisterFonts();
 void LoadExtraIconModule();
@@ -118,44 +114,41 @@ static HBITMAP hbmLockedPoint = 0, hbmOldLockedPoint = 0;
 HICON overlayicons[10];
 
 struct CluiTopButton top_buttons[] = {
-	    0, 0, 0, IDC_TBTOPMENU, IDI_TBTOPMENU, 0,           "CLN_topmenu", NULL, TOPBUTTON_PUSH | TOPBUTTON_SENDONDOWN, 1, _T("Show menu"), 
-		0, 0, 0, IDC_TBHIDEOFFLINE, IDI_HIDEOFFLINE, 0,     "CLN_online", NULL, 0, 2, _T("Show / hide offline contacts"),
-		0, 0, 0, IDC_TBHIDEGROUPS, IDI_HIDEGROUPS, 0,       "CLN_groups", NULL, 0, 4, _T("Toggle group mode"),
-		0, 0, 0, IDC_TBFINDANDADD, IDI_FINDANDADD, 0,       "CLN_findadd", NULL, TOPBUTTON_PUSH, 8, _T("Find and add contacts"),
-		0, 0, 0, IDC_TBOPTIONS, IDI_TBOPTIONS, 0,           "CLN_options", NULL, TOPBUTTON_PUSH, 16, _T("Open preferences"),
-		0, 0, 0, IDC_TBSOUND, IDI_SOUNDSON, IDI_SOUNDSOFF,  "CLN_sound", "CLN_soundsoff", 0, 32, _T("Toggle sounds"),
-		0, 0, 0, IDC_TBMINIMIZE, IDI_MINIMIZE, 0,           "CLN_minimize", NULL, TOPBUTTON_PUSH, 64, _T("Minimize contact list"),
-		0, 0, 0, IDC_TBTOPSTATUS, 0, 0,                     "CLN_topstatus", NULL, TOPBUTTON_PUSH  | TOPBUTTON_SENDONDOWN, 128, _T("Status menu"),
-		0, 0, 0, IDC_TABSRMMSLIST, IDI_TABSRMMSESSIONLIST, 0, "CLN_slist", NULL, TOPBUTTON_PUSH | TOPBUTTON_SENDONDOWN, 256, _T("tabSRMM session list"),
-		0, 0, 0, IDC_TABSRMMMENU, IDI_TABSRMMMENU, 0,       "CLN_menu", NULL, TOPBUTTON_PUSH | TOPBUTTON_SENDONDOWN, 512, _T("tabSRMM Menu"),
+	    0, 0, 0, IDC_TBTOPMENU, IDI_TBTOPMENU, 0,           "CLN_topmenu", NULL, TOPBUTTON_PUSH | TOPBUTTON_SENDONDOWN, 1, LPGENT("Show menu"), 
+		0, 0, 0, IDC_TBHIDEOFFLINE, IDI_HIDEOFFLINE, 0,     "CLN_online", NULL, 0, 2, LPGENT("Show / hide offline contacts"),
+		0, 0, 0, IDC_TBHIDEGROUPS, IDI_HIDEGROUPS, 0,       "CLN_groups", NULL, 0, 4, LPGENT("Toggle group mode"),
+		0, 0, 0, IDC_TBFINDANDADD, IDI_FINDANDADD, 0,       "CLN_findadd", NULL, TOPBUTTON_PUSH, 8, LPGENT("Find and add contacts"),
+		0, 0, 0, IDC_TBOPTIONS, IDI_TBOPTIONS, 0,           "CLN_options", NULL, TOPBUTTON_PUSH, 16, LPGENT("Open preferences"),
+		0, 0, 0, IDC_TBSOUND, IDI_SOUNDSON, IDI_SOUNDSOFF,  "CLN_sound", "CLN_soundsoff", 0, 32, LPGENT("Toggle sounds"),
+		0, 0, 0, IDC_TBMINIMIZE, IDI_MINIMIZE, 0,           "CLN_minimize", NULL, TOPBUTTON_PUSH, 64, LPGENT("Minimize contact list"),
+		0, 0, 0, IDC_TBTOPSTATUS, 0, 0,                     "CLN_topstatus", NULL, TOPBUTTON_PUSH  | TOPBUTTON_SENDONDOWN, 128, LPGENT("Status menu"),
+		0, 0, 0, IDC_TABSRMMSLIST, IDI_TABSRMMSESSIONLIST, 0, "CLN_slist", NULL, TOPBUTTON_PUSH | TOPBUTTON_SENDONDOWN, 256, LPGENT("tabSRMM session list"),
+		0, 0, 0, IDC_TABSRMMMENU, IDI_TABSRMMMENU, 0,       "CLN_menu", NULL, TOPBUTTON_PUSH | TOPBUTTON_SENDONDOWN, 512, LPGENT("tabSRMM Menu"),
+		
+		0, 0, 0, IDC_TBSELECTVIEWMODE, IDI_CLVM_SELECT, 0,  "CLN_CLVM_select", NULL, TOPBUTTON_PUSH | TOPBUTTON_SENDONDOWN, 1024, LPGENT("Select view mode"),
+		0, 0, 0, IDC_TBCONFIGUREVIEWMODE, IDI_CLVM_OPTIONS, 0, "CLN_CLVM_options", NULL, TOPBUTTON_PUSH, 2048, LPGENT("Setup view modes"),
+		0, 0, 0, IDC_TBCLEARVIEWMODE, IDI_DELETE, 0,        "CLN_CLVM_reset", NULL, TOPBUTTON_PUSH, 4096, LPGENT("Clear view mode"),
 
-		0, 0, 0, IDC_TBSELECTVIEWMODE, IDI_CLVM_SELECT, 0,  "CLN_CLVM_select", NULL, TOPBUTTON_PUSH | TOPBUTTON_SENDONDOWN, 1024, _T("Select view mode"),
-		0, 0, 0, IDC_TBCONFIGUREVIEWMODE, IDI_CLVM_OPTIONS, 0, "CLN_CLVM_options", NULL, TOPBUTTON_PUSH, 2048, _T("Setup view modes"),
-		0, 0, 0, IDC_TBCLEARVIEWMODE, IDI_DELETE, 0,        "CLN_CLVM_reset", NULL, TOPBUTTON_PUSH, 4096, _T("Clear view mode"),
-
-		0, 0, 0, IDC_TBGLOBALSTATUS, 0, 0, "", NULL, TOPBUTTON_PUSH | TOPBUTTON_SENDONDOWN, 0, _T("Set status modes"),
-		0, 0, 0, IDC_TBMENU, IDI_MINIMIZE, 0, "", NULL, TOPBUTTON_PUSH | TOPBUTTON_SENDONDOWN, 0, _T("Open main menu"),
+		0, 0, 0, IDC_TBGLOBALSTATUS, 0, 0, "", NULL, TOPBUTTON_PUSH | TOPBUTTON_SENDONDOWN, 0, LPGENT("Set status modes"),
+		0, 0, 0, IDC_TBMENU, IDI_MINIMIZE, 0, "", NULL, TOPBUTTON_PUSH | TOPBUTTON_SENDONDOWN, 0, LPGENT("Open main menu"),
 		(HWND) - 1, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
 static struct IconDesc myIcons[] = {
-	"CLN_online", "Toggle show online/offline", -IDI_HIDEOFFLINE,
-		"CLN_groups", "Toggle groups", -IDI_HIDEGROUPS,
-		"CLN_findadd", "Find contacts", -IDI_FINDANDADD,
-		"CLN_options", "Open preferences", -IDI_TBOPTIONS,
-		"CLN_sound", "Toggle sounds", -IDI_SOUNDSON,
-		"CLN_minimize", "Minimize contact list", -IDI_MINIMIZE,
-		"CLN_slist", "Show tabSRMM session list", -IDI_TABSRMMSESSIONLIST,
-		"CLN_menu", "Show tabSRMM menu", -IDI_TABSRMMMENU,
-		"CLN_soundsoff", "Sounds are off", -IDI_SOUNDSOFF,
-		"CLN_email", "Email", -IDI_EMAIL,
-		"CLN_web", "Homepage", -IDI_URL,
-		"CLN_sms", "SMS", -IDI_SMS,
-		"CLN_CLVM_select", "Select view mode", -IDI_CLVM_SELECT,
-		"CLN_CLVM_reset", "Reset view mode", -IDI_DELETE,
-		"CLN_CLVM_options", "Configure view modes", -IDI_CLVM_OPTIONS,
-		"CLN_topmenu", "Show menu", -IDI_TBTOPMENU,
-		NULL, NULL, 0
+	"CLN_online", LPGEN("Toggle show online/offline"), -IDI_HIDEOFFLINE,
+	"CLN_groups", LPGEN("Toggle groups"), -IDI_HIDEGROUPS,
+	"CLN_findadd", LPGEN("Find contacts"), -IDI_FINDANDADD,
+	"CLN_options", LPGEN("Open preferences"), -IDI_TBOPTIONS,
+	"CLN_sound", LPGEN("Toggle sounds"), -IDI_SOUNDSON,
+	"CLN_minimize", LPGEN("Minimize contact list"), -IDI_MINIMIZE,
+	"CLN_slist", LPGEN("Show tabSRMM session list"), -IDI_TABSRMMSESSIONLIST,
+	"CLN_menu", LPGEN("Show tabSRMM menu"), -IDI_TABSRMMMENU,
+	"CLN_soundsoff", LPGEN("Sounds are off"), -IDI_SOUNDSOFF,
+	"CLN_CLVM_select", LPGEN("Select view mode"), -IDI_CLVM_SELECT,
+	"CLN_CLVM_reset", LPGEN("Reset view mode"), -IDI_DELETE,
+	"CLN_CLVM_options", LPGEN("Configure view modes"), -IDI_CLVM_OPTIONS,
+	"CLN_topmenu", LPGEN("Show menu"), -IDI_TBTOPMENU,
+	NULL, NULL, 0
 };
 
 static void Tweak_It(COLORREF clr)
@@ -261,18 +254,18 @@ static int PreCreateCLC(HWND parent)
 
 static int CreateCLC(HWND parent)
 {
+    ReloadExtraIcons();
 	CallService(MS_CLIST_SETHIDEOFFLINE,(WPARAM)oldhideoffline,0);
 	disableautoupd=0;
 
-	ReloadExtraIcons();
 	{
 		CLISTFrame frame = {0};
 		frame.cbSize = sizeof(frame);
-		frame.name = "EventArea";
+		frame.tname = _T("EventArea");
+		frame.TBtname = TranslateT("Event Area");
 		frame.hIcon = 0;
 		frame.height = 20;
-		frame.TBname = "Event Area";
-		frame.Flags=F_VISIBLE|F_SHOWTBTIP|F_NOBORDER;
+		frame.Flags=F_VISIBLE|F_SHOWTBTIP|F_NOBORDER|F_TCHAR;
 		frame.align = alBottom;
 		frame.hWnd = CreateWindowExA(0, "EventAreaClass", "evt", WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 20, 20, pcli->hwndContactList, (HMENU) 0, g_hInst, NULL);
         g_hwndEventArea = frame.hWnd;
@@ -291,8 +284,9 @@ static int CreateCLC(HWND parent)
 		Frame.hWnd=pcli->hwndContactTree;
 		Frame.align=alClient;
 		Frame.hIcon=LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
-		Frame.Flags=F_VISIBLE|F_SHOWTB|F_SHOWTBTIP|F_NOBORDER;
-		Frame.name=(Translate("My Contacts"));
+		Frame.Flags=F_VISIBLE|F_SHOWTB|F_SHOWTBTIP|F_NOBORDER|F_TCHAR;
+		Frame.tname=_T("My Contacts");
+		Frame.TBtname=TranslateT("My Contacts");
 		Frame.height = 200;
 		hFrameContactTree=(HWND)CallService(MS_CLIST_FRAMES_ADDFRAME,(WPARAM)&Frame,(LPARAM)0);
 		//free(Frame.name);
@@ -388,16 +382,17 @@ static void CacheClientIcons()
 		mir_snprintf(szBuffer, sizeof(szBuffer), "cln_ovl_%d", ID_STATUS_OFFLINE + (i - IDI_OVL_OFFLINE));
 		overlayicons[i - IDI_OVL_OFFLINE] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM) szBuffer);
 	}
-	ImageList_AddIcon(himlExtraImages, (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM) "CLN_email"));
-	ImageList_AddIcon(himlExtraImages, (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM) "CLN_web"));
-	ImageList_AddIcon(himlExtraImages, (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM) "CLN_sms"));
+	ImageList_AddIcon(himlExtraImages, (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM) "core_main_14"));
+	//ImageList_AddIcon(himlExtraImages, (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM) "CLN_web"));
+    ImageList_AddIcon(himlExtraImages, (HICON)LoadSkinnedIcon(SKINICON_EVENT_URL));
+	ImageList_AddIcon(himlExtraImages, (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM) "core_main_17"));
 	if(hIconSaved != 0) {
 		ImageList_AddIcon(himlExtraImages, hIconSaved);
 		DestroyIcon(hIconSaved);
 		hIconSaved = 0;
 	}
 	else
-		ImageList_AddIcon(himlExtraImages, (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM) "CLN_sms"));
+		ImageList_AddIcon(himlExtraImages, (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM) "core_main_17"));
 }
 
 static void InitIcoLib()
@@ -462,7 +457,7 @@ static void InitIcoLib()
 
 static int IcoLibChanged(WPARAM wParam, LPARAM lParam)
 {
-	IcoLibReloadIcons();
+    IcoLibReloadIcons();
 	return 0;
 }
 
@@ -472,38 +467,14 @@ static int IcoLibChanged(WPARAM wParam, LPARAM lParam)
 
 void CLN_LoadAllIcons(BOOL mode)
 {
-	int i;
-	HICON hIcon;
-
-	if (g_CluiData.IcoLib_Avail) {
-		if(mode) {
-			InitIcoLib();
-			hIcoLibChanged = HookEvent(ME_SKIN2_ICONSCHANGED, IcoLibChanged);
-			g_CluiData.hIconVisible = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM) "CLN_visible");
-			g_CluiData.hIconInvisible = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM) "CLN_invisible");
-			g_CluiData.hIconChatactive = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM) "CLN_chatactive");
-		}
-		CacheClientIcons();
-	} else {
-		if(mode) {
-			for (i = IDI_OVL_OFFLINE; i <= IDI_OVL_OUTTOLUNCH; i++)
-				overlayicons[i - IDI_OVL_OFFLINE] = LoadImage(g_hInst, MAKEINTRESOURCE(i), IMAGE_ICON, g_cxsmIcon, g_cysmIcon, LR_SHARED);
-			g_CluiData.hIconVisible = LoadImage(g_hInst, MAKEINTRESOURCE(IDI_CLVISIBLE), IMAGE_ICON, g_cxsmIcon, g_cysmIcon, LR_SHARED);
-			g_CluiData.hIconInvisible = LoadImage(g_hInst, MAKEINTRESOURCE(IDI_CLINVISIBLE), IMAGE_ICON, g_cxsmIcon, g_cysmIcon, LR_SHARED);
-			g_CluiData.hIconChatactive = LoadImage(g_hInst, MAKEINTRESOURCE(IDI_OVL_FREEFORCHAT), IMAGE_ICON, g_cxsmIcon, g_cysmIcon, LR_SHARED);
-			g_CluiData.hIconConnecting = LoadImage(g_hInst, MAKEINTRESOURCE(IDI_PROTOCONNECTING), IMAGE_ICON, g_cxsmIcon, g_cysmIcon, LR_SHARED);
-		}
-		hIcon = LoadImage(g_hInst, MAKEINTRESOURCE(IDI_EMAIL), IMAGE_ICON, g_cxsmIcon, g_cysmIcon, LR_SHARED);
-		ImageList_AddIcon(himlExtraImages, hIcon);
-		DestroyIcon(hIcon);
-		hIcon = LoadImage(g_hInst, MAKEINTRESOURCE(IDI_URL), IMAGE_ICON, g_cxsmIcon, g_cysmIcon, LR_SHARED);
-		ImageList_AddIcon(himlExtraImages, hIcon);
-		DestroyIcon(hIcon);
-		hIcon = LoadImage(g_hInst, MAKEINTRESOURCE(IDI_SMS), IMAGE_ICON, g_cxsmIcon, g_cysmIcon, LR_SHARED);
-		ImageList_AddIcon(himlExtraImages, hIcon);
-		ImageList_AddIcon(himlExtraImages, hIcon);
-		DestroyIcon(hIcon);
-	}
+    if(mode) {
+        InitIcoLib();
+        hIcoLibChanged = HookEvent(ME_SKIN2_ICONSCHANGED, IcoLibChanged);
+        g_CluiData.hIconVisible = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM) "CLN_visible");
+        g_CluiData.hIconInvisible = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM) "CLN_invisible");
+        g_CluiData.hIconChatactive = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM) "CLN_chatactive");
+    }
+    CacheClientIcons();
 }
 
 void ConfigureEventArea(HWND hwnd)
@@ -566,8 +537,10 @@ void IcoLibReloadIcons()
 			continue;
 
 		hIcon = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM) top_buttons[i].szIcoLibIcon);
-		SendMessage(top_buttons[i].hwnd, BM_SETIMAGE, IMAGE_ICON, (LPARAM) hIcon);
-		InvalidateRect(top_buttons[i].hwnd, NULL, TRUE);
+        if(top_buttons[i].hwnd && IsWindow(top_buttons[i].hwnd)) {
+            SendMessage(top_buttons[i].hwnd, BM_SETIMAGE, IMAGE_ICON, (LPARAM) hIcon);
+            InvalidateRect(top_buttons[i].hwnd, NULL, TRUE);
+        }
 	}
 	g_CluiData.hIconVisible = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM) "CLN_visible");
 	g_CluiData.hIconInvisible = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM) "CLN_invisible");
@@ -579,15 +552,16 @@ void IcoLibReloadIcons()
     {
         int i;
 
-        for(i = 0; i < g_maxExtraCacheEntry; i++) {
+        for(i = 0; i < g_nextExtraCacheEntry; i++) {
             if(g_ExtraCache[i].hContact)
                 NotifyEventHooks(hExtraImageApplying, (WPARAM)g_ExtraCache[i].hContact, 0);
         }
     }
     //
 	pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
-	MenuModulesLoaded(0, 0);
-    NotifyEventHooks(hPreBuildStatusMenuEvent, 0, 0);
+	pcli->pfnReloadProtoMenus();
+	//FYR: Not necessary. It is already notified in pfnReloadProtoMenus
+    //NotifyEventHooks(pcli->hPreBuildStatusMenuEvent, 0, 0);
 	SendMessage(g_hwndViewModeFrame, WM_USER + 100, 0, 0);
 }
 
@@ -1173,7 +1147,6 @@ static void ShowCLUI(HWND hwnd)
 	int onTop = DBGetContactSettingByte(NULL, "CList", "OnTop", SETTING_ONTOP_DEFAULT);
 
 	SendMessage(hwnd, WM_SETREDRAW, FALSE, FALSE);
-	hMenuMain = GetMenu(pcli->hwndContactList);
 	if (!DBGetContactSettingByte(NULL, "CLUI", "ShowMainMenu", SETTING_SHOWMAINMENU_DEFAULT))
 		SetMenu(pcli->hwndContactList, NULL);
 	if (state == SETTING_STATE_NORMAL) {
@@ -1271,15 +1244,16 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		break;
 	case M_CREATECLC:
 		{
-            if(DBGetContactSettingByte(NULL, "CLUI", "useskin", 0))
-                IMG_LoadItems();
-            CreateButtonBar(hwnd);
-		    NotifyEventHooks(hPreBuildStatusMenuEvent, 0, 0);
+			if(DBGetContactSettingByte(NULL, "CLUI", "useskin", 0))
+				IMG_LoadItems();
+			CreateButtonBar(hwnd);
+            //FYR: to be checked: otherwise it raises double xStatus items
+            //NotifyEventHooks(pcli->hPreBuildStatusMenuEvent, 0, 0);
 			SendMessage(hwnd, WM_SETREDRAW, FALSE, FALSE);
 			{
 				BYTE windowStyle = DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", 0);
 				ShowWindow(pcli->hwndContactList, SW_HIDE);
-				SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, windowStyle != SETTING_WINDOWSTYLE_DEFAULT ? GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) | WS_EX_TOOLWINDOW : GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) & ~WS_EX_TOOLWINDOW);
+				SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, windowStyle != SETTING_WINDOWSTYLE_DEFAULT ? GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) | (WS_EX_TOOLWINDOW | WS_EX_WINDOWEDGE) : GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) & ~WS_EX_TOOLWINDOW);
 				ApplyCLUIBorderStyle(pcli->hwndContactList);
 
 				SetWindowPos(pcli->hwndContactList, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED | SWP_NOACTIVATE);
@@ -1305,7 +1279,17 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
             }
 
 			DBWriteContactSettingByte(NULL, "CList", "State", old_cliststate);
-			
+
+            if(DBGetContactSettingByte(NULL, "CList", "AutoApplyLastViewMode", 0)) {
+                DBVARIANT dbv = {0};
+                if(!DBGetContactSetting(NULL, "CList", "LastViewMode", &dbv)) {
+                    if(lstrlenA(dbv.pszVal) > 2) {
+                        if(DBGetContactSettingDword(NULL, CLVM_MODULE, dbv.pszVal, -1) != 0xffffffff)
+                            ApplyViewMode((char *)dbv.pszVal);
+                    }
+                    DBFreeVariant(&dbv);
+                }
+            }
 			if(!g_CluiData.autosize)
 				ShowCLUI(hwnd);
 			else {
@@ -1731,7 +1715,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			if (wParam) {
 				sourceAlpha = 0;
 				destAlpha = g_CluiData.isTransparent ? g_CluiData.alpha : 255;
-				MySetLayeredWindowAttributes(hwnd, g_CluiData.bFullTransparent ? g_CluiData.colorkey : RGB(0, 0, 0), sourceAlpha, LWA_ALPHA | (g_CluiData.bFullTransparent ? LWA_COLORKEY : 0));
+				MySetLayeredWindowAttributes(hwnd, g_CluiData.bFullTransparent ? (COLORREF)g_CluiData.colorkey : RGB(0, 0, 0), (BYTE)sourceAlpha, LWA_ALPHA | (g_CluiData.bFullTransparent ? LWA_COLORKEY : 0));
 				noRecurse = 1;
 				ShowWindow(hwnd, SW_SHOW);
 				RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE|RDW_UPDATENOW|RDW_ALLCHILDREN);
@@ -1753,35 +1737,14 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			MySetLayeredWindowAttributes(hwnd, g_CluiData.bFullTransparent ? g_CluiData.colorkey : RGB(0, 0, 0), (BYTE) (destAlpha), LWA_ALPHA | (g_CluiData.bFullTransparent ? LWA_COLORKEY : 0));
 			return DefWindowProc(hwnd, msg, wParam, lParam);
 		}
-	case WM_MENUSELECT:
-		{
-			POINT pt;
-			int pos;
-
-			if((HMENU)lParam != hMenuMain)
-				break;
-
-			GetCursorPos(&pt);
-			pos = LOWORD(wParam); //MenuItemFromPoint(hwnd, hMenuMain, pt);
-			if ((pos == 0 || pos == 1) && HIWORD(wParam) & MF_POPUP && MenuItemFromPoint(hwnd, hMenuMain, pt) != -1) {
-				MENUITEMINFO mii;
-
-				ZeroMemory(&mii, sizeof(mii));
-				mii.cbSize = MENUITEMINFO_V4_SIZE;
-				mii.fMask = MIIM_SUBMENU;
-				mii.hSubMenu = (pos == 0) ? (HMENU)CallService(MS_CLIST_MENUGETMAIN, 0, 0) : (HMENU)CallService(MS_CLIST_MENUGETSTATUS, 0, 0);
-				SetMenuItemInfo(hMenuMain, pos, TRUE, &mii);
-			}
-			break;
-		}
     case WM_SYSCOMMAND:
         if (wParam == SC_MAXIMIZE)
             return 0;
 		else if(wParam == SC_MINIMIZE) {
-			if(DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", SETTING_WINDOWSTYLE_DEFAULT) == SETTING_WINDOWSTYLE_DEFAULT) {
+			//if(DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", SETTING_WINDOWSTYLE_DEFAULT) == SETTING_WINDOWSTYLE_DEFAULT) {
 				pcli->pfnShowHide(0, 0);
 				return 0;
-			}
+			//}
 		}
         return DefWindowProc(hwnd, msg, wParam, lParam);
 	case WM_COMMAND:
@@ -1902,7 +1865,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 						RECT rc;
 						HMENU hMenu = (HMENU) CallService(MS_CLIST_MENUGETMAIN, 0, 0);
 
-						//HMENU hmenu = GetSubMenu(hMenuMain, 0);
 						GetWindowRect(GetDlgItem(hwnd, LOWORD(wParam)), &rc);
 						TrackPopupMenu(hMenu, TPM_TOPALIGN|TPM_LEFTALIGN|TPM_RIGHTBUTTON, rc.left, LOWORD(wParam) == IDC_TBMENU ? rc.top : rc.bottom, 0, hwnd, NULL);
 						return 0;
@@ -1928,8 +1890,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				case IDC_TBSOUND:
 					{
 						g_CluiData.soundsOff = !g_CluiData.soundsOff;
-						DBWriteContactSettingByte(NULL, "CLUI", "NoSounds", g_CluiData.soundsOff);
-						DBWriteContactSettingByte(NULL, "Skin", "UseSound", g_CluiData.soundsOff ? 0 : 1);
+						DBWriteContactSettingByte(NULL, "CLUI", "NoSounds", (BYTE)g_CluiData.soundsOff);
+						DBWriteContactSettingByte(NULL, "Skin", "UseSound", (BYTE)(g_CluiData.soundsOff ? 0 : 1));
 						return 0;
 					}
 				case IDC_TBSELECTVIEWMODE:
@@ -2282,7 +2244,7 @@ buttons_done:
 				case ID_BUTTONBAR_SKINNEDTOOLBAR:
 					g_CluiData.bSkinnedToolbar = !g_CluiData.bSkinnedToolbar;
 					SetTBSKinned(g_CluiData.bSkinnedToolbar);
-					DBWriteContactSettingByte(NULL, "CLUI", "tb_skinned", g_CluiData.bSkinnedToolbar);
+					DBWriteContactSettingByte(NULL, "CLUI", "tb_skinned", (BYTE)g_CluiData.bSkinnedToolbar);
 					PostMessage(hwnd, CLUIINTM_REDRAW, 0, 0);
 					break;
 				}
@@ -2328,21 +2290,8 @@ buttons_done:
 
 				if (showOpts & 1) {
 					HICON hIcon;
-					BYTE xStatusID = 0;
-					BOOL bDestroy = FALSE;
 
-					if(g_CluiData.bShowXStatusOnSbar && status > ID_STATUS_OFFLINE && DBGetContactSettingByte(NULL, szProto, "XStatusEnabled", 0) && (xStatusID = DBGetContactSettingByte(NULL, szProto, "XStatusId", 0)) > 0) {
-						if(xStatusID > 0 && xStatusID <= 32) {
-							char szServiceName[128];
-
-							mir_snprintf(szServiceName, 128, "%s/GetXStatusIcon", pd->RealName);
-							if(ServiceExists(szServiceName)) {
-								hIcon = (HICON)CallProtoService(pd->RealName, "/GetXStatusIcon", 0, 0);	// get OWN xStatus icon (if set)
-								bDestroy = TRUE;
-							}
-						}
-					}
-					else if(status >= ID_STATUS_CONNECTING && status < ID_STATUS_OFFLINE) {
+					if(status >= ID_STATUS_CONNECTING && status < ID_STATUS_OFFLINE) {
 						if(g_CluiData.IcoLib_Avail) {
 							char szBuffer[128];
 							mir_snprintf(szBuffer, 128, "%s_conn", pd->RealName);
@@ -2350,6 +2299,21 @@ buttons_done:
 						}
 						else
 							hIcon = g_CluiData.hIconConnecting;
+					}
+					else if(g_CluiData.bShowXStatusOnSbar && status > ID_STATUS_OFFLINE) {
+						ICQ_CUSTOM_STATUS cst = {0};
+						char szServiceName[128];
+						int xStatus;
+
+						mir_snprintf(szServiceName, 128, "%s%s", pd->RealName, PS_ICQ_GETCUSTOMSTATUSEX);
+						cst.cbSize = sizeof(ICQ_CUSTOM_STATUS);
+						cst.flags = CSSF_MASK_STATUS;
+						cst.status = &xStatus;
+						if(ServiceExists(szServiceName) && !CallService(szServiceName, 0, (LPARAM)&cst) && xStatus > 0) {
+							hIcon = (HICON)CallProtoService(pd->RealName, PS_ICQ_GETCUSTOMSTATUSICON, 0, LR_SHARED);	// get OWN xStatus icon (if set)
+						}
+						else
+							hIcon = LoadSkinnedProtoIcon(szProto, status);
 					}
 					else
 						hIcon = LoadSkinnedProtoIcon(szProto, status);
@@ -2381,8 +2345,6 @@ buttons_done:
                             DeleteObject(hbr);
                         }
                     }
-					if(bDestroy)
-						DestroyIcon(hIcon);
 					x += 18;
 				} else {
 					x += 2;
@@ -2601,7 +2563,6 @@ void LoadCLUIModule(void)
 	WNDCLASS wndclass;
 
 	HookEvent(ME_SYSTEM_MODULESLOADED, CluiModulesLoaded);
-	HookEvent(ME_OPT_INITIALISE, CluiOptInit);
 	HookEvent(ME_MC_DEFAULTTCHANGED, MetaChanged);
 	HookEvent(ME_MC_SUBCONTACTSCHANGED, MetaChanged);
 
@@ -2637,10 +2598,10 @@ void LoadCLUIModule(void)
 }
 
 static struct {UINT id; char *name;} _tagFSINFO[] = {
-        FONTID_STATUS, "Status mode",
-		FONTID_FRAMETITLE, "Frame titles",
-		FONTID_EVENTAREA, "Event area",
-		FONTID_TIMESTAMP, "Contact list local time",
+		FONTID_STATUS, LPGEN("Status mode"),
+		FONTID_FRAMETITLE, LPGEN("Frame titles"),
+		FONTID_EVENTAREA, LPGEN("Event area"),
+		FONTID_TIMESTAMP, LPGEN("Contact list local time"),
 		0, NULL
 };
 

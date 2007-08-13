@@ -2,7 +2,7 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-06  George Hazan
+Copyright ( C ) 2005-07  George Hazan
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -64,27 +64,27 @@ JABBER_SOCKET JabberWsConnect( char* host, WORD port )
 	return ( HANDLE )JCallService( MS_NETLIB_OPENCONNECTION, ( WPARAM ) hNetlibUser, ( LPARAM )&nloc );
 }
 
-int JabberWsSend( JABBER_SOCKET hConn, char* data, int datalen )
+int JabberWsSend( JABBER_SOCKET hConn, char* data, int datalen, int flags )
 {
 	int len;
 
-	if (( len=Netlib_Send( hConn, data, datalen, MSG_DUMPASTEXT ))==SOCKET_ERROR || len!=datalen ) {
+	if (( len = Netlib_Send( hConn, data, datalen, flags )) == SOCKET_ERROR || len != datalen ) {
 		JabberLog( "Netlib_Send() failed, error=%d", WSAGetLastError());
-		return FALSE;
+		return SOCKET_ERROR;
 	}
-	return TRUE;
+	return len;
 }
 
-int JabberWsRecv( JABBER_SOCKET hConn, char* data, long datalen )
+int JabberWsRecv( JABBER_SOCKET hConn, char* data, long datalen, int flags )
 {
 	int ret;
 
-	ret = Netlib_Recv( hConn, data, datalen, MSG_DUMPASTEXT );
-	if( ret == SOCKET_ERROR ) {
+	ret = Netlib_Recv( hConn, data, datalen, flags );
+	if ( ret == SOCKET_ERROR ) {
 		JabberLog( "Netlib_Recv() failed, error=%d", WSAGetLastError());
 		return 0;
 	}
-	if( ret == 0 ) {
+	if ( ret == 0 ) {
 		JabberLog( "Connection closed gracefully" );
 		return 0;
 	}

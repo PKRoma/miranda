@@ -29,17 +29,17 @@ int aim_auth_request(HANDLE hServerConn,unsigned short &seqno,char* key,char* la
 {
 	unsigned short offset=0;
 	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE*13+MD5_HASH_LENGTH+lstrlen(conn.username)+lstrlen(AIM_CLIENT_ID_STRING)+15+lstrlen(language)+lstrlen(country)];
-	md5_byte_t pass_hash[16];
-	md5_byte_t auth_hash[16];
-	md5_state_t state;
-	md5_init(&state);
-	md5_append(&state,(const md5_byte_t *)conn.password, lstrlen(conn.password));
-	md5_finish(&state,pass_hash);
-	md5_init(&state);
-	md5_append(&state,(md5_byte_t*)key, lstrlen(key));
-	md5_append(&state,(md5_byte_t*)pass_hash,MD5_HASH_LENGTH);
-	md5_append(&state,(md5_byte_t*)AIM_MD5_STRING, lstrlen(AIM_MD5_STRING));
-	md5_finish(&state,auth_hash);
+	mir_md5_byte_t pass_hash[16];
+	mir_md5_byte_t auth_hash[16];
+	mir_md5_state_t state;
+	mir_md5_init(&state);
+	mir_md5_append(&state,(const mir_md5_byte_t *)conn.password, lstrlen(conn.password));
+	mir_md5_finish(&state,pass_hash);
+	mir_md5_init(&state);
+	mir_md5_append(&state,(mir_md5_byte_t*)key, lstrlen(key));
+	mir_md5_append(&state,(mir_md5_byte_t*)pass_hash,MD5_HASH_LENGTH);
+	mir_md5_append(&state,(mir_md5_byte_t*)AIM_MD5_STRING, lstrlen(AIM_MD5_STRING));
+	mir_md5_finish(&state,auth_hash);
 	aim_writesnac(0x17,0x02,4,offset,buf);
 	aim_writetlv(0x01,(unsigned short)lstrlen(conn.username),conn.username,offset,buf);
 	aim_writetlv(0x25,MD5_HASH_LENGTH,(char*)auth_hash,offset,buf);
@@ -193,19 +193,37 @@ int aim_set_caps(HANDLE hServerConn,unsigned short &seqno)
 	if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PR, &dbv))
 	{
 		profile_buf=strip_linebreaks(dbv.pszVal);
-		buf=new char[SNAC_SIZE+TLV_HEADER_SIZE*3+AIM_CAPS_LENGTH*7+lstrlen(AIM_MSG_TYPE)+lstrlen(profile_buf)];
+		buf=new char[SNAC_SIZE+TLV_HEADER_SIZE*3+AIM_CAPS_LENGTH*50+lstrlen(AIM_MSG_TYPE)+lstrlen(profile_buf)];
 		DBFreeVariant(&dbv);
 	}
 	else
 	{
-		buf=new char[SNAC_SIZE+TLV_HEADER_SIZE*3+AIM_CAPS_LENGTH*7+lstrlen(AIM_MSG_TYPE)];
+		buf=new char[SNAC_SIZE+TLV_HEADER_SIZE*3+AIM_CAPS_LENGTH*50+lstrlen(AIM_MSG_TYPE)];
 	}
-	char temp[AIM_CAPS_LENGTH*7];
-	memcpy(temp,AIM_CAP_ICQ_SUPPORT,AIM_CAPS_LENGTH);
-	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_RECEIVE_FILES,AIM_CAPS_LENGTH);
+	char temp[AIM_CAPS_LENGTH*50];
+	memcpy(temp,AIM_CAP_ICHAT,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_UNKNOWN3,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_UNKNOWNA,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_UNKNOWNB,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_VOICE_CHAT,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_DIRECT_PLAY,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_SEND_FILES,AIM_CAPS_LENGTH);
-	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_ICHAT,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_ROUTER_FIND,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_DIRECT_IM,AIM_CAPS_LENGTH);
+	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_AVATARS,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_ADDINS,AIM_CAPS_LENGTH);
+	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_RECEIVE_FILES,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_CHANNEL_TWO,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_GAMES,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_LIST_TRANSFER,AIM_CAPS_LENGTH);
+	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_ICQ_SUPPORT,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_UTF8,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_UNKNOWN4,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_UNKNOWN1,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_UNKNOWNC,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_CHAT,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_IM2,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_TRILLIAN,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_MIRANDA,AIM_CAPS_LENGTH);
 	if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HF, 0))
 		memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_HIPTOP,AIM_CAPS_LENGTH);
@@ -356,6 +374,20 @@ int aim_mail_ready(HANDLE hServerConn,unsigned short &seqno)
 	aim_writefamily(AIM_SERVICE_GENERIC,offset,buf);
 	aim_writegeneric(4,AIM_TOOL_VERSION,offset,buf);
 	aim_writefamily(AIM_SERVICE_MAIL,offset,buf);
+	aim_writegeneric(4,AIM_TOOL_VERSION,offset,buf);
+	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
+		return 0;
+	else
+		return -1;
+}
+int aim_avatar_ready(HANDLE hServerConn,unsigned short &seqno)
+{
+	unsigned short offset=0;
+	char buf[SNAC_SIZE+TLV_HEADER_SIZE*4];
+	aim_writesnac(0x01,0x02,6,offset,buf);
+	aim_writefamily(AIM_SERVICE_GENERIC,offset,buf);
+	aim_writegeneric(4,AIM_TOOL_VERSION,offset,buf);
+	aim_writefamily(AIM_SERVICE_AVATAR,offset,buf);
 	aim_writegeneric(4,AIM_TOOL_VERSION,offset,buf);
 	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
 		return 0;
@@ -682,7 +714,7 @@ int aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_c
 		aim_writetlv(0x0e,2,"\x65\x6e",frag_offset,msg_frag);
 		aim_writetlv(0x0d,8,"us-ascii",frag_offset,msg_frag);
 		if(descr)
-			aim_writetlv(0x0c,lstrlen(descr),descr,frag_offset,msg_frag);
+			aim_writetlv(0x0c,(unsigned short)lstrlen(descr),descr,frag_offset,msg_frag);
 		else
 			aim_writetlv(0x0c,6,"<HTML>",frag_offset,msg_frag);
 		unsigned long lip=_htonl(ip);
@@ -723,7 +755,7 @@ int aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_c
 			aim_writegeneric(2,"\0\1",frag_offset,msg_frag);//number of files being transfered
 			total_bytes=_htonl(total_bytes);
 			aim_writegeneric(4,(char*)&total_bytes,frag_offset,msg_frag);//number of bytes in file
-			aim_writegeneric(lstrlen(file_name),file_name,frag_offset,msg_frag);//filename
+			aim_writegeneric((unsigned short)lstrlen(file_name),file_name,frag_offset,msg_frag);//filename
 			aim_writegeneric(1,"\0",frag_offset,msg_frag);//null termination
 			//end tlv
 			aim_writetlv(0x2712,8,"us-ascii",frag_offset,msg_frag);//character set
@@ -1033,3 +1065,49 @@ int aim_request_mail(HANDLE hServerConn,unsigned short &seqno)
 	else
 		return 0;
 }
+int aim_request_avatar(HANDLE hServerConn,unsigned short &seqno,char* sn, char* hash, unsigned short hash_size)
+{
+	unsigned short offset=0;
+	char sn_length=(char)strlen(sn);
+	char* buf= new char[SNAC_SIZE+sn_length+22];
+	aim_writesnac(0x10,0x04,6,offset,buf);
+	aim_writegeneric(1,&sn_length,offset,buf);
+	aim_writegeneric(sn_length,sn,offset,buf);
+	aim_writegeneric(4,"\x01\0\x01\0",offset,buf);
+	char* size=(char*)&hash_size;
+	aim_writegeneric(1,&size[0],offset,buf);
+	aim_writegeneric(hash_size,hash,offset,buf);
+	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
+	{
+		delete[] buf;
+		return 1;
+	}
+	else
+	{
+		delete[] buf;
+		return 0;
+	}
+}
+/* See icq server relaying for retrieving client away message: http://forums.miranda-im.org/showpost.php?p=73099&postcount=939
+int aim_request_crap(HANDLE hServerConn,int &seqno)
+{
+	int offset=0;
+	char buf[SNAC_SIZE*50];
+	aim_writesnac(0x04,0x06,0x06,offset,buf);
+	char sn[]="snaphatvirgil";
+	aim_writegeneric(10,"\x69\xe8\x89\x44\xcf\0\0\0\0\x02",offset,buf);
+	char sn_len=strlen(sn);
+	aim_writegeneric(1,&sn_len,offset,buf);
+	aim_writegeneric(sn_len,sn,offset,buf);
+	aim_writegeneric(6,"\0\x05\0\x5e\0\0",offset,buf);
+	aim_writegeneric(16,"\x69\xe8\x89\x44\xcf\0\0\0\x09\x46\x13\x49\x4c\x7f\x11\xd1",offset,buf);
+	aim_writegeneric(16,"\x82\x22\x44\x45\x53\x54\0\0\0\x0a\0\x02\0\x01\0\x0f",offset,buf);
+	aim_writegeneric(16,"\0\0\x27\x11\0\x36\x1b\0\x08\0\0\0\0\0\0\0",offset,buf);
+	aim_writegeneric(16,"\0\0\0\0\0\0\0\0\0\0\0\0\x03\0\0\0",offset,buf);
+	aim_writegeneric(16,"\x04\x0d\0\x0e\0\x0d\0\0\0\0\0\0\0\0\0\0",offset,buf);
+	aim_writegeneric(12,"\0\0\0\xe8\x03\x01\0\0\x01\x01\0\0",offset,buf);
+	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
+		return 1;
+	else
+		return 0;
+}*/

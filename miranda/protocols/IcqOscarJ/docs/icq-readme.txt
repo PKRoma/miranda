@@ -58,15 +58,6 @@ __________
 Changes
 _______
 
-0.3.9.1
-
-Bugfixes:
-  Fixes several minor problems
-  
-Improvements:
-  Oscar File Transfers now fully handle directory transfers
-  
-
 0.3.9
 
 Bugfixes:

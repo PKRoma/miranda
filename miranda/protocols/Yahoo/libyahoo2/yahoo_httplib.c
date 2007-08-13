@@ -441,8 +441,10 @@ void yahoo_get_url_fd(int id, const char *url, const struct yahoo_data *yd,
 {
 	char buff[1024];
 	struct url_data *ud = y_new0(struct url_data, 1);
-	//snprintf(buff, sizeof(buff), "Y=%s; T=%s", yd->cookie_y, yd->cookie_t);
-	buff[0]='\0'; /*don't send them our cookies!! */
+	
+	//buff[0]='\0'; /*don't send them our cookies!! */
+	snprintf(buff, sizeof(buff), "Y=%s; T=%s", yd->cookie_y, yd->cookie_t);
+
 	ud->callback = callback;
 	ud->user_data = data;
 //	yahoo_http_get(id, url, buff, yahoo_got_url_fd, ud);

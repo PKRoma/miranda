@@ -34,7 +34,7 @@
 //
 // -----------------------------------------------------------------------------
 
-
+#define MIRANDA_VER 0x0700
 
 // Windows includes
 #include <windows.h>
@@ -110,7 +110,6 @@
 #include "icq_uploadui.h"
 #include "log.h"
 #include "channels.h"
-#include "forkthread.h"
 #include "UI/askauthentication.h"
 #include "UI/userinfotab.h"
 #include "UI/loginpassword.h"
@@ -120,8 +119,6 @@
 #include "changeinfo/changeinfo.h"
 #include "icq_popups.h"
 #include "iconlib.h"
-
-#include "md5.h"
 
 // :TODO: This should not be here :p
 void icq_FirstRunCheck(void);

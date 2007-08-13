@@ -165,3 +165,95 @@ WCHAR* mir_wstrdup( const WCHAR* str )
 	}
 	return NULL;
 }
+
+/******************************************************************************/
+
+int mir_snprintf(char *buffer, size_t count, const char* fmt, ...)
+{
+	va_list va;
+	int len;
+
+	va_start(va, fmt);
+	len = _vsnprintf(buffer, count-1, fmt, va);
+	va_end(va);
+	buffer[count-1] = 0;
+	return len;
+}
+
+/******************************************************************************/
+
+int mir_sntprintf(TCHAR *buffer, size_t count, const TCHAR* fmt, ...)
+{
+	va_list va;
+	int len;
+
+	va_start(va, fmt);
+	len = _vsntprintf(buffer, count-1, fmt, va);
+	va_end(va);
+	buffer[count-1] = 0;
+	return len;
+}
+
+/******************************************************************************/
+
+int mir_vsnprintf(char *buffer, size_t count, const char* fmt, va_list va)
+{
+	int len;
+
+	len = _vsnprintf(buffer, count-1, fmt, va);
+	buffer[count-1] = 0;
+	return len;
+}
+
+/******************************************************************************/
+
+int mir_vsntprintf(TCHAR *buffer, size_t count, const TCHAR* fmt, va_list va)
+{
+	int len;
+
+	len = _vsntprintf(buffer, count-1, fmt, va);
+	buffer[count-1] = 0;
+	return len;
+}
+
+/******************************************************************************/
+
+wchar_t* mir_a2u_cp( const char* src, int codepage )
+{
+	int cbLen = MultiByteToWideChar( codepage, 0, src, -1, NULL, 0 );
+	wchar_t* result = ( wchar_t* )mir_alloc( sizeof( wchar_t )*(cbLen+1));
+	if ( result == NULL )
+		return NULL;
+
+	MultiByteToWideChar( codepage, 0, src, -1, result, cbLen );
+	result[ cbLen ] = 0;
+	return result;
+}
+
+/******************************************************************************/
+
+wchar_t* mir_a2u( const char* src )
+{
+	return mir_a2u_cp( src, LangPackGetDefaultCodePage());
+}
+
+/******************************************************************************/
+
+char* mir_u2a_cp( const wchar_t* src, int codepage )
+{
+	int cbLen = WideCharToMultiByte( codepage, 0, src, -1, NULL, 0, NULL, NULL );
+	char* result = ( char* )mir_alloc( cbLen+1 );
+	if ( result == NULL )
+		return NULL;
+
+	WideCharToMultiByte( codepage, 0, src, -1, result, cbLen, NULL, NULL );
+	result[ cbLen ] = 0;
+	return result;
+}
+
+/******************************************************************************/
+
+char* mir_u2a( const wchar_t* src )
+{
+	return mir_u2a_cp( src, LangPackGetDefaultCodePage());
+}

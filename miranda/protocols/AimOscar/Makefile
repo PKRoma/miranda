@@ -32,6 +32,7 @@ SRC =	snac.cpp \
 	packets.cpp \
 	services.cpp \
 	thread.cpp \
+	theme.cpp \
 	utility.cpp \
 	popup.cpp \
 	proxy.cpp \
@@ -47,7 +48,8 @@ SRC =	snac.cpp \
 		
 OBJ =	$(SRC:.cpp=.o)
 RES = resource.res
-HDR =	tlv.h \
+HDR = defines.h \
+	tlv.h \
 	snac.h \
 	flap.h  \
 	aim.h \
@@ -59,6 +61,7 @@ HDR =	tlv.h \
 	client.h \
 	server.h \
 	thread.h \
+	theme .h \
 	utility.h \
 	popup.h \
 	proxy.h	\
@@ -72,6 +75,7 @@ HDR =	tlv.h \
 	error.h \
 	conv.h
 
+LIB = -lgdi32 -lComdlg32
 CC = g++
 RC = windres
 RM = rm
@@ -96,13 +100,13 @@ ifdef DEBUG
 CFLAGS  = -g -g3 $(DEFINES) -I../../include
 LFLAGS  = -shared
 else
-CFLAGS  = -Os $(DEFINES) -I../../include
+CFLAGS  = -O1 $(DEFINES) -I../../include
 LFLAGS  = -shared -s -pedantic -W
 endif
 
 # Targets
 all : $(OBJ) $(RES)
-	$(CC) $(LFLAGS) $(CFLAGS) -o $(BIN) $(OBJ) $(RES) -Wl
+	$(CC) $(LFLAGS) $(CFLAGS) -o $(BIN) $(OBJ) $(RES) $(LIB) -Wl
 
 $(OBJ) :
 	$(CC) -c $(SRC) $(CFLAGS)

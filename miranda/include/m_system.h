@@ -23,6 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef M_SYSTEM_H__
 #define M_SYSTEM_H__ 1
 
+#include <tchar.h>
+
 #ifndef MIRANDANAME
 	#define MIRANDANAME		"Miranda IM"
 #endif
@@ -143,6 +145,17 @@ struct MM_INTERFACE
 		char*    (*mmi_strdup) (const char *src);
 		wchar_t* (*mmi_wstrdup) (const wchar_t *src);
 	#endif
+	#if MIRANDA_VER >= 0x0700
+      int      (*mir_snprintf) (char *buffer, size_t count, const char* fmt, ...);
+		int      (*mir_sntprintf) (TCHAR *buffer, size_t count, const TCHAR* fmt, ...);
+		int      (*mir_vsnprintf) (char *buffer, size_t count, const char* fmt, va_list va);
+		int      (*mir_vsntprintf) (TCHAR *buffer, size_t count, const TCHAR* fmt, va_list va);
+
+		wchar_t* (*mir_a2u_cp) (const char* src, int codepage);
+		wchar_t* (*mir_a2u)(const char* src);
+		char*    (*mir_u2a_cp)(const wchar_t* src, int codepage);
+		char*    (*mir_u2a)( const wchar_t* src);
+	#endif
 };
 
 #define MS_SYSTEM_GET_MMI  "Miranda/System/GetMMI"
@@ -171,6 +184,17 @@ __forceinline int mir_getMMI( struct MM_INTERFACE* dest )
 		__forceinline WCHAR* mir_wstrdup(const WCHAR *src)
 		{	return (src == NULL) ? NULL : wcscpy(( WCHAR* )mir_alloc(( wcslen(src)+1 )*sizeof( WCHAR )), src );
 		}
+	#endif
+	#if MIRANDA_VER >= 0x0700
+		#define mir_snprintf   mmi.mir_snprintf
+		#define mir_sntprintf  mmi.mir_sntprintf 
+		#define mir_vsnprintf  mmi.mir_vsnprintf
+		#define mir_vsntprintf mmi.mir_vsntprintf
+
+		#define mir_a2u_cp(src,cp) mmi.mir_a2u_cp(src,cp) 
+		#define mir_a2u(src)       mmi.mir_a2u(src)
+		#define mir_u2a_cp(src,cp) mmi.mir_u2a_cp(src,cp)
+		#define mir_u2a(src)       mmi.mir_u2a(src)
 	#endif
 #endif
 
@@ -238,6 +262,7 @@ __forceinline int mir_getLI( struct LIST_INTERFACE* dest )
 	Contains functions for utf8-strings encoding & decoding
 */
 
+#define UTF8_INTERFACE_SIZEOF_V1 24
 struct UTF8_INTERFACE
 {
 	int cbSize;
@@ -258,6 +283,9 @@ struct UTF8_INTERFACE
 	// encodes an WCHAR string into a utf8 format
 	// the resulting string should be freed using mir_free
 	char* ( *utf8_encodeW )( const wchar_t* src );
+	// decodes utf8 and returns the result as wchar_t* that should be freed using mir_free()
+	// the input buffer remains unchanged
+	wchar_t* ( *utf8_decodeW )( const char* str );
 };
 
 #define MS_SYSTEM_GET_UTFI  "Miranda/System/GetUTFI"
@@ -271,9 +299,10 @@ __forceinline int mir_getUTFI( struct UTF8_INTERFACE* dest )
 extern struct UTF8_INTERFACE utfi;
 
 #define mir_utf8decode(A,B)     utfi.utf8_decode(A,B)
-#define mir_utf8decodecp(A,B,C) utfi.utf8_decode(A,B,C)
+#define mir_utf8decodecp(A,B,C) utfi.utf8_decodecp(A,B,C)
+#define mir_utf8decodeW(A)		utfi.utf8_decodeW(A)
 #define mir_utf8encode(A)       utfi.utf8_encode(A)
-#define mir_utf8encodecp(A,B)   utfi.utf8_encode(A,B)
+#define mir_utf8encodecp(A,B)   utfi.utf8_encodecp(A,B)
 #define mir_utf8encodeW(A)      utfi.utf8_encodeW(A)
 
 #if defined( _UNICODE )
@@ -415,7 +444,7 @@ static __inline int mir_forkthreadex( pThreadFuncEx aFunc, void* arg, int stackS
 	params.arg        = arg;
 	params.iStackSize = stackSize;
 	params.threadID   = pThreadID;
-	return CallService( MS_SYSTEM_FORK_THREAD, 0, (LPARAM)&params );
+	return CallService( MS_SYSTEM_FORK_THREAD_EX, 0, (LPARAM)&params );
 }
 
 /*

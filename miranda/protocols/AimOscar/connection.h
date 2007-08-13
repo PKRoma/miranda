@@ -3,6 +3,10 @@
 #include "defines.h"
 extern char* COOKIE;
 extern int COOKIE_LENGTH;
+extern char* MAIL_COOKIE;
+extern int MAIL_COOKIE_LENGTH;
+extern char* AVATAR_COOKIE;
+extern int AVATAR_COOKIE_LENGTH;
 extern char* CWD;//current working directory
 extern char* AIM_PROTOCOL_NAME;
 extern char* GROUP_ID_KEY;
@@ -18,4 +22,5 @@ HANDLE aim_peer_connect(char* ip,unsigned short port);
 void aim_connection_authorization();
 void aim_protocol_negotiation();
 void aim_mail_negotiation();
+void aim_avatar_negotiation();
 #endif

@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/i18n.h,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -37,19 +37,23 @@
 
 
 BOOL IsUSASCII(const unsigned char *pBuffer, int nSize);
-BOOL IsUnicodeAscii(const wchar_t *pBuffer, int nSize);
+BOOL IsUnicodeAscii(const WCHAR *pBuffer, int nSize);
 int UTF8_IsValid(const unsigned char* pszInput);
 
 char* detect_decode_utf8(const char *from);
 
-wchar_t *make_unicode_string(const unsigned char *utf8);
+WCHAR *make_unicode_string(const unsigned char *utf8);
 
-unsigned char *make_utf8_string(const wchar_t *unicode);
+unsigned char *make_utf8_string(const WCHAR *unicode);
 
-int utf8_encode(const char *from, char **to);
 char *ansi_to_utf8(const char *szAnsi);
 char *ansi_to_utf8_codepage(const char *szAnsi, WORD wCp);
+char *tchar_to_utf8(const TCHAR *szTxt);
+char *mtchar_to_utf8(const TCHAR *szTxt);
+
+int utf8_encode(const char *from, char **to);
 int utf8_decode(const char *from, char **to);
+int utf8_decode_codepage(const char *from, char **to, WORD wCp);
 int utf8_decode_static(const char *from, char *to, int to_size);
 
 void InitI18N(void);

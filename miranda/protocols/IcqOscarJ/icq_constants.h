@@ -63,7 +63,7 @@
 #define DEFAULT_CAPS                0
 #define DEFAULT_AVATARS_ENABLED     1
 #define DEFAULT_LOAD_AVATARS        1
-#define DEFAULT_LINK_AVATARS        1
+#define DEFAULT_BIGGER_AVATARS      1
 #define DEFAULT_AVATARS_CHECK       1
 #define DEFAULT_XSTATUS_ENABLED     1
 #define DEFAULT_XSTATUS_AUTO        1
@@ -159,6 +159,7 @@
 #define CAPF_TYPING                 0x00000020
 #define CAPF_XTRAZ                  0x00000100
 #define CAPF_OSCAR_FILE             0x00000400
+#define CAPF_STATUSMSGEXT           0x01000000
 
 
 // Message Capability IDs
@@ -522,7 +523,7 @@
 #define SSI_ITEM_IMPORTTIME         0x0013  // Item that contain roster import time (name: "Import time")
 #define SSI_ITEM_BUDDYICON          0x0014  // Buddy icon info. (names: from "0" and incrementing by one)
 
-#define SSI_TLV_AWAITING_AUTH       0x0066  // Contact not authorised in list
+#define SSI_TLV_AWAITING_AUTH       0x0066  // Contact not authorized in list
 #define SSI_TLV_UNKNOWN             0x006D  // WTF ?
 #define SSI_TLV_SUBITEMS            0x00C8  // List of sub-items IDs
 #define SSI_TLV_VISIBILITY          0x00CA
@@ -537,26 +538,35 @@
 
 
 // Internal Constants
-#define ICQ_PLUG_VERSION            0x00030901
-#define ICQ_VERSION                 8
+#define ICQ_PLUG_VERSION            0x80030A05
+#define ICQ_VERSION                 8         // Protocol version
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_NICK_SIZE               32
 #define MAX_CONTACTSSEND            15
 #define MAX_MESSAGESNACSIZE         8000
 #define CLIENTRATELIMIT             0
-#define UPDATE_THRESHOLD            14      // Two weeks
-#define COOKIE_TIMEOUT              3600    // One hour
-#define KEEPALIVE_INTERVAL          57000   // One minute
+#define UPDATE_THRESHOLD            14        // Two weeks
+#define COOKIE_TIMEOUT              3600      // One hour
+#define KEEPALIVE_INTERVAL          57000     // One minute
 #define WEBFRONTPORT                0x50
 #define CLIENTFEATURES              0x3
 #define URL_FORGOT_PASSWORD         "https://www.icq.com/password/"
 #define URL_REGISTER                "http://lite.icq.com/register"
 #define FLAP_MARKER                 0x2a
-#define CLIENT_ID_STRING            "ICQBasic"
 #define CLIENT_MD5_STRING           "AOL Instant Messenger (SM)"
 #define UNIQUEIDSETTING             "UIN"
 #define UINMAXLEN                   11 // DWORD string max len + 1
 #define OSCAR_PROXY_HOST            "ars.oscar.aol.com"
 #define OSCAR_PROXY_VERSION         0x044A
+
+#define CLIENT_ID_STRING            "ICQBasic"  // Client identification, mimic icq5.1
+#define CLIENT_ID_CODE              0x010a
+#define CLIENT_VERSION_MAJOR        0x0014
+#define CLIENT_VERSION_MINOR        0x0034
+#define CLIENT_VERSION_LESSER       0x0000
+#define CLIENT_VERSION_BUILD        0x0c18
+#define CLIENT_DISTRIBUTION         0x0000043d
+#define CLIENT_LANGUAGE             "en"
+#define CLIENT_COUNTRY              "us"
 
 #endif /* __ICQ_CONSTANTS_H */

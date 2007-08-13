@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
+// Microsoft Developer Studio generated include file.
 // Used by resource.rc
 //
 #define IDD_TEMPLATEEDIT                1
@@ -192,6 +192,7 @@
 #define IDC_PROTOCOL                    1140
 #define IDC_STMSGLOGGROUP2              1140
 #define IDC_TYPING                      1141
+#define IDC_STMSGLOGGROUP3              1141
 #define IDC_PROTOMENU                   1143
 #define IDC_TOGGLETOOLBAR               1144
 #define IDC_ERRORTEXT                   1145
@@ -379,6 +380,7 @@
 #define IDC_SKIN_LOADTEMPLATES          1290
 #define IDC_NOSKINNING                  1291
 #define IDC_SKIN_LOADTEMPLATES2         1291
+#define IDC_NOAUTOCLOSE                 1291
 #define IDC_AVADYNAMIC                  1292
 #define IDC_FLATTABS2                   1292
 #define IDC_USESNAPPING                 1293
@@ -489,6 +491,7 @@
 #define IDC_DESC                        1404
 #define IDC_LABEL_PRIVATETHEME          1405
 #define IDC_SKIN_WIN9XWARN              1406
+#define IDC_MSGLOGDIDSPLAY              1407
 #define IDC_WHITERECT                   2000
 #define IDC_TABSRMM                     2001
 #define IDC_COPYRIGHT                   2002
@@ -677,6 +680,7 @@
 #define ID_MESSAGELOG_USESIMPLETEMPLATES 40246
 #define ID_HELP_VIEWRELEASENOTES        40247
 #define ID_EDITOR_SHOWMESSAGELENGTHINDICATOR 40248
+#define ID_MESSAGELOGDISPLAY_USEHISTORY 40249
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -684,8 +688,8 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        11
-#define _APS_NEXT_COMMAND_VALUE         40249
-#define _APS_NEXT_CONTROL_VALUE         1407
+#define _APS_NEXT_COMMAND_VALUE         40250
+#define _APS_NEXT_CONTROL_VALUE         1408
 #define _APS_NEXT_SYMED_VALUE           40282
 #endif
 #endif

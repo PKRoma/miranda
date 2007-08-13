@@ -2,7 +2,7 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-06  George Hazan
+Copyright ( C ) 2005-07  George Hazan
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -28,13 +28,14 @@ Last change by : $Author$
 #include "jabber.h"
 #include "jabber_ssl.h"
 #include "jabber_list.h"
-#include "sha1.h"
+#include "jabber_caps.h"
 
 extern CRITICAL_SECTION mutex;
 extern UINT jabberCodePage;
 
 static CRITICAL_SECTION serialMutex;
 static unsigned int serial;
+extern int bSecureIM;
 
 void __stdcall JabberSerialInit( void )
 {
@@ -70,9 +71,51 @@ void __stdcall JabberLog( const char* fmt, ... )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// JabberChatRoomHContactFromJID - looks for the char room HCONTACT with required JID
+
+HANDLE __stdcall JabberChatRoomHContactFromJID( const TCHAR* jid )
+{
+	if ( jid == NULL )
+		return ( HANDLE )NULL;
+
+	JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_CHATROOM, jid );
+	
+	HANDLE hContactMatched = NULL;
+	HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
+	while ( hContact != NULL ) {
+		char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
+		if ( szProto != NULL && !strcmp( jabberProtoName, szProto )) 
+		{
+			DBVARIANT dbv;
+			int result = JGetStringT( hContact, "ChatRoomID", &dbv );
+			if ( result )
+				result = JGetStringT( hContact, "jid", &dbv );	
+
+			if ( !result ) 
+			{
+				int result;
+				result = lstrcmpi( jid, dbv.ptszVal );
+				JFreeVariant( &dbv );
+				if ( !result && JGetByte( hContact, "ChatRoom", 0 )!=0 ) 
+				{
+
+					hContactMatched = hContact;
+					break;
+
+				}
+			}
+		}
+
+		hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 );
+	}
+
+	return hContactMatched;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // JabberHContactFromJID - looks for the HCONTACT with required JID
 
-HANDLE __stdcall JabberHContactFromJID( const TCHAR* jid )
+HANDLE __stdcall JabberHContactFromJID( const TCHAR* jid , BOOL bStripResource )
 {
 	if ( jid == NULL )
 		return ( HANDLE )NULL;
@@ -94,7 +137,22 @@ HANDLE __stdcall JabberHContactFromJID( const TCHAR* jid )
 				if ( item != NULL )
 					result = lstrcmpi( jid, dbv.ptszVal );
 				else
-					result = JabberCompareJids( jid, dbv.ptszVal );
+				{
+					//if (bStripResource == 3)
+					if (bStripResource==3)
+					{
+						if (JGetByte(hContact, "ChatRoom", 0))
+							result = lstrcmpi( jid, dbv.ptszVal );  // for chat room we have to have full contact matched
+						else if ( TRUE )
+							result = _tcsnicmp( jid, dbv.ptszVal, _tcslen(dbv.ptszVal));
+						else
+							result = JabberCompareJids( jid, dbv.ptszVal );
+					}
+					// most probably it should just look full matching contact
+					else
+						result = lstrcmpi( jid, dbv.ptszVal );
+
+				}
 				JFreeVariant( &dbv );
 				if ( !result ) {
 					hContactMatched = hContact;
@@ -123,6 +181,44 @@ TCHAR* __stdcall JabberNickFromJID( const TCHAR* jid )
 	}
 	else nick = mir_tstrdup( jid );
 	return nick;
+}
+
+JABBER_RESOURCE_STATUS* __stdcall JabberResourceInfoFromJID( TCHAR* jid )
+{
+	if ( !jid )
+		return NULL;
+
+	JABBER_LIST_ITEM *item = NULL;
+	if (( item = JabberListGetItemPtr( LIST_VCARD_TEMP, jid )) == NULL)
+		item = JabberListGetItemPtr( LIST_ROSTER, jid );
+	if ( item == NULL ) return NULL;
+
+	TCHAR* p = _tcschr( jid, '/' );
+	if ( p == NULL )
+		return &item->itemResource;
+	if ( *++p == '\0' ) return NULL;
+
+	JABBER_RESOURCE_STATUS *r = item->resource;
+	if ( r == NULL ) return NULL;
+
+	int i;
+	for ( i=0; i<item->resourceCount && _tcscmp( r->resourceName, p ); i++, r++ );
+	if ( i >= item->resourceCount )
+		return NULL;
+
+	return r;
+}
+
+TCHAR* JabberPrepareJid( TCHAR *jid )
+{
+	if ( !jid ) return NULL;
+	TCHAR* szNewJid = mir_tstrdup( jid );
+	if ( !szNewJid ) return NULL;
+	TCHAR* pDelimiter = _tcschr( szNewJid, _T('/') );
+	if ( pDelimiter ) *pDelimiter = _T('\0');
+	CharLower( szNewJid );
+	if ( pDelimiter ) *pDelimiter = _T('/');
+	return szNewJid;
 }
 
 char* __stdcall JabberUrlDecode( char* str )
@@ -181,12 +277,12 @@ char* __stdcall JabberUrlEncode( const char* str )
 
 	for ( c=0,p=( char* )str; *p!='\0'; p++ ) {
 		switch ( *p ) {
-		case '&': c += 5; break;
-		case '\'': c += 6; break;
-		case '>': c += 4; break;
-		case '<': c += 4; break;
-		case '"': c += 6; break;
-		default: c++; break;
+			case '&': c += 5; break;
+			case '\'': c += 6; break;
+			case '>': c += 4; break;
+			case '<': c += 4; break;
+			case '"': c += 6; break;
+			default: c++; break;
 		}
 	}
 	if (( s=( char* )mir_alloc( c+1 )) != NULL ) {
@@ -197,7 +293,21 @@ char* __stdcall JabberUrlEncode( const char* str )
 			case '>': strcpy( q, "&gt;" ); q += 4; break;
 			case '<': strcpy( q, "&lt;" ); q += 4; break;
 			case '"': strcpy( q, "&quot;" ); q += 6; break;
-			default: *q = *p; q++; break;
+			default:
+				if ( *p > 0 && *p < 32 ) {
+					switch( *p ) {
+					case '\r':
+					case '\n':
+					case '\t':
+						*q = *p;
+						break;
+					default:
+						*q = '?';
+					}
+				}
+				else *q = *p; 
+				q++; 
+				break;
 			}
 		}
 		*q = '\0';
@@ -271,17 +381,17 @@ void __stdcall JabberUtfToTchar( const char* pszValue, size_t cbLen, LPTSTR& des
 
 char* __stdcall JabberSha1( char* str )
 {
-	SHA1Context sha;
-	uint8_t digest[20];
+	mir_sha1_ctx sha;
+	mir_sha1_byte_t digest[20];
 	char* result;
 	int i;
 
 	if ( str == NULL )
 		return NULL;
 
-	SHA1Reset( &sha );
-	SHA1Input( &sha, ( const unsigned __int8* )str, strlen( str ));
-	SHA1Result( &sha, digest );
+	mir_sha1_init( &sha );
+	mir_sha1_append( &sha, (mir_sha1_byte_t* )str, strlen( str ));
+	mir_sha1_finish( &sha, digest );
 	if (( result=( char* )mir_alloc( 41 )) == NULL )
 		return NULL;
 
@@ -793,12 +903,12 @@ int __stdcall JabberCountryNameToId( TCHAR* ptszCountryName )
 
 	// Check Miranda country list
 	{
-		const char *szName, *p;
+		const char* szName;
 		struct CountryListEntry *countries;
 		JCallService( MS_UTILS_GETCOUNTRYLIST, ( WPARAM )&ctryCount, ( LPARAM )&countries );
 
 		#if defined ( _UNICODE )
-			p = ( const char* )t2a( ptszCountryName );
+			const char* p = ( const char* )mir_t2a( ptszCountryName );
 			szName = NEWSTR_ALLOCA( p );
 			mir_free(( void* )p );
 		#else
@@ -821,7 +931,7 @@ void __stdcall JabberSendPresenceTo( int status, TCHAR* to, XmlNode* extra )
 	EnterCriticalSection( &modeMsgMutex );
 
 	char szPriority[40];
-	itoa( JGetWord( NULL, "Priority", 0 ), szPriority, 10 );
+	itoa( (short)JGetWord( NULL, "Priority", 0 ), szPriority, 10 );
 
 	XmlNode p( "presence" ); p.addChild( "priority", szPriority );
 	if ( to != NULL )
@@ -830,12 +940,56 @@ void __stdcall JabberSendPresenceTo( int status, TCHAR* to, XmlNode* extra )
 	if ( extra )
 		p.addChild( extra );
 
+	// XEP-0115:Entity Capabilities
+	char* version = JabberGetVersionText();
+
+	XmlNode *c = p.addChild( "c" );
+	c->addAttr( "xmlns", JABBER_FEAT_ENTITY_CAPS );
+	c->addAttr( "node", JABBER_CAPS_MIRANDA_NODE );
+	c->addAttr( "ver", version );
+
+	TCHAR szExtCaps[ 512 ];
+	szExtCaps[ 0 ] = _T('\0');
+
+	if ( bSecureIM ) {
+		if ( _tcslen( szExtCaps ))
+			_tcscat( szExtCaps, _T(" "));
+		_tcscat( szExtCaps, _T(JABBER_EXT_SECUREIM) );
+	}
+
+	if ( JGetByte( "EnableRemoteControl", FALSE )) {
+		if ( _tcslen( szExtCaps ))
+			_tcscat( szExtCaps, _T(" "));
+		_tcscat( szExtCaps, _T(JABBER_EXT_COMMANDS) );
+	}
+
+	if ( JGetByte( "EnableUserMood", TRUE )) {
+		if ( _tcslen( szExtCaps ))
+			_tcscat( szExtCaps, _T(" "));
+		_tcscat( szExtCaps, _T(JABBER_EXT_USER_MOOD) );
+	}
+
+	if ( JGetByte( "EnableUserTune", FALSE )) {
+		if ( _tcslen( szExtCaps ))
+			_tcscat( szExtCaps, _T(" "));
+		_tcscat( szExtCaps, _T(JABBER_EXT_USER_TUNE) );
+	}
+
+	if ( _tcslen( szExtCaps ))
+		c->addAttr( "ext", szExtCaps );
+
+	mir_free( version );
+
 	if ( JGetByte( "EnableAvatars", TRUE )) {
 		char hashValue[ 50 ];
-		if ( !JGetStaticString( "AvatarHash", NULL, hashValue, sizeof hashValue )) {
-			XmlNode* x = p.addChild( "x" ); x->addAttr( "xmlns", "jabber:x:avatar" );
-			x->addChild( "hash", hashValue );
+		if ( !JGetStaticString( "AvatarHash", NULL, hashValue, sizeof( hashValue ))) {
+			XmlNode* x;
 
+			// deprecated XEP-0008
+//			x = p.addChild( "x" ); x->addAttr( "xmlns", "jabber:x:avatar" );
+//			x->addChild( "hash", hashValue );
+
+			// XEP-0153: vCard-Based Avatars
 			x = p.addChild( "x" ); x->addAttr( "xmlns", "vcard-temp:x:update" );
 			x->addChild( "photo", hashValue );
 	}	}
@@ -990,65 +1144,13 @@ TCHAR* __stdcall JabberStripJid( const TCHAR* jid, TCHAR* dest, size_t destLen )
 int __stdcall JabberGetPictureType( const char* buf )
 {
 	if ( buf != NULL ) {
-		if ( memcmp( buf, "GIF89", 5 ) == 0 )   return PA_FORMAT_GIF;
-		if ( memcmp( buf, "\x89PNG", 4 ) == 0 ) return PA_FORMAT_PNG;
-		if ( memcmp( buf, "BM", 2 ) == 0 )      return PA_FORMAT_BMP;
-		if ( memcmp( buf+6, "JFIF", 4 ) == 0 )  return PA_FORMAT_JPEG;
+		if ( memcmp( buf, "GIF8", 4 ) == 0 )     return PA_FORMAT_GIF;
+		if ( memcmp( buf, "\x89PNG", 4 ) == 0 )  return PA_FORMAT_PNG;
+		if ( memcmp( buf, "BM", 2 ) == 0 )       return PA_FORMAT_BMP;
+		if ( memcmp( buf, "\xFF\xD8", 2 ) == 0 ) return PA_FORMAT_JPEG;
 	}
 
 	return PA_FORMAT_UNKNOWN;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// Unicode functions
-
-TCHAR* a2t( const char* str )
-{
-	if ( str == NULL )
-		return NULL;
-
-	#if defined( _UNICODE )
-		return ( TCHAR* )JCallService( MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)str );
-	#else
-		return mir_strdup( str );
-	#endif
-}
-
-char* t2a( const TCHAR* src )
-{
-	#if defined( _UNICODE )
-		return u2a( src );
-	#else
-		return mir_strdup( src );
-	#endif
-}
-
-char* u2a( const wchar_t* src )
-{
-	int codepage = CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
-
-	int cbLen = WideCharToMultiByte( codepage, 0, src, -1, NULL, 0, NULL, NULL );
-	char* result = ( char* )mir_alloc( cbLen+1 );
-	if ( result == NULL )
-		return NULL;
-
-	WideCharToMultiByte( codepage, 0, src, -1, result, cbLen, NULL, NULL );
-	result[ cbLen ] = 0;
-	return result;
-}
-
-wchar_t* a2u( const char* src )
-{
-	int codepage = CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
-
-	int cbLen = MultiByteToWideChar( codepage, 0, src, -1, NULL, 0 );
-	wchar_t* result = ( wchar_t* )mir_alloc( sizeof( wchar_t )*(cbLen+1));
-	if ( result == NULL )
-		return NULL;
-
-	MultiByteToWideChar( codepage, 0, src, -1, result, cbLen );
-	result[ cbLen ] = 0;
-	return result;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -1064,7 +1166,7 @@ TStringPairs::TStringPairs( char* buffer ) :
 		if ( p == NULL )
 			break;
 
-		tempElem[ numElems ].name = buffer;
+		tempElem[ numElems ].name = rtrim( buffer );
 		*p = 0;
 		if (( p = strchr( ++p, '\"' )) == NULL )
 			break;
@@ -1074,11 +1176,12 @@ TStringPairs::TStringPairs( char* buffer ) :
 			break;
 
 		*p1++ = 0;
-		tempElem[ numElems ].value = p+1;
+		tempElem[ numElems ].value = rtrim( p+1 );
+		p1 = skipSpaces( p1 );
 		if ( *p1 == ',' )
 			p1++;
-
-		buffer = p1;
+		
+		buffer = skipSpaces( p1 );
 	}
 
 	if ( numElems ) {

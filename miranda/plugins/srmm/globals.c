@@ -27,32 +27,26 @@ static HANDLE g_hDbEvent = 0, g_hAck = 0;
 static int dbaddedevent(WPARAM wParam, LPARAM lParam);
 static int ackevent(WPARAM wParam, LPARAM lParam);
 
-void InitGlobals() {
+void InitGlobals()
+{
 	g_dat = (struct GlobalMessageData *)malloc(sizeof(struct GlobalMessageData));
 	g_dat->hMessageWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
 	g_hDbEvent = HookEvent(ME_DB_EVENT_ADDED, dbaddedevent);
 	g_hAck = HookEvent(ME_PROTO_ACK, ackevent);
 	ReloadGlobals();
-	g_dat->hIcons[SMF_ICON_ADD] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_ADDCONTACT), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-	g_dat->hIcons[SMF_ICON_USERDETAIL] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_USERDETAILS), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-	g_dat->hIcons[SMF_ICON_HISTORY] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_HISTORY), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-	g_dat->hIcons[SMF_ICON_ARROW] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_DOWNARROW), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-	g_dat->hIcons[SMF_ICON_TYPING] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TYPING), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
 }
 
-void FreeGlobals() {
-	int i;
-
-	if (g_dat) {
-		for (i=0; i < SIZEOF(g_dat->hIcons); i++)
-			DestroyIcon(g_dat->hIcons[i]);
+void FreeGlobals()
+{
+	if (g_dat)
 		free(g_dat);
-	}
+
 	if (g_hDbEvent) UnhookEvent(g_hDbEvent);
 	if (g_hAck) UnhookEvent(g_hAck);
 }
 
-void ReloadGlobals() {
+void ReloadGlobals()
+{
 	g_dat->flags = 0;
 	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWINFOLINE, SRMSGDEFSET_SHOWINFOLINE))
 		g_dat->flags |= SMF_SHOWINFO;
@@ -83,7 +77,8 @@ void ReloadGlobals() {
 	g_dat->openFlags = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_POPFLAGS, SRMSGDEFSET_POPFLAGS);
 }
 
-static int dbaddedevent(WPARAM wParam, LPARAM lParam) {
+static int dbaddedevent(WPARAM wParam, LPARAM lParam)
+{
 	if (wParam) {
 		HWND h = WindowList_Find(g_dat->hMessageWindowList, (HANDLE)wParam);
 		if(h) SendMessage(h, HM_DBEVENTADDED, wParam, lParam);
@@ -91,7 +86,8 @@ static int dbaddedevent(WPARAM wParam, LPARAM lParam) {
 	return 0;
 }
 
-static int ackevent(WPARAM wParam, LPARAM lParam) {
+static int ackevent(WPARAM wParam, LPARAM lParam)
+{
 	ACKDATA *pAck = (ACKDATA *)lParam;
 	
 	if (!pAck) return 0;

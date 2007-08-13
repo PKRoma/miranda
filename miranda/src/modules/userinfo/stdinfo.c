@@ -32,7 +32,6 @@ BOOL CALLBACK ContactDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 #define SVS_MONTH         5
 #define SVS_SIGNED        6
 #define SVS_TIMEZONE      7
-#define SVS_ICQVERSION    8
 
 static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char *szSetting,int special)
 {
@@ -75,14 +74,6 @@ static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char
 				if(special==SVS_COUNTRY) {
 					pstr=(char*)CallService(MS_UTILS_GETCOUNTRYBYNUMBER,dbv.wVal,0);
 					unspecified=pstr==NULL;
-				}
-				else if (special == SVS_ICQVERSION) {
-					if (dbv.wVal != 0) {
-						static char *szVersionDescr[] = {"", "ICQ 1.x", "ICQ 2.x", "Unknown", "ICQ98", "Unknown", "ICQ99 / licq", "ICQ2000", "ICQ2001-2003, Miranda or Trillian", "ICQ Lite"};
-						pstr = str;
-						wsprintfA(str, "%d: %s", dbv.wVal, dbv.wVal > 9 ? Translate("Unknown") : Translate(szVersionDescr[dbv.wVal]));
-					}
-					else unspecified = 1;
 				}
 				else {
 					unspecified=(special==SVS_ZEROISUNSPEC && dbv.wVal==0);
@@ -209,16 +200,14 @@ static BOOL CALLBACK LocationDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					SetDlgItemText(hwndDlg,IDC_LOCALTIME,TranslateT("<not specified>"));
 				}
 				else {
-                    TIME_ZONE_INFORMATION tzi;
+					TIME_ZONE_INFORMATION tzi;
 
 					EnableWindow(GetDlgItem(hwndDlg,IDC_LOCALTIME),TRUE);
 					timezone=(char)timezone;
 					GetSystemTimeAsFileTime(&ft);
-                    switch (GetTimeZoneInformation(&tzi)) {
-                        case TIME_ZONE_ID_DAYLIGHT:
-                            timezone+=tzi.DaylightBias/30;
-                            break;
-                    }
+					if (GetTimeZoneInformation(&tzi) == TIME_ZONE_ID_DAYLIGHT)
+						timezone+=tzi.DaylightBias/30;
+
 					lift.QuadPart=*(__int64*)&ft;
 					lift.QuadPart-=(__int64)timezone*BIGI(30)*BIGI(60)*BIGI(10000000);
 					*(__int64*)&ft=lift.QuadPart;
@@ -502,37 +491,37 @@ int DetailsInit(WPARAM wParam,LPARAM lParam)
 	odp.pfnDlgProc = SummaryDlgProc;
 	odp.position = -2100000000;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_INFO_SUMMARY);
-	odp.pszTitle = "Summary";
+	odp.pszTitle = LPGEN("Summary");
 	CallService(MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp);
 
 	odp.pfnDlgProc = ContactDlgProc;
 	odp.position = -1800000000;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_INFO_CONTACT);
- 	odp.pszTitle = "Contact";
+ 	odp.pszTitle = LPGEN("Contact");
 	CallService(MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp );
 
 	odp.pfnDlgProc = LocationDlgProc;
 	odp.position = -1500000000;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_INFO_LOCATION);
-	odp.pszTitle = "Location";
+	odp.pszTitle = LPGEN("Location");
 	CallService(MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp);
 
 	odp.pfnDlgProc = WorkDlgProc;
 	odp.position = -1200000000;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_INFO_WORK);
-	odp.pszTitle = "Work";
+	odp.pszTitle = LPGEN("Work");
 	CallService(MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp);
 
 	odp.pfnDlgProc = BackgroundDlgProc;
 	odp.position = -900000000;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_INFO_BACKGROUND);
-	odp.pszTitle = "Background";
+	odp.pszTitle = LPGEN("Background");
 	CallService(MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp );
 
 	odp.pfnDlgProc = NotesDlgProc;
 	odp.position = 0;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_INFO_NOTES);
-	odp.pszTitle = "Notes";
+	odp.pszTitle = LPGEN("Notes");
 	CallService(MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp);
 	return 0;
 }

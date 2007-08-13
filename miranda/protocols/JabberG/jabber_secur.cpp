@@ -2,7 +2,7 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-06  George Hazan
+Copyright ( C ) 2005-07  George Hazan
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -27,7 +27,6 @@ Last change by : $Author: ghazan $
 
 #include "jabber.h"
 #include "jabber_secur.h"
-#include "md5.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // ntlm auth - LanServer based authorization
@@ -64,9 +63,9 @@ char* TNtlmAuth::getChallenge( const TCHAR* challenge )
 	if ( !hProvider )
 		return NULL;
 
-	char *text = ( !lstrcmp( challenge, _T("="))) ? mir_strdup( "" ) : t2a( challenge ), *result;
+	char *text = ( !lstrcmp( challenge, _T("="))) ? mir_strdup( "" ) : mir_t2a( challenge ), *result;
 	if ( info->password[0] != 0 ) {
-		char* user = t2a( info->username );
+		char* user = mir_t2a( info->username );
 		result = Netlib_NtlmCreateResponse( hProvider, text, user, info->password );
 		mir_free( user );
 	}
@@ -109,49 +108,49 @@ char* TMD5Auth::getChallenge( const TCHAR* challenge )
 	itoa( rand(), randomNumber, 10 );
 
 	DWORD digest[4], hash1[4], hash2[4];
-	MD5_CTX ctx;
-	MD5Init( &ctx );
-	MD5Update( &ctx, (BYTE*)randomNumber, strlen(randomNumber));
-	MD5Final(( BYTE* )digest, &ctx );
+	mir_md5_state_t ctx;
+	mir_md5_init( &ctx );
+	mir_md5_append( &ctx, ( BYTE* )randomNumber, strlen(randomNumber));
+	mir_md5_finish( &ctx, ( BYTE* )digest );
 	sprintf( cnonce, "%08x%08x%08x%08x", htonl(digest[0]), htonl(digest[1]), htonl(digest[2]), htonl(digest[3]));
 
 	char *uname = mir_utf8encodeT( info->username ), 
 		  *passw = mir_utf8encode( info->password ), 
 		  *serv  = mir_utf8encode( info->server );
 
-	MD5Init( &ctx );
-	MD5Update( &ctx, ( BYTE* )uname,  strlen( uname ));
-	MD5Update( &ctx, ( BYTE* )":",    1 );
-	MD5Update( &ctx, ( BYTE* )realm,  strlen( realm ));
-	MD5Update( &ctx, ( BYTE* )":",    1 );
-	MD5Update( &ctx, ( BYTE* )passw,  strlen( passw ));
-	MD5Final(( BYTE* )hash1, &ctx );
+	mir_md5_init( &ctx );
+	mir_md5_append( &ctx, ( BYTE* )uname,  strlen( uname ));
+	mir_md5_append( &ctx, ( BYTE* )":",    1 );
+	mir_md5_append( &ctx, ( BYTE* )realm,  strlen( realm ));
+	mir_md5_append( &ctx, ( BYTE* )":",    1 );
+	mir_md5_append( &ctx, ( BYTE* )passw,  strlen( passw ));
+	mir_md5_finish( &ctx, ( BYTE* )hash1 );
 
-	MD5Init( &ctx );
-	MD5Update( &ctx, ( BYTE* )hash1,  16 );
-	MD5Update( &ctx, ( BYTE* )":",    1 );
-	MD5Update( &ctx, ( BYTE* )nonce,  strlen( nonce ));
-	MD5Update( &ctx, ( BYTE* )":",    1 );
-	MD5Update( &ctx, ( BYTE* )cnonce, strlen( cnonce ));
-	MD5Final(( BYTE* )hash1, &ctx );
+	mir_md5_init( &ctx );
+	mir_md5_append( &ctx, ( BYTE* )hash1,  16 );
+	mir_md5_append( &ctx, ( BYTE* )":",    1 );
+	mir_md5_append( &ctx, ( BYTE* )nonce,  strlen( nonce ));
+	mir_md5_append( &ctx, ( BYTE* )":",    1 );
+	mir_md5_append( &ctx, ( BYTE* )cnonce, strlen( cnonce ));
+	mir_md5_finish( &ctx, ( BYTE* )hash1 );
 	
-	MD5Init( &ctx );
-	MD5Update( &ctx, ( BYTE* )"AUTHENTICATE:xmpp/", 18 );
-	MD5Update( &ctx, ( BYTE* )serv,   strlen( serv ));
-	MD5Final(( BYTE* )hash2, &ctx );
+	mir_md5_init( &ctx );
+	mir_md5_append( &ctx, ( BYTE* )"AUTHENTICATE:xmpp/", 18 );
+	mir_md5_append( &ctx, ( BYTE* )serv,   strlen( serv ));
+	mir_md5_finish( &ctx, ( BYTE* )hash2 );
 
-	MD5Init( &ctx );
+	mir_md5_init( &ctx );
 	sprintf( tmpBuf, "%08x%08x%08x%08x", htonl(hash1[0]), htonl(hash1[1]), htonl(hash1[2]), htonl(hash1[3]));
-	MD5Update( &ctx, ( BYTE* )tmpBuf, strlen( tmpBuf ));
-	MD5Update( &ctx, ( BYTE* )":",    1 );
-	MD5Update( &ctx, ( BYTE* )nonce,  strlen( nonce ));
+	mir_md5_append( &ctx, ( BYTE* )tmpBuf, strlen( tmpBuf ));
+	mir_md5_append( &ctx, ( BYTE* )":",    1 );
+	mir_md5_append( &ctx, ( BYTE* )nonce,  strlen( nonce ));
 	sprintf( tmpBuf, ":%08d:", iCallCount );
-	MD5Update( &ctx, ( BYTE* )tmpBuf, strlen( tmpBuf ));
-	MD5Update( &ctx, ( BYTE* )cnonce, strlen( cnonce ));
-	MD5Update( &ctx, ( BYTE* )":auth:", 6 );
+	mir_md5_append( &ctx, ( BYTE* )tmpBuf, strlen( tmpBuf ));
+	mir_md5_append( &ctx, ( BYTE* )cnonce, strlen( cnonce ));
+	mir_md5_append( &ctx, ( BYTE* )":auth:", 6 );
 	sprintf( tmpBuf, "%08x%08x%08x%08x", htonl(hash2[0]), htonl(hash2[1]), htonl(hash2[2]), htonl(hash2[3]));
-	MD5Update( &ctx, ( BYTE* )tmpBuf, strlen( tmpBuf ));
-	MD5Final(( BYTE* )digest, &ctx );
+	mir_md5_append( &ctx, ( BYTE* )tmpBuf, strlen( tmpBuf ));
+	mir_md5_finish( &ctx, ( BYTE* )digest );
 
 	char* buf = (char*)alloca(8000);
 	int cbLen = mir_snprintf( buf, 8000, 
@@ -183,7 +182,7 @@ TPlainAuth::~TPlainAuth()
 
 char* TPlainAuth::getInitialRequest()
 {
-	char *temp = t2a(info->username);
+	char *temp = mir_t2a(info->username);
 	int size = strlen(temp)*2+strlen(info->server)+strlen(info->password)+3;
 	char *toEncode = ( char* )alloca( size+1 );
 	mir_snprintf( toEncode, size+1, "%s@%s%c%s%c%s", temp, info->server, 0, temp, 0, info->password );

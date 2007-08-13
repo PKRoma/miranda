@@ -23,8 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "cluiframes/cluiframes.h"
 
-void TrayIconSetToBase(char *szPreferredProto);
-
 static HWND hwndEventFrame = 0;
 HFONT __fastcall ChangeToFont(HDC hdc, struct ClcData *dat, int id, int *fontHeight);
 

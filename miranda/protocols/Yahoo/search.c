@@ -13,7 +13,6 @@
 #include "yahoo.h"
 #include <m_protosvc.h>
 #include <m_langpack.h>
-#include <m_message.h>
 
 extern yahoo_local_account * ylad;
 
@@ -59,7 +58,7 @@ static void yahoo_search_simple(const char *nick)
 	//YAHOO_basicsearch(nick);
 	yahoo_search(ylad->id, YAHOO_SEARCH_YID, nick, YAHOO_GENDER_NONE, YAHOO_AGERANGE_NONE, 0, 1);
 	
-    pthread_create(yahoo_search_simplethread, (void *) m);
+    mir_forkthread(yahoo_search_simplethread, (void *) m);
 }
 
 int YahooBasicSearch(WPARAM wParam,LPARAM lParam)

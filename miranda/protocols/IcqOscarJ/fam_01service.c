@@ -67,9 +67,10 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
     // This tells the server which SNAC families and their corresponding
     // versions which the client understands. This also seems to identify
     // the client as an ICQ vice AIM client to the server.
-    // Miranda mimics the behaviour of icq5 (haven't changed since at least 2002a)
-    serverPacketInit(&packet, 50);
+    // Miranda mimics the behaviour of ICQ 6
+    serverPacketInit(&packet, 54);
     packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_FAMILIES);
+    packDWord(&packet, 0x00220001);
     packDWord(&packet, 0x00010004);
     packDWord(&packet, 0x00130004);
     packDWord(&packet, 0x00020001);
@@ -365,9 +366,9 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 
   case ICQ_SERVER_REDIRECT_SERVICE: // reply to family request, got new connection point
   {
-     oscar_tlv_chain* pChain = NULL;
-     WORD wFamily;
-     familyrequest_rec* reqdata;
+    oscar_tlv_chain* pChain = NULL;
+    WORD wFamily;
+    familyrequest_rec* reqdata;
 
     if (!(pChain = readIntoTLVChain(&pBuffer, wBufferLength, 0)))
     {
@@ -554,7 +555,6 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
           { // we have no file to upload, remove hash from server
             NetLog_Server("We do not have avatar, removing hash.");
             IcqSetMyAvatar(0, 0);
-            LinkContactPhotoToFile(NULL, NULL);
             break;
           }
           dwPaFormat = DetectAvatarFormat(file);
@@ -563,7 +563,6 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
           { // the hash could not be calculated, remove from server
             NetLog_Server("We could not obtain hash, removing hash.");
             IcqSetMyAvatar(0, 0);
-            LinkContactPhotoToFile(NULL, NULL);
           }
           else if (!memcmp(hash, pBuffer+4, 0x10))
           { // we have the right file
@@ -581,7 +580,6 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
             if (cbFileSize != 0)
             {
               SetAvatarData(NULL, (WORD)(dwPaFormat == PA_FORMAT_XML ? AVATAR_HASH_FLASH : AVATAR_HASH_STATIC), ppMap, cbFileSize);
-              LinkContactPhotoToFile(NULL, file);
             }
 
             if (ppMap != NULL) UnmapViewOfFile(ppMap);
@@ -662,22 +660,22 @@ char* calcMD5Hash(char* szFile)
         res = (char*)SAFE_MALLOC(16*sizeof(char));
         if (cbFileSize != 0 && res)
         {
-          md5_state_t state;
-          md5_byte_t digest[16];
+          mir_md5_state_t state;
+          mir_md5_byte_t digest[16];
           int dwOffset = 0;
 
-          md5_init(&state);
+          mir_md5_init(&state);
           while (dwOffset < cbFileSize)
           {
             int dwBlockSize = min(MD5_BLOCK_SIZE, cbFileSize-dwOffset);
 
             if (!(ppMap = (BYTE*)MapViewOfFile(hMap, FILE_MAP_READ, 0, dwOffset, dwBlockSize)))
               break;
-            md5_append(&state, (const md5_byte_t *)ppMap, dwBlockSize);
+            mir_md5_append(&state, (const mir_md5_byte_t *)ppMap, dwBlockSize);
             UnmapViewOfFile(ppMap);
             dwOffset += dwBlockSize;
           }
-          md5_finish(&state, digest);
+          mir_md5_finish(&state, digest);
           memcpy(res, digest, 16);
         }
       }
@@ -1001,28 +999,30 @@ void handleServUINSettings(int nPort, serverthread_info *info)
   SetCurrentStatus(icqGoingOnlineStatus);
 
   // Finish Login sequence
-  serverPacketInit(&packet, 90);
+  serverPacketInit(&packet, 98);
   packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_READY);
-  packDWord(&packet, 0x00010004); // imitate icq5 behaviour
-  packDWord(&packet, 0x011008E4);
+  packDWord(&packet, 0x00220001); // imitate ICQ 6 behaviour
+  packDWord(&packet, 0x0110157f);
+  packDWord(&packet, 0x00010004);
+  packDWord(&packet, 0x0110157f);
   packDWord(&packet, 0x00130004);
-  packDWord(&packet, 0x011008E4);
+  packDWord(&packet, 0x0110157f);
   packDWord(&packet, 0x00020001);
-  packDWord(&packet, 0x011008E4);
+  packDWord(&packet, 0x0110157f);
   packDWord(&packet, 0x00030001);
-  packDWord(&packet, 0x011008E4);
+  packDWord(&packet, 0x0110157f);
   packDWord(&packet, 0x00150001);
-  packDWord(&packet, 0x011008E4);
+  packDWord(&packet, 0x0110157f);
   packDWord(&packet, 0x00040001);
-  packDWord(&packet, 0x011008E4);
+  packDWord(&packet, 0x0110157f);
   packDWord(&packet, 0x00060001);
-  packDWord(&packet, 0x011008E4);
+  packDWord(&packet, 0x0110157f);
   packDWord(&packet, 0x00090001);
-  packDWord(&packet, 0x011008E4);
+  packDWord(&packet, 0x0110157f);
   packDWord(&packet, 0x000A0001);
-  packDWord(&packet, 0x011008E4);
+  packDWord(&packet, 0x0110157f);
   packDWord(&packet, 0x000B0001);
-  packDWord(&packet, 0x011008E4);
+  packDWord(&packet, 0x0110157f);
 
   sendServPacket(&packet);
 

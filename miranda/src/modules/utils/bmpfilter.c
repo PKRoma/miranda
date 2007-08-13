@@ -44,6 +44,11 @@ static int BmpFilterLoadBitmap(WPARAM wParam,LPARAM lParam)
 	filenameLen=lstrlenA(szFilename);
 	if(filenameLen>4) {
 		char* pszExt = szFilename+filenameLen-4;
+		
+		if(ServiceExists("IMG/Load")) {
+            return (int)CallService("IMG/Load", (WPARAM)szFilename, 0);
+        }
+		
 		if ( !lstrcmpiA( pszExt,".bmp" ) || !lstrcmpiA( pszExt, ".rle" )) {
 			//LoadImage can do this much faster
 			return (int)LoadImageA( GetModuleHandle(NULL), szFilename, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE );
@@ -57,7 +62,7 @@ static int BmpFilterLoadBitmap(WPARAM wParam,LPARAM lParam)
 			BYTE* pDibBits;
 
 			if ( !ServiceExists( MS_PNG2DIB )) {
-				MessageBox( NULL, TranslateT( "You need the png2dib plugin v. 0.1.3.x or later to process PNG images" ), TranslateT( "Error" ), MB_OK );
+				MessageBox( NULL, TranslateT( "You need an image services plugin to process PNG images." ), TranslateT( "Error" ), MB_OK );
 				return (int)(HBITMAP)NULL;
 			}
 

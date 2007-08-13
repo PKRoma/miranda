@@ -381,8 +381,8 @@ PLUGINLINK *pluginLink;
 static HANDLE hDib2mempng = NULL;
 static HANDLE hMempng2Dib = NULL;
 
-PLUGININFO pluginInfo = {
-	sizeof( PLUGININFO ),
+PLUGININFOEX pluginInfo = {
+	sizeof( PLUGININFOEX ),
 	"PNG images processor",
 	__VERSION_DWORD,
 	"png2dib plugin for Miranda IM ( "__DATE__" )",
@@ -391,10 +391,11 @@ PLUGININFO pluginInfo = {
 	"(c) 2004-06 George Hazan",
 	"http://addons.miranda-im.org/details.php?action=viewfile&id=1420",
 	0,
-	0
+	0,
+	{0x7f65393b, 0x7771, 0x4f3f, { 0xa9, 0xeb, 0x5d, 0xba, 0xf2, 0xb3, 0x61, 0xf1 }} //{7F65393B-7771-4f3f-A9EB-5DBAF2B361F1}
 };
 
-__declspec( dllexport ) PLUGININFO* MirandaPluginInfo( DWORD mirandaVersion )
+__declspec( dllexport ) PLUGININFOEX* MirandaPluginInfoEx( DWORD mirandaVersion )
 {
 	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0,4,3,0 )) {
 		MessageBox( NULL, "The png2dib plugin cannot be loaded. It requires Miranda IM 0.5 or later.", "png2dib Plugin", MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
@@ -402,6 +403,12 @@ __declspec( dllexport ) PLUGININFO* MirandaPluginInfo( DWORD mirandaVersion )
 	}
 
 	return &pluginInfo;
+}
+
+static const MUUID interfaces[] = {MIID_IMGSERVICES, MIID_LAST};
+__declspec( dllexport ) const MUUID* MirandaPluginInterfaces(void)
+{
+	return interfaces;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

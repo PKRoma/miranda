@@ -16,8 +16,8 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)/Release/Plugins"
-			IntermediateDirectory="$(SolutionDir)/Release/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -120,8 +120,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)Debug/Plugins"
-			IntermediateDirectory="$(SolutionDir)Debug/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -207,8 +207,205 @@
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
+		<Configuration
+			Name="Debug Unicode|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
+			ConfigurationType="2"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="1"
+				TypeLibraryName=".\Debug/png2dib.tlb"
+				HeaderFileName=""
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="../../include"
+				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO"
+				ExceptionHandling="0"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="3"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				SuppressStartupBanner="true"
+				DebugInformationFormat="4"
+				DisableSpecificWarnings="4996"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1049"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				SuppressStartupBanner="true"
+				ModuleDefinitionFile=".\png2dib.def"
+				GenerateDebugInformation="true"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release Unicode|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
+			ConfigurationType="2"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="1"
+				TypeLibraryName=".\Release/png2dib.tlb"
+				HeaderFileName=""
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="3"
+				InlineFunctionExpansion="1"
+				FavorSizeOrSpeed="2"
+				OmitFramePointers="true"
+				WholeProgramOptimization="true"
+				AdditionalIncludeDirectories="../../include"
+				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO"
+				StringPooling="true"
+				ExceptionHandling="0"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="true"
+				BrowseInformationFile="$(IntDir)/"
+				WarningLevel="3"
+				SuppressStartupBanner="true"
+				DebugInformationFormat="3"
+				DisableSpecificWarnings="4996"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1049"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				IgnoreImportLibrary="true"
+				AdditionalOptions="/filealign:512"
+				LinkIncremental="0"
+				SuppressStartupBanner="true"
+				AdditionalManifestDependencies="type=&apos;Win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;X86&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
+				ModuleDefinitionFile=".\png2dib.def"
+				GenerateDebugInformation="true"
+				GenerateMapFile="true"
+				MapFileName="$(OutDir)/$(ProjectName).map"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				OptimizeForWindows98="1"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
 	</Configurations>
 	<References>
+		<ProjectReference
+			ReferencedProjectIdentifier="{E2A369CD-EDA3-414F-8AD0-E732CD7EE68C}"
+			RelativePathToProject="..\plugins\zlib\zlib_8.vcproj"
+		/>
 	</References>
 	<Files>
 		<Filter
@@ -242,291 +439,31 @@
 						BrowseInformation="1"
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
+						BasicRuntimeChecks="3"
+						BrowseInformation="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="png2dib.def"
 				>
 			</File>
-			<Filter
-				Name="ZLib sources"
-				>
-				<File
-					RelativePath="zlib\adler32.c"
-					>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="1"
-							PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
-							BasicRuntimeChecks="3"
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="zlib\compress.c"
-					>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="1"
-							PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
-							BasicRuntimeChecks="3"
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="zlib\crc32.c"
-					>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="1"
-							PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
-							BasicRuntimeChecks="3"
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="zlib\crc32.h"
-					>
-				</File>
-				<File
-					RelativePath="zlib\deflate.c"
-					>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="1"
-							PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
-							BasicRuntimeChecks="3"
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="zlib\deflate.h"
-					>
-				</File>
-				<File
-					RelativePath="zlib\inffast.c"
-					>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="1"
-							PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
-							BasicRuntimeChecks="3"
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="zlib\inffast.h"
-					>
-				</File>
-				<File
-					RelativePath="zlib\inflate.c"
-					>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="1"
-							PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
-							BasicRuntimeChecks="3"
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="zlib\inflate.h"
-					>
-				</File>
-				<File
-					RelativePath="zlib\inftrees.c"
-					>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="1"
-							PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
-							BasicRuntimeChecks="3"
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="zlib\inftrees.h"
-					>
-				</File>
-				<File
-					RelativePath="zlib\trees.c"
-					>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="1"
-							PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
-							BasicRuntimeChecks="3"
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="zlib\trees.h"
-					>
-				</File>
-				<File
-					RelativePath="zlib\uncompr.c"
-					>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="1"
-							PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
-							BasicRuntimeChecks="3"
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="zlib\zconf.h"
-					>
-				</File>
-				<File
-					RelativePath="zlib\zlib.h"
-					>
-				</File>
-				<File
-					RelativePath="zlib\zutil.c"
-					>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="1"
-							PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
-							BasicRuntimeChecks="3"
-							BrowseInformation="1"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="zlib\zutil.h"
-					>
-				</File>
-			</Filter>
 			<Filter
 				Name="Libpng sources"
 				>
@@ -551,6 +488,26 @@
 							PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
 							BasicRuntimeChecks="3"
 							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
+							BasicRuntimeChecks="3"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="1"
+							PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
 						/>
 					</FileConfiguration>
 				</File>
@@ -589,6 +546,26 @@
 							BrowseInformation="1"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
+							BasicRuntimeChecks="3"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="1"
+							PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="libpng\pngget.c"
@@ -611,6 +588,26 @@
 							PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
 							BasicRuntimeChecks="3"
 							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
+							BasicRuntimeChecks="3"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="1"
+							PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
 						/>
 					</FileConfiguration>
 				</File>
@@ -637,6 +634,26 @@
 							BrowseInformation="1"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
+							BasicRuntimeChecks="3"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="1"
+							PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="libpng\pngpread.c"
@@ -659,6 +676,26 @@
 							PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
 							BasicRuntimeChecks="3"
 							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
+							BasicRuntimeChecks="3"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="1"
+							PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
 						/>
 					</FileConfiguration>
 				</File>
@@ -685,6 +722,26 @@
 							BrowseInformation="1"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
+							BasicRuntimeChecks="3"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="1"
+							PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="libpng\pngrio.c"
@@ -707,6 +764,26 @@
 							PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
 							BasicRuntimeChecks="3"
 							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
+							BasicRuntimeChecks="3"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="1"
+							PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
 						/>
 					</FileConfiguration>
 				</File>
@@ -733,6 +810,26 @@
 							BrowseInformation="1"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
+							BasicRuntimeChecks="3"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="1"
+							PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="libpng\pngrutil.c"
@@ -755,6 +852,26 @@
 							PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
 							BasicRuntimeChecks="3"
 							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
+							BasicRuntimeChecks="3"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="1"
+							PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
 						/>
 					</FileConfiguration>
 				</File>
@@ -781,6 +898,26 @@
 							BrowseInformation="1"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
+							BasicRuntimeChecks="3"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="1"
+							PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="libpng\pngtrans.c"
@@ -803,6 +940,26 @@
 							PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
 							BasicRuntimeChecks="3"
 							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
+							BasicRuntimeChecks="3"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="1"
+							PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
 						/>
 					</FileConfiguration>
 				</File>
@@ -829,6 +986,26 @@
 							BrowseInformation="1"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
+							BasicRuntimeChecks="3"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="1"
+							PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="libpng\pngwio.c"
@@ -851,6 +1028,26 @@
 							PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
 							BasicRuntimeChecks="3"
 							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
+							BasicRuntimeChecks="3"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="1"
+							PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
 						/>
 					</FileConfiguration>
 				</File>
@@ -877,6 +1074,26 @@
 							BrowseInformation="1"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
+							BasicRuntimeChecks="3"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="1"
+							PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="libpng\pngwtran.c"
@@ -901,6 +1118,26 @@
 							BrowseInformation="1"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
+							BasicRuntimeChecks="3"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="1"
+							PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="libpng\pngwutil.c"
@@ -923,6 +1160,26 @@
 							PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
 							BasicRuntimeChecks="3"
 							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
+							BasicRuntimeChecks="3"
+							BrowseInformation="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="1"
+							PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_MBCS;_USRDLL;NO_GZIP;PNG_NO_STDIO;PNG_NO_CONSOLE_IO;$(NoInherit)"
 						/>
 					</FileConfiguration>
 				</File>

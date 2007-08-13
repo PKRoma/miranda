@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2006 Miranda ICQ/IM project, 
+Copyright 2000-2007 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -29,10 +29,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonprototypes.h"
 #include "modern_row.h"
 
-extern const ROWCELL * rowAddCell(pROWCELL*, int );
-extern void rowDeleteTree(pROWCELL cell);
-extern BOOL rowParse(pROWCELL*cell, ROWCELL* parent, char *tbuf, int *hbuf, int *sequence, ROWCELL* *RowTabAccess );
-extern void rowSizeWithReposition(pROWCELL* root, int width);
 
 void RefreshTree(HWND hwndDlg,HTREEITEM hti);
 static char* rowOptTmplStr;

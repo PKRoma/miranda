@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2006 Miranda ICQ/IM project, 
+Copyright 2000-2007 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -25,10 +25,8 @@ Created by Pescuma, modified by Artem Shpynov
 */
 #include "commonheaders.h"
 #include "rowheight_funcs.h"
+#include "commonprototypes.h"
 
-
-extern int CLCPaint_GetRealStatus(struct ClcContact * contact, int status);
-extern int CLCPaint_GetBasicFontID(struct ClcContact * contact);
 
 int g_mutex_nCalcRowHeightLock=0;
 int mod_CalcRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcContact *contact, int item);
@@ -47,8 +45,6 @@ void FreeRowCell ()
 	if (gl_RowRoot) 
 		cppDeleteTree(gl_RowRoot);
 }
-extern void CLCPaint_GetTextSize(SIZE *text_size, HDC hdcMem, RECT free_row_rc, TCHAR *szText, SortedList *plText, UINT uTextFormat, int smiley_height);
-extern HFONT CLCPaint_ChangeToFont(HDC hdc,struct ClcData *dat,int id,int *fontHeight);
 
 void RowHeight_InitModernRow()
 {
@@ -146,11 +142,11 @@ int mod_CalcRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcContact *
                 RECT count_rc={0};
                 // calc width and height
                 CLCPaint_ChangeToFont(hdc,dat,contact->group->expanded?FONTID_OPENGROUPCOUNTS:FONTID_CLOSEDGROUPCOUNTS,NULL);
-                SkinEngine_DrawText(hdc,_T(" "),1,&count_rc,DT_CALCRECT | DT_NOPREFIX);
+                ske_DrawText(hdc,_T(" "),1,&count_rc,DT_CALCRECT | DT_NOPREFIX);
                 size.cx +=count_rc.right-count_rc.left;
                 count_rc.right=0;
                 count_rc.left=0;
-                SkinEngine_DrawTextA(hdc,szCounts,lstrlenA(szCounts),&count_rc,DT_CALCRECT);
+                ske_DrawTextA(hdc,szCounts,lstrlenA(szCounts),&count_rc,DT_CALCRECT);
                 size.cx +=count_rc.right-count_rc.left;
                 tmp = max(tmp,count_rc.bottom-count_rc.top);
               }
@@ -264,7 +260,7 @@ int mod_CalcRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcContact *
           // Draw extra icons
 
           if (contact->type == CLCIT_CONTACT && 
-            (!contact->isSubcontact || DBGetContactSettingByte(NULL,"CLC","MetaHideExtra",0) == 0 && dat->extraColumnsCount > 0))
+            (!contact->isSubcontact || DBGetContactSettingByte(NULL,"CLC","MetaHideExtra",SETTING_METAHIDEEXTRA_DEFAULT) == 0 && dat->extraColumnsCount > 0))
           {
             BOOL hasExtra=FALSE;
             int k;
@@ -295,7 +291,7 @@ int mod_CalcRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcContact *
 	  case TC_EXTRA9:
 		  {
 			if (contact->type == CLCIT_CONTACT && 
-				(!contact->isSubcontact || DBGetContactSettingByte(NULL,"CLC","MetaHideExtra",0) == 0 && dat->extraColumnsCount > 0))
+				(!contact->isSubcontact || DBGetContactSettingByte(NULL,"CLC","MetaHideExtra",SETTING_METAHIDEEXTRA_DEFAULT) == 0 && dat->extraColumnsCount > 0))
 			{
 				int eNum=gl_RowTabAccess[i]->type-TC_EXTRA1;
 				if (eNum<dat->extraColumnsCount)
@@ -337,7 +333,7 @@ int mod_CalcRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcContact *
                 CLCPaint_ChangeToFont(hdc,dat,FONTID_CONTACT_TIME,NULL);
 
                 // Get text size
-                text_size.cy = SkinEngine_DrawText(hdc, szResult, lstrlen(szResult), &rc, DT_CALCRECT | DT_NOPREFIX | DT_SINGLELINE);
+                text_size.cy = ske_DrawText(hdc, szResult, lstrlen(szResult), &rc, DT_CALCRECT | DT_NOPREFIX | DT_SINGLELINE);
                 SelectObject(hdc,GetStockObject(DEFAULT_GUI_FONT));
 				mod_DeleteDC(hdc);
                 text_size.cx = rc.right - rc.left;
@@ -628,6 +624,8 @@ int RowHeights_GetRowHeight(struct ClcData *dat, HWND hwnd, struct ClcContact *c
     return res;
 }
 
+BOOL CLCPaint_IsForegroundWindow(HWND hWnd);
+BOOL CLCPaint_CheckMiniMode(struct ClcData *dat, BOOL selected, BOOL hot);
 int RowHeights_GetRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcContact *contact, int item)
 {
   int height = 0;
@@ -640,6 +638,9 @@ int RowHeights_GetRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcCon
     DWORD style=GetWindowLong(hwnd,GWL_STYLE);
     //TODO replace futher code with new rowheight definition
     int tmp;
+	BOOL selected=((item==dat->selection) && (dat->hwndRenameEdit!=NULL || dat->showSelAlways || dat->exStyle&CLS_EX_SHOWSELALWAYS || CLCPaint_IsForegroundWindow(hwnd)) && contact->type!=CLCIT_DIVIDER);
+	BOOL hottrack=((item==dat->iHotTrack) && (dat->hwndRenameEdit!=NULL || dat->showSelAlways || dat->exStyle&CLS_EX_SHOWSELALWAYS || CLCPaint_IsForegroundWindow(hwnd)) && contact->type!=CLCIT_DIVIDER);
+	BOOL minimalistic=(CLCPaint_CheckMiniMode(dat,selected,hottrack));
     if (!RowHeights_Alloc(dat, item + 1))
       return -1;
 
@@ -654,7 +655,8 @@ int RowHeights_GetRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcCon
           tmp = max(tmp, contact->iTextMaxSmileyHeight);
         }
         height += tmp;
-        if (dat->second_line_show && pdnce->szSecondLineText && pdnce->szSecondLineText[0])
+
+        if (!minimalistic && dat->second_line_show && pdnce->szSecondLineText && pdnce->szSecondLineText[0])
         {
           tmp = dat->fontModernInfo[FONTID_SECONDLINE].fontHeight;
           if (dat->text_replace_smileys && dat->second_line_draw_smileys && !dat->text_resize_smileys)
@@ -664,7 +666,7 @@ int RowHeights_GetRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcCon
           height += dat->second_line_top_space + tmp;
         }
 
-        if (dat->third_line_show && pdnce->szThirdLineText && pdnce->szThirdLineText[0])
+        if (!minimalistic && dat->third_line_show && pdnce->szThirdLineText && pdnce->szThirdLineText[0])
         {
           tmp = dat->fontModernInfo[FONTID_THIRDLINE].fontHeight;
           if (dat->text_replace_smileys && dat->third_line_draw_smileys && !dat->text_resize_smileys)
@@ -681,8 +683,7 @@ int RowHeights_GetRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcCon
         (
         (dat->use_avatar_service && contact->avatar_data != NULL) ||
         (!dat->use_avatar_service && contact->avatar_pos != AVATAR_POS_DONT_HAVE)
-        )
-        )
+        ) && !minimalistic )
       {
         height = max(height, dat->avatars_maxheight_size);
       }

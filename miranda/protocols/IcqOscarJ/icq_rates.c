@@ -306,13 +306,13 @@ typedef struct rate_delay_args_s
   void (*delaycode)();
 } rate_delay_args;
 
-void __cdecl rateDelayThread(rate_delay_args* pArgs)
+static DWORD __stdcall rateDelayThread(rate_delay_args* pArgs)
 {
   SleepEx(pArgs->nDelay, TRUE);
   pArgs->delaycode();
 
   SAFE_FREE(&pArgs);
-  return;
+  return 0;
 }
 
 
@@ -330,7 +330,7 @@ void InitDelay(int nDelay, void (*delaycode)())
   pArgs->nDelay = nDelay;
   pArgs->delaycode = delaycode;
 
-  forkthread(rateDelayThread, 0, pArgs);
+  ICQCreateThread(rateDelayThread, pArgs);
 }
 
 
@@ -346,7 +346,7 @@ static void RatesTimer1()
     LeaveCriticalSection(&ratesListsMutex);
     return;
   }
-
+  
   if (!icqOnline)
   {
     int i;
@@ -355,7 +355,7 @@ static void RatesTimer1()
     SAFE_FREE((void**)&pendingList1);
     pendingListSize1 = 0;
     LeaveCriticalSection(&ratesListsMutex);
-
+    
     return;
   }
   // take from queue, execute
@@ -469,7 +469,7 @@ static void RatesTimer2()
     LeaveCriticalSection(&ratesListsMutex);
     return;
   }
-
+  
   if (!icqOnline)
   {
     int i;
@@ -482,7 +482,7 @@ static void RatesTimer2()
     SAFE_FREE((void**)&pendingList2);
     pendingListSize2 = 0;
     LeaveCriticalSection(&ratesListsMutex);
-
+    
     return;
   }
   // take from queue, execute

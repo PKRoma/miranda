@@ -340,11 +340,8 @@ BOOL IsDirectConnectionOpen(HANDLE hContact, int type, int bPassive)
 // one of our incomming DC ports
 void icq_newConnectionReceived(HANDLE hNewConnection, DWORD dwRemoteIP, void *pExtra)
 {
-  pthread_t tid;
-
   // Start a new thread for the incomming connection
-  tid.hThread = (HANDLE)forkthreadex(NULL, 0, icq_directThread, CreateDTSI(NULL, hNewConnection, -1), 0, &tid.dwThreadId);
-  CloseHandle(tid.hThread);
+  ICQCreateThread(icq_directThread, CreateDTSI(NULL, hNewConnection, -1));
 }
 
 
@@ -352,15 +349,13 @@ void icq_newConnectionReceived(HANDLE hNewConnection, DWORD dwRemoteIP, void *pE
 // Opens direct connection of specified type to specified contact
 void OpenDirectConnection(HANDLE hContact, int type, void* pvExtra)
 {
-  pthread_t tid;
   directthreadstartinfo* dtsi;
 
   // Create a new connection
   dtsi = CreateDTSI(hContact, NULL, type);
   dtsi->pvExtra = pvExtra;
 
-  tid.hThread = (HANDLE)forkthreadex(NULL, 0, icq_directThread, dtsi, 0, &tid.dwThreadId);
-  CloseHandle(tid.hThread);
+  ICQCreateThread(icq_directThread, dtsi);
 }
 
 

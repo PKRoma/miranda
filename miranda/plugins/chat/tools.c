@@ -141,7 +141,7 @@ static int ShowPopup (HANDLE hContact, SESSION_INFO* si, HICON hIcon,  char* psz
 	if ( hIcon )
 		pd.lchIcon = hIcon ;
 	else
-		pd.lchIcon = LoadIconEx(IDI_CHANMGR, "window", 0, 0 );
+		pd.lchIcon = LoadIconEx( "window" );
 
 	mir_sntprintf(pd.lptzContactName, MAX_CONTACTNAME-1, _T(TCHAR_STR_PARAM) _T(" - %s"),
 		pszProtoName, CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR ));
@@ -832,6 +832,41 @@ BOOL DoEventHook(const TCHAR* pszID, const char* pszModule, int iType, const TCH
 	mir_free( gch.ptszUID );
 	mir_free( gch.ptszText );
 	return TRUE;
+}
+
+BOOL IsEventSupported(int eventType)
+{
+	switch (eventType)
+	{
+		// Supported events
+		case GC_EVENT_JOIN:
+		case GC_EVENT_PART:
+		case GC_EVENT_QUIT:
+		case GC_EVENT_KICK:
+		case GC_EVENT_NICK:
+		case GC_EVENT_NOTICE:
+		case GC_EVENT_MESSAGE:
+		case GC_EVENT_TOPIC:
+		case GC_EVENT_INFORMATION:
+		case GC_EVENT_ACTION:
+		case GC_EVENT_ADDSTATUS:
+		case GC_EVENT_REMOVESTATUS:
+		case GC_EVENT_CHUID:
+		case GC_EVENT_CHANGESESSIONAME:
+		case GC_EVENT_ADDGROUP:
+		case GC_EVENT_SETITEMDATA:
+		case GC_EVENT_GETITEMDATA:
+		case GC_EVENT_SETSBTEXT:
+		case GC_EVENT_ACK:
+		case GC_EVENT_SENDMESSAGE:
+		case GC_EVENT_SETSTATUSEX:
+		case GC_EVENT_CONTROL:
+		case GC_EVENT_SETCONTACTSTATUS:
+			return TRUE;
+	}
+
+	// Other events
+	return FALSE;
 }
 
 void ValidateFilename (char * filename)

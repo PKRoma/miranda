@@ -3,7 +3,26 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
-Project: "ICONS"=..\protocols\IcqOscarJ\icon_pack\ICONS.dsp - Package Owner=<4>
+Project: "FreeImage"=..\plugins\freeimage\FreeImage.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+    begin source code control
+    "$/Miranda/miranda/plugins/FreeImage", YWBAAAAA
+    ..\plugins\freeimage
+    end source code control
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name zlib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "GG"="..\protocols\Gadu-Gadu\Gadu-Gadu.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -15,7 +34,19 @@ Package=<4>
 
 ###############################################################################
 
-Project: "IRC"=..\protocols\IRC\IRC.dsp - Package Owner=<4>
+Project: "ICONS"=..\protocols\IcqOscarJ\icons_pack\ICONS.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "IRC"=..\protocols\IRCG\IRC.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -31,6 +62,10 @@ Project: "Yahoo"=..\protocols\Yahoo\Yahoo.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
+    begin source code control
+    "$/Miranda/miranda/protocols/Yahoo", TLIAAAAA
+    ..\protocols\yahoo
+    end source code control
 }}}
 
 Package=<4>
@@ -51,10 +86,30 @@ Package=<4>
 
 ###############################################################################
 
+Project: "avs"=..\plugins\avs\avs.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+    begin source code control
+    "$/Miranda/miranda/plugins/avs", WKIAAAAA
+    ..\plugins\avs
+    end source code control
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "chat"=..\plugins\chat\chat.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
+    begin source code control
+    "$/Miranda/miranda/plugins/chat", VONAAAAA
+    ..\plugins\chat
+    end source code control
 }}}
 
 Package=<4>
@@ -64,6 +119,22 @@ Package=<4>
 ###############################################################################
 
 Project: "clist"=..\plugins\clist\clist.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+    begin source code control
+    "$/Miranda/miranda/plugins/clist", SKIAAAAA
+    ..\plugins\clist
+    end source code control
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "clist_modern"=..\plugins\modernb\modernb.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -79,6 +150,10 @@ Project: "clist_nicer"=..\plugins\clist_nicer\clist.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
+    begin source code control
+    "$/Miranda/miranda/plugins/clist_nicer", JBOAAAAA
+    ..\plugins\clist_nicer
+    end source code control
 }}}
 
 Package=<4>
@@ -88,6 +163,38 @@ Package=<4>
 ###############################################################################
 
 Project: "db3x"=..\plugins\db3x\db3x.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+    begin source code control
+    "$/Miranda/miranda/plugins/db3x", WKIAAAAA
+    ..\plugins\db3x
+    end source code control
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "db3x_mmap"=..\plugins\db3x_mmap\db3x_mmap.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+    begin source code control
+    "$/Miranda/miranda/plugins/db3x_mmap", WKIAAAAA
+    ..\plugins\db3x_mmap
+    end source code control
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "dbrw"=..\plugins\dbrw\dbrw.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -103,6 +210,10 @@ Project: "dbtool"="..\..\miranda-tools\dbtool\dbtool.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
+    begin source code control
+    "$/Miranda/miranda-tools/dbtool", DIIAAAAA
+    ..\..\miranda-tools\dbtool
+    end source code control
 }}}
 
 Package=<4>
@@ -115,6 +226,10 @@ Project: "icqoscar8"=..\protocols\IcqOscarJ\icqoscar8.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
+    begin source code control
+    "$/Miranda/miranda/protocols/icqoscarj", QLIAAAAA
+    ..\protocols\icqoscarj
+    end source code control
 }}}
 
 Package=<4>
@@ -127,6 +242,10 @@ Project: "import"=..\plugins\import\import.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
+    begin source code control
+    "$/Miranda/miranda/plugins/import", BLIAAAAA
+    ..\plugins\import
+    end source code control
 }}}
 
 Package=<4>
@@ -139,10 +258,17 @@ Project: "jabberg"=..\protocols\JabberG\jabber.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
+    begin source code control
+    "$/Miranda/miranda/protocols/JabberG", NEOAAAAA
+    ..\protocols\jabberg
+    end source code control
 }}}
 
 Package=<4>
 {{{
+    Begin Project Dependency
+    Project_Dep_Name zlib
+    End Project Dependency
 }}}
 
 ###############################################################################
@@ -151,18 +277,10 @@ Project: "miranda32"=..\src\miranda32.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "modernb"=..\plugins\modernb\modernb.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
+    begin source code control
+    "$/Miranda/miranda", SHIAAAAA
+    ..
+    end source code control
 }}}
 
 Package=<4>
@@ -175,6 +293,10 @@ Project: "msn"=..\protocols\MSN\msn.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
+    begin source code control
+    "$/Miranda/miranda/protocols/msn", SLIAAAAA
+    ..\protocols\msn
+    end source code control
 }}}
 
 Package=<4>
@@ -187,6 +309,10 @@ Project: "mwclist"=..\plugins\mwclist\mwclist.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
+    begin source code control
+    "$/Miranda/miranda/plugins/mwclist", SLIAAAAA
+    ..\plugins\mwclist
+    end source code control
 }}}
 
 Package=<4>
@@ -195,10 +321,14 @@ Package=<4>
 
 ###############################################################################
 
-Project: "png2dib"=..\plugins\png2dib\png2dib.dsp - Package Owner=<4>
+Project: "scriver"=..\plugins\Scriver\scriver.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
+    begin source code control
+    "$/Miranda/miranda/plugins/Scriver", KCWAAAAA
+    ..\plugins\scriver
+    end source code control
 }}}
 
 Package=<4>
@@ -211,6 +341,10 @@ Project: "srmm"=..\plugins\srmm\srmm.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
+    begin source code control
+    "$/Miranda/miranda/plugins/srmm", ILIAAAAA
+    ..\plugins\srmm
+    end source code control
 }}}
 
 Package=<4>
@@ -223,6 +357,26 @@ Project: "tabSRMM"=..\plugins\tabsrmm\tabsrmm.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
+    begin source code control
+    "$/Miranda/miranda/plugins/tabsrmm", JLIAAAAA
+    ..\plugins\tabsrmm
+    end source code control
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "zlib"=..\plugins\zlib\zlib.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+    begin source code control
+    "$/Miranda/miranda/plugins/zlib", QWMAAAAA
+    ..\plugins\zlib
+    end source code control
 }}}
 
 Package=<4>
@@ -235,6 +389,10 @@ Global:
 
 Package=<5>
 {{{
+    begin source code control
+    "$/Miranda/miranda/bin", OWMAAAAA
+    .
+    end source code control
 }}}
 
 Package=<3>

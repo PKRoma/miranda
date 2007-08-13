@@ -150,7 +150,7 @@ char* __stdcall UniGetContactSettingUtf(HANDLE hContact, const char *szModule,co
 
   if (bUtfReadyDB)
   {
-    if (DBGetContactSettingStringUtf(hContact, szModule, szSetting, &dbv))
+    if (DBGetContactSettingUTF8String(hContact, szModule, szSetting, &dbv))
       return null_strdup(szDef);
     
     szRes = null_strdup(dbv.pszVal);
@@ -251,7 +251,7 @@ int __stdcall ICQWriteContactSettingString(HANDLE hContact, const char* szSettin
 int __stdcall UniWriteContactSettingUtf(HANDLE hContact, const char *szModule, const char* szSetting, char* szValue)
 {
   if (bUtfReadyDB)
-    return DBWriteContactSettingStringUtf(hContact, szModule, szSetting, szValue);
+    return DBWriteContactSettingUTF8String(hContact, szModule, szSetting, szValue);
   else
   { // old DB, we need to convert the string to Ansi
     int size = strlennull(szValue) + 2;

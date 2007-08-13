@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2006 Miranda ICQ/IM project,
+Copyright 2000-2007 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -23,34 +23,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _CLC_H_
 #define _CLC_H_
 #include "image_array.h"
+#include "m_api/m_xpTheme.h"
+
+#include "defsettings.h"
 
 
-#define SETTING_TOOLWINDOW_DEFAULT   1
-#define SETTING_SHOWMAINMENU_DEFAULT 1
-#define SETTING_SHOWCAPTION_DEFAULT  1
-#define SETTING_CLIENTDRAG_DEFAULT   1
-#define SETTING_ONTOP_DEFAULT        0
-#define SETTING_MIN2TRAY_DEFAULT     1
-#define SETTING_TRAY1CLICK_DEFAULT   0
-#define SETTING_HIDEOFFLINE_DEFAULT  0
-#define SETTING_HIDEEMPTYGROUPS_DEFAULT  0
-#define SETTING_USEGROUPS_DEFAULT    1
 
-#define SETTING_SORTBY1_DEFAULT      2
-#define SETTING_SORTBY2_DEFAULT      1
-#define SETTING_SORTBY3_DEFAULT      0
-
-#define SETTING_NOOFFLINEBOTTOM_DEFAULT 0
-
-#define SETTING_TRANSPARENT_DEFAULT  0
-#define SETTING_AUTOALPHA_DEFAULT    150
-#define SETTING_CONFIRMDELETE_DEFAULT 1
-#define SETTING_AUTOHIDE_DEFAULT     0
-#define SETTING_HIDETIME_DEFAULT     30
-#define SETTING_CYCLETIME_DEFAULT    4
-#define SETTING_TRAYICON_DEFAULT     SETTING_TRAYICON_SINGLE
-#define SETTING_ALWAYSSTATUS_DEFAULT 0
-#define SETTING_ALWAYSMULTI_DEFAULT  0
 
 #define SETTING_TRAYICON_SINGLE   0
 #define SETTING_TRAYICON_CYCLE    1
@@ -95,26 +73,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define INTM_AVATARCHANGED	(WM_USER+28)
 #define INTM_TIMEZONECHANGED	(WM_USER+29)
 
-#define CLCDEFAULT_EXSTYLE       (CLS_EX_EDITLABELS|CLS_EX_TRACKSELECT|CLS_EX_SHOWGROUPCOUNTS|CLS_EX_HIDECOUNTSWHENEMPTY|CLS_EX_TRACKSELECT|CLS_EX_NOTRANSLUCENTSEL)  //plus CLS_EX_NOSMOOTHSCROLL is got from the system
-#define CLCDEFAULT_SCROLLTIME    150
-#define CLCDEFAULT_GROUPINDENT   5
-#define CLCDEFAULT_BKCOLOUR      GetSysColor(COLOR_3DFACE)
-#define CLCDEFAULT_USEBITMAP     0
-#define CLCDEFAULT_BKBMPUSE      CLB_STRETCH
-#define CLCDEFAULT_OFFLINEMODES  MODEF_OFFLINE
-#define CLCDEFAULT_GREYOUTFLAGS  0
-#define CLCDEFAULT_FULLGREYOUTFLAGS  (MODEF_OFFLINE|PF2_INVISIBLE|GREYF_UNFOCUS)
-#define CLCDEFAULT_SELBKCOLOUR   GetSysColor(COLOR_HIGHLIGHT)
-#undef CLCDEFAULT_TEXTCOLOUR
-#undef CLCDEFAULT_SELTEXTCOLOUR
-#define CLCDEFAULT_TEXTCOLOUR    GetSysColor(COLOR_WINDOWTEXT)
-#define CLCDEFAULT_SELTEXTCOLOUR GetSysColor(COLOR_HIGHLIGHTTEXT)
-#define CLCDEFAULT_HOTTEXTCOLOUR (IsWinVer98Plus()?RGB(0,0,255):GetSysColor(COLOR_HOTLIGHT))
-#define CLCDEFAULT_QUICKSEARCHCOLOUR RGB(255,255,0)
-#define CLCDEFAULT_LEFTMARGIN    0
-#define CLCDEFAULT_RIGHTMARGIN   2
-#define CLCDEFAULT_GAMMACORRECT  1
-#define CLCDEFAULT_SHOWIDLE      0
+
 
 #define CLM_SETEXTRACOLUMNSSPACE   (CLM_FIRST+73)   //wParam=extra space between icons
 
@@ -125,8 +84,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define TIMERID_INFOTIP        13
 #define TIMERID_REBUILDAFTER   14
 #define TIMERID_DELAYEDRESORTCLC   15
-#define TIMERID_TRAYHOVER      16
-#define TIMERID_TRAYHOVER_2    17
 #define TIMERID_SUBEXPAND		21
 #define TIMERID_INVALIDATE 22
 
@@ -154,8 +111,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define FONTID_CLOSEDGROUPS 19
 #define FONTID_CLOSEDGROUPCOUNTS 20
 #define FONTID_STATUSBAR_PROTONAME 21
-#define FONTID_EVENTAREA 22
-#define FONTID_MODERN_MAX 22
+#define FONTID_EVENTAREA	22
+#define FONTID_VIEMODES		23
+#define FONTID_MODERN_MAX 23
 
 #define DROPTARGET_OUTSIDE    0
 #define DROPTARGET_ONSELF     1
@@ -177,6 +135,7 @@ struct ClcGroup;
 //#define CONTACTF_STATUSMSG 64
 
 #define AVATAR_POS_DONT_HAVE -1
+#define AVATAR_POS_ANIMATED -2
 
 #define TEXT_PIECE_TYPE_TEXT   0
 #define TEXT_PIECE_TYPE_SMILEY 1
@@ -237,6 +196,23 @@ typedef struct tagClcContactTextPiece
 	};
 } ClcContactTextPiece;
 
+#define CIT_PAINT_END	0  //next items are invalids
+#define CIT_AVATAR		1
+#define CIT_ICON		2
+#define CIT_TEXT		3  //the contact name or group name
+#define CIT_SUBTEXT1	4  //the second line for contact or group counter for groups
+#define CIT_SUBTEXT2	5
+#define CIT_TIME		6
+#define CIT_CHECKBOX	7
+#define CIT_SELECTION	8
+#define CIT_EXTRA		64 //use bit compare for extra icon, the mask &0x3F will return number of extra icon
+
+
+typedef struct _tagContactItems
+{
+	BYTE itemType;	   //one of above CIT_ definitions
+	RECT itemRect;
+}tContactItems;
 
 struct ClcContact {
 	BYTE type;
@@ -261,22 +237,11 @@ struct ClcContact {
 	BYTE isSubcontact;
 //	int status;
 	BOOL image_is_special;
-	union
-	{
-		int avatar_pos;
-		struct avatarCacheEntry *avatar_data;
-	};
-
+	int avatar_pos;
+	struct avatarCacheEntry *avatar_data;
+	SIZE avatar_size;
 	SortedList *plText;						// List of ClcContactTextPiece
-	//TCHAR *szSecondLineText;//[120-MAXEXTRACOLUMNS];
-	//SortedList *plSecondLineText;				// List of ClcContactTextPiece
-	//TCHAR *szThirdLineText;//[120-MAXEXTRACOLUMNS];
-	//SortedList *plThirdLineText;				// List of ClcContactTextPiece
     int iTextMaxSmileyHeight;
-	//int iThirdLineMaxSmileyHeight;
-    //int iSecondLineMaxSmileyHeight;
-    //DWORD timezone;
-    //DWORD timediff;
 
 	// For hittest
 	int pos_indent;
@@ -288,6 +253,12 @@ struct ClcContact {
 	RECT pos_contact_time;
 	RECT pos_extra[MAXEXTRACOLUMNS];
     DWORD lastPaintCounter;
+    BYTE bContactRate;
+
+	// For extended layout
+	BYTE ext_nItemsNum;
+	BOOL ext_fItemsValid;
+	tContactItems ext_mpItemsDesc[MAXEXTRACOLUMNS+10];  //up to 10 items
 };
 
 
@@ -443,6 +414,13 @@ struct ClcData {
     BYTE useMetaIcon;
     BYTE drawOverlayedStatus;
     int nInsertionLevel;
+
+	BYTE dbbMetaHideExtra;
+	BYTE dbbBlendInActiveState;
+	BYTE dbbBlend25;
+
+	XPTHANDLE hCheckBoxTheme;
+	BYTE bCompactMode;
 };
 
 struct SHORTDATA
@@ -551,9 +529,6 @@ void    GetFontSetting(int i,LOGFONTA *lf,COLORREF *colour,BYTE *effect, COLORRE
 
 //clistsettings.c
 TCHAR * GetContactDisplayNameW( HANDLE hContact, int mode );
-char*   u2a( wchar_t* src );
-wchar_t* a2u( char* src );
-
 
 //groups.c
 TCHAR*  GetGroupNameTS( int idx, DWORD* pdwFlags );
@@ -563,7 +538,5 @@ int     GetContactCachedStatus(HANDLE hContact);
 char   *GetContactCachedProtocol(HANDLE hContact);
 
 ExternDrawer SED;
-extern void (*saveSortCLC) (HWND hwnd, struct ClcData *dat, int useInsertionSort );
-extern HICON listening_to_icon;
 
 #endif _CLC_H_

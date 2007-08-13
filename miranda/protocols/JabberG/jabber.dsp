@@ -140,7 +140,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib version.lib /nologo /base:"0x32500000" /dll /incremental:no /map /debug /machine:I386 /out:"../../bin/debug/plugins/jabber.dll" /pdbtype:sept
 # SUBTRACT BASE LINK32 /pdb:none
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib version.lib comctl32.lib /nologo /base:"0x32500000" /dll /map /debug /machine:I386 /out:"../../bin/debug/plugins/jabber.dll" /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib version.lib comctl32.lib /nologo /base:"0x32500000" /dll /map /debug /machine:I386 /out:"../../bin/debug unicode/plugins/jabber.dll" /pdbtype:sept
 # SUBTRACT LINK32 /pdb:none /incremental:no
 
 !ENDIF 
@@ -161,12 +161,16 @@ SOURCE=.\jabber.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\jabber_adhoc.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\jabber_agent.cpp
 # ADD CPP /Yu
 # End Source File
 # Begin Source File
 
-SOURCE=.\jabber_bitmap.cpp
+SOURCE=.\jabber_bookmarks.cpp
 # End Source File
 # Begin Source File
 
@@ -175,7 +179,19 @@ SOURCE=.\jabber_byte.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\jabber_caps.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\jabber_chat.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\jabber_console.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\jabber_disco.cpp
 # End Source File
 # Begin Source File
 
@@ -199,12 +215,24 @@ SOURCE=.\jabber_groupchat.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\jabber_ibb.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\jabber_opttree.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\jabber_icolib.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_iq.cpp
 # ADD CPP /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\jabber_iq_handlers.cpp
 # End Source File
 # Begin Source File
 
@@ -247,8 +275,20 @@ SOURCE=.\jabber_password.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\jabber_privacy.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\jabber_proxy.cpp
 # ADD CPP /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\jabber_rc.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\jabber_search.cpp
 # End Source File
 # Begin Source File
 
@@ -272,6 +312,10 @@ SOURCE=.\jabber_svc.cpp
 
 SOURCE=.\jabber_thread.cpp
 # ADD CPP /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\jabber_treelist.cpp
 # End Source File
 # Begin Source File
 
@@ -305,12 +349,11 @@ SOURCE=.\jabber_xmlns.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\md5c.cpp
+SOURCE=.\jabber_xstatus.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\sha1.cpp
-# SUBTRACT CPP /YX /Yc /Yu
+SOURCE=.\jabber_zstream.cpp
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -326,7 +369,23 @@ SOURCE=.\jabber_byte.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\jabber_caps.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\jabber_disco.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\jabber_ibb.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\jabber_iq.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\jabber_iq_handlers.h
 # End Source File
 # Begin Source File
 
@@ -334,7 +393,23 @@ SOURCE=.\jabber_list.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\jabber_privacy.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\jabber_proxy.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\jabber_rc.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\jabber_opttree.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\jabber_search.h
 # End Source File
 # Begin Source File
 
@@ -352,25 +427,33 @@ SOURCE=.\jabber_xml.h
 
 SOURCE=.\jabber_xmlns.h
 # End Source File
-# Begin Source File
-
-SOURCE=.\md5.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\sha1.h
-# End Source File
 # End Group
 # Begin Group "Resource Files"
 
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # Begin Source File
 
+SOURCE=.\icos\add2roster.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\icos\addcontact.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\icos\auth_revoke.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\icos\block.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\bookmarks.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\command.ico
 # End Source File
 # Begin Source File
 
@@ -394,6 +477,10 @@ SOURCE=.\icos\key.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\icos\login.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\msvc6.rc
 # End Source File
 # Begin Source File
@@ -406,6 +493,10 @@ SOURCE=.\icos\pages.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\icos\refresh.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\icos\rename.ico
 # End Source File
 # Begin Source File
@@ -414,7 +505,15 @@ SOURCE=.\icos\request.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\icos\roster.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\icos\save.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\user2room.ico
 # End Source File
 # Begin Source File
 

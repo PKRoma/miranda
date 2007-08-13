@@ -103,8 +103,16 @@ typedef struct tagCLISTFrame {
 	int align; //al flags below
 	int height;
 	int Flags; //F_flags below
-	char *name; //frame window name,will be shown in menu
-	char *TBname; //titlebar caption
+	union {
+		char *name; //frame window name indentifier (DO NOT TRANSLATE)
+		wchar_t *wname;
+		LPTSTR tname;
+	};
+	union {
+		char *TBname; //titlebar & menu caption
+		wchar_t *TBwname;
+		LPTSTR TBtname;
+	};
 	//COLORREF TBBackColour; //titlebar background colour
 } CLISTFrame;
 #define F_VISIBLE			1 //Frame visible
@@ -113,7 +121,12 @@ typedef struct tagCLISTFrame {
 #define F_LOCKED			8 //Lock Frame
 #define F_NOBORDER			16 //Dont apply WS_BORDER style for window
 #define F_SHOWTBTIP			32 //Show titlebar tooltip
-
+#define F_UNICODE			32768 //Use unicode text
+#ifdef _UNICODE
+# define F_TCHAR			F_UNICODE
+#else
+# define F_TCHAR			0
+#endif
 
 // frame alignment
 #define alTop		0x00000001
@@ -195,6 +208,13 @@ typedef struct tagCLISTFrame {
 #define FO_ALIGN		0x0008 //Change align
 #define FO_TBTIPNAME	0x0009 //Change TB tooltip
 #define FO_FLOATING		0x000a //Change floating mode
+
+#define FO_UNICODETEXT	0x8000 // flag for	FO_NAME,FO_TBNAME, FO_TBTIPNAME set/get lPAram as unicode wchar_t
+#ifdef _UNICODE
+	#define FO_TCHAR FO_UNICODETEXT
+#else
+	#define FO_TCHAR 0x0000
+#endif
 
 #define MS_CLIST_FRAMES_GETFRAMEOPTIONS			"CListFrame/GetFrameOptions"
 

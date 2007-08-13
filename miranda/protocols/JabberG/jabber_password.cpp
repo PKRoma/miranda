@@ -2,7 +2,7 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-06  George Hazan
+Copyright ( C ) 2005-07  George Hazan
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -28,6 +28,7 @@ Last change by : $Author$
 #include "jabber.h"
 #include "jabber_iq.h"
 #include "resource.h"
+#include "jabber_caps.h"
 
 static BOOL CALLBACK JabberChangePasswordDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
 
@@ -46,7 +47,7 @@ static BOOL CALLBACK JabberChangePasswordDlgProc( HWND hwndDlg, UINT msg, WPARAM
 {
 	switch ( msg ) {
 	case WM_INITDIALOG:
-		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )LoadIcon( hInst, MAKEINTRESOURCE( IDI_KEYS )) );
+		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )LoadIconEx( "key" ));
 		TranslateDialogDefault( hwndDlg );
 		if ( jabberOnline && jabberThreadInfo!=NULL ) {
 			TCHAR text[128];
@@ -76,7 +77,7 @@ static BOOL CALLBACK JabberChangePasswordDlgProc( HWND hwndDlg, UINT msg, WPARAM
 				JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultSetPassword );
 
 				XmlNodeIq iq( "set", iqId, jabberThreadInfo->server );
-				XmlNode* q = iq.addQuery( "jabber:iq:register" );
+				XmlNode* q = iq.addQuery( JABBER_FEAT_REGISTER );
 				q->addChild( "username", jabberThreadInfo->username );
 				q->addChild( "password", newPasswd );
 				jabberThreadInfo->send( iq );

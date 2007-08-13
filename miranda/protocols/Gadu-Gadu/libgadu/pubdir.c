@@ -1,8 +1,10 @@
+/* coding: UTF-8 */
 /* $Id$ */
 
 /*
- *  (C) Copyright 2001-2002 Wojtek Kaniewski <wojtekka@irc.pl>
+ *  (C) Copyright 2001-2006 Wojtek Kaniewski <wojtekka@irc.pl>
  *                          Dawid Jarosz <dawjar@poczta.onet.pl>
+ *                          Adam Wysocki <gophi@ekg.chmurka.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU Lesser General Public License Version
@@ -19,6 +21,14 @@
  *  USA.
  */
 
+/**
+ * \file pubdir.c
+ *
+ * \brief ObsÅ‚uga katalogu publicznego
+ */
+
+#include "libgadu-config.h"
+
 #include <ctype.h>
 #include <errno.h>
 #include <stdarg.h>
@@ -28,26 +38,28 @@
 #include <unistd.h>
 
 #include "libgadu.h"
-#define random(x) rand(x)
+#ifdef GG_CONFIG_MIRANDA
+#define random() rand()
+#endif
 
-/*
- * gg_register3()
+/**
+ * Rejestruje nowego uÅ¼ytkownika.
  *
- * rozpoczyna rejestracjê u¿ytkownika protoko³em GG 6.0. wymaga wcze¶niejszego
- * pobrania tokenu za pomoc± funkcji gg_token().
+ * Wymaga wczeÅ›niejszego pobrania tokenu za pomocÄ… \c gg_token.
  *
- *  - email - adres e-mail klienta
- *  - password - has³o klienta
- *  - tokenid - identyfikator tokenu
- *  - tokenval - warto¶æ tokenu
- *  - async - po³±czenie asynchroniczne
+ * \param email Adres e-mail
+ * \param password HasÅ‚o
+ * \param tokenid Identyfikator tokenu
+ * \param tokenval ZawartoÅ›Ä‡ tokenu
+ * \param async Flaga poÅ‚Ä…czenia asynchronicznego
  *
- * zaalokowana struct gg_http, któr± po¼niej nale¿y zwolniæ
- * funkcj± gg_register_free(), albo NULL je¶li wyst±pi³ b³±d.
+ * \return Struktura \c gg_http lub \c NULL w przypadku bÅ‚Ä™du
+ *
+ * \ingroup register
  */
 struct gg_http *gg_register3(const char *email, const char *password, const char *tokenid, const char *tokenval, int async)
 {
-        struct gg_http *h;
+	struct gg_http *h;
 	char *__pwd, *__email, *__tokenid, *__tokenval, *form, *query;
 
 	if (!email || !password || !tokenid || !tokenval) {
@@ -106,7 +118,7 @@ struct gg_http *gg_register3(const char *email, const char *password, const char
 	if (!(h = gg_http_connect(GG_REGISTER_HOST, GG_REGISTER_PORT, async, "POST", "/appsvc/fmregister3.asp", query))) {
 		gg_debug(GG_DEBUG_MISC, "=> register, gg_http_connect() failed mysteriously\n");
 		free(query);
-                return NULL;
+		return NULL;
 	}
 
 	h->type = GG_SESSION_REGISTER;
@@ -122,19 +134,59 @@ struct gg_http *gg_register3(const char *email, const char *password, const char
 	return h;
 }
 
-/*
- * gg_unregister3()
+#ifdef DOXYGEN
+
+/**
+ * Funkcja wywoÅ‚ywana po zaobserwowaniu zmian na deskryptorze poÅ‚Ä…czenia.
  *
- * usuwa konto u¿ytkownika z serwera protoko³em GG 6.0
+ * Operacja bÄ™dzie zakoÅ„czona, gdy pole \c state bÄ™dzie rÃ³wne \c GG_STATE_DONE.
+ * JeÅ›li wystÄ…pi bÅ‚Ä…d, \c state bÄ™dzie rÃ³wne \c GG_STATE_ERROR, a kod bÅ‚Ä™du
+ * znajdzie siÄ™ w polu \c error.
  *
- *  - uin - numerek GG
- *  - password - has³o klienta
- *  - tokenid - identyfikator tokenu
- *  - tokenval - warto¶æ tokenu
- *  - async - po³±czenie asynchroniczne
+ * \note W rzeczywistoÅ›ci funkcja jest makrem rozwijanym do
+ * \c gg_pubdir_watch_fd.
  *
- * zaalokowana struct gg_http, któr± po¼niej nale¿y zwolniæ
- * funkcj± gg_unregister_free(), albo NULL je¶li wyst±pi³ b³±d.
+ * \param h Struktura poÅ‚Ä…czenia
+ *
+ * \return 0 jeÅ›li siÄ™ powiodÅ‚o, -1 w przypadku bÅ‚Ä™du
+ *
+ * \ingroup register
+ */
+int gg_register_watch_fd(struct gg_httpd *h)
+{
+	return gg_pubdir_watch_fd(h);
+}
+
+/**
+ * Zwalnia zasoby po operacji.
+ *
+ * \note W rzeczywistoÅ›ci funkcja jest makrem rozwijanym do \c gg_pubdir_free.
+ *
+ * \param h Struktura poÅ‚Ä…czenia
+ *
+ * \ingroup register
+ */
+void gg_register_free(struct gg_http *h)
+{
+	return gg_pubdir_free(h);
+}
+
+#endif /* DOXYGEN */
+
+/**
+ * Usuwa uÅ¼ytkownika.
+ *
+ * Wymaga wczeÅ›niejszego pobrania tokenu za pomocÄ… \c gg_token.
+ *
+ * \param uin Numer Gadu-Gadu
+ * \param password HasÅ‚o
+ * \param tokenid Identyfikator tokenu
+ * \param tokenval ZawartoÅ›Ä‡ tokenu
+ * \param async Flaga poÅ‚Ä…czenia asynchronicznego
+ *
+ * \return Struktura \c gg_http lub \c NULL w przypadku bÅ‚Ä™du
+ *
+ * \ingroup unregister
  */
 struct gg_http *gg_unregister3(uin_t uin, const char *password, const char *tokenid, const char *tokenval, int async)
 {
@@ -211,22 +263,61 @@ struct gg_http *gg_unregister3(uin_t uin, const char *password, const char *toke
 	return h;
 }
 
-/*
- * gg_change_passwd4()
+#ifdef DOXYGEN
+
+/**
+ * Funkcja wywoÅ‚ywana po zaobserwowaniu zmian na deskryptorze poÅ‚Ä…czenia.
  *
- * wysy³a ¿±danie zmiany has³a zgodnie z protoko³em GG 6.0. wymaga
- * wcze¶niejszego pobrania tokenu za pomoc± funkcji gg_token().
+ * Operacja bÄ™dzie zakoÅ„czona, gdy pole \c state bÄ™dzie rÃ³wne \c GG_STATE_DONE.
+ * JeÅ›li wystÄ…pi bÅ‚Ä…d, \c state bÄ™dzie rÃ³wne \c GG_STATE_ERROR, a kod bÅ‚Ä™du
+ * znajdzie siÄ™ w polu \c error.
  *
- *  - uin - numer
- *  - email - adres e-mail
- *  - passwd - stare has³o
- *  - newpasswd - nowe has³o
- *  - tokenid - identyfikator tokenu
- *  - tokenval - warto¶æ tokenu
- *  - async - po³±czenie asynchroniczne
+ * \note W rzeczywistoÅ›ci funkcja jest makrem rozwijanym do
+ * \c gg_pubdir_watch_fd.
  *
- * zaalokowana struct gg_http, któr± po¼niej nale¿y zwolniæ
- * funkcj± gg_change_passwd_free(), albo NULL je¶li wyst±pi³ b³±d.
+ * \param h Struktura poÅ‚Ä…czenia
+ *
+ * \return 0 jeÅ›li siÄ™ powiodÅ‚o, -1 w przypadku bÅ‚Ä™du
+ *
+ * \ingroup unregister
+ */
+int gg_unregister_watch_fd(struct gg_httpd *h)
+{
+	return gg_pubdir_watch_fd(h);
+}
+
+/**
+ * Zwalnia zasoby po operacji.
+ *
+ * \note W rzeczywistoÅ›ci funkcja jest makrem rozwijanym do \c gg_pubdir_free.
+ *
+ * \param h Struktura poÅ‚Ä…czenia
+ *
+ * \ingroup unregister
+ */
+void gg_unregister_free(struct gg_http *h)
+{
+	return gg_pubdir_free(h);
+}
+
+#endif /* DOXYGEN */
+
+/**
+ * Zmienia hasÅ‚o uÅ¼ytkownika.
+ *
+ * Wymaga wczeÅ›niejszego pobrania tokenu za pomocÄ… \c gg_token.
+ *
+ * \param uin Numer Gadu-Gadu
+ * \param email Adres e-mail
+ * \param passwd Obecne hasÅ‚o
+ * \param newpasswd Nowe hasÅ‚o
+ * \param tokenid Identyfikator tokenu
+ * \param tokenval ZawartoÅ›Ä‡ tokenu
+ * \param async Flaga poÅ‚Ä…czenia asynchronicznego
+ *
+ * \return Struktura \c gg_http lub \c NULL w przypadku bÅ‚Ä™du
+ *
+ * \ingroup passwd
  */
 struct gg_http *gg_change_passwd4(uin_t uin, const char *email, const char *passwd, const char *newpasswd, const char *tokenid, const char *tokenval, int async)
 {
@@ -274,15 +365,15 @@ struct gg_http *gg_change_passwd4(uin_t uin, const char *email, const char *pass
 	
 	gg_debug(GG_DEBUG_MISC, "=> change, %s\n", form);
 
-        query = gg_saprintf(
+	query = gg_saprintf(
 		"Host: " GG_REGISTER_HOST "\r\n"
-                "Content-Type: application/x-www-form-urlencoded\r\n"
-                "User-Agent: " GG_HTTP_USERAGENT "\r\n"
-                "Content-Length: %d\r\n"
-                "Pragma: no-cache\r\n"
-                "\r\n"
-                "%s",
-                (int) strlen(form), form);
+		"Content-Type: application/x-www-form-urlencoded\r\n"
+		"User-Agent: " GG_HTTP_USERAGENT "\r\n"
+		"Content-Length: %d\r\n"
+		"Pragma: no-cache\r\n"
+		"\r\n"
+		"%s",
+		(int) strlen(form), form);
 
 	free(form);
 
@@ -293,7 +384,7 @@ struct gg_http *gg_change_passwd4(uin_t uin, const char *email, const char *pass
 
 	if (!(h = gg_http_connect(GG_REGISTER_HOST, GG_REGISTER_PORT, async, "POST", "/appsvc/fmregister3.asp", query))) {
 		gg_debug(GG_DEBUG_MISC, "=> change, gg_http_connect() failed mysteriously\n");
-                free(query);
+		free(query);
 		return NULL;
 	}
 
@@ -310,19 +401,59 @@ struct gg_http *gg_change_passwd4(uin_t uin, const char *email, const char *pass
 	return h;
 }
 
-/*
- * gg_remind_passwd3()
+#ifdef DOXYGEN
+
+/**
+ * Funkcja wywoÅ‚ywana po zaobserwowaniu zmian na deskryptorze poÅ‚Ä…czenia.
  *
- * wysy³a ¿±danie przypomnienia has³a e-mailem.
+ * Operacja bÄ™dzie zakoÅ„czona, gdy pole \c state bÄ™dzie rÃ³wne \c GG_STATE_DONE.
+ * JeÅ›li wystÄ…pi bÅ‚Ä…d, \c state bÄ™dzie rÃ³wne \c GG_STATE_ERROR, a kod bÅ‚Ä™du
+ * znajdzie siÄ™ w polu \c error.
  *
- *  - uin - numer
- *  - email - adres e-mail taki, jak ten zapisany na serwerze
- *  - async - po³±czenie asynchroniczne
- *  - tokenid - identyfikator tokenu
- *  - tokenval - warto¶æ tokenu
+ * \note W rzeczywistoÅ›ci funkcja jest makrem rozwijanym do
+ * \c gg_pubdir_watch_fd.
  *
- * zaalokowana struct gg_http, któr± po¼niej nale¿y zwolniæ
- * funkcj± gg_remind_passwd_free(), albo NULL je¶li wyst±pi³ b³±d.
+ * \param h Struktura poÅ‚Ä…czenia
+ *
+ * \return 0 jeÅ›li siÄ™ powiodÅ‚o, -1 w przypadku bÅ‚Ä™du
+ *
+ * \ingroup passwd
+ */
+int gg_change_passwd_watch_fd(struct gg_httpd *h)
+{
+	return gg_pubdir_watch_fd(h);
+}
+
+/**
+ * Zwalnia zasoby po operacji.
+ *
+ * \note W rzeczywistoÅ›ci funkcja jest makrem rozwijanym do \c gg_pubdir_free.
+ *
+ * \param h Struktura poÅ‚Ä…czenia
+ *
+ * \ingroup passwd
+ */
+void gg_change_passwd_free(struct gg_http *h)
+{
+	return gg_pubdir_free(h);
+}
+
+#endif /* DOXYGEN */
+
+/**
+ * WysyÅ‚a hasÅ‚o uÅ¼ytkownika na e-mail.
+ *
+ * Wymaga wczeÅ›niejszego pobrania tokenu za pomocÄ… \c gg_token.
+ *
+ * \param uin Numer Gadu-Gadu
+ * \param email Adres e-mail (podany przy rejestracji)
+ * \param tokenid Identyfikator tokenu
+ * \param tokenval ZawartoÅ›Ä‡ tokenu
+ * \param async Flaga poÅ‚Ä…czenia asynchronicznego
+ *
+ * \return Struktura \c gg_http lub \c NULL w przypadku bÅ‚Ä™du
+ *
+ * \ingroup remind
  */
 struct gg_http *gg_remind_passwd3(uin_t uin, const char *email, const char *tokenid, const char *tokenval, int async)
 {
@@ -361,15 +492,15 @@ struct gg_http *gg_remind_passwd3(uin_t uin, const char *email, const char *toke
 	
 	gg_debug(GG_DEBUG_MISC, "=> remind, %s\n", form);
 
-        query = gg_saprintf(
+	query = gg_saprintf(
 		"Host: " GG_REMIND_HOST "\r\n"
-                "Content-Type: application/x-www-form-urlencoded\r\n"
-                "User-Agent: " GG_HTTP_USERAGENT "\r\n"
-                "Content-Length: %d\r\n"
-                "Pragma: no-cache\r\n"
-                "\r\n"
-                "%s",
-                (int) strlen(form), form);
+		"Content-Type: application/x-www-form-urlencoded\r\n"
+		"User-Agent: " GG_HTTP_USERAGENT "\r\n"
+		"Content-Length: %d\r\n"
+		"Pragma: no-cache\r\n"
+		"\r\n"
+		"%s",
+		(int) strlen(form), form);
 
 	free(form);
 
@@ -380,7 +511,7 @@ struct gg_http *gg_remind_passwd3(uin_t uin, const char *email, const char *toke
 
 	if (!(h = gg_http_connect(GG_REMIND_HOST, GG_REMIND_PORT, async, "POST", "/appsvc/fmsendpwd3.asp", query))) {
 		gg_debug(GG_DEBUG_MISC, "=> remind, gg_http_connect() failed mysteriously\n");
-                free(query);
+		free(query);
 		return NULL;
 	}
 
@@ -397,17 +528,55 @@ struct gg_http *gg_remind_passwd3(uin_t uin, const char *email, const char *toke
 	return h;
 }
 
-/*
- * gg_pubdir_watch_fd()
+#ifdef DOXYGEN
+
+/**
+ * Funkcja wywoÅ‚ywana po zaobserwowaniu zmian na deskryptorze poÅ‚Ä…czenia.
  *
- * przy asynchronicznych operacjach na katalogu publicznym nale¿y wywo³ywaæ
- * tê funkcjê przy zmianach na obserwowanym deskryptorze.
+ * Operacja bÄ™dzie zakoÅ„czona, gdy pole \c state bÄ™dzie rÃ³wne \c GG_STATE_DONE.
+ * JeÅ›li wystÄ…pi bÅ‚Ä…d, \c state bÄ™dzie rÃ³wne \c GG_STATE_ERROR, a kod bÅ‚Ä™du
+ * znajdzie siÄ™ w polu \c error.
  *
- *  - h - struktura opisuj±ca po³±czenie
+ * \note W rzeczywistoÅ›ci funkcja jest makrem rozwijanym do
+ * \c gg_pubdir_watch_fd.
  *
- * je¶li wszystko posz³o dobrze to 0, inaczej -1. operacja bêdzie
- * zakoñczona, je¶li h->state == GG_STATE_DONE. je¶li wyst±pi jaki¶
- * b³±d, to bêdzie tam GG_STATE_ERROR i odpowiedni kod b³êdu w h->error.
+ * \param h Struktura poÅ‚Ä…czenia
+ *
+ * \return 0 jeÅ›li siÄ™ powiodÅ‚o, -1 w przypadku bÅ‚Ä™du
+ *
+ * \ingroup remind
+ */
+int gg_remind_watch_fd(struct gg_httpd *h)
+{
+	return gg_pubdir_watch_fd(h);
+}
+
+/**
+ * Zwalnia zasoby po operacji.
+ *
+ * \note W rzeczywistoÅ›ci funkcja jest makrem rozwijanym do \c gg_pubdir_free.
+ *
+ * \param h Struktura poÅ‚Ä…czenia
+ *
+ * \ingroup remind
+ */
+void gg_remind_free(struct gg_http *h)
+{
+	return gg_pubdir_free(h);
+}
+
+#endif /* DOXYGEN */
+
+/**
+ * Funkcja wywoÅ‚ywana po zaobserwowaniu zmian na deskryptorze poÅ‚Ä…czenia.
+ *
+ * Operacja bÄ™dzie zakoÅ„czona, gdy pole \c state bÄ™dzie rÃ³wne \c GG_STATE_DONE.
+ * JeÅ›li wystÄ…pi bÅ‚Ä…d, \c state bÄ™dzie rÃ³wne \c GG_STATE_ERROR, a kod bÅ‚Ä™du
+ * znajdzie siÄ™ w polu \c error.
+ *
+ * \param h Struktura poÅ‚Ä…czenia
+ *
+ * \return 0 jeÅ›li siÄ™ powiodÅ‚o, -1 w przypadku bÅ‚Ä™du
  */
 int gg_pubdir_watch_fd(struct gg_http *h)
 {
@@ -419,35 +588,40 @@ int gg_pubdir_watch_fd(struct gg_http *h)
 		return -1;
 	}
 
-        if (h->state == GG_STATE_ERROR) {
-                gg_debug(GG_DEBUG_MISC, "=> pubdir, watch_fd issued on failed session\n");
-                errno = EINVAL;
-                return -1;
-        }
+	if (h->state == GG_STATE_ERROR) {
+		gg_debug(GG_DEBUG_MISC, "=> pubdir, watch_fd issued on failed session\n");
+		errno = EINVAL;
+		return -1;
+	}
 	
 	if (h->state != GG_STATE_PARSING) {
 		if (gg_http_watch_fd(h) == -1) {
 			gg_debug(GG_DEBUG_MISC, "=> pubdir, http failure\n");
-                        errno = EINVAL;
+			errno = EINVAL;
 			return -1;
 		}
 	}
 
 	if (h->state != GG_STATE_PARSING)
-                return 0;
+		return 0;
 	
-        h->state = GG_STATE_DONE;
+	h->state = GG_STATE_DONE;
 	
 	if (!(h->data = p = malloc(sizeof(struct gg_pubdir)))) {
 		gg_debug(GG_DEBUG_MISC, "=> pubdir, not enough memory for results\n");
 		return -1;
 	}
+
 	p->success = 0;
 	p->uin = 0;
 	
 	gg_debug(GG_DEBUG_MISC, "=> pubdir, let's parse \"%s\"\n", h->body);
 
-	if ((tmp = strstr(h->body, "success")) || (tmp = strstr(h->body, "results"))) {
+	if ((tmp = strstr(h->body, "Tokens okregisterreply_packet.reg.dwUserId="))) {
+		p->success = 1;
+		p->uin = strtol(tmp + sizeof("Tokens okregisterreply_packet.reg.dwUserId=") - 1, NULL, 0);
+		gg_debug(GG_DEBUG_MISC, "=> pubdir, success (okregisterreply, uin=%d)\n", p->uin);
+	} else if ((tmp = strstr(h->body, "success")) || (tmp = strstr(h->body, "results"))) {
 		p->success = 1;
 		if (tmp[7] == ':')
 			p->uin = strtol(tmp + 8, NULL, 0);
@@ -458,12 +632,10 @@ int gg_pubdir_watch_fd(struct gg_http *h)
 	return 0;
 }
 
-/*
- * gg_pubdir_free()
+/**
+ * Zwalnia zasoby po operacji na katalogu publicznym.
  *
- * zwalnia pamiêæ po efektach operacji na katalogu publicznym.
- *
- *  - h - zwalniana struktura
+ * \param h Struktura poÅ‚Ä…czenia
  */
 void gg_pubdir_free(struct gg_http *h)
 {
@@ -474,14 +646,17 @@ void gg_pubdir_free(struct gg_http *h)
 	gg_http_free(h);
 }
 
-/*
- * gg_token()
+/**
+ * Pobiera token do autoryzacji operacji na katalogu publicznym.
  *
- * pobiera z serwera token do autoryzacji zak³adania konta, usuwania
- * konta i zmiany has³a.
+ * Token jest niezbÄ™dny do tworzenia nowego i usuwania uÅ¼ytkownika,
+ * zmiany hasÅ‚a itd.
  *
- * zaalokowana struct gg_http, któr± po¼niej nale¿y zwolniæ
- * funkcj± gg_token_free(), albo NULL je¶li wyst±pi³ b³±d.
+ * \param async Flaga poÅ‚Ä…czenia asynchronicznego
+ *
+ * \return Struktura \c gg_http lub \c NULL w przypadku bÅ‚Ä™du
+ *
+ * \ingroup token
  */
 struct gg_http *gg_token(int async)
 {
@@ -511,17 +686,18 @@ struct gg_http *gg_token(int async)
 	return h;
 }
 
-/*
- * gg_token_watch_fd()
+/**
+ * Funkcja wywoÅ‚ywana po zaobserwowaniu zmian na deskryptorze poÅ‚Ä…czenia.
  *
- * przy asynchronicznych operacjach zwi±zanych z tokenem nale¿y wywo³ywaæ
- * tê funkcjê przy zmianach na obserwowanym deskryptorze.
+ * Operacja bÄ™dzie zakoÅ„czona, gdy pole \c state bÄ™dzie rÃ³wne \c GG_STATE_DONE.
+ * JeÅ›li wystÄ…pi bÅ‚Ä…d, \c state bÄ™dzie rÃ³wne \c GG_STATE_ERROR, a kod bÅ‚Ä™du
+ * znajdzie siÄ™ w polu \c error.
  *
- *  - h - struktura opisuj±ca po³±czenie
+ * \param h Struktura poÅ‚Ä…czenia
  *
- * je¶li wszystko posz³o dobrze to 0, inaczej -1. operacja bêdzie
- * zakoñczona, je¶li h->state == GG_STATE_DONE. je¶li wyst±pi jaki¶
- * b³±d, to bêdzie tam GG_STATE_ERROR i odpowiedni kod b³êdu w h->error.
+ * \return 0 jeÅ›li siÄ™ powiodÅ‚o, -1 w przypadku bÅ‚Ä™du
+ *
+ * \ingroup token
  */
 int gg_token_watch_fd(struct gg_http *h)
 {
@@ -530,25 +706,25 @@ int gg_token_watch_fd(struct gg_http *h)
 		return -1;
 	}
 
-        if (h->state == GG_STATE_ERROR) {
-                gg_debug(GG_DEBUG_MISC, "=> token, watch_fd issued on failed session\n");
-                errno = EINVAL;
-                return -1;
-        }
+	if (h->state == GG_STATE_ERROR) {
+		gg_debug(GG_DEBUG_MISC, "=> token, watch_fd issued on failed session\n");
+		errno = EINVAL;
+		return -1;
+	}
 	
 	if (h->state != GG_STATE_PARSING) {
 		if (gg_http_watch_fd(h) == -1) {
 			gg_debug(GG_DEBUG_MISC, "=> token, http failure\n");
-                        errno = EINVAL;
+			errno = EINVAL;
 			return -1;
 		}
 	}
 
 	if (h->state != GG_STATE_PARSING)
-                return 0;
+		return 0;
 	
-	/* je¶li h->data jest puste, to ¶ci±gali¶my tokenid i url do niego,
-	 * ale je¶li co¶ tam jest, to znaczy, ¿e mamy drugi etap polegaj±cy
+	/* jeÅ›li h->data jest puste, to Å›ciÄ…galiÅ›my tokenid i url do niego,
+	 * ale jeÅ›li coÅ› tam jest, to znaczy, Å¼e mamy drugi etap polegajÄ…cy
 	 * na pobieraniu tokenu. */
 	if (!h->data) {
 		int width, height, length;
@@ -573,8 +749,8 @@ int gg_token_watch_fd(struct gg_http *h)
 			return -1;
 		}
 		
-		/* dostali¶my tokenid i wszystkie niezbêdne informacje,
-		 * wiêc pobierzmy obrazek z tokenem */
+		/* dostaliÅ›my tokenid i wszystkie niezbÄ™dne informacje,
+		 * wiÄ™c pobierzmy obrazek z tokenem */
 
 		if (strncmp(url, "http://", 7)) {
 			path = gg_saprintf("%s?tokenid=%s", url, tokenid);
@@ -605,11 +781,11 @@ int gg_token_watch_fd(struct gg_http *h)
 		if (!(headers = gg_saprintf("Host: %s\r\nUser-Agent: " GG_HTTP_USERAGENT "\r\n\r\n", host))) {
 			gg_debug(GG_DEBUG_MISC, "=> token, not enough memory for token url\n");
 			free(path);
-		free(url);
+			free(url);
 			free(tokenid);
 			return -1;
 		}			
-	
+
 		if (!(h2 = gg_http_connect(host, GG_REGISTER_PORT, h->async, "GET", path, headers))) {
 			gg_debug(GG_DEBUG_MISC, "=> token, gg_http_connect() failed mysteriously\n");
 			free(headers);
@@ -622,6 +798,8 @@ int gg_token_watch_fd(struct gg_http *h)
 		free(headers);
 		free(path);
 		free(url);
+
+		gg_http_free_fields(h);
 
 		memcpy(h, h2, sizeof(struct gg_http));
 		free(h2);
@@ -652,12 +830,12 @@ int gg_token_watch_fd(struct gg_http *h)
 	return 0;
 }
 
-/*
- * gg_token_free()
+/**
+ * Zwalnia zasoby po operacji pobierania tokenu.
  *
- * zwalnia pamiêæ po efektach pobierania tokenu.
+ * \param h Struktura poÅ‚Ä…czenia
  *
- *  - h - zwalniana struktura
+ * \ingroup token
  */
 void gg_token_free(struct gg_http *h)
 {

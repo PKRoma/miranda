@@ -2,7 +2,8 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-06  George Hazan
+Copyright ( C ) 2005-07  George Hazan
+Copyright ( C ) 2007     Maxim Mluhov
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -44,6 +45,17 @@ typedef struct {
 	int ( *pfnRecv )( HANDLE hConn, void *userdata, char* buffer, int datalen );
 	void ( *pfnFinal )( BOOL success, void *userdata );
 	void *userdata;
+
+	// XEP-0065 proxy support
+	BOOL bProxyDiscovered;
+	HANDLE hProxyEvent;
+	TCHAR* szProxyHost;
+	TCHAR* szProxyPort;
+	TCHAR* szProxyJid;
+	TCHAR* szStreamhostUsed;
+	BOOL bStreamActivated;
+	HANDLE hSendEvent;
+
 } JABBER_BYTE_TRANSFER;
 
 void __cdecl JabberByteSendThread( JABBER_BYTE_TRANSFER *jbt );

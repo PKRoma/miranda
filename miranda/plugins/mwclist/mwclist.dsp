@@ -69,7 +69,7 @@ LINK32=link.exe
 # PROP Use_Debug_Libraries 1
 # PROP Output_Dir "Debug"
 # PROP Intermediate_Dir "Debug"
-# PROP Ignore_Export_Lib 0
+# PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "mwclist_EXPORTS" /YX /FD /GZ /c
 # ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "mwclist_EXPORTS" /Yu"commonheaders.h" /FD /GZ /c
@@ -178,11 +178,6 @@ SOURCE=.\CLUIFrames\framesmenu.c
 # Begin Source File
 
 SOURCE=.\CLUIFrames\m_cluiframes.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\CLUIFrames\protocolorder.c
-# ADD CPP /Yu"../commonheaders.h"
 # End Source File
 # Begin Source File
 
@@ -521,14 +516,6 @@ SOURCE=.\forkthread.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\genmenu.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\genmenuopt.c
-# End Source File
-# Begin Source File
-
 SOURCE=.\groupmenu.c
 # End Source File
 # Begin Source File
@@ -571,10 +558,6 @@ SOURCE=.\keyboard.c
 !ENDIF 
 
 # End Source File
-# Begin Source File
-
-SOURCE=.\movetogroup.c
-# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -598,14 +581,6 @@ SOURCE=.\commonheaders.h
 # Begin Source File
 
 SOURCE=.\forkthread.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\genmenu.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\m_genmenu.h
 # End Source File
 # Begin Source File
 

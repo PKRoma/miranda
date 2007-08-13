@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2006 Miranda ICQ/IM project, 
+Copyright 2000-2007 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -28,8 +28,7 @@ Created by Pescuma
 
 #include "clc.h"
 #include "commonprototypes.h"
-extern HANDLE g_hMainThread;
-extern DWORD g_dwMainThreadID;
+
 void Cache_GetText(struct ClcData *dat, struct ClcContact *contact, BOOL forceRenew);
 void Cache_GetFirstLineText(struct ClcData *dat, struct ClcContact *contact);
 void Cache_GetSecondLineText(struct SHORTDATA *dat, PDNCE pdnce);
@@ -41,6 +40,6 @@ int Cache_GetLineText(PDNCE pdnce, int type, LPTSTR text, int text_size, TCHAR *
 					  BOOL show_status_if_no_away, BOOL show_listening_if_no_away, BOOL use_name_and_message_for_xstatus, 
 					  BOOL pdnce_time_show_only_if_different);
 
-void Cache_ReAskAwayMsg(HANDLE hContact);
+void amRequestAwayMsg(HANDLE hContact);
 
 #endif // __CACHE_FUNCS_H__

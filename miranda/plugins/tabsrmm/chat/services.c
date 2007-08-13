@@ -19,7 +19,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "../commonheaders.h"
 
-extern HANDLE hMessageWindowList;
+#ifdef __MATHMOD_SUPPORT
+	#include "../m_MathModule.h"
+#endif
+
+extern HANDLE		hMessageWindowList;
 extern BOOL			IEviewInstalled;
 extern int          g_chat_integration_enabled;
 extern int          g_chat_fully_initialized;
@@ -31,7 +35,7 @@ SESSION_INFO		g_TabSession;
 CRITICAL_SECTION	cs;
 int                 g_sessionshutdown = 0;
 
-static HANDLE     hServiceRegister = NULL, 
+static HANDLE     hServiceRegister = NULL,
                   hServiceNewChat = NULL,
                   hServiceAddEvent = NULL,
                   hServiceGetAddEventPtr = NULL,
@@ -48,14 +52,12 @@ void HookEvents(void)
 {
 	InitializeCriticalSection(&cs);
 	g_hHookContactDblClick=		HookEvent(ME_CLIST_DOUBLECLICKED, CList_RoomDoubleclicked);
-	return;
 }
 
 void UnhookEvents(void)
 {
 	UnhookEvent(g_hHookContactDblClick);
 	DeleteCriticalSection(&cs);
-	return;
 }
 
 void CreateServiceFunctions(void)
@@ -67,7 +69,6 @@ void CreateServiceFunctions(void)
 	hServiceGetInfo        = CreateServiceFunction(MS_GC_GETINFO,         Service_GetInfo);
 	hServiceGetCount       = CreateServiceFunction(MS_GC_GETSESSIONCOUNT, Service_GetCount);
 	hEventDoubleclicked    = CreateServiceFunction("GChat/DblClickEvent", CList_EventDoubleclicked);
-	return;
 }
 
 void DestroyServiceFunctions(void)
@@ -76,23 +77,21 @@ void DestroyServiceFunctions(void)
 	DestroyServiceFunction(hServiceNewChat        );
 	DestroyServiceFunction(hServiceAddEvent       );
 	DestroyServiceFunction(hServiceGetAddEventPtr );
-	DestroyServiceFunction(hServiceGetInfo        );       
-	DestroyServiceFunction(hServiceGetCount       );      
+	DestroyServiceFunction(hServiceGetInfo        );
+	DestroyServiceFunction(hServiceGetCount       );
 	DestroyServiceFunction(hEventDoubleclicked    );
-	return;
 }
 
 void CreateHookableEvents(void)
 {
 	hSendEvent = CreateHookableEvent(ME_GC_EVENT);
 	hBuildMenuEvent = CreateHookableEvent(ME_GC_BUILDMENU);
-	return;
 }
 
 void TabsInit(void)
 {
 	ZeroMemory(&g_TabSession, sizeof(SESSION_INFO));
-			
+
 	//g_TabSession.iType = GCW_TABROOM;
 	g_TabSession.iSplitterX = g_Settings.iSplitterX;
 	g_TabSession.iSplitterY = g_Settings.iSplitterY;
@@ -102,28 +101,29 @@ void TabsInit(void)
 	g_TabSession.iFG = 4;
 	g_TabSession.bFGSet = TRUE;
 	g_TabSession.iBG = 2;
-	g_TabSession.bBGSet = TRUE;	
-		
-	return;
+	g_TabSession.bBGSet = TRUE;
 }
 
 int Chat_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
     if(!g_chat_integration_enabled)
         return 0;
-    
-    { 
+
+    {
 		char * mods[3] = {"Chat",CHAT_FONTMODULE};
 		CallService("DBEditorpp/RegisterModule",(WPARAM)mods,(LPARAM)2);
 	}
 
-    LoadIcons();
-	if (ServiceExists(MS_IEVIEW_WINDOW))
+	LoadIcons();
+	if ( ServiceExists( MS_IEVIEW_WINDOW ))
 		IEviewInstalled = TRUE;
+
 	CList_SetAllOffline(TRUE);
 
-    g_chat_fully_initialized = TRUE;
-    return 0;
+	g_chat_fully_initialized = TRUE;
+
+    g_Settings.MathMod = ServiceExists(MATH_RTF_REPLACE_FORMULAE) && DBGetContactSettingByte(NULL, "Chat", "MathModSupport", 0);
+	return 0;
 }
 
 int Chat_PreShutdown(WPARAM wParam,LPARAM lParam)
@@ -136,20 +136,7 @@ int Chat_PreShutdown(WPARAM wParam,LPARAM lParam)
 
 int Chat_IconsChanged(WPARAM wParam,LPARAM lParam)
 {
-//	int i;
-
 	FreeMsgLogBitmaps();
-
-	/* not necessary
-	for(i = 0; i < 30; i++)
-	{
-		if ( hIcons[i] )
-		{
-			DestroyIcon(hIcons[i]);
-			hIcons[i] = NULL;
-		}
-	}
-	*/
 
 	LoadLogIcons();
 	LoadMsgLogBitmaps();
@@ -162,7 +149,7 @@ int Service_GetCount(WPARAM wParam,LPARAM lParam)
 {
 	int i;
 
-	if(!lParam)
+	if (!lParam)
 		return -1;
 
 	EnterCriticalSection(&cs);
@@ -176,82 +163,79 @@ int Service_GetCount(WPARAM wParam,LPARAM lParam)
 int Service_GetInfo(WPARAM wParam,LPARAM lParam)
 {
 	GC_INFO * gci = (GC_INFO *) lParam;
-	SESSION_INFO * si = NULL;
+	SESSION_INFO* si = NULL;
 
-	if(!gci || !gci->pszModule)
+	if (!gci || !gci->pszModule)
 		return 1;
 
 	EnterCriticalSection(&cs);
 
-	if(gci->Flags&BYINDEX)
-		si = SM_FindSessionByIndex((char *)gci->pszModule, gci->iItem);
+	if ( gci->Flags&BYINDEX)
+		si = SM_FindSessionByIndex( gci->pszModule, gci->iItem );
 	else
-		si = SM_FindSession((char *)gci->pszID, (char *)gci->pszModule);
+		si = SM_FindSession( gci->pszID, gci->pszModule );
 
-	if(si)
-	{
-		if(gci->Flags&DATA)
-			gci->dwItemData = si->dwItemData;
-		if(gci->Flags&ID)
-			gci->pszID = si->pszID;
-		if(gci->Flags&NAME)
-			gci->pszName = si->pszName;
-		if(gci->Flags&HCONTACT)
-			gci->hContact = si->hContact;
-		if(gci->Flags&TYPE)
-			gci->iType = si->iType;
-		if(gci->Flags&COUNT)
-			gci->iCount = si->nUsersInNicklist;
-		if(gci->Flags&USERS)
-			gci->pszUsers = SM_GetUsers(si);
-	
+	if ( si ) {
+		if ( gci->Flags & DATA )     gci->dwItemData = si->dwItemData;
+		if ( gci->Flags & HCONTACT ) gci->hContact = si->hContact;
+		if ( gci->Flags & TYPE )     gci->iType = si->iType;
+		if ( gci->Flags & COUNT )    gci->iCount = si->nUsersInNicklist;
+		if ( gci->Flags & USERS )    gci->pszUsers = SM_GetUsers(si);
+
+		#if defined( _UNICODE )
+			if ( si->dwFlags & GC_UNICODE ) {
+				if ( gci->Flags & ID )    gci->pszID = si->ptszID;
+				if ( gci->Flags & NAME )  gci->pszName = si->ptszName;
+			}
+			else {
+				if ( gci->Flags & ID )    gci->pszID = ( TCHAR* )si->pszID;
+				if ( gci->Flags & NAME )  gci->pszName = ( TCHAR* )si->pszName;
+			}
+		#else
+			if ( gci->Flags & ID )    gci->pszID = si->ptszID;
+			if ( gci->Flags & NAME )  gci->pszName = si->ptszName;
+		#endif
+
 		LeaveCriticalSection(&cs);
-	
 		return 0;
 	}
 
 	LeaveCriticalSection(&cs);
-
 	return 1;
 }
+
 int Service_Register(WPARAM wParam, LPARAM lParam)
 {
 
 	GCREGISTER *gcr = (GCREGISTER *)lParam;
 	MODULEINFO * mi = NULL;
-	if(gcr== NULL)
+	if ( gcr == NULL)
 		return GC_REGISTER_ERROR;
 
-	if(gcr->cbSize != SIZEOF_STRUCT_GCREGISTER_V1)
+	if ( gcr->cbSize != SIZEOF_STRUCT_GCREGISTER_V1 )
 		return GC_REGISTER_WRONGVER;
 
-#ifndef _UNICODE
-	if(gcr->dwFlags &GC_UNICODE)
-		return GC_REGISTER_NOUNICODE;
-#endif
+	#ifndef _UNICODE
+		if (gcr->dwFlags & GC_UNICODE)
+			return GC_REGISTER_NOUNICODE;
+	#endif
 
 	EnterCriticalSection(&cs);
 
-	mi = MM_AddModule((char *)gcr->pszModule);
-	if(mi)
-	{
-		if(gcr->pszModuleDispName)
-		{
-			mi->pszModDispName = (char *) malloc(lstrlenA(gcr->pszModuleDispName) + 1);
-			lstrcpynA(mi->pszModDispName, gcr->pszModuleDispName, lstrlenA(gcr->pszModuleDispName) + 1);
-		}
-		mi->bBold = gcr->dwFlags&GC_BOLD;	
-		mi->bUnderline = gcr->dwFlags&GC_UNDERLINE ;	
-		mi->bItalics = gcr->dwFlags&GC_ITALICS ;	
+	mi = MM_AddModule( gcr->pszModule );
+	if ( mi ) {
+		mi->pszModDispName = mir_strdup( gcr->pszModuleDispName );
+		mi->bBold = gcr->dwFlags&GC_BOLD;
+		mi->bUnderline = gcr->dwFlags&GC_UNDERLINE ;
+		mi->bItalics = gcr->dwFlags&GC_ITALICS ;
 		mi->bColor = gcr->dwFlags&GC_COLOR ;
 		mi->bBkgColor = gcr->dwFlags&GC_BKGCOLOR ;
 		mi->bAckMsg = gcr->dwFlags&GC_ACKMSG ;
 		mi->bChanMgr = gcr->dwFlags&GC_CHANMGR ;
 		mi->iMaxText= gcr->iMaxText;
 		mi->nColorCount = gcr->nColors;
-		if(gcr->nColors > 0)
-		{
-			mi->crColors = malloc(sizeof(COLORREF) * gcr->nColors);
+		if ( gcr->nColors > 0) {
+			mi->crColors = mir_alloc(sizeof(COLORREF) * gcr->nColors);
 			memcpy(mi->crColors, gcr->pColors, sizeof(COLORREF) * gcr->nColors);
 		}
 		mi->pszHeader = Log_CreateRtfHeader(mi);
@@ -262,320 +246,236 @@ int Service_Register(WPARAM wParam, LPARAM lParam)
 		LeaveCriticalSection(&cs);
 		return 0;
 	}
+
 	LeaveCriticalSection(&cs);
 	return GC_REGISTER_ERROR;
 }
 
 int Service_NewChat(WPARAM wParam, LPARAM lParam)
 {
+	MODULEINFO* mi;
 	GCSESSION *gcw =(GCSESSION *)lParam;
-
-	if(gcw== NULL)
+	if ( gcw == NULL)
 		return GC_NEWSESSION_ERROR;
 
-    if(gcw->cbSize != SIZEOF_STRUCT_GCWINDOW_V1)
+	if ( gcw->cbSize != SIZEOF_STRUCT_GCWINDOW_V1 )
 		return GC_NEWSESSION_WRONGVER;
 
 	EnterCriticalSection(&cs);
 
-	if(MM_FindModule((char *)gcw->pszModule))
-	{
+	if (( mi = MM_FindModule( gcw->pszModule )) != NULL ) {
+		TCHAR* ptszID = a2tf( gcw->ptszID, gcw->dwFlags, 0 );
+		SESSION_INFO* si = SM_AddSession( ptszID, gcw->pszModule);
+
 		// create a new session and set the defaults
-		SESSION_INFO * si = SM_AddSession((char *)gcw->pszID, (char *)gcw->pszModule);
-		if(si)
-		{
-			char szTemp[256];
-			
+		if ( si != NULL ) {
+			TCHAR szTemp[256];
+
 			si->dwItemData = gcw->dwItemData;
-			if(gcw->iType != GCW_SERVER)
+			if ( gcw->iType != GCW_SERVER )
 				si->wStatus = ID_STATUS_ONLINE;
 			si->iType = gcw->iType;
-			if(gcw->pszName)
-			{
-				si->pszName = (char *) malloc(lstrlenA(gcw->pszName) + 1);
-				lstrcpynA(si->pszName, gcw->pszName, lstrlenA(gcw->pszName) + 1);
-			}
-			if(gcw->pszStatusbarText)
-			{
-				si->pszStatusbarText = (char *) malloc(lstrlenA(gcw->pszStatusbarText) + 1);
-				lstrcpynA(si->pszStatusbarText, gcw->pszStatusbarText, lstrlenA(gcw->pszStatusbarText) + 1);
-			}
+			si->dwFlags = gcw->dwFlags;
+			si->ptszName = a2tf( gcw->ptszName, gcw->dwFlags, 0 );
+			si->ptszStatusbarText = a2tf( gcw->ptszStatusbarText, gcw->dwFlags, 0 );
 			si->iSplitterX = g_Settings.iSplitterX;
 			si->iSplitterY = g_Settings.iSplitterY;
-			si->bFilterEnabled = DBGetContactSettingByte(NULL, "Chat", "FilterEnabled", 0);
+			si->bFilterEnabled = DBGetContactSettingByte(si->hContact, "Chat", "FilterEnabled", DBGetContactSettingByte(NULL, "Chat", "FilterEnabled", 0));
 			si->bNicklistEnabled = DBGetContactSettingByte(NULL, "Chat", "ShowNicklist", 1);
-			if((MODULEINFO *)MM_FindModule((char *)gcw->pszModule)->bColor)
-			{
+			#if defined( _UNICODE )
+				if ( !( gcw->dwFlags & GC_UNICODE )) {
+					si->pszID = mir_strdup( gcw->pszID );
+					si->pszName = mir_strdup( gcw->pszName );
+				}
+			#endif
+
+			if ( mi->bColor ) {
 				si->iFG = 4;
 				si->bFGSet = TRUE;
 			}
-			if((MODULEINFO *)MM_FindModule((char *)gcw->pszModule)->bBkgColor)
-			{
+			if ( mi->bBkgColor ) {
 				si->iBG = 2;
 				si->bBGSet = TRUE;
 			}
-			if(si->iType == GCW_SERVER)
-				mir_snprintf(szTemp, sizeof(szTemp), "Server: %s", gcw->pszName);
+			if (si->iType == GCW_SERVER)
+				mir_sntprintf(szTemp, SIZEOF(szTemp), _T("Server: %s"), si->ptszName);
 			else
-				mir_snprintf(szTemp, sizeof(szTemp), "%s", gcw->pszName);
-			si->hContact = CList_AddRoom((char *)gcw->pszModule, (char *)gcw->pszID, szTemp, si->iType); 
-
-            si->iLogFilterFlags = (int)DBGetContactSettingDword(si->hContact, "Chat", "FilterFlags", DBGetContactSettingDword(NULL, "Chat", "FilterFlags", 0x03E0));
-
+				mir_sntprintf(szTemp, SIZEOF(szTemp), _T("%s"), si->ptszName);
+			si->hContact = CList_AddRoom( gcw->pszModule, ptszID, szTemp, si->iType);
 			DBWriteContactSettingString(si->hContact, si->pszModule , "Topic", "");
 			DBDeleteContactSetting(si->hContact, "CList", "StatusMsg");
-			if(si->pszStatusbarText)
-				DBWriteContactSettingString(si->hContact, si->pszModule, "StatusBar", si->pszStatusbarText);
+			if (si->ptszStatusbarText)
+				DBWriteContactSettingTString(si->hContact, si->pszModule, "StatusBar", si->ptszStatusbarText);
 			else
 				DBWriteContactSettingString(si->hContact, si->pszModule, "StatusBar", "");
 		}
-		else
-		{
-			SESSION_INFO * si2 = SM_FindSession((char *)gcw->pszID, (char *)gcw->pszModule);
-			if(si2)
-			{
-				if(si2->hWnd)
+		else {
+			SESSION_INFO* si2 = SM_FindSession( ptszID, gcw->pszModule );
+			if ( si2 ) {
+				if (si2->hWnd)
 					g_TabSession.nUsersInNicklist = 0;
 
 				UM_RemoveAll(&si2->pUsers);
 				TM_RemoveAll(&si2->pStatuses);
 
-				si2->iStatusCount = 0;	
+				si2->iStatusCount = 0;
 				si2->nUsersInNicklist = 0;
 
-				if(si2->hWnd )
+				if (si2->hWnd )
 					RedrawWindow(GetDlgItem(si2->hWnd, IDC_LIST), NULL, NULL, RDW_INVALIDATE);
-			}
-//			SendMessage(hwnd, GC_NICKLISTREINIT, 0, 0);
-		}
-	
+		}	}
+
 		LeaveCriticalSection(&cs);
+		mir_free( ptszID );
 		return 0;
 	}
+
+	LeaveCriticalSection(&cs);
 	return GC_NEWSESSION_ERROR;
-}
-
-
-
-
-void AddStatus(GCEVENT * gce)
-{
-	STATUSINFO * si = SM_AddStatus((char *)gce->pDest->pszID, (char *)gce->pDest->pszModule, (char *)gce->pszStatus);
-	if(si && gce->dwItemData)
-		si->hIcon = CopyIcon((HICON)gce->dwItemData);
-	return;
 }
 
 static int DoControl(GCEVENT * gce, WPARAM wp)
 {
-	if(gce->pDest->iType == GC_EVENT_CONTROL)
-	{ 
-        switch (wp)
-		{
+	if ( gce->pDest->iType == GC_EVENT_CONTROL ) {
+		switch (wp) {
 		case WINDOW_HIDDEN:
 			{
-				SESSION_INFO * si = SM_FindSession(gce->pDest->pszID, gce->pDest->pszModule);
-				if(si)
-				{
+				SESSION_INFO* si = SM_FindSession(gce->pDest->ptszID, gce->pDest->pszModule);
+				if (si) {
 					si->bInitDone = TRUE;
-					SetActiveSession(si->pszID, si->pszModule);
+					SetActiveSession(si->ptszID, si->pszModule);
+					if (si->hWnd)
+						ShowRoom(si, wp, FALSE);
 				}
-				if(si->hWnd)
-				{
-					ShowRoom(si, wp, FALSE);
-					return 0;
-				}
-
-				return 0;
 			}
+			return 0;
 
 		case WINDOW_MINIMIZE:
 		case WINDOW_MAXIMIZE:
 		case WINDOW_VISIBLE:
 		case SESSION_INITDONE:
 			{
-				SESSION_INFO * si = SM_FindSession(gce->pDest->pszID, gce->pDest->pszModule);
-				if(si)
-				{
+				SESSION_INFO* si = SM_FindSession(gce->pDest->ptszID, gce->pDest->pszModule);
+				if (si) {
 					si->bInitDone = TRUE;
-					if(wp != SESSION_INITDONE || DBGetContactSettingByte(NULL, "Chat", "PopupOnJoin", 0) == 0)
+					if (wp != SESSION_INITDONE || DBGetContactSettingByte(NULL, "Chat", "PopupOnJoin", 0) == 0)
 						ShowRoom(si, wp, TRUE);
 					return 0;
-				}
-			}break;
-		case SESSION_OFFLINE:
-			{
-				SM_SetOffline(gce->pDest->pszID, gce->pDest->pszModule);		
-			} // fall through
-		case SESSION_ONLINE:
-			SM_SetStatus((char *)gce->pDest->pszID, (char *)gce->pDest->pszModule, wp==SESSION_ONLINE?ID_STATUS_ONLINE:ID_STATUS_OFFLINE);
+			}	}
 			break;
+
+		case SESSION_OFFLINE:
+			SM_SetOffline(gce->pDest->ptszID, gce->pDest->pszModule);
+			// fall through
+
+		case SESSION_ONLINE:
+			SM_SetStatus( gce->pDest->ptszID, gce->pDest->pszModule, wp==SESSION_ONLINE?ID_STATUS_ONLINE:ID_STATUS_OFFLINE);
+			break;
+
 		case WINDOW_CLEARLOG:
 		{
-			SESSION_INFO * si = SM_FindSession(gce->pDest->pszID, gce->pDest->pszModule);
-			if(si)
-			{
+			SESSION_INFO* si = SM_FindSession(gce->pDest->ptszID, gce->pDest->pszModule);
+			if ( si ) {
 				LM_RemoveAll(&si->pLog, &si->pLogEnd);
-				if(si->hWnd)
-				{
+				if ( si->hWnd ) {
 					g_TabSession.pLog = si->pLog;
 					g_TabSession.pLogEnd = si->pLogEnd;
 				}
 				si->iEventCount = 0;
 				si->LastTime = 0;
 			}
-		}break;
+			break;
+		}
 		case SESSION_TERMINATE:
-		{
-			return SM_RemoveSession(gce->pDest->pszID, gce->pDest->pszModule);
-		}break;
-		default:break;
+			return SM_RemoveSession(gce->pDest->ptszID, gce->pDest->pszModule);
 		}
-		SM_SendMessage(gce->pDest->pszID, gce->pDest->pszModule, GC_EVENT_CONTROL + WM_USER + 500, wp, 0);
-
+		SM_SendMessage(gce->pDest->ptszID, gce->pDest->pszModule, GC_EVENT_CONTROL + WM_USER + 500, wp, 0);
 	}
 
-	else if(gce->pDest->iType == GC_EVENT_CHUID && gce->pszText)
+	else if (gce->pDest->iType == GC_EVENT_CHUID && gce->pszText)
 	{
-		SM_ChangeUID((char *)gce->pDest->pszID, (char *)gce->pDest->pszModule, (char *)gce->pszNick, (char *)gce->pszText);
+		SM_ChangeUID( gce->pDest->ptszID, gce->pDest->pszModule, gce->ptszNick, gce->ptszText);
 	}
 
-	else if(gce->pDest->iType == GC_EVENT_CHANGESESSIONAME && gce->pszText)
+	else if (gce->pDest->iType == GC_EVENT_CHANGESESSIONAME && gce->pszText)
 	{
-		SESSION_INFO * si = SM_FindSession(gce->pDest->pszID, gce->pDest->pszModule);
-		if(si)
-		{
-			si->pszName = realloc(si->pszName, lstrlenA(gce->pszText) + 1);
-			lstrcpynA(si->pszName, gce->pszText, lstrlenA(gce->pszText) + 1);
-			if(si->hWnd)
-			{
-//				g_TabSession.pszName = si->pszName;
+		SESSION_INFO* si = SM_FindSession(gce->pDest->ptszID, gce->pDest->pszModule);
+		if ( si ) {
+			replaceStr( &si->ptszName, gce->ptszText );
+			if ( si->hWnd )
 				SendMessage(si->hWnd, GC_UPDATETITLE, 0, 0);
-			}
-		}
-	}
+	}	}
 
-	else if(gce->pDest->iType == GC_EVENT_SETITEMDATA)
-	{
-		SESSION_INFO * si = SM_FindSession(gce->pDest->pszID, gce->pDest->pszModule);
+	else if (gce->pDest->iType == GC_EVENT_SETITEMDATA) {
+		SESSION_INFO* si = SM_FindSession(gce->pDest->ptszID, gce->pDest->pszModule);
 		if (si)
 			si->dwItemData = gce->dwItemData;
 	}
 
-	else if(gce->pDest->iType ==GC_EVENT_GETITEMDATA)
-	{
-		SESSION_INFO * si = SM_FindSession(gce->pDest->pszID, gce->pDest->pszModule);
-		if(si)
-		{
+	else if (gce->pDest->iType ==GC_EVENT_GETITEMDATA) {
+		SESSION_INFO* si = SM_FindSession(gce->pDest->ptszID, gce->pDest->pszModule);
+		if (si) {
 			gce->dwItemData = si->dwItemData;
 			return si->dwItemData;
 		}
 		return 0;
-		
 	}
-	else if(gce->pDest->iType ==GC_EVENT_SETSBTEXT)
+	else if (gce->pDest->iType ==GC_EVENT_SETSBTEXT)
 	{
-		SESSION_INFO * si = SM_FindSession(gce->pDest->pszID, gce->pDest->pszModule);
-		if(si)
-		{
-			if(gce->pszText)
-			{
-				si->pszStatusbarText = realloc(si->pszStatusbarText, lstrlenA(gce->pszText)+1);
-				lstrcpynA(si->pszStatusbarText, RemoveFormatting((char *)gce->pszText), lstrlenA(gce->pszText)+1);
-			}
-			else
-			{
-				if(si->pszStatusbarText)
-				{
-					free(si->pszStatusbarText);
-				}
-				si->pszStatusbarText = NULL;
-			}
-
-			if(si->pszStatusbarText)
-				DBWriteContactSettingString(si->hContact, si->pszModule, "StatusBar", si->pszStatusbarText);
+		SESSION_INFO* si = SM_FindSession(gce->pDest->ptszID, gce->pDest->pszModule);
+		if (si) {
+			replaceStr( &si->ptszStatusbarText, gce->ptszText );
+			if ( si->ptszStatusbarText )
+				DBWriteContactSettingTString(si->hContact, si->pszModule, "StatusBar", si->ptszStatusbarText);
 			else
 				DBWriteContactSettingString(si->hContact, si->pszModule, "StatusBar", "");
-			if(si->hWnd)
-			{
-				g_TabSession.pszStatusbarText = si->pszStatusbarText;
+			if ( si->hWnd ) {
+				g_TabSession.ptszStatusbarText = si->ptszStatusbarText;
 				SendMessage(si->hWnd, GC_UPDATESTATUSBAR, 0, 0);
-			}
-		}
-		
+		}	}
 	}
-	else if(gce->pDest->iType == GC_EVENT_ACK)
+	else if (gce->pDest->iType == GC_EVENT_ACK)
 	{
-		SM_SendMessage(gce->pDest->pszID, gce->pDest->pszModule, GC_ACKMESSAGE, 0, 0);
+		SM_SendMessage(gce->pDest->ptszID, gce->pDest->pszModule, GC_ACKMESSAGE, 0, 0);
 	}
-	else if(gce->pDest->iType == GC_EVENT_SENDMESSAGE && gce->pszText)
+	else if (gce->pDest->iType == GC_EVENT_SENDMESSAGE && gce->pszText)
 	{
-		SM_SendUserMessage((char *)gce->pDest->pszID, (char *)gce->pDest->pszModule, (char *)gce->pszText);
+		SM_SendUserMessage( gce->pDest->ptszID, gce->pDest->pszModule, gce->ptszText);
 	}
-	else if(gce->pDest->iType == GC_EVENT_SETSTATUSEX)
+	else if (gce->pDest->iType == GC_EVENT_SETSTATUSEX)
 	{
-		SM_SetStatusEx((char *)gce->pDest->pszID, (char *)gce->pDest->pszModule, (char *)gce->pszText, gce->dwItemData);
+		SM_SetStatusEx( gce->pDest->ptszID, gce->pDest->pszModule, gce->ptszText, gce->dwItemData);
 	}
-	else 
-		return 1;
+
+	else return 1;
 
 	return 0;
 }
 
 static void AddUser(GCEVENT * gce)
 {
-	SESSION_INFO * si = SM_FindSession((char *)gce->pDest->pszID, (char *)gce->pDest->pszModule);
-	if(si)
-	{
-		WORD status = TM_StringToWord(si->pStatuses, (char *)gce->pszStatus);
-		USERINFO * ui = SM_AddUser((char *)gce->pDest->pszID, (char *)gce->pDest->pszModule, (char *)gce->pszUID, (char *)gce->pszNick, status);
-		if(ui)
-		{
-			ui->pszNick = (char*)malloc(lstrlenA(gce->pszNick) + 1); 
-			lstrcpyA(ui->pszNick, gce->pszNick);
+	SESSION_INFO* si = SM_FindSession( gce->pDest->ptszID, gce->pDest->pszModule);
+	if ( si ) {
+		WORD status = TM_StringToWord( si->pStatuses, gce->ptszStatus );
+		USERINFO * ui = SM_AddUser( gce->pDest->ptszID, gce->pDest->pszModule, gce->ptszUID, gce->ptszNick, status);
+		if (ui) {
+			ui->pszNick = mir_tstrdup( gce->ptszNick );
 
-			if(gce->bIsMe)
+			if (gce->bIsMe)
 				si->pMe = ui;
-	
-			ui->Status = status; 
-			ui->Status |= si->pStatuses->Status; 
 
-			if(si->hWnd)
-			{
+			ui->Status = status;
+			ui->Status |= si->pStatuses->Status;
+
+			if (si->hWnd) {
 				g_TabSession.pUsers = si->pUsers;
 				SendMessage(si->hWnd, GC_UPDATENICKLIST, (WPARAM)0, (LPARAM)0);
-			}
-		}
-	}
-	return;
-}
-
-
-int RemoveUser(GCEVENT * gce)
-{
-	return SM_RemoveUser((char*)gce->pDest->pszID, (char*)gce->pDest->pszModule, (char*)gce->pszUID)==0?1:0;
-}
-
-static void ChangeNickname(GCEVENT * gce)
-{
-	SM_ChangeNick((char*)gce->pDest->pszID, (char*)gce->pDest->pszModule, gce);
-	return;
-}
-static void GiveStatus(GCEVENT * gce)
-{
-	SM_GiveStatus((char*)gce->pDest->pszID, (char*)gce->pDest->pszModule, (char*)gce->pszUID, (char*)gce->pszStatus);
-	return;
-}
-static void TakeStatus(GCEVENT * gce)
-{
-	SM_TakeStatus((char*)gce->pDest->pszID, (char*)gce->pDest->pszModule, (char*)gce->pszUID, (char*)gce->pszStatus);
-	return;
-}
+}	}	}	}
 
 HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOOL bActivateTab, BOOL bPopupContainer, BOOL bWantPopup)
 {
 	TCHAR *contactName = NULL, newcontactname[128];
-    char *szProto, *szStatus, tabtitle[128];
+    char *szProto, *szStatus;
 	WORD wStatus;
     int	newItem;
     HWND hwndNew = 0;
@@ -584,7 +484,7 @@ HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOO
     HWND hwndTab;
 #if defined(_UNICODE)
     WCHAR contactNameW[100];
-#endif    
+#endif
     if(WindowList_Find(hMessageWindowList, hContact) != 0) {
         _DebugPopup(hContact, "Warning: trying to create duplicate window");
         return 0;
@@ -610,7 +510,7 @@ HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOO
     contactName = contactNameW;
 #else
 	contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) newData.hContact, 0);
-#endif    
+#endif
 
 	/*
 	 * cut nickname if larger than x chars...
@@ -629,22 +529,8 @@ HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOO
 
 	wStatus = szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord((HANDLE) newData.hContact, szProto, "Status", ID_STATUS_OFFLINE);
 	szStatus = (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord((HANDLE)newData.hContact, szProto, "Status", ID_STATUS_OFFLINE), 0);
-    
-	if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "tabstatus", 0))
-		_snprintf(tabtitle, sizeof(tabtitle), "%s (%s)", newcontactname, szStatus);
-	else
-		_snprintf(tabtitle, sizeof(tabtitle), "%s", newcontactname);
 
-#ifdef _UNICODE
-	{
-    wchar_t w_tabtitle[256];
-    if(MultiByteToWideChar(CP_ACP, 0, tabtitle, -1, w_tabtitle, safe_sizeof(w_tabtitle)) != 0)
-        newData.item.pszText = w_tabtitle;
-	}
-#else
-	newData.item.pszText = tabtitle;
-#endif
-    //newData.item.iImage = GetProtoIconFromList(szProto, wStatus);
+    newData.item.pszText = newcontactname;
 
 	newData.item.mask = TCIF_TEXT | TCIF_IMAGE | TCIF_PARAM;
     newData.item.iImage = 0;
@@ -716,7 +602,7 @@ HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOO
 	return hwndNew;		// return handle of the new dialog
 }
 
-void ShowRoom(SESSION_INFO * si, WPARAM wp, BOOL bSetForeground)
+void ShowRoom(SESSION_INFO* si, WPARAM wp, BOOL bSetForeground)
 {
 	if(!si)
 		return;
@@ -724,7 +610,7 @@ void ShowRoom(SESSION_INFO * si, WPARAM wp, BOOL bSetForeground)
 	if (si->hWnd == NULL) {
         TCHAR szName[CONTAINER_NAMELEN + 2];
         struct ContainerWindowData *pContainer = si->pContainer;
-        
+
         szName[0] = 0;
         if(pContainer == NULL) {
             GetContainerNameForContact(si->hContact, szName, CONTAINER_NAMELEN);
@@ -737,58 +623,65 @@ void ShowRoom(SESSION_INFO * si, WPARAM wp, BOOL bSetForeground)
             pContainer = CreateContainer(szName, FALSE, si->hContact);
 		si->hWnd = CreateNewRoom(pContainer, si, TRUE, TRUE, FALSE);
 	}
-    else
-        ActivateExistingTab(si->pContainer, si->hWnd);
-    
-	return;
+	else ActivateExistingTab(si->pContainer, si->hWnd);
 }
-
-
 
 int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 {
-	GCEVENT *gce = (GCEVENT*)lParam;
-	GCDEST *gcd = NULL;
-	char * pWnd = NULL;
-	char * pMod = NULL;
+	GCEVENT *gce = (GCEVENT*)lParam, save_gce;
+	GCDEST *gcd = NULL, save_gcd;
+	TCHAR* pWnd = NULL;
+	char* pMod = NULL;
 	BOOL bIsHighlighted = FALSE;
 	BOOL bRemoveFlag = FALSE;
-	int iRetVal;
+	int iRetVal = GC_EVENT_ERROR;
+    SESSION_INFO *si = NULL;
+    BOOL fFreeText = FALSE;
 
-    if(g_sessionshutdown)
-        return 0;
+	if( g_sessionshutdown )
+   	return 0;
 
-    if(gce== NULL)
+	if ( gce == NULL )
 		return GC_EVENT_ERROR;
+
 	gcd = gce->pDest;
-	if(gcd== NULL)
+	if ( gcd == NULL )
 		return GC_EVENT_ERROR;
 
-	if(gce->cbSize != SIZEOF_STRUCT_GCEVENT_V1 && gce->cbSize != SIZEOF_STRUCT_GCEVENT_V2)
+	if ( gce->cbSize != SIZEOF_STRUCT_GCEVENT_V1 && gce->cbSize != SIZEOF_STRUCT_GCEVENT_V2 )
 		return GC_EVENT_WRONGVER;
+
+	if ( !IsEventSupported( gcd->iType ) )
+		return GC_EVENT_ERROR;
+
+	#if defined( _UNICODE )
+		if ( !( gce->dwFlags & GC_UNICODE )) {
+			save_gce = *gce;
+			save_gcd = *gce->pDest;
+			gce->pDest->ptszID = a2tf( gce->pDest->ptszID, gce->dwFlags, 0 );
+			gce->ptszUID       = a2tf( gce->ptszUID,       gce->dwFlags, 0 );
+			gce->ptszNick      = a2tf( gce->ptszNick,      gce->dwFlags, 0 );
+			gce->ptszStatus    = a2tf( gce->ptszStatus,    gce->dwFlags, 0 );
+			if(gcd->iType != GC_EVENT_MESSAGE && gcd->iType != GC_EVENT_ACTION) {
+				gce->ptszText   = a2tf( gce->ptszText,      gce->dwFlags, 0 );
+				fFreeText = TRUE;
+			}
+			gce->ptszUserInfo  = a2tf( gce->ptszUserInfo,  gce->dwFlags, 0 );
+		}
+	#endif
 
 	EnterCriticalSection(&cs);
 
-	//remove spaces in UID
-	if(gce->pszUID)
-	{
-		char * p = (char *)gce->pszUID;
-		while (*p)
-		{
-			if(*p == ' ')
-				memmove(p, p+1, lstrlenA(p));
-			p++;
-		}
-
-	}
-
 	// Do different things according to type of event
-	switch(gcd->iType)
-	{
+	switch(gcd->iType) {
 	case GC_EVENT_ADDGROUP:
-		AddStatus(gce);
-		LeaveCriticalSection(&cs);
-		return 0;
+		{
+			STATUSINFO* si = SM_AddStatus( gce->pDest->ptszID, gce->pDest->pszModule, gce->ptszStatus);
+			if ( si && gce->dwItemData)
+				si->hIcon = CopyIcon((HICON)gce->dwItemData);
+		}
+		iRetVal = 0;
+		goto LBL_Exit;
 
 	case GC_EVENT_CHUID:
 	case GC_EVENT_CHANGESESSIONAME:
@@ -800,44 +693,56 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 	case GC_EVENT_SENDMESSAGE :
 	case GC_EVENT_SETSTATUSEX :
 		iRetVal = DoControl(gce, wParam);
-		LeaveCriticalSection(&cs);
-		return iRetVal;
+		goto LBL_Exit;
+
+	case GC_EVENT_SETCONTACTSTATUS:
+		iRetVal = SM_SetContactStatus( gce->pDest->ptszID, gce->pDest->pszModule, gce->ptszUID, (WORD)gce->dwItemData );
+		goto LBL_Exit;
+
 	case GC_EVENT_TOPIC:
 	{
-		SESSION_INFO * si = SM_FindSession(gce->pDest->pszID, gce->pDest->pszModule);
-		if(si)
-		{
-			if(gce->pszText)
-			{
-				si->pszTopic = realloc(si->pszTopic, lstrlenA(gce->pszText) + 1);
-				lstrcpynA(si->pszTopic, gce->pszText, lstrlenA(gce->pszText) + 1);
-				if (si->hWnd)
-					g_TabSession.pszTopic = si->pszTopic;
-				DBWriteContactSettingString(si->hContact, si->pszModule , "Topic", RemoveFormatting(si->pszTopic));
-				if(DBGetContactSettingByte(NULL, "Chat", "TopicOnClist", 0))
-					DBWriteContactSettingString(si->hContact, "CList" , "StatusMsg", RemoveFormatting(si->pszTopic));
-			}
-		}
-	}break;
+		si = SM_FindSession(gce->pDest->ptszID, gce->pDest->pszModule);
+		if ( si ) {
+			if ( gce->pszText ) {
+				replaceStr( &si->ptszTopic, gce->ptszText);
+				if ( si->hWnd )
+					g_TabSession.ptszTopic = si->ptszTopic;
+				DBWriteContactSettingTString( si->hContact, si->pszModule , "Topic", RemoveFormatting( si->ptszTopic ));
+				if ( DBGetContactSettingByte( NULL, "Chat", "TopicOnClist", 0 ))
+					DBWriteContactSettingTString( si->hContact, "CList" , "StatusMsg", RemoveFormatting( si->ptszTopic ));
+		}	}
+		break;
+	}
 	case GC_EVENT_ADDSTATUS:
-	{
-		GiveStatus(gce);
-	}break;
+		SM_GiveStatus( gce->pDest->ptszID, gce->pDest->pszModule, gce->ptszUID, gce->ptszStatus );
+		break;
+
 	case GC_EVENT_REMOVESTATUS:
-	{
-		TakeStatus(gce);
-	}break;
+		SM_TakeStatus( gce->pDest->ptszID, gce->pDest->pszModule, gce->ptszUID, gce->ptszStatus);
+		break;
+
 	case GC_EVENT_MESSAGE:
 	case GC_EVENT_ACTION:
-		if(!gce->bIsMe && gce->pDest->pszID && gce->pszText)
 		{
-			SESSION_INFO * si = SM_FindSession(gce->pDest->pszID, gce->pDest->pszModule);
-			if(si)
-				if(IsHighlighted(si, (char *)gce->pszText))
-					bIsHighlighted = TRUE;
-		}break;
+			si = SM_FindSession( gce->pDest->ptszID, gce->pDest->pszModule );
+#if defined(_UNICODE)
+			if(!(gce->dwFlags & GC_UNICODE)) {
+				fFreeText = TRUE;
+				if(si)
+					gce->ptszText = a2tf( gce->ptszText, gce->dwFlags, DBGetContactSettingDword(si->hContact, SRMSGMOD_T, "ANSIcodepage", 0) );
+				else
+					gce->ptszText = a2tf( gce->ptszText, gce->dwFlags, 0 );
+			}
+#endif
+			if ( !gce->bIsMe && gce->pDest->pszID && gce->pszText ) {
+				if ( si )
+					if ( IsHighlighted( si, gce->ptszText ))
+						bIsHighlighted = TRUE;
+		}	}
+		break;
+
 	case GC_EVENT_NICK:
-		ChangeNickname(gce);
+		SM_ChangeNick( gce->pDest->ptszID, gce->pDest->pszModule, gce);
 		break;
 
 	case GC_EVENT_JOIN:
@@ -849,94 +754,89 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 	case GC_EVENT_KICK:
 		bRemoveFlag = TRUE;
 		break;
-	default:break;
 	}
 
 	// Decide which window (log) should have the event
-	if(gcd->pszID)
-	{
-		pWnd = gcd->pszID;
+	if ( gcd->pszID ) {
+		pWnd = gcd->ptszID;
 		pMod = gcd->pszModule;
 	}
-	else if ( gcd->iType == GC_EVENT_NOTICE || gcd->iType == GC_EVENT_INFORMATION )
-	{
-		SESSION_INFO * si = GetActiveSession();
-		if(si)
-		{
-			pWnd = si->pszID;
+	else if ( gcd->iType == GC_EVENT_NOTICE || gcd->iType == GC_EVENT_INFORMATION ) {
+		SESSION_INFO* si = GetActiveSession();
+		if ( si && !lstrcmpA( si->pszModule, gcd->pszModule )) {
+			pWnd = si->ptszID;
 			pMod = si->pszModule;
 		}
-		else
-		{
-			LeaveCriticalSection(&cs);
-			return 0;
+		else {
+			iRetVal = 0;
+			goto LBL_Exit;
 		}
 	}
-	else
-	{
+	else {
 		// Send the event to all windows with a user pszUID. Used for broadcasting QUIT etc
-		SM_AddEventToAllMatchingUID(gce);
-		if(!bRemoveFlag)
-		{
-			LeaveCriticalSection(&cs);
-			return 0;
-		}
-	}
+		SM_AddEventToAllMatchingUID( gce );
+		if ( !bRemoveFlag ) {
+			iRetVal = 0;
+			goto LBL_Exit;
+	}	}
+
 	// add to log
-	if(pWnd)
-	{	
-		SESSION_INFO * si = SM_FindSession(pWnd, pMod);
+	if ( pWnd ) {
+        if(si == NULL)
+            si = SM_FindSession(pWnd, pMod);
 
 		// fix for IRC's old stuyle mode notifications. Should not affect any other protocol
-		if((gce->pDest->iType == GC_EVENT_ADDSTATUS || gce->pDest->iType == GC_EVENT_REMOVESTATUS) && !gce->bAddToLog)
-		{
-			LeaveCriticalSection(&cs);
-			return 0;
+		if ((gce->pDest->iType == GC_EVENT_ADDSTATUS || gce->pDest->iType == GC_EVENT_REMOVESTATUS) && !(gce->dwFlags & GCEF_ADDTOLOG)) {
+			iRetVal = 0;
+			goto LBL_Exit;
 		}
 
-		if(gce && gce->pDest->iType == GC_EVENT_JOIN && gce->time == 0)
-		{
-			LeaveCriticalSection(&cs);
-			return 0;
+		if (gce && gce->pDest->iType == GC_EVENT_JOIN && gce->time == 0) {
+			iRetVal = 0;
+			goto LBL_Exit;
 		}
-
-		if(si && (si->bInitDone || gce->pDest->iType == GC_EVENT_TOPIC || (gce->pDest->iType == GC_EVENT_JOIN && gce->bIsMe)))
-		{
-			if(SM_AddEvent(pWnd, pMod, gce, bIsHighlighted) && si->hWnd)
-			{
+		if (si && (si->bInitDone || gce->pDest->iType == GC_EVENT_TOPIC || (gce->pDest->iType == GC_EVENT_JOIN && gce->bIsMe))) {
+			if (SM_AddEvent(pWnd, pMod, gce, bIsHighlighted) && si->hWnd) {
 				g_TabSession.pLog = si->pLog;
 				g_TabSession.pLogEnd = si->pLogEnd;
 				SendMessage(si->hWnd, GC_ADDLOG, 0, 0);
 			}
-			else if(si->hWnd)
-			{
+			else if (si->hWnd) {
 				g_TabSession.pLog = si->pLog;
 				g_TabSession.pLogEnd = si->pLogEnd;
 				SendMessage(si->hWnd, GC_REDRAWLOG2, 0, 0);
 			}
 			DoSoundsFlashPopupTrayStuff(si, gce, bIsHighlighted, 0);
-			if(gce->bAddToLog && g_Settings.LoggingEnabled)
+			if ((gce->dwFlags & GCEF_ADDTOLOG) && g_Settings.LoggingEnabled)
 				LogToFile(si, gce);
 		}
 
+		if ( !bRemoveFlag ) {
+			iRetVal = 0;
+			goto LBL_Exit;
+	}	}
 
-		if(!bRemoveFlag)
-		{
-			LeaveCriticalSection(&cs);
-			return 0;
-		}
+	if ( bRemoveFlag )
+		iRetVal = ( SM_RemoveUser( gce->pDest->ptszID, gce->pDest->pszModule, gce->ptszUID ) == 0 ) ? 1 : 0;
 
-	}
-	if (bRemoveFlag)
-	{
-		iRetVal = RemoveUser(gce);
-		LeaveCriticalSection(&cs);
-		return iRetVal;
-	}
-
-
+LBL_Exit:
 	LeaveCriticalSection(&cs);
-	return GC_EVENT_ERROR;
+
+	#if defined( _UNICODE )
+		if ( !( gce->dwFlags & GC_UNICODE )) {
+			if ( fFreeText )
+				mir_free((void*)gce->ptszText );
+			mir_free((void*)gce->ptszNick );
+			mir_free((void*)gce->ptszUID );
+			mir_free((void*)gce->ptszStatus );
+			mir_free((void*)gce->ptszUserInfo );
+			mir_free((void*)gce->pDest->ptszID );
+			*gce = save_gce;
+			*gce->pDest = save_gcd;
+		}
+	#endif
+
+	return iRetVal;
 }
 
 int Service_GetAddEventPtr(WPARAM wParam, LPARAM lParam)
@@ -947,6 +847,5 @@ int Service_GetAddEventPtr(WPARAM wParam, LPARAM lParam)
 
 	gp->pfnAddEvent = Service_AddEvent;
 	LeaveCriticalSection(&cs);
-
 	return 0;
 }

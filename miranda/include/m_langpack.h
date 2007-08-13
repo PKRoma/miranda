@@ -38,13 +38,26 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MS_LANGPACK_TRANSLATESTRING   "LangPack/TranslateString"
 #define Translate(s)   ((char*)CallService(MS_LANGPACK_TRANSLATESTRING,0,(LPARAM)(s)))
 #define TranslateW(s)   ((WCHAR*)CallService(MS_LANGPACK_TRANSLATESTRING,LANG_UNICODE,(LPARAM)(s)))
-#if defined( _UNICODE )
-	#define TranslateT(s) TranslateW(_T(s))
-	#define TranslateTS(s) TranslateW(s)
+#ifdef _UNICODE
+	#define TranslateT(s)	TranslateW(_T(s))
+	#define TranslateTS(s)	TranslateW(s)
 #else
-	#define TranslateT(s) Translate(s)
-	#define TranslateTS(s) Translate(s)
+	#define TranslateT(s)	Translate(s)
+	#define TranslateTS(s)	Translate(s)
 #endif
+
+// If you're storing some string for calling later-on Translate or using it
+// with an API call that does translation automatically marked with
+// [TRANSLATED-BY-CORE] please wrap it with one of LPGEN macros in order to
+// generate proper language pack.
+#define LPGEN(s)			s
+#define LPGENW(s)			L ## s
+#ifdef _UNICODE
+	#define LPGENT(s)		_T(s)
+#else
+	#define LPGENT(s)		s
+#endif
+//Those macros do NOTHING. They are just markers for lpgen.pl.
 
 //translates a dialog into the user's local language	  v0.1.1.0+
 //wParam=0

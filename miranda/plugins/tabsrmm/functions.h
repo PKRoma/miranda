@@ -72,7 +72,7 @@ int         CutContactName(TCHAR *oldname, TCHAR *newname, unsigned int size);
 struct      ContainerWindowData *FindContainerByName(const TCHAR *name);
 void        BroadCastContainer(struct ContainerWindowData *pContainer, UINT message, WPARAM wParam, LPARAM lParam);
 int         GetTabIndexFromHWND(HWND hwndTab, HWND hwnd);
-static int  GetTabItemFromMouse(HWND hwndTab, POINT *pt);
+int  GetTabItemFromMouse(HWND hwndTab, POINT *pt);
 int         ActivateTabFromHWND(HWND hwndTab, HWND hwnd);
 int         GetProtoIconFromList(const char *szProto, int iStatus);
 void        AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc);
@@ -171,6 +171,7 @@ int         CheckThemeVersion(const char *szIniFilename);
 void        WriteThemeToINI(const char *szIniFilename, struct MessageWindowData *dat);
 void        ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, int noAdvanced, DWORD dwFlags);
 
+// compatibility
 
-
-
+typedef     BOOL ( *pfnSetMenuInfo )( HMENU hmenu, LPCMENUINFO lpcmi );
+extern      pfnSetMenuInfo fnSetMenuInfo;

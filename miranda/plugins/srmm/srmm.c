@@ -1,8 +1,8 @@
 /*
 SRMM
 
-Copyright 2000-2005 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2005 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -27,24 +27,27 @@ int SplitmsgShutdown(void);
 
 PLUGINLINK* pluginLink;
 HINSTANCE   g_hInst;
+int bNewDbApi = FALSE;
 
 struct MM_INTERFACE mmi;
+struct UTF8_INTERFACE utfi;
 
-PLUGININFO pluginInfo = {
-	sizeof(PLUGININFO),
-#ifdef _UNICODE
-	"Send/Receive Messages (Unicode)",
-#else
+PLUGININFOEX pluginInfo = {
+	sizeof(PLUGININFOEX),
 	"Send/Receive Messages",
-#endif
-	PLUGIN_MAKE_VERSION(3, 0, 0, 0),
+	PLUGIN_MAKE_VERSION(0, 7, 0, 0),
 	"Send and receive instant messages",
 	"Miranda IM Development Team",
 	"rainwater@miranda-im.org",
 	"Copyright 2000-2006 Miranda IM project",
 	"http://www.miranda-im.org",
-	0,
-	DEFMOD_SRMESSAGE            // replace internal version (if any)
+	UNICODE_AWARE,
+	DEFMOD_SRMESSAGE,            // replace internal version (if any)
+#ifdef _UNICODE
+	{0x657fe89b, 0xd121, 0x40c2, { 0x8a, 0xc9, 0xb9, 0xfa, 0x57, 0x55, 0xb3, 0xc }} //{657FE89B-D121-40c2-8AC9-B9FA5755B30C}
+#else
+	{0xd53dd778, 0x16d2, 0x49ac, { 0x8f, 0xb3, 0x6f, 0x9a, 0x96, 0x1c, 0x9f, 0xd2 }} //{D53DD778-16D2-49ac-8FB3-6F9A961C9FD2}
+#endif
 };
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
@@ -53,17 +56,28 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 	return TRUE;
 }
 
-__declspec(dllexport) PLUGININFO *MirandaPluginInfo(DWORD mirandaVersion)
+__declspec(dllexport) PLUGININFOEX *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 0))
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 7, 0, 2))
 		return NULL;
 	return &pluginInfo;
+}
+
+static const MUUID interfaces[] = {MIID_SRMM, MIID_LAST};
+__declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
+{
+	return interfaces;
 }
 
 int __declspec(dllexport) Load(PLUGINLINK * link)
 {
 	pluginLink = link;
 	mir_getMMI( &mmi );
+	mir_getUTFI( &utfi );
+
+	if ( ServiceExists( MS_DB_EVENT_GETTEXT ))
+		bNewDbApi = TRUE;
+
 	return LoadSendRecvMessageModule();
 }
 

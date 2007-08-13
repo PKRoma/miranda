@@ -1021,6 +1021,8 @@ static void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, 
     DeleteDC(dcMem);
 }
 
+static POINT ptMouseT = {0};
+
 static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     struct TabControlData *tabdat = 0;
@@ -1046,6 +1048,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
             tabdat->hwnd = hwnd;
             tabdat->cx = GetSystemMetrics(SM_CXSMICON);
             tabdat->cy = GetSystemMetrics(SM_CYSMICON);
+            tabdat->fTipActive = FALSE;
             SendMessage(hwnd, EM_THEMECHANGED, 0, 0);
             OldTabControlClassProc = wcl.lpfnWndProc;
             return TRUE;
@@ -1151,6 +1154,25 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
             SendMessage(GetParent(hwnd), DM_CLOSETABATMOUSE, 0, (LPARAM)&pt);
             return 1;
         }
+        case WM_SETCURSOR:
+        {
+            POINT pt;
+
+            GetCursorPos(&pt);
+            SendMessage(GetParent(hwnd), msg, wParam, lParam);
+            if (abs(pt.x - ptMouseT.x) < 4  && abs(pt.y - ptMouseT.y) < 4) {
+                return 1;
+            }
+            ptMouseT = pt;
+            if(tabdat->fTipActive){
+                KillTimer(hwnd, TIMERID_HOVER_T);
+                CallService("mToolTip/HideTip", 0, 0);
+                tabdat->fTipActive = FALSE;
+            }
+            KillTimer(hwnd, TIMERID_HOVER_T);
+            SetTimer(hwnd, TIMERID_HOVER_T, 450, 0);
+            break;
+        }
         case WM_SIZE:
         {
             int iTabs = TabCtrl_GetItemCount(hwnd);
@@ -1195,10 +1217,19 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
             SendMessage(GetParent(hwnd), DM_CLOSETABATMOUSE, 0, (LPARAM)&pt);
             break;
         }
+        case WM_RBUTTONDOWN:
+            KillTimer(hwnd, TIMERID_HOVER_T);
+            CallService("mToolTip/HideTip", 0, 0);
+            tabdat->fTipActive = FALSE;
+            break;
 
         case WM_LBUTTONDOWN:
 		{
 			TCHITTESTINFO tci = {0};
+
+            KillTimer(hwnd, TIMERID_HOVER_T);
+            CallService("mToolTip/HideTip", 0, 0);
+            tabdat->fTipActive = FALSE;
 
             if(GetKeyState(VK_CONTROL) & 0x8000) {
                 tci.pt.x=(short)LOWORD(GetMessagePos());
@@ -1221,6 +1252,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
                             tabdat->iBeginIndex = i;
                             tabdat->hwndDrag = (HWND)tc.lParam;
                             tabdat->dragDat = dat;
+                            tabdat->fSavePos = TRUE;
                             tabdat->himlDrag = ImageList_Create(16, 16, ILC_MASK | (IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16), 1, 0);
                             ImageList_AddIcon(tabdat->himlDrag, dat->hTabIcon);
                             ImageList_BeginDrag(tabdat->himlDrag, 0, 8, 8);
@@ -1231,6 +1263,39 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
                     }
                 }
             }
+
+           if(GetKeyState(VK_MENU) & 0x8000) {
+               tci.pt.x=(short)LOWORD(GetMessagePos());
+               tci.pt.y=(short)HIWORD(GetMessagePos());
+               if(DragDetect(hwnd, tci.pt) && TabCtrl_GetItemCount(hwnd) >1 ) {
+                   int i; 
+                   tci.flags = TCHT_ONITEM;
+
+                   ScreenToClient(hwnd, &tci.pt);
+                   i= TabCtrl_HitTest(hwnd, &tci);
+                   if(i != -1) {
+                       TCITEM tc;
+                       struct MessageWindowData *dat = NULL;
+
+                       tc.mask = TCIF_PARAM;
+                       TabCtrl_GetItem(hwnd, i, &tc);
+                       dat = (struct MessageWindowData *)GetWindowLong((HWND)tc.lParam, GWL_USERDATA);
+                       if(dat)	{
+                           tabdat->bDragging = TRUE;
+                           tabdat->iBeginIndex = i;
+                           tabdat->hwndDrag = (HWND)tc.lParam;
+                           tabdat->dragDat = dat;
+                           tabdat->himlDrag = ImageList_Create(16, 16, ILC_MASK | (IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16), 1, 0);
+                           tabdat->fSavePos = FALSE;
+                           ImageList_AddIcon(tabdat->himlDrag, dat->hTabIcon);
+                           ImageList_BeginDrag(tabdat->himlDrag, 0, 8, 8);
+                           ImageList_DragEnter(hwnd, tci.pt.x, tci.pt.y);
+                           SetCapture(hwnd);
+                       }
+                       return TRUE;
+                   }
+               }
+           }
 		}
         break;
 
@@ -1275,7 +1340,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
                 ScreenToClient(hwnd, &tci.pt);
                 i= TabCtrl_HitTest(hwnd, &tci);
                 if(i != -1 && i != tabdat->iBeginIndex)
-                    RearrangeTab(tabdat->hwndDrag, tabdat->dragDat, MAKELONG(i, 0xffff));
+                    RearrangeTab(tabdat->hwndDrag, tabdat->dragDat, MAKELONG(i, 0xffff), tabdat->fSavePos);
                 tabdat->hwndDrag = (HWND)-1;
                 tabdat->dragDat = NULL;
                 if(tabdat->himlDrag) {
@@ -1553,6 +1618,45 @@ skip_tabs:
             EndPaint(hwnd, &ps);
             return 0;
         }
+        case WM_TIMER:
+        {
+            if(wParam == TIMERID_HOVER_T &&  DBGetContactSettingByte(NULL, SRMSGMOD_T, "d_tooltips", 1)) {
+                POINT pt;
+                CLCINFOTIP ti = {0};
+                ti.cbSize = sizeof(ti);
+
+                KillTimer(hwnd, TIMERID_HOVER_T);
+                GetCursorPos(&pt);
+                if(abs(pt.x - ptMouseT.x) < 5 && abs(pt.y - ptMouseT.y) < 5) {
+                    TCITEM item = {0};
+                    int    nItem = 0;
+					struct MessageWindowData *dat = 0;
+
+                    ti.ptCursor = pt;
+                    //ScreenToClient(hwnd, &pt);
+
+                    item.mask = TCIF_PARAM;
+                    nItem = GetTabItemFromMouse(hwnd, &pt);
+                    if(nItem >= 0 && nItem < TabCtrl_GetItemCount(hwnd)) {
+                        TabCtrl_GetItem(hwnd, nItem, &item);
+                        /*
+                         * get the message window data for the session to which this tab item belongs
+                         */
+
+                        if(IsWindow((HWND)item.lParam) && item.lParam != 0)
+                            dat = (struct MessageWindowData *)GetWindowLong((HWND)item.lParam, GWL_USERDATA);
+                        if(dat) {
+                            tabdat->fTipActive = TRUE;
+                            ti.isGroup = 0;
+                            ti.hItem = dat->hContact;
+                            ti.isTreeFocused = 0;
+                            CallService("mToolTip/ShowTip", 0, (LPARAM)&ti);
+                        }
+                    }
+                }
+            }
+            break;
+        }
         case WM_MOUSEWHEEL:
         {
             short amount = (short)(HIWORD(wParam));
@@ -1564,6 +1668,13 @@ skip_tabs:
                 SendMessage(GetParent(hwnd), DM_SELECTTAB, DM_SELECT_NEXT, 0);
             InvalidateRect(hwnd, NULL, FALSE);
             break;
+        }
+        case  WM_USER + 100:
+        {
+            if(tabdat->fTipActive) {
+                tabdat->fTipActive = FALSE;
+                CallService("mToolTip/HideTip", 0, 0);
+            }
         }
     }
     return CallWindowProc(OldTabControlClassProc, hwnd, msg, wParam, lParam); 

@@ -61,14 +61,10 @@ CLEAN :
 	-@erase "$(INTDIR)\extraimage.obj"
 	-@erase "$(INTDIR)\forkthread.obj"
 	-@erase "$(INTDIR)\framesmenu.obj"
-	-@erase "$(INTDIR)\genmenu.obj"
-	-@erase "$(INTDIR)\genmenuopt.obj"
 	-@erase "$(INTDIR)\groupmenu.obj"
 	-@erase "$(INTDIR)\init.obj"
 	-@erase "$(INTDIR)\keyboard.obj"
-	-@erase "$(INTDIR)\movetogroup.obj"
 	-@erase "$(INTDIR)\mwclist.pch"
-	-@erase "$(INTDIR)\protocolorder.obj"
 	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\statusbar.obj"
 	-@erase "$(INTDIR)\vc60.idb"
@@ -94,7 +90,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\cluiframes.obj" \
 	"$(INTDIR)\extraimage.obj" \
 	"$(INTDIR)\framesmenu.obj" \
-	"$(INTDIR)\protocolorder.obj" \
 	"$(INTDIR)\statusbar.obj" \
 	"$(INTDIR)\BkgrCfg.obj" \
 	"$(INTDIR)\clc.obj" \
@@ -114,12 +109,9 @@ LINK32_OBJS= \
 	"$(INTDIR)\commonheaders.obj" \
 	"$(INTDIR)\contact.obj" \
 	"$(INTDIR)\forkthread.obj" \
-	"$(INTDIR)\genmenu.obj" \
-	"$(INTDIR)\genmenuopt.obj" \
 	"$(INTDIR)\groupmenu.obj" \
 	"$(INTDIR)\init.obj" \
 	"$(INTDIR)\keyboard.obj" \
-	"$(INTDIR)\movetogroup.obj" \
 	"$(INTDIR)\resource.res"
 
 "..\..\bin\release\plugins\clist_mw.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -157,14 +149,10 @@ CLEAN :
 	-@erase "$(INTDIR)\extraimage.obj"
 	-@erase "$(INTDIR)\forkthread.obj"
 	-@erase "$(INTDIR)\framesmenu.obj"
-	-@erase "$(INTDIR)\genmenu.obj"
-	-@erase "$(INTDIR)\genmenuopt.obj"
 	-@erase "$(INTDIR)\groupmenu.obj"
 	-@erase "$(INTDIR)\init.obj"
 	-@erase "$(INTDIR)\keyboard.obj"
-	-@erase "$(INTDIR)\movetogroup.obj"
 	-@erase "$(INTDIR)\mwclist.pch"
-	-@erase "$(INTDIR)\protocolorder.obj"
 	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\statusbar.obj"
 	-@erase "$(INTDIR)\vc60.idb"
@@ -191,7 +179,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\cluiframes.obj" \
 	"$(INTDIR)\extraimage.obj" \
 	"$(INTDIR)\framesmenu.obj" \
-	"$(INTDIR)\protocolorder.obj" \
 	"$(INTDIR)\statusbar.obj" \
 	"$(INTDIR)\BkgrCfg.obj" \
 	"$(INTDIR)\clc.obj" \
@@ -211,12 +198,9 @@ LINK32_OBJS= \
 	"$(INTDIR)\commonheaders.obj" \
 	"$(INTDIR)\contact.obj" \
 	"$(INTDIR)\forkthread.obj" \
-	"$(INTDIR)\genmenu.obj" \
-	"$(INTDIR)\genmenuopt.obj" \
 	"$(INTDIR)\groupmenu.obj" \
 	"$(INTDIR)\init.obj" \
 	"$(INTDIR)\keyboard.obj" \
-	"$(INTDIR)\movetogroup.obj" \
 	"$(INTDIR)\resource.res"
 
 "..\..\bin\debug\plugins\clist_mw.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -254,14 +238,10 @@ CLEAN :
 	-@erase "$(INTDIR)\extraimage.obj"
 	-@erase "$(INTDIR)\forkthread.obj"
 	-@erase "$(INTDIR)\framesmenu.obj"
-	-@erase "$(INTDIR)\genmenu.obj"
-	-@erase "$(INTDIR)\genmenuopt.obj"
 	-@erase "$(INTDIR)\groupmenu.obj"
 	-@erase "$(INTDIR)\init.obj"
 	-@erase "$(INTDIR)\keyboard.obj"
-	-@erase "$(INTDIR)\movetogroup.obj"
 	-@erase "$(INTDIR)\mwclist.pch"
-	-@erase "$(INTDIR)\protocolorder.obj"
 	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\statusbar.obj"
 	-@erase "$(INTDIR)\vc60.idb"
@@ -287,7 +267,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\cluiframes.obj" \
 	"$(INTDIR)\extraimage.obj" \
 	"$(INTDIR)\framesmenu.obj" \
-	"$(INTDIR)\protocolorder.obj" \
 	"$(INTDIR)\statusbar.obj" \
 	"$(INTDIR)\BkgrCfg.obj" \
 	"$(INTDIR)\clc.obj" \
@@ -307,12 +286,9 @@ LINK32_OBJS= \
 	"$(INTDIR)\commonheaders.obj" \
 	"$(INTDIR)\contact.obj" \
 	"$(INTDIR)\forkthread.obj" \
-	"$(INTDIR)\genmenu.obj" \
-	"$(INTDIR)\genmenuopt.obj" \
 	"$(INTDIR)\groupmenu.obj" \
 	"$(INTDIR)\init.obj" \
 	"$(INTDIR)\keyboard.obj" \
-	"$(INTDIR)\movetogroup.obj" \
 	"$(INTDIR)\resource.res"
 
 "..\..\bin\release Unicode\plugins\clist_mw.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -350,14 +326,10 @@ CLEAN :
 	-@erase "$(INTDIR)\extraimage.obj"
 	-@erase "$(INTDIR)\forkthread.obj"
 	-@erase "$(INTDIR)\framesmenu.obj"
-	-@erase "$(INTDIR)\genmenu.obj"
-	-@erase "$(INTDIR)\genmenuopt.obj"
 	-@erase "$(INTDIR)\groupmenu.obj"
 	-@erase "$(INTDIR)\init.obj"
 	-@erase "$(INTDIR)\keyboard.obj"
-	-@erase "$(INTDIR)\movetogroup.obj"
 	-@erase "$(INTDIR)\mwclist.pch"
-	-@erase "$(INTDIR)\protocolorder.obj"
 	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\statusbar.obj"
 	-@erase "$(INTDIR)\vc60.idb"
@@ -383,7 +355,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\cluiframes.obj" \
 	"$(INTDIR)\extraimage.obj" \
 	"$(INTDIR)\framesmenu.obj" \
-	"$(INTDIR)\protocolorder.obj" \
 	"$(INTDIR)\statusbar.obj" \
 	"$(INTDIR)\BkgrCfg.obj" \
 	"$(INTDIR)\clc.obj" \
@@ -403,12 +374,9 @@ LINK32_OBJS= \
 	"$(INTDIR)\commonheaders.obj" \
 	"$(INTDIR)\contact.obj" \
 	"$(INTDIR)\forkthread.obj" \
-	"$(INTDIR)\genmenu.obj" \
-	"$(INTDIR)\genmenuopt.obj" \
 	"$(INTDIR)\groupmenu.obj" \
 	"$(INTDIR)\init.obj" \
 	"$(INTDIR)\keyboard.obj" \
-	"$(INTDIR)\movetogroup.obj" \
 	"$(INTDIR)\resource.res"
 
 "..\..\bin\debug Unicode\plugins\clist_mw.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -584,50 +552,6 @@ CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /
 CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "mwclist_EXPORTS" /Fp"$(INTDIR)\mwclist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
 "$(INTDIR)\framesmenu.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\mwclist.pch"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ENDIF 
-
-SOURCE=.\CLUIFrames\protocolorder.c
-
-!IF  "$(CFG)" == "mwclist - Win32 Release"
-
-CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "mwclist_EXPORTS" /Fp"$(INTDIR)\mwclist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-"$(INTDIR)\protocolorder.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\mwclist.pch"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ELSEIF  "$(CFG)" == "mwclist - Win32 Debug"
-
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "mwclist_EXPORTS" /Fp"$(INTDIR)\mwclist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
-
-"$(INTDIR)\protocolorder.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\mwclist.pch"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ELSEIF  "$(CFG)" == "mwclist - Win32 Release Unicode"
-
-CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "mwclist_EXPORTS" /Fp"$(INTDIR)\mwclist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-"$(INTDIR)\protocolorder.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\mwclist.pch"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ELSEIF  "$(CFG)" == "mwclist - Win32 Debug Unicode"
-
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "mwclist_EXPORTS" /Fp"$(INTDIR)\mwclist.pch" /Yu"../commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
-
-"$(INTDIR)\protocolorder.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\mwclist.pch"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
@@ -1432,16 +1356,6 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 
 !ENDIF 
 
-SOURCE=.\genmenu.c
-
-"$(INTDIR)\genmenu.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\mwclist.pch"
-
-
-SOURCE=.\genmenuopt.c
-
-"$(INTDIR)\genmenuopt.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\mwclist.pch"
-
-
 SOURCE=.\groupmenu.c
 
 "$(INTDIR)\groupmenu.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\mwclist.pch"
@@ -1534,11 +1448,6 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 
 
 !ENDIF 
-
-SOURCE=.\movetogroup.c
-
-"$(INTDIR)\movetogroup.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\mwclist.pch"
-
 
 SOURCE=.\resource.rc
 

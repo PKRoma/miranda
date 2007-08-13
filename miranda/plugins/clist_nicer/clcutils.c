@@ -35,7 +35,7 @@ UNICODE done
 extern struct CluiData g_CluiData;
 
 extern struct ExtraCache *g_ExtraCache;
-extern int g_nextExtraCacheEntry, g_maxExtraCacheEntry;
+extern int g_nextExtraCacheEntry;
 extern int /*g_isConnecting,*/ during_sizing;
 
 extern void ( *saveRecalcScrollBar )(HWND hwnd, struct ClcData *dat);
@@ -103,7 +103,7 @@ int RTL_HitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct Clc
         for (i = 5; i >= 0; i--) {
             if (g_ExtraCache[hitcontact->extraCacheEntry].iExtraImage[i] == 0xFF)
                 continue;
-            if(!((1 << i) & g_CluiData.dwExtraImageMask))
+            if(!((1 << i) & g_ExtraCache[hitcontact->extraCacheEntry].dwXMask))
                 continue;
             images_present++;
             if (testx < right - (rightOffset - (g_CluiData.exIconScale + 2) * images_present) && testx > right - (rightOffset - (g_CluiData.exIconScale + 2) * images_present + (g_CluiData.exIconScale))) {
@@ -259,7 +259,7 @@ int HitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcCont
         for (i = 5; i >= 0; i--) {
             if (g_ExtraCache[hitcontact->extraCacheEntry].iExtraImage[i] == 0xFF)
                 continue;
-            if(!((1 << i) & g_CluiData.dwExtraImageMask))
+            if(!((1 << i) & g_ExtraCache[hitcontact->extraCacheEntry].dwXMask))
                 continue;
             images_present++;
             if (testx > (rightOffset - (g_CluiData.exIconScale + 2) * images_present) && testx < (rightOffset - (g_CluiData.exIconScale + 2) * images_present + (g_CluiData.exIconScale))) {

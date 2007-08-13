@@ -28,6 +28,7 @@
 #define IDD_VCARD_PHOTO                 132
 #define IDD_VCARD_NOTE                  133
 #define IDD_CHANGEPASSWORD              136
+#define IDD_SEARCHUSER                  138
 #define IDD_OPT_JABBERMAIN              139
 #define IDD_OPT_JABBER2                 140
 #define IDI_REQUEST                     141
@@ -47,9 +48,29 @@
 #define IDD_GROUPCHAT_INVITE            183
 #define IDD_GROUPCHAT_INVITE_ACCEPT     184
 #define IDD_OPT_JABBER3                 185
-#define IDD_OPT_SETAVATAR               185
 #define IDI_LOGIN                       186
 #define IDI_AUTHREVOKE                  187
+#define IDI_COMMAND                     188
+#define IDI_DISCO_OK                    190
+#define IDI_ICON2                       191
+#define IDI_DISCO_FAIL                  191
+#define IDI_VIEW_LIST                   192
+#define IDI_VIEW_TREE                   193
+#define IDI_FILTER_APPLY                194
+#define IDI_BROWSE                      195
+#define IDI_NAV_HOME                    196
+#define IDI_NAV_REFRESH                 197
+#define IDI_ICON8                       198
+#define IDI_FILTER_RESET                198
+#define IDI_DISCO_PROGRESS              199
+#define IDI_NODE_RSS                    200
+#define IDI_NODE_SERVER                 201
+#define IDI_NODE_STORE                  202
+#define IDI_ICON6                       203
+#define IDI_NODE_WEATHER                203
+#define IDD_CONSOLE                     205
+#define IDI_CONSOLE                     207
+#define IDD_SETMOODMSG                  216
 #define IDC_EDIT_USERNAME               1000
 #define IDC_SAVE                        1000
 #define IDC_EDIT_PASSWORD               1001
@@ -75,12 +96,16 @@
 #define IDC_AGENT_SEARCH                1022
 #define IDC_SUBMIT                      1023
 #define IDC_LOGO                        1024
+#define IDC_NEXT                        1025
+#define IDC_PREV                        1026
+#define IDC_COMPLETE                    1027
 #define IDC_AGENT_BROWSE                1029
 #define IDC_INSTRUCTION                 1030
 #define IDC_DESCRIPTION                 1031
 #define IDC_FRAME                       1037
 #define IDC_FRAME_TEXT                  1038
 #define IDC_SUBSCRIPTION                1039
+#define IDC_LOGOFF_TIME                 1040
 #define IDC_SIMPLE                      1041
 #define IDC_KEEPALIVE                   1042
 #define IDC_HOST                        1043
@@ -110,10 +135,7 @@
 #define IDC_BIRTH                       1065
 #define IDC_OCCUPATION                  1066
 #define IDC_HOMEPAGE                    1067
-#define IDC_AVATAR                      1068
 #define IDC_ENABLE_AVATARS              1069
-#define IDC_SETAVATAR                   1070
-#define IDC_DELETEAVATAR                1071
 #define IDC_MIDDLE                      1072
 #define IDC_EMAIL                       1073
 #define IDC_HOME                        1074
@@ -146,8 +168,13 @@
 #define IDC_SYSTEM                      1103
 #define IDC_PRIORITY_SPIN               1104
 #define IDC_PRIORITY                    1105
+#define IDC_SYSTEM2                     1105
+#define IDC_IDLE_SINCE                  1105
 #define IDC_PRIORITY_LABEL              1106
 #define IDC_NEWPASSWD                   1107
+#define IDC_COMBO_ACCTYPE               1108
+#define IDD_WIZARD                      1109
+#define IDD_MODERNOPT                   1110
 #define IDC_PASS_SERVER                 1112
 #define IDC_PROXY_ADDR                  1112
 #define IDC_PASS_PORT                   1113
@@ -159,7 +186,6 @@
 #define IDC_EXT_ADDRESS_LABEL           1118
 #define IDC_PASS_PORT_LABEL             1119
 #define IDC_USE_PASS                    1120
-#define IDC_PROXY                       1120
 #define IDC_USE_EXT_ADDRESS             1121
 #define IDC_DIRECT_MANUAL               1121
 #define IDC_REG_STATUS                  1122
@@ -193,7 +219,6 @@
 #define IDC_DATE                        1157
 #define IDC_MANUAL_REGISTER             1167
 #define IDC_REASON                      1171
-
 #define IDC_CLIST                       1172
 #define IDC_NEWJID                      1173
 #define IDC_ADDJID                      1174
@@ -204,19 +229,113 @@
 #define IDC_DISABLE_MAINMENU            1179
 #define IDC_USE_TLS                     1180
 #define IDC_AUTO_ACCEPT_MUC             1181
-
 #define IDC_DISABLE_SASL                1182
 #define IDC_UNREGISTER                  1183
 #define IDC_VALIDATEADD                 1184
+#define IDC_UNREGISTER2                 1184
+#define IDC_ENABLE_RC                   1184
+#define IDC_GO                          1196
+#define IDC_RADIO1                      1215
+#define IDC_COMMANDS                    1216
+#define IDC_COMMANDS1                   1216
+#define IDC_COMMANDS2                   1217
+#define IDC_STATIC_LOGOFF_TIME_LABEL    1217
+#define IDC_COMBO_RESOURCE              1218
+#define IDC_PL_LIST                     1219
+#define IDC_PL_RULES_LIST               1219
 #define IDC_WHITERECT                   1221
+#define IDC_ADD_RULE                    1221
+#define IDC_EDIT_RULE                   1222
+#define IDC_REMOVE_RULE                 1223
+#define IDC_COMBO_CURRENT_LIST          1224
+#define IDC_ADD_LIST                    1225
+#define IDC_REMOVE_LIST                 1226
+#define IDC_COMBO_ACTIVE_LIST           1227
+#define IDC_COMBO_DEFAULT_LIST          1228
+#define IDC_COMBO_TYPE                  1230
 #define IDC_UPDATING                    1231
+#define IDC_EDIT_VALUE                  1231
+#define IDC_COMBO_ACTION                1232
+#define IDC_CHECK_MESSAGES              1233
+#define IDC_CHECK_QUERIES               1234
+#define IDC_CHECK_PRESENCE_OUT          1235
+#define IDC_CHECK_PRESENCE_IN           1236
+#define IDC_COMBO_VALUE                 1237
+#define IDC_EDIT_NAME                   1238
+#define IDC_STATIC_LISTS_LABEL          1239
+#define IDC_TREE_DISCO                  1240
+#define IDC_FRAME1                      1241
+#define IDC_FRAME2                      1242
+#define IDC_COMBO_JID                   1243
+#define IDC_TXT_JID                     1243
+#define IDC_COMBO_NODE                  1244
+#define IDC_BUTTON1                     1245
+#define IDC_BUTTON_BROWSE               1245
+#define IDC_DOWNLOAD                    1245
+#define IDC_BTN_NAVHOME                 1246
+#define IDC_UPLOAD                      1246
+#define IDC_TXT_FILTERTEXT              1247
+#define IDC_IMPORT                      1247
+#define IDC_BTN_FILTERRESET             1248
+#define IDC_EXPORT                      1248
+#define IDC_TXT_FILTER                  1249
+#define IDC_TXT_NODELABEL               1250
+#define IDC_BTN_FAVORITE                1251
+#define IDC_RADIO2                      1251
+#define IDC_RADIO3                      1252
+#define IDC_BTN_REFRESH                 1253
+#define IDC_BTN_VIEWTREE                1254
+#define IDC_BTN_VIEWLIST                1255
+#define IDC_TXT_NODE                    1257
+#define IDC_BTN_FILTERAPPLY             1258
+#define IDC_COMBO2                      1260
+#define IDC_ROSTER                      1261
+#define IDC_MSG_MOOD                    1262
+#define IDC_OPTTREE                     1263
+#define IDC_LIST1                       1264
+#define IDC_LV_INFO                     1264
+#define IDC_TITLE1                      1265
+#define IDC_CONSOLE                     1266
+#define IDC_CONSOLEIN                   1267
+#define IDC_RESET                       1268
 #define IDC_EMAILS                      1306
 #define IDC_PHONES                      1308
 #define IDC_UPDATE                      1313
 #define IDC_STATUS                      1414
+#define IDC_INSTRUCTIONS                1414
 #define IDC_PLAN                        1415
 #define IDC_PERSONALGROUP               1434
 #define IDC_EXTRAGROUP                  1436
+#define IDC_COMBO_VALUES                1437
+#define IDI_BOOKMARKS                   3000
+#define IDD_BOOKMARKS                   3001
+#define IDC_BM_LIST                     3002
+#define IDC_ADD                         3004
+#define IDC_REMOVE                      3005
+#define IDD_BOOKMARK_ADD                3006
+#define IDC_UP                          3006
+#define IDC_UP_RULE                     3006
+#define IDC_ROOM_JID                    3007
+#define IDD_PRIVACY_LISTS               3007
+#define IDC_DOWN                        3007
+#define IDC_DOWN_RULE                   3007
+#define IDC_ROSTER2BOOKMARK             3008
+#define IDC_APPLY                       3008
+#define IDD_PRIVACY_RULE                3008
+#define IDC_ROOM_RADIO                  3009
+#define IDD_PRIVACY_ADD_LIST            3009
+#define IDC_AUTOJOIN_BOOKMARKS          3010
+#define IDD_SERVICE_DISCOVERY           3010
+#define IDC_URL_RADIO                   3011
+#define IDC_AGENT_RADIO                 3012
+#define IDC_BOOKMARK_TYPE               3013
+#define IDC_CHECK_BM_AUTOJOIN           3014
+#define IDC_ZLIB                        3015
+#define IDI_PRIVACY_LISTS               3016
+#define IDC_LOG_CHATSTATES              3016
+#define IDI_SERVICE_DISCOVERY           3017
+#define IDC_ENABLE_USER_MOOD            3017
+#define IDC_ENABLE_USER_TUNE            3018
 #define IDM_MESSAGE                     10002
 #define IDM_CLEAR                       10003
 #define IDM_VOICE                       10005
@@ -230,17 +349,16 @@
 #define IDM_DESTROY                     10014
 #define IDM_MEMBER                      10015
 #define IDM_INVITE                      10016
+#define IDM_BOOKMARKS                   10017
+#define IDM_VCARD                       10018
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
- #ifndef APSTUDIO_READONLY_SYMBOLS
- #define _APS_NEXT_RESOURCE_VALUE        188
- #define _APS_NEXT_COMMAND_VALUE         40017
- #define _APS_NEXT_CONTROL_VALUE         1187
- #define _APS_NEXT_SYMED_VALUE           101
+#define _APS_NEXT_RESOURCE_VALUE        208
+#define _APS_NEXT_COMMAND_VALUE         40017
+#define _APS_NEXT_CONTROL_VALUE         1270
+#define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
-#endif
-

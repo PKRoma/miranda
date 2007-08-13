@@ -113,12 +113,12 @@ int SM_RemoveSession( const TCHAR* pszID, const char* pszModule)
 			if (pTemp->hWnd)
 				g_TabSession.nUsersInNicklist = 0;
 
+			DoEventHook(pTemp->ptszID, pTemp->pszModule, GC_SESSION_TERMINATE, NULL, NULL, (DWORD)pTemp->dwItemData);
+
 			if (pLast == NULL)
 				m_WndList = pTemp->next;
 			else
 				pLast->next = pTemp->next;
-
-			DoEventHook(pTemp->ptszID, pTemp->pszModule, GC_SESSION_TERMINATE, NULL, NULL, (DWORD)pTemp->dwItemData);
 
 			UM_RemoveAll(&pTemp->pUsers);
 			TM_RemoveAll(&pTemp->pStatuses);
@@ -126,15 +126,17 @@ int SM_RemoveSession( const TCHAR* pszID, const char* pszModule)
 			pTemp->iStatusCount = 0;
 			pTemp->nUsersInNicklist = 0;
 
-			if (pTemp->hContact)
+			// contact may have been deleted here already, since function may be called after deleting
+			// contact so the handle may be invalid, therefore DBGetContactSettingByte shall return 0
+			if (pTemp->hContact && DBGetContactSettingByte( pTemp->hContact, pTemp->pszModule, "ChatRoom", 0 ) != 0)
 			{
 				CList_SetOffline(pTemp->hContact, pTemp->iType == GCW_CHATROOM?TRUE:FALSE);
 				if (pTemp->iType != GCW_SERVER)
 					DBWriteContactSettingByte(pTemp->hContact, "CList", "Hidden", 1);
+				DBWriteContactSettingString(pTemp->hContact, pTemp->pszModule, "Topic", "");
+				DBWriteContactSettingString(pTemp->hContact, pTemp->pszModule, "StatusBar", "");
+				DBDeleteContactSetting(pTemp->hContact, "CList", "StatusMsg");
 			}
-			DBWriteContactSettingString(pTemp->hContact, pTemp->pszModule , "Topic", "");
-			DBWriteContactSettingString(pTemp->hContact, pTemp->pszModule, "StatusBar", "");
-			DBDeleteContactSetting(pTemp->hContact, "CList", "StatusMsg");
 
 			mir_free( pTemp->pszModule );
 			mir_free( pTemp->ptszID );
@@ -476,6 +478,30 @@ BOOL SM_GiveStatus(const TCHAR* pszID, const char* pszModule, const TCHAR* pszUI
 	return FALSE;
 }
 
+BOOL SM_SetContactStatus(const TCHAR* pszID, const char* pszModule, const TCHAR* pszUID, WORD wStatus)
+{
+	SESSION_INFO* pTemp = m_WndList, *pLast = NULL;
+
+	if ( !pszID || !pszModule )
+		return FALSE;
+
+	while ( pTemp != NULL ) {
+		if ( !lstrcmpi( pTemp->ptszID, pszID ) && !lstrcmpiA( pTemp->pszModule, pszModule )) {
+			USERINFO * ui = UM_SetContactStatus(pTemp->pUsers, pszUID, wStatus);
+			if (ui) {
+				SM_MoveUser( pTemp->ptszID, pTemp->pszModule, ui->pszUID );
+				if ( pTemp->hWnd )
+					SendMessage(pTemp->hWnd, GC_UPDATENICKLIST, (WPARAM)0, (LPARAM)0);
+			}
+			return TRUE;
+		}
+		pLast = pTemp;
+		pTemp = pTemp->next;
+	}
+
+	return FALSE;
+}
+
 BOOL SM_TakeStatus(const TCHAR* pszID, const char* pszModule, const TCHAR* pszUID, const TCHAR* pszStatus)
 {
 	SESSION_INFO *pTemp = m_WndList, *pLast = NULL;
@@ -759,6 +785,10 @@ BOOL SM_RemoveAll (void)
 		mir_free( m_WndList->ptszName );
 		mir_free( m_WndList->ptszStatusbarText );
 		mir_free( m_WndList->ptszTopic );
+		#if defined( _UNICODE )
+			mir_free( m_WndList->pszID );
+			mir_free( m_WndList->pszName );
+		#endif
 
 		while (m_WndList->lpCommands != NULL) {
 			COMMAND_INFO *pNext = m_WndList->lpCommands->next;
@@ -964,7 +994,7 @@ void MM_IconsChanged(void)
 {
 	MODULEINFO *pTemp = m_ModList, *pLast = NULL;
 	ImageList_ReplaceIcon(hIconsList, 0, LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
-	ImageList_ReplaceIcon(hIconsList, 1, LoadIconEx(IDI_OVERLAY, "overlay", 0, 0));
+	ImageList_ReplaceIcon(hIconsList, 1, LoadIconEx( "overlay" ));
 	while (pTemp != NULL)
 	{
 		pTemp->OnlineIconIndex = ImageList_ReplaceIcon(hIconsList, pTemp->OnlineIconIndex, LoadSkinnedProtoIcon(pTemp->pszModule, ID_STATUS_ONLINE));
@@ -1379,6 +1409,24 @@ USERINFO* UM_GiveStatus(USERINFO* pUserList, const TCHAR* pszUID, WORD status)
 	while ( pTemp != NULL ) {
 		if ( !lstrcmpi( pTemp->pszUID, pszUID )) {
 			pTemp->Status |= status;
+			return pTemp;
+		}
+		pLast = pTemp;
+		pTemp = pTemp->next;
+	}
+	return 0;
+}
+
+USERINFO* UM_SetContactStatus(USERINFO* pUserList, const TCHAR* pszUID, WORD status)
+{
+	USERINFO *pTemp = pUserList, *pLast = NULL;
+
+	if (!pUserList || !pszUID)
+		return NULL;
+
+	while ( pTemp != NULL ) {
+		if ( !lstrcmpi( pTemp->pszUID, pszUID )) {
+			pTemp->ContactStatus = status;
 			return pTemp;
 		}
 		pLast = pTemp;

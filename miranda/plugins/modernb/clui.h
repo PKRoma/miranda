@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2006 Miranda ICQ/IM project, 
+Copyright 2000-2007 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 
 listed in contributors.txt.
@@ -42,10 +42,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define MENU_MIRANDAMENU            0xFFFF1234
 #define MENU_STATUSMENU             0xFFFF1235
+#define MENU_MINIMIZE               0xFFFF1236
 
 #define M_CREATECLC                 (WM_USER+1)
 #define M_SETALLEXTRAICONS          (WM_USER+2)
-#define UM_ALPHASUPPORT             (WM_USER+100)
+
 
 #define MS_CLUI_SHOWMAINMENU    "CList/ShowMainMenu"
 #define MS_CLUI_SHOWSTATUSMENU  "CList/ShowStatusMenu"
@@ -58,34 +59,19 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define ANIMATION_STEP              40
 
 /* Declaration of prototypes in other modules */
-
-int  CLC_EnterDragToScroll(HWND hwnd, int Y);
-HFONT CLCPaint_ChangeToFont(HDC hdc,struct ClcData *dat,int id,int *fontHeight);
-int CLCPaint_FillQuickHash();
-int CListSettings_GetCopyFromCache(pdisplayNameCacheEntry pDest);
 int CLC_GetShortData(struct ClcData* pData, struct SHORTDATA *pShortData);
-int SkinEngine_JustUpdateWindowImage();
+int  CLC_EnterDragToScroll(HWND hwnd, int Y);
 
-int CListSettings_SetToCache(pdisplayNameCacheEntry pSrc);
+HFONT CLCPaint_ChangeToFont(HDC hdc,struct ClcData *dat,int id,int *fontHeight);
+void CLCPaint_FillQuickHash();
 
 int CListMod_ContactListShutdownProc(WPARAM wParam,LPARAM lParam);
 int CListMod_HideWindow(HWND hwndContactList, int mode);
 
+int CListSettings_GetCopyFromCache(pdisplayNameCacheEntry pDest);
+int CListSettings_SetToCache(pdisplayNameCacheEntry pSrc);
+
 int CListTray_GetGlobalStatus(WPARAM wparam,LPARAM lparam);
-void CListTray_TrayIconDestroy(HWND hwnd);
-
-int CLUIFrames_ActivateSubContainers(BOOL active);
-int CLUIFrames_ApplyNewSizes(int mode);
-int CLUIFrames_GetTotalHeight();
-int CLUIFrames_OnClistResize_mod(WPARAM wParam,LPARAM lParam, int mode);
-int CLUIFrames_OnMoving(HWND hwnd,RECT *lParam);
-int CLUIFrames_OnShowHide(HWND hwnd, int mode);
-int CLUIFrames_RepaintSubContainers();
-int CLUIFrames_SetParentForContainers(HWND parent);
-void __inline CLUIFrames_UnLockFrame();
-int CLUIFrames_UpdateFrame(WPARAM wParam,LPARAM lParam);
-
-int CLUIOpt_Init(WPARAM wParam,LPARAM lParam);
 
 int CLUIServices_LoadModule(void);
 int CLUIServices_SortList(WPARAM wParam,LPARAM lParam);
@@ -105,19 +91,15 @@ void GroupMenus_Init();
 int ModernButton_LoadModule();
 int ModernButton_ReposButtons(HWND parent, BOOL draw,RECT *r);
 
-int ProtocolOrder_CheckOrder();
-int ProtocolOrder_LoadModule(void);
-
-void SkinEngine_ApplyTransluency();
-HBITMAP SkinEngine_CreateDIB32(int cx, int cy);
-HBITMAP SkinEngine_CreateDIB32Point(int cx, int cy, void ** bits);
-int SkinEngine_JustSkinEngine_UpdateWindowImage();
-void SkinEngine_LoadSkinFromDB(void);
-int SkinEngine_RedrawCompleteWindow();
-BOOL SkinEngine_SetRectOpaque(HDC memdc,RECT *fr);
-int SkinEngine_UpdateWindowImage();
-int SkinEngine_ValidateFrameImageProc(RECT * r);
-
+void ske_ApplyTransluency();
+HBITMAP ske_CreateDIB32(int cx, int cy);
+HBITMAP ske_CreateDIB32Point(int cx, int cy, void ** bits);
+int ske_JustUpdateWindowImage();
+void ske_LoadSkinFromDB(void);
+int ske_RedrawCompleteWindow();
+BOOL ske_SetRectOpaque(HDC memdc,RECT *fr);
+int ske_UpdateWindowImage();
+int ske_ValidateFrameImageProc(RECT * r);
 
 int StatusBar_Create(HWND parent);
 
@@ -128,75 +110,29 @@ int UnhookAll();
 
 /* External variables */
 
-extern STATUSBARDATA g_StatusBarData;
-extern SKINOBJECTSLIST g_SkinObjectList;
-extern void (*saveLoadCluiGlobalOpts)(void);
-extern CURRWNDIMAGEDATA * g_pCachedWindow;
-            
-extern HWND g_hwndEventFrame;
-extern char * g_szConnectingProto;
-
-extern BOOL g_mutex_bLockImageUpdating;
-extern BOOL g_mutex_bLockUpdating;
-extern BOOL g_mutex_bSetAllExtraIconsCycle;
-
-extern int  g_mutex_uPreventDockMoving;
-extern int  g_mutex_nPaintLock;
-extern int  g_mutex_nCalcRowHeightLock;
-extern int  g_mutex_bOnTrayRightClick;
-
-extern BOOL g_flag_bUpdateQueued;
-extern BOOL g_flag_bPostWasCanceled;
-extern BOOL g_flag_bFullRepaint;   
-
-extern BOOL g_bLayered;
-extern BOOL g_bDocked;
-extern BOOL g_bMultiConnectionMode;
-
-extern BYTE g_bCalledFromShowHide;
-
-extern PLUGININFO pluginInfo;   
-
-extern tPaintCallbackProc CLC_PaintCallbackProc(HWND hWnd, HDC hDC, RECT * rcPaint, HRGN rgn, DWORD dFlags, void * CallBackData);
-extern BOOL (WINAPI *g_proc_UpdateLayeredWindow)(HWND,HDC,POINT*,SIZE*,HDC,POINT*,COLORREF,BLENDFUNCTION*,DWORD);
-extern LRESULT ( CALLBACK *saveContactListWndProc )(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 /* Global variables */
 
-struct CluiData g_CluiData={0};
-BYTE    g_bSTATE=STATE_NORMAL;
+
 HANDLE  g_hSkinLoadedEvent;
 
-DWORD   g_dwMainThreadID=0,
-        g_dwAskAwayMsgThreadID=0,
-        g_dwGetTextThreadID=0,
-        g_dwFillFontListThreadID=0,
-        g_dwSmoothAnimationThreadID=0;
+HANDLE  g_hMainThread=NULL;
 
-HANDLE  g_hMainThread=NULL,
-        g_hAskAwayMsgThreadID=NULL,
-        g_hGetTextThreadID=NULL,
-        g_hSmoothAnimationThreadID=NULL,
-        g_hFillFontListThreadID=NULL;
+DWORD   g_dwMainThreadID=0,
+        g_dwAwayMsgThreadID=0,
+        g_dwGetTextAsyncThreadID=0,
+        g_dwSmoothAnimationThreadID=0,
+        g_dwFillFontListThreadID=0;
         
 HMENU   g_hMenuMain;
 BOOL    g_bTransparentFlag=FALSE;
-int     g_nBehindEdgeState=FALSE;
-int     g_nBehindEdgeSettings;
-
-BOOL    g_bSmoothAnimation;
 
 BOOL    g_mutex_bChangingMode=FALSE,
-        g_mutex_bSizing=FALSE,
-        g_mutex_bOnEdgeSizing=FALSE;
+        g_mutex_bSizing=FALSE;        
         
 BOOL    g_flag_bOnModulesLoadedCalled=FALSE;
 
-
 RECT    g_rcEdgeSizingRect={0};
-BYTE    g_bStatusBarShowOptions;
-BYTE    g_bCurrentAlpha;
-BOOL    g_bOnDesktop=FALSE;
 
 BOOL (WINAPI *g_proc_SetLayeredWindowAttributes)(HWND,COLORREF,BYTE,DWORD);
 BOOL (WINAPI *g_proc_SetLayeredWindowAttributesNew)(HWND,COLORREF,BYTE,DWORD);

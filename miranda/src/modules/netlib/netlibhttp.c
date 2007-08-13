@@ -106,11 +106,12 @@ static int HttpPeekFirstResponseLine(struct NetlibConnection *nlc,DWORD dwTimeou
 			   || *pHttpMinor++!='.'
 			   || (httpMinorVer=strtol(pHttpMinor,&pResultCode,10))<0
 			   || pResultCode==pHttpMinor
-			   || (tokenLen=strspn(pResultCode," \t"))==0
+			   || (tokenLen=strspn(pResultCode," \t\n\0"))==0	//by FYR: Some proxy may not return code description but mostly 'HTTP/1.0 200' is able to work result
 			   || (*resultCode=strtol(pResultCode+=tokenLen,&pResultDescr,10))==0
-			   || pResultDescr==pResultCode
-			   || (tokenLen=strspn(pResultDescr," \t"))==0
-			   || *(pResultDescr+=tokenLen)=='\0') {
+			// || pResultDescr==pResultCode
+			// || (tokenLen=strspn(pResultDescr," \t"))==0
+			// || *(pResultDescr+=tokenLen)=='\0' 
+			   ) {
 				SetLastError(peol==buffer?ERROR_BAD_FORMAT:ERROR_INVALID_DATA);
 				return 0;
 			}
@@ -157,8 +158,8 @@ int NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 	struct ResizableCharBuffer httpRequest={0};
 	char *pszRequest,*szHost,*pszUrl;
 	char *pszProxyAuthorizationHeader;
-	int i,doneHostHeader,doneContentLengthHeader,doneProxyAuthHeader,usingNtlmAuthentication;
-	int useProxyHttpAuth,bytesSent;
+	int i,doneHostHeader,doneContentLengthHeader,doneProxyAuthHeader,doneConnectionHeader;
+	int useProxyHttpAuth,usingNtlmAuthentication,bytesSent;
 
 	if(nlhr==NULL || nlhr->cbSize!=sizeof(NETLIBHTTPREQUEST) || nlhr->szUrl==NULL || nlhr->szUrl[0]=='\0') {
 		SetLastError(ERROR_INVALID_PARAMETER);
@@ -209,7 +210,9 @@ int NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 	if(useProxyHttpAuth) {
 		if(nlc->nlu->settings.useProxyAuthNtlm) {
 			char *pszNtlmAuth;
-			pszNtlmAuth=NtlmCreateResponseFromChallenge(nlc->hNtlmSecurity, "", NULL, NULL);
+			pszNtlmAuth=NtlmCreateResponseFromChallenge(nlc->hNtlmSecurity, "", 
+				nlc->nlu->settings.szProxyAuthUser, nlc->nlu->settings.szProxyAuthPassword);
+
 			if(pszNtlmAuth==NULL) {useProxyHttpAuth=0; pszProxyAuthorizationHeader=NULL;}
 			else {
 				pszProxyAuthorizationHeader=(char*)mir_alloc(lstrlenA(pszNtlmAuth)+6);
@@ -237,11 +240,12 @@ int NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 	else pszProxyAuthorizationHeader=NULL;
 
 	//HTTP headers
-	doneHostHeader=doneContentLengthHeader=doneProxyAuthHeader=0;
+	doneHostHeader=doneContentLengthHeader=doneProxyAuthHeader=doneConnectionHeader=0;
 	for(i=0;i<nlhr->headersCount;i++) {
 		if(!lstrcmpiA(nlhr->headers[i].szName,"Host")) doneHostHeader=1;
 		else if(!lstrcmpiA(nlhr->headers[i].szName,"Content-Length")) doneContentLengthHeader=1;
 		else if(!lstrcmpiA(nlhr->headers[i].szName,"Proxy-Authorization")) doneProxyAuthHeader=1;
+		else if(!lstrcmpiA(nlhr->headers[i].szName,"Connection")) doneConnectionHeader=1;
 		else if(!lstrcmpiA(nlhr->headers[i].szName,"Connection") && usingNtlmAuthentication) continue;
 		if(nlhr->headers[i].szValue==NULL) continue;
 		AppendToCharBuffer(&httpRequest,"%s: %s\r\n",nlhr->headers[i].szName,nlhr->headers[i].szValue);
@@ -250,8 +254,13 @@ int NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 	if(pszProxyAuthorizationHeader) {
 		if(!doneProxyAuthHeader) AppendToCharBuffer(&httpRequest,"%s: %s\r\n","Proxy-Authorization",pszProxyAuthorizationHeader);
 		mir_free(pszProxyAuthorizationHeader);
-		if(usingNtlmAuthentication) AppendToCharBuffer(&httpRequest,"%s: %s\r\n","Connection","Keep-Alive");
+		if (usingNtlmAuthentication) {
+			AppendToCharBuffer(&httpRequest,"%s: %s\r\n","Connection","Keep-Alive");
+			doneConnectionHeader=1;
+		}
 	}
+	if (!doneConnectionHeader && (nlhr->flags & NLHRF_HTTP11) && nlhr->requestType != REQUEST_CONNECT) 
+		AppendToCharBuffer(&httpRequest,"%s: %s\r\n","Connection","close");
 
 	// Add Sticky Headers
 	if (nlc->nlu->szStickyHeaders != NULL) {
@@ -299,8 +308,10 @@ int NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 			error=ERROR_SUCCESS;
 			for(i=0;i<nlhrReply->headersCount;i++) {
 				if(!lstrcmpiA(nlhrReply->headers[i].szName,"Proxy-Authenticate")) {
-					if(!_strnicmp(nlhrReply->headers[i].szValue,"NTLM ",5))
-						pszProxyAuthorizationHeader=NtlmCreateResponseFromChallenge(nlc->hNtlmSecurity, nlhrReply->headers[i].szValue+5, NULL, NULL);
+					if(!_strnicmp(nlhrReply->headers[i].szValue,"NTLM ",5)) {
+						pszProxyAuthorizationHeader=NtlmCreateResponseFromChallenge(nlc->hNtlmSecurity, nlhrReply->headers[i].szValue+5,
+							nlc->nlu->settings.szProxyAuthUser, nlc->nlu->settings.szProxyAuthPassword);
+					}
 					else error=ERROR_ACCESS_DENIED;
 				}
 			}
@@ -317,10 +328,11 @@ int NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 			AppendToCharBuffer(&httpRequest,"%s %s HTTP/1.%d\r\n",pszRequest,pszUrl,(nlhr->flags & NLHRF_HTTP11) != 0);
 
 			//HTTP headers
-			doneHostHeader=doneContentLengthHeader=0;
+			doneHostHeader=doneContentLengthHeader=doneConnectionHeader=0;
 			for(i=0;i<nlhr->headersCount;i++) {
 				if(!lstrcmpiA(nlhr->headers[i].szName,"Host")) doneHostHeader=1;
 				else if(!lstrcmpiA(nlhr->headers[i].szName,"Content-Length")) doneContentLengthHeader=1;
+				else if(!lstrcmpiA(nlhr->headers[i].szName,"Connection")) doneConnectionHeader=1;
 				if(nlhr->headers[i].szValue==NULL) continue;
 				AppendToCharBuffer(&httpRequest,"%s: %s\r\n",nlhr->headers[i].szName,nlhr->headers[i].szValue);
 			}
@@ -328,6 +340,7 @@ int NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 				if(!doneHostHeader) AppendToCharBuffer(&httpRequest,"%s: %s\r\n","Host",szHost);
 				mir_free(szHost); szHost=NULL;
 			}
+			if(!doneConnectionHeader && (nlhr->flags & NLHRF_HTTP11)) AppendToCharBuffer(&httpRequest,"%s: %s\r\n","Connection","close");
 			AppendToCharBuffer(&httpRequest,"%s: NTLM %s\r\n","Proxy-Authorization",pszProxyAuthorizationHeader);
 			mir_free(pszProxyAuthorizationHeader);
 
@@ -683,10 +696,10 @@ NETLIBHTTPREQUEST* NetlibHttpRecv(HANDLE hConnection, DWORD hflags, DWORD dflags
 
 	if (chunked)
 	{
-		mir_realloc(nlhrReply->headers[chunkhdr].szName, 16);
+		nlhrReply->headers[chunkhdr].szName = mir_realloc(nlhrReply->headers[chunkhdr].szName, 16);
 		lstrcpyA(nlhrReply->headers[chunkhdr].szName, "Content-Length");
 
-		mir_realloc(nlhrReply->headers[chunkhdr].szValue, 16);
+		nlhrReply->headers[chunkhdr].szValue = mir_realloc(nlhrReply->headers[chunkhdr].szValue, 16);
 		mir_snprintf(nlhrReply->headers[chunkhdr].szValue, 16, "%u", nlhrReply->dataLength);
 	}
 

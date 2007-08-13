@@ -26,14 +26,21 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 void replaceStr( char*& dest, const char* src )
 {
 	if ( src != NULL ) {
-		if ( dest != NULL )
-			mir_free( dest );
+		mir_free( dest );
 		dest = mir_strdup( src );
 }	}
 
-void overrideStr( TCHAR*& dest, const TCHAR* src, BOOL unicode, const TCHAR* def )
+static TCHAR* a2tf( const TCHAR* str, bool unicode )
 {
-	if ( dest != NULL ) 
+	if ( str == NULL )
+		return NULL;
+
+	return unicode ? mir_tstrdup( str ) : mir_a2t(( char* )str );
+}
+
+void overrideStr( TCHAR*& dest, const TCHAR* src, bool unicode, const TCHAR* def )
+{
+	if ( dest != NULL )
 	{
 		mir_free( dest );
 		dest = NULL;
@@ -58,10 +65,9 @@ char* rtrim( char *string )
    return string;
 }
 
-#if defined( _UNICODE )
-TCHAR* rtrim( TCHAR* string )
+wchar_t* rtrim( wchar_t* string )
 {
-   TCHAR* p = string + lstrlen( string ) - 1;
+   wchar_t* p = string + wcslen( string ) - 1;
 
    while ( p >= string )
    {  if ( *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r' )
@@ -71,51 +77,220 @@ TCHAR* rtrim( TCHAR* string )
    }
    return string;
 }
-#endif
 
-void strdel( char* parBuffer, int len )
+char* arrayToHex(BYTE* data, size_t datasz)
 {
-	char *p;
-	for ( p = parBuffer+len; *p != 0; p++ )
-		p[ -len ] = *p;
+	char* res = (char*)mir_alloc(2 * datasz + 1);
 
-	p[ -len ] = '\0';
+	char* resptr = res;
+	for (unsigned i=0; i<datasz ; i++)
+	{
+		const BYTE ch = data[i];
+
+		const char ch0 = ch >> 4;
+		*resptr++ = (ch0 <= 9) ? ('0' + ch0) : (('a' - 10) + ch0);
+
+		const char ch1 = ch & 0xF;
+		*resptr++ = (ch1 <= 9) ? ('0' + ch1) : (('a' - 10) + ch1);
+	}
+	*resptr = '\0';
+	return res;
+} 
+
+bool txtParseParam (const char* szData, const char* presearch, const char* start, const char* finish, char* param, const int size)
+{
+	const char *cp, *cp1;
+	int len;
+	
+	if (szData == NULL) return false;
+
+	if (presearch != NULL)
+	{
+		cp1 = strstr(szData, presearch);
+		if (cp1 == NULL) return false;
+	}
+	else
+		cp1 = szData;
+
+	cp = strstr(cp1, start);
+	if (cp == NULL) return false;
+	cp += strlen(start);
+	while (*cp == ' ') ++cp;
+
+	if (finish)
+	{
+		cp1 = strstr(cp, finish);
+		if (cp1 == NULL) return FALSE;
+		while (*(cp1-1) == ' ' && cp1 > cp) --cp1;
+	}
+	else
+		cp1 = strchr(cp, '\0');
+
+	len = min(cp1 - cp, size - 1);
+	memmove(param, cp, len);
+	param[len] = 0;
+
+	return true;
+} 
+
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// UrlDecode - converts URL chars like %20 into printable characters
+
+static int SingleHexToDecimal(char c)
+{
+	if ( c >= '0' && c <= '9' ) return c-'0';
+	if ( c >= 'a' && c <= 'f' ) return c-'a'+10;
+	if ( c >= 'A' && c <= 'F' ) return c-'A'+10;
+	return -1;
 }
 
-TCHAR* a2t( const char* str )
+void  UrlDecode( char* str )
 {
-	if ( str == NULL )
-		return NULL;
+	char* s = str, *d = str;
 
-	#if defined( _UNICODE )
-		return (TCHAR*)CallService( MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)str);
-	#else
-		return mir_strdup( str );
-	#endif
+	while( *s )
+	{
+		if ( *s == '%' ) {
+			int digit1 = SingleHexToDecimal( s[1] );
+			if ( digit1 != -1 ) {
+				int digit2 = SingleHexToDecimal( s[2] );
+				if ( digit2 != -1 ) {
+					s += 3;
+					*d++ = (char)(( digit1 << 4 ) | digit2);
+					continue;
+		}	}	}
+		*d++ = *s++;
+	}
+
+	*d = 0;
 }
 
-TCHAR* a2tf( const TCHAR* str, BOOL unicode )
+void  HtmlDecode( char* str )
 {
+	char* p, *q;
+
 	if ( str == NULL )
-		return NULL;
+		return;
 
-	#if defined( _UNICODE )
-		if ( unicode )
-			return mir_tstrdup( str );
-		else {
-			int codepage = CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
-
-			int cbLen = MultiByteToWideChar( codepage, 0, (char*)str, -1, 0, 0 );
-			TCHAR* result = ( TCHAR* )mir_alloc( sizeof(TCHAR)*( cbLen+1 ));
-			if ( result == NULL )
-				return NULL;
-
-			MultiByteToWideChar( codepage, 0, (char*)str, -1, result, cbLen );
-			result[ cbLen ] = 0;
-			return result;
+	for ( p=q=str; *p!='\0'; p++,q++ ) {
+		if ( *p == '&' ) {
+			if ( !strncmp( p, "&amp;", 5 )) {	*q = '&'; p += 4; }
+			else if ( !strncmp( p, "&apos;", 6 )) { *q = '\''; p += 5; }
+			else if ( !strncmp( p, "&gt;", 4 )) { *q = '>'; p += 3; }
+			else if ( !strncmp( p, "&lt;", 4 )) { *q = '<'; p += 3; }
+			else if ( !strncmp( p, "&quot;", 6 )) { *q = '"'; p += 5; }
+			else { *q = *p;	}
 		}
-	#else
-		return mir_strdup( str );
-	#endif
+		else {
+			*q = *p;
+		}
+	}
+	*q = '\0';
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// HtmlEncode - replaces special HTML chars
+
+WCHAR*  HtmlEncodeW( const WCHAR* str )
+{
+	WCHAR* s, *p, *q;
+	int c;
+
+	if ( str == NULL )
+		return NULL;
+
+	for ( c=0,p=( WCHAR* )str; *p!=L'\0'; p++ ) {
+		switch ( *p ) {
+		case L'&': c += 5; break;
+		case L'\'': c += 6; break;
+		case L'>': c += 4; break;
+		case L'<': c += 4; break;
+		case L'"': c += 6; break;
+		default: c++; break;
+		}
+	}
+	if (( s=( WCHAR* )mir_alloc( (c+1) * sizeof(WCHAR) )) != NULL ) {
+		for ( p=( WCHAR* )str,q=s; *p!=L'\0'; p++ ) {
+			switch ( *p ) {
+			case L'&': wcscpy( q, L"&amp;" ); q += 5; break;
+			case L'\'': wcscpy( q, L"&apos;" ); q += 6; break;
+			case L'>': wcscpy( q, L"&gt;" ); q += 4; break;
+			case L'<': wcscpy( q, L"&lt;" ); q += 4; break;
+			case L'"': wcscpy( q, L"&quot;" ); q += 6; break;
+			default: *q = *p; q++; break;
+			}
+		}
+		*q = L'\0';
+	}
+
+	return s;
+}
+
+char*  HtmlEncode( const char* str )
+{
+	char* s, *p, *q;
+	int c;
+
+	if ( str == NULL )
+		return NULL;
+
+	for ( c=0,p=( char* )str; *p!='\0'; p++ ) {
+		switch ( *p ) {
+		case '&': c += 5; break;
+		case '\'': c += 6; break;
+		case '>': c += 4; break;
+		case '<': c += 4; break;
+		case '"': c += 6; break;
+		default: c++; break;
+		}
+	}
+	if (( s=( char* )mir_alloc( c+1 )) != NULL ) {
+		for ( p=( char* )str,q=s; *p!='\0'; p++ ) {
+			switch ( *p ) {
+			case '&': strcpy( q, "&amp;" ); q += 5; break;
+			case '\'': strcpy( q, "&apos;" ); q += 6; break;
+			case '>': strcpy( q, "&gt;" ); q += 4; break;
+			case '<': strcpy( q, "&lt;" ); q += 4; break;
+			case '"': strcpy( q, "&quot;" ); q += 6; break;
+			default: *q = *p; q++; break;
+			}
+		}
+		*q = '\0';
+	}
+
+	return s;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// UrlEncode - converts printable characters into URL chars like %20
+
+void  UrlEncode( const char* src,char* dest, int cbDest )
+{
+	BYTE* d = ( BYTE* )dest;
+	int   i = 0;
+
+	for( const BYTE* s = ( const BYTE* )src; *s; s++ ) {
+		if (( *s < '0' && *s != '.' && *s != '-' ) ||
+			 ( *s >= ':' && *s <= '?' ) ||
+			 ( *s >= '[' && *s <= '`' && *s != '_' ))
+		{
+			if ( i >= cbDest-4 )
+				break;
+
+			*d++ = '%';
+			_itoa( *s, ( char* )d, 16 );
+			d += 2;
+			i += 3;
+		}
+		else
+		{
+			*d++ = *s;
+			if ( i++ == cbDest-1 )
+				break;
+	}	}
+
+	*d = '\0';
+}
+
 

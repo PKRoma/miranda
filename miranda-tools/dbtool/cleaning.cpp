@@ -32,11 +32,13 @@ BOOL CALLBACK CleaningDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam
 			CheckDlgButton(hdlg,IDC_ERASEHISTORY,opts.bEraseHistory);
 			EnableWindow(GetDlgItem(hdlg,IDC_ERASEHISTORY),!opts.bAggressive);
 			CheckDlgButton(hdlg,IDC_MARKREAD,opts.bMarkRead);
+			CheckDlgButton(hdlg,IDC_CONVERTUTF,opts.bConvertUtf);
 			TranslateDialog(hdlg);
 			return TRUE;
 		case WZN_PAGECHANGING:
 			opts.bEraseHistory=IsDlgButtonChecked(hdlg,IDC_ERASEHISTORY)&&!opts.bAggressive;
 			opts.bMarkRead=IsDlgButtonChecked(hdlg,IDC_MARKREAD);
+			opts.bConvertUtf=IsDlgButtonChecked(hdlg,IDC_CONVERTUTF);
 			break;
 		case WM_COMMAND:
 			switch(LOWORD(wParam)) {

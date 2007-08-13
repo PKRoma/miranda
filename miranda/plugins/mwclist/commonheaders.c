@@ -2,32 +2,12 @@
 
 #define SAFE_PTR(a) a?(IsBadReadPtr(a,1)?a=NULL:a):a
 
-void *mir_calloc( size_t num, size_t size )
-{
- 	void *p=mir_alloc(num*size);
-	if (p==NULL) return NULL;
-	memset(p,0,num*size);
-	return p;
-}
-
 int __cdecl MyStrCmp (const char *a, const char *b)
 {
 	SAFE_PTR(a);
 	SAFE_PTR(b);
 	if (!(a&&b)) return a!=b;
 	return (strcmp(a,b));
-}
-
-char *DBGetStringA(HANDLE hContact,const char *szModule,const char *szSetting)
-{
-	char *str=NULL;
-	DBVARIANT dbv={0};
-	DBGetContactSetting(hContact,szModule,szSetting,&dbv);
-	if(dbv.type==DBVT_ASCIIZ)
-		str=mir_strdup(dbv.pszVal);
-
-	DBFreeVariant(&dbv);
-	return str;
 }
 
 DWORD exceptFunction(LPEXCEPTION_POINTERS EP)

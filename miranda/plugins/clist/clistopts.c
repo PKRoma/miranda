@@ -185,7 +185,7 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 						DBWriteContactSettingByte(NULL, "CList", "UseGroups", (BYTE) ! IsDlgButtonChecked(hwndDlg, IDC_DISABLEGROUPS));
 					if (!(caps & CLUIF_HASONTOPOPTION)) {
 						DBWriteContactSettingByte(NULL, "CList", "OnTop", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_ONTOP));
-						SetWindowPos((HWND) CallService(MS_CLUI_GETHWND, 0, 0),
+						SetWindowPos( pcli->hwndContactList,
 							IsDlgButtonChecked(hwndDlg, IDC_ONTOP) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0,
 							SWP_NOMOVE | SWP_NOSIZE);
 					}
@@ -298,7 +298,7 @@ static BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		case PSN_APPLY:
 			{
 				char str[256];
-				pcli->pfnHotKeysUnregister((HWND) CallService(MS_CLUI_GETHWND, 0, 0));
+				pcli->pfnHotKeysUnregister( pcli->hwndContactList );
 				DBWriteContactSettingByte(NULL, "CList", "HKEnShowHide", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWHIDE));
 				DBWriteContactSettingWord(NULL, "CList", "HKShowHide", (WORD) SendDlgItemMessage(hwndDlg, IDC_HKSHOWHIDE, HKM_GETHOTKEY, 0, 0));
 				DBWriteContactSettingByte(NULL, "CList", "HKEnReadMsg", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_READMSG));
@@ -310,7 +310,7 @@ static BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				DBWriteContactSettingByte(NULL, "CList", "HKSearchNewWnd", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SEARCHNEWWND));
 				DBWriteContactSettingByte(NULL, "CList", "HKEnShowOptions", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWOPTIONS));
 				DBWriteContactSettingWord(NULL, "CList", "HKShowOptions", (WORD) SendDlgItemMessage(hwndDlg, IDC_HKSHOWOPTIONS, HKM_GETHOTKEY, 0, 0));
-				pcli->pfnHotKeysRegister((HWND) CallService(MS_CLUI_GETHWND, 0, 0));
+				pcli->pfnHotKeysRegister( pcli->hwndContactList );
 				return TRUE;
 			}
 		}
@@ -332,7 +332,7 @@ int CListOptInit(WPARAM wParam, LPARAM lParam)
 	odp.position = -1000000000;
 	odp.hInstance = g_hInst;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_CLIST);
-	odp.pszTitle = "Contact List";
+	odp.pszTitle = LPGEN("Contact List");
 	odp.pfnDlgProc = DlgProcGenOpts;
 	odp.flags = ODPF_BOLDGROUPS;
 	odp.nIDBottomSimpleControl = IDC_STCLISTGROUP;
@@ -342,8 +342,8 @@ int CListOptInit(WPARAM wParam, LPARAM lParam)
 
 	odp.position = -900000000;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_HOTKEY);
-	odp.pszTitle = "Hotkeys";
-	odp.pszGroup = "Events";
+	odp.pszTitle = LPGEN("Hotkeys");
+	odp.pszGroup = LPGEN("Events");
 	odp.pfnDlgProc = DlgProcHotkeyOpts;
 	odp.nIDBottomSimpleControl = 0;
 	odp.nExpertOnlyControls = 0;

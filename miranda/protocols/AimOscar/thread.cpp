@@ -29,86 +29,37 @@ unsigned long ForkThread(pThreadFunc threadcode,void *arg)
 }
 void __cdecl aim_keepalive_thread(void* /*fa*/)
 {
-	HANDLE hKeepAliveEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-	#if _MSC_VER
-	#pragma warning( disable: 4127)
-	#endif
-	while(1)
+	if(!conn.hKeepAliveEvent)
 	{
+		conn.hKeepAliveEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 		#if _MSC_VER
-		#pragma warning( default: 4127)
+		#pragma warning( disable: 4127)
 		#endif
-		int timer=DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA, DEFAULT_KEEPALIVE_TIMER);
-		if(timer<30)
-			timer=DEFAULT_KEEPALIVE_TIMER;
-		DWORD dwWait = WaitForSingleObjectEx(hKeepAliveEvent, 1000*timer, TRUE);
-		if (dwWait == WAIT_OBJECT_0) break; // we should end
-		else if (dwWait == WAIT_TIMEOUT)
+		while(1)
 		{
-			if (conn.state==1)
-				aim_keepalive(conn.hServerConn,conn.seqno);
+			#if _MSC_VER
+			#pragma warning( default: 4127)
+			#endif
+			DWORD dwWait = WaitForSingleObjectEx(conn.hKeepAliveEvent, 1000*DEFAULT_KEEPALIVE_TIMER, TRUE);
+			if (dwWait == WAIT_OBJECT_0) break; // we should end
+			else if (dwWait == WAIT_TIMEOUT)
+			{
+				if (conn.state==1)
+					aim_keepalive(conn.hServerConn,conn.seqno);
+			}
+			//else if (dwWait == WAIT_IO_COMPLETION)
+			// Possible shutdown in progress
+			if (Miranda_Terminated()) break;
 		}
-		//else if (dwWait == WAIT_IO_COMPLETION)
-		// Possible shutdown in progress
-		if (Miranda_Terminated()) break;
+		CloseHandle(conn.hKeepAliveEvent);
+		conn.hKeepAliveEvent = NULL;
 	}
-	CloseHandle(hKeepAliveEvent);
-	hKeepAliveEvent = NULL;
 }
 /*void message_box_thread(char* data)
 {
 	MessageBox( NULL, Translate(data), AIM_PROTOCOL_NAME, MB_OK );
 	delete[] data;
 }*/
-void set_status_thread(int status)
-{
-	if(conn.shutting_down)
-		return;
-	EnterCriticalSection(&statusMutex);
-	start_connection(status);
-	if(conn.state==1)
-		switch(status)
-		{
-			case ID_STATUS_OFFLINE:
-				{
-					broadcast_status(ID_STATUS_OFFLINE);
-					break;
-				}
-			case ID_STATUS_ONLINE:
-			case ID_STATUS_FREECHAT:
-				{
-					broadcast_status(ID_STATUS_ONLINE);
-					aim_set_away(conn.hServerConn,conn.seqno,NULL);//unset away message
-					aim_set_invis(conn.hServerConn,conn.seqno,AIM_STATUS_ONLINE,AIM_STATUS_NULL);//online not invis	
-					break;
-				}
-			case ID_STATUS_INVISIBLE:
-				{
-					broadcast_status(status);
-					aim_set_invis(conn.hServerConn,conn.seqno,AIM_STATUS_INVISIBLE,AIM_STATUS_NULL);
-					break;
-				}
-			case ID_STATUS_AWAY:
-			case ID_STATUS_OUTTOLUNCH:
-			case ID_STATUS_NA:
-			case ID_STATUS_DND:
-			case ID_STATUS_OCCUPIED:
-			case ID_STATUS_ONTHEPHONE:
-				{
-					start_connection(ID_STATUS_AWAY);// if not started
-					if(conn.status!=ID_STATUS_AWAY)
-					{
-						assign_modmsg((char*)&DEFAULT_AWAY_MSG);
-						broadcast_status(ID_STATUS_AWAY);
-						aim_set_away(conn.hServerConn,conn.seqno,conn.szModeMsg);//set actual away message
-						aim_set_invis(conn.hServerConn,conn.seqno,AIM_STATUS_AWAY,AIM_STATUS_NULL);//away not invis
-					}
-					//see SetAwayMsg for status away
-					break;
-				}
-		}
-	LeaveCriticalSection(&statusMutex);
-}
 /*void contact_setting_changed_thread(char* data)
 {
 	HANDLE* hContact=(HANDLE*)data;

@@ -154,85 +154,64 @@ int LoadCluiServices(void)
 
 int fnCluiProtocolStatusChanged(int parStatus, const char* szProto)
 {
-	int protoCount, i;
-	PROTOCOLDESCRIPTOR **proto;
-	int *partWidths, partCount;
+	int i, *partWidths;
 	int borders[3];
 	int status;
 	int flags = 0;
 
-	SendMessage(cli.hwndStatus, SB_GETBORDERS, 0, (LPARAM) & borders);
-	CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) & protoCount, (LPARAM) & proto);
-	if (protoCount == 0)
+	if ( cli.menuProtoCount == 0 )
 		return 0;
-	partWidths = (int *) mir_alloc(protoCount * sizeof(int));
-	if (DBGetContactSettingByte(NULL, "CLUI", "EqualSections", 0)) {
+
+	SendMessage(cli.hwndStatus, SB_GETBORDERS, 0, ( LPARAM )&borders);
+
+	partWidths = ( int* )alloca( cli.menuProtoCount * sizeof( int ));
+	if ( DBGetContactSettingByte( NULL, "CLUI", "EqualSections", 0 )) {
 		RECT rc;
-		int part;
-		GetClientRect(cli.hwndStatus, &rc);
-		rc.right -= borders[0] * 2 + (DBGetContactSettingByte(NULL, "CLUI", "ShowGrip", 1) ? GetSystemMetrics(SM_CXVSCROLL) : 0);
-		for (partCount = 0, i = protoCount - 1; i >= 0; i--)
-			if (proto[i]->type == PROTOTYPE_PROTOCOL && CallProtoService(proto[i]->szName, PS_GETCAPS, PFLAGNUM_2, 0) != 0)
-				partCount++;
-		for (part = 0, i = 0; i < protoCount; i++) {
-			if (proto[i]->type != PROTOTYPE_PROTOCOL)
-				continue;
-			partWidths[part] = (part + 1) * rc.right / partCount - (borders[2] >> 1);
-			part++;
-		}
+		GetClientRect( cli.hwndStatus, &rc );
+		rc.right -= borders[0] * 2 + ( DBGetContactSettingByte( NULL, "CLUI", "ShowGrip", 1 ) ? GetSystemMetrics( SM_CXVSCROLL ) : 0 );
+		for ( i = 0; i < cli.menuProtoCount; i++ )
+			partWidths[ i ] = ( i+1 ) * rc.right / cli.menuProtoCount - (borders[2] >> 1);
 	}
 	else {
 		HDC hdc;
 		SIZE textSize;
 		BYTE showOpts = DBGetContactSettingByte(NULL, "CLUI", "SBarShow", 1);
-		int x;
 		char szName[32];
 
 		hdc = GetDC(NULL);
 		SelectObject(hdc, (HFONT) SendMessage(cli.hwndStatus, WM_GETFONT, 0, 0));
-		for (partCount = 0, i = protoCount - 1; i >= 0; i--) {  //count down since built in ones tend to go at the end
-			if (proto[i]->type != PROTOTYPE_PROTOCOL || CallProtoService(proto[i]->szName, PS_GETCAPS, PFLAGNUM_2, 0) == 0)
-				continue;
-			x = 2;
-			if (showOpts & 1)
+		for ( i = 0; i < cli.menuProtoCount; i++ ) {  //count down since built in ones tend to go at the end
+			int x = 2;
+			if ( showOpts & 1 )
 				x += g_IconWidth;
-			if (showOpts & 2) {
-				CallProtoService(proto[i]->szName, PS_GETNAME, SIZEOF(szName), (LPARAM) szName);
-				if (showOpts & 4 && lstrlenA(szName) < SIZEOF(szName) - 1)
-					lstrcatA(szName, " ");
+			if ( showOpts & 2 ) {
+				CallProtoService( cli.menuProtos[i].szProto, PS_GETNAME, SIZEOF(szName), (LPARAM) szName);
+				if ( showOpts & 4 && lstrlenA(szName) < SIZEOF(szName)-1 )
+					lstrcatA( szName, " " );
 				GetTextExtentPoint32A(hdc, szName, lstrlenA(szName), &textSize);
 				x += textSize.cx;
 				x += GetSystemMetrics(SM_CXBORDER) * 4; // The SB panel doesnt allocate enough room
 			}
-			if (showOpts & 4) {
-				TCHAR* modeDescr = ( TCHAR* )CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, CallProtoService( proto[i]->szName, PS_GETSTATUS, 0, 0), GCMDF_TCHAR );
+			if ( showOpts & 4 ) {
+				TCHAR* modeDescr = ( TCHAR* )CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, CallProtoService( cli.menuProtos[i].szProto, PS_GETSTATUS, 0, 0), GCMDF_TCHAR );
 				GetTextExtentPoint32(hdc, modeDescr, lstrlen(modeDescr), &textSize);
 				x += textSize.cx;
 				x += GetSystemMetrics(SM_CXBORDER) * 4; // The SB panel doesnt allocate enough room
 			}
-			partWidths[partCount] = (partCount ? partWidths[partCount - 1] : 0) + x + 2;
-			partCount++;
+			partWidths[ i ] = ( i ? partWidths[ i-1] : 0 ) + x + 2;
 		}
 		ReleaseDC(NULL, hdc);
 	}
-	if (partCount == 0) {
-		mir_free(partWidths);
-		return 0;
-	}
-	partWidths[partCount - 1] = -1;
+
+	partWidths[ cli.menuProtoCount-1 ] = -1;
 	SendMessage(cli.hwndStatus, SB_SETMINHEIGHT, g_IconHeight, 0);
-	SendMessage(cli.hwndStatus, SB_SETPARTS, partCount, (LPARAM) partWidths);
-	mir_free(partWidths);
+	SendMessage(cli.hwndStatus, SB_SETPARTS, cli.menuProtoCount, ( LPARAM )partWidths);
 	flags = SBT_OWNERDRAW;
-	if (DBGetContactSettingByte(NULL, "CLUI", "SBarBevel", 1) == 0)
+	if ( DBGetContactSettingByte( NULL, "CLUI", "SBarBevel", 1 ) == 0 )
 		flags |= SBT_NOBORDERS;
-	for (partCount = 0, i = protoCount - 1; i >= 0; i--) {      //count down since built in ones tend to go at the end
-		// okay, so it was a bug ;)
-		if (proto[i]->type != PROTOTYPE_PROTOCOL || (CallProtoService(proto[i]->szName, PS_GETCAPS, PFLAGNUM_2, 0) == 0))
-			continue;
-		status = CallProtoService(proto[i]->szName, PS_GETSTATUS, 0, 0);
-		SendMessage(cli.hwndStatus, SB_SETTEXT, partCount | flags, (LPARAM) proto[i]->szName);
-		partCount++;
+	for ( i = 0; i < cli.menuProtoCount; i++ ) {
+		status = CallProtoService( cli.menuProtos[i].szProto, PS_GETSTATUS, 0, 0);
+		SendMessage( cli.hwndStatus, SB_SETTEXT, i | flags, ( LPARAM )cli.menuProtos[i].szProto );
 	}
 	return 0;
 }

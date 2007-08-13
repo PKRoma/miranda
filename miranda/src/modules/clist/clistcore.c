@@ -23,143 +23,20 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 #include "clc.h"
+#include "genmenu.h"
 
 CLIST_INTERFACE cli = { 0 };
+
+static TCHAR szTip[MAX_TIP_SIZE+1];
 
 int LoadContactListModule2( void );
 int LoadCLCModule( void );
 
-/* clc.c */
-void   fnClcOptionsChanged( void );
-void   fnClcBroadcast( int msg, WPARAM wParam, LPARAM lParam );
-HMENU  fnBuildGroupPopupMenu( struct ClcGroup* group );
-
-LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-/* clcfiledrop.c */
-void   fnRegisterFileDropping ( HWND hwnd );
-void   fnUnregisterFileDropping ( HWND hwnd );
-
-/* clcidents.c */
-int    fnGetRowsPriorTo( struct ClcGroup *group, struct ClcGroup *subgroup, int contactIndex );
-int    fnFindItem( HWND hwnd, struct ClcData *dat, HANDLE hItem, struct ClcContact **contact, struct ClcGroup **subgroup, int *isVisible );
-int    fnGetRowByIndex( struct ClcData *dat, int testindex, struct ClcContact **contact, struct ClcGroup **subgroup );
-HANDLE fnContactToHItem( struct ClcContact* contact );
-HANDLE fnContactToItemHandle( struct ClcContact * contact, DWORD * nmFlags );
-
-/* clcitems.c */
-struct ClcGroup* fnAddGroup( HWND hwnd, struct ClcData *dat, const TCHAR *szName, DWORD flags, int groupId, int calcTotalMembers );
-struct ClcGroup* fnRemoveItemFromGroup(HWND hwnd, struct ClcGroup *group, struct ClcContact *contact, int updateTotalCount);
-
-void fnFreeContact( struct ClcContact *p );
-void fnFreeGroup( struct ClcGroup *group );
-int  fnAddInfoItemToGroup(struct ClcGroup *group, int flags, const TCHAR *pszText);
-int  fnAddItemToGroup( struct ClcGroup *group,int iAboveItem );
-void fnAddContactToTree( HWND hwnd, struct ClcData *dat, HANDLE hContact, int updateTotalCount, int checkHideOffline);
-int  fnAddContactToGroup( struct ClcData *dat, struct ClcGroup *group, HANDLE hContact);
-void fnDeleteItemFromTree( HWND hwnd, HANDLE hItem );
-void fnRebuildEntireList( HWND hwnd, struct ClcData *dat );
-int  fnGetGroupContentsCount( struct ClcGroup *group, int visibleOnly );
-void fnSortCLC( HWND hwnd, struct ClcData *dat, int useInsertionSort );
-void fnSaveStateAndRebuildList(HWND hwnd, struct ClcData *dat);
-
-/* clcmsgs.c */
-LRESULT fnProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM wParam, LPARAM lParam );
-
-/* clcpaint.c */
-void  fnPaintClc( HWND hwnd, struct ClcData *dat, HDC hdc, RECT * rcPaint ) {}
-
-/* clcutils.c */
-char* fnGetGroupCountsText(struct ClcData *dat, struct ClcContact *contact );
-int   fnHitTest( HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcContact **contact, struct ClcGroup **group, DWORD * flags );
-void  fnScrollTo( HWND hwnd, struct ClcData *dat, int desty, int noSmooth );
-void  fnEnsureVisible(HWND hwnd, struct ClcData *dat, int iItem, int partialOk );
-void  fnRecalcScrollBar( HWND hwnd, struct ClcData *dat );
-void  fnSetGroupExpand( HWND hwnd, struct ClcData *dat, struct ClcGroup *group, int newState );
-void  fnDoSelectionDefaultAction( HWND hwnd, struct ClcData *dat );
-int   fnFindRowByText(HWND hwnd, struct ClcData *dat, const TCHAR *text, int prefixOk );
-void  fnEndRename(HWND hwnd, struct ClcData *dat, int save );
-void  fnDeleteFromContactList( HWND hwnd, struct ClcData *dat );
-void  fnBeginRenameSelection( HWND hwnd, struct ClcData *dat );
-void  fnCalcEipPosition( struct ClcData *dat, struct ClcContact *contact, struct ClcGroup *group, POINT *result);
-int   fnGetDropTargetInformation( HWND hwnd, struct ClcData *dat, POINT pt );
-int   fnClcStatusToPf2( int status );
-int   fnIsHiddenMode( struct ClcData *dat, int status );
-void  fnHideInfoTip( HWND hwnd, struct ClcData *dat );
-void  fnNotifyNewContact( HWND hwnd, HANDLE hContact );
-DWORD fnGetDefaultExStyle( void );
-void  fnGetSetting( int i, LOGFONT* lf, COLORREF* colour );
-void  fnGetDefaultFontSetting(int i, LOGFONT* lf, COLORREF* colour);
-void  fnGetFontSetting( int i, LOGFONT* lf, COLORREF* colour );
-void  fnLoadClcOptions( HWND hwnd, struct ClcData *dat );
-void  fnRecalculateGroupCheckboxes( HWND hwnd, struct ClcData *dat );
-void  fnSetGroupChildCheckboxes( struct ClcGroup *group, int checked );
-void  fnInvalidateItem( HWND hwnd, struct ClcData *dat, int iItem );
-
-/* clistevents.c */
-struct CListEvent* fnAddEvent( CLISTEVENT *cle );
-CLISTEVENT* fnGetEvent( HANDLE hContact, int idx );
-
-struct CListEvent* fnCreateEvent( void );
-void fnFreeEvent( struct CListEvent* p );
-
-int   fnEventsProcessContactDoubleClick( HANDLE hContact );
-int   fnEventsProcessTrayDoubleClick( void );
-int   fnGetImlIconIndex(HICON hIcon);
-int   fnRemoveEvent( HANDLE hContact, HANDLE dbEvent );
-
-/* clistmod.c */
-int    fnIconFromStatusMode(const char *szProto, int status, HANDLE hContact);
-int    fnShowHide( WPARAM wParam, LPARAM lParam );
-TCHAR* fnGetStatusModeDescription( int wParam, int lParam);
-int    fnGetWindowVisibleState(HWND hWnd, int iStepX, int iStepY);
-
-/* clistsettings.c */
-TCHAR* fnGetContactDisplayName( HANDLE hContact, int mode );
-void   fnGetDefaultFontSetting( int i, LOGFONT* lf, COLORREF * colour);
-void   fnInvalidateDisplayNameCacheEntry( HANDLE hContact );
-
-ClcCacheEntryBase* fnGetCacheEntry( HANDLE hContact );
-ClcCacheEntryBase* fnCreateCacheItem ( HANDLE hContact );
-void fnCheckCacheItem( ClcCacheEntryBase* p );
-void fnFreeCacheItem( ClcCacheEntryBase* p );
-
-/* clisttray.c */
-int  fnCListTrayNotify(MIRANDASYSTRAYNOTIFY *msn);
-void fnTrayIconUpdateWithImageList ( int iImage, const TCHAR *szNewTip, char *szPreferredProto );
-void fnTrayIconUpdateBase ( const char *szChangedProto );
-void fnTrayIconSetToBase ( char *szPreferredProto );
-void fnTrayIconIconsChanged ( void );
-int  fnTrayIconPauseAutoHide ( WPARAM wParam, LPARAM lParam );
-int  fnTrayIconProcessMessage ( WPARAM wParam, LPARAM lParam );
-
-/* clui.c */
-LRESULT CALLBACK fnContactListWndProc ( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
-void fnLoadCluiGlobalOpts( void );
-int  fnCluiProtocolStatusChanged(int,const char*);
-void fnDrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon, HICON eventIcon);
-
-/* contact.c */
-void fnChangeContactIcon ( HANDLE hContact, int iIcon, int add );
-void fnLoadContactTree ( void );
-int  fnCompareContacts ( const struct ClcContact *contact1, const struct ClcContact *contact2);
-void fnSortContacts ( void );
-int  fnSetHideOffline ( WPARAM wParam, LPARAM lParam );
-
-/* docking.c */
-int fnDocking_ProcessWindowMessage ( WPARAM wParam, LPARAM lParam );
-
-/* group.c */
-TCHAR* fnGetGroupName ( int idx, DWORD* pdwFlags );
-int    fnRenameGroup ( int groupID, TCHAR* newName );
-
-/* keyboard.c */
-int  fnHotKeysRegister ( HWND hwnd );
-void fnHotKeysUnregister ( HWND hwnd );
-int  fnHotKeysProcess ( HWND hwnd, WPARAM wParam, LPARAM lParam );
-int  fnHotkeysProcessMessage ( WPARAM wParam, LPARAM lParam );
-
 static int interfaceInited = 0;
+
+static void fnPaintClc( HWND hwnd, struct ClcData *dat, HDC hdc, RECT * rcPaint )
+{
+}
 
 static struct ClcContact* fnCreateClcContact( void )
 {
@@ -175,12 +52,18 @@ static void fnOnCreateClc( void )
 {
 }
 
+static void fnReloadProtoMenus( void )
+{
+	RebuildMenuOrder();
+	cli.pfnCluiProtocolStatusChanged(0,0);
+}
+
 static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
 {
 	int rc;
 
 	if ( interfaceInited == 0 ) {
-		cli.version = 3;
+		cli.version = 5;
 
 		cli.pfnClcOptionsChanged               = fnClcOptionsChanged;
 		cli.pfnClcBroadcast                    = fnClcBroadcast;
@@ -261,12 +144,27 @@ static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
 		cli.pfnFreeCacheItem                   = fnFreeCacheItem;
 		cli.pfnGetCacheEntry                   = fnGetCacheEntry;
 
-		cli.pfnTrayIconUpdateWithImageList	   = fnTrayIconUpdateWithImageList;
-		cli.pfnTrayIconUpdateBase				   = fnTrayIconUpdateBase;
-		cli.pfnTrayIconSetToBase					= fnTrayIconSetToBase;
+		cli.szTip                              = szTip;
+		cli.pfnInitTray                        = fnInitTray;
+		cli.pfnUninitTray                      = fnUninitTray;
+		cli.pfnLockTray                        = fnLockTray;
+		cli.pfnUnlockTray                      = fnUnlockTray;
+
+		cli.pfnTrayCycleTimerProc              = fnTrayCycleTimerProc;
+		cli.pfnTrayIconAdd                     = fnTrayIconAdd;
+		cli.pfnTrayIconDestroy                 = fnTrayIconDestroy;
 		cli.pfnTrayIconIconsChanged            = fnTrayIconIconsChanged;
+		cli.pfnTrayIconInit                    = fnTrayIconInit;
+		cli.pfnTrayIconMakeTooltip              = fnTrayIconMakeTooltip;
 		cli.pfnTrayIconPauseAutoHide			   = fnTrayIconPauseAutoHide;
 		cli.pfnTrayIconProcessMessage			   = fnTrayIconProcessMessage;
+		cli.pfnTrayIconRemove                  = fnTrayIconRemove;
+		cli.pfnTrayIconSetBaseInfo             = fnTrayIconSetBaseInfo;
+		cli.pfnTrayIconSetToBase					= fnTrayIconSetToBase;
+		cli.pfnTrayIconTaskbarCreated          = fnTrayIconTaskbarCreated;
+		cli.pfnTrayIconUpdate                  = fnTrayIconUpdate;
+		cli.pfnTrayIconUpdateBase				   = fnTrayIconUpdateBase;
+		cli.pfnTrayIconUpdateWithImageList	   = fnTrayIconUpdateWithImageList;
 		cli.pfnCListTrayNotify                 = fnCListTrayNotify;
 
 		cli.pfnContactListWndProc				   = fnContactListWndProc;
@@ -284,6 +182,7 @@ static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
 
 		cli.pfnDocking_ProcessWindowMessage	   = fnDocking_ProcessWindowMessage;
 
+		cli.pfnGetIconFromStatusMode           = fnGetIconFromStatusMode;
 		cli.pfnGetWindowVisibleState           = fnGetWindowVisibleState;
 		cli.pfnIconFromStatusMode              = fnIconFromStatusMode;
 		cli.pfnShowHide                        = fnShowHide;
@@ -296,6 +195,12 @@ static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
 		cli.pfnHotKeysUnregister					= fnHotKeysUnregister;
 		cli.pfnHotKeysProcess						= fnHotKeysProcess;
 		cli.pfnHotkeysProcessMessage			   = fnHotkeysProcessMessage;
+
+		cli.pfnMOGetIntMenuItem                = MO_GetIntMenuItem;
+		cli.pfnMOGetMenuItemByGlobalID         = GetMenuItemByGlobalID;
+		cli.pfnGetProtocolVisibility           = fnGetProtocolVisibility;
+		cli.pfnGetProtoIndexByPos              = GetProtoIndexByPos;
+		cli.pfnReloadProtoMenus                = fnReloadProtoMenus;
 
 		cli.hInst = ( HMODULE )lParam;
 

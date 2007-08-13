@@ -1,5 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
+Copyright (c) 2006-7 Boris Krasnovskiy.
 Copyright (c) 2003-5 George Hazan.
 Copyright (c) 2002-3 Richard Hughes (original version).
 
@@ -22,8 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "msn_global.h"
-
-#include <io.h>
 
 int MSN_HandleErrors(ThreadData *info,char *cmdString);
 
@@ -53,6 +52,35 @@ void msnftp_sendAcceptReject( filetransfer *ft, bool acc )
 			"Cancel-Code: REJECT\r\n\r\n",
 			172-33+4+strlen( ft->szInvcookie ), ft->szInvcookie );
 	}
+}
+
+void msnftp_invite( filetransfer *ft )
+{
+	bool isOffline;
+	ThreadData* thread = MSN_StartSB(ft->std.hContact, isOffline);
+	if (isOffline) return; 
+	if (thread != NULL) thread->mMsnFtp = ft;
+
+	char* pszFiles = strrchr( *ft->std.files, '\\' ), msg[ 1024 ];
+	if ( pszFiles )
+		pszFiles++;
+	else
+		pszFiles = *ft->std.files;
+
+	mir_snprintf( msg, sizeof( msg ),
+		"Content-Type: text/x-msmsgsinvite; charset=UTF-8\r\n\r\n"
+		"Application-Name: File Transfer\r\n"
+		"Application-GUID: {5D3E02AB-6190-11d3-BBBB-00C04F795683}\r\n"
+		"Invitation-Command: INVITE\r\n"
+		"Invitation-Cookie: %i\r\n"
+		"Application-File: %s\r\n"
+		"Application-FileSize: %i\r\n\r\n",
+		rand() << 16 | rand(), UTF8(pszFiles), ft->std.currentFileSize );
+
+	if ( thread == NULL )
+		MsgQueue_Add( ft->std.hContact, 'S', msg, -1, ft );
+	else
+		thread->sendMessage( 'S', msg, MSG_DISABLE_HDR );
 }
 
 
@@ -107,8 +135,8 @@ int MSN_HandleMSNFTP( ThreadData *info, char *cmdString )
 				if ( packetLen > 2045 )
 					packetLen = 2045;
 
-				sendpacket[ wPlace++ ] = packetLen & 0x00ff;
-				sendpacket[ wPlace++ ] = ( packetLen & 0xff00 ) >> 8;
+				sendpacket[ wPlace++ ] = (char)(packetLen & 0x00ff);
+				sendpacket[ wPlace++ ] = (char)(( packetLen & 0xff00 ) >> 8);
 				_read( ft->fileId, &sendpacket[wPlace], packetLen );
 
 				info->send( &sendpacket[0], packetLen+3 );
@@ -173,7 +201,7 @@ LBL_InvalidCommand:
 		{
 			HReadBuffer tBuf( info, int( cmdString - info->mData ));
 
-			while ( true )
+			for ( ;; )
 			{
 				if ( ft->bCanceled )
 				{	info->send( "CCL\r\n", 5 );
@@ -224,8 +252,6 @@ static void __cdecl sttSendFileThread( ThreadData* info )
 {
 	MSN_DebugLog( "Waiting for an incoming connection to '%s'...", info->mServer );
 
-	filetransfer* ft = info->mMsnFtp;
-
 	switch( WaitForSingleObject( info->hWaitEvent, 60000 )) {
 	case WAIT_TIMEOUT:
 	case WAIT_FAILED:
@@ -235,7 +261,7 @@ static void __cdecl sttSendFileThread( ThreadData* info )
 
 	info->mBytesInData = 0;
 
-	while ( TRUE ) {
+	for ( ;; ) {
 		int recvResult = info->recv( info->mData+info->mBytesInData, 1000 - info->mBytesInData );
 		if ( recvResult == SOCKET_ERROR || !recvResult )
 			break;
@@ -248,7 +274,7 @@ static void __cdecl sttSendFileThread( ThreadData* info )
 				break;
 		}
 		else {  // info->mType!=SERVER_FILETRANS
-			while ( TRUE ) {
+			for ( ;; ) {
 				char* peol = strchr(info->mData,'\r');
 				if ( peol == NULL )
 					break;
@@ -287,28 +313,20 @@ static void __cdecl sttSendFileThread( ThreadData* info )
 
 void ft_startFileSend( ThreadData* info, const char* Invcommand, const char* Invcookie )
 {
-	if ( strcmpi( Invcommand,"ACCEPT" ))
+	if ( _stricmp( Invcommand, "ACCEPT" ))
 		return;
 
-	bool bHasError = false;
 	NETLIBBIND nlb = {0};
-	char ipaddr[256];
-	HANDLE sb;
+	HANDLE sb = NULL;
 
 	filetransfer* ft = info->mMsnFtp; info->mMsnFtp = NULL;
 	if ( ft != NULL ) {
-		if ( MSN_GetMyHostAsString( ipaddr, sizeof ipaddr ))
-			bHasError = true;
-		else {
-			nlb.cbSize = sizeof( nlb );
-			nlb.pfnNewConnectionV2 = MSN_ConnectionProc;
-			nlb.wPort = 0;	// Use user-specified incoming port ranges, if available
-			sb = ( HANDLE )MSN_CallService( MS_NETLIB_BINDPORT, ( WPARAM )hNetlibUser, ( LPARAM )&nlb);
-			if ( sb == NULL ) {
-				MSN_DebugLog( "Unable to bind the port for incoming transfers" );
-				bHasError = true;
-	}	}	}
-	else bHasError = true;
+		nlb.cbSize = sizeof( nlb );
+		nlb.pfnNewConnectionV2 = MSN_ConnectionProc;
+		sb = ( HANDLE )MSN_CallService( MS_NETLIB_BINDPORT, ( WPARAM )hNetlibUser, ( LPARAM )&nlb);
+		if ( sb == NULL )
+			MSN_DebugLog( "Unable to bind the port for incoming transfers" );
+	}
 
 	char command[ 1024 ];
 	int  nBytes = mir_snprintf( command, sizeof( command ),
@@ -321,20 +339,20 @@ void ft_startFileSend( ThreadData* info, const char* Invcommand, const char* Inv
 		"AuthCookie: %i\r\n"
 		"Launch-Application: FALSE\r\n"
 		"Request-Data: IP-Address:\r\n\r\n",
-		( bHasError ) ? "CANCEL" : "ACCEPT",
-		Invcookie, ipaddr, nlb.wExPort, WORD((( double )rand() / ( double )RAND_MAX ) * 4294967295 ));
+		sb ? "ACCEPT" : "CANCEL",
+		Invcookie, MyConnection.GetMyExtIPStr(), nlb.wExPort, rand() << 16 | rand());
 	info->sendPacket( "MSG", "N %d\r\n%s", nBytes, command );
 
-	if ( bHasError ) {
-		delete ft;
-		return;
+	if ( sb ) {
+		ThreadData* newThread = new ThreadData;
+		newThread->mType = SERVER_FILETRANS;
+		newThread->mCaller = 2;
+		newThread->mMsnFtp = ft;
+		newThread->mIncomingBoundPort = sb;
+		newThread->mIncomingPort = nlb.wPort;
+		newThread->startThread(( pThreadFunc )sttSendFileThread );
 	}
+	else
+		delete ft;
 	
-	ThreadData* newThread = new ThreadData;
-	newThread->mType = SERVER_FILETRANS;
-	newThread->mCaller = 2;
-	newThread->mMsnFtp = ft;
-	newThread->mIncomingBoundPort = sb;
-	newThread->mIncomingPort = nlb.wPort;
-	newThread->startThread(( pThreadFunc )sttSendFileThread );
 }

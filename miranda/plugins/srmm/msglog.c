@@ -189,6 +189,7 @@ int DbEventIsShown(DBEVENTINFO * dbei, struct MessageWindowData *dat)
 	switch (dbei->eventType) {
 		case EVENTTYPE_MESSAGE:
 			return 1;
+		case EVENTTYPE_JABBER_CHATSTATES:
 		case EVENTTYPE_STATUSCHANGE:
 		case EVENTTYPE_FILE:
 			if (dbei->flags & DBEF_READ)
@@ -220,7 +221,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 		CallService(MS_DB_EVENT_MARKREAD, (WPARAM) hContact, (LPARAM) hDbEvent);
 		CallService(MS_CLIST_REMOVEEVENT, (WPARAM) hContact, (LPARAM) hDbEvent);
 	}
-	else if (dbei.eventType == EVENTTYPE_STATUSCHANGE) {
+	else if (dbei.eventType == EVENTTYPE_STATUSCHANGE || dbei.eventType == EVENTTYPE_JABBER_CHATSTATES) {
 		CallService(MS_DB_EVENT_MARKREAD, (WPARAM) hContact, (LPARAM) hDbEvent);
 	}
 	bufferEnd = 0;
@@ -260,6 +261,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 					i = LOGICON_MSG_IN;
 				}
 				break;
+			case EVENTTYPE_JABBER_CHATSTATES:
 			case EVENTTYPE_STATUSCHANGE:
 			case EVENTTYPE_FILE:
 				i = LOGICON_MSG_NOTICE;
@@ -287,7 +289,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 		AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, str);
 		showColon = 1;
 	}
-	if (!(g_dat->flags&SMF_HIDENAMES) && dbei.eventType != EVENTTYPE_STATUSCHANGE) {
+	if (!(g_dat->flags&SMF_HIDENAMES) && dbei.eventType != EVENTTYPE_STATUSCHANGE && dbei.eventType != EVENTTYPE_JABBER_CHATSTATES) {
 		TCHAR* szName;
 		CONTACTINFO ci;
 		ZeroMemory(&ci, sizeof(ci));
@@ -320,26 +322,15 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 	switch (dbei.eventType) {
 		case EVENTTYPE_MESSAGE:
 		{
-			TCHAR* msg;
+			TCHAR* msg = DbGetEventTextT( &dbei, CP_ACP );
 
 			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", SetToStyle(dbei.flags & DBEF_SENT ? MSGFONTID_MYMSG : MSGFONTID_YOURMSG));
-
-			#if defined( _UNICODE )
-			{
-				int msglen = strlen((char *) dbei.pBlob) + 1;
-				if (msglen != (int) dbei.cbBlob)
-					msg = (TCHAR *) & dbei.pBlob[msglen];
-				else {
-					msg = (TCHAR *) alloca(sizeof(TCHAR) * msglen);
-					MultiByteToWideChar(CP_ACP, 0, (char *) dbei.pBlob, -1, msg, msglen);
-				}
-			}
-			#else
-				msg = (BYTE *) dbei.pBlob;
-			#endif
 			AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, msg);
+
+			mir_free(msg);
 			break;
 		}
+		case EVENTTYPE_JABBER_CHATSTATES:
 		case EVENTTYPE_STATUSCHANGE:
 		{
 			TCHAR *msg, *szName;
@@ -364,16 +355,25 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", SetToStyle(MSGFONTID_NOTICE));
 			AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, szName);
 			AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, _T(" "));
-			#if defined( _UNICODE )
-			{
-				int msglen = strlen((char *) dbei.pBlob) + 1;
-				msg = ( TCHAR* )alloca(sizeof(TCHAR) * msglen);
-				MultiByteToWideChar(CP_ACP, 0, (char *) dbei.pBlob, -1, msg, msglen);
+			if ( bNewDbApi ) {
+				TCHAR* msg = DbGetEventTextT( &dbei, CP_ACP );
+				if ( msg ) {
+					AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, msg);
+					mir_free( msg );
+				}
 			}
-			#else
-				msg = (BYTE *) dbei.pBlob;
-			#endif
-			AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, msg);
+			else {
+				#if defined( _UNICODE )
+				{
+					int msglen = strlen((char *) dbei.pBlob) + 1;
+					msg = ( TCHAR* )alloca(sizeof(TCHAR) * msglen);
+					MultiByteToWideChar(CP_ACP, 0, (char *) dbei.pBlob, -1, msg, msglen);
+				}
+				#else
+					msg = (BYTE *) dbei.pBlob;
+				#endif
+				AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, msg);
+			}
 			if (ci.pszVal)
 				mir_free(ci.pszVal);
 			break;

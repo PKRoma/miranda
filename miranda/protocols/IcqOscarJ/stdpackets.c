@@ -182,12 +182,12 @@ static void packServAdvancedReply(icq_packet *p, DWORD dwUin, char* szUid, DWORD
 
 
 
-static void packServAdvancedMsgReply(icq_packet *p, DWORD dwUin, DWORD dwTimestamp, DWORD dwTimestamp2, WORD wCookie, BYTE bMsgType, BYTE bMsgFlags, WORD wLen)
+static void packServAdvancedMsgReply(icq_packet *p, DWORD dwUin, DWORD dwID1, DWORD dwID2, WORD wCookie, WORD wVersion, BYTE bMsgType, BYTE bMsgFlags, WORD wLen)
 {
-  packServAdvancedReply(p, dwUin, NULL, dwTimestamp, dwTimestamp2, wCookie, (WORD)(wLen + 51));
+  packServAdvancedReply(p, dwUin, NULL, dwID1, dwID2, wCookie, (WORD)(wLen + 51));
 
   packLEWord(p, 0x1B);          // Unknown
-  packByte(p, ICQ_VERSION);     // Protocol version
+  packByte(p, (BYTE)wVersion);  // Protocol version
   packGUID(p, PSIG_MESSAGE);
   packDWord(p, CLIENTFEATURES);
   packDWord(p, DC_TYPE);
@@ -608,6 +608,43 @@ DWORD icq_sendGetAwayMsgServ(HANDLE hContact, DWORD dwUin, int type, WORD wVersi
 
 
 
+DWORD icq_sendGetAwayMsgServExt(HANDLE hContact, DWORD dwUin, int type, WORD wVersion)
+{
+  icq_packet packet;
+  DWORD dwCookie;
+  message_cookie_data *pCookieData = NULL;
+
+  if (IsServerOverRate(ICQ_MSG_FAMILY, ICQ_MSG_SRV_SEND, RML_IDLE_30))
+    return 0;
+
+  pCookieData = CreateMessageCookie(MTYPE_AUTOAWAY, (BYTE)type);
+  dwCookie = AllocateCookie(CKT_MESSAGE, 0, hContact, (void*)pCookieData);
+
+  packServMsgSendHeader(&packet, dwCookie, pCookieData->dwMsgID1, pCookieData->dwMsgID2, dwUin, NULL, 2, 182);
+
+  // TLV(5) header
+  packServTLV5HeaderMsg(&packet, 142, pCookieData->dwMsgID1, pCookieData->dwMsgID2, 1);
+
+  // TLV(0x2711) header
+  packServTLV2711Header(&packet, (WORD)dwCookie, wVersion, MTYPE_PLUGIN, 0, 0, 0x100, 87);
+  //
+  packLEWord(&packet, 0); // Empty msg
+
+  packPluginTypeId(&packet, type);
+
+  packLEDWord(&packet, 0x15);
+  packLEDWord(&packet, 0);
+  packLEDWord(&packet, 0x0D);
+  packBuffer(&packet, "text/x-aolrtf", 0x0D);
+
+  // Send the monster
+  sendServPacket(&packet);
+
+  return dwCookie;
+}
+
+
+
 DWORD icq_sendGetAimAwayMsgServ(HANDLE hContact, char *szUID, int type)
 {
   icq_packet packet;
@@ -866,6 +903,7 @@ void icq_sendAwayMsgReplyServ(DWORD dwUin, DWORD dwMsgID1, DWORD dwMsgID2, WORD 
   WORD wMsgLen;
   char* pszMsg;
   HANDLE hContact;
+  WORD wReplyVersion = ICQ_VERSION;
 
 
   hContact = HContactFromUIN(dwUin, NULL);
@@ -880,8 +918,11 @@ void icq_sendAwayMsgReplyServ(DWORD dwUin, DWORD dwMsgID1, DWORD dwMsgID2, WORD 
     {
       char* szAnsiMsg = NULL;
 
-      if (wVersion == 9 && ICQ_VERSION == 9)
+      if (wVersion == 9)
+      {
         pszMsg = (char*)*szMsg;
+        wReplyVersion = 9;
+      }
       else
       { // only v9 protocol supports UTF-8 mode messagees
         wMsgLen = strlennull(*szMsg) + 1;
@@ -896,7 +937,7 @@ void icq_sendAwayMsgReplyServ(DWORD dwUin, DWORD dwMsgID1, DWORD dwMsgID2, WORD 
       if (wMsgLen > MAX_MESSAGESNACSIZE)
         wMsgLen = MAX_MESSAGESNACSIZE;
 
-      packServAdvancedMsgReply(&packet, dwUin, dwMsgID1, dwMsgID2, wCookie, msgType, 3, (WORD)(wMsgLen + 3));
+      packServAdvancedMsgReply(&packet, dwUin, dwMsgID1, dwMsgID2, wCookie, wReplyVersion, msgType, 3, (WORD)(wMsgLen + 3));
       packLEWord(&packet, (WORD)(wMsgLen + 1));
       packBuffer(&packet, pszMsg, wMsgLen);
       packByte(&packet, 0);
@@ -914,7 +955,7 @@ void icq_sendAdvancedMsgAck(DWORD dwUin, DWORD dwTimestamp, DWORD dwTimestamp2, 
 {
   icq_packet packet;
 
-  packServAdvancedMsgReply(&packet, dwUin, dwTimestamp, dwTimestamp2, wCookie, bMsgType, bMsgFlags, 11);
+  packServAdvancedMsgReply(&packet, dwUin, dwTimestamp, dwTimestamp2, wCookie, ICQ_VERSION, bMsgType, bMsgFlags, 11);
   packEmptyMsg(&packet);       // Status message
   packMsgColorInfo(&packet);
 
@@ -1501,7 +1542,7 @@ void icq_sendXtrazResponseServ(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCoo
 {
   icq_packet packet;
 
-  packServAdvancedMsgReply(&packet, dwUin, dwMID, dwMID2, wCookie, MTYPE_PLUGIN, 0, (WORD)(getPluginTypeIdLen(nType) + 11 + nBodyLen));
+  packServAdvancedMsgReply(&packet, dwUin, dwMID, dwMID2, wCookie, ICQ_VERSION, MTYPE_PLUGIN, 0, (WORD)(getPluginTypeIdLen(nType) + 11 + nBodyLen));
   //
   packEmptyMsg(&packet);
 

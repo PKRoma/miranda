@@ -120,27 +120,31 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 			break;
 		}
 		case CNF_COUNTRY:
+		case CNF_COCOUNTRY:
 		{
 			int i,countryCount;
 			struct CountryListEntry *countries;
-			if (!DBGetContactSetting(ci->hContact,ci->szProto,"Country",&dbv)) {
-				CallService(MS_UTILS_GETCOUNTRYLIST,(WPARAM)&countryCount,(LPARAM)&countries);
-				for(i=0;i<countryCount;i++) {
-					if(countries[i].id!=dbv.wVal) continue;
+			if ( !DBGetContactSetting( ci->hContact, ci->szProto, (ci->dwFlag & 0x7F)==CNF_COUNTRY ? "Country" : "CompanyCountry", &dbv )) {
+				if ( dbv.type == DBVT_WORD ) {
+					CallService(MS_UTILS_GETCOUNTRYLIST,(WPARAM)&countryCount,(LPARAM)&countries);
+					for(i=0;i<countryCount;i++) {
+						if(countries[i].id!=dbv.wVal) continue;
 
-					if ( ci->dwFlag & CNF_UNICODE ) {
-						int cbLen = MultiByteToWideChar( CP_ACP, 0, ( LPCSTR )countries[i].szName, -1, NULL, 0 );
-						WCHAR* buf = ( WCHAR* )mir_alloc( sizeof( WCHAR )*(cbLen+1) );
-						if ( buf != NULL )
-							MultiByteToWideChar( CP_ACP, 0, ( LPCSTR )countries[i].szName, -1, buf, cbLen );
-						ci->pszVal = ( TCHAR* )buf;
+						if ( ci->dwFlag & CNF_UNICODE ) {
+							int cbLen = MultiByteToWideChar( CP_ACP, 0, ( LPCSTR )countries[i].szName, -1, NULL, 0 );
+							WCHAR* buf = ( WCHAR* )mir_alloc( sizeof( WCHAR )*(cbLen+1) );
+							if ( buf != NULL )
+								MultiByteToWideChar( CP_ACP, 0, ( LPCSTR )countries[i].szName, -1, buf, cbLen );
+							ci->pszVal = ( TCHAR* )buf;
+						}
+						else ci->pszVal = ( TCHAR* )mir_strdup(countries[i].szName);
+
+						ci->type = CNFT_ASCIIZ;
+						DBFreeVariant(&dbv);
+						return 0;
 					}
-					else ci->pszVal = ( TCHAR* )mir_strdup(countries[i].szName);
-
-					ci->type = CNFT_ASCIIZ;
-					DBFreeVariant(&dbv);
-					return 0;
 				}
+				else return ProcessDatabaseValueDefault( ci, (ci->dwFlag & 0x7F)==CNF_COUNTRY ? "Country" : "CompanyCountry" );
 				DBFreeVariant(&dbv);
 			}
 			break;
@@ -454,8 +458,8 @@ static int ContactOptInit(WPARAM wParam,LPARAM lParam)
 	odp.position = -1000000000;
 	odp.hInstance = GetModuleHandle(NULL);
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_CONTACT);
-	odp.pszGroup = "Customize";
-	odp.pszTitle = "Contacts";
+	odp.pszGroup = LPGEN("Customize");
+	odp.pszTitle = LPGEN("Contacts");
 	odp.pfnDlgProc = ContactOpts;
 	odp.flags = ODPF_BOLDGROUPS;
 	CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );

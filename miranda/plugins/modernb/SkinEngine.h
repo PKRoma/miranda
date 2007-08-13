@@ -1,7 +1,8 @@
-#ifndef SKINENGINE_H_INC
-#define SKINENGINE_H_INC
+#ifndef ske_H_INC
+#define ske_H_INC
 
-#include "mod_skin_selector.h"
+#include "hdr/modern_skinselector.h"
+#include "commonprototypes.h"
 
 /* Definitions */
 #define GetAValue(argb)((BYTE)((argb)>>24))
@@ -15,21 +16,6 @@
 
 /* External variables */
 
-extern struct LIST_INTERFACE li;
-extern BOOL (WINAPI *g_proc_SetLayeredWindowAttributesNew)(HWND,COLORREF,BYTE,DWORD);
-extern int  g_nTitleBarHeight;
-extern int  g_nGapBetweenTitlebar;
-extern BOOL g_bSmoothAnimation;
-extern BOOL g_bTransparentFlag;
-
-/* External procedures */
-
-BOOL    GDIPlus_AlphaBlend(HDC hdcDest,int nXOriginDest,int nYOriginDest,int nWidthDest,int nHeightDest,HDC hdcSrc,int nXOriginSrc,int nYOriginSrc,int nWidthSrc,int nHeightSrc, BLENDFUNCTION * blendFunction);
-HBITMAP GDIPlus_LoadGlyphImage(char *szFileName);
-int     ModernButton_UnloadModule(WPARAM,LPARAM);
-BOOL    wildcmp(char * name, char * mask, BYTE option);
-
-
 /* Structs */
 
 typedef struct tagSKINOBJECTSLIST
@@ -37,8 +23,9 @@ typedef struct tagSKINOBJECTSLIST
     DWORD               dwObjLPReserved;
     DWORD               dwObjLPAlocated;
     char              * szSkinPlace;
-    LISTMODERNMASK  * pMaskList;
-    SKINOBJECTDESCRIPTOR  * pObjects;   
+    LISTMODERNMASK		* pMaskList;
+    SKINOBJECTDESCRIPTOR  * pObjects;
+	SortedList	*		pTextList;
 } SKINOBJECTSLIST;
 
 typedef struct tagGLYPHIMAGE
@@ -96,9 +83,9 @@ typedef struct
 
 
 
-int SkinEngine_UnloadSkin(SKINOBJECTSLIST * Skin);
-int SkinEngine_AddDescriptorToSkinObjectList (LPSKINOBJECTDESCRIPTOR lpDescr, SKINOBJECTSLIST* Skin);
-int SkinEngine_Service_DrawGlyph(WPARAM wParam,LPARAM lParam);
+int ske_UnloadSkin(SKINOBJECTSLIST * Skin);
+int ske_AddDescriptorToSkinObjectList (LPSKINOBJECTDESCRIPTOR lpDescr, SKINOBJECTSLIST* Skin);
+int ske_Service_DrawGlyph(WPARAM wParam,LPARAM lParam);
 
 #endif
 

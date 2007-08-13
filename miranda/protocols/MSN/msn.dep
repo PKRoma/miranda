@@ -1,146 +1,906 @@
 # Microsoft Developer Studio Generated Dependency File, included by msn.mak
 
-.\mmdecsjis.cpp : \
-	"..\..\include\m_system.h"\
+.\ezxml.c : \
+	".\ezxml.h"\
 	
 
 .\msn.cpp : \
+	"..\..\include\m_avatars.h"\
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_idle.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
 	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
-	"..\..\include\m_png.h"\
 	"..\..\include\m_popup.h"\
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
+	".\ezxml.h"\
 	".\msn_global.h"\
+	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
+	".\sdk\m_proto_listeningto.h"\
 	".\version.h"\
 	
 
-.\msn_bitmap.cpp : \
-	"..\..\include\m_system.h"\
-	".\sha1.h"\
-	
-
 .\msn_chat.cpp : \
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
 	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\ezxml.h"\
+	".\msn_global.h"\
+	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
+	".\sdk\m_proto_listeningto.h"\
 	
 
 .\msn_commands.cpp : \
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
-	".\msn_md5.h"\
+	"..\..\include\m_system_cpp.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\ezxml.h"\
+	".\msn_global.h"\
+	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
+	".\sdk\m_proto_listeningto.h"\
 	
 
 .\msn_contact.cpp : \
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\ezxml.h"\
+	".\msn_global.h"\
+	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
+	".\sdk\m_proto_listeningto.h"\
 	
 
 .\msn_errors.cpp : \
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\ezxml.h"\
+	".\msn_global.h"\
+	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
+	".\sdk\m_proto_listeningto.h"\
 	
 
 .\msn_ftold.cpp : \
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\ezxml.h"\
+	".\msn_global.h"\
+	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
+	".\sdk\m_proto_listeningto.h"\
 	
 
 .\msn_http.cpp : \
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\ezxml.h"\
+	".\msn_global.h"\
+	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
+	".\sdk\m_proto_listeningto.h"\
 	
 
 .\msn_libstr.cpp : \
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\ezxml.h"\
+	".\msn_global.h"\
+	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
+	".\sdk\m_proto_listeningto.h"\
 	
 
 .\msn_lists.cpp : \
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\ezxml.h"\
+	".\msn_global.h"\
+	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
+	".\sdk\m_proto_listeningto.h"\
 	
 
-.\msn_md5c.cpp : \
+.\msn_mail.cpp : \
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
-	".\msn_md5.h"\
+	"..\..\include\m_system_cpp.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\ezxml.h"\
+	".\msn_global.h"\
+	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
+	".\sdk\m_proto_listeningto.h"\
+	
+
+.\msn_menu.cpp : \
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\ezxml.h"\
+	".\msn_global.h"\
+	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
+	".\sdk\m_proto_listeningto.h"\
 	
 
 .\msn_mime.cpp : \
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\ezxml.h"\
+	".\msn_global.h"\
+	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
+	".\sdk\m_proto_listeningto.h"\
 	
 
 .\msn_misc.cpp : \
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
-	".\msn_md5.h"\
+	"..\..\include\m_system_cpp.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\ezxml.h"\
+	".\msn_global.h"\
+	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
+	".\sdk\m_proto_listeningto.h"\
+	".\version.h"\
 	
 
 .\msn_msgqueue.cpp : \
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\ezxml.h"\
+	".\msn_global.h"\
+	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
+	".\sdk\m_proto_listeningto.h"\
+	
+
+.\msn_msgsplit.cpp : \
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\ezxml.h"\
+	".\msn_global.h"\
+	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
+	".\sdk\m_proto_listeningto.h"\
+	
+
+.\msn_natdetect.cpp : \
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\ezxml.h"\
+	".\msn_global.h"\
+	".\SDK\icftypes.h"\
+	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
+	".\sdk\m_proto_listeningto.h"\
+	".\SDK\netfw.h"\
 	
 
 .\msn_opts.cpp : \
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
-	".\msn_md5.h"\
+	"..\..\include\m_system_cpp.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\ezxml.h"\
+	".\msn_global.h"\
+	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
+	".\sdk\m_proto_listeningto.h"\
 	
 
 .\msn_p2p.cpp : \
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
-	".\sha1.h"\
+	"..\..\include\m_system_cpp.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\ezxml.h"\
+	".\msn_global.h"\
+	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
+	".\sdk\m_proto_listeningto.h"\
 	
 
 .\msn_p2ps.cpp : \
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\ezxml.h"\
+	".\msn_global.h"\
+	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
+	".\sdk\m_proto_listeningto.h"\
 	
 
 .\msn_srv.cpp : \
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\ezxml.h"\
+	".\msn_global.h"\
+	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
+	".\sdk\m_proto_listeningto.h"\
 	
 
 .\msn_ssl.cpp : \
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\ezxml.h"\
+	".\msn_global.h"\
+	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
+	".\sdk\m_proto_listeningto.h"\
 	
 
 .\msn_std.cpp : \
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\ezxml.h"\
+	".\msn_global.h"\
+	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
+	".\sdk\m_proto_listeningto.h"\
 	
 
 .\msn_svcs.cpp : \
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\ezxml.h"\
+	".\msn_global.h"\
+	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
+	".\sdk\m_proto_listeningto.h"\
 	
 
 .\msn_switchboard.cpp : \
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\ezxml.h"\
+	".\msn_global.h"\
+	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
+	".\sdk\m_proto_listeningto.h"\
 	
 
 .\msn_threads.cpp : \
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_system_cpp.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\ezxml.h"\
+	".\msn_global.h"\
+	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
+	".\sdk\m_proto_listeningto.h"\
 	
 
 .\msn_useropts.cpp : \
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
+	"..\..\include\m_system_cpp.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\ezxml.h"\
+	".\msn_global.h"\
+	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
+	".\sdk\m_proto_listeningto.h"\
 	
 
 .\msn_ws.cpp : \
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_idle.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
 	"..\..\include\m_system.h"\
-	
-
-.\sha1.c : \
-	".\sha1.h"\
+	"..\..\include\m_system_cpp.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\ezxml.h"\
+	".\msn_global.h"\
+	".\sdk\m_folders.h"\
+	".\sdk\m_metacontacts.h"\
+	".\sdk\m_proto_listeningto.h"\
 	
 
 .\resource.rc : \
-	".\Icos\avatar.ico"\
 	".\Icos\inbox.ico"\
 	".\Icos\invite.ico"\
 	".\Icos\list_al.ico"\
@@ -150,7 +910,6 @@
 	".\Icos\msn.ico"\
 	".\Icos\msnblock.ico"\
 	".\Icos\netmeeting.ico"\
-	".\Icos\nudge.ico"\
 	".\Icos\profile.ico"\
 	".\Icos\services.ico"\
 	".\msn.rc"\

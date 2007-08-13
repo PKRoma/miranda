@@ -108,6 +108,7 @@ void yahoo_set_stealth(int id, const char *buddy, int add);
 
 void yahoo_add_buddy(int id, const char *who, const char *group, const char *msg);
 void yahoo_remove_buddy(int id, const char *who, const char *group);
+void yahoo_accept_buddy(int id, const char *who);
 void yahoo_reject_buddy(int id, const char *who, const char *msg);
 /* if unignore is true, unignore, else ignore */
 void yahoo_ignore_buddy(int id, const char *who, int unignore);
@@ -202,6 +203,11 @@ void yahoo_send_picture_status(int id, int buddy_icon);
 void yahoo_send_picture_update(int id, const char *who, int type);
 
 void yahoo_ftdc_cancel(int id, const char *buddy, const char *filename, const char *ft_token, int command);
+void yahoo_ft7dc_accept(int id, const char *buddy, const char *ft_token);
+void yahoo_ft7dc_cancel(int id, const char *buddy, const char *ft_token);
+void yahoo_ft7dc_relay(int id, const char *buddy, const char *ft_token);
+char *yahoo_webmessenger_idle_packet(int id, int* len);
+void yahoo_send_idle_packet(int id);
 #include "yahoo_httplib.h"
 
 #ifdef __cplusplus

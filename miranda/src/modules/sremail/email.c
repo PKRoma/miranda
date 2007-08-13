@@ -63,10 +63,10 @@ static int EMailPreBuildMenu(WPARAM wParam, LPARAM lParam)
 	mi.flags = CMIM_FLAGS;
 
 	szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
-	if (szProto == NULL || DBGetContactSetting((HANDLE)wParam, szProto, "e-mail",& dbv)) {
+	if (szProto == NULL || DBGetContactSetting((HANDLE)wParam, szProto, "e-mail",& dbv))
 		if (DBGetContactSetting((HANDLE)wParam, "UserInfo", "Mye-mail0", &dbv))
 			mi.flags = CMIM_FLAGS | CMIF_HIDDEN;
-	}
+
 	CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hEMailMenuItem, (LPARAM)&mi);
 	if (dbv.pszVal) DBFreeVariant(&dbv);
 	return 0;
@@ -74,19 +74,16 @@ static int EMailPreBuildMenu(WPARAM wParam, LPARAM lParam)
 
 int LoadSendRecvEMailModule(void)
 {
-	CLISTMENUITEM mi;
-
-	CreateServiceFunction(MS_EMAIL_SENDEMAIL, SendEMailCommand);
-	ZeroMemory(&mi, sizeof(mi));
+	CLISTMENUITEM mi = { 0 };
 	mi.cbSize = sizeof(mi);
 	mi.position = -2000010000;
-	mi.flags = 0;
-	mi.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_SENDEMAIL));
-	mi.pszContactOwner = NULL;
-	mi.pszName = Translate("&E-mail");
+	mi.flags = CMIF_ICONFROMICOLIB;
+	mi.icolibItem = GetSkinIconHandle( SKINICON_OTHER_SENDEMAIL );
+	mi.pszName = LPGEN("&E-mail");
 	mi.pszService = MS_EMAIL_SENDEMAIL;
 	hEMailMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
-	HookEvent(ME_CLIST_PREBUILDCONTACTMENU, EMailPreBuildMenu);
 
+	CreateServiceFunction(MS_EMAIL_SENDEMAIL, SendEMailCommand);
+	HookEvent(ME_CLIST_PREBUILDCONTACTMENU, EMailPreBuildMenu);
 	return 0;
 }

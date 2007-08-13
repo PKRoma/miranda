@@ -122,7 +122,7 @@ typedef struct _settextex {
 #include <richedit.h>
 #include <richole.h>
 #include "m_avatars.h"
-#include "m_tabsrmm.h"
+#include "m_message.h"
 
 #define MSGERROR_CANCEL	0
 #define MSGERROR_RETRY	    1
@@ -186,6 +186,7 @@ typedef struct _settextex {
 #define MWF_SHOW_USELOCALTIME 16384
 #define MWF_EX_DELAYEDSPLITTER 32768
 #define MWF_EX_AVATARCHANGED 65536
+#define MWF_EX_WARNCLOSE     0x20000
 
 #define SMODE_DEFAULT 0
 #define SMODE_MULTIPLE 1
@@ -283,6 +284,7 @@ struct ContainerWindowData {
     HWND    hwndSaved;
     ButtonItem *buttonItems;
     RECT    rcSaved;
+    DWORD   exFlags;
 };
 
 #define STICK_ICON_MSG 10
@@ -302,6 +304,7 @@ struct SendJob {
     int     iAcksNeeded;
     HANDLE  hEventSplit;
     int     chunkSize;
+    DWORD   dwTime;
 };
 
 struct MessageSessionStats {
@@ -327,7 +330,7 @@ struct MessageWindowData {
 	BYTE    bType;
     BYTE    bWasDeleted;
 	HANDLE  hContact, hSubContact;
-	HWND    hwndIEView, hwndFlash, hwndIWebBrowserControl;
+	HWND    hwndIEView, hwndFlash, hwndIWebBrowserControl, hwndHPP;
     HWND    hwnd;
 	HANDLE  hDbEventFirst,hDbEventLast, hDbEventLastFeed;
 	int     sendMode;
@@ -411,7 +414,7 @@ struct MessageWindowData {
     COLORREF inputbg;
     SIZE    szLabel;
     struct  MessageWindowTheme theme;
-    struct  avatarCacheEntry *ace;
+    struct  avatarCacheEntry *ace, *ownAce;
     COLORREF avatarbg;
 	HANDLE  *hHistoryEvents;
 	int     maxHistory, curHistory;
@@ -426,10 +429,11 @@ struct MessageWindowData {
     LONG    ipFieldHeight;
     WNDPROC oldIEViewProc;
     BOOL    clr_added;
-	BOOL	fIsReattach;
-	WPARAM  wParam;
-	LPARAM  lParam;
+    BOOL    fIsReattach;
+    WPARAM  wParam;          // used for "delayed" actions like moved splitters in minimized windows
+    LPARAM  lParam;
     int     iHaveRTLLang;
+    BOOL    fInsertMode;
 };
 
 typedef struct _recentinfo {
@@ -457,6 +461,8 @@ struct TabControlData {
     struct  MessageWindowData *dragDat;
     HIMAGELIST himlDrag;
     BOOL    bRefreshWithoutClip;
+    BOOL    fSavePos;
+    BOOL    fTipActive;
 };
 
 /*
@@ -492,7 +498,7 @@ typedef struct _globals {
     HICON       g_iconIn, g_iconOut, g_iconErr, g_iconContainer, g_iconStatus;
     HCURSOR     hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
     HBITMAP     g_hbmUnknown;
-    int         g_MetaContactsAvail, g_SmileyAddAvail, g_SecureIMAvail, g_WantIEView, g_PopupAvail, g_PopupWAvail;
+    int         g_MetaContactsAvail, g_SmileyAddAvail, g_WantIEView, g_PopupAvail, g_PopupWAvail, g_WantHPP;
     int         g_FlashAvatarAvail;
     HIMAGELIST  g_hImageList;
     HICON       g_IconMsgEvent, g_IconTypingEvent, g_IconFileEvent, g_IconUrlEvent, g_IconSend;
@@ -583,7 +589,7 @@ typedef struct _globals {
     BOOL        m_visualMessageSizeIndicator;
     BOOL        m_autoSplit;
     int         rtf_ctablesize;
-	DWORD		dwThreadID;
+    DWORD       dwThreadID;
 } MYGLOBALS;
 
 typedef struct _tag_ICONDESC {
@@ -686,6 +692,8 @@ struct NewMessageWindowLParam {
 #define CNT_CREATEFLAG_CLONED 1
 #define CNT_CREATEFLAG_MINIMIZED 2
 
+#define CNT_EX_CLOSEWARN 1
+
 #define MWF_LOG_ALL (MWF_LOG_NORMALTEMPLATES | MWF_LOG_SHOWTIME | MWF_LOG_SHOWSECONDS | \
         MWF_LOG_SHOWDATES | MWF_LOG_INDENT | MWF_LOG_TEXTFORMAT | MWF_LOG_SYMBOLS | MWF_LOG_INOUTICONS | \
         MWF_LOG_SHOWICONS | MWF_LOG_GRID | MWF_LOG_INDIVIDUALBKG | MWF_LOG_GROUPMODE)
@@ -721,7 +729,7 @@ struct ProtocolData {
 
 #define DM_SELECTTAB		 (WM_USER+23)
 #define DM_CLOSETABATMOUSE   (WM_USER+24)
-//#define DM_SAVELOCALE        (WM_USER+25) *free*
+#define DM_STATUSICONCHANGE  (WM_USER+25)
 #define DM_SETLOCALE         (WM_USER+26)
 #define DM_SESSIONLIST       (WM_USER+27)
 #define DM_QUERYLASTUNREAD   (WM_USER+28)
@@ -766,7 +774,7 @@ struct ProtocolData {
 #define DM_UPDATEMETACONTACTINFO (WM_USER+67)
 #define DM_SETICON           (WM_USER+68)
 #define DM_MULTISENDTHREADCOMPLETE (WM_USER+69)
-#define DM_SECURE_CHANGED    (WM_USER+70)
+#define DM_CHECKQUEUEFORCLOSE (WM_USER+70)
 #define DM_QUERYSTATUS       (WM_USER+71)
 #define DM_SETPARENTDIALOG   (WM_USER+72)
 #define DM_HANDLECLISTEVENT  (WM_USER+73)
@@ -861,7 +869,7 @@ extern const int msgDlgFontCount;
 #define SRMSGSET_SENDONENTER       "SendOnEnter"
 #define SRMSGDEFSET_SENDONENTER    0
 #define SRMSGSET_MSGTIMEOUT        "MessageTimeout"
-#define SRMSGDEFSET_MSGTIMEOUT     10000
+#define SRMSGDEFSET_MSGTIMEOUT     30000
 #define SRMSGSET_MSGTIMEOUT_MIN    4000 // minimum value (4 seconds)
 
 #define SRMSGSET_LOADHISTORY       "LoadHistory"
@@ -900,6 +908,7 @@ extern const int msgDlgFontCount;
 #define TIMERID_HEARTBEAT    2
 #define TIMEOUT_HEARTBEAT    20000
 #define TIMERID_HOVER 10
+#define TIMERID_HOVER_T 11
 
 #define SRMSGMOD "SRMsg"
 #define SRMSGMOD_T "Tab_SRMsg"
@@ -1065,6 +1074,95 @@ static __inline int mir_snprintfW(wchar_t *buffer, size_t count, const wchar_t* 
 
 #include "templates.h"
 
+struct StatusIconListNode {
+    struct StatusIconListNode *next;
+	StatusIconData sid;
+};
+
+struct TABSRMM_SessionInfo {
+    unsigned int cbSize;
+    unsigned short evtCode;
+    HWND hwnd;              // handle of the message dialog (tab)
+    HWND hwndContainer;     // handle of the parent container
+    HWND hwndInput;         // handle of the input area (rich edit)
+    UINT extraFlags;
+    UINT extraFlagsEX;
+    void *local;
+};
+
+typedef struct {
+	int cbSize;
+	HANDLE hContact;
+	int uFlags;  // should be same as input data unless 0, then it will be the actual type
+	HWND hwndWindow; //top level window for the contact or NULL if no window exists
+	int uState; // see window states
+	void *local; // used to store pointer to custom data
+} MessageWindowOutputData;
+
+
 #endif
+
+#define MS_MSG_FORWARDMESSAGE  "SRMsg/ForwardMessage"
+
+#define MS_MSG_GETWINDOWDATA "MessageAPI/GetWindowData"
+//wparam=(MessageWindowInputData*)
+//lparam=(MessageWindowData*)
+//returns 0 on success and returns non-zero (1) on error or if no window data exists for that hcontact
+
+// callback for the user menu entry
+
+#define MS_TABMSG_SETUSERPREFS "SRMsg_MOD/SetUserPrefs"
+
+// show one of the tray menus
+// wParam = 0 -> session list
+// wParam = 1 -> tray menu
+// lParam must be 0
+// 
+#define MS_TABMSG_TRAYSUPPORT "SRMsg_MOD/Show_TrayMenu"
+
+#define MBF_DISABLED		0x01
+
+#define TEMPLATES_MODULE "tabSRMM_Templates"
+#define RTLTEMPLATES_MODULE "tabSRMM_RTLTemplates"
+
+//Checks if there is a message window opened
+//wParam=(LPARAM)(HANDLE)hContact  - handle of the contact for which the window is searched. ignored if lParam
+//is not zero.
+//lParam=(LPARAM)(HWND)hwnd - a window handle - SET THIS TO 0 if you want to obtain the window handle
+//from the hContact.
+#define MS_MSG_MOD_MESSAGEDIALOGOPENED "SRMsg_MOD/MessageDialogOpened"
+
+//obtain the message window flags
+//wParam = hContact - ignored if lParam is given.
+//lParam = hwnd
+//returns struct MessageWindowData *dat, 0 if no window is found
+#define MS_MSG_MOD_GETWINDOWFLAGS "SRMsg_MOD/GetWindowFlags"
+
+// custom tabSRMM events
+
+#define tabMSG_WINDOW_EVT_CUSTOM_BEFORESEND 1
+
+
+/* temporary HPP API for emulating message log */
+
+#define MS_HPP_EG_WINDOW "History++/ExtGrid/NewWindow"
+#define MS_HPP_EG_EVENT  "History++/ExtGrid/Event"
+#define MS_HPP_EG_UTILS  "History++/ExtGrid/Utils"
+#define MS_HPP_EG_OPTIONSCHANGED "History++/ExtGrid/OptionsChanged"
+#define MS_HPP_EG_NOTIFICATION   "History++/ExtGrid/Notification"
+
+/*
+ * encryption status bar indicator
+ */
+
+extern HANDLE hHookIconPressedEvt;
+extern int status_icon_list_size;
+
+int SI_InitStatusIcons();
+int SI_DeinitStatusIcons();
+
+int  GetStatusIconsCount();
+void DrawStatusIcons(struct MessageWindowData *dat, HDC hdc, RECT r, int gap);
+void SI_CheckStatusIconClick(struct MessageWindowData *dat, HWND hwndFrom, POINT pt, RECT rc, int gap, int code);
 
 

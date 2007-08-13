@@ -1,21 +1,21 @@
 /* $Id$ */
 
 /*
- *  (C) Copyright 2001-2003 Wojtek Kaniewski <wojtekka@irc.pl>
- *                          Dawid Jarosz <dawjar@poczta.onet.pl>
+ *	(C) Copyright 2001-2003 Wojtek Kaniewski <wojtekka@irc.pl>
+ *							Dawid Jarosz <dawjar@poczta.onet.pl>
  *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License Version 2 as
- *  published by the Free Software Foundation.
+ *	This program is free software; you can redistribute it and/or modify
+ *	it under the terms of the GNU General Public License Version 2 as
+ *	published by the Free Software Foundation.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ *	This program is distributed in the hope that it will be useful,
+ *	but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *	GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *	You should have received a copy of the GNU General Public License
+ *	along with this program; if not, write to the Free Software
+ *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
 #include <errno.h>
@@ -23,12 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "dynstuff.h"
-
-#ifdef _MSC_VER
-#define strcasecmp stricmp
-#define snprintf _snprintf
-#endif
+#include "gg.h"
 
 /*
  * list_add_sorted()
@@ -37,9 +32,9 @@
  * je¶li poda siê jako ostatni parametr funkcjê porównuj±c± zawarto¶æ
  * elementów, mo¿e posortowaæ od razu.
  *
- *  - list - wska¼nik do listy,
- *  - data - wska¼nik do elementu,
- *  - alloc_size - rozmiar elementu, je¶li chcemy go skopiowaæ.
+ *	- list - wska¼nik do listy,
+ *	- data - wska¼nik do elementu,
+ *	- alloc_size - rozmiar elementu, je¶li chcemy go skopiowaæ.
  *
  * zwraca wska¼nik zaalokowanego elementu lub NULL w przpadku b³êdu.
  */
@@ -108,9 +103,9 @@ void *list_add(list_t *list, void *data, int alloc_size)
  *
  * usuwa z listy wpis z podanym elementem.
  *
- *  - list - wska¼nik do listy,
- *  - data - element,
- *  - free_data - zwolniæ pamiêæ po elemencie.
+ *	- list - wska¼nik do listy,
+ *	- data - element,
+ *	- free_data - zwolniæ pamiêæ po elemencie.
  */
 int list_remove(list_t *list, void *data, int free_data)
 {
@@ -146,7 +141,7 @@ int list_remove(list_t *list, void *data, int free_data)
  *
  * zwraca ilo¶æ elementów w danej li¶cie.
  *
- *  - list - lista.
+ *	- list - lista.
  */
 int list_count(list_t list)
 {
@@ -163,8 +158,8 @@ int list_count(list_t list)
  *
  * niszczy wszystkie elementy listy.
  *
- *  - list - lista,
- *  - free_data - czy zwalniaæ bufor danych?
+ *	- list - lista,
+ *	- free_data - czy zwalniaæ bufor danych?
  */
 int list_destroy(list_t list, int free_data)
 {
@@ -189,8 +184,8 @@ int list_destroy(list_t list, int free_data)
  *
  * upewnia siê, ¿e w stringu bêdzie wystarczaj±co du¿o miejsca.
  *
- *  - s - ci±g znaków,
- *  - count - wymagana ilo¶æ znaków (bez koñcowego '\0').
+ *	- s - ci±g znaków,
+ *	- count - wymagana ilo¶æ znaków (bez koñcowego '\0').
  */
 static void string_realloc(string_t s, int count)
 {
@@ -213,8 +208,8 @@ static void string_realloc(string_t s, int count)
  * dodaje do danego ci±gu jeden znak, alokuj±c przy tym odpowiedni± ilo¶æ
  * pamiêci.
  *
- *  - s - ci±g znaków.
- *  - c - znaczek do dopisania.
+ *	- s - ci±g znaków.
+ *	- c - znaczek do dopisania.
  */
 int string_append_c(string_t s, char c)
 {
@@ -236,9 +231,9 @@ int string_append_c(string_t s, char c)
  *
  * dodaje tekst do bufora alokuj±c odpowiedni± ilo¶æ pamiêci.
  *
- *  - s - ci±g znaków,
- *  - str - tekst do dopisania,
- *  - count - ile znaków tego tekstu dopisaæ? (-1 znaczy, ¿e ca³y).
+ *	- s - ci±g znaków,
+ *	- str - tekst do dopisania,
+ *	- count - ile znaków tego tekstu dopisaæ? (-1 znaczy, ¿e ca³y).
  */
 int string_append_n(string_t s, const char *str, int count)
 {
@@ -270,10 +265,10 @@ int string_append(string_t s, const char *str)
  *
  * wstawia tekst w podane miejsce bufora.
  *
- *  - s - ci±g znaków,
- *  - index - miejsce, gdzie mamy wpisaæ (liczone od 0),
- *  - str - tekst do dopisania,
- *  - count - ilo¶æ znaków do dopisania (-1 znaczy, ¿e wszystkie).
+ *	- s - ci±g znaków,
+ *	- index - miejsce, gdzie mamy wpisaæ (liczone od 0),
+ *	- str - tekst do dopisania,
+ *	- count - ilo¶æ znaków do dopisania (-1 znaczy, ¿e wszystkie).
  */
 void string_insert_n(string_t s, int index, const char *str, int count)
 {
@@ -304,7 +299,7 @@ void string_insert(string_t s, int index, const char *str)
  *
  * inicjuje strukturê string. alokuje pamiêæ i przypisuje pierwsz± warto¶æ.
  *
- *  - value - je¶li NULL, ci±g jest pusty, inaczej kopiuje tam.
+ *	- value - je¶li NULL, ci±g jest pusty, inaczej kopiuje tam.
  *
  * zwraca zaalokowan± strukturê `string'.
  */
@@ -327,7 +322,7 @@ string_t string_init(const char *value)
  *
  * czy¶ci zawarto¶æ struktury `string'.
  *
- *  - s - ci±g znaków.
+ *	- s - ci±g znaków.
  */
 void string_clear(string_t s)
 {
@@ -349,8 +344,8 @@ void string_clear(string_t s)
  * zwalnia pamiêæ po strukturze string i mo¿e te¿ zwolniæ pamiêæ po samym
  * ci±gu znaków.
  *
- *  - s - struktura, któr± wycinamy,
- *  - free_string - zwolniæ pamiêæ po ci±gu znaków?
+ *	- s - struktura, któr± wycinamy,
+ *	- free_string - zwolniæ pamiêæ po ci±gu znaków?
  *
  * je¶li free_string=0 zwraca wska¼nik do ci±gu, inaczej NULL.
  */
@@ -379,7 +374,7 @@ char *string_free(string_t s, int free_string)
  * razy, poniewa¿ tyle mamy statycznych buforów. lepsze to ni¿ ci±g³e
  * tworzenie tymczasowych buforów na stosie i sprintf()owanie.
  *
- *  - i - liczba do zamiany.
+ *	- i - liczba do zamiany.
  *
  * zwraca adres do bufora, którego _NIE_NALE¯Y_ zwalniaæ.
  */
@@ -392,7 +387,7 @@ const char *ditoa(long int i)
 	if (index > 9)
 		index = 0;
 
-	snprintf(tmp, 16, "%ld", i);
+	mir_snprintf(tmp, 16, "%ld", i);
 
 	return tmp;
 }
@@ -402,14 +397,14 @@ const char *ditoa(long int i)
  *
  * tworzy tablicê tekstów z jednego, rozdzielonego podanymi znakami.
  *
- *  - string - tekst wej¶ciowy,
- *  - sep - lista elementów oddzielaj±cych,
- *  - max - maksymalna ilo¶æ elementów tablicy. je¶li równe 0, nie ma
- *          ograniczeñ rozmiaru tablicy.
- *  - trim - czy wiêksz± ilo¶æ elementów oddzielaj±cych traktowaæ jako
- *           jeden (na przyk³ad spacje, tabulacja itp.)
- *  - quotes - czy pola mog± byæ zapisywane w cudzys³owiach lub
- *             apostrofach z escapowanymi znakami.
+ *	- string - tekst wej¶ciowy,
+ *	- sep - lista elementów oddzielaj±cych,
+ *	- max - maksymalna ilo¶æ elementów tablicy. je¶li równe 0, nie ma
+ *			ograniczeñ rozmiaru tablicy.
+ *	- trim - czy wiêksz± ilo¶æ elementów oddzielaj±cych traktowaæ jako
+ *			 jeden (na przyk³ad spacje, tabulacja itp.)
+ *	- quotes - czy pola mog± byæ zapisywane w cudzys³owiach lub
+ *			   apostrofach z escapowanymi znakami.
  *
  * zaalokowan± tablicê z zaalokowanymi ci±gami znaków, któr± nale¿y
  * zwolniæ funkcj± array_free()
@@ -548,8 +543,8 @@ void array_add(char ***array, char *string)
  * ³±czy elementy tablicy w jeden string oddzielaj±c elementy odpowiednim
  * separatorem.
  *
- *  - array - wska¼nik do tablicy,
- *  - sep - seperator.
+ *	- array - wska¼nik do tablicy,
+ *	- sep - seperator.
  *
  * zwrócony ci±g znaków nale¿y zwolniæ.
  */
@@ -576,9 +571,9 @@ char *array_join(char **array, const char *sep)
  *
  * stwierdza, czy tablica zawiera podany element.
  *
- *  - array - tablica,
- *  - string - szukany ci±g znaków,
- *  - casesensitive - czy mamy zwracaæ uwagê na wielko¶æ znaków?
+ *	- array - tablica,
+ *	- string - szukany ci±g znaków,
+ *	- casesensitive - czy mamy zwracaæ uwagê na wielko¶æ znaków?
  *
  * 0/1
  */

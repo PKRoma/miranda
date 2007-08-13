@@ -245,7 +245,7 @@ int IcqOptInit(WPARAM wParam, LPARAM lParam)
   odp.pfnDlgProc = DlgProcIcqMain;
   odp.flags = ODPF_BOLDGROUPS;
   odp.nIDBottomSimpleControl = 0;
-  AddOptionsPageUtf(&odp, wParam, "Network", gpszICQProtoName);
+  AddOptionsPageUtf(&odp, wParam, LPGEN("Network"), gpszICQProtoName);
 
   InitPopupOpts(wParam);
 
@@ -795,7 +795,7 @@ static BOOL CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 
 
 static const UINT icqContactsControls[] = {IDC_ADDSERVER,IDC_LOADFROMSERVER,IDC_SAVETOSERVER,IDC_UPLOADNOW};
-static const UINT icqAvatarControls[] = {IDC_AUTOLOADAVATARS,IDC_LINKAVATARS,IDC_STRICTAVATARCHECK};
+static const UINT icqAvatarControls[] = {IDC_AUTOLOADAVATARS,IDC_BIGGERAVATARS,IDC_STRICTAVATARCHECK};
 static BOOL CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
   switch (msg)
@@ -808,7 +808,7 @@ static BOOL CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wPara
     LoadDBCheckState(hwndDlg, IDC_SAVETOSERVER, "StoreServerDetails", DEFAULT_SS_STORE);
     LoadDBCheckState(hwndDlg, IDC_ENABLEAVATARS, "AvatarsEnabled", DEFAULT_AVATARS_ENABLED);
     LoadDBCheckState(hwndDlg, IDC_AUTOLOADAVATARS, "AvatarsAutoLoad", DEFAULT_LOAD_AVATARS);
-    LoadDBCheckState(hwndDlg, IDC_LINKAVATARS, "AvatarsAutoLink", DEFAULT_LINK_AVATARS);
+    LoadDBCheckState(hwndDlg, IDC_BIGGERAVATARS, "AvatarsAllowBigger", DEFAULT_BIGGER_AVATARS);
     LoadDBCheckState(hwndDlg, IDC_STRICTAVATARCHECK, "StrictAvatarCheck", DEFAULT_AVATARS_CHECK);
 
     icq_EnableMultipleControls(hwndDlg, icqContactsControls, sizeof(icqContactsControls)/sizeof(icqContactsControls[0]), 
@@ -858,7 +858,7 @@ static BOOL CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wPara
       StoreDBCheckState(hwndDlg, IDC_SAVETOSERVER, "StoreServerDetails");
       StoreDBCheckState(hwndDlg, IDC_ENABLEAVATARS, "AvatarsEnabled");
       StoreDBCheckState(hwndDlg, IDC_AUTOLOADAVATARS, "AvatarsAutoLoad");
-      StoreDBCheckState(hwndDlg, IDC_LINKAVATARS, "AvatarsAutoLink");
+      StoreDBCheckState(hwndDlg, IDC_BIGGERAVATARS, "AvatarsAllowBigger");
       StoreDBCheckState(hwndDlg, IDC_STRICTAVATARCHECK, "StrictAvatarCheck");
 
       return TRUE;

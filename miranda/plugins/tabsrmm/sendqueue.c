@@ -13,6 +13,7 @@ extern      MYGLOBALS myGlobals;
 extern      TCHAR *pszIDCSAVE_save, *pszIDCSAVE_close;
 extern      const UINT errorControls[5], infoPanelControls[8];
 extern      struct SendJob *sendJobs;
+extern      NEN_OPTIONS nen_options;
 
 static char *pss_msg = "/SendMsg";
 static char *pss_msgw = "/SendMsgW";
@@ -83,7 +84,16 @@ void HandleQueueError(HWND hwndDlg, struct MessageWindowData *dat, int iEntry)
     
     dat->iCurrentQueueError = iEntry;
     _snprintf(szErrorMsg, 500, "%s", sendJobs[iEntry].szErrorMsg);
-    LogErrorMessage(hwndDlg, dat, iEntry, (char *)szErrorMsg);
+#if defined(_UNICODE)
+    {
+        wchar_t wszErrorMsg[512];
+        MultiByteToWideChar(myGlobals.m_LangPackCP, 0, szErrorMsg, -1, wszErrorMsg, 512);
+        wszErrorMsg[511] = 0;
+        LogErrorMessage(hwndDlg, dat, iEntry, wszErrorMsg);
+    }
+#else
+    LogErrorMessage(hwndDlg, dat, iEntry, szErrorMsg);
+#endif
     RecallFailedMessage(hwndDlg, dat, iEntry);
     ShowErrorControls(hwndDlg, dat, TRUE);
     HandleIconFeedback(hwndDlg, dat, myGlobals.g_iconErr);
@@ -105,11 +115,22 @@ int AddToSendQueue(HWND hwndDlg, struct MessageWindowData *dat, int iLen, int dw
      * find a free entry in the send queue...
      */
     for(i = 0; i < NR_SENDJOBS; i++) {
-        if(sendJobs[i].hOwner != 0 || sendJobs[i].sendCount != 0 || sendJobs[i].iStatus != 0)
-            continue;
+        if(sendJobs[i].hOwner != 0 || sendJobs[i].sendCount != 0 || sendJobs[i].iStatus != 0) {
+            // this entry is used, check if it's orphaned and can be removed...
+            if(sendJobs[i].hwndOwner && IsWindow(sendJobs[i].hwndOwner))            // window exists, do not reuse it
+                continue;
+            if(time(NULL) - sendJobs[i].dwTime < 120) {                              // non-acked entry, but not old enough, don't re-use it
+                continue;
+            }
+            //_DebugPopup(sendJobs[i].hOwner, "Removing orphaned job from queue (%d seconds old)", time(NULL) - sendJobs[i].dwTime);
+            ClearSendJob(i);
+            iFound = i;
+            goto entry_found;
+        }
         iFound = i;
         break;
     }
+entry_found:
     if(iFound == NR_SENDJOBS) {
         _DebugMessage(hwndDlg, dat, "Send queue full");
         return 0;
@@ -119,18 +140,20 @@ int AddToSendQueue(HWND hwndDlg, struct MessageWindowData *dat, int iLen, int dw
         if(sendJobs[iFound].sendBuffer == NULL) {
             if(iLength < HISTORY_INITIAL_ALLOCSIZE)
                 iLength = HISTORY_INITIAL_ALLOCSIZE;
-            sendJobs[iFound].sendBuffer = (char *)malloc(iLength);
+            sendJobs[iFound].sendBuffer = (char *)mir_alloc(iLength);
             sendJobs[iFound].dwLen = iLength;
         }
         else {
             if(iLength > sendJobs[iFound].dwLen) {
-                sendJobs[iFound].sendBuffer = (char *)realloc(sendJobs[iFound].sendBuffer, iLength);
+                sendJobs[iFound].sendBuffer = (char *)mir_realloc(sendJobs[iFound].sendBuffer, iLength);
                 sendJobs[iFound].dwLen = iLength;
             }
         }
         CopyMemory(sendJobs[iFound].sendBuffer, dat->sendBuffer, iLen);
     }
     sendJobs[iFound].dwFlags = dwFlags;
+    sendJobs[iFound].dwTime = time(NULL);
+
     SaveInputHistory(hwndDlg, dat, 0, 0);
     SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
     EnableSendButton(hwndDlg, FALSE);
@@ -154,11 +177,11 @@ static int SendChunkW(WCHAR *chunk, HANDLE hContact, char *szSvc, DWORD dwFlags)
     int mbcsSize = WideCharToMultiByte(codePage, 0, chunk, -1, pBuf, 0, 0, 0);
 
     memRequired += mbcsSize;
-    pBuf = (BYTE *)malloc(memRequired);
+    pBuf = (BYTE *)mir_alloc(memRequired);
     WideCharToMultiByte(codePage, 0, chunk, -1, pBuf, mbcsSize, 0, 0);
     CopyMemory(&pBuf[mbcsSize], chunk, (wLen + 1) * sizeof(WCHAR));
     id = CallContactService(hContact, szSvc, dwFlags, (LPARAM)pBuf);
-    free(pBuf);
+    mir_free(pBuf);
     return id;
 }
 
@@ -274,7 +297,7 @@ static DWORD WINAPI DoSplitSendA(LPVOID param)
     svcName = pss_msg;
 
     iLen = lstrlenA(job->sendBuffer);
-    szTemp = (char *)malloc(iLen + 1);
+    szTemp = (char *)mir_alloc(iLen + 1);
     CopyMemory(szTemp, job->sendBuffer, iLen + 1);
     szBegin = szTemp;
 
@@ -324,7 +347,7 @@ static DWORD WINAPI DoSplitSendA(LPVOID param)
         }
         Sleep(500L);
     } while(fSplitting);
-    free(szBegin);
+    mir_free(szBegin);
     return 0;
 }
 
@@ -345,7 +368,7 @@ static int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iE
             }
         } while (hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0));
         if (sendJobs[iEntry].sendCount == 0) {
-            LogErrorMessage(hwndDlg, dat, -1, Translate("You haven't selected any contacts from the list. Click the checkbox box next to a name to send the message to that person."));
+            LogErrorMessage(hwndDlg, dat, -1, TranslateT("You haven't selected any contacts from the list. Click the checkbox box next to a name to send the message to that person."));
             return 0;
         }
         
@@ -468,6 +491,7 @@ void ClearSendJob(int iIndex)
     sendJobs[iIndex].iAcksNeeded = 0;
     sendJobs[iIndex].dwFlags = 0;
     sendJobs[iIndex].chunkSize = 0;
+    sendJobs[iIndex].dwTime = 0;
     ZeroMemory(sendJobs[iIndex].hContact, sizeof(HANDLE) * SENDJOBS_MAX_SENDS);
     ZeroMemory(sendJobs[iIndex].hSendId, sizeof(HANDLE) * SENDJOBS_MAX_SENDS);
 }
@@ -497,7 +521,7 @@ void CheckSendQueue(HWND hwndDlg, struct MessageWindowData *dat)
  * from the given sendJob (queue index)
  */
 
-void LogErrorMessage(HWND hwndDlg, struct MessageWindowData *dat, int iSendJobIndex, char *szErrMsg)
+void LogErrorMessage(HWND hwndDlg, struct MessageWindowData *dat, int iSendJobIndex, TCHAR *szErrMsg)
 {
     DBEVENTINFO dbei = {0};
     int iMsgLen;
@@ -511,6 +535,8 @@ void LogErrorMessage(HWND hwndDlg, struct MessageWindowData *dat, int iSendJobIn
         iMsgLen = 0;
         dbei.pBlob = NULL;
     }
+	 if ( sendJobs[iSendJobIndex].dwFlags & PREF_UTF )
+		 dbei.flags = DBEF_UTF;
 #if defined(_UNICODE)
     if(iSendJobIndex >= 0) {
         if(sendJobs[iSendJobIndex].dwFlags & PREF_UNICODE) {
@@ -520,7 +546,7 @@ void LogErrorMessage(HWND hwndDlg, struct MessageWindowData *dat, int iSendJobIn
 #endif
     dbei.cbBlob = iMsgLen;
     dbei.timestamp = time(NULL);
-    dbei.szModule = szErrMsg;
+    dbei.szModule = (char *)szErrMsg;
     StreamInEvents(hwndDlg, NULL, 1, 1, &dbei);
 }
 
@@ -592,7 +618,7 @@ void RecallFailedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iEntry
         if(sendJobs[iEntry].dwFlags & PREF_UNICODE)
             SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)&sendJobs[iEntry].sendBuffer[lstrlenA(sendJobs[iEntry].sendBuffer) + 1]);
         else {
-            stx.codepage = CP_ACP;
+            stx.codepage = (sendJobs[iEntry].dwFlags & PREF_UTF) ? CP_UTF8 : CP_ACP;
             SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)sendJobs[iEntry].sendBuffer);
         }
 #else
@@ -638,23 +664,39 @@ void UpdateSaveAndSendButton(HWND hwndDlg, struct MessageWindowData *dat)
 
 void NotifyDeliveryFailure(HWND hwndDlg, struct MessageWindowData *dat)
 {
+#if defined _UNICODE
+    POPUPDATAW ppd;
+    int     ibsize = 1023;
+
+    if(CallService(MS_POPUP_QUERY, PUQS_GETSTATUS, 0) == 1) {
+        ZeroMemory((void *)&ppd, sizeof(ppd));
+        ppd.lchContact = dat->hContact;
+        mir_sntprintf(ppd.lpwzContactName, MAX_CONTACTNAME, _T("%s"), dat->szNickname);
+        mir_sntprintf(ppd.lpwzText, MAX_SECONDLINE, _T("%s"), TranslateT("A message delivery has failed.\nClick to open the message window."));
+        ppd.colorText = RGB(255, 245, 225);
+        ppd.colorBack = RGB(191,0,0);
+        ppd.PluginData = hwndDlg;
+        ppd.PluginWindowProc = (WNDPROC)PopupDlgProc;
+        ppd.lchIcon = myGlobals.g_iconErr;
+        CallService(MS_POPUP_ADDPOPUPW, (WPARAM)&ppd, 0);
+    }
+#else
     POPUPDATA ppd;
     int     ibsize = 1023;
 
     if(CallService(MS_POPUP_QUERY, PUQS_GETSTATUS, 0) == 1) {
         ZeroMemory((void *)&ppd, sizeof(ppd));
         ppd.lchContact = dat->hContact;
-        ppd.lchIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
-        ppd.lpzContactName[0] = 0;
-        //strncpy(ppd.lpzContactName, dat->szNickname, MAX_CONTACTNAME);
-        strcpy(ppd.lpzText, Translate("A message delivery has failed.\nClick to open the message window."));
-        ppd.colorText = RGB(0,0,0);
-        ppd.colorBack = RGB(255,0,0);
+        mir_sntprintf(ppd.lpzContactName, MAX_CONTACTNAME, "%s", dat->szNickname);
+        mir_sntprintf(ppd.lpzText, MAX_SECONDLINE, "%s", Translate("A message delivery has failed.\nClick to open the message window."));
+        ppd.colorText = RGB(255, 245, 225);
+        ppd.colorBack = RGB(191,0,0);
         ppd.PluginData = hwndDlg;
         ppd.PluginWindowProc = (WNDPROC)PopupDlgProc;
         ppd.lchIcon = myGlobals.g_iconErr;
         CallService(MS_POPUP_ADDPOPUP, (WPARAM)&ppd, 0);
     }
+#endif
 }
 
 static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -714,3 +756,157 @@ int RTL_Detect(WCHAR *pszwText)
     return 0;
 }
 #endif
+
+int AckMessage(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
+{
+    ACKDATA *ack = (ACKDATA *) lParam;
+    DBEVENTINFO dbei = { 0};
+    HANDLE hNewEvent;
+    int i, iFound = NR_SENDJOBS, iNextFailed;
+    struct ContainerWindowData *m_pContainer = 0;
+
+    if(dat)
+        m_pContainer = dat->pContainer;
+
+    iFound = (int)(LOWORD(wParam));
+    i = (int)(HIWORD(wParam));
+
+    /*      -- not longer needed, none of this happened once in more than 2 years --
+
+    if(iFound < 0 || iFound >= NR_SENDJOBS || i < 0 || i >= SENDJOBS_MAX_SENDS) {       // sanity checks (unlikely to happen).
+        _DebugPopup(dat->hContact, "Warning: HM_EVENTSENT with invalid data (sq-index = %d, sendId-index = %d", iFound, i);
+        break;
+    }
+    */
+    /*
+    if (ack->type != ACKTYPE_MESSAGE) {
+        _DebugPopup(dat->hContact, "Warning: HM_EVENTSENT received unknown/invalid ACKTYPE (%d)", ack->type);
+        break;                                       // should not happen, but who knows...
+    }
+    */
+
+    if(sendJobs[iFound].iStatus == SQ_ERROR) {       // received ack for a job which is already in error state...
+        if(hwndDlg && dat) {                         // window still open
+            if(dat->iCurrentQueueError == iFound) {
+                dat->iCurrentQueueError = -1;
+                ShowErrorControls(hwndDlg, dat, FALSE);
+            }
+        }
+    }
+
+    // failed acks are only handled when the window is still open. with no window open, they will be *silently* discarded
+
+    if(ack->result == ACKRESULT_FAILED) {
+        if(hwndDlg && dat) {
+            /*
+             * "hard" errors are handled differently in multisend. There is no option to retry - once failed, they
+             * are discarded and the user is notified with a small log message.
+             */
+            if(!nen_options.iNoSounds && !(m_pContainer->dwFlags & CNT_NOSOUND))
+                SkinPlaySound("SendError");
+            if(sendJobs[iFound].sendCount > 1) {         // multisend is different...
+                char szErrMsg[256];
+                mir_snprintf(szErrMsg, sizeof(szErrMsg), Translate("Multisend: failed sending to: %s"), dat->szProto);
+    #if defined(_UNICODE)
+                {
+                    wchar_t wszErrMsg[256];
+                    MultiByteToWideChar(myGlobals.m_LangPackCP, 0, szErrMsg, -1, wszErrMsg, 256);
+                    wszErrMsg[255] = 0;
+                    LogErrorMessage(hwndDlg, dat, -1, wszErrMsg);
+                }
+    #else
+                LogErrorMessage(hwndDlg, dat, -1, szErrMsg);
+    #endif
+                goto verify;
+            }
+            else {
+                mir_snprintf(sendJobs[iFound].szErrorMsg, sizeof(sendJobs[iFound].szErrorMsg), Translate("Delivery failure: %s"), (char *)ack->lParam);
+                sendJobs[iFound].iStatus = SQ_ERROR;
+                KillTimer(hwndDlg, TIMERID_MSGSEND + iFound);
+                if(!(dat->dwFlags & MWF_ERRORSTATE))
+                    HandleQueueError(hwndDlg, dat, iFound);
+            }
+            return 0;
+        }
+        else {
+            ClearSendJob(iFound);
+            return 0;
+        }
+    }
+
+    dbei.cbSize = sizeof(dbei);
+    dbei.eventType = EVENTTYPE_MESSAGE;
+    dbei.flags = DBEF_SENT;
+    dbei.szModule = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) sendJobs[iFound].hContact[i], 0);
+    dbei.timestamp = time(NULL);
+    dbei.cbBlob = lstrlenA(sendJobs[iFound].sendBuffer) + 1;
+
+    if(dat) {
+        dat->stats.iSentBytes += (dbei.cbBlob - 1);
+        dat->stats.iSent++;
+    }
+
+#if defined( _UNICODE )
+    if(sendJobs[iFound].dwFlags & PREF_UNICODE)
+        dbei.cbBlob *= sizeof(TCHAR) + 1;
+    if(sendJobs[iFound].dwFlags & PREF_RTL)
+        dbei.flags |= DBEF_RTL;
+    if(sendJobs[iFound].dwFlags & PREF_UTF)
+        dbei.flags |= DBEF_UTF;
+#endif
+    dbei.pBlob = (PBYTE) sendJobs[iFound].sendBuffer;
+    hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM) sendJobs[iFound].hContact[i], (LPARAM) & dbei);
+
+    if(m_pContainer) {
+        if(!nen_options.iNoSounds && !(m_pContainer->dwFlags & CNT_NOSOUND))
+            SkinPlaySound("SendMsg");
+    }
+
+    /*
+     * if this is a multisend job, AND the ack was from a different contact (not the session "owner" hContact)
+     * then we print a small message telling the user that the message has been delivered to *foo*
+     */
+
+    if(hwndDlg && dat) {
+        if(sendJobs[iFound].hContact[i] != sendJobs[iFound].hOwner) {
+            TCHAR szErrMsg[256];
+            TCHAR *szReceiver = (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)sendJobs[iFound].hContact[i], GCDNF_TCHAR);
+            mir_sntprintf(szErrMsg, safe_sizeof(szErrMsg), TranslateT("Multisend: successfully sent to: %s"), szReceiver);
+            LogErrorMessage(hwndDlg, dat, -1, szErrMsg);
+        }
+    }
+
+    if (dat && (sendJobs[iFound].hContact[i] == dat->hContact)) {
+        if (dat->hDbEventFirst == NULL) {
+            dat->hDbEventFirst = hNewEvent;
+            SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
+        }
+    }
+verify:
+    sendJobs[iFound].hSendId[i] = NULL;
+    sendJobs[iFound].hContact[i] = NULL;
+    sendJobs[iFound].iAcksNeeded--;
+
+    if(sendJobs[iFound].iAcksNeeded == 0) {               // everything sent
+        if(sendJobs[iFound].sendCount > 1 && hwndDlg && dat)
+            EnableSending(hwndDlg, dat, TRUE);
+        ClearSendJob(iFound);
+        if(hwndDlg && dat) {
+            KillTimer(hwndDlg, TIMERID_MSGSEND + iFound);
+            dat->iOpenJobs--;
+        }
+        myGlobals.iSendJobCurrent--;
+    }
+    if(hwndDlg && dat) {
+        CheckSendQueue(hwndDlg, dat);
+        if((iNextFailed = FindNextFailedMsg(hwndDlg, dat)) >= 0 && !(dat->dwFlags & MWF_ERRORSTATE))
+            HandleQueueError(hwndDlg, dat, iNextFailed);
+    }
+
+    return 0;
+}
+
+LRESULT WarnPendingJobs(unsigned int uNrMessages)
+{
+    return(MessageBox(0, TranslateT("There are unsent messages waiting for confirmation.\nWhen you close the window now, Miranda will try to send them but may be unable to inform you about possible delivery errors.\nDo you really want to close the Window(s)?"), TranslateT("Message Window warning"), MB_YESNO | MB_ICONHAND));
+}

@@ -89,32 +89,6 @@ void StatusUpdaterThread(HWND hwndDlg)
 	}
 }
 
-int GetProtocolVisibility(char * ProtoName)
-{
-	int i;
-	int res=0;
-	DBVARIANT dbv;
-	char buf2[10];
-	int count = (int)DBGetContactSettingDword(0,"Protocols","ProtoCount",-1);
-	if (count==-1) return (1);
-	for (i=0; i<count; i++)
-	{
-		itoa(i,buf2,10);
-		if (!DBGetContactSetting(NULL,"Protocols",buf2,&dbv))
-		{
-			if (strcmp(ProtoName,dbv.pszVal)==0)
-			{
-				mir_free(dbv.pszVal);
-				itoa(i+400,buf2,10);
-				res= DBGetContactSettingDword(NULL,"Protocols",buf2,0);
-				return res;
-			}
-			mir_free(dbv.pszVal);
-		}
-	}
-	return 0;
-}
-
 HMENU BuildGroupPopupMenu( struct ClcGroup* group )
 {
 	return (HMENU)CallService(MS_CLIST_MENUBUILDSUBGROUP,(WPARAM)group,0);
@@ -168,7 +142,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 
 	switch (msg) {
 	case WM_CREATE:
-		dat = (struct ClcData*)mir_calloc( sizeof(struct ClcData), 1);
+		dat = (struct ClcData*)mir_calloc( sizeof(struct ClcData));
 		SetWindowLong(hwnd,0,(LPARAM)dat);
 		InitDisplayNameCache(&dat->lCLCContactsCache);
 		break;
@@ -177,6 +151,8 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 	{	struct ClcContact *contact=NULL;
 		struct ClcGroup *group=NULL;
 		int recalcScrollBar=0,shouldShow;
+		HANDLE hSelItem=NULL;
+		struct ClcContact *selcontact=NULL;
 		pdisplayNameCacheEntry cacheEntry = GetContactFullCacheEntry((HANDLE)wParam);
 
 		WORD status;
@@ -186,9 +162,11 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 		if(szProto==NULL) status=ID_STATUS_OFFLINE;
 		else status=cacheEntry->status;
 		
-		shouldShow=(GetWindowLong(hwnd,GWL_STYLE)&CLS_SHOWHIDDEN || !cacheEntry->Hidden) && (!pcli->pfnIsHiddenMode(dat,status)||cacheEntry->noHiddenOffline || CallService(MS_CLIST_GETCONTACTICON,wParam,0)!=lParam);	//this means an offline msg is flashing, so the contact should be shown
+		shouldShow=(GetWindowLong(hwnd,GWL_STYLE)&CLS_SHOWHIDDEN || !cacheEntry->Hidden) && (!pcli->pfnIsHiddenMode(dat,status)||cacheEntry->noHiddenOffline || CallService(MS_CLIST_GETCONTACTICON,wParam,0)!=LOWORD(lParam));	//this means an offline msg is flashing, so the contact should be shown
 		if(!FindItem(hwnd,dat,(HANDLE)wParam,&contact,&group,NULL)) {				
-			if(shouldShow) {					
+			if(shouldShow && CallService(MS_DB_CONTACT_IS, wParam, 0)) {
+				if(dat->selection>=0 && GetRowByIndex(dat,dat->selection,&selcontact,NULL)!=-1)
+					hSelItem=pcli->pfnContactToHItem(selcontact);
 				AddContactToTree(hwnd,dat,(HANDLE)wParam,0,0);
 				NeedResort=1;
 				recalcScrollBar=1;					
@@ -200,22 +178,16 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 				}
 			}				
 		}
-		else {	  //item in list already
+		else {
+			//item in list already
 			DWORD style=GetWindowLong(hwnd,GWL_STYLE);				
-			if(contact->iImage==(WORD)lParam) break;				
+			if(contact->iImage== (WORD)lParam) break;				
 			if (sortByStatus) dat->NeedResort=1;
 
 			if(!shouldShow && !(style&CLS_NOHIDEOFFLINE) && (style&CLS_HIDEOFFLINE || group->hideOffline)) {
-				HANDLE hSelItem;
-				struct ClcContact *selcontact;
-				struct ClcGroup *selgroup;
-				if(GetRowByIndex(dat,dat->selection,&selcontact,NULL)==-1) hSelItem=NULL;
-				else hSelItem=pcli->pfnContactToHItem(selcontact);
+				if(dat->selection>=0 && GetRowByIndex(dat,dat->selection,&selcontact,NULL)!=-1)
+					hSelItem=pcli->pfnContactToHItem(selcontact);
 				RemoveItemFromGroup(hwnd,group,contact,0);
-				if(hSelItem)
-					if(FindItem(hwnd,dat,hSelItem,&selcontact,&selgroup,NULL))
-						dat->selection=GetRowsPriorTo(&dat->list,selgroup,li.List_IndexOf((SortedList*)&selgroup->cl, selcontact));
-
 				recalcScrollBar=1;
 				dat->NeedResort=1;
 			}
@@ -228,6 +200,13 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 				if (oldflags!=contact->flags)
 					dat->NeedResort=1;
 		}	}
+		if(hSelItem) {
+			struct ClcGroup *selgroup;
+			if(FindItem(hwnd,dat,hSelItem,&selcontact,&selgroup,NULL))
+				dat->selection=GetRowsPriorTo(&dat->list,selgroup,li.List_IndexOf((SortedList*)&selgroup->cl, selcontact));
+			else
+				dat->selection=-1;
+		}
 
 		SortClcByTimer(hwnd);
 		if(recalcScrollBar) RecalcScrollBar(hwnd,dat);			

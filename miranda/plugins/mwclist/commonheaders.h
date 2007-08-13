@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _COMMON_HEADERS_H_
 #define _COMMON_HEADERS_H_ 1
 
-//#include "AggressiveOptimize.h"
+#define MIRANDA_VER 0x0700
 
 #if defined( UNICODE ) && !defined( _UNICODE )
 #define _UNICODE
@@ -53,12 +53,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <newpluginapi.h>
 #include <m_system.h>
+#include <m_utils.h>
 #include <m_database.h>
 #include <m_langpack.h>
 #include <m_button.h>
 #include <m_options.h>
 #include <m_protosvc.h>
-#include <m_utils.h>
 #include <m_clc.h>
 #include <m_clist.h>
 #include <m_clistint.h>
@@ -66,7 +66,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_contacts.h>
 #include <m_plugins.h>
 #include "m_genmenu.h"
-#include "genmenu.h"
 #include "m_clui.h"
 #include "m_mwclc.h"
 #include "clc.h"
@@ -106,14 +105,10 @@ extern int __cdecl MyStrCmp (const char *a, const char *b);
 extern int __cdecl MyStrLen (const char *a);
 extern int __cdecl MyStrCmpi(const char *a, const char *b);
 extern int __cdecl MyStrCmpiT(const TCHAR *a, const TCHAR *b);
-extern __inline void *mir_calloc( size_t num, size_t size );
 
-extern void *mir_calloc( size_t num, size_t size );
-extern char * mir_strdup(const char * src);
-
-extern char *DBGetStringA(HANDLE hContact,const char *szModule,const char *szSetting);
-extern wchar_t *DBGetStringW(HANDLE hContact,const char *szModule,const char *szSetting);
 extern DWORD exceptFunction(LPEXCEPTION_POINTERS EP);
+
+extern int     ( *saveIconFromStatusMode )( const char *szProto,int nStatus, HANDLE hContact);
 
 //from bkg options
 

@@ -230,33 +230,12 @@ static void handleRecvServMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD 
 static char* convertMsgToUserSpecificUtf(HANDLE hContact, const char* szMsg)
 {
   WORD wCP = ICQGetContactSettingWord(hContact, "CodePage", gwAnsiCodepage);
-  WCHAR* usMsg = NULL;
+  char* usMsg = NULL;
 
   if (wCP != CP_ACP)
-  {
-    int nMsgLen = strlennull(szMsg);
+    usMsg = ansi_to_utf8_codepage(szMsg, wCP);
 
-    usMsg = (WCHAR*)SAFE_MALLOC((nMsgLen + 2)*(sizeof(WCHAR) + 1));
-    memcpy((char*)usMsg, szMsg, nMsgLen + 1);
-    MultiByteToWideChar(wCP, 0, szMsg, nMsgLen, (WCHAR*)((char*)usMsg + nMsgLen + 1), nMsgLen);
-    *(WCHAR*)((char*)usMsg + 1 + nMsgLen*(1 + sizeof(WCHAR))) = '\0'; // trailing zeros
-  }
-  return (char*)usMsg;
-}
-
-
-
-static char* createMsgFromUnicode(const WCHAR* usMsg, int usMsgLen)
-{
-  char *szMsg = NULL;
-  int nStrSize = WideCharToMultiByte(CP_ACP, 0, usMsg, usMsgLen, szMsg, 0, NULL, NULL);
-
-  szMsg = (char*)SAFE_MALLOC((nStrSize+1)*(sizeof(WCHAR)+1));
-  WideCharToMultiByte(CP_ACP, 0, usMsg, usMsgLen, szMsg, nStrSize, NULL, NULL);
-  nStrSize = strlennull(szMsg); // this is necessary, sometimes it was bad
-  memcpy(szMsg+nStrSize+1, usMsg, usMsgLen*sizeof(WCHAR));
-  
-  return szMsg;
+  return usMsg;
 }
 
 
@@ -356,25 +335,18 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
               unpackWideString(&pMsgBuf, usMsg, wMsgLen);
               usMsg[wMsgLen/sizeof(WCHAR)] = 0;
 
+              szMsg = make_utf8_string(usMsg);
+              SAFE_FREE(&usMsg);
+
               if (!dwUin)
-              {
-                char *utf = make_utf8_string(usMsg);
-                int nUtfLen = strlennull(utf);
+              { // strip HTML formating from AIM message
+                szMsg = EliminateHtml(szMsg, strlennull(szMsg));
 
-                SAFE_FREE(&usMsg);
-                utf = EliminateHtml(utf, nUtfLen);
-
-                usMsg = make_unicode_string(utf);
-                SAFE_FREE(&utf);
                 SetContactCapabilities(hContact, CAPF_UTF);
               }
 
-              szMsg = createMsgFromUnicode(usMsg, wcslen(usMsg));
-
-              if (!IsUnicodeAscii(usMsg, wcslen(usMsg)))
-                pre.flags = PREF_UNICODE; // only mark real non-ascii messages as unicode
-
-              SAFE_FREE(&usMsg);
+              if (!IsUSASCII(szMsg, strlennull(szMsg)))
+                pre.flags = PREF_UTF; // only mark real non-ascii messages as utf-8
 
               break;
             }
@@ -388,7 +360,7 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
               memcpy(szMsg, pMsgBuf, wMsgLen);
               szMsg[wMsgLen] = '\0';
               if (!dwUin)
-              {
+              { // strip HTML formating from AIM message
                 szMsg = EliminateHtml(szMsg, wMsgLen);
               }
 
@@ -403,8 +375,8 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
             if (usMsg)
             {
               SAFE_FREE(&szMsg);
-              szMsg = (char*)usMsg;
-              pre.flags = PREF_UNICODE;
+              szMsg = usMsg;
+              pre.flags = PREF_UTF;
             }
           }
           // Create and send the message event
@@ -1217,6 +1189,13 @@ int getPluginTypeIdLen(int nTypeID)
   case MTYPE_FILEREQ:
     return 0x2B;
 
+  case MTYPE_AUTOAWAY:
+  case MTYPE_AUTOBUSY:
+  case MTYPE_AUTONA:
+  case MTYPE_AUTODND:
+  case MTYPE_AUTOFFC:
+    return 0x3C;
+
   default:
     return 0;
   }
@@ -1257,6 +1236,26 @@ void packPluginTypeId(icq_packet *packet, int nTypeID)
     packDWord(packet, 0x00000000);
     packWord(packet, 0x0000);
     packByte(packet, 0x00);
+
+    break;
+
+  case MTYPE_AUTOAWAY:
+  case MTYPE_AUTOBUSY:
+  case MTYPE_AUTONA:
+  case MTYPE_AUTODND:
+  case MTYPE_AUTOFFC:
+    packLEWord(packet, 0x03A);                // Length
+
+    packGUID(packet, MGTYPE_STATUSMSGEXT);    // Message Type GUID
+    packLEWord(packet, (WORD)(nTypeID - 0xE7)); // Function ID
+    packLEDWord(packet, 0x13);                // Request type string
+    packBuffer(packet, "Away Status Message", 0x13);
+
+    packDWord(packet, 0x01000000);            // Unknown binary stuff
+    packDWord(packet, 0x00000000);
+    packDWord(packet, 0x00000000);
+    packDWord(packet, 0x00000000);
+    packByte(packet, 0x00);       
 
     break;
 
@@ -1435,10 +1434,8 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
       // Check if this message is marked as UTF8 encoded
       if (dwDataLen > 12)
       {
-        DWORD dwGuidLen;
-
-        WCHAR* usMsg;
-        WCHAR* usMsgW;
+        DWORD dwGuidLen = 0;
+        int bDoubleMsg = 0;
 
         if (bThruDC)
         {
@@ -1446,18 +1443,21 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
 
           if (dwExtraLen < dwDataLen && !strncmp(szMsg, "{\\rtf", 5))
           { // it is icq5 sending us crap, get real message from it
-            usMsg = (WCHAR*)(pMsg + 4);
+            WCHAR* usMsg = (WCHAR*)_alloca((dwExtraLen + 1)*sizeof(WCHAR));
+            // make sure it is null-terminated
+            wcsncpy(usMsg, (WCHAR*)(pMsg + 4), dwExtraLen);
+            usMsg[dwExtraLen] = '\0';
             SAFE_FREE(&szMsg);
-            szMsg = createMsgFromUnicode(usMsg, dwExtraLen);
+            szMsg = make_utf8_string(usMsg);
 
             if (!IsUnicodeAscii(usMsg, dwExtraLen))
-              pre.flags = PREF_UNICODE; // only mark real non-ascii messages as unicode
+              pre.flags = PREF_UTF; // only mark real non-ascii messages as unicode
           
-            dwGuidLen = 0;
+            bDoubleMsg = 1;
           }
         }
 
-        if (!pre.flags)
+        if (!bDoubleMsg)
         {
           dwGuidLen = *(DWORD*)(pMsg+8);
           dwDataLen -= 12;
@@ -1468,36 +1468,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
         {
           if (!strncmp(pMsg, CAP_UTF8MSGS, 38))
           { // Found UTF8 cap, convert message to ansi
-            char *szAnsiMessage = NULL;
-
-            if (utf8_decode(szMsg, &szAnsiMessage))
-            {
-              if (!strcmpnull(szMsg, szAnsiMessage))
-              {
-                SAFE_FREE(&szMsg);
-                szMsg = szAnsiMessage;
-              }
-              else
-              {
-                int nMsgLen = strlennull(szAnsiMessage) + 1;
-                int nMsgWLen;
-
-                usMsg = SAFE_MALLOC((nMsgLen)*(sizeof(WCHAR) + 1));
-                memcpy((char*)usMsg, szAnsiMessage, nMsgLen);
-                usMsgW = make_unicode_string(szMsg);
-                nMsgWLen = wcslen(usMsgW);
-                memcpy((char*)usMsg + nMsgLen, (char*)usMsgW, ((nMsgWLen>nMsgLen)?nMsgLen:nMsgWLen)*sizeof(WCHAR));
-                SAFE_FREE(&usMsgW);
-                SAFE_FREE(&szAnsiMessage);
-                SAFE_FREE(&szMsg);
-                szMsg = (char*)usMsg;
-                pre.flags = PREF_UNICODE;
-              }
-            }
-            else
-            {
-              NetLog_Uni(bThruDC, "Failed to translate UTF-8 message.");
-            }
+            pre.flags = PREF_UTF;
             break;
           }
           else if (!strncmp(pMsg, CAP_RTFMSGS, 38))
@@ -1513,7 +1484,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
       }
 
       hContact = HContactFromUIN(dwUin, &bAdded);
-      sendMessageTypesAck(hContact, pre.flags & PREF_UNICODE, pAckParams);
+      sendMessageTypesAck(hContact, pre.flags & PREF_UTF, pAckParams);
 
       if (!pre.flags && !IsUSASCII(szMsg, strlennull(szMsg)))
       { // message is Ansi and contains national characters, create Unicode part by codepage
@@ -1522,8 +1493,8 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
         if (usMsg)
         {
           SAFE_FREE(&szMsg);
-          szMsg = (char*)usMsg;
-          pre.flags = PREF_UNICODE;
+          szMsg = usMsg;
+          pre.flags = PREF_UTF;
         }
       }
 
@@ -1542,7 +1513,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
     {
       CCSDATA ccs;
       PROTORECVEVENT pre = {0};
-      char* szBlob;
+      char *szBlob, *szTitle, *szDataDescr, *szDataUrl;
 
 
       if (nMsgFields < 2)
@@ -1554,18 +1525,30 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
       hContact = HContactFromUIN(dwUin, &bAdded);
       sendMessageTypesAck(hContact, 0, pAckParams);
 
-      szBlob = (char *)_alloca(strlennull(pszMsgField[0]) + strlennull(pszMsgField[1]) + 2);
-      strcpy(szBlob, pszMsgField[1]);
-      strcpy(szBlob + strlennull(szBlob) + 1, pszMsgField[0]);
+      szTitle = ICQTranslateUtf("Incoming URL:");
+      szDataDescr = ansi_to_utf8(pszMsgField[0]);
+      szDataUrl = ansi_to_utf8(pszMsgField[1]);
+      szBlob = (char *)SAFE_MALLOC(strlennull(szTitle) + strlennull(szDataDescr) + strlennull(szDataUrl) + 8);
+      strcpy(szBlob, szTitle);
+      strcat(szBlob, " ");
+      strcat(szBlob, szDataDescr); // Description
+      strcat(szBlob, "\r\n");
+      strcat(szBlob, szDataUrl); // URL
+      SAFE_FREE(&szTitle);
+      SAFE_FREE(&szDataDescr);
+      SAFE_FREE(&szDataUrl);
 
-      ccs.szProtoService = PSR_URL;
+      ccs.szProtoService = PSR_MESSAGE;
       ccs.hContact = hContact;
       ccs.wParam = 0;
       ccs.lParam = (LPARAM)&pre;
       pre.timestamp = dwTimestamp;
       pre.szMessage = (char *)szBlob;
+      pre.flags = PREF_UTF;
 
       CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
+
+      SAFE_FREE(&szBlob);
     }
     break;
 
@@ -1959,7 +1942,7 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
 
       bMsgType = pCookieData->bMessageType;
     }
-    else if (pCookieData->bMessageType == MTYPE_AUTOAWAY)
+    else if (pCookieData->bMessageType == MTYPE_AUTOAWAY && bMsgType != MTYPE_PLUGIN)
     {
       if (bMsgType != pCookieData->nAckType)
         NetLog_Server("Warning: Invalid message type in %s from (%u)", "message response", dwUin);
@@ -2027,6 +2010,8 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
         DWORD dwLengthToEnd;
         DWORD dwDataLen;
         int typeId;
+        WORD wFunctionId;
+
 
         if (wLength != 0x1B)
         {
@@ -2047,7 +2032,7 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
         // This packet is malformed. Possibly a file accept from Miranda IM 0.1.2.1
         if (wLen < 20) return;
 
-        if (!unpackPluginTypeId(&buf, &wLen, &typeId, NULL, FALSE)) return;
+        if (!unpackPluginTypeId(&buf, &wLen, &typeId, &wFunctionId, FALSE)) return;
 
         if (wLen < 4)
         {
@@ -2071,7 +2056,7 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
         {
         case MTYPE_PLAIN:
           if (pCookieData && pCookieData->bMessageType == MTYPE_AUTOAWAY && dwLengthToEnd >= 4)
-          { // icq6 invented this
+          { // ICQ 6 invented this
             char *szMsg;
 
             szMsg = (char*)_alloca(dwDataLen + 1);
@@ -2126,6 +2111,22 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
             ReleaseCookie(dwCookie);
           }
           return;
+
+        case MTYPE_STATUSMSGEXT:
+          { // handle Away Message response (ICQ 6)
+            char *szMsg;
+
+            szMsg = (char*)SAFE_MALLOC(dwDataLen + 1);
+            if (dwDataLen > 0)
+              memcpy(szMsg, buf, dwDataLen);
+            szMsg[dwDataLen] = '\0';
+            szMsg = EliminateHtml(szMsg, dwDataLen);
+
+            handleStatusMsgReply("SNAC(4.B) ", hContact, dwUin, wVersion, pCookieData->nAckType, (WORD)dwCookie, szMsg);
+
+            SAFE_FREE(&szMsg);
+          }
+          break;
 
         default:
           NetLog_Server("Error: Unknown plugin message response, type %d.", typeId);
@@ -2489,23 +2490,23 @@ static void handleMissedMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dw
   unpackWord(&buf, &wError);
   wLen -= 2;
 
-  switch (wError) // FIXME: this needs unicode support
+  switch (wError)
   {
 
   case 0:
-    pszErrorMsg = ICQTranslate("** This message was blocked by the ICQ server ** The message was invalid.");
+    pszErrorMsg = "** This message was blocked by the ICQ server ** The message was invalid.";
     break;
 
   case 1:
-    pszErrorMsg = ICQTranslate("** This message was blocked by the ICQ server ** The message was too long.");
+    pszErrorMsg = "** This message was blocked by the ICQ server ** The message was too long.";
     break;
 
   case 2:
-    pszErrorMsg = ICQTranslate("** This message was blocked by the ICQ server ** The sender has flooded the server.");
+    pszErrorMsg = "** This message was blocked by the ICQ server ** The sender has flooded the server.";
     break;
 
   case 4:
-    pszErrorMsg = ICQTranslate("** This message was blocked by the ICQ server ** You are too evil.");
+    pszErrorMsg = "** This message was blocked by the ICQ server ** You are too evil.";
     break;
 
   default:
@@ -2514,24 +2515,25 @@ static void handleMissedMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dw
     break;
   }
 
+  pszErrorMsg = ICQTranslateUtf(pszErrorMsg);
 
   // Create message to notify user
   {
     CCSDATA ccs;
-    PROTORECVEVENT pre;
+    PROTORECVEVENT pre = {0};
     int bAdded;
 
     ccs.szProtoService = PSR_MESSAGE;
     ccs.hContact = HContactFromUIN(dwUin, &bAdded);
     ccs.wParam = 0;
     ccs.lParam = (LPARAM)&pre;
-    pre.flags = 0;
     pre.timestamp = time(NULL);
     pre.szMessage = pszErrorMsg;
-    pre.lParam = 0;
+    pre.flags = PREF_UTF;
 
     CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
   }
+  SAFE_FREE(&pszErrorMsg);
 }
 
 

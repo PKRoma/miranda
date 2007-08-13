@@ -1,26 +1,26 @@
 # Microsoft Developer Studio Project File - Name="clist_nicer" - Package Owner=<4>
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
-# ** NICHT BEARBEITEN **
+# ** DO NOT EDIT **
 
 # TARGTYPE "Win32 (x86) Dynamic-Link Library" 0x0102
 
 CFG=clist_nicer - Win32 Debug Unicode
-!MESSAGE Dies ist kein gültiges Makefile. Zum Erstellen dieses Projekts mit NMAKE
-!MESSAGE verwenden Sie den Befehl "Makefile exportieren" und führen Sie den Befehl
+!MESSAGE This is not a valid makefile. To build this project using NMAKE,
+!MESSAGE use the Export Makefile command and run
 !MESSAGE 
 !MESSAGE NMAKE /f "clist.mak".
 !MESSAGE 
-!MESSAGE Sie können beim Ausführen von NMAKE eine Konfiguration angeben
-!MESSAGE durch Definieren des Makros CFG in der Befehlszeile. Zum Beispiel:
+!MESSAGE You can specify a configuration when running NMAKE
+!MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
 !MESSAGE NMAKE /f "clist.mak" CFG="clist_nicer - Win32 Debug Unicode"
 !MESSAGE 
-!MESSAGE Für die Konfiguration stehen zur Auswahl:
+!MESSAGE Possible choices for configuration are:
 !MESSAGE 
-!MESSAGE "clist_nicer - Win32 Release" (basierend auf  "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "clist_nicer - Win32 Debug" (basierend auf  "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "clist_nicer - Win32 Release Unicode" (basierend auf  "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "clist_nicer - Win32 Debug Unicode" (basierend auf  "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "clist_nicer - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "clist_nicer - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "clist_nicer - Win32 Release Unicode" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "clist_nicer - Win32 Debug Unicode" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE 
 
 # Begin Project
@@ -55,7 +55,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib msimg32.lib advapi32.lib gdiplus.lib delayimp.lib shlwapi.lib /nologo /base:"0x6590000" /dll /map /debug /machine:I386 /out:"../../bin/release/plugins/clist_nicer.dll" /delayload:gdiplus.dll /OPT:NOWIN98
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib msimg32.lib advapi32.lib shlwapi.lib /nologo /base:"0x6590000" /dll /map /debug /machine:I386 /out:"../../bin/release/plugins/clist_nicer.dll" /OPT:NOWIN98
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
@@ -111,7 +111,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib msimg32.lib advapi32.lib /nologo /base:"0x6590000" /dll /machine:I386 /out:"../../bin/release/plugins/clist_nicer.dll"
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib msimg32.lib advapi32.lib gdiplus.lib delayimp.lib shlwapi.lib /nologo /base:"0x6590000" /dll /map /debug /machine:I386 /out:"../../bin/Release Unicode/plugins/clist_nicer.dll" /OPT:NOWIN98 /delayload:gdiplus.dll
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib msimg32.lib advapi32.lib shlwapi.lib /nologo /base:"0x6590000" /dll /map /debug /machine:I386 /out:"../../bin/Release Unicode/plugins/clist_nicer.dll" /OPT:NOWIN98
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
@@ -129,7 +129,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Yu"commonheaders.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Yu"commonheaders.h" /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x809 /i "../../include/" /d "_DEBUG"
@@ -172,31 +172,7 @@ SOURCE=.\CLUIFrames\framesmenu.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\CLUIFrames\genmenu.c
-# ADD CPP /Yu"../commonheaders.h"
-# End Source File
-# Begin Source File
-
-SOURCE=.\CLUIFrames\genmenu.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\CLUIFrames\genmenuopt.c
-# ADD CPP /Yu"../commonheaders.h"
-# End Source File
-# Begin Source File
-
 SOURCE=.\CLUIFrames\groupmenu.c
-# ADD CPP /Yu"../commonheaders.h"
-# End Source File
-# Begin Source File
-
-SOURCE=.\CLUIFrames\movetogroup.c
-# ADD CPP /Yu"../commonheaders.h"
-# End Source File
-# Begin Source File
-
-SOURCE=.\CLUIFrames\protocolorder.c
 # ADD CPP /Yu"../commonheaders.h"
 # End Source File
 # End Group
@@ -470,6 +446,31 @@ SOURCE=.\clisttray.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\clnplus.cpp
+
+!IF  "$(CFG)" == "clist_nicer - Win32 Release"
+
+# ADD CPP /GX
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
+
+# ADD CPP /GR- /GX
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
 SOURCE=.\clui.c
 
 !IF  "$(CFG)" == "clist_nicer - Win32 Release"
@@ -612,31 +613,6 @@ SOURCE=.\forkthread.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\gdiplus.cpp
-
-!IF  "$(CFG)" == "clist_nicer - Win32 Release"
-
-# ADD CPP /GX
-# SUBTRACT CPP /YX /Yc /Yu
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
-
-# SUBTRACT CPP /YX /Yc /Yu
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
-
-# ADD CPP /GX
-# SUBTRACT CPP /YX /Yc /Yu
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
-
-# SUBTRACT CPP /YX /Yc /Yu
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
 SOURCE=.\init.c
 
 !IF  "$(CFG)" == "clist_nicer - Win32 Release"
@@ -654,6 +630,11 @@ SOURCE=.\init.c
 
 !ENDIF 
 
+# End Source File
+# Begin Source File
+
+SOURCE=.\CLUIFrames\movetogroup.c
+# ADD CPP /Yu"../commonheaders.h"
 # End Source File
 # Begin Source File
 
@@ -709,11 +690,15 @@ SOURCE=.\resource.h
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # Begin Source File
 
-SOURCE=.\res\addcontact.ico
+SOURCE=.\res\addgoupp.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\away.ico
+SOURCE=".\res\arrow-down.ico"
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\overlay\away.ico
 # End Source File
 # Begin Source File
 
@@ -721,7 +706,11 @@ SOURCE=.\res\blank.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\changefont.ico
+SOURCE=.\res\overlay\chat.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\connecting.ico
 # End Source File
 # Begin Source File
 
@@ -729,15 +718,7 @@ SOURCE=.\res\delete.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\detailsl.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\dnd.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\downarrow.ico
+SOURCE=.\res\overlay\dnd.ico
 # End Source File
 # Begin Source File
 
@@ -749,39 +730,11 @@ SOURCE=.\res\dropuser.cur
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\emptyblo.ico
+SOURCE=.\res\find.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\file.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\filledbl.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\finduser.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\freechat.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\groupope.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\groupshu.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\help.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\history.ico
+SOURCE=.\res\groups.ico
 # End Source File
 # Begin Source File
 
@@ -793,23 +746,23 @@ SOURCE=.\res\invisible.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\message.ico
+SOURCE=.\res\overlay\invisible.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\miranda.ico
+SOURCE=.\res\overlay\lunch.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\mirandaw.ico
+SOURCE=.\res\menu.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\multisend.ico
+SOURCE=.\res\minimize.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\na2.ico
+SOURCE=.\res\overlay\NA.ico
 # End Source File
 # Begin Source File
 
@@ -821,19 +774,19 @@ SOURCE=.\res\notick1.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\occupied.ico
+SOURCE=.\res\overlay\occupied.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\offline2.ico
+SOURCE=.\res\overlay\offline.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\online2.ico
+SOURCE=.\res\online.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\onthepho.ico
+SOURCE=.\res\overlay\online.ico
 # End Source File
 # Begin Source File
 
@@ -841,7 +794,11 @@ SOURCE=.\res\options.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\outtolun.ico
+SOURCE=.\res\options_clvm.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\overlay\phone.ico
 # End Source File
 # Begin Source File
 
@@ -849,51 +806,27 @@ SOURCE=.\res\rename.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\reply.ico
-# End Source File
-# Begin Source File
-
 SOURCE=.\resource.rc
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\searchal.ico
+SOURCE=.\res\slist.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\sendmail.ico
+SOURCE=.\res\sounds_off.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\smalldot.ico
+SOURCE=.\res\sounds_on.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\sms.ico
+SOURCE=.\res\tabsrmm_menu.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\sortcold.bmp
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\sortcolu.bmp
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\timestamp.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\url.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\useronli.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\viewdetails.ico
+SOURCE=.\res\visible.ico
 # End Source File
 # End Group
 # End Target

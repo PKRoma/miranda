@@ -4,10 +4,10 @@
 	Version="7.10"
 	Name="db3x"
 	ProjectGUID="{18ED0397-6E30-4A6B-8FA5-1348E12B6DB8}"
-	SccProjectName="SAK"
-	SccAuxPath="SAK"
-	SccLocalPath="SAK"
-	SccProvider="SAK">
+	SccProjectName=""
+	SccAuxPath=""
+	SccLocalPath=""
+	SccProvider="">
 	<Platforms>
 		<Platform
 			Name="Win32"/>
@@ -228,8 +228,9 @@
 				Name="VCCLCompilerTool"
 				Optimization="3"
 				GlobalOptimizations="TRUE"
-				InlineFunctionExpansion="1"
 				FavorSizeOrSpeed="2"
+				OmitFramePointers="FALSE"
+				OptimizeForProcessor="0"
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;DB3X_EXPORTS"
 				StringPooling="TRUE"

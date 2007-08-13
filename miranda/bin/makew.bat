@@ -2,6 +2,9 @@
 
 for /F "tokens=1,2,3 delims= " %%i in (build.no) do call :WriteVer %%i %%j %%k
 
+md Release
+md "Release/Icons"
+md "Release/Plugins"
 md "Release Unicode"
 md "Release Unicode/Icons"
 md "Release Unicode/Plugins"
@@ -10,103 +13,136 @@ rem ---------------------------------------------------------------------------
 rem Main modules
 rem ---------------------------------------------------------------------------
 
-cd ..\src
-nmake /f miranda32.mak CFG="miranda32 - Win32 Release Unicode"
+pushd ..\src
+call :Nmake miranda32.mak "miranda32 - Win32 Release Unicode"
+popd
 if errorlevel 1 goto :Error
 
-cd ..\..\miranda-tools\dbtool
-nmake /f dbtool.mak CFG="dbtool - Win32 Release"
+pushd ..\..\miranda-tools\dbtool
+call :Nmake dbtool.mak "dbtool - Win32 Release Unicode"
+popd
 if errorlevel 1 goto :Error
 
 rem ---------------------------------------------------------------------------
 rem Protocols
 rem ---------------------------------------------------------------------------
 
-cd ..\..\miranda\protocols\IcqOscarJ
-nmake /f IcqOscar8.mak CFG="icqoscar8 - Win32 Release"
+pushd ..\..\miranda\protocols\AimOscar
+call :Nmake aimoscar.mak "aim - Win32 Release"
+popd
 if errorlevel 1 goto :Error
 
-cd ..\MSN
-nmake /f MSN.mak CFG="msn - Win32 Release Unicode"
+pushd ..\..\miranda\protocols\Gadu-Gadu
+call :Nmake Gadu-Gadu.mak "GG - Win32 Release"
+popd
 if errorlevel 1 goto :Error
 
-cd ..\JabberG
-nmake /f jabber.mak CFG="jabberg - Win32 Release Unicode"
+pushd ..\..\miranda\protocols\IcqOscarJ
+call :Nmake IcqOscar8.mak "icqoscar8 - Win32 Release"
+popd
 if errorlevel 1 goto :Error
 
-cd ..\AimOscar
-nmake /f aimoscar.mak CFG="aim - Win32 Release"
+pushd ..\..\miranda\protocols\IRCG
+call :Nmake irc.mak "IRC - Win32 Release Unicode"
+popd
 if errorlevel 1 goto :Error
 
-cd ..\YAHOO
-nmake /f Yahoo.mak CFG="Yahoo - Win32 Release"
+pushd ..\..\miranda\protocols\JabberG
+call :Nmake jabber.mak "jabberg - Win32 Release Unicode"
+popd
 if errorlevel 1 goto :Error
 
-cd ..\IRC
-nmake /f IRC.mak CFG="IRC - Win32 Release"
+pushd ..\..\miranda\protocols\MSN
+call :Nmake MSN.mak "msn - Win32 Release Unicode"
+popd
+if errorlevel 1 goto :Error
+
+pushd ..\..\miranda\protocols\YAHOO
+call :Nmake Yahoo.mak "Yahoo - Win32 Release"
+popd
 if errorlevel 1 goto :Error
 
 rem ---------------------------------------------------------------------------
 rem Plugins
 rem ---------------------------------------------------------------------------
 
-cd ..\..\plugins\chat
-nmake /f chat.mak CFG="chat - Win32 Release Unicode"
+pushd ..\..\miranda\plugins\avs
+call :Nmake avs.mak "avs - Win32 Release Unicode"
+popd
 if errorlevel 1 goto :Error
 
-cd ..\clist
-nmake /f clist.mak CFG="clist - Win32 Release Unicode"
+pushd ..\..\miranda\plugins\chat
+call :Nmake chat.mak "chat - Win32 Release Unicode"
+popd
 if errorlevel 1 goto :Error
 
-rem cd ..\clist_nicer
-rem nmake /f clist.mak CFG="clist_nicer - Win32 Release Unicode"
-rem if errorlevel 1 goto :Error
-
-rem cd ..\help
-rem nmake /f help.mak CFG="help - Win32 Release Unicode"
-rem if errorlevel 1 goto :Error
-
-cd ..\loadavatars
-nmake /f avatars.mak CFG="loadavatars - Win32 Release Unicode"
+pushd ..\..\miranda\plugins\clist
+call :Nmake clist.mak "clist - Win32 Release Unicode"
+popd
 if errorlevel 1 goto :Error
 
-rem cd ..\modernb
-rem nmake /f modernb.mak CFG="modernb - Win32 Release Unicode"
-rem if errorlevel 1 goto :Error
-
-cd ..\mwclist
-nmake /f mwclist.mak CFG="mwclist - Win32 Release Unicode"
+pushd ..\..\miranda\plugins\clist_nicer
+call :Nmake clist.mak "clist_nicer - Win32 Release Unicode"
+popd
 if errorlevel 1 goto :Error
 
-cd ..\srmm
-nmake /f srmm.mak CFG="srmm - Win32 Release Unicode"
+pushd ..\..\miranda\plugins\modernb
+call :Nmake modernb.mak "modernb - Win32 Release Unicode"
+popd
 if errorlevel 1 goto :Error
 
-cd ..\tabSRMM
-nmake /f tabSRMM.mak CFG="tabSRMM - Win32 Release Unicode"
+pushd ..\..\miranda\plugins\mwclist
+call :Nmake mwclist.mak "mwclist - Win32 Release Unicode"
+popd
+if errorlevel 1 goto :Error
+
+pushd ..\..\miranda\plugins\scriver
+call :Nmake scriver.mak "scriver - Win32 Release Unicode"
+popd
+if errorlevel 1 goto :Error
+
+pushd ..\..\miranda\plugins\srmm
+call :Nmake srmm.mak "srmm - Win32 Release Unicode"
+popd
+if errorlevel 1 goto :Error
+
+pushd ..\..\miranda\plugins\tabSRMM
+call :Nmake tabSRMM.mak "tabSRMM - Win32 Release Unicode"
+popd
 if errorlevel 1 goto :Error
 
 rem ---------------------------------------------------------------------------
 rem Zip it
 rem ---------------------------------------------------------------------------
 
-cd "..\..\bin\Release Unicode"
-copy ..\release\dbtool.exe
+pushd "Release Unicode"
+
+copy ..\release\zlib.dll
 
 copy ..\release\Icons\xstatus_ICQ.dll    Icons
 
 copy ..\release\Plugins\aim.dll          Plugins
 copy ..\release\Plugins\dbx_3x.dll       Plugins
 copy ..\release\Plugins\dbx_mmap.dll     Plugins
+copy ..\release\Plugins\advaimg.dll      Plugins
+copy ..\release\Plugins\GG.dll           Plugins
 copy ..\release\Plugins\ICQ.dll          Plugins
 copy ..\release\Plugins\import.dll       Plugins
-copy ..\release\Plugins\IRC.dll          Plugins
-copy ..\release\Plugins\png2dib.dll      Plugins
 copy ..\release\Plugins\Yahoo.dll        Plugins
 
 dir /B /S *.dll | rebaser /NOCRC
 
 for /F "tokens=1,2,3 delims= " %%i in (..\build.no) do call :Pack %%i %%j %%k
+
+popd
+goto :eof
+
+:Nmake
+echo.
+echo ===========================================================================
+echo Building %1
+echo ===========================================================================
+nmake /NOLOGO /f %1 CFG=%2
 goto :eof
 
 :WriteVer
@@ -116,7 +152,9 @@ call :WriteVer2 %Version% %SubVersion% %3
 goto :eof
 
 :WriteVer2
-echo #ifndef _MAC >..\src\version.rc
+echo #include ^<windows.h^>                                                         >..\src\version.rc
+echo #include ^<winres.h^>                                                         >>..\src\version.rc
+echo #ifndef _MAC                                                                  >>..\src\version.rc
 echo ///////////////////////////////////////////////////////////////////////////// >>..\src\version.rc
 echo //                                                                            >>..\src\version.rc
 echo // Version                                                                    >>..\src\version.rc
@@ -144,7 +182,7 @@ echo             VALUE "CompanyName", " \0"                                     
 echo             VALUE "FileDescription", "Miranda IM\0"                           >>..\src\version.rc
 echo             VALUE "FileVersion", "0.%1.%2 alpha build #%3\0"                  >>..\src\version.rc
 echo             VALUE "InternalName", "miranda32\0"                               >>..\src\version.rc
-echo             VALUE "LegalCopyright", "Copyright c 2000-2006 Miranda IM Project. This software is released under the terms of the GNU General Public License.\0"    >>..\src\version.rc
+echo             VALUE "LegalCopyright", "Copyright © 2000-2007 Miranda IM Project. This software is released under the terms of the GNU General Public License.\0"    >>..\src\version.rc
 echo             VALUE "LegalTrademarks", "\0"                                     >>..\src\version.rc
 echo             VALUE "OriginalFilename", "miranda32.exe\0"                       >>..\src\version.rc
 echo             VALUE "PrivateBuild", "\0"                                        >>..\src\version.rc
@@ -204,7 +242,7 @@ if %2 == 00 (
    set FileVer=v%1%2a%3w.zip
 )
 
-del "%Temp%\miranda-%FileVer%"
+del /Q /F "%Temp%\miranda-%FileVer%"
 7z.exe a -tzip -r -mx=9 "%Temp%\miranda-%FileVer%" ./* ..\ChangeLog.txt
 
 rd /Q /S %Temp%\pdbw >nul
@@ -216,25 +254,28 @@ copy ..\..\..\miranda-tools\dbtool\Release\dbtool.pdb          %Temp%\pdbw
 rem  Protocols
 copy ..\..\protocols\AimOscar\Release\Aim.pdb                  %Temp%\pdbw\plugins
 copy ..\..\protocols\IcqOscarJ\Release\ICQ.pdb                 %Temp%\pdbw\plugins
-copy ..\..\protocols\IRC\Release\IRC.pdb                       %Temp%\pdbw\plugins
+copy ..\..\protocols\IRCG\Release_Unicode\IRC.pdb              %Temp%\pdbw\plugins
 copy ..\..\protocols\JabberG\Release_Unicode\jabber.pdb        %Temp%\pdbw\plugins
 copy ..\..\protocols\MSN\Release_Unicode\MSN.pdb               %Temp%\pdbw\plugins
 copy ..\..\protocols\Yahoo\Release\Yahoo.pdb                   %Temp%\pdbw\plugins
+copy ..\..\protocols\Gadu-Gadu\Release\GG.pdb                  %Temp%\pdbw\plugins
 rem  Unicode plugins
+copy ..\..\plugins\avs\Release_Unicode\avs.pdb                 %Temp%\pdbw\plugins
 copy ..\..\plugins\chat\Release_Unicode\chat.pdb               %Temp%\pdbw\plugins
 copy ..\..\plugins\clist\Release_Unicode\clist_classic.pdb     %Temp%\pdbw\plugins
 copy ..\..\plugins\clist_nicer\Release_Unicode\clist_nicer.pdb %Temp%\pdbw\plugins
-copy ..\..\plugins\help\Release_Unicode\help.pdb               %Temp%\pdbw\plugins
 copy ..\..\plugins\modernb\Release_Unicode\clist_modern.pdb    %Temp%\pdbw\plugins
 copy ..\..\plugins\mwclist\Release_Unicode\clist_mw.pdb        %Temp%\pdbw\plugins
+copy ..\..\plugins\scriver\Release_Unicode\scriver.pdb         %Temp%\pdbw\plugins
 copy ..\..\plugins\srmm\Release_Unicode\srmm.pdb               %Temp%\pdbw\plugins
 copy ..\..\plugins\tabSRMM\Release_Unicode\tabSRMM.pdb         %Temp%\pdbw\plugins
 rem  Non-Unicode plugins
 copy ..\..\plugins\db3x\Release\dbx_3x.pdb                     %Temp%\pdbw\plugins
+copy ..\..\plugins\db3x_mmap\Release\dbx_mmap.pdb              %Temp%\pdbw\plugins
 copy ..\..\plugins\import\Release\import.pdb                   %Temp%\pdbw\plugins
-copy ..\..\plugins\png2dib\Release\png2dib.pdb                 %Temp%\pdbw\plugins
+copy ..\..\plugins\freeimage\Release\freeimage.pdb             %Temp%\pdbw\plugins
 
-del "%Temp%\miranda-pdb-%FileVer%"
+del /Q /F "%Temp%\miranda-pdb-%FileVer%"
 7z.exe a -tzip -r -mx=9 "%Temp%\miranda-pdb-%FileVer%" %Temp%\pdbw/*
 rd /Q /S %Temp%\pdbw
 goto :eof

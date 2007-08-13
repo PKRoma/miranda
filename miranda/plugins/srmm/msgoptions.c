@@ -1,8 +1,8 @@
 /*
 SRMM
 
-Copyright 2000-2005 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2005 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -22,6 +22,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #pragma hdrstop
 
+#include "m_fontservice.h"
+
 extern HINSTANCE g_hInst;
 
 #define FONTF_BOLD   1
@@ -39,17 +41,18 @@ struct FontOptionsList
 	char     size;
 }
 static fontOptionsList[] = {
-	{_T("Outgoing messages"), RGB(106, 106, 106), _T("Arial"), DEFAULT_CHARSET, 0, -12},
-	{_T("Incoming messages"), RGB(0, 0, 0), _T("Arial"), DEFAULT_CHARSET, 0, -12},
-	{_T("Outgoing name"), RGB(89, 89, 89), _T("Arial"), DEFAULT_CHARSET, FONTF_BOLD, -12},
-	{_T("Outgoing time"), RGB(0, 0, 0), _T("Terminal"), DEFAULT_CHARSET, FONTF_BOLD, -9},
-	{_T("Outgoing colon"), RGB(89, 89, 89), _T("Arial"), DEFAULT_CHARSET, 0, -11},
-	{_T("Incoming name"), RGB(215, 0, 0), _T("Arial"), DEFAULT_CHARSET, FONTF_BOLD, -12},
-	{_T("Incoming time"), RGB(0, 0, 0), _T("Terminal"), DEFAULT_CHARSET, FONTF_BOLD, -9},
-	{_T("Incoming colon"), RGB(215, 0, 0), _T("Arial"), DEFAULT_CHARSET, 0, -11},
-	{_T("Message area"), RGB(0, 0, 0), _T("Arial"), DEFAULT_CHARSET, 0, -12},
-	{_T("Notices"), RGB(90, 90, 160), _T("Arial"), DEFAULT_CHARSET, 0, -12},
+	{ LPGENT("Outgoing messages"), RGB(106, 106, 106), _T("Arial"),    DEFAULT_CHARSET, 0, -12},
+	{ LPGENT("Incoming messages"), RGB(0, 0, 0),       _T("Arial"),    DEFAULT_CHARSET, 0, -12},
+	{ LPGENT("Outgoing name"),     RGB(89, 89, 89),    _T("Arial"),    DEFAULT_CHARSET, FONTF_BOLD, -12},
+	{ LPGENT("Outgoing time"),     RGB(0, 0, 0),       _T("Terminal"), DEFAULT_CHARSET, FONTF_BOLD, -9},
+	{ LPGENT("Outgoing colon"),    RGB(89, 89, 89),    _T("Arial"),    DEFAULT_CHARSET, 0, -11},
+	{ LPGENT("Incoming name"),     RGB(215, 0, 0),     _T("Arial"),    DEFAULT_CHARSET, FONTF_BOLD, -12},
+	{ LPGENT("Incoming time"),     RGB(0, 0, 0),       _T("Terminal"), DEFAULT_CHARSET, FONTF_BOLD, -9},
+	{ LPGENT("Incoming colon"),    RGB(215, 0, 0),     _T("Arial"),    DEFAULT_CHARSET, 0, -11},
+	{ LPGENT("Message area"),      RGB(0, 0, 0),       _T("Arial"),    DEFAULT_CHARSET, 0, -12},
+	{ LPGENT("Notices"),           RGB(90, 90, 160),   _T("Arial"),    DEFAULT_CHARSET, 0, -12},
 };
+
 const int msgDlgFontCount = SIZEOF(fontOptionsList);
 
 void LoadMsgDlgFont(int i, LOGFONT* lf, COLORREF * colour)
@@ -58,11 +61,11 @@ void LoadMsgDlgFont(int i, LOGFONT* lf, COLORREF * colour)
 	int style;
 	DBVARIANT dbv;
 
-	if (colour) {
+	if ( colour ) {
 		wsprintfA(str, "SRMFont%dCol", i);
 		*colour = DBGetContactSettingDword(NULL, SRMMMOD, str, fontOptionsList[i].defColour);
 	}
-	if (lf) {
+	if ( lf ) {
 		wsprintfA(str, "SRMFont%dSize", i);
 		lf->lfHeight = (char) DBGetContactSettingByte(NULL, SRMMMOD, str, fontOptionsList[i].defSize);
 		lf->lfWidth = 0;
@@ -86,25 +89,60 @@ void LoadMsgDlgFont(int i, LOGFONT* lf, COLORREF * colour)
 		else {
 			lstrcpyn(lf->lfFaceName, dbv.ptszVal, SIZEOF(lf->lfFaceName));
 			DBFreeVariant(&dbv);
-		}
+}	}	}
+
+void RegisterSRMMFonts( void )
+{
+	FontIDT fontid = {0};
+	ColourIDT colourid = {0};
+	char idstr[10];
+	int i, index = 0;
+
+	fontid.cbSize = sizeof(FontID);
+	fontid.flags = FIDF_ALLOWREREGISTER | FIDF_DEFAULTVALID;
+	for ( i = 0; i < msgDlgFontCount; i++, index++ ) {
+		strncpy(fontid.dbSettingsGroup, SRMMMOD, sizeof(fontid.dbSettingsGroup));
+		_tcsncpy(fontid.group, TranslateT("Message Log"), SIZEOF(fontid.group));
+		_tcsncpy(fontid.name, TranslateTS(fontOptionsList[i].szDescr), SIZEOF(fontid.name));
+		sprintf(idstr, "SRMFont%d", index);
+		strncpy(fontid.prefix, idstr, SIZEOF(fontid.prefix));
+		fontid.order = index;
+
+		fontid.deffontsettings.charset = fontOptionsList[i].defCharset;
+		fontid.deffontsettings.colour = fontOptionsList[i].defColour;
+		fontid.deffontsettings.size = fontOptionsList[i].defSize;
+		fontid.deffontsettings.style = fontOptionsList[i].defStyle;
+		_tcsncpy(fontid.deffontsettings.szFace, fontOptionsList[i].szDefFace, SIZEOF(fontid.deffontsettings.szFace));
+		CallService(MS_FONT_REGISTERT, (WPARAM)&fontid, 0);
 	}
+
+	colourid.cbSize = sizeof(ColourID);
+	strncpy(colourid.dbSettingsGroup, SRMMMOD, sizeof(colourid.dbSettingsGroup));
+	strncpy(colourid.setting, SRMSGSET_BKGCOLOUR, sizeof(colourid.setting));
+	colourid.defcolour = SRMSGDEFSET_BKGCOLOUR;
+	_tcsncpy(colourid.name, TranslateT("Background"), SIZEOF(colourid.name));
+	_tcsncpy(colourid.group, TranslateT("Message Log"), SIZEOF(colourid.group));
+	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
 struct CheckBoxValues_t
 {
     DWORD  style;
     TCHAR* szDescr;
 }
-static const statusValues[] = 
+static const statusValues[] =
 {
-	{ PF2_ONLINE,     _T("Online")        },
-	{ PF2_SHORTAWAY,  _T("Away")          },
-	{ PF2_LONGAWAY,   _T("NA")            },
-	{ PF2_LIGHTDND,   _T("Occupied")      },
-	{ PF2_HEAVYDND,   _T("DND")           },
-	{ PF2_FREECHAT,   _T("Free for chat") },
-	{ PF2_INVISIBLE,  _T("Invisible")     },
-	{ PF2_OUTTOLUNCH, _T("Out to lunch")  },
-	{ PF2_ONTHEPHONE, _T("On the phone")  }
+	{ PF2_ONLINE,     LPGENT("Online")        },
+	{ PF2_SHORTAWAY,  LPGENT("Away")          },
+	{ PF2_LONGAWAY,   LPGENT("NA")            },
+	{ PF2_LIGHTDND,   LPGENT("Occupied")      },
+	{ PF2_HEAVYDND,   LPGENT("DND")           },
+	{ PF2_FREECHAT,   LPGENT("Free for chat") },
+	{ PF2_INVISIBLE,  LPGENT("Invisible")     },
+	{ PF2_OUTTOLUNCH, LPGENT("Out to lunch")  },
+	{ PF2_ONTHEPHONE, LPGENT("On the phone")  }
 };
 
 static void FillCheckBoxTree(HWND hwndTree, const struct CheckBoxValues_t *values, int nValues, DWORD style)
@@ -159,13 +197,13 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			CheckDlgButton(hwndDlg, IDC_SENDONENTER, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SENDONENTER, SRMSGDEFSET_SENDONENTER));
 			CheckDlgButton(hwndDlg, IDC_SENDONDBLENTER, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SENDONDBLENTER, SRMSGDEFSET_SENDONDBLENTER));
 			CheckDlgButton(hwndDlg, IDC_STATUSWIN, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_STATUSICON, SRMSGDEFSET_STATUSICON));
-			
+
 			CheckDlgButton(hwndDlg, IDC_AVATARSUPPORT, g_dat->flags&SMF_AVATAR);
 			CheckDlgButton(hwndDlg, IDC_LIMITAVATARH, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_LIMITAVHEIGHT, SRMSGDEFSET_LIMITAVHEIGHT));
 			avatarHeight = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_AVHEIGHT, SRMSGDEFSET_AVHEIGHT);
 			SetDlgItemInt(hwndDlg, IDC_AVATARHEIGHT, avatarHeight, FALSE);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_LIMITAVATARH), IsDlgButtonChecked(hwndDlg, IDC_AVATARSUPPORT));
-			if (!IsDlgButtonChecked(hwndDlg, IDC_AVATARSUPPORT)) 
+			if (!IsDlgButtonChecked(hwndDlg, IDC_AVATARSUPPORT))
 				EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARHEIGHT), FALSE);
 			else EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARHEIGHT), IsDlgButtonChecked(hwndDlg, IDC_LIMITAVATARH));
 			CheckDlgButton(hwndDlg, IDC_SHOWSENDBTN, g_dat->flags&SMF_SENDBTN);
@@ -202,7 +240,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					break;
 				case IDC_AVATARSUPPORT:
 					EnableWindow(GetDlgItem(hwndDlg, IDC_LIMITAVATARH), IsDlgButtonChecked(hwndDlg, IDC_AVATARSUPPORT));
-					if (!IsDlgButtonChecked(hwndDlg, IDC_AVATARSUPPORT)) 
+					if (!IsDlgButtonChecked(hwndDlg, IDC_AVATARSUPPORT))
 						EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARHEIGHT), FALSE);
 					else EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARHEIGHT), IsDlgButtonChecked(hwndDlg, IDC_LIMITAVATARH));
 					break;
@@ -241,7 +279,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 						case PSN_APPLY:
 						{
 							DWORD msgTimeout, avatarHeight;
-							
+
 							DBWriteContactSettingDword(NULL, SRMMMOD, SRMSGSET_POPFLAGS, MakeCheckBoxTreeFlags(GetDlgItem(hwndDlg, IDC_POPLIST)));
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWBUTTONLINE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWBUTTONLINE));
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWINFOLINE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWINFOLINE));
@@ -252,7 +290,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SENDONENTER, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SENDONENTER));
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SENDONDBLENTER, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SENDONDBLENTER));
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_STATUSICON, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_STATUSWIN));
-							
+
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_AVATARENABLE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AVATARSUPPORT));
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_LIMITAVHEIGHT, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_LIMITAVATARH));
 							avatarHeight = GetDlgItemInt(hwndDlg, IDC_AVATARHEIGHT, NULL, TRUE);
@@ -314,71 +352,8 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWDATES), IsDlgButtonChecked(hwndDlg, IDC_SHOWTIMES));
 			CheckDlgButton(hwndDlg, IDC_SHOWDATES, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWDATE, SRMSGDEFSET_SHOWDATE));
 			CheckDlgButton(hwndDlg, IDC_SHOWSTATUSCHANGES, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWSTATUSCH, SRMSGDEFSET_SHOWSTATUSCH));
-			SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR));
-			SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_SETDEFAULTCOLOUR, 0, SRMSGDEFSET_BKGCOLOUR);
+			return TRUE;
 
-			hBkgColourBrush = CreateSolidBrush(SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_GETCOLOUR, 0, 0));
-
-			{	int i;
-				LOGFONT lf;
-				for (i = 0; i < SIZEOF(fontOptionsList); i++) {
-					LoadMsgDlgFont(i, &lf, &fontOptionsList[i].colour);
-					lstrcpy(fontOptionsList[i].szFace, lf.lfFaceName);
-					fontOptionsList[i].size = (char) lf.lfHeight;
-					fontOptionsList[i].style = (lf.lfWeight >= FW_BOLD ? FONTF_BOLD : 0) | (lf.lfItalic ? FONTF_ITALIC : 0);
-					fontOptionsList[i].charset = lf.lfCharSet;
-					//I *think* some OSs will fail LB_ADDSTRING if lParam==0
-					SendDlgItemMessage(hwndDlg, IDC_FONTLIST, LB_ADDSTRING, 0, i + 1);
-				}
-				SendDlgItemMessage(hwndDlg, IDC_FONTLIST, LB_SETSEL, TRUE, 0);
-				SendDlgItemMessage(hwndDlg, IDC_FONTCOLOUR, CPM_SETCOLOUR, 0, fontOptionsList[0].colour);
-				SendDlgItemMessage(hwndDlg, IDC_FONTCOLOUR, CPM_SETDEFAULTCOLOUR, 0, fontOptionsList[0].defColour);
-			}
-			return TRUE;
-		case WM_CTLCOLORLISTBOX:
-			SetBkColor((HDC) wParam, SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_GETCOLOUR, 0, 0));
-			return (BOOL) hBkgColourBrush;
-		case WM_MEASUREITEM:
-		{
-			MEASUREITEMSTRUCT *mis = (MEASUREITEMSTRUCT *) lParam;
-			HFONT hFont, hoFont;
-			HDC hdc;
-			SIZE fontSize;
-			int iItem = mis->itemData - 1;
-			hFont = CreateFont(fontOptionsList[iItem].size, 0, 0, 0,
-								fontOptionsList[iItem].style & FONTF_BOLD ? FW_BOLD : FW_NORMAL,
-								fontOptionsList[iItem].style & FONTF_ITALIC ? 1 : 0, 0, 0, fontOptionsList[iItem].charset, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, fontOptionsList[iItem].szFace);
-			hdc = GetDC(GetDlgItem(hwndDlg, mis->CtlID));
-			hoFont = (HFONT) SelectObject(hdc, hFont);
-			GetTextExtentPoint32(hdc, fontOptionsList[iItem].szDescr, lstrlen(fontOptionsList[iItem].szDescr), &fontSize);
-			SelectObject(hdc, hoFont);
-			ReleaseDC(GetDlgItem(hwndDlg, mis->CtlID), hdc);
-			DeleteObject(hFont);
-			mis->itemWidth = fontSize.cx;
-			mis->itemHeight = fontSize.cy;
-			return TRUE;
-		}
-		case WM_DRAWITEM:
-		{
-			DRAWITEMSTRUCT* dis = (DRAWITEMSTRUCT *) lParam;
-			HFONT hFont, hoFont;
-			TCHAR* pszText;
-			int iItem = dis->itemData - 1;
-			hFont = CreateFont(fontOptionsList[iItem].size, 0, 0, 0,
-								fontOptionsList[iItem].style & FONTF_BOLD ? FW_BOLD : FW_NORMAL,
-								fontOptionsList[iItem].style & FONTF_ITALIC ? 1 : 0, 0, 0, fontOptionsList[iItem].charset, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, fontOptionsList[iItem].szFace);
-			hoFont = (HFONT) SelectObject(dis->hDC, hFont);
-			SetBkMode(dis->hDC, TRANSPARENT);
-			FillRect(dis->hDC, &dis->rcItem, hBkgColourBrush);
-			if (dis->itemState & ODS_SELECTED)
-				FrameRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_HIGHLIGHT));
-			SetTextColor(dis->hDC, fontOptionsList[iItem].colour);
-			pszText = TranslateTS(fontOptionsList[iItem].szDescr);
-			TextOut(dis->hDC, dis->rcItem.left, dis->rcItem.top, pszText, lstrlen(pszText));
-			SelectObject(dis->hDC, hoFont);
-			DeleteObject(hFont);
-			return TRUE;
-		}
 		case WM_COMMAND:
 			switch (LOWORD(wParam)) {
 				case IDC_LOADUNREAD:
@@ -390,87 +365,12 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					EnableWindow(GetDlgItem(hwndDlg, IDC_LOADTIMESPIN), IsDlgButtonChecked(hwndDlg, IDC_LOADTIME));
 					EnableWindow(GetDlgItem(hwndDlg, IDC_STMINSOLD), IsDlgButtonChecked(hwndDlg, IDC_LOADTIME));
 					break;
+
 				case IDC_SHOWTIMES:
 					EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWSECS), IsDlgButtonChecked(hwndDlg, IDC_SHOWTIMES));
 					EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWDATES), IsDlgButtonChecked(hwndDlg, IDC_SHOWTIMES));
 					break;
-				case IDC_BKGCOLOUR:
-					DeleteObject(hBkgColourBrush);
-					hBkgColourBrush = CreateSolidBrush(SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_GETCOLOUR, 0, 0));
-					InvalidateRect(GetDlgItem(hwndDlg, IDC_FONTLIST), NULL, TRUE);
-					break;
-				case IDC_FONTLIST:
-					if (HIWORD(wParam) == LBN_SELCHANGE) {
-						if (SendDlgItemMessage(hwndDlg, IDC_FONTLIST, LB_GETSELCOUNT, 0, 0) > 1) {
-							SendDlgItemMessage(hwndDlg, IDC_FONTCOLOUR, CPM_SETCOLOUR, 0, GetSysColor(COLOR_3DFACE));
-							SendDlgItemMessage(hwndDlg, IDC_FONTCOLOUR, CPM_SETDEFAULTCOLOUR, 0, GetSysColor(COLOR_WINDOWTEXT));
-						}
-						else {
-							int i = SendDlgItemMessage(hwndDlg, IDC_FONTLIST, LB_GETITEMDATA,
-													   SendDlgItemMessage(hwndDlg, IDC_FONTLIST, LB_GETCURSEL, 0, 0), 0) - 1;
-							SendDlgItemMessage(hwndDlg, IDC_FONTCOLOUR, CPM_SETCOLOUR, 0, fontOptionsList[i].colour);
-							SendDlgItemMessage(hwndDlg, IDC_FONTCOLOUR, CPM_SETDEFAULTCOLOUR, 0, fontOptionsList[i].defColour);
-						}
-					}
-					if (HIWORD(wParam) != LBN_DBLCLK)
-						return TRUE;
-					//fall through
-				case IDC_CHOOSEFONT:
-				{
-					CHOOSEFONT cf = { 0 };
-					LOGFONT lf = { 0 };
-					int i = SendDlgItemMessage(hwndDlg, IDC_FONTLIST, LB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_FONTLIST, LB_GETCURSEL, 0, 0),
-											   0) - 1;
-					lf.lfHeight = fontOptionsList[i].size;
-					lf.lfWeight = fontOptionsList[i].style & FONTF_BOLD ? FW_BOLD : FW_NORMAL;
-					lf.lfItalic = fontOptionsList[i].style & FONTF_ITALIC ? 1 : 0;
-					lf.lfCharSet = fontOptionsList[i].charset;
-					lf.lfOutPrecision = OUT_DEFAULT_PRECIS;
-					lf.lfClipPrecision = CLIP_DEFAULT_PRECIS;
-					lf.lfQuality = DEFAULT_QUALITY;
-					lf.lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
-					lstrcpy(lf.lfFaceName, fontOptionsList[i].szFace);
-					cf.lStructSize = sizeof(cf);
-					cf.hwndOwner = hwndDlg;
-					cf.lpLogFont = &lf;
-					cf.Flags = CF_FORCEFONTEXIST | CF_INITTOLOGFONTSTRUCT | CF_SCREENFONTS;
-					if (ChooseFont(&cf)) {
-						int selItems[ SIZEOF(fontOptionsList) ];
-						int sel, selCount;
 
-						selCount = SendDlgItemMessage(hwndDlg, IDC_FONTLIST, LB_GETSELITEMS, SIZEOF(fontOptionsList), (LPARAM) selItems);
-						for (sel = 0; sel < selCount; sel++) {
-							i = SendDlgItemMessage(hwndDlg, IDC_FONTLIST, LB_GETITEMDATA, selItems[sel], 0) - 1;
-							fontOptionsList[i].size = (char) lf.lfHeight;
-							fontOptionsList[i].style = (lf.lfWeight >= FW_BOLD ? FONTF_BOLD : 0) | (lf.lfItalic ? FONTF_ITALIC : 0);
-							fontOptionsList[i].charset = lf.lfCharSet;
-							lstrcpy(fontOptionsList[i].szFace, lf.lfFaceName);
-							{
-								MEASUREITEMSTRUCT mis = { 0 };
-								mis.CtlID = IDC_FONTLIST;
-								mis.itemData = i + 1;
-								SendMessage(hwndDlg, WM_MEASUREITEM, 0, (LPARAM) & mis);
-								SendDlgItemMessage(hwndDlg, IDC_FONTLIST, LB_SETITEMHEIGHT, selItems[sel], mis.itemHeight);
-							}
-						}
-						InvalidateRect(GetDlgItem(hwndDlg, IDC_FONTLIST), NULL, TRUE);
-						break;
-					}
-					return TRUE;
-				}
-				case IDC_FONTCOLOUR:
-				{
-					int selItems[ SIZEOF(fontOptionsList) ];
-					int sel, selCount, i;
-
-					selCount = SendDlgItemMessage(hwndDlg, IDC_FONTLIST, LB_GETSELITEMS, SIZEOF(fontOptionsList), (LPARAM) selItems);
-					for (sel = 0; sel < selCount; sel++) {
-						i = SendDlgItemMessage(hwndDlg, IDC_FONTLIST, LB_GETITEMDATA, selItems[sel], 0) - 1;
-						fontOptionsList[i].colour = SendDlgItemMessage(hwndDlg, IDC_FONTCOLOUR, CPM_GETCOLOUR, 0, 0);
-					}
-					InvalidateRect(GetDlgItem(hwndDlg, IDC_FONTLIST), NULL, FALSE);
-					break;
-				}
 				case IDC_LOADCOUNTN:
 				case IDC_LOADTIMEN:
 					if (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus())
@@ -498,24 +398,6 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWSECS, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWSECS));
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWDATE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWDATES));
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWSTATUSCH, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWSTATUSCHANGES));
-							DBWriteContactSettingDword(NULL, SRMMMOD, SRMSGSET_BKGCOLOUR, SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_GETCOLOUR, 0, 0));
-
-							{
-								int i;
-								char str[32];
-								for (i = 0; i < SIZEOF(fontOptionsList); i++) {
-									wsprintfA(str, "SRMFont%d", i);
-									DBWriteContactSettingTString(NULL, SRMMMOD, str, fontOptionsList[i].szFace);
-									wsprintfA(str, "SRMFont%dSize", i);
-									DBWriteContactSettingByte(NULL, SRMMMOD, str, fontOptionsList[i].size);
-									wsprintfA(str, "SRMFont%dSty", i);
-									DBWriteContactSettingByte(NULL, SRMMMOD, str, fontOptionsList[i].style);
-									wsprintfA(str, "SRMFont%dSet", i);
-									DBWriteContactSettingByte(NULL, SRMMMOD, str, fontOptionsList[i].charset);
-									wsprintfA(str, "SRMFont%dCol", i);
-									DBWriteContactSettingDword(NULL, SRMMMOD, str, fontOptionsList[i].colour);
-								}
-							}
 
 							FreeMsgLogIcons();
 							LoadMsgLogIcons();
@@ -621,7 +503,7 @@ static BOOL CALLBACK DlgProcTypeOptions(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			if (!ServiceExists(MS_CLIST_SYSTRAY_NOTIFY)) {
 				EnableWindow(GetDlgItem(hwndDlg, IDC_NOTIFYBALLOON), FALSE);
 				CheckDlgButton(hwndDlg, IDC_NOTIFYTRAY, BST_CHECKED);
-				SetWindowTextA(GetDlgItem(hwndDlg, IDC_NOTIFYBALLOON), Translate("Show balloon popup (unsupported system)"));
+				SetWindowText(GetDlgItem(hwndDlg, IDC_NOTIFYBALLOON), TranslateT("Show balloon popup (unsupported system)"));
 			}
 			break;
 		case WM_COMMAND:
@@ -696,20 +578,20 @@ static int OptInitialise(WPARAM wParam, LPARAM lParam)
 	odp.position = 910000000;
 	odp.hInstance = g_hInst;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSGDLG);
-	odp.pszTitle = "Messaging";
-	odp.pszGroup = "Events";
+	odp.pszTitle = LPGEN("Messaging");
+	odp.pszGroup = LPGEN("Events");
 	odp.pfnDlgProc = DlgProcOptions;
 	odp.flags = ODPF_BOLDGROUPS;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
 
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSGLOG);
-	odp.pszTitle = "Messaging Log";
+	odp.pszTitle = LPGEN("Messaging Log");
 	odp.pfnDlgProc = DlgProcLogOptions;
 	odp.nIDBottomSimpleControl = IDC_STMSGLOGGROUP;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
 
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSGTYPE);
-	odp.pszTitle = "Typing Notify";
+	odp.pszTitle = LPGEN("Typing Notify");
 	odp.pfnDlgProc = DlgProcTypeOptions;
 	odp.nIDBottomSimpleControl = 0;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);

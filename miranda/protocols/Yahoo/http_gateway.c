@@ -15,28 +15,48 @@
 #include <windows.h>
 #include "yahoo.h"
 
-char *Bcookie = NULL;
+extern yahoo_local_account * ylad;
 
 int YAHOO_httpGatewayInit(HANDLE hConn, NETLIBOPENCONNECTION *nloc, NETLIBHTTPREQUEST *nlhr)
 {
-	char szHttpPostUrl[300];
 	NETLIBHTTPPROXYINFO nlhpi;
 
 	YAHOO_DebugLog("YAHOO_httpGatewayInit!!!");
 	
 	ZeroMemory(&nlhpi, sizeof(nlhpi) );
 	nlhpi.cbSize = sizeof(nlhpi);
-	nlhpi.flags = 0; /* NO SEQUENCE NUMBERS */
-	/*nlhpi.flags = NLHPIF_USEPOSTSEQUENCE;*/
-	nlhpi.szHttpGetUrl = NULL;
-	nlhpi.szHttpPostUrl = szHttpPostUrl;
-	/*nlhpi.firstPostSequence = 1;
-	_snprintf(szHttpPostUrl, 300, "http://http.pager.yahoo.com/notify");*/
-	lstrcpyn(szHttpPostUrl, "http://http.pager.yahoo.com/notify", 300);
+	nlhpi.szHttpPostUrl = "http://shttp.msg.yahoo.com/notify/";
+	
+	//CallService( MS_NETLIB_SETPOLLINGTIMEOUT, (WPARAM) hConn, 15 );
 	
 	return CallService(MS_NETLIB_SETHTTPPROXYINFO, (WPARAM)hConn, (LPARAM)&nlhpi);
 }
 
+int YAHOO_httpGatewayWrapSend(HANDLE hConn, PBYTE buf, int len, int flags, MIRANDASERVICE pfnNetlibSend)
+{
+	YAHOO_DebugLog("YAHOO_httpGatewayWrapSend!!! Len: %d", len);
+
+	if (len == 0 && ylad->id > 0) { // we need to send something!!!
+		int n;
+		char *z = yahoo_webmessenger_idle_packet(ylad->id, &n);
+		int ret = 0;
+		
+		if (z != NULL) {
+			YAHOO_DebugLog("YAHOO_httpGatewayWrapSend!!! Got Len: %d", n);
+			NETLIBBUFFER tBuf = { ( char* )z, n, flags };
+			ret = pfnNetlibSend(( LPARAM )hConn, (WPARAM) &tBuf );
+			FREE(z);
+		} else {
+			YAHOO_DebugLog("YAHOO_httpGatewayWrapSend!!! GOT NULL???");
+		}
+		
+		return ret;
+	} else {
+		NETLIBBUFFER tBuf = { ( char* )buf, len, flags };
+		
+		return pfnNetlibSend(( LPARAM )hConn, (WPARAM) &tBuf );
+	}
+}
 
 PBYTE YAHOO_httpGatewayUnwrapRecv(NETLIBHTTPREQUEST *nlhr, PBYTE buf, int len, int *outBufLen, void *(*NetlibRealloc)(void *, size_t))
 {
@@ -44,42 +64,23 @@ PBYTE YAHOO_httpGatewayUnwrapRecv(NETLIBHTTPREQUEST *nlhr, PBYTE buf, int len, i
 
     YAHOO_DebugLog("Got headers: %d", nlhr->headersCount);
     /* we need to get the first 4 bytes! */
+	if (len < 4) 
+		return NULL;
+
+	ylad->rpkts = buf[0] + buf[1] *256;
+	YAHOO_DebugLog("Got packets: %d", ylad->rpkts);
+	
     if (len == 4){
         *outBufLen = 0;
         return buf;
-    }
-
-    if (len > 4) {
-                        
-            if ( (buf[4] == 'Y') && (buf[5] == 'M') && (buf[6] == 'S') && (buf[7] == 'G') ) {
-                 int i;
-                 
-                 if ( (buf[14] == 0) && (buf[15] == 2) ) /* LOGOFF */
-                                  return NULL;
-
-                 for (i = 0; i < nlhr->headersCount; i++ ) 
-                     if(!lstrcmpi(nlhr->headers[i].szName,"Set-Cookie")) {
-                       char *c;
-                       YAHOO_DebugLog("Got Cookie: %s", nlhr->headers[i].szValue);
-                       Bcookie = strdup(nlhr->headers[i].szValue);
-                       
-                       c = strchr(Bcookie, ';');
-                       if (c != NULL)
-                         (*c) = '\0';
-                         
-                       YAHOO_DebugLog("Bcookie: %s", Bcookie);  
-				       break;
-                     }
-                 
-				MoveMemory( buf, buf + 4, len - 4);
-                 *outBufLen = len-4;/* we take off 4 bytes from the beginning*/
-                 
-                 return buf;                 
-            } else
-                 return NULL; /* Break connection, something went wrong! */
+    } else  if ( (buf[4] == 'Y') && (buf[5] == 'M') && (buf[6] == 'S') && (buf[7] == 'G') ) {
+		MoveMemory( buf, buf + 4, len - 4);
+		*outBufLen = len-4;// we take off 4 bytes from the beginning
+		 
+		return buf;                 
     } else
-        return NULL; /* we need our counter!!! */
-
+        return NULL; /* Break connection, something went wrong! */
+     
 }
 
 #endif

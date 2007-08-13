@@ -24,7 +24,6 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	".\commandmonitor.h"\
-	".\IcoLib.h"\
 	".\irc.h"\
 	".\irclib.h"\
 	".\m_ircscript.h"\
@@ -54,7 +53,6 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	".\commandmonitor.h"\
-	".\IcoLib.h"\
 	".\irc.h"\
 	".\irclib.h"\
 	".\m_ircscript.h"\
@@ -84,7 +82,6 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	".\commandmonitor.h"\
-	".\IcoLib.h"\
 	".\irc.h"\
 	".\irclib.h"\
 	".\m_ircscript.h"\
@@ -114,7 +111,6 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	".\commandmonitor.h"\
-	".\IcoLib.h"\
 	".\irc.h"\
 	".\irclib.h"\
 	".\m_ircscript.h"\
@@ -144,7 +140,6 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	".\commandmonitor.h"\
-	".\IcoLib.h"\
 	".\irc.h"\
 	".\irclib.h"\
 	".\m_ircscript.h"\
@@ -174,7 +169,6 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	".\commandmonitor.h"\
-	".\IcoLib.h"\
 	".\irc.h"\
 	".\irclib.h"\
 	".\m_ircscript.h"\
@@ -204,7 +198,6 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	".\commandmonitor.h"\
-	".\IcoLib.h"\
 	".\irc.h"\
 	".\irclib.h"\
 	".\m_ircscript.h"\
@@ -234,7 +227,6 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	".\commandmonitor.h"\
-	".\IcoLib.h"\
 	".\irc.h"\
 	".\irclib.h"\
 	".\m_ircscript.h"\
@@ -264,7 +256,6 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	".\commandmonitor.h"\
-	".\IcoLib.h"\
 	".\irc.h"\
 	".\irclib.h"\
 	".\m_ircscript.h"\
@@ -294,7 +285,6 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	".\commandmonitor.h"\
-	".\IcoLib.h"\
 	".\irc.h"\
 	".\irclib.h"\
 	".\m_ircscript.h"\
@@ -324,7 +314,6 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	".\commandmonitor.h"\
-	".\IcoLib.h"\
 	".\irc.h"\
 	".\irclib.h"\
 	".\m_ircscript.h"\

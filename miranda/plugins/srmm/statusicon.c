@@ -32,7 +32,7 @@ int AddStatusIcon(WPARAM wParam, LPARAM lParam) {
 }
 
 int RemoveStatusIcon(WPARAM wParam, LPARAM lParam) {
-	StatusIconData *sid = (StatusIconData *)lParam;	
+	StatusIconData *sid = (StatusIconData *)lParam;
 	struct StatusIconListNode *current = status_icon_list, *prev = 0;
 
 	while(current) {
@@ -78,8 +78,8 @@ void RemoveAllStatusIcons(void) {
 
 int ModifyStatusIcon(WPARAM wParam, LPARAM lParam) {
 	HANDLE hContact = (HANDLE)wParam;
-	
-	StatusIconData *sid = (StatusIconData *)lParam;	
+
+	StatusIconData *sid = (StatusIconData *)lParam;
 	struct StatusIconListNode *current = status_icon_list, *prev = 0;
 
 	while(current) {
@@ -156,6 +156,7 @@ void CheckIconClick(HANDLE hContact, HWND hwndFrom, POINT pt, RECT r, int gap, i
 
 	if(current) {
 		sicd.cbSize = sizeof(StatusIconClickData);
+		ClientToScreen(hwndFrom, &pt);
 		sicd.clickLocation = pt;
 		sicd.dwId = current->sid.dwId;
 		sicd.szModule = current->sid.szModule;
@@ -168,7 +169,7 @@ void CheckIconClick(HANDLE hContact, HWND hwndFrom, POINT pt, RECT r, int gap, i
 HANDLE hServiceIcon[3];
 int InitStatusIcons() {
 	hServiceIcon[0] = CreateServiceFunction(MS_MSG_ADDICON, AddStatusIcon);
-	hServiceIcon[1] = CreateServiceFunction(MS_MSG_ADDICON, RemoveStatusIcon);
+	hServiceIcon[1] = CreateServiceFunction(MS_MSG_REMOVEICON, RemoveStatusIcon);
 	hServiceIcon[2] = CreateServiceFunction(MS_MSG_MODIFYICON, ModifyStatusIcon);
 	hHookIconPressedEvt = CreateHookableEvent(ME_MSG_ICONPRESSED);
 
@@ -181,4 +182,20 @@ int DeinitStatusIcons() {
 	for(i = 0; i < 3; i++) DestroyServiceFunction(hServiceIcon[i]);
 	RemoveAllStatusIcons();
 	return 0;
+}
+
+int GetStatusIconsCount(HANDLE hContact) {
+	char buff[256];
+	int count = 0;
+	int flags;
+	struct StatusIconListNode *current = status_icon_list;
+	while(current) {
+		sprintf(buff, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
+		flags = DBGetContactSettingByte(hContact, current->sid.szModule, buff, current->sid.flags);
+		if(!(flags & MBF_HIDDEN)) {
+			count ++;
+		}
+		current = current->next;
+	}
+	return count;
 }

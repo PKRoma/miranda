@@ -1,195 +1,126 @@
 # Microsoft Developer Studio Generated Dependency File, included by png2dib.mak
 
-.\zlib\adler32.c : \
-	".\zlib\zconf.h"\
-	".\zlib\zlib.h"\
-	
-
-.\zlib\compress.c : \
-	".\zlib\zconf.h"\
-	".\zlib\zlib.h"\
-	
-
-.\zlib\crc32.c : \
-	".\zlib\crc32.h"\
-	".\zlib\zconf.h"\
-	".\zlib\zlib.h"\
-	".\zlib\zutil.h"\
-	
-
-.\zlib\deflate.c : \
-	".\zlib\deflate.h"\
-	".\zlib\zconf.h"\
-	".\zlib\zlib.h"\
-	".\zlib\zutil.h"\
-	
-
-.\zlib\inffast.c : \
-	".\zlib\inffast.h"\
-	".\zlib\inflate.h"\
-	".\zlib\inftrees.h"\
-	".\zlib\zconf.h"\
-	".\zlib\zlib.h"\
-	".\zlib\zutil.h"\
-	
-
-.\zlib\inflate.c : \
-	".\zlib\inffast.h"\
-	".\zlib\inffixed.h"\
-	".\zlib\inflate.h"\
-	".\zlib\inftrees.h"\
-	".\zlib\zconf.h"\
-	".\zlib\zlib.h"\
-	".\zlib\zutil.h"\
-	
-
-.\zlib\inftrees.c : \
-	".\zlib\inftrees.h"\
-	".\zlib\zconf.h"\
-	".\zlib\zlib.h"\
-	".\zlib\zutil.h"\
-	
-
-.\zlib\trees.c : \
-	".\zlib\deflate.h"\
-	".\zlib\trees.h"\
-	".\zlib\zconf.h"\
-	".\zlib\zlib.h"\
-	".\zlib\zutil.h"\
-	
-
-.\zlib\uncompr.c : \
-	".\zlib\zconf.h"\
-	".\zlib\zlib.h"\
-	
-
-.\zlib\zutil.c : \
-	".\zlib\zconf.h"\
-	".\zlib\zlib.h"\
-	".\zlib\zutil.h"\
-	
-
 .\libpng\png.c : \
+	"..\zlib\zconf.h"\
+	"..\zlib\zlib.h"\
 	".\libpng\png.h"\
 	".\libpng\pngconf.h"\
-	".\zlib\zconf.h"\
-	".\zlib\zlib.h"\
 	
 
 .\libpng\pnggccrd.c : \
+	"..\zlib\zconf.h"\
+	"..\zlib\zlib.h"\
 	".\libpng\png.h"\
 	".\libpng\pngconf.h"\
-	".\zlib\zconf.h"\
-	".\zlib\zlib.h"\
 	
 
 .\libpng\pngget.c : \
+	"..\zlib\zconf.h"\
+	"..\zlib\zlib.h"\
 	".\libpng\png.h"\
 	".\libpng\pngconf.h"\
-	".\zlib\zconf.h"\
-	".\zlib\zlib.h"\
 	
 
 .\libpng\pngmem.c : \
+	"..\zlib\zconf.h"\
+	"..\zlib\zlib.h"\
 	".\libpng\png.h"\
 	".\libpng\pngconf.h"\
-	".\zlib\zconf.h"\
-	".\zlib\zlib.h"\
 	
 
 .\libpng\pngpread.c : \
+	"..\zlib\zconf.h"\
+	"..\zlib\zlib.h"\
 	".\libpng\png.h"\
 	".\libpng\pngconf.h"\
-	".\zlib\zconf.h"\
-	".\zlib\zlib.h"\
 	
 
 .\libpng\pngread.c : \
+	"..\zlib\zconf.h"\
+	"..\zlib\zlib.h"\
 	".\libpng\png.h"\
 	".\libpng\pngconf.h"\
-	".\zlib\zconf.h"\
-	".\zlib\zlib.h"\
 	
 
 .\libpng\pngrio.c : \
+	"..\zlib\zconf.h"\
+	"..\zlib\zlib.h"\
 	".\libpng\png.h"\
 	".\libpng\pngconf.h"\
-	".\zlib\zconf.h"\
-	".\zlib\zlib.h"\
 	
 
 .\libpng\pngrtran.c : \
+	"..\zlib\zconf.h"\
+	"..\zlib\zlib.h"\
 	".\libpng\png.h"\
 	".\libpng\pngconf.h"\
-	".\zlib\zconf.h"\
-	".\zlib\zlib.h"\
 	
 
 .\libpng\pngrutil.c : \
+	"..\zlib\zconf.h"\
+	"..\zlib\zlib.h"\
 	".\libpng\png.h"\
 	".\libpng\pngconf.h"\
-	".\zlib\zconf.h"\
-	".\zlib\zlib.h"\
 	
 
 .\libpng\pngset.c : \
+	"..\zlib\zconf.h"\
+	"..\zlib\zlib.h"\
 	".\libpng\png.h"\
 	".\libpng\pngconf.h"\
-	".\zlib\zconf.h"\
-	".\zlib\zlib.h"\
 	
 
 .\libpng\pngtrans.c : \
+	"..\zlib\zconf.h"\
+	"..\zlib\zlib.h"\
 	".\libpng\png.h"\
 	".\libpng\pngconf.h"\
-	".\zlib\zconf.h"\
-	".\zlib\zlib.h"\
 	
 
 .\libpng\pngvcrd.c : \
+	"..\zlib\zconf.h"\
+	"..\zlib\zlib.h"\
 	".\libpng\png.h"\
 	".\libpng\pngconf.h"\
-	".\zlib\zconf.h"\
-	".\zlib\zlib.h"\
 	
 
 .\libpng\pngwio.c : \
+	"..\zlib\zconf.h"\
+	"..\zlib\zlib.h"\
 	".\libpng\png.h"\
 	".\libpng\pngconf.h"\
-	".\zlib\zconf.h"\
-	".\zlib\zlib.h"\
 	
 
 .\libpng\pngwrite.c : \
+	"..\zlib\zconf.h"\
+	"..\zlib\zlib.h"\
 	".\libpng\png.h"\
 	".\libpng\pngconf.h"\
-	".\zlib\zconf.h"\
-	".\zlib\zlib.h"\
 	
 
 .\libpng\pngwtran.c : \
+	"..\zlib\zconf.h"\
+	"..\zlib\zlib.h"\
 	".\libpng\png.h"\
 	".\libpng\pngconf.h"\
-	".\zlib\zconf.h"\
-	".\zlib\zlib.h"\
 	
 
 .\libpng\pngwutil.c : \
+	"..\zlib\zconf.h"\
+	"..\zlib\zlib.h"\
 	".\libpng\png.h"\
 	".\libpng\pngconf.h"\
-	".\zlib\zconf.h"\
-	".\zlib\zlib.h"\
 	
 
 .\png2dib.c : \
 	"..\..\include\m_plugins.h"\
 	"..\..\include\newpluginapi.h"\
+	"..\zlib\zconf.h"\
+	"..\zlib\zlib.h"\
 	".\libpng\png.h"\
 	".\libpng\pngconf.h"\
 	".\m_png.h"\
 	".\version.h"\
-	".\zlib\zconf.h"\
-	".\zlib\zlib.h"\
 	
 
 .\version.rc : \

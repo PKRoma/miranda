@@ -24,8 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "ImageDataObject.h"
 
-extern "C" int _DebugPopup(HANDLE hContact, const char *fmt, ...);
-
 extern "C" void ReleaseRichEditOle(IRichEditOle *ole) {
     ole->Release();
 }

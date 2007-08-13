@@ -1,5 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
+Copyright (c) 2006-7 Boris Krasnovskiy.
 Copyright (c) 2003-5 George Hazan.
 Copyright (c) 2002-3 Richard Hughes (original version).
 
@@ -22,7 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "msn_global.h"
-#include <m_system_cpp.h>
 
 static CRITICAL_SECTION sessionLock;
 
@@ -44,7 +44,7 @@ static LIST<directconnection> dcList( 10, CompareDC );
 /////////////////////////////////////////////////////////////////////////////////////////
 // add file session to a list
 
-void __stdcall p2p_registerSession( filetransfer* ft )
+void  p2p_registerSession( filetransfer* ft )
 {
 	EnterCriticalSection( &sessionLock );
 	sessionList.insert( ft );
@@ -54,18 +54,21 @@ void __stdcall p2p_registerSession( filetransfer* ft )
 /////////////////////////////////////////////////////////////////////////////////////////
 // remove file session from a list
 
-void __stdcall p2p_unregisterSession( filetransfer* ft )
+void  p2p_unregisterSession( filetransfer* ft )
 {
 	EnterCriticalSection( &sessionLock );
-	sessionList.remove( ft );
-	delete ft; 
+	int idx = sessionList.getIndex( ft );
+	if ( idx > -1 ) {
+		sessionList.remove( idx );
+		delete ft; 
+	}
 	LeaveCriticalSection( &sessionLock );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // get session by some parameter
 
-filetransfer* __stdcall p2p_getSessionByID( unsigned id )
+filetransfer*  p2p_getSessionByID( unsigned id )
 {
 	if ( id == 0 )
 		return NULL;
@@ -82,12 +85,12 @@ filetransfer* __stdcall p2p_getSessionByID( unsigned id )
 
 	LeaveCriticalSection( &sessionLock );
 	if ( ft == NULL )
-		MSN_DebugLog( "Ignoring unknown session id %lu", id );
+		MSN_DebugLog( "Ignoring unknown session id %08x", id );
 
 	return ft;
 }
 
-filetransfer* __stdcall p2p_getSessionByMsgID( unsigned id )
+filetransfer*  p2p_getSessionByUniqueID( unsigned id )
 {
 	if ( id == 0 )
 		return NULL;
@@ -97,35 +100,31 @@ filetransfer* __stdcall p2p_getSessionByMsgID( unsigned id )
 
 	for ( int i=0; i < sessionList.getCount(); i++ ) {
 		filetransfer* FT = sessionList[i];
-		if ( FT->p2p_msgid == id || FT->p2p_msgid == (id + 1) ) {
+		if ( FT->p2p_acksessid == id ) {
 			ft = FT;
 			break;
 	}	}
 
 	LeaveCriticalSection( &sessionLock );
 	if ( ft == NULL )
-		MSN_DebugLog( "Ignoring unknown message id %lu", id );
+		MSN_DebugLog( "Ignoring unknown unique id %08x", id );
 
 	return ft;
 }
 
-BOOL __stdcall p2p_sessionRegistered( filetransfer* ft )
+
+bool  p2p_sessionRegistered( filetransfer* ft )
 {
-    BOOL result = FALSE;
+	if ( ft != NULL && ft->p2p_appID == 0)
+		return true;
+
 	EnterCriticalSection( &sessionLock );
-
-	for ( int i=0; i < sessionList.getCount(); i++ ) {
-		filetransfer* FT = sessionList[i];
-		if ( sessionList[i] == ft ) {
-			result = TRUE;
-			break;
-	}	}
-
+	int idx = sessionList.getIndex( ft );
 	LeaveCriticalSection( &sessionLock );
-	return result;
+	return idx > -1;
 }
 
-filetransfer* __stdcall p2p_getThreadSession( HANDLE hContact, TInfoType mType )
+filetransfer*  p2p_getThreadSession( HANDLE hContact, TInfoType mType )
 {
 	EnterCriticalSection( &sessionLock );
 
@@ -141,14 +140,45 @@ filetransfer* __stdcall p2p_getThreadSession( HANDLE hContact, TInfoType mType )
 	return result;
 }
 
-void __stdcall p2p_clearDormantSessions( void )
+filetransfer*  p2p_getAvatarSession( HANDLE hContact )
+{
+	EnterCriticalSection( &sessionLock );
+
+	filetransfer* result = NULL;
+	for ( int i=0; i < sessionList.getCount(); i++ ) {
+		filetransfer* FT = sessionList[i];
+		if ( FT->std.hContact == hContact && !FT->std.sending && 
+			FT->p2p_type == MSN_APPID_AVATAR ) {
+			result = FT;
+			break;
+	}	}
+
+	LeaveCriticalSection( &sessionLock );
+	return result;
+}
+
+bool  p2p_isAvatarOnly( HANDLE hContact )
+{
+	EnterCriticalSection( &sessionLock );
+
+	bool result = true;
+	for ( int i=0; i < sessionList.getCount(); i++ ) {
+		filetransfer* FT = sessionList[i];
+		result &= FT->std.hContact != hContact || FT->p2p_type != MSN_APPID_FILE;
+	}
+
+	LeaveCriticalSection( &sessionLock );
+	return result;
+}
+
+void  p2p_clearDormantSessions( void )
 {
 	EnterCriticalSection( &sessionLock );
 
 	time_t ts = time( NULL );
 	for ( int i=0; i < sessionList.getCount(); i++ ) {
 		filetransfer* FT = sessionList[i];
-		if ( FT->p2p_waitack && ( ts - FT->ts ) > 10 ) 
+		if ( FT->p2p_waitack && ( ts - FT->ts ) > 60 ) 
 		{
 			LeaveCriticalSection( &sessionLock );
 			p2p_unregisterSession( FT );
@@ -168,7 +198,7 @@ void __stdcall p2p_clearDormantSessions( void )
 	LeaveCriticalSection( &sessionLock );
 }
 
-void __stdcall p2p_redirectSessions( HANDLE hContact )
+void  p2p_redirectSessions( HANDLE hContact )
 {
 	EnterCriticalSection( &sessionLock );
 
@@ -176,20 +206,21 @@ void __stdcall p2p_redirectSessions( HANDLE hContact )
 	for ( int i=0; i < sessionList.getCount(); i++ ) {
 		filetransfer* FT = sessionList[i];
 		if ( FT->std.hContact == hContact && !FT->std.sending && 
+			FT->std.currentFileProgress < FT->std.currentFileSize &&
 			( T == NULL || ( FT->tType != T->mType && FT->tType != 0 ))) 
-			p2p_sendRedirect( T, FT );
+			p2p_sendRedirect( FT );
 	}
 
 	LeaveCriticalSection( &sessionLock );
 }
 
-void __stdcall p2p_cancelAllSessions( void )
+void  p2p_cancelAllSessions( void )
 {
 	EnterCriticalSection( &sessionLock );
 
 	for ( int i=0; i < sessionList.getCount(); i++ ) {
 		filetransfer* FT = sessionList[i];
-		p2p_sendCancel( MSN_GetP2PThreadByContact( FT->std.hContact ), FT );
+		p2p_sendCancel( FT );
 	}
 
 	for ( int j=0; j < dcList.getCount(); j++ ) 
@@ -200,7 +231,7 @@ void __stdcall p2p_cancelAllSessions( void )
 	LeaveCriticalSection( &sessionLock );
 }
 
-filetransfer* __stdcall p2p_getSessionByCallID( const char* CallID )
+filetransfer*  p2p_getSessionByCallID( const char* CallID )
 {
 	if ( CallID == NULL )
 		return NULL;
@@ -223,22 +254,25 @@ filetransfer* __stdcall p2p_getSessionByCallID( const char* CallID )
 }
 
 
-void __stdcall p2p_registerDC( directconnection* dc )
+void  p2p_registerDC( directconnection* dc )
 {
 	EnterCriticalSection( &sessionLock );
 	dcList.insert( dc );
 	LeaveCriticalSection( &sessionLock );
 }
 
-void __stdcall p2p_unregisterDC( directconnection* dc )
+void  p2p_unregisterDC( directconnection* dc )
 {
 	EnterCriticalSection( &sessionLock );
-	delete dc; 
-	dcList.remove( dc );
+	int idx = dcList.getIndex( dc );
+	if ( idx > -1 ) {
+		dcList.remove( idx );
+		delete dc; 
+	}
 	LeaveCriticalSection( &sessionLock );
 }
 
-directconnection* __stdcall p2p_getDCByCallID( const char* CallID )
+directconnection*  p2p_getDCByCallID( const char* CallID )
 {
 	if ( CallID == NULL )
 		return NULL;

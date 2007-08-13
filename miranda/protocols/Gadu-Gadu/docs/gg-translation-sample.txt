@@ -1,4 +1,4 @@
-; *** Gadu-Gadu
+; ** Gadu-Gadu 0.0.4.5
 
 ; Info page
 [Public Info]
@@ -67,16 +67,14 @@ Podaj adres hosta serwera rêcznie
 [Manually specify connection servers' hosts]
 Podaj adresy hostów serwerów rêcznie
 ;[Use secure SSL connection] @ deprecated 0.0.2.6
-[Use SSL secure connection]
 [Host:]
 Host:
-U¿ywaj bezpiecznego po³¹czenia SSL
-[* new line is separator\n** hostname:port format]
-* nowa linia - separator\n** format nazwahosta:port
 [Use direct connections]
 U¿ywaj po³¹czeñ bezpoœrednich
 [Use forwarding]
 U¿ywaj forwardowania
+[* new line is separator\n** hostname:port format]
+* nowa linia - separator\n** format nazwahosta:port
 
 ; Menu
 [Import List From &Server]
@@ -92,6 +90,34 @@ Eksportuj listê do pliku &tekstowego...
 [Text files]
 Pliki tekstowe
 
+; Icons
+[Protocol icon]
+Ikona protoko³u
+[Import list from server]
+Import listy z serwera
+[Import list from text file]
+Import listy z pliku tekstowego
+[Remove list from server]
+Usuniêcie listy z serwera
+[Export list to server]
+Eksport listy do serwera
+[Export list to text file]
+Eksport listy do pliku tekstowego
+[Account settings]
+Ustawienia konta
+[Blocked to this contact}
+Ten kontakt mnie zablokowa³
+[Previous image]
+Poprzedni obrazek
+[Next image]
+Nastêpny obrazek
+[Send image]
+Wyœlij obrazek
+[Save image]
+Zapisz obrazek
+[Delete image]
+Usuñ obrazek
+
 ; Errors
 ;[Gadu-Gadu Error] << depreciated in 0.0.1.4
 [Connection cannot be established because of error:\n\t%s]
@@ -103,6 +129,10 @@ Miranda nie mog³a ustaliæ IP serwera Gadu-Gadu na podstawie nazwy hosta.
 Otrzymano niepoprawn¹ odpowiedŸ od serwera.
 [Cannot establish secure connection.]
 Nie mo¿na nawi¹zaæ bezpiecznego po³¹czenia.
+[Server disconnected asking you for changing your e-mail.]
+Serwer roz³¹czy³ siê prosz¹c o zmianê Twojego adresu e-mail.
+[Too many login attempts with invalid password.]
+Za du¿o prób po³¹czeñ z podaniem b³êdnego has³a.
 [Your Gadu-Gadu number and password combination was rejected by the Gadu-Gadu server. Please check login details at M->Options->Network->Gadu-Gadu and try again.]
 Twój numer i has³o zosta³y odrzucone przez serwer Gadu-Gadu. SprawdŸ dane logowania M->Opcje->Sieæ->Gadu-Gadu i spróbuj ponownie.
 [Connecting to Gadu-Gadu hub failed.]
@@ -224,7 +254,8 @@ Zostanie utworzone nowe konto Gadu-Gadu.
 Wiek od:
 [to:]
 do:
-;[Search online users only]
+[Search online users only]
+Szukaj tylko wœród dostêpnych
 
 ; Image recv/send
 [&Image]
@@ -245,6 +276,8 @@ Pliki obrazów (*.bmp,*.jpg,*.gif,*.png)
 Wybierz obrazek do wys³ania
 [Could not load image. Image might have unsupported file format.]
 Nie mo¿na za³adowaæ obrazka. Wybrany plik mo¿e mieæ nieznany format.
+[Image exceeds maximum allowed size of 255 KB.]
+Rozmiar pliku obrazka przekracza maksymalny dozwolony rozmiar 255 KB.
 
 ; Conferences
 [Open new conference]

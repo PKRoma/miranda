@@ -10,15 +10,9 @@
  * I want to thank Robert Rainwater and George Hazan for their code and support
  * and for answering some of my questions during development of this plugin.
  */
-#include <windows.h>
-#include <windowsx.h>
-#include <stdio.h>
-#include <shlwapi.h>
-#include <malloc.h>
-
 #include "yahoo.h"
+#include <windowsx.h>
 #include <m_popup.h>
-#include <m_system.h>
 #include <m_protomod.h>
 #include <m_protosvc.h>
 #include <m_langpack.h>
@@ -114,8 +108,15 @@ DWORD __stdcall YAHOO_SetString( HANDLE hContact, const char* valueName, const c
 	return DBWriteContactSettingString( hContact, yahooProtocolName, valueName, parValue );
 }
 
-LRESULT CALLBACK PopupWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam )
+DWORD __stdcall YAHOO_SetStringUtf( HANDLE hContact, const char* valueName, const char* parValue )
 {
+	return DBWriteContactSettingStringUtf( hContact, yahooProtocolName, valueName, parValue );
+}
+
+static int CALLBACK PopupWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam )
+{
+	//YAHOO_DebugLog("[PopupWindowProc] Got Message: %d", message);
+	
 	switch( message ) {
 		case WM_COMMAND:
 				YAHOO_DebugLog("[PopupWindowProc] WM_COMMAND");
@@ -123,7 +124,7 @@ LRESULT CALLBACK PopupWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM
 					char *szURL = (char *)PUGetPluginData( hWnd );
 					if ( szURL != NULL ) 
 						YahooOpenURL(szURL, 1);
-					
+				
 					PUDeletePopUp( hWnd );
 					return 0;
 				}
@@ -135,15 +136,15 @@ LRESULT CALLBACK PopupWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM
 			return TRUE;
 
 		case UM_FREEPLUGINDATA: {
-			char *szURL;
-			YAHOO_DebugLog("[PopupWindowProc] UM_FREEPLUGINDATA");
-
-			szURL = (char *)PUGetPluginData( hWnd );
-			if ( szURL != NULL ) 
-				free(szURL);
+				YAHOO_DebugLog("[PopupWindowProc] UM_FREEPLUGINDATA");
+				{
+					char *szURL = (char *)PUGetPluginData( hWnd );
+					if ( szURL != NULL ) 
+						free(szURL);
+				}
 					
-			return TRUE;
-		}
+				return TRUE;
+			}
 	}
 
 	return DefWindowProc(hWnd, message, wParam, lParam);
@@ -165,14 +166,14 @@ int __stdcall	YAHOO_ShowPopup( const char* nickname, const char* msg, const char
 
 	if (szURL != NULL) {
 		if (lstrcmpi(szURL, "http://mail.yahoo.com") == 0) {
-			ppd.lchIcon = LoadIcon( hinstance, MAKEINTRESOURCE( IDI_INBOX ));
+			ppd.lchIcon = LoadIconEx( "mail" );
 		} else {
-			ppd.lchIcon = LoadIcon( hinstance, MAKEINTRESOURCE( IDI_CALENDAR ));
+			ppd.lchIcon = LoadIconEx( "calendar" );
 		}
 		
 		ppd.PluginData =  (void *)strdup( szURL );
 	} else {
-		ppd.lchIcon = LoadIcon( hinstance, MAKEINTRESOURCE( IDI_MAIN ));
+		ppd.lchIcon = LoadIconEx( "yahoo" );
 	}
 	YAHOO_DebugLog("[MS_POPUP_ADDPOPUPEX] Generating a popup for %s", nickname);
 	YAHOO_CallService( MS_POPUP_ADDPOPUPEX, (WPARAM)&ppd, 0 );
@@ -262,7 +263,7 @@ char* YAHOO_GetContactName( HANDLE hContact )
 	return ( char* )YAHOO_CallService( MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) hContact, 0 );
 }
 
-extern PLUGININFO pluginInfo;
+extern PLUGININFOEX pluginInfo;
 
 /*
  * Thanks Robert for the following function. Copied from AIM plugin.
@@ -282,102 +283,6 @@ void YAHOO_utils_logversion()
 #ifdef YAHOO_CVSBUILD
     YAHOO_DebugLog("You are using a development version of Yahoo.  Please make sure you are using the latest version before posting bug reports.");
 #endif
-}
-
-//=======================================================================================
-// Utf8Decode - converts UTF8-encoded string to the UCS2/MBCS format
-//=======================================================================================
-
-void __stdcall Utf8Decode( char* str, int maxSize, wchar_t** ucs2 )
-{
-	wchar_t* tempBuf;
-
-	int len = strlen( str );
-	if ( len < 2 ) {	
-		if ( ucs2 != NULL ) {
-			*ucs2 = ( wchar_t* )malloc(( len+1 )*sizeof( wchar_t ));
-			MultiByteToWideChar( CP_ACP, 0, str, len, *ucs2, len );
-			( *ucs2 )[ len ] = 0;
-		}
-		return;
-	}
-
-	tempBuf = ( wchar_t* )alloca(( len+1 )*sizeof( wchar_t ));
-	{
-		wchar_t* d = tempBuf;
-		BYTE* s = ( BYTE* )str;
-
-		while( *s )
-		{
-			if (( *s & 0x80 ) == 0 ) {
-				*d++ = *s++;
-				continue;
-			}
-
-			if (( s[0] & 0xE0 ) == 0xE0 && ( s[1] & 0xC0 ) == 0x80 && ( s[2] & 0xC0 ) == 0x80 ) {
-				*d++ = (( WORD )( s[0] & 0x0F) << 12 ) + ( WORD )(( s[1] & 0x3F ) << 6 ) + ( WORD )( s[2] & 0x3F );
-				s += 3;
-				continue;
-			}
-
-			if (( s[0] & 0xE0 ) == 0xC0 && ( s[1] & 0xC0 ) == 0x80 ) {
-				*d++ = ( WORD )(( s[0] & 0x1F ) << 6 ) + ( WORD )( s[1] & 0x3F );
-				s += 2;
-				continue;
-			}
-
-			*d++ = *s++;
-		}
-
-		*d = 0;
-	}
-
-	if ( ucs2 != NULL ) {
-		int fullLen = ( len+1 )*sizeof( wchar_t );
-		*ucs2 = ( wchar_t* )malloc( fullLen );
-		memcpy( *ucs2, tempBuf, fullLen );
-	}
-
-	if ( maxSize == 0 )
-		maxSize = len;
-
-   WideCharToMultiByte( CP_ACP, 0, tempBuf, -1, str, maxSize, NULL, NULL );
-}
-
-//=======================================================================================
-// Utf8Encode - converts UCS2 string to the UTF8-encoded format
-//=======================================================================================
-
-char* __stdcall Utf8EncodeUcs2( const wchar_t* src )
-{
-	int len = wcslen( src );
-	char* result = ( char* )malloc( len*3 + 1 );
-	if ( result == NULL )
-		return NULL;
-
-	{	const wchar_t* s = src;
-		BYTE*	d = ( BYTE* )result;
-
-		while( *s ) {
-			int U = *s++;
-
-			if ( U < 0x80 ) {
-				*d++ = ( BYTE )U;
-			}
-			else if ( U < 0x800 ) {
-				*d++ = 0xC0 + (( U >> 6 ) & 0x3F );
-				*d++ = 0x80 + ( U & 0x003F );
-			}
-			else {
-				*d++ = 0xE0 + ( U >> 12 );
-				*d++ = 0x80 + (( U >> 6 ) & 0x3F );
-				*d++ = 0x80 + ( U & 0x3F );
-		}	}
-
-		*d = 0;
-	}
-
-	return result;
 }
 
 void SetButtonCheck(HWND hwndDlg, int CtrlID, BOOL bCheck)

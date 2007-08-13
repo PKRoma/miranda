@@ -21,14 +21,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../commonheaders.h"
 
 //globals
-struct MM_INTERFACE	mmi = {0};					// structure which keeps pointers to mirandas alloc, free and realloc
-HANDLE			g_hWindowList;
-HMENU			g_hMenu = NULL;
 
-FONTINFO		aFonts[OPTIONS_FONTCOUNT];
-HICON			hIcons[30];
-BOOL			IEviewInstalled = FALSE;
-HBRUSH			hListBkgBrush = NULL;
+HANDLE      g_hWindowList;
+HMENU       g_hMenu = NULL;
+
+FONTINFO    aFonts[OPTIONS_FONTCOUNT];
+HICON       hIcons[30];
+BOOL        IEviewInstalled = FALSE;
+HBRUSH      hListBkgBrush = NULL;
 
 struct GlobalLogSettings_t g_Settings;
 
@@ -42,15 +42,13 @@ int             g_chat_fully_initialized = 0;
 int Chat_Load(PLUGINLINK *link)
 {
 	BOOL bFlag = FALSE;
-
-    if(!DBGetContactSettingByte(NULL, SRMSGMOD_T, "enable_chat", 0))
+	
+   if(!DBGetContactSettingByte(NULL, SRMSGMOD_T, "enable_chat", 0))
         return 0;
     
     g_chat_integration_enabled = 1;
     
-	CallService(MS_SYSTEM_GET_MMI, 0, (LPARAM) &mmi);
 	g_hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENU));
-    //OleInitialize(NULL);
 	HookEvents();
 	CreateServiceFunctions();
 	CreateHookableEvents();
@@ -59,13 +57,12 @@ int Chat_Load(PLUGINLINK *link)
 	return 0;
 }
 
-
 int Chat_Unload(void)
 {
     if(!g_chat_integration_enabled)
         return 0;
     
-    DBWriteContactSettingWord(NULL, "Chat", "SplitterX", (WORD)g_Settings.iSplitterX);
+	DBWriteContactSettingWord(NULL, "Chat", "SplitterX", (WORD)g_Settings.iSplitterX);
 	DBWriteContactSettingWord(NULL, "Chat", "splitY", (WORD)g_Settings.iSplitterY);
 	DBWriteContactSettingDword(NULL, "Chat", "roomx", g_Settings.iX);
 	DBWriteContactSettingDword(NULL, "Chat", "roomy", g_Settings.iY);
@@ -74,11 +71,8 @@ int Chat_Unload(void)
 
 	CList_SetAllOffline(TRUE);
 
-//	RichUtil_Unload();
-	if(pszActiveWndID)
-		free(pszActiveWndID);
-	if(pszActiveWndModule)
-		free(pszActiveWndModule);
+	mir_free( pszActiveWndID );
+	mir_free( pszActiveWndModule );
 
 	DestroyMenu(g_hMenu);
 	DestroyServiceFunctions();
@@ -90,8 +84,8 @@ int Chat_Unload(void)
 
 void LoadLogIcons(void)
 {
-    ZeroMemory(hIcons, sizeof(HICON) * (ICON_STATUS5 - ICON_ACTION));
-    hIcons[ICON_ACTION] = LoadIconEx(IDI_ACTION, "log_action", 16, 16); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_ACTION),IMAGE_ICON,0,0,0);
+	ZeroMemory(hIcons, sizeof(HICON) * (ICON_STATUS5 - ICON_ACTION));
+	hIcons[ICON_ACTION] = LoadIconEx(IDI_ACTION, "log_action", 16, 16); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_ACTION),IMAGE_ICON,0,0,0);
 	hIcons[ICON_ADDSTATUS] = LoadIconEx(IDI_ADDSTATUS, "log_addstatus", 16, 16); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_ADDSTATUS),IMAGE_ICON,0,0,0);
 	hIcons[ICON_HIGHLIGHT] = LoadIconEx(IDI_HIGHLIGHT, "log_highlight", 16, 16); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_HIGHLIGHT),IMAGE_ICON,0,0,0);
 	hIcons[ICON_INFO] = LoadIconEx(IDI_INFO, "log_info", 16, 16); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_INFO),IMAGE_ICON,0,0,0);
@@ -114,6 +108,7 @@ void LoadLogIcons(void)
 
 	return;
 }
+
 void LoadIcons(void)
 {
 	int i;

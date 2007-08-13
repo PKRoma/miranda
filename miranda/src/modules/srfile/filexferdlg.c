@@ -86,17 +86,16 @@ static void __cdecl RunVirusScannerThread(struct virusscanthreadstartinfo *info)
 static void SetFilenameControls(HWND hwndDlg,PROTOFILETRANSFERSTATUS *fts)
 {
 	char str[MAX_PATH];
-	HWND hwndFilename;
+	HWND hwndFilename = GetDlgItem(hwndDlg,IDC_FILENAME);
+
+	GetWindowTextA(hwndFilename, str, SIZEOF(str));
+	if (lstrcmpA(str, fts->currentFile) == 0) return;
 
 	{	TCHAR msg[MAX_PATH];
-		GetDlgItemText(hwndDlg,IDC_FILENAME,msg,SIZEOF(msg));
-		if(msg[0]) return;
-
 		wsprintf(msg,TranslateT("Current file (%d of %d)"),fts->currentFileNumber+1,fts->totalFiles);
 		SetDlgItemText(hwndDlg,IDC_CURRENTFILEGROUP,msg);
 	}
 
-	hwndFilename=GetDlgItem(hwndDlg,IDC_FILENAME);
 	lstrcpynA(str,fts->currentFile,SIZEOF(str));
 	if(strchr(str,'\\')) {
 		RECT rcFilename;
@@ -142,13 +141,15 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 {
 	struct FileDlgData *dat=NULL;
 
-	dat=(struct FileDlgData*)GetWindowLong(GetParent(hwndDlg),GWL_USERDATA);
+	dat=(struct FileDlgData*)GetWindowLong(hwndDlg,GWL_USERDATA);
 	switch (msg)
 	{
 		case WM_INITDIALOG:
 			TranslateDialogDefault(hwndDlg);
+			dat = (struct FileDlgData*)lParam;
+			SetWindowLong(hwndDlg, GWL_USERDATA, (LPARAM)dat);
 			dat->hNotifyEvent=HookEventMessage(ME_PROTO_ACK,hwndDlg,HM_RECVEVENT);
-			dat->transferStatus.currentFileNumber=-1;
+			dat->transferStatus.currentFileNumber = -1;
 			if(dat->send) {
 				char szMsg[450];
 				GetDlgItemTextA(GetParent(hwndDlg),IDC_MSG,szMsg,SIZEOF(szMsg));
@@ -331,7 +332,7 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					return 0;
 				case FILERESUME_RESUMEALL:
 				case FILERESUME_OVERWRITEALL:
-					dat->resumeBehaviour=wParam;
+					dat->resumeBehaviour=pfr->action;
 					pfr->action&=~FILERESUMEF_ALL;
 					break;
 				case FILERESUME_RENAMEALL:
@@ -394,8 +395,7 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				{
 					PROTOFILETRANSFERSTATUS *fts=(PROTOFILETRANSFERSTATUS*)ack->lParam;
 
-					FreeProtoFileTransferStatus(&dat->transferStatus);
-					CopyProtoFileTransferStatus(&dat->transferStatus,fts);
+          UpdateProtoFileTransferStatus(&dat->transferStatus,fts);
 					SetFilenameControls(hwndDlg,fts);
 					if(_access(fts->currentFile,0)!=0) break;
 					SetDlgItemText(hwndDlg,IDC_STATUS,TranslateT("File already exists"));
@@ -420,22 +420,23 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					TCHAR str[256],szSizeDone[32],szSizeTotal[32],*contactName;
 					int units;
 
-					/* HACK: for 0.3.3, limit updates to around 1.1 ack per second */
-					if (fts->totalProgress!=fts->totalBytes && GetTickCount() - dat->dwTicks < 650) break; // the last update was less than a second ago!
-					dat->dwTicks=GetTickCount();
-
-/* FIXME: There is a major performance issue  with creating and freeing this list EVERY DAMN ACK! */
-					FreeProtoFileTransferStatus(&dat->transferStatus);
-					CopyProtoFileTransferStatus(&dat->transferStatus,fts);
 					if ( dat->fileVirusScanned==NULL )
 						dat->fileVirusScanned=(int*)mir_calloc(sizeof(int) * fts->totalFiles);
+
+          // This needs to be here - otherwise we get holes in the files array
 					if ( !dat->send ) {
 						if ( dat->files == NULL )
 							dat->files = ( char** )mir_calloc(( fts->totalFiles+1 )*sizeof( char* ));
 						if ( fts->currentFileNumber < fts->totalFiles && dat->files[ fts->currentFileNumber ] == NULL )
 							dat->files[ fts->currentFileNumber ] = mir_strdup( fts->currentFile );
 					}
-/* FIXME: There is a performance issue of creating this list here if it does not exist */
+
+					/* HACK: for 0.3.3, limit updates to around 1.1 ack per second */
+					if (fts->totalProgress!=fts->totalBytes && GetTickCount() - dat->dwTicks < 650) break; // the last update was less than a second ago!
+					dat->dwTicks=GetTickCount();
+
+          // Update local transfer status with data from protocol
+					UpdateProtoFileTransferStatus(&dat->transferStatus,fts);
 
 					SetDlgItemText(hwndDlg,IDC_STATUS,TranslateTS(fts->sending?_T("Sending..."):_T("Receiving...")));
 					SetFilenameControls(hwndDlg,fts);

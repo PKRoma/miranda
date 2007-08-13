@@ -671,6 +671,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
                 {
                   strcpy(szClientBuf, "icq5.1");
                 }
+                SetContactCapabilities(hContact, CAPF_STATUSMSGEXT);
               }
               else
               {

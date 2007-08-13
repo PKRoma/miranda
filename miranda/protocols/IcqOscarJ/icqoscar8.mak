@@ -1,29 +1,29 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on icqoscar8.dsp
 !IF "$(CFG)" == ""
-CFG=icqoscar8 - Win32 Debug
-!MESSAGE No configuration specified. Defaulting to icqoscar8 - Win32 Debug.
-!ENDIF 
+CFG=icqoscar8 - Win32 Release
+!MESSAGE No configuration specified. Defaulting to icqoscar8 - Win32 Release.
+!ENDIF
 
 !IF "$(CFG)" != "icqoscar8 - Win32 Release" && "$(CFG)" != "icqoscar8 - Win32 Debug"
 !MESSAGE Invalid configuration "$(CFG)" specified.
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
-!MESSAGE 
+!MESSAGE
 !MESSAGE NMAKE /f "icqoscar8.mak" CFG="icqoscar8 - Win32 Debug"
-!MESSAGE 
+!MESSAGE
 !MESSAGE Possible choices for configuration are:
-!MESSAGE 
+!MESSAGE
 !MESSAGE "icqoscar8 - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "icqoscar8 - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE 
+!MESSAGE
 !ERROR An invalid configuration is specified.
-!ENDIF 
+!ENDIF
 
 !IF "$(OS)" == "Windows_NT"
 NULL=
-!ELSE 
+!ELSE
 NULL=nul
-!ENDIF 
+!ENDIF
 
 !IF  "$(CFG)" == "icqoscar8 - Win32 Release"
 
@@ -85,8 +85,6 @@ CLEAN :
 	-@erase "$(INTDIR)\fam_15icqserver.sbr"
 	-@erase "$(INTDIR)\fam_17signon.obj"
 	-@erase "$(INTDIR)\fam_17signon.sbr"
-	-@erase "$(INTDIR)\forkthread.obj"
-	-@erase "$(INTDIR)\forkthread.sbr"
 	-@erase "$(INTDIR)\i18n.obj"
 	-@erase "$(INTDIR)\i18n.sbr"
 	-@erase "$(INTDIR)\iconlib.obj"
@@ -146,8 +144,6 @@ CLEAN :
 	-@erase "$(INTDIR)\loginpassword.sbr"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\main.sbr"
-	-@erase "$(INTDIR)\md5.obj"
-	-@erase "$(INTDIR)\md5.sbr"
 	-@erase "$(INTDIR)\oscar_filetransfer.obj"
 	-@erase "$(INTDIR)\oscar_filetransfer.sbr"
 	-@erase "$(INTDIR)\resources.res"
@@ -174,44 +170,44 @@ CLEAN :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
 CPP=cl.exe
-CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "icqoscar8_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\icqoscar8.pch" /Yu"icqoscar.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "icqoscar8_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\icqoscar8.pch" /Yu"icqoscar.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cpp{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cxx{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .c{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cpp{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cxx{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 MTL=midl.exe
-MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
+MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
 RSC=rc.exe
-RSC_PROJ=/l 0x417 /fo"$(INTDIR)\resources.res" /d "NDEBUG" 
+RSC_PROJ=/l 0x417 /fo"$(INTDIR)\resources.res" /d "NDEBUG"
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\icqoscar8.bsc" 
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\icqoscar8.bsc"
 BSC32_SBRS= \
 	"$(INTDIR)\chan_01login.sbr" \
 	"$(INTDIR)\chan_02data.sbr" \
@@ -254,7 +250,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\upload.sbr" \
 	"$(INTDIR)\capabilities.sbr" \
 	"$(INTDIR)\cookies.sbr" \
-	"$(INTDIR)\forkthread.sbr" \
 	"$(INTDIR)\i18n.sbr" \
 	"$(INTDIR)\iconlib.sbr" \
 	"$(INTDIR)\icq_avatar.sbr" \
@@ -269,7 +264,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\icq_xstatus.sbr" \
 	"$(INTDIR)\icq_xtraz.sbr" \
 	"$(INTDIR)\icqoscar.sbr" \
-	"$(INTDIR)\md5.sbr" \
 	"$(INTDIR)\oscar_filetransfer.sbr" \
 	"$(INTDIR)\stdpackets.sbr" \
 	"$(INTDIR)\tlv.sbr" \
@@ -281,7 +275,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comctl32.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\ICQ.pdb" /map:"$(INTDIR)\ICQ.map" /debug /machine:I386 /out:"../../bin/release/plugins/ICQ.dll" /implib:"$(OUTDIR)\ICQ.lib" /ALIGN:4096 /ignore:4108 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comctl32.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\ICQ.pdb" /map:"$(INTDIR)\ICQ.map" /debug /machine:I386 /out:"../../bin/release/plugins/ICQ.dll" /implib:"$(OUTDIR)\ICQ.lib" /ALIGN:4096 /ignore:4108
 LINK32_OBJS= \
 	"$(INTDIR)\chan_01login.obj" \
 	"$(INTDIR)\chan_02data.obj" \
@@ -324,7 +318,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\upload.obj" \
 	"$(INTDIR)\capabilities.obj" \
 	"$(INTDIR)\cookies.obj" \
-	"$(INTDIR)\forkthread.obj" \
 	"$(INTDIR)\i18n.obj" \
 	"$(INTDIR)\iconlib.obj" \
 	"$(INTDIR)\icq_avatar.obj" \
@@ -339,7 +332,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\icq_xstatus.obj" \
 	"$(INTDIR)\icq_xtraz.obj" \
 	"$(INTDIR)\icqoscar.obj" \
-	"$(INTDIR)\md5.obj" \
 	"$(INTDIR)\oscar_filetransfer.obj" \
 	"$(INTDIR)\stdpackets.obj" \
 	"$(INTDIR)\tlv.obj" \
@@ -411,8 +403,6 @@ CLEAN :
 	-@erase "$(INTDIR)\fam_15icqserver.sbr"
 	-@erase "$(INTDIR)\fam_17signon.obj"
 	-@erase "$(INTDIR)\fam_17signon.sbr"
-	-@erase "$(INTDIR)\forkthread.obj"
-	-@erase "$(INTDIR)\forkthread.sbr"
 	-@erase "$(INTDIR)\i18n.obj"
 	-@erase "$(INTDIR)\i18n.sbr"
 	-@erase "$(INTDIR)\iconlib.obj"
@@ -472,8 +462,6 @@ CLEAN :
 	-@erase "$(INTDIR)\loginpassword.sbr"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\main.sbr"
-	-@erase "$(INTDIR)\md5.obj"
-	-@erase "$(INTDIR)\md5.sbr"
 	-@erase "$(INTDIR)\oscar_filetransfer.obj"
 	-@erase "$(INTDIR)\oscar_filetransfer.sbr"
 	-@erase "$(INTDIR)\resources.res"
@@ -501,44 +489,44 @@ CLEAN :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
 CPP=cl.exe
-CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "icqoscar8_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\icqoscar8.pch" /Yu"icqoscar.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "icqoscar8_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\icqoscar8.pch" /Yu"icqoscar.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cpp{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cxx{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .c{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cpp{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cxx{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 MTL=midl.exe
-MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
+MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
 RSC=rc.exe
-RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resources.res" /d "_DEBUG" 
+RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resources.res" /d "_DEBUG"
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\icqoscar8.bsc" 
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\icqoscar8.bsc"
 BSC32_SBRS= \
 	"$(INTDIR)\chan_01login.sbr" \
 	"$(INTDIR)\chan_02data.sbr" \
@@ -581,7 +569,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\upload.sbr" \
 	"$(INTDIR)\capabilities.sbr" \
 	"$(INTDIR)\cookies.sbr" \
-	"$(INTDIR)\forkthread.sbr" \
 	"$(INTDIR)\i18n.sbr" \
 	"$(INTDIR)\iconlib.sbr" \
 	"$(INTDIR)\icq_avatar.sbr" \
@@ -596,7 +583,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\icq_xstatus.sbr" \
 	"$(INTDIR)\icq_xtraz.sbr" \
 	"$(INTDIR)\icqoscar.sbr" \
-	"$(INTDIR)\md5.sbr" \
 	"$(INTDIR)\oscar_filetransfer.sbr" \
 	"$(INTDIR)\stdpackets.sbr" \
 	"$(INTDIR)\tlv.sbr" \
@@ -608,7 +594,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comctl32.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /base:"0x25000000" /dll /incremental:yes /pdb:"$(OUTDIR)\ICQ.pdb" /map:"$(INTDIR)\ICQ.map" /debug /debugtype:both /machine:I386 /out:"../../bin/debug/plugins/ICQ.dll" /implib:"$(OUTDIR)\ICQ.lib" /pdbtype:sept 
+LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comctl32.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /base:"0x25000000" /dll /incremental:yes /pdb:"$(OUTDIR)\ICQ.pdb" /map:"$(INTDIR)\ICQ.map" /debug /debugtype:both /machine:I386 /out:"../../bin/debug/plugins/ICQ.dll" /implib:"$(OUTDIR)\ICQ.lib" /pdbtype:sept
 LINK32_OBJS= \
 	"$(INTDIR)\chan_01login.obj" \
 	"$(INTDIR)\chan_02data.obj" \
@@ -651,7 +637,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\upload.obj" \
 	"$(INTDIR)\capabilities.obj" \
 	"$(INTDIR)\cookies.obj" \
-	"$(INTDIR)\forkthread.obj" \
 	"$(INTDIR)\i18n.obj" \
 	"$(INTDIR)\iconlib.obj" \
 	"$(INTDIR)\icq_avatar.obj" \
@@ -666,7 +651,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\icq_xstatus.obj" \
 	"$(INTDIR)\icq_xtraz.obj" \
 	"$(INTDIR)\icqoscar.obj" \
-	"$(INTDIR)\md5.obj" \
 	"$(INTDIR)\oscar_filetransfer.obj" \
 	"$(INTDIR)\stdpackets.obj" \
 	"$(INTDIR)\tlv.obj" \
@@ -678,16 +662,16 @@ LINK32_OBJS= \
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
 
-!ENDIF 
+!ENDIF
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
 !IF EXISTS("icqoscar8.dep")
 !INCLUDE "icqoscar8.dep"
-!ELSE 
+!ELSE
 !MESSAGE Warning: cannot find "icqoscar8.dep"
-!ENDIF 
-!ENDIF 
+!ENDIF
+!ENDIF
 
 
 !IF "$(CFG)" == "icqoscar8 - Win32 Release" || "$(CFG)" == "icqoscar8 - Win32 Debug"
@@ -912,11 +896,6 @@ SOURCE=.\cookies.c
 "$(INTDIR)\cookies.obj"	"$(INTDIR)\cookies.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\forkthread.c
-
-"$(INTDIR)\forkthread.obj"	"$(INTDIR)\forkthread.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
-
-
 SOURCE=.\i18n.c
 
 "$(INTDIR)\i18n.obj"	"$(INTDIR)\i18n.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
@@ -986,7 +965,7 @@ SOURCE=.\icqoscar.c
 
 !IF  "$(CFG)" == "icqoscar8 - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "icqoscar8_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\icqoscar8.pch" /Yc"icqoscar.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "icqoscar8_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\icqoscar8.pch" /Yc"icqoscar.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 
 "$(INTDIR)\icqoscar.obj"	"$(INTDIR)\icqoscar.sbr"	"$(INTDIR)\icqoscar8.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -996,7 +975,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "icqoscar8 - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "icqoscar8_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\icqoscar8.pch" /Yc"icqoscar.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "icqoscar8_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\icqoscar8.pch" /Yc"icqoscar.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
 
 "$(INTDIR)\icqoscar.obj"	"$(INTDIR)\icqoscar.sbr"	"$(INTDIR)\icqoscar8.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -1004,12 +983,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 <<
 
 
-!ENDIF 
-
-SOURCE=.\md5.c
-
-"$(INTDIR)\md5.obj"	"$(INTDIR)\md5.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
-
+!ENDIF
 
 SOURCE=.\oscar_filetransfer.c
 
@@ -1032,5 +1006,4 @@ SOURCE=.\utilities.c
 
 
 
-!ENDIF 
-
+!ENDIF

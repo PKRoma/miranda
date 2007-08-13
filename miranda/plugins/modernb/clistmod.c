@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2006 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2007 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -27,25 +27,21 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "clist.h"
 #include "commonprototypes.h"
 
+pfnMyMonitorFromPoint  MyMonitorFromPoint = NULL;
+pfnMyMonitorFromWindow MyMonitorFromWindow = NULL;
+pfnMyGetMonitorInfo    MyGetMonitorInfo = NULL;
 
 static HANDLE hookSystemShutdown_CListMod=NULL;
 HANDLE  hookOptInitialise_CList=NULL,
         hookOptInitialise_Skin=NULL,
-        hookOptInitialise_SkinEditor=NULL,
         hookContactAdded_CListSettings=NULL;
 
-extern void Docking_GetMonitorRectFromWindow(HWND hWnd,RECT *rc);
-extern HICON GetMainStatusOverlay(int STATUS);
+
 int CListMod_HideWindow(HWND hwndContactList, int mode);
-extern int CLUI_SmoothAlphaTransition(HWND hwnd, BYTE GoalAlpha, BOOL wParam);
-extern void InitTray(void);
 
 void GroupMenus_Init(void);
 int AddMainMenuItem(WPARAM wParam,LPARAM lParam);
 int AddContactMenuItem(WPARAM wParam,LPARAM lParam);
-int InitCustomMenus(void);
-void UninitCustomMenus(void);
-int InitCListEvents(void);
 void UninitCListEvents(void);
 int ContactSettingChanged(WPARAM wParam,LPARAM lParam);
 int ContactAdded(WPARAM wParam,LPARAM lParam);
@@ -58,44 +54,35 @@ int TrayIconPauseAutoHide(WPARAM wParam,LPARAM lParam);
 int ContactChangeGroup(WPARAM wParam,LPARAM lParam);
 void InitTrayMenus(void);
 
-extern int CLUIFrames_ActivateSubContainers(BOOL active);
-extern int g_nBehindEdgeSettings;
 
-HANDLE hStatusModeChangeEvent,hContactIconChangedEvent;
+HANDLE hContactIconChangedEvent;
 HIMAGELIST hCListImages=NULL;
-extern int currentDesiredStatusMode;
+
 BOOL (WINAPI *MySetProcessWorkingSetSize)(HANDLE,SIZE_T,SIZE_T);
-extern BYTE nameOrder[];
-extern SortedList lContactsCache;
-extern HBITMAP SkinEngine_GetCurrentWindowImage();
 
 
-extern int g_nBehindEdgeSettings;
 static HANDLE hSettingChanged;
 
-
-extern int SkinEditorOptInit(WPARAM wParam,LPARAM lParam);
-
 //returns normal icon or combined with status overlay. Needs to be destroyed.
-HICON GetIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
+HICON cliGetIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
 {
 	HICON hIcon=NULL;
 	HICON hXIcon=NULL;
 	// check if options is turned on
-	BYTE trayOption=DBGetContactSettingByte(NULL,"CLUI","XStatusTray",15);
+	BYTE trayOption=DBGetContactSettingByte(NULL,"CLUI","XStatusTray",SETTING_TRAYOPTION_DEFAULT);
 	if (trayOption&3 && szProto!=NULL)
 	{
 		// check service exists
 		char str[MAXMODULELABELLENGTH];
 		strcpy(str,szProto);
 		strcat(str,"/GetXStatusIcon");
-		if (ServiceExists(str))	
+		if (ServiceExists(str))
 		{
 			// check status is online
 			if (status>ID_STATUS_OFFLINE)
 			{
 				// get xicon
-				hXIcon=(HICON)CallService(str,0,0);	
+				hXIcon=(HICON)CallService(str,0,0);
 				if (hXIcon)
 				{
 					// check overlay mode
@@ -103,7 +90,7 @@ HICON GetIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
 					{
 						// get overlay
 						HICON MainOverlay=(HICON)GetMainStatusOverlay(status);
-						hIcon=SkinEngine_CreateJoinedIcon(hXIcon,MainOverlay,(trayOption&4)?192:0);
+						hIcon=ske_CreateJoinedIcon(hXIcon,MainOverlay,(trayOption&4)?192:0);
 						DestroyIcon_protect(hXIcon);
                         DestroyIcon_protect(MainOverlay);
 					}
@@ -111,32 +98,32 @@ HICON GetIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
 					{
 						// paint it
 						hIcon=hXIcon;
-					}								
+					}
 				}
 			}
 		}
 	}
 	if (!hIcon)
 	{
-		hIcon=SkinEngine_ImageList_GetIcon(himlCListClc,ExtIconFromStatusMode(hContact,szProto,status),ILD_NORMAL);
+		hIcon=ske_ImageList_GetIcon(himlCListClc,ExtIconFromStatusMode(hContact,szProto,status),ILD_NORMAL);
 	}
 	// if not ready take normal icon
 	return hIcon;
 }
 ////////// By FYR/////////////
 int ExtIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
-{    
-	/*pdisplayNameCacheEntry cacheEntry;	
+{
+	/*pdisplayNameCacheEntry cacheEntry;
 	if ((DBGetContactSettingByte(NULL,"CLC","Meta",0)!=1) && szProto!=NULL)
     {
-		if (mir_strcmp(szProto,"MetaContacts")==0)      
+		if (mir_strcmp(szProto,"MetaContacts")==0)
         {
 			hContact=(HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT,(UINT)hContact,0);
-			if (hContact!=0)            
+			if (hContact!=0)
             {
 				szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(UINT)hContact,0);
 				status=DBGetContactSettingWord(hContact,szProto,"Status",ID_STATUS_OFFLINE);
-			}	
+			}
         }
     }
     cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(hContact);
@@ -154,7 +141,7 @@ int cli_IconFromStatusMode(const char *szProto,int nStatus, HANDLE hContact)
        char AdvancedService[255]={0};
        int  nActStatus=nStatus;
        HANDLE hActContact=hContact;
-       if (!DBGetContactSettingByte(NULL,"CLC","Meta",0) && !mir_strcmp(szActProto,"MetaContacts"))
+       if (!DBGetContactSettingByte(NULL,"CLC","Meta",SETTING_USEMETAICON_DEFAULT) && !mir_strcmp(szActProto,"MetaContacts"))
        {
             // substitute params by mostonline contact datas
            HANDLE hMostOnlineContact=(HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT,(UINT)hActContact,0);
@@ -169,14 +156,14 @@ int cli_IconFromStatusMode(const char *szProto,int nStatus, HANDLE hContact)
                     hActContact=hMostOnlineContact;
                 }
            }
-       }         
+       }
        _snprintf(AdvancedService,sizeof(AdvancedService),"%s%s",szActProto,"/GetAdvancedStatusIcon");
-       
-       if (ServiceExists(AdvancedService)) 
-          result=CallService(AdvancedService,(WPARAM)hActContact, (LPARAM)0); 
 
-       if (result==-1 || !(result&0xFFFF))
-       {  
+       if (ServiceExists(AdvancedService))
+          result=CallService(AdvancedService,(WPARAM)hActContact, (LPARAM)0);
+
+       if (result==-1 || !(LOWORD(result)))
+       {
            //Get normal Icon
            int  basicIcon=saveIconFromStatusMode(szActProto,nActStatus,NULL);
            if (result!=-1 && basicIcon!=1) result|=basicIcon;
@@ -204,13 +191,12 @@ int GetContactIcon(WPARAM wParam,LPARAM lParam)
 {
 	char *szProto;
 	int status;
-	pdisplayNameCacheEntry cacheEntry;
-    int res;
-
-    cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry((HANDLE)wParam);
-	szProto=cacheEntry->szProto;
-	status=cacheEntry->status;
-
+	int res;
+	szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
+	if (szProto == NULL)
+		status = ID_STATUS_OFFLINE;
+	else
+		status = DBGetContactSettingWord((HANDLE) wParam, szProto, "Status", ID_STATUS_OFFLINE);
     res=ExtIconFromStatusMode((HANDLE)wParam,szProto,szProto==NULL?ID_STATUS_OFFLINE:status); //by FYR
     if (lParam==0 && res!=-1) res&=0xFFFF;
     return res;
@@ -219,31 +205,23 @@ void UninitTrayMenu();
 void UnLoadContactListModule()  //unhooks noncritical events
 {
     UninitTrayMenu();
+    UninitCustomMenus();
    // UnloadMainMenu();
    // UnloadStatusMenu();
     UnhookEvent(hookOptInitialise_CList);
     UnhookEvent(hookOptInitialise_Skin);
-    UnhookEvent(hookOptInitialise_SkinEditor);
     UnhookEvent(hSettingChanged);
     UnhookEvent(hookContactAdded_CListSettings);
 }
 int CListMod_ContactListShutdownProc(WPARAM wParam,LPARAM lParam)
 {
-    UnhookEvent(hookSystemShutdown_CListMod);	
-	UninitCustomMenus();
+    UnhookEvent(hookSystemShutdown_CListMod);
     FreeDisplayNameCache();
     if(g_hMainThread) CloseHandle(g_hMainThread);
     g_hMainThread=NULL;
 	return 0;
 }
-extern int ToggleHideOffline(WPARAM wParam,LPARAM lParam);
-extern int MenuProcessCommand(WPARAM wParam,LPARAM lParam);
-static int SetStatusMode(WPARAM wParam, LPARAM lParam)
-{
-	MenuProcessCommand(MAKEWPARAM(LOWORD(wParam), MPCF_MAINMENU), 0);
-	return 0;
-}
-extern PLUGININFO pluginInfo;
+
 int CLUIGetCapsService(WPARAM wParam,LPARAM lParam)
 {
 	if (lParam)
@@ -254,7 +232,7 @@ int CLUIGetCapsService(WPARAM wParam,LPARAM lParam)
 			return 0;
 		case CLUIF2_PLUGININFO:
 			return (int)&pluginInfo;
-		case CLUIF2_CLISTTYPE:	
+		case CLUIF2_CLISTTYPE:
 	#ifdef UNICODE
 				return 0x0107;
 	#else
@@ -272,9 +250,16 @@ int CLUIGetCapsService(WPARAM wParam,LPARAM lParam)
 		switch (wParam)
 		{
 		case CLUICAPS_FLAGS1:
-			return CLUIF_HIDEEMPTYGROUPS|CLUIF_DISABLEGROUPS|CLUIF_HASONTOPOPTION|CLUIF_HASAUTOHIDEOPTION;	
+			return CLUIF_HIDEEMPTYGROUPS|CLUIF_DISABLEGROUPS|CLUIF_HASONTOPOPTION|CLUIF_HASAUTOHIDEOPTION;
 		}
 	}
+	return 0;
+}
+int PreLoadContactListModule()
+{
+	//initialize firstly hooks
+	//clist interface is empty yet so handles should check
+	hSettingChanged = HookEvent(ME_DB_CONTACT_SETTINGCHANGED,ContactSettingChanged);
 	return 0;
 }
 
@@ -286,31 +271,34 @@ int LoadContactListModule(void)
 	hookSystemShutdown_CListMod  = HookEvent(ME_SYSTEM_SHUTDOWN,CListMod_ContactListShutdownProc);
 	hookOptInitialise_CList      = HookEvent(ME_OPT_INITIALISE,CListOptInit);
 	hookOptInitialise_Skin       = HookEvent(ME_OPT_INITIALISE,SkinOptInit);
-	hookOptInitialise_SkinEditor = HookEvent(ME_OPT_INITIALISE,SkinEditorOptInit);
-
-	hSettingChanged              = HookEvent(ME_DB_CONTACT_SETTINGCHANGED,ContactSettingChanged);
+	
 	hookContactAdded_CListSettings = HookEvent(ME_DB_CONTACT_ADDED,ContactAdded);
-	hStatusModeChangeEvent       = CreateHookableEvent(ME_CLIST_STATUSMODECHANGE);
 	hContactIconChangedEvent     = CreateHookableEvent(ME_CLIST_CONTACTICONCHANGED);
 	CreateServiceFunction(MS_CLIST_TRAYICONPROCESSMESSAGE,cli_TrayIconProcessMessage);
 	CreateServiceFunction(MS_CLIST_PAUSEAUTOHIDE,TrayIconPauseAutoHide);
 	CreateServiceFunction(MS_CLIST_CONTACTCHANGEGROUP,ContactChangeGroup);
 	CreateServiceFunction(MS_CLIST_TOGGLEHIDEOFFLINE,ToggleHideOffline);
 	CreateServiceFunction(MS_CLIST_GETCONTACTICON,GetContactIcon);
-	CreateServiceFunction(MS_CLIST_SETSTATUSMODE, SetStatusMode);
 
 	MySetProcessWorkingSetSize=(BOOL (WINAPI*)(HANDLE,SIZE_T,SIZE_T))GetProcAddress(GetModuleHandle(TEXT("kernel32")),"SetProcessWorkingSetSize");
 	hCListImages = ImageList_Create(16, 16, ILC_MASK|ILC_COLOR32, 32, 0);
-
-	//InitCListEvents();
 	InitCustomMenus();
 	InitTray();
-
+	{
+		HINSTANCE hUser = GetModuleHandleA("USER32");
+		MyMonitorFromPoint  = ( pfnMyMonitorFromPoint )GetProcAddress( hUser,"MonitorFromPoint" );
+		MyMonitorFromWindow = ( pfnMyMonitorFromWindow )GetProcAddress( hUser, "MonitorFromWindow" );
+		#if defined( _UNICODE )
+			MyGetMonitorInfo = ( pfnMyGetMonitorInfo )GetProcAddress( hUser, "GetMonitorInfoW");
+		#else
+			MyGetMonitorInfo = ( pfnMyGetMonitorInfo )GetProcAddress( hUser, "GetMonitorInfoA");
+		#endif
+	}
 	return 0;
 }
 
 /*
-Begin of Hrk's code for bug 
+Begin of Hrk's code for bug
 */
 #define GWVS_HIDDEN 1
 #define GWVS_VISIBLE 2
@@ -325,15 +313,15 @@ __inline DWORD GetDIBPixelColor(int X, int Y, int Width, int Height, int ByteWid
 		res=*((DWORD*)(ptr+ByteWidth*(Height-Y-1)+X*4));
 	return res;
 }
-extern BYTE g_bCurrentAlpha;
+
 int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY) {
 	RECT rc = { 0 };
 	POINT pt = { 0 };
-	register int    i = 0, 
-                    j = 0, 
-                    width = 0, 
-                    height = 0, 
-                    iCountedDots = 0, 
+	register int    i = 0,
+                    j = 0,
+                    width = 0,
+                    height = 0,
+                    iCountedDots = 0,
                     iNotCoveredDots = 0;
 	HWND hAux = 0;
 
@@ -357,8 +345,8 @@ int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY) {
 		int dx,dy;
 		BYTE *ptr=NULL;
 		HRGN rgn=NULL;
-		WindowImage=g_bLayered?SkinEngine_GetCurrentWindowImage():0;
-		if (WindowImage&&g_bLayered)
+		WindowImage=g_CluiData.fLayered?ske_GetCurrentWindowImage():0;
+		if (WindowImage&&g_CluiData.fLayered)
 		{
 			GetObject(WindowImage,sizeof(BITMAP),&bmp);
 			ptr=bmp.bmBits;
@@ -374,7 +362,7 @@ int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY) {
 			GetWindowRect(hWnd,&rc);
 			GetWindowRgn(hWnd,rgn);
 			OffsetRgn(rgn,rc.left,rc.top);
-			GetRgnBox(rgn,&rc);	
+			GetRgnBox(rgn,&rc);
 			i=i;
 			//maxx=rc.right;
 			//maxy=rc.bottom;
@@ -402,12 +390,12 @@ int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY) {
 			for (j = rc.left; j < rc.right; j+=hstep) {
 				BOOL po=FALSE;
 				pt.x = j;
-				if (rgn) 
+				if (rgn)
 					po=PtInRegion(rgn,j,i);
 				else
 				{
 					DWORD a=(GetDIBPixelColor(j+dx,i+dy,maxx,maxy,wx,ptr)&0xFF000000)>>24;
-					a=((a*g_bCurrentAlpha)>>8);
+					a=((a*g_CluiData.bCurrentAlpha)>>8);
 					po=(a>16);
 				}
 				if (po||(!rgn&&ptr==0))
@@ -417,7 +405,7 @@ int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY) {
 					hAux = WindowFromPoint(pt);
 					do
 					{
-						if (hAux==hWnd) 
+						if (hAux==hWnd)
 						{
 							hWndFound=TRUE;
 							break;
@@ -429,7 +417,7 @@ int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY) {
 						{
 							TCHAR buf[255];
 							GetClassName(hAux,buf,SIZEOF(buf));
-							if (!lstrcmp(buf,_T(CLUIFrameSubContainerClassName)))
+							if (!lstrcmp(buf,CLUIFrameSubContainerClassName))
 							{
 								hWndFound=TRUE;
 								break;
@@ -438,17 +426,17 @@ int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY) {
 					}while(hAux!= NULL &&hAuxOld!=hAux);
 
 					if (hWndFound) //There's  window!
-						iNotCoveredDots++; //Let's count the not covered dots.			
+						iNotCoveredDots++; //Let's count the not covered dots.
 					//{
 					//		  //bPartiallyCovered = TRUE;
 					//           //iCountedDots++;
 					//	    //break;
 					//}
-					//else             
+					//else
 					iCountedDots++; //Let's keep track of how many dots we checked.
 				}
 			}
-		}    
+		}
 		if (rgn) DeleteObject(rgn);
 		if ( iCountedDots - iNotCoveredDots<2) //Every dot was not covered: the window is visible.
 			return GWVS_VISIBLE;
@@ -459,16 +447,16 @@ int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY) {
 	}
 }
 BYTE g_bCalledFromShowHide=0;
-int cliShowHide(WPARAM wParam,LPARAM lParam) 
+int cliShowHide(WPARAM wParam,LPARAM lParam)
 {
 	BOOL bShow = FALSE;
 
 	int iVisibleState = GetWindowVisibleState(pcli->hwndContactList,0,0);
 	int method;
-	method=DBGetContactSettingByte(NULL, "ModernData", "HideBehind", 0);; //(0-none, 1-leftedge, 2-rightedge);
+	method=DBGetContactSettingByte(NULL, "ModernData", "HideBehind", SETTING_HIDEBEHIND_DEFAULT);; //(0-none, 1-leftedge, 2-rightedge);
 	if (method)
 	{
-		if (DBGetContactSettingByte(NULL, "ModernData", "BehindEdge", 0)==0 && lParam!=1)
+		if (DBGetContactSettingByte(NULL, "ModernData", "BehindEdge", SETTING_BEHINDEDGE_DEFAULT)==0 && lParam!=1)
 		{
 			//hide
 			CLUI_HideBehindEdge();
@@ -481,21 +469,21 @@ int cliShowHide(WPARAM wParam,LPARAM lParam)
 		iVisibleState=GWVS_HIDDEN;
 	}
 
-	if (!method && DBGetContactSettingByte(NULL, "ModernData", "BehindEdge", 0)>0)
+	if (!method && DBGetContactSettingByte(NULL, "ModernData", "BehindEdge", SETTING_BEHINDEDGE_DEFAULT)>0)
 	{
-		g_nBehindEdgeSettings=DBGetContactSettingByte(NULL, "ModernData", "BehindEdge", 0);
+		g_CluiData.bBehindEdgeSettings=DBGetContactSettingByte(NULL, "ModernData", "BehindEdge", SETTING_BEHINDEDGE_DEFAULT);
 		CLUI_ShowFromBehindEdge();
-		g_nBehindEdgeSettings=0;
-		g_nBehindEdgeState=0;
+		g_CluiData.bBehindEdgeSettings=0;
+		g_CluiData.nBehindEdgeState=0;
 		DBDeleteContactSetting(NULL, "ModernData", "BehindEdge");
 	}
 
 	//bShow is FALSE when we enter the switch if no hide behind edge.
 	switch (iVisibleState) {
 		case GWVS_PARTIALLY_COVERED:
-			//If we don't want to bring it to top, we can use a simple break. This goes against readability ;-) but the comment explains it.			
+			//If we don't want to bring it to top, we can use a simple break. This goes against readability ;-) but the comment explains it.
 		case GWVS_COVERED: //Fall through (and we're already falling)
-			if (DBGetContactSettingByte(NULL,"CList","OnDesktop",0) || !DBGetContactSettingByte(NULL, "CList", "BringToFront", SETTING_BRINGTOFRONT_DEFAULT)) break;            
+			if (DBGetContactSettingByte(NULL,"CList","OnDesktop",SETTING_ONDESKTOP_DEFAULT) || !DBGetContactSettingByte(NULL, "CList", "BringToFront", SETTING_BRINGTOFRONT_DEFAULT)) break;
 		case GWVS_HIDDEN:
 			bShow = TRUE; break;
 		case GWVS_VISIBLE: //This is not needed, but goes for readability.
@@ -511,26 +499,23 @@ int cliShowHide(WPARAM wParam,LPARAM lParam)
 		SystemParametersInfo(SPI_GETWORKAREA,0,&rcScreen,FALSE);
 		GetWindowRect(pcli->hwndContactList,&rcWindow);
 
-		CLUIFrames_ActivateSubContainers(TRUE);
+		sync1(CLUIFrames_ActivateSubContainers, TRUE);
 		CLUI_ShowWindowMod(pcli->hwndContactList, SW_RESTORE);
 
-		if (!DBGetContactSettingByte(NULL,"CList","OnDesktop",0))
+		if (!DBGetContactSettingByte(NULL,"CList","OnDesktop",SETTING_ONDESKTOP_DEFAULT))
 		{
-			CLUIFrames_OnShowHide(pcli->hwndContactList,1);
-			SetWindowPos(pcli->hwndContactList, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE |SWP_NOACTIVATE);           
+			sync2(CLUIFrames_OnShowHide, pcli->hwndContactList,1);	//TO BE PROXIED
+			SetWindowPos(pcli->hwndContactList, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE |SWP_NOACTIVATE);
 			g_bCalledFromShowHide=1;
-			//BringWindowToTop(pcli->hwndContactList);			     
 			if (!DBGetContactSettingByte(NULL,"CList","OnTop",SETTING_ONTOP_DEFAULT))
-				//&& ((DBGetContactSettingByte(NULL, "CList", "BringToFront", SETTING_BRINGTOFRONT_DEFAULT) /*&& iVisibleState>=2*/)))
 				SetWindowPos(pcli->hwndContactList, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
-			//SetForegroundWindow(pcli->hwndContactList);	     
 			g_bCalledFromShowHide=0;
 		}
 		else
 		{
 			SetWindowPos(pcli->hwndContactList, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
-			CLUIFrames_OnShowHide(pcli->hwndContactList,1);
-			SetForegroundWindow(pcli->hwndContactList);	
+			sync2(CLUIFrames_OnShowHide, pcli->hwndContactList,1);
+			SetForegroundWindow(pcli->hwndContactList);
 		}
 		DBWriteContactSettingByte(NULL,"CList","State",SETTING_STATE_NORMAL);
 		//this forces the window onto the visible screen
@@ -558,17 +543,16 @@ int cliShowHide(WPARAM wParam,LPARAM lParam)
 			else if(rcWindow.right<=rcScreen.left) OffsetRect(&rcWindow,rcScreen.left-rcWindow.left,0);
 			SetWindowPos(pcli->hwndContactList,0,rcWindow.left,rcWindow.top,rcWindow.right-rcWindow.left,rcWindow.bottom-rcWindow.top,SWP_NOZORDER);
 		}
-		//if (DBGetContactSettingByte(NULL,"CList","OnDesktop",0))
+		//if (DBGetContactSettingByte(NULL,"CList","OnDesktop",SETTING_ONDESKTOP_DEFAULT))
 		//    SetWindowPos(pcli->hwndContactList, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
 	}
 	else { //It needs to be hidden
 
 		CListMod_HideWindow(pcli->hwndContactList, SW_HIDE);
-		//CLUIFrames_OnShowHide(pcli->hwndContactList,0);
 
 		DBWriteContactSettingByte(NULL,"CList","State",SETTING_STATE_HIDDEN);
-		if(MySetProcessWorkingSetSize!=NULL && DBGetContactSettingByte(NULL,"CList","DisableWorkingSet",1)) MySetProcessWorkingSetSize(GetCurrentProcess(),-1,-1);
+		if(MySetProcessWorkingSetSize!=NULL && DBGetContactSettingByte(NULL,"CList","DisableWorkingSet",SETTING_DISABLEWORKINGSET_DEFAULT)) MySetProcessWorkingSetSize(GetCurrentProcess(),-1,-1);
 	}
 	return 0;
 }

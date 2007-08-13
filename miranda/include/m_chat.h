@@ -1,7 +1,7 @@
 /*
 Chat module plugin for Miranda IM
 
-Copyright (C) 2003 Jörgen Persson
+Copyright (C) 2003 JÃ¶rgen Persson
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -46,8 +46,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 	NOTE. Chat keeps its own copies of strings passed.
 
-  
-	* * Example of implementing this rule * *: 
+
+	* * Example of implementing this rule * *:
 	* * This is a code snippet that is common in protocols * *:
 
 
@@ -135,10 +135,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define GC_ACKMSG          0x0020		//the protocol must acknowlege messages sent
 #define GC_TYPNOTIF        0x0040		//NOT SUPPORTED YET! Enable typing notifications.
 #define GC_CHANMGR         0x0080		//enable the 'channel settings' button
+#define GC_SINGLEFORMAT 0x0100		//the protocol supports only 1 formatting per message
 
 #define GC_UNICODE        0x01000		//NOT SUPPORTED YET! Enable unicode (if chat supports it),
 													//Pass UNICODE instead of ASCII. Note that
-													//registration will fail if the unicode version	of chat is not installed									
+													//registration will fail if the unicode version	of chat is not installed
 #if defined( _UNICODE )
 	#define GC_TCHAR   GC_UNICODE
 #else
@@ -213,7 +214,7 @@ typedef struct {
 		const char* pszStatusbarText;	//Optional text to set in the statusbar of the chat room window, or NULL.
 		const TCHAR* ptszStatusbarText;
 	};
-	DWORD    dwFlags;	
+	DWORD    dwFlags;
 	DWORD		dwItemData;			//Set user defined data for this session. Retrieve it by using the GC_EVENT_GETITEMDATA event
  } GCSESSION;
 #define MS_GC_NEWSESSION  "GChat/NewChat"
@@ -416,7 +417,7 @@ typedef struct {
 //	pszText		- The text
 #define GC_EVENT_SENDMESSAGE	0x1008
 
-//	GC_EVENT_SETSTATUSEX - not shown in the log (Space or tab delimited list of pszUID's to indicate as away). 
+//	GC_EVENT_SETSTATUSEX - not shown in the log (Space or tab delimited list of pszUID's to indicate as away).
 //  Used by IRC to mark users as away in the nicklist. If UIDs can contain spaces, use tabs
 //	pszText		- Space or tab delimited list of pszUID's
 
@@ -424,7 +425,12 @@ typedef struct {
 #define GC_SSE_ONLINE         0x0002  // displays a contact online, otherwise away
 #define GC_SSE_TABDELIMITED   0x0004  // use tabs as delimiters
 
-#define GC_EVENT_SETSTATUSEX	0x1009 
+#define GC_EVENT_SETSTATUSEX	0x1009
+
+//	GC_EVENT_SETCONTACTSTATUS - sets status icon for contact
+//	pszUID		- Unique identifier of the one who receives a new status
+//	dwItemData	- (DWORD)ID_STATUS_* or zero to remove status icon
+#define GC_EVENT_SETCONTACTSTATUS	0x100A
 
 //	GC_EVENT_CONTROL  - not shown in the log (Control window associated to a session and the session itself)
 //	NOTE 1: No members of GCEVENT are used, send one of the below flags in wParam instead,
@@ -493,7 +499,7 @@ typedef struct {
 
                                  // FALSE any other time than when initializing the window (before sending SESSION_INITDONE)
 	DWORD		dwItemData;          // User specified data.
-	time_t   time;                // Timestamp of the event
+	DWORD   time;                // Timestamp of the event
 }
 	GCEVENT;
 
@@ -659,3 +665,11 @@ typedef struct {
 		return 0;
 	}
 */
+
+//////////////////////////////////////////////////////////////////////////
+// Get Chat ToolTip Text for buddy
+// wParam = (WPARAM)(TCHAR*) roomID parentdat->ptszID
+// lParam = (WPARAM)(TCHAR*) userID ui1->pszUID
+// result (int)(TCHAR*)mir_tstrdup("tooltip text")
+// returns pointer to text of tooltip and starts owns it
+#define MS_GC_PROTO_GETTOOLTIPTEXT "/GetChatToolTipText"

@@ -366,8 +366,8 @@ static BOOL CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 
 			// icons
 			hImgList=ImageList_Create(16, 16, ILC_MASK | (IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16), 1, 1);
-            ImageList_AddIcon(hImgList, LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_USERDETAILS)));
-			ImageList_AddIcon(hImgList, LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_DELETE)));
+			ImageList_AddIcon_NotShared(hImgList, MAKEINTRESOURCE(IDI_USERDETAILS));
+			ImageList_AddIcon_NotShared(hImgList, MAKEINTRESOURCE(IDI_DELETE));
 
 			// LV will destroy the image list
 			ListView_SetImageList(hwndList, hImgList, LVSIL_SMALL);
@@ -440,7 +440,7 @@ static BOOL CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		struct DlgProfData * prof = (struct DlgProfData *)lParam;			
 		PROPSHEETHEADER *psh = prof->psh;
 		TranslateDialogDefault(hwndDlg);
-		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_USERDETAILS)));
+		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_USERDETAILS),IMAGE_ICON,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0));
 		dat = (struct DetailsData*)mir_alloc(sizeof(struct DetailsData));
 		dat->prof = prof;
 		prof->hwndOK = GetDlgItem( hwndDlg, IDOK );
@@ -621,6 +621,7 @@ static BOOL CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		break;
 
 	case WM_DESTROY:
+		DestroyIcon(( HICON )SendMessage(hwndDlg, WM_SETICON, ICON_BIG, 0));
 		SendDlgItemMessage( hwndDlg, IDC_NAME, WM_SETFONT, SendDlgItemMessage( hwndDlg, IDC_WHITERECT, WM_GETFONT, 0, 0 ), 0 );
 		DeleteObject( dat->hBoldFont );
 		{	int i;
@@ -681,13 +682,13 @@ int getProfileManager(PROFILEMANAGERDATA * pd)
 		OPTIONSDIALOGPAGE odp;
 		ZeroMemory(&odp,sizeof(odp));
 		odp.cbSize      = sizeof(odp);
-		odp.pszTitle    = Translate( "My Profiles" );
+		odp.pszTitle    = LPGEN("My Profiles");
 		odp.pfnDlgProc  = DlgProfileSelect;
 		odp.pszTemplate = MAKEINTRESOURCEA(IDD_PROFILE_SELECTION);
 		odp.hInstance   = GetModuleHandle(NULL);
 		AddProfileManagerPage(&opi, &odp);
 
-		odp.pszTitle    = Translate( "New Profile" );
+		odp.pszTitle    = LPGEN("New Profile");
 		odp.pszTemplate = MAKEINTRESOURCEA(IDD_PROFILE_NEW);
 		odp.pfnDlgProc  = DlgProfileNew;
 		AddProfileManagerPage(&opi, &odp);

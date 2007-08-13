@@ -7,7 +7,6 @@
 #define IDD_ICQACCOUNT                  103
 #define IDD_ASKAUTH                     104
 #define IDD_LOGINPW                     105
-#define IDD_INFO_AVATAR                 106
 #define IDD_OPT_ICQMAIN                 107
 #define IDD_OPT_ICQ                     108
 #define IDD_OPT_ICQCONTACTS             109
@@ -102,9 +101,6 @@
 #define IDC_DCPASSIVE                   1021
 #define IDC_OLDPASS                     1021
 #define IDC_ICQNUM                      1022
-#define IDC_AVATAR                      1023
-#define IDC_SETAVATAR                   1024
-#define IDC_DELETEAVATAR                1025
 #define IDC_AIMENABLE                   1030
 #define IDC_CLIST                       1035
 #define IDC_XSTATUSENABLE               1040
@@ -174,7 +170,7 @@
 #define IDC_IGNORE                      1528
 #define IDC_ENABLE                      1529
 #define IDC_LOADFROMSERVER              1530
-#define IDC_LINKAVATARS                 1531
+#define IDC_BIGGERAVATARS               1531
 #define IDC_ADDSERVER                   1532
 #define IDC_SAVETOSERVER                1533
 #define IDC_ENABLEAVATARS               1536

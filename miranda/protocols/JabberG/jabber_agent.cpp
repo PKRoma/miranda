@@ -2,7 +2,7 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-06  George Hazan
+Copyright ( C ) 2005-07  George Hazan
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -19,7 +19,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 File name      : $Source: /cvsroot/miranda/miranda/protocols/JabberG/jabber_agent.cpp,v $
-Revision       : $Revision$
+)Revision       : $Revision$
 Last change on : $Date$
 Last change by : $Author$
 
@@ -29,11 +29,21 @@ Last change by : $Author$
 #include <commctrl.h>
 #include "resource.h"
 #include "jabber_iq.h"
+#include "jabber_caps.h"
+
+
 
 static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
 static BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
 static BOOL CALLBACK JabberAgentRegDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
 static BOOL CALLBACK JabberAgentManualRegDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
+
+struct TJabberRegWndData
+{
+	int curPos;
+	int formHeight, frameHeight;
+	RECT frameRect;
+};
 
 int JabberMenuHandleAgents( WPARAM wParam, LPARAM lParam )
 {
@@ -45,7 +55,7 @@ int JabberMenuHandleAgents( WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
-static void JabberRegisterAgent( HWND hwndDlg, TCHAR* jid )
+void JabberRegisterAgent( HWND hwndDlg, TCHAR* jid )
 {
 	CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_FORM ),
 		hwndDlg, JabberAgentRegInputDlgProc, ( LPARAM )jid );
@@ -53,7 +63,7 @@ static void JabberRegisterAgent( HWND hwndDlg, TCHAR* jid )
 
 static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
-	HWND lv;
+	HWND lv=NULL;
 	LVCOLUMN lvCol;
 	LVITEM lvItem;
 	JABBER_LIST_ITEM *item;
@@ -65,7 +75,7 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 	switch ( msg ) {
 	case WM_INITDIALOG:
 		hwndJabberAgents = hwndDlg;
-		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )LoadIcon( hInst, MAKEINTRESOURCE( IDI_AGENTS )) );
+		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )LoadIconEx( "Agents" ));
 		TranslateDialogDefault( hwndDlg );
 		// Add columns to the top list
 		lv = GetDlgItem( hwndDlg, IDC_AGENT_LIST );
@@ -96,7 +106,7 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			JabberIqAdd( iqId, IQ_PROC_DISCOAGENTS, JabberIqResultDiscoAgentItems );
 
 			XmlNodeIq iq( "get", iqId, jabberThreadInfo->server );
-			XmlNode* query = iq.addQuery( "http://jabber.org/protocol/disco#items" );
+			XmlNode* query = iq.addQuery( JABBER_FEAT_DISCO_ITEMS );
 			jabberThreadInfo->send( iq );
 
 			SendMessage( hwndDlg, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
@@ -125,12 +135,15 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 								//if ( item->canSearch ) EnableWindow( GetDlgItem( hwndDlg, IDC_AGENT_SEARCH ), TRUE );
 								if ( item->cap & AGENT_CAP_GROUPCHAT )
 									EnableWindow( GetDlgItem( hwndDlg, IDC_JOIN ), TRUE );
+								if ( item->cap & AGENT_CAP_ADHOC )
+									EnableWindow( GetDlgItem( hwndDlg, IDC_COMMANDS1 ), TRUE );
 							}
 						}
 						else {
 							EnableWindow( GetDlgItem( hwndDlg, IDC_AGENT_REGISTER ), FALSE );
 							//EnableWindow( GetDlgItem( hwndDlg, IDC_AGENT_SEARCH ), FALSE );
 							EnableWindow( GetDlgItem( hwndDlg, IDC_JOIN ), FALSE );
+							EnableWindow( GetDlgItem( hwndDlg, IDC_COMMANDS1 ), FALSE );
 						}
 						return TRUE;
 					}
@@ -149,12 +162,17 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 							lvItem.cchTextMax = SIZEOF( text );
 							ListView_GetItem( lv, &lvItem );
 							if (( item=JabberListGetItemPtr( LIST_ROSTER, lvItem.pszText )) != NULL ) {
-								if ( item->status == ID_STATUS_OFFLINE )
+								if ( item->itemResource.status == ID_STATUS_OFFLINE )
 									EnableWindow( GetDlgItem( hwndDlg, IDC_AGENT_LOGON ), TRUE );
 								else
 									EnableWindow( GetDlgItem( hwndDlg, IDC_AGENT_LOGOFF ), TRUE );
 								EnableWindow( GetDlgItem( hwndDlg, IDC_AGENT_UNREGISTER ), TRUE );
-						}	}
+							}
+							if (( item=JabberListGetItemPtr( LIST_ROSTER, lvItem.pszText )) != NULL )
+								EnableWindow( GetDlgItem( hwndDlg, IDC_COMMANDS2 ), (item->cap & AGENT_CAP_ADHOC)?TRUE:FALSE );
+							else
+								EnableWindow( GetDlgItem( hwndDlg, IDC_COMMANDS2 ), FALSE );
+						}
 						return TRUE;
 			}	}	}
 			break;
@@ -212,7 +230,7 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 					lvItem.pszText = text;
 					ListView_InsertItem( lv, &lvItem );
 					lvItem.iSubItem = 1;
-					if ( item->status != ID_STATUS_OFFLINE )
+					if ( item->itemResource.status != ID_STATUS_OFFLINE )
 						lvItem.pszText = TranslateT( "Online" );
 					else
 						lvItem.pszText = TranslateT( "Offline" );
@@ -235,6 +253,23 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 		case IDC_MANUAL_REGISTER:
 			hwndAgentManualReg = CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_AGENT_MANUAL_REGISTER ), hwndDlg, JabberAgentManualRegDlgProc, 0 );
 			return TRUE;
+		case IDC_COMMANDS1:		
+			lv = GetDlgItem( hwndDlg, IDC_AGENT_LIST );
+		case IDC_COMMANDS2:
+			if (!lv) lv = GetDlgItem( hwndDlg, IDC_AGENT_TRANSPORT );
+			if (( lvItem.iItem=ListView_GetNextItem( lv, -1, LVNI_SELECTED )) >= 0 ) {
+				lvItem.iSubItem = 0;
+				lvItem.mask = LVIF_TEXT;
+				lvItem.pszText = text;
+				lvItem.cchTextMax = SIZEOF( text );
+				ListView_GetItem( lv, &lvItem );				
+				if (( item=JabberListGetItemPtr( LIST_AGENT, lvItem.pszText )) != NULL ) {
+					CJabberAdhocStartupParams* pStartupParams = new CJabberAdhocStartupParams( item->jid, NULL );
+					JabberContactMenuRunCommands(0, LPARAM(pStartupParams) );
+				}
+			}
+			return TRUE;
+
 		case IDC_AGENT_REGISTER:
 			lv = GetDlgItem( hwndDlg, IDC_AGENT_LIST );
 			if (( lvItem.iItem=ListView_GetNextItem( lv, -1, LVNI_SELECTED )) >= 0 ) {
@@ -274,11 +309,19 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			ListView_DeleteAllItems( GetDlgItem( hwndDlg, IDC_AGENT_LIST ));
 			JabberListRemoveList( LIST_AGENT );
 			iqId = JabberSerialNext();
-			JabberIqAdd( iqId, IQ_PROC_DISCOAGENTS, JabberIqResultDiscoAgentItems );
-			{	XmlNodeIq iq( "get", iqId, text );
-				XmlNode* query = iq.addQuery( "http://jabber.org/protocol/disco#items" );
-				jabberThreadInfo->send( iq );
-			}
+			{
+				//remove start and end spaces
+				TCHAR * start=text;
+				while (*start==_T(' ')) start++;
+				TCHAR * end=start;
+				while (*end!=_T(' ') && *end!=_T('\0')) end++;
+				*end=_T('\0');
+				JabberIqAdd( iqId, IQ_PROC_DISCOAGENTS, JabberIqResultDiscoAgentItems );
+				{
+					XmlNodeIq iq( "get", iqId, start );
+					XmlNode* query = iq.addQuery( JABBER_FEAT_DISCO_ITEMS );
+					jabberThreadInfo->send( iq );
+			}	}
 			return TRUE;
 
 		case IDC_AGENT_LOGON:
@@ -313,12 +356,12 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 				ListView_GetItem( lv, &lvItem );
 				if (( item=JabberListGetItemPtr( LIST_ROSTER, lvItem.pszText )) != NULL ) {
 					{	XmlNodeIq iq( "set", NOID, item->jid );
-						XmlNode* query = iq.addQuery( "jabber:iq:register" );
+						XmlNode* query = iq.addQuery( JABBER_FEAT_REGISTER );
 						query->addChild( "remove" );
 						jabberThreadInfo->send( iq );
 					}
 					{
-                  XmlNodeIq iq( "set" );
+						XmlNodeIq iq( "set" );
 						XmlNode* query = iq.addQuery( "jabber:iq:roster" );
 						XmlNode* itm = query->addChild( "item" ); itm->addAttr( "jid", item->jid ); itm->addAttr( "subscription", "remove" );
 						jabberThreadInfo->send( iq );
@@ -347,9 +390,13 @@ static BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 	int id, ypos, i;
 	TCHAR *from, *str, *str2;
 
+	TJabberRegWndData *dat = (TJabberRegWndData *)GetWindowLong(hwndDlg, GWL_USERDATA);
+
 	switch ( msg ) {
 	case WM_INITDIALOG:
 	{
+		SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)0);
+
 		EnableWindow( GetParent( hwndDlg ), FALSE );
 		TranslateDialogDefault( hwndDlg );
 		agentRegIqNode = NULL;
@@ -362,7 +409,7 @@ static BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 			int iqId = JabberSerialNext();
 			JabberIqAdd( iqId, IQ_PROC_GETREGISTER, JabberIqResultGetRegister );
 			XmlNodeIq iq( "get", iqId, jid );
-			XmlNode* query = iq.addQuery( "jabber:iq:register" );
+			XmlNode* query = iq.addQuery( JABBER_FEAT_REGISTER );
 			jabberThreadInfo->send( iq );
 		}
 
@@ -370,8 +417,20 @@ static BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 		LONG frameExStyle = GetWindowLong( GetDlgItem( hwndDlg, IDC_FRAME ), GWL_EXSTYLE );
 		frameExStyle |= WS_EX_CONTROLPARENT;
 		SetWindowLong( GetDlgItem( hwndDlg, IDC_FRAME ), GWL_EXSTYLE, frameExStyle );
+
 		return TRUE;
 	}
+	case WM_CTLCOLORSTATIC:
+		if ((GetWindowLong((HWND)lParam, GWL_ID) == IDC_WHITERECT) ||
+			(GetWindowLong((HWND)lParam, GWL_ID) == IDC_INSTRUCTION) ||
+			(GetWindowLong((HWND)lParam, GWL_ID) == IDC_TITLE))
+		{
+			//MessageBeep(MB_ICONSTOP);
+			return (BOOL)GetStockObject(WHITE_BRUSH);
+		} else
+		{
+			return NULL;
+		}
 	case WM_COMMAND:
 		switch ( LOWORD( wParam )) {
 		case IDC_SUBMIT:
@@ -391,7 +450,7 @@ static BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 			JabberIqAdd( iqId, IQ_PROC_SETREGISTER, JabberIqResultSetRegister );
 
 			XmlNodeIq iq( "set", iqId, from );
-			XmlNode* query = iq.addQuery( "jabber:iq:register" );
+			XmlNode* query = iq.addQuery( JABBER_FEAT_REGISTER );
 
 			if (( xNode=JabberXmlGetChild( queryNode, "x" )) != NULL ) {
 				// use new jabber:x:data form
@@ -441,40 +500,58 @@ static BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 			if (( queryNode=JabberXmlGetChild( agentRegIqNode, "query" )) == NULL ) return TRUE;
 			id = 0;
 			ypos = 14;
+
+			RECT rect;
+			dat = (TJabberRegWndData *)mir_alloc(sizeof(TJabberRegWndData));
+			dat->curPos = 0;
+			GetClientRect( GetDlgItem( hwndDlg, IDC_FRAME ), &( dat->frameRect ));
+			GetClientRect( GetDlgItem( hwndDlg, IDC_VSCROLL ), &rect );
+			dat->frameRect.right -= ( rect.right - rect.left );
+			GetClientRect( GetDlgItem( hwndDlg, IDC_FRAME ), &rect );
+			dat->frameHeight = rect.bottom - rect.top;
+			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)dat);
+
 			if (( xNode=JabberXmlGetChild( queryNode, "x" )) != NULL ) {
 				// use new jabber:x:data form
 				if (( n=JabberXmlGetChild( xNode, "instructions" ))!=NULL && n->text!=NULL )
-					SetDlgItemText( hwndDlg, IDC_INSTRUCTION, n->text );
+					JabberFormSetInstruction( hwndDlg, n->text );
 
-				JabberFormCreateUI( hFrame, xNode, &i /*dummy*/ );
+				JabberFormCreateUI( hFrame, xNode, &dat->formHeight /*dummy*/ );
 			}
 			else {
 				// use old registration information form
+				HJFORMLAYOUT layout_info = JabberFormCreateLayout(hFrame);
 				for ( i=0; i<queryNode->numChild; i++ ) {
 					n = queryNode->child[i];
 					if ( n->name ) {
 						if ( !strcmp( n->name, "instructions" )) {
-							SetDlgItemText( hwndDlg, IDC_INSTRUCTION, n->text );
+							JabberFormSetInstruction( hwndDlg, n->text );
 						}
 						else if ( !strcmp( n->name, "key" ) || !strcmp( n->name, "registered" )) {
 							// do nothing
 						}
 						else if ( !strcmp( n->name, "password" )) {
-							HWND hCtrl = CreateWindowA( "static", n->name, WS_CHILD|WS_VISIBLE|SS_RIGHT, 10, ypos+4, 100, 18, hFrame, ( HMENU ) IDC_STATIC, hInst, NULL );
-							SendMessage( hCtrl, WM_SETFONT, ( WPARAM ) hFont, 0 );
-							hCtrl = CreateWindowEx( WS_EX_CLIENTEDGE, _T("edit"), n->text, WS_CHILD|WS_VISIBLE|WS_BORDER|WS_TABSTOP|ES_LEFT|ES_AUTOHSCROLL|ES_PASSWORD, 120, ypos, 128, 24, hFrame, ( HMENU ) id, hInst, NULL );
-							SendMessage( hCtrl, WM_SETFONT, ( WPARAM ) hFont, 0 );
-							id++;
-							ypos += 24;
+							TCHAR *name = mir_a2t(n->name);
+							JabberFormAppendControl(hFrame, layout_info, JFORM_CTYPE_TEXT_PRIVATE, name, n->text);
+							mir_free(name);
 						}
 						else {	// everything else is a normal text field
-							HWND hCtrl = CreateWindowA( "static", n->name, WS_CHILD|WS_VISIBLE|SS_RIGHT, 10, ypos+4, 100, 18, hFrame, ( HMENU ) IDC_STATIC, hInst, NULL );
-							SendMessage( hCtrl, WM_SETFONT, ( WPARAM ) hFont, 0 );
-							hCtrl = CreateWindowEx( WS_EX_CLIENTEDGE, _T("edit"), n->text, WS_CHILD|WS_VISIBLE|WS_BORDER|WS_TABSTOP|ES_LEFT|ES_AUTOHSCROLL, 120, ypos, 128, 24, hFrame, ( HMENU ) id, hInst, NULL );
-							SendMessage( hCtrl, WM_SETFONT, ( WPARAM ) hFont, 0 );
-							id++;
-							ypos += 24;
-			}	}	}	}
+							TCHAR *name = mir_a2t(n->name);
+							JabberFormAppendControl(hFrame, layout_info, JFORM_CTYPE_TEXT_SINGLE, name, n->text);
+							mir_free(name);
+				}	}	}
+				JabberFormLayoutControls(hFrame, layout_info, &dat->formHeight);
+				mir_free(layout_info);
+			}
+
+			if ( dat->formHeight > dat->frameHeight ) {
+				HWND hwndScroll;
+
+				hwndScroll = GetDlgItem( hwndDlg, IDC_VSCROLL );
+				EnableWindow( hwndScroll, TRUE );
+				SetScrollRange( hwndScroll, SB_CTL, 0, dat->formHeight - dat->frameHeight, FALSE );
+				dat->curPos = 0;
+			}
 
 			EnableWindow( GetDlgItem( hwndDlg, IDC_SUBMIT ), TRUE );
 		}
@@ -483,10 +560,47 @@ static BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 			SetDlgItemText( hwndDlg, IDC_FRAME_TEXT, ( LPCTSTR ) lParam );
 		}
 		return TRUE;
+	case WM_VSCROLL:
+		{
+			int pos;
+
+			if ( dat != NULL ) {
+				pos = dat->curPos;
+				switch ( LOWORD( wParam )) {
+				case SB_LINEDOWN:
+					pos += 10;
+					break;
+				case SB_LINEUP:
+					pos -= 10;
+					break;
+				case SB_PAGEDOWN:
+					pos += ( dat->frameHeight - 10 );
+					break;
+				case SB_PAGEUP:
+					pos -= ( dat->frameHeight - 10 );
+					break;
+				case SB_THUMBTRACK:
+					pos = HIWORD( wParam );
+					break;
+				}
+				if ( pos > ( dat->formHeight - dat->frameHeight ))
+					pos = dat->formHeight - dat->frameHeight;
+				if ( pos < 0 )
+					pos = 0;
+				if ( dat->curPos != pos ) {
+					ScrollWindow( GetDlgItem( hwndDlg, IDC_FRAME ), 0, dat->curPos - pos, NULL, &( dat->frameRect ));
+					SetScrollPos( GetDlgItem( hwndDlg, IDC_VSCROLL ), SB_CTL, pos, TRUE );
+					dat->curPos = pos;
+				}
+			}
+		}
+		break;
 	case WM_DESTROY:
+		JabberFormDestroyUI(GetDlgItem(hwndDlg, IDC_FRAME));
 		hwndAgentRegInput = NULL;
 		EnableWindow( GetParent( hwndDlg ), TRUE );
 		SetActiveWindow( GetParent( hwndDlg ));
+		if (dat) mir_free(dat);
 		break;
 	}
 
@@ -501,7 +615,7 @@ static BOOL CALLBACK JabberAgentManualRegDlgProc( HWND hwndDlg, UINT msg, WPARAM
 	case WM_INITDIALOG:
 		EnableWindow( GetParent( hwndDlg ), FALSE );
 		dontEnableParent = FALSE;
-		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )LoadIcon( hInst, MAKEINTRESOURCE( IDI_AGENTS )) );
+		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )LoadIconEx( "Agents" ));
 		TranslateDialogDefault( hwndDlg );
 		return TRUE;
 	case WM_COMMAND:

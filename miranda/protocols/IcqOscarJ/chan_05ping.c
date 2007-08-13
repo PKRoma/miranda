@@ -95,9 +95,7 @@ void StartKeepAlive(serverthread_info* info)
 
   if (ICQGetContactSettingByte(NULL, "KeepAlive", 0))
   {
-    DWORD dwThreadId;
-
-    info->hKeepAliveThread = (HANDLE)forkthreadex(NULL, 0, icq_keepAliveThread, info, 0, &dwThreadId);
+    info->hKeepAliveThread = ICQCreateThreadEx(icq_keepAliveThread, info, NULL);
   }
 }
 

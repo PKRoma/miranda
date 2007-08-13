@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 #include "netlib.h"
+#include "../srfile/file.h"
 
 #define MS_NETLIB_LOGWIN "Netlib/Log/Win"
 
@@ -44,6 +45,7 @@ struct {
 	CRITICAL_SECTION cs;
 } logOptions;
 static __int64 mirandaStartTime,perfCounterFreq;
+static int bIsActive = TRUE;
 
 static const TCHAR* szTimeFormats[] = 
 {
@@ -225,20 +227,6 @@ void NetlibLogShowOptions(void)
 	SetForegroundWindow(logOptions.hwndOpts);
 }
 
-static void CreateDirectoryTree( TCHAR* szDir)
-{
-	DWORD  dwAttributes;
-	TCHAR* pszLastBackslash,szTestDir[MAX_PATH];
-
-	lstrcpyn(szTestDir, szDir, SIZEOF(szTestDir));
-	if ((dwAttributes = GetFileAttributes(szTestDir))!=0xffffffff && dwAttributes&FILE_ATTRIBUTE_DIRECTORY) return;
-	pszLastBackslash = _tcsrchr( szTestDir, '\\' );
-	if ( pszLastBackslash == NULL ) return;
-	*pszLastBackslash = '\0';
-	CreateDirectoryTree( szTestDir );
-	CreateDirectory( szTestDir, NULL );
-}
-
 static int NetlibLog(WPARAM wParam,LPARAM lParam)
 {
 	struct NetlibUser *nlu=(struct NetlibUser*)wParam;
@@ -251,7 +239,10 @@ static int NetlibLog(WPARAM wParam,LPARAM lParam)
 	size_t cbBufLen;
 	int bNeedsFree = FALSE;
 
-	if( (nlu != NULL && GetNetlibHandleType(nlu)!=NLH_USER) || pszMsg==NULL) {
+	if ( !bIsActive )
+		return 0;
+
+	if ((nlu != NULL && GetNetlibHandleType(nlu)!=NLH_USER) || pszMsg==NULL) {
 		SetLastError(ERROR_INVALID_PARAMETER);
 		return 0;
 	}
@@ -297,7 +288,7 @@ static int NetlibLog(WPARAM wParam,LPARAM lParam)
 		FILE *fp;
 		fp = _tfopen(logOptions.szFile, _T("at"));
 		if(!fp) {
-			CreateDirectoryTree(logOptions.szFile);
+			CreateDirectoryTreeT(logOptions.szFile);
 			fp = _tfopen(logOptions.szFile, _T("at"));
 		}
 		if(fp) {			
@@ -450,5 +441,5 @@ void NetlibLogShutdown(void)
 	if(IsWindow(logOptions.hwndOpts)) DestroyWindow(logOptions.hwndOpts);
 	DeleteCriticalSection(&logOptions.cs);
 	if(logOptions.szFile) mir_free(logOptions.szFile);
+	bIsActive = FALSE;
 }
-

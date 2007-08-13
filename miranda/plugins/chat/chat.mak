@@ -1,31 +1,31 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on chat.dsp
 !IF "$(CFG)" == ""
-CFG=chat - Win32 Release Unicode
-!MESSAGE No configuration specified. Defaulting to chat - Win32 Release Unicode.
-!ENDIF
+CFG=chat - Win32 Debug Unicode
+!MESSAGE No configuration specified. Defaulting to chat - Win32 Debug Unicode.
+!ENDIF 
 
 !IF "$(CFG)" != "chat - Win32 Release" && "$(CFG)" != "chat - Win32 Debug" && "$(CFG)" != "chat - Win32 Debug Unicode" && "$(CFG)" != "chat - Win32 Release Unicode"
 !MESSAGE Invalid configuration "$(CFG)" specified.
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
-!MESSAGE
+!MESSAGE 
 !MESSAGE NMAKE /f "chat.mak" CFG="chat - Win32 Debug Unicode"
-!MESSAGE
+!MESSAGE 
 !MESSAGE Possible choices for configuration are:
-!MESSAGE
+!MESSAGE 
 !MESSAGE "chat - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "chat - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "chat - Win32 Debug Unicode" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "chat - Win32 Release Unicode" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE
+!MESSAGE 
 !ERROR An invalid configuration is specified.
-!ENDIF
+!ENDIF 
 
 !IF "$(OS)" == "Windows_NT"
 NULL=
-!ELSE
+!ELSE 
 NULL=nul
-!ENDIF
+!ENDIF 
 
 CPP=cl.exe
 MTL=midl.exe
@@ -62,15 +62,15 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CHAT_EXPORTS" /Fp"$(INTDIR)\chat.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
-MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x41d /fo"$(INTDIR)\Chat.res" /d "NDEBUG"
+CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CHAT_EXPORTS" /Fp"$(INTDIR)\chat.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
+RSC_PROJ=/l 0x41d /fo"$(INTDIR)\Chat.res" /d "NDEBUG" 
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\chat.bsc"
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\chat.bsc" 
 BSC32_SBRS= \
-
+	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib shlwapi.lib Version.lib /nologo /base:"0x54110000" /dll /incremental:no /pdb:"$(OUTDIR)\chat.pdb" /map:"$(INTDIR)\chat.map" /debug /machine:I386 /out:"../../bin/release/plugins/chat.dll" /implib:"$(OUTDIR)\chat.lib"
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib shlwapi.lib Version.lib /nologo /base:"0x54110000" /dll /incremental:no /pdb:"$(OUTDIR)\chat.pdb" /map:"$(INTDIR)\chat.map" /debug /machine:I386 /out:"../../bin/release/plugins/chat.dll" /implib:"$(OUTDIR)\chat.lib" 
 LINK32_OBJS= \
 	"$(INTDIR)\clist.obj" \
 	"$(INTDIR)\colorchooser.obj" \
@@ -122,15 +122,15 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CHAT_EXPORTS" /Fp"$(INTDIR)\chat.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
-MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x41d /fo"$(INTDIR)\Chat.res" /d "_DEBUG"
+CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CHAT_EXPORTS" /Fp"$(INTDIR)\chat.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
+RSC_PROJ=/l 0x41d /fo"$(INTDIR)\Chat.res" /d "_DEBUG" 
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\chat.bsc"
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\chat.bsc" 
 BSC32_SBRS= \
-
+	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib shlwapi.lib Version.lib /nologo /base:"0x54110000" /dll /incremental:yes /pdb:"$(OUTDIR)\chat.pdb" /debug /machine:I386 /out:"../../bin/debug/plugins/chat.dll" /implib:"$(OUTDIR)\chat.lib" /pdbtype:sept
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib shlwapi.lib Version.lib /nologo /base:"0x54110000" /dll /incremental:yes /pdb:"$(OUTDIR)\chat.pdb" /debug /machine:I386 /out:"../../bin/debug/plugins/chat.dll" /implib:"$(OUTDIR)\chat.lib" /pdbtype:sept 
 LINK32_OBJS= \
 	"$(INTDIR)\clist.obj" \
 	"$(INTDIR)\colorchooser.obj" \
@@ -181,15 +181,15 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "CHAT_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\chat.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
-MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x41d /fo"$(INTDIR)\Chat.res" /d "_DEBUG" /d "UNICODE"
+CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "CHAT_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\chat.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
+RSC_PROJ=/l 0x41d /fo"$(INTDIR)\Chat.res" /d "_DEBUG" 
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\chat.bsc"
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\chat.bsc" 
 BSC32_SBRS= \
-
+	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib Version.lib shlwapi.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\chat.pdb" /debug /machine:I386 /out:"../../bin/Debug Unicode/plugins/chat.dll" /implib:"$(OUTDIR)\chat.lib" /pdbtype:sept
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib Version.lib shlwapi.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\chat.pdb" /debug /machine:I386 /out:"../../bin/Debug Unicode/plugins/chat.dll" /implib:"$(OUTDIR)\chat.lib" /pdbtype:sept 
 LINK32_OBJS= \
 	"$(INTDIR)\clist.obj" \
 	"$(INTDIR)\colorchooser.obj" \
@@ -240,15 +240,15 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "CHAT_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\chat.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
-MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x41d /fo"$(INTDIR)\Chat.res" /d "NDEBUG" /d "UNICODE"
+CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "CHAT_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\chat.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
+RSC_PROJ=/l 0x41d /fo"$(INTDIR)\Chat.res" /d "NDEBUG" /d "UNICODE" 
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\chat.bsc"
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\chat.bsc" 
 BSC32_SBRS= \
-
+	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib Version.lib shlwapi.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\chat.pdb" /map:"$(INTDIR)\chat.map" /debug /machine:I386 /out:"../../bin/Release Unicode/plugins/chat.dll" /implib:"$(OUTDIR)\chat.lib"
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib Version.lib shlwapi.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\chat.pdb" /map:"$(INTDIR)\chat.map" /debug /machine:I386 /out:"../../bin/Release Unicode/plugins/chat.dll" /implib:"$(OUTDIR)\chat.lib" 
 LINK32_OBJS= \
 	"$(INTDIR)\clist.obj" \
 	"$(INTDIR)\colorchooser.obj" \
@@ -268,46 +268,46 @@ LINK32_OBJS= \
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
 
-!ENDIF
+!ENDIF 
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 .cpp{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 .cxx{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 .c{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 .cpp{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 .cxx{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
 !IF EXISTS("chat.dep")
 !INCLUDE "chat.dep"
-!ELSE
+!ELSE 
 !MESSAGE Warning: cannot find "chat.dep"
-!ENDIF
-!ENDIF
+!ENDIF 
+!ENDIF 
 
 
 !IF "$(CFG)" == "chat - Win32 Release" || "$(CFG)" == "chat - Win32 Debug" || "$(CFG)" == "chat - Win32 Debug Unicode" || "$(CFG)" == "chat - Win32 Release Unicode"
@@ -373,4 +373,5 @@ SOURCE=.\Chat.rc
 
 
 
-!ENDIF
+!ENDIF 
+

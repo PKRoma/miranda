@@ -23,8 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // Minipthread code from Miranda IM source
 typedef struct
 {
-    HANDLE hThread;
-    DWORD dwThreadId;
+	HANDLE hThread;
+	DWORD dwThreadId;
 }
 pthread_t;
 
@@ -42,7 +42,7 @@ pthread_t *pthread_self(void);
 /* cancel execution of a thread */
 void pthread_exit(void *value_ptr);
 
-#define pthread_mutex_init(pmutex, pattr)    InitializeCriticalSection(pmutex)
-#define pthread_mutex_destroy(pmutex)        DeleteCriticalSection(pmutex)
-#define pthread_mutex_lock(pmutex)           EnterCriticalSection(pmutex)
-#define pthread_mutex_unlock(pmutex)         LeaveCriticalSection(pmutex)
+#define pthread_mutex_init(pmutex, pattr)	 InitializeCriticalSection(pmutex)
+#define pthread_mutex_destroy(pmutex)		 DeleteCriticalSection(pmutex)
+#define pthread_mutex_lock(pmutex)			 EnterCriticalSection(pmutex)
+#define pthread_mutex_unlock(pmutex)		 LeaveCriticalSection(pmutex)

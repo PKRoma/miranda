@@ -128,6 +128,7 @@ static __inline unsigned long Proto_Status2Flag(int status)
 #define PF4_SUPPORTIDLE   0x00000010 // protocol understands idle, added during v0.3.4+ (2004/09/13)
 #define PF4_AVATARS		  0x00000020 // protocol has avatar support, added during v0.3.4 (2004/09/13)
 #define PF4_OFFLINEFILES  0x00000040 // protocols supports sending files to offline users (v0.5.2)
+#define PF4_IMSENDUTF     0x00000080 // protocol is able to process messages in utf-8 (v.0.7.0+)
 
 #define PFLAG_UNIQUEIDTEXT  100    //returns a static buffer of text describing the unique field by which this protocol identifies users (already translated), or NULL
 
@@ -349,6 +350,13 @@ typedef struct {
 //Results are returned as for PS_BASICSEARCH.
 //This function is only available if the PF1_EXTSEARCHUI capability is set
 #define PS_SEARCHBYADVANCED          "/SearchByAdvanced"
+
+typedef struct {
+	size_t nSize;
+	int nFieldCount;
+	TCHAR ** pszFields;
+	PROTOSEARCHRESULT psr;
+} CUSTOMSEARCHRESULTS;
 
 //Adds a search result to the contact list
 //wParam=flags
@@ -578,13 +586,17 @@ typedef struct {
 #define PREF_CREATEREAD   1     //create the database event with the 'read' flag set
 #define PREF_UNICODE	     2
 #define PREF_RTL          4     // 0.5+ addition: support for right-to-left messages
-#define PSR_MESSAGE   "/RecvMessage"
+#define PREF_UTF          8     // message is in utf-8 (0.7.0+)
 
 #if defined( _UNICODE )
 	#define PREF_TCHAR PREF_UNICODE
 #else
 	#define PREF_TCHAR 0
 #endif
+
+#define PSR_MESSAGE   "/RecvMessage"
+
+#define MS_PROTO_RECVMSG "Proto/RecvMessage"
 
 //An URL has been received
 //wParam=0
@@ -598,6 +610,7 @@ typedef struct {
 //lParam=(LPARAM)(PROTORECVEVENT*)&pre
 //pre.szMessage is actually a (PROTOSEARCHRESULT**) list.
 //pre.lParam is the number of contacts in that list.
+//pre.flags can contain PREF_UTF defining the strings as utf-8 encoded (0.7.0+)
 //PS_ADDTOLIST can be used to add the contacts to the contact list.
 #define PSR_CONTACTS       "/RecvContacts"
 
@@ -608,7 +621,8 @@ repeat {
 }
 userNick should be a human-readable description of the user. It need not
 be the nick, or even confined to displaying just one type of
-information.
+information. The dbe.flags can contain DBEF_UTF defining userNick as utf-8 
+encoded. 
 userId should be a machine-readable representation of the unique
 protocol identifying field of the user. Because of the need to be
 zero-terminated, binary data should be converted to text.
@@ -626,6 +640,8 @@ typedef struct {
 	LPARAM lParam;     //extra space for the network level protocol module
 } PROTORECVFILE;
 #define PSR_FILE       "/RecvFile"
+
+#define MS_PROTO_RECVFILE "Proto/RecvFile"
 
 //An away message reply has been received
 //wParam=statusMode

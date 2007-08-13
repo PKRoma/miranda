@@ -32,44 +32,14 @@ extern struct ExtraCache *g_ExtraCache;
 void LoadContactTree(void);
 void SortContacts(void);
 
-static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static int opt_gen_opts_changed = 0;
 
-static UINT expertOnlyControls[] = {
-    IDC_ALWAYSSTATUS
-};
-int CListOptInit(WPARAM wParam, LPARAM lParam)
+static void __setFlag(DWORD dwFlag, int iMode)
 {
-    OPTIONSDIALOGPAGE odp;
-
-    ZeroMemory(&odp, sizeof(odp));
-    odp.cbSize = sizeof(odp);
-    odp.position = -1000000000;
-    odp.hInstance = g_hInst;
-    odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_CLIST);
-    odp.pszTitle = Translate("Contact List");
-    odp.pfnDlgProc = DlgProcGenOpts;
-    odp.flags = ODPF_BOLDGROUPS;
-    odp.nIDBottomSimpleControl = IDC_STCLISTGROUP;
-    odp.expertOnlyControls = expertOnlyControls;
-    odp.nExpertOnlyControls = sizeof(expertOnlyControls) / sizeof(expertOnlyControls[0]);
-    CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
-
-    odp.position = -900000000;
-    odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_HOTKEY);
-    odp.pszTitle = Translate("Hotkeys");
-    odp.pszGroup = Translate("Events");
-    odp.pfnDlgProc = DlgProcHotkeyOpts;
-    odp.nIDBottomSimpleControl = 0;
-    odp.nExpertOnlyControls = 0;
-    odp.expertOnlyControls = NULL;
-    CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
-    return 0;
+	g_CluiData.dwFlags = iMode ? g_CluiData.dwFlags | dwFlag : g_CluiData.dwFlags & ~dwFlag;
 }
 
-static UINT sortCtrlIDs[] = {IDC_SORTPRIMARY, IDC_SORTTHEN, IDC_SORTFINALLY, 0};
-
-static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg) {
         case WM_USER+1:
@@ -87,6 +57,7 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                 break;
             }
         case WM_INITDIALOG:
+            opt_gen_opts_changed = 0;
             TranslateDialogDefault(hwndDlg);
             SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) HookEventMessage(ME_DB_CONTACT_SETTINGCHANGED, hwndDlg, WM_USER + 1));
             CheckDlgButton(hwndDlg, IDC_ONTOP, DBGetContactSettingByte(NULL, "CList", "OnTop", SETTING_ONTOP_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
@@ -94,27 +65,7 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             CheckDlgButton(hwndDlg, IDC_HIDEEMPTYGROUPS, DBGetContactSettingByte(NULL, "CList", "HideEmptyGroups", SETTING_HIDEEMPTYGROUPS_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
             CheckDlgButton(hwndDlg, IDC_DISABLEGROUPS, DBGetContactSettingByte(NULL, "CList", "UseGroups", SETTING_USEGROUPS_DEFAULT) ? BST_UNCHECKED : BST_CHECKED);
             CheckDlgButton(hwndDlg, IDC_CONFIRMDELETE, DBGetContactSettingByte(NULL, "CList", "ConfirmDelete", SETTING_CONFIRMDELETE_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
-            CheckDlgButton(hwndDlg, IDC_AUTOHIDE, DBGetContactSettingByte(NULL, "CList", "AutoHide", SETTING_AUTOHIDE_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
-            CheckDlgButton(hwndDlg, IDC_EVENTSONTOP, (g_CluiData.dwFlags & CLUI_STICKYEVENTS) ? BST_CHECKED : BST_UNCHECKED);
-            CheckDlgButton(hwndDlg, IDC_DONTSEPARATE, g_CluiData.bDontSeparateOffline);
-
 			{
-				int i;
-
-				for(i = 0; sortCtrlIDs[i] != 0; i++) {
-					SendDlgItemMessage(hwndDlg, sortCtrlIDs[i], CB_INSERTSTRING, -1, (LPARAM)TranslateT("Nothing"));
-					SendDlgItemMessage(hwndDlg, sortCtrlIDs[i], CB_INSERTSTRING, -1, (LPARAM)TranslateT("Name"));
-					SendDlgItemMessage(hwndDlg, sortCtrlIDs[i], CB_INSERTSTRING, -1, (LPARAM)TranslateT("Protocol"));
-					SendDlgItemMessage(hwndDlg, sortCtrlIDs[i], CB_INSERTSTRING, -1, (LPARAM)TranslateT("Status"));
-					SendDlgItemMessage(hwndDlg, sortCtrlIDs[i], CB_INSERTSTRING, -1, (LPARAM)TranslateT("Last Message"));
-                    SendDlgItemMessage(hwndDlg, sortCtrlIDs[i], CB_INSERTSTRING, -1, (LPARAM)TranslateT("Message Frequency"));
-					
-					SendDlgItemMessage(hwndDlg, sortCtrlIDs[i], CB_SETCURSEL, g_CluiData.sortOrder[i], 0);
-				}
-			}
-
-			EnableWindow(GetDlgItem(hwndDlg, IDC_HIDETIME), IsDlgButtonChecked(hwndDlg, IDC_AUTOHIDE));
-            EnableWindow(GetDlgItem(hwndDlg, IDC_HIDETIMESPIN), IsDlgButtonChecked(hwndDlg, IDC_AUTOHIDE)); {
                 DWORD caps = CallService(MS_CLUI_GETCAPS, CLUICAPS_FLAGS1, 0);
                 if (!(caps & CLUIF_HIDEEMPTYGROUPS))
                     ShowWindow(GetDlgItem(hwndDlg, IDC_HIDEEMPTYGROUPS), SW_HIDE);
@@ -123,14 +74,15 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                 if (caps & CLUIF_HASONTOPOPTION)
                     ShowWindow(GetDlgItem(hwndDlg, IDC_ONTOP), SW_HIDE);
                 if (caps & CLUIF_HASAUTOHIDEOPTION) {
-                    ShowWindow(GetDlgItem(hwndDlg, IDC_AUTOHIDE), SW_HIDE);
-                    ShowWindow(GetDlgItem(hwndDlg, IDC_HIDETIME), SW_HIDE);
-                    ShowWindow(GetDlgItem(hwndDlg, IDC_HIDETIMESPIN), SW_HIDE);
-                    ShowWindow(GetDlgItem(hwndDlg, IDC_STAUTOHIDESECS), SW_HIDE);
                 }
             }
-            SendDlgItemMessage(hwndDlg, IDC_HIDETIMESPIN, UDM_SETRANGE, 0, MAKELONG(900, 1));
-            SendDlgItemMessage(hwndDlg, IDC_HIDETIMESPIN, UDM_SETPOS, 0, MAKELONG(DBGetContactSettingWord(NULL, "CList", "HideTime", SETTING_HIDETIME_DEFAULT), 0));
+
+            CheckDlgButton(hwndDlg, IDC_SHOWBUTTONBAR, g_CluiData.dwFlags & CLUI_FRAME_SHOWTOPBUTTONS);
+            CheckDlgButton(hwndDlg, IDC_SHOWBOTTOMBUTTONS, g_CluiData.dwFlags & CLUI_FRAME_SHOWBOTTOMBUTTONS);
+            CheckDlgButton(hwndDlg, IDC_CLISTSUNKEN, g_CluiData.dwFlags & CLUI_FRAME_CLISTSUNKEN);
+            CheckDlgButton(hwndDlg, IDC_EVENTAREAAUTOHIDE, g_CluiData.dwFlags & CLUI_FRAME_AUTOHIDENOTIFY);
+            CheckDlgButton(hwndDlg, IDC_EVENTAREASUNKEN, (g_CluiData.dwFlags & CLUI_FRAME_EVENTAREASUNKEN) ? BST_CHECKED : BST_UNCHECKED);
+
             CheckDlgButton(hwndDlg, IDC_ONECLK, DBGetContactSettingByte(NULL, "CList", "Tray1Click", SETTING_TRAY1CLICK_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
             CheckDlgButton(hwndDlg, IDC_ALWAYSSTATUS, DBGetContactSettingByte(NULL, "CList", "AlwaysStatus", SETTING_ALWAYSSTATUS_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
             CheckDlgButton(hwndDlg, IDC_ALWAYSMULTI, !DBGetContactSettingByte(NULL, "CList", "AlwaysMulti", SETTING_ALWAYSMULTI_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
@@ -181,33 +133,33 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             SendDlgItemMessage(hwndDlg, IDC_BLINKSPIN, UDM_SETRANGE, 0, MAKELONG(0x3FFF, 250));
             SendDlgItemMessage(hwndDlg, IDC_BLINKSPIN, UDM_SETPOS, 0, MAKELONG(DBGetContactSettingWord(NULL, "CList", "IconFlashTime", 550), 0));
             CheckDlgButton(hwndDlg, IDC_NOTRAYINFOTIPS, g_CluiData.bNoTrayTips ? 1 : 0);
+            CheckDlgButton(hwndDlg, IDC_APPLYLASTVIEWMODE, DBGetContactSettingByte(NULL, "CList", "AutoApplyLastViewMode", 0) ? 1 : 0);
             return TRUE;
         case WM_COMMAND:
-            if (LOWORD(wParam) == IDC_AUTOHIDE) {
-                EnableWindow(GetDlgItem(hwndDlg, IDC_HIDETIME), IsDlgButtonChecked(hwndDlg, IDC_AUTOHIDE));
-                EnableWindow(GetDlgItem(hwndDlg, IDC_HIDETIMESPIN), IsDlgButtonChecked(hwndDlg, IDC_AUTOHIDE));
-            }
             if (LOWORD(wParam) == IDC_DONTCYCLE || LOWORD(wParam) == IDC_CYCLE || LOWORD(wParam) == IDC_MULTITRAY) {
                 EnableWindow(GetDlgItem(hwndDlg, IDC_PRIMARYSTATUS), IsDlgButtonChecked(hwndDlg, IDC_DONTCYCLE));
                 EnableWindow(GetDlgItem(hwndDlg, IDC_CYCLETIME), IsDlgButtonChecked(hwndDlg, IDC_CYCLE));
                 EnableWindow(GetDlgItem(hwndDlg, IDC_CYCLETIMESPIN), IsDlgButtonChecked(hwndDlg, IDC_CYCLE));
                 EnableWindow(GetDlgItem(hwndDlg, IDC_ALWAYSMULTI), IsDlgButtonChecked(hwndDlg, IDC_MULTITRAY));
             }
-            if ((LOWORD(wParam) == IDC_HIDETIME || LOWORD(wParam) == IDC_CYCLETIME) && HIWORD(wParam) != EN_CHANGE)
+            if ((LOWORD(wParam) == IDC_CYCLETIME) && HIWORD(wParam) != EN_CHANGE)
                 break;
             if (LOWORD(wParam) == IDC_PRIMARYSTATUS && HIWORD(wParam) != CBN_SELCHANGE)
                 break;
-            if ((LOWORD(wParam) == IDC_HIDETIME || LOWORD(wParam) == IDC_CYCLETIME) && (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
+            if ((LOWORD(wParam) == IDC_CYCLETIME) && (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
                 return 0;
             if (LOWORD(wParam) == IDC_BLINKTIME && HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus())
                 return 0; // dont make apply enabled during buddy set crap
             SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+            opt_gen_opts_changed = TRUE;
             break;
         case WM_NOTIFY:
             switch (((LPNMHDR) lParam)->idFrom) {
                 case 0:
                     switch (((LPNMHDR) lParam)->code) {
                         case PSN_APPLY:
+                            if(!opt_gen_opts_changed)
+                                return TRUE;
                             DBWriteContactSettingByte(NULL, "CList", "HideOffline", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_HIDEOFFLINE)); {
                                 DWORD caps = CallService(MS_CLUI_GETCAPS, CLUICAPS_FLAGS1, 0);
                                 if (caps & CLUIF_HIDEEMPTYGROUPS)
@@ -216,37 +168,11 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                                     DBWriteContactSettingByte(NULL, "CList", "UseGroups", (BYTE) ! IsDlgButtonChecked(hwndDlg, IDC_DISABLEGROUPS));
                                 if (!(caps & CLUIF_HASONTOPOPTION)) {
                                     DBWriteContactSettingByte(NULL, "CList", "OnTop", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_ONTOP));
-                                    SetWindowPos((HWND) CallService(MS_CLUI_GETHWND, 0, 0), IsDlgButtonChecked(hwndDlg, IDC_ONTOP) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+                                    SetWindowPos(pcli->hwndContactList, IsDlgButtonChecked(hwndDlg, IDC_ONTOP) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
                                 }
                                 if (!(caps & CLUIF_HASAUTOHIDEOPTION)) {
-                                    DBWriteContactSettingByte(NULL, "CList", "AutoHide", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOHIDE));
-                                    DBWriteContactSettingWord(NULL, "CList", "HideTime", (WORD) SendDlgItemMessage(hwndDlg, IDC_HIDETIMESPIN, UDM_GETPOS, 0, 0));
                                 }
                             }
-
-							{
-								int i;
-								LRESULT curSel;
-
-								for(i = 0; sortCtrlIDs[i] != 0; i++) {
-									curSel = SendDlgItemMessage(hwndDlg, sortCtrlIDs[i], CB_GETCURSEL, 0, 0);
-									if(curSel == 0 || curSel == CB_ERR)
-										g_CluiData.sortOrder[i] = 0;
-									else
-										g_CluiData.sortOrder[i] = (BYTE)curSel;
-								}
-								DBWriteContactSettingDword(NULL, "CList", "SortOrder", 
-									MAKELONG(MAKEWORD(g_CluiData.sortOrder[0], g_CluiData.sortOrder[1]),
-									MAKEWORD(g_CluiData.sortOrder[2], 0)));
-
-								if(g_CluiData.sortOrder[0] == SORTBY_LASTMSG || g_CluiData.sortOrder[1] == SORTBY_LASTMSG || g_CluiData.sortOrder[2] == SORTBY_LASTMSG) {
-									int i;
-
-									for(i = 0; i < g_nextExtraCacheEntry; i++)
-										g_ExtraCache[i].dwLastMsgTime = INTSORT_GetLastMsgTime(g_ExtraCache[i].hContact);
-								}
-							}
-
                             DBWriteContactSettingByte(NULL, "CList", "ConfirmDelete", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_CONFIRMDELETE));
                             DBWriteContactSettingByte(NULL, "CList", "Tray1Click", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_ONECLK));
                             DBWriteContactSettingByte(NULL, "CList", "AlwaysStatus", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_ALWAYSSTATUS));
@@ -256,20 +182,34 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                             DBWriteContactSettingWord(NULL, "CList", "IconFlashTime", (WORD) SendDlgItemMessage(hwndDlg, IDC_BLINKSPIN, UDM_GETPOS, 0, 0));
                             DBWriteContactSettingByte(NULL, "CList", "DisableTrayFlash", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_DISABLEBLINK));
                             DBWriteContactSettingByte(NULL, "CList", "NoIconBlink", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_ICONBLINK));
-                            g_CluiData.bDontSeparateOffline = IsDlgButtonChecked(hwndDlg, IDC_DONTSEPARATE) ? 1 : 0;
-                            DBWriteContactSettingByte(NULL, "CList", "DontSeparateOffline", g_CluiData.bDontSeparateOffline);
+                            DBWriteContactSettingByte(NULL, "CList", "AutoApplyLastViewMode", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_APPLYLASTVIEWMODE));
+
+                            __setFlag(CLUI_FRAME_EVENTAREASUNKEN, IsDlgButtonChecked(hwndDlg, IDC_EVENTAREASUNKEN));
+                            __setFlag(CLUI_FRAME_AUTOHIDENOTIFY, IsDlgButtonChecked(hwndDlg, IDC_EVENTAREAAUTOHIDE));
+
+                            __setFlag(CLUI_FRAME_SHOWTOPBUTTONS, IsDlgButtonChecked(hwndDlg, IDC_SHOWBUTTONBAR));
+                            __setFlag(CLUI_FRAME_SHOWBOTTOMBUTTONS, IsDlgButtonChecked(hwndDlg, IDC_SHOWBOTTOMBUTTONS));
+                            __setFlag(CLUI_FRAME_CLISTSUNKEN, IsDlgButtonChecked(hwndDlg, IDC_CLISTSUNKEN));
 
                             g_CluiData.bNoTrayTips = IsDlgButtonChecked(hwndDlg, IDC_NOTRAYINFOTIPS) ? 1 : 0;
-                            DBWriteContactSettingByte(NULL, "CList", "NoTrayTips", g_CluiData.bNoTrayTips);
+                            DBWriteContactSettingByte(NULL, "CList", "NoTrayTips", (BYTE)g_CluiData.bNoTrayTips);
                             if (!SendDlgItemMessage(hwndDlg, IDC_PRIMARYSTATUS, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_PRIMARYSTATUS, CB_GETCURSEL, 0, 0), 0))
                                 DBDeleteContactSetting(NULL, "CList", "PrimaryStatus");
                             else
                                 DBWriteContactSettingString(NULL, "CList", "PrimaryStatus", ((PROTOCOLDESCRIPTOR *) SendDlgItemMessage(hwndDlg, IDC_PRIMARYSTATUS, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_PRIMARYSTATUS, CB_GETCURSEL, 0, 0), 0))->szName);
                             pcli->pfnTrayIconIconsChanged();
-                            LoadContactTree(); /* this won't do job properly since it only really works when changes happen */
-                            SendMessage(pcli->hwndContactTree, CLM_AUTOREBUILD, 0, 0); /* force reshuffle */
-                            g_CluiData.dwFlags = IsDlgButtonChecked(hwndDlg, IDC_EVENTSONTOP) ? g_CluiData.dwFlags | CLUI_STICKYEVENTS : g_CluiData.dwFlags & ~CLUI_STICKYEVENTS;
                             DBWriteContactSettingDword(NULL, "CLUI", "Frameflags", g_CluiData.dwFlags);
+                            ConfigureFrame();
+                            ConfigureCLUIGeometry(1);
+                            ConfigureEventArea(pcli->hwndContactList);
+                            HideShowNotifyFrame();
+                            SendMessage(pcli->hwndContactTree, WM_SIZE, 0, 0);
+                            SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
+                            LoadContactTree(); /* this won't do job properly since it only really works when changes happen */
+                            pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
+                            PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);
+
+                            opt_gen_opts_changed = 0;
                             return TRUE;
                     }
                     break;
@@ -279,7 +219,7 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
     return FALSE;
 }
 
-static BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg) {
         case WM_INITDIALOG:
@@ -340,7 +280,7 @@ static BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                 case PSN_APPLY:
                     {
                         char str[256];
-                        pcli->pfnHotKeysUnregister((HWND) CallService(MS_CLUI_GETHWND, 0, 0));
+                        pcli->pfnHotKeysUnregister(pcli->hwndContactList);
                         DBWriteContactSettingByte(NULL, "CList", "HKEnShowHide", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWHIDE));
                         DBWriteContactSettingWord(NULL, "CList", "HKShowHide", (WORD) SendDlgItemMessage(hwndDlg, IDC_HKSHOWHIDE, HKM_GETHOTKEY, 0, 0));
                         DBWriteContactSettingByte(NULL, "CList", "HKEnReadMsg", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_READMSG));
@@ -352,7 +292,7 @@ static BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                         DBWriteContactSettingByte(NULL, "CList", "HKSearchNewWnd", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SEARCHNEWWND));
                         DBWriteContactSettingByte(NULL, "CList", "HKEnShowOptions", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWOPTIONS));
                         DBWriteContactSettingWord(NULL, "CList", "HKShowOptions", (WORD) SendDlgItemMessage(hwndDlg, IDC_HKSHOWOPTIONS, HKM_GETHOTKEY, 0, 0));
-                        pcli->pfnHotKeysRegister((HWND) CallService(MS_CLUI_GETHWND, 0, 0));
+                        pcli->pfnHotKeysRegister(pcli->hwndContactList);
                         return TRUE;
                     }
             }

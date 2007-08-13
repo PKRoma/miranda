@@ -17,6 +17,7 @@
 #define HTTP_PROXY_VERSION  0x0443
 
 int YAHOO_httpGatewayInit(HANDLE hConn, NETLIBOPENCONNECTION *nloc, NETLIBHTTPREQUEST *nlhr);
+int YAHOO_httpGatewayWrapSend(HANDLE hConn, PBYTE buf, int len, int flags, MIRANDASERVICE pfnNetlibSend);
 PBYTE YAHOO_httpGatewayUnwrapRecv(NETLIBHTTPREQUEST *nlhr, PBYTE buf, int bufLen, int *outBufLen, void *(*NetlibRealloc)(void *, size_t));
 
 #endif 

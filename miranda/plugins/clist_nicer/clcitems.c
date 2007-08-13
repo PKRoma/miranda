@@ -24,16 +24,10 @@ UNICODE done
 
 */
 #include "commonheaders.h"
+#include <m_icq.h>
 
-static TCHAR *xStatusDescr[] = 
-{
-	_T("Angry"), _T("Duck"), _T("Tired"), _T("Party"), _T("Beer"), _T("Thinking"), _T("Eating"), _T("TV"), _T("Friends"), _T("Coffee"),
-	_T("Music"), _T("Business"), _T("Camera"), _T("Funny"), _T("Phone"), _T("Games"), _T("College"), _T("Shopping"), _T("Sick"), _T("Sleeping"),
-    _T("Surfing"), _T("@Internet"), _T("Engineering"), _T("Typing"), _T("Eating..yummy.."), _T("Having fun"), _T("Chit chatting"), _T("Crashing"), _T("Going to toilet")
- };
 
 CRITICAL_SECTION cs_extcache;
-
 extern struct CluiData g_CluiData;
 extern HANDLE hExtraImageListRebuilding, hExtraImageApplying;
 
@@ -99,6 +93,32 @@ struct ClcGroup *RemoveItemFromGroup(HWND hwnd, struct ClcGroup *group, struct C
 	return(saveRemoveItemFromGroup(hwnd, group, contact, updateTotalCount));
 }
 
+void LoadAvatarForContact(struct ClcContact *p)
+{
+    DWORD dwFlags;
+
+    if(p->extraCacheEntry >= 0 && p->extraCacheEntry < g_nextExtraCacheEntry)
+        dwFlags = g_ExtraCache[p->extraCacheEntry].dwDFlags;
+    else
+        dwFlags = DBGetContactSettingDword(p->hContact, "CList", "CLN_Flags", 0);
+
+    if(g_CluiData.dwFlags & CLUI_FRAME_AVATARS)
+        p->cFlags = (dwFlags & ECF_HIDEAVATAR ? p->cFlags & ~ECF_AVATAR : p->cFlags | ECF_AVATAR);
+    else
+        p->cFlags = (dwFlags & ECF_FORCEAVATAR ? p->cFlags | ECF_AVATAR : p->cFlags & ~ECF_AVATAR);
+
+    p->ace = NULL;
+    if(g_CluiData.bAvatarServiceAvail && (p->cFlags & ECF_AVATAR) && (!g_CluiData.bNoOfflineAvatars || p->wStatus != ID_STATUS_OFFLINE)) {
+        p->ace = (struct avatarCacheEntry *)CallService(MS_AV_GETAVATARBITMAP, (WPARAM)p->hContact, 0);
+        if (p->ace != NULL && p->ace->cbSize != sizeof(struct avatarCacheEntry))
+            p->ace = NULL;
+        if (p->ace != NULL)
+            p->ace->t_lastAccess = g_CluiData.t_now;
+    }
+    if(p->ace == NULL)
+        p->cFlags &= ~ECF_AVATAR;
+}
+
 int AddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDLE hContact)
 {
 	int i = saveAddContactToGroup( dat, group, hContact );
@@ -106,6 +126,8 @@ int AddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDLE hConta
 
 	p->wStatus = DBGetContactSettingWord(hContact, p->proto, "Status", ID_STATUS_OFFLINE);
 	p->xStatus = DBGetContactSettingByte(hContact, p->proto, "XStatusId", 0);
+    //p->iRowHeight = -1;
+
 	if (p->proto)
 		p->bIsMeta = !strcmp(p->proto, "MetaContacts");
 	else
@@ -120,14 +142,7 @@ int AddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDLE hConta
 	}
 
 	p->codePage = DBGetContactSettingDword(hContact, "Tab_SRMsg", "ANSIcodepage", DBGetContactSettingDword(hContact, "UserInfo", "ANSIcodepage", CP_ACP));
-	p->ace = NULL;
-	if(g_CluiData.bAvatarServiceAvail && (!g_CluiData.bNoOfflineAvatars || p->wStatus != ID_STATUS_OFFLINE)) {
-		p->ace = (struct avatarCacheEntry *)CallService(MS_AV_GETAVATARBITMAP, (WPARAM)hContact, 0);
-		if (p->ace != NULL && p->ace->cbSize != sizeof(struct avatarCacheEntry))
-			p->ace = NULL;
-		if (p->ace != NULL)
-			p->ace->t_lastAccess = g_CluiData.t_now;
-	}
+    p->bSecondLine = DBGetContactSettingByte(hContact, "CList", "CLN_2ndline", g_CluiData.dualRowMode);
 
 	if(dat->bisEmbedded)
 		p->extraCacheEntry = -1;
@@ -145,6 +160,9 @@ int AddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDLE hConta
 				}
 			}
 		}
+        LoadAvatarForContact(p);
+        // notify other plugins to re-supply their extra images (icq for xstatus, mBirthday etc...)
+        NotifyEventHooks(hExtraImageApplying, (WPARAM)hContact, 0);
 	}
 #if defined(_UNICODE)
 	RTL_DetectAndSet( p, p->hContact);
@@ -274,6 +292,8 @@ BYTE GetCachedStatusMsg(int iExtraCacheEntry, char *szProto)
 	}	}
 
 	if(cEntry->bStatusMsgValid == STATUSMSG_NOTFOUND) {      // no status msg, consider xstatus name (if available)
+		if ( !result )
+			DBFreeVariant( &dbv );
 		result = DBGetContactSettingTString(hContact, szProto, "XStatusName", &dbv);
 		if ( !result && lstrlen(dbv.ptszVal) > 1) {
 			int iLen = lstrlen(dbv.ptszVal);
@@ -282,12 +302,26 @@ BYTE GetCachedStatusMsg(int iExtraCacheEntry, char *szProto)
 			_tcsncpy(cEntry->statusMsg, dbv.ptszVal, iLen + 1);
 		}
 		else {
-			BYTE bXStatus = DBGetContactSettingByte(hContact, szProto, "XStatusId", 0);
-			if(bXStatus > 0 && bXStatus <= 29) {
-				TCHAR *szwXstatusName = TranslateTS(xStatusDescr[bXStatus - 1]);
-				cEntry->statusMsg = (TCHAR *)realloc(cEntry->statusMsg, (lstrlen(szwXstatusName) + 2) * sizeof(TCHAR));
-				_tcsncpy(cEntry->statusMsg, szwXstatusName, lstrlen(szwXstatusName) + 1);
-				cEntry->bStatusMsgValid = STATUSMSG_XSTATUSNAME;
+			ICQ_CUSTOM_STATUS cst = {0};
+			int xStatus;
+			TCHAR xStatusName[128];
+			char szServiceName[128];
+
+			mir_snprintf(szServiceName, 128, "%s%s", szProto, PS_ICQ_GETCUSTOMSTATUSEX);
+
+			cst.cbSize = sizeof(ICQ_CUSTOM_STATUS);
+			cst.flags = CSSF_MASK_STATUS;
+			cst.status = &xStatus;
+			if(ServiceExists(szServiceName) && !CallService(szServiceName, (WPARAM)hContact, (LPARAM)&cst) && xStatus > 0) {
+				cst.flags = CSSF_MASK_NAME | CSSF_DEFAULT_NAME | CSSF_TCHAR;
+				cst.wParam = &xStatus;
+				cst.ptszName = xStatusName; 
+				if(!CallService(szServiceName, (WPARAM)hContact, (LPARAM)&cst)) {
+					TCHAR *szwXstatusName = TranslateTS(xStatusName);
+					cEntry->statusMsg = (TCHAR *)realloc(cEntry->statusMsg, (lstrlen(szwXstatusName) + 2) * sizeof(TCHAR));
+					_tcsncpy(cEntry->statusMsg, szwXstatusName, lstrlen(szwXstatusName) + 1);
+					cEntry->bStatusMsgValid = STATUSMSG_XSTATUSNAME;
+				}
 			}
 		}
 	}
@@ -481,10 +515,6 @@ void GetExtendedInfo(struct ClcContact *contact, struct ClcData *dat)
         contact_gmt_diff = g_ExtraCache[index].timezone > 128 ? 256 - g_ExtraCache[index].timezone : 0 - g_ExtraCache[index].timezone;
         g_ExtraCache[index].timediff = (int)g_CluiData.local_gmt_diff - (int)contact_gmt_diff*60*60/2;
     }
-
-    // notify other plugins to re-supply their extra images (icq for xstatus, mBirthday etc...)
-    
-    NotifyEventHooks(hExtraImageApplying, (WPARAM)contact->hContact, 0);
 }
 
 static void LoadSkinItemToCache(struct ExtraCache *cEntry, char *szProto)
@@ -532,6 +562,24 @@ void ReloadSkinItemsToCache()
     }
 }
 
+DWORD CalcXMask(HANDLE hContact)
+{
+    DWORD dwXMask = DBGetContactSettingDword(hContact, "CList", "CLN_xmask", 0);
+    int   i;
+    DWORD dwResult = g_CluiData.dwExtraImageMask, bForced, bHidden;
+
+    for(i = 0; i <= 10; i++) {
+        bForced = (dwXMask & (1 << (2 * i)));
+        bHidden = (dwXMask & (1 << (2 * i + 1)));
+        if(bForced == 0 && bHidden == 0)
+            continue;
+        else if(bForced)
+            dwResult |= (1 << i);
+        else if(bHidden)
+            dwResult &= ~(1 << i);
+    }
+    return(dwResult);
+}
 int GetExtraCache(HANDLE hContact, char *szProto)
 {
     int i, iFound = -1;
@@ -558,6 +606,8 @@ int GetExtraCache(HANDLE hContact, char *szProto)
         g_ExtraCache[g_nextExtraCacheEntry].status_item = NULL;
         LoadSkinItemToCache(&g_ExtraCache[g_nextExtraCacheEntry], szProto);
         g_ExtraCache[g_nextExtraCacheEntry].dwCFlags = g_ExtraCache[g_nextExtraCacheEntry].timediff = g_ExtraCache[g_nextExtraCacheEntry].timezone = 0;
+        g_ExtraCache[g_nextExtraCacheEntry].dwDFlags = DBGetContactSettingDword(hContact, "CList", "CLN_Flags", 0);
+        g_ExtraCache[g_nextExtraCacheEntry].dwXMask = CalcXMask(hContact);
         GetCachedStatusMsg(g_nextExtraCacheEntry, szProto);
 		g_ExtraCache[g_nextExtraCacheEntry].dwLastMsgTime = INTSORT_GetLastMsgTime(hContact);
         iFound = g_nextExtraCacheEntry++;

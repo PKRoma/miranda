@@ -29,7 +29,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 PLUGININFO pluginInfo = {
     sizeof(PLUGININFO), 
 	"Skin editor",
-	PLUGIN_MAKE_VERSION(0, 0, 0, 1), 
+	PLUGIN_MAKE_VERSION(0, 0, 0, 2), 
 	"Skin editor for clist_nicer+", 
 	"Nightwish", 
 	"", 
@@ -670,12 +670,16 @@ static BOOL CALLBACK SkinEdit_ExtBkDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam
             AppendMenu(psd->hMenuItems, MF_STRING | MF_DISABLED, (UINT_PTR)0, _T("Copy from"));
             AppendMenuA(psd->hMenuItems, MF_SEPARATOR, (UINT_PTR)0, NULL);
 
-            for(int i = ID_EXTBK_FIRST; i <= ID_EXTBK_LAST; i++) {
-                int iOff = StatusItems[i - ID_EXTBK_FIRST].szName[0] == '{' ? 3 : 0;
-                if(iOff)
-                    AppendMenuA(psd->hMenuItems, MF_SEPARATOR, (UINT_PTR)0, NULL);
-                AppendMenuA(psd->hMenuItems, MF_STRING, (UINT_PTR)i, &StatusItems[i - ID_EXTBK_FIRST].szName[iOff]);
-            }
+            {
+				int i;
+				
+				for(i = ID_EXTBK_FIRST; i <= ID_EXTBK_LAST; i++) {
+					int iOff = StatusItems[i - ID_EXTBK_FIRST].szName[0] == '{' ? 3 : 0;
+					if(iOff)
+						AppendMenuA(psd->hMenuItems, MF_SEPARATOR, (UINT_PTR)0, NULL);
+					AppendMenuA(psd->hMenuItems, MF_STRING, (UINT_PTR)i, &StatusItems[i - ID_EXTBK_FIRST].szName[iOff]);
+				}
+			}
             return TRUE;
         case WM_USER + 101:
             {

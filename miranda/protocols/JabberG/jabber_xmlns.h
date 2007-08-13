@@ -2,7 +2,7 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-06  George Hazan
+Copyright ( C ) 2005-07  George Hazan
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -28,7 +28,7 @@ Last change by : $Author$
 #ifndef _JABBER_XMLNS_H_
 #define _JABBER_XMLNS_H_
 
-void JabberXmlnsBrowse( XmlNode *iqNode, void *userdata );
-void JabberXmlnsDisco( XmlNode *iqNode, void *userdata );
+void JabberHandleDiscoInfoRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
+void JabberHandleDiscoItemsRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
 
 #endif

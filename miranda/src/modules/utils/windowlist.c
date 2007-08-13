@@ -79,21 +79,6 @@ static int BroadcastToWindowListAsync(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int FreeWindowList(WPARAM wParam,LPARAM lParam)
-{
-	if (windowList) mir_free(windowList);
-	windowList=NULL;
-	windowListCount=0;
-	nextWindowListId=1;
-	return 0;
-}
-
-static int HookShutdown(WPARAM wParam, LPARAM lParam)
-{
-	HookEvent(ME_SYSTEM_SHUTDOWN,FreeWindowList);
-	return 0;
-}
-
 int InitWindowList(void)
 {
 	CreateServiceFunction(MS_UTILS_ALLOCWINDOWLIST,AllocWindowList);
@@ -102,6 +87,15 @@ int InitWindowList(void)
 	CreateServiceFunction(MS_UTILS_BROADCASTTOWINDOWLIST,BroadcastToWindowList);
 	CreateServiceFunction(MS_UTILS_BROADCASTTOWINDOWLIST_ASYNC,BroadcastToWindowListAsync);
 	CreateServiceFunction(MS_UTILS_FINDWINDOWINLIST,FindInWindowList);
-	HookEvent(ME_SYSTEM_MODULESLOADED,HookShutdown);
 	return 0;
+}
+
+void FreeWindowList()
+{
+	if ( windowList ) {
+		mir_free(windowList);
+		windowList = NULL;
+	}
+	windowListCount=0;
+	nextWindowListId=1;
 }

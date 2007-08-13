@@ -57,9 +57,9 @@ int ClcOptInit(WPARAM wParam,LPARAM lParam)
 	odp.cbSize=sizeof(odp);
 	odp.position=0;
 	odp.hInstance=g_hInst;
-	odp.pszGroup=Translate("Contact List");
+	odp.pszGroup=LPGEN("Contact List");
 	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_CLC);
-	odp.pszTitle=Translate("List");
+	odp.pszTitle=LPGEN("List");
 	odp.pfnDlgProc=DlgProcClcMainOpts;
 	odp.flags=ODPF_BOLDGROUPS|ODPF_EXPERTONLY;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
@@ -67,26 +67,26 @@ int ClcOptInit(WPARAM wParam,LPARAM lParam)
 	if (!ServiceExists(MS_BACKGROUNDCONFIG_REGISTER))
 	{
 	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_CLCBKG);
-	odp.pszTitle=Translate("List Background");
+	odp.pszTitle=LPGEN("List Background");
 	odp.pfnDlgProc=DlgProcClcBkgOpts;
 	odp.flags=ODPF_BOLDGROUPS;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 	}
 
 	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_CLCTEXT);
-	odp.pszTitle=Translate("List Text");
+	odp.pszTitle=LPGEN("List Text");
 	odp.pfnDlgProc=DlgProcClcTextOpts;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 
 	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_META_CLC);
-	odp.pszTitle=Translate("List MetaContacts");
+	odp.pszTitle=LPGEN("List MetaContacts");
 	odp.pfnDlgProc=DlgProcClcMetaOpts;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 
 	if (!ServiceExists(MS_BACKGROUNDCONFIG_REGISTER))
 	{
 		odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_CLCBKG);
-		odp.pszTitle=Translate("StatusBar Background");
+		odp.pszTitle=LPGEN("StatusBar Background");
 		odp.pfnDlgProc=DlgProcStatusBarBkgOpts;
 		odp.flags=ODPF_BOLDGROUPS;
 		CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
@@ -598,17 +598,17 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 static const TCHAR *szFontIdDescr[FONTID_MAX+1]=
 {
-	_T("Standard contacts"),
-	_T("Online contacts to whom you have a different visibility"),
-	_T("Offline contacts"),
-	_T("Contacts which are 'not on list'"),
-	_T("Groups"),
-	_T("Group member counts"),
-	_T("Dividers"),
-	_T("Offline contacts to whom you have a different visibility"),
-	_T("Status messages"),
-	_T("Group Closed"),
-	_T("Hover Contacts")
+	LPGENT("Standard contacts"),
+	LPGENT("Online contacts to whom you have a different visibility"),
+	LPGENT("Offline contacts"),
+	LPGENT("Contacts which are 'not on list'"),
+	LPGENT("Groups"),
+	LPGENT("Group member counts"),
+	LPGENT("Dividers"),
+	LPGENT("Offline contacts to whom you have a different visibility"),
+	LPGENT("Status messages"),
+	LPGENT("Group Closed"),
+	LPGENT("Hover Contacts")
 };
 
 #define SAMEASF_FACE   1

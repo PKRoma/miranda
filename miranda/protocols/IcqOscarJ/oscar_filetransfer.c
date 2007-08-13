@@ -266,7 +266,7 @@ void SafeReleaseFileTransfer(void **ft)
     LeaveCriticalSection(&oftMutex);
     return;
   }
-
+  
   if (*bft)
   {
     if ((*bft)->ft_magic == FT_MAGIC_ICQ)
@@ -968,7 +968,7 @@ int oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, char** files, cha
     { // transfering single file, give filename
       pszFiles = ExtractFileName(ft->files[0].szFile);
     }
-    else
+    else 
     { // check if transfering one directory
       char *szFirstDiv, *szFirstDir = ft->file_containers[0];
       int nFirstDirLen;
@@ -1263,15 +1263,13 @@ void CloseOscarConnection(oscar_connection *oc)
 
 void OpenOscarConnection(HANDLE hContact, oscar_filetransfer *ft, int type)
 {
-  pthread_t tid;
   oscarthreadstartinfo *otsi = (oscarthreadstartinfo*)SAFE_MALLOC(sizeof(oscarthreadstartinfo));
 
   otsi->hContact = hContact;
   otsi->type = type;
   otsi->ft = ft;
 
-  tid.hThread = (HANDLE)forkthreadex(NULL, 0, oft_connectionThread, otsi, 0, &tid.dwThreadId);
-  CloseHandle(tid.hThread);
+  ICQCreateThread(oft_connectionThread, otsi);
 }
 
 
@@ -1307,7 +1305,6 @@ static int CreateOscarProxyConnection(oscar_connection *oc)
 // This function is called from the Netlib when someone is connecting to our oscar_listener
 static void oft_newConnectionReceived(HANDLE hNewConnection, DWORD dwRemoteIP, void *pExtra)
 {
-  pthread_t tid;
   oscarthreadstartinfo *otsi = (oscarthreadstartinfo*)SAFE_MALLOC(sizeof(oscarthreadstartinfo));
   oscar_listener* listener = (oscar_listener*)pExtra;
 
@@ -1318,8 +1315,7 @@ static void oft_newConnectionReceived(HANDLE hNewConnection, DWORD dwRemoteIP, v
   otsi->listener = listener;
 
   // Start a new thread for the incomming connection
-  tid.hThread = (HANDLE)forkthreadex(NULL, 0, oft_connectionThread, otsi, 0, &tid.dwThreadId);
-  CloseHandle(tid.hThread);
+  ICQCreateThread(oft_connectionThread, otsi);
 }
 
 

@@ -66,7 +66,8 @@ __inline int mir_strlen (const char *a)
  	 	
 #define strlen(a) mir_strlen(a)
 #define strcmp(a,b) mir_strcmp(a,b)
- 	 	
+ 	
+/*
 __inline void *mir_calloc( size_t num, size_t size )
 {
  	void *p=mir_alloc(num*size);
@@ -74,7 +75,7 @@ __inline void *mir_calloc( size_t num, size_t size )
 	memset(p,0,num*size);
     return p;
 };
-
+*/
 extern __inline wchar_t * mir_strdupW(const wchar_t * src)
 {
 	wchar_t * p;
@@ -95,44 +96,6 @@ __inline char * strdupn(const char * src, int len)
     memcpy(p,src,len);
     p[len]='\0';
     return p;
-}
-
-TCHAR *DBGetStringT(HANDLE hContact,const char *szModule,const char *szSetting)
-{
-	TCHAR *str=NULL;
-    DBVARIANT dbv={0};
-	if (!DBGetContactSettingTString(hContact,szModule,szSetting,&dbv))
-		str=mir_tstrdup(dbv.ptszVal);		
-	DBFreeVariant(&dbv);
-	return str;
-}
-char *DBGetStringA(HANDLE hContact,const char *szModule,const char *szSetting)
-{
-	char *str=NULL;
-    DBVARIANT dbv={0};
-	DBGetContactSetting(hContact,szModule,szSetting,&dbv);
-	if(dbv.type==DBVT_ASCIIZ)
-    {
-        str=mir_strdup(dbv.pszVal);
-        //mir_free_and_nill(dbv.pszVal);
-    }
-    DBFreeVariant(&dbv);
-	return str;
-}
-wchar_t *DBGetStringW(HANDLE hContact,const char *szModule,const char *szSetting)
-{
-	wchar_t *str=NULL;
-	DBVARIANT dbv={0};
-	DBGetContactSetting(hContact,szModule,szSetting,&dbv);
-	if(dbv.type==DBVT_WCHAR)
-	{
-		str=mir_strdupW(dbv.pwszVal);
-		//mir_free_and_nill(dbv.pwszVal);
-	}
-	//else  TODO if no unicode string (only ansi)
-	//
-	DBFreeVariant(&dbv);
-	return str;
 }
 
 DWORD exceptFunction(LPEXCEPTION_POINTERS EP) 
@@ -186,40 +149,21 @@ void TRACE_ERROR()
 BOOL DebugDeleteObject(HGDIOBJ a)
 {
 	BOOL res=DeleteObject(a);
-	if (!res) 
-	{
-		DWORD t = GetLastError();
-		LPVOID lpMsgBuf;
-		if (!FormatMessage( 
-			FORMAT_MESSAGE_ALLOCATE_BUFFER | 
-			FORMAT_MESSAGE_FROM_SYSTEM | 
-			FORMAT_MESSAGE_IGNORE_INSERTS,
-			NULL,
-			t,
-			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
-			(LPTSTR) &lpMsgBuf,
-			0,
-			NULL ))
-		{
-		// Handle the error.
-		return res;
-		}
-
-		MessageBox( NULL, (LPCTSTR)lpMsgBuf, _T("Error"), MB_OK | MB_ICONINFORMATION );
-		LocalFree( lpMsgBuf );
-
-	}
+	if (!res) TRACE_ERROR();
 	return res;
 }
 
 __inline BOOL mod_DeleteDC(HDC hdc)
 {
-//  SkinEngine_ResetTextEffect(hdc);
+//  ske_ResetTextEffect(hdc);
   return DeleteDC(hdc);
 }
 #ifdef _DEBUG
 #define DeleteObject(a) DebugDeleteObject(a)
 #endif 
+
+
+// load small icon (shared) it's not need to be destroyed
 
 HICON LoadSmallIconShared(HINSTANCE hInstance, LPCTSTR lpIconName)
 {
@@ -227,6 +171,7 @@ HICON LoadSmallIconShared(HINSTANCE hInstance, LPCTSTR lpIconName)
 		return LoadImage(hInstance,lpIconName, IMAGE_ICON,cx,cx, LR_DEFAULTCOLOR|LR_SHARED);
 }
 
+// load small icon (not shared) it IS NEED to be destroyed
 HICON LoadSmallIcon(HINSTANCE hInstance, LPCTSTR lpIconName)
 {
 	HICON hIcon=NULL;				  // icon handle 
@@ -237,10 +182,64 @@ HICON LoadSmallIcon(HINSTANCE hInstance, LPCTSTR lpIconName)
 	return hIcon;
 }
 
+// load small icon from hInstance
+HICON LoadIconEx(HINSTANCE hInstance, LPCTSTR lpIconName, BOOL bShared)
+{
+    HICON hResIcon=bShared?LoadSmallIcon(hInstance,lpIconName):LoadSmallIconShared(hInstance,lpIconName);
+    if (!hResIcon) //Icon not found in hInstance lets try to load it from core
+    {
+        HINSTANCE hCoreInstance=GetModuleHandle(NULL);
+        if (hCoreInstance!=hInstance)
+            hResIcon=bShared?LoadSmallIcon(hInstance,lpIconName):LoadSmallIconShared(hInstance,lpIconName);
+    }
+    return hResIcon;
+}
+
 BOOL DestroyIcon_protect(HICON icon)
 {
 	if (icon) return DestroyIcon(icon);
 	return FALSE;
 }
 
+void li_ListDestruct(SortedList *pList, ItemDestuctor pItemDestructor)
+{																			
+	int i=0;
+	if (!pList) return;
+	for (i=0; i<pList->realCount; i++)	pItemDestructor(pList->items[i]);	
+	li.List_Destroy(pList);																											
+   mir_free(pList);
+}
+
+void li_RemoveDestruct(SortedList *pList, int index, ItemDestuctor pItemDestructor)
+{																																
+	if (index>=0 && index<pList->realCount)	
+	{
+		pItemDestructor(pList->items[index]);
+		li.List_Remove(pList, index);
+	}
+}
+
+void li_RemovePtrDestruct(SortedList *pList, void * ptr, ItemDestuctor pItemDestructor)
+{																																
+	if (li.List_RemovePtr(pList, ptr))
+        pItemDestructor(ptr);
+}
+
+void li_SortList(SortedList *pList, FSortFunc pSortFunct)
+{
+	FSortFunc pOldSort=pList->sortFunc;
+	int i;
+	if (!pSortFunct) pSortFunct=pOldSort;
+	pList->sortFunc=NULL;
+	for (i=0; i<pList->realCount-1; i++)
+		if (pOldSort(pList->items[i],pList->items[i+1])<0)
+		{
+		    void * temp=pList->items[i];
+			pList->items[i]=pList->items[i+1];
+			pList->items[i+1]=temp;
+			i--;
+			if (i>0) i--;
+		}
+	pList->sortFunc=pOldSort;
+}
 

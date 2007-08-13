@@ -15,8 +15,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\Debug"
-			IntermediateDirectory=".\Debug"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -48,14 +48,14 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../../include"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;IRC_EXPORTS"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;IRC_EXPORTS;_USE_32BIT_TIME_T"
 				MinimalRebuild="true"
+				ExceptionHandling="1"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				PrecompiledHeaderFile=".\Debug/IRC.pch"
+				EnableFunctionLevelLinking="true"
+				PrecompiledHeaderFile=""
 				AssemblerListingLocation=".\Debug/"
-				ObjectFile=".\Debug/"
-				ProgramDataBaseFileName=".\Debug/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
@@ -75,15 +75,13 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/DLL"
 				AdditionalDependencies="odbc32.lib odbccp32.lib shlwapi.lib wsock32.lib"
-				OutputFile="../../bin/Debug/plugins/IRC.dll"
-				LinkIncremental="2"
+				LinkIncremental="0"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Debug/IRC.pdb"
-				GenerateMapFile="true"
-				MapFileName=".\Debug/IRC.map"
+				GenerateMapFile="false"
+				MapFileName=""
 				BaseAddress="0x54010000"
-				ImportLibrary=".\Debug/IRC.lib"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -98,7 +96,6 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Debug/IRC.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -115,13 +112,14 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\Release"
-			IntermediateDirectory=".\Release"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -146,19 +144,20 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="2"
-				InlineFunctionExpansion="1"
+				Optimization="3"
+				InlineFunctionExpansion="2"
+				FavorSizeOrSpeed="2"
+				OmitFramePointers="true"
 				AdditionalIncludeDirectories="../../include"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;IRC_EXPORTS"
-				StringPooling="false"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;IRC_EXPORTS;_USE_32BIT_TIME_T"
+				StringPooling="true"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
-				PrecompiledHeaderFile=".\Release/IRC.pch"
+				PrecompiledHeaderFile=""
 				AssemblerListingLocation=".\Release/"
-				ObjectFile=".\Release/"
-				ProgramDataBaseFileName=".\Release/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
+				DebugInformationFormat="3"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -175,14 +174,15 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/DLL"
 				AdditionalDependencies="odbc32.lib odbccp32.lib shlwapi.lib wsock32.lib"
-				OutputFile="../../bin/Release/plugins/IRC.dll"
-				LinkIncremental="1"
+				LinkIncremental="0"
 				SuppressStartupBanner="true"
-				ProgramDatabaseFile=".\Release/IRC.pdb"
-				GenerateMapFile="true"
-				MapFileName=".\Release/IRC.map"
+				GenerateDebugInformation="true"
+				GenerateMapFile="false"
+				MapFileName=""
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
 				BaseAddress="0x54010000"
-				ImportLibrary=".\Release/IRC.lib"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -197,7 +197,6 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Release/IRC.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -533,11 +532,11 @@
 				>
 			</File>
 			<File
-				RelativePath="Icons\Icons\irc.ico"
+				RelativePath="Icons\irc.ico"
 				>
 			</File>
 			<File
-				RelativePath="Icons\irc.ico"
+				RelativePath="Icons\Icons\irc.ico"
 				>
 			</File>
 			<File

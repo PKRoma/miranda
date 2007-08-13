@@ -4,6 +4,13 @@ Legend:
 [-] deleted
 [!] bug fixed
 
+Version 0.7.1.0
+===============
+[+] All bitmap processing routines were removed in honour of the loadavatars plugin
+
+Version 0.7.0.1
+===============
+[+] IcoLib Integration
 
 Version 0.5.0.3
 ===============

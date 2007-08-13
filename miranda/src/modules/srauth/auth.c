@@ -47,7 +47,9 @@ static int AuthEventAdded(WPARAM wParam,LPARAM lParam)
 	CLISTEVENT cli;
 	char szTooltip[256];
 	HANDLE hcontact;
-
+    CONTACTINFO ci;
+    char szUid[128];
+    
 	ZeroMemory(&dbei,sizeof(dbei));
 	dbei.cbSize=sizeof(dbei);
 	dbei.cbBlob=0;
@@ -67,21 +69,45 @@ static int AuthEventAdded(WPARAM wParam,LPARAM lParam)
 	cli.lParam=lParam;
 	cli.hDbEvent=(HANDLE)lParam;
 
+    szUid[0] = 0;
+    ZeroMemory(&ci, sizeof(ci));
+    ci.cbSize = sizeof(ci);
+    ci.hContact = hcontact;
+    ci.szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hcontact, 0);
+    ci.dwFlag = CNF_UNIQUEID;
+    if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
+        switch (ci.type) {
+            case CNFT_ASCIIZ:
+                mir_snprintf(szUid, SIZEOF(szUid), "%s", ci.pszVal);
+                mir_free(ci.pszVal);
+                break;
+            case CNFT_DWORD:
+                mir_snprintf(szUid, SIZEOF(szUid), "%u", ci.dVal);
+                break;
+        }
+    }
+                    
 	if(dbei.eventType==EVENTTYPE_AUTHREQUEST)
 	{
-		mir_snprintf(szTooltip,256,Translate("%u requests authorization"),*((PDWORD)dbei.pBlob));
+        if (lstrlenA(szUid))
+            mir_snprintf(szTooltip,256,Translate("%s requests authorization"),szUid);
+        else
+            mir_snprintf(szTooltip,256,Translate("%u requests authorization"),*((PDWORD)dbei.pBlob));
 
-		cli.hIcon=LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
-		cli.pszService=MS_AUTH_SHOWREQUEST;
+		cli.hIcon = LoadSkinIcon( SKINICON_OTHER_MIRANDA );
+		cli.pszService = MS_AUTH_SHOWREQUEST;
 		CallService(MS_CLIST_ADDEVENT,0,(LPARAM)&cli);
 		mir_free(dbei.pBlob);
 	}
 	else if(dbei.eventType==EVENTTYPE_ADDED)
 	{
-		mir_snprintf(szTooltip,256,Translate("%u added you to their contact list"),*((PDWORD)dbei.pBlob));
-
-		cli.hIcon=LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
-		cli.pszService=MS_AUTH_SHOWADDED;
+        if (lstrlenA(szUid))
+            mir_snprintf(szTooltip,256,Translate("%d added you to their contact list"),szUid);
+        else
+            mir_snprintf(szTooltip,256,Translate("%u added you to their contact list"),*((PDWORD)dbei.pBlob));
+            
+		cli.hIcon = LoadSkinIcon( SKINICON_OTHER_MIRANDA );
+		cli.pszService = MS_AUTH_SHOWADDED;
 		CallService(MS_CLIST_ADDEVENT,0,(LPARAM)&cli);
 		mir_free(dbei.pBlob);
 	}

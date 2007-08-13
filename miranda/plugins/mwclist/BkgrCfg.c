@@ -341,9 +341,9 @@ int OnOptionsInit(WPARAM wParam,LPARAM lParam)
 	odp.cbSize = sizeof(odp);
 	odp.position = 0;
 	odp.hInstance = g_hInst;
-	odp.pszGroup = "Customize";
+	odp.pszGroup = LPGEN("Customize");
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_CLCBKG2);
-	odp.pszTitle = "Backgrounds";
+	odp.pszTitle = LPGEN("Backgrounds");
 	odp.pfnDlgProc = DlgProcBkgOpts;
 	odp.flags = ODPF_BOLDGROUPS;
 	

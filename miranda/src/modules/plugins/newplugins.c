@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2005 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2005 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -21,7 +21,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
-#include "../database/dblists.h"
 
 // block these plugins
 #define DEFMOD_REMOVED_UIPLUGINOPTS     21
@@ -31,21 +30,25 @@ typedef int (__cdecl * Miranda_Plugin_Load) ( PLUGINLINK * );
 typedef int (__cdecl * Miranda_Plugin_Unload) ( void );
 // version control
 typedef PLUGININFO * (__cdecl * Miranda_Plugin_Info) ( DWORD mirandaVersion );
+typedef PLUGININFOEX * (__cdecl * Miranda_Plugin_InfoEx) ( DWORD mirandaVersion );
 // prototype for databases
 typedef DATABASELINK * (__cdecl * Database_Plugin_Info) ( void * reserved );
 // prototype for clists
-typedef int (__cdecl * CList_Initialise) ( PLUGINLINK * ); 
-// prototype for protocol plugins?
+typedef int (__cdecl * CList_Initialise) ( PLUGINLINK * );
+// Interface support
+typedef MUUID * (__cdecl * Miranda_Plugin_Interfaces) ( void );
 
 typedef struct { // can all be NULL
-	HINSTANCE hInst;			
+	HINSTANCE hInst;
 	Miranda_Plugin_Load Load;
 	Miranda_Plugin_Unload Unload;
 	Miranda_Plugin_Info Info;
+	Miranda_Plugin_InfoEx InfoEx;
+	Miranda_Plugin_Interfaces Interfaces;
 	Database_Plugin_Info DbInfo;
 	CList_Initialise clistlink;
-	PLUGININFO * pluginInfo;	 // must be freed if hInst==NULL then its a copy
-	DATABASELINK * dblink;		 // only valid during module being in memory	
+	PLUGININFOEX * pluginInfo;	 // must be freed if hInst==NULL then its a copy
+	DATABASELINK * dblink;		 // only valid during module being in memory
 } BASIC_PLUGIN_INFO;
 
 #define PCLASS_FAILED	 0x1  	// not a valid plugin, or API is invalid, pluginname is valid
@@ -61,8 +64,17 @@ typedef struct pluginEntry {
 	char pluginname[64];
 	unsigned int pclass; // PCLASS_*
 	BASIC_PLUGIN_INFO bpi;
-	struct pluginEntry * nextclass; 
+	struct pluginEntry * nextclass;
 } pluginEntry;
+
+struct PluginUUIDList {
+    MUUID uuid;
+} pluginBannedList[] = {
+    {0x7f65393b, 0x7771, 0x4f3f, { 0xa9, 0xeb, 0x5d, 0xba, 0xf2, 0xb3, 0x61, 0xf1 }}, // png2dib
+    {0xe00f1643, 0x263c, 0x4599, { 0xb8, 0x4b, 0x5, 0x3e, 0x5c, 0x51, 0x1d, 0x28 }}, // loadavatars (unicode)
+    {0xc9e01eb0, 0xa119, 0x42d2, { 0xb3, 0x40, 0xe8, 0x67, 0x8f, 0x5f, 0xea, 0xd9 }} // loadavatars (ansi)
+};
+const int pluginBannedListCount = SIZEOF(pluginBannedList);
 
 SortedList pluginList = { 0 }, pluginListAddr = { 0 };
 
@@ -71,7 +83,7 @@ char   mirandabootini[MAX_PATH];
 static DWORD mirandaVersion;
 static pluginEntry * pluginListDb;
 static pluginEntry * pluginListUI;
-static pluginEntry * pluginList_png2dib = NULL;
+static pluginEntry * pluginList_freeimg = NULL;
 static HANDLE hPluginListHeap = NULL;
 static pluginEntry * pluginDefModList[DEFMOD_HIGHEST+1]; // do not free this memory
 static int askAboutIgnoredPlugins;
@@ -84,7 +96,9 @@ void UninitIni(void);
 void KillModuleEventHooks( HINSTANCE );
 void KillModuleServices( HINSTANCE );
 
-int LoadDatabaseModule(void);	
+int CallHookSubscribers( HANDLE hEvent, WPARAM wParam, LPARAM lParam );
+
+int LoadDatabaseModule(void);
 void ListView_SetItemTextA( HWND hwndLV, int i, int iSubItem, char* pszText );
 
 void ListView_GetItemTextA( HWND hwndLV, int i, int iSubItem, char* pszText, size_t cchTextMax )
@@ -116,33 +130,100 @@ HINSTANCE GetInstByAddress( void* codePtr )
 	return result;
 }
 
+static int uuidToString(const MUUID uuid, char *szStr, int cbLen)
+{
+	if (cbLen<1||!szStr) return 0;
+	mir_snprintf(szStr, cbLen, "{%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x}",
+		uuid.a, uuid.b, uuid.c, uuid.d[0], uuid.d[1], uuid.d[2], uuid.d[3], uuid.d[4], uuid.d[5], uuid.d[6], uuid.d[7]);
+	return 1;
+}
+
+static int equalUUID(MUUID u1, MUUID u2)
+{
+    return memcmp(&u1, &u2, sizeof(MUUID))?0:1;
+}
+
+static 	MUUID miid_last = MIID_LAST;
+
+static int validInterfaceList(Miranda_Plugin_Interfaces ifaceProc)
+{
+	MUUID *piface = ( ifaceProc ) ? ifaceProc() : NULL;
+
+	if (!piface) 
+		return 0;
+	if (equalUUID(miid_last, piface[0]))
+		return 0;
+	return 1;
+}
+
+static int isPluginBanned(MUUID u1) {
+    int i;
+    
+    for (i=0; i<pluginBannedListCount; i++) {
+        if (equalUUID(pluginBannedList[i].uuid, u1))
+            return 1;
+    }
+    return 0;
+}
+
 // returns true if the API exports were good, otherwise, passed in data is returned
 #define CHECKAPI_NONE 	0
 #define CHECKAPI_DB 	1
 #define CHECKAPI_CLIST  2
+
+static char* modulesToSkip[] = { "autoloadavatars.dll", "multiwindow.dll", "fontservice.dll", "icolib.dll" };
+// The following plugins will be checked for a valid MUUID or they will not be loaded
+static char* expiredModulesToSkip[] = { "scriver.dll", "nconvers.dll", "tabsrmm.dll", "nhistory.dll", "historypp.dll", "help.dll", "loadavatars.dll",
+                                        "tabsrmm_unicode.dll", "clist_nicer_plus.dll", "changeinfo.dll", "png2dib.dll" };
+
 static int checkAPI(char * plugin, BASIC_PLUGIN_INFO * bpi, DWORD mirandaVersion, int checkTypeAPI, int * exports)
 {
 	HINSTANCE h = NULL;
 	// this is evil but these plugins are buggy/old and people are blaming Miranda
+	// fontservice plugin is built into the core now
 	{
 		char * p = strrchr(plugin,'\\');
 		if ( p != NULL && ++p ) {
-			if ( lstrcmpiA(p,"autoloadavatars.dll")==0 || lstrcmpiA(p,"multiwindow.dll")==0 ) return 0;
-		}
-	}
+			int i;
+			for ( i = 0; i < SIZEOF(modulesToSkip); i++ )
+				if ( lstrcmpiA( p, modulesToSkip[i] ) == 0 )
+					return 0;
+	}	}
+
 	h = LoadLibraryA(plugin);
 	if ( h == NULL ) return 0;
 	// loaded, check for exports
 	bpi->Load = (Miranda_Plugin_Load) GetProcAddress(h, "Load");
 	bpi->Unload = (Miranda_Plugin_Unload) GetProcAddress(h, "Unload");
 	bpi->Info = (Miranda_Plugin_Info) GetProcAddress(h, "MirandaPluginInfo");
+	bpi->InfoEx = (Miranda_Plugin_InfoEx) GetProcAddress(h, "MirandaPluginInfoEx");
+	bpi->Interfaces = (Miranda_Plugin_Interfaces) GetProcAddress(h, "MirandaPluginInterfaces");
 	// if they were present
-	if ( bpi->Load && bpi->Unload && bpi->Info ) 
-	{ 
-		PLUGININFO * pi = bpi->Info(mirandaVersion);
-		if ( pi && pi->cbSize==sizeof(PLUGININFO) && pi->shortName && pi->description 
+	if ( bpi->Load && bpi->Unload && (bpi->Info||(bpi->InfoEx&&bpi->Interfaces)) )
+	{
+		PLUGININFOEX * pi = 0;
+		if (bpi->InfoEx)
+			pi = bpi->InfoEx(mirandaVersion);
+		else
+			pi = (PLUGININFOEX*)bpi->Info(mirandaVersion);
+        {
+            // similar to the above hack but these plugins are checked for a valid interface first (in case there are updates to the plugin later)
+            char * p = strrchr(plugin,'\\');
+            if ( p != NULL && ++p ) {
+                if (!bpi->InfoEx||pi->cbSize!=sizeof(PLUGININFOEX)) {
+                    int i;
+                    for ( i = 0; i < SIZEOF(expiredModulesToSkip); i++ ) {
+                        if ( lstrcmpiA( p, expiredModulesToSkip[i] ) == 0 ) {
+                            FreeLibrary(h);
+                            return 0;
+                        }
+                    }   
+                }
+            }
+        }
+		if ( pi && ((bpi->Info&&pi->cbSize==sizeof(PLUGININFO))||(bpi->InfoEx&&pi->cbSize==sizeof(PLUGININFOEX)&&validInterfaceList(bpi->Interfaces)&&!isPluginBanned(pi->uuid))) && pi->shortName && pi->description
 				&& pi->author && pi->authorEmail && pi->copyright && pi->homepage
-				&& pi->replacesDefaultModule <= DEFMOD_HIGHEST 
+				&& pi->replacesDefaultModule <= DEFMOD_HIGHEST
 				&& pi->replacesDefaultModule != DEFMOD_REMOVED_UIPLUGINOPTS)
 		{
 			bpi->pluginInfo = pi;
@@ -152,7 +233,7 @@ static int checkAPI(char * plugin, BASIC_PLUGIN_INFO * bpi, DWORD mirandaVersion
 				return 1;
 			}
 			// check for DB?
-			if ( checkTypeAPI == CHECKAPI_DB ) {			
+			if ( checkTypeAPI == CHECKAPI_DB ) {
 				bpi->DbInfo = (Database_Plugin_Info) GetProcAddress(h, "DatabasePluginInfo");
 				if ( bpi->DbInfo ) {
 					// fetch internal database function pointers
@@ -164,25 +245,25 @@ static int checkAPI(char * plugin, BASIC_PLUGIN_INFO * bpi, DWORD mirandaVersion
 					}
 					// had DB exports
 					if ( exports != NULL ) *exports=1;
-				} //if				
-			} //if 
-		
+				} //if
+			} //if
+
 			// check clist ?
-			if ( checkTypeAPI == CHECKAPI_CLIST ) {				
+			if ( checkTypeAPI == CHECKAPI_CLIST ) {
 				bpi->clistlink = (CList_Initialise) GetProcAddress(h, "CListInitialise");
 				#if defined( _UNICODE )
-					if ( pi->isTransient == UNICODE_AWARE )
+					if ( pi->flags & UNICODE_AWARE )
 				#endif
 				if ( bpi->clistlink ) {
 					// nothing more can be done here, this export is a load function
 					bpi->hInst=h;
 					if ( exports != NULL ) *exports=1;
 					return 1;
-				} 
+				}
 			}
 		} // if
 		if ( exports != NULL ) *exports=1;
-	} //if 
+	} //if
 	// not found, unload
 	FreeLibrary(h);
 	return 0;
@@ -192,16 +273,17 @@ static int checkAPI(char * plugin, BASIC_PLUGIN_INFO * bpi, DWORD mirandaVersion
 static int valid_library_name(char * name)
 {
 	char * dot = strrchr(name, '.');
-	if ( dot != NULL && lstrcmpiA(dot+1,"dll") == 0) {
-		if ( dot[4] == 0 ) return 1;
-	}
+	if ( dot != NULL && lstrcmpiA(dot+1,"dll") == 0)
+		if ( dot[4] == 0 )
+			return 1;
+
 	return 0;
 }
 
 // returns true if the given file matches dbx_*.dll, which is used to LoadLibrary()
 static int validguess_db_name(char * name)
 {
-	int rc=0;	
+	int rc=0;
 	// this is ONLY SAFE because name -> ffd.cFileName == MAX_PATH
 	char x = name[4];
 	name[4]=0;
@@ -213,7 +295,7 @@ static int validguess_db_name(char * name)
 // returns true if the given file matches clist_*.dll
 static int validguess_clist_name(char * name)
 {
-	int rc=0;	
+	int rc=0;
 	// argh evil
 	char x = name[6];
 	name[6]=0;
@@ -224,7 +306,7 @@ static int validguess_clist_name(char * name)
 
 // perform any API related tasks to freeing
 static void Plugin_Uninit(pluginEntry * p)
-{	
+{
 	// if it was an installed database plugin, call its unload
 	if ( p->pclass & PCLASS_DB )
 		p->bpi.dblink->Unload( p->pclass & PCLASS_OK );
@@ -252,7 +334,7 @@ static void enumPlugins(SCAN_PLUGINS_CALLBACK cb, WPARAM wParam, LPARAM lParam)
 {
 	char exe[MAX_PATH];
 	char search[MAX_PATH];
-	char * p = 0;	
+	char * p = 0;
 	// get miranda's exe path
 	GetModuleFileNameA(NULL, exe, SIZEOF(exe));
 	// find the last \ and null it out, this leaves no trailing slash
@@ -261,19 +343,19 @@ static void enumPlugins(SCAN_PLUGINS_CALLBACK cb, WPARAM wParam, LPARAM lParam)
 	// create the search filter
 	mir_snprintf(search,SIZEOF(search),"%s\\Plugins\\*.dll", exe);
 	{
-		// FFFN will return filenames for things like dot dll+ or dot dllx 
+		// FFFN will return filenames for things like dot dll+ or dot dllx
 		HANDLE hFind=INVALID_HANDLE_VALUE;
-		WIN32_FIND_DATAA ffd;		
+		WIN32_FIND_DATAA ffd;
 		hFind = FindFirstFileA(search, &ffd);
 		if ( hFind != INVALID_HANDLE_VALUE ) {
 			do {
-				if ( !(ffd.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) && valid_library_name(ffd.cFileName) ) 
-				{ 
+				if ( !(ffd.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) && valid_library_name(ffd.cFileName) )
+				{
 					cb(&ffd,exe,wParam,lParam);
 				} //if
 			} while ( FindNextFileA(hFind, &ffd) );
 			FindClose(hFind);
-		} //if	
+		} //if
 	}
 }
 
@@ -293,10 +375,10 @@ static int PluginsEnum(WPARAM wParam, LPARAM lParam)
 				if ( x != y )
 					Plugin_Uninit(y);
 				y = n;
-			} // while			
+			} // while
 			x->pclass |= PCLASS_LOADED | PCLASS_OK | PCLASS_LAST;
 			return 0;
-		} 
+		}
 		else if ( rc == DBPE_HALT ) return 1;
 		x = x->nextclass;
 	} // while
@@ -319,16 +401,16 @@ static BOOL scanPluginsDir (WIN32_FIND_DATAA * fd, char * path, WPARAM wParam, L
 	if ( isdb ) {
 		char buf[MAX_PATH];
 		mir_snprintf(buf,SIZEOF(buf),"%s\\Plugins\\%s", path, fd->cFileName);
-		if ( checkAPI(buf, &bpi, mirandaVersion, CHECKAPI_DB, NULL) ) {	
+		if ( checkAPI(buf, &bpi, mirandaVersion, CHECKAPI_DB, NULL) ) {
 			// db plugin is valid
 			p->pclass |= (PCLASS_DB|PCLASS_BASICAPI);
 			// copy the dblink stuff
 			p->bpi=bpi;
 			// keep a faster list.
-			if ( pluginListDb != NULL ) p->nextclass=pluginListDb;			
+			if ( pluginListDb != NULL ) p->nextclass=pluginListDb;
 			pluginListDb=p;
-		}  
-		else {							
+		}
+		else {
 			// didn't have basic APIs or DB exports - failed.
 			p->pclass |= PCLASS_FAILED;
 		}
@@ -338,9 +420,9 @@ static BOOL scanPluginsDir (WIN32_FIND_DATAA * fd, char * path, WPARAM wParam, L
 		if ( pluginListUI != NULL ) p->nextclass=pluginListUI;
 		pluginListUI=p;
 		p->pclass |= PCLASS_CLIST;
-	} 
-	else if ( lstrcmpiA(fd->cFileName, "png2dib.dll") == 0)
-		pluginList_png2dib = p;
+	}
+	else if ( lstrcmpiA(fd->cFileName, "freeimage.dll") == 0)
+		pluginList_freeimg = p;
 
 	// add it to the list
 	List_InsertPtr( &pluginList, p );
@@ -383,7 +465,7 @@ static pluginEntry* getCListModule(char * exe, char * slice, int useWhiteList)
 					p->bpi=bpi;
 					p->pclass |= PCLASS_LOADED;
 					return p;
-				} 
+				}
 				else Plugin_Uninit( p );
 			} //if
 		} //if
@@ -397,7 +479,7 @@ static pluginEntry* getCListModule(char * exe, char * slice, int useWhiteList)
 //   Event hook to unload all non-core plugins
 //   hooked very late, after all the internal plugins, blah
 
-static int UnloadNewPlugins(WPARAM wParam, LPARAM lParam)
+void UnloadNewPlugins(void)
 {
 	int i;
 
@@ -406,14 +488,23 @@ static int UnloadNewPlugins(WPARAM wParam, LPARAM lParam)
 		pluginEntry* p = pluginList.items[i];
 		if ( !(p->pclass & PCLASS_LAST) && (p->pclass & PCLASS_OK))
 			Plugin_Uninit( p );
-	}
-
-	return 0;
-}
+}	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //
 //   Plugins options page dialog
+
+typedef struct 
+{
+	int   flags;
+	char* author;
+	char* authorEmail;
+	char* description;
+	char* copyright;
+	char* homepage;
+	MUUID uuid;
+}
+	PluginListItemData;
 
 static BOOL dialogListPlugins(WIN32_FIND_DATAA * fd, char * path, WPARAM wParam, LPARAM lParam)
 {
@@ -424,45 +515,67 @@ static BOOL dialogListPlugins(WIN32_FIND_DATAA * fd, char * path, WPARAM wParam,
 	int exports=0;
 	char buf[MAX_PATH];
 	int isdb = 0;
-	HINSTANCE gModule=NULL;
+	HINSTANCE gModule;
+	PluginListItemData* dat;
+
 	mir_snprintf(buf,SIZEOF(buf),"%s\\Plugins\\%s",path,fd->cFileName);
 	CharLowerA(fd->cFileName);
 	gModule=GetModuleHandleA(buf);
 	if ( checkAPI(buf, &pi, mirandaVersion, CHECKAPI_NONE, &exports) == 0 ) {
 		// failed to load anything, but if exports were good, show some info.
 		return TRUE;
-	}	
+	}
 	isdb = pi.pluginInfo->replacesDefaultModule == DEFMOD_DB;
 	ZeroMemory(&it, sizeof(it));
-	it.mask=LVIF_TEXT | LVIF_PARAM;
+	it.mask = LVIF_TEXT | LVIF_PARAM | LVIF_IMAGE;
 	it.pszText = Translate(fd->cFileName);
-	it.lParam=(LPARAM)pi.pluginInfo->replacesDefaultModule;
+	it.iImage = ( pi.pluginInfo->flags & 1 ) ? 0 : 1;
+	it.lParam = (LPARAM)( dat = (PluginListItemData*)mir_alloc( sizeof( PluginListItemData )));
 	iRow=SendMessageA( hwndList, LVM_INSERTITEMA, 0, (LPARAM)&it );
-	if ( isPluginOnWhiteList(fd->cFileName) ) ListView_SetItemState(hwndList, iRow, !isdb ? 0x2000 : 0x3000, 0xF000);
-	if ( iRow != (-1) ) {
+	if ( isPluginOnWhiteList(fd->cFileName) ) 
+		ListView_SetItemState(hwndList, iRow, !isdb ? 0x2000 : 0x3000, LVIS_STATEIMAGEMASK);
+	if ( iRow != -1 ) {
+		dat->flags = pi.pluginInfo->replacesDefaultModule;
+		dat->author = mir_strdup( pi.pluginInfo->author );
+		dat->authorEmail = mir_strdup( pi.pluginInfo->authorEmail );
+		dat->copyright = mir_strdup( pi.pluginInfo->copyright );
+		dat->description = mir_strdup( pi.pluginInfo->description );
+		dat->homepage = mir_strdup( pi.pluginInfo->homepage );
+		if ( pi.pluginInfo->cbSize == sizeof( PLUGININFOEX ))
+			dat->uuid = pi.pluginInfo->uuid;
+		else
+			memset( &dat->uuid, 0, sizeof(dat->uuid));
+
 		ListView_SetItemTextA(hwndList, iRow, 1, pi.pluginInfo->shortName);
 		mir_snprintf(buf,SIZEOF(buf),"%d.%d.%d.%d", HIBYTE(HIWORD(pi.pluginInfo->version)), LOBYTE(HIWORD(pi.pluginInfo->version)), HIBYTE(LOWORD(pi.pluginInfo->version)), LOBYTE(LOWORD(pi.pluginInfo->version)));
 		ListView_SetItemTextA(hwndList, iRow, 2, buf);
-		ListView_SetItemText(hwndList, iRow, 3, TranslateTS( gModule != NULL ? _T("Yes"):_T("No") ));
-		ListView_SetItemTextA(hwndList, iRow, 4, pi.pluginInfo->author);
-		ListView_SetItemTextA(hwndList, iRow, 5, pi.pluginInfo->authorEmail);
-		{	TCHAR* p = LangPackPcharToTchar( pi.pluginInfo->description );
-			ListView_SetItemText(hwndList, iRow, 6, TranslateTS( p ));
-			mir_free( p );
-		}
-		ListView_SetItemTextA(hwndList, iRow, 7, pi.pluginInfo->copyright);
-		ListView_SetItemTextA(hwndList, iRow, 8, pi.pluginInfo->homepage);
+
+		it.mask = LVIF_IMAGE;
+		it.iItem = iRow;
+		it.iSubItem = 3;
+		it.iImage = ( gModule != NULL ) ? 2 : 3;
+		ListView_SetItem( hwndList, &it );
 	}
+	else mir_free( dat );
 	FreeLibrary(pi.hInst);
 	return TRUE;
 }
 
-static LRESULT CALLBACK ListView_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+static RemoveAllItems( HWND hwnd )
 {
-	WNDPROC proc=(WNDPROC)GetWindowLong(hwnd,GWL_USERDATA);
-	if ( msg == WM_WINDOWPOSCHANGING ) ShowScrollBar(hwnd,SB_HORZ,FALSE);
-	return CallWindowProc(proc,hwnd,msg,wParam,lParam);
-}
+	LVITEM lvi;
+	lvi.mask = LVIF_PARAM;
+	lvi.iItem = 0;
+	while ( ListView_GetItem( hwnd, &lvi )) {
+		PluginListItemData* dat = ( PluginListItemData* )lvi.lParam;
+		mir_free( dat->author );
+		mir_free( dat->authorEmail );
+		mir_free( dat->copyright );
+		mir_free( dat->description );
+		mir_free( dat->homepage );
+		mir_free( dat );
+		lvi.iItem ++;
+}	}
 
 static TCHAR* PluginCutCopyright(TCHAR * buf)
 {
@@ -477,146 +590,154 @@ static TCHAR* PluginCutCopyright(TCHAR * buf)
 static BOOL CALLBACK DlgPluginOpt(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
-		case WM_INITDIALOG:
-		{
-			HWND hwndList=GetDlgItem(hwndDlg,IDC_PLUGLIST);
-			LVCOLUMN col;			
-			TranslateDialogDefault(hwndDlg);
-			SetWindowLong(hwndList,GWL_USERDATA, SetWindowLong(hwndList,GWL_WNDPROC, (LONG)ListView_WndProc));
-			col.mask=LVCF_TEXT|LVCF_WIDTH;
-			col.pszText=TranslateT("Plugin");
-			col.cx=75;
-			ListView_InsertColumn(hwndList,0,&col);
-			
-			col.pszText=TranslateT("Name");			
-			ListView_InsertColumn(hwndList,1,&col);
-		
-			col.pszText=TranslateT("Version");
-			col.cx=60;
-			ListView_InsertColumn(hwndList,2,&col);
-		
-			col.pszText=TranslateT("Running");
-			col.cx=1000;
-			ListView_InsertColumn(hwndList,3,&col);
-		
-			col.pszText=TranslateT("Author");
-			ListView_InsertColumn(hwndList,4,&col);		
-		
-			col.pszText=TranslateT("e-mail");
-			ListView_InsertColumn(hwndList,5,&col);				
-			
-			col.pszText=TranslateT("Description");
-			ListView_InsertColumn(hwndList,6,&col);				
-			
-			col.pszText=TranslateT("Copyright");
-			ListView_InsertColumn(hwndList,7,&col);	
-			
-			col.pszText=TranslateT("Homepage");
-			ListView_InsertColumn(hwndList,8,&col);	
-			
-			// XXX: Won't work on windows 95 without IE3+ or 4.70
-			ListView_SetExtendedListViewStyleEx(hwndList, 0, LVS_EX_CHECKBOXES | LVS_EX_FULLROWSELECT );
-			// scan the plugin dir for plugins, cos 
-			enumPlugins(dialogListPlugins,(WPARAM)hwndDlg,(LPARAM)hwndList);
-			// sort out the headers
-			ListView_SetColumnWidth(hwndList, 0, LVSCW_AUTOSIZE); // dll name
-			ListView_SetColumnWidth(hwndList, 1, LVSCW_AUTOSIZE); // short name
-			return TRUE;
-		}
-		case WM_NOTIFY: 
-		{
-			NMLISTVIEW * hdr = (NMLISTVIEW *) lParam;
-			if ( hdr && hdr->hdr.code == LVN_ITEMCHANGED && hdr->uOldState != 0 
-				&& (hdr->uNewState == 0x1000 || hdr->uNewState == 0x2000 ) && IsWindowVisible(hdr->hdr.hwndFrom) ) { 
-				HWND hwndList=GetDlgItem(hwndDlg,IDC_PLUGLIST);								
-				LVITEM it;
-				int iRow;								
-				ZeroMemory(&it,sizeof(it));				
-				it.mask=LVIF_PARAM | LVIF_STATE;
-				it.iItem = hdr->iItem;
-				if ( ListView_GetItem(hwndList,&it) && it.lParam == DEFMOD_DB ) {
-					ListView_SetItemState(hwndList, hdr->iItem, 0x3000, 0xF000);
-					return FALSE;
-				}
-				// if enabling and replaces, find all other replaces and toggle off
-				if ( hdr->uNewState&0x2000 && it.lParam )  {
-					for ( iRow=0; iRow != (-1); ) {
-						if ( iRow != hdr->iItem ) {
-							LVITEM dt;						
-							dt.mask = LVIF_PARAM;
-							dt.iItem = iRow;
-							if ( ListView_GetItem(hwndList,&dt) && dt.lParam == it.lParam ) {
-								// the lParam is unset, so when the check is unset the clist block doesnt trigger
-								LPARAM lParam = dt.lParam;
-								dt.lParam = 0;
-								ListView_SetItem(hwndList, &dt);
-								ListView_SetItemState(hwndList, iRow, 0x1000, 0xF000);
-								dt.lParam = lParam;
-								ListView_SetItem(hwndList, &dt);
-							}
-						}
-						iRow=ListView_GetNextItem(hwndList, iRow, LVNI_ALL);
-					}
-				}
-				ShowWindow(GetDlgItem(hwndDlg, IDC_RESTART), TRUE);
-				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+	case WM_INITDIALOG:
+	{
+		HWND hwndList=GetDlgItem(hwndDlg,IDC_PLUGLIST);
+		LVCOLUMN col;
+		HIMAGELIST hIml = ImageList_Create(16, 16, ILC_MASK | (IsWinVerXPPlus()? ILC_COLOR32 : ILC_COLOR16), 4, 0);
+		ImageList_AddIcon_IconLibLoaded( hIml, SKINICON_OTHER_UNICODE );
+		ImageList_AddIcon_IconLibLoaded( hIml, SKINICON_OTHER_ANSI );
+		ImageList_AddIcon_IconLibLoaded( hIml, SKINICON_OTHER_LOADED );
+		ImageList_AddIcon_IconLibLoaded( hIml, SKINICON_OTHER_NOTLOADED );
+		ListView_SetImageList( hwndList, hIml, LVSIL_SMALL );
+
+		TranslateDialogDefault(hwndDlg);
+
+		col.mask = LVCF_TEXT | LVCF_WIDTH;
+		col.pszText = TranslateT("Plugin");
+		col.cx = 70;
+		ListView_InsertColumn(hwndList,0,&col);
+
+		col.pszText=TranslateT("Name");
+		ListView_InsertColumn(hwndList,1,&col);
+
+		col.pszText=TranslateT("Version");
+		col.cx=55;
+		ListView_InsertColumn(hwndList,2,&col);
+
+		col.pszText=_T("");
+		col.cx=20;
+		ListView_InsertColumn(hwndList,3,&col);
+		//ListView_InsertColumn(hwndList,4,&col);
+
+		// XXX: Won't work on windows 95 without IE3+ or 4.70
+		ListView_SetExtendedListViewStyleEx( hwndList, 0, LVS_EX_SUBITEMIMAGES | LVS_EX_CHECKBOXES | LVS_EX_LABELTIP | LVS_EX_FULLROWSELECT );
+		// scan the plugin dir for plugins, cos
+		enumPlugins( dialogListPlugins, ( WPARAM )hwndDlg, ( LPARAM )hwndList );
+		// sort out the headers
+		ListView_SetColumnWidth( hwndList, 0, LVSCW_AUTOSIZE ); // dll name
+		ListView_SetColumnWidth( hwndList, 1, LVSCW_AUTOSIZE ); // short name
+		return TRUE;
+	}
+	case WM_NOTIFY:
+	{
+		NMLISTVIEW * hdr = (NMLISTVIEW *) lParam;
+		if ( hdr && hdr->hdr.code == LVN_ITEMCHANGED && hdr->uOldState != 0
+			&& (hdr->uNewState == 0x1000 || hdr->uNewState == 0x2000 ) && IsWindowVisible(hdr->hdr.hwndFrom) ) {
+			HWND hwndList = GetDlgItem(hwndDlg,IDC_PLUGLIST);
+			PluginListItemData* dat;
+			int iRow;
+			LVITEM it;
+			it.mask=LVIF_PARAM | LVIF_STATE;
+			it.iItem = hdr->iItem;
+			if ( !ListView_GetItem( hwndList, &it ))
 				break;
-			}			
-			if ( hdr && hdr->hdr.code == LVN_ITEMCHANGED && IsWindowVisible(hdr->hdr.hwndFrom) && hdr->iItem != -1 ) {
-				TCHAR buf[1024];
-				int sel = hdr->uNewState&LVIS_SELECTED;
-				HWND hwndList = GetDlgItem(hwndDlg, IDC_PLUGLIST);	
-				// frame/about
-				ListView_GetItemText(hwndList, hdr->iItem, 1, buf, SIZEOF(buf));				
-				SetWindowText(GetDlgItem(hwndDlg,IDC_PLUGININFOFRAME),sel ? buf : _T(""));
-				// author
-				ListView_GetItemText(hwndList, hdr->iItem, 4, buf, SIZEOF(buf));
-				SetWindowText(GetDlgItem(hwndDlg,IDC_PLUGINAUTHOR), sel ? buf : _T(""));
-				// author email
-				ListView_GetItemText(hwndList, hdr->iItem, 5, buf, SIZEOF(buf));
-				SetWindowText(GetDlgItem(hwndDlg,IDC_PLUGINEMAIL), sel ? buf : _T(""));
-				// description
-				ListView_GetItemText(hwndList, hdr->iItem, 6, buf, SIZEOF(buf));
-				SetWindowText(GetDlgItem(hwndDlg,IDC_PLUGINLONGINFO), sel ? buf : _T(""));
-				// copyright
-				ListView_GetItemText(hwndList, hdr->iItem, 7, buf, SIZEOF(buf));
-				SetWindowText(GetDlgItem(hwndDlg,IDC_PLUGINCPYR), sel ? PluginCutCopyright(buf) : _T(""));
-				// homepage
-				ListView_GetItemText(hwndList, hdr->iItem, 8, buf, SIZEOF(buf));
-				SetWindowText(GetDlgItem(hwndDlg,IDC_PLUGINURL), sel ? buf : _T(""));
+
+			dat = ( PluginListItemData* )it.lParam;
+			if ( dat->flags == DEFMOD_DB ) {
+				ListView_SetItemState(hwndList, hdr->iItem, 0x3000, LVIS_STATEIMAGEMASK);
+				return FALSE;
 			}
-			if ( hdr && hdr->hdr.code == PSN_APPLY ) {				
-				HWND hwndList=GetDlgItem(hwndDlg,IDC_PLUGLIST);
-				int iRow;
-				int iState;
-				char buf[1024];
-				for (iRow=0 ; iRow != (-1) ; ) {					
-					ListView_GetItemTextA(hwndList, iRow, 0, buf, SIZEOF(buf));
-					iState=ListView_GetItemState(hwndList, iRow, LVIS_STATEIMAGEMASK);
-					SetPluginOnWhiteList(buf, iState&0x2000 ? 1 : 0);
-					iRow=ListView_GetNextItem(hwndList, iRow, LVNI_ALL);					
+			// if enabling and replaces, find all other replaces and toggle off
+			if ( hdr->uNewState & 0x2000 && dat->flags != 0 )  {
+				for ( iRow=0; iRow != -1; ) {
+					if ( iRow != hdr->iItem ) {
+						LVITEM dt;
+						dt.mask = LVIF_PARAM;
+						dt.iItem = iRow;
+						if ( ListView_GetItem( hwndList, &dt )) {
+							PluginListItemData* dat2 = ( PluginListItemData* )dt.lParam;
+							if ( dat2->flags == dat->flags ) {
+								// the lParam is unset, so when the check is unset the clist block doesnt trigger
+								int lParam = dat2->flags;
+								dat2->flags = 0;
+								ListView_SetItemState(hwndList, iRow, 0x1000, LVIS_STATEIMAGEMASK );
+								dat2->flags = lParam;
+					}	}	}
+
+					iRow = ListView_GetNextItem( hwndList, iRow, LVNI_ALL );
 			}	}
+
+			ShowWindow( GetDlgItem(hwndDlg, IDC_RESTART ), TRUE );
+			SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 			break;
 		}
-		case WM_COMMAND:
-		{
-			if ( HIWORD(wParam) == STN_CLICKED ) { 
-				switch (LOWORD(wParam)) {
-					case IDC_PLUGINEMAIL:
-					case IDC_PLUGINURL:
-					{
-						char buf[512];
-						char * p = &buf[7];
-						lstrcpyA(buf,"mailto:");
-						if ( GetWindowTextA(GetDlgItem(hwndDlg, LOWORD(wParam)), p, SIZEOF(buf) - 7) ) {							
-							CallService(MS_UTILS_OPENURL,0,(LPARAM) (LOWORD(wParam)==IDC_PLUGINEMAIL ? buf : p) );
-						}
-						break;
+
+		if ( hdr && hdr->hdr.code == LVN_ITEMCHANGED && IsWindowVisible(hdr->hdr.hwndFrom) && hdr->iItem != -1 ) {
+			TCHAR buf[1024];
+			int sel = hdr->uNewState & LVIS_SELECTED;
+			HWND hwndList = GetDlgItem(hwndDlg, IDC_PLUGLIST);
+			LVITEM lvi = { 0 };
+			lvi.mask = LVIF_PARAM;
+			lvi.iItem = hdr->iItem;
+			if ( ListView_GetItem( hwndList, &lvi )) {
+				PluginListItemData* dat = ( PluginListItemData* )lvi.lParam;
+
+				ListView_GetItemText(hwndList, hdr->iItem, 1, buf, SIZEOF(buf));
+				SetWindowText(GetDlgItem(hwndDlg,IDC_PLUGININFOFRAME),sel ? buf : _T(""));
+
+				SetWindowTextA(GetDlgItem(hwndDlg,IDC_PLUGINAUTHOR), sel ? dat->author : "" );
+				SetWindowTextA(GetDlgItem(hwndDlg,IDC_PLUGINEMAIL), sel ? dat->authorEmail : "" );
+				{
+					TCHAR* p = LangPackPcharToTchar( dat->description );
+					SetWindowText(GetDlgItem(hwndDlg,IDC_PLUGINLONGINFO), sel ? p : _T(""));
+					mir_free( p );
+				}
+				SetWindowTextA(GetDlgItem(hwndDlg,IDC_PLUGINCPYR), sel ? dat->copyright : "" );
+				SetWindowTextA(GetDlgItem(hwndDlg,IDC_PLUGINURL), sel ? dat->homepage : "" );
+				if(equalUUID(miid_last, dat->uuid))
+					SetWindowText(GetDlgItem(hwndDlg,IDC_PLUGINPID), sel ? TranslateT("<none>") : _T(""));
+				else
+				{
+					char szUID[128];
+					uuidToString( dat->uuid, szUID, sizeof(szUID));
+					SetWindowTextA(GetDlgItem(hwndDlg,IDC_PLUGINPID), sel ? szUID : "" );
+				}
+		}	}
+
+		if ( hdr && hdr->hdr.code == PSN_APPLY ) {
+			HWND hwndList=GetDlgItem(hwndDlg,IDC_PLUGLIST);
+			int iRow;
+			int iState;
+			char buf[1024];
+			for (iRow=0 ; iRow != (-1) ; ) {
+				ListView_GetItemTextA(hwndList, iRow, 0, buf, SIZEOF(buf));
+				iState=ListView_GetItemState(hwndList, iRow, LVIS_STATEIMAGEMASK);
+				SetPluginOnWhiteList(buf, iState&0x2000 ? 1 : 0);
+				iRow=ListView_GetNextItem(hwndList, iRow, LVNI_ALL);
+		}	}
+		break;
+	}
+
+	case WM_COMMAND:
+		if ( HIWORD(wParam) == STN_CLICKED ) {
+			switch (LOWORD(wParam)) {
+				case IDC_PLUGINEMAIL:
+				case IDC_PLUGINURL:
+				{
+					char buf[512];
+					char * p = &buf[7];
+					lstrcpyA(buf,"mailto:");
+					if ( GetWindowTextA(GetDlgItem(hwndDlg, LOWORD(wParam)), p, SIZEOF(buf) - 7) ) {
+						CallService(MS_UTILS_OPENURL,0,(LPARAM) (LOWORD(wParam)==IDC_PLUGINEMAIL ? buf : p) );
 					}
-				} // switch
-			}
-			break;
-		}
+					break;
+		}	}	}
+		break;
+
+	case WM_DESTROY:
+		RemoveAllItems( GetDlgItem( hwndDlg, IDC_PLUGLIST ));
+		break;
 	}
 	return FALSE;
 }
@@ -628,8 +749,8 @@ static int PluginOptionsInit(WPARAM wParam, LPARAM lParam)
 	odp.hInstance = GetModuleHandle(NULL);
 	odp.pfnDlgProc = DlgPluginOpt;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_PLUGINS);
-	odp.position = 1300000000;	
-	odp.pszTitle = "Plugins";
+	odp.position = 1300000000;
+	odp.pszTitle = LPGEN("Plugins");
 	odp.flags = ODPF_BOLDGROUPS;
 	CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
 	return 0;
@@ -650,27 +771,27 @@ int LoadNewPluginsModule(void)
 	// make full path to the plugin
 	GetModuleFileNameA(NULL, exe, SIZEOF(exe));
 	slice=strrchr(exe, '\\');
-	if ( slice != NULL ) 
+	if ( slice != NULL )
 		*slice=0;
 
 	// remember some useful options
 	askAboutIgnoredPlugins=(UINT) GetPrivateProfileIntA( "PluginLoader", "AskAboutIgnoredPlugins", 0, mirandabootini);
 
-	// if png2dib is present, load it to provide the basic core functions
-	if ( pluginList_png2dib != NULL ) {
+	// if freeimage is present, load it to provide the basic core functions
+	if ( pluginList_freeimg != NULL ) {
 		BASIC_PLUGIN_INFO bpi;
-		mir_snprintf(slice,&exe[SIZEOF(exe)] - slice, "\\Plugins\\%s", pluginList_png2dib->pluginname);			
+		mir_snprintf(slice,&exe[SIZEOF(exe)] - slice, "\\Plugins\\%s", pluginList_freeimg->pluginname);
 		if ( checkAPI(exe, &bpi, mirandaVersion, CHECKAPI_NONE, NULL) ) {
-			pluginList_png2dib->bpi = bpi;
-			pluginList_png2dib->pclass |= PCLASS_OK | PCLASS_BASICAPI;
+			pluginList_freeimg->bpi = bpi;
+			pluginList_freeimg->pclass |= PCLASS_OK | PCLASS_BASICAPI;
 			if ( bpi.Load(&pluginCoreLink) == 0 )
-				pluginList_png2dib->pclass |= PCLASS_LOADED;
+				pluginList_freeimg->pclass |= PCLASS_LOADED;
 			else
-				Plugin_Uninit( pluginList_png2dib );
+				Plugin_Uninit( pluginList_freeimg );
 	}	}
 
 	// first load the clist cos alot of plugins need that to be present at Load()
-	for ( useWhiteList = 1; useWhiteList >= 0 && clist == NULL; useWhiteList-- ) 
+	for ( useWhiteList = 1; useWhiteList >= 0 && clist == NULL; useWhiteList-- )
 		clist=getCListModule(exe, slice, useWhiteList);
 	/* the loop above will try and get one clist DLL to work, if all fail then just bail now */
 	if ( clist == NULL ) {
@@ -689,14 +810,14 @@ int LoadNewPluginsModule(void)
 		p = p->nextclass;
 	}
 	/* now loop thru and load all the other plugins, do this in one pass */
-	
+
 	for ( i=0; i < pluginList.realCount; i++ ) {
-		p = pluginList.items[i];		
+		p = pluginList.items[i];
 		CharLowerA(p->pluginname);
-		if ( !(p->pclass&PCLASS_LOADED) && !(p->pclass&PCLASS_DB) 
+		if ( !(p->pclass&PCLASS_LOADED) && !(p->pclass&PCLASS_DB)
 			&& !(p->pclass&PCLASS_CLIST) && isPluginOnWhiteList(p->pluginname) ) {
 			BASIC_PLUGIN_INFO bpi;
-			mir_snprintf(slice,&exe[SIZEOF(exe)] - slice, "\\Plugins\\%s", p->pluginname);			
+			mir_snprintf(slice,&exe[SIZEOF(exe)] - slice, "\\Plugins\\%s", p->pluginname);
 			if ( checkAPI(exe, &bpi, mirandaVersion, CHECKAPI_NONE, NULL) ) {
 				int rm = bpi.pluginInfo->replacesDefaultModule;
 				p->bpi = bpi;
@@ -712,17 +833,18 @@ int LoadNewPluginsModule(void)
 					}
 					if ( rm ) pluginDefModList[rm]=p;
 				} //if
-				else { 
+				else {
 					SetPluginOnWhiteList( p->pluginname, 0 );
 					Plugin_Uninit( p );
 					i--;
 				}
-			} 
+			}
 			else p->pclass |= PCLASS_FAILED;
-	}	}
+		}
+		else if ( p->bpi.hInst != NULL )
+			List_InsertPtr( &pluginListAddr, p );
+	}
 
-	// hook shutdown after everything
-	HookEvent(ME_SYSTEM_SHUTDOWN, UnloadNewPlugins);
 	HookEvent(ME_OPT_INITIALISE, PluginOptionsInit);
 	return 0;
 }
@@ -748,9 +870,9 @@ int LoadNewPluginsModuleInfos(void)
 	pluginListAddr.increment = 10;
 	pluginListAddr.sortFunc = sttComparePlugins;
 
-	hPluginListHeap=HeapCreate(HEAP_NO_SERIALIZE, 0, 0);	
+	hPluginListHeap=HeapCreate(HEAP_NO_SERIALIZE, 0, 0);
 	mirandaVersion = (DWORD)CallService(MS_SYSTEM_GETVERSION, 0, 0);
-	// 
+	//
 	CreateServiceFunction(MS_PLUGINS_ENUMDBPLUGINS, PluginsEnum);
 	CreateServiceFunction(MS_PLUGINS_GETDISABLEDEFAULTARRAY, PluginsGetDefaultArray);
 	// make sure plugins can get internal core APIs
@@ -758,6 +880,7 @@ int LoadNewPluginsModuleInfos(void)
 	pluginCoreLink.ServiceExists=ServiceExists;
 	pluginCoreLink.CreateServiceFunction=CreateServiceFunction;
 	pluginCoreLink.CreateTransientServiceFunction=CreateServiceFunction;
+	pluginCoreLink.CreateServiceFunctionParam=CreateServiceFunctionParam;
 	pluginCoreLink.DestroyServiceFunction=DestroyServiceFunction;
 	pluginCoreLink.CreateHookableEvent=CreateHookableEvent;
 	pluginCoreLink.DestroyHookableEvent=DestroyHookableEvent;
@@ -767,7 +890,8 @@ int LoadNewPluginsModuleInfos(void)
 	pluginCoreLink.NotifyEventHooks=NotifyEventHooks;
 	pluginCoreLink.SetHookDefaultForHookableEvent=SetHookDefaultForHookableEvent;
 	pluginCoreLink.CallServiceSync=CallServiceSync;
-	pluginCoreLink.CallFunctionAsync=CallFunctionAsync;	
+	pluginCoreLink.CallFunctionAsync=CallFunctionAsync;
+	pluginCoreLink.NotifyEventHooksDirect=CallHookSubscribers;
 	// remember where the mirandaboot.ini goes
 	{
 		char exe[MAX_PATH];
@@ -804,7 +928,7 @@ int UnloadNewPluginsModule(void)
 
 	// unload the DB
 	for ( i = pluginList.realCount-1; i >= 0; i-- ) {
-		pluginEntry * p = pluginList.items[i];		
+		pluginEntry * p = pluginList.items[i];
 		Plugin_Uninit( p );
 	}
 

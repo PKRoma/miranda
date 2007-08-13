@@ -1,5 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
+Copyright (c) 2006-7 Boris Krasnovskiy.
 Copyright (c) 2003-5 George Hazan.
 Copyright (c) 2002-3 Richard Hughes (original version).
 
@@ -27,7 +28,6 @@ struct ServerGroupItem
 {
 	char* id;
 	char* name; // in UTF8
-	int   number;
 
 	ServerGroupItem* next;
 };
@@ -43,7 +43,6 @@ bool MSN_AddGroup( const char* pName, const char* pId )
 	if ( p == NULL )
 		return false;
 
-	p->number = -1;
 	p->id = mir_strdup( pId );
 	p->name = mir_strdup( pName );
 	p->next = sttFirst;
@@ -95,7 +94,7 @@ void MSN_FreeGroups()
 LPCSTR MSN_GetGroupById( const char* pId )
 {
 	for ( ServerGroupItem* p = sttFirst; p != NULL; p = p->next )
-		if ( stricmp( p->id, pId ) == 0 )
+		if ( _stricmp( p->id, pId ) == 0 )
 			return p->name;
 
 	return NULL;
@@ -114,18 +113,6 @@ LPCSTR MSN_GetGroupByName( const char* pName )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// MSN_GetGroupByNumber - tries to return a group UUID associated with the given id 
-
-LPCSTR MSN_GetGroupByNumber( int pNumber )
-{
-	for ( ServerGroupItem* p = sttFirst; p != NULL; p = p->next )
-		if ( p->number == pNumber )
-			return p->id;
-
-	return NULL;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
 // MSN_MoveContactToGroup - sends a contact to the specified group 
 
 void MSN_MoveContactToGroup( HANDLE hContact, const char* grpName )
@@ -135,7 +122,7 @@ void MSN_MoveContactToGroup( HANDLE hContact, const char* grpName )
 	if ( lstrcmpA( grpName, "MetaContacts Hidden Group" ) == 0 )
 		return;
 
-	LPCSTR szId;
+	LPCSTR szId = NULL;
 	char szContactID[ 100 ], szGroupID[ 100 ];
 	if ( MSN_GetStaticString( "ID", hContact, szContactID, sizeof( szContactID )))
 		return;
@@ -176,17 +163,6 @@ void MSN_SetGroupName( const char* pId, const char* pNewName )
 }	}	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// MSN_SetGroupNumber - associate a server group with Miranda's group number 
-
-void MSN_SetGroupNumber( const char* pId, int pNumber )
-{
-	for ( ServerGroupItem* p = sttFirst; p != NULL; p = p->next ) {
-		if ( strcmp( p->id, pId ) == 0 ) {
-			p->number = pNumber;
-			return;
-}	}	}
-
-/////////////////////////////////////////////////////////////////////////////////////////
 // MSN_RemoveEmptyGroups - removes empty groups from the server list
 
 void MSN_RemoveEmptyGroups( void )
@@ -201,14 +177,13 @@ void MSN_RemoveEmptyGroups( void )
 	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL )
 	{
-		char *proto = (char*)MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 );
-		if ( lstrcmpA( msnProtocolName, proto ) == 0 ) 
+		if ( MSN_IsMyContact( hContact )) 
 		{
 			char szGroupID[ 100 ];
 			if ( !MSN_GetStaticString( "GroupID", hContact, szGroupID, sizeof( szGroupID ))) {
 				unsigned i = 0;
 				for ( ServerGroupItem* p = sttFirst; p != NULL; p = p->next )
-					if ( stricmp( p->id, szGroupID ) != 0 ) ++i;
+					if ( _stricmp( p->id, szGroupID ) != 0 ) ++i;
 					else { ++cCount[i]; break; }
 			}
 		}
@@ -231,9 +206,9 @@ void MSN_RemoveEmptyGroups( void )
 void MSN_AddServerGroup( const char* pszGroupName, HANDLE hContact )
 {
 	char szBuf[ 200 ];
-	UrlEncode( pszGroupName, szBuf, sizeof szBuf );
+	UrlEncode( pszGroupName, szBuf, sizeof( szBuf ));
 	msnNsThread->sendPacket( "ADG", "%s", szBuf );
-	DBDeleteContactSetting( hContact, msnProtocolName, "GroupID" );
+	MSN_DeleteSetting( hContact, "GroupID" );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -245,7 +220,7 @@ void  MSN_UploadServerGroups( char* group )
 
 	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL ) {
-		if ( !lstrcmpA( msnProtocolName, ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact,0 ))) {
+		if ( MSN_IsMyContact( hContact )) {
 			DBVARIANT dbv;
 			if ( !DBGetContactSettingStringUtf( hContact, "CList", "Group", &dbv )) {
 				char szGroupID[ 100 ];
@@ -299,8 +274,42 @@ void MSN_SyncContactToServerGroup( HANDLE hContact, char* userId, char* groupId 
 	}
 	else {
 		DBDeleteContactSetting( hContact, "CList", "Group" );
-		DBDeleteContactSetting( hContact, msnProtocolName, "GroupID" );
+		MSN_DeleteSetting( hContact, "GroupID" );
 	}	
 
 	if ( dbv.pszVal != NULL ) MSN_FreeVariant( &dbv );
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// MSN_RenameServerGroup - renames a group at the server
+
+void MSN_RenameServerGroup( LPCSTR szId, const char* newName )
+{
+	char szNewName[ 256 ];
+	UrlEncode( newName, szNewName, sizeof szNewName );
+	msnNsThread->sendPacket( "REG", "%s %s", szId, szNewName );
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// Msn_SendNickname - update our own nickname on the server
+
+int  MSN_SendNickname(char *nickname)
+{
+	char urlNick[ 387 ];
+	UrlEncode( UTF8(nickname), urlNick,  sizeof( urlNick ));
+	msnNsThread->sendPacket( "PRP", "MFN %s", urlNick );
+	return 0;
+}
+
+int  MSN_SendNicknameW( WCHAR* nickname)
+{
+	char* nickutf = mir_utf8encodeW( nickname );
+
+	char urlNick[ 387 ];
+	UrlEncode( nickutf, urlNick,  sizeof( urlNick ));
+	msnNsThread->sendPacket( "PRP", "MFN %s", urlNick );
+
+	mir_free( nickutf );
+	return 0;
+}
+

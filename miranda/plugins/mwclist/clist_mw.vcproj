@@ -5,10 +5,10 @@
 	Name="clist_mw"
 	ProjectGUID="{56997126-0098-407A-94E1-7C5748C1C9EF}"
 	RootNamespace="clist_mw"
-	SccProjectName="SAK"
-	SccAuxPath="SAK"
-	SccLocalPath="SAK"
-	SccProvider="SAK">
+	SccProjectName=""
+	SccAuxPath=""
+	SccLocalPath=""
+	SccProvider="">
 	<Platforms>
 		<Platform
 			Name="Win32"/>
@@ -228,8 +228,9 @@
 				Name="VCCLCompilerTool"
 				Optimization="3"
 				GlobalOptimizations="TRUE"
-				InlineFunctionExpansion="1"
 				FavorSizeOrSpeed="2"
+				OmitFramePointers="FALSE"
+				OptimizeForProcessor="0"
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;clist_mw_EXPORTS"
 				StringPooling="TRUE"
@@ -963,76 +964,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="genmenu.c">
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="3"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;clist_mw_EXPORTS;$(NoInherit)"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;clist_mw_EXPORTS;$(NoInherit)"
-						BasicRuntimeChecks="3"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						BasicRuntimeChecks="3"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="3"
-						AdditionalIncludeDirectories=""/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="genmenuopt.c">
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="3"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;clist_mw_EXPORTS;$(NoInherit)"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;clist_mw_EXPORTS;$(NoInherit)"
-						BasicRuntimeChecks="3"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						BasicRuntimeChecks="3"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="3"
-						AdditionalIncludeDirectories=""/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\groupmenu.c">
 				<FileConfiguration
 					Name="Release|Win32">
@@ -1124,9 +1055,6 @@
 						UsePrecompiledHeader="3"
 						PrecompiledHeaderThrough="commonheaders.h"/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\movetogroup.c">
 			</File>
 			<Filter
 				Name="CLUIFrames"
@@ -1255,45 +1183,6 @@
 					RelativePath="CLUIFrames\m_cluiframes.h">
 				</File>
 				<File
-					RelativePath="CLUIFrames\protocolorder.c">
-					<FileConfiguration
-						Name="Release|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="3"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;clist_mw_EXPORTS;$(NoInherit)"
-							PrecompiledHeaderThrough="../commonheaders.h"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;clist_mw_EXPORTS;$(NoInherit)"
-							BasicRuntimeChecks="3"
-							PrecompiledHeaderThrough="../commonheaders.h"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug Unicode|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							BasicRuntimeChecks="3"
-							PrecompiledHeaderThrough="../commonheaders.h"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release Unicode|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="3"
-							AdditionalIncludeDirectories=""
-							PrecompiledHeaderThrough="../commonheaders.h"/>
-					</FileConfiguration>
-				</File>
-				<File
 					RelativePath="CLUIFrames\statusbar.c">
 					<FileConfiguration
 						Name="Release|Win32">
@@ -1345,21 +1234,6 @@
 			</File>
 			<File
 				RelativePath="commonheaders.h">
-			</File>
-			<File
-				RelativePath="forkthread.h">
-			</File>
-			<File
-				RelativePath="genmenu.h">
-			</File>
-			<File
-				RelativePath="m_clist.h">
-			</File>
-			<File
-				RelativePath="m_clui.h">
-			</File>
-			<File
-				RelativePath="m_genmenu.h">
 			</File>
 			<File
 				RelativePath="resource.h">

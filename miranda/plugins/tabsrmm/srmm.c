@@ -34,9 +34,43 @@ DWORD g_mirandaVersion = 0;
 PLUGINLINK *pluginLink;
 HINSTANCE g_hInst;
 extern MYGLOBALS myGlobals;
-struct MM_INTERFACE memoryManagerInterface;
+struct MM_INTERFACE mmi;
+struct UTF8_INTERFACE utfi;
+int bNewDbApi = FALSE;
 
-PLUGININFO pluginInfo = {
+pfnSetMenuInfo fnSetMenuInfo = NULL;
+
+PLUGININFOEX pluginInfo = {
+    sizeof(PLUGININFOEX),
+#ifdef _UNICODE
+    #ifdef __GNUWIN32__
+        "tabSRMsgW (MINGW32 - unicode)",
+    #else    
+        "tabSRMsgW (unicode)",
+    #endif    
+#else
+    #ifdef __GNUWIN32__
+        "tabSRMsg (MINGW32)",
+    #else    
+        "tabSRMsg",
+    #endif    
+#endif
+    PLUGIN_MAKE_VERSION(1, 1, 1, 2),
+    "Chat module for instant messaging and group chat, offering a tabbed interface and many advanced features.",
+    "The Miranda developers team",
+    "silvercircle@gmail.com",
+    "© 2000-2007 Miranda Project",
+    "http://tabsrmm.sourceforge.net",
+    UNICODE_AWARE,
+    DEFMOD_SRMESSAGE,            // replace internal version (if any)
+    #ifdef _UNICODE
+    {0x6ca5f042, 0x7a7f, 0x47cc, { 0xa7, 0x15, 0xfc, 0x8c, 0x46, 0xfb, 0xf4, 0x34 }} //{6CA5F042-7A7F-47cc-A715-FC8C46FBF434}
+    #else    
+    {0x5889a3ef, 0x7c95, 0x4249, { 0x98, 0xbb, 0x34, 0xe9, 0x5, 0x3a, 0x6e, 0xa0 }} //{5889A3EF-7C95-4249-98BB-34E9053A6EA0}
+    #endif    
+};
+
+PLUGININFO oldPluginInfo = {
     sizeof(PLUGININFO),
 #ifdef _UNICODE
     #ifdef __GNUWIN32__
@@ -51,13 +85,13 @@ PLUGININFO pluginInfo = {
         "tabSRMsg",
     #endif    
 #endif
-    PLUGIN_MAKE_VERSION(1, 0, 0, 2),
+    PLUGIN_MAKE_VERSION(1, 1, 1, 2),
     "Chat module for instant messaging and group chat, offering a tabbed interface and many advanced features.",
     "The Miranda developers team",
     "silvercircle@gmail.com",
-    "© 2000-2006 Miranda Project",
+    "© 2000-2007 Miranda Project",
     "http://tabsrmm.sourceforge.net",
-    0,
+    UNICODE_AWARE,
     DEFMOD_SRMESSAGE            // replace internal version (if any)
 };
 
@@ -68,30 +102,50 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 }
 
 __declspec(dllexport)
-     PLUGININFO *MirandaPluginInfo(DWORD mirandaVersion)
+     PLUGININFOEX *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
     g_mirandaVersion = mirandaVersion;
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 0))
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 6, 0, 0))
         return NULL;
     return &pluginInfo;
 }
 
+__declspec(dllexport)
+     PLUGININFO *MirandaPluginInfo(DWORD mirandaVersion)
+{
+    g_mirandaVersion = mirandaVersion;
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 6, 0, 0))
+        return NULL;
+    return &oldPluginInfo;
+}
+
+static const MUUID interfaces[] = {MIID_SRMM, MIID_CHAT, MIID_LAST};
+__declspec(dllexport) 
+     const MUUID* MirandaPluginInterfaces(void)
+{
+	return interfaces;
+}
+
 int __declspec(dllexport) Load(PLUGINLINK * link)
 {
-    pluginLink = link;
+	pluginLink = link;
 
 #ifdef _DEBUG //mem leak detector :-) Thanks Tornado!
-    {
-        int flag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG); // Get current flag
-        flag |= (_CRTDBG_LEAK_CHECK_DF | _CRTDBG_ALLOC_MEM_DF | _CRTDBG_CHECK_CRT_DF); // Turn on leak-checking bit
-        _CrtSetDbgFlag(flag); // Set flag to the new value
-    }
+	{
+		int flag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG); // Get current flag
+		flag |= (_CRTDBG_LEAK_CHECK_DF | _CRTDBG_ALLOC_MEM_DF | _CRTDBG_CHECK_CRT_DF); // Turn on leak-checking bit
+		_CrtSetDbgFlag(flag); // Set flag to the new value
+	}
 #endif
 
-    memset(&memoryManagerInterface, 0, sizeof(memoryManagerInterface));
-    memoryManagerInterface.cbSize = sizeof(memoryManagerInterface);
-    CallService(MS_SYSTEM_GET_MMI, 0, (LPARAM) &memoryManagerInterface);
-    
+	mir_getMMI( &mmi );
+	mir_getUTFI( &utfi );
+
+	if ( ServiceExists( MS_DB_EVENT_GETTEXT ))
+		bNewDbApi = TRUE;
+
+	fnSetMenuInfo = ( pfnSetMenuInfo )GetProcAddress( GetModuleHandleA( "USER32.DLL" ), "GetMenuInfo" );
+
 	Chat_Load(pluginLink);
 	return LoadSendRecvMessageModule();
 }
@@ -118,6 +172,8 @@ int _DebugTraceW(const wchar_t *fmt, ...)
 	return 0;
 }
 #endif
+#endif
+
 int _DebugTraceA(const char *fmt, ...)
 {
     char    debug[2048];
@@ -127,10 +183,25 @@ int _DebugTraceA(const char *fmt, ...)
 
 	lstrcpyA(debug, "TABSRMM: ");
 	_vsnprintf(&debug[9], ibsize - 10, fmt, va);
+#ifdef _DEBUG
     OutputDebugStringA(debug);
+#else
+    {
+        char szLogFileName[MAX_PATH], szDataPath[MAX_PATH];
+        FILE *f;
+
+        CallService(MS_DB_GETPROFILEPATH, MAX_PATH, (LPARAM)szDataPath);
+        mir_snprintf(szLogFileName, MAX_PATH, "%s\\%s", szDataPath, "tabsrmm_debug.log");
+        f = fopen(szLogFileName, "a+");
+        if(f) {
+            fputs(debug, f);
+            fputs("\n", f);
+            fclose(f);
+        }
+    }
+#endif
 	return 0;
 }
-#endif
 
 /*
  * output a notification message.

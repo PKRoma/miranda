@@ -233,7 +233,6 @@ static int LoadLangPack(const TCHAR *szLangPack)
 			}
 			pszLine = line+1;
 			line[lstrlenA(line)-1]='\0';
-			TrimStringSimple(line);
 			if(++langPack.entryCount>entriesAlloced) {
 				entriesAlloced+=128;
 				langPack.entry=(struct LangPackEntry*)mir_realloc(langPack.entry,sizeof(struct LangPackEntry)*entriesAlloced);
@@ -321,22 +320,6 @@ TCHAR* LangPackPcharToTchar( const char* pszStr )
 	#endif
 }
 
-static int LangPackShutdown(WPARAM wParam,LPARAM lParam)
-{
-	int i;
-	for(i=0;i<langPack.entryCount;i++) {
-		if(langPack.entry[i].english!=NULL) mir_free(langPack.entry[i].english);
-		if(langPack.entry[i].local!=NULL) { mir_free(langPack.entry[i].local); }
-		if(langPack.entry[i].wlocal!=NULL) { mir_free(langPack.entry[i].wlocal); }
-	}
-	if(langPack.entryCount) {
-		mir_free(langPack.entry);
-		langPack.entry=0;
-		langPack.entryCount=0;
-	}
-	return 0;
-}
-
 int LoadLangPackModule(void)
 {
 	HANDLE hFind;
@@ -344,7 +327,6 @@ int LoadLangPackModule(void)
 	WIN32_FIND_DATA fd;
 
 	ZeroMemory(&langPack,sizeof(langPack));
-	HookEvent(ME_SYSTEM_SHUTDOWN,LangPackShutdown);
 	LoadLangPackServices();
 	GetModuleFileName(GetModuleHandle(NULL),szSearch,SIZEOF(szSearch));
 	str2=_tcsrchr(szSearch,'\\');
@@ -361,6 +343,20 @@ int LoadLangPackModule(void)
 	return 0;
 }
 
+void UnloadLangPackModule()
+{
+	int i;
+	for ( i=0; i < langPack.entryCount; i++ ) {
+		mir_free(langPack.entry[i].english);
+		mir_free(langPack.entry[i].local);
+		mir_free(langPack.entry[i].wlocal);
+	}
+	if ( langPack.entryCount ) {
+		mir_free(langPack.entry);
+		langPack.entry=0;
+		langPack.entryCount=0;
+}	}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // Langpack ANSI <-> UNICODE transformation routines
 
@@ -373,6 +369,16 @@ TCHAR* a2t( const char* str )
 		return LangPackPcharToTchar( str );
 	#else
 		return mir_strdup( str );
+	#endif
+}
+
+char* t2a(const TCHAR* src)
+{
+	if (!src) return NULL;
+	#ifdef _UNICODE
+		return u2a( src );
+	#else
+		return mir_strdup( src );
 	#endif
 }
 
@@ -403,4 +409,3 @@ wchar_t* a2u( const char* src )
 	result[ cbLen ] = 0;
 	return result;
 }
-

@@ -169,11 +169,9 @@ struct SetAwasMsgNewData {
 
 static BOOL CALLBACK SetAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)
 {
-	struct SetAwayMsgData *dat;
-
-	dat=(struct SetAwayMsgData*)GetWindowLong(hwndDlg,GWL_USERDATA);
+	struct SetAwayMsgData* dat = ( struct SetAwayMsgData* )GetWindowLong(hwndDlg,GWL_USERDATA);
 	switch(message) {
-		case WM_INITDIALOG:
+	case WM_INITDIALOG:
 		{
 			struct SetAwasMsgNewData *newdat = (struct SetAwasMsgNewData*)lParam;
 			TranslateDialogDefault(hwndDlg);
@@ -196,43 +194,47 @@ static BOOL CALLBACK SetAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 			}
 			dat->countdown=5;
 			SendMessage(hwndDlg,WM_TIMER,0,0);
-			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedProtoIcon(dat->szProto, dat->statusMode));
+			Window_SetProtoIcon_IcoLib(hwndDlg, dat->szProto, dat->statusMode);
 			SetTimer(hwndDlg,1,1000,0);
 			dat->hPreshutdown=HookEventMessage(ME_SYSTEM_PRESHUTDOWN,hwndDlg,DM_SRAWAY_SHUTDOWN);
-			return TRUE;
 		}
-		case WM_TIMER:
-			if(dat->countdown==-1) {DestroyWindow(hwndDlg); break;}
-			{	char str[64];
-				mir_snprintf(str,SIZEOF(str),dat->okButtonFormat,dat->countdown);
-				SetDlgItemTextA(hwndDlg,IDOK,str);
-			}
-			dat->countdown--;
-			break;
-		case WM_COMMAND:
-			switch(LOWORD(wParam)) {
-				case IDOK:
-				case IDCANCEL:
-					DestroyWindow(hwndDlg);
-					break;
-				case IDC_MSG:
-					KillTimer(hwndDlg,1);
-					SetDlgItemText(hwndDlg,IDOK,TranslateT("OK"));
-					break;
-			}
-			break;
-		case DM_SRAWAY_SHUTDOWN:
-			DestroyWindow(hwndDlg);
-			break;
-		case WM_DESTROY:
-			{	char str[1024];
-				GetDlgItemTextA(hwndDlg,IDC_MSG,str,SIZEOF(str));
-				ChangeAllProtoMessages(dat->szProto,dat->statusMode,str);
-				DBWriteContactSettingString(NULL,"SRAway",StatusModeToDbSetting(dat->statusMode,"Msg"),str);
-			}
-			SetWindowLong(GetDlgItem(hwndDlg,IDC_MSG),GWL_WNDPROC,(LONG)OldMessageEditProc);
-			mir_free(dat);
-			break;
+		return TRUE;
+
+	case WM_TIMER:
+		if(dat->countdown==-1) {DestroyWindow(hwndDlg); break;}
+		{	char str[64];
+			mir_snprintf(str,SIZEOF(str),dat->okButtonFormat,dat->countdown);
+			SetDlgItemTextA(hwndDlg,IDOK,str);
+		}
+		dat->countdown--;
+		break;
+
+	case WM_COMMAND:
+		switch(LOWORD(wParam)) {
+			case IDOK:
+			case IDCANCEL:
+				DestroyWindow(hwndDlg);
+				break;
+			case IDC_MSG:
+				KillTimer(hwndDlg,1);
+				SetDlgItemText(hwndDlg,IDOK,TranslateT("OK"));
+				break;
+		}
+		break;
+	case DM_SRAWAY_SHUTDOWN:
+		DestroyWindow(hwndDlg);
+		break;
+
+	case WM_DESTROY:
+		{	char str[1024];
+			GetDlgItemTextA(hwndDlg,IDC_MSG,str,SIZEOF(str));
+			ChangeAllProtoMessages(dat->szProto,dat->statusMode,str);
+			DBWriteContactSettingString(NULL,"SRAway",StatusModeToDbSetting(dat->statusMode,"Msg"),str);
+		}
+		Window_FreeIcon_IcoLib(hwndDlg);
+		SetWindowLong(GetDlgItem(hwndDlg,IDC_MSG),GWL_WNDPROC,(LONG)OldMessageEditProc);
+		mir_free(dat);
+		break;
 	}
 	return FALSE;
 }
@@ -383,8 +385,8 @@ static int AwayMsgOptInitialise(WPARAM wParam,LPARAM lParam)
 	odp.position = 870000000;
 	odp.hInstance = GetModuleHandle(NULL);
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_AWAYMSG);
-	odp.pszTitle = "Status Messages";
-	odp.pszGroup = "Status";
+	odp.pszTitle = LPGEN("Messages");
+	odp.pszGroup = LPGEN("Status");
 	odp.pfnDlgProc = DlgProcAwayMsgOpts;
 	odp.flags = ODPF_BOLDGROUPS;
 	CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );

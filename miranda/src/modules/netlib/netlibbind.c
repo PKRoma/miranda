@@ -34,7 +34,7 @@ int StringToPortsMask(const char *szPorts,BYTE *mask)
 
 	ZeroMemory(mask,8192);
 	for(psz=szPorts;*psz;) {
-		while(*psz==' ' && *psz==',') psz++;
+		while(*psz==' ' || *psz==',') psz++;
 		portMin=strtol(psz,&pszEnd,0);
 		if(pszEnd==psz) break;
 		while(*pszEnd==' ') pszEnd++;
@@ -221,8 +221,8 @@ int NetlibBindPort(WPARAM wParam,LPARAM lParam)
 			if(he->h_addr_list[0])
 				nlb->dwInternalIP=ntohl(*(PDWORD)he->h_addr_list[0]);
 		}
-		if (nlu->settings.enableUPnP&&NetlibUPnPAddPortMapping(nlb->wPort, "TCP", &nlbp->wExPort,
-			&extIP, nlb->cbSize > NETLIBBIND_SIZEOF_V2))
+		if (nlu->settings.enableUPnP && 
+			NetlibUPnPAddPortMapping(nlb->wPort, "TCP", &nlbp->wExPort, &extIP, nlb->cbSize > NETLIBBIND_SIZEOF_V2))
 		{
 			Netlib_Logf(NULL, "UPnP port mapping succeeded. Internal Port: %u External Port: %u\n", 
 				nlb->wPort, nlbp->wExPort); 
@@ -234,7 +234,10 @@ int NetlibBindPort(WPARAM wParam,LPARAM lParam)
 		}
 		else
 		{
-			Netlib_Logf(NULL, "UPnP port mapping failed. Internal Port: %u\n", nlb->wPort); 
+			if (nlu->settings.enableUPnP)
+				Netlib_Logf(NULL, "UPnP port mapping failed. Internal Port: %u\n", nlb->wPort); 
+			else
+				Netlib_Logf(NULL, "UPnP disabled. Internal Port: %u\n", nlb->wPort); 
 
 			nlbp->wExPort = 0;
 			if (nlb->cbSize > NETLIBBIND_SIZEOF_V2)

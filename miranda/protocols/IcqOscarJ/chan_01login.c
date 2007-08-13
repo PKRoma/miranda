@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/chan_01login.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -59,9 +59,10 @@ void handleLoginChannel(unsigned char *buf, WORD datalen, serverthread_info *inf
 #ifdef _DEBUG
       NetLog_Server("Sending %s to login server", "CLI_HELLO");
 #endif
-      packet.wLen = 4;
+      packet.wLen = 12;
       write_flap(&packet, ICQ_LOGIN_CHAN);
       packDWord(&packet, 0x00000001);
+      packTLVDWord(&packet, 0x8003, 0x00100000); // unknown
       sendServPacket(&packet);  // greet login server
 
       wUinLen = strlennull(strUID(dwLocalUIN, szUin));
@@ -69,10 +70,9 @@ void handleLoginChannel(unsigned char *buf, WORD datalen, serverthread_info *inf
       NetLog_Server("Sending %s to login server", "ICQ_SIGNON_AUTH_REQUEST");
 #endif
 
-      serverPacketInit(&packet, (WORD)(18 + wUinLen));
+      serverPacketInit(&packet, (WORD)(14 + wUinLen));
       packFNACHeaderFull(&packet, ICQ_AUTHORIZATION_FAMILY, ICQ_SIGNON_AUTH_REQUEST, 0, 0);
       packTLV(&packet, 0x0001, wUinLen, szUin);
-      packDWord(&packet, 0x004B0000);
       sendServPacket(&packet);  // request login digest
     }
     else

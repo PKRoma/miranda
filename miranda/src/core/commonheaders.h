@@ -25,8 +25,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #  define _UNICODE
 #endif
 
-// to enable all 0.6 core functions
-#define MIRANDA_VER 0x600
+// to enable all 0.7 core functions
+#define MIRANDA_VER 0x700
 
 #include <tchar.h>
 #include <malloc.h>
@@ -54,8 +54,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../resource.h"
 #include <win2k.h>
 #include "modules.h"
-#include "miranda.h"
-#include "forkthread.h"
 #include <m_system.h>
 #include <newpluginapi.h>
 #include <m_database.h>
@@ -64,14 +62,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_langpack.h>
 #include <m_clist.h>
 #include <m_clistint.h>
-#include <m_netlib.h>
 #include <m_button.h>
 #include <m_protosvc.h>
 #include <m_protomod.h>
 #include <m_protocols.h>
 #include <m_plugins.h>
 #include <m_options.h>
-#include <m_utils.h>
 #include <m_skin.h>
 #include <m_contacts.h>
 #include <m_message.h>
@@ -84,4 +80,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_awaymsg.h>
 #include <m_idle.h>
 #include <m_ignore.h>
-#include <m_utils.h>
+#include <m_icolib.h>
+
+#include "forkthread.h"
+#include "miranda.h"
+#include "../modules/database/dblists.h"
+
+#include <m_netlib.h>
+
+#include "../resource.h"

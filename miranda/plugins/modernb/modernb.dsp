@@ -69,7 +69,7 @@ LINK32=link.exe
 # PROP Use_Debug_Libraries 1
 # PROP Output_Dir "Debug"
 # PROP Intermediate_Dir "Debug"
-# PROP Ignore_Export_Lib 0
+# PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "modernb_EXPORTS" /YX /FD /GZ /c
 # ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "modernb_EXPORTS" /Yu"commonheaders.h" /FD /GZ /c
@@ -158,33 +158,30 @@ LINK32=link.exe
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\CLUIFrames\cluiframes.c
-# ADD CPP /Yu"../commonheaders.h"
+SOURCE=.\cluiframes.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\CLUIFrames\cluiframes.h
+SOURCE=.\extraimage.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\CLUIFrames\extraimage.c
-# ADD CPP /Yu"../commonheaders.h"
-# End Source File
-# Begin Source File
-
-SOURCE=.\CLUIFrames\framesmenu.c
-# ADD CPP /Yu"../commonheaders.h"
-# End Source File
-# Begin Source File
-
-SOURCE=.\CLUIFrames\m_cluiframes.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\CLUIFrames\protocolorder.c
-# ADD CPP /Yu"../commonheaders.h"
+SOURCE=.\framesmenu.c
 # End Source File
 # End Group
+# Begin Group "ExtFrames"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\ExtFrames\modern_ext_frames.c
+# ADD CPP /Yu"..\commonheaders.h"
+# End Source File
+# End Group
+# Begin Source File
+
+SOURCE=.\button.c
+# End Source File
 # Begin Source File
 
 SOURCE=.\cache_funcs.c
@@ -439,26 +436,6 @@ SOURCE=.\clui.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\cluiopts.c
-
-!IF  "$(CFG)" == "modernb - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug Unicode"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
 SOURCE=.\cluiservices.c
 
 !IF  "$(CFG)" == "modernb - Win32 Release"
@@ -508,36 +485,8 @@ SOURCE=.\Docking.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\forkthread.c
-
-!IF  "$(CFG)" == "modernb - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug Unicode"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
 SOURCE=.\gdiplus.cpp
 # SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\genmenu.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\genmenuopt.c
 # End Source File
 # Begin Source File
 
@@ -589,11 +538,19 @@ SOURCE=.\keyboard.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\mod_skin_selector.c
+SOURCE=.\modern_animated_avatars.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modern_awaymsg.c
 # End Source File
 # Begin Source File
 
 SOURCE=.\modern_button.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modern_gettextasync.c
 # End Source File
 # Begin Source File
 
@@ -602,11 +559,15 @@ SOURCE=.\modern_row.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\modern_skinselector.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\modern_statusbar.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\movetogroup.c
+SOURCE=.\modern_toolbar.c
 # End Source File
 # Begin Source File
 
@@ -630,11 +591,11 @@ SOURCE=.\SkinOpt.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\tabbedoptions.c
+SOURCE=.\viewmodes.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\utf.c
+SOURCE=.\xpTheme.c
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -662,15 +623,7 @@ SOURCE=.\forkthread.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\genmenu.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\IcoLib.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\m_genmenu.h
 # End Source File
 # Begin Source File
 

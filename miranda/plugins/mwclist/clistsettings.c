@@ -50,7 +50,7 @@ void InitDisplayNameCache(SortedList *list)
 	i=0;
 	while (hContact!=0)
 	{
-		displayNameCacheEntry *pdnce = mir_calloc(1,sizeof(displayNameCacheEntry));
+		displayNameCacheEntry *pdnce = mir_calloc(sizeof(displayNameCacheEntry));
 		pdnce->hContact = hContact;
 		InvalidateDisplayNameCacheEntryByPDNE(hContact,pdnce,0);
 		li.List_GetIndex(list,pdnce,&idx);

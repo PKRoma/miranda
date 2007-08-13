@@ -19,6 +19,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "chat.h"
 
+#include "m_fontservice.h"
+
 extern HANDLE		g_hInst;
 extern HIMAGELIST	hImageList;
 extern HIMAGELIST	hIconsList;
@@ -31,72 +33,112 @@ HANDLE				hBuildMenuEvent ;
 HANDLE				g_hModulesLoaded;
 HANDLE				g_hSystemPreShutdown;
 HANDLE				g_hHookContactDblClick;
-HANDLE				g_hIconsChanged;
+HANDLE				g_hIconsChanged, g_hFontsChanged;
 HANDLE				g_hSmileyOptionsChanged = NULL;
 HANDLE				g_hIconsChanged2;
 SESSION_INFO		g_TabSession;
 CRITICAL_SECTION	cs;
 
-static HANDLE     hServiceRegister = NULL,
-                  hServiceNewChat = NULL,
-                  hServiceAddEvent = NULL,
-                  hServiceGetAddEventPtr = NULL,
-                  hServiceGetInfo = NULL,
-                  hServiceGetCount = NULL,
-                  hEventDoubleclicked = NULL;
+void RegisterFonts( void );
+
+static HANDLE
+	hServiceRegister = NULL,
+   hServiceNewChat = NULL,
+   hServiceAddEvent = NULL,
+   hServiceGetAddEventPtr = NULL,
+   hServiceGetInfo = NULL,
+   hServiceGetCount = NULL,
+   hEventDoubleclicked = NULL;
 
 #define SIZEOF_STRUCT_GCREGISTER_V1 28
 #define SIZEOF_STRUCT_GCWINDOW_V1	32
 #define SIZEOF_STRUCT_GCEVENT_V1	44
 #define SIZEOF_STRUCT_GCEVENT_V2	48
 
-void HookEvents(void)
+void ShowRoom(SESSION_INFO* si, WPARAM wp, BOOL bSetForeground)
 {
-	InitializeCriticalSection(&cs);
-	g_hModulesLoaded =			HookEvent(ME_SYSTEM_MODULESLOADED, ModulesLoaded);
-	g_hHookContactDblClick=		HookEvent(ME_CLIST_DOUBLECLICKED, CList_RoomDoubleclicked);
-	g_hSystemPreShutdown =		HookEvent(ME_SYSTEM_PRESHUTDOWN, PreShutdown);
-	g_hIconsChanged =			HookEvent(ME_SKIN_ICONSCHANGED, IconsChanged);
-}
+	if (!si)
+		return;
 
-void UnhookEvents(void)
-{
-	UnhookEvent(g_hModulesLoaded);
-	UnhookEvent(g_hSystemPreShutdown);
-	UnhookEvent(g_hHookContactDblClick);
-	UnhookEvent(g_hIconsChanged);
-	UnhookEvent(g_hIconsChanged2);
-	if (g_hSmileyOptionsChanged)
-		UnhookEvent(g_hSmileyOptionsChanged);
-	DeleteCriticalSection(&cs);
-}
+	if ( g_Settings.TabsEnable) {
+		// the session is not the current tab, so we copy the necessary
+		// details into the SESSION_INFO for the tabbed window
+		if (!si->hWnd) {
+			g_TabSession.iEventCount = si->iEventCount;
+			g_TabSession.iStatusCount = si->iStatusCount;
+			g_TabSession.iType = si->iType;
+			g_TabSession.nUsersInNicklist = si->nUsersInNicklist;
+			g_TabSession.pLog = si->pLog;
+			g_TabSession.pLogEnd = si->pLogEnd;
+			g_TabSession.pMe = si->pMe;
+			g_TabSession.dwFlags = si->dwFlags;
+			g_TabSession.pStatuses = si->pStatuses;
+			g_TabSession.ptszID = si->ptszID;
+			g_TabSession.pszModule = si->pszModule;
+			g_TabSession.ptszName = si->ptszName;
+			g_TabSession.ptszStatusbarText = si->ptszStatusbarText;
+			g_TabSession.ptszTopic = si->ptszTopic;
+			g_TabSession.pUsers = si->pUsers;
+			g_TabSession.hContact = si->hContact;
+			g_TabSession.wStatus = si->wStatus;
+			g_TabSession.lpCommands = si->lpCommands;
+			g_TabSession.lpCurrentCommand = NULL;
+		}
 
-void CreateServiceFunctions(void)
-{
-	hServiceRegister       = CreateServiceFunction(MS_GC_REGISTER,        Service_Register);
-	hServiceNewChat        = CreateServiceFunction(MS_GC_NEWSESSION,      Service_NewChat);
-	hServiceAddEvent       = CreateServiceFunction(MS_GC_EVENT,           Service_AddEvent);
-	hServiceGetAddEventPtr = CreateServiceFunction(MS_GC_GETEVENTPTR,     Service_GetAddEventPtr);
-	hServiceGetInfo        = CreateServiceFunction(MS_GC_GETINFO,         Service_GetInfo);
-	hServiceGetCount       = CreateServiceFunction(MS_GC_GETSESSIONCOUNT, Service_GetCount);
-	hEventDoubleclicked    = CreateServiceFunction("GChat/DblClickEvent", CList_EventDoubleclicked);
-}
+		//Do we need to create a tabbed window?
+		if (g_TabSession.hWnd == NULL)
+			g_TabSession.hWnd = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CHANNEL), NULL, RoomWndProc, (LPARAM)&g_TabSession);
 
-void DestroyServiceFunctions(void)
-{
-	DestroyServiceFunction(hServiceRegister       );
-	DestroyServiceFunction(hServiceNewChat        );
-	DestroyServiceFunction(hServiceAddEvent       );
-	DestroyServiceFunction(hServiceGetAddEventPtr );
-	DestroyServiceFunction(hServiceGetInfo        );
-	DestroyServiceFunction(hServiceGetCount       );
-	DestroyServiceFunction(hEventDoubleclicked    );
-}
+		SetWindowLong(g_TabSession.hWnd, GWL_EXSTYLE, GetWindowLong(g_TabSession.hWnd, GWL_EXSTYLE) | WS_EX_APPWINDOW);
 
-void CreateHookableEvents(void)
-{
-	hSendEvent = CreateHookableEvent(ME_GC_EVENT);
-	hBuildMenuEvent = CreateHookableEvent(ME_GC_BUILDMENU);
+		// if the session was not the current tab we need to tell the window to
+		// redraw to show the contents of the current SESSION_INFO
+		if (!si->hWnd) {
+			SM_SetTabbedWindowHwnd(si, g_TabSession.hWnd);
+			SendMessage(g_TabSession.hWnd, GC_ADDTAB, -1, (LPARAM)si);
+			SendMessage(g_TabSession.hWnd, GC_TABCHANGE, 0, (LPARAM)&g_TabSession);
+		}
+
+		SetActiveSession(si->ptszID, si->pszModule);
+
+		if (!IsWindowVisible(g_TabSession.hWnd) || wp == WINDOW_HIDDEN)
+			SendMessage(g_TabSession.hWnd, GC_EVENT_CONTROL + WM_USER + 500, wp, 0);
+		else {
+			if (IsIconic(g_TabSession.hWnd))
+				ShowWindow(g_TabSession.hWnd, SW_NORMAL);
+
+			PostMessage(g_TabSession.hWnd, WM_SIZE, 0, 0);
+			if (si->iType != GCW_SERVER)
+				SendMessage(g_TabSession.hWnd, GC_UPDATENICKLIST, 0, 0);
+			else
+				SendMessage(g_TabSession.hWnd, GC_UPDATETITLE, 0, 0);
+			SendMessage(g_TabSession.hWnd, GC_REDRAWLOG, 0, 0);
+			SendMessage(g_TabSession.hWnd, GC_UPDATESTATUSBAR, 0, 0);
+			ShowWindow(g_TabSession.hWnd, SW_SHOW);
+			if (bSetForeground)
+				SetForegroundWindow(g_TabSession.hWnd);
+		}
+		SendMessage(g_TabSession.hWnd, WM_MOUSEACTIVATE, 0, 0);
+		SetFocus(GetDlgItem(g_TabSession.hWnd, IDC_MESSAGE));
+		return;
+	}
+
+	//Do we need to create a window?
+	if (si->hWnd == NULL)
+		si->hWnd = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CHANNEL), NULL, RoomWndProc, (LPARAM)si);
+
+	SetWindowLong(si->hWnd, GWL_EXSTYLE, GetWindowLong(si->hWnd, GWL_EXSTYLE) | WS_EX_APPWINDOW);
+	if (!IsWindowVisible(si->hWnd) || wp == WINDOW_HIDDEN)
+		SendMessage(si->hWnd, GC_EVENT_CONTROL + WM_USER + 500, wp, 0);
+	else {
+		if (IsIconic(si->hWnd))
+			ShowWindow(si->hWnd, SW_NORMAL);
+		ShowWindow(si->hWnd, SW_SHOW);
+		SetForegroundWindow(si->hWnd);
+	}
+
+	SendMessage(si->hWnd, WM_MOUSEACTIVATE, 0, 0);
+	SetFocus(GetDlgItem(si->hWnd, IDC_MESSAGE));
 }
 
 void TabsInit(void)
@@ -115,14 +157,68 @@ void TabsInit(void)
 	g_TabSession.bBGSet = TRUE;
 }
 
-int ModulesLoaded(WPARAM wParam,LPARAM lParam)
+/////////////////////////////////////////////////////////////////////////////////////////
+// Post-load event hooks
+
+static int FontsChanged(WPARAM wParam,LPARAM lParam)
+{
+	LoadLogFonts();
+	{
+		LOGFONT lf;
+		HFONT hFont;
+		int iText;
+
+		LoadMsgDlgFont(0, &lf, NULL);
+		hFont = CreateFontIndirect(&lf);
+		iText = GetTextPixelSize(MakeTimeStamp(g_Settings.pszTimeStamp, time(NULL)),hFont, TRUE);
+		DeleteObject(hFont);
+		g_Settings.LogTextIndent = iText;
+		g_Settings.LogTextIndent = g_Settings.LogTextIndent*12/10;
+		g_Settings.LogIndentEnabled = (DBGetContactSettingByte(NULL, "Chat", "LogIndentEnabled", 1) != 0)?TRUE:FALSE;
+	}
+	MM_FontsChanged();						
+	MM_FixColors();
+	SM_BroadcastMessage(NULL, GC_SETWNDPROPS, 0, 0, TRUE);
+	return 0;
+}
+
+static int IconsChanged(WPARAM wParam,LPARAM lParam)
+{
+	FreeMsgLogBitmaps();
+
+	LoadLogIcons();
+	LoadMsgLogBitmaps();
+	MM_IconsChanged();
+	SM_BroadcastMessage(NULL, GC_SETWNDPROPS, 0, 0, FALSE);
+	return 0;
+}
+
+static int PreShutdown(WPARAM wParam,LPARAM lParam)
+{
+	SM_BroadcastMessage(NULL, GC_CLOSEWINDOW, 0, 1, FALSE);
+
+	SM_RemoveAll();
+	MM_RemoveAll();
+	TabM_RemoveAll();
+	return 0;
+}
+
+static int SmileyOptionsChanged(WPARAM wParam,LPARAM lParam)
+{
+	SM_BroadcastMessage(NULL, GC_REDRAWLOG, 0, 1, FALSE);
+	return 0;
+}
+
+static int ModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
 	char* mods[3] = { "Chat", "ChatFonts" };
 	CallService( "DBEditorpp/RegisterModule", (WPARAM)mods, 2 );
 
+	RegisterFonts();
 	AddIcons();
 	LoadIcons();
 
+	g_hFontsChanged  = HookEvent(ME_FONT_RELOAD, FontsChanged);
 	g_hIconsChanged2 = HookEvent(ME_SKIN2_ICONSCHANGED, IconsChanged);
 
 	if ( ServiceExists( MS_SMILEYADD_SHOWSELECTION )) {
@@ -139,35 +235,7 @@ int ModulesLoaded(WPARAM wParam,LPARAM lParam)
  	return 0;
 }
 
-
-int SmileyOptionsChanged(WPARAM wParam,LPARAM lParam)
-{
-	SM_BroadcastMessage(NULL, GC_REDRAWLOG, 0, 1, FALSE);
-	return 0;
-}
-
-int PreShutdown(WPARAM wParam,LPARAM lParam)
-{
-	SM_BroadcastMessage(NULL, GC_CLOSEWINDOW, 0, 1, FALSE);
-
-	SM_RemoveAll();
-	MM_RemoveAll();
-	TabM_RemoveAll();
-	return 0;
-}
-
-int IconsChanged(WPARAM wParam,LPARAM lParam)
-{
-	FreeMsgLogBitmaps();
-
-	LoadLogIcons();
-	LoadMsgLogBitmaps();
-	MM_IconsChanged();
-	SM_BroadcastMessage(NULL, GC_SETWNDPROPS, 0, 0, FALSE);
-	return 0;
-}
-
-int Service_GetCount(WPARAM wParam,LPARAM lParam)
+static int Service_GetCount(WPARAM wParam,LPARAM lParam)
 {
 	int i;
 
@@ -182,7 +250,7 @@ int Service_GetCount(WPARAM wParam,LPARAM lParam)
 	return i;
 }
 
-int Service_GetInfo(WPARAM wParam,LPARAM lParam)
+static int Service_GetInfo(WPARAM wParam,LPARAM lParam)
 {
 	GC_INFO * gci = (GC_INFO *) lParam;
 	SESSION_INFO* si = NULL;
@@ -226,7 +294,7 @@ int Service_GetInfo(WPARAM wParam,LPARAM lParam)
 	return 1;
 }
 
-int Service_Register(WPARAM wParam, LPARAM lParam)
+static int Service_Register(WPARAM wParam, LPARAM lParam)
 {
 
 	GCREGISTER *gcr = (GCREGISTER *)lParam;
@@ -286,7 +354,7 @@ int Service_Register(WPARAM wParam, LPARAM lParam)
 	return GC_REGISTER_ERROR;
 }
 
-int Service_NewChat(WPARAM wParam, LPARAM lParam)
+static int Service_NewChat(WPARAM wParam, LPARAM lParam)
 {
 	MODULEINFO* mi;
 	GCSESSION *gcw =(GCSESSION *)lParam;
@@ -515,93 +583,7 @@ static void AddUser(GCEVENT * gce)
 				SendMessage(si->hWnd, GC_UPDATENICKLIST, (WPARAM)0, (LPARAM)0);
 }	}	}	}
 
-void ShowRoom(SESSION_INFO* si, WPARAM wp, BOOL bSetForeground)
-{
-	if (!si)
-		return;
-
-	if ( g_Settings.TabsEnable) {
-		// the session is not the current tab, so we copy the necessary
-		// details into the SESSION_INFO for the tabbed window
-		if (!si->hWnd) {
-			g_TabSession.iEventCount = si->iEventCount;
-			g_TabSession.iStatusCount = si->iStatusCount;
-			g_TabSession.iType = si->iType;
-			g_TabSession.nUsersInNicklist = si->nUsersInNicklist;
-			g_TabSession.pLog = si->pLog;
-			g_TabSession.pLogEnd = si->pLogEnd;
-			g_TabSession.pMe = si->pMe;
-			g_TabSession.dwFlags = si->dwFlags;
-			g_TabSession.pStatuses = si->pStatuses;
-			g_TabSession.ptszID = si->ptszID;
-			g_TabSession.pszModule = si->pszModule;
-			g_TabSession.ptszName = si->ptszName;
-			g_TabSession.ptszStatusbarText = si->ptszStatusbarText;
-			g_TabSession.ptszTopic = si->ptszTopic;
-			g_TabSession.pUsers = si->pUsers;
-			g_TabSession.hContact = si->hContact;
-			g_TabSession.wStatus = si->wStatus;
-			g_TabSession.lpCommands = si->lpCommands;
-			g_TabSession.lpCurrentCommand = NULL;
-		}
-
-		//Do we need to create a tabbed window?
-		if (g_TabSession.hWnd == NULL)
-			g_TabSession.hWnd = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CHANNEL), NULL, RoomWndProc, (LPARAM)&g_TabSession);
-
-		SetWindowLong(g_TabSession.hWnd, GWL_EXSTYLE, GetWindowLong(g_TabSession.hWnd, GWL_EXSTYLE) | WS_EX_APPWINDOW);
-
-		// if the session was not the current tab we need to tell the window to
-		// redraw to show the contents of the current SESSION_INFO
-		if (!si->hWnd) {
-			SM_SetTabbedWindowHwnd(si, g_TabSession.hWnd);
-			SendMessage(g_TabSession.hWnd, GC_ADDTAB, -1, (LPARAM)si);
-			SendMessage(g_TabSession.hWnd, GC_TABCHANGE, 0, (LPARAM)&g_TabSession);
-		}
-
-		SetActiveSession(si->ptszID, si->pszModule);
-
-		if (!IsWindowVisible(g_TabSession.hWnd) || wp == WINDOW_HIDDEN)
-			SendMessage(g_TabSession.hWnd, GC_EVENT_CONTROL + WM_USER + 500, wp, 0);
-		else {
-			if (IsIconic(g_TabSession.hWnd))
-				ShowWindow(g_TabSession.hWnd, SW_NORMAL);
-
-			PostMessage(g_TabSession.hWnd, WM_SIZE, 0, 0);
-			if (si->iType != GCW_SERVER)
-				SendMessage(g_TabSession.hWnd, GC_UPDATENICKLIST, 0, 0);
-			else
-				SendMessage(g_TabSession.hWnd, GC_UPDATETITLE, 0, 0);
-			SendMessage(g_TabSession.hWnd, GC_REDRAWLOG, 0, 0);
-			SendMessage(g_TabSession.hWnd, GC_UPDATESTATUSBAR, 0, 0);
-			ShowWindow(g_TabSession.hWnd, SW_SHOW);
-			if (bSetForeground)
-				SetForegroundWindow(g_TabSession.hWnd);
-		}
-		SendMessage(g_TabSession.hWnd, WM_MOUSEACTIVATE, 0, 0);
-		SetFocus(GetDlgItem(g_TabSession.hWnd, IDC_MESSAGE));
-		return;
-	}
-
-	//Do we need to create a window?
-	if (si->hWnd == NULL)
-		si->hWnd = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CHANNEL), NULL, RoomWndProc, (LPARAM)si);
-
-	SetWindowLong(si->hWnd, GWL_EXSTYLE, GetWindowLong(si->hWnd, GWL_EXSTYLE) | WS_EX_APPWINDOW);
-	if (!IsWindowVisible(si->hWnd) || wp == WINDOW_HIDDEN)
-		SendMessage(si->hWnd, GC_EVENT_CONTROL + WM_USER + 500, wp, 0);
-	else {
-		if (IsIconic(si->hWnd))
-			ShowWindow(si->hWnd, SW_NORMAL);
-		ShowWindow(si->hWnd, SW_SHOW);
-		SetForegroundWindow(si->hWnd);
-	}
-
-	SendMessage(si->hWnd, WM_MOUSEACTIVATE, 0, 0);
-	SetFocus(GetDlgItem(si->hWnd, IDC_MESSAGE));
-}
-
-int Service_AddEvent(WPARAM wParam, LPARAM lParam)
+static int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 {
 	GCEVENT *gce = (GCEVENT*)lParam, save_gce;
 	GCDEST *gcd = NULL, save_gcd;
@@ -620,6 +602,9 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 
 	if ( gce->cbSize != SIZEOF_STRUCT_GCEVENT_V1 && gce->cbSize != SIZEOF_STRUCT_GCEVENT_V2 )
 		return GC_EVENT_WRONGVER;
+
+	if ( !IsEventSupported( gcd->iType ) )
+		return GC_EVENT_ERROR;
 
 	EnterCriticalSection(&cs);
 
@@ -657,6 +642,10 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 	case GC_EVENT_SENDMESSAGE :
 	case GC_EVENT_SETSTATUSEX :
 		iRetVal = DoControl(gce, wParam);
+		goto LBL_Exit;
+
+	case GC_EVENT_SETCONTACTSTATUS:
+		iRetVal = SM_SetContactStatus( gce->pDest->ptszID, gce->pDest->pszModule, gce->ptszUID, (WORD)gce->dwItemData );
 		goto LBL_Exit;
 
 	case GC_EVENT_TOPIC:
@@ -713,7 +702,7 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 	}
 	else if ( gcd->iType == GC_EVENT_NOTICE || gcd->iType == GC_EVENT_INFORMATION ) {
 		SESSION_INFO* si = GetActiveSession();
-		if ( si ) {
+		if ( si && !lstrcmpA( si->pszModule, gcd->pszModule )) {
 			pWnd = si->ptszID;
 			pMod = si->pszModule;
 		}
@@ -788,7 +777,7 @@ LBL_Exit:
 	return iRetVal;
 }
 
-int Service_GetAddEventPtr(WPARAM wParam, LPARAM lParam)
+static int Service_GetAddEventPtr(WPARAM wParam, LPARAM lParam)
 {
 	GCPTRS * gp = (GCPTRS *) lParam;
 
@@ -797,4 +786,57 @@ int Service_GetAddEventPtr(WPARAM wParam, LPARAM lParam)
 	gp->pfnAddEvent = Service_AddEvent;
 	LeaveCriticalSection(&cs);
 	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// Service creation
+
+void HookEvents(void)
+{
+	InitializeCriticalSection(&cs);
+	g_hModulesLoaded =       HookEvent(ME_SYSTEM_MODULESLOADED, ModulesLoaded);
+	g_hHookContactDblClick = HookEvent(ME_CLIST_DOUBLECLICKED, CList_RoomDoubleclicked);
+	g_hSystemPreShutdown =   HookEvent(ME_SYSTEM_PRESHUTDOWN, PreShutdown);
+	g_hIconsChanged =	       HookEvent(ME_SKIN_ICONSCHANGED, IconsChanged);
+}
+
+void UnhookEvents(void)
+{
+	UnhookEvent(g_hModulesLoaded);
+	UnhookEvent(g_hSystemPreShutdown);
+	UnhookEvent(g_hHookContactDblClick);
+	UnhookEvent(g_hIconsChanged);
+	UnhookEvent(g_hIconsChanged2);
+	UnhookEvent(g_hFontsChanged);
+	if (g_hSmileyOptionsChanged)
+		UnhookEvent(g_hSmileyOptionsChanged);
+	DeleteCriticalSection(&cs);
+}
+
+void CreateServiceFunctions(void)
+{
+	hServiceRegister       = CreateServiceFunction(MS_GC_REGISTER,        Service_Register);
+	hServiceNewChat        = CreateServiceFunction(MS_GC_NEWSESSION,      Service_NewChat);
+	hServiceAddEvent       = CreateServiceFunction(MS_GC_EVENT,           Service_AddEvent);
+	hServiceGetAddEventPtr = CreateServiceFunction(MS_GC_GETEVENTPTR,     Service_GetAddEventPtr);
+	hServiceGetInfo        = CreateServiceFunction(MS_GC_GETINFO,         Service_GetInfo);
+	hServiceGetCount       = CreateServiceFunction(MS_GC_GETSESSIONCOUNT, Service_GetCount);
+	hEventDoubleclicked    = CreateServiceFunction("GChat/DblClickEvent", CList_EventDoubleclicked);
+}
+
+void DestroyServiceFunctions(void)
+{
+	DestroyServiceFunction(hServiceRegister       );
+	DestroyServiceFunction(hServiceNewChat        );
+	DestroyServiceFunction(hServiceAddEvent       );
+	DestroyServiceFunction(hServiceGetAddEventPtr );
+	DestroyServiceFunction(hServiceGetInfo        );
+	DestroyServiceFunction(hServiceGetCount       );
+	DestroyServiceFunction(hEventDoubleclicked    );
+}
+
+void CreateHookableEvents(void)
+{
+	hSendEvent = CreateHookableEvent(ME_GC_EVENT);
+	hBuildMenuEvent = CreateHookableEvent(ME_GC_BUILDMENU);
 }

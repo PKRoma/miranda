@@ -18,20 +18,18 @@
 /* 
  * Yahoo Services
  */
-#include "pthread.h"
-
-//#include "libyahoo2/config.h"
 #define USE_STRUCT_CALLBACKS
-
 #include "libyahoo2/yahoo2.h"
 #include "libyahoo2/yahoo2_callbacks.h"
 #include "libyahoo2/yahoo_util.h"
 
 #include <newpluginapi.h>
+#include <m_system.h>
 #include <m_database.h>
 #include <m_protomod.h>
 #include <m_netlib.h>
 #include <m_clist.h>
+#include <m_langpack.h>
 
 //=======================================================
 //	Definitions
@@ -39,9 +37,8 @@
 // Build is a cvs build
 //
 // If defined, the build will add cvs info to the plugin info
-//#define YAHOO_CVSBUILD
+#define YAHOO_CVSBUILD
 
-//#define modname			"myYahoo"
 #define YAHOO_LOGINSERVER                 "LoginServer"
 #define YAHOO_LOGINPORT                   "LoginPort"
 #define YAHOO_LOGINID                     "yahoo_id"
@@ -66,14 +63,15 @@ extern int do_yahoo_debug;
 	YAHOO_DEBUGLOG x; \
 	YAHOO_DEBUGLOG(" ");}
 
-#define YAHOO_SET_CUST_STAT  "/SetCustomStatCommand" 
-#define YAHOO_SHOW_PROFILE   "/YahooShowProfileCommand"
-#define YAHOO_SHOW_MY_PROFILE "/YahooShowMyProfileCommand"
-#define YAHOO_YAHOO_MAIL     "/YahooGotoMailboxCommand"
-#define YAHOO_REFRESH     "/YahooRefreshCommand"
-#define YAHOO_AB     "/YahooAddressBook"
-#define YAHOO_CALENDAR     "/YahooCalendar"
-#define YAHOO_SEND_NUDGE     "/SendNudge"
+#define YAHOO_SET_CUST_STAT			"/SetCustomStatCommand" 
+#define YAHOO_SHOW_PROFILE			"/YahooShowProfileCommand"
+#define YAHOO_SHOW_MY_PROFILE		"/YahooShowMyProfileCommand"
+#define YAHOO_YAHOO_MAIL			"/YahooGotoMailboxCommand"
+#define YAHOO_REFRESH				"/YahooRefreshCommand"
+#define YAHOO_AB					"/YahooAddressBook"
+#define YAHOO_CALENDAR				"/YahooCalendar"
+#define YAHOO_SEND_NUDGE			"/SendNudge"
+#define YAHOO_GETUNREAD_EMAILCOUNT	"/GetUnreadEmailCount"
 
 #define STYLE_DEFAULTBGCOLOUR     RGB(173,206,247)
 
@@ -95,17 +93,17 @@ struct _conn {
 //=======================================================
 //	Defines
 //=======================================================
-//General
 extern HANDLE			hNetlibUser;
 extern HINSTANCE		hinstance;
-extern int				yahooStatus;
+extern int				yahooStatus, mUnreadMessages;
 extern char				yahooProtocolName[MAX_PATH];
 extern BOOL             yahooLoggedIn;
-
 extern HANDLE           YahooMenuItems[ MENU_ITEMS_COUNT ];
-extern pthread_mutex_t connectionHandleMutex;
 
-//int ext_yahoo_log(char *fmt,...);
+
+#ifdef HTTP_GATEWAY
+extern int 				iHTTPGateway;
+#endif
 
 HANDLE __stdcall YAHOO_CreateProtoServiceFunction( 
 	const char* szService,
@@ -131,6 +129,7 @@ DWORD __stdcall YAHOO_SetWord( HANDLE hContact, const char* valueName, int parVa
 int __stdcall YAHOO_SendBroadcast( HANDLE hContact, int type, int result, HANDLE hProcess, LPARAM lParam );
 
 DWORD __stdcall YAHOO_SetString( HANDLE hContact, const char* valueName, const char* parValue );
+DWORD __stdcall YAHOO_SetStringUtf( HANDLE hContact, const char* valueName, const char* parValue );
 
 int __stdcall	YAHOO_ShowPopup( const char* nickname, const char* msg, const char *szURL );
 
@@ -155,14 +154,13 @@ void yahoo_logoff_buddies();
 void yahoo_set_status(int myyahooStatus, char *msg, int away);
 int miranda_to_yahoo(int myyahooStatus);
 void yahoo_stealth(const char *buddy, int add);
-const YList* YAHOO_GetIgnoreList(void);
-void YAHOO_IgnoreBuddy(const char *buddy, int ignore);
 
 void register_callbacks();
 char* YAHOO_GetContactName(HANDLE hContact);
 
 void YAHOO_remove_buddy(const char *who);
 void YAHOO_reject(const char *who, const char *msg);
+void YAHOO_accept(const char *who);
 void YAHOO_add_buddy(const char *who, const char *group, const char *msg);
 HANDLE add_buddy( const char *yahoo_id, const char *yahoo_name, DWORD flags );
 void YAHOO_sendtyping(const char *who, int stat);
@@ -183,6 +181,7 @@ typedef struct {
 	int fd;
 	int status;
 	char *msg;
+	int  rpkts;
 } yahoo_local_account;
 
 void SetButtonCheck(HWND hwndDlg, int CtrlID, BOOL bCheck);
@@ -194,8 +193,9 @@ int LoadYahooServices(void);
 void yahoo_logout();
 void yahoo_callback(struct _conn *c, yahoo_input_condition cond);
 void ext_yahoo_login(int login_mode);
-void __stdcall Utf8Decode( char* str, int maxSize, wchar_t** ucs2 );
-char* __stdcall Utf8EncodeUcs2( const wchar_t* src );
 int YahooGotoMailboxCommand( WPARAM wParam, LPARAM lParam );
 
+void YahooMenuInit( void );
+void YahooIconsInit( void );
+HICON LoadIconEx( const char* name );
 #endif

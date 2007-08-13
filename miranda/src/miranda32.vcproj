@@ -4,10 +4,10 @@
 	Version="7.10"
 	Name="miranda32"
 	RootNamespace="miranda32"
-	SccProjectName="&quot;$/Miranda/miranda&quot;, SHIAAAAA"
-	SccAuxPath=""
-	SccLocalPath=".."
-	SccProvider="MSSCCI:Microsoft Visual SourceSafe">
+	SccProjectName="SAK"
+	SccAuxPath="SAK"
+	SccLocalPath="SAK"
+	SccProvider="SAK">
 	<Platforms>
 		<Platform
 			Name="Win32"/>
@@ -164,8 +164,9 @@
 				Name="VCCLCompilerTool"
 				Optimization="3"
 				GlobalOptimizations="TRUE"
-				InlineFunctionExpansion="1"
 				FavorSizeOrSpeed="2"
+				OmitFramePointers="FALSE"
+				OptimizeForProcessor="0"
 				AdditionalIncludeDirectories="../include"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_NOSDK;_STATIC"
 				StringPooling="TRUE"
@@ -338,7 +339,13 @@
 				RelativePath="..\include\m_fuse.h">
 			</File>
 			<File
+				RelativePath="..\include\m_genmenu.h">
+			</File>
+			<File
 				RelativePath="..\include\m_history.h">
+			</File>
+			<File
+				RelativePath="..\include\m_icolib.h">
 			</File>
 			<File
 				RelativePath="..\include\m_icq.h">
@@ -689,6 +696,82 @@
 				</File>
 			</Filter>
 			<Filter
+				Name="clist"
+				Filter="">
+				<File
+					RelativePath=".\modules\clist\clc.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\clc.h">
+				</File>
+				<File
+					RelativePath=".\modules\clist\clcfiledrop.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\clcidents.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\clcitems.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\clcmsgs.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\clcutils.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\clistcore.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\clistevents.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\clistmenus.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\clistmod.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\clistsettings.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\clisttray.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\clui.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\cluiservices.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\contact.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\Docking.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\genmenu.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\genmenu.h">
+				</File>
+				<File
+					RelativePath=".\modules\clist\genmenuopt.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\groups.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\keyboard.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\movetogroup.c">
+				</File>
+				<File
+					RelativePath=".\modules\clist\protocolorder.c">
+				</File>
+			</Filter>
+			<Filter
 				Name="contacts"
 				Filter="">
 				<File
@@ -846,6 +929,9 @@
 					RelativePath=".\modules\database\dbtime.c">
 				</File>
 				<File
+					RelativePath=".\modules\database\dbutils.c">
+				</File>
+				<File
 					RelativePath=".\modules\database\profilemanager.c">
 				</File>
 				<File
@@ -935,6 +1021,28 @@
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
 					</FileConfiguration>
+				</File>
+			</Filter>
+			<Filter
+				Name="fonts"
+				Filter="">
+				<File
+					RelativePath=".\modules\fonts\FontOptions.c">
+				</File>
+				<File
+					RelativePath=".\modules\fonts\FontService.c">
+				</File>
+				<File
+					RelativePath=".\modules\fonts\FontService.h">
+				</File>
+				<File
+					RelativePath=".\modules\fonts\module_fonts.c">
+				</File>
+				<File
+					RelativePath=".\modules\fonts\module_fonts.h">
+				</File>
+				<File
+					RelativePath=".\modules\fonts\services.c">
 				</File>
 			</Filter>
 			<Filter
@@ -1060,6 +1168,46 @@
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
 					</FileConfiguration>
+				</File>
+			</Filter>
+			<Filter
+				Name="icolib"
+				Filter="">
+				<File
+					RelativePath=".\modules\icolib\extracticon.c">
+					<FileConfiguration
+						Name="Release|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\modules\icolib\IcoLib.c">
+				</File>
+				<File
+					RelativePath=".\modules\icolib\IcoLib.h">
+				</File>
+				<File
+					RelativePath=".\modules\icolib\skin2icons.c">
 				</File>
 			</Filter>
 			<Filter
@@ -2456,6 +2604,13 @@
 				</File>
 			</Filter>
 			<Filter
+				Name="updater"
+				Filter="">
+				<File
+					RelativePath=".\modules\updatenotify\updatenotify.c">
+				</File>
+			</Filter>
+			<Filter
 				Name="userinfo"
 				Filter="">
 				<File
@@ -2740,6 +2895,9 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath=".\modules\utils\md5.c">
+				</File>
+				<File
 					RelativePath="modules\utils\openurl.c">
 					<FileConfiguration
 						Name="Release|Win32">
@@ -2855,6 +3013,9 @@
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
 					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\modules\utils\sha1.c">
 				</File>
 				<File
 					RelativePath=".\modules\utils\utf.c">
@@ -2981,188 +3142,12 @@
 					</FileConfiguration>
 				</File>
 			</Filter>
-			<Filter
-				Name="clist"
-				Filter="">
-				<File
-					RelativePath=".\modules\clist\clc.c">
-				</File>
-				<File
-					RelativePath=".\modules\clist\clc.h">
-				</File>
-				<File
-					RelativePath=".\modules\clist\clcfiledrop.c">
-				</File>
-				<File
-					RelativePath=".\modules\clist\clcidents.c">
-				</File>
-				<File
-					RelativePath=".\modules\clist\clcitems.c">
-				</File>
-				<File
-					RelativePath=".\modules\clist\clcmsgs.c">
-				</File>
-				<File
-					RelativePath=".\modules\clist\clcutils.c">
-				</File>
-				<File
-					RelativePath=".\modules\clist\clistcore.c">
-				</File>
-				<File
-					RelativePath=".\modules\clist\clistevents.c">
-				</File>
-				<File
-					RelativePath=".\modules\clist\clistmod.c">
-				</File>
-				<File
-					RelativePath=".\modules\clist\clistsettings.c">
-				</File>
-				<File
-					RelativePath=".\modules\clist\clisttray.c">
-				</File>
-				<File
-					RelativePath=".\modules\clist\clui.c">
-				</File>
-				<File
-					RelativePath=".\modules\clist\cluiservices.c">
-				</File>
-				<File
-					RelativePath=".\modules\clist\contact.c">
-				</File>
-				<File
-					RelativePath=".\modules\clist\Docking.c">
-				</File>
-				<File
-					RelativePath=".\modules\clist\groups.c">
-				</File>
-				<File
-					RelativePath=".\modules\clist\keyboard.c">
-				</File>
-			</Filter>
-			<Filter
-				Name="updater"
-				Filter="">
-				<File
-					RelativePath=".\modules\updatenotify\updatenotify.c">
-				</File>
-			</Filter>
 		</Filter>
 		<Filter
 			Name="Resources"
 			Filter="">
 			<File
-				RelativePath="res\addcontact.ico">
-			</File>
-			<File
-				RelativePath="res\away.ico">
-			</File>
-			<File
-				RelativePath="res\blank.ico">
-			</File>
-			<File
-				RelativePath="res\changefont.ico">
-			</File>
-			<File
-				RelativePath="..\docs\credits.txt">
-			</File>
-			<File
-				RelativePath="res\delete.ico">
-			</File>
-			<File
-				RelativePath="res\detailsl.ico">
-			</File>
-			<File
-				RelativePath="res\dnd.ico">
-			</File>
-			<File
-				RelativePath="res\downarrow.ico">
-			</File>
-			<File
-				RelativePath="res\dragcopy.cur">
-			</File>
-			<File
-				RelativePath="res\dropuser.cur">
-			</File>
-			<File
-				RelativePath="res\emptyblo.ico">
-			</File>
-			<File
-				RelativePath="res\file.ico">
-			</File>
-			<File
-				RelativePath="res\filledbl.ico">
-			</File>
-			<File
-				RelativePath="res\finduser.ico">
-			</File>
-			<File
-				RelativePath="res\freechat.ico">
-			</File>
-			<File
-				RelativePath="res\groupope.ico">
-			</File>
-			<File
-				RelativePath="res\groupshu.ico">
-			</File>
-			<File
-				RelativePath="res\help.ico">
-			</File>
-			<File
-				RelativePath="res\history.ico">
-			</File>
-			<File
-				RelativePath="res\hyperlin.cur">
-			</File>
-			<File
-				RelativePath="res\invisible.ico">
-			</File>
-			<File
-				RelativePath="res\message.ico">
-			</File>
-			<File
-				RelativePath="res\miranda.ico">
-			</File>
-			<File
 				RelativePath="miranda32.exe.manifest">
-			</File>
-			<File
-				RelativePath="res\mirandaw.ico">
-			</File>
-			<File
-				RelativePath="res\multisend.ico">
-			</File>
-			<File
-				RelativePath="res\na2.ico">
-			</File>
-			<File
-				RelativePath="res\notick.ico">
-			</File>
-			<File
-				RelativePath="res\notick1.ico">
-			</File>
-			<File
-				RelativePath="res\occupied.ico">
-			</File>
-			<File
-				RelativePath="res\offline2.ico">
-			</File>
-			<File
-				RelativePath="res\online2.ico">
-			</File>
-			<File
-				RelativePath="res\onthepho.ico">
-			</File>
-			<File
-				RelativePath="res\options.ico">
-			</File>
-			<File
-				RelativePath="res\outtolun.ico">
-			</File>
-			<File
-				RelativePath="res\rename.ico">
-			</File>
-			<File
-				RelativePath="res\reply.ico">
 			</File>
 			<File
 				RelativePath="resource.h">
@@ -3171,36 +3156,18 @@
 				RelativePath="resource.rc">
 			</File>
 			<File
-				RelativePath="res\searchal.ico">
-			</File>
-			<File
-				RelativePath="res\sendmail.ico">
-			</File>
-			<File
-				RelativePath="res\smalldot.ico">
-			</File>
-			<File
-				RelativePath="res\sms.ico">
-			</File>
-			<File
-				RelativePath="res\sortcold.bmp">
-			</File>
-			<File
-				RelativePath="res\sortcolu.bmp">
-			</File>
-			<File
-				RelativePath="res\timestamp.ico">
-			</File>
-			<File
-				RelativePath="res\url.ico">
-			</File>
-			<File
-				RelativePath="res\useronli.ico">
-			</File>
-			<File
-				RelativePath="res\viewdetails.ico">
+				RelativePath=".\version.rc">
 			</File>
 		</Filter>
+		<File
+			RelativePath="..\docs\contributors.txt">
+		</File>
+		<File
+			RelativePath=".\res\load.ico">
+		</File>
+		<File
+			RelativePath=".\res\typing.ico">
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

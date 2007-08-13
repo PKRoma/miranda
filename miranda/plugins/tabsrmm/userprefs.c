@@ -58,6 +58,8 @@ static BOOL CALLBACK FillCpCombo(LPCTSTR str)
 	return TRUE;
 }
 
+static int have_ieview = 0, have_hpp = 0;
+
 BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     HANDLE hContact = (HANDLE)GetWindowLong(hwndDlg, GWL_USERDATA);
@@ -75,19 +77,23 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			DWORD maxhist = DBGetContactSettingDword((HANDLE)lParam, SRMSGMOD_T, "maxhist", 0);
             BYTE bOverride = DBGetContactSettingByte((HANDLE)lParam, SRMSGMOD_T, "mwoverride", 0);
             BYTE bIEView = DBGetContactSettingByte((HANDLE)lParam, SRMSGMOD_T, "ieview", 0);
+            BYTE bHPP = DBGetContactSettingByte((HANDLE)lParam, SRMSGMOD_T, "hpplog", 0);
             int iLocalFormat = DBGetContactSettingDword((HANDLE)lParam, SRMSGMOD_T, "sendformat", 0);
             BYTE bRTL = DBGetContactSettingByte((HANDLE)lParam, SRMSGMOD_T, "RTL", 0);
             BYTE bLTR = DBGetContactSettingByte((HANDLE)lParam, SRMSGMOD_T, "RTL", 1);
             BYTE bSplit = DBGetContactSettingByte((HANDLE)lParam, SRMSGMOD_T, "splitoverride", 0);
 			BYTE bInfoPanel = DBGetContactSettingByte((HANDLE)lParam, SRMSGMOD_T, "infopanel", 0);
             char *szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)lParam, 0);
+            int  def_log_index = 1, hpp_log_index = 1, ieview_log_index = 1;
+
+            have_ieview = ServiceExists(MS_IEVIEW_WINDOW);
+            have_hpp = ServiceExists("History++/ExtGrid/NewWindow");
 
             hContact = (HANDLE)lParam;
             
             WindowList_Add(hUserPrefsWindowList, hwndDlg, hContact);
             TranslateDialogDefault(hwndDlg);
             SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)lParam);
-            EnableWindow(GetDlgItem(hwndDlg, IDC_IEVIEWMODE), ServiceExists(MS_IEVIEW_WINDOW) ? TRUE : FALSE);
 
             SendDlgItemMessage(hwndDlg, IDC_INFOPANEL, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Use Global Setting"));
             SendDlgItemMessage(hwndDlg, IDC_INFOPANEL, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Always On"));
@@ -95,10 +101,19 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             SendDlgItemMessage(hwndDlg, IDC_INFOPANEL, CB_SETCURSEL, bInfoPanel == 0 ? 0 : (bInfoPanel == 1 ? 1 : 2), 0);
 
 			SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Use global Setting"));
-            SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Force IEView"));
+            SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_INSERTSTRING, -1, (LPARAM)(have_hpp ? TranslateT("Force History++") : TranslateT("Force History++ (plugin missing)")));
+            SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_INSERTSTRING, -1, (LPARAM)(have_ieview ? TranslateT("Force IEView") : TranslateT("Force IEView (plugin missing)")));
             SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Force Default Message Log"));
-            SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_SETCURSEL, bIEView == 0 ? 0 : (bIEView == 1 ? 1 : 2), 0);
-            
+
+            if(bIEView == 0xff && bHPP == 0xff)
+                SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_SETCURSEL, 3, 0);
+            else if(bIEView == 1)
+                SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_SETCURSEL, 2, 0);
+            else if(bHPP == 1)
+                SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_SETCURSEL, 1, 0);
+            else
+                SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_SETCURSEL, 0, 0);
+                
             SendDlgItemMessage(hwndDlg, IDC_TEXTFORMATTING, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Global Setting"));
             SendDlgItemMessage(hwndDlg, IDC_TEXTFORMATTING, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Simple Tags (*/_)"));
             SendDlgItemMessage(hwndDlg, IDC_TEXTFORMATTING, CB_INSERTSTRING, -1, (LPARAM)TranslateT("BBCode"));
@@ -165,6 +180,7 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
             else
                 SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_SETCURSEL, 0, 0);
             ShowWindow(hwndDlg, SW_SHOW);
+            CheckDlgButton(hwndDlg, IDC_NOAUTOCLOSE, DBGetContactSettingByte(hContact, SRMSGMOD_T, "NoAutoClose", 0));
             return TRUE;
         }
         case WM_COMMAND:
@@ -182,18 +198,45 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
                     int iIndex = CB_ERR;
                     DWORD newCodePage;
                     int offset;
+                    unsigned int iOldIEView;
                     HWND hWnd = WindowList_Find(hMessageWindowList, hContact);
                     DWORD sCodePage = DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", 0);
                     DWORD oldTZ = (DWORD)DBGetContactSettingByte(hContact,"UserInfo","Timezone", DBGetContactSettingByte(hContact, (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0), "Timezone",-1));
                     BYTE bInfoPanel, bOldInfoPanel = DBGetContactSettingByte(hContact, SRMSGMOD_T, "infopanel", 0);
 
-                    if(hWnd)
+                    if(hWnd) {
                         dat = (struct MessageWindowData *)GetWindowLong(hWnd, GWL_USERDATA);
+                        if(dat)
+                            iOldIEView = GetIEViewMode(hWnd, dat);
+                    }
 
-                    if(ServiceExists(MS_IEVIEW_EVENT) && (iIndex = SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_GETCURSEL, 0, 0)) != CB_ERR) {
-                        DBWriteContactSettingByte(hContact, SRMSGMOD_T, "ieview", (BYTE)(iIndex == 2 ? -1 : iIndex));
+                    if((iIndex = SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_GETCURSEL, 0, 0)) != CB_ERR) {
+                        unsigned int iNewIEView;
+
+                        switch (iIndex) {
+                            case 0:
+                                DBWriteContactSettingByte(hContact, SRMSGMOD_T, "ieview", 0);
+                                DBWriteContactSettingByte(hContact, SRMSGMOD_T, "hpplog", 0);
+                                break;
+                            case 1:
+                                DBWriteContactSettingByte(hContact, SRMSGMOD_T, "ieview", -1);
+                                DBWriteContactSettingByte(hContact, SRMSGMOD_T, "hpplog", 1);
+                                break;
+                            case 2:
+                                DBWriteContactSettingByte(hContact, SRMSGMOD_T, "ieview", 1);
+                                DBWriteContactSettingByte(hContact, SRMSGMOD_T, "hpplog", -1);
+                                break;
+                            case 3:
+                                DBWriteContactSettingByte(hContact, SRMSGMOD_T, "ieview", -1);
+                                DBWriteContactSettingByte(hContact, SRMSGMOD_T, "hpplog", -1);
+                                break;
+                            default:
+                                break;
+                        }
                         if(hWnd && dat) {
-                            SwitchMessageLog(hWnd, dat, GetIEViewMode(hWnd, dat));
+                            iNewIEView = GetIEViewMode(hWnd, dat);
+                            if(iNewIEView != iOldIEView)
+                                SwitchMessageLog(hWnd, dat, iNewIEView);
                         }
                     }
                     if((iIndex = SendDlgItemMessage(hwndDlg, IDC_BIDI, CB_GETCURSEL, 0, 0)) != CB_ERR) {
@@ -289,6 +332,12 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 					}
 					if(hWnd && dat)
                         SendMessage(hWnd, DM_CONFIGURETOOLBAR, 0, 1);
+
+                    if(IsDlgButtonChecked(hwndDlg, IDC_NOAUTOCLOSE))
+                        DBWriteContactSettingByte(hContact, SRMSGMOD_T, "NoAutoClose", 1);
+                    else
+                        DBDeleteContactSetting(hContact, SRMSGMOD_T, "NoAutoClose");
+
                     DestroyWindow(hwndDlg);
                     break;
                 }

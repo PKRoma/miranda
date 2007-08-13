@@ -35,6 +35,15 @@ static int UserOnlineSettingChanged(WPARAM wParam,LPARAM lParam)
 	DBWriteContactSettingWord((HANDLE)wParam,"UserOnline","OldStatus",(WORD)newStatus);
 	if(CallService(MS_IGNORE_ISIGNORED,wParam,IGNOREEVENT_USERONLINE)) return 0;
 	if(DBGetContactSettingByte((HANDLE)wParam,"CList","Hidden",0)) return 0;
+    if(newStatus==ID_STATUS_OFFLINE&&oldStatus!=ID_STATUS_OFFLINE) {
+       // Remove the event from the queue if it exists since they are now offline     
+       int lastEvent = (int)DBGetContactSettingDword((HANDLE)wParam,"UserOnline","LastEvent",0);
+       
+       if (lastEvent) {
+           CallService(MS_CLIST_REMOVEEVENT,wParam,(LPARAM)lastEvent);
+           DBWriteContactSettingDword((HANDLE)wParam,"UserOnline", "LastEvent", 0);
+       }
+    }
 	if((newStatus==ID_STATUS_ONLINE || newStatus==ID_STATUS_FREECHAT) &&
 	   oldStatus!=ID_STATUS_ONLINE && oldStatus!=ID_STATUS_FREECHAT) {
 		{
@@ -49,12 +58,13 @@ static int UserOnlineSettingChanged(WPARAM wParam,LPARAM lParam)
 				cle.flags=CLEF_ONLYAFEW;
 				cle.hContact=(HANDLE)wParam;
 				cle.hDbEvent=(HANDLE)(uniqueEventId++);
-				cle.hIcon=LoadSkinnedIcon(SKINICON_OTHER_USERONLINE);
+				cle.hIcon = LoadSkinIcon( SKINICON_OTHER_USERONLINE );
 				cle.pszService="UserOnline/Description";
 				mir_snprintf(tooltip,SIZEOF(tooltip),Translate("%s is Online"),(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,wParam,0));
 				cle.pszTooltip=tooltip;
 				CallService(MS_CLIST_ADDEVENT,0,(LPARAM)&cle);
-
+				IconLib_ReleaseIcon( cle.hIcon, 0 );
+                DBWriteContactSettingDword(cle.hContact,"UserOnline", "LastEvent", (DWORD)cle.hDbEvent);
 				SkinPlaySound("UserOnline");
 			}
 		}

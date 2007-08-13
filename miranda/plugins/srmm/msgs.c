@@ -1,8 +1,8 @@
 /*
 SRMM
 
-Copyright 2000-2005 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2005 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -22,41 +22,31 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "statusicon.h"
 #pragma hdrstop
+#include "m_fontservice.h"
 
 static void InitREOleCallback(void);
 
 HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
 static HANDLE hEventDbEventAdded, hEventDbSettingChange, hEventContactDeleted;
-HANDLE *hMsgMenuItem = NULL, hHookWinEvt=NULL;
-int hMsgMenuItemCount = 0;
+HANDLE hHookWinEvt = NULL;
 
 extern HINSTANCE g_hInst;
 
 static int SRMMStatusToPf2(int status)
 {
-    switch (status) {
-        case ID_STATUS_ONLINE:
-            return PF2_ONLINE;
-        case ID_STATUS_AWAY:
-            return PF2_SHORTAWAY;
-        case ID_STATUS_DND:
-            return PF2_HEAVYDND;
-        case ID_STATUS_NA:
-            return PF2_LONGAWAY;
-        case ID_STATUS_OCCUPIED:
-            return PF2_LIGHTDND;
-        case ID_STATUS_FREECHAT:
-            return PF2_FREECHAT;
-        case ID_STATUS_INVISIBLE:
-            return PF2_INVISIBLE;
-        case ID_STATUS_ONTHEPHONE:
-            return PF2_ONTHEPHONE;
-        case ID_STATUS_OUTTOLUNCH:
-            return PF2_OUTTOLUNCH;
-        case ID_STATUS_OFFLINE:
-            return MODEF_OFFLINE;
-    }
-    return 0;
+	switch (status) {
+		case ID_STATUS_ONLINE:     return PF2_ONLINE;
+		case ID_STATUS_AWAY:       return PF2_SHORTAWAY;
+		case ID_STATUS_DND:        return PF2_HEAVYDND;
+		case ID_STATUS_NA:         return PF2_LONGAWAY;
+		case ID_STATUS_OCCUPIED:   return PF2_LIGHTDND;
+		case ID_STATUS_FREECHAT:   return PF2_FREECHAT;
+		case ID_STATUS_INVISIBLE:  return PF2_INVISIBLE;
+		case ID_STATUS_ONTHEPHONE: return PF2_ONTHEPHONE;
+		case ID_STATUS_OUTTOLUNCH: return PF2_OUTTOLUNCH;
+		case ID_STATUS_OFFLINE:    return MODEF_OFFLINE;
+	}
+	return 0;
 }
 
 static int ReadMessageCommand(WPARAM wParam, LPARAM lParam)
@@ -242,11 +232,12 @@ static int TypingMessage(WPARAM wParam, LPARAM lParam)
 			cle.hContact = (HANDLE) wParam;
 			cle.hDbEvent = (HANDLE) 1;
 			cle.flags = CLEF_ONLYAFEW;
-			cle.hIcon = g_dat->hIcons[SMF_ICON_TYPING];
+			cle.hIcon = LoadSkinnedIcon( SKINICON_OTHER_TYPING );
 			cle.pszService = "SRMsg/TypingMessage";
 			cle.pszTooltip = szTip;
 			CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
 			CallServiceSync(MS_CLIST_ADDEVENT, wParam, (LPARAM) & cle);
+			CallService(MS_SKIN2_RELEASEICON,(WPARAM)cle.hIcon, 0);
 		}
 	}
 	return 0;
@@ -267,10 +258,9 @@ static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
 static int ContactDeleted(WPARAM wParam, LPARAM lParam)
 {
 	HWND hwnd;
-
-	if (hwnd = WindowList_Find(g_dat->hMessageWindowList, (HANDLE) wParam)) {
+	if (hwnd = WindowList_Find(g_dat->hMessageWindowList, (HANDLE) wParam))
 		SendMessage(hwnd, WM_CLOSE, 0, 0);
-	}
+
 	return 0;
 }
 
@@ -324,19 +314,29 @@ static void RestoreUnreadMessageAlerts(void)
 	}
 }
 
+void RegisterSRMMFonts( void );
+
+static int FontsChanged(WPARAM wParam,LPARAM lParam)
+{
+	WindowList_Broadcast(g_dat->hMessageWindowList, DM_OPTIONSAPPLIED, 0, 0);
+	return 0;
+}
+
 static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
 	CLISTMENUITEM mi;
 	PROTOCOLDESCRIPTOR **protocol;
 	int protoCount, i;
 
+	RegisterSRMMFonts();
 	LoadMsgLogIcons();
+
 	ZeroMemory(&mi, sizeof(mi));
 	mi.cbSize = sizeof(mi);
 	mi.position = -2000090000;
-	mi.flags = 0;
-	mi.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
-	mi.pszName = Translate("&Message");
+	mi.flags = CMIF_ICONFROMICOLIB;
+	mi.icolibItem = LoadSkinnedIconHandle( SKINICON_EVENT_MESSAGE );
+	mi.pszName = LPGEN("&Message");
 	mi.pszService = MS_MSG_SENDMESSAGE;
 	CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) & protoCount, (LPARAM) & protocol);
 	for (i = 0; i < protoCount; i++) {
@@ -344,11 +344,12 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 			continue;
 		if (CallProtoService(protocol[i]->szName, PS_GETCAPS, PFLAGNUM_1, 0) & PF1_IMSEND) {
 			mi.pszContactOwner = protocol[i]->szName;
-			hMsgMenuItem = realloc(hMsgMenuItem, (hMsgMenuItemCount + 1) * sizeof(HANDLE));
-			hMsgMenuItem[hMsgMenuItemCount++] = (HANDLE) CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
-		}
-	}
+			CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
+	}	}
+
+	HookEvent(ME_FONT_RELOAD, FontsChanged);
 	HookEvent(ME_CLIST_DOUBLECLICKED, SendMessageCommand);
+
 	RestoreUnreadMessageAlerts();
 	return 0;
 }
@@ -371,11 +372,6 @@ int SplitmsgShutdown(void)
 	FreeMsgLogIcons();
 	FreeLibrary(GetModuleHandleA("riched20"));
 	OleUninitialize();
-	if (hMsgMenuItem) {
-		free(hMsgMenuItem);
-		hMsgMenuItem = NULL;
-		hMsgMenuItemCount = 0;
-	}
 	RichUtil_Unload();
 	FreeGlobals();
 	return 0;
@@ -383,18 +379,6 @@ int SplitmsgShutdown(void)
 
 static int IconsChanged(WPARAM wParam, LPARAM lParam)
 {
-	if (hMsgMenuItem) {
-		int j;
-		CLISTMENUITEM mi;
-
-		mi.cbSize = sizeof(mi);
-		mi.flags = CMIM_ICON;
-		mi.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
-
-		for (j = 0; j < hMsgMenuItemCount; j++) {
-			CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hMsgMenuItem[j], (LPARAM) & mi);
-		}
-	}
 	FreeMsgLogIcons();
 	LoadMsgLogIcons();
 	WindowList_Broadcast(g_dat->hMessageWindowList, DM_REMAKELOG, 0, 0);
@@ -439,9 +423,9 @@ int LoadSendRecvMessageModule(void)
 	if (LoadLibraryA("riched20.dll") == NULL) {
 		if (IDYES !=
 			MessageBoxA(0,
-						Translate
-						("Miranda could not load the built-in message module, riched20.dll is missing. If you are using Windows 95 or WINE please make sure you have riched20.dll installed. Press 'Yes' to continue loading Miranda."),
-						Translate("Information"), MB_YESNO | MB_ICONINFORMATION))
+			Translate
+			("Miranda could not load the built-in message module, riched20.dll is missing. If you are using Windows 95 or WINE please make sure you have riched20.dll installed. Press 'Yes' to continue loading Miranda."),
+			Translate("Information"), MB_YESNO | MB_ICONINFORMATION))
 			return 1;
 		return 0;
 	}
@@ -548,7 +532,7 @@ static STDMETHODIMP_(HRESULT) CREOleCallback_GetNewStorage(struct CREOleCallback
 {
 	WCHAR szwName[64];
 	char szName[64];
-	wsprintfA(szName, "s%u", lpThis->nextStgId);
+	wsprintfA(szName, "s%u", lpThis->nextStgId++);
 	MultiByteToWideChar(CP_ACP, 0, szName, -1, szwName, SIZEOF(szwName));
 	if (lpThis->pictStg == NULL)
 		return STG_E_MEDIUMFULL;

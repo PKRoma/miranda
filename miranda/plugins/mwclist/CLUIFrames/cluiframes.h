@@ -31,7 +31,7 @@ typedef struct tagProtocolData {
 #define OFFSET_PROTOPOS 200
 #define OFFSET_VISIBLE 400
 
-#define CLUIFrameTitleBarClassName				"CLUIFrameTitleBar"
+#define CLUIFrameTitleBarClassName				_T("CLUIFrameTitleBar")
 #define CLUIFrameModule							"CLUIFrames"
 
 //integrated menu module

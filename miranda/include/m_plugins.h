@@ -40,33 +40,34 @@ typedef struct PLUGIN_DB_ENUM {
 #define MS_PLUGINS_ENUMDBPLUGINS "Plugins/DbEnumerate"
 
 
-#define DEFMOD_PROTOCOLICQ		1    //removed from v0.3 alpha
-#define DEFMOD_PROTOCOLMSN		2	 //removed from v0.1.2.0+
-#define DEFMOD_UIFINDADD		3
-#define DEFMOD_UIUSERINFO		4
-#define DEFMOD_SRMESSAGE		5	//removed from v0.3.3a (temp)
-#define DEFMOD_SRURL			6
-#define DEFMOD_SREMAIL			7
-#define DEFMOD_SRAUTH			8
-#define DEFMOD_SRFILE			9
-#define DEFMOD_UIHELP			10
-#define DEFMOD_UIHISTORY		11
-//#define DEFMOD_RNDCHECKUPD		12    //removed from v0.3.1 alpha
-//#define DEFMOD_RNDICQIMPORT		13	  //removed from v0.3 alpha
-#define DEFMOD_RNDAUTOAWAY		14
-#define DEFMOD_RNDUSERONLINE	15
-#define DEFMOD_RNDCRYPT         16   //v0.1.0.1-v0.1.2.0
-#define DEFMOD_SRAWAY           17	 //v0.1.0.1+
-#define DEFMOD_RNDIGNORE        18	 //v0.1.0.1+
-#define DEFMOD_UIVISIBILITY     19   //v0.1.1.0+, options page only
-#define DEFMOD_UICLUI           20   //v0.1.1.0+
-//#define DEFMOD_UIPLUGINOPTS     21	 //removed from 0.4.0.1
-#define DEFMOD_PROTOCOLNETLIB   22	 //v0.1.2.2+
-#define DEFMOD_RNDIDLE			23   //v0.3.4a+
-#define DEFMOD_CLISTALL			24	 //v0.3.4a+ (2004/09/28)
-#define DEFMOD_DB				25   //v0.3.4.3+ (2004/10/11)
-#define DEFMOD_UPDATENOTIFY     27
-#define DEFMOD_HIGHEST          27
+#define DEFMOD_PROTOCOLICQ	   1    //removed from v0.3 alpha
+#define DEFMOD_PROTOCOLMSN	   2	  //removed from v0.1.2.0+
+#define DEFMOD_UIFINDADD      3
+#define DEFMOD_UIUSERINFO     4
+#define DEFMOD_SRMESSAGE      5	  //removed from v0.3.3a (temp)
+#define DEFMOD_SRURL          6
+#define DEFMOD_SREMAIL        7
+#define DEFMOD_SRAUTH         8
+#define DEFMOD_SRFILE         9
+#define DEFMOD_UIHELP         10
+#define DEFMOD_UIHISTORY      11
+//#define DEFMOD_RNDCHECKUPD  12    //removed from v0.3.1 alpha
+//#define DEFMOD_RNDICQIMPORT 13	   //removed from v0.3 alpha
+#define DEFMOD_RNDAUTOAWAY    14
+#define DEFMOD_RNDUSERONLINE  15
+#define DEFMOD_RNDCRYPT       16    // v0.1.0.1-v0.1.2.0
+#define DEFMOD_SRAWAY         17	   // v0.1.0.1+
+#define DEFMOD_RNDIGNORE      18	   // v0.1.0.1+
+#define DEFMOD_UIVISIBILITY   19    // v0.1.1.0+, options page only
+#define DEFMOD_UICLUI         20    // v0.1.1.0+
+//#define DEFMOD_UIPLUGINOPTS 21	   // removed from 0.4.0.1
+#define DEFMOD_PROTOCOLNETLIB 22	   // v0.1.2.2+
+#define DEFMOD_RNDIDLE        23    // v0.3.4a+
+#define DEFMOD_CLISTALL       24	   // v0.3.4a+ (2004/09/28)
+#define DEFMOD_DB             25    // v0.3.4.3+ (2004/10/11)
+#define DEFMOD_FONTSERVICE    26    // v0.7.0+ (2006/11/17)
+#define DEFMOD_UPDATENOTIFY   27
+#define DEFMOD_HIGHEST        27
 
 //plugins/getdisabledefaultarray
 //gets an array of the modules that the plugins report they want to replace
@@ -79,4 +80,5 @@ typedef struct PLUGIN_DB_ENUM {
 #define MS_PLUGINS_GETDISABLEDEFAULTARRAY	   "Plugins/GetDisableDefaultArray" 
 
 #endif // M_PLUGINS_H__
+
 

@@ -1,0 +1,18 @@
+
+This is the source file for the upcoming documentation.
+-------------------------------------------------------
+
+It is created with Help 'n Doc, a freeware utility to create HTML-help based 
+software documentation.
+
+http://www.ibe-software.com/products/software/helpndoc/
+
+I've choosen this application because it is:
+
+a) free for personal and non-commercial use (valid, since tabsrmm isn an open
+   source product).
+   
+b) very easy to use. It offers full WYSIWYG editing of the complete help file and
+   can output both .CHM files and a plain HTML version which can be viewed in
+   any browser.
+   

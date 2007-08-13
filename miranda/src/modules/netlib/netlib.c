@@ -140,7 +140,7 @@ static int NetlibRegisterUser(WPARAM wParam,LPARAM lParam)
 	thisUser->handleType=NLH_USER;
 	thisUser->user=*nlu;
 	if((thisUser->user.szSettingsModule=mir_strdup(nlu->szSettingsModule))==NULL
-	   || (nlu->szDescriptiveName && (thisUser->user.szDescriptiveName=mir_strdup(nlu->szDescriptiveName))==NULL)
+	   || (nlu->szDescriptiveName && (thisUser->user.ptszDescriptiveName = a2t(nlu->szDescriptiveName))==NULL)
 	   || (nlu->szHttpGatewayUserAgent && (thisUser->user.szHttpGatewayUserAgent=mir_strdup(nlu->szHttpGatewayUserAgent))==NULL)) {
 		SetLastError(ERROR_OUTOFMEMORY);
 		return (int)(HANDLE)NULL;
@@ -171,7 +171,7 @@ static int NetlibRegisterUser(WPARAM wParam,LPARAM lParam)
 	thisUser->settings.specifyOutgoingPorts=GetNetlibUserSettingInt(thisUser->user.szSettingsModule,"NLSpecifyOutgoingPorts",0);
 	thisUser->settings.szOutgoingPorts=GetNetlibUserSettingString(thisUser->user.szSettingsModule,"NLOutgoingPorts",0);
 	thisUser->settings.enableUPnP=GetNetlibUserSettingInt(thisUser->user.szSettingsModule,"NLEnableUPnP",1); //default to on
-
+    
 	EnterCriticalSection(&csNetlibUser);
 	netlibUser=(struct NetlibUser**)mir_realloc(netlibUser,sizeof(struct NetlibUser*)*++netlibUserCount);
 	netlibUser[netlibUserCount-1]=thisUser;
@@ -469,11 +469,10 @@ static int NetlibModulesLoaded(WPARAM wParam, LPARAM lParam)
 int LoadNetlibModule(void)
 {
 	WSADATA wsadata;
+	WSAStartup(MAKEWORD(1,1), &wsadata);
 
-	//HookEvent(ME_SYSTEM_SHUTDOWN,NetlibShutdown); // hooked later to be called last after plugins
 	HookEvent(ME_SYSTEM_MODULESLOADED, NetlibModulesLoaded);
 	HookEvent(ME_OPT_INITIALISE,NetlibOptInitialise);
-	WSAStartup(MAKEWORD(1,1), &wsadata);
 	InitializeCriticalSection(&csNetlibUser);
 	hConnectionHeaderMutex=CreateMutex(NULL,FALSE,NULL);
 	g_LastConnectionTick=GetTickCount();

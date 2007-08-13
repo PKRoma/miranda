@@ -184,6 +184,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalOptions="wsock32.lib"
 				OutputFile="../../bin/debug/plugins/Aim.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -243,6 +244,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\avatars.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\away.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\connection.cpp"
 				>
 			</File>
@@ -267,10 +276,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\md5.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\packets.cpp"
 				>
 			</File>
@@ -288,6 +293,10 @@
 			</File>
 			<File
 				RelativePath=".\strl.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\theme.cpp"
 				>
 			</File>
 			<File
@@ -332,68 +341,19 @@
 			</Filter>
 		</Filter>
 		<Filter
-			Name="Resource Files"
-			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
-			>
-			<File
-				RelativePath=".\icons\add.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\icons\admin.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\icons\aol.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\icons\away.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\icons\bot.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\icons\confirmed.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\icons\hiptop.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\icons\icq.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\icons\idle.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\icons\inbox.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\icons\oscar.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\icons\profile.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\icons\unconfirmed.ico"
-				>
-			</File>
-		</Filter>
-		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
 				RelativePath=".\aim.h"
+				>
+			</File>
+			<File
+				RelativePath=".\avatars.h"
+				>
+			</File>
+			<File
+				RelativePath=".\away.h"
 				>
 			</File>
 			<File
@@ -429,10 +389,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\md5.h"
-				>
-			</File>
-			<File
 				RelativePath=".\packets.h"
 				>
 			</File>
@@ -454,6 +410,10 @@
 			</File>
 			<File
 				RelativePath=".\strl.h"
+				>
+			</File>
+			<File
+				RelativePath=".\theme.h"
 				>
 			</File>
 			<File
@@ -493,6 +453,119 @@
 				</File>
 				<File
 					RelativePath=".\server.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Resource Files"
+				Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
+				>
+				<File
+					RelativePath=".\icons\add.ico"
+					>
+				</File>
+				<File
+					RelativePath=".\icons\admin.ico"
+					>
+				</File>
+				<File
+					RelativePath=".\icons\aol.ico"
+					>
+				</File>
+				<File
+					RelativePath=".\icons\away.ico"
+					>
+				</File>
+				<File
+					RelativePath=".\icons\backgroundcolor.ico"
+					>
+				</File>
+				<File
+					RelativePath=".\icons\bold.ico"
+					>
+				</File>
+				<File
+					RelativePath=".\icons\bot.ico"
+					>
+				</File>
+				<File
+					RelativePath=".\icons\confirmed.ico"
+					>
+				</File>
+				<File
+					RelativePath=".\icons\foregroundcolor.ico"
+					>
+				</File>
+				<File
+					RelativePath=".\icons\hiptop.ico"
+					>
+				</File>
+				<File
+					RelativePath=".\icons\icq.ico"
+					>
+				</File>
+				<File
+					RelativePath=".\icons\idle.ico"
+					>
+				</File>
+				<File
+					RelativePath=".\icons\inbox.ico"
+					>
+				</File>
+				<File
+					RelativePath=".\icons\italic.ico"
+					>
+				</File>
+				<File
+					RelativePath=".\icons\nbold.ico"
+					>
+				</File>
+				<File
+					RelativePath=".\icons\nitalic.ico"
+					>
+				</File>
+				<File
+					RelativePath=".\icons\nnormalscript.ico"
+					>
+				</File>
+				<File
+					RelativePath=".\icons\normalscript.ico"
+					>
+				</File>
+				<File
+					RelativePath=".\icons\nsubscript.ico"
+					>
+				</File>
+				<File
+					RelativePath=".\icons\nsuperscript.ico"
+					>
+				</File>
+				<File
+					RelativePath=".\icons\nunderline.ico"
+					>
+				</File>
+				<File
+					RelativePath=".\icons\oscar.ico"
+					>
+				</File>
+				<File
+					RelativePath=".\icons\profile.ico"
+					>
+				</File>
+				<File
+					RelativePath=".\icons\subscript.ico"
+					>
+				</File>
+				<File
+					RelativePath=".\icons\superscript.ico"
+					>
+				</File>
+				<File
+					RelativePath=".\icons\unconfirmed.ico"
+					>
+				</File>
+				<File
+					RelativePath=".\icons\underline.ico"
 					>
 				</File>
 			</Filter>

@@ -235,6 +235,17 @@ typedef struct {
 } CLCINFOTIP;
 #define ME_CLC_SHOWINFOTIP    "CLC/ShowInfoTip"
 
+typedef struct {
+	int cbSize;
+	int isTreeFocused;   //so the plugin can provide an option
+	HANDLE hItem;	 //handle to group or contact
+	POINT ptCursor;
+	RECT rcItem;
+	int  extraIndex;
+	HWND hwnd;
+} CLCEXTRAINFOTIP;
+#define ME_CLC_SHOWEXTRAINFOTIP    "CLC/ShowExtraInfoTip"
+
 //it's time to destroy an infotip
 //wParam=0
 //lParam=(LPARAM)(CLCINFOTIP*)&it

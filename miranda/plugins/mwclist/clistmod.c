@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -26,7 +26,6 @@ extern int DefaultImageListColorDepth;
 
 int InitCustomMenus(void);
 void UninitCustomMenus(void);
-int MenuProcessCommand(WPARAM wParam,LPARAM lParam);
 int ContactSettingChanged(WPARAM wParam,LPARAM lParam);
 int CListOptInit(WPARAM wParam,LPARAM lParam);
 int ContactChangeGroup(WPARAM wParam,LPARAM lParam);
@@ -35,19 +34,54 @@ void InitTrayMenus(void);
 
 HIMAGELIST hCListImages;
 
-HANDLE hStatusModeChangeEvent,hContactIconChangedEvent;
+HANDLE hContactIconChangedEvent;
 extern BYTE nameOrder[];
-extern int currentDesiredStatusMode;
 
 static HANDLE hSettingChanged, hProtoAckHook;
+
+/////////// End by FYR ////////
+int cli_IconFromStatusMode(const char *szProto,int nStatus, HANDLE hContact)
+{
+	int result=-1;
+	if (hContact && szProto) {
+		char * szActProto=(char*)szProto;
+		char AdvancedService[255]={0};
+		int  nActStatus=nStatus;
+		HANDLE hActContact=hContact;
+		if (!DBGetContactSettingByte(NULL,"CLC","Meta",0) && !strcmp(szActProto,"MetaContacts")) {
+			// substitute params by mostonline contact datas
+			HANDLE hMostOnlineContact=(HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT,(UINT)hActContact,0);
+			if (hMostOnlineContact) {
+				pdisplayNameCacheEntry cacheEntry;
+				cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(hMostOnlineContact);
+				if (cacheEntry && cacheEntry->szProto) {
+					szActProto=cacheEntry->szProto;
+					nActStatus=cacheEntry->status;
+					hActContact=hMostOnlineContact;
+				}
+			}
+		}
+		_snprintf(AdvancedService,sizeof(AdvancedService),"%s%s",szActProto,"/GetAdvancedStatusIcon");
+
+		if (ServiceExists(AdvancedService))
+			result = CallService(AdvancedService,(WPARAM)hActContact, (LPARAM)0);
+
+		if (result==-1 || !(LOWORD(result))) 
+			// result == -1 means no Advanced icon. LOWORD(result) == 0 happens when Advanced icon returned by ICQ (i.e. no transpot)
+			result = saveIconFromStatusMode(szActProto,nActStatus,NULL);
+	}
+	else result=saveIconFromStatusMode(szProto,nStatus,NULL);
+	return result;
+}
+
 
 ////////// By FYR/////////////
 int ExtIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
 {
-	if ( DBGetContactSettingByte( NULL, "CLC", "Meta", 0 ) == 1 )
+/*	if ( DBGetContactSettingByte( NULL, "CLC", "Meta", 0 ) == 1 )
 		return pcli->pfnIconFromStatusMode(szProto,status,hContact);
 
-	if ( szProto != NULL )
+	if ( szProto != NULL ) {
 		if (strcmp(szProto,"MetaContacts") == 0 ) {
 			hContact=(HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT,(UINT)hContact,0);
 			if ( hContact != 0 ) {
@@ -55,6 +89,7 @@ int ExtIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
 				status=DBGetContactSettingWord(hContact,szProto,"Status",ID_STATUS_OFFLINE);
 			}
 		}
+	}*/
 
 	return pcli->pfnIconFromStatusMode(szProto,status,hContact);
 }
@@ -80,16 +115,9 @@ static int ProtocolAck(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int SetStatusMode(WPARAM wParam, LPARAM lParam)
-{
-	//todo: check wParam is valid so people can't use this to run random menu items
-	MenuProcessCommand(MAKEWPARAM(LOWORD(wParam), MPCF_MAINMENU), 0);
-	return 0;
-}
-
 static int GetStatusMode(WPARAM wParam, LPARAM lParam)
 {
-	return currentDesiredStatusMode;
+	return pcli->currentDesiredStatusMode;
 }
 
 static int ContactListShutdownProc(WPARAM wParam,LPARAM lParam)
@@ -109,16 +137,14 @@ int LoadContactListModule(void)
 
 	hCListImages = (HIMAGELIST)CallService(MS_CLIST_GETICONSIMAGELIST, 0, 0);
 	DefaultImageListColorDepth=DBGetContactSettingDword(NULL,"CList","DefaultImageListColorDepth",ILC_COLOR32);
-	
+
 	hProtoAckHook = (HANDLE) HookEvent(ME_PROTO_ACK, ProtocolAck);
 	HookEvent(ME_OPT_INITIALISE,CListOptInit);
 	HookEvent(ME_SYSTEM_SHUTDOWN,ContactListShutdownProc);
 	hSettingChanged=HookEvent(ME_DB_CONTACT_SETTINGCHANGED,ContactSettingChanged);
-	hStatusModeChangeEvent=CreateHookableEvent(ME_CLIST_STATUSMODECHANGE);
 	hContactIconChangedEvent=CreateHookableEvent(ME_CLIST_CONTACTICONCHANGED);
 	CreateServiceFunction(MS_CLIST_CONTACTCHANGEGROUP,ContactChangeGroup);
 	CreateServiceFunction(MS_CLIST_HOTKEYSPROCESSMESSAGE,HotkeysProcessMessage);
-	CreateServiceFunction(MS_CLIST_SETSTATUSMODE, SetStatusMode);
 	CreateServiceFunction(MS_CLIST_GETSTATUSMODE, GetStatusMode);
 
 	InitCustomMenus();

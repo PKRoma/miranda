@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2006 Miranda ICQ/IM project, 
+Copyright 2000-2007 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -23,13 +23,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "m_clui.h"
 #include "clist.h"
+#include "commonprototypes.h"
 
-extern HANDLE hContactIconChangedEvent;
-extern int GetContactCachedStatus(HANDLE hContact);
-extern char *GetContactCachedProtocol(HANDLE hContact);
-
-int sortBy[3], sortNoOfflineBottom;
-struct {
+struct 
+{
 	int status,order;
 } statusModeOrder[]={
 	{ID_STATUS_OFFLINE,500},
@@ -45,66 +42,13 @@ struct {
 
 static int GetContactStatus(HANDLE hContact)
 {
-	/*
-	
-	char *szProto;
-
-	szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
-	if(szProto==NULL) return ID_STATUS_OFFLINE;
-	return DBGetContactSettingWord(hContact,szProto,"Status",ID_STATUS_OFFLINE);
-	*/
 	return (GetContactCachedStatus(hContact));
 }
 
-extern void ( *saveChangeContactIcon)(HANDLE hContact,int iIcon,int add);
+
 void cli_ChangeContactIcon(HANDLE hContact,int iIcon,int add)
 {
-	/*pdisplayNameCacheEntry cacheEntry;
-	HANDLE hMostMeta=NULL;
-	cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry((HANDLE)hContact);
-	if (iIcon)
-        if (cacheEntry)
-        {
-            BOOL isMeta=!mir_strcmp(cacheEntry->szProto,"MetaContacts");
-            if (cacheEntry->isTransport>0 && !isMeta)
-            {
-                int statusicon=pcli->pfnIconFromStatusMode(cacheEntry->szProto,cacheEntry->status,NULL);
-                if (statusicon==iIcon) //going to set status icon but has transport;
-                {
-                    iIcon=GetTrasportStatusIconIndex(cacheEntry->isTransport-1,cacheEntry->status);
-                }
-            }
-			if (isMeta)
-				if (!DBGetContactSettingByte(NULL,"CLC","Meta",0))
-				{
-					int iMetaStatusIcon;
-					char * szMetaProto;
-					int MetaStatus;
-					szMetaProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(UINT)hContact,0);
-					MetaStatus=DBGetContactSettingWord(hContact,szMetaProto,"Status",ID_STATUS_OFFLINE);
-					iMetaStatusIcon=pcli->pfnIconFromStatusMode(szMetaProto,MetaStatus,NULL);
-					if (iIcon==iMetaStatusIcon) //going to set meta icon but need to set most online icon
-					{
-							hMostMeta=(HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT,(UINT)hContact,0);
-							if (hMostMeta!=0)            
-							{   
-            				    cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry((HANDLE)hMostMeta);
-                                if (cacheEntry)
-                                {
-                                    if (cacheEntry->isTransport>0)
-                                        iIcon=GetTrasportStatusIconIndex(cacheEntry->isTransport-1,cacheEntry->status);
-                                    else
-    							        iIcon=pcli->pfnIconFromStatusMode(cacheEntry->szProto,cacheEntry->status,NULL);
-                                }
-    						}
-					}
-				}
-        }
-	//clui MS_CLUI_CONTACTADDED MS_CLUI_CONTACTSETICON this methods is null
-    */
 	saveChangeContactIcon((HANDLE) hContact,(int) iIcon,(int) add);
-    
-	//CallService(add?MS_CLUI_CONTACTADDED:MS_CLUI_CONTACTSETICON,(WPARAM)hContact,iIcon);
 }
 
 static int GetStatusModeOrdering(int statusMode)
@@ -115,17 +59,7 @@ static int GetStatusModeOrdering(int statusMode)
 	return 1000;
 }
 
-/*void ReLoadContactTree(void)
-{
-	hideOffline=DBGetContactSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT);
 
-	sortBy[0]=DBGetContactSettingByte(NULL,"CList","SortBy1",SETTING_SORTBY1_DEFAULT);
-	sortBy[1]=DBGetContactSettingByte(NULL,"CList","SortBy2",SETTING_SORTBY2_DEFAULT);
-	sortBy[2]=DBGetContactSettingByte(NULL,"CList","SortBy3",SETTING_SORTBY3_DEFAULT);
-	sortNoOfflineBottom=DBGetContactSettingByte(NULL,"CList","NoOfflineBottom",SETTING_NOOFFLINEBOTTOM_DEFAULT);
-
-	CallService(MS_CLUI_SORTLIST,0,0);
-}*/
 DWORD CompareContacts2_getLMTime(HANDLE u)
 {
 	HANDLE hDbEvent;
@@ -143,6 +77,7 @@ DWORD CompareContacts2_getLMTime(HANDLE u)
 }
 
 #define SAFESTRING(a) a?a:""
+#define SAFETSTRING(a) a?a:_T("")
 
 int GetProtoIndex(char * szName)
 {
@@ -193,7 +128,8 @@ int CompareContacts2(const struct ClcContact *contact1,const struct ClcContact *
 	szProto2=contact2->proto;
 
 
-	if (by==1) { //status
+	if (by==SORTBY_STATUS) 
+	{ //status
 		int ordera,orderb;
 		ordera=GetStatusModeOrdering(statusa);
 		orderb=GetStatusModeOrdering(statusb);
@@ -202,21 +138,34 @@ int CompareContacts2(const struct ClcContact *contact1,const struct ClcContact *
 	}
 
 
-	if(sortNoOfflineBottom==0 && (statusa==ID_STATUS_OFFLINE)!=(statusb==ID_STATUS_OFFLINE)) { //one is offline: offline goes below online
+	if(g_CluiData.fSortNoOfflineBottom==0 && (statusa==ID_STATUS_OFFLINE)!=(statusb==ID_STATUS_OFFLINE)) { //one is offline: offline goes below online
 		return 2*(statusa==ID_STATUS_OFFLINE)-1;
 	}
 
-	if (by==0) { //name
+	if (by==SORTBY_NAME) 
+	{ //name
 		return mir_tstrcmpi(namea,nameb);
-	} else if (by==2) { //last message
+	} 
+	if (by==SORTBY_NAME_LOCALE) 
+	{ //name
+		static int LocaleId=-1;
+		if (LocaleId==-1) LocaleId=CallService(MS_LANGPACK_GETLOCALE,0,0);
+		return (CompareString(LocaleId,NORM_IGNORECASE,SAFETSTRING(namea),-1,SAFETSTRING(nameb),-1))-2;
+	} 
+	else if (by==SORTBY_LASTMSG) 
+	{ //last message
 		DWORD ta=CompareContacts2_getLMTime(a);
 		DWORD tb=CompareContacts2_getLMTime(b);
 		return tb-ta;
-	} else if (by==3) {
+	} 
+	else if (by==SORTBY_PROTO) 
+	{
 		int rc=GetProtoIndex(szProto1)-GetProtoIndex(szProto2);
 
 		if (rc != 0 && (szProto1 != NULL && szProto2 != NULL)) return rc;
 	}
+    else if (by==SORTBY_RATE)
+        return contact2->bContactRate-contact1->bContactRate;
 	// else :o)
 	return 0;
 }
@@ -224,9 +173,9 @@ int CompareContacts2(const struct ClcContact *contact1,const struct ClcContact *
 int cliCompareContacts(const struct ClcContact *contact1,const struct ClcContact *contact2)
 {
 	int i, r;
-	
-	for (i=0; i<sizeof(sortBy)/sizeof(char*); i++) {
-		r=CompareContacts2(contact1, contact2, sortBy[i]);
+	for (i=0; i<SIZEOF(g_CluiData.bSortByOrder); i++) 
+	{
+		r=CompareContacts2(contact1, contact2, g_CluiData.bSortByOrder[i]);
 		if (r!=0)
 			return r;
 	}

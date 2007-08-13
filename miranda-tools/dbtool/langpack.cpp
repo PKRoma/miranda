@@ -331,6 +331,14 @@ int TranslateDialog( HWND hwndDlg )
 	return 0;
 }
 
+int LangPackCodePage( void )
+{
+	if ( langPack.entryCount == 0 )
+		return CP_ACP;
+
+	return langPack.defaultANSICp;
+}
+
 int LangPackShutdown( void )
 {
 	int i;

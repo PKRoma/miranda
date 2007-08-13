@@ -25,15 +25,13 @@ UNICODE done
 */
 #include "commonheaders.h"
 #include "cluiframes/cluiframes.h"
+#include <m_icq.h>
 
 extern HIMAGELIST hCListImages, himlExtraImages;;
 extern struct CluiData g_CluiData;
 extern int g_shutDown;
-extern PLUGININFO pluginInfo;
-extern HANDLE hStatusModeChangeEvent;
-extern int currentDesiredStatusMode;
+extern PLUGININFOEX pluginInfo;
 
-extern protoMenu *protoMenus;
 extern ButtonItem *g_ButtonItems;
 
 static int GetClistVersion(WPARAM wParam, LPARAM lParam)
@@ -47,10 +45,6 @@ static int GetClistVersion(WPARAM wParam, LPARAM lParam)
 	return (int)g_szVersionString;
 }
 
-static char *xStatusNames_ansi[] = { ("Angry"), ("Duck"), ("Tired"), ("Party"), ("Beer"), ("Thinking"), ("Eating"), ("TV"), ("Friends"), ("Coffee"),
-("Music"), ("Business"), ("Camera"), ("Funny"), ("Phone"), ("Games"), ("College"), ("Shopping"), ("Sick"), ("Sleeping"),
-("Surfing"), ("@Internet"), ("Engineering"), ("Typing"), ("Eating..yummy.."), ("Having fun"), ("Chit chatting"), ("Crashing"), ("Going to toilet")};
- 
 
 void FreeProtocolData( void )
 {
@@ -83,7 +77,7 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 	char *szStoredName;
 	char buf[10];
 	int toshow;
-	char *szStatus = NULL;
+	TCHAR *szStatus = NULL;
 	char *szMaxProto = NULL;
 	int maxOnline = 0, onlineness = 0;
 	WORD maxStatus = ID_STATUS_OFFLINE, wStatus;
@@ -110,7 +104,7 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 
 	SendMessage(pcli->hwndStatus,SB_GETBORDERS,0,(LPARAM)&borders);
 
-	partWidths=(int*)malloc((storedcount+1)*sizeof(int));
+	partWidths=(int*)_alloca((storedcount+1)*sizeof(int));
 
 	if (g_CluiData.bEqualSections) {
 		RECT rc;
@@ -189,7 +183,6 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 	}
 	if (partCount==0) {
 		SendMessage(pcli->hwndStatus,SB_SIMPLE,TRUE,0);
-		free(partWidths);
 		return;
 	}
 	SendMessage(pcli->hwndStatus,SB_SIMPLE,FALSE,0);
@@ -198,7 +191,6 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 	windowStyle = DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", 0);
 	SendMessage(pcli->hwndStatus,SB_SETMINHEIGHT, 18 + g_CluiData.bClipBorder + ((windowStyle == SETTING_WINDOWSTYLE_THINBORDER || windowStyle == SETTING_WINDOWSTYLE_NOBORDER) ? 3 : 0), 0);
 	SendMessage(pcli->hwndStatus, SB_SETPARTS, partCount, (LPARAM)partWidths);
-	free(partWidths);
 
 	for (partCount=0,i=0;i<storedcount;i++) {      //count down since built in ones tend to go at the end
 		ProtocolData    *PD;
@@ -239,42 +231,50 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 				szMaxProto = curprotocol->szName;
 			}
 		}
-		if(protoMenus != NULL) {
+/* // Joe @ Whale: The core handles this by itself now, do not mess with it // 0.7.0.8+
+    if(pcli->menuProtos != NULL) {
 			int i;
 
-			for(i = 0; protoMenus[i].protoName[0]; i++) {
-				if(!strcmp(protoMenus[i].protoName, curprotocol->szName) && protoMenus[i].menuID != 0 && protoMenus[i].added != 0) {
-					BYTE xStatus = DBGetContactSettingByte(NULL, curprotocol->szName, "XStatusId", -1);
+			for(i = 0; i < pcli->menuProtoCount; i++) {
+				if(!strcmp(pcli->menuProtos[i].szProto, curprotocol->szName) && pcli->menuProtos[i].menuID != 0 && pcli->menuProtos[i].hasAdded !=0) {
 					CLISTMENUITEM mi = {0};
+					char szServiceName[128];
+					TCHAR xStatusName[128];
+					int xStatus = 0;
+					int xStatusCount;
+					ICQ_CUSTOM_STATUS cst = {0};
 					mi.cbSize = sizeof(mi);
-					mi.flags = CMIM_FLAGS|CMIM_NAME|CMIM_ICON;
+					mi.flags = CMIM_FLAGS | CMIM_NAME | CMIM_ICON | CMIF_TCHAR;
 
-					if(protoMenus[i].hIcon) {
-						DestroyIcon(protoMenus[i].hIcon);
-						protoMenus[i].hIcon = 0;
-					}
+					mir_snprintf(szServiceName, 128, "%s%s", curprotocol->szName, PS_ICQ_GETCUSTOMSTATUSEX);
 
-					if(xStatus > 0 && xStatus <= 29) {
-						char szServiceName[128];
+					cst.cbSize = sizeof(ICQ_CUSTOM_STATUS);
+					cst.flags = CSSF_MASK_STATUS | CSSF_STATUSES_COUNT;
+					cst.wParam = &xStatusCount;
+					cst.status = &xStatus;
+					if(ServiceExists(szServiceName) && !CallService(szServiceName, 0, (LPARAM)&cst)) {
+						if(xStatus > 0 && xStatus <= xStatusCount) {
+							mi.hIcon = (HICON)CallProtoService(curprotocol->szName, PS_ICQ_GETCUSTOMSTATUSICON, 0, LR_SHARED);	// get OWN xStatus icon (if set)
 
-						mir_snprintf(szServiceName, 128, "%s/GetXStatusIcon", curprotocol->szName);
-						if(ServiceExists(szServiceName)) {
-							mi.hIcon = (HICON)CallProtoService(curprotocol->szName, "/GetXStatusIcon", 0, 0);	// get OWN xStatus icon (if set)
-							protoMenus[i].hIcon = mi.hIcon;
-							mi.pszName = xStatusNames_ansi[xStatus - 1];
+							cst.flags = CSSF_MASK_NAME | CSSF_DEFAULT_NAME | CSSF_TCHAR;
+							cst.wParam = &xStatus;
+							cst.ptszName = xStatusName; 
+							if(!CallService(szServiceName, 0, (LPARAM)&cst))
+								mi.ptszName = xStatusName;
+							else
+								mi.ptszName = _T("Custom Status");
+						}	
+						else {
+							mi.ptszName = _T("None");
+							mi.flags |= CMIF_CHECKED;
+							mi.hIcon = 0;
 						}
+						CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)pcli->menuProtos[i].hasAdded, (LPARAM)&mi);
 					}
-					else {
-						mi.pszName = "None";
-						mi.flags |= CMIF_CHECKED;
-						mi.hIcon = 0;
-						protoMenus[i].hIcon = 0;
-					}
-					CallService(MS_CLIST_MODIFYMENUITEM, protoMenus[i].menuID, (LPARAM)&mi);
 					break;
 				}
 			}
-		}
+		}*/
 		partCount++;
 	}
 	// update the clui button
@@ -301,7 +301,7 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 	* when connecting multiple protocols significantly.
 	*/
 	//g_isConnecting = (wStatus >= ID_STATUS_CONNECTING && wStatus < ID_STATUS_OFFLINE);
-	szStatus = (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM) wStatus, 0);
+	szStatus = (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM) wStatus, GCMDF_TCHAR);
 
 	/*
 	* set the global status icon and display the global (most online) status mode on the
@@ -310,7 +310,7 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 
 	if (szStatus) {
 		if(pcli->hwndContactList && IsWindow(GetDlgItem(pcli->hwndContactList, IDC_TBGLOBALSTATUS)) && IsWindow(GetDlgItem(pcli->hwndContactList, IDC_TBTOPSTATUS))) {
-			SendMessageA(GetDlgItem(pcli->hwndContactList, IDC_TBGLOBALSTATUS), WM_SETTEXT, 0, (LPARAM) szStatus);
+			SendMessage(GetDlgItem(pcli->hwndContactList, IDC_TBGLOBALSTATUS), WM_SETTEXT, 0, (LPARAM) szStatus);
 			if(!hIcon) {
 				SendMessage(GetDlgItem(pcli->hwndContactList, IDC_TBGLOBALSTATUS), BM_SETIMLICON, (WPARAM) hCListImages, (LPARAM) iIcon);
                 if(g_ButtonItems == NULL)

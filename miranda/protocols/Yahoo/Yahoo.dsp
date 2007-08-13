@@ -105,10 +105,6 @@ SOURCE=.\libyahoo2\libyahoo2.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\libyahoo2\md5.c
-# End Source File
-# Begin Source File
-
 SOURCE=.\libyahoo2\sha.c
 # End Source File
 # Begin Source File
@@ -121,15 +117,15 @@ SOURCE=.\libyahoo2\yahoo2_types.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\libyahoo2\yahoo_auth.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\libyahoo2\yahoo_auth.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\libyahoo2\yahoo_debug.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\libyahoo2\yahoo_fn.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\libyahoo2\yahoo_fn.h
 # End Source File
 # Begin Source File
 
@@ -174,6 +170,14 @@ SOURCE=.\http_gateway.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\icolib.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\ignore.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\im.c
 # End Source File
 # Begin Source File
@@ -183,14 +187,6 @@ SOURCE=.\main.c
 # Begin Source File
 
 SOURCE=.\options.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\pthread.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\pthread.h
 # End Source File
 # Begin Source File
 
@@ -207,10 +203,6 @@ SOURCE=.\server.c
 # Begin Source File
 
 SOURCE=.\services.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\utf8.c
 # End Source File
 # Begin Source File
 
@@ -231,6 +223,54 @@ SOURCE=.\yahoo.c
 # Begin Source File
 
 SOURCE=.\Yahoo.rc
+# End Source File
+# End Group
+# Begin Group "Header Files"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\avatar.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\chat.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\file_transfer.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\http_gateway.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\ignore.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\im.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\options.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\search.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\version.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\webcam.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\yahoo.h
 # End Source File
 # End Group
 # End Target

@@ -1,0 +1,91 @@
+                                  Project Information:
+                                  ====================
+
+Name: tabsrmm
+Homepage: http://miranda.or.at
+                               
+						
+				    Version History:
+				    ================
++ : new feature
+* : changed
+! : bugfix						
+- : feature removed or disabled because of pending bugs
+
+View CHANGELOG.OLD to see pre-1.0 relevant changes. Version 1.0.0.0 was declared
+splitted from trunk and declared as "stable" branch 2006/07/30. Released to
+the file listing the same day.
+
+Trunk is now using version numbers 1.1.0.x until the next major release. Bugfixes
+will be backported to stable branch, new features will only go into trunk.
+
+Version 1.1.0.16 - 2007/01/20
+
+        * bugfixes
+        * 3-way message log selection added to the user preferences dialog.
+        * fixed problem with calling certain protocol services too early.
+        * fixed own nickname not showing in template editor.
+        * removed old icon loading code. IcoLib API is now required (either
+          via IcoLib plugin or new Miranda 0.7 core).
+
+Version 1.1.0.14 - 2006/12/06
+
+        * more work on clickable nicknames in group chats.
+        * draw inactive / disabled status bar icons with high transparency to make
+          them appear "dimmed". Less confusing than constantly disappearing/jumping
+          icons in the status bar.
+        * clickable nicknames in the group chat history can now be right-clicked to
+          open the user context menu (same menu as in nickname list).
+        * fixed ugly crash bug introduced in .13 (clicking on the session list/tray
+          icon).
+
+Version 1.1.0.13 - 2006/11/26
+
+        + group chat module has been converted to UNICODE (ghazan)
+        + Support for history++ as a message log viewer has been added.
+        + Support for the spell checker plugin by pescuma has been added to IM and
+          group chat sessions.
+        + codepage support for group chat windows added.
+        * various smaller enhancements and bugfixes (too many to list here).
+        + message window API support for status bar icons has been added.
+
+Version 1.1.0.10|11|12 - internal
+
+Version 1.1.0.9 - 2006/09/20
+
+        ! fix: own avatar images are now rendered properly when they have transparency
+        * enabling or disabling the integrated group chat support will now set the chat.dll
+          plugin to enabled or disabled.
+        * most temporary error messages are now translateable
+
+Version 1.1.0.8 - 2006/09/10
+
+        internal only
+
+Version 1.1.0.7 - 2006/08/20
+
+        ! disable auto-bidi mode when no RTL language is installed
+        ! workaround for a loadavatars problem (may cause disappearing avatars in
+          the message window).
+
+Version 1.1.0.6 - 2006/08/05
+
+    Mainly bugfixes from 1.0.0.0 release.
+    
+	! fixed updater support (301, invalid response).
+	! fixed bug when re-attaching a temporary contact to a new
+	  container while the option to delete temporary contacts on close
+	  is enabled.
+	! fixed minor issue with [color] bbcode
+	! using the own UIN as fallback for own nickname, to solve the "Unknown
+	  Contact" problem which can appear when the own nickname is not 
+	  properly set.
+	! fixed a few issues with global splitter positioning.
+	* selecting offline sub protocol throws a warning instead of an error.
+	- removed the feature to load a background image for the message input area.
+	  was causing too many troubles and people did not understand that it was an
+	  experimental feature, thus sending bug reports.
+	! fixed problem with freezing when opening a message window by clicking on a
+	  typing notify popup
+	! fixed vertiacl maximize (patch by SloMo)	  	
+

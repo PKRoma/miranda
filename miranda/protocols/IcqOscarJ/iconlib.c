@@ -38,102 +38,63 @@
 #include "m_icolib.h"
 
 
-static int bIcoReady = 0;
-static int bIcoUtf = 0;
-
-
 void InitIconLib()
-{ // check plugin presence, init variables
-  bIcoReady = ServiceExists(MS_SKIN2_GETICON);
-  if (bIcoReady)
-  {
-    SKINICONDESC sid = {0};
-
-    if (ServiceExists(MS_SKIN2_RELEASEICON) || (CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid) >= PLUGIN_MAKE_VERSION(0,0,1,0)))
-      bIcoUtf = 1;
-  }
+{ 
+  // nothing
 }
 
 
 
-int IconLibInstalled()
+HANDLE IconLibDefine(const char* desc, const char* section, const char* ident, HICON icon, const char* def_file, int def_idx)
 {
-  return bIcoReady;
-}
+  SKINICONDESC sid = {0};
+  char szTemp[MAX_PATH + 128];
+  HANDLE hIcon;
 
+  sid.cbSize = SKINICONDESC_SIZE;
+  sid.pwszSection = make_unicode_string(section);
+  sid.pwszDescription = make_unicode_string(desc);
+  sid.flags = SIDF_UNICODE;
 
+  null_snprintf(szTemp, sizeof(szTemp), "%s_%s", gpszICQProtoName, ident);
+  sid.pszName = szTemp;
+  sid.pszDefaultFile = (char*)def_file;
+  sid.iDefaultIndex = def_idx;
+  sid.hDefaultIcon = icon;
+  sid.cx = sid.cy = 16;
 
-void IconLibDefine(const char* desc, const char* section, const char* ident, HICON icon, const char* def_file, int def_idx)
-{
-  if (bIcoReady)
-  {
-    SKINICONDESC sid = {0};
-    char szTemp[MAX_PATH + 128];
+  hIcon = (HANDLE)CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 
-    if (bIcoUtf)
-    {
-      sid.cbSize = SKINICONDESC_SIZE;
-      sid.pwszSection = make_unicode_string(section);
-      sid.pwszDescription = make_unicode_string(desc);
-      sid.flags = SIDF_UNICODE;
-    }
-    else
-    {
-      sid.cbSize = SKINICONDESC_SIZE_V3;
-      utf8_decode(section, &sid.pszSection);
-      utf8_decode(desc, &sid.pszDescription);
-    }
-    null_snprintf(szTemp, sizeof(szTemp), "%s_%s", gpszICQProtoName, ident);
-    sid.pszName = szTemp;
-    sid.pszDefaultFile = (char*)def_file;
-    sid.iDefaultIndex = def_idx;
-    sid.hDefaultIcon = icon;
-    sid.cx = sid.cy = 16;
+  SAFE_FREE(&sid.pwszSection);
+  SAFE_FREE(&sid.pwszDescription);
 
-    CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-    SAFE_FREE(&sid.pwszSection);
-    SAFE_FREE(&sid.pwszDescription);
-  }
+  return hIcon;
 }
 
 
 
 HICON IconLibGetIcon(const char* ident)
 {
-  if (bIcoReady)
-  {
-		char szTemp[MAX_PATH + 128];
-    HICON hNew;
+  char szTemp[MAX_PATH + 128];
 
-		null_snprintf(szTemp, sizeof(szTemp), "%s_%s", gpszICQProtoName, ident);
-		hNew = (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)szTemp);
-    if (hNew) return hNew;
-  }
+  null_snprintf(szTemp, sizeof(szTemp), "%s_%s", gpszICQProtoName, ident);
 
-  return NULL;
+  return (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)szTemp);
 }
 
 
 
 void IconLibReleaseIcon(const char* ident)
 {
-  if (bIcoReady)
-  {
-		char szTemp[MAX_PATH + 128];
+  char szTemp[MAX_PATH + 128];
 
-		null_snprintf(szTemp, sizeof(szTemp), "%s_%s", gpszICQProtoName, ident);
-		CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)szTemp);
-  }
+  null_snprintf(szTemp, sizeof(szTemp), "%s_%s", gpszICQProtoName, ident);
+  CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)szTemp);
 }
 
 
 
 HANDLE IconLibHookIconsChanged(MIRANDAHOOK hook)
 {
-  if (bIcoReady)
-  {
-    return HookEvent(ME_SKIN2_ICONSCHANGED, hook);
-  }
-  return NULL;
+  return HookEvent(ME_SKIN2_ICONSCHANGED, hook);
 }

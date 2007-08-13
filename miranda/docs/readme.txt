@@ -1,7 +1,7 @@
                    Miranda Instant Messenger Release Notes
                    ---------------------------------------
 
-                             March 2007 (v0.6.8)
+                             November 2006 (v0.6)
 
                           http://www.miranda-im.org
 
@@ -22,114 +22,23 @@ Contents
 
 1. New in this version
 ----------------------
-* New in 0.6.8
-Bugfixes:
- - AIM: Fixed issue with outgoing messages with double quotes
- - AIM: Fixed issue with converting links in incoming messages
- - IRC: Fixed crash with "perform" command in IRC options tab
- - Jabber: Fixed auth error via SSL ("SSL negotiation failed")
- - Jabber: Fixed OS version detection under Windows Vista
- - MSN: Fixed idle mode support
- - MSN: Fixed typing notifications
- - MSN: Improved group handling
- - MSN: Improved file transfers
 
-* New in 0.6.7
-Bugfixes
- - Jabber: Fixed crash on exit when using Jabber
- - MSN: Uploading avatars was broken
+This section lists some of the changes between different releases. We have tried
+to list all the important ones without getting too technical. 
 
-* New in 0.6.6
-Bugfixes
- - Fixed dragging/dropping file with non-locale characters into message window
- - Logging large chunks of data to disk could cause crash
- - Fetching events from the database sometimes failed
- - Sounds in message windows didn't play properly
+If you want to see the full changelogs, go here:
+http://files.miranda-im.org/builds/ChangeLog
 
-* New in 0.6.5
-Bugfixes
- - Update notification module not loaded correctly
-
-* New in 0.6.4
-Enhancement
- - Update notification added to notify of new Miranda IM releases
- - Improved dbTool and now supports language packs (translations)
- - Some cosmetic changes to the profile selection dialog
-
-Bugfixes
- - "Read Message" hotkey opened contact list if no events were present
- - Translation fix in Find/Add error message
- - Improved UPnP support and disabled UPnP cleanup when no incoming connections available
- - Show file transfers correctly in message window
- - Improved UPnP router support
- - UPnP cleanup will not run if there are no incoming connections
-
-* New in 0.6.3
-Bugfixes
- - Pin to Desktop was broken
- - AIM: Auto response messages weren't shown as auto responses
-
-* New in 0.6.2
-Enhancements
- - Improved unicode support in path utilities
- - UPnP routers that use chunked encoding are now supported
- - Added ability to enable/disable sounds globally
-
-Bugfixes
- - Tooltips on button controls displayed incorrectly in ANSI version
- - Enabling/disabling first group of sounds in options didn't enable apply button
- - Path in sound options was cut off for long paths
- - Some dialog backgrounds were not using system colors
- - Global hotkeys didn't work correctly
- - AIM: Messages were not received properly
- - AIM: Fixed formatting of outgoing unicode messages (AIM 5.9 was affected)
- - ICQ: Fixed compatibility issues with ICQ 6
- - ICQ: Fixed Meebo client detection
-
-* New in 0.6.1
-Enhancements
- - Added option to enable/disable UPnP support
- - Improved control/shift/enter behavior in chat windows
- 
-Bugfixes:
- - History button in chats didn't open history
- - Fixed network bind plugin compatibility issues with older plugins
- 
 * New in 0.6
-Enhancements
- - Implemented UPnP support
- - Core support for memory operations, strings, utf8 support, threading
- - Tabbed options support
- - ICQ: GDI resources optimization for extended status icons
- - Jabber: Support for NTLM & MD5-DIGEST auth modes
- - MSN: Support for WLM8 direct transfers
- - MSN: File transfers added for the HTTP gateway mode
- - MSN: Improved keep-alive packets sending
- - Jabber: Ability to remove your account from the server
- - Jabber: Ability to resolve nick names for transports
+Enhancements:
+ - FIXME
 
 Bugfixes:
- - AIM: Fix for file transfers
- - ICQ: Some fixes for avatars
- - IRC: Fix for nicknames which contain spaces
- - Jabber: Added language id to the login request ('en')
- - Jabber: Jabber crashes on very large images in vCards
- - Jabber: Fix for issues with backslashes in the transports names
- - Jabber: Fix for sending files to Pandion IM
- - MSN: Improved error 217 (contact already exists) processing.
+ - FIXME
 
 * New in 0.5.1
 Enhancements
  - ICQ: Added new session password API - allowing plugins like Secure Login to work better
- - Jabber: Improved the compatibility with the GTalk clients:
-   - Typing notification (JEP-0085);
-   - Avatars retrieving and publication (JEP-0153).
- - Jabber: SASL authentication implemented, to allow the TLS usage. For old
-   servers which don't support SASL, the special option was added to disable
-   SASL, it guarantees the full compatilibily with almost all servers.
- - Yahoo: Show a Popup for System Messages.
- - Yahoo: Improvements to the request handling when behind HTTP/HTTPS proxies
- - Yahoo: Added System Message handling (via Popup).
 
 Bugfixes:
  - Cannot create new profile through startup dialog (under NT4/95)
@@ -140,7 +49,6 @@ Bugfixes:
  - AutoExec files were deleted after use instead of renaming
  - Allow use of '#' as the beginning character in a autoexec file
  - Typo in about dialog
- - Importing from autoexec_*.ini now supports CP1251 and UTF-8
  - AIM: Fixed login problems from previous login order change
  - AIM: Fixed utf8 sending for aim clients
  - AIM: Keepalive timer fixes
@@ -152,10 +60,6 @@ Bugfixes:
  - AIM: Modified the gaim/adium detection to show as only gaim detection
  - AIM: Fixed file transfer directory opening bug.
  - AIM: Apply button in options got enabled by default
- - AIM: Require "You were added" on new contact additions
- - AIM: Fixed a memory leak on deny file transfer
- - AIM: Removed extra mail service request at login
- - AIM: Fixed problems with initial signon as away when "Do not reply to request for this message" is set
  - ICQ: Fixed possible hang on exit
  - ICQ: Fixed avatars were not working when server port set to 0
  - ICQ: Made message parser more strict (fixes bug allowing stealth invisible client detection)
@@ -164,15 +68,7 @@ Bugfixes:
  - ICQ: Fixed migration was not working at all (should not disconnect so often on server's upgrading)
  - ICQ: Fixed offline greeting cards were not processed properly
  - ICQ: Fixed small protocol glitch with reverse peer-to-peer connection
- - ICQ: Fixed HTTP/HTTPS proxy support (removed useless gateway option), long messages are now sent properly
- - Jabber: Fixed invalid invitations in groupchats
- - Jabber: JEP-0077 compliance fixed
- - MSN: Fixed sending files to old Windows Messengers (4.x-5.x)
- - MSN: Fixed direct avatars transfers for Windows Live Messenger
- - SRMM: Improved RTL support
  - Yahoo: Fixed avatar upload bug
- - Yahoo: Show a system message when a file is successfully uploaded to Yahoo servers.
- - Yahoo: various small fixes.
 
 * New in 0.5
 Enhancements:
@@ -352,7 +248,7 @@ Enhancements:
  - ICQ: My user-details now show more information & added idle since to ICQ tab
  - ICQ: Added full unicode message support (requires SRMM Unicode)
  - ICQ: Added support for sending and receiving Idle time
- - ICQ: Added reliable client identification
+ - ICQ: Added reliable client identification 
  - ICQ: Added support for avatar images (downloading & uploading).
  - ICQ: Added Grant authorisation option (send & recognize)
  - IRC: Support for secured connections using OpenSSL
@@ -530,7 +426,7 @@ Enhancements:
  - ICQ module has been moved to a separate plugin. You can now
    run Miranda IM without ICQ
  - Bundled support for ICQ, AIM, Jabber and MSN
-
+ 
  Bugfixes:
  - Reply quoted sometimes closed window
  - Much safer multithreading. This will help make Miranda IM more stable.
@@ -551,7 +447,7 @@ Enhancements:
    corruption (total data loss of a profile infact)
  - At least 2 gazillion internal fixes too complicated to explain (we dont
    even know what we did ;))
-
+ 
  Enhancements:
  - UI improvements to the plugins options page
  - Search dialog now remembers last protocol used
@@ -563,6 +459,7 @@ Enhancements:
  - Several optimizations to make Miranda IM run even faster and more stable
  - Made it possible to close read status message dialog with escape
  - Improved some of the error messages to make them easier to understand
+ 
 
 * New in 0.2.1
  - Sending messages to ICQ users who are in 'Invisible' mode does not work
@@ -696,7 +593,7 @@ c) Plugins
 6. Contact
 ----------
 
-a) Webpage
+a) Webpage 
 
 The official webpage for the Miranda IM project is www.miranda-im.org.
 

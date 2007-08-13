@@ -49,6 +49,8 @@ extern NEN_OPTIONS  nen_options;
 extern PSLWA        pSetLayeredWindowAttributes;
 extern struct       ContainerWindowData *pLastActiveContainer;
 extern HICON		hIcons[];
+int					SendMessageCommand(WPARAM wParam, LPARAM lParam);
+int					SendMessageCommand_W(WPARAM wParam, LPARAM lParam);
 
 int g_hotkeysEnabled = 0;
 HWND g_hotkeyHwnd = 0;
@@ -278,16 +280,23 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                     
                     if (dis->itemData >= 0) {
                         HICON hIcon;
+                        BOOL fNeedFree = FALSE;
+
                         if(dis->itemData > 0)
                             hIcon = dis->itemData & 0x10000000 ? hIcons[ICON_HIGHLIGHT] : myGlobals.g_IconMsgEvent;
                         else if(dat != NULL) {
-                            hIcon = LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus);
+                            //hIcon = LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus);
+                            hIcon = MY_GetContactIcon(dat);
+                            fNeedFree=TRUE;
                             idle = dat->idle;
                         }
                         else
                             hIcon = myGlobals.g_iconContainer;
                         
                         DrawMenuItem(dis, hIcon, idle);
+                        if (fNeedFree) 
+                            DestroyIcon(hIcon);
+
                         return TRUE;
                     }
                 }
@@ -627,7 +636,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                 if(IsWindow(job->hwndOwner))
                     SendMessage(job->hwndOwner, HM_EVENTSENT, (WPARAM)MAKELONG(wParam, 0), (LPARAM)&ack);
                 else
-                    ClearSendJob((int)wParam);                                  // window already gone, clear and forget the job
+                    AckMessage(0, NULL, (WPARAM)MAKELONG(wParam, 0), (LPARAM)&ack);
             }
             return 0;
         }

@@ -70,7 +70,7 @@ LINK32=link.exe
 # PROP Use_Debug_Libraries 1
 # PROP Output_Dir "Debug"
 # PROP Intermediate_Dir "Debug"
-# PROP Ignore_Export_Lib 0
+# PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "MSN_EXPORTS" /YX /FD /GZ /c
 # ADD CPP /nologo /MDd /W3 /Gm /Gi /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "MSN_EXPORTS" /FR /Yu"msn_global.h" /FD /GZ /c
@@ -159,16 +159,13 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=.\mmdecsjis.cpp
+SOURCE=.\ezxml.c
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\msn.cpp
 # ADD CPP /Yc"msn_global.h"
-# End Source File
-# Begin Source File
-
-SOURCE=.\msn_bitmap.cpp
 # End Source File
 # Begin Source File
 
@@ -208,11 +205,11 @@ SOURCE=.\msn_lists.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\msn_md5.h
+SOURCE=.\msn_mail.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\msn_md5c.cpp
+SOURCE=.\msn_menu.cpp
 # End Source File
 # Begin Source File
 
@@ -225,6 +222,14 @@ SOURCE=.\msn_misc.cpp
 # Begin Source File
 
 SOURCE=.\msn_msgqueue.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\msn_msgsplit.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\msn_natdetect.cpp
 # End Source File
 # Begin Source File
 
@@ -269,15 +274,6 @@ SOURCE=.\msn_useropts.cpp
 # Begin Source File
 
 SOURCE=.\msn_ws.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\sha1.c
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\sha1.h
 # End Source File
 # Begin Source File
 
@@ -404,9 +400,5 @@ SOURCE=.\resource.rc
 SOURCE=.\Icos\services.ico
 # End Source File
 # End Group
-# Begin Source File
-
-SOURCE=.\msn.def
-# End Source File
 # End Target
 # End Project

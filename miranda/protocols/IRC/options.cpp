@@ -176,129 +176,74 @@ void InitPrefs(void)
 	return;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
 // add icons to the skinning module
+
+struct
+{
+	char*  szDescr;
+	char*  szName;
+	int    iSize;
+	int    defIconID;
+	HANDLE hIconLibItem;
+}
+static iconList[] =
+{
+	{ LPGEN("Main"),              "main",    16, IDI_MAIN    },
+	{ LPGEN("Add"),               "add",     16, IDI_ADD     },
+	{ LPGEN("Apply"),             "go",      16, IDI_GO      },
+	{ LPGEN("Edit"),              "rename",  16, IDI_RENAME  },
+	{ LPGEN("Cancel"),            "delete",  16, IDI_DELETE  },
+	{ LPGEN("Ignore"),            "block",   16, IDI_BLOCK   },
+	{ LPGEN("Channel list"),      "list",    16, IDI_LIST    },
+	{ LPGEN("Channel manager"),   "manager", 16, IDI_MANAGER },
+	{ LPGEN("Quick connect"),     "quick",   16, IDI_QUICK   },
+	{ LPGEN("Server window"),     "server",  16, IDI_SERVER  },
+	{ LPGEN("Show channel"),      "show",    16, IDI_SHOW    },
+	{ LPGEN("Join channel"),      "join",    16, IDI_JOIN    },
+	{ LPGEN("Leave Channel"),     "part",    16, IDI_PART    },
+	{ LPGEN("Question"),          "whois",   16, IDI_WHOIS   },
+	{ LPGEN("Incoming DCC Chat"), "dcc",     16, IDI_DCC     },
+	{ LPGEN("Logo (48x48)"),      "logo",    48, IDI_LOGO    }
+};
+
 void AddIcons(void)
 {
-	if (ServiceExists(MS_SKIN2_ADDICON)) {
-		SKINICONDESC3 sid = {0};
+	char szFile[MAX_PATH];
+	GetModuleFileName(g_hInstance, szFile, MAX_PATH);
+
+	SKINICONDESC sid = {0};
+	sid.cbSize = sizeof(SKINICONDESC);
+	sid.pszSection = ALTIRCPROTONAME;
+	sid.pszDefaultFile = szFile;
+
+	// add them one by one
+	for ( int i=0; i < SIZEOF(iconList); i++ ) {
 		char szTemp[255];
-		char szFile[MAX_PATH];
-
-		sid.cx = sid.cy = 16;
-		sid.cbSize = sizeof(SKINICONDESC3);
-		sid.pszSection = ALTIRCPROTONAME;
-		GetModuleFileName(g_hInstance, szFile, MAX_PATH);
-		sid.pszDefaultFile = szFile;
-
-		// add them one by one
-		sid.pszDescription = Translate("Main");
-		mir_snprintf(szTemp, sizeof(szTemp), "%s_main", IRCPROTONAME);
+		mir_snprintf(szTemp, sizeof(szTemp), "%s_%s", IRCPROTONAME, iconList[i].szName );
 		sid.pszName = szTemp;
-		sid.iDefaultIndex = -IDI_MAIN;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Add");
-		mir_snprintf(szTemp, sizeof(szTemp), "%s_add", IRCPROTONAME);
-		sid.pszName = szTemp;
-		sid.iDefaultIndex = -IDI_ADD;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Apply");
-		mir_snprintf(szTemp, sizeof(szTemp), "%s_go", IRCPROTONAME);
-		sid.pszName = szTemp;
-		sid.iDefaultIndex = -IDI_GO;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Edit");
-		mir_snprintf(szTemp, sizeof(szTemp), "%s_rename", IRCPROTONAME);
-		sid.pszName = szTemp;
-		sid.iDefaultIndex = -IDI_RENAME;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Cancel");
-		mir_snprintf(szTemp, sizeof(szTemp), "%s_delete", IRCPROTONAME);
-		sid.pszName = szTemp;
-		sid.iDefaultIndex = -IDI_DELETE;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Ignore");
-		mir_snprintf(szTemp, sizeof(szTemp), "%s_block", IRCPROTONAME);
-		sid.pszName = szTemp;
-		sid.iDefaultIndex = -IDI_BLOCK;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Channel list");
-		mir_snprintf(szTemp, sizeof(szTemp), "%s_list", IRCPROTONAME);
-		sid.pszName = szTemp;
-		sid.iDefaultIndex = -IDI_LIST;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Channel manager");
-		mir_snprintf(szTemp, sizeof(szTemp), "%s_manager", IRCPROTONAME);
-		sid.pszName = szTemp;
-		sid.iDefaultIndex = -IDI_MANAGER;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Quick connect");
-		mir_snprintf(szTemp, sizeof(szTemp), "%s_quick", IRCPROTONAME);
-		sid.pszName = szTemp;
-		sid.iDefaultIndex = -IDI_QUICK;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Server window");
-		mir_snprintf(szTemp, sizeof(szTemp), "%s_server", IRCPROTONAME);
-		sid.pszName = szTemp;
-		sid.iDefaultIndex = -IDI_SERVER;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Show channel");
-		mir_snprintf(szTemp, sizeof(szTemp), "%s_show", IRCPROTONAME);
-		sid.pszName = szTemp;
-		sid.iDefaultIndex = -IDI_SHOW;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Join channel");
-		mir_snprintf(szTemp, sizeof(szTemp), "%s_join", IRCPROTONAME);
-		sid.pszName = szTemp;
-		sid.iDefaultIndex = -IDI_JOIN;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Leave Channel");
-		mir_snprintf(szTemp, sizeof(szTemp), "%s_part", IRCPROTONAME);
-		sid.pszName = szTemp;
-		sid.iDefaultIndex = -IDI_PART;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Question");
-		mir_snprintf(szTemp, sizeof(szTemp), "%s_whois", IRCPROTONAME);
-		sid.pszName = szTemp;
-		sid.iDefaultIndex = -IDI_WHOIS;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.pszDescription = Translate("Incoming DCC Chat");
-		mir_snprintf(szTemp, sizeof(szTemp), "%s_dcc", IRCPROTONAME);
-		sid.pszName = szTemp;
-		sid.iDefaultIndex = -IDI_DCC;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-		sid.cx = sid.cy = 48;
-		sid.pszDescription = Translate("Logo (48x48)");
-		mir_snprintf(szTemp, sizeof(szTemp), "%s_logo", IRCPROTONAME);
-		sid.pszName = szTemp;
-		sid.iDefaultIndex = -IDI_LOGO;
-		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+		sid.pszDescription = iconList[i].szDescr;
+		sid.iDefaultIndex = -iconList[i].defIconID;
+		sid.cx = sid.cy = iconList[i].iSize;
+		iconList[i].hIconLibItem = ( HANDLE )CallService( MS_SKIN2_ADDICON, 0, ( LPARAM )&sid );
 }	}
 
-// load icons from the skinning module if available
-HICON LoadIconEx(int iIndex, char * pszIcoLibName, int iX, int iY)
+HICON LoadIconEx( int iconId )
 {
-	if (ServiceExists(MS_SKIN2_GETICON)) {
-		char szTemp[256];
-		mir_snprintf(szTemp, sizeof(szTemp), "%s_%s", IRCPROTONAME, pszIcoLibName);
-		return (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)szTemp);
-	}
+	for ( int i=0; i < SIZEOF(iconList); i++ )
+		if ( iconList[i].defIconID == iconId )
+			return ( HICON )CallService(MS_SKIN2_GETICONBYHANDLE, 0, (LPARAM)iconList[i].hIconLibItem );
 
-	return (HICON)LoadImage(g_hInstance,MAKEINTRESOURCE(iIndex),IMAGE_ICON,iX,iY,LR_SHARED);
+	return NULL;
+}
+
+HANDLE GetIconHandle( int iconId )
+{
+	for ( int i=0; i < SIZEOF(iconList); i++ )
+		if ( iconList[i].defIconID == iconId )
+			return iconList[i].hIconLibItem;
+
+	return NULL;
 }
 
 // Callback for the 'Add server' dialog
@@ -694,8 +639,8 @@ BOOL CALLBACK OtherPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SetWindowLong(GetDlgItem(hwndDlg, IDC_QUITMESSAGE), GWL_WNDPROC,(LONG)EditSubclassProc); 
 			SetWindowLong(GetDlgItem(hwndDlg, IDC_PERFORMEDIT), GWL_WNDPROC,(LONG)EditSubclassProc); 
 
-			SendDlgItemMessage(hwndDlg,IDC_ADD,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_ADD,"add",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON)));
-			SendDlgItemMessage(hwndDlg,IDC_DELETE,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_DELETE,"delete",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON)));
+			SendDlgItemMessage(hwndDlg,IDC_ADD,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_ADD));
+			SendDlgItemMessage(hwndDlg,IDC_DELETE,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_DELETE));
 			SendMessage(GetDlgItem(hwndDlg,IDC_ADD), BUTTONADDTOOLTIP, (WPARAM)Translate("Click to set commands that will be performed for this event"), 0);
 			SendMessage(GetDlgItem(hwndDlg,IDC_DELETE), BUTTONADDTOOLTIP, (WPARAM)Translate("Click to delete the commands for this event"), 0);
 
@@ -952,9 +897,9 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
 
-		SendDlgItemMessage(hwndDlg,IDC_ADDSERVER,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_ADD,"add",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON)));
-		SendDlgItemMessage(hwndDlg,IDC_DELETESERVER,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_DELETE,"delete",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON)));
-		SendDlgItemMessage(hwndDlg,IDC_EDITSERVER,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_RENAME,"rename",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON)));
+		SendDlgItemMessage(hwndDlg,IDC_ADDSERVER,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_ADD));
+		SendDlgItemMessage(hwndDlg,IDC_DELETESERVER,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_DELETE));
+		SendDlgItemMessage(hwndDlg,IDC_EDITSERVER,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_RENAME));
 		SendMessage(GetDlgItem(hwndDlg,IDC_ADDSERVER), BUTTONADDTOOLTIP, (WPARAM)Translate("Add a new network"), 0);
 		SendMessage(GetDlgItem(hwndDlg,IDC_EDITSERVER), BUTTONADDTOOLTIP, (WPARAM)Translate("Edit this network"), 0);
 		SendMessage(GetDlgItem(hwndDlg,IDC_DELETESERVER), BUTTONADDTOOLTIP, (WPARAM)Translate("Delete this network"), 0);
@@ -1148,7 +1093,7 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 						EnableWindow(GetDlgItem(hwndDlg, IDC_DELETESERVER), false);
 						SERVER_INFO * pData = (SERVER_INFO *)SendMessage(GetDlgItem(hwndDlg, IDC_SERVERCOMBO), CB_GETITEMDATA, i, 0);
 						char * temp = new char [lstrlen(pData->Name)+24];
-						wsprintf(temp,Translate(	"Do you want to delete\r\n%s"	), pData->Name);
+						mir_snprintf(temp, sizeof(temp), Translate("Do you want to delete\r\n%s"), pData->Name);
 						if (MessageBox(hwndDlg, temp, Translate(	"Delete server"	), MB_YESNO|MB_ICONQUESTION) == IDYES) {
 							delete []pData->Name;
 							delete []pData->Address;
@@ -1320,14 +1265,10 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 					CLISTMENUITEM clmi;
 					memset( &clmi, 0, sizeof( clmi ));
 					clmi.cbSize = sizeof( clmi );
-					if ( prefs->UseServer ) {
-						clmi.flags = CMIM_FLAGS;
-						CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuServer, ( LPARAM )&clmi );
-					}
-					else {
-						clmi.flags = CMIM_FLAGS|CMIF_GRAYED;
-						CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuServer, ( LPARAM )&clmi );
-					}
+					clmi.flags = CMIM_FLAGS;
+					if ( !prefs->UseServer )
+						clmi.flags |= CMIF_GRAYED;
+					CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuServer, ( LPARAM )&clmi );
 
 					prefs->JoinOnInvite = IsDlgButtonChecked(hwndDlg, IDC_AUTOJOIN )== BST_CHECKED;
 					DBWriteContactSettingByte(NULL,IRCPROTONAME,"JoinOnInvite",prefs->JoinOnInvite);
@@ -1563,9 +1504,9 @@ BOOL CALLBACK IgnorePrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 			EnableWindow(GetDlgItem(hwndDlg, IDC_IGNORECHANNEL), prefs->Ignore);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_ADD), prefs->Ignore);
 
-			SendDlgItemMessage(hwndDlg,IDC_ADD,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_ADD,"add",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON)));
-			SendDlgItemMessage(hwndDlg,IDC_DELETE,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_DELETE,"delete",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON)));
-			SendDlgItemMessage(hwndDlg,IDC_EDIT,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_RENAME,"rename",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON)));
+			SendDlgItemMessage(hwndDlg,IDC_ADD,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_ADD));
+			SendDlgItemMessage(hwndDlg,IDC_DELETE,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_DELETE));
+			SendDlgItemMessage(hwndDlg,IDC_EDIT,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_RENAME));
 			SendMessage(GetDlgItem(hwndDlg,IDC_ADD), BUTTONADDTOOLTIP, (WPARAM)Translate("Add new ignore"), 0);
 			SendMessage(GetDlgItem(hwndDlg,IDC_EDIT), BUTTONADDTOOLTIP, (WPARAM)Translate("Edit this ignore"), 0);
 			SendMessage(GetDlgItem(hwndDlg,IDC_DELETE), BUTTONADDTOOLTIP, (WPARAM)Translate("Delete this ignore"), 0);
@@ -1846,25 +1787,25 @@ int InitOptionsPages(WPARAM wParam,LPARAM lParam)
 	odp.hInstance = g_hInstance;
 	odp.pszTemplate = MAKEINTRESOURCE(IDD_PREFS_CONNECT);
 	odp.pszTitle = ALTIRCPROTONAME;
-	odp.pszGroup = "Network";
-	odp.pszTab = "Account";
+	odp.pszGroup = LPGEN("Network");
+	odp.pszTab = LPGEN("Account");
 	odp.flags = ODPF_BOLDGROUPS;
 	odp.pfnDlgProc = ConnectPrefsProc;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 
 	odp.flags = ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
 	odp.pszTemplate = MAKEINTRESOURCE(IDD_PREFS_CTCP);
-	odp.pszTab = "DCC'n CTCP";
+	odp.pszTab = LPGEN("DCC'n CTCP");
 	odp.pfnDlgProc = CtcpPrefsProc;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 
 	odp.pszTemplate = MAKEINTRESOURCE(IDD_PREFS_OTHER);
-	odp.pszTab = "Advanced";
+	odp.pszTab = LPGEN("Advanced");
 	odp.pfnDlgProc = OtherPrefsProc;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 
 	odp.pszTemplate = MAKEINTRESOURCE(IDD_PREFS_IGNORE);
-	odp.pszTab = "Ignore";
+	odp.pszTab = LPGEN("Ignore");
 	odp.pfnDlgProc = IgnorePrefsProc;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 	return 0;

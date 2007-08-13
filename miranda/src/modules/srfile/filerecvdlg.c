@@ -209,24 +209,13 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 		dat->hPreshutdownEvent=HookEventMessage(ME_SYSTEM_PRESHUTDOWN,hwndDlg,M_PRESHUTDOWN);
 		dat->dwTicks=GetTickCount();
 
-		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_FILE));
 		EnumChildWindows(hwndDlg,ClipSiblingsChildEnumProc,0);
-		dat->hUIIcons[0]=LoadImage(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_ADDCONTACT),IMAGE_ICON,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0);
-		dat->hUIIcons[1]=LoadImage(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_USERDETAILS),IMAGE_ICON,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0);
-		dat->hUIIcons[2]=LoadImage(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_HISTORY),IMAGE_ICON,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0);
-		dat->hUIIcons[3]=LoadImage(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_DOWNARROW),IMAGE_ICON,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0);
-		SendDlgItemMessage(hwndDlg,IDC_ADD,BM_SETIMAGE,IMAGE_ICON,(LPARAM)dat->hUIIcons[0]);
-		SendDlgItemMessage(hwndDlg,IDC_DETAILS,BM_SETIMAGE,IMAGE_ICON,(LPARAM)dat->hUIIcons[1]);
-		SendDlgItemMessage(hwndDlg,IDC_HISTORY,BM_SETIMAGE,IMAGE_ICON,(LPARAM)dat->hUIIcons[2]);
-		SendDlgItemMessage(hwndDlg,IDC_USERMENU,BM_SETIMAGE,IMAGE_ICON,(LPARAM)dat->hUIIcons[3]);
-		SendDlgItemMessage(hwndDlg,IDC_ADD,BUTTONSETASFLATBTN,0,0);
-		SendDlgItemMessage(hwndDlg,IDC_DETAILS,BUTTONSETASFLATBTN,0,0);
-		SendDlgItemMessage(hwndDlg,IDC_HISTORY,BUTTONSETASFLATBTN,0,0);
-		SendDlgItemMessage(hwndDlg,IDC_USERMENU,BUTTONSETASFLATBTN,0,0);
-		SendMessage(GetDlgItem(hwndDlg,IDC_ADD), BUTTONADDTOOLTIP, (WPARAM)Translate("Add Contact Permanently to List"), 0);
-		SendMessage(GetDlgItem(hwndDlg,IDC_USERMENU), BUTTONADDTOOLTIP, (WPARAM)Translate("User Menu"), 0);
-		SendMessage(GetDlgItem(hwndDlg,IDC_DETAILS), BUTTONADDTOOLTIP, (WPARAM)Translate("View User's Details"), 0);
-		SendMessage(GetDlgItem(hwndDlg,IDC_HISTORY), BUTTONADDTOOLTIP, (WPARAM)Translate("View User's History"), 0);
+		
+		Window_SetIcon_IcoLib(hwndDlg, SKINICON_EVENT_FILE);
+		Button_SetIcon_IcoLib(hwndDlg, IDC_ADD, SKINICON_OTHER_ADDCONTACT, "Add Contact Permanently to List");
+		Button_SetIcon_IcoLib(hwndDlg, IDC_DETAILS, SKINICON_OTHER_USERDETAILS, "View User's Details");
+		Button_SetIcon_IcoLib(hwndDlg, IDC_HISTORY, SKINICON_OTHER_HISTORY, "View User's History");
+		Button_SetIcon_IcoLib(hwndDlg, IDC_USERMENU, SKINICON_OTHER_DOWNARROW, "User Menu");
 
 		contactName=(TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)dat->hContact,GCDNF_TCHAR);
 		SetDlgItemText(hwndDlg,IDC_FROM,contactName);
@@ -316,8 +305,10 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 	}
 	case M_FILEEXISTSDLGREPLY:
 		return SendMessage(dat->hwndTransfer,msg,wParam,lParam);
+
 	case WM_MEASUREITEM:
 		return CallService(MS_CLIST_MENUMEASUREITEM,wParam,lParam);
+
 	case WM_DRAWITEM:
 		{	LPDRAWITEMSTRUCT dis=(LPDRAWITEMSTRUCT)lParam;
 			if(dis->hwndItem==GetDlgItem(hwndDlg, IDC_PROTOCOL)) {
@@ -331,10 +322,9 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 					if (hIcon) {
 						DrawIconEx(dis->hDC,dis->rcItem.left,dis->rcItem.top,hIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
 						DestroyIcon(hIcon);
-			}	}	}
-
-			return CallService(MS_CLIST_MENUDRAWITEM,wParam,lParam);
-		}
+		}	}	}	}
+		return CallService(MS_CLIST_MENUDRAWITEM,wParam,lParam);
+		
 	case WM_COMMAND:
 		if ( CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam),MPCF_CONTACTMENU), (LPARAM)dat->hContact ))
 			break;
@@ -351,7 +341,7 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 				return TRUE;
 			}
 		case IDOK:
-			if(dat->hwndTransfer) return SendMessage(dat->hwndTransfer,msg,wParam,lParam);
+			if ( dat->hwndTransfer ) return SendMessage(dat->hwndTransfer,msg,wParam,lParam);
 			{	//most recently used directories
 				char szRecvDir[MAX_PATH],szDefaultRecvDir[MAX_PATH];
 				GetDlgItemTextA(hwndDlg,IDC_FILEDIR,szRecvDir,SIZEOF(szRecvDir));
@@ -374,10 +364,12 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			EnableWindow(GetDlgItem(hwndDlg,IDC_MSG),FALSE);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_FILEDIR),FALSE);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_FILEDIRBROWSE),FALSE);
-			dat->hwndTransfer=CreateDialog(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_FILETRANSFERINFO),hwndDlg,DlgProcFileTransfer);
+			dat->hwndTransfer=CreateDialogParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_FILETRANSFERINFO),hwndDlg,DlgProcFileTransfer,(LPARAM)dat);
 			//check for auto-minimize here to fix BUG#647620
-			if(DBGetContactSettingByte(NULL,"SRFile","AutoAccept",0) && DBGetContactSettingByte(NULL,"SRFile","AutoMin",0))
-				ShowWindow(hwndDlg,SW_SHOWMINIMIZED);
+			if(DBGetContactSettingByte(NULL,"SRFile","AutoAccept",0) && DBGetContactSettingByte(NULL,"SRFile","AutoMin",0)) {
+				ShowWindow(hwndDlg,SW_HIDE);
+				ShowWindow(hwndDlg,SW_SHOWMINNOACTIVE);
+			}
 			return TRUE;
 		case IDCANCEL:					
 			if (dat->fs) CallContactService(dat->hContact,PSS_FILEDENY,(WPARAM)dat->fs,(LPARAM)Translate("Cancelled"));
@@ -388,21 +380,21 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 		case IDC_ADD:
 			{	ADDCONTACTSTRUCT acs={0};
 
-			acs.handle=dat->hContact;
-			acs.handleType=HANDLE_CONTACT;
-			acs.szProto="";
-			CallService(MS_ADDCONTACT_SHOW,(WPARAM)hwndDlg,(LPARAM)&acs);
-			if(!DBGetContactSettingByte(dat->hContact,"CList","NotOnList",0))
-				ShowWindow(GetDlgItem(hwndDlg,IDC_ADD), SW_HIDE);
-			return TRUE;
+				acs.handle=dat->hContact;
+				acs.handleType=HANDLE_CONTACT;
+				acs.szProto="";
+				CallService(MS_ADDCONTACT_SHOW,(WPARAM)hwndDlg,(LPARAM)&acs);
+				if(!DBGetContactSettingByte(dat->hContact,"CList","NotOnList",0))
+					ShowWindow(GetDlgItem(hwndDlg,IDC_ADD), SW_HIDE);
+				return TRUE;
 			}
 		case IDC_USERMENU:
 			{	RECT rc;
-			HMENU hMenu=(HMENU)CallService(MS_CLIST_MENUBUILDCONTACT,(WPARAM)dat->hContact,0);
-			GetWindowRect((HWND)lParam,&rc);
-			TrackPopupMenu(hMenu,0,rc.left,rc.bottom,0,hwndDlg,NULL);
-			DestroyMenu(hMenu);
-			break;
+				HMENU hMenu=(HMENU)CallService(MS_CLIST_MENUBUILDCONTACT,(WPARAM)dat->hContact,0);
+				GetWindowRect((HWND)lParam,&rc);
+				TrackPopupMenu(hMenu,0,rc.left,rc.bottom,0,hwndDlg,NULL);
+				DestroyMenu(hMenu);
+				break;
 			}
 		case IDC_DETAILS:
 			CallService(MS_USERINFO_SHOWDIALOG,(WPARAM)dat->hContact,0);
@@ -418,12 +410,13 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 		break;
 
 	case WM_DESTROY:
+		Window_FreeIcon_IcoLib(hwndDlg);
+		Button_FreeIcon_IcoLib(hwndDlg,IDC_ADD);
+		Button_FreeIcon_IcoLib(hwndDlg,IDC_DETAILS);
+		Button_FreeIcon_IcoLib(hwndDlg,IDC_HISTORY);
+		Button_FreeIcon_IcoLib(hwndDlg,IDC_USERMENU);
 		if(dat->hPreshutdownEvent) UnhookEvent(dat->hPreshutdownEvent);
 		if(dat->hwndTransfer) DestroyWindow(dat->hwndTransfer);
-		DestroyIcon(dat->hUIIcons[3]);
-		DestroyIcon(dat->hUIIcons[2]);
-		DestroyIcon(dat->hUIIcons[1]);
-		DestroyIcon(dat->hUIIcons[0]);
 		mir_free(dat);
 		return TRUE;
 	}

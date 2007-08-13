@@ -7,7 +7,7 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include <winresrc.h>
+#include "afxres.h"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -66,44 +66,56 @@ BEGIN
     LTEXT           "Display Name:",IDC_STATIC,9,39,48,15
     LTEXT           "Password:",IDC_STATIC,21,59,35,15
     LTEXT           "Login Server:",IDC_STATIC,11,80,44,12
-    CONTROL         "Message Delivery Confirmation",IDC_DC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,119,130,13
-    CONTROL         "Do Not Autoreply When Away",IDC_DM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,132,143,13
-    CONTROL         "Convert Incoming Messages to BBCode",IDC_FI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,145,143,13
-    CONTROL         "Convert Outgoing Messages to HTML",IDC_FO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,157,143,13
-    CONTROL         "Disable Account Type Icons",IDC_AT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,170,133,13
-    CONTROL         "Disable Extended Status Icons",IDC_ES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,183,143,13
-    CONTROL         "Handle aim: links on websites",IDC_WEBSUPPORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,196,143,13
+    CONTROL         "Message Delivery Confirmation",IDC_DC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,116,130,13
+    CONTROL         "Do Not Autoreply When Away",IDC_DM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,128,143,13
+    CONTROL         "Convert Incoming Messages to BBCode",IDC_FI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,140,143,13
+    CONTROL         "Convert Outgoing Messages to HTML",IDC_FO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,152,143,13
+    CONTROL         "Disable Avatars",IDC_DA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,164,143,13
+	CONTROL         "Disable Account Type Icons",IDC_AT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,176,133,13
+    CONTROL         "Disable Extended Status Icons",IDC_ES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,188,143,13
+    CONTROL         "Handle aim: links on websites",IDC_WEBSUPPORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,200,143,13
+    CONTROL         "Check Mail on Login",IDC_CM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,212,143,13
     GROUPBOX        "AIM User Details",IDC_DETAILS,3,7,161,95,WS_GROUP
     GROUPBOX        "Advanced Options",IDC_EXPERT,166,7,156,95,WS_GROUP
-    EDITTEXT        IDC_KA,234,23,20,12,ES_AUTOHSCROLL | ES_NUMBER,WS_EX_RIGHT
     LTEXT           "*Aim must be reconnected  for some option to take effect.",IDC_MASQ,186,109,115,18,NOT WS_VISIBLE
-    LTEXT           "Keep Alive Timer:",IDC_STATIC,173,25,56,15
-    LTEXT           "(seconds)",IDC_STATIC,255,25,32,12
+    CONTROL         "Send Keep Alive Packets",IDC_KA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,21,93,13
     LTEXT           "File Transfer Grace Period:",IDC_STATIC,174,40,87,12
     EDITTEXT        IDC_GP,261,39,20,12,ES_AUTOHSCROLL | ES_NUMBER,WS_EX_RIGHT
     LTEXT           "(seconds)",IDC_STATIC,285,41,32,12
     CONTROL         "Instant Idle on Login",IDC_II,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,52,93,13
     CONTROL         "Force Proxy File Transfers",IDC_FP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,65,130,11
     CONTROL         "Masquerade as a Sidekick/Hiptop User",IDC_HF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,76,143,13
-    CONTROL         "Check Mail on Login",IDC_CM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,209,143,13
 END
 
-IDD_INFO DIALOGEX 0, 0, 222, 153
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+IDD_INFO DIALOGEX 0, 0, 329, 190
+STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+EXSTYLE WS_EX_STATICEDGE | WS_EX_APPWINDOW
+CAPTION "Aim Profile Editing Dialog"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    PUSHBUTTON      "Save Profile",IDC_SETPROFILE,152,141,60,12,WS_DISABLED
-    EDITTEXT        IDC_PROFILE,0,0,221,138,ES_MULTILINE | ES_AUTOHSCROLL | ES_WANTRETURN | WS_VSCROLL | WS_HSCROLL
-    LTEXT           "AIM Profile Editing Dialog",IDC_STATIC,38,142,105,8
+    PUSHBUTTON      "Save Profile",IDC_SETPROFILE,240,162,60,12,WS_DISABLED
+    CONTROL         "",IDC_PROFILE,"RichEdit20A",ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_NOHIDESEL | ES_WANTRETURN | WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,7,21,315,139
+    CONTROL         "",IDC_BOLD,"Button",BS_OWNERDRAW,115,2,16,16
+    CONTROL         "",IDC_ITALIC,"Button",BS_OWNERDRAW,133,2,16,16
+    CONTROL         "",IDC_UNDERLINE,"Button",BS_OWNERDRAW,151,2,16,16
+    CONTROL         "",IDC_SUPERSCRIPT,"Button",BS_OWNERDRAW,169,2,16,16
+    CONTROL         "",IDC_SUBSCRIPT,"Button",BS_OWNERDRAW,205,2,16,16
+    CONTROL         "",IDC_FOREGROUNDCOLOR,"Button",BS_OWNERDRAW,223,2,16,16
+    CONTROL         "",IDC_FOREGROUNDCOLORPICKER,"Button",BS_OWNERDRAW,238,2,10,16
+    CONTROL         "",IDC_BACKGROUNDCOLOR,"Button",BS_OWNERDRAW,251,2,16,16
+    CONTROL         "",IDC_BACKGROUNDCOLORPICKER,"Button",BS_OWNERDRAW,266,2,10,16
+    COMBOBOX        IDC_TYPEFACE,2,5,80,16,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_FONTSIZE,84,5,26,14,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_NORMALSCRIPT,"Button",BS_OWNERDRAW,187,2,16,16
 END
 
 IDD_AIMACCOUNT DIALOGEX 0, 0, 195, 97
-STYLE DS_SETFONT | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOPMOST
 CAPTION "AIM Account Setup"
-FONT 8, "MS Sans Serif", 0, 0, 0x0
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    PUSHBUTTON      "Ok",IDOK,90,74,46,14
+    PUSHBUTTON      "OK",IDOK,90,74,46,14
     PUSHBUTTON      "Cancel",IDCANCEL,140,74,33,14
     LTEXT           "Please enter your AIM account details to continue:",IDC_STATIC,7,9,163,15
     LTEXT           "Screenname:",IDC_STATIC,18,32,53,10
@@ -113,10 +125,10 @@ BEGIN
 END
 
 IDD_IDLE DIALOGEX 0, 0, 173, 74
-STYLE DS_SETFONT | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOPMOST
 CAPTION "AIM Instant Idler"
-FONT 8, "MS Sans Serif", 0, 0, 0x0
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     EDITTEXT        IDC_IIH,86,11,28,12,ES_AUTOHSCROLL | ES_NUMBER,WS_EX_RIGHT
     LTEXT           "Number of Hours:",IDC_STATIC,18,13,62,12
@@ -161,8 +173,8 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_ADD                 ICON                    "icons\\add.ico"
 IDI_AIM                 ICON                    "icons\\oscar.ico"
+IDI_ADD                 ICON                    "icons\\add.ico"
 IDI_ICQ                 ICON                    "icons\\icq.ico"
 IDI_AOL                 ICON                    "icons\\aol.ico"
 IDI_HIPTOP              ICON                    "icons\\hiptop.ico"
@@ -174,6 +186,20 @@ IDI_AWAY                ICON                    "icons\\away.ico"
 IDI_IDLE                ICON                    "icons\\idle.ico"
 IDI_PROFILE             ICON                    "icons\\profile.ico"
 IDI_MAIL                ICON                    "icons\\inbox.ico"
+IDI_BOLD                ICON                    "icons\\bold.ico"
+IDI_NBOLD               ICON                    "icons\\nbold.ico"
+IDI_NITALIC             ICON                    "icons\\nitalic.ico"
+IDI_ITALIC              ICON                    "icons\\italic.ico"
+IDI_NUNDERLINE          ICON                    "icons\\nunderline.ico"
+IDI_UNDERLINE           ICON                    "icons\\underline.ico"
+IDI_NSUPERSCRIPT        ICON                    "icons\\nsuperscript.ico"
+IDI_NSUBSCRIPT          ICON                    "icons\\nsubscript.ico"
+IDI_FOREGROUNDCOLOR     ICON                    "icons\\foregroundcolor.ico"
+IDI_BACKGROUNDCOLOR     ICON                    "icons\\backgroundcolor.ico"
+IDI_NNORMALSCRIPT       ICON                    "icons\\nnormalscript.ico"
+IDI_NORMALSCRIPT        ICON                    "icons\\normalscript.ico"
+IDI_SUBSCRIPT           ICON                    "icons\\subscript.ico"
+IDI_SUPERSCRIPT         ICON                    "icons\\superscript.ico"
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 

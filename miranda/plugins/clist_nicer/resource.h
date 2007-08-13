@@ -10,12 +10,12 @@
 #define IDD_OPT_SKIN                    4
 #define IDD_QUICKIGNORE                 5
 #define IDD_OPT                         6
+#define IDD_OPTIONSDIALOG               101
 #define IDI_MIRANDA                     102
 #define IDD_CLNABOUT                    102
 #define IDD_ABOUT                       103
 #define IDI_ONLINE                      104
 #define IDI_OFFLINE                     105
-#define IDI_EMAIL                       106
 #define IDD_FILESEND                    107
 #define IDD_FINDADD                     108
 #define IDD_OPT_AUTOAWAY                109
@@ -43,14 +43,12 @@
 #define IDI_SENDURL                     135
 #define IDI_RECVMSG                     136
 #define IDI_SENDMSG                     137
-#define IDI_URL                         138
 #define IDI_EMPTYBLOB                   139
 #define IDI_FILE                        140
 #define IDI_GROUPOPEN                   141
 #define IDI_GROUPSHUT                   142
 #define IDI_NOTICK                      143
 #define IDI_ONTHEPHONE                  144
-#define IDI_SMS                         145
 #define IDI_TICK                        146
 #define IDI_USERONLINE                  147
 #define IDM_COPY                        148
@@ -82,8 +80,11 @@
 #define IDI_ADDCONTACT                  210
 #define IDI_SMALLDOT                    211
 #define IDI_FILLEDBLOB                  212
+#define IDC_HYPERLINKHAND               214
+#define IDC_DROPUSER                    215
 #define IDD_OPT_AWAYMSG                 217
 #define IDD_OPT_CLUI                    218
+#define IDD_OPT_XICONS                  219
 #define IDD_INFO_SUMMARY                220
 #define IDD_INFO_CONTACT                221
 #define IDD_INFO_BACKGROUND             222
@@ -116,10 +117,10 @@
 #define IDI_DOWNARROW                   264
 #define IDD_CREDITS                     265
 #define IDD_OPT_IDLE                    268
-#define IDD_OPT_EXTBKG                  270
-#define IDD_OPT_PLUS                    271
-#define IDI_NEWGROUP                    282
-#define IDI_NEWGROUP2                   283
+#define IDD_OPT_DSPPROFILES             300
+#define IDD_OPT_DSPADVANCED             301
+#define IDD_OPT_DSPITEMS                302
+#define IDD_OPT_DSPGROUPS               303
 #define IDC_ACTIVEPERC                  1000
 #define IDC_RESETPROTOCOLDATA           1000
 #define IDC_OPTIONSTAB                  1000
@@ -170,6 +171,8 @@
 #define IDC_DATE                        1027
 #define IDC_IGN_ALWAYSOFFLINE           1027
 #define IDC_DEPARTMENT                  1028
+#define IDC_IGN_ONLINE2                 1028
+#define IDC_IGN_PRIORITY                1028
 #define IDC_DETAILS                     1029
 #define IDC_DISABLEGROUPS               1030
 #define IDC_DOBYEAR                     1031
@@ -177,7 +180,6 @@
 #define IDC_MYNOTES                     1033
 #define IDC_DONTREPLY                   1034
 #define IDC_DROPSHADOW                  1035
-#define IDC_DROPUSER                    1036
 #define IDC_URLS                        1037
 #define IDC_DUMPRECV                    1038
 #define IDC_REPLY                       1039
@@ -214,6 +216,7 @@
 #define IDC_EXTRARESERVED4              1059
 #define IDC_GENDER                      1060
 #define IDC_EXTRARESERVED5              1060
+#define IDC_EXTRAORDER                  1061
 #define IDC_CITY                        1061
 #define IDC_STATE                       1062
 #define IDC_COUNTRY                     1063
@@ -253,7 +256,6 @@
 #define IDC_HKSEARCH                    1084
 #define IDC_USESOUND                    1085
 #define IDC_HKSHOWOPTIONS               1086
-#define IDC_HYPERLINKHAND               1087
 #define IDC_LANGUAGE1                   1088
 #define IDC_LANGUAGE2                   1089
 #define IDC_LANGUAGE3                   1090
@@ -285,7 +287,6 @@
 #define IDC_PROXYTYPE                   1117
 #define IDC_RADIUSSPIN2                 1118
 #define IDC_READMSG                     1119
-#define IDC_RENDERGDIP                  1120
 #define IDC_RIGHTMARGIN                 1121
 #define IDC_ROWGAP                      1122
 #define IDC_UIN                         1123
@@ -615,6 +616,8 @@
 #define IDC_IDLE                        1610
 #define IDC_SBPANELBEVEL                1611
 #define IDC_DBLCLKAVATARS               1611
+#define IDC_IDLE2                       1611
+#define IDC_XSTATUSASSTATUS             1611
 #define IDC_NOSCROLLBAR                 1613
 #define IDC_BUTTON1                     1633
 #define IDC_ADDVIEWMODE                 1633
@@ -627,6 +630,7 @@
 #define IDC_IGN_NONE2                   1635
 #define IDC_IGN_ADDPERMANENTLY          1635
 #define IDC_IDLECHECK                   1636
+#define IDC_DSP_LOADDEFAULT             1636
 #define IDC_IDLEONWINDOWS               1637
 #define IDC_IDLEONMIRANDA               1638
 #define IDC_IDLEUSEGLI                  1639
@@ -645,6 +649,8 @@
 #define IDC_WINCOLOUR                   1659
 #define IDC_ICONBLINK                   1660
 #define IDC_SELECT_D                    1661
+#define IDC_ICONBLINK2                  1661
+#define IDC_APPLYLASTVIEWMODE           1661
 #define IDC_SELECT_F                    1662
 #define IDC_SELECT_L                    1663
 #define IDC_SELECT_N                    1664
@@ -751,8 +757,6 @@
 #define IDI_PROTOCONNECTING             2111
 #define IDI_TBTOPMENU                   2112
 #define IDI_PUMPKIN                     3000
-#define IDD_OPT_GENMENU                 11267
-#define IDD_OPT_PROTOCOLORDER           11268
 #define IDC_MENUITEMS                   11710
 #define IDC_MENUOBJECTS                 11711
 #define IDC_NOTSUPPORTWARNING           11712
@@ -849,14 +853,23 @@
 #define IDC_UNLOAD                      40048
 #define ID_BUTTONBAR_DRAWSUNKENFRAME    40049
 #define POPUP_NEWGROUP                  40050
+#define IDC_SECONDLINEMODE              40050
 #define POPUP_SHOWSTATUSICONS           40051
+#define IDC_OVERLAYICON                 40051
+#define IDC_SHOWLOCALTIME1              40052
 #define POPUP_RENAMEGROUP               40052
 #define POPUP_DELETEGROUP               40053
+#define IDC_SHOWLOCALTIME2              40053
+#define IDC_DSP_ADD                     -25483
 #define ID_BUTTONBAR_SKINNEDTOOLBAR     40054
+#define IDC_DSP_DELETE                  40054
 #define ID_APPEARANCE_USESTATUSFLOATER  40055
+#define IDC_DSP_RENAME                  40055
 #define ID_APPEARANCE_AUTO              40056
+#define IDC_DSP_APPLY                   40056
 #define POPUP_FLOATER                   40057
 #define POPUP_FLOATER_AUTOHIDE          40058
+#define IDC_AVATARDISPMODE              40059
 #define ID_APPEARANCE_SHOWEVENTAREAINFLOATER 40059
 #define POPUP_FLOATER_EVENTS            40060
 
@@ -866,7 +879,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        7
 #define _APS_NEXT_COMMAND_VALUE         40061
-#define _APS_NEXT_CONTROL_VALUE         40049
+#define _APS_NEXT_CONTROL_VALUE         40054
 #define _APS_NEXT_SYMED_VALUE           40154
 #endif
 #endif

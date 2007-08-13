@@ -69,7 +69,7 @@ LINK32=link.exe
 # PROP Use_Debug_Libraries 1
 # PROP Output_Dir "Debug"
 # PROP Intermediate_Dir "Debug"
-# PROP Ignore_Export_Lib 0
+# PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /c
 # ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr /Yu"commonheaders.h" /FD /c
@@ -439,6 +439,10 @@ SOURCE=.\modules\database\dbtime.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\modules\database\dbutils.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\modules\database\profilemanager.c
 # End Source File
 # Begin Source File
@@ -731,6 +735,10 @@ SOURCE=.\modules\utils\hyperlink.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\modules\utils\md5.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\modules\utils\openurl.c
 # End Source File
 # Begin Source File
@@ -740,6 +748,10 @@ SOURCE=.\modules\utils\path.c
 # Begin Source File
 
 SOURCE=.\modules\utils\resizer.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\utils\sha1.c
 # End Source File
 # Begin Source File
 
@@ -803,6 +815,10 @@ SOURCE=.\modules\clist\clistevents.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\modules\clist\clistmenus.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\modules\clist\clistmod.c
 # End Source File
 # Begin Source File
@@ -831,11 +847,80 @@ SOURCE=.\modules\clist\Docking.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\modules\clist\genmenu.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\clist\genmenu.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\clist\genmenuopt.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\modules\clist\groups.c
 # End Source File
 # Begin Source File
 
 SOURCE=.\modules\clist\keyboard.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\clist\movetogroup.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\clist\protocolorder.c
+# End Source File
+# End Group
+# Begin Group "fontservice"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\modules\fonts\FontOptions.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\fonts\FontService.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\fonts\FontService.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\fonts\module_fonts.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\fonts\module_fonts.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\fonts\services.c
+# End Source File
+# End Group
+# Begin Group "icolib"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\modules\icolib\extracticon.c
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\icolib\IcoLib.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\icolib\IcoLib.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\icolib\skin2icons.c
 # End Source File
 # End Group
 # Begin Group "updatenotify"
@@ -852,208 +937,12 @@ SOURCE=.\modules\updatenotify\updatenotify.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\res\addcontact.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\away.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\blank.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\changefont.ico
-# End Source File
-# Begin Source File
-
-SOURCE=..\docs\credits.txt
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\delete.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\detailsl.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\dnd.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\downarrow.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\dragcopy.cur
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\dropuser.cur
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\emptyblo.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\file.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\filledbl.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\finduser.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\freechat.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\groupope.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\groupshu.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\help.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\history.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\hyperlin.cur
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\invisible.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\message.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\miranda.ico
-# End Source File
-# Begin Source File
-
 SOURCE=.\miranda32.exe.manifest
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\mirandaw.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\multisend.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\na2.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\notick.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\notick1.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\occupied.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\offline2.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\online2.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\onthepho.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\options.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\outtolun.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\rename.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\reply.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\resource.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\resource.rc
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\searchal.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\sendmail.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\smalldot.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\sms.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\sortcold.bmp
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\sortcolu.bmp
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\timestamp.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\url.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\useronli.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\viewdetails.ico
+SOURCE=.\vc6.rc
 # End Source File
 # End Group
-# Begin Source File
-
-SOURCE=..\docs\contributors.txt
-# End Source File
 # End Target
 # End Project

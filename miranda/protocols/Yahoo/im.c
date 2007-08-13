@@ -12,16 +12,14 @@
  */
 #include <time.h>
 #include <malloc.h>
-#include <sys/stat.h>
 
 #include "yahoo.h"
-
 #include <m_langpack.h>
 #include <m_protosvc.h>
 
 #include "avatar.h"
 #include "im.h"
-#include "utf8.h"
+#include "ignore.h"
 
 extern yahoo_local_account *ylad;
 extern HANDLE   hYahooNudge;
@@ -33,33 +31,7 @@ static void yahoo_send_msg(const char *id, const char *msg, int utf8)
 	
 	buddy_icon = (YAHOO_GetDword("AvatarHash", 0) != 0) ? 2: 0;
 	
-    if (YAHOO_GetByte( "DisableUTF8", 0 ) ) { /* Send ANSI */
-		/* need to convert it to ascii argh */
-		char 	*umsg = (char *)msg;
-		
-		if (utf8) {
-			wchar_t* tRealBody = NULL;
-			
-			umsg = (char *) alloca(lstrlen(msg) + 1);
-			lstrcpy(umsg, msg);
-			Utf8Decode( umsg, 0, &tRealBody );
-			free( tRealBody );
-		} 
-			
-		yahoo_send_im(ylad->id, NULL, id, umsg, 0, buddy_icon);
-    } else { /* Send Unicode */
-	    
-		if (!utf8) {
-			char *tmp;
-			
-			utf8_encode(msg, &tmp);
-        	//tmp = y_str_to_utf8(msg);
-			yahoo_send_im(ylad->id, NULL, id, tmp, 1, buddy_icon);
-			free(tmp);
-		} else 
-			yahoo_send_im(ylad->id, NULL, id, msg, 1, buddy_icon);
-    } 
-   
+	yahoo_send_im(ylad->id, NULL, id, msg, utf8, buddy_icon);
 }
 
 void ext_yahoo_got_im(int id, const char *me, const char *who, const char *msg, long tm, int stat, int utf8, int buddy_icon)
@@ -67,17 +39,12 @@ void ext_yahoo_got_im(int id, const char *me, const char *who, const char *msg, 
     char 		*umsg;
 	const char	*c = msg;
 	int 		oidx = 0;
-	wchar_t* 	tRealBody = NULL;
-	int      	tRealBodyLen = 0;
-	int 		msgLen;
-	char* 		tMsgBuf = NULL;
-	char* 		p = NULL;
 	CCSDATA 		ccs;
 	PROTORECVEVENT 	pre;
 	HANDLE 			hContact;
 
 	
-    LOG(("YAHOO_GOT_IM id:%s %s: %s tm:%lu stat:%i utf8:%i buddy_icon: %i", me, who, msg, tm, stat, utf8, buddy_icon));
+    LOG(("YAHOO_GOT_IM id:%s %s: %s (len: %d) tm:%lu stat:%i utf8:%i buddy_icon: %i", me, who, msg, lstrlen(msg), tm, stat, utf8, buddy_icon));
    	
 	if(stat == 2) {
 		char z[1024];
@@ -93,26 +60,12 @@ void ext_yahoo_got_im(int id, const char *me, const char *who, const char *msg, 
 		return;
 	}
 
-	{
-		YList *l;
-		
-		/* show our current ignore list */
-		l = (YList *)YAHOO_GetIgnoreList();
-		while (l != NULL) {
-			struct yahoo_buddy *b = (struct yahoo_buddy *) l->data;
-			
-			//MessageBox(NULL, b->id, "ID", MB_OK);
-			//SendMessage(GetDlgItem(hwndDlg,IDC_YIGN_LIST), LB_INSERTSTRING, 0, (LPARAM)b->id);
-			if (lstrcmpi(b->id, who) == 0) {
-				LOG(("User '%s' on our Ignore List. Dropping Message.", who));
-				return;
-			}
-			l = l->next;
-		}
-
+	if (YAHOO_BuddyIgnored(who)) {
+		LOG(("User '%s' on our Ignore List. Dropping Message.", who));
+		return;
 	}
 		
-	umsg = (char *) alloca(lstrlen(msg) * 2 + 1); /* double size to be on the safe side */
+	umsg = (char *) alloca(lstrlen(msg) + 1); 
 	while ( *c != '\0') {
 			// Strip the font tag
         if (!strnicmp(c,"<font ",6) || !strnicmp(c,"</font>",6) ||
@@ -141,39 +94,16 @@ void ext_yahoo_got_im(int id, const char *me, const char *who, const char *msg, 
 	umsg[oidx++]= '\0';
 		
 	/* Need to strip off formatting stuff first. Then do all decoding/converting */
-	if (utf8){	
-		Utf8Decode( umsg, 0, &tRealBody );
-		tRealBodyLen = wcslen( tRealBody );
-	} 
-
 	LOG(("%s: %s", who, umsg));
 	
 	//if(!strcmp(umsg, "<ding>")) 
 	//	:P("\a");
 	
-	if (utf8)
-		msgLen = (lstrlen(umsg) + 1) * (sizeof(wchar_t) + 1);
-	else
-		msgLen = (lstrlen(umsg) + 1);
-	
-	tMsgBuf = ( char* )alloca( msgLen );
-	p = tMsgBuf;
-
-	// MSGBUF Blob:  <ASCII> \0 <UNICODE> \0 
-	strcpy( p, umsg );
-	
-	p += lstrlen(umsg) + 1;
-
-	if ( tRealBodyLen != 0 ) {
-		memcpy( p, tRealBody, sizeof( wchar_t )*( tRealBodyLen+1 ));
-		free( tRealBody );
-	} 
-
 	ccs.szProtoService = PSR_MESSAGE;
 	ccs.hContact = hContact = add_buddy(who, who, PALF_TEMPORARY);
 	ccs.wParam = 0;
 	ccs.lParam = (LPARAM) &pre;
-	pre.flags = (utf8) ? PREF_UNICODE : 0;
+	pre.flags = (utf8) ? PREF_UTF : 0;
 	
 	if (tm) {
 		HANDLE hEvent = (HANDLE)CallService(MS_DB_EVENT_FINDLAST, (WPARAM)hContact, 0);
@@ -194,7 +124,7 @@ void ext_yahoo_got_im(int id, const char *me, const char *who, const char *msg, 
 	} else
 		pre.timestamp = time(NULL);
 		
-	pre.szMessage = tMsgBuf;
+	pre.szMessage = umsg;
 	pre.lParam = 0;
 	
     // Turn off typing
@@ -236,60 +166,47 @@ static void __cdecl yahoo_im_sendackfail_longmsg(HANDLE hContact)
 //=======================================================
 //Send a message
 //=======================================================
-//#define MSG_LEN                                   2048
 int YahooSendMessage(WPARAM wParam, LPARAM lParam)
 {
     CCSDATA *ccs = (CCSDATA *) lParam;
     DBVARIANT dbv;
-    char *msg = (char *) ccs->lParam;
-    
-    if (!yahooLoggedIn) {/* don't send message if we not connected! */
-        pthread_create(yahoo_im_sendackfail, ccs->hContact);
-        return 1;
-    }
-        
-    if (lstrlen(msg) > 800) {/* don't send message if we not connected! */
-        pthread_create(	yahoo_im_sendackfail_longmsg, ccs->hContact);
-        return 1;
-    }
-
-	if (!DBGetContactSetting(ccs->hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
-        yahoo_send_msg(dbv.pszVal, msg, 0);
-        DBFreeVariant(&dbv);
-
-        pthread_create(yahoo_im_sendacksuccess, ccs->hContact);
-    
-        return 1;
-    }
-    
-    return 0;
-}
-
-int YahooSendMessageW(WPARAM wParam, LPARAM lParam)
-{
-    CCSDATA *ccs = (CCSDATA *) lParam;
-    DBVARIANT dbv;
-        
-    if (!yahooLoggedIn) {/* don't send message if we not connected! */
-        pthread_create(yahoo_im_sendackfail, ccs->hContact);
-        return 1;
-    }
-
-
-	if (!DBGetContactSetting(ccs->hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
-		char* p = ( char* )ccs->lParam;
-		char* msg = Utf8EncodeUcs2(( wchar_t* )&p[ strlen(p)+1 ] );
-
-		if (lstrlen(msg) > 800) {/* don't send message if we not connected! */
-			pthread_create(yahoo_im_sendackfail_longmsg, ccs->hContact);
-		} else {
-			yahoo_send_msg(dbv.pszVal, msg, 1);
-		    pthread_create(yahoo_im_sendacksuccess, ccs->hContact);
-		}
-
-        DBFreeVariant(&dbv);
-		free(msg);
+    char *msg;
+	int  bANSI;
 		
+	bANSI = YAHOO_GetByte( "DisableUTF8", 0 );
+
+    if (!yahooLoggedIn) {/* don't send message if we not connected! */
+        mir_forkthread(yahoo_im_sendackfail, ccs->hContact);
+        return 1;
+    }
+
+	if (bANSI) {
+		/* convert to ANSI */
+		msg = ( char* )ccs->lParam;
+	} else if ( ccs->wParam & PREF_UNICODE ) {
+		/* convert to utf8 */
+		char* p = ( char* )ccs->lParam;
+		msg = mir_utf8encodeW(( wchar_t* )&p[ strlen(p)+1 ] );
+	} else if ( ccs->wParam & PREF_UTF ) {
+		msg = mir_strdup(( char* )ccs->lParam );
+	} else {
+		msg = mir_utf8encode(( char* )ccs->lParam );
+	}
+        
+    if (lstrlen(msg) > 800) {
+        mir_forkthread(	yahoo_im_sendackfail_longmsg, ccs->hContact);
+        return 1;
+    }
+
+	if (!DBGetContactSetting(ccs->hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
+		yahoo_send_msg(dbv.pszVal, msg, (!bANSI) ? 1 : 0);
+		
+		if (!bANSI)
+			mir_free(msg);
+		
+		mir_forkthread(yahoo_im_sendacksuccess, ccs->hContact);
+		
+        DBFreeVariant(&dbv);
         return 1;
     }
     
@@ -301,7 +218,6 @@ int YahooSendMessageW(WPARAM wParam, LPARAM lParam)
 //=======================================================
 int YahooRecvMessage(WPARAM wParam, LPARAM lParam)
 {
-    DBEVENTINFO dbei;
     CCSDATA *ccs = (CCSDATA *) lParam;
     PROTORECVEVENT *pre = (PROTORECVEVENT *) ccs->lParam;
 
@@ -314,20 +230,7 @@ int YahooRecvMessage(WPARAM wParam, LPARAM lParam)
 		return 0;
     } 
 	
-    ZeroMemory(&dbei, sizeof(dbei));
-    dbei.cbSize = sizeof(dbei);
-    dbei.szModule = yahooProtocolName;
-    dbei.timestamp = pre->timestamp;
-    dbei.flags = (pre->flags & PREF_CREATEREAD) ? DBEF_READ : 0;
-    dbei.eventType = EVENTTYPE_MESSAGE;
-    dbei.cbBlob = (!lstrcmp(pre->szMessage, "<ding>"))? lstrlen("BUZZ!!!")+1:lstrlen(pre->szMessage) + 1;
-	if ( pre->flags & PREF_UNICODE )
-		dbei.cbBlob *= ( sizeof( wchar_t )+1 );
-
-	
-    dbei.pBlob = (PBYTE) (!lstrcmp(pre->szMessage, "<ding>"))? "BUZZ!!!":pre->szMessage;
-    CallService(MS_DB_EVENT_ADD, (WPARAM) ccs->hContact, (LPARAM) & dbei);
-    return 0;
+	return CallService( MS_PROTO_RECVMSG, wParam, lParam );
 }
 
 //=======================================================
@@ -341,7 +244,7 @@ int YahooSendNudge(WPARAM wParam, LPARAM lParam)
 	YAHOO_DebugLog("[YAHOO_SENDNUDGE]");
 	
     if (!yahooLoggedIn) {/* don't send nudge if we not connected! */
-        pthread_create(yahoo_im_sendackfail, hContact);
+        mir_forkthread(yahoo_im_sendackfail, hContact);
         return 1;
     }
 
@@ -349,7 +252,7 @@ int YahooSendNudge(WPARAM wParam, LPARAM lParam)
         yahoo_send_msg(dbv.pszVal, "<ding>", 0);
         DBFreeVariant(&dbv);
 
-        pthread_create(yahoo_im_sendacksuccess, hContact);
+        mir_forkthread(yahoo_im_sendacksuccess, hContact);
     
         return 1;
     }

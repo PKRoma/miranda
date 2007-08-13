@@ -2,7 +2,8 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-06  George Hazan
+Copyright ( C ) 2005-07  George Hazan
+Copyright ( C ) 2007     Maxim Mluhov
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -20,13 +21,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 File name      : $Source: /cvsroot/miranda/miranda/protocols/JabberG/jabber_misc.cpp,v $
 Revision       : $Revision$
-Last change on : $Date: 2006-07-13 16:11:29 +0400 
+Last change on : $Date: 2006-07-13 16:11:29 +0400
 Last change by : $Author$
 
 */
 
 #include "jabber.h"
 #include "jabber_list.h"
+#include "jabber_caps.h"
+
+#include "sdk/m_folders.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // JabberAddContactToRoster() - adds a contact to the roster
@@ -48,6 +52,7 @@ void JabberAddContactToRoster( const TCHAR* jid, const TCHAR* nick, const TCHAR*
 	if ( grpName != NULL )
 		item->addChild( "group", grpName );
 	jabberThreadInfo->send( iq );
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -133,13 +138,8 @@ void JabberDBAddAuthRequest( TCHAR* jid, TCHAR* nick )
 	JDeleteSetting( hContact, "Hidden" );
 	//JSetStringT( hContact, "Nick", nick );
 
-	#if defined( _UNICODE )
-		char* szJid = u2a( jid );
-		char* szNick = u2a( nick );
-	#else
-		char* szJid = jid;
-		char* szNick = nick;
-	#endif
+	char* szJid = mir_t2a( jid );
+	char* szNick = mir_t2a( nick );
 
 	//blob is: uin( DWORD ), hContact( HANDLE ), nick( ASCIIZ ), first( ASCIIZ ), last( ASCIIZ ), email( ASCIIZ ), reason( ASCIIZ )
 	//blob is: 0( DWORD ), hContact( HANDLE ), nick( ASCIIZ ), ""( ASCIIZ ), ""( ASCIIZ ), email( ASCIIZ ), ""( ASCIIZ )
@@ -162,10 +162,8 @@ void JabberDBAddAuthRequest( TCHAR* jid, TCHAR* nick )
 	JCallService( MS_DB_EVENT_ADD, ( WPARAM ) ( HANDLE ) NULL, ( LPARAM )&dbei );
 	JabberLog( "Setup DBAUTHREQUEST with nick='" TCHAR_STR_PARAM "' jid='" TCHAR_STR_PARAM "'", szNick, szJid );
 
-	#if defined( _UNICODE )
-		mir_free( szJid );
-		mir_free( szNick );
-	#endif
+	mir_free( szJid );
+	mir_free( szNick );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -229,13 +227,42 @@ HANDLE JabberDBCreateContact( TCHAR* jid, TCHAR* nick, BOOL temporary, BOOL stri
 ///////////////////////////////////////////////////////////////////////////////
 // JabberGetAvatarFileName() - gets a file name for the avatar image
 
+static HANDLE hJabberAvatarsFolder = NULL;
+static bool bInitDone = false;
+
+void InitCustomFolders( void )
+{
+	if ( bInitDone )
+		return;
+
+	bInitDone = true;
+	if ( ServiceExists( MS_FOLDERS_REGISTER_PATH )) {
+		char AvatarsFolder[MAX_PATH]; AvatarsFolder[0] = 0;
+		CallService( MS_DB_GETPROFILEPATH, ( WPARAM )MAX_PATH, ( LPARAM )AvatarsFolder );
+		strcat( AvatarsFolder, "\\Jabber" );
+		hJabberAvatarsFolder = FoldersRegisterCustomPath(jabberProtoName, "Avatars", AvatarsFolder);
+}	}
+
 void JabberGetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen )
 {
-	JCallService( MS_DB_GETPROFILEPATH, cbLen, LPARAM( pszDest ));
+	size_t tPathLen;
+	char* path = ( char* )alloca( cbLen );
 
-	int tPathLen = strlen( pszDest );
-	tPathLen += mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "\\Jabber\\"  );
-	CreateDirectoryA( pszDest, NULL );
+	InitCustomFolders();
+
+	if ( hJabberAvatarsFolder == NULL || FoldersGetCustomPath( hJabberAvatarsFolder, path, cbLen, "" )) {
+		JCallService( MS_DB_GETPROFILEPATH, cbLen, LPARAM( pszDest ));
+		
+		tPathLen = strlen( pszDest );
+		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\Jabber" );
+	}
+	else tPathLen = mir_snprintf( pszDest, cbLen, "%s", path );
+
+	DWORD dwAttributes = GetFileAttributesA( pszDest );
+	if ( dwAttributes == 0xffffffff || ( dwAttributes & FILE_ATTRIBUTE_DIRECTORY ) == 0 )
+		JCallService( MS_UTILS_CREATEDIRTREE, 0, ( LPARAM )pszDest );
+
+	pszDest[ tPathLen++ ] = '\\';
 
 	char* szFileType;
 	switch( JGetByte( hContact, "AvatarType", PA_FORMAT_PNG )) {
@@ -260,19 +287,20 @@ void JabberGetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen )
 		mir_free( hash );
 	}
 	else if ( jabberThreadInfo != NULL ) {
-		mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, TCHAR_STR_PARAM"@%s avatar.%s", jabberThreadInfo->username, jabberThreadInfo->server, szFileType );
+		mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, TCHAR_STR_PARAM "@%s avatar.%s", 
+			jabberThreadInfo->username, jabberThreadInfo->server, szFileType );
 	}
 	else {
 		DBVARIANT dbv1, dbv2;
 		BOOL res1 = DBGetContactSetting( NULL, jabberProtoName, "LoginName", &dbv1 );
 		BOOL res2 = DBGetContactSetting( NULL, jabberProtoName, "LoginServer", &dbv2 );
-		mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%s@%s avatar.%s", 
-			res1 ? "noname" : dbv1.pszVal, 
+		mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%s@%s avatar.%s",
+			res1 ? "noname" : dbv1.pszVal,
 			res2 ? jabberProtoName : dbv2.pszVal,
 			szFileType );
 		if (!res1) JFreeVariant( &dbv1 );
 		if (!res2) JFreeVariant( &dbv2 );
-	}	
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -390,4 +418,68 @@ char* UnEscapeChatTags(char* str_in)
 	}
 	*d = 0;
 	return str_in;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// update MirVer with data for active resource
+
+void   JabberUpdateMirVer(JABBER_LIST_ITEM *item)
+{
+	HANDLE hContact = JabberHContactFromJID(item->jid);
+	if (!hContact)
+		return;
+
+	JabberLog("JabberUpdateMirVer: for jid " TCHAR_STR_PARAM, item->jid);
+
+	int resource = -1;
+	if (item->resourceMode == RSMODE_LASTSEEN)
+		resource = item->lastSeenResource;
+	else if (item->resourceMode == RSMODE_MANUAL)
+		resource = item->manualResource;
+	if ((resource < 0) || (resource >= item->resourceCount))
+		return;
+
+	JabberUpdateMirVer( hContact, &item->resource[resource] );
+}
+
+void JabberUpdateMirVer(HANDLE hContact, JABBER_RESOURCE_STATUS *resource)
+{
+	// jabber:iq:version info requested and exists?
+	if ( resource->dwVersionRequestTime && resource->software ) {
+		JabberLog("JabberUpdateMirVer: for iq:version rc " TCHAR_STR_PARAM ": " TCHAR_STR_PARAM, resource->resourceName, resource->software);
+		JSetStringT( hContact, "MirVer", resource->software );
+		return;
+	}
+
+	// no version info and no caps info? set MirVer = resource name
+	if ( !resource->szCapsNode || !resource->szCapsVer ) {
+		JabberLog("JabberUpdateMirVer: for rc " TCHAR_STR_PARAM ": " TCHAR_STR_PARAM, resource->resourceName, resource->resourceName);
+		if ( resource->resourceName )
+			JSetStringT( hContact, "MirVer", resource->resourceName );
+		return;
+	}
+	JabberLog("JabberUpdateMirVer: for rc " TCHAR_STR_PARAM ": " TCHAR_STR_PARAM "#" TCHAR_STR_PARAM, resource->resourceName, resource->szCapsNode, resource->szCapsVer);
+
+	// XEP-0115 caps mode
+	TCHAR szMirVer[ 512 ];
+	if ( _tcsstr( resource->szCapsNode, _T("miranda-im.org"))) {
+		if ( resource->szCapsExt ) {
+			mir_sntprintf( szMirVer, SIZEOF(szMirVer ), _T("Miranda IM %s (Jabber %s [%s]) (%s)"), resource->szCapsVer, resource->szCapsVer, resource->resourceName, resource->szCapsExt );
+
+			if (TCHAR *pszSecureIm = _tcsstr( szMirVer, _T(JABBER_EXT_SECUREIM)))
+				_tcsncpy(pszSecureIm, _T("SecureIM"), 8);
+		}
+		else
+			mir_sntprintf( szMirVer, SIZEOF(szMirVer ), _T("Miranda IM %s (Jabber %s [%s])"), resource->szCapsVer, resource->szCapsVer, resource->resourceName );
+	}
+	else if ( !resource->szCapsExt )
+		mir_sntprintf( szMirVer, SIZEOF(szMirVer ), _T("%s#%s"), resource->szCapsNode, resource->szCapsVer );
+	else if ( _tcsstr( resource->szCapsExt, _T(JABBER_EXT_SECUREIM) ))
+		mir_sntprintf( szMirVer, SIZEOF(szMirVer), _T("%s#%s#%s (SecureIM)"), resource->szCapsNode, resource->szCapsVer, resource->szCapsExt );
+	else if ( _tcsstr( resource->szCapsNode, _T("www.google.com") ))
+		mir_sntprintf( szMirVer, SIZEOF(szMirVer), _T("%s#%s#%s gtalk"), resource->szCapsNode, resource->szCapsVer, resource->szCapsExt );
+	else
+		mir_sntprintf( szMirVer, SIZEOF(szMirVer), _T("%s#%s#%s"), resource->szCapsNode, resource->szCapsVer, resource->szCapsExt );
+	
+	JSetStringT( hContact, "MirVer", szMirVer );
 }

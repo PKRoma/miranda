@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2006 Miranda ICQ/IM project, 
+Copyright 2000-2007 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_clc.h"
 #include "clist.h"
 #include "commonprototypes.h"
+#include "hdr/modern_awaymsg.h"
 
 void InsertContactIntoTree(HANDLE hContact,int status);
 static displayNameCacheEntry *displayNameCache;
@@ -38,7 +39,7 @@ TCHAR* GetNameForContact(HANDLE hContact,int flag,boolean *isUnknown);
 char *GetProtoForContact(HANDLE hContact);
 int GetStatusForContact(HANDLE hContact,char *szProto);
 TCHAR *UnknownConctactTranslatedName=NULL;
-extern boolean g_flag_bOnModulesLoadedCalled;
+
 void InvalidateDNCEbyPointer(HANDLE hContact,pdisplayNameCacheEntry pdnce,int SettingType);
 
 static int handleCompare( void* c1, void* c2 )
@@ -80,21 +81,22 @@ static int handleCompare( void* c1, void* c2 )
 //		i++;
 //}	}
 
-extern CRITICAL_SECTION LockCacheChain;
-extern CRITICAL_SECTION AAMLockChain;
+
+void InitCacheAsync();
+void UninitCacheAsync();
 
 void InitDisplayNameCache(void)
 {
 	int i=0;
-    InitializeCriticalSection(&LockCacheChain);
-    InitializeCriticalSection(&AAMLockChain);
+    InitCacheAsync();
+	InitAwayMsgModule();
 	clistCache = li.List_Create( 0, 50 );
 	clistCache->sortFunc = handleCompare;
 }
 void FreeDisplayNameCache()
 {
-    DeleteCriticalSection(&LockCacheChain);
-    DeleteCriticalSection(&AAMLockChain);
+    UninitCacheAsync();
+	UninitAwayMsgModule();
 	if ( clistCache != NULL ) {
 		int i;
 		for ( i = 0; i < clistCache->realCount; i++) {
@@ -238,6 +240,14 @@ void cliCheckCacheItem(pdisplayNameCacheEntry pdnce)
 {
 	if (pdnce!=NULL)
 	{
+		if (pdnce->hContact==NULL) //selfcontact
+		{
+			if (!pdnce->name) pdnce->name=GetNameForContact(pdnce->hContact,0,&pdnce->isUnknown);
+#ifdef _UNICODE
+			if (!pdnce->szName) pdnce->szName=mir_t2a(pdnce->name);
+#endif
+			return;
+		}
 		if (pdnce->szProto==NULL&&pdnce->protoNotExists==FALSE)
 		{
 			pdnce->szProto=GetProtoForContact(pdnce->hContact);
@@ -253,7 +263,8 @@ void cliCheckCacheItem(pdisplayNameCacheEntry pdnce)
 				{
 					if(pdnce->szProto&&pdnce->name) 
 					{
-						if (!pdnce->isUnknown && pdnce->name!=UnknownConctactTranslatedName) mir_free_and_nill(pdnce->name);
+						if (!pdnce->isUnknown && pdnce->name!=UnknownConctactTranslatedName) 
+							mir_free_and_nill(pdnce->name);
 						pdnce->name=NULL;
 					}
 				}
@@ -273,6 +284,7 @@ void cliCheckCacheItem(pdisplayNameCacheEntry pdnce)
 				if (g_flag_bOnModulesLoadedCalled)
 					pdnce->name = GetNameForContact(pdnce->hContact,0,&pdnce->isUnknown); //TODO UNICODE
 				else
+                    // what to return here???
 					pdnce->name = GetNameForContact(pdnce->hContact,0,&pdnce->isUnknown); //TODO UNICODE
 			}	
 		}
@@ -283,14 +295,12 @@ void cliCheckCacheItem(pdisplayNameCacheEntry pdnce)
 				if (CallService(MS_PROTO_ISPROTOCOLLOADED,0,(LPARAM)pdnce->szProto)==(int)NULL)
 				{
 					pdnce->protoNotExists=FALSE;						
-
-					//mir_free_and_nill(pdnce->name);
 					pdnce->name= GetNameForContact(pdnce->hContact,0,&pdnce->isUnknown); //TODO UNICODE
 				}
 			}
 		}
 
-		if (pdnce->status==0)
+		if (pdnce->status==0) //very strange look status sort is broken let always reread status
 		{
 			pdnce->status=GetStatusForContact(pdnce->hContact,pdnce->szProto);
 		}
@@ -340,6 +350,11 @@ void cliCheckCacheItem(pdisplayNameCacheEntry pdnce)
 		if (pdnce->IsExpanded==-1)
 		{
 			pdnce->IsExpanded=DBGetContactSettingByte(pdnce->hContact,"CList","Expanded",0);
+		}
+		if (pdnce->dwLastMsgTime==0)
+		{
+			pdnce->dwLastMsgTime=DBGetContactSettingDword(pdnce->hContact, "CList", "mf_lastmsg", 0);
+			if (pdnce->dwLastMsgTime==0) pdnce->dwLastMsgTime=CompareContacts2_getLMTime(pdnce->hContact);
 		}
 	}
 }
@@ -392,6 +407,7 @@ void InvalidateDNCEbyPointer(HANDLE hContact,pdisplayNameCacheEntry pdnce,int Se
 			pdnce->iThirdLineMaxSmileyHeight=0;
 			pdnce->timediff=0;
 			pdnce->timezone=-1;
+			pdnce->dwLastMsgTime=0;//CompareContacts2_getLMTime(pdnce->hContact);
 			Cache_GetTimezone(NULL,pdnce->hContact);
 			SettingType&=~16;
 		}
@@ -438,6 +454,7 @@ void InvalidateDNCEbyPointer(HANDLE hContact,pdisplayNameCacheEntry pdnce,int Se
 		pdnce->isUnknown=FALSE;
 		pdnce->noHiddenOffline=-1;
 		pdnce->IsExpanded=-1;
+		pdnce->dwLastMsgTime=0;//CompareContacts2_getLMTime(pdnce->hContact);
 	};
 };
 
@@ -457,12 +474,10 @@ char* GetProtoForContact(HANDLE hContact)
 
 int GetStatusForContact(HANDLE hContact,char *szProto)
 {
-	int status=ID_STATUS_OFFLINE;
 	if (szProto)
-	{
-		status=DBGetContactSettingWord((HANDLE)hContact,szProto,"Status",ID_STATUS_OFFLINE);
-	}
-	return (status);
+		return (int)(DBGetContactSettingWord((HANDLE)hContact,szProto,"Status",ID_STATUS_OFFLINE));
+	else 
+		return (ID_STATUS_OFFLINE);
 }
 
 TCHAR* GetNameForContact(HANDLE hContact,int flag,boolean *isUnknown)
@@ -516,11 +531,8 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 	DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING*)lParam;
 	DBVARIANT dbv={0};
 	pdisplayNameCacheEntry pdnce;
-    if (MirandaExiting()) return 0;
-	// Early exit
-	if ((HANDLE)wParam == NULL)
-		return 0;
-	
+    if (MirandaExiting() || !pcli || !clistCache || (HANDLE)wParam == NULL) return 0;
+
 	dbv.pszVal = NULL;
 	pdnce=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry((HANDLE)wParam);
 
@@ -550,10 +562,10 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 					//InvalidateDisplayNameCacheEntryByPDNE((HANDLE)wParam,pdnce,cws->value.type);
 					if (pcli->hwndContactTree && g_flag_bOnModulesLoadedCalled) 
 						res=PostAutoRebuidMessage(pcli->hwndContactTree);
-					if ((DBGetContactSettingWord(NULL,"CList","SecondLineType",0)==TEXT_STATUS_MESSAGE||DBGetContactSettingWord(NULL,"CList","ThirdLineType",0)==TEXT_STATUS_MESSAGE) &&pdnce->hContact && pdnce->szProto)
+					if ((DBGetContactSettingWord(NULL,"CList","SecondLineType",SETTING_SECONDLINE_TYPE_DEFAULT)==TEXT_STATUS_MESSAGE||DBGetContactSettingWord(NULL,"CList","ThirdLineType",SETTING_THIRDLINE_TYPE_DEFAULT)==TEXT_STATUS_MESSAGE) &&pdnce->hContact && pdnce->szProto)
 					{
 						//	if (pdnce->status!=ID_STATUS_OFFLINE)  
-						Cache_ReAskAwayMsg((HANDLE)wParam);  
+						amRequestAwayMsg((HANDLE)wParam);  
 					}
 					DBFreeVariant(&dbv);
 					return 0;
@@ -563,17 +575,15 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 					pdnce->status=cws->value.wVal;
 					if (cws->value.wVal == ID_STATUS_OFFLINE) 
 					{
-						//if (DBGetContactSettingByte(NULL,"ModernData","InternalAwayMsgDiscovery",0)
-						if (DBGetContactSettingByte(NULL,"ModernData","RemoveAwayMessageForOffline",0))
+						if (g_CluiData.bRemoveAwayMessageForOffline)
 						{
-							char a='\0';
-							DBWriteContactSettingString((HANDLE)wParam,"CList","StatusMsg",&a);
+							DBWriteContactSettingString((HANDLE)wParam,"CList","StatusMsg","");
 						}
 					}
 					if ((DBGetContactSettingWord(NULL,"CList","SecondLineType",0)==TEXT_STATUS_MESSAGE||DBGetContactSettingWord(NULL,"CList","ThirdLineType",0)==TEXT_STATUS_MESSAGE) &&pdnce->hContact && pdnce->szProto)
 					{
 						//	if (pdnce->status!=ID_STATUS_OFFLINE)  
-						Cache_ReAskAwayMsg((HANDLE)wParam);  
+						amRequestAwayMsg((HANDLE)wParam);  
 					}
 					pcli->pfnClcBroadcast( INTM_STATUSCHANGED,wParam,0);
 					cli_ChangeContactIcon((HANDLE)wParam, ExtIconFromStatusMode((HANDLE)wParam,cws->szModule, cws->value.wVal), 0); //by FYR
@@ -597,7 +607,11 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 		if(!strcmp(cws->szModule,"CList")) 
 		{
 			//name is null or (setting is myhandle)
-			if (pdnce->name==NULL || !strcmp(cws->szSetting,"MyHandle"))
+            if (!strcmp(cws->szSetting,"Rate"))
+            {
+                pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
+            }
+			else if (pdnce->name==NULL || !strcmp(cws->szSetting,"MyHandle"))
 			{
 				InvalidateDNCEbyPointer((HANDLE)wParam,pdnce,cws->value.type);
 			}
@@ -619,6 +633,7 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 			else if(!strcmp(cws->szSetting,"noOffline")) 
 			{
 				InvalidateDNCEbyPointer((HANDLE)wParam,pdnce,cws->value.type);		
+                pcli->pfnClcBroadcast(CLM_AUTOREBUILD,0, 0);
 			}
 		}
 		else if(!strcmp(cws->szModule,"Protocol")) 

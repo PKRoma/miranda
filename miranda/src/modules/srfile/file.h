@@ -49,7 +49,6 @@ struct FileDlgData {
 	HANDLE hDbEvent;
 	HANDLE hNotifyEvent;
 	char **files;
-	HICON hUIIcons[4];
 	int send;
 	int closeIfFileChooseCancelled;
 	int resumeBehaviour;
@@ -63,15 +62,24 @@ struct FileDlgData {
 };
 
 //file.c
-void CreateDirectoryTree(char *szDir);
+int CreateDirectoryTree(const char *szDir);
+int CreateDirectoryTreeW(const WCHAR *szDir);
+#if defined( _UNICODE )
+	#define CreateDirectoryTreeT CreateDirectoryTreeW
+#else
+	#define CreateDirectoryTreeT CreateDirectoryTree
+#endif
+
 #define UNITS_BYTES     1   // 0<=size<1000: "%d bytes"
 #define UNITS_KBPOINT1	2	// 1000<=size<100*1024: "%.1f KB"
 #define UNITS_KBPOINT0  3   // 100*1024<=size<1024*1024: "%d KB"
 #define UNITS_MBPOINT2  4   // 1024*1024<=size: "%.2f MB"
+
 void GetSensiblyFormattedSize(DWORD size,TCHAR *szOut,int cchOut,int unitsOverride,int appendUnits,int *unitsUsed);
 void FreeFilesMatrix(char ***files);	  //loving that triple indirection
 void FreeProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *fts);
 void CopyProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *dest,PROTOFILETRANSFERSTATUS *src);
+void UpdateProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *dest,PROTOFILETRANSFERSTATUS *src);
 int SRFile_GetRegValue(HKEY hKeyBase,const char *szSubKey,const char *szValue,char *szOutput,int cbOutput);
 //filesenddlg.c
 BOOL CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -85,4 +93,5 @@ BOOL CALLBACK DlgProcFileExists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 //fileopts.c
 int FileOptInitialise(WPARAM wParam,LPARAM lParam);
+
 

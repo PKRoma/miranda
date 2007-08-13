@@ -21,7 +21,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-$Id:$
+$Id$
 
 Event popups for tabSRMM - most of the code taken from NewEventNotify (see copyright above)
 
@@ -34,7 +34,7 @@ Event popups for tabSRMM - most of the code taken from NewEventNotify (see copyr
 #define _NEN_H_
 
 #include "m_popup.h"
-#include "m_popupw.h"
+//#include "m_popupw.h"
 
 #define MODULE "tabSRMM_NEN"
 

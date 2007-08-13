@@ -143,7 +143,7 @@ static void CombineSettingsStructs(NETLIBUSERSETTINGS *dest,DWORD *destFlags,NET
 	}
 	if(sourceFlags&NUF_INCOMING) {
 		if(*destFlags&NUF_INCOMING) {
-			if(dest->enableUPnP!=source->enableUPnP) dest->enableUPnP=2;
+            if(dest->enableUPnP!=source->enableUPnP) dest->enableUPnP=2;
 			if(dest->specifyIncomingPorts!=source->specifyIncomingPorts) dest->specifyIncomingPorts=2;
 			CombineSettingsStrings(&dest->szIncomingPorts,&source->szIncomingPorts);
 		}
@@ -217,7 +217,7 @@ static void WriteSettingsStructToDb(const char *szSettingsModule,NETLIBUSERSETTI
 		DBWriteContactSettingString(NULL,szSettingsModule,"NLOutgoingPorts",settings->szOutgoingPorts?settings->szOutgoingPorts:"");
 	}
 	if(flags&NUF_INCOMING) {
-		DBWriteContactSettingByte(NULL,szSettingsModule,"NLEnableUPnP",(BYTE)settings->enableUPnP);
+        DBWriteContactSettingByte(NULL,szSettingsModule,"NLEnableUPnP",(BYTE)settings->enableUPnP);
 		DBWriteContactSettingByte(NULL,szSettingsModule,"NLSpecifyIncomingPorts",(BYTE)settings->specifyIncomingPorts);
 		DBWriteContactSettingString(NULL,szSettingsModule,"NLIncomingPorts",settings->szIncomingPorts?settings->szIncomingPorts:"");
 	}
@@ -249,7 +249,7 @@ void NetlibSaveUserSettingsStruct(const char *szSettingsModule,NETLIBUSERSETTING
 	if(combinedSettings.useProxyAuth==2) combinedSettings.useProxyAuth=0;
 	if(combinedSettings.useProxyAuthNtlm==2) combinedSettings.useProxyAuthNtlm=0;
 	if(combinedSettings.dnsThroughProxy==2) combinedSettings.dnsThroughProxy=1;
-	if(combinedSettings.enableUPnP==2) combinedSettings.enableUPnP=1;
+    if(combinedSettings.enableUPnP==2) combinedSettings.enableUPnP=1;
 	if(combinedSettings.specifyIncomingPorts==2) combinedSettings.specifyIncomingPorts=0;
 	WriteSettingsStructToDb("Netlib",&combinedSettings,flags);
 	NetlibFreeUserSettingsStruct(&combinedSettings);
@@ -275,7 +275,7 @@ static BOOL CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				tempSettings[iUser].szSettingsModule=mir_strdup(netlibUser[iUser]->user.szSettingsModule);
 				CopySettingsStruct(&tempSettings[iUser].settings,&netlibUser[iUser]->settings);
 				if(netlibUser[iUser]->user.flags&NUF_NOOPTIONS) continue;
-				iItem=SendDlgItemMessageA(hwndDlg,IDC_NETLIBUSERS,CB_ADDSTRING,0,(LPARAM)netlibUser[iUser]->user.szDescriptiveName);
+				iItem = SendDlgItemMessage(hwndDlg,IDC_NETLIBUSERS,CB_ADDSTRING,0,(LPARAM)netlibUser[iUser]->user.ptszDescriptiveName);
 				SendDlgItemMessage(hwndDlg,IDC_NETLIBUSERS,CB_SETITEMDATA,iItem,iUser);
 			}
 			LeaveCriticalSection(&csNetlibUser);
@@ -348,11 +348,9 @@ static BOOL CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 						else {
 							enableAuth=1;
 							if(tempSettings[i].settings.useProxyAuth) {
-								if(tempSettings[i].settings.proxyType==PROXYTYPE_HTTP || tempSettings[i].settings.proxyType==PROXYTYPE_HTTPS) {
+								if(tempSettings[i].settings.proxyType==PROXYTYPE_HTTP || tempSettings[i].settings.proxyType==PROXYTYPE_HTTPS)
 									enableNtlm=1;
-									if(!tempSettings[i].settings.useProxyAuthNtlm) enableUser=enablePass=1;
-								}
-								else enableUser=enablePass=1;
+								enableUser=enablePass=1;
 							}
 						}
 					}
@@ -362,11 +360,8 @@ static BOOL CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					else {
 						enableAuth=1;
 						if(IsDlgButtonChecked(hwndDlg,IDC_PROXYAUTH)!=BST_UNCHECKED) {
-							if(selectedProxyType==PROXYTYPE_HTTP || selectedProxyType==PROXYTYPE_HTTPS) {
-								enableNtlm=1;
-								if(IsDlgButtonChecked(hwndDlg,IDC_PROXYAUTHNTLM)!=BST_CHECKED) enableUser=enablePass=1;
-							}
-							else enableUser=enablePass=1;
+							enableNtlm=selectedProxyType==PROXYTYPE_HTTP || selectedProxyType==PROXYTYPE_HTTPS;
+							enableUser=enablePass=1;
 						}
 					}
 				}
@@ -431,10 +426,10 @@ static BOOL CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				case IDC_SPECIFYPORTSO:
 					ChangeSettingIntByCheckbox(hwndDlg,LOWORD(wParam),iUser,offsetof(NETLIBUSERSETTINGS,specifyOutgoingPorts));
 					break;
-				case IDC_ENABLEUPNP:
+                case IDC_ENABLEUPNP:
 					ChangeSettingIntByCheckbox(hwndDlg,LOWORD(wParam),iUser,offsetof(NETLIBUSERSETTINGS,enableUPnP));
-					break;      
-				case IDC_PROXYHOST:
+                    break;
+                case IDC_PROXYHOST:
 					if(HIWORD(wParam)!=EN_CHANGE || (HWND)lParam!=GetFocus()) return 0;
 					ChangeSettingStringByEdit(hwndDlg,LOWORD(wParam),iUser,offsetof(NETLIBUSERSETTINGS,szProxyServer));
 					break;
@@ -516,7 +511,7 @@ int NetlibOptInitialise(WPARAM wParam,LPARAM lParam)
 	odp.position = 900000000;
 	odp.hInstance = GetModuleHandle(NULL);
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_NETLIB);
-	odp.pszTitle = "Network";
+	odp.pszTitle = LPGEN("Network");
 	odp.pfnDlgProc = DlgProcNetlibOpts;
 	odp.flags = ODPF_BOLDGROUPS;
 	odp.expertOnlyControls = expertOnlyControls;

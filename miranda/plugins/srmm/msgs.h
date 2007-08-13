@@ -25,7 +25,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <richedit.h>
 #include <richole.h>
 #define MSGERROR_CANCEL	0
-#define MSGERROR_RETRY	    1
+#define MSGERROR_RETRY	1
+#define MSGERROR_DONE	2
 
 struct NewMessageWindowLParam
 {
@@ -65,8 +66,9 @@ struct MessageWindowData
 	WORD wOldStatus;
 	TCmdList *cmdList;
 	TCmdList *cmdListCurrent;
-	int bIsRtl, bIsFirstAppend, bIsAutoRTL;
+	int bIsRtl, bIsFirstAppend, bIsAutoRTL, bIsUtf;
 	int lastEventType;
+	HWND hwndErrorDlg;
 };
 
 #define HM_EVENTSENT         (WM_USER+10)
@@ -92,7 +94,8 @@ struct MessageWindowData
 #define DM_GETWINDOWSTATE    (WM_USER+30)
 #define DM_STATUSICONCHANGE  (WM_USER+31)
 
-#define EVENTTYPE_STATUSCHANGE 25368
+#define EVENTTYPE_JABBER_CHATSTATES     2000
+#define EVENTTYPE_STATUSCHANGE          25368
 
 struct CREOleCallback
 {

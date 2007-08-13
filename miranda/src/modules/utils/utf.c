@@ -28,9 +28,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 char* Utf8DecodeCP( char* str, int codepage, wchar_t** ucs2 )
 {
-	int len;
+	int len, needs_free = 0;
 	wchar_t* tempBuf;
-
+	BOOL errFlag = FALSE;
+	
 	if ( str == NULL )
 		return NULL;
 
@@ -38,13 +39,21 @@ char* Utf8DecodeCP( char* str, int codepage, wchar_t** ucs2 )
 	if ( len < 2 ) {
 		if ( ucs2 != NULL ) {
 			*ucs2 = ( wchar_t* )mir_alloc(( len+1 )*sizeof( wchar_t ));
-			MultiByteToWideChar( CP_ACP, 0, str, len, *ucs2, len );
+			MultiByteToWideChar( codepage, 0, str, len, *ucs2, len );
 			( *ucs2 )[ len ] = 0;
 		}
 		return str;
 	}
 
-	tempBuf = ( wchar_t* )alloca(( len+1 )*sizeof( wchar_t ));
+	__try
+	{
+		tempBuf = ( wchar_t* )alloca(( len+1 )*sizeof( wchar_t ));
+	}
+	__except( EXCEPTION_EXECUTE_HANDLER )
+	{
+		tempBuf = ( wchar_t* )mir_alloc(( len+1 )*sizeof( wchar_t ));
+		needs_free = 1;
+	}
 	{
 		wchar_t* d = tempBuf;
 		BYTE* s = ( BYTE* )str;
@@ -56,13 +65,16 @@ char* Utf8DecodeCP( char* str, int codepage, wchar_t** ucs2 )
 				continue;
 			}
 
-			if (( s[0] & 0xE0 ) == 0xE0 && ( s[1] & 0xC0 ) == 0x80 && ( s[2] & 0xC0 ) == 0x80 ) {
+			if (( s[0] & 0xE0 ) == 0xE0 ) {
+				if ( s[1] == 0 || ( s[1] & 0xC0 ) != 0x80 ) { errFlag = 1; goto LBL_Exit; }
+				if ( s[2] == 0 || ( s[2] & 0xC0 ) != 0x80 ) { errFlag = 1; goto LBL_Exit; }
 				*d++ = (( WORD )( s[0] & 0x0F) << 12 ) + ( WORD )(( s[1] & 0x3F ) << 6 ) + ( WORD )( s[2] & 0x3F );
 				s += 3;
 				continue;
 			}
 
-			if (( s[0] & 0xE0 ) == 0xC0 && ( s[1] & 0xC0 ) == 0x80 ) {
+			if (( s[0] & 0xE0 ) == 0xC0 ) {
+				if ( s[1] == 0 || ( s[1] & 0xC0 ) != 0x80 ) { errFlag = 1; goto LBL_Exit; }
 				*d++ = ( WORD )(( s[0] & 0x1F ) << 6 ) + ( WORD )( s[1] & 0x3F );
 				s += 2;
 				continue;
@@ -80,13 +92,28 @@ char* Utf8DecodeCP( char* str, int codepage, wchar_t** ucs2 )
 		memcpy( *ucs2, tempBuf, fullLen );
 	}
 
-   WideCharToMultiByte( CP_ACP, 0, tempBuf, -1, str, len, NULL, NULL );
-	return str;
+	WideCharToMultiByte( codepage, 0, tempBuf, -1, str, len, "?", &errFlag );
+
+LBL_Exit:
+   if ( needs_free )
+		mir_free( tempBuf );
+
+	return ( errFlag ) ? NULL : str;
 }
 
 char* Utf8Decode( char* str, wchar_t** ucs2 )
 {
 	return Utf8DecodeCP( str, LangPackGetDefaultCodePage(), ucs2 );
+}
+
+wchar_t* Utf8DecodeUcs2( const char* str )
+{
+	wchar_t* ucs2;
+	char *tempBuffer = mir_strdup(str);
+	Utf8Decode( tempBuffer, &ucs2 );
+	mir_free(tempBuffer);
+	return ucs2;
+
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

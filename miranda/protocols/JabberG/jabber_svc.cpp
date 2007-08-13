@@ -2,7 +2,8 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-06  George Hazan
+Copyright ( C ) 2005-07  George Hazan
+Copyright ( C ) 2007     Maxim Mluhov
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -26,12 +27,18 @@ Last change by : $Author$
 */
 
 #include "jabber.h"
+
+#include <fcntl.h>
 #include <io.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+
 #include "resource.h"
 #include "jabber_list.h"
 #include "jabber_iq.h"
+#include "jabber_caps.h"
+#include "sdk/m_proto_listeningto.h"
+
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // JabberAddToList - adds a contact to the contact list
@@ -71,7 +78,7 @@ static HANDLE AddToListByJID( const TCHAR* newJid, DWORD flags )
 	else {
 		// already exist
 		// Set up a dummy "NotOnList" when adding permanently only
-		if ( !( flags&PALF_TEMPORARY ))
+		if ( !( flags & PALF_TEMPORARY ))
 			DBWriteContactSettingByte( hContact, "CList", "NotOnList", 1 );
 	}
 
@@ -122,11 +129,7 @@ int JabberAddToListByEvent( WPARAM wParam, LPARAM lParam )
 	lastName = firstName + strlen( firstName ) + 1;
 	jid = lastName + strlen( lastName ) + 1;
 
-	#if defined( _UNICODE )
-		TCHAR* newJid = a2u( jid );
-	#else
-		TCHAR* newJid = mir_strdup( jid );
-	#endif
+	TCHAR* newJid = mir_a2t( jid );
 	hContact = ( HANDLE ) AddToListByJID( newJid, wParam );
 	mir_free( newJid );
 	return ( int ) hContact;
@@ -166,11 +169,7 @@ int JabberAuthAllow( WPARAM wParam, LPARAM lParam )
 	XmlNode presence( "presence" ); presence.addAttr( "to", jid ); presence.addAttr( "type", "subscribed" );
 	jabberThreadInfo->send( presence );
 
-	#if defined( _UNICODE )
-		TCHAR* newJid = a2u( jid );
-	#else
-		TCHAR* newJid = mir_strdup( jid );
-	#endif
+	TCHAR* newJid = mir_a2t( jid );
 
 	// Automatically add this user to my roster if option is enabled
 	if ( JGetByte( "AutoAdd", TRUE ) == TRUE ) {
@@ -252,13 +251,11 @@ static void __cdecl JabberBasicSearchThread( JABBER_SEARCH_BASIC *jsb )
 	jsr.hdr.firstName = "";
 	jsr.hdr.lastName = "";
 	jsr.hdr.email = jsb->jid;
-	#if defined( _UNICODE )
-		TCHAR* jid = a2u(jsb->jid);
-		_tcsncpy( jsr.jid, jid, SIZEOF( jsr.jid ));
-		mir_free( jid );
-	#else
-		strncpy( jsr.jid, jsb->jid, SIZEOF( jsr.jid ));
-	#endif
+
+	TCHAR* jid = mir_a2t(jsb->jid);
+	_tcsncpy( jsr.jid, jid, SIZEOF( jsr.jid ));
+	mir_free( jid );
+
 	jsr.jid[SIZEOF( jsr.jid )-1] = '\0';
 	JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, ( HANDLE ) jsb->hSearch, ( LPARAM )&jsr );
 	JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, ( HANDLE ) jsb->hSearch, 0 );
@@ -275,25 +272,20 @@ int JabberBasicSearch( WPARAM wParam, LPARAM lParam )
 		return 0;
 
 	if ( strchr( szJid, '@' ) == NULL ) {
-		char szServer[ 100 ];
-		if ( JGetStaticString( "LoginServer", NULL, szServer, sizeof szServer ))
-			strcpy( szServer, "jabber.org" );
+		const char* p = strstr( szJid, jabberThreadInfo->server );
+		if ( !p ) {
+			char szServer[ 100 ];
+			if ( JGetStaticString( "LoginServer", NULL, szServer, sizeof szServer ))
+				strcpy( szServer, "jabber.org" );
 
-		mir_snprintf( jsb->jid, SIZEOF(jsb->jid), "%s@%s", szJid, szServer );
+			mir_snprintf( jsb->jid, SIZEOF(jsb->jid), "%s@%s", szJid, szServer );
+		}
+		else strncpy( jsb->jid, szJid, SIZEOF(jsb->jid));
 	}
 	else strncpy( jsb->jid, szJid, SIZEOF(jsb->jid));
 
-	if ( JGetByte( "ValidateAddition", TRUE )) {
-		JabberLog( "Sending basic search validation request for '%s'", jsb->jid );
-		TCHAR* ptszJid = a2t( jsb->jid );
-		jabberSearchID = JabberSendGetVcard( ptszJid );
-		mir_free( ptszJid );
-		mir_free( jsb );
-		return jabberSearchID;
-	}
-	
 	JabberLog( "Adding '%s' without validation", jsb->jid );
-   jsb->hSearch = JabberSerialNext();
+	jsb->hSearch = JabberSerialNext();
 	mir_forkthread(( pThreadFunc )JabberBasicSearchThread, jsb );
 	return jsb->hSearch;
 }
@@ -312,24 +304,37 @@ int JabberContactDeleted( WPARAM wParam, LPARAM lParam )
 
 	DBVARIANT dbv;
 	if ( !JGetStringT(( HANDLE ) wParam, JGetByte( (HANDLE ) wParam, "ChatRoom", 0 )?(char*)"ChatRoomID":(char*)"jid", &dbv )) {
-		TCHAR* jid, *p, *q = NULL;
-
-		jid = dbv.ptszVal;
-		if (( p = _tcschr( jid, '@' )) != NULL )
-			if (( q = _tcschr( p, '/' )) != NULL )
-				*q = '\0';
-
-		if ( !JabberListExist( LIST_CHATROOM, jid ) || q == NULL )
-			if ( JabberListExist( LIST_ROSTER, jid )) {
-				// Remove from roster, server also handles the presence unsubscription process.
-				XmlNodeIq iq( "set" ); iq.addAttrID( JabberSerialNext());
-				XmlNode* query = iq.addQuery( "jabber:iq:roster" );
-				XmlNode* item = query->addChild( "item" ); item->addAttr( "jid", jid ); item->addAttr( "subscription", "remove" );
-				jabberThreadInfo->send( iq );
-			}
+		if ( JabberListExist( LIST_ROSTER, dbv.ptszVal )) {
+			// Remove from roster, server also handles the presence unsubscription process.
+			XmlNodeIq iq( "set" ); iq.addAttrID( JabberSerialNext());
+			XmlNode* query = iq.addQuery( "jabber:iq:roster" );
+			XmlNode* item = query->addChild( "item" ); item->addAttr( "jid", dbv.ptszVal ); item->addAttr( "subscription", "remove" );
+			jabberThreadInfo->send( iq );
+		}
 
 		JFreeVariant( &dbv );
 	}
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// JabberIdleChanged - tracks idle start time for XEP-0012 support
+
+int JabberIdleChanged( WPARAM wParam, LPARAM lParam )
+{
+	// don't report idle time, if user disabled
+	if (lParam & IDF_PRIVACY) {
+		jabberIdleStartTime = 0;
+		return 0;
+	}
+
+	BOOL bIdle = lParam & IDF_ISIDLE;
+
+	// second call, ignore it
+	if (bIdle && jabberIdleStartTime)
+		return 0;
+
+	jabberIdleStartTime = bIdle ? time( 0 ) : 0;
 	return 0;
 }
 
@@ -341,7 +346,7 @@ static TCHAR* sttSettingToTchar( DBCONTACTWRITESETTING* cws )
 	switch( cws->value.type ) {
 	case DBVT_ASCIIZ:
 		#if defined( _UNICODE )
-			return a2u( cws->value.pszVal );
+			return mir_a2u( cws->value.pszVal );
 		#else
 			return mir_strdup( cws->value.pszVal );
 		#endif
@@ -507,7 +512,7 @@ int JabberFileAllow( WPARAM wParam, LPARAM lParam )
 	filetransfer* ft = ( filetransfer* ) ccs->wParam;
 	ft->std.workingDir = mir_strdup(( char* )ccs->lParam );
 	int len = strlen( ft->std.workingDir )-1;
-	if ( ft->std.workingDir[len] == '//' || ft->std.workingDir[len] == '\\' )
+	if ( ft->std.workingDir[len] == '/' || ft->std.workingDir[len] == '\\' )
 		ft->std.workingDir[len] = 0;
 
 	switch ( ft->type ) {
@@ -516,6 +521,9 @@ int JabberFileAllow( WPARAM wParam, LPARAM lParam )
 		break;
 	case FT_BYTESTREAM:
 		JabberFtAcceptSiRequest( ft );
+		break;
+	case FT_IBB:
+		JabberFtAcceptIbbRequest( ft );
 		break;
 	}
 	return ccs->wParam;
@@ -570,6 +578,7 @@ int JabberFileDeny( WPARAM wParam, LPARAM lParam )
 		}
 		break;
 	case FT_BYTESTREAM:
+	case FT_IBB:
 		{	XmlNode* e = iq.addChild( "error", _T("File transfer refused"));
 			e->addAttr( "code", 403 ); e->addAttr( "type", "cancel" );
 			XmlNode* f = e->addChild( "forbidden" ); f->addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
@@ -624,11 +633,29 @@ int JabberGetAvatar(WPARAM wParam, LPARAM lParam)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// JabberGetAvatarFormatSupported - Jabber supports avatars of virtually all formats
+// JabberGetAvatarCaps - returns directives how to process avatars
 
-int JabberGetAvatarFormatSupported(WPARAM wParam, LPARAM lParam)
+int JabberGetAvatarCaps(WPARAM wParam, LPARAM lParam)
 {
-	return 1;
+	switch( wParam ) {
+	case AF_MAXSIZE:
+		{
+			POINT* size = (POINT*)lParam;
+			if ( size )
+				size->x = size->y = 96;
+		}
+      return 0;
+
+	case AF_PROPORTION:
+		return PIP_NONE;
+
+	case AF_FORMATSUPPORTED: // Jabber supports avatars of virtually all formats
+		return 1;
+
+	case AF_ENABLED:
+		return JGetByte( "EnableAvatars", TRUE );
+	}
+	return -1;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -664,22 +691,23 @@ static int JabberGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 			JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, dbv.ptszVal );
 			if ( item != NULL ) {
 				TCHAR szJid[ 512 ];
-				BOOL isXVcard = JGetByte(AI->hContact,"AvatarXVcard",0);
-				if ( (item->resourceCount != NULL) & (!isXVcard)){
+				BOOL isXVcard = JGetByte( AI->hContact, "AvatarXVcard", 0 );
+				if ( item->resourceCount != NULL && !isXVcard ) {
 					TCHAR *bestResName = JabberListGetBestClientResourceNamePtr(dbv.ptszVal);
 					mir_sntprintf( szJid, SIZEOF( szJid ), bestResName?_T("%s/%s"):_T("%s"), dbv.ptszVal, bestResName );
-				}else
-					lstrcpyn( szJid, dbv.ptszVal, SIZEOF( szJid ));
+				}
+				else lstrcpyn( szJid, dbv.ptszVal, SIZEOF( szJid ));
 
-				JabberLog( "Rereading %s for " TCHAR_STR_PARAM, isXVcard?"vcard-temp":"jabber:iq:avatar", szJid );
+				JabberLog( "Rereading %s for " TCHAR_STR_PARAM, isXVcard ? JABBER_FEAT_VCARD_TEMP : JABBER_FEAT_AVATAR, szJid );
 
 				int iqId = JabberSerialNext();
 				JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultGetAvatar );
 
 				XmlNodeIq iq( "get", iqId, szJid );
-				if (isXVcard) {
-					XmlNode* vs = iq.addChild( "vCard" ); vs->addAttr( "xmlns", "vcard-temp" );
-				} else XmlNode* query = iq.addQuery( isXVcard?"":"jabber:iq:avatar" );
+				if ( isXVcard )
+					iq.addChild( "vCard" )->addAttr( "xmlns", JABBER_FEAT_VCARD_TEMP );
+				else
+					iq.addQuery( isXVcard ? "" : JABBER_FEAT_AVATAR );
 				jabberThreadInfo->send( iq );
 
 				JFreeVariant( &dbv );
@@ -688,16 +716,6 @@ static int JabberGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 
 	JabberLog( "No avatar" );
 	return GAIR_NOAVATAR;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// JabberGetAvatarMaxSize - retrieves the optimal avatar size
-
-int JabberGetAvatarMaxSize(WPARAM wParam, LPARAM lParam)
-{
-	if (wParam != 0) *((int*) wParam) = 64;
-	if (lParam != 0) *((int*) lParam) = 64;
-	return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -736,28 +754,18 @@ static void __cdecl JabberGetAwayMsgThread( HANDLE hContact )
 						_tcscat( str, r[i].statusMessage );
 				}	}
 
-				#if defined( _UNICODE )
-					char* msg = u2a(str);
-				#else
-					char* msg = str;
-				#endif
-				JSendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE ) 1, ( LPARAM )msg );
-				#if defined( _UNICODE )
-					mir_free(msg);
-				#endif
+				char* msg = mir_t2a(str);
+				char* msg2 = JabberUnixToDos(msg);
+				JSendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE ) 1, ( LPARAM )msg2 );
+				mir_free(msg);
+				mir_free(msg2);
 				return;
 			}
 
-			if ( item->statusMessage != NULL ) {
-				#if defined( _UNICODE )
-					char* msg = u2a(item->statusMessage);
-				#else
-					char* msg = item->statusMessage;
-				#endif
+			if ( item->itemResource.statusMessage != NULL ) {
+				char* msg = mir_t2a(item->itemResource.statusMessage);
 				JSendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE ) 1, ( LPARAM )msg );
-				#if defined( _UNICODE )
-					mir_free(msg);
-				#endif
+				mir_free(msg);
 				return;
 			}
 		}
@@ -785,13 +793,13 @@ int JabberGetCaps( WPARAM wParam, LPARAM lParam )
 {
 	switch( wParam ) {
 	case PFLAGNUM_1:
-		return PF1_IM|PF1_AUTHREQ|PF1_SERVERCLIST|PF1_MODEMSG|PF1_BASICSEARCH|PF1_SEARCHBYEMAIL|PF1_SEARCHBYNAME|PF1_FILE|PF1_VISLIST|PF1_INVISLIST;
+		return PF1_IM | PF1_AUTHREQ | PF1_CHAT | PF1_SERVERCLIST | PF1_MODEMSG|PF1_BASICSEARCH | PF1_EXTSEARCH | PF1_FILE;
 	case PFLAGNUM_2:
 		return PF2_ONLINE | PF2_INVISIBLE | PF2_SHORTAWAY | PF2_LONGAWAY | PF2_HEAVYDND | PF2_FREECHAT;
 	case PFLAGNUM_3:
 		return PF2_ONLINE | PF2_SHORTAWAY | PF2_LONGAWAY | PF2_HEAVYDND | PF2_FREECHAT;
 	case PFLAGNUM_4:
-		return PF4_FORCEAUTH | PF4_NOCUSTOMAUTH | PF4_SUPPORTTYPING | PF4_AVATARS;
+		return PF4_FORCEAUTH | PF4_NOCUSTOMAUTH | PF4_SUPPORTTYPING | PF4_AVATARS | PF4_IMSENDUTF;
 	case PFLAG_UNIQUEIDTEXT:
 		return ( int ) JTranslate( "JID" );
 	case PFLAG_UNIQUEIDSETTING:
@@ -803,6 +811,8 @@ int JabberGetCaps( WPARAM wParam, LPARAM lParam )
 ////////////////////////////////////////////////////////////////////////////////////////
 // JabberGetInfo - retrieves a contact info
 
+void JabberProcessIqResultVersion( XmlNode* node, void* userdata, CJabberIqInfo *pInfo );
+
 int JabberGetInfo( WPARAM wParam, LPARAM lParam )
 {
 	if ( !jabberOnline )
@@ -811,7 +821,80 @@ int JabberGetInfo( WPARAM wParam, LPARAM lParam )
 	CCSDATA *ccs = ( CCSDATA * ) lParam;
 	int result = 1;
 	DBVARIANT dbv;
-	if ( !JGetStringT( ccs->hContact, "jid", &dbv )) {
+	if ( JGetByte( ccs->hContact, "ChatRoom" , 0) )
+	{
+		// process chat room request
+
+	} 
+	else if ( !JGetStringT( ccs->hContact, "jid", &dbv )) {
+		if ( jabberThreadInfo ) {
+			TCHAR jid[ 256 ];
+			JabberGetClientJID( dbv.ptszVal, jid, SIZEOF( jid ));
+
+			XmlNodeIq iq( g_JabberIqManager.AddHandler( JabberIqResultEntityTime, JABBER_IQ_TYPE_GET, jid, JABBER_IQ_PARSE_HCONTACT ));
+			XmlNode* pReq = iq.addChild( "time" );
+			pReq->addAttr( "xmlns", JABBER_FEAT_ENTITY_TIME );
+			jabberThreadInfo->send( iq );
+
+			// XEP-0012, last logoff time
+			XmlNodeIq iq2( g_JabberIqManager.AddHandler( JabberIqResultLastActivity, JABBER_IQ_TYPE_GET, dbv.ptszVal, JABBER_IQ_PARSE_FROM ));
+			iq2.addQuery( JABBER_FEAT_LAST_ACTIVITY );
+			jabberThreadInfo->send( iq2 );
+
+			JABBER_LIST_ITEM *item = NULL;
+
+			if (( item = JabberListGetItemPtr( LIST_VCARD_TEMP, dbv.ptszVal )) == NULL)
+				item = JabberListGetItemPtr( LIST_ROSTER, dbv.ptszVal );
+
+			if ( !item ) {
+				TCHAR szBareJid[ 1024 ];
+				_tcsncpy( szBareJid, dbv.ptszVal, 1023 );
+				TCHAR* pDelimiter = _tcschr( szBareJid, _T('/') );
+				if ( pDelimiter ) {
+					*pDelimiter = 0;
+					pDelimiter++;
+					if ( !*pDelimiter )
+						pDelimiter = NULL;
+				}
+				JABBER_LIST_ITEM *tmpItem = NULL;
+				if ( pDelimiter && ( tmpItem  = JabberListGetItemPtr( LIST_CHATROOM, szBareJid ))) {
+					JABBER_RESOURCE_STATUS *him = NULL;
+					for ( int i=0; i < tmpItem->resourceCount; i++ ) {
+						JABBER_RESOURCE_STATUS& p = tmpItem->resource[i];
+						if ( !lstrcmp( p.resourceName, pDelimiter )) him = &p;
+					}
+					if ( him ) {
+						item = JabberListAdd( LIST_VCARD_TEMP, dbv.ptszVal );
+						JabberListAddResource( LIST_VCARD_TEMP, dbv.ptszVal, him->status, him->statusMessage, him->priority );
+					}
+				}
+				else
+					item = JabberListAdd( LIST_VCARD_TEMP, dbv.ptszVal );
+			}
+
+			if ( item ) {
+				if ( item->resource ) {
+					for ( int i = 0; i < item->resourceCount; i++ ) {
+						TCHAR szp1[ JABBER_MAX_JID_LEN ];
+						JabberStripJid( dbv.ptszVal, szp1, SIZEOF( szp1 ));
+						mir_sntprintf( jid, 256, _T("%s/%s"), szp1, item->resource[i].resourceName );
+
+						XmlNodeIq iq3( g_JabberIqManager.AddHandler( JabberIqResultLastActivity, JABBER_IQ_TYPE_GET, jid, JABBER_IQ_PARSE_FROM ));
+						iq3.addQuery( JABBER_FEAT_LAST_ACTIVITY );
+						jabberThreadInfo->send( iq3 );
+
+						if ( !item->resource[i].dwVersionRequestTime ) {
+							XmlNodeIq iq4( g_JabberIqManager.AddHandler( JabberProcessIqResultVersion, JABBER_IQ_TYPE_GET, jid, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_HCONTACT | JABBER_IQ_PARSE_CHILD_TAG_NODE ));
+							XmlNode* query = iq4.addQuery( JABBER_FEAT_VERSION );
+							jabberThreadInfo->send( iq4 );
+					}	}
+				}
+				else if ( !item->itemResource.dwVersionRequestTime ) {
+					XmlNodeIq iq4( g_JabberIqManager.AddHandler( JabberProcessIqResultVersion, JABBER_IQ_TYPE_GET, item->jid, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_HCONTACT | JABBER_IQ_PARSE_CHILD_TAG_NODE ));
+					XmlNode* query = iq4.addQuery( JABBER_FEAT_VERSION );
+					jabberThreadInfo->send( iq4 );
+		}	}	}
+
 		JabberSendGetVcard( dbv.ptszVal );
 		JFreeVariant( &dbv );
 		result = 0;
@@ -842,10 +925,10 @@ int JabberGetStatus( WPARAM wParam, LPARAM lParam )
 
 int JabberLoadIcon( WPARAM wParam, LPARAM lParam )
 {
-	if (( wParam&0xffff ) == PLI_PROTOCOL )
-		return ( int ) LoadImage( hInst, MAKEINTRESOURCE( IDI_JABBER ), IMAGE_ICON, GetSystemMetrics( wParam&PLIF_SMALL?SM_CXSMICON:SM_CXICON ), GetSystemMetrics( wParam&PLIF_SMALL?SM_CYSMICON:SM_CYICON ), 0 );
-	else
-		return ( int ) ( HICON ) NULL;
+	if (( wParam & 0xffff ) == PLI_PROTOCOL )
+		return ( int )CopyIcon( LoadIconEx( "main" ));
+
+	return ( int ) ( HICON ) NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -853,24 +936,9 @@ int JabberLoadIcon( WPARAM wParam, LPARAM lParam )
 
 int JabberRecvFile( WPARAM wParam, LPARAM lParam )
 {
-	CCSDATA *ccs = ( CCSDATA * ) lParam;
-	PROTORECVEVENT *pre = ( PROTORECVEVENT * ) ccs->lParam;
-	char* szFile = pre->szMessage + sizeof( DWORD );
-	char* szDesc = szFile + strlen( szFile ) + 1;
-	JabberLog( "Description = %s", szDesc );
-
+	CCSDATA *ccs = ( CCSDATA* )lParam;
 	DBDeleteContactSetting( ccs->hContact, "CList", "Hidden" );
-
-	DBEVENTINFO dbei = { 0 };
-	dbei.cbSize = sizeof( dbei );
-	dbei.szModule = jabberProtoName;
-	dbei.timestamp = pre->timestamp;
-	dbei.flags = ( pre->flags & PREF_CREATEREAD ) ? DBEF_READ : 0;
-	dbei.eventType = EVENTTYPE_FILE;
-	dbei.cbBlob = sizeof( DWORD )+ strlen( szFile ) + strlen( szDesc ) + 2;
-	dbei.pBlob = ( PBYTE ) pre->szMessage;
-	JCallService( MS_DB_EVENT_ADD, ( WPARAM ) ccs->hContact, ( LPARAM )&dbei );
-	return 0;
+	return CallService( MS_PROTO_RECVFILE, wParam, lParam );
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -878,22 +946,7 @@ int JabberRecvFile( WPARAM wParam, LPARAM lParam )
 
 int JabberRecvMessage( WPARAM wParam, LPARAM lParam )
 {
-	CCSDATA *ccs = ( CCSDATA* )lParam;
-	PROTORECVEVENT *pre = ( PROTORECVEVENT* )ccs->lParam;
-
-	DBEVENTINFO dbei = { 0 };
-	dbei.cbSize = sizeof( dbei );
-	dbei.szModule = jabberProtoName;
-	dbei.timestamp = pre->timestamp;
-	dbei.flags = pre->flags&PREF_CREATEREAD?DBEF_READ:0;
-	dbei.eventType = EVENTTYPE_MESSAGE;
-	dbei.cbBlob = strlen( pre->szMessage ) + 1;
-	if ( pre->flags & PREF_UNICODE )
-		dbei.cbBlob *= ( sizeof( wchar_t )+1 );
-
-	dbei.pBlob = ( PBYTE ) pre->szMessage;
-	JCallService( MS_DB_EVENT_ADD, ( WPARAM ) ccs->hContact, ( LPARAM )&dbei );
-	return 0;
+	return CallService( MS_PROTO_RECVMSG, wParam, lParam );
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -941,7 +994,7 @@ int JabberSearchByName( WPARAM wParam, LPARAM lParam )
 		JabberIqAdd( iqId, IQ_PROC_GETSEARCH, JabberIqResultExtSearch );
 
 		iq.addAttr( "xml:lang", "en" );
-		x = query->addChild( "x" ); x->addAttr( "xmlns", "jabber:x:data" ); x->addAttr( "type", "submit" );
+		x = query->addChild( "x" ); x->addAttr( "xmlns", JABBER_FEAT_DATA_FORMS ); x->addAttr( "type", "submit" );
 	}
 	else JabberIqAdd( iqId, IQ_PROC_GETSEARCH, JabberIqResultSetSearch );
 
@@ -992,11 +1045,40 @@ int JabberSendFile( WPARAM wParam, LPARAM lParam )
 	int i, j;
 	struct _stat statbuf;
 	JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, dbv.ptszVal );
-	if ( item == NULL )
+	if ( item == NULL ) {
+		JFreeVariant( &dbv );
 		return 0;
+	}
 
 	// Check if another file transfer session request is pending ( waiting for disco result )
-	if ( item->ft != NULL ) return 0;
+	if ( item->ft != NULL ) {
+		JFreeVariant( &dbv );
+		return 0;
+	}
+
+	JabberCapsBits jcb = JabberGetResourceCapabilites( item->jid );
+
+	// fix for very smart clients, like gajim
+	if ( !JGetByte( "BsDirect", FALSE ) && !JGetByte( "BsProxyManual", FALSE ) ) {
+		// disable bytestreams
+		jcb &= ~JABBER_CAPS_BYTESTREAMS;
+	}
+
+	// if only JABBER_CAPS_SI_FT feature set (without BS or IBB), disable JABBER_CAPS_SI_FT
+	if (( jcb & (JABBER_CAPS_SI_FT | JABBER_CAPS_IBB | JABBER_CAPS_BYTESTREAMS)) == JABBER_CAPS_SI_FT)
+		jcb &= ~JABBER_CAPS_SI_FT;
+
+	if (
+		// can't get caps
+		( jcb & JABBER_RESOURCE_CAPS_ERROR )
+		// caps not already received
+		|| ( jcb == JABBER_RESOURCE_CAPS_NONE )
+		// XEP-0096 and OOB not supported?
+		|| !(jcb & ( JABBER_CAPS_SI_FT | JABBER_CAPS_OOB ) )
+		) {
+		JFreeVariant( &dbv );
+		return 0;
+	}
 
 	filetransfer* ft = new filetransfer;
 	ft->std.hContact = ccs->hContact;
@@ -1020,27 +1102,9 @@ int JabberSendFile( WPARAM wParam, LPARAM lParam )
 	ft->jid = mir_tstrdup( dbv.ptszVal );
 	JFreeVariant( &dbv );
 
-	if (( item->cap & CLIENT_CAP_READY ) == 0 ) {
-		int iqId;
-		TCHAR* rs;
-
-		// Probe client capability
-		if (( rs=JabberListGetBestClientResourceNamePtr( item->jid )) != NULL ) {
-			item->ft = ft;
-			iqId = JabberSerialNext();
-			JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultDiscoClientInfo );
-
-			TCHAR jid[ 200 ];
-			mir_sntprintf( jid, SIZEOF(jid), _T("%s/%s"), item->jid, rs );
-			XmlNodeIq iq( "get", iqId, jid );
-			XmlNode* query = iq.addQuery( "http://jabber.org/protocol/disco#info" );
-			jabberThreadInfo->send( iq );
-		}
-	}
-	else if (( item->cap & CLIENT_CAP_FILE ) && ( item->cap & CLIENT_CAP_BYTESTREAM ))
-		// Use the new standard file transfer
+	if ( jcb & JABBER_CAPS_SI_FT )
 		JabberFtInitiate( item->jid, ft );
-	else // Use the jabber:iq:oob file transfer
+	else if ( jcb & JABBER_CAPS_OOB )
 		mir_forkthread(( pThreadFunc )JabberFileServerThread, ft );
 
 	return ( int )( HANDLE ) ft;
@@ -1048,6 +1112,24 @@ int JabberSendFile( WPARAM wParam, LPARAM lParam )
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // JabberSendMessage - sends a message
+
+int JabberGetEventTextChatStates( WPARAM wParam, LPARAM lParam )
+{
+	DBEVENTGETTEXT *pdbEvent = ( DBEVENTGETTEXT * )lParam;
+
+	int nRetVal = 0;
+
+	if ( pdbEvent->dbei->cbBlob > 0 ) {
+		if ( pdbEvent->dbei->pBlob[0] == JABBER_DB_EVENT_CHATSTATES_GONE ) {
+			if ( pdbEvent->datatype == DBVT_WCHAR )
+				nRetVal = (int)mir_tstrdup(TranslateTS(_T("closed chat session")));
+			else if ( pdbEvent->datatype == DBVT_ASCIIZ )
+				nRetVal = (int)mir_strdup(Translate("closed chat session"));
+		}
+	}
+	
+	return nRetVal;
+}
 
 static void __cdecl JabberSendMessageAckThread( HANDLE hContact )
 {
@@ -1063,7 +1145,6 @@ static char PGP_EPILOG[] = "\r\n-----END PGP MESSAGE-----\r\n";
 int JabberSendMessage( WPARAM wParam, LPARAM lParam )
 {
 	CCSDATA *ccs = ( CCSDATA * ) lParam;
-	JABBER_LIST_ITEM *item;
 	int id;
 
 	DBVARIANT dbv;
@@ -1084,13 +1165,18 @@ int JabberSendMessage( WPARAM wParam, LPARAM lParam )
 		strncpy( tempstring, pszSrc+strlen(PGP_PROLOG), strlen(pszSrc)-strlen(PGP_EPILOG)-result );
 		pszSrc = tempstring;
 		isEncrypted = 1;
+		ccs->wParam &= ~PREF_UNICODE;
 	}
 	else isEncrypted = 0;
 
-	if ( ccs->wParam & PREF_UNICODE )
+	if ( ccs->wParam & PREF_UTF )
+		msg = JabberUrlEncode( pszSrc );
+	else if ( ccs->wParam & PREF_UNICODE )
 		msg = JabberTextEncodeW(( wchar_t* )&pszSrc[ strlen( pszSrc )+1 ] );
 	else
 		msg = JabberTextEncode( pszSrc );
+
+	int nSentMsgId = 0;
 
 	if ( msg != NULL ) {
 		char msgType[ 16 ];
@@ -1110,39 +1196,48 @@ int JabberSendMessage( WPARAM wParam, LPARAM lParam )
 			x->sendText = msg;
 		}
 
-		XmlNode* active = m.addChild( "active" ); active->addAttr( "xmlns", _T("http://jabber.org/protocol/chatstates"));
+		TCHAR szClientJid[ 256 ];
+		JabberGetClientJID( dbv.ptszVal, szClientJid, SIZEOF( szClientJid ));
 
-		if ( !strcmp( msgType, "groupchat" ) || !JGetByte( "MsgAck", FALSE ) || !JGetByte( ccs->hContact, "MsgAck", TRUE )) {
+		JABBER_RESOURCE_STATUS *r = JabberResourceInfoFromJID( szClientJid );
+		if ( r )
+			r->bMessageSessionActive = TRUE;
+
+		JabberCapsBits jcb = JabberGetResourceCapabilites( szClientJid );
+
+		if ( jcb & JABBER_RESOURCE_CAPS_ERROR )
+			jcb = JABBER_RESOURCE_CAPS_NONE;
+
+		if ( jcb & JABBER_CAPS_CHATSTATES )
+			m.addChild( "active" )->addAttr( "xmlns", _T(JABBER_FEAT_CHATSTATES));
+
+		if ( ( jcb & JABBER_CAPS_MESSAGE_EVENTS_NO_DELIVERY ) || !( jcb & JABBER_CAPS_MESSAGE_EVENTS ) || !strcmp( msgType, "groupchat" ) || !JGetByte( "MsgAck", FALSE ) || !JGetByte( ccs->hContact, "MsgAck", TRUE )) {
 			if ( !strcmp( msgType, "groupchat" ))
 				m.addAttr( "to", dbv.ptszVal );
 			else {
 				id = JabberSerialNext();
-				TCHAR szClientJid[ 256 ];
-				JabberGetClientJID( dbv.ptszVal, szClientJid, SIZEOF( szClientJid ));
 
 				m.addAttr( "to", szClientJid ); m.addAttrID( id );
-				XmlNode* x = m.addChild( "x" ); x->addAttr( "xmlns", "jabber:x:event" ); x->addChild( "composing" );
-			}
+				if ( jcb & JABBER_CAPS_MESSAGE_EVENTS ) {
+					XmlNode* x = m.addChild( "x" ); x->addAttr( "xmlns", JABBER_FEAT_MESSAGE_EVENTS ); x->addChild( "composing" );
+			}	}
 
 			jabberThreadInfo->send( m );
 			mir_forkthread( JabberSendMessageAckThread, ccs->hContact );
+			nSentMsgId = 1;
 		}
 		else {
 			id = JabberSerialNext();
-			if (( item=JabberListGetItemPtr( LIST_ROSTER, dbv.ptszVal )) != NULL )
-				item->idMsgAckPending = id;
-
-			TCHAR szClientJid[ 256 ];
-			JabberGetClientJID( dbv.ptszVal, szClientJid, SIZEOF( szClientJid ));
 			m.addAttr( "to", szClientJid ); m.addAttrID( id );
 
-			XmlNode* x = m.addChild( "x" ); x->addAttr( "xmlns", "jabber:x:event" );
+			XmlNode* x = m.addChild( "x" ); x->addAttr( "xmlns", JABBER_FEAT_MESSAGE_EVENTS );
 			x->addChild( "composing" ); x->addChild( "delivered" ); x->addChild( "offline" );
 			jabberThreadInfo->send( m );
+			nSentMsgId = id;
 	}	}
 
 	JFreeVariant( &dbv );
-	return 1;
+	return nSentMsgId;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -1193,18 +1288,48 @@ int JabberSetApparentMode( WPARAM wParam, LPARAM lParam )
 
 static int JabberSetAvatar( WPARAM wParam, LPARAM lParam )
 {
-	HBITMAP hBitmap = ( HBITMAP )JCallService( MS_UTILS_LOADBITMAP, 0, lParam );
-	if ( hBitmap == NULL )
+	char* szFileName = ( char* )lParam;
+	int fileIn = open( szFileName, O_RDWR | O_BINARY, S_IREAD | S_IWRITE );
+	if ( fileIn == -1 )
 		return 1;
 
-	if (( hBitmap = JabberStretchBitmap( hBitmap )) == NULL )
+	long  dwPngSize = filelength( fileIn );
+	char* pResult = new char[ dwPngSize ];
+	if ( pResult == NULL ) {
+		close( fileIn );
 		return 2;
+	}
 
-	JabberBitmapToAvatar( hBitmap );
-	DeleteObject( hBitmap );
+	read( fileIn, pResult, dwPngSize );
+	close( fileIn );
+
+	mir_sha1_byte_t digest[MIR_SHA1_HASH_SIZE];
+	mir_sha1_ctx sha1ctx;
+	mir_sha1_init( &sha1ctx );
+	mir_sha1_append( &sha1ctx, (mir_sha1_byte_t*)pResult, dwPngSize );
+	mir_sha1_finish( &sha1ctx, digest );
+
+	char tFileName[ MAX_PATH ];
+	JabberGetAvatarFileName( NULL, tFileName, MAX_PATH );
+	DeleteFileA( tFileName );
+
+	char buf[MIR_SHA1_HASH_SIZE*2+1];
+	for ( int i=0; i<MIR_SHA1_HASH_SIZE; i++ )
+		sprintf( buf+( i<<1 ), "%02x", digest[i] );
+	JSetString( NULL, "AvatarHash", buf );
+	JSetByte( "AvatarType", JabberGetPictureType( pResult ));
+
+	JabberGetAvatarFileName( NULL, tFileName, MAX_PATH );
+	FILE* out = fopen( tFileName, "wb" );
+	if ( out != NULL ) {
+		fwrite( pResult, dwPngSize, 1, out );
+		fclose( out );
+	}
+	delete pResult;
 
 	if ( jabberConnected )
-		JabberSendPresence( jabberDesiredStatus, true );
+		JabberSendPresence( jabberDesiredStatus, false );
+
 	return 0;
 }
 
@@ -1257,7 +1382,7 @@ int JabberSetAwayMsg( WPARAM wParam, LPARAM lParam )
 		*szMsg = newModeMsg;
 		// Send a presence update if needed
 		if ( desiredStatus == jabberStatus ) {
-			JabberSendPresence( jabberStatus, false );
+			JabberSendPresence( jabberStatus, true );
 	}	}
 
 	LeaveCriticalSection( &modeMsgMutex );
@@ -1276,6 +1401,7 @@ int JabberSetStatus( WPARAM wParam, LPARAM lParam )
  	if ( desiredStatus == ID_STATUS_OFFLINE ) {
 		if ( jabberThreadInfo ) {
 			jabberThreadInfo->send( "</stream:stream>" );
+			jabberThreadInfo->close();
 			jabberThreadInfo = NULL;
 			if ( jabberConnected )
 				jabberConnected = jabberOnline = FALSE;
@@ -1316,24 +1442,30 @@ int JabberUserIsTyping( WPARAM wParam, LPARAM lParam )
 	if (( item = JabberListGetItemPtr( LIST_ROSTER, dbv.ptszVal )) != NULL ) {
 		TCHAR szClientJid[ 256 ];
 		JabberGetClientJID( dbv.ptszVal, szClientJid, SIZEOF( szClientJid ));
+
+		JabberCapsBits jcb = JabberGetResourceCapabilites( szClientJid );
+
+		if ( jcb & JABBER_RESOURCE_CAPS_ERROR )
+			jcb = JABBER_RESOURCE_CAPS_NONE;
+
 		XmlNode m( "message" ); m.addAttr( "to", szClientJid );
 
-		if ( item->cap & CLIENT_CAP_CHATSTAT ) {
+		if ( jcb & JABBER_CAPS_CHATSTATES ) {
 			m.addAttr( "type", "chat" );
 			m.addAttrID( JabberSerialNext());
 			switch ( lParam ){
 			case PROTOTYPE_SELFTYPING_OFF:
-				m.addChild( "paused" )->addAttr( "xmlns", _T("http://jabber.org/protocol/chatstates"));
+				m.addChild( "paused" )->addAttr( "xmlns", _T(JABBER_FEAT_CHATSTATES));
 				jabberThreadInfo->send( m );
 				break;
 			case PROTOTYPE_SELFTYPING_ON:
-				m.addChild( "composing" )->addAttr( "xmlns", _T("http://jabber.org/protocol/chatstates"));
+				m.addChild( "composing" )->addAttr( "xmlns", _T(JABBER_FEAT_CHATSTATES));
 				jabberThreadInfo->send( m );
 				break;
 			}
 		}
-		else if ( item->wantComposingEvent == TRUE ) {
-			XmlNode* x = m.addChild( "x" ); x->addAttr( "xmlns", "jabber:x:event" );
+		else if ( jcb & JABBER_CAPS_MESSAGE_EVENTS ) {
+			XmlNode* x = m.addChild( "x" ); x->addAttr( "xmlns", JABBER_FEAT_MESSAGE_EVENTS );
 			if ( item->messageEventIdStr != NULL )
 				x->addChild( "id", item->messageEventIdStr );
 
@@ -1359,43 +1491,105 @@ int ServiceSendXML(WPARAM wParam, LPARAM lParam)
 	return jabberThreadInfo->send( (char*)lParam);
 }
 
+int JabberGCGetToolTipText(WPARAM wParam, LPARAM lParam)
+{
+	if (!wParam)
+		return 0;
+
+	if (!lParam)
+		return 0; //room global tooltip not supported yet
+
+	JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_CHATROOM, (TCHAR*)wParam);
+	if ( item == NULL )	return 0;  //no room found
+
+	JABBER_RESOURCE_STATUS * info = NULL;
+	for ( int i=0; i < item->resourceCount; i++ ) {
+		JABBER_RESOURCE_STATUS& p = item->resource[i];
+		if ( !lstrcmp( p.resourceName, (TCHAR*)lParam )) {
+			info = &p;
+			break;
+		}	}
+	if ( info==NULL )
+		return 0; //no info found
+
+	// ok process info output will be:
+	// JID:			real@jid/resource or
+	// Nick:		Nickname
+	// Status:		StatusText
+	// Role:		Moderaror
+	// Affiliation:  Affiliation
+
+	TCHAR outBuf[2048];
+	outBuf[0]=_T('\0');
+
+	TCHAR * szSeparator= (IsWinVerMEPlus()) ? _T("\r\n") : _T(" | ");
+
+	static const TCHAR * JabberEnum2AffilationStr[]={ _T("None"), _T("Outcast"), _T("Member"), _T("Admin"), _T("Owner") };
+
+	static const TCHAR * JabberEnum2RoleStr[]={ _T("None"), _T("Visitor"), _T("Participant"), _T("Moderator") };
+
+	//FIXME Table conversion fast but is not safe
+	static const TCHAR * JabberEnum2StatusStr[]= {	_T("Offline"), _T("Online"), _T("Away"), _T("DND"),
+		_T("NA"), _T("Occupied"), _T("Free for chat"),
+		_T("Invisible"), _T("On the phone"), _T("Out to lunch"),
+		_T("Idle")  };
+
+
+	//JID:
+	if ( _tcschr(info->resourceName,_T('@') != NULL ) ) {
+		_tcsncat( outBuf, TranslateT("JID:\t\t"), sizeof(outBuf) );
+		_tcsncat( outBuf, info->resourceName, sizeof(outBuf) );
+	} else if (lParam) { //or simple nick
+		_tcsncat( outBuf, TranslateT("Nick:\t\t"), sizeof(outBuf) );
+		_tcsncat( outBuf, (TCHAR*) lParam, sizeof(outBuf) );
+	}
+
+	// status
+	if ( info->status >= ID_STATUS_OFFLINE && info->status <= ID_STATUS_IDLE  ) {
+		_tcsncat( outBuf, szSeparator, sizeof(outBuf) );
+		_tcsncat( outBuf, TranslateT("Status:\t\t"), sizeof(outBuf) );
+		_tcsncat( outBuf, TranslateTS( JabberEnum2StatusStr [ info->status-ID_STATUS_OFFLINE ]), sizeof(outBuf) );
+	}
+
+	// status text
+	if ( info->statusMessage ) {
+		_tcsncat( outBuf, szSeparator, sizeof(outBuf) );
+		_tcsncat( outBuf, TranslateT("Status text:\t"), sizeof(outBuf) );
+		_tcsncat( outBuf, info->statusMessage, sizeof(outBuf) );
+	}
+
+	// Role
+	if ( TRUE || info->role ) {
+		_tcsncat( outBuf, szSeparator, sizeof(outBuf) );
+		_tcsncat( outBuf, TranslateT("Role:\t\t"), sizeof(outBuf) );
+		_tcsncat( outBuf, TranslateTS( JabberEnum2RoleStr[info->role] ), sizeof(outBuf) );
+	}
+
+	// Affiliation
+	if ( TRUE || info->affiliation ) {
+		_tcsncat( outBuf, szSeparator, sizeof(outBuf) );
+		_tcsncat( outBuf, TranslateT("Affiliation:\t"), sizeof(outBuf) );
+		_tcsncat( outBuf, TranslateTS( JabberEnum2AffilationStr[info->affiliation] ), sizeof(outBuf) );
+	}
+
+	// real jid
+	if ( info->szRealJid ) {
+		_tcsncat( outBuf, szSeparator, sizeof(outBuf) );
+		_tcsncat( outBuf, TranslateT("Real JID:\t"), sizeof(outBuf) );
+		_tcsncat( outBuf, info->szRealJid, sizeof(outBuf) );
+	}
+
+	if ( lstrlen( outBuf ) == 0)
+		return 0;
+
+	return (int) mir_tstrdup( outBuf );
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // Service initialization code
 
-static HANDLE hEventSettingChanged = NULL;
-static HANDLE hEventContactDeleted = NULL;
-static HANDLE hEventRebuildCMenu = NULL;
-
-static HANDLE hMenuAgent = NULL;
-static HANDLE hMenuChangePassword = NULL;
-static HANDLE hMenuGroupchat = NULL;
-
-int JabberMenuHandleAgents( WPARAM wParam, LPARAM lParam );
-int JabberMenuHandleChangePassword( WPARAM wParam, LPARAM lParam );
-int JabberMenuHandleVcard( WPARAM wParam, LPARAM lParam );
-int JabberMenuHandleRequestAuth( WPARAM wParam, LPARAM lParam );
-int JabberMenuHandleGrantAuth( WPARAM wParam, LPARAM lParam );
-int JabberMenuPrebuildContactMenu( WPARAM wParam, LPARAM lParam );
-
-void JabberEnableMenuItems( BOOL bEnable )
-{
-	CLISTMENUITEM clmi = { 0 };
-	clmi.cbSize = sizeof( CLISTMENUITEM );
-	clmi.flags = CMIM_FLAGS;
-	if ( !bEnable )
-		clmi.flags += CMIF_GRAYED;
-
-	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuAgent, ( LPARAM )&clmi );
-	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuChangePassword, ( LPARAM )&clmi );
-	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuGroupchat, ( LPARAM )&clmi );
-}
-
 int JabberSvcInit( void )
 {
-	hEventSettingChanged = HookEvent( ME_DB_CONTACT_SETTINGCHANGED, JabberDbSettingChanged );
-	hEventContactDeleted = HookEvent( ME_DB_CONTACT_DELETED, JabberContactDeleted );
-	hEventRebuildCMenu   = HookEvent( ME_CLIST_PREBUILDCONTACTMENU, JabberMenuPrebuildContactMenu );
-
 	JCreateServiceFunction( PS_GETCAPS, JabberGetCaps );
 	JCreateServiceFunction( PS_GETNAME, JabberGetName );
 	JCreateServiceFunction( PS_LOADICON, JabberLoadIcon );
@@ -1412,6 +1606,8 @@ int JabberSvcInit( void )
 	JCreateServiceFunction( PS_SETAWAYMSG, JabberSetAwayMsg );
 	JCreateServiceFunction( PS_FILERESUME, JabberFileResume );
 
+	JCreateServiceFunction( PS_SET_LISTENINGTO, JabberSetListeningTo );
+
 	JCreateServiceFunction( PSS_GETINFO, JabberGetInfo );
 	JCreateServiceFunction( PSS_SETAPPARENTMODE, JabberSetApparentMode );
 	JCreateServiceFunction( PSS_MESSAGE, JabberSendMessage );
@@ -1424,78 +1620,25 @@ int JabberSvcInit( void )
 	JCreateServiceFunction( PSR_FILE, JabberRecvFile );
 	JCreateServiceFunction( PSS_USERISTYPING, JabberUserIsTyping );
 
+	//JEP-055 aware CUSTOM SEARCHING (jabber_search.h)
+	JCreateServiceFunction( PS_CREATEADVSEARCHUI, JabberSearchCreateAdvUI );
+	JCreateServiceFunction( PS_SEARCHBYADVANCED, JabberSearchByAdvanced );
+
 	// Protocol services and events...
 	heventRawXMLIn = JCreateHookableEvent( JE_RAWXMLIN );
 	heventRawXMLOut = JCreateHookableEvent( JE_RAWXMLOUT );
 	JCreateServiceFunction( JS_SENDXML, ServiceSendXML );
-	JCreateServiceFunction( JS_ISAVATARFORMATSUPPORTED, JabberGetAvatarFormatSupported );
-	JCreateServiceFunction( JS_GETMYAVATARMAXSIZE, JabberGetAvatarMaxSize );
-	JCreateServiceFunction( JS_GETMYAVATAR, JabberGetAvatar );
-	JCreateServiceFunction( JS_SETMYAVATAR, JabberSetAvatar );
+	JCreateServiceFunction( PS_GETMYAVATAR, JabberGetAvatar );
+	JCreateServiceFunction( PS_GETAVATARCAPS, JabberGetAvatarCaps );
+	JCreateServiceFunction( PS_SETMYAVATAR, JabberSetAvatar );
 
-	// Menu items
-	CLISTMENUITEM mi, clmi;
-	memset( &mi, 0, sizeof( CLISTMENUITEM ));
-	mi.cbSize = sizeof( CLISTMENUITEM );
-	memset( &clmi, 0, sizeof( CLISTMENUITEM ));
-	clmi.cbSize = sizeof( CLISTMENUITEM );
-	clmi.flags = CMIM_FLAGS | CMIF_GRAYED;
+	// service to get from protocol chat buddy info
+	JCreateServiceFunction( MS_GC_PROTO_GETTOOLTIPTEXT, JabberGCGetToolTipText );
 
-	// Add Jabber menu to the main menu
-	char text[_MAX_PATH];
-	strcpy( text, jabberProtoName );
-	char* tDest = text + strlen( text );
-
-	if ( !JGetByte( "DisableMainMenu", FALSE )) {
-		// "Agents..."
-		strcpy( tDest, "/Agents" );
-		CreateServiceFunction( text, JabberMenuHandleAgents );
-
-		mi.pszPopupName = jabberModuleName;
-		mi.popupPosition = 500090000;
-		mi.pszName = JTranslate( "Agents..." );
-		mi.position = 2000050000;
-		mi.hIcon = LoadIcon( hInst, MAKEINTRESOURCE( IDI_AGENTS ));
-		mi.pszService = text;
-		hMenuAgent = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
-		JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuAgent, ( LPARAM )&clmi );
-
-		// "Change Password..."
-		strcpy( tDest, "/ChangePassword" );
-		CreateServiceFunction( text, JabberMenuHandleChangePassword );
-		mi.pszName = JTranslate( "Change Password..." );
-		mi.position = 2000050001;
-		mi.hIcon = LoadIcon( hInst, MAKEINTRESOURCE( IDI_KEYS ));
-		mi.pszService = text;
-		hMenuChangePassword = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
-		JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuChangePassword, ( LPARAM )&clmi );
-
-		// "Multi-User Conference..."
-		strcpy( tDest, "/Groupchat" );
-		CreateServiceFunction( text, JabberMenuHandleGroupchat );
-		mi.pszName = JTranslate( "Multi-User Conference..." );
-		mi.position = 2000050002;
-		mi.hIcon = LoadIcon( hInst, MAKEINTRESOURCE( IDI_GROUP ));
-		mi.pszService = text;
-		hMenuGroupchat = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
-		JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuGroupchat, ( LPARAM )&clmi );
-
-		// "Personal vCard..."
-		strcpy( tDest,  "/Vcard" );
-		CreateServiceFunction( text, JabberMenuHandleVcard );
-		mi.pszName = JTranslate( "Personal vCard..." );
-		mi.position = 2000050003;
-		mi.hIcon = LoadIcon( hInst, MAKEINTRESOURCE( IDI_VCARD ));
-		mi.pszService = text;
-		JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
-	}
 	return 0;
 }
 
 int JabberSvcUninit()
 {
-	if ( hEventSettingChanged )   UnhookEvent( hEventSettingChanged );
-	if ( hEventContactDeleted )   UnhookEvent( hEventContactDeleted );
-	if ( hEventRebuildCMenu )     UnhookEvent( hEventRebuildCMenu );
 	return 0;
 }

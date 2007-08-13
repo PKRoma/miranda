@@ -77,7 +77,7 @@ BOOL CList_AddDCCChat(String name, String hostmask, unsigned long adr, int port)
 		cle.hContact=(HANDLE)hContact;
 		cle.hDbEvent=(HANDLE)"dccchat";	
 		cle.flags = 0;
-		cle.hIcon=LoadIconEx(IDI_DCC,"dcc",GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON));
+		cle.hIcon=LoadIconEx(IDI_DCC);
 		mir_snprintf(szService, sizeof(szService),"%s/DblClickEvent", IRCPROTONAME);
 		cle.pszService= szService ;
 		mir_snprintf(szNick, sizeof(szNick), Translate("CTCP chat request from %s"), name.c_str());

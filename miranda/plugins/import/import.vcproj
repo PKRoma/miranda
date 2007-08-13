@@ -3,10 +3,10 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="import"
-	SccProjectName="SAK"
-	SccAuxPath="SAK"
-	SccLocalPath="SAK"
-	SccProvider="SAK">
+	SccProjectName=""
+	SccAuxPath=""
+	SccLocalPath=""
+	SccProvider="">
 	<Platforms>
 		<Platform
 			Name="Win32"/>
@@ -228,8 +228,9 @@
 				Name="VCCLCompilerTool"
 				Optimization="3"
 				GlobalOptimizations="TRUE"
-				InlineFunctionExpansion="1"
 				FavorSizeOrSpeed="2"
+				OmitFramePointers="FALSE"
+				OptimizeForProcessor="0"
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;IMPORT_EXPORTS"
 				StringPooling="TRUE"

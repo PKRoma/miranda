@@ -1,5 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
+Copyright (c) 2006-7 Boris Krasnovskiy.
 Copyright (c) 2003-5 George Hazan.
 Copyright (c) 2002-3 Richard Hughes (original version).
 
@@ -23,16 +24,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "msn_global.h"
 
-HANDLE __stdcall MSN_HContactFromEmail( const char* msnEmail, const char* msnNick, int addIfNeeded, int temporary )
+HANDLE  MSN_HContactFromEmail( const char* msnEmail, const char* msnNick, int addIfNeeded, int temporary )
 {
 	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL )
 	{
-		char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO,( WPARAM )hContact, 0 );
-		if ( szProto != NULL && !strcmp( msnProtocolName, szProto )) {
+		if ( MSN_IsMyContact( hContact )) {
 			char tEmail[ MSN_MAX_EMAIL_LEN ];
 			if ( !MSN_GetStaticString( "e-mail", hContact, tEmail, sizeof( tEmail )))
-				if ( !strcmpi( msnEmail, tEmail ))
+				if ( !_stricmp( msnEmail, tEmail ))
 					return hContact;
 		}
 
@@ -54,13 +54,12 @@ HANDLE __stdcall MSN_HContactFromEmail( const char* msnEmail, const char* msnNic
 	return NULL;
 }
 
-HANDLE __stdcall MSN_HContactFromEmailT( const TCHAR* msnEmail )
+HANDLE  MSN_HContactFromEmailT( const TCHAR* msnEmail )
 {
 	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL )
 	{
-		char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO,( WPARAM )hContact, 0 );
-		if ( szProto != NULL && !strcmp( msnProtocolName, szProto )) {
+		if ( MSN_IsMyContact( hContact )) {
 			DBVARIANT dbv;
 			if ( !MSN_GetStringT( "e-mail", hContact, &dbv ))
 				if ( !lstrcmpi( msnEmail, dbv.ptszVal ))
@@ -73,16 +72,15 @@ HANDLE __stdcall MSN_HContactFromEmailT( const TCHAR* msnEmail )
 	return NULL;
 }
 
-HANDLE __stdcall MSN_HContactById( const char* szGuid )
+HANDLE  MSN_HContactById( const char* szGuid )
 {
 	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL )
 	{
-		char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO,( WPARAM )hContact, 0 );
-		if ( szProto != NULL && !strcmp( msnProtocolName, szProto )) {
+		if ( MSN_IsMyContact( hContact )) {
 			char tId[ 100 ];
 			if ( !MSN_GetStaticString( "ID", hContact, tId, sizeof tId ))
-				if ( !strcmpi( szGuid, tId ))
+				if ( !_stricmp( szGuid, tId ))
 					return hContact;
 		}
 

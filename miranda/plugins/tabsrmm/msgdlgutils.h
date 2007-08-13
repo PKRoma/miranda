@@ -61,7 +61,7 @@ void        GetLocaleID(struct MessageWindowData *dat, char *szKLName);
 BOOL        IsUnicodeAscii(const wchar_t* pBuffer, int nSize);
 void        GetDataDir();
 void        LoadOwnAvatar(HWND hwndDlg, struct MessageWindowData *dat);
-void		LoadContactAvatar(HWND hwndDlg, struct MessageWindowData *dat);
+void        LoadContactAvatar(HWND hwndDlg, struct MessageWindowData *dat);
 BYTE        GetInfoPanelSetting(HWND hwndDlg, struct MessageWindowData *dat);
 void        UpdateApparentModeDisplay(HWND hwndDlg, struct MessageWindowData *dat);
 void        LoadPanelHeight(HWND hwndDlg, struct MessageWindowData *dat);
@@ -80,7 +80,7 @@ HICON       GetXStatusIcon(struct MessageWindowData *dat);
 void        FlashTab(struct MessageWindowData *dat, HWND hwndTab, int iTabindex, BOOL *bState, BOOL mode, HICON origImage);
 void        GetClientIcon(struct MessageWindowData *dat, HWND hwndDlg);
 void        GetMaxMessageLength(HWND hwndDlg, struct MessageWindowData *dat);
-void        RearrangeTab(HWND hwndDlg, struct MessageWindowData *dat, int iMode);
+void        RearrangeTab(HWND hwndDlg, struct MessageWindowData *dat, int iMode, BOOL fSavePos);
 void        GetCachedStatusMsg(HWND hwndDlg, struct MessageWindowData *dat);
 int         MY_pathToRelative(const char *pSrc, char *pOut);
 int         MY_pathToAbsolute(const char *pSrc, char *pOut);
@@ -88,6 +88,12 @@ void        GetRealIEViewWindow(HWND hwndDlg, struct MessageWindowData *dat);
 BOOL        IsStatusEvent(int eventType);
 void        GetMyNick(HWND hwndDlg, struct MessageWindowData *dat);
 int         FindRTLLocale(struct MessageWindowData *dat);
+HICON       MY_GetContactIcon(struct MessageWindowData *dat);
+
+// mathmod
+
+void        MTH_updatePreview(HWND hwndDlg, struct MessageWindowData *dat);
+void        MTH_updateMathWindow(HWND hwndDlg, struct MessageWindowData *dat);
 
 extern BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);

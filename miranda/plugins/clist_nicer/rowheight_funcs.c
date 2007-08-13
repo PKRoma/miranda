@@ -24,9 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "rowheight_funcs.h"
 
-extern struct   CluiData g_CluiData;
-extern struct   ExtraCache *g_ExtraCache;
-
 BOOL RowHeights_Initialize(struct ClcData *dat)
 {
 	dat->max_row_height = 0;
@@ -179,47 +176,6 @@ void RowHeights_CalcRowHeights(struct ClcData *dat, HWND hwnd)
 }
 
 
-// Calc and store row height
-int __forceinline RowHeights_GetRowHeight(struct ClcData *dat, HWND hwnd, struct ClcContact *contact, int item, DWORD style)
-{
-	int height = 0;
-	//DWORD style=GetWindowLong(hwnd,GWL_STYLE);
-
-	if (!RowHeights_Alloc(dat, item + 1))
-		return -1;
-
-    height = dat->fontInfo[GetBasicFontID(contact)].fontHeight;
-
-    if(!dat->bisEmbedded) {
-        if(g_CluiData.dualRowMode != MULTIROW_NEVER && g_CluiData.dualRowMode != MULTIROW_IFSPACE && contact->type == CLCIT_CONTACT) {
-            if ((g_CluiData.dualRowMode == MULTIROW_ALWAYS || ((g_CluiData.dwFlags & CLUI_FRAME_SHOWSTATUSMSG && g_CluiData.dualRowMode == MULTIROW_IFNEEDED) && (contact->xStatus > 0 || g_ExtraCache[contact->extraCacheEntry].bStatusMsgValid > STATUSMSG_XSTATUSID))))
-                height += (dat->fontInfo[FONTID_STATUS].fontHeight + g_CluiData.avatarPadding);
-        }
-
-        // Avatar size
-        if (g_CluiData.dwFlags & CLUI_FRAME_AVATARS && contact->type == CLCIT_CONTACT && contact->ace != NULL && !(contact->ace->dwFlags & AVS_HIDEONCLIST))
-            height = max(height, g_CluiData.avatarSize + g_CluiData.avatarPadding);
-    }
-
-    // Checkbox size
-    if((style&CLS_CHECKBOXES && contact->type==CLCIT_CONTACT) ||
-        (style&CLS_GROUPCHECKBOXES && contact->type==CLCIT_GROUP) ||
-        (contact->type==CLCIT_INFO && contact->flags&CLCIIF_CHECKBOX))
-    {
-        height = max(height, dat->checkboxSize);
-    }
-
-    //height += 2 * dat->row_border;
-    // Min size
-    height = max(height, contact->type == CLCIT_GROUP ? dat->group_row_height : dat->min_row_heigh);
-    height += g_CluiData.bRowSpacing;
-
-	dat->row_heights[item] = height;
-
-	return height;
-}
-
-
 // Calc item top Y (using stored data)
 int RowHeights_GetItemTopY(struct ClcData *dat, int item)
 {
@@ -291,7 +247,10 @@ int RowHeights_HitTest(struct ClcData *dat, int pos_y)
 }
 
 int RowHeights_GetHeight(struct ClcData *dat, int item)
-{	
+{
+	if ( dat->row_heights == 0 )
+		return 0;
+
 	return dat->row_heights[ item ];
 }
 
@@ -303,13 +262,13 @@ int RowHeights_GetFloatingRowHeight(struct ClcData *dat, HWND hwnd, struct ClcCo
 
     if(!dat->bisEmbedded) {
 		if(dwFlags & FLT_DUALROW) {
-			if(g_CluiData.dualRowMode != MULTIROW_NEVER && g_CluiData.dualRowMode != MULTIROW_IFSPACE) {
-				if ((g_CluiData.dualRowMode == MULTIROW_ALWAYS || ((g_CluiData.dwFlags & CLUI_FRAME_SHOWSTATUSMSG && g_CluiData.dualRowMode == MULTIROW_IFNEEDED) && (contact->xStatus > 0 || g_ExtraCache[contact->extraCacheEntry].bStatusMsgValid > STATUSMSG_XSTATUSID))))
+			if(contact->bSecondLine != MULTIROW_NEVER && contact->bSecondLine != MULTIROW_IFSPACE) {
+				if ((contact->bSecondLine == MULTIROW_ALWAYS || ((g_CluiData.dwFlags & CLUI_FRAME_SHOWSTATUSMSG && contact->bSecondLine == MULTIROW_IFNEEDED) && (contact->xStatus > 0 || g_ExtraCache[contact->extraCacheEntry].bStatusMsgValid > STATUSMSG_XSTATUSID))))
 					height += (dat->fontInfo[FONTID_STATUS].fontHeight + g_CluiData.avatarPadding);
 			}
 		}
         // Avatar size
-        if (dwFlags & FLT_AVATARS && g_CluiData.dwFlags & CLUI_FRAME_AVATARS && contact->type == CLCIT_CONTACT && contact->ace != NULL && !(contact->ace->dwFlags & AVS_HIDEONCLIST))
+        if (dwFlags & FLT_AVATARS && contact->cFlags & ECF_AVATAR && contact->type == CLCIT_CONTACT && contact->ace != NULL && !(contact->ace->dwFlags & AVS_HIDEONCLIST))
             height = max(height, g_CluiData.avatarSize + g_CluiData.avatarPadding);
     }
 

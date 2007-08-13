@@ -1,7 +1,7 @@
 ; MSN 0.1.7.9 translation strings
 
 [MSN Protocol]
-[MSN plugin connections]
+[%s plugin connections]
 [Hotmail]
 [Hotmail Notify]
 [Hotmail from %s]

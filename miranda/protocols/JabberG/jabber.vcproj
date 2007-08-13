@@ -4,6 +4,7 @@
 	Version="7.10"
 	Name="jabber"
 	ProjectGUID="{33276462-8313-4192-8306-13717ECCA60A}"
+	RootNamespace="jabber"
 	SccProjectName="SAK"
 	SccAuxPath="SAK"
 	SccLocalPath="SAK"
@@ -231,8 +232,9 @@
 				Name="VCCLCompilerTool"
 				Optimization="3"
 				GlobalOptimizations="TRUE"
-				InlineFunctionExpansion="1"
 				FavorSizeOrSpeed="2"
+				OmitFramePointers="FALSE"
+				OptimizeForProcessor="0"
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;JABBER_EXPORTS"
 				StringPooling="TRUE"
@@ -336,6 +338,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\jabber_adhoc.cpp">
+			</File>
+			<File
 				RelativePath="jabber_agent.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -369,7 +374,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\jabber_bitmap.cpp">
+				RelativePath=".\jabber_bookmarks.cpp">
 			</File>
 			<File
 				RelativePath="jabber_byte.cpp">
@@ -405,7 +410,19 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\jabber_caps.cpp">
+			</File>
+			<File
+				RelativePath=".\jabber_opttree.cpp">
+			</File>
+			<File
 				RelativePath=".\jabber_chat.cpp">
+			</File>
+			<File
+				RelativePath=".\jabber_console.cpp">
+			</File>
+			<File
+				RelativePath=".\jabber_disco.cpp">
 			</File>
 			<File
 				RelativePath="jabber_file.cpp">
@@ -540,6 +557,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\jabber_ibb.cpp">
+			</File>
+			<File
 				RelativePath=".\jabber_icolib.cpp">
 			</File>
 			<File
@@ -574,6 +594,9 @@
 						Optimization="1"
 						AdditionalIncludeDirectories=""/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\jabber_iq_handlers.cpp">
 			</File>
 			<File
 				RelativePath="jabber_iqid.cpp">
@@ -810,6 +833,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\jabber_privacy.cpp">
+			</File>
+			<File
 				RelativePath="jabber_proxy.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -841,6 +867,12 @@
 						Optimization="1"
 						AdditionalIncludeDirectories=""/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\jabber_rc.cpp">
+			</File>
+			<File
+				RelativePath=".\jabber_search.cpp">
 			</File>
 			<File
 				RelativePath=".\jabber_secur.cpp">
@@ -946,6 +978,9 @@
 						Optimization="1"
 						AdditionalIncludeDirectories=""/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\jabber_treelist.cpp">
 			</File>
 			<File
 				RelativePath="jabber_userinfo.cpp">
@@ -1146,62 +1181,10 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\md5c.cpp">
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
+				RelativePath=".\jabber_xstatus.cpp">
 			</File>
 			<File
-				RelativePath="sha1.cpp">
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						BasicRuntimeChecks="3"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						BasicRuntimeChecks="3"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
+				RelativePath=".\jabber_zstream.cpp">
 			</File>
 		</Filter>
 		<Filter
@@ -1214,13 +1197,34 @@
 				RelativePath="jabber_byte.h">
 			</File>
 			<File
+				RelativePath=".\jabber_caps.h">
+			</File>
+			<File
+				RelativePath=".\jabber_disco.h">
+			</File>
+			<File
+				RelativePath=".\jabber_ibb.h">
+			</File>
+			<File
 				RelativePath="jabber_iq.h">
+			</File>
+			<File
+				RelativePath=".\jabber_iq_handlers.h">
 			</File>
 			<File
 				RelativePath="jabber_list.h">
 			</File>
 			<File
 				RelativePath="jabber_proxy.h">
+			</File>
+			<File
+				RelativePath=".\jabber_rc.h">
+			</File>
+			<File
+				RelativePath=".\jabber_search.h">
+			</File>
+			<File
+				RelativePath=".\jabber_opttree.h">
 			</File>
 			<File
 				RelativePath=".\jabber_secur.h">
@@ -1235,13 +1239,10 @@
 				RelativePath="jabber_xmlns.h">
 			</File>
 			<File
-				RelativePath=".\md5.h">
+				RelativePath=".\jabber_zstream.h">
 			</File>
 			<File
 				RelativePath=".\resource.h">
-			</File>
-			<File
-				RelativePath="sha1.h">
 			</File>
 			<File
 				RelativePath=".\version.h">
@@ -1257,7 +1258,16 @@
 				RelativePath="icos\addcontact.ico">
 			</File>
 			<File
+				RelativePath=".\icos\auth_revoke.ico">
+			</File>
+			<File
 				RelativePath="icos\block.ico">
+			</File>
+			<File
+				RelativePath=".\icos\bookmarks.ico">
+			</File>
+			<File
+				RelativePath=".\icos\command.ico">
 			</File>
 			<File
 				RelativePath="icos\delete.ico">
@@ -1302,10 +1312,19 @@
 				RelativePath="icos\pages.ico">
 			</File>
 			<File
+				RelativePath=".\icos\privacy_lists.ico">
+			</File>
+			<File
+				RelativePath=".\icos\refresh.ico">
+			</File>
+			<File
 				RelativePath="icos\rename.ico">
 			</File>
 			<File
 				RelativePath="icos\request.ico">
+			</File>
+			<File
+				RelativePath=".\icos\roster.ico">
 			</File>
 			<File
 				RelativePath="icos\save.ico">

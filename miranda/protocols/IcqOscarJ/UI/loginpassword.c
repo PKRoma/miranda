@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $URL$
+// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/UI/loginpassword.c,v $
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$

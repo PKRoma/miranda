@@ -910,64 +910,6 @@ END
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
-
-/////////////////////////////////////////////////////////////////////////////
-// Dutch (Netherlands) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NLD)
-#ifdef _WIN32
-LANGUAGE LANG_DUTCH, SUBLANG_DUTCH
-#pragma code_page(1252)
-#endif //_WIN32
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog
-//
-
-IDD_OPT_PROTOCOLORDER DIALOGEX 0, 0, 300, 211
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    CTEXT           "Note: Miranda IM will have to be restarted for changes to take effect.",
-                    IDC_PROTOCOLORDERWARNING,5,190,289,14,NOT WS_VISIBLE
-    GROUPBOX        "Protocol Order && Visibility",IDC_STATIC,75,0,147,185
-    CONTROL         "Tree1",IDC_PROTOCOLORDER,"SysTreeView32",TVS_NOTOOLTIPS | 
-                    WS_BORDER | WS_TABSTOP,85,40,132,95
-    LTEXT           "Show protocols in the following order, drag to choose another order:",
-                    IDC_STATIC,85,15,132,20
-    PUSHBUTTON      "Reset",IDC_RESETPROTOCOLDATA,120,140,50,14,BS_NOTIFY
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
-BEGIN
-    IDD_OPT_PROTOCOLORDER, DIALOG
-    BEGIN
-        VERTGUIDE, 8
-        VERTGUIDE, 140
-        VERTGUIDE, 158
-        VERTGUIDE, 290
-        VERTGUIDE, 297
-        BOTTOMMARGIN, 209
-        HORZGUIDE, 17
-        HORZGUIDE, 38
-        HORZGUIDE, 133
-        HORZGUIDE, 138
-    END
-END
-#endif    // APSTUDIO_INVOKED
-
-#endif    // Dutch (Netherlands) resources
-/////////////////////////////////////////////////////////////////////////////
-
-
 /////////////////////////////////////////////////////////////////////////////
 // English (Canada) resources
 

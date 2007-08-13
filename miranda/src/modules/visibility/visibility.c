@@ -137,9 +137,9 @@ static BOOL CALLBACK DlgProcVisibilityOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 			TranslateDialogDefault(hwndDlg);
 			{	HIMAGELIST hIml;
 				hIml=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),(IsWinVerXPPlus()?ILC_COLOR32:ILC_COLOR16)|ILC_MASK,3,3);
-				ImageList_AddIcon(hIml,LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_SMALLDOT)));
-				ImageList_AddIcon(hIml,LoadSkinnedIcon(SKINICON_STATUS_INVISIBLE));
-				ImageList_AddIcon(hIml,LoadSkinnedIcon(SKINICON_STATUS_OFFLINE));
+				ImageList_AddIcon_IconLibLoaded(hIml,SKINICON_OTHER_SMALLDOT);
+				ImageList_AddIcon_IconLibLoaded(hIml,SKINICON_STATUS_INVISIBLE);
+				ImageList_AddIcon_IconLibLoaded(hIml,SKINICON_STATUS_OFFLINE);
 				SendDlgItemMessage(hwndDlg,IDC_LIST,CLM_SETEXTRAIMAGELIST,0,(LPARAM)hIml);
 				hVisibleIcon=ImageList_GetIcon(hIml,1,ILD_NORMAL);
 				SendDlgItemMessage(hwndDlg,IDC_VISIBLEICON,STM_SETICON,(WPARAM)hVisibleIcon,0);
@@ -282,8 +282,8 @@ static int VisibilityOptInitialise(WPARAM wParam,LPARAM lParam)
 	odp.position = 850000000;
 	odp.hInstance = GetModuleHandle(NULL);
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_VISIBILITY);
-	odp.pszTitle = "Visibility";
-	odp.pszGroup = "Status";
+	odp.pszTitle = LPGEN("Visibility");
+	odp.pszGroup = LPGEN("Status");
 	odp.pfnDlgProc = DlgProcVisibilityOpts;
 	odp.flags = ODPF_BOLDGROUPS;
 	CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );

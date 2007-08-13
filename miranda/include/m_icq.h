@@ -4,8 +4,8 @@
 // 
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin  berg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/m_icq.h,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -82,6 +82,10 @@ typedef struct {
 // Revoke authorization
 // wParam=(WPARAM)hContact
 #define MS_REVOKE_AUTH "/RevokeAuth"
+
+// Add contact to server-list
+// wParam=(WPARAM)hContact
+#define MS_ICQ_ADDSERVCONTACT "/AddServerContact"
 
 // Display XStatus detail (internal use only)
 // wParam=(WPARAM)hContact;
@@ -186,30 +190,6 @@ typedef struct {
 #define ME_ICQ_STATUSMSGREQ      "/StatusMsgReq"
 
 
-//set owner avatar
-//wParam=0
-//lParam=(const char *)Avatar file name
-//return=0 for success
-#define PS_ICQ_SETMYAVATAR "/SetMyAvatar"
-
-//get current owner avatar
-//wParam=(char *)Buffer to file name
-//lParam=(int)Buffer size
-//return=0 for success
-#define PS_ICQ_GETMYAVATAR "/GetMyAvatar"
-
-//get size limit for avatar image
-//wParam=(int *)max width of avatar - will be set
-//lParam=(int *)max height of avatar - will be set
-//return=0 for success
-#define PS_ICQ_GETMYAVATARMAXSIZE "/GetMyAvatarMaxSize"
-
-//check if image format supported for avatars
-//wParam = 0
-//lParam = PA_FORMAT_*   // avatar format
-//return = 1 (supported) or 0 (not supported)
-#define PS_ICQ_ISAVATARFORMATSUPPORTED "/IsAvatarFormatSupported"
-
 
 /* Custom Status helper API *
  - to set custom status message & title use PS_ICQ_GETCUSTOMSTATUS to obtain
@@ -272,8 +252,8 @@ typedef struct {
 
 // Retrieves specified custom status icon
 //wParam = (int)N  // custom status id (1-32), 0 = my current custom status
-//lParam = 0
-//return = HICON   // custom status icon (use DestroyIcon to release resources)
+//lParam = flags   // use LR_SHARED for shared HICON
+//return = HICON   // custom status icon (use DestroyIcon to release resources if not LR_SHARED)
 #define PS_ICQ_GETCUSTOMSTATUSICON "/GetXStatusIcon"
 
 // Get Custom status DB field names & current owner custom status (obsolete)
@@ -294,5 +274,11 @@ typedef struct {
 //wParam = hContact    // contact changing status
 //lParam = hIcon       // HANDLE to clist extra icon set as custom status
 #define ME_ICQ_CUSTOMSTATUS_EXTRAICON_CHANGED "/XStatusExtraIconChanged"
+
+// Called from contact list in order to get index of custom status icon in list
+// wParam = hContact
+// lParam = 0
+// rerurn = (int) index of extra contact icon shifted <<16 (the low word will be normal status icon, the high will be xStatus Icon
+#define PS_ICQ_GETADVANCEDSTATUSICON "/GetAdvancedStatusIcon"
 
 #endif // M_ICQ_H__

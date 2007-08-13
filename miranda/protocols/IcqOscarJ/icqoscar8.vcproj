@@ -4,10 +4,10 @@
 	Version="7.10"
 	Name="icqoscar8"
 	ProjectGUID="{01DDCB36-4DE2-405D-BC36-2C8BDEB86659}"
-	SccProjectName="&quot;$/Miranda/miranda/protocols/IcqOscarJ&quot;, QLIAAAAA"
+	SccProjectName=""
 	SccAuxPath=""
-	SccLocalPath="."
-	SccProvider="MSSCCI:Microsoft Visual SourceSafe">
+	SccLocalPath=""
+	SccProvider="">
 	<Platforms>
 		<Platform
 			Name="Win32"/>
@@ -229,8 +229,9 @@
 				Name="VCCLCompilerTool"
 				Optimization="3"
 				GlobalOptimizations="TRUE"
-				InlineFunctionExpansion="1"
 				FavorSizeOrSpeed="2"
+				OmitFramePointers="FALSE"
+				OptimizeForProcessor="0"
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;icqoscar8_EXPORTS"
 				StringPooling="TRUE"
@@ -314,9 +315,6 @@
 				RelativePath="families.h">
 			</File>
 			<File
-				RelativePath="forkthread.h">
-			</File>
-			<File
 				RelativePath="guids.h">
 			</File>
 			<File
@@ -381,9 +379,6 @@
 			</File>
 			<File
 				RelativePath="UI\loginpassword.h">
-			</File>
-			<File
-				RelativePath="m_icq.h">
 			</File>
 			<File
 				RelativePath="md5.h">
@@ -1651,47 +1646,6 @@
 			RelativePath=".\fam_17signon.c">
 		</File>
 		<File
-			RelativePath="forkthread.c">
-			<FileConfiguration
-				Name="Release|Win32">
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="1"
-					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
-					BrowseInformation="1"/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Debug|Win32">
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="0"
-					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
-					BasicRuntimeChecks="3"
-					BrowseInformation="1"/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Debug Unicode|Win32">
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="0"
-					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
-					BasicRuntimeChecks="3"
-					BrowseInformation="1"/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Release Unicode|Win32">
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="1"
-					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
-					BrowseInformation="1"/>
-			</FileConfiguration>
-		</File>
-		<File
 			RelativePath="i18n.c">
 			<FileConfiguration
 				Name="Release|Win32">
@@ -2073,47 +2027,6 @@
 					AdditionalIncludeDirectories=""
 					PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					UsePrecompiledHeader="1"
-					BrowseInformation="1"/>
-			</FileConfiguration>
-		</File>
-		<File
-			RelativePath="md5.c">
-			<FileConfiguration
-				Name="Release|Win32">
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="1"
-					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
-					BrowseInformation="1"/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Debug|Win32">
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="0"
-					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
-					BasicRuntimeChecks="3"
-					BrowseInformation="1"/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Debug Unicode|Win32">
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="0"
-					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
-					BasicRuntimeChecks="3"
-					BrowseInformation="1"/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Release Unicode|Win32">
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="1"
-					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BrowseInformation="1"/>
 			</FileConfiguration>
 		</File>

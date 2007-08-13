@@ -22,7 +22,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 #include "clc.h"
-#include "../database/dblists.h"
 
 //routines for managing adding/removal of items in the list, including sorting
 
@@ -80,7 +79,7 @@ struct ClcGroup* fnAddGroup(HWND hwnd, struct ClcData *dat, const TCHAR *szName,
 			}
 			if (pNextField == NULL && group->cl.items[i]->groupId == 0)
 				break;
-			if (groupId && group->cl.items[i]->groupId > groupId)
+			if (!(dat->exStyle & CLS_EX_SORTGROUPSALPHA) && groupId && group->cl.items[i]->groupId > groupId)
 				break;
 		}
 		if (compareResult) {
@@ -369,7 +368,7 @@ void fnRebuildEntireList(HWND hwnd, struct ClcData *dat)
 	DBVARIANT dbv;
 
 	dat->list.expanded = 1;
-	dat->list.hideOffline = DBGetContactSettingByte(NULL, "CLC", "HideOfflineRoot", 0);
+	dat->list.hideOffline = DBGetContactSettingByte(NULL, "CLC", "HideOfflineRoot", 0) && style&CLS_USEGROUPS;
 	dat->list.cl.count = dat->list.cl.limit = 0;
 	dat->selection = -1;
 	{
@@ -392,6 +391,7 @@ void fnRebuildEntireList(HWND hwnd, struct ClcData *dat)
 				group = &dat->list;
 			else {
 				group = cli.pfnAddGroup(hwnd, dat, dbv.ptszVal, (DWORD) - 1, 0, 0);
+				if (group == NULL && style & CLS_SHOWHIDDEN) group = &dat->list;
 				mir_free(dbv.ptszVal);
 			}
 

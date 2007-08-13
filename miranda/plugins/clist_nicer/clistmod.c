@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -32,34 +32,24 @@ BOOL (WINAPI *MySetProcessWorkingSetSize)(HANDLE, SIZE_T, SIZE_T) = 0;
 extern int AddEvent(WPARAM wParam, LPARAM lParam);
 extern int RemoveEvent(WPARAM wParam, LPARAM lParam);
 
-int AddMainMenuItem(WPARAM wParam, LPARAM lParam);
-int AddContactMenuItem(WPARAM wParam, LPARAM lParam);
 int InitCustomMenus(void);
 void UninitCustomMenus(void);
 int GetContactStatusMessage(WPARAM wParam, LPARAM lParam);
-int CListOptInit(WPARAM wParam, LPARAM lParam);
 void TrayIconUpdateBase(const char *szChangedProto);
 int EventsProcessContactDoubleClick(HANDLE hContact);
 int SetHideOffline(WPARAM wParam, LPARAM lParam);
-int MenuProcessCommand(WPARAM wParam, LPARAM lParam);
 
-HANDLE hContactDoubleClicked, hStatusModeChangeEvent;
 HIMAGELIST hCListImages;
 
-extern int      currentDesiredStatusMode, g_maxStatus;
-extern HANDLE   hSvc_GetContactStatusMsg;
+extern int       g_maxStatus;
+extern HANDLE    hSvc_GetContactStatusMsg;
+extern ImageItem *g_CLUIImageItem;
 
 extern struct CluiData g_CluiData;
 
-static int SetStatusMode(WPARAM wParam, LPARAM lParam)
-{
-	MenuProcessCommand(MAKEWPARAM(LOWORD(wParam), MPCF_MAINMENU), 0);
-	return 0;
-}
-
 static int GetStatusMode(WPARAM wParam, LPARAM lParam)
 {
-	return(g_maxStatus == ID_STATUS_OFFLINE ? currentDesiredStatusMode : g_maxStatus);
+	return(g_maxStatus == ID_STATUS_OFFLINE ? pcli->currentDesiredStatusMode : g_maxStatus);
 }
 
 extern int ( *saveIconFromStatusMode )( const char *szProto, int status, HANDLE hContact );
@@ -104,9 +94,6 @@ static int ContactListShutdownProc(WPARAM wParam, LPARAM lParam)
 int LoadContactListModule(void)
 {
 	HookEvent(ME_SYSTEM_SHUTDOWN, ContactListShutdownProc);
-	HookEvent(ME_OPT_INITIALISE, CListOptInit);
-	hStatusModeChangeEvent = CreateHookableEvent(ME_CLIST_STATUSMODECHANGE);
-	CreateServiceFunction(MS_CLIST_SETSTATUSMODE, SetStatusMode);
 	CreateServiceFunction(MS_CLIST_GETSTATUSMODE, GetStatusMode);
 
 	hSvc_GetContactStatusMsg = CreateServiceFunction("CList/GetContactStatusMsg", GetContactStatusMessage);
@@ -116,7 +103,7 @@ int LoadContactListModule(void)
 }
 
 /*
-Begin of Hrk's code for bug 
+Begin of Hrk's code for bug
 */
 #define GWVS_HIDDEN 1
 #define GWVS_VISIBLE 2
@@ -141,9 +128,19 @@ int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY)
 		return GWVS_HIDDEN;
 	else {
 		HRGN rgn = 0;
-		POINT ptTest;
+		POINT ptOrig;
+        RECT  rcClient;
 		int clip = (int)g_CluiData.bClipBorder;
-		GetWindowRect(hWnd, &rc);
+
+        GetClientRect(hWnd, &rcClient);
+        ptOrig.x = ptOrig.y = 0;
+        ClientToScreen(hWnd, &ptOrig);
+        rc.left = ptOrig.x;
+        rc.top = ptOrig.y;
+        rc.right = rc.left + rcClient.right;
+        rc.bottom = rc.top + rcClient.bottom;
+
+		//GetWindowRect(hWnd, &rc);
 		width = rc.right - rc.left;
 		height = rc.bottom - rc.top;
 
@@ -162,18 +159,25 @@ int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY)
 		 * also, clip at least 2 pixels from the border (same reason)
 		 */
 
-		clip = max(clip, DBGetContactSettingByte(NULL, "CLUI", "ignoreframepixels", 2));
-		rgn = CreateRoundRectRgn(rc.left + clip, rc.top + clip, rc.right - clip, rc.bottom - clip, 10 + clip, 10 + clip);
-		for (i = rc.top + 3 + clip; i < rc.bottom - 3 - clip; i += (height / iStepY)) {
+        if(g_CLUIImageItem)
+            clip = 5;
+        else
+            clip = 0;
+        //clip = max(clip, DBGetContactSettingByte(NULL, "CLUI", "ignoreframepixels", 2));
+		//rgn = CreateRoundRectRgn(rc.left + clip, rc.top + clip, rc.right - clip, rc.bottom - clip, 10 + clip, 10 + clip);
+        //rgn = CreateRectRgn(rc.left, rc.top, rc.right, rc.bottom);
+		//for (i = rc.top + 3 + clip; i < rc.bottom - 3 - clip; i += (height / iStepY)) {
+        for (i = rc.top + clip; i < rc.bottom; i += (height / iStepY)) {
 			pt.y = i;
-			for (j = rc.left + 3 + clip; j < rc.right - 3 - clip; j += (width / iStepX)) {
-				if(rgn) {
+			//for (j = rc.left + 3 + clip; j < rc.right - 3 - clip; j += (width / iStepX)) {
+            for (j = rc.left + clip; j < rc.right; j += (width / iStepX)) {
+				/*if(rgn) {
 					ptTest.x = j;
 					ptTest.y = i;
 					if(!PtInRegion(rgn, ptTest.x, ptTest.y)) {
 						continue;
 					}
-				}
+				}*/
 				pt.x = j;
 				hAux = WindowFromPoint(pt);
 				while (GetParent(hAux) != NULL)

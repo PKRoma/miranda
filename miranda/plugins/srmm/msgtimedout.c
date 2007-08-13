@@ -26,22 +26,21 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 BOOL CALLBACK ErrorDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	char* pszError = ( char* )GetWindowLong(hwndDlg, GWL_USERDATA);
-
 	switch (msg) {
 	case WM_INITDIALOG:
 		{
 			RECT rc, rcParent;
-
-			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) pszError);
+			char *pszError = (char *) lParam;
 
 			TranslateDialogDefault(hwndDlg);
 
-			if (lParam) {
-				pszError = (char *) lParam;
-				if (!pszError||!strlen(pszError))
-					pszError = strdup(Translate("An unknown error has occured."));
-				SetDlgItemTextA(hwndDlg, IDC_ERRORTEXT, pszError);
+			if (!pszError||!strlen(pszError))
+				SetDlgItemText(hwndDlg, IDC_ERRORTEXT, TranslateT("An unknown error has occured."));
+			else {
+				TCHAR* ptszError = (TCHAR*)CallService(MS_LANGPACK_PCHARTOTCHAR,0,(LPARAM)pszError);
+
+				SetDlgItemText(hwndDlg, IDC_ERRORTEXT, ptszError);
+				mir_free(ptszError);
 			}
 
 			GetWindowRect(hwndDlg, &rc);
@@ -53,18 +52,20 @@ BOOL CALLBACK ErrorDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_COMMAND:
 		switch (LOWORD(wParam)) {
 		case IDOK:
-			if (pszError)
-				free(pszError);
 			SendMessage(GetParent(hwndDlg), DM_ERRORDECIDED, MSGERROR_RETRY, 0);
 			DestroyWindow(hwndDlg);
 			break;
 		case IDCANCEL:
-			if (pszError)
-				free(pszError);
 			SendMessage(GetParent(hwndDlg), DM_ERRORDECIDED, MSGERROR_CANCEL, 0);
 			DestroyWindow(hwndDlg);
 			break;
 		}
+		break;
+
+	case DM_ERRORDECIDED:
+		if (wParam != MSGERROR_DONE) break;
+		SendMessage(GetParent(hwndDlg), DM_ERRORDECIDED, MSGERROR_DONE, 0);
+		DestroyWindow(hwndDlg);
 		break;
 	}
 	return FALSE;

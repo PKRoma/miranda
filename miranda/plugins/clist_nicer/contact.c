@@ -101,12 +101,15 @@ static void MF_CalcFrequency(HANDLE hContact, DWORD dwCutoffDays, int doSleep)
     DBWriteContactSettingDword(hContact, "CList", "mf_count", eventCount);
 }
 
+extern TCHAR g_ptszEventName[];
+
 DWORD WINAPI MF_UpdateThread(LPVOID p)
 {
     HANDLE hContact;
-    HANDLE hEvent = OpenEvent(EVENT_ALL_ACCESS, FALSE, _T("mf_update_evt"));
+    HANDLE hEvent = OpenEvent(EVENT_ALL_ACCESS, FALSE, g_ptszEventName);
 
     WaitForSingleObject(hEvent, 20000);
+    ResetEvent(hEvent);
 
     while(mf_updatethread_running) {
         hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
@@ -114,10 +117,12 @@ DWORD WINAPI MF_UpdateThread(LPVOID p)
             MF_CalcFrequency(hContact, 50, 1);
             if(mf_updatethread_running)
                 WaitForSingleObject(hEvent, 5000);
+            ResetEvent(hEvent);
             hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
         }
         if(mf_updatethread_running)
             WaitForSingleObject(hEvent, 1000000);
+        ResetEvent(hEvent);
     }
     return 0;
 }

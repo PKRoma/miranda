@@ -92,7 +92,7 @@ static DWORD __inline GetSettingValueLength(PBYTE pSetting)
 
 static char* InsertCachedSetting( const char* szName, size_t cbNameLen, int index )
 {
-	char* newValue = (char*)HeapAlloc( hCacheHeap, HEAP_NO_SERIALIZE, cbNameLen );
+	char* newValue = (char*)HeapAlloc( hCacheHeap, 0, cbNameLen );
 	*newValue = 0;
 	strcpy(newValue+1,szName+1);
 	li.List_Insert(&lSettings,newValue,index);
@@ -101,6 +101,7 @@ static char* InsertCachedSetting( const char* szName, size_t cbNameLen, int inde
 
 static char* GetCachedSetting(const char *szModuleName,const char *szSettingName,int settingNameLen)
 {
+	static char *lastsetting = NULL;
 	int moduleNameLen = strlen(szModuleName),index;
 	char *szFullName = (char*)alloca(moduleNameLen+settingNameLen+3);
 
@@ -108,10 +109,14 @@ static char* GetCachedSetting(const char *szModuleName,const char *szSettingName
 	szFullName[moduleNameLen+1]='/';
 	strcpy(szFullName+moduleNameLen+2,szSettingName);
 
-	if ( li.List_GetIndex(&lSettings, szFullName, &index))
-		return((char*)lSettings.items[index] + 1);
+	if (lastsetting && strcmp(szFullName+1,lastsetting) == 0)
+		return lastsetting;
 
-	return InsertCachedSetting( szFullName, moduleNameLen+settingNameLen+3, index )+1;
+	if ( li.List_GetIndex(&lSettings, szFullName, &index))
+		lastsetting = (char*)lSettings.items[index] + 1;
+	else
+		lastsetting = InsertCachedSetting( szFullName, moduleNameLen+settingNameLen+3, index )+1;
+	return lastsetting;
 }
 
 static void SetCachedVariant( DBVARIANT* s /* new */, DBVARIANT* d /* cached */ )
@@ -121,9 +126,9 @@ static void SetCachedVariant( DBVARIANT* s /* new */, DBVARIANT* d /* cached */ 
 	memcpy( d, s, sizeof( DBVARIANT ));
 	if (( s->type == DBVT_UTF8 || s->type == DBVT_ASCIIZ ) && s->pszVal != NULL ) {
 		if ( szSave != NULL )
-			d->pszVal = (char*)HeapReAlloc(hCacheHeap,HEAP_NO_SERIALIZE,szSave,strlen(s->pszVal)+1);
+			d->pszVal = (char*)HeapReAlloc(hCacheHeap,0,szSave,strlen(s->pszVal)+1);
 		else
-			d->pszVal = (char*)HeapAlloc(hCacheHeap,HEAP_NO_SERIALIZE,strlen(s->pszVal)+1);
+			d->pszVal = (char*)HeapAlloc(hCacheHeap,0,strlen(s->pszVal)+1);
 		strcpy(d->pszVal,s->pszVal);
 	}
 
@@ -139,7 +144,7 @@ static void SetCachedVariant( DBVARIANT* s /* new */, DBVARIANT* d /* cached */ 
 static void FreeCachedVariant( DBVARIANT* V )
 {
 	if (( V->type == DBVT_ASCIIZ || V->type == DBVT_UTF8 ) && V->pszVal != NULL )
-		HeapFree(hCacheHeap,HEAP_NO_SERIALIZE,V->pszVal);
+		HeapFree(hCacheHeap,0,V->pszVal);
 }
 
 static DBVARIANT* GetCachedValuePtr( HANDLE hContact, char* szSetting, int bAllocate )
@@ -154,14 +159,14 @@ static DBVARIANT* GetCachedValuePtr( HANDLE hContact, char* szSetting, int bAllo
 			if ( bAllocate == -1 ) {
 				FreeCachedVariant( &V->value );
 				li.List_Remove(&lGlobalSettings,index);
-				HeapFree(hCacheHeap,HEAP_NO_SERIALIZE,V);
+				HeapFree(hCacheHeap,0,V);
 				return NULL;
 		}	}
 		else {
 			if ( bAllocate != 1 )
 				return NULL;
 
-			V = (DBCachedGlobalValue*)HeapAlloc(hCacheHeap,HEAP_NO_SERIALIZE+HEAP_ZERO_MEMORY,sizeof(DBCachedGlobalValue));
+			V = (DBCachedGlobalValue*)HeapAlloc(hCacheHeap,HEAP_ZERO_MEMORY,sizeof(DBCachedGlobalValue));
 			V->name = szSetting;
 			li.List_Insert(&lGlobalSettings,V,index);
 		}
@@ -177,10 +182,10 @@ static DBVARIANT* GetCachedValuePtr( HANDLE hContact, char* szSetting, int bAllo
 			VL = (DBCachedContactValueList*)lContacts.items[index];
 		}
 		else {
-			if ( bAllocate == -1 )
+			if ( bAllocate != 1 )
 				return NULL;
 
-			VL = (DBCachedContactValueList*)HeapAlloc(hCacheHeap,HEAP_NO_SERIALIZE+HEAP_ZERO_MEMORY,sizeof(DBCachedContactValueList));
+			VL = (DBCachedContactValueList*)HeapAlloc(hCacheHeap,HEAP_ZERO_MEMORY,sizeof(DBCachedContactValueList));
 			VL->hContact = hContact;
 			li.List_Insert(&lContacts,VL,index);
 		}
@@ -189,11 +194,11 @@ static DBVARIANT* GetCachedValuePtr( HANDLE hContact, char* szSetting, int bAllo
 			if (strcmp(V->name,szSetting)==0)
 				break;
 
-		if ( V == NULL )
-		{	if ( bAllocate != 1 )
+		if ( V == NULL ) {
+			if ( bAllocate != 1 )
 				return NULL;
 
-			V = HeapAlloc(hCacheHeap,HEAP_NO_SERIALIZE+HEAP_ZERO_MEMORY,sizeof(DBCachedContactValue));
+			V = HeapAlloc(hCacheHeap,HEAP_ZERO_MEMORY,sizeof(DBCachedContactValue));
 			V->next = VL->first;
 			VL->first = V;
 			V->name = szSetting;
@@ -207,7 +212,7 @@ static DBVARIANT* GetCachedValuePtr( HANDLE hContact, char* szSetting, int bAllo
 					V1->next = V->next;
 					break;
 				}
-			HeapFree(hCacheHeap,HEAP_NO_SERIALIZE,V);
+			HeapFree(hCacheHeap,0,V);
 			return NULL;
 		}
 
@@ -378,9 +383,17 @@ static int GetContactSetting(WPARAM wParam,LPARAM lParam)
 		return 1;
 
 	if ( dgs->pValue->type == DBVT_UTF8 ) {
-		mir_utf8decode( dgs->pValue->pszVal, NULL );
-		dgs->pValue->type = DBVT_ASCIIZ;
-	}
+		WCHAR* tmp;
+		char* val = mir_utf8decode( dgs->pValue->pszVal, &tmp );
+		if ( val == NULL ) {
+			dgs->pValue->type = DBVT_WCHAR;
+			mir_free( dgs->pValue->pszVal );
+			dgs->pValue->pwszVal = tmp;
+		}
+		else {
+			dgs->pValue->type = DBVT_ASCIIZ;
+			mir_free( tmp );
+	}	}
 
 	return 0;
 }
@@ -393,7 +406,7 @@ static int GetContactSettingStr(WPARAM wParam,LPARAM lParam)
 	if ( GetContactSettingWorker(( HANDLE )wParam, dgs, 0 ))
 		return 1;
 
-   if ( iSaveType == 0 || iSaveType == dgs->pValue->type )
+	if ( iSaveType == 0 || iSaveType == dgs->pValue->type )
 		return 0;
 
 	if ( dgs->pValue->type != DBVT_ASCIIZ && dgs->pValue->type != DBVT_UTF8 )
@@ -432,7 +445,7 @@ static int GetContactSettingStr(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int GetContactSettingStatic(WPARAM wParam,LPARAM lParam)
+int GetContactSettingStatic(WPARAM wParam,LPARAM lParam)
 {
 	DBCONTACTGETSETTING* dgs = (DBCONTACTGETSETTING*)lParam;
 	if ( GetContactSettingWorker(( HANDLE )wParam, dgs, 1 ))
@@ -467,6 +480,26 @@ static int FreeVariant(WPARAM wParam,LPARAM lParam)
 		}
 	}
 	dbv->type=0;
+	return 0;
+}
+
+static int SetSettingResident(WPARAM wParam,LPARAM lParam)
+{
+	char*  szSetting;
+	size_t cbSettingNameLen = strlen(( char* )lParam );
+	int    idx;
+	char*  szTemp = ( char* )alloca( cbSettingNameLen+2 );
+	strcpy( szTemp+1, ( char* )lParam );
+
+	EnterCriticalSection(&csDbAccess);
+	if ( !li.List_GetIndex( &lSettings, szTemp, &idx ))
+		szSetting = InsertCachedSetting( szTemp, cbSettingNameLen+2, idx );
+	else
+		szSetting = lSettings.items[ idx ];
+
+   *szSetting = (char)wParam;
+
+	LeaveCriticalSection(&csDbAccess);
 	return 0;
 }
 
@@ -915,9 +948,10 @@ int InitSettings(void)
 	CreateServiceFunction(MS_DB_CONTACT_WRITESETTING,WriteContactSetting);
 	CreateServiceFunction(MS_DB_CONTACT_DELETESETTING,DeleteContactSetting);
 	CreateServiceFunction(MS_DB_CONTACT_ENUMSETTINGS,EnumContactSettings);
+	CreateServiceFunction(MS_DB_SETSETTINGRESIDENT,SetSettingResident);
 	hSettingChangeEvent=CreateHookableEvent(ME_DB_CONTACT_SETTINGCHANGED);
 
-	hCacheHeap=HeapCreate(HEAP_NO_SERIALIZE,0,0);
+	hCacheHeap=HeapCreate(0,0,0);
 	lSettings.sortFunc=stringCompare;
 	lSettings.increment=50;
 	lContacts.sortFunc=handleCompare;

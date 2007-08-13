@@ -26,7 +26,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // RT_MANIFEST
 //
 
-1                       DISCARDABLE     "dbtool.exe.manifest"
+1                       RT_MANIFEST             "dbtool.exe.manifest"
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
@@ -46,12 +46,12 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE
+2 TEXTINCLUDE 
 BEGIN
     "#include <windows.h>\r\n"
     "\0"
@@ -189,6 +189,11 @@ BEGIN
                     WS_EX_CLIENTEDGE
     LTEXT           "Marks all the history events as read. This will rectify any problems with old messages always appearing in the message window log box.",
                     IDC_STATIC,37,73,212,24
+    CONTROL         "Convert old Unicode messages to UTF8",IDC_CONVERTUTF,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,23,101,226,10,
+                    WS_EX_CLIENTEDGE
+    LTEXT           "Converts history messages in pre-0.7 format (ANSI+UCS2) to the new UTF8 format supported by 0.7. Saves the database space in most cases (recommended).",
+                    IDC_STATIC,37,111,212,25
 END
 
 IDD_PROGRESS DIALOGEX 0, 0, 262, 143
@@ -338,8 +343,8 @@ IDI_PROFILERED          ICON                    "res\\profiler.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,4,0,0
- PRODUCTVERSION 0,4,0,0
+ FILEVERSION 0,7,0,1
+ PRODUCTVERSION 0,7,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -356,12 +361,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", " "
             VALUE "FileDescription", "Miranda IM Database Tool"
-            VALUE "FileVersion", "0.4.0"
+            VALUE "FileVersion", "0.7.0.1"
             VALUE "InternalName", "dbtool"
             VALUE "LegalCopyright", "Copyright © 2001-2006 Richard Hughes"
             VALUE "OriginalFilename", "dbtool.exe"
             VALUE "ProductName", "Miranda Database Tool"
-            VALUE "ProductVersion", "0.4.0"
+            VALUE "ProductVersion", "0.7.0.1"
         END
     END
     BLOCK "VarFileInfo"
@@ -384,3 +389,4 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
+

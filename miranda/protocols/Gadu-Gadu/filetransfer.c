@@ -26,17 +26,17 @@
 void gg_dccwait(GGTHREAD *thread)
 {
 	// Wait for DCC socket service to die
-    DWORD exitCode = 0;
-    GetExitCodeThread(thread->dccId.hThread, &exitCode);
+	DWORD exitCode = 0;
+	GetExitCodeThread(thread->dccId.hThread, &exitCode);
 	// Wait for main connection server to die
-    if (GetCurrentThreadId() != thread->dccId.dwThreadId && exitCode == STILL_ACTIVE)
+	if (GetCurrentThreadId() != thread->dccId.dwThreadId && exitCode == STILL_ACTIVE)
 	{
 #ifdef DEBUGMODE
 		gg_netlog("gg_dccstop(): Waiting until gg_dccmainthread() finished.");
 #endif
-        while (WaitForSingleObjectEx(thread->dccId.hThread, INFINITE, TRUE) != WAIT_OBJECT_0);
+		while (WaitForSingleObjectEx(thread->dccId.hThread, INFINITE, TRUE) != WAIT_OBJECT_0);
 	}
-    pthread_detach(&thread->dccId);
+	pthread_detach(&thread->dccId);
 }
 
 void *__stdcall gg_dccmainthread(void *empty);
@@ -51,23 +51,23 @@ void gg_dccstart(GGTHREAD *thread)
 	GetExitCodeThread(thread->dccId.hThread, &exitCode);
 	// Check if dcc thread isn't running already
 	if(exitCode == STILL_ACTIVE)
-    {
+	{
 #ifdef DEBUGMODE
-        gg_netlog("gg_dccstart(): DCC thread still active. Exiting...");
+		gg_netlog("gg_dccstart(): DCC thread still active. Exiting...");
 #endif
-        // Signalize mainthread it's started
-        if(thread->event) SetEvent(thread->event);
-        return;
-    }
+		// Signalize mainthread it's started
+		if(thread->event) SetEvent(thread->event);
+		return;
+	}
 
 	// Check if we wan't direct connections
 	if(!DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_DIRECTCONNS, GG_KEYDEF_DIRECTCONNS))
 	{
 #ifdef DEBUGMODE
-        gg_netlog("gg_dccstart(): No direct connections setup.");
+		gg_netlog("gg_dccstart(): No direct connections setup.");
 #endif
 		if(thread->event) SetEvent(thread->event);
-        return;
+		return;
 	}
 
 	// Start thread
@@ -76,12 +76,12 @@ void gg_dccstart(GGTHREAD *thread)
 
 void gg_dccconnect(uin_t uin)
 {
-    struct gg_dcc *dcc;
+	struct gg_dcc *dcc;
 	HANDLE hContact = gg_getcontact(uin, 0, 0, NULL);
 	DWORD ip, myuin; WORD port;
 
 #ifdef DEBUGMODE
-    gg_netlog("gg_dccconnect(): Connecting to uin %d.", uin);
+	gg_netlog("gg_dccconnect(): Connecting to uin %d.", uin);
 #endif
 
 	// If unknown user or not on list ignore
@@ -101,9 +101,9 @@ void gg_dccconnect(uin_t uin)
 	// Check if dccmainthread() running
 	if(!ggThread || !ggThread->dcc) return;
 	// Add client dcc to watches
-    pthread_mutex_lock(&threadMutex);
+	pthread_mutex_lock(&threadMutex);
 	list_add(&ggThread->watches, dcc, 0);
-    pthread_mutex_unlock(&threadMutex);
+	pthread_mutex_unlock(&threadMutex);
 }
 
 //////////////////////////////////////////////////////////
@@ -116,20 +116,20 @@ struct ftfaildata
 static void *__stdcall gg_ftfailthread(void *empty)
 {
 	struct ftfaildata *ft = (struct ftfaildata *)empty;
-    SleepEx(100, FALSE);
+	SleepEx(100, FALSE);
 #ifdef DEBUGMODE
-    gg_netlog("gg_ftfailthread(): Sending failed file transfer.");
+	gg_netlog("gg_ftfailthread(): Sending failed file transfer.");
 #endif
 	ProtoBroadcastAck(GG_PROTO, ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft->hProcess, 0);
 	free(ft);
-    return NULL;
+	return NULL;
 }
 int ftfail(HANDLE hContact)
 {
-    pthread_t tid;
+	pthread_t tid;
 	struct ftfaildata *ft = malloc(sizeof(struct ftfaildata));
 #ifdef DEBUGMODE
-    gg_netlog("gg_ftfail(): Failing file transfer...");
+	gg_netlog("gg_ftfail(): Failing file transfer...");
 #endif
 	srand(time(NULL));
 	ft->hProcess = (HANDLE)rand();
@@ -148,7 +148,7 @@ int ftfail(HANDLE hContact)
 void *__stdcall gg_dccmainthread(void *empty)
 {
 	uin_t uin;
-    struct gg_event *e;
+	struct gg_event *e;
 	struct timeval tv;
 	fd_set rd, wd;
 	int ret, maxfd;
@@ -161,34 +161,34 @@ void *__stdcall gg_dccmainthread(void *empty)
 	thread->watches = thread->transfers = thread->requests = l = NULL;
 
 #ifdef DEBUGMODE
-    gg_netlog("gg_dccmainthread(): DCC Server Thread Starting");
+	gg_netlog("gg_dccmainthread(): DCC Server Thread Starting");
 #endif
 
-    // Readup number
-    if (!(uin = DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0)))
-    {
+	// Readup number
+	if (!(uin = DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0)))
+	{
 #ifdef DEBUGMODE
-        gg_netlog("gg_dccmainthread(): No Gadu-Gadu number specified. Exiting.");
+		gg_netlog("gg_dccmainthread(): No Gadu-Gadu number specified. Exiting.");
 #endif
 		if(thread->event) SetEvent(thread->event);
-        return NULL;
-    }
+		return NULL;
+	}
 
 	// Create listen socket on config direct port
 	if(!(thread->dcc = gg_dcc_socket_create(uin, DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_DIRECTPORT, GG_KEYDEF_DIRECTPORT))))
 	{
 #ifdef DEBUGMODE
-        gg_netlog("gg_dccmainthread(): Cannot create DCC listen socket. Exiting.");
+		gg_netlog("gg_dccmainthread(): Cannot create DCC listen socket. Exiting.");
 #endif
 		// Signalize mainthread we haven't start
 		if(thread->event) SetEvent(thread->event);
-        return NULL;
+		return NULL;
 	}
 
 	gg_dcc_port = thread->dcc->port;
 	gg_dcc_ip = inet_addr("255.255.255.255");
 #ifdef DEBUGMODE
-    gg_netlog("gg_dccmainthread(): Listening on port %d.", gg_dcc_port);
+	gg_netlog("gg_dccmainthread(): Listening on port %d.", gg_dcc_port);
 #endif
 
 	// Signalize mainthread we started
@@ -197,9 +197,9 @@ void *__stdcall gg_dccmainthread(void *empty)
 	// Add main dcc handler to watches
 	list_add(&thread->watches, thread->dcc, 0);
 
-    // Do while we are in the main server thread
-    while((thread == ggThread) && thread->dcc)
-    {
+	// Do while we are in the main server thread
+	while((thread == ggThread) && thread->dcc)
+	{
 		// Timeouts
 		tv.tv_sec = 1;
 		tv.tv_usec = 0;
@@ -242,12 +242,12 @@ void *__stdcall gg_dccmainthread(void *empty)
 		}
 
 		// Process watches (carefull with l)
-        l = thread->watches;
-        pthread_mutex_lock(&threadMutex);
+		l = thread->watches;
+		pthread_mutex_lock(&threadMutex);
 		while (l)
 		{
 			struct gg_dcc *dcc = l->data;
-            l = l->next;
+			l = l->next;
 
 			if (!dcc || (!FD_ISSET(dcc->fd, &rd) && !FD_ISSET(dcc->fd, &wd)))
 				continue;
@@ -494,8 +494,8 @@ void *__stdcall gg_dccmainthread(void *empty)
 			// Free event
 			gg_free_event(e);
 		}
-        pthread_mutex_unlock(&threadMutex);
-    }
+		pthread_mutex_unlock(&threadMutex);
+	}
 
 	// Close all dcc client sockets
 	for (l = thread->watches; l; l = l->next)
@@ -522,10 +522,10 @@ void *__stdcall gg_dccmainthread(void *empty)
 	gg_dcc_port = 0;
 	gg_dcc_ip = 0;
 #ifdef DEBUGMODE
-    gg_netlog("gg_dccmainthread(): DCC Server Thread Ending");
+	gg_netlog("gg_dccmainthread(): DCC Server Thread Ending");
 #endif
 
-    return NULL;
+	return NULL;
 }
 
 ////////////////////////////////////////////////////////////
@@ -661,15 +661,15 @@ int gg_fileallow(WPARAM wParam, LPARAM lParam)
 		return 0;
 	}
 
-    // Put an offset to the file
-    fseek(dcc->file_fd, 0, SEEK_END);
-    dcc->offset = ftell(dcc->file_fd);
+	// Put an offset to the file
+	fseek(dcc->file_fd, 0, SEEK_END);
+	dcc->offset = ftell(dcc->file_fd);
 
 	// Add to watches and start transfer
 	list_add(&ggThread->watches, dcc, 0);
 
 #ifdef DEBUGMODE
-    gg_netlog("gg_fileallow(): Receiving file \"%s\" from %d.", dcc->file_info.filename, dcc->peer_uin);
+	gg_netlog("gg_fileallow(): Receiving file \"%s\" from %d.", dcc->file_info.filename, dcc->peer_uin);
 #endif
 
 	return ccs->wParam;
@@ -684,18 +684,18 @@ int gg_filedeny(WPARAM wParam, LPARAM lParam)
 	if(!dcc) return 0;
 
 	// Remove transfer from any list
-    pthread_mutex_lock(&threadMutex);
+	pthread_mutex_lock(&threadMutex);
 	if(ggThread && ggThread->watches) list_remove(&ggThread->watches, dcc, 0);
 	if(ggThread && ggThread->requests) list_remove(&ggThread->requests, dcc, 0);
 	if(ggThread && ggThread->transfers) list_remove(&ggThread->transfers, dcc, 0);
 
 #ifdef DEBUGMODE
-    gg_netlog("gg_filedeny(): Rejected file \"%s\" from/to %d.", dcc->file_info.filename, dcc->peer_uin);
+	gg_netlog("gg_filedeny(): Rejected file \"%s\" from/to %d.", dcc->file_info.filename, dcc->peer_uin);
 #endif
 
 	// Free transfer
 	gg_free_dcc(dcc);
-    pthread_mutex_unlock(&threadMutex);
+	pthread_mutex_unlock(&threadMutex);
 
 	return 0;
 }
@@ -709,7 +709,7 @@ int gg_filecancel(WPARAM wParam, LPARAM lParam)
 	if(!dcc) return 0;
 
 	// Remove transfer from any list
-    pthread_mutex_lock(&threadMutex);
+	pthread_mutex_lock(&threadMutex);
 	if(ggThread && ggThread->watches) list_remove(&ggThread->watches, dcc, 0);
 	if(ggThread && ggThread->requests) list_remove(&ggThread->requests, dcc, 0);
 	if(ggThread && ggThread->transfers) list_remove(&ggThread->transfers, dcc, 0);
@@ -724,12 +724,12 @@ int gg_filecancel(WPARAM wParam, LPARAM lParam)
 	}
 
 #ifdef DEBUGMODE
-    gg_netlog("gg_filecancel(): Canceled file \"%s\" from/to %d.", dcc->file_info.filename, dcc->peer_uin);
+	gg_netlog("gg_filecancel(): Canceled file \"%s\" from/to %d.", dcc->file_info.filename, dcc->peer_uin);
 #endif
 
 	// Free transfer
 	gg_free_dcc(dcc);
-    pthread_mutex_unlock(&threadMutex);
+	pthread_mutex_unlock(&threadMutex);
 
 	return 0;
 }

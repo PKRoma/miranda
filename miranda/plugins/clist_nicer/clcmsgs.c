@@ -28,7 +28,7 @@ UNICODE done
 extern struct CluiData g_CluiData;
 
 extern struct ExtraCache *g_ExtraCache;
-extern int g_nextExtraCacheEntry, g_maxExtraCacheEntry;
+extern int g_nextExtraCacheEntry;
 
 //processing of all the CLM_ messages incoming
 
@@ -70,6 +70,11 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
 			if(contact->bIsMeta && LOWORD(lParam) != EIMG_EXTRA && LOWORD(lParam) != EIMG_CLIENT)
 				return 0;
 
+            /*
+            if(contact->hContact == 5846286) {
+                _DebugTraceA("set extra image %d", LOWORD(lParam));
+            }
+            */
 			if(index >= 0 && index < g_nextExtraCacheEntry) {
 				g_ExtraCache[index].iExtraImage[LOWORD(lParam)] = (BYTE)HIWORD(lParam);
 				g_ExtraCache[index].iExtraValid = g_ExtraCache[index].iExtraImage[LOWORD(lParam)] != (BYTE)0xff ? (g_ExtraCache[index].iExtraValid | (1 << LOWORD(lParam))) : (g_ExtraCache[index].iExtraValid & ~(1 << LOWORD(lParam)));
@@ -128,7 +133,7 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
 			if(contact->type != CLCIT_CONTACT)
 				return 0;
 			contact->flags ^= CONTACTF_PRIORITY;
-			DBWriteContactSettingByte(contact->hContact, "CList", "Priority", contact->flags & CONTACTF_PRIORITY ? 1 : 0);
+			DBWriteContactSettingByte(contact->hContact, "CList", "Priority", (BYTE)(contact->flags & CONTACTF_PRIORITY ? 1 : 0));
 			pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
 			return 0;
 		}

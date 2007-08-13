@@ -42,8 +42,8 @@ int CluiOptInit(WPARAM wParam,LPARAM lParam)
 	odp.position=0;
 	odp.hInstance=g_hInst;
 	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_CLUI);
-	odp.pszTitle=Translate("Window");
-	odp.pszGroup=Translate("Contact List");
+	odp.pszTitle=LPGEN("Window");
+	odp.pszGroup=LPGEN("Contact List");
 	odp.pfnDlgProc=DlgProcCluiOpts;
 	odp.flags=ODPF_BOLDGROUPS;
 	odp.nIDBottomSimpleControl=IDC_STWINDOWGROUP;
@@ -51,7 +51,7 @@ int CluiOptInit(WPARAM wParam,LPARAM lParam)
 	odp.nExpertOnlyControls=sizeof(expertOnlyControls)/sizeof(expertOnlyControls[0]);
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_SBAR);
-	odp.pszTitle=Translate("Status Bar");
+	odp.pszTitle=LPGEN("Status Bar");
 	odp.pfnDlgProc=DlgProcSBarOpts;
 	odp.flags=ODPF_BOLDGROUPS|ODPF_EXPERTONLY;
 	odp.nIDBottomSimpleControl=0;
@@ -415,7 +415,6 @@ static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				    CallService(MS_CLIST_FRAMES_SETFRAMEOPTIONS,MAKEWPARAM(FO_FLAGS,hFrameHelperStatusBar),frameopt);
 
 					SendMessage(pcli->hwndContactList,WM_SIZE,0,0);
-					//CheckProtocolOrder();
 					
 					OnStatusBarBackgroundChange();
 					CluiProtocolStatusChanged(0,0);			

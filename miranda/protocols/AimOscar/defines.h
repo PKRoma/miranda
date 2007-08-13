@@ -13,15 +13,19 @@
 #include <malloc.h>
 #include <process.h>
 #include <prsht.h>
+#include <richedit.h>
 #include <stdio.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <Tmschema.h>
+#include <winuser.h>
 //Miranda IM includes
 #pragma warning( disable: 4100 )
 #pragma warning( disable: 4244 )
 #pragma warning( disable: 4201 )
 #include <newpluginapi.h>
 #include <statusmodes.h>
+#include <m_button.h>
 #include <m_clist.h>
 #include <m_clui.h>
 #include "m_cluiframes.h"
@@ -49,7 +53,9 @@
 #include "snac.h"
 #include "tlv.h"
 //rest o includes
+#include "avatars.h"
 #include "aim.h"
+#include "away.h"
 #include "utility.h"
 #include "client.h"
 #include "connection.h"
@@ -58,13 +64,13 @@
 #include "error.h"
 #include "file.h"
 #include "links.h"
-#include "md5.h"
 #include "packets.h"
 #include "popup.h"
 #include "proxy.h"
 #include "resource.h"
 #include "services.h"
 #include "server.h"
+#include "theme.h"
 #include "thread.h"
 #include "windows.h"
 //Packet Stuff
@@ -98,6 +104,7 @@
 #define AIM_KEY_II						"InstantIdle"
 #define AIM_KEY_IIT						"InstantIdleTS"
 #define AIM_KEY_CM						"CheckMail"
+#define AIM_KEY_DA						"DisableAvatars"
 
 //Other plugin Option Keys
 #define OTH_KEY_AI						"AwayIgnore"
@@ -143,6 +150,7 @@
 #define AIM_KEY_NL						"NotOnList"
 #define AIM_KEY_LM						"LastMessage"
 #define AIM_KEY_NC						"NewContact"
+#define AIM_KEY_AH						"AvatarHash"
 //File Transfer Keys
 #define AIM_KEY_FT						"FileTransfer"//1= sending 0=receiving
 #define AIM_KEY_CK						"Cookie"
@@ -273,9 +281,9 @@ public:
 	unsigned int status;//current status
 	int initial_status;//start up status
 	char* szModeMsg;//away message
+	unsigned short port;
 
 	//Some bools to keep track of different things
-	bool requesting_HTML_ModeMsg;
 	bool request_HTML_profile;
 	bool extra_icons_loaded;
 	bool freeing_DirectBoundPort;
@@ -284,6 +292,7 @@ public:
 	bool instantidle;
 	bool checking_mail;
 	bool list_received;
+	HANDLE hKeepAliveEvent;
 
 	HINSTANCE hInstance;//plugin handle instance
 	
@@ -312,6 +321,15 @@ public:
 	unsigned short mail_seqno;
 	int mail_packet_offset;
 	
+	//avatar connection stuff
+	HANDLE hAvatarConn;
+	unsigned short avatar_seqno;
+	HANDLE hAvatarEvent;
+	bool AvatarLimitThread;
+
+	//away message retrieval stuff
+	HANDLE hAwayMsgEvent;
+
 	//Some Icon handles
 	HANDLE bot_icon;
 	HANDLE icq_icon;

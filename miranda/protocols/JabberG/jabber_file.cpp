@@ -2,7 +2,7 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-06  George Hazan
+Copyright ( C ) 2005-07  George Hazan
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -30,6 +30,7 @@ Last change by : $Author$
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include "jabber_caps.h"
 
 static char* fileBaseName;
 static char* filePathName;
@@ -96,13 +97,8 @@ void __cdecl JabberFileReceiveThread( filetransfer* ft )
 
 	ft->s = NULL;
 
-	if ( ft->state==FT_RECEIVING || ft->state==FT_DONE )
-		_close( ft->fileId );
-
 	if ( ft->state==FT_DONE || ( ft->state==FT_RECEIVING && ft->std.currentFileSize < 0 ))
-		JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, ft, 0 );
-	else
-		JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
+		ft->complete();
 
 	JabberLog( "Thread ended: type=file_receive server='%s'", ft->httpHostName );
 
@@ -276,7 +272,7 @@ void __cdecl JabberFileServerThread( filetransfer* ft )
 				TCHAR* fulljid = ( TCHAR* )alloca( sizeof( TCHAR )*len );
 				wsprintf( fulljid, _T("%s/%s"), ft->jid, ptszResource );
 				XmlNodeIq iq( "set", id, fulljid );
-				XmlNode* query = iq.addQuery( "jabber:iq:oob" );
+				XmlNode* query = iq.addQuery( JABBER_FEAT_OOB );
 				query->addChild( "url", szAddr );
 				query->addChild( "desc", ft->szDescription );
 				jabberThreadInfo->send( iq );
@@ -454,7 +450,7 @@ static int JabberFileSendParse( JABBER_SOCKET s, filetransfer* ft, char* buffer,
 
 				char fileBuffer[ 2048 ];
 				int bytes = mir_snprintf( fileBuffer, sizeof(fileBuffer), "HTTP/1.1 200 OK\r\nContent-Length: %d\r\n\r\n", statbuf.st_size );
-				JabberWsSend( s, fileBuffer, bytes );
+				JabberWsSend( s, fileBuffer, bytes, MSG_DUMPASTEXT );
 
 				ft->std.sending = TRUE;
 				ft->std.currentFileProgress = 0;

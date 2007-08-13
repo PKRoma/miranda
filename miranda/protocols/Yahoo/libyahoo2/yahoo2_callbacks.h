@@ -484,8 +484,28 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_conf_message)(int id, const char *me, const c
  * 	msg  - the message
  * 	fname- the file name if direct transfer
  * 	fsize- the file size if direct transfer
+ *  ftoken - file token
+ *  y7    - flag signalling y7 transfer
  */
-void YAHOO_CALLBACK_TYPE(ext_yahoo_got_file)(int id, const char *me, const char *who, const char *url, long expires, const char *msg, const char *fname, unsigned long fesize, const char *ft_token);
+void YAHOO_CALLBACK_TYPE(ext_yahoo_got_file)(int id, const char *me, const char *who, const char *url, long expires, const char *msg, const char *fname, unsigned long fesize, const char *ft_token, int y7);
+
+
+/*
+ * Name: ext_yahoo_got_file7info
+ * 	Called when someone sends you a file
+ * Params:
+ * 	id   - the id that identifies the server connection
+ * 	me   - the identity the file was sent to
+ * 	who  - the user who sent the file
+ * 	url  - the file url
+ * 	expires  - the expiry date of the file on the server (timestamp)
+ * 	msg  - the message
+ * 	fname- the file name if direct transfer
+ * 	fsize- the file size if direct transfer
+ *  ftoken - file token
+ *  y7    - flag signalling y7 transfer
+ */
+void YAHOO_CALLBACK_TYPE(ext_yahoo_got_file7info)(int id, const char *me, const char *who, const char *url, const char *fname, const char *ft_token);
 
 
 /*
@@ -497,7 +517,20 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_got_file)(int id, const char *me, const char 
  * 	who  - who was added
  * 	msg  - any message sent
  */
-void YAHOO_CALLBACK_TYPE(ext_yahoo_contact_added)(int id, char *myid, char *who, char *msg);
+void YAHOO_CALLBACK_TYPE(ext_yahoo_contact_added)(int id, char *myid, char *who, char *fname, char *lname, char *msg);
+
+
+/*
+ * Name: ext_yahoo_buddy_group_changed
+ * 	Called when a buddy is moved from one group into another
+ * Params:
+ * 	id   - the id that identifies the server connection
+ * 	myid - the identity he was added to
+ * 	who  - who was added
+ * 	from_group  
+ *  to_group
+ */
+void YAHOO_CALLBACK_TYPE(ext_yahoo_buddy_group_changed)(int id, char *myid, char *who, char *old_group, char *new_group);
 
 
 /*
@@ -510,7 +543,7 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_contact_added)(int id, char *myid, char *who,
  * 	group  - group buddy was added to
  *  status - status of the operation
  */
-void YAHOO_CALLBACK_TYPE(ext_yahoo_buddy_added)(int id, char *myid, char *who, char *group, int status);
+void YAHOO_CALLBACK_TYPE(ext_yahoo_buddy_added)(int id, char *myid, char *who, char *group, int status, int auth);
 
 
 /*

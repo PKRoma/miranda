@@ -47,7 +47,8 @@ extern int icqGoingOnlineStatus;
 HANDLE hServerConn;
 WORD wListenPort;
 WORD wLocalSequence;
-static pthread_t serverThreadId;
+static DWORD serverThreadId;
+static HANDLE serverThreadHandle;
 
 static int handleServerPackets(unsigned char* buf, int len, serverthread_info* info);
 
@@ -227,13 +228,13 @@ void icq_serverDisconnect(BOOL bBlock)
     LeaveCriticalSection(&connectionHandleMutex);
     
     // Not called from network thread?
-    if (bBlock && GetCurrentThreadId() != serverThreadId.dwThreadId)
+    if (bBlock && GetCurrentThreadId() != serverThreadId)
     {
-      while (WaitForSingleObjectEx(serverThreadId.hThread, INFINITE, TRUE) != WAIT_OBJECT_0);
-      CloseHandle(serverThreadId.hThread);
+      while (WaitForSingleObjectEx(serverThreadHandle, INFINITE, TRUE) != WAIT_OBJECT_0);
+      CloseHandle(serverThreadHandle);
     }
     else
-      CloseHandle(serverThreadId.hThread);
+      CloseHandle(serverThreadHandle);
   }
   else
     LeaveCriticalSection(&connectionHandleMutex);
@@ -375,12 +376,12 @@ typedef struct icq_packet_async_s
   
 } icq_packet_async;
 
-static void __cdecl sendPacketAsyncThread(icq_packet_async* pArgs)
+static DWORD __stdcall sendPacketAsyncThread(icq_packet_async* pArgs)
 {
   sendServPacket(&pArgs->packet);
 
   SAFE_FREE(&pArgs);
-  return;
+  return 0;
 }
 
 
@@ -391,7 +392,7 @@ void sendServPacketAsync(icq_packet *packet)
   pArgs = (icq_packet_async*)SAFE_MALLOC(sizeof(icq_packet_async)); // This will be freed in the new thread
   memcpy(&pArgs->packet, packet, sizeof(icq_packet));
 
-  forkthread(sendPacketAsyncThread, 0, pArgs);
+  ICQCreateThread(sendPacketAsyncThread, pArgs);
 }
 
 
@@ -448,5 +449,5 @@ void icq_login(const char* szPassword)
 
   dwLocalUIN = dwUin;
 
-  serverThreadId.hThread = (HANDLE)forkthreadex(NULL, 0, icq_serverThread, stsi, 0, &serverThreadId.dwThreadId);
+  serverThreadHandle = ICQCreateThreadEx(icq_serverThread, stsi, &serverThreadId);
 }

@@ -97,7 +97,6 @@ int RandRange(int nLow, int nHigh);
 
 BOOL IsStringUIN(char* pszString);
 
-void __cdecl icq_ProtocolAckThread(icq_ack_args* pArguments);
 void icq_SendProtoAck(HANDLE hContact, DWORD dwCookie, int nAckResult, int nAckType, char* pszMessage);
 
 void SetCurrentStatus(int nStatus);
@@ -117,9 +116,6 @@ BOOL validateStatusMessageRequest(HANDLE hContact, WORD byMessageType);
 void __fastcall SAFE_FREE(void** p);
 void* __fastcall SAFE_MALLOC(size_t size);
 
-void LinkContactPhotoToFile(HANDLE hContact, char* szFile);
-void ContactPhotoSettingChanged(HANDLE hContact);
-
 HANDLE NetLib_OpenConnection(HANDLE hUser, const char* szIdent, NETLIBOPENCONNECTION* nloc);
 HANDLE NetLib_BindPort(NETLIBNEWCONNECTIONPROC_V2 pFunc, void* lParam, WORD* pwPort, DWORD* pdwIntIP);
 void NetLib_SafeCloseHandle(HANDLE *hConnection, int bServerConn);
@@ -133,6 +129,9 @@ int __fastcall ICQTranslateDialog(HWND hwndDlg);
 char* __fastcall ICQTranslate(const char* src);
 char* __fastcall ICQTranslateUtf(const char* src);
 char* __fastcall ICQTranslateUtfStatic(const char* src, char* buf);
+
+HANDLE ICQCreateThreadEx(pThreadFuncEx AFunc, void* arg, DWORD* pThreadID);
+void ICQCreateThread(pThreadFuncEx AFunc, void* arg);
 
 char* GetUserPassword(BOOL bAlways);
 WORD GetMyStatusFlags();
@@ -148,8 +147,8 @@ int MakeDirUtf(const char *dir);
 int OpenFileUtf(const char *filename, int oflag, int pmode);
 
 /* Unicode UI utility functions */
-wchar_t* GetWindowTextUcs(HWND hWnd);
-void SetWindowTextUcs(HWND hWnd, wchar_t *text);
+WCHAR* GetWindowTextUcs(HWND hWnd);
+void SetWindowTextUcs(HWND hWnd, WCHAR *text);
 char* GetWindowTextUtf(HWND hWnd);
 char* GetDlgItemTextUtf(HWND hwndDlg, int iItem);
 void SetWindowTextUtf(HWND hWnd, const char* szText);

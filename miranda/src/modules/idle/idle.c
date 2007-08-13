@@ -372,8 +372,8 @@ static int IdleOptInit(WPARAM wParam, LPARAM lParam)
 	odp.position = 100000000;
 	odp.hInstance = GetModuleHandle(NULL);
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_IDLE);
-	odp.pszGroup = "Status";
-	odp.pszTitle = "Idle";
+	odp.pszGroup = LPGEN("Status");
+	odp.pszTitle = LPGEN("Idle");
 	odp.pfnDlgProc = IdleOptsDlgProc;
 	odp.flags = ODPF_BOLDGROUPS;
 	CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
@@ -392,22 +392,20 @@ static int IdleGetInfo(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int UnloadIdleModule(WPARAM wParam, LPARAM lParam)
-{
-	IdleObject_Destroy(&gIdleObject);
-	DestroyHookableEvent(hIdleEvent);
-	hIdleEvent=NULL;
-	return 0;
-}
-
 int LoadIdleModule(void)
 {
 	bIsWTSApiPresent = InitWTSAPI();
 	MyGetLastInputInfo=(BOOL (WINAPI *)(LASTINPUTINFO*))GetProcAddress(GetModuleHandleA("user32"), "GetLastInputInfo");
 	hIdleEvent=CreateHookableEvent(ME_IDLE_CHANGED);
 	IdleObject_Create(&gIdleObject);
-    CreateServiceFunction(MS_IDLE_GETIDLEINFO, IdleGetInfo);
-	HookEvent(ME_SYSTEM_SHUTDOWN, UnloadIdleModule);
+	CreateServiceFunction(MS_IDLE_GETIDLEINFO, IdleGetInfo);
 	HookEvent(ME_OPT_INITIALISE, IdleOptInit);
 	return 0;
+}
+
+void UnloadIdleModule()
+{
+	IdleObject_Destroy(&gIdleObject);
+	DestroyHookableEvent(hIdleEvent);
+	hIdleEvent=NULL;
 }

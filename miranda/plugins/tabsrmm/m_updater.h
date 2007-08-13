@@ -39,7 +39,7 @@ static char *CreateVersionString(DWORD version, char *buf) {
 	return buf;
 }
 
-static char *CreateVersionStringPlugin(PLUGININFO *pluginInfo, char *buf) {
+static char *CreateVersionStringPlugin(PLUGININFOEX *pluginInfo, char *buf) {
 	return CreateVersionString(pluginInfo->version, buf);
 }
 

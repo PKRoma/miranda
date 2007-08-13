@@ -24,6 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "clc.h"
 
 extern HANDLE hContactIconChangedEvent;
+extern HANDLE hGroupChangeEvent;
 
 int sortByStatus;
 int sortByProto;
@@ -156,13 +157,19 @@ void fnSortContacts(void)
 
 int ContactChangeGroup(WPARAM wParam, LPARAM lParam)
 {
+	CLISTGROUPCHANGE grpChg = { sizeof(CLISTGROUPCHANGE), NULL, NULL };
+
 	CallService(MS_CLUI_CONTACTDELETED, wParam, 0);
 	if ((HANDLE) lParam == NULL)
 		DBDeleteContactSetting((HANDLE) wParam, "CList", "Group");
-	else
-		DBWriteContactSettingTString((HANDLE) wParam, "CList", "Group", cli.pfnGetGroupName(lParam, NULL));
+	else {
+		grpChg.pszNewName = cli.pfnGetGroupName(lParam, NULL);
+		DBWriteContactSettingTString((HANDLE) wParam, "CList", "Group", grpChg.pszNewName);
+	}
 	CallService(MS_CLUI_CONTACTADDED, wParam,
 		cli.pfnIconFromStatusMode((char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0), GetContactStatus((HANDLE) wParam), (HANDLE) wParam));
+
+	NotifyEventHooks(hGroupChangeEvent, wParam, (LPARAM)&grpChg);
 	return 0;
 }
 

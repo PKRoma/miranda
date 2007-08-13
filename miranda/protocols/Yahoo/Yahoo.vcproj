@@ -4,10 +4,10 @@
 	Version="7.10"
 	Name="Yahoo"
 	ProjectGUID="{E42870DB-9FED-44E7-9C93-4E64D0C87F51}"
-	SccProjectName="SAK"
-	SccAuxPath="SAK"
-	SccLocalPath="SAK"
-	SccProvider="SAK">
+	SccProjectName=""
+	SccAuxPath=""
+	SccLocalPath=""
+	SccProvider="">
 	<Platforms>
 		<Platform
 			Name="Win32"/>
@@ -15,8 +15,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="../../bin7/Debug/Plugins"
-			IntermediateDirectory="../../bin7/Debug/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -27,7 +27,7 @@
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;YAHOO_EXPORTS;HAVE_CONFIG_H"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="1"
+				RuntimeLibrary="3"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="yahoo.h"
 				WarningLevel="3"
@@ -37,6 +37,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
 				TargetMachine="1"/>
@@ -71,8 +72,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="../../bin7/Release/Plugins"
-			IntermediateDirectory="../../bin7/Release/Obj/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -136,6 +137,132 @@
 			<Tool
 				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
+		<Configuration
+			Name="Debug Unicode|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
+			ConfigurationType="2"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="../../include"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;YAHOO_EXPORTS;HAVE_CONFIG_H"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="3"
+				BufferSecurityCheck="TRUE"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="yahoo.h"
+				WarningLevel="3"
+				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="4"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				IgnoreImportLibrary="TRUE"
+				LinkIncremental="2"
+				SuppressStartupBanner="TRUE"
+				GenerateDebugInformation="TRUE"
+				TargetMachine="1"/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="TRUE"
+				SuppressStartupBanner="TRUE"
+				TargetEnvironment="1"
+				TypeLibraryName=".\Debug/Yahoo.tlb"
+				HeaderFileName=""/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1049"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="Release Unicode|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
+			ConfigurationType="2"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2"
+			WholeProgramOptimization="FALSE">
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="3"
+				GlobalOptimizations="TRUE"
+				FavorSizeOrSpeed="2"
+				OmitFramePointers="FALSE"
+				OptimizeForProcessor="0"
+				AdditionalIncludeDirectories="../../include"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;YAHOO_EXPORTS;HAVE_CONFIG_H"
+				StringPooling="TRUE"
+				RuntimeLibrary="2"
+				BufferSecurityCheck="TRUE"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough=""
+				WarningLevel="3"
+				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="3"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				IgnoreImportLibrary="TRUE"
+				GenerateDebugInformation="TRUE"
+				GenerateMapFile="TRUE"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				OptimizeForWindows98="1"
+				ImportLibrary=""
+				TargetMachine="1"/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="TRUE"
+				SuppressStartupBanner="TRUE"
+				TargetEnvironment="1"
+				TypeLibraryName=".\Release/Yahoo.tlb"
+				HeaderFileName=""/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1049"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
 	</Configurations>
 	<References>
 	</References>
@@ -156,6 +283,12 @@
 				RelativePath=".\http_gateway.c">
 			</File>
 			<File
+				RelativePath=".\icolib.c">
+			</File>
+			<File
+				RelativePath=".\ignore.c">
+			</File>
+			<File
 				RelativePath=".\im.c">
 			</File>
 			<File
@@ -165,9 +298,6 @@
 				RelativePath=".\options.c">
 			</File>
 			<File
-				RelativePath=".\pthread.c">
-			</File>
-			<File
 				RelativePath=".\search.c">
 			</File>
 			<File
@@ -175,9 +305,6 @@
 			</File>
 			<File
 				RelativePath=".\services.c">
-			</File>
-			<File
-				RelativePath=".\utf8.c">
 			</File>
 			<File
 				RelativePath=".\util.c">
@@ -201,12 +328,6 @@
 					RelativePath=".\libyahoo2\libyahoo2.c">
 				</File>
 				<File
-					RelativePath=".\libyahoo2\md5.c">
-				</File>
-				<File
-					RelativePath=".\libyahoo2\md5.h">
-				</File>
-				<File
 					RelativePath=".\libyahoo2\sha.c">
 				</File>
 				<File
@@ -222,13 +343,13 @@
 					RelativePath=".\libyahoo2\yahoo2_types.h">
 				</File>
 				<File
+					RelativePath=".\libyahoo2\yahoo_auth.c">
+				</File>
+				<File
+					RelativePath=".\libyahoo2\yahoo_auth.h">
+				</File>
+				<File
 					RelativePath=".\libyahoo2\yahoo_debug.h">
-				</File>
-				<File
-					RelativePath=".\libyahoo2\yahoo_fn.c">
-				</File>
-				<File
-					RelativePath=".\libyahoo2\yahoo_fn.h">
 				</File>
 				<File
 					RelativePath=".\libyahoo2\yahoo_httplib.c">
@@ -254,40 +375,16 @@
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl">
 			<File
-				RelativePath=".\avatar.h">
-			</File>
-			<File
-				RelativePath=".\chat.h">
-			</File>
-			<File
-				RelativePath=".\file_transfer.h">
-			</File>
-			<File
 				RelativePath=".\http_gateway.h">
 			</File>
 			<File
-				RelativePath=".\im.h">
-			</File>
-			<File
-				RelativePath=".\options.h">
+				RelativePath=".\ignore.h">
 			</File>
 			<File
 				RelativePath=".\pthread.h">
 			</File>
 			<File
 				RelativePath=".\resource.h">
-			</File>
-			<File
-				RelativePath=".\search.h">
-			</File>
-			<File
-				RelativePath=".\utf8.h">
-			</File>
-			<File
-				RelativePath=".\version.h">
-			</File>
-			<File
-				RelativePath=".\webcam.h">
 			</File>
 			<File
 				RelativePath=".\yahoo.h">

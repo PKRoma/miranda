@@ -375,7 +375,7 @@ static void DrawCheckedRect(HDC hdc, RECT *rect, COLORREF fg, COLORREF bg)
 static void PaintRect(HDC hdc, RECT *rect, COLORREF color)
 {
 	COLORREF oldcol = SetBkColor(hdc, color);
-	ExtTextOut(hdc, 0, 0, ETO_OPAQUE, rect, _T(""), 0, 0);
+	ExtTextOutA(hdc, 0, 0, ETO_OPAQUE, rect, "", 0, NULL);
 	SetBkColor(hdc, oldcol);
 }
 

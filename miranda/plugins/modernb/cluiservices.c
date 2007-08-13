@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2006 Miranda ICQ/IM project,
+Copyright 2000-2007 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -25,10 +25,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_clui.h"
 #include "commonprototypes.h"
 
-extern void cliTrayIconUpdateBase(char *szChangedProto);
+int CLUIUnreadEmailCountChanged(WPARAM wParam,LPARAM lParam)
+{
+	CallService(MS_SKINENG_INVALIDATEFRAMEIMAGE, 0 ,0);
+	return 0;
+}
+
 int CLUIServices_ProtocolStatusChanged(WPARAM wParam,LPARAM lParam)
 {
-	SkinEngine_Service_InvalidateFrameImage((WPARAM)pcli->hwndStatus,0);
+	CallService(MS_SKINENG_INVALIDATEFRAMEIMAGE,(WPARAM)pcli->hwndStatus,0);
 	if (lParam) cliTrayIconUpdateBase((char*)lParam);
 	return 0;
 }

@@ -5,8 +5,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tabsrmm_8", "tabsrmm_8.vcpr
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ICONSXP", "icons\ICONSXP\iconsxp_8.vcproj", "{987C5A57-A46B-4779-BB85-077E21F7BF7F}"
 EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "tabsrmm_setup", "tabsrmm_setup\tabsrmm_setup.vdproj", "{56017AAC-5789-4680-9CF5-314DEAE39749}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug Unicode|Win32 = Debug Unicode|Win32
@@ -31,10 +29,6 @@ Global
 		{987C5A57-A46B-4779-BB85-077E21F7BF7F}.Release Unicode|Win32.Build.0 = Release|Win32
 		{987C5A57-A46B-4779-BB85-077E21F7BF7F}.Release|Win32.ActiveCfg = Release|Win32
 		{987C5A57-A46B-4779-BB85-077E21F7BF7F}.Release|Win32.Build.0 = Release|Win32
-		{56017AAC-5789-4680-9CF5-314DEAE39749}.Debug Unicode|Win32.ActiveCfg = Debug
-		{56017AAC-5789-4680-9CF5-314DEAE39749}.Debug|Win32.ActiveCfg = Debug
-		{56017AAC-5789-4680-9CF5-314DEAE39749}.Release Unicode|Win32.ActiveCfg = Release
-		{56017AAC-5789-4680-9CF5-314DEAE39749}.Release|Win32.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

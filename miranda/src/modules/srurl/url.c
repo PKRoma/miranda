@@ -27,8 +27,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 HANDLE hUrlWindowList = NULL;
 static HANDLE hEventContactSettingChange = NULL;
 HANDLE hContactDeleted=NULL;
-HANDLE *hUrlContactMenu=NULL;
-int hUrlContactMenuCount=0;
 
 BOOL CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -57,7 +55,7 @@ static int UrlEventAdded(WPARAM wParam,LPARAM lParam)
 	cle.cbSize=sizeof(cle);
 	cle.hContact=(HANDLE)wParam;
 	cle.hDbEvent=(HANDLE)lParam;
-	cle.hIcon=LoadSkinnedIcon(SKINICON_EVENT_URL);
+	cle.hIcon = LoadSkinIcon( SKINICON_EVENT_URL );
 	cle.pszService="SRUrl/ReadUrl";
 	contactName=(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,wParam,0);
 	mir_snprintf(szTooltip,SIZEOF(szTooltip),Translate("URL from %s"),contactName);
@@ -81,7 +79,7 @@ static void RestoreUnreadUrlAlerts(void)
 
 	dbei.cbSize=sizeof(dbei);
 	cle.cbSize=sizeof(cle);
-	cle.hIcon=LoadSkinnedIcon(SKINICON_EVENT_URL);
+	cle.hIcon = LoadSkinIcon( SKINICON_EVENT_URL );
 	cle.pszService="SRUrl/ReadUrl";
 
 	hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDFIRST,0,0);
@@ -116,73 +114,49 @@ static int ContactSettingChanged(WPARAM wParam, LPARAM lParam)
 
 static int SRUrlModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
-	CLISTMENUITEM mi;
+	CLISTMENUITEM mi = { 0 };
 	PROTOCOLDESCRIPTOR **protocol;
 	int protoCount,i;
 
-	ZeroMemory(&mi,sizeof(mi));
-	mi.cbSize=sizeof(mi);
-	mi.position=-2000040000;
-	mi.flags=0;
-	mi.hIcon=LoadSkinnedIcon(SKINICON_EVENT_URL);
-	mi.pszName=Translate("Web Page Address (&URL)");
-	mi.pszService=MS_URL_SENDURL;
+	mi.cbSize = sizeof(mi);
+	mi.position = -2000040000;
+	mi.flags = CMIF_ICONFROMICOLIB;
+	mi.icolibItem = GetSkinIconHandle( SKINICON_EVENT_URL );
+	mi.pszName = LPGEN("Web Page Address (&URL)");
+	mi.pszService = MS_URL_SENDURL;
 	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&protocol);
-	for(i=0;i<protoCount;i++) {
-		if(protocol[i]->type!=PROTOTYPE_PROTOCOL) continue;
-		if(CallProtoService(protocol[i]->szName,PS_GETCAPS,PFLAGNUM_1,0)&PF1_URLSEND) {
-			mi.pszContactOwner=protocol[i]->szName;
-			hUrlContactMenu=mir_realloc(hUrlContactMenu,(hUrlContactMenuCount+1)*sizeof(HANDLE));
-			hUrlContactMenu[hUrlContactMenuCount++]=(HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
-		}
-	}
+	for ( i=0; i < protoCount; i++ ) {
+		if ( protocol[i]->type != PROTOTYPE_PROTOCOL )
+			continue;
+		if ( CallProtoService( protocol[i]->szName,PS_GETCAPS,PFLAGNUM_1,0) & PF1_URLSEND ) {
+			mi.pszContactOwner = protocol[i]->szName;
+			CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
+	}	}
+
 	RestoreUnreadUrlAlerts();
-	return 0;
-}
-
-static int UrlMenuIconChanged(WPARAM wParam, LPARAM lParam)
-{
-
-	if (hUrlContactMenu) {
-		
-		int j; 
-		CLISTMENUITEM mi;
-
-		mi.cbSize=sizeof(mi);
-		mi.flags=CMIM_ICON;
-		mi.hIcon=LoadSkinnedIcon(SKINICON_EVENT_URL);
-
-		for (j=0; j<hUrlContactMenuCount; j++) {		
-			CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)hUrlContactMenu[j],(LPARAM)&mi);
-		}
-
-	}
 	return 0;
 }
 
 static int SRUrlShutdown(WPARAM wParam,LPARAM lParam)
 {
+	if (hEventContactSettingChange)
+		UnhookEvent(hEventContactSettingChange);
 
-	if (hEventContactSettingChange)	UnhookEvent(hEventContactSettingChange);
-	if (hContactDeleted) UnhookEvent(hContactDeleted);
-	if (hUrlWindowList) {		
+	if (hContactDeleted)
+		UnhookEvent(hContactDeleted);
+
+	if (hUrlWindowList)
 		WindowList_BroadcastAsync(hUrlWindowList,WM_CLOSE,0,0);
-	}
-	if (hUrlContactMenu) {
-		mir_free(hUrlContactMenu); hUrlContactMenu=NULL;
-		hUrlContactMenuCount=0;
-	}
-	return 0;
 
+	return 0;
 }
 
 int UrlContactDeleted(WPARAM wParam, LPARAM lParam)
 {
-	HWND h;
-	h=WindowList_Find(hUrlWindowList,(HANDLE)wParam);
-	if (h) {
+	HWND h = WindowList_Find(hUrlWindowList,(HANDLE)wParam);
+	if (h)
 		SendMessage(h,WM_CLOSE,0,0);
-	}
+
 	return 0;
 }
 
@@ -191,7 +165,6 @@ int LoadSendRecvUrlModule(void)
 	hUrlWindowList=(HANDLE)CallService(MS_UTILS_ALLOCWINDOWLIST,0,0);
 	HookEvent(ME_SYSTEM_MODULESLOADED,SRUrlModulesLoaded);
 	HookEvent(ME_DB_EVENT_ADDED,UrlEventAdded);
-	HookEvent(ME_SKIN_ICONSCHANGED,UrlMenuIconChanged);
 	hEventContactSettingChange = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, ContactSettingChanged);
 	hContactDeleted = HookEvent(ME_DB_CONTACT_DELETED, UrlContactDeleted);
 	HookEvent(ME_SYSTEM_PRESHUTDOWN,SRUrlShutdown);
@@ -200,4 +173,3 @@ int LoadSendRecvUrlModule(void)
 	SkinAddNewSoundEx("RecvUrl",Translate("URL"),Translate("Incoming"));
 	return 0;
 }
-

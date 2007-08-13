@@ -48,7 +48,7 @@ struct FORK_ARG {
 
 unsigned __stdcall forkthreadex_r(void *param)
 {
-    struct FORK_ARG *fa = (struct FORK_ARG *)param;
+	struct FORK_ARG *fa = (struct FORK_ARG *)param;
 	unsigned (__stdcall * threadcode) (void *) = fa->threadcodeex;
 	void *arg = fa->arg;
 	unsigned long rc;
@@ -56,11 +56,11 @@ unsigned __stdcall forkthreadex_r(void *param)
 	CallService(MS_SYSTEM_THREAD_PUSH, 0, 0);
 	SetEvent(fa->hEvent);
 	/* Push, execute and pop thread */
-	__try 
+	__try
 	{
 		rc = threadcode(arg);
-	} 
-	__finally 
+	}
+	__finally
 	{
 		CallService(MS_SYSTEM_THREAD_POP, 0, 0);
 	}
@@ -82,7 +82,7 @@ unsigned long forkthreadex(
 	fa.arg = arg;
 	fa.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 	/* Wait until thread is pushed into the Miranda IM thread stack */
-	if(rc = _beginthreadex(sec, stacksize, forkthreadex_r, &fa, 0, thraddr)) 
+	if(rc = _beginthreadex(sec, stacksize, forkthreadex_r, &fa, 0, thraddr))
 		WaitForSingleObject(fa.hEvent,INFINITE);
 	CloseHandle(fa.hEvent);
 	return rc;
@@ -94,25 +94,25 @@ unsigned long forkthreadex(
 /* create thread */
 GGINLINE int pthread_create(pthread_t *tid, const pthread_attr_t *attr, void *(__stdcall * thread_start) (void *), void *param)
 {
-    tid->hThread = (HANDLE) forkthreadex(NULL, 0, (unsigned (__stdcall *) (void *)) thread_start, param, 0, (unsigned *) &tid->dwThreadId);
-    return 0;
+	tid->hThread = (HANDLE) forkthreadex(NULL, 0, (unsigned (__stdcall *) (void *)) thread_start, param, 0, (unsigned *) &tid->dwThreadId);
+	return 0;
 }
 
 /* detach a thread */
 int pthread_detach(pthread_t *tid)
 {
-    CloseHandle(tid->hThread);
-    return 0;
+	CloseHandle(tid->hThread);
+	return 0;
 }
 
 /* wait for thread termination */
 int pthread_join(pthread_t *tid, void **value_ptr)
 {
-    if(tid->dwThreadId == GetCurrentThreadId())
-        return 0;
+	if(tid->dwThreadId == GetCurrentThreadId())
+		return 0;
 
-    WaitForSingleObject(tid->hThread, INFINITE);
-    return 0;
+	WaitForSingleObject(tid->hThread, INFINITE);
+	return 0;
 }
 
 /* This code is not used */

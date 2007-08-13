@@ -22,9 +22,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 #include "clc.h"
-#include "../database/dblists.h"
 
 #define NEWSTR_ALLOCA(A) (A==NULL)?NULL:strcpy((char*)alloca(strlen(A)+1),A)
+
+int InitGenMenu( void );
+int UnitGenMenu( void );
+
+int InitCustomMenus( void );
+int UninitCustomMenus( void );
+
+void MTG_OnmodulesLoad( void );
 
 static HANDLE hClcWindowList;
 static HANDLE hShowInfoTipEvent;
@@ -127,6 +134,8 @@ static int ClcModulesLoaded(WPARAM wParam, LPARAM lParam)
 		cli.clcProto[cli.hClcProtoCount].dwStatus = ID_STATUS_OFFLINE;
 		cli.hClcProtoCount++;
 	}
+
+	MTG_OnmodulesLoad();
 	return 0;
 }
 
@@ -185,16 +194,6 @@ static int GetInfoTipHoverTime(WPARAM wParam, LPARAM lParam)
 	return DBGetContactSettingWord(NULL, "CLC", "InfoTipHoverTime", 750);
 }
 
-static int ClcShutdown(WPARAM wParam, LPARAM lParam)
-{
-	UnhookEvent(hAckHook);
-	UnhookEvent(hClcSettingsChanged);
-	if (cli.clcProto) mir_free(cli.clcProto);
-	FreeFileDropping();
-	FreeDisplayNameCache();
-	return 0;
-}
-
 static void SortClcByTimer( HWND hwnd )
 {
 	KillTimer( hwnd, TIMERID_DELAYEDRESORTCLC );
@@ -221,8 +220,23 @@ int LoadCLCModule(void)
 	HookEvent(ME_CLIST_CONTACTICONCHANGED, ClcContactIconChanged);
 	HookEvent(ME_SKIN_ICONSCHANGED, ClcIconsChanged);
 	hAckHook = (HANDLE) HookEvent(ME_PROTO_ACK, ClcProtoAck);
-	HookEvent(ME_SYSTEM_SHUTDOWN, ClcShutdown);
+
+	InitCustomMenus();
 	return 0;
+}
+
+void UnloadClcModule()
+{
+	UnhookEvent(hAckHook);
+	UnhookEvent(hClcSettingsChanged);
+
+	if (cli.clcProto) mir_free(cli.clcProto);
+
+	FreeFileDropping();
+	FreeDisplayNameCache();
+
+	UninitCustomMenus();
+	UnitGenMenu();	
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -295,7 +309,7 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 		KillTimer(hwnd, TIMERID_INFOTIP);
 		KillTimer(hwnd, TIMERID_RENAME);
 		cli.pfnRecalcScrollBar(hwnd, dat);
-		{                   //creating imagelist containing blue line for highlight
+		{ // creating imagelist containing blue line for highlight
 			HBITMAP hBmp, hBmpMask, hoBmp, hoMaskBmp;
 			HDC hdc,hdcMem;
 			RECT rc;
@@ -462,16 +476,22 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 	{
 		struct ClcContact *contact;
 		BYTE iExtraImage[MAXEXTRACOLUMNS];
+		BYTE flags = 0;
 		if (!cli.pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
 			memset(iExtraImage, 0xFF, SIZEOF(iExtraImage));
-		else
+		else {
 			CopyMemory(iExtraImage, contact->iExtraImage, SIZEOF(iExtraImage));
+			flags = contact->flags;
+		}
 		cli.pfnDeleteItemFromTree(hwnd, (HANDLE) wParam);
 		if (GetWindowLong(hwnd, GWL_STYLE) & CLS_SHOWHIDDEN || !DBGetContactSettingByte((HANDLE) wParam, "CList", "Hidden", 0)) {
 			NMCLISTCONTROL nm;
 			cli.pfnAddContactToTree(hwnd, dat, (HANDLE) wParam, 1, 1);
-			if (cli.pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
+			if (cli.pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL)) {
 				CopyMemory(contact->iExtraImage, iExtraImage, SIZEOF(iExtraImage));
+				if(flags & CONTACTF_CHECKED)
+					contact->flags |= CONTACTF_CHECKED;
+			}
 			nm.hdr.code = CLN_CONTACTMOVED;
 			nm.hdr.hwndFrom = hwnd;
 			nm.hdr.idFrom = GetDlgCtrlID(hwnd);
@@ -490,6 +510,8 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 		int recalcScrollBar = 0, shouldShow;
 		WORD status;
 		char *szProto;
+		HANDLE hSelItem = NULL;
+		struct ClcContact *selcontact = NULL;
 
 		szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
 		if (szProto == NULL)
@@ -499,9 +521,11 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 
 		shouldShow = (GetWindowLong(hwnd, GWL_STYLE) & CLS_SHOWHIDDEN || !DBGetContactSettingByte((HANDLE) wParam, "CList", "Hidden", 0))
 			&& (!cli.pfnIsHiddenMode(dat, status)
-			|| CallService(MS_CLIST_GETCONTACTICON, wParam, 0) != lParam);      //this means an offline msg is flashing, so the contact should be shown
+			|| CallService(MS_CLIST_GETCONTACTICON, wParam, 0) != lParam); // this means an offline msg is flashing, so the contact should be shown
 		if (!cli.pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, &group, NULL)) {
-			if (shouldShow) {
+			if (shouldShow && CallService(MS_DB_CONTACT_IS, wParam, 0)) {
+				if (dat->selection >= 0 && cli.pfnGetRowByIndex(dat, dat->selection, &selcontact, NULL) != -1)
+					hSelItem = cli.pfnContactToHItem(selcontact);
 				cli.pfnAddContactToTree(hwnd, dat, (HANDLE) wParam, 0, 0);
 				recalcScrollBar = 1;
 				cli.pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL);
@@ -511,23 +535,14 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 					dat->needsResort = 1;
 			}	}
 		}
-		else {              //item in list already
+		else { // item in list already
 			DWORD style = GetWindowLong(hwnd, GWL_STYLE);
 			if (contact->iImage == (WORD) lParam)
 				break;
 			if (!shouldShow && !(style & CLS_NOHIDEOFFLINE) && (style & CLS_HIDEOFFLINE || group->hideOffline)) {
-				HANDLE hSelItem;
-				struct ClcContact *selcontact;
-				struct ClcGroup *selgroup;
-				if (cli.pfnGetRowByIndex(dat, dat->selection, &selcontact, NULL) == -1)
-					hSelItem = NULL;
-				else
+				if (dat->selection >= 0 && cli.pfnGetRowByIndex(dat, dat->selection, &selcontact, NULL) != -1)
 					hSelItem = cli.pfnContactToHItem(selcontact);
 				cli.pfnRemoveItemFromGroup(hwnd, group, contact, 0);
-				if (hSelItem)
-					if (cli.pfnFindItem(hwnd, dat, hSelItem, &selcontact, &selgroup, NULL))
-						dat->selection = cli.pfnGetRowsPriorTo(&dat->list, selgroup, List_IndexOf(( SortedList* )&selgroup->cl, selcontact));
-
 				recalcScrollBar = 1;
 			}
 			else {
@@ -538,6 +553,13 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 					contact->flags &= ~CONTACTF_ONLINE;
 			}
 			dat->needsResort = 1;
+		}
+		if (hSelItem) {
+			struct ClcGroup *selgroup;
+			if (cli.pfnFindItem(hwnd, dat, hSelItem, &selcontact, &selgroup, NULL))
+				dat->selection = cli.pfnGetRowsPriorTo(&dat->list, selgroup, List_IndexOf(( SortedList* )&selgroup->cl, selcontact));
+			else
+				dat->selection = -1;
 		}
 		SortClcByTimer(hwnd);
 		break;
@@ -1119,17 +1141,16 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 				break;
 			case DROPTARGET_ONGROUP:
 			{
-				struct ClcContact *contact;
-				TCHAR *szGroup;
-				cli.pfnGetRowByIndex(dat, dat->selection, &contact, NULL);
-				szGroup = cli.pfnGetGroupName(contact->groupId, NULL);
-				cli.pfnGetRowByIndex(dat, dat->iDragItem, &contact, NULL);
-				if (contact->type == CLCIT_CONTACT) //dropee is a contact
-					DBWriteContactSettingTString(contact->hContact, "CList", "Group", szGroup);
-				else if (contact->type == CLCIT_GROUP) { //dropee is a group
+				struct ClcContact *contactn, *contacto;
+				cli.pfnGetRowByIndex(dat, dat->selection, &contactn, NULL);
+				cli.pfnGetRowByIndex(dat, dat->iDragItem, &contacto, NULL);
+				if (contacto->type == CLCIT_CONTACT) //dropee is a contact
+					CallService(MS_CLIST_CONTACTCHANGEGROUP, (WPARAM)contacto->hContact, contactn->groupId);
+				else if (contacto->type == CLCIT_GROUP) { //dropee is a group
 					TCHAR szNewName[120];
-					mir_sntprintf(szNewName, SIZEOF(szNewName), _T("%s\\%s"), szGroup, contact->szText);
-					cli.pfnRenameGroup( contact->groupId, szNewName );
+					TCHAR* szGroup = cli.pfnGetGroupName(contactn->groupId, NULL);
+					mir_sntprintf(szNewName, SIZEOF(szNewName), _T("%s\\%s"), szGroup, contacto->szText);
+					cli.pfnRenameGroup( contacto->groupId, szNewName );
 				}
 				break;
 			}

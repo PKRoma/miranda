@@ -97,7 +97,7 @@ BOOL CALLBACK DlgProcColorToolWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
 
 			SetDlgItemText(hwndDlg, IDC_COLORTEXT, pCC->bForeground?TranslateT("Text colour"):TranslateT("Background colour"));
-            SetWindowPos(GetDlgItem(hwndDlg, IDC_COLORTEXT), NULL,  0, 0, width, 20, 0);
+			SetWindowPos(GetDlgItem(hwndDlg, IDC_COLORTEXT), NULL,  0, 0, width, 20, 0);
 			SetWindowPos(hwndDlg, NULL, pCC->xPosition, pCC->yPosition, width, height, SWP_SHOWWINDOW);
 		}
 		break;

@@ -1,5 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
+Copyright (c) 2006-7 Boris Krasnovskiy.
 Copyright (c) 2003-5 George Hazan.
 Copyright (c) 2002-3 Richard Hughes (original version).
 
@@ -23,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "msn_global.h"
 
-int __stdcall MSN_ContactJoined( ThreadData* parInfo, HANDLE hContact )
+int  MSN_ContactJoined( ThreadData* parInfo, HANDLE hContact )
 {
 	for ( int i=0; i < parInfo->mJoinedCount; i++ )
 		if ( parInfo->mJoinedContacts[i] == hContact )
@@ -35,7 +36,7 @@ int __stdcall MSN_ContactJoined( ThreadData* parInfo, HANDLE hContact )
 	return ret;
 }
 
-int __stdcall MSN_ContactLeft( ThreadData* parInfo, HANDLE hContact )
+int  MSN_ContactLeft( ThreadData* parInfo, HANDLE hContact )
 {
 	int i;
 

@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2006 Miranda ICQ/IM project, 
+Copyright 2000-2007 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -23,17 +23,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "m_clc.h"
 #include "clc.h"
-extern BOOL CLUI__cliInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase );
-extern ON_SETALLEXTRAICON_CYCLE;
-extern BOOL CLM_AUTOREBUILD_WAS_POSTED;
+#include "commonprototypes.h"
+
 
 //processing of all the CLM_ messages incoming
 
-extern LRESULT ( *saveProcessExternalMessages )(HWND hwnd,struct ClcData *dat,UINT msg,WPARAM wParam,LPARAM lParam);
-
 LRESULT cli_ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARAM wParam,LPARAM lParam)
 {
-	switch(msg) {
+	switch(msg) 
+	{
+
 	case CLM_AUTOREBUILD:
 		if (dat->force_in_dialog)
 		{
@@ -43,7 +42,7 @@ LRESULT cli_ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARA
 		{
 			KillTimer(hwnd,TIMERID_REBUILDAFTER);
 			// Give some time to gather other events too		
-			SetTimer(hwnd,TIMERID_REBUILDAFTER,50,NULL);
+			CLUI_SafeSetTimer(hwnd,TIMERID_REBUILDAFTER,50,NULL);
 			CLM_AUTOREBUILD_WAS_POSTED=FALSE;
 		}
 		return 0;
@@ -55,10 +54,10 @@ LRESULT cli_ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARA
 
 	case CLM_SETFONT:
 		if(HIWORD(lParam)<0 || HIWORD(lParam)>FONTID_MODERN_MAX) return 0;
-		
+
 		dat->fontModernInfo[HIWORD(lParam)].hFont=(HFONT)wParam;
 		dat->fontModernInfo[HIWORD(lParam)].changed=1;
-		
+
 		RowHeights_GetMaxRowHeight(dat, hwnd);
 
 		if(LOWORD(lParam))
@@ -77,18 +76,108 @@ LRESULT cli_ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARA
 				SendMessage(hwnd,CLM_AUTOREBUILD,0,0);
 		}
 		return 0;
-
+	
 	case CLM_SETTEXTCOLOR:
 		if(wParam<0 || wParam>FONTID_MODERN_MAX) break;
-		
+
 		dat->fontModernInfo[wParam].colour=lParam;
 		dat->force_in_dialog=TRUE;
 		if (wParam==FONTID_CONTACTS) {
 			dat->fontModernInfo[FONTID_SECONDLINE].colour=lParam;
 			dat->fontModernInfo[FONTID_THIRDLINE].colour=lParam;
 		}
-		
 
+	case CLM_GETNEXTITEM:
+		{
+			struct ClcContact *contact;
+			struct ClcGroup *group;
+			int i;
+
+			if (wParam != CLGN_ROOT) {
+				if (!pcli->pfnFindItem(hwnd, dat, (HANDLE) lParam, &contact, &group, NULL))
+					return (LRESULT) (HANDLE) NULL;
+				i = li.List_IndexOf((SortedList*)&group->cl,contact);
+				if (i<0) return 0;
+			}
+			switch (wParam) 
+			{
+			case CLGN_ROOT:
+				if (dat->list.cl.count)
+					return (LRESULT) pcli->pfnContactToHItem(dat->list.cl.items[0]);
+				else
+					return (LRESULT) (HANDLE) NULL;
+			case CLGN_CHILD:
+				if (contact->type != CLCIT_GROUP)
+					return (LRESULT) (HANDLE) NULL;
+				group = contact->group;
+				if (group->cl.count == 0)
+					return (LRESULT) (HANDLE) NULL;
+				return (LRESULT) pcli->pfnContactToHItem(group->cl.items[0]);
+			case CLGN_PARENT:
+				return group->groupId | HCONTACT_ISGROUP;
+			case CLGN_NEXT:
+				if (i >= group->cl.count)
+					return (LRESULT) (HANDLE) NULL;
+				return (LRESULT) pcli->pfnContactToHItem(group->cl.items[i + 1]);
+			case CLGN_PREVIOUS:
+				if (i <= 0)
+					return (LRESULT) (HANDLE) NULL;
+				return (LRESULT) pcli->pfnContactToHItem(group->cl.items[i - 1]);
+			case CLGN_NEXTCONTACT:
+				for (i++; i < group->cl.count; i++)
+					if (group->cl.items[i]->type == CLCIT_CONTACT)
+						break;
+				if (i >= group->cl.count)
+					return (LRESULT) (HANDLE) NULL;
+				return (LRESULT) pcli->pfnContactToHItem(group->cl.items[i]);
+			case CLGN_PREVIOUSCONTACT:
+				if (i >= group->cl.count)
+					return (LRESULT) (HANDLE) NULL;
+				for (i--; i >= 0; i--)
+					if (group->cl.items[i]->type == CLCIT_CONTACT)
+						break;
+				if (i < 0)
+					return (LRESULT) (HANDLE) NULL;
+				return (LRESULT) pcli->pfnContactToHItem(group->cl.items[i]);
+			case CLGN_NEXTGROUP:
+				for (i++; i < group->cl.count; i++)
+					if (group->cl.items[i]->type == CLCIT_GROUP)
+						break;
+				if (i >= group->cl.count)
+					return (LRESULT) (HANDLE) NULL;
+				return (LRESULT) pcli->pfnContactToHItem(group->cl.items[i]);
+			case CLGN_PREVIOUSGROUP:
+				if (i >= group->cl.count)
+					return (LRESULT) (HANDLE) NULL;
+				for (i--; i >= 0; i--)
+					if (group->cl.items[i]->type == CLCIT_GROUP)
+						break;
+				if (i < 0)
+					return (LRESULT) (HANDLE) NULL;
+				return (LRESULT) pcli->pfnContactToHItem(group->cl.items[i]);
+			}
+			return (LRESULT) (HANDLE) NULL;
+		}
+		return 0;
+	case CLM_SELECTITEM:
+		{
+			struct ClcContact *contact;
+			struct ClcGroup *group, *tgroup;
+			int index=-1;
+			if (!pcli->pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, &group, NULL))
+				break;
+			for (tgroup = group; tgroup; tgroup = tgroup->parent)
+				pcli->pfnSetGroupExpand(hwnd, dat, tgroup, 1);
+			if (!contact->isSubcontact)
+				index=li.List_IndexOf((SortedList*)&group->cl,contact);
+			else
+			{
+				index=li.List_IndexOf((SortedList*)&group->cl,contact->subcontacts);
+				index+=contact->isSubcontact;
+			}
+			dat->selection = pcli->pfnGetRowsPriorTo(&dat->list, group, index);
+			pcli->pfnEnsureVisible(hwnd, dat, dat->selection, 0);			
+		}
 		return 0;
 	}
 
