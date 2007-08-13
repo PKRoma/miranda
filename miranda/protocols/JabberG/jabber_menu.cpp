@@ -68,10 +68,8 @@ int JabberMenuHandleRequestAuth( WPARAM wParam, LPARAM lParam );
 int JabberMenuHandleGrantAuth( WPARAM wParam, LPARAM lParam );
 int JabberMenuHandleConsole(WPARAM wParam, LPARAM lParam);
 
-static int sttCompareHandles( const void* p1, const void* p2 )
-{	return (long)p1 - (long)p2;
-}
-static LIST<void> arHooks( 20, sttCompareHandles );
+extern LIST<void> arHooks;
+extern LIST<void> arServices;
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // contact menu services
@@ -407,7 +405,7 @@ void JabberMenuInit()
 
 	// "Request authorization"
 	strcpy( tDest, "/RequestAuth" );
-	CreateServiceFunction( text, JabberMenuHandleRequestAuth );
+	arServices.insert( CreateServiceFunction( text, JabberMenuHandleRequestAuth ));
 	mi.pszName = LPGEN("Request authorization");
 	mi.flags = CMIF_ICONFROMICOLIB;
 	mi.position = -2000001000;
@@ -418,7 +416,7 @@ void JabberMenuInit()
 
 	// "Grant authorization"
 	strcpy( tDest, "/GrantAuth" );
-	CreateServiceFunction( text, JabberMenuHandleGrantAuth );
+	arServices.insert( CreateServiceFunction( text, JabberMenuHandleGrantAuth ));
 	mi.pszName = LPGEN("Grant authorization");
 	mi.position = -2000001001;
 	mi.icolibItem = GetIconHandle( IDI_GRANT );
@@ -426,7 +424,7 @@ void JabberMenuInit()
 
 	// Revoke auth
 	strcpy( tDest, "/RevokeAuth" );
-	CreateServiceFunction( text, JabberMenuRevokeAuth );
+	arServices.insert( CreateServiceFunction( text, JabberMenuRevokeAuth ));
 	mi.pszName = LPGEN("Revoke authorization");
 	mi.position = -2000001002;
 	mi.icolibItem = GetIconHandle( IDI_AUTHREVOKE );
@@ -434,7 +432,7 @@ void JabberMenuInit()
 
 	// "Grant authorization"
 	strcpy( tDest, "/JoinChat" );
-	CreateServiceFunction( text, JabberMenuJoinLeave );
+	arServices.insert( CreateServiceFunction( text, JabberMenuJoinLeave ));
 	mi.pszName = LPGEN("Join chat");
 	mi.position = -2000001003;
 	mi.icolibItem = GetIconHandle( IDI_GROUP );
@@ -442,7 +440,7 @@ void JabberMenuInit()
 
 	// "Convert Chat/Contact"
 	strcpy( tDest, "/ConvertChatContact" );
-	CreateServiceFunction( text, JabberMenuConvertChatContact );
+	arServices.insert( CreateServiceFunction( text, JabberMenuConvertChatContact ));
 	mi.pszName = LPGEN("Convert");
 	mi.position = -1999901004;
 	mi.icolibItem = GetIconHandle( IDI_USER2ROOM );
@@ -450,7 +448,7 @@ void JabberMenuInit()
 
 	// "Add to roster"
 	strcpy( tDest, "/AddToRoster" );
-	CreateServiceFunction( text, JabberMenuRosterAdd );
+	arServices.insert( CreateServiceFunction( text, JabberMenuRosterAdd ));
 	mi.pszName = LPGEN("Add to roster");
 	mi.position = -1999901005;
 	mi.icolibItem = GetIconHandle( IDI_ADDROSTER );
@@ -458,7 +456,7 @@ void JabberMenuInit()
 
 	// "Add to Bookmarks"
 	strcpy( tDest, "/AddToBookmarks" );
-	CreateServiceFunction( text, JabberMenuBookmarkAdd );
+	arServices.insert( CreateServiceFunction( text, JabberMenuBookmarkAdd ));
 	mi.pszName = LPGEN("Add to Bookmarks");
 	mi.position = -1999901006;
 	mi.icolibItem = GetIconHandle( IDI_BOOKMARKS);
@@ -466,7 +464,7 @@ void JabberMenuInit()
 
 	// Login/logout
 	strcpy( tDest, "/TransportLogin" );
-	CreateServiceFunction( text, JabberMenuTransportLogin );
+	arServices.insert( CreateServiceFunction( text, JabberMenuTransportLogin ));
 	mi.pszName = LPGEN("Login/logout");
 	mi.position = -1999901007;
 	mi.icolibItem = GetIconHandle( IDI_LOGIN );
@@ -474,7 +472,7 @@ void JabberMenuInit()
 
 	// Retrieve nicks
 	strcpy( tDest, "/TransportGetNicks" );
-	CreateServiceFunction( text, JabberMenuTransportResolve );
+	arServices.insert( CreateServiceFunction( text, JabberMenuTransportResolve ));
 	mi.pszName = LPGEN("Resolve nicks");
 	mi.position = -1999901008;
 	mi.icolibItem = GetIconHandle( IDI_REFRESH );
@@ -482,7 +480,7 @@ void JabberMenuInit()
 
 	// Run Commands
 	strcpy( tDest, "/RunCommands" );
-	CreateServiceFunction( text, JabberContactMenuRunCommands );
+	arServices.insert( CreateServiceFunction( text, JabberContactMenuRunCommands ));
 	mi.pszName = LPGEN("Commands");
 	mi.position = -1999901009;
 	mi.icolibItem = GetIconHandle( IDI_COMMAND );
@@ -503,7 +501,7 @@ void JabberMenuInit()
 	
 	// "Agents..."
 	strcpy( tDest, "/Agents" );
-	CreateServiceFunction( text, JabberMenuHandleAgents );
+	arServices.insert( CreateServiceFunction( text, JabberMenuHandleAgents ));
 	mi.pszName = LPGEN("Agents...");
 	mi.position = 2000050005;
 	mi.icolibItem = GetIconHandle( IDI_JABBER );
@@ -512,7 +510,7 @@ void JabberMenuInit()
 
 	// "Service Discovery..."
 	strcpy( tDest, "/ServiceDiscovery" );
-	CreateServiceFunction( text, JabberMenuHandleServiceDiscovery );
+	arServices.insert( CreateServiceFunction( text, JabberMenuHandleServiceDiscovery ));
 	mi.pszName = LPGEN("Service Discovery...");
 	mi.position = 2000050000;
 	mi.icolibItem = GetIconHandle( IDI_SERVICE_DISCOVERY );
@@ -521,7 +519,7 @@ void JabberMenuInit()
 
 	// "Bookmarks..."
 	strcpy( tDest, "/Bookmarks" );
-	CreateServiceFunction( text, JabberMenuHandleBookmarks );
+	arServices.insert( CreateServiceFunction( text, JabberMenuHandleBookmarks ));
 	mi.pszName = LPGEN("Bookmarks...");
 	mi.position = 2000050001;
 	mi.icolibItem = GetIconHandle( IDI_BOOKMARKS );
@@ -529,7 +527,7 @@ void JabberMenuInit()
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuBookmarks, ( LPARAM )&clmi );
 
 	strcpy( tDest, "/SD/MyTransports" );
-	CreateServiceFunction( text, JabberMenuHandleServiceDiscoveryMyTransports );
+	arServices.insert( CreateServiceFunction( text, JabberMenuHandleServiceDiscoveryMyTransports ));
 	mi.pszName = LPGEN("Registered Transports...");
 	mi.position = 2000050002;
 	mi.icolibItem = GetIconHandle( IDI_AGENTS );
@@ -537,7 +535,7 @@ void JabberMenuInit()
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuSDMyTransports, ( LPARAM )&clmi );
 
 	strcpy( tDest, "/SD/Transports" );
-	CreateServiceFunction( text, JabberMenuHandleServiceDiscoveryTransports );
+	arServices.insert( CreateServiceFunction( text, JabberMenuHandleServiceDiscoveryTransports ));
 	mi.pszName = LPGEN("Local Transports...");
 	mi.position = 2000050003;
 	mi.icolibItem = GetIconHandle( IDI_AGENTS );
@@ -545,7 +543,7 @@ void JabberMenuInit()
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuSDTransports, ( LPARAM )&clmi );
 
 	strcpy( tDest, "/SD/Conferences" );
-	CreateServiceFunction( text, JabberMenuHandleServiceDiscoveryConferences );
+	arServices.insert( CreateServiceFunction( text, JabberMenuHandleServiceDiscoveryConferences ));
 	mi.pszName = LPGEN("Browse Chatrooms...");
 	mi.position = 2000050004;
 	mi.icolibItem = GetIconHandle( IDI_GROUP );
@@ -554,7 +552,7 @@ void JabberMenuInit()
 
 	// "Multi-User Conference..."
 	strcpy( tDest, "/Groupchat" );
-	CreateServiceFunction( text, JabberMenuHandleGroupchat );
+	arServices.insert( CreateServiceFunction( text, JabberMenuHandleGroupchat ));
 	mi.pszName = LPGEN("Multi-User Conference...");
 	mi.position = 2000050006;
 	mi.icolibItem = GetIconHandle( IDI_GROUP );
@@ -563,7 +561,7 @@ void JabberMenuInit()
 
 	// "Change Password..."
 	strcpy( tDest, "/ChangePassword" );
-	CreateServiceFunction( text, JabberMenuHandleChangePassword );
+	arServices.insert( CreateServiceFunction( text, JabberMenuHandleChangePassword ));
 	mi.pszName = LPGEN("Change Password...");
 	mi.position = 2000050007;
 	mi.icolibItem = GetIconHandle( IDI_KEYS );
@@ -572,7 +570,7 @@ void JabberMenuInit()
 
 	// "Personal vCard..."
 	strcpy( tDest,  "/Vcard" );
-	CreateServiceFunction( text, JabberMenuHandleVcard );
+	arServices.insert( CreateServiceFunction( text, JabberMenuHandleVcard ));
 	mi.pszName = LPGEN("Personal vCard...");
 	mi.position = 2000050008;
 	mi.icolibItem = GetIconHandle( IDI_VCARD );
@@ -580,7 +578,7 @@ void JabberMenuInit()
 
 	// "Privacy lists..."
 	strcpy( tDest, "/PrivacyLists" );
-	CreateServiceFunction( text, JabberMenuHandlePrivacyLists );
+	arServices.insert( CreateServiceFunction( text, JabberMenuHandlePrivacyLists ));
 	mi.pszName = LPGEN("Privacy Lists...");
 	mi.position = 2000050009;
 	mi.icolibItem = GetIconHandle( IDI_PRIVACY_LISTS );
@@ -589,7 +587,7 @@ void JabberMenuInit()
 
 	// "XML Console"
 	strcpy( tDest, "/XMLConsole" );
-	CreateServiceFunction( text, JabberMenuHandleConsole );
+	arServices.insert( CreateServiceFunction( text, JabberMenuHandleConsole ));
 	mi.pszName = LPGEN("XML Console");
 	mi.position = 2000050010;
 	mi.icolibItem = GetIconHandle( IDI_CONSOLE );

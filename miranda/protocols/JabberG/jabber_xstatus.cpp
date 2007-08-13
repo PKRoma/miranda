@@ -35,6 +35,8 @@ Last change by : $Author: ghazan $
 
 #include "sdk/m_proto_listeningto.h"
 
+extern LIST<void> arServices;
+
 #define NUM_XMODES 61
 
 static BOOL CALLBACK SetMoodMsgDlgProc( HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lParam );
@@ -391,8 +393,8 @@ void JabberXStatusInit()
 
 	hHookStatusBuild = HookEvent(ME_CLIST_PREBUILDSTATUSMENU, CListMW_BuildStatusItems);
 
-	JCreateServiceFunction( JS_GETXSTATUS, JabberGetXStatus );
-	JCreateServiceFunction( JS_SETXSTATUS, JabberSetXStatus );
+	arServices.insert( JCreateServiceFunction( JS_GETXSTATUS, JabberGetXStatus ));
+	arServices.insert( JCreateServiceFunction( JS_SETXSTATUS, JabberSetXStatus ));
 }
 
 void JabberXStatusUninit()
