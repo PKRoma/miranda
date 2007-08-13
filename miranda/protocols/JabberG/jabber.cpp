@@ -139,6 +139,7 @@ static int sttCompareHandles( const void* p1, const void* p2 )
 {	return (long)p1 - (long)p2;
 }
 LIST<void> arHooks( 20, sttCompareHandles );
+LIST<void> arServices( 20, sttCompareHandles );
 
 int JabberOptInit( WPARAM wParam, LPARAM lParam );
 int JabberWizardInit( WPARAM wParam, LPARAM lParam );
@@ -252,7 +253,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
 	JabberMenuInit();
 	JabberWsInit();
-	HookEvent( ME_USERINFO_INITIALISE, JabberUserInfoInit );
+	arHooks.insert( HookEvent( ME_USERINFO_INITIALISE, JabberUserInfoInit ));
 	bSecureIM = (ServiceExists("SecureIM/IsContactSecured"));
 
 	if ( ServiceExists( MS_GC_REGISTER )) {
@@ -277,7 +278,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		arHooks.insert( HookEvent( szEvent, JabberGcInit ));
 	}
 
-	JCreateServiceFunction( JS_GETADVANCEDSTATUSICON, JGetAdvancedStatusIcon );
+	arServices.insert( JCreateServiceFunction( JS_GETADVANCEDSTATUSICON, JGetAdvancedStatusIcon ));
 	arHooks.insert( HookEvent( ME_SKIN2_ICONSCHANGED, ReloadIconsEventHook ));
 	arHooks.insert( HookEvent( ME_DB_CONTACT_SETTINGCHANGED, JabberDbSettingChanged ));
 	arHooks.insert( HookEvent( ME_DB_CONTACT_DELETED, JabberContactDeleted ));
@@ -311,7 +312,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	dbEventType.descr = "Chat state notifications";
 
 	JCallService( MS_DB_EVENT_REGISTERTYPE, 0, (LPARAM)&dbEventType );
-	JCreateServiceFunction( JS_DB_GETEVENTTEXT_CHATSTATES, JabberGetEventTextChatStates );
+	arServices.insert( JCreateServiceFunction( JS_DB_GETEVENTTEXT_CHATSTATES, JabberGetEventTextChatStates ));
 
 	JabberCheckAllContactsAreTransported();
 	InitCustomFolders();

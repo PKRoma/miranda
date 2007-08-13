@@ -39,6 +39,7 @@ Last change by : $Author$
 #include "jabber_caps.h"
 #include "sdk/m_proto_listeningto.h"
 
+extern LIST<void> arServices;
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // JabberAddToList - adds a contact to the contact list
@@ -1590,55 +1591,62 @@ int JabberGCGetToolTipText(WPARAM wParam, LPARAM lParam)
 
 int JabberSvcInit( void )
 {
-	JCreateServiceFunction( PS_GETCAPS, JabberGetCaps );
-	JCreateServiceFunction( PS_GETNAME, JabberGetName );
-	JCreateServiceFunction( PS_LOADICON, JabberLoadIcon );
-	JCreateServiceFunction( PS_BASICSEARCH, JabberBasicSearch );
-	JCreateServiceFunction( PS_SEARCHBYEMAIL, JabberSearchByEmail );
-	JCreateServiceFunction( PS_SEARCHBYNAME, JabberSearchByName );
-	JCreateServiceFunction( PS_ADDTOLIST, JabberAddToList );
-	JCreateServiceFunction( PS_ADDTOLISTBYEVENT, JabberAddToListByEvent );
-	JCreateServiceFunction( PS_AUTHALLOW, JabberAuthAllow );
-	JCreateServiceFunction( PS_AUTHDENY, JabberAuthDeny );
-	JCreateServiceFunction( PS_SETSTATUS, JabberSetStatus );
-	JCreateServiceFunction( PS_GETAVATARINFO, JabberGetAvatarInfo );
-	JCreateServiceFunction( PS_GETSTATUS, JabberGetStatus );
-	JCreateServiceFunction( PS_SETAWAYMSG, JabberSetAwayMsg );
-	JCreateServiceFunction( PS_FILERESUME, JabberFileResume );
+	arServices.insert( JCreateServiceFunction( PS_GETCAPS, JabberGetCaps ));
+	arServices.insert( JCreateServiceFunction( PS_GETNAME, JabberGetName ));
+	arServices.insert( JCreateServiceFunction( PS_LOADICON, JabberLoadIcon ));
+	arServices.insert( JCreateServiceFunction( PS_BASICSEARCH, JabberBasicSearch ));
+	arServices.insert( JCreateServiceFunction( PS_SEARCHBYEMAIL, JabberSearchByEmail ));
+	arServices.insert( JCreateServiceFunction( PS_SEARCHBYNAME, JabberSearchByName ));
+	arServices.insert( JCreateServiceFunction( PS_ADDTOLIST, JabberAddToList ));
+	arServices.insert( JCreateServiceFunction( PS_ADDTOLISTBYEVENT, JabberAddToListByEvent ));
+	arServices.insert( JCreateServiceFunction( PS_AUTHALLOW, JabberAuthAllow ));
+	arServices.insert( JCreateServiceFunction( PS_AUTHDENY, JabberAuthDeny ));
+	arServices.insert( JCreateServiceFunction( PS_SETSTATUS, JabberSetStatus ));
+	arServices.insert( JCreateServiceFunction( PS_GETAVATARINFO, JabberGetAvatarInfo ));
+	arServices.insert( JCreateServiceFunction( PS_GETSTATUS, JabberGetStatus ));
+	arServices.insert( JCreateServiceFunction( PS_SETAWAYMSG, JabberSetAwayMsg ));
+	arServices.insert( JCreateServiceFunction( PS_FILERESUME, JabberFileResume ));
 
-	JCreateServiceFunction( PS_SET_LISTENINGTO, JabberSetListeningTo );
+	arServices.insert( JCreateServiceFunction( PS_SET_LISTENINGTO, JabberSetListeningTo ));
 
-	JCreateServiceFunction( PSS_GETINFO, JabberGetInfo );
-	JCreateServiceFunction( PSS_SETAPPARENTMODE, JabberSetApparentMode );
-	JCreateServiceFunction( PSS_MESSAGE, JabberSendMessage );
-	JCreateServiceFunction( PSS_GETAWAYMSG, JabberGetAwayMsg );
-	JCreateServiceFunction( PSS_FILEALLOW, JabberFileAllow );
-	JCreateServiceFunction( PSS_FILECANCEL, JabberFileCancel );
-	JCreateServiceFunction( PSS_FILEDENY, JabberFileDeny );
-	JCreateServiceFunction( PSS_FILE, JabberSendFile );
-	JCreateServiceFunction( PSR_MESSAGE, JabberRecvMessage );
-	JCreateServiceFunction( PSR_FILE, JabberRecvFile );
-	JCreateServiceFunction( PSS_USERISTYPING, JabberUserIsTyping );
+	arServices.insert( JCreateServiceFunction( PSS_GETINFO, JabberGetInfo ));
+	arServices.insert( JCreateServiceFunction( PSS_SETAPPARENTMODE, JabberSetApparentMode ));
+	arServices.insert( JCreateServiceFunction( PSS_MESSAGE, JabberSendMessage ));
+	arServices.insert( JCreateServiceFunction( PSS_GETAWAYMSG, JabberGetAwayMsg ));
+	arServices.insert( JCreateServiceFunction( PSS_FILEALLOW, JabberFileAllow ));
+	arServices.insert( JCreateServiceFunction( PSS_FILECANCEL, JabberFileCancel ));
+	arServices.insert( JCreateServiceFunction( PSS_FILEDENY, JabberFileDeny ));
+	arServices.insert( JCreateServiceFunction( PSS_FILE, JabberSendFile ));
+	arServices.insert( JCreateServiceFunction( PSR_MESSAGE, JabberRecvMessage ));
+	arServices.insert( JCreateServiceFunction( PSR_FILE, JabberRecvFile ));
+	arServices.insert( JCreateServiceFunction( PSS_USERISTYPING, JabberUserIsTyping ));
 
 	//JEP-055 aware CUSTOM SEARCHING (jabber_search.h)
-	JCreateServiceFunction( PS_CREATEADVSEARCHUI, JabberSearchCreateAdvUI );
-	JCreateServiceFunction( PS_SEARCHBYADVANCED, JabberSearchByAdvanced );
+	arServices.insert( JCreateServiceFunction( PS_CREATEADVSEARCHUI, JabberSearchCreateAdvUI ));
+	arServices.insert( JCreateServiceFunction( PS_SEARCHBYADVANCED, JabberSearchByAdvanced ));
 
 	// Protocol services and events...
 	heventRawXMLIn = JCreateHookableEvent( JE_RAWXMLIN );
 	heventRawXMLOut = JCreateHookableEvent( JE_RAWXMLOUT );
-	JCreateServiceFunction( JS_SENDXML, ServiceSendXML );
-	JCreateServiceFunction( PS_GETMYAVATAR, JabberGetAvatar );
-	JCreateServiceFunction( PS_GETAVATARCAPS, JabberGetAvatarCaps );
-	JCreateServiceFunction( PS_SETMYAVATAR, JabberSetAvatar );
+	arServices.insert( JCreateServiceFunction( JS_SENDXML, ServiceSendXML ));
+	arServices.insert( JCreateServiceFunction( PS_GETMYAVATAR, JabberGetAvatar ));
+	arServices.insert( JCreateServiceFunction( PS_GETAVATARCAPS, JabberGetAvatarCaps ));
+	arServices.insert( JCreateServiceFunction( PS_SETMYAVATAR, JabberSetAvatar ));
 
 	// service to get from protocol chat buddy info
-	JCreateServiceFunction( MS_GC_PROTO_GETTOOLTIPTEXT, JabberGCGetToolTipText );
+	arServices.insert( JCreateServiceFunction( MS_GC_PROTO_GETTOOLTIPTEXT, JabberGCGetToolTipText ));
 
 	return 0;
 }
 
 int JabberSvcUninit()
 {
+	for ( int i=0; i < arServices.getCount(); i++ )
+		DestroyServiceFunction( arServices[i] );
+	arServices.destroy();
+
+	DestroyHookableEvent( heventRawXMLIn );
+	DestroyHookableEvent( heventRawXMLOut );
+
 	return 0;
 }

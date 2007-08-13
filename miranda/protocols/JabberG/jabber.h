@@ -169,7 +169,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef SPI_GETSCREENSAVERRUNNING
 #define SPI_GETSCREENSAVERRUNNING 114
 #endif
-#define IDC_STATIC ( -1 )
 
 // Icon list
 enum {
