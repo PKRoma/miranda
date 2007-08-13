@@ -1,7 +1,7 @@
                    Miranda Instant Messenger Release Notes
                    ---------------------------------------
 
-                             November 2006 (v0.6)
+                                    v0.7
 
                           http://www.miranda-im.org
 
@@ -22,19 +22,107 @@ Contents
 
 1. New in this version
 ----------------------
-
-This section lists some of the changes between different releases. We have tried
-to list all the important ones without getting too technical. 
-
-If you want to see the full changelogs, go here:
-http://files.miranda-im.org/builds/ChangeLog
-
-* New in 0.6
+* New in 0.7
 Enhancements:
- - FIXME
+ - TDB
+Bugfixes:
+ - TBD
+
+* New in 0.6.8
+Bugfixes:
+ - AIM: Fixed issue with outgoing messages with double quotes
+ - AIM: Fixed issue with converting links in incoming messages
+ - IRC: Fixed crash with "perform" command in IRC options tab
+ - Jabber: Fixed auth error via SSL ("SSL negotiation failed")
+ - Jabber: Fixed OS version detection under Windows Vista
+ - MSN: Fixed idle mode support
+ - MSN: Fixed typing notifications
+ - MSN: Improved group handling
+ - MSN: Improved file transfers
+
+* New in 0.6.7
+Bugfixes
+ - Jabber: Fixed crash on exit when using Jabber
+ - MSN: Uploading avatars was broken
+
+* New in 0.6.6
+Bugfixes
+ - Fixed dragging/dropping file with non-locale characters into message window
+ - Logging large chunks of data to disk could cause crash
+ - Fetching events from the database sometimes failed
+ - Sounds in message windows didn't play properly
+
+* New in 0.6.5
+Bugfixes
+ - Update notification module not loaded correctly
+
+* New in 0.6.4
+Enhancements
+ - Update notification added to notify of new Miranda IM releases
+ - Improved dbTool and now supports language packs (translations)
+ - Some cosmetic changes to the profile selection dialog
+
+Bugfixes
+ - "Read Message" hotkey opened contact list if no events were present
+ - Translation fix in Find/Add error message
+ - Improved UPnP support and disabled UPnP cleanup when no incoming connections available
+ - Show file transfers correctly in message window
+ - Improved UPnP router support
+ - UPnP cleanup will not run if there are no incoming connections
+
+* New in 0.6.3
+Bugfixes
+ - Pin to Desktop was broken
+ - AIM: Auto response messages weren't shown as auto responses
+
+* New in 0.6.2
+Enhancements
+ - Improved unicode support in path utilities
+ - UPnP routers that use chunked encoding are now supported
+ - Added ability to enable/disable sounds globally
+
+Bugfixes
+ - Tooltips on button controls displayed incorrectly in ANSI version
+ - Enabling/disabling first group of sounds in options didn't enable apply button
+ - Path in sound options was cut off for long paths
+ - Some dialog backgrounds were not using system colors
+ - Global hotkeys didn't work correctly
+ - AIM: Messages were not received properly
+ - AIM: Fixed formatting of outgoing unicode messages (AIM 5.9 was affected)
+ - ICQ: Fixed compatibility issues with ICQ 6
+ - ICQ: Fixed Meebo client detection
+
+* New in 0.6.1
+Enhancements
+ - Added option to enable/disable UPnP support
+ - Improved control/shift/enter behavior in chat windows
+ 
+Bugfixes:
+ - History button in chats didn't open history
+ - Fixed network bind plugin compatibility issues with older plugins
+ 
+* New in 0.6
+Enhancements
+ - Implemented UPnP support
+ - Core support for memory operations, strings, utf8 support, threading
+ - Tabbed options support
+ - ICQ: GDI resources optimization for extended status icons
+ - Jabber: Support for NTLM & MD5-DIGEST auth modes
+ - MSN: Support for WLM8 direct transfers
+ - MSN: File transfers added for the HTTP gateway mode
+ - MSN: Improved keep-alive packets sending
+ - Jabber: Ability to remove your account from the server
+ - Jabber: Ability to resolve nick names for transports
 
 Bugfixes:
- - FIXME
+ - AIM: Fix for file transfers
+ - ICQ: Some fixes for avatars
+ - IRC: Fix for nicknames which contain spaces
+ - Jabber: Added language id to the login request ('en')
+ - Jabber: Jabber crashes on very large images in vCards
+ - Jabber: Fix for issues with backslashes in the transports names
+ - Jabber: Fix for sending files to Pandion IM
+ - MSN: Improved error 217 (contact already exists) processing.
 
 * New in 0.5.1
 Enhancements
