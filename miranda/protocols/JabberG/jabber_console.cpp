@@ -97,20 +97,29 @@ static HANDLE hThreadConsole = NULL;
 
 void JabberConsoleProcessXml(XmlNode *node, DWORD flags)
 {
-	if (hwndJabberConsole)
+	if (node && hwndJabberConsole)
 	{
-		StringBuf buf = {0};
-		sttAppendBufRaw(&buf, RTF_HEADER);
-		sttRtfAppendXml(&buf, node, flags, 1);
-		sttAppendBufRaw(&buf, RTF_SEPARATOR);
-		sttAppendBufRaw(&buf, RTF_FOOTER);
-		SendMessage(hwndJabberConsole, WM_JABBER_REFRESH, 0, (LPARAM)&buf);
-		sttEmptyBuf(&buf);
+		if (node->name)
+		{
+			StringBuf buf = {0};
+			sttAppendBufRaw(&buf, RTF_HEADER);
+			sttRtfAppendXml(&buf, node, flags, 1);
+			sttAppendBufRaw(&buf, RTF_SEPARATOR);
+			sttAppendBufRaw(&buf, RTF_FOOTER);
+			SendMessage(hwndJabberConsole, WM_JABBER_REFRESH, 0, (LPARAM)&buf);
+			sttEmptyBuf(&buf);
+		} else
+		{
+			for (int i = 0; i < node->numChild; ++i)
+				JabberConsoleProcessXml(node->child[i], flags);
+		}
 	}
 }
 
 static void sttAppendBufRaw(StringBuf *buf, char *str)
 {
+	if (!str) return;
+
 	int length = lstrlenA(str);
 	if (buf->size - buf->offset < length+1)
 	{
@@ -124,6 +133,8 @@ static void sttAppendBufRaw(StringBuf *buf, char *str)
 static void sttAppendBufA(StringBuf *buf, char *str)
 {
 	char tmp[32];
+
+	if (!str) return;
 
 	for (char *p = str; *p; ++p)
 	{
@@ -145,6 +156,8 @@ static void sttAppendBufA(StringBuf *buf, char *str)
 static void sttAppendBufW(StringBuf *buf, WCHAR *str)
 {
 	char tmp[32];
+
+	if (!str) return;
 
 	sttAppendBufRaw(buf, "{\\uc1 ");
 	for (WCHAR *p = str; *p; ++p)
@@ -202,20 +215,23 @@ static void sttRtfAppendXml(StringBuf *buf, XmlNode *node, DWORD flags, int inde
 		sttAppendBufRaw(buf, RTF_ENDATTRNAME);
 		sttAppendBufRaw(buf, "=\"");
 		sttAppendBufRaw(buf, RTF_BEGINATTRVAL);
-		if (flags & JCPF_UTF8)
+		if (node->attr[i]->value)
 		{
-			wchar_t *tmp = mir_utf8decodeW(node->attr[i]->sendValue);
+			if (flags & JCPF_UTF8)
+			{
+				wchar_t *tmp = mir_utf8decodeW(node->attr[i]->sendValue);
 #if defined( _UNICODE )
-			sttAppendBufW(buf, tmp);
+				sttAppendBufW(buf, tmp);
 #else
-			char *szTmp2 = mir_u2a(tmp);
-			sttAppendBufA(buf, szTmp2);
-			mir_free(szTmp2);
+				char *szTmp2 = mir_u2a(tmp);
+				sttAppendBufA(buf, szTmp2);
+				mir_free(szTmp2);
 #endif
-			mir_free(tmp);
-		} else
-		{
-			sttAppendBufT(buf, node->attr[i]->value);
+				mir_free(tmp);
+			} else
+			{
+				sttAppendBufT(buf, node->attr[i]->value);
+			}
 		}
 		sttAppendBufRaw(buf, "\"");
 		sttAppendBufRaw(buf, RTF_ENDATTRVAL);
@@ -238,20 +254,23 @@ static void sttRtfAppendXml(StringBuf *buf, XmlNode *node, DWORD flags, int inde
 		sttAppendBufRaw(buf, indentTextLevel);
 		mir_free(indentTextLevel);
 
-		if (flags & JCPF_UTF8)
+		if (node->text)
 		{
-			wchar_t *tmp = mir_utf8decodeW(node->sendText);
+			if (flags & JCPF_UTF8)
+			{
+				wchar_t *tmp = mir_utf8decodeW(node->sendText);
 #if defined( _UNICODE )
-			sttAppendBufW(buf, tmp);
+				sttAppendBufW(buf, tmp);
 #else
-			char *szTmp2 = mir_u2a(tmp);
-			sttAppendBufA(buf, szTmp2);
-			mir_free(szTmp2);
+				char *szTmp2 = mir_u2a(tmp);
+				sttAppendBufA(buf, szTmp2);
+				mir_free(szTmp2);
 #endif
-			mir_free(tmp);
-		} else
-		{
-			sttAppendBufT(buf, node->text);
+				mir_free(tmp);
+			} else
+			{
+				sttAppendBufT(buf, node->text);
+			}
 		}
 		sttAppendBufRaw(buf, RTF_ENDTEXT);
 	}
