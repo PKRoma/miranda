@@ -1191,10 +1191,10 @@ LBL_InvalidCommand:
 			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, NULL, 0, 0 );
 			if ( hContact != NULL ) 
 			{
-				if ( lastStatus == ID_STATUS_OFFLINE || lastStatus == ID_STATUS_INVISIBLE )
-					DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
 				MSN_SetStringUtf( hContact, "Nick", data.userNick );
 				lastStatus = MSN_GetWord( hContact, "Status", ID_STATUS_OFFLINE );
+				if ( lastStatus == ID_STATUS_OFFLINE || lastStatus == ID_STATUS_INVISIBLE )
+					DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
 				MSN_SetWord( hContact, "Status", MSNStatusToMiranda( data.userStatus ));
 				MSN_SetDword( hContact, "IdleTS", strcmp( data.userStatus, "IDL" ) ? 0 : time( NULL ));
 			}
