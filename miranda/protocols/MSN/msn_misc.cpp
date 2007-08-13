@@ -539,7 +539,7 @@ void  MSN_SendStatusMessage( const char* msg )
 
 		sz = mir_snprintf( szMsg, sizeof szMsg, 
 			"<Data><PSM>%s</PSM><CurrentMedia>%s\\0%s\\01\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0\\0</CurrentMedia></Data>", 
-			UTF8(msgEnc), szPlayer, szType, szFormatEnc, szTitle, szArtist, szAlbum, szTrack, szYear, szGenre, szLength, szPlayer, szType);
+			msgEnc, szPlayer, szType, szFormatEnc, szTitle, szArtist, szAlbum, szTrack, szYear, szGenre, szLength, szPlayer, szType);
 
 		mir_free( szArtist );
 		mir_free( szAlbum );
