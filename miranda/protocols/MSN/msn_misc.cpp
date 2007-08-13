@@ -500,10 +500,7 @@ void  MSN_SendStatusMessage( const char* msg )
 	size_t sz;
 	char  szMsg[ 2048 ];
 	if ( msnCurrentMedia.cbSize == 0 ) 
-	{
 		sz = mir_snprintf( szMsg, sizeof szMsg, "<Data><PSM>%s</PSM></Data>", msgEnc);
-		mir_free( msgEnc );
-	}
 	else 
 	{
 		char *szFormatEnc;
@@ -551,6 +548,7 @@ void  MSN_SendStatusMessage( const char* msg )
 		mir_free( szPlayer );
 		mir_free( szType );
 	}
+	mir_free( msgEnc );
 
 	if ( msnPreviousUUX == NULL || strcmp( msnPreviousUUX, szMsg ))
 	{
