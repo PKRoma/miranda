@@ -145,7 +145,7 @@ char* ThreadData::httpTransact(char* szCommand, size_t cmdsz, size_t& ressz)
 {
 	NETLIBSELECT tSelect = {0};
 	tSelect.cbSize = sizeof( tSelect );
-	tSelect.dwTimeout = 10000;
+	tSelect.dwTimeout = 8000;
 	tSelect.hReadConns[ 0 ] = s;
 
 	size_t bufSize = 4096;
