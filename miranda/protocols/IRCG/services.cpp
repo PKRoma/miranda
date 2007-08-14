@@ -1586,10 +1586,11 @@ static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 		GCEVENT gce = {0};
 
 		gcw.cbSize = sizeof(GCSESSION);
+		gcw.dwFlags = GC_TCHAR;
 		gcw.iType = GCW_SERVER;
-		gcw.pszID = "Network log";
+		gcw.ptszID = _T("Network log");
 		gcw.pszModule = IRCPROTONAME;
-		gcw.pszName = prefs->Network;
+		gcw.ptszName = NEWTSTR_ALLOCA( _A2T( prefs->Network ));
 		CallServiceSync( MS_GC_NEWSESSION, 0, (LPARAM)&gcw );
 
 		gce.cbSize = sizeof(GCEVENT);
