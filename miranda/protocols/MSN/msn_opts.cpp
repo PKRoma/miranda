@@ -671,8 +671,8 @@ void  LoadOptions()
 
 	MyOptions.AwayAsBrb = MSN_GetByte( "AwayAsBrb", FALSE ) != 0;
 	MyOptions.ManageServer = MSN_GetByte( "ManageServer", TRUE ) != 0;
-	MyOptions.PopupTimeoutHotmail = MSN_GetDword( NULL, "PopupTimeout", 3 ) != 0;
-	MyOptions.PopupTimeoutOther = MSN_GetDword( NULL, "PopupTimeoutOther", MyOptions.PopupTimeoutHotmail ) != 0;
+	MyOptions.PopupTimeoutHotmail = MSN_GetDword( NULL, "PopupTimeout", 3 );
+	MyOptions.PopupTimeoutOther = MSN_GetDword( NULL, "PopupTimeoutOther", MyOptions.PopupTimeoutHotmail );
 	MyOptions.ShowErrorsAsPopups = MSN_GetByte( "ShowErrorsAsPopups", FALSE ) != 0;
 	MyOptions.SlowSend = MSN_GetByte( "SlowSend", FALSE ) != 0;
 	MyOptions.UseProxy = MSN_GetByte( "NLUseProxy", FALSE ) != 0;
