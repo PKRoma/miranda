@@ -605,10 +605,11 @@ static BOOL CALLBACK DlgPluginOpt(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 
 		col.mask = LVCF_TEXT | LVCF_WIDTH;
 		col.pszText = TranslateT("Plugin");
-		col.cx = 70;
+		col.cx = 70;//max = 140;
 		ListView_InsertColumn(hwndList,0,&col);
 
 		col.pszText=TranslateT("Name");
+		col.cx = 70;//max = 220;
 		ListView_InsertColumn(hwndList,1,&col);
 
 		col.pszText=TranslateT("Version");
@@ -625,8 +626,21 @@ static BOOL CALLBACK DlgPluginOpt(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 		// scan the plugin dir for plugins, cos
 		enumPlugins( dialogListPlugins, ( WPARAM )hwndDlg, ( LPARAM )hwndList );
 		// sort out the headers
-		ListView_SetColumnWidth( hwndList, 0, LVSCW_AUTOSIZE ); // dll name
-		ListView_SetColumnWidth( hwndList, 1, LVSCW_AUTOSIZE ); // short name
+        {
+            int w, max;
+            
+            ListView_SetColumnWidth( hwndList, 0, LVSCW_AUTOSIZE ); // dll name
+            w = ListView_GetColumnWidth( hwndList, 0 );
+            if (w>140) {
+                ListView_SetColumnWidth( hwndList, 0, 140 );
+                w = 140;
+            }
+            max = w<140? 220+140-w:220;
+            ListView_SetColumnWidth( hwndList, 1, LVSCW_AUTOSIZE ); // short name
+            w = ListView_GetColumnWidth( hwndList, 1 );
+            if (w>max)
+                ListView_SetColumnWidth( hwndList, 1, max );
+        }
 		return TRUE;
 	}
 	case WM_NOTIFY:
