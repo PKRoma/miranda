@@ -62,6 +62,7 @@ static int	ShutdownProc(WPARAM wParam, LPARAM lParam);
 static int  OkToExitProc(WPARAM wParam, LPARAM lParam);
 static int  OnDetailsInit(WPARAM wParam, LPARAM lParam);
 static int  GetFileHash(char* filename);
+static DWORD GetFileSize(char *szFilename);
 
 void ProcessAvatarInfo(HANDLE hContact, int type, PROTO_AVATAR_INFORMATION *pai, const char *szProto);
 int FetchAvatarFor(HANDLE hContact, char *szProto = NULL);
@@ -518,6 +519,9 @@ int CreateAvatarInCache(HANDLE hContact, struct avatarCacheEntry *ace, char *szP
         else {
             return -2;
         }
+		// Check max allowed size
+		if (GetFileSize(szFilename) > DBGetContactSettingDword(0, AVS_MODULE, "SizeLimit", 70) * 1024)
+			return -3;
     }
     else {
 		if(hContact == 0) {				// create a protocol picture in the proto picture cache
@@ -1509,15 +1513,14 @@ static DWORD GetFileSize(char *szFilename)
     if(hFile == INVALID_HANDLE_VALUE)
         return 0;
 
-	DWORD hi;
-	DWORD low = GetFileSize(hFile, &hi);
+	DWORD low = GetFileSize(hFile, NULL);
 
     CloseHandle(hFile);
 
 	if (low == INVALID_FILE_SIZE)
 		return 0;
 
-	return MAKELONG(low, hi);
+	return low;
 }
 
 struct SaveProtocolData {
@@ -1858,7 +1861,9 @@ static void PicLoader(LPVOID param)
 					}
 				}
 
-				if(result == 1 && ace_temp.hbmPic != 0) {
+				if ((result == 1 && ace_temp.hbmPic != 0) // Loaded
+					|| (result == -3)) // Image is too big
+				{
                     HBITMAP oldPic = node->ace.hbmPic;
 
                     EnterCriticalSection(&cachecs);
@@ -2604,6 +2609,7 @@ int Proto_GetDelayAfterFail(const char *proto)
 
 	return 0;
 }
+
 
 
 
