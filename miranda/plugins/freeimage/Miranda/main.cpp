@@ -188,12 +188,22 @@ static BOOL FreeImage_PreMultiply(HBITMAP hBitmap)
 	return transp;
 }
 
-static HBITMAP  FreeImage_CreateHBITMAPFromDIB(FIBITMAP *dib)
+static HBITMAP  FreeImage_CreateHBITMAPFromDIB(FIBITMAP *in)
 {
+    FIBITMAP *dib = NULL;
+	if (FreeImage_GetBPP(in) > 32) 
+		dib = FreeImage_ConvertTo32Bits(in);
+    else
+        dib = in;
+
 	BYTE *ptPixels;
 	BITMAPINFO *info = FreeImage_GetInfo(dib);
 	HBITMAP hBmp = CreateDIBSection(NULL, info, DIB_RGB_COLORS, (void **)&ptPixels, NULL, 0);
 	memmove(ptPixels, FreeImage_GetBits(dib), FreeImage_GetPitch(dib) * FreeImage_GetHeight(dib));
+
+	if (dib != in)
+		FreeImage_Unload(dib);
+
 	return hBmp;
 }
 
