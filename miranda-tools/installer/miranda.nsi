@@ -4,7 +4,7 @@
 
 !define MIM_NAME                "Miranda IM"
 !define MIM_VERSION             "0.7"
-!define MIM_PREVIEW             "1" ; comment out for final build
+!define MIM_PREVIEW             "2" ; comment out for final build
 
 !define MIM_BUILD_UNICODE
 
@@ -106,7 +106,12 @@ Section "Miranda IM"
   File "${MIM_BUILD_DIR}\plugins\srmm.dll"
   File "${MIM_BUILD_DIR}\plugins\avs.dll"
   File "${MIM_BUILD_DIRANSI}\plugins\advaimg.dll"
+  !ifdef MIM_BUILD_UNICODE
+  File "${MIM_BUILD_DIRANSI}\plugins\dbx_mmap.dll"
+  Delete "$INSTDIR\Plugins\dbx_3x.dll" ; remove old dbx_3x.dll
+  !else
   File "${MIM_BUILD_DIRANSI}\plugins\dbx_3x.dll"
+  !endif
   File "${MIM_BUILD_DIR}\plugins\chat.dll"
   
   Delete "$INSTDIR\Plugins\png2dib.dll" ; remove old png2dib.dll
