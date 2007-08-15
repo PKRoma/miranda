@@ -664,55 +664,63 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 	return false;
 }
 
+static void __stdcall DoInputRequestAliasApcStub( void* str )
+{
+	TCHAR* infotext = NULL;
+	TCHAR* title = NULL;
+	TCHAR* defaulttext = NULL;
+	TString command = ( TCHAR* )str;
+	TCHAR* p = _tcsstr(( TCHAR* )str, _T("%question"));
+	if ( p[9] == '=' && p[10] == '\"' ) {
+		infotext = &p[11];
+		p = _tcschr( infotext, '\"' );
+		if ( p ) {
+			*p = '\0';
+			p++;
+			if ( *p == ',' && p[1] == '\"' ) {
+				p++; p++;
+				title = p;
+				p = _tcschr( title, '\"' );
+				if ( p ) {
+					*p = '\0';
+					p++;
+					if ( *p == ',' && p[1] == '\"' ) {
+						p++; p++;
+						defaulttext = p;
+						p = _tcschr( defaulttext, '\"' );
+						if ( p )
+							*p = '\0';
+	}	}	}	}	}
+
+	HWND question_hWnd = CreateDialog( g_hInstance, MAKEINTRESOURCE(IDD_QUESTION), NULL, QuestionWndProc );
+
+	if ( title )
+		SetDlgItemText( question_hWnd, IDC_CAPTION, title);
+	else
+		SetDlgItemText( question_hWnd, IDC_CAPTION, TranslateT("Input command"));
+
+	if ( infotext )
+		SetWindowText( GetDlgItem( question_hWnd, IDC_TEXT), infotext );
+	else
+		SetWindowText( GetDlgItem( question_hWnd, IDC_TEXT), TranslateT("Please enter the reply"));
+
+	if ( defaulttext )
+		SetWindowText( GetDlgItem( question_hWnd, IDC_EDIT), defaulttext );
+
+	SetDlgItemText( question_hWnd, IDC_HIDDENEDIT, command.c_str());
+	PostMessage( question_hWnd, IRC_ACTIVATE, 0, 0);
+
+	mir_free( str );
+}
+
 static bool DoInputRequestAlias( TCHAR* text )
 {
-	TCHAR* p1 = _tcsstr( text, _T("%question"));
-	if ( p1 ) {
-		TCHAR* infotext = NULL;
-		TCHAR* title = NULL;
-		TCHAR* defaulttext = NULL;
-		TString command = text;
-		if ( p1[9] == '=' && p1[10] == '\"' ) {
-			infotext = &p1[11];
-			p1 = _tcschr( infotext, '\"' );
-			if ( p1 ) {
-				*p1 = '\0';
-				p1++;
-				if ( *p1 == ',' && p1[1] == '\"' ) {
-					p1++; p1++;
-					title = p1;
-					p1 = _tcschr( title, '\"' );
-					if ( p1 ) {
-						*p1 = '\0';
-						p1++;
-						if ( *p1 == ',' && p1[1] == '\"' ) {
-							p1++; p1++;
-							defaulttext = p1;
-							p1 = _tcschr( defaulttext, '\"' );
-							if ( p1 )
-								*p1 = '\0';
-		}	}	}	}	}
+	TCHAR* p = _tcsstr( text, _T("%question"));
+	if ( p == NULL )
+		return false;
 
-		HWND question_hWnd = CreateDialog( g_hInstance, MAKEINTRESOURCE(IDD_QUESTION), NULL, QuestionWndProc );
-
-		if ( title )
-			SetDlgItemText( question_hWnd, IDC_CAPTION, title);
-		else
-			SetDlgItemText( question_hWnd, IDC_CAPTION, TranslateT("Input command"));
-
-		if ( infotext )
-			SetWindowText( GetDlgItem( question_hWnd, IDC_TEXT), infotext );
-		else
-			SetWindowText( GetDlgItem( question_hWnd, IDC_TEXT), TranslateT("Please enter the reply"));
-
-		if ( defaulttext )
-			SetWindowText( GetDlgItem( question_hWnd, IDC_EDIT), defaulttext );
-
-		SetDlgItemText( question_hWnd, IDC_HIDDENEDIT, command.c_str());
-		PostMessage( question_hWnd, IRC_ACTIVATE, 0, 0);
-		return true;
-	}
-	return false;
+	CallFunctionAsync( DoInputRequestAliasApcStub, mir_tstrdup( text ));
+	return true;
 }
 
 bool PostIrcMessage( const TCHAR* fmt, ... )
