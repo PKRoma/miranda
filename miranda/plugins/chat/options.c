@@ -663,6 +663,7 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 		EnableWindow(GetDlgItem(hwndDlg, IDC_HIGHLIGHTWORDS), g_Settings.HighlightEnabled?TRUE:FALSE);
 		CheckDlgButton(hwndDlg, IDC_LOGGING, g_Settings.LoggingEnabled);
 		EnableWindow(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY), g_Settings.LoggingEnabled?TRUE:FALSE);
+		EnableWindow(GetDlgItem(hwndDlg, IDC_FONTCHOOSE), g_Settings.LoggingEnabled?TRUE:FALSE);
 		EnableWindow(GetDlgItem(hwndDlg, IDC_LIMIT), g_Settings.LoggingEnabled?TRUE:FALSE);
 		break;
 
@@ -682,9 +683,38 @@ static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
 		switch (LOWORD(wParam)) {
 		case IDC_LOGGING:
 			EnableWindow(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY), IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED?TRUE:FALSE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_FONTCHOOSE), IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED?TRUE:FALSE);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_LIMIT), IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED?TRUE:FALSE);
 			break;
 
+		case IDC_FONTCHOOSE:
+		{
+			char szDirectory[MAX_PATH];
+			LPITEMIDLIST idList;
+			LPMALLOC psMalloc; 
+			BROWSEINFOA bi = {0};
+
+			if(SUCCEEDED(CoGetMalloc(1,&psMalloc))) 
+			{
+				char szTemp[MAX_PATH];
+				bi.hwndOwner=hwndDlg;
+				bi.pszDisplayName=szDirectory;
+				bi.lpszTitle=Translate("Select Folder");
+				bi.ulFlags=BIF_NEWDIALOGSTYLE|BIF_EDITBOX|BIF_RETURNONLYFSDIRS;			
+				bi.lpfn=BrowseCallbackProc;
+				bi.lParam=(LPARAM)szDirectory;
+				idList = SHBrowseForFolderA(&bi);
+				if ( idList ) {
+					SHGetPathFromIDListA(idList,szDirectory);
+					lstrcatA(szDirectory,"\\");
+					CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)szDirectory, (LPARAM)szTemp );
+					SetWindowTextA(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY), lstrlenA(szTemp) > 1?szTemp:"Logs\\");
+				}
+				psMalloc->lpVtbl->Free(psMalloc,idList);
+				psMalloc->lpVtbl->Release(psMalloc);
+			}
+			break;
+		}
 		case IDC_HIGHLIGHT:
 			EnableWindow(GetDlgItem(hwndDlg, IDC_HIGHLIGHTWORDS), IsDlgButtonChecked(hwndDlg, IDC_HIGHLIGHT) == BST_CHECKED?TRUE:FALSE);
 			break;
