@@ -321,14 +321,15 @@ static int GetAwayMsg(WPARAM /*wParam*/, LPARAM lParam)
 	if (conn.state!=1)
 		return 0;
 	CCSDATA* ccs = (CCSDATA*)lParam;
-	if(ID_STATUS_OFFLINE==DBGetContactSettingWord(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST, ID_STATUS_OFFLINE))
+	int status=DBGetContactSettingWord(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST, ID_STATUS_OFFLINE);
+	if(ID_STATUS_AWAY!=status)
 		return 0;
 	if(char* sn=getSetting(ccs->hContact,AIM_PROTOCOL_NAME,AIM_KEY_SN))
 	{
 		awaymsg_request_handler(sn);
 		delete[] sn;
 	}	
-	return 0;
+	return 1;
 }
 static int GetHTMLAwayMsg(WPARAM wParam, LPARAM /*lParam*/)
 {
@@ -347,7 +348,7 @@ static int RecvAwayMsg(WPARAM /*wParam*/,LPARAM lParam)
 {
 	CCSDATA* ccs = (CCSDATA*)lParam;
 	PROTORECVEVENT* pre = (PROTORECVEVENT*)ccs->lParam;
-	ProtoBroadcastAck(AIM_PROTOCOL_NAME, ccs->hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, (HANDLE)pre->lParam, (LPARAM)pre->szMessage);
+	ProtoBroadcastAck(AIM_PROTOCOL_NAME, ccs->hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, (HANDLE)1, (LPARAM)pre->szMessage);
 	return 0;
 }
 static int LoadIcons(WPARAM wParam, LPARAM /*lParam*/)
