@@ -1,0 +1,128 @@
+# Microsoft Developer Studio Generated Dependency File, included by png2dib.mak
+
+.\libpng\png.c : \
+	"..\zlib\zconf.h"\
+	"..\zlib\zlib.h"\
+	".\libpng\png.h"\
+	".\libpng\pngconf.h"\
+	
+
+.\libpng\pnggccrd.c : \
+	"..\zlib\zconf.h"\
+	"..\zlib\zlib.h"\
+	".\libpng\png.h"\
+	".\libpng\pngconf.h"\
+	
+
+.\libpng\pngget.c : \
+	"..\zlib\zconf.h"\
+	"..\zlib\zlib.h"\
+	".\libpng\png.h"\
+	".\libpng\pngconf.h"\
+	
+
+.\libpng\pngmem.c : \
+	"..\zlib\zconf.h"\
+	"..\zlib\zlib.h"\
+	".\libpng\png.h"\
+	".\libpng\pngconf.h"\
+	
+
+.\libpng\pngpread.c : \
+	"..\zlib\zconf.h"\
+	"..\zlib\zlib.h"\
+	".\libpng\png.h"\
+	".\libpng\pngconf.h"\
+	
+
+.\libpng\pngread.c : \
+	"..\zlib\zconf.h"\
+	"..\zlib\zlib.h"\
+	".\libpng\png.h"\
+	".\libpng\pngconf.h"\
+	
+
+.\libpng\pngrio.c : \
+	"..\zlib\zconf.h"\
+	"..\zlib\zlib.h"\
+	".\libpng\png.h"\
+	".\libpng\pngconf.h"\
+	
+
+.\libpng\pngrtran.c : \
+	"..\zlib\zconf.h"\
+	"..\zlib\zlib.h"\
+	".\libpng\png.h"\
+	".\libpng\pngconf.h"\
+	
+
+.\libpng\pngrutil.c : \
+	"..\zlib\zconf.h"\
+	"..\zlib\zlib.h"\
+	".\libpng\png.h"\
+	".\libpng\pngconf.h"\
+	
+
+.\libpng\pngset.c : \
+	"..\zlib\zconf.h"\
+	"..\zlib\zlib.h"\
+	".\libpng\png.h"\
+	".\libpng\pngconf.h"\
+	
+
+.\libpng\pngtrans.c : \
+	"..\zlib\zconf.h"\
+	"..\zlib\zlib.h"\
+	".\libpng\png.h"\
+	".\libpng\pngconf.h"\
+	
+
+.\libpng\pngvcrd.c : \
+	"..\zlib\zconf.h"\
+	"..\zlib\zlib.h"\
+	".\libpng\png.h"\
+	".\libpng\pngconf.h"\
+	
+
+.\libpng\pngwio.c : \
+	"..\zlib\zconf.h"\
+	"..\zlib\zlib.h"\
+	".\libpng\png.h"\
+	".\libpng\pngconf.h"\
+	
+
+.\libpng\pngwrite.c : \
+	"..\zlib\zconf.h"\
+	"..\zlib\zlib.h"\
+	".\libpng\png.h"\
+	".\libpng\pngconf.h"\
+	
+
+.\libpng\pngwtran.c : \
+	"..\zlib\zconf.h"\
+	"..\zlib\zlib.h"\
+	".\libpng\png.h"\
+	".\libpng\pngconf.h"\
+	
+
+.\libpng\pngwutil.c : \
+	"..\zlib\zconf.h"\
+	"..\zlib\zlib.h"\
+	".\libpng\png.h"\
+	".\libpng\pngconf.h"\
+	
+
+.\png2dib.c : \
+	"..\..\include\m_plugins.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\zlib\zconf.h"\
+	"..\zlib\zlib.h"\
+	".\libpng\png.h"\
+	".\libpng\pngconf.h"\
+	".\m_png.h"\
+	".\version.h"\
+	
+
+.\version.rc : \
+	".\version.h"\
+	
