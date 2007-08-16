@@ -180,11 +180,11 @@ TCHAR* Chat_DoRtfToTags( char* pszText, SESSION_INFO* si)
 				iRemoveChars = 4;
 				strcpy(InsertThis, "\n" );
 			}
-            else if ( !memcmp(p1, "\\emdash", 7 ) || !memcmp(p1, "\\endash", 7 )) { // dashes
-                bTextHasStarted = bJustRemovedRTF = TRUE;
-                iRemoveChars = 7;
-                strcpy(InsertThis, "-" );
-            }
+			else if ( !memcmp(p1, "\\emdash", 7 ) || !memcmp(p1, "\\endash", 7 )) { // dashes
+				bTextHasStarted = bJustRemovedRTF = TRUE;
+				iRemoveChars = 7;
+				strcpy(InsertThis, "-" );
+			}
 			else if ( !memcmp(p1, "\\line", 5 )) { // newline
 				bTextHasStarted = bJustRemovedRTF = TRUE;
 				iRemoveChars = 5;
@@ -231,6 +231,12 @@ TCHAR* Chat_DoRtfToTags( char* pszText, SESSION_INFO* si)
 				iRemoveChars = 2;
 				mir_snprintf(InsertThis, SIZEOF(InsertThis), "%c", p1[1]);
 			}
+			else if ( p1[1] == '~' ) { // non-breaking space
+				bTextHasStarted = TRUE;
+				bJustRemovedRTF = FALSE;
+				iRemoveChars = 2;
+				mir_snprintf(InsertThis, SIZEOF(InsertThis), "\xA0" );
+			}
 			else if ( p1[1] == '\'' ) { // special character
 				char tmp[4], *p3 = tmp;
 				bTextHasStarted = TRUE;
@@ -247,8 +253,7 @@ TCHAR* Chat_DoRtfToTags( char* pszText, SESSION_INFO* si)
 
 					InsertThis[1] = 0;
 				}
-				else 
-                    iRemoveChars = 2;
+				else iRemoveChars = 2;
 			}
 			else if ( bJustRemovedRTF ) { // remove unknown RTF command
 				int j = 1;

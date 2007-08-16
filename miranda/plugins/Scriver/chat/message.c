@@ -204,6 +204,12 @@ TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 				iRemoveChars = 2;
 				mir_snprintf(InsertThis, SIZEOF(InsertThis), "%c", p1[1]);
 			}
+			else if ( p1[1] == '~' ) { // non-breaking space
+				bTextHasStarted = TRUE;
+				bJustRemovedRTF = FALSE;
+				iRemoveChars = 2;
+				mir_snprintf(InsertThis, SIZEOF(InsertThis), "\xA0" );
+			}
 			else if ( p1[1] == '\'' ) { // special character
 				char tmp[4], *p3 = tmp;
 				bTextHasStarted = TRUE;
