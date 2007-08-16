@@ -140,7 +140,7 @@ void InitPrefs(void)
 	prefs->DisconnectDCCChats = DBGetContactSettingByte( NULL, IRCPROTONAME, "DisconnectDCCChats", 1);
 	prefs->OldStyleModes = DBGetContactSettingByte( NULL, IRCPROTONAME, "OldStyleModes", 0);
 	prefs->SendNotice = DBGetContactSettingByte( NULL, IRCPROTONAME, "SendNotice", 1);
-	prefs->Codepage = DBGetContactSettingDword( NULL, IRCPROTONAME, "Codepage", IRC_DEFAULT_CODEPAGE );
+	prefs->Codepage = DBGetContactSettingDword( NULL, IRCPROTONAME, "Codepage", CP_ACP );
 	prefs->UtfAutodetect = DBGetContactSettingByte( NULL, IRCPROTONAME, "UtfAutodetect", 1);
 	prefs->MyHost[0] = '\0';
 	prefs->colors[0] = RGB(255,255,255);
