@@ -726,6 +726,12 @@ int MSN_GetPassportAuth( char* authChallengeInfo )
 					{
 						const char* szFault = ezxml_txt(ezxml_get(xml, "S:Fault", 0, "faultcode", -1));
 						retVal = strcmp( szFault, "wsse:FailedAuthentication" ) == 0 ? 3 : 5;
+						if (retVal == 5 && defaultUrlAllow)
+						{
+							strcpy( szPassportHost, defaultPassportUrl );
+							defaultUrlAllow = false;
+							retVal = -1;
+						}
 					}
 				}
 
