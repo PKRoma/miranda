@@ -291,7 +291,7 @@ int CSSLSession::SSLDisconnect(void)
 ////////////////////////////////////////////////////////////////////
 
 CIrcSession::CIrcSession() :
-	codepage( IRC_DEFAULT_CODEPAGE )
+	codepage( CP_ACP )
 {
 	InitializeCriticalSection(&m_resolve);
 	InitializeCriticalSection(&m_dcc);
@@ -312,7 +312,7 @@ CIrcSession::~CIrcSession()
 
 int CIrcSession::getCodepage() const
 {
-	return ( con != NULL ) ? codepage : IRC_DEFAULT_CODEPAGE;
+	return ( con != NULL ) ? codepage : CP_ACP;
 }
 
 CIrcSession& CIrcSession::operator << (const CIrcMessage& msg)

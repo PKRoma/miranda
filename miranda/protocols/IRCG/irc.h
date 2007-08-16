@@ -98,12 +98,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define IRC_MENU2CHANNEL      "/Menu2ChannelMenu"
 #define IRC_MENU3CHANNEL      "/Menu3ChannelMenu"
 
-#if defined( _UNICODE )
-	#define IRC_DEFAULT_CODEPAGE CP_UTF8
-#else
-	#define IRC_DEFAULT_CODEPAGE CP_ACP
-#endif
-
 #define STR_QUITMESSAGE  "\002Miranda IM!\002 Smaller, Faster, Easier. http://miranda-im.org"
 #define STR_USERINFO     "I'm a happy Miranda IM user! Get it here: http://miranda-im.org"
 #define STR_AWAYMESSAGE  "I'm away from the computer." // Default away
@@ -455,5 +449,6 @@ BOOL Scripting_TriggerMSPGuiOut(GCHOOK * gch);
 #pragma comment(lib,"comctl32.lib")
 
 #endif
+
 
 
