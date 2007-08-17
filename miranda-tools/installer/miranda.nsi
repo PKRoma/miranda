@@ -4,7 +4,7 @@
 
 !define MIM_NAME                "Miranda IM"
 !define MIM_VERSION             "0.7"
-!define MIM_PREVIEW             "2" ; comment out for final build
+!define MIM_PREVIEW             "3" ; comment out for final build
 
 !define MIM_BUILD_UNICODE
 
@@ -97,10 +97,12 @@ Section "Miranda IM"
   File "${MIM_BUILD_SRC}\docs\readme.txt"
   File "${MIM_BUILD_SRC}\docs\license.txt"
 
+  StrCmp $INST_UPGRADE "1" nosavemirandaboot
   SetOverWrite off
   File "${MIM_BUILD_SRC}\docs\mirandaboot.ini"
   SetOverWrite on
-
+  nosavemirandaboot:
+    
   SetOutPath "$INSTDIR\Plugins"
   File "${MIM_BUILD_DIR}\plugins\clist_classic.dll"
   File "${MIM_BUILD_DIR}\plugins\srmm.dll"
