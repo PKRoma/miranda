@@ -148,13 +148,14 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
     char szVer[MAX_PATH];
 
     CallService(MS_SYSTEM_GETVERSIONTEXT, MAX_PATH, (LPARAM)szVer);
-    gbUnicodeCore = (strstr(szVer, "Unicode") != NULL);
+    _strlwr(szVer); // make sure it is lowercase
+    gbUnicodeCore = (strstr(szVer, "unicode") != NULL);
 
     if (strstr(szVer, "alpha") != NULL)
     { // Are we running under Alpha Core
       MIRANDA_VERSION |= 0x80000000;
     }
-    else if (MIRANDA_VERSION >= 0x00050000 && strstr(szVer, "Preview") == NULL)
+    else if (MIRANDA_VERSION >= 0x00050000 && strstr(szVer, "preview") == NULL)
     { // for Final Releases of Miranda 0.5+ clear build number
       MIRANDA_VERSION &= 0xFFFFFF00;
     }
