@@ -226,16 +226,17 @@ UINT _ExtractIconEx(LPCTSTR lpszFile, int iconIndex, int cxIcon, int cyIcon, HIC
 	UINT res = 0;
 
 	if (cxIcon == GetSystemMetrics(SM_CXICON) && cyIcon == GetSystemMetrics(SM_CYICON))
-		return ExtractIconEx(lpszFile, iconIndex, phicon, NULL, 1);
-
-	if (cxIcon == GetSystemMetrics(SM_CXSMICON) && cyIcon == GetSystemMetrics(SM_CYSMICON))
-		return ExtractIconEx(lpszFile, iconIndex, NULL, phicon, 1);
+		res = ExtractIconEx(lpszFile, iconIndex, phicon, NULL, 1);
+	else if (cxIcon == GetSystemMetrics(SM_CXSMICON) && cyIcon == GetSystemMetrics(SM_CYSMICON))
+		res = ExtractIconEx(lpszFile, iconIndex, NULL, phicon, 1);
+	// check if the api succeded, if not try our method too
+	if (res) return res;
 
 	hFile = CreateFile(lpszFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
 	if (hFile == INVALID_HANDLE_VALUE)
 		return 0;
 
-	 // failed to read file signature
+	// failed to read file signature
 	if ( !ReadFile(hFile,&magic, sizeof(magic), &read, NULL ) || (read != sizeof(magic))) {
 		CloseHandle(hFile);
 		return 0;
