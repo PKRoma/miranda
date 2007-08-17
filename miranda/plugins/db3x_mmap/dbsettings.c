@@ -531,7 +531,7 @@ static int WriteContactSetting(WPARAM wParam,LPARAM lParam)
 	int bytesRequired,bytesRemaining;
 	DWORD ofsContact,ofsSettingsGroup,ofsBlobPtr;
 
-	if (dbcws == NULL)
+	if (dbcws == NULL || dbcws->szSetting==NULL || dbcws->szModule==NULL )
 		return 1;
 
 	// the db format can't tolerate more than 255 bytes of space (incl. null) for settings+module name
