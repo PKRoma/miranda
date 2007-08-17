@@ -150,7 +150,7 @@ SubSection /e "Protocols"
     SetOutPath "$INSTDIR\Plugins"
     File "${MIM_BUILD_DIR}\plugins\irc.dll"
     SetOverWrite off
-    File "${MIM_BUILD_SRC}\protocols\IRC\Docs\IRC_Servers.ini"
+    File "${MIM_BUILD_SRC}\protocols\IRCG\Docs\IRC_Servers.ini"
     SetOverWrite on
     !insertmacro InstallMirandaIcon "proto_IRC.dll"
   SectionEnd
