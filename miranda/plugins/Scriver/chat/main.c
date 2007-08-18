@@ -33,7 +33,6 @@ HICON       hIcons[30];
 BOOL        SmileyAddInstalled = FALSE;
 BOOL        IEviewInstalled = FALSE;
 BOOL        PopUpInstalled = FALSE;
-HBRUSH      hEditBkgBrush = NULL;
 HBRUSH      hListBkgBrush = NULL;
 
 int			overlayIcon = 0;

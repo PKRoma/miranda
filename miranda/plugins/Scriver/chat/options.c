@@ -24,7 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <shlwapi.h>
 
 extern HANDLE			g_hInst;
-extern HBRUSH 			hEditBkgBrush;
 extern HBRUSH 			hListBkgBrush;
 extern HICON			hIcons[30];
 extern FONTINFO			aFonts[OPTIONS_FONTCOUNT];
@@ -1111,7 +1110,7 @@ void LoadGlobalSettings(void)
 	g_Settings.crPUBkgColour = DBGetContactSettingDword(NULL, "Chat", "PopupColorBG", GetSysColor(COLOR_WINDOW));
 	g_Settings.crPUTextColour = DBGetContactSettingDword(NULL, "Chat", "PopupColorText", 0);
 	g_Settings.ShowContactStatus = DBGetContactSettingByte(NULL, "Chat", "ShowContactStatus", 0);
-	g_Settings.ContactStatusFirst = DBGetContactSettingByte(NULL, "Chat", "ContactStatusFirst", 0);	
+	g_Settings.ContactStatusFirst = DBGetContactSettingByte(NULL, "Chat", "ContactStatusFirst", 0);
 
 	InitSetting( &g_Settings.pszTimeStamp, "HeaderTime", _T("[%H:%M]"));
 	InitSetting( &g_Settings.pszTimeStampLog, "LogTimestamp", _T("[%d %b %y %H:%M]"));
@@ -1149,6 +1148,10 @@ void LoadGlobalSettings(void)
 		DeleteObject(g_Settings.UserListHeadingsFont);
 	Chat_LoadMsgDlgFont(19, &lf, NULL);
 	g_Settings.UserListHeadingsFont = CreateFontIndirect(&lf);
+	if (hListBkgBrush != NULL) {
+		DeleteObject(hListBkgBrush);
+	}
+	hListBkgBrush = CreateSolidBrush(DBGetContactSettingDword(NULL, "Chat", "ColorNicklistBG", GetSysColor(COLOR_WINDOW)));
 }
 
 static void FreeGlobalSettings(void)
@@ -1187,9 +1190,6 @@ int OptionsInit(void)
 	g_Settings.iSplitterY = DBGetContactSettingWord(NULL, "Chat", "SplitterY", 90);
 	LoadGlobalSettings();
 
-	hEditBkgBrush = CreateSolidBrush(DBGetContactSettingDword(NULL, "Chat", "ColorMessageBG", GetSysColor(COLOR_WINDOW)));
-	hListBkgBrush = CreateSolidBrush(DBGetContactSettingDword(NULL, "Chat", "ColorNicklistBG", GetSysColor(COLOR_WINDOW)));
-
 	SkinAddNewSoundEx("ChatMessage", "Chat", Translate("Incoming message"));
 	SkinAddNewSoundEx("ChatHighlight", "Chat", Translate("Message is highlighted"));
 	SkinAddNewSoundEx("ChatAction", "Chat", Translate("User has performed an action"));
@@ -1226,10 +1226,10 @@ int OptionsUnInit(void)
 {
 	FreeGlobalSettings();
 	UnhookEvent(g_hOptions);
-	DeleteObject(hEditBkgBrush);
 	DeleteObject(hListBkgBrush);
 	DeleteObject(g_Settings.NameFont);
 	return 0;
 }
+
 
 

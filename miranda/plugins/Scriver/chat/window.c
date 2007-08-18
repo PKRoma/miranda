@@ -30,7 +30,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define _except __except
 #define _finally __finally
 
-extern HBRUSH      hEditBkgBrush;
 extern HBRUSH      hListBkgBrush;
 extern HANDLE      hSendEvent;
 extern HINSTANCE   g_hInst;
@@ -938,16 +937,16 @@ static void ProcessNickListHovering(HWND hwnd, int hoveredItem, POINT * pt, SESS
 	}
 	if (hoveredItem==-1) {
 
-		SendMessage( hwndToolTip, TTM_ACTIVATE, 0, 0 ); 
+		SendMessage( hwndToolTip, TTM_ACTIVATE, 0, 0 );
 
 	} else {
 
 		if (!hwndToolTip) {
 			hwndToolTip=CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS,  NULL,
-				WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP,		
+				WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP,
 				CW_USEDEFAULT, CW_USEDEFAULT,  CW_USEDEFAULT,  CW_USEDEFAULT,
 				hwnd, NULL, g_hInst,  NULL  );
-			//SetWindowPos(hwndToolTip,  HWND_TOPMOST,  0,  0,  0,  0,  SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);	  
+			//SetWindowPos(hwndToolTip,  HWND_TOPMOST,  0,  0,  0,  0,  SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 			bNewTip=TRUE;
 		}
 
@@ -955,14 +954,14 @@ static void ProcessNickListHovering(HWND hwnd, int hoveredItem, POINT * pt, SESS
 		ti.cbSize=sizeof(TOOLINFO);
 		ti.uFlags=TTF_SUBCLASS;
 		ti.hinst=g_hInst;
-		ti.hwnd=hwnd;	
+		ti.hwnd=hwnd;
 		ti.uId=1;
 		ti.rect=clientRect;
 
 		ti.lpszText=NULL;
 
 		ui1 = SM_GetUserFromIndex(parentdat->ptszID, parentdat->pszModule, currentHovered);
-		if(ui1) {	
+		if(ui1) {
 			// /GetChatToolTipText
 			// wParam = roomID parentdat->ptszID
 			// lParam = userID ui1->pszUID
@@ -972,12 +971,12 @@ static void ProcessNickListHovering(HWND hwnd, int hoveredItem, POINT * pt, SESS
 				ti.lpszText=(TCHAR*)CallService(serviceName, (WPARAM)parentdat->ptszID, (LPARAM)ui1->pszUID);
 		}
 
-		SendMessage( hwndToolTip, bNewTip ? TTM_ADDTOOL : TTM_UPDATETIPTEXT, 0, (LPARAM) &ti);	
-		SendMessage( hwndToolTip, TTM_ACTIVATE, (ti.lpszText!=NULL) , 0 ); 
+		SendMessage( hwndToolTip, bNewTip ? TTM_ADDTOOL : TTM_UPDATETIPTEXT, 0, (LPARAM) &ti);
+		SendMessage( hwndToolTip, TTM_ACTIVATE, (ti.lpszText!=NULL) , 0 );
 		SendMessage( hwndToolTip, TTM_SETMAXTIPWIDTH, 0 , 400 );
 		if (ti.lpszText)
 			mir_free(ti.lpszText);
-	}	
+	}
 }
 
 static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -1042,9 +1041,9 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
          else ScreenToClient(hwnd,&hti.pt);
 
          item = (DWORD)(SendMessage(hwnd, LB_ITEMFROMPOINT, 0, MAKELPARAM(hti.pt.x, hti.pt.y)));
-		 if ( HIWORD( item ) == 1 ) 
+		 if ( HIWORD( item ) == 1 )
 			item = (DWORD)(-1);
-		 else 
+		 else
 			item &= 0xFFFF;
          ui = SM_GetUserFromIndex(parentdat->ptszID, parentdat->pszModule, (int)item);
          if (ui) {
@@ -1079,7 +1078,7 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 		{
 			POINT pt;
 			RECT clientRect;
-			BOOL bInClient;			
+			BOOL bInClient;
 			SESSION_INFO* parentdat =(SESSION_INFO*)GetWindowLong(GetParent(hwnd),GWL_USERDATA);
 			pt.x=LOWORD(lParam);
 			pt.y=HIWORD(lParam);
@@ -1094,16 +1093,16 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 			if (bInClient) {
 				//hit test item under mouse
 				DWORD nItemUnderMouse=(DWORD)SendMessage(hwnd, LB_ITEMFROMPOINT, 0, lParam);
-				if ( HIWORD( nItemUnderMouse ) == 1 ) 
+				if ( HIWORD( nItemUnderMouse ) == 1 )
 					nItemUnderMouse = (DWORD)(-1);
-				else 
+				else
 					nItemUnderMouse &= 0xFFFF;
-			
+
 				ProcessNickListHovering(hwnd, (int)nItemUnderMouse, &pt, parentdat);
 			} else {
 				ProcessNickListHovering(hwnd, -1, &pt, NULL);
 		}	}
-		break;		
+		break;
 	}
 
    return CallWindowProc(OldNicklistProc, hwnd, msg, wParam, lParam);
