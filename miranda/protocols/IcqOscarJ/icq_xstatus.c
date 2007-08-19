@@ -346,7 +346,7 @@ void handleXStatusCaps(HANDLE hContact, char* caps, int capsize)
         if (ICQGetContactSettingByte(hContact, DBSETTING_XSTATUSID, -1) != bXStatusId)
         { // only write default name when it is really needed, i.e. on Custom Status change
           ICQWriteContactSettingByte(hContact, DBSETTING_XSTATUSID, bXStatusId);
-          ICQWriteContactSettingUtf(hContact, DBSETTING_XSTATUSNAME, ICQTranslateUtfStatic(nameXStatus[i], str));
+          ICQWriteContactSettingUtf(hContact, DBSETTING_XSTATUSNAME, ICQTranslateUtfStatic(nameXStatus[i], str, MAX_PATH));
         }
 
         if (ICQGetContactSettingByte(NULL, "XStatusAuto", DEFAULT_XSTATUS_AUTO))
@@ -454,7 +454,7 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
       ShowWindow(GetDlgItem(hwndDlg, IDC_RETRXSTATUS), SW_HIDE);
       ShowWindow(GetDlgItem(hwndDlg, IDC_XMSG), SW_SHOW);
       ShowWindow(GetDlgItem(hwndDlg, IDC_XTITLE), SW_SHOW);
-      SetDlgItemTextUtf(hwndDlg,IDOK,ICQTranslateUtfStatic("Close", str));
+      SetDlgItemTextUtf(hwndDlg,IDOK,ICQTranslateUtfStatic("Close", str, MAX_PATH));
       UnhookEvent(dat->hEvent); dat->hEvent = NULL;
       szText = ICQGetContactSettingUtf(dat->hContact, DBSETTING_XSTATUSNAME, "");
       SetDlgItemTextUtf(hwndDlg, IDC_XTITLE, szText);
@@ -499,7 +499,7 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
         SendMessage(GetDlgItem(hwndDlg, IDC_XMSG), EM_SETREADONLY, 1, 0);
         if (!ICQGetContactSettingByte(NULL, "XStatusAuto", DEFAULT_XSTATUS_AUTO))
         {
-          SetDlgItemTextUtf(hwndDlg,IDOK,ICQTranslateUtfStatic("Cancel", str));
+          SetDlgItemTextUtf(hwndDlg,IDOK,ICQTranslateUtfStatic("Cancel", str, MAX_PATH));
           dat->hEvent = HookEventMessage(ME_PROTO_ACK, hwndDlg, HM_PROTOACK);
           ShowWindow(GetDlgItem(hwndDlg, IDC_RETRXSTATUS), SW_SHOW);
           ShowWindow(GetDlgItem(hwndDlg, IDC_XMSG), SW_HIDE);
@@ -510,7 +510,7 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
         {
           char *szText;
 
-          SetDlgItemTextUtf(hwndDlg,IDOK,ICQTranslateUtfStatic("Close", str));
+          SetDlgItemTextUtf(hwndDlg,IDOK,ICQTranslateUtfStatic("Close", str, MAX_PATH));
           dat->hEvent = NULL;
           szText = ICQGetContactSettingUtf(dat->hContact, DBSETTING_XSTATUSNAME, "");
           SetDlgItemTextUtf(hwndDlg, IDC_XTITLE, szText);
@@ -531,7 +531,7 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
         char buf[MAX_PATH];
 
         format = GetWindowTextUtf(hwndDlg);
-        null_snprintf(str, sizeof(str), format, dat->bXStatus?ICQTranslateUtfStatic(nameXStatus[dat->bXStatus-1], buf):"");
+        null_snprintf(str, sizeof(str), format, dat->bXStatus?ICQTranslateUtfStatic(nameXStatus[dat->bXStatus-1], buf, MAX_PATH):"");
         SetWindowTextUtf(hwndDlg, str);
         SAFE_FREE(&format);
       }
@@ -561,7 +561,7 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
           if (!dat->bAction)
           { // set our xStatus
             KillTimer(hwndDlg,1);
-            SetDlgItemTextUtf(hwndDlg,IDOK,ICQTranslateUtfStatic("OK", str));
+            SetDlgItemTextUtf(hwndDlg,IDOK,ICQTranslateUtfStatic("OK", str, MAX_PATH));
           }
           break;
       }
@@ -627,7 +627,7 @@ static void setXStatusEx(BYTE bXStatus, BYTE bQuiet)
     char *szName, *szMsg;
 
     sprintf(szSetting, "XStatus%dName", bXStatus);
-    szName = ICQGetContactSettingUtf(NULL, szSetting, ICQTranslateUtfStatic(nameXStatus[bXStatus-1], str));
+    szName = ICQGetContactSettingUtf(NULL, szSetting, ICQTranslateUtfStatic(nameXStatus[bXStatus-1], str, MAX_PATH));
     sprintf(szSetting, "XStatus%dMsg", bXStatus);
     szMsg = ICQGetContactSettingUtf(NULL, szSetting, "");
 
@@ -732,14 +732,14 @@ void InitXStatusIcons()
 
   icon_lib = InitXStatusIconLibrary(lib);
 
-  null_snprintf(szSection, sizeof(szSection), ICQTranslateUtfStatic("%s/Custom Status", str), ICQTranslateUtfStatic(gpszICQProtoName, prt));
+  null_snprintf(szSection, sizeof(szSection), ICQTranslateUtfStatic("%s/Custom Status", str, MAX_PATH), ICQTranslateUtfStatic(gpszICQProtoName, prt, MAX_PATH));
 
   for (i = 0; i < XSTATUS_COUNT; i++) 
   {
     char szTemp[64];
 
     null_snprintf(szTemp, sizeof(szTemp), "xstatus%d", i);
-    IconLibDefine(ICQTranslateUtfStatic(nameXStatus[i], str), szSection, szTemp, NULL, icon_lib, -(IDI_XSTATUS1+i));
+    IconLibDefine(ICQTranslateUtfStatic(nameXStatus[i], str, MAX_PATH), szSection, szTemp, NULL, icon_lib, -(IDI_XSTATUS1+i));
   }
 
   if (bXStatusMenuBuilt)

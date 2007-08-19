@@ -2601,8 +2601,8 @@ static void handleTypingNotification(unsigned char* buf, WORD wLen, WORD wFlags,
       char szMsg[MAX_PATH];
       char *nick = NickFromHandleUtf(hContact);
 
-      null_snprintf(szMsg, MAX_PATH, ICQTranslateUtfStatic("Contact \"%s\" has closed the message window.", szFormat), nick);
-      ShowPopUpMsg(hContact, ICQTranslateUtfStatic("ICQ Note", szFormat), szMsg, LOG_NOTE);
+      null_snprintf(szMsg, MAX_PATH, ICQTranslateUtfStatic("Contact \"%s\" has closed the message window.", szFormat, MAX_PATH), nick);
+      ShowPopUpMsg(hContact, ICQTranslateUtfStatic("ICQ Note", szFormat, MAX_PATH), szMsg, LOG_NOTE);
       SAFE_FREE(&nick);
 
       NetLog_Server("%s has closed the message window.", strUID(dwUin, szUID));

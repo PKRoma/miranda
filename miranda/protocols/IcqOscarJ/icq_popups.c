@@ -247,15 +247,10 @@ int ShowPopUpMsg(HANDLE hContact, const char* szTitle, const char* szMsg, BYTE b
     if (gbUnicodeAPI && ServiceExists(MS_POPUP_ADDPOPUPW))
     { // call unicode popup module - only on unicode OS otherwise it will not work properly :(
       // due to Popup Plug bug in ADDPOPUPW implementation
-      wchar_t *tmp;
-      char str[MAX_SECONDLINE];
+      char str[MAX_PATH];
 
-      tmp = make_unicode_string(ICQTranslateUtfStatic(szTitle, str));
-      memmove(ppdw.lpwzContactName, tmp, wcslen(tmp)*sizeof(wchar_t));
-      SAFE_FREE(&tmp);
-      tmp = make_unicode_string(ICQTranslateUtfStatic(szMsg, str));
-      memmove(ppdw.lpwzText, tmp, wcslen(tmp)*sizeof(wchar_t));
-      SAFE_FREE(&tmp);
+      make_unicode_string_static(ICQTranslateUtfStatic(szTitle, str, MAX_PATH), ppdw.lpwzContactName, MAX_CONTACTNAME);
+      make_unicode_string_static(ICQTranslateUtfStatic(szMsg, str, MAX_PATH), ppdw.lpwzText, MAX_SECONDLINE);
       ppdw.lchContact = hContact;
       ppdw.lchIcon = ppd.lchIcon;
       ppdw.colorBack = ppd.colorBack;
@@ -268,10 +263,10 @@ int ShowPopUpMsg(HANDLE hContact, const char* szTitle, const char* szMsg, BYTE b
     }
     else
     {
-      char str[MAX_SECONDLINE];
+      char str[MAX_PATH];
 
-      utf8_decode_static(ICQTranslateUtfStatic(szTitle, str), ppd.lpzContactName, MAX_CONTACTNAME);
-      utf8_decode_static(ICQTranslateUtfStatic(szMsg, str), ppd.lpzText, MAX_SECONDLINE);
+      utf8_decode_static(ICQTranslateUtfStatic(szTitle, str, MAX_PATH), ppd.lpzContactName, MAX_CONTACTNAME);
+      utf8_decode_static(ICQTranslateUtfStatic(szMsg, str, MAX_PATH), ppd.lpzText, MAX_SECONDLINE);
       ppd.lchContact = hContact;
       ppd.PluginWindowProc = NULL;
       ppd.PluginData = NULL;

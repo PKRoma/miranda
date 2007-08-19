@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/UI/loginpassword.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -59,7 +59,7 @@ BOOL CALLBACK LoginPasswdDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
         ICQTranslateDialog(hwndDlg);
         SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICQ)));
         dwUin = ICQGetContactSettingUIN(NULL);
-        null_snprintf(pszUIN, 128, ICQTranslateUtfStatic("Enter a password for UIN %u:", str), dwUin);
+        null_snprintf(pszUIN, 128, ICQTranslateUtfStatic("Enter a password for UIN %u:", str, MAX_PATH), dwUin);
         SetDlgItemTextUtf(hwndDlg, IDC_INSTRUCTION, pszUIN);
 
         SendDlgItemMessage(hwndDlg, IDC_LOGINPW, EM_LIMITTEXT, 10, 0);

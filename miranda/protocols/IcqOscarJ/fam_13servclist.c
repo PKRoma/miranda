@@ -210,7 +210,7 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
                 char *nick = NickFromHandleUtf(hContact);
 
                 ICQWriteContactSettingByte(hContact, "Auth", 0);
-                null_snprintf(str, MAX_PATH, ICQTranslateUtfStatic("Contact \"%s\" was authorized in the server list.", msg), nick);
+                null_snprintf(str, MAX_PATH, ICQTranslateUtfStatic("Contact \"%s\" was authorized in the server list.", msg, MAX_PATH), nick);
                 icq_LogMessage(LOG_WARNING, str);
                 SAFE_FREE(&nick);
               }
@@ -221,7 +221,7 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
                 char *nick = NickFromHandleUtf(hContact);
 
                 ICQWriteContactSettingByte(hContact, "Auth", 1);
-                null_snprintf(str, MAX_PATH, ICQTranslateUtfStatic("Contact \"%s\" lost its authorization in the server list.", msg), nick);
+                null_snprintf(str, MAX_PATH, ICQTranslateUtfStatic("Contact \"%s\" lost its authorization in the server list.", msg, MAX_PATH), nick);
                 icq_LogMessage(LOG_WARNING, str);
                 SAFE_FREE(&nick);
               }
@@ -268,7 +268,7 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
             char msg[MAX_PATH];
             char *nick = NickFromHandleUtf(hContact);
 
-            null_snprintf(str, MAX_PATH, ICQTranslateUtfStatic("User \"%s\" was removed from server list.", msg), nick);
+            null_snprintf(str, MAX_PATH, ICQTranslateUtfStatic("User \"%s\" was removed from server list.", msg, MAX_PATH), nick);
             icq_LogMessage(LOG_WARNING, str);
             SAFE_FREE(&nick);
           }

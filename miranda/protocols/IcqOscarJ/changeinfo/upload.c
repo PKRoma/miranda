@@ -3,7 +3,7 @@
 //                ________________________________________
 // 
 // Copyright © 2001,2002,2003,2004 Richard Hughes, Martin Öberg
-// Copyright © 2004,2005,2006 Joe Kucera, Bio
+// Copyright © 2004,2005,2006,2007 Joe Kucera, Bio
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -21,7 +21,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/changeinfo/upload.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -73,9 +73,7 @@ int UploadSettings(HWND hwndParent)
 
   if (!icqOnline) 
   {
-    char str[1024],cap[MAX_PATH];
-
-    MessageBoxUtf(hwndParent, ICQTranslateUtfStatic("You are not currently connected to the ICQ network. You must be online in order to update your information on the server.", str), ICQTranslateUtfStatic("Change ICQ Details", cap), MB_OK);
+    MessageBoxUtf(hwndParent, LPGEN("You are not currently connected to the ICQ network. You must be online in order to update your information on the server."), LPGEN("Change ICQ Details"), MB_OK);
     return 0;
   }
 

@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/UI/askauthentication.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -68,7 +68,7 @@ static BOOL CALLBACK AskAuthProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
       ICQTranslateDialog(hwndDlg);
       SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
       SendDlgItemMessage(hwndDlg, IDC_EDITAUTH, EM_LIMITTEXT, (WPARAM)255, 0);
-      SetDlgItemTextUtf(hwndDlg, IDC_EDITAUTH, ICQTranslateUtfStatic("Please authorize me to add you to my contact list.", str));
+      SetDlgItemTextUtf(hwndDlg, IDC_EDITAUTH, ICQTranslateUtfStatic("Please authorize me to add you to my contact list.", str, MAX_PATH));
 
       return TRUE;
     }
