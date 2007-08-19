@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/fam_03buddy.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -381,7 +381,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
   // Save contacts details in database
   if (hContact != NULL)
   {
-    if (szClient == 0) szClient = ICQTranslateUtfStatic("Unknown", szStrBuf); // if no detection, set uknown
+    if (szClient == 0) szClient = ICQTranslateUtfStatic("Unknown", szStrBuf, MAX_PATH); // if no detection, set uknown
 
     ICQWriteContactSettingDword(hContact, "LogonTS",      dwOnlineSince);
     if (dwMemberSince)

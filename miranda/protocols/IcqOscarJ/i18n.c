@@ -163,11 +163,46 @@ char* detect_decode_utf8(const char *from)
 /*
  * Convert a string between UTF-8 and the locale's charset.
  */
+unsigned char *make_utf8_string_static(const WCHAR *unicode, unsigned char *utf8, size_t utf_size)
+{
+  int index = 0;
+  unsigned int out_index = 0;
+  unsigned short c;
+
+  c = unicode[index++];
+  while (c)
+  {
+    if (c < 0x080) 
+    {
+      if (out_index + 1 >= utf_size) break;
+      utf8[out_index++] = (unsigned char)c;
+    }
+    else if (c < 0x800) 
+    {
+      if (out_index + 2 >= utf_size) break;
+      utf8[out_index++] = 0xc0 | (c >> 6);
+      utf8[out_index++] = 0x80 | (c & 0x3f);
+    }
+    else
+    {
+      if (out_index + 3 >= utf_size) break;
+      utf8[out_index++] = 0xe0 | (c >> 12);
+      utf8[out_index++] = 0x80 | ((c >> 6) & 0x3f);
+      utf8[out_index++] = 0x80 | (c & 0x3f);
+    }
+    c = unicode[index++];
+  }
+  utf8[out_index] = 0x00;
+
+  return utf8;
+}
+
+
+
 unsigned char *make_utf8_string(const WCHAR *unicode)
 {
   int size = 0;
   int index = 0;
-  int out_index = 0;
   unsigned char* out;
   unsigned short c;
 
@@ -189,38 +224,52 @@ unsigned char *make_utf8_string(const WCHAR *unicode)
   out = (unsigned char*)SAFE_MALLOC(size + 1);
   if (out == NULL)
     return NULL;
-  index = 0;
+  else
+    return make_utf8_string_static(unicode, out, size + 1);
+}
 
-  c = unicode[index++];
+
+
+WCHAR *make_unicode_string_static(const unsigned char *utf8, WCHAR *unicode, size_t unicode_len)
+{
+  int index = 0;
+  unsigned int out_index = 0;
+  unsigned char c;
+
+  c = utf8[index++];
   while (c)
   {
-    if (c < 0x080) 
+    if (out_index + 1 >= unicode_len) break;
+    if((c & 0x80) == 0) 
     {
-      out[out_index++] = (unsigned char)c;
-    }
-    else if (c < 0x800) 
+      unicode[out_index++] = c;
+    } 
+    else if((c & 0xe0) == 0xe0) 
     {
-      out[out_index++] = 0xc0 | (c >> 6);
-      out[out_index++] = 0x80 | (c & 0x3f);
+      unicode[out_index] = (c & 0x1F) << 12;
+      c = utf8[index++];
+      unicode[out_index] |= (c & 0x3F) << 6;
+      c = utf8[index++];
+      unicode[out_index++] |= (c & 0x3F);
     }
     else
     {
-      out[out_index++] = 0xe0 | (c >> 12);
-      out[out_index++] = 0x80 | ((c >> 6) & 0x3f);
-      out[out_index++] = 0x80 | (c & 0x3f);
+      unicode[out_index] = (c & 0x3F) << 6;
+      c = utf8[index++];
+      unicode[out_index++] |= (c & 0x3F);
     }
-    c = unicode[index++];
+    c = utf8[index++];
   }
-  out[out_index] = 0x00;
+  unicode[out_index] = 0;
 
-  return out;
+  return unicode;
 }
 
 
 
 WCHAR *make_unicode_string(const unsigned char *utf8)
 {
-  int size = 0, index = 0, out_index = 0;
+  int size = 0, index = 0;
   WCHAR *out;
   unsigned char c;
 
@@ -249,34 +298,8 @@ WCHAR *make_unicode_string(const unsigned char *utf8)
   out = (WCHAR*)SAFE_MALLOC((size + 1) * sizeof(WCHAR));
   if (out == NULL)
     return NULL;
-  index = 0;
-
-  c = utf8[index++];
-  while (c)
-  {
-    if((c & 0x80) == 0) 
-    {
-      out[out_index++] = c;
-    } 
-    else if((c & 0xe0) == 0xe0) 
-    {
-      out[out_index] = (c & 0x1F) << 12;
-      c = utf8[index++];
-      out[out_index] |= (c & 0x3F) << 6;
-      c = utf8[index++];
-      out[out_index++] |= (c & 0x3F);
-    }
-    else
-    {
-      out[out_index] = (c & 0x3F) << 6;
-      c = utf8[index++];
-      out[out_index++] |= (c & 0x3F);
-    }
-    c = utf8[index++];
-  }
-  out[out_index] = 0;
-
-  return out;
+  else
+    return make_unicode_string_static(utf8, out, size + 1);
 }
 
 
@@ -388,19 +411,15 @@ int utf8_decode_codepage(const char *from, char **to, WORD wCp)
     int chars;
     int err;
 
-    unicode = make_unicode_string(from);
-    if(unicode == NULL)
-    {
-      fprintf(stderr, "Out of memory processing string from UTF8 to UNICODE16\n");
-      return 0;
-    }
+    chars = strlennull(from) + 1;
+    unicode = (WCHAR*)_alloca(chars * sizeof(WCHAR));
+    make_unicode_string_static(from, unicode, chars);
 
     chars = WideCharToMultiByte(wCp, WC_COMPOSITECHECK, unicode, -1, NULL, 0, NULL, NULL);
 
     if(chars == 0)
     {
       fprintf(stderr, "Unicode translation error %d\n", GetLastError());
-      SAFE_FREE(&unicode);
       return 0;
     }
 
@@ -408,7 +427,6 @@ int utf8_decode_codepage(const char *from, char **to, WORD wCp)
     if(*to == NULL)
     {
       fprintf(stderr, "Out of memory processing string to local charset\n");
-      SAFE_FREE(&unicode);
       return 0;
     }
 
@@ -416,12 +434,9 @@ int utf8_decode_codepage(const char *from, char **to, WORD wCp)
     if (err != chars)
     {
       fprintf(stderr, "Unicode translation error %d\n", GetLastError());
-      SAFE_FREE(&unicode);
       SAFE_FREE(to);
       return 0;
     }
-
-    SAFE_FREE(&unicode);
 
     nResult = 1;
   }
@@ -470,17 +485,12 @@ int utf8_decode_static(const char *from, char *to, int to_size)
   }
   else
   {
-    WCHAR *unicode = make_unicode_string(from);
-
-    if (unicode == NULL)
-    {
-      fprintf(stderr, "Out of memory processing string from UTF8 to UNICODE16\n");
-      return 0;
-    }
+    int chars = strlennull(from) + 1;
+    WCHAR *unicode = (WCHAR*)_alloca(chars * sizeof(WCHAR));
+    
+    make_unicode_string_static(from, unicode, chars);
 
     WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK, unicode, -1, to, to_size, NULL, NULL);
-
-    SAFE_FREE(&unicode);
 
     nResult = 1;
   }

@@ -59,14 +59,14 @@ static void AddUniPageUtf(const char* szService, OPTIONSDIALOGPAGE *op, WPARAM w
 
   if (strstr(szTitle, "%s"))
   {
-    char *lTitle = ICQTranslateUtfStatic(szTitle, str);
+    char *lTitle = ICQTranslateUtfStatic(szTitle, str, MAX_PATH);
     int size = strlennull(lTitle) + strlennull(gpszICQProtoName);
  
     pszTitle = (char*)_alloca(size);
     null_snprintf(pszTitle, size, lTitle, gpszICQProtoName);
   }
   else
-    pszTitle = (char*)ICQTranslateUtfStatic(szTitle, str);
+    pszTitle = (char*)ICQTranslateUtfStatic(szTitle, str, MAX_PATH);
 
   if (gbUnicodeCore)
   {
@@ -74,7 +74,7 @@ static void AddUniPageUtf(const char* szService, OPTIONSDIALOGPAGE *op, WPARAM w
 
     utitle = make_unicode_string(pszTitle);
     if (szGroup)
-      ugroup = make_unicode_string(ICQTranslateUtfStatic(szGroup, str));
+      ugroup = make_unicode_string(ICQTranslateUtfStatic(szGroup, str, MAX_PATH));
     else
       ugroup = NULL;
     op->pszTitle = (char*)utitle; // this is union with ptszTitle
@@ -94,7 +94,7 @@ static void AddUniPageUtf(const char* szService, OPTIONSDIALOGPAGE *op, WPARAM w
     utf8_decode_static(pszTitle, title, size);
     if (szGroup)
     {
-      tmp = ICQTranslateUtfStatic(szGroup, str);
+      tmp = ICQTranslateUtfStatic(szGroup, str, MAX_PATH);
       size = strlennull(tmp) + 2;
       group = (char*)_alloca(size);
       utf8_decode_static(tmp, group, size);
@@ -128,12 +128,13 @@ static void TabOptions_AddItemUtf(HWND hTabCtrl, const char* szTitle, HWND hPage
 {
   TCITEM tci = {0};
   RECT rcClient;
+  char str[MAX_PATH];
   char* szTitleUtf;
   int iTotal;
 
   GetClientRect(GetParent(hTabCtrl), &rcClient);
 
-  szTitleUtf = ICQTranslateUtf(szTitle);
+  szTitleUtf = ICQTranslateUtfStatic(szTitle, str, MAX_PATH);
 
   iTotal = TabCtrl_GetItemCount(hTabCtrl);
 
@@ -150,7 +151,6 @@ static void TabOptions_AddItemUtf(HWND hTabCtrl, const char* szTitle, HWND hPage
     SendMessageA(hTabCtrl, TCM_INSERTITEMA, iTotal, (WPARAM)&tci);
   }
   SAFE_FREE(&tci.pszText);
-  SAFE_FREE(&szTitleUtf);
 
   MoveWindow(hPage, 3, 24, rcClient.right - 6, rcClient.bottom - 28, 1);
 }
@@ -409,7 +409,7 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
       LoadDBCheckState(hwndDlg, IDC_SECURE, "SecureLogin", DEFAULT_SECURE_LOGIN);
       SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_SETRANGE, FALSE, MAKELONG(0, 4));
       SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_SETPOS, TRUE, 4-ICQGetContactSettingByte(NULL, "ShowLogLevel", LOG_WARNING));
-      SetDlgItemTextUtf(hwndDlg, IDC_LEVELDESCR, ICQTranslateUtfStatic(szLogLevelDescr[4-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_GETPOS, 0, 0)], szServer));
+      SetDlgItemTextUtf(hwndDlg, IDC_LEVELDESCR, ICQTranslateUtfStatic(szLogLevelDescr[4-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_GETPOS, 0, 0)], szServer, MAX_PATH));
       ShowWindow(GetDlgItem(hwndDlg, IDC_RECONNECTREQD), SW_HIDE);
       LoadDBCheckState(hwndDlg, IDC_NOERRMULTI, "IgnoreMultiErrorBox", 0);
       
@@ -420,7 +420,7 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
     {
       char str[MAX_PATH];
 
-      SetDlgItemTextUtf(hwndDlg, IDC_LEVELDESCR, ICQTranslateUtfStatic(szLogLevelDescr[4-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL,TBM_GETPOS, 0, 0)], str));
+      SetDlgItemTextUtf(hwndDlg, IDC_LEVELDESCR, ICQTranslateUtfStatic(szLogLevelDescr[4-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL,TBM_GETPOS, 0, 0)], str, MAX_PATH));
       OptDlgChanged(hwndDlg);
     }
     break;

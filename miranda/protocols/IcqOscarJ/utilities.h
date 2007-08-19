@@ -128,7 +128,7 @@ int ICQBroadcastAck(HANDLE hContact,int type,int result,HANDLE hProcess,LPARAM l
 int __fastcall ICQTranslateDialog(HWND hwndDlg);
 char* __fastcall ICQTranslate(const char* src);
 char* __fastcall ICQTranslateUtf(const char* src);
-char* __fastcall ICQTranslateUtfStatic(const char* src, char* buf);
+char* __fastcall ICQTranslateUtfStatic(const char* src, char* buf, size_t bufsize);
 
 HANDLE ICQCreateThreadEx(pThreadFuncEx AFunc, void* arg, DWORD* pThreadID);
 void ICQCreateThread(pThreadFuncEx AFunc, void* arg);

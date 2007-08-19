@@ -1160,7 +1160,7 @@ BOOL writeDbInfoSettingWordWithTable(HANDLE hContact, const char *szSetting, str
   unpackLEWord(buf, &wVal);
   *pwLength -= 2;
 
-  text = LookupFieldNameUtf(table, wVal, sbuf);
+  text = LookupFieldNameUtf(table, wVal, sbuf, MAX_PATH);
   if (text)
     ICQWriteContactSettingUtf(hContact, szSetting, text);
   else
@@ -1203,7 +1203,7 @@ BOOL writeDbInfoSettingByteWithTable(HANDLE hContact, const char *szSetting, str
   unpackByte(buf, &byVal);
   *pwLength -= 1;
 
-  text = LookupFieldNameUtf(table, byVal, sbuf);
+  text = LookupFieldNameUtf(table, byVal, sbuf, MAX_PATH);
   if (text)
     ICQWriteContactSettingUtf(hContact, szSetting, text);
   else
@@ -1489,15 +1489,15 @@ char* __fastcall ICQTranslateUtf(const char* src)
 
 
 
-char* __fastcall ICQTranslateUtfStatic(const char* src, char* buf)
+char* __fastcall ICQTranslateUtfStatic(const char* src, char* buf, size_t bufsize)
 { // this takes UTF-8 strings only!!!
-  char* t;
-  
   if (strlennull(src))
-  {
-    t = ICQTranslateUtf(src);
-    strcpy(buf, t);
-    SAFE_FREE(&t);
+  { // we can use unicode translate (0.5+)
+    WCHAR* usrc = make_unicode_string(src);
+
+    make_utf8_string_static(TranslateW(usrc), buf, bufsize);
+
+    SAFE_FREE(&usrc);
   }
   else
     buf[0] = '\0';
@@ -1893,7 +1893,7 @@ LRESULT CallWindowProcUtf(WNDPROC OldProc, HWND hWnd, UINT msg, WPARAM wParam, L
 static int ControlAddStringUtf(HWND ctrl, DWORD msg, const char* szString)
 {
   char str[MAX_PATH];
-  char *szItem = ICQTranslateUtfStatic(szString, str);
+  char *szItem = ICQTranslateUtfStatic(szString, str, MAX_PATH);
   int item = -1;
 
   if (gbUnicodeAPI)
@@ -1971,8 +1971,8 @@ int MessageBoxUtf(HWND hWnd, const char* szText, const char* szCaption, UINT uTy
 
   if (gbUnicodeAPI)
   {
-    WCHAR *text = make_unicode_string(ICQTranslateUtfStatic(szText, str));
-    WCHAR *caption = make_unicode_string(ICQTranslateUtfStatic(szCaption, cap));
+    WCHAR *text = make_unicode_string(ICQTranslateUtfStatic(szText, str, 1024));
+    WCHAR *caption = make_unicode_string(ICQTranslateUtfStatic(szCaption, cap, MAX_PATH));
     res = MessageBoxW(hWnd, text, caption, uType);
     SAFE_FREE(&caption);
     SAFE_FREE(&text);
@@ -1983,8 +1983,8 @@ int MessageBoxUtf(HWND hWnd, const char* szText, const char* szCaption, UINT uTy
     char *text = (char*)_alloca(size);
     char *caption = (char*)_alloca(size2);
 
-    utf8_decode_static(ICQTranslateUtfStatic(szText, str), text, size);
-    utf8_decode_static(ICQTranslateUtfStatic(szCaption, cap), caption, size2);
+    utf8_decode_static(ICQTranslateUtfStatic(szText, str, 1024), text, size);
+    utf8_decode_static(ICQTranslateUtfStatic(szCaption, cap, MAX_PATH), caption, size2);
     res = MessageBoxA(hWnd, text, caption, uType);
   }
   return res;

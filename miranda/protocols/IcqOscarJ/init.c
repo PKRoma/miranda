@@ -423,14 +423,14 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
   {
     char str[MAX_PATH], proto[MAX_PATH], lib[MAX_PATH];
     
-    ICQTranslateUtfStatic(gpszICQProtoName, proto);
+    ICQTranslateUtfStatic(gpszICQProtoName, proto, MAX_PATH);
 
     GetModuleFileName(hInst, lib, MAX_PATH);
 
-    hIconMenuAuth = IconLibDefine(ICQTranslateUtfStatic("Request authorization", str), proto, "req_auth", NULL, lib, -IDI_AUTH_ASK);
-    hIconMenuGrant = IconLibDefine(ICQTranslateUtfStatic("Grant authorization", str), proto, "grant_auth", NULL, lib, -IDI_AUTH_GRANT);
-    hIconMenuRevoke = IconLibDefine(ICQTranslateUtfStatic("Revoke authorization", str), proto, "revoke_auth", NULL, lib, -IDI_AUTH_REVOKE);
-    hIconMenuAddServ = IconLibDefine(ICQTranslateUtfStatic("Add to server list", str), proto, "add_to_server", NULL, lib, -IDI_SERVLIST_ADD);
+    hIconMenuAuth = IconLibDefine(ICQTranslateUtfStatic("Request authorization", str, MAX_PATH), proto, "req_auth", NULL, lib, -IDI_AUTH_ASK);
+    hIconMenuGrant = IconLibDefine(ICQTranslateUtfStatic("Grant authorization", str, MAX_PATH), proto, "grant_auth", NULL, lib, -IDI_AUTH_GRANT);
+    hIconMenuRevoke = IconLibDefine(ICQTranslateUtfStatic("Revoke authorization", str, MAX_PATH), proto, "revoke_auth", NULL, lib, -IDI_AUTH_REVOKE);
+    hIconMenuAddServ = IconLibDefine(ICQTranslateUtfStatic("Add to server list", str, MAX_PATH), proto, "add_to_server", NULL, lib, -IDI_SERVLIST_ADD);
   }
 
   // Initialize IconLib icons

@@ -3,7 +3,7 @@
 //                ________________________________________
 // 
 // Copyright © 2001,2002,2003,2004 Richard Hughes, Martin Öberg
-// Copyright © 2004,2005,2006 Joe Kucera, Bio
+// Copyright © 2004,2005,2006,2007 Joe Kucera, Bio
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -21,7 +21,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/changeinfo/editlist.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -103,7 +103,7 @@ void BeginListEdit(int iItem,RECT *rc,int i,WORD wVKey)
     n = ListBoxAddStringUtf(hwndListEdit, ((ListTypeDataItem*)setting[i].pList)[j].szValue);
     SendMessage(hwndListEdit,LB_SETITEMDATA,n,((ListTypeDataItem*)setting[i].pList)[j].id);
     if ((setting[i].dbType==DBVT_ASCIIZ && (!strcmpnull((char*)setting[i].value,((ListTypeDataItem*)setting[i].pList)[j].szValue))
-       || (setting[i].dbType==DBVT_ASCIIZ && (!strcmpnull((char*)setting[i].value,ICQTranslateUtfStatic(((ListTypeDataItem*)setting[i].pList)[j].szValue, str))))
+       || (setting[i].dbType==DBVT_ASCIIZ && (!strcmpnull((char*)setting[i].value,ICQTranslateUtfStatic(((ListTypeDataItem*)setting[i].pList)[j].szValue, str, MAX_PATH))))
        || ((char*)setting[i].value==NULL && ((ListTypeDataItem*)setting[i].pList)[j].id==0))
        || (setting[i].dbType!=DBVT_ASCIIZ && setting[i].value==((ListTypeDataItem*)setting[i].pList)[j].id))
       SendMessage(hwndListEdit,LB_SETCURSEL,n,0);

@@ -43,8 +43,10 @@ int UTF8_IsValid(const unsigned char* pszInput);
 char* detect_decode_utf8(const char *from);
 
 WCHAR *make_unicode_string(const unsigned char *utf8);
+WCHAR *make_unicode_string_static(const unsigned char *utf8, WCHAR *unicode, size_t unicode_len);
 
 unsigned char *make_utf8_string(const WCHAR *unicode);
+unsigned char *make_utf8_string_static(const WCHAR *unicode, unsigned char *utf8, size_t utf_size);
 
 char *ansi_to_utf8(const char *szAnsi);
 char *ansi_to_utf8_codepage(const char *szAnsi, WORD wCp);

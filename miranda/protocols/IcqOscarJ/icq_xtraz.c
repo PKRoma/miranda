@@ -368,7 +368,7 @@ void handleXtrazData(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char*
           strcpy(szWork+1, szWork+5);
         }
         szWork = (char*)SAFE_MALLOC(nDataLen + MAX_PATH);
-        ICQTranslateUtfStatic("Greeting card:", szWork);
+        ICQTranslateUtfStatic("Greeting card:", szWork, MAX_PATH);
         strcat(szWork, "\r\nhttp://www.icq.com/friendship/pages/view_page_");
         strcat(szWork, szNum);
 
