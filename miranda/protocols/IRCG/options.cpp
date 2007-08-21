@@ -20,6 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "irc.h"
+#include <algorithm>
 #include <uxtheme.h>
 #include <win2k.h>
 
@@ -675,6 +676,8 @@ static char* sttPerformEvents[] = {
 static void addPerformComboValue( HWND hWnd, int idx, const char* szValueName )
 {
 	String sSetting = String("PERFORM:") + szValueName;
+	transform( sSetting.begin(), sSetting.end(), sSetting.begin(), toupper );
+
 	PERFORM_INFO* pPref;
 	DBVARIANT dbv;
 	if ( !DBGetContactSettingTString( NULL, IRCPROTONAME, sSetting.c_str(), &dbv )) {

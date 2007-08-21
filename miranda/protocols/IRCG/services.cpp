@@ -21,6 +21,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "irc.h"
 
+#include <algorithm>
+
 CIrcSessionInfo si;
 
 HANDLE g_hModulesLoaded = NULL;
@@ -1533,6 +1535,18 @@ static int Service_InitUserInfo(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+static int sttCheckPerform( const char *szSetting, LPARAM lParam )
+{
+	if ( !memicmp( szSetting, "PERFORM:", 8 )) {
+		String s = szSetting;
+		transform( s.begin(), s.end(), s.begin(), toupper );
+		if ( s != szSetting ) {
+			vector<String>* p = ( vector<String>* )lParam;
+			p->push_back( String( szSetting ));
+	}	}
+	return 0;
+}
+
 static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
 	char szTemp[MAX_PATH];
@@ -1623,6 +1637,7 @@ static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 			p1 += 9;
 			p2 = strchr(p1, '\n');
 			String sNetwork( p1, int( p2-p1-1 ));
+			transform(sNetwork.begin(), sNetwork.end(), sNetwork.begin(), toupper);
 			p1 = p2;
 			p2 = strstr( ++p1, "\nNETWORK: " );
 			if ( !p2 )
@@ -1635,6 +1650,27 @@ static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 		}
 		delete[] pszPerformData;
 		::remove( szTemp );
+	}
+
+	if ( !DBGetContactSettingByte( NULL, IRCPROTONAME, "PerformConversionDone", 0 )) {
+		vector<String> performToConvert;
+		DBCONTACTENUMSETTINGS dbces;
+		dbces.pfnEnumProc = sttCheckPerform;
+		dbces.lParam = ( LPARAM )&performToConvert;
+		dbces.szModule = IRCPROTONAME;
+		CallService( MS_DB_CONTACT_ENUMSETTINGS, NULL, (LPARAM)&dbces );
+
+		for ( size_t i = 0; i < performToConvert.size(); i++ ) {
+			String s = performToConvert[i];
+			DBVARIANT dbv;
+			if ( !DBGetContactSettingTString( NULL, IRCPROTONAME, s.c_str(), &dbv )) {
+				DBDeleteContactSetting( NULL, IRCPROTONAME, s.c_str());
+				transform( s.begin(), s.end(), s.begin(), toupper );
+				DBWriteContactSettingTString( NULL, IRCPROTONAME, s.c_str(), dbv.ptszVal );
+				DBFreeVariant( &dbv );
+		}	}
+
+		DBWriteContactSettingByte( NULL, IRCPROTONAME, "PerformConversionDone", 1 );
 	}
 
 	InitIgnore();
