@@ -2480,6 +2480,8 @@ static void __cdecl AwayWarningThread(LPVOID di)
 int DoPerform( const char* event )
 {
 	String sSetting = String("PERFORM:") + event;
+	transform( sSetting.begin(), sSetting.end(), sSetting.begin(), toupper );
+
 	DBVARIANT dbv;
 	if ( !DBGetContactSettingTString( NULL, IRCPROTONAME, sSetting.c_str(), &dbv )) {
 		if ( !my_strstri( dbv.ptszVal, _T("/away")))
