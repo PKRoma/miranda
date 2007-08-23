@@ -514,7 +514,6 @@ void JabberConsoleUninit()
 {
 	if (!hThreadConsole) return;
 	QueueUserAPC(sttTerminateConsoleAPC, hThreadConsole, NULL);
-	WaitForSingleObject(hThreadConsole, INFINITE);
 }
 
 int JabberMenuHandleConsole(WPARAM wParam, LPARAM lParam)
