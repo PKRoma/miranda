@@ -2472,7 +2472,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK * link)
 		result = CallService(MS_IMG_GETINTERFACE, FI_IF_VERSION, (LPARAM)&fei);
 
 	if(fei == NULL || result != S_OK) {
-		MessageBox(0, _T("Fatal error, image services not found. Avatar service will be disabled.\nYou may also need C runtime (msvcp60.dll)"), _T("Loadavatars"), MB_OK);
+		MessageBox(0, _T("Fatal error, image services not found. Avatar services will be disabled."), _T("Avatar Service"), MB_OK);
 		return 1;
 	}
 	LoadACC();
