@@ -20,23 +20,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-
 // ==============
 // == INCLUDES ==
 // ==============
 
-#include <windows.h>
-#include <io.h>
-#include <stdio.h>
-#include <stddef.h> // offsetof()
-#include "resource.h"
 #include "import.h"
-#include <m_database.h>
-#include <m_protocols.h>
-#include <m_protosvc.h>
-#include <m_utils.h>
-#include "mirandadb0700.h"
 
+#include "resource.h"
+#include "mirandadb0700.h"
 
 // ======================
 // == GLOBAL FUNCTIONS ==
@@ -45,30 +36,30 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 HANDLE HContactFromNumericID(char* pszProtoName, char* pszSetting, DWORD dwID);
 HANDLE HContactFromID(char* pszProtoName, char* pszSetting, char* pszID);
 
-HANDLE AddNumericContact(HWND hdlgProgress, char* pszProtoName, char* pszUniqueSetting, DWORD dwID, char* pzsNick, char* pzsGroupName);
-HANDLE AddContact(HWND hdlgProgress, char* pszProtoName, char* pszUniqueSetting, char* pszID, char* pzsNick, char* pzsGroupName);
+HANDLE AddContact(HWND hdlgProgress, char* pszProtoName, char* pszUniqueSetting, DBVARIANT* id, DBVARIANT* nick, DBVARIANT* group);
 
 BOOL IsProtocolLoaded(char* pszProtocolName);
 BOOL IsDuplicateEvent(HANDLE hContact, DBEVENTINFO dbei);
-int CreateGroup(HWND hdlgProgress, const char *groupName);
+int CreateGroup(HWND hdlgProgress, BYTE type, const char* name);
 void GetMirandaPath(char *szPath,int cbPath);
 
 BOOL CALLBACK ImportTypePageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
 BOOL CALLBACK FinishedPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
 BOOL CALLBACK ProgressPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
 BOOL CALLBACK MirandaOptionsPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
-
+BOOL CALLBACK MirandaAdvOptionsPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
 
 // =====================
 // == LOCAL FUNCTIONS ==
 // =====================
 
-
 void MirandaImport(HWND hdlgProgress);
 int CheckFileFormat(HANDLE hFile);
 static HANDLE ImportContact(HANDLE hDbFile, struct DBContact Contact);
-static void ImportHistory(HANDLE hDbFile, struct DBContact Contact);
+static void ImportHistory(HANDLE hDbFile, struct DBContact Contact, PROTOCOLDESCRIPTOR **protocol, int protoCount);
 static int ImportGroups(HANDLE hDbFile, struct DBHeader *pdbHeader);
+
+#define NEWSTR_ALLOCA(A) (A==NULL)?NULL:strcpy((char*)alloca(strlen(A)+1),A)
 
 // Comment: The Find* functions only return a file offset.
 //          The Get* functions actually reads the requested
@@ -82,14 +73,13 @@ DWORD FindOwnerContact(struct DBHeader* pDbHeader);
 
 int GetContactCount(struct DBHeader* pDbHeader);
 BOOL GetContact(HANDLE hDbFile, DWORD dwOffset, struct DBContact* pDbContact);
-BOOL GetSetting(HANDLE hDbFile, struct DBContact* pDbContact, char* pszModuleName, char* pszSettingName, void** pValue, BYTE* pType);
+BOOL GetSetting(HANDLE hDbFile, struct DBContact* pDbContact, char* pszModuleName, char* pszSettingName, DBVARIANT* pValue);
 char* GetNextSetting(char* pDbSetting);
 BOOL GetSettings(HANDLE hDbFile, DWORD dwOffset, struct DBContactSettings** pDbSettings);
 struct DBContactSettings* GetSettingsGroupByModuleName(HANDLE hdbFile, struct DBContact* pDbContact, char* pszName);
 DWORD GetBlobSize(struct DBContactSettings* pDbSettings);
-void* GetSettingByName(struct DBContactSettings* pDbSettings, char* pszSettingName);
-BYTE GetSettingTypeByName(struct DBContactSettings* pDbSettings, char* pszSettingName);
-void* GetSettingValue(char* pBlob);
+int GetSettingByName(struct DBContactSettings* pDbSettings, char* pszSettingName, DBVARIANT* pValue);
+int GetSettingValue(char* pBlob,DBVARIANT* pValue);
 
 BOOL GetEvent(HANDLE hDbFile, DWORD dwOffset, DBEVENTINFO* pDBEI);
 char* GetName(HANDLE hDbFile, DWORD dwOffset);
@@ -111,19 +101,32 @@ extern int nCustomOptions;
 char importFile[MAX_PATH];
 HWND hdlgProgress;
 char str[512];
-int importOptions = 0;
 DWORD dwFileSize;
 
-int nDupes;
-int nContactsCount;
-int nMessagesCount;
-int nGroupsCount;
-int nSkippedEvents;
+DWORD nDupes;
+DWORD nContactsCount;
+DWORD nMessagesCount;
+DWORD nGroupsCount;
+DWORD nSkippedEvents;
+DWORD nSkippedContacts;
+
+DWORD dwSinceDate = 0;
 
 // =============
 // == DEFINES ==
 // =============
 
+#define EVENTTYPE_MESSAGE   0
+#define EVENTTYPE_URL       1
+#define EVENTTYPE_FILE      1002
+
+#define IOPT_FILESENT   32
+#define IOPT_FILERECV   64
+#define IOPT_OTHERSENT  128
+#define IOPT_OTHERRECV  256
+#define IOPT_SYSTEM     512
+#define IOPT_CONTACTS   1024
+#define IOPT_GROUPS     2048
 
 // Supported database versions
 #define DB_INVALID 0x00000000  // Unknown or corrupted DAT
@@ -134,8 +137,8 @@ struct DBSignature {
   char name[15];
   BYTE eof;
 };
-static struct DBSignature dbSignature={"Miranda ICQ DB",0x1A};
 
+static struct DBSignature dbSignature={"Miranda ICQ DB",0x1A};
 
 // ====================
 // ====================
@@ -145,35 +148,34 @@ static struct DBSignature dbSignature={"Miranda ICQ DB",0x1A};
 
 static void SearchForLists(HWND hdlg,const char *mirandaPath,const char *pattern,const char *type)
 {
-
 	HANDLE hFind;
-	WIN32_FIND_DATA fd;
+	WIN32_FIND_DATAA fd;
 	char szSearchPath[MAX_PATH];
 	char szRootName[MAX_PATH];
 	char* str2;
 	int i;
 
-
-	_snprintf(szSearchPath, sizeof(szSearchPath), "%s\\%s", mirandaPath, pattern);
-	hFind = FindFirstFile(szSearchPath, &fd);
+	mir_snprintf(szSearchPath, sizeof(szSearchPath), "%s\\%s", mirandaPath, pattern);
+	hFind = FindFirstFileA(szSearchPath, &fd);
 	if (hFind != INVALID_HANDLE_VALUE)
 	{
 		do
 		{
-			lstrcpy(szRootName, fd.cFileName);
+			lstrcpyA(szRootName, fd.cFileName);
 			str2 = strrchr(szRootName, '.');
 			if (str2 != NULL)
 				*str2 = 0;
-			lstrcat(szRootName, type);
-			i = SendDlgItemMessage(hdlg, IDC_LIST, LB_ADDSTRING, 0, (LPARAM)szRootName);
-			str2 = (char*)malloc(lstrlen(mirandaPath) + 2 + lstrlen(fd.cFileName));
-			wsprintf(str2, "%s\\%s", mirandaPath, fd.cFileName);
+			lstrcatA(szRootName, type);
+			i = SendDlgItemMessageA(hdlg, IDC_LIST, LB_ADDSTRING, 0, (LPARAM)szRootName);
+			str2 = (char*)malloc(lstrlenA(mirandaPath) + 2 + lstrlenA(fd.cFileName));
+			wsprintfA(str2, "%s\\%s", mirandaPath, fd.cFileName);
 			SendDlgItemMessage(hdlg, IDC_LIST, LB_SETITEMDATA, i, (LPARAM)str2);
-		} 
-			while(FindNextFile(hFind,&fd));
+		}
+			while( FindNextFileA( hFind, &fd ));
 
-		FindClose(hFind);
-}	}
+		FindClose( hFind );
+	}
+}
 
 BOOL CALLBACK MirandaPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam)
 {
@@ -192,44 +194,48 @@ BOOL CALLBACK MirandaPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam
 		case IDC_BACK:
 			PostMessage(GetParent(hdlg),WIZM_GOTOPAGE,IDD_IMPORTTYPE,(LPARAM)ImportTypePageProc);
 			break;
+
 		case IDOK:
 			{
 				char filename[MAX_PATH];
 
-				GetDlgItemText(hdlg, IDC_FILENAME, filename, sizeof(filename));
+				GetDlgItemTextA(hdlg, IDC_FILENAME, filename, sizeof(filename));
 				if (_access(filename, 4)) {
-					MessageBox(hdlg, Translate("The given file does not exist. Please check that you have entered the name correctly."), Translate("Miranda Import"), MB_OK);
+					MessageBox(hdlg, TranslateT("The given file does not exist. Please check that you have entered the name correctly."), TranslateT("Miranda Import"), MB_OK);
 					break;
 				}
-				lstrcpy(importFile, filename);
+				lstrcpyA(importFile, filename);
 				PostMessage(GetParent(hdlg),WIZM_GOTOPAGE,IDD_OPTIONS,(LPARAM)MirandaOptionsPageProc);
-				break;
 			}
+			break;
+
 		case IDCANCEL:
 			PostMessage(GetParent(hdlg),WM_CLOSE,0,0);
 			break;
+
 		case IDC_LIST:
 			if(HIWORD(wParam)==LBN_SELCHANGE) {
 				int sel = SendDlgItemMessage(hdlg, IDC_LIST, LB_GETCURSEL, 0, 0);
 				if (sel == LB_ERR) break;
-				SetDlgItemText(hdlg, IDC_FILENAME, (char*)SendDlgItemMessage(hdlg, IDC_LIST, LB_GETITEMDATA, sel, 0));
+				SetDlgItemTextA(hdlg, IDC_FILENAME, (char*)SendDlgItemMessage(hdlg, IDC_LIST, LB_GETITEMDATA, sel, 0));
 			}
 			break;
+
 		case IDC_OTHER:
 			{
 				OPENFILENAME ofn;
-				char str[MAX_PATH];
+				TCHAR str[MAX_PATH];
 
 				GetDlgItemText(hdlg,IDC_FILENAME,str,sizeof(str));
 				ZeroMemory(&ofn, sizeof(ofn));
 				ofn.lStructSize = sizeof(ofn);
 				ofn.hwndOwner = hdlg;
 				ofn.hInstance = NULL;
-				ofn.lpstrFilter = Translate("Miranda IM database (*.dat)\0*.DAT\0All Files (*)\0*\0");
-				ofn.lpstrDefExt = "dat";
+				ofn.lpstrFilter = TranslateT("Miranda IM database (*.dat)\0*.DAT\0All Files (*)\0*\0");
+				ofn.lpstrDefExt = _T("dat");
 				ofn.lpstrFile = str;
 				ofn.Flags = OFN_FILEMUSTEXIST;
-				ofn.nMaxFile = sizeof(str);
+				ofn.nMaxFile = SIZEOF(str);
 				ofn.nMaxFileTitle = MAX_PATH;
 				if (GetOpenFileName(&ofn))
 					SetDlgItemText(hdlg,IDC_FILENAME,str);
@@ -237,15 +243,14 @@ BOOL CALLBACK MirandaPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam
 			}
 		}
 		break;
-		case WM_DESTROY:
-			{
-				int i;
+	case WM_DESTROY:
+		{
+			int i;
 
-				for(i=SendDlgItemMessage(hdlg,IDC_LIST,LB_GETCOUNT,0,0)-1;i>=0;i--)
-					free((char*)SendDlgItemMessage(hdlg,IDC_LIST,LB_GETITEMDATA,i,0));
-				break;
-			}
-	}
+			for(i=SendDlgItemMessage(hdlg,IDC_LIST,LB_GETCOUNT,0,0)-1;i>=0;i--)
+				free((char*)SendDlgItemMessage(hdlg,IDC_LIST,LB_GETITEMDATA,i,0));
+			break;
+	}	}
 
 	return FALSE;
 }
@@ -260,21 +265,26 @@ BOOL CALLBACK MirandaOptionsPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM
 		EnableWindow(GetDlgItem(hdlg,IDC_STATIC_ALL), TRUE);
 		EnableWindow(GetDlgItem(hdlg,IDC_RADIO_CONTACTS), TRUE);
 		EnableWindow(GetDlgItem(hdlg,IDC_STATIC_CONTACTS), TRUE);
-		CheckDlgButton(hdlg,IDC_RADIO_ALL,BST_CHECKED);
+		EnableWindow(GetDlgItem(hdlg,IDC_RADIO_CUSTOM), TRUE);
+		EnableWindow(GetDlgItem(hdlg,IDC_STATIC_CUSTOM), TRUE);
+		CheckDlgButton(hdlg,IDC_RADIO_ALL,BST_UNCHECKED);
 		return TRUE;
+
 	case WM_COMMAND:
 		switch(LOWORD(wParam)) {
 		case IDC_BACK:
 			PostMessage(GetParent(hdlg),WIZM_GOTOPAGE,IDD_MIRANDADB,(LPARAM)MirandaPageProc);
 			break;
+
 		case IDOK:
 			if(IsDlgButtonChecked(hdlg,IDC_RADIO_ALL)) {
 				nImportOption = IMPORT_ALL;
-				nCustomOptions = IOPT_MSGSENT|IOPT_MSGRECV|IOPT_URLSENT|IOPT_URLRECV;
+				nCustomOptions = 0;//IOPT_MSGSENT|IOPT_MSGRECV|IOPT_URLSENT|IOPT_URLRECV;
 				DoImport = MirandaImport;
 				PostMessage(GetParent(hdlg),WIZM_GOTOPAGE,IDD_PROGRESS,(LPARAM)ProgressPageProc);
 				break;
 			}
+
 			if(IsDlgButtonChecked(hdlg,IDC_RADIO_CONTACTS)) {
 				nImportOption = IMPORT_CONTACTS;
 				nCustomOptions = 0;
@@ -282,7 +292,13 @@ BOOL CALLBACK MirandaOptionsPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM
 				PostMessage(GetParent(hdlg),WIZM_GOTOPAGE,IDD_PROGRESS,(LPARAM)ProgressPageProc);
 				break;
 			}
+
+			if(IsDlgButtonChecked(hdlg,IDC_RADIO_CUSTOM)) {
+				PostMessage(GetParent(hdlg),WIZM_GOTOPAGE,IDD_ADVOPTIONS,(LPARAM)MirandaAdvOptionsPageProc);
+				break;
+			}
 			break;
+
 		case IDCANCEL:
 			PostMessage(GetParent(hdlg), WM_CLOSE, 0, 0);
 			break;
@@ -292,11 +308,148 @@ BOOL CALLBACK MirandaOptionsPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM
 	return FALSE;
 }
 
+static const UINT InControls[]={IDC_IN_MSG,IDC_IN_URL,IDC_IN_FT,IDC_IN_OTHER};
+static const UINT OutControls[]={IDC_OUT_MSG,IDC_OUT_URL,IDC_OUT_FT,IDC_OUT_OTHER};
+static const UINT SysControls[]={IDC_CONTACTS, IDC_SYSTEM};
+
+BOOL CALLBACK MirandaAdvOptionsPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam)
+{
+	switch(message) {
+	case WM_INITDIALOG:
+		TranslateDialogDefault(hdlg);
+		{
+			struct tm *TM = NULL;
+			struct _SYSTEMTIME ST = {0};
+
+			dwSinceDate = DBGetContactSettingDword(NULL,IMPORT_MODULE,"ImportSinceTS",time(NULL));
+
+			TM = localtime(&dwSinceDate);
+
+			ST.wYear = TM->tm_year + 1900;
+			ST.wMonth = TM->tm_mon + 1;
+			ST.wDay = TM->tm_mday;
+
+    		DateTime_SetSystemtime(GetDlgItem(hdlg,IDC_DATETIMEPICKER),GDT_VALID,&ST);
+		}
+		return TRUE;
+
+	case WM_COMMAND:
+		switch(LOWORD(wParam)) {
+		case IDC_BACK:
+			PostMessage(GetParent(hdlg),WIZM_GOTOPAGE,IDD_OPTIONS,(LPARAM)MirandaOptionsPageProc);
+			break;
+
+		case IDOK:
+			DoImport = MirandaImport;
+			nImportOption = IMPORT_CUSTOM;
+			nCustomOptions = 0;
+
+			if (IsDlgButtonChecked(hdlg,IDC_CONTACTS))
+				nCustomOptions |= IOPT_CONTACTS | IOPT_GROUPS;
+			if (IsDlgButtonChecked(hdlg,IDC_SYSTEM))
+				nCustomOptions |= IOPT_SYSTEM;
+
+			// incoming
+			if (IsDlgButtonChecked(hdlg,IDC_IN_MSG))
+				nCustomOptions |= IOPT_MSGRECV;
+			if (IsDlgButtonChecked(hdlg,IDC_IN_URL))
+				nCustomOptions |= IOPT_URLRECV;
+			if (IsDlgButtonChecked(hdlg,IDC_IN_FT))
+				nCustomOptions |= IOPT_FILERECV;
+			if (IsDlgButtonChecked(hdlg,IDC_IN_OTHER))
+				nCustomOptions |= IOPT_OTHERRECV;
+
+			// outgoing
+			if (IsDlgButtonChecked(hdlg,IDC_OUT_MSG))
+				nCustomOptions |= IOPT_MSGSENT;
+			if (IsDlgButtonChecked(hdlg,IDC_OUT_URL))
+				nCustomOptions |= IOPT_URLSENT;
+			if (IsDlgButtonChecked(hdlg,IDC_OUT_FT))
+				nCustomOptions |= IOPT_FILESENT;
+			if (IsDlgButtonChecked(hdlg,IDC_OUT_OTHER))
+				nCustomOptions |= IOPT_OTHERSENT;
+
+			// since date
+			dwSinceDate = 0;
+
+			if ( IsDlgButtonChecked( hdlg, IDC_SINCE )) {
+				struct _SYSTEMTIME ST = {0};
+
+				if (DateTime_GetSystemtime(GetDlgItem(hdlg,IDC_DATETIMEPICKER), &ST) == GDT_VALID) {
+					struct tm TM = {0};
+
+					TM.tm_mday = ST.wDay;
+					TM.tm_mon = ST.wMonth - 1;
+					TM.tm_year = ST.wYear - 1900;
+
+					dwSinceDate = mktime(&TM);
+
+					DBWriteContactSettingDword(NULL,IMPORT_MODULE,"ImportSinceTS",dwSinceDate);
+  			}	}
+
+			if (nCustomOptions)
+				PostMessage(GetParent(hdlg),WIZM_GOTOPAGE,IDD_PROGRESS,(LPARAM)ProgressPageProc);
+			break;
+
+		case IDCANCEL:
+			PostMessage(GetParent(hdlg), WM_CLOSE, 0, 0);
+			break;
+
+		case IDC_SINCE:
+			EnableWindow(GetDlgItem(hdlg, IDC_DATETIMEPICKER), IsDlgButtonChecked(hdlg, IDC_SINCE));
+			break;
+
+		if (HIWORD(wParam) != STN_CLICKED)
+			break;
+
+		case IDC_ALL:
+		case IDC_INCOMING:
+		case IDC_OUTGOING:
+			{
+				int i;
+
+				if (LOWORD(wParam) == IDC_ALL)
+					for (i = 0; i < sizeof(SysControls)/sizeof(SysControls[0]); i++)
+						CheckDlgButton(hdlg,SysControls[i], !IsDlgButtonChecked(hdlg,SysControls[i]));
+
+				if (LOWORD(wParam) != IDC_OUTGOING)
+					for (i = 0; i < sizeof(InControls)/sizeof(InControls[0]); i++)
+						CheckDlgButton(hdlg,InControls[i], !IsDlgButtonChecked(hdlg,InControls[i]));
+
+				if (LOWORD(wParam) != IDC_INCOMING)
+					for (i = 0; i < sizeof(OutControls)/sizeof(OutControls[0]); i++)
+						CheckDlgButton(hdlg,OutControls[i], !IsDlgButtonChecked(hdlg,OutControls[i]));
+			}
+			break;
+
+		case IDC_MSG:
+			CheckDlgButton(hdlg,IDC_IN_MSG, !IsDlgButtonChecked(hdlg,IDC_IN_MSG));
+			CheckDlgButton(hdlg,IDC_OUT_MSG, !IsDlgButtonChecked(hdlg,IDC_OUT_MSG));
+			break;
+
+		case IDC_URL:
+			CheckDlgButton(hdlg,IDC_IN_URL, !IsDlgButtonChecked(hdlg,IDC_IN_URL));
+			CheckDlgButton(hdlg,IDC_OUT_URL, !IsDlgButtonChecked(hdlg,IDC_OUT_URL));
+			break;
+
+		case IDC_FT:
+			CheckDlgButton(hdlg,IDC_IN_FT, !IsDlgButtonChecked(hdlg,IDC_IN_FT));
+			CheckDlgButton(hdlg,IDC_OUT_FT, !IsDlgButtonChecked(hdlg,IDC_OUT_FT));
+			break;
+
+		case IDC_OTHER:
+			CheckDlgButton(hdlg,IDC_IN_OTHER, !IsDlgButtonChecked(hdlg,IDC_IN_OTHER));
+			CheckDlgButton(hdlg,IDC_OUT_OTHER, !IsDlgButtonChecked(hdlg,IDC_OUT_OTHER));
+			break;
+		}
+		break;
+	}
+	return FALSE;
+}
 
 #ifndef INVALID_SET_FILE_POINTER
 #define INVALID_SET_FILE_POINTER ((DWORD)-1)
 #endif
-
 
 // Read header from file, returns null on failure
 struct DBHeader* GetHeader(HANDLE hDbFile)
@@ -304,7 +457,7 @@ struct DBHeader* GetHeader(HANDLE hDbFile)
 	struct DBHeader* pdbHeader;
 	DWORD dwBytesRead;
 
-	if (!(pdbHeader = calloc(1, sizeof(struct DBHeader))))
+	if (( pdbHeader = calloc(1, sizeof(struct DBHeader))) == NULL )
 		return NULL;
 
 	// Goto start of file
@@ -312,83 +465,64 @@ struct DBHeader* GetHeader(HANDLE hDbFile)
 		return FALSE;
 
 	// Read header
-	if ((!ReadFile(hDbFile, pdbHeader, sizeof(struct DBHeader), &dwBytesRead, NULL)) ||
-		(dwBytesRead != sizeof(struct DBHeader)))
+	if ( !ReadFile(hDbFile, pdbHeader, sizeof(struct DBHeader), &dwBytesRead, NULL ) || 
+		  dwBytesRead != sizeof(struct DBHeader))
 		return NULL;
 
 	// Return pointer to header
 	return pdbHeader;
-};
+}
 
 int CheckFileFormat(HANDLE hDbFile)
 {
 	struct DBHeader* pdbHeader;
 
 	// Read header
-	if (!(pdbHeader = GetHeader(hDbFile)))
+	if (( pdbHeader = GetHeader(hDbFile)) == NULL )
 		return DB_INVALID;
 
 	// Check header signature
-	if (memcmp(pdbHeader->signature, &dbSignature, sizeof(pdbHeader->signature)))
-	{
-		AddMessage("Signature mismatch");
-		free(pdbHeader);
+	if (memcmp(pdbHeader->signature, &dbSignature, sizeof(pdbHeader->signature))) {
+		AddMessage( LPGEN("Signature mismatch" ));
 		return DB_INVALID;
 	}
 
 	// Determine Miranda version
 	switch (pdbHeader->version) {
 	case DB_000700:
-		AddMessage("This looks like a Miranda database, version 0.1.0.0 or above.");
+		AddMessage( LPGEN("This looks like a Miranda database, version 0.1.0.0 or above." ));
 		free(pdbHeader);
 		return DB_000700;
 
 	default:
-		AddMessage("Version mismatch");
+		AddMessage( LPGEN("Version mismatch" ));
 		free(pdbHeader);
 		return DB_INVALID;
 }	}
 
 // High level Miranda DB access functions
+// Returns true if pValue points to the requested value
 
-// Return true if pValue points to the requested value
-//		if (!FindSetting(&Contact, ICQOSCPROTONAME, "uin", &UIN))
-BOOL GetSetting(HANDLE hDbFile, struct DBContact* pDbContact, char* pszModuleName, char* pszSettingName, void** pValue, BYTE* bType)
+BOOL GetSetting(HANDLE hDbFile, struct DBContact* pDbContact, char* pszModuleName, char* pszSettingName, DBVARIANT* pValue)
 {
-	struct DBContactSettings* pDbSettings = NULL;
-
-	if (pDbSettings = GetSettingsGroupByModuleName(hDbFile, pDbContact, pszModuleName))
-	{
-		if (*pValue = GetSettingByName(pDbSettings, pszSettingName))
-		{
-		  *bType = GetSettingTypeByName(pDbSettings, pszSettingName);
-
+	struct DBContactSettings* pDbSettings;
+	if ( pDbSettings = GetSettingsGroupByModuleName(hDbFile, pDbContact, pszModuleName)) {
+		if ( GetSettingByName( pDbSettings, pszSettingName, pValue )) {
 			free(pDbSettings);
 			return TRUE;
 		}
-#ifdef _DEBUG
-		else
-		{
-			_snprintf(str, sizeof(str), "Failed to find setting %s", pszSettingName);
-			AddMessage(str);
-		}
-#endif
+		#ifdef _DEBUG
+			AddMessage( LPGEN("Failed to find setting %s" ), pszSettingName );
+		#endif
 		free(pDbSettings);
 	}
 #ifdef _DEBUG
-	else
-	{
-		_snprintf(str, sizeof(str), "Failed to find module %s", pszModuleName);
-		AddMessage(str);
-	}
+	else AddMessage( LPGEN("Failed to find module %s" ), pszModuleName );
 #endif
 
 	// Search failed
-	*pValue = NULL;
-	*bType = DBVT_DELETED;
-
+	pValue->type = 0;
 	return FALSE;
-
 }
 
 // **
@@ -424,6 +558,7 @@ DWORD FindNextContact(struct DBContact* pDbContact)
 	return pDbContact->ofsNext;
 }
 
+
 // Read the contact at offset 'dwOffset'
 // Returns true if successful and pDbContact points to the contact struct
 // pDbContact must point to allocated struct
@@ -456,8 +591,7 @@ char* GetNextSetting(char* pDbSetting)
 {
 	// Get next setting
 	pDbSetting = pDbSetting + *pDbSetting+1; // Skip name
-
-	switch(*(BYTE*)pDbSetting) {
+	switch( *(BYTE*)pDbSetting ) {
 	case DBVT_BYTE:
 		pDbSetting = pDbSetting+1+1;
 		break;
@@ -472,22 +606,19 @@ char* GetNextSetting(char* pDbSetting)
 
 	case DBVT_ASCIIZ:
 	case DBVT_BLOB:
-	case DBVT_UTF8:
-	case DBVT_WCHAR:
 	case DBVTF_VARIABLELENGTH:
 		pDbSetting = pDbSetting + 3 + *(WORD*)(pDbSetting+1);
 		break;
 
 	case DBVT_DELETED:
-		AddMessage("DEBUG: Deleted setting treated as 0-length setting");
+		AddMessage( LPGEN("DEBUG: Deleted setting treated as 0-length setting"));
 		pDbSetting = pDbSetting+1;
 		break;
 
 	default:
 		// Unknown datatype assert
-		AddMessage("ERROR: Faulty settings chain");
+		AddMessage( LPGEN("ERROR: Faulty settings chain"));
 		return NULL;
-
 	}
 
 	return pDbSetting;
@@ -497,7 +628,6 @@ char* GetNextSetting(char* pDbSetting)
 // **
 // ** SETTINGS CHAIN
 // **
-
 
 // Return the settings at offset 'dwOffset'
 BOOL GetSettingsGroup(HANDLE hDbFile, DWORD dwOffset, struct DBContactSettings** pDbSettings)
@@ -510,7 +640,6 @@ BOOL GetSettingsGroup(HANDLE hDbFile, DWORD dwOffset, struct DBContactSettings**
 		return FALSE;
 
 	// ** Read and verify the struct
-
 	if (SetFilePointer(hDbFile, dwOffset, NULL, FILE_BEGIN) == INVALID_SET_FILE_POINTER)
 		return FALSE;
 
@@ -522,7 +651,6 @@ BOOL GetSettingsGroup(HANDLE hDbFile, DWORD dwOffset, struct DBContactSettings**
 		return FALSE; // Setttings corrupted
 
 	// ** Read the struct and the following blob
-
 	dwBlobSize = pSettings.cbBlob;
 	if (SetFilePointer(hDbFile, dwOffset, NULL, FILE_BEGIN) == INVALID_SET_FILE_POINTER)
 		return FALSE;
@@ -540,7 +668,6 @@ BOOL GetSettingsGroup(HANDLE hDbFile, DWORD dwOffset, struct DBContactSettings**
 	return TRUE;
 }
 
-
 // pDbContact is a ptr to a struct DBContact
 // Returns pointer to a struct DBContactSettings or NULL
 struct DBContactSettings* GetSettingsGroupByModuleName(HANDLE hDbFile, struct DBContact* pDbContact, char* pszName)
@@ -554,8 +681,7 @@ struct DBContactSettings* GetSettingsGroupByModuleName(HANDLE hDbFile, struct DB
 		return NULL; // No settings exists in this contact
 
 	// Loop over all settings groups
-	while (dwGroupOfs && dwGroupOfs < dwFileSize)
-	{
+	while (dwGroupOfs && dwGroupOfs < dwFileSize) {
 		pSettingsGroup = NULL;
 
 		// Read and verify the struct
@@ -563,30 +689,23 @@ struct DBContactSettings* GetSettingsGroupByModuleName(HANDLE hDbFile, struct DB
 			return NULL; // Bad struct
 
 		// Struct OK, now get the name
-		if ((pszGroupName = GetName(hDbFile, pSettingsGroup->ofsModuleName)))
-		{
+		if ((pszGroupName = GetName(hDbFile, pSettingsGroup->ofsModuleName))) {
+
 			// Is it the right one?
-			if (strcmp(pszGroupName, pszName) == 0)
-			{
-#ifdef _DEBUG
-				_snprintf(str, sizeof(str), "Found module: %s", pszGroupName);
-				AddMessage(str);
-#endif
+			if (strcmp(pszGroupName, pszName) == 0) {
+				#ifdef _DEBUG
+					AddMessage( LPGEN("Found module: %s"), pszGroupName );
+				#endif
 				free(pszGroupName);
 				return pSettingsGroup;
 			}
-#ifdef _DEBUG
-			else {
-				_snprintf(str, sizeof(str), "Ignoring module: %s", pszGroupName);
-				AddMessage(str);
-			}
-#endif
+			#ifdef _DEBUG
+			else AddMessage( LPGEN("Ignoring module: %s"), pszGroupName );
+			#endif
 			if (pszGroupName)
 				free(pszGroupName);
 		}
-		else {
-			AddMessage("Warning: Found module with no name");
-		}
+		else AddMessage( LPGEN("Warning: Found module with no name"));
 
 		dwGroupOfs = pSettingsGroup->ofsNext;
 
@@ -599,149 +718,119 @@ struct DBContactSettings* GetSettingsGroupByModuleName(HANDLE hDbFile, struct DB
 }
 
 // pDbSettings must point to a complete DBContactSettings struct in memory
-void* GetSettingByName(struct DBContactSettings* pDbSettings, char* pszSettingName)
+int GetSettingByName(struct DBContactSettings* pDbSettings, char* pszSettingName, DBVARIANT* dbv)
 {
-	char* pDbSetting;
-	char* pszName;
-
 	// We need at least one setting to start with
-	if (!(pDbSetting = pDbSettings->blob))
-		return NULL;
+	char* pDbSetting = pDbSettings->blob;
+	if ( !pDbSetting )
+		return FALSE;
 
 	// ** pDbSettings now points to the first setting in this module
 
 	// Loop over all settings
-	while (pDbSetting && *pDbSetting)
-	{
-		pszName = calloc(*pDbSetting+1, 1);
+	while (pDbSetting && *pDbSetting) {
+		char* pszName = calloc(*pDbSetting+1, 1);
 		memcpy(pszName, pDbSetting+1, *pDbSetting);
 
 		// Is this the right one?
-		if (strcmp(pszSettingName, pszName) == 0)
-		{
+		if (strcmp(pszSettingName, pszName) == 0) {
 			free(pszName);
-			return GetSettingValue(pDbSetting);
+			return GetSettingValue(pDbSetting, dbv);
 		}
-		else
-		{
-			free(pszName);
-#ifdef _DEBUG
-			pszName = calloc(*pDbSetting+1, 1);
-			memcpy(pszName, pDbSetting+1, *pDbSetting);
-			_snprintf(str, sizeof(str), "Ignoring setting: %s", pszName);
-			AddMessage(str);
-			free(pszName);
-#endif
-			pDbSetting = GetNextSetting(pDbSetting);
-	}	}
+		
+		#ifdef _DEBUG
+			AddMessage( LPGEN("Ignoring setting: %s"), pszName );
+		#endif
+		free(pszName);
+		pDbSetting = GetNextSetting(pDbSetting);
+	}
 
 	// Search failed
-	return NULL;
-}
-
-// pDbSettings must point to a complete DBContactSettings struct in memory
-BYTE GetSettingTypeByName(struct DBContactSettings* pDbSettings, char* pszSettingName)
-{
-	char* pDbSetting;
-	char* pszName;
-
-	// We need at least one setting to start with
-	if (!(pDbSetting = pDbSettings->blob))
-		return DBVT_DELETED;
-
-	// ** pDbSettings now points to the first setting in this module
-
-	// Loop over all settings
-	while (pDbSetting && *pDbSetting)
-	{
-		pszName = calloc(*pDbSetting+1, 1);
-		memcpy(pszName, pDbSetting+1, *pDbSetting);
-
-		// Is this the right one?
-		if (lstrcmp(pszSettingName, pszName) == 0)
-		{
-			free(pszName);
-			return (BYTE)*(pDbSetting + (*pDbSetting) + 1);
-		}
-		else
-		{
-			free(pszName);
-#ifdef _DEBUG
-			pszName = calloc(*pDbSetting+1, 1);
-			memcpy(pszName, pDbSetting+1, *pDbSetting);
-			mir_snprintf(str, sizeof(str), "Ignoring setting: %s", pszName);
-			AddMessage(str);
-			free(pszName);
-#endif
-			pDbSetting = GetNextSetting(pDbSetting);
-	}	}
-
-	// Search failed
-	return DBVT_DELETED;
+	return FALSE;
 }
 
 // dwSettingpointer points to a valid DBSettings struct
-void* GetSettingValue(char* pBlob)
+int GetSettingValue(char* pBlob, DBVARIANT* dbv)
 {
-	void* pValue;
-
-#ifdef _DEBUG
-{
-	char* pszName = calloc((*pBlob)+1, 1);
-	memcpy(pszName, pBlob+1, *pBlob);
-	_snprintf(str, sizeof(str), "Getting type %u value for setting: %s", (BYTE)*(pBlob+(*pBlob)+1), pszName);
-	AddMessage(str);
-	free(pszName);
-}
-#endif
+	#ifdef _DEBUG
+	{
+		char* pszName = calloc((*pBlob)+1, 1);
+		memcpy(pszName, pBlob+1, *pBlob);
+		AddMessage( LPGEN("Getting type %u value for setting: %s"), (BYTE)*(pBlob+(*pBlob)+1), pszName );
+		free(pszName);
+	}
+	#endif
 
 	// Skip name
 	pBlob = pBlob + (*pBlob)+1;
+	dbv->type = ( BYTE )*pBlob++;
 
 	// Check what type it is
-	switch((BYTE)*pBlob) {
+	switch( dbv->type ) {
 	case DBVT_BYTE:
-		pValue = calloc(1,sizeof(byte));
-		*(byte*)pValue = pBlob[1];
-		return pValue;
+		dbv->bVal = *pBlob;
+		return TRUE;
 
 	case DBVT_WORD:
-		pValue = calloc(1, sizeof(WORD));
-		*(WORD*)pValue = *(WORD*)(pBlob+1);
-		return pValue;
+		dbv->wVal = *(WORD*)pBlob;
+		return TRUE;
 
 	case DBVT_DWORD:
-		pValue = calloc(1, sizeof(DWORD));
-		*(DWORD*)pValue = *(DWORD*)(pBlob+1);
-		return pValue;
+		dbv->dVal = *(DWORD*)pBlob;
+		return TRUE;
 
 	case DBVT_ASCIIZ:
-		pValue = calloc((*(WORD*)(pBlob+1))+1, sizeof(char));
-		memcpy(pValue, pBlob+3, *(WORD*)(pBlob+1));
-		return pValue;
-
 	case DBVT_UTF8:
-	case DBVT_WCHAR:
-		pValue = calloc((*(WORD*)(pBlob+1))+2, sizeof(char));
-		memcpy(pValue, pBlob+3, *(WORD*)(pBlob+1));
-	  return pValue;
+		dbv->cchVal = *(WORD*)pBlob;
+		dbv->pszVal = calloc( dbv->cchVal+1, sizeof( char ));
+		memcpy( dbv->pszVal, pBlob+2, dbv->cchVal );
+		dbv->pszVal[ dbv->cchVal ] = 0;
+		return TRUE;
 
 	case DBVTF_VARIABLELENGTH:
 	case DBVT_BLOB:
-		pValue = calloc(*(WORD*)(pBlob+1), sizeof(char));
-		memcpy(pValue, pBlob+3, *(WORD*)(pBlob+1));
-		return pValue;
+		dbv->cpbVal = *(WORD*)pBlob;
+		dbv->pbVal  = calloc( dbv->cpbVal+1, sizeof( char ));
+		memcpy( dbv->pbVal, pBlob+2, dbv->cpbVal );
+		dbv->pbVal[ dbv->cpbVal ] = 0;
+		return TRUE;
 
 	case DBVT_DELETED:
-		AddMessage("DEBUG: Deleted setting treated as 0-length setting");
-		// Fall through
+		AddMessage( LPGEN("DEBUG: Deleted setting treated as 0-length setting"));
 
 	default:
-		return NULL;
-
+		dbv->type = DBVT_DELETED;
 	}
 
-	return NULL;
+	return FALSE;
+}
+
+void FreeVariant( DBVARIANT* dbv )
+{
+	switch( dbv->type ) {
+	case DBVT_ASCIIZ:
+	case DBVT_UTF8:
+		if ( dbv->pszVal )
+			free( dbv->pszVal );
+		break;
+
+	case DBVTF_VARIABLELENGTH:
+	case DBVT_BLOB:
+		if ( dbv->pbVal )
+			free( dbv->pbVal );
+		break;
+	}
+
+	dbv->type = 0;
+}
+
+void WriteVariant( HANDLE hContact, const char* module, const char* var, DBVARIANT* dbv )
+{
+	DBCONTACTWRITESETTING dbw;
+	dbw.szModule = module;
+	dbw.szSetting = var;
+	dbw.value = *dbv;
+	CallService( MS_DB_CONTACT_WRITESETTING, (WPARAM)hContact, (LPARAM)&dbw );
 }
 
 // Returns true if pDBEI has been filled in with nice values
@@ -752,14 +841,11 @@ BOOL GetEvent(HANDLE hDbFile, DWORD dwOffset, DBEVENTINFO* pDBEI)
 	struct DBEvent pEvent;
 	char* pBlob;
 
-
 	// Early reject
 	if (dwOffset == 0 || dwOffset >= dwFileSize)
 		return FALSE;
 
-
 	// ** Read and verify the struct
-
 	if (SetFilePointer(hDbFile, dwOffset, NULL, FILE_BEGIN) == INVALID_SET_FILE_POINTER)
 		return FALSE;
 
@@ -770,30 +856,27 @@ BOOL GetEvent(HANDLE hDbFile, DWORD dwOffset, DBEVENTINFO* pDBEI)
 		return FALSE; // Event corrupted
 
 	// ** Read the blob
-
 	if (SetFilePointer(hDbFile, dwOffset+offsetof(struct DBEvent, blob), NULL, FILE_BEGIN) == INVALID_SET_FILE_POINTER)
 		return FALSE;
 
 	if (!(pBlob = calloc(pEvent.cbBlob, 1)))
 		return FALSE;
 
-	if ((!ReadFile(hDbFile, pBlob, pEvent.cbBlob, &dwBytesRead, NULL)) ||
-		(dwBytesRead != pEvent.cbBlob))
-	{
+	if ((!ReadFile(hDbFile, pBlob, pEvent.cbBlob, &dwBytesRead, NULL)) || (dwBytesRead != pEvent.cbBlob)) {
 		free(pBlob);
 		return FALSE;
 	}
 
 	// ** Copy the static part to the event info struct
-
 	pDBEI->timestamp = pEvent.timestamp;
-	pDBEI->flags = pEvent.flags&DBEF_SENT ? DBEF_SENT : DBEF_READ; // Imported events are always marked READ
 	pDBEI->eventType = pEvent.eventType;
 	pDBEI->cbSize = sizeof(DBEVENTINFO);
 	pDBEI->cbBlob = pEvent.cbBlob;
 	pDBEI->pBlob = pBlob;
-	if (!(pDBEI->szModule = GetName(hDbFile, pEvent.ofsModuleName)))
-	{
+	pDBEI->flags = (pEvent.flags & ~(DBEF_SENT+DBEF_READ)) +
+		((pEvent.flags & DBEF_SENT) ? DBEF_SENT : DBEF_READ ); // Imported events are always marked READ
+
+	if (!(pDBEI->szModule = GetName(hDbFile, pEvent.ofsModuleName))) {
 		free(pBlob);
 		return FALSE;
 	}
@@ -815,7 +898,6 @@ char* GetName(HANDLE hDbFile, DWORD dwOffset)
 		return FALSE;
 
 	// ** Read and verify the name struct
-
 	if (SetFilePointer(hDbFile, dwOffset, NULL, FILE_BEGIN) == INVALID_SET_FILE_POINTER)
 		return NULL;
 
@@ -823,27 +905,22 @@ char* GetName(HANDLE hDbFile, DWORD dwOffset)
 		(dwBytesRead != sizeof(struct DBModuleName)))
 		return NULL;
 
-	if (pModule.signature != DBMODULENAME_SIGNATURE)
-	{
-		AddMessage("Modulename corrupted");
+	if (pModule.signature != DBMODULENAME_SIGNATURE) {
+		AddMessage( LPGEN("Modulename corrupted"));
 		return NULL; // ModuleName corrupted
 	}
 
 	// ** Name struct OK, now get the actual name
-
 	if (!(pszName = calloc(pModule.cbName+1, sizeof(char))))
 		return NULL;
 
-	if (SetFilePointer(hDbFile, dwOffset + offsetof(struct DBModuleName, name), NULL, FILE_BEGIN) == INVALID_SET_FILE_POINTER)
-	{
+	if (SetFilePointer(hDbFile, dwOffset + offsetof(struct DBModuleName, name), NULL, FILE_BEGIN) == INVALID_SET_FILE_POINTER) {
 		free(pszName);
 		return NULL;
 	}
 
 	// Read name into string buffer
-	if ((!ReadFile(hDbFile, pszName, pModule.cbName, &dwBytesRead, NULL)) ||
-		(dwBytesRead != pModule.cbName))
-	{
+	if ((!ReadFile(hDbFile, pszName, pModule.cbName, &dwBytesRead, NULL)) || (dwBytesRead != pModule.cbName)) {
 		free(pszName);
 		return NULL;
 	}
@@ -861,7 +938,6 @@ DWORD FindNextEvent(HANDLE hDbFile, DWORD dwOffset)
 		return FALSE;
 
 	// ** Read and verify the struct
-
 	if (SetFilePointer(hDbFile, dwOffset, NULL, FILE_BEGIN) == INVALID_SET_FILE_POINTER)
 		return FALSE;
 
@@ -869,8 +945,7 @@ DWORD FindNextEvent(HANDLE hDbFile, DWORD dwOffset)
 		(dwBytesRead != sizeof(struct DBEvent)))
 		return FALSE;
 
-	if ((pEvent.signature != DBEVENT_SIGNATURE) ||
-		(pEvent.ofsNext > dwFileSize))
+	if ( pEvent.signature != DBEVENT_SIGNATURE || pEvent.ofsNext > dwFileSize )
 		return FALSE; // Event corrupted
 
 	return pEvent.ofsNext;
@@ -881,29 +956,25 @@ int ImportGroups(HANDLE hDbFile, struct DBHeader* pdbHeader)
 	struct DBContactSettings* pDbSettings;
 	struct DBContact DbContact;
 	char* pSetting;
-	char* pszGroupName;
 	DWORD dwOffset;
 	int nGroups = 0;
 
 	// Find owner data
 	dwOffset = pdbHeader->ofsUser;
-	if (!GetContact(hDbFile, dwOffset, &DbContact))
-	{
-		AddMessage("No owner found.");
+	if (!GetContact(hDbFile, dwOffset, &DbContact)) {
+		AddMessage( LPGEN("No owner found."));
 		return -1;
 	}
 
 	// Find the module with the groups, and import them all
-	if (pDbSettings = GetSettingsGroupByModuleName(hDbFile, &DbContact, "CListGroups"))
-	{
+	if ( pDbSettings = GetSettingsGroupByModuleName( hDbFile, &DbContact, "CListGroups" )) {
 		pSetting = pDbSettings->blob;
-		while (pSetting && *pSetting)
-		{
-			if (pszGroupName = GetSettingValue(pSetting))
-			{
-				if (CreateGroup(hdlgProgress, pszGroupName+1))
+		while ( pSetting && *pSetting ) {
+			DBVARIANT dbv;
+			if ( GetSettingValue( pSetting, &dbv )) {
+				if ( CreateGroup( hdlgProgress, dbv.type, dbv.pszVal+1 ))
 					nGroups++;
-				free(pszGroupName);
+				FreeVariant( &dbv );
 			}
 			pSetting = GetNextSetting(pSetting);
 		}
@@ -915,220 +986,113 @@ int ImportGroups(HANDLE hDbFile, struct DBHeader* pdbHeader)
 
 HANDLE ImportContact(HANDLE hDbFile, struct DBContact Contact)
 {
-	HANDLE hContact = INVALID_HANDLE_VALUE;
-	char* pszProtoName = NULL;
-	void* pSettingValue = NULL;
-	BYTE bSettingType = DBVT_DELETED;
-	BYTE* pbHidden = NULL;
-	DWORD* pdwIgnoreMask = NULL;
-	char* pzsGroupName = NULL;
-	char* pzsNickName = NULL;
+	HANDLE hContact;
+	DBVARIANT group, nick;
+	char* pszProtoName;
+	char* pszUniqueSetting;
+	char* pszUserName;
+	char id[ 40 ];
 
 	// Check what protocol this contact belongs to
-	if (GetSetting(hDbFile, &Contact, "Protocol", "p", &pszProtoName, &bSettingType))
-	{
-		if (!IsProtocolLoaded(pszProtoName))
-		{
-			_snprintf(str, sizeof(str), "Skipping contact, %s not installed.", pszProtoName);
-			AddMessage(str);
-		}
-		else
-		{
-			DWORD dwCaps1;
-			char* pszUniqueSetting = NULL;
-
-			dwCaps1 = (DWORD)CallProtoService(pszProtoName, PS_GETCAPS, PFLAGNUM_1, 0);
-			pszUniqueSetting = (char*)CallProtoService(pszProtoName, PS_GETCAPS, PFLAG_UNIQUEIDSETTING, 0);
-
-			// Skip protocols with no unique id setting (some non IM protocols return NULL)
-
-			if (!pszUniqueSetting)
-			{
-				_snprintf(str, sizeof(str), "Skipping non-IM contact (%s)", pszProtoName);
-				AddMessage(str);
-			}
-
-			// Import numeric user
-
-			else if (GetSetting(hDbFile, &Contact, pszProtoName, pszUniqueSetting, &pSettingValue, &bSettingType))
-			{
-				if (bSettingType == DBVT_DWORD)
-				{
-					DWORD* pdwUniqueID = (DWORD*)pSettingValue;//NULL;
-
-					// Does the contact already exist?
-					if (HContactFromNumericID(pszProtoName, pszUniqueSetting, *pdwUniqueID) == INVALID_HANDLE_VALUE)
-					{
-						// No, add contact and copy some important settings
-						GetSetting(hDbFile, &Contact, "CList", "Group", &pzsGroupName, &bSettingType);
-
-						if (!GetSetting(hDbFile, &Contact, "CList", "MyHandle", &pzsNickName, &bSettingType))
-							GetSetting(hDbFile, &Contact, pszProtoName, "Nick", &pzsNickName, &bSettingType);
-
-						hContact = AddNumericContact(hdlgProgress, pszProtoName, pszUniqueSetting, *pdwUniqueID, pzsNickName, pzsGroupName);
-
-						if (hContact != INVALID_HANDLE_VALUE)
-						{
-							WORD* pwOrd = NULL;
-							char* pszString = NULL;
-
-							// Hidden?
-							if (GetSetting(hDbFile, &Contact, "CList", "Hidden", &pbHidden, &bSettingType))
-								DBWriteContactSettingByte(hContact,"CList","Hidden", *pbHidden);
-
-							// Ignore settings
-							if (GetSetting(hDbFile, &Contact, "Ignore", "Mask1", &pdwIgnoreMask, &bSettingType))
-								DBWriteContactSettingDword(hContact,"Ignore","Mask1", *pdwIgnoreMask);
-
-							// Apparent mode
-							if (GetSetting(hDbFile, &Contact, pszProtoName, "ApparentMode", &pwOrd, &bSettingType))
-							{
-								DBWriteContactSettingWord(hContact, pszProtoName,"ApparentMode", *pwOrd);
-								free(pwOrd);
-							}
-
-							// Nick // TODO this requires Unicode fix !!!!!
-							if (GetSetting(hDbFile, &Contact, pszProtoName, "Nick", &pszString, &bSettingType))
-							{
-								DBWriteContactSettingString(hContact, pszProtoName,"Nick", pszString);
-								free(pszString);
-							}
-							// Myhandle // TODO this requires Unicode fix !!!!!
-							if (GetSetting(hDbFile, &Contact, pszProtoName, "MyHandle", &pszString, &bSettingType))
-							{
-								DBWriteContactSettingString(hContact, pszProtoName,"MyHandle", pszString);
-								free(pszString);
-							}
-							// First name
-							if (GetSetting(hDbFile, &Contact, pszProtoName, "FirstName", &pszString, &bSettingType))
-							{
-								DBWriteContactSettingString(hContact, pszProtoName,"FirstName", pszString);
-								free(pszString);
-							}
-							// Last name
-							if (GetSetting(hDbFile, &Contact, pszProtoName, "LastName", &pszString, &bSettingType))
-							{
-								DBWriteContactSettingString(hContact, pszProtoName,"LastName", pszString);
-								free(pszString);
-							}
-							// About
-							if (GetSetting(hDbFile, &Contact, pszProtoName, "About", &pszString, &bSettingType))
-							{
-								DBWriteContactSettingString(hContact, pszProtoName,"About", pszString);
-								free(pszString);
-							}
-						}
-						else
-						{
-							_snprintf(str, sizeof(str), "Unknown error while adding %s contact %u", pszProtoName, *pdwUniqueID);
-							AddMessage(str);
-						}
-					}
-					else
-					{
-						_snprintf(str, sizeof(str), "Skipping duplicate %s contact %u", pszProtoName, *pdwUniqueID);
-						AddMessage(str);
-					}
-				}
-
-				// Import string user
-
-				else if (bSettingType == DBVT_ASCIIZ)
-				{
-					char* pszUniqueID = (char*)pSettingValue;
-
-					// Does the contact already exist?
-					if (HContactFromID(pszProtoName, pszUniqueSetting, pszUniqueID) == INVALID_HANDLE_VALUE)
-					{
-						// No, add contact and copy some important settings
-						GetSetting(hDbFile, &Contact, "CList", "Group", &pzsGroupName, &bSettingType);
-
-						if (!GetSetting(hDbFile, &Contact, "CList", "MyHandle", &pzsNickName, &bSettingType))
-							GetSetting(hDbFile, &Contact, pszProtoName, "Nick", &pzsNickName, &bSettingType);
-
-						hContact = AddContact(hdlgProgress, pszProtoName, pszUniqueSetting, pszUniqueID, pzsNickName, pzsGroupName);
-
-						if (hContact != INVALID_HANDLE_VALUE)
-						{
-
-							WORD* pwOrd = NULL;
-							char* pszString = NULL;
-
-							// Ignore settings
-							if (GetSetting(hDbFile, &Contact, "Ignore", "Mask1", &pdwIgnoreMask, &bSettingType))
-								DBWriteContactSettingDword(hContact,"Ignore","Mask1", *pdwIgnoreMask);
-
-							// Apparent mode
-							if (GetSetting(hDbFile, &Contact, pszProtoName, "ApparentMode", &pwOrd, &bSettingType))
-							{
-								DBWriteContactSettingWord(hContact, pszProtoName,"ApparentMode", *pwOrd);
-								free(pwOrd);
-							}
-
-							// Nick
-							if (GetSetting(hDbFile, &Contact, pszProtoName, "Nick", &pszString, &bSettingType))
-							{
-								DBWriteContactSettingString(hContact, pszProtoName,"Nick", pszString);
-								free(pszString);
-							}
-							// Myhandle
-							if (GetSetting(hDbFile, &Contact, pszProtoName, "MyHandle", &pszString, &bSettingType))
-							{
-								DBWriteContactSettingString(hContact, pszProtoName,"MyHandle", pszString);
-								free(pszString);
-							}
-							// First name
-							if (GetSetting(hDbFile, &Contact, pszProtoName, "FirstName", &pszString, &bSettingType))
-							{
-								DBWriteContactSettingString(hContact, pszProtoName,"FirstName", pszString);
-								free(pszString);
-							}
-							// Last name
-							if (GetSetting(hDbFile, &Contact, pszProtoName, "LastName", &pszString, &bSettingType))
-							{
-								DBWriteContactSettingString(hContact, pszProtoName,"LastName", pszString);
-								free(pszString);
-							}
-							// About
-							if (GetSetting(hDbFile, &Contact, pszProtoName, "About", &pszString, &bSettingType))
-							{
-								DBWriteContactSettingString(hContact, pszProtoName,"About", pszString);
-								free(pszString);
-							}
-						}
-						else
-						{
-							_snprintf(str, sizeof(str), "Unknown error while adding %s contact %s", pszProtoName, pszUniqueID);
-							AddMessage(str);
-						}
-					}
-					else
-					{
-						_snprintf(str, sizeof(str), "Skipping duplicate %s contact, %s", pszProtoName, pszUniqueID);
-						AddMessage(str);
-					}
-				}
-				if (pSettingValue)
-					free(pSettingValue);
-			}
-			else
-			{
-				_snprintf(str, sizeof(str), "Skipping %s contact, ID not found", pszProtoName);
-				AddMessage(str);
-			}
-		}
-	}
-	else
-	{
-		AddMessage("Skipping contact with no protocol");
+	DBVARIANT dbv;
+	if ( !GetSetting( hDbFile, &Contact, "Protocol", "p", &dbv )) {
+		AddMessage( LPGEN("Skipping contact with no protocol"));
+		return INVALID_HANDLE_VALUE;
 	}
 
-	// Clean up and exit
-	if (pbHidden) free(pbHidden);
-	if (pdwIgnoreMask) free(pdwIgnoreMask);
-	if (pszProtoName) free(pszProtoName);
-	if (pzsGroupName) free(pzsGroupName);
-	if (pzsNickName) free(pzsNickName);
+	pszProtoName = NEWSTR_ALLOCA( dbv.pszVal );
+	FreeVariant( &dbv );
+
+	if ( !IsProtocolLoaded( pszProtoName )) {
+		AddMessage( LPGEN("Skipping contact, %s not installed."), pszProtoName );
+		return INVALID_HANDLE_VALUE;
+	}
+
+	// Skip protocols with no unique id setting (some non IM protocols return NULL)
+	pszUniqueSetting = (char*)CallProtoService(pszProtoName, PS_GETCAPS, PFLAG_UNIQUEIDSETTING, 0);
+	if ( !pszUniqueSetting ) {
+		AddMessage( LPGEN("Skipping non-IM contact (%s)"), pszProtoName );
+		return INVALID_HANDLE_VALUE;
+	}
+
+	if ( !GetSetting(hDbFile, &Contact, pszProtoName, pszUniqueSetting, &dbv )) {
+		AddMessage( LPGEN("Skipping %s contact, ID not found"), pszProtoName );
+		return INVALID_HANDLE_VALUE;
+	}
+
+	// Does the contact already exist?
+	if ( dbv.type == DBVT_DWORD ) {
+		pszUserName = ltoa( dbv.dVal, id, 10 );
+		hContact = HContactFromNumericID( pszProtoName, pszUniqueSetting, dbv.dVal );
+	}
+	else {
+		pszUserName = NEWSTR_ALLOCA( dbv.pszVal );
+		hContact = HContactFromID( pszProtoName, pszUniqueSetting, dbv.pszVal );
+	}
+
+	if ( hContact != INVALID_HANDLE_VALUE ) {
+		AddMessage( LPGEN("Skipping duplicate %s contact %s"), pszProtoName, pszUserName );
+		return INVALID_HANDLE_VALUE;
+	}
+	
+	// No, add contact and copy some important settings
+	GetSetting(hDbFile, &Contact, "CList", "Group", &group);
+
+	if ( !GetSetting( hDbFile, &Contact, "CList", "MyHandle", &nick ))
+		GetSetting(hDbFile, &Contact, pszProtoName, "Nick", &nick );
+
+	hContact = AddContact( hdlgProgress, pszProtoName, pszUniqueSetting, &dbv, &nick, &group );
+	FreeVariant( &dbv );
+	if ( hContact != INVALID_HANDLE_VALUE) {
+
+		// Hidden?
+		if ( GetSetting( hDbFile, &Contact, "CList", "Hidden", &dbv )) {
+			WriteVariant( hContact, "CList", "Hidden", &dbv );
+			FreeVariant( &dbv );
+		}
+		// Ignore settings
+		if ( GetSetting( hDbFile, &Contact, "Ignore", "Mask1", &dbv )) {
+			WriteVariant( hContact, "Ignore", "Mask1", &dbv );
+			FreeVariant( &dbv );
+		}
+
+		// Apparent mode
+		if ( GetSetting( hDbFile, &Contact, pszProtoName, "ApparentMode", &dbv )) {
+			WriteVariant( hContact, pszProtoName, "ApparentMode", &dbv );
+			FreeVariant( &dbv );
+		}
+
+		// Nick
+		if ( GetSetting( hDbFile, &Contact, pszProtoName, "Nick", &dbv )) {
+			WriteVariant( hContact, pszProtoName, "Nick", &dbv );
+			FreeVariant( &dbv );
+		}
+
+		// Myhandle
+		if ( GetSetting( hDbFile, &Contact, pszProtoName, "MyHandle", &dbv )) {
+			WriteVariant( hContact, pszProtoName, "MyHandle", &dbv );
+			FreeVariant( &dbv );
+		}
+
+		// First name
+		if ( GetSetting( hDbFile, &Contact, pszProtoName, "FirstName", &dbv )) {
+			WriteVariant( hContact, pszProtoName, "FirstName", &dbv );
+			FreeVariant( &dbv );
+		}
+
+		// Last name
+		if ( GetSetting( hDbFile, &Contact, pszProtoName, "LastName", &dbv )) {
+			WriteVariant( hContact, pszProtoName, "LastName", &dbv );
+			FreeVariant( &dbv );
+		}
+
+		// About
+		if ( GetSetting( hDbFile, &Contact, pszProtoName, "About", &dbv )) {
+			WriteVariant( hContact, pszProtoName, "About", &dbv );
+			FreeVariant( &dbv );
+		}
+	}
+	else AddMessage( LPGEN("Unknown error while adding %s contact %s"), pszProtoName, pszUserName );
 
 	return hContact;
 }
@@ -1137,98 +1101,138 @@ HANDLE ImportContact(HANDLE hDbFile, struct DBContact Contact)
 // why there are no messages for errors related to contacts. Those
 // would only be a repetition of the messages printed during contact
 // import.
-static void ImportHistory(HANDLE hDbFile, struct DBContact Contact)
+
+static void ImportHistory(HANDLE hDbFile, struct DBContact Contact, PROTOCOLDESCRIPTOR **protocol, int protoCount)
 {
 	DBEVENTINFO dbei;
 	HANDLE hContact = INVALID_HANDLE_VALUE;
 	DWORD dwOffset;
 	MSG msg;
-	char* pszProtoName = NULL;
-	BYTE bType;
+	DBVARIANT proto;
 
-	// Check what protocol this contact belongs to
-	if (GetSetting(hDbFile, &Contact, "Protocol", "p", &pszProtoName, &bType))
-	{
-		// Protocol installed?
-		if (IsProtocolLoaded(pszProtoName))
-		{
-			// Is contact in database?
-			DWORD dwCaps1;
-			char* pszUniqueSetting = NULL;
+	// Is it contats history import?
+	if ( protoCount == 0 ) {
 
-			dwCaps1 = (DWORD)CallProtoService(pszProtoName, PS_GETCAPS, PFLAGNUM_1, 0);
-			pszUniqueSetting = (char*)CallProtoService(pszProtoName, PS_GETCAPS, PFLAG_UNIQUEIDSETTING, 0);
+		// Check what protocol this contact belongs to
+		if ( GetSetting( hDbFile, &Contact, "Protocol", "p", &proto )) {
 
-			// Skip protocols with no unique id setting (some non IM protocols return NULL)
-			if (pszUniqueSetting)
-			{
-				void* pSetting;
+			// Protocol installed?
+			if ( IsProtocolLoaded( proto.pszVal )) {
+				// Is contact in database?
+				char* pszUniqueSetting = (char*)CallProtoService( proto.pszVal, PS_GETCAPS, PFLAG_UNIQUEIDSETTING, 0);
 
-				//if (dwCaps1&PF1_NUMERICUSERID)
-				if (GetSetting(hDbFile, &Contact, pszProtoName, pszUniqueSetting, &pSetting, &bType))
-				{
-					if (bType==DBVT_DWORD)
-					{
-						DWORD* pdwUniqueID = (DWORD*)pSetting;//NULL;
-						hContact = HContactFromNumericID(pszProtoName, pszUniqueSetting, *pdwUniqueID);
-					}
-
-					// Lookup string user
-
-					else
-					{
-						char* pszUniqueID = (char*)pSetting;//NULL;
-						hContact = HContactFromID(pszProtoName, pszUniqueSetting, pszUniqueID);
-					}
-					if (pSetting)
-						free(pSetting);
-				}
-			}
+				// Skip protocols with no unique id setting (some non IM protocols return NULL)
+				if ( pszUniqueSetting ) {
+					DBVARIANT dbv;
+					if ( GetSetting( hDbFile, &Contact, proto.pszVal, pszUniqueSetting, &dbv )) {
+						if ( dbv.type == DBVT_DWORD )
+							hContact = HContactFromNumericID( proto.pszVal, pszUniqueSetting, dbv.dVal );
+						else
+							hContact = HContactFromID( proto.pszVal, pszUniqueSetting, dbv.pszVal );
+						FreeVariant( &dbv );
+			}	}	}	
+			FreeVariant( &proto );
 		}
 	}
+	else hContact = NULL; //system history import
 
 	// OK to import this chain?
-	if (hContact != INVALID_HANDLE_VALUE)
-	{
+	if (hContact != INVALID_HANDLE_VALUE) {
 		int i = 0;
+		int skipAll = 0;
 
 		// Get the start of the event chain
 		dwOffset = Contact.ofsFirstEvent;
 		while (dwOffset) {
+			int skip = 0;
 
 			// Copy the event and import it
 			ZeroMemory(&dbei, sizeof(dbei));
 			if (GetEvent(hDbFile, dwOffset, &dbei)) {
-				// Check for duplicate entries
-				if (!IsDuplicateEvent(hContact, dbei)) {
-					// Add dbevent
-					if (CallService(MS_DB_EVENT_ADD, (WPARAM)hContact, (LPARAM)&dbei))
-						nMessagesCount++;
-					else
-						AddMessage("Failed to add message");
+				// check protocols during system history import
+				if (hContact == NULL) {
+					int i;
+					skipAll = 1;
+
+					for(i = 0; i < protoCount; i++)
+						if (!strcmp(dbei.szModule, protocol[i]->szName)) { //&& protocol[i]->type == PROTOTYPE_PROTOCOL)
+							skipAll = 0;
+							break;
+						}
+
+					skip = skipAll;
 				}
-				else
-					nDupes++;
+
+				// custom filtering
+				if (!skip && nImportOption == IMPORT_CUSTOM) {
+					BOOL sent = (dbei.flags&DBEF_SENT);
+
+					if (dbei.timestamp < dwSinceDate)
+						skip = 1;
+
+					if (!skip) {
+						if (hContact) {
+							skip = 1;
+							switch(dbei.eventType) {
+							case EVENTTYPE_MESSAGE:
+								if ((sent?IOPT_MSGSENT:IOPT_MSGRECV)&nCustomOptions)
+									skip = 0;
+								break;
+							case EVENTTYPE_FILE:
+								if ((sent?IOPT_FILESENT:IOPT_FILERECV)&nCustomOptions)
+									skip = 0;
+								break;
+							case EVENTTYPE_URL:
+								if ((sent?IOPT_URLSENT:IOPT_URLRECV)&nCustomOptions)
+									skip = 0;
+								break;
+							default:
+								if ((sent?IOPT_OTHERSENT:IOPT_OTHERRECV)&nCustomOptions)
+									skip = 0;
+								break;
+							}
+						}
+						else if ( !( nCustomOptions & IOPT_SYSTEM ))
+							skip = 1;
+					}
+
+					if (skip)
+						nSkippedEvents++;
+				}
+
+				if (!skip) {
+					// Check for duplicate entries
+					if ( !IsDuplicateEvent( hContact, dbei )) {
+						// Add dbevent
+						if (CallService(MS_DB_EVENT_ADD, (WPARAM)hContact, (LPARAM)&dbei))
+							nMessagesCount++;
+						else
+							AddMessage( LPGEN("Failed to add message"));
+					}
+					else
+						nDupes++;
+				}
+
 				free(dbei.pBlob);
 				free(dbei.szModule);
 			}
 
-			if (!(i%10)) {
+			if ( !( i%10 )) {
 				if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
 					TranslateMessage(&msg);
 					DispatchMessage(&msg);
 			}	}
 
+			// skip this chain if needed
+			if ( skipAll )
+				break;
+
 			// Get next event
 			dwOffset = FindNextEvent(hDbFile, dwOffset);
 			i++;
-	}	}
-
-	// Clean up and exit
-	if (pszProtoName)
-		free(pszProtoName);
-
-	return;
+		}
+	}
+	else nSkippedContacts++;
 }
 
 static void MirandaImport(HWND hdlg)
@@ -1240,7 +1244,6 @@ static void MirandaImport(HWND hdlg)
 	DWORD dwTimer;
 	DWORD dwOffset;
 	HANDLE hFile;
-	char str[256];
 	char* pszModuleName = NULL;
 	struct DBHeader* pdbHeader = NULL;
 	struct DBContact Contact;
@@ -1249,15 +1252,16 @@ static void MirandaImport(HWND hdlg)
 	hdlgProgress = hdlg;
 
 	// Reset statistics
+	nSkippedEvents = 0;
 	nDupes = 0;
 	nContactsCount = 0;
 	nMessagesCount = 0;
 	nGroupsCount = 0;
-
+	nSkippedContacts = 0;
 	SetProgress(0);
 
 	// Open database
-	hFile = CreateFile(importFile,
+	hFile = CreateFileA(importFile,
 		GENERIC_READ,                 // open for reading
 		0,                            // do not share
 		NULL,                         // no security
@@ -1266,18 +1270,16 @@ static void MirandaImport(HWND hdlg)
 		NULL);                        // no attr. template
 
 	// Read error
-	if (hFile == INVALID_HANDLE_VALUE)
-	{
-		AddMessage("Could not open file.");
+	if (hFile == INVALID_HANDLE_VALUE) {
+		AddMessage( LPGEN("Could not open file."));
 		SetProgress(100);
 		return;
 	}
 
 	// Check filesize
 	dwFileSize = GetFileSize(hFile, NULL) ;
-	if ((dwFileSize == INVALID_FILE_SIZE) || (dwFileSize < sizeof(struct DBHeader)))
-	{
-		AddMessage("This is not a valid Miranda IM database.");
+	if ((dwFileSize == INVALID_FILE_SIZE) || (dwFileSize < sizeof(struct DBHeader))) {
+		AddMessage( LPGEN("This is not a valid Miranda IM database."));
 		SetProgress(100);
 		CloseHandle(hFile);
 		return;
@@ -1285,18 +1287,16 @@ static void MirandaImport(HWND hdlg)
 
 	// Check header and database version
 	nDBVersion = CheckFileFormat(hFile);
-	if (nDBVersion == DB_INVALID)
-	{
-		AddMessage("This is not a valid Miranda IM database.");
+	if (nDBVersion == DB_INVALID) {
+		AddMessage( LPGEN("This is not a valid Miranda IM database."));
 		SetProgress(100);
 		CloseHandle(hFile);
 		return;
 	}
 
 	// Load database header
-	if (!(pdbHeader = GetHeader(hFile)))
-	{
-		AddMessage("Read failure.");
+	if (!(pdbHeader = GetHeader(hFile))) {
+		AddMessage( LPGEN("Read failure."));
 		SetProgress(100);
 		CloseHandle(hFile);
 		return;
@@ -1304,10 +1304,8 @@ static void MirandaImport(HWND hdlg)
 
 	// Get number of contacts
 	nNumberOfContacts = pdbHeader->contactCount;
-	_snprintf(str, sizeof(str), "Number of contacts in database: %d", nNumberOfContacts);
-	AddMessage(str);
-	AddMessage("");
-
+	AddMessage( LPGEN("Number of contacts in database: %d"), nNumberOfContacts );
+	AddMessage( "" );
 
 	// Configure database for fast writing
 	CallService(MS_DB_SETSAFETYMODE, FALSE, 0);
@@ -1315,84 +1313,93 @@ static void MirandaImport(HWND hdlg)
 	// Start benchmark timer
 	dwTimer = time(NULL);
 
-
 	// Import Groups
-	AddMessage("Importing groups.");
-	nGroupsCount = ImportGroups(hFile, pdbHeader);
-	if (nGroupsCount == -1)
-	{
-		AddMessage("Group import failed.");
+	if (nImportOption == IMPORT_ALL || (nCustomOptions & IOPT_GROUPS)) {
+		AddMessage( LPGEN("Importing groups."));
+		nGroupsCount = ImportGroups(hFile, pdbHeader);
+		if (nGroupsCount == -1)
+			AddMessage( LPGEN("Group import failed."));
+
+		AddMessage( "" );
 	}
-	AddMessage("");
 	// End of Import Groups
 
 	// Import Contacts
-	AddMessage("Importing contacts.");
-	i = 1;
-	dwOffset = FindFirstContact(pdbHeader);
-	while (dwOffset && (dwOffset < dwFileSize))
-	{
-		if (!GetContact(hFile, dwOffset, &Contact))
-		{
-			_snprintf(str, sizeof(str), "ERROR: Chain broken, no valid contact at %d", dwOffset);
-			AddMessage(str);
-			SetProgress(100);
-			break;
-		}
-
-		if (ImportContact(hFile, Contact) != INVALID_HANDLE_VALUE)
-			nContactsCount++;
-
-		// Update progress bar
-		SetProgress(100 * i / nNumberOfContacts);
-		i++;
-
-		// Process queued messages
-		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-		// Get next contact in chain
-		dwOffset = FindNextContact(&Contact);
-	}
-	AddMessage("");
-	// End of Import Contacts
-
-	// Import history
-	if (nImportOption != IMPORT_CONTACTS)
-	{
-		AddMessage("Importing history");
-
-		// Import NULL contact message chain
-		dwOffset = FindOwnerContact(pdbHeader);
-		if (!GetContact(hFile, dwOffset, &Contact))
-		{
-			_snprintf(str, sizeof(str), "ERROR: Chain broken, no valid contact at %d", dwOffset);
-			AddMessage(str);
-			SetProgress(100);
-		}
-		else
-			ImportHistory(hFile, Contact);
-
-		// Import other contact messages
+	if (nImportOption != IMPORT_CUSTOM || (nCustomOptions & IOPT_CONTACTS)) {
+		AddMessage( LPGEN("Importing contacts."));
+		i = 1;
 		dwOffset = FindFirstContact(pdbHeader);
-		for(i=1; i <= nNumberOfContacts; i++)
-		{
-			if (!GetContact(hFile, dwOffset, &Contact))
-			{
-				_snprintf(str, sizeof(str), "ERROR: Chain broken, no valid contact at %d", dwOffset);
-				AddMessage(str);
+		while (dwOffset && (dwOffset < dwFileSize)) {
+			if (!GetContact(hFile, dwOffset, &Contact)) {
+				AddMessage( LPGEN("ERROR: Chain broken, no valid contact at %d"), dwOffset );
 				SetProgress(100);
 				break;
 			}
 
-			ImportHistory(hFile, Contact);
+			if (ImportContact(hFile, Contact) != INVALID_HANDLE_VALUE)
+				nContactsCount++;
 
+			// Update progress bar
 			SetProgress(100 * i / nNumberOfContacts);
+			i++;
+
+			// Process queued messages
+			if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+			// Get next contact in chain
 			dwOffset = FindNextContact(&Contact);
 		}
-		AddMessage("");
+	}
+	else AddMessage( LPGEN("Skipping new contacts import."));
+	AddMessage( "" );
+	// End of Import Contacts
+
+	// Import history
+	if (nImportOption != IMPORT_CONTACTS) {
+		// Import NULL contact message chain
+		if (nImportOption == IMPORT_ALL || (nCustomOptions & IOPT_SYSTEM)) {
+			AddMessage( LPGEN("Importing system history."));
+			dwOffset = FindOwnerContact(pdbHeader);
+			if (!GetContact(hFile, dwOffset, &Contact)) {
+				AddMessage( LPGEN("ERROR: Chain broken, no valid contact at %d"), dwOffset );
+				SetProgress(100);
+			}
+			else {
+				PROTOCOLDESCRIPTOR **protocol;
+				int protoCount;
+
+				CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM)&protoCount, (LPARAM)&protocol);
+
+				if (protoCount > 0)
+					ImportHistory(hFile, Contact, protocol, protoCount);
+			}
+		}
+		else AddMessage( LPGEN("Skipping system history import."));
+
+		AddMessage( "" );
+
+		// Import other contact messages
+		if (nImportOption == IMPORT_ALL || (nCustomOptions & 510)) { // 2 - 256 types 
+			AddMessage( LPGEN("Importing history."));
+			dwOffset = FindFirstContact(pdbHeader);
+			for(i=1; i <= nNumberOfContacts; i++) {
+				if (!GetContact(hFile, dwOffset, &Contact)) {
+					AddMessage( LPGEN("ERROR: Chain broken, no valid contact at %d"), dwOffset );
+					SetProgress(100);
+					break;
+				}
+
+				ImportHistory(hFile, Contact, NULL, 0);
+
+				SetProgress(100 * i / nNumberOfContacts);
+				dwOffset = FindNextContact(&Contact);
+			}
+		}
+		else AddMessage( LPGEN("Skipping history import."));
+
+		AddMessage( "" );
 	}
 	// End of Import History
 
@@ -1407,16 +1414,17 @@ static void MirandaImport(HWND hdlg)
 	dwTimer = time(NULL) - dwTimer;
 
 	// Print statistics
-	_snprintf(str, sizeof(str), "Import completed in %d seconds.", dwTimer);
-	AddMessage(str);
+	AddMessage( LPGEN("Import completed in %d seconds."), dwTimer );
 	SetProgress(100);
-	_snprintf(str, sizeof(str), "Added %d contacts and %d groups.", nContactsCount, nGroupsCount);
-	AddMessage(str);
-	if ((nImportOption == IMPORT_ALL)||(nImportOption == IMPORT_CUSTOM))
-	{
-		_snprintf(str, sizeof(str), "Added %d events and skipped %d duplicates.", nMessagesCount, nDupes);
-		AddMessage(str);
-	}
+	AddMessage((nImportOption == IMPORT_CONTACTS) ?
+		LPGEN("Added %d contacts and %d groups.") : LPGEN("Added %d contacts, %d groups and %d events."),
+		nContactsCount, nGroupsCount, nMessagesCount);
 
-	return;
-}
+	if ( nImportOption != IMPORT_CONTACTS ) {
+		if (nSkippedContacts)
+			AddMessage( LPGEN("Skipped %d contacts."), nSkippedContacts );
+
+		AddMessage((nImportOption == IMPORT_CUSTOM) ? 
+			LPGEN("Skipped %d duplicates and %d filtered events.") : LPGEN("Skipped %d duplicates."),
+			nDupes, nSkippedEvents);
+}	}

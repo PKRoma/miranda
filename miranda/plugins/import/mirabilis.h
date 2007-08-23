@@ -26,13 +26,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MIRABILIS_H
 
 #include <windows.h>
+#include <newpluginapi.h>
+#include <m_database.h>
 
 // ======================
 // == GLOBAL FUNCTIONS ==
 // ======================
 
 HANDLE HistoryImportFindContact(HWND hdlgProgress,DWORD uin,int addUnknown);
-int CreateGroup(HWND hdlgProgress, const char *groupName);
+int CreateGroup(HWND hdlgProgress, BYTE type, const char* name);
 void Utf8ToAnsi(const char *szIn, char *szOut, int cchOut);
 
 // =====================
@@ -49,7 +51,6 @@ BOOL CALLBACK FinishedPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lPara
 BOOL CALLBACK ProgressPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
 BOOL CALLBACK MirabilisPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
 BOOL CALLBACK MirabilisOptionsPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
-
 
 // Helper functions for entries
 static int GetHighestIndexEntry(void);
@@ -96,16 +97,7 @@ extern int nCustomOptions;
 
 static DWORD dwDBVersion;
 static DWORD dwGroupListOfs;
-HWND hdlgProgress;
 static PBYTE pIdx,pDat;
-char str[256];
-
-int nDupes;
-int nContactsCount;
-int nMessagesCount;
-int nGroupsCount;
-int nSkippedEvents;
-
 
 // =============
 // == DEFINES ==
