@@ -345,7 +345,7 @@ int CListMW_BuildStatusItems( WPARAM wParam, LPARAM lParam )
 			mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", jabberProtoName, arXStatusNames[i] );
 			sid.pszName = szSettingName;
 			sid.pszDescription = Translate( arXStatusNames[i] );
-			sid.iDefaultIndex = -( i+200 );
+			sid.iDefaultIndex = -( i+201 );
 			arXStatusIcons[ i ] = ( HANDLE )CallService( MS_SKIN2_ADDICON, 0, ( LPARAM )&sid );
 	}	}
 
