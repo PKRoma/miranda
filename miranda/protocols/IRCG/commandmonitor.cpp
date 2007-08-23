@@ -2510,7 +2510,7 @@ int IsIgnored( TString mask, char type )
 			
 		bool bUserContainsWild = ( _tcschr( mask.c_str(), '*') != NULL || _tcschr( mask.c_str(), '?' ) != NULL );
 		if ( bUserContainsWild && WCCmp( C.mask.c_str(), mask.c_str()) || 
-			  !bUserContainsWild && !lstrcmpi( mask.c_str(), C.mask.c_str()))
+			  !bUserContainsWild && !WCCmp( mask.c_str(), C.mask.c_str()))
 		{
 			if ( C.flags.empty() || C.flags[0] != '+' )
 				continue;
