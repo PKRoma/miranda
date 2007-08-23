@@ -261,7 +261,7 @@ static void NotifyMetaAware(HANDLE hContact, struct CacheNode *node = NULL, AVAT
     if(node->dwFlags & AVH_MUSTNOTIFY) {
         // Fire the event for avatar history
         node->dwFlags &= ~AVH_MUSTNOTIFY;
-        if(node->loaded) {
+        if(node->ace.szFilename[0] != '\0') {
             CONTACTAVATARCHANGEDNOTIFICATION cacn = {0};
             cacn.cbSize = sizeof(CONTACTAVATARCHANGEDNOTIFICATION);
             cacn.hContact = hContact;
@@ -484,7 +484,7 @@ static char *getJGMailID(char *szProto)
 
 
 // create the avatar in cache
-// returns 0 if not created (no avatar), iIndex otherwise, -2 if has to request avatar
+// returns 0 if not created (no avatar), iIndex otherwise, -2 if has to request avatar, -3 if avatar too big
 int CreateAvatarInCache(HANDLE hContact, struct avatarCacheEntry *ace, char *szProto)
 {
     DBVARIANT dbv = {0};
@@ -520,8 +520,11 @@ int CreateAvatarInCache(HANDLE hContact, struct avatarCacheEntry *ace, char *szP
             return -2;
         }
 		// Check max allowed size
-		if (GetFileSize(szFilename) > DBGetContactSettingDword(0, AVS_MODULE, "SizeLimit", 70) * 1024)
+		if (GetFileSize(szFilename) > DBGetContactSettingDword(0, AVS_MODULE, "SizeLimit", 70) * 1024) {
+			strncpy(ace->szFilename, szFilename, MAX_PATH);
+			ace->szFilename[MAX_PATH - 1] = 0;
 			return -3;
+		}
     }
     else {
 		if(hContact == 0) {				// create a protocol picture in the proto picture cache
@@ -1789,9 +1792,9 @@ void DeleteAvatarFromCache(HANDLE hContact, BOOL forever)
         return;
     }
     node->mustLoad = -1;                        // mark for deletion
-    SetEvent(hLoaderEvent);
     if(forever)
         node->dwFlags |= AVS_DELETENODEFOREVER;
+    SetEvent(hLoaderEvent);
 }
 
 int ChangeAvatar(HANDLE hContact, BOOL fLoad, BOOL fNotifyHist, int pa_format)
@@ -1861,8 +1864,7 @@ static void PicLoader(LPVOID param)
 					}
 				}
 
-				if ((result == 1 && ace_temp.hbmPic != 0) // Loaded
-					|| (result == -3)) // Image is too big
+				if ((result == 1 && ace_temp.hbmPic != 0)) // Loaded
 				{
                     HBITMAP oldPic = node->ace.hbmPic;
 
@@ -1874,19 +1876,36 @@ static void PicLoader(LPVOID param)
                         DeleteObject(oldPic);
                     NotifyMetaAware(node->ace.hContact, node);
                 }
+				else if (result == 0 || result == -3) // Has no avatar
+				{
+                    HBITMAP oldPic = node->ace.hbmPic;
+
+                    EnterCriticalSection(&cachecs);
+                    CopyMemory(&node->ace, &ace_temp, sizeof(AVATARCACHEENTRY));
+                    node->loaded = FALSE;
+					node->mustLoad = 0;
+					LeaveCriticalSection(&cachecs);
+                    if(oldPic)
+                        DeleteObject(oldPic);
+                    NotifyMetaAware(node->ace.hContact, node);
+				}
+
                 mir_sleep(dwDelay);
             }
             else if(node->mustLoad < 0 && node->ace.hContact) {         // delete this picture
                 HANDLE hContact = node->ace.hContact;
+				EnterCriticalSection(&cachecs);
                 node->mustLoad = 0;
                 node->loaded = 0;
                 if(node->ace.hbmPic)
                     DeleteObject(node->ace.hbmPic);
                 ZeroMemory(&node->ace, sizeof(AVATARCACHEENTRY));
-                if(node->dwFlags & AVS_DELETENODEFOREVER)
+                if(node->dwFlags & AVS_DELETENODEFOREVER) {
                     node->dwFlags &= ~AVS_DELETENODEFOREVER;
-                else {                                                  // restore node contact and notify events
+					LeaveCriticalSection(&cachecs);
+                } else {                                                  // restore node contact and notify events
                     node->ace.hContact = hContact;
+					LeaveCriticalSection(&cachecs);
                     NotifyMetaAware(hContact, node, (AVATARCACHEENTRY *)GetProtoDefaultAvatar(hContact));
                 }
             }
@@ -2609,6 +2628,7 @@ int Proto_GetDelayAfterFail(const char *proto)
 
 	return 0;
 }
+
 
 
 
