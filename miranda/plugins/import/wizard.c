@@ -20,15 +20,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-
-
-#include <windows.h>
-#include <string.h>
-#include "resource.h"
 #include "import.h"
-#include <m_database.h>
-#include <m_findadd.h>
-#include <m_protomod.h>
+#include "resource.h"
 
 BOOL CALLBACK WizardIntroPageProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK FinishedPageProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam);
@@ -39,43 +32,31 @@ BOOL CALLBACK ICQserverPageProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM l
 extern HINSTANCE hInst;
 BOOL IsProtocolLoaded(char* pszProtocolName);
 
-
 BOOL CALLBACK ImportTypePageProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
-
-	switch(message)
-	{
-
+	switch( message ) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hdlg);
 		CheckDlgButton(hdlg, IDC_MIRANDA, BST_CHECKED);
 
 		// Disable Mirabilis import if ICQ isn't loaded.
 		if (!IsProtocolLoaded(ICQOSCPROTONAME))
-		{
 			EnableWindow(GetDlgItem(hdlg, IDC_MIRABILIS), FALSE);
-		}
 
 		return TRUE;
 		
 	case WM_COMMAND:
-		switch(LOWORD(wParam))
-		{
+		switch( LOWORD( wParam )) {
 		case IDC_BACK:
 			PostMessage(GetParent(hdlg), WIZM_GOTOPAGE, IDD_WIZARDINTRO, (LPARAM)WizardIntroPageProc);
 			break;
 
 		case IDOK:
 			if (IsDlgButtonChecked(hdlg, IDC_MIRANDA))
-			{
 				PostMessage(GetParent(hdlg), WIZM_GOTOPAGE, IDD_MIRANDADB, (LPARAM)MirandaPageProc);
-			}
 			else if (IsDlgButtonChecked(hdlg, IDC_MIRABILIS))
-			{
 				PostMessage(GetParent(hdlg), WIZM_GOTOPAGE, IDD_MIRABILISDB, (LPARAM)MirabilisPageProc);
-			}
-			else if (IsDlgButtonChecked(hdlg, IDC_USEFINDADD))
-			{
+			else if (IsDlgButtonChecked(hdlg, IDC_USEFINDADD)) {
 				CallService(MS_FINDADD_FINDADD, 0, 0);
 				PostMessage(GetParent(hdlg), WIZM_GOTOPAGE, IDD_FINISHED, (LPARAM)FinishedPageProc);
 			}
@@ -84,32 +65,21 @@ BOOL CALLBACK ImportTypePageProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM 
 		case IDCANCEL:
 			PostMessage(GetParent(hdlg), WM_CLOSE, 0, 0);
 			break;
-
-		}
-		break;
-		
-	}
+	}	}
 
 	return FALSE;
-
 }
-
 
 BOOL CALLBACK WizardIntroPageProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	
-	switch(message)
-	{
-		
+	switch( message ) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hdlg);
 		SendMessage(GetParent(hdlg), WIZM_DISABLEBUTTON, 0, 0);
 		return TRUE;
 		
 	case WM_COMMAND:
-		switch(LOWORD(wParam))
-		{
-
+		switch( LOWORD( wParam )) {
 		case IDOK:
 			PostMessage(GetParent(hdlg), WIZM_GOTOPAGE, IDD_IMPORTTYPE, (LPARAM)ImportTypePageProc);
 			break;
@@ -117,82 +87,61 @@ BOOL CALLBACK WizardIntroPageProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM
 		case IDCANCEL:
 			PostMessage(GetParent(hdlg), WM_CLOSE, 0, 0);
 			break;
-			
-		}
-		break;
-		
-	}
+	}	}
 	
 	return FALSE;
-	
 }
-
-
 
 BOOL CALLBACK FinishedPageProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	
-	switch(message)
-	{
-
+	switch( message ) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hdlg);
 		SendMessage(GetParent(hdlg), WIZM_DISABLEBUTTON, 0, 0);
-		SendMessage(GetParent(hdlg), WIZM_SETCANCELTEXT, 0, (LPARAM)Translate("Finish"));
+		SendMessage(GetParent(hdlg), WIZM_SETCANCELTEXT, 0, (LPARAM)TranslateT("Finish"));
 		CheckDlgButton(hdlg, IDC_DONTLOADPLUGIN, BST_UNCHECKED);
 		return TRUE;
 		
 	case WM_COMMAND:
-		switch(LOWORD(wParam))
-		{
-
+		switch( LOWORD( wParam )) {
 		case IDOK:
 			PostMessage(GetParent(hdlg), WIZM_GOTOPAGE, IDD_IMPORTTYPE, (LPARAM)ImportTypePageProc);
 			break;
 
 		case IDCANCEL:
-			if(IsDlgButtonChecked(hdlg, IDC_DONTLOADPLUGIN))
-			{			
+			if ( IsDlgButtonChecked( hdlg, IDC_DONTLOADPLUGIN )) {			
 				char sModuleFileName[MAX_PATH];
 				char *pszFileName;
 				
-				GetModuleFileName(hInst, sModuleFileName, sizeof(sModuleFileName));
+				GetModuleFileNameA(hInst, sModuleFileName, sizeof(sModuleFileName));
 				pszFileName = strrchr(sModuleFileName, '\\' );
 				if (pszFileName == NULL)
 					pszFileName = sModuleFileName;
 				else
 					pszFileName++;
+
 				// We must lower case here because if a DLL is loaded in two
 				// processes, its file name from GetModuleFileName in one process may
 				// differ in case from its file name in the other process. This will
 				// prevent the plugin from disabling/enabling correctly (this fix relies
 				// on the plugin loader to ignore case)
-				CharLower(pszFileName);
+				CharLowerA(pszFileName);
 				DBWriteContactSettingByte(NULL, "PluginDisable", pszFileName, 1);
 			}
 			PostMessage(GetParent(hdlg), WM_CLOSE, 0, 0);
 			break;
-
 		}
 		break;
-
 	}
 	
 	return FALSE;
-	
 }
-
-
 
 BOOL CALLBACK WizardDlgProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	
 	static HWND hwndPage;
-	
 
-	switch (message)
-	{
-		
+	switch ( message ) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hdlg);
 		hwndPage = CreateDialog(hInst, MAKEINTRESOURCE(IDD_WIZARDINTRO), hdlg, WizardIntroPageProc);
@@ -207,16 +156,14 @@ BOOL CALLBACK WizardDlgProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lPara
 		EnableWindow(GetDlgItem(hdlg, IDC_BACK), TRUE);
 		EnableWindow(GetDlgItem(hdlg, IDOK), TRUE);
 		EnableWindow(GetDlgItem(hdlg, IDCANCEL), TRUE);
-		SetDlgItemText(hdlg, IDCANCEL, Translate("Cancel"));
+		SetDlgItemText(hdlg, IDCANCEL, TranslateT("Cancel"));
 		hwndPage = CreateDialog(hInst, MAKEINTRESOURCE(wParam), hdlg, (DLGPROC)lParam);
 		SetWindowPos(hwndPage, 0, 0, 0, 0, 0, SWP_NOZORDER|SWP_NOSIZE);
 		ShowWindow(hwndPage, SW_SHOW);
 		break;
 
 	case WIZM_DISABLEBUTTON:
-		switch (wParam)
-		{
-
+		switch ( wParam ) {
 		case 0:
 			EnableWindow(GetDlgItem(hdlg, IDC_BACK), FALSE);
 			break;
@@ -228,14 +175,11 @@ BOOL CALLBACK WizardDlgProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lPara
 		case 2:
 			EnableWindow(GetDlgItem(hdlg, IDCANCEL), FALSE);
 			break;
-
 		}
 		break;
 
 	case WIZM_ENABLEBUTTON:
-		switch (wParam)
-		{
-
+		switch ( wParam ) {
 		case 0:
 			EnableWindow(GetDlgItem(hdlg, IDC_BACK), TRUE);
 			break;
@@ -247,12 +191,11 @@ BOOL CALLBACK WizardDlgProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lPara
 		case 2:
 			EnableWindow(GetDlgItem(hdlg, IDCANCEL), TRUE);
 			break;
-
 		}
 		break;
 
 	case WIZM_SETCANCELTEXT:
-		SetDlgItemText(hdlg, IDCANCEL, (char*)lParam);
+		SetDlgItemText(hdlg, IDCANCEL, (TCHAR*)lParam);
 		break;
 
 	case WM_COMMAND:
@@ -263,9 +206,7 @@ BOOL CALLBACK WizardDlgProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lPara
 		DestroyWindow(hwndPage);
 		DestroyWindow(hdlg);
 		break;
-		
 	}
 	
 	return FALSE;
-
 }

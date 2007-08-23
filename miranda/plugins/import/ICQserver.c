@@ -20,18 +20,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-
-
 // ==============
 // == INCLUDES ==
 // ==============
 
-#include "ICQserver.h"
 #include "import.h"
+
+#include "ICQserver.h"
 #include "resource.h"
-
-#include <m_database.h>
-
 
 // ====================
 // ====================
@@ -39,39 +35,33 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // ====================
 // ====================
 
-
-
 BOOL CALLBACK ICQserverPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam)
 {
 	switch(message) {
 	case WM_INITDIALOG:
-		{
-			SendMessage(GetParent(hdlg),WIZM_DISABLEBUTTON,0,0);
-			SendMessage(GetParent(hdlg),WIZM_ENABLEBUTTON,1,0);
-			SendMessage(GetParent(hdlg),WIZM_DISABLEBUTTON,2,0);
-			TranslateDialogDefault(hdlg);
-			ICQserverImport();
-			return TRUE;
-		}
+		SendMessage(GetParent(hdlg),WIZM_DISABLEBUTTON,0,0);
+		SendMessage(GetParent(hdlg),WIZM_ENABLEBUTTON,1,0);
+		SendMessage(GetParent(hdlg),WIZM_DISABLEBUTTON,2,0);
+		TranslateDialogDefault(hdlg);
+		ICQserverImport();
+		return TRUE;
 
-		case WM_COMMAND:
-			switch(LOWORD(wParam)) {
-				case IDOK:
-					PostMessage(GetParent(hdlg),WIZM_GOTOPAGE,IDD_FINISHED,(LPARAM)FinishedPageProc);
-					break;
-				case IDCANCEL:
-					PostMessage(GetParent(hdlg),WM_CLOSE,0,0);
-					break;
-			}
+	case WM_COMMAND:
+		switch(LOWORD(wParam)) {
+		case IDOK:
+			PostMessage(GetParent(hdlg),WIZM_GOTOPAGE,IDD_FINISHED,(LPARAM)FinishedPageProc);
 			break;
+		case IDCANCEL:
+			PostMessage(GetParent(hdlg),WM_CLOSE,0,0);
+			break;
+		}
+		break;
 	}
 	return FALSE;
 }
 
-
 static void ICQserverImport()
 {
-
 	// Clear last update stamp
 	DBDeleteContactSetting(NULL, ICQOSCPROTONAME, "SrvLastUpdate");
 	DBDeleteContactSetting(NULL, ICQOSCPROTONAME, "SrvRecordCount");
@@ -79,7 +69,6 @@ static void ICQserverImport()
 	// Enable contacts downloading
 	DBWriteContactSettingByte(NULL, ICQOSCPROTONAME, "UseServerCList", 1);
 	DBWriteContactSettingByte(NULL, ICQOSCPROTONAME, "AddServerNew", 1);
-	DBWriteContactSettingByte(NULL, ICQOSCPROTONAME, "UseServerNicks",1 );
-	DBWriteContactSettingByte(NULL, ICQOSCPROTONAME, "ServerAddRemove",1 );
-
+	DBWriteContactSettingByte(NULL, ICQOSCPROTONAME, "UseServerNicks", 1);
+	DBWriteContactSettingByte(NULL, ICQOSCPROTONAME, "ServerAddRemove", 1);
 }

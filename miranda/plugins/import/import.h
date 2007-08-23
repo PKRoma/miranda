@@ -20,12 +20,34 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
+#define MIRANDA_VER 0x0700
 
+#if !defined( _UNICODE ) && defined( UNICODE )
+	#define _UNICODE
+#endif
+
+#include <tchar.h>
+
+#include <windows.h>
+#include <commctrl.h> // datetimepicker
+
+#include <malloc.h>
+#include <stdio.h>
+#include <stddef.h>
+#include <time.h>
+#include <io.h>
 
 #include <newpluginapi.h>
 #include <m_langpack.h>
 #include <m_system.h>
-#include <time.h>
+#include <m_database.h>
+#include <m_protocols.h>
+#include <m_protosvc.h>
+#include <m_protomod.h>
+#include <m_utils.h>
+#include <m_findadd.h>
+#include <m_clist.h>
+#include <win2k.h>
 
 // ** Global constants
 
@@ -44,7 +66,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define PROGM_SETPROGRESS  (WM_USER+10)   //wParam=0..100
 #define PROGM_ADDMESSAGE   (WM_USER+11)   //lParam=(char*)szText
 #define SetProgress(n)  SendMessage(hdlgProgress,PROGM_SETPROGRESS,n,0)
-#define AddMessage(t)   SendMessage(hdlgProgress,PROGM_ADDMESSAGE,0,(LPARAM)(t)) 
 
 #define ICQOSCPROTONAME  "ICQ"
 #define MSNPROTONAME     "MSN"
@@ -64,3 +85,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define IOPT_MSGRECV    4
 #define IOPT_URLSENT    8
 #define IOPT_URLRECV    16
+
+void AddMessage( const char* fmt, ... );
+
+extern HWND hdlgProgress;
+
+extern DWORD nDupes, nContactsCount, nMessagesCount, nGroupsCount, nSkippedEvents, nSkippedContacts;
