@@ -72,6 +72,7 @@ VAR INST_UPGRADE
 
 !macro InstallMirandaIcon IconFile
   SetOutPath "$INSTDIR\Icons"
+  SetOverWrite off
   !ifdef MIM_BUILD_UNICODE
   ${If} ${AtLeastWinXP}
   File "${MIM_BUILD_ICONS_HI}\${IconFile}"
@@ -80,6 +81,7 @@ VAR INST_UPGRADE
   ${EndIf}
   !else
   File "${MIM_BUILD_ICONS_LOW}\${IconFile}"
+  SetOverWrite on
   !endif
 !macroend
 
