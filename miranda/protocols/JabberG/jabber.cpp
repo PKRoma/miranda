@@ -227,6 +227,7 @@ static int OnPreShutdown( WPARAM wParam, LPARAM lParam )
 
 	g_JabberIqManager.ExpireAll();
 	g_JabberIqManager.Shutdown();
+	JabberConsoleUninit();
 	return 0;
 }
 
@@ -434,7 +435,6 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	JabberIqUninit();
 	JabberSerialUninit();
 	JabberWsUninit();
-	JabberConsoleUninit();
 	DeleteCriticalSection( &modeMsgMutex );
 	mir_free( modeMsgs.szOnline );
 	mir_free( modeMsgs.szAway );
