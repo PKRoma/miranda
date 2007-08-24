@@ -24,7 +24,7 @@ using namespace irc;
 bool  DoOnConnect(const CIrcMessage *pmsg);
 int   DoPerform(const char* event);
 int   IsIgnored(TString nick, TString address, TString host, char type) ;
-int   IsIgnored(TString mask, char type);
+int   IsIgnored(TString user, char type);
 bool  AddIgnore(const TCHAR* mask, const TCHAR* mode, const TCHAR* network) ;
 bool  RemoveIgnore(const TCHAR* mask) ;
 void  ResolveIPThread(LPVOID di);

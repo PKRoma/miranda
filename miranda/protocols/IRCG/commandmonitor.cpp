@@ -2499,18 +2499,18 @@ int IsIgnored( TString nick, TString address, TString host, char type)
 	return IsIgnored( nick + _T("!") + address + _T("@") + host, type );
 }
 
-int IsIgnored( TString mask, char type ) 
+int IsIgnored( TString user, char type ) 
 {
 	for ( size_t i=0; i < g_ignoreItems.size(); i++ ) {
 		CIrcIgnoreItem& C = g_ignoreItems[i];
 
       if ( type == '\0' )	
-			if ( !lstrcmpi( mask.c_str(), C.mask.c_str()))
+			if ( !lstrcmpi( user.c_str(), C.mask.c_str()))
 				return i+1;
 			
-		bool bUserContainsWild = ( _tcschr( mask.c_str(), '*') != NULL || _tcschr( mask.c_str(), '?' ) != NULL );
-		if ( bUserContainsWild && WCCmp( C.mask.c_str(), mask.c_str()) || 
-			  !bUserContainsWild && !WCCmp( mask.c_str(), C.mask.c_str()))
+		bool bUserContainsWild = ( _tcschr( user.c_str(), '*') != NULL || _tcschr( user.c_str(), '?' ) != NULL );
+		if ( !bUserContainsWild && WCCmp( C.mask.c_str(), user.c_str()) || 
+			  bUserContainsWild && !lstrcmpi( user.c_str(), C.mask.c_str()))
 		{
 			if ( C.flags.empty() || C.flags[0] != '+' )
 				continue;
