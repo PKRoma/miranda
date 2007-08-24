@@ -205,7 +205,7 @@ Section "Import Plugin"
   DetailPrint "Installing Import Plugin..."
   SetDetailsPrint listonly
   SetOutPath "$INSTDIR\Plugins"
-  File "${MIM_BUILD_DIRANSI}\plugins\import.dll"
+  File "${MIM_BUILD_DIR}\plugins\import.dll"
 SectionEnd
 
 SubSection /e "Options" pOptions
