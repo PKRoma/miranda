@@ -135,7 +135,17 @@ SubSection /e "Protocols"
     File "${MIM_BUILD_DIRANSI}\plugins\Aim.dll"
     !insertmacro InstallMirandaIcon "proto_AIM.dll"
   SectionEnd
-
+  
+  Section "Gadu-Gadu"
+    SetDetailsPrint textonly
+    DetailPrint "Installing Gadu-Gadu Protocol..."
+    SetDetailsPrint listonly
+    SetOutPath "$INSTDIR\Plugins"
+    File "${MIM_BUILD_DIRANSI}\plugins\GG.dll"
+    ;!insertmacro InstallMirandaIcon "proto_GG.dll"
+    ;GG icons are embedded int the protocol dll
+  SectionEnd
+  
   Section "ICQ"
     SetDetailsPrint textonly
     DetailPrint "Installing ICQ Protocol..."
