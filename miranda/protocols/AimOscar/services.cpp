@@ -70,7 +70,7 @@ void set_status_thread(int status)
 			case ID_STATUS_OCCUPIED:
 			case ID_STATUS_ONTHEPHONE:
 				{
-					start_connection(ID_STATUS_AWAY);// if not started
+					//start_connection(ID_STATUS_AWAY);// if not started
 					if(conn.status!=ID_STATUS_AWAY)
 					{
 						assign_modmsg((char*)&DEFAULT_AWAY_MSG);

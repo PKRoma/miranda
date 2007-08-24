@@ -72,7 +72,7 @@ void start_connection(int initial_status)
 		if(conn.hServerConn)
 		{
 			conn.initial_status=initial_status;
-			ForkThread((pThreadFunc)aim_connection_authorization,NULL);
+			aim_connection_authorization();
 		}
 		else
 			broadcast_status(ID_STATUS_OFFLINE);
