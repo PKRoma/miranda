@@ -1,5 +1,5 @@
 #include "flap.h"
-FLAP::FLAP(char* buf,unsigned short num_bytes)
+FLAP::FLAP(char* buf,int num_bytes)
 {
 	if(FLAP_SIZE>num_bytes)
 	{

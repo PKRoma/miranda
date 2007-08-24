@@ -11,7 +11,7 @@ private:
 	unsigned short length_;
 	char* value_;
 public:
-	FLAP(char* buf,unsigned short num_bytes);
+	FLAP(char* buf,int num_bytes);
 	unsigned short len();
 	unsigned short snaclen();
 	int cmp(unsigned short type);

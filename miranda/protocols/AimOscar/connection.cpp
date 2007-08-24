@@ -16,13 +16,13 @@ HANDLE aim_connect(char* server)
 {
 	char* server_dup=strldup(server,lstrlen(server));
     NETLIBOPENCONNECTION ncon = { 0 };
-	char* host=strtok(server_dup,":");
-	char* port=strtok(NULL,":");
+	char* port = strchr(server_dup,':');
+	if (port) *port++ = 0; else port = "5190";
     ncon.cbSize = sizeof(ncon);
-    ncon.szHost = host;
-    ncon.wPort =(short)atoi(port);
-	conn.port=ncon.wPort;
+    ncon.szHost = server_dup;
+    conn.port = ncon.wPort = (WORD)atol(port);
 	ncon.timeout=5;
+	LOG("%s:%u", server_dup, ncon.wPort);
     HANDLE con = (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM) conn.hNetlib, (LPARAM) & ncon);
 	delete[] server_dup;
 	return con;
@@ -84,12 +84,12 @@ void __cdecl aim_connection_authorization()
 			LOG("Connection Closed: No Error? during Connection Authorization");
 			break;
 		}
-        if (recvResult == SOCKET_ERROR)
+        else if (recvResult < 0)
 		{
-			LOG("Connection Closed: Socket Error during Connection Authorization");
+			LOG("Connection Closed: Socket Error during Connection Authorization %d", WSAGetLastError());
 			break;
 		}
-		if(recvResult>0)
+		else
 		{
 			unsigned short flap_length=0;
 			for(;packetRecv.bytesUsed<packetRecv.bytesAvailable;packetRecv.bytesUsed=flap_length)
@@ -168,7 +168,7 @@ void __cdecl aim_protocol_negotiation()
 		}
 		if (recvResult == SOCKET_ERROR)
 		{
-			LOG("Connection Closed: Socket Error during Connection Negotiation");
+			LOG("Connection Closed: Socket Error during Connection Negotiation %d", WSAGetLastError());
 			break;
 		}
 		if(recvResult>0)
@@ -178,7 +178,7 @@ void __cdecl aim_protocol_negotiation()
 			{
 				if(!packetRecv.buffer)
 					break;
-				FLAP flap((char*)&packetRecv.buffer[packetRecv.bytesUsed],(unsigned short)(packetRecv.bytesAvailable-packetRecv.bytesUsed));
+				FLAP flap((char*)&packetRecv.buffer[packetRecv.bytesUsed],packetRecv.bytesAvailable-packetRecv.bytesUsed);
 				if(!flap.len())
 					break;
 				flap_length+=FLAP_SIZE+flap.len();
@@ -278,7 +278,7 @@ void __cdecl aim_mail_negotiation()
 			{
 				if(!packetRecv.buffer)
 					break;
-				FLAP flap((char*)&packetRecv.buffer[packetRecv.bytesUsed],(unsigned short)(packetRecv.bytesAvailable-packetRecv.bytesUsed));
+				FLAP flap((char*)&packetRecv.buffer[packetRecv.bytesUsed],packetRecv.bytesAvailable-packetRecv.bytesUsed);
 				if(!flap.len())
 					break;
 				flap_length+=FLAP_SIZE+flap.len();
@@ -349,7 +349,7 @@ void __cdecl aim_avatar_negotiation()
 			{
 				if(!packetRecv.buffer)
 					break;
-				FLAP flap((char*)&packetRecv.buffer[packetRecv.bytesUsed],(unsigned short)(packetRecv.bytesAvailable-packetRecv.bytesUsed));
+				FLAP flap((char*)&packetRecv.buffer[packetRecv.bytesUsed],packetRecv.bytesAvailable-packetRecv.bytesUsed);
 				if(!flap.len())
 					break;
 				flap_length+=FLAP_SIZE+flap.len();
