@@ -926,6 +926,16 @@ int oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, char** files, cha
       }
     }
   }
+  if (!ft->wFilesCount)
+  { // found no valid files to send
+    icq_LogMessage(LOG_ERROR, LPGEN("Failed to Initialize File Transfer. No valid files were specified."));
+    // Notify UI
+    ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, (HANDLE)ft, 0);
+    // Release transfer
+    SafeReleaseFileTransfer(&ft);
+
+    return 0; // Failure
+  }
   if (ft->qwTotalSize >= 0x100000000 && ft->wFilesCount > 1)
   { // file larger than 4GB can be send only as single
     icq_LogMessage(LOG_ERROR, "The files are too big to be sent at once. Files bigger than 4GB can be sent only separately.");
