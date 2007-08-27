@@ -1026,7 +1026,15 @@ static void JabberProcessPubsubEvent( XmlNode *node )
 		if ( childNode && childNode->text )
 			szUri = childNode->text;
 
-		JabberSetContactTune( hContact, szArtist, szLength, szSource, szTitle, szTrack, szUri );
+		TCHAR szLengthInTime[32];
+		szLengthInTime[0] = _T('\0');
+		if ( szLength ) {
+			int nLength = _ttoi( szLength );
+			mir_sntprintf( szLengthInTime, SIZEOF( szLengthInTime ),  _T("%02d:%02d:%02d"),
+				nLength / 3600, (nLength / 60) % 60, nLength % 60 );
+		}
+
+		JabberSetContactTune( hContact, szArtist, szLength ? szLengthInTime : NULL, szSource, szTitle, szTrack, szUri );
 	}
 }
 

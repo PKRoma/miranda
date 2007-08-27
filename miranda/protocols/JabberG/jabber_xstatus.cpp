@@ -271,8 +271,30 @@ int JabberSetListeningTo( WPARAM wParam, LPARAM lParam )
 		overrideStr( szTrack, cm->ptszTrack, unicode );
 		overrideStr( szLength, cm->ptszLength, unicode );
 
-		JabberSendPepTune( szArtist, szLength, szSource, szTitle, szTrack, NULL );
+		TCHAR szLengthInSec[ 32 ];
+		szLengthInSec[ 0 ] = _T('\0');
+		if ( szLength ) {
+			unsigned int multiplier = 1, result = 0;
+			for ( TCHAR *p = szLength; *p; p++ ) {
+				if ( *p == _T(':')) multiplier *= 60;
+			}
+			if ( multiplier <= 3600 ) {
+				TCHAR *szTmp = szLength;
+				while ( szTmp[0] ) {
+					result += ( _ttoi( szTmp ) * multiplier );
+					multiplier /= 60;
+					szTmp = _tcschr( szTmp, _T(':') );
+					if ( !szTmp )
+						break;
+					szTmp++;
+				}
+			}
+			mir_sntprintf( szLengthInSec, SIZEOF( szLengthInSec ), _T("%d"), result );
+		}
+
+		JabberSendPepTune( szArtist, szLength ? szLengthInSec : NULL, szSource, szTitle, szTrack, NULL );
 		JabberSetContactTune( NULL, szArtist, szLength, szSource, szTitle, szTrack, NULL );
+		
 		mir_free( szArtist );
 		mir_free( szLength );
 		mir_free( szSource );
