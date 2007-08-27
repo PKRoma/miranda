@@ -38,7 +38,7 @@ int bNewDbApi = FALSE;
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
 	"Scriver",
-	PLUGIN_MAKE_VERSION(2, 6, 9, 9),
+	PLUGIN_MAKE_VERSION(0, 7, 0, 0),
 	"Scriver - send and receive instant messages",
 	"Miranda IM Development Team",
 	"the_leech@users.berlios.de",
@@ -62,7 +62,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 __declspec(dllexport)
 	 PLUGININFOEX *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 6, 0, 0))
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 7, 0, 40))
 		return NULL;
 	return &pluginInfo;
 }
