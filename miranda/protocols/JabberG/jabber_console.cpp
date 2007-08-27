@@ -38,6 +38,8 @@ Last change by : $Author: $
 #define JCPF_UTF8		0x08UL
 #define JCPF_TCHAR		0x00UL
 
+#define WM_CREATECONSOLE  WM_USER+1000
+
 void JabberConsoleProcessXml(XmlNode *node, DWORD flags);
 int JabberMenuHandleConsole(WPARAM wParam, LPARAM lParam);
 void JabberConsoleInit();
@@ -94,6 +96,7 @@ static void sttRtfAppendXml(StringBuf *buf, XmlNode *node, DWORD flags, int inde
 
 static HWND hwndJabberConsole = NULL;
 static HANDLE hThreadConsole = NULL;
+static UINT sttJabberConsoleThreadId = 0;
 
 void JabberConsoleProcessXml(XmlNode *node, DWORD flags)
 {
@@ -473,58 +476,40 @@ static BOOL CALLBACK JabberConsoleDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam
 	return FALSE;
 }
 
-static void __cdecl sttJabberConsoleThread(void *)
+static UINT WINAPI sttJabberConsoleThread(void *)
 {
 	MSG msg;
-	while (1)
-	{
-		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-		{
-			if (msg.message == WM_QUIT)
-				goto LBL_Quit;
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-			SleepEx(1, TRUE);
+	while ( GetMessage(&msg, NULL, 0, 0 )) {
+		if ( msg.message == WM_CREATECONSOLE ) {
+			hwndJabberConsole = CreateDialog(hInst, MAKEINTRESOURCE(IDD_CONSOLE), NULL, JabberConsoleDlgProc);
+			ShowWindow(hwndJabberConsole, SW_SHOW);
+			continue;
 		}
-		SleepEx(1,TRUE);
+
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
 	}
-
-LBL_Quit:
-	;
-}
-
-static void CALLBACK sttCreateConsoleAPC(DWORD dwParam)
-{
-	hwndJabberConsole = CreateDialog(hInst, MAKEINTRESOURCE(IDD_CONSOLE), NULL, JabberConsoleDlgProc);
-	ShowWindow(hwndJabberConsole, SW_SHOW);
-}
-
-static void CALLBACK sttTerminateConsoleAPC(DWORD dwParam)
-{
-	PostQuitMessage(0);
+	return 0;
 }
 
 void JabberConsoleInit()
 {
 	LoadLibraryA("riched20.dll");
-	hThreadConsole = (HANDLE)mir_forkthread(sttJabberConsoleThread, NULL);
+	hThreadConsole = (HANDLE)mir_forkthreadex(sttJabberConsoleThread, NULL, 0, &sttJabberConsoleThreadId);
 }
 
 void JabberConsoleUninit()
 {
-	if (!hThreadConsole) return;
-	QueueUserAPC(sttTerminateConsoleAPC, hThreadConsole, NULL);
+	if ( hThreadConsole ) 
+		PostThreadMessage(sttJabberConsoleThreadId, WM_QUIT, 0, 0);
 }
 
 int JabberMenuHandleConsole(WPARAM wParam, LPARAM lParam)
 {
 	if (hwndJabberConsole && IsWindow(hwndJabberConsole))
-	{
 		SetForegroundWindow(hwndJabberConsole);
-	} else
-	if (hThreadConsole)
-	{
-		QueueUserAPC(sttCreateConsoleAPC, hThreadConsole, NULL);
-	}
+	else
+		if (hThreadConsole)
+			PostThreadMessage(sttJabberConsoleThreadId, WM_CREATECONSOLE, 0, 0);
 	return 0;
 }
