@@ -92,7 +92,7 @@ char* Utf8DecodeCP( char* str, int codepage, wchar_t** ucs2 )
 		memcpy( *ucs2, tempBuf, fullLen );
 	}
 
-	WideCharToMultiByte( codepage, 0, tempBuf, -1, str, len, "?", &errFlag );
+	WideCharToMultiByte( codepage, 0, tempBuf, -1, str, len, "?", NULL );
 
 LBL_Exit:
    if ( needs_free )
@@ -113,7 +113,6 @@ wchar_t* Utf8DecodeUcs2( const char* str )
 	Utf8Decode( tempBuffer, &ucs2 );
 	mir_free(tempBuffer);
 	return ucs2;
-
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
