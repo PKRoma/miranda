@@ -59,16 +59,19 @@ void CListSetMenuItemIcon(HANDLE hMenuItem, HICON hIcon);
 
 DWORD sendXStatusDetailsRequest(HANDLE hContact, int bForced)
 {
-  char *szNotify;
-  int nNotifyLen;
-  DWORD dwCookie;
+  DWORD dwCookie = 0;
 
-  nNotifyLen = 94 + UINMAXLEN;
-  szNotify = (char*)_alloca(nNotifyLen);
-  nNotifyLen = null_snprintf(szNotify, nNotifyLen, "<srv><id>cAwaySrv</id><req><id>AwayStat</id><trans>1</trans><senderId>%d</senderId></req></srv>", dwLocalUIN);
+  if (ICQGetContactSettingByte(hContact, DBSETTING_XSTATUSID, -1) != -1)
+  { // only request custom status detail when the contact has one
+    char *szNotify;
+    int nNotifyLen;
 
-  dwCookie = SendXtrazNotifyRequest(hContact, "<Q><PluginID>srvMng</PluginID></Q>", szNotify, bForced);
+    nNotifyLen = 94 + UINMAXLEN;
+    szNotify = (char*)_alloca(nNotifyLen);
+    nNotifyLen = null_snprintf(szNotify, nNotifyLen, "<srv><id>cAwaySrv</id><req><id>AwayStat</id><trans>1</trans><senderId>%d</senderId></req></srv>", dwLocalUIN);
 
+    dwCookie = SendXtrazNotifyRequest(hContact, "<Q><PluginID>srvMng</PluginID></Q>", szNotify, bForced);
+  }
   return dwCookie;
 }
 
