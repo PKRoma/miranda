@@ -62,7 +62,7 @@ char str[512];
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
 	"Import contacts and messages",
-	PLUGIN_MAKE_VERSION(0,7,0,1),
+	PLUGIN_MAKE_VERSION(0,7,0,0),
 	"Imports contacts and messages from Mirabilis ICQ and Miranda IM.",
 	"Miranda team",
 	"info@miranda-im.org",
