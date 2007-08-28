@@ -153,7 +153,7 @@ static DATABASELINK dblink = {
 static PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
 	"Miranda database driver",
-	PLUGIN_MAKE_VERSION(0,6,0,1),
+	PLUGIN_MAKE_VERSION(0,8,0,0),
 	"Provides Miranda database support: global settings, contacts, history, settings per contact.",
 	"Miranda-IM project",
 	"ghazan@miranda-im.org",
