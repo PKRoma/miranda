@@ -305,26 +305,26 @@ void MsnInitMenus( void )
 	mi.pszName = LPGEN("&Block");
 	msnBlockMenuItem = ( HANDLE )MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 
-	strcpy( tDest, MSN_INVITE );
-	arServices.insert( CreateServiceFunction( servicefunction, MsnInviteCommand ));
-	mi.flags = CMIF_ICONFROMICOLIB | CMIF_NOTOFFLINE;
-	mi.position = -500050001;
-	mi.icolibItem = GetIconHandle( IDI_INVITE );
-	mi.pszName = LPGEN("&Invite to chat");
-	menuItemsAll[ 3 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi );
-
 	strcpy( tDest, MSN_NETMEETING );
 	arServices.insert( CreateServiceFunction( servicefunction, MsnSendNetMeeting ));
 	mi.position = -500050002;
 	mi.icolibItem = GetIconHandle( IDI_NETMEETING );
 	mi.pszName = LPGEN("&Start Netmeeting");
-	menuItemsAll[ 4 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi );
+	menuItemsAll[ 3 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi );
 
 	strcpy( tDest, MSN_VIEW_PROFILE );
 	arServices.insert( CreateServiceFunction( servicefunction, MsnViewProfile ));
 	mi.position = -500050003;
 	mi.icolibItem = GetIconHandle( IDI_PROFILE );
 	mi.pszName = LPGEN("&View Profile");
+	menuItemsAll[ 4 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi );
+
+	strcpy( tDest, MSN_INVITE );
+	arServices.insert( CreateServiceFunction( servicefunction, MsnInviteCommand ));
+	mi.flags = CMIF_ICONFROMICOLIB | CMIF_NOTOFFLINE;
+	mi.position = -500050001;
+	mi.icolibItem = GetIconHandle( IDI_INVITE );
+	mi.pszName = LPGEN("&Invite to chat");
 	menuItemsAll[ 5 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi );
 
 	MSN_EnableMenuItems( false );
