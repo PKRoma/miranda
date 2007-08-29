@@ -237,23 +237,22 @@ char* ThreadData::httpTransact(char* szCommand, size_t cmdsz, size_t& ressz)
 						memmove(szResult, szResult + hdrSize, ackSize+1);
 						mir_free(tbuf);
 					}
-					
-					if (szBody != NULL)
-					{
-						tHeaders.readFromBuffer( hdrs );
+					if (szBody == NULL) continue;
 
-						// Calculate the size of the response packet
-						const char* contLenHdr = tHeaders[ "Content-Length" ];
-						ressz = hdrSize + (contLenHdr ? atol( contLenHdr ) : 0);
-						// Adjust the buffer to hold complete response
-						if (bufSize <= ressz)
-						{
-							bufSize = ressz + 1;
-							szResult = (char*)mir_realloc(szResult, bufSize);
-						}
-						mir_free(tbuf);
+					tHeaders.readFromBuffer( hdrs );
+
+					// Calculate the size of the response packet
+					const char* contLenHdr = tHeaders[ "Content-Length" ];
+					ressz = hdrSize + (contLenHdr ? atol( contLenHdr ) : 0);
+					// Adjust the buffer to hold complete response
+					if (bufSize <= ressz)
+					{
+						bufSize = ressz + 1;
+						szResult = (char*)mir_realloc(szResult, bufSize);
 					}
+					mir_free(tbuf);
 				}
+
 				// Content-Length bytes reached, all data received
 				if (ackSize >= ressz) break;
 			}
