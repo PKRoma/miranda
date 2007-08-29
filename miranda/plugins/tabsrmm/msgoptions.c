@@ -53,16 +53,16 @@ struct FontOptionsList
 {
     COLORREF defColour;
     char *szDefFace;
-    BYTE defCharset, defStyle;
+    BYTE defStyle;
     char defSize;
-    COLORREF colour;
-    char szFace[LF_FACESIZE];
-    BYTE charset, style;
-    char size;
+//    COLORREF colour;
+//    char szFace[LF_FACESIZE];
+//  BYTE charset, style;
+//  char size;
 }
 
 static fontOptionsList[] = {
-    {RGB(0, 0, 0), "Tahoma", DEFAULT_CHARSET, 0, -10}};
+    {RGB(0, 0, 0), "Tahoma", 0, -10}};
     
 
 static HIMAGELIST g_himlStates = 0;
@@ -77,6 +77,70 @@ HIMAGELIST CreateStateImageList()
         ImageList_AddIcon(g_himlStates, myGlobals.g_IconChecked);
     }
     return g_himlStates;
+}
+
+// get font charset according to current CP
+static BYTE MsgDlgGetCPDefaultCharset()
+{
+	switch (GetACP()) {
+		case 1250:
+			return EASTEUROPE_CHARSET;
+		case 1251:
+			return RUSSIAN_CHARSET;
+		case 1252:
+			return ANSI_CHARSET;
+		case 1253:
+			return GREEK_CHARSET;
+		case 1254:
+			return TURKISH_CHARSET;
+		case 1255:
+			return HEBREW_CHARSET;
+		case 1256:
+			return ARABIC_CHARSET;
+		case 1257:
+			return BALTIC_CHARSET;
+		case 1361:
+			return JOHAB_CHARSET;
+		case 874:
+			return THAI_CHARSET;
+		case 932:
+			return SHIFTJIS_CHARSET;
+		case 936:
+			return GB2312_CHARSET;
+		case 949:
+			return HANGEUL_CHARSET;
+		case 950:
+			return CHINESEBIG5_CHARSET;
+		default:
+			return DEFAULT_CHARSET;
+	}
+}
+
+static int CALLBACK EnumFontFamExProc(const LOGFONTA *lpelfe, const TEXTMETRICA *lpntme, DWORD FontType, LPARAM lParam)
+{
+	*(int*)lParam = 1;
+	return 0;
+}
+
+// get font charset according to current CP, if available for specified font
+static BYTE MsgDlgGetFontDefaultCharset(const char* szFont)
+{
+	HDC hdc;
+	LOGFONTA lf = {0};
+	int found = 0;
+
+	strcpy(lf.lfFaceName, szFont);
+	lf.lfCharSet = MsgDlgGetCPDefaultCharset();
+
+	// check if the font supports specified charset
+	hdc = GetDC(0);
+	EnumFontFamiliesExA(hdc, &lf, &EnumFontFamExProc, (LPARAM)&found, 0);
+	ReleaseDC(0, hdc);
+
+	if (found)
+		return lf.lfCharSet;
+	else // no, give default
+		return DEFAULT_CHARSET;
 }
 
 void LoadLogfont(int i, LOGFONTA * lf, COLORREF * colour, char *szModule)
@@ -112,10 +176,6 @@ void LoadLogfont(int i, LOGFONTA * lf, COLORREF * colour, char *szModule)
         lf->lfUnderline = style & FONTF_UNDERLINE ? 1 : 0;
         lf->lfStrikeOut = 0;
         mir_snprintf(str, sizeof(str), "Font%dSet", i);
-        if((i == MSGFONTID_SYMBOLS_IN || i == MSGFONTID_SYMBOLS_OUT) && !strcmp(szModule, FONTMODULE))
-            lf->lfCharSet = SYMBOL_CHARSET;
-        else
-            lf->lfCharSet = DBGetContactSettingByte(NULL, szModule, str, fontOptionsList[0].defCharset);
         lf->lfOutPrecision = OUT_DEFAULT_PRECIS;
         lf->lfClipPrecision = CLIP_DEFAULT_PRECIS;
         lf->lfQuality = DEFAULT_QUALITY;
@@ -136,6 +196,10 @@ void LoadLogfont(int i, LOGFONTA * lf, COLORREF * colour, char *szModule)
                 DBFreeVariant(&dbv);
             }
         }
+        if((i == MSGFONTID_SYMBOLS_IN || i == MSGFONTID_SYMBOLS_OUT) && !strcmp(szModule, FONTMODULE))
+            lf->lfCharSet = SYMBOL_CHARSET;
+        else
+            lf->lfCharSet = DBGetContactSettingByte(NULL, szModule, str, MsgDlgGetFontDefaultCharset(lf->lfFaceName));
     }
 }
 
