@@ -91,7 +91,6 @@ BEGIN
             VALUE "OriginalFilename", "avs.dll"
             VALUE "ProductName", "Miranda IM Avatar Service plugin"
             VALUE "ProductVersion", "0, 8, 0, 0"
-            VALUE "SpecialBuild", "011"
 #else
             VALUE "Comments", "Service plugin to load and update avatars for Miranda IM"
             VALUE "CompanyName", "Written by Nightwish and Pescuma for Miranda IM project"
@@ -103,7 +102,6 @@ BEGIN
             VALUE "OriginalFilename", "avs.dll"
             VALUE "ProductName", "Miranda IM Avatar Service (UNICODE)"
             VALUE "ProductVersion", "0, 8, 0, 0"
-            VALUE "SpecialBuild", "011"
 #endif
         END
     END
