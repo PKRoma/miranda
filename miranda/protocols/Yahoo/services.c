@@ -520,15 +520,11 @@ int YahooRecvAuth(WPARAM wParam,LPARAM lParam)
 
 static void __cdecl yahoo_get_statusthread(HANDLE hContact)
 {
-	CCSDATA ccs1;
-	PROTORECVEVENT pre;
-	int status, l;
+	int l;
 	DBVARIANT dbv;
 	char *gm = NULL, *sm = NULL, *fm;
-	status = DBGetContactSettingWord(hContact, yahooProtocolName, "Status", ID_STATUS_OFFLINE);
-
-	if (status == ID_STATUS_OFFLINE)
-	   return;
+	
+	Sleep( 150 );
 	
 	/* Check Yahoo Games Message */
 	if (! DBGetContactSetting(( HANDLE )hContact, yahooProtocolName, "YGMsg", &dbv )) {
@@ -537,7 +533,7 @@ static void __cdecl yahoo_get_statusthread(HANDLE hContact)
 		DBFreeVariant( &dbv );
 	}
 	
-	if (! DBGetContactSetting(( HANDLE )hContact, "CList", "StatusMsg", &dbv )) {
+	if (! DBGetContactSetting(hContact, "CList", "StatusMsg", &dbv )) {
 		if (lstrlen(dbv.pszVal) >= 1)
 			sm = strdup(dbv.pszVal);
 		
@@ -579,16 +575,7 @@ static void __cdecl yahoo_get_statusthread(HANDLE hContact)
 	
 	FREE(sm);
 	
-	ccs1.szProtoService = PSR_AWAYMSG;
-	ccs1.hContact = hContact;
-	ccs1.wParam = status;
-	ccs1.lParam = (LPARAM)&pre;
-	pre.flags = 0;
-	pre.timestamp = time(NULL);
-	pre.lParam = 1;
-	pre.szMessage = fm;
-	
-	CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs1);
+	YAHOO_SendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE )1, ( LPARAM ) fm );
 }
 
 //=======================================================
@@ -596,7 +583,7 @@ static void __cdecl yahoo_get_statusthread(HANDLE hContact)
 //=======================================================
 int YahooGetAwayMessage(WPARAM wParam,LPARAM lParam)
 {
-    YAHOO_DebugLog("YahooGetAwayMessage");
+    YAHOO_DebugLog("[YahooGetAwayMessage] ");
 	if (lParam && yahooLoggedIn) {
 	    CCSDATA *ccs = (CCSDATA *) lParam;
 		
@@ -611,21 +598,6 @@ int YahooGetAwayMessage(WPARAM wParam,LPARAM lParam)
 	}
 	
 	return 0; // Failure
-}
-
-int YahooRecvAwayMessage(WPARAM wParam,LPARAM lParam)
-{
-    CCSDATA *ccs;
-    PROTORECVEVENT *pre;
-    
-    YAHOO_DebugLog("YahooRecvAwayMessage");
-	
-	ccs=(CCSDATA*)lParam;
-	pre=(PROTORECVEVENT*)ccs->lParam;
-	
-	YAHOO_DebugLog("Got Msg: %s", pre->szMessage);
-	ProtoBroadcastAck(yahooProtocolName,ccs->hContact,ACKTYPE_AWAYMSG,ACKRESULT_SUCCESS,(HANDLE)pre->lParam,(LPARAM)pre->szMessage);
-	return 0;
 }
 
 //=======================================================
@@ -1082,9 +1054,8 @@ int LoadYahooServices( void )
 	///
 	YAHOO_CreateProtoServiceFunction( PSS_MESSAGE,	YahooSendMessage );
 	YAHOO_CreateProtoServiceFunction( PSR_MESSAGE,	YahooRecvMessage );
-	
+	 
 	YAHOO_CreateProtoServiceFunction( PSS_GETAWAYMSG,	YahooGetAwayMessage );
-	YAHOO_CreateProtoServiceFunction( PSR_AWAYMSG,	YahooRecvAwayMessage );
 
 	YAHOO_CreateProtoServiceFunction( PS_SETAWAYMSG, YahooSetAwayMessage );
 
@@ -1113,4 +1084,5 @@ int LoadYahooServices( void )
 	
 	return 0;
 }
+
 
