@@ -350,7 +350,7 @@ void ext_yahoo_status_changed(int id, const char *who, int stat, const char *msg
 	HANDLE 	hContact = 0;
 	time_t  idlets = 0;
 	
-	LOG(("[ext_yahoo_status_changed] %s with msg %s (stat: %d, away: %d, idle: %d seconds)", who, msg, stat, away, idle));
+	YAHOO_DebugLog("[ext_yahoo_status_changed] %s with msg %s (stat: %d, away: %d, idle: %d seconds)", who, msg, stat, away, idle);
 	
 	hContact = getbuddyH(who);
 	if (hContact == NULL) {
@@ -370,21 +370,18 @@ void ext_yahoo_status_changed(int id, const char *who, int stat, const char *msg
 	YAHOO_SetWord(hContact, "Mobile", mobile);
 
 	if(msg) {
-		LOG(("%s custom message '%s'", who, msg));
+		YAHOO_DebugLog("[ext_yahoo_status_changed] %s custom message '%s'", who, msg);
 		//YAHOO_SetString(hContact, "YMsg", msg);
 		//DBWriteContactSettingString( hContact, "CList", "StatusMsg", msg);
-		DBWriteContactSettingStringUtf( hContact, "CList", "StatusMsg", msg);
+		//DBWriteContactSettingStringUtf( hContact, "CList", "StatusMsg", msg);
+		DBWriteContactSettingString( hContact, "CList", "StatusMsg", msg);
 	} else {
-		//YAHOO_SetString(hContact, "YMsg", "");
 		DBDeleteContactSetting(hContact, "CList", "StatusMsg" );
 	}
 
-	/*if (stat == YAHOO_STATUS_OFFLINE)
-		DBDeleteContactSetting(hContact, yahooProtocolName, "MirVer" );*/
-	
 	if ( (away == 2) || (stat == YAHOO_STATUS_IDLE) || (idle > 0)) {
 		if (stat > 0) {
-			LOG(("%s idle for %d:%02d:%02d", who, idle/3600, (idle/60)%60, idle%60));
+			YAHOO_DebugLog("[ext_yahoo_status_changed] %s idle for %d:%02d:%02d", who, idle/3600, (idle/60)%60, idle%60);
 			
 			time(&idlets);
 			idlets -= idle;
@@ -393,7 +390,7 @@ void ext_yahoo_status_changed(int id, const char *who, int stat, const char *msg
 		
 	DBWriteContactSettingDword(hContact, yahooProtocolName, "IdleTS", idlets);
 
-	LOG(("[ext_yahoo_status_changed] exiting"));
+	YAHOO_DebugLog("[ext_yahoo_status_changed] exiting");
 }
 
 void ext_yahoo_status_logon(int id, const char *who, int stat, const char *msg, int away, int idle, int mobile, int cksum, int buddy_icon, long client_version)
@@ -401,7 +398,7 @@ void ext_yahoo_status_logon(int id, const char *who, int stat, const char *msg, 
 	HANDLE 	hContact = 0;
 	char 	*s = NULL;
 	
-	LOG(("[ext_yahoo_status_logon] %s with msg %s (stat: %d, away: %d, idle: %d seconds, checksum: %d buddy_icon: %d client_version: %ld)", who, msg, stat, away, idle, cksum, buddy_icon, client_version));
+	YAHOO_DebugLog("[ext_yahoo_status_logon] %s with msg %s (stat: %d, away: %d, idle: %d seconds, checksum: %d buddy_icon: %d client_version: %ld)", who, msg, stat, away, idle, cksum, buddy_icon, client_version);
 	
 	ext_yahoo_status_changed(id, who, stat, msg, away, idle, mobile);
 	hContact = getbuddyH(who);
@@ -435,7 +432,7 @@ void ext_yahoo_status_logon(int id, const char *who, int stat, const char *msg, 
 		
 	/* Last thing check the checksum and request new one if we need to */
 	if (buddy_icon == -1) {
-		LOG(("[ext_yahoo_status_logon] No avatar information in this packet? Not touching stuff!"));
+		YAHOO_DebugLog("[ext_yahoo_status_logon] No avatar information in this packet? Not touching stuff!");
 	} else {
 		// we got some avatartype info
 		DBWriteContactSettingByte(hContact, yahooProtocolName, "AvatarType", buddy_icon);
@@ -457,7 +454,8 @@ void ext_yahoo_status_logon(int id, const char *who, int stat, const char *msg, 
 		// Cleanup the type? and reset things...
 		yahoo_reset_avatar(hContact);
 	}
-	LOG(("[ext_yahoo_status_logon] exiting"));
+	
+	YAHOO_DebugLog("[ext_yahoo_status_logon] exiting");
 }
 
 void ext_yahoo_got_audible(int id, const char *me, const char *who, const char *aud, const char *msg, const char *aud_hash)
@@ -1541,6 +1539,7 @@ void YAHOO_refresh()
 {
 	yahoo_refresh(ylad->id);
 }
+
 
 
 
