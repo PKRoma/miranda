@@ -712,47 +712,51 @@ int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam)
  */
 int YahooGetAvatarCaps(WPARAM wParam, LPARAM lParam)
 {
-  if (wParam == AF_MAXSIZE)
-  {
-    POINT *size = (POINT*)lParam;
-
-	LOG(("[YahooGetAvatarCaps] AF_MAXSIZE"));
+	int res = 0;
 	
-    if (size)
-    {
-      size->x = 96;
-      size->y = 96;
-
-      return 0;
-    }
-  }
-  else if (wParam == AF_PROPORTION)
-  {
-	LOG(("[YahooGetAvatarCaps] AF_PROPORTION"));
+	switch (wParam) {
+	case AF_MAXSIZE: 
+					LOG(("[YahooGetAvatarCaps] AF_MAXSIZE"));
 	
-    return PIP_NONE;
-  }
-  else if (wParam == AF_FORMATSUPPORTED)
-  {
-	LOG(("[YahooGetAvatarCaps] AF_FORMATSUPPORTED"));
-	  
-    if (lParam == PA_FORMAT_PNG)
-      return 1;
-    else
-      return 0;
-  }
-  else if (wParam == AF_ENABLED)
-  {
-	LOG(("[YahooGetAvatarCaps] AF_ENABLED"));
+					((POINT*)lParam)->x = 96;
+					((POINT*)lParam)->y = 96;
+					
+					break;
+					
+	case AF_PROPORTION: 
+					LOG(("[YahooGetAvatarCaps] AF_PROPORTION"));
 	
-    if (YAHOO_GetByte( "ShowAvatars", 0 ))
-      return 1;
-    else
-      return 0;
-  }
+					res = PIP_NONE;
+					break;
   
-  LOG(("[YahooGetAvatarCaps] Unknown: %d", wParam));
-  return -1;
+	case AF_FORMATSUPPORTED:
+					LOG(("[YahooGetAvatarCaps] AF_FORMATSUPPORTED"));
+					res = lParam == PA_FORMAT_PNG;
+					break;
+	  
+	case AF_ENABLED:
+					LOG(("[YahooGetAvatarCaps] AF_ENABLED"));
+	
+					res = (YAHOO_GetByte( "ShowAvatars", 0 )) ? 1 : 0;
+					break;
+					
+	case AF_DONTNEEDDELAYS:
+					res = 1; /* don't need to delay avatar loading */
+					break;
+					
+	case AF_MAXFILESIZE:
+					res = 0; /* no max filesize for now */
+					break;
+		
+	case AF_DELAYAFTERFAIL:
+					res = 15 * 60 * 1000; /* 15 mins */
+					break;
+					
+	default:
+					LOG(("[YahooGetAvatarCaps] Unknown: %d", wParam));
+	}
+  
+	return res;
 }
 
 /*
