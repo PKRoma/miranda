@@ -52,7 +52,7 @@ PLUGINLINK *pluginLink = NULL;
 PLUGININFO pluginInfo = {
 	sizeof(PLUGININFO),
 	"Miranda Image services",
-	PLUGIN_MAKE_VERSION(0, 0, 1, 0),
+	__VERSION_DWORD,
 	"Generic image services for Miranda IM",
 	"Nightwish, The FreeImage project (http://freeimage.sourceforge.net/)",
 	"",
@@ -65,7 +65,7 @@ PLUGININFO pluginInfo = {
 PLUGININFOEX pluginInfoEx = {
 	sizeof(PLUGININFOEX),
 	"Miranda Image services",
-	PLUGIN_MAKE_VERSION(0, 0, 1, 0),
+	__VERSION_DWORD,
 	"Generic image services for Miranda IM",
 	"Nightwish, The FreeImage project (http://freeimage.sourceforge.net/)",
 	"",

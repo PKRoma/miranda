@@ -89,7 +89,6 @@ BEGIN
             VALUE "OriginalFilename", "advaimg.dll"
             VALUE "ProductName", "Miranda IM Image services"
             VALUE "ProductVersion", "0, 7, 0, 0"
-            VALUE "SpecialBuild", "011"
         END
     END
     BLOCK "VarFileInfo"
