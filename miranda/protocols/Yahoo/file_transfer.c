@@ -29,14 +29,10 @@ static y_filetransfer* new_ft(int id, HANDLE hContact, const char *who, const ch
 
 	LOG(("[new_ft]"));
 	
-	ft= (y_filetransfer*) malloc(sizeof(y_filetransfer));
+	ft = (y_filetransfer*) malloc(sizeof(y_filetransfer));
 	ft->id  = id;
 	ft->who = strdup(who);
 	ft->hWaitEvent = INVALID_HANDLE_VALUE;
-	if (msg != NULL)
-		ft->msg = strdup(msg);
-	else
-		ft->msg = strdup("[no description given]");
 	
 	ft->hContact = hContact;
 	ft->filename = strdup(fname);
@@ -44,10 +40,11 @@ static y_filetransfer* new_ft(int id, HANDLE hContact, const char *who, const ch
 	
 	ft->url = (url == NULL) ? NULL : strdup(url);
 	ft->ftoken = (ft_token == NULL) ? NULL : strdup(ft_token);
+	ft->msg = (msg != NULL) ? strdup(msg) : strdup("[no description given]");
 	
 	ft->cancel = 0;
 	ft->y7 = y7;
-	
+	ft->savepath = NULL;
 	file_transfers = y_list_prepend(file_transfers, ft);
 	
 	return ft;
@@ -708,4 +705,5 @@ int YahooRecvFile(WPARAM wParam,LPARAM lParam)
     CallService(MS_DB_EVENT_ADD, (WPARAM) ccs->hContact, (LPARAM) & dbei);
     return 0;
 }
+
 
