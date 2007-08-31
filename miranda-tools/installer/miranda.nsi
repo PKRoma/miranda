@@ -81,8 +81,8 @@ VAR INST_UPGRADE
   ${EndIf}
   !else
   File "${MIM_BUILD_ICONS_LOW}\${IconFile}"
-  SetOverWrite on
   !endif
+  SetOverWrite on
 !macroend
 
 Section "Miranda IM"
