@@ -383,9 +383,8 @@ static int GetContactSetting(WPARAM wParam,LPARAM lParam)
 		return 1;
 
 	if ( dgs->pValue->type == DBVT_UTF8 ) {
-		WCHAR* tmp;
-		char* val = mir_utf8decode( dgs->pValue->pszVal, &tmp );
-		if ( val == NULL ) {
+		WCHAR* tmp = NULL;
+		if ( mir_utf8decode( NEWSTR_ALLOCA(dgs->pValue->pszVal), &tmp ) != NULL ) {
 			dgs->pValue->type = DBVT_WCHAR;
 			mir_free( dgs->pValue->pszVal );
 			dgs->pValue->pwszVal = tmp;
@@ -425,9 +424,10 @@ static int GetContactSettingStr(WPARAM wParam,LPARAM lParam)
 			dgs->pValue->pwszVal = wszResult;
 		}
 		else {
-			char* savePtr = dgs->pValue->pszVal;
-			mir_utf8decode( dgs->pValue->pszVal, &dgs->pValue->pwszVal );
-			mir_free( savePtr );
+			char* savePtr = NEWSTR_ALLOCA(dgs->pValue->pszVal);
+			mir_free( dgs->pValue->pszVal );
+			if ( !mir_utf8decode( savePtr, &dgs->pValue->pwszVal ))
+				return 1;
 		}
 	}
 	else if ( iSaveType == DBVT_UTF8 ) {
