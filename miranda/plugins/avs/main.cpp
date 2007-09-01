@@ -504,7 +504,7 @@ int CreateAvatarInCache(HANDLE hContact, struct avatarCacheEntry *ace, char *szP
 
     if(szProto == NULL) {
 		char *proto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-		if (!DBGetContactSettingByte(NULL, AVS_MODULE, proto, 1)) {
+		if (proto == NULL || !DBGetContactSettingByte(NULL, AVS_MODULE, proto, 1)) {
 			return -1;
 		}
 
@@ -687,7 +687,7 @@ struct CacheNode *FindAvatarInCache(HANDLE hContact, BOOL add, BOOL findAny = FA
 	struct CacheNode *cacheNode = g_Cache, *foundNode = NULL;
 
 	char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-	if (!DBGetContactSettingByte(NULL, AVS_MODULE, szProto, 1))
+	if (szProto == NULL || !DBGetContactSettingByte(NULL, AVS_MODULE, szProto, 1))
 		return NULL;
 
     EnterCriticalSection(&cachecs);
@@ -2388,7 +2388,7 @@ static int OnDetailsInit(WPARAM wParam, LPARAM lParam)
 	else
 	{
 		char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-		if (DBGetContactSettingByte(NULL, AVS_MODULE, szProto, 1))
+		if (szProto == NULL || DBGetContactSettingByte(NULL, AVS_MODULE, szProto, 1))
 		{
 			// Contact dialog
 			OPTIONSDIALOGPAGE odp = {0};
@@ -2640,6 +2640,7 @@ int Proto_GetDelayAfterFail(const char *proto)
 
 	return 0;
 }
+
 
 
 
