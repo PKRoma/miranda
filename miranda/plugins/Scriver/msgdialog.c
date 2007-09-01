@@ -972,6 +972,7 @@ static BOOL CALLBACK ConfirmSendAllDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam
 	case WM_INITDIALOG:
 		{
 			RECT rcParent, rcChild;
+			TranslateDialogDefault( hwndDlg );
 			GetWindowRect(GetParent(hwndDlg), &rcParent);
 			GetWindowRect(hwndDlg, &rcChild);
 			rcChild.bottom -= rcChild.top;

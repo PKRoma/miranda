@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include <ctype.h>
 #include <mbstring.h>
-#include "tom.h"
+//#include "tom.h"
 
 #define MIRANDA_0_5
 

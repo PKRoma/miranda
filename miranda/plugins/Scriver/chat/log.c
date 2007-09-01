@@ -351,7 +351,6 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 	char *buffer, *header;
 	int bufferAlloced, bufferEnd, i;
 	LOGINFO * lin = streamData->lin;
-	MODULEINFO *mi = MM_FindModule(streamData->si->pszModule);
 
 	// guesstimate amount of memory for the RTF
 	bufferEnd = 0;
