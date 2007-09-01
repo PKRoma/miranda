@@ -503,11 +503,6 @@ int CreateAvatarInCache(HANDLE hContact, struct avatarCacheEntry *ace, char *szP
     ace->szFilename[0] = 0;
 
     if(szProto == NULL) {
-		char *proto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-		if (!DBGetContactSettingByte(NULL, AVS_MODULE, proto, 1)) {
-			return -1;
-		}
-
         if(DBGetContactSettingByte(hContact, "ContactPhoto", "Locked", 0)
 				&& !DBGetContactSetting(hContact, "ContactPhoto", "Backup", &dbv)) {
             AVS_pathToAbsolute(dbv.pszVal, szFilename);
@@ -685,10 +680,6 @@ static struct CacheNode *AddToList(struct CacheNode *node) {
 struct CacheNode *FindAvatarInCache(HANDLE hContact, BOOL add, BOOL findAny = FALSE)
 {
 	struct CacheNode *cacheNode = g_Cache, *foundNode = NULL;
-
-	char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-	if (!DBGetContactSettingByte(NULL, AVS_MODULE, szProto, 1))
-		return NULL;
 
     EnterCriticalSection(&cachecs);
 
@@ -1911,11 +1902,12 @@ static void PicLoader(LPVOID param)
                 ZeroMemory(&node->ace, sizeof(AVATARCACHEENTRY));
                 if(node->dwFlags & AVS_DELETENODEFOREVER) {
                     node->dwFlags &= ~AVS_DELETENODEFOREVER;
-                } else {
+					LeaveCriticalSection(&cachecs);
+                } else {                                                  // restore node contact and notify events
                     node->ace.hContact = hContact;
+					LeaveCriticalSection(&cachecs);
+                    NotifyMetaAware(hContact, node, (AVATARCACHEENTRY *)GetProtoDefaultAvatar(hContact));
                 }
-				LeaveCriticalSection(&cachecs);
-                NotifyMetaAware(hContact, node, (AVATARCACHEENTRY *)GetProtoDefaultAvatar(hContact));
             }
             // protect this by changes from the cache block allocator as it can cause inconsistencies while working
             // on allocating a new block.
@@ -2387,20 +2379,16 @@ static int OnDetailsInit(WPARAM wParam, LPARAM lParam)
 	}
 	else
 	{
-		char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-		if (DBGetContactSettingByte(NULL, AVS_MODULE, szProto, 1))
-		{
-			// Contact dialog
-			OPTIONSDIALOGPAGE odp = {0};
-			odp.cbSize = sizeof(odp);
-			odp.hIcon = g_hIcon;
-			odp.hInstance = g_hInst;
-			odp.pfnDlgProc = DlgProcAvatarUserInfo;
-			odp.position = -2000000000;
-			odp.pszTemplate = MAKEINTRESOURCEA(IDD_USER_AVATAR);
-			odp.pszTitle = LPGEN("Avatar");
-			CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
-		}
+		// Contact dialog
+		OPTIONSDIALOGPAGE odp = {0};
+		odp.cbSize = sizeof(odp);
+		odp.hIcon = g_hIcon;
+		odp.hInstance = g_hInst;
+		odp.pfnDlgProc = DlgProcAvatarUserInfo;
+		odp.position = -2000000000;
+		odp.pszTemplate = MAKEINTRESOURCEA(IDD_USER_AVATAR);
+		odp.pszTitle = LPGEN("Avatar");
+		CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
 	}
 	return 0;
 }
@@ -2640,7 +2628,6 @@ int Proto_GetDelayAfterFail(const char *proto)
 
 	return 0;
 }
-
 
 
 

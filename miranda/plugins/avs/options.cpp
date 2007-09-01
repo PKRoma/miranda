@@ -201,8 +201,6 @@ BOOL CALLBACK DlgProcOptionsOwn(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 {
     switch (msg) {
         case WM_INITDIALOG: {
-            TranslateDialogDefault(hwndDlg);
-
 			CheckDlgButton(hwndDlg, IDC_MAKE_MY_AVATARS_TRANSP, DBGetContactSettingByte(0, AVS_MODULE, "MakeMyAvatarsTransparent", 0));
             CheckDlgButton(hwndDlg, IDC_SET_MAKE_SQUARE, DBGetContactSettingByte(0, AVS_MODULE, "SetAllwaysMakeSquare", 0));
 
@@ -373,28 +371,10 @@ BOOL CALLBACK DlgProcOptionsProtos(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                             for(i = 0; i < ListView_GetItemCount(hwndList); i++) {
                                 item.iItem = i;
 								SendMessageA(hwndList, LVM_GETITEMA, 0, (LPARAM)&item);
-								char *szProto = item.pszText;
-
-								BOOL oldVal = DBGetContactSettingByte(NULL, AVS_MODULE, szProto, 1);
-								BOOL newVal = ListView_GetCheckState(hwndList, i);
-
-								if (oldVal && !newVal)
-								{
-									HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-									while (hContact != NULL) 
-									{
-										char* szContactProto = (char*) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-										if (szContactProto != NULL && !strcmp(szContactProto, szProto)) 
-											DeleteAvatarFromCache(hContact, TRUE);
-
-										hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
-									}
-								}
-
-                                if(newVal)
-                                    DBWriteContactSettingByte(NULL, AVS_MODULE, szProto, 1);
+                                if(ListView_GetCheckState(hwndList, i))
+                                    DBWriteContactSettingByte(NULL, AVS_MODULE, item.pszText, 1);
                                 else
-                                    DBWriteContactSettingByte(NULL, AVS_MODULE, szProto, 0);
+                                    DBWriteContactSettingByte(NULL, AVS_MODULE, item.pszText, 0);
                             }
                         }
                     }
