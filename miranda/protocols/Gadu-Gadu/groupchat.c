@@ -178,7 +178,7 @@ int gg_gc_event(WPARAM wParam, LPARAM lParam)
 		while (hContact)
 		{
 			DBVARIANT dbv;
-			if(!DBGetContactSetting(hContact, GG_PROTO, "ChatRoomID", &dbv))
+			if(!DBGetContactSettingString(hContact, GG_PROTO, "ChatRoomID", &dbv))
 			{
 				if(dbv.pszVal && !strcmp(gch->pDest->pszID, dbv.pszVal))
 					CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
@@ -202,7 +202,7 @@ int gg_gc_event(WPARAM wParam, LPARAM lParam)
 
 		gcevent.pszUID = id;
 		gcevent.pszText = gch->pszText;
-		if(!DBGetContactSetting(NULL, GG_PROTO, "Nick", &dbv))
+		if(!DBGetContactSettingString(NULL, GG_PROTO, "Nick", &dbv))
 			gcevent.pszNick = dbv.pszVal;
 		else
 			gcevent.pszNick = Translate("Me");
@@ -406,7 +406,7 @@ int gg_gc_egetchat(WPARAM wParam, LPARAM lParam)
 	if(uin = DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0))
 	{
 		UIN2ID(uin, id);
-		if(!DBGetContactSetting(NULL, GG_PROTO, "Nick", &dbv))
+		if(!DBGetContactSettingString(NULL, GG_PROTO, "Nick", &dbv))
 			gcevent.pszNick = dbv.pszVal;
 		else
 			gcevent.pszNick = Translate("Me");

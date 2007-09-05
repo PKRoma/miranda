@@ -466,7 +466,7 @@ static void *__stdcall gg_getawaymsgthread(HANDLE hContact)
 	DBVARIANT dbv;
 
 	SleepEx(100, FALSE);
-	if (!DBGetContactSetting(hContact, "CList", GG_KEY_STATUSDESCR, &dbv))
+	if (!DBGetContactSettingString(hContact, "CList", GG_KEY_STATUSDESCR, &dbv))
 	{
 		ProtoBroadcastAck(GG_PROTO, hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, (HANDLE) 1, (LPARAM) dbv.pszVal);
 

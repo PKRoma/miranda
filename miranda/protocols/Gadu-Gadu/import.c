@@ -35,7 +35,7 @@ int GroupNameExists(const char *name)
 
 	for (i = 0; ; i++) {
 		itoa(i, idstr, 10);
-		if (DBGetContactSetting(NULL, "CListGroups", idstr, &dbv)) break;
+		if (DBGetContactSettingString(NULL, "CListGroups", idstr, &dbv)) break;
 		if (!strcmp(dbv.pszVal + 1, name)) {
 			DBFreeVariant(&dbv);
 			return 1;
@@ -86,7 +86,7 @@ char *CreateGroup(char *groupName)
 		// Find an unused id
 		for (groupId = 0; ; groupId++) {
 				itoa(groupId, groupIdStr,10);
-				if (DBGetContactSetting(NULL, "CListGroups", groupIdStr, &dbv))
+				if (DBGetContactSettingString(NULL, "CListGroups", groupIdStr, &dbv))
 						break;
 				DBFreeVariant(&dbv);
 		}
@@ -112,14 +112,14 @@ char *gg_makecontacts(int cr)
 			DBVARIANT dbv;
 
 			// Readup FirstName
-			if (!DBGetContactSetting(hContact, GG_PROTO, "FirstName", &dbv))
+			if (!DBGetContactSettingString(hContact, GG_PROTO, "FirstName", &dbv))
 			{
 				string_append(s, dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
 			string_append_c(s, ';');
 			// Readup LastName
-			if (!DBGetContactSetting(hContact, GG_PROTO, "LastName", &dbv))
+			if (!DBGetContactSettingString(hContact, GG_PROTO, "LastName", &dbv))
 			{
 				string_append(s, dbv.pszVal);
 				DBFreeVariant(&dbv);
@@ -127,10 +127,10 @@ char *gg_makecontacts(int cr)
 			string_append_c(s, ';');
 
 			// Readup Nick
-			if (!DBGetContactSetting(hContact, "CList", "MyHandle", &dbv) || !DBGetContactSetting(hContact, GG_PROTO, "Nick", &dbv))
+			if (!DBGetContactSettingString(hContact, "CList", "MyHandle", &dbv) || !DBGetContactSettingString(hContact, GG_PROTO, "Nick", &dbv))
 			{
 				DBVARIANT dbv2;
-				if (!DBGetContactSetting(hContact, GG_PROTO, "NickName", &dbv2))
+				if (!DBGetContactSettingString(hContact, GG_PROTO, "NickName", &dbv2))
 				{
 					string_append(s, dbv2.pszVal);
 					DBFreeVariant(&dbv2);
@@ -145,7 +145,7 @@ char *gg_makecontacts(int cr)
 			string_append_c(s, ';');
 
 			// Readup Phone (fixed: uses stored editable phones)
-			if (!DBGetContactSetting(hContact, "UserInfo", "MyPhone0", &dbv))
+			if (!DBGetContactSettingString(hContact, "UserInfo", "MyPhone0", &dbv))
 			{
 				// Remove SMS postfix
 				char *sms = strstr(dbv.pszVal, " SMS");
@@ -156,7 +156,7 @@ char *gg_makecontacts(int cr)
 			}
 			string_append_c(s, ';');
 			// Readup Group
-			if (!DBGetContactSetting(hContact, "CList", "Group", &dbv))
+			if (!DBGetContactSettingString(hContact, "CList", "Group", &dbv))
 			{
 				string_append(s, dbv.pszVal);
 				DBFreeVariant(&dbv);
@@ -166,7 +166,7 @@ char *gg_makecontacts(int cr)
 			string_append(s, ditoa(DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0)));
 			string_append_c(s, ';');
 			// Readup Mail (fixed: uses stored editable mails)
-			if (!DBGetContactSetting(hContact, "UserInfo", "Mye-mail0", &dbv))
+			if (!DBGetContactSettingString(hContact, "UserInfo", "Mye-mail0", &dbv))
 			{
 				string_append(s, dbv.pszVal);
 				DBFreeVariant(&dbv);
@@ -330,7 +330,7 @@ static int gg_import_server(WPARAM wParam, LPARAM lParam)
 	}
 
 	// Readup password
-	if (!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_PASSWORD, &dbv))
+	if (!DBGetContactSettingString(NULL, GG_PROTO, GG_KEY_PASSWORD, &dbv))
 	{
 		CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
 		password = strdup(dbv.pszVal);
@@ -380,7 +380,7 @@ static int gg_remove_server(WPARAM wParam, LPARAM lParam)
 	}
 
 	// Readup password
-	if (!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_PASSWORD, &dbv))
+	if (!DBGetContactSettingString(NULL, GG_PROTO, GG_KEY_PASSWORD, &dbv))
 	{
 		CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
 		password = strdup(dbv.pszVal);
@@ -590,7 +590,7 @@ static int gg_export_server(WPARAM wParam, LPARAM lParam)
 	}
 
 	// Readup password
-	if (!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_PASSWORD, &dbv))
+	if (!DBGetContactSettingString(NULL, GG_PROTO, GG_KEY_PASSWORD, &dbv))
 	{
 		CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
 		password = strdup(dbv.pszVal);

@@ -97,7 +97,7 @@ void gg_refreshblockedicon()
 	DBVARIANT dbv;
 	GetModuleFileName(hInstance, strFmt1, sizeof(strFmt1));
 	mir_snprintf(strFmt1, sizeof(strFmt1), "%s_blocked", GG_PROTO, ID_STATUS_DND);
-	if(!DBGetContactSetting(NULL, "SkinIcons", strFmt1, &dbv))
+	if(!DBGetContactSettingString(NULL, "SkinIcons", strFmt1, &dbv))
 	{
 		DBWriteContactSettingString(NULL, "Icons", strFmt1, dbv.pszVal);
 		DBFreeVariant(&dbv);

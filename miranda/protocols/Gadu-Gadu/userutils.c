@@ -152,10 +152,12 @@ void *gg_dochpass(uin_t uin, char *password, char *newPass)
 #endif
 	if(!uin || !password || !newPass) return NULL;
 
-	if (!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_EMAIL, &dbv_email))
+	if (!DBGetContactSettingString(NULL, GG_PROTO, GG_KEY_EMAIL, &dbv_email)) 
+    {
 		strncpy(email, dbv_email.pszVal, sizeof(email));
-	DBFreeVariant(&dbv_email);
-
+        DBFreeVariant(&dbv_email);
+    }
+    
 	// Load token
 	if(!gg_gettoken(&token)) return NULL;
 
@@ -356,7 +358,7 @@ static int gg_chpass(WPARAM wParam, LPARAM lParam)
 	GGUSERUTILDLGDATA dat;
 
 	// Readup password
-	if (!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_PASSWORD, &dbv_pass))
+	if (!DBGetContactSettingString(NULL, GG_PROTO, GG_KEY_PASSWORD, &dbv_pass))
 	{
 		CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv_pass.pszVal) + 1, (LPARAM) dbv_pass.pszVal);
 		password = dbv_pass.pszVal;
@@ -368,7 +370,7 @@ static int gg_chpass(WPARAM wParam, LPARAM lParam)
 		return 0;
 
 	// Readup email
-	if (!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_EMAIL, &dbv_email))
+	if (!DBGetContactSettingString(NULL, GG_PROTO, GG_KEY_EMAIL, &dbv_email))
 	{
 		email = dbv_email.pszVal;
 	}
@@ -387,4 +389,5 @@ static int gg_chpass(WPARAM wParam, LPARAM lParam)
 	DBFreeVariant(&dbv_pass);
 	DBFreeVariant(&dbv_email);
 }
+
 
