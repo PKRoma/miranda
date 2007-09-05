@@ -245,7 +245,7 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		SendMessage(hwndDlg, WM_USER + 11, 0, 0);
 		{
 			DBVARIANT dbv;
-			if (!DBGetContactSetting(NULL, "CLC", "BkBitmap", &dbv)) {
+			if (!DBGetContactSettingString(NULL, "CLC", "BkBitmap", &dbv)) {
 				SetDlgItemTextA(hwndDlg, IDC_FILENAME, dbv.pszVal);
 				if (ServiceExists(MS_UTILS_PATHTOABSOLUTE)) {
 					char szPath[MAX_PATH];
@@ -253,8 +253,7 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					if (CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM) dbv.pszVal, (LPARAM) szPath))
 						SetDlgItemTextA(hwndDlg, IDC_FILENAME, szPath);
 				}
-				else
-					mir_free(dbv.pszVal);
+				DBFreeVariant(&dbv);
 			}
 		}
 		{
