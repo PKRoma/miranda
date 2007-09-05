@@ -348,7 +348,7 @@ static BOOL CALLBACK DlgProcStatusBarBkgOpts(HWND hwndDlg, UINT msg, WPARAM wPar
 		SendDlgItemMessage(hwndDlg,IDC_SELCOLOUR,CPM_SETDEFAULTCOLOUR,0,CLCDEFAULT_SELBKCOLOUR);
 		SendDlgItemMessage(hwndDlg,IDC_SELCOLOUR,CPM_SETCOLOUR,0,DBGetContactSettingDword(NULL,"StatusBar","SelBkColour",CLCDEFAULT_SELBKCOLOUR));
 		{	DBVARIANT dbv;
-			if(!DBGetContactSetting(NULL,"StatusBar","BkBitmap",&dbv)) {
+			if(!DBGetContactSettingString(NULL,"StatusBar","BkBitmap",&dbv)) {
 				SetDlgItemTextA(hwndDlg,IDC_FILENAME,dbv.pszVal);
 				if (ServiceExists(MS_UTILS_PATHTOABSOLUTE)) {
 					char szPath[MAX_PATH];
@@ -487,7 +487,7 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		SendDlgItemMessage(hwndDlg,IDC_SELCOLOUR,CPM_SETDEFAULTCOLOUR,0,CLCDEFAULT_SELBKCOLOUR);
 		SendDlgItemMessage(hwndDlg,IDC_SELCOLOUR,CPM_SETCOLOUR,0,DBGetContactSettingDword(NULL,"CLC","SelBkColour",CLCDEFAULT_SELBKCOLOUR));
 		{	DBVARIANT dbv;
-			if(!DBGetContactSetting(NULL,"CLC","BkBitmap",&dbv)) {
+			if(!DBGetContactSettingString(NULL,"CLC","BkBitmap",&dbv)) {
 				SetDlgItemTextA(hwndDlg,IDC_FILENAME,dbv.pszVal);
 				if (ServiceExists(MS_UTILS_PATHTOABSOLUTE)) {
 					char szPath[MAX_PATH];

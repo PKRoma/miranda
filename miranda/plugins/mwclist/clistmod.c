@@ -101,7 +101,7 @@ static int ProtocolAck(WPARAM wParam,LPARAM lParam)
 	ACKDATA *ack=(ACKDATA*)lParam;
 	if (ack->type==ACKTYPE_AWAYMSG && ack->lParam) {
 		DBVARIANT dbv;
-		if (!DBGetContactSetting(ack->hContact, "CList", "StatusMsg", &dbv)) {
+		if (!DBGetContactSettingString(ack->hContact, "CList", "StatusMsg", &dbv)) {
 			if (!strcmp(dbv.pszVal, (char *)ack->lParam)) {
 				DBFreeVariant(&dbv);
 				return 0;

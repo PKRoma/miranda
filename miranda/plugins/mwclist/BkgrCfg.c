@@ -80,7 +80,7 @@ static BOOL CALLBACK DlgProcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				dat->item[indx].selColor = DBGetContactSettingDword(NULL,module, "SelBkColour", DEFAULT_SELBKCOLOUR);
 				{	
 					DBVARIANT dbv;
-					if(!DBGetContactSetting(NULL,module,"BkBitmap",&dbv))
+					if(!DBGetContactSettingString(NULL,module,"BkBitmap",&dbv))
 					{
 						int retval = CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)dat->item[indx].filename);
 						if(!retval || retval == CALLSERVICE_NOTFOUND)

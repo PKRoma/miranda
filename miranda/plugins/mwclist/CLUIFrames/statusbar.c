@@ -35,7 +35,7 @@ int OnStatusBarBackgroundChange()
 		bkColour=DBGetContactSettingDword(NULL,"StatusBar","BkColour",CLCDEFAULT_BKCOLOUR);
 		if(hBmpBackground) {DeleteObject(hBmpBackground); hBmpBackground=NULL;}
 		if(DBGetContactSettingByte(NULL,"StatusBar","UseBitmap",CLCDEFAULT_USEBITMAP)) {
-			if(!DBGetContactSetting(NULL,"StatusBar","BkBitmap",&dbv)) {
+			if(!DBGetContactSettingString(NULL,"StatusBar","BkBitmap",&dbv)) {
 				hBmpBackground=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);
 				mir_free(dbv.pszVal);
 			}
