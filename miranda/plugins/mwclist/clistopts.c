@@ -146,7 +146,7 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				PROTOCOLDESCRIPTOR **protos;
 				char szName[64];
 				DBVARIANT dbv={DBVT_DELETED};
-				DBGetContactSetting(NULL,"CList","PrimaryStatus",&dbv);
+				DBGetContactSettingString(NULL,"CList","PrimaryStatus",&dbv);
 				CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&count,(LPARAM)&protos);
 				item=SendDlgItemMessage(hwndDlg,IDC_PRIMARYSTATUS,CB_ADDSTRING,0,(LPARAM)TranslateT("Global"));
 				SendDlgItemMessage(hwndDlg,IDC_PRIMARYSTATUS,CB_SETITEMDATA,item,(LPARAM)0);
@@ -256,7 +256,7 @@ static BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			SendDlgItemMessage(hwndDlg,IDC_HKREADMSG,HKM_SETHOTKEY,DBGetContactSettingWord(NULL,"CList","HKReadMsg",MAKEWORD('I',HOTKEYF_CONTROL|HOTKEYF_SHIFT)),0);
 			SendDlgItemMessage(hwndDlg,IDC_HKSEARCH,HKM_SETHOTKEY,DBGetContactSettingWord(NULL,"CList","HKNetSearch",MAKEWORD('S',HOTKEYF_CONTROL|HOTKEYF_SHIFT)),0);
 			SendDlgItemMessage(hwndDlg,IDC_HKSHOWOPTIONS,HKM_SETHOTKEY,DBGetContactSettingWord(NULL,"CList","HKShowOptions",MAKEWORD('O',HOTKEYF_CONTROL|HOTKEYF_SHIFT)),0);
-			if(!DBGetContactSetting(NULL,"CList","SearchUrl",&dbv)) {
+			if(!DBGetContactSettingString(NULL,"CList","SearchUrl",&dbv)) {
 				SetDlgItemTextA(hwndDlg,IDC_SEARCHURL,dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}

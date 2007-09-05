@@ -65,7 +65,7 @@ int hkHideShow(WPARAM wParam,LPARAM lParam)
 int hkSearch(WPARAM wParam,LPARAM lParam)
 {
 	DBVARIANT dbv={0};
-	if(!DBGetContactSetting(NULL,"CList","SearchUrl",&dbv)) {
+	if(!DBGetContactSettingString(NULL,"CList","SearchUrl",&dbv)) {
 		CallService(MS_UTILS_OPENURL,DBGetContactSettingByte(NULL,"CList","HKSearchNewWnd",0),(LPARAM)dbv.pszVal);
 		mir_free(dbv.pszVal);
 	}
@@ -305,7 +305,7 @@ static int ServiceSkinAddNewHotKey(WPARAM wParam,LPARAM lParam)
 	if (ssd->DefHotKey) {
 		DBVARIANT dbv={0};
 
-		if (DBGetContactSetting(NULL, "SkinHotKeys", HotKeyList[HotKeyCount].name, &dbv)) {
+		if (DBGetContactSettingString(NULL, "SkinHotKeys", HotKeyList[HotKeyCount].name, &dbv)) {
 			DBWriteContactSettingWord(NULL, "SkinHotKeys", HotKeyList[HotKeyCount].name, (WORD)ssd->DefHotKey);
 		}
 		else DBFreeVariant(&dbv);
@@ -469,7 +469,7 @@ BOOL CALLBACK DlgProcHotKeyOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				NotifyEventHooks(hPlayEvent, 0, (LPARAM)HotKeyList[tvi.lParam].tempFile);
 			else {
 				DBVARIANT dbv={0};
-				if(!DBGetContactSetting(NULL,"SkinHotKeys",HotKeyList[tvi.lParam].name,&dbv)) {
+				if(!DBGetContactSettingString(NULL,"SkinHotKeys",HotKeyList[tvi.lParam].name,&dbv)) {
 					char szPathFull[MAX_PATH];
 
 					CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)szPathFull);
@@ -501,7 +501,7 @@ BOOL CALLBACK DlgProcHotKeyOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				if (DBGetContactSettingByte(NULL, "SkinHotKeysOff", HotKeyList[tvi.lParam].name, 0)==0) {
 					DBVARIANT dbv={0};
 
-					if (DBGetContactSetting(NULL, "SkinHotKeys", HotKeyList[tvi.lParam].name, &dbv)==0) {                           
+					if (DBGetContactSettingString(NULL, "SkinHotKeys", HotKeyList[tvi.lParam].name, &dbv)==0) {                           
 						//CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)str);
 						DBFreeVariant(&dbv);
 					}
