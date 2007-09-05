@@ -742,9 +742,9 @@ LBL_Def:
 							char buf[4096];
 							DBVARIANT dbv = {0};
 							char *szEmail = NULL;
-							if(!DBGetContactSetting(contact->hContact, "UserInfo", "Mye-mail0", &dbv))
+							if(!DBGetContactSettingString(contact->hContact, "UserInfo", "Mye-mail0", &dbv))
 								szEmail = dbv.pszVal;
-							else if(!DBGetContactSetting(contact->hContact, contact->proto, "e-mail", &dbv))
+							else if(!DBGetContactSettingString(contact->hContact, contact->proto, "e-mail", &dbv))
 								szEmail = dbv.pszVal;
 
 							if (szEmail) {
@@ -758,9 +758,9 @@ LBL_Def:
 							char *homepage = NULL;
 							DBVARIANT dbv = {0};
 
-							if(!DBGetContactSetting(contact->hContact, "UserInfo", "Homepage", &dbv))
+							if(!DBGetContactSettingString(contact->hContact, "UserInfo", "Homepage", &dbv))
 								homepage = dbv.pszVal;
-							else if(!DBGetContactSetting(contact->hContact, contact->proto, "Homepage", &dbv))
+							else if(!DBGetContactSettingString(contact->hContact, contact->proto, "Homepage", &dbv))
 								homepage = dbv.pszVal;
 							if (homepage) {
 								ShellExecuteA(hwnd,"open",homepage,NULL,NULL,SW_SHOW);

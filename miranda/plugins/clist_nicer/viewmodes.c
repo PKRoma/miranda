@@ -1137,7 +1137,7 @@ void ApplyViewMode(const char *name)
     g_CluiData.bFilterEffective = 0;
     
     mir_snprintf(szSetting, 256, "%c%s_PF", 246, name);
-    if(!DBGetContactSetting(NULL, CLVM_MODULE, szSetting, &dbv)) {
+    if(!DBGetContactSettingString(NULL, CLVM_MODULE, szSetting, &dbv)) {
         if(lstrlenA(dbv.pszVal) >= 2) {
             strncpy(g_CluiData.protoFilter, dbv.pszVal, sizeof(g_CluiData.protoFilter));
             g_CluiData.protoFilter[sizeof(g_CluiData.protoFilter) - 1] = 0;
@@ -1166,7 +1166,7 @@ void ApplyViewMode(const char *name)
 
     /*
     mir_snprintf(szSetting, 256, "%c%s_VA", 246, name);
-    if(!DBGetContactSetting(NULL, CLVM_MODULE, szSetting, &dbv)) {
+    if(!DBGetContactSettingString(NULL, CLVM_MODULE, szSetting, &dbv)) {
         strncpy(g_CluiData.varFilter, dbv.pszVal, sizeof(g_CluiData.varFilter));
         g_CluiData.varFilter[sizeof(g_CluiData.varFilter) - 1] = 0;
         if(lstrlenA(g_CluiData.varFilter) > 10 && ServiceExists(MS_VARS_FORMATSTRING))
@@ -1272,4 +1272,5 @@ void ApplyViewMode(const char *name)
 
     DBWriteContactSettingString(NULL, "CList", "LastViewMode", g_CluiData.current_viewmode);
 }
+
 

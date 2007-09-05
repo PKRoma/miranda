@@ -470,9 +470,9 @@ void GetExtendedInfo(struct ClcContact *contact, struct ClcData *dat)
     g_ExtraCache[index].iExtraValid &= ~(EIMG_SHOW_MAIL | EIMG_SHOW_SMS | EIMG_SHOW_URL);
     g_ExtraCache[index].iExtraImage[EIMG_MAIL] = g_ExtraCache[index].iExtraImage[EIMG_URL] = g_ExtraCache[index].iExtraImage[EIMG_SMS] = 0xff;
 
-    if(!DBGetContactSetting(contact->hContact, contact->proto, "e-mail", &dbv) && lstrlenA(dbv.pszVal) > 1)
+    if(!DBGetContactSettingString(contact->hContact, contact->proto, "e-mail", &dbv) && lstrlenA(dbv.pszVal) > 1)
         g_ExtraCache[index].iExtraImage[EIMG_MAIL] = 0;
-    else if(!DBGetContactSetting(contact->hContact, "UserInfo", "Mye-mail0", &dbv) && lstrlenA(dbv.pszVal) > 1)
+    else if(!DBGetContactSettingString(contact->hContact, "UserInfo", "Mye-mail0", &dbv) && lstrlenA(dbv.pszVal) > 1)
         g_ExtraCache[index].iExtraImage[EIMG_MAIL] = 0;
 
     if(dbv.pszVal) {
@@ -480,9 +480,9 @@ void GetExtendedInfo(struct ClcContact *contact, struct ClcData *dat)
         dbv.pszVal = NULL;
     }
 
-    if(!DBGetContactSetting(contact->hContact, contact->proto, "Homepage", &dbv) && lstrlenA(dbv.pszVal) > 1)
+    if(!DBGetContactSettingString(contact->hContact, contact->proto, "Homepage", &dbv) && lstrlenA(dbv.pszVal) > 1)
         g_ExtraCache[index].iExtraImage[EIMG_URL] = 1;
-    else if(!DBGetContactSetting(contact->hContact, "UserInfo", "Homepage", &dbv) && lstrlenA(dbv.pszVal) > 1)
+    else if(!DBGetContactSettingString(contact->hContact, "UserInfo", "Homepage", &dbv) && lstrlenA(dbv.pszVal) > 1)
         g_ExtraCache[index].iExtraImage[EIMG_URL] = 1;
     
     if(dbv.pszVal) {
@@ -490,11 +490,11 @@ void GetExtendedInfo(struct ClcContact *contact, struct ClcData *dat)
         dbv.pszVal = NULL;
     }
 
-    if(!DBGetContactSetting(contact->hContact, "UserInfoEx", "Cellular", &dbv) && lstrlenA(dbv.pszVal) > 1)
+    if(!DBGetContactSettingString(contact->hContact, "UserInfoEx", "Cellular", &dbv) && lstrlenA(dbv.pszVal) > 1)
         g_ExtraCache[index].iExtraImage[EIMG_SMS] = 2;
-    else if(!DBGetContactSetting(contact->hContact, contact->proto, "Cellular", &dbv) && lstrlenA(dbv.pszVal) > 1)
+    else if(!DBGetContactSettingString(contact->hContact, contact->proto, "Cellular", &dbv) && lstrlenA(dbv.pszVal) > 1)
         g_ExtraCache[index].iExtraImage[EIMG_SMS] = 2;
-    else if(!DBGetContactSetting(contact->hContact, "UserInfo", "MyPhone0", &dbv) && lstrlenA(dbv.pszVal) > 1)
+    else if(!DBGetContactSettingString(contact->hContact, "UserInfo", "MyPhone0", &dbv) && lstrlenA(dbv.pszVal) > 1)
         g_ExtraCache[index].iExtraImage[EIMG_SMS] = 2;
     
     if(dbv.pszVal) {
