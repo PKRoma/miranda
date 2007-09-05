@@ -2132,7 +2132,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                  */
                 if(dat->hContact) {
     				DBVARIANT dbv;
-                    if(!DBGetContactSetting(dat->hContact, SRMSGMOD, "SavedMsg", &dbv)) {
+                    if(!DBGetContactSettingString(dat->hContact, SRMSGMOD, "SavedMsg", &dbv)) {
                         SETTEXTEX stx = {ST_DEFAULT, CP_UTF8};
                         int len;
                         if(dbv.type == DBVT_ASCIIZ && lstrlenA(dbv.pszVal) > 0)
@@ -2143,7 +2143,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         if(m_pContainer->hwndActive == hwndDlg)
                             UpdateReadChars(hwndDlg, dat);
     				}
-                    if(!DBGetContactSetting(dat->hContact, "UserInfo", "MyNotes", &dbv)) {
+                    if(!DBGetContactSettingString(dat->hContact, "UserInfo", "MyNotes", &dbv)) {
                         SetDlgItemTextA(hwndDlg, IDC_NOTES, dbv.pszVal);
                         DBFreeVariant(&dbv);
                     }
@@ -5226,9 +5226,8 @@ quote_from_last:
                     {
                         DBVARIANT dbv;
 
-                        if(!DBGetContactSetting(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "XStatusName", &dbv)) {
-                            if(dbv.type == DBVT_ASCIIZ)
-                                mir_snprintf(szTitle, sizeof(szTitle), Translate("Extended status for %s: %s"), dat->szNickname, dbv.pszVal);
+                        if(!DBGetContactSettingString(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "XStatusName", &dbv)) {
+                            mir_snprintf(szTitle, sizeof(szTitle), Translate("Extended status for %s: %s"), dat->szNickname, dbv.pszVal);
                             DBFreeVariant(&dbv);
                         }
                         else if(dat->xStatus > 0 && dat->xStatus <= 32)

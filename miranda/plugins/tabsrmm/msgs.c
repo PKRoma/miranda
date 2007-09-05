@@ -1024,7 +1024,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 #else
 	#define SHORT_MODULENAME "tabSRMsg"
 #endif    
-	if(DBGetContactSetting(NULL, "KnownModules", SHORT_MODULENAME, &dbv))
+	if(DBGetContactSettingString(NULL, "KnownModules", SHORT_MODULENAME, &dbv))
 		DBWriteContactSettingString(NULL, "KnownModules", SHORT_MODULENAME, "SRMsg,Tab_SRMsg,TAB_Containers,TAB_ContainersW");
 	else
 		DBFreeVariant(&dbv);
@@ -2125,5 +2125,6 @@ HICON *BTN_GetIcon(char *szIconName)
     }
     return NULL;
 }
+
 
 

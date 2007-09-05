@@ -2421,7 +2421,7 @@ panel_found:
                 szTitleFormat = MY_DBGetContactSettingString(pContainer->hContactFrom, SRMSGMOD_T, szCname);
                 pContainer->szThemeFile[0] = 0;
                 mir_snprintf(szCname, 40, "%s_theme", szSetting);
-                if(!DBGetContactSetting(pContainer->hContactFrom, SRMSGMOD_T, szCname, &dbv))
+                if(!DBGetContactSettingString(pContainer->hContactFrom, SRMSGMOD_T, szCname, &dbv))
                     szThemeName = dbv.pszVal;
                 if(dwLocalFlags == 0xffffffff || dwLocalTrans == 0xffffffff)
                     overridePerContact = 1;
@@ -2439,7 +2439,7 @@ panel_found:
                 }
                 if(szThemeName == NULL) {
                     mir_snprintf(szCname, 40, "%s%d_theme", szSetting, pContainer->iContainerIndex);
-                    if(!DBGetContactSetting(NULL, SRMSGMOD_T, szCname, &dbv))
+                    if(!DBGetContactSettingString(NULL, SRMSGMOD_T, szCname, &dbv))
                         szThemeName = dbv.pszVal;
                 }
             }
@@ -3553,7 +3553,7 @@ HMENU BuildMCProtocolMenu(HWND hwndDlg)
 
     for(i = 0; i < iNumProtos; i++) {
         mir_snprintf(szTemp, sizeof(szTemp), "Protocol%d", i);
-        if(DBGetContactSetting(dat->hContact, "MetaContacts", szTemp, &dbv))
+        if(DBGetContactSettingString(dat->hContact, "MetaContacts", szTemp, &dbv))
             continue;
 #if defined(_UNICODE)
         tzProtoName = (TCHAR *)CallService(MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)dbv.pszVal);
@@ -3720,4 +3720,5 @@ void UpdateContainerMenu(HWND hwndDlg, struct MessageWindowData *dat)
     if(dat->bType == SESSIONTYPE_IM)
         EnableWindow(GetDlgItem(hwndDlg, IDC_TIME), fDisable ? FALSE : TRUE);
 }
+
 

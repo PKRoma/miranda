@@ -211,7 +211,7 @@ void DM_SetDBButtonStates(HWND hwndChild, struct MessageWindowData *dat)
         if(buttonItem->type == DBVT_ASCIIZ) {
             DBVARIANT dbv = {0};
 
-            if(!DBGetContactSetting(hFinalContact, szModule, szSetting, &dbv)) {
+            if(!DBGetContactSettingString(hFinalContact, szModule, szSetting, &dbv)) {
                 result = !strcmp((char *)buttonItem->bValuePush, dbv.pszVal);
                 DBFreeVariant(&dbv);
             }
@@ -306,8 +306,8 @@ LRESULT DM_LoadLocale(HWND hwndDlg, struct MessageWindowData *dat)
             char szKLName[KL_NAMELENGTH+1];
             UINT flags = KLF_ACTIVATE;
 
-            res = DBGetContactSetting(dat->hContact, SRMSGMOD_T, "locale", &dbv);
-            if (res == 0 && dbv.type == DBVT_ASCIIZ) {
+            res = DBGetContactSettingString(dat->hContact, SRMSGMOD_T, "locale", &dbv);
+            if (res == 0) {
 
                 dat->hkl = LoadKeyboardLayoutA(dbv.pszVal, KLF_ACTIVATE);
                 PostMessage(hwndDlg, DM_SETLOCALE, 0, 0);
@@ -813,6 +813,7 @@ int SI_DeinitStatusIcons() {
 int SI_GetStatusIconsCount() {
 	return status_icon_list_size;
 }
+
 
 
 
