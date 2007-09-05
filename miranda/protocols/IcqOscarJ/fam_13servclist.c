@@ -1482,7 +1482,7 @@ static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
   // Read nick name from DB
   if (dwUin)
   {
-    if (ICQGetContactSetting(hcontact, "Nick", &dbv))
+    if (ICQGetContactSettingString(hcontact, "Nick", &dbv))
       nNickLen = 0;
     else
     {
@@ -1565,7 +1565,7 @@ static void handleRecvAdded(unsigned char *buf, WORD wLen)
 
   if (dwUin)
   {
-    if (ICQGetContactSetting(hContact, "Nick", &dbv))
+    if (ICQGetContactSettingString(hContact, "Nick", &dbv))
       nNickLen = 0;
     else
     {

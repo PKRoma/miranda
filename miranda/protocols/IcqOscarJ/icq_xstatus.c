@@ -925,7 +925,7 @@ int IcqGetXStatusEx(WPARAM wParam, LPARAM lParam)
       {
         DBVARIANT dbv = {0};
       
-        if (!ICQGetContactSetting(hContact, DBSETTING_XSTATUSNAME, &dbv) && dbv.pszVal)
+        if (!ICQGetContactSettingString(hContact, DBSETTING_XSTATUSNAME, &dbv) && dbv.pszVal)
           strcpy(pData->pszName, dbv.pszVal);
         else 
           strcpy(pData->pszName, "");
@@ -950,7 +950,7 @@ int IcqGetXStatusEx(WPARAM wParam, LPARAM lParam)
     {
       DBVARIANT dbv = {0};
       
-      if (!ICQGetContactSetting(hContact, DBSETTING_XSTATUSMSG, &dbv) && dbv.pszVal)
+      if (!ICQGetContactSettingString(hContact, DBSETTING_XSTATUSMSG, &dbv) && dbv.pszVal)
         strcpy(pData->pszMessage, dbv.pszVal);
       else
         strcpy(pData->pszMessage, "");
@@ -975,7 +975,7 @@ int IcqGetXStatusEx(WPARAM wParam, LPARAM lParam)
 
     if (pData->wParam)
     {
-      if (!ICQGetContactSetting(hContact, DBSETTING_XSTATUSNAME, &dbv))
+      if (!ICQGetContactSettingString(hContact, DBSETTING_XSTATUSNAME, &dbv))
       {
         *pData->wParam = strlennull(dbv.pszVal);
         ICQFreeVariant(&dbv);
@@ -985,7 +985,7 @@ int IcqGetXStatusEx(WPARAM wParam, LPARAM lParam)
     }
     if (pData->lParam)
     {
-      if (!ICQGetContactSetting(hContact, DBSETTING_XSTATUSMSG, &dbv))
+      if (!ICQGetContactSettingString(hContact, DBSETTING_XSTATUSMSG, &dbv))
       {
         *pData->lParam = strlennull(dbv.pszVal);
         ICQFreeVariant(&dbv);

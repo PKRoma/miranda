@@ -138,7 +138,20 @@ int __stdcall ICQGetContactSettingUID(HANDLE hContact, DWORD *pdwUin, uid_str* p
 
 int __stdcall ICQGetContactSetting(HANDLE hContact, const char* szSetting, DBVARIANT *dbv)
 {
-  return DBGetContactSetting(hContact, gpszICQProtoName, szSetting, dbv);
+  if (bUtfReadyDB)
+    return DBGetContactSettingW(hContact, gpszICQProtoName, szSetting, dbv);
+  else
+    return DBGetContactSetting(hContact, gpszICQProtoName, szSetting, dbv);
+}
+
+
+
+int __stdcall ICQGetContactSettingString(HANDLE hContact, const char* szSetting, DBVARIANT *dbv)
+{
+  if (bUtfReadyDB)
+    return DBGetContactSettingString(hContact, gpszICQProtoName, szSetting, dbv);
+  else
+    return ICQGetContactSetting(hContact, szSetting, dbv);
 }
 
 

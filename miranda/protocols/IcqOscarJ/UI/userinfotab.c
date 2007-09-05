@@ -292,6 +292,7 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
       break;
       
     case DBVT_ASCIIZ:
+    case DBVT_WCHAR:
       unspecified = (special == SVS_ZEROISUNSPEC && dbv.pszVal[0] == '\0');
       if (!unspecified && pstr != szSetting)
       {
@@ -305,7 +306,7 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
       
     default:
       pstr = str;
-      lstrcpy(str,"???");
+      strcpy(str,"???");
       break;
     }
   }

@@ -190,7 +190,7 @@ char* loadMyAvatarFileName()
 {
   DBVARIANT dbvFile = {0};
  
-  if (!ICQGetContactSetting(NULL, "AvatarFile", &dbvFile))
+  if (!ICQGetContactSettingString(NULL, "AvatarFile", &dbvFile))
   {
     char tmp[MAX_PATH];;
 
