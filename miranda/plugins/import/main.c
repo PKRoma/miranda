@@ -298,14 +298,14 @@ HANDLE HContactFromID(char* pszProtoName, char* pszSetting, char* pszID)
 		char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 		if ( !lstrcmpA(szProto, pszProtoName)) {
 			DBVARIANT dbv;
-			if (DBGetContactSetting(hContact, pszProtoName, pszSetting, &dbv) == 0) {
-				if (dbv.type==DBVT_ASCIIZ) {
-					if (strcmp(pszID, dbv.pszVal) == 0) {
-						mir_free(dbv.pszVal);
-						return hContact;
-					}
-					mir_free(dbv.pszVal);
-		}	}	}
+			if (DBGetContactSettingString(hContact, pszProtoName, pszSetting, &dbv) == 0) {
+                if (strcmp(pszID, dbv.pszVal) == 0) {
+                    mir_free(dbv.pszVal);
+                    return hContact;
+                }
+				DBFreeVariant(&dbv);
+            }	
+        }
 
 		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
 	}
@@ -383,7 +383,7 @@ int GroupNameExists(const char* name)
 
 	for (i = 0; ; i++) {
 		itoa(i, idstr, 10);
-		if (DBGetContactSetting(NULL, "CListGroups", idstr, &dbv))
+		if (DBGetContactSettingString(NULL, "CListGroups", idstr, &dbv))
 			break;
 
 		if ( !lstrcmpA( dbv.pszVal + 1, name )) {
@@ -411,7 +411,7 @@ int CreateGroup(HWND hdlgProgress, BYTE type, const char* name)
 		char groupIdStr[11];
 		for (groupId = 0; ; groupId++) {
 			itoa(groupId, groupIdStr,10);
-			if (DBGetContactSetting(NULL, "CListGroups", groupIdStr, &dbv))
+			if (DBGetContactSettingString(NULL, "CListGroups", groupIdStr, &dbv))
 				break;
 			DBFreeVariant(&dbv);
 		}
