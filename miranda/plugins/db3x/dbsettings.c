@@ -44,6 +44,7 @@ struct SettingsGroupOfsCacheEntry {
 };
 static struct SettingsGroupOfsCacheEntry settingsGroupOfsCache[SETTINGSGROUPOFSCOUNT];
 static int nextSGOCacheEntry;
+static int mirCp = CP_ACP;
 
 //this function caches results
 static DWORD GetSettingsGroupOfsByModuleNameOfs(struct DBContact *dbc,DWORD ofsContact,DWORD ofsModuleName)
@@ -384,10 +385,21 @@ static int GetContactSetting(WPARAM wParam,LPARAM lParam)
 
 	if ( dgs->pValue->type == DBVT_UTF8 ) {
 		WCHAR* tmp = NULL;
-		if ( mir_utf8decode( NEWSTR_ALLOCA(dgs->pValue->pszVal), &tmp ) != NULL ) {
-			dgs->pValue->type = DBVT_WCHAR;
+		char*  p = NEWSTR_ALLOCA(dgs->pValue->pszVal);
+		if ( mir_utf8decode( p, &tmp ) != NULL ) {
+			BOOL bUsed = FALSE;
+			int  result = WideCharToMultiByte( mirCp, 0, tmp, -1, NULL, 0, "?", &bUsed );
+
 			mir_free( dgs->pValue->pszVal );
-			dgs->pValue->pwszVal = tmp;
+
+			if ( bUsed || result == 0 ) {
+				dgs->pValue->type = DBVT_WCHAR;
+				dgs->pValue->pwszVal = tmp;
+			}
+			else {
+				dgs->pValue->type = DBVT_ASCIIZ;
+				dgs->pValue->pszVal = mir_strdup( p );
+			}
 		}
 		else {
 			dgs->pValue->type = DBVT_ASCIIZ;
@@ -950,6 +962,8 @@ int InitSettings(void)
 	CreateServiceFunction(MS_DB_CONTACT_ENUMSETTINGS,EnumContactSettings);
 	CreateServiceFunction(MS_DB_SETSETTINGRESIDENT,SetSettingResident);
 	hSettingChangeEvent=CreateHookableEvent(ME_DB_CONTACT_SETTINGCHANGED);
+
+	mirCp = CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
 
 	hCacheHeap=HeapCreate(0,0,0);
 	lSettings.sortFunc=stringCompare;
