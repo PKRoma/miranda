@@ -612,7 +612,7 @@ void ShowAvatar(HWND hwndDlg, struct MessageWindowData *dat)
 		dat->avatarPic=0;
 	}
 
-	if (!DBGetContactSetting(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, &dbv)) {
+	if (!DBGetContactSettingString(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, &dbv)) {
 		if(dbv.pszVal) {
 			HANDLE hFile;
 
