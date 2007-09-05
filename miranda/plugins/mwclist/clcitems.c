@@ -180,7 +180,7 @@ static struct ClcContact * AddContactToGroup(struct ClcData *dat,struct ClcGroup
 
 	if (dat->style&CLS_SHOWSTATUSMESSAGES)
 	{
-		if (!DBGetContactSettingString(hContact, "CList", "StatusMsg", &dbv)) { //FIXME!!!!!!!!!!!!!!!!!!!!!
+		if (!DBGetContactSettingString(hContact, "CList", "StatusMsg", &dbv)) {
 			int j;
 			lstrcpynA(group->cl.items[i]->szStatusMsg, dbv.pszVal, SIZEOF(group->cl.items[i]->szStatusMsg));
 			for (j=strlen(group->cl.items[i]->szStatusMsg)-1;j>=0;j--) {

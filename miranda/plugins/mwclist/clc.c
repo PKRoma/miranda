@@ -220,7 +220,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 		if (!(dat->style&CLS_SHOWSTATUSMESSAGES)) break;
 		if(FindItem(hwnd,dat,(HANDLE)wParam,&contact,&group,NULL) && contact!=NULL) {
 			contact->flags &= ~CONTACTF_STATUSMSG;
-			if (!DBGetContactSettingString((HANDLE)wParam, "CList", "StatusMsg", &dbv)) { //FIXME!!!!!!!!!!!!!!!!!!!!!
+			if (!DBGetContactSettingString((HANDLE)wParam, "CList", "StatusMsg", &dbv)) {
 				int j;
 				if (dbv.pszVal==NULL||strlen(dbv.pszVal)==0) break;
 				lstrcpynA(contact->szStatusMsg, dbv.pszVal, SIZEOF(contact->szStatusMsg));

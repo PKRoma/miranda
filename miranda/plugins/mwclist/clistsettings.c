@@ -309,7 +309,7 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 					if (!(pdnce->Hidden == 1)) {
 
 						if(DBGetContactSettingByte((HANDLE)NULL,"CList","ShowStatusMsg",0)||DBGetContactSettingByte((HANDLE)wParam,"CList","StatusMsgAuto",0))
-							DBWriteContactSettingString((HANDLE)wParam, "CList", "StatusMsg", (char *)"");	
+							DBWriteContactSettingString((HANDLE)wParam, "CList", "StatusMsg", "");	
 
 						if (DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT))	{
 							// User's state is changing, and we are hideOffline-ing

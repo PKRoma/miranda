@@ -1156,7 +1156,7 @@ int CLUIFramesSetFrameOptions(WPARAM wParam,LPARAM lParam)
 
 		case FO_TBNAME:
 			if(lParam==(LPARAM)NULL) {ulockfrm(); return(-1);}
-			if(Frames[pos].TitleBar.tbname!=NULL) free(Frames[pos].TitleBar.tbname);
+			mir_free(Frames[pos].TitleBar.tbname);
 			Frames[pos].TitleBar.tbname=mir_tstrdup((LPTSTR)lParam);
 			ulockfrm();
 			if (Frames[pos].floating&&(Frames[pos].TitleBar.tbname!=NULL)){SetWindowText(Frames[pos].ContainerWnd,Frames[pos].TitleBar.tbname);}
@@ -1164,7 +1164,7 @@ int CLUIFramesSetFrameOptions(WPARAM wParam,LPARAM lParam)
 
 		case FO_TBTIPNAME:
 			if(lParam==(LPARAM)NULL) {ulockfrm(); return(-1);}
-			if(Frames[pos].TitleBar.tooltip!=NULL) free(Frames[pos].TitleBar.tooltip);
+			mir_free(Frames[pos].TitleBar.tooltip);
 			Frames[pos].TitleBar.tooltip=mir_tstrdup((LPTSTR)lParam);
 			UpdateTBToolTip(pos);
 			ulockfrm();
@@ -1825,17 +1825,17 @@ static int CLUIFramesRemoveFrame(WPARAM wParam,LPARAM lParam)
 
 	if (pos<0||pos>nFramescount){ulockfrm();return(-1);}
 
-	if (Frames[pos].name!=NULL) free(Frames[pos].name);
-	if (Frames[pos].TitleBar.tbname!=NULL) free(Frames[pos].TitleBar.tbname);
-	if (Frames[pos].TitleBar.tooltip!=NULL) free(Frames[pos].TitleBar.tooltip);
+	mir_free(Frames[pos].name);
+	mir_free(Frames[pos].TitleBar.tbname);
+	mir_free(Frames[pos].TitleBar.tooltip);
 
-		DestroyWindow(Frames[pos].hWnd);
-		Frames[pos].hWnd=(HWND)-1;
-		DestroyWindow(Frames[pos].TitleBar.hwnd);
-		Frames[pos].TitleBar.hwnd=(HWND)-1;
-		DestroyWindow(Frames[pos].ContainerWnd);
-		Frames[pos].ContainerWnd=(HWND)-1;
-		DestroyMenu(Frames[pos].TitleBar.hmenu);
+	DestroyWindow(Frames[pos].hWnd);
+	Frames[pos].hWnd=(HWND)-1;
+	DestroyWindow(Frames[pos].TitleBar.hwnd);
+	Frames[pos].TitleBar.hwnd=(HWND)-1;
+	DestroyWindow(Frames[pos].ContainerWnd);
+	Frames[pos].ContainerWnd=(HWND)-1;
+	DestroyMenu(Frames[pos].TitleBar.hmenu);
 
 	RemoveItemFromList(pos,&Frames,&nFramescount);
 
