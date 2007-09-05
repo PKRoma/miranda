@@ -949,7 +949,7 @@ static void sttInitFileTransfer(
 		case MSN_APPID_AVATAR2:
 			if ( !strcmp( szEufGuid, "{A4268EEC-FEC5-49E5-95C3-F126696BDBF6}" )) {
 				DBVARIANT dbv;
-				bool pictmatch = !DBGetContactSetting( NULL, msnProtocolName, "PictObject", &dbv );
+				bool pictmatch = !DBGetContactSettingString( NULL, msnProtocolName, "PictObject", &dbv );
 				if ( pictmatch ) 
 				{
 					UrlDecode(dbv.pszVal);

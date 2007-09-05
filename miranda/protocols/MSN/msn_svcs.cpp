@@ -685,7 +685,7 @@ static void __cdecl MsnGetAwayMsgThread( void* param )
 
 	AwayMsgInfo *inf = ( AwayMsgInfo* )param;
 	DBVARIANT dbv;
-	if ( !DBGetContactSetting( inf->hContact, "CList", "StatusMsg", &dbv )) {
+	if ( !DBGetContactSettingString( inf->hContact, "CList", "StatusMsg", &dbv )) {
 		MSN_SendBroadcast( inf->hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE )inf->id, ( LPARAM )dbv.pszVal );
 		MSN_FreeVariant( &dbv );
 	}

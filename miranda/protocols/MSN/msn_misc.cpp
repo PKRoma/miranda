@@ -351,7 +351,7 @@ LONG ThreadData::sendMessage( int msgType, const char* parMsg, int parFlags )
 			char* p;
 
 			DBVARIANT dbv;
-			if ( !DBGetContactSetting( NULL, "SRMsg", "Font0", &dbv )) {
+			if ( !DBGetContactSettingString( NULL, "SRMsg", "Font0", &dbv )) {
 				for ( p = dbv.pszVal; *p; p++ )
 					if ( BYTE( *p ) >= 128 || *p < 32 )
 						break;
@@ -641,7 +641,7 @@ void MsnInvokeMyURL( bool ismail, char* url )
 	char* email = ( char* )alloca( strlen( MyOptions.szEmail )*3 );
 	UrlEncode( MyOptions.szEmail, email, strlen( MyOptions.szEmail )*3 );
 
-	if ( DBGetContactSetting( NULL, msnProtocolName, "Password", &dbv ))
+	if ( DBGetContactSettingString( NULL, msnProtocolName, "Password", &dbv ))
 		return;
 
 	MSN_CallService( MS_DB_CRYPT_DECODESTRING, strlen( dbv.pszVal )+1, ( LPARAM )dbv.pszVal );
