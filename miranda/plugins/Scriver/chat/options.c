@@ -1122,7 +1122,7 @@ void LoadGlobalSettings(void)
 		char pszTemp[MAX_PATH];
 		DBVARIANT dbv;
 		g_Settings.pszLogDir = (char *)mir_realloc(g_Settings.pszLogDir, MAX_PATH);
-		if (!DBGetContactSetting(NULL, "Chat", "LogDirectory", &dbv) && dbv.type == DBVT_ASCIIZ)
+		if (!DBGetContactSettingString(NULL, "Chat", "LogDirectory", &dbv))
 		{
 			lstrcpynA(pszTemp, dbv.pszVal, MAX_PATH);
 			DBFreeVariant(&dbv);
@@ -1230,6 +1230,7 @@ int OptionsUnInit(void)
 	DeleteObject(g_Settings.NameFont);
 	return 0;
 }
+
 
 
 
