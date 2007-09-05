@@ -1847,7 +1847,7 @@ bool CMyMonitor::OnIrc_WHOIS_NO_USER( const CIrcMessage* pmsg )
 				if ( DBGetContactSettingByte( hContact, IRCPROTONAME, "AdvancedMode", 0 ) == 0 )
 					DoUserhostWithReason(1, ((TString)_T("S") + dbv.ptszVal).c_str(), true, dbv.ptszVal );
 				else {
-					if ( !DBGetContactSetting( hContact, IRCPROTONAME, "UWildcard", &dbv2 )) {
+					if ( !DBGetContactSettingTString( hContact, IRCPROTONAME, "UWildcard", &dbv2 )) {
 						DoUserhostWithReason(2, ((TString)_T("S") + dbv2.ptszVal).c_str(), true, dbv2.ptszVal );
 						DBFreeVariant(&dbv2);
 					}

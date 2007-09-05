@@ -1089,7 +1089,7 @@ static int Service_MenuPreBuild(WPARAM wParam,LPARAM lParam)
 			if (DBGetContactSettingWord( hContact, IRCPROTONAME, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE) {
 				char * host = NULL;
 				DBVARIANT dbv3;
-				if ( !DBGetContactSetting( hContact, IRCPROTONAME, "Host", &dbv3) && dbv3.type == DBVT_ASCIIZ ) {
+				if ( !DBGetContactSettingString( hContact, IRCPROTONAME, "Host", &dbv3) ) {
 					host = dbv3.pszVal;
 					clmi.pszName = LPGEN("&Add to ignore list");
 					DBFreeVariant( &dbv3 );
