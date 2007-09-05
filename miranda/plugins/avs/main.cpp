@@ -469,9 +469,9 @@ static char *getJGMailID(char *szProto)
 	DBVARIANT dbva={0}, dbvb={0};
 
 	szJID[0] = '\0';
-	if(DBGetContactSetting(NULL, szProto, "LoginName", &dbva))
+	if(DBGetContactSettingString(NULL, szProto, "LoginName", &dbva))
 		return szJID;
-	if(DBGetContactSetting(NULL, szProto, "LoginServer", &dbvb)) {
+	if(DBGetContactSettingString(NULL, szProto, "LoginServer", &dbvb)) {
 		DBFreeVariant(&dbva);
 		return szJID;
 	}
@@ -509,15 +509,15 @@ int CreateAvatarInCache(HANDLE hContact, struct avatarCacheEntry *ace, char *szP
 		}
 
         if(DBGetContactSettingByte(hContact, "ContactPhoto", "Locked", 0)
-				&& !DBGetContactSetting(hContact, "ContactPhoto", "Backup", &dbv)) {
+				&& !DBGetContactSettingString(hContact, "ContactPhoto", "Backup", &dbv)) {
             AVS_pathToAbsolute(dbv.pszVal, szFilename);
             DBFreeVariant(&dbv);
         }
-        else if(!DBGetContactSetting(hContact, "ContactPhoto", "RFile", &dbv)) {
+        else if(!DBGetContactSettingString(hContact, "ContactPhoto", "RFile", &dbv)) {
             AVS_pathToAbsolute(dbv.pszVal, szFilename);
             DBFreeVariant(&dbv);
         }
-        else if(!DBGetContactSetting(hContact, "ContactPhoto", "File", &dbv)) {
+        else if(!DBGetContactSettingString(hContact, "ContactPhoto", "File", &dbv)) {
             AVS_pathToAbsolute(dbv.pszVal, szFilename);
             DBFreeVariant(&dbv);
         }
@@ -533,7 +533,7 @@ int CreateAvatarInCache(HANDLE hContact, struct avatarCacheEntry *ace, char *szP
     }
     else {
 		if(hContact == 0) {				// create a protocol picture in the proto picture cache
-			if(!DBGetContactSetting(NULL, PPICT_MODULE, szProto, &dbv)) {
+			if(!DBGetContactSettingString(NULL, PPICT_MODULE, szProto, &dbv)) {
                 AVS_pathToAbsolute(dbv.pszVal, szFilename);
 				DBFreeVariant(&dbv);
 			}
@@ -542,7 +542,7 @@ int CreateAvatarInCache(HANDLE hContact, struct avatarCacheEntry *ace, char *szP
 											// startup and everytime they are changed.
 			if (szProto[0] == '\0') {
 				// Global avatar
-				if (!DBGetContactSetting(NULL, AVS_MODULE, "GlobalUserAvatarFile", &dbv)) {
+				if (!DBGetContactSettingString(NULL, AVS_MODULE, "GlobalUserAvatarFile", &dbv)) {
 					AVS_pathToAbsolute(dbv.pszVal, szFilename);
 					DBFreeVariant(&dbv);
 				} else
@@ -552,7 +552,7 @@ int CreateAvatarInCache(HANDLE hContact, struct avatarCacheEntry *ace, char *szP
 				if (CallProtoService(szProto, PS_GETMYAVATAR, (WPARAM)szFilename, (LPARAM)MAX_PATH)) {
 					szFilename[0] = '\0';
 				}
-			} else if(!DBGetContactSetting(NULL, szProto, "AvatarFile", &dbv)) {
+			} else if(!DBGetContactSettingString(NULL, szProto, "AvatarFile", &dbv)) {
                 AVS_pathToAbsolute(dbv.pszVal, szFilename);
 				DBFreeVariant(&dbv);
 			}
@@ -1173,7 +1173,7 @@ static void FilterGetStrings(char *filter, int bytesLeft, BOOL xml, BOOL swf)
 static void DeleteGlobalUserAvatar()
 {
 	DBVARIANT dbv = {0};
-	if (DBGetContactSetting(NULL, AVS_MODULE, "GlobalUserAvatarFile", &dbv))
+	if (DBGetContactSettingString(NULL, AVS_MODULE, "GlobalUserAvatarFile", &dbv))
 		return;
 
 	char szFilename[MAX_PATH];
@@ -1199,7 +1199,7 @@ static int InternalRemoveMyAvatar(char *protocol)
 		{
 			// Has global avatar?
 			DBVARIANT dbv = {0};
-			if (!DBGetContactSetting(NULL, AVS_MODULE, "GlobalUserAvatarFile", &dbv))
+			if (!DBGetContactSettingString(NULL, AVS_MODULE, "GlobalUserAvatarFile", &dbv))
 			{
 				DBFreeVariant(&dbv);
 				DBWriteContactSettingByte(NULL, AVS_MODULE, "GlobalUserAvatarNotConsistent", 1);
