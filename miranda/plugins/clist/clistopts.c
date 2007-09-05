@@ -262,9 +262,9 @@ static BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			DBGetContactSettingWord(NULL, "CList", "HKNetSearch", MAKEWORD('S', HOTKEYF_CONTROL | HOTKEYF_SHIFT)), 0);
 		SendDlgItemMessage(hwndDlg, IDC_HKSHOWOPTIONS, HKM_SETHOTKEY,
 			DBGetContactSettingWord(NULL, "CList", "HKShowOptions", MAKEWORD('O', HOTKEYF_CONTROL | HOTKEYF_SHIFT)), 0);
-		if (!DBGetContactSetting(NULL, "CList", "SearchUrl", &dbv)) {
+		if (!DBGetContactSettingString(NULL, "CList", "SearchUrl", &dbv)) {
 			SetDlgItemTextA(hwndDlg, IDC_SEARCHURL, dbv.pszVal);
-			mir_free(dbv.pszVal);
+			DBFreeVariant(&dbv);
 		}
 		else
 			SetDlgItemTextA(hwndDlg, IDC_SEARCHURL, "http://www.google.com/");
