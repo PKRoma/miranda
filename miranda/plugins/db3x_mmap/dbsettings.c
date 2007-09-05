@@ -26,6 +26,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 DWORD GetModuleNameOfs(const char *szName);
 DBCachedContactValueList* AddToCachedContactList(HANDLE hContact, int index);
 
+static int mirCp = CP_ACP;
+
 HANDLE hCacheHeap = NULL;
 SortedList lContacts = {0};
 HANDLE hLastCachedContact = NULL;
@@ -387,10 +389,21 @@ static int GetContactSetting(WPARAM wParam,LPARAM lParam)
 
 	if ( dgs->pValue->type == DBVT_UTF8 ) {
 		WCHAR* tmp = NULL;
-		if ( mir_utf8decode( NEWSTR_ALLOCA(dgs->pValue->pszVal), &tmp ) != NULL ) {
-			dgs->pValue->type = DBVT_WCHAR;
+		char*  p = NEWSTR_ALLOCA(dgs->pValue->pszVal);
+		if ( mir_utf8decode( p, &tmp ) != NULL ) {
+			BOOL bUsed = FALSE;
+			int  result = WideCharToMultiByte( mirCp, 0, tmp, -1, NULL, 0, "?", &bUsed );
+
 			mir_free( dgs->pValue->pszVal );
-			dgs->pValue->pwszVal = tmp;
+
+			if ( bUsed || result == 0 ) {
+				dgs->pValue->type = DBVT_WCHAR;
+				dgs->pValue->pwszVal = tmp;
+			}
+			else {
+				dgs->pValue->type = DBVT_ASCIIZ;
+				dgs->pValue->pszVal = mir_strdup( p );
+			}
 		}
 		else {
 			dgs->pValue->type = DBVT_ASCIIZ;
@@ -990,6 +1003,8 @@ int InitSettings(void)
 	lGlobalSettings.increment=50;
 	lResidentSettings.sortFunc=stringCompare2;
 	lResidentSettings.increment=50;
+
+	mirCp = CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
 	return 0;
 }
 
