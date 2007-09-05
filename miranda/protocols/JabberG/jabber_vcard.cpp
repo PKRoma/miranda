@@ -389,7 +389,7 @@ static BOOL CALLBACK EditEmailDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 			SetWindowText( hwndDlg, TranslateT( "Jabber vCard: Edit Email Address" ));
 			wsprintfA( idstr, "e-mail%d", lParam );
-			if ( !DBGetContactSetting( NULL, jabberProtoName, idstr, &dbv )) {
+			if ( !DBGetContactSettingString( NULL, jabberProtoName, idstr, &dbv )) {
 				SetDlgItemTextA( hwndDlg, IDC_EMAIL, dbv.pszVal );
 				JFreeVariant( &dbv );
 				wsprintfA( idstr, "e-mailFlag%d", lParam );
@@ -414,7 +414,7 @@ static BOOL CALLBACK EditEmailDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				if ( id < 0 ) {
 					for ( id=0;;id++ ) {
 						mir_snprintf( idstr, SIZEOF(idstr), "e-mail%d", id );
-						if ( DBGetContactSetting( NULL, jabberProtoName, idstr, &dbv )) break;
+						if ( DBGetContactSettingString( NULL, jabberProtoName, idstr, &dbv )) break;
 						JFreeVariant( &dbv );
 				}	}
 				GetDlgItemText( hwndDlg, IDC_EMAIL, text, SIZEOF( text ));
@@ -451,7 +451,7 @@ static BOOL CALLBACK EditPhoneDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 			SetWindowText( hwndDlg, TranslateT( "Jabber vCard: Edit Phone Number" ));
 			wsprintfA( idstr, "Phone%d", lParam );
-			if ( !DBGetContactSetting( NULL, jabberProtoName, idstr, &dbv )) {
+			if ( !DBGetContactSettingString( NULL, jabberProtoName, idstr, &dbv )) {
 				SetDlgItemTextA( hwndDlg, IDC_PHONE, dbv.pszVal );
 				JFreeVariant( &dbv );
 				wsprintfA( idstr, "PhoneFlag%d", lParam );
@@ -484,7 +484,7 @@ static BOOL CALLBACK EditPhoneDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				if ( id < 0 ) {
 					for ( id=0;;id++ ) {
 						wsprintfA( idstr, "Phone%d", id );
-						if ( DBGetContactSetting( NULL, jabberProtoName, idstr, &dbv )) break;
+						if ( DBGetContactSettingString( NULL, jabberProtoName, idstr, &dbv )) break;
 						JFreeVariant( &dbv );
 					}
 				}
@@ -663,7 +663,7 @@ static BOOL CALLBACK ContactDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 								WORD nFlag;
 
 								wsprintfA( idstr, szIdTemplate, i+1 );
-								if ( DBGetContactSetting( NULL, jabberProtoName, idstr, &dbv )) break;
+								if ( DBGetContactSettingString( NULL, jabberProtoName, idstr, &dbv )) break;
 								wsprintfA( idstr,szIdTemplate,i );
 								JSetString( NULL, idstr, dbv.pszVal );
 								wsprintfA( idstr, szFlagTemplate, i+1 );
