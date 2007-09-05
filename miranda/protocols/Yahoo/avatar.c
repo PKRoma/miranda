@@ -292,7 +292,7 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 			/* need to read CheckSum */
 			cksum = YAHOO_GetDword("AvatarHash", 0);
 			if (cksum) {
-				if (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarURL", &dbv)) {
+				if (!DBGetContactSettingString(NULL, yahooProtocolName, "AvatarURL", &dbv)) {
 					LOG(("[ext_yahoo_got_picture] Sending url: %s checksum: %d to '%s'!", dbv.pszVal, cksum, who));
 					//void yahoo_send_picture_info(int id, const char *me, const char *who, const char *pic_url, int cksum)
 					yahoo_send_picture_info(id, who, 2, dbv.pszVal, cksum);
@@ -306,7 +306,7 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 				 */
 				if (YAHOO_GetByte("AvatarUL", 0) != 1){
 					// NO avatar URL??
-					if (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarFile", &dbv)) {
+					if (!DBGetContactSettingString(NULL, yahooProtocolName, "AvatarFile", &dbv)) {
 						struct _stat statbuf;
 						
 						if (_stat( dbv.pszVal, &statbuf ) != 0 ) {
@@ -393,7 +393,7 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 			
 			LOG(("[ext_yahoo_got_picture] My Checksum: %d", mcksum));
 			
-			if (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarURL", &dbv)){
+			if (!DBGetContactSettingString(NULL, yahooProtocolName, "AvatarURL", &dbv)){
 					if (lstrcmpi(pic_url, dbv.pszVal) == 0) {
 						DBVARIANT dbv2;
 						/*time_t  ts;
@@ -418,7 +418,7 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 						LOG(("[ext_yahoo_got_picture] Buddy: %s told us this is bad??Expired??. Re-uploading", who));
 						DBDeleteContactSetting(NULL, yahooProtocolName, "AvatarURL");
 						
-						if (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarFile", &dbv2)) {
+						if (!DBGetContactSettingString(NULL, yahooProtocolName, "AvatarFile", &dbv2)) {
 							DBWriteContactSettingString(NULL, yahooProtocolName, "AvatarInv", who);
 							YAHOO_SendAvatar(dbv2.pszVal);
 							DBFreeVariant(&dbv2);
@@ -574,7 +574,7 @@ void YAHOO_bcast_picture_update(int buddy_icon)
 			if (YAHOO_GetWord(hContact, "Status", ID_STATUS_OFFLINE)!=ID_STATUS_OFFLINE) {
 							DBVARIANT dbv;
 
-				if ( DBGetContactSetting( hContact, yahooProtocolName, YAHOO_LOGINID, &dbv ))
+				if ( DBGetContactSettingString( hContact, yahooProtocolName, YAHOO_LOGINID, &dbv ))
 					continue;
 
 				yahoo_send_picture_update(ylad->id, dbv.pszVal, buddy_icon);
@@ -609,7 +609,7 @@ void YAHOO_bcast_picture_checksum(int cksum)
 			if (YAHOO_GetWord(hContact, "Status", ID_STATUS_OFFLINE)!=ID_STATUS_OFFLINE) {
 							DBVARIANT dbv;
 
-				if ( DBGetContactSetting( hContact, yahooProtocolName, YAHOO_LOGINID, &dbv ))
+				if ( DBGetContactSettingString( hContact, yahooProtocolName, YAHOO_LOGINID, &dbv ))
 					continue;
 
 				yahoo_send_picture_checksum(ylad->id, dbv.pszVal, cksum);
@@ -648,7 +648,7 @@ int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 	DBVARIANT dbv;
 	int avtType;
 	
-	if (!DBGetContactSetting(AI->hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
+	if (!DBGetContactSettingString(AI->hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
 		YAHOO_DebugLog("[YAHOO_GETAVATARINFO] For: %s", dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}else {
@@ -690,7 +690,7 @@ int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 		} else if ( yahooLoggedIn ) {
 			DBVARIANT dbv;
   
-			if (!DBGetContactSetting(AI->hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
+			if (!DBGetContactSettingString(AI->hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
 				YAHOO_DebugLog("[YAHOO_GETAVATARINFO] Requesting avatar!");
 				
 				YAHOO_request_avatar(dbv.pszVal);
@@ -785,7 +785,7 @@ int YahooGetMyAvatar(WPARAM wParam, LPARAM lParam)
 
 		if (YAHOO_GetDword("AvatarHash", 0)){
 			
-			if (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarFile", &dbv)){
+			if (!DBGetContactSettingString(NULL, yahooProtocolName, "AvatarFile", &dbv)){
 				if (access(dbv.pszVal, 0) == 0){
 					strncpy(buffer, dbv.pszVal, size-1);
 					buffer[size-1] = '\0';

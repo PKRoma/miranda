@@ -201,9 +201,9 @@ void YAHOO_remove_buddy(const char *who)
 	
 	hContact = getbuddyH(who);
 
-	//if ( DBGetContactSetting( hContact, "Clist", "Group", &dbv ))
+	//if ( DBGetContactSettingString( hContact, "Clist", "Group", &dbv ))
 	//	return;
-	if ( DBGetContactSetting( hContact, yahooProtocolName, "YGroup", &dbv )) {
+	if ( DBGetContactSettingString( hContact, yahooProtocolName, "YGroup", &dbv )) {
 		LOG(("WARNING NO DATABASE GROUP  using 'miranda'!"));
 		yahoo_remove_buddy(ylad->id, who, "miranda");
 		return;
@@ -266,7 +266,7 @@ HANDLE getbuddyH(const char *yahoo_id)
 		if ( szProto != NULL && !lstrcmp( szProto, yahooProtocolName ))
 		{
 			DBVARIANT dbv;
-			if ( DBGetContactSetting( hContact, yahooProtocolName, YAHOO_LOGINID, &dbv ))
+			if ( DBGetContactSettingString( hContact, yahooProtocolName, YAHOO_LOGINID, &dbv ))
 				continue;
 
 			{	
@@ -330,7 +330,7 @@ const char *find_buddy( const char *yahoo_id)
 	
 	hContact = getbuddyH(yahoo_id);
 	if (hContact != NULL) {
-		if ( DBGetContactSetting( hContact, yahooProtocolName, "Nick", &dbv ))
+		if ( DBGetContactSettingString( hContact, yahooProtocolName, "Nick", &dbv ))
 			return NULL;
 	
 		strncpy(nick, dbv.pszVal, 128);
@@ -523,7 +523,7 @@ void ext_yahoo_got_picture_upload(int id, const char *me, const char *url,unsign
 	YAHOO_SetString(NULL, "AvatarURL", url);
 	//YAHOO_SetDword("AvatarExpires", ts);
 
-	if  (!DBGetContactSetting(NULL, yahooProtocolName, "AvatarInv", &dbv) ){
+	if  (!DBGetContactSettingString(NULL, yahooProtocolName, "AvatarInv", &dbv) ){
 		LOG(("[ext_yahoo_got_picture_upload] Buddy: %s told us this is bad??", dbv.pszVal));
 
 		LOG(("[ext_yahoo_got_picture] Sending url: %s checksum: %d to '%s'!", url, cksum, dbv.pszVal));
@@ -563,7 +563,7 @@ void ext_yahoo_got_stealth(int id, char *stealthlist)
 		szProto = ( char* )YAHOO_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 );
 		if ( szProto != NULL && !lstrcmp( szProto, yahooProtocolName )) {
 			DBVARIANT dbv;
-			if ( DBGetContactSetting( hContact, yahooProtocolName, YAHOO_LOGINID, &dbv ))
+			if ( DBGetContactSettingString( hContact, yahooProtocolName, YAHOO_LOGINID, &dbv ))
 				continue;
 
 			found = 0;
@@ -1488,7 +1488,7 @@ void ext_yahoo_login(int login_mode)
 	
 	LOG(("ext_yahoo_login"));
 
-	if (!DBGetContactSetting(NULL, yahooProtocolName, YAHOO_LOGINSERVER, &dbv)) {
+	if (!DBGetContactSettingString(NULL, yahooProtocolName, YAHOO_LOGINSERVER, &dbv)) {
         mir_snprintf(host, sizeof(host), "%s", dbv.pszVal);
         DBFreeVariant(&dbv);
     }
@@ -1539,6 +1539,7 @@ void YAHOO_refresh()
 {
 	yahoo_refresh(ylad->id);
 }
+
 
 
 
