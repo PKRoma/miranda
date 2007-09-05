@@ -255,7 +255,7 @@ void WriteThemeToINI(const char *szIniFilename, struct MessageWindowData *dat)
         for(i = 0; i < fontBlocks[n].iCount; i++) {
             sprintf(szTemp, "Font%d", firstIndex + i);
             sprintf(szAppname, fontBlocks[n].szIniTemp, firstIndex + i);
-            if(!DBGetContactSetting(NULL, szModule, szTemp, &dbv)) {
+            if(!DBGetContactSettingString(NULL, szModule, szTemp, &dbv)) {
                 WritePrivateProfileStringA(szAppname, "Face", dbv.pszVal, szIniFilename);
                 DBFreeVariant(&dbv);
             }
@@ -2008,7 +2008,7 @@ void ReloadContainerSkin(int doLoad, int onStartup)
         if(pSetLayeredWindowAttributes == 0 || MyAlphaBlend == 0)
             return;
 
-        if(!DBGetContactSetting(NULL, SRMSGMOD_T, "ContainerSkin", &dbv)) {
+        if(!DBGetContactSettingString(NULL, SRMSGMOD_T, "ContainerSkin", &dbv)) {
             MY_pathToAbsolute(dbv.pszVal, szFinalPath);
             LoadSkinItems(szFinalPath, onStartup);
             IMG_LoadItems(szFinalPath);

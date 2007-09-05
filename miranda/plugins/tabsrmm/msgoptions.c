@@ -192,7 +192,7 @@ void LoadLogfont(int i, LOGFONTA * lf, COLORREF * colour, char *szModule)
             lf->lfCharSet = SYMBOL_CHARSET;
         }
         else {
-			if (DBGetContactSetting(NULL, szModule, str, &dbv)) {
+			if (DBGetContactSettingString(NULL, szModule, str, &dbv)) {
                 lstrcpynA(lf->lfFaceName, fontOptionsList[0].szDefFace, LF_FACESIZE);
 				lf->lfFaceName[LF_FACESIZE - 1] = 0;
 			}
@@ -1438,7 +1438,7 @@ static BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
             CheckDlgButton(hwndDlg, IDC_SKIN_LOADFONTS, loadMode & THEME_READ_FONTS);
             CheckDlgButton(hwndDlg, IDC_SKIN_LOADTEMPLATES, loadMode & THEME_READ_TEMPLATES);
 
-            if(!DBGetContactSetting(NULL, SRMSGMOD_T, "ContainerSkin", &dbv)) {
+            if(!DBGetContactSettingString(NULL, SRMSGMOD_T, "ContainerSkin", &dbv)) {
                 if(lstrlenA(dbv.pszVal) > 4)
                     SetDlgItemTextA(hwndDlg, IDC_SKINFILENAME, dbv.pszVal);
                 DBFreeVariant(&dbv);
@@ -1503,7 +1503,7 @@ static BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
                             int skinChanged = 0;
                             DBVARIANT dbv = {0};
 
-                            if(!DBGetContactSetting(NULL, SRMSGMOD_T, "ContainerSkin", &dbv)) {
+                            if(!DBGetContactSettingString(NULL, SRMSGMOD_T, "ContainerSkin", &dbv)) {
                                 if(strcmp(dbv.pszVal, final_path))
                                     skinChanged = TRUE;
                                 DBFreeVariant(&dbv);
@@ -1847,7 +1847,7 @@ void GetDefaultContainerTitleFormat()
 	}
 	myGlobals.szDefaultTitleFormat[255] = 0;
 #else
-	if(DBGetContactSetting(NULL, SRMSGMOD_T, "titleformat", &dbv)) {
+	if(DBGetContactSettingString(NULL, SRMSGMOD_T, "titleformat", &dbv)) {
         DBWriteContactSettingString(NULL, SRMSGMOD_T, "titleformat", "%n - %s");
 		_tcsncpy(myGlobals.szDefaultTitleFormat, "%n - %s", sizeof(myGlobals.szDefaultTitleFormat));
 	}
