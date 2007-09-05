@@ -250,7 +250,7 @@ LBL_Continue:
 
 			GetDlgItemTextA( hwndDlg, IDC_PASSWORD, password, sizeof( password ));
 			MSN_CallService( MS_DB_CRYPT_ENCODESTRING, sizeof( password ),( LPARAM )password );
-			if ( !DBGetContactSetting( NULL, msnProtocolName, "Password", &dbv )) {
+			if ( !DBGetContactSettingString( NULL, msnProtocolName, "Password", &dbv )) {
 				if ( lstrcmpA( password, dbv.pszVal )) {
 					reconnectRequired = true;
 					MSN_SetString( NULL, "Password", password );
@@ -317,7 +317,7 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 		{
 			int tUseGateway = MSN_GetByte( "UseGateway", 0 );
 			CheckDlgButton( hwndDlg, IDC_USEGATEWAY, tUseGateway );
-			if ( !DBGetContactSetting( NULL, msnProtocolName, "LoginServer", &dbv )) {
+			if ( !DBGetContactSettingString( NULL, msnProtocolName, "LoginServer", &dbv )) {
 				SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, dbv.pszVal );
 				MSN_FreeVariant( &dbv );
 			}
@@ -411,7 +411,7 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 						SetDlgItemInt( hwndDlg, IDC_MSNPORT, MSN_DEFAULT_GATEWAY_PORT, FALSE );
 					}
 					else {
-						if ( !DBGetContactSetting( NULL, msnProtocolName, "LoginServer", &dbv )) {
+						if ( !DBGetContactSettingString( NULL, msnProtocolName, "LoginServer", &dbv )) {
 							SetWindowTextA( tWindow, dbv.pszVal );
 							MSN_FreeVariant( &dbv );
 						}
