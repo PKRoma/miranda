@@ -9,7 +9,7 @@ void __cdecl aim_proxy_helper(HANDLE hContact)
 		char cookie[8];
 		read_cookie(hContact,cookie);
 		DBVARIANT dbv;//CHECK FOR FREE VARIANT!
-		if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+		if (!DBGetContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 		{
 			
 			if(stage==1&&!sender||stage==2&&sender||stage==3&&!sender)
@@ -100,7 +100,7 @@ void __cdecl aim_proxy_helper(HANDLE hContact)
 						unsigned long* ip=(unsigned long*)&packetRecv.buffer[14];
 						*port=_htons(*port);
 						*ip=_htonl(*ip);
-						if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+						if (!DBGetContactSettingString(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 						{
 							if(stage==1&&sender)
 							{
@@ -112,11 +112,11 @@ void __cdecl aim_proxy_helper(HANDLE hContact)
 								unsigned long size;
 								long_ip_to_char_ip(*ip,vip);
 								DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_IP,vip);
-								if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FN, &dbv))
+								if (!DBGetContactSettingString(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FN, &dbv))
 								{
 									file=strldup(dbv.pszVal,lstrlen(dbv.pszVal));
 									DBFreeVariant(&dbv);
-									if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FD, &dbv))
+									if (!DBGetContactSettingString(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FD, &dbv))
 									{
 										descr=strldup(dbv.pszVal,lstrlen(dbv.pszVal));
 										DBFreeVariant(&dbv);
@@ -156,14 +156,14 @@ void __cdecl aim_proxy_helper(HANDLE hContact)
 					}
 					else if(*type==0x0005)
 					{
-						if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_IP, &dbv))
+						if (!DBGetContactSettingString(hContact, AIM_PROTOCOL_NAME, AIM_KEY_IP, &dbv))
 						{
 							unsigned long ip=char_ip_to_long_ip(dbv.pszVal);
 							DBWriteContactSettingDword(NULL,FILE_TRANSFER_KEY,dbv.pszVal,(DWORD)hContact);
 							DBFreeVariant(&dbv);
 							if(stage==1&&!sender||stage==2&&sender||stage==3&&!sender)
 							{
-								if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+								if (!DBGetContactSettingString(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 								{
 									aim_accept_file(conn.hServerConn,conn.seqno,dbv.pszVal,cookie);
 									DBFreeVariant(&dbv);

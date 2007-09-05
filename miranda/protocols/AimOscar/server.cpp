@@ -131,12 +131,12 @@ void snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 					{
 						if(!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_AI,0))
 						{
-							if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_AD,&dbv))
+							if(!DBGetContactSettingString(NULL,MOD_KEY_SA,OTH_KEY_AD,&dbv))
 							{
 								assign_modmsg(dbv.pszVal);
 								DBFreeVariant(&dbv);
 							}
-							if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_AM,&dbv))
+							if(!DBGetContactSettingString(NULL,MOD_KEY_SA,OTH_KEY_AM,&dbv))
 							{
 								assign_modmsg(dbv.pszVal);
 								DBFreeVariant(&dbv);
@@ -151,12 +151,12 @@ void snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 					{
 						if(!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_DI,0))
 						{
-							if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_DD,&dbv))
+							if(!DBGetContactSettingString(NULL,MOD_KEY_SA,OTH_KEY_DD,&dbv))
 							{
 								assign_modmsg(dbv.pszVal);
 								DBFreeVariant(&dbv);
 							}
-							else if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_DM,&dbv))
+							else if(!DBGetContactSettingString(NULL,MOD_KEY_SA,OTH_KEY_DM,&dbv))
 							{
 								assign_modmsg(dbv.pszVal);
 								DBFreeVariant(&dbv);
@@ -171,7 +171,7 @@ void snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 					{
 						if(!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_OI,0))
 						{
-							if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_OD,&dbv))
+							if(!DBGetContactSettingString(NULL,MOD_KEY_SA,OTH_KEY_OD,&dbv))
 							{
 								assign_modmsg(dbv.pszVal);
 								DBFreeVariant(&dbv);
@@ -191,12 +191,12 @@ void snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 					{
 						if(!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_PI,0))
 						{
-							if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_PD,&dbv))
+							if(!DBGetContactSettingString(NULL,MOD_KEY_SA,OTH_KEY_PD,&dbv))
 							{
 								assign_modmsg(dbv.pszVal);
 								DBFreeVariant(&dbv);
 							}
-							else if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_PM,&dbv))
+							else if(!DBGetContactSettingString(NULL,MOD_KEY_SA,OTH_KEY_PM,&dbv))
 							{
 								assign_modmsg(dbv.pszVal);
 								DBFreeVariant(&dbv);
@@ -211,7 +211,7 @@ void snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 					{
 						if(!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_NI,0))
 						{
-							if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_ND,&dbv))
+							if(!DBGetContactSettingString(NULL,MOD_KEY_SA,OTH_KEY_ND,&dbv))
 							{
 								assign_modmsg(dbv.pszVal);
 								DBFreeVariant(&dbv);
@@ -231,12 +231,12 @@ void snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)/
 					{
 						if(!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_LI,0))
 						{
-							if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_LD,&dbv))
+							if(!DBGetContactSettingString(NULL,MOD_KEY_SA,OTH_KEY_LD,&dbv))
 							{
 								assign_modmsg(dbv.pszVal);
 								DBFreeVariant(&dbv);
 							}
-							else if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_LM,&dbv))
+							else if(!DBGetContactSettingString(NULL,MOD_KEY_SA,OTH_KEY_LM,&dbv))
 							{
 								assign_modmsg(dbv.pszVal);
 								DBFreeVariant(&dbv);

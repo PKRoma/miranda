@@ -111,7 +111,7 @@ int ModulesLoaded(WPARAM /*wParam*/,LPARAM /*lParam*/)
 	nlu.minIncomingPorts = 1;
 	conn.hNetlibPeer = (HANDLE) CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM) & nlu);
 	
-	if (DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HN, &dbv))
+	if (DBGetContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HN, &dbv))
 		DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HN, AIM_DEFAULT_SERVER);
 	else
 		DBFreeVariant(&dbv);
@@ -119,9 +119,9 @@ int ModulesLoaded(WPARAM /*wParam*/,LPARAM /*lParam*/)
 	if(DBGetContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_GP, -1)==-1)
 		DBWriteContactSettingWord(NULL, AIM_PROTOCOL_NAME, AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
 
-	if(DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PW, &dbv))
+	if(DBGetContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PW, &dbv))
 	{
-		if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, OLD_KEY_PW, &dbv))
+		if (!DBGetContactSettingString(NULL, AIM_PROTOCOL_NAME, OLD_KEY_PW, &dbv))
 		{
 			DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PW, dbv.pszVal);
 			DBDeleteContactSetting(NULL, AIM_PROTOCOL_NAME, OLD_KEY_PW);

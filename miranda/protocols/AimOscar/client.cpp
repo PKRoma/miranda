@@ -190,7 +190,7 @@ int aim_set_caps(HANDLE hServerConn,unsigned short &seqno)
 	char* buf;
 	char* profile_buf=0;
 	DBVARIANT dbv;
-	if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PR, &dbv))
+	if (!DBGetContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PR, &dbv))
 	{
 		profile_buf=strip_linebreaks(dbv.pszVal);
 		buf=new char[SNAC_SIZE+TLV_HEADER_SIZE*3+AIM_CAPS_LENGTH*50+lstrlen(AIM_MSG_TYPE)+lstrlen(profile_buf)];

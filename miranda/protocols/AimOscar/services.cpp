@@ -136,7 +136,7 @@ static int SendMsg(WPARAM /*wParam*/, LPARAM lParam)
 {
 	CCSDATA *ccs = (CCSDATA *)lParam;
 	DBVARIANT dbv;
-	if (!DBGetContactSetting(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+	if (!DBGetContactSettingString(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 	{
 		if(0==DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DC, 1))
 		{
@@ -175,7 +175,7 @@ static int SendMsgW(WPARAM /*wParam*/, LPARAM lParam)
 {
 	CCSDATA *ccs = (CCSDATA *)lParam;
 	DBVARIANT dbv;
-	if (!DBGetContactSetting(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+	if (!DBGetContactSettingString(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 	{
 		if(0==DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DC, 1))
 		{
@@ -283,7 +283,7 @@ static int GetProfile(WPARAM wParam, LPARAM /*lParam*/)
 	if (conn.state!=1)
 		return 0;
 	DBVARIANT dbv;
-	if(!DBGetContactSetting((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+	if(!DBGetContactSettingString((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 	{
 		conn.request_HTML_profile=1;
 		aim_query_profile(conn.hServerConn,conn.seqno,dbv.pszVal);
@@ -371,7 +371,7 @@ static int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 			if(cws->value.type == DBVT_DELETED)
 			{
 				DBVARIANT dbv;
-				if(!DBGetContactSetting((HANDLE)wParam,MOD_KEY_CL,OTH_KEY_GP,&dbv))
+				if(!DBGetContactSettingString((HANDLE)wParam,MOD_KEY_CL,OTH_KEY_GP,&dbv))
 				{
 					add_contact_to_group((HANDLE)wParam,dbv.pszVal);
 					DBFreeVariant(&dbv);
@@ -450,7 +450,7 @@ static int AuthRequest(WPARAM /*wParam*/,LPARAM lParam)
 		return 1;
 	CCSDATA *ccs = (CCSDATA *)lParam;
 	DBVARIANT dbv;
-	if(!DBGetContactSetting(ccs->hContact,MOD_KEY_CL,OTH_KEY_GP,&dbv))
+	if(!DBGetContactSettingString(ccs->hContact,MOD_KEY_CL,OTH_KEY_GP,&dbv))
 	{
 		add_contact_to_group(ccs->hContact,dbv.pszVal);
 		DBFreeVariant(&dbv);
@@ -464,7 +464,7 @@ int ContactDeleted(WPARAM wParam,LPARAM /*lParam*/)
 	if (conn.state!=1)
 		return 0;
 	DBVARIANT dbv;
-	if(!DBGetContactSetting((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_SN,&dbv))
+	if(!DBGetContactSettingString((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_SN,&dbv))
 	{
 		int i=1;
 		#if _MSC_VER
@@ -522,7 +522,7 @@ static int SendFile(WPARAM /*wParam*/,LPARAM lParam)
 			stat(files[0],&statbuf);
 			unsigned long pszSize = statbuf.st_size;
 			DBVARIANT dbv;
-			if (!DBGetContactSetting(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+			if (!DBGetContactSettingString(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 			{
 				for(int file_amt=0;files[file_amt];file_amt++)
 					if(file_amt==1)
@@ -610,7 +610,7 @@ static int DenyFile(WPARAM /*wParam*/, LPARAM lParam)
 {
 	CCSDATA *ccs = (CCSDATA *) lParam;
 	DBVARIANT dbv;
-	if (!DBGetContactSetting(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+	if (!DBGetContactSettingString(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 	{
 		LOG("We are denying a file transfer.");
 		char cookie[8];
@@ -625,7 +625,7 @@ static int CancelFile(WPARAM /*wParam*/, LPARAM lParam)
 {
 	CCSDATA *ccs = (CCSDATA *) lParam;
 	DBVARIANT dbv;
-	if (!DBGetContactSetting(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+	if (!DBGetContactSettingString(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 	{
 		LOG("We are cancelling a file transfer.");
 		char cookie[8];
@@ -645,7 +645,7 @@ static int CancelFile(WPARAM /*wParam*/, LPARAM lParam)
 static int UserIsTyping(WPARAM wParam, LPARAM lParam)
 {
 	DBVARIANT dbv;
-	if(!DBGetContactSetting((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+	if(!DBGetContactSettingString((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 	{
 		if(lParam==PROTOTYPE_SELFTYPING_ON)
 			aim_typing_notification(conn.hServerConn,conn.seqno,dbv.pszVal,0x0002);
@@ -660,7 +660,7 @@ static int AddToServerList(WPARAM wParam, LPARAM /*lParam*/)
 	if (conn.state!=1)
 		return 0;
 	DBVARIANT dbv;
-	if(!DBGetContactSetting((HANDLE)wParam,MOD_KEY_CL,OTH_KEY_GP,&dbv))
+	if(!DBGetContactSettingString((HANDLE)wParam,MOD_KEY_CL,OTH_KEY_GP,&dbv))
 	{
 		add_contact_to_group((HANDLE)wParam,dbv.pszVal);
 		DBFreeVariant(&dbv);
@@ -699,7 +699,7 @@ static int GetAvatarInfo(WPARAM /*wParam*/,LPARAM lParam)
 	//avatar_apply(HANDLE &hContact)
 
 //	DBVARIANT dbv;
-	//if (!DBGetContactSetting(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+	//if (!DBGetContactSettingString(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 	if(char* sn=getSetting(AI->hContact,AIM_PROTOCOL_NAME,AIM_KEY_SN))
 	{
 		if(char* photo_path=getSetting(AI->hContact,"ContactPhoto","File"))
@@ -746,7 +746,7 @@ static int GetAvatarInfo(WPARAM /*wParam*/,LPARAM lParam)
 	//AI.cbSize = sizeof AI;
 	//AI.hContact = hContact;
 	//DBVARIANT dbv;
-///	if(!DBGetContactSetting( AI->hContact, "ContactPhoto", "File",&dbv))//check for image type in db 
+///	if(!DBGetContactSettingString( AI->hContact, "ContactPhoto", "File",&dbv))//check for image type in db 
 	//{
 //		memcpy(&filetype,&filename[lstrlen(filename)]-3,4);
 	//	DBFreeVariant(&dbv);
