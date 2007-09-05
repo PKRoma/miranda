@@ -253,7 +253,7 @@ static int    ehhToolBarBackgroundSettingsChanged(WPARAM wParam, LPARAM lParam)
 		DBVARIANT dbv;
 		tbdat.mtb_bkColour=sttGetColor("ToolBar","BkColour",CLCDEFAULT_BKCOLOUR);
 		if(DBGetContactSettingByte(NULL,"ToolBar","UseBitmap",CLCDEFAULT_USEBITMAP)) {
-			if(!DBGetContactSetting(NULL,"ToolBar","BkBitmap",&dbv)) {
+			if(!DBGetContactSettingString(NULL,"ToolBar","BkBitmap",&dbv)) {
 				tbdat.mtb_hBmpBackground=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}

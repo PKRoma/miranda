@@ -716,7 +716,7 @@ void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 			{	
 				if(DBGetContactSettingByte(NULL,"CLC","UseBitmap",CLCDEFAULT_USEBITMAP)) 
 				{
-					if(!DBGetContactSetting(NULL,"CLC","BkBitmap",&dbv)) 
+					if(!DBGetContactSettingString(NULL,"CLC","BkBitmap",&dbv)) 
 					{
 						dat->hBmpBackground=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);				
 						DBFreeVariant(&dbv);						
@@ -732,7 +732,7 @@ void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 		dat->MenuTextHiColor=sttGetColor("Menu","SelTextColour",CLCDEFAULT_SELTEXTCOLOUR);
 		
 		if(DBGetContactSettingByte(NULL,"Menu","UseBitmap",CLCDEFAULT_USEBITMAP)) {
-			if(!DBGetContactSetting(NULL,"Menu","BkBitmap",&dbv)) {
+			if(!DBGetContactSettingString(NULL,"Menu","BkBitmap",&dbv)) {
 				dat->hMenuBackground=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);
 				//mir_free_and_nill(dbv.pszVal);
 				DBFreeVariant(&dbv);

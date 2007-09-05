@@ -191,7 +191,7 @@ void cliTrayIconUpdateBase(const char *szChangedProto)
 				{
 					DBVARIANT dbv={DBVT_DELETED};
 					char *szProto;
-					if(DBGetContactSetting(NULL,"CList","PrimaryStatus",&dbv)) szProto=NULL;
+					if(DBGetContactSettingString(NULL,"CList","PrimaryStatus",&dbv)) szProto=NULL;
 					else szProto=dbv.pszVal;
 					changed=pcli->pfnTrayIconSetBaseInfo(cliGetIconFromStatusMode(NULL,szProto,averageMode),NULL);
 					if (szProto) mir_free_and_nill(szProto);
@@ -207,7 +207,7 @@ void cliTrayIconUpdateBase(const char *szChangedProto)
 					DBVARIANT dbv={DBVT_DELETED};
 					char *szProto;
 					int status;
-					if(DBGetContactSetting(NULL,"CList","PrimaryStatus",&dbv)) szProto=NULL;
+					if(DBGetContactSettingString(NULL,"CList","PrimaryStatus",&dbv)) szProto=NULL;
 					else szProto=dbv.pszVal;
 					status=CallProtoService(szChangedProto,PS_GETSTATUS,0,0);
 
