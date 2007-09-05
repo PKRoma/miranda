@@ -2372,7 +2372,7 @@ static int CLUI_MenuItem_PreBuild(WPARAM wParam, LPARAM lParam)
 		else
 		{
 			DBVARIANT dbv={0};
-			if (DBGetContactSetting(hItem, "ContactPhoto", "File", &dbv))
+			if (DBGetContactSettingString(hItem, "ContactPhoto", "File", &dbv))
 			{
 				has_avatar = 0;
 			}

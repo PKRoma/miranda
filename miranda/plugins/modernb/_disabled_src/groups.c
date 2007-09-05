@@ -34,7 +34,7 @@ static int CountGroups(void)
 
 	for(i=0;;i++) {
 		itoa(i,str,10);
-		if (DBGetContactSetting(NULL, "CListGroups", str, &dbv))
+		if (DBGetContactSettingTString(NULL, "CListGroups", str, &dbv))
 			break;
 		DBFreeVariant(&dbv);
 	}
@@ -99,7 +99,7 @@ static int GetGroupName2(WPARAM wParam,LPARAM lParam)
 	static char name[128];
 
 	itoa(wParam-1,idstr,10);
-	if(DBGetContactSetting(NULL,"CListGroups",idstr,&dbv))
+	if(DBGetContactSettingTString(NULL,"CListGroups",idstr,&dbv))
 		    return (int)(char*)NULL;
 	lstrcpynA(name, dbv.pszVal + 1, SIZEOF(name));
 	if ((DWORD *) lParam != NULL)

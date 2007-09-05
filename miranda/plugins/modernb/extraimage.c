@@ -348,10 +348,10 @@ void ExtraImage_SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 			if (ExtraImage_ExtraIDToColumnNum(EXTRA_ICON_EMAIL)!=-1)
 			{
 
-				if (szProto == NULL || DBGetContactSetting(hContact, szProto, "e-mail",&dbv)) 
+				if (szProto == NULL || DBGetContactSettingString(hContact, szProto, "e-mail",&dbv)) 
 				{
 					DBFreeVariant(&dbv);
-					if (DBGetContactSetting(hContact, "UserInfo", "Mye-mail0", &dbv))
+					if (DBGetContactSettingString(hContact, "UserInfo", "Mye-mail0", &dbv))
 						showemail=FALSE;					
 				}
 				SendMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraImage_ExtraIDToColumnNum(EXTRA_ICON_EMAIL),(showemail)?0:0xFF));	
@@ -365,10 +365,10 @@ void ExtraImage_SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 			showsms=TRUE;
 			if (ExtraImage_ExtraIDToColumnNum(EXTRA_ICON_SMS)!=-1)
 			{
-				if (szProto == NULL || DBGetContactSetting(hContact, szProto, "Cellular",&dbv)) 
+				if (szProto == NULL || DBGetContactSettingString(hContact, szProto, "Cellular",&dbv)) 
 				{
 					DBFreeVariant(&dbv);
-					if (DBGetContactSetting(hContact, "UserInfo", "MyPhone0", &dbv))
+					if (DBGetContactSettingString(hContact, "UserInfo", "MyPhone0", &dbv))
 						showsms=FALSE;
 				}
 				SendMessage(hwndList,CLM_SETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(ExtraImage_ExtraIDToColumnNum(EXTRA_ICON_SMS),(showsms)?1:0xFF));	

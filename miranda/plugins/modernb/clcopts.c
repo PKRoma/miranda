@@ -283,7 +283,7 @@ void GetFontSetting(int i,LOGFONTA *lf,COLORREF *colour,BYTE *effect, COLORREF *
 
 	GetDefaultFontSetting(i,lf,colour);
 	mir_snprintf(idstr,sizeof(idstr),"Font%dName",i);
-	if(!DBGetContactSetting(NULL,"CLC",idstr,&dbv)) {
+	if(!DBGetContactSettingString(NULL,"CLC",idstr,&dbv)) {
 		strcpy(lf->lfFaceName,dbv.pszVal);
 		//mir_free_and_nill(dbv.pszVal);
 		DBFreeVariant(&dbv);
@@ -698,7 +698,7 @@ static BOOL CALLBACK DlgProcStatusBarBkgOpts(HWND hwndDlg, UINT msg, WPARAM wPar
 		SendDlgItemMessage(hwndDlg,IDC_SELCOLOUR,CPM_SETDEFAULTCOLOUR,0,CLCDEFAULT_SELBKCOLOUR);
 		SendDlgItemMessage(hwndDlg,IDC_SELCOLOUR,CPM_SETCOLOUR,0,DBGetContactSettingDword(NULL,"StatusBar","SelBkColour",CLCDEFAULT_SELBKCOLOUR));
 		{	DBVARIANT dbv={0};
-		if(!DBGetContactSetting(NULL,"StatusBar","BkBitmap",&dbv)) {
+		if(!DBGetContactSettingString(NULL,"StatusBar","BkBitmap",&dbv)) {
 			SetDlgItemTextA(hwndDlg,IDC_FILENAME,dbv.pszVal);
 			if (ServiceExists(MS_UTILS_PATHTOABSOLUTE)) {
 				char szPath[MAX_PATH];
@@ -706,9 +706,7 @@ static BOOL CALLBACK DlgProcStatusBarBkgOpts(HWND hwndDlg, UINT msg, WPARAM wPar
 				if (CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)szPath))
 					SetDlgItemTextA(hwndDlg,IDC_FILENAME,szPath);
 			}
-			else 
-				//mir_free_and_nill(dbv.pszVal);
-				DBFreeVariant(&dbv);
+			DBFreeVariant(&dbv);
 		}
 		}
 
@@ -2416,19 +2414,19 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			sprintf(szUin,"%u",DBGetContactSettingDword(NULL,"ICQ","UIN",0));
 			SendDlgItemMessage(hwndDlg,IDC_TITLETEXT,CB_ADDSTRING,0,(LPARAM)szUin);
 
-			if(!DBGetContactSetting(NULL,"ICQ","Nick",&dbv)) {
+			if(!DBGetContactSettingString(NULL,"ICQ","Nick",&dbv)) {
 				SendDlgItemMessage(hwndDlg,IDC_TITLETEXT,CB_ADDSTRING,0,(LPARAM)dbv.pszVal);
 				//mir_free_and_nill(dbv.pszVal);
 				DBFreeVariant(&dbv);
 				dbv.pszVal=NULL;
 			}
-			if(!DBGetContactSetting(NULL,"ICQ","FirstName",&dbv)) {
+			if(!DBGetContactSettingString(NULL,"ICQ","FirstName",&dbv)) {
 				SendDlgItemMessage(hwndDlg,IDC_TITLETEXT,CB_ADDSTRING,0,(LPARAM)dbv.pszVal);
 				//mir_free_and_nill(dbv.pszVal);
 				DBFreeVariant(&dbv);
 				dbv.pszVal=NULL;
 			}
-			if(!DBGetContactSetting(NULL,"ICQ","e-mail",&dbv)) {
+			if(!DBGetContactSettingString(NULL,"ICQ","e-mail",&dbv)) {
 				SendDlgItemMessage(hwndDlg,IDC_TITLETEXT,CB_ADDSTRING,0,(LPARAM)dbv.pszVal);
 				//mir_free_and_nill(dbv.pszVal);
 				DBFreeVariant(&dbv);
@@ -2734,7 +2732,7 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				dat->item[indx].useWinColours = DBGetContactSettingByte(NULL,module, "UseWinColours", CLCDEFAULT_USEWINDOWSCOLOURS);	
 				{	
 					DBVARIANT dbv;
-					if(!DBGetContactSetting(NULL,module,"BkBitmap",&dbv))
+					if(!DBGetContactSettingString(NULL,module,"BkBitmap",&dbv))
 					{
 						int retval = CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)dat->item[indx].filename);
 						if(!retval || retval == CALLSERVICE_NOTFOUND)

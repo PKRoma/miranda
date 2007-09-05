@@ -2866,7 +2866,7 @@ int OnFrameTitleBarBackgroundChange(WPARAM wParam,LPARAM lParam)
 		if (g_CluiData.fDisableSkinEngine)
 		{
 			if(DBGetContactSettingByte(NULL,"FrameTitleBar","UseBitmap",CLCDEFAULT_USEBITMAP)) {
-				if(!DBGetContactSetting(NULL,"FrameTitleBar","BkBitmap",&dbv)) {
+				if(!DBGetContactSettingString(NULL,"FrameTitleBar","BkBitmap",&dbv)) {
 					hBmpBackground=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);
 					//mir_free_and_nill(dbv.pszVal);
 					DBFreeVariant(&dbv);

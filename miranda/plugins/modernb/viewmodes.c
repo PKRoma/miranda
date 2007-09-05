@@ -567,7 +567,7 @@ void UpdateFilters()
     mir_sntprintf(szTemp, 100, TranslateT("Configuring view mode: %s"), szTempBuf);
     SetDlgItemText(clvmHwnd, IDC_CURVIEWMODE2, szTemp);
     mir_snprintf(szSetting, 128, "%c%s_PF", 246, szBuf);
-    if(DBGetContactSetting(NULL, CLVM_MODULE, szSetting, &dbv_pf))
+    if(DBGetContactSettingString(NULL, CLVM_MODULE, szSetting, &dbv_pf))
         goto cleanup;
     mir_snprintf(szSetting, 128, "%c%s_GF", 246, szBuf);
     if(DBGetContactSettingTString(NULL, CLVM_MODULE, szSetting, &dbv_gf))
@@ -1362,7 +1362,7 @@ void ApplyViewMode(const char *Name)
     
     if (!name)  // Name is null - apply last stored view mode
     {
-        if (!DBGetContactSetting(NULL, CLVM_MODULE, szSetting, &dbv))
+        if (!DBGetContactSettingString(NULL, CLVM_MODULE, szSetting, &dbv))
         {
             name=(char*)_alloca(strlen(dbv.pszVal)+1);
             strcpy(name,dbv.pszVal);
@@ -1372,7 +1372,7 @@ void ApplyViewMode(const char *Name)
     }
 
     mir_snprintf(szSetting, 256, "%c%s_PF", 246, name);
-    if(!DBGetContactSetting(NULL, CLVM_MODULE, szSetting, &dbv)) {
+    if(!DBGetContactSettingString(NULL, CLVM_MODULE, szSetting, &dbv)) {
         if(lstrlenA(dbv.pszVal) >= 2) 
 		{
             strncpy(g_CluiData.protoFilter, dbv.pszVal, sizeof(g_CluiData.protoFilter));
