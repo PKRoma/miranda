@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2007 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -103,7 +103,7 @@ static int UpdateNotifyOptInit(WPARAM wParam, LPARAM lParam) {
 
 static VOID CALLBACK UpdateNotifyTimerCheck(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime) {
 	KillTimer(NULL, updateTimerId);
-	if (!DBGetContactSettingByte(NULL, UN_MOD, UN_ENABLE, UN_ENABLE_DEF)) 
+	if (!DBGetContactSettingByte(NULL, UN_MOD, UN_ENABLE, UN_ENABLE_DEF))
 		return;
 	if (dwUpdateThreadID!=0) {
 		Netlib_Logf(hNetlibUser, "Update notification already running, ignoring attempt");
@@ -142,7 +142,7 @@ static void UpdateNotifyPerform(void *manual) {
 	NETLIBHTTPREQUEST req;
 	NETLIBHTTPREQUEST *resp;
 	NETLIBHTTPHEADER headers[1];
-	DWORD timeNow = time(NULL);    
+	DWORD timeNow = time(NULL);
 	DWORD dwVersion;
 	char szVersion[32], szUrl[256], szVersionText[128];
 	int isUnicode, isAlpha, isAlphaBuild;
@@ -154,10 +154,10 @@ static void UpdateNotifyPerform(void *manual) {
 	isAlpha = DBGetContactSettingByte(NULL, UN_MOD, UN_NOTIFYALPHA, UN_NOTIFYALPHA_DEF);
 	isAlphaBuild = strstr(szVersionText, "alpha") != NULL ? 1 : 0;
 	dwVersion = CallService(MS_SYSTEM_GETVERSION, 0, 0);
-	mir_snprintf(szVersion, sizeof(szVersion), "%d.%d.%d.%d", 
-		HIBYTE(HIWORD(dwVersion)), LOBYTE(HIWORD(dwVersion)), 
+	mir_snprintf(szVersion, sizeof(szVersion), "%d.%d.%d.%d",
+		HIBYTE(HIWORD(dwVersion)), LOBYTE(HIWORD(dwVersion)),
 		HIBYTE(LOWORD(dwVersion)), LOBYTE(LOWORD(dwVersion)));
-	if (!DBGetContactSetting(NULL, UN_MOD, UN_CUSTOMURL, &dbv)) {
+	if (!DBGetContactSettingString(NULL, UN_MOD, UN_CUSTOMURL, &dbv)) {
 		mir_snprintf(szUrl, sizeof(szUrl), "%s?version=%s&unicode=%d&alpha=%d&alphaBuild=%d", dbv.pszVal?dbv.pszVal:UN_URL, szVersion, isUnicode, isAlpha, isAlphaBuild);
 		DBFreeVariant(&dbv);
 	}
@@ -213,7 +213,7 @@ static void UpdateNotifyPerform(void *manual) {
 			if (resUpdate&&und.version[0]&&und.downloadUrl[0]) {
 				int notify = 1;
 
-				if (!DBGetContactSetting(NULL, UN_MOD, UN_CURRENTVERSION, &dbv)) {
+				if (!DBGetContactSettingString(NULL, UN_MOD, UN_CURRENTVERSION, &dbv)) {
 					if (!strcmp(dbv.pszVal, und.version)) // already notified of this version, don't show dialog
 						notify = 0;
 					DBFreeVariant(&dbv);
@@ -248,7 +248,7 @@ static BOOL CALLBACK UpdateNotifyProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			CallService(MS_SYSTEM_GETVERSIONTEXT, sizeof(szTmp), (LPARAM)szTmp);
 			p = strstr(szTmp, " Unicode");
 			if (p)
-				*p = '\0';   
+				*p = '\0';
 			SetDlgItemTextA(hwndDlg, IDC_CURRENTVERSION, szTmp);
 			mir_snprintf(szTmp, sizeof(szTmp), "%s", und->version);
 			SetDlgItemTextA(hwndDlg, IDC_VERSION, szTmp);
@@ -265,7 +265,7 @@ static BOOL CALLBACK UpdateNotifyProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				GetObject(hFont, sizeof(lf), &lf);
 				lf.lfWeight = FW_BOLD;
 				hFont = CreateFontIndirect(&lf);
-				SendDlgItemMessage(hwndDlg, IDC_NEWVERSIONLABEL, WM_SETFONT, (WPARAM)hFont, 0);  
+				SendDlgItemMessage(hwndDlg, IDC_NEWVERSIONLABEL, WM_SETFONT, (WPARAM)hFont, 0);
 			}
 			SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
 		}

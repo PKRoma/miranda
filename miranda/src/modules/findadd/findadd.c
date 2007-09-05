@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2007 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -46,7 +46,7 @@ void ListView_SetItemTextA( HWND hwndLV, int i, int iSubItem, char* pszText )
 static char* FindAddTrimR(char *s) {
 	char* p = s+strlen(s)-1;
 
-	while (p>=s) {  
+	while (p>=s) {
 		if (*p!=' '&&*p!='\t'&&*p!='\n'&&*p!='\r')
 			break;
 		*p--=0;
@@ -100,7 +100,7 @@ static int FindAddDlgResizer(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
 			{
 				int height= urc->dlgNewSize.cy-y-(urc->dlgOriginalSize.cy-urc->rcItem.bottom);
 				nextY=y+200;  //min height for custom dialog
-				urc->rcItem.top=urc->rcItem.bottom-height;				
+				urc->rcItem.top=urc->rcItem.bottom-height;
 			}
 			return RD_ANCHORX_LEFT|RD_ANCHORY_BOTTOM;
 		case IDC_BYEMAIL:
@@ -359,7 +359,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				int cbwidth = 0;
 				DWORD caps;
 
-				if(!DBGetContactSetting(NULL, "FindAdd", "LastSearched", &dbv))
+				if(!DBGetContactSettingString(NULL, "FindAdd", "LastSearched", &dbv))
 					szProto=(char*)dbv.pszVal;
 				CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&protos);
 				for(i=0,netProtoCount=0;i<protoCount;i++) {
@@ -377,7 +377,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				if(netProtoCount>1) {
 					cbei.pszText=TranslateT("All Networks");
 					GetTextExtentPoint32(hdc,cbei.pszText,lstrlen(cbei.pszText),&textSize);
-					if (textSize.cx>cbwidth) cbwidth = textSize.cx;                    
+					if (textSize.cx>cbwidth) cbwidth = textSize.cx;
 					cbei.iImage=cbei.iSelectedImage=ImageList_AddIcon_IconLibLoaded(dat->himlComboIcons, SKINICON_OTHER_SEARCHALL);
 					cbei.lParam=0;
 					SendDlgItemMessageA(hwndDlg,IDC_PROTOLIST,CBEM_INSERTITEM,0,(LPARAM)&cbei);
@@ -415,7 +415,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				DBFreeVariant(&dbv); /* free string szProto was fetched with */
 			}
 			SendMessage(hwndDlg,M_SETGROUPVISIBILITIES,0,0);
-			Utils_RestoreWindowPosition(hwndDlg,NULL,"FindAdd","");			
+			Utils_RestoreWindowPosition(hwndDlg,NULL,"FindAdd","");
 			return TRUE;
 		}
 		case WM_SIZE:
@@ -642,7 +642,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				case IDC_ADVANCED:
 					if(IsDlgButtonChecked(hwndDlg,IDC_ADVANCED))
 						ShowAdvancedSearchDlg(hwndDlg,dat);
-					else	
+					else
 						HideAdvancedSearchDlg(hwndDlg,dat);
 					CheckSearchTypeRadioButton(hwndDlg,IDC_BYADVANCED);
 					break;
@@ -749,8 +749,8 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					break;
 				}
 			}
-			if (lParam && dat->hwndTinySearch==(HWND)lParam 
-				&& HIWORD(wParam)==EN_SETFOCUS && LOWORD(wParam)==0 
+			if (lParam && dat->hwndTinySearch==(HWND)lParam
+				&& HIWORD(wParam)==EN_SETFOCUS && LOWORD(wParam)==0
 				&& !IsDlgButtonChecked(hwndDlg, IDC_BYCUSTOM))	{
 					CheckSearchTypeRadioButton(hwndDlg, IDC_BYCUSTOM);
 			}
@@ -794,16 +794,16 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				ListView_SortItemsEx(GetDlgItem(hwndDlg, IDC_RESULTS), SearchResultsCompareFunc, (LPARAM)hwndDlg);
 				SetStatusBarSearchInfo(GetDlgItem(hwndDlg,IDC_STATUSBAR),dat);
 			}
-			else if(ack->result==ACKRESULT_SEARCHRESULT && ack->lParam) {		
-				
-				PROTOSEARCHRESULT *psr;							
+			else if(ack->result==ACKRESULT_SEARCHRESULT && ack->lParam) {
+
+				PROTOSEARCHRESULT *psr;
 				HWND hwndList=GetDlgItem(hwndDlg,IDC_RESULTS);
 				CUSTOMSEARCHRESULTS * csr=(CUSTOMSEARCHRESULTS*)ack->lParam;
-				dat->bFlexSearchResult=TRUE;				
+				dat->bFlexSearchResult=TRUE;
 				psr=&(csr->psr);
 				// check if this is column names data (psr->cbSize==0)
 				if ( psr->cbSize==0 ){ // blob contain info about columns
-				
+
 					int iColumn;
 					LVCOLUMN lvc={0};
 
@@ -821,7 +821,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					}
 					// Column inserting Done
 				} else {	//  blob contain info about found contacts
-					
+
 					LVITEM lvi={0};
 					int i,col;
 					struct ListSearchResult *lsr;
@@ -836,7 +836,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					lsr->psr.nick=psr->nick==NULL?NULL:mir_strdup(psr->nick);
 					lsr->psr.firstName=psr->firstName==NULL?NULL:mir_strdup(psr->firstName);
 					lsr->psr.lastName=psr->lastName==NULL?NULL:mir_strdup(psr->lastName);
-		
+
 					lvi.mask = LVIF_PARAM|LVIF_IMAGE;
 					lvi.lParam=(LPARAM)lsr;
 					for(i=SendDlgItemMessage(hwndDlg,IDC_PROTOLIST,CB_GETCOUNT,0,0)-1;i>=0;i--) {
@@ -910,7 +910,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		case WM_CLOSE:
 			DestroyWindow(hwndDlg);
 			break;
-		case WM_DESTROY:		
+		case WM_DESTROY:
 			{
 				TCHAR *szProto;
 				int len = SendDlgItemMessage(hwndDlg,IDC_PROTOLIST,CB_GETLBTEXTLEN,SendDlgItemMessage(hwndDlg,IDC_PROTOLIST,CB_GETCURSEL,0,0),0);
@@ -918,7 +918,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				*szProto='\0';
 				SendDlgItemMessage(hwndDlg,IDC_PROTOLIST,CB_GETLBTEXT,SendDlgItemMessage(hwndDlg,IDC_PROTOLIST,CB_GETCURSEL,0,0),(LPARAM)szProto);
 				DBWriteContactSettingTString(NULL, "FindAdd", "LastSearched", szProto?szProto:_T(""));
-			}			
+			}
 			SaveColumnSizes(GetDlgItem(hwndDlg,IDC_RESULTS));
 			if(dat->hResultHook!=NULL) UnhookEvent(dat->hResultHook);
 			FreeSearchResults(GetDlgItem(hwndDlg,IDC_RESULTS));
@@ -962,9 +962,9 @@ static int FindAddCommand(WPARAM wParam,LPARAM lParam)
 		// that is not good either...
 		CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&protos);
 		for(i=0,netProtoCount=0;i<protoCount;i++)
-			if(protos[i]->type==PROTOTYPE_PROTOCOL) { 
+			if(protos[i]->type==PROTOTYPE_PROTOCOL) {
 				int protoCaps=CallProtoService(protos[i]->szName, PS_GETCAPS, PFLAGNUM_1, 0);
-				if ( protoCaps&PF1_BASICSEARCH || protoCaps&PF1_SEARCHBYEMAIL || protoCaps&PF1_SEARCHBYNAME 
+				if ( protoCaps&PF1_BASICSEARCH || protoCaps&PF1_SEARCHBYEMAIL || protoCaps&PF1_SEARCHBYNAME
 					|| protoCaps&PF1_EXTSEARCHUI ) netProtoCount++;
 			}
 		if (netProtoCount > 0) {

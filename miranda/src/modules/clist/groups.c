@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2007 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -97,7 +97,7 @@ static int CreateGroup(WPARAM wParam, LPARAM lParam)
 	}
 	if (i) {
 		const CLISTGROUPCHANGE grpChg = { sizeof(CLISTGROUPCHANGE), NULL, newName };
-	
+
 		newName[0] = 1 | GROUPF_EXPANDED;   //1 is required so we never get '\0'
 		DBWriteContactSettingTString(NULL, "CListGroups", str, newName);
 		CallService(MS_CLUI_GROUPADDED, newId + 1, 1);
@@ -115,7 +115,7 @@ static int GetGroupName2(WPARAM wParam, LPARAM lParam)
 	static char name[128];
 
 	itoa(wParam - 1, idstr, 10);
-	if (DBGetContactSetting(NULL, "CListGroups", idstr, &dbv))
+	if (DBGetContactSettingString(NULL, "CListGroups", idstr, &dbv))
 		return (int) (char *) NULL;
 	lstrcpynA(name, dbv.pszVal + 1, SIZEOF(name));
 	if ((DWORD *) lParam != NULL)
@@ -234,7 +234,7 @@ static int DeleteGroup(WPARAM wParam, LPARAM lParam)
 static int RenameGroupWithMove(int groupId, const TCHAR *szName, int move)
 {
 	char idstr[33];
-	TCHAR str[256], oldName[256]; 
+	TCHAR str[256], oldName[256];
 	DBVARIANT dbv;
 	HANDLE hContact;
 
@@ -263,7 +263,7 @@ static int RenameGroupWithMove(int groupId, const TCHAR *szName, int move)
             cache->group = 0;
             cli.pfnCheckCacheItem(cache);
         }
-	} 
+	}
 	while ((hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0)) != NULL);
 
 	//rename subgroups
@@ -535,7 +535,7 @@ int InitGroupServices(void)
 	CreateServiceFunction(MS_CLIST_GROUPSETFLAGS, SetGroupFlags);
 	CreateServiceFunction(MS_CLIST_GROUPMOVEBEFORE, MoveGroupBefore);
 	CreateServiceFunction(MS_CLIST_GROUPBUILDMENU, BuildGroupMenu);
-	
+
 	hGroupChangeEvent = CreateHookableEvent( ME_CLIST_GROUPCHANGE );
 	return 0;
 }

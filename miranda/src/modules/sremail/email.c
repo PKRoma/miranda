@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2007 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -27,7 +27,7 @@ static HANDLE hEMailMenuItem;
 void SendEmailThread(char *szUrl)
 {
 	ShellExecuteA(NULL,"open",szUrl,"","",SW_SHOW);
-	mir_free(szUrl);	
+	mir_free(szUrl);
 	return;
 }
 
@@ -38,8 +38,8 @@ static int SendEMailCommand(WPARAM wParam,LPARAM lParam)
 	char *szProto;
 
 	szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,wParam,0);
-	if(szProto==NULL || DBGetContactSetting((HANDLE)wParam,szProto,"e-mail",&dbv)) {
-		if(DBGetContactSetting((HANDLE)wParam,"UserInfo","Mye-mail0",&dbv)) {
+	if(szProto==NULL || DBGetContactSettingString((HANDLE)wParam,szProto,"e-mail",&dbv)) {
+		if(DBGetContactSettingString((HANDLE)wParam,"UserInfo","Mye-mail0",&dbv)) {
 			MessageBox((HWND)lParam,TranslateT("User has not registered an e-mail address"),TranslateT("Send e-mail"),MB_OK);
 			return 1;
 		}
@@ -57,14 +57,14 @@ static int EMailPreBuildMenu(WPARAM wParam, LPARAM lParam)
 	CLISTMENUITEM mi;
 	DBVARIANT dbv = { 0 };
 	char *szProto;
-	
+
 	ZeroMemory(&mi,sizeof(mi));
 	mi.cbSize = sizeof(mi);
 	mi.flags = CMIM_FLAGS;
 
 	szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
-	if (szProto == NULL || DBGetContactSetting((HANDLE)wParam, szProto, "e-mail",& dbv))
-		if (DBGetContactSetting((HANDLE)wParam, "UserInfo", "Mye-mail0", &dbv))
+	if (szProto == NULL || DBGetContactSettingString((HANDLE)wParam, szProto, "e-mail",& dbv))
+		if (DBGetContactSettingString((HANDLE)wParam, "UserInfo", "Mye-mail0", &dbv))
 			mi.flags = CMIM_FLAGS | CMIF_HIDDEN;
 
 	CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hEMailMenuItem, (LPARAM)&mi);

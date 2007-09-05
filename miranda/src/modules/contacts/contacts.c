@@ -18,16 +18,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 
 #define NAMEORDERCOUNT 8
-static TCHAR* nameOrderDescr[ NAMEORDERCOUNT ] = 
+static TCHAR* nameOrderDescr[ NAMEORDERCOUNT ] =
 {
-	_T( "My custom name (not moveable)" ), 
+	_T( "My custom name (not moveable)" ),
 	_T( "Nick" ),
 	_T( "FirstName" ),
 	_T( "E-mail" ),
 	_T( "LastName" ),
 	_T( "Username" ),
 	_T( "FirstName LastName" ),
-	_T( "'(Unknown Contact)' (not moveable)" ) 
+	_T( "'(Unknown Contact)' (not moveable)" )
 };
 
 BYTE nameOrder[NAMEORDERCOUNT];
@@ -37,7 +37,7 @@ static int GetDatabaseString( CONTACTINFO *ci, const char* setting, DBVARIANT* d
 	if ( ci->dwFlag & CNF_UNICODE )
 		return DBGetContactSettingWString(ci->hContact,ci->szProto,setting,dbv);
 
-	return DBGetContactSetting(ci->hContact,ci->szProto,setting,dbv);
+	return DBGetContactSettingString(ci->hContact,ci->szProto,setting,dbv);
 }
 
 static int ProcessDatabaseValueDefault(CONTACTINFO *ci, const char* setting)
@@ -45,7 +45,7 @@ static int ProcessDatabaseValueDefault(CONTACTINFO *ci, const char* setting)
 	DBVARIANT dbv;
 	if ( GetDatabaseString( ci, setting, &dbv ))
 		return 1;
-		
+
 	switch (dbv.type) {
 	case DBVT_ASCIIZ:
 	case DBVT_WCHAR:
@@ -99,7 +99,7 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 		case CNF_ZIP:			return ProcessDatabaseValueDefault( ci, "ZIP" );
 		case CNF_LANGUAGE1:	return ProcessDatabaseValueDefault( ci, "Language1" );
 		case CNF_LANGUAGE2:	return ProcessDatabaseValueDefault( ci, "Language2" );
-		case CNF_LANGUAGE3:	return ProcessDatabaseValueDefault( ci, "Language3" );									
+		case CNF_LANGUAGE3:	return ProcessDatabaseValueDefault( ci, "Language3" );
 		case CNF_CONAME:		return ProcessDatabaseValueDefault( ci, "Company" );
 		case CNF_CODEPT:     return ProcessDatabaseValueDefault( ci, "CompanyDepartment" );
 		case CNF_COPOSITION: return ProcessDatabaseValueDefault( ci, "CompanyPosition" );
@@ -109,7 +109,7 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 		case CNF_COZIP:      return ProcessDatabaseValueDefault( ci, "CompanyZIP" );
 		case CNF_COHOMEPAGE: return ProcessDatabaseValueDefault( ci, "CompanyHomepage" );
 
-		case CNF_CUSTOMNICK: 
+		case CNF_CUSTOMNICK:
 		{
 			char* saveProto = ci->szProto; ci->szProto = "CList";
 			if ( ci->hContact != NULL && !ProcessDatabaseValueDefault( ci, "MyHandle" )) {
@@ -203,15 +203,15 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 						ci->szProto = saveProto;
 						break;
 					}
-					case 1: 
+					case 1:
 						if ( !ProcessDatabaseValueDefault( ci, "Nick" )) // nick
 							return 0;
 						break;
-					case 2: 
+					case 2:
 						if ( !ProcessDatabaseValueDefault( ci, "FirstName" )) // First Name
 							return 0;
 						break;
-					case 3: 
+					case 3:
 						if ( !ProcessDatabaseValueDefault( ci, "e-mail" )) // E-mail
 							return 0;
 						break;
@@ -294,7 +294,7 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 		case CNF_TIMEZONE: {
 			char str[80];
 			DBVARIANT dbv;
-			
+
 			if (!DBGetContactSetting(ci->hContact,ci->szProto,"Timezone",&dbv)) {
 				sprintf(str,dbv.cVal?"GMT%+d:%02d":"GMT",-dbv.cVal/2,(dbv.cVal&1)*30);
 				if ( ci->dwFlag & CNF_UNICODE ) {
@@ -334,7 +334,7 @@ static BOOL CALLBACK ContactOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 	dat=(struct ContactOptionsData*)GetWindowLong(hwndDlg,GWL_USERDATA);
 	switch (msg)
 	{
-		case WM_INITDIALOG: 
+		case WM_INITDIALOG:
 		{	TranslateDialogDefault(hwndDlg);
 			dat=(struct ContactOptionsData*)mir_alloc(sizeof(struct ContactOptionsData));
 			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)dat);

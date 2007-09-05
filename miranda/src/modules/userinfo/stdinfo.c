@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2007 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -337,12 +337,12 @@ static BOOL CALLBACK BackgroundDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				char idstr[33];
 				DBVARIANT dbv,dbvText;
 				HANDLE hContact=(HANDLE)((LPPSHNOTIFY)lParam)->lParam;
-				
+
 				if (hContact != NULL) {
 					szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
 					if (szProto==NULL) break;
 					SetValue(hwndDlg,IDC_WEBPAGE,hContact,szProto,"Homepage",SVS_ZEROISUNSPEC);
-					
+
 					//past
 					ListView_DeleteAllItems(GetDlgItem(hwndDlg,IDC_PAST));
 					lvi.mask=LVIF_TEXT;
@@ -362,7 +362,7 @@ static BOOL CALLBACK BackgroundDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 						DBFreeVariant(&dbv);
 						lvi.iItem++;
 					}
-					
+
 					for(i=0;;i++) {
 						wsprintfA(idstr,"Affiliation%d",i);
 						if(DBGetContactSettingTString(hContact,szProto,idstr,&dbv))
@@ -377,9 +377,9 @@ static BOOL CALLBACK BackgroundDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 						DBFreeVariant(&dbv);
 						lvi.iItem++;
 					}
-					
+
 					ResizeColumns(GetDlgItem(hwndDlg,IDC_PAST));
-					
+
 					//interests
 					ListView_DeleteAllItems(GetDlgItem(hwndDlg,IDC_INTERESTS));
 					lvi.mask=LVIF_TEXT;
@@ -428,7 +428,7 @@ static BOOL CALLBACK NotesDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
 		{	DBVARIANT dbv;
-			if(!DBGetContactSetting((HANDLE)lParam,"UserInfo","MyNotes",&dbv)) {
+			if(!DBGetContactSettingString((HANDLE)lParam,"UserInfo","MyNotes",&dbv)) {
 				SetDlgItemTextA(hwndDlg,IDC_MYNOTES,dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}

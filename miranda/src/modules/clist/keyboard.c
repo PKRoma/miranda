@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2007 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -102,7 +102,7 @@ int fnHotKeysProcess(HWND hwnd, WPARAM wParam, LPARAM lParam)
 		cli.pfnShowHide(0, 0);
 	else if (wParam == aSearch) {
 		DBVARIANT dbv;
-		if (!DBGetContactSetting(NULL, "CList", "SearchUrl", &dbv)) {
+		if (!DBGetContactSettingString(NULL, "CList", "SearchUrl", &dbv)) {
 			CallService(MS_UTILS_OPENURL, DBGetContactSettingByte(NULL, "CList", "HKSearchNewWnd", 0), (LPARAM) dbv.pszVal);
 			DBFreeVariant( &dbv );
 		}

@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2007 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -81,7 +81,7 @@ static BOOL CALLBACK DlgProcFileOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					}
 				}
 			}
-			if(DBGetContactSetting(NULL,"SRFile","ScanCmdLine",&dbv)==0) {
+			if(DBGetContactSettingString(NULL,"SRFile","ScanCmdLine",&dbv)==0) {
 				SetDlgItemTextA(hwndDlg,IDC_SCANCMDLINE,dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}

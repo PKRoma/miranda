@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2007 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -59,7 +59,7 @@ static void __cdecl RunVirusScannerThread(struct virusscanthreadstartinfo *info)
 	DBVARIANT dbv;
 	char szCmdLine[768];
 
-	if(!DBGetContactSetting(NULL,"SRFile","ScanCmdLine",&dbv)) {
+	if(!DBGetContactSettingString(NULL,"SRFile","ScanCmdLine",&dbv)) {
 		if(dbv.pszVal[0]) {
 			char *pszReplace;
 			si.cb=sizeof(si);
@@ -156,7 +156,7 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				dat->fs=(HANDLE)CallContactService(dat->hContact,PSS_FILE,(WPARAM)szMsg,(LPARAM)dat->files);
 				SetDlgItemText(hwndDlg,IDC_STATUS,TranslateT("Request sent, waiting for acceptance..."));
 				SetOpenFileButtonStyle(GetDlgItem(hwndDlg,IDC_OPENFILE),dat->files[1]!=NULL,1);
-				dat->waitingForAcceptance=1; 
+				dat->waitingForAcceptance=1;
 			}
 			else {	//recv
 				char szSavePath[MAX_PATH];
@@ -171,10 +171,10 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			}
 			{
 				/* check we actually got an fs handle back from the protocol */
-				if (!dat->fs) {					
+				if (!dat->fs) {
 					SetDlgItemText(hwndDlg,IDC_STATUS,TranslateT("Unable to initiate transfer."));
 					dat->waitingForAcceptance=0;
-				} 
+				}
 			}
 			{	LOGFONT lf;
 				HFONT hFont;
@@ -245,7 +245,7 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				case IDC_OPENFILE:
 				{
 					char **files;
-					
+
 					if (dat->send)
 						if (dat->files == NULL)
 							files = dat->transferStatus.files;
@@ -270,12 +270,12 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 						int i,limit;
 						char *pszFilename,*pszNewFileName;
 						HMENU hMenu = CreatePopupMenu();
-						
+
 						if (dat->send)
 							limit = dat->transferStatus.totalFiles;
 						else
 							limit = dat->transferStatus.currentFileNumber;
-						
+
 						// Loop over all transfered files and add them to the menu
 						for (i = 0; i < limit; i++) {
 							pszFilename = strrchr(files[i], '\\');
@@ -287,7 +287,7 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
                                 if (pszFilename) {
                                     int pszlen;
                                     char *p;
-                                    
+
                                     pszNewFileName = (char*)mir_alloc(strlen(pszFilename)*2);
                                     p = pszNewFileName;
                                     for (pszlen=0; pszlen<(int)strlen(pszFilename); pszlen++) {
@@ -461,7 +461,7 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				case ACKRESULT_SUCCESS:
 				{
 					dat->fs=NULL; /* protocol will free structure */
-					SetDlgItemText(hwndDlg,IDC_STATUS,TranslateT("Transfer completed")); 
+					SetDlgItemText(hwndDlg,IDC_STATUS,TranslateT("Transfer completed"));
 					if (ack->result==ACKRESULT_SUCCESS) SkinPlaySound("FileDone");
 					if(!dat->send) {	//receiving
 						int useScanner=DBGetContactSettingByte(NULL,"SRFile","UseScanner",VIRUSSCAN_DISABLE);
@@ -519,7 +519,7 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					if(ack->result==ACKRESULT_FAILED) {
 						SetDlgItemText(hwndDlg,IDC_STATUS,TranslateT("File transfer failed"));
 						SkinPlaySound("FileFailed");
-					} else 
+					} else
 						if(DBGetContactSettingByte(NULL,"SRFile","AutoClose",0))
 							PostMessage(hwndDlg,WM_COMMAND,MAKEWPARAM(IDCANCEL,BN_CLICKED),(LPARAM)GetDlgItem(hwndDlg,IDCANCEL));
 					break;

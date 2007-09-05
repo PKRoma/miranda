@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2007 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -75,13 +75,13 @@ static int GetAwayMessage(WPARAM wParam, LPARAM lParam)
 		return (int)NULL;
 	}
 	if(DBGetContactSettingByte(NULL,"SRAway",StatusModeToDbSetting(statusMode,"UsePrev"),0)) {
-		if(DBGetContactSetting(NULL,"SRAway",StatusModeToDbSetting(statusMode,"Msg"),&dbv))
+		if(DBGetContactSettingString(NULL,"SRAway",StatusModeToDbSetting(statusMode,"Msg"),&dbv))
 			dbv.pszVal=mir_strdup(GetDefaultMessage(statusMode));
 	}
 	else {
 		int i;
 		char substituteStr[128];
-		if(DBGetContactSetting(NULL,"SRAway",StatusModeToDbSetting(statusMode,"Default"),&dbv))
+		if(DBGetContactSettingString(NULL,"SRAway",StatusModeToDbSetting(statusMode,"Default"),&dbv))
 			dbv.pszVal=mir_strdup(GetDefaultMessage(statusMode));
 		for(i=0;dbv.pszVal[i];i++) {
 			if(dbv.pszVal[i]!='%') continue;
@@ -243,7 +243,7 @@ static int StatusModeChange(WPARAM wParam,LPARAM lParam)
 {
 	BOOL bScreenSaverRunning=FALSE;
 	char *szProto = (char*)lParam;
-	
+
 	// If its a global change check the complete PFLAGNUM_3 flags to see if a popup might be needed
 	if(!szProto) {
 		if(!(protoModeMsgFlags&Proto_Status2Flag(wParam)))
@@ -300,15 +300,15 @@ static BOOL CALLBACK DlgProcAwayMsgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				if ( !(protoModeMsgFlags & Proto_Status2Flag( statusModes[i] )))
 					continue;
 
-				j = SendDlgItemMessage( hwndDlg, IDC_STATUS, CB_ADDSTRING, 0, 
+				j = SendDlgItemMessage( hwndDlg, IDC_STATUS, CB_ADDSTRING, 0,
 					CallService( MS_CLIST_GETSTATUSMODEDESCRIPTION, statusModes[i], GCMDF_TCHAR ));
 
 				SendDlgItemMessage(hwndDlg,IDC_STATUS,CB_SETITEMDATA,j,statusModes[i]);
 				dat->info[j].ignore=DBGetContactSettingByte(NULL,"SRAway",StatusModeToDbSetting(statusModes[i],"Ignore"),0);
 				dat->info[j].noDialog=DBGetContactSettingByte(NULL,"SRAway",StatusModeToDbSetting(statusModes[i],"NoDlg"),0);
 				dat->info[j].usePrevious=DBGetContactSettingByte(NULL,"SRAway",StatusModeToDbSetting(statusModes[i],"UsePrev"),0);
-				if(DBGetContactSetting(NULL,"SRAway",StatusModeToDbSetting(statusModes[i],"Default"),&dbv))
-					if(DBGetContactSetting(NULL,"SRAway",StatusModeToDbSetting(statusModes[i],"Msg"),&dbv))
+				if(DBGetContactSettingString(NULL,"SRAway",StatusModeToDbSetting(statusModes[i],"Default"),&dbv))
+					if(DBGetContactSettingString(NULL,"SRAway",StatusModeToDbSetting(statusModes[i],"Msg"),&dbv))
 						dbv.pszVal=mir_strdup(GetDefaultMessage(statusModes[i]));
 				lstrcpyA(dat->info[j].msg,dbv.pszVal);
 				mir_free(dbv.pszVal);
