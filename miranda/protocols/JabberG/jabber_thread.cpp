@@ -261,7 +261,7 @@ LBL_FatalError:
          goto LBL_Exit;
 		}
 
-		if ( !DBGetContactSetting( NULL, jabberProtoName, "LoginServer", &dbv )) {
+		if ( !DBGetContactSettingString( NULL, jabberProtoName, "LoginServer", &dbv )) {
 			strncpy( info->server, dbv.pszVal, SIZEOF( info->server )-1 );
 			JFreeVariant( &dbv );
 		}
@@ -303,7 +303,7 @@ LBL_FatalError:
 			info->password[ SIZEOF( info->password )-1] = '\0';
 		}
 		else {
-			if ( DBGetContactSetting( NULL, jabberProtoName, "Password", &dbv )) {
+			if ( DBGetContactSettingString( NULL, jabberProtoName, "Password", &dbv )) {
 				JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_BADUSERID );
 				JabberLog( "Thread ended, password is not configured" );
 				goto LBL_FatalError;
@@ -315,7 +315,7 @@ LBL_FatalError:
 		}
 
 		if ( JGetByte( "ManualConnect", FALSE ) == TRUE ) {
-			if ( !DBGetContactSetting( NULL, jabberProtoName, "ManualHost", &dbv )) {
+			if ( !DBGetContactSettingString( NULL, jabberProtoName, "ManualHost", &dbv )) {
 				strncpy( info->manualHost, dbv.pszVal, SIZEOF( info->manualHost ));
 				info->manualHost[sizeof( info->manualHost )-1] = '\0';
 				JFreeVariant( &dbv );
@@ -818,7 +818,7 @@ static void JabberProcessSuccess( XmlNode *node, void *userdata )
 		DBVARIANT dbv;
 
 		JabberLog( "Success: Logged-in." );
-		if ( DBGetContactSetting( NULL, jabberProtoName, "Nick", &dbv ))
+		if ( DBGetContactSettingString( NULL, jabberProtoName, "Nick", &dbv ))
 			JSetStringT( NULL, "Nick", info->username );
 		else
 			JFreeVariant( &dbv );

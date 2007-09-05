@@ -1076,7 +1076,7 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 				else {
 					char text[ 100 ];
 					sprintf( text, "e-mail%d", nEmail-1 );
-					if ( DBGetContactSetting( hContact, jabberProtoName, text, &dbv )) break;
+					if ( DBGetContactSettingString( hContact, jabberProtoName, text, &dbv )) break;
 					JFreeVariant( &dbv );
 					JDeleteSetting( hContact, text );
 				}
@@ -1087,7 +1087,7 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 			while ( true ) {
 				char text[ 100 ];
 				sprintf( text, "e-mail%d", nEmail );
-				if ( DBGetContactSetting( NULL, jabberProtoName, text, &dbv )) break;
+				if ( DBGetContactSettingString( NULL, jabberProtoName, text, &dbv )) break;
 				JFreeVariant( &dbv );
 				JDeleteSetting( NULL, text );
 				sprintf( text, "e-mailFlag%d", nEmail );
@@ -1119,7 +1119,7 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 			while ( true ) {
 				char text[ 100 ];
 				sprintf( text, "Phone%d", nPhone );
-				if ( DBGetContactSetting( NULL, jabberProtoName, text, &dbv )) break;
+				if ( DBGetContactSettingString( NULL, jabberProtoName, text, &dbv )) break;
 				JFreeVariant( &dbv );
 				JDeleteSetting( NULL, text );
 				sprintf( text, "PhoneFlag%d", nPhone );

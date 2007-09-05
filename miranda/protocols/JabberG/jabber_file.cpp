@@ -257,7 +257,7 @@ void __cdecl JabberFileServerThread( filetransfer* ft )
 				char *myAddr;
 				DBVARIANT dbv;
 				if ( JGetByte( "BsDirect", TRUE ) && JGetByte( "BsDirectManual", FALSE )) {
-					if ( !DBGetContactSetting( NULL, jabberProtoName, "BsDirectAddr", &dbv )) {
+					if ( !DBGetContactSettingString( NULL, jabberProtoName, "BsDirectAddr", &dbv )) {
 						myAddr = NEWSTR_ALLOCA( dbv.pszVal );
 						JFreeVariant( &dbv );
 					}
