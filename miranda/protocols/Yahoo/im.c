@@ -198,7 +198,7 @@ int YahooSendMessage(WPARAM wParam, LPARAM lParam)
         return 1;
     }
 
-	if (!DBGetContactSetting(ccs->hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
+	if (!DBGetContactSettingString(ccs->hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
 		yahoo_send_msg(dbv.pszVal, msg, (!bANSI) ? 1 : 0);
 		
 		if (!bANSI)
@@ -248,7 +248,7 @@ int YahooSendNudge(WPARAM wParam, LPARAM lParam)
         return 1;
     }
 
-    if (!DBGetContactSetting(hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
+    if (!DBGetContactSettingString(hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
         yahoo_send_msg(dbv.pszVal, "<ding>", 0);
         DBFreeVariant(&dbv);
 

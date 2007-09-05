@@ -653,7 +653,7 @@ int YahooSendFile(WPARAM wParam,LPARAM lParam)
 	
 	YAHOO_DebugLog("Getting Yahoo ID");
 	
-	if (!DBGetContactSetting(ccs->hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
+	if (!DBGetContactSettingString(ccs->hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
 		long tFileSize = 0;
 		struct _stat statbuf;
 	

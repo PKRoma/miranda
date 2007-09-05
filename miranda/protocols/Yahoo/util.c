@@ -232,7 +232,7 @@ int YAHOO_util_dbsettingchanged(WPARAM wParam, LPARAM lParam)
                 szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
                 if (szProto==NULL || strcmp(szProto, yahooProtocolName)) return 0;
 
-                if ( !DBGetContactSetting( (HANDLE) wParam, yahooProtocolName, YAHOO_LOGINID, &dbv )){
+                if ( !DBGetContactSettingString( (HANDLE) wParam, yahooProtocolName, YAHOO_LOGINID, &dbv )){
 						YAHOO_DebugLog("Adding Permanently %s to list.", dbv.pszVal);
                         YAHOO_add_buddy(dbv.pszVal, "miranda", NULL);
            		 		DBFreeVariant(&dbv);
@@ -245,7 +245,7 @@ int YAHOO_util_dbsettingchanged(WPARAM wParam, LPARAM lParam)
 		
         YAHOO_DebugLog("DB Setting changed.  YAHOO user's visible setting changed.");
 		
-		if ( !DBGetContactSetting( (HANDLE) wParam, yahooProtocolName, YAHOO_LOGINID, &dbv )){
+		if ( !DBGetContactSettingString( (HANDLE) wParam, yahooProtocolName, YAHOO_LOGINID, &dbv )){
 			int iAdd;
 			
 			

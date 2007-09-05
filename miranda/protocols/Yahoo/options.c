@@ -58,24 +58,24 @@ BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 	case WM_INITDIALOG:
 		TranslateDialogDefault( hwndDlg );
 
-		if ( !DBGetContactSetting( NULL, yahooProtocolName, YAHOO_LOGINID, &dbv )) {
+		if ( !DBGetContactSettingString( NULL, yahooProtocolName, YAHOO_LOGINID, &dbv )) {
 			SetDlgItemText(hwndDlg,IDC_HANDLE,dbv.pszVal);
 			DBFreeVariant(&dbv);
 		}
 
-		if ( !DBGetContactSetting( NULL, yahooProtocolName, "Nick", &dbv )) {
+		if ( !DBGetContactSettingString( NULL, yahooProtocolName, "Nick", &dbv )) {
 			SetDlgItemText(hwndDlg,IDC_NICK,dbv.pszVal);
 			DBFreeVariant(&dbv);
 		}
 
-		if ( !DBGetContactSetting( NULL, yahooProtocolName, YAHOO_PASSWORD, &dbv )) {
+		if ( !DBGetContactSettingString( NULL, yahooProtocolName, YAHOO_PASSWORD, &dbv )) {
 			//bit of a security hole here, since it's easy to extract a password from an edit box
 			YAHOO_CallService( MS_DB_CRYPT_DECODESTRING, strlen( dbv.pszVal )+1, ( LPARAM )dbv.pszVal );
 			SetDlgItemText( hwndDlg, IDC_PASSWORD, dbv.pszVal );
 			DBFreeVariant( &dbv );
 		}
 
-		if ( !DBGetContactSetting( NULL, yahooProtocolName, YAHOO_LOGINSERVER, &dbv )){
+		if ( !DBGetContactSettingString( NULL, yahooProtocolName, YAHOO_LOGINSERVER, &dbv )){
 			SetDlgItemText( hwndDlg, IDC_LOGINSERVER, dbv. pszVal );
 			DBFreeVariant( &dbv );
 		}
@@ -211,7 +211,7 @@ BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			GetDlgItemText( hwndDlg, IDC_HANDLE, id, sizeof( id ));
 			dbv.pszVal = NULL;
 			
-			if ( DBGetContactSetting( NULL, yahooProtocolName, YAHOO_LOGINID, &dbv ) || 
+			if ( DBGetContactSettingString( NULL, yahooProtocolName, YAHOO_LOGINID, &dbv ) || 
                   lstrcmp( id, dbv.pszVal ))
 				reconnectRequired = TRUE;
 				
@@ -222,7 +222,7 @@ BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			GetDlgItemText( hwndDlg, IDC_PASSWORD, str, sizeof( str ));
 			YAHOO_CallService( MS_DB_CRYPT_ENCODESTRING, sizeof( str ),( LPARAM )str );
 			dbv.pszVal = NULL;
-			if ( DBGetContactSetting( NULL, yahooProtocolName, YAHOO_PASSWORD, &dbv ) || 
+			if ( DBGetContactSettingString( NULL, yahooProtocolName, YAHOO_PASSWORD, &dbv ) || 
 				lstrcmp( str, dbv.pszVal ))
 				reconnectRequired = TRUE;
 			if ( dbv.pszVal != NULL ) DBFreeVariant( &dbv );

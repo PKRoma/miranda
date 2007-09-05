@@ -160,7 +160,7 @@ int SetStatus(WPARAM wParam,LPARAM lParam)
 		/*
 		 * Load Yahoo ID form the database.
 		 */
-		if (!DBGetContactSetting(NULL, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
+		if (!DBGetContactSettingString(NULL, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
 			if (lstrlen(dbv.pszVal) > 0) {
 				lstrcpyn(ylad->yahoo_id, dbv.pszVal, 255);
 			} else
@@ -174,7 +174,7 @@ int SetStatus(WPARAM wParam,LPARAM lParam)
 		if (err) {
 			lstrcpyn(errmsg, Translate("Please enter your yahoo id in Options/Network/Yahoo"), 80);
 		} else {
-			if (!DBGetContactSetting(NULL, yahooProtocolName, YAHOO_PASSWORD, &dbv)) {
+			if (!DBGetContactSettingString(NULL, yahooProtocolName, YAHOO_PASSWORD, &dbv)) {
 				CallService(MS_DB_CRYPT_DECODESTRING, lstrlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
 				if (lstrlen(dbv.pszVal) > 0) {
 					lstrcpyn(ylad->password, dbv.pszVal, 255);
@@ -266,7 +266,7 @@ static int YahooContactDeleted( WPARAM wParam, LPARAM lParam )
 		return 0;
 	}
 	
-	if ( !DBGetContactSetting(( HANDLE )wParam, yahooProtocolName, YAHOO_LOGINID, &dbv )){
+	if ( !DBGetContactSettingString(( HANDLE )wParam, yahooProtocolName, YAHOO_LOGINID, &dbv )){
 		YAHOO_DebugLog("[YahooContactDeleted] Removing %s", dbv.pszVal);
 		YAHOO_remove_buddy(dbv.pszVal);
 		
@@ -289,7 +289,7 @@ int YahooSendAuthRequest(WPARAM wParam,LPARAM lParam)
 			
 			DBVARIANT dbv;
 			
-			if (!DBGetContactSetting(ccs->hContact, yahooProtocolName, YAHOO_LOGINID, &dbv ))			{
+			if (!DBGetContactSettingString(ccs->hContact, yahooProtocolName, YAHOO_LOGINID, &dbv ))			{
 				char *c = NULL;
 				
 				if ( ccs->lParam )
@@ -438,7 +438,7 @@ int YahooAuthAllow(WPARAM wParam,LPARAM lParam)
 	memcpy(&hContact,( char* )( dbei.pBlob + sizeof( DWORD ) ), sizeof(HANDLE)); 
     
     /* Need to remove the buddy from our Miranda Lists */
-    if (hContact != NULL && !DBGetContactSetting( hContact, yahooProtocolName, YAHOO_LOGINID, &dbv )){
+    if (hContact != NULL && !DBGetContactSettingString( hContact, yahooProtocolName, YAHOO_LOGINID, &dbv )){
 		YAHOO_DebugLog("Accepting buddy:%s", dbv.pszVal);    
 	    YAHOO_accept(dbv.pszVal);
 		DBFreeVariant(&dbv);
@@ -485,7 +485,7 @@ int YahooAuthDeny(WPARAM wParam,LPARAM lParam)
     memcpy(&hContact,( char* )( dbei.pBlob + sizeof( DWORD ) ), sizeof(HANDLE)); 
     
     /* Need to remove the buddy from our Miranda Lists */
-    if (hContact != NULL && !DBGetContactSetting( hContact, yahooProtocolName, YAHOO_LOGINID, &dbv )){
+    if (hContact != NULL && !DBGetContactSettingString( hContact, yahooProtocolName, YAHOO_LOGINID, &dbv )){
 		YAHOO_DebugLog("Rejecting buddy:%s msg: %s", dbv.pszVal, reason);    
 	    YAHOO_reject(dbv.pszVal,reason);
 		DBFreeVariant(&dbv);
@@ -527,13 +527,13 @@ static void __cdecl yahoo_get_statusthread(HANDLE hContact)
 	Sleep( 150 );
 	
 	/* Check Yahoo Games Message */
-	if (! DBGetContactSetting(( HANDLE )hContact, yahooProtocolName, "YGMsg", &dbv )) {
+	if (! DBGetContactSettingString(( HANDLE )hContact, yahooProtocolName, "YGMsg", &dbv )) {
 		gm = strdup(dbv.pszVal);
 		
 		DBFreeVariant( &dbv );
 	}
 	
-	if (! DBGetContactSetting(hContact, "CList", "StatusMsg", &dbv )) {
+	if (! DBGetContactSettingString(hContact, "CList", "StatusMsg", &dbv )) {
 		if (lstrlen(dbv.pszVal) >= 1)
 			sm = strdup(dbv.pszVal);
 		
@@ -680,7 +680,7 @@ static BOOL CALLBACK DlgProcSetCustStat(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			TranslateDialogDefault( hwndDlg );
 			SendMessage( hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIconEx( "yahoo" ) );
 
-		    if ( !DBGetContactSetting( NULL, yahooProtocolName, YAHOO_CUSTSTATDB, &dbv ))
+		    if ( !DBGetContactSettingString( NULL, yahooProtocolName, YAHOO_CUSTSTATDB, &dbv ))
 				    {
 				    SetDlgItemText( hwndDlg, IDC_CUSTSTAT, dbv. pszVal );
 					
@@ -804,7 +804,7 @@ static int YahooShowProfileCommand( WPARAM wParam, LPARAM lParam )
 	char tUrl[ 4096 ];
 	DBVARIANT dbv;
 
-	if ( DBGetContactSetting(( HANDLE )wParam, yahooProtocolName, "yahoo_id", &dbv ))
+	if ( DBGetContactSettingString(( HANDLE )wParam, yahooProtocolName, "yahoo_id", &dbv ))
 		return 0;
 		
 	_snprintf( tUrl, sizeof( tUrl ), "http://profiles.yahoo.com/%s", dbv.pszVal  );
@@ -822,7 +822,7 @@ static int YahooShowMyProfileCommand( WPARAM wParam, LPARAM lParam )
 	char tUrl[ 4096 ];
 	DBVARIANT dbv;
 
-	DBGetContactSetting( NULL, yahooProtocolName, YAHOO_LOGINID, &dbv );
+	DBGetContactSettingString( NULL, yahooProtocolName, YAHOO_LOGINID, &dbv );
 		
 	_snprintf( tUrl, sizeof( tUrl ), "http://profiles.yahoo.com/%s", dbv.pszVal  );
 	DBFreeVariant( &dbv );
@@ -885,7 +885,7 @@ int YAHOOSendTyping(WPARAM wParam, LPARAM lParam)
 	
 	szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
     if (szProto==NULL || strcmp(szProto, yahooProtocolName)) return 0;
-	if (!DBGetContactSetting(hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
+	if (!DBGetContactSettingString(hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
 		if (state==PROTOTYPE_SELFTYPING_OFF || state==PROTOTYPE_SELFTYPING_ON) {
 			YAHOO_sendtyping(dbv.pszVal, state == PROTOTYPE_SELFTYPING_ON?1:0);
 		}
