@@ -107,16 +107,19 @@ int IsAutoPopup(HANDLE hContact) {
 
 static int ReadMessageCommand(WPARAM wParam, LPARAM lParam)
 {
-   NewMessageWindowLParam newData = { 0 };
-   HWND hwndExisting;
-   HWND hParent;
+	NewMessageWindowLParam newData = { 0 };
+	HWND hwndExisting;
+	HWND hParent;
 
-   hwndExisting = WindowList_Find(g_dat->hMessageWindowList, ((CLISTEVENT *) lParam)->hContact);
-   newData.hContact = ((CLISTEVENT *) lParam)->hContact;
-   hParent = GetParentWindow(newData.hContact, FALSE);
-   CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), hParent, DlgProcMessage, (LPARAM) & newData);
-//      CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), NULL, DlgProcMessage, (LPARAM) & newData);
-   return 0;
+	hwndExisting = WindowList_Find(g_dat->hMessageWindowList, ((CLISTEVENT *) lParam)->hContact);
+	if (hwndExisting == NULL) {
+		newData.hContact = ((CLISTEVENT *) lParam)->hContact;
+		hParent = GetParentWindow(newData.hContact, FALSE);
+		CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), hParent, DlgProcMessage, (LPARAM) & newData);
+	} else {
+		SendMessage(GetParent(hwndExisting), CM_POPUPWINDOW, 0, (LPARAM) hwndExisting);
+	}
+	return 0;
 }
 
 static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
@@ -143,31 +146,31 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 
 	CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
 	/* does a window for the contact exist? */
-	if (hwnd) {
-		return 0;
+	if (hwnd == NULL) {
+		/* new message */
+		SkinPlaySound("AlertMsg");
+		if (IsAutoPopup((HANDLE) wParam)) {
+			HWND hParent;
+			NewMessageWindowLParam newData = { 0 };
+			newData.hContact = (HANDLE) wParam;
+			hParent = GetParentWindow(newData.hContact, FALSE);
+			newData.flags = NMWLP_INCOMING;
+			CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), hParent, DlgProcMessage, (LPARAM) & newData);
+			return 0;
+		}
 	}
-	/* new message */
-	SkinPlaySound("AlertMsg");
-
-	if (IsAutoPopup((HANDLE) wParam)) {
-		HWND hParent;
-		NewMessageWindowLParam newData = { 0 };
-		newData.hContact = (HANDLE) wParam;
-		hParent = GetParentWindow(newData.hContact, FALSE);
-		newData.flags = NMWLP_INCOMING;
-		CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), hParent, DlgProcMessage, (LPARAM) & newData);
-		return 0;
+	if (hwnd == NULL || !IsWindowVisible(hwnd)) {
+		ZeroMemory(&cle, sizeof(cle));
+		cle.cbSize = sizeof(cle);
+		cle.hContact = (HANDLE) wParam;
+		cle.hDbEvent = (HANDLE) lParam;
+		cle.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
+		cle.pszService = "SRMsg/ReadMessage";
+		contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, 0);
+		mir_snprintf(toolTip, sizeof(toolTip), Translate("Message from %s"), contactName);
+		cle.pszTooltip = toolTip;
+		CallService(MS_CLIST_ADDEVENT, 0, (LPARAM) & cle);
 	}
-	ZeroMemory(&cle, sizeof(cle));
-	cle.cbSize = sizeof(cle);
-	cle.hContact = (HANDLE) wParam;
-	cle.hDbEvent = (HANDLE) lParam;
-	cle.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
-	cle.pszService = "SRMsg/ReadMessage";
-	contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, 0);
-	mir_snprintf(toolTip, sizeof(toolTip), Translate("Message from %s"), contactName);
-	cle.pszTooltip = toolTip;
-	CallService(MS_CLIST_ADDEVENT, 0, (LPARAM) & cle);
 	return 0;
 }
 
