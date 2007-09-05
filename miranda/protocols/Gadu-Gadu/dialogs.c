@@ -346,12 +346,12 @@ static BOOL CALLBACK gg_genoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				ShowWindow(GetDlgItem(hwndDlg, IDC_REMOVEACCOUNT), SW_HIDE);
 				ShowWindow(GetDlgItem(hwndDlg, IDC_LOSTPASS), SW_HIDE);
 			}
-			if (!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_PASSWORD, &dbv)) {
+			if (!DBGetContactSettingString(NULL, GG_PROTO, GG_KEY_PASSWORD, &dbv)) {
 				CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
 				SetDlgItemText(hwndDlg, IDC_PASSWORD, dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
-			if (!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_EMAIL, &dbv)) {
+			if (!DBGetContactSettingString(NULL, GG_PROTO, GG_KEY_EMAIL, &dbv)) {
 				SetDlgItemText(hwndDlg, IDC_EMAIL, dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
@@ -506,7 +506,7 @@ static BOOL CALLBACK gg_genoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 								SetDlgItemText(hwndDlg, IDC_UIN, "");
 
 							// Update password
-							if (!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_PASSWORD, &dbv)) {
+							if (!DBGetContactSettingString(NULL, GG_PROTO, GG_KEY_PASSWORD, &dbv)) {
 								CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
 								SetDlgItemText(hwndDlg, IDC_PASSWORD, dbv.pszVal);
 								DBFreeVariant(&dbv);
@@ -515,7 +515,7 @@ static BOOL CALLBACK gg_genoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 								SetDlgItemText(hwndDlg, IDC_PASSWORD, "");
 
 							// Update e-mail
-							if (!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_EMAIL, &dbv)) {
+							if (!DBGetContactSettingString(NULL, GG_PROTO, GG_KEY_EMAIL, &dbv)) {
 								SetDlgItemText(hwndDlg, IDC_EMAIL, dbv.pszVal);
 								DBFreeVariant(&dbv);
 							}
@@ -683,7 +683,7 @@ static BOOL CALLBACK gg_advoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			DWORD num;
 
 			TranslateDialogDefault(hwndDlg);
-			if (!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_SERVERHOSTS, &dbv)) {
+			if (!DBGetContactSettingString(NULL, GG_PROTO, GG_KEY_SERVERHOSTS, &dbv)) {
 				SetDlgItemText(hwndDlg, IDC_HOST, dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
@@ -710,7 +710,7 @@ static BOOL CALLBACK gg_advoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			if (num = DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_DIRECTPORT, GG_KEYDEF_DIRECTPORT))
 				SetDlgItemText(hwndDlg, IDC_DIRECTPORT, ditoa(num));
 			CheckDlgButton(hwndDlg, IDC_FORWARDING, DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_FORWARDING, GG_KEYDEF_FORWARDING));
-			if (!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_FORWARDHOST, &dbv)) {
+			if (!DBGetContactSettingString(NULL, GG_PROTO, GG_KEY_FORWARDHOST, &dbv)) {
 				SetDlgItemText(hwndDlg, IDC_FORWARDHOST, dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}

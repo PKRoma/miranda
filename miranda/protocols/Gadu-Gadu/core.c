@@ -63,7 +63,7 @@ void gg_disconnect()
 			{
 				case ID_STATUS_ONLINE:
 					if(!(szMsg = ggModeMsg.szOnline) &&
-						!DBGetContactSetting(NULL, "SRAway", gg_status2db(ID_STATUS_ONLINE, "Default"), &dbv))
+						!DBGetContactSettingString(NULL, "SRAway", gg_status2db(ID_STATUS_ONLINE, "Default"), &dbv))
 					{
 						if(*(dbv.pszVal))
 							szMsg = dbMsg = strdup(dbv.pszVal);
@@ -72,7 +72,7 @@ void gg_disconnect()
 					break;
 				case ID_STATUS_AWAY:
 					if(!(szMsg = ggModeMsg.szAway) &&
-						!DBGetContactSetting(NULL, "SRAway", gg_status2db(ID_STATUS_AWAY, "Default"), &dbv))
+						!DBGetContactSettingString(NULL, "SRAway", gg_status2db(ID_STATUS_AWAY, "Default"), &dbv))
 					{
 						if(*(dbv.pszVal))
 							szMsg = dbMsg = strdup(dbv.pszVal);
@@ -81,7 +81,7 @@ void gg_disconnect()
 					break;
 				case ID_STATUS_INVISIBLE:
 					if(!(szMsg = ggModeMsg.szInvisible) &&
-						!DBGetContactSetting(NULL, "SRAway", gg_status2db(ID_STATUS_INVISIBLE, "Default"), &dbv))
+						!DBGetContactSettingString(NULL, "SRAway", gg_status2db(ID_STATUS_INVISIBLE, "Default"), &dbv))
 					{
 						if(*(dbv.pszVal))
 							szMsg = dbMsg = strdup(dbv.pszVal);
@@ -337,7 +337,7 @@ start:
 	if(DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_MANUALHOST, GG_KEYDEF_MANUALHOST))
 	{
 		DBVARIANT dbv;
-		if(!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_SERVERHOSTS, &dbv))
+		if(!DBGetContactSettingString(NULL, GG_PROTO, GG_KEY_SERVERHOSTS, &dbv))
 		{
 			hostcount = gg_decodehosts(dbv.pszVal, hosts, 64);
 			hostnum ++;
@@ -371,7 +371,7 @@ start:
 	}
 
 	// Readup password
-	if(!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_PASSWORD, &dbv)) {
+	if(!DBGetContactSettingString(NULL, GG_PROTO, GG_KEY_PASSWORD, &dbv)) {
 		CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
 		p.password = _strdup(dbv.pszVal);
 		DBFreeVariant(&dbv);
@@ -435,7 +435,7 @@ start:
 	if(thread->dcc && DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_FORWARDING, GG_KEYDEF_FORWARDING))
 	{
 		DBVARIANT dbv;
-		if(!DBGetContactSetting(NULL, GG_PROTO, GG_KEY_FORWARDHOST, &dbv))
+		if(!DBGetContactSettingString(NULL, GG_PROTO, GG_KEY_FORWARDHOST, &dbv))
 		{
 			if(!(p.external_addr = gg_dnslookup(dbv.pszVal)))
 			{
