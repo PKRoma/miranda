@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_db.h,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -47,6 +47,7 @@ DWORD __stdcall ICQGetContactSettingDword(HANDLE hContact, const char* szSetting
 DWORD __stdcall ICQGetContactSettingUIN(HANDLE hContact);
 int __stdcall ICQGetContactSettingUID(HANDLE hContact, DWORD *pdwUin, uid_str* ppszUid);
 int __stdcall ICQGetContactSetting(HANDLE hContact, const char* szSetting, DBVARIANT *dbv);
+int __stdcall ICQGetContactSettingString(HANDLE hContact, const char* szSetting, DBVARIANT *dbv);
 char* __stdcall ICQGetContactSettingUtf(HANDLE hContact, const char* szSetting, char* szDef);
 
 WORD __stdcall ICQGetContactStatus(HANDLE hContact);

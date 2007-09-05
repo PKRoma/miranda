@@ -81,7 +81,7 @@ static void file_sendNick(directconnect* dc)
 
 
   dbv.type = DBVT_DELETED;
-  if (ICQGetContactSetting(NULL, "Nick", &dbv))
+  if (ICQGetContactSettingString(NULL, "Nick", &dbv))
     szNick = "";
   else
     szNick = dbv.pszVal;

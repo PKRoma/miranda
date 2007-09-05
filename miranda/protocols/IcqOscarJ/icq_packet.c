@@ -350,7 +350,7 @@ void ppackLELNTSfromDB(PBYTE *buf, int *buflen, const char *szSetting)
 {
   DBVARIANT dbv;
 
-  if (ICQGetContactSetting(NULL, szSetting, &dbv))
+  if (ICQGetContactSettingString(NULL, szSetting, &dbv))
   {
     ppackLEWord(buf, buflen, 0);
   }

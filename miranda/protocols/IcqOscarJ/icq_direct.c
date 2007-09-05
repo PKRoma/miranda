@@ -1325,7 +1325,7 @@ static void sendPeerFileInit(directconnect* dc)
   int nNickLen;
 
   dbv.type = DBVT_DELETED;
-  if (ICQGetContactSetting(NULL, "Nick", &dbv))
+  if (ICQGetContactSettingString(NULL, "Nick", &dbv))
     szNick = "";
   else
     szNick = dbv.pszVal;

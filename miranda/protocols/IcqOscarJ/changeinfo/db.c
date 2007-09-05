@@ -66,6 +66,9 @@ void LoadSettingsFromDb(int keepChanged)
         case DBVT_ASCIIZ:
           setting[i].value=(LPARAM)ICQGetContactSettingUtf(NULL,setting[i].szDbSetting, NULL);
           break;
+        case DBVT_UTF8:
+          setting[i].value=null_strdup(dbv.pszVal);
+          break;
         case DBVT_WORD:
           if(setting[i].displayType&LIF_SIGNED) 
             setting[i].value=dbv.sVal;

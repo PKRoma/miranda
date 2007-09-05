@@ -616,7 +616,7 @@ DWORD icq_sendServerContact(HANDLE hContact, DWORD dwCookie, WORD wAction, WORD 
   {
     DBVARIANT dbv;
 
-    if (!DBGetContactSetting(hContact, gpszICQProtoName, "ServerData", &dbv))
+    if (!ICQGetContactSetting(hContact, "ServerData", &dbv))
     { // read additional server item data
       nDataLen = dbv.cpbVal;
       pData = (BYTE*)_alloca(nDataLen);
