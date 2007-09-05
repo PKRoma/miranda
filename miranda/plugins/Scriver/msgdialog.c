@@ -852,7 +852,7 @@ void ShowAvatar(HWND hwndDlg, struct MessageWindowData *dat) {
 			DeleteObject(dat->avatarPic);
 			dat->avatarPic=0;
 		}
-		if (!DBGetContactSetting(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, &dbv)) {
+		if (!DBGetContactSettingString(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, &dbv)) {
 			HANDLE hFile;
 			char tmpPath[MAX_PATH];
 			/* relative to absolute here */
@@ -1464,7 +1464,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		//Use contact photo
         if (!(CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0)&PF4_AVATARS)) {
 			DBVARIANT dbv;
-			if (!DBGetContactSetting(dat->hContact, "ContactPhoto", "File", &dbv)) {
+			if (!DBGetContactSettingString(dat->hContact, "ContactPhoto", "File", &dbv)) {
 				DBWriteContactSettingString(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
@@ -1485,7 +1485,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			if (VALID_AVATAR(pai.format)) {
 				DBVARIANT dbv;
 				DBWriteContactSettingString(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, pai.filename);
-				if (DBGetContactSetting(dat->hContact, "ContactPhoto", "File", &dbv)) {
+				if (DBGetContactSettingString(dat->hContact, "ContactPhoto", "File", &dbv)) {
 					DBWriteContactSettingString(dat->hContact, "ContactPhoto", "File", pai.filename);
 				} else {
 					DBFreeVariant(&dbv);
@@ -1494,7 +1494,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			ShowAvatar(hwndDlg, dat);
 		} else if (result==GAIR_NOAVATAR) {
 			DBVARIANT dbv;
-			if (!DBGetContactSetting(dat->hContact, "ContactPhoto", "File", &dbv)) {
+			if (!DBGetContactSettingString(dat->hContact, "ContactPhoto", "File", &dbv)) {
 				DBWriteContactSettingString(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, dbv.pszVal);
 				DBFreeVariant(&dbv);
 			} else {
