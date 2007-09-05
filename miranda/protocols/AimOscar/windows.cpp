@@ -119,7 +119,7 @@ BOOL CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
         case WM_INITDIALOG:
         {
 			DBVARIANT dbv;
-			if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PR, &dbv))
+			if (!DBGetContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PR, &dbv))
 			{
                 SetDlgItemText(hwndDlg, IDC_PROFILE, dbv.pszVal);
                 DBFreeVariant(&dbv);
@@ -735,28 +735,28 @@ BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
         {
             DBVARIANT dbv;
             TranslateDialogDefault(hwndDlg);
-            if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+            if (!DBGetContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 			{
                 SetDlgItemText(hwndDlg, IDC_SN, dbv.pszVal);
                 DBFreeVariant(&dbv);
             }
-			if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_NK, &dbv))
+			if (!DBGetContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_NK, &dbv))
 			{
                 SetDlgItemText(hwndDlg, IDC_NK, dbv.pszVal);
                 DBFreeVariant(&dbv);
             }
-			else if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+			else if (!DBGetContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 			{
                 SetDlgItemText(hwndDlg, IDC_NK, dbv.pszVal);
                 DBFreeVariant(&dbv);
 			}
-            if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PW, &dbv))
+            if (!DBGetContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PW, &dbv))
 			{
                 CallService(MS_DB_CRYPT_DECODESTRING, lstrlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
                 SetDlgItemText(hwndDlg, IDC_PW, dbv.pszVal);
                 DBFreeVariant(&dbv);
             }
-			if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HN, &dbv))
+			if (!DBGetContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HN, &dbv))
 			{
                 SetDlgItemText(hwndDlg, IDC_HN, dbv.pszVal);
                 DBFreeVariant(&dbv);
@@ -987,13 +987,13 @@ BOOL CALLBACK first_run_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM /*l
             DBVARIANT dbv;
             TranslateDialogDefault(hwndDlg);
 			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM) LoadIcon(conn.hInstance, MAKEINTRESOURCE(IDI_AIM)));
-            if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+            if (!DBGetContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 			{
                 SetDlgItemText(hwndDlg, IDC_SN, dbv.pszVal);
                 DBFreeVariant(&dbv);
             }
 
-            if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PW, &dbv))
+            if (!DBGetContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PW, &dbv))
 			{
                 CallService(MS_DB_CRYPT_DECODESTRING, lstrlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
                 SetDlgItemText(hwndDlg, IDC_PW, dbv.pszVal);

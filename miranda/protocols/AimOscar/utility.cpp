@@ -38,7 +38,7 @@ void start_connection(int initial_status)
 	{
 		offline_contacts();
 		DBVARIANT dbv;
-		if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+		if (!DBGetContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 			DBFreeVariant(&dbv);
 		else
 		{
@@ -49,7 +49,7 @@ void start_connection(int initial_status)
 			broadcast_status(ID_STATUS_OFFLINE);
 			return;
 		}
-		if(!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PW, &dbv))
+		if(!DBGetContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PW, &dbv))
 			DBFreeVariant(&dbv);
 		else
 		{
@@ -57,7 +57,7 @@ void start_connection(int initial_status)
 			broadcast_status(ID_STATUS_OFFLINE);
 			return;
 		}
-		if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HN, &dbv))
+		if (!DBGetContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HN, &dbv))
 		{
 			broadcast_status(ID_STATUS_CONNECTING);
 			conn.hServerConn=NULL;
@@ -157,7 +157,7 @@ void add_contact_to_group(HANDLE hContact,char* group)
 		}
 		else
 		{
-			if(!DBGetContactSetting(NULL,ID_GROUP_KEY,group_id_string,&dbv))//utf
+			if(!DBGetContactSettingString(NULL,ID_GROUP_KEY,group_id_string,&dbv))//utf
 				if(!lstrcmpi(tgroup,dbv.pszVal))
 				{
 					DBFreeVariant(&dbv);
@@ -186,7 +186,7 @@ void add_contact_to_group(HANDLE hContact,char* group)
 	if(new_group_id&&new_group_id!=old_group_id)
 	{
 		DBVARIANT dbv;
-		if(!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN,&dbv))
+		if(!DBGetContactSettingString(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN,&dbv))
 		{
 			char* groupNum= new char[lstrlen(AIM_KEY_GI)+10];
 			mir_snprintf(groupNum,lstrlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",1);
@@ -267,7 +267,7 @@ void add_contacts_to_groups()
 					//MessageBox( NULL, "ansi path... should start writing", AIM_PROTOCOL_NAME, MB_OK );
 					if(DBGetContactSettingByte(hContact, AIM_PROTOCOL_NAME,AIM_KEY_NC,0))
 					{
-						if(!DBGetContactSetting(NULL,ID_GROUP_KEY,group_id_string,&dbv))//utf
+						if(!DBGetContactSettingString(NULL,ID_GROUP_KEY,group_id_string,&dbv))//utf
 						{
 							//MessageBox( NULL, "Got group name... should add", AIM_PROTOCOL_NAME, MB_OK );
 							//MessageBox( NULL, dbv.pszVal, AIM_PROTOCOL_NAME, MB_OK );
@@ -371,7 +371,7 @@ void remove_AT_icons()
 			if (protocol != NULL && !lstrcmp(protocol, AIM_PROTOCOL_NAME))
 			{
 				DBVARIANT dbv;
-				if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+				if (!DBGetContactSettingString(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 				{
 					char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
 					HANDLE handle=(HANDLE)-1;
@@ -398,7 +398,7 @@ void remove_ES_icons()
 			if (protocol != NULL && !lstrcmp(protocol, AIM_PROTOCOL_NAME))
 			{
 				DBVARIANT dbv;
-				if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+				if (!DBGetContactSettingString(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 				{
 					char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
 					HANDLE handle=(HANDLE)-1;
@@ -423,7 +423,7 @@ void add_AT_icons()
 		if (protocol != NULL && !lstrcmp(protocol, AIM_PROTOCOL_NAME))
 		{
 			DBVARIANT dbv;
-			if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+			if (!DBGetContactSettingString(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 			{
 				int account_type=DBGetContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_AC,0);		
 				if(account_type==ACCOUNT_TYPE_ADMIN)
@@ -486,7 +486,7 @@ void add_ES_icons()
 		if (protocol != NULL && !lstrcmp(protocol, AIM_PROTOCOL_NAME))
 		{
 			DBVARIANT dbv;
-			if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+			if (!DBGetContactSettingString(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 			{
 				int es_type=DBGetContactSettingByte(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ET,0);		
 				if(es_type==EXTENDED_STATUS_BOT)
@@ -614,7 +614,7 @@ void create_group(char *group)
 		}
 		else
 		{
-			if (DBGetContactSetting(NULL, "CListGroups", str, &dbv))
+			if (DBGetContactSettingString(NULL, "CListGroups", str, &dbv))
 				break;//invalid
 		}
 		//only happens if dbv entry exist
@@ -652,7 +652,7 @@ unsigned short search_for_free_group_id(char *name)//searches for a free group i
 		}
 		else
 		{
-			if(DBGetContactSetting(NULL,ID_GROUP_KEY,group_id_string,&dbv))
+			if(DBGetContactSettingString(NULL,ID_GROUP_KEY,group_id_string,&dbv))
 			{//invalid
 				create_group(name);	
 				return i;
@@ -843,7 +843,7 @@ void delete_module(char* module, HANDLE hContact)
 	}
 	else
 	{
-		if(DBGetContactSetting(NULL, ID_GROUP_KEY,group_id_string,&dbv))
+		if(DBGetContactSettingString(NULL, ID_GROUP_KEY,group_id_string,&dbv))
 			return;
 		else
 		{
@@ -873,7 +873,7 @@ void delete_module(char* module, HANDLE hContact)
 			}
 			else
 			{
-				if (!DBGetContactSetting(hContact, MOD_KEY_CL, OTH_KEY_GP, &dbv))
+				if (!DBGetContactSettingString(hContact, MOD_KEY_CL, OTH_KEY_GP, &dbv))
 				{
 					if(!lstrcmp(dbv.pszVal,group))
 					{
@@ -1210,7 +1210,7 @@ char* get_default_group()
 {
 	char* default_group;
 	DBVARIANT dbv;
-	if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DG, &dbv))
+	if (!DBGetContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DG, &dbv))
 	{
 		default_group=strdup(dbv.pszVal);
 		DBFreeVariant(&dbv);
@@ -1225,7 +1225,7 @@ char* get_outer_group()
 {
 	char* outer_group;
 	DBVARIANT dbv;
-	if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_OG, &dbv))
+	if (!DBGetContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_OG, &dbv))
 	{
 		outer_group=strdup(dbv.pszVal);
 		DBFreeVariant(&dbv);
@@ -1287,7 +1287,7 @@ unsigned short string_to_bytes_count(char* string)
 char* getSetting(HANDLE &hContact,char* module,char* setting)
 {
 	DBVARIANT dbv;
-	if (!DBGetContactSetting(hContact, module, setting, &dbv))
+	if (!DBGetContactSettingString(hContact, module, setting, &dbv))
 	{
 		char* store=strldup(dbv.pszVal,lstrlen(dbv.pszVal));
 		DBFreeVariant(&dbv);

@@ -76,7 +76,7 @@ void accept_file_thread(char* data)//buddy sending file
 	verified_ip = local_ip + lstrlen(local_ip) + 1;
 	proxy_ip = verified_ip + lstrlen(verified_ip) + 1;
 	DBVARIANT dbv;
-	if (!DBGetContactSetting(*hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+	if (!DBGetContactSettingString(*hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 	{
 		sn= strldup(dbv.pszVal,lstrlen(dbv.pszVal));
 		DBFreeVariant(&dbv);
@@ -100,7 +100,7 @@ void accept_file_thread(char* data)//buddy sending file
 		}
 		else
 		{
-			if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+			if (!DBGetContactSettingString(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 			{
 				LOG("We failed to connect to the buddy over the proxy transfer.");
 				char cookie[8];

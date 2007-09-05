@@ -44,7 +44,7 @@ void __cdecl aim_connection_authorization()
 	NETLIBPACKETRECVER packetRecv;
 	DBVARIANT dbv;
 	int recvResult=0;
-	if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PW, &dbv))
+	if (!DBGetContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PW, &dbv))
 	{
         CallService(MS_DB_CRYPT_DECODESTRING, lstrlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
         conn.password = strldup(dbv.pszVal,lstrlen(dbv.pszVal));
@@ -55,7 +55,7 @@ void __cdecl aim_connection_authorization()
 		LeaveCriticalSection(&connectionMutex);
 		return;
 	}
-	if (!DBGetContactSetting(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+	if (!DBGetContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 	{
         conn.username = strldup(dbv.pszVal,lstrlen(dbv.pszVal));
         DBFreeVariant(&dbv);

@@ -10,7 +10,7 @@ void sending_file(HANDLE hContact, HANDLE hNewConnection)
 	char* wd;
 	int file_start_point=0;
 	unsigned long size;
-	if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FN, &dbv))
+	if (!DBGetContactSettingString(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FN, &dbv))
 	{
 		file=strldup(dbv.pszVal,lstrlen(dbv.pszVal));
 		DBFreeVariant(&dbv);
@@ -187,7 +187,7 @@ void receiving_file(HANDLE hContact, HANDLE hNewConnection)
 	pfts.totalFiles=1;
 	pfts.totalProgress=0;
 	unsigned long size;
-	if (!DBGetContactSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FN, &dbv))
+	if (!DBGetContactSettingString(hContact, AIM_PROTOCOL_NAME, AIM_KEY_FN, &dbv))
 	{
 		file=strldup(dbv.pszVal,lstrlen(dbv.pszVal));
 		pfts.workingDir=strldup(file,lstrlen(file));
