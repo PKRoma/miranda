@@ -100,8 +100,8 @@ static int GetNetlibUserSettingInt(const char *szUserModule,const char *szSettin
 static char *GetNetlibUserSettingString(const char *szUserModule,const char *szSetting,int decode)
 {
 	DBVARIANT dbv;
-	if(DBGetContactSetting(NULL,szUserModule,szSetting,&dbv)
-	   && DBGetContactSetting(NULL,"Netlib",szSetting,&dbv)) {
+	if(DBGetContactSettingString(NULL,szUserModule,szSetting,&dbv)
+	   && DBGetContactSettingString(NULL,"Netlib",szSetting,&dbv)) {
 		return NULL;
 	}
 	else {
@@ -171,7 +171,7 @@ static int NetlibRegisterUser(WPARAM wParam,LPARAM lParam)
 	thisUser->settings.specifyOutgoingPorts=GetNetlibUserSettingInt(thisUser->user.szSettingsModule,"NLSpecifyOutgoingPorts",0);
 	thisUser->settings.szOutgoingPorts=GetNetlibUserSettingString(thisUser->user.szSettingsModule,"NLOutgoingPorts",0);
 	thisUser->settings.enableUPnP=GetNetlibUserSettingInt(thisUser->user.szSettingsModule,"NLEnableUPnP",1); //default to on
-    
+
 	EnterCriticalSection(&csNetlibUser);
 	netlibUser=(struct NetlibUser**)mir_realloc(netlibUser,sizeof(struct NetlibUser*)*++netlibUserCount);
 	netlibUser[netlibUserCount-1]=thisUser;

@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2007 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -231,7 +231,7 @@ BOOL CALLBACK ContactDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			TCHAR idstr2[33];
 			DBVARIANT dbv;
 			HANDLE hContact=(HANDLE)GetWindowLong(hwndDlg,GWL_USERDATA);
-			
+
 			if (hContact != NULL) {
 				szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
 				if (szProto==NULL) break;
@@ -433,7 +433,7 @@ BOOL CALLBACK ContactDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 										break;
 									for(i=0;;i++) {
 										wsprintfA(idstr,szIdTemplate,i);
-										if(DBGetContactSetting(hContact,"UserInfo",idstr,&dbv)) break;
+										if(DBGetContactSettingString(hContact,"UserInfo",idstr,&dbv)) break;
 										DBFreeVariant(&dbv);
 									}
 									DBWriteContactSettingString(hContact,"UserInfo",idstr,szNewData);
@@ -448,7 +448,7 @@ BOOL CALLBACK ContactDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 									DBVARIANT dbv;
 									for(i=lvi.lParam;;i++) {
 										wsprintfA(idstr,szIdTemplate,i+1);
-										if(DBGetContactSetting(hContact,"UserInfo",idstr,&dbv)) break;
+										if(DBGetContactSettingString(hContact,"UserInfo",idstr,&dbv)) break;
 										wsprintfA(idstr,szIdTemplate,i);
 										DBWriteContactSettingString(hContact,"UserInfo",idstr,dbv.pszVal);
 										DBFreeVariant(&dbv);
@@ -462,7 +462,7 @@ BOOL CALLBACK ContactDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 									char szText[256],idstr[33];
 									DBVARIANT dbv;
 									wsprintfA(idstr,szIdTemplate,lvi.lParam);
-									if(DBGetContactSetting(hContact,"UserInfo",idstr,&dbv)) break;
+									if(DBGetContactSettingString(hContact,"UserInfo",idstr,&dbv)) break;
 									lstrcpynA(szText,dbv.pszVal,SIZEOF(szText));
 									DBFreeVariant(&dbv);
 									if(IDOK!=DialogBoxParam(GetModuleHandle(NULL),MAKEINTRESOURCE(nm->hdr.idFrom==IDC_PHONES?IDD_ADDPHONE:IDD_ADDEMAIL),hwndDlg,nm->hdr.idFrom==IDC_PHONES?EditUserPhoneDlgProc:EditUserEmailDlgProc,(LPARAM)szText))

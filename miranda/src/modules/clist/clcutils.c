@@ -79,7 +79,7 @@ int fnHitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcCo
 
 	if ( flags )
 		*flags = 0;
-	
+
 	pt.x = testx;
 	pt.y = testy;
 	MapWindowPoints(hwnd, GetDesktopWindow(), &pt, 1);
@@ -405,7 +405,7 @@ void fnEndRename(HWND hwnd, struct ClcData *dat, int save)
 					if (contact->group->parent && contact->group->parent->parent)
 						mir_sntprintf( szFullName, SIZEOF(szFullName), _T("%s\\%s"),
 							cli.pfnGetGroupName(contact->group->parent->groupId, NULL), text);
-					else 
+					else
 						lstrcpyn( szFullName, text, SIZEOF( szFullName ));
 					cli.pfnRenameGroup( contact->groupId, szFullName );
 				}
@@ -721,7 +721,7 @@ void fnLoadClcOptions(HWND hwnd, struct ClcData *dat)
 		SIZE fontSize;
 		HDC hdc = GetDC(hwnd);
 		HFONT hFont = GetCurrentObject(hdc, OBJ_FONT);
-		HFONT holdfont;	
+		HFONT holdfont;
 
 		for (i = 0; i <= FONTID_MAX; i++) {
 			if (!dat->fontInfo[i].changed)
@@ -761,7 +761,7 @@ void fnLoadClcOptions(HWND hwnd, struct ClcData *dat)
 			dat->hBmpBackground = NULL;
 		}
 		if (DBGetContactSettingByte(NULL, "CLC", "UseBitmap", CLCDEFAULT_USEBITMAP)) {
-			if (!DBGetContactSetting(NULL, "CLC", "BkBitmap", &dbv)) {
+			if (!DBGetContactSettingString(NULL, "CLC", "BkBitmap", &dbv)) {
 				dat->hBmpBackground = (HBITMAP) CallService(MS_UTILS_LOADBITMAP, 0, (LPARAM) dbv.pszVal);
 				mir_free(dbv.pszVal);
 			}

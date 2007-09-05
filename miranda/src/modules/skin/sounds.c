@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2007 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -42,7 +42,7 @@ static int ServiceSkinAddNewSound(WPARAM wParam,LPARAM lParam)
 		return 0;
     if (ssd->pszName==NULL || ssd->pszDescription==NULL)
         return 0;
-    
+
 	soundList=(struct SoundItem*)mir_realloc(soundList,sizeof(struct SoundItem)*(soundCount+1));
 	item = &soundList[soundCount++];
 	item->name = mir_strdup( ssd->pszName );
@@ -52,9 +52,9 @@ static int ServiceSkinAddNewSound(WPARAM wParam,LPARAM lParam)
 	if ( ssd->pszDefaultFile ) {
 		DBVARIANT dbv;
 
-		if ( DBGetContactSetting(NULL, "SkinSounds", item->name, &dbv))
+		if ( DBGetContactSettingString(NULL, "SkinSounds", item->name, &dbv))
 			DBWriteContactSettingString(NULL, "SkinSounds", item->name, ssd->pszDefaultFile);
-		else 
+		else
 			DBFreeVariant(&dbv);
 	}
 	return 0;
@@ -79,7 +79,7 @@ static int ServiceSkinPlaySound(WPARAM wParam, LPARAM lParam)
 			if (DBGetContactSettingByte(NULL, "SkinSoundsOff", pszSoundName, 0)==0) {
 				DBVARIANT dbv;
 
-				if (DBGetContactSetting(NULL, "SkinSounds", pszSoundName, &dbv)==0) {
+				if (DBGetContactSettingString(NULL, "SkinSounds", pszSoundName, &dbv)==0) {
 					char szFull[MAX_PATH];
 
 					CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)szFull);
@@ -167,7 +167,7 @@ BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 				TreeView_GetItem(hwndTree, &tvi);
 				if ( tvi.lParam == -1 )
 					TreeView_SetItemState(hwndTree, tvi.hItem, INDEXTOSTATEIMAGEMASK(0), TVIS_STATEIMAGEMASK);
-			
+
 				tvi.hItem=TreeView_GetNextSibling(hwndTree,tvi.hItem);
 		}	}
 
@@ -220,11 +220,11 @@ BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			tvi.hItem = hti;
 			if (TreeView_GetItem(hwndTree, &tvi)==FALSE) break;
 			if (tvi.lParam==-1) break;
-			if (soundList[tvi.lParam].tempFile) 
+			if (soundList[tvi.lParam].tempFile)
 				 NotifyEventHooks(hPlayEvent, 1, (LPARAM)soundList[tvi.lParam].tempFile);
 			else {
 				DBVARIANT dbv;
-				if(!DBGetContactSetting(NULL,"SkinSounds",soundList[tvi.lParam].name,&dbv)) {
+				if(!DBGetContactSettingString(NULL,"SkinSounds",soundList[tvi.lParam].name,&dbv)) {
 					char szPathFull[MAX_PATH];
 
 					CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)szPathFull);
@@ -253,7 +253,7 @@ BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 				if (DBGetContactSettingByte(NULL, "SkinSoundsOff", soundList[tvi.lParam].name, 0)==0) {
 					DBVARIANT dbv;
 
-					if (DBGetContactSetting(NULL, "SkinSounds", soundList[tvi.lParam].name, &dbv)==0) {                           
+					if (DBGetContactSettingString(NULL, "SkinSounds", soundList[tvi.lParam].name, &dbv)==0) {
 						CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)strdir);
 						DBFreeVariant(&dbv);
 			}	}	}
@@ -286,7 +286,7 @@ BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			break;
 		}
         if(LOWORD(wParam)==IDC_LOCATION) {
-            break;   
+            break;
         }
 		SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 		break;
@@ -294,9 +294,9 @@ BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 		switch(((LPNMHDR)lParam)->idFrom) {
 		case 0:
 			if (((LPNMHDR)lParam)->code == PSN_APPLY)
-			{	
+			{
 				int i;
-                
+
             DBWriteContactSettingByte(NULL, "Skin", "UseSound", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_ENABLESOUNDS));
 				for ( i=0; i < soundCount; i++ )
 					if ( soundList[i].tempFile )
@@ -343,9 +343,9 @@ BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
 						mir_sntprintf(buf, SIZEOF(buf), _T("%s: %s"), soundList[tvi.lParam].section, soundList[tvi.lParam].description);
 						SetDlgItemText(hwndDlg, IDC_NAMEVAL, buf);
-						if (soundList[tvi.lParam].tempFile) 
+						if (soundList[tvi.lParam].tempFile)
 							SetDlgItemTextA(hwndDlg, IDC_LOCATION, soundList[tvi.lParam].tempFile);
-						else if(!DBGetContactSetting(NULL,"SkinSounds",soundList[tvi.lParam].name,&dbv)) {
+						else if(!DBGetContactSettingString(NULL,"SkinSounds",soundList[tvi.lParam].name,&dbv)) {
 							SetDlgItemTextA(hwndDlg, IDC_LOCATION, dbv.pszVal);
 							DBFreeVariant(&dbv);
 						}

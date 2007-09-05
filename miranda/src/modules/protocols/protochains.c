@@ -37,10 +37,10 @@ static int Proto_CallContactService(WPARAM wParam,LPARAM lParam)
 
 	if ( wParam == (WPARAM)(-1))
 		return 1;
-	
+
 	for ( i = wParam;; i++ ) {
 		_itoa( i, str, 10 );
-		if ( DBGetContactSetting( ccs->hContact, "_Filter", str, &dbv ))
+		if ( DBGetContactSettingString( ccs->hContact, "_Filter", str, &dbv ))
 			break;
 
 		if (( ret = CallProtoService( dbv.pszVal, ccs->szProtoService, i+1, lParam )) != CALLSERVICE_NOTFOUND ) {
@@ -50,7 +50,7 @@ static int Proto_CallContactService(WPARAM wParam,LPARAM lParam)
 		}
 		mir_free( dbv.pszVal );
 	}
-	if ( DBGetContactSetting( ccs->hContact, "Protocol", "p", &dbv ))
+	if ( DBGetContactSettingString( ccs->hContact, "Protocol", "p", &dbv ))
 		return 1;
 
 	if (( ret = CallProtoService( dbv.pszVal, ccs->szProtoService, (WPARAM)(-1), lParam )) == CALLSERVICE_NOTFOUND )
@@ -71,7 +71,7 @@ static int CallRecvChain(WPARAM wParam,LPARAM lParam)
 	if ( wParam == 0 ) {	   //begin processing by finding end of chain
 		for( ;;wParam++ ) {
 			_itoa( wParam, str, 10 );
-			if ( DBGetContactSetting( ccs->hContact, "_Filter", str, &dbv ))
+			if ( DBGetContactSettingString( ccs->hContact, "_Filter", str, &dbv ))
 				break;
 			mir_free(dbv.pszVal);
 		}
@@ -80,7 +80,7 @@ static int CallRecvChain(WPARAM wParam,LPARAM lParam)
 
 	for ( i = wParam-1; i >= 0; i-- ) {
 		_itoa( i, str, 10 );
-		if ( DBGetContactSetting( ccs->hContact, "_Filter", str, &dbv ))  //never happens
+		if ( DBGetContactSettingString( ccs->hContact, "_Filter", str, &dbv ))  //never happens
 			return 1;
 
 		if (( ret = CallProtoService( dbv.pszVal, ccs->szProtoService, i+1, lParam )) != CALLSERVICE_NOTFOUND ) {
@@ -92,7 +92,7 @@ static int CallRecvChain(WPARAM wParam,LPARAM lParam)
 	}
 
 	//end of chain, call network protocol again
-	if ( DBGetContactSetting( ccs->hContact, "Protocol", "p", &dbv ))
+	if ( DBGetContactSettingString( ccs->hContact, "Protocol", "p", &dbv ))
 		return 1;
 
 	if (( ret = CallProtoService( dbv.pszVal, ccs->szProtoService, (WPARAM)(-1), lParam )) == CALLSERVICE_NOTFOUND )
@@ -138,7 +138,7 @@ static int Proto_IsProtoOnContact(WPARAM wParam,LPARAM lParam)
 	char str[10];
 	DBVARIANT dbv;
 
-	if(!DBGetContactSetting((HANDLE)wParam,"Protocol","p",&dbv)) {
+	if(!DBGetContactSettingString((HANDLE)wParam,"Protocol","p",&dbv)) {
 		if(!strcmp((char*)lParam,dbv.pszVal)) {
 			mir_free(dbv.pszVal);
 			return -1;
@@ -147,7 +147,7 @@ static int Proto_IsProtoOnContact(WPARAM wParam,LPARAM lParam)
 	}
 	for(i=0;;i++) {
 		_itoa(i,str,10);
-		if(DBGetContactSetting((HANDLE)wParam,"_Filter",str,&dbv)) break;
+		if(DBGetContactSettingString((HANDLE)wParam,"_Filter",str,&dbv)) break;
 		if(!strcmp((char*)lParam,dbv.pszVal)) {
 			mir_free(dbv.pszVal);
 			return i+1;
@@ -175,7 +175,7 @@ static int Proto_AddToContact(WPARAM wParam,LPARAM lParam)
 
 		for(i=0;;i++) {
 			_itoa(i,str,10);
-			if(DBGetContactSetting((HANDLE)wParam,"_Filter",str,&dbv)) break;
+			if(DBGetContactSettingString((HANDLE)wParam,"_Filter",str,&dbv)) break;
 			pdCompare=(PROTOCOLDESCRIPTOR*)Proto_IsProtocolLoaded(0,(LPARAM)dbv.pszVal);
 			mir_free(dbv.pszVal);
 			if(pdCompare==NULL) continue;
@@ -185,7 +185,7 @@ static int Proto_AddToContact(WPARAM wParam,LPARAM lParam)
 		lastProto=mir_strdup((char*)lParam);
 		for(;;i++) {
 			_itoa(i,str,10);
-			if(DBGetContactSetting((HANDLE)wParam,"_Filter",str,&dbv)) {
+			if(DBGetContactSettingString((HANDLE)wParam,"_Filter",str,&dbv)) {
 				DBWriteContactSettingString((HANDLE)wParam,"_Filter",str,lastProto);
 				mir_free(lastProto);
 				break;
@@ -211,7 +211,7 @@ static int Proto_RemoveFromContact(WPARAM wParam,LPARAM lParam)
 	else {
 		for(i--;;i++) {			//we have to decrease i, as Proto_IsOnContact returns +1 more number than read from database
 			_itoa(i+1,str,10);
-			if(0!=DBGetContactSetting((HANDLE)wParam,"_Filter",str,&dbv)) {
+			if(0!=DBGetContactSettingString((HANDLE)wParam,"_Filter",str,&dbv)) {
 				_itoa(i,str,10);
 				DBDeleteContactSetting((HANDLE)wParam,"_Filter",str);
 				break;

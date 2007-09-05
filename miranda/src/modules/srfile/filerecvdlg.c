@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2007 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -123,7 +123,7 @@ void GetContactReceivedFilesDir(HANDLE hContact,char *szDir,int cchDir)
 	char *szRecvFilesDir, szTemp[MAX_PATH];
 	int len;
 
-	if(DBGetContactSetting(NULL,"SRFile","RecvFilesDirAdv",&dbv)||lstrlenA(dbv.pszVal)==0) {
+	if(DBGetContactSettingString(NULL,"SRFile","RecvFilesDirAdv",&dbv)||lstrlenA(dbv.pszVal)==0) {
 		char szDbPath[MAX_PATH];
 
 		CallService(MS_DB_GETPROFILEPATH,(WPARAM)MAX_PATH,(LPARAM)szDbPath);
@@ -210,7 +210,7 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 		dat->dwTicks=GetTickCount();
 
 		EnumChildWindows(hwndDlg,ClipSiblingsChildEnumProc,0);
-		
+
 		Window_SetIcon_IcoLib(hwndDlg, SKINICON_EVENT_FILE);
 		Button_SetIcon_IcoLib(hwndDlg, IDC_ADD, SKINICON_OTHER_ADDCONTACT, "Add Contact Permanently to List");
 		Button_SetIcon_IcoLib(hwndDlg, IDC_DETAILS, SKINICON_OTHER_USERDETAILS, "View User's Details");
@@ -230,7 +230,7 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			if(MySHAutoComplete) MySHAutoComplete(GetWindow(GetDlgItem(hwndDlg,IDC_FILEDIR),GW_CHILD),1);
 			for(i=0;i<MAX_MRU_DIRS;i++) {
 				wsprintfA(idstr,"MruDir%d",i);
-				if(DBGetContactSetting(NULL,"SRFile",idstr,&dbv)) break;
+				if(DBGetContactSettingString(NULL,"SRFile",idstr,&dbv)) break;
 				SendDlgItemMessageA(hwndDlg,IDC_FILEDIR,CB_ADDSTRING,0,(LPARAM)dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
@@ -324,7 +324,7 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 						DestroyIcon(hIcon);
 		}	}	}	}
 		return CallService(MS_CLIST_MENUDRAWITEM,wParam,lParam);
-		
+
 	case WM_COMMAND:
 		if ( CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam),MPCF_CONTACTMENU), (LPARAM)dat->hContact ))
 			break;
@@ -352,7 +352,7 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 					DBVARIANT dbv;
 					for(i=MAX_MRU_DIRS-2;i>=0;i--) {
 						wsprintfA(idstr,"MruDir%d",i);
-						if(DBGetContactSetting(NULL,"SRFile",idstr,&dbv)) continue;
+						if(DBGetContactSettingString(NULL,"SRFile",idstr,&dbv)) continue;
 						wsprintfA(idstr,"MruDir%d",i+1);
 						DBWriteContactSettingString(NULL,"SRFile",idstr,dbv.pszVal);
 						DBFreeVariant(&dbv);
@@ -371,7 +371,7 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 				ShowWindow(hwndDlg,SW_SHOWMINNOACTIVE);
 			}
 			return TRUE;
-		case IDCANCEL:					
+		case IDCANCEL:
 			if (dat->fs) CallContactService(dat->hContact,PSS_FILEDENY,(WPARAM)dat->fs,(LPARAM)Translate("Cancelled"));
 			dat->fs=NULL; /* the protocol will free the handle */
 			if(dat->hwndTransfer) return SendMessage(dat->hwndTransfer,msg,wParam,lParam);

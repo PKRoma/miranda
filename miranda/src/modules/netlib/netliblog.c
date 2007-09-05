@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2007 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -47,7 +47,7 @@ struct {
 static __int64 mirandaStartTime,perfCounterFreq;
 static int bIsActive = TRUE;
 
-static const TCHAR* szTimeFormats[] = 
+static const TCHAR* szTimeFormats[] =
 {
 	_T( "No times" ),
 	_T( "Standard hh:mm:ss times" ),
@@ -77,7 +77,7 @@ static BOOL CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 		SetDlgItemText(hwndDlg,IDC_FILENAME,logOptions.szFile);
 		CheckDlgButton(hwndDlg,IDC_SHOWTHISDLGATSTART,DBGetContactSettingByte(NULL,"Netlib","ShowLogOptsAtStart",0)?BST_CHECKED:BST_UNCHECKED);
 		{	DBVARIANT dbv;
-			if(!DBGetContactSetting(NULL,"Netlib","RunAtStart",&dbv)) {
+			if(!DBGetContactSettingString(NULL,"Netlib","RunAtStart",&dbv)) {
 				SetDlgItemTextA(hwndDlg,IDC_RUNATSTART,dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
@@ -142,7 +142,7 @@ static BOOL CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 			} else {
 				ofn.Flags|=OFN_PATHMUSTEXIST|OFN_FILEMUSTEXIST;
 				ofn.lpstrTitle=TranslateT("Select program to be run");
-			}					
+			}
 			_tcscpy(filter,TranslateT("All Files"));
 			_tcscat(filter,_T(" (*)"));
 			pfilter=filter+lstrlen(filter)+1;
@@ -156,7 +156,7 @@ static BOOL CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 			if (LOWORD(wParam)==IDC_FILENAMEBROWSE) {
 				if(!GetSaveFileName(&ofn)) return 1;
 			} else {
-				if(!GetOpenFileName(&ofn)) return 1;						
+				if(!GetOpenFileName(&ofn)) return 1;
 			}
 			if(LOWORD(wParam)==IDC_RUNATSTARTBROWSE && _tcschr(str,' ')!=NULL) {
 				MoveMemory(str+1,str,SIZEOF(str)-2);
@@ -291,7 +291,7 @@ static int NetlibLog(WPARAM wParam,LPARAM lParam)
 			CreateDirectoryTreeT(logOptions.szFile);
 			fp = _tfopen(logOptions.szFile, _T("at"));
 		}
-		if(fp) {			
+		if(fp) {
 			fputs(szLine,fp);
 			fclose(fp);
 	}	}
@@ -427,7 +427,7 @@ void NetlibLogInit(void)
 	}
 	if(DBGetContactSettingByte(NULL,"Netlib","ShowLogOptsAtStart",0))
 		NetlibLogShowOptions();
-	if(!DBGetContactSetting(NULL,"Netlib","RunAtStart",&dbv)) {
+	if(!DBGetContactSettingString(NULL,"Netlib","RunAtStart",&dbv)) {
 		STARTUPINFOA si={0};
 		PROCESS_INFORMATION pi;
 		si.cb=sizeof(si);
