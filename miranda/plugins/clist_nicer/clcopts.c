@@ -231,7 +231,7 @@ static int DSP_Read(DISPLAYPROFILE *p)
      */
 
     _snprintf(szKey, 256, "{dw_%u}", p->uID);
-    if(!DBGetContactSetting(NULL, DSP_PROFILES_MODULE, szKey, &dbv)) {
+    if(!DBGetContactSettingString(NULL, DSP_PROFILES_MODULE, szKey, &dbv)) {
         _snscanf(dbv.pszVal, 255, "%u,%u,%u,%u,%u", p->dwFlags, p->dwExtraImageMask, p->avatarBorder, p->clcExStyle, p->clcOfflineModes);
         DBFreeVariant(&dbv);
     }
@@ -244,7 +244,7 @@ static int DSP_Read(DISPLAYPROFILE *p)
      */
 
     _snprintf(szKey, 256, "{b_%u}", p->uID);
-    if(!DBGetContactSetting(NULL, DSP_PROFILES_MODULE, szKey, &dbv)) {
+    if(!DBGetContactSettingString(NULL, DSP_PROFILES_MODULE, szKey, &dbv)) {
         if(lstrlenA(dbv.pszVal) >= 16) {
             p->exIconScale = (int)szBuf[i++];
             p->dualRowMode = szBuf[i++];
@@ -1551,7 +1551,7 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
             SendMessage(hwndDlg, WM_USER + 11, 0, 0); {
                 DBVARIANT dbv;
                 
-                if (!DBGetContactSetting(NULL, "CLC", "BkBitmap", &dbv)) {
+                if (!DBGetContactSettingString(NULL, "CLC", "BkBitmap", &dbv)) {
                     if (ServiceExists(MS_UTILS_PATHTOABSOLUTE)) {
                         char szPath[MAX_PATH];
 

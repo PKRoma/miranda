@@ -101,7 +101,7 @@ void TrayIconUpdateBase(const char *szChangedProto)
 					int iIcon = 0;
 					HICON hIcon = 0;
 					char *szProto;
-					if (DBGetContactSetting(NULL, "CList", "PrimaryStatus", &dbv))
+					if (DBGetContactSettingString(NULL, "CList", "PrimaryStatus", &dbv))
 						szProto = NULL;
 					else
 						szProto = dbv.pszVal;

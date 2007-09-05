@@ -741,7 +741,7 @@ void SetDBButtonStates(HANDLE hPassedContact)
         if(buttonItem->type == DBVT_ASCIIZ) {
             DBVARIANT dbv = {0};
 
-            if(!DBGetContactSetting(hFinalContact, szModule, szSetting, &dbv)) {
+            if(!DBGetContactSettingString(hFinalContact, szModule, szSetting, &dbv)) {
                 result = !strcmp((char *)buttonItem->bValuePush, dbv.pszVal);
                 DBFreeVariant(&dbv);
             }
@@ -2633,7 +2633,7 @@ void FS_RegisterFonts()
 		_snprintf(szTemp, sizeof(szTemp), "Font%dSet", _tagFSINFO[j].id);
 		fid.deffontsettings.charset = DBGetContactSettingByte(NULL, "CLC", szTemp, DEFAULT_CHARSET);
 		_snprintf(szTemp, sizeof(szTemp), "Font%dName", _tagFSINFO[j].id);
-		if (DBGetContactSetting(NULL, "CLC", szTemp, &dbv))
+		if (DBGetContactSettingString(NULL, "CLC", szTemp, &dbv))
 			lstrcpynA(fid.deffontsettings.szFace, "Arial", LF_FACESIZE);
 		else {
 			lstrcpynA(fid.deffontsettings.szFace, dbv.pszVal, LF_FACESIZE);

@@ -348,7 +348,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 		g_CluiData.local_gmt_diff = (int)difftime(now, gmt_time);
 
 	}
-    if(!DBGetContactSetting(NULL, "CLUI", "exIconOrder", &dbv)) {
+    if(!DBGetContactSettingString(NULL, "CLUI", "exIconOrder", &dbv)) {
 
         if(lstrlenA(dbv.pszVal) < EXICON_COUNT) {
             for(i = 1; i <= EXICON_COUNT; i++)

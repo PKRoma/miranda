@@ -561,7 +561,7 @@ void extbk_export(char *file)
         mir_snprintf(szSection, 255, "Font%d", n);
         
         mir_snprintf(szKey, 255, "Font%dName", n);
-        if(!DBGetContactSetting(NULL, "CLC", szKey, &dbv)) {
+        if(!DBGetContactSettingString(NULL, "CLC", szKey, &dbv)) {
             WritePrivateProfileStringA(szSection, "Name", dbv.pszVal, file);
             mir_free(dbv.pszVal);
         }
@@ -606,7 +606,7 @@ void extbk_export(char *file)
         WritePrivateProfileStructA("Global", _tagSettings[i].szSetting, &data, _tagSettings[i].size, file);
         i++;
     }
-    if(!DBGetContactSetting(NULL, "CLC", "BkBitmap", &dbv)) {
+    if(!DBGetContactSettingString(NULL, "CLC", "BkBitmap", &dbv)) {
         WritePrivateProfileStringA("Global", "BkBitmap", dbv.pszVal, file);
         DBFreeVariant(&dbv);
     }
@@ -1264,7 +1264,7 @@ void IMG_LoadItems()
     char szFileName[MAX_PATH];
     int  i = 0;
 
-    if(DBGetContactSetting(NULL, "CLC", "AdvancedSkin", &dbv))
+    if(DBGetContactSettingString(NULL, "CLC", "AdvancedSkin", &dbv))
         return;
 
     CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)szFileName);
@@ -1562,7 +1562,7 @@ static void ApplyCLUISkin()
     DBVARIANT dbv = {0};
     char szFinalName[MAX_PATH];
 
-    if(!DBGetContactSetting(NULL, "CLC", "AdvancedSkin", &dbv)) {
+    if(!DBGetContactSettingString(NULL, "CLC", "AdvancedSkin", &dbv)) {
         CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)szFinalName);
         if(DBGetContactSettingByte(NULL, "CLUI", "skin_changed", 0)) {
             extbk_import(szFinalName, 0);
@@ -1607,7 +1607,7 @@ static BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
             CheckDlgButton(hwndDlg, IDC_IGNORESELFORGROUPS, DBGetContactSettingByte(NULL, "CLC", "IgnoreSelforGroups", 0) ? BST_CHECKED : BST_UNCHECKED);
 
 
-            if(!DBGetContactSetting(NULL, "CLC", "ContactSkins", &dbv)) {
+            if(!DBGetContactSettingString(NULL, "CLC", "ContactSkins", &dbv)) {
                 SetDlgItemTextA(hwndDlg, IDC_SKINFILE, dbv.pszVal);
                 DBFreeVariant(&dbv);
                 EnableWindow(GetDlgItem(hwndDlg, IDC_RELOAD), TRUE);
@@ -1615,7 +1615,7 @@ static BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
             else
                 EnableWindow(GetDlgItem(hwndDlg, IDC_RELOAD), FALSE);
             CheckDlgButton(hwndDlg, IDC_USESKIN, DBGetContactSettingByte(NULL, "CLUI", "useskin", 0) ? BST_CHECKED : BST_UNCHECKED);
-            if(!DBGetContactSetting(NULL, "CLC", "AdvancedSkin", &dbv)) {
+            if(!DBGetContactSettingString(NULL, "CLC", "AdvancedSkin", &dbv)) {
                 SetDlgItemTextA(hwndDlg, IDC_SKINFILENAME, dbv.pszVal);
                 DBFreeVariant(&dbv);
             }
@@ -1663,7 +1663,7 @@ static BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
                             int skinChanged = 0;
                             DBVARIANT dbv = {0};
 
-                            if(!DBGetContactSetting(NULL, "CLC", "AdvancedSkin", &dbv)) {
+                            if(!DBGetContactSettingString(NULL, "CLC", "AdvancedSkin", &dbv)) {
                                 if(strcmp(dbv.pszVal, final_path))
                                     skinChanged = TRUE;
                                 DBFreeVariant(&dbv);
