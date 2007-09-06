@@ -354,10 +354,13 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 			if (gethst == 0)
 			{
 				mir_snprintf(ipaddr, sizeof(ipaddr), "%s", msnLoggedIn ? 
-					MyConnection.GetMyExtIPStr() : MSN_Translate("IP info available only after login"));
+					MyConnection.GetMyExtIPStr() : "");
 			}
 			SendDlgItemMessage( hwndDlg, IDC_HOSTOPT, CB_SETCURSEL, gethst, 0);
-			SetDlgItemTextA( hwndDlg, IDC_YOURHOST, ipaddr );
+			if (ipaddr[0])
+				SetDlgItemTextA( hwndDlg, IDC_YOURHOST, ipaddr );
+			else
+				SetDlgItemText( hwndDlg, IDC_YOURHOST, TranslateT("IP info available only after login" ));
 			EnableWindow( GetDlgItem( hwndDlg, IDC_YOURHOST), gethst == 1 );
 		}
 
