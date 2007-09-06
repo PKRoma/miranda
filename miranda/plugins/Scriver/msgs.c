@@ -159,7 +159,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 			return 0;
 		}
 	}
-	if (hwnd == NULL || !IsWindowVisible(hwnd)) {
+	if (hwnd == NULL || !IsWindowVisible(GetParent(hwnd))) {
 		ZeroMemory(&cle, sizeof(cle));
 		cle.cbSize = sizeof(cle);
 		cle.hContact = (HANDLE) wParam;
