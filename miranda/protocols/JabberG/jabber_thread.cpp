@@ -338,7 +338,7 @@ LBL_FatalError:
 	}
 	else {
 		JabberLog( "Thread ended, invalid session type" );
-		goto LBL_Exit;
+		goto LBL_FatalError;
 	}
 
 	char connectHost[128];
@@ -370,7 +370,7 @@ LBL_FatalError:
 			SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 100, ( LPARAM )TranslateT( "Error: Not enough memory" ));
 		}
 		JabberLog( "Thread ended, network buffer cannot be allocated" );
-		goto LBL_Exit;
+		goto LBL_FatalError;
 	}
 
 	info->s = JabberWsConnect( connectHost, info->port );
@@ -389,7 +389,7 @@ LBL_FatalError:
 
 		JabberLog( "Thread ended, connection failed" );
 		mir_free( buffer );
-		goto LBL_Exit;
+		goto LBL_FatalError;
 	}
 
 	// Determine local IP
@@ -442,7 +442,7 @@ LBL_FatalError:
 			if ( !hLibSSL )
 				MessageBox( NULL, TranslateT( "The connection requires an OpenSSL library, which is not installed." ), TranslateT( "Jabber Connection Error" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
 			JabberLog( "Thread ended, SSL connection failed" );
-			goto LBL_Exit;
+			goto LBL_FatalError;
 	}	}
 
 	// User may change status to OFFLINE while we are connecting above
