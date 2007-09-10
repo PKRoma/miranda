@@ -384,13 +384,17 @@ int MO_MenuItemGetOwnerData(WPARAM wParam,LPARAM lParam)
 
 	EnterCriticalSection( &csMenuHook );
 	UnpackGlobalId( wParam, &objid, &menuitemid );
-	if ( objid == -1 || menuitemid == -1 )
+	if ( objid == -1 || menuitemid == -1 ) {
+		LeaveCriticalSection( &csMenuHook );
 		return 0;
+	}
 
 	objidx = GetMenuObjbyId( objid );
 	menuitemidx = GetMenuItembyId( objidx, menuitemid );
-	if ( objidx == -1 || menuitemidx == -1 )
+	if ( objidx == -1 || menuitemidx == -1 ) {
+		LeaveCriticalSection( &csMenuHook );
 		return 0;
+	}
 
 	res = (int)MenuObjects[objidx].MenuItems[menuitemidx].mi.ownerdata;
 	LeaveCriticalSection( &csMenuHook );
@@ -460,76 +464,72 @@ int MO_ProcessCommand(WPARAM wParam,LPARAM lParam)
 int MO_SetOptionsMenuItem( int handle, int setting, int value )
 {
 	int objidx;
+	int res = -1;
 
 	if ( !isGenMenuInited )
-		return -1;
+		return res;
 
 	EnterCriticalSection( &csMenuHook );
-	__try
+	__try 
 	{
 		PMO_IntMenuItem pimi = MO_GetIntMenuItem( handle );
-		if ( pimi == NULL ) {
-			LeaveCriticalSection( &csMenuHook );
-			return -1;
+		if ( pimi != NULL ) {
+			objidx = GetObjIdxByItemId( pimi->id );
+			if ( objidx != -1 ) {
+				res = 1;
+				if ( setting == OPT_MENUITEMSETUNIQNAME ) {
+					mir_free( pimi->UniqName );
+					pimi->UniqName = mir_strdup(( char* )value );
+				}
+			}
 		}
-		objidx = GetObjIdxByItemId( pimi->id );
-		if ( objidx == -1 ) {
-			LeaveCriticalSection( &csMenuHook );
-			return -1;
-		}
+	}
+	__except( EXCEPTION_EXECUTE_HANDLER ) {}
 
-		if ( setting == OPT_MENUITEMSETUNIQNAME ) {
-			mir_free( pimi->UniqName );
-			pimi->UniqName = mir_strdup(( char* )value );
-		}
-	}
-	__finally
-	{
-		LeaveCriticalSection( &csMenuHook );
-	}
-	return 1;
+	LeaveCriticalSection( &csMenuHook );
+	return res;
 }
 
 int MO_SetOptionsMenuObject( int handle, int setting, int value )
 {
 	int  pimoidx;
+	int  res = 0;
 
 	if ( !isGenMenuInited )
 		return -1;
 
 	EnterCriticalSection( &csMenuHook );
-	__try
+	__try 
 	{
 		pimoidx = GetMenuObjbyId( handle );
-		if ( pimoidx == -1 )
-			return 0;
+		res = pimoidx != -1;
+		if ( res ) {
+			switch ( setting ) {
+			case OPT_MENUOBJECT_SET_ONADD_SERVICE:
+				FreeAndNil( &MenuObjects[pimoidx].onAddService );
+				MenuObjects[pimoidx].onAddService = mir_strdup(( char* )value );
+				break;
 
-		switch ( setting ) {
-		case OPT_MENUOBJECT_SET_ONADD_SERVICE:
-			FreeAndNil( &MenuObjects[pimoidx].onAddService );
-			MenuObjects[pimoidx].onAddService = mir_strdup(( char* )value );
-			break;
+			case OPT_MENUOBJECT_SET_FREE_SERVICE:
+				FreeAndNil( &MenuObjects[pimoidx].FreeService );
+				MenuObjects[pimoidx].FreeService = mir_strdup(( char* )value );
+				break;
 
-		case OPT_MENUOBJECT_SET_FREE_SERVICE:
-			FreeAndNil( &MenuObjects[pimoidx].FreeService );
-			MenuObjects[pimoidx].FreeService = mir_strdup(( char* )value );
-			break;
+			case OPT_MENUOBJECT_SET_CHECK_SERVICE:
+				FreeAndNil( &MenuObjects[pimoidx].CheckService );
+				MenuObjects[pimoidx].CheckService = mir_strdup(( char* )value);
+				break;
 
-		case OPT_MENUOBJECT_SET_CHECK_SERVICE:
-			FreeAndNil( &MenuObjects[pimoidx].CheckService );
-			MenuObjects[pimoidx].CheckService = mir_strdup(( char* )value);
-			break;
-
-		case OPT_USERDEFINEDITEMS:
-			MenuObjects[pimoidx].bUseUserDefinedItems = ( BOOL )value;
-			break;
+			case OPT_USERDEFINEDITEMS:
+				MenuObjects[pimoidx].bUseUserDefinedItems = ( BOOL )value;
+				break;
+			}
 		}
 	}
-	__finally
-	{
-		LeaveCriticalSection( &csMenuHook );
-	}
-	return 1;
+	__except( EXCEPTION_EXECUTE_HANDLER ) {}
+
+	LeaveCriticalSection( &csMenuHook );
+	return res;
 }
 
 //wparam=0;
@@ -863,8 +863,10 @@ int MO_BuildMenu(WPARAM wParam,LPARAM lParam)
 
 	lp = ( ListParam* )lParam;
 	pimoidx = GetMenuObjbyId( lp->MenuObjectHandle );
-	if ( pimoidx == -1 )
+	if ( pimoidx == -1 ) {
+		LeaveCriticalSection( &csMenuHook );
 		return 0;
+	}
 
 	res = (int)BuildRecursiveMenu(( HMENU )wParam, ( ListParam* )lParam );
 	LeaveCriticalSection( &csMenuHook );
