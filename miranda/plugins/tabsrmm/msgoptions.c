@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -63,7 +63,7 @@ struct FontOptionsList
 
 static fontOptionsList[] = {
     {RGB(0, 0, 0), "Tahoma", 0, -10}};
-    
+
 
 static HIMAGELIST g_himlStates = 0;
 
@@ -172,7 +172,7 @@ void LoadLogfont(int i, LOGFONTA * lf, COLORREF * colour, char *szModule)
             else
                 lf->lfHeight = (LONG)bSize;
         }
-        
+
         lf->lfWidth = 0;
         lf->lfEscapement = 0;
         lf->lfOrientation = 0;
@@ -663,7 +663,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			break;
 		default:
 			switch (((LPNMHDR) lParam)->code) {
-			case PSN_APPLY: 
+			case PSN_APPLY:
 				{
 					int i = 0;
 					TVITEM item = {0};
@@ -919,7 +919,7 @@ static struct LISTOPTIONSITEM tabItems[] = {
 static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	BOOL translated;
-    
+
 	switch (msg) {
 	case WM_INITDIALOG:
 		{
@@ -1143,7 +1143,7 @@ static BOOL CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM wPa
                             GetDlgItemText(hwndDlg, IDC_DEFAULTTITLEFORMAT, szDefaultName, TITLE_FORMATLEN);
 #if defined(_UNICODE)
                             DBWriteContactSettingWString(NULL, SRMSGMOD_T, "titleformatW", szDefaultName);
-#else                            
+#else
                             DBWriteContactSettingString(NULL, SRMSGMOD_T, "titleformat", szDefaultName);
 #endif
 							GetDefaultContainerTitleFormat();
@@ -1198,7 +1198,7 @@ static int OptInitialise(WPARAM wParam, LPARAM lParam)
     odp.nIDBottomSimpleControl = 0;
     odp.flags = ODPF_BOLDGROUPS;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
-    
+
     odp.pszGroup = LPGEN("Message Sessions");
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSGTYPE);
     odp.pszTitle = LPGEN("Typing Notify");
@@ -1232,16 +1232,16 @@ BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
     DWORD dwStatusMask = GetWindowLong(hwndDlg, GWL_USERDATA);
     static DWORD dwNewStatusMask = 0;
     static HWND hwndParent = 0;
-    
+
     switch (msg) {
         case WM_INITDIALOG:
         {
             int i;
-            
+
             TranslateDialogDefault(hwndDlg);
             SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
             dwStatusMask = lParam;
-            
+
             SetWindowText(hwndDlg, TranslateT("Choose status modes"));
             for(i = ID_STATUS_ONLINE; i <= ID_STATUS_OUTTOLUNCH; i++) {
                 SetWindowText(GetDlgItem(hwndDlg, i), (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)i, GCMDF_TCHAR));
@@ -1307,7 +1307,7 @@ BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
    static int iInit = TRUE;
-   
+
    switch(msg)
    {
       case WM_INITDIALOG:
@@ -1350,7 +1350,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
          ShowWindow((HWND)tci.lParam, oPage == 3 ? SW_SHOW : SW_HIDE);
          if(MyEnableThemeDialogTexture)
              MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
-         
+
          tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPTIONS1),hwnd, DlgProcOptions1);
          tci.pszText = TranslateT("Group chats");
          TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 4, &tci);
@@ -1363,7 +1363,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
          iInit = FALSE;
          return FALSE;
       }
-      
+
        case PSM_CHANGED: // used so tabs dont have to call SendMessage(GetParent(GetParent(hwnd)), PSM_CHANGED, 0, 0);
          if(!iInit)
              SendMessage(GetParent(hwnd), PSM_CHANGED, 0, 0);
@@ -1396,7 +1396,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
                         TCITEM tci;
                         tci.mask = TCIF_PARAM;
                         TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),TabCtrl_GetCurSel(GetDlgItem(hwnd,IDC_OPTIONSTAB)),&tci);
-                        ShowWindow((HWND)tci.lParam,SW_HIDE);                     
+                        ShowWindow((HWND)tci.lParam,SW_HIDE);
                      }
                   break;
                   case TCN_SELCHANGE:
@@ -1430,7 +1430,7 @@ static BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
             BYTE loadMode = DBGetContactSettingByte(NULL, SRMSGMOD_T, "skin_loadmode", 0);
             TranslateDialogDefault(hwndDlg);
-	
+
             //SendDlgItemMessage(hwndDlg, IDC_CORNERSPIN, UDM_SETRANGE, 0, MAKELONG(10, 0));
             //SendDlgItemMessage(hwndDlg, IDC_CORNERSPIN, UDM_SETPOS, 0, g_CluiData.cornerRadius);
 
@@ -1451,7 +1451,7 @@ static BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
                 EnableWindow(hwndDlg, FALSE);
 				ShowWindow(GetDlgItem(hwndDlg, IDC_SKIN_WIN9XWARN), SW_SHOW);
-				while(_ctrls[i] != 0) 
+				while(_ctrls[i] != 0)
 					ShowWindow(GetDlgItem(hwndDlg, _ctrls[i++]), SW_HIDE);
 			}
 
@@ -1522,7 +1522,7 @@ static BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
                     SendMessage(hwndTabConfig, WM_USER + 100, 0, 0);
                     break;
             }
-            if ((LOWORD(wParam) == IDC_SKINFILE || LOWORD(wParam) == IDC_SKINFILENAME) 
+            if ((LOWORD(wParam) == IDC_SKINFILE || LOWORD(wParam) == IDC_SKINFILENAME)
                 && (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
                 return 0;
             SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
@@ -1626,7 +1626,7 @@ static BOOL CALLBACK SkinOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
          iInit = FALSE;
          return FALSE;
       }
-      
+
       case PSM_CHANGED: // used so tabs dont have to call SendMessage(GetParent(GetParent(hwnd)), PSM_CHANGED, 0, 0);
          if(!iInit)
              SendMessage(GetParent(hwnd), PSM_CHANGED, 0, 0);
@@ -1701,7 +1701,7 @@ static BOOL CALLBACK SkinOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
                         TCITEM tci;
                         tci.mask = TCIF_PARAM;
                         TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),TabCtrl_GetCurSel(GetDlgItem(hwnd,IDC_OPTIONSTAB)),&tci);
-                        ShowWindow((HWND)tci.lParam,SW_HIDE);                     
+                        ShowWindow((HWND)tci.lParam,SW_HIDE);
                      }
                   break;
                   case TCN_SELCHANGE:
@@ -1750,7 +1750,7 @@ void ReloadGlobals()
      myGlobals.m_DividersUsePopupConfig = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "div_popupconfig", 0);
      myGlobals.m_MsgTimeout = (int)DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT);
 
-     if(myGlobals.m_MsgTimeout < SRMSGDEFSET_MSGTIMEOUT)
+     if(myGlobals.m_MsgTimeout < SRMSGSET_MSGTIMEOUT_MIN)
          myGlobals.m_MsgTimeout = SRMSGDEFSET_MSGTIMEOUT;
 
      myGlobals.m_EscapeCloses = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "escmode", 0);
@@ -1772,7 +1772,7 @@ void ReloadGlobals()
      myGlobals.m_FixFutureTimestamps = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "do_fft", 1);
      myGlobals.m_RTLDefault = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "rtldefault", 0);
      myGlobals.m_SplitterSaveOnClose = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "splitsavemode", 1);
-#ifdef __MATHMOD_SUPPORT    		
+#ifdef __MATHMOD_SUPPORT
 	 myGlobals.m_MathModAvail = ServiceExists(MATH_RTF_REPLACE_FORMULAE); // && DBGetContactSettingByte(NULL, SRMSGMOD_T, "wantmathmod", 1);
 #else
      myGlobals.m_MathModAvail = 0;
