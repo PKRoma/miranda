@@ -619,7 +619,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 					}	}
 					dat->opd[i].insideTab = (pages > 1);
 
-					GetClientRect(dat->opd[i].hwnd,&rcPage);
+					GetWindowRect(dat->opd[i].hwnd,&rcPage);
 					if(dat->opd[i].simpleBottomControlId) newh=expert?dat->opd[i].expertHeight:dat->opd[i].simpleHeight;
 					else newh=rcPage.bottom-rcPage.top;
 					if(dat->opd[i].simpleRightControlId) neww=expert?dat->opd[i].expertWidth:dat->opd[i].simpleWidth;
