@@ -80,9 +80,10 @@ void start_connection(int initial_status)
 }
 HANDLE find_contact(char * sn)
 {
+	HANDLE hContact = NULL;
 	if(char* norm_sn=normalize_name(sn))
 	{
-		HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 		while (hContact)
 		{
 			char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
@@ -90,21 +91,16 @@ HANDLE find_contact(char * sn)
 			{
 				if (char* db_sn=getSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN))
 				{
-
-					if (!lstrcmp(norm_sn,db_sn))
-					{
-						delete[] db_sn;
-						delete[] norm_sn;
-						return hContact;
-					}
+					bool found = !lstrcmp(norm_sn,db_sn); 
 					delete[] db_sn;
+					if (found) break; 
 				}
 			}
 			hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 		}
 		delete[] norm_sn;
 	}
-	return 0;
+	return hContact;
 }
 HANDLE add_contact(char* buddy)
 {
