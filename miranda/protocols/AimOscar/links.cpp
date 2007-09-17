@@ -39,7 +39,7 @@ static LRESULT CALLBACK aim_links_watcherwndproc(HWND hwnd, UINT msg, WPARAM wPa
     switch (msg) {
         case WM_COPYDATA:
         {
-            char *szData, *s;
+            char *szData=NULL, *s;
             COPYDATASTRUCT *cds = (COPYDATASTRUCT *) lParam;
 
             //LOG(LOG_DEBUG, "Links: WM_COPYDATA");
@@ -91,7 +91,10 @@ static LRESULT CALLBACK aim_links_watcherwndproc(HWND hwnd, UINT msg, WPARAM wPa
                 //LOG(LOG_DEBUG, "Links: WM_COPYDATA - goim");
                 s += 5;
                 if (!(*s))
+				{
+					delete[] szData;
                     break;
+				}
                 tok = strtok(s, "&");
                 while (tok != NULL)
 				{
@@ -141,7 +144,7 @@ static LRESULT CALLBACK aim_links_watcherwndproc(HWND hwnd, UINT msg, WPARAM wPa
                     aim_gchat_joinrequest(rm, exchange);
                 }
             }*/
-            delete[] szData;
+			delete[] szData;
             break;
         }
     }
