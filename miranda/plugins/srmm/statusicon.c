@@ -143,15 +143,16 @@ void DrawStatusIcons(HANDLE hContact, HDC hDC, RECT r, int gap) {
 void CheckIconClick(HANDLE hContact, HWND hwndFrom, POINT pt, RECT r, int gap, int click_flags) {
 	StatusIconClickData sicd;
 	struct StatusIconListNode *current = status_icon_list;
-	unsigned int iconNum = (pt.x - r.left) / (GetSystemMetrics(SM_CYSMICON) + gap);
+	int iconNum = (pt.x - r.left) / (GetSystemMetrics(SM_CXSMICON) + gap);
 	char buff[256];
 	int flags;
 
-	while(current && iconNum > 0) {
+	while(current && iconNum >= 0) {
 		sprintf(buff, "SRMMStatusIconFlags%d", current->sid.dwId);
 		flags = DBGetContactSettingByte(hContact, current->sid.szModule, buff, current->sid.flags);
 		if(!(flags & MBF_HIDDEN)) iconNum--;
-		current = current->next;
+		if(iconNum >= 0) 
+			current = current->next;
 	}
 
 	if(current) {
