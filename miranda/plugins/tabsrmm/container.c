@@ -486,6 +486,7 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
                     if(dat && PtInRect(&rc,pt)) {
                         int gap = 2;
                         struct StatusIconListNode *current = status_icon_list;
+						struct StatusIconListNode *clicked = NULL;
                         unsigned int iconNum = (pt.x - rc.left ) / (myGlobals.m_smcxicon + gap);
                         unsigned int list_icons = 0;
                         char         buff[100];
@@ -494,11 +495,12 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
                         while(current) {
                             sprintf(buff, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
                             flags = DBGetContactSettingByte(dat->hContact, current->sid.szModule, buff, current->sid.flags);
-                            if(!(flags & MBF_HIDDEN))
-                                list_icons++;
+                            if(!(flags & MBF_HIDDEN)) {
+                                if (list_icons++ == iconNum)
+									clicked = current;
+							}
                             current = current->next;
                         }
-                        current = status_icon_list;
 
                         if((int)iconNum == list_icons && pContainer) {
 #if defined(_UNICODE)
@@ -545,23 +547,9 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 							tooltip_active = TRUE;
                         }
                         else {
-                            while(current && iconNum > 0) {
-                                //sprintf(buff, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
-                                //flags = DBGetContactSettingByte(dat->hContact, current->sid.szModule, buff, current->sid.flags);
-                                //if(!(flags & MBF_HIDDEN)) 
-                                    iconNum--;
-                                current = current->next;
-                            }
-                            if(current) {
-                                char buff[256];
-								BYTE flags;
-
-                                mir_snprintf(buff, 256, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
-                                flags = DBGetContactSettingByte(dat->hContact, current->sid.szModule, buff, current->sid.flags);
-                                if(!(flags & MBF_HIDDEN)) {
-                                    CallService("mToolTip/ShowTip", (WPARAM)current->sid.szTooltip, (LPARAM)&ti);
-                                    tooltip_active = TRUE;
-                                }
+                            if(clicked) {
+                                CallService("mToolTip/ShowTip", (WPARAM)clicked->sid.szTooltip, (LPARAM)&ti);
+                                tooltip_active = TRUE;
                             }
                         }
                     }
@@ -3720,4 +3708,5 @@ void UpdateContainerMenu(HWND hwndDlg, struct MessageWindowData *dat)
     if(dat->bType == SESSIONTYPE_IM)
         EnableWindow(GetDlgItem(hwndDlg, IDC_TIME), fDisable ? FALSE : TRUE);
 }
+
 
