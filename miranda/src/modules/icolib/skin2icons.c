@@ -1445,6 +1445,8 @@ void UninitSkin2Icons(void)
 {
 	int indx;
 
+	if (hIconBlank == NULL) return;
+
 	DestroyHookableEvent(hIconsChangedEvent);
 	DestroyHookableEvent(hIcons2ChangedEvent);
 
