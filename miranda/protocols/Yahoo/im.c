@@ -64,8 +64,10 @@ void ext_yahoo_got_im(int id, const char *me, const char *who, const char *msg, 
 		LOG(("User '%s' on our Ignore List. Dropping Message.", who));
 		return;
 	}
-		
-	umsg = (char *) alloca(lstrlen(msg) + 1); 
+
+	// make a bigger buffer for \n -> \r\n conversion (x2)
+	umsg = (char *) alloca(lstrlen(msg) * 2 + 1); 
+	
 	while ( *c != '\0') {
 			// Strip the font tag
         if (!strnicmp(c,"<font ",6) || !strnicmp(c,"</font>",6) ||
@@ -259,5 +261,6 @@ int YahooSendNudge(WPARAM wParam, LPARAM lParam)
     
     return 0;
 }
+
 
 
