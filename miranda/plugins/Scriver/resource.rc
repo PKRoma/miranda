@@ -252,8 +252,8 @@ BEGIN
     DEFPUSHBUTTON   "Try again",IDOK,22,91,63,14
     PUSHBUTTON      "Cancel",IDCANCEL,104,91,61,14
     EDITTEXT        IDC_ERRORTEXT,5,24,177,21,ES_MULTILINE | ES_READONLY
-    EDITTEXT        IDC_MSGTEXT,5,60,177,26,ES_MULTILINE | ES_READONLY |
-                    WS_VSCROLL
+    CONTROL         "",IDC_MSGTEXT,RICHEDIT_CLASS,WS_CLIPSIBLINGS | WS_VSCROLL |
+                    WS_TABSTOP | ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY,5,60,177,26,WS_EX_STATICEDGE
     LTEXT           "while sending the following message:",IDC_STATIC,6,48,
                     175,8
 END
@@ -518,8 +518,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,6,9,9
- PRODUCTVERSION 2,6,9,9
+ FILEVERSION 0,7,0,0
+ PRODUCTVERSION 0,7,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -537,14 +537,14 @@ BEGIN
             VALUE "Comments", "http://www.miranda-im.org\0"
             VALUE "CompanyName", "Miranda IM Development Team\0"
             VALUE "FileDescription", "Scriver - send and receive instant messages\0"
-            VALUE "FileVersion", "2.6.9.9\0"
+            VALUE "FileVersion", "0.7.0.0\0"
             VALUE "InternalName", "scriver\0"
             VALUE "LegalCopyright", "Copyright © 2000-2007 Miranda IM Project\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "scriver.dll\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "Scriver\0"
-            VALUE "ProductVersion", "2.6.9.9\0"
+            VALUE "ProductVersion", "0.7.0.0\0"
             VALUE "SpecialBuild", "\0"
         END
     END

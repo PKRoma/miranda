@@ -2187,7 +2187,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			item->hwndErrorDlg = NULL;
 			switch (wParam) {
 			case MSGERROR_CANCEL:
-				if (RemoveSendQueueItem(item));
+				RemoveSendQueueItem(item);
 				SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
 				break;
 			case MSGERROR_RETRY:

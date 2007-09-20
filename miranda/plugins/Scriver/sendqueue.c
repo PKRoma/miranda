@@ -55,7 +55,7 @@ TCHAR * GetSendBufferMsg(MessageSendQueueItem *item) {
     if (item->flags & PREF_UTF) {
         szMsg = mir_utf8decodecp(mir_strdup(item->sendBuffer), item->codepage, NULL);
     } else {
-		szMsg = (char *)mir_alloc(item->sendBufferSize);
+		szMsg = (char *)mir_alloc(len + 1);
 		memcpy(szMsg, item->sendBuffer, len + 1);
     }
 #endif
