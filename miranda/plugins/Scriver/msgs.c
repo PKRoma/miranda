@@ -170,7 +170,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 		mir_snprintf(toolTip, sizeof(toolTip), Translate("Message from %s"), contactName);
 		cle.pszTooltip = toolTip;
 		CallService(MS_CLIST_ADDEVENT, 0, (LPARAM) & cle);
-	}	
+	}
 	return 0;
 }
 

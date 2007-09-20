@@ -193,18 +193,17 @@ struct EventData *getEventFromDB(struct MessageWindowData *dat, HANDLE hContact,
 	if (event->eventType == EVENTTYPE_FILE) {
 		char* filename = ((char *)dbei.pBlob) + sizeof(DWORD);
 		char* descr = filename + lstrlenA( filename ) + 1;
-		event->pszTextW = a2t(filename);//dat->codePage);
+		event->pszTextW = a2tcp(filename, dat->codePage);
 		if ( *descr != 0 ) {
-			event->pszText2W = a2t(descr);//dat->codePage);
+			event->pszText2W = a2tcp(descr, dat->codePage);
 		}
 	} else if ( bNewDbApi ) {
-		DBEVENTGETTEXT egt = { &dbei, DBVT_WCHAR + ((dat->flags & SMF_DISABLE_UNICODE) ? DBVTF_DENYUNICODE : 0), dat->codePage };
-		event->pszTextW = ( WCHAR* )CallService( MS_DB_EVENT_GETTEXT, 0, (LPARAM)&egt );
-		if ( !event->pszTextW ) {
-			mir_free(event->pszNickW);
-			mir_free(dbei.pBlob);
-			mir_free(event);
-			return NULL;
+		event->pszTextW = DbGetEventTextW( &dbei, dat->codePage );
+		if (dat->flags & SMF_DISABLE_UNICODE) {
+			char * tmpStr = t2acp(event->pszTextW, dat->codePage);
+			mir_free(event->pszTextW);
+			event->pszTextW = a2tcp(tmpStr, dat->codePage);
+			mir_free(tmpStr);
 		}
 	} else {
 		int msglen = strlen((char *) dbei.pBlob) + 1;
