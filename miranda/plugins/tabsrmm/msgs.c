@@ -793,16 +793,20 @@ static int TypingMessage(WPARAM wParam, LPARAM lParam)
         foundWin = 0;
     
     if ((int) lParam && !foundWin && DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGNOWIN, SRMSGDEFSET_SHOWTYPINGNOWIN)) {
-        char szTip[256];
+        TCHAR szTip[256];
 
-        _snprintf(szTip, sizeof(szTip), Translate("%s is typing a message"), (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, 0));
+        _sntprintf(szTip, SIZEOF(szTip), TranslateT("%s is typing a message"), (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, GCDNF_TCHAR));
         if (ServiceExists(MS_CLIST_SYSTRAY_NOTIFY) && !DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGCLIST, SRMSGDEFSET_SHOWTYPINGCLIST)) {
             MIRANDASYSTRAYNOTIFY tn;
             tn.szProto = NULL;
             tn.cbSize = sizeof(tn);
-            tn.szInfoTitle = Translate("Typing Notification");
-            tn.szInfo = szTip;
-            tn.dwInfoFlags = NIIF_INFO;
+            tn.tszInfoTitle = TranslateT("Typing Notification");
+            tn.tszInfo = szTip;
+#ifdef UNICODE
+			tn.dwInfoFlags = NIIF_INFO | NIIF_INTERN_UNICODE;
+#else
+			tn.dwInfoFlags = NIIF_INFO;
+#endif
             tn.uTimeout = 1000 * 4;
             CallService(MS_CLIST_SYSTRAY_NOTIFY, 0, (LPARAM) & tn);
         }
@@ -813,10 +817,10 @@ static int TypingMessage(WPARAM wParam, LPARAM lParam)
             cle.cbSize = sizeof(cle);
             cle.hContact = (HANDLE) wParam;
 			cle.hDbEvent = (HANDLE) 1;
-            cle.flags = CLEF_ONLYAFEW;
+            cle.flags = CLEF_ONLYAFEW | CLEF_TCHAR;
             cle.hIcon = myGlobals.g_buttonBarIcons[5];
             cle.pszService = "SRMsg/TypingMessage";
-            cle.pszTooltip = szTip;
+            cle.ptszTooltip = szTip;
             CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
             CallServiceSync(MS_CLIST_ADDEVENT, wParam, (LPARAM) & cle);
         }
@@ -2125,6 +2129,8 @@ HICON *BTN_GetIcon(char *szIconName)
     }
     return NULL;
 }
+
+
 
 
 
