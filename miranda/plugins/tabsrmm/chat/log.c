@@ -401,8 +401,8 @@ static void AddEventToBuffer(char **buffer, int *bufferEnd, int *bufferAlloced, 
 			if (streamData->lin->ptszNick && streamData->lin->ptszText) {
 				if (g_Settings.ClickableNicks)
 					_sntprintf(szTemp2, SIZEOF(szTemp2),
-						TranslateT("Notice from %s: %s"),
-						_T("~~++#%s#++~~"), _T("%s"));
+						TranslateT("Notice from %s:"),
+						_T("~~++#%s#++~~"));
 				Log_AppendRTF(streamData, TRUE, buffer, bufferEnd, bufferAlloced,
 					g_Settings.ClickableNicks ? szTemp2 : TranslateT("Notice from %s: "),
 					streamData->lin->ptszNick, streamData->lin->ptszText);
