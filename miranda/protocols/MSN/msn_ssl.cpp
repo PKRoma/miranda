@@ -755,6 +755,8 @@ int MSN_GetPassportAuth( char* authChallengeInfo )
 			"Unable to contact MS Passport servers check proxy/firewall settings" );
 		MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
 	}
+	else
+		MSN_SetString(NULL, "MsnPassportHost", szPassportHost);
 
 	MSN_DebugLog( "MSN_CheckRedirector exited with errorCode = %d", retVal );
 
