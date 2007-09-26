@@ -56,6 +56,7 @@ static HRESULT  (WINAPI *MyDrawThemeText)(HANDLE,HDC,int,int,LPCWSTR,int,DWORD,D
 
 static CRITICAL_SECTION csTips;
 static HWND hwndToolTips = NULL;
+static BOOL buttonIntialized = FALSE;
 
 int LoadButtonModule(void)
 {
@@ -71,12 +72,14 @@ int LoadButtonModule(void)
 	wc.style          = CS_GLOBALCLASS;
 	RegisterClassEx(&wc);
 	InitializeCriticalSection(&csTips);
+	buttonIntialized = TRUE;
 	return 0;
 }
 
 void UnloadButtonModule()
 {
-	DeleteCriticalSection(&csTips);
+	if (buttonIntialized)
+		DeleteCriticalSection(&csTips);
 }
 
 // Used for our own cheap TrackMouseEvent
