@@ -60,6 +60,7 @@ struct THREAD_WAIT_ENTRY {
 	DWORD dwThreadId;	// valid if hThread isn't signalled
 	HANDLE hThread;
 	HINSTANCE hOwner;
+	DWORD addr;
 };
 
 struct THREAD_WAIT_ENTRY *WaitingThreads=NULL;
@@ -80,7 +81,7 @@ void __cdecl forkthread_r(void * arg)
 	struct FORK_ARG * fa = (struct FORK_ARG *) arg;
 	void (*callercode)(void*)=fa->threadcode;
 	void * cookie=fa->arg;
-	CallService(MS_SYSTEM_THREAD_PUSH,0,(LPARAM)&callercode);
+	CallService(MS_SYSTEM_THREAD_PUSH,0,(LPARAM)callercode);
 	SetEvent(fa->hEvent);
 	__try
 	{
@@ -212,8 +213,8 @@ VOID CALLBACK KillAllThreads(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTim
 		for ( j=0; j < WaitingThreadsCount; j++ ) {
 			char szModuleName[ MAX_PATH ];
 			GetModuleFileNameA( WaitingThreads[j].hOwner, szModuleName, sizeof(szModuleName));
-			Netlib_Logf( NULL, "Thread %08x was abnormally terminated because module '%s' didn't released it",
-				WaitingThreads[j].hThread, szModuleName );
+			Netlib_Logf( NULL, "Thread %08x was abnormally terminated because module '%s' didn't release it. Entry point: %08x",
+				WaitingThreads[j].hThread, szModuleName, WaitingThreads[j].addr );
 			TerminateThread( WaitingThreads[j].hThread, 9999 );
 		}
 
@@ -282,6 +283,7 @@ int UnwindThreadPush(WPARAM wParam,LPARAM lParam)
 		WaitingThreads[WaitingThreadsCount].hThread=hThread;
 		WaitingThreads[WaitingThreadsCount].dwThreadId=GetCurrentThreadId();
 		WaitingThreads[WaitingThreadsCount].hOwner=GetInstByAddress(( void* )lParam );
+		WaitingThreads[WaitingThreadsCount].addr=lParam;
 		WaitingThreadsCount++;
  		//Netlib_Logf( NULL, "*** pushing thread %x[%x] (%d)", hThread, GetCurrentThreadId(), WaitingThreadsCount );
 		ReleaseMutex(hStackMutex);
