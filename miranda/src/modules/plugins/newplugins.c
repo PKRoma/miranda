@@ -462,6 +462,7 @@ static pluginEntry* getCListModule(char * exe, char * slice, int useWhiteList)
 			if ( checkAPI(exe, &bpi, mirandaVersion, CHECKAPI_CLIST, NULL) ) {
 				p->bpi = bpi;
 				p->pclass |= PCLASS_LAST | PCLASS_OK | PCLASS_BASICAPI;
+				List_InsertPtr( &pluginListAddr, p );
 				if ( bpi.clistlink(&pluginCoreLink) == 0 ) {
 					p->bpi=bpi;
 					p->pclass |= PCLASS_LOADED;
