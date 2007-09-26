@@ -2952,7 +2952,7 @@ static void CLCPaint_CalulateContactItemsPositions(HWND hwnd, HDC hdcMem, struct
 
                         if (counts_size.cy < counts_rc.bottom - counts_rc.top)
                         {
-                            counts_rc.top += (counts_rc.bottom - counts_rc.top - counts_size.cy) >> 1;
+                            counts_rc.top += (counts_rc.bottom - counts_rc.top - counts_size.cy + 1) >> 1;
                             counts_rc.bottom = counts_rc.top + counts_size.cy;
                         }
                         // Draw counts

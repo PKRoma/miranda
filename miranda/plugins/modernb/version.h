@@ -1,9 +1,9 @@
-#define BUILD_NUM 27
-#define BUILD_NUM_STR  "27"
+#define BUILD_NUM 11
+#define BUILD_NUM_STR  "11"
 #define REVISION  "$Revision$"
 
-#define COREVERSION_NUM 0, 7, 34,
-#define COREVERSION_NUM_STR  "0, 7, 34 "
+#define COREVERSION_NUM 0, 7, 100,
+#define COREVERSION_NUM_STR  "0, 7, 100 "
 
 #define MINIMAL_COREVERSION_NUM PLUGIN_MAKE_VERSION(0, 7, 0, 34)
 #define MINIMAL_COREVERSION 0, 7, 0, 34

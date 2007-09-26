@@ -487,8 +487,10 @@ TCHAR* GetNameForContact(HANDLE hContact,int flag,boolean *isUnknown)
 	if (UnknownConctactTranslatedName == NULL)
 		UnknownConctactTranslatedName = TranslateT("(Unknown Contact)");
 	itUnknown=lstrcmp(result ,UnknownConctactTranslatedName) == 0;
-	if (itUnknown) 
+	if (itUnknown) {
+		mir_free(result);
 		result=UnknownConctactTranslatedName;
+	}
 	if (isUnknown) {
 		*isUnknown = itUnknown;
 	}

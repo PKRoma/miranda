@@ -138,6 +138,19 @@ static int gtaThreadProc(void * lpParam)
 	g_dwGetTextAsyncThreadID=0;
 	return 1;
 }
+
+BOOL gtaWakeThread()
+{
+	if (hgtaWakeupEvent && g_dwGetTextAsyncThreadID)
+	{
+		SetEvent(hgtaWakeupEvent);
+
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
 int gtaAddRequest(struct ClcData *dat,struct ClcContact *contact,HANDLE hContact)
 {
 	if (MirandaExiting()) return 0;
@@ -166,11 +179,17 @@ void gtaRenewText(HANDLE hContact)
 {
 	gtaAddRequest(NULL,NULL, hContact);
 }
+int gtaOnModulesUnload(WPARAM wParam,LPARAM lParam)
+{
+	SetEvent(hgtaWakeupEvent);
+	return 0;
+}
 void InitCacheAsync()
 {
 	InitializeCriticalSection(&gtaCS);
 	hgtaWakeupEvent=CreateEvent(NULL,FALSE,FALSE,NULL);
 	g_dwGetTextAsyncThreadID=(DWORD)mir_forkthread(gtaThreadProc,0);
+	HookEvent(ME_SYSTEM_PRESHUTDOWN,  gtaOnModulesUnload);
 }
 
 void UninitCacheAsync()

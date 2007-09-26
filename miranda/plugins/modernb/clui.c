@@ -44,6 +44,9 @@ int CLUIFramesGetMinHeight();			//cluiframes.c
 wndFrame * FindFrameByItsHWND(HWND FrameHwnd);						//cluiframes.c
 int		SizeFramesByWindowRect(RECT *r, HDWP * PosBatch, int mode);	//cluiframes.c
 
+extern BOOL amWakeThread();
+extern BOOL gtaWakeThread();
+
 /*
 *  Function CLUI_CheckOwnedByClui returns true if given window is in 
 *  frames.
@@ -139,13 +142,6 @@ static BOOL CLUI_WaitThreadsCompletion(HWND hwnd)
 		return TRUE;
 	}
 
-	if (bEntersCount==bcMAX_AWAITING_RETRY)
-	{   //force to terminate threads after max times repeating of awaiting
-		if (g_dwAwayMsgThreadID)      TerminateThread((HANDLE)g_dwAwayMsgThreadID,0);
-		if (g_dwGetTextAsyncThreadID)         TerminateThread((HANDLE)g_dwGetTextAsyncThreadID,0);
-		if (g_dwSmoothAnimationThreadID) TerminateThread((HANDLE)g_dwSmoothAnimationThreadID,0);
-		if (g_dwFillFontListThreadID)    TerminateThread((HANDLE)g_dwFillFontListThreadID,0);
-	}
 	return FALSE;
 }
 
@@ -2264,10 +2260,26 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 	case WM_DESTROY:
 		{
 			int state=DBGetContactSettingByte(NULL,"CList","State",SETTING_STATE_NORMAL);
+			BOOL wait = FALSE;
+
 			AniAva_UnloadModule();
 			TRACE("CLUI.c: WM_DESTROY\n");
 			g_CluiData.bSTATE=STATE_EXITING;
 			CLUI_DisconnectAll();
+			//fire the "Away Message" Event to wake the thread so it can die.
+			//fire the "Get Text Async" Event to wake the thread so it can die.
+			if (amWakeThread())
+				wait = TRUE;
+
+			if (gtaWakeThread())
+				wait = TRUE;
+			
+			if (wait)
+			{
+				//need to give them a little time to exit.
+				Sleep(50);
+			}
+
 			TRACE("CLUI.c: WM_DESTROY - WaitThreadsCompletion \n");
 			if (CLUI_WaitThreadsCompletion(hwnd)) return 0; //stop all my threads                
 			TRACE("CLUI.c: WM_DESTROY - WaitThreadsCompletion DONE\n");
@@ -2885,6 +2897,8 @@ HANDLE RegisterIcolibIconHandle(char * szIcoID, char *szSectionName,  char * szD
 	if ( sid.hDefaultIcon )	DestroyIcon(sid.hDefaultIcon);
 	return hIcolibItem; 
 }
+
+
 
 
 
