@@ -639,7 +639,7 @@ int SearchNextContact(HWND hwnd, struct ClcData *dat, int index, const TCHAR *te
 		}
 		if (group->cl.items[group->scanIndex]->type != CLCIT_DIVIDER) 
 		{
-			if ((prefixOk && !_tcsnicmp(text, group->cl.items[group->scanIndex]->szText, testlen)) ||
+			if ((prefixOk && !CompareString(LOCALE_INVARIANT, NORM_IGNORECASE, text, -1, group->cl.items[group->scanIndex]->szText, testlen)) ||
 				(!prefixOk && !lstrcmpi(text, group->cl.items[group->scanIndex]->szText))) 
 				{
 					struct ClcGroup *contactGroup = group;
@@ -1183,7 +1183,7 @@ case WM_KEYDOWN:
 		case VK_LEFT: changeGroupExpand=1; break;
 		case VK_RIGHT: changeGroupExpand=2; break;
 		case VK_RETURN: pcli->pfnDoSelectionDefaultAction(hwnd,dat); SetCapture(hwnd); return 0;
-		case VK_F2: cliBeginRenameSelection(hwnd,dat); SetCapture(hwnd);return 0;
+		case VK_F2: cliBeginRenameSelection(hwnd,dat); /*SetCapture(hwnd);*/ return 0;
 		case VK_DELETE: pcli->pfnDeleteFromContactList(hwnd,dat); SetCapture(hwnd);return 0;
 		case VK_ESCAPE: 
 			{

@@ -4197,14 +4197,13 @@ static DWORD ske_HexToARGB(char * Hex)
 
 static TCHAR *ske_ReAppend(TCHAR *lfirst, TCHAR * lsecond, int len)
 { 
-	int l1=lfirst?lstrlen(lfirst)*sizeof(TCHAR):0;
-	int l2=(len?len:lstrlen(lsecond))*sizeof(TCHAR);
-	int size=l1+l2+sizeof(TCHAR);
-	TCHAR *buf=mir_alloc(size);
-	if (lfirst) memmove(buf,lfirst,l1);
-	memmove(((BYTE*)buf)+l1,lsecond,l2+sizeof(TCHAR));
-	if (lfirst) mir_free_and_nill(lfirst);
-	if (len) buf[(l1+l2+1)/sizeof(TCHAR)]=(TCHAR)'\0';
+	int l1=lfirst?lstrlen(lfirst):0;
+	int l2=(len?len:lstrlen(lsecond));
+	TCHAR *buf=mir_alloc((l1+l2+1)*sizeof(TCHAR));
+	if (lfirst) memmove(buf,lfirst,l1*sizeof(TCHAR));
+	memmove(buf+l1,lsecond,l2*sizeof(TCHAR));
+	if (lfirst) mir_free(lfirst);
+	if (len) buf[l1+l2]=_T('\0');
 	return buf;
 }
 

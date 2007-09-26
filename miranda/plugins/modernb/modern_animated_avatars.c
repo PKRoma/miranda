@@ -177,6 +177,14 @@ static ANIAVA AniAva={0};
 
 ///	IMPLEMENTATION
 
+
+int _AniAva_OnModulesUnload(WPARAM wParam,LPARAM lParam)
+{
+	SetEvent(AniAva.hExitEvent);
+	return 0;
+}
+
+
 // Init AniAva module
 int AniAva_InitModule()
 {
@@ -203,6 +211,7 @@ int AniAva_InitModule()
 	AniAva.bModuleStarted=TRUE;
 	AniAva.hExitEvent=CreateEvent(NULL,FALSE,FALSE,NULL);
 	AniAva.AnimationThreadID=(DWORD)mir_forkthread(_AniAva_AnimationTreadProc, (void*)AniAva.hExitEvent);
+	HookEvent(ME_SYSTEM_PRESHUTDOWN,  _AniAva_OnModulesUnload);
 
 	_AniAva_LoadOptions();
 
@@ -373,7 +382,7 @@ int AniAva_SetAvatarPos(HANDLE hContact, RECT * rc, int overlayIdx, BYTE bAlpha)
 					//not found -> create window
 					char szName[150] = "AniAvaWnd_";
 					TCHAR * tszName;
-					itoa((int)hContact,szName+10,16);
+					_itoa((int)hContact,szName+10,16);
 #ifdef _DEBUG
 					{
 						char *temp;

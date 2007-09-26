@@ -105,7 +105,8 @@ $$BarButton/Pressed=sGlyph,Fragment,back%.tga,24,49,7,20,StretchBoth,3,4,2,5,255
 @72=s$$Contact/Normal:CL,ID=Row,Type=Contact,GroupPos=First,Indent=2
 @73=s$$Contact/Last:CL,ID=Row,Type=Contact,GroupPos=Last
 @74=s$$Contact/Last:CL,ID=Row,Type=Contact,GroupPos=First-Single
-@75=s$$Group/Open:CL,ID=Row,Type=*Contact,Index=0
+;@75=s$$Group/Open:CL,ID=Row,Type=*Contact,Index=0   ; Fix of first contact is group liked then groups are disabled fix
+@75=s$$Contact/First:CL,ID=Row,Type=*Contact,Index=0
 @76=s$$Contact/First:CL,ID=Row,Type=*Contact,Index=1
 @77=s$$Contact/First:CL,ID=Row,Type=*Contact,GroupPos=First
 @78=s$$Contact/Normal:CL,ID=Row,Type=*Contact

@@ -173,7 +173,7 @@ static int amThreadProc(HWND hwnd)
 			}
 		}
 		//MsgWaitForMultipleObjectsEx(1,&hamProcessEvent, INFINITE, 0, 0 );
-		WaitForSingleObjectEx(hamProcessEvent, INFINITE, FALSE);
+		WaitForSingleObjectEx(hamProcessEvent, INFINITE, TRUE);
 		ResetEvent(hamProcessEvent);
 		if (MirandaExiting()) 
 		{
@@ -185,7 +185,17 @@ static int amThreadProc(HWND hwnd)
 	return 1;
 }
 
+BOOL amWakeThread()
+{
+	if (hamProcessEvent && g_dwAwayMsgThreadID)
+	{
+		SetEvent(hamProcessEvent);
 
+		return TRUE;
+	}
+
+	return FALSE;
+}
 
 /*
 *	Sub to be called outside on status changing to retrieve away message
