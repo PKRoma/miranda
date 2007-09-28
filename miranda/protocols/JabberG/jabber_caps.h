@@ -100,7 +100,7 @@ typedef unsigned __int64 JabberCapsBits;
 #define JABBER_CAPS_SECUREIM                    ((JabberCapsBits)1<<28)
 #define JABBER_FEAT_PRIVACY_LISTS               "jabber:iq:privacy"
 #define JABBER_CAPS_PRIVACY_LISTS               ((JabberCapsBits)1<<29)
-#define JABBER_FEAT_MESSAGE_RECEIPTS            "http://www.xmpp.org/extensions/xep-0184.html#ns"
+#define JABBER_FEAT_MESSAGE_RECEIPTS            "urn:xmpp:receipts"
 #define JABBER_CAPS_MESSAGE_RECEIPTS            ((JabberCapsBits)1<<30)
 #define JABBER_FEAT_USER_TUNE                   "http://jabber.org/protocol/tune"
 #define JABBER_CAPS_USER_TUNE                   ((JabberCapsBits)1<<31)
