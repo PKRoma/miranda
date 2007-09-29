@@ -275,7 +275,7 @@ void cli_AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int upda
 	struct ClcContact * cont;
 	pdisplayNameCacheEntry cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(hContact);
 	if(dat->IsMetaContactsEnabled && cacheEntry && cacheEntry->HiddenSubcontact) return;		//contact should not be added
-	if(!dat->IsMetaContactsEnabled && cacheEntry && !mir_strcmp(cacheEntry->szProto,"MetaContacts")) return;
+	if(!dat->IsMetaContactsEnabled && cacheEntry && meta_module && !mir_strcmp(cacheEntry->szProto,meta_module)) return;
 	saveAddContactToTree(hwnd,dat,hContact,updateTotalCount,checkHideOffline);
 	if (FindItem(hwnd,dat,hContact,&cont,&group,NULL,FALSE))
 	{
@@ -285,7 +285,7 @@ void cli_AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int upda
 			if (cont && cont->proto)
 			{	
 				cont->SubAllocated=0;
-				if (mir_strcmp(cont->proto,"MetaContacts")==0) 
+				if (meta_module && mir_strcmp(cont->proto,meta_module)==0) 
 					AddSubcontacts(dat,cont,CLCItems_IsShowOfflineGroup(group));
 			}
             cont->lastPaintCounter=0;
@@ -370,7 +370,7 @@ void cliRebuildEntireList(HWND hwnd,struct ClcData *dat)
 /*
 		if( (cacheEntry->szProto || style&CLS_SHOWHIDDEN ) &&
 			(
-			 (dat->IsMetaContactsEnabled||mir_strcmp(cacheEntry->szProto,"MetaContacts"))
+			 (dat->IsMetaContactsEnabled||(meta_module && mir_strcmp(cacheEntry->szProto,meta_module))
 			 &&(style&CLS_SHOWHIDDEN || (!cacheEntry->Hidden && !cacheEntry->isUnknown)) 
 			 &&(!cacheEntry->HiddenSubcontact || !dat->IsMetaContactsEnabled)
 			)
@@ -408,7 +408,7 @@ void cliRebuildEntireList(HWND hwnd,struct ClcData *dat)
 		if (cont)	
 		{	
 			cont->SubAllocated=0;
-			if (cont->proto && strcmp(cont->proto,"MetaContacts")==0)
+			if (cont->proto && meta_module && strcmp(cont->proto,meta_module)==0)
 				AddSubcontacts(dat,cont,CLCItems_IsShowOfflineGroup(group));
 		}
 		hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0);
@@ -736,7 +736,7 @@ int __fastcall CLVM_GetContactHiddenStatus(HANDLE hContact, char *szProto, struc
 	BOOL fEmbedded=dat->force_in_dialog;
 	// always hide subcontacts (but show them on embedded contact lists)
 	
-	if(g_CluiData.bMetaAvail && dat != NULL && dat->IsMetaContactsEnabled && DBGetContactSettingByte(hContact, "MetaContacts", "IsSubcontact", 0))
+	if(g_CluiData.bMetaAvail && dat != NULL && dat->IsMetaContactsEnabled && meta_module && DBGetContactSettingByte(hContact, meta_module, "IsSubcontact", 0))
 		return -1; //subcontact
     if (pdnce && pdnce->isUnknown && !fEmbedded)    
         return 1; //'Unknown Contact'

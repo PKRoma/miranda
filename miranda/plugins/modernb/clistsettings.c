@@ -325,7 +325,8 @@ void cliCheckCacheItem(pdisplayNameCacheEntry pdnce)
 		}
 		//if (pdnce->HiddenSubcontact==-1)
 		//{
-		pdnce->HiddenSubcontact=DBGetContactSettingByte(pdnce->hContact,"MetaContacts","IsSubcontact",0);
+		pdnce->HiddenSubcontact=meta_module && DBGetContactSettingByte(pdnce->hContact,meta_module,"IsSubcontact",0);
+		//pdnce->HiddenSubcontact=ServiceExists(MS_MC_GETMETACONTACT) && CallService(MS_MC_GETMETACONTACT, (WPARAM)pdnce->hContact, 0) != 0;
 		//};
 
 		if (pdnce->noHiddenOffline==-1)
@@ -558,7 +559,7 @@ int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 					wildcmp((char*)cws->szSetting, (char*) "Status?",2))
 			{
 				
-				if (!mir_strcmp(cws->szModule,"MetaContacts") && mir_strcmp(cws->szSetting, "Status"))
+				if (meta_module && !mir_strcmp(cws->szModule,meta_module) && mir_strcmp(cws->szSetting, "Status"))
 				{
 					int res=0;
 					//InvalidateDisplayNameCacheEntryByPDNE((HANDLE)wParam,pdnce,cws->value.type);

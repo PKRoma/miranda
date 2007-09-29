@@ -1726,33 +1726,46 @@ static HBITMAP ske_LoadGlyphImageByDecoders(char * szFileName)
 HBITMAP ske_LoadGlyphImage(char * szFileName)
 {
 	// try to find image in loaded
-	DWORD i;HBITMAP hbmp;
-	char szFile [MAX_PATH]={0};
+	DWORD i;
+	HBITMAP hbmp;
+	char szFile [MAX_PATH]={0};	
 	ske_GetFullFilename(szFile,szFileName,g_SkinObjectList.szSkinPlace,TRUE);
-	for (i=0; i<dwLoadedImagesCount; i++)
+	ske_LockSkin();
+	if (pLoadedImages)
 	{
-		if (mir_bool_strcmpi(pLoadedImages[i].szFileName,szFile))
+		for (i=0; i<dwLoadedImagesCount; i++)
 		{
-			pLoadedImages[i].dwLoadedTimes++;
-			return pLoadedImages[i].hGlyph;
+			if (mir_bool_strcmpi(pLoadedImages[i].szFileName,szFile))
+			{
+				pLoadedImages[i].dwLoadedTimes++;
+				ske_UnlockSkin();
+				return pLoadedImages[i].hGlyph;
+			}
 		}
 	}
+	// load new image
+	hbmp=ske_skinLoadGlyphImage(szFile);
+	if (hbmp==NULL) 
 	{
-		// load new image
-		hbmp=ske_skinLoadGlyphImage(szFile);
-		if (hbmp==NULL) return NULL;
-		// add to loaded list
-		if (dwLoadedImagesCount+1>dwLoadedImagesAlocated)
-		{
-			pLoadedImages=mir_realloc(pLoadedImages,sizeof(GLYPHIMAGE)*(dwLoadedImagesCount+1));
-			if (pLoadedImages) dwLoadedImagesAlocated++;
-			else return NULL;
-		}
-		pLoadedImages[dwLoadedImagesCount].dwLoadedTimes=1;
-		pLoadedImages[dwLoadedImagesCount].hGlyph=hbmp;
-		pLoadedImages[dwLoadedImagesCount].szFileName=mir_strdup(szFile);
-		dwLoadedImagesCount++;
+		ske_UnlockSkin();
+		return NULL;
 	}
+	// add to loaded list
+	if (dwLoadedImagesCount+1>dwLoadedImagesAlocated)
+	{
+		pLoadedImages=mir_realloc(pLoadedImages,sizeof(GLYPHIMAGE)*(dwLoadedImagesCount+1));
+		if (pLoadedImages) dwLoadedImagesAlocated++;
+		else 
+		{
+			ske_UnlockSkin();
+			return NULL;
+		}
+	}
+	pLoadedImages[dwLoadedImagesCount].dwLoadedTimes=1;
+	pLoadedImages[dwLoadedImagesCount].hGlyph=hbmp;
+	pLoadedImages[dwLoadedImagesCount].szFileName=mir_strdup(szFile);
+	dwLoadedImagesCount++;
+	ske_UnlockSkin();
 	return hbmp;
 }
 int ske_UnloadGlyphImage(HBITMAP hbmp)

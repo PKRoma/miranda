@@ -59,7 +59,7 @@ HICON listening_to_icon = NULL;
 
 HIMAGELIST hAvatarOverlays=NULL;
 
-
+char *meta_module = 0;
 
 OVERLAYICONINFO g_pAvatarOverlayIcons[ID_STATUS_OUTTOLUNCH - ID_STATUS_OFFLINE + 1] = 
 {
@@ -121,12 +121,12 @@ static int ClcSettingChanged(WPARAM wParam,LPARAM lParam)
 	if (MirandaExiting()) return 0;
 	if ((HANDLE)wParam==NULL)
 	{
-		if (!mir_strcmp(cws->szModule,"MetaContacts"))
+		if (meta_module && !mir_strcmp(cws->szModule, meta_module))
 		{
-			if (!mir_strcmp(cws->szSetting,"Enabled"))
-				pcli->pfnClcBroadcast( INTM_RELOADOPTIONS,wParam,lParam);
+			if (!mir_strcmp(cws->szSetting, "Enabled"))
+				pcli->pfnClcBroadcast( INTM_RELOADOPTIONS, wParam, lParam);
 		}
-		else if (!mir_strcmp(cws->szModule,"CListGroups")) 
+		else if (!mir_strcmp(cws->szModule, "CListGroups")) 
 		{
 			pcli->pfnClcBroadcast( INTM_GROUPSCHANGED,wParam,lParam);
 		}
@@ -141,7 +141,7 @@ static int ClcSettingChanged(WPARAM wParam,LPARAM lParam)
 		{
 			pcli->pfnClcBroadcast( INTM_STATUSCHANGED,wParam,0);
 		}
-		else if (!strcmp(cws->szModule,"MetaContacts"))
+		else if (meta_module && !strcmp(cws->szModule,meta_module))
 		{ 
 			if(!strcmp(cws->szSetting,"Handle"))
 			{
@@ -289,8 +289,10 @@ static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam) {
 	int protoCount,i;
 	if (MirandaExiting()) return 0;
 
-	if (ServiceExists(MS_MC_DISABLEHIDDENGROUP));
-	CallService(MS_MC_DISABLEHIDDENGROUP, (WPARAM)TRUE, (LPARAM)0);
+	if (ServiceExists(MS_MC_DISABLEHIDDENGROUP))
+		CallService(MS_MC_DISABLEHIDDENGROUP, (WPARAM)TRUE, (LPARAM)0);
+	if (ServiceExists(MS_MC_GETPROTOCOLNAME))
+		meta_module = (char *)CallService(MS_MC_GETPROTOCOLNAME, 0, 0);
 
 	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&proto);
 	for(i=0;i<protoCount;i++) {
@@ -703,9 +705,9 @@ case WM_CREATE:
 
 		dat->NeedResort=1;
 		dat->MetaIgnoreEmptyExtra=DBGetContactSettingByte(NULL,"CLC","MetaIgnoreEmptyExtra",SETTING_METAIGNOREEMPTYEXTRA_DEFAULT);
-		dat->IsMetaContactsEnabled=(!(GetWindowLong(hwnd,GWL_STYLE)&CLS_MANUALUPDATE)) 
-			//&& (GetWindowLong(hwnd,GWL_STYLE)&CLS_USEGROUPS)
-			&& DBGetContactSettingByte(NULL,"MetaContacts","Enabled",1) && ServiceExists(MS_MC_GETDEFAULTCONTACT);
+		// done below in LoadCLCOptions
+		//dat->IsMetaContactsEnabled=(!(GetWindowLong(hwnd,GWL_STYLE)&CLS_MANUALUPDATE)) 
+			//&& meta_module && DBGetContactSettingByte(NULL,meta_module,"Enabled",1);
 		dat->expandMeta=DBGetContactSettingByte(NULL,"CLC","MetaExpanding",SETTING_METAEXPANDING_DEFAULT);		
 		dat->useMetaIcon=DBGetContactSettingByte(NULL,"CLC","Meta",SETTING_USEMETAICON_DEFAULT);
 		dat->drawOverlayedStatus=DBGetContactSettingByte(NULL,"CLC","DrawOverlayedStatus",SETTING_DRAWOVERLAYEDSTATUS_DEFAULT);
@@ -1435,8 +1437,7 @@ case WM_LBUTTONDOWN:
 			struct ClcGroup *group;
 			int hit;
 			DWORD hitFlags;
-			mUpped=0;
-			if(GetFocus()!=hwnd) SetFocus(hwnd);
+			mUpped=0;			
 			pcli->pfnHideInfoTip(hwnd,dat);
 			KillTimer(hwnd,TIMERID_INFOTIP);
 			KillTimer(hwnd,TIMERID_RENAME);
@@ -1447,6 +1448,7 @@ case WM_LBUTTONDOWN:
 			dat->ptDragStart.y=(short)HIWORD(lParam);
 			dat->szQuickSearch[0]=0;
 			hit=cliHitTest(hwnd,dat,(short)LOWORD(lParam),(short)HIWORD(lParam),&contact,&group,&hitFlags);
+			if(GetFocus()!=hwnd) SetFocus(hwnd);
 			if(hit!=-1 && !(hitFlags&CLCHT_NOWHERE)) {
 				if(hit==dat->selection && hitFlags&CLCHT_ONITEMLABEL && dat->exStyle&CLS_EX_EDITLABELS) {
 					SetCapture(hwnd);
@@ -1671,7 +1673,7 @@ case DROPTARGET_ONCONTACT:
 	{
 		struct ClcContact *contSour;
 		cliGetRowByIndex(dat,dat->iDragItem,&contSour,NULL);
-		if (contSour->type==CLCIT_CONTACT && mir_strcmp(contSour->proto,"MetaContacts"))
+		if (contSour->type==CLCIT_CONTACT && meta_module && mir_strcmp(contSour->proto,meta_module))
 		{
 			if (!contSour->isSubcontact)
 				hNewCursor=LoadCursor(GetModuleHandle(NULL), MAKEINTRESOURCE(IDC_DROPUSER));  /// Add to meta
@@ -1687,7 +1689,7 @@ case DROPTARGET_ONMETACONTACT:
 		struct ClcContact *contSour,*contDest;
 		cliGetRowByIndex(dat,dat->selection,&contDest,NULL);  
 		cliGetRowByIndex(dat,dat->iDragItem,&contSour,NULL);
-		if (contSour->type==CLCIT_CONTACT && mir_strcmp(contSour->proto,"MetaContacts"))
+		if (contSour->type==CLCIT_CONTACT && meta_module && mir_strcmp(contSour->proto,meta_module))
 		{
 			if (!contSour->isSubcontact)
 				hNewCursor=LoadCursor(GetModuleHandle(NULL), MAKEINTRESOURCE(IDC_DROPUSER));  /// Add to meta
@@ -1704,7 +1706,7 @@ case DROPTARGET_ONSUBCONTACT:
 		struct ClcContact *contSour,*contDest;
 		cliGetRowByIndex(dat,dat->selection,&contDest,NULL);  
 		cliGetRowByIndex(dat,dat->iDragItem,&contSour,NULL);
-		if (contSour->type==CLCIT_CONTACT && mir_strcmp(contSour->proto,"MetaContacts"))
+		if (contSour->type==CLCIT_CONTACT && meta_module && mir_strcmp(contSour->proto,meta_module))
 		{
 			if (!contSour->isSubcontact)
 				hNewCursor=LoadCursor(GetModuleHandle(NULL), MAKEINTRESOURCE(IDC_DROPUSER));  /// Add to meta
@@ -1817,7 +1819,7 @@ case WM_LBUTTONUP:
 					if (contSour->type==CLCIT_CONTACT)
 					{
 
-						if (mir_strcmp(contSour->proto,"MetaContacts"))
+						if (meta_module && mir_strcmp(contSour->proto,meta_module))
 						{
 							if (!contSour->isSubcontact)
 							{
@@ -1863,7 +1865,7 @@ case WM_LBUTTONUP:
 					if (contSour->type==CLCIT_CONTACT)
 					{
 
-						if (strcmp(contSour->proto,"MetaContacts"))
+						if (meta_module && strcmp(contSour->proto,meta_module))
 						{
 							if (!contSour->isSubcontact)
 							{   
@@ -1923,7 +1925,7 @@ case WM_LBUTTONUP:
 					cliGetRowByIndex(dat,dat->selection,&contDest,NULL);  
 					if (contSour->type==CLCIT_CONTACT)
 					{
-						if (strcmp(contSour->proto,"MetaContacts"))
+						if (meta_module && strcmp(contSour->proto,meta_module))
 						{
 							if (!contSour->isSubcontact)
 							{

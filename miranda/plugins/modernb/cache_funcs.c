@@ -265,7 +265,7 @@ void Cache_ReplaceSmileys(struct SHORTDATA *dat, PDNCE pdnce, TCHAR *text, int t
     {
         sp.Protocolname = pdnce->szProto;
 
-        if (DBGetContactSettingByte(NULL,"CLC","Meta",SETTING_USEMETAICON_DEFAULT) != 1 && pdnce->szProto != NULL && strcmp(pdnce->szProto, "MetaContacts") == 0)
+        if (DBGetContactSettingByte(NULL,"CLC","Meta",SETTING_USEMETAICON_DEFAULT) != 1 && pdnce->szProto != NULL && meta_module && strcmp(pdnce->szProto, meta_module) == 0)
         {
             HANDLE hContact = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT, (UINT)pdnce->hContact, 0);
             if (hContact != 0)
@@ -1275,4 +1275,6 @@ void Cache_GetAvatar(struct ClcData *dat, struct ClcContact *contact)
 		}
     }
 }
+
+
 

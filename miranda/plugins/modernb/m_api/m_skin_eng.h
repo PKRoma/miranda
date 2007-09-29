@@ -73,6 +73,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //lParam=0
 #define MS_CLIST_TOGGLEHIDEOFFLINE  "CList/ToggleHideOffline"
 
+#define MS_CLIST_TOGGLEGROUPS  "CList/ToggleGroups"
+
+#define MS_CLIST_TOGGLESOUNDS  "CList/ToggleSounds"
+
 // Add new object to skin object list.
 // wParam = pointer to SKINOBJECTDESCRIPTOR structure
 // lParam = 0 ( used for internal purposes: pointer to skin object list)

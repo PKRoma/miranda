@@ -199,3 +199,19 @@ int ToggleHideOffline(WPARAM wParam,LPARAM lParam)
 {
 	return pcli->pfnSetHideOffline((WPARAM)-1,0);
 }
+
+int ToggleGroups(WPARAM wParam,LPARAM lParam)
+{
+
+	DBWriteContactSettingByte(NULL, "CList", "UseGroups",
+				(BYTE) !DBGetContactSettingByte(NULL, "CList", "UseGroups", SETTING_USEGROUPS_DEFAULT));
+	pcli->pfnLoadContactTree();
+	return 0;
+}
+
+int ToggleSounds(WPARAM wParam,LPARAM lParam)
+{
+	DBWriteContactSettingByte(NULL, "Skin", "UseSound",
+		(BYTE) !DBGetContactSettingByte(NULL, "Skin", "UseSound", SETTING_ENABLESOUNDS_DEFAULT ) );
+	return 0;
+}

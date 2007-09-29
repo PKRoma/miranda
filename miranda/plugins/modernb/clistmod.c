@@ -116,7 +116,7 @@ int ExtIconFromStatusMode(HANDLE hContact, const char *szProto,int status)
 	/*pdisplayNameCacheEntry cacheEntry;
 	if ((DBGetContactSettingByte(NULL,"CLC","Meta",0)!=1) && szProto!=NULL)
     {
-		if (mir_strcmp(szProto,"MetaContacts")==0)
+		if (meta_module && mir_strcmp(szProto,meta_module)==0)
         {
 			hContact=(HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT,(UINT)hContact,0);
 			if (hContact!=0)
@@ -141,7 +141,7 @@ int cli_IconFromStatusMode(const char *szProto,int nStatus, HANDLE hContact)
        char AdvancedService[255]={0};
        int  nActStatus=nStatus;
        HANDLE hActContact=hContact;
-       if (!DBGetContactSettingByte(NULL,"CLC","Meta",SETTING_USEMETAICON_DEFAULT) && !mir_strcmp(szActProto,"MetaContacts"))
+       if (!DBGetContactSettingByte(NULL,"CLC","Meta",SETTING_USEMETAICON_DEFAULT) && meta_module && !mir_strcmp(szActProto,meta_module))
        {
             // substitute params by mostonline contact datas
            HANDLE hMostOnlineContact=(HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT,(UINT)hActContact,0);
@@ -278,6 +278,11 @@ int LoadContactListModule(void)
 	CreateServiceFunction(MS_CLIST_PAUSEAUTOHIDE,TrayIconPauseAutoHide);
 	CreateServiceFunction(MS_CLIST_CONTACTCHANGEGROUP,ContactChangeGroup);
 	CreateServiceFunction(MS_CLIST_TOGGLEHIDEOFFLINE,ToggleHideOffline);
+
+	CreateServiceFunction(MS_CLIST_TOGGLEGROUPS,ToggleGroups);
+	CreateServiceFunction(MS_CLIST_TOGGLESOUNDS,ToggleSounds);
+
+
 	CreateServiceFunction(MS_CLIST_GETCONTACTICON,GetContactIcon);
 
 	MySetProcessWorkingSetSize=(BOOL (WINAPI*)(HANDLE,SIZE_T,SIZE_T))GetProcAddress(GetModuleHandle(TEXT("kernel32")),"SetProcessWorkingSetSize");
