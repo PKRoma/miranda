@@ -4,7 +4,7 @@
 
 !define MIM_NAME                "Miranda IM"
 !define MIM_VERSION             "0.7"
-!define MIM_PREVIEW             "10" ; comment out for final build
+!define MIM_PREVIEW             "11" ; comment out for final build
 
 !define MIM_BUILD_UNICODE
 
