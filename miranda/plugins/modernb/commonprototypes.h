@@ -272,6 +272,8 @@ int		callProxied_SetAlpha(BYTE bAlpha);																//cluiframes.c
 int		SkinSelector_DeleteMask(MODERNMASK * mm);											//mod_skin_selector.c
 int		StoreAllContactData(struct ClcData *dat);											//cache_func.c
 int		ToggleHideOffline(WPARAM wParam,LPARAM lParam);										//contact.c
+int		ToggleGroups(WPARAM wParam,LPARAM lParam);										//contact.c
+int		ToggleSounds(WPARAM wParam,LPARAM lParam);										//contact.c
 int		UnitFramesMenu();																	//framesmenu.c
 void	ClcOptionsChanged();																//clc.c
 void	Docking_GetMonitorRectFromWindow(HWND hWnd,RECT *rc);								//Docking.c

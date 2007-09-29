@@ -529,9 +529,9 @@ static int CLUI_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	*	Updater support
 	*/
 #ifdef _UNICODE
-	CallService("Update/RegisterFL", (WPARAM)2103, (LPARAM)&pluginInfo);
+	CallService("Update/RegisterFL", (WPARAM)3684, (LPARAM)&pluginInfo);
 #else
-	CallService("Update/RegisterFL", (WPARAM)2996, (LPARAM)&pluginInfo);
+	//CallService("Update/RegisterFL", (WPARAM)2996, (LPARAM)&pluginInfo);
 #endif 
 
 	/*
@@ -545,8 +545,10 @@ static int CLUI_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	g_CluiData.bMetaAvail = ServiceExists(MS_MC_GETDEFAULTCONTACT) ? TRUE : FALSE;
 	setlocale(LC_CTYPE,"");  //fix for case insensitive comparing
 	CLCPaint_FillQuickHash();
-	if (ServiceExists(MS_MC_DISABLEHIDDENGROUP));
-	CallService(MS_MC_DISABLEHIDDENGROUP, (WPARAM)TRUE, (LPARAM)0);
+	if (ServiceExists(MS_MC_DISABLEHIDDENGROUP))
+		CallService(MS_MC_DISABLEHIDDENGROUP, (WPARAM)TRUE, (LPARAM)0);
+	if (ServiceExists(MS_MC_GETPROTOCOLNAME))
+		meta_module = (char *)CallService(MS_MC_GETPROTOCOLNAME, 0, 0);
 
 	ZeroMemory(&mii,sizeof(mii));
 	mii.cbSize=MENUITEMINFO_V4_SIZE;
@@ -2897,6 +2899,8 @@ HANDLE RegisterIcolibIconHandle(char * szIcoID, char *szSectionName,  char * szD
 	if ( sid.hDefaultIcon )	DestroyIcon(sid.hDefaultIcon);
 	return hIcolibItem; 
 }
+
+
 
 
 

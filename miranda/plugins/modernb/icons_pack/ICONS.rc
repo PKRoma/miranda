@@ -37,6 +37,11 @@ IDI_DBEDITOR         ICON    DISCARDABLE     "icos\\icon_dbeditor.ico"
 IDI_FINDUSER         ICON    DISCARDABLE     "icos\\icon_find_user.ico"
 IDI_OPTIONS          ICON    DISCARDABLE     "icos\\icon_options.ico"
 
+IDI_GROUPS_ON        ICON    DISCARDABLE     "icos\\icon_groups_on.ico"
+IDI_GROUPS_OFF       ICON    DISCARDABLE     "icos\\icon_groups_off.ico"
+IDI_SOUNDS_ON        ICON    DISCARDABLE     "icos\\icon_sounds_on.ico"
+IDI_SOUNDS_OFF       ICON    DISCARDABLE     "icos\\icon_sounds_off.ico"
+IDI_MINIMIZE         ICON    DISCARDABLE     "icos\\icon_minimize.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -52,4 +57,5 @@ END
 
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
+
 

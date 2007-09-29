@@ -450,7 +450,7 @@ int GetDropTargetInformation(HWND hwnd,struct ClcData *dat,POINT pt)
 	}
 	dat->selection=hit;
 
-	if (!mir_strcmp(contact->proto,"MetaContacts")&& (ServiceExists(MS_MC_ADDTOMETA))) return DROPTARGET_ONMETACONTACT;
+	if (meta_module && !mir_strcmp(contact->proto,meta_module)&& (ServiceExists(MS_MC_ADDTOMETA))) return DROPTARGET_ONMETACONTACT;
 	if (contact->isSubcontact && (ServiceExists(MS_MC_ADDTOMETA))) return DROPTARGET_ONSUBCONTACT;
 	return DROPTARGET_ONCONTACT;
 }
@@ -747,8 +747,9 @@ void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 	dat->selTextColour=DBGetContactSettingDword(NULL,"CLC","SelTextColour",CLCDEFAULT_SELTEXTCOLOUR);
 	dat->hotTextColour=DBGetContactSettingDword(NULL,"CLC","HotTextColour",CLCDEFAULT_HOTTEXTCOLOUR);
 	dat->quickSearchColour=DBGetContactSettingDword(NULL,"CLC","QuickSearchColour",CLCDEFAULT_QUICKSEARCHCOLOUR);
+	if(!meta_module && ServiceExists(MS_MC_GETPROTOCOLNAME)) meta_module = (char *)CallService(MS_MC_GETPROTOCOLNAME, 0, 0);
 	dat->IsMetaContactsEnabled=(!(GetWindowLong(hwnd,GWL_STYLE)&CLS_MANUALUPDATE)) &&
-		DBGetContactSettingByte(NULL,"MetaContacts","Enabled",1) && ServiceExists(MS_MC_GETDEFAULTCONTACT);
+		meta_module && DBGetContactSettingByte(NULL,meta_module,"Enabled",1) && ServiceExists(MS_MC_GETDEFAULTCONTACT);
 	dat->MetaIgnoreEmptyExtra=DBGetContactSettingByte(NULL,"CLC","MetaIgnoreEmptyExtra",SETTING_METAIGNOREEMPTYEXTRA_DEFAULT);
 	dat->expandMeta=DBGetContactSettingByte(NULL,"CLC","MetaExpanding",SETTING_METAEXPANDING_DEFAULT);
 	dat->useMetaIcon=DBGetContactSettingByte(NULL,"CLC","Meta",SETTING_USEMETAICON_DEFAULT);

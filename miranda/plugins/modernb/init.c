@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 //definitions
 #define MS_CLIST_GETVERSION "CList/GetVersionType"
+#define UPDATER_PATH "http://miranda-im.org/download/details.php?action=viewfile&id=3684"
 
 //include
 #include "commonheaders.h"
@@ -127,9 +128,9 @@ PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
 #ifndef _DEBUG
 	#ifdef UNICODE
-		"Modern Contact List (UNICODE)",
+		"Modern Contact List '07 (UNICODE)",
 	#else
-		"Modern Contact List (ANSI)",
+		"Modern Contact List '07 (ANSI)",
 	#endif
 
 #else
@@ -145,9 +146,9 @@ PLUGININFOEX pluginInfo = {
 	"ashpynov@gmail.com" ,
 	"Copyright 2000-2007 Miranda-IM project ["__DATE__" "__TIME__"]",
 #ifdef UNICODE
-	"http://miranda-im.org/download/details.php?action=viewfile&id=2103",
+	UPDATER_PATH,	
 #else
-    "http://miranda-im.org/download/details.php?action=viewfile&id=2996",
+    "No link",
 #endif
 	UNICODE_AWARE,
 	DEFMOD_CLISTALL,

@@ -238,7 +238,15 @@ static int    ehhToolBarSettingsChanged( WPARAM wParam, LPARAM lParam )
 	{
 		if (!mir_strcmp(cws->szSetting,"HideOffline"))
 			sttSetButtonPressed("ShowHideOffline", (BOOL) DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT) );
+		else if (!mir_strcmp(cws->szSetting,"UseGroups"))
+			sttSetButtonPressed( "UseGroups", (BOOL) DBGetContactSettingByte(NULL, "CList", "UseGroups", SETTING_USEGROUPS_DEFAULT) );
 	}
+	else if (!mir_strcmp(cws->szModule,"Skin"))
+	{
+		if (!mir_strcmp(cws->szSetting,"UseSound"))
+			sttSetButtonPressed( "EnableSounds", (BOOL) DBGetContactSettingByte(NULL, "Skin", "UseSound", SETTING_ENABLESOUNDS_DEFAULT ) );
+	}
+	
 	return 0;
 }
 static int    ehhToolBarBackgroundSettingsChanged(WPARAM wParam, LPARAM lParam)
@@ -287,6 +295,7 @@ static int    svcToolBarAddButton(WPARAM wParam, LPARAM lParam)
 	BYTE bPanel;
 	DWORD dwOrder;
 	TBButton * bi=(TBButton *)lParam;
+	bVisible=(bi->tbbFlags&TBBF_VISIBLE ? TRUE : FALSE);
 	if (!ServiceExists(bi->pszServiceName))
 		return 0;
 	tbcheck 0;
@@ -345,11 +354,11 @@ static void	  sttTBButton2MTBBUTTONINFO(TBButton * bi, MTB_BUTTONINFO * mtbi)
 	}		
 	else
 	{
-		mtbi->bVisible = 1;
 		mtbi->nOrderValue=bi->defPos;
 		mtbi->bSeparator= (((bi->tbbFlags & TBBF_FLEXSIZESEPARATOR) == TBBF_FLEXSIZESEPARATOR)? 	SEPARATOR_FLEX :
 		((bi->tbbFlags & TBBF_ISSEPARATOR) == TBBF_ISSEPARATOR)? SEPARATOR_FIXED : SEPARATOR_NOT);
 	}
+	mtbi->bVisible = ((bi->tbbFlags&TBBF_VISIBLE)!=0);
 }
 static void   sttUpdateButtonState(MTB_BUTTONINFO * mtbi)
 {
@@ -483,7 +492,7 @@ static BOOL   sttDrawToolBarBackground(HWND hwnd, HDC hdc, RECT * rect, MTBINFO 
 	return TRUE;
 }
 static void   sttRegisterToolBarButton(char * pszButtonID, char * pszButtonName, char * pszServiceName,
-									   char * pszTooltipUp, char * pszTooltipDn, int icoDefIdx, int defResource, int defResource2)
+									   char * pszTooltipUp, char * pszTooltipDn, int icoDefIdx, int defResource, int defResource2, BOOL bVisByDefault)
 {
 	TBButton tbb;
 	static int defPos=0;
@@ -515,7 +524,7 @@ static void   sttRegisterToolBarButton(char * pszButtonID, char * pszButtonName,
 		if ((BYTE)pszButtonName) tbb.tbbFlags=TBBF_FLEXSIZESEPARATOR;
 		else tbb.tbbFlags=TBBF_ISSEPARATOR;
 	}
-
+	tbb.tbbFlags|=(bVisByDefault ? TBBF_VISIBLE :0 );
 	CallService(MS_TB_ADDBUTTON,0, (LPARAM)&tbb);
 }
 
@@ -523,23 +532,25 @@ static void   sttSetButtonPressed( char * hButton, BOOL bPressed )
 {
 	CallService(MS_TB_SETBUTTONSTATE, (WPARAM) hButton, (LPARAM) (bPressed ? TBST_PUSHED : TBST_RELEASED) );
 }
-static void   sttAddStaticSeparator()
+static void   sttAddStaticSeparator( BOOL bVisibleByDefault )
 {
-	sttRegisterToolBarButton( NULL, (char*)FALSE, NULL, NULL, NULL, 0, 0, 0 );
+	sttRegisterToolBarButton( NULL, (char*)FALSE, NULL, NULL, NULL, 0, 0, 0, bVisibleByDefault );
 }
-static void   sttAddDynamicSeparator()
+static void   sttAddDynamicSeparator( BOOL bVisibleByDefault )
 {
-	sttRegisterToolBarButton( NULL, (char*)TRUE, NULL, NULL, NULL, 0, 0, 0 );
+	sttRegisterToolBarButton( NULL, (char*)TRUE, NULL, NULL, NULL, 0, 0, 0, bVisibleByDefault );
 }
 static void   sttGetButtonSettings(char * ID, BYTE * pbVisible, DWORD * pdwOrder, BYTE * pbPanelID)
 {
 	char key[255]={0};
-	BYTE vis;
+	BYTE vis=1;
+
 	DWORD ord;
 	BYTE panel;
 
+	if (pbVisible) vis=*pbVisible;
 	_snprintf(key, sizeof(key), "visible_%s", ID);
-	vis=DBGetContactSettingByte(NULL,"ModernToolBar", key, 1);
+	vis=DBGetContactSettingByte(NULL,"ModernToolBar", key, vis);
 
 	_snprintf(key, sizeof(key), "order_%s", ID);
 	ord=DBGetContactSettingDword(NULL,"ModernToolBar", key, 0);
@@ -569,7 +580,8 @@ static void   sttReloadButtons()
 		DWORD dwOrder;
 
 		MTB_BUTTONINFO * mtbi = (MTB_BUTTONINFO *)tbdat.listOfButtons->items[i];
-
+		
+		bVisible=mtbi->bVisible;
 		sttGetButtonSettings(mtbi->szButtonID, &bVisible, &dwOrder, &bPanel);
 		
 		mtbi->nOrderValue = dwOrder ? dwOrder : mtbi->nOrderValue;
@@ -580,7 +592,10 @@ static void   sttReloadButtons()
 			ToolBar_AddButtonToBars(mtbi);
 	}
 	tbunlock;
-	sttSetButtonPressed("ShowHideOffline", (BOOL) DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT) );
+	sttSetButtonPressed( "ShowHideOffline", (BOOL) DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT) );
+	sttSetButtonPressed( "UseGroups", (BOOL) DBGetContactSettingByte(NULL, "CList", "UseGroups", SETTING_USEGROUPS_DEFAULT) );
+	sttSetButtonPressed( "EnableSounds", (BOOL) DBGetContactSettingByte(NULL, "Skin", "UseSound", SETTING_ENABLESOUNDS_DEFAULT ) );
+
 }
 static int	  sttDBEnumProc (const char *szSetting,LPARAM lParam)
 {
@@ -617,33 +632,47 @@ static int				ToolBar_LayeredPaintProc(HWND hWnd, HDC hDC, RECT * rcPaint, HRGN 
 
 
 
-static void				ToolBar_DefaultButtonRegistration()
+static void	ToolBar_DefaultButtonRegistration()
 {
 	
 	sttRegisterToolBarButton( "MainMenu", "Main Menu", MS_CLUI_SHOWMAINMENU,
-		"Main menu", NULL,  100 , IDI_RESETVIEW, IDI_RESETVIEW  );
+		"Main menu", NULL,  100 , IDI_RESETVIEW, IDI_RESETVIEW, TRUE  );
 
 	
 	sttRegisterToolBarButton( "StatusMenu", "Status Menu", MS_CLUI_SHOWSTATUSMENU,
-		"Status menu", NULL,  105 , IDI_RESETVIEW, IDI_RESETVIEW  );
+		"Status menu", NULL,  105 , IDI_RESETVIEW, IDI_RESETVIEW, TRUE  );
 	
 	sttRegisterToolBarButton( "ShowHideOffline","Show/Hide offline contacts", MS_CLIST_TOGGLEHIDEOFFLINE,
-					    "Hide offline contacts", "Show offline contacts", 110 /*and 111 */ , IDI_RESETVIEW, IDI_RESETVIEW  );
+					    "Hide offline contacts", "Show offline contacts", 110 /*and 111 */ , IDI_RESETVIEW, IDI_RESETVIEW, TRUE  );
 	
 	sttSetButtonPressed( "ShowHideOffline", (BOOL) DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT) );
 
-
     sttRegisterToolBarButton( "JabberBookmarks","Jabber Bookmarks", MS_JABBER_SHOWBOOKMARK,
-		"Jabber Bookmark", NULL,  120 , IDI_RESETVIEW, IDI_RESETVIEW  );
+		"Jabber Bookmark", NULL,  120 , IDI_RESETVIEW, IDI_RESETVIEW, TRUE  );
 
 	sttRegisterToolBarButton( "DatabaseEditor","DBEditor++", "DBEditorpp/MenuCommand",
-		"Database Editor", NULL,  130 , IDI_RESETVIEW, IDI_RESETVIEW  );
+		"Database Editor", NULL,  130 , IDI_RESETVIEW, IDI_RESETVIEW, TRUE  );
 
 	sttRegisterToolBarButton( "FindUser","Find User", "FindAdd/FindAddCommand",
-		"Find User", NULL,  140 , IDI_RESETVIEW, IDI_RESETVIEW  );
+		"Find User", NULL,  140 , IDI_RESETVIEW, IDI_RESETVIEW, TRUE  );
 	
 	sttRegisterToolBarButton( "Options","Options", "Options/OptionsCommand",
-		"Options", NULL,  150 , IDI_RESETVIEW, IDI_RESETVIEW  );
+		"Options", NULL,  150 , IDI_RESETVIEW, IDI_RESETVIEW, TRUE  );
+
+	sttRegisterToolBarButton( "UseGroups","Use/Disable groups", MS_CLIST_TOGGLEGROUPS,
+		"Use groups", "Disable Groups", 160 /*and 161 */ , IDI_RESETVIEW, IDI_RESETVIEW, FALSE  );
+
+	sttSetButtonPressed( "UseGroups", (BOOL) DBGetContactSettingByte(NULL, "CList", "UseGroups", SETTING_USEGROUPS_DEFAULT) );
+
+	sttRegisterToolBarButton( "EnableSounds","Enable/Disable sounds", MS_CLIST_TOGGLESOUNDS,
+		"Enable sounds", "Disable Sounds", 170 /*and 171 */ , IDI_RESETVIEW, IDI_RESETVIEW, FALSE  );
+	
+	sttSetButtonPressed( "EnableSounds", (BOOL) DBGetContactSettingByte(NULL, "Skin", "UseSound", SETTING_ENABLESOUNDS_DEFAULT ) );
+	
+	sttAddDynamicSeparator(FALSE);
+
+	sttRegisterToolBarButton( "Minimize","Minimize", "CList/ShowHide",
+		"Minimize", NULL,  180 , IDI_RESETVIEW, IDI_RESETVIEW, FALSE  );
 
 	sttReloadButtons();
 }
