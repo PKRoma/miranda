@@ -146,7 +146,7 @@ PLUGININFOEX pluginInfo = {
 	"ashpynov@gmail.com" ,
 	"Copyright 2000-2007 Miranda-IM project ["__DATE__" "__TIME__"]",
 #ifdef UNICODE
-	UPDATER_PATH,	
+	"http://miranda-im.org/download/details.php?action=viewfile&id=3684",	
 #else
     "No link",
 #endif
