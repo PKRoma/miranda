@@ -24,10 +24,114 @@ Contents
 ----------------------
 * New in 0.7
 Enhancements:
- - TDB
+ - Added Gadu-Gadu protocol support
+ - Improved Unicode support
+ - Messages and other events are now stored as UTF-8
+ - New icon manager allows more icon skinning possibilities
+ - Centralized font manager added to the options to manage fonts for all services
+ - New avatar and image handling core plugins to better manage avatars
+ - Improved memory and threading support
+ - Menus are now customizable
+ - Improved contact list plugin support
+ - Implemented a new memory mapped database driver
+ - New plugin identification API
+ - ICQ: Oscar File Transfers - like ICQ 5
+ - ICQ: Client detection improvements
+ - ICQ: Level 1 Rate management (global)
+ - ICQ: Ability to send long offline messages (up to 4096 characters)
+ - ICQ: Support for AIM contacts enhanced
+ - ICQ: Better support for Miranda Ignore module
+ - ICQ: URL events are now received as normal messages
+ - Import: Supports UTF-8 and improved import speed
+ - IRC: True Unicode support for servers with UTF-8 channels
+ - IRC: Ability to set a codepage for a server and to convert a text from ASCII to Unicode properly
+ - Jabber: Ability to choose contacts's resource to send message
+ - Jabber: Bookmarks storage support (XEP-0048)
+ - Jabber: Last activity support (XEP-0012)
+ - Jabber: Jabber search (XEP-0055)
+ - Jabber: Proper data forms support (XEP-0004)
+ - Jabber: Transport gateway recognition
+ - Jabber: Vcard in jabber chatrooms
+ - Jabber: Ability to revoke authorization from a contact
+ - Jabber: Entity time support (XEP-0202)
+ - Jabber: Ad-hoc commands implementation (XEP-0050)
+ - Jabber: Traffic compression (XEP-0138)
+ - Jabber: Full support for socks5-bytestreams filetransfers (XEP-0065)
+ - Jabber: In band bytestreams filetransfers support (XEP-0047)
+ - Jabber: Entity capabilites support (XEP-0115 v1.3)
+ - Jabber: User moods (XEP-0107)
+ - Jabber: User tunes (XEP-0118, via ListeningTo plugin)
+ - Jabber: Personal eventing protocol support (XEP-0163) 
+ - Jabber: Proper priority support (inc. negative priority) and displaing, priority change without reconnect
+ - Jabber: Combobox with most popular resources in options
+ - Jabber: Redesigned options dialogs
+ - Jabber: Chat state notifications support (XEP-0085)
+ - Jabber: Self contact support in a contact list
+ - Jabber: Show participants real jid, affiliation/role and status messages in group chat
+ - Jabber: Privacy lists (XEP-0016)
+ - Jabber: Brand new service discovery, transports discovery
+ - Jabber: Remote controlling clients (XEP-0146)
+ - Jabber: Roster editor + backup/restore feature
+ - Jabber: Protocol status show in group chat
+ - Jabber: Pre-filled text controls in change nickname + set topic dialogs in group chat
+ - Jabber: Delayed delivery support (XEP-0203)
+ - Jabber: XML Console
+ - Jabber: Option to disable sharing OS version information
+ - Jabber: Partial extended stanza addressing support (XEP-0033)
+ - Jabber: Message receipts preliminary support (XEP-0184, experimental)
+ - Jabber: XMPP ping support (XEP-0199)
+ - Jabber: XMPP Basic Client 2008 (XEP-0211)
+ - Jabber: XMPP Intermediate IM Client 2008 (XEP-0213)
+ - Jabber: Redesigned group chat invitation dialog with ability to invite multiple users
+ - Jabber: Show ban reason in group chat
+ - Jabber: Folders plugin support
+ - MSN: Offline messaging (send/receive)
+ - MSN: SMS messaging (send/receive)
+ - MSN: Passport 3.0 authentication
+ - MSN: JPEG avatar reception
+ - MSN: Any size avatar support
+ - MSN: P2P connection capabilties determination
+ - MSN: MSN Alerts
+ - MSN: Unicode Hotmail Notifications
+ - Yahoo: Yahoo Client 7.x protocol support (client identification, protocol version, supported services upgraded to support this)
+ - Yahoo: Avatar code cleanup/rewrite.
+ - Yahoo: Avatar improvements (new AVS Support, different file caching strategy)
+ - Yahoo: Adding pingbacks to signal errors during login.
+ - Yahoo: Using "First Name and Last Name" as the Nick when somebody adds us.
+ - Yahoo: Adding E-mail count service support
+ - Yahoo: New Icons from Angi
+ - Yahoo: Use japan mail server for those who set options that they are using Japan servers
+ 
 Bugfixes:
- - TBD
-
+ - IRC: Special symbols and cyrillic/chinese/japanese characters were handled incorrectly
+ - ICQ: Fixed disconnections on long messages
+ - ICQ: Fixed peer-to-peer session cookie checking
+ - ICQ: Fixed SMS message handling
+ - ICQ: Applied fix for re-requesting authorization
+ - ICQ: Fixed handling of message acks & status message replies from ICQ 6
+ - ICQ: Fixed handling of malformed messages acks
+ - ICQ: Minor fixes for Popup plugin support
+ - ICQ: Minor protocol related tweaks
+ - ICQ: Fixed possible lags caused by typing notifications (on slow connections)
+ - ICQ: Fixed message handling (fixes bug used for stealth invisibility detection)
+ - ICQ: Several fixes to Rate Level 2 handling - more propper handling of message responses
+ - ICQ: Fixed possible crashes caused by malformed langpacks
+ - Jabber: Proper message delivery verification support, no more timeouts
+ - Jabber: Proper handling of conference nicknames, including storing nicks to a roster
+ - Jabber: Fixed group chat deadlocks
+ - Jabber: Fixed private messages in groupchats
+ - Jabber: Fixed NTLM authentication
+ - Jabber: Fixed owner and admin list handling in groupchats
+ - Jabber: Fixed jabber status message reading
+ - Jabber: Proper status and away message displaing in contact list if more then one JID's resource available
+ - Jabber: Fixed freezing miranda in jabber search dialog
+ - Jabber: Removed search validation via vcards
+ - MSN: P2P file/avatar transfer issues
+ - MSN: Message timeout issues
+ - MSN: Fixed lost message issues
+ - Yahoo: Buffer overflow in incoming IM
+ - Yahoo: Lots of bug fixes
+ 
 * New in 0.6.8
 Bugfixes:
  - AIM: Fixed issue with outgoing messages with double quotes
@@ -39,7 +143,7 @@ Bugfixes:
  - MSN: Fixed typing notifications
  - MSN: Improved group handling
  - MSN: Improved file transfers
-
+ 
 * New in 0.6.7
 Bugfixes
  - Jabber: Fixed crash on exit when using Jabber
