@@ -34,6 +34,7 @@ Enhancements:
  - Menus are now customizable
  - Improved contact list plugin support
  - Implemented a new memory mapped database driver
+ - Improved uPnP support
  - New plugin identification API
  - ICQ: Oscar File Transfers - like ICQ 5
  - ICQ: Client detection improvements
@@ -90,7 +91,7 @@ Enhancements:
  - MSN: Passport 3.0 authentication
  - MSN: JPEG avatar reception
  - MSN: Any size avatar support
- - MSN: P2P connection capabilties determination
+ - MSN: Robustness improvements to P2P connections
  - MSN: MSN Alerts
  - MSN: Unicode Hotmail Notifications
  - Yahoo: Yahoo Client 7.x protocol support (client identification, protocol version, supported services upgraded to support this)
