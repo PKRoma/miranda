@@ -59,7 +59,7 @@ Enhancements:
  - Jabber: Traffic compression (XEP-0138)
  - Jabber: Full support for socks5-bytestreams filetransfers (XEP-0065)
  - Jabber: In band bytestreams filetransfers support (XEP-0047)
- - Jabber: Entity capabilites support (XEP-0115 v1.3)
+ - Jabber: Entity capabilities support (XEP-0115 v1.3)
  - Jabber: User moods (XEP-0107)
  - Jabber: User tunes (XEP-0118, via ListeningTo plugin)
  - Jabber: Personal eventing protocol support (XEP-0163) 
@@ -124,7 +124,7 @@ Bugfixes:
  - Jabber: Fixed NTLM authentication
  - Jabber: Fixed owner and admin list handling in groupchats
  - Jabber: Fixed jabber status message reading
- - Jabber: Proper status and away message displaing in contact list if more then one JID's resource available
+ - Jabber: Proper status and away message displaying in contact list if more then one JID's resource available
  - Jabber: Fixed freezing miranda in jabber search dialog
  - Jabber: Removed search validation via vcards
  - MSN: P2P file/avatar transfer issues
