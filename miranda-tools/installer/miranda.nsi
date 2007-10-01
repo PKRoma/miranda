@@ -217,7 +217,7 @@ SubSection /e "Options" pOptions
     RMDir /r "$SMPROGRAMS\Miranda IM"
     CreateDirectory "$SMPROGRAMS\Miranda IM"
     CreateShortCut  "$SMPROGRAMS\Miranda IM\Miranda IM.lnk" "$INSTDIR\miranda32.exe"
-    CreateShortCut  "$SMPROGRAMS\Miranda IM\Database Repair Tool.lnk" "$INSTDIR\dbtool.exe"
+    CreateShortCut  "$SMPROGRAMS\Miranda IM\Database Tool.lnk" "$INSTDIR\dbtool.exe"
     WriteINIStr     "$SMPROGRAMS\Miranda IM\Homepage.url" "InternetShortcut" "URL" "http://www.miranda-im.org/"
   SectionEnd
 
