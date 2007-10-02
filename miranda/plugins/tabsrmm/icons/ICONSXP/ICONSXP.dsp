@@ -77,20 +77,20 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo 
 # ADD BSC32 /nologo 
 LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /out:"Release\tabsrmm_icons.dll" /incremental:no /debug /pdbtype:sept /subsystem:windows /opt:ref /opt:icf /noentry /implib:"$(OutDir)/ICONSXP.lib" /machine:ix86 
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /out:"Release\tabsrmm_icons.dll" /incremental:no /debug /pdbtype:sept /subsystem:windows /opt:ref /opt:icf /noentry /implib:"$(OutDir)/ICONSXP.lib" /machine:ix86 
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /out:"Release\tabsrmm_icons.dll" /incremental:no /debug /pdbtype:sept /subsystem:windows /opt:ref /opt:icf /noentry /implib:"Release/ICONSXP.lib" /machine:ix86 
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /out:"Release\tabsrmm_icons.dll" /incremental:no /debug /pdbtype:sept /subsystem:windows /opt:ref /opt:icf /noentry /implib:"Release/ICONSXP.lib" /machine:ix86 
 
 !ELSEIF  "$(CFG)" == "ICONSXP - Win32 Release Unicode 98"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "$(ConfigurationName)"
-# PROP BASE Intermediate_Dir "$(ConfigurationName)"
+# PROP BASE Output_Dir "Release Unicode"
+# PROP BASE Intermediate_Dir "Release Unicode"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "$(ConfigurationName)"
-# PROP Intermediate_Dir "$(ConfigurationName)"
+# PROP Output_Dir "Release Unicode"
+# PROP Intermediate_Dir "Release Unicode"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /Zi /W3 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "ICONSXP_EXPORTS" /D "_MBCS" /Yu"stdafx.h" /c /GX 
 # ADD CPP /nologo /MT /Zi /W3 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "ICONSXP_EXPORTS" /D "_MBCS" /Yu"stdafx.h" /c /GX 
@@ -102,8 +102,8 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo 
 # ADD BSC32 /nologo 
 LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /out:"$(ConfigurationName)\tabsrmm_icons.dll" /incremental:no /debug /pdbtype:sept /subsystem:windows /opt:ref /opt:icf /noentry /implib:"$(OutDir)/ICONSXP.lib" /machine:ix86 
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /out:"$(ConfigurationName)\tabsrmm_icons.dll" /incremental:no /debug /pdbtype:sept /subsystem:windows /opt:ref /opt:icf /noentry /implib:"$(OutDir)/ICONSXP.lib" /machine:ix86 
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /out:"Release Unicode\tabsrmm_icons.dll" /incremental:no /debug /pdbtype:sept /subsystem:windows /opt:ref /opt:icf /noentry /implib:"Release Unicode/ICONSXP.lib" /machine:ix86 
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /out:"Release Unicode\tabsrmm_icons.dll" /incremental:no /debug /pdbtype:sept /subsystem:windows /opt:ref /opt:icf /noentry /implib:"Release Unicode/ICONSXP.lib" /machine:ix86 
 
 !ENDIF
 
