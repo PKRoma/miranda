@@ -72,6 +72,8 @@ created. CTRL key needs to be pressed only when a tab is being dropped.
 
 6. Change Log
 -------------
+2.6.0.0
+* miranda 0.7 compatibility
 2.5.9.14
 * bugfixes (mainly visual glitches)
 * docs updated
