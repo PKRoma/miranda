@@ -111,7 +111,7 @@ struct MessageWindowData
 	ParentWindowData *parent;
 	HWND hwndParent;
 	HWND hwndLog;
-	HANDLE hDbEventFirst, hDbEventLast;
+	HANDLE hDbEventFirst, hDbEventLast, hDbUnreadEventFirst;
 	int splitterPos;
 	SIZE minEditBoxSize;
 	SIZE minTopSize;

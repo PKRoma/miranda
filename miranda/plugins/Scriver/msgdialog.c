@@ -1038,6 +1038,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			dat->wOldStatus = dat->wStatus;
 			dat->hDbEventFirst = NULL;
 			dat->hDbEventLast = NULL;
+			dat->hDbUnreadEventFirst = NULL;
 			dat->messagesInProgress = 0;
 			dat->nTypeSecs = 0;
 			dat->nLastTyping = 0;
@@ -1098,7 +1099,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			dat->minEditBoxHeight = dat->minEditInit.bottom - dat->minEditInit.top;
 			dat->minLogBoxHeight = dat->minEditBoxHeight;
 			dat->splitterPos = (int) DBGetContactSettingDword((g_dat->flags & SMF_SAVESPLITTERPERCONTACT) ? dat->hContact : NULL, SRMMMOD, "splitterPos", (DWORD) - 1);
-			dat->toolbarSize.cy = DBGetContactSettingDword((g_dat->flags & SMF_SAVESPLITTERPERCONTACT) ? dat->hContact : NULL, SRMMMOD, "splitterHeight", (DWORD) 26);
+			dat->toolbarSize.cy = DBGetContactSettingDword((g_dat->flags & SMF_SAVESPLITTERPERCONTACT) ? dat->hContact : NULL, SRMMMOD, "splitterHeight", (DWORD) 24);
+			if (dat->toolbarSize.cy > 24) {
+				dat->toolbarSize.cy = 24;
+			}
 			dat->toolbarSize.cx = GetToolbarWidth();
 			if (dat->splitterPos == -1) {
 				dat->splitterPos = dat->minEditBoxHeight;
@@ -1833,12 +1837,20 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 		}
 	case DM_ACTIVATE:
-
 	case WM_ACTIVATE:
 		if (LOWORD(wParam) != WA_ACTIVE)
 			break;
 		//fall through
 	case WM_MOUSEACTIVATE:
+		/*TODO: clear unread events here*/
+		if (dat->hDbUnreadEventFirst != NULL) {
+			HANDLE hDbEvent = dat->hDbUnreadEventFirst;
+			dat->hDbUnreadEventFirst = NULL;
+			while (hDbEvent != NULL) {
+				CallService(MS_CLIST_REMOVEEVENT, (WPARAM) dat->hContact, (LPARAM) hDbEvent);
+				hDbEvent = (HANDLE) CallService(MS_DB_EVENT_FINDNEXT, (WPARAM) hDbEvent, 0);
+			}
+		}
 		if (dat->showUnread) {
 			dat->showUnread = 0;
 			/*
@@ -1922,7 +1934,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				if (isCtrl) {
 					oldSplitterY = dat->toolbarSize.cy + dat->splitterPos - (rc.bottom - pt.y);
 					if (oldSplitterY < 18) oldSplitterY = 18;
-					if (oldSplitterY > 26) oldSplitterY = 26;
+					if (oldSplitterY > 24) oldSplitterY = 24;
 					if (oldSplitterY == dat->toolbarSize.cy) {
 						break;
 					}
@@ -1991,10 +2003,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			CallService(MS_DB_EVENT_GET, lParam, (LPARAM) & dbei);
 			if (dat->hDbEventFirst == NULL)
 				dat->hDbEventFirst = (HANDLE) lParam;
-			if (dbei.eventType == EVENTTYPE_MESSAGE && (dbei.flags & DBEF_READ))
-				break;
 			if (DbEventIsShown(&dbei, dat)) {
 				if (dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & (DBEF_SENT))) {
+					/* store the event when the container is hidden so that clist notifications can be removed */
+					if (!IsWindowVisible(GetParent(hwndDlg)) && dat->hDbUnreadEventFirst == NULL)
+						dat->hDbUnreadEventFirst = (HANDLE) lParam;
 					dat->lastMessage = dbei.timestamp;
 					SendMessage(hwndDlg, DM_UPDATESTATUSBAR, 0, 0);
 					if (GetForegroundWindow()==dat->hwndParent && dat->parent->hwndActive == hwndDlg)

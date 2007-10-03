@@ -134,14 +134,13 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 	dbei.cbSize = sizeof(dbei);
 	dbei.cbBlob = 0;
 	CallService(MS_DB_EVENT_GET, lParam, (LPARAM) & dbei);
+	if (dbei.eventType == EVENTTYPE_MESSAGE && (dbei.flags & DBEF_READ))
+		return 0;
 	hwnd = WindowList_Find(g_dat->hMessageWindowList, (HANDLE) wParam);
 	if (hwnd) {
 		SendMessage(hwnd, HM_DBEVENTADDED, wParam, lParam);
 	}
 	if (dbei.flags & DBEF_SENT || dbei.eventType != EVENTTYPE_MESSAGE)
-		return 0;
-
-	if (dbei.eventType == EVENTTYPE_MESSAGE && (dbei.flags & DBEF_READ))
 		return 0;
 
 	CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
