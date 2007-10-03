@@ -725,30 +725,24 @@ void SM_AddCommand(const TCHAR* pszID, const char* pszModule, const char* lpNewC
 		if ( lstrcmpi( pTemp->ptszID, pszID ) == 0 && lstrcmpiA( pTemp->pszModule, pszModule ) == 0) { // match
 			COMMAND_INFO *node = mir_alloc(sizeof(COMMAND_INFO));
 			node->lpCommand = mir_strdup( lpNewCommand );
-			node->last = NULL; // always added at beginning!
-
+			node->prev = NULL; // always added at beginning!
+			node->next = pTemp->lpCommands;
 			// new commands are added at start
-			if (pTemp->lpCommands == NULL) {
-				node->next = NULL;
-				pTemp->lpCommands = node;
+			if (pTemp->lpCommands != NULL) {
+				pTemp->lpCommands->prev = node;
 			}
-			else {
-				node->next = pTemp->lpCommands;
-				pTemp->lpCommands->last = node; // hmm, weird
-				pTemp->lpCommands = node;
-			}
+			pTemp->lpCommands = node;
 			pTemp->lpCurrentCommand = NULL; // current command
 			pTemp->wCommandsNum++;
-
+			// prune the list
 			if (pTemp->wCommandsNum > WINDOWS_COMMANDS_MAX) {
 				COMMAND_INFO *pCurComm = pTemp->lpCommands;
 				COMMAND_INFO *pLast;
 				while (pCurComm->next != NULL) { pCurComm = pCurComm->next; }
-				pLast = pCurComm->last;
+				pLast = pCurComm->prev;
+				pLast->next = NULL;
 				mir_free(pCurComm->lpCommand);
 				mir_free(pCurComm);
-				pLast->next = NULL;
-				// done
 				pTemp->wCommandsNum--;
 		}	}
 		pTemp = pTemp->next;
@@ -783,7 +777,7 @@ char* SM_GetNextCommand(const TCHAR* pszID, const char* pszModule) // get next c
 		if ( lstrcmpi( pTemp->ptszID, pszID ) == 0 && lstrcmpiA( pTemp->pszModule, pszModule ) == 0) { // match
 			COMMAND_INFO *pNextCmd = NULL;
 			if (pTemp->lpCurrentCommand != NULL)
-				pNextCmd = pTemp->lpCurrentCommand->last; // last command (newest at beginning)
+				pNextCmd = pTemp->lpCurrentCommand->prev; // last command (newest at beginning)
 
 			pTemp->lpCurrentCommand = pNextCmd; // make it the new command
 			return(((pNextCmd) ? (pNextCmd->lpCommand) : (NULL)));

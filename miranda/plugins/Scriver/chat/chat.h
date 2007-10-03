@@ -141,7 +141,7 @@ typedef struct  MODULE_INFO_TYPE
 typedef struct COMMAND_INFO_TYPE
 {
 	char*  lpCommand;
-	struct COMMAND_INFO_TYPE *last, *next;
+	struct COMMAND_INFO_TYPE *prev, *next;
 }
 	COMMAND_INFO;
 
