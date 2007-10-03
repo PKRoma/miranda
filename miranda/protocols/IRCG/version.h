@@ -1,5 +1,5 @@
-#define __FILEVERSION_STRING        0,7,0,2
-#define __VERSION_STRING			   "0.7.0.2"
+#define __FILEVERSION_STRING        0,7,1,0
+#define __VERSION_STRING			"0.7.1.0"
 #define __VERSION_DWORD             0x00070002
 
 #define __DESC	                  "IRC protocol for Miranda IM"

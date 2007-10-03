@@ -458,8 +458,8 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 		int minutes = ( int )NoOfChannels/4000;
 		int minutes2 = ( int )NoOfChannels/9000;
 		
-		TCHAR text[250];
-		mir_sntprintf( text, SIZEOF(temp), TranslateT("This command is not recommended on a network of this size!\r\nIt will probably cause high CPU usage and/or high bandwidth\r\nusage for around %u to %u minute(s).\r\n\r\nDo you want to continue?"), minutes2, minutes);
+		TCHAR text[256];
+		mir_sntprintf( text, SIZEOF(text), TranslateT("This command is not recommended on a network of this size!\r\nIt will probably cause high CPU usage and/or high bandwidth\r\nusage for around %u to %u minute(s).\r\n\r\nDo you want to continue?"), minutes2, minutes);
 		if ( NoOfChannels < 4000 || ( NoOfChannels >= 4000 && MessageBox( NULL, text, TranslateT("IRC warning") , MB_YESNO|MB_ICONWARNING|MB_DEFBUTTON2) == IDYES)) {
 			ListView_DeleteAllItems( GetDlgItem( list_hWnd, IDC_INFO_LISTVIEW ));
 			PostIrcMessage( _T("/lusers" ));
