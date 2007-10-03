@@ -5371,7 +5371,7 @@ quote_from_last:
             if((isForced = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "tabSRMM_forced", -1)) >= 0) {
                 char szTemp[64];
                 mir_snprintf(szTemp, sizeof(szTemp), "Status%d", isForced);
-                if(DBGetContactSettingWord(dat->hContact, "MetaContacts", szTemp, 0) == ID_STATUS_OFFLINE) {
+                if(DBGetContactSettingWord(dat->hContact, myGlobals.szMetaName, szTemp, 0) == ID_STATUS_OFFLINE) {
                     TCHAR szBuffer[200];
                     mir_sntprintf(szBuffer, 200, TranslateT("Warning: you have selected a subprotocol for sending the following messages which is currently offline"));
                     SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, IDC_MESSAGE, (LPARAM)szBuffer);

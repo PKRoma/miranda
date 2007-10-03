@@ -380,7 +380,7 @@ int IsMetaContact(HWND hwndDlg, struct MessageWindowData *dat)
     if(dat->hContact == 0 || dat->szProto == NULL)
        return 0;
     
-    return (myGlobals.g_MetaContactsAvail && !strcmp(dat->szProto, "MetaContacts"));
+    return (myGlobals.g_MetaContactsAvail && !strcmp(dat->szProto, myGlobals.szMetaName));
 }
 char *GetCurrentMetaContactProto(HWND hwndDlg, struct MessageWindowData *dat)
 {

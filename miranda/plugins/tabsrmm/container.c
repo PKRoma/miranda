@@ -3519,7 +3519,7 @@ HMENU BuildMCProtocolMenu(HWND hwndDlg)
 
     for(i = 0; i < iNumProtos; i++) {
         mir_snprintf(szTemp, sizeof(szTemp), "Protocol%d", i);
-        if(DBGetContactSettingString(dat->hContact, "MetaContacts", szTemp, &dbv))
+        if(DBGetContactSettingString(dat->hContact, myGlobals.szMetaName, szTemp, &dbv))
             continue;
 #if defined(_UNICODE)
         tzProtoName = (TCHAR *)CallService(MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)dbv.pszVal);
@@ -3527,10 +3527,10 @@ HMENU BuildMCProtocolMenu(HWND hwndDlg)
         tzProtoName = dbv.pszVal;
 #endif
         mir_snprintf(szTemp, sizeof(szTemp), "Handle%d", i);
-        if((handle = (HANDLE)DBGetContactSettingDword(dat->hContact, "MetaContacts", szTemp, 0)) != 0) {
+        if((handle = (HANDLE)DBGetContactSettingDword(dat->hContact, myGlobals.szMetaName, szTemp, 0)) != 0) {
             nick = (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)handle, GCDNF_TCHAR);
             mir_snprintf(szTemp, sizeof(szTemp), "Status%d", i);
-            wStatus = (WORD)DBGetContactSettingWord(dat->hContact, "MetaContacts", szTemp, 0);
+            wStatus = (WORD)DBGetContactSettingWord(dat->hContact, myGlobals.szMetaName, szTemp, 0);
             szStatusText = (TCHAR *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, wStatus, GCMDF_TCHAR);
         }
         mir_sntprintf(szMenuLine, safe_sizeof(szMenuLine), _T("%s: %s [%s] %s"), tzProtoName, nick, szStatusText, i == isForced ? TranslateT("(Forced)") : _T(""));

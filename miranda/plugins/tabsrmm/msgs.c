@@ -858,7 +858,7 @@ static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
     
     // metacontacts support
 
-    if(!lstrcmpA(cws->szModule, "MetaContacts") && !lstrcmpA(cws->szSetting, "Nick"))       // filter out this setting to avoid infinite loops while trying to obtain the most online contact
+    if(!lstrcmpA(cws->szModule, myGlobals.szMetaName) && !lstrcmpA(cws->szSetting, "Nick"))       // filter out this setting to avoid infinite loops while trying to obtain the most online contact
         return 0;
     
     if(hwnd) {
@@ -1071,6 +1071,11 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
     
 	if(ServiceExists(MS_MC_GETDEFAULTCONTACT))
 		myGlobals.g_MetaContactsAvail = 1;
+
+    if(myGlobals.g_MetaContactsAvail)
+        mir_snprintf(myGlobals.szMetaName, 256, "%s", (char *)CallService(MS_MC_GETPROTOCOLNAME, 0, 0));
+    else
+        myGlobals.szMetaName[0] = 0;
 
 	if(ServiceExists(MS_POPUP_ADDPOPUPEX))
 		myGlobals.g_PopupAvail = 1;
