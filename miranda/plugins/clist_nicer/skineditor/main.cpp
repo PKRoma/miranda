@@ -26,10 +26,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define ID_EXTBKSEPARATOR           40200
 
+/*
 PLUGININFO pluginInfo = {
     sizeof(PLUGININFO), 
 	"Skin editor",
-	PLUGIN_MAKE_VERSION(0, 0, 0, 2), 
+	PLUGIN_MAKE_VERSION(0, 0, 0, 4), 
 	"Skin editor for clist_nicer+", 
 	"Nightwish", 
 	"", 
@@ -37,6 +38,24 @@ PLUGININFO pluginInfo = {
 	"http://www.miranda-im.org", 
 	0, 
 	0
+};
+*/
+
+PLUGININFOEX pluginInfo = {
+#if defined(_UNICODE)
+		sizeof(PLUGININFOEX), "Skin editor for clist_nicer+ (unicode)", PLUGIN_MAKE_VERSION(0, 0, 0, 4),
+#else
+		sizeof(PLUGININFOEX), "Skin editor for clist_nicer+", PLUGIN_MAKE_VERSION(0, 0, 0, 4),
+#endif		
+		"Allow inline skin item editing for clist nicer+",
+		"Nightwish, Pixel", "", "Copyright 2000-2006 Miranda-IM project", "http://www.miranda-im.org",
+		UNICODE_AWARE,
+        0,
+#if defined(_UNICODE)
+        {0x21948c89, 0xb549, 0x4c9d, { 0x8b, 0x4f, 0x3f, 0x37, 0x26, 0xec, 0x6b, 0x4b }}
+#else
+        {0xa0c06bfe, 0x64cf, 0x487e, { 0x82, 0x87, 0x8c, 0x9b, 0x1, 0x97, 0x7d, 0xff }}
+#endif
 };
 
 HINSTANCE g_hInst = 0;
@@ -923,12 +942,35 @@ static int LoadModule()
     return 0;
 }
 
+extern "C" __declspec(dllexport) PLUGININFOEX * MirandaPluginInfoEx(DWORD mirandaVersion)
+{
+#if defined(_UNICODE)
+	pluginInfo.flags |= UNICODE_AWARE;
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 7, 0, 0))
+#else
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 7, 0, 0))
+#endif
+		return NULL;
+	return &pluginInfo;
+}
+
+/*
+ * define our own MUUID, since this is a special plugin...
+ */
+extern "C" static const MUUID interfaces[] = {MIID_TESTPLUGIN, { 0x70ff4eef, 0xcb7b, 0x4d88, { 0x85, 0x60, 0x7d, 0xe3, 0xa6, 0x68, 0x5c, 0xe3 }}, MIID_LAST};
+extern "C" __declspec(dllexport) const MUUID * MirandaPluginInterfaces(void)
+{
+	return interfaces;
+}
+
+/*
 extern "C" __declspec(dllexport) PLUGININFO * MirandaPluginInfo(DWORD mirandaVersion)
 {
     if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 0))
         return NULL;
     return &pluginInfo;
 }
+*/
 
 static int ModulesLoaded(WPARAM wParam, LPARAM lParam)
 {

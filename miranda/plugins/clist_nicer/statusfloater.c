@@ -26,24 +26,35 @@ implements a simple status floater as a layered (and skinnable) window with
 a minimalistic UI (change status, access main menu). It also may hold a copy
 of the event area.
 
+Also implementes floating contacts (FLT_*() functions)
+
 */
 
 #include "commonheaders.h"
+
+#define SNAP_SCREEN_TOLERANCE	10
+#define SNAP_FLT_TOLERANCE		10
 
 BYTE __forceinline percent_to_byte(UINT32 percent)
 {
     return(BYTE) ((FLOAT) (((FLOAT) percent) / 100) * 255);
 }
 
+void FLT_Update(struct ClcData *dat, struct ClcContact *contact);
+void FLT_ShowHideAll(int showCmd);
+void FLT_SnapToEdges(HWND hwnd);
+void FLT_SnapToFloater(HWND hwnd);
+
 HWND g_hwndSFL = 0;
 HDC g_SFLCachedDC = 0;
 HBITMAP g_SFLhbmOld = 0, g_SFLhbm = 0;
 struct ContactFloater *pFirstFloater = 0;
+BOOL hover = FALSE;
 
 extern StatusItems_t *StatusItems;
 extern BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
 extern BOOL (WINAPI *MyUpdateLayeredWindow)(HWND hwnd, HDC hdcDst, POINT *pptDst,SIZE *psize, HDC hdcSrc, POINT *pptSrc, COLORREF crKey, BLENDFUNCTION *pblend, DWORD dwFlags);
-extern int g_nextExtraCacheEntry;
+extern int g_nextExtraCacheEntry, g_padding_y;
 extern struct ExtraCache *g_ExtraCache;
 
 extern struct CluiData g_CluiData;
@@ -52,13 +63,16 @@ extern HWND g_hwndEventArea;
 extern struct ClcData *g_clcData;
 extern HDC g_HDC;
 
+extern int g_list_avatars;
+
 FLOATINGOPTIONS g_floatoptions;
 
 static UINT padctrlIDs[] = { IDC_FLT_PADLEFTSPIN, IDC_FLT_PADRIGHTSPIN, IDC_FLT_PADTOPSPIN,
 							 IDC_FLT_PADBOTTOMSPIN, 0 };
 
 /*
- * status floater support
+ * floating contacts support functions
+ * simple linked list of allocated ContactFloater* structs
  */
 
 static struct ContactFloater *FLT_AddToList(struct ContactFloater *pFloater) {
@@ -98,6 +112,88 @@ static struct ContactFloater *FLT_RemoveFromList(struct ContactFloater *pFloater
     return NULL;
 }
 
+void FLT_SnapToEdges(HWND hwnd){
+	RECT dr;
+	MONITORINFO monInfo;
+	RECT rcWindow;
+	HMONITOR curMonitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+
+	monInfo.cbSize = sizeof(monInfo);
+	GetMonitorInfo(curMonitor, &monInfo);
+
+	dr = monInfo.rcWork;
+	GetWindowRect(hwnd, &rcWindow);
+	
+	if (rcWindow.left < dr.left + SNAP_SCREEN_TOLERANCE){
+		SetWindowPos(hwnd, HWND_TOPMOST, 0, rcWindow.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		GetWindowRect(hwnd, &rcWindow);
+	}
+
+	if (rcWindow.top < dr.top + SNAP_SCREEN_TOLERANCE){
+		SetWindowPos(hwnd, HWND_TOPMOST, rcWindow.left, 0, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		GetWindowRect(hwnd, &rcWindow);
+	}
+
+	if (rcWindow.right > dr.right - SNAP_SCREEN_TOLERANCE)
+		SetWindowPos(hwnd, HWND_TOPMOST, dr.right - (rcWindow.right - rcWindow.left), rcWindow.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+
+	if (rcWindow.bottom > dr.bottom - SNAP_SCREEN_TOLERANCE)
+		SetWindowPos(hwnd, HWND_TOPMOST, rcWindow.left, dr.bottom - (rcWindow.bottom - rcWindow.top), 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+}
+
+void FLT_SnapToFloater(HWND hwnd)
+{
+	struct ContactFloater *pCurrent = pFirstFloater;
+	RECT rcWindow, rcBase;
+	int minTop = 0xFFFFFF, minBottom = 0xFFFFFF, minRight = 0xFFFFFF, minLeft = 0xFFFFFF;
+	int posTop = 0, posBottom = 0, posRight = 0, posLeft = 0;
+
+	GetWindowRect(hwnd, &rcBase);
+
+	//find the closest floater
+	while(pCurrent) {
+		GetWindowRect(pCurrent->hwnd, &rcWindow);
+		//top
+		if((rcWindow.top - rcBase.bottom > -SNAP_FLT_TOLERANCE) && (rcWindow.top - rcBase.bottom < minTop)){
+			posTop = rcWindow.top;
+			minTop = rcWindow.top - rcBase.bottom;
+		}
+		//bottom
+		if((rcBase.top - rcWindow.bottom > -SNAP_FLT_TOLERANCE) && (rcBase.top - rcWindow.bottom  < minBottom)){
+			posBottom = rcWindow.bottom;
+			minBottom = rcBase.top - rcWindow.bottom;
+		}
+		//left
+		if((rcWindow.left - rcBase.right > -SNAP_FLT_TOLERANCE) && (rcWindow.left - rcBase.right < minLeft)){
+			posLeft= rcWindow.left;
+			minLeft = rcWindow.left - rcBase.right;
+		}
+		//right
+		if((rcBase.left - rcWindow.right > -SNAP_FLT_TOLERANCE) && (rcBase.left - rcWindow.right  < minRight)){
+			posRight= rcWindow.right;
+			minRight = rcBase.left - rcWindow.right;
+		}
+		pCurrent = pCurrent->pNextFloater;
+	}
+
+	//snap to the closest floater if spacing is under SNAP_FLT_TOLERANCE
+	if (posTop && (rcBase.bottom > posTop - SNAP_FLT_TOLERANCE))
+		SetWindowPos(hwnd, HWND_TOPMOST, rcBase.left, posTop - (rcBase.bottom - rcBase.top), 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+
+	if (posBottom && (rcBase.top < posBottom + SNAP_FLT_TOLERANCE))
+		SetWindowPos(hwnd, HWND_TOPMOST, rcBase.left, posBottom, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+	
+	if (posLeft && (rcBase.right > posLeft - SNAP_FLT_TOLERANCE))
+		SetWindowPos(hwnd, HWND_TOPMOST, posLeft - (rcBase.right - rcBase.left), rcBase.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+	
+	if (posRight && (rcBase.left < posRight + SNAP_FLT_TOLERANCE))
+		SetWindowPos(hwnd, HWND_TOPMOST, posRight, rcBase.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+}
+
+/*
+ * dialog procedure for the floating contacts option page
+ */
+
 BOOL CALLBACK DlgProcFloatingContacts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch(msg) {
@@ -107,6 +203,9 @@ BOOL CALLBACK DlgProcFloatingContacts(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				int i = 0;
 
 				TranslateDialogDefault(hwndDlg);
+
+				CheckDlgButton(hwndDlg, IDC_FLT_ENABLED, g_floatoptions.enabled);
+				SendMessage(hwndDlg, WM_COMMAND, (WPARAM)IDC_FLT_ENABLED, 0);
 				CheckDlgButton(hwndDlg, IDC_FLT_SIMPLELAYOUT, dwFlags & FLT_SIMPLE);
 				SendMessage(hwndDlg, WM_COMMAND, (WPARAM)IDC_FLT_SIMPLELAYOUT, 0);
 				CheckDlgButton(hwndDlg, IDC_FLT_AVATARS, dwFlags & FLT_AVATARS);
@@ -114,29 +213,122 @@ BOOL CALLBACK DlgProcFloatingContacts(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				CheckDlgButton(hwndDlg, IDC_FLT_EXTRAICONS, dwFlags & FLT_EXTRAICONS);
 				CheckDlgButton(hwndDlg, IDC_FLT_SYNCED, dwFlags & FLT_SYNCWITHCLIST);
 				CheckDlgButton(hwndDlg, IDC_FLT_AUTOHIDE, dwFlags & FLT_AUTOHIDE);
+				CheckDlgButton(hwndDlg, IDC_FLT_SNAP, dwFlags & FLT_SNAP);
+				CheckDlgButton(hwndDlg, IDC_FLT_BORDER, dwFlags & FLT_BORDER);
+				SendMessage(hwndDlg, WM_COMMAND, (WPARAM)IDC_FLT_BORDER, 0);
+				CheckDlgButton(hwndDlg, IDC_FLT_ROUNDED, dwFlags & FLT_ROUNDED);
+				SendMessage(hwndDlg, WM_COMMAND, (WPARAM)IDC_FLT_ROUNDED, 0);
 
 				for(i = 0; padctrlIDs[i] != 0; i++)
 					SendDlgItemMessage(hwndDlg, padctrlIDs[i], UDM_SETRANGE, 0, MAKELONG(20, 0));
+				SendDlgItemMessage(hwndDlg, IDC_FLT_WIDTHSPIN, UDM_SETRANGE, 0, MAKELONG(200, 50));
+				SendDlgItemMessage(hwndDlg, IDC_FLT_RADIUSSPIN, UDM_SETRANGE, 0, MAKELONG(20, 1));
 
 				SendDlgItemMessage(hwndDlg, IDC_FLT_PADLEFTSPIN, UDM_SETPOS, 0, (LPARAM)g_floatoptions.pad_left);
 				SendDlgItemMessage(hwndDlg, IDC_FLT_PADRIGHTSPIN, UDM_SETPOS, 0, (LPARAM)g_floatoptions.pad_right);
 				SendDlgItemMessage(hwndDlg, IDC_FLT_PADTOPSPIN, UDM_SETPOS, 0, (LPARAM)g_floatoptions.pad_top);
-				SendDlgItemMessage(hwndDlg, IDC_FLT_PADBOTTOMSPIN, UDM_SETPOS, 0, (LPARAM)g_floatoptions.pad_bottom);
+				SendDlgItemMessage(hwndDlg, IDC_FLT_PADBOTTOMSPIN, UDM_SETPOS, 0, (LPARAM)g_floatoptions.pad_top);
+				SendDlgItemMessage(hwndDlg, IDC_FLT_WIDTHSPIN, UDM_SETPOS, 0, (LPARAM)g_floatoptions.width);
+				SendDlgItemMessage(hwndDlg, IDC_FLT_RADIUSSPIN, UDM_SETPOS, 0, (LPARAM)g_floatoptions.radius);
+
+				SendDlgItemMessage(hwndDlg, IDC_FLT_ACTIVEOPACITY, TBM_SETRANGE, FALSE, MAKELONG(1, 255));
+				SendDlgItemMessage(hwndDlg, IDC_FLT_ACTIVEOPACITY, TBM_SETPOS, TRUE, g_floatoptions.act_trans);
+				SendDlgItemMessage(hwndDlg, IDC_FLT_OPACITY, TBM_SETRANGE, FALSE, MAKELONG(1, 255));
+				SendDlgItemMessage(hwndDlg, IDC_FLT_OPACITY, TBM_SETPOS, TRUE, g_floatoptions.trans);
+				SendMessage(hwndDlg, WM_HSCROLL, 0, 0);
+
+				SendDlgItemMessage(hwndDlg, IDC_FLT_BORDERCOLOUR, CPM_SETDEFAULTCOLOUR, 0, 0);
+				SendDlgItemMessage(hwndDlg, IDC_FLT_BORDERCOLOUR, CPM_SETCOLOUR, 0, g_floatoptions.border_colour);  
+
+				FLT_ShowHideAll(SW_SHOWNOACTIVATE);
 
 				return TRUE;
 			}
 		case WM_COMMAND:
 			switch(LOWORD(wParam)) {
-				case IDC_FLT_SIMPLELAYOUT:
+				case IDC_FLT_ENABLED:
 					{
+						int isEnabled = IsDlgButtonChecked(hwndDlg, IDC_FLT_ENABLED);
 						int isSimple = IsDlgButtonChecked(hwndDlg, IDC_FLT_SIMPLELAYOUT);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_AVATARS), !isSimple);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_EXTRAICONS), !isSimple);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_DUALROWS), !isSimple);
+						int isBorder = IsDlgButtonChecked(hwndDlg, IDC_FLT_BORDER);
+						int isRounded = IsDlgButtonChecked(hwndDlg, IDC_FLT_ROUNDED);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_SIMPLELAYOUT), isEnabled);		
+						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_SYNCED), isEnabled);	
+						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_AUTOHIDE), isEnabled);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_SNAP), isEnabled);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_ACTIVEOPACITY), isEnabled);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_OPACITY), isEnabled);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_PADLEFTSPIN), isEnabled);		
+						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_PADRIGHTSPIN), isEnabled);	
+						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_PADTOPSPIN), isEnabled);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_PADLEFT), isEnabled);		
+						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_PADRIGHT), isEnabled);	
+						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_PADTOP), isEnabled);
+						//EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_PADBOTTOMSPIN), isEnabled);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_PADBOTTOM), isEnabled);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_WIDTHSPIN), isEnabled);	
+						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_WIDTH), isEnabled);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_BORDER), isEnabled);	
+						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_ROUNDED), isEnabled);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_BORDERCOLOUR), isEnabled & isBorder);	
+						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_RADIUS), isEnabled & isRounded);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_RADIUSSPIN), isEnabled & isRounded);
+
+						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_AVATARS), isEnabled & !isSimple);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_EXTRAICONS), isEnabled & !isSimple);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_DUALROWS), isEnabled & !isSimple);
 					}
 					break;
+				case IDC_FLT_SIMPLELAYOUT:
+					{
+						if (IsDlgButtonChecked(hwndDlg, IDC_FLT_ENABLED)){
+							int isSimple = IsDlgButtonChecked(hwndDlg, IDC_FLT_SIMPLELAYOUT);
+							EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_AVATARS), !isSimple);
+							EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_EXTRAICONS), !isSimple);
+							EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_DUALROWS), !isSimple);
+						}
+					}
+					break;
+				case IDC_FLT_BORDER:
+					{
+						if (IsDlgButtonChecked(hwndDlg, IDC_FLT_ENABLED)){
+							int isBorder = IsDlgButtonChecked(hwndDlg, IDC_FLT_BORDER);
+							EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_BORDERCOLOUR), isBorder);
+						}
+					}
+					break;
+				case IDC_FLT_ROUNDED:
+					{
+						if (IsDlgButtonChecked(hwndDlg, IDC_FLT_ENABLED)){
+							int isRounded = IsDlgButtonChecked(hwndDlg, IDC_FLT_ROUNDED);
+							EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_RADIUS), isRounded);
+							EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_RADIUSSPIN), isRounded);
+						}
+					}
+					break;
+				case IDC_FLT_PADTOP:
+					{
+						if(HIWORD(wParam) == EN_CHANGE){
+							int value = SendDlgItemMessage(hwndDlg, IDC_FLT_PADTOPSPIN, UDM_GETPOS, 0, 0);
+							SendDlgItemMessage(hwndDlg, IDC_FLT_PADBOTTOMSPIN, UDM_SETPOS, 0, (LPARAM)value);
+						}
+					}
+					break;
+			break;
 			}
-            SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+			break;
+		case WM_HSCROLL:
+			{
+				char str[10];
+				wsprintfA(str, "%d%%", 100 * SendDlgItemMessage(hwndDlg, IDC_FLT_ACTIVEOPACITY, TBM_GETPOS, 0, 0) / 255);
+				SetDlgItemTextA(hwndDlg, IDC_FLT_ACTIVEOPACITYVALUE, str);
+				wsprintfA(str, "%d%%", 100 * SendDlgItemMessage(hwndDlg, IDC_FLT_OPACITY, TBM_GETPOS, 0, 0) / 255);
+				SetDlgItemTextA(hwndDlg, IDC_FLT_OPACITYVALUE, str);
+
+				if (lParam)
+					SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+			}
 			break;
 		case WM_NOTIFY:
             switch (((LPNMHDR) lParam)->idFrom) {
@@ -144,21 +336,30 @@ BOOL CALLBACK DlgProcFloatingContacts(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                     switch (((LPNMHDR) lParam)->code) {
                         case PSN_APPLY:
                             {
+								g_floatoptions.enabled = IsDlgButtonChecked(hwndDlg, IDC_FLT_ENABLED) ? 1 : 0;
 								g_floatoptions.dwFlags = 0;
 
 								if(IsDlgButtonChecked(hwndDlg, IDC_FLT_SIMPLELAYOUT))
 									g_floatoptions.dwFlags = FLT_SIMPLE;
 
-								g_floatoptions.dwFlags = (IsDlgButtonChecked(hwndDlg, IDC_FLT_AVATARS) ? FLT_AVATARS : 0) |
-														 (IsDlgButtonChecked(hwndDlg, IDC_FLT_DUALROWS) ? FLT_DUALROW : 0) |
-														 (IsDlgButtonChecked(hwndDlg, IDC_FLT_EXTRAICONS) ? FLT_EXTRAICONS : 0) |
-														 (IsDlgButtonChecked(hwndDlg, IDC_FLT_SYNCED) ? FLT_SYNCWITHCLIST : 0) |
-														 (IsDlgButtonChecked(hwndDlg, IDC_FLT_AUTOHIDE) ? FLT_AUTOHIDE : 0);
+								g_floatoptions.dwFlags |= (IsDlgButtonChecked(hwndDlg, IDC_FLT_AVATARS) ? FLT_AVATARS : 0) |
+														  (IsDlgButtonChecked(hwndDlg, IDC_FLT_DUALROWS) ? FLT_DUALROW : 0) |
+														  (IsDlgButtonChecked(hwndDlg, IDC_FLT_EXTRAICONS) ? FLT_EXTRAICONS : 0) |
+														  (IsDlgButtonChecked(hwndDlg, IDC_FLT_SYNCED) ? FLT_SYNCWITHCLIST : 0) |
+														  (IsDlgButtonChecked(hwndDlg, IDC_FLT_AUTOHIDE) ? FLT_AUTOHIDE : 0) |
+														  (IsDlgButtonChecked(hwndDlg, IDC_FLT_SNAP) ? FLT_SNAP : 0) |
+														  (IsDlgButtonChecked(hwndDlg, IDC_FLT_BORDER) ? FLT_BORDER : 0) |
+														  (IsDlgButtonChecked(hwndDlg, IDC_FLT_ROUNDED) ? FLT_ROUNDED : 0);
 								
+								g_floatoptions.act_trans = (BYTE)SendDlgItemMessage(hwndDlg, IDC_FLT_ACTIVEOPACITY, TBM_GETPOS, 0, 0);
+								g_floatoptions.trans = (BYTE)SendDlgItemMessage(hwndDlg, IDC_FLT_OPACITY, TBM_GETPOS, 0, 0);
 								g_floatoptions.pad_left = (BYTE)SendDlgItemMessage(hwndDlg, IDC_FLT_PADLEFTSPIN, UDM_GETPOS, 0, 0);
 								g_floatoptions.pad_right = (BYTE)SendDlgItemMessage(hwndDlg, IDC_FLT_PADRIGHTSPIN, UDM_GETPOS, 0, 0);
 								g_floatoptions.pad_top = (BYTE)SendDlgItemMessage(hwndDlg, IDC_FLT_PADTOPSPIN, UDM_GETPOS, 0, 0);
 								g_floatoptions.pad_bottom = (BYTE)SendDlgItemMessage(hwndDlg, IDC_FLT_PADBOTTOMSPIN, UDM_GETPOS, 0, 0);
+								g_floatoptions.width = (BYTE)SendDlgItemMessage(hwndDlg, IDC_FLT_WIDTHSPIN, UDM_GETPOS, 0, 0);
+								g_floatoptions.radius = (BYTE)SendDlgItemMessage(hwndDlg, IDC_FLT_RADIUSSPIN, UDM_GETPOS, 0, 0);
+								g_floatoptions.border_colour = SendDlgItemMessage(hwndDlg, IDC_FLT_BORDERCOLOUR, CPM_GETCOLOUR, 0, 0);
 
 								FLT_WriteOptions();
 								FLT_RefreshAll();
@@ -178,8 +379,8 @@ void FLT_ReadOptions()
 
 	ZeroMemory(&g_floatoptions, sizeof(FLOATINGOPTIONS));
 
-	g_floatoptions.dwFlags = DBGetContactSettingDword(NULL, "CList", "flt_flags", 
-		FLT_AVATARS | FLT_DUALROW | FLT_EXTRAICONS);
+	g_floatoptions.enabled = DBGetContactSettingByte(NULL, "CList", "flt_enabled", 0);
+	g_floatoptions.dwFlags = DBGetContactSettingDword(NULL, "CList", "flt_flags", FLT_SIMPLE);
 	dwPad = DBGetContactSettingDword(NULL, "CList", "flt_padding", 0);
 	
 	g_floatoptions.pad_top = LOBYTE(LOWORD(dwPad));
@@ -187,18 +388,27 @@ void FLT_ReadOptions()
 	g_floatoptions.pad_bottom = LOBYTE(HIWORD(dwPad));
 	g_floatoptions.pad_left = HIBYTE(HIWORD(dwPad));
 
-	g_floatoptions.transparency = DBGetContactSettingByte(NULL, "CList", "flt_trans", 255);
+	g_floatoptions.width = DBGetContactSettingByte(NULL, "CList", "flt_width", 100);
+	g_floatoptions.act_trans = DBGetContactSettingByte(NULL, "CList", "flt_acttrans", 255);
+	g_floatoptions.trans = DBGetContactSettingByte(NULL, "CList", "flt_trans", 255);
+	g_floatoptions.radius = DBGetContactSettingByte(NULL, "CList", "flt_radius", 3);
+	g_floatoptions.border_colour = DBGetContactSettingDword(NULL, "CList", "flt_bordercolour", 0);
 }
 
 void FLT_WriteOptions()
 {
 	DWORD dwPad;
 
+	DBWriteContactSettingByte(NULL, "CList", "flt_enabled", g_floatoptions.enabled);
 	DBWriteContactSettingDword(NULL, "CList", "flt_flags", g_floatoptions.dwFlags);
 	dwPad = MAKELONG(MAKEWORD(g_floatoptions.pad_top, g_floatoptions.pad_right), 
 					 MAKEWORD(g_floatoptions.pad_bottom, g_floatoptions.pad_left));
 	DBWriteContactSettingDword(NULL, "CList", "flt_padding", dwPad);
-	DBWriteContactSettingByte(NULL, "CList", "flt_trans", g_floatoptions.transparency);
+	DBWriteContactSettingDword(NULL, "CList", "flt_width", g_floatoptions.width);
+	DBWriteContactSettingByte(NULL, "CList", "flt_acttrans", g_floatoptions.act_trans);
+	DBWriteContactSettingByte(NULL, "CList", "flt_trans", g_floatoptions.trans);
+	DBWriteContactSettingByte(NULL, "CList", "flt_radius", g_floatoptions.radius);
+	DBWriteContactSettingDword(NULL, "CList", "flt_bordercolour", g_floatoptions.border_colour);
 }
 
 LRESULT CALLBACK StatusFloaterClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -326,6 +536,61 @@ LRESULT CALLBACK ContactFloaterClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 				rcWindow.right = rcWindow.left + 25;
 				if(!PtInRect(&rcWindow, ptMouse))
 					return SendMessage(hwnd, WM_SYSCOMMAND, SC_MOVE | HTCAPTION, MAKELPARAM(ptMouse.x, ptMouse.y));
+				break;
+			}
+		case WM_MOUSEMOVE:
+			{
+				if(!hover){
+					TRACKMOUSEEVENT tme;
+					tme.cbSize = sizeof(TRACKMOUSEEVENT);
+					tme.dwFlags = TME_HOVER | TME_LEAVE;
+					tme.hwndTrack = hwnd;
+					tme.dwHoverTime = 5;
+					TrackMouseEvent(&tme);
+					hover = TRUE;
+				}
+				return FALSE;
+			}
+		case WM_MOUSEHOVER:
+			{
+				struct ClcContact *contact = NULL;
+				struct ContactFloater *pCurrent = pFirstFloater;
+				int oldTrans = g_floatoptions.trans;
+
+				while(pCurrent->hwnd != hwnd)
+					pCurrent = pCurrent->pNextFloater;
+
+				if(FindItem(pcli->hwndContactTree, g_clcData, pCurrent->hContact, &contact, NULL, 0)){
+					g_floatoptions.trans = g_floatoptions.act_trans;
+					FLT_Update(g_clcData, contact);
+					g_floatoptions.trans = oldTrans;
+				}
+
+				break;
+			}
+		case WM_MOUSELEAVE:
+			{
+				struct ClcContact *contact = NULL;
+				struct ContactFloater *pCurrent = pFirstFloater;
+
+				while(pCurrent->hwnd != hwnd)
+					pCurrent = pCurrent->pNextFloater;
+
+				if(FindItem(pcli->hwndContactTree, g_clcData, pCurrent->hContact, &contact, NULL, 0))
+					FLT_Update(g_clcData, contact);
+
+				hover = FALSE;
+				break;
+			}
+
+		case WM_MOVE:
+			{
+				if (g_floatoptions.dwFlags & FLT_SNAP)
+					FLT_SnapToEdges(hwnd);
+
+				if(GetKeyState(VK_CONTROL) < 0)
+					FLT_SnapToFloater(hwnd);
+
 				break;
 			}
 		case WM_MEASUREITEM:
@@ -558,14 +823,17 @@ void FLT_SetSize(struct ExtraCache *centry, LONG width, LONG height)
 	HDC hdc;
 	RECT rcWindow;
 	HFONT oldFont;
+	int flags = SWP_SHOWWINDOW | SWP_NOMOVE | SWP_NOACTIVATE;
+
+	int iVis = pcli->pfnGetWindowVisibleState(pcli->hwndContactList, 0, 0);
+	if((g_floatoptions.dwFlags & FLT_AUTOHIDE) && (iVis == 2 || iVis == 4)) //2 = GWVS_VISIBLE, 4 = GWVS_PARTIALLY_COVERED
+		flags = SWP_NOMOVE | SWP_NOACTIVATE;
 
 	if(centry->floater) {
-		GetWindowRect(centry->floater->hwnd, &rcWindow);
-
 		hdc = GetDC(centry->floater->hwnd);
 		oldFont = SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
 
-		SetWindowPos(centry->floater->hwnd, HWND_TOPMOST, 0, 0, width, height, SWP_SHOWWINDOW | SWP_NOMOVE | SWP_NOACTIVATE);
+		SetWindowPos(centry->floater->hwnd, HWND_TOPMOST, 0, 0, width, height, flags);
 		GetWindowRect(centry->floater->hwnd, &rcWindow);
 
 		if(centry->floater->hdc) {
@@ -585,13 +853,13 @@ void FLT_SetSize(struct ExtraCache *centry, LONG width, LONG height)
 
 void FLT_Create(int iEntry)
 {
-	struct ExtraCache *centry = &g_ExtraCache[iEntry];
+	struct ExtraCache *centry = NULL;
 
 	if(iEntry >= 0 && iEntry < g_nextExtraCacheEntry) {
 		struct ClcContact *contact = NULL;
 		struct ClcGroup *group = NULL;
 
-		//_DebugPopup(centry->hContact, "attempt to create");
+        centry = &g_ExtraCache[iEntry];
 		if(centry->floater == 0 && MyUpdateLayeredWindow != NULL) {
 
 			centry->floater = (struct ContactFloater *)malloc(sizeof(struct ContactFloater));
@@ -612,7 +880,7 @@ void FLT_Create(int iEntry)
 			if(Utils_RestoreWindowPositionNoMove(centry->floater->hwnd, centry->hContact, "CList", "flt"))
 				SetWindowPos(centry->floater->hwnd, 0, 50, 50, 150, 30, SWP_NOZORDER | SWP_NOACTIVATE);
 
-		FLT_SetSize(centry, 100, 20);
+		//FLT_SetSize(centry, 100, 20);
 		ShowWindow(centry->floater->hwnd, SW_SHOWNOACTIVATE);
 		if(FindItem(pcli->hwndContactTree, g_clcData, centry->hContact, &contact, &group, 0)) {
 			if(contact)
@@ -638,6 +906,7 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
 	struct ClcGroup *group = NULL;
 	struct ClcContact *newContact = NULL;
 	HRGN rgn;
+	HANDLE hbrBorder;
 
 	if(contact == NULL || dat == NULL)
 		return;
@@ -648,7 +917,7 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
 	if(g_ExtraCache[contact->extraCacheEntry].floater == NULL)
 		return;
 
-	FLT_SetSize(&g_ExtraCache[contact->extraCacheEntry], 150, RowHeights_GetFloatingRowHeight(dat, pcli->hwndContactTree, contact, g_floatoptions.dwFlags));
+	FLT_SetSize(&g_ExtraCache[contact->extraCacheEntry], g_floatoptions.width, RowHeights_GetFloatingRowHeight(dat, pcli->hwndContactTree, contact, g_floatoptions.dwFlags) + (2*g_floatoptions.pad_top));
 
 	hwnd = g_ExtraCache[contact->extraCacheEntry].floater->hwnd;
 	hdc = g_ExtraCache[contact->extraCacheEntry].floater->hdc;
@@ -667,29 +936,49 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
 	FillRect(hdc, &rcClient, GetSysColorBrush(COLOR_3DFACE));
 	SetBkMode(hdc, TRANSPARENT);
 
-	bf.BlendOp = AC_SRC_OVER;
-	bf.AlphaFormat = 0;
-	bf.SourceConstantAlpha = g_floatoptions.transparency;
-
-	rgn = CreateRoundRectRgn(0, 0, rcClient.right, rcClient.bottom, 6, 6);
-	SelectClipRgn(hdc, rgn);
+	if(g_floatoptions.dwFlags & FLT_ROUNDED){
+		rgn = CreateRoundRectRgn(0, 0, rcClient.right, rcClient.bottom, g_floatoptions.radius, g_floatoptions.radius);
+		SelectClipRgn(hdc, rgn);
+	}
 
 	if(FindItem(pcli->hwndContactTree, dat, contact->hContact, &newContact, &group, 0)) {
 		DWORD oldFlags = g_CluiData.dwFlags;
+		BYTE oldPadding = g_CluiData.avatarPadding;
 		DWORD oldExtraImageMask = g_ExtraCache[contact->extraCacheEntry].dwXMask;
 		struct avatarCacheEntry *ace_old = contact->ace;
 		BYTE oldDualRow = contact->bSecondLine;
 
-		if(!(g_floatoptions.dwFlags & FLT_AVATARS))
+		int oldLeftMargin = dat->leftMargin;
+		int oldRightMargin = dat->rightMargin;
+
+		if(g_floatoptions.dwFlags & FLT_SIMPLE) {
 			contact->ace = 0;
-
-		if(!(g_floatoptions.dwFlags & FLT_DUALROW))
 			contact->bSecondLine = MULTIROW_NEVER;
-
-		if(!(g_floatoptions.dwFlags & FLT_EXTRAICONS)) {
-			g_CluiData.dwFlags &= ~CLUI_SHOWCLIENTICONS;
+			g_CluiData.dwFlags &= ~(CLUI_SHOWCLIENTICONS | CLUI_SHOWVISI);
 			g_ExtraCache[contact->extraCacheEntry].dwXMask = 0;
 		}
+		else{
+			if(!(g_floatoptions.dwFlags & FLT_AVATARS)) {
+                contact->ace = 0;
+                g_list_avatars = 0;
+            }
+            else
+                g_list_avatars = 1;
+
+            if(!(g_floatoptions.dwFlags & FLT_DUALROW))
+                contact->bSecondLine = MULTIROW_NEVER;
+			else
+				contact->bSecondLine = MULTIROW_ALWAYS;
+
+			if(!(g_floatoptions.dwFlags & FLT_EXTRAICONS)) {
+				g_CluiData.dwFlags &= ~(CLUI_SHOWCLIENTICONS | CLUI_SHOWVISI);
+				g_ExtraCache[contact->extraCacheEntry].dwXMask = 0;
+			}
+		}
+
+		//g_CluiData.avatarPadding = g_floatoptions.pad_top;
+		dat->leftMargin = g_floatoptions.pad_left;
+		dat->rightMargin = g_floatoptions.pad_right;
 
 		g_HDC = hdc;
 
@@ -698,7 +987,9 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
         hbmTempAV = CreateCompatibleBitmap(g_HDC, g_maxAV_X, g_maxAV_Y);
         hbmTempOldAV = SelectObject(hdcTempAV, hbmTempAV);
 
+        g_padding_y = g_floatoptions.pad_top;
 		PaintItem(hdc, group, contact, 0, 0, dat, -4, pcli->hwndContactTree, 0, &rcClient, &firstDrawn, 0, rcClient.bottom - rcClient.top);
+        g_padding_y = 0;
 
         SelectObject(hdcTempAV, hbmTempOldAV);
         DeleteObject(hbmTempAV);
@@ -706,11 +997,32 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
         DeleteDC(hdcAV);
 
 		g_CluiData.dwFlags = oldFlags;
+		g_CluiData.avatarPadding = oldPadding;
 		contact->ace = ace_old;
 		contact->bSecondLine = oldDualRow;
 		g_ExtraCache[contact->extraCacheEntry].dwXMask = oldExtraImageMask;
+
+		dat->leftMargin = oldLeftMargin;
+		dat->rightMargin = oldRightMargin;
 	}
-	DeleteObject(rgn);
+ 
+	if(g_floatoptions.dwFlags & FLT_BORDER){
+		hbrBorder = CreateSolidBrush(g_floatoptions.border_colour);
+		if(g_floatoptions.dwFlags & FLT_ROUNDED)
+			FrameRgn(hdc, rgn, hbrBorder, 1, 1);
+		else
+			FrameRect(hdc, &rcClient, hbrBorder);
+
+		DeleteObject(hbrBorder);
+	}
+	
+	if(g_floatoptions.dwFlags & FLT_ROUNDED)
+		DeleteObject(rgn);
+
+	bf.BlendOp = AC_SRC_OVER;
+	bf.AlphaFormat = 0;
+	bf.SourceConstantAlpha = g_floatoptions.trans;
+
 	if(MyUpdateLayeredWindow)
 		MyUpdateLayeredWindow(hwnd, 0, &ptDest, &szDest, hdc, &ptSrc, GetSysColor(COLOR_3DFACE), &bf, ULW_COLORKEY | ULW_ALPHA);
 }
@@ -726,15 +1038,24 @@ void FLT_SyncWithClist()
 	struct ClcContact *contact;
 	struct ContactFloater *pCurrent = pFirstFloater;
 	HWND hwnd;
+    int iVis = pcli->pfnGetWindowVisibleState(pcli->hwndContactList, 0, 0);
 
-	while(pCurrent) {
-		if((hwnd = pCurrent->hwnd)) {
-			if(FindItem(pcli->hwndContactTree, g_clcData, pCurrent->hContact, &contact, NULL, 0))
-				ShowWindow(hwnd, SW_SHOWNOACTIVATE);
-			else
-				ShowWindow(hwnd, SW_HIDE);
+	if(g_floatoptions.dwFlags & FLT_SYNCWITHCLIST){
+		while(pCurrent) {
+			hwnd = pCurrent->hwnd;
+			if(hwnd && IsWindow(hwnd)){
+				if(FindItem(pcli->hwndContactTree, g_clcData, pCurrent->hContact, &contact, NULL, 0)) {
+                    FLT_Update(g_clcData, contact);
+                    if(((g_floatoptions.dwFlags & FLT_AUTOHIDE) && (iVis == 2 || iVis == 4)) || !(g_floatoptions.dwFlags & FLT_AUTOHIDE))
+                        ShowWindow(hwnd, SW_SHOWNOACTIVATE);
+                    else
+                        ShowWindow(hwnd, SW_HIDE);
+                }
+				else
+					ShowWindow(hwnd, SW_HIDE);
+			}
+			pCurrent = pCurrent->pNextFloater;
 		}
-		pCurrent = pCurrent->pNextFloater;
 	}
 }
 
@@ -745,14 +1066,21 @@ void FLT_SyncWithClist()
 
 void FLT_ShowHideAll(int showCmd)
 {
+	struct ClcContact *contact;
 	struct ContactFloater *pCurrent = pFirstFloater;
 	HWND hwnd;
 
-	while(pCurrent) {
-		hwnd = pCurrent->hwnd;
-		if(hwnd && IsWindow(hwnd))
-			ShowWindow(hwnd, showCmd);
-		pCurrent = pCurrent->pNextFloater;
+	if(g_floatoptions.dwFlags & FLT_AUTOHIDE){
+		while(pCurrent) {
+			hwnd = pCurrent->hwnd;
+			if(hwnd && IsWindow(hwnd)){
+				if(showCmd == SW_SHOWNOACTIVATE && FindItem(pcli->hwndContactTree, g_clcData, pCurrent->hContact, &contact, NULL, 0))
+					ShowWindow(hwnd, SW_SHOWNOACTIVATE);
+				else if(showCmd != SW_SHOWNOACTIVATE)
+					ShowWindow(hwnd, showCmd);
+			}
+			pCurrent = pCurrent->pNextFloater;
+		}
 	}
 }
 
@@ -774,3 +1102,4 @@ void FLT_RefreshAll()
 		pCurrent = pCurrent->pNextFloater;
 	}
 }
+

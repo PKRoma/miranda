@@ -7,6 +7,25 @@
 + = new feature
 - = removed
 
+0.8.0.1  - 2007/10/02
+
+                * removed all hardcoded instances of the MetaContacts protocol name 
+                                  
+0.8.0.0  - 2007/10/02
+
+                * released for Miranda 0.7. NOT compatible with 0.6 or earlier.
+                               
+0.7.2.1  - 2007/09/xx
+
+                * completed floating contacts (patch by yaho, yaho@miranda-easy.net). All the
+                  options on Options->Contact List->Floating contacts are now working and a few
+                  new features (transparency, snapping) have been added.
+
+                * reworked options. Display profiles is now where you can set most things for
+                  the contact layout. Right now, only one profile (<current>) is available, but
+                  in the future, there will be the possibility to configure multiple profiles for
+                  quickly changing display options.
+
 0.7.1.1  - 2007/01/25
 
                 * more options for per contact display settings.

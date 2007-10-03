@@ -122,8 +122,6 @@ typedef struct _OrderTreeData
 } *PORDERTREEDATA, ORDERTREEDATA;
 
 struct DisplayProfile {
-    UINT    uID;
-    TCHAR   tszName[60];
     DWORD   dwFlags;
     DWORD   dwExtraImageMask;
     int     exIconScale;
@@ -140,10 +138,20 @@ struct DisplayProfile {
     BYTE     bLeftMargin, bRightMargin, bRowSpacing, bGroupIndent, bRowHeight, bGroupRowHeight;
     BYTE     exIconOrder[EXICON_COUNT];
 };
+typedef struct DisplayProfile DISPLAYPROFILE;
+
+/*
+ * a set of 4 (online, offline, selected, hottracked) display profiles
+ */
+
+struct DisplayProfileSet {
+    UINT    uID;
+    TCHAR   tszName[60];
+    DISPLAYPROFILE dp[4];
+};
+typedef struct DisplayProfileSet DISPLAYPROFILESET;
 
 #define DSP_PROFILES_MODULE "CLN_DspProfiles"           // db module for display profiles
-
-typedef struct DisplayProfile DISPLAYPROFILE;
 
 struct ExtraCache {
 	BYTE iExtraImage[MAXEXTRACOLUMNS];
@@ -683,19 +691,26 @@ typedef BOOL (WINAPI *PGF)(HDC, PTRIVERTEX, ULONG, PVOID, ULONG, ULONG);
  * floating stuff
  */
 
-#define FLT_SIMPLE 1
-#define FLT_AVATARS 2
-#define FLT_DUALROW 4
-#define FLT_EXTRAICONS 8
-#define FLT_SYNCWITHCLIST 16
-#define FLT_AUTOHIDE 32
+#define FLT_SIMPLE			1
+#define FLT_AVATARS			2
+#define FLT_DUALROW			4
+#define FLT_EXTRAICONS		8
+#define FLT_SYNCWITHCLIST	16
+#define FLT_AUTOHIDE		32
+#define FLT_SNAP			64
+#define FLT_BORDER			128
+#define FLT_ROUNDED			256
 
 typedef struct _floatopts {
 	DWORD dwFlags;
 	BYTE pad_left, pad_right, pad_top, pad_bottom;
-	COLORREF bg;
-	BYTE transparency;
+	BYTE width;
+	COLORREF border_colour;
+	BYTE trans, act_trans;
+	BYTE radius;
+	BYTE enabled;
 } FLOATINGOPTIONS;
 
 extern FLOATINGOPTIONS g_floatoptions;
+
 

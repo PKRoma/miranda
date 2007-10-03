@@ -171,15 +171,17 @@ static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
                 else if(!__strcmp(cws->szSetting, "MirVer"))
                     NotifyEventHooks(hExtraImageApplying, wParam, 0);
                     
-				if (g_CluiData.bMetaAvail && !(g_CluiData.dwFlags & CLUI_USEMETAICONS) && !__strcmp(szProto, "MetaContacts")) {
+				if (g_CluiData.bMetaAvail && !(g_CluiData.dwFlags & CLUI_USEMETAICONS) && !__strcmp(szProto, g_CluiData.szMetaName)) {
 					if ((lstrlenA(cws->szSetting) > 6 && !strncmp(cws->szSetting, "Status", 6)) || strstr("Default,ForceSend,Nick", cws->szSetting))
 						pcli->pfnClcBroadcast(INTM_NAMEORDERCHANGED, wParam, lParam);
 				}
 			}
+			if(g_CluiData.bMetaAvail && g_CluiData.bMetaEnabled && !__strcmp(cws->szModule, g_CluiData.szMetaName) && !__strcmp(cws->szSetting, "IsSubcontact"))
+				pcli->pfnClcBroadcast( INTM_HIDDENCHANGED, wParam, lParam);
 		}
 	}
-	else if (wParam == 0 && !__strcmp(cws->szModule, "MetaContacts")) {
-		BYTE bMetaEnabled = DBGetContactSettingByte(NULL, "MetaContacts", "Enabled", 1);
+	else if (wParam == 0 && !__strcmp(cws->szModule, g_CluiData.szMetaName)) {
+		BYTE bMetaEnabled = DBGetContactSettingByte(NULL, g_CluiData.szMetaName, "Enabled", 1);
 		if(bMetaEnabled != (BYTE)g_CluiData.bMetaEnabled) {
 			g_CluiData.bMetaEnabled = bMetaEnabled;
 			pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
@@ -453,8 +455,11 @@ LBL_Def:
 				if(contact->extraCacheEntry >= 0 && contact->extraCacheEntry < g_nextExtraCacheEntry) {
 					int subIndex = GetExtraCache(contact->hSubContact, contact->metaProto);
 					g_ExtraCache[contact->extraCacheEntry].proto_status_item = GetProtocolStatusItem(contact->metaProto);
-					if(subIndex >= 0 && subIndex <= g_nextExtraCacheEntry)
-						g_ExtraCache[contact->extraCacheEntry].status_item = g_ExtraCache[subIndex].status_item;
+					if(subIndex >= 0 && subIndex <= g_nextExtraCacheEntry) {
+                        g_ExtraCache[contact->extraCacheEntry].status_item = g_ExtraCache[subIndex].status_item;
+                        CopyMemory(g_ExtraCache[contact->extraCacheEntry].iExtraImage, g_ExtraCache[subIndex].iExtraImage, MAXEXTRACOLUMNS);
+                        g_ExtraCache[contact->extraCacheEntry].iExtraValid = g_ExtraCache[subIndex].iExtraValid;
+                    }
 				}
 			}
 			SendMessage(hwnd, INTM_NAMEORDERCHANGED, wParam, lParam);
@@ -668,10 +673,10 @@ LBL_Def:
 			if (!FindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL)) {
 				index = GetExtraCache((HANDLE)wParam, szProto);
 				if(!dat->bisEmbedded && g_CluiData.bMetaAvail && szProto) {				// may be a subcontact, forward the xstatus
-					if(DBGetContactSettingByte((HANDLE)wParam, "MetaContacts", "IsSubcontact", 0)) {
-						HANDLE hMasterContact = (HANDLE)DBGetContactSettingDword((HANDLE)wParam, "MetaContacts", "Handle", 0);
+					if(DBGetContactSettingByte((HANDLE)wParam, g_CluiData.szMetaName, "IsSubcontact", 0)) {
+						HANDLE hMasterContact = (HANDLE)DBGetContactSettingDword((HANDLE)wParam, g_CluiData.szMetaName, "Handle", 0);
 						if(hMasterContact && hMasterContact != (HANDLE)wParam)				// avoid recursive call of settings handler
-							DBWriteContactSettingByte(hMasterContact, "MetaContacts", "XStatusId", 
+							DBWriteContactSettingByte(hMasterContact, g_CluiData.szMetaName, "XStatusId", 
 													  (BYTE)DBGetContactSettingByte((HANDLE)wParam, szProto, "XStatusId", 0));
 						break;
 					}

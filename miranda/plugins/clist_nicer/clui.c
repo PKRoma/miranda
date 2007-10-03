@@ -96,6 +96,8 @@ void FS_RegisterFonts();
 void LoadExtraIconModule();
 int MTG_OnmodulesLoad(WPARAM wParam,LPARAM lParam);
 extern void RemoveFromTaskBar(HWND hWnd);
+extern void FLT_ShowHideAll(int showCmd);
+extern void FLT_SnapToEdges(HWND hwnd);
 
 extern LONG g_cxsmIcon, g_cysmIcon;
 struct CluiData g_CluiData;
@@ -310,19 +312,19 @@ static int CluiModulesLoaded(WPARAM wParam, LPARAM lParam)
 #if defined(_UNICODE)
 	static char *component = "CList Nicer+ (Unicode)";
 	static char szCurrentVersion[30];
-	static char *szVersionUrl = "http://miranda.or.at/files/clist_nicer/versionW.txt";
-	static char *szUpdateUrl = "http://miranda.or.at/files/clist_nicer/clist_nicer_plusW.zip";
-	static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=2601";
-	static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=2601";
-    upd.pbVersionPrefix = (BYTE *)"<span class=\"fileNameHeader\">CList Nicer+ (NEW) - Unicode ";
+	static char *szVersionUrl = "http://miranda.or.at/files/clist_nicer/0.8(versionW.txt";
+	static char *szUpdateUrl = "http://miranda.or.at/files/clist_nicer/0.8/clist_nicer_plusW.zip";
+	static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=3703";
+	static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=3703";
+    upd.pbVersionPrefix = (BYTE *)"<span class=\"fileNameHeader\">Clist Nicer for MIranda 0.7 (UNICODE) ";
 #else
 	static char *component = "CList Nicer+";
 	static char szCurrentVersion[30];
-	static char *szVersionUrl = "http://miranda.or.at/files/clist_nicer/version.txt";
-	static char *szUpdateUrl = "http://miranda.or.at/files/clist_nicer/clist_nicer_plus.zip";
-	static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=2602";
-	static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=2602";
-    upd.pbVersionPrefix = (BYTE *)"<span class=\"fileNameHeader\">CList Nicer+ (NEW) ";
+	static char *szVersionUrl = "http://miranda.or.at/files/clist_nicer/0.8/version.txt";
+	static char *szUpdateUrl = "http://miranda.or.at/files/clist_nicer/0.8/clist_nicer_plus.zip";
+	static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=3702";
+	static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=3702";
+    upd.pbVersionPrefix = (BYTE *)"<span class=\"fileNameHeader\">Clist Nicer for Miranda 0.7 (ANSI) ";
 #endif
 
 	// updater plugin support
@@ -1701,6 +1703,14 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				}
 			}
 			PostMessage(hwnd, CLUIINTM_REMOVEFROMTASKBAR, 0, 0);
+
+			if (g_floatoptions.enabled) {
+				if (wParam)
+					FLT_ShowHideAll(SW_HIDE);
+				else
+					FLT_ShowHideAll(SW_SHOWNOACTIVATE);
+			}
+
 			if(!g_CluiData.fadeinout)
 				SFL_SetState(-1);
 			if (lParam)
@@ -2690,5 +2700,6 @@ UpdateWindowImage()
 	ReleaseDC(0, screenDC);
 }
 #endif
+
 
 

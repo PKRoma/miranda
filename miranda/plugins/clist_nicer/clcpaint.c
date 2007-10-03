@@ -57,12 +57,6 @@ extern struct ClcData *g_clcData;
 
 pfnDrawAlpha pDrawAlpha = NULL;
 
-void DrawWithGDIp(HRGN rgn, DWORD x, DWORD y, DWORD width, DWORD height, UCHAR alpha, struct ClcContact *contact);
-void RemoveFromImgCache(HANDLE hContact, struct avatarCacheEntry *ace);
-int DrawTextHQ(HDC hdc, HFONT hFont, RECT *rc, WCHAR *szwText, COLORREF colorref, int fontHeight, int g_RTL);
-void CreateG(HDC hdc), DeleteG();
-int MeasureTextHQ(HDC hdc, HFONT hFont, RECT *rc, WCHAR *szwText);
-
 int g_hottrack, g_center, g_ignoreselforgroups, g_selectiveIcon, g_exIconSpacing, g_hottrack_done;
 HWND g_focusWnd;
 BYTE selBlend;
@@ -70,9 +64,7 @@ BYTE saved_alpha;
 int my_status;
 
 BOOL g_inCLCpaint = FALSE;
-static int g_list_avatars = 0;
-
-#undef _GDITEXTRENDERING
+int g_list_avatars = 0;
 
 HFONT __fastcall ChangeToFont(HDC hdc, struct ClcData *dat, int id, int *fontHeight)
 {
@@ -479,6 +471,7 @@ static BOOL av_left, av_right, av_rightwithnick;
 static BOOL mirror_rtl, mirror_always, mirror_rtltext;
 
 BYTE savedCORNER = -1;
+int  g_padding_y = 0;
 
 void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *contact, int indent, int y, struct ClcData *dat, int index, HWND hwnd, DWORD style, RECT *clRect, BOOL *bFirstNGdrawn, int groupCountsFontTopShift, int rowHeight)
 {
@@ -927,8 +920,8 @@ set_bg_l:
 		pfnSetLayout(hdcMem, LAYOUT_RTL | LAYOUT_BITMAPORIENTATIONPRESERVED);
 bgskipped:
 
-    rcContent.top = y;
-    rcContent.bottom = y + rowHeight;
+    rcContent.top = y + g_padding_y;
+    rcContent.bottom = y + rowHeight - (2 * g_padding_y);
     rcContent.left = leftX;
     rcContent.right = clRect->right - dat->rightMargin;
 	twoRows = ((dat->fontInfo[FONTID_STATUS].fontHeight + fontHeight <= rowHeight + 1) && (contact->bSecondLine != MULTIROW_NEVER)) && !dat->bisEmbedded;
@@ -1217,22 +1210,10 @@ text:
 
 		// nickname
 		if(!twoRows) {
-			if(dt_nickflags) {
-#if defined(_GDITEXTRENDERING) && defined(_UNICODE)
-				if(g_gdiPlusText)
-					DrawTextHQ(hdcMem, dat->fontInfo[dat->currentFontID].hFont, &rcContent, szText, GetTextColor(hdcMem), fontHeight, dt_nickflags);
-				else
-#endif                
-					DrawText(hdcMem, szText, -1, &rcContent, DT_EDITCONTROL | DT_NOPREFIX | DT_NOCLIP | DT_WORD_ELLIPSIS | DT_SINGLELINE | dt_nickflags);
-			}
-			else {
-#if defined(_GDITEXTRENDERING) && defined(_UNICODE)
-				if(g_gdiPlusText)
-					DrawTextHQ(hdcMem, dat->fontInfo[dat->currentFontID].hFont, &rcContent, szText, GetTextColor(hdcMem), fontHeight, 0);
-				else
-#endif                
-					DrawText(hdcMem, szText, -1, &rcContent, DT_EDITCONTROL | DT_NOPREFIX | DT_NOCLIP | DT_WORD_ELLIPSIS | DT_SINGLELINE);
-			}
+			if(dt_nickflags)
+                DrawText(hdcMem, szText, -1, &rcContent, DT_EDITCONTROL | DT_NOPREFIX | DT_NOCLIP | DT_WORD_ELLIPSIS | DT_SINGLELINE | dt_nickflags);
+			else
+                DrawText(hdcMem, szText, -1, &rcContent, DT_EDITCONTROL | DT_NOPREFIX | DT_NOCLIP | DT_WORD_ELLIPSIS | DT_SINGLELINE);
 		}
 		else {
 			int statusFontHeight;
@@ -1315,16 +1296,9 @@ nodisplay:
 						rcContent.right = clRect->right - dat->rightMargin;
 				}
 			}
-
-#if defined(_GDITEXTRENDERING) && defined(_UNICODE)
-			if(g_gdiPlusText)
-				DrawTextHQ(hdcMem, dat->fontInfo[dat->currentFontID].hFont, &rcContent, szText, GetTextColor(hdcMem), fontHeight, dt_nickflags);
-			else
-#endif                
-				DrawText(hdcMem, szText, -1, &rcContent, DT_EDITCONTROL | DT_NOPREFIX | DT_NOCLIP | DT_WORD_ELLIPSIS | DT_SINGLELINE | dt_nickflags);
+			DrawText(hdcMem, szText, -1, &rcContent, DT_EDITCONTROL | DT_NOPREFIX | DT_NOCLIP | DT_WORD_ELLIPSIS | DT_SINGLELINE | dt_nickflags);
 
 			rcContent.right = saved_right;
-
 			rcContent.top += (fontHeight - 1);
 			hPreviousFont = ChangeToFont(hdcMem, dat, FONTID_STATUS, &statusFontHeight);
 			//if(selected)
@@ -1352,22 +1326,11 @@ nodisplay:
 						dtFlags |= DT_WORDBREAK;
 						rcContent.bottom -= ((rcContent.bottom - rcContent.top) % statusFontHeight);
 					}
-#if defined(_GDITEXTRENDERING) && defined(_UNICODE)
-					if(g_gdiPlusText)
-						DrawTextHQ(hdcMem, dat->fontInfo[dat->currentFontID].hFont, &rcContent, szText, GetTextColor(hdcMem), 0, dt_2ndrowflags);
-					else
-#endif                    
-						DrawText(hdcMem, szText, -1, &rcContent, dtFlags | dt_2ndrowflags);
+					DrawText(hdcMem, szText, -1, &rcContent, dtFlags | dt_2ndrowflags);
 				}
 				else {
-					if((rcContent.bottom - rcContent.top) < (2 * statusFontHeight) - 2) {
-#if defined(_GDITEXTRENDERING) && defined(_UNICODE)
-						if(g_gdiPlusText)
-							DrawTextHQ(hdcMem, dat->fontInfo[dat->currentFontID].hFont, &rcContent, szText, GetTextColor(hdcMem), 0, dt_2ndrowflags);
-						else
-#endif                    
-							DrawText(hdcMem, szText, -1, &rcContent, dtFlags | dt_2ndrowflags);
-					}
+					if((rcContent.bottom - rcContent.top) < (2 * statusFontHeight) - 2)
+						DrawText(hdcMem, szText, -1, &rcContent, dtFlags | dt_2ndrowflags);
 					else {
 						DRAWTEXTPARAMS dtp = {0};
 						LONG rightIconsTop = rcContent.bottom - g_exIconSpacing;
@@ -1474,6 +1437,8 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint)
     /*                                                              
      * temporary DC for avatar drawing
     */
+
+    g_padding_y = 0;
 
     hdcTempAV = CreateCompatibleDC(g_HDC);
     hdcAV = CreateCompatibleDC(g_HDC);

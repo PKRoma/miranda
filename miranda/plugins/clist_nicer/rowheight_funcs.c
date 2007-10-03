@@ -261,16 +261,15 @@ int RowHeights_GetFloatingRowHeight(struct ClcData *dat, HWND hwnd, struct ClcCo
     height = dat->fontInfo[GetBasicFontID(contact)].fontHeight;
 
     if(!dat->bisEmbedded) {
-		if(dwFlags & FLT_DUALROW) {
-			if(contact->bSecondLine != MULTIROW_NEVER && contact->bSecondLine != MULTIROW_IFSPACE) {
-				if ((contact->bSecondLine == MULTIROW_ALWAYS || ((g_CluiData.dwFlags & CLUI_FRAME_SHOWSTATUSMSG && contact->bSecondLine == MULTIROW_IFNEEDED) && (contact->xStatus > 0 || g_ExtraCache[contact->extraCacheEntry].bStatusMsgValid > STATUSMSG_XSTATUSID))))
-					height += (dat->fontInfo[FONTID_STATUS].fontHeight + g_CluiData.avatarPadding);
+		if(!(dwFlags & FLT_SIMPLE)){
+			if(dwFlags & FLT_DUALROW) {
+				height += (dat->fontInfo[FONTID_STATUS].fontHeight + g_CluiData.avatarPadding);
 			}
+			// Avatar size
+			if (dwFlags & FLT_AVATARS && contact->cFlags & ECF_AVATAR && contact->type == CLCIT_CONTACT && contact->ace != NULL && !(contact->ace->dwFlags & AVS_HIDEONCLIST))
+				height = max(height, g_CluiData.avatarSize + g_CluiData.avatarPadding);
 		}
-        // Avatar size
-        if (dwFlags & FLT_AVATARS && contact->cFlags & ECF_AVATAR && contact->type == CLCIT_CONTACT && contact->ace != NULL && !(contact->ace->dwFlags & AVS_HIDEONCLIST))
-            height = max(height, g_CluiData.avatarSize + g_CluiData.avatarPadding);
-    }
+	}
 
     height = max(height, dat->min_row_heigh);
     height += g_CluiData.bRowSpacing;

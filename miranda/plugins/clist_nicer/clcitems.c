@@ -129,7 +129,7 @@ int AddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDLE hConta
     //p->iRowHeight = -1;
 
 	if (p->proto)
-		p->bIsMeta = !strcmp(p->proto, "MetaContacts");
+		p->bIsMeta = !strcmp(p->proto, g_CluiData.szMetaName);
 	else
 		p->bIsMeta = FALSE;
 	if (p->bIsMeta && g_CluiData.bMetaAvail && !(g_CluiData.dwFlags & CLUI_USEMETAICONS)) {
@@ -151,7 +151,7 @@ int AddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDLE hConta
 		GetExtendedInfo( p, dat);
 		if(p->extraCacheEntry >= 0 && p->extraCacheEntry < g_nextExtraCacheEntry) {
 			g_ExtraCache[p->extraCacheEntry].proto_status_item = GetProtocolStatusItem(p->bIsMeta ? p->metaProto : p->proto);
-			if(DBGetContactSettingByte(p->hContact, "CList", "floating", 0)) {
+			if(DBGetContactSettingByte(p->hContact, "CList", "floating", 0) && g_floatoptions.enabled) {
 				if(g_ExtraCache[p->extraCacheEntry].floater == NULL)
 					FLT_Create(p->extraCacheEntry);
 				else {
@@ -633,7 +633,7 @@ int __fastcall CLVM_GetContactHiddenStatus(HANDLE hContact, char *szProto, struc
     
     // always hide subcontacts (but show them on embedded contact lists)
     
-    if(g_CluiData.bMetaAvail && dat != NULL && dat->bHideSubcontacts && g_CluiData.bMetaEnabled && DBGetContactSettingByte(hContact, "MetaContacts", "IsSubcontact", 0))
+    if(g_CluiData.bMetaAvail && dat != NULL && dat->bHideSubcontacts && g_CluiData.bMetaEnabled && DBGetContactSettingByte(hContact, g_CluiData.szMetaName, "IsSubcontact", 0))
         return 1;
 
     if(g_CluiData.bFilterEffective) {

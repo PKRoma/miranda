@@ -152,57 +152,65 @@ void DSP_EnumModes(pfnEnumCallback EnumCallback)
  * p->uID must contain the (valid) identifier
  */
 
-static void DSP_Write(DISPLAYPROFILE *p)
+static void DSP_Write(DISPLAYPROFILESET *p)
 {
     char szBuf[256], szKey[256];
-    int  i = 0;
+    int  i = 0, j;
     DWORD dwFlags = 0;
+    DISPLAYPROFILE  *dp;
 
     _snprintf(szKey, 256, "[%u]", p->uID);
     DBWriteContactSettingTString(NULL, DSP_PROFILES_MODULE, szKey, p->tszName);
 
-    /*
-     * dword values
-     */
+    for(j = 0; j < 4; j++) {
 
-    _snprintf(szBuf, 256, "%u,%u,%d,%u,%u", p->dwFlags, p->dwExtraImageMask, p->avatarBorder, p->clcExStyle, p->clcOfflineModes);
-    szBuf[255] = 0;
-    _snprintf(szKey, 256, "{dw_%u}", p->uID);
-    DBWriteContactSettingString(NULL, DSP_PROFILES_MODULE, szKey, szBuf);
-    _snprintf(szKey, 256, "{b_%u}", p->uID);
+        dp = &p->dp[i];
+        i = 0;
 
-    /*
-     * byte values
-     */
+        /*
+         * dword values
+         */
 
-    szBuf[i++] = (BYTE)p->exIconScale;
-    szBuf[i++] = (BYTE)p->dualRowMode;
-    szBuf[i++] = (BYTE)p->avatarRadius;
-    szBuf[i++] = (BYTE)p->avatarSize;
-    szBuf[i++] = (BYTE)p->sortOrder[0];szBuf[i++] = (BYTE)p->sortOrder[1];szBuf[i++] = (BYTE)p->sortOrder[2];
-    szBuf[i++] = p->bUseDCMirroring;
-    szBuf[i++] = p->bGroupAlign;
-    szBuf[i++] = p->avatarPadding;
-    szBuf[i++] = p->bLeftMargin; szBuf[i++] = p->bRightMargin; szBuf[i++] = p->bRowSpacing;
-    szBuf[i++] = p->bGroupIndent; szBuf[i++] = p->bRowHeight; szBuf[i++] = p->bGroupRowHeight;
-    szBuf[i++] = 0;
+        _snprintf(szBuf, 256, "%u,%u,%d,%u,%u", dp->dwFlags, dp->dwExtraImageMask, dp->avatarBorder, dp->clcExStyle, dp->clcOfflineModes);
+        szBuf[255] = 0;
+        _snprintf(szKey, 256, "{dw_%u_%u}", p->uID, j);
+        DBWriteContactSettingString(NULL, DSP_PROFILES_MODULE, szKey, szBuf);
 
-    DBWriteContactSettingString(NULL, DSP_PROFILES_MODULE, szKey, szBuf);
+        _snprintf(szKey, 256, "{b_%u_%u}", p->uID, j);
 
-    /*
-     * bool values (convert to bitflags
-     */
+        /*
+         * byte values
+         */
 
-    _snprintf(szKey, 256, "{f_%u}", p->uID);
-    dwFlags = ((p->bCenterStatusIcons ? DSPF_CENTERSTATUSICON : 0) |
-               (p->bDimIdle ? DSPF_DIMIDLE : 0) |
-               (p->bNoOfflineAvatars ? DSPF_NOFFLINEAVATARS : 0) |
-               (p->bShowLocalTime ? DSPF_SHOWLOCALTIME : 0) |
-               (p->bShowLocalTimeSelective ? DSPF_LOCALTIMESELECTIVE : 0) |
-               (p->bDontSeparateOffline ? DSPF_DONTSEPARATEOFFLINE : 0) |
-               (p->bCenterGroupNames ? DSPF_CENTERGROUPNAMES : 0));
+        szBuf[i++] = (BYTE)dp->exIconScale;
+        szBuf[i++] = (BYTE)dp->dualRowMode;
+        szBuf[i++] = (BYTE)dp->avatarRadius;
+        szBuf[i++] = (BYTE)dp->avatarSize;
+        szBuf[i++] = (BYTE)dp->sortOrder[0];szBuf[i++] = (BYTE)dp->sortOrder[1];szBuf[i++] = (BYTE)dp->sortOrder[2];
+        szBuf[i++] = dp->bUseDCMirroring;
+        szBuf[i++] = dp->bGroupAlign;
+        szBuf[i++] = dp->avatarPadding;
+        szBuf[i++] = dp->bLeftMargin; szBuf[i++] = dp->bRightMargin; szBuf[i++] = dp->bRowSpacing;
+        szBuf[i++] = dp->bGroupIndent; szBuf[i++] = dp->bRowHeight; szBuf[i++] = dp->bGroupRowHeight;
+        szBuf[i++] = 0;
 
-    DBWriteContactSettingDword(NULL, DSP_PROFILES_MODULE, szKey, dwFlags);
+        DBWriteContactSettingString(NULL, DSP_PROFILES_MODULE, szKey, szBuf);
+
+        /*
+         * bool values (convert to bitflags
+         */
+
+        _snprintf(szKey, 256, "{f_%u_%u}", p->uID, j);
+        dwFlags = ((dp->bCenterStatusIcons ? DSPF_CENTERSTATUSICON : 0) |
+                   (dp->bDimIdle ? DSPF_DIMIDLE : 0) |
+                   (dp->bNoOfflineAvatars ? DSPF_NOFFLINEAVATARS : 0) |
+                   (dp->bShowLocalTime ? DSPF_SHOWLOCALTIME : 0) |
+                   (dp->bShowLocalTimeSelective ? DSPF_LOCALTIMESELECTIVE : 0) |
+                   (dp->bDontSeparateOffline ? DSPF_DONTSEPARATEOFFLINE : 0) |
+                   (dp->bCenterGroupNames ? DSPF_CENTERGROUPNAMES : 0));
+
+        DBWriteContactSettingDword(NULL, DSP_PROFILES_MODULE, szKey, dwFlags);
+    }
 }
 
 
@@ -211,12 +219,13 @@ static void DSP_Write(DISPLAYPROFILE *p)
  * p->uID must contain the (valid) identifier
  */
 
-static int DSP_Read(DISPLAYPROFILE *p)
+static int DSP_Read(DISPLAYPROFILESET *p)
 {
     char szBuf[256], szKey[256];
-    int  i = 0;
+    int  i = 0, j;
     DWORD dwFlags = 0;
     DBVARIANT dbv = {0};
+    DISPLAYPROFILE  *dp;
 
     _snprintf(szKey, 256, "[%u]", p->uID);
 
@@ -226,60 +235,64 @@ static int DSP_Read(DISPLAYPROFILE *p)
     mir_sntprintf(p->tszName, 60, dbv.ptszVal);
     DBFreeVariant(&dbv);
 
-    /*
-     * dword values
-     */
+    for(j = 0; j < 4; j++) {
 
-    _snprintf(szKey, 256, "{dw_%u}", p->uID);
-    if(!DBGetContactSettingString(NULL, DSP_PROFILES_MODULE, szKey, &dbv)) {
-        _snscanf(dbv.pszVal, 255, "%u,%u,%u,%u,%u", p->dwFlags, p->dwExtraImageMask, p->avatarBorder, p->clcExStyle, p->clcOfflineModes);
-        DBFreeVariant(&dbv);
-    }
-    else
-        return 0;
+        dp = &p->dp[j];
+        i = 0;
+        /*
+         * dword values
+         */
 
-
-    /*
-     * byte values
-     */
-
-    _snprintf(szKey, 256, "{b_%u}", p->uID);
-    if(!DBGetContactSettingString(NULL, DSP_PROFILES_MODULE, szKey, &dbv)) {
-        if(lstrlenA(dbv.pszVal) >= 16) {
-            p->exIconScale = (int)szBuf[i++];
-            p->dualRowMode = szBuf[i++];
-            p->avatarRadius = szBuf[i++];
-            p->avatarSize = szBuf[i++];
-            p->sortOrder[0] = szBuf[i++]; p->sortOrder[1] = szBuf[i++];  p->sortOrder[2] = szBuf[i++];
-            p->bUseDCMirroring = szBuf[i++];
-            p->bGroupAlign = szBuf[i++];
-            p->avatarPadding = szBuf[i++];
-            p->bLeftMargin = szBuf[i++]; p->bRightMargin = szBuf[i++]; p->bRowSpacing = szBuf[i++];
-            p->bGroupIndent = szBuf[i++]; p->bRowHeight = szBuf[i++];  p->bGroupRowHeight = szBuf[i++];
-        }
-        else {
+        _snprintf(szKey, 256, "{dw_%u_%u}", p->uID, j);
+        if(!DBGetContactSettingString(NULL, DSP_PROFILES_MODULE, szKey, &dbv)) {
+            _snscanf(dbv.pszVal, 255, "%u,%u,%u,%u,%u", dp->dwFlags, dp->dwExtraImageMask, dp->avatarBorder, dp->clcExStyle, dp->clcOfflineModes);
             DBFreeVariant(&dbv);
-            return 0;
         }
-        DBFreeVariant(&dbv);
+        else
+            return 0;
+
+        /*
+         * byte values
+         */
+
+        _snprintf(szKey, 256, "{b_%u_%u}", p->uID, j);
+        if(!DBGetContactSettingString(NULL, DSP_PROFILES_MODULE, szKey, &dbv)) {
+            if(lstrlenA(dbv.pszVal) >= 16) {
+                dp->exIconScale = (int)szBuf[i++];
+                dp->dualRowMode = szBuf[i++];
+                dp->avatarRadius = szBuf[i++];
+                dp->avatarSize = szBuf[i++];
+                dp->sortOrder[0] = szBuf[i++]; dp->sortOrder[1] = szBuf[i++];  dp->sortOrder[2] = szBuf[i++];
+                dp->bUseDCMirroring = szBuf[i++];
+                dp->bGroupAlign = szBuf[i++];
+                dp->avatarPadding = szBuf[i++];
+                dp->bLeftMargin = szBuf[i++]; dp->bRightMargin = szBuf[i++]; dp->bRowSpacing = szBuf[i++];
+                dp->bGroupIndent = szBuf[i++]; dp->bRowHeight = szBuf[i++];  dp->bGroupRowHeight = szBuf[i++];
+            }
+            else {
+                DBFreeVariant(&dbv);
+                return 0;
+            }
+            DBFreeVariant(&dbv);
+        }
+        else
+            return 0;
+
+        /*
+         * bool values (convert to bitflags
+         */
+
+        _snprintf(szKey, 256, "{f_%u_%u}", p->uID, j);
+        dwFlags = DBGetContactSettingDword(NULL, DSP_PROFILES_MODULE, szKey, 0);
+
+        dp->bCenterStatusIcons = dwFlags & DSPF_CENTERSTATUSICON ? 1 : 0;
+        dp->bDimIdle = dwFlags & DSPF_DIMIDLE ? 1 : 0;
+        dp->bNoOfflineAvatars = dwFlags & DSPF_NOFFLINEAVATARS ? 1 : 0;
+        dp->bShowLocalTime = dwFlags & DSPF_SHOWLOCALTIME ? 1 : 0;
+        dp->bShowLocalTimeSelective = dwFlags & DSPF_LOCALTIMESELECTIVE ? 1 : 0;
+        dp->bDontSeparateOffline = dwFlags & DSPF_DONTSEPARATEOFFLINE ? 1 : 0;
+        dp->bCenterGroupNames = dwFlags & DSPF_CENTERGROUPNAMES ? 1 : 0;
     }
-    else
-        return 0;
-
-    /*
-     * bool values (convert to bitflags
-     */
-
-    _snprintf(szKey, 256, "{f_%u}", p->uID);
-    dwFlags = DBGetContactSettingDword(NULL, DSP_PROFILES_MODULE, szKey, 0);
-
-    p->bCenterStatusIcons = dwFlags & DSPF_CENTERSTATUSICON ? 1 : 0;
-    p->bDimIdle = dwFlags & DSPF_DIMIDLE ? 1 : 0;
-    p->bNoOfflineAvatars = dwFlags & DSPF_NOFFLINEAVATARS ? 1 : 0;
-    p->bShowLocalTime = dwFlags & DSPF_SHOWLOCALTIME ? 1 : 0;
-    p->bShowLocalTimeSelective = dwFlags & DSPF_LOCALTIMESELECTIVE ? 1 : 0;
-    p->bDontSeparateOffline = dwFlags & DSPF_DONTSEPARATEOFFLINE ? 1 : 0;
-    p->bCenterGroupNames = dwFlags & DSPF_CENTERGROUPNAMES ? 1 : 0;
 
     return 1;
 }
@@ -1161,6 +1174,13 @@ static BOOL CALLBACK DlgProcDspProfiles(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 
          SendMessage(hwnd, WM_USER + 100, 0, (LPARAM)&dsp_default);
          SendMessage(hwndList, LB_INSERTSTRING, 0, (LPARAM)_T("<current>"));
+
+         hwndList = GetDlgItem(hwnd, IDC_CLASSLIST);
+         SendMessage(hwndList, LB_INSERTSTRING, 0, (LPARAM)_T("Default"));
+         SendMessage(hwndList, LB_INSERTSTRING, 1, (LPARAM)_T("Offline contact"));
+         SendMessage(hwndList, LB_INSERTSTRING, 2, (LPARAM)_T("Selected contact"));
+         SendMessage(hwndList, LB_INSERTSTRING, 3, (LPARAM)_T("Hottracked contact"));
+
          iInit = FALSE;
          return FALSE;
       }

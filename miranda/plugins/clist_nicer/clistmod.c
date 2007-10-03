@@ -59,7 +59,7 @@ int IconFromStatusMode(const char *szProto, int status, HANDLE hContact, HICON *
 	char *szFinalProto;
 	int finalStatus;
 
-	if (szProto != NULL && !strcmp(szProto, "MetaContacts") && g_CluiData.bMetaAvail && hContact != 0 && !(g_CluiData.dwFlags & CLUI_USEMETAICONS)) {
+	if (szProto != NULL && !strcmp(szProto, g_CluiData.szMetaName) && g_CluiData.bMetaAvail && hContact != 0 && !(g_CluiData.dwFlags & CLUI_USEMETAICONS)) {
 		HANDLE hSubContact = (HANDLE) CallService(MS_MC_GETMOSTONLINECONTACT, (WPARAM) hContact, 0);
 		szFinalProto = (char*) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hSubContact, 0);
 		finalStatus = (status == 0) ? (WORD) DBGetContactSettingWord(hSubContact, szFinalProto, "Status", ID_STATUS_OFFLINE) : status;
