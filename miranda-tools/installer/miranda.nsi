@@ -4,7 +4,7 @@
 
 !define MIM_NAME                "Miranda IM"
 !define MIM_VERSION             "0.7"
-!define MIM_PREVIEW             "5" ; comment out for final build
+;!define MIM_PREVIEW             "1" ; comment out for final build
 
 !define MIM_BUILD_UNICODE
 
@@ -81,8 +81,8 @@ VAR INST_UPGRADE
   ${EndIf}
   !else
   File "${MIM_BUILD_ICONS_LOW}\${IconFile}"
-  SetOverWrite on
   !endif
+  SetOverWrite on
 !macroend
 
 Section "Miranda IM"
@@ -217,7 +217,7 @@ SubSection /e "Options" pOptions
     RMDir /r "$SMPROGRAMS\Miranda IM"
     CreateDirectory "$SMPROGRAMS\Miranda IM"
     CreateShortCut  "$SMPROGRAMS\Miranda IM\Miranda IM.lnk" "$INSTDIR\miranda32.exe"
-    CreateShortCut  "$SMPROGRAMS\Miranda IM\Database Repair Tool.lnk" "$INSTDIR\dbtool.exe"
+    CreateShortCut  "$SMPROGRAMS\Miranda IM\Database Tool.lnk" "$INSTDIR\dbtool.exe"
     WriteINIStr     "$SMPROGRAMS\Miranda IM\Homepage.url" "InternetShortcut" "URL" "http://www.miranda-im.org/"
   SectionEnd
 
