@@ -422,7 +422,7 @@ static BOOL scanPluginsDir (WIN32_FIND_DATAA * fd, char * path, WPARAM wParam, L
 		pluginListUI=p;
 		p->pclass |= PCLASS_CLIST;
 	}
-	else if ( lstrcmpiA(fd->cFileName, "freeimage.dll") == 0)
+	else if ( lstrcmpiA(fd->cFileName, "advaimg.dll") == 0)
 		pluginList_freeimg = p;
 
 	// add it to the list
