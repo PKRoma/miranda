@@ -146,7 +146,7 @@ static struct branch_t branch2[] = {
 	{LPGENT("Indent the second line of a message"), "LogIndentEnabled", 0,1, NULL},
 	{LPGENT("Limit user names in the message log to 20 characters"), "LogLimitNames", 0,1, NULL},
 	{LPGENT("Add \':\' to auto-completed user names"), "AddColonToAutoComplete", 0, 1, NULL},
-	{LPGENT("Start private conversaton on doubleclick in nick list (insert nick if unchecked)"), "DoubleClick4Privat", 0, 1, NULL},
+	{LPGENT("Start private conversation on doubleclick in nick list (insert nick if unchecked)"), "DoubleClick4Privat", 0, 1, NULL},
 	{LPGENT("Strip colors from messages in the log"), "StripFormatting", 0, 0, NULL},
 	{LPGENT("Enable the \'event filter\' for new rooms"), "FilterEnabled", 0,0, NULL},
     {LPGENT("Use IRC style status indicators in the nicklist (@, %, + etc.)"), "ClassicIndicators", 0,1, NULL},
@@ -771,7 +771,7 @@ static UINT _o2chatcontrols[] = { IDC_CHAT_SPIN2, IDC_LOGTIMESTAMP, IDC_TIMESTAM
     IDC_OUTSTAMP, IDC_INSTAMP, IDC_HIGHLIGHT, IDC_HIGHLIGHTWORDS, IDC_CHAT_SPIN2, IDC_CHAT_SPIN3, IDC_NICKROW2, IDC_LOGLIMIT, 
     IDC_NICKCOLOR, IDC_NICKCOLORS, 0 };
     
-static BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
+BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
 	static HBRUSH hBkgColourBrush;
 	static HBRUSH hListColourBrush;
@@ -1322,17 +1322,6 @@ static BOOL CALLBACK DlgProcOptionsPopup(HWND hwndDlg,UINT uMsg,WPARAM wParam,LP
 int Chat_OptionsInitialize(WPARAM wParam, LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE odp = {0};
-
-
-	odp.cbSize = sizeof(odp);
-	odp.position = 910000001;
-	odp.hInstance = g_hInst;
-	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPTIONS2);
-	odp.pszTitle = LPGEN("Fonts and colors");
-	odp.pszGroup = LPGEN("Message Sessions");
-	odp.pfnDlgProc = DlgProcOptions2;
-	odp.flags = ODPF_BOLDGROUPS;
-	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM)&odp);
 
 	if ( !g_chat_integration_enabled )
         return 0;

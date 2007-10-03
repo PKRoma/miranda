@@ -5,17 +5,13 @@
 1.Requirements
 ---------------
 
-a) Miranda IM, Version 0.5.0.0 or later (released in July 2006)
+a) Miranda IM, Version 0.7.0.0 or later (released in October 2006) IT WILL NOT
+   WORK with older Miranda (0.6 or earlier)
 b) The unicode version of tabSRMM requires Windows 2000 or XP and will not 
    run under Windows 9x or ME. The ANSI version may run under Windows 98 
    or ME (not under Windows 95), but there are some minor problems and some
    features are disabled.
 
-c) To see avatars in the message window, you need the AVATAR SERVICE plugin 
-   (also known as loadavatars). It is available from the addons page at
-   http://www.miranda-im.org 
-
-   
 HOW TO INSTALL
 --------------
 

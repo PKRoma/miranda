@@ -37,8 +37,8 @@ $Id$
 
 static char *relnotes[] = {
     "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
-    "\\par\t\\b\\ul1 Release notes for version 1.1.1.2\\b0\\ul0\\par ",
-    "*\tBugfixes (quoting, message grouping).\\par",
+    "\\par\t\\b\\ul1 Release notes for version 2.0.0.1\\b0\\ul0\\par ",
+    "*\tReleased for Miranda 0.7 final..\\par",
     NULL
 };
 
@@ -952,16 +952,16 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	static Update upd = {0};
 #if defined(_UNICODE)
 	static char szCurrentVersion[30];
-	static char *szVersionUrl = "http://miranda.or.at/files/tabsrmm/tabsrmm.txt";
-	static char *szUpdateUrl = "http://miranda.or.at/files/tabsrmm/tabsrmmW.zip";
-	static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=2457";
-	static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=2457";
+	static char *szVersionUrl = "http://miranda.or.at/files/tabsrmm/2/tabsrmm.txt";
+	static char *szUpdateUrl = "http://miranda.or.at/files/tabsrmm/2/tabsrmmW.zip";
+	static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=3699";
+	static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=3699";
 #else
 	static char szCurrentVersion[30];
-	static char *szVersionUrl = "http://miranda.or.at/files/tabsrmm/version.txt";
-	static char *szUpdateUrl = "http://miranda.or.at/files/tabsrmm/tabsrmm.zip";
-	static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=1401";
-	static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=1401";
+	static char *szVersionUrl = "http://miranda.or.at/files/tabsrmm/2/version.txt";
+	static char *szUpdateUrl = "http://miranda.or.at/files/tabsrmm/2/tabsrmm.zip";
+	static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=3698";
+	static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=3698";
 #endif    
 	static char *szPrefix = "tabsrmm ";
 

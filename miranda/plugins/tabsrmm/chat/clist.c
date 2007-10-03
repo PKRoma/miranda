@@ -194,7 +194,6 @@ void CList_CreateGroup(TCHAR* group)
 		DBFreeVariant(&dbv);
 	}
 
-	//	CallService(MS_CLIST_GROUPCREATE, (WPARAM)group, 0);
 	name[0] = 1 | GROUPF_EXPANDED;
 	_tcsncpy(name + 1, group, SIZEOF(name) - 1);
 	name[ lstrlen(group) + 1] = '\0';

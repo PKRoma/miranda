@@ -1114,7 +1114,6 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Stay on Top",                 40095
     END
-    MENUITEM "&User",                       40125
     POPUP "Message &Log"
     BEGIN
         POPUP "Log Items to show"

@@ -100,14 +100,23 @@ BOOL IsStatusEvent(int eventType)
 	return FALSE;
 }
 
+/*
+ * init default color table. the table may grow when using custom colors via bbcodes
+ */
+
 void RTF_CTableInit()
 {
-    rtf_ctable = (struct RTFColorTable *)malloc(sizeof(struct RTFColorTable) * RTF_CTABLE_DEFSIZE);
-    ZeroMemory(rtf_ctable, sizeof(struct RTFColorTable) * RTF_CTABLE_DEFSIZE);
-    CopyMemory(rtf_ctable, _rtf_ctable, sizeof(struct RTFColorTable) * RTF_CTABLE_DEFSIZE);
-    myGlobals.rtf_ctablesize = RTF_CTABLE_DEFSIZE;
-    g_ctable_size = RTF_CTABLE_DEFSIZE;
+    int iSize = sizeof(struct RTFColorTable) * RTF_CTABLE_DEFSIZE;
+
+    rtf_ctable = (struct RTFColorTable *) malloc(iSize);
+    ZeroMemory(rtf_ctable, iSize);
+    CopyMemory(rtf_ctable, _rtf_ctable, iSize);
+    myGlobals.rtf_ctablesize = g_ctable_size = RTF_CTABLE_DEFSIZE;
 }
+
+/*
+ * add a color to the global rtf color table
+ */
 
 void RTF_ColorAdd(const TCHAR *tszColname, size_t length)
 {
@@ -123,8 +132,12 @@ void RTF_ColorAdd(const TCHAR *tszColname, size_t length)
 
     clr = _tcstol(tszColname, &stopped, 16);
     rtf_ctable[g_ctable_size - 1].clr = (RGB(GetBValue(clr), GetGValue(clr), GetRValue(clr)));
-    //_DebugTraceA("adding color: %s (%d)", rtf_ctable[g_ctable_size - 1].szName, length);
 }
+
+/*
+ * reorder tabs within a container. fSavePos indicates whether the new position should be saved to the
+ * contacts db record (if so, the container will try to open the tab at the saved position later)
+ */
 
 void RearrangeTab(HWND hwndDlg, struct MessageWindowData *dat, int iMode, BOOL fSavePos)
 {
@@ -152,6 +165,7 @@ void RearrangeTab(HWND hwndDlg, struct MessageWindowData *dat, int iMode, BOOL f
             DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "tabindex", newIndex * 100);
     }
 }
+
 /*                                                              
  * subclassing for the save as file dialog (needed to set it to thumbnail view on Windows 2000
  * or later                                                                
@@ -271,7 +285,6 @@ void FlashTab(struct MessageWindowData *dat, HWND hwndTab, int iTabindex, BOOL *
     item.iImage = 0;
     TabCtrl_SetItem(hwndTab, iTabindex, &item);
 }
-
 
 /*
  * draw transparent avatar image. Get around crappy image rescaling quality of the
@@ -3150,8 +3163,7 @@ HICON MY_GetContactIcon(struct MessageWindowData *dat)
     if(dat->bIsMeta)
         return CopyIcon(LoadSkinnedProtoIcon(dat->szMetaProto, dat->wMetaStatus));
 
-    if (ServiceExists(MS_CLIST_GETCONTACTICON) && ServiceExists(MS_CLIST_GETICONSIMAGELIST)) 
-    {
+    if (ServiceExists(MS_CLIST_GETCONTACTICON) && ServiceExists(MS_CLIST_GETICONSIMAGELIST)) {
         HIMAGELIST iml = (HIMAGELIST)CallService(MS_CLIST_GETICONSIMAGELIST,0,0);
         int index = CallService(MS_CLIST_GETCONTACTICON,(WPARAM)dat->hContact,0);
         if (iml && index>=0)

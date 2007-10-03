@@ -109,9 +109,9 @@ static void ShowPage(HWND hwndDlg, int iPage, BOOL fShow)
             ShowWindow(GetDlgItem(hwndDlg, o_pages[iPage].uIds[i]), fShow ? SW_SHOW : SW_HIDE);
     }
     if(fShow) {
-        SetDlgItemText(hwndDlg, IDC_TITLEBOX, o_pages[iPage].szTitle);
+        SetDlgItemText(hwndDlg, IDC_TITLEBOX, TranslateTS(o_pages[iPage].szTitle));
         if(o_pages[iPage].szDesc)
-            SetDlgItemText(hwndDlg, IDC_DESC, o_pages[iPage].szDesc);
+            SetDlgItemText(hwndDlg, IDC_DESC, TranslateTS(o_pages[iPage].szDesc));
         else
             SetDlgItemText(hwndDlg, IDC_DESC, _T(""));
     }

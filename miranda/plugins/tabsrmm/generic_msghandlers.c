@@ -745,7 +745,7 @@ void SI_CheckStatusIconClick(struct MessageWindowData *dat, HWND hwndFrom, POINT
 	StatusIconClickData sicd;
 	struct StatusIconListNode *current = status_icon_list;
 	struct StatusIconListNode *clicked = NULL;
-	//unsigned int iconNum = (pt.x - (r.left + (dat->bType != SESSIONTYPE_IM ? myGlobals.m_smcxicon + gap : 0))) / (myGlobals.m_smcxicon + gap);
+
     unsigned int iconNum = (pt.x - (r.left + 0)) / (myGlobals.m_smcxicon + gap);
     unsigned int list_icons = 0;
 	char         buff[100];
@@ -754,9 +754,10 @@ void SI_CheckStatusIconClick(struct MessageWindowData *dat, HWND hwndFrom, POINT
     while(current && dat) {
         sprintf(buff, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
         flags = DBGetContactSettingByte(dat->hContact, current->sid.szModule, buff, current->sid.flags);
-        if(!(flags & MBF_HIDDEN))
+        if(!(flags & MBF_HIDDEN)) {
 			if (list_icons++ == iconNum)
 				clicked = current;
+        }
         current = current->next;
     }
 

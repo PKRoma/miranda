@@ -645,14 +645,22 @@ static int PopupAct(HWND hWnd, UINT mask, PLUGIN_DATA* pdata)
     if (mask & MASK_OPEN) {
         int i;
 
-        for(i = 0; i < pdata->nrMerged; i++)
-            PostMessage(myGlobals.g_hwndHotkeyHandler, DM_HANDLECLISTEVENT, (WPARAM)pdata->hContact, (LPARAM)pdata->eventData[i].hEvent);
+        for(i = 0; i < pdata->nrMerged; i++) {
+            if(pdata->eventData[i].hEvent != 0) {
+                PostMessage(myGlobals.g_hwndHotkeyHandler, DM_HANDLECLISTEVENT, (WPARAM)pdata->hContact, (LPARAM)pdata->eventData[i].hEvent);
+                pdata->eventData[i].hEvent = 0;
+            }
+        }
     }
     if (mask & MASK_REMOVE) {
         int i;
         
-        for(i = 0; i < pdata->nrMerged; i++)
-            PostMessage(myGlobals.g_hwndHotkeyHandler, DM_REMOVECLISTEVENT, (WPARAM)pdata->hContact, (LPARAM)pdata->eventData[i].hEvent);
+        for(i = 0; i < pdata->nrMerged; i++) {
+            if(pdata->eventData[i].hEvent != 0) {
+                PostMessage(myGlobals.g_hwndHotkeyHandler, DM_REMOVECLISTEVENT, (WPARAM)pdata->hContact, (LPARAM)pdata->eventData[i].hEvent);
+                pdata->eventData[i].hEvent = 0;
+            }
+        }
         PopUpList[NumberPopupData(pdata->hContact)] = NULL;
     }
     if (mask & MASK_DISMISS) {

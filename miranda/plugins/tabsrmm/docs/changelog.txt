@@ -19,6 +19,14 @@ the file listing the same day.
 Trunk is now using version numbers 1.1.0.x until the next major release. Bugfixes
 will be backported to stable branch, new features will only go into trunk.
 
+Version 2.0.0.0  - 2007/10/02
+
+		* compatible ONLY with Miranda 0.7
+		* UTF-8 message storage now supported
+		* many bug fixes
+		* see online changelog at http://miranda.or.at/tabsrmm/tabsrmm-changelog/
+		  for more detailed history.
+
 Version 1.1.0.16 - 2007/01/20
 
         * bugfixes

@@ -5,8 +5,8 @@ Online resources at: http://miranda.or.at
 
 ----------------------------------------------------------
 				
-Version: 1.0.0.0
-Created: July 2006
+Version: 2.0.0.0
+Created: October 2007
 
 1. Overview
 -----------
