@@ -773,7 +773,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			Button_SetIcon_IcoLib(hwndDlg, IDC_DETAILS, SKINICON_OTHER_USERDETAILS, "View User's Details" );
 			Button_SetIcon_IcoLib(hwndDlg, IDC_HISTORY, SKINICON_OTHER_HISTORY, "View User's History" );
 			Button_SetIcon_IcoLib(hwndDlg, IDC_USERMENU, SKINICON_OTHER_DOWNARROW, "User Menu" );
-
+            SendDlgItemMessage(hwndDlg, IDC_NAME, BUTTONSETASFLATBTN, 0, 0 );
+            
 			EnableWindow(GetDlgItem(hwndDlg, IDC_PROTOCOL), FALSE);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_AVATAR), FALSE);
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETOLECALLBACK, 0, (LPARAM) & reOleCallback);
