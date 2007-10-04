@@ -294,7 +294,7 @@ int MsnGroupChange(WPARAM wParam,LPARAM lParam)
 		{
 			char* szOldName = mir_utf8encodeT(grpchg->pszOldName);
 			LPCSTR szId = MSN_GetGroupByName(szOldName);
-			if (szId != NULL) msnNsThread->sendPacket("RMG", szId);	
+			if (szId != NULL) MSN_DeleteServerGroup(szId);	
 			mir_free(szOldName);
 		}
 		else if (grpchg->pszNewName != NULL && grpchg->pszOldName != NULL)
