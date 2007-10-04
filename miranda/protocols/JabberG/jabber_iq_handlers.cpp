@@ -167,8 +167,8 @@ void JabberProcessIqTime202( XmlNode* node, void* userdata, CJabberIqInfo *pInfo
 	_tzset();
 	time(&ltime);
 	gmt = gmtime(&ltime);
-	sprintf(stime,"%.4i-%.2i-%.2iT%.2i:%.2i:%.2iZ", gmt->tm_year + 1900, gmt->tm_mon, gmt->tm_mday,
-		gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
+	sprintf(stime,"%.4i-%.2i-%.2iT%.2i:%.2i:%.2iZ", gmt->tm_year + 1900, gmt->tm_mon + 1,
+		gmt->tm_mday, gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
 
 	int nGmtOffset = GetGMTOffset();
 	ltime = abs(nGmtOffset);
