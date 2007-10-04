@@ -37,8 +37,8 @@ $Id$
 
 static char *relnotes[] = {
     "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
-    "\\par\t\\b\\ul1 Release notes for version 2.0.0.1\\b0\\ul0\\par ",
-    "*\tReleased for Miranda 0.7 final..\\par",
+    "\\par\t\\b\\ul1 Release notes for version 2.0.0.2\\b0\\ul0\\par ",
+    "*\tBug fixes only.\\par",
     NULL
 };
 
@@ -2006,7 +2006,7 @@ static int SetupIconLibConfig()
 		strncpy(szFilename, "icons\\tabsrmm_icons.dll", MAX_PATH);
 		g_hIconDLL = LoadLibraryA(szFilename);
 		if(g_hIconDLL == 0) {
-			MessageBoxA(0, "Critical: cannot init IcoLib, no resource DLL found.", "tabSRMM", MB_OK);
+			MessageBox(0, TranslateT("Critical: cannot init IcoLib, no resource DLL found."), _T("tabSRMM"), MB_OK);
 			return 0;
 		}
 	}

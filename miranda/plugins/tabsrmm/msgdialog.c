@@ -1321,6 +1321,8 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 					if(dat) {
 						GetClientRect(hwnd, &rc);
 						dat->savedSplitter = rc.right > rc.bottom ? (short) HIWORD(GetMessagePos()) + rc.bottom / 2 : (short) LOWORD(GetMessagePos()) + rc.right / 2;
+                        dat->savedSplitY = dat->splitterY;
+                        dat->savedDynaSplit = dat->dynaSplitter;
 					}
 				}
 				SetCapture(hwnd);
@@ -1464,7 +1466,11 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
                             break;
                         }
                         default:
-                            SendMessage(hwndParent, DM_SPLITTERMOVED, dat->savedSplitter, (LPARAM) hwnd);
+                            dat->splitterY = dat->savedSplitY;
+                            dat->dynaSplitter = dat->savedDynaSplit;
+                            DM_RecalcPictureSize(hwndParent, dat);
+                            SendMessage(hwndParent, WM_SIZE, 0, 0);
+                            //SendMessage(hwndParent, DM_SPLITTERMOVEDGLOBAL, dat->savedSplitter, (LPARAM) hwnd);
                             DM_ScrollToBottom(hwndParent, dat, 0, 1);
                             break;
                     }

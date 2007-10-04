@@ -335,7 +335,7 @@ struct MessageWindowData {
 	HANDLE  hDbEventFirst,hDbEventLast, hDbEventLastFeed;
 	int     sendMode;
 	HBRUSH  hBkgBrush, hInputBkgBrush;
-	int     splitterY, originalSplitterY, dynaSplitter, savedSplitter;
+	int     splitterY, originalSplitterY, dynaSplitter, savedSplitter, savedSplitY, savedDynaSplit;
 	int     multiSplitterX;
 	char    *sendBuffer;
     int     iSendBufferSize;
