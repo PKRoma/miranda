@@ -101,13 +101,13 @@ void CIrcMessage::ParseIrcCommand(const TCHAR* lpszCmdLine)
 	if( *p1 == ':' ) {
 		// break prefix into its components (nick!user@host)
 		p2 = ++p1;
-		while( *p2 && !strchr(" !", *p2) )
+		while( *p2 && !_tcschr( _T(" !"), *p2 ))
 			++p2;
 		prefix.sNick.assign(p1, p2 - p1);
 		if( *p2 != '!' )
 			goto end_of_prefix;
 		p1 = ++p2;
-		while( *p2 && !strchr(" @", *p2) )
+		while( *p2 && !_tcschr( _T(" @"), *p2 ))
 			++p2;
 		prefix.sUser.assign(p1, p2 - p1);
 		if( *p2 != '@' )
