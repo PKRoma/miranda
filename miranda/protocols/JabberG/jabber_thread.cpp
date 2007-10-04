@@ -543,9 +543,8 @@ LBL_FatalError:
 			while ( hContact != NULL ) {
 				if ( !lstrcmpA(( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 ), jabberProtoName ))
 				{
-					if ( JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != ID_STATUS_OFFLINE )
-						JSetWord( hContact, "Status", ID_STATUS_OFFLINE );
-					JabberMenuHideSrmmIcon(hContact);
+					JabberSetContactOfflineStatus( hContact );
+					JabberMenuHideSrmmIcon( hContact );
 				}
 
 				hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 );
@@ -1455,6 +1454,14 @@ void JabberUpdateJidDbSettings( TCHAR *jid )
 	if ( _tcschr( jid, '@' )!=NULL || JGetByte( "ShowTransport", TRUE )==TRUE )
 		if ( JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != status )
 			JSetWord( hContact, "Status", ( WORD )status );
+
+	if (status == ID_STATUS_OFFLINE)
+	{ // remove xstatus icon
+		JDeleteSetting( hContact, DBSETTING_XSTATUSID );
+		JDeleteSetting( hContact, DBSETTING_XSTATUSNAME );
+		JDeleteSetting( hContact, DBSETTING_XSTATUSMSG );
+		JabberUpdateContactExtraIcon(hContact);
+	}
 
 	JabberMenuUpdateSrmmIcon( item );
 }

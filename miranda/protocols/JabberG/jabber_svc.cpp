@@ -1628,6 +1628,12 @@ int JabberSvcInit( void )
 	// Protocol services and events...
 	heventRawXMLIn = JCreateHookableEvent( JE_RAWXMLIN );
 	heventRawXMLOut = JCreateHookableEvent( JE_RAWXMLOUT );
+	heventXStatusIconChanged = JCreateHookableEvent( JE_CUSTOMSTATUS_EXTRAICON_CHANGED );
+	heventXStatusChanged = JCreateHookableEvent( JE_CUSTOMSTATUS_CHANGED );
+	arServices.insert( JCreateServiceFunction( JS_GETCUSTOMSTATUSICON, JabberGetXStatusIcon ));
+	arServices.insert( JCreateServiceFunction( JS_GETXSTATUS, JabberGetXStatus ));
+	arServices.insert( JCreateServiceFunction( JS_SETXSTATUS, JabberSetXStatus ));
+
 	arServices.insert( JCreateServiceFunction( JS_SENDXML, ServiceSendXML ));
 	arServices.insert( JCreateServiceFunction( PS_GETMYAVATAR, JabberGetAvatar ));
 	arServices.insert( JCreateServiceFunction( PS_GETAVATARCAPS, JabberGetAvatarCaps ));
@@ -1647,6 +1653,8 @@ int JabberSvcUninit()
 
 	DestroyHookableEvent( heventRawXMLIn );
 	DestroyHookableEvent( heventRawXMLOut );
+	DestroyHookableEvent( heventXStatusIconChanged );
+	DestroyHookableEvent( heventXStatusChanged );
 
 	return 0;
 }

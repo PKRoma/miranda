@@ -483,3 +483,15 @@ void JabberUpdateMirVer(HANDLE hContact, JABBER_RESOURCE_STATUS *resource)
 	
 	JSetStringT( hContact, "MirVer", szMirVer );
 }
+
+
+void JabberSetContactOfflineStatus( HANDLE hContact )
+{
+	if ( JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != ID_STATUS_OFFLINE )
+		JSetWord( hContact, "Status", ID_STATUS_OFFLINE );
+
+	JDeleteSetting( hContact, DBSETTING_XSTATUSID );
+	JDeleteSetting( hContact, DBSETTING_XSTATUSNAME );
+	JDeleteSetting( hContact, DBSETTING_XSTATUSMSG );
+	JabberUpdateContactExtraIcon(hContact);
+}
