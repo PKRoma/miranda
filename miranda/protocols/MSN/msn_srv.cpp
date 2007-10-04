@@ -84,6 +84,30 @@ void MSN_DeleteGroup( const char* pId )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
+// MSN_DeleteServerGroup - deletes group from the server
+
+void MSN_DeleteServerGroup( LPCSTR szId )
+{
+	if ( !MyOptions.ManageServer ) return;
+
+	MSN_DeleteGroup(szId);
+	MSN_ABAddDelContactGroup(NULL, szId, "ABGroupDelete");
+
+	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
+	while ( hContact != NULL )
+	{
+		char szGroupID[ 100 ];
+		if ( !MSN_GetStaticString( "GroupID", hContact, szGroupID, sizeof( szGroupID ))) 
+		{
+			if (strcmp(szGroupID, szId) == 0)
+				MSN_DeleteSetting( hContact, "GroupID" );
+		}
+
+		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 );
+	}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 // MSN_FreeGroups - clears the server groups list
 
 void MSN_FreeGroups(void)
@@ -233,29 +257,6 @@ void MSN_RenameServerGroup( LPCSTR szId, const char* newName )
 	MSN_ABRenameGroup(newName, szId);
 }
 
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// MSN_DeleteServerGroup - deletes group from the server
-
-void MSN_DeleteServerGroup( LPCSTR szId )
-{
-	if ( !MyOptions.ManageServer ) return;
-
-	MSN_DeleteGroup(szId);
-	MSN_ABAddDelContactGroup(NULL, szId, "ABGroupDelete");
-
-	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
-	while ( hContact != NULL )
-	{
-		char szGroupID[ 100 ];
-		if ( !MSN_GetStaticString( "GroupID", hContact, szGroupID, sizeof( szGroupID ))) 
-		{
-			if (strcmp(szGroupID, szId) == 0)
-				MSN_DeleteSetting( hContact, "GroupID" );
-		}
-	}
-	hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 );
-}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_UploadServerGroups - adds a group to the server list and contacts into the group
