@@ -44,9 +44,7 @@
 #define SSA_GROUP_RENAME      5     // rename group
 #define SSA_PRIVACY_ADD       0xA   // add privacy item
 #define SSA_PRIVACY_REMOVE    0xB   // remove privacy item
-#define SSA_CONTACT_PRE_ADD   0x14  // add contact to new group, group added
 #define SSA_CONTACT_ADD       0x10  // add contact w/o auth
-#define SSA_CONTACT_ADD_AUTH  0x11  // add contact with auth
 #define SSA_CONTACT_SET_GROUP 0x12  // move to group
 #define SSA_CONTACT_REMOVE    0x13  // delete contact
 #define SSA_CONTACT_FIX_AUTH  0x40  // reuploading contact for auth re-request
