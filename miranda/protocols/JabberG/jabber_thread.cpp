@@ -1500,7 +1500,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 			return;
 
 		if (( hContact = JabberHContactFromJID( from )) == NULL ) {
-			if ( !bSelfPresence && !JabberListExist( LIST_ROSTER, from )) {
+			if ( !_tcsicmp( info->fullJID, from ) || ( !bSelfPresence && !JabberListExist( LIST_ROSTER, from ))) {
 				JabberLog("SKIP Receive presence online from "TCHAR_STR_PARAM" ( who is not in my roster and not in list - skiping)", from );
 				mir_free( nick );
 				return;
@@ -1589,6 +1589,10 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 		hContact = JabberHContactFromJID( from );
 		if (( item = JabberListGetItemPtr( LIST_ROSTER, from )) != NULL ) {
 			JabberListRemoveResource( LIST_ROSTER, from );
+
+			// remove selfcontact, if where is no more another resources
+			if ( item->resourceCount == 1 && JabberResourceInfoFromJID( info->fullJID ))
+				JabberListRemoveResource( LIST_ROSTER, info->fullJID );
 
 			// set status only if no more available resources
 			if ( !item->resourceCount )
