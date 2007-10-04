@@ -127,6 +127,8 @@ HWND hwndServiceDiscovery = NULL;
 // Service and event handles
 HANDLE heventRawXMLIn;
 HANDLE heventRawXMLOut;
+HANDLE heventXStatusIconChanged;
+HANDLE heventXStatusChanged;
 
 HANDLE hInitChat = NULL;
 
@@ -252,6 +254,7 @@ static COLORREF crCols[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 
 static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
+	JabberXStatusInit();
 	JabberMenuInit();
 	JabberWsInit();
 	arHooks.insert( HookEvent( ME_USERINFO_INITIALISE, JabberUserInfoInit ));
@@ -378,8 +381,7 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	while ( hContact != NULL ) {
 		char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
 		if ( szProto != NULL && !strcmp( szProto, jabberProtoName )) {
-			if ( JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != ID_STATUS_OFFLINE )
-				JSetWord( hContact, "Status", ID_STATUS_OFFLINE );
+			JabberSetContactOfflineStatus( hContact );
 
 			if ( JGetByte( hContact, "IsTransport", 0 )) {
 				DBVARIANT dbv;
@@ -407,7 +409,6 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	JabberIconsInit();
 	JabberConsoleInit();
 	JabberSvcInit();
-	JabberXStatusInit();
 	g_JabberIqManager.FillPermanentHandlers();
 	g_JabberIqManager.Start();
 	g_JabberAdhocManager.FillDefaultNodes();

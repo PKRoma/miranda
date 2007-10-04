@@ -318,8 +318,7 @@ void JabberHandleRosterPushRequest( XmlNode* node, void* userdata, CJabberIqInfo
 			// remove, so that history will be retained.
 			if ( !_tcscmp( str, _T("remove"))) {
 				if (( hContact=JabberHContactFromJID( jid )) != NULL ) {
-					if ( JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != ID_STATUS_OFFLINE )
-						JSetWord( hContact, "Status", ID_STATUS_OFFLINE );
+					JabberSetContactOfflineStatus( hContact );
 					JabberListRemove( LIST_ROSTER, jid );
 				}	}
 			else if ( JGetByte( hContact, "ChatRoom", 0 ))

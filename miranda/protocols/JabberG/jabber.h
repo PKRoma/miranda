@@ -183,12 +183,19 @@ enum {
 #define JE_RAWXMLIN                "/RawXMLIn"
 #define JE_RAWXMLOUT               "/RawXMLOut"
 
+// Called when contact changes custom status and extra icon is set to clist_mw
+//wParam = hContact    // contact changing status
+//lParam = hIcon       // HANDLE to clist extra icon set as custom status
+#define JE_CUSTOMSTATUS_EXTRAICON_CHANGED "/XStatusExtraIconChanged"
+#define JE_CUSTOMSTATUS_CHANGED						"/XStatusChanged"
+
 #define JS_SENDXML                 "/SendXML"
 #define JS_GETADVANCEDSTATUSICON   "/GetAdvancedStatusIcon"
+#define JS_GETCUSTOMSTATUSICON     "/GetXStatusIcon"
 #define JS_GETXSTATUS              "/GetXStatus"
 #define JS_SETXSTATUS              "/SetXStatus"
 
-#define DBSETTING_XSTATUSID        "XStatusID"
+#define DBSETTING_XSTATUSID        "XStatusId"
 #define DBSETTING_XSTATUSNAME      "XStatusName"
 #define DBSETTING_XSTATUSMSG       "XStatusMsg"
 
@@ -431,6 +438,8 @@ extern const char xmlnsOwner[], xmlnsAdmin[];
 // Service and event handles
 extern HANDLE heventRawXMLIn;
 extern HANDLE heventRawXMLOut;
+extern HANDLE heventXStatusIconChanged;
+extern HANDLE heventXStatusChanged;
 
 // Transports list
 extern LIST<TCHAR> jabberTransports;
@@ -563,6 +572,7 @@ char*  UnEscapeChatTags(char* str_in);
 void   JabberUpdateMirVer(JABBER_LIST_ITEM *item);
 void   JabberUpdateMirVer(HANDLE hContact, JABBER_RESOURCE_STATUS *resource);
 int    JabberGetEventTextChatStates( WPARAM wParam, LPARAM lParam );
+void   JabberSetContactOfflineStatus( HANDLE hContact );
 
 //---- jabber_adhoc.cpp	---------------------------------------------
 
@@ -717,5 +727,10 @@ void JabberSetContactMood( HANDLE hContact, const char* moodName, const TCHAR* m
 void JabberSetContactTune( HANDLE hContact,  TCHAR* szArtist, TCHAR* szLength, TCHAR* szSource, TCHAR* szTitle, TCHAR* szTrack, TCHAR* szUri );
 
 int JabberSetListeningTo( WPARAM wParam, LPARAM lParam );
+void JabberUpdateContactExtraIcon( HANDLE hContact );
+
+int JabberGetXStatusIcon( WPARAM wParam, LPARAM lParam );
+int JabberGetXStatus( WPARAM wParam, LPARAM lParam );
+int JabberSetXStatus( WPARAM wParam, LPARAM lParam );
 
 #endif
