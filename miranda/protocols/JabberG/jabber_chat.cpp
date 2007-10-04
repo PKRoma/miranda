@@ -90,7 +90,7 @@ BOOL JabberEnterString( TCHAR* result, size_t resultLen )
 	TCHAR *szCaption = mir_tstrdup( result );
 	result[ 0 ] = _T('\0');
 	JabberEnterStringParams params = { szCaption, result, resultLen };
-	BOOL bRetVal = DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_GROUPCHAT_INPUT ), NULL, JabberEnterStringDlgProc, LPARAM( &params ));
+	BOOL bRetVal = DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_GROUPCHAT_INPUT ), GetForegroundWindow(), JabberEnterStringDlgProc, LPARAM( &params ));
 	mir_free( szCaption );
 	return bRetVal;
 }
