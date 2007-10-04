@@ -35,7 +35,7 @@ struct UTF8_INTERFACE utfi;
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
 	"Send/Receive Messages",
-	PLUGIN_MAKE_VERSION(0, 7, 0, 0),
+	PLUGIN_MAKE_VERSION(0, 7, 1, 0),
 	"Send and receive instant messages",
 	"Miranda IM Development Team",
 	"rainwater@miranda-im.org",
