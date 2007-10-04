@@ -409,7 +409,7 @@ void JabberIqResultGetRoster( XmlNode* iqNode, void* )
 			gcw.ptszName = NEWTSTR_ALLOCA( jid );
 
 			TCHAR* p = (TCHAR*)_tcschr( gcw.ptszName, '@' );
-			if ( p ) 
+			if ( p )
 				*p = 0;
 
 			CallServiceSync( MS_GC_NEWSESSION, 0, ( LPARAM )&gcw );
@@ -1522,9 +1522,9 @@ void JabberIqResultGetAvatar( XmlNode *iqNode, void *userdata )
 		if ( lstrcmp( xmlns, _T(JABBER_FEAT_AVATAR)))
 			return;
 
-		mimeType = JabberXmlGetAttrValue( n, "mimetype" );
-
 		n = JabberXmlGetChild( queryNode, "data" );
+		if ( n )
+			mimeType = JabberXmlGetAttrValue( n, "mimetype" );
 	}
 	if ( n == NULL )
 		return;
@@ -1753,7 +1753,7 @@ void JabberIqResultEntityTime( XmlNode* pIqNode, void* pUserdata, CJabberIqInfo*
 {
 	if ( !pInfo->m_hContact )
 		return;
-	
+
 	if ( pInfo->m_nIqType == JABBER_IQ_TYPE_RESULT ) {
 		XmlNode* pTimeNode = JabberXmlGetChildWithGivenAttrValue(pIqNode, "time", "xmlns", _T( JABBER_FEAT_ENTITY_TIME ));
 		if ( pTimeNode ) {
