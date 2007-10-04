@@ -43,6 +43,8 @@ int		LoadMsnServices( void );
 void    UnloadMsnServices( void );
 void	MsgQueue_Init( void );
 void	MsgQueue_Uninit( void );
+void	Lists_Init( void );
+void	Lists_Uninit( void );
 void	P2pSessions_Uninit( void );
 void	P2pSessions_Init( void );
 void	Threads_Uninit( void );
@@ -52,7 +54,7 @@ void	UninitSsl( void );
 /////////////////////////////////////////////////////////////////////////////////////////
 // Global variables
 
-int      msnSearchID = -1;
+char*    abchMigrated = NULL;
 char*    msnExternalIP = NULL;
 char*    msnPreviousUUX = NULL;
 HANDLE   msnMainThread;
@@ -80,6 +82,8 @@ char* msnProductID  = NULL;
 char* mailsoundname;
 char* alertsoundname;
 char* ModuleName;
+
+bool avsPresent = false;
 
 PLUGININFOEX pluginInfo =
 {
@@ -141,18 +145,15 @@ int msn_httpGatewayBegin(HANDLE hConn,NETLIBOPENCONNECTION *nloc);
 int msn_httpGatewayWrapSend(HANDLE hConn,PBYTE buf,int len,int flags,MIRANDASERVICE pfnNetlibSend);
 PBYTE msn_httpGatewayUnwrapRecv(NETLIBHTTPREQUEST *nlhr,PBYTE buf,int len,int *outBufLen,void *(*NetlibRealloc)(void*,size_t));
 
-static COLORREF crCols[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+static const COLORREF crCols[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 
 static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
-	if ( !ServiceExists( MS_DB_CONTACT_GETSETTING_STR )) {
-		MessageBox( NULL, TranslateT( "This plugin requires db3x plugin version 0.5.1.0 or later" ), _T("MSN"), MB_OK );
-		return 1;
-	}
-
 	char szBuffer[ MAX_PATH ];
 
 	mir_snprintf( szBuffer, sizeof(szBuffer), MSN_Translate("%s plugin connections"), msnProtocolName );
+
+	avsPresent = ServiceExists(MS_AV_SETMYAVATAR) != 0;
 
 	NETLIBUSER nlu = {0};
 	nlu.cbSize = sizeof( nlu );
@@ -221,7 +222,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		gcr.dwFlags = GC_TYPNOTIF | GC_CHANMGR;
 		gcr.iMaxText = 0;
 		gcr.nColors = 16;
-		gcr.pColors = &crCols[0];
+		gcr.pColors = (COLORREF*)crCols;
 		gcr.pszModuleDispName = msnProtocolName;
 		gcr.pszModule = msnProtocolName;
 		CallServiceSync( MS_GC_REGISTER, 0, ( LPARAM )&gcr );
@@ -301,9 +302,6 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	mir_snprintf( path, sizeof( path ), "%s/p2pMsgId", protocolname );
 	MSN_CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
 
-	mir_snprintf( path, sizeof( path ), "%s/AccList", protocolname );
-	MSN_CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
-
 	mir_snprintf( path, sizeof( path ), "%s/MobileEnabled", protocolname );
 	MSN_CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
 
@@ -350,6 +348,14 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 		strcmp(evtname, MSN_DEFAULT_GATEWAY) == 0))
 		MSN_DeleteSetting( NULL, "LoginServer" );
 
+	if (MyOptions.SlowSend)
+	{
+		if (DBGetContactSettingDword(NULL, "SRMsg", "MessageTimeout", 10000) < 30000) 
+			DBWriteContactSettingDword(NULL, "SRMsg", "MessageTimeout", 30000);
+		if (DBGetContactSettingDword(NULL, "SRMM", "MessageTimeout", 10000) < 30000) 
+			DBWriteContactSettingDword(NULL, "SRMM", "MessageTimeout", 30000);
+	}
+
 	mailsoundname = ( char* )mir_alloc( 64 );
 	mir_snprintf(mailsoundname, 64, "%s:Hotmail", protocolname);
 	SkinAddNewSoundEx(mailsoundname, protocolname, MSN_Translate( "Live Mail" ));
@@ -363,6 +369,7 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	msnLoggedIn = false;
 	LoadMsnServices();
 	MsnInitIcons();
+	Lists_Init();
 	MsgQueue_Init();
 	P2pSessions_Init();
 	return 0;
@@ -391,6 +398,7 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	MSN_FreeGroups();
 	Threads_Uninit();
 	MsgQueue_Uninit();
+	Lists_Uninit();
 	P2pSessions_Uninit();
 	CachedMsg_Uninit();
 	Netlib_CloseHandle( hNetlibUser );

@@ -125,7 +125,7 @@ static INT_PTR CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		}
 		EnableWindow(wnd, msnLoggedIn);
 		EnableWindow(GetDlgItem(hwndDlg, IDC_MOBILESEND), msnLoggedIn && 
-			(MSN_GetByte( "MobileEnabled", 0) || MSN_GetByte( "MobileAllowed", 0)));
+			MSN_GetByte( "MobileEnabled", 0) && MSN_GetByte( "MobileAllowed", 0));
 
 		CheckDlgButton( hwndDlg, IDC_MOBILESEND,        MSN_GetByte( "MobileAllowed", 0 ));
 		CheckDlgButton( hwndDlg, IDC_SENDFONTINFO,      MSN_GetByte( "SendFontInfo", 1 ));
@@ -453,8 +453,16 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 					reconnectRequired = true;
 			}
 
-			MSN_SetByte( "UseIeProxy",  ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USEIEPROXY  ));
-			MSN_SetByte( "SlowSend",    ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_SLOWSEND    ));
+			MSN_SetByte( "UseIeProxy", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USEIEPROXY ));
+			MSN_SetByte( "SlowSend",   ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_SLOWSEND   ));
+			if (MSN_GetByte( "SlowSend", FALSE ))
+			{
+				if (DBGetContactSettingDword(NULL, "SRMsg", "MessageTimeout", 30000) < 30000 ||  
+					DBGetContactSettingDword(NULL, "SRMM",  "MessageTimeout", 30000) < 30000) 
+				{
+					MessageBox(NULL, TranslateT("MSN Protocol requires message timeout to be not less then 30 sec. Correct the timeout value."), TranslateT("MSN"), MB_OK|MB_ICONINFORMATION);
+				}
+			}
 
 			unsigned gethst2 = MSN_GetByte( "AutoGetHost", 1 );
 			unsigned gethst = SendDlgItemMessage(hwndDlg, IDC_HOSTOPT, CB_GETCURSEL, 0, 0);
@@ -576,7 +584,7 @@ static INT_PTR CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM 
 			break;
 
 		case IDC_PREVIEW2:
-			MSN_ShowPopup( _T("vasya.pupkin@hotmail.com"), TranslateT( "Chat session established" ), 0, NULL );
+			MSN_ShowPopup( _T("john.doe@hotmail.com"), TranslateT( "Chat session established" ), 0, NULL );
 			break;
 		}
 		break;

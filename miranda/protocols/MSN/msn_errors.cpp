@@ -30,12 +30,6 @@ int MSN_HandleErrors( ThreadData* info, char* cmdString )
 	int errorCode, packetID = -1;
 	sscanf( cmdString, "%d %d", &errorCode, &packetID );
 
-	if ( packetID == msnSearchID )
-	{
-		MSN_SendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)msnSearchID, 0 );
-		msnSearchID = -1;
-	}
-
 	MSN_DebugLog( "Server error:%s", cmdString );
 
 	switch( errorCode ) {
@@ -61,6 +55,12 @@ int MSN_HandleErrors( ThreadData* info, char* cmdString )
 	case ERR_ALREADY_THERE:
 		MSN_ShowError( "User is already in your contact list" );
 		return 0;
+
+	case ERR_CONTACT_LIST_FAILED:
+			char* tWords[ 3 ];
+			if ( sttDivideWords( cmdString, 3, tWords ) == 3 )
+				HReadBuffer(info, 0).surelyRead(atol(tWords[2])); 
+			return 0;
 
 	case ERR_NOT_ONLINE:
 		MSN_SendBroadcast( info->mInitialContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, 

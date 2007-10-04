@@ -24,60 +24,262 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "msn_global.h"
 
-int  Lists_NameToCode( const char *name )
+struct MsnContact
 {
-	if ( name[2] )
-		return 0;
+	int list;
+	char *email;
+};
 
-	switch( *( PWORD )name )  {
-		case 'LA': return LIST_AL;
-		case 'LB': return LIST_BL;
-		case 'LR': return LIST_RL;
-		case 'LF': return LIST_FL;
-		case 'LP': return LIST_PL;
-	}
+static int CompareLists( const MsnContact* p1, const MsnContact* p2 )
+{
+	return int( p1 - p2 );
+}
 
-	return 0;
+static LIST<MsnContact> contList( 10, CompareLists );
+
+static CRITICAL_SECTION csLists;
+
+void Lists_Init(void)
+{
+	InitializeCriticalSection( &csLists );
+}
+
+void Lists_Uninit(void)
+{
+	Lists_Wipe();
+	contList.destroy();
+	DeleteCriticalSection( &csLists );
 }
 
 void  Lists_Wipe( void )
 {
-	for ( HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
-		hContact != NULL; 
-		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 )) 
+	EnterCriticalSection( &csLists );
+	for ( int i=contList.getCount(); i--; ) {
+		mir_free( contList[i]->email );
+		mir_free( contList[i] );
+		contList.remove(i);
+	}
+	LeaveCriticalSection( &csLists );
+}
+
+int  Lists_IsInList( int list, const char* email )
+{
+	int i;
+	EnterCriticalSection( &csLists );
+	for ( i=0; i < contList.getCount(); i++ )
+		if ( !strcmp( contList[i]->email, email ))
+			break;
+
+	if ( list != -1 && i != contList.getCount() )
+		if (( contList[ i ]->list & list ) != list )
+			i = contList.getCount();
+
+	LeaveCriticalSection( &csLists );
+	return ( i == contList.getCount() ) ? 0 : i+1;
+}
+
+int  Lists_GetMask( const char* email )
+{
+	int res = 0;
+	EnterCriticalSection( &csLists );
+	for ( int i=0; i < contList.getCount(); i++ )
+		if ( !strcmp( contList[i]->email, email )) {
+			res = contList[i]->list;
+			break;
+		}
+
+	LeaveCriticalSection( &csLists );
+	return res;
+}
+
+int  Lists_Add( int list, const char* email )
+{
+	EnterCriticalSection( &csLists );
+
+	MsnContact* p;
+	int idx = Lists_IsInList( -1, email );
+	if ( idx == 0 )
 	{
-		if (MSN_IsMyContact( hContact ))
-			MSN_DeleteSetting(hContact, "AccList");
+		p = ( MsnContact* )mir_alloc( sizeof( MsnContact ));
+		p->list = 0;
+		p->email = mir_strdup( email );
+		contList.insert( p );
+	}
+	else 
+		p = contList[ idx-1 ];
+
+	int result = ( p->list |= list );
+	LeaveCriticalSection( &csLists );
+	return result;
+}
+
+void  Lists_Remove( int list, const char* email )
+{
+	EnterCriticalSection( &csLists );
+	int i = Lists_IsInList( -1, email );
+	if ( i != 0 ) {
+		MsnContact* C = contList[ --i ];
+
+		C->list &= ~list;
+		if ( C->list == 0 ) {
+			mir_free( C->email );
+			mir_free( C );
+			contList.remove(i);
+	}	}
+
+	LeaveCriticalSection( &csLists );
+}
+
+
+static void AddDelUserContList(const char* email, const int list, const bool del)
+{
+	char buf[512];
+	size_t sz;
+
+	const char* dom = strchr(email, '@');
+	if (dom == NULL)
+	{
+		sz = mir_snprintf(buf, sizeof(buf),
+			"<ml><t><c n=\"%s\" l=\"%d\"/></t></ml>",
+			email, list);
+	}
+	else
+	{
+		*(char*)dom = 0;
+		sz = mir_snprintf(buf, sizeof(buf),
+			"<ml><d n=\"%s\"><c n=\"%s\" l=\"%d\" t=\"%d\"/></d></ml>",
+			dom+1, email, list, 1);
+		*(char*)dom = '@';
+	}
+	msnNsThread->sendPacket(del ? "RML" : "ADL", "%d\r\n%s", sz, buf);
+
+	if (del)
+		Lists_Remove(list, email);
+	else
+		Lists_Add(list, email);
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// MSN_AddUser - adds a e-mail address to one of the MSN server lists
+
+void  MSN_AddUser( HANDLE hContact, const char* email, int flags )
+{
+	bool needRemove = (flags & LIST_REMOVE) != 0;
+	flags &= 0xFF;
+
+	if (needRemove != (Lists_IsInList(flags, email) != 0))
+		return;
+
+	if (flags == LIST_FL) 
+	{
+		if (needRemove) 
+		{
+			if (hContact == NULL)
+				if (( hContact = MSN_HContactFromEmail( email, NULL, 0, 0 )) == NULL )
+					return;
+
+			char id[ MSN_GUID_LEN ];
+			if ( !MSN_GetStaticString( "ID", hContact, id, sizeof( id ))) 
+			{
+				MSN_ABAddDelContactGroup(id , NULL, "ABContactDelete");
+				AddDelUserContList(email, flags, true);
+			}
+		}
+		else 
+		{
+			DBVARIANT dbv = {0};
+			if ( !strcmp( email, MyOptions.szEmail ))
+				DBGetContactSettingStringUtf( NULL, msnProtocolName, "Nick", &dbv );
+
+			MSN_ABContactAdd(email, dbv.pszVal, false);
+			AddDelUserContList(email, flags, false);
+			MSN_FreeVariant( &dbv );
+		}
+	}
+	else {
+		const char* listName = (flags & LIST_AL) ? "Allow" :  "Block";
+		MSN_SharingAddDelMember(email, listName, needRemove ? "DeleteMember" : "AddMember");
+		AddDelUserContList(email, flags, needRemove);
 	}
 }
 
-bool  Lists_IsInList( int list, HANDLE hContact )
+/*
+void MSN_CleanupLists(void)
 {
-	int i = MSN_GetDword(hContact, "AccList", 0);
+	EnterCriticalSection(&csLists);
+	for (int i=contList.getCount(); i--; )
+	{
+		MsnContact* C = contList[i];
 
-	if ( list != -1 && i != 0)
-		if (( i & list ) != list )
-			i = 0;
-	return i != 0;
+		if (!(C->list & LIST_RL) && (C->list & (LIST_AL | LIST_BL))) 
+		{
+			MSN_SharingAddDelMember(C->email, (C->list & LIST_AL) ? "Allow" : "Block", "DeleteMember");
+			C->list &= ~(LIST_AL | LIST_BL);
+
+			if (C->list == 0) 
+			{
+				mir_free(C->email);
+				mir_free(C);
+				contList.remove(i);
+			}
+
+			break;
+		}
+	}
+	LeaveCriticalSection(&csLists);
 }
-
-int  Lists_GetMask( HANDLE hContact )
+*/
+void MSN_CreateContList(void)
 {
-	return MSN_GetDword(hContact, "AccList", 0);
-}
+	EnterCriticalSection(&csLists);
 
-int  Lists_Add( int list, HANDLE hContact )
-{
-	int i = MSN_GetDword(hContact, "AccList", 0) | list;
-	MSN_SetDword(hContact, "AccList", i);
-	return i;
-}
+	bool *used = (bool*)mir_calloc(contList.getCount()*sizeof(bool));
 
-void  Lists_Remove( int list, HANDLE hContact )
-{
-	int i = MSN_GetDword(hContact, "AccList", 0) & ~list;
-	if (i == 0) MSN_DeleteSetting(hContact, "AccList");
-	else MSN_SetDword(hContact, "AccList", i);
+	size_t cxmlsz = 4096;
+	char* cxml = (char*)mir_alloc(cxmlsz); 
+	size_t sz = 0;
+
+	sz += mir_snprintf(cxml , cxmlsz, "<ml l=\"1\">");
+		
+	for ( int i=0; i < contList.getCount(); i++ )
+	{
+		if (used[i]) continue;
+
+		const char* lastds = strchr(contList[i]->email, '@');
+
+		if ((cxmlsz - sz) < 128) cxml = (char*)mir_realloc(cxml, (cxmlsz += 4096)); 
+		sz += mir_snprintf(cxml+sz, cxmlsz-sz, lastds ? "<d n=\"%s\">" : "<t>", lastds+1);
+
+		for ( int j=0; j < contList.getCount(); j++ )
+		{
+			if (used[j]) continue;
+			
+			const MsnContact* C = contList[j];
+			
+			const char* dom = strchr(C->email, '@');
+			if (dom == NULL && lastds == NULL)
+			{
+				if ((cxmlsz - sz) < 128) cxml = (char*)mir_realloc(cxml, (cxmlsz += 4096)); 
+				sz += mir_snprintf(cxml+sz, cxmlsz-sz, "<c n=\"%s\" l=\"%d\"/>", C->email, C->list & ~LIST_RL, 1);
+				used[j] = true;
+			}
+			else if (dom != NULL && lastds != NULL && _stricmp(lastds, dom) == 0)
+			{
+				if ((cxmlsz - sz) < 128) cxml = (char*)mir_realloc(cxml, (cxmlsz += 4096)); 
+				*(char*)dom = 0;
+				sz += mir_snprintf(cxml+sz, cxmlsz-sz, "<c n=\"%s\" l=\"%d\" t=\"%d\"/>", C->email, C->list & ~LIST_RL, 1);
+				*(char*)dom = '@';
+				used[j] = true;
+			}
+		}
+		sz += mir_snprintf(cxml+sz, cxmlsz-sz, lastds ? "</d>" : "</t>" );
+	}
+	sz += mir_snprintf(cxml+sz, cxmlsz-sz,  "</ml>" );
+	LeaveCriticalSection(&csLists);
+
+	msnNsThread->sendPacket("ADL", "%d\r\n%s", sz, cxml);
+	mir_free(cxml);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -111,12 +313,13 @@ static void SetAllContactIcons( HWND hwndList )
 			continue;
 		}
 
-		DWORD dwMask = Lists_GetMask( hContact );
-		if ( dwMask == 0 ) {
+		char szEmail[ MSN_MAX_EMAIL_LEN ];
+		if ( MSN_GetStaticString( "e-mail", hContact, szEmail, sizeof( szEmail ))) {
 			SendMessage( hwndList, CLM_DELETEITEM, ( WPARAM )hItem, 0 );
 			continue;
 		}
 
+		DWORD dwMask = Lists_GetMask( szEmail );
 		if ( SendMessage( hwndList, CLM_GETEXTRAIMAGE, ( WPARAM )hItem, MAKELPARAM(0,0)) == 0xFF )
 			SendMessage( hwndList, CLM_SETEXTRAIMAGE,( WPARAM )hItem, MAKELPARAM(0,( dwMask & LIST_FL )?1:0));
 		if ( SendMessage( hwndList, CLM_GETEXTRAIMAGE, ( WPARAM )hItem, MAKELPARAM(1,0)) == 0xFF )
@@ -144,20 +347,37 @@ static void SaveSettings( HWND hwndList )
 		hContact != NULL; 
 		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 )) 
 	{
-		if (!MSN_IsMyContact( hContact )) continue;
-
 		HANDLE hItem = ( HANDLE )SendMessage( hwndList, CLM_FINDCONTACT, ( WPARAM )hContact, 0 );
 		if ( hItem == NULL ) continue;
+
+		if ( !MSN_IsMyContact( hContact )) continue;
 
 		char szEmail[ MSN_MAX_EMAIL_LEN ];
 		if ( MSN_GetStaticString( "e-mail", hContact, szEmail, sizeof( szEmail ))) continue;
 
-		DWORD dwMask = Lists_GetMask( hContact );
-		if ( dwMask == 0 ) continue;
+		int dwMask = Lists_GetMask( szEmail );
+		SaveListItem( hContact, szEmail, LIST_FL, ( dwMask & LIST_FL )?1:0, SendMessage( hwndList, CLM_GETEXTRAIMAGE, ( WPARAM )hItem, MAKELPARAM(0,0)));
+		SaveListItem( hContact, szEmail, LIST_AL, ( dwMask & LIST_AL )?2:0, SendMessage( hwndList, CLM_GETEXTRAIMAGE, ( WPARAM )hItem, MAKELPARAM(1,0)));
+		SaveListItem( hContact, szEmail, LIST_BL, ( dwMask & LIST_BL )?3:0, SendMessage( hwndList, CLM_GETEXTRAIMAGE, ( WPARAM )hItem, MAKELPARAM(2,0)));
 
-		SaveListItem( hContact, szEmail, LIST_FL, ( dwMask & LIST_FL ) != 0, SendMessage( hwndList, CLM_GETEXTRAIMAGE, ( WPARAM )hItem, MAKELPARAM(0,0)));
-		SaveListItem( hContact, szEmail, LIST_AL, ( dwMask & LIST_AL ) != 0, SendMessage( hwndList, CLM_GETEXTRAIMAGE, ( WPARAM )hItem, MAKELPARAM(1,0)));
-		SaveListItem( hContact, szEmail, LIST_BL, ( dwMask & LIST_BL ) != 0, SendMessage( hwndList, CLM_GETEXTRAIMAGE, ( WPARAM )hItem, MAKELPARAM(2,0)));
+		dwMask = Lists_GetMask( szEmail );
+		if (( dwMask & ( LIST_AL | LIST_BL | LIST_FL )) == LIST_BL ) {
+			DBDeleteContactSetting( hContact, "CList", "NotOnList" );
+			DBWriteContactSettingByte( hContact, "CList", "Hidden", 1 );
+		}
+
+		if ( dwMask == LIST_RL ) {
+			DBWriteContactSettingByte( hContact, "CList", "NotOnList", 1 );
+			DBWriteContactSettingByte( hContact, "CList", "Hidden", 1 );
+		}
+
+		if ( dwMask & ( LIST_BL | LIST_AL )) {
+			WORD tApparentMode = MSN_GetWord( hContact, "ApparentMode", 0 );
+			if (( dwMask & LIST_BL ) && tApparentMode == 0 )
+				MSN_SetWord( hContact, "ApparentMode", ID_STATUS_OFFLINE );
+			else if (( dwMask & LIST_AL ) && tApparentMode != 0 )
+				MSN_SetWord( hContact, "ApparentMode", 0 );
+		}
 	}
 }
 

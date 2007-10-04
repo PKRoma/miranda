@@ -70,63 +70,6 @@ WORD  MSNStatusToMiranda(const char *status)
 }	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// MSN_AddUser - adds a e-mail address to one of the MSN server lists
-
-void  MSN_AddUser( HANDLE hContact, const char* email, int flags )
-{
-	if ( flags & LIST_REMOVE )
-	{
-		if ( !Lists_IsInList( flags & 0xFF, hContact ))
-			return;
-	}
-	else if ( Lists_IsInList( flags, hContact ))
-		return;
-
-	char* listName;
-
-	switch( flags & 0xFF )
-	{
-		case LIST_AL: listName = "AL";	break;
-		case LIST_BL: listName = "BL";	break;
-		case LIST_FL: listName = "FL";	break;
-		case LIST_RL: listName = "RL";	break;
-		case LIST_PL: listName = "PL";	break;
-		default:
-			return;
-	}
-
-	if (( flags & 0xFF ) == LIST_FL ) {
-		if ( flags & LIST_REMOVE ) {
-			if ( hContact == NULL )
-				if (( hContact = MSN_HContactFromEmail( email, NULL, 0, 0 )) == NULL )
-					return;
-
-			char id[ MSN_GUID_LEN ];
-			if ( !MSN_GetStaticString( "ID", hContact, id, sizeof( id )))
-				msnNsThread->sendPacket( "REM", "%s %s", listName, id );
-		}
-		else {
-			char urlNick[388];
-			strcpy( urlNick, email );
-
-			if ( !strcmp( email, MyOptions.szEmail )) {
-				DBVARIANT dbv;
-				if ( !DBGetContactSettingStringUtf( NULL, msnProtocolName, "Nick", &dbv )) {
-					UrlEncode( dbv.pszVal, urlNick, sizeof( urlNick ));
-					MSN_FreeVariant( &dbv );
-			}	}
-			msnNsThread->sendPacket( "ADC", "%s N=%s F=%s", listName, email, urlNick );
-		}
-	}
-	else {
-		if ( flags & LIST_REMOVE )
-			msnNsThread->sendPacket( "REM", "%s %s", listName, email );
-		else
-			msnNsThread->sendPacket( "ADC", "%s N=%s", listName, email );
-	}
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
 // MSN_AddAuthRequest - adds the authorization event to the database
 
 void  MSN_AddAuthRequest( HANDLE hContact, const char *email, const char *nick )
@@ -478,11 +421,7 @@ static char * HtmlEncodeUTF8T( const TCHAR *src )
 	if (src == NULL)
 		return mir_strdup("");
 
-#if defined( _UNICODE )
-	char *tmp = mir_utf8encodeW(src);
-#else
-	char *tmp = mir_utf8encode(src);
-#endif
+	char *tmp = mir_utf8encodeT(src);
 	char *ret = HtmlEncode(tmp);
 	mir_free(tmp);
 	return ret;
@@ -498,9 +437,9 @@ void  MSN_SendStatusMessage( const char* msg )
 	mir_free(tmp);
 
 	size_t sz;
-	char  szMsg[ 2048 ];
-	if ( msnCurrentMedia.cbSize == 0 ) 
-		sz = mir_snprintf( szMsg, sizeof szMsg, "<Data><PSM>%s</PSM></Data>", msgEnc);
+	char  szMsg[2048];
+	if (msnCurrentMedia.cbSize == 0) 
+		sz = mir_snprintf(szMsg, sizeof(szMsg), "<Data><PSM>%s</PSM><MachineGuid></MachineGuid></Data>", msgEnc);
 	else 
 	{
 		char *szFormatEnc;
@@ -535,7 +474,11 @@ void  MSN_SendStatusMessage( const char* msg )
 		char *szType = HtmlEncodeUTF8T( msnCurrentMedia.ptszType );
 
 		sz = mir_snprintf( szMsg, sizeof szMsg, 
-			"<Data><PSM>%s</PSM><CurrentMedia>%s\\0%s\\01\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0\\0</CurrentMedia></Data>", 
+			"<Data>"
+				"<PSM>%s</PSM>"
+				"<CurrentMedia>%s\\0%s\\01\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0\\0</CurrentMedia>"
+				"<MachineGuid></MachineGuid>"
+			"</Data>", 
 			msgEnc, szPlayer, szType, szFormatEnc, szTitle, szArtist, szAlbum, szTrack, szYear, szGenre, szLength, szPlayer, szType);
 
 		mir_free( szArtist );
@@ -613,7 +556,7 @@ void  MSN_SetServerStatus( int newStatus )
 			 MSN_GetStaticString( "PictObject", NULL, szMsnObject, sizeof( szMsnObject )))
 			szMsnObject[ 0 ] = 0;
 
-		unsigned flags = 0x50000020;
+		unsigned flags = 0x60000020;
 		if (MSN_GetByte( "MobileEnabled", 0) && MSN_GetByte( "MobileAllowed", 0))
 			flags |= 0x40;
 

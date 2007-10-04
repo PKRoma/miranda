@@ -106,6 +106,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define ERR_NOT_ONLINE                   217
 #define ERR_ALREADY_IN_THE_MODE          218
 #define ERR_ALREADY_IN_OPPOSITE_LIST     219
+#define ERR_CONTACT_LIST_FAILED          241
 #define ERR_SWITCHBOARD_FAILED           280
 #define ERR_NOTIFY_XFR_FAILED            281
 #define ERR_REQUIRED_FIELDS_MISSING      300
@@ -213,13 +214,10 @@ long		MSN_SendSMS(char* tel, char* txt);
 void        MSN_SetServerStatus( int newStatus );
 void        LoadOptions( void );
 
-int         MSN_SendNickname(char *nickname);
-#if defined( _UNICODE )
-	int      MSN_SendNicknameW( WCHAR* nickname);
-	#define  MSN_SendNicknameT MSN_SendNicknameW
-#else
-	#define  MSN_SendNicknameT MSN_SendNickname
-#endif
+void		MSN_SetNicknameUtf( char* nickname );
+void		MSN_SendNicknameUtf( char* nickname );
+#define		MSN_SendNicknameA(a) MSN_SendNicknameUtf(mir_utf8encode(a))
+#define		MSN_SendNicknameT(a) MSN_SendNicknameUtf(mir_utf8encodeT(a))
 
 #if defined( _DEBUG )
 #define MSN_CallService CallService
@@ -623,28 +621,44 @@ void     MsgQueue_Clear( HANDLE hContact = NULL, bool msg = false );
 
 #define	IsValidListCode(n)  ((n)!=0)
 
-int		 Lists_NameToCode( const char* name );
-int		 Lists_Add( int list, HANDLE hContact );
-bool	 Lists_IsInList( int list, HANDLE hContact );
-int		 Lists_GetMask( HANDLE hContact );
-void	 Lists_Remove( int list, HANDLE hContact );
+int		 Lists_Add( int list, const char* email );
+int		 Lists_IsInList( int list, const char* email );
+int		 Lists_GetMask( const char* email );
+void	 Lists_Remove( int list, const char* email );
 void	 Lists_Wipe( void );
+
+void	 MSN_CreateContList(void);
+void	 MSN_CleanupLists(void);
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN server groups
 
-bool   MSN_AddGroup( const char* pName, const char* pId );
-void   MSN_AddServerGroup( const char* pszGroupName, HANDLE hContact );
+void   MSN_AddGroup( const char* pName, const char* pId, bool init );
 void   MSN_DeleteGroup( const char* pId );
 void   MSN_FreeGroups( void );
 LPCSTR MSN_GetGroupById( const char* pId );
 LPCSTR MSN_GetGroupByName( const char* pName );
-void   MSN_MoveContactToGroup( HANDLE hContact, const char* grpName );
-void   MSN_RemoveEmptyGroups( void );
-void   MSN_RenameServerGroup( LPCSTR szId, const char* newName );
 void   MSN_SetGroupName( const char* pId, const char* pName );
-void   MSN_SyncContactToServerGroup( HANDLE hContact, char* userId, char* groupId );
+
+void   MSN_MoveContactToGroup( HANDLE hContact, const char* grpName );
+void   MSN_RenameServerGroup( LPCSTR szId, const char* newName );
+void   MSN_DeleteServerGroup( LPCSTR szId );
+void   MSN_RemoveEmptyGroups( void );
+void   MSN_SyncContactToServerGroup( HANDLE hContact, const char* szContId, ezxml_t cgrp );
 void   MSN_UploadServerGroups( char* group );
+
+/////////////////////////////////////////////////////////////////////////////////////////
+//	MSN SOAP Address Book
+
+void MSN_SharingFindMembership(void);
+void MSN_SharingAddDelMember(const char* szEmail, const char* szRole, const char* szMethod);
+
+void MSN_ABGetFull(void);
+void MSN_ABAddDelContactGroup(const char* szCntId, const char* szGrpId, const char* szMethod);
+void MSN_ABAddGroup(const char* szGrpName);
+void MSN_ABRenameGroup(const char* szGrpName, const char* szGrpId);
+void MSN_ABUpdateNick(const char* szNick, const char* szCntId);
+bool MSN_ABContactAdd(const char* szEmail, const char* szNick, const bool search);
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN plugin options
@@ -706,7 +720,6 @@ extern	ThreadData*	msnNsThread;
 extern	bool        msnLoggedIn;
 
 extern	char*	    msnProtocolName;
-extern	int         msnSearchID;
 extern	char*       msnExternalIP;
 extern	unsigned	msnStatusMode,
 					msnDesiredStatus;
@@ -726,9 +739,12 @@ extern  char*       profileURL;
 extern  char*       profileURLId;
 extern  char*       rru;
 extern  unsigned	langpref;
+extern	char*       abchMigrated;
 
 extern char pAuthToken[];
 extern char tAuthToken[]; 
+extern char pContAuthToken[];
+extern char tContAuthToken[]; 
 
 extern	HANDLE		hNetlibUser;
 extern	HINSTANCE	hInst;

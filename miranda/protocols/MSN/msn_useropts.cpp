@@ -36,19 +36,13 @@ INT_PTR CALLBACK MsnDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam
 			{
 				TranslateDialogDefault( hwndDlg );
 				
-				const HANDLE hContact = ( HANDLE )lParam;
+				const HANDLE hContact = (HANDLE)lParam;
 
-				char tBuffer[ MAX_PATH ];
-				if ( MSN_GetStaticString( "OnMobile", hContact, tBuffer, sizeof( tBuffer )))
-					strcpy( tBuffer, "N" );
-				SetDlgItemTextA( hwndDlg, IDC_MOBILE, tBuffer );
+				SetDlgItemInt(hwndDlg, IDC_MOBILE, DBGetContactSettingByte(hContact, msnProtocolName, "MobileAllowed", 0), 0);
+				SetDlgItemInt(hwndDlg, IDC_MSN_MOBILE, DBGetContactSettingByte(hContact, msnProtocolName, "MobileEnabled", 0), 0);
 
-				if ( MSN_GetStaticString( "OnMsnMobile", hContact, tBuffer, sizeof( tBuffer )))
-					strcpy( tBuffer, "N" );
-				SetDlgItemTextA( hwndDlg, IDC_MSN_MOBILE, tBuffer );
-
-				DWORD dwFlagBits = MSN_GetDword( hContact, "FlagBits", 0 );
-				SetDlgItemTextA( hwndDlg, IDC_WEBMESSENGER, ( dwFlagBits & 0x200 ) ? "Y" : "N" );
+				DWORD dwFlagBits = MSN_GetDword(hContact, "FlagBits", 0);
+				SetDlgItemTextA(hwndDlg, IDC_WEBMESSENGER, (dwFlagBits & 0x200) ? "Y" : "N");
 			}
 
 			return TRUE;

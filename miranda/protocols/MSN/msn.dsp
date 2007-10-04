@@ -169,6 +169,10 @@ SOURCE=.\msn.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\msn_auth.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\msn_chat.cpp
 # End Source File
 # Begin Source File
@@ -242,6 +246,10 @@ SOURCE=.\msn_p2p.cpp
 # Begin Source File
 
 SOURCE=.\msn_p2ps.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\msn_soapab.cpp
 # End Source File
 # Begin Source File
 

@@ -145,7 +145,7 @@ void __cdecl MSNServerThread( ThreadData* info )
 	MSN_DebugLog( "Connected with handle=%08X", info->s );
 
 	if ( info->mType == SERVER_DISPATCH || info->mType == SERVER_NOTIFICATION ) {
-		info->sendPacket( "VER", "MSNP12 MSNP11 MSNP10 CVR0" );
+		info->sendPacket( "VER", "MSNP13 CVR0" );
 	}
 	else if ( info->mType == SERVER_SWITCHBOARD ) {
 		info->sendPacket( info->mCaller ? "USR" : "ANS", "%s %s", MyOptions.szEmail, info->mCookie );
@@ -470,7 +470,7 @@ ThreadData* MSN_StartSB(HANDLE hContact, bool& isOffline)
 	if (thread == NULL)
 	{
 		WORD wStatus = MSN_GetWord(hContact, "Status", ID_STATUS_OFFLINE);
-		if (wStatus != ID_STATUS_OFFLINE && msnStatusMode != ID_STATUS_INVISIBLE)
+		if (wStatus != ID_STATUS_OFFLINE)
 		{
 			if (MSN_GetUnconnectedThread(hContact) == NULL && MsgQueue_CheckContact(hContact, 5) == NULL)
 				msnNsThread->sendPacket( "XFR", "SB" );
