@@ -38,6 +38,9 @@ typedef struct
 	int          default_indx;
 	HICON        icon;
 	int          cx, cy;
+
+	int          icon_cache_index;
+	int          icon_cache_valid;
 			 
 	int          default_icon_index;
 	HICON        default_icon;
