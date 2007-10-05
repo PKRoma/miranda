@@ -56,7 +56,7 @@ void MSN_AddGroup( const char* grpName, const char *grpId, bool init )
 #ifdef _UNICODE
 		CallService(MS_CLIST_GROUPCREATE, 0, (LPARAM)szNewName);
 #else
-		CallService(MS_CLIST_GROUPCREATE, 0, (LPARAM)data.grpName);
+		CallService(MS_CLIST_GROUPCREATE, 0, (LPARAM)grpName);
 #endif
 		mir_free(szNewName);
 	}
