@@ -30,7 +30,7 @@ typedef struct {
 	short  y;
 	short  cx;
 	short  cy;
-	WORD   id;
+	DWORD  id;
 } START_OF_DLGITEMTEMPLATEEX;
 
 typedef struct {
