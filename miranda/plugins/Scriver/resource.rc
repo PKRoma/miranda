@@ -31,7 +31,7 @@ STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Message Window Options",IDC_STATIC,0,0,304,155
+    GROUPBOX        "Message Window Options",IDC_STATIC,0,0,304,150
     CONTROL         "Automatically pop up the window when",
                     IDC_AUTOPOPUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,12,
                     155,10
@@ -42,49 +42,51 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,20,23,141,10
 
     CONTROL         "Close the message window on send",IDC_AUTOCLOSE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,48,140,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,47,140,10
     CONTROL         "Minimize the message window on send",IDC_AUTOMIN,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,59,152,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,58,152,10
     CONTROL         "Save the splitter position individually for each contact",
                     IDC_SAVESPLITTERPERCONTACT,"Button",BS_AUTOCHECKBOX |
-                    WS_TABSTOP,8,70,292,10
+                    WS_TABSTOP,8,69,292,10
     CONTROL         "Support control up/down in message area to show previously sent messages",
                     IDC_CTRLSUPPORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,
-                    81,292,10
+                    80,292,10
     CONTROL         "Save message draft when closing message window",
                     IDC_SAVEDRAFTS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,
-                    92,292,10
+                    91,292,10
     CONTROL         "Delete temporary contacts when closing message window",
-                    IDC_DELTEMP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,103,
+                    IDC_DELTEMP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,102,
                     292,10
     CONTROL         "Send message on 'Enter'",IDC_SENDONENTER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,114,140,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,113,140,10
     CONTROL         "Send message on double 'Enter'",IDC_SENDONDBLENTER,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,125,138,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,124,138,10
 
     LTEXT           "Show warning when message has not been received after",
-                    IDC_STATIC,8,139,211,8
-    EDITTEXT        IDC_SECONDS,223,137,25,12,ES_AUTOHSCROLL
-    LTEXT           "seconds.",IDC_STATIC,253,139,44,8
+                    IDC_STATIC,8,136,211,8
+    EDITTEXT        IDC_SECONDS,223,134,25,12,ES_AUTOHSCROLL
+    LTEXT           "seconds.",IDC_STATIC,253,136,44,8
 
-    GROUPBOX        "Look And Feel",IDC_STATIC,0,155,304,74
+    GROUPBOX        "Look And Feel",IDC_STATIC,0,150,304,79
 
 	CONTROL         "Show tool bar ",IDC_SHOWBUTTONLINE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,167,140,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,162,140,10
     CONTROL         "Use the contact's status icon as the window icon",
-                    IDC_STATUSWIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,178,
+                    IDC_STATUSWIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,173,
                     292,10
     CONTROL         "Show 'sending in progress' indicator",IDC_SHOWPROGRESS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,189,138,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,184,138,10
     CONTROL         "Enable avatar support in the message window",
                     IDC_AVATARSUPPORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    8,200,292,10
+                    8,195,292,10
     CONTROL         "Limit avatar height to min.",IDC_LIMITAVATARH,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,20,213,106,10
-    EDITTEXT        IDC_AVATARHEIGHTMIN,148,212,28,12,ES_AUTOHSCROLL
-    LTEXT           "and max.",IDC_AVATARTEXT1,188,213,35,8
-    EDITTEXT        IDC_AVATARHEIGHT,230,212,28,12,ES_AUTOHSCROLL
-    LTEXT           "pixels.",IDC_AVATARTEXT2,263,213,35,8
+                    BS_AUTOCHECKBOX | WS_TABSTOP,20,206,106,10
+    EDITTEXT        IDC_AVATARHEIGHTMIN,148,205,28,12,ES_AUTOHSCROLL
+    LTEXT           "and max.",IDC_AVATARTEXT1,188,206,35,8
+    EDITTEXT        IDC_AVATARHEIGHT,230,205,28,12,ES_AUTOHSCROLL
+    LTEXT           "pixels.",IDC_AVATARTEXT2,263,206,35,8
+    CONTROL         "Keep original avatar size",IDC_ORIGINALAVATARH,"Button",BS_AUTOCHECKBOX |
+                    WS_TABSTOP,20,216,106,10
 END
 
 IDD_OPT_MSGLOG DIALOGEX 2, 0, 304, 232

@@ -1120,26 +1120,26 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend)
 	streamData.hDbEventLast = dat->hDbEventLast;
 	streamData.dlgDat = dat;
 	streamData.eventsToInsert = count;
-	streamData.isFirst = fAppend ? GetWindowTextLength(GetDlgItem(hwndDlg, IDC_LOG)) == 0 : 1;
+	streamData.isFirst = fAppend ? GetRichTextLength(GetDlgItem(hwndDlg, IDC_LOG), dat->codePage) == 0 : 1;
 	stream.pfnCallback = LogStreamInEvents;
 	stream.dwCookie = (DWORD_PTR) & streamData;
 	sel.cpMin = 0;
 	if (fAppend) {
         GETTEXTLENGTHEX gtxl = {0};
+        gtxl.flags = GTL_DEFAULT | GTL_PRECISE | GTL_NUMCHARS;
 #if defined( _UNICODE )
         gtxl.codepage = 1200;
 #else
         gtxl.codepage = CP_ACP;
 #endif
         gtxl.codepage = 1200;
-        gtxl.flags = GTL_DEFAULT | GTL_PRECISE | GTL_NUMCHARS;
         fi.chrg.cpMin = SendDlgItemMessage(hwndDlg, IDC_LOG, EM_GETTEXTLENGTHEX, (WPARAM)&gtxl, 0);
-        sel.cpMin = sel.cpMax = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_LOG));
+        sel.cpMin = sel.cpMax = GetRichTextLength(GetDlgItem(hwndDlg, IDC_LOG), dat->codePage);
         SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXSETSEL, 0, (LPARAM) & sel);
     } else {
 		SetDlgItemText(hwndDlg, IDC_LOG, _T(""));
         sel.cpMin = 0;
-		sel.cpMax = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_LOG));
+		sel.cpMax = GetRichTextLength(GetDlgItem(hwndDlg, IDC_LOG), dat->codePage);
         SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXSETSEL, 0, (LPARAM) & sel);
         fi.chrg.cpMin = 0;
 		dat->isMixed = 0;
@@ -1148,19 +1148,6 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend)
 	SendDlgItemMessage(hwndDlg, IDC_LOG, EM_STREAMIN, fAppend ? SFF_SELECTION | SF_RTF : SFF_SELECTION |  SF_RTF, (LPARAM) & stream);
 	SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXSETSEL, 0, (LPARAM) & oldSel);
 	SendDlgItemMessage(hwndDlg, IDC_LOG, EM_HIDESELECTION, FALSE, 0);
-	/*
-	if (fi.chrg.cpMin > 0) {
-		sel.cpMin = fi.chrg.cpMin;
-	} else {
-		sel.cpMin = 0;
-	}
-	{
-		int len;
-		len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_LOG));
-		sel.cpMax = len;//100;//-1;
-		//AutoURLDetect(GetDlgItem(hwndDlg, IDC_LOG), &sel);
-	}
-	*/
 	if (ServiceExists(MS_SMILEYADD_REPLACESMILEYS)) {
 		SMADD_RICHEDIT3 smre;
 		smre.cbSize = sizeof(SMADD_RICHEDIT3);
@@ -1188,7 +1175,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend)
 //	if (GetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_STYLE) & WS_VSCROLL)
 	{
 		int len;
-		len = GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_LOG));
+		len = GetRichTextLength(GetDlgItem(hwndDlg, IDC_LOG), dat->codePage);
 		SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETSEL, len - 1, len - 1);
 	}
 	dat->hDbEventLast = streamData.hDbEventLast;

@@ -184,7 +184,7 @@ TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 					*d++ = wChar;
 					p = p1 + iRemoveChars;
 					for ( i=0; i < iUcMode; i++, p += 4 )
-						if ( *p == '\\' && p[1] == '\'' ) 
+						if ( *p == '\\' && p[1] == '\'' )
 							iRemoveChars += 4;
 				#endif
 			}

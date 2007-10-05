@@ -389,6 +389,8 @@ extern int fontOptionsListSize;
 #define SRMSGSET_AVHEIGHTMIN        "AvatarHeightMin"
 #define SRMSGDEFSET_AVHEIGHTMIN     20
 #define SRMSGSET_AVATAR             "Avatar"
+#define SRMSGSET_ORIGINALAVATARH    "OriginalAvatarSize"
+#define SRMSGDEFSET_ORIGINALAVATARH 0
 
 #define SRMSGSET_USETRANSPARENCY	"UseTransparency"
 #define SRMSGDEFSET_USETRANSPARENCY 0

@@ -369,7 +369,6 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
          if (wParam == VK_TAB && !(GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_SHIFT) & 0x8000)) {    //tab-autocomplete
             TCHAR* pszText = NULL;
             int iLen;
-            GETTEXTLENGTHEX gtl = {0};
             GETTEXTEX gt = {0};
             LRESULT lResult = (LRESULT)SendMessage(hwnd, EM_GETSEL, (WPARAM)NULL, (LPARAM)NULL);
 
@@ -377,9 +376,8 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
             start = LOWORD(lResult);
             end = HIWORD(lResult);
             SendMessage(hwnd, EM_SETSEL, end, end);
-            gtl.flags = GTL_PRECISE;
-            gtl.codepage = CP_ACP;
-            iLen = SendMessage(hwnd, EM_GETTEXTLENGTHEX, (WPARAM)&gtl, (LPARAM)NULL);
+
+            iLen = GetRichTextLength(hwnd, CP_ACP);
             if (iLen >0) {
                TCHAR *pszName = NULL;
                TCHAR *pszSelName = NULL;
@@ -531,7 +529,6 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 
          if (wParam == VK_UP && isCtrl && !isAlt) {
             int iLen;
-            GETTEXTLENGTHEX gtl = {0};
             SETTEXTEX ste;
             LOGFONT lf;
             char* lpPrevCmd = SM_GetPrevCommand(Parentsi->ptszID, Parentsi->pszModule);
@@ -546,9 +543,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
             else
                SetWindowText(hwnd, _T(""));
 
-            gtl.flags = GTL_PRECISE;
-            gtl.codepage = CP_ACP;
-            iLen = SendMessage(hwnd, EM_GETTEXTLENGTHEX, (WPARAM)&gtl, (LPARAM)NULL);
+            iLen = GetRichTextLength(hwnd, CP_ACP);
             SendMessage(hwnd, EM_SCROLLCARET, 0,0);
             SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
             RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE);
@@ -559,7 +554,6 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 
          if (wParam == VK_DOWN && isCtrl && !isAlt) {
             int iLen;
-            GETTEXTLENGTHEX gtl = {0};
             SETTEXTEX ste;
 
             char* lpPrevCmd = SM_GetNextCommand(Parentsi->ptszID, Parentsi->pszModule);
@@ -572,9 +566,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
             else
                SetWindowText(hwnd, _T(""));
 
-            gtl.flags = GTL_PRECISE;
-            gtl.codepage = CP_ACP;
-            iLen = SendMessage(hwnd, EM_GETTEXTLENGTHEX, (WPARAM)&gtl, (LPARAM)NULL);
+            iLen = GetRichTextLength(hwnd, CP_ACP);
             SendMessage(hwnd, EM_SCROLLCARET, 0,0);
             SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
             RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE);
@@ -1715,7 +1707,7 @@ LABEL_SHOWWINDOW:
             si.fMask = SIF_POS;
             si.nPos = si.nMax - si.nPage + 1;
             SetScrollInfo(GetDlgItem(hwndDlg, IDC_CHAT_LOG), SB_VERT, &si, TRUE);
-            sel.cpMin = sel.cpMax = GetRichTextLength(GetDlgItem(hwndDlg, IDC_CHAT_LOG));
+            sel.cpMin = sel.cpMax = GetRichTextLength(GetDlgItem(hwndDlg, IDC_CHAT_LOG), CP_ACP);
             SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_LOG), EM_EXSETSEL, 0, (LPARAM) & sel);
             PostMessage(GetDlgItem(hwndDlg, IDC_CHAT_LOG), WM_VSCROLL, MAKEWPARAM(SB_BOTTOM, 0), 0);
       }   }
@@ -2037,7 +2029,7 @@ LABEL_SHOWWINDOW:
          break;
 
       case IDC_CHAT_MESSAGE:
-         EnableWindow(GetDlgItem(hwndDlg, IDOK), GetRichTextLength(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE)) != 0);
+         EnableWindow(GetDlgItem(hwndDlg, IDOK), GetRichTextLength(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), CP_ACP) != 0);
          break;
 
       case IDC_CHAT_SMILEY:

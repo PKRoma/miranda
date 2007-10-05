@@ -182,3 +182,17 @@ void logInfo(const char *fmt, ...) {
 		fclose(flog);
 	}
 }
+
+int GetRichTextLength(HWND hwnd, int codepage) {
+	GETTEXTLENGTHEX gtl;
+
+#if defined( _UNICODE )
+	gtl.flags = GTL_NUMCHARS;
+	gtl.codepage = 1200;
+#else
+	gtl.codepage = codepage;
+	gtl.flags = GTL_NUMBYTES;
+#endif
+	gtl.flags |= GTL_PRECISE;
+	return (int) SendMessage(hwnd, EM_GETTEXTLENGTHEX, (WPARAM)&gtl, 0);
+}
