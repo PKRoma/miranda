@@ -54,7 +54,7 @@ call :Nmake Yahoo.mak "Yahoo - Win32 Release"
 popd
 if errorlevel 1 goto :Error
 
-pushd ..\..\miranda\protocols\IRC
+pushd ..\..\miranda\protocols\IRCG
 call :Nmake IRC.mak "IRC - Win32 Release"
 popd
 if errorlevel 1 goto :Error
