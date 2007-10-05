@@ -1094,13 +1094,14 @@ case INTM_STATUSCHANGED:
 
 case INTM_RELOADOPTIONS:
 	{
+		saveContactListControlWndProc(hwnd, msg, wParam, lParam);	
 		pcli->pfnLoadClcOptions(hwnd,dat);
 		LoadCLCOptions(hwnd,dat);
 		pcli->pfnSaveStateAndRebuildList(hwnd,dat);
 		pcli->pfnSortCLC(hwnd,dat,1);
 		if (IsWindowVisible(hwnd))
 			pcli->pfnInvalidateRect(GetParent(hwnd), NULL, FALSE);
-		break;
+		return TRUE;
 	}
 case WM_CHAR:
 	{
@@ -1338,7 +1339,7 @@ case WM_TIMER:
 		{
 			KillTimer(hwnd,TIMERID_INVALIDATE_FULL);
 			pcli->pfnRecalcScrollBar(hwnd,dat);
-			SkinInvalidateFrame(hwnd,NULL,0);
+			pcli->pfnInvalidateRect(hwnd,NULL,0);
 		}
 		else if (wParam==TIMERID_INVALIDATE)
 		{

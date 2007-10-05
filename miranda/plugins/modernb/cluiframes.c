@@ -733,10 +733,10 @@ static int DBLoadFrameSettingsAtPos(int pos,int Frameid)
 	Frames[Frameid].HeightWhenCollapsed		=DBGetContactSettingWord(0,CLUIFrameModule,AS(buf,"HeightCollapsed",sadd),0);
 	Frames[Frameid].align					=DBGetContactSettingWord(0,CLUIFrameModule,AS(buf,"Align",sadd),Frames[Frameid].align);
 
-	Frames[Frameid].FloatingPos.x		=DBGetContactSettingRangedWord(0,CLUIFrameModule,AS(buf,"FloatX",sadd),100,0,1024);
-	Frames[Frameid].FloatingPos.y		=DBGetContactSettingRangedWord(0,CLUIFrameModule,AS(buf,"FloatY",sadd),100,0,1024);
-	Frames[Frameid].FloatingSize.x		=DBGetContactSettingRangedWord(0,CLUIFrameModule,AS(buf,"FloatW",sadd),100,0,1024);
-	Frames[Frameid].FloatingSize.y		=DBGetContactSettingRangedWord(0,CLUIFrameModule,AS(buf,"FloatH",sadd),100,0,1024);
+	Frames[Frameid].FloatingPos.x		=DBGetContactSettingRangedWord(0,CLUIFrameModule,AS(buf,"FloatX",sadd),100,0,2048);
+	Frames[Frameid].FloatingPos.y		=DBGetContactSettingRangedWord(0,CLUIFrameModule,AS(buf,"FloatY",sadd),100,0,2048);
+	Frames[Frameid].FloatingSize.x		=DBGetContactSettingRangedWord(0,CLUIFrameModule,AS(buf,"FloatW",sadd),100,0,2048);
+	Frames[Frameid].FloatingSize.y		=DBGetContactSettingRangedWord(0,CLUIFrameModule,AS(buf,"FloatH",sadd),100,0,2048);
 
 	Frames[Frameid].floating			=DBGetContactSettingByte(0,CLUIFrameModule,AS(buf,"Floating",sadd),0);
 	Frames[Frameid].order				=DBGetContactSettingWord(0,CLUIFrameModule,AS(buf,"Order",sadd),0);
@@ -3411,9 +3411,6 @@ static LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam
 
 					if (!IntersectRect( &rcOverlap, &rcwnd, &rcMiranda ) )	
 					{
-
-
-
 						GetCursorPos(&curpt);
 						GetWindowRect( Frames[pos].hWnd, &rcwnd );
 						rcwnd.left=rcwnd.right-rcwnd.left;
@@ -3736,9 +3733,7 @@ static LRESULT CALLBACK CLUIFrameSubContainerProc(HWND hwnd, UINT msg, WPARAM wP
 	  {
 		  return 1;
 	  }
-
 	};
-
 	return DefWindowProc(hwnd, msg, wParam, lParam);
 };
 
@@ -3866,6 +3861,59 @@ static LRESULT CALLBACK CLUIFrameContainerWndProc(HWND hwnd, UINT msg, WPARAM wP
 
 			CLUIFramesStoreFrameSettings(framepos);		
 
+			if ( Frames[framepos].floating )
+			{
+				POINT curpt,ofspt, newpt, newpos;
+				RECT rcwnd, rcOverlap, rcMiranda;
+
+				GetCursorPos(&curpt);
+				rcwnd.bottom=curpt.y+5;
+				rcwnd.top=curpt.y;
+				rcwnd.left=curpt.x;
+				rcwnd.right=curpt.x+5;
+
+				GetWindowRect(pcli->hwndContactList, &rcMiranda );
+				//GetWindowRect( Frames[pos].ContainerWnd, &rcwnd );
+				//IntersectRect( &rcOverlap, &rcwnd, &rcMiranda )
+
+
+				if (IntersectRect( &rcOverlap, &rcwnd, &rcMiranda ) )	
+				{
+					GetCursorPos(&curpt);
+					GetWindowRect( Frames[framepos].hWnd, &rcwnd );
+					rcwnd.left=rcwnd.right-rcwnd.left;
+					rcwnd.top=rcwnd.bottom-rcwnd.top;
+					newpos.x=curpt.x;newpos.y=curpt.y;
+					if (curpt.x>=(rcMiranda.right-1)){newpos.x=curpt.x+5;};
+					if (curpt.x<=(rcMiranda.left+1)){newpos.x=curpt.x-(rcwnd.left)-5;};
+					if (curpt.y>=(rcMiranda.bottom-1)){newpos.y=curpt.y+5;};
+					if (curpt.y<=(rcMiranda.top+1)){newpos.y=curpt.y-(rcwnd.top)-5;};
+					ofspt.x=0;ofspt.y=0;
+					//ClientToScreen(Frames[pos].TitleBar.hwnd,&ofspt);
+					GetWindowRect(Frames[framepos].TitleBar.hwnd,&rcwnd);
+					ofspt.x=curpt.x-ofspt.x;ofspt.y=curpt.y-ofspt.y;
+
+					Frames[framepos].FloatingPos.x=newpos.x;
+					Frames[framepos].FloatingPos.y=newpos.y;
+					CLUIFrameSetFloat(Frameid,0);				
+					//SetWindowPos(Frames[pos].ContainerWnd,0,newpos.x,newpos.y,0,0,SWP_NOSIZE);
+
+
+					newpt.x=0;newpt.y=0;
+					ClientToScreen(Frames[framepos].TitleBar.hwnd,&newpt);
+
+					GetWindowRect( Frames[framepos].hWnd, &rcwnd );
+					SetCursorPos(newpt.x+(rcwnd.right-rcwnd.left)/2,newpt.y+(rcwnd.bottom-rcwnd.top)/2);
+					GetCursorPos(&curpt);
+
+					Frames[framepos].TitleBar.oldpos=curpt;
+
+
+					return(0);
+				};
+
+			};
+
 
 			return(0);
 		};
@@ -3894,11 +3942,21 @@ static LRESULT CALLBACK CLUIFrameContainerWndProc(HWND hwnd, UINT msg, WPARAM wP
 
 			return(0);
 		};
+	case WM_LBUTTONDOWN:
+		{
+			if (DBGetContactSettingByte(NULL,"CLUI","ClientAreaDrag",SETTING_CLIENTDRAG_DEFAULT)) {
+				POINT pt;
+				GetCursorPos(&pt);
+				return SendMessage( hwnd, WM_SYSCOMMAND, SC_MOVE|HTCAPTION,MAKELPARAM(pt.x,pt.y));
+			}
+			break;
+		}
 	case WM_CLOSE:
 		{
 			DestroyWindow(hwnd);
 			break;
 		};
+
 	case WM_DESTROY:
 		{
 			//{ CLUIFramesStoreAllFrames();};
@@ -3996,16 +4054,17 @@ static int CLUIFrameSetFloat(WPARAM wParam,LPARAM lParam)
 			SetWindowLong(Frames[wParam].ContainerWnd,GWL_USERDATA,Frames[wParam].id);
 			if ((lParam==1))
 			{
-				if ((Frames[wParam].FloatingPos.x!=0)&&(Frames[wParam].FloatingPos.y!=0))
+				//if ((Frames[wParam].FloatingPos.x!=0)&&(Frames[wParam].FloatingPos.y!=0))
 				{
-					if (Frames[wParam].FloatingPos.x<20){Frames[wParam].FloatingPos.x=40;};
-					if (Frames[wParam].FloatingPos.y<20){Frames[wParam].FloatingPos.y=40;};
+					if (Frames[wParam].FloatingPos.x<0){Frames[wParam].FloatingPos.x=0;};
+					if (Frames[wParam].FloatingPos.y<0){Frames[wParam].FloatingPos.y=0;};
 
 					SetWindowPos(Frames[wParam].ContainerWnd,HWND_TOPMOST,Frames[wParam].FloatingPos.x,Frames[wParam].FloatingPos.y,Frames[wParam].FloatingSize.x,Frames[wParam].FloatingSize.y,SWP_HIDEWINDOW|SWP_NOACTIVATE);
-				}else
-				{
-					SetWindowPos(Frames[wParam].ContainerWnd,HWND_TOPMOST,120,120,140,140,SWP_HIDEWINDOW|SWP_NOACTIVATE);
-				};
+				}
+				//else
+				//{
+				//	SetWindowPos(Frames[wParam].ContainerWnd,HWND_TOPMOST,120,120,140,140,SWP_HIDEWINDOW|SWP_NOACTIVATE);
+				//};
 			}
 			else if (lParam==0)
 			{

@@ -143,7 +143,7 @@ static HWND sttCreateToolBarFrame( HWND hwndParent, char * szCaption, int nHeigh
 static void sttGetButtonSettings(char * ID, BYTE * pbVisible, DWORD * pdwOrder, BYTE * pbPanelID);
 static void sttReloadButtons();
 static void sttTBButton2MTBBUTTONINFO(TBButton * bi, MTB_BUTTONINFO * mtbi);
-
+static int  sttSortButtons(const void * vmtbi1, const void * vmtbi2);
 
 
 static MTB_GLOBALDAT tbdat ={0};
@@ -372,6 +372,7 @@ static int    sttSortButtons(const void * vmtbi1, const void * vmtbi2)
 {
 	MTB_BUTTONINFO * mtbi1=(MTB_BUTTONINFO *)*((MTB_BUTTONINFO ** )vmtbi1);
 	MTB_BUTTONINFO * mtbi2=(MTB_BUTTONINFO *)*((MTB_BUTTONINFO ** )vmtbi2);
+	if (mtbi1==NULL || mtbi2==NULL) return (mtbi1-mtbi2);
 	return mtbi1->nOrderValue-mtbi2->nOrderValue;
 }
 
@@ -456,7 +457,8 @@ static int    sttButtonPressed(MTBINFO * pMTBInfo, HWND hwndbutton)
 }
 static BOOL   sttDrawToolBarBackground(HWND hwnd, HDC hdc, RECT * rect, MTBINFO * pMTBInfo)
 {
-	if (g_CluiData.fDisableSkinEngine || !g_CluiData.fLayered)
+	BOOL bFloat = (GetParent(hwnd)!=pcli->hwndContactList);
+	if (g_CluiData.fDisableSkinEngine || !g_CluiData.fLayered || bFloat)
 	{	
 		RECT rc;
 		HBRUSH hbr;
@@ -877,11 +879,12 @@ static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 		{
 			BOOL ret=FALSE;
 			PAINTSTRUCT ps;
-			if (g_CluiData.fDisableSkinEngine|| !g_CluiData.fLayered)
+			BOOL bFloat = (GetParent(hwnd)!=pcli->hwndContactList);
+			if (g_CluiData.fDisableSkinEngine|| !g_CluiData.fLayered || bFloat )
 			{
 				HBRUSH hbr=CreateSolidBrush(RGB(255,0,255));
 				BeginPaint(hwnd,&ps);
-				if (!g_CluiData.fLayered && !g_CluiData.fDisableSkinEngine)
+				if ((!g_CluiData.fLayered || bFloat) && !g_CluiData.fDisableSkinEngine)
 				{
 					sttDrawNonLayeredSkinedBar(hwnd, ps.hdc);
 				}
@@ -962,6 +965,8 @@ static LRESULT CALLBACK ToolBar_OptDlgProc(HWND hwndDlg,UINT msg,WPARAM wParam,L
 			}
 			TreeView_DeleteAllItems(hTree);
 			tblock;
+			
+			qsort(tbdat.listOfButtons->items,tbdat.listOfButtons->realCount,sizeof(MTB_BUTTONINFO *),sttSortButtons);
 			{				
 				int i=0;
 				for (i=0; i<tbdat.listOfButtons->realCount; i++)

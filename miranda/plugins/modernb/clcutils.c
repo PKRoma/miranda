@@ -24,6 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_clc.h"
 #include "clc.h"
 #include "commonprototypes.h"
+#include "defsettings.h"
 
 //loads of stuff that didn't really fit anywhere else
 
@@ -729,7 +730,7 @@ void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 		dat->MenuBkHiColor=sttGetColor("Menu","SelBkColour",CLCDEFAULT_SELBKCOLOUR);
 
 		dat->MenuTextColor=sttGetColor("Menu","TextColour",CLCDEFAULT_TEXTCOLOUR);
-		dat->MenuTextHiColor=sttGetColor("Menu","SelTextColour",CLCDEFAULT_SELTEXTCOLOUR);
+		dat->MenuTextHiColor=sttGetColor("Menu","SelTextColour",CLCDEFAULT_MODERN_SELTEXTCOLOUR);
 		
 		if(DBGetContactSettingByte(NULL,"Menu","UseBitmap",CLCDEFAULT_USEBITMAP)) {
 			if(!DBGetContactSettingString(NULL,"Menu","BkBitmap",&dbv)) {
@@ -740,13 +741,13 @@ void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 		}
 		dat->MenuBmpUse=DBGetContactSettingWord(NULL,"Menu","BkBmpUse",CLCDEFAULT_BKBMPUSE);
 	}
-
+	
 	dat->greyoutFlags=DBGetContactSettingDword(NULL,"CLC","GreyoutFlags",CLCDEFAULT_GREYOUTFLAGS);
 	dat->offlineModes=DBGetContactSettingDword(NULL,"CLC","OfflineModes",CLCDEFAULT_OFFLINEMODES);
 	dat->selBkColour=sttGetColor("CLC","SelBkColour",CLCDEFAULT_SELBKCOLOUR);
-	dat->selTextColour=DBGetContactSettingDword(NULL,"CLC","SelTextColour",CLCDEFAULT_SELTEXTCOLOUR);
-	dat->hotTextColour=DBGetContactSettingDword(NULL,"CLC","HotTextColour",CLCDEFAULT_HOTTEXTCOLOUR);
-	dat->quickSearchColour=DBGetContactSettingDword(NULL,"CLC","QuickSearchColour",CLCDEFAULT_QUICKSEARCHCOLOUR);
+	dat->selTextColour=DBGetContactSettingDword(NULL,"CLC","SelTextColour",CLCDEFAULT_MODERN_SELTEXTCOLOUR);
+	dat->hotTextColour=DBGetContactSettingDword(NULL,"CLC","HotTextColour",CLCDEFAULT_MODERN_HOTTEXTCOLOUR);
+	dat->quickSearchColour=DBGetContactSettingDword(NULL,"CLC","QuickSearchColour",CLCDEFAULT_MODERN_QUICKSEARCHCOLOUR);
 	if(!meta_module && ServiceExists(MS_MC_GETPROTOCOLNAME)) meta_module = (char *)CallService(MS_MC_GETPROTOCOLNAME, 0, 0);
 	dat->IsMetaContactsEnabled=(!(GetWindowLong(hwnd,GWL_STYLE)&CLS_MANUALUPDATE)) &&
 		meta_module && DBGetContactSettingByte(NULL,meta_module,"Enabled",1) && ServiceExists(MS_MC_GETDEFAULTCONTACT);

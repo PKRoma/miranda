@@ -570,7 +570,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
         }
         break;
     case WM_SIZE:
-        if (!g_CluiData.fLayered)
+        if (!g_CluiData.fLayered || GetParent(hwnd)!=pcli->hwndContactList)
             InvalidateRect(hwnd,NULL,FALSE);
         return DefWindowProc(hwnd, msg, wParam, lParam);
     case WM_ERASEBKGND:
@@ -636,9 +636,9 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
         GetWindowRect(hwnd,&rct);
         memset((LPMINMAXINFO)lParam,0,sizeof(MINMAXINFO));
         ((LPMINMAXINFO)lParam)->ptMinTrackSize.x=16;
-        ((LPMINMAXINFO)lParam)->ptMinTrackSize.y=rct.bottom-rct.top;
+        ((LPMINMAXINFO)lParam)->ptMinTrackSize.y=16;
         ((LPMINMAXINFO)lParam)->ptMaxTrackSize.x=1600;
-        ((LPMINMAXINFO)lParam)->ptMaxTrackSize.y=rct.bottom-rct.top;
+        ((LPMINMAXINFO)lParam)->ptMaxTrackSize.y=1600;
         return(0);
                           }
 
@@ -823,6 +823,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
                     return 0;
                 }
             }
+			return SendMessage(GetParent(hwnd), msg, wParam, lParam );
         }
     }
     return DefWindowProc(hwnd, msg, wParam, lParam);

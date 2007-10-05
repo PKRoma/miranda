@@ -97,7 +97,7 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				/* Text Colors */
 				DWORD c1,c2,c3,c4;
 				c1=DBGetContactSettingDword(NULL,"Menu", "TextColour", CLCDEFAULT_TEXTCOLOUR);
-				c2=DBGetContactSettingDword(NULL,"Menu", "SelTextColour", CLCDEFAULT_SELTEXTCOLOUR);
+				c2=DBGetContactSettingDword(NULL,"Menu", "SelTextColour", CLCDEFAULT_MODERN_SELTEXTCOLOUR);
 				c3=DBGetContactSettingDword(NULL,"FrameTitleBar", "TextColour", CLCDEFAULT_TEXTCOLOUR);
 				c4=DBGetContactSettingDword(NULL,"StatusBar", "TextColour", CLCDEFAULT_TEXTCOLOUR);
 				SendDlgItemMessage(hwndDlg,IDC_COLOUR_MENUNORMAL,CPM_SETCOLOUR,0,c1);                  

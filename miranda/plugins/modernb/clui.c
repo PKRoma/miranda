@@ -1842,7 +1842,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 
 			pt=&CycleStartTick[wParam-TM_STATUSBARUPDATE];
 			{
-				if(IsWindowVisible(pcli->hwndStatus)) SkinInvalidateFrame(pcli->hwndStatus,NULL,0);//InvalidateRectZ(pcli->hwndStatus,NULL,TRUE);
+				if(IsWindowVisible(pcli->hwndStatus)) pcli->pfnInvalidateRect(pcli->hwndStatus,NULL,0);//InvalidateRectZ(pcli->hwndStatus,NULL,TRUE);
 				//if (DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)!=SETTING_TRAYICON_CYCLE) 
 				if (pt->bGlobal) 
 					cliTrayIconUpdateBase(g_szConnectingProto);
@@ -1850,7 +1850,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 					cliTrayIconUpdateBase(pt->szProto);
 
 			}
-			SkinInvalidateFrame(pcli->hwndStatus,NULL,0);
+			pcli->pfnInvalidateRect(pcli->hwndStatus,NULL,TRUE);
 			break;
 		}
 		else if ((int)wParam==TM_SMOTHALPHATRANSITION)
@@ -2210,7 +2210,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 						nMirMenuState=dis->itemState;
 					} else {
 						nMirMenuState=dis->itemState;
-						SkinInvalidateFrame(hwnd,NULL,0);
+						pcli->pfnInvalidateRect(hwnd,NULL,0);
 					}
 					return TRUE;
 				}
@@ -2236,7 +2236,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 						nStatusMenuState=dis->itemState;
 					} else {
 						nStatusMenuState=dis->itemState;
-						SkinInvalidateFrame(hwnd,NULL,0);
+						pcli->pfnInvalidateRect(hwnd,NULL,0);
 					}
 					return TRUE;
 				} else if(dis->itemData==MENU_MINIMIZE && !g_CluiData.fLayered)
@@ -2851,7 +2851,8 @@ BOOL CLUI__cliInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase )
 			return 0;
 		}
 	}
-	else return InvalidateRect(hWnd,lpRect,bErase);
+	else 
+		return InvalidateRect(hWnd,lpRect,bErase);
 	return 1;
 }
 

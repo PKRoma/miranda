@@ -300,7 +300,7 @@ int __inline SkinEngUpdateImageFrame(HWND hwnd, RECT * rcUpdate, DWORD dwFlags, 
 int __inline SkinEngInvalidateImageFrame(HWND hwnd, CONST RECT * rcUpdate, DWORD dwFlags, void * CallBackData)
 {
   sPaintRequest sr={0};
-  if (!g_CluiData.fLayered && hwnd) return InvalidateRect(hwnd,rcUpdate,dwFlags);
+  if (hwnd && (!g_CluiData.fLayered)) return InvalidateRect(hwnd,rcUpdate,dwFlags);
   sr.dStructSize=sizeof(sPaintRequest);
   sr.hWnd=hwnd;
   if (rcUpdate)
