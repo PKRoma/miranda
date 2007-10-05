@@ -37,7 +37,11 @@ int bNewDbApi = FALSE;
 
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
+#ifdef _UNICODE
+	"Scriver (Unicode)",
+#else
 	"Scriver",
+#endif
 	PLUGIN_MAKE_VERSION(2, 6, 9, 9),
 	"Scriver - send and receive instant messages",
 	"Miranda IM Development Team",
