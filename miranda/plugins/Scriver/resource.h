@@ -165,6 +165,7 @@
 #define IDC_INDENTSIZE					1636
 #define IDC_INDENTSPIN					1637
 #define IDC_HIDECONTAINERS				1638
+#define IDC_ORIGINALAVATARH             1639
 #define IDM_CUT                         40000
 #define IDM_COPY                        40001
 #define IDM_PASTE                       40002

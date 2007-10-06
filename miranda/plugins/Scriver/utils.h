@@ -37,4 +37,5 @@ extern char* t2acp(const TCHAR* src, int cp);
 extern char* u2a( const wchar_t* src, int codepage );
 extern wchar_t* a2u( const char* src, int codepage );
 extern void logInfo(const char *fmt, ...);
+extern int GetRichTextLength(HWND hwnd, int codepage);
 #endif

@@ -20,6 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "../commonheaders.h"
 #include "chat.h"
+#include <string.h>
 #include <shlwapi.h>
 
 extern HICON        hIcons[30];
@@ -29,15 +30,6 @@ extern FONTINFO     aFonts[OPTIONS_FONTCOUNT];
 extern HMENU        g_hMenu;
 extern HANDLE       hBuildMenuEvent ;
 extern HANDLE       hSendEvent;
-
-int GetRichTextLength(HWND hwnd)
-{
-	GETTEXTLENGTHEX gtl;
-
-	gtl.flags = GTL_PRECISE;
-	gtl.codepage = CP_ACP ;
-	return (int) SendMessage(hwnd, EM_GETTEXTLENGTHEX, (WPARAM)&gtl, 0);
-}
 
 TCHAR* RemoveFormatting(const TCHAR* pszWord)
 {
@@ -692,7 +684,7 @@ UINT CreateGCMenu(HWND hwndDlg, HMENU *hMenu, int iIndex, POINT pt, SESSION_INFO
 	gcmi.pszUID = pszUID;
 
 	if (iIndex == 1) {
-		int i = GetRichTextLength(GetDlgItem(hwndDlg, IDC_CHAT_LOG));
+		int i = GetRichTextLength(GetDlgItem(hwndDlg, IDC_CHAT_LOG), CP_ACP);
 
 		EnableMenuItem(*hMenu, ID_CLEARLOG, MF_ENABLED);
 		EnableMenuItem(*hMenu, ID_COPYALL, MF_ENABLED);

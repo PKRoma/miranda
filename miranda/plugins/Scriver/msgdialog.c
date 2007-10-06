@@ -184,7 +184,7 @@ static TCHAR *GetQuotedTextW(TCHAR * text) {
 static void saveDraftMessage(struct MessageWindowData *dat) {
 	TCHAR *textBuffer;
 	int textBufferSize;
-	textBufferSize = (GetWindowTextLengthA(GetDlgItem(dat->hwnd, IDC_MESSAGE)) + 1);
+	textBufferSize = GetRichTextLength(GetDlgItem(dat->hwnd, IDC_MESSAGE), dat->codePage) + 1;
 	if (textBufferSize > 1) {
 		GETTEXTEX  gt = {0};
 		textBufferSize *= sizeof(TCHAR);
@@ -342,7 +342,7 @@ static void SetDialogToType(HWND hwndDlg)
 	}
 	UpdateReadChars(hwndDlg, dat);
 	ShowWindow(GetDlgItem(hwndDlg, IDC_SPLITTER), SW_SHOW);
-	EnableWindow(GetDlgItem(hwndDlg, IDOK), GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE))?TRUE:FALSE);
+	EnableWindow(GetDlgItem(hwndDlg, IDOK), GetRichTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE), dat->codePage)?TRUE:FALSE);
 	SendMessage(hwndDlg, DM_UPDATETITLEBAR, 0, 0);
 	SendMessage(hwndDlg, WM_SIZE, 0, 0);
 }
@@ -481,7 +481,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 						//SendMessage(hwnd, EM_SETSEL, 0, -1);
 					}
 				}
-				EnableWindow(GetDlgItem(GetParent(hwnd), IDOK), GetWindowTextLength(GetDlgItem(GetParent(hwnd), IDC_MESSAGE)) != 0);
+				EnableWindow(GetDlgItem(GetParent(hwnd), IDOK), GetRichTextLength(GetDlgItem(GetParent(hwnd), IDC_MESSAGE), pdat->codePage) != 0);
 				UpdateReadChars(GetParent(hwnd), pdat);
 				return 0;
 			}
@@ -504,7 +504,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 						}
 					}
 				}
-				EnableWindow(GetDlgItem(GetParent(hwnd), IDOK), GetWindowTextLength(GetDlgItem(GetParent(hwnd), IDC_MESSAGE)) != 0);
+				EnableWindow(GetDlgItem(GetParent(hwnd), IDOK), GetRichTextLength(GetDlgItem(GetParent(hwnd), IDC_MESSAGE), pdat->codePage) != 0);
 				UpdateReadChars(GetParent(hwnd), pdat);
 				return 0;
 			}
@@ -828,7 +828,7 @@ static void UpdateReadChars(HWND hwndDlg, struct MessageWindowData * dat)
 	if (dat->parent->hwndActive == hwndDlg) {
 		TCHAR szText[256];
 		StatusBarData sbd;
-		int len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
+		int len = GetRichTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE), dat->codePage);
 		sbd.iItem = 1;
 		sbd.iFlags = SBDF_TEXT | SBDF_ICON;
 		sbd.hIcon = NULL;
@@ -1038,6 +1038,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			dat->wOldStatus = dat->wStatus;
 			dat->hDbEventFirst = NULL;
 			dat->hDbEventLast = NULL;
+			dat->hDbUnreadEventFirst = NULL;
 			dat->messagesInProgress = 0;
 			dat->nTypeSecs = 0;
 			dat->nLastTyping = 0;
@@ -1098,7 +1099,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			dat->minEditBoxHeight = dat->minEditInit.bottom - dat->minEditInit.top;
 			dat->minLogBoxHeight = dat->minEditBoxHeight;
 			dat->splitterPos = (int) DBGetContactSettingDword((g_dat->flags & SMF_SAVESPLITTERPERCONTACT) ? dat->hContact : NULL, SRMMMOD, "splitterPos", (DWORD) - 1);
-			dat->toolbarSize.cy = DBGetContactSettingDword((g_dat->flags & SMF_SAVESPLITTERPERCONTACT) ? dat->hContact : NULL, SRMMMOD, "splitterHeight", (DWORD) 26);
+			dat->toolbarSize.cy = DBGetContactSettingDword((g_dat->flags & SMF_SAVESPLITTERPERCONTACT) ? dat->hContact : NULL, SRMMMOD, "splitterHeight", (DWORD) 24);
+			dat->toolbarSize.cy = max(min(dat->toolbarSize.cy, 24), 18);
 			dat->toolbarSize.cx = GetToolbarWidth();
 			if (dat->splitterPos == -1) {
 				dat->splitterPos = dat->minEditBoxHeight;
@@ -1126,7 +1128,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					#endif
 					SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM) &st, (LPARAM)draft->szCmd);
 				}
-				len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
+				len = GetRichTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE), dat->codePage);
 				PostMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SETSEL, len, len);
 			}
 
@@ -1395,8 +1397,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 	case DM_AVATARCALCSIZE:
 	{
 		BITMAP bminfo;
-		int avatarH;
 		ParentWindowData *pdat;
+		RECT rc;
+		double aspect;
 		pdat = dat->parent;
 		dat->avatarWidth = 0;
 		dat->avatarHeight = 0;
@@ -1409,36 +1412,35 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			ShowWindow(GetDlgItem(hwndDlg, IDC_AVATAR), SW_HIDE);
 			return 0;
 		}
-		dat->avatarHeight = avatarH = dat->splitterPos + ((pdat->flags2&SMF2_SHOWTOOLBAR) ? dat->toolbarSize.cy : 0);//- 3;
+		dat->avatarHeight = dat->splitterPos + ((pdat->flags2&SMF2_SHOWTOOLBAR) ? dat->toolbarSize.cy : 0);//- 3;
 		if (g_dat->flags & SMF_LIMITAVATARH) {
-			if (avatarH < g_dat->limitAvatarMinH) {
-				avatarH = g_dat->limitAvatarMinH;
+			if (dat->avatarHeight < g_dat->limitAvatarMinH) {
+				dat->avatarHeight = g_dat->limitAvatarMinH;
 			}
-			if (avatarH > g_dat->limitAvatarMaxH) {
-				avatarH = g_dat->limitAvatarMaxH;
+			if (dat->avatarHeight > g_dat->limitAvatarMaxH) {
+				dat->avatarHeight = g_dat->limitAvatarMaxH;
 			}
+		} else if (g_dat->flags & SMF_ORIGINALAVATARH) {
+			dat->avatarHeight = bminfo.bmHeight;
 		}
-		{
-			RECT rc;
-			double aspect = 0;
-			GetClientRect(hwndDlg, &rc);
-			dat->avatarHeight = avatarH;
+		aspect = (double)dat->avatarHeight / (double)bminfo.bmHeight;
+		GetClientRect(hwndDlg, &rc);
+		dat->avatarWidth = (int)(bminfo.bmWidth * aspect);
+		/* include 1px border */
+		dat->avatarHeight+= 2;
+		dat->avatarWidth += 2;
+		// if edit box width < min then adjust avatarWidth
+		if (rc.right - dat->avatarWidth < dat->toolbarSize.cx) {
+			dat->avatarWidth = rc.right - dat->toolbarSize.cx;
+			if (dat->avatarWidth < 0) dat->avatarWidth = 0;
+			aspect = (double)dat->avatarWidth / (double)bminfo.bmWidth;
+			dat->avatarHeight = (int)(bminfo.bmHeight * aspect);
+		}
+		if (rc.bottom - dat->avatarHeight < dat->minLogBoxHeight) {
+			dat->avatarHeight = rc.bottom - dat->minLogBoxHeight;
+			if (dat->avatarHeight < 0) dat->avatarHeight = 0;
 			aspect = (double)dat->avatarHeight / (double)bminfo.bmHeight;
 			dat->avatarWidth = (int)(bminfo.bmWidth * aspect);
-			// if edit box width < min then adjust avatarWidth
-			if (rc.right - dat->avatarWidth < dat->toolbarSize.cx) {
-				dat->avatarWidth = rc.right - dat->toolbarSize.cx;
-				if (dat->avatarWidth < 0) dat->avatarWidth = 0;
-				aspect = (double)dat->avatarWidth / (double)bminfo.bmWidth;
-				dat->avatarHeight = (int)(bminfo.bmHeight * aspect);
-
-			}
-			if (rc.bottom - dat->avatarHeight < dat->minLogBoxHeight) {
-				dat->avatarHeight = rc.bottom - dat->minLogBoxHeight;
-				if (dat->avatarHeight < 0) dat->avatarHeight = 0;
-				aspect = (double)dat->avatarHeight / (double)bminfo.bmHeight;
-				dat->avatarWidth = (int)(bminfo.bmWidth * aspect);
-			}
 		}
 		ShowWindow(GetDlgItem(hwndDlg, IDC_AVATAR), SW_SHOW);
 		break;
@@ -1833,12 +1835,20 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 		}
 	case DM_ACTIVATE:
-
 	case WM_ACTIVATE:
 		if (LOWORD(wParam) != WA_ACTIVE)
 			break;
 		//fall through
 	case WM_MOUSEACTIVATE:
+		/*TODO: clear unread events here*/
+		if (dat->hDbUnreadEventFirst != NULL) {
+			HANDLE hDbEvent = dat->hDbUnreadEventFirst;
+			dat->hDbUnreadEventFirst = NULL;
+			while (hDbEvent != NULL) {
+				CallService(MS_CLIST_REMOVEEVENT, (WPARAM) dat->hContact, (LPARAM) hDbEvent);
+				hDbEvent = (HANDLE) CallService(MS_DB_EVENT_FINDNEXT, (WPARAM) hDbEvent, 0);
+			}
+		}
 		if (dat->showUnread) {
 			dat->showUnread = 0;
 			/*
@@ -1921,8 +1931,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				ScreenToClient(hwndDlg, &pt);
 				if (isCtrl) {
 					oldSplitterY = dat->toolbarSize.cy + dat->splitterPos - (rc.bottom - pt.y);
-					if (oldSplitterY < 18) oldSplitterY = 18;
-					if (oldSplitterY > 26) oldSplitterY = 26;
+					oldSplitterY = max(min(oldSplitterY, 24), 18);
 					if (oldSplitterY == dat->toolbarSize.cy) {
 						break;
 					}
@@ -1991,10 +2000,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			CallService(MS_DB_EVENT_GET, lParam, (LPARAM) & dbei);
 			if (dat->hDbEventFirst == NULL)
 				dat->hDbEventFirst = (HANDLE) lParam;
-			if (dbei.eventType == EVENTTYPE_MESSAGE && (dbei.flags & DBEF_READ))
-				break;
 			if (DbEventIsShown(&dbei, dat)) {
 				if (dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & (DBEF_SENT))) {
+					/* store the event when the container is hidden so that clist notifications can be removed */
+					if (!IsWindowVisible(GetParent(hwndDlg)) && dat->hDbUnreadEventFirst == NULL)
+						dat->hDbUnreadEventFirst = (HANDLE) lParam;
 					dat->lastMessage = dbei.timestamp;
 					SendMessage(hwndDlg, DM_UPDATESTATUSBAR, 0, 0);
 					if (GetForegroundWindow()==dat->hwndParent && dat->parent->hwndActive == hwndDlg)
@@ -2214,11 +2224,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					HBITMAP hbmMem = CreateCompatibleBitmap(dis->hDC, dat->avatarWidth, dat->avatarHeight);
 					hPen = (HPEN)SelectObject(hdcMem, hPen);
 					hbmMem = (HBITMAP) SelectObject(hdcMem, hbmMem);
-					Rectangle(hdcMem, 0, 0, dat->avatarWidth, dat->avatarHeight);
 					if (!g_dat->avatarServiceExists) {
 						BITMAP bminfo;
 						HDC hdcTemp = CreateCompatibleDC(dis->hDC);
 						HBITMAP hbmTemp = (HBITMAP)SelectObject(hdcTemp, dat->avatarPic);
+						Rectangle(hdcMem, 0, 0, dat->avatarWidth, dat->avatarHeight);
 						GetObject(dat->avatarPic, sizeof(bminfo), &bminfo);
 						SetStretchBltMode(hdcMem, HALFTONE);
 						StretchBlt(hdcMem, 1, 1, dat->avatarWidth-2, dat->avatarHeight-2, hdcTemp, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
@@ -2230,11 +2240,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						adr.cbSize = sizeof (AVATARDRAWREQUEST);
 						adr.hContact = dat->hContact;
 						adr.hTargetDC = hdcMem;
-						adr.rcDraw.left = 1;
-						adr.rcDraw.top = 1;
-						adr.rcDraw.right = dat->avatarWidth-1;
-						adr.rcDraw.bottom = dat->avatarHeight -1;
-						adr.dwFlags = 0;//AVDRQ_DRAWBORDER;
+						adr.rcDraw.left = 0;
+						adr.rcDraw.top = 0;
+						adr.rcDraw.right = dat->avatarWidth;
+						adr.rcDraw.bottom = dat->avatarHeight;
+						adr.dwFlags = AVDRQ_DRAWBORDER;
 						adr.alpha = 0;
 						CallService(MS_AV_DRAWAVATAR, (WPARAM)0, (LPARAM)&adr);
 					}
@@ -2279,7 +2289,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				GETTEXTEX  gt = {0};
 				PARAFORMAT2 pf2;
 				MessageSendQueueItem msi = { 0 };
-				int bufSize = GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE)) + 1;
+				int bufSize = GetRichTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE), dat->codePage) + 1;
 
 				ZeroMemory((void *)&pf2, sizeof(pf2));
 				pf2.cbSize = sizeof(pf2);
@@ -2458,19 +2468,18 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			}
 		case IDC_MESSAGE:
 			if (HIWORD(wParam) == EN_CHANGE) {
-				int len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
+				int len = GetRichTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE), dat->codePage);
 				dat->cmdListCurrent = dat->cmdListNew;
 				dat->cmdListNew = 0;
 				UpdateReadChars(hwndDlg, dat);
 				EnableWindow(GetDlgItem(hwndDlg, IDOK), len != 0);
 				if (!(GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_SHIFT) & 0x8000)) {
 					dat->nLastTyping = GetTickCount();
-					if (GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE))) {
+					if (len != 0) {
 						if (dat->nTypeMode == PROTOTYPE_SELFTYPING_OFF) {
 							NotifyTyping(dat, PROTOTYPE_SELFTYPING_ON);
 						}
-					}
-					else {
+					} else {
 						if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON) {
 							NotifyTyping(dat, PROTOTYPE_SELFTYPING_OFF);
 						}
