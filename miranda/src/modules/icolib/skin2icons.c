@@ -34,7 +34,7 @@ static HICON hIconBlank = NULL;
 HANDLE hIcoLib_AddNewIcon, hIcoLib_RemoveIcon, hIcoLib_GetIcon, hIcoLib_GetIcon2, 
        hIcoLib_IsManaged, hIcoLib_AddRef, hIcoLib_ReleaseIcon;
 
-static HIMAGELIST hDefaultIconList;
+static HIMAGELIST hCacheIconList;
 static int iconEventActive = 0;
 
 struct IcoLibOptsData {
@@ -164,6 +164,8 @@ static IconItem* IcoLib_FindHIcon(HICON hIcon)
 
 static void IcoLib_FreeIcon(IconItem* icon)
 {
+	if ( !icon) return;
+
 	SAFE_FREE( &icon->name );
 	SAFE_FREE( &icon->description );
 	SAFE_FREE( &icon->default_file );
@@ -172,6 +174,41 @@ static void IcoLib_FreeIcon(IconItem* icon)
 		SafeDestroyIcon( &icon->icon );
 	SafeDestroyIcon( &icon->default_icon );
 	SafeDestroyIcon( &icon->temp_icon );
+
+	if ( icon->icon_cache_index != -1 ) {
+		int indx;
+
+		if ( ImageList_Remove( hCacheIconList, icon->icon_cache_index ) ) {
+			for ( indx = 0; indx < iconList.count; indx++ ) {
+				IconItem* item = iconList.items[ indx ];
+
+				if ( !item ) continue;
+
+				if ( item->icon_cache_index > icon->icon_cache_index )
+					item->icon_cache_index--;
+				if ( item->default_icon_index > icon->icon_cache_index )
+					item->default_icon_index--;
+			}
+			icon->icon_cache_index = -1;
+		}
+	}
+	if ( icon->default_icon_index != -1 ) {
+		int indx;
+
+		if ( ImageList_Remove( hCacheIconList, icon->default_icon_index ) ) {
+			for ( indx = 0; indx < iconList.count; indx++ ) {
+				IconItem* item = iconList.items[ indx ];
+
+				if ( !item ) continue;
+
+				if ( item->icon_cache_index > icon->default_icon_index )
+					item->icon_cache_index--;
+				if ( item->default_icon_index > icon->default_icon_index )
+					item->default_icon_index--;
+			}
+			icon->default_icon_index = -1;
+		}
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -278,11 +315,13 @@ HANDLE IcoLib_AddNewIcon( SKINICONDESC* sid )
 	}
 
 	if ( item->cx == GetSystemMetrics( SM_CXSMICON ) && item->cy == GetSystemMetrics( SM_CYSMICON ) && item->default_icon ) {
-		item->default_icon_index = ImageList_AddIcon( hDefaultIconList, item->default_icon );
+		item->default_icon_index = ImageList_AddIcon( hCacheIconList, item->default_icon );
 		if ( item->default_icon_index != -1 )
 			SafeDestroyIcon( &item->default_icon );
 	}
 	else item->default_icon_index = -1;
+
+	item->icon_cache_index = -1;
 
 	if ( sid->cbSize >= SKINICONDESC_SIZE && item->section )
 		item->section->flags = sid->flags & SIDF_SORTED;
@@ -321,7 +360,7 @@ HICON IconItem_GetDefaultIcon( IconItem* item )
 	}
 
 	if ( !hIcon && item->default_icon_index != -1 )
-		hIcon = ImageList_GetIcon( hDefaultIconList, item->default_icon_index, ILD_NORMAL );
+		hIcon = ImageList_GetIcon( hCacheIconList, item->default_icon_index, ILD_NORMAL );
 
 	if ( !hIcon && item->default_file )
 		_ExtractIconEx( item->default_file, item->default_indx, item->cx, item->cy, &hIcon, LR_COLOR );
@@ -341,7 +380,10 @@ HICON IconItem_GetIcon( IconItem* item )
 	if ( item->icon )
 		return item->icon;
 
-	if ( !DBGetContactSettingTString( NULL, "SkinIcons", item->name, &dbv )) {
+	if ( item->icon_cache_valid )
+		hIcon = ImageList_GetIcon( hCacheIconList, item->icon_cache_index, ILD_NORMAL );
+
+	if ( !hIcon && !DBGetContactSettingTString( NULL, "SkinIcons", item->name, &dbv )) {
 		hIcon = ExtractIconFromPath( dbv.ptszVal, item->cx, item->cy );
 		DBFreeVariant( &dbv );
 	}
@@ -352,6 +394,14 @@ HICON IconItem_GetIcon( IconItem* item )
 		if ( !hIcon )
 			return hIconBlank;
 	}
+
+	if ( !item->icon_cache_valid && item->cx == GetSystemMetrics(SM_CXSMICON) && item->cy == GetSystemMetrics(SM_CYSMICON) ) {
+		item->icon_cache_index = ImageList_ReplaceIcon( hCacheIconList, item->icon_cache_index, hIcon );
+
+		if ( item->icon_cache_index != -1 )
+			item->icon_cache_valid = TRUE;
+	}
+
 	item->icon = hIcon;
 	return hIcon;
 }
@@ -676,6 +726,12 @@ void DoOptionsChanged(HWND hwndDlg)
 void DoIconsChanged(HWND hwndDlg)
 {
 	int indx;
+
+	EnterCriticalSection(&csIconList); // Invalidate icons cache
+	for (indx = 0; indx < iconList.count; indx++) {
+		iconList.items[indx]->icon_cache_valid = FALSE;
+	}
+	LeaveCriticalSection(&csIconList);
 
 	SendMessage(hwndDlg, DM_UPDATEICONSPREVIEW, 0, 0);
 
@@ -1425,7 +1481,7 @@ int InitSkin2Icons(void)
 
 	hIconBlank = LoadIconEx(NULL, MAKEINTRESOURCE(IDI_BLANK),0);
 
-	hDefaultIconList = ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,15,15);
+	hCacheIconList = ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,15,15);
 
 	InitializeCriticalSection(&csIconList);
 	hIcoLib_AddNewIcon  = CreateServiceFunction(MS_SKIN2_ADDICON,         sttIcoLib_AddNewIcon);
@@ -1461,16 +1517,16 @@ void UninitSkin2Icons(void)
 
 	for (indx = 0; indx < iconList.count; indx++) {
 		IcoLib_FreeIcon( iconList.items[indx] );
-		mir_free( iconList.items[indx] );
+		SAFE_FREE( &iconList.items[indx] );
 	}
 	List_Destroy(( SortedList* )&iconList );
 
 	for (indx = 0; indx < sectionList.count; indx++) {
 		SAFE_FREE( &sectionList.items[indx]->name );
-		mir_free( sectionList.items[indx] );
+		SAFE_FREE( &sectionList.items[indx] );
 	}
 	List_Destroy(( SortedList* )&sectionList );
 
-	ImageList_Destroy(hDefaultIconList);
+	ImageList_Destroy(hCacheIconList);
 	SafeDestroyIcon(&hIconBlank);
 }
