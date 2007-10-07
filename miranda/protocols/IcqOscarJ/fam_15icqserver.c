@@ -330,7 +330,46 @@ static void parseOfflineMessage(unsigned char *databuf, WORD wPacketLen)
       if (bType == MTYPE_PLUGIN)
         parseOfflineGreeting(databuf, wPacketLen, wMsgLen, dwUin, dwTimestamp, bFlags);
       else
+      {
+        void* pFree = NULL;
+
+        if (bType == MTYPE_PLAIN)
+        { // It should be plain ANSI encoded message, but some clients send this UCS-2 encoded,
+          // so try to *identify* such messages and decode them properly
+          int wideLen = wMsgLen / sizeof(WCHAR);
+          int i, nAscii = 0, nWideMarks = 0;
+          WCHAR* pwMsg = (WORD*)databuf;
+
+          for (i = 0; i < wideLen; i++)
+          { // Cycle thru the message text (BE formatted) and look for word aligned WCHARs 0x0D, 0x0A, 0x20 
+            // and plain ascii WCHARs
+            if (*pwMsg == 0x0D00 || *pwMsg == 0x0A00 || *pwMsg == 0x2000)
+              nWideMarks++;
+            if (((*pwMsg & 0xFF) == 0) && (*pwMsg >= 0x2000) && (*pwMsg <= 0x8000))
+              nAscii++;
+
+            pwMsg++;
+          }
+          if (nWideMarks > 1 || nAscii >= 4)
+          { // a string with at least two WCHAR separators or at least 4 WCHAR ascii chars
+            // is considered as UCS-2 formatted
+            pwMsg = (WCHAR*)_alloca(wMsgLen + 4);
+
+            ZeroMemory(pwMsg, wMsgLen + 4);
+            unpackWideString(&databuf, pwMsg, (WORD)(wideLen * sizeof(WCHAR)));
+            pFree = databuf = make_utf8_string(pwMsg);
+            wMsgLen = strlennull(databuf) + 1;
+            databuf = (unsigned char*)realloc(databuf, wMsgLen + 50);
+            wPacketLen = wMsgLen + 50;
+            // prepare guid - to let handleMessageTypes handle the message as utf-8 encoded one
+            *(DWORD*)(databuf + wMsgLen + 8) = 38;
+            memcpy(databuf + wMsgLen + 12, CAP_UTF8MSGS, 38);
+          }
+        }
         handleMessageTypes(dwUin, dwTimestamp, 0, 0, 0, 0, bType, bFlags, 0, wPacketLen, wMsgLen, databuf, FALSE, NULL);
+        // Release memory
+        SAFE_FREE(&pFree);
+      }
 
       // Success
       return; 

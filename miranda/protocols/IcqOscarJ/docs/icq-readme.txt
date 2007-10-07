@@ -58,6 +58,43 @@ __________
 Changes
 _______
 
+0.3.10 Development
+
+Improvements:
+  URL events are now received as normal messages
+
+
+0.3.9.4
+
+Improvements:
+  Added ability to handle malformed UCS-2 encoded offline messages
+
+
+0.3.9.3
+
+Bugfixes:
+  Fixed problem with utf-8 message API and some message plugins (weird chars)
+  Fixed double Avatar pages in User Details for newer Miranda IM
+
+
+0.3.9.2
+
+Bugfixes:
+  Fixed possible memory corruption caused by malformed langpack
+  Added support for new utf-8 message API (when available)
+  Fixed possible rare problems with Folders plug-in support
+  Other minor fixes merged from trunk (0.3.10.x Development)
+
+
+0.3.9.1
+
+Bugfixes:
+  Fixes several minor problems
+  
+Improvements:
+  Oscar File Transfers now fully handle directory transfers
+  
+
 0.3.9
 
 Bugfixes:
