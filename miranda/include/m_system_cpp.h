@@ -48,6 +48,7 @@ template<class T> struct LIST
 
 	inline void destroy( void )        { li.List_Destroy(( SortedList* )this ); }
 
+	inline T*  find( T* p )            { return ( T* )li.List_Find(( SortedList* )this, p ); }
 	inline int indexOf( T* p )         { return li.List_IndexOf(( SortedList* )this, p ); }
 	inline int insert( T* p, int idx ) { return li.List_Insert(( SortedList* )this, p, idx ); }
 	inline int remove( int idx )       { return li.List_Remove(( SortedList* )this, idx ); }
