@@ -82,14 +82,15 @@ BEGIN
     CONTROL         "Notify me when a message delivery has failed",
                     IDC_SLOWSEND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,69,
                     263,8
-    CONTROL         "Use OpenSSL encryption (requires LIBEAY32.DLL)",
-                    IDC_USEOPENSSL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,
-                    80,263,8
+    CONTROL         "Use OpenSSL (requires LIBEAY32.DLL) ",IDC_USEOPENSSL,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,80,263,8
     GROUPBOX        "Incoming file transfers",IDC_STATIC,4,108,298,48
     LTEXT           "Your host (or router):",IDC_STATIC,12,138,87,8
     EDITTEXT        IDC_YOURHOST,105,136,169,12,ES_AUTOHSCROLL
     PUSHBUTTON      "Reset",IDC_RESETSERVER,244,16,34,12
     COMBOBOX        IDC_HOSTOPT,11,120,261,30,CBS_DROPDOWNLIST | WS_TABSTOP
+    LTEXT           "(SSL through Internet Explrer is used when unchecked)",
+                    IDC_STATIC,23,90,178,8
 END
 
 IDD_LISTSMGR DIALOGEX 0, 0, 304, 228
@@ -157,8 +158,8 @@ BEGIN
 END
 
 IDD_SETNICKNAME DIALOGEX 0, 0, 187, 42
-STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU | DS_FIXEDSYS
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | 
+    WS_CAPTION | WS_SYSMENU
 CAPTION "Set Nickname"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
