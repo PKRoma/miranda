@@ -39,7 +39,7 @@ static int MsnBlockCommand( WPARAM wParam, LPARAM lParam )
 		char tEmail[ MSN_MAX_EMAIL_LEN ];
 		MSN_GetStaticString( "e-mail", (HANDLE)wParam, tEmail, sizeof( tEmail ));
 
-		MSN_SetWord(( HANDLE )wParam, "ApparentMode", ( Lists_IsInList( LIST_BL, tEmail )) ? 0 : ID_STATUS_OFFLINE );
+		MSN_SetWord(( HANDLE )wParam, "ApparentMode", Lists_IsInList( LIST_BL, tEmail ) ? 0 : ID_STATUS_OFFLINE );
 	}
 	return 0;
 }

@@ -27,12 +27,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 struct MsnContact
 {
 	int list;
+	int type;
 	char *email;
 };
 
 static int CompareLists( const MsnContact* p1, const MsnContact* p2 )
 {
-	return int( p1 - p2 );
+	return strcmp(p1->email, p2->email);
 }
 
 static LIST<MsnContact> contList( 10, CompareLists );
@@ -54,7 +55,8 @@ void Lists_Uninit(void)
 void  Lists_Wipe( void )
 {
 	EnterCriticalSection( &csLists );
-	for ( int i=contList.getCount(); i--; ) {
+	for ( int i=contList.getCount(); i--; ) 
+	{
 		mir_free( contList[i]->email );
 		mir_free( contList[i] );
 		contList.remove(i);
@@ -62,76 +64,113 @@ void  Lists_Wipe( void )
 	LeaveCriticalSection( &csLists );
 }
 
-int  Lists_IsInList( int list, const char* email )
+bool Lists_IsInList( int list, const char* email )
 {
-	int i;
-	EnterCriticalSection( &csLists );
-	for ( i=0; i < contList.getCount(); i++ )
-		if ( !strcmp( contList[i]->email, email ))
-			break;
+	MsnContact srchCnt; 
+	srchCnt.email = (char*)email;
 
-	if ( list != -1 && i != contList.getCount() )
-		if (( contList[ i ]->list & list ) != list )
-			i = contList.getCount();
+	EnterCriticalSection(&csLists);
+	
+	MsnContact* p = contList.find(&srchCnt);
+	int res = p != NULL;
+	if (res && list != -1)
+		res &= (p->list & list) == list;
 
-	LeaveCriticalSection( &csLists );
-	return ( i == contList.getCount() ) ? 0 : i+1;
+	LeaveCriticalSection(&csLists);
+	return res;
 }
 
-int  Lists_GetMask( const char* email )
+int Lists_GetMask( const char* email )
 {
-	int res = 0;
+	MsnContact srchCnt; 
+	srchCnt.email = (char*)email;
+
 	EnterCriticalSection( &csLists );
-	for ( int i=0; i < contList.getCount(); i++ )
-		if ( !strcmp( contList[i]->email, email )) {
-			res = contList[i]->list;
-			break;
-		}
+
+	MsnContact* p = contList.find(&srchCnt);
+	int res = p ? p->list : 0;
 
 	LeaveCriticalSection( &csLists );
 	return res;
 }
 
-int  Lists_Add( int list, const char* email )
+int Lists_GetType( const char* email )
 {
+	MsnContact srchCnt; 
+	srchCnt.email = (char*)email;
+
 	EnterCriticalSection( &csLists );
 
-	MsnContact* p;
-	int idx = Lists_IsInList( -1, email );
-	if ( idx == 0 )
-	{
-		p = ( MsnContact* )mir_alloc( sizeof( MsnContact ));
-		p->list = 0;
-		p->email = mir_strdup( email );
-		contList.insert( p );
-	}
-	else 
-		p = contList[ idx-1 ];
+	MsnContact* p = contList.find(&srchCnt);
+	int res = p ? p->type : 0;
 
-	int result = ( p->list |= list );
+	LeaveCriticalSection( &csLists );
+	return res;
+}
+
+int Lists_Add(int list, int type, const char* email)
+{
+	MsnContact srchCnt; 
+	srchCnt.email = (char*)email;
+
+	EnterCriticalSection(&csLists);
+
+	MsnContact* p = contList.find(&srchCnt);
+	if ( p == NULL )
+	{
+		p = (MsnContact*)mir_alloc(sizeof( MsnContact));
+		p->list = list;
+		p->type = type;
+		p->email = mir_strdup(email);
+		contList.insert(p);
+	}
+	else
+		p->list |= list;
+	int result = p->list;
+
 	LeaveCriticalSection( &csLists );
 	return result;
 }
 
 void  Lists_Remove( int list, const char* email )
 {
+	MsnContact srchCnt; 
+	srchCnt.email = (char*)email;
+
 	EnterCriticalSection( &csLists );
-	int i = Lists_IsInList( -1, email );
-	if ( i != 0 ) {
-		MsnContact* C = contList[ --i ];
-
-		C->list &= ~list;
-		if ( C->list == 0 ) {
-			mir_free( C->email );
-			mir_free( C );
+	int i = contList.getIndex(&srchCnt);
+	if ( i != -1 ) 
+	{
+		MsnContact* p = contList[i];
+		p->list &= ~list;
+		if (p->list == 0) 
+		{
+			mir_free(p->email);
+			mir_free(p);
 			contList.remove(i);
-	}	}
-
+		}	
+	}
 	LeaveCriticalSection( &csLists );
 }
 
+// FDQ <ml><d n="yahoo.com"><c n="borkra1"/></d></ml>
+// FDQ <ml><d n="yahoo.com"><c n="borkra1" t="32" /></d></ml>
+// ADL <ml><d n="yahoo.com"><c n="borkra1" l="1" t="32"/></d></ml>
+void MSN_FindYahooUser(const char* email)
+{
+	const char* dom = strchr(email, '@');
+	if (dom)
+	{
+		char buf[512];
+		size_t sz;
 
-static void AddDelUserContList(const char* email, const int list, const bool del)
+		sz = mir_snprintf(buf, sizeof(buf), "<ml><d n=\"%s\"><c n=\"%s\"/></d></ml>", dom+1, email);
+		msnNsThread->sendPacket("FDQ", "%d\r\n%s", sz, buf);
+	}
+}
+
+
+static void AddDelUserContList(const char* email, const int list, const int type, const bool del)
 {
 	char buf[512];
 	size_t sz;
@@ -148,7 +187,7 @@ static void AddDelUserContList(const char* email, const int list, const bool del
 		*(char*)dom = 0;
 		sz = mir_snprintf(buf, sizeof(buf),
 			"<ml><d n=\"%s\"><c n=\"%s\" l=\"%d\" t=\"%d\"/></d></ml>",
-			dom+1, email, list, 1);
+			dom+1, email, list, type);
 		*(char*)dom = '@';
 	}
 	msnNsThread->sendPacket(del ? "RML" : "ADL", "%d\r\n%s", sz, buf);
@@ -156,7 +195,7 @@ static void AddDelUserContList(const char* email, const int list, const bool del
 	if (del)
 		Lists_Remove(list, email);
 	else
-		Lists_Add(list, email);
+		Lists_Add(list, type, email);
 }
 
 
@@ -168,7 +207,7 @@ void  MSN_AddUser( HANDLE hContact, const char* email, int flags )
 	bool needRemove = (flags & LIST_REMOVE) != 0;
 	flags &= 0xFF;
 
-	if (needRemove != (Lists_IsInList(flags, email) != 0))
+	if (needRemove != Lists_IsInList(flags, email))
 		return;
 
 	if (flags == LIST_FL) 
@@ -183,7 +222,7 @@ void  MSN_AddUser( HANDLE hContact, const char* email, int flags )
 			if ( !MSN_GetStaticString( "ID", hContact, id, sizeof( id ))) 
 			{
 				MSN_ABAddDelContactGroup(id , NULL, "ABContactDelete");
-				AddDelUserContList(email, flags, true);
+				AddDelUserContList(email, flags, Lists_GetType(email), true);
 			}
 		}
 		else 
@@ -192,35 +231,35 @@ void  MSN_AddUser( HANDLE hContact, const char* email, int flags )
 			if ( !strcmp( email, MyOptions.szEmail ))
 				DBGetContactSettingStringUtf( NULL, msnProtocolName, "Nick", &dbv );
 
-			MSN_ABContactAdd(email, dbv.pszVal, false);
-			AddDelUserContList(email, flags, false);
+			MSN_ABContactAdd(email, dbv.pszVal, 1, false);
+			AddDelUserContList(email, flags, 1, false);
 			MSN_FreeVariant( &dbv );
 		}
 	}
 	else {
 		const char* listName = (flags & LIST_AL) ? "Allow" :  "Block";
 		MSN_SharingAddDelMember(email, listName, needRemove ? "DeleteMember" : "AddMember");
-		AddDelUserContList(email, flags, needRemove);
+		AddDelUserContList(email, flags, Lists_GetType(email), needRemove);
 	}
 }
 
-/*
+
 void MSN_CleanupLists(void)
 {
 	EnterCriticalSection(&csLists);
 	for (int i=contList.getCount(); i--; )
 	{
-		MsnContact* C = contList[i];
+		MsnContact* p = contList[i];
 
-		if (!(C->list & LIST_RL) && (C->list & (LIST_AL | LIST_BL))) 
+		if ((p->list & (LIST_FL | LIST_RL)) == 0 && (p->list & (LIST_AL | LIST_BL)) != 0) 
 		{
-			MSN_SharingAddDelMember(C->email, (C->list & LIST_AL) ? "Allow" : "Block", "DeleteMember");
-			C->list &= ~(LIST_AL | LIST_BL);
+			MSN_SharingAddDelMember(p->email, (p->list & LIST_AL) ? "Allow" : "Block", "DeleteMember");
+			p->list &= ~(LIST_AL | LIST_BL);
 
-			if (C->list == 0) 
+			if (p->list == 0) 
 			{
-				mir_free(C->email);
-				mir_free(C);
+				mir_free(p->email);
+				mir_free(p);
 				contList.remove(i);
 			}
 
@@ -229,7 +268,7 @@ void MSN_CleanupLists(void)
 	}
 	LeaveCriticalSection(&csLists);
 }
-*/
+
 void MSN_CreateContList(void)
 {
 	EnterCriticalSection(&csLists);

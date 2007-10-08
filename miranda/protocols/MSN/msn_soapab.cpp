@@ -31,7 +31,6 @@ static ezxml_t abSoapHdr(const char* service, const char* scenario, ezxml_t& tbd
 	ezxml_set_attr(xmlp, "xmlns:xsd",  "http://www.w3.org/2001/XMLSchema");
 	ezxml_set_attr(xmlp, "xmlns:soapenc", "http://schemas.xmlsoap.org/soap/encoding/");
 	
-
 	ezxml_t hdr = ezxml_add_child(xmlp, "soap:Header", 0);
 	ezxml_t apphdr = ezxml_add_child(hdr, "ABApplicationHeader", 0);
 	ezxml_set_attr(apphdr, "xmlns", "http://www.msn.com/webservices/AddressBook");
@@ -133,36 +132,36 @@ void MSN_SharingFindMembership(void)
 				if (strcmp(szType, "Passport") == 0)
 				{
 					const char* szEmail = ezxml_txt(ezxml_child(memb, "PassportName"));
-					Lists_Add(lstId, szEmail);
+					Lists_Add(lstId, 1, szEmail);
 				}
 				else if (strcmp(szType, "Phone") == 0)
 				{
 					const char* szEmail = ezxml_txt(ezxml_child(memb, "PhoneNumber"));
 					char email[128];
 					mir_snprintf(email, sizeof(email), "tel:%s", szEmail);
-					Lists_Add(lstId, email);
+					Lists_Add(lstId, 4, email);
 				}
 				else if (strcmp(szType, "Email") == 0)
 				{
+					int typeId = 0;
 					const char* szEmail = ezxml_txt(ezxml_child(memb, "Email"));
 					ezxml_t anot = ezxml_get(memb, "Annotations", 0, "Annotation", -1);
 					while (anot != NULL)
 					{
 						if (strcmp(ezxml_txt(ezxml_child(anot, "Name")), "MSN.IM.BuddyType") == 0)
 						{
-//							type = atoi(ezxml_txt(ezxml_child(anot, "Value")));
+							typeId = atol(ezxml_txt(ezxml_child(anot, "Value")));
 							break;
 						}
 						anot = ezxml_next(anot);
 					}
-					Lists_Add(lstId, szEmail);
+					Lists_Add(lstId, typeId, szEmail);
 				}
 				memb = ezxml_next(memb);
 			}
 			mems = ezxml_next(mems);
 		}
 		ezxml_free(xmlm);
-//		MSN_CleanupLists();
 	}
 	mir_free(tResult);
 }
@@ -184,20 +183,61 @@ void MSN_SharingAddDelMember(const char* szEmail, const char* szRole, const char
 	node = ezxml_add_child(svchnd, "ForeignId", 0);
 //	ezxml_set_txt(node, "");
 
+	const char* szMemberName = "";
+	const char* szTypeName = "";
+	const char* szAccIdName = "";
+
+	int typeId = Lists_GetType(szEmail);
+	switch (typeId)
+	{
+		case 1: 
+			szMemberName = "PassportMember";
+			szTypeName = "Passport";
+			szAccIdName = "PassportName";
+			break;
+
+		case 4: 
+			szMemberName = "PhoneMember";
+			szTypeName = "Phone";
+			szAccIdName = "PhoneNumber";
+			szEmail = strchr(szEmail, ':') + 1; 
+			break;
+
+		case 2: 
+		case 32: 
+			szMemberName = "EmailMember";
+			szTypeName = "Email";
+			szAccIdName = "Email";
+			break;
+	}
+
 	ezxml_t memb = ezxml_add_child(tbdy, "memberships", 0);
 	memb = ezxml_add_child(memb, "Membership", 0);
 	node = ezxml_add_child(memb, "MemberRole", 0);
 	ezxml_set_txt(node, szRole);
 	memb = ezxml_add_child(memb, "Members", 0);
 	memb = ezxml_add_child(memb, "Member", 0);
-	ezxml_set_attr(memb, "xsi:type",  "PassportMember");
+	ezxml_set_attr(memb, "xsi:type",  szMemberName);
 	ezxml_set_attr(memb, "xmlns:xsi",  "http://www.w3.org/2001/XMLSchema-instance");
 	node = ezxml_add_child(memb, "Type", 0);
-	ezxml_set_txt(node, "Passport");
+	ezxml_set_txt(node, szTypeName);
 	node = ezxml_add_child(memb, "State", 0);
 	ezxml_set_txt(node, "Accepted");
-	node = ezxml_add_child(memb, "PassportName", 0);
+	node = ezxml_add_child(memb, szAccIdName, 0);
 	ezxml_set_txt(node, szEmail);
+	
+	char buf[64];
+	if (typeId == 2 && strcmp(szMethod, "DeleteMember") != 0)
+	{
+		node = ezxml_add_child(memb, "Annotations", 0);
+		ezxml_t anot = ezxml_add_child(node, "Annotation", 0);
+		node = ezxml_add_child(anot, "Name", 0);
+		ezxml_set_txt(node, "MSN.IM.BuddyType");
+		node = ezxml_add_child(anot, "Value", 0);
+
+		mir_snprintf(buf, sizeof(buf), "%02d:", typeId);
+		ezxml_set_txt(node, buf);
+	}
 
 	char* szData = ezxml_toxml(xmlp, true);
 
@@ -274,17 +314,49 @@ void MSN_ABGetFull(void)
 
 			if (strcmp(szType, "Me") != 0)
 			{
-				const char* szMsgUsr = ezxml_txt(ezxml_child(contInf, "isMessengerUser"));
+				char email[128];
+				int typeId = 0;
+
 				const char* szEmail = ezxml_txt(ezxml_child(contInf, "passportName"));
+				const char* szMsgUsr = ezxml_txt(ezxml_child(contInf, "isMessengerUser"));
+				if (*szEmail == '\0')
+				{
+					ezxml_t phn = ezxml_get(contInf, "phones", 0, "ContactPhone", -1);
+					if (phn != NULL)
+					{
+						szMsgUsr = ezxml_txt(ezxml_child(phn, "isMessengerEnabled"));
+						szEmail = ezxml_txt(ezxml_child(phn, "number"));
+						mir_snprintf(email, sizeof(email), "tel:%s", szEmail);
+						szEmail = email;
+						typeId = 4;
+					}
+					else 
+					{
+						ezxml_t eml = ezxml_get(contInf, "emails", 0, "ContactEmail", -1);
+						if (eml != NULL)
+						{
+							szMsgUsr = ezxml_txt(ezxml_child(eml, "isMessengerEnabled"));
+							szEmail = ezxml_txt(ezxml_child(eml, "email"));
+							const char* szCntType = ezxml_txt(ezxml_child(eml, "contactEmailType"));
+							if (strcmp(szCntType, "Messenger2") == 0)
+								typeId = 32;
+							else if (strcmp(szCntType, "Messenger3") == 0)
+								typeId = 2;
+
+						}
+					}
+				}
 
 				const int lstFlg = strcmp(szMsgUsr, "true") ? 0 : LIST_FL; 
-				if (Lists_IsInList(-1, szEmail) != 0 || lstFlg != 0)
+				if (Lists_IsInList(-1, szEmail) || lstFlg != 0)
 				{
 					const char* szMBE   = ezxml_txt(ezxml_child(contInf, "isMobileIMEnabled"));
 					const char* szMOB   = ezxml_txt(ezxml_child(contInf, "IsNotMobileVisible"));
 
 					const char* szNick  = ezxml_txt(ezxml_child(contInf, "displayName"));
-					HANDLE hContact = MSN_HContactFromEmail( szEmail, szNick, 1, 0 );
+					if (*szNick == '\0') szNick = szEmail;
+					HANDLE hContact = MSN_HContactFromEmail(szEmail, szNick, 1, 0);
+					MSN_SetStringUtf(hContact, "Nick", (char*)szNick);
 
 					ezxml_t anot = ezxml_get(contInf, "annotations", 0, "Annotation", -1);
 					while (anot != NULL)
@@ -300,9 +372,7 @@ void MSN_ABGetFull(void)
 					if (anot == NULL)
 						DBDeleteContactSetting(hContact, "CList", "MyHandle");
 
-				
-					int listId = Lists_Add(lstFlg, szEmail);
-
+					int listId = Lists_Add(lstFlg, typeId, szEmail);
 					if ((listId & (LIST_AL | LIST_BL | LIST_FL)) == LIST_BL) 
 					{
 						DBDeleteContactSetting( hContact, "CList", "NotOnList" );
@@ -532,7 +602,7 @@ void MSN_ABUpdateNick(const char* szNick, const char* szCntId)
 }
 
 
-bool MSN_ABContactAdd(const char* szEmail, const char* szNick, const bool search)
+bool MSN_ABContactAdd(const char* szEmail, const char* szNick, const int typeId, const bool search)
 {
 	SSLAgent mAgent;
 
@@ -544,41 +614,60 @@ bool MSN_ABContactAdd(const char* szEmail, const char* szNick, const bool search
 	ezxml_t node = ezxml_add_child(conts, "Contact", 0);
 	ezxml_set_attr(node, "xmlns", "http://www.msn.com/webservices/AddressBook");
 	ezxml_t conti = ezxml_add_child(node, "contactInfo", 0);
-	
+	ezxml_t contp;
+
 	const char* szEmailNP = strchr(szEmail, ':');
-	if (szEmailNP == NULL)
+	if (szEmailNP != NULL) (int)typeId = 4;
+
+	switch (typeId)
 	{
+	case 1:
 		node = ezxml_add_child(conti, "contactType", 0);
 		ezxml_set_txt(node, "LivePending");
 		node = ezxml_add_child(conti, "passportName", 0);
 		ezxml_set_txt(node, szEmail);
 		node = ezxml_add_child(conti, "isMessengerUser", 0);
 		ezxml_set_txt(node, "true");
-		
-		if (szNick != NULL)
-		{
-			node = ezxml_add_child(conti, "annotations", 0);
-			ezxml_t annt = ezxml_add_child(node, "Annotation", 0);
-			node = ezxml_add_child(annt, "Name", 0);
-			ezxml_set_txt(node, "MSN.IM.Display");
-			node = ezxml_add_child(annt, "Value", 0);
-			ezxml_set_txt(node, szNick);
-		}
-	}
-	else
-	{
-		node = ezxml_add_child(conti, "firstName", 0);
-		ezxml_set_txt(node, szNick ? szNick : szEmailNP);
+		break;
+
+	case 4:
+		++szEmailNP;
+		if (szNick == NULL) szNick = szEmailNP;
 		node = ezxml_add_child(conti, "phones", 0);
-		ezxml_t contp = ezxml_add_child(node, "ContactPhone", 0);
+		contp = ezxml_add_child(node, "ContactPhone", 0);
 		node = ezxml_add_child(contp, "contactPhoneType", 0);
 		ezxml_set_txt(node, "ContactPhoneMobile");
 		node = ezxml_add_child(contp, "number", 0);
 		ezxml_set_txt(node, szEmailNP);
-		node = ezxml_add_child(contp, "isMessengerUser", 0);
+		node = ezxml_add_child(contp, "isMessengerEnabled", 0);
 		ezxml_set_txt(node, "true");
 		node = ezxml_add_child(contp, "propertiesChanged", 0);
 		ezxml_set_txt(node, "Number IsMessengerEnabled");
+		break;
+
+	case 2:
+	case 32:
+		node = ezxml_add_child(conti, "emails", 0);
+		contp = ezxml_add_child(node, "ContactEmail", 0);
+		node = ezxml_add_child(contp, "contactEmailType", 0);
+		ezxml_set_txt(node, typeId == 32 ? "Messenger2" : "Messenger3");
+		node = ezxml_add_child(contp, "email", 0);
+		ezxml_set_txt(node, szEmail);
+		node = ezxml_add_child(contp, "isMessengerEnabled", 0);
+		ezxml_set_txt(node, "true");
+		node = ezxml_add_child(contp, "propertiesChanged", 0);
+		ezxml_set_txt(node, "Email IsMessengerEnabled");
+		break;
+	}
+
+	if (szNick != NULL)
+	{
+		node = ezxml_add_child(conti, "annotations", 0);
+		ezxml_t annt = ezxml_add_child(node, "Annotation", 0);
+		node = ezxml_add_child(annt, "Name", 0);
+		ezxml_set_txt(node, "MSN.IM.Display");
+		node = ezxml_add_child(annt, "Value", 0);
+		ezxml_set_txt(node, szNick);
 	}
 
 	node = ezxml_add_child(conts, "options", 0);

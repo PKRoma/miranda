@@ -561,12 +561,13 @@ static void sttProcessAdd( char* buf, size_t len )
 			const char* szCont = ezxml_attr(cont, "n");
 			const char* szNick = ezxml_attr(cont, "f");
 			int listId =  atol(ezxml_attr(cont, "l"));
+			int typeId =  atol(ezxml_attr(cont, "t"));
 			
 			char szEmail[128];
 			mir_snprintf(szEmail, sizeof(szEmail), "%s@%s", szCont, szDom);
 
 			HANDLE hContact = MSN_HContactFromEmail(szEmail, szNick, 1, 0);
-			int mask = Lists_Add(listId, szEmail);
+			int mask = Lists_Add(listId, typeId, szEmail);
 
 			if ( listId == LIST_RL && ( mask & ( LIST_FL+LIST_AL+LIST_BL )) == 0 )
 				MSN_AddAuthRequest( hContact, szEmail, szNick );
@@ -1451,13 +1452,15 @@ LBL_InvalidCommand:
 							MSN_GoOffline();
 						return 1;
 					}
-
-					MSN_SharingFindMembership();
-					MSN_ABGetFull();
 					info->sendPacket( "USR", "TWN S t=%s&p=%s", tAuthToken, pAuthToken );
 				}
 				else if ( !strcmp( data.security, "OK" )) {
 					sl = time(NULL); //for hotmail
+
+					MSN_SharingFindMembership();
+					MSN_ABGetFull();
+					MSN_CleanupLists();
+
 					msnLoggedIn = true;
 
 					MSN_CreateContList();

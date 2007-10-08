@@ -36,42 +36,20 @@ void msnftp_invite( filetransfer *ft );
 
 static HANDLE AddToListByEmail( const char *email, DWORD flags )
 {
-	HANDLE hContact;
+	HANDLE hContact = MSN_HContactFromEmail(email, email, true, flags & PALF_TEMPORARY);
 
-	//check not already on list
-	for ( hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
-		   hContact != NULL;
-			hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 ))
+	if ( flags & PALF_TEMPORARY ) 
 	{
-		if ( MSN_IsMyContact( hContact )) {
-			char tEmail[ MSN_MAX_EMAIL_LEN ];
-			if ( MSN_GetStaticString( "e-mail", hContact, tEmail, sizeof( tEmail )))
-				continue;
-
-			if ( strcmp( tEmail, email ))
-				continue;
-
-			if ( !( flags & PALF_TEMPORARY ) && DBGetContactSettingByte( hContact, "CList", "NotOnList", 1 )) {
-				DBDeleteContactSetting( hContact, "CList", "NotOnList" );
-				DBDeleteContactSetting( hContact, "CList", "Hidden" );
-				goto LBL_AddContact;
-			}
-
-			return hContact;
-	}	}
-
-	//not already there: add
-	hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_ADD, 0, 0 );
-	MSN_CallService( MS_PROTO_ADDTOCONTACT, ( WPARAM )hContact,( LPARAM )msnProtocolName );
-	MSN_SetString( hContact, "e-mail", email );
-
-	if ( flags & PALF_TEMPORARY ) {
-   		DBWriteContactSettingByte( hContact, "CList", "NotOnList", 1 );
-		DBWriteContactSettingByte( hContact, "CList", "Hidden", 1 );
+		if (DBGetContactSettingByte( hContact, "CList", "NotOnList", 0 ) == 1) 
+			DBWriteContactSettingByte( hContact, "CList", "Hidden", 1 );
 	}
-	else {
-LBL_AddContact:
-		if ( msnLoggedIn ) {
+	else 
+	{
+		DBDeleteContactSetting( hContact, "CList", "NotOnList" );
+		DBDeleteContactSetting( hContact, "CList", "Hidden" );
+
+		if ( msnLoggedIn ) 
+		{
 			MSN_AddUser( hContact, email, LIST_FL );
 			MSN_AddUser( hContact, email, LIST_BL + LIST_REMOVE );
 			MSN_AddUser( hContact, email, LIST_AL );
@@ -217,7 +195,7 @@ static int MsnAuthDeny(WPARAM wParam,LPARAM lParam)
 
 static void __cdecl MsnSearchAckThread( void* arg )
 {
-	if (MSN_ABContactAdd((char*)arg, NULL, true))
+	if (MSN_ABContactAdd((char*)arg, NULL, 1, true))
 	{
 		PROTOSEARCHRESULT isr = {0};
 		isr.cbSize = sizeof( isr );
