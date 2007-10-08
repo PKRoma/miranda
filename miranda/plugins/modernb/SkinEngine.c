@@ -4211,7 +4211,7 @@ static DWORD ske_HexToARGB(char * Hex)
 static TCHAR *ske_ReAppend(TCHAR *lfirst, TCHAR * lsecond, int len)
 { 
 	int l1=lfirst?lstrlen(lfirst):0;
-	int l2=(len?len:(lstrlen(lsecond)+1));
+	int l2=(len?len:lstrlen(lsecond));
 	TCHAR *buf=mir_alloc((l1+l2+1)*sizeof(TCHAR));
 	if (lfirst) memmove(buf,lfirst,l1*sizeof(TCHAR));
 	memmove(buf+l1,lsecond,l2*sizeof(TCHAR));
