@@ -26,9 +26,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 struct MsnContact
 {
+	char *email;
 	int list;
 	int type;
-	char *email;
 };
 
 static int CompareLists( const MsnContact* p1, const MsnContact* p2 )
@@ -66,15 +66,12 @@ void  Lists_Wipe( void )
 
 bool Lists_IsInList( int list, const char* email )
 {
-	MsnContact srchCnt; 
-	srchCnt.email = (char*)email;
-
 	EnterCriticalSection(&csLists);
 	
-	MsnContact* p = contList.find(&srchCnt);
-	int res = p != NULL;
+	MsnContact* p = contList.find((MsnContact*)&email);
+	bool res = p != NULL;
 	if (res && list != -1)
-		res &= (p->list & list) == list;
+		res &= ((p->list & list) == list);
 
 	LeaveCriticalSection(&csLists);
 	return res;
@@ -82,12 +79,9 @@ bool Lists_IsInList( int list, const char* email )
 
 int Lists_GetMask( const char* email )
 {
-	MsnContact srchCnt; 
-	srchCnt.email = (char*)email;
-
 	EnterCriticalSection( &csLists );
 
-	MsnContact* p = contList.find(&srchCnt);
+	MsnContact* p = contList.find((MsnContact*)&email);
 	int res = p ? p->list : 0;
 
 	LeaveCriticalSection( &csLists );
@@ -96,12 +90,9 @@ int Lists_GetMask( const char* email )
 
 int Lists_GetType( const char* email )
 {
-	MsnContact srchCnt; 
-	srchCnt.email = (char*)email;
-
 	EnterCriticalSection( &csLists );
 
-	MsnContact* p = contList.find(&srchCnt);
+	MsnContact* p = contList.find((MsnContact*)&email);
 	int res = p ? p->type : 0;
 
 	LeaveCriticalSection( &csLists );
@@ -110,12 +101,9 @@ int Lists_GetType( const char* email )
 
 int Lists_Add(int list, int type, const char* email)
 {
-	MsnContact srchCnt; 
-	srchCnt.email = (char*)email;
-
 	EnterCriticalSection(&csLists);
 
-	MsnContact* p = contList.find(&srchCnt);
+	MsnContact* p = contList.find((MsnContact*)&email);
 	if ( p == NULL )
 	{
 		p = (MsnContact*)mir_alloc(sizeof( MsnContact));
@@ -134,11 +122,8 @@ int Lists_Add(int list, int type, const char* email)
 
 void  Lists_Remove( int list, const char* email )
 {
-	MsnContact srchCnt; 
-	srchCnt.email = (char*)email;
-
 	EnterCriticalSection( &csLists );
-	int i = contList.getIndex(&srchCnt);
+	int i = contList.getIndex((MsnContact*)&email);
 	if ( i != -1 ) 
 	{
 		MsnContact* p = contList[i];
@@ -300,14 +285,14 @@ void MSN_CreateContList(void)
 			if (dom == NULL && lastds == NULL)
 			{
 				if ((cxmlsz - sz) < 128) cxml = (char*)mir_realloc(cxml, (cxmlsz += 4096)); 
-				sz += mir_snprintf(cxml+sz, cxmlsz-sz, "<c n=\"%s\" l=\"%d\"/>", C->email, C->list & ~LIST_RL, 1);
+				sz += mir_snprintf(cxml+sz, cxmlsz-sz, "<c n=\"%s\" l=\"%d\"/>", C->email, C->list & ~LIST_RL);
 				used[j] = true;
 			}
 			else if (dom != NULL && lastds != NULL && _stricmp(lastds, dom) == 0)
 			{
 				if ((cxmlsz - sz) < 128) cxml = (char*)mir_realloc(cxml, (cxmlsz += 4096)); 
 				*(char*)dom = 0;
-				sz += mir_snprintf(cxml+sz, cxmlsz-sz, "<c n=\"%s\" l=\"%d\" t=\"%d\"/>", C->email, C->list & ~LIST_RL, 1);
+				sz += mir_snprintf(cxml+sz, cxmlsz-sz, "<c n=\"%s\" l=\"%d\" t=\"%d\"/>", C->email, C->list & ~LIST_RL, C->type);
 				*(char*)dom = '@';
 				used[j] = true;
 			}
