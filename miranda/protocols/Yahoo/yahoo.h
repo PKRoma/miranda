@@ -198,4 +198,5 @@ int YahooGotoMailboxCommand( WPARAM wParam, LPARAM lParam );
 void YahooMenuInit( void );
 void YahooIconsInit( void );
 HICON LoadIconEx( const char* name );
+int YahooIdleEvent(WPARAM wParam, LPARAM lParam);
 #endif
