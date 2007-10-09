@@ -313,7 +313,6 @@ static void RequestThread(void *vParam)
 
 				if (FetchAvatarFor(hContact) == GAIR_WAITFOR)
 				{
-printf(" ****  WAITING FOR\n");
 					// Mark to not request this contact avatar for more 30 min
 				    EnterCriticalSection(&requestQueue.cs);
 					QueueRemove(requestQueue, hContact);
