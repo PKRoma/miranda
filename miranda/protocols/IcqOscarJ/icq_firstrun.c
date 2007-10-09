@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_firstrun.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -105,9 +105,9 @@ BOOL CALLBACK icq_FirstRunDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
           GetDlgItemText(hwndDlg, IDC_UIN, str, sizeof(str));
           dwUIN = atoi(str);
           ICQWriteContactSettingDword(NULL, UNIQUEIDSETTING, dwUIN);
-          GetDlgItemText(hwndDlg, IDC_PW, str, sizeof(str));
+          GetDlgItemText(hwndDlg, IDC_PW, str, sizeof(gpszPassword));
           strcpy(gpszPassword, str);
-          CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(str), (LPARAM) str);
+          CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(gpszPassword), (LPARAM) str);
           ICQWriteContactSettingString(NULL, "Password", str);
         }
         // fall through
