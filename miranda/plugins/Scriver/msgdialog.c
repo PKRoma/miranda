@@ -52,7 +52,7 @@ static char buttonAlignment[] = { 0, 0, 0, 1, 1, 1, 1, 1};
 static UINT buttonSpacing[] = { 0, 0, 12, 0, 0, 0, 0, 0};
 static UINT buttonWidth[] = { 24, 24, 24, 24, 24, 24, 24, 38};
 
-/*
+
 static DWORD CALLBACK EditStreamCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
 {
     char *szFilename = (char *)dwCookie;
@@ -65,7 +65,7 @@ static DWORD CALLBACK EditStreamCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG
 	}
     return 1;
 }
-*/
+
 static DWORD CALLBACK StreamOutCallback(DWORD dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
 {
 	MessageSendQueueItem * msi = (MessageSendQueueItem *) dwCookie;
@@ -98,6 +98,16 @@ TCHAR *GetRichEditSelection(HWND hwnd) {
 		return (TCHAR *)msi.sendBuffer;
 	}
 	return NULL;
+}
+
+void SaveLog(HWND hwnd, const char *filename) {
+	EDITSTREAM stream;
+	DWORD dwFlags = 0;
+	ZeroMemory(&stream, sizeof(stream));
+	stream.pfnCallback = EditStreamCallback;
+	stream.dwCookie = (DWORD) filename;
+	dwFlags = SF_TEXT|SF_UNICODE;
+	SendMessage(hwnd, EM_STREAMOUT, (WPARAM)dwFlags, (LPARAM) &stream);
 }
 
 static TCHAR *GetIEViewSelection(struct MessageWindowData *dat) {
@@ -182,18 +192,18 @@ static TCHAR *GetQuotedTextW(TCHAR * text) {
 }
 
 static void saveDraftMessage(struct MessageWindowData *dat) {
+	GETTEXTEX  gt = {0};
 	TCHAR *textBuffer;
 	int textBufferSize;
-	textBufferSize = GetRichTextLength(GetDlgItem(dat->hwnd, IDC_MESSAGE), dat->codePage) + 1;
-	if (textBufferSize > 1) {
-		GETTEXTEX  gt = {0};
-		textBufferSize *= sizeof(TCHAR);
-		textBuffer = (TCHAR *) mir_alloc(textBufferSize);
 #if defined( _UNICODE )
 		gt.codepage = 1200;
 #else
 		gt.codepage = dat->codePage;
 #endif
+	textBufferSize = GetRichTextLength(GetDlgItem(dat->hwnd, IDC_MESSAGE), gt.codepage, TRUE);
+	if (textBufferSize > 0) {
+		textBufferSize += sizeof(TCHAR);
+		textBuffer = (TCHAR *) mir_alloc(textBufferSize);
 		gt.cb = textBufferSize;
 		gt.flags = GT_USECRLF;
 		SendDlgItemMessage(dat->hwnd, IDC_MESSAGE, EM_GETTEXTEX, (WPARAM) &gt, (LPARAM) textBuffer);
@@ -342,7 +352,7 @@ static void SetDialogToType(HWND hwndDlg)
 	}
 	UpdateReadChars(hwndDlg, dat);
 	ShowWindow(GetDlgItem(hwndDlg, IDC_SPLITTER), SW_SHOW);
-	EnableWindow(GetDlgItem(hwndDlg, IDOK), GetRichTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE), dat->codePage)?TRUE:FALSE);
+	EnableWindow(GetDlgItem(hwndDlg, IDOK), GetRichTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE), dat->codePage, FALSE)?TRUE:FALSE);
 	SendMessage(hwndDlg, DM_UPDATETITLEBAR, 0, 0);
 	SendMessage(hwndDlg, WM_SIZE, 0, 0);
 }
@@ -452,6 +462,11 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 				SendMessage(GetParent(GetParent(hwnd)), DM_SWITCHTITLEBAR, 0, 0);
 				return 0;
 			}
+			if (wParam == 19 && isCtrl && isAlt) {     // ctrl-shift-s
+			   // rm("scriver.log");
+			   // SaveLog(hwnd, "scriver.log");
+				return 0;
+			}
 		}
 		break;
 	case WM_KEYUP:
@@ -464,24 +479,29 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			if (wParam == VK_UP && isCtrl && (g_dat->flags & SMF_CTRLSUPPORT) && !DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE)) {
 				if (pdat->cmdList) {
 					if (!pdat->cmdListCurrent) {
+						int iLen;
 						saveDraftMessage(pdat);
 						pdat->cmdListCurrent = pdat->cmdListNew = tcmdlist_last(pdat->cmdList);
-					//	SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
+						SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
 						SendMessage(hwnd, EM_SETTEXTEX, (WPARAM) &st, (LPARAM)pdat->cmdListCurrent->szCmd);
 						SendMessage(hwnd, EM_SCROLLCARET, 0,0);
-					//	SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
-						//SendMessage(hwnd, EM_SETSEL, 0, -1);
-					}
-					else if (pdat->cmdListCurrent->prev) {
+						iLen = GetRichTextLength(hwnd, st.codepage, FALSE);
+						SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
+						RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE);
+						SendMessage(hwnd, EM_SETSEL, iLen, iLen);
+					} else if (pdat->cmdListCurrent->prev) {
+						int iLen;
 						pdat->cmdListCurrent = pdat->cmdListNew = pdat->cmdListCurrent->prev;
-					//	SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
+						SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
 						SendMessage(hwnd, EM_SETTEXTEX, (WPARAM) &st, (LPARAM)pdat->cmdListCurrent->szCmd);
+						iLen = GetRichTextLength(hwnd, st.codepage, FALSE);
 						SendMessage(hwnd, EM_SCROLLCARET, 0,0);
-					//	SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
-						//SendMessage(hwnd, EM_SETSEL, 0, -1);
+						SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
+						RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE);
+						SendMessage(hwnd, EM_SETSEL, iLen, iLen);
 					}
 				}
-				EnableWindow(GetDlgItem(GetParent(hwnd), IDOK), GetRichTextLength(GetDlgItem(GetParent(hwnd), IDC_MESSAGE), pdat->codePage) != 0);
+				EnableWindow(GetDlgItem(GetParent(hwnd), IDOK), GetRichTextLength(GetDlgItem(GetParent(hwnd), IDC_MESSAGE), pdat->codePage, FALSE) != 0);
 				UpdateReadChars(GetParent(hwnd), pdat);
 				return 0;
 			}
@@ -493,18 +513,21 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 							pdat->cmdListCurrent = tcmdlist_get2(g_dat->draftList, pdat->hContact);
 						}
 						if (pdat->cmdListCurrent) {
-							//SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
+							int iLen;
+							SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
 							SendMessage(hwnd, EM_SETTEXTEX, (WPARAM) &st, (LPARAM)pdat->cmdListCurrent->szCmd);
+							iLen = GetRichTextLength(hwnd, st.codepage, FALSE);
 							SendMessage(hwnd, EM_SCROLLCARET, 0,0);
-							//SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
-							//SendMessage(hwnd, EM_SETSEL, 0, -1);
+							SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
+							RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE);
+							SendMessage(hwnd, EM_SETSEL, iLen, iLen);
 						} else {
 							pdat->cmdListCurrent = 0;
 							SetWindowText(hwnd, _T(""));
 						}
 					}
 				}
-				EnableWindow(GetDlgItem(GetParent(hwnd), IDOK), GetRichTextLength(GetDlgItem(GetParent(hwnd), IDC_MESSAGE), pdat->codePage) != 0);
+				EnableWindow(GetDlgItem(GetParent(hwnd), IDOK), GetRichTextLength(GetDlgItem(GetParent(hwnd), IDC_MESSAGE), pdat->codePage, FALSE) != 0);
 				UpdateReadChars(GetParent(hwnd), pdat);
 				return 0;
 			}
@@ -828,7 +851,7 @@ static void UpdateReadChars(HWND hwndDlg, struct MessageWindowData * dat)
 	if (dat->parent->hwndActive == hwndDlg) {
 		TCHAR szText[256];
 		StatusBarData sbd;
-		int len = GetRichTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE), dat->codePage);
+		int len = GetRichTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE), dat->codePage, FALSE);
 		sbd.iItem = 1;
 		sbd.iFlags = SBDF_TEXT | SBDF_ICON;
 		sbd.hIcon = NULL;
@@ -1128,7 +1151,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					#endif
 					SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM) &st, (LPARAM)draft->szCmd);
 				}
-				len = GetRichTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE), dat->codePage);
+				len = GetRichTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE), dat->codePage, FALSE);
 				PostMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SETSEL, len, len);
 			}
 
@@ -2289,30 +2312,31 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				GETTEXTEX  gt = {0};
 				PARAFORMAT2 pf2;
 				MessageSendQueueItem msi = { 0 };
-				int bufSize = GetRichTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE), dat->codePage) + 1;
-
+				int bufSize;
+				int ansiBufSize = GetRichTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE), dat->codePage, TRUE) + 1;
+				bufSize = ansiBufSize;
 				ZeroMemory((void *)&pf2, sizeof(pf2));
 				pf2.cbSize = sizeof(pf2);
 				pf2.dwMask = PFM_RTLPARA;
 				SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETPARAFORMAT, 0, (LPARAM)&pf2);
 				if (pf2.wEffects & PFE_RTLPARA)
 					msi.flags |= PREF_RTL;
-
-				msi.sendBufferSize = bufSize * (sizeof(TCHAR) + 1);
+				#if defined( _UNICODE )
+					bufSize += GetRichTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE), 1200, TRUE) + 2;
+				#endif
+				msi.sendBufferSize = bufSize;
 				msi.sendBuffer = (char *) mir_alloc(msi.sendBufferSize);
 				msi.flags |= PREF_TCHAR;
 
 				gt.flags = GT_USECRLF;
-				gt.cb = bufSize;
+				gt.cb = ansiBufSize;
 				gt.codepage = dat->codePage;
 				SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETTEXTEX, (WPARAM) &gt, (LPARAM) msi.sendBuffer);
-//				GetDlgItemTextA(hwndDlg, IDC_MESSAGE, msi.sendBuffer, bufSize);
 				#if defined( _UNICODE )
-					gt.cb = bufSize * sizeof(TCHAR);
+					gt.cb = bufSize - ansiBufSize;
 					gt.codepage = 1200;
-					SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETTEXTEX, (WPARAM) &gt, (LPARAM) &msi.sendBuffer[bufSize]);
-
-					if ( RTL_Detect((wchar_t *)&msi.sendBuffer[bufSize] ))
+					SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETTEXTEX, (WPARAM) &gt, (LPARAM) &msi.sendBuffer[ansiBufSize]);
+					if ( RTL_Detect((wchar_t *)&msi.sendBuffer[ansiBufSize] ))
 						msi.flags |= PREF_RTL;
 				#endif
 				if (msi.sendBuffer[0] == 0) {
@@ -2320,7 +2344,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					break;
 				}
 				#if defined( _UNICODE )
-					dat->cmdList = tcmdlist_append(dat->cmdList, (TCHAR *) &msi.sendBuffer[bufSize]);
+					dat->cmdList = tcmdlist_append(dat->cmdList, (TCHAR *) &msi.sendBuffer[ansiBufSize]);
 				#else
 					dat->cmdList = tcmdlist_append(dat->cmdList, msi.sendBuffer);
 				#endif
@@ -2468,7 +2492,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			}
 		case IDC_MESSAGE:
 			if (HIWORD(wParam) == EN_CHANGE) {
-				int len = GetRichTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE), dat->codePage);
+				int len = GetRichTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE), dat->codePage, FALSE);
 				dat->cmdListCurrent = dat->cmdListNew;
 				dat->cmdListNew = 0;
 				UpdateReadChars(hwndDlg, dat);

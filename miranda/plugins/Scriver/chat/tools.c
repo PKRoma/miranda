@@ -684,12 +684,12 @@ UINT CreateGCMenu(HWND hwndDlg, HMENU *hMenu, int iIndex, POINT pt, SESSION_INFO
 	gcmi.pszUID = pszUID;
 
 	if (iIndex == 1) {
-		int i = GetRichTextLength(GetDlgItem(hwndDlg, IDC_CHAT_LOG), CP_ACP);
+		int iLen = GetRichTextLength(GetDlgItem(hwndDlg, IDC_CHAT_LOG), CP_ACP, FALSE);
 
 		EnableMenuItem(*hMenu, ID_CLEARLOG, MF_ENABLED);
 		EnableMenuItem(*hMenu, ID_COPYALL, MF_ENABLED);
 		ModifyMenu(*hMenu, 4, MF_GRAYED|MF_BYPOSITION, 4, NULL);
-		if (!i) {
+		if (!iLen) {
 			EnableMenuItem(*hMenu, ID_COPYALL, MF_BYCOMMAND | MF_GRAYED);
 			EnableMenuItem(*hMenu, ID_CLEARLOG, MF_BYCOMMAND | MF_GRAYED);
 			if (pszWordText && pszWordText[0])
