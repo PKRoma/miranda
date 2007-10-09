@@ -366,7 +366,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			}
 		}
 
-         if (wParam == VK_TAB && !(GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_SHIFT) & 0x8000)) {    //tab-autocomplete
+		if (wParam == VK_TAB && !isCtrl && !isShift) {    //tab-autocomplete
             TCHAR* pszText = NULL;
             int iLen;
             GETTEXTEX gt = {0};
@@ -377,25 +377,24 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
             end = HIWORD(lResult);
             SendMessage(hwnd, EM_SETSEL, end, end);
 
-            iLen = GetRichTextLength(hwnd, CP_ACP);
+			#if defined( _UNICODE )
+				gt.codepage = 1200;
+			#else
+				gt.codepage = CP_ACP;
+			#endif
+			iLen = GetRichTextLength(hwnd, gt.codepage, TRUE);
             if (iLen >0) {
-               TCHAR *pszName = NULL;
-               TCHAR *pszSelName = NULL;
-               pszText = mir_alloc(sizeof(TCHAR)*(iLen+100));
+				TCHAR *pszName = NULL;
+				TCHAR *pszSelName = NULL;
+				pszText = mir_alloc(iLen + 100 * sizeof(TCHAR));
+				gt.cb = iLen + 99 * sizeof(TCHAR);
+				gt.flags = GT_DEFAULT;
 
-               gt.cb = iLen+99;
-               gt.flags = GT_DEFAULT;
-               #if defined( _UNICODE )
-                  gt.codepage = 1200;
-               #else
-                  gt.codepage = CP_ACP;
-               #endif
-
-               SendMessage(hwnd, EM_GETTEXTEX, (WPARAM)&gt, (LPARAM)pszText);
-               while ( start >0 && pszText[start-1] != ' ' && pszText[start-1] != 13 && pszText[start-1] != VK_TAB)
-                  start--;
-               while (end < iLen && pszText[end] != ' ' && pszText[end] != 13 && pszText[end-1] != VK_TAB)
-                  end ++;
+				SendMessage(hwnd, EM_GETTEXTEX, (WPARAM)&gt, (LPARAM)pszText);
+				while ( start >0 && pszText[start-1] != ' ' && pszText[start-1] != 13 && pszText[start-1] != VK_TAB)
+					start--;
+				while (end < iLen && pszText[end] != ' ' && pszText[end] != 13 && pszText[end-1] != VK_TAB)
+					end ++;
 
                if ( dat->szTabSave[0] =='\0')
                   lstrcpyn( dat->szTabSave, pszText+start, end-start+1 );
@@ -543,7 +542,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
             else
                SetWindowText(hwnd, _T(""));
 
-            iLen = GetRichTextLength(hwnd, CP_ACP);
+            iLen = GetRichTextLength(hwnd, ste.codepage, FALSE);
             SendMessage(hwnd, EM_SCROLLCARET, 0,0);
             SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
             RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE);
@@ -566,7 +565,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
             else
                SetWindowText(hwnd, _T(""));
 
-            iLen = GetRichTextLength(hwnd, CP_ACP);
+            iLen = GetRichTextLength(hwnd, ste.codepage, FALSE);
             SendMessage(hwnd, EM_SCROLLCARET, 0,0);
             SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
             RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE);
@@ -1707,7 +1706,7 @@ LABEL_SHOWWINDOW:
             si.fMask = SIF_POS;
             si.nPos = si.nMax - si.nPage + 1;
             SetScrollInfo(GetDlgItem(hwndDlg, IDC_CHAT_LOG), SB_VERT, &si, TRUE);
-            sel.cpMin = sel.cpMax = GetRichTextLength(GetDlgItem(hwndDlg, IDC_CHAT_LOG), CP_ACP);
+            sel.cpMin = sel.cpMax = GetRichTextLength(GetDlgItem(hwndDlg, IDC_CHAT_LOG), CP_ACP, FALSE);
             SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_LOG), EM_EXSETSEL, 0, (LPARAM) & sel);
             PostMessage(GetDlgItem(hwndDlg, IDC_CHAT_LOG), WM_VSCROLL, MAKEWPARAM(SB_BOTTOM, 0), 0);
       }   }
@@ -2029,7 +2028,7 @@ LABEL_SHOWWINDOW:
          break;
 
       case IDC_CHAT_MESSAGE:
-         EnableWindow(GetDlgItem(hwndDlg, IDOK), GetRichTextLength(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), CP_ACP) != 0);
+         EnableWindow(GetDlgItem(hwndDlg, IDOK), GetRichTextLength(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), si->codePage, FALSE) != 0);
          break;
 
       case IDC_CHAT_SMILEY:

@@ -183,16 +183,14 @@ void logInfo(const char *fmt, ...) {
 	}
 }
 
-int GetRichTextLength(HWND hwnd, int codepage) {
+int GetRichTextLength(HWND hwnd, int codepage, BOOL inBytes) {
 	GETTEXTLENGTHEX gtl;
-
-#if defined( _UNICODE )
-	gtl.flags = GTL_NUMCHARS;
-	gtl.codepage = 1200;
-#else
 	gtl.codepage = codepage;
-	gtl.flags = GTL_NUMBYTES;
-#endif
-	gtl.flags |= GTL_PRECISE;
+	if (inBytes) {
+		gtl.flags = GTL_NUMBYTES;
+	} else {
+		gtl.flags = GTL_NUMCHARS;
+	}
+	gtl.flags |= GTL_PRECISE | GTL_USECRLF;
 	return (int) SendMessage(hwnd, EM_GETTEXTLENGTHEX, (WPARAM)&gtl, 0);
 }
