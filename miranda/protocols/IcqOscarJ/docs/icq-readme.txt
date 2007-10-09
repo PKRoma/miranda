@@ -68,6 +68,7 @@ Improvements:
 
 Improvements:
   Added ability to handle malformed UCS-2 encoded offline messages
+  Fixed possible local buffer overflow
 
 
 0.3.9.3

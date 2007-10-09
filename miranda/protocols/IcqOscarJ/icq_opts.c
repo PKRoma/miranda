@@ -452,7 +452,7 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
         
         GetClassName((HWND)lParam, szClass, sizeof(szClass));
         
-        if (lstrcmpi(szClass, "EDIT") || HIWORD(wParam) == EN_CHANGE)
+        if (stricmp(szClass, "EDIT") || HIWORD(wParam) == EN_CHANGE)
           ShowWindow(GetDlgItem(hwndDlg, IDC_RECONNECTREQD), SW_SHOW);
       }
       
@@ -476,7 +476,7 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
           char str[128];
           
           ICQWriteContactSettingDword(NULL, UNIQUEIDSETTING, (DWORD)GetDlgItemInt(hwndDlg, IDC_ICQNUM, NULL, FALSE));
-          GetDlgItemText(hwndDlg, IDC_PASSWORD, str, sizeof(str));
+          GetDlgItemText(hwndDlg, IDC_PASSWORD, str, sizeof(gpszPassword));
           if (strlennull(str))
           {
             strcpy(gpszPassword, str);
@@ -486,7 +486,7 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
           {
             gbRememberPwd = ICQGetContactSettingByte(NULL, "RememberPass", 0);
           }
-          CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(str), (LPARAM)str);
+          CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(gpszPassword), (LPARAM)str);
           ICQWriteContactSettingString(NULL, "Password", str);
           GetDlgItemText(hwndDlg,IDC_ICQSERVER, str, sizeof(str));
           ICQWriteContactSettingString(NULL, "OscarServer", str);
