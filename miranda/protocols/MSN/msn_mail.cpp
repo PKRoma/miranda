@@ -359,7 +359,7 @@ int MSN_SendOIM(const char* szEmail, const char* msg)
 	ezxml_set_attr(from, "xml:lang", langcd);
 	ezxml_set_attr(from, "proxy", "MSNMSGR");
 	ezxml_set_attr(from, "xmlns", "http://messenger.msn.com/ws/2004/09/oim/");
-	ezxml_set_attr(from, "msnpVer", "MSNP13");
+	ezxml_set_attr(from, "msnpVer", "MSNP14");
 	ezxml_set_attr(from, "buildVer", "8.0.0812");
 
 	ezxml_t to = ezxml_add_child(hdr, "To", 0);

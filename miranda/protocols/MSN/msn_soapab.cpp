@@ -143,19 +143,19 @@ void MSN_SharingFindMembership(void)
 				}
 				else if (strcmp(szType, "Email") == 0)
 				{
-					int typeId = 0;
 					const char* szEmail = ezxml_txt(ezxml_child(memb, "Email"));
+					int netId = strstr(szEmail, "@yahoo.com") ? 32 : 2;
 					ezxml_t anot = ezxml_get(memb, "Annotations", 0, "Annotation", -1);
 					while (anot != NULL)
 					{
 						if (strcmp(ezxml_txt(ezxml_child(anot, "Name")), "MSN.IM.BuddyType") == 0)
 						{
-							typeId = atol(ezxml_txt(ezxml_child(anot, "Value")));
+							netId = atol(ezxml_txt(ezxml_child(anot, "Value")));
 							break;
 						}
 						anot = ezxml_next(anot);
 					}
-					Lists_Add(lstId, typeId, szEmail);
+					Lists_Add(lstId, netId, szEmail);
 				}
 				memb = ezxml_next(memb);
 			}
@@ -167,7 +167,7 @@ void MSN_SharingFindMembership(void)
 }
 
 // AddMember, DeleteMember
-void MSN_SharingAddDelMember(const char* szEmail, const char* szRole, const char* szMethod)
+bool MSN_SharingAddDelMember(const char* szEmail, const char* szRole, const char* szMethod)
 {
 	SSLAgent mAgent;
 
@@ -187,8 +187,8 @@ void MSN_SharingAddDelMember(const char* szEmail, const char* szRole, const char
 	const char* szTypeName = "";
 	const char* szAccIdName = "";
 
-	int typeId = Lists_GetType(szEmail);
-	switch (typeId)
+	int netId = Lists_GetNetId(szEmail);
+	switch (netId)
 	{
 		case 1: 
 			szMemberName = "PassportMember";
@@ -227,7 +227,7 @@ void MSN_SharingAddDelMember(const char* szEmail, const char* szRole, const char
 	ezxml_set_txt(node, szEmail);
 	
 	char buf[64];
-	if (typeId == 2 && strcmp(szMethod, "DeleteMember") != 0)
+	if ((netId == 2 || netId == 32) && strcmp(szMethod, "DeleteMember") != 0)
 	{
 		node = ezxml_add_child(memb, "Annotations", 0);
 		ezxml_t anot = ezxml_add_child(node, "Annotation", 0);
@@ -235,7 +235,7 @@ void MSN_SharingAddDelMember(const char* szEmail, const char* szRole, const char
 		ezxml_set_txt(node, "MSN.IM.BuddyType");
 		node = ezxml_add_child(anot, "Value", 0);
 
-		mir_snprintf(buf, sizeof(buf), "%02d:", typeId);
+		mir_snprintf(buf, sizeof(buf), "%02d:", netId);
 		ezxml_set_txt(node, buf);
 	}
 
@@ -254,6 +254,8 @@ void MSN_SharingAddDelMember(const char* szEmail, const char* szRole, const char
 	free(szData);
 
 	mir_free(tResult);
+
+	return status == 200;
 }
 
 
@@ -418,7 +420,7 @@ void MSN_ABGetFull(void)
 }
 
 //		"ABGroupContactAdd" : "ABGroupContactDelete", "ABGroupDelete", "ABContactDelete"
-void MSN_ABAddDelContactGroup(const char* szCntId, const char* szGrpId, const char* szMethod)
+bool MSN_ABAddDelContactGroup(const char* szCntId, const char* szGrpId, const char* szMethod)
 {
 	SSLAgent mAgent;
 
@@ -456,6 +458,8 @@ void MSN_ABAddDelContactGroup(const char* szCntId, const char* szGrpId, const ch
 	free(szData);
 
 	mir_free(tResult);
+
+	return status == 200;
 }
 
 void MSN_ABAddGroup(const char* szGrpName)

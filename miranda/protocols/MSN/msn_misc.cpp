@@ -279,7 +279,7 @@ void 	MSN_GoOffline()
 
 static const char sttHeaderStart[] = "MIME-Version: 1.0\r\n";
 
-LONG ThreadData::sendMessage( int msgType, const char* parMsg, int parFlags )
+LONG ThreadData::sendMessage( int msgType, const char* email, int netId, const char* parMsg, int parFlags )
 {
 	char tHeader[ 1024 ];
 	strcpy( tHeader, sttHeaderStart );
@@ -324,7 +324,13 @@ LONG ThreadData::sendMessage( int msgType, const char* parMsg, int parFlags )
 			tFontName, tFontStyle, tFontColor, (parFlags & MSG_RTL) ? ";RL=1" : "" );
 	}
 
-	return sendPacket( "MSG", "%c %d\r\n%s%s", msgType, strlen( parMsg )+strlen( tHeader ), tHeader, parMsg );
+	int seq;
+	if (netId == 1)
+		seq = sendPacket( "MSG", "%c %d\r\n%s%s", msgType, strlen( parMsg )+strlen( tHeader ), tHeader, parMsg );
+	else
+		seq = sendPacket( "UUM", "%s %d %c %d\r\n%s%s", email, netId, msgType, strlen( parMsg )+strlen( tHeader ), tHeader, parMsg );
+
+	return seq;
 }
 
 void ThreadData::sendCaps( void )
@@ -337,7 +343,7 @@ void ThreadData::sendCaps( void )
 		"Client-Name: Miranda IM %s (MSN v.%s)\r\n",
 		mversion, __VERSION_STRING );
 
-	sendMessage( 'U', capMsg, MSG_DISABLE_HDR );
+	sendMessage( 'U', NULL, 1, capMsg, MSG_DISABLE_HDR );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -365,14 +371,14 @@ LONG ThreadData::sendRawMessage( int msgType, const char* data, int datLen )
 
 // Typing notifications support
 
-void MSN_SendTyping( ThreadData* info  )
+void MSN_SendTyping( ThreadData* info, const char* email, int netId  )
 {
 	char tCommand[ 1024 ];
 	mir_snprintf( tCommand, sizeof( tCommand ),
 		"Content-Type: text/x-msmsgscontrol\r\n"
 		"TypingUser: %s\r\n\r\n\r\n", MyOptions.szEmail );
 
-	info->sendMessage( 'U', tCommand, MSG_DISABLE_HDR );
+	info->sendMessage( netId == 1 ? 'U' : '2', email, netId, tCommand, MSG_DISABLE_HDR );
 }
 
 
@@ -380,7 +386,7 @@ static VOID CALLBACK TypingTimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWO
 {
 	ThreadData* T = MSN_GetThreadByTimer( idEvent );
 	if ( T != NULL )
-		MSN_SendTyping( T );
+		MSN_SendTyping( T, NULL, 1 );
 	else
 		KillTimer( NULL, idEvent );
 }	
@@ -390,7 +396,7 @@ void  MSN_StartStopTyping( ThreadData* info, bool start )
 {
 	if ( start && info->mTimerId == 0 ) {
 		info->mTimerId = SetTimer(NULL, 0, 5000, TypingTimerProc);
-		MSN_SendTyping( info );
+		MSN_SendTyping( info, NULL, 1 );
 	}
 	else if ( !start && info->mTimerId != 0 ) {
 			KillTimer( NULL, info->mTimerId );

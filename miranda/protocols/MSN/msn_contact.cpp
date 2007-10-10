@@ -89,3 +89,115 @@ HANDLE  MSN_HContactById( const char* szGuid )
 
 	return NULL;
 }
+
+
+static void AddDelUserContList(const char* email, const int list, const int netId, const bool del)
+{
+	char buf[512];
+	size_t sz;
+
+	const char* dom = strchr(email, '@');
+	if (dom == NULL)
+	{
+		sz = mir_snprintf(buf, sizeof(buf),
+			"<ml><t><c n=\"%s\" l=\"%d\"/></t></ml>",
+			email, list);
+	}
+	else
+	{
+		*(char*)dom = 0;
+		sz = mir_snprintf(buf, sizeof(buf),
+			"<ml><d n=\"%s\"><c n=\"%s\" l=\"%d\" t=\"%d\"/></d></ml>",
+			dom+1, email, list, netId);
+		*(char*)dom = '@';
+	}
+	msnNsThread->sendPacket(del ? "RML" : "ADL", "%d\r\n%s", sz, buf);
+
+	if (del)
+		Lists_Remove(list, email);
+	else
+		Lists_Add(list, netId, email);
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// MSN_AddUser - adds a e-mail address to one of the MSN server lists
+
+bool MSN_AddUser( HANDLE hContact, const char* email, int netId, int flags )
+{
+	bool needRemove = (flags & LIST_REMOVE) != 0;
+	flags &= 0xFF;
+
+	if (needRemove != Lists_IsInList(flags, email))
+		return true;
+
+	bool res = false;
+	if (flags == LIST_FL) 
+	{
+		if (needRemove) 
+		{
+			if (hContact == NULL)
+			{
+				hContact = MSN_HContactFromEmail( email, NULL, 0, 0 );
+				if ( hContact == NULL ) return false;
+			}
+
+			char id[ MSN_GUID_LEN ];
+			if ( !MSN_GetStaticString( "ID", hContact, id, sizeof( id ))) 
+			{
+				res = MSN_ABAddDelContactGroup(id , NULL, "ABContactDelete");
+				if (res) AddDelUserContList(email, flags, Lists_GetNetId(email), true);
+			}
+		}
+		else 
+		{
+			DBVARIANT dbv = {0};
+			if ( !strcmp( email, MyOptions.szEmail ))
+				DBGetContactSettingStringUtf( NULL, msnProtocolName, "Nick", &dbv );
+
+			res = MSN_ABContactAdd(email, dbv.pszVal, netId, false);
+			if (res)
+				AddDelUserContList(email, flags, netId, false);
+			else
+			{
+				if (netId == 1 && strstr(email, "@yahoo.com") != 0)
+					MSN_FindYahooUser(email);
+			}
+			MSN_FreeVariant( &dbv );
+		}
+	}
+	else {
+		const char* listName = (flags & LIST_AL) ? "Allow" :  "Block";
+		res = MSN_SharingAddDelMember(email, listName, needRemove ? "DeleteMember" : "AddMember");
+		if (res) AddDelUserContList(email, flags, Lists_GetNetId(email), needRemove);
+	}
+	return res;
+}
+
+
+void MSN_FindYahooUser(const char* email)
+{
+	const char* dom = strchr(email, '@');
+	if (dom)
+	{
+		char buf[512];
+		size_t sz;
+
+		*(char*)dom = '\0';
+		sz = mir_snprintf(buf, sizeof(buf), "<ml><d n=\"%s\"><c n=\"%s\"/></d></ml>", dom+1, email);
+		*(char*)dom = '@';
+		msnNsThread->sendPacket("FQY", "%d\r\n%s", sz, buf);
+	}
+}
+
+void MSN_RefreshContactList(void)
+{
+	Lists_Wipe();
+	MSN_SharingFindMembership();
+	MSN_ABGetFull();
+	MSN_CleanupLists();
+
+	msnLoggedIn = true;
+
+	MSN_CreateContList();
+}

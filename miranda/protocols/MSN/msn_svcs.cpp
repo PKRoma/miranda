@@ -50,13 +50,16 @@ static HANDLE AddToListByEmail( const char *email, DWORD flags )
 
 		if ( msnLoggedIn ) 
 		{
-			MSN_AddUser( hContact, email, LIST_FL );
-			MSN_AddUser( hContact, email, LIST_BL + LIST_REMOVE );
-			MSN_AddUser( hContact, email, LIST_AL );
-			if (strncmp(email, "tel:", 4) == 0 )
+			int netId = strncmp(email, "tel:", 4) == 0 ? 4 : 1;
+			if (MSN_AddUser( hContact, email, netId, LIST_FL ))
 			{
-				MSN_SetWord( hContact, "Status", ID_STATUS_ONTHEPHONE );
-				MSN_SetString( hContact, "MirVer", "SMS" );
+				MSN_AddUser( hContact, email, netId, LIST_BL + LIST_REMOVE );
+				MSN_AddUser( hContact, email, netId, LIST_AL );
+				if (netId == 4)
+				{
+					MSN_SetWord( hContact, "Status", ID_STATUS_ONTHEPHONE );
+					MSN_SetString( hContact, "MirVer", "SMS" );
+				}
 			}
 		}
 		else hContact = NULL;
@@ -186,16 +189,18 @@ static int MsnAuthDeny(WPARAM wParam,LPARAM lParam)
 	UrlEncode( UTF8(nick), urlNick, sizeof( urlNick ));
 	UrlEncode( email, urlEmail, sizeof( urlEmail ));
 
-	MSN_AddUser( NULL, urlEmail, LIST_BL );
+	MSN_AddUser( NULL, urlEmail, 1, LIST_BL );
 	return 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnBasicSearch - search contacts by e-mail
+HANDLE msnSearchId = NULL;
 
 static void __cdecl MsnSearchAckThread( void* arg )
 {
-	if (MSN_ABContactAdd((char*)arg, NULL, 1, true))
+	const char* email = (char*)arg;
+	if (MSN_ABContactAdd(email, NULL, 1, true))
 	{
 		PROTOSEARCHRESULT isr = {0};
 		isr.cbSize = sizeof( isr );
@@ -204,7 +209,17 @@ static void __cdecl MsnSearchAckThread( void* arg )
 
 		MSN_SendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, arg, ( LPARAM )&isr );
 	}
-	MSN_SendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, arg, 0 );
+	else
+	{
+		if (strstr(email, "@yahoo.com") == 0)
+			MSN_SendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, arg, 0 );
+		else
+		{
+			msnSearchId = arg;
+			MSN_FindYahooUser(email);
+		}
+	}
+
 	mir_free(arg);
 }
 
@@ -234,17 +249,13 @@ int MsnContactDeleted( WPARAM wParam, LPARAM lParam )
 
 	char tEmail[ MSN_MAX_EMAIL_LEN ];
 	if ( !MSN_GetStaticString( "e-mail", hContact, tEmail, sizeof( tEmail ))) {
-		MSN_AddUser( hContact, tEmail, LIST_FL | LIST_REMOVE );
-		MSN_AddUser( hContact, tEmail, LIST_AL | LIST_REMOVE );
+		MSN_AddUser( hContact, tEmail, 0, LIST_FL | LIST_REMOVE );
+		MSN_AddUser( hContact, tEmail, 0, LIST_AL | LIST_REMOVE );
 
-		if ( !Lists_IsInList( LIST_RL, tEmail )) {
-			MSN_AddUser( hContact, tEmail, LIST_BL | LIST_REMOVE );
-			Lists_Remove( 0xFF, tEmail );
-		}
-		else {
-			MSN_AddUser( hContact, tEmail, LIST_BL );
-			Lists_Remove( LIST_FL, tEmail );
-		}
+		if ( Lists_IsInList( LIST_RL, tEmail ))
+			MSN_AddUser( hContact, tEmail, 0, LIST_BL );
+		else 
+			MSN_AddUser( hContact, tEmail, 0, LIST_BL | LIST_REMOVE );
 	}
 
 	int type = DBGetContactSettingByte( hContact, msnProtocolName, "ChatRoom", 0 );
@@ -332,13 +343,13 @@ int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 
 			if ( !isBlocked && cws->value.wVal == ID_STATUS_OFFLINE ) 
 			{
-				MSN_AddUser( hContact, tEmail, LIST_AL + LIST_REMOVE );
-				MSN_AddUser( hContact, tEmail, LIST_BL );
+				MSN_AddUser( hContact, tEmail, 0, LIST_AL + LIST_REMOVE );
+				MSN_AddUser( hContact, tEmail, 0, LIST_BL );
 			}
 			else if ( isBlocked && cws->value.wVal == 0 ) 
 			{
-				MSN_AddUser( hContact, tEmail, LIST_BL + LIST_REMOVE );
-				MSN_AddUser( hContact, tEmail, LIST_AL );
+				MSN_AddUser( hContact, tEmail, 0, LIST_BL + LIST_REMOVE );
+				MSN_AddUser( hContact, tEmail, 0, LIST_AL );
 			}	
 		}	
 	}
@@ -396,7 +407,11 @@ int MsnWindowEvent(WPARAM wParam, LPARAM lParam)
 
 	if ( msgEvData->uType == MSG_WINDOW_EVT_OPENING ) {
 		if ( !MSN_IsMyContact( msgEvData->hContact )) return 0;
-		if ( MSN_IsMeByContact( msgEvData->hContact )) return 0;
+		
+		char tEmail[ MSN_MAX_EMAIL_LEN ];
+		if ( MSN_IsMeByContact( msgEvData->hContact, tEmail )) return 0;
+
+		if (Lists_GetNetId(tEmail) != 1) return 0;
 
 		bool isOffline;
 		ThreadData* thread = MSN_StartSB(msgEvData->hContact, isOffline);
@@ -956,7 +971,8 @@ static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 	else
 		msg = mir_utf8encode( msg );
 
-	if (strncmp(tEmail, "tel:", 4) == 0)
+	int netId  = Lists_GetNetId(tEmail);
+	if (netId == 4)
 	{
 		long id;
 		if ( strlen( msg ) > 133 ) {
@@ -981,28 +997,37 @@ static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 		return 999996;
 	}
 
-	int seq, msgType = ( MyOptions.SlowSend ) ? 'A' : 'N';
-	int rtlFlag = ( ccs->wParam & PREF_RTL ) ? MSG_RTL : 0;
+	int seq; 
+	int rtlFlag = (ccs->wParam & PREF_RTL ) ? MSG_RTL : 0;
 	
-	
-	bool isOffline;
-	ThreadData* thread = MSN_StartSB(ccs->hContact, isOffline);
-	if ( thread == NULL )
+	if (netId == 1)
 	{
-		if ( isOffline ) 
+		const char msgType = MyOptions.SlowSend ? 'A' : 'N';
+		bool isOffline;
+		ThreadData* thread = MSN_StartSB(ccs->hContact, isOffline);
+		if ( thread == NULL )
 		{
-			seq = rand();
-			mir_forkthread( sttSendOim, new TFakeAckParams( ccs->hContact, seq, msg ));
-			return seq;
+			if ( isOffline ) 
+			{
+				seq = rand();
+				mir_forkthread( sttSendOim, new TFakeAckParams( ccs->hContact, seq, msg ));
+				return seq;
+			}
+			else
+				seq = MsgQueue_Add( ccs->hContact, msgType, msg, 0, 0, rtlFlag );
 		}
 		else
-			seq = MsgQueue_Add( ccs->hContact, msgType, msg, 0, 0, rtlFlag );
+		{
+			seq = thread->sendMessage( msgType, tEmail, netId, msg, rtlFlag );
+			if ( !MyOptions.SlowSend )
+				mir_forkthread( sttFakeAck, new TFakeAckParams( ccs->hContact, seq, 0 ));
+		}
 	}
 	else
 	{
-		seq = thread->sendMessage( msgType, msg, rtlFlag );
-		if ( !MyOptions.SlowSend )
-			mir_forkthread( sttFakeAck, new TFakeAckParams( ccs->hContact, seq, 0 ));
+//		const char msgType = MyOptions.SlowSend ? '2' : '1';
+		seq = msnNsThread->sendMessage( '1', tEmail, netId, msg, rtlFlag );
+		mir_forkthread( sttFakeAck, new TFakeAckParams( ccs->hContact, seq, 0 ));
 	}
 
 	mir_free( msg );
@@ -1329,25 +1354,31 @@ static int MsnSetStatus( WPARAM wParam, LPARAM lParam )
 
 static int MsnUserIsTyping(WPARAM wParam, LPARAM lParam)
 {
-	if ( !msnLoggedIn )
-		return 0;
+	if ( !msnLoggedIn ) return 0;
 
 	HANDLE hContact = ( HANDLE )wParam;
 
-	if ( MSN_IsMeByContact( hContact )) return 0;
+	char tEmail[ MSN_MAX_EMAIL_LEN ];
+	if ( MSN_IsMeByContact( hContact, tEmail )) return 0;
 
 	bool typing = lParam == PROTOTYPE_SELFTYPING_ON;
 
-	bool isOffline;
-	ThreadData* thread = MSN_StartSB(hContact, isOffline);
-
-	if ( thread == NULL ) 
+	int netId = Lists_GetNetId(tEmail);
+	if (netId == 1)
 	{
-		if (isOffline) return 0;
-		MsgQueue_Add( hContact, 2571, NULL, 0, NULL, typing );
+		bool isOffline;
+		ThreadData* thread = MSN_StartSB(hContact, isOffline);
+
+		if ( thread == NULL ) 
+		{
+			if (isOffline) return 0;
+			MsgQueue_Add( hContact, 2571, NULL, 0, NULL, typing );
+		}
+		else
+			MSN_StartStopTyping( thread, typing );
 	}
 	else
-		MSN_StartStopTyping( thread, typing );
+		if (typing) MSN_SendTyping(msnNsThread, tEmail, netId);
 
 	return 0;
 }

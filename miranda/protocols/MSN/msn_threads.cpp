@@ -145,7 +145,7 @@ void __cdecl MSNServerThread( ThreadData* info )
 	MSN_DebugLog( "Connected with handle=%08X", info->s );
 
 	if ( info->mType == SERVER_DISPATCH || info->mType == SERVER_NOTIFICATION ) {
-		info->sendPacket( "VER", "MSNP13 CVR0" );
+		info->sendPacket( "VER", "MSNP14 MSNP13 CVR0" );
 	}
 	else if ( info->mType == SERVER_SWITCHBOARD ) {
 		info->sendPacket( info->mCaller ? "USR" : "ANS", "%s %s", MyOptions.szEmail, info->mCookie );

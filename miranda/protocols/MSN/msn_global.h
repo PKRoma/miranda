@@ -196,12 +196,9 @@ HANDLE      MSN_HContactById( const char* szGuid );
 
 bool		MSN_IsMyContact( HANDLE hContact );
 bool		MSN_IsMeByContact( HANDLE hContact, char* szEmail  = NULL );
-int         MSN_AddContact( char* uhandle,char* nick ); //returns clist ID
-void        MSN_AddUser( HANDLE hContact, const char* email, int flags );
+bool        MSN_AddUser( HANDLE hContact, const char* email, int netId, int flags );
 void        MSN_AddAuthRequest( HANDLE hContact, const char *email, const char *nick );
-int         MSN_ContactFromHandle( char* uhandle ); //get cclist id from Uhandle
 void        MSN_DebugLog( const char* fmt, ... );
-void        MSN_HandleFromContact( unsigned long uin, char* uhandle );
 
 void     __cdecl     MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP, void* );
 void        MSN_GoOffline( void );
@@ -504,7 +501,7 @@ struct ThreadData
 	char*          httpTransact(char* szCommand, size_t cmdsz, size_t& bdysz);
 
 	void           sendCaps( void );
-	LONG           sendMessage( int msgType, const char* msg, int parFlags );
+	LONG           sendMessage( int msgType, const char* email, int netId, const char* msg, int parFlags );
 	LONG           sendRawMessage( int msgType, const char* data, int datLen );
 	LONG           sendPacket( const char* cmd, const char* fmt, ... );
 };
@@ -525,6 +522,7 @@ ThreadData*  MSN_GetUnconnectedThread( HANDLE hContact );
 ThreadData*  MSN_GetOtherContactThread( ThreadData* thread );
 ThreadData*  MSN_GetThreadByTimer( UINT timerId );
 void		 MSN_StartStopTyping( ThreadData* info, bool start );
+void		 MSN_SendTyping( ThreadData* info, const char* email, int netId  );
 ThreadData*	 MSN_StartSB(HANDLE hContact, bool& isOffline);
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -619,15 +617,17 @@ void     MsgQueue_Clear( HANDLE hContact = NULL, bool msg = false );
 
 #define	LIST_REMOVE	0x0100
 
-int		 Lists_Add( int list, int type, const char* email );
+int		 Lists_Add( int list, int netId, const char* email );
 bool	 Lists_IsInList( int list, const char* email );
 int		 Lists_GetMask( const char* email );
-int		 Lists_GetType( const char* email );
+int		 Lists_GetNetId( const char* email );
 void	 Lists_Remove( int list, const char* email );
 void	 Lists_Wipe( void );
 
 void	 MSN_CreateContList(void);
 void	 MSN_CleanupLists(void);
+void	 MSN_FindYahooUser(const char* email);
+void	 MSN_RefreshContactList(void);
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN server groups
@@ -650,10 +650,10 @@ void   MSN_UploadServerGroups( char* group );
 //	MSN SOAP Address Book
 
 void MSN_SharingFindMembership(void);
-void MSN_SharingAddDelMember(const char* szEmail, const char* szRole, const char* szMethod);
+bool MSN_SharingAddDelMember(const char* szEmail, const char* szRole, const char* szMethod);
 
 void MSN_ABGetFull(void);
-void MSN_ABAddDelContactGroup(const char* szCntId, const char* szGrpId, const char* szMethod);
+bool MSN_ABAddDelContactGroup(const char* szCntId, const char* szGrpId, const char* szMethod);
 void MSN_ABAddGroup(const char* szGrpName);
 void MSN_ABRenameGroup(const char* szGrpName, const char* szGrpId);
 void MSN_ABUpdateNick(const char* szNick, const char* szCntId);

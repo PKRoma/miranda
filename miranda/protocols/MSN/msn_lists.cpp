@@ -28,7 +28,7 @@ struct MsnContact
 {
 	char *email;
 	int list;
-	int type;
+	int netId;
 };
 
 static int CompareLists( const MsnContact* p1, const MsnContact* p2 )
@@ -88,18 +88,18 @@ int Lists_GetMask( const char* email )
 	return res;
 }
 
-int Lists_GetType( const char* email )
+int Lists_GetNetId( const char* email )
 {
 	EnterCriticalSection( &csLists );
 
 	MsnContact* p = contList.find((MsnContact*)&email);
-	int res = p ? p->type : 0;
+	int res = p ? p->netId : 0;
 
 	LeaveCriticalSection( &csLists );
 	return res;
 }
 
-int Lists_Add(int list, int type, const char* email)
+int Lists_Add(int list, int netId, const char* email)
 {
 	EnterCriticalSection(&csLists);
 
@@ -108,7 +108,7 @@ int Lists_Add(int list, int type, const char* email)
 	{
 		p = (MsnContact*)mir_alloc(sizeof( MsnContact));
 		p->list = list;
-		p->type = type;
+		p->netId = netId;
 		p->email = mir_strdup(email);
 		contList.insert(p);
 	}
@@ -136,96 +136,6 @@ void  Lists_Remove( int list, const char* email )
 		}	
 	}
 	LeaveCriticalSection( &csLists );
-}
-
-// FDQ <ml><d n="yahoo.com"><c n="borkra1"/></d></ml>
-// FDQ <ml><d n="yahoo.com"><c n="borkra1" t="32" /></d></ml>
-// ADL <ml><d n="yahoo.com"><c n="borkra1" l="1" t="32"/></d></ml>
-void MSN_FindYahooUser(const char* email)
-{
-	const char* dom = strchr(email, '@');
-	if (dom)
-	{
-		char buf[512];
-		size_t sz;
-
-		sz = mir_snprintf(buf, sizeof(buf), "<ml><d n=\"%s\"><c n=\"%s\"/></d></ml>", dom+1, email);
-		msnNsThread->sendPacket("FDQ", "%d\r\n%s", sz, buf);
-	}
-}
-
-
-static void AddDelUserContList(const char* email, const int list, const int type, const bool del)
-{
-	char buf[512];
-	size_t sz;
-
-	const char* dom = strchr(email, '@');
-	if (dom == NULL)
-	{
-		sz = mir_snprintf(buf, sizeof(buf),
-			"<ml><t><c n=\"%s\" l=\"%d\"/></t></ml>",
-			email, list);
-	}
-	else
-	{
-		*(char*)dom = 0;
-		sz = mir_snprintf(buf, sizeof(buf),
-			"<ml><d n=\"%s\"><c n=\"%s\" l=\"%d\" t=\"%d\"/></d></ml>",
-			dom+1, email, list, type);
-		*(char*)dom = '@';
-	}
-	msnNsThread->sendPacket(del ? "RML" : "ADL", "%d\r\n%s", sz, buf);
-
-	if (del)
-		Lists_Remove(list, email);
-	else
-		Lists_Add(list, type, email);
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// MSN_AddUser - adds a e-mail address to one of the MSN server lists
-
-void  MSN_AddUser( HANDLE hContact, const char* email, int flags )
-{
-	bool needRemove = (flags & LIST_REMOVE) != 0;
-	flags &= 0xFF;
-
-	if (needRemove != Lists_IsInList(flags, email))
-		return;
-
-	if (flags == LIST_FL) 
-	{
-		if (needRemove) 
-		{
-			if (hContact == NULL)
-				if (( hContact = MSN_HContactFromEmail( email, NULL, 0, 0 )) == NULL )
-					return;
-
-			char id[ MSN_GUID_LEN ];
-			if ( !MSN_GetStaticString( "ID", hContact, id, sizeof( id ))) 
-			{
-				MSN_ABAddDelContactGroup(id , NULL, "ABContactDelete");
-				AddDelUserContList(email, flags, Lists_GetType(email), true);
-			}
-		}
-		else 
-		{
-			DBVARIANT dbv = {0};
-			if ( !strcmp( email, MyOptions.szEmail ))
-				DBGetContactSettingStringUtf( NULL, msnProtocolName, "Nick", &dbv );
-
-			MSN_ABContactAdd(email, dbv.pszVal, 1, false);
-			AddDelUserContList(email, flags, 1, false);
-			MSN_FreeVariant( &dbv );
-		}
-	}
-	else {
-		const char* listName = (flags & LIST_AL) ? "Allow" :  "Block";
-		MSN_SharingAddDelMember(email, listName, needRemove ? "DeleteMember" : "AddMember");
-		AddDelUserContList(email, flags, Lists_GetType(email), needRemove);
-	}
 }
 
 
@@ -292,7 +202,7 @@ void MSN_CreateContList(void)
 			{
 				if ((cxmlsz - sz) < 128) cxml = (char*)mir_realloc(cxml, (cxmlsz += 4096)); 
 				*(char*)dom = 0;
-				sz += mir_snprintf(cxml+sz, cxmlsz-sz, "<c n=\"%s\" l=\"%d\" t=\"%d\"/>", C->email, C->list & ~LIST_RL, C->type);
+				sz += mir_snprintf(cxml+sz, cxmlsz-sz, "<c n=\"%s\" l=\"%d\" t=\"%d\"/>", C->email, C->list & ~LIST_RL, C->netId);
 				*(char*)dom = '@';
 				used[j] = true;
 			}
@@ -362,7 +272,8 @@ static void SaveListItem( HANDLE hContact, const char* szEmail, int list, int iP
 
 	if ( iNewValue == 0 )
 		list += LIST_REMOVE;
-	MSN_AddUser( hContact, szEmail, list );
+
+	MSN_AddUser( hContact, szEmail, 0, list );
 }
 
 static void SaveSettings( HWND hwndList )
