@@ -1557,6 +1557,7 @@ LBL_InvalidCommand:
 					void MSNConnDetectThread( void* );
 					mir_forkthread( MSNConnDetectThread, NULL );
 
+					msnNsThread->sendPacket( "BLP", msnOtherContactsBlocked ? "BL" : "AL" );
 					tridUrlInbox = msnNsThread->sendPacket( "URL", "INBOX" );
 					tridUrlEdit  = msnNsThread->sendPacket( "URL", "PROFILE 0x%04x", langpref );
 				}
