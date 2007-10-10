@@ -657,6 +657,7 @@ bool MSN_ABAddDelContactGroup(const char* szCntId, const char* szGrpId, const ch
 void MSN_ABAddGroup(const char* szGrpName);
 void MSN_ABRenameGroup(const char* szGrpName, const char* szGrpId);
 void MSN_ABUpdateNick(const char* szNick, const char* szCntId);
+void MSN_ABUpdateAttr(const char* szAttr, const int value);
 bool MSN_ABContactAdd(const char* szEmail, const char* szNick, const int typeId, const bool search);
 
 /////////////////////////////////////////////////////////////////////////////////////////

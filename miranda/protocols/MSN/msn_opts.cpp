@@ -279,7 +279,9 @@ LBL_Continue:
 
 			unsigned tValue = IsDlgButtonChecked( hwndDlg, IDC_DISABLE_ANOTHER_CONTACTS );
 			if ( tValue != msnOtherContactsBlocked && msnLoggedIn ) {
-				msnNsThread->sendPacket( "BLP", ( tValue ) ? "BL" : "AL" );
+				msnOtherContactsBlocked = tValue;
+				msnNsThread->sendPacket( "BLP", tValue ? "BL" : "AL" );
+				MSN_ABUpdateAttr("MSN.IM.BLP", !tValue);
 				break;
 			}
 

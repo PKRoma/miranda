@@ -1013,18 +1013,8 @@ LBL_InvalidCommand:
 			break;
 
 		case ' PLB':    //********* BLP: section 7.6 List Retrieval And Property Management
-		{
-			union {
-				char* tWords[ 2 ];
-				struct { char *junk, *listName; } data;
-			};
-
-			if ( sttDivideWords( params, 2, tWords ) == 1 )
-				data.listName = data.junk;
-
-			msnOtherContactsBlocked = _stricmp( data.listName, "BL" ) == 0;
 			break;
-		}
+
 		case ' EYB':   //********* BYE: section 8.5 Session Participant Changes
 		{
 			union {

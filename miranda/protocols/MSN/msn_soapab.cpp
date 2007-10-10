@@ -411,6 +411,15 @@ void MSN_ABGetFull(void)
 				MSN_SetByte( "MobileEnabled", strcmp(szMBE, "true") == 0);
 				const char* szMOB   = ezxml_txt(ezxml_child(contInf, "IsNotMobileVisible"));
 				MSN_SetByte( "MobileAllowed", strcmp(szMOB, "true") != 0);
+
+				ezxml_t anot = ezxml_get(contInf, "annotations", 0, "Annotation", -1);
+				while (anot != NULL)
+				{
+					if (strcmp(ezxml_txt(ezxml_child(anot, "Name")), "MSN.IM.BLP") == 0)
+						msnOtherContactsBlocked = !atol(ezxml_txt(ezxml_child(anot, "Value")));
+
+					anot = ezxml_next(anot);
+				}
 			}
 			cont = ezxml_next(cont);
 		}
@@ -588,6 +597,50 @@ void MSN_ABUpdateNick(const char* szNick, const char* szCntId)
 		node = ezxml_add_child(cont, "propertiesChanged", 0);
 		ezxml_set_txt(node, "DisplayName");
 	}
+
+	char* szData = ezxml_toxml(xmlp, true);
+	ezxml_free(xmlp);
+
+	unsigned status;
+	MimeHeaders httpInfo;
+	char* htmlbody;
+
+	char* tResult = mAgent.getSslResult("https://contacts.msn.com/abservice/abservice.asmx", 
+		szData, reqHdr, status, httpInfo, htmlbody);
+
+	mir_free(reqHdr);
+	free(szData);
+
+	mir_free(tResult);
+}
+
+
+void MSN_ABUpdateAttr(const char* szAttr, const int value)
+{
+	SSLAgent mAgent;
+
+	char* reqHdr;
+	ezxml_t tbdy;
+	ezxml_t xmlp = abSoapHdr("ABContactUpdate", "Timer", tbdy, reqHdr);
+
+	ezxml_t node = ezxml_add_child(tbdy, "contacts", 0);
+	ezxml_t cont = ezxml_add_child(node, "Contact", 0);
+	ezxml_set_attr(cont, "xmlns", "http://www.msn.com/webservices/AddressBook");
+	ezxml_t conti = ezxml_add_child(cont, "contactInfo", 0);
+	node = ezxml_add_child(conti, "contactType", 0);
+	ezxml_set_txt(node, "Me");
+	node = ezxml_add_child(conti, "annotations", 0);
+	ezxml_t anot = ezxml_add_child(node, "Annotation", 0);
+	node = ezxml_add_child(anot, "Name", 0);
+	ezxml_set_txt(node, szAttr);
+	node = ezxml_add_child(anot, "Value", 0);
+
+	char buf[64];
+	mir_snprintf(buf, sizeof(buf), "%d", value);
+	ezxml_set_txt(node, buf);
+
+	node = ezxml_add_child(cont, "propertiesChanged", 0);
+	ezxml_set_txt(node, "Annotation");
 
 	char* szData = ezxml_toxml(xmlp, true);
 	ezxml_free(xmlp);
