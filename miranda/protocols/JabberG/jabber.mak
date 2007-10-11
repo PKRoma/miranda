@@ -55,6 +55,7 @@ CLEAN :
 	-@erase "$(INTDIR)\jabber_byte.obj"
 	-@erase "$(INTDIR)\jabber_caps.obj"
 	-@erase "$(INTDIR)\jabber_chat.obj"
+	-@erase "$(INTDIR)\jabber_console.obj"
 	-@erase "$(INTDIR)\jabber_disco.obj"
 	-@erase "$(INTDIR)\jabber_file.obj"
 	-@erase "$(INTDIR)\jabber_form.obj"
@@ -153,6 +154,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_byte.obj" \
 	"$(INTDIR)\jabber_caps.obj" \
 	"$(INTDIR)\jabber_chat.obj" \
+	"$(INTDIR)\jabber_console.obj" \
 	"$(INTDIR)\jabber_disco.obj" \
 	"$(INTDIR)\jabber_file.obj" \
 	"$(INTDIR)\jabber_form.obj" \
@@ -235,6 +237,8 @@ CLEAN :
 	-@erase "$(INTDIR)\jabber_caps.sbr"
 	-@erase "$(INTDIR)\jabber_chat.obj"
 	-@erase "$(INTDIR)\jabber_chat.sbr"
+	-@erase "$(INTDIR)\jabber_console.obj"
+	-@erase "$(INTDIR)\jabber_console.sbr"
 	-@erase "$(INTDIR)\jabber_disco.obj"
 	-@erase "$(INTDIR)\jabber_disco.sbr"
 	-@erase "$(INTDIR)\jabber_file.obj"
@@ -367,6 +371,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\jabber_byte.sbr" \
 	"$(INTDIR)\jabber_caps.sbr" \
 	"$(INTDIR)\jabber_chat.sbr" \
+	"$(INTDIR)\jabber_console.sbr" \
 	"$(INTDIR)\jabber_disco.sbr" \
 	"$(INTDIR)\jabber_file.sbr" \
 	"$(INTDIR)\jabber_form.sbr" \
@@ -419,6 +424,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_byte.obj" \
 	"$(INTDIR)\jabber_caps.obj" \
 	"$(INTDIR)\jabber_chat.obj" \
+	"$(INTDIR)\jabber_console.obj" \
 	"$(INTDIR)\jabber_disco.obj" \
 	"$(INTDIR)\jabber_file.obj" \
 	"$(INTDIR)\jabber_form.obj" \
@@ -491,6 +497,7 @@ CLEAN :
 	-@erase "$(INTDIR)\jabber_byte.obj"
 	-@erase "$(INTDIR)\jabber_caps.obj"
 	-@erase "$(INTDIR)\jabber_chat.obj"
+	-@erase "$(INTDIR)\jabber_console.obj"
 	-@erase "$(INTDIR)\jabber_disco.obj"
 	-@erase "$(INTDIR)\jabber_file.obj"
 	-@erase "$(INTDIR)\jabber_form.obj"
@@ -589,6 +596,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_byte.obj" \
 	"$(INTDIR)\jabber_caps.obj" \
 	"$(INTDIR)\jabber_chat.obj" \
+	"$(INTDIR)\jabber_console.obj" \
 	"$(INTDIR)\jabber_disco.obj" \
 	"$(INTDIR)\jabber_file.obj" \
 	"$(INTDIR)\jabber_form.obj" \
@@ -671,6 +679,8 @@ CLEAN :
 	-@erase "$(INTDIR)\jabber_caps.sbr"
 	-@erase "$(INTDIR)\jabber_chat.obj"
 	-@erase "$(INTDIR)\jabber_chat.sbr"
+	-@erase "$(INTDIR)\jabber_console.obj"
+	-@erase "$(INTDIR)\jabber_console.sbr"
 	-@erase "$(INTDIR)\jabber_disco.obj"
 	-@erase "$(INTDIR)\jabber_disco.sbr"
 	-@erase "$(INTDIR)\jabber_file.obj"
@@ -803,6 +813,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\jabber_byte.sbr" \
 	"$(INTDIR)\jabber_caps.sbr" \
 	"$(INTDIR)\jabber_chat.sbr" \
+	"$(INTDIR)\jabber_console.sbr" \
 	"$(INTDIR)\jabber_disco.sbr" \
 	"$(INTDIR)\jabber_file.sbr" \
 	"$(INTDIR)\jabber_form.sbr" \
@@ -855,6 +866,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_byte.obj" \
 	"$(INTDIR)\jabber_caps.obj" \
 	"$(INTDIR)\jabber_chat.obj" \
+	"$(INTDIR)\jabber_console.obj" \
 	"$(INTDIR)\jabber_disco.obj" \
 	"$(INTDIR)\jabber_file.obj" \
 	"$(INTDIR)\jabber_form.obj" \
@@ -1152,6 +1164,34 @@ SOURCE=.\jabber_chat.cpp
 
 
 "$(INTDIR)\jabber_chat.obj"	"$(INTDIR)\jabber_chat.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
+
+
+!ENDIF
+
+SOURCE=.\jabber_console.cpp
+
+!IF  "$(CFG)" == "jabberg - Win32 Release"
+
+
+"$(INTDIR)\jabber_console.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
+
+
+!ELSEIF  "$(CFG)" == "jabberg - Win32 Debug"
+
+
+"$(INTDIR)\jabber_console.obj"	"$(INTDIR)\jabber_console.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
+
+
+!ELSEIF  "$(CFG)" == "jabberg - Win32 Release Unicode"
+
+
+"$(INTDIR)\jabber_console.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
+
+
+!ELSEIF  "$(CFG)" == "jabberg - Win32 Debug Unicode"
+
+
+"$(INTDIR)\jabber_console.obj"	"$(INTDIR)\jabber_console.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
 
 
 !ENDIF
@@ -2525,48 +2565,48 @@ SOURCE=.\msvc6.rc
 !IF  "$(CFG)" == "jabberg - Win32 Release"
 
 "zlib - Win32 Release" :
-   cd "..\..\plugins\zlib"
+   cd "\MirandaStable\miranda\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release"
    cd "..\..\protocols\JabberG"
 
 "zlib - Win32 ReleaseCLEAN" :
-   cd "..\..\plugins\zlib"
+   cd "\MirandaStable\miranda\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release" RECURSE=1 CLEAN
    cd "..\..\protocols\JabberG"
 
 !ELSEIF  "$(CFG)" == "jabberg - Win32 Debug"
 
 "zlib - Win32 Debug" :
-   cd "..\..\plugins\zlib"
+   cd "\MirandaStable\miranda\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug"
    cd "..\..\protocols\JabberG"
 
 "zlib - Win32 DebugCLEAN" :
-   cd "..\..\plugins\zlib"
+   cd "\MirandaStable\miranda\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug" RECURSE=1 CLEAN
    cd "..\..\protocols\JabberG"
 
 !ELSEIF  "$(CFG)" == "jabberg - Win32 Release Unicode"
 
 "zlib - Win32 Release Unicode" :
-   cd "..\..\plugins\zlib"
+   cd "\MirandaStable\miranda\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release Unicode"
    cd "..\..\protocols\JabberG"
 
 "zlib - Win32 Release UnicodeCLEAN" :
-   cd "..\..\plugins\zlib"
+   cd "\MirandaStable\miranda\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release Unicode" RECURSE=1 CLEAN
    cd "..\..\protocols\JabberG"
 
 !ELSEIF  "$(CFG)" == "jabberg - Win32 Debug Unicode"
 
 "zlib - Win32 Debug Unicode" :
-   cd "..\..\plugins\zlib"
+   cd "\MirandaStable\miranda\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug Unicode"
    cd "..\..\protocols\JabberG"
 
 "zlib - Win32 Debug UnicodeCLEAN" :
-   cd "..\..\plugins\zlib"
+   cd "\MirandaStable\miranda\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug Unicode" RECURSE=1 CLEAN
    cd "..\..\protocols\JabberG"
 
