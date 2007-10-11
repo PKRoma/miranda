@@ -61,17 +61,18 @@ static int pathToRelative(WPARAM wParam, LPARAM lParam)
 static int pathToAbsolute(WPARAM wParam, LPARAM lParam) {
 	char *pSrc = (char*)wParam;
 	char *pOut = (char*)lParam;
-	if (!pSrc||!strlen(pSrc)||strlen(pSrc)>MAX_PATH) return 0;
-	if (pathIsAbsolute(pSrc)||(!isalnum(pSrc[0]) && pSrc[0]!='\\' )) {
+	if ( !pSrc || !strlen( pSrc ) || strlen( pSrc ) > MAX_PATH )
+		return 0;
+	if ( pathIsAbsolute( pSrc ) || ( !isalnum(pSrc[0]) && pSrc[0]!='\\' )) {
 		mir_snprintf(pOut, MAX_PATH, "%s", pSrc);
 		return strlen(pOut);
 	}
-	else if (pSrc[0]!='\\') {
-		mir_snprintf(pOut, MAX_PATH, "%s%s", szMirandaPath, pSrc);
-		return strlen(pOut);
+	else if ( pSrc[0] != '\\' ) {
+		mir_snprintf( pOut, MAX_PATH, "%s%s", szMirandaPath, pSrc );
+		return strlen( pOut );
 	}
 	else {
-		mir_snprintf(pOut, MAX_PATH, "%s%s", szMirandaPath, pSrc+1);
+		mir_snprintf( pOut, MAX_PATH, "%s%s", szMirandaPath, pSrc+1 );
 		return strlen(pOut);
 	}
 }
@@ -143,18 +144,20 @@ static int pathToAbsoluteW(WPARAM wParam, LPARAM lParam)
 {
 	TCHAR *pSrc = (TCHAR*)wParam;
 	TCHAR *pOut = (TCHAR*)lParam;
-	if (!pSrc||!lstrlen(pSrc)||lstrlen(pSrc)>MAX_PATH) return 0;
-	if (pathIsAbsoluteW(pSrc)||(!isalnum(pSrc[0]) && pSrc[0]!='\\' )) {
-		mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc);
-		return lstrlen(pOut);
+	if ( !pSrc || !lstrlen( pSrc ) || lstrlen( pSrc ) > MAX_PATH)
+		return 0;
+
+	if ( pathIsAbsoluteW( pSrc ) || ( !_istalnum( pSrc[0] ) && pSrc[0] != '\\' )) {
+		mir_sntprintf( pOut, MAX_PATH, _T("%s"), pSrc );
+		return lstrlen( pOut );
 	}
-	else if (pSrc[0]!='\\') {
-		mir_sntprintf(pOut, MAX_PATH, _T("%s%s"), szMirandaPathW, pSrc);
-		return lstrlen(pOut);
+	else if ( pSrc[0] != '\\' ) {
+		mir_sntprintf( pOut, MAX_PATH, _T("%s%s"), szMirandaPathW, pSrc );
+		return lstrlen( pOut );
 	}
 	else {
-		mir_sntprintf(pOut, MAX_PATH, _T("%s%s"), szMirandaPathW, pSrc+1);
-		return lstrlen(pOut);
+		mir_sntprintf( pOut, MAX_PATH, _T("%s%s"), szMirandaPathW, pSrc+1 );
+		return lstrlen( pOut );
 	}
 }
 
@@ -190,8 +193,9 @@ int InitPathUtilsW(void)
 {
 	TCHAR *p = 0;
 	GetModuleFileName(GetModuleHandle(NULL), szMirandaPathW, SIZEOF(szMirandaPathW));
-	p=_tcsrchr(szMirandaPathW,'\\');
-	if (p&&p+1) *(p+1)=0;
+	p = _tcsrchr(szMirandaPathW,'\\');
+	if ( p )
+		p[1] = 0;
 	mir_sntprintf(szMirandaPathWLower, MAX_PATH, _T("%s"), szMirandaPathW);
 	_tcslwr(szMirandaPathWLower);
 	CreateServiceFunction(MS_UTILS_PATHTORELATIVEW, pathToRelativeW);
@@ -205,8 +209,9 @@ int InitPathUtils(void)
 {
 	char *p = 0;
 	GetModuleFileNameA(GetModuleHandle(NULL), szMirandaPath, SIZEOF(szMirandaPath));
-	p=strrchr(szMirandaPath,'\\');
-	if (p&&p+1) *(p+1)=0;
+	p = strrchr(szMirandaPath,'\\');
+	if ( p )
+		p[1] = 0;
 	mir_snprintf(szMirandaPathLower, MAX_PATH, "%s", szMirandaPath);
 	_strlwr(szMirandaPathLower);
 	CreateServiceFunction(MS_UTILS_PATHTORELATIVE, pathToRelative);

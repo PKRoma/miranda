@@ -287,11 +287,17 @@ static int NetlibLog(WPARAM wParam,LPARAM lParam)
 	if(logOptions.toFile && logOptions.szFile[0]) {
 		FILE *fp;
 		fp = _tfopen(logOptions.szFile, _T("at"));
-		if(!fp) {
-			CreateDirectoryTreeT(logOptions.szFile);
+		if ( !fp ) {
+			TCHAR* pszLastBackslash = wcsrchr( logOptions.szFile, '\\' );
+			if ( pszLastBackslash != NULL ) {
+				*pszLastBackslash = '\0';
+				CreateDirectoryTreeT( logOptions.szFile );
+				*pszLastBackslash = '\\';
+			}
+			else CreateDirectoryTreeT( logOptions.szFile );
 			fp = _tfopen(logOptions.szFile, _T("at"));
 		}
-		if(fp) {
+		if ( fp ) {
 			fputs(szLine,fp);
 			fclose(fp);
 	}	}
