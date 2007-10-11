@@ -72,6 +72,14 @@ static void removeSpaces( TCHAR* p )
 		p++;
 }	}
 
+static char* getControlText( HWND hWnd, int ctrlID )
+{
+	size_t size = GetWindowTextLength( GetDlgItem( hWnd, ctrlID ))+1;
+	char* result = new char[size];
+	GetDlgItemTextA( hWnd, ctrlID, result, size );
+	return result;
+}
+
 void InitPrefs(void)
 {
 	DBVARIANT dbv;
@@ -336,20 +344,18 @@ BOOL CALLBACK AddServerProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 							pData->iSSL = 2;
 						if(IsDlgButtonChecked( hwndDlg, IDC_AUTO))
 							pData->iSSL = 1;
-						pData->Address=new char[GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_ADDRESS))+1];
-						GetDlgItemTextA( hwndDlg,IDC_ADD_ADDRESS, pData->Address, GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_ADDRESS))+1);
-						pData->Group=new char[GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_COMBO))+1];
-						GetDlgItemTextA( hwndDlg,IDC_ADD_COMBO, pData->Group, GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_COMBO))+1);
-						pData->Name=new char[GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_SERVER))+GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_COMBO))+3];
-						lstrcpyA(pData->Name, pData->Group);
-						lstrcatA(pData->Name, ": ");
+
+						pData->PortEnd = getControlText( hwndDlg, IDC_ADD_PORT2 );
+						pData->PortStart = getControlText( hwndDlg, IDC_ADD_PORT );
+						pData->Address = getControlText( hwndDlg, IDC_ADD_ADDRESS );
+						pData->Group = getControlText( hwndDlg, IDC_ADD_COMBO );
+						pData->Name = getControlText( hwndDlg, IDC_ADD_SERVER );
+
 						char temp[255];
-						GetDlgItemTextA( hwndDlg,IDC_ADD_SERVER, temp, GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_SERVER))+1);
-						lstrcatA(pData->Name, temp);			
-						pData->PortEnd=new char[GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_PORT2))+1];
-						GetDlgItemTextA( hwndDlg,IDC_ADD_PORT2, pData->PortEnd, GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_PORT2))+1);
-						pData->PortStart=new char[GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_PORT))+1];
-						GetDlgItemTextA( hwndDlg,IDC_ADD_PORT, pData->PortStart, GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_PORT))+1);
+						mir_snprintf( temp, sizeof(temp), "%s: %s", pData->Group, pData->Name );
+						delete pData->Name;
+						strcpy( pData->Name = new char[ strlen(temp)+1 ], temp );
+
 						int iItem = SendMessageA(GetDlgItem(connect_hWnd, IDC_SERVERCOMBO),CB_ADDSTRING,0,(LPARAM) pData->Name);
 						SendMessage(GetDlgItem(connect_hWnd, IDC_SERVERCOMBO),CB_SETITEMDATA,iItem,(LPARAM) pData);
 						SendMessage(GetDlgItem(connect_hWnd, IDC_SERVERCOMBO),CB_SETCURSEL,iItem,0);
@@ -402,23 +408,18 @@ BOOL CALLBACK EditServerProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			}
 			int j = SendMessage(GetDlgItem(connect_hWnd, IDC_SERVERCOMBO), CB_GETCURSEL, 0, 0);
 			SERVER_INFO* pData = ( SERVER_INFO* )SendMessage(GetDlgItem(connect_hWnd, IDC_SERVERCOMBO), CB_GETITEMDATA, j, 0);
-			SetDlgItemTextA( hwndDlg, IDC_ADD_ADDRESS, pData->Address);
-			SetDlgItemTextA( hwndDlg, IDC_ADD_COMBO, pData->Group);
-			SetDlgItemTextA( hwndDlg, IDC_ADD_PORT, pData->PortStart);
-			SetDlgItemTextA( hwndDlg, IDC_ADD_PORT2, pData->PortEnd);
-			char tempchar[255];
-			strcpy (tempchar, pData->Name);
-			int temp = strchr(tempchar, ' ') -tempchar;
-			for (int index2 = temp+1; index2 < lstrlenA(tempchar)+1;index2++)
-				tempchar[index2-temp-1] = tempchar[index2];
-
-			if(m_ssleay32) {
-				if(pData->iSSL == 0)
-					CheckDlgButton( hwndDlg, IDC_OFF, BST_CHECKED);
-				if(pData->iSSL == 1)
-					CheckDlgButton( hwndDlg, IDC_AUTO, BST_CHECKED);
-				if(pData->iSSL == 2)
-					CheckDlgButton( hwndDlg, IDC_ON, BST_CHECKED);
+			SetDlgItemTextA( hwndDlg, IDC_ADD_ADDRESS, pData->Address );
+			SetDlgItemTextA( hwndDlg, IDC_ADD_COMBO, pData->Group );
+			SetDlgItemTextA( hwndDlg, IDC_ADD_PORT, pData->PortStart );
+			SetDlgItemTextA( hwndDlg, IDC_ADD_PORT2, pData->PortEnd );
+			
+			if ( m_ssleay32 ) {
+				if ( pData->iSSL == 0 )
+					CheckDlgButton( hwndDlg, IDC_OFF, BST_CHECKED );
+				if ( pData->iSSL == 1 )
+					CheckDlgButton( hwndDlg, IDC_AUTO, BST_CHECKED );
+				if ( pData->iSSL == 2 )
+					CheckDlgButton( hwndDlg, IDC_ON, BST_CHECKED );
 			}
 			else {
 				EnableWindow(GetDlgItem( hwndDlg, IDC_ON), FALSE);
@@ -426,7 +427,10 @@ BOOL CALLBACK EditServerProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				EnableWindow(GetDlgItem( hwndDlg, IDC_AUTO), FALSE);
 			}
 
-			SetDlgItemTextA( hwndDlg, IDC_ADD_SERVER, tempchar);
+			char* p = strchr( pData->Name, ' ' );
+			if ( p )
+				SetDlgItemTextA( hwndDlg, IDC_ADD_SERVER, p+1);
+
 			SetFocus(GetDlgItem( hwndDlg, IDC_ADD_COMBO));	
 		}
 		return TRUE;
@@ -449,24 +453,22 @@ BOOL CALLBACK EditServerProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 					SERVER_INFO* pData = new SERVER_INFO;
 					pData->iSSL = 0;
-					if(IsDlgButtonChecked( hwndDlg, IDC_ON))
+					if ( IsDlgButtonChecked( hwndDlg, IDC_ON ))
 						pData->iSSL = 2;
-					if(IsDlgButtonChecked( hwndDlg, IDC_AUTO))
+					if ( IsDlgButtonChecked( hwndDlg, IDC_AUTO ))
 						pData->iSSL = 1;
-					pData->Address=new char[GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_ADDRESS))+1];
-					GetDlgItemTextA( hwndDlg,IDC_ADD_ADDRESS, pData->Address, GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_ADDRESS))+1);
-					pData->Group=new char[GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_COMBO))+1];
-					GetDlgItemTextA( hwndDlg,IDC_ADD_COMBO, pData->Group, GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_COMBO))+1);
-					pData->Name=new char[GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_SERVER))+GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_COMBO))+3];
-					lstrcpyA(pData->Name, pData->Group);
-					lstrcatA(pData->Name, ": ");
+
+					pData->PortEnd = getControlText( hwndDlg, IDC_ADD_PORT2 );
+					pData->PortStart = getControlText( hwndDlg, IDC_ADD_PORT );
+					pData->Address = getControlText( hwndDlg, IDC_ADD_ADDRESS );
+					pData->Group = getControlText( hwndDlg, IDC_ADD_COMBO );
+					pData->Name = getControlText( hwndDlg, IDC_ADD_SERVER );
+
 					char temp[255];
-					GetDlgItemTextA( hwndDlg,IDC_ADD_SERVER, temp, GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_SERVER))+1);
-					lstrcatA(pData->Name, temp);			
-					pData->PortEnd=new char[GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_PORT2))+1];
-					GetDlgItemTextA( hwndDlg,IDC_ADD_PORT2, pData->PortEnd, GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_PORT2))+1);
-					pData->PortStart=new char[GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_PORT))+1];
-					GetDlgItemTextA( hwndDlg,IDC_ADD_PORT, pData->PortStart, GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_PORT))+1);
+					mir_snprintf( temp, sizeof(temp), "%s: %s", pData->Group, pData->Name );
+					delete pData->Name;
+					strcpy( pData->Name = new char[ strlen(temp)+1 ], temp );
+
 					int iItem = SendMessageA(GetDlgItem(connect_hWnd, IDC_SERVERCOMBO),CB_ADDSTRING,0,(LPARAM) pData->Name);
 					SendMessage(GetDlgItem(connect_hWnd, IDC_SERVERCOMBO),CB_SETITEMDATA,iItem,(LPARAM) pData);
 					SendMessage(GetDlgItem(connect_hWnd, IDC_SERVERCOMBO),CB_SETCURSEL,iItem,0);
