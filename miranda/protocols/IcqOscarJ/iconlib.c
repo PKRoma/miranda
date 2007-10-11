@@ -38,14 +38,8 @@
 #include "m_icolib.h"
 
 
-void InitIconLib()
-{ 
-  // nothing
-}
 
-
-
-HANDLE IconLibDefine(const char* desc, const char* section, const char* ident, HICON icon, const char* def_file, int def_idx)
+HANDLE IconLibDefine(const char* desc, const char* section, const char* ident, const char* def_file, int def_idx)
 {
   SKINICONDESC sid = {0};
   char szTemp[MAX_PATH + 128];
@@ -53,14 +47,13 @@ HANDLE IconLibDefine(const char* desc, const char* section, const char* ident, H
 
   sid.cbSize = SKINICONDESC_SIZE;
   sid.pwszSection = make_unicode_string(section);
-  sid.pwszDescription = make_unicode_string(desc);
+  sid.pwszDescription = make_unicode_string(ICQTranslateUtfStatic(desc, szTemp, MAX_PATH));
   sid.flags = SIDF_UNICODE;
 
   null_snprintf(szTemp, sizeof(szTemp), "%s_%s", gpszICQProtoName, ident);
   sid.pszName = szTemp;
   sid.pszDefaultFile = (char*)def_file;
   sid.iDefaultIndex = def_idx;
-  sid.hDefaultIcon = icon;
   sid.cx = sid.cy = 16;
 
   hIcon = (HANDLE)CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);

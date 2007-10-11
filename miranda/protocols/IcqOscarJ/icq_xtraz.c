@@ -38,6 +38,7 @@
 
 
 extern HANDLE hsmsgrequest;
+extern HANDLE hxstatuschanged;
 
 
 void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char* szMsg, int nMsgLen, BOOL bThruDC)
@@ -217,6 +218,8 @@ NextVal:
 
           if ((DWORD)atoi(szNode) == dwUin)
           {
+            int bChanged = FALSE;
+
             *szEnd = ' ';
             szNode = strstr(szWork, "<index>");
             szEnd = strstr(szWork, "</index>");
@@ -236,11 +239,16 @@ NextVal:
 
             if (szNode && szEnd)
             { // we got XStatus title, save it
-              char *szXName;
+              char *szXName, *szOldXName;
 
               szNode += 7;
               *szEnd = '\0';
               szXName = DemangleXml(szNode, strlennull(szNode));
+              // check if the name changed
+              szOldXName = ICQGetContactSettingUtf(hContact, DBSETTING_XSTATUSNAME, NULL);
+              if (strcmpnull(szOldXName, szXName))
+                bChanged = TRUE;
+              SAFE_FREE(&szOldXName);
               ICQWriteContactSettingUtf(hContact, DBSETTING_XSTATUSNAME, szXName);
               SAFE_FREE(&szXName);
               *szEnd = ' ';
@@ -250,15 +258,23 @@ NextVal:
 
             if (szNode && szEnd)
             { // we got XStatus mode msg, save it
-              char *szXMsg;
+              char *szXMsg, *szOldXMsg;
 
               szNode += 6;
               *szEnd = '\0';
               szXMsg = DemangleXml(szNode, strlennull(szNode));
+              // check if the decription changed
+              szOldXMsg = ICQGetContactSettingUtf(hContact, DBSETTING_XSTATUSNAME, NULL);
+              if (strcmpnull(szOldXMsg, szXMsg))
+                bChanged = TRUE;
+              SAFE_FREE(&szOldXMsg);
               ICQWriteContactSettingUtf(hContact, DBSETTING_XSTATUSMSG, szXMsg);
               SAFE_FREE(&szXMsg);
             }
             ICQBroadcastAck(hContact, ICQACKTYPE_XSTATUS_RESPONSE, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
+
+            if (bChanged)
+              NotifyEventHooks(hxstatuschanged, (WPARAM)hContact, 0);
           }
           else
             NetLog_Server("Error: Invalid sender information");
