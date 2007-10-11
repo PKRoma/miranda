@@ -196,7 +196,9 @@ will pick this up and everything will be good.
 #define PLI_OFFLINE    3    //Offline state icon for that protocol (eg red flower for ICQ)
 #define PLIF_LARGE     0		//OR with one of the above to get the large (32x32 by default) icon
 #define PLIF_SMALL     0x10000  //OR with one of the above to get the small (16x16 by default) icon
-#define PS_LOADICON     "/LoadIcon"
+#define PLIF_ICOLIB    0x20000  //the returned HICON is managed by IcoLib, DO NOT DestroyIcon() it
+#define PLIF_ICOLIBHANDLE 0x40000 //the function will return IcoLib handle not HICON
+#define PS_LOADICON    "/LoadIcon"
 
 //Change the protocol's status mode
 //wParam=newMode, from ui/contactlist/statusmodes.h

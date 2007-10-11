@@ -275,6 +275,11 @@ typedef struct {
 //lParam = hIcon       // HANDLE to clist extra icon set as custom status
 #define ME_ICQ_CUSTOMSTATUS_EXTRAICON_CHANGED "/XStatusExtraIconChanged"
 
+// Called when a contact changes its custom status 
+// wParam = hContact
+// lParam = 0
+#define ME_ICQ_CUSTOMSTATUS_CHANGED "/XStatusChanged"
+
 // Called from contact list in order to get index of custom status icon in list
 // wParam = hContact
 // lParam = 0
