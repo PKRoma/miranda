@@ -51,11 +51,17 @@ static HANDLE hUserMenuAuth = NULL;
 static HANDLE hUserMenuGrant = NULL;
 static HANDLE hUserMenuRevoke = NULL;
 static HANDLE hUserMenuXStatus = NULL;
+HANDLE hIconProtocol = NULL;
+static HANDLE hIconMenuAuth = NULL;
+static HANDLE hIconMenuGrant = NULL;
+static HANDLE hIconMenuRevoke = NULL;
+static HANDLE hIconMenuAddServ = NULL;
 
 extern HANDLE hServerConn;
 CRITICAL_SECTION localSeqMutex;
 CRITICAL_SECTION connectionHandleMutex;
 HANDLE hsmsgrequest;
+HANDLE hxstatuschanged;
 HANDLE hxstatusiconchanged;
 
 extern int bHideXStatusUI;
@@ -63,7 +69,7 @@ extern int bHideXStatusUI;
 PLUGININFOEX pluginInfo = {
   sizeof(PLUGININFOEX),
   NULL,
-  PLUGIN_MAKE_VERSION(0,3,10,5),
+  PLUGIN_MAKE_VERSION(0,3,10,6),
   "Support for ICQ network, enhanced.",
   "Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
   "jokusoftware@miranda-im.org",
@@ -122,12 +128,20 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
 	return TRUE;
 }
 
-static HANDLE ICQCreateServiceFunction(const char* szService,  MIRANDASERVICE serviceProc)
+static HANDLE ICQCreateServiceFunction(const char* szService, MIRANDASERVICE serviceProc)
 {
   char str[MAX_PATH + 32];
   strcpy(str, gpszICQProtoName);
   strcat(str, szService);
   return CreateServiceFunction(str, serviceProc);
+}
+
+static HANDLE ICQCreateHookableEvent(const char* szEvent)
+{
+  char str[MAX_PATH + 32];
+  strcpy(str, gpszICQProtoName);
+  strcat(str, szEvent);
+  return CreateHookableEvent(str);
 }
 
 
@@ -274,15 +288,9 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
   ICQCreateServiceFunction(PS_ICQ_REQUESTCUSTOMSTATUS, IcqRequestXStatusDetails);
   ICQCreateServiceFunction(PS_ICQ_GETADVANCEDSTATUSICON, IcqRequestAdvStatusIconIdx);
 
-  {
-    char pszServiceName[MAX_PATH + 32];
-
-    strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, ME_ICQ_STATUSMSGREQ);
-    hsmsgrequest = CreateHookableEvent(pszServiceName);
-
-    strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, ME_ICQ_CUSTOMSTATUS_EXTRAICON_CHANGED);
-    hxstatusiconchanged = CreateHookableEvent(pszServiceName);
-  }
+  hsmsgrequest = ICQCreateHookableEvent(ME_ICQ_STATUSMSGREQ);
+  hxstatuschanged = ICQCreateHookableEvent(ME_ICQ_CUSTOMSTATUS_CHANGED);
+  hxstatusiconchanged = ICQCreateHookableEvent(ME_ICQ_CUSTOMSTATUS_EXTRAICON_CHANGED);
 
   InitDirectConns();
   InitOscarFileTransfer();
@@ -303,6 +311,24 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
   ICQCreateServiceFunction(MS_REVOKE_AUTH, IcqRevokeAuthorization);
 
   ICQCreateServiceFunction(MS_XSTATUS_SHOWDETAILS, IcqShowXStatusDetails);
+
+  hHookIconsChanged = IconLibHookIconsChanged(IconLibIconsChanged);
+
+  // Initialize IconLib icons (only 0.7+)
+  {
+    char proto[MAX_PATH], lib[MAX_PATH];
+    
+    ICQTranslateUtfStatic(gpszICQProtoName, proto, MAX_PATH);
+
+    GetModuleFileName(hInst, lib, MAX_PATH);
+
+    hIconProtocol = IconLibDefine(LPGEN("Protocol Icon"), proto, "main", lib, -IDI_ICQ);
+    hIconMenuAuth = IconLibDefine(LPGEN("Request authorization"), proto, "req_auth", lib, -IDI_AUTH_ASK);
+    hIconMenuGrant = IconLibDefine(LPGEN("Grant authorization"), proto, "grant_auth", lib, -IDI_AUTH_GRANT);
+    hIconMenuRevoke = IconLibDefine(LPGEN("Revoke authorization"), proto, "revoke_auth", lib, -IDI_AUTH_REVOKE);
+    hIconMenuAddServ = IconLibDefine(LPGEN("Add to server list"), proto, "add_to_server", lib, -IDI_SERVLIST_ADD);
+  }
+  InitXStatusIcons();
 
   // This must be here - the events are called too early, WTF?
   InitXStatusEvents();
@@ -348,6 +374,9 @@ int __declspec(dllexport) Unload(void)
   if (hsmsgrequest)
     DestroyHookableEvent(hsmsgrequest);
 
+  if (hxstatuschanged)
+    DestroyHookableEvent(hxstatuschanged);
+
   if (hxstatusiconchanged)
     DestroyHookableEvent(hxstatusiconchanged);
 
@@ -370,7 +399,6 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
   char pszSrvGroupsName[MAX_PATH+10];
   char szBuffer[MAX_PATH+64];
   char* modules[5] = {0,0,0,0,0};
-  HANDLE hIconMenuAuth, hIconMenuGrant, hIconMenuRevoke, hIconMenuAddServ;
 
   strcpy(pszP2PName, gpszICQProtoName);
   strcat(pszP2PName, "P2P");
@@ -416,25 +444,7 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 
   // Init extra optional modules
   InitPopUps();
-  InitIconLib();
 
-  hHookIconsChanged = IconLibHookIconsChanged(IconLibIconsChanged);
-
-  {
-    char str[MAX_PATH], proto[MAX_PATH], lib[MAX_PATH];
-    
-    ICQTranslateUtfStatic(gpszICQProtoName, proto, MAX_PATH);
-
-    GetModuleFileName(hInst, lib, MAX_PATH);
-
-    hIconMenuAuth = IconLibDefine(ICQTranslateUtfStatic("Request authorization", str, MAX_PATH), proto, "req_auth", NULL, lib, -IDI_AUTH_ASK);
-    hIconMenuGrant = IconLibDefine(ICQTranslateUtfStatic("Grant authorization", str, MAX_PATH), proto, "grant_auth", NULL, lib, -IDI_AUTH_GRANT);
-    hIconMenuRevoke = IconLibDefine(ICQTranslateUtfStatic("Revoke authorization", str, MAX_PATH), proto, "revoke_auth", NULL, lib, -IDI_AUTH_REVOKE);
-    hIconMenuAddServ = IconLibDefine(ICQTranslateUtfStatic("Add to server list", str, MAX_PATH), proto, "add_to_server", NULL, lib, -IDI_SERVLIST_ADD);
-  }
-
-  // Initialize IconLib icons
-  InitXStatusIcons();
   InitXStatusEvents();
   InitXStatusItems(FALSE);
 

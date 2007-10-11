@@ -41,6 +41,8 @@
 int gbIdleAllow;
 int icqGoingOnlineStatus;
 
+extern HANDLE hIconProtocol;
+
 extern WORD wListenPort;
 
 extern char* calcMD5Hash(char* szFile);
@@ -123,20 +125,30 @@ int IcqGetName(WPARAM wParam, LPARAM lParam)
 
 int IcqLoadIcon(WPARAM wParam, LPARAM lParam)
 {
-  UINT id;
+  char *id;
 
 
   switch (wParam & 0xFFFF)
   {
     case PLI_PROTOCOL:
-      id = IDI_ICQ;
+      id = "main";
       break;
 
     default:
       return 0; // Failure
   }
 
-  return (int)LoadImage(hInst, MAKEINTRESOURCE(id), IMAGE_ICON, GetSystemMetrics(wParam&PLIF_SMALL?SM_CXSMICON:SM_CXICON), GetSystemMetrics(wParam&PLIF_SMALL?SM_CYSMICON:SM_CYICON), 0);
+  if (wParam&PLIF_ICOLIBHANDLE)
+    return (int)hIconProtocol;
+  else
+  {
+    HICON icon = IconLibGetIcon(id);
+
+    if (wParam&PLIF_ICOLIB)
+      return (int)icon;
+    else
+      return (int)CopyIcon(icon);
+  }
 }
 
 
