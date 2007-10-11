@@ -456,7 +456,7 @@ void ext_yahoo_status_logon(int id, const char *who, int stat, const char *msg, 
 void ext_yahoo_got_audible(int id, const char *me, const char *who, const char *aud, const char *msg, const char *aud_hash)
 {
 	HANDLE 	hContact = 0;
-	char	*z;
+	char	z[1028];
 	
 	/* aud = file class name 
 					GAIM: the audible, in foo.bar.baz format
@@ -477,8 +477,7 @@ void ext_yahoo_got_audible(int id, const char *me, const char *who, const char *
 		return;
 	}
 	
-	z = (char*)_alloca(lstrlen(msg) + 25);
-	wsprintf(z, "[miranda-audible] %s", msg ?msg:"");
+	mir_snprintf(z, sizeof(z), "[miranda-audible] %s", msg ?msg:"");
 	ext_yahoo_got_im(id, (char*)me, (char*)who, z, 0, 0, 1, -1);
 }
 
@@ -660,7 +659,7 @@ void ext_yahoo_got_buddies(int id, YList * buds)
 
 void ext_yahoo_rejected(int id, const char *who, const char *msg)
 {
-   	char buff[1024] = {0};
+   	char buff[1024];
    	HANDLE hContact;
 	
     LOG(("[ext_yahoo_rejected] who: %s  msg: %s", who, msg));
@@ -677,7 +676,7 @@ void ext_yahoo_rejected(int id, const char *who, const char *msg)
 		LOG(("[ext_yahoo_rejected] Buddy not on our buddy list"));
 	}
     
-	snprintf(buff, sizeof(buff), Translate("%s has rejected your request and sent the following message:"), who);    
+	mir_snprintf(buff, sizeof(buff), Translate("%s has rejected your request and sent the following message:"), who);    
     MessageBox( NULL, msg, buff, MB_OK | MB_ICONINFORMATION );
 }
 
@@ -703,9 +702,9 @@ void ext_yahoo_buddy_group_changed(int id, char *myid, char *who, char *old_grou
 	LOG(("[ext_yahoo_buddy_group_changed] %s has been moved from group: %s to: %s", who, old_group, new_group));
 }
 
-void ext_yahoo_contact_added(int id, char *myid, char *who, char *fname, char *lname, char *msg)
+void ext_yahoo_contact_added(int id, const char *myid, const char *who, const char *fname, const char *lname, const char *msg)
 {
-	char		*szBlob, *pCurBlob, *nick;
+	char		*szBlob, *pCurBlob, nick[128];
 	HANDLE		hContact = NULL;
 	CCSDATA 	ccs;
 	PROTORECVEVENT pre;
@@ -718,21 +717,11 @@ void ext_yahoo_contact_added(int id, char *myid, char *who, char *fname, char *l
 		return;
 	}
 	
-	nick = (char *) _alloca(lstrlen(fname) + lstrlen(lname) + 5);
-	nick[0] = '\0';
-	
-	if (fname != NULL)
-		lstrcpy(nick, fname);
-
-	if (lname != NULL) {
-		if (nick[0] != '\0')
-			lstrcat(nick, " ");
-		
-		lstrcat(nick,lname); 
-	} 
-
-	if (nick[0] == '\0')
-		lstrcpy(nick,who); 
+	if (fname == NULL && lname == NULL) {
+		mir_snprintf(nick, sizeof(nick), who);
+	} else {
+		mir_snprintf(nick, sizeof(nick), "%s %s", fname, lname);
+	}
 	
 	hContact = add_buddy(who, nick, PALF_TEMPORARY);
 	
@@ -772,7 +761,6 @@ void ext_yahoo_contact_added(int id, char *myid, char *who, char *fname, char *l
     pCurBlob+=sizeof(DWORD);
     
     // NICK
-	//lstrcpy((char *)pCurBlob,who); 
 	lstrcpy((char *)pCurBlob, nick); 
 
 	pCurBlob+=lstrlen((char *)pCurBlob)+1;
