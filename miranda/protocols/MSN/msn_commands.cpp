@@ -653,6 +653,8 @@ static bool sttAddGroup( char* params, bool isFromBoot )
 
 static void sttProcessStatusMessage( char* buf, unsigned len, HANDLE hContact )
 {
+	if (hContact == NULL) return;
+
 	ezxml_t xmli = ezxml_parse_str(buf, len);
 
 	// Process status message info
@@ -835,7 +837,13 @@ static void sttProcessNotificationMessage( char* buf, unsigned len )
 		char fullurl[1024];
 		size_t sz = 0;
 
-		if (strstr(ezxml_txt(xmltxt), "New! Send messages to your friends on Yahoo!") != NULL)		{			ezxml_free(xmlnot);			return;		}		const char* acturl = ezxml_attr(xmlact, "url");
+		if (strstr(ezxml_txt(xmltxt), "New! Send messages to your friends on Yahoo!") != NULL)
+		{
+			ezxml_free(xmlnot);
+			return;
+		}
+
+		const char* acturl = ezxml_attr(xmlact, "url");
 		if (acturl == NULL || strstr(acturl, "//:") == NULL) 
 			sz = mir_snprintf(fullurl+sz, sizeof(fullurl)-sz, "%s", ezxml_attr(xmlnot, "siteurl"));
 		
@@ -1630,8 +1638,6 @@ LBL_InvalidCommand:
 				goto LBL_InvalidCommand;
 
 			HANDLE hContact = MSN_HContactFromEmail( data.email, data.email, 0, 0 );
-			if ( hContact == NULL )
-				break;
 
 			int len = atol( data.datalen );
 			if ( len < 0 || len > 4000 )
