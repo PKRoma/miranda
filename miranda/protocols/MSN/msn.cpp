@@ -81,6 +81,8 @@ char* mailsoundname;
 char* alertsoundname;
 char* ModuleName;
 
+bool avsPresent = false;
+
 PLUGININFOEX pluginInfo =
 {
 	sizeof(PLUGININFOEX),
@@ -141,18 +143,15 @@ int msn_httpGatewayBegin(HANDLE hConn,NETLIBOPENCONNECTION *nloc);
 int msn_httpGatewayWrapSend(HANDLE hConn,PBYTE buf,int len,int flags,MIRANDASERVICE pfnNetlibSend);
 PBYTE msn_httpGatewayUnwrapRecv(NETLIBHTTPREQUEST *nlhr,PBYTE buf,int len,int *outBufLen,void *(*NetlibRealloc)(void*,size_t));
 
-static COLORREF crCols[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+static const COLORREF crCols[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 
 static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
-	if ( !ServiceExists( MS_DB_CONTACT_GETSETTING_STR )) {
-		MessageBox( NULL, TranslateT( "This plugin requires db3x plugin version 0.5.1.0 or later" ), _T("MSN"), MB_OK );
-		return 1;
-	}
-
 	char szBuffer[ MAX_PATH ];
 
 	mir_snprintf( szBuffer, sizeof(szBuffer), MSN_Translate("%s plugin connections"), msnProtocolName );
+
+	avsPresent = ServiceExists(MS_AV_SETMYAVATAR) != 0;
 
 	NETLIBUSER nlu = {0};
 	nlu.cbSize = sizeof( nlu );
@@ -221,7 +220,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		gcr.dwFlags = GC_TYPNOTIF | GC_CHANMGR;
 		gcr.iMaxText = 0;
 		gcr.nColors = 16;
-		gcr.pColors = &crCols[0];
+		gcr.pColors = (COLORREF*)crCols;
 		gcr.pszModuleDispName = msnProtocolName;
 		gcr.pszModule = msnProtocolName;
 		CallServiceSync( MS_GC_REGISTER, 0, ( LPARAM )&gcr );
@@ -262,7 +261,7 @@ static int OnPreShutdown( WPARAM wParam, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 // Performs a primary set of actions upon plugin loading
 
-extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
+extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )  
 {
 	pluginLink = link;
 	DuplicateHandle( GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &msnMainThread, THREAD_SET_CONTEXT, FALSE, 0 );
@@ -349,6 +348,14 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 		(strcmp(evtname, MSN_DEFAULT_LOGIN_SERVER) == 0 ||
 		strcmp(evtname, MSN_DEFAULT_GATEWAY) == 0))
 		MSN_DeleteSetting( NULL, "LoginServer" );
+
+	if (MyOptions.SlowSend)
+	{
+		if (DBGetContactSettingDword(NULL, "SRMsg", "MessageTimeout", 10000) < 30000) 
+			DBWriteContactSettingDword(NULL, "SRMsg", "MessageTimeout", 30000);
+		if (DBGetContactSettingDword(NULL, "SRMM", "MessageTimeout", 10000) < 30000) 
+			DBWriteContactSettingDword(NULL, "SRMM", "MessageTimeout", 30000);
+	}
 
 	mailsoundname = ( char* )mir_alloc( 64 );
 	mir_snprintf(mailsoundname, 64, "%s:Hotmail", protocolname);

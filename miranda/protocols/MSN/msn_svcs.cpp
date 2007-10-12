@@ -24,6 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "msn_global.h"
 
+extern bool avsPresent;
+
 void __cdecl MSNServerThread( ThreadData* info );
 
 void msnftp_sendAcceptReject( filetransfer *ft, bool acc );
@@ -308,10 +310,19 @@ int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 	HANDLE hContact = ( HANDLE )wParam;
 	DBCONTACTWRITESETTING* cws = ( DBCONTACTWRITESETTING* )lParam;
 
-	if ( !msnLoggedIn )
+	if (!msnLoggedIn)
 		return 0;
 
-	if ( hContact == NULL ) return 0;
+	if (hContact == NULL) 
+	{
+		if (MyOptions.SlowSend && strcmp(cws->szSetting, "MessageTimeout") == 0 &&
+		   (strcmp(cws->szModule, "SRMM") == 0 || strcmp(cws->szModule, "SRMsg") == 0))
+		{ 
+			if (cws->value.dVal < 30000)
+				MessageBox(NULL, TranslateT("MSN Protocol requires messages timeout to be not less then 30 sec. Correct the timeout value."), TranslateT("MSN"), MB_OK|MB_ICONINFORMATION);
+		}
+		return 0;
+	}
 
 	if ( !strcmp( cws->szSetting, "ApparentMode" )) {
 		if ( !MSN_IsMyContact( hContact ))
@@ -550,6 +561,8 @@ int MsnFileResume( WPARAM wParam, LPARAM lParam )
 
 int MsnGetAvatar(WPARAM wParam, LPARAM lParam)
 {
+	if (!avsPresent) return 1;
+
 	char* buf = ( char* )wParam;
 	int  size = ( int )lParam;
 
@@ -571,6 +584,8 @@ static void sttFakeAvatarAck( LPVOID param )
 
 static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 {
+	if (!avsPresent) return GAIR_NOAVATAR;
+
 	PROTO_AVATAR_INFORMATION* AI = ( PROTO_AVATAR_INFORMATION* )lParam;
 
 	if (( MSN_GetDword( AI->hContact, "FlagBits", 0 ) & 0xf0000000 ) == 0 )
@@ -1034,6 +1049,8 @@ static int MsnSetApparentMode( WPARAM wParam, LPARAM lParam )
 
 static int MsnSetAvatar( WPARAM wParam, LPARAM lParam )
 {
+	if (!avsPresent) return 1;
+
 	char* szFileName = ( char* )lParam;
 
 	if (szFileName == NULL)

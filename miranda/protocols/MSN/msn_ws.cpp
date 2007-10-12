@@ -145,14 +145,14 @@ char* ThreadData::httpTransact(char* szCommand, size_t cmdsz, size_t& ressz)
 {
 	NETLIBSELECT tSelect = {0};
 	tSelect.cbSize = sizeof( tSelect );
-	tSelect.dwTimeout = 8000;
+	tSelect.dwTimeout = 6000;
 	tSelect.hReadConns[ 0 ] = s;
 
 	size_t bufSize = 4096;
 	char* szResult = (char*)mir_alloc(bufSize);
 	char* szBody;
 
-	for (unsigned rc=0; rc<3; ++rc)
+	for (unsigned rc=4; --rc; )
 	{
 		ressz = 0;
 		szBody = NULL;
@@ -167,10 +167,13 @@ char* ThreadData::httpTransact(char* szCommand, size_t cmdsz, size_t& ressz)
 			tConn.timeout = 5;
 			MSN_DebugLog("Connecting to gateway: %s:%d", tConn.szHost, tConn.wPort);
 			s = ( HANDLE )MSN_CallService( MS_NETLIB_OPENCONNECTION, ( WPARAM )hNetlibUser, ( LPARAM )&tConn );
-			if (s == NULL) break;
+			if (s == NULL) 
+			{
+				Sleep(3000);
+				continue;
+			}
 			tSelect.hReadConns[ 0 ] = s;
 		}
-
 		int lstRes = Netlib_Send(s, szCommand, cmdsz, 0);
 		if (lstRes != SOCKET_ERROR)
 		{
@@ -179,7 +182,11 @@ char* ThreadData::httpTransact(char* szCommand, size_t cmdsz, size_t& ressz)
 			{
 				// Wait for the next packet
 				lstRes = MSN_CallService( MS_NETLIB_SELECT, 0, ( LPARAM )&tSelect );
-				if ( lstRes <= 0 ) { 
+				if ( lstRes < 0 ) { 
+					MSN_DebugLog( "Connection failed while waiting." );
+					break; 
+				}
+				else if ( lstRes == 0 ) { 
 					MSN_DebugLog( "Receive Timeout. Bytes received: %u %u", ackSize, ressz );
 					lstRes = SOCKET_ERROR; 
 					break; 
@@ -279,6 +286,7 @@ char* ThreadData::httpTransact(char* szCommand, size_t cmdsz, size_t& ressz)
 
 int ThreadData::recv_dg( char* data, long datalen )
 {
+	time_t ts = time(NULL);
 	for(;;)
 	{
 		if ( mReadAheadBuffer != NULL ) {
@@ -301,14 +309,14 @@ int ThreadData::recv_dg( char* data, long datalen )
 
 		char* tBuffer = NULL;
 		size_t cbBytes = 0;
-		for ( int i=0; i < mGatewayTimeout; i++ ) {
+		while ((time(NULL) - ts)  < mGatewayTimeout) 
+		{
 			if ( numQueueItems > 0 ) break;
-
 			Sleep(1000);
-			
 			// Timeout switchboard session if inactive
 			if ( isTimeout() ) return 0;
 		}	
+		ts = time(NULL);
 
 		unsigned np = 0, dlen = 0;
 		
@@ -334,16 +342,13 @@ int ThreadData::recv_dg( char* data, long datalen )
 		}
 		ReleaseMutex( hQueueMutex );
 
-		if ( dlen == 0 ) {
-			mGatewayTimeout += 2;
-			if ( mGatewayTimeout > 8 ) 
-				mGatewayTimeout = 8;
-		}
-
 		size_t ressz;
 		char* tResult = httpTransact(tBuffer, cbBytes, ressz);
 
 		if (tResult == NULL) return SOCKET_ERROR;
+
+		if ( dlen == 0 ) 
+			mGatewayTimeout = max(mGatewayTimeout + 2, 20);
 
 		unsigned status;
 		MimeHeaders tHeaders;

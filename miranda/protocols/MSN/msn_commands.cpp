@@ -833,8 +833,18 @@ static void sttProcessNotificationMessage( char* buf, unsigned len )
 	if (xmltxt != NULL)
 	{
 		char fullurl[1024];
-		mir_snprintf(fullurl, sizeof(fullurl), "%snotification_id=%s&message_id=%s",
-			ezxml_attr(xmlact, "url"), ezxml_attr(xmlnot, "id"), ezxml_attr(xmlmsg, "id"));
+		size_t sz = 0;
+
+		if (strstr(ezxml_txt(xmltxt), "New! Send messages to your friends on Yahoo!") != NULL)		{			ezxml_free(xmlnot);			return;		}		const char* acturl = ezxml_attr(xmlact, "url");
+		if (acturl == NULL || strstr(acturl, "//:") == NULL) 
+			sz = mir_snprintf(fullurl+sz, sizeof(fullurl)-sz, "%s", ezxml_attr(xmlnot, "siteurl"));
+		
+		sz += mir_snprintf(fullurl+sz, sizeof(fullurl)-sz, "%s", acturl);
+		if (sz != 0 && fullurl[sz-1] != '?')
+			sz += mir_snprintf(fullurl+sz, sizeof(fullurl)-sz, "?");
+
+		mir_snprintf(fullurl+sz, sizeof(fullurl)-sz, "notification_id=%s&message_id=%s",
+			ezxml_attr(xmlnot, "id"), ezxml_attr(xmlmsg, "id"));
 
 		wchar_t* alrtu;
 		const char* txt = ezxml_txt(xmltxt);
