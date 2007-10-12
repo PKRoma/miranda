@@ -1634,10 +1634,15 @@ LBL_InvalidCommand:
 				struct { char *email, *datalen; } data;
 			};
 
-			if ( sttDivideWords( params, 2, tWords ) != 2 )
-				goto LBL_InvalidCommand;
+			HANDLE hContact = NULL;
+			int num = sttDivideWords( params, 2, tWords );
 
-			HANDLE hContact = MSN_HContactFromEmail( data.email, data.email, 0, 0 );
+			if ( num == 2 )
+				hContact = MSN_HContactFromEmail( data.email, data.email, 0, 0 );
+			else if ( num == 1 && trid == 0 )
+				data.datalen = data.email;
+			else
+				goto LBL_InvalidCommand;
 
 			int len = atol( data.datalen );
 			if ( len < 0 || len > 4000 )
