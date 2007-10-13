@@ -351,6 +351,7 @@ void handleXStatusCaps(HANDLE hContact, char* caps, int capsize)
         { // only write default name when it is really needed, i.e. on Custom Status change
           ICQWriteContactSettingByte(hContact, DBSETTING_XSTATUSID, bXStatusId);
           ICQWriteContactSettingUtf(hContact, DBSETTING_XSTATUSNAME, ICQTranslateUtfStatic(nameXStatus[i], str, MAX_PATH));
+          ICQDeleteContactSetting(hContact, DBSETTING_XSTATUSMSG);
 
           bChanged = TRUE;
         }
