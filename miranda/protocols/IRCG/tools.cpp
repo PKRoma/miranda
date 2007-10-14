@@ -509,7 +509,10 @@ int DoEvent(int iEvent, const TCHAR* pszWindow, const TCHAR* pszNick,
 	gce.dwFlags = GC_TCHAR + ((bAddToLog) ? GCEF_ADDTOLOG : 0);
 	gce.ptszNick = pszNick;
 	gce.ptszUID = pszNick;
-	gce.ptszUserInfo = prefs->ShowAddresses ? pszUserInfo : NULL;
+	if (iEvent == GC_EVENT_TOPIC)
+	  gce.ptszUserInfo = pszUserInfo;
+	else
+	  gce.ptszUserInfo = prefs->ShowAddresses ? pszUserInfo : NULL;
 
 	if ( !sText.empty() )
 		gce.ptszText = sText.c_str();
