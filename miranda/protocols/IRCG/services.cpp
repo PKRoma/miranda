@@ -792,10 +792,13 @@ int Service_GCEventHook(WPARAM wParam,LPARAM lParam)
 				case GC_USER_LOGMENU:
 					switch( gch->dwData ) {
 					case 1:
+						Service_ChangeNickMenuCommand(NULL, NULL);
+						break;
+					case 2:
 						PostIrcMessageWnd(p1, NULL, _T("/CHANNELMANAGER"));
 						break;
 
-					case 2:
+					case 3:
 						PostIrcMessage( _T("/PART %s"), p1 );
 						{	GCEVENT gce = {0};
 							GCDEST gcd = {0};
@@ -809,7 +812,7 @@ int Service_GCEventHook(WPARAM wParam,LPARAM lParam)
 							CallChatEvent( SESSION_TERMINATE, (LPARAM)&gce);
 						}
 						break;
-					case 3:
+					case 4:
 						PostIrcMessageWnd(p1, NULL, _T("/SERVERSHOW"));
 						break;
 					}
@@ -930,9 +933,11 @@ static int Service_GCMenuHook(WPARAM wParam,LPARAM lParam)
 			if (gcmi->Type == MENU_ON_LOG) {
 				if (lstrcmpi(gcmi->pszID, _T("Network log"))) {
 					static gc_item Item[] = {
-						{ TranslateT("Channel &settings" ), 1, MENU_ITEM, FALSE},
-						{ TranslateT("&Leave the channel" ), 2, MENU_ITEM, FALSE},
-						{ TranslateT("Show the server &window" ), 3, MENU_ITEM, FALSE}};
+						{ TranslateT("&Change your nickname" ), 1, MENU_ITEM, FALSE},
+						{ TranslateT("Channel &settings" ), 2, MENU_ITEM, FALSE},
+						{ TranslateT("&Leave the channel" ), 3, MENU_ITEM, FALSE},
+						{ TranslateT("Show the server &window" ), 4, MENU_ITEM, FALSE}
+						};
 						gcmi->nItems = SIZEOF(Item);
 						gcmi->Item = &Item[0];
 				}

@@ -47,6 +47,7 @@ TString        sChannelPrefixes;
 TString        WhoisAwayReply;
 TString        sTopic;
 TString        sTopicName;
+TString		   sTopicTime;
 TString        NamesToWho = _T("");
 TString        ChannelsToWho = _T("");
 TString        NamesToUserhost = _T("");
@@ -673,11 +674,12 @@ bool CMyMonitor::OnIrc_NOTICE( const CIrcMessage* pmsg )
 		if ( !prefs->Ignore || !IsIgnored(pmsg->prefix.sNick, pmsg->prefix.sUser, pmsg->prefix.sHost, 'n' )) {
 			TString S;
 			TString S2;
+			TString S3;
 			if ( pmsg->prefix.sNick.length() > 0 )
-				S = pmsg->prefix.sNick + _T(" (") +m_session.GetInfo().sNetwork + _T(")");
+				S = pmsg->prefix.sNick;
 			else
 				S = m_session.GetInfo().sNetwork;
-
+			S3 = m_session.GetInfo().sNetwork;
 			if ( IsChannel( pmsg->parameters[0] ))
 				S2 = pmsg->parameters[0].c_str();
 			else {
@@ -698,7 +700,7 @@ bool CMyMonitor::OnIrc_NOTICE( const CIrcMessage* pmsg )
 				}
 				else S2 = _T("");
 			}
-			DoEvent(GC_EVENT_NOTICE, S2.empty() ? 0 : S2.c_str(), S.c_str(), pmsg->parameters[1].c_str(), NULL, NULL, NULL, true, false); 
+			DoEvent(GC_EVENT_NOTICE, S2.empty() ? 0 : S2.c_str(), S.c_str(), pmsg->parameters[1].c_str(), NULL, S3.c_str(), NULL, true, false); 
 		}
 	}
 	else ShowMessage( pmsg );
@@ -1421,10 +1423,11 @@ bool CMyMonitor::OnIrc_ENDNAMES( const CIrcMessage* pmsg )
 					DoEvent(GC_EVENT_SETITEMDATA, sChanName, NULL, NULL, NULL, NULL, (DWORD)wi, false, false, 0);
 
 					if ( !sTopic.empty() && !lstrcmpi(GetWord(sTopic.c_str(), 0).c_str(), sChanName )) {
-						DoEvent(GC_EVENT_TOPIC, sChanName, sTopicName.empty() ? NULL : sTopicName.c_str(), GetWordAddress(sTopic.c_str(), 1), NULL, NULL, NULL, true, false);
+						DoEvent(GC_EVENT_TOPIC, sChanName, sTopicName.empty() ? NULL : sTopicName.c_str(), GetWordAddress(sTopic.c_str(), 1), NULL, sTopicTime.empty() ? NULL : sTopicTime.c_str(), NULL, true, false);
 						AddWindowItemData(sChanName, 0, 0, 0, GetWordAddress(sTopic.c_str(), 1));
 						sTopic = _T("");
 						sTopicName = _T("");
+						sTopicTime = _T("");
 				}	}
 				
 				gcd.ptszID = (TCHAR*)sID.c_str();
@@ -1498,6 +1501,7 @@ bool CMyMonitor::OnIrc_INITIALTOPIC( const CIrcMessage* pmsg )
 		AddWindowItemData( pmsg->parameters[1].c_str(), 0, 0, 0, pmsg->parameters[2].c_str());
 		sTopic = pmsg->parameters[1] + _T(" ") + pmsg->parameters[2];
 		sTopicName = _T("");
+		sTopicTime = _T("");
 	}
 	ShowMessage( pmsg );
 	return true;
@@ -1505,9 +1509,14 @@ bool CMyMonitor::OnIrc_INITIALTOPIC( const CIrcMessage* pmsg )
 
 bool CMyMonitor::OnIrc_INITIALTOPICNAME( const CIrcMessage* pmsg )
 {
-	if ( pmsg->m_bIncoming && pmsg->parameters.size() > 2 )
+	if ( (pmsg->m_bIncoming) && (pmsg->parameters.size() > 3 )) {
+		TCHAR tTimeBuf[128], *tStopStr;
+		time_t ttTopicTime;
 		sTopicName = pmsg->parameters[2];
-
+		ttTopicTime = _tcstol( pmsg->parameters[3].c_str(), &tStopStr, 10);
+		_tcsftime(tTimeBuf, 128, _T("%#c"), localtime(&ttTopicTime));
+		sTopicTime = tTimeBuf;
+	}
 	ShowMessage( pmsg );
 	return true;
 }
@@ -1515,10 +1524,9 @@ bool CMyMonitor::OnIrc_INITIALTOPICNAME( const CIrcMessage* pmsg )
 bool CMyMonitor::OnIrc_TOPIC( const CIrcMessage* pmsg )
 {
 	if ( pmsg->parameters.size() > 1 && pmsg->m_bIncoming ) {
-		DoEvent( GC_EVENT_TOPIC, pmsg->parameters[0].c_str(), pmsg->prefix.sNick.c_str(), pmsg->parameters[1].c_str(), NULL, NULL, NULL, true, false);
+		DoEvent( GC_EVENT_TOPIC, pmsg->parameters[0].c_str(), pmsg->prefix.sNick.c_str(), pmsg->parameters[1].c_str(), NULL, sTopicTime.empty() ? NULL : sTopicTime.c_str(), NULL, true, false);
 		AddWindowItemData(pmsg->parameters[0].c_str(), 0, 0, 0, pmsg->parameters[1].c_str());
 	}
-
 	ShowMessage( pmsg );
 	return true;
 }
