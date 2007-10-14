@@ -128,6 +128,43 @@ static int DbEventGetText(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+static int DbEventGetIcon( WPARAM wParam, LPARAM lParam )
+{
+	DBEVENTINFO* dbei = ( DBEVENTINFO* )lParam;
+	HICON icon;
+	char szName[100];
+	mir_snprintf( szName, sizeof( szName ), "%s/GetEventIcon%d", dbei->szModule, dbei->eventType );
+	if ( ServiceExists( szName )) {
+		icon = ( HICON )CallService( szName, wParam, lParam );
+		if ( icon )
+			return ( int )icon;
+	}
+	mir_snprintf( szName, sizeof( szName ), "eventicon_%s%d", dbei->szModule, dbei->eventType );
+	icon = ( HICON )CallService( MS_SKIN2_GETICON, 0, ( LPARAM )szName );
+
+	if ( !icon )
+	{
+		switch( dbei->eventType ) {
+		case EVENTTYPE_URL:
+			icon = LoadSkinIcon( SKINICON_EVENT_URL );
+			break;
+
+		case EVENTTYPE_FILE:
+			icon = LoadSkinIcon( SKINICON_EVENT_FILE );
+			break;
+
+		default: // EVENTTYPE_MESSAGE and unknown types
+			icon = LoadSkinIcon( SKINICON_EVENT_MESSAGE );
+			break;
+		}
+	}
+
+  if ( wParam & LR_SHARED )
+    return ( int )icon;
+  else
+    return ( int )CopyIcon( icon );
+}
+
 static int CompareEventTypes( const DBEVENTTYPEDESCR* p1, const DBEVENTTYPEDESCR* p2 )
 {
 	int result = strcmp( p1->module, p2->module );
@@ -145,6 +182,7 @@ int InitUtils()
 	CreateServiceFunction(MS_DB_EVENT_REGISTERTYPE, DbEventTypeRegister);
 	CreateServiceFunction(MS_DB_EVENT_GETTYPE, DbEventTypeGet);
 	CreateServiceFunction(MS_DB_EVENT_GETTEXT, DbEventGetText);
+	CreateServiceFunction(MS_DB_EVENT_GETICON, DbEventGetIcon);
 	return 0;
 }
 
