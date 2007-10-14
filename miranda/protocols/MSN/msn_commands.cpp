@@ -436,11 +436,23 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 			if ( msnHaveChatDll )
 				MSN_ChatStart( info );
 			else
+			{
 				for ( int j=0; j < info->mJoinedCount; j++ ) {
 					if ( info->mJoinedContacts[j] == tContact && j != 0 ) {
 						ccs.hContact = info->mJoinedContacts[ 0 ];
 						break;
 				}	}
+			}
+
+			const char* tP4Context = tHeader[ "P4-Context" ];
+			if ( tP4Context ) 
+			{
+				size_t newlen  = strlen( msgBody ) + strlen( tP4Context ) + 4;
+				char* newMsgBody = ( char* )mir_alloc( newlen );
+				mir_snprintf(newMsgBody, newlen, "[%s] %s", tP4Context, msgBody);
+				mir_free(newbody);
+				msgBody = newbody = newMsgBody;
+			}
 		}
 		else ccs.hContact = tContact;
 
@@ -1294,7 +1306,7 @@ LBL_InvalidCommand:
 			if ( thisContact != 1 )
 				mir_utf8decode( data.userNick, NULL );
 
-			// only start the chat session after all the IRO messages has been recieved
+			// only start the chat session after all the IRO messages has been received
 			if ( msnHaveChatDll && info->mJoinedCount > 1 && !lstrcmpA(data.strThisContact, data.totalContacts) )
 				MSN_ChatStart(info);
 
