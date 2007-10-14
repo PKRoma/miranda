@@ -440,16 +440,6 @@ static void MsgWindowUpdateState(HWND hwndDlg, struct MessageWindowData *dat, UI
             }
             dat->hwndIWebBrowserControl = WindowFromPoint(pt);
         }
-        else if(dat->hwndHPP) {
-            dat->hwndIWebBrowserControl = dat->hwndHPP;
-            if(dat->oldIEViewProc == NULL &&  DBGetContactSettingByte(NULL, SRMSGMOD_T, "subclassIEView", 0)) {
-                if(OldHppProc == 0)
-                    OldHppProc = (WNDPROC)GetWindowLong(dat->hwndHPP, GWL_WNDPROC);
-                SetWindowLong(dat->hwndHPP, GWL_WNDPROC, (LONG)IEViewSubclassProc);
-                dat->oldIEViewProc = OldHppProc;
-            }
-        }
-
         if(dat->dwFlagsEx & MWF_EX_DELAYEDSPLITTER) {
             dat->dwFlagsEx &= ~MWF_EX_DELAYEDSPLITTER;
             ShowWindow(dat->pContainer->hwnd, SW_RESTORE);
