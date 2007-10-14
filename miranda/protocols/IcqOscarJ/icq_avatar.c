@@ -493,6 +493,8 @@ void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned
       // 0008: ICQ Flash avatar hash (16 bytes)
       // 0009: iTunes music store link
       // 000C: ICQ contact photo (16 bytes)
+      // 000D: ?
+      // 000E: Custom Status (ICQ6)
       if (itemType == AVATAR_HASH_STATIC && (itemLen == 0x05 || itemLen == 0x10) && avatarType == -1)
       { // normal avatar
         pAvatarHash = pHash;
@@ -505,12 +507,12 @@ void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned
         cbAvatarHash = itemLen + 4;
         avatarType = itemType;
       }
-/*      else if (itemType == AVATAR_HASH_PHOTO && itemLen == 0x10) // not sent thru this
+      else if (itemType == AVATAR_HASH_PHOTO && itemLen == 0x10)
       { // big avatar (ICQ 6)
         pAvatarHash = pHash;
         cbAvatarHash = itemLen + 4;
         avatarType = itemType;
-      }*/
+      }
     }
     pHash += itemLen + 4;
     nHashLen -= itemLen + 4;
