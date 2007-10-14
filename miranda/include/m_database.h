@@ -338,7 +338,7 @@ Returns 1 if the contact is a contact, or 0 if the contact is not valid.
 Registers the specified database event type, with module, id & description.
 When someone needs to retrieve an event's text, a service named Module/GetEventText<id>
 will be called. For example, for module named 'foo' and event id 2000 a service
-foo/GetEventText2000 should be defined to process this request. That handler should 
+foo/GetEventText2000 should be defined to process this request. That handler should
 decode a blob and return the event text in the required format, its prototype is identical
 to a call of MS_DB_EVENT_GETTEXT (see below)
   wParam=0
@@ -346,7 +346,7 @@ to a call of MS_DB_EVENT_GETTEXT (see below)
 Always returns 0.
 */
 
-typedef struct 
+typedef struct
 {
 	int   cbSize;      // structure size in bytes
 	char* module;      // event module name
@@ -491,6 +491,22 @@ __inline static TCHAR* DbGetEventTextT( DBEVENTINFO* dbei, int codepage )
 {  DBEVENTGETTEXT temp = { dbei, DBVT_TCHAR, codepage };
    return (TCHAR*)CallService(MS_DB_EVENT_GETTEXT,0,(LPARAM)&temp);
 }
+
+/* DB/Event/GetIcon (0.7.0.1+)
+Retrieves the event's icon
+  wParam=(WPARAM)(int)flags - use LR_SHARED for shared HICON
+  lParam=(LPARAM)(DBEVENTINFO*)dbei
+dbei should be a valid database event read via MS_DB_EVENT_GET
+
+Function returns HICON (use DestroyIcon to release resources if not LR_SHARED)
+
+A plugin can register the standard event icon in IcoLib named
+'eventicon_'+Module+EvtID, like eventicon_ICQ2001. Otherwise, to declare an icon
+with the non-standard name, you can declare the special service, Module/GetEventIcon<id>,
+which will retrieve the custom icon handle (HICON). This service function has the
+same parameters MS_DB_EVENT_GETICON does.
+*/
+#define MS_DB_EVENT_GETICON "DB/Event/GetIcon"
 
 /* DB/Event/MarkRead
 Changes the flags for an event to mark it as read.
