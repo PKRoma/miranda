@@ -877,13 +877,14 @@ int JabberAdhocQuitMirandaHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo
 
 int JabberAdhocLeaveGroupchatsHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
 {
+	int i = 0;
 	if ( pSession->GetStage() == 0 ) {
 		// first form
 		TCHAR szMsg[ 1024 ];
 
 		JabberListLock();
 		int nChatsCount = 0;
-		for ( int i = 0; ( i=JabberListFindNext( LIST_CHATROOM, i )) >= 0; i++ ) {
+		for ( i = 0; ( i=JabberListFindNext( LIST_CHATROOM, i )) >= 0; i++ ) {
 			JABBER_LIST_ITEM *item = JabberListGetItemPtrFromIndex( i );
 			if ( item != NULL )
 				nChatsCount++;
@@ -938,7 +939,7 @@ int JabberAdhocLeaveGroupchatsHandler( XmlNode *iqNode, void *usedata, CJabberIq
 		fieldNode->addChild( "required" );
 
 		JabberListLock();
-		for ( int i = 0; ( i=JabberListFindNext( LIST_CHATROOM, i )) >= 0; i++ ) {
+		for ( i = 0; ( i=JabberListFindNext( LIST_CHATROOM, i )) >= 0; i++ ) {
 			JABBER_LIST_ITEM *item = JabberListGetItemPtrFromIndex( i );
 			if ( item != NULL ) {
 				XmlNode* optionNode = fieldNode->addChild( "option" );
@@ -964,7 +965,7 @@ int JabberAdhocLeaveGroupchatsHandler( XmlNode *iqNode, void *usedata, CJabberIq
 		// Groupchat list here:
 		fieldNode = JabberXmlGetChildWithGivenAttrValue( xNode, "field", "var", _T("groupchats") );
 		if ( fieldNode ) {
-			for ( int i = 0; i < fieldNode->numChild; i++ ) {
+			for ( i = 0; i < fieldNode->numChild; i++ ) {
 				valueNode = fieldNode->child[i];
 				if ( valueNode && valueNode->name && valueNode->text && !strcmp( valueNode->name, "value" )) {
 					JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_CHATROOM, valueNode->text );
