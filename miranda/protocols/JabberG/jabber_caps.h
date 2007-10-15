@@ -128,6 +128,7 @@ typedef unsigned __int64 JabberCapsBits;
 #define JABBER_FEAT_RC_SET_STATUS               "http://jabber.org/protocol/rc#set-status"
 #define JABBER_FEAT_RC_SET_OPTIONS              "http://jabber.org/protocol/rc#set-options"
 #define JABBER_FEAT_RC_FORWARD                  "http://jabber.org/protocol/rc#forward"
+#define JABBER_FEAT_RC_LEAVE_GROUPCHATS			"http://jabber.org/protocol/rc#leave-groupchats"
 #define JABBER_FEAT_RC_WS_LOCK                  "http://miranda-im.org/rc#lock_workstation"
 #define JABBER_FEAT_RC_QUIT_MIRANDA             "http://miranda-im.org/rc#quit"
 

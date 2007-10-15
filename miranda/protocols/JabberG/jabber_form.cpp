@@ -650,7 +650,7 @@ XmlNode* JabberFormGetData( HWND hwndStatic, XmlNode* xNode )
 			for ( j=0; j<count; j++ ) {
 				if ( SendMessage( hCtrl, LB_GETSEL, j, 0 ) > 0 ) {
 					// an entry is selected
-					len = SendMessage( hCtrl, LB_GETTEXTLEN, 0, 0 );
+					len = SendMessage( hCtrl, LB_GETTEXTLEN, j, 0 );
 					if (( str = ( TCHAR* )mir_alloc(( len+1 )*sizeof( TCHAR ))) != NULL ) {
 						SendMessage( hCtrl, LB_GETTEXT, j, ( LPARAM )str );
 						for ( k=0; k < n->numChild; k++ ) {

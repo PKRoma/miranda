@@ -874,3 +874,107 @@ int JabberAdhocQuitMirandaHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo
 	}
 	return JABBER_ADHOC_HANDLER_STATUS_CANCEL;
 }
+
+int JabberAdhocLeaveGroupchatsHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
+{
+	if ( pSession->GetStage() == 0 ) {
+		// first form
+		TCHAR szMsg[ 1024 ];
+
+		JabberListLock();
+		int nChatsCount = 0;
+		for ( int i = 0; ( i=JabberListFindNext( LIST_CHATROOM, i )) >= 0; i++ ) {
+			JABBER_LIST_ITEM *item = JabberListGetItemPtrFromIndex( i );
+			if ( item != NULL )
+				nChatsCount++;
+		}
+		JabberListUnlock();
+
+		if ( !nChatsCount ) {
+			XmlNodeIq iq( "result", pInfo );
+			XmlNode* commandNode = iq.addChild( "command" );
+			commandNode->addAttr( "xmlns", JABBER_FEAT_COMMANDS );
+			commandNode->addAttr( "node", JABBER_FEAT_RC_LEAVE_GROUPCHATS );
+			commandNode->addAttr( "sessionid", pSession->GetSessionId() );
+			commandNode->addAttr( "status", "completed" );
+
+			mir_sntprintf( szMsg, SIZEOF(szMsg), _T("There is no groupchats to leave") );
+			XmlNode* noteNode = commandNode->addChild( "note", szMsg );
+			noteNode->addAttr( "type", "info" );
+
+			jabberThreadInfo->send( iq );
+
+			return JABBER_ADHOC_HANDLER_STATUS_REMOVE_SESSION;
+		}
+
+		pSession->SetStage( 1 );
+
+		XmlNodeIq iq( "result", pInfo );
+		XmlNode* commandNode = iq.addChild( "command" );
+		commandNode->addAttr( "xmlns", JABBER_FEAT_COMMANDS );
+		commandNode->addAttr( "node", JABBER_FEAT_RC_LEAVE_GROUPCHATS );
+		commandNode->addAttr( "sessionid", pSession->GetSessionId() );
+		commandNode->addAttr( "status", "executing" );
+
+		XmlNode* xNode = commandNode->addChild( "x" );
+		xNode->addAttr( "xmlns", JABBER_FEAT_DATA_FORMS );
+		xNode->addAttr( "type", "form" );
+
+		xNode->addChild( "title", "Leave groupchats" );
+		xNode->addChild( "instructions", "Choose the groupchats you want to leave" );
+
+		XmlNode* fieldNode = NULL;
+
+		fieldNode = xNode->addChild( "field" );
+		fieldNode->addAttr( "type", "hidden" );
+		fieldNode->addAttr( "var", "FORM_TYPE" );
+		fieldNode->addChild( "value", JABBER_FEAT_RC );
+
+		// Groupchats
+		fieldNode = xNode->addChild( "field" );
+		fieldNode->addAttr( "label", "Groupchats" );
+		fieldNode->addAttr( "type", "list-multi" );
+		fieldNode->addAttr( "var", "groupchats" );
+		fieldNode->addChild( "required" );
+
+		JabberListLock();
+		for ( int i = 0; ( i=JabberListFindNext( LIST_CHATROOM, i )) >= 0; i++ ) {
+			JABBER_LIST_ITEM *item = JabberListGetItemPtrFromIndex( i );
+			if ( item != NULL ) {
+				XmlNode* optionNode = fieldNode->addChild( "option" );
+				optionNode->addAttr( "label", item->jid );
+				optionNode->addChild( "value", item->jid );
+			}
+		}
+		JabberListUnlock();
+
+		jabberThreadInfo->send( iq );
+		return JABBER_ADHOC_HANDLER_STATUS_EXECUTING;
+	}
+	else if ( pSession->GetStage() == 1 ) {
+		// result form here
+		XmlNode* commandNode = pInfo->GetChildNode();
+		XmlNode* xNode = JabberXmlGetChildWithGivenAttrValue( commandNode, "x", "xmlns", _T(JABBER_FEAT_DATA_FORMS) );
+		if ( !xNode )
+			return JABBER_ADHOC_HANDLER_STATUS_CANCEL;
+
+		XmlNode* fieldNode = NULL;
+		XmlNode* valueNode = NULL;
+
+		// Groupchat list here:
+		fieldNode = JabberXmlGetChildWithGivenAttrValue( xNode, "field", "var", _T("groupchats") );
+		if ( fieldNode ) {
+			for ( int i = 0; i < fieldNode->numChild; i++ ) {
+				valueNode = fieldNode->child[i];
+				if ( valueNode && valueNode->name && valueNode->text && !strcmp( valueNode->name, "value" )) {
+					JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_CHATROOM, valueNode->text );
+					if ( item )
+						JabberGcQuit( item, 0, NULL );
+				}
+			}
+		}
+
+		return JABBER_ADHOC_HANDLER_STATUS_COMPLETED;
+	}
+	return JABBER_ADHOC_HANDLER_STATUS_CANCEL;
+}
