@@ -39,6 +39,7 @@ int JabberAdhocOptionsHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pI
 int JabberAdhocForwardHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
 int JabberAdhocLockWSHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
 int JabberAdhocQuitMirandaHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
+int JabberAdhocLeaveGroupchatsHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
 
 #define JABBER_ADHOC_HANDLER_STATUS_EXECUTING            1
 #define JABBER_ADHOC_HANDLER_STATUS_COMPLETED            2
@@ -294,6 +295,7 @@ public:
 		AddNode( NULL, _T(JABBER_FEAT_RC_SET_STATUS), _T("Set status"), JabberAdhocSetStatusHandler );
 		AddNode( NULL, _T(JABBER_FEAT_RC_SET_OPTIONS), _T("Set options"), JabberAdhocOptionsHandler );
 		AddNode( NULL, _T(JABBER_FEAT_RC_FORWARD), _T("Forward unread messages"), JabberAdhocForwardHandler );
+		AddNode( NULL, _T(JABBER_FEAT_RC_LEAVE_GROUPCHATS), _T("Leave groupchats"), JabberAdhocLeaveGroupchatsHandler );
 		AddNode( NULL, _T(JABBER_FEAT_RC_WS_LOCK), _T("Lock workstation"), JabberAdhocLockWSHandler );
 		AddNode( NULL, _T(JABBER_FEAT_RC_QUIT_MIRANDA), _T("Quit Miranda IM"), JabberAdhocQuitMirandaHandler );
 		return TRUE;
