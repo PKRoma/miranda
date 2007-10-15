@@ -1037,6 +1037,29 @@ static void JabberProcessPubsubEvent( XmlNode *node )
 	}
 }
 
+// returns 0, if error or no events
+DWORD JabberGetLastContactMessageTime( HANDLE hContact )
+{
+	// TODO: time cache can improve performance
+	HANDLE hDbEvent = (HANDLE)JCallService( MS_DB_EVENT_FINDLAST, (WPARAM)hContact, 0 );
+	if ( !hDbEvent )
+		return 0;
+
+	DWORD dwTime = 0;
+
+	DBEVENTINFO dbei = { 0 };
+	dbei.cbSize = sizeof(dbei);
+	dbei.cbBlob = CallService( MS_DB_EVENT_GETBLOBSIZE, (WPARAM)hDbEvent, 0 );
+	if ( dbei.cbBlob != -1 ) {
+		dbei.pBlob = (PBYTE)mir_alloc( dbei.cbBlob + 1 );
+		int nGetTextResult = JCallService( MS_DB_EVENT_GET, (WPARAM)hDbEvent, (LPARAM)&dbei );
+		if ( !nGetTextResult )
+			dwTime = dbei.timestamp;
+		mir_free( dbei.pBlob );
+	}
+	return dwTime;
+}
+
 static void JabberProcessMessage( XmlNode *node, void *userdata )
 {
 	ThreadData* info;
@@ -1366,9 +1389,7 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 		}	}
 
 		time_t now = time( NULL );
-		// attempt to temporary fix 'time machine', allowing range (NOW - 1 DAY, NOW)
-		// need for stored offline messages, remote controlling and RSS channel messages
-		if ( msgTime == 0 || ( msgTime > now ) || ( msgTime < now - 86400 ))
+		if ( msgTime == 0 || msgTime > now || ( msgTime < ( time_t )JabberGetLastContactMessageTime( hContact )))
 			msgTime = now;
 
 		PROTORECVEVENT recv;

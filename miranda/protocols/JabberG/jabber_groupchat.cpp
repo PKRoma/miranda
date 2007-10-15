@@ -348,7 +348,7 @@ static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 		}
 		break;
 	case WM_CONTEXTMENU:
-		if (( HWND )wParam == GetDlgItem( hwndDlg, IDC_ROOM )) {
+		if ( jabberOnline && ( HWND )wParam == GetDlgItem( hwndDlg, IDC_ROOM )) {
 			HMENU hMenu = CreatePopupMenu();
 			AppendMenu( hMenu, MF_STRING, WM_JABBER_JOIN, TranslateT( "Join" ));
 			AppendMenu( hMenu, MF_STRING, WM_JABBER_ADD_TO_ROSTER, TranslateT( "Add to roster" ));
