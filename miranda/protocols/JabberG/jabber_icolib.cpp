@@ -55,26 +55,26 @@ struct
 }
 static TransportProtoTable[] =
 {
-	{ _T("|icq*|jit*"), "ICQ",  -1},
-	{ _T("msn*"),       "MSN",  -1},
-	{ _T("yahoo*"),     "YAHOO",-1},
-	{ _T("mrim*"),      "MRA",  -1},
-	{ _T("aim*"),       "AIM",  -1},
+	{ _T("|icq*|jit*"),      "ICQ",           -1},
+	{ _T("msn*"),            "MSN",           -1},
+	{ _T("yahoo*"),          "YAHOO",         -1},
+	{ _T("mrim*"),           "MRA",           -1},
+	{ _T("aim*"),            "AIM",           -1},
 	//request #3094
-	{ _T("gg*"),        "GaduGadu",   -1},
-	{ _T("tv*"),        "TV",         -1},
-	{ _T("dict*"),      "Dictionary", -1},
-	{ _T("weather*"),   "Weather",    -1},
-	{ _T("sms*"),       "SMS",        -1},
-	{ _T("smtp*"),      "SMTP",       -1},
-	//j2j 
-	{ _T("gtalk.*.*"),     "GTalk", -1},
-	{ _T("xmpp.*.*"),   "Jabber2Jabber", -1},
+	{ _T("|gg*|gadu*"),      "GaduGadu",      -1},
+	{ _T("tv*"),             "TV",            -1},
+	{ _T("dict*"),           "Dictionary",    -1},
+	{ _T("weather*"),        "Weather",       -1},
+	{ _T("sms*"),            "SMS",           -1},
+	{ _T("smtp*"),           "SMTP",          -1},
+	//j2j
+	{ _T("gtalk.*.*"),       "GTalk",         -1},
+	{ _T("xmpp.*.*"),        "Jabber2Jabber", -1},
 	//jabbim.cz - services
-	{ _T("disk*"),      "Jabber Disk", -1},
-	{ _T("irc*"),       "IRC", -1},
-	{ _T("rss*"),       "RSS", -1},
-	{ _T("tlen*"),      "Tlen", -1}
+	{ _T("disk*"),           "Jabber Disk",   -1},
+	{ _T("irc*"),            "IRC",           -1},
+	{ _T("rss*"),            "RSS",           -1},
+	{ _T("tlen*"),           "Tlen",          -1}
 };
 
 static int skinIconStatusToResourceId[] = {IDI_OFFLINE,IDI_ONLINE,IDI_AWAY,IDI_DND,IDI_NA,IDI_NA,/*IDI_OCCUPIED,*/IDI_FREE4CHAT,IDI_INVISIBLE,IDI_ONTHEPHONE,IDI_OUTTOLUNCH};
