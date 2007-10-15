@@ -676,6 +676,25 @@ int SearchNextContact(HWND hwnd, struct ClcData *dat, int index, const TCHAR *te
 	return -1;
 }
 
+BOOL CLCItems_IsNotHiddenOffline(struct ClcData * dat, struct ClcGroup* group, struct ClcContact * contact)
+{
+	PDNCE pdnce;
+
+	if (!group) return FALSE;
+	if (!contact) return FALSE;
+	if (group->hideOffline) return FALSE;
+	if (g_CluiData.bFilterEffective) return FALSE;				
+
+	if (CLCItems_IsShowOfflineGroup(group)) return TRUE;
+	
+	pdnce=(PDNCE)pcli->pfnGetCacheEntry( contact->hContact);
+	if (!pdnce) return FALSE;
+	if (pdnce->noHiddenOffline) return TRUE;
+
+	return FALSE;
+	
+}
+
 LRESULT CALLBACK cli_ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {     
 	struct ClcData *dat;
@@ -895,11 +914,16 @@ case INTM_ICONCHANGED:
 		}
 		else 
 		{
+
 			//item in list already
 			DWORD style = GetWindowLong(hwnd, GWL_STYLE);
 			if (contact->iImage == lParam)
 				return 0;
-			if (!shouldShow && !(style & CLS_NOHIDEOFFLINE) && (style & CLS_HIDEOFFLINE || group->hideOffline || g_CluiData.bFilterEffective)) // CLVM changed
+			if ( !shouldShow && !(style & CLS_NOHIDEOFFLINE) && (style & CLS_HIDEOFFLINE) && CLCItems_IsNotHiddenOffline(dat, group, contact))
+			{
+				shouldShow=TRUE;
+			}
+			if (!shouldShow && !(style & CLS_NOHIDEOFFLINE) && ((style & CLS_HIDEOFFLINE) || group->hideOffline || g_CluiData.bFilterEffective) ) // CLVM changed
 			{
 				if (dat->selection >= 0 && pcli->pfnGetRowByIndex(dat, dat->selection, &selcontact, NULL) != -1)
 					hSelItem = pcli->pfnContactToHItem(selcontact);
