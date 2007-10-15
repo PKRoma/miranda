@@ -288,7 +288,7 @@ static int NetlibLog(WPARAM wParam,LPARAM lParam)
 		FILE *fp;
 		fp = _tfopen(logOptions.szFile, _T("at"));
 		if ( !fp ) {
-			TCHAR* pszLastBackslash = wcsrchr( logOptions.szFile, '\\' );
+			TCHAR* pszLastBackslash = _tcsrchr( logOptions.szFile, '\\' );
 			if ( pszLastBackslash != NULL ) {
 				*pszLastBackslash = '\0';
 				CreateDirectoryTreeT( logOptions.szFile );
