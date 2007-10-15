@@ -1366,7 +1366,9 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 		}	}
 
 		time_t now = time( NULL );
-		if ( msgTime == 0 || now - jabberLoggedInTime < 60 )
+		// attempt to temporary fix 'time machine', allowing range (NOW - 1 DAY, NOW)
+		// need for stored offline messages, remote controlling and RSS channel messages
+		if ( msgTime == 0 || ( msgTime > now ) || ( msgTime < now - 86400 ))
 			msgTime = now;
 
 		PROTORECVEVENT recv;
