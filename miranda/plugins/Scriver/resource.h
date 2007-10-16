@@ -242,13 +242,6 @@
 #define ID_COPY                         50004
 #define ID_COPYALL                      50006
 #define ID_CLEARLOG                     50009
-#define ID_MESSAGE_UNDO                 50013
-#define ID_MESSAGE_COPY                 50014
-#define ID_MESSAGE_CUT                  50015
-#define ID_MESSAGE_CLEAR                50017
-#define ID_MESSAGE_SELECTALL            50018
-#define ID_MESSAGE_REDO                 50019
-#define ID_MESSAGE_PASTE                50020
 #define ID_Menu                         50026
 #define ID_SEARCH_GOOGLE                50027
 #define ID_SEARCH_WIKIPEDIA             50028

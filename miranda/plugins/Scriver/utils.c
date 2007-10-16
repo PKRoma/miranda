@@ -25,6 +25,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <ctype.h>
 #include <mbstring.h>
 
+extern HINSTANCE g_hInst;
+extern HANDLE hHookWinPopup;
+
 static unsigned hookNum = 0;
 static unsigned serviceNum = 0;
 static HANDLE* hHooks = NULL;
@@ -193,4 +196,87 @@ int GetRichTextLength(HWND hwnd, int codepage, BOOL inBytes) {
 	}
 	gtl.flags |= GTL_PRECISE | GTL_USECRLF;
 	return (int) SendMessage(hwnd, EM_GETTEXTLENGTHEX, (WPARAM)&gtl, 0);
+}
+
+void InputAreaContextMenu(HWND hwnd, WPARAM wParam, LPARAM lParam, HANDLE hContact) {
+
+	HMENU hMenu, hSubMenu;
+	POINT pt;
+	CHARRANGE sel, all = { 0, -1 };
+	MessageWindowPopupData mwpd;
+	int selection;
+
+	hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CONTEXT));
+	hSubMenu = GetSubMenu(hMenu, 2);
+	CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hSubMenu, 0);
+	SendMessage(hwnd, EM_EXGETSEL, 0, (LPARAM) & sel);
+	if (sel.cpMin == sel.cpMax) {
+		EnableMenuItem(hSubMenu, IDM_CUT, MF_BYCOMMAND | MF_GRAYED);
+		EnableMenuItem(hSubMenu, IDM_COPY, MF_BYCOMMAND | MF_GRAYED);
+		EnableMenuItem(hSubMenu, IDM_DELETE, MF_BYCOMMAND | MF_GRAYED);
+	}
+	if (!SendMessage(hwnd, EM_CANUNDO, 0, 0)) {
+		EnableMenuItem(hSubMenu, IDM_UNDO, MF_BYCOMMAND | MF_GRAYED);
+	}
+	if (!SendMessage(hwnd, EM_CANREDO, 0, 0)) {
+		EnableMenuItem(hSubMenu, IDM_REDO, MF_BYCOMMAND | MF_GRAYED);
+	}
+	if (!SendMessage(hwnd, EM_CANPASTE, 0, 0)) {
+		EnableMenuItem(hSubMenu, IDM_PASTE, MF_BYCOMMAND | MF_GRAYED);
+	}
+	if (lParam == 0xFFFFFFFF) {
+		SendMessage(hwnd, EM_POSFROMCHAR, (WPARAM) & pt, (LPARAM) sel.cpMax);
+		ClientToScreen(hwnd, &pt);
+	}
+	else {
+		pt.x = (short) LOWORD(lParam);
+		pt.y = (short) HIWORD(lParam);
+	}
+
+	// First notification
+	mwpd.cbSize = sizeof(mwpd);
+	mwpd.uType = MSG_WINDOWPOPUP_SHOWING;
+	mwpd.uFlags = MSG_WINDOWPOPUP_INPUT;
+	mwpd.hContact = hContact;
+	mwpd.hwnd = hwnd;
+	mwpd.hMenu = hSubMenu;
+	mwpd.selection = 0;
+	mwpd.pt = pt;
+	NotifyEventHooks(hHookWinPopup, 0, (LPARAM)&mwpd);
+
+	selection = TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, GetParent(hwnd), NULL);
+
+	// Second notification
+	mwpd.selection = selection;
+	mwpd.uType = MSG_WINDOWPOPUP_SELECTED;
+	NotifyEventHooks(hHookWinPopup, 0, (LPARAM)&mwpd);
+
+	switch (selection) {
+	case IDM_UNDO:
+		SendMessage(hwnd, WM_UNDO, 0, 0);
+		break;
+	case IDM_REDO:
+		SendMessage(hwnd, EM_REDO, 0, 0);
+		break;
+	case IDM_CUT:
+		SendMessage(hwnd, WM_CUT, 0, 0);
+		break;
+	case IDM_COPY:
+		SendMessage(hwnd, WM_COPY, 0, 0);
+		break;
+	case IDM_PASTE:
+		SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0);
+		break;
+	case IDM_DELETE:
+		SendMessage(hwnd, EM_REPLACESEL, TRUE, 0);
+		break;
+	case IDM_SELECTALL:
+		SendMessage(hwnd, EM_EXSETSEL, 0, (LPARAM) & all);
+		break;
+	case IDM_CLEAR:
+		SetWindowText(hwnd, _T( "" ));
+		break;
+	}
+	DestroyMenu(hMenu);
+	//PostMessage(hwnd, WM_KEYUP, 0, 0 );
 }
