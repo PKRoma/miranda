@@ -1863,12 +1863,18 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			break;
 		//fall through
 	case WM_MOUSEACTIVATE:
-		/*TODO: clear unread events here*/
 		if (dat->hDbUnreadEventFirst != NULL) {
 			HANDLE hDbEvent = dat->hDbUnreadEventFirst;
 			dat->hDbUnreadEventFirst = NULL;
 			while (hDbEvent != NULL) {
-				CallService(MS_CLIST_REMOVEEVENT, (WPARAM) dat->hContact, (LPARAM) hDbEvent);
+				DBEVENTINFO dbei;
+				ZeroMemory(&dbei, sizeof(dbei));
+				dbei.cbSize = sizeof(dbei);
+				dbei.cbBlob = 0;
+				CallService(MS_DB_EVENT_GET, (WPARAM) hDbEvent, (LPARAM) & dbei);
+				if (!(dbei.flags & DBEF_SENT) && (dbei.eventType == EVENTTYPE_MESSAGE || dbei.eventType == EVENTTYPE_URL)) {
+					CallService(MS_CLIST_REMOVEEVENT, (WPARAM) dat->hContact, (LPARAM) hDbEvent);
+				}
 				hDbEvent = (HANDLE) CallService(MS_DB_EVENT_FINDNEXT, (WPARAM) hDbEvent, 0);
 			}
 		}
@@ -2033,7 +2039,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					if (GetForegroundWindow()==dat->hwndParent && dat->parent->hwndActive == hwndDlg)
 						SkinPlaySound("RecvMsgActive");
 					else SkinPlaySound("RecvMsgInactive");
-					if ((g_dat->flags2 & SMF2_SWITCHTOACTIVE) && (IsIconic(dat->hwndParent) || GetActiveWindow() != dat->hwndParent)) {
+					if ((g_dat->flags2 & SMF2_SWITCHTOACTIVE) && (IsIconic(dat->hwndParent) || GetActiveWindow() != dat->hwndParent) && IsWindowVisible(dat->hwndParent)) {
 						SendMessage(dat->hwndParent, CM_ACTIVATECHILD, 0, (LPARAM) hwndDlg);
 					}
 					if (IsAutoPopup(dat->hContact)) {
