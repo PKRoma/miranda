@@ -292,3 +292,4 @@ void SetButtonCheck(HWND hwndDlg, int CtrlID, BOOL bCheck)
 	Button_SetCheck(hwndCtrl, (bCheck)?BST_CHECKED:BST_UNCHECKED);
 }
 
+

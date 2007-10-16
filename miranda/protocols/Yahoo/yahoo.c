@@ -702,7 +702,7 @@ void ext_yahoo_buddy_group_changed(int id, char *myid, char *who, char *old_grou
 	LOG(("[ext_yahoo_buddy_group_changed] %s has been moved from group: %s to: %s", who, old_group, new_group));
 }
 
-void ext_yahoo_contact_added(int id, char *myid, char *who, char *fname, char *lname, char *msg)
+void ext_yahoo_contact_added(int id, const char *myid, const char *who, const char *fname, const char *lname, const char *msg)
 {
 	char		*szBlob, *pCurBlob, nick[128];
 	HANDLE		hContact = NULL;
@@ -899,7 +899,7 @@ void ext_yahoo_game_notify(int id, const char *me, const char *who, int stat, co
 	}
 }
 
-int mUnreadMessages;
+int mUnreadMessages = 0;
 
 void ext_yahoo_mail_notify(int id, const char *from, const char *subj, int cnt)
 {

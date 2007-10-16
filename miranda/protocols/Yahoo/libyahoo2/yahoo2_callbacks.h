@@ -517,7 +517,7 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_got_file7info)(int id, const char *me, const 
  * 	who  - who was added
  * 	msg  - any message sent
  */
-void YAHOO_CALLBACK_TYPE(ext_yahoo_contact_added)(int id, char *myid, char *who, char *fname, char *lname, char *msg);
+void YAHOO_CALLBACK_TYPE(ext_yahoo_contact_added)(int id, const char *myid, const char *who, const char *fname, const char *lname, const char *msg);
 
 
 /*

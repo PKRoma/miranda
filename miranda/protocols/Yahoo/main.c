@@ -227,6 +227,7 @@ int __declspec(dllexport)Load(PLUGINLINK *link)
 	ylad = y_new0(yahoo_local_account, 1);
 	
 	register_callbacks();
+	
 	// 3.
 	yahoo_logoff_buddies();
 
@@ -246,8 +247,6 @@ int __declspec(dllexport)Load(PLUGINLINK *link)
 int __declspec(dllexport) Unload(void)
 {
 	YAHOO_DebugLog("Unload");
-	
-	//stop_timer();
 	
 	if (yahooLoggedIn)
 		yahoo_logout();
@@ -297,6 +296,7 @@ __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
  * Parameters: none
  */
 static const MUUID interfaces[] = {MIID_PROTOCOL, MIID_LAST};
+
 __declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
 {
 	return interfaces;
