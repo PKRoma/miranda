@@ -899,7 +899,7 @@ void ext_yahoo_game_notify(int id, const char *me, const char *who, int stat, co
 	}
 }
 
-int mUnreadMessages;
+int mUnreadMessages = 0;
 
 void ext_yahoo_mail_notify(int id, const char *from, const char *subj, int cnt)
 {
