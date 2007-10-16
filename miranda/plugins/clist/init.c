@@ -59,7 +59,7 @@ BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD dwReason, LPVOID reserved)
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
 	"Classic contact list",
-	PLUGIN_MAKE_VERSION(0, 7, 0, 0),
+	PLUGIN_MAKE_VERSION(0, 7, 1, 0),
 	"Display contacts, event notifications, protocol status",
 	"Miranda IM project",
 	"ghazan@miranda-im.org",

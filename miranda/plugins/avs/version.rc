@@ -64,8 +64,8 @@ LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_AUSTRIAN
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,7,0,0
- PRODUCTVERSION 0,7,0,0
+ FILEVERSION 0,7,1,0
+ PRODUCTVERSION 0,7,1,0
  FILEFLAGSMASK 0x37L
 #ifdef _DEBUG
  FILEFLAGS 0x21L
@@ -84,24 +84,24 @@ BEGIN
             VALUE "Comments", "Service plugin to load and update avatars for Miranda IM"
             VALUE "CompanyName", "Written by Nightwish and Pescuma for Miranda IM project"
             VALUE "FileDescription", "avs"
-            VALUE "FileVersion", "0, 7, 0, 0"
+            VALUE "FileVersion", "0, 7, 1, 0"
             VALUE "InternalName", "avs"
             VALUE "LegalCopyright", "Copyright (C) 2006, Nightwish, Pescuma"
             VALUE "LegalTrademarks", "Licensed under the Gnu General Public License V2 or any later version"
             VALUE "OriginalFilename", "avs.dll"
             VALUE "ProductName", "Miranda IM Avatar Service plugin"
-            VALUE "ProductVersion", "0, 7, 0, 0"
+            VALUE "ProductVersion", "0, 7, 1, 0"
 #else
             VALUE "Comments", "Service plugin to load and update avatars for Miranda IM"
             VALUE "CompanyName", "Written by Nightwish and Pescuma for Miranda IM project"
             VALUE "FileDescription", "avs (UNICODE)"
-            VALUE "FileVersion", "0, 7, 0, 0"
+            VALUE "FileVersion", "0, 7, 1, 0"
             VALUE "InternalName", "avsW"
             VALUE "LegalCopyright", "Copyright (C) 2006, Nightwish, Pescuma"
             VALUE "LegalTrademarks", "Licensed under the Gnu General Public License V2 or any later version"
             VALUE "OriginalFilename", "avs.dll"
             VALUE "ProductName", "Miranda IM Avatar Service (UNICODE)"
-            VALUE "ProductVersion", "0, 7, 0, 0"
+            VALUE "ProductVersion", "0, 7, 1, 0"
 #endif
         END
     END
