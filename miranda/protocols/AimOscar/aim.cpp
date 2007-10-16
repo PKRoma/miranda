@@ -1,6 +1,6 @@
 #include "aim.h"
 PLUGINLINK *pluginLink;
-#define AIM_OSCAR_VERSION "\0\0\0\x07"
+#define AIM_OSCAR_VERSION "\0\x07\x01\0"
 char* AIM_CLIENT_ID_STRING="Miranda Oscar Plugin, version 0.7.1.0";
 char AIM_CAP_MIRANDA[]="MirandaA\0\0\0\0\0\0\0";
 PLUGININFOEX pluginInfo={
