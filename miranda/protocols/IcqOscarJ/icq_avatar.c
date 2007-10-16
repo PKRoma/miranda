@@ -910,7 +910,7 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
 
     InitializeCriticalSection(&atsi->localSeqMutex);
 
-    atsi->hAvatarPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)atsi->hConnection, 8192);
+    atsi->hAvatarPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)atsi->hConnection, 16384);
     packetRecv.cbSize = sizeof(packetRecv);
     packetRecv.dwTimeout = dwKeepAliveInterval < KEEPALIVE_INTERVAL ? dwKeepAliveInterval: KEEPALIVE_INTERVAL; // timeout - for stopThread to work
     while(!atsi->stopThread)
