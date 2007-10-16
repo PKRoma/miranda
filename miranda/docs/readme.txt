@@ -27,7 +27,7 @@ Enhancements:
  - Improved icon skinning engine performance
  - ICQ: Enable ICQ 6 photo handling
  - Jabber: Improved avatar processing
- - MSN: Added P4-Context processing
+ - MSN: Added per message nickname display
  - MSN: Improved status message processing
  
 Bugfixes:
