@@ -669,6 +669,27 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* szUid, char* hash, unsigne
     DWORD dwNow = GetTickCount();
 
     EnterCriticalSection(&cookieMutex); // reused...
+    { // check if requests for this user are not blocked
+      avatarrequest* ar = pendingRequests;
+
+      while (ar)
+      {
+        if (ar->hContact == hContact && ar->type == ART_BLOCK)
+        { // found a block item
+          if (GetTickCount() > ar->timeOut)
+          { // remove timeouted block
+            ar = ReleaseAvatarRequestInQueue(ar);
+            continue;
+          }
+          LeaveCriticalSection(&cookieMutex);
+          NetLog_Server("Requests for %d avatar are blocked.", dwUin);
+
+          return 0;
+        }
+        ar = ar->pNext;
+      }
+    }
+
     for(i = 0; i < atsi->runCount;)
     { // look for timeouted requests
       if (atsi->runTime[i] < dwNow)
@@ -1433,7 +1454,7 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
                 avatarrequest *last = pendingRequests;
 
                 ar->hContact = ac->hContact;
-                ar->timeOut = GetTickCount() + 3600000; // do not allow re-request one hour
+                ar->timeOut = GetTickCount() + 14400000; // do not allow re-request four hours
 
                 // add it to the end of queue, i.e. do not block other requests
                 while (last && last->pNext) last = last->pNext;
