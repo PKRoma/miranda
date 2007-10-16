@@ -352,10 +352,22 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 		tvis.item.mask = TVIF_TEXT | TVIF_STATE | TVIF_PARAM;
 		tvis.item.state = tvis.item.stateMask = TVIS_EXPANDED;
 		for ( i=0; i < dat->pageCount; i++ ) {
+			static TCHAR *fullTitle=NULL;
+			TCHAR * useTitle;
+			if (fullTitle) mir_free(fullTitle);
+			fullTitle=NULL;
 			if ( FilterInst!=NULL && dat->opd[i].hInst!=FilterInst ) continue;
 			if (( dat->opd[i].flags & ODPF_SIMPLEONLY ) && IsDlgButtonChecked( hdlg, IDC_EXPERT )) continue;
 			if (( dat->opd[i].flags & ODPF_EXPERTONLY ) && !IsDlgButtonChecked( hdlg, IDC_EXPERT )) continue;
 			tvis.hParent = NULL;
+			if ( FilterInst!=NULL ) {
+				size_t sz=dat->opd[i].pszGroup?_tcslen(dat->opd[i].pszGroup)+1:0;
+				if (sz) sz+=3;
+				sz+=dat->opd[i].pszTitle?_tcslen(dat->opd[i].pszTitle)+1:0;
+				fullTitle=mir_alloc(sz*sizeof(TCHAR));
+				mir_sntprintf(fullTitle,sz,(dat->opd[i].pszGroup && dat->opd[i].pszTitle)?_T("%s - %s"):_T("%s%s"),dat->opd[i].pszGroup?dat->opd[i].pszGroup:_T(""),dat->opd[i].pszTitle?dat->opd[i].pszTitle:_T("") );
+			}
+			useTitle=fullTitle?fullTitle:dat->opd[i].pszTitle;
 			if(dat->opd[i].pszGroup != NULL && FilterInst==NULL) {
 				tvis.hParent = FindNamedTreeItemAtRoot(GetDlgItem(hdlg,IDC_PAGETREE),dat->opd[i].pszGroup);
 				if(tvis.hParent == NULL) {
@@ -366,7 +378,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 			}
 			else {
 				TVITEM tvi;
-				tvi.hItem = FindNamedTreeItemAtRoot(GetDlgItem(hdlg,IDC_PAGETREE),dat->opd[i].pszTitle);
+				tvi.hItem = FindNamedTreeItemAtRoot(GetDlgItem(hdlg,IDC_PAGETREE),useTitle);
 				if( tvi.hItem != NULL ) {
 					if ( i == dat->currentPage ) dat->hCurrentPage=tvi.hItem;
 					tvi.mask = TVIF_PARAM;
@@ -380,9 +392,9 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 			if ( dat->opd[i].pszTab != NULL ) {
 				HTREEITEM hItem;
 				if (tvis.hParent == NULL)
-					hItem = FindNamedTreeItemAtRoot(GetDlgItem(hdlg,IDC_PAGETREE),dat->opd[i].pszTitle);
+					hItem = FindNamedTreeItemAtRoot(GetDlgItem(hdlg,IDC_PAGETREE),useTitle);
 				else
-					hItem = FindNamedTreeItemAtChildren(GetDlgItem(hdlg,IDC_PAGETREE),tvis.hParent,dat->opd[i].pszTitle);
+					hItem = FindNamedTreeItemAtChildren(GetDlgItem(hdlg,IDC_PAGETREE),tvis.hParent,useTitle);
 				if( hItem != NULL ) {
 					if ( i == dat->currentPage ) {
 						TVITEM tvi;
@@ -396,11 +408,14 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 				}
 			}
 
-			tvis.item.pszText = dat->opd[i].pszTitle;
+			tvis.item.pszText = useTitle;
 			tvis.item.lParam = i;
 			dat->opd[i].hTreeItem = TreeView_InsertItem( GetDlgItem(hdlg,IDC_PAGETREE), &tvis);
 			if ( i == dat->currentPage )
-				dat->hCurrentPage = dat->opd[i].hTreeItem;
+				dat->hCurrentPage = dat->opd[i].hTreeItem;	
+
+			if (fullTitle) mir_free(fullTitle);
+			fullTitle=NULL;
 		}
 		tvi.mask = TVIF_TEXT | TVIF_STATE;
 		tvi.pszText = str;
