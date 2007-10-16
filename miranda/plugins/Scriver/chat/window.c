@@ -31,6 +31,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define _finally __finally
 
 extern HBRUSH      hListBkgBrush;
+extern HBRUSH      hListSelectedBkgBrush;
 extern HANDLE      hSendEvent;
 extern HINSTANCE   g_hInst;
 extern HICON      hIcons[30];
@@ -1516,7 +1517,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
                SetBkMode(dis->hDC, TRANSPARENT);
 
                if (dis->itemAction == ODA_FOCUS && dis->itemState & ODS_SELECTED)
-                  FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_HIGHLIGHT));
+                  FillRect(dis->hDC, &dis->rcItem, hListSelectedBkgBrush);
                else //if (dis->itemState & ODS_INACTIVE)
                   FillRect(dis->hDC, &dis->rcItem, hListBkgBrush);
 

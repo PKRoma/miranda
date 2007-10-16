@@ -36,6 +36,7 @@ HBRUSH      hListBkgBrush = NULL;
 BOOL        SmileyAddInstalled = FALSE;
 BOOL        PopUpInstalled = FALSE;
 HBRUSH      hEditBkgBrush = NULL;
+HBRUSH      hListSelectedBkgBrush = NULL;
 
 HIMAGELIST  hImageList = NULL;
 

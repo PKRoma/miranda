@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern HANDLE			g_hInst;
 extern HBRUSH 			hListBkgBrush;
+extern HBRUSH 			hListSelectedBkgBrush;
 extern HICON			hIcons[30];
 extern FONTINFO			aFonts[OPTIONS_FONTCOUNT];
 extern BOOL				PopUpInstalled;
@@ -67,7 +68,7 @@ static fontOptionsList[] = {
 	{LPGENT("Action message"), RGB(160, 90, 160), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
 	{LPGENT("Highlighted message"), RGB(180, 150, 80), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
 	{LPGENT("Message typing area"), RGB(0, 0, 40), _T("Verdana"), DEFAULT_CHARSET, 0, -14},
-	{LPGENT("User list members (Online)"), RGB(0,0, 0), _T("Verdana"), DEFAULT_CHARSET, 0, -12},
+	{LPGENT("User list members (online)"), RGB(0,0, 0), _T("Verdana"), DEFAULT_CHARSET, 0, -12},
 	{LPGENT("User list members (away)"), RGB(170, 170, 170), _T("Verdana"), DEFAULT_CHARSET, 0, -12},
 };
 
@@ -363,11 +364,11 @@ void RegisterFonts( void )
 		_tcsncpy(fontid.backgroundGroup, _T("Scriver/Group Chats"), SIZEOF(fontid.backgroundGroup));
 		switch (i) {
 		case 17:
-			_tcsncpy(fontid.backgroundName, _T("Message Background"), SIZEOF(fontid.backgroundName));
+			_tcsncpy(fontid.backgroundName, _T("Message background"), SIZEOF(fontid.backgroundName));
 			break;
 		case 18:
 		case 19:
-			_tcsncpy(fontid.backgroundName, _T("Userlist Background"), SIZEOF(fontid.backgroundName));
+			_tcsncpy(fontid.backgroundName, _T("User list background"), SIZEOF(fontid.backgroundName));
 			break;
 		default:
 			_tcsncpy(fontid.backgroundName, _T("Background"), SIZEOF(fontid.backgroundName));
@@ -387,18 +388,23 @@ void RegisterFonts( void )
 	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
 
 	strncpy(colourid.setting, "ColorMessageBG", SIZEOF(colourid.setting));
-	_tcsncpy(colourid.name, LPGENT("Message Background"), SIZEOF(colourid.name));
+	_tcsncpy(colourid.name, LPGENT("Message background"), SIZEOF(colourid.name));
 	colourid.defcolour = GetSysColor(COLOR_WINDOW);
 	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
 
 	strncpy(colourid.setting, "ColorNicklistBG", SIZEOF(colourid.setting));
-	_tcsncpy(colourid.name, LPGENT("Userlist Background"), SIZEOF(colourid.name));
+	_tcsncpy(colourid.name, LPGENT("User list background"), SIZEOF(colourid.name));
 	colourid.defcolour = GetSysColor(COLOR_WINDOW);
 	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
 
 	strncpy(colourid.setting, "ColorNicklistLines", SIZEOF(colourid.setting));
-	_tcsncpy(colourid.name, LPGENT("Userlist Lines"), SIZEOF(colourid.name));
+	_tcsncpy(colourid.name, LPGENT("User list lines"), SIZEOF(colourid.name));
 	colourid.defcolour = GetSysColor(COLOR_INACTIVEBORDER);
+	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
+
+	strncpy(colourid.setting, "ColorNicklistSelectedBG", SIZEOF(colourid.setting));
+	_tcsncpy(colourid.name, LPGENT("User list background (selected)"), SIZEOF(colourid.name));
+	colourid.defcolour = GetSysColor(COLOR_HIGHLIGHT);
 	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
 }
 
@@ -1097,10 +1103,11 @@ void LoadGlobalSettings(void)
 	g_Settings.LoggingEnabled = (BOOL)DBGetContactSettingByte(NULL, "Chat", "LoggingEnabled", 0);
 	g_Settings.FlashWindow = (BOOL)DBGetContactSettingByte(NULL, "Chat", "FlashWindow", 0);
 	g_Settings.HighlightEnabled = (BOOL)DBGetContactSettingByte(NULL, "Chat", "HighlightEnabled", 1);
-	g_Settings.crUserListColor = (BOOL)DBGetContactSettingDword(NULL, "ChatFonts", "Font18Col", RGB(0,0,0));
-	g_Settings.crUserListBGColor = (BOOL)DBGetContactSettingDword(NULL, "Chat", "ColorNicklistBG", GetSysColor(COLOR_WINDOW));
-	g_Settings.crUserListHeadingsColor = (BOOL)DBGetContactSettingDword(NULL, "ChatFonts", "Font19Col", RGB(170,170,170));
-	g_Settings.crLogBackground = (BOOL)DBGetContactSettingDword(NULL, "Chat", "ColorLogBG", GetSysColor(COLOR_WINDOW));
+	g_Settings.crUserListColor = DBGetContactSettingDword(NULL, "ChatFonts", "Font18Col", RGB(0,0,0));
+	g_Settings.crUserListBGColor = DBGetContactSettingDword(NULL, "Chat", "ColorNicklistBG", GetSysColor(COLOR_WINDOW));
+	g_Settings.crUserListSelectedBGColor = DBGetContactSettingDword(NULL, "Chat", "ColorNicklistSelectedBG", GetSysColor(COLOR_HIGHLIGHT));
+	g_Settings.crUserListHeadingsColor = DBGetContactSettingDword(NULL, "ChatFonts", "Font19Col", RGB(170,170,170));
+	g_Settings.crLogBackground = DBGetContactSettingDword(NULL, "Chat", "ColorLogBG", GetSysColor(COLOR_WINDOW));
 	g_Settings.StripFormat = (BOOL)DBGetContactSettingByte(NULL, "Chat", "StripFormatting", 0);
 	g_Settings.TrayIconInactiveOnly = (BOOL)DBGetContactSettingByte(NULL, "Chat", "TrayIconInactiveOnly", 1);
 	g_Settings.PopUpInactiveOnly = (BOOL)DBGetContactSettingByte(NULL, "Chat", "PopUpInactiveOnly", 1);
@@ -1152,6 +1159,10 @@ void LoadGlobalSettings(void)
 		DeleteObject(hListBkgBrush);
 	}
 	hListBkgBrush = CreateSolidBrush(DBGetContactSettingDword(NULL, "Chat", "ColorNicklistBG", GetSysColor(COLOR_WINDOW)));
+	if (hListSelectedBkgBrush != NULL) {
+		DeleteObject(hListSelectedBkgBrush);
+	}
+	hListSelectedBkgBrush = CreateSolidBrush(DBGetContactSettingDword(NULL, "Chat", "ColorNicklistSelectedBG", GetSysColor(COLOR_HIGHLIGHT)));
 }
 
 static void FreeGlobalSettings(void)
@@ -1227,6 +1238,7 @@ int OptionsUnInit(void)
 	FreeGlobalSettings();
 	UnhookEvent(g_hOptions);
 	DeleteObject(hListBkgBrush);
+	DeleteObject(hListSelectedBkgBrush);
 	DeleteObject(g_Settings.NameFont);
 	return 0;
 }

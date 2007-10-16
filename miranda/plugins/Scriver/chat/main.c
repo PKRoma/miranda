@@ -34,6 +34,7 @@ BOOL        SmileyAddInstalled = FALSE;
 BOOL        IEviewInstalled = FALSE;
 BOOL        PopUpInstalled = FALSE;
 HBRUSH      hListBkgBrush = NULL;
+HBRUSH      hListSelectedBkgBrush = NULL;
 
 int			overlayIcon = 0;
 
