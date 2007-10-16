@@ -5,7 +5,7 @@
 // Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2004,2005,2006,2007 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_xtraz.h,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -55,7 +55,7 @@ void InitXStatusIcons();
 void ChangedIconsXStatus();
 HICON GetXStatusIcon(int bStatus, UINT flags);
 
-void handleXStatusCaps(HANDLE hContact, char* caps, int capsize);
+void handleXStatusCaps(HANDLE hContact, char* caps, int capsize, char* moods, int moodsize);
 
 int IcqShowXStatusDetails(WPARAM wParam, LPARAM lParam);
 

@@ -86,6 +86,39 @@ void handleBuddyFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSn
 }
 
 
+
+void extractMoodData(oscar_tlv_chain* pChain, char** pMood, int* cbMood)
+{
+  oscar_tlv* tlv = getTLV(pChain, 0x1D, 1);
+  int len = 0;
+  char* data;
+
+  if (tlv) 
+  {
+    len = tlv->wLen;
+    data = tlv->pData;
+  }
+  
+  while (len >= 4)
+  { // parse online message items one by one
+    WORD itemType = data[0] << 8 | data[1];
+    BYTE itemLen = data[3];
+
+    // just some validity check
+    if (itemLen + 4 > len) 
+      itemLen = len - 4;
+
+    if (itemType == 0x0E)
+    { // mood data
+      *pMood = data + 4;
+      *cbMood = itemLen;
+    }
+    data += itemLen + 4;
+    len -= itemLen + 4;
+  }
+}
+
+
 // TLV(1) Unknown (x50)
 // TLV(2) Member since (not sent)
 // TLV(3) Online since
@@ -340,8 +373,13 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
             NetLog_Server("No capability info TLVs");
           }
 
-          // handle Xtraz status
-          handleXStatusCaps(hContact, capBuf, capLen);
+          { // handle Xtraz status
+            char* moodData = NULL;
+            int moodSize = 0;
+
+            extractMoodData(pChain, &moodData, &moodSize);
+            handleXStatusCaps(hContact, capBuf, capLen, moodData, moodSize);
+          }
 
           szClient = detectUserClient(hContact, dwUIN, wVersion, dwFT1, dwFT2, dwFT3, dwOnlineSince, nTCPFlag, dwDirectConnCookie, dwWebPort, capBuf, capLen, &bClientId, szStrBuf);
         }
@@ -367,9 +405,12 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
         pTLV = getTLV(pChain, 0x0D, 1);
 
         if (pTLV && (pTLV->wLen >= 16))
-        {
-          // handle Xtraz status
-          handleXStatusCaps(hContact, pTLV->pData, pTLV->wLen);
+        { // handle Xtraz status
+          char* moodData = NULL;
+          int moodSize = 0;
+
+          extractMoodData(pChain, &moodData, &moodSize);
+          handleXStatusCaps(hContact, pTLV->pData, pTLV->wLen, moodData, moodSize);
         }
       }
     }
@@ -466,7 +507,7 @@ static void handleUserOffline(BYTE *buf, WORD wLen)
     // Reset DC status
     ICQWriteContactSettingByte(hContact, "DCStatus", 0);
     // clear Xtraz status
-    handleXStatusCaps(hContact, NULL, 0);
+    handleXStatusCaps(hContact, NULL, 0, NULL, 0);
   }
 }
 

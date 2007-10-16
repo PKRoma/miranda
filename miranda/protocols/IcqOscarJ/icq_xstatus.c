@@ -295,30 +295,30 @@ const capstr capXStatus[XSTATUS_COUNT] = {
   {0xdd, 0xcf, 0x0e, 0xa9, 0x71, 0x95, 0x40, 0x48, 0xa9, 0xc6, 0x41, 0x32, 0x06, 0xd6, 0xf2, 0x80}};
 
 const char* nameXStatus[XSTATUS_COUNT] = {
-  LPGEN("Angry"),
-  LPGEN("Taking a bath"),
-  LPGEN("Tired"),
-  LPGEN("Party"),
-  LPGEN("Drinking beer"),
-  LPGEN("Thinking"),
-  LPGEN("Eating"),
-  LPGEN("Watching TV"),
-  LPGEN("Meeting"),
-  LPGEN("Coffee"),
-  LPGEN("Listening to music"),
-  LPGEN("Business"),
-  LPGEN("Shooting"),
-  LPGEN("Having fun"),
-  LPGEN("On the phone"),
-  LPGEN("Gaming"),
-  LPGEN("Studying"),
-  LPGEN("Shopping"),
-  LPGEN("Feeling sick"),
-  LPGEN("Sleeping"),
-  LPGEN("Surfing"),
-  LPGEN("Browsing"),
-  LPGEN("Working"),
-  LPGEN("Typing"),
+  LPGEN("Angry"),         // 23
+  LPGEN("Taking a bath"), // 1
+  LPGEN("Tired"),         // 2
+  LPGEN("Party"),         // 3
+  LPGEN("Drinking beer"), // 4
+  LPGEN("Thinking"),      // 5
+  LPGEN("Eating"),        // 6
+  LPGEN("Watching TV"),   // 7
+  LPGEN("Meeting"),       // 8
+  LPGEN("Coffee"),        // 9
+  LPGEN("Listening to music"),// 10
+  LPGEN("Business"),      // 11
+  LPGEN("Shooting"),      // 12
+  LPGEN("Having fun"),    // 13
+  LPGEN("On the phone"),  // 14
+  LPGEN("Gaming"),        // 15
+  LPGEN("Studying"),      // 16
+  LPGEN("Shopping"),      // 0
+  LPGEN("Feeling sick"),  // 17
+  LPGEN("Sleeping"),      // 18
+  LPGEN("Surfing"),       // 19
+  LPGEN("Browsing"),      // 20
+  LPGEN("Working"),       // 21
+  LPGEN("Typing"),        // 22
   LPGEN("Picnic"),
   LPGEN("Cooking"),
   LPGEN("Smoking"),
@@ -328,8 +328,42 @@ const char* nameXStatus[XSTATUS_COUNT] = {
   LPGEN("Watching pro7 on TV"),
   LPGEN("Love")};
 
+const int moodXStatus[XSTATUS_COUNT] = {
+  23,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  0,
+  17,
+  18,
+  19,
+  20,
+  21,
+  22,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1};
 
-void handleXStatusCaps(HANDLE hContact, char* caps, int capsize)
+
+void handleXStatusCaps(HANDLE hContact, char* caps, int capsize, char* moods, int moodsize)
 {
   int bChanged = FALSE;
   HANDLE hIcon = (HANDLE)-1;
@@ -337,7 +371,7 @@ void handleXStatusCaps(HANDLE hContact, char* caps, int capsize)
   if (!gbXStatusEnabled) return;
 
   if (caps)
-  {
+  { // detect custom status capabilities
     int i;
 
     for (i = 0; i < XSTATUS_COUNT; i++)
@@ -359,6 +393,39 @@ void handleXStatusCaps(HANDLE hContact, char* caps, int capsize)
         if (ICQGetContactSettingByte(NULL, "XStatusAuto", DEFAULT_XSTATUS_AUTO))
           requestXStatusDetails(hContact, TRUE);
 
+        hIcon = hXStatusIcons[i];
+
+        break;
+      }
+    }
+  }
+  if (hIcon == (HANDLE)-1 && moods && moodsize < 32)
+  { // process custom statuses (moods) from ICQ6
+    int i;
+
+    for (i = 0; i < XSTATUS_COUNT; i++)
+    {
+      char szMoodId[32], szMoodData[32];
+
+      strncpy(szMoodData, moods, moodsize);
+      szMoodData[moodsize] = '\0';
+
+      if (moodXStatus[i] == -1) continue;
+      null_snprintf(szMoodId, 32, "icqmood%d", moodXStatus[i]);
+      if (!strcmpnull(szMoodId, szMoodData))
+      {
+        BYTE bXStatusId = (BYTE)(i+1);
+        char str[MAX_PATH];
+
+        if (ICQGetContactSettingByte(hContact, DBSETTING_XSTATUSID, -1) != bXStatusId)
+        { // only write default name when it is really needed, i.e. on Custom Status change
+          ICQWriteContactSettingByte(hContact, DBSETTING_XSTATUSID, bXStatusId);
+          ICQWriteContactSettingUtf(hContact, DBSETTING_XSTATUSNAME, ICQTranslateUtfStatic(nameXStatus[i], str, MAX_PATH));
+          ICQDeleteContactSetting(hContact, DBSETTING_XSTATUSMSG);
+
+          bChanged = TRUE;
+        }
+        // cannot retrieve mood details here - need to be processed with new user details
         hIcon = hXStatusIcons[i];
 
         break;
