@@ -605,6 +605,7 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 						if ( !_tcscmp( str, _T("owner")))        r->affiliation = AFFILIATION_OWNER;
 						else if ( !_tcscmp( str, _T("admin")))   r->affiliation = AFFILIATION_ADMIN;
 						else if ( !_tcscmp( str, _T("member")))  r->affiliation = AFFILIATION_MEMBER;
+						else if ( !_tcscmp( str, _T("none")))	 r->affiliation = AFFILIATION_NONE;
 						else if ( !_tcscmp( str, _T("outcast"))) r->affiliation = AFFILIATION_OUTCAST;
 					}
 					if (( str=JabberXmlGetAttrValue( itemNode, "role" )) != NULL ) {
@@ -691,9 +692,10 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 					JabberGcLogUpdateMemberStatus( item, nick, str, GC_EVENT_KICK, reasonNode, iStatus );
 					return;
 		}	}	}
-
+		
+		statusNode = JabberXmlGetChild( node, "status" );
 		JabberListRemoveResource( LIST_CHATROOM, from );
-		JabberGcLogUpdateMemberStatus( item, nick, str, GC_EVENT_PART, NULL );
+		JabberGcLogUpdateMemberStatus( item, nick, str, GC_EVENT_PART, statusNode );
 
 		HANDLE hContact = JabberHContactFromJID( from );
 		if ( hContact != NULL )
