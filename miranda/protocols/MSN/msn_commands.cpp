@@ -856,7 +856,7 @@ static void sttProcessNotificationMessage( char* buf, unsigned len )
 		}
 
 		const char* acturl = ezxml_attr(xmlact, "url");
-		if (acturl == NULL || strstr(acturl, "//:") == NULL) 
+		if (acturl == NULL || strstr(acturl, "://") == NULL) 
 			sz = mir_snprintf(fullurl+sz, sizeof(fullurl)-sz, "%s", ezxml_attr(xmlnot, "siteurl"));
 		
 		sz += mir_snprintf(fullurl+sz, sizeof(fullurl)-sz, "%s", acturl);
