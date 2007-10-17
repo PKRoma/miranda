@@ -225,10 +225,9 @@ BOOL CList_AddEvent(HANDLE hContact, HICON Icon, HANDLE event, int type, TCHAR* 
 	if ( type ) {
 		if(!CallService(MS_CLIST_GETEVENT, (WPARAM)hContact, (LPARAM)0))
 			CallService(MS_CLIST_ADDEVENT,(WPARAM) hContact,(LPARAM) &cle);
-	}
-	else {
+	} else {
 		if(CallService(MS_CLIST_GETEVENT, (WPARAM)hContact, (LPARAM)0))
-			CallService(MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM)"chaticon");
+			CallService(MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM)event);
 		CallService(MS_CLIST_ADDEVENT,(WPARAM) hContact,(LPARAM) &cle);
 	}
 	return TRUE;
@@ -241,7 +240,7 @@ HANDLE CList_FindRoom ( const char* pszModule, const TCHAR* pszRoom)
 		char* szProto = ( char* )CallService( MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0 );
 		if ( szProto && !lstrcmpiA( szProto, pszModule )) {
 			if ( DBGetContactSettingByte( hContact, szProto, "ChatRoom", 0) != 0 ) {
-	DBVARIANT dbv;
+				DBVARIANT dbv;
 				if ( !DBGetContactSettingTString( hContact, szProto, "ChatRoomID", &dbv )) {
 					if ( !lstrcmpi(dbv.ptszVal, pszRoom)) {
 						DBFreeVariant(&dbv);
