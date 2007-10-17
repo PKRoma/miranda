@@ -231,7 +231,7 @@ BOOL CList_AddEvent(HANDLE hContact, HICON Icon, HANDLE event, int type, TCHAR* 
 	}
 	else {
 		if (CallService(MS_CLIST_GETEVENT, (WPARAM)hContact, (LPARAM)0))
-			CallService(MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM)"chaticon");
+			CallService(MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM)event);
 		CallService(MS_CLIST_ADDEVENT,(WPARAM) hContact,(LPARAM) &cle);
 	}
 	return TRUE;
