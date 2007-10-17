@@ -504,6 +504,8 @@ BEGIN
         MENUITEM "Delete",                      IDM_DELETE
         MENUITEM SEPARATOR
         MENUITEM "Select &All",                 IDM_SELECTALL
+        MENUITEM SEPARATOR
+        MENUITEM "Clear",                 		IDM_CLEAR
     END
     POPUP "Tabs"
     BEGIN

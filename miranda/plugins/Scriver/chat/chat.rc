@@ -212,17 +212,5 @@ BEGIN
         MENUITEM "&Copy link",                  ID_COPY
     END
     MENUITEM "",                            65535
-    POPUP "Message"
-    BEGIN
-        MENUITEM "Undo  ",                      ID_MESSAGE_UNDO, GRAYED
-        MENUITEM "Redo",                        ID_MESSAGE_REDO, GRAYED
-        MENUITEM SEPARATOR
-        MENUITEM "Copy",                        ID_MESSAGE_COPY, GRAYED
-        MENUITEM "Cut",                         ID_MESSAGE_CUT, GRAYED
-        MENUITEM "Paste",                       ID_MESSAGE_PASTE
-        MENUITEM "Select All",                  ID_MESSAGE_SELECTALL
-        MENUITEM SEPARATOR
-        MENUITEM "Clear",                       ID_MESSAGE_CLEAR
-    END
 END
 

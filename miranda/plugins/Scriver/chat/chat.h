@@ -299,6 +299,7 @@ struct GlobalLogSettings_t {
 	COLORREF    crLogBackground;
 	COLORREF    crUserListColor;
 	COLORREF    crUserListBGColor;
+	COLORREF    crUserListSelectedBGColor;
 	COLORREF    crUserListHeadingsColor;
 	COLORREF    crPUTextColour;
 	COLORREF    crPUBkgColour;
