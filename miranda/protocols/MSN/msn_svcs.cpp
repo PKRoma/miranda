@@ -561,6 +561,7 @@ int MsnFileResume( WPARAM wParam, LPARAM lParam )
 
 int MsnGetAvatar(WPARAM wParam, LPARAM lParam)
 {
+	if (avsPresent < 0) avsPresent = ServiceExists(MS_AV_SETMYAVATAR) != 0;
 	if (!avsPresent) return 1;
 
 	char* buf = ( char* )wParam;
@@ -1050,6 +1051,7 @@ static int MsnSetApparentMode( WPARAM wParam, LPARAM lParam )
 
 static int MsnSetAvatar( WPARAM wParam, LPARAM lParam )
 {
+	if (avsPresent < 0) avsPresent = ServiceExists(MS_AV_SETMYAVATAR) != 0;
 	if (!avsPresent) return 1;
 
 	char* szFileName = ( char* )lParam;
