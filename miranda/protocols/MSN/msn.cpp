@@ -81,7 +81,7 @@ char* mailsoundname;
 char* alertsoundname;
 char* ModuleName;
 
-bool avsPresent = false;
+int avsPresent = -1;
 
 PLUGININFOEX pluginInfo =
 {
