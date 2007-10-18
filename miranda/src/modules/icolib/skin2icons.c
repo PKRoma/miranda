@@ -86,6 +86,62 @@ static void __fastcall SafeDestroyIcon( HICON* icon )
 		*icon = NULL;
 }	}
 
+
+// Helper function to get valid icons with valid alpha from ImageList, borrowed from clist_modern code
+static HICON ImageList_GetIcon_Fixed( HIMAGELIST himl, int i, UINT fStyle )
+{
+	IMAGEINFO imi = { 0 };
+	BITMAP bm = { 0 };
+
+	if (IsWinVerXPPlus() && i != -1) {
+		ImageList_GetImageInfo( himl, i, &imi );
+		GetObject( imi.hbmImage, sizeof(bm), &bm);
+		if ( bm.bmBitsPixel == 32 ) //stupid bug of Microsoft 
+			// Icons bitmaps are not premultiplied
+			// So Imagelist_AddIcon - premultiply alpha
+			// But incorrect - it is possible that alpha will
+			// be less than color and
+			// ImageList_GetIcon will return overflowed colors
+		{
+			BYTE *bits = bm.bmBits;
+			if ( !bits ) {
+				bits = malloc( bm.bmWidthBytes * bm.bmHeight );
+				GetBitmapBits( imi.hbmImage, bm.bmWidthBytes * bm.bmHeight, bits );
+			}
+			{	int iy;
+				BYTE *bcbits;
+				int wb = (( imi.rcImage.right - imi.rcImage.left ) * bm.bmBitsPixel >> 3 );
+				bcbits = bits + ( bm.bmHeight - imi.rcImage.bottom ) * bm.bmWidthBytes + ( imi.rcImage.left * bm.bmBitsPixel >> 3 );
+				for ( iy = 0; iy < imi.rcImage.bottom - imi.rcImage.top; iy++ )	{
+					int x;
+					// Dummy microsoft fix - alpha can be less than r,g or b
+					// Looks like color channels in icons should be non-premultiplied with alpha
+					// But AddIcon store it premultiplied (incorrectly cause can be Alpha==7F, but R,G or B==80
+					// So i check that alpha is 0x7F and set it to 0x80
+					DWORD *c = ((DWORD*) bcbits);
+					for ( x = 0; x < imi.rcImage.right - imi.rcImage.left; x++ ) {
+						DWORD val = *c;
+						BYTE a = (BYTE)(val >> 24);
+						if ( a != 0 ) {
+							BYTE r = (BYTE)((val & 0xFF0000) >> 16);
+							BYTE g = (BYTE)((val & 0xFF00) >> 8);
+							BYTE b = (BYTE)(val & 0xFF);
+							if ( a < r || a < g || a < b ) {
+								a = max(max(r, g), b);
+								val = a << 24 | r << 16 | g << 8 | b;
+								*c = val;
+						}	}
+						c++;
+					}
+					bcbits += bm.bmWidthBytes;
+			}	}
+			if ( !bm.bmBits ) { 
+				SetBitmapBits( imi.hbmImage, bm.bmWidthBytes * bm.bmHeight, bits );
+				free( bits );
+	}	}	}
+	return ImageList_GetIcon( himl, i, ILD_TRANSPARENT );
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // Service functions
 
@@ -360,7 +416,7 @@ HICON IconItem_GetDefaultIcon( IconItem* item )
 	}
 
 	if ( !hIcon && item->default_icon_index != -1 )
-		hIcon = ImageList_GetIcon( hCacheIconList, item->default_icon_index, ILD_NORMAL );
+		hIcon = ImageList_GetIcon_Fixed( hCacheIconList, item->default_icon_index, ILD_NORMAL );
 
 	if ( !hIcon && item->default_file )
 		_ExtractIconEx( item->default_file, item->default_indx, item->cx, item->cy, &hIcon, LR_COLOR );
@@ -381,7 +437,7 @@ HICON IconItem_GetIcon( IconItem* item )
 		return item->icon;
 
 	if ( item->icon_cache_valid )
-		hIcon = ImageList_GetIcon( hCacheIconList, item->icon_cache_index, ILD_NORMAL );
+		hIcon = ImageList_GetIcon_Fixed( hCacheIconList, item->icon_cache_index, ILD_NORMAL );
 
 	if ( !hIcon && !DBGetContactSettingTString( NULL, "SkinIcons", item->name, &dbv )) {
 		hIcon = ExtractIconFromPath( dbv.ptszVal, item->cx, item->cy );
