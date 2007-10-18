@@ -241,18 +241,19 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 				if (( iqNode = jidListInfo->iqNode ) != NULL ) {
 					if (( from = JabberXmlGetAttrValue( iqNode, "from" )) != NULL ) {
 						jidListInfo->roomJid = mir_tstrdup( from );
-						localFrom = mir_tstrdup( from );
-						mir_sntprintf( title, SIZEOF( title ), _T("%s (%s)"),
-							( jidListInfo->type==MUC_VOICELIST ) ? TranslateT( "Voice List" ) :
+						
+						if (( queryNode=JabberXmlGetChild( iqNode, "query" )) != NULL ) {
+							localFrom = mir_tstrdup( from );
+							mir_sntprintf( title, SIZEOF( title ), _T("%s, %d items (%s)"),
+								( jidListInfo->type==MUC_VOICELIST ) ? TranslateT( "Voice List" ) :
 							( jidListInfo->type==MUC_MEMBERLIST ) ? TranslateT( "Member List" ) :
 							( jidListInfo->type==MUC_MODERATORLIST ) ? TranslateT( "Moderator List" ) :
 							( jidListInfo->type==MUC_BANLIST ) ? TranslateT( "Ban List" ) :
 							( jidListInfo->type==MUC_ADMINLIST ) ? TranslateT( "Admin List" ) :
 							( jidListInfo->type==MUC_OWNERLIST ) ? TranslateT( "Owner List" ) :
-							TranslateT( "JID List" ),
-							localFrom );
-						mir_free( localFrom );
-						if (( queryNode=JabberXmlGetChild( iqNode, "query" )) != NULL ) {
+							TranslateT( "JID List" ), queryNode->numChild,
+								localFrom );
+							mir_free( localFrom );
 							lvi.mask = LVIF_TEXT | LVIF_PARAM;
 							lvi.iSubItem = 0;
 							lvi.iItem = 0;
