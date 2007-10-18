@@ -726,7 +726,7 @@ int JabberAdhocForwardHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pI
 									time_t ltime = ( time_t )dbei.timestamp;
 									struct tm *gmt = gmtime( &ltime );
 									char stime[ 512 ];
-									sprintf(stime, "%.4i-%.2i-%.2iT%.2i:%.2i:%.2iZ", gmt->tm_year + 1900, gmt->tm_mon, gmt->tm_mday,
+									sprintf(stime, "%.4i-%.2i-%.2iT%.2i:%.2i:%.2iZ", gmt->tm_year + 1900, gmt->tm_mon + 1, gmt->tm_mday,
 										gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
 
 									XmlNode* delayNode = msg.addChild( "delay" );
