@@ -25,8 +25,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #  define _UNICODE
 #endif
 
-// to enable all 0.7 core functions
-#define MIRANDA_VER 0x700
+// to enable all 0.7.2 core functions
+#define MIRANDA_VER 0x720
 
 #include <tchar.h>
 #include <malloc.h>
