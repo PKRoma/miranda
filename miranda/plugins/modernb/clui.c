@@ -1625,8 +1625,8 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 		{
 			POINT pt;
 			int k=0;
-			pt.x = LOWORD(lParam); 
-			pt.y = HIWORD(lParam); 
+			pt.x = (short)LOWORD(lParam); 
+			pt.y = (short)HIWORD(lParam); 
 			ClientToScreen(hwnd,&pt);
 
 			k=CLUI_SizingOnBorder(pt,1);
@@ -1642,8 +1642,8 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 		if (wParam==WM_LBUTTONDOWN) {   
 			POINT pt;
 			int k=0;
-			pt.x = LOWORD(lParam); 
-			pt.y = HIWORD(lParam); 
+			pt.x = (short)LOWORD(lParam); 
+			pt.y = (short)HIWORD(lParam); 
 			ClientToScreen(hwnd,&pt);
 
 			k=CLUI_SizingOnBorder(pt,1);
@@ -1755,8 +1755,8 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 		{   
 			POINT pt;
 			int k=0;
-			pt.x = LOWORD(lParam); 
-			pt.y = HIWORD(lParam); 
+			pt.x = (short)LOWORD(lParam); 
+			pt.y = (short)HIWORD(lParam); 
 			//ClientToScreen(hwnd,&pt);
 			k=CLUI_SizingOnBorder(pt,1);
 			//if (!k) after_syscommand=1;
@@ -1771,8 +1771,8 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 			int k=0;
 			RECT rc;
 			GetWindowRect(hwnd, &rc);
-			pt.x = LOWORD(lParam); 
-			pt.y = HIWORD(lParam); 
+			pt.x = (short)LOWORD(lParam); 
+			pt.y = (short)HIWORD(lParam); 
 			if (/*wParam!=HTMENU ||*/ (pt.x>rc.right-16 && pt.x<rc.right))
 				return CallService(MS_CLIST_SHOWHIDE, 0, 0);
 		}
@@ -1788,8 +1788,8 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 			{
 				int t;
 				POINT pt;
-				pt.x=LOWORD(lParam);
-				pt.y=HIWORD(lParam);
+				pt.x=(short)LOWORD(lParam);
+				pt.y=(short)HIWORD(lParam);
 				t=MenuItemFromPoint(hwnd,g_hMenuMain,pt);
 
 				if (t==-1 && (DBGetContactSettingByte(NULL,"CLUI","ClientAreaDrag",SETTING_CLIENTDRAG_DEFAULT)))
@@ -1799,8 +1799,8 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 			{
 				POINT pt;
 				int k;
-				pt.x=LOWORD(lParam);
-				pt.y=HIWORD(lParam);			
+				pt.x=(short)LOWORD(lParam);
+				pt.y=(short)HIWORD(lParam);			
 				k=CLUI_SizingOnBorder(pt,0);
 				if (!k && (DBGetContactSettingByte(NULL,"CLUI","ClientAreaDrag",SETTING_CLIENTDRAG_DEFAULT)))
 					return HTCAPTION;
