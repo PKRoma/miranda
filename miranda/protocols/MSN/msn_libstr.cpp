@@ -265,17 +265,17 @@ char*  HtmlEncode( const char* str )
 /////////////////////////////////////////////////////////////////////////////////////////
 // UrlEncode - converts printable characters into URL chars like %20
 
-void  UrlEncode( const char* src,char* dest, int cbDest )
+void  UrlEncode( const char* src, char* dest, size_t cbDest )
 {
-	BYTE* d = ( BYTE* )dest;
-	int   i = 0;
+	char *d = dest;
+	size_t   i = 0;
 
-	for( const BYTE* s = ( const BYTE* )src; *s; s++ ) {
+	for ( const char *s = src; *s; s++ ) {
 		if (( *s < '0' && *s != '.' && *s != '-' ) ||
 			 ( *s >= ':' && *s <= '?' ) ||
 			 ( *s >= '[' && *s <= '`' && *s != '_' ))
 		{
-			if ( i >= cbDest-4 )
+			if ( i + 4 >= cbDest )
 				break;
 
 			*d++ = '%';
@@ -285,9 +285,8 @@ void  UrlEncode( const char* src,char* dest, int cbDest )
 		}
 		else
 		{
+			if ( ++i == cbDest ) break;
 			*d++ = *s;
-			if ( i++ == cbDest-1 )
-				break;
 	}	}
 
 	*d = '\0';

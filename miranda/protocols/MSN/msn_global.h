@@ -187,7 +187,7 @@ bool		txtParseParam (const char* szData, const char* presearch, const char* star
 char*		MSN_Base64Decode( const char* str );
 
 void     	UrlDecode( char*str );
-void     	UrlEncode( const char* src, char* dest, int cbDest );
+void     	UrlEncode( const char *src, char *dest, size_t cbDest );
 
 HANDLE      MSN_HContactFromEmail( const char* msnEmail, const char* msnNick, int addIfNeeded, int temporary );
 HANDLE      MSN_HContactFromEmailT( const TCHAR* msnEmail );
