@@ -413,6 +413,10 @@ int MsnWindowEvent(WPARAM wParam, LPARAM lParam)
 
 		if (Lists_GetNetId(tEmail) != 1) return 0;
 
+		WORD lastStatus = MSN_GetWord(msgEvData->hContact, "Status", ID_STATUS_OFFLINE);
+		if (lastStatus == ID_STATUS_OFFLINE || lastStatus == ID_STATUS_INVISIBLE)
+			return 0;
+
 		bool isOffline;
 		ThreadData* thread = MSN_StartSB(msgEvData->hContact, isOffline);
 		
