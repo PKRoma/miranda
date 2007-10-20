@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "msn_global.h"
 
-extern int tridUrlInbox, tridUrlEdit;
+extern int tridUrlInbox;
 
 int MSN_HandleErrors( ThreadData* info, char* cmdString )
 {
@@ -57,6 +57,7 @@ int MSN_HandleErrors( ThreadData* info, char* cmdString )
 		return 0;
 
 	case ERR_CONTACT_LIST_FAILED:
+	case ERR_LIST_UNAVAILABLE:
 			char* tWords[ 3 ];
 			if ( sttDivideWords( cmdString, 3, tWords ) == 3 )
 				HReadBuffer(info, 0).surelyRead(atol(tWords[2])); 
@@ -81,11 +82,6 @@ int MSN_HandleErrors( ThreadData* info, char* cmdString )
 	case ERR_INVALID_LOCALE:
 		if ( packetID == tridUrlInbox ) {
 			tridUrlInbox = -1;
-			return 0;
-		}
-
-		if ( packetID == tridUrlEdit ) {
-			tridUrlEdit  = msnNsThread->sendPacket( "URL", "PROFILE 0x0409" );
 			return 0;
 		}
 		// fall through

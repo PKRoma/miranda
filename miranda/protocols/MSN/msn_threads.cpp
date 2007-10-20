@@ -145,7 +145,23 @@ void __cdecl MSNServerThread( ThreadData* info )
 	MSN_DebugLog( "Connected with handle=%08X", info->s );
 
 	if ( info->mType == SERVER_DISPATCH || info->mType == SERVER_NOTIFICATION ) {
-		info->sendPacket( "VER", "MSNP14 MSNP13 CVR0" );
+		info->sendPacket( "VER", "MSNP15 MSNP14 MSNP13 CVR0" );
+
+		OSVERSIONINFO osvi = {0};
+		osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+	    GetVersionEx(&osvi);
+
+		info->sendPacket( "CVR","0x0409 %s %d.%d i386 MSNMSGR 8.1.0178 MSFT %s",
+			osvi.dwPlatformId >= 2 ? "winnt" : "win", osvi.dwMajorVersion, osvi.dwMinorVersion, 
+			MyOptions.szEmail );
+
+		info->sendPacket( "USR", "SSO I %s", MyOptions.szEmail );
+
+		if ( MSN_GetPassportAuth()) {
+			MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
+			MSN_GoOffline();
+			return;
+		}
 	}
 	else if ( info->mType == SERVER_SWITCHBOARD ) {
 		info->sendPacket( info->mCaller ? "USR" : "ANS", "%s %s", MyOptions.szEmail, info->mCookie );

@@ -19,8 +19,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "msn_global.h"
 
+extern char *authContactToken;
+
 static const char abReqHdr[] = 
-	"Cookie: MSPAuth=%s;MSPProf=%s\r\n"
 	"SOAPAction: http://www.msn.com/webservices/AddressBook/%s\r\n";
 
 static ezxml_t abSoapHdr(const char* service, const char* scenario, ezxml_t& tbdy, char*& httphdr)
@@ -34,17 +35,19 @@ static ezxml_t abSoapHdr(const char* service, const char* scenario, ezxml_t& tbd
 	ezxml_t hdr = ezxml_add_child(xmlp, "soap:Header", 0);
 	ezxml_t apphdr = ezxml_add_child(hdr, "ABApplicationHeader", 0);
 	ezxml_set_attr(apphdr, "xmlns", "http://www.msn.com/webservices/AddressBook");
-	ezxml_t appid = ezxml_add_child(apphdr, "ApplicationId", 0);
-	ezxml_set_txt(appid, "09607671-1C32-421F-A6A6-CBFAA51AB5F4");
-	ezxml_t migr = ezxml_add_child(apphdr, "IsMigration", 0);
-	ezxml_set_txt(migr, ((abchMigrated == NULL || *abchMigrated == '1') ? "false" : "true"));
-	ezxml_t scn = ezxml_add_child(apphdr, "PartnerScenario", 0);
-	ezxml_set_txt(scn, scenario);
+	ezxml_t node = ezxml_add_child(apphdr, "ApplicationId", 0);
+	ezxml_set_txt(node, "09607671-1C32-421F-A6A6-CBFAA51AB5F4");
+	node = ezxml_add_child(apphdr, "IsMigration", 0);
+	ezxml_set_txt(node, ((abchMigrated == NULL || *abchMigrated == '1') ? "false" : "true"));
+	node = ezxml_add_child(apphdr, "PartnerScenario", 0);
+	ezxml_set_txt(node, scenario);
 
 	ezxml_t authhdr = ezxml_add_child(hdr, "ABAuthHeader", 0);
 	ezxml_set_attr(authhdr, "xmlns", "http://www.msn.com/webservices/AddressBook");
-	ezxml_t mggr = ezxml_add_child(authhdr, "ManagedGroupRequest", 0);
-	ezxml_set_txt(mggr, "false");
+	node = ezxml_add_child(authhdr, "ManagedGroupRequest", 0);
+	ezxml_set_txt(node, "false");
+	node = ezxml_add_child(authhdr, "TicketToken", 0);
+	if (authContactToken) ezxml_set_txt(node, authContactToken);
 
 	ezxml_t bdy = ezxml_add_child(xmlp, "soap:Body", 0);
 	
@@ -57,11 +60,10 @@ static ezxml_t abSoapHdr(const char* service, const char* scenario, ezxml_t& tbd
 		ezxml_set_txt(node, "00000000-0000-0000-0000-000000000000");
 	}
 
-	size_t hdrsz = strlen(tContAuthToken) + strlen(pContAuthToken) + strlen(service) + 
-		sizeof(abReqHdr) + 20;
+	size_t hdrsz = strlen(service) + sizeof(abReqHdr) + 20;
 	httphdr = (char*)mir_alloc(hdrsz);
 
-	mir_snprintf(httphdr, hdrsz, abReqHdr, tContAuthToken, pContAuthToken, service);
+	mir_snprintf(httphdr, hdrsz, abReqHdr, service);
 
 	return xmlp;
 }

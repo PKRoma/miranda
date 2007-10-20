@@ -159,6 +159,23 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
+SOURCE=.\des.c
+
+!IF  "$(CFG)" == "msn - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "msn - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "msn - Win32 Release Unicode"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "msn - Win32 Debug Unicode"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
 SOURCE=.\ezxml.c
 # SUBTRACT CPP /YX /Yc /Yu
 # End Source File

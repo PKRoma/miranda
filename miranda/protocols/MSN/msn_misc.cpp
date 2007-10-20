@@ -562,7 +562,7 @@ void  MSN_SetServerStatus( int newStatus )
 			 MSN_GetStaticString( "PictObject", NULL, szMsnObject, sizeof( szMsnObject )))
 			szMsnObject[ 0 ] = 0;
 
-		unsigned flags = 0x60000020;
+		unsigned flags = 0x70000020;
 		if (MSN_GetByte( "MobileEnabled", 0) && MSN_GetByte( "MobileAllowed", 0))
 			flags |= 0x40;
 
@@ -584,45 +584,30 @@ void  MSN_SetServerStatus( int newStatus )
 
 void MsnInvokeMyURL( bool ismail, char* url )
 {
-	DBVARIANT dbv;
-	extern unsigned long sl;
+	const char* requrl = url ? url : (ismail ? rru : "http://spaces.live.com");  
+	const char* id = ismail ? urlId : "73625";
 
-	char* email = ( char* )alloca( strlen( MyOptions.szEmail )*3 );
-	UrlEncode( MyOptions.szEmail, email, strlen( MyOptions.szEmail )*3 );
-
-	if ( DBGetContactSettingString( NULL, msnProtocolName, "Password", &dbv ))
-		return;
-
-	MSN_CallService( MS_DB_CRYPT_DECODESTRING, strlen( dbv.pszVal )+1, ( LPARAM )dbv.pszVal );
-
-	// for hotmail access
-	int tm = time(NULL) - sl;
-
-	char hippy[ 2048 ];
-	long challen = mir_snprintf( hippy, sizeof( hippy ), "%s%lu%s", MSPAuth, tm, dbv.pszVal );
-	MSN_FreeVariant( &dbv );
-
-	//Digest it
-	unsigned char digest[16];
-	mir_md5_hash(( BYTE* )hippy, challen, digest );
-	char* hexdgst = arrayToHex(digest, sizeof(digest));
-
-	if ( rru && passport )
+	char* hippy;
+	if (passport && requrl && id)
 	{
-		char rruenc[256];
-		char* prru = ismail ? (url ? url : rru) : profileURL;
-		UrlEncode(prru, rruenc, sizeof(rruenc));
+		char* post = HotmailLogin(requrl, id, ismail);
 
-		mir_snprintf(hippy, sizeof(hippy),
-			"%s&auth=%s&creds=%s&sl=%d&username=%s&mode=ttl"
-			"&sid=%s&id=%s&rru=%s%s&js=yes",
-			passport, MSPAuth, hexdgst, tm, email, sid, 
-			ismail ? urlId : profileURLId, rruenc, ismail ? "&svc=mail" : "" );
+		hippy = (char*)alloca(strlen(passport) + strlen(post) + 20);
+
+		strcpy(hippy, passport);
+		char* ch = strstr(hippy, "md5auth");
+		if (ch)
+		{
+			memmove(ch + 1, ch, strlen(ch)+1);
+			memcpy(ch, "sha1", 4);
+		}
+		strcat(hippy, "&"); strcat(hippy, post);
+		mir_free(post);
+
 	}
 	else
-		strcpy( hippy, ismail ? "http://login.live.com" : "http://spaces.live.com/PersonalSpaceSignup.aspx" );
+		hippy = ismail ? "http://login.live.com" : "http://spaces.live.com";
 
-	mir_free(hexdgst);
 	MSN_DebugLog( "Starting URL: '%s'", hippy );
 	MSN_CallService( MS_UTILS_OPENURL, 1, ( LPARAM )hippy );
 }

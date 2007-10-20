@@ -113,6 +113,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define ERR_NOT_LOGGED_IN                302
 #define ERR_INTERNAL_SERVER              500
 #define ERR_DB_SERVER                    501
+#define ERR_LIST_UNAVAILABLE             508
 #define ERR_FILE_OPERATION               510
 #define ERR_MEMORY_ALLOC                 520
 #define ERR_SERVER_BUSY                  600
@@ -187,8 +188,8 @@ WCHAR*      HtmlEncodeW( const WCHAR* str );
 bool		txtParseParam (const char* szData, const char* presearch, const char* start, const char* finish, char* param, const int size);
 char*		MSN_Base64Decode( const char* str );
 
-void     	UrlDecode( char*str );
-void     	UrlEncode( const char* src, char* dest, int cbDest );
+void     	UrlDecode( char* str );
+void     	UrlEncode( const char* src, char* dest, size_t cbDest );
 
 HANDLE      MSN_HContactFromEmail( const char* msnEmail, const char* msnNick, int addIfNeeded, int temporary );
 HANDLE      MSN_HContactFromEmailT( const TCHAR* msnEmail );
@@ -264,7 +265,10 @@ int         sttDivideWords( char* parBuffer, int parMinItems, char** parDest );
 void		sttNotificationMessage( char* msgBody, bool isInitial );
 int			MSN_SendOIM(const char* szEmail, const char* msg);
 void		MSN_MakeDigest(const char* chl, char* dgst);
-int			MSN_GetPassportAuth( char* authChallengeInfo );
+int			MSN_GetPassportAuth( void );
+char*		GenerateLoginBlob(char* challenge);
+char*		HotmailLogin(const char* url, const char* id, bool ismail);
+void		FreeAuthTokens(void);
 char*		getNewUuid(void);
 
 TCHAR* EscapeChatTags(const TCHAR* pszText);
@@ -731,20 +735,11 @@ extern	char*		ModuleName;
 extern	char*	    mailsoundname;
 extern	char*	    alertsoundname;
 
-extern	char*       sid;
 extern	char*       passport;
 extern	char*       urlId;
-extern	char*       MSPAuth;
-extern  char*       profileURL;
-extern  char*       profileURLId;
 extern  char*       rru;
 extern  unsigned	langpref;
 extern	char*       abchMigrated;
-
-extern char pAuthToken[];
-extern char tAuthToken[]; 
-extern char pContAuthToken[];
-extern char tContAuthToken[]; 
 
 extern	HANDLE		hNetlibUser;
 extern	HINSTANCE	hInst;

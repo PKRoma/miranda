@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "msn_global.h"
 
-extern bool avsPresent;
+extern int avsPresent;
 
 void __cdecl MSNServerThread( ThreadData* info );
 
@@ -581,6 +581,7 @@ int MsnFileResume( WPARAM wParam, LPARAM lParam )
 
 int MsnGetAvatar(WPARAM wParam, LPARAM lParam)
 {
+	if (avsPresent < 0) avsPresent = ServiceExists(MS_AV_SETMYAVATAR) != 0;
 	if (!avsPresent) return 1;
 
 	char* buf = ( char* )wParam;
@@ -604,6 +605,7 @@ static void sttFakeAvatarAck( LPVOID param )
 
 static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 {
+	if (avsPresent < 0) avsPresent = ServiceExists(MS_AV_SETMYAVATAR) != 0;
 	if (!avsPresent) return GAIR_NOAVATAR;
 
 	PROTO_AVATAR_INFORMATION* AI = ( PROTO_AVATAR_INFORMATION* )lParam;
@@ -1083,6 +1085,7 @@ static int MsnSetApparentMode( WPARAM wParam, LPARAM lParam )
 
 static int MsnSetAvatar( WPARAM wParam, LPARAM lParam )
 {
+	if (avsPresent < 0) avsPresent = ServiceExists(MS_AV_SETMYAVATAR) != 0;
 	if (!avsPresent) return 1;
 
 	char* szFileName = ( char* )lParam;

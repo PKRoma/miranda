@@ -21,6 +21,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 // Global Email counters
 int  mUnreadMessages = 0, mUnreadJunkEmails = 0;
+extern char *pAuthToken, *tAuthToken, *oimSendToken;
+
 
 ezxml_t oimRecvHdr(void)
 {
@@ -33,9 +35,9 @@ ezxml_t oimRecvHdr(void)
 	ezxml_t cook = ezxml_add_child(hdr, "PassportCookie", 0);
 	ezxml_set_attr(cook, "xmlns", "http://www.hotmail.msn.com/ws/2004/09/oim/rsi");
 	ezxml_t tcook = ezxml_add_child(cook, "t", 0);
-	ezxml_set_txt(tcook, tAuthToken);
+	ezxml_set_txt(tcook, tAuthToken ? tAuthToken : "");
 	ezxml_t pcook = ezxml_add_child(cook, "p", 0);
-	ezxml_set_txt(pcook, pAuthToken);
+	ezxml_set_txt(pcook, pAuthToken ? pAuthToken : "");
 
 	ezxml_add_child(xmlp, "soap:Body", 0);
 
@@ -308,7 +310,6 @@ static char oimUID[64] = "";
 
 int MSN_SendOIM(const char* szEmail, const char* msg)
 {
-	char szAuth[530];
 	char num[32];
 	mir_snprintf(num, sizeof(num), "%u", ++oimMsgNum);
 
@@ -359,15 +360,15 @@ int MSN_SendOIM(const char* szEmail, const char* msg)
 	ezxml_set_attr(from, "xml:lang", langcd);
 	ezxml_set_attr(from, "proxy", "MSNMSGR");
 	ezxml_set_attr(from, "xmlns", "http://messenger.msn.com/ws/2004/09/oim/");
-	ezxml_set_attr(from, "msnpVer", "MSNP14");
-	ezxml_set_attr(from, "buildVer", "8.0.0812");
+	ezxml_set_attr(from, "msnpVer", "MSNP15");
+	ezxml_set_attr(from, "buildVer", "8.1.0178");
 
 	ezxml_t to = ezxml_add_child(hdr, "To", 0);
 	ezxml_set_attr(to, "memberName", szEmail);
 	ezxml_set_attr(to, "xmlns", "http://messenger.msn.com/ws/2004/09/oim/");
 
 	ezxml_t tick = ezxml_add_child(hdr, "Ticket", 0);
-	ezxml_set_attr(tick, "passport", szAuth);
+	ezxml_set_attr(tick, "passport", oimSendToken ? oimSendToken : "");
 	
 	ezxml_set_attr(tick, "appid", msnProductID);
 	ezxml_set_attr(tick, "lockkey", oimDigest);
@@ -428,7 +429,6 @@ int MSN_SendOIM(const char* szEmail, const char* msg)
 	{
 		retry = false;
 
-		mir_snprintf(szAuth, sizeof(szAuth), "t=%s&p=%s", tAuthToken, pAuthToken);
 		char* szData = ezxml_toxml(xmlp, true);
 		
 		unsigned status;
@@ -436,8 +436,7 @@ int MSN_SendOIM(const char* szEmail, const char* msg)
 		char* htmlbody;
 
 		char* tResult = mAgent.getSslResult( "https://ows.messenger.msn.com/OimWS/oim.asmx", szData,
-			"SOAPAction: \"http://messenger.msn.com/ws/2004/09/oim/Store\"\r\n",
-//			"SOAPAction: \"http://messenger.live.com/ws/2006/09/oim/Store2\"\r\n",
+			"SOAPAction: \"http://messenger.live.com/ws/2006/09/oim/Store2\"\r\n",
 			status, httpInfo, htmlbody);
 
 		free(szData);
@@ -457,7 +456,7 @@ int MSN_SendOIM(const char* szEmail, const char* msg)
 					const char* szChl   = ezxml_txt(ezxml_child(det, "LockKeyChallenge"));
 
 					if (*szTwChl) 
-						MSN_GetPassportAuth((char*)szTwChl);
+						MSN_GetPassportAuth();
 					if (*szChl)
 					{
 						MSN_MakeDigest(szChl, oimDigest);

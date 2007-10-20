@@ -31,23 +31,17 @@ void __cdecl MSNSendfileThread( ThreadData* info );
 void MSN_ChatStart(ThreadData* info);
 void MSN_KillChatSession(TCHAR* id);
 
-int tridUrlInbox = -1, tridUrlEdit = -1;
+int tridUrlInbox = -1;
 
-char* sid = NULL;
-char* MSPAuth = NULL;
 char* passport = NULL;
 char* urlId = NULL;
 char* rru = NULL;
-char* profileURL = NULL;
-char* profileURLId = NULL;
 unsigned langpref;
 
 extern HANDLE	 hMSNNudge;
 
 extern int msnPingTimeout;
 extern HANDLE hKeepAliveThreadEvt;
-
-unsigned long sl;
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Starts a file sending thread
@@ -451,11 +445,23 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 			if ( msnHaveChatDll )
 				MSN_ChatStart( info );
 			else
+			{
 				for ( int j=0; j < info->mJoinedCount; j++ ) {
 					if ( info->mJoinedContacts[j] == tContact && j != 0 ) {
 						ccs.hContact = info->mJoinedContacts[ 0 ];
 						break;
 				}	}
+			}
+
+			const char* tP4Context = tHeader[ "P4-Context" ];
+			if ( tP4Context ) 
+			{
+				size_t newlen  = strlen( msgBody ) + strlen( tP4Context ) + 4;
+				char* newMsgBody = ( char* )mir_alloc( newlen );
+				mir_snprintf(newMsgBody, newlen, "[%s] %s", tP4Context, msgBody);
+				mir_free(newbody);
+				msgBody = newbody = newMsgBody;
+			}
 		}
 		else ccs.hContact = tContact;
 
@@ -501,8 +507,6 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		}
 	}
 	else if ( !_strnicmp( tContentType, "text/x-msmsgsprofile", 20 )) {
-		replaceStr( sid,           tHeader[ "sid" ]      );
-		replaceStr( MSPAuth,       tHeader[ "MSPAuth" ]  );
 		replaceStr( msnExternalIP, tHeader[ "ClientIP" ] );
 		replaceStr( abchMigrated, tHeader[ "ABCHMigrated" ] );
 		langpref = atol(tHeader[ "lang_preference" ]);
@@ -882,8 +886,18 @@ static void sttProcessNotificationMessage( char* buf, unsigned len )
 	if (xmltxt != NULL)
 	{
 		char fullurl[1024];
-		mir_snprintf(fullurl, sizeof(fullurl), "%snotification_id=%s&message_id=%s",
-			ezxml_attr(xmlact, "url"), ezxml_attr(xmlnot, "id"), ezxml_attr(xmlmsg, "id"));
+		size_t sz = 0;
+
+		const char* acturl = ezxml_attr(xmlact, "url");
+		if (acturl == NULL || strstr(acturl, "://") == NULL) 
+			sz += mir_snprintf(fullurl+sz, sizeof(fullurl)-sz, "%s", ezxml_attr(xmlnot, "siteurl"));
+		
+		sz += mir_snprintf(fullurl+sz, sizeof(fullurl)-sz, "%s", acturl);
+		if (sz != 0 && fullurl[sz-1] != '?')
+			sz += mir_snprintf(fullurl+sz, sizeof(fullurl)-sz, "?");
+
+		mir_snprintf(fullurl+sz, sizeof(fullurl)-sz, "notification_id=%s&message_id=%s",
+			ezxml_attr(xmlnot, "id"), ezxml_attr(xmlmsg, "id"));
 
 		wchar_t* alrtu;
 		const char* txt = ezxml_txt(xmltxt);
@@ -1130,10 +1144,8 @@ LBL_InvalidCommand:
 			break;
 		}
 		case ' RVC':    //********* CVR: MSNP8
-		{
-			info->sendPacket( "USR", "TWN I %s", MyOptions.szEmail );
 			break;
-		}
+
 		case ' NLF':    //********* FLN: section 7.9 Notification Messages
 		{	
 			union {
@@ -1180,7 +1192,7 @@ LBL_InvalidCommand:
 				MSN_SetDword( hContact, "IdleTS", strcmp( data.userStatus, "IDL" ) ? 0 : time( NULL ));
 			}
 
-			if ( tArgs > 3 && tArgs <= 5 ) {
+			if ( tArgs > 4 && tArgs <= 6 ) {
 				UrlDecode( data.cmdstring );
 				DWORD dwValue = strtoul( data.objid, NULL, 10 );
 				MSN_SetDword( hContact, "FlagBits", dwValue );
@@ -1473,11 +1485,6 @@ LBL_InvalidCommand:
 				replaceStr( urlId, data.urlID );
 				tridUrlInbox = -1;
 			}
-			else if ( trid == tridUrlEdit ) {
-				replaceStr( profileURL, data.rru );
-				replaceStr( profileURLId, data.urlID );
-				tridUrlEdit = -1;
-			}
 			break;
 		}
 		case ' RSU':	//********* USR: sections 7.3 Authentication, 8.2 Switchboard Connections and Authentication
@@ -1522,24 +1529,21 @@ LBL_InvalidCommand:
 			else 	   //dispatch or notification server (section 7.3)
 			{
 				union {
-					char* tWords[ 3 ];
-					struct { char *security, *sequence, *authChallengeInfo; } data;
+					char* tWords[ 4 ];
+					struct { char *security, *sequence, *authChallengeInfo, *nonce; } data;
 				};
+				extern char *authStrToken;
 
-				if ( sttDivideWords( params, 3, tWords ) != 3 )
+				if ( sttDivideWords( params, 4, tWords ) != 4 )
 					goto LBL_InvalidCommand;
 
-				if ( !strcmp( data.security, "TWN" )) {
-					if ( MSN_GetPassportAuth( data.authChallengeInfo )) {
-						MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
-							MSN_GoOffline();
-						return 1;
-					}
-					info->sendPacket( "USR", "TWN S t=%s&p=%s", tAuthToken, pAuthToken );
+				if ( !strcmp( data.security, "SSO" )) {
+					char* sec = GenerateLoginBlob(data.nonce);
+					info->sendPacket( "USR", "SSO S %s %s", authStrToken ? authStrToken : "", sec );
+					mir_free(sec);
 				}
-				else if ( !strcmp( data.security, "OK" )) {
-					sl = time(NULL); //for hotmail
-
+				else if ( !strcmp( data.security, "OK" )) 
+				{
 					MSN_RefreshContactList();
 
 					msnLoggedIn = true;
@@ -1559,7 +1563,6 @@ LBL_InvalidCommand:
 
 					msnNsThread->sendPacket( "BLP", msnOtherContactsBlocked ? "BL" : "AL" );
 					tridUrlInbox = msnNsThread->sendPacket( "URL", "INBOX" );
-					tridUrlEdit  = msnNsThread->sendPacket( "URL", "PROFILE 0x%04x", langpref );
 				}
 				else {
 					MSN_DebugLog( "Unknown security package '%s'", data.security );
@@ -1591,17 +1594,10 @@ LBL_InvalidCommand:
 				return 1;
 			}
 
-            if ( !strcmp( protocol1, "MSNP14" )) 
+            if ( !strcmp( protocol1, "MSNP15" )) 
 			{
-				OSVERSIONINFO osvi = {0};
-				osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-			    GetVersionEx(&osvi);
-
-				info->sendPacket( "CVR","0x0409 %s %d.%d i386 MSNMSGR 8.0.0812 msmsgs %s",
-					osvi.dwPlatformId >= 2 ? "winnt" : "win", osvi.dwMajorVersion, osvi.dwMinorVersion, 
-					MyOptions.szEmail );
-				msnProtChallenge = "RH96F{PHI8PPX_TJ";
-				msnProductID = "PROD0112J1LW7%NB";
+				msnProtChallenge = "PK}_A_0N_K%O?A9S";
+				msnProductID = "PROD0114ES4Z%Q5W";
 			}
 			else {
 				MSN_ShowError( "Server has requested an unknown protocol set (%s)", params );

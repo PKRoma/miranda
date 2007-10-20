@@ -83,7 +83,7 @@ char* mailsoundname;
 char* alertsoundname;
 char* ModuleName;
 
-bool avsPresent = false;
+int avsPresent = -1;
 
 PLUGININFOEX pluginInfo =
 {
@@ -414,16 +414,14 @@ extern "C" int __declspec( dllexport ) Unload( void )
 		if ( msnModeMsgs[ i ].m_msg )
 			mir_free( msnModeMsgs[ i ].m_msg );
 
-	mir_free( sid );
 	mir_free( passport );
-	mir_free( MSPAuth );
 	mir_free( rru );
-	mir_free( profileURL );
-	mir_free( profileURLId );
 	mir_free( urlId );
 
 	mir_free( msnPreviousUUX );
 	mir_free( msnExternalIP );
+	FreeAuthTokens();
+
 	return 0;
 }
 
