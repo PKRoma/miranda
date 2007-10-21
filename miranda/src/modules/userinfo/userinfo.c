@@ -106,7 +106,11 @@ static int AddDetailsPage(WPARAM wParam,LPARAM lParam)
 	struct DetailsPageInit *opi=(struct DetailsPageInit*)wParam;
 
 	if(odp==NULL||opi==NULL) return 1;
-	if(odp->cbSize != sizeof(OPTIONSDIALOGPAGE) && odp->cbSize != OPTIONPAGE_OLD_SIZE2) return 1;
+	if(odp->cbSize!=sizeof(OPTIONSDIALOGPAGE)
+			&& odp->cbSize != OPTIONPAGE_OLD_SIZE2
+			&& odp->cbSize != OPTIONPAGE_OLD_SIZE3)
+		return 1;
+
 	opi->odp=(OPTIONSDIALOGPAGE*)mir_realloc(opi->odp,sizeof(OPTIONSDIALOGPAGE)*(opi->pageCount+1));
 	dst = opi->odp + opi->pageCount;
 	dst->cbSize = sizeof(OPTIONSDIALOGPAGE);
