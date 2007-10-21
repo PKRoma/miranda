@@ -279,7 +279,7 @@ void  UrlEncode( const char* src, char* dest, size_t cbDest )
 				break;
 
 			*d++ = '%';
-			_itoa( *s, ( char* )d, 16 );
+			_itoa( *s, d, 16 );
 			d += 2;
 			i += 3;
 		}

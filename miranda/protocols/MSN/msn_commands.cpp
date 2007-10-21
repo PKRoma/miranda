@@ -840,6 +840,12 @@ static void sttProcessNotificationMessage( char* buf, unsigned len )
 {
 	ezxml_t xmlnot = ezxml_parse_str(buf, len);
 
+	if (strcmp(ezxml_attr(xmlnot, "siteid"), "0") == 0)
+	{
+		ezxml_free(xmlnot);
+		return;
+	}
+
 	ezxml_t xmlmsg = ezxml_child(xmlnot, "MSG");
 	ezxml_t xmlact = ezxml_child(xmlmsg, "ACTION");
 	ezxml_t xmltxt = ezxml_get(xmlmsg, "BODY", 0, "TEXT", -1);
@@ -848,12 +854,6 @@ static void sttProcessNotificationMessage( char* buf, unsigned len )
 	{
 		char fullurl[1024];
 		size_t sz = 0;
-
-		if (strstr(ezxml_txt(xmltxt), "New! Send messages to your friends on Yahoo!") != NULL)
-		{
-			ezxml_free(xmlnot);
-			return;
-		}
 
 		const char* acturl = ezxml_attr(xmlact, "url");
 		if (acturl == NULL || strstr(acturl, "://") == NULL) 
