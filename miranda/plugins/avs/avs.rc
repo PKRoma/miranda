@@ -76,12 +76,6 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,19,72,269,13
     CONTROL         "Show warning messages",IDC_SHOWWARNINGS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,19,87,269,13
-    LTEXT           "Max allowed file size for avatars: (KBytes)",-1,19,107,
-                    150,10
-    EDITTEXT        IDC_SIZELIMIT,173,106,36,12,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_SIZELIMITSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,209,106,
-                    11,12
 END
 
 IDD_OPTIONS_OWN DIALOGEX 0, 0, 302, 75

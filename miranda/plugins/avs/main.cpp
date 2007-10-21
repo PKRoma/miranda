@@ -524,12 +524,6 @@ int CreateAvatarInCache(HANDLE hContact, struct avatarCacheEntry *ace, char *szP
         else {
             return -2;
         }
-		// Check max allowed size
-		if (GetFileSize(szFilename) > DBGetContactSettingDword(0, AVS_MODULE, "SizeLimit", 70) * 1024) {
-			strncpy(ace->szFilename, szFilename, MAX_PATH);
-			ace->szFilename[MAX_PATH - 1] = 0;
-			return -3;
-		}
     }
     else {
 		if(hContact == 0) {				// create a protocol picture in the proto picture cache
