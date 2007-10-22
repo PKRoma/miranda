@@ -771,10 +771,9 @@ static void _RosterHandleGetRequest( XmlNode* node, void* userdata )
 		_RosterListClear(rrud.hwndDlg);
 		XmlNode * query=JabberXmlGetChild(node, "query");
 		if (!query) return;
-		int i=1;
-		while (TRUE)
-		{
-			XmlNode *item=JabberXmlGetNthChild(query, "item", i++);
+		int i = 1;
+		while (TRUE) {
+			XmlNode *item = JabberXmlGetNthChild(query, "item", i++);
 			if (!item) break;
 			TCHAR *jid=JabberXmlGetAttrValue(item,"jid");
 			if (!jid) continue;
@@ -782,8 +781,8 @@ static void _RosterHandleGetRequest( XmlNode* node, void* userdata )
 			TCHAR *subscription=JabberXmlGetAttrValue(item,"subscription");
 			TCHAR *group=NULL;
 			XmlNode * groupNode=JabberXmlGetChild(item, "group");
-			if (groupNode) group=groupNode->text;
-			_RosterInsertListItem(hList, jid, name, group, subscription, TRUE);
+			if ( groupNode ) group = groupNode->text;
+			_RosterInsertListItem( hList, jid, name, group, subscription, TRUE );
 		}
 		// now it is require to process whole contact list to add not in roster contacts
 		{
@@ -797,52 +796,47 @@ static void _RosterHandleGetRequest( XmlNode* node, void* userdata )
 					if ( !JGetStringT( hContact, "jid", &dbv ))
 					{
 						LVFINDINFO lvfi={0};
-						lvfi.flags=LVFI_STRING | LVFI_PARTIAL;
-						lvfi.psz=dbv.ptszVal;
-						TCHAR *p=_tcschr(dbv.ptszVal,_T('@'));
-						if (p)
-						{
-							p=_tcschr(dbv.ptszVal,_T('\\'));
-							if (p) *p=_T('\0');
+						lvfi.flags = LVFI_STRING;
+						lvfi.psz = dbv.ptszVal;
+						TCHAR *p = _tcschr(dbv.ptszVal,_T('@'));
+						if ( p ) {
+							p = _tcschr( dbv.ptszVal, _T('/'));
+							if ( p ) *p = _T('\0');
 						}
-						if ( ListView_FindItem(hList, -1, &lvfi) == -1)
-						{
-							TCHAR *jid=mir_tstrdup(dbv.ptszVal);
-							TCHAR *name=NULL;
-							TCHAR *group=NULL;
+						if ( ListView_FindItem(hList, -1, &lvfi) == -1) {
+							TCHAR *jid = mir_tstrdup( dbv.ptszVal );
+							TCHAR *name = NULL;
+							TCHAR *group = NULL;
 							DBVARIANT dbvtemp;
-							if ( !DBGetContactSettingTString( hContact, "CList", "MyHandle", &dbvtemp ) )
-							{
-								name=mir_tstrdup(dbv.ptszVal);
-								DBFreeVariant(&dbvtemp);
+							if ( !DBGetContactSettingTString( hContact, "CList", "MyHandle", &dbvtemp )) {
+								name = mir_tstrdup( dbvtemp.ptszVal );
+								DBFreeVariant( &dbvtemp );
 							}
-							if ( !DBGetContactSettingTString( hContact, "CList", "Group", &dbvtemp ) )
-							{
-								group=mir_tstrdup(dbv.ptszVal);
-								DBFreeVariant(&dbvtemp);
+							if ( !DBGetContactSettingTString( hContact, "CList", "Group", &dbvtemp )) {
+								group = mir_tstrdup( dbvtemp.ptszVal );
+								DBFreeVariant( &dbvtemp );
 							}
-							_RosterInsertListItem(hList, jid, name, group, NULL, FALSE);
-							if (jid) mir_free(jid);
-							if (name) mir_free(name);
-							if (group) mir_free(group);
+							_RosterInsertListItem( hList, jid, name, group, NULL, FALSE );
+							if ( jid ) mir_free( jid );
+							if ( name ) mir_free( name );
+							if ( group ) mir_free( group );
 						}
-						DBFreeVariant(&dbv);
-
+						DBFreeVariant( &dbv );
 					}
 				}
 				hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 );
 			}
 		}
-		rrud.bReadyToDownload=FALSE;
-		rrud.bReadyToUpload=TRUE;
-		SetDlgItemText(rrud.hwndDlg,IDC_DOWNLOAD,TranslateT("Download"));
-		SetDlgItemText(rrud.hwndDlg,IDC_UPLOAD,TranslateT("Upload"));
-		SendMessage(rrud.hwndDlg, JM_STATUSCHANGED,0,0);
+		rrud.bReadyToDownload = FALSE;
+		rrud.bReadyToUpload = TRUE;
+		SetDlgItemText( rrud.hwndDlg, IDC_DOWNLOAD, TranslateT( "Download" ));
+		SetDlgItemText( rrud.hwndDlg, IDC_UPLOAD, TranslateT( "Upload" ));
+		SendMessage( rrud.hwndDlg, JM_STATUSCHANGED, 0, 0 );
         return;
 	}
-	else if (rrud.bRRAction==RRA_SYNCROSTER)
+	else if ( rrud.bRRAction == RRA_SYNCROSTER )
 	{
-		SetDlgItemText(rrud.hwndDlg,IDC_UPLOAD,TranslateT("Uploading..."));
+		SetDlgItemText(rrud.hwndDlg, IDC_UPLOAD, TranslateT("Uploading..."));
 		XmlNode * queryRoster=JabberXmlGetChild(node, "query");
 		if (!queryRoster) return;
 
@@ -903,10 +897,12 @@ static void _RosterHandleGetRequest( XmlNode* node, void* userdata )
 				if (bPushed)
 				{
 					XmlNode* item = query->addChild( "item" );
-					if (group)item->addChild("group", group);
-					item->addAttr( "name", name );
+					if ( group && _tcslen( group ))
+						item->addChild( "group", group );
+					if ( name && _tcslen( name ))
+						item->addAttr( "name", name );
 					item->addAttr( "jid", jid );
-					item->addAttr( "subscription",subscr[0] ? subscr : _T("none"));
+					item->addAttr( "subscription", subscr[0] ? subscr : _T("none"));
 					itemCount++;
 				}
 			}
@@ -1264,15 +1260,15 @@ static BOOL CALLBACK JabberRosterOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 	{
 	case JM_STATUSCHANGED:
 		{
-			int count=ListView_GetItemCount(GetDlgItem(hwndDlg,IDC_ROSTER));
-			EnableWindow( GetDlgItem( hwndDlg, IDC_DOWNLOAD ), rrud.bReadyToDownload && jabberConnected );
-			EnableWindow( GetDlgItem( hwndDlg, IDC_UPLOAD ),   rrud.bReadyToUpload && count && jabberConnected );
+			int count = ListView_GetItemCount(GetDlgItem(hwndDlg,IDC_ROSTER));
+			EnableWindow( GetDlgItem( hwndDlg, IDC_DOWNLOAD ), jabberConnected );
+			EnableWindow( GetDlgItem( hwndDlg, IDC_UPLOAD ), count && jabberConnected );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_EXPORT ), count > 0);
 			break;
 		}
 	case WM_DESTROY:
 		{
-			rrud.hwndDlg=NULL;
+			rrud.hwndDlg = NULL;
 			break;
 		}
 	case WM_INITDIALOG:
@@ -1285,7 +1281,7 @@ static BOOL CALLBACK JabberRosterOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			rrud.hwndDlg=hwndDlg;
 			rrud.bReadyToDownload=TRUE;
 			rrud.bReadyToUpload=FALSE;
-			SendMessage(hwndDlg, JM_STATUSCHANGED,0,0);
+			SendMessage( hwndDlg, JM_STATUSCHANGED, 0, 0 );
 			return TRUE;
 		}
 	case WM_COMMAND:
@@ -1294,29 +1290,29 @@ static BOOL CALLBACK JabberRosterOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			{
 			case IDC_DOWNLOAD:
 				{
-					rrud.bReadyToUpload=FALSE;
-					rrud.bReadyToDownload=FALSE;
+					rrud.bReadyToUpload = FALSE;
+					rrud.bReadyToDownload = FALSE;
 					SendMessage(rrud.hwndDlg, JM_STATUSCHANGED,0,0);
-					SetDlgItemText(rrud.hwndDlg,IDC_DOWNLOAD,TranslateT("Downloading..."));
-					_RosterSendRequest(hwndDlg,RRA_FILLLIST);
+					SetDlgItemText(rrud.hwndDlg, IDC_DOWNLOAD, TranslateT("Downloading..."));
+					_RosterSendRequest(hwndDlg, RRA_FILLLIST);
 					break;
 				}
 			case IDC_UPLOAD:
 				{
-					rrud.bReadyToUpload=FALSE;
-					SendMessage(rrud.hwndDlg, JM_STATUSCHANGED,0,0);
-					SetDlgItemText(rrud.hwndDlg,IDC_UPLOAD,TranslateT("Connecting..."));
-					_RosterSendRequest(hwndDlg,RRA_SYNCROSTER);
+					rrud.bReadyToUpload = FALSE;
+					SendMessage( rrud.hwndDlg, JM_STATUSCHANGED, 0, 0 );
+					SetDlgItemText( rrud.hwndDlg, IDC_UPLOAD, TranslateT("Connecting..."));
+					_RosterSendRequest( hwndDlg, RRA_SYNCROSTER );
 					break;
 				}
 			case IDC_EXPORT:
 				{
-					_RosterExportToFile(hwndDlg);
+					_RosterExportToFile( hwndDlg );
 					break;
 				}
 			case IDC_IMPORT:
 				{
-					_RosterImportFromFile(hwndDlg);
+					_RosterImportFromFile( hwndDlg );
 					break;
 				}
 
