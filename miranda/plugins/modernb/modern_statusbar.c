@@ -212,26 +212,14 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 
             // create service name
             mir_snprintf(servName, SIZEOF(servName), "%s/GetUnreadEmailCount", proto[i]->szName);   
-            if(!CallProtoService(proto[i]->szName,PS_GETNAME,(WPARAM)SIZEOF(buf),(LPARAM)buf))
+            if((g_StatusBarData.showProtoEmails == 1) && ServiceExists(servName))
             {
-                if((g_StatusBarData.showProtoEmails == 1) && ServiceExists(servName))
-                {
-                    mir_snprintf(protoNameExt, SIZEOF(protoNameExt),"[%d]", (int) CallService(servName, 0, 0));
-                    ProtosData[visProtoCount].ProtoEMailCount=mir_strdup(buf);
-                }
-                else
-                    ProtosData[visProtoCount].ProtoEMailCount=NULL;
+                mir_snprintf(protoNameExt, SIZEOF(protoNameExt),"[%d]", (int) CallService(servName, 0, 0));
+                ProtosData[visProtoCount].ProtoEMailCount=mir_strdup(buf);
             }
             else
-            {
-                if((g_StatusBarData.showProtoEmails == 1) && ServiceExists(servName))
-                {
-                    mir_snprintf(protoNameExt, SIZEOF(protoNameExt),"[%d]", (int) CallService(servName, 0, 0));
-                    ProtosData[visProtoCount].ProtoEMailCount=mir_strdup(protoNameExt);
-                }
-                else
-                    ProtosData[visProtoCount].ProtoEMailCount=NULL;
-            }
+                ProtosData[visProtoCount].ProtoEMailCount=NULL;
+            
 			ProtosData[visProtoCount].ProtoHumanName=mir_strdup(proto[i]->szName);
             ProtosData[visProtoCount].ProtoName=mir_strdup(proto[i]->szName);
             ProtosData[visProtoCount].ProtoStatus=CallProtoService(proto[i]->szName,PS_GETSTATUS,0,0);
