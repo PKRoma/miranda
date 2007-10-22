@@ -201,7 +201,6 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
         protcnt=(int)DBGetContactSettingDword(0,"Protocols","ProtoCount",-1);
         for (j=0; j<protcnt; j++)
         {
-            char buf[40];
             int vis;
             i=pcli->pfnGetProtoIndexByPos(proto,protoCount,j);
             if (i==-1) 

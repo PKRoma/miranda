@@ -221,6 +221,19 @@ static int ClcSettingChanged(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
+int ExpandMetaContact(HWND hwnd, struct ClcContact * contact, struct ClcData * dat, BOOL bExpand)
+{
+	struct ClcContact * ht=NULL;
+	KillTimer(hwnd,TIMERID_SUBEXPAND);
+	if (contact->type!=CLCIT_CONTACT ||contact->SubAllocated==0 || contact->SubExpanded==bExpand || !DBGetContactSettingByte(NULL,"CLC","MetaExpanding",SETTING_METAEXPANDING_DEFAULT)) return 0;
+	contact->SubExpanded=bExpand;
+	DBWriteContactSettingByte(contact->hContact,"CList","Expanded",contact->SubExpanded);
+	dat->NeedResort=1;
+	pcli->pfnSortCLC(hwnd,dat,1);		
+	cliRecalcScrollBar(hwnd,dat);
+	return contact->SubExpanded;
+}
+
 /*
 *	IcoLib hook to handle icon changes
 */

@@ -54,6 +54,7 @@ int   cli_AddItemToGroup(struct ClcGroup *group, int iAboveItem);
 int   cli_AddInfoItemToGroup(struct ClcGroup *group,int flags,const TCHAR *pszText);
 int   cliGetGroupContentsCount(struct ClcGroup *group, int visibleOnly);
 struct CListEvent* cliCreateEvent( void );
+int cliFindRowByText(HWND hwnd, struct ClcData *dat, const TCHAR *text, int prefixOk);
 
 int cliGetRowsPriorTo(struct ClcGroup *group,struct ClcGroup *subgroup,int contactIndex);
 
@@ -303,6 +304,7 @@ LBL_Error:
 	pcli->pfnGetRowsPriorTo		= cliGetRowsPriorTo;
 	pcli->pfnGetGroupContentsCount =cliGetGroupContentsCount;
 	pcli->pfnCreateEvent        = cliCreateEvent;
+	pcli->pfnFindRowByText		= cliFindRowByText;
 
 	//partialy overloaded - call default handlers from inside
 	saveIconFromStatusMode      = pcli->pfnIconFromStatusMode;

@@ -777,3 +777,72 @@ void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 	SendMessage(hwnd,WM_SIZE,0,0);
 
 }
+
+int ExpandMetaContact(HWND hwnd, struct ClcContact * contact, struct ClcData * dat, BOOL bExpand);
+
+int cliFindRowByText(HWND hwnd, struct ClcData *dat, const TCHAR *text, int prefixOk)
+{
+	struct ClcGroup *group = &dat->list;
+	int testlen = lstrlen(text);
+	struct ClcContact *contact=NULL;
+	int SubCount=0;
+
+	group->scanIndex = 0;
+	for (;;) {
+		if (group->scanIndex == group->cl.count) {
+			group = group->parent;
+			if (group == NULL)
+				break;
+			group->scanIndex++;
+			continue;
+		}
+		contact=group->cl.items[group->scanIndex];
+		if (contact->type != CLCIT_DIVIDER) 
+		{			
+			if ((prefixOk && !_tcsnicmp(text, contact->szText, testlen)) ||
+				(!prefixOk && !lstrcmpi(text, contact->szText))) 
+			{
+				struct ClcGroup *contactGroup = group;
+				int contactScanIndex = group->scanIndex;
+				for (; group; group = group->parent)
+					pcli->pfnSetGroupExpand(hwnd, dat, group, 1);
+				return pcli->pfnGetRowsPriorTo(&dat->list, contactGroup, contactScanIndex+SubCount);
+			}
+			if (group->cl.items[group->scanIndex]->type == CLCIT_GROUP) 
+			{
+				if (!(dat->exStyle & CLS_EX_QUICKSEARCHVISONLY) || group->cl.items[group->scanIndex]->group->expanded) {
+					group = group->cl.items[group->scanIndex]->group;
+					group->scanIndex = 0;
+					SubCount=0;
+					continue;
+				}
+			}
+		}
+		if (contact->type==CLCIT_CONTACT && contact->SubAllocated)			
+		{
+			if (!(dat->exStyle & CLS_EX_QUICKSEARCHVISONLY) || contact->SubExpanded )
+			{
+				int i=0;
+				for (i=0; i<contact->SubAllocated; i++)
+				{
+					struct ClcContact * subcontact=&(contact->subcontacts[i]);
+					if ((prefixOk && !_tcsnicmp(text, subcontact->szText, testlen)) ||
+						(!prefixOk && !lstrcmpi(text, subcontact->szText))) 
+					{
+						struct ClcGroup *contactGroup = group;
+						int contactScanIndex = group->scanIndex;
+						for (; group; group = group->parent)
+							pcli->pfnSetGroupExpand(hwnd, dat, group, 1);
+						if (!contact->SubExpanded)
+							ExpandMetaContact(hwnd, contact, dat, 1 );
+						return pcli->pfnGetRowsPriorTo(&dat->list, contactGroup, contactScanIndex+SubCount+i+1);
+					}
+				}
+			}
+		}
+		if (contact->type==CLCIT_CONTACT && contact->SubAllocated && contact->SubExpanded)
+			SubCount+=contact->SubAllocated;
+		group->scanIndex++;
+	}
+	return -1;
+}
