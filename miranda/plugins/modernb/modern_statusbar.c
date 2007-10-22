@@ -215,7 +215,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
             if((g_StatusBarData.showProtoEmails == 1) && ServiceExists(servName))
             {
                 mir_snprintf(protoNameExt, SIZEOF(protoNameExt),"[%d]", (int) CallService(servName, 0, 0));
-                ProtosData[visProtoCount].ProtoEMailCount=mir_strdup(buf);
+                ProtosData[visProtoCount].ProtoEMailCount=mir_strdup(protoNameExt);
             }
             else
                 ProtosData[visProtoCount].ProtoEMailCount=NULL;
