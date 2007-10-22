@@ -3334,6 +3334,7 @@ static void CLCPaint_DrawContactItems(HWND hwnd, HDC hdcMem, struct ClcData *dat
                             else if(hottrack)
                                 CLCPaint_SetHotTrackColour(hdcMem,dat);
                             ske_DrawTextA( hdcMem, szCounts, -1,rc, uTextFormat);
+							ske_ResetTextEffect(hdcMem);
                         }                       
                     }
                     else if ( Drawing->type == CLCIT_CONTACT )
@@ -3460,9 +3461,11 @@ static void CLCPaint_InternalPaintRowItems (HWND hwnd, HDC hdcMem, struct ClcDat
     if (gl_RowRoot && (dat->hWnd==pcli->hwndContactTree))
     {
         CLCPaint_ModernInternalPaintRowItems(hwnd,hdcMem,dat,Drawing,row_rc,free_row_rc,left_pos,right_pos,selected,hottrack,rcPaint);
+		ske_ResetTextEffect(hdcMem);
         return;
     }
     CLCPaint_DrawContactItems(hwnd, hdcMem, dat, Drawing, &row_rc, &free_row_rc, left_pos, right_pos, selected, hottrack, rcPaint);
+	ske_ResetTextEffect(hdcMem);
 }
 
 /* TODO Render items 

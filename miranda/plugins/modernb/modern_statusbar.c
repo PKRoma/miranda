@@ -28,6 +28,7 @@ typedef struct
     char * ProtoName;
     int ProtoStatus;
     char *ProtoHumanName;
+	char *ProtoEMailCount;
     char * ProtoStatusText;
     TCHAR * ProtoXStatus;
     int ProtoPos;
@@ -188,6 +189,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
                 if(ProtosData[k].ProtoXStatus) mir_free_and_nill (ProtosData[k].ProtoXStatus);
                 if(ProtosData[k].ProtoName) mir_free_and_nill (ProtosData[k].ProtoName);
                 if(ProtosData[k].ProtoHumanName) mir_free_and_nill (ProtosData[k].ProtoHumanName);
+				if(ProtosData[k].ProtoEMailCount) mir_free_and_nill (ProtosData[k].ProtoEMailCount);
                 if(ProtosData[k].ProtoStatusText) mir_free_and_nill (ProtosData[k].ProtoStatusText);      
             }
             mir_free_and_nill(ProtosData);
@@ -214,22 +216,23 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
             {
                 if((g_StatusBarData.showProtoEmails == 1) && ServiceExists(servName))
                 {
-                    mir_snprintf(protoNameExt, SIZEOF(protoNameExt),"%s [%d]",proto[i]->szName, (int) CallService(servName, 0, 0));
-                    ProtosData[visProtoCount].ProtoHumanName=mir_strdup(protoNameExt);
+                    mir_snprintf(protoNameExt, SIZEOF(protoNameExt),"[%d]", (int) CallService(servName, 0, 0));
+                    ProtosData[visProtoCount].ProtoEMailCount=mir_strdup(buf);
                 }
                 else
-                    ProtosData[visProtoCount].ProtoHumanName=mir_strdup(buf);
+                    ProtosData[visProtoCount].ProtoEMailCount=NULL;
             }
             else
             {
                 if((g_StatusBarData.showProtoEmails == 1) && ServiceExists(servName))
                 {
-                    mir_snprintf(protoNameExt, SIZEOF(protoNameExt),"%s [%d]",proto[i]->szName, (int) CallService(servName, 0, 0));
-                    ProtosData[visProtoCount].ProtoHumanName=mir_strdup(protoNameExt);
+                    mir_snprintf(protoNameExt, SIZEOF(protoNameExt),"[%d]", (int) CallService(servName, 0, 0));
+                    ProtosData[visProtoCount].ProtoEMailCount=mir_strdup(protoNameExt);
                 }
                 else
-                    ProtosData[visProtoCount].ProtoHumanName=mir_strdup(proto[i]->szName);
+                    ProtosData[visProtoCount].ProtoEMailCount=NULL;
             }
+			ProtosData[visProtoCount].ProtoHumanName=mir_strdup(proto[i]->szName);
             ProtosData[visProtoCount].ProtoName=mir_strdup(proto[i]->szName);
             ProtosData[visProtoCount].ProtoStatus=CallProtoService(proto[i]->szName,PS_GETSTATUS,0,0);
             ProtosData[visProtoCount].ProtoStatusText=mir_strdup((char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,(WPARAM)ProtosData[visProtoCount].ProtoStatus,0));
@@ -277,12 +280,15 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
                 SumWidth=0;
                 height=(rowheight*linecount);
 
-                rowsdy=((rc.bottom-rc.top)-height)/2;
-                if (rowheight*(line)+rowsdy<rc.top-rowheight) continue;
-                if (rowheight*(line+1)+rowsdy>rc.bottom+rowheight) break;
-
-                rc.top=rowsdy+rowheight*line+1;
-                rc.bottom=rowsdy+rowheight*(line+1);
+				rowsdy=((rc.bottom-rc.top)-height)/2;
+				if (rowheight*(line)+rowsdy<rc.top-rowheight) continue;
+			    if (rowheight*(line+1)+rowsdy>rc.bottom+rowheight)
+				{
+					ProtosData=orig_ProtosData;
+					break;
+				}
+				rc.top=rowsdy+rowheight*line+1;
+				rc.bottom=rowsdy+rowheight*(line+1);
 
                 textY=rc.top+(((rc.bottom-rc.top)-textSize.cy)/2);
                 iconY=rc.top+(((rc.bottom-rc.top)-iconHeight)/2);
@@ -341,6 +347,11 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
                                 GetTextExtentPoint32A(hDC,ProtosData[i].ProtoHumanName,lstrlenA(ProtosData[i].ProtoHumanName),&textSize);
                                 w+=textSize.cx+3+spaceWidth;
                             }
+							if (g_StatusBarData.showProtoEmails && ProtosData[i].ProtoEMailCount )
+							{
+								GetTextExtentPoint32A(hDC,ProtosData[i].ProtoEMailCount,lstrlenA(ProtosData[i].ProtoEMailCount),&textSize);
+								w+=textSize.cx+3+spaceWidth;
+							}
                             if (g_StatusBarData.showStatusName)
                             {
                                 GetTextExtentPoint32A(hDC,ProtosData[i].ProtoStatusText,lstrlenA(ProtosData[i].ProtoStatusText),&textSize);
@@ -352,6 +363,11 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
                                 GetTextExtentPoint32(hDC,ProtosData[i].ProtoXStatus,lstrlen(ProtosData[i].ProtoXStatus),&textSize);
                                 w+=textSize.cx+spaceWidth+3;
                             }
+							if ( (g_StatusBarData.showProtoName) || 
+								 (g_StatusBarData.showProtoEmails && ProtosData[i].ProtoEMailCount ) || 
+								 (g_StatusBarData.showStatusName) ||
+								 ((g_StatusBarData.xStatusMode&8) && ProtosData[i].ProtoXStatus) )
+								w-=spaceWidth;
                             ProtosData[i].fullWidth=w;
                             if (g_StatusBarData.sameWidth)
                             {
@@ -495,12 +511,26 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
                                 rt.top=textY;
                                 ske_DrawTextA(hDC,ProtosData[i].ProtoHumanName,lstrlenA(ProtosData[i].ProtoHumanName),&rt,0);
                                 //TextOutS(hDC,x,textY,ProtosData[i].ProtoName,lstrlenA(ProtosData[i].ProtoName));
-                                if (g_StatusBarData.showStatusName || ((g_StatusBarData.xStatusMode&8) && ProtosData[i].ProtoXStatus))
+                                if ((g_StatusBarData.showProtoEmails && ProtosData[i].ProtoEMailCount!=NULL) || g_StatusBarData.showStatusName || ((g_StatusBarData.xStatusMode&8) && ProtosData[i].ProtoXStatus))
                                 {
                                     GetTextExtentPoint32A(hDC,ProtosData[i].ProtoHumanName,lstrlenA(ProtosData[i].ProtoHumanName),&textSize);
                                     x+=textSize.cx+3;
                                 }
                             }
+							if (g_StatusBarData.showProtoEmails && ProtosData[i].ProtoEMailCount!=NULL)
+							{
+								SIZE textSize;
+								RECT rt=r;
+								rt.left=x+(spaceWidth>>1);
+								rt.top=textY;
+								ske_DrawTextA(hDC,ProtosData[i].ProtoEMailCount,lstrlenA(ProtosData[i].ProtoEMailCount),&rt,0);
+								//TextOutS(hDC,x,textY,ProtosData[i].ProtoName,lstrlenA(ProtosData[i].ProtoName));
+								if (g_StatusBarData.showStatusName || ((g_StatusBarData.xStatusMode&8) && ProtosData[i].ProtoXStatus))
+								{
+									GetTextExtentPoint32A(hDC,ProtosData[i].ProtoEMailCount,lstrlenA(ProtosData[i].ProtoEMailCount),&textSize);
+									x+=textSize.cx+3;
+								}
+							}
                             if (g_StatusBarData.showStatusName)
                             {
                                 SIZE textSize;
@@ -539,6 +569,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
     }
 
     SelectObject(hDC,hOldFont);
+	ske_ResetTextEffect(hDC);
     return 0;
 }
 

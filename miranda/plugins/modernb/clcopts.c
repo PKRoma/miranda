@@ -1640,6 +1640,7 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			SetTextColor(hdc,ColorSample);
 			ske_SelectTextEffect(hdc,EffectSample-1,Color1Sample,Color2Sample);
 			ske_DrawText(hdc,TranslateT("Sample"),lstrlen(TranslateT("Sample")),&rc,DT_CENTER|DT_VCENTER);
+			ske_ResetTextEffect(hdc);
 			BitBlt(dis->hDC,dis->rcItem.left,dis->rcItem.top,rc.right,rc.bottom,hdc,0,0,SRCCOPY);
 			SelectObject(hdc,obmp);
 			SelectObject(hdc,oldFnt);

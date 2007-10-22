@@ -699,6 +699,7 @@ static void PaintWorker(SKINBUTTONDATA *lpSBData, HDC hdcPaint , POINT * pOffset
 
 			}
 			ske_DrawText(hdcMem, lpSBData->szText, -1, &rcText, (bCentered ? DT_CENTER: 0) | DT_VCENTER | DT_SINGLELINE);
+			ske_ResetTextEffect(hdcMem);
 		}
 		if (!pOffset)
 			BitBlt(hdcPaint,0,0,width,height,hdcMem,0,0,SRCCOPY);

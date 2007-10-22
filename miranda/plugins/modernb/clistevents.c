@@ -319,6 +319,7 @@ static int EventArea_DrawWorker(HWND hWnd, HDC hDC)
 		    DestroyIcon(hIcon);
 	    }
     }
+	ske_ResetTextEffect(hDC);
     SelectObject(hDC,hOldFont);
     return 0;
 }
