@@ -584,29 +584,7 @@ void  MSN_SetServerStatus( int newStatus )
 
 void MsnInvokeMyURL( bool ismail, char* url )
 {
-	const char* requrl = url ? url : (ismail ? rru : "http://spaces.live.com");  
-	const char* id = ismail ? urlId : "73625";
-
-	char* hippy;
-	if (passport && requrl && id)
-	{
-		char* post = HotmailLogin(requrl, id, ismail);
-
-		hippy = (char*)alloca(strlen(passport) + strlen(post) + 20);
-
-		strcpy(hippy, passport);
-		char* ch = strstr(hippy, "md5auth");
-		if (ch)
-		{
-			memmove(ch + 1, ch, strlen(ch)+1);
-			memcpy(ch, "sha1", 4);
-		}
-		strcat(hippy, "&"); strcat(hippy, post);
-		mir_free(post);
-
-	}
-	else
-		hippy = ismail ? "http://login.live.com" : "http://spaces.live.com";
+	char *hippy = ismail ? "http://mail.live.com" : "http://spaces.live.com";
 
 	MSN_DebugLog( "Starting URL: '%s'", hippy );
 	MSN_CallService( MS_UTILS_OPENURL, 1, ( LPARAM )hippy );
