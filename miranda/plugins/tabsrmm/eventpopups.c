@@ -703,7 +703,7 @@ static BOOL CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM
             } */
             break;
         case WM_SETCURSOR:
-            SetFocus(hWnd);
+            /*SetFocus(hWnd);*/ // prevents popups from stealing focus
             break;
         case WM_TIMER:
             if (wParam != TIMER_TO_ACTION)
@@ -725,7 +725,7 @@ static int PopupShow(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent,
     DBEVENTINFO dbe;
     char* sampleEvent;
     long iSeconds = 0;
-    int iPreviewLimit = nen_options.iLimitPreview, result;
+    int iPreviewLimit = nen_options.iLimitPreview;
     
     //there has to be a maximum number of popups shown at the same time
     if (PopupCount >= MAX_POPUPS)
@@ -773,15 +773,16 @@ static int PopupShow(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent,
     }
 
     dbe.pBlob = NULL;
-
     dbe.cbSize = sizeof(dbe);
-    if(pluginOptions->bPreview || hContact == 0) {
+    
+    // fix for a crash
+    if (hEvent && (pluginOptions->bPreview || hContact == 0)) {
         dbe.cbBlob = CallService(MS_DB_EVENT_GETBLOBSIZE, (WPARAM)hEvent, 0);
         dbe.pBlob = (PBYTE)malloc(dbe.cbBlob);
     }
     else
         dbe.cbBlob = 0;
-    result = CallService(MS_DB_EVENT_GET, (WPARAM)hEvent, (LPARAM)&dbe);
+    CallService(MS_DB_EVENT_GET, (WPARAM)hEvent, (LPARAM)&dbe);
 
     pdata = (PLUGIN_DATA*)malloc(sizeof(PLUGIN_DATA));
     ZeroMemory((void *)pdata, sizeof(PLUGIN_DATA));
@@ -826,7 +827,17 @@ static int PopupShow(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent,
 
     PopUpList[NumberPopupData(NULL)] = pdata;
 
-    CallService(MS_POPUP_ADDPOPUPEX, (WPARAM)&pud, 0);
+    if (CallService(MS_POPUP_ADDPOPUPEX, (WPARAM)&pud, 0) < 0) {
+    	  // failed to display, perform cleanup
+        PopUpList[NumberPopupData(pdata->hContact)] = NULL;
+        PopupCount--;
+        if(pdata->eventData)
+            free(pdata->eventData);
+        free(pdata);
+    }
+
+	// nullbie: end of fix
+
     if (dbe.pBlob)
         free(dbe.pBlob);
 
@@ -1111,7 +1122,7 @@ static int PopupShowW(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent
     PLUGIN_DATAW *pdata;
     DBEVENTINFO dbe;
     long iSeconds = 0;
-    int iPreviewLimit = nen_options.iLimitPreview, result;
+    int iPreviewLimit = nen_options.iLimitPreview;
     BOOL isUnicode = 0;
     char *szPreview = NULL;
     DWORD codePage;
@@ -1162,15 +1173,16 @@ static int PopupShowW(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent
     }
 
     dbe.pBlob = NULL;
-
     dbe.cbSize = sizeof(dbe);
-    if(pluginOptions->bPreview || hContact == 0) {
+
+    // fix for a crash
+    if (hEvent && (pluginOptions->bPreview || hContact == 0)) {
         dbe.cbBlob = CallService(MS_DB_EVENT_GETBLOBSIZE, (WPARAM)hEvent, 0);
         dbe.pBlob = (PBYTE)malloc(dbe.cbBlob);
     }
     else
         dbe.cbBlob = 0;
-    result = CallService(MS_DB_EVENT_GET, (WPARAM)hEvent, (LPARAM)&dbe);
+    CallService(MS_DB_EVENT_GET, (WPARAM)hEvent, (LPARAM)&dbe);
 
     pdata = (PLUGIN_DATAW *)malloc(sizeof(PLUGIN_DATAW));
     ZeroMemory((void *)pdata, sizeof(PLUGIN_DATAW));
@@ -1228,7 +1240,16 @@ static int PopupShowW(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent
 
     PopUpList[NumberPopupData(NULL)] = (PLUGIN_DATA *)pdata;
 
-    CallService(MS_POPUP_ADDPOPUPW, (WPARAM)&pud, 0);
+    // fix for broken popups -- process failures
+    if (CallService(MS_POPUP_ADDPOPUPW, (WPARAM)&pud, 0) < 0) {
+        // failed to display, perform cleanup
+        PopUpList[NumberPopupData(pdata->hContact)] = NULL;
+        PopupCount--;
+        if(pdata->eventData)
+           free(pdata->eventData);
+        free(pdata);
+    }
+
     if (dbe.pBlob)
         free(dbe.pBlob);
 
