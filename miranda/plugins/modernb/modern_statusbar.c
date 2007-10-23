@@ -208,20 +208,21 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
             else
                 vis=pcli->pfnGetProtocolVisibility(proto[i]->szName);
             if (!vis) continue;
-
-            // create service name
-            mir_snprintf(servName, SIZEOF(servName), "%s/GetUnreadEmailCount", proto[i]->szName);   
-            if((g_StatusBarData.showProtoEmails == 1) && ServiceExists(servName))
-            {
-                mir_snprintf(protoNameExt, SIZEOF(protoNameExt),"[%d]", (int) CallService(servName, 0, 0));
-                ProtosData[visProtoCount].ProtoEMailCount=mir_strdup(protoNameExt);
-            }
-            else
-                ProtosData[visProtoCount].ProtoEMailCount=NULL;
-            
+			ProtosData[visProtoCount].ProtoStatus=CallProtoService(proto[i]->szName,PS_GETSTATUS,0,0);
+			ProtosData[visProtoCount].ProtoEMailCount=NULL;
+			if (ProtosData[visProtoCount].ProtoStatus>ID_STATUS_OFFLINE)
+			{
+				// create service name
+				mir_snprintf(servName, SIZEOF(servName), "%s/GetUnreadEmailCount", proto[i]->szName);   
+				if((g_StatusBarData.showProtoEmails == 1) && ServiceExists(servName) && )
+				{
+	                mir_snprintf(protoNameExt, SIZEOF(protoNameExt),"[%d]", (int) CallService(servName, 0, 0));
+					ProtosData[visProtoCount].ProtoEMailCount=mir_strdup(protoNameExt);
+				}
+			}	
+          
 			ProtosData[visProtoCount].ProtoHumanName=mir_strdup(proto[i]->szName);
             ProtosData[visProtoCount].ProtoName=mir_strdup(proto[i]->szName);
-            ProtosData[visProtoCount].ProtoStatus=CallProtoService(proto[i]->szName,PS_GETSTATUS,0,0);
             ProtosData[visProtoCount].ProtoStatusText=mir_strdup((char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,(WPARAM)ProtosData[visProtoCount].ProtoStatus,0));
             ProtosData[visProtoCount].ProtoPos=visProtoCount;
             visProtoCount++;
@@ -578,6 +579,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
             for (k=0; k<allocedItemData; k++)
             {
                 if(ProtosData[k].ProtoName) mir_free_and_nill (ProtosData[k].ProtoName);
+				if(ProtosData[k].ProtoEMailCount) mir_free_and_nill (ProtosData[k].ProtoEMailCount);
                 if(ProtosData[k].ProtoHumanName) mir_free_and_nill (ProtosData[k].ProtoHumanName);
                 if(ProtosData[k].ProtoStatusText) mir_free_and_nill (ProtosData[k].ProtoStatusText);
                 if(ProtosData[k].ProtoXStatus) mir_free_and_nill (ProtosData[k].ProtoXStatus);
