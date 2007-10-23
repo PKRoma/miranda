@@ -78,6 +78,10 @@ Project: "aim"=..\protocols\AimOscar\aimoscar.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
+    begin source code control
+    "$/Miranda/miranda/protocols/AimTOC2", YCPAAAAA
+    ..\protocols\aimoscar
+    end source code control
 }}}
 
 Package=<4>
@@ -126,18 +130,6 @@ Package=<5>
     "$/Miranda/miranda/plugins/clist", SKIAAAAA
     ..\plugins\clist
     end source code control
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "clist_modern"=..\plugins\modernb\modernb.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
 }}}
 
 Package=<4>
@@ -281,6 +273,18 @@ Package=<5>
     "$/Miranda/miranda", SHIAAAAA
     ..
     end source code control
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "modernb"=..\plugins\modernb\modernb.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
 }}}
 
 Package=<4>

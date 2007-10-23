@@ -146,6 +146,7 @@ nmake /NOLOGO /f %1 CFG=%2
 goto :eof
 
 :WriteVer
+echo %1 %2 %3
 set /A Version = %1
 set /A SubVersion = %2
 call :WriteVer2 %Version% %SubVersion% %3

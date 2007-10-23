@@ -2,6 +2,7 @@
 
 .\cmdlist.c : \
 	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
@@ -28,7 +29,6 @@
 	".\cmdlist.h"\
 	".\commonheaders.h"\
 	".\globals.h"\
-	".\m_avatars.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_smileyadd.h"\
@@ -41,6 +41,7 @@
 
 .\globals.c : \
 	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
@@ -67,7 +68,6 @@
 	".\cmdlist.h"\
 	".\commonheaders.h"\
 	".\globals.h"\
-	".\m_avatars.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_smileyadd.h"\
@@ -80,6 +80,7 @@
 
 .\msgdialog.c : \
 	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
@@ -106,7 +107,6 @@
 	".\cmdlist.h"\
 	".\commonheaders.h"\
 	".\globals.h"\
-	".\m_avatars.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_smileyadd.h"\
@@ -119,6 +119,7 @@
 
 .\msglog.c : \
 	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
@@ -145,7 +146,6 @@
 	".\cmdlist.h"\
 	".\commonheaders.h"\
 	".\globals.h"\
-	".\m_avatars.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_smileyadd.h"\
@@ -154,11 +154,11 @@
 	".\resource.h"\
 	".\sendqueue.h"\
 	".\utils.h"\
-	{$(INCLUDE)}"tom.h"\
 	
 
 .\msgoptions.c : \
 	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
@@ -185,7 +185,6 @@
 	".\cmdlist.h"\
 	".\commonheaders.h"\
 	".\globals.h"\
-	".\m_avatars.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_smileyadd.h"\
@@ -198,6 +197,7 @@
 
 .\msgs.c : \
 	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
@@ -224,7 +224,6 @@
 	".\cmdlist.h"\
 	".\commonheaders.h"\
 	".\globals.h"\
-	".\m_avatars.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_smileyadd.h"\
@@ -238,6 +237,7 @@
 
 .\msgtimedout.c : \
 	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
@@ -264,7 +264,6 @@
 	".\cmdlist.h"\
 	".\commonheaders.h"\
 	".\globals.h"\
-	".\m_avatars.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_smileyadd.h"\
@@ -277,6 +276,7 @@
 
 .\msgwindow.c : \
 	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
@@ -307,7 +307,6 @@
 	".\cmdlist.h"\
 	".\commonheaders.h"\
 	".\globals.h"\
-	".\m_avatars.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_smileyadd.h"\
@@ -322,6 +321,7 @@
 
 .\sendqueue.c : \
 	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
@@ -348,7 +348,6 @@
 	".\cmdlist.h"\
 	".\commonheaders.h"\
 	".\globals.h"\
-	".\m_avatars.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_smileyadd.h"\
@@ -361,6 +360,7 @@
 
 .\srmm.c : \
 	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
@@ -387,7 +387,6 @@
 	".\cmdlist.h"\
 	".\commonheaders.h"\
 	".\globals.h"\
-	".\m_avatars.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_smileyadd.h"\
@@ -400,6 +399,7 @@
 
 .\statusicon.c : \
 	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
@@ -426,7 +426,6 @@
 	".\cmdlist.h"\
 	".\commonheaders.h"\
 	".\globals.h"\
-	".\m_avatars.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_smileyadd.h"\
@@ -440,6 +439,7 @@
 
 .\utils.c : \
 	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
@@ -466,7 +466,6 @@
 	".\cmdlist.h"\
 	".\commonheaders.h"\
 	".\globals.h"\
-	".\m_avatars.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_smileyadd.h"\
@@ -531,6 +530,7 @@
 
 .\chat\clist.c : \
 	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
@@ -561,7 +561,6 @@
 	".\cmdlist.h"\
 	".\commonheaders.h"\
 	".\globals.h"\
-	".\m_avatars.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_smileyadd.h"\
@@ -574,6 +573,7 @@
 
 .\chat\colorchooser.c : \
 	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
@@ -604,7 +604,6 @@
 	".\cmdlist.h"\
 	".\commonheaders.h"\
 	".\globals.h"\
-	".\m_avatars.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_smileyadd.h"\
@@ -616,7 +615,9 @@
 	
 
 .\chat\log.c : \
+	"..\..\..\..\vc\sdk\include\shtypes.h"\
 	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
@@ -647,7 +648,6 @@
 	".\cmdlist.h"\
 	".\commonheaders.h"\
 	".\globals.h"\
-	".\m_avatars.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_smileyadd.h"\
@@ -660,6 +660,7 @@
 
 .\chat\main.c : \
 	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
@@ -690,7 +691,6 @@
 	".\cmdlist.h"\
 	".\commonheaders.h"\
 	".\globals.h"\
-	".\m_avatars.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_smileyadd.h"\
@@ -703,6 +703,7 @@
 
 .\chat\manager.c : \
 	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
@@ -733,7 +734,6 @@
 	".\cmdlist.h"\
 	".\commonheaders.h"\
 	".\globals.h"\
-	".\m_avatars.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_smileyadd.h"\
@@ -746,6 +746,7 @@
 
 .\chat\message.c : \
 	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
@@ -776,7 +777,6 @@
 	".\cmdlist.h"\
 	".\commonheaders.h"\
 	".\globals.h"\
-	".\m_avatars.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_smileyadd.h"\
@@ -788,7 +788,11 @@
 	
 
 .\chat\options.c : \
+	"..\..\..\..\vc\sdk\include\shldisp.h"\
+	"..\..\..\..\vc\sdk\include\shobjidl.h"\
+	"..\..\..\..\vc\sdk\include\shtypes.h"\
 	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
@@ -819,7 +823,6 @@
 	".\cmdlist.h"\
 	".\commonheaders.h"\
 	".\globals.h"\
-	".\m_avatars.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_smileyadd.h"\
@@ -832,6 +835,7 @@
 
 .\chat\services.c : \
 	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
@@ -862,7 +866,6 @@
 	".\cmdlist.h"\
 	".\commonheaders.h"\
 	".\globals.h"\
-	".\m_avatars.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_smileyadd.h"\
@@ -874,7 +877,9 @@
 	
 
 .\chat\tools.c : \
+	"..\..\..\..\vc\sdk\include\shtypes.h"\
 	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
@@ -905,7 +910,6 @@
 	".\cmdlist.h"\
 	".\commonheaders.h"\
 	".\globals.h"\
-	".\m_avatars.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_smileyadd.h"\
@@ -918,6 +922,7 @@
 
 .\chat\window.c : \
 	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
@@ -948,7 +953,6 @@
 	".\cmdlist.h"\
 	".\commonheaders.h"\
 	".\globals.h"\
-	".\m_avatars.h"\
 	".\m_ieview.h"\
 	".\m_metacontacts.h"\
 	".\m_smileyadd.h"\

@@ -1,29 +1,29 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on Yahoo.dsp
 !IF "$(CFG)" == ""
-CFG=Yahoo - Win32 Release
-!MESSAGE No configuration specified. Defaulting to Yahoo - Win32 Release.
-!ENDIF
+CFG=Yahoo - Win32 Debug
+!MESSAGE No configuration specified. Defaulting to Yahoo - Win32 Debug.
+!ENDIF 
 
 !IF "$(CFG)" != "Yahoo - Win32 Release" && "$(CFG)" != "Yahoo - Win32 Debug"
 !MESSAGE Invalid configuration "$(CFG)" specified.
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
-!MESSAGE
+!MESSAGE 
 !MESSAGE NMAKE /f "Yahoo.mak" CFG="Yahoo - Win32 Debug"
-!MESSAGE
+!MESSAGE 
 !MESSAGE Possible choices for configuration are:
-!MESSAGE
+!MESSAGE 
 !MESSAGE "Yahoo - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "Yahoo - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE
+!MESSAGE 
 !ERROR An invalid configuration is specified.
-!ENDIF
+!ENDIF 
 
 !IF "$(OS)" == "Windows_NT"
 NULL=
-!ELSE
+!ELSE 
 NULL=nul
-!ENDIF
+!ENDIF 
 
 CPP=cl.exe
 MTL=midl.exe
@@ -52,7 +52,6 @@ CLEAN :
 	-@erase "$(INTDIR)\search.obj"
 	-@erase "$(INTDIR)\server.obj"
 	-@erase "$(INTDIR)\services.obj"
-	-@erase "$(INTDIR)\sha.obj"
 	-@erase "$(INTDIR)\util.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
@@ -72,19 +71,18 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fp"$(INTDIR)\Yahoo.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
-MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x419 /fo"$(INTDIR)\Yahoo.res" /d "NDEBUG"
+CPP_PROJ=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fp"$(INTDIR)\Yahoo.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
+RSC_PROJ=/l 0x419 /fo"$(INTDIR)\Yahoo.res" /d "NDEBUG" 
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\Yahoo.bsc"
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\Yahoo.bsc" 
 BSC32_SBRS= \
-
+	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\Yahoo.pdb" /map:"$(INTDIR)\Yahoo.map" /debug /machine:I386 /out:"../../Bin/Release/Plugins/Yahoo.dll" /implib:"$(OUTDIR)\Yahoo.lib"
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\Yahoo.pdb" /map:"$(INTDIR)\Yahoo.map" /debug /machine:I386 /out:"../../Bin/Release/Plugins/Yahoo.dll" /implib:"$(OUTDIR)\Yahoo.lib" 
 LINK32_OBJS= \
 	"$(INTDIR)\crypt.obj" \
 	"$(INTDIR)\libyahoo2.obj" \
-	"$(INTDIR)\sha.obj" \
 	"$(INTDIR)\yahoo_auth.obj" \
 	"$(INTDIR)\yahoo_httplib.obj" \
 	"$(INTDIR)\yahoo_list.obj" \
@@ -94,6 +92,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\file_transfer.obj" \
 	"$(INTDIR)\http_gateway.obj" \
 	"$(INTDIR)\icolib.obj" \
+	"$(INTDIR)\ignore.obj" \
 	"$(INTDIR)\im.obj" \
 	"$(INTDIR)\main.obj" \
 	"$(INTDIR)\options.obj" \
@@ -103,8 +102,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\util.obj" \
 	"$(INTDIR)\webcam.obj" \
 	"$(INTDIR)\yahoo.obj" \
-	"$(INTDIR)\Yahoo.res" \
-	"$(INTDIR)\ignore.obj"
+	"$(INTDIR)\Yahoo.res"
 
 "..\..\Bin\Release\Plugins\Yahoo.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -134,7 +132,6 @@ CLEAN :
 	-@erase "$(INTDIR)\search.obj"
 	-@erase "$(INTDIR)\server.obj"
 	-@erase "$(INTDIR)\services.obj"
-	-@erase "$(INTDIR)\sha.obj"
 	-@erase "$(INTDIR)\util.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
@@ -154,19 +151,18 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fp"$(INTDIR)\Yahoo.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
-MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x419 /fo"$(INTDIR)\Yahoo.res" /d "_DEBUG"
+CPP_PROJ=/nologo /MDd /W3 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "YAHOO_EXPORTS" /D "HAVE_CONFIG_H" /Fp"$(INTDIR)\Yahoo.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
+RSC_PROJ=/l 0x419 /fo"$(INTDIR)\Yahoo.res" /d "_DEBUG" 
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\Yahoo.bsc"
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\Yahoo.bsc" 
 BSC32_SBRS= \
-
+	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\Yahoo.pdb" /debug /machine:I386 /out:"../../Bin/Debug/Plugins/Yahoo.dll" /implib:"$(OUTDIR)\Yahoo.lib" /pdbtype:sept
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\Yahoo.pdb" /debug /machine:I386 /out:"../../Bin/Debug/Plugins/Yahoo.dll" /implib:"$(OUTDIR)\Yahoo.lib" /pdbtype:sept 
 LINK32_OBJS= \
 	"$(INTDIR)\crypt.obj" \
 	"$(INTDIR)\libyahoo2.obj" \
-	"$(INTDIR)\sha.obj" \
 	"$(INTDIR)\yahoo_auth.obj" \
 	"$(INTDIR)\yahoo_httplib.obj" \
 	"$(INTDIR)\yahoo_list.obj" \
@@ -176,6 +172,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\file_transfer.obj" \
 	"$(INTDIR)\http_gateway.obj" \
 	"$(INTDIR)\icolib.obj" \
+	"$(INTDIR)\ignore.obj" \
 	"$(INTDIR)\im.obj" \
 	"$(INTDIR)\main.obj" \
 	"$(INTDIR)\options.obj" \
@@ -185,54 +182,53 @@ LINK32_OBJS= \
 	"$(INTDIR)\util.obj" \
 	"$(INTDIR)\webcam.obj" \
 	"$(INTDIR)\yahoo.obj" \
-	"$(INTDIR)\Yahoo.res" \
-	"$(INTDIR)\ignore.obj"
+	"$(INTDIR)\Yahoo.res"
 
 "..\..\Bin\Debug\Plugins\Yahoo.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
 
-!ENDIF
+!ENDIF 
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 .cpp{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 .cxx{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 .c{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 .cpp{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 .cxx{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
 !IF EXISTS("Yahoo.dep")
 !INCLUDE "Yahoo.dep"
-!ELSE
+!ELSE 
 !MESSAGE Warning: cannot find "Yahoo.dep"
-!ENDIF
-!ENDIF
+!ENDIF 
+!ENDIF 
 
 
 !IF "$(CFG)" == "Yahoo - Win32 Release" || "$(CFG)" == "Yahoo - Win32 Debug"
@@ -245,12 +241,6 @@ SOURCE=.\libyahoo2\crypt.c
 SOURCE=.\libyahoo2\libyahoo2.c
 
 "$(INTDIR)\libyahoo2.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-SOURCE=.\libyahoo2\sha.c
-
-"$(INTDIR)\sha.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -360,4 +350,5 @@ SOURCE=.\Yahoo.rc
 
 
 
-!ENDIF
+!ENDIF 
+
