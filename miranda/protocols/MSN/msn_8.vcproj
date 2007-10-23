@@ -229,8 +229,8 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				CommandLine="xcopy &quot;$(OutDir)\$(ProjectName).dll&quot; &quot;$(OutDir)\$(ProjectName)-hot.dll&quot; /i /Y&#x0D;&#x0A;"
-				Outputs="&quot;$(OutDir)\$(ProjectName)-hot.dll&quot;"
+				CommandLine=""
+				Outputs=""
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
