@@ -36,12 +36,16 @@
 	".\jabber_rc.h"\
 	".\jabber_ssl.h"\
 	".\jabber_xml.h"\
+	".\sdk\m_folders.h"\
 	".\sdk\m_icolib.h"\
+	".\sdk\m_modernopt.h"\
+	".\sdk\m_wizard.h"\
 	".\version.h"\
 	
 
 .\jabber_adhoc.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -53,6 +57,7 @@
 
 .\jabber_agent.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -64,6 +69,7 @@
 
 .\jabber_bookmarks.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -75,6 +81,7 @@
 
 .\jabber_byte.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -86,6 +93,7 @@
 
 .\jabber_caps.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -98,6 +106,19 @@
 
 .\jabber_chat.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_protocols.h"\
+	".\jabber.h"\
+	".\jabber_byte.h"\
+	".\jabber_caps.h"\
+	".\jabber_ibb.h"\
+	".\jabber_iq.h"\
+	".\jabber_list.h"\
+	
+
+.\jabber_console.cpp : \
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -109,6 +130,7 @@
 
 .\jabber_disco.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -121,6 +143,7 @@
 
 .\jabber_file.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -132,6 +155,7 @@
 
 .\jabber_form.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -143,6 +167,7 @@
 
 .\jabber_ft.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -154,6 +179,7 @@
 
 .\jabber_groupchat.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -165,6 +191,7 @@
 
 .\jabber_ibb.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -177,6 +204,7 @@
 .\jabber_icolib.cpp : \
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -188,6 +216,7 @@
 
 .\jabber_iq.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -203,6 +232,7 @@
 
 .\jabber_iq_handlers.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -218,6 +248,7 @@
 	"..\..\include\m_clistint.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -230,6 +261,7 @@
 
 .\jabber_iqid_muc.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -241,6 +273,7 @@
 
 .\jabber_libstr.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -252,6 +285,7 @@
 
 .\jabber_list.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -264,6 +298,7 @@
 .\jabber_menu.cpp : \
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_contacts.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -277,6 +312,7 @@
 
 .\jabber_misc.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -284,10 +320,12 @@
 	".\jabber_ibb.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
+	".\sdk\m_folders.h"\
 	
 
 .\jabber_opt.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -297,10 +335,13 @@
 	".\jabber_list.h"\
 	".\jabber_opttree.h"\
 	".\jabber_ssl.h"\
+	".\sdk\m_modernopt.h"\
+	".\sdk\m_wizard.h"\
 	
 
 .\jabber_opttree.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -313,6 +354,7 @@
 
 .\jabber_password.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -324,6 +366,7 @@
 
 .\jabber_privacy.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -336,6 +379,7 @@
 
 .\jabber_proxy.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -348,6 +392,7 @@
 .\jabber_rc.cpp : \
 	"..\..\include\m_awaymsg.h"\
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -360,6 +405,7 @@
 
 .\jabber_search.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -372,6 +418,7 @@
 
 .\jabber_secur.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -384,6 +431,7 @@
 
 .\jabber_ssl.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -396,6 +444,7 @@
 
 .\jabber_std.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -407,6 +456,7 @@
 
 .\jabber_svc.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -419,6 +469,7 @@
 
 .\jabber_thread.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -434,6 +485,7 @@
 
 .\jabber_treelist.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -445,6 +497,7 @@
 
 .\jabber_userinfo.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -456,6 +509,7 @@
 
 .\jabber_util.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -468,6 +522,7 @@
 
 .\jabber_vcard.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -479,6 +534,7 @@
 
 .\jabber_ws.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -490,6 +546,7 @@
 
 .\jabber_xml.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -501,6 +558,7 @@
 
 .\jabber_xmlns.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -515,6 +573,7 @@
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -522,11 +581,13 @@
 	".\jabber_ibb.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
+	".\sdk\m_cluiframes.h"\
 	".\sdk\m_proto_listeningto.h"\
 	
 
 .\jabber_zstream.cpp : \
 	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
@@ -542,6 +603,7 @@
 	".\icos\auth_revoke.ico"\
 	".\icos\bookmarks.ico"\
 	".\icos\command.ico"\
+	".\icos\console.ico"\
 	".\icos\delete.ico"\
 	".\icos\disco_fail.ico"\
 	".\icos\disco_in_progress.ico"\
