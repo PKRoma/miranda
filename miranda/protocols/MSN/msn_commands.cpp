@@ -444,19 +444,20 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 				}	}
 			}
 
-			const char* tP4Context = tHeader[ "P4-Context" ];
-			if ( tP4Context ) 
-			{
-				size_t newlen  = strlen( msgBody ) + strlen( tP4Context ) + 4;
-				char* newMsgBody = ( char* )mir_alloc( newlen );
-				mir_snprintf(newMsgBody, newlen, "[%s] %s", tP4Context, msgBody);
-				mir_free(newbody);
-				msgBody = newbody = newMsgBody;
-			}
 		}
 		else ccs.hContact = tContact;
 
 		MSN_CallService( MS_PROTO_CONTACTISTYPING, WPARAM( tContact ), 0 );
+
+		const char* tP4Context = tHeader[ "P4-Context" ];
+		if ( tP4Context ) 
+		{
+			size_t newlen  = strlen( msgBody ) + strlen( tP4Context ) + 4;
+			char* newMsgBody = ( char* )mir_alloc( newlen );
+			mir_snprintf(newMsgBody, newlen, "[%s] %s", tP4Context, msgBody);
+			mir_free(newbody);
+			msgBody = newbody = newMsgBody;
+		}
 
 		if ( info->mChatID[0] ) {
 			GCDEST gcd = { msnProtocolName, { NULL }, GC_EVENT_MESSAGE };
