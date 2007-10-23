@@ -202,6 +202,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
         for (j=0; j<protcnt; j++)
         {
             int vis;
+			char buf[40];
             i=pcli->pfnGetProtoIndexByPos(proto,protoCount,j);
             if (i==-1) 
                 vis=FALSE;
@@ -220,8 +221,10 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 					ProtosData[visProtoCount].ProtoEMailCount=mir_strdup(protoNameExt);
 				}
 			}	
-          
-			ProtosData[visProtoCount].ProtoHumanName=mir_strdup(proto[i]->szName);
+			if(!CallProtoService(proto[i]->szName,PS_GETNAME,(WPARAM)SIZEOF(buf),(LPARAM)buf))
+				ProtosData[visProtoCount].ProtoHumanName=mir_strdup(buf);
+			else
+				ProtosData[visProtoCount].ProtoHumanName=mir_strdup(proto[i]->szName);
             ProtosData[visProtoCount].ProtoName=mir_strdup(proto[i]->szName);
             ProtosData[visProtoCount].ProtoStatusText=mir_strdup((char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,(WPARAM)ProtosData[visProtoCount].ProtoStatus,0));
             ProtosData[visProtoCount].ProtoPos=visProtoCount;
