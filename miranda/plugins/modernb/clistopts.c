@@ -730,7 +730,7 @@ static BOOL CALLBACK DlgProcItemTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			if (!IsDlgButtonChecked(hwndDlg,IDC_REPLACE_SMILEYS))
 			{
 				EnableWindow(GetDlgItem(hwndDlg,IDC_USE_PROTOCOL_SMILEYS),FALSE);
-				EnableWindow(GetDlgItem(hwndDlg,IDC_RESIZE_SMILEYS),FALSE);
+				//EnableWindow(GetDlgItem(hwndDlg,IDC_RESIZE_SMILEYS),FALSE);  //Commented out for listening to icon
 			}
 
 			break;
@@ -741,7 +741,7 @@ static BOOL CALLBACK DlgProcItemTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			{
 				BOOL enabled = IsDlgButtonChecked(hwndDlg,IDC_REPLACE_SMILEYS);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_USE_PROTOCOL_SMILEYS),enabled);
-				EnableWindow(GetDlgItem(hwndDlg,IDC_RESIZE_SMILEYS),enabled);
+				//EnableWindow(GetDlgItem(hwndDlg,IDC_RESIZE_SMILEYS),enabled); //Commented out for listening to icon
 			}      
 			if (LOWORD(wParam)!=IDC_ALIGNGROUPCOMBO || (LOWORD(wParam)==IDC_ALIGNGROUPCOMBO && HIWORD(wParam)==CBN_SELCHANGE))
 				SendMessage((GetParent(hwndDlg)), PSM_CHANGED, 0, 0);
