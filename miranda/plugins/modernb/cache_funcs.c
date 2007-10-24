@@ -177,7 +177,7 @@ void Cache_AddListeningToIcon(struct SHORTDATA *dat, PDNCE pdnce, TCHAR *text, i
 {
     *max_smiley_height = 0;
 
-    if (!dat->text_replace_smileys || !replace_smileys || text == NULL)
+    if (/*!dat->text_replace_smileys || !replace_smileys ||*/ text == NULL)
     {
         Cache_DestroySmileyList(*plText);
         *plText = NULL;
@@ -196,6 +196,7 @@ void Cache_AddListeningToIcon(struct SHORTDATA *dat, PDNCE pdnce, TCHAR *text, i
     // Add Icon
     {
         BITMAP bm;
+
         ICONINFO icon;
         ClcContactTextPiece *piece = (ClcContactTextPiece *) mir_alloc(sizeof(ClcContactTextPiece));
 
