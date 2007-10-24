@@ -1,5 +1,5 @@
-#define BUILD_NUM 24
-#define BUILD_NUM_STR  "24"
+#define BUILD_NUM 25
+#define BUILD_NUM_STR  "25"
 #define REVISION  "$Revision$"
 
 #define COREVERSION_NUM 0, 7, 100,
