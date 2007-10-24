@@ -416,6 +416,12 @@ bool CMyMonitor::OnIrc_SETAWAY( const CIrcMessage* pmsg )
 			case ID_STATUS_OCCUPIED:
 				DoPerform( "Event: Occupied" );
 				break;
+			case ID_STATUS_OUTTOLUNCH:
+				DoPerform( "Event: Out for lunch" );
+				break;
+			case ID_STATUS_ONTHEPHONE:
+            DoPerform( "Event: On the phone" );
+				break;
 			default:
 				GlobalStatus = ID_STATUS_AWAY;
 				DoPerform( "Event: Away" );
