@@ -51,12 +51,12 @@ void AddToList(char *name, DWORD len, DWORD ofs)
 	mn->ofs = ofs;
 
 	if (li.List_GetIndex(&lMods,mn,&index))
-		DatabaseCorruption("%s (Module Name not unique)");
+		DatabaseCorruption( _T("%s (Module Name not unique)"));
 
 	li.List_Insert(&lMods,mn,index);
 
 	if (li.List_GetIndex(&lOfs,mn,&index))
-		DatabaseCorruption("%s (Module Offset not unique)");
+		DatabaseCorruption( _T("%s (Module Offset not unique)"));
 
 	li.List_Insert(&lOfs,mn,index);
 }

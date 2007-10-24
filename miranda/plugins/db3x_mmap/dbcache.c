@@ -42,10 +42,10 @@ void Map()
 	if (hMap)
 		pDbCache = MapViewOfFile(hMap, FILE_MAP_ALL_ACCESS/*FILE_MAP_WRITE*/, 0, 0 ,0);
 	else
-		DatabaseCorruption("%s (CreateFileMapping failed. Code: %d)");
+		DatabaseCorruption( _T("%s (CreateFileMapping failed. Code: %d)"));
 
 	if (!pDbCache)
-		DatabaseCorruption("%s (MapViewOfFile failed. Code: %d)");
+		DatabaseCorruption( _T("%s (MapViewOfFile failed. Code: %d)"));
 }
 
 void ReMap(DWORD needed)
@@ -57,7 +57,7 @@ void ReMap(DWORD needed)
 	if (needed > ChunkSize)
 	{
 		if ((needed + dwFileSize) - dbHeader.ofsFileEnd > ChunkSize)
-			DatabaseCorruption("%s (Too large increment)");
+			DatabaseCorruption( _T("%s (Too large increment)"));
 		else
 		{
 			DWORD x = dbHeader.ofsFileEnd/ChunkSize;

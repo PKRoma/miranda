@@ -78,10 +78,6 @@ Project: "aim"=..\protocols\AimOscar\aimoscar.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
-    begin source code control
-    "$/Miranda/miranda/protocols/AimTOC2", YCPAAAAA
-    ..\protocols\aimoscar
-    end source code control
 }}}
 
 Package=<4>
@@ -190,6 +186,10 @@ Project: "dbrw"=..\plugins\dbrw\dbrw.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
+    begin source code control
+    "$/Miranda/miranda/plugins/dbrw", WKIAAAAA
+    ..\plugins\dbrw
+    end source code control
 }}}
 
 Package=<4>
@@ -285,6 +285,10 @@ Project: "modernb"=..\plugins\modernb\modernb.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
+    begin source code control
+    "$/Miranda/miranda/plugins/modernb", FQUAAAAA
+    ..\plugins\modernb
+    end source code control
 }}}
 
 Package=<4>

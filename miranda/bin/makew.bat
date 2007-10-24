@@ -86,6 +86,16 @@ call :Nmake clist.mak "clist_nicer - Win32 Release Unicode"
 popd
 if errorlevel 1 goto :Error
 
+pushd ..\..\miranda\plugins\db3x
+call :Nmake db3x.mak "db3x - Win32 Release Unicode"
+popd
+if errorlevel 1 goto :Error
+
+pushd ..\..\miranda\plugins\db3x_mmap
+call :Nmake db3x_mmap.mak "db3x_mmap - Win32 Release Unicode"
+popd
+if errorlevel 1 goto :Error
+
 pushd ..\..\miranda\plugins\modernb
 call :Nmake modernb.mak "modernb - Win32 Release Unicode"
 popd
@@ -122,8 +132,6 @@ copy ..\release\zlib.dll
 copy ..\release\Icons\xstatus_ICQ.dll    Icons
 
 copy ..\release\Plugins\aim.dll          Plugins
-copy ..\release\Plugins\dbx_3x.dll       Plugins
-copy ..\release\Plugins\dbx_mmap.dll     Plugins
 copy ..\release\Plugins\advaimg.dll      Plugins
 copy ..\release\Plugins\GG.dll           Plugins
 copy ..\release\Plugins\ICQ.dll          Plugins
@@ -267,12 +275,12 @@ copy ..\..\plugins\clist\Release_Unicode\clist_classic.pdb     %Temp%\pdbw\plugi
 copy ..\..\plugins\clist_nicer\Release_Unicode\clist_nicer.pdb %Temp%\pdbw\plugins
 copy ..\..\plugins\modernb\Release_Unicode\clist_modern.pdb    %Temp%\pdbw\plugins
 copy ..\..\plugins\mwclist\Release_Unicode\clist_mw.pdb        %Temp%\pdbw\plugins
+copy ..\..\plugins\db3x\Release_Unicode\dbx_3x.pdb             %Temp%\pdbw\plugins
+copy ..\..\plugins\db3x_mmap\Release_Unicode\dbx_mmap.pdb      %Temp%\pdbw\plugins
 copy ..\..\plugins\scriver\Release_Unicode\scriver.pdb         %Temp%\pdbw\plugins
 copy ..\..\plugins\srmm\Release_Unicode\srmm.pdb               %Temp%\pdbw\plugins
 copy ..\..\plugins\tabSRMM\Release_Unicode\tabSRMM.pdb         %Temp%\pdbw\plugins
 rem  Non-Unicode plugins
-copy ..\..\plugins\db3x\Release\dbx_3x.pdb                     %Temp%\pdbw\plugins
-copy ..\..\plugins\db3x_mmap\Release\dbx_mmap.pdb              %Temp%\pdbw\plugins
 copy ..\..\plugins\import\Release\import.pdb                   %Temp%\pdbw\plugins
 copy ..\..\plugins\freeimage\Release\freeimage.pdb             %Temp%\pdbw\plugins
 

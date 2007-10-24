@@ -42,7 +42,7 @@ static int getCapability( int flag )
 // returns 0 if the profile is created, EMKPRF*
 static int makeDatabase(char * profile, int * error)
 {
-	HANDLE hFile=CreateFile(profile, GENERIC_READ|GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, 0, NULL);
+	HANDLE hFile=CreateFileA(profile, GENERIC_READ|GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, 0, NULL);
 	if ( hFile != INVALID_HANDLE_VALUE ) {
 		CreateDbHeaders(hFile);
 		CloseHandle(hFile);
@@ -61,7 +61,7 @@ static int grokHeader( char * profile, int * error )
 	HANDLE hFile = INVALID_HANDLE_VALUE;
 	DWORD dummy=0;
 
-	hFile = CreateFile(profile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+	hFile = CreateFileA(profile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
 	if ( hFile == INVALID_HANDLE_VALUE ) {
 		if ( error != NULL ) *error=EGROKPRF_CANTREAD;
 		return 1;
@@ -159,7 +159,7 @@ static PLUGININFOEX pluginInfo = {
 	"ghazan@miranda-im.org",
 	"Copyright 2000-2006 Miranda IM project",
 	"",
-	0,
+	UNICODE_AWARE,
 	DEFMOD_DB,
     {0x1394a3ab, 0x2585, 0x4196, { 0x8f, 0x72, 0xe, 0xae, 0xc2, 0x45, 0xe, 0x11 }} //{1394A3AB-2585-4196-8F72-0EAEC2450E11}
 };
