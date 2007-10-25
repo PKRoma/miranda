@@ -299,13 +299,13 @@ HANDLE HContactFromID(char* pszProtoName, char* pszSetting, char* pszID)
 		if ( !lstrcmpA(szProto, pszProtoName)) {
 			DBVARIANT dbv;
 			if (DBGetContactSettingString(hContact, pszProtoName, pszSetting, &dbv) == 0) {
-                if (strcmp(pszID, dbv.pszVal) == 0) {
-                    mir_free(dbv.pszVal);
-                    return hContact;
-                }
+				if (strcmp(pszID, dbv.pszVal) == 0) {
+					mir_free(dbv.pszVal);
+					return hContact;
+				}
 				DBFreeVariant(&dbv);
-            }	
-        }
+			}	
+		}
 
 		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
 	}
