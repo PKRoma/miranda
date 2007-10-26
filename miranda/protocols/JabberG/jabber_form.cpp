@@ -769,6 +769,17 @@ static BOOL CALLBACK JabberFormDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, L
 		{
 			return NULL;
 		}
+	case WM_MOUSEWHEEL:
+		{
+			int zDelta = GET_WHEEL_DELTA_WPARAM( wParam );
+			if ( zDelta ) {
+				int nScrollLines=0;
+				SystemParametersInfo( SPI_GETWHEELSCROLLLINES, 0, (void*)&nScrollLines, 0 );
+				for (int i = 0; i < ( nScrollLines + 1 ) / 2; i++ )
+					SendMessage( hwndDlg, WM_VSCROLL, ( zDelta < 0 ) ? SB_LINEDOWN : SB_LINEUP, 0 );
+			}
+		}
+		break;
 	case WM_VSCROLL:
 		{
 			int pos;
@@ -778,10 +789,10 @@ static BOOL CALLBACK JabberFormDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, L
 				pos = jfi->curPos;
 				switch ( LOWORD( wParam )) {
 				case SB_LINEDOWN:
-					pos += 10;
+					pos += 15;
 					break;
 				case SB_LINEUP:
-					pos -= 10;
+					pos -= 15;
 					break;
 				case SB_PAGEDOWN:
 					pos += ( jfi->frameHeight - 10 );
@@ -814,7 +825,7 @@ static BOOL CALLBACK JabberFormDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, L
 				( jfi->pfnSubmit )( n, jfi->userdata );
 			}
 			// fall through
-		case IDCANCEL:
+		case IDCLOSE:
 			DestroyWindow( hwndDlg );
 			return TRUE;
 		}
