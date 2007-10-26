@@ -1370,6 +1370,7 @@ int JabberSetAwayMsg( WPARAM wParam, LPARAM lParam )
 	case ID_STATUS_ONTHEPHONE:
 	case ID_STATUS_OUTTOLUNCH:
 		szMsg = &modeMsgs.szAway;
+		desiredStatus = ID_STATUS_AWAY;
 		break;
 	case ID_STATUS_NA:
 		szMsg = &modeMsgs.szNa;
@@ -1377,6 +1378,7 @@ int JabberSetAwayMsg( WPARAM wParam, LPARAM lParam )
 	case ID_STATUS_DND:
 	case ID_STATUS_OCCUPIED:
 		szMsg = &modeMsgs.szDnd;
+		desiredStatus = ID_STATUS_DND;
 		break;
 	case ID_STATUS_FREECHAT:
 		szMsg = &modeMsgs.szFreechat;
