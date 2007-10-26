@@ -298,6 +298,7 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 					if ( item->photoFileName ) {
 						JabberLog( "Showing picture from %s", item->photoFileName );
 						photoInfo->hBitmap = ( HBITMAP ) JCallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )item->photoFileName );
+						JabberBitmapPremultiplyChannels(photoInfo->hBitmap);
 						ShowWindow( GetDlgItem( hwndDlg, IDC_SAVE ), SW_SHOW );
 					}
 				}
@@ -415,7 +416,7 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			if ( ptSize.x<=rect.right && ptSize.y<=rect.bottom ) {
 				pt.x = ( rect.right - ptSize.x )/2;
 				pt.y = ( rect.bottom - ptSize.y )/2;
-				BitBlt( hdcCanvas, pt.x, pt.y, ptSize.x, ptSize.y, hdcMem, ptOrg.x, ptOrg.y, SRCCOPY );
+				ptFitSize = ptSize;
 			}
 			else {
 				if (( ( float )( ptSize.x-rect.right ))/ptSize.x > (( float )( ptSize.y-rect.bottom ))/ptSize.y ) {
@@ -430,9 +431,31 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 					pt.x = ( rect.right - ptFitSize.x )/2;
 					pt.y = 0;
 				}
+			}
+
+			if (JabberIsThemeActive && JabberDrawThemeParentBackground && JabberIsThemeActive())
+			{
+				RECT rc; GetClientRect(hwndCanvas, &rc);
+				JabberDrawThemeParentBackground(hwndCanvas, hdcCanvas, &rc);
+			} else
+			{
+				RECT rc; GetClientRect(hwndCanvas, &rc);
+				FillRect(hdcCanvas, &rc, (HBRUSH)GetSysColorBrush(COLOR_BTNFACE));
+			}
+
+			if (JabberAlphaBlend && (bm.bmBitsPixel == 32))
+			{
+				BLENDFUNCTION bf = {0};
+				bf.AlphaFormat = AC_SRC_ALPHA;
+				bf.BlendOp = AC_SRC_OVER;
+				bf.SourceConstantAlpha = 255;
+				JabberAlphaBlend( hdcCanvas, pt.x, pt.y, ptFitSize.x, ptFitSize.y, hdcMem, ptOrg.x, ptOrg.y, ptSize.x, ptSize.y, bf );
+			} else
+			{
 				SetStretchBltMode( hdcCanvas, COLORONCOLOR );
 				StretchBlt( hdcCanvas, pt.x, pt.y, ptFitSize.x, ptFitSize.y, hdcMem, ptOrg.x, ptOrg.y, ptSize.x, ptSize.y, SRCCOPY );
 			}
+
 			DeleteDC( hdcMem );
 		}
 		break;

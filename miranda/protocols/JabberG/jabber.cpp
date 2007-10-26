@@ -65,6 +65,13 @@ UTF8_INTERFACE  utfi;
 MD5_INTERFACE   md5i;
 SHA1_INTERFACE  sha1i;
 
+/////////////////////////////////////////////////////////////////////////////
+// Theme API
+BOOL (WINAPI *JabberAlphaBlend)(HDC, int, int, int, int, HDC, int, int, int, int, BLENDFUNCTION) = NULL;
+BOOL (WINAPI *JabberIsThemeActive)() = NULL;
+HRESULT (WINAPI *JabberDrawThemeParentBackground)(HWND, HDC, RECT *) = NULL;
+/////////////////////////////////////////////////////////////////////////////
+
 HANDLE hMainThread = NULL;
 DWORD jabberMainThreadId;
 char* jabberProtoName;	// "JABBER"
@@ -400,6 +407,24 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	jabberCodePage = JGetWord( NULL, "CodePage", CP_ACP );
 
 	InitializeCriticalSection( &modeMsgMutex );
+
+	{	// Load some fuctions
+		HINSTANCE hDll;
+
+		if (hDll = LoadLibraryA("msimg32.dll"))
+		{
+			JabberAlphaBlend = (BOOL (WINAPI *)(HDC, int, int, int, int, HDC, int, int, int, int, BLENDFUNCTION)) GetProcAddress(hDll, "AlphaBlend");
+		}
+
+		if (IsWinVerXPPlus())
+		{
+			if (hDll = GetModuleHandleA("uxtheme"))
+			{
+				JabberDrawThemeParentBackground = (HRESULT (WINAPI *)(HWND,HDC,RECT *))GetProcAddress(hDll, "DrawThemeParentBackground");
+				JabberIsThemeActive = (BOOL (WINAPI *)())GetProcAddress(hDll, "IsThemeActive");
+			}
+		}
+	}
 
 	srand(( unsigned ) time( NULL ));
 	JabberSerialInit();

@@ -1202,3 +1202,44 @@ const char* TStringPairs::operator[]( const char* key ) const
 
 	return "";
 }
+
+////////////////////////////////////////////////////////////////////////
+// Premultiply bitmap channels for 32-bit bitmaps
+void JabberBitmapPremultiplyChannels(HBITMAP hBitmap)
+{
+	BITMAP bmp;
+	DWORD dwLen;
+	BYTE *p;
+	int x, y;
+
+	GetObject(hBitmap, sizeof(bmp), &bmp);
+
+	if (bmp.bmBitsPixel != 32)
+		return;
+
+	dwLen = bmp.bmWidth * bmp.bmHeight * (bmp.bmBitsPixel / 8);
+	p = (BYTE *)malloc(dwLen);
+	if (p == NULL)
+		return;
+	memset(p, 0, dwLen);
+
+	GetBitmapBits(hBitmap, dwLen, p);
+
+	for (y = 0; y < bmp.bmHeight; ++y)
+	{
+		BYTE *px = p + bmp.bmWidth * 4 * y;
+
+		for (x = 0; x < bmp.bmWidth; ++x)
+		{
+			px[0] = px[0] * px[3] / 255;
+			px[1] = px[1] * px[3] / 255;
+			px[2] = px[2] * px[3] / 255;
+
+			px += 4;
+		}
+	}
+
+	SetBitmapBits(hBitmap, dwLen, p);
+
+	free(p);
+}

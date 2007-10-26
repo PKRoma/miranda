@@ -446,6 +446,11 @@ extern HANDLE heventXStatusChanged;
 // Transports list
 extern LIST<TCHAR> jabberTransports;
 
+// Theme API
+extern BOOL (WINAPI *JabberAlphaBlend)(HDC, int, int, int, int, HDC, int, int, int, int, BLENDFUNCTION);
+extern BOOL (WINAPI *JabberIsThemeActive)();
+extern HRESULT (WINAPI *JabberDrawThemeParentBackground)(HWND, HDC, RECT *);
+
 /*******************************************************************
  * Function declarations
  *******************************************************************/
@@ -704,6 +709,8 @@ int           __stdcall JabberGetPacketID( XmlNode* n );
 #else
 	#define JabberUnixToDosT JabberUnixToDos
 #endif
+
+void JabberBitmapPremultiplyChannels(HBITMAP hBitmap);
 
 //---- jabber_vcard.c -----------------------------------------------
 
