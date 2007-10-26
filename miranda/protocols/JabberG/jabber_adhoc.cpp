@@ -495,8 +495,8 @@ static BOOL CALLBACK JabberAdHoc_CommandDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 					return JabberAdHoc_ExecuteCommand(hwndDlg,dat->ResponderJID, dat);
 				else
 					return JabberAdHoc_SubmitCommandForm(hwndDlg,dat, NULL);
-			case IDCLOSE:
 			case IDCANCEL:
+			case IDCLOSE:
 				if ( dat->AdHocNode )
 					delete dat->AdHocNode;
 				dat->AdHocNode=NULL;

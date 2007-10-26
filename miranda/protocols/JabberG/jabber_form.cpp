@@ -825,6 +825,7 @@ static BOOL CALLBACK JabberFormDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, L
 				( jfi->pfnSubmit )( n, jfi->userdata );
 			}
 			// fall through
+		case IDCANCEL:
 		case IDCLOSE:
 			DestroyWindow( hwndDlg );
 			return TRUE;

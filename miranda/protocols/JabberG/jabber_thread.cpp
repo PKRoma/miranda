@@ -1635,6 +1635,7 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 
 	if ( !_tcscmp( type, _T("subscribe"))) {
 		if ( _tcschr( from, '@' ) == NULL ) {
+			JabberListAdd( LIST_ROSTER, from );
 			// automatically send authorization allowed to agent/transport
 			XmlNode p( "presence" ); p.addAttr( "to", from ); p.addAttr( "type", "subscribed" );
 			info->send( p );

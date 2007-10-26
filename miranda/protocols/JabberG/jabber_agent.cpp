@@ -482,6 +482,7 @@ static BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 			// Fall through to IDCANCEL
 		}
 		case IDCANCEL:
+		case IDCLOSE:
 			if ( agentRegIqNode )
 				delete agentRegIqNode;
 			DestroyWindow( hwndDlg );
