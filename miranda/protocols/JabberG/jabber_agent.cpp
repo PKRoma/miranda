@@ -130,12 +130,12 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 							lvItem.cchTextMax = SIZEOF( text );
 							ListView_GetItem( lv, &lvItem );
 							if (( item=JabberListGetItemPtr( LIST_AGENT, lvItem.pszText )) != NULL ) {
-								if ( item->cap & AGENT_CAP_REGISTER )
+//								if ( item->cap & AGENT_CAP_REGISTER )
 									EnableWindow( GetDlgItem( hwndDlg, IDC_AGENT_REGISTER ), TRUE );
 								//if ( item->canSearch ) EnableWindow( GetDlgItem( hwndDlg, IDC_AGENT_SEARCH ), TRUE );
-								if ( item->cap & AGENT_CAP_GROUPCHAT )
+//								if ( item->cap & AGENT_CAP_GROUPCHAT )
 									EnableWindow( GetDlgItem( hwndDlg, IDC_JOIN ), TRUE );
-								if ( item->cap & AGENT_CAP_ADHOC )
+//								if ( item->cap & AGENT_CAP_ADHOC )
 									EnableWindow( GetDlgItem( hwndDlg, IDC_COMMANDS1 ), TRUE );
 							}
 						}
@@ -168,10 +168,10 @@ static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 									EnableWindow( GetDlgItem( hwndDlg, IDC_AGENT_LOGOFF ), TRUE );
 								EnableWindow( GetDlgItem( hwndDlg, IDC_AGENT_UNREGISTER ), TRUE );
 							}
-							if (( item=JabberListGetItemPtr( LIST_ROSTER, lvItem.pszText )) != NULL )
-								EnableWindow( GetDlgItem( hwndDlg, IDC_COMMANDS2 ), (item->cap & AGENT_CAP_ADHOC)?TRUE:FALSE );
-							else
-								EnableWindow( GetDlgItem( hwndDlg, IDC_COMMANDS2 ), FALSE );
+//							if (( item=JabberListGetItemPtr( LIST_ROSTER, lvItem.pszText )) != NULL )
+//								EnableWindow( GetDlgItem( hwndDlg, IDC_COMMANDS2 ), (item->cap & AGENT_CAP_ADHOC)?TRUE:FALSE );
+//							else
+//								EnableWindow( GetDlgItem( hwndDlg, IDC_COMMANDS2 ), FALSE );
 						}
 						return TRUE;
 			}	}	}

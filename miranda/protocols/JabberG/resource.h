@@ -235,6 +235,7 @@
 #define IDC_UNREGISTER2                 1184
 #define IDC_ENABLE_RC                   1184
 #define IDC_GO                          1196
+#define IDC_HOSTNAME_AS_RESOURCE        1214
 #define IDC_RADIO1                      1215
 #define IDC_COMMANDS                    1216
 #define IDC_COMMANDS1                   1216

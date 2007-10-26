@@ -215,6 +215,8 @@ enum JABBER_SESSION_TYPE
 
 #define ZLIB_CHUNK_SIZE 2048
 
+#include "jabber_caps.h"
+
 struct ThreadData
 {
 	ThreadData( JABBER_SESSION_TYPE parType );
@@ -249,7 +251,8 @@ struct ThreadData
 	HWND  reg_hwndDlg;
 	BOOL  reg_done, bIsSessionAvailable;
 	class TJabberAuth* auth;
-	int	caps; // capabilities
+	JabberCapsBits jabberServerCaps;
+	BOOL bBookmarksLoaded;
 
 	// connection & login data
 	TCHAR username[128];
@@ -409,7 +412,6 @@ extern BOOL   jabberChangeStatusMessageOnly;
 extern BOOL   jabberSendKeepAlive;
 extern BOOL   jabberPepSupported;
 extern BOOL   jabberChatDllPresent;
-extern JabberCapsBits jabberServerCaps;
 
 extern HWND hwndJabberAgents;
 extern HWND hwndAgentReg;
@@ -525,6 +527,7 @@ BOOL JabberFtHandleIbbRequest( XmlNode *iqNode, BOOL bOpen );
 //---- jabber_groupchat.c -------------------------------------------
 
 int JabberMenuHandleGroupchat( WPARAM wParam, LPARAM lParam );
+int JabberMenuHandleJoinGroupchat( WPARAM wParam, LPARAM lParam );
 void JabberGroupchatJoinRoom( const TCHAR* server, const TCHAR* room, const TCHAR* nick, const TCHAR* password );
 void JabberGroupchatProcessPresence( XmlNode *node, void *userdata );
 void JabberGroupchatProcessMessage( XmlNode *node, void *userdata );

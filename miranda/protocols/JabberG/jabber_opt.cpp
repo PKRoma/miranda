@@ -187,12 +187,22 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			TCHAR* szResources[] = { _T("Home"), _T("Work"), _T("Office"), _T("Miranda") };
 			for ( int i = 0; i < SIZEOF(szResources); i++ )
 				SendDlgItemMessage( hwndDlg, IDC_COMBO_RESOURCE, CB_ADDSTRING, 0, (LPARAM)szResources[i] );
+			
+			// append computer name to the resource list
+			TCHAR szCompName[ MAX_COMPUTERNAME_LENGTH + 1];
+			DWORD dwCompNameLength = MAX_COMPUTERNAME_LENGTH;
+			if ( GetComputerName( szCompName, &dwCompNameLength ))
+				SendDlgItemMessage( hwndDlg, IDC_COMBO_RESOURCE, CB_ADDSTRING, 0, (LPARAM)szCompName );
 
 			if ( !DBGetContactSettingTString( NULL, jabberProtoName, "Resource", &dbv )) {
 				SetDlgItemText( hwndDlg, IDC_COMBO_RESOURCE, dbv.ptszVal );
 				JFreeVariant( &dbv );
 			}
 			else SetDlgItemTextA( hwndDlg, IDC_COMBO_RESOURCE, "Miranda" );
+
+			BOOL bHostnameAsResource = JGetByte( "HostNameAsResource", FALSE );
+			CheckDlgButton( hwndDlg, IDC_HOSTNAME_AS_RESOURCE, bHostnameAsResource );
+			EnableWindow(GetDlgItem( hwndDlg, IDC_COMBO_RESOURCE ), !bHostnameAsResource);
 
 			SendMessage( GetDlgItem( hwndDlg, IDC_PRIORITY_SPIN ), UDM_SETRANGE, 0, ( LPARAM )MAKELONG( 127, -128 ));
 
@@ -350,6 +360,19 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			if ( HIWORD( wParam ) == CBN_SELCHANGE )
 				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 			break;
+		case IDC_HOSTNAME_AS_RESOURCE:
+			{
+				BOOL bUseHostname = IsDlgButtonChecked( hwndDlg, IDC_HOSTNAME_AS_RESOURCE );
+				EnableWindow( GetDlgItem( hwndDlg, IDC_COMBO_RESOURCE ), !bUseHostname );
+				if ( bUseHostname ) {
+					TCHAR szCompName[ MAX_COMPUTERNAME_LENGTH + 1];
+					DWORD dwCompNameLength = MAX_COMPUTERNAME_LENGTH;
+					if ( GetComputerName( szCompName, &dwCompNameLength ))
+						SetDlgItemText( hwndDlg, IDC_COMBO_RESOURCE, szCompName );
+				}
+				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
+				break;
+			}
 		case IDC_USE_SSL:
 			if ( !IsDlgButtonChecked( hwndDlg, IDC_MANUAL )) {
 				if ( IsDlgButtonChecked( hwndDlg, IDC_USE_SSL )) {
@@ -402,6 +425,13 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			}
 			else reconnectRequired = TRUE;
 			JSetStringT( NULL, "Resource", textT );
+
+			BOOL bHostOld = JGetByte( "HostNameAsResource", FALSE ) ? TRUE : FALSE;
+			BOOL bHostNew = IsDlgButtonChecked( hwndDlg, IDC_HOSTNAME_AS_RESOURCE ) ? TRUE : FALSE;
+			if ( bHostNew != bHostOld )
+				reconnectRequired = TRUE;
+
+			JSetByte( "HostNameAsResource", ( BYTE )bHostNew );
 
 			GetDlgItemTextA( hwndDlg, IDC_PRIORITY, text, sizeof( text ));
 			int nPriority = atoi( text );
@@ -571,7 +601,7 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
 			JGetByte("EnableRemoteControl", FALSE)?1:0, "EnableRemoteControl");
 		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
-			JGetByte("AutoJoinBookmarks", FALSE)?1:0,	"AutoJoinBookmarks");
+			JGetByte("AutoJoinBookmarks", TRUE)?1:0,	"AutoJoinBookmarks");
 		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
 			JGetByte("EnableZlib", FALSE)?1:0,			"EnableZlib");
 		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 

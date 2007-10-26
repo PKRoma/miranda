@@ -336,7 +336,7 @@ int JabberGcMenuHook( WPARAM wParam, LPARAM lParam )
 				sttLogListItems[9].bDisabled = sttLogListItems[14].bDisabled =
 				sttLogListItems[16].bDisabled = FALSE;
 		}
-		if ( jabberThreadInfo->caps & CAPS_BOOKMARK ) sttLogListItems[1].bDisabled = FALSE;
+		if ( jabberThreadInfo->jabberServerCaps & JABBER_CAPS_PRIVATE_STORAGE ) sttLogListItems[1].bDisabled = FALSE;
 	}
 	else if ( gcmi->Type == MENU_ON_NICKLIST ) {
 		static struct gc_item sttListItems[] = {

@@ -64,16 +64,17 @@ void JabberIqResultServerDiscoInfo( XmlNode* iqNode, void* userdata )
 				break;
 			}
 		}
-		jabberServerCaps = JABBER_RESOURCE_CAPS_NONE;
-		XmlNode *feature;
-		for ( i = 1; ( feature = JabberXmlGetNthChild( query, "feature", i )) != NULL; i++ ) {
-			TCHAR *featureName = JabberXmlGetAttrValue( feature, "var" );
-			if ( featureName ) {
-				for ( int i = 0; g_JabberFeatCapPairs[i].szFeature; i++ ) {
-					if ( !_tcscmp( g_JabberFeatCapPairs[i].szFeature, featureName )) {
-						jabberServerCaps |= g_JabberFeatCapPairs[i].jcbCap;
-						break;
-}	}	}	}	}	}
+		if ( jabberThreadInfo ) {
+			jabberThreadInfo->jabberServerCaps = JABBER_RESOURCE_CAPS_NONE;
+			XmlNode *feature;
+			for ( i = 1; ( feature = JabberXmlGetNthChild( query, "feature", i )) != NULL; i++ ) {
+				TCHAR *featureName = JabberXmlGetAttrValue( feature, "var" );
+				if ( featureName ) {
+					for ( int i = 0; g_JabberFeatCapPairs[i].szFeature; i++ ) {
+						if ( !_tcscmp( g_JabberFeatCapPairs[i].szFeature, featureName )) {
+							jabberThreadInfo->jabberServerCaps |= g_JabberFeatCapPairs[i].jcbCap;
+							break;
+}	}	}	}	}	}	}
 
 static void JabberOnLoggedIn( ThreadData* info )
 {
@@ -90,13 +91,13 @@ static void JabberOnLoggedIn( ThreadData* info )
 	iqId = JabberSerialNext();
 	JabberIqAdd( iqId, IQ_PROC_DISCOBOOKMARKS, JabberIqResultDiscoBookmarks);
 	XmlNodeIq biq( "get", iqId);
-	XmlNode* bquery = biq.addQuery( "jabber:iq:private" );
-	XmlNode* storage = bquery->addChild("storage");
-	storage->addAttr("xmlns","storage:bookmarks");
+	XmlNode* bquery = biq.addQuery( JABBER_FEAT_PRIVATE_STORAGE );
+	XmlNode* storage = bquery->addChild( "storage" );
+	storage->addAttr( "xmlns", "storage:bookmarks" );
 	info->send( biq );
 
 	jabberPepSupported = FALSE;
-	jabberServerCaps = JABBER_RESOURCE_CAPS_NONE;
+	info->jabberServerCaps = JABBER_RESOURCE_CAPS_NONE;
 	iqId = JabberSerialNext();
 	JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultServerDiscoInfo );
 	XmlNodeIq diq( "get", iqId, jabberThreadInfo->server );
@@ -528,17 +529,17 @@ void JabberIqResultGetAgents( XmlNode *iqNode, void *userdata )
 				if ( !lstrcmpA( agentNode->name, "agent" )) {
 					if (( jid=JabberXmlGetAttrValue( agentNode, "jid" )) != NULL ) {
 						item = JabberListAdd( LIST_AGENT, jid );
-						if ( JabberXmlGetChild( agentNode, "register" ) != NULL )
-							item->cap |= AGENT_CAP_REGISTER;
-						if ( JabberXmlGetChild( agentNode, "search" ) != NULL )
-							item->cap |= AGENT_CAP_SEARCH;
-						if ( JabberXmlGetChild( agentNode, "groupchat" ) != NULL )
-							item->cap |= AGENT_CAP_GROUPCHAT;
+//						if ( JabberXmlGetChild( agentNode, "register" ) != NULL )
+//							item->cap |= AGENT_CAP_REGISTER;
+//						if ( JabberXmlGetChild( agentNode, "search" ) != NULL )
+//							item->cap |= AGENT_CAP_SEARCH;
+//						if ( JabberXmlGetChild( agentNode, "groupchat" ) != NULL )
+//							item->cap |= AGENT_CAP_GROUPCHAT;
 						// set service also???
 						// most chatroom servers don't announce <grouchat/> so we will
 						// also treat <service>public</service> as groupchat services
-						if (( n=JabberXmlGetChild( agentNode, "service" ))!=NULL && n->text!=NULL && !_tcscmp( n->text, _T("public")))
-							item->cap |= AGENT_CAP_GROUPCHAT;
+//						if (( n=JabberXmlGetChild( agentNode, "service" ))!=NULL && n->text!=NULL && !_tcscmp( n->text, _T("public")))
+//							item->cap |= AGENT_CAP_GROUPCHAT;
 						if (( n=JabberXmlGetChild( agentNode, "name" ))!=NULL && n->text!=NULL )
 							item->name = mir_tstrdup( n->text );
 		}	}	}	}
@@ -1358,7 +1359,7 @@ void JabberIqResultDiscoAgentItems( XmlNode *iqNode, void *userdata )
 						if (( jid=JabberXmlGetAttrValue( itemNode, "jid" )) != NULL ) {
 							JABBER_LIST_ITEM* item = JabberListAdd( LIST_AGENT, jid );
 							replaceStr( item->name, JabberXmlGetAttrValue( itemNode, "name" ));
-							item->cap = AGENT_CAP_REGISTER | AGENT_CAP_GROUPCHAT;	// default to all cap until specific info is later received
+//							item->cap = AGENT_CAP_REGISTER | AGENT_CAP_GROUPCHAT;	// default to all cap until specific info is later received
 							int iqId = JabberSerialNext();
 							JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultDiscoAgentInfo );
 
@@ -1391,7 +1392,7 @@ void JabberIqResultDiscoAgentInfo( XmlNode *iqNode, void *userdata )
 	TCHAR* type, *from, *var;
 	JABBER_LIST_ITEM *item;
 	JABBER_LIST_ITEM *rosterItem=NULL;
-	WORD cap=0;
+//	WORD cap=0;
 	// RECVED: info for a specific agent
 	// ACTION: refresh agent list dialog
 	JabberLog( "<iq/> iqIdDiscoAgentInfo" );
@@ -1412,23 +1413,23 @@ void JabberIqResultDiscoAgentInfo( XmlNode *iqNode, void *userdata )
 						if (rosterItem) replaceStr( rosterItem->name, str );
 					}
 				}
-				cap = 0;
+//				cap = 0;
 				for ( int i=0; i<queryNode->numChild; i++ ) {
 						if (( itemNode=queryNode->child[i] )!=NULL && itemNode->name!=NULL ) {
 							if ( !strcmp( itemNode->name, "feature" )) {
 								if (( var=JabberXmlGetAttrValue( itemNode, "var" )) != NULL ) {
-									if ( !lstrcmp( var, _T(JABBER_FEAT_REGISTER)))
-										cap |= AGENT_CAP_REGISTER;
-									else if ( !lstrcmp( var, _T(JABBER_FEAT_MUC)))
-										cap |= AGENT_CAP_GROUPCHAT;
-									else if ( !lstrcmp( var, _T(JABBER_FEAT_COMMANDS)))
-										cap |= AGENT_CAP_ADHOC;
+//									if ( !lstrcmp( var, _T(JABBER_FEAT_REGISTER)))
+//										cap |= AGENT_CAP_REGISTER;
+//									else if ( !lstrcmp( var, _T(JABBER_FEAT_MUC)))
+//										cap |= AGENT_CAP_GROUPCHAT;
+//									else if ( !lstrcmp( var, _T(JABBER_FEAT_COMMANDS)))
+//										cap |= AGENT_CAP_ADHOC;
 								}
 							}
 						}
 					}
-				if (item) item->cap=cap;
-				if (rosterItem) rosterItem->cap|=cap;
+//				if (item) item->cap=cap;
+//				if (rosterItem) rosterItem->cap|=cap;
 		}	}
 
 		if ( hwndJabberAgents != NULL )
@@ -1598,6 +1599,11 @@ void JabberIqResultDiscoBookmarks( XmlNode *iqNode, void *userdata )
 	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
 
 	if ( !lstrcmp( type, _T("result"))) {
+		if ( jabberThreadInfo && !( jabberThreadInfo->jabberServerCaps & JABBER_CAPS_PRIVATE_STORAGE )) {
+			jabberThreadInfo->jabberServerCaps |= JABBER_CAPS_PRIVATE_STORAGE;
+			JabberEnableMenuItems( TRUE );
+		}
+
 		if (( queryNode = JabberXmlGetChild( iqNode, "query" )) != NULL ) {
 			if ((storageNode = JabberXmlGetChild( queryNode, "storage" )) != NULL) {
 				JabberListRemoveList( LIST_BOOKMARK );
@@ -1627,7 +1633,7 @@ void JabberIqResultDiscoBookmarks( XmlNode *iqNode, void *userdata )
 								item->type = mir_tstrdup( _T("url") );
 			}	}	}	}	}
 
-			if ( JGetByte( "AutoJoinBookmarks", FALSE ) == TRUE && !( info->caps & CAPS_BOOKMARKS_LOADED )) {
+			if ( JGetByte( "AutoJoinBookmarks", TRUE ) == TRUE && !( info->bBookmarksLoaded )) {
 				JABBER_LIST_ITEM* item;
 				for ( int i=0; ( i = JabberListFindNext( LIST_BOOKMARK, i )) >= 0; i++ ) {
 					if ((( item = JabberListGetItemPtrFromIndex( i )) != NULL ) && !lstrcmp( item->type, _T("conference") )) {
@@ -1649,12 +1655,12 @@ void JabberIqResultDiscoBookmarks( XmlNode *iqNode, void *userdata )
 
 			if ( hwndJabberBookmarks != NULL )
 				SendMessage( hwndJabberBookmarks, WM_JABBER_REFRESH, 0, 0);
-			info->caps |= CAPS_BOOKMARKS_LOADED;
+			info->bBookmarksLoaded = TRUE;
 		}
 	}
 	else if ( !lstrcmp( type, _T("error"))) {
-		if ( info->caps & CAPS_BOOKMARK ) {
-			info->caps &= ~CAPS_BOOKMARK;
+		if ( info->jabberServerCaps & JABBER_CAPS_PRIVATE_STORAGE ) {
+			info->jabberServerCaps &= ~JABBER_CAPS_PRIVATE_STORAGE;
 			JabberEnableMenuItems( TRUE );
 			return;
 		}
@@ -1668,7 +1674,7 @@ void JabberIqResultDiscoBookmarks( XmlNode *iqNode, void *userdata )
 
 void JabberSetBookmarkRequest (XmlNodeIq& iq)
 {
-	XmlNode* query = iq.addQuery( "jabber:iq:private" );
+	XmlNode* query = iq.addQuery( JABBER_FEAT_PRIVATE_STORAGE );
 	XmlNode* storage = query->addChild( "storage" );
 	storage->addAttr( "xmlns", "storage:bookmarks" );
 

@@ -106,6 +106,8 @@ typedef unsigned __int64 JabberCapsBits;
 #define JABBER_CAPS_USER_TUNE                   ((JabberCapsBits)1<<31)
 #define JABBER_FEAT_USER_TUNE_NOTIFY            "http://jabber.org/protocol/tune+notify"
 #define JABBER_CAPS_USER_TUNE_NOTIFY            ((JabberCapsBits)1<<32)
+#define JABBER_FEAT_PRIVATE_STORAGE             "jabber:iq:private"
+#define JABBER_CAPS_PRIVATE_STORAGE             ((JabberCapsBits)1<<33)
 
 #define JABBER_FEAT_PUBSUB_EVENT                "http://jabber.org/protocol/pubsub#event"
 #define JABBER_FEAT_PUBSUB_NODE_CONFIG          "http://jabber.org/protocol/pubsub#node_config"
@@ -239,5 +241,6 @@ extern JabberFeatCapPair g_JabberFeatCapPairsExt[];
 extern CJabberClientCapsManager g_JabberClientCapsManager;
 
 JabberCapsBits JabberGetResourceCapabilites( TCHAR *jid, BOOL appendBestResource = TRUE );
+JabberCapsBits JabberGetTotalJidCapabilites( TCHAR *jid );
 
 #endif

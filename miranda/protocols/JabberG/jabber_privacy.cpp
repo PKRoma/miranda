@@ -256,7 +256,8 @@ void JabberIqResultPrivacyLists( XmlNode* iqNode, void* userdata, CJabberIqInfo*
 	if ( !query )
 		return;
 
-	jabberServerCaps |= JABBER_CAPS_PRIVACY_LISTS;
+	if ( jabberThreadInfo )
+		jabberThreadInfo->jabberServerCaps |= JABBER_CAPS_PRIVACY_LISTS;
 
 	if ( !hwndPrivacyLists )
 		return;

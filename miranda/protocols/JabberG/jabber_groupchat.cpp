@@ -35,6 +35,7 @@ Last change by : $Author$
 
 static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
 static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
+void JabberGroupchatJoinRoomByJid( HWND hwndParent, TCHAR *jid );
 
 int JabberMenuHandleGroupchat( WPARAM wParam, LPARAM lParam )
 {
@@ -56,6 +57,13 @@ int JabberMenuHandleGroupchat( WPARAM wParam, LPARAM lParam )
 	}
 	else hwndJabberGroupchat = CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_GROUPCHAT ), NULL, JabberGroupchatDlgProc, lParam );
 
+	return 0;
+}
+
+
+int JabberMenuHandleJoinGroupchat( WPARAM wParam, LPARAM lParam )
+{
+	JabberGroupchatJoinRoomByJid( NULL, NULL );
 	return 0;
 }
 
@@ -352,7 +360,7 @@ static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			HMENU hMenu = CreatePopupMenu();
 			AppendMenu( hMenu, MF_STRING, WM_JABBER_JOIN, TranslateT( "Join" ));
 			AppendMenu( hMenu, MF_STRING, WM_JABBER_ADD_TO_ROSTER, TranslateT( "Add to roster" ));
-			if ( jabberThreadInfo->caps & CAPS_BOOKMARK ) AppendMenu( hMenu, MF_STRING, WM_JABBER_ADD_TO_BOOKMARKS, TranslateT( "Add to Bookmarks" ));
+			if ( jabberThreadInfo->jabberServerCaps & JABBER_CAPS_PRIVATE_STORAGE ) AppendMenu( hMenu, MF_STRING, WM_JABBER_ADD_TO_BOOKMARKS, TranslateT( "Add to Bookmarks" ));
 			TrackPopupMenu( hMenu, TPM_LEFTALIGN | TPM_NONOTIFY, LOWORD(lParam), HIWORD(lParam), 0, hwndDlg, 0 );
 			::DestroyMenu( hMenu );
 			return TRUE;
@@ -385,11 +393,10 @@ void JabberGroupchatJoinRoom( const TCHAR* server, const TCHAR* room, const TCHA
 	JabberSendPresenceTo( status, text, x );
 }
 
-void JabberGroupchatJoinRoomByJid(HWND hwndParent, TCHAR *jid)
+void JabberGroupchatJoinRoomByJid( HWND hwndParent, TCHAR *jid )
 {
 	DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_GROUPCHAT_JOIN ), hwndParent, JabberGroupchatJoinDlgProc, ( LPARAM )jid );
 }
-
 
 static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
@@ -402,7 +409,7 @@ static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 			// lParam is the room JID ( room@server ) in UTF-8
 			hwndJabberJoinGroupchat = hwndDlg;
 			TranslateDialogDefault( hwndDlg );
-			if ( lParam ){
+			if ( lParam ) {
 				_tcsncpy( text, ( TCHAR* )lParam, SIZEOF( text ));
 				if (( p = _tcschr( text, '@' )) != NULL ) {
 					*p = '\0';

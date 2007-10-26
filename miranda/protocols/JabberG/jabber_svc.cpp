@@ -1212,16 +1212,21 @@ int JabberSendMessage( WPARAM wParam, LPARAM lParam )
 		if ( jcb & JABBER_CAPS_CHATSTATES )
 			m.addChild( "active" )->addAttr( "xmlns", _T(JABBER_FEAT_CHATSTATES));
 
-		if ( ( jcb & JABBER_CAPS_MESSAGE_EVENTS_NO_DELIVERY ) || !( jcb & JABBER_CAPS_MESSAGE_EVENTS ) || !strcmp( msgType, "groupchat" ) || !JGetByte( "MsgAck", FALSE ) || !JGetByte( ccs->hContact, "MsgAck", TRUE )) {
+		if (
+			// if message delivery check disabled by entity caps manager
+			( jcb & JABBER_CAPS_MESSAGE_EVENTS_NO_DELIVERY ) ||
+			// if client knows nothing about delivery
+			!( jcb & ( JABBER_CAPS_MESSAGE_EVENTS | JABBER_CAPS_MESSAGE_RECEIPTS )) ||
+			// if message sent to groupchat
+			!strcmp( msgType, "groupchat" ) ||
+			// if message delivery check disabled in settings
+			!JGetByte( "MsgAck", FALSE ) || !JGetByte( ccs->hContact, "MsgAck", TRUE )) {
 			if ( !strcmp( msgType, "groupchat" ))
 				m.addAttr( "to", dbv.ptszVal );
 			else {
 				id = JabberSerialNext();
-
 				m.addAttr( "to", szClientJid ); m.addAttrID( id );
-				if ( jcb & JABBER_CAPS_MESSAGE_EVENTS ) {
-					XmlNode* x = m.addChild( "x" ); x->addAttr( "xmlns", JABBER_FEAT_MESSAGE_EVENTS ); x->addChild( "composing" );
-			}	}
+			}
 
 			jabberThreadInfo->send( m );
 			mir_forkthread( JabberSendMessageAckThread, ccs->hContact );
@@ -1231,8 +1236,19 @@ int JabberSendMessage( WPARAM wParam, LPARAM lParam )
 			id = JabberSerialNext();
 			m.addAttr( "to", szClientJid ); m.addAttrID( id );
 
-			XmlNode* x = m.addChild( "x" ); x->addAttr( "xmlns", JABBER_FEAT_MESSAGE_EVENTS );
-			x->addChild( "composing" ); x->addChild( "delivered" ); x->addChild( "offline" );
+			// message receipts XEP priority
+			if ( jcb & JABBER_CAPS_MESSAGE_RECEIPTS ) {
+				XmlNode* receiptRequest = m.addChild( "request" );
+				receiptRequest->addAttr( "xmlns", JABBER_FEAT_MESSAGE_RECEIPTS );
+			}
+			else if ( jcb & JABBER_CAPS_MESSAGE_EVENTS ) {
+				XmlNode* x = m.addChild( "x" ); x->addAttr( "xmlns", JABBER_FEAT_MESSAGE_EVENTS );
+				x->addChild( "delivered" );
+				x->addChild( "offline" );
+			}
+			else
+				id = 1;
+
 			jabberThreadInfo->send( m );
 			nSentMsgId = id;
 	}	}

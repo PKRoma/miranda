@@ -93,7 +93,6 @@ char* jabberVcardPhotoFileName = NULL;
 BOOL  jabberSendKeepAlive;
 
 BOOL jabberPepSupported = FALSE;
-JabberCapsBits jabberServerCaps = JABBER_RESOURCE_CAPS_NONE;
 
 // SSL-related global variable
 HMODULE hLibSSL = NULL;

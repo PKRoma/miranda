@@ -118,6 +118,33 @@ static void JabberIqResultCapsDiscoInfo( XmlNode* iqNode, void* userdata, CJabbe
 	}
 }
 
+JabberCapsBits JabberGetTotalJidCapabilites( TCHAR *jid )
+{
+	if ( !jid )
+		return JABBER_RESOURCE_CAPS_NONE;
+
+	TCHAR szBareJid[ JABBER_MAX_JID_LEN ];
+	JabberStripJid( jid, szBareJid, SIZEOF( szBareJid ));
+
+	JabberCapsBits jcbToReturn = JabberGetResourceCapabilites( szBareJid, FALSE );
+	if ( jcbToReturn & JABBER_RESOURCE_CAPS_ERROR)
+		jcbToReturn = JABBER_RESOURCE_CAPS_NONE;
+	
+	JABBER_LIST_ITEM *item = JabberListGetItemPtr( LIST_ROSTER, szBareJid );
+	if ( !item )
+		item = JabberListGetItemPtr( LIST_VCARD_TEMP, szBareJid );
+	if ( item ) {
+		for ( int i = 0; i < item->resourceCount; i++ ) {
+			TCHAR szFullJid[ JABBER_MAX_JID_LEN ];
+			mir_sntprintf( szFullJid, JABBER_MAX_JID_LEN, _T("%s/%s"), szBareJid, item->resource[i].resourceName );
+			JabberCapsBits jcb = JabberGetResourceCapabilites( szFullJid, FALSE );
+			if ( !( jcb & JABBER_RESOURCE_CAPS_ERROR ))
+				jcbToReturn |= jcb;
+		}
+	}
+	return jcbToReturn;
+}
+
 JabberCapsBits JabberGetResourceCapabilites( TCHAR *jid, BOOL appendBestResource /*= TRUE*/ )
 {
 	TCHAR fullJid[ 512 ];

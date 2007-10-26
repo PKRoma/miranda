@@ -127,7 +127,7 @@ int JabberMenuPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
 				sttEnableMenuItem( hMenuRosterAdd, TRUE );
 
 			if ( JabberListGetItemPtr( LIST_BOOKMARK, dbv.ptszVal ) == NULL )
-				if ( jabberThreadInfo && jabberThreadInfo->caps & CAPS_BOOKMARK )
+				if ( jabberThreadInfo && jabberThreadInfo->jabberServerCaps & JABBER_CAPS_PRIVATE_STORAGE )
 					sttEnableMenuItem( hMenuAddBookmark, TRUE );
 
 			JFreeVariant( &dbv );
@@ -149,18 +149,7 @@ int JabberMenuPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
 
 	DBVARIANT dbv;
 	if ( !JGetStringT( hContact, "jid", &dbv )) {
-		JABBER_LIST_ITEM * item;
-		item=JabberListGetItemPtr( LIST_ROSTER, dbv.ptszVal );
-		if ( !bIsTransport ||
-			 (( item != NULL ) && (item->cap & AGENT_CAP_ADHOC) ) ) {
-				sttEnableMenuItem( hMenuCommands, TRUE );				
-		}
-		else 
-			sttEnableMenuItem( hMenuCommands, FALSE );
-		JFreeVariant( &dbv );
-	}
-
-	if ( !JGetStringT( hContact, "jid", &dbv )) {
+		JabberCapsBits jcb = JabberGetTotalJidCapabilites(dbv.ptszVal );
 		JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, dbv.ptszVal );
 		JFreeVariant( &dbv );
 		if ( item != NULL ) {
@@ -168,7 +157,7 @@ int JabberMenuPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
 			sttEnableMenuItem( hMenuRequestAuth, item->subscription == SUB_FROM || item->subscription == SUB_NONE || bCtrlPressed );
 			sttEnableMenuItem( hMenuGrantAuth, item->subscription == SUB_TO || item->subscription == SUB_NONE || bCtrlPressed );
 			sttEnableMenuItem( hMenuRevokeAuth, item->subscription == SUB_FROM || item->subscription == SUB_BOTH || bCtrlPressed );
-			sttEnableMenuItem( hMenuCommands, (!bIsChatRoom && (!bIsTransport || (item->cap & AGENT_CAP_ADHOC))) );
+			sttEnableMenuItem( hMenuCommands, ( jcb & JABBER_CAPS_COMMANDS ) != 0 );
 			return 0;
 	}	}
 
@@ -500,13 +489,13 @@ void JabberMenuInit()
 	mi.pszService = text;
 	
 	// "Agents..."
-	strcpy( tDest, "/Agents" );
-	arServices.insert( CreateServiceFunction( text, JabberMenuHandleAgents ));
-	mi.pszName = LPGEN("Agents...");
-	mi.position = 2000050005;
-	mi.icolibItem = GetIconHandle( IDI_JABBER );
-	hMenuAgent = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
-	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuAgent, ( LPARAM )&clmi );
+//	strcpy( tDest, "/Agents" );
+//	arServices.insert( CreateServiceFunction( text, JabberMenuHandleAgents ));
+//	mi.pszName = LPGEN("Agents...");
+//	mi.position = 2000050005;
+//	mi.icolibItem = GetIconHandle( IDI_JABBER );
+//	hMenuAgent = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+//	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuAgent, ( LPARAM )&clmi );
 
 	// "Service Discovery..."
 	strcpy( tDest, "/ServiceDiscovery" );
@@ -551,9 +540,17 @@ void JabberMenuInit()
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuSDConferences, ( LPARAM )&clmi );
 
 	// "Multi-User Conference..."
+//	strcpy( tDest, "/Groupchat" );
+//	arServices.insert( CreateServiceFunction( text, JabberMenuHandleGroupchat ));
+//	mi.pszName = LPGEN("Multi-User Conference...");
+//	mi.position = 2000050006;
+//	mi.icolibItem = GetIconHandle( IDI_GROUP );
+//	hMenuGroupchat = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+//	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuGroupchat, ( LPARAM )&clmi );
+
 	strcpy( tDest, "/Groupchat" );
-	arServices.insert( CreateServiceFunction( text, JabberMenuHandleGroupchat ));
-	mi.pszName = LPGEN("Multi-User Conference...");
+	arServices.insert( CreateServiceFunction( text, JabberMenuHandleJoinGroupchat ));
+	mi.pszName = LPGEN("Create/Join groupchat...");
 	mi.position = 2000050006;
 	mi.icolibItem = GetIconHandle( IDI_GROUP );
 	hMenuGroupchat = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
@@ -612,7 +609,7 @@ void JabberEnableMenuItems( BOOL bEnable )
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuSDTransports, ( LPARAM )&clmi );
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuSDConferences, ( LPARAM )&clmi );
 
-	if ( jabberThreadInfo && !( jabberThreadInfo->caps & CAPS_BOOKMARK ))
+	if ( jabberThreadInfo && !( jabberThreadInfo->jabberServerCaps & JABBER_CAPS_PRIVATE_STORAGE))
 		clmi.flags |= CMIF_GRAYED;
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuBookmarks, ( LPARAM )&clmi );
 

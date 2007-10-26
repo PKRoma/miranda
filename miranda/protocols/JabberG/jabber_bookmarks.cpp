@@ -264,14 +264,14 @@ static BOOL CALLBACK JabberBookmarksDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 		lvCol.iSubItem = 2;
 		ListView_InsertColumn( lv, 2, &lvCol );
 		if ( jabberOnline ) {
-			if ( !( jabberThreadInfo->caps & CAPS_BOOKMARKS_LOADED )) {
+			if ( !( jabberThreadInfo->bBookmarksLoaded )) {
 				int iqId = JabberSerialNext();
 				JabberIqAdd( iqId, IQ_PROC_DISCOBOOKMARKS, JabberIqResultDiscoBookmarks);
 
 				XmlNodeIq iq( "get", iqId);
-				XmlNode* query = iq.addQuery( "jabber:iq:private" );
-				XmlNode* storage = query->addChild("storage");
-				storage->addAttr("xmlns","storage:bookmarks");
+				XmlNode* query = iq.addQuery( JABBER_FEAT_PRIVATE_STORAGE );
+				XmlNode* storage = query->addChild( "storage" );
+				storage->addAttr( "xmlns", "storage:bookmarks" );
 
 				jabberThreadInfo->send( iq );
 			}
@@ -461,7 +461,7 @@ static BOOL CALLBACK JabberBookmarksDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 
 				XmlNodeIq iq( "get", iqId);
 
-				XmlNode* query = iq.addQuery( "jabber:iq:private" );
+				XmlNode* query = iq.addQuery( JABBER_FEAT_PRIVATE_STORAGE );
 				XmlNode* storage = query->addChild("storage");
 				storage->addAttr("xmlns","storage:bookmarks");
 
@@ -564,7 +564,7 @@ int JabberMenuHandleBookmarks( WPARAM wParam, LPARAM lParam )
 
 		XmlNodeIq iq( "get", iqId);
 
-		XmlNode* query = iq.addQuery( "jabber:iq:private" );
+		XmlNode* query = iq.addQuery( JABBER_FEAT_PRIVATE_STORAGE );
 		XmlNode* storage = query->addChild("storage");
 		storage->addAttr("xmlns","storage:bookmarks");
 
