@@ -1121,18 +1121,34 @@ static LRESULT CALLBACK _AniAva_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 		dat->bOrderTop=((HWND)wParam!=GetDesktopWindow());
 		SetParent(hwnd,(HWND)wParam);
 		if (dat->bOrderTop)
-			SetWindowPos(hwnd,HWND_TOP/*pcli->hwndContactList*/,0,0,0,0,SWP_NOSIZE|SWP_NOMOVE|SWP_NOACTIVATE|SWP_ASYNCWINDOWPOS);
+		{
+			SetWindowPos(hwnd,HWND_TOP,0,0,0,0,SWP_NOSIZE|SWP_NOMOVE|SWP_NOACTIVATE|SWP_ASYNCWINDOWPOS);
+		}
 		else
-			SetWindowPos(pcli->hwndContactList,hwnd,0,0,0,0,SWP_NOSIZE|SWP_NOMOVE|SWP_NOACTIVATE|SWP_ASYNCWINDOWPOS);
+		{
+			LONG exStyle;
+			exStyle=GetWindowLong(pcli->hwndContactList,GWL_EXSTYLE);
+			SetWindowPos(pcli->hwndContactList,hwnd,0,0,0,0,SWP_NOSIZE|SWP_NOMOVE|SWP_NOACTIVATE/*|SWP_ASYNCWINDOWPOS*/);			
+			if (!(exStyle&WS_EX_TOPMOST))
+				SetWindowPos(pcli->hwndContactList,HWND_NOTOPMOST,0,0,0,0,SWP_NOSIZE|SWP_NOMOVE|SWP_NOACTIVATE/*|SWP_ASYNCWINDOWPOS*/);
+		}
 
 		return 0;
 	case AAM_REDRAW:
 		if (wParam)
 		{
 			if (dat->bOrderTop)
-				SetWindowPos(hwnd,HWND_TOP/*pcli->hwndContactList*/,0,0,0,0,SWP_NOSIZE|SWP_NOMOVE|SWP_NOACTIVATE|SWP_ASYNCWINDOWPOS);
+			{
+				SetWindowPos(hwnd,HWND_TOP,0,0,0,0,SWP_NOSIZE|SWP_NOMOVE|SWP_NOACTIVATE|SWP_ASYNCWINDOWPOS);
+			}
 			else
-				SetWindowPos(pcli->hwndContactList,hwnd,0,0,0,0,SWP_NOSIZE|SWP_NOMOVE|SWP_NOACTIVATE|SWP_ASYNCWINDOWPOS);
+			{
+				LONG exStyle;
+				exStyle=GetWindowLong(pcli->hwndContactList,GWL_EXSTYLE);
+				SetWindowPos(pcli->hwndContactList,hwnd,0,0,0,0,SWP_NOSIZE|SWP_NOMOVE|SWP_NOACTIVATE/*|SWP_ASYNCWINDOWPOS*/);
+				if (!(exStyle&WS_EX_TOPMOST))
+					SetWindowPos(pcli->hwndContactList,HWND_NOTOPMOST,0,0,0,0,SWP_NOSIZE|SWP_NOMOVE|SWP_NOACTIVATE/*|SWP_ASYNCWINDOWPOS*/);
+			}
 		}
 		_AniAva_RenderAvatar(dat);
 		return 0;
