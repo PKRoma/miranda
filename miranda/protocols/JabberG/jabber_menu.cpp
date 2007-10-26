@@ -664,6 +664,9 @@ int JabberMenuProcessSrmmEvent( WPARAM wParam, LPARAM lParam )
 		if ( !DBGetContactSetting( event->hContact, "SRMsg", "SupportTyping", &dbv )) {
 			bSupportTyping = dbv.bVal == 1;
 			JFreeVariant( &dbv );
+		} else if ( !DBGetContactSetting( NULL, "SRMsg", "DefaultTyping", &dbv )) {
+			bSupportTyping = dbv.bVal == 1;
+			JFreeVariant( &dbv );
 		}
 		if ( bSupportTyping && !JGetStringT( event->hContact, "jid", &dbv )) {
 			TCHAR jid[ 256 ];
