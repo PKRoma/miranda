@@ -34,8 +34,6 @@ Last change by : $Author: ghazan $
 
 CJabberSDManager g_SDManager;
 
-#define SD_RECENT_COUNT		10
-
 #define SD_FAKEJID_CONFERENCES	"@@conferences"
 #define SD_FAKEJID_MYAGENTS		"@@my-transports"
 #define SD_FAKEJID_AGENTS		"@@transports"
@@ -175,7 +173,6 @@ static struct
 
 static void sttApplyNodeIcon(HTREELISTITEM hItem, CJabberSDNode *pNode);
 void JabberServiceDiscoveryShowMenu(CJabberSDNode *node, HTREELISTITEM hItem, POINT pt);
-static void sttAddRecentString(HWND hwndDlg, UINT idcCombo, char *param, TCHAR *string);
 
 BOOL SendInfoRequest(CJabberSDNode* pNode, XmlNode* parent);
 BOOL SendBothRequests(CJabberSDNode* pNode, XmlNode* parent);
@@ -415,8 +412,8 @@ static void sttPerformBrowse(HWND hwndDlg)
 	if ( !GetDlgItemText( hwndDlg, IDC_COMBO_NODE, szNode, SIZEOF( szNode )))
 		szNode[ 0 ] = _T('\0');
 	
-	sttAddRecentString(hwndDlg, IDC_COMBO_JID, "doscoWnd_rcJid", szJid);
-	sttAddRecentString(hwndDlg, IDC_COMBO_NODE, "doscoWnd_rcNode", szNode);
+	JabberComboAddRecentString(hwndDlg, IDC_COMBO_JID, "discoWnd_rcJid", szJid);
+	JabberComboAddRecentString(hwndDlg, IDC_COMBO_NODE, "discoWnd_rcNode", szNode);
 
 	if ( _tcslen( szJid )) {
 		HWND hwndList = GetDlgItem(hwndDlg, IDC_TREE_DISCO);
@@ -641,39 +638,6 @@ int JabberServiceDiscoveryDlgResizer(HWND hwndDlg, LPARAM lParam, UTILRESIZECONT
 	return RD_ANCHORX_LEFT|RD_ANCHORY_TOP;
 }
 
-static void sttLoadRecentStrings(HWND hwndDlg, UINT idcCombo, char *param)
-{
-	for (int i = 0; i < SD_RECENT_COUNT; ++i) {
-		DBVARIANT dbv;
-		char setting[MAXMODULELABELLENGTH];
-		mir_snprintf(setting, sizeof(setting), "%s%d", param, i);
-		if (!JGetStringT(NULL, setting, &dbv)) {
-			SendDlgItemMessage(hwndDlg, idcCombo, CB_ADDSTRING, 0, (LPARAM)dbv.ptszVal);
-			JFreeVariant(&dbv);
-	}	}
-	if (!SendDlgItemMessage(hwndDlg, idcCombo, CB_GETCOUNT, 0, 0))
-		SendDlgItemMessage(hwndDlg, idcCombo, CB_ADDSTRING, 0, (LPARAM)_T(""));
-}
-
-static void sttAddRecentString(HWND hwndDlg, UINT idcCombo, char *param, TCHAR *string)
-{
-	if (!string || !*string)
-		return;
-	if (SendDlgItemMessage(hwndDlg, idcCombo, CB_FINDSTRING, (WPARAM)-1, (LPARAM)string) != CB_ERR)
-		return;
-
-	int id;
-	SendDlgItemMessage(hwndDlg, idcCombo, CB_ADDSTRING, 0, (LPARAM)string);
-	if ((id = SendDlgItemMessage(hwndDlg, idcCombo, CB_FINDSTRING, (WPARAM)-1, (LPARAM)_T(""))) != CB_ERR)
-		SendDlgItemMessage(hwndDlg, idcCombo, CB_DELETESTRING, id, 0);
-
-	id = JGetByte(NULL, param, 0);
-	char setting[MAXMODULELABELLENGTH];
-	mir_snprintf(setting, sizeof(setting), "%s%d", param, id);
-	JSetStringT(NULL, setting, string);
-	JSetByte(NULL, param, (id+1)%SD_RECENT_COUNT);
-}
-
 BOOL CALLBACK JabberServiceDiscoveryDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	BOOL result;
@@ -733,8 +697,8 @@ BOOL CALLBACK JabberServiceDiscoveryDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			SendDlgItemMessage(hwndDlg, IDC_COMBO_JID, CB_ADDSTRING, 0, (LPARAM)_T(SD_FAKEJID_MYAGENTS));
 			SendDlgItemMessage(hwndDlg, IDC_COMBO_JID, CB_ADDSTRING, 0, (LPARAM)_T(SD_FAKEJID_AGENTS));
 			SendDlgItemMessage(hwndDlg, IDC_COMBO_JID, CB_ADDSTRING, 0, (LPARAM)_T(SD_FAKEJID_FAVORITES));
-			sttLoadRecentStrings(hwndDlg, IDC_COMBO_JID, "doscoWnd_rcJid");
-			sttLoadRecentStrings(hwndDlg, IDC_COMBO_NODE, "doscoWnd_rcNode");
+			JabberComboLoadRecentStrings(hwndDlg, IDC_COMBO_JID, "discoWnd_rcJid");
+			JabberComboLoadRecentStrings(hwndDlg, IDC_COMBO_NODE, "discoWnd_rcNode");
 
 			HWND hwndList = GetDlgItem(hwndDlg, IDC_TREE_DISCO);
 			LVCOLUMN lvc = {0};

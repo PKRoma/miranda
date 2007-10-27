@@ -2,6 +2,7 @@
 // Microsoft Visual C++ generated include file.
 // Used by jabber.rc
 //
+#define IDC_STATIC                      -1
 #define IDCANCEL2                       3
 #define IDD_OPT_JABBER                  101
 #define IDI_JABBER                      102
@@ -196,6 +197,7 @@
 #define IDC_PROXY_MANUAL                1124
 #define IDC_SERVER                      1125
 #define IDC_BROWSE                      1126
+#define IDC_SERVER2                     1126
 #define IDC_VSCROLL                     1128
 #define IDC_NICK                        1129
 #define IDC_EDIT                        1131
@@ -299,6 +301,8 @@
 #define IDC_CONSOLE                     1266
 #define IDC_CONSOLEIN                   1267
 #define IDC_RESET                       1268
+#define IDC_CUSTOM1                     1270
+#define IDC_BOOKMARKS                   1270
 #define IDC_EMAILS                      1306
 #define IDC_PHONES                      1308
 #define IDC_UPDATE                      1313
@@ -352,15 +356,14 @@
 #define IDM_INVITE                      10016
 #define IDM_BOOKMARKS                   10017
 #define IDM_VCARD                       10018
-#define IDC_STATIC                      -1
 
 // Next default values for new objects
-//
+// 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        208
 #define _APS_NEXT_COMMAND_VALUE         40017
-#define _APS_NEXT_CONTROL_VALUE         1270
+#define _APS_NEXT_CONTROL_VALUE         1272
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

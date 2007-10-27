@@ -153,10 +153,11 @@ struct JABBER_LIST_ITEM
 	// jid = string representation of stream id ( sid )
 	// ft = file transfer data
 
-	//LIST_BOOKMARKS
+	//LIST_BOOKMARK
 	// jid = room JID
 	// TCHAR* nick;	// my nick in this chat room
-	// TCHAR * name   // name of the bookmark
+	// TCHAR* name; // name of the bookmark
+	// TCHAR* type; // type of bookmark ("url" or "conference")
 	TCHAR* password;	// password for room
 	BOOL bAutoJoin;
 

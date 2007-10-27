@@ -1204,6 +1204,41 @@ const char* TStringPairs::operator[]( const char* key ) const
 }
 
 ////////////////////////////////////////////////////////////////////////
+// Manage combo boxes with recent item list
+void JabberComboLoadRecentStrings(HWND hwndDlg, UINT idcCombo, char *param)
+{
+	for (int i = 0; i < JABBER_COMBO_RECENT_COUNT; ++i) {
+		DBVARIANT dbv;
+		char setting[MAXMODULELABELLENGTH];
+		mir_snprintf(setting, sizeof(setting), "%s%d", param, i);
+		if (!JGetStringT(NULL, setting, &dbv)) {
+			SendDlgItemMessage(hwndDlg, idcCombo, CB_ADDSTRING, 0, (LPARAM)dbv.ptszVal);
+			JFreeVariant(&dbv);
+	}	}
+	if (!SendDlgItemMessage(hwndDlg, idcCombo, CB_GETCOUNT, 0, 0))
+		SendDlgItemMessage(hwndDlg, idcCombo, CB_ADDSTRING, 0, (LPARAM)_T(""));
+}
+
+void JabberComboAddRecentString(HWND hwndDlg, UINT idcCombo, char *param, TCHAR *string)
+{
+	if (!string || !*string)
+		return;
+	if (SendDlgItemMessage(hwndDlg, idcCombo, CB_FINDSTRING, (WPARAM)-1, (LPARAM)string) != CB_ERR)
+		return;
+
+	int id;
+	SendDlgItemMessage(hwndDlg, idcCombo, CB_ADDSTRING, 0, (LPARAM)string);
+	if ((id = SendDlgItemMessage(hwndDlg, idcCombo, CB_FINDSTRING, (WPARAM)-1, (LPARAM)_T(""))) != CB_ERR)
+		SendDlgItemMessage(hwndDlg, idcCombo, CB_DELETESTRING, id, 0);
+
+	id = JGetByte(NULL, param, 0);
+	char setting[MAXMODULELABELLENGTH];
+	mir_snprintf(setting, sizeof(setting), "%s%d", param, id);
+	JSetStringT(NULL, setting, string);
+	JSetByte(NULL, param, (id+1)%JABBER_COMBO_RECENT_COUNT);
+}
+
+////////////////////////////////////////////////////////////////////////
 // Premultiply bitmap channels for 32-bit bitmaps
 void JabberBitmapPremultiplyChannels(HBITMAP hBitmap)
 {
