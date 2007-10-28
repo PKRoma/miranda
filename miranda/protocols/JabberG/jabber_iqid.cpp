@@ -1590,7 +1590,7 @@ LBL_ErrFormat:
 void JabberIqResultDiscoBookmarks( XmlNode *iqNode, void *userdata )
 {
 	ThreadData* info = ( ThreadData* ) userdata;
-	XmlNode *queryNode, *itemNode, *storageNode, *nickNode, *passNode, *errorNode;
+	XmlNode *queryNode, *itemNode, *storageNode, *nickNode, *passNode;
 	TCHAR* type, *jid;
 
 	// RECVED: list of bookmarks
@@ -1662,14 +1662,10 @@ void JabberIqResultDiscoBookmarks( XmlNode *iqNode, void *userdata )
 		if ( info->jabberServerCaps & JABBER_CAPS_PRIVATE_STORAGE ) {
 			info->jabberServerCaps &= ~JABBER_CAPS_PRIVATE_STORAGE;
 			JabberEnableMenuItems( TRUE );
+			if ( hwndJabberBookmarks != NULL )
+				SendMessage( hwndJabberBookmarks, WM_JABBER_ACTIVATE, 0, 0);
 			return;
 		}
-		errorNode = JabberXmlGetChild( iqNode, "error" );
-		TCHAR* str = JabberErrorMsg( errorNode );
-		MessageBox( NULL, str, TranslateT( "Jabber Bookmarks Error" ), MB_OK|MB_SETFOREGROUND );
-		mir_free( str );
-		if ( hwndJabberBookmarks != NULL )
-			SendMessage( hwndJabberBookmarks, WM_JABBER_ACTIVATE, 0, 0);
 }	}
 
 void JabberSetBookmarkRequest (XmlNodeIq& iq)
@@ -1708,7 +1704,7 @@ void JabberSetBookmarkRequest (XmlNodeIq& iq)
 
 void JabberIqResultSetBookmarks( XmlNode *iqNode, void *userdata )
 {
-	// RECVED: server's responce
+	// RECVED: server's response
 	// ACTION: refresh bookmarks list dialog
 
 	JabberLog( "<iq/> iqIdSetBookmarks" );
