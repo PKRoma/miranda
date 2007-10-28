@@ -446,9 +446,9 @@ static void SetContainerWindowStyle(ParentWindowData *dat)
 	if (dat->flags2 & SMF2_TABSATBOTTOM) {
 		ws |= TCS_BOTTOM;
 	}
-	//ws |= 0x2000; //TCS_OWNERDRAWFIXED
+	ws |= 0x2000; //TCS_OWNERDRAWFIXED
 	if (dat->flags2 & SMF2_TABCLOSEBUTTON) {
-		ws |= 0x2000; //TCS_OWNERDRAWFIXED
+//		ws |= 0x2000; //TCS_OWNERDRAWFIXED
 		TabCtrl_SetPadding(dat->hwndTabs, GetSystemMetrics(SM_CXEDGE) + 12, GetSystemMetrics(SM_CYEDGE) + 1);
 	} else {
 		TabCtrl_SetPadding(dat->hwndTabs, GetSystemMetrics(SM_CXEDGE) + 4, GetSystemMetrics(SM_CYEDGE) + 1);
