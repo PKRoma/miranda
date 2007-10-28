@@ -246,7 +246,7 @@
 #define IDC_COMBO_RESOURCE              1218
 #define IDC_PL_LIST                     1219
 #define IDC_PL_RULES_LIST               1219
-#define IDC_WHITERECT                   1221
+#define IDC_WHITERECT                   1220
 #define IDC_ADD_RULE                    1221
 #define IDC_EDIT_RULE                   1222
 #define IDC_REMOVE_RULE                 1223
@@ -275,6 +275,7 @@
 #define IDC_BUTTON1                     1245
 #define IDC_BUTTON_BROWSE               1245
 #define IDC_DOWNLOAD                    1245
+#define IDC_ACTIVATE                    1245
 #define IDC_BTN_NAVHOME                 1246
 #define IDC_UPLOAD                      1246
 #define IDC_TXT_FILTERTEXT              1247
@@ -297,12 +298,16 @@
 #define IDC_OPTTREE                     1263
 #define IDC_LIST1                       1264
 #define IDC_LV_INFO                     1264
+#define IDC_LB_LISTS                    1264
 #define IDC_TITLE1                      1265
 #define IDC_CONSOLE                     1266
 #define IDC_CONSOLEIN                   1267
 #define IDC_RESET                       1268
 #define IDC_CUSTOM1                     1270
 #define IDC_BOOKMARKS                   1270
+#define IDC_SET_DEFAULT                 1272
+#define IDC_TXT_RULES                   1273
+#define IDC_TXT_LISTS                   1274
 #define IDC_EMAILS                      1306
 #define IDC_PHONES                      1308
 #define IDC_UPDATE                      1313
@@ -363,7 +368,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        208
 #define _APS_NEXT_COMMAND_VALUE         40017
-#define _APS_NEXT_CONTROL_VALUE         1272
+#define _APS_NEXT_CONTROL_VALUE         1275
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

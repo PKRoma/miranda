@@ -52,9 +52,12 @@ void JabberIqResultPrivacyListModify( XmlNode* iqNode, void* userdata, CJabberIq
 		pParam->m_bAllOk = FALSE;
 
 	if ( !g_JabberIqManager.GetGroupPendingIqCount( pInfo->m_dwGroupId )) {
-		if ( !pParam->m_bAllOk ) {
-			// FIXME: msg box with error message
-		}
+		TCHAR szText[ 512 ];
+		if ( !pParam->m_bAllOk )
+			mir_sntprintf( szText, SIZEOF( szText ), TranslateT("Error occurred while applying changes"));
+		else
+			mir_sntprintf( szText, SIZEOF( szText ), TranslateT("Privacy lists successfully saved"));
+		SetDlgItemText( hwndPrivacyLists, IDC_STATIC_LISTS_LABEL, szText );
 		// FIXME: enable apply button
 		delete pParam;
 	}
@@ -135,13 +138,13 @@ void JabberIqResultPrivacyList( XmlNode* iqNode, void* userdata )
 			SendMessage( hwndPrivacyLists, WM_JABBER_REFRESH, 0, 0);
 }	}
 
-CPrivacyList* GetSelectedList(HWND hDlg, int nControl = IDC_COMBO_CURRENT_LIST)
+CPrivacyList* GetSelectedList(HWND hDlg)
 {
-	int nCurSel = SendDlgItemMessage( hDlg, nControl, CB_GETCURSEL, 0, 0 );
+	int nCurSel = SendDlgItemMessage( hDlg, IDC_LB_LISTS, LB_GETCURSEL, 0, 0 );
 	if ( nCurSel == CB_ERR )
 		return NULL;
 
-	int nItemData = SendDlgItemMessage( hDlg, nControl, CB_GETITEMDATA, nCurSel, 0 );
+	int nItemData = SendDlgItemMessage( hDlg, IDC_LB_LISTS, LB_GETITEMDATA, nCurSel, 0 );
 	if ( nItemData == CB_ERR || nItemData == 0 )
 		return NULL;
 
@@ -166,7 +169,7 @@ void JabberIqResultPrivacyListActive( XmlNode* iqNode, void* userdata )
 	if ( !hwndPrivacyLists )
 		return;
 
-	EnableWindow( GetDlgItem( hwndPrivacyLists, IDC_COMBO_ACTIVE_LIST ), TRUE );
+	EnableWindow( GetDlgItem( hwndPrivacyLists, IDC_ACTIVATE ), TRUE );
 
 	if ( !iqNode )
 		return;
@@ -179,7 +182,7 @@ void JabberIqResultPrivacyListActive( XmlNode* iqNode, void* userdata )
 	szText[0] = _T('\0');
 	g_PrivacyListManager.Lock();
 	if ( !_tcscmp( type, _T("result"))) {
-		CPrivacyList* pList = GetSelectedList( hwndPrivacyLists, IDC_COMBO_ACTIVE_LIST );
+		CPrivacyList* pList = (CPrivacyList*)GetWindowLong(GetDlgItem(hwndPrivacyLists, IDC_ACTIVATE), GWL_USERDATA);
 		if ( pList ) {
 			g_PrivacyListManager.SetActiveListName( pList->GetListName() );
 			mir_sntprintf( szText, SIZEOF( szText ), TranslateT("Privacy list %s set as active"), pList->GetListName() );
@@ -190,18 +193,12 @@ void JabberIqResultPrivacyListActive( XmlNode* iqNode, void* userdata )
 		}
 	}
 	else {
-		TCHAR szListName[ 512 ];
-		if (GetDlgItemText( hwndPrivacyLists, IDC_COMBO_ACTIVE_LIST, szListName, 511 ))
-			mir_sntprintf( szText, SIZEOF( szText ), TranslateT("Error occurred while setting list %s as active"), szListName );
-
-		TCHAR *szActive = g_PrivacyListManager.GetActiveListName();
-		if ( szActive )
-			SendDlgItemMessage( hwndPrivacyLists, IDC_COMBO_ACTIVE_LIST, CB_SELECTSTRING, -1, (LPARAM)szActive );
-		else
-			SendDlgItemMessage( hwndPrivacyLists, IDC_COMBO_ACTIVE_LIST, CB_SETCURSEL, 0, 0 );
+		mir_sntprintf( szText, SIZEOF( szText ), TranslateT("Error occurred while setting active list") );
 	}
 	SetDlgItemText( hwndPrivacyLists, IDC_STATIC_LISTS_LABEL, szText );
 	g_PrivacyListManager.Unlock();
+
+	RedrawWindow(GetDlgItem(hwndPrivacyLists, IDC_LB_LISTS), NULL, NULL, RDW_INVALIDATE);
 }
 
 void JabberIqResultPrivacyListDefault( XmlNode* iqNode, void* userdata )
@@ -209,7 +206,7 @@ void JabberIqResultPrivacyListDefault( XmlNode* iqNode, void* userdata )
 	if ( !hwndPrivacyLists )
 		return;
 
-	EnableWindow( GetDlgItem( hwndPrivacyLists, IDC_COMBO_DEFAULT_LIST ), TRUE );
+	EnableWindow( GetDlgItem( hwndPrivacyLists, IDC_SET_DEFAULT ), TRUE );
 
 	if ( !iqNode )
 		return;
@@ -222,7 +219,7 @@ void JabberIqResultPrivacyListDefault( XmlNode* iqNode, void* userdata )
 	szText[0] = _T('\0');
 	g_PrivacyListManager.Lock();
 	if ( !_tcscmp( type, _T("result"))) {
-		CPrivacyList* pList = GetSelectedList( hwndPrivacyLists, IDC_COMBO_DEFAULT_LIST );
+		CPrivacyList* pList = (CPrivacyList*)GetWindowLong(GetDlgItem(hwndPrivacyLists, IDC_SET_DEFAULT), GWL_USERDATA);
 		if ( pList ) {
 			g_PrivacyListManager.SetDefaultListName( pList->GetListName() );
 			mir_sntprintf( szText, SIZEOF( szText ), TranslateT("Privacy list %s set as default"), pList->GetListName() );
@@ -233,18 +230,12 @@ void JabberIqResultPrivacyListDefault( XmlNode* iqNode, void* userdata )
 		}
 	}
 	else {
-		TCHAR szListName[ 512 ];
-		if (GetDlgItemText( hwndPrivacyLists, IDC_COMBO_DEFAULT_LIST, szListName, 511 )) {
-			mir_sntprintf( szText, SIZEOF( szText ), TranslateT("Error occurred while setting list %s as default"), szListName );
-		}
-		TCHAR* szDefault = g_PrivacyListManager.GetDefaultListName();
-		if ( szDefault )
-			SendDlgItemMessage( hwndPrivacyLists, IDC_COMBO_DEFAULT_LIST, CB_SELECTSTRING, -1, (LPARAM)szDefault );
-		else
-			SendDlgItemMessage( hwndPrivacyLists, IDC_COMBO_DEFAULT_LIST, CB_SETCURSEL, 0, 0 );
+		mir_sntprintf( szText, SIZEOF( szText ), TranslateT("Error occurred while setting default list") );
 	}
 	SetDlgItemText( hwndPrivacyLists, IDC_STATIC_LISTS_LABEL, szText );
 	g_PrivacyListManager.Unlock();
+
+	RedrawWindow(GetDlgItem(hwndPrivacyLists, IDC_LB_LISTS), NULL, NULL, RDW_INVALIDATE);
 }
 
 void JabberIqResultPrivacyLists( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
@@ -568,6 +559,309 @@ BOOL JabberPrivacyListDlgCanExit( HWND hDlg )
 	return FALSE;
 }
 
+static void sttDrawNextRulePart(HDC hdc, COLORREF color, TCHAR *text, RECT *rc)
+{
+	SetTextColor(hdc, color);
+	DrawText(hdc, text, lstrlen(text), rc, DT_LEFT|DT_NOPREFIX|DT_SINGLELINE|DT_VCENTER|DT_WORD_ELLIPSIS);
+
+	SIZE sz;
+	GetTextExtentPoint32(hdc, text, lstrlen(text), &sz);
+	rc->left += sz.cx;
+}
+
+static void sttDrawRuleAction(HDC hdc, COLORREF clLine1, COLORREF clLine2, CPrivacyListRule *pRule, RECT *rc)
+{
+	sttDrawNextRulePart(hdc, clLine1, pRule->GetAction() ? TranslateT("allow ") : TranslateT("deny "), rc);
+	if (!pRule->GetPackets() || (pRule->GetPackets() == JABBER_PL_RULE_TYPE_ALL))
+	{
+		sttDrawNextRulePart(hdc, clLine1, TranslateT("all."), rc);
+	} else
+	{
+		bool needComma = false;
+		int itemCount = 
+			((pRule->GetPackets() & JABBER_PL_RULE_TYPE_MESSAGE) ? 1 : 0) +
+			((pRule->GetPackets() & JABBER_PL_RULE_TYPE_PRESENCE_IN) ? 1 : 0) +
+			((pRule->GetPackets() & JABBER_PL_RULE_TYPE_PRESENCE_OUT) ? 1 : 0) +
+			((pRule->GetPackets() & JABBER_PL_RULE_TYPE_IQ) ? 1 : 0);
+
+		if (pRule->GetPackets() & JABBER_PL_RULE_TYPE_MESSAGE)
+		{
+			--itemCount;
+			needComma = true;
+			sttDrawNextRulePart(hdc, clLine1, TranslateT("messages"), rc);
+		}
+		if (pRule->GetPackets() & JABBER_PL_RULE_TYPE_PRESENCE_IN)
+		{
+			--itemCount;
+			if (needComma)
+				sttDrawNextRulePart(hdc, clLine1, itemCount ? _T(", ") : TranslateT(" and "), rc);
+			needComma = true;
+			sttDrawNextRulePart(hdc, clLine1, TranslateT("incoming presences"), rc);
+		}
+		if (pRule->GetPackets() & JABBER_PL_RULE_TYPE_PRESENCE_OUT)
+		{
+			--itemCount;
+			if (needComma)
+				sttDrawNextRulePart(hdc, clLine1, itemCount ? _T(", ") : TranslateT(" and "), rc);
+			needComma = true;
+			sttDrawNextRulePart(hdc, clLine1, TranslateT("outgoing presences"), rc);
+		}
+		if (pRule->GetPackets() & JABBER_PL_RULE_TYPE_IQ)
+		{
+			--itemCount;
+			if (needComma)
+				sttDrawNextRulePart(hdc, clLine1, itemCount ? _T(", ") : TranslateT(" and "), rc);
+			needComma = true;
+			sttDrawNextRulePart(hdc, clLine1, TranslateT("queries"), rc);
+		}
+		sttDrawNextRulePart(hdc, clLine1, _T("."), rc);
+	}
+}
+
+static void sttDrawRulesList(HWND hwndDlg, LPDRAWITEMSTRUCT lpdis)
+{
+	if (lpdis->itemID == -1)
+		return;
+
+	CPrivacyListRule *pRule = (CPrivacyListRule *)lpdis->itemData;
+
+	COLORREF clLine1, clLine2, clBack;
+	if (lpdis->itemState & ODS_SELECTED)
+	{
+		FillRect(lpdis->hDC, &lpdis->rcItem, GetSysColorBrush(COLOR_HIGHLIGHT));
+		clBack = GetSysColor(COLOR_HIGHLIGHT);
+		clLine1 = GetSysColor(COLOR_HIGHLIGHTTEXT);
+	} else
+	{
+		FillRect(lpdis->hDC, &lpdis->rcItem, GetSysColorBrush(COLOR_WINDOW));
+		clBack = GetSysColor(COLOR_WINDOW);
+		clLine1 = GetSysColor(COLOR_WINDOWTEXT);
+	}
+	clLine2 = RGB(
+			GetRValue(clLine1) * 0.66 + GetRValue(clBack) * 0.34,
+			GetGValue(clLine1) * 0.66 + GetGValue(clBack) * 0.34,
+			GetBValue(clLine1) * 0.66 + GetBValue(clBack) * 0.34
+		);
+
+	SetBkMode(lpdis->hDC, TRANSPARENT);
+
+	RECT rc;
+
+	if (!pRule)
+	{
+		rc = lpdis->rcItem;
+		rc.left += 25;
+
+		int len = SendDlgItemMessage(hwndDlg, lpdis->CtlID, LB_GETTEXTLEN, lpdis->itemID, 0) + 1;
+		TCHAR *str = (TCHAR *)_alloca(len * sizeof(TCHAR));
+		SendDlgItemMessage(hwndDlg, lpdis->CtlID, LB_GETTEXT, lpdis->itemID, (LPARAM)str);
+		sttDrawNextRulePart(lpdis->hDC, clLine1, str, &rc);
+	} else
+	if (pRule->GetType() == Else)
+	{
+		rc = lpdis->rcItem;
+		rc.left += 25;
+
+		sttDrawNextRulePart(lpdis->hDC, clLine2, TranslateT("Else "), &rc);
+		sttDrawRuleAction(lpdis->hDC, clLine1, clLine2, pRule, &rc);
+	} else
+	{
+		rc = lpdis->rcItem;
+		rc.bottom -= (rc.bottom - rc.top) / 2;
+		rc.left += 25;
+
+		switch ( pRule->GetType() )
+		{
+			case Jid:
+			{
+				sttDrawNextRulePart(lpdis->hDC, clLine2, TranslateT("If jabber id is '"), &rc);
+				sttDrawNextRulePart(lpdis->hDC, clLine1, pRule->GetValue(), &rc);
+				sttDrawNextRulePart(lpdis->hDC, clLine2, TranslateT("'"), &rc);
+				
+				if (HANDLE hContact = JabberHContactFromJID(pRule->GetValue()))
+				{
+					TCHAR *szName = (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR);
+					if (szName)
+					{
+						sttDrawNextRulePart(lpdis->hDC, clLine2, TranslateT(" (nickname: "), &rc);
+						sttDrawNextRulePart(lpdis->hDC, clLine1, szName, &rc);
+						sttDrawNextRulePart(lpdis->hDC, clLine2, TranslateT(")"), &rc);
+					}
+				}
+				break;
+			}
+
+			case Group:
+				sttDrawNextRulePart(lpdis->hDC, clLine2, TranslateT("If group is '"), &rc);
+				sttDrawNextRulePart(lpdis->hDC, clLine1, pRule->GetValue(), &rc);
+				sttDrawNextRulePart(lpdis->hDC, clLine2, TranslateT("'"), &rc);
+				break;
+			case Subscription:
+				sttDrawNextRulePart(lpdis->hDC, clLine2, TranslateT("If subscription is '"), &rc);
+				sttDrawNextRulePart(lpdis->hDC, clLine1, pRule->GetValue(), &rc);
+				sttDrawNextRulePart(lpdis->hDC, clLine2, TranslateT("'"), &rc);
+				break;
+		}
+
+		rc = lpdis->rcItem;
+		rc.top += (rc.bottom - rc.top) / 2;
+		rc.left += 25;
+
+		sttDrawNextRulePart(lpdis->hDC, clLine2, TranslateT("then "), &rc);
+		sttDrawRuleAction(lpdis->hDC, clLine1, clLine2, pRule, &rc);
+	}
+
+	DrawIconEx(lpdis->hDC, lpdis->rcItem.left+4, (lpdis->rcItem.top+lpdis->rcItem.bottom-16)/2,
+		LoadIconEx("main"),
+		16, 16, 0, NULL, DI_NORMAL);
+
+	if (pRule)
+	{
+		DrawIconEx(lpdis->hDC, lpdis->rcItem.left+4, (lpdis->rcItem.top+lpdis->rcItem.bottom-16)/2,
+			LoadIconEx(pRule->GetAction() ? "disco_ok" : "disco_fail"),
+			16, 16, 0, NULL, DI_NORMAL);
+	}
+
+	if (lpdis->itemState & ODS_FOCUS)
+	{
+		int sel = SendDlgItemMessage(hwndDlg, lpdis->CtlID, LB_GETCURSEL, 0, 0);
+		if ((sel == LB_ERR) || (sel == lpdis->itemID))
+			DrawFocusRect(lpdis->hDC, &lpdis->rcItem);
+	}
+}
+
+static void sttDrawLists(HWND hwndDlg, LPDRAWITEMSTRUCT lpdis)
+{
+	CPrivacyList *pList = (CPrivacyList *)lpdis->itemData;
+
+	COLORREF clLine1, clLine2, clBack;
+	if (lpdis->itemState & ODS_SELECTED)
+	{
+		FillRect(lpdis->hDC, &lpdis->rcItem, GetSysColorBrush(COLOR_HIGHLIGHT));
+		clBack = GetSysColor(COLOR_HIGHLIGHT);
+		clLine1 = GetSysColor(COLOR_HIGHLIGHTTEXT);
+	} else
+	{
+		FillRect(lpdis->hDC, &lpdis->rcItem, GetSysColorBrush(COLOR_WINDOW));
+		clBack = GetSysColor(COLOR_WINDOW);
+		clLine1 = GetSysColor(COLOR_WINDOWTEXT);
+	}
+	clLine2 = RGB(
+			GetRValue(clLine1) * 0.66 + GetRValue(clBack) * 0.34,
+			GetGValue(clLine1) * 0.66 + GetGValue(clBack) * 0.34,
+			GetBValue(clLine1) * 0.66 + GetBValue(clBack) * 0.34
+		);
+
+	SetBkMode(lpdis->hDC, TRANSPARENT);
+
+	RECT rc;
+
+	g_PrivacyListManager.Lock();
+	TCHAR *szDefault = NEWTSTR_ALLOCA(g_PrivacyListManager.GetDefaultListName());
+	TCHAR *szActive = NEWTSTR_ALLOCA(g_PrivacyListManager.GetActiveListName());
+	g_PrivacyListManager.Unlock();
+
+	HFONT hfnt = NULL;
+
+	rc = lpdis->rcItem;
+	rc.left +=3;
+
+	if (!pList)
+	{
+		if (!szActive)
+		{
+			LOGFONT lf;
+			GetObject(GetCurrentObject(lpdis->hDC, OBJ_FONT), sizeof(lf), &lf);
+			lf.lfWeight = FW_BOLD;
+			hfnt = (HFONT)SelectObject(lpdis->hDC, CreateFontIndirect(&lf));
+		}
+
+		int len = SendDlgItemMessage(hwndDlg, lpdis->CtlID, LB_GETTEXTLEN, lpdis->itemID, 0) + 1;
+		TCHAR *str = (TCHAR *)_alloca(len * sizeof(TCHAR));
+		SendDlgItemMessage(hwndDlg, lpdis->CtlID, LB_GETTEXT, lpdis->itemID, (LPARAM)str);
+		sttDrawNextRulePart(lpdis->hDC, clLine1, str, &rc);
+
+		if (!szActive && !szDefault)
+			sttDrawNextRulePart(lpdis->hDC, clLine2, TranslateT(" (act., def.)"), &rc);
+		else if (!szActive)
+			sttDrawNextRulePart(lpdis->hDC, clLine2, TranslateT(" (active)"), &rc);
+		else if (!szDefault)
+			sttDrawNextRulePart(lpdis->hDC, clLine2, TranslateT(" (default)"), &rc);
+
+		if (!szDefault)
+			DrawIconEx(lpdis->hDC, lpdis->rcItem.right-16-4, (lpdis->rcItem.top+lpdis->rcItem.bottom-16)/2,
+				LoadSkinnedIcon(SKINICON_OTHER_EMPTYBLOB),
+				16, 16, 0, NULL, DI_NORMAL);
+	} else
+	{
+		if (!lstrcmp(pList->GetListName(), szActive))
+		{
+			LOGFONT lf;
+			GetObject(GetCurrentObject(lpdis->hDC, OBJ_FONT), sizeof(lf), &lf);
+			lf.lfWeight = FW_BOLD;
+			hfnt = (HFONT)SelectObject(lpdis->hDC, CreateFontIndirect(&lf));
+		}
+
+		sttDrawNextRulePart(lpdis->hDC, clLine1, pList->GetListName(), &rc);
+
+		if (!lstrcmp(pList->GetListName(), szActive) && !lstrcmp(pList->GetListName(), szDefault))
+			sttDrawNextRulePart(lpdis->hDC, clLine2, TranslateT(" (act., def.)"), &rc);
+		else if (!lstrcmp(pList->GetListName(), szActive))
+			sttDrawNextRulePart(lpdis->hDC, clLine2, TranslateT(" (active)"), &rc);
+		else if (!lstrcmp(pList->GetListName(), szDefault))
+			sttDrawNextRulePart(lpdis->hDC, clLine2, TranslateT(" (default)"), &rc);
+
+		if (!lstrcmp(pList->GetListName(), szDefault))
+			DrawIconEx(lpdis->hDC, lpdis->rcItem.right-16-4, (lpdis->rcItem.top+lpdis->rcItem.bottom-16)/2,
+				LoadSkinnedIcon(SKINICON_OTHER_EMPTYBLOB),
+				16, 16, 0, NULL, DI_NORMAL);
+	}
+
+	if (hfnt)
+	{
+		DeleteObject(SelectObject(lpdis->hDC, hfnt));
+	}
+
+	if (lpdis->itemState & ODS_FOCUS)
+	{
+		int sel = SendDlgItemMessage(hwndDlg, lpdis->CtlID, LB_GETCURSEL, 0, 0);
+		if ((sel == LB_ERR) || (sel == lpdis->itemID))
+			DrawFocusRect(lpdis->hDC, &lpdis->rcItem);
+	}
+}
+
+static int sttPrivacyListsResizer(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
+{
+	switch (urc->wId)
+	{
+	case IDC_WHITERECT:
+	case IDC_TITLE:
+	case IDC_DESCRIPTION:
+	case IDC_FRAME1:
+		return RD_ANCHORX_LEFT|RD_ANCHORY_TOP|RD_ANCHORX_WIDTH;
+	case IDC_LB_LISTS:
+		return RD_ANCHORX_LEFT|RD_ANCHORY_TOP|RD_ANCHORY_HEIGHT;
+	case IDC_PL_RULES_LIST:
+		return RD_ANCHORX_LEFT|RD_ANCHORY_TOP|RD_ANCHORY_HEIGHT|RD_ANCHORX_WIDTH;
+	case IDC_STATIC_LISTS_LABEL:
+		return RD_ANCHORX_RIGHT|RD_ANCHORY_TOP|RD_ANCHORX_WIDTH;
+	case IDC_ADD_LIST:
+	case IDC_ACTIVATE:
+	case IDC_REMOVE_LIST:
+	case IDC_SET_DEFAULT:
+	case IDC_ADD_RULE:
+	case IDC_UP_RULE:
+	case IDC_EDIT_RULE:
+	case IDC_DOWN_RULE:
+	case IDC_REMOVE_RULE:
+		return RD_ANCHORX_LEFT|RD_ANCHORY_BOTTOM;
+	case IDC_APPLY:
+	case IDCANCEL:
+		return RD_ANCHORX_RIGHT|RD_ANCHORY_BOTTOM;
+	}
+	return RD_ANCHORX_LEFT|RD_ANCHORY_TOP;
+}
+
 BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	switch ( msg ) {
@@ -586,68 +880,98 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 			XmlNode* query = iq.addQuery( JABBER_FEAT_PRIVACY_LISTS );
 			jabberThreadInfo->send( iq );
 		}
+
+		{
+			LOGFONT lf;
+			GetObject((HFONT)SendDlgItemMessage(hwndDlg, IDC_TXT_LISTS, WM_GETFONT, 0, 0), sizeof(lf), &lf);
+			lf.lfWeight = FW_BOLD;
+			HFONT hfnt = CreateFontIndirect(&lf);
+			SendDlgItemMessage(hwndDlg, IDC_TXT_LISTS, WM_SETFONT, (WPARAM)hfnt, TRUE);
+			SendDlgItemMessage(hwndDlg, IDC_TXT_RULES, WM_SETFONT, (WPARAM)hfnt, TRUE);
+			SendDlgItemMessage(hwndDlg, IDC_TITLE, WM_SETFONT, (WPARAM)hfnt, TRUE);
+		}
+
+		Utils_RestoreWindowPosition(hwndDlg, NULL, jabberProtoName, "plistsWnd_sz");
+
 		return TRUE;
 
 	case WM_JABBER_REFRESH:
 		{
-			TCHAR szCurrentSelectedList[ 512 ];
-			GetDlgItemText( hwndDlg, IDC_COMBO_CURRENT_LIST, szCurrentSelectedList, SIZEOF( szCurrentSelectedList ));
+			int sel = SendDlgItemMessage(hwndDlg, IDC_LB_LISTS, LB_GETCURSEL, 0, 0);
+			int len = SendDlgItemMessage(hwndDlg, IDC_LB_LISTS, LB_GETTEXTLEN, sel, 0) + 1;
+			TCHAR *szCurrentSelectedList = (TCHAR *)_alloca(len * sizeof(TCHAR));
+			SendDlgItemMessage(hwndDlg, IDC_LB_LISTS, LB_GETTEXT, sel, (LPARAM)szCurrentSelectedList);
 
-			SendDlgItemMessage( hwndDlg, IDC_COMBO_ACTIVE_LIST, CB_RESETCONTENT, 0, 0 );
-			SendDlgItemMessage( hwndDlg, IDC_COMBO_CURRENT_LIST, CB_RESETCONTENT, 0, 0 );
-			SendDlgItemMessage( hwndDlg, IDC_COMBO_DEFAULT_LIST, CB_RESETCONTENT, 0, 0 );
+			SendDlgItemMessage( hwndDlg, IDC_LB_LISTS, LB_RESETCONTENT, 0, 0 );
 
 			int nItemId;
 
-			nItemId = SendDlgItemMessage( hwndDlg, IDC_COMBO_ACTIVE_LIST, CB_ADDSTRING, 0, (LPARAM)TranslateT( "<none>" ));
-			SendDlgItemMessage( hwndDlg, IDC_COMBO_ACTIVE_LIST, CB_SETITEMDATA, nItemId, (LPARAM)NULL );
-
-			nItemId = SendDlgItemMessage( hwndDlg, IDC_COMBO_DEFAULT_LIST, CB_ADDSTRING, 0, (LPARAM)TranslateT( "<none>" ));
-			SendDlgItemMessage( hwndDlg, IDC_COMBO_DEFAULT_LIST, CB_SETITEMDATA, nItemId, (LPARAM)NULL );
+			nItemId = SendDlgItemMessage( hwndDlg, IDC_LB_LISTS, LB_ADDSTRING, 0, (LPARAM)TranslateT( "<none>" ));
+			SendDlgItemMessage( hwndDlg, IDC_LB_LISTS, LB_SETITEMDATA, nItemId, (LPARAM)NULL );
 
 			g_PrivacyListManager.Lock();
 			CPrivacyList* pList = g_PrivacyListManager.GetFirstList();
 			while ( pList ) {
 				if ( !pList->IsDeleted() ) {
-					nItemId = SendDlgItemMessage( hwndDlg, IDC_COMBO_DEFAULT_LIST, CB_ADDSTRING, 0, (LPARAM)pList->GetListName() );
-					SendDlgItemMessage( hwndDlg, IDC_COMBO_DEFAULT_LIST, CB_SETITEMDATA, nItemId, (LPARAM)pList );
-
-					nItemId = SendDlgItemMessage( hwndDlg, IDC_COMBO_ACTIVE_LIST, CB_ADDSTRING, 0, (LPARAM)pList->GetListName() );
-					SendDlgItemMessage( hwndDlg, IDC_COMBO_ACTIVE_LIST, CB_SETITEMDATA, nItemId, (LPARAM)pList );
-
-					nItemId = SendDlgItemMessage( hwndDlg, IDC_COMBO_CURRENT_LIST, CB_ADDSTRING, 0, (LPARAM)pList->GetListName() );
-					SendDlgItemMessage( hwndDlg, IDC_COMBO_CURRENT_LIST, CB_SETITEMDATA, nItemId, (LPARAM)pList );
+					nItemId = SendDlgItemMessage( hwndDlg, IDC_LB_LISTS, LB_ADDSTRING, 0, (LPARAM)pList->GetListName() );
+					SendDlgItemMessage( hwndDlg, IDC_LB_LISTS, LB_SETITEMDATA, nItemId, (LPARAM)pList );
 				}
 				pList = pList->GetNext();
 			}
-			TCHAR *szActive = g_PrivacyListManager.GetActiveListName();
-			if ( szActive )
-				SendDlgItemMessage( hwndDlg, IDC_COMBO_ACTIVE_LIST, CB_SELECTSTRING, -1, (LPARAM)szActive );
-			else
-				SendDlgItemMessage( hwndDlg, IDC_COMBO_ACTIVE_LIST, CB_SETCURSEL, 0, 0 );
-			TCHAR *szDefault = g_PrivacyListManager.GetDefaultListName();
-			if ( szDefault )
-				SendDlgItemMessage( hwndDlg, IDC_COMBO_DEFAULT_LIST, CB_SELECTSTRING, -1, (LPARAM)szDefault );
-			else
-				SendDlgItemMessage( hwndDlg, IDC_COMBO_DEFAULT_LIST, CB_SETCURSEL, 0, 0 );
 
-			if ( SendDlgItemMessage( hwndDlg, IDC_COMBO_CURRENT_LIST, CB_SELECTSTRING, -1, (LPARAM)szCurrentSelectedList ) == CB_ERR )
-				SendDlgItemMessage( hwndDlg, IDC_COMBO_CURRENT_LIST, CB_SETCURSEL, 0, 0 );
+			if ( SendDlgItemMessage( hwndDlg, IDC_LB_LISTS, LB_SELECTSTRING, -1, (LPARAM)szCurrentSelectedList ) == LB_ERR )
+				SendDlgItemMessage( hwndDlg, IDC_LB_LISTS, LB_SETCURSEL, 0, 0 );
 
 			g_PrivacyListManager.Unlock();
 
-			PostMessage( hwndDlg, WM_COMMAND, MAKEWPARAM( IDC_COMBO_CURRENT_LIST, CBN_SELCHANGE ), 0 );
+			PostMessage( hwndDlg, WM_COMMAND, MAKEWPARAM( IDC_LB_LISTS, LBN_SELCHANGE ), 0 );
 			PostMessage( hwndDlg, WM_COMMAND, MAKEWPARAM( IDC_PL_RULES_LIST, LBN_SELCHANGE ), 0 );
 		}
 		return TRUE;
 
+	case WM_MEASUREITEM:
+	{
+		LPMEASUREITEMSTRUCT lpmis = (LPMEASUREITEMSTRUCT)lParam;
+		if ((lpmis->CtlID != IDC_PL_RULES_LIST) && (lpmis->CtlID != IDC_LB_LISTS))
+			break;
+
+		TEXTMETRIC tm = {0};
+		HDC hdc = GetDC(GetDlgItem(hwndDlg, lpmis->CtlID));
+		GetTextMetrics(hdc, &tm);
+		ReleaseDC(GetDlgItem(hwndDlg, lpmis->CtlID), hdc);
+
+		if (lpmis->CtlID == IDC_PL_RULES_LIST)
+			lpmis->itemHeight = tm.tmHeight * 2;
+		else if (lpmis->CtlID == IDC_LB_LISTS)
+			lpmis->itemHeight = tm.tmHeight;
+
+		if (lpmis->itemHeight < 18) lpmis->itemHeight = 18;
+
+		return TRUE;
+	}
+
+	case WM_DRAWITEM:
+	{
+		LPDRAWITEMSTRUCT lpdis = (LPDRAWITEMSTRUCT)lParam;
+		if ((lpdis->CtlID != IDC_PL_RULES_LIST) && (lpdis->CtlID != IDC_LB_LISTS))
+			break;
+
+		if (lpdis->CtlID == IDC_PL_RULES_LIST)
+			sttDrawRulesList(hwndDlg, lpdis);
+		else if (lpdis->CtlID == IDC_LB_LISTS)
+			sttDrawLists(hwndDlg, lpdis);
+
+		return TRUE;
+	}
+
 	case WM_COMMAND:
 		switch ( LOWORD( wParam )) {
-		case IDC_COMBO_ACTIVE_LIST:
-			if ( HIWORD( wParam ) == CBN_SELCHANGE && jabberOnline ) {
+		case IDC_ACTIVATE:
+			if ( jabberOnline ) {
 				g_PrivacyListManager.Lock();
-				EnableWindow( GetDlgItem( hwndDlg, IDC_COMBO_ACTIVE_LIST ), FALSE );
-				CPrivacyList* pList = GetSelectedList( hwndDlg, IDC_COMBO_ACTIVE_LIST );
+				EnableWindow( GetDlgItem( hwndDlg, IDC_ACTIVATE ), FALSE );
+				CPrivacyList* pList = GetSelectedList(hwndDlg);
+				SetWindowLong( GetDlgItem( hwndDlg, IDC_ACTIVATE ), GWL_USERDATA, (DWORD)pList );
 				int iqId = JabberSerialNext();
 				JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultPrivacyListActive );
 				XmlNodeIq iq( "set", iqId );
@@ -661,11 +985,12 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 			}
 			return TRUE;
 
-		case IDC_COMBO_DEFAULT_LIST:
-			if ( HIWORD( wParam ) == CBN_SELCHANGE && jabberOnline ) {
+		case IDC_SET_DEFAULT:
+			if ( jabberOnline ) {
 				g_PrivacyListManager.Lock();
-				EnableWindow( GetDlgItem( hwndDlg, IDC_COMBO_DEFAULT_LIST ), FALSE );
-				CPrivacyList* pList = GetSelectedList( hwndDlg, IDC_COMBO_DEFAULT_LIST );
+				EnableWindow( GetDlgItem( hwndDlg, IDC_SET_DEFAULT ), FALSE );
+				CPrivacyList* pList = GetSelectedList(hwndDlg);
+				SetWindowLong( GetDlgItem( hwndDlg, IDC_SET_DEFAULT ), GWL_USERDATA, (DWORD)pList );
 				int iqId = JabberSerialNext();
 				JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultPrivacyListDefault );
 				XmlNodeIq iq( "set", iqId);
@@ -679,18 +1004,25 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 			}
 			return TRUE;
 
-		case IDC_COMBO_CURRENT_LIST:
-			if ( HIWORD( wParam ) == CBN_SELCHANGE ) {
+		case IDC_LB_LISTS:
+			if ( HIWORD( wParam ) == LBN_SELCHANGE ) {
 				int nLbSel = SendDlgItemMessage( hwndDlg, IDC_PL_RULES_LIST, LB_GETCURSEL, 0, 0 );
 				SendDlgItemMessage( hwndDlg, IDC_PL_RULES_LIST, LB_RESETCONTENT, 0, 0 );
 
-				int nCurSel = SendDlgItemMessage( hwndDlg, IDC_COMBO_CURRENT_LIST, CB_GETCURSEL, 0, 0 );
-				if ( nCurSel == CB_ERR )
+				int nCurSel = SendDlgItemMessage( hwndDlg, IDC_LB_LISTS, LB_GETCURSEL, 0, 0 );
+				if ( nCurSel == LB_ERR )
 					return TRUE;
 
-				int nErr = SendDlgItemMessage( hwndDlg, IDC_COMBO_CURRENT_LIST, CB_GETITEMDATA, nCurSel, 0 );
-				if ( nErr == CB_ERR || nErr == 0 )
+				int nErr = SendDlgItemMessage( hwndDlg, IDC_LB_LISTS, LB_GETITEMDATA, nCurSel, 0 );
+				if ( nErr == LB_ERR )
 					return TRUE;
+				if ( nErr == 0 )
+				{
+					EnableWindow( GetDlgItem( hwndDlg, IDC_PL_RULES_LIST ), FALSE );
+					SendDlgItemMessage( hwndDlg, IDC_PL_RULES_LIST, LB_ADDSTRING, 0, (LPARAM)TranslateTS(_T("No list selected")));
+					PostMessage( hwndDlg, WM_COMMAND, MAKEWPARAM( IDC_PL_RULES_LIST, LBN_SELCHANGE ), 0 );
+					return TRUE;
+				}
 
 				g_PrivacyListManager.Lock();
 				TCHAR *szListName = ((CPrivacyList* )nErr)->GetListName();
@@ -762,6 +1094,8 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 				g_PrivacyListManager.Unlock();
 			}
+			else if ( HIWORD( wParam ) == LBN_DBLCLK )
+				PostMessage( hwndDlg, WM_COMMAND, MAKEWPARAM( IDC_ACTIVATE, 0 ), 0 );
 			return TRUE;
 
 		case IDC_PL_RULES_LIST:
@@ -773,8 +1107,9 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 				int nCurSel = SendDlgItemMessage( hwndDlg, IDC_PL_RULES_LIST, LB_GETCURSEL, 0, 0 );
 				int nItemCount = SendDlgItemMessage( hwndDlg, IDC_PL_RULES_LIST, LB_GETCOUNT, 0, 0 );
 				BOOL bSelected = nCurSel != CB_ERR;
-				BOOL bListSelected = SendDlgItemMessage( hwndDlg, IDC_COMBO_CURRENT_LIST, CB_GETCURSEL, 0, 0) != CB_ERR;
-				bListSelected = bListSelected && SendDlgItemMessage( hwndDlg, IDC_COMBO_CURRENT_LIST, CB_GETCOUNT, 0, 0);
+				BOOL bListSelected = SendDlgItemMessage( hwndDlg, IDC_LB_LISTS, LB_GETCOUNT, 0, 0);
+				bListSelected = bListSelected && (SendDlgItemMessage( hwndDlg, IDC_LB_LISTS, LB_GETCURSEL, 0, 0) != LB_ERR);
+				bListSelected = bListSelected && SendDlgItemMessage( hwndDlg, IDC_LB_LISTS, LB_GETITEMDATA, SendDlgItemMessage( hwndDlg, IDC_LB_LISTS, LB_GETCURSEL, 0, 0), 0);
 
 				EnableWindow( GetDlgItem( hwndDlg, IDC_ADD_RULE ), bListsLoaded && bListSelected );
 				EnableWindow( GetDlgItem( hwndDlg, IDC_EDIT_RULE ), bListsLoaded && bSelected );
@@ -796,7 +1131,7 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 			g_PrivacyListManager.Lock();
 			{
 				CPrivacyListRule* pRule = GetSelectedRule( hwndDlg );
-				CPrivacyList* pList = GetSelectedList( hwndDlg );
+				CPrivacyList* pList = GetSelectedList(hwndDlg);
 				if ( pList && pRule ) {
 					int nResult = DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_PRIVACY_RULE ), hwndDlg, JabberPrivacyRuleDlgProc, (LPARAM)pRule );
 					if ( nResult ) {
@@ -810,7 +1145,7 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 			// FIXME: potential deadlock due to PLM lock while editing rule
 			g_PrivacyListManager.Lock();
 			{
-				CPrivacyList* pList = GetSelectedList( hwndDlg );
+				CPrivacyList* pList = GetSelectedList(hwndDlg);
 				if ( pList ) {
 					CPrivacyListRule* pRule = new CPrivacyListRule( Jid, _T(""), FALSE );
 					int nResult = DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_PRIVACY_RULE ), hwndDlg, JabberPrivacyRuleDlgProc, (LPARAM)pRule );
@@ -828,7 +1163,7 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		case IDC_REMOVE_RULE:
 			g_PrivacyListManager.Lock();
 			{
-				CPrivacyList* pList = GetSelectedList( hwndDlg );
+				CPrivacyList* pList = GetSelectedList(hwndDlg);
 				CPrivacyListRule* pRule = GetSelectedRule( hwndDlg );
 
 				if ( pList && pRule ) {
@@ -847,7 +1182,7 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		case IDC_UP_RULE:
 			g_PrivacyListManager.Lock();
 			{
-				CPrivacyList* pList = GetSelectedList( hwndDlg );
+				CPrivacyList* pList = GetSelectedList(hwndDlg);
 				CPrivacyListRule* pRule = GetSelectedRule( hwndDlg );
 				int nCurSel = SendDlgItemMessage( hwndDlg, IDC_PL_RULES_LIST, LB_GETCURSEL, 0, 0 );
 
@@ -865,7 +1200,7 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		case IDC_DOWN_RULE:
 			g_PrivacyListManager.Lock();
 			{
-				CPrivacyList* pList = GetSelectedList( hwndDlg );
+				CPrivacyList* pList = GetSelectedList(hwndDlg);
 				CPrivacyListRule* pRule = GetSelectedRule( hwndDlg );
 				int nCurSel = SendDlgItemMessage( hwndDlg, IDC_PL_RULES_LIST, LB_GETCURSEL, 0, 0 );
 				int nItemCount = SendDlgItemMessage( hwndDlg, IDC_PL_RULES_LIST, LB_GETCOUNT, 0, 0 );
@@ -900,11 +1235,11 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 					}
 					if ( pList )
 						pList->SetDeleted( FALSE );
-					int nSelected = SendDlgItemMessage( hwndDlg, IDC_COMBO_CURRENT_LIST, CB_SELECTSTRING, -1, (LPARAM)szLine );
+					int nSelected = SendDlgItemMessage( hwndDlg, IDC_LB_LISTS, LB_SELECTSTRING, -1, (LPARAM)szLine );
 					if ( nSelected == CB_ERR ) {
-						nSelected = SendDlgItemMessage( hwndDlg, IDC_COMBO_CURRENT_LIST, CB_ADDSTRING, 0, (LPARAM)szLine );
-						SendDlgItemMessage( hwndDlg, IDC_COMBO_CURRENT_LIST, CB_SETITEMDATA, nSelected, (LPARAM)pList );
-						SendDlgItemMessage( hwndDlg, IDC_COMBO_CURRENT_LIST, CB_SETCURSEL, nSelected, 0 );
+						nSelected = SendDlgItemMessage( hwndDlg, IDC_LB_LISTS, LB_ADDSTRING, 0, (LPARAM)szLine );
+						SendDlgItemMessage( hwndDlg, IDC_LB_LISTS, LB_SETITEMDATA, nSelected, (LPARAM)pList );
+						SendDlgItemMessage( hwndDlg, IDC_LB_LISTS, LB_SETCURSEL, nSelected, 0 );
 					}
 					g_PrivacyListManager.Unlock();
 					PostMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0 );
@@ -915,7 +1250,7 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		case IDC_REMOVE_LIST:
 			g_PrivacyListManager.Lock();
 			{
-				CPrivacyList* pList = GetSelectedList( hwndDlg );
+				CPrivacyList* pList = GetSelectedList(hwndDlg);
 				if ( pList ) {
 					TCHAR *szListName = pList->GetListName();
 					if ( ( g_PrivacyListManager.GetActiveListName() && !_tcscmp( szListName, g_PrivacyListManager.GetActiveListName()))
@@ -1018,10 +1353,42 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 			DestroyWindow( hwndDlg );
 		return TRUE;
 
+	case WM_CTLCOLORSTATIC:
+		if ( ((HWND)lParam == GetDlgItem(hwndDlg, IDC_WHITERECT)) ||
+			 ((HWND)lParam == GetDlgItem(hwndDlg, IDC_TITLE)) ||
+			 ((HWND)lParam == GetDlgItem(hwndDlg, IDC_DESCRIPTION)) )
+			return (BOOL)GetStockObject(WHITE_BRUSH);
+		return FALSE;
+
+	case WM_GETMINMAXINFO:
+		{
+			LPMINMAXINFO lpmmi = (LPMINMAXINFO)lParam;
+			lpmmi->ptMinTrackSize.x = 550;
+			lpmmi->ptMinTrackSize.y = 390;
+			return 0;
+		}
+	case WM_SIZE:
+	{
+		UTILRESIZEDIALOG urd = {0};
+		urd.cbSize = sizeof(urd);
+		urd.hInstance = hInst;
+		urd.hwndDlg = hwndDlg;
+		urd.lpTemplate = MAKEINTRESOURCEA(IDD_PRIVACY_LISTS);
+		urd.pfnResizer = sttPrivacyListsResizer;
+		CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM)&urd);
+		break;
+	}
+
 	case WM_DESTROY:
 		hwndPrivacyLists = NULL;
 		g_PrivacyListManager.RemoveAllLists();
 		g_PrivacyListManager.SetModified( FALSE );
+
+		// Delete custom bold font
+		DeleteObject((HFONT)SendDlgItemMessage(hwndDlg, IDC_TXT_LISTS, WM_GETFONT, 0, 0));
+
+		Utils_SaveWindowPosition(hwndDlg, NULL, jabberProtoName, "plistsWnd_sz");
+
 		break;
 	}
 	return FALSE;
