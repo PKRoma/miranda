@@ -440,7 +440,7 @@ static int menuSetXStatus( WPARAM wParam, LPARAM lParam, LPARAM param )
 
 int CListMW_BuildStatusItems( WPARAM wParam, LPARAM lParam )
 {
-	if ( !jabberPepSupported )
+	if ( !jabberOnline || !jabberPepSupported )
 		return 0;
 
 	CLISTMENUITEM mi = { 0 };

@@ -1279,8 +1279,10 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 			return TRUE;
 
 		case IDC_APPLY:
-			if ( !jabberOnline )
+			if ( !jabberOnline ) {
+				SetDlgItemText( hwndPrivacyLists, IDC_STATIC_LISTS_LABEL, TranslateT( "You are currently offline" ));
 				return TRUE;
+			}
 
 			g_PrivacyListManager.Lock();
 			{
@@ -1353,14 +1355,14 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 		case IDCLOSE:
 		case IDCANCEL:
-			if ( jabberOnline && JabberPrivacyListDlgCanExit( hwndDlg ))
+			if ( JabberPrivacyListDlgCanExit( hwndDlg ))
 				DestroyWindow( hwndDlg );
 			return TRUE;
 		}
 		break;
 
 	case WM_CLOSE:
-		if ( jabberOnline && JabberPrivacyListDlgCanExit( hwndDlg ))
+		if ( JabberPrivacyListDlgCanExit( hwndDlg ))
 			DestroyWindow( hwndDlg );
 		return TRUE;
 

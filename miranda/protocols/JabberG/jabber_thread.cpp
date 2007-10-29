@@ -517,6 +517,7 @@ LBL_FatalError:
 			jabberConnected = FALSE;
 			info->zlibUninit();
 			JabberEnableMenuItems( FALSE );
+			JabberUtilsRebuildStatusMenu();
 			if ( hwndJabberChangePassword ) {
 				//DestroyWindow( hwndJabberChangePassword );
 				// Since this is a different thread, simulate the click on the cancel button instead

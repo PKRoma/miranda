@@ -1422,8 +1422,10 @@ int JabberSetStatus( WPARAM wParam, LPARAM lParam )
 			jabberThreadInfo->send( "</stream:stream>" );
 			jabberThreadInfo->close();
 			jabberThreadInfo = NULL;
-			if ( jabberConnected )
+			if ( jabberConnected ) {
 				jabberConnected = jabberOnline = FALSE;
+				JabberUtilsRebuildStatusMenu();
+			}
 		}
 
 		int oldStatus = jabberStatus;
