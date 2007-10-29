@@ -160,6 +160,8 @@ void InitCustomFolders( void );
 void JabberConsoleInit();
 void JabberConsoleUninit();
 void JabberUserInfoInit(void);
+void JabberPrivacyInit();
+void JabberPrivacyUninit();
 
 int bSecureIM;
 extern "C" BOOL WINAPI DllMain( HINSTANCE hModule, DWORD dwReason, LPVOID lpvReserved )
@@ -236,6 +238,7 @@ static int OnPreShutdown( WPARAM wParam, LPARAM lParam )
 	g_JabberIqManager.ExpireAll();
 	g_JabberIqManager.Shutdown();
 	JabberConsoleUninit();
+	JabberPrivacyUninit();
 	return 0;
 }
 
@@ -264,6 +267,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	JabberMenuInit();
 	JabberWsInit();
 	arHooks.insert( HookEvent( ME_USERINFO_INITIALISE, JabberUserInfoInit ));
+
 	bSecureIM = (ServiceExists("SecureIM/IsContactSecured"));
 
 	if ( ServiceExists( MS_GC_REGISTER )) {
@@ -433,6 +437,7 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	JabberIconsInit();
 	JabberUserInfoInit();
 	JabberConsoleInit();
+	JabberPrivacyInit();
 	JabberSvcInit();
 	g_JabberIqManager.FillPermanentHandlers();
 	g_JabberIqManager.Start();

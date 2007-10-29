@@ -58,10 +58,8 @@ void JabberIqResultServerDiscoInfo( XmlNode* iqNode, void* userdata )
 			if ( identityCategory && identityType && !_tcscmp( identityCategory, _T("pubsub") ) && !_tcscmp( identityType, _T("pep")) ) {
 				jabberPepSupported = TRUE;
 
-				CLIST_INTERFACE* pcli = ( CLIST_INTERFACE* )CallService( MS_CLIST_RETRIEVE_INTERFACE, 0, 0 );
-				if ( pcli && pcli->version > 4 )
-					pcli->pfnReloadProtoMenus();
-				break;
+			JabberUtilsRebuildStatusMenu();
+			break;
 			}
 		}
 		if ( jabberThreadInfo ) {
@@ -106,9 +104,12 @@ static void JabberOnLoggedIn( ThreadData* info )
 
 //	iqId = JabberSerialNext();
 //	JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultPrivacyLists );
-	XmlNodeIq piq( g_JabberIqManager.AddHandler( JabberIqResultPrivacyLists ));
-	piq.addQuery( JABBER_FEAT_PRIVACY_LISTS );
-	jabberThreadInfo->send( piq );
+
+//	XmlNodeIq piq( g_JabberIqManager.AddHandler( JabberIqResultPrivacyLists ));
+//	piq.addQuery( JABBER_FEAT_PRIVACY_LISTS );
+//	jabberThreadInfo->send( piq );
+
+	g_PrivacyListManager.QueryLists();
 
 	char szServerName[ sizeof(info->server) ];
 	if ( JGetStaticString( "LastLoggedServer", NULL, szServerName, sizeof(szServerName)))

@@ -1296,6 +1296,33 @@ static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
 	}	}
 	// End
 
+	// nullbie: hack to allow multiple protocol menus
+	// we used to store popup menu handle in "mp->hasAdded". now we
+	// will check if popup name changed and create new one when needed.
+	// you should take this into account when adding multiple menus.
+	if (mp && mp->hasAdded && mi->pszPopupName) {
+		PMO_IntMenuItem item = MO_GetIntMenuItem((int)mp->hasAdded);
+		if (item) {
+			BOOL bPopupChanged = FALSE;
+
+			#ifdef _UNICODE
+			{
+				char *tmp = mir_u2a(item->mi.ptszName);
+				bPopupChanged = lstrcmpA(tmp, mi->pszPopupName);
+				mir_free(tmp);
+			}
+			#else
+			{
+				bPopupChanged = lstrcmpA(item->mi.pszName, mi->pszPopupName);
+			}
+			#endif
+
+			if (bPopupChanged)
+				mp->hasAdded = NULL;
+		}
+	}
+	// nullbie: end of hack
+
 	if (mp && !mp->hasAdded) {
 		memset(&tmi,0,sizeof(tmi));
 		tmi.cbSize=sizeof(tmi);

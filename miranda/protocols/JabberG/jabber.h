@@ -712,7 +712,7 @@ int           __stdcall JabberGetPacketID( XmlNode* n );
 #define JABBER_COMBO_RECENT_COUNT 10
 void JabberComboLoadRecentStrings(HWND hwndDlg, UINT idcCombo, char *param);
 void JabberComboAddRecentString(HWND hwndDlg, UINT idcCombo, char *param, TCHAR *string);
-
+void JabberUtilsRebuildStatusMenu();
 void JabberBitmapPremultiplyChannels(HBITMAP hBitmap);
 
 //---- jabber_vcard.c -----------------------------------------------

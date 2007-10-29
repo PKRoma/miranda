@@ -30,6 +30,8 @@ Last change by : $Author$
 #include "jabber_list.h"
 #include "jabber_caps.h"
 
+#include "m_clistint.h"
+
 extern CRITICAL_SECTION mutex;
 extern UINT jabberCodePage;
 
@@ -1236,6 +1238,20 @@ void JabberComboAddRecentString(HWND hwndDlg, UINT idcCombo, char *param, TCHAR 
 	mir_snprintf(setting, sizeof(setting), "%s%d", param, id);
 	JSetStringT(NULL, setting, string);
 	JSetByte(NULL, param, (id+1)%JABBER_COMBO_RECENT_COUNT);
+}
+
+////////////////////////////////////////////////////////////////////////
+// Rebuild status menu
+static VOID CALLBACK sttRebuildMenusApcProc( DWORD param )
+{
+	CLIST_INTERFACE* pcli = ( CLIST_INTERFACE* )CallService( MS_CLIST_RETRIEVE_INTERFACE, 0, 0 );
+	if ( pcli && pcli->version > 4 )
+		pcli->pfnReloadProtoMenus();
+}
+
+void JabberUtilsRebuildStatusMenu()
+{
+	QueueUserAPC(sttRebuildMenusApcProc, hMainThread, 0);
 }
 
 ////////////////////////////////////////////////////////////////////////
