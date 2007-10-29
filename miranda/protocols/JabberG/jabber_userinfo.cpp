@@ -117,8 +117,8 @@ static void sttFillResourceInfo( HWND hwndTree, HTREEITEM htiRoot, JABBER_LIST_I
 		htiResource = sttFillInfoLine( hwndTree, htiRoot, LoadSkinnedProtoIcon( jabberProtoName, res->status ), TranslateT("Resource"), res->resourceName );
 
 	{	// StatusMsg
-		sttFillInfoLine( hwndTree, htiResource, LoadSkinnedIcon( SKINICON_EVENT_MESSAGE ), TranslateT( "Message" ),
-			res->statusMessage ? res->statusMessage : TranslateT( "<not specified>" ));
+		sttFillInfoLine( hwndTree, htiResource, NULL /*LoadSkinnedIcon( SKINICON_EVENT_MESSAGE )*/,
+			TranslateT( "Message" ), res->statusMessage ? res->statusMessage : TranslateT( "<not specified>" ));
 	}
 
 	{	// Software
@@ -220,7 +220,8 @@ static void sttFillUserInfo( HWND hwndTree, JABBER_LIST_ITEM *item )
 		else
 			lstrcpyn( buf, TranslateT( "<not specified>" ), SIZEOF( buf ));
 
-		sttFillInfoLine( hwndTree, htiRoot, NULL, TranslateT( "Last logoff time" ), buf );
+		sttFillInfoLine( hwndTree, htiRoot, NULL,
+			( item->jid && _tcschr( item->jid, _T( '@' ))) ? TranslateT( "Last logoff time" ) : TranslateT( "Uptime"), buf );
 	}
 
 	{	// activity
