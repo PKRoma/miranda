@@ -43,15 +43,20 @@ static int GetDatabaseString( CONTACTINFO *ci, const char* setting, DBVARIANT* d
 static int ProcessDatabaseValueDefault(CONTACTINFO *ci, const char* setting)
 {
 	DBVARIANT dbv;
-	if ( GetDatabaseString( ci, setting, &dbv ))
+	if ( !GetDatabaseString( ci, setting, &dbv )) {
+		switch (dbv.type) {
+		case DBVT_ASCIIZ:
+		case DBVT_WCHAR:
+			ci->type = CNFT_ASCIIZ;
+			ci->pszVal = dbv.ptszVal;
+			return 0;
+		}
+	}
+
+	if ( DBGetContactSetting( ci->hContact, ci->szProto, setting, &dbv ))
 		return 1;
 
 	switch (dbv.type) {
-	case DBVT_ASCIIZ:
-	case DBVT_WCHAR:
-		ci->type = CNFT_ASCIIZ;
-		ci->pszVal = dbv.ptszVal;
-		return 0;
 	case DBVT_BYTE:
 		ci->type = CNFT_BYTE;
 		ci->bVal = dbv.bVal;
