@@ -233,6 +233,7 @@ struct JabberFeatCapPair
 {
 	TCHAR *szFeature;
 	JabberCapsBits jcbCap;
+	TCHAR *szDescription;
 };
 
 extern JabberFeatCapPair g_JabberFeatCapPairs[];
