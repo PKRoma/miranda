@@ -125,7 +125,6 @@ HWND hwndMucOwnerList = NULL;
 HWND hwndJabberChangePassword = NULL;
 HWND hwndJabberBookmarks = NULL;
 HWND hwndJabberAddBookmark = NULL;
-HWND hwndJabberInfo = NULL;
 HWND hwndPrivacyLists = NULL;
 HWND hwndPrivacyRule = NULL;
 HWND hwndServiceDiscovery = NULL;
@@ -160,6 +159,7 @@ int JabberSvcUninit( void );
 void InitCustomFolders( void );
 void JabberConsoleInit();
 void JabberConsoleUninit();
+void JabberUserInfoInit(void);
 
 int bSecureIM;
 extern "C" BOOL WINAPI DllMain( HINSTANCE hModule, DWORD dwReason, LPVOID lpvReserved )
@@ -431,6 +431,7 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	JabberIqInit();
 	JabberListInit();
 	JabberIconsInit();
+	JabberUserInfoInit();
 	JabberConsoleInit();
 	JabberSvcInit();
 	g_JabberIqManager.FillPermanentHandlers();

@@ -1139,6 +1139,7 @@ BOOL CALLBACK JabberServiceDiscoveryDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 void JabberRegisterAgent( HWND hwndDlg, TCHAR* jid );
 void JabberGroupchatJoinRoomByJid(HWND hwndParent, TCHAR *jid);
 void JabberSearchAddToRecent( TCHAR* szAddr, HWND hwndDialog = NULL );
+//void JabberUserInfoShowBox(JABBER_LIST_ITEM *item);
 
 static void sttCopyText(HWND hwnd, TCHAR *text)
 {

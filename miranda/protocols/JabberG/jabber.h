@@ -430,7 +430,6 @@ extern HWND hwndMucAdminList;
 extern HWND hwndMucOwnerList;
 extern HWND hwndJabberBookmarks;
 extern HWND hwndJabberAddBookmark;
-extern HWND hwndJabberInfo;
 extern HWND hwndPrivacyLists;
 extern HWND hwndPrivacyRule;
 extern HWND hwndServiceDiscovery;
@@ -746,5 +745,8 @@ void JabberUpdateContactExtraIcon( HANDLE hContact );
 int JabberGetXStatusIcon( WPARAM wParam, LPARAM lParam );
 int JabberGetXStatus( WPARAM wParam, LPARAM lParam );
 int JabberSetXStatus( WPARAM wParam, LPARAM lParam );
+
+//---- jabber_userinfo.c --------------------------------------------
+void JabberUserInfoUpdate(HANDLE hContact);
 
 #endif

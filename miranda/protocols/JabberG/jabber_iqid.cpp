@@ -1746,8 +1746,7 @@ void JabberIqResultLastActivity( XmlNode *iqNode, void *userdata, CJabberIqInfo*
 
 	r->idleStartTime = lastActivity;
 
-	if ( hwndJabberInfo != NULL )
-		PostMessage( hwndJabberInfo, WM_JABBER_REFRESH, 0, 0);
+	JabberUserInfoUpdate(pInfo->GetHContact());
 }
 
 // entity time (XEP-0202) support

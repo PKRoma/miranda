@@ -71,6 +71,7 @@
 #define IDI_NODE_WEATHER                203
 #define IDD_CONSOLE                     205
 #define IDI_CONSOLE                     207
+#define IDD_INFOBOX                     208
 #define IDD_SETMOODMSG                  216
 #define IDC_EDIT_USERNAME               1000
 #define IDC_SAVE                        1000
@@ -308,6 +309,8 @@
 #define IDC_SET_DEFAULT                 1272
 #define IDC_TXT_RULES                   1273
 #define IDC_TXT_LISTS                   1274
+#define IDC_TREE2                       1276
+#define IDC_TV_INFO                     1276
 #define IDC_EMAILS                      1306
 #define IDC_PHONES                      1308
 #define IDC_UPDATE                      1313
@@ -366,9 +369,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        208
+#define _APS_NEXT_RESOURCE_VALUE        209
 #define _APS_NEXT_COMMAND_VALUE         40017
-#define _APS_NEXT_CONTROL_VALUE         1275
+#define _APS_NEXT_CONTROL_VALUE         1277
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

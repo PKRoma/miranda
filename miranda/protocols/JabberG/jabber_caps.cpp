@@ -106,6 +106,7 @@ static void JabberIqResultCapsDiscoInfo( XmlNode* iqNode, void* userdata, CJabbe
 		}
 
 		g_JabberClientCapsManager.SetClientCaps( pInfo->GetIqId(), jcbCaps );
+		JabberUserInfoUpdate( pInfo->GetHContact() );
 	}
 	else {
 		// no version info support and no XEP-0115 support?

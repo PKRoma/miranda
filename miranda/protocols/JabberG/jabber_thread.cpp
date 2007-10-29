@@ -1690,8 +1690,7 @@ void JabberProcessIqResultVersion( XmlNode* node, void* userdata, CJabberIqInfo 
 	if ( pInfo->GetHContact() )
 		JabberUpdateMirVer( pInfo->GetHContact(), r );
 
-	if ( hwndJabberInfo != NULL )
-		PostMessage( hwndJabberInfo, WM_JABBER_REFRESH, 0, 0);
+	JabberUserInfoUpdate(pInfo->GetHContact());
 }
 
 static void JabberProcessIq( XmlNode *node, void *userdata )
