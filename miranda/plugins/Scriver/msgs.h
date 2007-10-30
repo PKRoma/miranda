@@ -32,8 +32,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 typedef DWORD (WINAPI *PSLWA)(HWND, DWORD, BYTE, DWORD);
 extern PSLWA pSetLayeredWindowAttributes;
-extern BOOL (WINAPI *pfnEnableThemeDialogTexture)(HANDLE, DWORD);
 extern BOOL (WINAPI *pfnIsAppThemed)(VOID);
+extern HRESULT (WINAPI *pfnDrawThemeParentBackground)(HWND, HDC, RECT *);
 
 typedef struct ErrorWindowDataStruct
 {

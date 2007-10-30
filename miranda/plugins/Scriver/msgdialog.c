@@ -2179,7 +2179,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					rect.left = 0;
 					rect.right = dat->avatarWidth;
 					rect.bottom = dat->avatarHeight;
-					FillRect(hdcMem, &rect, GetSysColorBrush(COLOR_3DFACE));
+					if (pfnIsAppThemed && pfnDrawThemeParentBackground && pfnIsAppThemed()) {
+						pfnDrawThemeParentBackground(dis->hwndItem, hdcMem, &rect);
+					} else {
+						FillRect(hdcMem, &rect, GetSysColorBrush(COLOR_3DFACE));
+					}
 					if (!g_dat->avatarServiceExists) {
 						BITMAP bminfo;
 						HPEN hPen = CreatePen(PS_SOLID, 1, RGB(0,0,0));
@@ -2204,7 +2208,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						adr.rcDraw.top = 0;
 						adr.rcDraw.right = dat->avatarWidth;
 						adr.rcDraw.bottom = dat->avatarHeight;
-						adr.dwFlags = AVDRQ_DRAWBORDER;
+						adr.dwFlags = AVDRQ_DRAWBORDER | AVDRQ_HIDEBORDERONTRANSPARENCY;
 						CallService(MS_AV_DRAWAVATAR, (WPARAM)0, (LPARAM)&adr);
 					}
 					BitBlt(dis->hDC, 0, 0, dat->avatarWidth, dat->avatarHeight, hdcMem, 0, 0, SRCCOPY);
