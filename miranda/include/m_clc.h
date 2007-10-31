@@ -115,7 +115,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define CLM_SETCHECKMARK      (CLM_FIRST+29)   //wParam=hItem, lParam=1 or 0
 #define CLM_SETEXTRACOLUMNS   (CLM_FIRST+30)   //wParam=number of extra columns (zero to MAXEXTRACOLUMNS from clc.h, currently 16)
 #define CLM_SETEXTRAIMAGE     (CLM_FIRST+31)   //wParam=hItem, lParam=MAKELPARAM(iColumn (0 based),iImage). iImage=0xFF is a blank
-#define CLM_SETEXTRAIMAGELIST (CLM_FIRST+32)   //lParam=HIMAGELIST
+#define CLM_SETEXTRAIMAGELIST (CLM_FIRST+32)   //lParam=HIMAGELIST, wParam=WideImageList
 
 #define FONTID_CONTACTS    0
 #define FONTID_INVIS       1
@@ -188,6 +188,11 @@ typedef struct {
 #define CLM_GETNEXTITEM    (CLM_FIRST+50)   //wParam=flag, lParam=hItem, returns an hItem
 #define CLM_GETTEXTCOLOR   (CLM_FIRST+51)   //wParam=FONTID_, returns COLORREF
 #define CLM_SETTEXTCOLOR   (CLM_FIRST+52)   //wParam=FONTID_, lParam=COLORREF
+
+//DO NOT USE IT EXTERNALLY CAN BE NOT SUPPORTED BY CLIST
+#define CLM_SETWIDEEXTRAIMAGE	  (CLM_FIRST+60)   //wParam=hItem, lParam=MAKELPARAM(iColumn (0 based),iImage). iImage=0xFFFF is a blank
+#define CLM_GETWIDEEXTRAIMAGE     (CLM_FIRST+61)   //wParam=hItem, lParam=MAKELPARAM(iColumn (0 based),0), returns iImage or 0xFF
+#define CLM_GETWIDEEXTRAIMAGELIST (CLM_FIRST+62)   //returns HWIDEIMAGELIST
 
 //notifications  (most are omitted because the control processes everything)
 #define CLNF_ISGROUP   1
