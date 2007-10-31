@@ -718,7 +718,7 @@ void ext_yahoo_contact_added(int id, const char *myid, const char *who, const ch
 	}
 	
 	if (fname == NULL && lname == NULL) {
-		mir_snprintf(nick, sizeof(nick), who);
+		mir_snprintf(nick, sizeof(nick), "%s", who);
 	} else {
 		mir_snprintf(nick, sizeof(nick), "%s %s", fname, lname);
 	}
