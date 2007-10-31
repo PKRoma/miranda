@@ -207,7 +207,7 @@ static int    ehhToolbarModulesLoaded(WPARAM wParam, LPARAM lParam)
 		sttCreateToolBarFrame( hwndClist, ("ToolBar"), 24);
 	}
 
-	NotifyEventHooks(ME_TB_MODULELOADED, 0, 0);	
+	NotifyEventHooks(tbdat.hehTBModuleLoaded, 0, 0);
 	return 0;
 }
 

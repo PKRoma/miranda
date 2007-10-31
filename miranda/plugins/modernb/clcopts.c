@@ -3012,6 +3012,7 @@ int BGModuleUnload(void)
 		mir_free(bkgrList);
 	}
 	DestroyHookableEvent(hEventBkgrChanged);
+	hEventBkgrChanged=NULL;
 
 	return 0;
 }

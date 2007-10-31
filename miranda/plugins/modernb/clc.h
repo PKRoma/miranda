@@ -196,16 +196,18 @@ typedef struct tagClcContactTextPiece
 	};
 } ClcContactTextPiece;
 
-#define CIT_PAINT_END	0  //next items are invalids
-#define CIT_AVATAR		1
-#define CIT_ICON		2
-#define CIT_TEXT		3  //the contact name or group name
-#define CIT_SUBTEXT1	4  //the second line for contact or group counter for groups
-#define CIT_SUBTEXT2	5
-#define CIT_TIME		6
-#define CIT_CHECKBOX	7
-#define CIT_SELECTION	8
-#define CIT_EXTRA		64 //use bit compare for extra icon, the mask &0x3F will return number of extra icon
+enum {
+	CIT_PAINT_END=0,  //next items are invalids
+	CIT_AVATAR,		  //	1
+	CIT_ICON,		  //	2
+	CIT_TEXT,		  //	3  //the contact name or group name
+	CIT_SUBTEXT1,	  //	4  //the second line for contact or group counter for groups
+	CIT_SUBTEXT2,	  //	5
+	CIT_TIME,		  //	6
+	CIT_CHECKBOX,	  //	7
+	CIT_SELECTION,	  //	8
+	CIT_EXTRA=64	  //use bit compare for extra icon, the mask &0x3F will return number of extra icon
+};
 
 
 typedef struct _tagContactItems
@@ -259,6 +261,8 @@ struct ClcContact {
 	BYTE ext_nItemsNum;
 	BOOL ext_fItemsValid;
 	tContactItems ext_mpItemsDesc[MAXEXTRACOLUMNS+10];  //up to 10 items
+	
+	WORD iWideExtraImage[MAXEXTRACOLUMNS];
 };
 
 
@@ -421,6 +425,9 @@ struct ClcData {
 
 	XPTHANDLE hCheckBoxTheme;
 	BYTE bCompactMode;
+	
+	HIMAGELIST himlWideExtraColumns;
+
 };
 
 struct SHORTDATA

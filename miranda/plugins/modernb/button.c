@@ -78,7 +78,6 @@ int LoadSkinButtonModule()
 }
 int UnloadSkinButtonModule(WPARAM wParam, LPARAM lParam)
 {
-	//TODO dealloc window list?
 	UnhookEvent(hBkgChangedHook);
 	UnhookEvent(hIconChangedHook);
 	return 0;

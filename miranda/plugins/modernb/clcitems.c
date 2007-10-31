@@ -67,6 +67,7 @@ void AddSubcontacts(struct ClcData *dat, struct ClcContact * cont, BOOL showOffl
 
 			cont->subcontacts[i].iImage=CallService(MS_CLIST_GETCONTACTICON,(WPARAM)cacheEntry->hContact,1);
 			memset(cont->subcontacts[i].iExtraImage,0xFF,sizeof(cont->subcontacts[i].iExtraImage));
+			memset((void*)cont->subcontacts[i].iWideExtraImage,0xFF,sizeof(cont->subcontacts[i].iWideExtraImage));
 			cont->subcontacts[i].proto=cacheEntry->szProto;		
 			cont->subcontacts[i].type=CLCIT_CONTACT;
 			cont->subcontacts[i].flags=0;//CONTACTF_ONLINE;
@@ -306,8 +307,7 @@ void cli_DeleteItemFromTree(HWND hwnd,HANDLE hItem)
 
 	//check here contacts are not resorting
 	if (hwnd==pcli->hwndContactTree)
-		pcli->pfnFreeCacheItem(pcli->pfnGetCacheEntry(hItem)); //TODO should be called in core
-
+		pcli->pfnFreeCacheItem(pcli->pfnGetCacheEntry(hItem)); 
 	dat->NeedResort=1;
 	ClearRowByIndexCache();
 }
@@ -502,6 +502,7 @@ int GetNewSelection(struct ClcGroup *group, int selection, int direction)
 struct SavedContactState_t {
 	HANDLE hContact;
 	BYTE iExtraImage[MAXEXTRACOLUMNS];
+	WORD iWideExtraImage[MAXEXTRACOLUMNS];
 	int checked;
 
 };
@@ -569,6 +570,10 @@ void cli_SaveStateAndRebuildList(HWND hwnd, struct ClcData *dat)
 			savedContact[savedContactCount - 1].hContact = group->cl.items[group->scanIndex]->hContact;
 			CopyMemory(savedContact[savedContactCount - 1].iExtraImage, group->cl.items[group->scanIndex]->iExtraImage,
 				sizeof(group->cl.items[group->scanIndex]->iExtraImage));
+			
+			CopyMemory((void*)savedContact[savedContactCount - 1].iWideExtraImage, (void*)group->cl.items[group->scanIndex]->iWideExtraImage,
+				sizeof(group->cl.items[group->scanIndex]->iWideExtraImage));
+			
 			savedContact[savedContactCount - 1].checked = group->cl.items[group->scanIndex]->flags & CONTACTF_CHECKED;
 		}
 		else if (group->cl.items[group->scanIndex]->type == CLCIT_INFO) {
@@ -610,7 +615,11 @@ void cli_SaveStateAndRebuildList(HWND hwnd, struct ClcData *dat)
 			for (i = 0; i < savedContactCount; i++)
 				if (savedContact[i].hContact == group->cl.items[group->scanIndex]->hContact) {
 					CopyMemory(group->cl.items[group->scanIndex]->iExtraImage, savedContact[i].iExtraImage,
-						SIZEOF(group->cl.items[group->scanIndex]->iExtraImage));
+						sizeof(group->cl.items[group->scanIndex]->iExtraImage));
+					
+					CopyMemory((void*)group->cl.items[group->scanIndex]->iWideExtraImage, (void*)savedContact[i].iWideExtraImage,
+						sizeof(group->cl.items[group->scanIndex]->iWideExtraImage));
+					
 					if (savedContact[i].checked)
 						group->cl.items[group->scanIndex]->flags |= CONTACTF_CHECKED;
 					break;
@@ -651,7 +660,9 @@ void cli_SaveStateAndRebuildList(HWND hwnd, struct ClcData *dat)
 
 struct ClcContact* cliCreateClcContact( void )
 {
-	return (struct ClcContact*)mir_calloc(sizeof( struct ClcContact ) );
+	 struct ClcContact* contact=(struct ClcContact*)mir_calloc(sizeof( struct ClcContact ) );
+	 memset((void*)contact->iWideExtraImage,0xFF,sizeof(contact->iWideExtraImage));
+	 return contact;
 }
 
 ClcCacheEntryBase* cliCreateCacheItem( HANDLE hContact )
@@ -661,7 +672,7 @@ ClcCacheEntryBase* cliCreateCacheItem( HANDLE hContact )
 	{
 		memset(p,0,sizeof( displayNameCacheEntry ));
 		p->hContact = hContact;
-		InvalidateDNCEbyPointer(hContact,p,0); //TODO should be in core
+		InvalidateDNCEbyPointer(hContact,p,0);
 		p->szSecondLineText=NULL;
 		p->szThirdLineText=NULL;
 		p->plSecondLineText=NULL;

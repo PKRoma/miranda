@@ -14,6 +14,7 @@ BOOL g_mutex_bSetAllExtraIconsCycle=0;
 
 static HANDLE hExtraImageListRebuilding,hExtraImageApplying;
 static HIMAGELIST hExtraImageList;
+static HIMAGELIST hWideExtraImageList;
 
 void ExtraImage_SetAllExtraIcons(HWND hwndList,HANDLE hContact);
 void ExtraImage_LoadModule();
@@ -143,45 +144,6 @@ void SetNewExtraColumnCount()
 	SendMessage(pcli->hwndContactTree,CLM_SETEXTRACOLUMNS,EnabledColumnCount,0);
 };
 
-int OnIconLibIconChanged(WPARAM wParam,LPARAM lParam)
-{
-	HICON hicon;
-	BOOL needFree;
-    if (MirandaExiting()) return 0;
-	hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",0,TRUE,FALSE,"Email","Contact List",Translate("Email Icon"),IDI_SENDEMAIL, &needFree);
-	ExtraImageIconsIndex[0]=ImageList_ReplaceIcon(hExtraImageList,ExtraImageIconsIndex[0],hicon );		
-    if (needFree) DestroyIcon_protect(hicon);
-
-	hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",1,TRUE,FALSE,"Sms","Contact List",Translate("Sms Icon"),IDI_SMS,&needFree);
-	ExtraImageIconsIndex[1]=ImageList_ReplaceIcon(hExtraImageList,ExtraImageIconsIndex[1],hicon );		
-	if (needFree) DestroyIcon_protect(hicon);
-
-	hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",4,TRUE,FALSE,"Web","Contact List",Translate("Web Icon"),IDI_URL,&needFree);
-	ExtraImageIconsIndex[2]=ImageList_ReplaceIcon(hExtraImageList,ExtraImageIconsIndex[2],hicon );		
-	if (needFree) DestroyIcon_protect(hicon);
-
-	hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",5,TRUE,FALSE,"AlwaysVis","Contact List",Translate("Always Visible"),-IDI_ALWAYSVIS, &needFree);
-	ExtraImageIconsIndex[3]=ImageList_ReplaceIcon(hExtraImageList,ExtraImageIconsIndex[3],hicon );		
-	if (needFree) DestroyIcon_protect(hicon);
-
-	hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",6,TRUE,FALSE,"NeverVis","Contact List",Translate("Never Visible"),-IDI_NEVERVIS, &needFree);
-	ExtraImageIconsIndex[4]=ImageList_ReplaceIcon(hExtraImageList,ExtraImageIconsIndex[4],hicon );		
-	if (needFree) DestroyIcon_protect(hicon);
-
-	hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",7,TRUE,TRUE,"ChatActivity","Contact List",Translate("Chat Activity"),-IDI_CHAT, &needFree);
-	ExtraImageIconsIndex[5]=ImageList_ReplaceIcon(hExtraImageList,ExtraImageIconsIndex[5],hicon );
-	if (needFree) DestroyIcon_protect(hicon);
-
-	CLUI_IconsChanged(wParam,lParam);
-	NotifyEventHooks(ME_SKIN_ICONSCHANGED,0,0);
-	pcli->pfnClcBroadcast( INTM_INVALIDATE,0,0);
-
-	SendMessage(g_hwndViewModeFrame, WM_USER+100, 0, 0);
-  
-	return 0;
-};
-
-
 void ExtraImage_ReloadExtraIcons()
 {
 	{	
@@ -193,7 +155,10 @@ void ExtraImage_ReloadExtraIcons()
 		SendMessage(pcli->hwndContactTree,CLM_SETEXTRACOLUMNSSPACE,DBGetContactSettingByte(NULL,"CLUI","ExtraColumnSpace",18),0);					
 		SendMessage(pcli->hwndContactTree,CLM_SETEXTRAIMAGELIST,0,(LPARAM)NULL);		
 		if (hExtraImageList){ImageList_Destroy(hExtraImageList);};
+		if (hWideExtraImageList){ImageList_Destroy(hWideExtraImageList);};
+
 		hExtraImageList=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,1,256);
+		hWideExtraImageList=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,1,256);
 
 		//adding protocol icons
 		CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&count,(LPARAM)&protos);
@@ -224,7 +189,7 @@ void ExtraImage_ReloadExtraIcons()
 		ExtraImageIconsIndex[5]=ImageList_AddIcon(hExtraImageList,hicon );
 		if (needFree) DestroyIcon_protect(hicon);
 
-		SendMessage(pcli->hwndContactTree,CLM_SETEXTRAIMAGELIST,0,(LPARAM)hExtraImageList);		
+		SendMessage(pcli->hwndContactTree,CLM_SETEXTRAIMAGELIST,(WPARAM)hWideExtraImageList,(LPARAM)hExtraImageList);		
 		//ExtraImage_SetAllExtraIcons(hImgList);
 		SetNewExtraColumnCount();
 		NotifyEventHooks(hExtraImageListRebuilding,0,0);
@@ -448,21 +413,59 @@ int ehhHideExtraInfoTip(WPARAM wParam, LPARAM lParam)
 	
 }
 
+int WideSetIconForExtraColumn(WPARAM wParam,LPARAM lParam)
+{
+	pIconExtraColumn piec;
+	int icol;
+	HANDLE hItem;
+
+	if (pcli->hwndContactTree==0){return(-1);};
+	if (wParam==0||lParam==0){return(-1);};
+	piec=(pIconExtraColumn)lParam;
+
+	if (piec->cbSize!=sizeof(IconExtraColumn)){return(-1);};
+	icol=ExtraImage_ExtraIDToColumnNum(piec->ColumnType);
+	if (icol==-1){return(-1);};
+
+	hItem=(HANDLE)SendMessage(pcli->hwndContactTree,CLM_FINDCONTACT,(WPARAM)wParam,0);
+	if (hItem==0){return(-1);};
+	if (piec->hImage==(HANDLE)0xFF)	piec->hImage=(HANDLE)0xFFFF;
+
+	SendMessage(pcli->hwndContactTree,CLM_SETWIDEEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(icol,piec->hImage));	
+	return(0);
+};
+
+//wparam=hIcon
+//return hImage on success,-1 on failure
+int WideAddIconToExtraImageList(WPARAM wParam,LPARAM lParam)
+{
+	int res=-1;
+	if (hWideExtraImageList==0||wParam==0){return(-1);};
+	res=((int)ImageList_AddIcon(hWideExtraImageList,(HICON)wParam));
+	if (res==0xFF)	res=((int)ImageList_AddIcon(hWideExtraImageList,(HICON)wParam));
+	if (res>0xFFFE) return -1;
+	return res;
+};
 
 void ExtraImage_LoadModule()
 {
-	CreateServiceFunction(MS_CLIST_EXTRA_SET_ICON,SetIconForExtraColumn); 
-	CreateServiceFunction(MS_CLIST_EXTRA_ADD_ICON,AddIconToExtraImageList); 
+	CreateServiceFunction(MS_CLIST_EXTRA_SET_ICON,WideSetIconForExtraColumn); 
+	CreateServiceFunction(MS_CLIST_EXTRA_ADD_ICON,WideAddIconToExtraImageList); 
+
+	//CreateServiceFunction(MS_CLIST_EXTRA2_SET_ICON,WideSetIconForExtraColumn); 
+	//CreateServiceFunction(MS_CLIST_EXTRA2_ADD_ICON,WideAddIconToExtraImageList); 
 
 	hExtraImageListRebuilding=CreateHookableEvent(ME_CLIST_EXTRA_LIST_REBUILD);
 	hExtraImageApplying=CreateHookableEvent(ME_CLIST_EXTRA_IMAGE_APPLY);
-	HookEvent(ME_SKIN2_ICONSCHANGED,OnIconLibIconChanged);
+	//HookEvent(ME_SKIN2_ICONSCHANGED,OnIconLibIconChanged);
 
 	HookEvent(ME_CLC_SHOWEXTRAINFOTIP, ehhShowExtraInfoTip );
 	HookEvent(ME_CLC_HIDEINFOTIP, ehhHideExtraInfoTip );
 
 
 };
+
+
 
 
 

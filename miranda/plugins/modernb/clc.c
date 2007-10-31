@@ -422,7 +422,6 @@ int ClcProtoAck(WPARAM wParam,LPARAM lParam)
 				pcli->clcProto[i].dwStatus = (WORD) ack->lParam;
 				if (pcli->clcProto[i].dwStatus>=ID_STATUS_OFFLINE)
 					pcli->pfnTrayIconUpdateBase(pcli->clcProto[i].szProto);
-				//TODO call update icons here
 				if(ExtraImage_ExtraIDToColumnNum(EXTRA_ICON_VISMODE)!=-1)
 					ExtraImage_SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)NULL);				
 				return 0;
@@ -880,6 +879,43 @@ case WM_SIZE:
 	}
 
 	return 0;
+case INTM_GROUPCHANGED:
+	{
+		struct ClcContact *contact;
+		BYTE iExtraImage[MAXEXTRACOLUMNS];
+		WORD iWideExtraImage[MAXEXTRACOLUMNS];
+		BYTE flags = 0;
+		if (!pcli->pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
+		{
+			memset(iExtraImage, 0xFF, SIZEOF(iExtraImage));
+			memset((void*)iWideExtraImage, 0xFF, sizeof(iWideExtraImage));
+		}
+		else {
+			CopyMemory(iExtraImage, contact->iExtraImage, SIZEOF(iExtraImage));
+			CopyMemory((void*)iWideExtraImage, (void*)contact->iWideExtraImage, sizeof(iWideExtraImage));
+			flags = contact->flags;
+		}
+		pcli->pfnDeleteItemFromTree(hwnd, (HANDLE) wParam);
+		if (GetWindowLong(hwnd, GWL_STYLE) & CLS_SHOWHIDDEN || !DBGetContactSettingByte((HANDLE) wParam, "CList", "Hidden", 0)) {
+			NMCLISTCONTROL nm;
+			pcli->pfnAddContactToTree(hwnd, dat, (HANDLE) wParam, 1, 1);
+			if (pcli->pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL)) {
+				CopyMemory(contact->iExtraImage, iExtraImage, SIZEOF(iExtraImage));
+				CopyMemory((void*)contact->iWideExtraImage, (void*)iWideExtraImage, sizeof(iWideExtraImage));
+				if(flags & CONTACTF_CHECKED)
+					contact->flags |= CONTACTF_CHECKED;
+			}
+			nm.hdr.code = CLN_CONTACTMOVED;
+			nm.hdr.hwndFrom = hwnd;
+			nm.hdr.idFrom = GetDlgCtrlID(hwnd);
+			nm.flags = 0;
+			nm.hItem = (HANDLE) wParam;
+			SendMessage(GetParent(hwnd), WM_NOTIFY, 0, (LPARAM) & nm);
+			dat->NeedResort = 1;
+		}
+		SetTimer(hwnd,TIMERID_REBUILDAFTER,1,NULL);
+		return 0;
+	}
 case INTM_ICONCHANGED:
 	{
 		struct ClcContact *contact = NULL;

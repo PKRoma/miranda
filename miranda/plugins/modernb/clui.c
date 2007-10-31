@@ -2492,7 +2492,7 @@ void CLUI_cliOnCreateClc(void)
 	GroupMenus_Init();
 
 	HookEvent(ME_SYSTEM_MODULESLOADED,CLUI_ModulesLoaded);
-	HookEvent(ME_SKIN_ICONSCHANGED,CLUI_IconsChanged);
+	HookEvent(ME_SKIN2_ICONSCHANGED,CLUI_IconsChanged);
 
 	hContactDraggingEvent=CreateHookableEvent(ME_CLUI_CONTACTDRAGGING);
 	hContactDroppedEvent=CreateHookableEvent(ME_CLUI_CONTACTDROPPED);

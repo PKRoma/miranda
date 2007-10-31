@@ -179,7 +179,50 @@ LRESULT cli_ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARA
 			pcli->pfnEnsureVisible(hwnd, dat, dat->selection, 0);			
 		}
 		return 0;
-	}
 
+	case CLM_SETEXTRAIMAGE:
+		{
+			struct ClcContact *contact;
+			if (LOWORD(lParam) >= dat->extraColumnsCount)
+				return 0;
+			if (!pcli->pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
+				return 0;
+			contact->iExtraImage[LOWORD(lParam)] = (BYTE)  HIWORD(lParam); //set oldstyle icon
+			contact->iWideExtraImage[LOWORD(lParam)] = (WORD) 0xFFFF; //reset wide icon
+			pcli->pfnInvalidateRect(hwnd, NULL, FALSE);
+			return 0;
+		}
+
+	case CLM_SETWIDEEXTRAIMAGE:
+		{
+				struct ClcContact *contact;
+				if (LOWORD(lParam) >= dat->extraColumnsCount)
+					return 0;
+				if (!pcli->pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
+					return 0;
+				contact->iExtraImage[LOWORD(lParam)] = (BYTE) 0xFF; //reset oldstyle icon
+				contact->iWideExtraImage[LOWORD(lParam)] = (WORD) HIWORD(lParam); //set wide icon
+				pcli->pfnInvalidateRect(hwnd, NULL, FALSE);
+				return 0;
+			}
+
+	case CLM_SETEXTRAIMAGELIST:
+		{
+			dat->himlExtraColumns = (HIMAGELIST) lParam;
+			dat->himlWideExtraColumns = (HIMAGELIST) wParam;
+			pcli->pfnInvalidateRect(hwnd, NULL, FALSE);
+			return 0;
+		}
+
+	case CLM_GETWIDEEXTRAIMAGE:
+		{
+			struct ClcContact *contact;
+			if (LOWORD(lParam) >= dat->extraColumnsCount)
+				return 0xFFFF;
+			if (!pcli->pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
+				return 0xFFFF;
+			return contact->iWideExtraImage[LOWORD(lParam)];
+		}
+	}
 	return saveProcessExternalMessages(hwnd, dat, msg, wParam, lParam);
 }
