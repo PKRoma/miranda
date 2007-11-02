@@ -605,6 +605,7 @@ char* GetNextSetting(char* pDbSetting)
 		break;
 
 	case DBVT_ASCIIZ:
+	case DBVT_UTF8:
 	case DBVT_BLOB:
 	case DBVTF_VARIABLELENGTH:
 		pDbSetting = pDbSetting + 3 + *(WORD*)(pDbSetting+1);
