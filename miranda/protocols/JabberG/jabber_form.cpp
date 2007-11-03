@@ -273,7 +273,8 @@ void JabberFormLayoutSingleControl(TJabberFormControlInfo *item, TJabberFormLayo
 		SetRect(&rcCtrl, 0, 0, layout_info->width, 0);
 		HDC hdc = GetDC( item->hCtrl );
 		HFONT hfntSave = (HFONT)SelectObject(hdc, (HFONT)SendMessage(item->hCtrl, WM_GETFONT, 0, 0));
-		DrawText( hdc, valueStr, -1, &rcCtrl, DT_CALCRECT|DT_EDITCONTROL|DT_WORDBREAK );
+		DrawText( hdc, valueStr, -1, &rcCtrl, DT_CALCRECT|DT_EDITCONTROL );
+		rcCtrl.right += 20;
 		SelectObject(hdc, hfntSave);
 		ReleaseDC(item->hCtrl, hdc);
 	} else
@@ -374,7 +375,7 @@ TJabberFormControlInfo *JabberFormAppendControl(HWND hwndStatic, TJabberFormLayo
 		case JFORM_CTYPE_FIXED:
 		{
 			item->hCtrl = CreateWindow( _T("edit"), valueStr,
-				WS_CHILD|WS_VISIBLE|ES_MULTILINE|ES_READONLY,
+				WS_CHILD|WS_VISIBLE|ES_MULTILINE|ES_READONLY|ES_AUTOHSCROLL,
 				0, 0, 0, 0,
 				hwndStatic, ( HMENU ) IDC_STATIC, hInst, NULL );
 			break;
