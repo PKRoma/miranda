@@ -543,6 +543,8 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 				OPTTREE_CHECK,	1,	NULL,	"ShowTransport"},
 		{0,	LPGENT("Other") _T("/") LPGENT("Automatically add contact when accept authorization"),
 				OPTTREE_CHECK,	1,	NULL,	"AutoAdd"},
+		{0,	LPGENT("Other") _T("/") LPGENT("Automatically accept authorization requests"),
+				OPTTREE_CHECK,	1,	NULL,	"AutoAcceptAuthorization"},
 		
 		{0, LPGENT("Security") _T("/") LPGENT("Show information about operating system in version replies"),
 				OPTTREE_CHECK,	1,	NULL,	"ShowOSVersion"},
@@ -590,6 +592,8 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			JGetByte("ShowTransport", TRUE)?1:0,		"ShowTransport");
 		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
 			JGetByte("AutoAdd", TRUE)?1:0,				"AutoAdd");
+		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options),
+			JGetByte("AutoAcceptAuthorization", FALSE)?1:0, "AutoAcceptAuthorization");
 		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
 			JGetByte("MsgAck", FALSE)?1:0,				"MsgAck");
 		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
@@ -678,21 +682,22 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 				index++;
 			}
 
-			JSetByte("AutoAdd",             (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoAdd"));
-			JSetByte("MsgAck",              (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "MsgAck"));
-			JSetByte("Disable3920auth",     (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "Disable3920auth"));
-			JSetByte("EnableAvatars",       (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableAvatars"));
-			JSetByte("AutoAcceptMUC",       (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoAcceptMUC"));
-			JSetByte("AutoJoinConferences", (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoJoinConferences"));
-			JSetByte("IgnoreMUCInvites",	(BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "IgnoreMUCInvites"));
-			JSetByte("EnableRemoteControl", (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableRemoteControl"));
-			JSetByte("AutoJoinBookmarks",   (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoJoinBookmarks"));
-			JSetByte("EnableZlib",          (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableZlib"));
-			JSetByte("LogChatstates",       (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "LogChatstates"));
-			JSetByte("EnableUserMood",      (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableUserMood"));
-			JSetByte("EnableUserTune",      (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableUserTune"));
-			JSetByte("ShowOSVersion",       (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "ShowOSVersion"));
-			JSetByte("BsOnlyIBB",           (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "BsOnlyIBB"));
+			JSetByte("AutoAdd",                  (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoAdd"));
+			JSetByte("AutoAcceptAuthorization",  (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoAcceptAuthorization"));
+			JSetByte("MsgAck",                   (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "MsgAck"));
+			JSetByte("Disable3920auth",          (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "Disable3920auth"));
+			JSetByte("EnableAvatars",            (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableAvatars"));
+			JSetByte("AutoAcceptMUC",            (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoAcceptMUC"));
+			JSetByte("AutoJoinConferences",      (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoJoinConferences"));
+			JSetByte("IgnoreMUCInvites",         (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "IgnoreMUCInvites"));
+			JSetByte("EnableRemoteControl",      (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableRemoteControl"));
+			JSetByte("AutoJoinBookmarks",        (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoJoinBookmarks"));
+			JSetByte("EnableZlib",               (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableZlib"));
+			JSetByte("LogChatstates",            (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "LogChatstates"));
+			JSetByte("EnableUserMood",           (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableUserMood"));
+			JSetByte("EnableUserTune",           (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableUserTune"));
+			JSetByte("ShowOSVersion",            (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "ShowOSVersion"));
+			JSetByte("BsOnlyIBB",                (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "BsOnlyIBB"));
 			JabberSendPresence( jabberStatus, true );
 			return TRUE;
 		}

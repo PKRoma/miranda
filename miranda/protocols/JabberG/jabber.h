@@ -607,6 +607,7 @@ int JabberContactMenuRunCommands(WPARAM wParam, LPARAM lParam);
 //---- jabber_svc.c -------------------------------------------------
 
 void JabberEnableMenuItems( BOOL bEnable );
+HANDLE AddToListByJID( const TCHAR* newJid, DWORD flags );
 
 //---- jabber_search.cpp -------------------------------------------------
 int JabberSearchCreateAdvUI( WPARAM wParam, LPARAM lParam);

@@ -1649,11 +1649,22 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 	}
 
 	if ( !_tcscmp( type, _T("subscribe"))) {
-		if ( _tcschr( from, '@' ) == NULL ) {
+		// automatically send authorization allowed to agent/transport
+		if ( _tcschr( from, '@' ) == NULL || JGetByte("AutoAcceptAuthorization", FALSE )) {
 			JabberListAdd( LIST_ROSTER, from );
-			// automatically send authorization allowed to agent/transport
 			XmlNode p( "presence" ); p.addAttr( "to", from ); p.addAttr( "type", "subscribed" );
 			info->send( p );
+			if ( JGetByte( "AutoAdd", TRUE ) == TRUE ) {
+				HANDLE hContact;
+				JABBER_LIST_ITEM *item;
+
+				if (( item = JabberListGetItemPtr( LIST_ROSTER, from )) == NULL || ( item->subscription != SUB_BOTH && item->subscription != SUB_TO )) {
+					JabberLog( "Try adding contact automatically jid = " TCHAR_STR_PARAM, from );
+					if (( hContact=AddToListByJID( from, 0 )) != NULL ) {
+						// Trigger actual add by removing the "NotOnList" added by AddToListByJID()
+						// See AddToListByJID() and JabberDbSettingChanged().
+						DBDeleteContactSetting( hContact, "CList", "NotOnList" );
+			}	}	}
 		}
 		else {
 			XmlNode* n = JabberXmlGetChild( node, "nick" );

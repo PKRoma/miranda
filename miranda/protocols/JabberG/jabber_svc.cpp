@@ -44,7 +44,7 @@ extern LIST<void> arServices;
 ////////////////////////////////////////////////////////////////////////////////////////
 // JabberAddToList - adds a contact to the contact list
 
-static HANDLE AddToListByJID( const TCHAR* newJid, DWORD flags )
+HANDLE AddToListByJID( const TCHAR* newJid, DWORD flags )
 {
 	HANDLE hContact;
 	TCHAR* jid, *nick;
