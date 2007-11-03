@@ -529,6 +529,8 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 				OPTTREE_CHECK,	1,	NULL,	"AutoJoinBookmarks"},
 		{0,	LPGENT("Conferences") _T("/") LPGENT("Automatically join conferences on login"),
 				OPTTREE_CHECK,	1,	NULL,	"AutoJoinConferences"},
+		{0, LPGENT("Conferences") _T("/") LPGENT("Do not show multiuser chat invitations"),
+				OPTTREE_CHECK,  1,	NULL,	"IgnoreMUCInvites"},
 
 		{0,	LPGENT("Server options") _T("/") LPGENT("Disable SASL authentication (for old servers)"),
 				OPTTREE_CHECK,	1,	NULL,	"Disable3920auth"},
@@ -596,6 +598,8 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			JGetByte("AutoAcceptMUC", FALSE)?1:0,		"AutoAcceptMUC");
 		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
 			JGetByte("AutoJoinConferences", FALSE)?1:0, "AutoJoinConferences");
+		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options),
+			JGetByte("IgnoreMUCInvites", FALSE)?1:0,	"IgnoreMUCInvites");
 		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
 			JGetByte("Disable3920auth", FALSE)?1:0,		"Disable3920auth");
 		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
@@ -680,6 +684,7 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			JSetByte("EnableAvatars",       (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableAvatars"));
 			JSetByte("AutoAcceptMUC",       (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoAcceptMUC"));
 			JSetByte("AutoJoinConferences", (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoJoinConferences"));
+			JSetByte("IgnoreMUCInvites",	(BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "IgnoreMUCInvites"));
 			JSetByte("EnableRemoteControl", (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableRemoteControl"));
 			JSetByte("AutoJoinBookmarks",   (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoJoinBookmarks"));
 			JSetByte("EnableZlib",          (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableZlib"));

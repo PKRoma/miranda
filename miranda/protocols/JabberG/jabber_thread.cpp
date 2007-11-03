@@ -1327,8 +1327,22 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 	}	}
 
 	if ( isChatRoomInvitation ) {
-		if ( inviteRoomJid != NULL )
-			JabberGroupchatProcessInvite( inviteRoomJid, inviteFromJid, inviteReason, invitePassword );
+		if ( inviteRoomJid != NULL ) {
+			if ( JGetByte( "IgnoreMUCInvites", FALSE )) {
+				// FIXME: temporary disabled due to MUC inconsistence on server side
+				/*
+				XmlNode m( "message" ); m.addAttr( "to", from );
+				XmlNode* xNode = m.addChild( "x" );
+				xNode->addAttr( "xmlns", JABBER_FEAT_MUC_USER );
+				XmlNode* declineNode = xNode->addChild( "decline" );
+				declineNode->addAttr( "from", inviteRoomJid );
+				XmlNode* reasonNode = declineNode->addChild( "reason", "The user has chosen to not accept chat invites" );
+				info->send( m );
+				*/
+			}
+			else
+				JabberGroupchatProcessInvite( inviteRoomJid, inviteFromJid, inviteReason, invitePassword );
+		}
 		return;
 	}
 
