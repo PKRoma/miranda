@@ -787,14 +787,11 @@ static void InsertMenuItemWithSeparators(HMENU hMenu,int uItem,BOOL fByPosition,
 	mii.cbSize = MENUITEMINFO_V4_SIZE;
 	//check for separator before
 	if ( uItem ) {
-		int needMenuBreak = 0;
 		mii.fMask = MIIM_SUBMENU | MIIM_DATA | MIIM_TYPE;
 		GetMenuItemInfo( hMenu, uItem-1, TRUE, &mii );
 		pimi = MO_GetIntMenuItem( mii.dwItemData );
 		if ( pimi != NULL ) {
-			if (( GetMenuItemCount( hMenu ) % 34 ) == 33 && pimi->mi.root != -1 )
-				needSeparator = needMenuBreak = 1;
-			else if ( mii.fType == MFT_SEPARATOR )
+			if ( mii.fType == MFT_SEPARATOR )
 				needSeparator = 0;
 			else
 				needSeparator = ( pimi->mi.position / SEPARATORPOSITIONINTERVAL ) != thisItemPosition / SEPARATORPOSITIONINTERVAL;
@@ -810,11 +807,7 @@ static void InsertMenuItemWithSeparators(HMENU hMenu,int uItem,BOOL fByPosition,
 				mii.fMask = MIIM_TYPE;
 				mii.fType = MFT_SEPARATOR;
 				InsertMenuItem( hMenu, uItem, TRUE, &mii );
-
-				if ( needMenuBreak ) {
-					ModifyMenu( hMenu, uItem, MF_MENUBARBREAK | MF_BYPOSITION, uItem, _T(""));
-					EnableMenuItem( hMenu, uItem, FALSE );
-			}	}
+			}
 			uItem++;
 	}	}
 
@@ -826,7 +819,7 @@ static void InsertMenuItemWithSeparators(HMENU hMenu,int uItem,BOOL fByPosition,
 		pimi = MO_GetIntMenuItem( mii.dwItemData );
 		if ( pimi != NULL ) {
 			if ( mii.fType == MFT_SEPARATOR )
-				needSeparator = 0;
+				needSeparator=0;
 			else
 				needSeparator = pimi->mi.position / SEPARATORPOSITIONINTERVAL != thisItemPosition / SEPARATORPOSITIONINTERVAL;
 		}
@@ -844,7 +837,21 @@ static void InsertMenuItemWithSeparators(HMENU hMenu,int uItem,BOOL fByPosition,
 		GetMenuItemInfo( hMenu, uItem, TRUE, &mii );
 	}
 
-	InsertMenuItem( hMenu, uItem, TRUE, lpmii );
+	{	// create local copy *lpmii so we can change some flags
+		MENUITEMINFO mii_copy = *lpmii;
+		lpmii = &mii_copy;
+
+		if (( GetMenuItemCount( hMenu ) % 35 ) == 33 /* will be 34 after addition :) */ && pimi != NULL )
+			if ( pimi->mi.root != -1 )
+			{
+				if (!(lpmii->fMask&MIIM_FTYPE))
+					lpmii->fType = 0;
+				lpmii->fMask |= MIIM_FTYPE;
+				lpmii->fType |= MFT_MENUBARBREAK;
+			}
+
+		InsertMenuItem( hMenu, uItem, TRUE, lpmii );
+	}
 }
 
 //wparam started hMenu
