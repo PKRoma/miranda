@@ -576,6 +576,7 @@ void   JabberResolveTransportNicks( TCHAR* jid );
 void   JabberSetServerStatus( int iNewStatus );
 TCHAR* EscapeChatTags(TCHAR* pszText);
 char*  UnEscapeChatTags(char* str_in);
+void   JabberFormatMirVer(JABBER_RESOURCE_STATUS *resource, TCHAR *buf, int bufSize);
 void   JabberUpdateMirVer(JABBER_LIST_ITEM *item);
 void   JabberUpdateMirVer(HANDLE hContact, JABBER_RESOURCE_STATUS *resource);
 int    JabberGetEventTextChatStates( WPARAM wParam, LPARAM lParam );

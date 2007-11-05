@@ -468,7 +468,10 @@ int CListMW_BuildStatusItems( WPARAM wParam, LPARAM lParam )
 			mi.icolibItem = arXStatusIcons[ i-1 ];
 			mi.pszName = ( char* )arXStatusNames[ i-1 ];
 		}
-		else mi.pszName = "None";
+		else {
+			mi.pszName = "None";
+			mi.icolibItem = LoadSkinnedIconHandle(SKINICON_OTHER_SMALLDOT);
+		}
 
 		mi.position++;
 		mi.pszPopupName = ( char* )hRoot;

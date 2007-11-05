@@ -154,6 +154,7 @@ int JabberModernOptInit( WPARAM wParam, LPARAM lParam );
 int JabberUserInfoInit( WPARAM wParam, LPARAM lParam );
 int JabberMsgUserTyping( WPARAM wParam, LPARAM lParam );
 void JabberMenuInit( void );
+void JabberMenuUninit( void );
 int JabberSvcInit( void );
 int JabberSvcUninit( void );
 void InitCustomFolders( void );
@@ -460,6 +461,7 @@ extern "C" int __declspec( dllexport ) Unload( void )
 		DestroyHookableEvent( hInitChat );
 
 	JabberXStatusUninit();
+	JabberMenuUninit();
 	JabberSvcUninit();
 	JabberSslUninit();
 	JabberListUninit();
