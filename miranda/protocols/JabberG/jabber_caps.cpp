@@ -128,13 +128,19 @@ JabberCapsBits JabberGetTotalJidCapabilites( TCHAR *jid )
 	TCHAR szBareJid[ JABBER_MAX_JID_LEN ];
 	JabberStripJid( jid, szBareJid, SIZEOF( szBareJid ));
 
-	JabberCapsBits jcbToReturn = JabberGetResourceCapabilites( szBareJid, FALSE );
-	if ( jcbToReturn & JABBER_RESOURCE_CAPS_ERROR)
-		jcbToReturn = JABBER_RESOURCE_CAPS_NONE;
-	
 	JABBER_LIST_ITEM *item = JabberListGetItemPtr( LIST_ROSTER, szBareJid );
 	if ( !item )
 		item = JabberListGetItemPtr( LIST_VCARD_TEMP, szBareJid );
+
+	JabberCapsBits jcbToReturn = JABBER_RESOURCE_CAPS_NONE;
+
+	// get bare jid info only if where is no resources
+	if ( !item || ( item && !item->resourceCount )) {
+		jcbToReturn = JabberGetResourceCapabilites( szBareJid, FALSE );
+		if ( jcbToReturn & JABBER_RESOURCE_CAPS_ERROR)
+			jcbToReturn = JABBER_RESOURCE_CAPS_NONE;
+	}
+
 	if ( item ) {
 		for ( int i = 0; i < item->resourceCount; i++ ) {
 			TCHAR szFullJid[ JABBER_MAX_JID_LEN ];
