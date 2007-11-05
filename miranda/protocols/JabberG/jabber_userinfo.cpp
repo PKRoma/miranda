@@ -272,6 +272,30 @@ static void sttGetNodeText( HWND hwndTree, HTREEITEM hti, UserInfoStringBuf *buf
 			sttGetNodeText( hwndTree, hti, buf, indent + 1 );
 }
 
+BOOL SetClipboardText(HWND hwndDlg, TCHAR *szText)
+{
+	if ( !hwndDlg || !szText)
+		return FALSE;
+
+	if (! OpenClipboard( hwndDlg ))
+		return FALSE;
+	
+	EmptyClipboard();
+	HGLOBAL hMem = GlobalAlloc( GMEM_MOVEABLE, sizeof( TCHAR ) * ( lstrlen( szText ) + 1 ));
+	TCHAR *s = ( TCHAR * )GlobalLock( hMem );
+	lstrcpy( s, szText );
+	GlobalUnlock( hMem );
+#ifdef UNICODE
+	SetClipboardData( CF_UNICODETEXT, hMem );
+#else
+	SetClipboardData( CF_TEXT, hMem );
+#endif
+	
+	CloseClipboard();
+	
+	return TRUE;
+}
+
 static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	JabberUserInfoDlgData *dat = (JabberUserInfoDlgData *)GetWindowLong( hwndDlg, GWL_USERDATA );
@@ -361,62 +385,57 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 
 		case WM_CONTEXTMENU:
 		{
-			switch (GetWindowLong((HWND)wParam, GWL_ID))
+			switch ( GetWindowLong(( HWND )wParam, GWL_ID ))
 			{
 				case IDC_TV_INFO:
 				{
-					HWND hwndTree = GetDlgItem(hwndDlg, IDC_TV_INFO);
-					POINT pt = { (signed short)LOWORD(lParam), (signed short)HIWORD(lParam) };
+					HWND hwndTree = GetDlgItem( hwndDlg, IDC_TV_INFO );
+					POINT pt = { (signed short)LOWORD( lParam ), (signed short)HIWORD( lParam ) };
 					HTREEITEM hItem = 0;
 
-					if ((pt.x == -1) && (pt.y == -1))
-					{
-						if (hItem = TreeView_GetSelection(hwndTree))
-						{
+					if (( pt.x == -1 ) && ( pt.y == -1 )) {
+						if (hItem = TreeView_GetSelection( hwndTree )) {
 							RECT rc;
-							TreeView_GetItemRect(hwndTree, hItem, &rc, TRUE);
+							TreeView_GetItemRect( hwndTree, hItem, &rc, TRUE );
 							pt.x = rc.left;
 							pt.y = rc.bottom;
-							ClientToScreen(hwndTree, &pt);
+							ClientToScreen( hwndTree, &pt );
 						}
-					} else
-					{
+					}
+					else {
 						TVHITTESTINFO tvhti = {0};
 						tvhti.pt = pt;
-						ScreenToClient(hwndTree, &tvhti.pt);
-						TreeView_HitTest(hwndTree, &tvhti);
-						if (tvhti.flags & TVHT_ONITEM)
-						{
+						ScreenToClient( hwndTree, &tvhti.pt );
+						TreeView_HitTest( hwndTree, &tvhti );
+						if ( tvhti.flags & TVHT_ONITEM ) {
 							hItem = tvhti.hItem;
 							TreeView_Select(hwndTree, hItem, TVGN_CARET);
 						}
 					}
 
-					if (hItem)
-					{
+					if ( hItem ) {
 						HMENU hMenu = CreatePopupMenu();
 						AppendMenu(hMenu, MF_STRING, (UINT_PTR)1, TranslateT("Copy"));
+						AppendMenu(hMenu, MF_STRING, (UINT_PTR)2, TranslateT("Copy only this value"));
 						AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
 						AppendMenu(hMenu, MF_STRING, (UINT_PTR)0, TranslateT("Cancel"));
-						if (TrackPopupMenu(hMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL))
-						{
+						int nReturnCmd = TrackPopupMenu( hMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL );
+						if ( nReturnCmd == 1 ) {
 							UserInfoStringBuf buf;
-							sttGetNodeText(hwndTree, hItem, &buf);
-
-							OpenClipboard(hwndDlg);
-							EmptyClipboard();
-							HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, sizeof(TCHAR)*(lstrlen(buf.buf)+1));
-							TCHAR *s = (TCHAR *)GlobalLock(hMem);
-							lstrcpy(s, buf.buf);
-							GlobalUnlock(hMem);
-							#ifdef UNICODE
-								SetClipboardData(CF_UNICODETEXT, hMem);
-							#else
-								SetClipboardData(CF_TEXT, hMem);
-							#endif
-							CloseClipboard();
+							sttGetNodeText( hwndTree, hItem, &buf );
+							SetClipboardText( hwndDlg, buf.buf );
 						}
-						DestroyMenu(hMenu);
+						else if ( nReturnCmd == 2 ) {
+							TCHAR szBuffer[ 1024 ];
+							TVITEMEX tvi = {0};
+							tvi.mask = TVIF_HANDLE|TVIF_TEXT|TVIF_STATE;
+							tvi.hItem = hItem;
+							tvi.cchTextMax = SIZEOF( szBuffer );
+							tvi.pszText = szBuffer;
+							if ( TreeView_GetItem( hwndTree, &tvi ))
+								SetClipboardText( hwndDlg, szBuffer );
+						}
+						DestroyMenu( hMenu );
 					}
 
 					break;
