@@ -319,13 +319,19 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 		case WM_DESTROY:
 		{
 			WindowList_Remove(hUserInfoList, hwndDlg);
-			mir_free(dat);
+			if (dat)
+			{
+				mir_free(dat);
+				SetWindowLong(hwndDlg, GWL_USERDATA, 0);
+			}
 			ImageList_Destroy(TreeView_SetImageList(GetDlgItem(hwndDlg, IDC_TV_INFO), NULL, TVSIL_NORMAL));
 			break;
 		}
 
 		case WM_JABBER_REFRESH:
 		{
+			if (!dat) break;
+
 			if (!dat->item)
 			{
 				DBVARIANT dbv = {0};
