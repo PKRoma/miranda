@@ -2172,20 +2172,32 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					return DrawMenuItem(wParam, lParam);
 				} else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_AVATAR) && dat->avatarPic && (g_dat->flags&SMF_AVATAR)) {
 					HDC hdcMem = CreateCompatibleDC(dis->hDC);
-					HPEN hPen = CreatePen(PS_SOLID, 1, RGB(0,0,0));
 					HBITMAP hbmMem = CreateCompatibleBitmap(dis->hDC, dat->avatarWidth, dat->avatarHeight);
-					hPen = (HPEN)SelectObject(hdcMem, hPen);
+					RECT rect;
 					hbmMem = (HBITMAP) SelectObject(hdcMem, hbmMem);
+					rect.top = 0;
+					rect.left = 0;
+					rect.right = dat->avatarWidth;
+					rect.bottom = dat->avatarHeight;
+					if (pfnIsAppThemed && pfnDrawThemeParentBackground && pfnIsAppThemed()) {
+						pfnDrawThemeParentBackground(dis->hwndItem, hdcMem, &rect);
+					} else {
+						FillRect(hdcMem, &rect, GetSysColorBrush(COLOR_3DFACE));
+					}
 					if (!g_dat->avatarServiceExists) {
 						BITMAP bminfo;
+						HPEN hPen = CreatePen(PS_SOLID, 1, RGB(0,0,0));
 						HDC hdcTemp = CreateCompatibleDC(dis->hDC);
 						HBITMAP hbmTemp = (HBITMAP)SelectObject(hdcTemp, dat->avatarPic);
+						hPen = (HPEN)SelectObject(hdcMem, hPen);
 						Rectangle(hdcMem, 0, 0, dat->avatarWidth, dat->avatarHeight);
 						GetObject(dat->avatarPic, sizeof(bminfo), &bminfo);
 						SetStretchBltMode(hdcMem, HALFTONE);
 						StretchBlt(hdcMem, 1, 1, dat->avatarWidth-2, dat->avatarHeight-2, hdcTemp, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
 						hbmTemp = (HBITMAP) SelectObject(hdcTemp, hbmTemp);
 						DeleteDC(hdcTemp);
+						hPen = (HPEN)SelectObject(hdcMem, hPen);
+						DeleteObject(hPen);
 					} else {
 						AVATARDRAWREQUEST adr;
 						ZeroMemory(&adr, sizeof(adr));
@@ -2196,14 +2208,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						adr.rcDraw.top = 0;
 						adr.rcDraw.right = dat->avatarWidth;
 						adr.rcDraw.bottom = dat->avatarHeight;
-						adr.dwFlags = AVDRQ_DRAWBORDER;
-						adr.alpha = 0;
+						adr.dwFlags = AVDRQ_DRAWBORDER | AVDRQ_HIDEBORDERONTRANSPARENCY;
 						CallService(MS_AV_DRAWAVATAR, (WPARAM)0, (LPARAM)&adr);
 					}
 					BitBlt(dis->hDC, 0, 0, dat->avatarWidth, dat->avatarHeight, hdcMem, 0, 0, SRCCOPY);
-					hPen = (HPEN)SelectObject(hdcMem, hPen);
 					hbmMem = (HBITMAP) SelectObject(hdcMem, hbmMem);
-					DeleteObject(hPen);
 					DeleteObject(hbmMem);
 					DeleteDC(hdcMem);
 					return TRUE;

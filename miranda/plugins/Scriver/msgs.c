@@ -45,8 +45,9 @@ extern HINSTANCE g_hInst;
 extern HWND GetParentWindow(HANDLE hContact, BOOL bChat);
 
 PSLWA pSetLayeredWindowAttributes;
-BOOL (WINAPI *pfnEnableThemeDialogTexture)(HANDLE, DWORD) = 0;
 BOOL (WINAPI *pfnIsAppThemed)(VOID) = 0;
+BOOL (WINAPI *pfnIsThemeActive)();
+HRESULT (WINAPI *pfnDrawThemeParentBackground)(HWND, HDC, RECT *);
 
 #ifdef __MINGW32__
 // RichEdit interface GUIDs
@@ -589,8 +590,9 @@ int LoadSendRecvMessageModule(void) {
 	if (IsWinVerXPPlus()) {
 		hDLL = GetModuleHandle(_T("uxtheme.dll"));
 		if (hDLL) {
-			pfnEnableThemeDialogTexture = (BOOL (WINAPI *)(HANDLE, DWORD))GetProcAddress(hDLL, "EnableThemeDialogTexture");
 			pfnIsAppThemed = (BOOL (WINAPI *)(VOID))GetProcAddress(hDLL, "IsAppThemed");
+			pfnDrawThemeParentBackground = (HRESULT (WINAPI *)(HWND,HDC,RECT *))GetProcAddress(hDLL, "DrawThemeParentBackground");
+			pfnIsThemeActive = (BOOL (WINAPI *)())GetProcAddress(hDLL, "IsThemeActive");
 		}
 	}
 	InitGlobals();
