@@ -35,7 +35,6 @@ Last change by : $Author$
 
 static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
 static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
-void JabberGroupchatJoinRoomByJid( HWND hwndParent, TCHAR *jid );
 
 int JabberMenuHandleGroupchat( WPARAM wParam, LPARAM lParam )
 {

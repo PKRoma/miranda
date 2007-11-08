@@ -37,6 +37,7 @@ Last change by : $Author$
 #include "sdk/m_folders.h"
 #include "sdk/m_wizard.h"
 #include "sdk/m_modernopt.h"
+#include "sdk/m_assocmgr.h"
 
 HINSTANCE hInst;
 PLUGINLINK *pluginLink;
@@ -328,6 +329,13 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 
 	JCallService( MS_DB_EVENT_REGISTERTYPE, 0, (LPARAM)&dbEventType );
 	arServices.insert( JCreateServiceFunction( JS_DB_GETEVENTTEXT_CHATSTATES, JabberGetEventTextChatStates ));
+
+	// file associations manager plugin support
+	if ( ServiceExists( MS_ASSOCMGR_ADDNEWURLTYPE )) {
+		char szService[ MAXMODULELABELLENGTH ];
+		mir_snprintf( szService, SIZEOF( szService ), "%s%s", jabberProtoName, JS_PARSE_XMPP_URI );
+		AssocMgr_AddNewUrlTypeT( "xmpp:", TranslateT("Jabber Link Protocol"), hInst, IDI_JABBER, szService, 0 );
+	}
 
 	JabberCheckAllContactsAreTransported();
 	InitCustomFolders();

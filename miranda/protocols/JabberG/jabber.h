@@ -183,6 +183,8 @@ enum {
 #define JE_RAWXMLIN                "/RawXMLIn"
 #define JE_RAWXMLOUT               "/RawXMLOut"
 
+#define JS_PARSE_XMPP_URI          "/ParseXmppURI"
+
 // Called when contact changes custom status and extra icon is set to clist_mw
 //wParam = hContact    // contact changing status
 //lParam = hIcon       // HANDLE to clist extra icon set as custom status
@@ -536,7 +538,7 @@ void JabberGroupchatJoinRoom( const TCHAR* server, const TCHAR* room, const TCHA
 void JabberGroupchatProcessPresence( XmlNode *node, void *userdata );
 void JabberGroupchatProcessMessage( XmlNode *node, void *userdata );
 void JabberGroupchatProcessInvite( TCHAR* roomJid, TCHAR* from, TCHAR* reason, TCHAR* password );
-
+void JabberGroupchatJoinRoomByJid(HWND hwndParent, TCHAR *jid);
 
 //---- jabber_bookmarks.c -------------------------------------------
 int JabberMenuHandleBookmarks( WPARAM wParam, LPARAM lParam );

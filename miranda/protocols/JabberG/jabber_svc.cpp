@@ -37,6 +37,9 @@ Last change by : $Author$
 #include "jabber_list.h"
 #include "jabber_iq.h"
 #include "jabber_caps.h"
+#include "m_file.h"
+#include "m_addcontact.h"
+#include "jabber_disco.h"
 #include "sdk/m_proto_listeningto.h"
 
 extern LIST<void> arServices;
@@ -1606,6 +1609,124 @@ int JabberGCGetToolTipText(WPARAM wParam, LPARAM lParam)
 	return (int) mir_tstrdup( outBuf );
 }
 
+// File Association Manager plugin support
+static int JabberServiceParseXmppURI( WPARAM wParam, LPARAM lParam )
+{
+	UNREFERENCED_PARAMETER( wParam );
+
+	TCHAR *arg = ( TCHAR * )lParam;
+	if ( arg == NULL )
+		return 1;
+
+	TCHAR szUri[ 1024 ];
+	mir_sntprintf( szUri, SIZEOF(szUri), _T("%s"), arg );
+
+	TCHAR *szJid = szUri;
+
+	// skip leading prefix
+	szJid = _tcschr( szJid, _T( ':' ));
+	if ( szJid == NULL )
+		return 1;
+
+	// skip //
+	for( ++szJid; *szJid == _T( '/' ); ++szJid );
+
+	// empty jid?
+	if ( !*szJid )
+		return 1;
+
+	// command code
+	TCHAR *szCommand = szJid;
+	szCommand = _tcschr( szCommand, _T( '?' ));
+	if ( szCommand ) 
+		*( szCommand++ ) = 0;
+
+	// parameters
+	TCHAR *szSecondParam = szCommand ? _tcschr( szCommand, _T( ';' )) : NULL;
+	if ( szSecondParam )
+		*( szSecondParam++ ) = 0;
+
+//	TCHAR *szThirdParam = szSecondParam ? _tcschr( szSecondParam, _T( ';' )) : NULL;
+//	if ( szThirdParam )
+//		*( szThirdParam++ ) = 0;
+
+	// no command or message command
+	if ( !szCommand || ( szCommand && !_tcsicmp( szCommand, _T( "message" )))) {
+		// message
+		if ( ServiceExists( MS_MSG_SENDMESSAGE )) {
+			HANDLE hContact = JabberHContactFromJID( szJid, TRUE );
+			if ( !hContact )
+				hContact = JabberDBCreateContact( szJid, szJid, TRUE, TRUE );
+			if ( !hContact )
+				return 1;
+			CallService( MS_MSG_SENDMESSAGE, (WPARAM)hContact, (LPARAM)NULL );
+			return 0;
+		}
+		return 1;
+	}
+	else if ( !_tcsicmp( szCommand, _T( "roster" )))
+	{
+		if ( !JabberHContactFromJID( szJid )) {
+			JABBER_SEARCH_RESULT jsr = { 0 };
+			jsr.hdr.cbSize = sizeof( JABBER_SEARCH_RESULT );
+			jsr.hdr.nick = mir_t2a( szJid );
+			_tcsncpy( jsr.jid, szJid, SIZEOF(jsr.jid) - 1 );
+
+			ADDCONTACTSTRUCT acs;
+			acs.handleType = HANDLE_SEARCHRESULT;
+			acs.szProto = jabberProtoName;
+			acs.psr = &jsr.hdr;
+			CallService( MS_ADDCONTACT_SHOW, (WPARAM)NULL, (LPARAM)&acs );
+			mir_free( jsr.hdr.email );
+		}
+		return 0;
+	}
+	else if ( !_tcsicmp( szCommand, _T( "join" )))
+	{
+		// chat join invitation
+		JabberGroupchatJoinRoomByJid( NULL, szJid );
+		return 0;
+	}
+	else if ( !_tcsicmp( szCommand, _T( "disco" )))
+	{
+		// service discovery request
+		JabberMenuHandleServiceDiscovery( NULL, (LPARAM)szJid );
+		return 0;
+	}
+	else if ( !_tcsicmp( szCommand, _T( "command" )))
+	{
+		// ad-hoc commands
+		if ( szSecondParam ) {
+			if ( !_tcsnicmp( szSecondParam, _T( "node=" ), 5 )) {
+				szSecondParam += 5;
+				if (!*szSecondParam)
+					szSecondParam = NULL;
+			}
+			else
+				szSecondParam = NULL;
+		}
+		CJabberAdhocStartupParams* pStartupParams = new CJabberAdhocStartupParams( szJid, szSecondParam );
+		JabberContactMenuRunCommands( 0, ( LPARAM )pStartupParams );
+		return 0;
+	}
+	else if ( !_tcsicmp( szCommand, _T( "sendfile" )))
+	{
+		// send file
+		if ( ServiceExists( MS_FILE_SENDFILE )) {
+			HANDLE hContact = JabberHContactFromJID( szJid, TRUE );
+			if ( !hContact )
+				hContact = JabberDBCreateContact( szJid, szJid, TRUE, TRUE );
+			if ( !hContact )
+				return 1;
+			CallService( MS_FILE_SENDFILE, ( WPARAM )hContact, ( LPARAM )NULL );
+			return 0;
+		}
+		return 1;
+	}
+
+	return 1; /* parse failed */
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // Service initialization code
 
@@ -1661,6 +1782,9 @@ int JabberSvcInit( void )
 
 	// service to get from protocol chat buddy info
 	arServices.insert( JCreateServiceFunction( MS_GC_PROTO_GETTOOLTIPTEXT, JabberGCGetToolTipText ));
+
+	// XMPP URI parser service for "File Association Manager" plugin
+	arServices.insert( JCreateServiceFunction( JS_PARSE_XMPP_URI, JabberServiceParseXmppURI ));
 
 	return 0;
 }
