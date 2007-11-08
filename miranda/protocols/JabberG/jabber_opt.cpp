@@ -692,9 +692,14 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			if ( index >= 0 ) {
 //				jabberCodePage = SendMessage( GetDlgItem( hwndDlg, IDC_MSGLANG ), CB_GETITEMDATA, ( WPARAM ) index, 0 );
 //				JSetWord( NULL, "CodePage", ( WORD )jabberCodePage );
+				TCHAR *szDefaultLanguage = JabberGetXmlLang();
 				TCHAR *szLanguageCode = (TCHAR *)SendDlgItemMessage( hwndDlg, IDC_MSGLANG, CB_GETITEMDATA, ( WPARAM ) index, 0 );
-				if ( szLanguageCode )
+				if ( szLanguageCode ) {
 					JSetStringT( NULL, "XmlLang", szLanguageCode );
+					if ( szDefaultLanguage && _tcscmp( szDefaultLanguage, szLanguageCode ))
+						reconnectRequired = TRUE;
+				}
+				mir_free( szDefaultLanguage );
 			}
 
 			if ( reconnectRequired && jabberConnected )
