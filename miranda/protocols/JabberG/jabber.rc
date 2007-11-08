@@ -91,8 +91,8 @@ BEGIN
     CONTROL         "Automatically delete contacts not in my roster",IDC_ROSTER_SYNC,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,172,221,10
     LTEXT           "User directory:",IDC_JUD_LABEL,14,188,68,8
-    EDITTEXT        IDC_JUD,87,185,103,12,ES_AUTOHSCROLL
-    COMBOBOX        IDC_MSGLANG,87,201,103,69,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_JUD,188,185,103,12,ES_AUTOHSCROLL
+    COMBOBOX        IDC_MSGLANG,188,201,103,69,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "Jabber",IDC_SIMPLE,4,0,298,116
     LTEXT           "Username:",IDC_STATIC,15,16,45,8
     LTEXT           "Password:",IDC_STATIC,15,30,45,8
@@ -104,7 +104,7 @@ BEGIN
     GROUPBOX        "Expert",IDC_STATIC,4,120,298,106
     LTEXT           "Host:",IDC_STATIC,26,147,30,8
     LTEXT           "Port:",IDC_STATIC,156,148,27,8
-    LTEXT           "Messaging language:",IDC_MSGLANG_LABEL,14,203,70,8
+    LTEXT           "Language for human-readable resources:",IDC_MSGLANG_LABEL,14,203,170,8
     CONTROL         "Press here to download OpenSSL, required for SSL & TLS support",IDC_DOWNLOAD_OPENSSL,
                     "Hyperlink",WS_TABSTOP,16,97,270,11
 END
@@ -696,6 +696,12 @@ BEGIN
     IDD_OPT_JABBER3, DIALOG
     BEGIN
         HORZGUIDE, 209
+    END
+
+    IDD_OPT_JABBER, DIALOG
+    BEGIN
+        VERTGUIDE, 291
+        HORZGUIDE, 185
     END
 
     IDD_OPT_JABBER2, DIALOG

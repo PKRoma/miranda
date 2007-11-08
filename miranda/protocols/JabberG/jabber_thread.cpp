@@ -197,7 +197,11 @@ static void xmlStreamInitializeNow(ThreadData* info)
 		stream.addAttr( "to", info->server );
 		stream.addAttr( "xmlns", "jabber:client" );
 		stream.addAttr( "xmlns:stream", "http://etherx.jabber.org/streams" );
-		stream.addAttr( "xml:lang", "en" );
+		TCHAR *szXmlLang = JabberGetXmlLang();
+		if ( szXmlLang ) {
+			stream.addAttr( "xml:lang", szXmlLang );
+			mir_free( szXmlLang );
+		}
 		if ( !JGetByte( "Disable3920auth", 0 ))
 			stream.addAttr( "version", "1.0" );
 		stream.dirtyHack = true; // this is to keep the node open - do not send </stream:stream>

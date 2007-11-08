@@ -997,7 +997,11 @@ int JabberSearchByName( WPARAM wParam, LPARAM lParam )
 	if ( bIsExtFormat ) {
 		JabberIqAdd( iqId, IQ_PROC_GETSEARCH, JabberIqResultExtSearch );
 
-		iq.addAttr( "xml:lang", "en" );
+		TCHAR *szXmlLang = JabberGetXmlLang();
+		if ( szXmlLang ) {
+			iq.addAttr( "xml:lang", szXmlLang );
+			mir_free( szXmlLang );
+		}
 		x = query->addChild( "x" ); x->addAttr( "xmlns", JABBER_FEAT_DATA_FORMS ); x->addAttr( "type", "submit" );
 	}
 	else JabberIqAdd( iqId, IQ_PROC_GETSEARCH, JabberIqResultSetSearch );

@@ -51,6 +51,195 @@ static BOOL (WINAPI *pfnEnableThemeDialogTexture)(HANDLE, DWORD) = 0;
 	#define STR_FORMAT _T("%s %s@%s:%d?")
 #endif
 
+struct { TCHAR *szCode; TCHAR *szDescription; } g_LanguageCodes[] = {
+	{	_T("aa"),	_T("Afar")	},
+	{	_T("ab"),	_T("Abkhazian")	},
+	{	_T("af"),	_T("Afrikaans")	},
+	{	_T("ak"),	_T("Akan")	},
+	{	_T("sq"),	_T("Albanian")	},
+	{	_T("am"),	_T("Amharic")	},
+	{	_T("ar"),	_T("Arabic")	},
+	{	_T("an"),	_T("Aragonese")	},
+	{	_T("hy"),	_T("Armenian")	},
+	{	_T("as"),	_T("Assamese")	},
+	{	_T("av"),	_T("Avaric")	},
+	{	_T("ae"),	_T("Avestan")	},
+	{	_T("ay"),	_T("Aymara")	},
+	{	_T("az"),	_T("Azerbaijani")	},
+	{	_T("ba"),	_T("Bashkir")	},
+	{	_T("bm"),	_T("Bambara")	},
+	{	_T("eu"),	_T("Basque")	},
+	{	_T("be"),	_T("Belarusian")	},
+	{	_T("bn"),	_T("Bengali")	},
+	{	_T("bh"),	_T("Bihari")	},
+	{	_T("bi"),	_T("Bislama")	},
+	{	_T("bs"),	_T("Bosnian")	},
+	{	_T("br"),	_T("Breton")	},
+	{	_T("bg"),	_T("Bulgarian")	},
+	{	_T("my"),	_T("Burmese")	},
+	{	_T("ca"),	_T("Catalan; Valencian")	},
+	{	_T("ch"),	_T("Chamorro")	},
+	{	_T("ce"),	_T("Chechen")	},
+	{	_T("zh"),	_T("Chinese")	},
+	{	_T("cu"),	_T("Church Slavic; Old Slavonic")	},
+	{	_T("cv"),	_T("Chuvash")	},
+	{	_T("kw"),	_T("Cornish")	},
+	{	_T("co"),	_T("Corsican")	},
+	{	_T("cr"),	_T("Cree")	},
+	{	_T("cs"),	_T("Czech")	},
+	{	_T("da"),	_T("Danish")	},
+	{	_T("dv"),	_T("Divehi; Dhivehi; Maldivian")	},
+	{	_T("nl"),	_T("Dutch; Flemish")	},
+	{	_T("dz"),	_T("Dzongkha")	},
+	{	_T("en"),	_T("English")	},
+	{	_T("eo"),	_T("Esperanto")	},
+	{	_T("et"),	_T("Estonian")	},
+	{	_T("ee"),	_T("Ewe")	},
+	{	_T("fo"),	_T("Faroese")	},
+	{	_T("fj"),	_T("Fijian")	},
+	{	_T("fi"),	_T("Finnish")	},
+	{	_T("fr"),	_T("French")	},
+	{	_T("fy"),	_T("Western Frisian")	},
+	{	_T("ff"),	_T("Fulah")	},
+	{	_T("ka"),	_T("Georgian")	},
+	{	_T("de"),	_T("German")	},
+	{	_T("gd"),	_T("Gaelic; Scottish Gaelic")	},
+	{	_T("ga"),	_T("Irish")	},
+	{	_T("gl"),	_T("Galician")	},
+	{	_T("gv"),	_T("Manx")	},
+	{	_T("el"),	_T("Greek, Modern (1453-)")	},
+	{	_T("gn"),	_T("Guarani")	},
+	{	_T("gu"),	_T("Gujarati")	},
+	{	_T("ht"),	_T("Haitian; Haitian Creole")	},
+	{	_T("ha"),	_T("Hausa")	},
+	{	_T("he"),	_T("Hebrew")	},
+	{	_T("hz"),	_T("Herero")	},
+	{	_T("hi"),	_T("Hindi")	},
+	{	_T("ho"),	_T("Hiri Motu")	},
+	{	_T("hu"),	_T("Hungarian")	},
+	{	_T("ig"),	_T("Igbo")	},
+	{	_T("is"),	_T("Icelandic")	},
+	{	_T("io"),	_T("Ido")	},
+	{	_T("ii"),	_T("Sichuan Yi")	},
+	{	_T("iu"),	_T("Inuktitut")	},
+	{	_T("ie"),	_T("Interlingue")	},
+	{	_T("ia"),	_T("Interlingua (International Auxiliary Language Association)")	},
+	{	_T("id"),	_T("Indonesian")	},
+	{	_T("ik"),	_T("Inupiaq")	},
+	{	_T("it"),	_T("Italian")	},
+	{	_T("jv"),	_T("Javanese")	},
+	{	_T("ja"),	_T("Japanese")	},
+	{	_T("kl"),	_T("Kalaallisut; Greenlandic")	},
+	{	_T("kn"),	_T("Kannada")	},
+	{	_T("ks"),	_T("Kashmiri")	},
+	{	_T("kr"),	_T("Kanuri")	},
+	{	_T("kk"),	_T("Kazakh")	},
+	{	_T("km"),	_T("Central Khmer")	},
+	{	_T("ki"),	_T("Kikuyu; Gikuyu")	},
+	{	_T("rw"),	_T("Kinyarwanda")	},
+	{	_T("ky"),	_T("Kirghiz; Kyrgyz")	},
+	{	_T("kv"),	_T("Komi")	},
+	{	_T("kg"),	_T("Kongo")	},
+	{	_T("ko"),	_T("Korean")	},
+	{	_T("kj"),	_T("Kuanyama; Kwanyama")	},
+	{	_T("ku"),	_T("Kurdish")	},
+	{	_T("lo"),	_T("Lao")	},
+	{	_T("la"),	_T("Latin")	},
+	{	_T("lv"),	_T("Latvian")	},
+	{	_T("li"),	_T("Limburgan; Limburger; Limburgish")	},
+	{	_T("ln"),	_T("Lingala")	},
+	{	_T("lt"),	_T("Lithuanian")	},
+	{	_T("lb"),	_T("Luxembourgish; Letzeburgesch")	},
+	{	_T("lu"),	_T("Luba-Katanga")	},
+	{	_T("lg"),	_T("Ganda")	},
+	{	_T("mk"),	_T("Macedonian")	},
+	{	_T("mh"),	_T("Marshallese")	},
+	{	_T("ml"),	_T("Malayalam")	},
+	{	_T("mi"),	_T("Maori")	},
+	{	_T("mr"),	_T("Marathi")	},
+	{	_T("ms"),	_T("Malay")	},
+	{	_T("mg"),	_T("Malagasy")	},
+	{	_T("mt"),	_T("Maltese")	},
+	{	_T("mo"),	_T("Moldavian")	},
+	{	_T("mn"),	_T("Mongolian")	},
+	{	_T("na"),	_T("Nauru")	},
+	{	_T("nv"),	_T("Navajo; Navaho")	},
+	{	_T("nr"),	_T("Ndebele, South; South Ndebele")	},
+	{	_T("nd"),	_T("Ndebele, North; North Ndebele")	},
+	{	_T("ng"),	_T("Ndonga")	},
+	{	_T("ne"),	_T("Nepali")	},
+	{	_T("nn"),	_T("Norwegian Nynorsk; Nynorsk, Norwegian")	},
+	{	_T("nb"),	_T("BokmЕl, Norwegian; Norwegian BokmЕl")	},
+	{	_T("no"),	_T("Norwegian")	},
+	{	_T("ny"),	_T("Chichewa; Chewa; Nyanja")	},
+	{	_T("oc"),	_T("Occitan (post 1500); ProvenГal")	},
+	{	_T("oj"),	_T("Ojibwa")	},
+	{	_T("or"),	_T("Oriya")	},
+	{	_T("om"),	_T("Oromo")	},
+	{	_T("os"),	_T("Ossetian; Ossetic")	},
+	{	_T("pa"),	_T("Panjabi; Punjabi")	},
+	{	_T("fa"),	_T("Persian")	},
+	{	_T("pi"),	_T("Pali")	},
+	{	_T("pl"),	_T("Polish")	},
+	{	_T("pt"),	_T("Portuguese")	},
+	{	_T("ps"),	_T("Pushto")	},
+	{	_T("qu"),	_T("Quechua")	},
+	{	_T("rm"),	_T("Romansh")	},
+	{	_T("ro"),	_T("Romanian")	},
+	{	_T("rn"),	_T("Rundi")	},
+	{	_T("ru"),	_T("Russian")	},
+	{	_T("sg"),	_T("Sango")	},
+	{	_T("sa"),	_T("Sanskrit")	},
+	{	_T("sr"),	_T("Serbian")	},
+	{	_T("hr"),	_T("Croatian")	},
+	{	_T("si"),	_T("Sinhala; Sinhalese")	},
+	{	_T("sk"),	_T("Slovak")	},
+	{	_T("sl"),	_T("Slovenian")	},
+	{	_T("se"),	_T("Northern Sami")	},
+	{	_T("sm"),	_T("Samoan")	},
+	{	_T("sn"),	_T("Shona")	},
+	{	_T("sd"),	_T("Sindhi")	},
+	{	_T("so"),	_T("Somali")	},
+	{	_T("st"),	_T("Sotho, Southern")	},
+	{	_T("es"),	_T("Spanish; Castilian")	},
+	{	_T("sc"),	_T("Sardinian")	},
+	{	_T("ss"),	_T("Swati")	},
+	{	_T("su"),	_T("Sundanese")	},
+	{	_T("sw"),	_T("Swahili")	},
+	{	_T("sv"),	_T("Swedish")	},
+	{	_T("ty"),	_T("Tahitian")	},
+	{	_T("ta"),	_T("Tamil")	},
+	{	_T("tt"),	_T("Tatar")	},
+	{	_T("te"),	_T("Telugu")	},
+	{	_T("tg"),	_T("Tajik")	},
+	{	_T("tl"),	_T("Tagalog")	},
+	{	_T("th"),	_T("Thai")	},
+	{	_T("bo"),	_T("Tibetan")	},
+	{	_T("ti"),	_T("Tigrinya")	},
+	{	_T("to"),	_T("Tonga (Tonga Islands)")	},
+	{	_T("tn"),	_T("Tswana")	},
+	{	_T("ts"),	_T("Tsonga")	},
+	{	_T("tk"),	_T("Turkmen")	},
+	{	_T("tr"),	_T("Turkish")	},
+	{	_T("tw"),	_T("Twi")	},
+	{	_T("ug"),	_T("Uighur; Uyghur")	},
+	{	_T("uk"),	_T("Ukrainian")	},
+	{	_T("ur"),	_T("Urdu")	},
+	{	_T("uz"),	_T("Uzbek")	},
+	{	_T("ve"),	_T("Venda")	},
+	{	_T("vi"),	_T("Vietnamese")	},
+	{	_T("vo"),	_T("VolapЭk")	},
+	{	_T("cy"),	_T("Welsh")	},
+	{	_T("wa"),	_T("Walloon")	},
+	{	_T("wo"),	_T("Wolof")	},
+	{	_T("xh"),	_T("Xhosa")	},
+	{	_T("yi"),	_T("Yiddish")	},
+	{	_T("yo"),	_T("Yoruba")	},
+	{	_T("za"),	_T("Zhuang; Chuang")	},
+	{	_T("zu"),	_T("Zulu")	},
+	{	NULL,	NULL	}
+};
+
 static BOOL CALLBACK JabberRegisterDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	ThreadData *thread, *regInfo;
@@ -111,6 +300,7 @@ static BOOL CALLBACK JabberRegisterDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberOptDlgProc - main options dialog procedure
 
+/*
 static HWND msgLangListBox;
 static BOOL CALLBACK JabberMsgLangAdd( LPSTR str )
 {
@@ -146,6 +336,7 @@ static BOOL CALLBACK JabberMsgLangAdd( LPSTR str )
 
 	return TRUE;
 }
+*/
 
 static LRESULT CALLBACK JabberValidateUsernameWndProc( HWND hwndEdit, UINT msg, WPARAM wParam, LPARAM lParam )
 {
@@ -257,13 +448,27 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			}
 			else SetDlgItemTextA( hwndDlg, IDC_JUD, "users.jabber.org" );
 
-			msgLangListBox = GetDlgItem( hwndDlg, IDC_MSGLANG );
-			TCHAR str[ 256 ];
-			mir_sntprintf( str, SIZEOF(str), _T("== %s =="), TranslateT( "System default" ));
-			SendMessage( msgLangListBox, CB_ADDSTRING, 0, ( LPARAM )str );
-			SendMessage( msgLangListBox, CB_SETITEMDATA, 0, CP_ACP );
-			SendMessage( msgLangListBox, CB_SETCURSEL, 0, 0 );
-			EnumSystemCodePagesA( JabberMsgLangAdd, CP_INSTALLED );
+//			msgLangListBox = GetDlgItem( hwndDlg, IDC_MSGLANG );
+//			TCHAR str[ 256 ];
+//			mir_sntprintf( str, SIZEOF(str), _T("== %s =="), TranslateT( "System default" ));
+//			SendMessage( msgLangListBox, CB_ADDSTRING, 0, ( LPARAM )str );
+//			SendMessage( msgLangListBox, CB_SETITEMDATA, 0, CP_ACP );
+//			SendMessage( msgLangListBox, CB_SETCURSEL, 0, 0 );
+//			EnumSystemCodePagesA( JabberMsgLangAdd, CP_INSTALLED );
+
+			TCHAR *szSelectedLang = NULL;
+			if ( !JGetStringT( NULL, "XmlLang", &dbv ))
+				szSelectedLang = dbv.ptszVal;
+			HWND hWndLLB = GetDlgItem( hwndDlg, IDC_MSGLANG );
+			for ( int nI = 0; g_LanguageCodes[nI].szCode; nI++ ) {
+				int nId = SendMessage( hWndLLB, CB_ADDSTRING, 0, (LPARAM)g_LanguageCodes[nI].szDescription );
+				SendMessage( hWndLLB, CB_SETITEMDATA, nId, (LPARAM)g_LanguageCodes[nI].szCode );
+				if ( ( szSelectedLang && !_tcscmp( szSelectedLang, g_LanguageCodes[nI].szCode )) ||
+					( !szSelectedLang && !_tcscmp( g_LanguageCodes[nI].szCode, _T( "en" ))))
+					SendMessage( hWndLLB, CB_SETCURSEL, nId, 0 );
+			}
+			if ( szSelectedLang )
+				JFreeVariant(&dbv);
 
 			WNDPROC oldProc = ( WNDPROC ) GetWindowLong( GetDlgItem( hwndDlg, IDC_EDIT_USERNAME ), GWL_WNDPROC );
 			SetWindowLong( GetDlgItem( hwndDlg, IDC_EDIT_USERNAME ), GWL_USERDATA, ( LONG ) oldProc );
@@ -483,10 +688,13 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			GetDlgItemTextA( hwndDlg, IDC_JUD, text, sizeof( text ));
 			JSetString( NULL, "Jud", text );
 
-			int index = SendMessage( GetDlgItem( hwndDlg, IDC_MSGLANG ), CB_GETCURSEL, 0, 0 );
+			int index = SendDlgItemMessage( hwndDlg, IDC_MSGLANG, CB_GETCURSEL, 0, 0 );
 			if ( index >= 0 ) {
-				jabberCodePage = SendMessage( GetDlgItem( hwndDlg, IDC_MSGLANG ), CB_GETITEMDATA, ( WPARAM ) index, 0 );
-				JSetWord( NULL, "CodePage", ( WORD )jabberCodePage );
+//				jabberCodePage = SendMessage( GetDlgItem( hwndDlg, IDC_MSGLANG ), CB_GETITEMDATA, ( WPARAM ) index, 0 );
+//				JSetWord( NULL, "CodePage", ( WORD )jabberCodePage );
+				TCHAR *szLanguageCode = (TCHAR *)SendDlgItemMessage( hwndDlg, IDC_MSGLANG, CB_GETITEMDATA, ( WPARAM ) index, 0 );
+				if ( szLanguageCode )
+					JSetStringT( NULL, "XmlLang", szLanguageCode );
 			}
 
 			if ( reconnectRequired && jabberConnected )

@@ -706,6 +706,7 @@ TCHAR*        __stdcall JabberGetClientJID( const TCHAR* jid, TCHAR*, size_t );
 TCHAR*        __stdcall JabberStripJid( const TCHAR* jid, TCHAR* dest, size_t destLen );
 int           __stdcall JabberGetPictureType( const char* buf );
 int           __stdcall JabberGetPacketID( XmlNode* n );
+TCHAR*                  JabberGetXmlLang();
 
 #if defined( _UNICODE )
 	#define JabberUnixToDosT JabberUnixToDosW
