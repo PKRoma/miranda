@@ -411,7 +411,7 @@ static void InviteUser(TCHAR *room, TCHAR *pUser, TCHAR *text)
 {
 	int iqId = JabberSerialNext();
 
-	XmlNode m( "message" ); m.addAttr( "from", jabberJID ); m.addAttr( "to", room ); m.addAttrID( iqId );
+	XmlNode m( "message" ); m.addAttr( "to", room ); m.addAttrID( iqId );
 	XmlNode* x = m.addChild( "x" ); x->addAttr( "xmlns", _T("http://jabber.org/protocol/muc#user"));
 	XmlNode* i = x->addChild( "invite" ); i->addAttr( "to", pUser ); 
 	if ( text[0] != 0 )
