@@ -1381,7 +1381,7 @@ static void sttEnableEditorControls(HWND hwndDlg)
 	EnableWindow( GetDlgItem( hwndDlg, IDC_APPLY ), bListsLoaded && bListsModified );
 
 	if (bListsLoaded)
-		sttStatusMessage(TranslateT("Ready."));
+		sttStatusMessage( NULL );
 }
 
 static int sttPrivacyListsResizer(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
@@ -1787,6 +1787,8 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 					active->addAttr( "name", pList->GetListName() );
 				g_PrivacyListManager.Unlock();
 
+				sttStatusMessage( TranslateT( "Sending request, please wait" ));
+
 				jabberThreadInfo->send( iq );
 			}
 			return TRUE;
@@ -1804,6 +1806,8 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 				if ( pList )
 					defaultTag->addAttr( "name", pList->GetListName() );
 				g_PrivacyListManager.Unlock();
+
+				sttStatusMessage( TranslateT( "Sending request, please wait" ));
 
 				jabberThreadInfo->send( iq );
 			}
@@ -2081,6 +2085,7 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 					pList = pList->GetNext();
 			}	}
 			g_PrivacyListManager.Unlock();
+			sttStatusMessage( TranslateT( "Sending request, please wait" ));
 			PostMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0 );
 			return TRUE;
 
