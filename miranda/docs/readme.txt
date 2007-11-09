@@ -1,7 +1,7 @@
                    Miranda Instant Messenger Release Notes
                    ---------------------------------------
 
-                                   v0.7.1
+                                   v0.7.2
 
                           http://www.miranda-im.org
 
@@ -22,6 +22,19 @@ Contents
 
 1. New in this version
 ----------------------
+* New in 0.7.2
+Enhancements:
+ - Jabber: Added "Toggle Member" item
+ - Jabber: Added items count in jid lists
+ - Jabber: Added display of quit messages
+
+Bugfixes:
+ - IRC: Handle on the phone and out to lunch events
+ - Jabber: Wrong timestamp for message forwarded from another client
+ - MSN: Potential buffer overflow issue
+ - MSN: Block MSN system alerts
+ - Yahoo: Potential buffer overflow issue
+ 
 * New in 0.7.1
 Enhancements:
  - Improved icon skinning engine performance
