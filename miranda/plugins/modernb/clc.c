@@ -2121,7 +2121,9 @@ case WM_DESTROY:
 
 		ImageArray_Clear(&dat->avatar_cache);
 		mod_DeleteDC(dat->avatar_cache.hdc);			
-		ImageArray_Free(&dat->avatar_cache, FALSE);		
+		ImageArray_Free(&dat->avatar_cache, FALSE);	
+		if (dat->himlHighlight)
+			ImageList_Destroy(dat->himlHighlight);
 
 		RowHeights_Free(dat);
 		saveContactListControlWndProc(hwnd, msg, wParam, lParam);			

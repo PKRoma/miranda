@@ -3468,6 +3468,15 @@ static void CLCPaint_DrawContactItems(HWND hwnd, HDC hdcMem, struct ClcData *dat
             RECT rcTemp=rc1;
             IntersectRect(&rc1, &rcTemp, rcPaint);
         }   
+
+		{	//Subtract icon rect from left and right.
+			RECT rcTemp;
+			IntersectRect(&rcTemp, &Drawing->pos_icon, &rc1);
+			if (!IsRectEmpty(&rcTemp)) rc1.right=rcTemp.left;
+			IntersectRect(&rcTemp, &Drawing->pos_icon, &rc2);
+			if (!IsRectEmpty(&rcTemp)) rc2.left=rcTemp.right;
+		}
+
         if (rc1.right-rc1.left>=6 && !IsRectEmpty(&rc1))
         {
             DrawEdge(hdcMem,&rc1,BDR_SUNKENOUTER,BF_RECT);

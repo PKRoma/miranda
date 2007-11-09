@@ -13,8 +13,8 @@ int EnabledColumnCount=0;
 BOOL g_mutex_bSetAllExtraIconsCycle=0;
 
 static HANDLE hExtraImageListRebuilding,hExtraImageApplying;
-static HIMAGELIST hExtraImageList;
-static HIMAGELIST hWideExtraImageList;
+static HIMAGELIST hExtraImageList=NULL;
+static HIMAGELIST hWideExtraImageList=NULL;
 
 void ExtraImage_SetAllExtraIcons(HWND hwndList,HANDLE hContact);
 void ExtraImage_LoadModule();
@@ -446,7 +446,13 @@ int WideAddIconToExtraImageList(WPARAM wParam,LPARAM lParam)
 	if (res>0xFFFE) return -1;
 	return res;
 };
+static int ehhExtraImage_UnloadModule(WPARAM wParam,LPARAM lParam)
+{
+	if (hExtraImageList) { ImageList_Destroy(hExtraImageList); };
+	if (hWideExtraImageList) { ImageList_Destroy(hWideExtraImageList); };
+	return 0;
 
+}
 void ExtraImage_LoadModule()
 {
 	CreateServiceFunction(MS_CLIST_EXTRA_SET_ICON,WideSetIconForExtraColumn); 
@@ -461,6 +467,7 @@ void ExtraImage_LoadModule()
 
 	HookEvent(ME_CLC_SHOWEXTRAINFOTIP, ehhShowExtraInfoTip );
 	HookEvent(ME_CLC_HIDEINFOTIP, ehhHideExtraInfoTip );
+	HookEvent(ME_SYSTEM_SHUTDOWN, ehhExtraImage_UnloadModule );
 
 
 };
