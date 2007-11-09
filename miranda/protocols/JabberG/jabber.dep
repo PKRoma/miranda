@@ -227,7 +227,6 @@
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
 	".\jabber_rc.h"\
-	".\jabber_xmlns.h"\
 	
 
 .\jabber_iq_handlers.cpp : \
@@ -555,18 +554,6 @@
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	
-
-.\jabber_xmlns.cpp : \
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_protocols.h"\
-	".\jabber.h"\
-	".\jabber_byte.h"\
-	".\jabber_caps.h"\
-	".\jabber_ibb.h"\
-	".\jabber_iq.h"\
-	".\jabber_list.h"\
-	".\jabber_rc.h"\
 	
 
 .\jabber_xstatus.cpp : \

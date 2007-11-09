@@ -69,7 +69,7 @@ static HANDLE hMenuSDConferences;
 
 
 
-int JabberMenuHandleAgents( WPARAM wParam, LPARAM lParam );
+//int JabberMenuHandleAgents( WPARAM wParam, LPARAM lParam );
 int JabberMenuHandleChangePassword( WPARAM wParam, LPARAM lParam );
 int JabberMenuHandleVcard( WPARAM wParam, LPARAM lParam );
 int JabberMenuHandleRequestAuth( WPARAM wParam, LPARAM lParam );
@@ -652,15 +652,6 @@ void JabberMenuInit()
 	mi.icolibItem = GetIconHandle( IDI_GROUP );
 	hMenuSDConferences = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuSDConferences, ( LPARAM )&clmi );
-
-	// "Multi-User Conference..."
-//	strcpy( tDest, "/Groupchat" );
-//	arServices.insert( CreateServiceFunction( text, JabberMenuHandleGroupchat ));
-//	mi.pszName = LPGEN("Multi-User Conference...");
-//	mi.position = 2000050006;
-//	mi.icolibItem = GetIconHandle( IDI_GROUP );
-//	hMenuGroupchat = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
-//	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuGroupchat, ( LPARAM )&clmi );
 
 	strcpy( tDest, "/Groupchat" );
 	arServices.insert( CreateServiceFunction( text, JabberMenuHandleJoinGroupchat ));
