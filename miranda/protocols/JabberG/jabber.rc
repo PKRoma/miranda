@@ -13,6 +13,28 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
+// Ukrainian resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_UKR)
+#ifdef _WIN32
+LANGUAGE LANG_UKRAINIAN, SUBLANG_DEFAULT
+#pragma code_page(1251)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_ARROW_DOWN          ICON                    "icos\\arrow_down.ico"
+IDI_ARROW_UP            ICON                    "icos\\arrow_up.ico"
+#endif    // Ukrainian resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
 // English (U.S.) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
@@ -20,6 +42,61 @@
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
 #endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_JABBER              ICON                    "icos\\jabber.ico"
+IDI_DISCO_PROGRESS      ICON                    "icos\\disco_in_progress.ico"
+IDI_NODE_RSS            ICON                    "icos\\rss.ico"
+IDI_NODE_SERVER         ICON                    "icos\\server.ico"
+IDI_NODE_STORE          ICON                    "icos\\store.ico"
+IDI_NODE_WEATHER        ICON                    "icos\\weather.ico"
+IDI_DISCO_OK            ICON                    "icos\\disco_ok.ico"
+IDI_DISCO_FAIL          ICON                    "icos\\disco_fail.ico"
+IDI_GROUP               ICON                    "icos\\group.ico"
+IDI_KEYS                ICON                    "icos\\key.ico"
+IDI_ADDCONTACT          ICON                    "icos\\addcontact.ico"
+IDI_ADDROSTER           ICON                    "icos\\add2roster.ico"
+IDI_AGENTS              ICON                    "icos\\roster.ico"
+IDI_VCARD               ICON                    "icos\\pages.ico"
+IDI_DELETE              ICON                    "icos\\delete.ico"
+IDI_EDIT                ICON                    "icos\\rename.ico"
+IDI_GRANT               ICON                    "icos\\grant.ico"
+IDI_OPEN                ICON                    "icos\\open.ico"
+IDI_REQUEST             ICON                    "icos\\request.ico"
+IDI_USER2ROOM           ICON                    "icos\\user2room.ico"
+IDI_SAVE                ICON                    "icos\\save.ico"
+IDI_LOGIN               ICON                    "icos\\login.ico"
+IDI_AUTHREVOKE          ICON                    "icos\\auth_revoke.ico"
+IDI_REFRESH             ICON                    "icos\\refresh.ico"
+IDI_COMMAND             ICON                    "icos\\command.ico"
+IDI_BOOKMARKS           ICON                    "icos\\bookmarks.ico"
+IDI_PRIVACY_LISTS       ICON                    "icos\\privacy_lists.ico"
+IDI_SERVICE_DISCOVERY   ICON                    "icos\\service_discovery.ico"
+IDI_VIEW_LIST           ICON                    "icos\\view_as_list.ico"
+IDI_VIEW_TREE           ICON                    "icos\\view_as_tree.ico"
+IDI_FILTER_APPLY        ICON                    "icos\\filter.ico"
+IDI_BROWSE              ICON                    "icos\\go.ico"
+IDI_NAV_HOME            ICON                    "icos\\home.ico"
+IDI_NAV_REFRESH         ICON                    "icos\\refresh_node.ico"
+IDI_FILTER_RESET        ICON                    "icos\\reset_filter.ico"
+IDI_CONSOLE             ICON                    "icos\\console.ico"
+IDI_PL_MSG_ALLOW        ICON                    "icos\\message_allow.ico"
+IDI_PL_MSG_DENY         ICON                    "icos\\message_deny.ico"
+IDI_PL_PRIN_ALLOW       ICON                    "icos\\presence_in_allow.ico"
+IDI_PL_PRIN_DENY        ICON                    "icos\\presence_in_deny.ico"
+IDI_PL_PROUT_ALLOW      ICON                    "icos\\presence_out_allow.ico"
+IDI_PL_PROUT_DENY       ICON                    "icos\\presence_out_deny.ico"
+IDI_PL_QUERY_ALLOW      ICON                    "icos\\query_allow.ico"
+IDI_PL_QUERY_DENY       ICON                    "icos\\query_deny.ico"
+IDI_PL_LIST_ACTIVE      ICON                    "icos\\plist_active.ico"
+IDI_PL_LIST_ANY         ICON                    "icos\\plist_any.ico"
+IDI_PL_LIST_DEFAULT     ICON                    "icos\\plist_default.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -524,7 +601,7 @@ BEGIN
     GROUPBOX        "Bookmark Type",IDC_BOOKMARK_TYPE,6,4,208,47
 END
 
-IDD_PRIVACY_LISTS DIALOGEX 0, 0, 424, 295
+IDD_PRIVACY_LISTS DIALOGEX 0, 0, 424, 288
 STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Privacy Lists"
@@ -534,43 +611,54 @@ BEGIN
     LTEXT           "Privacy Lists",IDC_TITLE,7,7,411,8,NOT WS_GROUP
     LTEXT           "Flexible way to configure visibility and more.",IDC_DESCRIPTION,17,17,401,8,NOT WS_GROUP
     CONTROL         "",IDC_FRAME1,"Static",SS_ETCHEDHORZ,0,32,424,1
-    LTEXT           "Lists:",IDC_TXT_LISTS,5,38,121,8
-    LTEXT           "Rules:",IDC_TXT_RULES,135,38,58,8
-    RTEXT           "",IDC_STATIC_LISTS_LABEL,230,38,188,8
-    LISTBOX         IDC_LB_LISTS,5,49,122,202,LBS_SORT | LBS_OWNERDRAWVARIABLE | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    LISTBOX         IDC_PL_RULES_LIST,135,49,283,202,LBS_OWNERDRAWVARIABLE | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "Add new...",IDC_ADD_LIST,24,256,50,14
-    PUSHBUTTON      "Remove list",IDC_REMOVE_LIST,78,256,50,14
-    PUSHBUTTON      "Activate",IDC_ACTIVATE,24,274,50,14
-    PUSHBUTTON      "Set default",IDC_SET_DEFAULT,78,274,50,14
-    PUSHBUTTON      "Add...",IDC_ADD_RULE,135,256,50,14
-    PUSHBUTTON      "Edit...",IDC_EDIT_RULE,189,256,50,14
-    PUSHBUTTON      "Remove",IDC_REMOVE_RULE,243,256,50,14
-    PUSHBUTTON      "Up",IDC_UP_RULE,135,274,50,14
-    PUSHBUTTON      "Down",IDC_DOWN_RULE,189,274,50,14
-    PUSHBUTTON      "Apply",IDC_APPLY,368,256,50,14
-    PUSHBUTTON      "Close",IDCANCEL,368,274,50,14
+    LTEXT           "Lists:",IDC_TXT_LISTS,5,38,121,14,SS_CENTERIMAGE
+    LISTBOX         IDC_LB_LISTS,5,55,122,196,LBS_SORT | LBS_OWNERDRAWVARIABLE | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Rules:",IDC_TXT_RULES,135,38,58,14,SS_CENTERIMAGE
+    LISTBOX         IDC_PL_RULES_LIST,135,55,283,196,LBS_OWNERDRAWVARIABLE | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x1,135,55,283,179,WS_EX_CLIENTEDGE
+    CONTROL         "Simple Mode",IDC_BTN_SIMPLE,"MButtonClass",WS_TABSTOP,386,38,16,14
+    CONTROL         "Advanced Mode",IDC_BTN_ADVANCED,"MButtonClass",WS_TABSTOP,402,38,16,14
+    RTEXT           "Other JID:",IDC_TXT_OTHERJID,135,237,49,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_NEWJID,187,238,210,12,ES_AUTOHSCROLL
+    CONTROL         "",IDC_ADDJID,"MButtonClass",WS_TABSTOP,402,237,16,14
+    CONTROL         "Save changes",IDC_APPLY,"MButtonClass",WS_TABSTOP,5,256,16,14
+    CONTROL         "Add list... (Ins)",IDC_ADD_LIST,"MButtonClass",WS_TABSTOP,53,256,16,14
+    CONTROL         "Activate (Space)",IDC_ACTIVATE,"MButtonClass",WS_TABSTOP,74,256,16,14
+    CONTROL         "Set as default (Ctrl+Space)",IDC_SET_DEFAULT,
+                    "MButtonClass",WS_TABSTOP,90,256,16,14
+    CONTROL         "Remove list (Del)",IDC_REMOVE_LIST,"MButtonClass",WS_TABSTOP,111,256,16,14
+    CONTROL         "Add rule (Ins)",IDC_ADD_RULE,"MButtonClass",WS_TABSTOP,323,256,16,14
+    CONTROL         "Edit rule... (F2)",IDC_EDIT_RULE,"MButtonClass",WS_TABSTOP,344,256,16,14
+    CONTROL         "Move rule up (Alt+Up)",IDC_UP_RULE,"MButtonClass",WS_TABSTOP,365,256,16,14
+    CONTROL         "Move rule down (Alt+Down)",IDC_DOWN_RULE,"MButtonClass",WS_TABSTOP,381,256,16,14
+    CONTROL         "Remove rule (Del)",IDC_REMOVE_RULE,"MButtonClass",WS_TABSTOP,402,256,16,14
+    CONTROL         "",IDC_CANVAS,"Static",SS_OWNERDRAW,135,256,283,14,WS_EX_TRANSPARENT
+    CONTROL         "",IDC_STATUSBAR,"msctls_statusbar32",0x0,0,274,424,14
 END
 
-IDD_PRIVACY_RULE DIALOGEX 0, 0, 261, 82
+IDD_PRIVACY_RULE DIALOGEX 0, 0, 261, 90
 STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Privacy rule"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
+    RTEXT           "If:",IDC_STATIC,5,5,35,12,SS_CENTERIMAGE
     COMBOBOX        IDC_COMBO_TYPE,43,5,76,179,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_COMBO_ACTION,43,21,76,206,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "If:",IDC_STATIC,5,7,35,8
-    CONTROL         "Messages",IDC_CHECK_MESSAGES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,38,119,10
-    LTEXT           "Then:",IDC_STATIC,5,23,35,8
-    CONTROL         "Queries",IDC_CHECK_QUERIES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,51,119,10
-    CONTROL         "Outgoing presence",IDC_CHECK_PRESENCE_OUT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,136,51,120,10
-    CONTROL         "Incoming presence",IDC_CHECK_PRESENCE_IN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,136,38,120,10
-    PUSHBUTTON      "OK",IDOK,152,63,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,206,63,50,14
     COMBOBOX        IDC_COMBO_VALUE,124,5,132,142,CBS_DROPDOWNLIST | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_COMBO_VALUES,124,5,132,142,CBS_DROPDOWN | CBS_AUTOHSCROLL | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "following stanza types:",IDC_STATIC,124,23,132,8
+    RTEXT           "Then:",IDC_STATIC,5,21,35,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_COMBO_ACTION,43,21,76,206,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "following stanza types:",IDC_STATIC,124,21,132,12,SS_CENTERIMAGE
+    CONTROL         "Messages",IDC_CHECK_MESSAGES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,59,38,89,14
+    CONTROL         "Queries",IDC_CHECK_QUERIES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,59,52,89,14
+    CONTROL         "Outgoing presence",IDC_CHECK_PRESENCE_OUT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,166,52,90,14
+    CONTROL         "Incoming presence",IDC_CHECK_PRESENCE_IN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,166,38,90,14
+    PUSHBUTTON      "OK",IDOK,152,71,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,206,71,50,14
+    ICON            "",IDC_ICO_MESSAGE,43,38,16,14,SS_CENTERIMAGE | SS_REALSIZEIMAGE
+    ICON            "",IDC_ICO_QUERY,43,52,16,14,SS_CENTERIMAGE | SS_REALSIZEIMAGE
+    ICON            "",IDC_ICO_PRESENCEIN,150,38,16,14,SS_CENTERIMAGE | SS_REALSIZEIMAGE
+    ICON            "",IDC_ICO_PRESENCEOUT,150,52,16,14,SS_CENTERIMAGE | SS_REALSIZEIMAGE
 END
 
 IDD_PRIVACY_ADD_LIST DIALOGEX 0, 0, 142, 54
@@ -747,12 +835,16 @@ BEGIN
 
     IDD_PRIVACY_LISTS, DIALOG
     BEGIN
-        LEFTMARGIN, 5
-        RIGHTMARGIN, 418
-        TOPMARGIN, 5
-        BOTTOMMARGIN, 288
-        HORZGUIDE, 33
+        VERTGUIDE, 5
+        VERTGUIDE, 127
+        VERTGUIDE, 135
+        VERTGUIDE, 418
         HORZGUIDE, 38
+        HORZGUIDE, 52
+        HORZGUIDE, 251
+        HORZGUIDE, 256
+        HORZGUIDE, 270
+        HORZGUIDE, 274
     END
 
     IDD_PRIVACY_RULE, DIALOG
@@ -761,13 +853,19 @@ BEGIN
         RIGHTMARGIN, 256
         VERTGUIDE, 40
         VERTGUIDE, 43
+        VERTGUIDE, 59
         VERTGUIDE, 124
-        VERTGUIDE, 136
+        VERTGUIDE, 150
+        VERTGUIDE, 166
         TOPMARGIN, 5
-        BOTTOMMARGIN, 77
+        BOTTOMMARGIN, 85
+        HORZGUIDE, 17
         HORZGUIDE, 21
+        HORZGUIDE, 33
         HORZGUIDE, 38
-        HORZGUIDE, 51
+        HORZGUIDE, 52
+        HORZGUIDE, 66
+        HORZGUIDE, 71
     END
 
     IDD_SETMOODMSG, DIALOG
@@ -788,50 +886,6 @@ BEGIN
 END
 #endif    // APSTUDIO_INVOKED
 
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Icon
-//
-
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
-IDI_JABBER              ICON                    "icos\\jabber.ico"
-IDI_DISCO_PROGRESS      ICON                    "icos\\disco_in_progress.ico"
-IDI_NODE_RSS            ICON                    "icos\\rss.ico"
-IDI_NODE_SERVER         ICON                    "icos\\server.ico"
-IDI_NODE_STORE          ICON                    "icos\\store.ico"
-IDI_NODE_WEATHER        ICON                    "icos\\weather.ico"
-IDI_DISCO_OK            ICON                    "icos\\disco_ok.ico"
-IDI_DISCO_FAIL          ICON                    "icos\\disco_fail.ico"
-IDI_GROUP               ICON                    "icos\\group.ico"
-IDI_KEYS                ICON                    "icos\\key.ico"
-IDI_ADDCONTACT          ICON                    "icos\\addcontact.ico"
-IDI_ADDROSTER           ICON                    "icos\\add2roster.ico"
-IDI_AGENTS              ICON                    "icos\\roster.ico"
-IDI_VCARD               ICON                    "icos\\pages.ico"
-IDI_DELETE              ICON                    "icos\\delete.ico"
-IDI_EDIT                ICON                    "icos\\rename.ico"
-IDI_GRANT               ICON                    "icos\\grant.ico"
-IDI_OPEN                ICON                    "icos\\open.ico"
-IDI_REQUEST             ICON                    "icos\\request.ico"
-IDI_USER2ROOM           ICON                    "icos\\user2room.ico"
-IDI_SAVE                ICON                    "icos\\save.ico"
-IDI_LOGIN               ICON                    "icos\\login.ico"
-IDI_AUTHREVOKE          ICON                    "icos\\auth_revoke.ico"
-IDI_REFRESH             ICON                    "icos\\refresh.ico"
-IDI_COMMAND             ICON                    "icos\\command.ico"
-IDI_BOOKMARKS           ICON                    "icos\\bookmarks.ico"
-IDI_PRIVACY_LISTS       ICON                    "icos\\privacy_lists.ico"
-IDI_SERVICE_DISCOVERY   ICON                    "icos\\service_discovery.ico"
-IDI_VIEW_LIST           ICON                    "icos\\view_as_list.ico"
-IDI_VIEW_TREE           ICON                    "icos\\view_as_tree.ico"
-IDI_FILTER_APPLY        ICON                    "icos\\filter.ico"
-IDI_BROWSE              ICON                    "icos\\go.ico"
-IDI_NAV_HOME            ICON                    "icos\\home.ico"
-IDI_NAV_REFRESH         ICON                    "icos\\refresh_node.ico"
-IDI_FILTER_RESET        ICON                    "icos\\reset_filter.ico"
-IDI_CONSOLE             ICON                    "icos\\console.ico"
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -872,4 +926,5 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
+
 
