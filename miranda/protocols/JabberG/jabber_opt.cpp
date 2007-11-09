@@ -456,19 +456,16 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 //			SendMessage( msgLangListBox, CB_SETCURSEL, 0, 0 );
 //			EnumSystemCodePagesA( JabberMsgLangAdd, CP_INSTALLED );
 
-			TCHAR *szSelectedLang = NULL;
-			if ( !JGetStringT( NULL, "XmlLang", &dbv ))
-				szSelectedLang = dbv.ptszVal;
+			TCHAR *szSelectedLang = JabberGetXmlLang();
 			HWND hWndLLB = GetDlgItem( hwndDlg, IDC_MSGLANG );
 			for ( int nI = 0; g_LanguageCodes[nI].szCode; nI++ ) {
-				int nId = SendMessage( hWndLLB, CB_ADDSTRING, 0, (LPARAM)g_LanguageCodes[nI].szDescription );
+				int nId = SendMessage( hWndLLB, CB_ADDSTRING, 0, (LPARAM)TranslateTS( g_LanguageCodes[nI].szDescription ));
 				SendMessage( hWndLLB, CB_SETITEMDATA, nId, (LPARAM)g_LanguageCodes[nI].szCode );
-				if ( ( szSelectedLang && !_tcscmp( szSelectedLang, g_LanguageCodes[nI].szCode )) ||
-					( !szSelectedLang && !_tcscmp( g_LanguageCodes[nI].szCode, _T( "en" ))))
+				if ( !_tcscmp( szSelectedLang, g_LanguageCodes[nI].szCode ))
 					SendMessage( hWndLLB, CB_SETCURSEL, nId, 0 );
 			}
 			if ( szSelectedLang )
-				JFreeVariant(&dbv);
+				mir_free( szSelectedLang );
 
 			WNDPROC oldProc = ( WNDPROC ) GetWindowLong( GetDlgItem( hwndDlg, IDC_EDIT_USERNAME ), GWL_WNDPROC );
 			SetWindowLong( GetDlgItem( hwndDlg, IDC_EDIT_USERNAME ), GWL_USERDATA, ( LONG ) oldProc );
