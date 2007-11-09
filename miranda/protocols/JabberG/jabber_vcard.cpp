@@ -817,6 +817,7 @@ static void AppendVcardFromDB( XmlNode* n, char* tag, char* key )
 		JFreeVariant( &dbv );
 }	}
 
+
 static void SetServerVcard()
 {
 	DBVARIANT dbv;
@@ -944,7 +945,6 @@ static void SetServerVcard()
 					if ( ReadFile( hFile, buffer, st.st_size, &nRead, NULL )) {
 						if (( str=JabberBase64Encode( buffer, nRead )) != NULL ) {
 							n = v->addChild( "PHOTO" );
-
 							char* szFileType;
 							switch( JabberGetPictureType( buffer )) {
 								case PA_FORMAT_PNG:  szFileType = "image/png";   break;
@@ -956,6 +956,22 @@ static void SetServerVcard()
 
 							n->addChild( "BINVAL", str );
 							mir_free( str );
+
+							// NEED TO UPDATE OUR AVATAR HASH:
+
+							mir_sha1_byte_t digest[MIR_SHA1_HASH_SIZE];
+							mir_sha1_ctx sha1ctx;
+							mir_sha1_init( &sha1ctx );
+							mir_sha1_append( &sha1ctx, (mir_sha1_byte_t*)buffer, nRead );
+							mir_sha1_finish( &sha1ctx, digest );
+
+							char buf[MIR_SHA1_HASH_SIZE*2+1];
+							for ( int i=0; i<MIR_SHA1_HASH_SIZE; i++ )
+								sprintf( buf+( i<<1 ), "%02x", digest[i] );
+
+							JSetByte( "AvatarType", JabberGetPictureType( buffer ));	
+							JSetString( NULL, "AvatarHash", buf );
+							JSetString( NULL, "AvatarSaved", buf );
 
 							if ( bPhotoChanged ) {
 								if ( jabberVcardPhotoFileName ) {
@@ -979,6 +995,14 @@ static void SetServerVcard()
 	}	}	}
 
 	jabberThreadInfo->send( iq );
+}
+
+
+void JabberUpdateVCardPhoto( char * szFileName )
+{
+	bPhotoChanged=1;
+	strncpy( szPhotoFileName,szFileName,MAX_PATH );
+	SetServerVcard();
 }
 
 static void ThemeDialogBackground( HWND hwnd ) {

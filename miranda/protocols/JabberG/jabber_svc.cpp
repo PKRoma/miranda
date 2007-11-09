@@ -1313,46 +1313,55 @@ int JabberSetApparentMode( WPARAM wParam, LPARAM lParam )
 static int JabberSetAvatar( WPARAM wParam, LPARAM lParam )
 {
 	char* szFileName = ( char* )lParam;
-	int fileIn = open( szFileName, O_RDWR | O_BINARY, S_IREAD | S_IWRITE );
-	if ( fileIn == -1 )
-		return 1;
-
-	long  dwPngSize = filelength( fileIn );
-	char* pResult = new char[ dwPngSize ];
-	if ( pResult == NULL ) {
-		close( fileIn );
-		return 2;
-	}
-
-	read( fileIn, pResult, dwPngSize );
-	close( fileIn );
-
-	mir_sha1_byte_t digest[MIR_SHA1_HASH_SIZE];
-	mir_sha1_ctx sha1ctx;
-	mir_sha1_init( &sha1ctx );
-	mir_sha1_append( &sha1ctx, (mir_sha1_byte_t*)pResult, dwPngSize );
-	mir_sha1_finish( &sha1ctx, digest );
-
-	char tFileName[ MAX_PATH ];
-	JabberGetAvatarFileName( NULL, tFileName, MAX_PATH );
-	DeleteFileA( tFileName );
-
-	char buf[MIR_SHA1_HASH_SIZE*2+1];
-	for ( int i=0; i<MIR_SHA1_HASH_SIZE; i++ )
-		sprintf( buf+( i<<1 ), "%02x", digest[i] );
-	JSetString( NULL, "AvatarHash", buf );
-	JSetByte( "AvatarType", JabberGetPictureType( pResult ));
-
-	JabberGetAvatarFileName( NULL, tFileName, MAX_PATH );
-	FILE* out = fopen( tFileName, "wb" );
-	if ( out != NULL ) {
-		fwrite( pResult, dwPngSize, 1, out );
-		fclose( out );
-	}
-	delete pResult;
 
 	if ( jabberConnected )
+	{	
+		JabberUpdateVCardPhoto( szFileName );
 		JabberSendPresence( jabberDesiredStatus, false );
+	}
+	else 
+	{
+		// FIXME OLD CODE: If avatar was changed during Jabber was offline. It should be store and send new vcard on online.
+
+		int fileIn = open( szFileName, O_RDWR | O_BINARY, S_IREAD | S_IWRITE );
+		if ( fileIn == -1 )
+			return 1;
+
+		long  dwPngSize = filelength( fileIn );
+		char* pResult = new char[ dwPngSize ];
+		if ( pResult == NULL ) {
+			close( fileIn );
+			return 2;
+		}
+
+		read( fileIn, pResult, dwPngSize );
+		close( fileIn );
+
+		mir_sha1_byte_t digest[MIR_SHA1_HASH_SIZE];
+		mir_sha1_ctx sha1ctx;
+		mir_sha1_init( &sha1ctx );
+		mir_sha1_append( &sha1ctx, (mir_sha1_byte_t*)pResult, dwPngSize );
+		mir_sha1_finish( &sha1ctx, digest );
+
+		char tFileName[ MAX_PATH ];
+		JabberGetAvatarFileName( NULL, tFileName, MAX_PATH );
+		DeleteFileA( tFileName );
+
+		char buf[MIR_SHA1_HASH_SIZE*2+1];
+		for ( int i=0; i<MIR_SHA1_HASH_SIZE; i++ )
+			sprintf( buf+( i<<1 ), "%02x", digest[i] );
+
+		JSetByte( "AvatarType", JabberGetPictureType( pResult ));
+		JSetString( NULL, "AvatarSaved", buf );
+
+		JabberGetAvatarFileName( NULL, tFileName, MAX_PATH );
+		FILE* out = fopen( tFileName, "wb" );
+		if ( out != NULL ) {
+			fwrite( pResult, dwPngSize, 1, out );
+			fclose( out );
+		}
+		delete pResult;
+	}
 
 	return 0;
 }

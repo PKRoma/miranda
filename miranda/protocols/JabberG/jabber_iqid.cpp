@@ -117,6 +117,19 @@ static void JabberOnLoggedIn( ThreadData* info )
 	else if ( strcmp( info->server, szServerName ))
 		JabberSendGetVcard( jabberJID );
 	JSetString( NULL, "LastLoggedServer", info->server );
+
+	//Check if avatar changed
+	DBVARIANT dbvSaved = {0};
+	DBVARIANT dbvHash = {0};
+	int resultSaved = JGetStringT( NULL, "AvatarSaved", &dbvSaved );
+	int resultHash  = JGetStringT( NULL, "AvatarHash", &dbvHash );
+	if ( resultSaved || resultHash || lstrcmp( dbvSaved.ptszVal, dbvHash.ptszVal ))	{
+		char tFileName[ MAX_PATH ];
+		JabberGetAvatarFileName( NULL, tFileName, MAX_PATH );
+		JabberUpdateVCardPhoto( tFileName );
+	}
+	DBFreeVariant(&dbvSaved);
+	DBFreeVariant(&dbvHash);
 }
 
 void JabberIqResultGetAuth( XmlNode *iqNode, void *userdata )

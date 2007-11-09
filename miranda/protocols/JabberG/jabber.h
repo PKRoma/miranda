@@ -723,6 +723,7 @@ void JabberBitmapPremultiplyChannels(HBITMAP hBitmap);
 //---- jabber_vcard.c -----------------------------------------------
 
 int JabberSendGetVcard( const TCHAR* jid );
+void JabberUpdateVCardPhoto( char * szPhotoFileName );
 
 //---- jabber_ws.c -------------------------------------------------
 
