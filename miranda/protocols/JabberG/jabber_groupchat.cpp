@@ -297,7 +297,7 @@ static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 					CallService( MS_GC_NEWSESSION, 0, ( LPARAM )&gcw );
 				}
 				{	XmlNodeIq iq( "set" );
-					XmlNode* query = iq.addQuery( "jabber:iq:roster" );
+					XmlNode* query = iq.addQuery( JABBER_FEAT_IQ_ROSTER );
 					XmlNode* item = query->addChild( "item" ); item->addAttr( "jid", jid );
 					jabberThreadInfo->send( iq );
 				}

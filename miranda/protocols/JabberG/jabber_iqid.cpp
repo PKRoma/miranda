@@ -38,6 +38,8 @@ Last change by : $Author$
 
 extern char* jabberVcardPhotoFileName;
 
+void JabberIqResultGetRoster( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
+
 void JabberIqResultServerDiscoInfo( XmlNode* iqNode, void* userdata )
 {
 	if ( !iqNode )
@@ -74,19 +76,61 @@ void JabberIqResultServerDiscoInfo( XmlNode* iqNode, void* userdata )
 							break;
 }	}	}	}	}	}	}
 
+
+void JabberIqResultNestedRosterGroups( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
+{
+	TCHAR *szGroupDelimeter = NULL;
+	BOOL bPrivateStorageSupport = FALSE;
+
+	if ( iqNode && pInfo->GetIqType() == JABBER_IQ_TYPE_RESULT ) {
+		XmlNode *pQuery = JabberXmlGetChildWithGivenAttrValue( iqNode, "query", "xmlns", _T( JABBER_FEAT_PRIVATE_STORAGE ));
+		if ( pQuery ) {
+			bPrivateStorageSupport = TRUE;
+			XmlNode *pRoster = JabberXmlGetChildWithGivenAttrValue( pQuery, "roster", "xmlns", _T( JABBER_FEAT_NESTED_ROSTER_GROUPS ));
+			if ( pRoster && pRoster->text && *pRoster->text )
+				szGroupDelimeter = pRoster->text;
+		}
+	}
+
+	// global fuckup
+	if ( !jabberThreadInfo )
+		return;
+
+	// is our default delimiter?
+	if (( !szGroupDelimeter && bPrivateStorageSupport ) || ( szGroupDelimeter && _tcscmp( szGroupDelimeter, _T("\\") ))) {
+		XmlNodeIq iqNRG( "set", JabberSerialNext() );
+		XmlNode* query = iqNRG.addQuery( JABBER_FEAT_PRIVATE_STORAGE );
+		XmlNode* roster = query->addChild( "roster", _T("\\") );
+		roster->addAttr( "xmlns", JABBER_FEAT_NESTED_ROSTER_GROUPS );
+		jabberThreadInfo->send( iqNRG );
+	}
+
+	// roster request
+	TCHAR *szUserData = mir_tstrdup( szGroupDelimeter ? szGroupDelimeter : _T("\\") );
+	XmlNodeIq iq( g_JabberIqManager.AddHandler( JabberIqResultGetRoster, JABBER_IQ_TYPE_GET, NULL, 0, -1, (void *)szUserData ));
+	XmlNode* query = iq.addChild( "query" ); query->addAttr( "xmlns", JABBER_FEAT_IQ_ROSTER );
+	jabberThreadInfo->send( iq );
+}
+
 static void JabberOnLoggedIn( ThreadData* info )
 {
 	jabberOnline = TRUE;
 	jabberLoggedInTime = time(0);
 
+
+	// XEP-0083 support
+	{
+		CJabberIqInfo* pIqInfo = g_JabberIqManager.AddHandler( JabberIqResultNestedRosterGroups, JABBER_IQ_TYPE_GET );
+		// ugly hack to prevent hangup during login process
+		pIqInfo->SetTimeout( 30000 );
+		XmlNodeIq iqNRG( pIqInfo );
+		XmlNode* query = iqNRG.addQuery( JABBER_FEAT_PRIVATE_STORAGE );
+		XmlNode* roster = query->addChild( "roster" );
+		roster->addAttr( "xmlns", JABBER_FEAT_NESTED_ROSTER_GROUPS );
+		info->send( iqNRG );
+	}
+
 	int iqId = JabberSerialNext();
-	JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultGetRoster );
-
-	XmlNode iq( "iq" ); iq.addAttr( "type", "get" ); iq.addAttrID( iqId );
-	XmlNode* query = iq.addChild( "query" ); query->addAttr( "xmlns", "jabber:iq:roster" );
-	info->send( iq );
-
-	iqId = JabberSerialNext();
 	JabberIqAdd( iqId, IQ_PROC_DISCOBOOKMARKS, JabberIqResultDiscoBookmarks);
 	XmlNodeIq biq( "get", iqId);
 	XmlNode* bquery = biq.addQuery( JABBER_FEAT_PRIVATE_STORAGE );
@@ -101,13 +145,6 @@ static void JabberOnLoggedIn( ThreadData* info )
 	XmlNodeIq diq( "get", iqId, jabberThreadInfo->server );
 	diq.addQuery( JABBER_FEAT_DISCO_INFO );
 	jabberThreadInfo->send( diq );
-
-//	iqId = JabberSerialNext();
-//	JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultPrivacyLists );
-
-//	XmlNodeIq piq( g_JabberIqManager.AddHandler( JabberIqResultPrivacyLists ));
-//	piq.addQuery( JABBER_FEAT_PRIVACY_LISTS );
-//	jabberThreadInfo->send( piq );
 
 	g_PrivacyListManager.QueryLists();
 
@@ -279,9 +316,6 @@ void JabberIqResultSession( XmlNode *iqNode, void *userdata )
 		JabberOnLoggedIn( info );
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////
-// JabberIqResultGetRoster - populates LIST_ROSTER and creates contact for any new rosters
-
 void sttGroupchatJoinByHContact( HANDLE hContact )
 {
 	DBVARIANT dbv;
@@ -320,19 +354,33 @@ void sttGroupchatJoinByHContact( HANDLE hContact )
 	mir_free( roomjid );
 }
 
-void JabberIqResultGetRoster( XmlNode* iqNode, void* )
+/////////////////////////////////////////////////////////////////////////////////////////
+// JabberIqResultGetRoster - populates LIST_ROSTER and creates contact for any new rosters
+
+void JabberIqResultGetRoster( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	JabberLog( "<iq/> iqIdGetRoster" );
-	TCHAR* type = JabberXmlGetAttrValue( iqNode, "type" );
-	if ( lstrcmp( type, _T("result")))
+	TCHAR *szGroupDelimeter = (TCHAR *)pInfo->GetUserData();
+	if ( pInfo->GetIqType() != JABBER_IQ_TYPE_RESULT ) {
+		mir_free( szGroupDelimeter );
 		return;
+	}
 
 	XmlNode* queryNode = JabberXmlGetChild( iqNode, "query" );
-   if ( queryNode == NULL )
+	if ( queryNode == NULL ) {
+		mir_free( szGroupDelimeter );
 		return;
+	}
 
-	if ( lstrcmp( JabberXmlGetAttrValue( queryNode, "xmlns" ), _T("jabber:iq:roster")))
+	if ( lstrcmp( JabberXmlGetAttrValue( queryNode, "xmlns" ), _T(JABBER_FEAT_IQ_ROSTER))) {
+		mir_free( szGroupDelimeter );
 		return;
+	}
+
+	if ( !_tcscmp( szGroupDelimeter, _T("\\"))) {
+		mir_free( szGroupDelimeter );
+		szGroupDelimeter = NULL;
+	}
 
 	TCHAR* name, *nick;
 	int i;
@@ -372,6 +420,8 @@ void JabberIqResultGetRoster( XmlNode* iqNode, void* )
 		{
 			//not found @ in jid request info about
 
+			// FIXME: replace by call to entity caps manager
+
 			int iqId = JabberSerialNext();
 			JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultDiscoAgentInfo );
 
@@ -392,6 +442,21 @@ void JabberIqResultGetRoster( XmlNode* iqNode, void* )
 
 		XmlNode* groupNode = JabberXmlGetChild( itemNode, "group" );
 		replaceStr( item->group, ( groupNode ) ? groupNode->text : NULL );
+
+		// check group delimiters:
+		if ( item->group && szGroupDelimeter ) {
+			TCHAR *szPos = NULL;
+			while ( szPos = _tcsstr( item->group, szGroupDelimeter )) {
+				*szPos = 0;
+				szPos += _tcslen( szGroupDelimeter );
+				TCHAR *szNewGroup = (TCHAR *)mir_alloc( sizeof(TCHAR) * ( _tcslen( item->group ) + _tcslen( szPos ) + 2));
+				_tcscpy( szNewGroup, item->group );
+				_tcscat( szNewGroup, _T("\\"));
+				_tcscat( szNewGroup, szPos );
+				mir_free( item->group );
+				item->group = szNewGroup;
+			}
+		}
 
 		HANDLE hContact = JabberHContactFromJID( jid );
 		if ( hContact == NULL ) {
@@ -516,6 +581,9 @@ void JabberIqResultGetRoster( XmlNode* iqNode, void* )
 		SendMessage( hwndServiceDiscovery, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
 	if ( hwndJabberVcard )
 		SendMessage( hwndJabberVcard, WM_JABBER_CHECK_ONLINE, 0, 0 );
+
+	if ( szGroupDelimeter )
+		mir_free( szGroupDelimeter );
 }
 
 void JabberIqResultGetAgents( XmlNode *iqNode, void *userdata )

@@ -1470,7 +1470,7 @@ void JabberServiceDiscoveryShowMenu(CJabberSDNode *pNode, HTREELISTITEM hItem, P
 				jabberThreadInfo->send( iq );
 			}
 			{	XmlNodeIq iq( "set" );
-				XmlNode* query = iq.addQuery( "jabber:iq:roster" );
+				XmlNode* query = iq.addQuery( JABBER_FEAT_IQ_ROSTER );
 				XmlNode* itm = query->addChild( "item" ); itm->addAttr( "jid", pNode->GetJid() ); itm->addAttr( "subscription", "remove" );
 				jabberThreadInfo->send( iq );
 			}

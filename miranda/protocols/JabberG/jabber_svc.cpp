@@ -311,7 +311,7 @@ int JabberContactDeleted( WPARAM wParam, LPARAM lParam )
 		if ( JabberListExist( LIST_ROSTER, dbv.ptszVal )) {
 			// Remove from roster, server also handles the presence unsubscription process.
 			XmlNodeIq iq( "set" ); iq.addAttrID( JabberSerialNext());
-			XmlNode* query = iq.addQuery( "jabber:iq:roster" );
+			XmlNode* query = iq.addQuery( JABBER_FEAT_IQ_ROSTER );
 			XmlNode* item = query->addChild( "item" ); item->addAttr( "jid", dbv.ptszVal ); item->addAttr( "subscription", "remove" );
 			jabberThreadInfo->send( iq );
 		}

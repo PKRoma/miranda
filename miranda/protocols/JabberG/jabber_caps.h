@@ -125,6 +125,7 @@ typedef unsigned __int64 JabberCapsBits;
 #define JABBER_EXT_USER_TUNE                    "tune"
 
 #define JABBER_FEAT_EXT_ADDRESSING              "http://jabber.org/protocol/address"
+#define JABBER_FEAT_NESTED_ROSTER_GROUPS        "roster:delimiter"
 
 #define JABBER_FEAT_RC                          "http://jabber.org/protocol/rc"
 #define JABBER_FEAT_RC_SET_STATUS               "http://jabber.org/protocol/rc#set-status"

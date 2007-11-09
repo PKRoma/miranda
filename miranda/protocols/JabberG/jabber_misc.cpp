@@ -38,7 +38,7 @@ Last change by : $Author$
 void JabberAddContactToRoster( const TCHAR* jid, const TCHAR* nick, const TCHAR* grpName, JABBER_SUBSCRIPTION subscription )
 {
 	XmlNodeIq iq( "set" );
-	XmlNode* query = iq.addQuery( "jabber:iq:roster" );
+	XmlNode* query = iq.addQuery( JABBER_FEAT_IQ_ROSTER );
 	XmlNode* item = query->addChild( "item" ); item->addAttr( "jid", jid );
 	if ( nick )
 		item->addAttr( "name", nick );

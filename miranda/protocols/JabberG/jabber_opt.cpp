@@ -1097,7 +1097,7 @@ static void _RosterHandleGetRequest( XmlNode* node, void* userdata )
 		iq.addAttr( "type", "set" );
 		iq.addAttrID( iqId );
 		XmlNode* query = iq.addChild( "query" );
-		query->addAttr( "xmlns", "jabber:iq:roster" );
+		query->addAttr( "xmlns", JABBER_FEAT_IQ_ROSTER );
 		int itemCount=0;
 		int ListItemCount=ListView_GetItemCount(hList);
 		for (int index=0; index<ListItemCount; index++)
@@ -1187,7 +1187,7 @@ static void _RosterSendRequest(HWND hwndDlg, BYTE rrAction)
 	iq.addAttr( "type", "get" );
 	iq.addAttrID( iqId );
 	XmlNode* query = iq.addChild( "query" );
-	query->addAttr( "xmlns", "jabber:iq:roster" );
+	query->addAttr( "xmlns", JABBER_FEAT_IQ_ROSTER );
 	jabberThreadInfo->send( iq );
 }
 
