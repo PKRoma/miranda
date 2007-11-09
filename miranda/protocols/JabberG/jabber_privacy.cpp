@@ -1368,6 +1368,10 @@ static void sttEnableEditorControls(HWND hwndDlg)
 	bListSelected = bListSelected && (SendDlgItemMessage( hwndDlg, IDC_LB_LISTS, LB_GETCURSEL, 0, 0) != LB_ERR);
 	bListSelected = bListSelected && SendDlgItemMessage( hwndDlg, IDC_LB_LISTS, LB_GETITEMDATA, SendDlgItemMessage( hwndDlg, IDC_LB_LISTS, LB_GETCURSEL, 0, 0), 0);
 
+	EnableWindow( GetDlgItem( hwndDlg, IDC_TXT_OTHERJID ), bListsLoaded && bListSelected );
+	EnableWindow( GetDlgItem( hwndDlg, IDC_NEWJID ), bListsLoaded && bListSelected );
+	EnableWindow( GetDlgItem( hwndDlg, IDC_ADDJID ), bListsLoaded && bListSelected );
+
 	EnableWindow( GetDlgItem( hwndDlg, IDC_ADD_RULE ), bListsLoaded && bListSelected );
 	EnableWindow( GetDlgItem( hwndDlg, IDC_EDIT_RULE ), bListsLoaded && bSelected );
 	EnableWindow( GetDlgItem( hwndDlg, IDC_REMOVE_RULE ), bListsLoaded && bSelected );
