@@ -68,7 +68,6 @@ struct OptionsPageData
 	DWORD flags;
 	TCHAR *pszTitle, *pszGroup, *pszTab;
 	BOOL insideTab;
-	LPARAM dwInitParam;
 };
 
 struct OptionsDlgData
@@ -261,7 +260,6 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 			dat->opd[i].nExpertOnlyControls=odp[i].nExpertOnlyControls;
 			dat->opd[i].expertOnlyControls=odp[i].expertOnlyControls;
 			dat->opd[i].flags=odp[i].flags;
-			dat->opd[i].dwInitParam=odp[i].dwInitParam;
 			if ( odp[i].pszTitle == NULL )
 				dat->opd[i].pszTitle = NULL;
 			else if ( odp[i].flags & ODPF_UNICODE ) {
@@ -489,7 +487,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 							RECT rcControl,rc;
 							int w,h,pages=0;
 
-							dat->opd[dat->currentPage].hwnd=CreateDialogIndirectParamA(dat->opd[dat->currentPage].hInst,dat->opd[dat->currentPage].pTemplate,hdlg,dat->opd[dat->currentPage].dlgProc,dat->opd[dat->currentPage].dwInitParam);
+							dat->opd[dat->currentPage].hwnd=CreateDialogIndirectA(dat->opd[dat->currentPage].hInst,dat->opd[dat->currentPage].pTemplate,hdlg,dat->opd[dat->currentPage].dlgProc);
 							if(dat->opd[dat->currentPage].flags&ODPF_BOLDGROUPS)
 								EnumChildWindows(dat->opd[dat->currentPage].hwnd,BoldGroupTitlesEnumChildren,(LPARAM)dat->hBoldFont);
 							GetClientRect(dat->opd[dat->currentPage].hwnd,&rcPage);
@@ -827,8 +825,7 @@ static int AddOptionsPage(WPARAM wParam,LPARAM lParam)
 	if(odp==NULL||opi==NULL) return 1;
 	if(odp->cbSize!=sizeof(OPTIONSDIALOGPAGE)
 			&& odp->cbSize != OPTIONPAGE_OLD_SIZE
-			&& odp->cbSize != OPTIONPAGE_OLD_SIZE2
-			&& odp->cbSize != OPTIONPAGE_OLD_SIZE3)
+			&& odp->cbSize != OPTIONPAGE_OLD_SIZE2)
 		return 1;
 
 	opi->odp=(OPTIONSDIALOGPAGE*)mir_realloc(opi->odp,sizeof(OPTIONSDIALOGPAGE)*(opi->pageCount+1));

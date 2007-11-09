@@ -82,18 +82,11 @@ typedef struct {
 			TCHAR* ptszTab;		 //v0.6.0.0+
 		};
 	#endif
-	
-	#if MIRANDA_VER >= 0x0720
-	union {
-			LPARAM dwInitParam;	 //v0.7.1.0+  a value to pass to lParam of WM_INITDIALOG message
-		};
-	#endif
 }
 	OPTIONSDIALOGPAGE;
 
 #define OPTIONPAGE_OLD_SIZE  40
 #define OPTIONPAGE_OLD_SIZE2 60
-#define OPTIONPAGE_OLD_SIZE3 64
 
 #define ODPF_SIMPLEONLY   1	// page is only shown when in simple mode
 #define ODPF_EXPERTONLY   2	//         "                 expert mode
