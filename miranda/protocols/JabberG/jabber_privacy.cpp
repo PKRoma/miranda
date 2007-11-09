@@ -35,6 +35,8 @@ Last change by : $Author: ghazan $
 #include "m_genmenu.h"
 #include "m_clistint.h"
 
+#define JABBER_PL_BUSY_MSG				"Sending request, please wait..."
+
 CPrivacyListManager g_PrivacyListManager;
 
 static void sttStatusMessage(TCHAR *msg = NULL)
@@ -1787,7 +1789,7 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 					active->addAttr( "name", pList->GetListName() );
 				g_PrivacyListManager.Unlock();
 
-				sttStatusMessage( TranslateT( "Sending request, please wait" ));
+				sttStatusMessage( TranslateT( JABBER_PL_BUSY_MSG ));
 
 				jabberThreadInfo->send( iq );
 			}
@@ -1807,7 +1809,7 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 					defaultTag->addAttr( "name", pList->GetListName() );
 				g_PrivacyListManager.Unlock();
 
-				sttStatusMessage( TranslateT( "Sending request, please wait" ));
+				sttStatusMessage( TranslateT( JABBER_PL_BUSY_MSG ));
 
 				jabberThreadInfo->send( iq );
 			}
@@ -2085,7 +2087,7 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 					pList = pList->GetNext();
 			}	}
 			g_PrivacyListManager.Unlock();
-			sttStatusMessage( TranslateT( "Sending request, please wait" ));
+			sttStatusMessage( TranslateT( JABBER_PL_BUSY_MSG ));
 			PostMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0 );
 			return TRUE;
 
