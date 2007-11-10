@@ -407,13 +407,15 @@ void JabberGroupchatJoinRoom( const TCHAR* server, const TCHAR* room, const TCHA
 			continue;
 		}
 
-		mir_snprintf(setting, sizeof(setting), "rcMuc_%d_password", i);
-		if (JGetStringT(NULL, setting, &dbv)) break;
-		CallService(MS_DB_CRYPT_DECODESTRING, lstrlen(dbv.ptszVal)+1, (LPARAM)dbv.ptszVal);
-		if (lstrcmp(dbv.ptszVal, password))
-		{
-			JFreeVariant(&dbv);
-			continue;
+		if ( password ) {
+			mir_snprintf(setting, sizeof(setting), "rcMuc_%d_password", i);
+			if (JGetStringT(NULL, setting, &dbv)) break;
+			CallService(MS_DB_CRYPT_DECODESTRING, lstrlen(dbv.ptszVal)+1, (LPARAM)dbv.ptszVal);
+			if (lstrcmp(dbv.ptszVal, password))
+			{
+				JFreeVariant(&dbv);
+				continue;
+			}
 		}
 
 		found = true;
@@ -446,9 +448,12 @@ void JabberGroupchatJoinRoom( const TCHAR* server, const TCHAR* room, const TCHA
 			JFreeVariant(&dbv);
 
 			mir_snprintf(setting, sizeof(setting), "rcMuc_%d_password", i);
-			JGetStringT(NULL, setting, &dbv);
+			int nResult = JGetStringT(NULL, setting, &dbv);
 			mir_snprintf(setting, sizeof(setting), "rcMuc_%d_password", i+1);
-			JSetStringT(NULL, setting, dbv.ptszVal);
+			if ( !nResult )
+				JSetStringT(NULL, setting, dbv.ptszVal);
+			else
+				JDeleteSetting(NULL, setting);
 		}
 
 		mir_snprintf(setting, sizeof(setting), "rcMuc_%d_server", 0);
