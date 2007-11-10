@@ -345,22 +345,13 @@ int JabberGcMenuHook( WPARAM wParam, LPARAM lParam )
 		gcmi->nItems = sizeof( sttLogListItems ) / sizeof( sttLogListItems[0] );
 		gcmi->Item = sttLogListItems;
 		
-		for( int i=3; i<=16; i++ ) {
-			if (i >= 11 && i <= 13) continue;
-			sttLogListItems[i].bDisabled = TRUE;
-		}
-
 		if ( me != NULL ) {
-			if ( me->role == ROLE_MODERATOR )
-				sttLogListItems[3].bDisabled = FALSE;
+				sttLogListItems[3].bDisabled = ( me->role != ROLE_MODERATOR );
 
-			if ( me->affiliation == AFFILIATION_ADMIN )
-				sttLogListItems[4].bDisabled = sttLogListItems[6].bDisabled = sttLogListItems[7].bDisabled = FALSE;
-			else if ( me->affiliation == AFFILIATION_OWNER )
-				sttLogListItems[4].bDisabled = sttLogListItems[6].bDisabled =
-				sttLogListItems[7].bDisabled = sttLogListItems[8].bDisabled =
-				sttLogListItems[9].bDisabled = sttLogListItems[14].bDisabled =
-				sttLogListItems[16].bDisabled = FALSE;
+				sttLogListItems[4].bDisabled = sttLogListItems[6].bDisabled = sttLogListItems[7].bDisabled =
+				sttLogListItems[8].bDisabled = sttLogListItems[9].bDisabled = ( me->affiliation < AFFILIATION_ADMIN );
+
+				sttLogListItems[14].bDisabled = sttLogListItems[16].bDisabled = ( me->affiliation != AFFILIATION_OWNER );
 		}
 		if ( jabberThreadInfo->jabberServerCaps & JABBER_CAPS_PRIVATE_STORAGE ) sttLogListItems[1].bDisabled = FALSE;
 	}
@@ -383,6 +374,7 @@ int JabberGcMenuHook( WPARAM wParam, LPARAM lParam )
 
 		for (int i=3; i<=10; i++) sttListItems[i].bDisabled = TRUE;
 		if ( me != NULL && him != NULL && me != him) {
+			// TODO: an admin should be able to set moderator's role to participant
 			if ( me->role == ROLE_MODERATOR && (me->role > him->role) ) {
 				sttListItems[3].bDisabled =	sttListItems[6].bDisabled = FALSE;
 			}
