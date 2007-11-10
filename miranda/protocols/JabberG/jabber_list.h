@@ -33,7 +33,6 @@ Last change by : $Author$
 
 typedef enum {
 	LIST_ROSTER,        // Roster list
-	LIST_AGENT,         // Agent list to show on the Jabber Agents dialog
 	LIST_CHATROOM,      // Groupchat room currently joined
 	LIST_ROOM,          // Groupchat room list to show on the Jabber groupchat dialog
 	LIST_FILE,          // Current file transfer session

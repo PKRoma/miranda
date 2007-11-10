@@ -226,7 +226,6 @@ void JabberIqResultSetAuth( XmlNode *iqNode, void *userdata )
 {
 	ThreadData* info = ( ThreadData* ) userdata;
 	TCHAR* type;
-	int iqId;
 
 	// RECVED: authentication result
 	// ACTION: if successfully logged in, continue by requesting roster list and set my initial status
@@ -241,16 +240,6 @@ void JabberIqResultSetAuth( XmlNode *iqNode, void *userdata )
 			JFreeVariant( &dbv );
 
 		JabberOnLoggedIn( info );
-
-		if ( hwndJabberAgents ) {
-			// Retrieve agent information
-			iqId = JabberSerialNext();
-			JabberIqAdd( iqId, IQ_PROC_GETAGENTS, JabberIqResultGetAgents );
-
-			XmlNodeIq iq( "get", iqId );
-			XmlNode* query = iq.addQuery( JABBER_FEAT_AGENTS );
-			info->send( iq );
-		}
 	}
 	// What to do if password error? etc...
 	else if ( !lstrcmp( type, _T("error"))) {
@@ -416,26 +405,6 @@ void JabberIqResultGetRoster( XmlNode* iqNode, void* userdata, CJabberIqInfo* pI
 			continue;
 
 		JABBER_LIST_ITEM* item = JabberListAdd( LIST_ROSTER, jid );
-		if (_tcschr(jid,_T('@'))==NULL)
-		{
-			//not found @ in jid request info about
-
-			// FIXME: replace by call to entity caps manager
-
-			int iqId = JabberSerialNext();
-			JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultDiscoAgentInfo );
-
-			XmlNodeIq iq( "get", iqId, jid );
-			XmlNode* query = iq.addQuery( JABBER_FEAT_DISCO_INFO );
-			jabberThreadInfo->send( iq );
-			bIsTransport=TRUE;
-			TCHAR * stripJid=_tcsdup( jid );
-			TCHAR * slash=_tcschr(stripJid,_T('/'));
-			if (slash!=NULL) *slash=_T('\0');
-			if ( jabberTransports.getIndex( stripJid ) == -1 )
-				jabberTransports.insert( _tcsdup( stripJid ));
-			free(stripJid);
-		}
 		item->subscription = sub;
 
 		mir_free( item->nick ); item->nick = nick;
@@ -585,53 +554,6 @@ void JabberIqResultGetRoster( XmlNode* iqNode, void* userdata, CJabberIqInfo* pI
 	if ( szGroupDelimeter )
 		mir_free( szGroupDelimeter );
 }
-
-void JabberIqResultGetAgents( XmlNode *iqNode, void *userdata )
-{
-	ThreadData* info = ( ThreadData* ) userdata;
-	XmlNode *queryNode;
-	TCHAR* type, *jid, *str;
-
-	// RECVED: agent list
-	// ACTION: refresh agent list dialog
-	JabberLog( "<iq/> iqIdGetAgents" );
-	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
-	if (( queryNode=JabberXmlGetChild( iqNode, "query" )) == NULL ) return;
-
-	if ( !lstrcmp( type, _T("result"))) {
-		str = JabberXmlGetAttrValue( queryNode, "xmlns" );
-		if ( str!=NULL && !lstrcmp( str, _T(JABBER_FEAT_AGENTS))) {
-			XmlNode *agentNode, *n;
-			JABBER_LIST_ITEM *item;
-			int i;
-
-			JabberListRemoveList( LIST_AGENT );
-			for ( i=0; i<queryNode->numChild; i++ ) {
-				agentNode = queryNode->child[i];
-				if ( !lstrcmpA( agentNode->name, "agent" )) {
-					if (( jid=JabberXmlGetAttrValue( agentNode, "jid" )) != NULL ) {
-						item = JabberListAdd( LIST_AGENT, jid );
-//						if ( JabberXmlGetChild( agentNode, "register" ) != NULL )
-//							item->cap |= AGENT_CAP_REGISTER;
-//						if ( JabberXmlGetChild( agentNode, "search" ) != NULL )
-//							item->cap |= AGENT_CAP_SEARCH;
-//						if ( JabberXmlGetChild( agentNode, "groupchat" ) != NULL )
-//							item->cap |= AGENT_CAP_GROUPCHAT;
-						// set service also???
-						// most chatroom servers don't announce <grouchat/> so we will
-						// also treat <service>public</service> as groupchat services
-//						if (( n=JabberXmlGetChild( agentNode, "service" ))!=NULL && n->text!=NULL && !_tcscmp( n->text, _T("public")))
-//							item->cap |= AGENT_CAP_GROUPCHAT;
-						if (( n=JabberXmlGetChild( agentNode, "name" ))!=NULL && n->text!=NULL )
-							item->name = mir_tstrdup( n->text );
-		}	}	}	}
-
-		if ( hwndJabberAgents != NULL ) {
-			if (( jid = JabberXmlGetAttrValue( iqNode, "from" )) != NULL )
-				SendMessage( hwndJabberAgents, WM_JABBER_AGENT_REFRESH, 0, ( LPARAM )jid );
-			else
-				SendMessage( hwndJabberAgents, WM_JABBER_AGENT_REFRESH, 0, ( LPARAM )info->server );
-}	}	}
 
 void JabberIqResultGetRegister( XmlNode *iqNode, void *userdata )
 {
@@ -1418,152 +1340,6 @@ void JabberIqResultSetPassword( XmlNode *iqNode, void *userdata )
 	else if ( !lstrcmp( type, _T("error")))
 		MessageBox( NULL, TranslateT( "Password cannot be changed." ), TranslateT( "Change Password" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
 }
-
-void JabberIqResultDiscoAgentItems( XmlNode *iqNode, void *userdata )
-{
-	ThreadData* info = ( ThreadData* ) userdata;
-	XmlNode *queryNode, *itemNode;
-	TCHAR* type, *jid, *from;
-
-	// RECVED: agent list
-	// ACTION: refresh agent list dialog
-	JabberLog( "<iq/> iqIdDiscoAgentItems" );
-	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
-	if (( from=JabberXmlGetAttrValue( iqNode, "from" )) == NULL ) return;
-
-	if ( !lstrcmp( type, _T("result"))) {
-		if (( queryNode=JabberXmlGetChild( iqNode, "query" )) != NULL ) {
-			TCHAR* str = JabberXmlGetAttrValue( queryNode, "xmlns" );
-			if  ( !lstrcmp( str, _T(JABBER_FEAT_DISCO_ITEMS))) {
-				JabberListRemoveList( LIST_AGENT );
-				for ( int i=0; i<queryNode->numChild; i++ ) {
-					if (( itemNode=queryNode->child[i] )!=NULL && itemNode->name!=NULL && !lstrcmpA( itemNode->name, "item" )) {
-						if (( jid=JabberXmlGetAttrValue( itemNode, "jid" )) != NULL ) {
-							JABBER_LIST_ITEM* item = JabberListAdd( LIST_AGENT, jid );
-							replaceStr( item->name, JabberXmlGetAttrValue( itemNode, "name" ));
-//							item->cap = AGENT_CAP_REGISTER | AGENT_CAP_GROUPCHAT;	// default to all cap until specific info is later received
-							int iqId = JabberSerialNext();
-							JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultDiscoAgentInfo );
-
-							XmlNodeIq iq( "get", iqId, jid );
-							XmlNode* query = iq.addQuery( JABBER_FEAT_DISCO_INFO );
-							jabberThreadInfo->send( iq );
-		}	}	}	}	}
-
-		if ( hwndJabberAgents != NULL ) {
-			if (( jid=JabberXmlGetAttrValue( iqNode, "from" )) != NULL )
-				SendMessage( hwndJabberAgents, WM_JABBER_AGENT_REFRESH, 0, ( LPARAM )jid );
-			else
-				SendMessage( hwndJabberAgents, WM_JABBER_AGENT_REFRESH, 0, ( LPARAM )info->server );
-		}
-	}
-	else if ( !lstrcmp( type, _T("error"))) {
-		// disco is not supported, try jabber:iq:agents
-		int iqId = JabberSerialNext();
-		JabberIqAdd( iqId, IQ_PROC_GETAGENTS, JabberIqResultGetAgents );
-
-		XmlNodeIq iq( "get", iqId, from );
-		XmlNode* query = iq.addQuery( JABBER_FEAT_AGENTS );
-		jabberThreadInfo->send( iq );
-}	}
-
-void JabberIqResultDiscoAgentInfo( XmlNode *iqNode, void *userdata )
-{
-	ThreadData* info = ( ThreadData* ) userdata;
-	XmlNode *queryNode, *itemNode, *identityNode;
-	TCHAR* type, *from, *var;
-	JABBER_LIST_ITEM *item;
-	JABBER_LIST_ITEM *rosterItem=NULL;
-//	WORD cap=0;
-	// RECVED: info for a specific agent
-	// ACTION: refresh agent list dialog
-	JabberLog( "<iq/> iqIdDiscoAgentInfo" );
-	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
-	if (( from = JabberXmlGetAttrValue( iqNode, "from" )) == NULL ) return;
-
-	if ( !lstrcmp( type, _T("result"))) {
-		if (( queryNode=JabberXmlGetChild( iqNode, "query" )) != NULL ) {
-			TCHAR* str = JabberXmlGetAttrValue( queryNode, "xmlns" );
-			if ( !lstrcmp( str, _T(JABBER_FEAT_DISCO_INFO))) {
-				rosterItem=JabberListGetItemPtr( LIST_ROSTER, from );
-				item=JabberListGetItemPtr( LIST_AGENT, from );
-				// Use the first <identity/> to set name
-				if (( identityNode=JabberXmlGetChild( queryNode, "identity" )) != NULL ) {
-					if (( str=JabberXmlGetAttrValue( identityNode, "name" )) != NULL )
-					{
-						if (item) replaceStr( item->name, str );
-						if (rosterItem) replaceStr( rosterItem->name, str );
-					}
-				}
-//				cap = 0;
-				for ( int i=0; i<queryNode->numChild; i++ ) {
-						if (( itemNode=queryNode->child[i] )!=NULL && itemNode->name!=NULL ) {
-							if ( !strcmp( itemNode->name, "feature" )) {
-								if (( var=JabberXmlGetAttrValue( itemNode, "var" )) != NULL ) {
-//									if ( !lstrcmp( var, _T(JABBER_FEAT_REGISTER)))
-//										cap |= AGENT_CAP_REGISTER;
-//									else if ( !lstrcmp( var, _T(JABBER_FEAT_MUC)))
-//										cap |= AGENT_CAP_GROUPCHAT;
-//									else if ( !lstrcmp( var, _T(JABBER_FEAT_COMMANDS)))
-//										cap |= AGENT_CAP_ADHOC;
-								}
-							}
-						}
-					}
-//				if (item) item->cap=cap;
-//				if (rosterItem) rosterItem->cap|=cap;
-		}	}
-
-		if ( hwndJabberAgents != NULL )
-			SendMessage( hwndJabberAgents, WM_JABBER_AGENT_REFRESH, 0, ( LPARAM )NULL );
-}	}
-
-/*
-void JabberIqResultDiscoClientInfo( XmlNode *iqNode, void *userdata )
-{
-	ThreadData* info = ( ThreadData* ) userdata;
-	XmlNode *queryNode, *itemNode;
-	TCHAR* type, *from, *var;
-	JABBER_LIST_ITEM *item;
-
-	// RECVED: info for a specific client
-	// ACTION: update client cap
-	// ACTION: if item->ft is pending, initiate file transfer
-	JabberLog( "<iq/> iqIdDiscoClientInfo" );
-	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
-	if (( from=JabberXmlGetAttrValue( iqNode, "from" )) == NULL ) return;
-
-	if ( lstrcmp( type, _T("result")) != 0 )
-		return;
-	if (( item=JabberListGetItemPtr( LIST_ROSTER, from )) == NULL )
-		return;
-
-	if (( queryNode=JabberXmlGetChild( iqNode, "query" )) != NULL ) {
-		TCHAR* str = JabberXmlGetAttrValue( queryNode, "xmlns" );
-		if ( !lstrcmp( str, _T(JABBER_FEAT_DISCO_INFO))) {
-			item->cap = CLIENT_CAP_READY;
-			for ( int i=0; i<queryNode->numChild; i++ ) {
-				if (( itemNode=queryNode->child[i] )!=NULL && itemNode->name!=NULL ) {
-					if ( !strcmp( itemNode->name, "feature" )) {
-						if (( var=JabberXmlGetAttrValue( itemNode, "var" )) != NULL ) {
-							if ( !lstrcmp( var, _T(JABBER_FEAT_SI)))
-								item->cap |= CLIENT_CAP_SI;
-							else if ( !lstrcmp( var, _T(JABBER_FEAT_SI_FT)))
-								item->cap |= CLIENT_CAP_SIFILE;
-							else if ( !lstrcmp( var, _T(JABBER_FEAT_BYTESTREAMS)))
-								item->cap |= CLIENT_CAP_BYTESTREAM;
-	}	}	}	}	}	}
-
-	// Check for pending file transfer session request
-	if ( item->ft != NULL ) {
-		filetransfer* ft = item->ft;
-		item->ft = NULL;
-		if (( item->cap & CLIENT_CAP_FILE ) && ( item->cap & CLIENT_CAP_BYTESTREAM ))
-			JabberFtInitiate( item->jid, ft );
-		else
-			mir_forkthread(( pThreadFunc )JabberFileServerThread, ft );
-}	}
-*/
 
 void JabberIqResultGetAvatar( XmlNode *iqNode, void *userdata )
 {

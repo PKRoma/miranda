@@ -33,7 +33,6 @@ Last change by : $Author$
 #include "m_clistint.h"
 
 extern CRITICAL_SECTION mutex;
-extern UINT jabberCodePage;
 
 static CRITICAL_SECTION serialMutex;
 static unsigned int serial;

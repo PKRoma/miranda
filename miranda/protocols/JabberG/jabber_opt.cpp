@@ -38,7 +38,6 @@ Last change by : $Author$
 #include "sdk/m_modernopt.h"
 
 extern BOOL jabberSendKeepAlive;
-extern UINT jabberCodePage;
 
 static BOOL (WINAPI *pfnEnableThemeDialogTexture)(HANDLE, DWORD) = 0;
 
@@ -300,44 +299,6 @@ static BOOL CALLBACK JabberRegisterDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberOptDlgProc - main options dialog procedure
 
-/*
-static HWND msgLangListBox;
-static BOOL CALLBACK JabberMsgLangAdd( LPSTR str )
-{
-	int i, count, index;
-	UINT cp;
-	static struct { UINT cpId; TCHAR* cpName; } cpTable[] = {
-		{	874,	_T("Thai") },
-		{	932,	_T("Japanese") },
-		{	936,	_T("Simplified Chinese") },
-		{	949,	_T("Korean") },
-		{	950,	_T("Traditional Chinese") },
-		{	1250,	_T("Central European") },
-		{	1251,	_T("Cyrillic") },
-		{	1252,	_T("Latin I") },
-		{	1253,	_T("Greek") },
-		{	1254,	_T("Turkish") },
-		{	1255,	_T("Hebrew") },
-		{	1256,	_T("Arabic") },
-		{	1257,	_T("Baltic") },
-		{	1258,	_T("Vietnamese") },
-		{	1361,	_T("Korean ( Johab )") }
-	};
-
-	cp = atoi( str );
-	count = sizeof( cpTable )/sizeof( cpTable[0] );
-	for ( i=0; i<count && cpTable[i].cpId!=cp; i++ );
-	if ( i < count ) {
-		if (( index=SendMessage( msgLangListBox, CB_ADDSTRING, 0, ( LPARAM )TranslateTS( cpTable[i].cpName )) ) >= 0 ) {
-			SendMessage( msgLangListBox, CB_SETITEMDATA, ( WPARAM ) index, ( LPARAM )cp );
-			if ( jabberCodePage == cp )
-				SendMessage( msgLangListBox, CB_SETCURSEL, ( WPARAM ) index, 0 );
-	}	}
-
-	return TRUE;
-}
-*/
-
 static LRESULT CALLBACK JabberValidateUsernameWndProc( HWND hwndEdit, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	WNDPROC oldProc = ( WNDPROC ) GetWindowLong( hwndEdit, GWL_USERDATA );
@@ -447,14 +408,6 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				JFreeVariant( &dbv );
 			}
 			else SetDlgItemTextA( hwndDlg, IDC_JUD, "users.jabber.org" );
-
-//			msgLangListBox = GetDlgItem( hwndDlg, IDC_MSGLANG );
-//			TCHAR str[ 256 ];
-//			mir_sntprintf( str, SIZEOF(str), _T("== %s =="), TranslateT( "System default" ));
-//			SendMessage( msgLangListBox, CB_ADDSTRING, 0, ( LPARAM )str );
-//			SendMessage( msgLangListBox, CB_SETITEMDATA, 0, CP_ACP );
-//			SendMessage( msgLangListBox, CB_SETCURSEL, 0, 0 );
-//			EnumSystemCodePagesA( JabberMsgLangAdd, CP_INSTALLED );
 
 			TCHAR *szSelectedLang = JabberGetXmlLang();
 			HWND hWndLLB = GetDlgItem( hwndDlg, IDC_MSGLANG );
@@ -687,8 +640,6 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 			int index = SendDlgItemMessage( hwndDlg, IDC_MSGLANG, CB_GETCURSEL, 0, 0 );
 			if ( index >= 0 ) {
-//				jabberCodePage = SendMessage( GetDlgItem( hwndDlg, IDC_MSGLANG ), CB_GETITEMDATA, ( WPARAM ) index, 0 );
-//				JSetWord( NULL, "CodePage", ( WORD )jabberCodePage );
 				TCHAR *szDefaultLanguage = JabberGetXmlLang();
 				TCHAR *szLanguageCode = (TCHAR *)SendDlgItemMessage( hwndDlg, IDC_MSGLANG, CB_GETITEMDATA, ( WPARAM ) index, 0 );
 				if ( szLanguageCode ) {

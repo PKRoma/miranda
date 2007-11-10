@@ -93,7 +93,6 @@ BOOL   jabberChangeStatusMessageOnly = FALSE;
 TCHAR* jabberJID = NULL;
 char*  streamId = NULL;
 DWORD  jabberLocalIP;
-UINT   jabberCodePage;
 int    jabberSearchID;
 JABBER_MODEMSGS modeMsgs;
 CRITICAL_SECTION modeMsgMutex;
@@ -417,7 +416,6 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	}
 
 	memset(( char* )&modeMsgs, 0, sizeof( JABBER_MODEMSGS ));
-	jabberCodePage = JGetWord( NULL, "CodePage", CP_ACP );
 
 	InitializeCriticalSection( &modeMsgMutex );
 

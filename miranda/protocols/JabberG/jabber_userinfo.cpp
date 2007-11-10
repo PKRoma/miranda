@@ -464,13 +464,6 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 	return FALSE;
 }
 
-/*
-void JabberUserInfoShowBox(JABBER_LIST_ITEM *item)
-{
-	HWND hwnd = CreateDialogParam(hInst, MAKEINTRESOURCE(IDD_INFOBOX), NULL, JabberUserInfoDlgProc, (LPARAM)item);
-	ShowWindow(hwnd, SW_SHOW);
-}
-*/
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberUserPhotoDlgProc - Jabber photo dialog
 

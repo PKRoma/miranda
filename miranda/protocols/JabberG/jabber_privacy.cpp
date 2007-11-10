@@ -881,60 +881,11 @@ static void sttDrawLists(HWND hwndDlg, LPDRAWITEMSTRUCT lpdis)
 		if (!szActive) bActive = true;
 		if (!szDefault) bDefault = true;
 		szName = TranslateT("<none>");
-/*
-		if (!szActive)
-		{
-			LOGFONT lf;
-			GetObject(GetCurrentObject(lpdis->hDC, OBJ_FONT), sizeof(lf), &lf);
-			lf.lfWeight = FW_BOLD;
-			hfnt = (HFONT)SelectObject(lpdis->hDC, CreateFontIndirect(&lf));
-		}
-
-		int len = SendDlgItemMessage(hwndDlg, lpdis->CtlID, LB_GETTEXTLEN, lpdis->itemID, 0) + 1;
-		TCHAR *str = (TCHAR *)_alloca(len * sizeof(TCHAR));
-		SendDlgItemMessage(hwndDlg, lpdis->CtlID, LB_GETTEXT, lpdis->itemID, (LPARAM)str);
-		sttDrawNextRulePart(lpdis->hDC, clLine1, str, &rc);
-
-		if (!szActive && !szDefault)
-			sttDrawNextRulePart(lpdis->hDC, clLine2, TranslateT(" (act., def.)"), &rc);
-		else if (!szActive)
-			sttDrawNextRulePart(lpdis->hDC, clLine2, TranslateT(" (active)"), &rc);
-		else if (!szDefault)
-			sttDrawNextRulePart(lpdis->hDC, clLine2, TranslateT(" (default)"), &rc);
-
-		if (!szDefault)
-			DrawIconEx(lpdis->hDC, lpdis->rcItem.right-16-4, (lpdis->rcItem.top+lpdis->rcItem.bottom-16)/2,
-				LoadSkinnedIcon(SKINICON_OTHER_EMPTYBLOB),
-				16, 16, 0, NULL, DI_NORMAL);
-*/
 	} else
 	{
 		if (!lstrcmp(pList->GetListName(), szActive)) bActive = true;
 		if (!lstrcmp(pList->GetListName(), szDefault)) bDefault = true;
 		szName = pList->GetListName();
-/*
-		if (!lstrcmp(pList->GetListName(), szActive))
-		{
-			LOGFONT lf;
-			GetObject(GetCurrentObject(lpdis->hDC, OBJ_FONT), sizeof(lf), &lf);
-			lf.lfWeight = FW_BOLD;
-			hfnt = (HFONT)SelectObject(lpdis->hDC, CreateFontIndirect(&lf));
-		}
-
-		sttDrawNextRulePart(lpdis->hDC, clLine1, pList->GetListName(), &rc);
-
-		if (!lstrcmp(pList->GetListName(), szActive) && !lstrcmp(pList->GetListName(), szDefault))
-			sttDrawNextRulePart(lpdis->hDC, clLine2, TranslateT(" (act., def.)"), &rc);
-		else if (!lstrcmp(pList->GetListName(), szActive))
-			sttDrawNextRulePart(lpdis->hDC, clLine2, TranslateT(" (active)"), &rc);
-		else if (!lstrcmp(pList->GetListName(), szDefault))
-			sttDrawNextRulePart(lpdis->hDC, clLine2, TranslateT(" (default)"), &rc);
-
-		if (!lstrcmp(pList->GetListName(), szDefault))
-			DrawIconEx(lpdis->hDC, lpdis->rcItem.right-16-4, (lpdis->rcItem.top+lpdis->rcItem.bottom-16)/2,
-				LoadSkinnedIcon(SKINICON_OTHER_EMPTYBLOB),
-				16, 16, 0, NULL, DI_NORMAL);
-*/
 	}
 
 	HFONT hfnt = NULL;

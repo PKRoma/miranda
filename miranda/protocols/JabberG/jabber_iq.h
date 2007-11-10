@@ -67,13 +67,10 @@ void JabberIqAdd( unsigned int iqId, JABBER_IQ_PROCID procId, JABBER_IQ_PFUNC fu
 void JabberIqResultBind( XmlNode *iqNode, void *userdata );
 void JabberIqResultBrowseRooms( XmlNode *iqNode, void *userdata );
 void JabberIqResultDiscoAgentInfo( XmlNode *iqNode, void *userdata );
-void JabberIqResultDiscoAgentItems( XmlNode *iqNode, void *userdata );
-//void JabberIqResultDiscoClientInfo( XmlNode *iqNode, void *userdata );
 void JabberIqResultDiscoRoomItems( XmlNode *iqNode, void *userdata );
 void JabberIqResultDiscoBookmarks( XmlNode *iqNode, void *userdata );
 void JabberIqResultSetBookmarks( XmlNode *iqNode, void *userdata );
 void JabberIqResultExtSearch( XmlNode *iqNode, void *userdata );
-void JabberIqResultGetAgents( XmlNode *iqNode, void *userdata );
 void JabberIqResultGetAuth( XmlNode *iqNode, void *userdata );
 void JabberIqResultGetAvatar( XmlNode *iqNode, void *userdata );
 void JabberIqResultGetMuc( XmlNode *iqNode, void *userdata );
