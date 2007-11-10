@@ -28,7 +28,6 @@ Last change by : $Author$
 
 #include "jabber.h"
 #include "jabber_iq.h"
-#include "jabber_xmlns.h"
 #include "jabber_caps.h"
 #include "jabber_iq_handlers.h"
 #include "jabber_privacy.h"

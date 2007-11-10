@@ -32,6 +32,7 @@ Last change by : $Author: ghazan $
 #include <io.h>
 #include "version.h"
 #include "jabber_iq.h"
+#include "jabber_rc.h"
 #include "jabber_iq_handlers.h"
 
 extern int bSecureIM;
@@ -423,4 +424,57 @@ void JabberHandleIqRequestOOB( XmlNode* node, void* userdata, CJabberIqInfo *pIn
 		jabberThreadInfo->send( iq );
 		delete ft;
 	}
+}
+
+void JabberHandleDiscoInfoRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
+{
+	if ( !pInfo->GetChildNode() )
+		return;
+
+	TCHAR* szNode = JabberXmlGetAttrValue( pInfo->GetChildNode(), "node" );
+	// caps hack
+	if ( g_JabberClientCapsManager.HandleInfoRequest( iqNode, userdata, pInfo, szNode ))
+		return;
+
+	// ad-hoc hack:
+	if ( szNode && g_JabberAdhocManager.HandleInfoRequest( iqNode, userdata, pInfo, szNode ))
+		return;
+
+	// another request, send empty result
+	XmlNodeIq iq( "error", pInfo );
+
+	XmlNode *errorNode = iq.addChild( "error" );
+	errorNode->addAttr( "code", "404" );
+	errorNode->addAttr( "type", "cancel" );
+	XmlNode *notfoundNode = errorNode->addChild( "item-not-found" );
+	notfoundNode->addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
+
+	jabberThreadInfo->send( iq );
+}
+
+void JabberHandleDiscoItemsRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
+{
+	if ( !pInfo->GetChildNode() )
+		return;
+
+	// ad-hoc commands check:
+	TCHAR* szNode = JabberXmlGetAttrValue( pInfo->GetChildNode(), "node" );
+	if ( szNode && g_JabberAdhocManager.HandleItemsRequest( iqNode, userdata, pInfo, szNode ))
+		return;
+
+	// another request, send empty result
+	XmlNodeIq iq( "result", pInfo );
+	XmlNode* resultQuery = iq.addChild( "query" );
+	resultQuery->addAttr( "xmlns", _T(JABBER_FEAT_DISCO_ITEMS));
+	if ( szNode )
+		resultQuery->addAttr( "node", szNode );
+
+	if ( !szNode && JGetByte( "EnableRemoteControl", FALSE )) {
+		XmlNode* item = resultQuery->addChild( "item" );
+		item->addAttr( "jid", jabberThreadInfo->fullJID );
+		item->addAttr( "node", _T(JABBER_FEAT_COMMANDS) );
+		item->addAttr( "name", "Ad-hoc commands" );
+	}
+
+	jabberThreadInfo->send( iq );
 }

@@ -42,6 +42,19 @@ struct JabberEnterStringParams
 	size_t resultLen;
 };
 
+static int sttEnterStringResizer(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
+{
+	switch (urc->wId)
+	{
+	case IDC_TOPIC:
+		return RD_ANCHORX_LEFT|RD_ANCHORY_TOP|RD_ANCHORX_WIDTH|RD_ANCHORY_HEIGHT;
+	case IDOK:
+	case IDCANCEL:
+		return RD_ANCHORX_RIGHT|RD_ANCHORY_BOTTOM;
+	}
+	return RD_ANCHORX_LEFT|RD_ANCHORY_TOP;
+}
+
 BOOL CALLBACK JabberEnterStringDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	switch ( msg ) {
@@ -49,6 +62,8 @@ BOOL CALLBACK JabberEnterStringDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, L
 	{
 		//SetWindowPos( hwndDlg, HWND_TOPMOST ,0,0,0,0,SWP_NOSIZE|SWP_NOMOVE );
 		TranslateDialogDefault( hwndDlg );
+		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_OTHER_RENAME));
+		SendMessage(hwndDlg, WM_SETICON, ICON_SMALL, (LPARAM)LoadSkinnedIcon(SKINICON_OTHER_RENAME));
 		JabberEnterStringParams* params = ( JabberEnterStringParams* )lParam;
 		SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG )params );
 		SetWindowText( hwndDlg, params->caption );
@@ -61,6 +76,17 @@ BOOL CALLBACK JabberEnterStringDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, L
 		KillTimer(hwndDlg,1000);
 		EnableWindow(GetParent(hwndDlg), TRUE);
 		return TRUE;
+	}
+	case WM_SIZE:
+	{
+		UTILRESIZEDIALOG urd = {0};
+		urd.cbSize = sizeof(urd);
+		urd.hInstance = hInst;
+		urd.hwndDlg = hwndDlg;
+		urd.lpTemplate = MAKEINTRESOURCEA(IDD_GROUPCHAT_INPUT);
+		urd.pfnResizer = sttEnterStringResizer;
+		CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM)&urd);
+		break;
 	}
 	case WM_COMMAND:
 		switch ( LOWORD( wParam )) {
@@ -319,24 +345,15 @@ int JabberGcMenuHook( WPARAM wParam, LPARAM lParam )
 		gcmi->nItems = sizeof( sttLogListItems ) / sizeof( sttLogListItems[0] );
 		gcmi->Item = sttLogListItems;
 		
-		for( int i=3; i<=16; i++ ) {
-			if (i >= 11 && i <= 13) continue;
-			sttLogListItems[i].bDisabled = TRUE;
-		}
-
 		if ( me != NULL ) {
-			if ( me->role == ROLE_MODERATOR )
-				sttLogListItems[3].bDisabled = FALSE;
+				sttLogListItems[3].bDisabled = ( me->role != ROLE_MODERATOR );
 
-			if ( me->affiliation == AFFILIATION_ADMIN )
-				sttLogListItems[4].bDisabled = sttLogListItems[6].bDisabled = sttLogListItems[7].bDisabled = FALSE;
-			else if ( me->affiliation == AFFILIATION_OWNER )
-				sttLogListItems[4].bDisabled = sttLogListItems[6].bDisabled =
-				sttLogListItems[7].bDisabled = sttLogListItems[8].bDisabled =
-				sttLogListItems[9].bDisabled = sttLogListItems[14].bDisabled =
-				sttLogListItems[16].bDisabled = FALSE;
+				sttLogListItems[4].bDisabled = sttLogListItems[6].bDisabled = sttLogListItems[7].bDisabled =
+				sttLogListItems[8].bDisabled = sttLogListItems[9].bDisabled = ( me->affiliation < AFFILIATION_ADMIN );
+
+				sttLogListItems[14].bDisabled = sttLogListItems[16].bDisabled = ( me->affiliation != AFFILIATION_OWNER );
 		}
-		if ( jabberThreadInfo->caps & CAPS_BOOKMARK ) sttLogListItems[1].bDisabled = FALSE;
+		if ( jabberThreadInfo->jabberServerCaps & JABBER_CAPS_PRIVATE_STORAGE ) sttLogListItems[1].bDisabled = FALSE;
 	}
 	else if ( gcmi->Type == MENU_ON_NICKLIST ) {
 		static struct gc_item sttListItems[] = {
@@ -357,6 +374,7 @@ int JabberGcMenuHook( WPARAM wParam, LPARAM lParam )
 
 		for (int i=3; i<=10; i++) sttListItems[i].bDisabled = TRUE;
 		if ( me != NULL && him != NULL && me != him) {
+			// TODO: an admin should be able to set moderator's role to participant
 			if ( me->role == ROLE_MODERATOR && (me->role > him->role) ) {
 				sttListItems[3].bDisabled =	sttListItems[6].bDisabled = FALSE;
 			}
@@ -411,7 +429,7 @@ static void InviteUser(TCHAR *room, TCHAR *pUser, TCHAR *text)
 {
 	int iqId = JabberSerialNext();
 
-	XmlNode m( "message" ); m.addAttr( "from", jabberJID ); m.addAttr( "to", room ); m.addAttrID( iqId );
+	XmlNode m( "message" ); m.addAttr( "to", room ); m.addAttrID( iqId );
 	XmlNode* x = m.addChild( "x" ); x->addAttr( "xmlns", _T("http://jabber.org/protocol/muc#user"));
 	XmlNode* i = x->addChild( "invite" ); i->addAttr( "to", pUser ); 
 	if ( text[0] != 0 )

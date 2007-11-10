@@ -59,6 +59,13 @@ int JabberMenuHandleGroupchat( WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
+
+int JabberMenuHandleJoinGroupchat( WPARAM wParam, LPARAM lParam )
+{
+	JabberGroupchatJoinRoomByJid( NULL, NULL );
+	return 0;
+}
+
 static BOOL sortAscending;
 static int sortColumn;
 
@@ -290,7 +297,7 @@ static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 					CallService( MS_GC_NEWSESSION, 0, ( LPARAM )&gcw );
 				}
 				{	XmlNodeIq iq( "set" );
-					XmlNode* query = iq.addQuery( "jabber:iq:roster" );
+					XmlNode* query = iq.addQuery( JABBER_FEAT_IQ_ROSTER );
 					XmlNode* item = query->addChild( "item" ); item->addAttr( "jid", jid );
 					jabberThreadInfo->send( iq );
 				}
@@ -352,7 +359,7 @@ static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			HMENU hMenu = CreatePopupMenu();
 			AppendMenu( hMenu, MF_STRING, WM_JABBER_JOIN, TranslateT( "Join" ));
 			AppendMenu( hMenu, MF_STRING, WM_JABBER_ADD_TO_ROSTER, TranslateT( "Add to roster" ));
-			if ( jabberThreadInfo->caps & CAPS_BOOKMARK ) AppendMenu( hMenu, MF_STRING, WM_JABBER_ADD_TO_BOOKMARKS, TranslateT( "Add to Bookmarks" ));
+			if ( jabberThreadInfo->jabberServerCaps & JABBER_CAPS_PRIVATE_STORAGE ) AppendMenu( hMenu, MF_STRING, WM_JABBER_ADD_TO_BOOKMARKS, TranslateT( "Add to Bookmarks" ));
 			TrackPopupMenu( hMenu, TPM_LEFTALIGN | TPM_NONOTIFY, LOWORD(lParam), HIWORD(lParam), 0, hwndDlg, 0 );
 			::DestroyMenu( hMenu );
 			return TRUE;
@@ -370,6 +377,103 @@ static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 
 void JabberGroupchatJoinRoom( const TCHAR* server, const TCHAR* room, const TCHAR* nick, const TCHAR* password )
 {
+	bool found = false;
+	for (int i = 0 ; i < 5; ++i)
+	{
+		DBVARIANT dbv;
+		char setting[MAXMODULELABELLENGTH];
+
+		mir_snprintf(setting, sizeof(setting), "rcMuc_%d_server", i);
+		if (JGetStringT(NULL, setting, &dbv)) break;
+		if (lstrcmp(dbv.ptszVal, server))
+		{
+			JFreeVariant(&dbv);
+			continue;
+		}
+
+		mir_snprintf(setting, sizeof(setting), "rcMuc_%d_room", i);
+		if (JGetStringT(NULL, setting, &dbv)) break;
+		if (lstrcmp(dbv.ptszVal, room))
+		{
+			JFreeVariant(&dbv);
+			continue;
+		}
+
+		mir_snprintf(setting, sizeof(setting), "rcMuc_%d_nick", i);
+		if (JGetStringT(NULL, setting, &dbv)) break;
+		if (lstrcmp(dbv.ptszVal, nick))
+		{
+			JFreeVariant(&dbv);
+			continue;
+		}
+
+		if ( password ) {
+			mir_snprintf(setting, sizeof(setting), "rcMuc_%d_password", i);
+			if (JGetStringT(NULL, setting, &dbv)) break;
+			CallService(MS_DB_CRYPT_DECODESTRING, lstrlen(dbv.ptszVal)+1, (LPARAM)dbv.ptszVal);
+			if (lstrcmp(dbv.ptszVal, password))
+			{
+				JFreeVariant(&dbv);
+				continue;
+			}
+		}
+
+		found = true;
+		break;
+	}
+
+	if (!found)
+	{
+		DBVARIANT dbv;
+		char setting[MAXMODULELABELLENGTH];
+
+		for (int i = 3; i >= 0; --i)
+		{
+			mir_snprintf(setting, sizeof(setting), "rcMuc_%d_server", i);
+			if (JGetStringT(NULL, setting, &dbv)) continue;
+			mir_snprintf(setting, sizeof(setting), "rcMuc_%d_server", i+1);
+			JSetStringT(NULL, setting, dbv.ptszVal);
+			JFreeVariant(&dbv);
+
+			mir_snprintf(setting, sizeof(setting), "rcMuc_%d_room", i);
+			JGetStringT(NULL, setting, &dbv);
+			mir_snprintf(setting, sizeof(setting), "rcMuc_%d_room", i+1);
+			JSetStringT(NULL, setting, dbv.ptszVal);
+			JFreeVariant(&dbv);
+
+			mir_snprintf(setting, sizeof(setting), "rcMuc_%d_nick", i);
+			JGetStringT(NULL, setting, &dbv);
+			mir_snprintf(setting, sizeof(setting), "rcMuc_%d_nick", i+1);
+			JSetStringT(NULL, setting, dbv.ptszVal);
+			JFreeVariant(&dbv);
+
+			mir_snprintf(setting, sizeof(setting), "rcMuc_%d_password", i);
+			int nResult = JGetStringT(NULL, setting, &dbv);
+			mir_snprintf(setting, sizeof(setting), "rcMuc_%d_password", i+1);
+			if ( !nResult )
+				JSetStringT(NULL, setting, dbv.ptszVal);
+			else
+				JDeleteSetting(NULL, setting);
+		}
+
+		mir_snprintf(setting, sizeof(setting), "rcMuc_%d_server", 0);
+		JSetStringT(NULL, setting, server);
+
+		mir_snprintf(setting, sizeof(setting), "rcMuc_%d_room", 0);
+		JSetStringT(NULL, setting, room);
+
+		mir_snprintf(setting, sizeof(setting), "rcMuc_%d_nick", 0);
+		JSetStringT(NULL, setting, nick);
+
+		// FIXME: temporary workaround
+		if ( password ) {
+			mir_snprintf(setting, sizeof(setting), "rcMuc_%d_password", 0);
+			TCHAR *password2 = NEWTSTR_ALLOCA(password);
+			CallService(MS_DB_CRYPT_DECODESTRING, lstrlen(password2)+1, (LPARAM)password2);
+			JSetStringT(NULL, setting, password2);
+		}
+	}
+
 	TCHAR text[128];
 	mir_sntprintf( text, SIZEOF(text), _T("%s@%s/%s"), room, server, nick );
 
@@ -385,11 +489,130 @@ void JabberGroupchatJoinRoom( const TCHAR* server, const TCHAR* room, const TCHA
 	JabberSendPresenceTo( status, text, x );
 }
 
-void JabberGroupchatJoinRoomByJid(HWND hwndParent, TCHAR *jid)
+void JabberGroupchatJoinRoomByJid( HWND hwndParent, TCHAR *jid )
 {
 	DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_GROUPCHAT_JOIN ), hwndParent, JabberGroupchatJoinDlgProc, ( LPARAM )jid );
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Join Dialog
+static int sttTextLineHeight = 16;
+
+struct RoomInfo
+{
+	enum Overlay { ROOM_WAIT, ROOM_FAIL, ROOM_BOOKMARK, ROOM_DEFAULT };
+	Overlay	overlay;
+	TCHAR	*line1, *line2;
+};
+
+static int sttRoomListAppend(HWND hwndList, RoomInfo::Overlay overlay, TCHAR *line1, TCHAR *line2, TCHAR *name)
+{
+	RoomInfo *info = (RoomInfo *)mir_alloc(sizeof(RoomInfo));
+	info->overlay = overlay;
+	info->line1 = line1 ? mir_tstrdup(line1) : 0;
+	info->line2 = line2 ? mir_tstrdup(line2) : 0;
+
+	int id = SendMessage(hwndList, CB_ADDSTRING, 0, (LPARAM)name);
+	SendMessage(hwndList, CB_SETITEMDATA, id, (LPARAM)info);
+	SendMessage(hwndList, CB_SETITEMHEIGHT, id, sttTextLineHeight * 2);
+	return id;
+}
+
+static void sttIqResultDiscovery(XmlNode *iqNode, void *userdata, CJabberIqInfo *pInfo)
+{
+	if (!iqNode || !userdata || !pInfo)
+		return;
+
+	HWND hwndList = (HWND)pInfo->GetUserData();
+	SendMessage(hwndList, CB_SHOWDROPDOWN, FALSE, 0);
+	SendMessage(hwndList, CB_RESETCONTENT, 0, 0);
+
+	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_RESULT )
+	{
+		XmlNode *query = JabberXmlGetChild( iqNode, "query" );
+		if ( !query )
+		{
+			sttRoomListAppend(hwndList, RoomInfo::ROOM_FAIL,
+				TranslateT("Jabber Error"),
+				TranslateT("Failed to retrieve room list from server."),
+				_T(""));
+		} else
+		{
+			XmlNode *item;
+			for ( int i = 1; ( item = JabberXmlGetNthChild( query, "item", i )) != NULL; i++ )
+			{
+				TCHAR *jid = JabberXmlGetAttrValue(item, "jid");
+				TCHAR *name = NEWTSTR_ALLOCA(jid);
+				if (name)
+				{
+					if (TCHAR *p = _tcschr(name, _T('@')))
+						*p = 0;
+				} else
+				{
+					name = _T("");
+				}
+
+				sttRoomListAppend(hwndList,
+					JabberListGetItemPtr(LIST_BOOKMARK, jid) ? RoomInfo::ROOM_BOOKMARK : RoomInfo::ROOM_DEFAULT,
+					JabberXmlGetAttrValue(item, "name"),
+					jid, name);
+			}
+		}
+	} else
+	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_ERROR )
+	{
+		XmlNode *errorNode = JabberXmlGetChild( iqNode, "error" );
+		TCHAR* str = JabberErrorMsg( errorNode );
+		sttRoomListAppend(hwndList, RoomInfo::ROOM_FAIL,
+			TranslateT("Jabber Error"),
+			str,
+			_T(""));
+		mir_free( str );
+	} else
+	{
+		sttRoomListAppend(hwndList, RoomInfo::ROOM_FAIL,
+			TranslateT("Jabber Error"),
+			TranslateT("Room list request timed out."),
+			_T(""));
+	}
+
+	SendMessage(hwndList, CB_SHOWDROPDOWN, TRUE, 0);
+}
+
+static void sttJoinDlgShowRecentItems(HWND hwndDlg, int newCount)
+{
+	RECT rcTitle, rcLastItem;
+	GetWindowRect(GetDlgItem(hwndDlg, IDC_TXT_RECENT), &rcTitle);
+	GetWindowRect(GetDlgItem(hwndDlg, IDC_RECENT5), &rcLastItem);
+
+	ShowWindow(GetDlgItem(hwndDlg, IDC_TXT_RECENT), newCount ? SW_SHOW : SW_HIDE);
+
+	int oldCount = 5;
+	for (int idc = IDC_RECENT1; idc <= IDC_RECENT5; ++idc)
+	{
+//		if (IsWindowVisible(GetDlgItem(hwndDlg, idc)))
+//			++oldCount;
+
+		ShowWindow(GetDlgItem(hwndDlg, idc), (idc - IDC_RECENT1 < newCount) ? SW_SHOW : SW_HIDE);
+	}
+
+	int curRecentHeight = rcLastItem.bottom - rcTitle.top - (5 - oldCount) * (rcLastItem.bottom - rcLastItem.top);
+	int newRecentHeight = rcLastItem.bottom - rcTitle.top - (5 - newCount) * (rcLastItem.bottom - rcLastItem.top);
+	if (!newCount) newRecentHeight = 0;
+	int offset = newRecentHeight - curRecentHeight;
+
+	RECT rc;
+	int ctrls[] = { IDC_BOOKMARKS, IDOK, IDCANCEL };
+	for (int i = 0; i < SIZEOF(ctrls); ++i)
+	{
+		GetWindowRect(GetDlgItem(hwndDlg, ctrls[i]), &rc);
+		MapWindowPoints(NULL, hwndDlg, (LPPOINT)&rc, 2);
+		SetWindowPos(GetDlgItem(hwndDlg, ctrls[i]), NULL, rc.left, rc.top + offset, 0, 0, SWP_NOSIZE|SWP_NOZORDER);
+	}
+
+	GetWindowRect(hwndDlg, &rc);
+	SetWindowPos(hwndDlg, NULL, 0, 0, rc.right-rc.left, rc.bottom-rc.top+offset, SWP_NOMOVE|SWP_NOZORDER);
+}
 
 static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
@@ -402,19 +625,47 @@ static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 			// lParam is the room JID ( room@server ) in UTF-8
 			hwndJabberJoinGroupchat = hwndDlg;
 			TranslateDialogDefault( hwndDlg );
-			if ( lParam ){
-				_tcsncpy( text, ( TCHAR* )lParam, SIZEOF( text ));
-				if (( p = _tcschr( text, '@' )) != NULL ) {
+
+			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIconEx("group"));
+			SendMessage(hwndDlg, WM_SETICON, ICON_SMALL, (LPARAM)LoadIconEx("group"));
+
+			TCHAR *roomJid = NULL;
+			if ( lParam ) {
+				roomJid = mir_tstrdup((TCHAR *)lParam);
+			} else
+			{
+				OpenClipboard(hwndDlg);
+#ifdef UNICODE
+				HANDLE hData = GetClipboardData(CF_UNICODETEXT);
+#else
+				HANDLE hData = GetClipboardData(CF_TEXT);
+#endif
+				if (hData)
+				{
+					TCHAR *buf = (TCHAR *)GlobalLock(hData);
+					if (buf && _tcschr(buf, _T('@')))
+						roomJid = mir_tstrdup(buf);
+					GlobalUnlock(hData);
+				}
+				CloseClipboard();
+			}
+
+			if (roomJid)
+			{
+				if (( p = _tcschr( roomJid, '@' )) != NULL ) {
 					*p = '\0';
 					// Need to save room name in UTF-8 in case the room codepage is different
 					// from the local code page
-					TCHAR* room = mir_tstrdup( text );
+					TCHAR* room = mir_tstrdup( roomJid );
 					SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG ) room );
 					SetDlgItemText( hwndDlg, IDC_ROOM, room );
 					SetDlgItemText( hwndDlg, IDC_SERVER, p+1 );
 				}
-				else SetDlgItemText( hwndDlg, IDC_SERVER, text );
+				else SetDlgItemText( hwndDlg, IDC_SERVER, roomJid );
+
+				mir_free(roomJid);
 			}
+
 
 			DBVARIANT dbv;
 			if ( !JGetStringT( NULL, "Nick", &dbv )) {
@@ -425,25 +676,323 @@ static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 				TCHAR* nick = JabberNickFromJID( jabberJID );
 				SetDlgItemText( hwndDlg, IDC_NICK, nick );
 				mir_free( nick );
-		}	}
+			}
+
+			{
+				TEXTMETRIC tm = {0};
+				HDC hdc = GetDC(hwndDlg);
+				GetTextMetrics(hdc, &tm);
+				ReleaseDC(hwndDlg, hdc);
+				sttTextLineHeight = tm.tmHeight;
+				SendDlgItemMessage(hwndDlg, IDC_ROOM, CB_SETITEMHEIGHT, -1, sttTextLineHeight-1);
+			}
+
+			{
+				LOGFONT lf = {0};
+				HFONT hfnt = (HFONT)SendDlgItemMessage(hwndDlg, IDC_TITLE, WM_GETFONT, 0, 0);
+				GetObject(hfnt, sizeof(lf), &lf);
+				lf.lfWeight = FW_BOLD;
+				SendDlgItemMessage(hwndDlg, IDC_TITLE, WM_SETFONT, (WPARAM)CreateFontIndirect(&lf), TRUE);
+				SendDlgItemMessage(hwndDlg, IDC_TXT_RECENT, WM_SETFONT, (WPARAM)CreateFontIndirect(&lf), TRUE);
+			}
+
+			SendDlgItemMessage(hwndDlg, IDC_BOOKMARKS, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx("bookmarks"));
+			SendDlgItemMessage(hwndDlg, IDC_BOOKMARKS, BUTTONSETASFLATBTN, 0, 0);
+			SendDlgItemMessage(hwndDlg, IDC_BOOKMARKS, BUTTONADDTOOLTIP, (WPARAM)TranslateT("Bookmarks"), BATF_TCHAR);
+			SendDlgItemMessage(hwndDlg, IDC_BOOKMARKS, BUTTONSETASPUSHBTN, 0, 0);
+
+			JabberComboLoadRecentStrings(hwndDlg, IDC_SERVER, "joinWnd_rcSvr");
+
+			int i = 0;
+			for ( ; i < 5; ++i)
+			{
+				DBVARIANT dbv;
+				char setting[MAXMODULELABELLENGTH];
+				TCHAR jid[256];
+				mir_snprintf(setting, sizeof(setting), "rcMuc_%d_room", i);
+				if (JGetStringT(NULL, setting, &dbv)) break;
+				lstrcpy(jid, dbv.ptszVal);
+				JFreeVariant(&dbv);
+				mir_snprintf(setting, sizeof(setting), "rcMuc_%d_server", i);
+				if (JGetStringT(NULL, setting, &dbv)) break;
+				lstrcat(jid, _T("@"));
+				lstrcat(jid, dbv.ptszVal);
+				JFreeVariant(&dbv);
+				mir_snprintf(setting, sizeof(setting), "rcMuc_%d_nick", i);
+				if (JGetStringT(NULL, setting, &dbv)) break;
+				lstrcat(jid, _T(" ("));
+				lstrcat(jid, dbv.ptszVal);
+				lstrcat(jid, _T(")"));
+				JFreeVariant(&dbv);
+
+				SetDlgItemText(hwndDlg, IDC_RECENT1+i, jid);
+			}
+			sttJoinDlgShowRecentItems(hwndDlg, i);
+		}
 		return TRUE;
+
+	case WM_CTLCOLORSTATIC:
+		if ( ((HWND)lParam == GetDlgItem(hwndDlg, IDC_WHITERECT)) ||
+			 ((HWND)lParam == GetDlgItem(hwndDlg, IDC_TITLE)) ||
+			 ((HWND)lParam == GetDlgItem(hwndDlg, IDC_DESCRIPTION)) )
+			return (BOOL)GetStockObject(WHITE_BRUSH);
+		return FALSE;
+
+	case WM_DELETEITEM:
+	{
+		LPDELETEITEMSTRUCT lpdis = (LPDELETEITEMSTRUCT)lParam;
+		if (lpdis->CtlID != IDC_ROOM)
+			break;
+
+		RoomInfo *info = (RoomInfo *)lpdis->itemData;
+		if (info->line1) mir_free(info->line1);
+		if (info->line2) mir_free(info->line2);
+		mir_free(info);
+
+		break;
+	}
+
+	case WM_MEASUREITEM:
+	{
+		LPMEASUREITEMSTRUCT lpmis = (LPMEASUREITEMSTRUCT)lParam;
+		if (lpmis->CtlID != IDC_ROOM)
+			break;
+
+		lpmis->itemHeight = 2*sttTextLineHeight;
+		if (lpmis->itemID == -1)
+			lpmis->itemHeight = sttTextLineHeight-1;
+
+		break;
+	}
+
+	case WM_DRAWITEM:
+	{
+		LPDRAWITEMSTRUCT lpdis = (LPDRAWITEMSTRUCT)lParam;
+		if (lpdis->CtlID != IDC_ROOM)
+			break;
+
+		if (lpdis->itemID < 0)
+			break;
+
+		RoomInfo *info = (RoomInfo *)SendDlgItemMessage(hwndDlg, IDC_ROOM, CB_GETITEMDATA, lpdis->itemID, 0);
+		COLORREF clLine1, clLine2, clBack;
+
+		if (lpdis->itemState & ODS_SELECTED)
+		{
+			FillRect(lpdis->hDC, &lpdis->rcItem, GetSysColorBrush(COLOR_HIGHLIGHT));
+			clBack = GetSysColor(COLOR_HIGHLIGHT);
+			clLine1 = GetSysColor(COLOR_HIGHLIGHTTEXT);
+		} else
+		{
+			FillRect(lpdis->hDC, &lpdis->rcItem, GetSysColorBrush(COLOR_WINDOW));
+			clBack = GetSysColor(COLOR_WINDOW);
+			clLine1 = GetSysColor(COLOR_WINDOWTEXT);
+		}
+		clLine2 = RGB(
+				GetRValue(clLine1) * 0.66 + GetRValue(clBack) * 0.34,
+				GetGValue(clLine1) * 0.66 + GetGValue(clBack) * 0.34,
+				GetBValue(clLine1) * 0.66 + GetBValue(clBack) * 0.34
+			);
+
+		SetBkMode(lpdis->hDC, TRANSPARENT);
+
+		RECT rc;
+
+		rc = lpdis->rcItem;
+		rc.bottom -= (rc.bottom - rc.top) / 2;
+		rc.left += 20;
+		SetTextColor(lpdis->hDC, clLine1);
+		DrawText(lpdis->hDC, info->line1, lstrlen(info->line1), &rc, DT_LEFT|DT_NOPREFIX|DT_SINGLELINE|DT_VCENTER|DT_WORD_ELLIPSIS);
+
+		rc = lpdis->rcItem;
+		rc.top += (rc.bottom - rc.top) / 2;
+		rc.left += 20;
+		SetTextColor(lpdis->hDC, clLine2);
+		DrawText(lpdis->hDC, info->line2, lstrlen(info->line2), &rc, DT_LEFT|DT_NOPREFIX|DT_SINGLELINE|DT_VCENTER|DT_WORD_ELLIPSIS);
+
+		DrawIconEx(lpdis->hDC, lpdis->rcItem.left+1, lpdis->rcItem.top+1, LoadIconEx("group"), 16, 16, 0, NULL, DI_NORMAL);
+		switch (info->overlay)
+		{
+		case RoomInfo::ROOM_WAIT:
+			DrawIconEx(lpdis->hDC, lpdis->rcItem.left+1, lpdis->rcItem.top+1, LoadIconEx("disco_progress"), 16, 16, 0, NULL, DI_NORMAL);
+			break;
+		case RoomInfo::ROOM_FAIL:
+			DrawIconEx(lpdis->hDC, lpdis->rcItem.left+1, lpdis->rcItem.top+1, LoadIconEx("disco_fail"), 16, 16, 0, NULL, DI_NORMAL);
+			break;
+		case RoomInfo::ROOM_BOOKMARK:
+			DrawIconEx(lpdis->hDC, lpdis->rcItem.left+1, lpdis->rcItem.top+1, LoadIconEx("disco_ok"), 16, 16, 0, NULL, DI_NORMAL);
+			break;
+		}
+	}
 
 	case WM_COMMAND:
 		switch ( LOWORD( wParam )) {
-		case IDC_ROOM:
-			if (( HWND )lParam==GetFocus() && HIWORD( wParam )==EN_CHANGE ) {
-				// Change in IDC_ROOM field is detected,
-				// invalidate the saved UTF-8 room name if any
-				char* str = ( char* )GetWindowLong( hwndDlg, GWL_USERDATA );
-				if ( str != NULL ) {
-					mir_free( str );
-					SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG ) NULL );
-			}	}
+		case IDC_SERVER:
+			switch (HIWORD(wParam)) {
+			case CBN_EDITCHANGE:
+			case CBN_SELCHANGE:
+				{
+					int iqid = GetWindowLong(GetDlgItem(hwndDlg, IDC_ROOM), GWL_USERDATA);
+					if (iqid)
+					{
+						g_JabberIqManager.ExpireIq(iqid);
+						SetWindowLong(GetDlgItem(hwndDlg, IDC_ROOM), GWL_USERDATA, 0);
+					}
+					SendDlgItemMessage(hwndDlg, IDC_ROOM, CB_RESETCONTENT, 0, 0);
+				}
+				break;
+			}
 			break;
+
+		case IDC_ROOM:
+			switch (HIWORD(wParam)) {
+			case CBN_EDITCHANGE:
+				{
+					char* str = ( char* )GetWindowLong( hwndDlg, GWL_USERDATA );
+					if ( str != NULL ) {
+						mir_free( str );
+						SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG ) NULL );
+				}	}
+				break;
+
+			case CBN_DROPDOWN:
+				if (!SendDlgItemMessage(hwndDlg, IDC_ROOM, CB_GETCOUNT, 0, 0))
+				{
+					int iqid = GetWindowLong(GetDlgItem(hwndDlg, IDC_ROOM), GWL_USERDATA);
+					if (iqid)
+					{
+						g_JabberIqManager.ExpireIq(iqid);
+						SetWindowLong(GetDlgItem(hwndDlg, IDC_ROOM), GWL_USERDATA, 0);
+					}
+
+					SendDlgItemMessage(hwndDlg, IDC_ROOM, CB_RESETCONTENT, 0, 0);
+
+					int len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_SERVER)) + 1;
+					TCHAR *server = (TCHAR *)_alloca(len * sizeof(TCHAR));
+					GetWindowText(GetDlgItem(hwndDlg, IDC_SERVER), server, len);
+
+					if (*server)
+					{
+						sttRoomListAppend(GetDlgItem(hwndDlg, IDC_ROOM), RoomInfo::ROOM_WAIT, TranslateT("Loading..."), TranslateT("Please wait for room list to download."), _T(""));
+
+						CJabberIqInfo *pInfo = g_JabberIqManager.AddHandler(sttIqResultDiscovery, JABBER_IQ_TYPE_GET, server, 0, -1, (void *)GetDlgItem(hwndDlg, IDC_ROOM));
+						pInfo->SetTimeout(30000);
+						XmlNodeIq iq(pInfo);
+						iq.addQuery(JABBER_FEAT_DISCO_ITEMS);
+						jabberThreadInfo->send(iq);
+
+						SetWindowLong(GetDlgItem(hwndDlg, IDC_ROOM), GWL_USERDATA, pInfo->GetIqId());
+					} else
+					{
+						sttRoomListAppend(GetDlgItem(hwndDlg, IDC_ROOM), RoomInfo::ROOM_FAIL,
+							TranslateT("Jabber Error"),
+							TranslateT("Please specify groupchat directory first."),
+							_T(""));
+					}
+				}
+				break;
+			}
+			break;
+
+		case IDC_BOOKMARKS:
+			{
+				HMENU hMenu = CreatePopupMenu();
+
+				int i = 0;
+				while ((i = JabberListFindNext(LIST_BOOKMARK, i)) >= 0)
+				{
+					JABBER_LIST_ITEM *item = 0;
+					if (item = JabberListGetItemPtrFromIndex(i))
+						if (!lstrcmp(item->type, _T("conference")))
+							AppendMenu(hMenu, MF_STRING, (UINT_PTR)item, item->name);
+					i++;
+				}
+				AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
+				AppendMenu(hMenu, MF_STRING, (UINT_PTR)-1, TranslateT("Bookmarks..."));
+				AppendMenu(hMenu, MF_STRING, (UINT_PTR)0, TranslateT("Cancel"));
+
+				RECT rc; GetWindowRect(GetDlgItem(hwndDlg, IDC_BOOKMARKS), &rc);
+				CheckDlgButton(hwndDlg, IDC_BOOKMARKS, TRUE);
+				int res = TrackPopupMenu(hMenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
+				CheckDlgButton(hwndDlg, IDC_BOOKMARKS, FALSE);
+				DestroyMenu(hMenu);
+
+				if (res == -1)
+				{
+					JabberMenuHandleBookmarks(0, 0);
+				} else
+				if (res)
+				{
+					JABBER_LIST_ITEM *item = (JABBER_LIST_ITEM *)res;
+					TCHAR *room = NEWTSTR_ALLOCA(item->jid);
+					if (room)
+					{
+						TCHAR *server = _tcschr(room, _T('@'));
+						if (server)
+						{
+							*server++ = 0;
+
+							SendMessage(hwndDlg, WM_COMMAND, MAKEWPARAM(IDC_SERVER, CBN_EDITCHANGE), (LPARAM)GetDlgItem(hwndDlg, IDC_SERVER));
+
+							SetDlgItemText(hwndDlg, IDC_SERVER, server);
+							SetDlgItemText(hwndDlg, IDC_ROOM, room);
+							SetDlgItemText(hwndDlg, IDC_NICK, item->nick);
+							SetDlgItemText(hwndDlg, IDC_PASSWORD, item->password);
+						}
+					}
+				}
+			}
+			break;
+
+
+		case IDC_RECENT1:
+		case IDC_RECENT2:
+		case IDC_RECENT3:
+		case IDC_RECENT4:
+		case IDC_RECENT5:
+			{
+				int i = LOWORD( wParam ) - IDC_RECENT1;
+
+				DBVARIANT dbv;
+				char setting[MAXMODULELABELLENGTH];
+
+				mir_snprintf(setting, sizeof(setting), "rcMuc_%d_server", i);
+				if (!JGetStringT(NULL, setting, &dbv))
+				{
+					SetDlgItemText(hwndDlg, IDC_SERVER, dbv.ptszVal);
+					JFreeVariant(&dbv);
+				}
+
+				mir_snprintf(setting, sizeof(setting), "rcMuc_%d_room", i);
+				if (!JGetStringT(NULL, setting, &dbv))
+				{
+					SetDlgItemText(hwndDlg, IDC_ROOM, dbv.ptszVal);
+					JFreeVariant(&dbv);
+				}
+
+				mir_snprintf(setting, sizeof(setting), "rcMuc_%d_nick", i);
+				if (!JGetStringT(NULL, setting, &dbv))
+				{
+					SetDlgItemText(hwndDlg, IDC_NICK, dbv.ptszVal);
+					JFreeVariant(&dbv);
+				}
+
+				mir_snprintf(setting, sizeof(setting), "rcMuc_%d_password", i);
+				if (!JGetStringT(NULL, setting, &dbv))
+				{
+					CallService(MS_DB_CRYPT_DECODESTRING, lstrlen(dbv.ptszVal)+1, (LPARAM)dbv.ptszVal);
+					SetDlgItemText(hwndDlg, IDC_PASSWORD, dbv.ptszVal);
+					JFreeVariant(&dbv);
+				}
+			}
+			// fall through
+
 		case IDOK:
 			{
 				GetDlgItemText( hwndDlg, IDC_SERVER, text, SIZEOF( text ));
 				TCHAR* server = NEWTSTR_ALLOCA( text ), *room;
+
+				JabberComboAddRecentString(hwndDlg, IDC_SERVER, "joinWnd_rcSvr", server);
 
 				if (( room=( TCHAR* )GetWindowLong( hwndDlg, GWL_USERDATA )) != NULL )
 					room = NEWTSTR_ALLOCA( room );
@@ -457,6 +1006,7 @@ static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 
 				GetDlgItemText( hwndDlg, IDC_PASSWORD, text, SIZEOF( text ));
 				TCHAR* password = NEWTSTR_ALLOCA( text );
+
 				JabberGroupchatJoinRoom( server, room, nick, password );
 			}
 			// fall through
@@ -475,6 +1025,8 @@ static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 				mir_free( str );
 
 			hwndJabberJoinGroupchat = NULL;
+
+			DeleteObject((HFONT)SendDlgItemMessage(hwndDlg, IDC_TITLE, WM_GETFONT, 0, 0));
 		}
 		break;
 	}

@@ -38,6 +38,8 @@ Last change by : $Author$
 
 extern char* jabberVcardPhotoFileName;
 
+void JabberIqResultGetRoster( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
+
 void JabberIqResultServerDiscoInfo( XmlNode* iqNode, void* userdata )
 {
 	if ( !iqNode )
@@ -58,56 +60,93 @@ void JabberIqResultServerDiscoInfo( XmlNode* iqNode, void* userdata )
 			if ( identityCategory && identityType && !_tcscmp( identityCategory, _T("pubsub") ) && !_tcscmp( identityType, _T("pep")) ) {
 				jabberPepSupported = TRUE;
 
-				CLIST_INTERFACE* pcli = ( CLIST_INTERFACE* )CallService( MS_CLIST_RETRIEVE_INTERFACE, 0, 0 );
-				if ( pcli && pcli->version > 4 )
-					pcli->pfnReloadProtoMenus();
-				break;
+			JabberUtilsRebuildStatusMenu();
+			break;
 			}
 		}
-		jabberServerCaps = JABBER_RESOURCE_CAPS_NONE;
-		XmlNode *feature;
-		for ( i = 1; ( feature = JabberXmlGetNthChild( query, "feature", i )) != NULL; i++ ) {
-			TCHAR *featureName = JabberXmlGetAttrValue( feature, "var" );
-			if ( featureName ) {
-				for ( int i = 0; g_JabberFeatCapPairs[i].szFeature; i++ ) {
-					if ( !_tcscmp( g_JabberFeatCapPairs[i].szFeature, featureName )) {
-						jabberServerCaps |= g_JabberFeatCapPairs[i].jcbCap;
-						break;
-}	}	}	}	}	}
+		if ( jabberThreadInfo ) {
+			jabberThreadInfo->jabberServerCaps = JABBER_RESOURCE_CAPS_NONE;
+			XmlNode *feature;
+			for ( i = 1; ( feature = JabberXmlGetNthChild( query, "feature", i )) != NULL; i++ ) {
+				TCHAR *featureName = JabberXmlGetAttrValue( feature, "var" );
+				if ( featureName ) {
+					for ( int i = 0; g_JabberFeatCapPairs[i].szFeature; i++ ) {
+						if ( !_tcscmp( g_JabberFeatCapPairs[i].szFeature, featureName )) {
+							jabberThreadInfo->jabberServerCaps |= g_JabberFeatCapPairs[i].jcbCap;
+							break;
+}	}	}	}	}	}	}
+
+
+void JabberIqResultNestedRosterGroups( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
+{
+	TCHAR *szGroupDelimeter = NULL;
+	BOOL bPrivateStorageSupport = FALSE;
+
+	if ( iqNode && pInfo->GetIqType() == JABBER_IQ_TYPE_RESULT ) {
+		XmlNode *pQuery = JabberXmlGetChildWithGivenAttrValue( iqNode, "query", "xmlns", _T( JABBER_FEAT_PRIVATE_STORAGE ));
+		if ( pQuery ) {
+			bPrivateStorageSupport = TRUE;
+			XmlNode *pRoster = JabberXmlGetChildWithGivenAttrValue( pQuery, "roster", "xmlns", _T( JABBER_FEAT_NESTED_ROSTER_GROUPS ));
+			if ( pRoster && pRoster->text && *pRoster->text )
+				szGroupDelimeter = pRoster->text;
+		}
+	}
+
+	// global fuckup
+	if ( !jabberThreadInfo )
+		return;
+
+	// is our default delimiter?
+	if (( !szGroupDelimeter && bPrivateStorageSupport ) || ( szGroupDelimeter && _tcscmp( szGroupDelimeter, _T("\\") ))) {
+		XmlNodeIq iqNRG( "set", JabberSerialNext() );
+		XmlNode* query = iqNRG.addQuery( JABBER_FEAT_PRIVATE_STORAGE );
+		XmlNode* roster = query->addChild( "roster", _T("\\") );
+		roster->addAttr( "xmlns", JABBER_FEAT_NESTED_ROSTER_GROUPS );
+		jabberThreadInfo->send( iqNRG );
+	}
+
+	// roster request
+	TCHAR *szUserData = mir_tstrdup( szGroupDelimeter ? szGroupDelimeter : _T("\\") );
+	XmlNodeIq iq( g_JabberIqManager.AddHandler( JabberIqResultGetRoster, JABBER_IQ_TYPE_GET, NULL, 0, -1, (void *)szUserData ));
+	XmlNode* query = iq.addChild( "query" ); query->addAttr( "xmlns", JABBER_FEAT_IQ_ROSTER );
+	jabberThreadInfo->send( iq );
+}
 
 static void JabberOnLoggedIn( ThreadData* info )
 {
 	jabberOnline = TRUE;
 	jabberLoggedInTime = time(0);
 
+
+	// XEP-0083 support
+	{
+		CJabberIqInfo* pIqInfo = g_JabberIqManager.AddHandler( JabberIqResultNestedRosterGroups, JABBER_IQ_TYPE_GET );
+		// ugly hack to prevent hangup during login process
+		pIqInfo->SetTimeout( 30000 );
+		XmlNodeIq iqNRG( pIqInfo );
+		XmlNode* query = iqNRG.addQuery( JABBER_FEAT_PRIVATE_STORAGE );
+		XmlNode* roster = query->addChild( "roster" );
+		roster->addAttr( "xmlns", JABBER_FEAT_NESTED_ROSTER_GROUPS );
+		info->send( iqNRG );
+	}
+
 	int iqId = JabberSerialNext();
-	JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultGetRoster );
-
-	XmlNode iq( "iq" ); iq.addAttr( "type", "get" ); iq.addAttrID( iqId );
-	XmlNode* query = iq.addChild( "query" ); query->addAttr( "xmlns", "jabber:iq:roster" );
-	info->send( iq );
-
-	iqId = JabberSerialNext();
 	JabberIqAdd( iqId, IQ_PROC_DISCOBOOKMARKS, JabberIqResultDiscoBookmarks);
 	XmlNodeIq biq( "get", iqId);
-	XmlNode* bquery = biq.addQuery( "jabber:iq:private" );
-	XmlNode* storage = bquery->addChild("storage");
-	storage->addAttr("xmlns","storage:bookmarks");
+	XmlNode* bquery = biq.addQuery( JABBER_FEAT_PRIVATE_STORAGE );
+	XmlNode* storage = bquery->addChild( "storage" );
+	storage->addAttr( "xmlns", "storage:bookmarks" );
 	info->send( biq );
 
 	jabberPepSupported = FALSE;
-	jabberServerCaps = JABBER_RESOURCE_CAPS_NONE;
+	info->jabberServerCaps = JABBER_RESOURCE_CAPS_NONE;
 	iqId = JabberSerialNext();
 	JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultServerDiscoInfo );
 	XmlNodeIq diq( "get", iqId, jabberThreadInfo->server );
 	diq.addQuery( JABBER_FEAT_DISCO_INFO );
 	jabberThreadInfo->send( diq );
 
-//	iqId = JabberSerialNext();
-//	JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultPrivacyLists );
-	XmlNodeIq piq( g_JabberIqManager.AddHandler( JabberIqResultPrivacyLists ));
-	piq.addQuery( JABBER_FEAT_PRIVACY_LISTS );
-	jabberThreadInfo->send( piq );
+	g_PrivacyListManager.QueryLists();
 
 	char szServerName[ sizeof(info->server) ];
 	if ( JGetStaticString( "LastLoggedServer", NULL, szServerName, sizeof(szServerName)))
@@ -115,6 +154,19 @@ static void JabberOnLoggedIn( ThreadData* info )
 	else if ( strcmp( info->server, szServerName ))
 		JabberSendGetVcard( jabberJID );
 	JSetString( NULL, "LastLoggedServer", info->server );
+
+	//Check if avatar changed
+	DBVARIANT dbvSaved = {0};
+	DBVARIANT dbvHash = {0};
+	int resultSaved = JGetStringT( NULL, "AvatarSaved", &dbvSaved );
+	int resultHash  = JGetStringT( NULL, "AvatarHash", &dbvHash );
+	if ( resultSaved || resultHash || lstrcmp( dbvSaved.ptszVal, dbvHash.ptszVal ))	{
+		char tFileName[ MAX_PATH ];
+		JabberGetAvatarFileName( NULL, tFileName, MAX_PATH );
+		JabberUpdateVCardPhoto( tFileName );
+	}
+	DBFreeVariant(&dbvSaved);
+	DBFreeVariant(&dbvHash);
 }
 
 void JabberIqResultGetAuth( XmlNode *iqNode, void *userdata )
@@ -174,7 +226,6 @@ void JabberIqResultSetAuth( XmlNode *iqNode, void *userdata )
 {
 	ThreadData* info = ( ThreadData* ) userdata;
 	TCHAR* type;
-	int iqId;
 
 	// RECVED: authentication result
 	// ACTION: if successfully logged in, continue by requesting roster list and set my initial status
@@ -189,16 +240,6 @@ void JabberIqResultSetAuth( XmlNode *iqNode, void *userdata )
 			JFreeVariant( &dbv );
 
 		JabberOnLoggedIn( info );
-
-		if ( hwndJabberAgents ) {
-			// Retrieve agent information
-			iqId = JabberSerialNext();
-			JabberIqAdd( iqId, IQ_PROC_GETAGENTS, JabberIqResultGetAgents );
-
-			XmlNodeIq iq( "get", iqId );
-			XmlNode* query = iq.addQuery( JABBER_FEAT_AGENTS );
-			info->send( iq );
-		}
 	}
 	// What to do if password error? etc...
 	else if ( !lstrcmp( type, _T("error"))) {
@@ -264,9 +305,6 @@ void JabberIqResultSession( XmlNode *iqNode, void *userdata )
 		JabberOnLoggedIn( info );
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////
-// JabberIqResultGetRoster - populates LIST_ROSTER and creates contact for any new rosters
-
 void sttGroupchatJoinByHContact( HANDLE hContact )
 {
 	DBVARIANT dbv;
@@ -305,19 +343,33 @@ void sttGroupchatJoinByHContact( HANDLE hContact )
 	mir_free( roomjid );
 }
 
-void JabberIqResultGetRoster( XmlNode* iqNode, void* )
+/////////////////////////////////////////////////////////////////////////////////////////
+// JabberIqResultGetRoster - populates LIST_ROSTER and creates contact for any new rosters
+
+void JabberIqResultGetRoster( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	JabberLog( "<iq/> iqIdGetRoster" );
-	TCHAR* type = JabberXmlGetAttrValue( iqNode, "type" );
-	if ( lstrcmp( type, _T("result")))
+	TCHAR *szGroupDelimeter = (TCHAR *)pInfo->GetUserData();
+	if ( pInfo->GetIqType() != JABBER_IQ_TYPE_RESULT ) {
+		mir_free( szGroupDelimeter );
 		return;
+	}
 
 	XmlNode* queryNode = JabberXmlGetChild( iqNode, "query" );
-   if ( queryNode == NULL )
+	if ( queryNode == NULL ) {
+		mir_free( szGroupDelimeter );
 		return;
+	}
 
-	if ( lstrcmp( JabberXmlGetAttrValue( queryNode, "xmlns" ), _T("jabber:iq:roster")))
+	if ( lstrcmp( JabberXmlGetAttrValue( queryNode, "xmlns" ), _T(JABBER_FEAT_IQ_ROSTER))) {
+		mir_free( szGroupDelimeter );
 		return;
+	}
+
+	if ( !_tcscmp( szGroupDelimeter, _T("\\"))) {
+		mir_free( szGroupDelimeter );
+		szGroupDelimeter = NULL;
+	}
 
 	TCHAR* name, *nick;
 	int i;
@@ -353,30 +405,27 @@ void JabberIqResultGetRoster( XmlNode* iqNode, void* )
 			continue;
 
 		JABBER_LIST_ITEM* item = JabberListAdd( LIST_ROSTER, jid );
-		if (_tcschr(jid,_T('@'))==NULL)
-		{
-			//not found @ in jid request info about
-
-			int iqId = JabberSerialNext();
-			JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultDiscoAgentInfo );
-
-			XmlNodeIq iq( "get", iqId, jid );
-			XmlNode* query = iq.addQuery( JABBER_FEAT_DISCO_INFO );
-			jabberThreadInfo->send( iq );
-			bIsTransport=TRUE;
-			TCHAR * stripJid=_tcsdup( jid );
-			TCHAR * slash=_tcschr(stripJid,_T('/'));
-			if (slash!=NULL) *slash=_T('\0');
-			if ( jabberTransports.getIndex( stripJid ) == -1 )
-				jabberTransports.insert( _tcsdup( stripJid ));
-			free(stripJid);
-		}
 		item->subscription = sub;
 
 		mir_free( item->nick ); item->nick = nick;
 
 		XmlNode* groupNode = JabberXmlGetChild( itemNode, "group" );
 		replaceStr( item->group, ( groupNode ) ? groupNode->text : NULL );
+
+		// check group delimiters:
+		if ( item->group && szGroupDelimeter ) {
+			TCHAR *szPos = NULL;
+			while ( szPos = _tcsstr( item->group, szGroupDelimeter )) {
+				*szPos = 0;
+				szPos += _tcslen( szGroupDelimeter );
+				TCHAR *szNewGroup = (TCHAR *)mir_alloc( sizeof(TCHAR) * ( _tcslen( item->group ) + _tcslen( szPos ) + 2));
+				_tcscpy( szNewGroup, item->group );
+				_tcscat( szNewGroup, _T("\\"));
+				_tcscat( szNewGroup, szPos );
+				mir_free( item->group );
+				item->group = szNewGroup;
+			}
+		}
 
 		HANDLE hContact = JabberHContactFromJID( jid );
 		if ( hContact == NULL ) {
@@ -501,54 +550,10 @@ void JabberIqResultGetRoster( XmlNode* iqNode, void* )
 		SendMessage( hwndServiceDiscovery, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
 	if ( hwndJabberVcard )
 		SendMessage( hwndJabberVcard, WM_JABBER_CHECK_ONLINE, 0, 0 );
+
+	if ( szGroupDelimeter )
+		mir_free( szGroupDelimeter );
 }
-
-void JabberIqResultGetAgents( XmlNode *iqNode, void *userdata )
-{
-	ThreadData* info = ( ThreadData* ) userdata;
-	XmlNode *queryNode;
-	TCHAR* type, *jid, *str;
-
-	// RECVED: agent list
-	// ACTION: refresh agent list dialog
-	JabberLog( "<iq/> iqIdGetAgents" );
-	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
-	if (( queryNode=JabberXmlGetChild( iqNode, "query" )) == NULL ) return;
-
-	if ( !lstrcmp( type, _T("result"))) {
-		str = JabberXmlGetAttrValue( queryNode, "xmlns" );
-		if ( str!=NULL && !lstrcmp( str, _T(JABBER_FEAT_AGENTS))) {
-			XmlNode *agentNode, *n;
-			JABBER_LIST_ITEM *item;
-			int i;
-
-			JabberListRemoveList( LIST_AGENT );
-			for ( i=0; i<queryNode->numChild; i++ ) {
-				agentNode = queryNode->child[i];
-				if ( !lstrcmpA( agentNode->name, "agent" )) {
-					if (( jid=JabberXmlGetAttrValue( agentNode, "jid" )) != NULL ) {
-						item = JabberListAdd( LIST_AGENT, jid );
-						if ( JabberXmlGetChild( agentNode, "register" ) != NULL )
-							item->cap |= AGENT_CAP_REGISTER;
-						if ( JabberXmlGetChild( agentNode, "search" ) != NULL )
-							item->cap |= AGENT_CAP_SEARCH;
-						if ( JabberXmlGetChild( agentNode, "groupchat" ) != NULL )
-							item->cap |= AGENT_CAP_GROUPCHAT;
-						// set service also???
-						// most chatroom servers don't announce <grouchat/> so we will
-						// also treat <service>public</service> as groupchat services
-						if (( n=JabberXmlGetChild( agentNode, "service" ))!=NULL && n->text!=NULL && !_tcscmp( n->text, _T("public")))
-							item->cap |= AGENT_CAP_GROUPCHAT;
-						if (( n=JabberXmlGetChild( agentNode, "name" ))!=NULL && n->text!=NULL )
-							item->name = mir_tstrdup( n->text );
-		}	}	}	}
-
-		if ( hwndJabberAgents != NULL ) {
-			if (( jid = JabberXmlGetAttrValue( iqNode, "from" )) != NULL )
-				SendMessage( hwndJabberAgents, WM_JABBER_AGENT_REFRESH, 0, ( LPARAM )jid );
-			else
-				SendMessage( hwndJabberAgents, WM_JABBER_AGENT_REFRESH, 0, ( LPARAM )info->server );
-}	}	}
 
 void JabberIqResultGetRegister( XmlNode *iqNode, void *userdata )
 {
@@ -1336,152 +1341,6 @@ void JabberIqResultSetPassword( XmlNode *iqNode, void *userdata )
 		MessageBox( NULL, TranslateT( "Password cannot be changed." ), TranslateT( "Change Password" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
 }
 
-void JabberIqResultDiscoAgentItems( XmlNode *iqNode, void *userdata )
-{
-	ThreadData* info = ( ThreadData* ) userdata;
-	XmlNode *queryNode, *itemNode;
-	TCHAR* type, *jid, *from;
-
-	// RECVED: agent list
-	// ACTION: refresh agent list dialog
-	JabberLog( "<iq/> iqIdDiscoAgentItems" );
-	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
-	if (( from=JabberXmlGetAttrValue( iqNode, "from" )) == NULL ) return;
-
-	if ( !lstrcmp( type, _T("result"))) {
-		if (( queryNode=JabberXmlGetChild( iqNode, "query" )) != NULL ) {
-			TCHAR* str = JabberXmlGetAttrValue( queryNode, "xmlns" );
-			if  ( !lstrcmp( str, _T(JABBER_FEAT_DISCO_ITEMS))) {
-				JabberListRemoveList( LIST_AGENT );
-				for ( int i=0; i<queryNode->numChild; i++ ) {
-					if (( itemNode=queryNode->child[i] )!=NULL && itemNode->name!=NULL && !lstrcmpA( itemNode->name, "item" )) {
-						if (( jid=JabberXmlGetAttrValue( itemNode, "jid" )) != NULL ) {
-							JABBER_LIST_ITEM* item = JabberListAdd( LIST_AGENT, jid );
-							replaceStr( item->name, JabberXmlGetAttrValue( itemNode, "name" ));
-							item->cap = AGENT_CAP_REGISTER | AGENT_CAP_GROUPCHAT;	// default to all cap until specific info is later received
-							int iqId = JabberSerialNext();
-							JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultDiscoAgentInfo );
-
-							XmlNodeIq iq( "get", iqId, jid );
-							XmlNode* query = iq.addQuery( JABBER_FEAT_DISCO_INFO );
-							jabberThreadInfo->send( iq );
-		}	}	}	}	}
-
-		if ( hwndJabberAgents != NULL ) {
-			if (( jid=JabberXmlGetAttrValue( iqNode, "from" )) != NULL )
-				SendMessage( hwndJabberAgents, WM_JABBER_AGENT_REFRESH, 0, ( LPARAM )jid );
-			else
-				SendMessage( hwndJabberAgents, WM_JABBER_AGENT_REFRESH, 0, ( LPARAM )info->server );
-		}
-	}
-	else if ( !lstrcmp( type, _T("error"))) {
-		// disco is not supported, try jabber:iq:agents
-		int iqId = JabberSerialNext();
-		JabberIqAdd( iqId, IQ_PROC_GETAGENTS, JabberIqResultGetAgents );
-
-		XmlNodeIq iq( "get", iqId, from );
-		XmlNode* query = iq.addQuery( JABBER_FEAT_AGENTS );
-		jabberThreadInfo->send( iq );
-}	}
-
-void JabberIqResultDiscoAgentInfo( XmlNode *iqNode, void *userdata )
-{
-	ThreadData* info = ( ThreadData* ) userdata;
-	XmlNode *queryNode, *itemNode, *identityNode;
-	TCHAR* type, *from, *var;
-	JABBER_LIST_ITEM *item;
-	JABBER_LIST_ITEM *rosterItem=NULL;
-	WORD cap=0;
-	// RECVED: info for a specific agent
-	// ACTION: refresh agent list dialog
-	JabberLog( "<iq/> iqIdDiscoAgentInfo" );
-	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
-	if (( from = JabberXmlGetAttrValue( iqNode, "from" )) == NULL ) return;
-
-	if ( !lstrcmp( type, _T("result"))) {
-		if (( queryNode=JabberXmlGetChild( iqNode, "query" )) != NULL ) {
-			TCHAR* str = JabberXmlGetAttrValue( queryNode, "xmlns" );
-			if ( !lstrcmp( str, _T(JABBER_FEAT_DISCO_INFO))) {
-				rosterItem=JabberListGetItemPtr( LIST_ROSTER, from );
-				item=JabberListGetItemPtr( LIST_AGENT, from );
-				// Use the first <identity/> to set name
-				if (( identityNode=JabberXmlGetChild( queryNode, "identity" )) != NULL ) {
-					if (( str=JabberXmlGetAttrValue( identityNode, "name" )) != NULL )
-					{
-						if (item) replaceStr( item->name, str );
-						if (rosterItem) replaceStr( rosterItem->name, str );
-					}
-				}
-				cap = 0;
-				for ( int i=0; i<queryNode->numChild; i++ ) {
-						if (( itemNode=queryNode->child[i] )!=NULL && itemNode->name!=NULL ) {
-							if ( !strcmp( itemNode->name, "feature" )) {
-								if (( var=JabberXmlGetAttrValue( itemNode, "var" )) != NULL ) {
-									if ( !lstrcmp( var, _T(JABBER_FEAT_REGISTER)))
-										cap |= AGENT_CAP_REGISTER;
-									else if ( !lstrcmp( var, _T(JABBER_FEAT_MUC)))
-										cap |= AGENT_CAP_GROUPCHAT;
-									else if ( !lstrcmp( var, _T(JABBER_FEAT_COMMANDS)))
-										cap |= AGENT_CAP_ADHOC;
-								}
-							}
-						}
-					}
-				if (item) item->cap=cap;
-				if (rosterItem) rosterItem->cap|=cap;
-		}	}
-
-		if ( hwndJabberAgents != NULL )
-			SendMessage( hwndJabberAgents, WM_JABBER_AGENT_REFRESH, 0, ( LPARAM )NULL );
-}	}
-
-/*
-void JabberIqResultDiscoClientInfo( XmlNode *iqNode, void *userdata )
-{
-	ThreadData* info = ( ThreadData* ) userdata;
-	XmlNode *queryNode, *itemNode;
-	TCHAR* type, *from, *var;
-	JABBER_LIST_ITEM *item;
-
-	// RECVED: info for a specific client
-	// ACTION: update client cap
-	// ACTION: if item->ft is pending, initiate file transfer
-	JabberLog( "<iq/> iqIdDiscoClientInfo" );
-	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
-	if (( from=JabberXmlGetAttrValue( iqNode, "from" )) == NULL ) return;
-
-	if ( lstrcmp( type, _T("result")) != 0 )
-		return;
-	if (( item=JabberListGetItemPtr( LIST_ROSTER, from )) == NULL )
-		return;
-
-	if (( queryNode=JabberXmlGetChild( iqNode, "query" )) != NULL ) {
-		TCHAR* str = JabberXmlGetAttrValue( queryNode, "xmlns" );
-		if ( !lstrcmp( str, _T(JABBER_FEAT_DISCO_INFO))) {
-			item->cap = CLIENT_CAP_READY;
-			for ( int i=0; i<queryNode->numChild; i++ ) {
-				if (( itemNode=queryNode->child[i] )!=NULL && itemNode->name!=NULL ) {
-					if ( !strcmp( itemNode->name, "feature" )) {
-						if (( var=JabberXmlGetAttrValue( itemNode, "var" )) != NULL ) {
-							if ( !lstrcmp( var, _T(JABBER_FEAT_SI)))
-								item->cap |= CLIENT_CAP_SI;
-							else if ( !lstrcmp( var, _T(JABBER_FEAT_SI_FT)))
-								item->cap |= CLIENT_CAP_SIFILE;
-							else if ( !lstrcmp( var, _T(JABBER_FEAT_BYTESTREAMS)))
-								item->cap |= CLIENT_CAP_BYTESTREAM;
-	}	}	}	}	}	}
-
-	// Check for pending file transfer session request
-	if ( item->ft != NULL ) {
-		filetransfer* ft = item->ft;
-		item->ft = NULL;
-		if (( item->cap & CLIENT_CAP_FILE ) && ( item->cap & CLIENT_CAP_BYTESTREAM ))
-			JabberFtInitiate( item->jid, ft );
-		else
-			mir_forkthread(( pThreadFunc )JabberFileServerThread, ft );
-}	}
-*/
-
 void JabberIqResultGetAvatar( XmlNode *iqNode, void *userdata )
 {
 	if ( !JGetByte( "EnableAvatars", TRUE ))
@@ -1589,7 +1448,7 @@ LBL_ErrFormat:
 void JabberIqResultDiscoBookmarks( XmlNode *iqNode, void *userdata )
 {
 	ThreadData* info = ( ThreadData* ) userdata;
-	XmlNode *queryNode, *itemNode, *storageNode, *nickNode, *passNode, *errorNode;
+	XmlNode *queryNode, *itemNode, *storageNode, *nickNode, *passNode;
 	TCHAR* type, *jid;
 
 	// RECVED: list of bookmarks
@@ -1598,6 +1457,11 @@ void JabberIqResultDiscoBookmarks( XmlNode *iqNode, void *userdata )
 	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
 
 	if ( !lstrcmp( type, _T("result"))) {
+		if ( jabberThreadInfo && !( jabberThreadInfo->jabberServerCaps & JABBER_CAPS_PRIVATE_STORAGE )) {
+			jabberThreadInfo->jabberServerCaps |= JABBER_CAPS_PRIVATE_STORAGE;
+			JabberEnableMenuItems( TRUE );
+		}
+
 		if (( queryNode = JabberXmlGetChild( iqNode, "query" )) != NULL ) {
 			if ((storageNode = JabberXmlGetChild( queryNode, "storage" )) != NULL) {
 				JabberListRemoveList( LIST_BOOKMARK );
@@ -1627,7 +1491,7 @@ void JabberIqResultDiscoBookmarks( XmlNode *iqNode, void *userdata )
 								item->type = mir_tstrdup( _T("url") );
 			}	}	}	}	}
 
-			if ( JGetByte( "AutoJoinBookmarks", FALSE ) == TRUE && !( info->caps & CAPS_BOOKMARKS_LOADED )) {
+			if ( JGetByte( "AutoJoinBookmarks", TRUE ) == TRUE && !( info->bBookmarksLoaded )) {
 				JABBER_LIST_ITEM* item;
 				for ( int i=0; ( i = JabberListFindNext( LIST_BOOKMARK, i )) >= 0; i++ ) {
 					if ((( item = JabberListGetItemPtrFromIndex( i )) != NULL ) && !lstrcmp( item->type, _T("conference") )) {
@@ -1649,26 +1513,22 @@ void JabberIqResultDiscoBookmarks( XmlNode *iqNode, void *userdata )
 
 			if ( hwndJabberBookmarks != NULL )
 				SendMessage( hwndJabberBookmarks, WM_JABBER_REFRESH, 0, 0);
-			info->caps |= CAPS_BOOKMARKS_LOADED;
+			info->bBookmarksLoaded = TRUE;
 		}
 	}
 	else if ( !lstrcmp( type, _T("error"))) {
-		if ( info->caps & CAPS_BOOKMARK ) {
-			info->caps &= ~CAPS_BOOKMARK;
+		if ( info->jabberServerCaps & JABBER_CAPS_PRIVATE_STORAGE ) {
+			info->jabberServerCaps &= ~JABBER_CAPS_PRIVATE_STORAGE;
 			JabberEnableMenuItems( TRUE );
+			if ( hwndJabberBookmarks != NULL )
+				SendMessage( hwndJabberBookmarks, WM_JABBER_ACTIVATE, 0, 0);
 			return;
 		}
-		errorNode = JabberXmlGetChild( iqNode, "error" );
-		TCHAR* str = JabberErrorMsg( errorNode );
-		MessageBox( NULL, str, TranslateT( "Jabber Bookmarks Error" ), MB_OK|MB_SETFOREGROUND );
-		mir_free( str );
-		if ( hwndJabberBookmarks != NULL )
-			SendMessage( hwndJabberBookmarks, WM_JABBER_ACTIVATE, 0, 0);
 }	}
 
 void JabberSetBookmarkRequest (XmlNodeIq& iq)
 {
-	XmlNode* query = iq.addQuery( "jabber:iq:private" );
+	XmlNode* query = iq.addQuery( JABBER_FEAT_PRIVATE_STORAGE );
 	XmlNode* storage = query->addChild( "storage" );
 	storage->addAttr( "xmlns", "storage:bookmarks" );
 
@@ -1702,7 +1562,7 @@ void JabberSetBookmarkRequest (XmlNodeIq& iq)
 
 void JabberIqResultSetBookmarks( XmlNode *iqNode, void *userdata )
 {
-	// RECVED: server's responce
+	// RECVED: server's response
 	// ACTION: refresh bookmarks list dialog
 
 	JabberLog( "<iq/> iqIdSetBookmarks" );
@@ -1744,8 +1604,7 @@ void JabberIqResultLastActivity( XmlNode *iqNode, void *userdata, CJabberIqInfo*
 
 	r->idleStartTime = lastActivity;
 
-	if ( hwndJabberInfo != NULL )
-		PostMessage( hwndJabberInfo, WM_JABBER_REFRESH, 0, 0);
+	JabberUserInfoUpdate(pInfo->GetHContact());
 }
 
 // entity time (XEP-0202) support

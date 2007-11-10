@@ -7,7 +7,7 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include <windows.h>
+#include "winres.h"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -20,6 +20,63 @@
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
 #endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_JABBER              ICON                    "icos\\jabber.ico"
+IDI_ARROW_DOWN          ICON                    "icos\\arrow_down.ico"
+IDI_ARROW_UP            ICON                    "icos\\arrow_up.ico"
+IDI_DISCO_PROGRESS      ICON                    "icos\\disco_in_progress.ico"
+IDI_NODE_RSS            ICON                    "icos\\rss.ico"
+IDI_NODE_SERVER         ICON                    "icos\\server.ico"
+IDI_NODE_STORE          ICON                    "icos\\store.ico"
+IDI_NODE_WEATHER        ICON                    "icos\\weather.ico"
+IDI_DISCO_OK            ICON                    "icos\\disco_ok.ico"
+IDI_DISCO_FAIL          ICON                    "icos\\disco_fail.ico"
+IDI_GROUP               ICON                    "icos\\group.ico"
+IDI_KEYS                ICON                    "icos\\key.ico"
+IDI_ADDCONTACT          ICON                    "icos\\addcontact.ico"
+IDI_ADDROSTER           ICON                    "icos\\add2roster.ico"
+IDI_AGENTS              ICON                    "icos\\roster.ico"
+IDI_VCARD               ICON                    "icos\\pages.ico"
+IDI_DELETE              ICON                    "icos\\delete.ico"
+IDI_EDIT                ICON                    "icos\\rename.ico"
+IDI_GRANT               ICON                    "icos\\grant.ico"
+IDI_OPEN                ICON                    "icos\\open.ico"
+IDI_REQUEST             ICON                    "icos\\request.ico"
+IDI_USER2ROOM           ICON                    "icos\\user2room.ico"
+IDI_SAVE                ICON                    "icos\\save.ico"
+IDI_LOGIN               ICON                    "icos\\login.ico"
+IDI_AUTHREVOKE          ICON                    "icos\\auth_revoke.ico"
+IDI_REFRESH             ICON                    "icos\\refresh.ico"
+IDI_COMMAND             ICON                    "icos\\command.ico"
+IDI_BOOKMARKS           ICON                    "icos\\bookmarks.ico"
+IDI_PRIVACY_LISTS       ICON                    "icos\\privacy_lists.ico"
+IDI_SERVICE_DISCOVERY   ICON                    "icos\\service_discovery.ico"
+IDI_VIEW_LIST           ICON                    "icos\\view_as_list.ico"
+IDI_VIEW_TREE           ICON                    "icos\\view_as_tree.ico"
+IDI_FILTER_APPLY        ICON                    "icos\\filter.ico"
+IDI_BROWSE              ICON                    "icos\\go.ico"
+IDI_NAV_HOME            ICON                    "icos\\home.ico"
+IDI_NAV_REFRESH         ICON                    "icos\\refresh_node.ico"
+IDI_FILTER_RESET        ICON                    "icos\\reset_filter.ico"
+IDI_CONSOLE             ICON                    "icos\\console.ico"
+IDI_PL_MSG_ALLOW        ICON                    "icos\\message_allow.ico"
+IDI_PL_MSG_DENY         ICON                    "icos\\message_deny.ico"
+IDI_PL_PRIN_ALLOW       ICON                    "icos\\presence_in_allow.ico"
+IDI_PL_PRIN_DENY        ICON                    "icos\\presence_in_deny.ico"
+IDI_PL_PROUT_ALLOW      ICON                    "icos\\presence_out_allow.ico"
+IDI_PL_PROUT_DENY       ICON                    "icos\\presence_out_deny.ico"
+IDI_PL_QUERY_ALLOW      ICON                    "icos\\query_allow.ico"
+IDI_PL_QUERY_DENY       ICON                    "icos\\query_deny.ico"
+IDI_PL_LIST_ACTIVE      ICON                    "icos\\plist_active.ico"
+IDI_PL_LIST_ANY         ICON                    "icos\\plist_any.ico"
+IDI_PL_LIST_DEFAULT     ICON                    "icos\\plist_default.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -71,11 +128,13 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_EDIT_USERNAME,66,14,86,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_EDIT_PASSWORD,66,28,86,12,ES_PASSWORD | ES_AUTOHSCROLL
-    CONTROL         "Save password",IDC_SAVEPASSWORD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,66,43,172,10
+    LTEXT           "Priority:",IDC_PRIORITY_LABEL,158,31,41,8
+    EDITTEXT        IDC_PRIORITY,213,29,42,12,ES_AUTOHSCROLL
+    CONTROL         "Spin1",IDC_PRIORITY_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_NOTHOUSANDS,254,29,11,12
+    CONTROL         "Save password",IDC_SAVEPASSWORD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,66,43,89,10
     COMBOBOX        IDC_COMBO_RESOURCE,66,54,86,130,CBS_DROPDOWN | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Priority:",IDC_PRIORITY_LABEL,161,57,31,8
-    EDITTEXT        IDC_PRIORITY,195,55,42,12,ES_AUTOHSCROLL
-    CONTROL         "Spin1",IDC_PRIORITY_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_NOTHOUSANDS,236,55,11,12
+    CONTROL         "Use hostname as resource",IDC_HOSTNAME_AS_RESOURCE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,157,56,138,9
     EDITTEXT        IDC_EDIT_LOGIN_SERVER,66,68,86,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_PORT,66,82,26,12,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "Use SSL",IDC_USE_SSL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,100,83,82,10
@@ -89,8 +148,8 @@ BEGIN
     CONTROL         "Automatically delete contacts not in my roster",IDC_ROSTER_SYNC,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,172,221,10
     LTEXT           "User directory:",IDC_JUD_LABEL,14,188,68,8
-    EDITTEXT        IDC_JUD,87,185,103,12,ES_AUTOHSCROLL
-    COMBOBOX        IDC_MSGLANG,87,201,103,69,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_JUD,188,185,103,12,ES_AUTOHSCROLL
+    COMBOBOX        IDC_MSGLANG,188,201,103,69,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "Jabber",IDC_SIMPLE,4,0,298,116
     LTEXT           "Username:",IDC_STATIC,15,16,45,8
     LTEXT           "Password:",IDC_STATIC,15,30,45,8
@@ -102,7 +161,7 @@ BEGIN
     GROUPBOX        "Expert",IDC_STATIC,4,120,298,106
     LTEXT           "Host:",IDC_STATIC,26,147,30,8
     LTEXT           "Port:",IDC_STATIC,156,148,27,8
-    LTEXT           "Messaging language:",IDC_MSGLANG_LABEL,14,203,70,8
+    LTEXT           "Language for human-readable resources:",IDC_MSGLANG_LABEL,14,203,170,8
     CONTROL         "Press here to download OpenSSL, required for SSL & TLS support",IDC_DOWNLOAD_OPENSSL,
                     "Hyperlink",WS_TABSTOP,16,97,270,11
 END
@@ -131,22 +190,16 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    LTEXT           "JID:",IDC_STATIC,7,7,19,8
-    EDITTEXT        IDC_INFO_JID,31,7,183,12,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
-    LTEXT           "Resources:",IDC_STATIC,7,53,81,8
-    LISTBOX         IDC_INFO_RESOURCE,7,63,69,82,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL
-    LTEXT           "Subscription type:",IDC_STATIC,7,20,60,8,NOT WS_GROUP
-    EDITTEXT        IDC_SUBSCRIPTION,70,20,144,12,ES_READONLY | NOT WS_BORDER
-    LTEXT           "Software:",IDC_STATIC,81,62,35,8
-    LTEXT           "Version:",IDC_STATIC,81,101,35,8
-    LTEXT           "System:",IDC_STATIC,81,116,35,8
-    EDITTEXT        IDC_SOFTWARE,121,62,93,36,ES_MULTILINE | ES_READONLY | WS_DISABLED | NOT WS_BORDER
-    EDITTEXT        IDC_VERSION,121,101,93,12,ES_AUTOHSCROLL | ES_READONLY | WS_DISABLED | NOT WS_BORDER
-    EDITTEXT        IDC_SYSTEM,121,116,93,13,ES_AUTOHSCROLL | ES_READONLY | WS_DISABLED | NOT WS_BORDER
-    LTEXT           "Last logoff time:",IDC_STATIC_LOGOFF_TIME_LABEL,7,34,54,8,NOT WS_GROUP
-    EDITTEXT        IDC_LOGOFF_TIME,70,34,144,12,ES_READONLY | NOT WS_BORDER
-    LTEXT           "Idle since:",IDC_STATIC,81,131,35,8
-    EDITTEXT        IDC_IDLE_SINCE,121,131,93,13,ES_AUTOHSCROLL | ES_READONLY | WS_DISABLED | NOT WS_BORDER
+    CONTROL         "",IDC_TV_INFO,"SysTreeView32",TVS_HASBUTTONS | TVS_DISABLEDRAGDROP | TVS_FULLROWSELECT | WS_BORDER | WS_TABSTOP,5,5,211,141
+END
+
+IDD_INFOBOX DIALOGEX 0, 0, 248, 239
+STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+EXSTYLE WS_EX_CONTROLPARENT
+CAPTION "Jabber Node Information"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_TV_INFO,"SysTreeView32",TVS_HASBUTTONS | TVS_DISABLEDRAGDROP | TVS_FULLROWSELECT | WS_BORDER | WS_TABSTOP,5,5,211,141
 END
 
 IDD_OPT_REGISTER DIALOGEX 0, 0, 165, 61
@@ -202,7 +255,7 @@ BEGIN
     EDITTEXT        IDC_FRAME_TEXT,18,101,220,33,ES_CENTER | ES_MULTILINE | ES_READONLY | NOT WS_BORDER
     SCROLLBAR       IDC_VSCROLL,246,28,11,167,SBS_VERT
     DEFPUSHBUTTON   "Submit",IDC_SUBMIT,146,203,50,14,WS_DISABLED
-    PUSHBUTTON      "Cancel",IDCANCEL,200,203,50,14
+    PUSHBUTTON      "Cancel",IDCLOSE,200,203,50,14
     DEFPUSHBUTTON   "Next",IDC_NEXT,50,203,40,14,NOT WS_VISIBLE | WS_DISABLED
     DEFPUSHBUTTON   "Back",IDC_PREV,6,203,42,14,NOT WS_VISIBLE | WS_DISABLED
     DEFPUSHBUTTON   "Complete",IDC_COMPLETE,150,203,46,14,NOT WS_VISIBLE | WS_DISABLED
@@ -402,32 +455,43 @@ BEGIN
     PUSHBUTTON      "Close",IDCLOSE,249,189,50,14
 END
 
-IDD_GROUPCHAT_JOIN DIALOGEX 0, 0, 208, 96
-STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION
+IDD_GROUPCHAT_JOIN DIALOGEX 0, 0, 258, 199
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
-CAPTION "Join Jabber Multi-User Conference Room"
+CAPTION "Create or Join Jabber Multi-User Conference Room"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    LTEXT           "Conference server:",IDC_STATIC,7,8,64,8
-    EDITTEXT        IDC_SERVER,74,7,127,12,ES_AUTOHSCROLL
-    LTEXT           "Room:",IDC_STATIC,7,22,64,8
-    EDITTEXT        IDC_ROOM,74,21,127,12,ES_AUTOHSCROLL
-    LTEXT           "Nick name:",IDC_STATIC,7,36,64,8
-    EDITTEXT        IDC_NICK,74,35,127,12,ES_AUTOHSCROLL
-    LTEXT           "Password:",IDC_STATIC,7,50,64,8
-    EDITTEXT        IDC_PASSWORD,74,49,127,12,ES_AUTOHSCROLL
-    DEFPUSHBUTTON   "OK",IDOK,51,75,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,106,75,50,14
+    CONTROL         "",IDC_WHITERECT,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,0,0,258,32
+    LTEXT           "Jabber Multi-User Conference",IDC_TITLE,7,7,193,8,NOT WS_GROUP
+    LTEXT           "Create or join existing conference room.",IDC_DESCRIPTION,17,17,183,8,NOT WS_GROUP
+    CONTROL         "",IDC_FRAME1,"Static",SS_ETCHEDHORZ,0,32,258,1
+    LTEXT           "Conference server:",IDC_STATIC,7,38,63,12,SS_CENTERIMAGE,WS_EX_RIGHT
+    COMBOBOX        IDC_SERVER,75,38,176,100,CBS_DROPDOWN | CBS_AUTOHSCROLL | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Room:",IDC_STATIC,7,56,63,12,SS_CENTERIMAGE,WS_EX_RIGHT
+    COMBOBOX        IDC_ROOM,75,56,176,158,CBS_DROPDOWN | CBS_OWNERDRAWVARIABLE | CBS_AUTOHSCROLL | CBS_SORT | CBS_HASSTRINGS | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Nick name:",IDC_STATIC,7,73,63,12,SS_CENTERIMAGE,WS_EX_RIGHT
+    EDITTEXT        IDC_NICK,75,73,176,12,ES_AUTOHSCROLL
+    LTEXT           "Password:",IDC_STATIC,7,90,63,12,SS_CENTERIMAGE,WS_EX_RIGHT
+    EDITTEXT        IDC_PASSWORD,75,90,176,12,ES_PASSWORD | ES_AUTOHSCROLL
+    LTEXT           "Recently visited chatrooms:",IDC_TXT_RECENT,7,107,244,8
+    CONTROL         "",IDC_RECENT1,"Hyperlink",WS_TABSTOP,27,120,224,11
+    CONTROL         "",IDC_RECENT2,"Hyperlink",WS_TABSTOP,27,131,224,11
+    CONTROL         "",IDC_RECENT3,"Hyperlink",WS_TABSTOP,27,142,224,11
+    CONTROL         "",IDC_RECENT4,"Hyperlink",WS_TABSTOP,27,153,224,11
+    CONTROL         "",IDC_RECENT5,"Hyperlink",WS_TABSTOP,27,164,224,11
+    CONTROL         "Bookmarks",IDC_BOOKMARKS,"MButtonClass",WS_TABSTOP,7,179,16,14
+    DEFPUSHBUTTON   "OK",IDOK,145,179,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,201,179,50,14
 END
 
-IDD_GROUPCHAT_INPUT DIALOGEX 0, 0, 241, 82
-STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION
+IDD_GROUPCHAT_INPUT DIALOGEX 0, 0, 242, 78
+STYLE DS_SETFONT | DS_SETFOREGROUND | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    EDITTEXT        IDC_TOPIC,7,7,227,48,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
-    DEFPUSHBUTTON   "OK",IDOK,66,59,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,119,59,50,14
+    EDITTEXT        IDC_TOPIC,6,6,230,47,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,131,58,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,186,58,50,14
 END
 
 IDD_JIDLIST DIALOGEX 0, 0, 208, 113
@@ -499,74 +563,88 @@ BEGIN
     PUSHBUTTON      "Remove",IDC_REMOVE,111,161,50,14
 END
 
-IDD_BOOKMARK_ADD DIALOGEX 0, 0, 219, 132
+IDD_BOOKMARK_ADD DIALOGEX 0, 0, 221, 137
 STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION
 EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Bookmark Details"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "Conference",IDC_ROOM_RADIO,"Button",BS_AUTORADIOBUTTON | WS_GROUP,15,17,59,10
-    CONTROL         "Transport",IDC_AGENT_RADIO,"Button",BS_AUTORADIOBUTTON,79,17,66,10
-    CONTROL         "URL",IDC_URL_RADIO,"Button",BS_AUTORADIOBUTTON,157,17,48,10
-    CONTROL         "Auto-join",IDC_CHECK_BM_AUTOJOIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,29,142,10
-    LTEXT           "Room JID/ URL:",IDC_STATIC,7,52,52,8
-    EDITTEXT        IDC_ROOM_JID,64,51,148,12,ES_AUTOHSCROLL
-    LTEXT           "Bookmark Name:",IDC_STATIC,7,66,64,8
-    EDITTEXT        IDC_NAME,64,65,148,12,ES_AUTOHSCROLL
-    LTEXT           "Nick name:",IDC_STATIC,7,80,64,8
-    EDITTEXT        IDC_NICK,64,79,148,12,ES_AUTOHSCROLL
-    LTEXT           "Password:",IDC_STATIC,7,94,64,8
-    EDITTEXT        IDC_PASSWORD,64,93,148,12,ES_PASSWORD | ES_AUTOHSCROLL
-    DEFPUSHBUTTON   "OK",IDOK,51,111,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,117,111,50,14
-    GROUPBOX        "Bookmark Type",IDC_BOOKMARK_TYPE,7,7,205,35
+    CONTROL         "Conference",IDC_ROOM_RADIO,"Button",BS_AUTORADIOBUTTON | WS_GROUP,15,14,59,10
+    CONTROL         "Transport",IDC_AGENT_RADIO,"Button",BS_AUTORADIOBUTTON,79,14,66,10
+    CONTROL         "URL",IDC_URL_RADIO,"Button",BS_AUTORADIOBUTTON,157,14,48,10
+    CONTROL         "Auto-join (Automatically join Bookmarks must be enabled in Miranda options)",IDC_CHECK_BM_AUTOJOIN,
+                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,15,26,191,18
+    EDITTEXT        IDC_ROOM_JID,76,55,138,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_NAME,76,68,138,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_NICK,76,83,138,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_PASSWORD,76,97,138,12,ES_PASSWORD | ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,51,115,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,117,115,50,14
+    LTEXT           "Room JID/ URL:",IDC_STATIC,7,55,65,8
+    LTEXT           "Bookmark Name:",IDC_STATIC,7,70,65,8
+    LTEXT           "Nick name:",IDC_STATIC,7,84,65,8
+    LTEXT           "Password:",IDC_STATIC,7,98,65,8
+    GROUPBOX        "Bookmark Type",IDC_BOOKMARK_TYPE,6,4,208,47
 END
 
-IDD_PRIVACY_LISTS DIALOGEX 0, 0, 309, 274
-STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+IDD_PRIVACY_LISTS DIALOGEX 0, 0, 424, 288
+STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Privacy Lists"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    LTEXT           "Active list (current session):",IDC_STATIC,10,18,90,8
-    COMBOBOX        IDC_COMBO_ACTIVE_LIST,111,16,78,153,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Default list (all sessions):",IDC_STATIC,10,32,80,8
-    COMBOBOX        IDC_COMBO_DEFAULT_LIST,111,31,78,163,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Selected list:",IDC_STATIC,10,67,42,8
-    COMBOBOX        IDC_COMBO_CURRENT_LIST,111,64,78,132,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "Add new...",IDC_ADD_LIST,194,64,50,14
-    PUSHBUTTON      "Remove list",IDC_REMOVE_LIST,248,64,50,14
-    LISTBOX         IDC_PL_RULES_LIST,10,82,288,148,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "Add...",IDC_ADD_RULE,10,233,50,14
-    PUSHBUTTON      "Edit...",IDC_EDIT_RULE,63,233,50,14
-    PUSHBUTTON      "Remove",IDC_REMOVE_RULE,116,233,50,14
-    PUSHBUTTON      "Up",IDC_UP_RULE,10,251,50,14
-    PUSHBUTTON      "Down",IDC_DOWN_RULE,63,251,50,14
-    PUSHBUTTON      "Apply",IDC_APPLY,248,233,50,14
-    PUSHBUTTON      "Close",IDCANCEL,248,251,50,14
-    GROUPBOX        "Privacy settings:",IDC_STATIC,5,7,297,42
-    GROUPBOX        "Privacy rules editor:",IDC_STATIC,5,50,297,220
-    LTEXT           "",IDC_STATIC_LISTS_LABEL,194,16,104,27
+    CONTROL         "",IDC_WHITERECT,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,0,0,424,32
+    LTEXT           "Privacy Lists",IDC_TITLE,7,7,411,8,NOT WS_GROUP
+    LTEXT           "Flexible way to configure visibility and more.",IDC_DESCRIPTION,17,17,401,8,NOT WS_GROUP
+    CONTROL         "",IDC_FRAME1,"Static",SS_ETCHEDHORZ,0,32,424,1
+    LTEXT           "Lists:",IDC_TXT_LISTS,5,38,121,14,SS_CENTERIMAGE
+    LISTBOX         IDC_LB_LISTS,5,55,122,196,LBS_SORT | LBS_OWNERDRAWVARIABLE | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Rules:",IDC_TXT_RULES,135,38,58,14,SS_CENTERIMAGE
+    LISTBOX         IDC_PL_RULES_LIST,135,55,283,196,LBS_OWNERDRAWVARIABLE | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x1,135,55,283,179,WS_EX_CLIENTEDGE
+    CONTROL         "Simple Mode",IDC_BTN_SIMPLE,"MButtonClass",WS_TABSTOP,386,38,16,14
+    CONTROL         "Advanced Mode",IDC_BTN_ADVANCED,"MButtonClass",WS_TABSTOP,402,38,16,14
+    RTEXT           "Other JID:",IDC_TXT_OTHERJID,135,237,49,14,SS_CENTERIMAGE
+    EDITTEXT        IDC_NEWJID,187,238,210,12,ES_AUTOHSCROLL
+    CONTROL         "",IDC_ADDJID,"MButtonClass",WS_TABSTOP,402,237,16,14
+    CONTROL         "Save changes",IDC_APPLY,"MButtonClass",WS_TABSTOP,5,256,16,14
+    CONTROL         "Add list... (Ins)",IDC_ADD_LIST,"MButtonClass",WS_TABSTOP,53,256,16,14
+    CONTROL         "Activate (Space)",IDC_ACTIVATE,"MButtonClass",WS_TABSTOP,74,256,16,14
+    CONTROL         "Set as default (Ctrl+Space)",IDC_SET_DEFAULT,
+                    "MButtonClass",WS_TABSTOP,90,256,16,14
+    CONTROL         "Remove list (Del)",IDC_REMOVE_LIST,"MButtonClass",WS_TABSTOP,111,256,16,14
+    CONTROL         "Add rule (Ins)",IDC_ADD_RULE,"MButtonClass",WS_TABSTOP,323,256,16,14
+    CONTROL         "Edit rule... (F2)",IDC_EDIT_RULE,"MButtonClass",WS_TABSTOP,344,256,16,14
+    CONTROL         "Move rule up (Alt+Up)",IDC_UP_RULE,"MButtonClass",WS_TABSTOP,365,256,16,14
+    CONTROL         "Move rule down (Alt+Down)",IDC_DOWN_RULE,"MButtonClass",WS_TABSTOP,381,256,16,14
+    CONTROL         "Remove rule (Del)",IDC_REMOVE_RULE,"MButtonClass",WS_TABSTOP,402,256,16,14
+    CONTROL         "",IDC_CANVAS,"Static",SS_OWNERDRAW,135,256,283,14,WS_EX_TRANSPARENT
+    CONTROL         "",IDC_STATUSBAR,"msctls_statusbar32",0x0,0,274,424,14
 END
 
-IDD_PRIVACY_RULE DIALOGEX 0, 0, 261, 78
+IDD_PRIVACY_RULE DIALOGEX 0, 0, 261, 90
 STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Privacy rule"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    COMBOBOX        IDC_COMBO_TYPE,43,7,76,179,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_COMBO_ACTION,43,24,76,206,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "If:",IDC_STATIC,5,9,9,8
-    CONTROL         "Messages",IDC_CHECK_MESSAGES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,41,47,10
-    LTEXT           "Then:",IDC_STATIC,5,27,20,8
-    CONTROL         "Queries",IDC_CHECK_QUERIES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,55,41,41,10
-    CONTROL         "Outgoing presence",IDC_CHECK_PRESENCE_OUT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,99,41,77,10
-    CONTROL         "Incoming presence",IDC_CHECK_PRESENCE_IN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,178,41,76,10
-    PUSHBUTTON      "OK",IDOK,151,59,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,204,59,50,14
-    COMBOBOX        IDC_COMBO_VALUE,122,19,132,142,CBS_DROPDOWNLIST | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_COMBO_VALUES,122,7,132,142,CBS_DROPDOWN | CBS_AUTOHSCROLL | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "If:",IDC_STATIC,5,5,35,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_COMBO_TYPE,43,5,76,179,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_VALUE,124,5,132,142,CBS_DROPDOWNLIST | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_VALUES,124,5,132,142,CBS_DROPDOWN | CBS_AUTOHSCROLL | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Then:",IDC_STATIC,5,21,35,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_COMBO_ACTION,43,21,76,206,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "following stanza types:",IDC_STATIC,124,21,132,12,SS_CENTERIMAGE
+    CONTROL         "Messages",IDC_CHECK_MESSAGES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,59,38,89,14
+    CONTROL         "Queries",IDC_CHECK_QUERIES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,59,52,89,14
+    CONTROL         "Outgoing presence",IDC_CHECK_PRESENCE_OUT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,166,52,90,14
+    CONTROL         "Incoming presence",IDC_CHECK_PRESENCE_IN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,166,38,90,14
+    PUSHBUTTON      "OK",IDOK,152,71,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,206,71,50,14
+    ICON            "",IDC_ICO_MESSAGE,43,38,16,14,SS_CENTERIMAGE | SS_REALSIZEIMAGE
+    ICON            "",IDC_ICO_QUERY,43,52,16,14,SS_CENTERIMAGE | SS_REALSIZEIMAGE
+    ICON            "",IDC_ICO_PRESENCEIN,150,38,16,14,SS_CENTERIMAGE | SS_REALSIZEIMAGE
+    ICON            "",IDC_ICO_PRESENCEOUT,150,52,16,14,SS_CENTERIMAGE | SS_REALSIZEIMAGE
 END
 
 IDD_PRIVACY_ADD_LIST DIALOGEX 0, 0, 142, 54
@@ -694,6 +772,12 @@ BEGIN
         HORZGUIDE, 209
     END
 
+    IDD_OPT_JABBER, DIALOG
+    BEGIN
+        VERTGUIDE, 291
+        HORZGUIDE, 185
+    END
+
     IDD_OPT_JABBER2, DIALOG
     BEGIN
         LEFTMARGIN, 4
@@ -702,9 +786,85 @@ BEGIN
         VERTGUIDE, 299
     END
 
+    IDD_INFO_JABBER, DIALOG
+    BEGIN
+        VERTGUIDE, 5
+        VERTGUIDE, 216
+        HORZGUIDE, 5
+        HORZGUIDE, 146
+    END
+
+    IDD_GROUPCHAT_JOIN, DIALOG
+    BEGIN
+        VERTGUIDE, 7
+        VERTGUIDE, 27
+        VERTGUIDE, 70
+        VERTGUIDE, 75
+        VERTGUIDE, 251
+        BOTTOMMARGIN, 198
+        HORZGUIDE, 102
+        HORZGUIDE, 107
+        HORZGUIDE, 194
+    END
+
+    IDD_GROUPCHAT_INPUT, DIALOG
+    BEGIN
+        VERTGUIDE, 6
+        VERTGUIDE, 181
+        VERTGUIDE, 186
+        VERTGUIDE, 236
+        HORZGUIDE, 6
+        HORZGUIDE, 53
+        HORZGUIDE, 58
+        HORZGUIDE, 72
+    END
+
     IDD_BOOKMARKS, DIALOG
     BEGIN
         VERTGUIDE, 288
+    END
+
+    IDD_BOOKMARK_ADD, DIALOG
+    BEGIN
+        VERTGUIDE, 7
+        VERTGUIDE, 72
+        VERTGUIDE, 76
+        VERTGUIDE, 214
+    END
+
+    IDD_PRIVACY_LISTS, DIALOG
+    BEGIN
+        VERTGUIDE, 5
+        VERTGUIDE, 127
+        VERTGUIDE, 135
+        VERTGUIDE, 418
+        HORZGUIDE, 38
+        HORZGUIDE, 52
+        HORZGUIDE, 251
+        HORZGUIDE, 256
+        HORZGUIDE, 270
+        HORZGUIDE, 274
+    END
+
+    IDD_PRIVACY_RULE, DIALOG
+    BEGIN
+        LEFTMARGIN, 5
+        RIGHTMARGIN, 256
+        VERTGUIDE, 40
+        VERTGUIDE, 43
+        VERTGUIDE, 59
+        VERTGUIDE, 124
+        VERTGUIDE, 150
+        VERTGUIDE, 166
+        TOPMARGIN, 5
+        BOTTOMMARGIN, 85
+        HORZGUIDE, 17
+        HORZGUIDE, 21
+        HORZGUIDE, 33
+        HORZGUIDE, 38
+        HORZGUIDE, 52
+        HORZGUIDE, 66
+        HORZGUIDE, 71
     END
 
     IDD_SETMOODMSG, DIALOG
@@ -725,50 +885,6 @@ BEGIN
 END
 #endif    // APSTUDIO_INVOKED
 
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Icon
-//
-
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
-IDI_JABBER              ICON                    "icos\\jabber.ico"
-IDI_DISCO_PROGRESS      ICON                    "icos\\disco_in_progress.ico"
-IDI_NODE_RSS            ICON                    "icos\\rss.ico"
-IDI_NODE_SERVER         ICON                    "icos\\server.ico"
-IDI_NODE_STORE          ICON                    "icos\\store.ico"
-IDI_NODE_WEATHER        ICON                    "icos\\weather.ico"
-IDI_DISCO_OK            ICON                    "icos\\disco_ok.ico"
-IDI_DISCO_FAIL          ICON                    "icos\\disco_fail.ico"
-IDI_GROUP               ICON                    "icos\\group.ico"
-IDI_KEYS                ICON                    "icos\\key.ico"
-IDI_ADDCONTACT          ICON                    "icos\\addcontact.ico"
-IDI_ADDROSTER           ICON                    "icos\\add2roster.ico"
-IDI_AGENTS              ICON                    "icos\\roster.ico"
-IDI_VCARD               ICON                    "icos\\pages.ico"
-IDI_DELETE              ICON                    "icos\\delete.ico"
-IDI_EDIT                ICON                    "icos\\rename.ico"
-IDI_GRANT               ICON                    "icos\\grant.ico"
-IDI_OPEN                ICON                    "icos\\open.ico"
-IDI_REQUEST             ICON                    "icos\\request.ico"
-IDI_USER2ROOM           ICON                    "icos\\user2room.ico"
-IDI_SAVE                ICON                    "icos\\save.ico"
-IDI_LOGIN               ICON                    "icos\\login.ico"
-IDI_AUTHREVOKE          ICON                    "icos\\auth_revoke.ico"
-IDI_REFRESH             ICON                    "icos\\refresh.ico"
-IDI_COMMAND             ICON                    "icos\\command.ico"
-IDI_BOOKMARKS           ICON                    "icos\\bookmarks.ico"
-IDI_PRIVACY_LISTS       ICON                    "icos\\privacy_lists.ico"
-IDI_SERVICE_DISCOVERY   ICON                    "icos\\service_discovery.ico"
-IDI_VIEW_LIST           ICON                    "icos\\view_as_list.ico"
-IDI_VIEW_TREE           ICON                    "icos\\view_as_tree.ico"
-IDI_FILTER_APPLY        ICON                    "icos\\filter.ico"
-IDI_BROWSE              ICON                    "icos\\go.ico"
-IDI_NAV_HOME            ICON                    "icos\\home.ico"
-IDI_NAV_REFRESH         ICON                    "icos\\refresh_node.ico"
-IDI_FILTER_RESET        ICON                    "icos\\reset_filter.ico"
-IDI_CONSOLE             ICON                    "icos\\console.ico"
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -809,7 +925,5 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
-
-
 
 

@@ -273,7 +273,8 @@ void JabberFormLayoutSingleControl(TJabberFormControlInfo *item, TJabberFormLayo
 		SetRect(&rcCtrl, 0, 0, layout_info->width, 0);
 		HDC hdc = GetDC( item->hCtrl );
 		HFONT hfntSave = (HFONT)SelectObject(hdc, (HFONT)SendMessage(item->hCtrl, WM_GETFONT, 0, 0));
-		DrawText( hdc, valueStr, -1, &rcCtrl, DT_CALCRECT|DT_EDITCONTROL|DT_WORDBREAK );
+		DrawText( hdc, valueStr, -1, &rcCtrl, DT_CALCRECT|DT_EDITCONTROL );
+		rcCtrl.right += 20;
 		SelectObject(hdc, hfntSave);
 		ReleaseDC(item->hCtrl, hdc);
 	} else
@@ -374,7 +375,7 @@ TJabberFormControlInfo *JabberFormAppendControl(HWND hwndStatic, TJabberFormLayo
 		case JFORM_CTYPE_FIXED:
 		{
 			item->hCtrl = CreateWindow( _T("edit"), valueStr,
-				WS_CHILD|WS_VISIBLE|ES_MULTILINE|ES_READONLY,
+				WS_CHILD|WS_VISIBLE|ES_MULTILINE|ES_READONLY|ES_AUTOHSCROLL,
 				0, 0, 0, 0,
 				hwndStatic, ( HMENU ) IDC_STATIC, hInst, NULL );
 			break;
@@ -769,6 +770,17 @@ static BOOL CALLBACK JabberFormDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, L
 		{
 			return NULL;
 		}
+	case WM_MOUSEWHEEL:
+		{
+			int zDelta = GET_WHEEL_DELTA_WPARAM( wParam );
+			if ( zDelta ) {
+				int nScrollLines=0;
+				SystemParametersInfo( SPI_GETWHEELSCROLLLINES, 0, (void*)&nScrollLines, 0 );
+				for (int i = 0; i < ( nScrollLines + 1 ) / 2; i++ )
+					SendMessage( hwndDlg, WM_VSCROLL, ( zDelta < 0 ) ? SB_LINEDOWN : SB_LINEUP, 0 );
+			}
+		}
+		break;
 	case WM_VSCROLL:
 		{
 			int pos;
@@ -778,10 +790,10 @@ static BOOL CALLBACK JabberFormDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, L
 				pos = jfi->curPos;
 				switch ( LOWORD( wParam )) {
 				case SB_LINEDOWN:
-					pos += 10;
+					pos += 15;
 					break;
 				case SB_LINEUP:
-					pos -= 10;
+					pos -= 15;
 					break;
 				case SB_PAGEDOWN:
 					pos += ( jfi->frameHeight - 10 );
@@ -815,6 +827,7 @@ static BOOL CALLBACK JabberFormDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, L
 			}
 			// fall through
 		case IDCANCEL:
+		case IDCLOSE:
 			DestroyWindow( hwndDlg );
 			return TRUE;
 		}

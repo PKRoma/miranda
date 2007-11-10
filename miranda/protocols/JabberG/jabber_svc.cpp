@@ -37,6 +37,9 @@ Last change by : $Author$
 #include "jabber_list.h"
 #include "jabber_iq.h"
 #include "jabber_caps.h"
+#include "m_file.h"
+#include "m_addcontact.h"
+#include "jabber_disco.h"
 #include "sdk/m_proto_listeningto.h"
 
 extern LIST<void> arServices;
@@ -44,7 +47,7 @@ extern LIST<void> arServices;
 ////////////////////////////////////////////////////////////////////////////////////////
 // JabberAddToList - adds a contact to the contact list
 
-static HANDLE AddToListByJID( const TCHAR* newJid, DWORD flags )
+HANDLE AddToListByJID( const TCHAR* newJid, DWORD flags )
 {
 	HANDLE hContact;
 	TCHAR* jid, *nick;
@@ -308,7 +311,7 @@ int JabberContactDeleted( WPARAM wParam, LPARAM lParam )
 		if ( JabberListExist( LIST_ROSTER, dbv.ptszVal )) {
 			// Remove from roster, server also handles the presence unsubscription process.
 			XmlNodeIq iq( "set" ); iq.addAttrID( JabberSerialNext());
-			XmlNode* query = iq.addQuery( "jabber:iq:roster" );
+			XmlNode* query = iq.addQuery( JABBER_FEAT_IQ_ROSTER );
 			XmlNode* item = query->addChild( "item" ); item->addAttr( "jid", dbv.ptszVal ); item->addAttr( "subscription", "remove" );
 			jabberThreadInfo->send( iq );
 		}
@@ -994,7 +997,11 @@ int JabberSearchByName( WPARAM wParam, LPARAM lParam )
 	if ( bIsExtFormat ) {
 		JabberIqAdd( iqId, IQ_PROC_GETSEARCH, JabberIqResultExtSearch );
 
-		iq.addAttr( "xml:lang", "en" );
+		TCHAR *szXmlLang = JabberGetXmlLang();
+		if ( szXmlLang ) {
+			iq.addAttr( "xml:lang", szXmlLang );
+			mir_free( szXmlLang );
+		}
 		x = query->addChild( "x" ); x->addAttr( "xmlns", JABBER_FEAT_DATA_FORMS ); x->addAttr( "type", "submit" );
 	}
 	else JabberIqAdd( iqId, IQ_PROC_GETSEARCH, JabberIqResultSetSearch );
@@ -1212,16 +1219,21 @@ int JabberSendMessage( WPARAM wParam, LPARAM lParam )
 		if ( jcb & JABBER_CAPS_CHATSTATES )
 			m.addChild( "active" )->addAttr( "xmlns", _T(JABBER_FEAT_CHATSTATES));
 
-		if ( ( jcb & JABBER_CAPS_MESSAGE_EVENTS_NO_DELIVERY ) || !( jcb & JABBER_CAPS_MESSAGE_EVENTS ) || !strcmp( msgType, "groupchat" ) || !JGetByte( "MsgAck", FALSE ) || !JGetByte( ccs->hContact, "MsgAck", TRUE )) {
+		if (
+			// if message delivery check disabled by entity caps manager
+			( jcb & JABBER_CAPS_MESSAGE_EVENTS_NO_DELIVERY ) ||
+			// if client knows nothing about delivery
+			!( jcb & ( JABBER_CAPS_MESSAGE_EVENTS | JABBER_CAPS_MESSAGE_RECEIPTS )) ||
+			// if message sent to groupchat
+			!strcmp( msgType, "groupchat" ) ||
+			// if message delivery check disabled in settings
+			!JGetByte( "MsgAck", FALSE ) || !JGetByte( ccs->hContact, "MsgAck", TRUE )) {
 			if ( !strcmp( msgType, "groupchat" ))
 				m.addAttr( "to", dbv.ptszVal );
 			else {
 				id = JabberSerialNext();
-
 				m.addAttr( "to", szClientJid ); m.addAttrID( id );
-				if ( jcb & JABBER_CAPS_MESSAGE_EVENTS ) {
-					XmlNode* x = m.addChild( "x" ); x->addAttr( "xmlns", JABBER_FEAT_MESSAGE_EVENTS ); x->addChild( "composing" );
-			}	}
+			}
 
 			jabberThreadInfo->send( m );
 			mir_forkthread( JabberSendMessageAckThread, ccs->hContact );
@@ -1231,8 +1243,19 @@ int JabberSendMessage( WPARAM wParam, LPARAM lParam )
 			id = JabberSerialNext();
 			m.addAttr( "to", szClientJid ); m.addAttrID( id );
 
-			XmlNode* x = m.addChild( "x" ); x->addAttr( "xmlns", JABBER_FEAT_MESSAGE_EVENTS );
-			x->addChild( "composing" ); x->addChild( "delivered" ); x->addChild( "offline" );
+			// message receipts XEP priority
+			if ( jcb & JABBER_CAPS_MESSAGE_RECEIPTS ) {
+				XmlNode* receiptRequest = m.addChild( "request" );
+				receiptRequest->addAttr( "xmlns", JABBER_FEAT_MESSAGE_RECEIPTS );
+			}
+			else if ( jcb & JABBER_CAPS_MESSAGE_EVENTS ) {
+				XmlNode* x = m.addChild( "x" ); x->addAttr( "xmlns", JABBER_FEAT_MESSAGE_EVENTS );
+				x->addChild( "delivered" );
+				x->addChild( "offline" );
+			}
+			else
+				id = 1;
+
 			jabberThreadInfo->send( m );
 			nSentMsgId = id;
 	}	}
@@ -1290,46 +1313,55 @@ int JabberSetApparentMode( WPARAM wParam, LPARAM lParam )
 static int JabberSetAvatar( WPARAM wParam, LPARAM lParam )
 {
 	char* szFileName = ( char* )lParam;
-	int fileIn = open( szFileName, O_RDWR | O_BINARY, S_IREAD | S_IWRITE );
-	if ( fileIn == -1 )
-		return 1;
-
-	long  dwPngSize = filelength( fileIn );
-	char* pResult = new char[ dwPngSize ];
-	if ( pResult == NULL ) {
-		close( fileIn );
-		return 2;
-	}
-
-	read( fileIn, pResult, dwPngSize );
-	close( fileIn );
-
-	mir_sha1_byte_t digest[MIR_SHA1_HASH_SIZE];
-	mir_sha1_ctx sha1ctx;
-	mir_sha1_init( &sha1ctx );
-	mir_sha1_append( &sha1ctx, (mir_sha1_byte_t*)pResult, dwPngSize );
-	mir_sha1_finish( &sha1ctx, digest );
-
-	char tFileName[ MAX_PATH ];
-	JabberGetAvatarFileName( NULL, tFileName, MAX_PATH );
-	DeleteFileA( tFileName );
-
-	char buf[MIR_SHA1_HASH_SIZE*2+1];
-	for ( int i=0; i<MIR_SHA1_HASH_SIZE; i++ )
-		sprintf( buf+( i<<1 ), "%02x", digest[i] );
-	JSetString( NULL, "AvatarHash", buf );
-	JSetByte( "AvatarType", JabberGetPictureType( pResult ));
-
-	JabberGetAvatarFileName( NULL, tFileName, MAX_PATH );
-	FILE* out = fopen( tFileName, "wb" );
-	if ( out != NULL ) {
-		fwrite( pResult, dwPngSize, 1, out );
-		fclose( out );
-	}
-	delete pResult;
 
 	if ( jabberConnected )
+	{	
+		JabberUpdateVCardPhoto( szFileName );
 		JabberSendPresence( jabberDesiredStatus, false );
+	}
+	else 
+	{
+		// FIXME OLD CODE: If avatar was changed during Jabber was offline. It should be store and send new vcard on online.
+
+		int fileIn = open( szFileName, O_RDWR | O_BINARY, S_IREAD | S_IWRITE );
+		if ( fileIn == -1 )
+			return 1;
+
+		long  dwPngSize = filelength( fileIn );
+		char* pResult = new char[ dwPngSize ];
+		if ( pResult == NULL ) {
+			close( fileIn );
+			return 2;
+		}
+
+		read( fileIn, pResult, dwPngSize );
+		close( fileIn );
+
+		mir_sha1_byte_t digest[MIR_SHA1_HASH_SIZE];
+		mir_sha1_ctx sha1ctx;
+		mir_sha1_init( &sha1ctx );
+		mir_sha1_append( &sha1ctx, (mir_sha1_byte_t*)pResult, dwPngSize );
+		mir_sha1_finish( &sha1ctx, digest );
+
+		char tFileName[ MAX_PATH ];
+		JabberGetAvatarFileName( NULL, tFileName, MAX_PATH );
+		DeleteFileA( tFileName );
+
+		char buf[MIR_SHA1_HASH_SIZE*2+1];
+		for ( int i=0; i<MIR_SHA1_HASH_SIZE; i++ )
+			sprintf( buf+( i<<1 ), "%02x", digest[i] );
+
+		JSetByte( "AvatarType", JabberGetPictureType( pResult ));
+		JSetString( NULL, "AvatarSaved", buf );
+
+		JabberGetAvatarFileName( NULL, tFileName, MAX_PATH );
+		FILE* out = fopen( tFileName, "wb" );
+		if ( out != NULL ) {
+			fwrite( pResult, dwPngSize, 1, out );
+			fclose( out );
+		}
+		delete pResult;
+	}
 
 	return 0;
 }
@@ -1354,6 +1386,7 @@ int JabberSetAwayMsg( WPARAM wParam, LPARAM lParam )
 	case ID_STATUS_ONTHEPHONE:
 	case ID_STATUS_OUTTOLUNCH:
 		szMsg = &modeMsgs.szAway;
+		desiredStatus = ID_STATUS_AWAY;
 		break;
 	case ID_STATUS_NA:
 		szMsg = &modeMsgs.szNa;
@@ -1361,6 +1394,7 @@ int JabberSetAwayMsg( WPARAM wParam, LPARAM lParam )
 	case ID_STATUS_DND:
 	case ID_STATUS_OCCUPIED:
 		szMsg = &modeMsgs.szDnd;
+		desiredStatus = ID_STATUS_DND;
 		break;
 	case ID_STATUS_FREECHAT:
 		szMsg = &modeMsgs.szFreechat;
@@ -1404,8 +1438,10 @@ int JabberSetStatus( WPARAM wParam, LPARAM lParam )
 			jabberThreadInfo->send( "</stream:stream>" );
 			jabberThreadInfo->close();
 			jabberThreadInfo = NULL;
-			if ( jabberConnected )
+			if ( jabberConnected ) {
 				jabberConnected = jabberOnline = FALSE;
+				JabberUtilsRebuildStatusMenu();
+			}
 		}
 
 		int oldStatus = jabberStatus;
@@ -1586,6 +1622,124 @@ int JabberGCGetToolTipText(WPARAM wParam, LPARAM lParam)
 	return (int) mir_tstrdup( outBuf );
 }
 
+// File Association Manager plugin support
+static int JabberServiceParseXmppURI( WPARAM wParam, LPARAM lParam )
+{
+	UNREFERENCED_PARAMETER( wParam );
+
+	TCHAR *arg = ( TCHAR * )lParam;
+	if ( arg == NULL )
+		return 1;
+
+	TCHAR szUri[ 1024 ];
+	mir_sntprintf( szUri, SIZEOF(szUri), _T("%s"), arg );
+
+	TCHAR *szJid = szUri;
+
+	// skip leading prefix
+	szJid = _tcschr( szJid, _T( ':' ));
+	if ( szJid == NULL )
+		return 1;
+
+	// skip //
+	for( ++szJid; *szJid == _T( '/' ); ++szJid );
+
+	// empty jid?
+	if ( !*szJid )
+		return 1;
+
+	// command code
+	TCHAR *szCommand = szJid;
+	szCommand = _tcschr( szCommand, _T( '?' ));
+	if ( szCommand ) 
+		*( szCommand++ ) = 0;
+
+	// parameters
+	TCHAR *szSecondParam = szCommand ? _tcschr( szCommand, _T( ';' )) : NULL;
+	if ( szSecondParam )
+		*( szSecondParam++ ) = 0;
+
+//	TCHAR *szThirdParam = szSecondParam ? _tcschr( szSecondParam, _T( ';' )) : NULL;
+//	if ( szThirdParam )
+//		*( szThirdParam++ ) = 0;
+
+	// no command or message command
+	if ( !szCommand || ( szCommand && !_tcsicmp( szCommand, _T( "message" )))) {
+		// message
+		if ( ServiceExists( MS_MSG_SENDMESSAGE )) {
+			HANDLE hContact = JabberHContactFromJID( szJid, TRUE );
+			if ( !hContact )
+				hContact = JabberDBCreateContact( szJid, szJid, TRUE, TRUE );
+			if ( !hContact )
+				return 1;
+			CallService( MS_MSG_SENDMESSAGE, (WPARAM)hContact, (LPARAM)NULL );
+			return 0;
+		}
+		return 1;
+	}
+	else if ( !_tcsicmp( szCommand, _T( "roster" )))
+	{
+		if ( !JabberHContactFromJID( szJid )) {
+			JABBER_SEARCH_RESULT jsr = { 0 };
+			jsr.hdr.cbSize = sizeof( JABBER_SEARCH_RESULT );
+			jsr.hdr.nick = mir_t2a( szJid );
+			_tcsncpy( jsr.jid, szJid, SIZEOF(jsr.jid) - 1 );
+
+			ADDCONTACTSTRUCT acs;
+			acs.handleType = HANDLE_SEARCHRESULT;
+			acs.szProto = jabberProtoName;
+			acs.psr = &jsr.hdr;
+			CallService( MS_ADDCONTACT_SHOW, (WPARAM)NULL, (LPARAM)&acs );
+			mir_free( jsr.hdr.email );
+		}
+		return 0;
+	}
+	else if ( !_tcsicmp( szCommand, _T( "join" )))
+	{
+		// chat join invitation
+		JabberGroupchatJoinRoomByJid( NULL, szJid );
+		return 0;
+	}
+	else if ( !_tcsicmp( szCommand, _T( "disco" )))
+	{
+		// service discovery request
+		JabberMenuHandleServiceDiscovery( NULL, (LPARAM)szJid );
+		return 0;
+	}
+	else if ( !_tcsicmp( szCommand, _T( "command" )))
+	{
+		// ad-hoc commands
+		if ( szSecondParam ) {
+			if ( !_tcsnicmp( szSecondParam, _T( "node=" ), 5 )) {
+				szSecondParam += 5;
+				if (!*szSecondParam)
+					szSecondParam = NULL;
+			}
+			else
+				szSecondParam = NULL;
+		}
+		CJabberAdhocStartupParams* pStartupParams = new CJabberAdhocStartupParams( szJid, szSecondParam );
+		JabberContactMenuRunCommands( 0, ( LPARAM )pStartupParams );
+		return 0;
+	}
+	else if ( !_tcsicmp( szCommand, _T( "sendfile" )))
+	{
+		// send file
+		if ( ServiceExists( MS_FILE_SENDFILE )) {
+			HANDLE hContact = JabberHContactFromJID( szJid, TRUE );
+			if ( !hContact )
+				hContact = JabberDBCreateContact( szJid, szJid, TRUE, TRUE );
+			if ( !hContact )
+				return 1;
+			CallService( MS_FILE_SENDFILE, ( WPARAM )hContact, ( LPARAM )NULL );
+			return 0;
+		}
+		return 1;
+	}
+
+	return 1; /* parse failed */
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // Service initialization code
 
@@ -1641,6 +1795,9 @@ int JabberSvcInit( void )
 
 	// service to get from protocol chat buddy info
 	arServices.insert( JCreateServiceFunction( MS_GC_PROTO_GETTOOLTIPTEXT, JabberGCGetToolTipText ));
+
+	// XMPP URI parser service for "File Association Manager" plugin
+	arServices.insert( JCreateServiceFunction( JS_PARSE_XMPP_URI, JabberServiceParseXmppURI ));
 
 	return 0;
 }

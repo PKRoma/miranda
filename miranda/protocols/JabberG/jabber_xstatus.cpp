@@ -50,45 +50,86 @@ static int jabberXStatus = 0;
 
 static BOOL   bXStatusMenuBuilt = FALSE;
 static HANDLE hCListXStatusIcons[ NUM_XMODES ] = {0};
-static HANDLE hXStatusItems[ NUM_XMODES+1 ];
 
-const char* arXStatusNames[ NUM_XMODES ] = {
-	LPGEN("Afraid"),      LPGEN("Amazed"),      LPGEN("Angry"),     LPGEN("Annoyed"),     LPGEN("Anxious"),      LPGEN("Aroused"),
-	LPGEN("Ashamed"),     LPGEN("Bored"),       LPGEN("Brave"),     LPGEN("Calm"),        LPGEN("Cold"),         LPGEN("Confused"),
-	LPGEN("Contented"),   LPGEN("Cranky"),      LPGEN("Curious"),   LPGEN("Depressed"),   LPGEN("Disappointed"), LPGEN("Disgusted"),
-	LPGEN("Distracted"),  LPGEN("Embarrassed"), LPGEN("Excited"),   LPGEN("Flirtatious"), LPGEN("Frustrated"),   LPGEN("Grumpy"),
-	LPGEN("Guilty"),      LPGEN("Happy"),       LPGEN("Hot"),       LPGEN("Humbled"),     LPGEN("Humiliated"),   LPGEN("Hungry"),
-	LPGEN("Hurt"),        LPGEN("Impressed"),   LPGEN("In awe"),    LPGEN("In love"),     LPGEN("Indignant"),    LPGEN("Interested"),
-	LPGEN("Intoxicated"), LPGEN("Invincible"),  LPGEN("Jealous"),   LPGEN("Lonely"),      LPGEN("Mean"),         LPGEN("Moody"),
-	LPGEN("Nervous"),     LPGEN("Neutral"),     LPGEN("Offended"),  LPGEN("Playful"),     LPGEN("Proud"),        LPGEN("Relieved"),
-	LPGEN("Remorseful"),  LPGEN("Restless"),    LPGEN("Sad"),       LPGEN("Sarcastic"),   LPGEN("Serious"),      LPGEN("Shocked"),
-	LPGEN("Shy"),         LPGEN("Sick"),        LPGEN("Sleepy"),    LPGEN("Stressed"),    LPGEN("Surprised"),    LPGEN("Thirsty"),
-	LPGEN("Worried")
-};
-
+struct
+{
+	char	*szName;
+	char	*szTag;
+	HANDLE	hItem;
+	HANDLE	hIcon;
+} static g_arrMoods[] = 
+{
 #define _T_STUB_
-const char* arXStatusTags[ NUM_XMODES ] = {
-	_T_STUB_("afraid"),      _T_STUB_("amazed"),      _T_STUB_("angry"),     _T_STUB_("annoyed"),     _T_STUB_("anxious"),      _T_STUB_("aroused"),
-	_T_STUB_("ashamed"),     _T_STUB_("bored"),       _T_STUB_("brave"),     _T_STUB_("calm"),        _T_STUB_("cold"),         _T_STUB_("confused"),
-	_T_STUB_("contented"),   _T_STUB_("cranky"),      _T_STUB_("curious"),   _T_STUB_("depressed"),   _T_STUB_("disappointed"), _T_STUB_("disgusted"),
-	_T_STUB_("distracted"),  _T_STUB_("embarrassed"), _T_STUB_("excited"),   _T_STUB_("flirtatious"), _T_STUB_("frustrated"),   _T_STUB_("grumpy"),
-	_T_STUB_("guilty"),      _T_STUB_("happy"),       _T_STUB_("hot"),       _T_STUB_("humbled"),     _T_STUB_("humiliated"),   _T_STUB_("hungry"),
-	_T_STUB_("hurt"),        _T_STUB_("impressed"),   _T_STUB_("in_awe"),    _T_STUB_("in_love"),     _T_STUB_("indignant"),    _T_STUB_("interested"),
-	_T_STUB_("intoxicated"), _T_STUB_("invincible"),  _T_STUB_("jealous"),   _T_STUB_("lonely"),      _T_STUB_("mean"),         _T_STUB_("moody"),
-	_T_STUB_("nervous"),     _T_STUB_("neutral"),     _T_STUB_("offended"),  _T_STUB_("playful"),     _T_STUB_("proud"),        _T_STUB_("relieved"),
-	_T_STUB_("remorseful"),  _T_STUB_("restless"),    _T_STUB_("sad"),       _T_STUB_("sarcastic"),   _T_STUB_("serious"),      _T_STUB_("shocked"),
-	_T_STUB_("shy"),         _T_STUB_("sick"),        _T_STUB_("sleepy"),    _T_STUB_("stressed"),    _T_STUB_("surprised"),    _T_STUB_("thirsty"),
-	_T_STUB_("worried")
-};
+	{ LPGEN("None"),			NULL					},
+	{ LPGEN("Afraid"),			_T_STUB_("afraid")		},
+	{ LPGEN("Amazed"),			_T_STUB_("amazed")		},
+	{ LPGEN("Angry"),			_T_STUB_("angry")		},
+	{ LPGEN("Annoyed"),			_T_STUB_("annoyed")		},
+	{ LPGEN("Anxious"),			_T_STUB_("anxious")		},
+	{ LPGEN("Aroused"),			_T_STUB_("aroused")		},
+	{ LPGEN("Ashamed"),			_T_STUB_("ashamed")		},
+	{ LPGEN("Bored"),			_T_STUB_("bored")		},
+	{ LPGEN("Brave"),			_T_STUB_("brave")		},
+	{ LPGEN("Calm"),			_T_STUB_("calm")		},
+	{ LPGEN("Cold"),			_T_STUB_("cold")		},
+	{ LPGEN("Confused"),		_T_STUB_("confused")	},
+	{ LPGEN("Contented"),		_T_STUB_("contented")	},
+	{ LPGEN("Cranky"),			_T_STUB_("cranky")		},
+	{ LPGEN("Curious"),			_T_STUB_("curious")		},
+	{ LPGEN("Depressed"),		_T_STUB_("depressed")	},
+	{ LPGEN("Disappointed"),	_T_STUB_("disappointed")},
+	{ LPGEN("Disgusted"),		_T_STUB_("disgusted")	},
+	{ LPGEN("Distracted"),		_T_STUB_("distracted")	},
+	{ LPGEN("Embarrassed"),		_T_STUB_("embarrassed")	},
+	{ LPGEN("Excited"),			_T_STUB_("excited")		},
+	{ LPGEN("Flirtatious"),		_T_STUB_("flirtatious")	},
+	{ LPGEN("Frustrated"),		_T_STUB_("frustrated")	},
+	{ LPGEN("Grumpy"),			_T_STUB_("grumpy")		},
+	{ LPGEN("Guilty"),			_T_STUB_("guilty")		},
+	{ LPGEN("Happy"),			_T_STUB_("happy")		},
+	{ LPGEN("Hot"),				_T_STUB_("hot")			},
+	{ LPGEN("Humbled"),			_T_STUB_("humbled")		},
+	{ LPGEN("Humiliated"),		_T_STUB_("humiliated")	},
+	{ LPGEN("Hungry"),			_T_STUB_("hungry")		},
+	{ LPGEN("Hurt"),			_T_STUB_("hurt")		},
+	{ LPGEN("Impressed"),		_T_STUB_("impressed")	},
+	{ LPGEN("In awe"),			_T_STUB_("in_awe")		},
+	{ LPGEN("In love"),			_T_STUB_("in_love")		},
+	{ LPGEN("Indignant"),		_T_STUB_("indignant")	},
+	{ LPGEN("Interested"),		_T_STUB_("interested")	},
+	{ LPGEN("Intoxicated"),		_T_STUB_("intoxicated")	},
+	{ LPGEN("Invincible"),		_T_STUB_("invincible")	},
+	{ LPGEN("Jealous"),			_T_STUB_("jealous")		},
+	{ LPGEN("Lonely"),			_T_STUB_("lonely")		},
+	{ LPGEN("Mean"),			_T_STUB_("mean")		},
+	{ LPGEN("Moody"),			_T_STUB_("moody")		},
+	{ LPGEN("Nervous"),			_T_STUB_("nervous")		},
+	{ LPGEN("Neutral"),			_T_STUB_("neutral")		},
+	{ LPGEN("Offended"),		_T_STUB_("offended")	},
+	{ LPGEN("Playful"),			_T_STUB_("playful")		},
+	{ LPGEN("Proud"),			_T_STUB_("proud")		},
+	{ LPGEN("Relieved"),		_T_STUB_("relieved")	},
+	{ LPGEN("Remorseful"),		_T_STUB_("remorseful")	},
+	{ LPGEN("Restless"),		_T_STUB_("restless")	},
+	{ LPGEN("Sad"),				_T_STUB_("sad")			},
+	{ LPGEN("Sarcastic"),		_T_STUB_("sarcastic")	},
+	{ LPGEN("Serious"),			_T_STUB_("serious")		},
+	{ LPGEN("Shocked"),			_T_STUB_("shocked")		},
+	{ LPGEN("Shy"),				_T_STUB_("shy")			},
+	{ LPGEN("Sick"),			_T_STUB_("sick")		},
+	{ LPGEN("Sleepy"),			_T_STUB_("sleepy")		},
+	{ LPGEN("Stressed"),		_T_STUB_("stressed")	},
+	{ LPGEN("Surprised"),		_T_STUB_("surprised")	},
+	{ LPGEN("Thirsty"),			_T_STUB_("thirsty")		},
+	{ LPGEN("Worried"),			_T_STUB_("worried")		},
 #undef _T_STUB_
-
-static HANDLE arXStatusIcons[ NUM_XMODES ];
+};
 
 HICON GetXStatusIcon(int bStatus, UINT flags)
 {
 	HICON icon;
 
-	icon = (HICON)CallService( MS_SKIN2_GETICONBYHANDLE, 0, (LPARAM)arXStatusIcons[ bStatus - 1 ]);
+	icon = (HICON)CallService( MS_SKIN2_GETICONBYHANDLE, 0, (LPARAM)g_arrMoods[ bStatus ].hIcon);
 
 	if (flags & LR_SHARED)
 		return icon;
@@ -158,9 +199,9 @@ void JabberSetContactMood( HANDLE hContact, const char* moodType, const TCHAR* m
 	int bXStatus = 0;
 	if ( moodType ) {
 		for ( bXStatus=1; bXStatus <= NUM_XMODES; bXStatus++ ) {
-			if ( !strcmp( moodType, arXStatusTags[bXStatus - 1] )) {
+			if ( !strcmp( moodType, g_arrMoods[bXStatus].szTag )) {
 				JSetByte( hContact, DBSETTING_XSTATUSID, bXStatus );
-				JSetString( hContact, DBSETTING_XSTATUSNAME, arXStatusNames[bXStatus - 1] );
+				JSetString( hContact, DBSETTING_XSTATUSNAME, g_arrMoods[bXStatus].szName );
 				break;
 		}	}
 
@@ -244,7 +285,7 @@ BOOL JabberSendPepMood( int nMoodNumber, TCHAR* szMoodText )
 		itemNode->addAttr( "id", "current" );
 		XmlNode* moodNode = itemNode->addChild( "mood" );
 		moodNode->addAttr( "xmlns", JABBER_FEAT_USER_MOOD );
-		moodNode->addChild( arXStatusTags[ nMoodNumber - 1 ]);
+		moodNode->addChild( g_arrMoods[ nMoodNumber ].szTag );
 		if ( szMoodText )
 			moodNode->addChild( "text", szMoodText );
 	}
@@ -440,7 +481,7 @@ static int menuSetXStatus( WPARAM wParam, LPARAM lParam, LPARAM param )
 
 int CListMW_BuildStatusItems( WPARAM wParam, LPARAM lParam )
 {
-	if ( !jabberPepSupported )
+	if ( !jabberOnline || !jabberPepSupported )
 		return 0;
 
 	CLISTMENUITEM mi = { 0 };
@@ -465,16 +506,19 @@ int CListMW_BuildStatusItems( WPARAM wParam, LPARAM lParam )
 		if ( i ) {
 			char szIcon[ MAX_PATH ];
 			mir_snprintf( szIcon, sizeof( szIcon ), "xicon%d", i );
-			mi.icolibItem = arXStatusIcons[ i-1 ];
-			mi.pszName = ( char* )arXStatusNames[ i-1 ];
+			mi.icolibItem = g_arrMoods[ i ].hIcon;
+			mi.pszName = ( char* )g_arrMoods[ i ].szName;
 		}
-		else mi.pszName = "None";
+		else {
+			mi.pszName = "None";
+			mi.icolibItem = LoadSkinnedIconHandle(SKINICON_OTHER_SMALLDOT);
+		}
 
 		mi.position++;
 		mi.pszPopupName = ( char* )hRoot;
 		mi.flags = CMIF_ICONFROMICOLIB + (( jabberXStatus == i ) ? CMIF_CHECKED : 0 );
 		mi.pszService = srvFce;
-		hXStatusItems[ i ] = ( HANDLE )CallService( MS_CLIST_ADDSTATUSMENUITEM, ( WPARAM )&hXStatusRoot, ( LPARAM )&mi );
+		g_arrMoods[ i ].hItem = ( HANDLE )CallService( MS_CLIST_ADDSTATUSMENUITEM, ( WPARAM )&hXStatusRoot, ( LPARAM )&mi );
 	}
 
 	bXStatusMenuBuilt = 1;
@@ -498,13 +542,13 @@ void InitXStatusIcons()
 	sid.cx = sid.cy = 16;
 	sid.pszSection = szSection;
 
-	for ( int i = 0; i < SIZEOF(arXStatusNames); i++ ) {
+	for ( int i = 1; i < SIZEOF(g_arrMoods); i++ ) {
 			char szSettingName[100];
-			mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", jabberProtoName, arXStatusNames[i] );
+			mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", jabberProtoName, g_arrMoods[i].szName );
 			sid.pszName = szSettingName;
-			sid.pszDescription = Translate( arXStatusNames[i] );
-			sid.iDefaultIndex = -( i+201 );
-			arXStatusIcons[ i ] = ( HANDLE )CallService( MS_SKIN2_ADDICON, 0, ( LPARAM )&sid );
+			sid.pszDescription = Translate( g_arrMoods[i].szName );
+			sid.iDefaultIndex = -( i+200 );
+			g_arrMoods[ i ].hIcon = ( HANDLE )CallService( MS_SKIN2_ADDICON, 0, ( LPARAM )&sid );
 	}
 }
 
@@ -594,7 +638,7 @@ static BOOL CALLBACK SetMoodMsgDlgProc( HWND hwndDlg, UINT message, WPARAM wPara
 
 			TCHAR str[256], format[128];
 			GetWindowText( hwndDlg, format, SIZEOF( format ));
-			TCHAR* szMood = mir_a2t( Translate(arXStatusNames[ lParam - 1 ]));
+			TCHAR* szMood = mir_a2t( Translate(g_arrMoods[ lParam ].szName));
 			mir_sntprintf( str, SIZEOF(str), format, szMood );
 			mir_free( szMood );
 			SetWindowText( hwndDlg, str );
@@ -609,7 +653,7 @@ static BOOL CALLBACK SetMoodMsgDlgProc( HWND hwndDlg, UINT message, WPARAM wPara
 				JFreeVariant( &dbv );
 			}
 			else
-				SetDlgItemTextA( hwndDlg, IDC_MSG_MOOD, arXStatusNames[ lParam - 1 ] );
+				SetDlgItemTextA( hwndDlg, IDC_MSG_MOOD, g_arrMoods[ lParam ].szName );
 
 			gnCountdown = 5;
 			SendMessage( hwndDlg, WM_TIMER, 0, 0 );
@@ -661,7 +705,7 @@ static BOOL CALLBACK SetMoodMsgDlgProc( HWND hwndDlg, UINT message, WPARAM wPara
 
 			JSetByte( NULL, DBSETTING_XSTATUSID, nStatus );
 			JSetStringT( NULL, DBSETTING_XSTATUSMSG, szMoodText );
-			JSetString( NULL, DBSETTING_XSTATUSNAME, arXStatusNames[ nStatus - 1 ] );
+			JSetString( NULL, DBSETTING_XSTATUSNAME, g_arrMoods[ nStatus ].szName );
 
 			char szSetting[64];
 			sprintf(szSetting, "XStatus%dMsg", nStatus);

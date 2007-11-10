@@ -2,6 +2,7 @@
 // Microsoft Visual C++ generated include file.
 // Used by jabber.rc
 //
+#define IDC_STATIC                      -1
 #define IDCANCEL2                       3
 #define IDD_OPT_JABBER                  101
 #define IDI_JABBER                      102
@@ -70,7 +71,24 @@
 #define IDI_NODE_WEATHER                203
 #define IDD_CONSOLE                     205
 #define IDI_CONSOLE                     207
+#define IDD_INFOBOX                     208
+#define IDI_PL_MSG_ALLOW                209
+#define IDI_PL_MSG_DENY                 210
+#define IDI_PL_PRIN_ALLOW               211
+#define IDI_PL_PRIN_DENY                212
+#define IDI_PL_PROUT_ALLOW              213
+#define IDI_ICON9                       214
+#define IDI_PL_PROUT_DENY               214
+#define IDI_PL_QUERY_ALLOW              215
 #define IDD_SETMOODMSG                  216
+#define IDI_PL_QUERY_DENY               216
+#define IDI_PL_LIST_ACTIVE              217
+#define IDI_PL_LIST_ANY                 218
+#define IDI_ICON1                       219
+#define IDI_PL_LIST_DEFAULT             219
+#define IDI_ARROW_DOWN                  220
+#define IDI_ICON4                       221
+#define IDI_ARROW_UP                    221
 #define IDC_EDIT_USERNAME               1000
 #define IDC_SAVE                        1000
 #define IDC_EDIT_PASSWORD               1001
@@ -196,6 +214,7 @@
 #define IDC_PROXY_MANUAL                1124
 #define IDC_SERVER                      1125
 #define IDC_BROWSE                      1126
+#define IDC_SERVER2                     1126
 #define IDC_VSCROLL                     1128
 #define IDC_NICK                        1129
 #define IDC_EDIT                        1131
@@ -223,7 +242,9 @@
 #define IDC_NEWJID                      1173
 #define IDC_ADDJID                      1174
 #define IDC_INVITE                      1175
+#define IDC_BTN_ADVANCED                1175
 #define IDC_ACCEPT                      1176
+#define IDC_BTN_SIMPLE                  1176
 #define IDC_FROM                        1177
 #define IDC_AUTOJOIN                    1178
 #define IDC_DISABLE_MAINMENU            1179
@@ -234,7 +255,9 @@
 #define IDC_VALIDATEADD                 1184
 #define IDC_UNREGISTER2                 1184
 #define IDC_ENABLE_RC                   1184
+#define IDC_ADDJID10                    1185
 #define IDC_GO                          1196
+#define IDC_HOSTNAME_AS_RESOURCE        1214
 #define IDC_RADIO1                      1215
 #define IDC_COMMANDS                    1216
 #define IDC_COMMANDS1                   1216
@@ -243,7 +266,7 @@
 #define IDC_COMBO_RESOURCE              1218
 #define IDC_PL_LIST                     1219
 #define IDC_PL_RULES_LIST               1219
-#define IDC_WHITERECT                   1221
+#define IDC_WHITERECT                   1220
 #define IDC_ADD_RULE                    1221
 #define IDC_EDIT_RULE                   1222
 #define IDC_REMOVE_RULE                 1223
@@ -272,6 +295,7 @@
 #define IDC_BUTTON1                     1245
 #define IDC_BUTTON_BROWSE               1245
 #define IDC_DOWNLOAD                    1245
+#define IDC_ACTIVATE                    1245
 #define IDC_BTN_NAVHOME                 1246
 #define IDC_UPLOAD                      1246
 #define IDC_TXT_FILTERTEXT              1247
@@ -294,10 +318,37 @@
 #define IDC_OPTTREE                     1263
 #define IDC_LIST1                       1264
 #define IDC_LV_INFO                     1264
+#define IDC_LB_LISTS                    1264
 #define IDC_TITLE1                      1265
 #define IDC_CONSOLE                     1266
 #define IDC_CONSOLEIN                   1267
 #define IDC_RESET                       1268
+#define IDC_CUSTOM1                     1270
+#define IDC_BOOKMARKS                   1270
+#define IDC_STATUSBAR                   1270
+#define IDC_SET_DEFAULT                 1272
+#define IDC_TXT_RULES                   1273
+#define IDC_TXT_LISTS                   1274
+#define IDC_TREE2                       1276
+#define IDC_TV_INFO                     1276
+#define IDC_TXT_OTHERJID                1277
+#define IDC_TXT_MESSAGE                 1278
+#define IDC_TXT_QUERY                   1279
+#define IDC_TXT_INPRESENCE              1280
+#define IDC_TXT_OUTPRESENCEOUT          1281
+#define IDC_TXT_OUTPRESENCE             1281
+#define IDC_ICO_OUTPRESENCE             1282
+#define IDC_ICO_INPRESENCE              1283
+#define IDC_ICO_QUERY                   1284
+#define IDC_ICO_MESSAGE                 1285
+#define IDC_ICO_PRESENCEIN              1286
+#define IDC_ICO_PRESENCEOUT             1287
+#define IDC_RECENT1                     1288
+#define IDC_RECENT2                     1289
+#define IDC_RECENT3                     1290
+#define IDC_RECENT4                     1291
+#define IDC_RECENT5                     1292
+#define IDC_TXT_RECENT                  1293
 #define IDC_EMAILS                      1306
 #define IDC_PHONES                      1308
 #define IDC_UPDATE                      1313
@@ -351,15 +402,14 @@
 #define IDM_INVITE                      10016
 #define IDM_BOOKMARKS                   10017
 #define IDM_VCARD                       10018
-#define IDC_STATIC                      -1
 
 // Next default values for new objects
-//
+// 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        208
+#define _APS_NEXT_RESOURCE_VALUE        222
 #define _APS_NEXT_COMMAND_VALUE         40017
-#define _APS_NEXT_CONTROL_VALUE         1270
+#define _APS_NEXT_CONTROL_VALUE         1294
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

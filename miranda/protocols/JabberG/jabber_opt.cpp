@@ -38,7 +38,6 @@ Last change by : $Author$
 #include "sdk/m_modernopt.h"
 
 extern BOOL jabberSendKeepAlive;
-extern UINT jabberCodePage;
 
 static BOOL (WINAPI *pfnEnableThemeDialogTexture)(HANDLE, DWORD) = 0;
 
@@ -50,6 +49,195 @@ static BOOL (WINAPI *pfnEnableThemeDialogTexture)(HANDLE, DWORD) = 0;
 #else
 	#define STR_FORMAT _T("%s %s@%s:%d?")
 #endif
+
+struct { TCHAR *szCode; TCHAR *szDescription; } g_LanguageCodes[] = {
+	{	_T("aa"),	_T("Afar")	},
+	{	_T("ab"),	_T("Abkhazian")	},
+	{	_T("af"),	_T("Afrikaans")	},
+	{	_T("ak"),	_T("Akan")	},
+	{	_T("sq"),	_T("Albanian")	},
+	{	_T("am"),	_T("Amharic")	},
+	{	_T("ar"),	_T("Arabic")	},
+	{	_T("an"),	_T("Aragonese")	},
+	{	_T("hy"),	_T("Armenian")	},
+	{	_T("as"),	_T("Assamese")	},
+	{	_T("av"),	_T("Avaric")	},
+	{	_T("ae"),	_T("Avestan")	},
+	{	_T("ay"),	_T("Aymara")	},
+	{	_T("az"),	_T("Azerbaijani")	},
+	{	_T("ba"),	_T("Bashkir")	},
+	{	_T("bm"),	_T("Bambara")	},
+	{	_T("eu"),	_T("Basque")	},
+	{	_T("be"),	_T("Belarusian")	},
+	{	_T("bn"),	_T("Bengali")	},
+	{	_T("bh"),	_T("Bihari")	},
+	{	_T("bi"),	_T("Bislama")	},
+	{	_T("bs"),	_T("Bosnian")	},
+	{	_T("br"),	_T("Breton")	},
+	{	_T("bg"),	_T("Bulgarian")	},
+	{	_T("my"),	_T("Burmese")	},
+	{	_T("ca"),	_T("Catalan; Valencian")	},
+	{	_T("ch"),	_T("Chamorro")	},
+	{	_T("ce"),	_T("Chechen")	},
+	{	_T("zh"),	_T("Chinese")	},
+	{	_T("cu"),	_T("Church Slavic; Old Slavonic")	},
+	{	_T("cv"),	_T("Chuvash")	},
+	{	_T("kw"),	_T("Cornish")	},
+	{	_T("co"),	_T("Corsican")	},
+	{	_T("cr"),	_T("Cree")	},
+	{	_T("cs"),	_T("Czech")	},
+	{	_T("da"),	_T("Danish")	},
+	{	_T("dv"),	_T("Divehi; Dhivehi; Maldivian")	},
+	{	_T("nl"),	_T("Dutch; Flemish")	},
+	{	_T("dz"),	_T("Dzongkha")	},
+	{	_T("en"),	_T("English")	},
+	{	_T("eo"),	_T("Esperanto")	},
+	{	_T("et"),	_T("Estonian")	},
+	{	_T("ee"),	_T("Ewe")	},
+	{	_T("fo"),	_T("Faroese")	},
+	{	_T("fj"),	_T("Fijian")	},
+	{	_T("fi"),	_T("Finnish")	},
+	{	_T("fr"),	_T("French")	},
+	{	_T("fy"),	_T("Western Frisian")	},
+	{	_T("ff"),	_T("Fulah")	},
+	{	_T("ka"),	_T("Georgian")	},
+	{	_T("de"),	_T("German")	},
+	{	_T("gd"),	_T("Gaelic; Scottish Gaelic")	},
+	{	_T("ga"),	_T("Irish")	},
+	{	_T("gl"),	_T("Galician")	},
+	{	_T("gv"),	_T("Manx")	},
+	{	_T("el"),	_T("Greek, Modern (1453-)")	},
+	{	_T("gn"),	_T("Guarani")	},
+	{	_T("gu"),	_T("Gujarati")	},
+	{	_T("ht"),	_T("Haitian; Haitian Creole")	},
+	{	_T("ha"),	_T("Hausa")	},
+	{	_T("he"),	_T("Hebrew")	},
+	{	_T("hz"),	_T("Herero")	},
+	{	_T("hi"),	_T("Hindi")	},
+	{	_T("ho"),	_T("Hiri Motu")	},
+	{	_T("hu"),	_T("Hungarian")	},
+	{	_T("ig"),	_T("Igbo")	},
+	{	_T("is"),	_T("Icelandic")	},
+	{	_T("io"),	_T("Ido")	},
+	{	_T("ii"),	_T("Sichuan Yi")	},
+	{	_T("iu"),	_T("Inuktitut")	},
+	{	_T("ie"),	_T("Interlingue")	},
+	{	_T("ia"),	_T("Interlingua (International Auxiliary Language Association)")	},
+	{	_T("id"),	_T("Indonesian")	},
+	{	_T("ik"),	_T("Inupiaq")	},
+	{	_T("it"),	_T("Italian")	},
+	{	_T("jv"),	_T("Javanese")	},
+	{	_T("ja"),	_T("Japanese")	},
+	{	_T("kl"),	_T("Kalaallisut; Greenlandic")	},
+	{	_T("kn"),	_T("Kannada")	},
+	{	_T("ks"),	_T("Kashmiri")	},
+	{	_T("kr"),	_T("Kanuri")	},
+	{	_T("kk"),	_T("Kazakh")	},
+	{	_T("km"),	_T("Central Khmer")	},
+	{	_T("ki"),	_T("Kikuyu; Gikuyu")	},
+	{	_T("rw"),	_T("Kinyarwanda")	},
+	{	_T("ky"),	_T("Kirghiz; Kyrgyz")	},
+	{	_T("kv"),	_T("Komi")	},
+	{	_T("kg"),	_T("Kongo")	},
+	{	_T("ko"),	_T("Korean")	},
+	{	_T("kj"),	_T("Kuanyama; Kwanyama")	},
+	{	_T("ku"),	_T("Kurdish")	},
+	{	_T("lo"),	_T("Lao")	},
+	{	_T("la"),	_T("Latin")	},
+	{	_T("lv"),	_T("Latvian")	},
+	{	_T("li"),	_T("Limburgan; Limburger; Limburgish")	},
+	{	_T("ln"),	_T("Lingala")	},
+	{	_T("lt"),	_T("Lithuanian")	},
+	{	_T("lb"),	_T("Luxembourgish; Letzeburgesch")	},
+	{	_T("lu"),	_T("Luba-Katanga")	},
+	{	_T("lg"),	_T("Ganda")	},
+	{	_T("mk"),	_T("Macedonian")	},
+	{	_T("mh"),	_T("Marshallese")	},
+	{	_T("ml"),	_T("Malayalam")	},
+	{	_T("mi"),	_T("Maori")	},
+	{	_T("mr"),	_T("Marathi")	},
+	{	_T("ms"),	_T("Malay")	},
+	{	_T("mg"),	_T("Malagasy")	},
+	{	_T("mt"),	_T("Maltese")	},
+	{	_T("mo"),	_T("Moldavian")	},
+	{	_T("mn"),	_T("Mongolian")	},
+	{	_T("na"),	_T("Nauru")	},
+	{	_T("nv"),	_T("Navajo; Navaho")	},
+	{	_T("nr"),	_T("Ndebele, South; South Ndebele")	},
+	{	_T("nd"),	_T("Ndebele, North; North Ndebele")	},
+	{	_T("ng"),	_T("Ndonga")	},
+	{	_T("ne"),	_T("Nepali")	},
+	{	_T("nn"),	_T("Norwegian Nynorsk; Nynorsk, Norwegian")	},
+	{	_T("nb"),	_T("BokmЕl, Norwegian; Norwegian BokmЕl")	},
+	{	_T("no"),	_T("Norwegian")	},
+	{	_T("ny"),	_T("Chichewa; Chewa; Nyanja")	},
+	{	_T("oc"),	_T("Occitan (post 1500); ProvenГal")	},
+	{	_T("oj"),	_T("Ojibwa")	},
+	{	_T("or"),	_T("Oriya")	},
+	{	_T("om"),	_T("Oromo")	},
+	{	_T("os"),	_T("Ossetian; Ossetic")	},
+	{	_T("pa"),	_T("Panjabi; Punjabi")	},
+	{	_T("fa"),	_T("Persian")	},
+	{	_T("pi"),	_T("Pali")	},
+	{	_T("pl"),	_T("Polish")	},
+	{	_T("pt"),	_T("Portuguese")	},
+	{	_T("ps"),	_T("Pushto")	},
+	{	_T("qu"),	_T("Quechua")	},
+	{	_T("rm"),	_T("Romansh")	},
+	{	_T("ro"),	_T("Romanian")	},
+	{	_T("rn"),	_T("Rundi")	},
+	{	_T("ru"),	_T("Russian")	},
+	{	_T("sg"),	_T("Sango")	},
+	{	_T("sa"),	_T("Sanskrit")	},
+	{	_T("sr"),	_T("Serbian")	},
+	{	_T("hr"),	_T("Croatian")	},
+	{	_T("si"),	_T("Sinhala; Sinhalese")	},
+	{	_T("sk"),	_T("Slovak")	},
+	{	_T("sl"),	_T("Slovenian")	},
+	{	_T("se"),	_T("Northern Sami")	},
+	{	_T("sm"),	_T("Samoan")	},
+	{	_T("sn"),	_T("Shona")	},
+	{	_T("sd"),	_T("Sindhi")	},
+	{	_T("so"),	_T("Somali")	},
+	{	_T("st"),	_T("Sotho, Southern")	},
+	{	_T("es"),	_T("Spanish; Castilian")	},
+	{	_T("sc"),	_T("Sardinian")	},
+	{	_T("ss"),	_T("Swati")	},
+	{	_T("su"),	_T("Sundanese")	},
+	{	_T("sw"),	_T("Swahili")	},
+	{	_T("sv"),	_T("Swedish")	},
+	{	_T("ty"),	_T("Tahitian")	},
+	{	_T("ta"),	_T("Tamil")	},
+	{	_T("tt"),	_T("Tatar")	},
+	{	_T("te"),	_T("Telugu")	},
+	{	_T("tg"),	_T("Tajik")	},
+	{	_T("tl"),	_T("Tagalog")	},
+	{	_T("th"),	_T("Thai")	},
+	{	_T("bo"),	_T("Tibetan")	},
+	{	_T("ti"),	_T("Tigrinya")	},
+	{	_T("to"),	_T("Tonga (Tonga Islands)")	},
+	{	_T("tn"),	_T("Tswana")	},
+	{	_T("ts"),	_T("Tsonga")	},
+	{	_T("tk"),	_T("Turkmen")	},
+	{	_T("tr"),	_T("Turkish")	},
+	{	_T("tw"),	_T("Twi")	},
+	{	_T("ug"),	_T("Uighur; Uyghur")	},
+	{	_T("uk"),	_T("Ukrainian")	},
+	{	_T("ur"),	_T("Urdu")	},
+	{	_T("uz"),	_T("Uzbek")	},
+	{	_T("ve"),	_T("Venda")	},
+	{	_T("vi"),	_T("Vietnamese")	},
+	{	_T("vo"),	_T("VolapЭk")	},
+	{	_T("cy"),	_T("Welsh")	},
+	{	_T("wa"),	_T("Walloon")	},
+	{	_T("wo"),	_T("Wolof")	},
+	{	_T("xh"),	_T("Xhosa")	},
+	{	_T("yi"),	_T("Yiddish")	},
+	{	_T("yo"),	_T("Yoruba")	},
+	{	_T("za"),	_T("Zhuang; Chuang")	},
+	{	_T("zu"),	_T("Zulu")	},
+	{	NULL,	NULL	}
+};
 
 static BOOL CALLBACK JabberRegisterDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
@@ -111,42 +299,6 @@ static BOOL CALLBACK JabberRegisterDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberOptDlgProc - main options dialog procedure
 
-static HWND msgLangListBox;
-static BOOL CALLBACK JabberMsgLangAdd( LPSTR str )
-{
-	int i, count, index;
-	UINT cp;
-	static struct { UINT cpId; TCHAR* cpName; } cpTable[] = {
-		{	874,	_T("Thai") },
-		{	932,	_T("Japanese") },
-		{	936,	_T("Simplified Chinese") },
-		{	949,	_T("Korean") },
-		{	950,	_T("Traditional Chinese") },
-		{	1250,	_T("Central European") },
-		{	1251,	_T("Cyrillic") },
-		{	1252,	_T("Latin I") },
-		{	1253,	_T("Greek") },
-		{	1254,	_T("Turkish") },
-		{	1255,	_T("Hebrew") },
-		{	1256,	_T("Arabic") },
-		{	1257,	_T("Baltic") },
-		{	1258,	_T("Vietnamese") },
-		{	1361,	_T("Korean ( Johab )") }
-	};
-
-	cp = atoi( str );
-	count = sizeof( cpTable )/sizeof( cpTable[0] );
-	for ( i=0; i<count && cpTable[i].cpId!=cp; i++ );
-	if ( i < count ) {
-		if (( index=SendMessage( msgLangListBox, CB_ADDSTRING, 0, ( LPARAM )TranslateTS( cpTable[i].cpName )) ) >= 0 ) {
-			SendMessage( msgLangListBox, CB_SETITEMDATA, ( WPARAM ) index, ( LPARAM )cp );
-			if ( jabberCodePage == cp )
-				SendMessage( msgLangListBox, CB_SETCURSEL, ( WPARAM ) index, 0 );
-	}	}
-
-	return TRUE;
-}
-
 static LRESULT CALLBACK JabberValidateUsernameWndProc( HWND hwndEdit, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	WNDPROC oldProc = ( WNDPROC ) GetWindowLong( hwndEdit, GWL_USERDATA );
@@ -187,12 +339,22 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			TCHAR* szResources[] = { _T("Home"), _T("Work"), _T("Office"), _T("Miranda") };
 			for ( int i = 0; i < SIZEOF(szResources); i++ )
 				SendDlgItemMessage( hwndDlg, IDC_COMBO_RESOURCE, CB_ADDSTRING, 0, (LPARAM)szResources[i] );
+			
+			// append computer name to the resource list
+			TCHAR szCompName[ MAX_COMPUTERNAME_LENGTH + 1];
+			DWORD dwCompNameLength = MAX_COMPUTERNAME_LENGTH;
+			if ( GetComputerName( szCompName, &dwCompNameLength ))
+				SendDlgItemMessage( hwndDlg, IDC_COMBO_RESOURCE, CB_ADDSTRING, 0, (LPARAM)szCompName );
 
 			if ( !DBGetContactSettingTString( NULL, jabberProtoName, "Resource", &dbv )) {
 				SetDlgItemText( hwndDlg, IDC_COMBO_RESOURCE, dbv.ptszVal );
 				JFreeVariant( &dbv );
 			}
 			else SetDlgItemTextA( hwndDlg, IDC_COMBO_RESOURCE, "Miranda" );
+
+			BOOL bHostnameAsResource = JGetByte( "HostNameAsResource", FALSE );
+			CheckDlgButton( hwndDlg, IDC_HOSTNAME_AS_RESOURCE, bHostnameAsResource );
+			EnableWindow(GetDlgItem( hwndDlg, IDC_COMBO_RESOURCE ), !bHostnameAsResource);
 
 			SendMessage( GetDlgItem( hwndDlg, IDC_PRIORITY_SPIN ), UDM_SETRANGE, 0, ( LPARAM )MAKELONG( 127, -128 ));
 
@@ -247,13 +409,16 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			}
 			else SetDlgItemTextA( hwndDlg, IDC_JUD, "users.jabber.org" );
 
-			msgLangListBox = GetDlgItem( hwndDlg, IDC_MSGLANG );
-			TCHAR str[ 256 ];
-			mir_sntprintf( str, SIZEOF(str), _T("== %s =="), TranslateT( "System default" ));
-			SendMessage( msgLangListBox, CB_ADDSTRING, 0, ( LPARAM )str );
-			SendMessage( msgLangListBox, CB_SETITEMDATA, 0, CP_ACP );
-			SendMessage( msgLangListBox, CB_SETCURSEL, 0, 0 );
-			EnumSystemCodePagesA( JabberMsgLangAdd, CP_INSTALLED );
+			TCHAR *szSelectedLang = JabberGetXmlLang();
+			HWND hWndLLB = GetDlgItem( hwndDlg, IDC_MSGLANG );
+			for ( int nI = 0; g_LanguageCodes[nI].szCode; nI++ ) {
+				int nId = SendMessage( hWndLLB, CB_ADDSTRING, 0, (LPARAM)TranslateTS( g_LanguageCodes[nI].szDescription ));
+				SendMessage( hWndLLB, CB_SETITEMDATA, nId, (LPARAM)g_LanguageCodes[nI].szCode );
+				if ( !_tcscmp( szSelectedLang, g_LanguageCodes[nI].szCode ))
+					SendMessage( hWndLLB, CB_SETCURSEL, nId, 0 );
+			}
+			if ( szSelectedLang )
+				mir_free( szSelectedLang );
 
 			WNDPROC oldProc = ( WNDPROC ) GetWindowLong( GetDlgItem( hwndDlg, IDC_EDIT_USERNAME ), GWL_WNDPROC );
 			SetWindowLong( GetDlgItem( hwndDlg, IDC_EDIT_USERNAME ), GWL_USERDATA, ( LONG ) oldProc );
@@ -350,6 +515,19 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			if ( HIWORD( wParam ) == CBN_SELCHANGE )
 				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 			break;
+		case IDC_HOSTNAME_AS_RESOURCE:
+			{
+				BOOL bUseHostname = IsDlgButtonChecked( hwndDlg, IDC_HOSTNAME_AS_RESOURCE );
+				EnableWindow( GetDlgItem( hwndDlg, IDC_COMBO_RESOURCE ), !bUseHostname );
+				if ( bUseHostname ) {
+					TCHAR szCompName[ MAX_COMPUTERNAME_LENGTH + 1];
+					DWORD dwCompNameLength = MAX_COMPUTERNAME_LENGTH;
+					if ( GetComputerName( szCompName, &dwCompNameLength ))
+						SetDlgItemText( hwndDlg, IDC_COMBO_RESOURCE, szCompName );
+				}
+				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
+				break;
+			}
 		case IDC_USE_SSL:
 			if ( !IsDlgButtonChecked( hwndDlg, IDC_MANUAL )) {
 				if ( IsDlgButtonChecked( hwndDlg, IDC_USE_SSL )) {
@@ -403,6 +581,13 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			else reconnectRequired = TRUE;
 			JSetStringT( NULL, "Resource", textT );
 
+			BOOL bHostOld = JGetByte( "HostNameAsResource", FALSE ) ? TRUE : FALSE;
+			BOOL bHostNew = IsDlgButtonChecked( hwndDlg, IDC_HOSTNAME_AS_RESOURCE ) ? TRUE : FALSE;
+			if ( bHostNew != bHostOld )
+				reconnectRequired = TRUE;
+
+			JSetByte( "HostNameAsResource", ( BYTE )bHostNew );
+
 			GetDlgItemTextA( hwndDlg, IDC_PRIORITY, text, sizeof( text ));
 			int nPriority = atoi( text );
 			if ( nPriority > 127) nPriority = 127;
@@ -453,10 +638,16 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			GetDlgItemTextA( hwndDlg, IDC_JUD, text, sizeof( text ));
 			JSetString( NULL, "Jud", text );
 
-			int index = SendMessage( GetDlgItem( hwndDlg, IDC_MSGLANG ), CB_GETCURSEL, 0, 0 );
+			int index = SendDlgItemMessage( hwndDlg, IDC_MSGLANG, CB_GETCURSEL, 0, 0 );
 			if ( index >= 0 ) {
-				jabberCodePage = SendMessage( GetDlgItem( hwndDlg, IDC_MSGLANG ), CB_GETITEMDATA, ( WPARAM ) index, 0 );
-				JSetWord( NULL, "CodePage", ( WORD )jabberCodePage );
+				TCHAR *szDefaultLanguage = JabberGetXmlLang();
+				TCHAR *szLanguageCode = (TCHAR *)SendDlgItemMessage( hwndDlg, IDC_MSGLANG, CB_GETITEMDATA, ( WPARAM ) index, 0 );
+				if ( szLanguageCode ) {
+					JSetStringT( NULL, "XmlLang", szLanguageCode );
+					if ( szDefaultLanguage && _tcscmp( szDefaultLanguage, szLanguageCode ))
+						reconnectRequired = TRUE;
+				}
+				mir_free( szDefaultLanguage );
 			}
 
 			if ( reconnectRequired && jabberConnected )
@@ -499,6 +690,8 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 				OPTTREE_CHECK,	1,	NULL,	"AutoJoinBookmarks"},
 		{0,	LPGENT("Conferences") _T("/") LPGENT("Automatically join conferences on login"),
 				OPTTREE_CHECK,	1,	NULL,	"AutoJoinConferences"},
+		{0, LPGENT("Conferences") _T("/") LPGENT("Do not show multiuser chat invitations"),
+				OPTTREE_CHECK,  1,	NULL,	"IgnoreMUCInvites"},
 
 		{0,	LPGENT("Server options") _T("/") LPGENT("Disable SASL authentication (for old servers)"),
 				OPTTREE_CHECK,	1,	NULL,	"Disable3920auth"},
@@ -511,6 +704,8 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 				OPTTREE_CHECK,	1,	NULL,	"ShowTransport"},
 		{0,	LPGENT("Other") _T("/") LPGENT("Automatically add contact when accept authorization"),
 				OPTTREE_CHECK,	1,	NULL,	"AutoAdd"},
+		{0,	LPGENT("Other") _T("/") LPGENT("Automatically accept authorization requests"),
+				OPTTREE_CHECK,	1,	NULL,	"AutoAcceptAuthorization"},
 		
 		{0, LPGENT("Security") _T("/") LPGENT("Show information about operating system in version replies"),
 				OPTTREE_CHECK,	1,	NULL,	"ShowOSVersion"},
@@ -558,6 +753,8 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			JGetByte("ShowTransport", TRUE)?1:0,		"ShowTransport");
 		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
 			JGetByte("AutoAdd", TRUE)?1:0,				"AutoAdd");
+		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options),
+			JGetByte("AutoAcceptAuthorization", FALSE)?1:0, "AutoAcceptAuthorization");
 		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
 			JGetByte("MsgAck", FALSE)?1:0,				"MsgAck");
 		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
@@ -566,12 +763,14 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			JGetByte("AutoAcceptMUC", FALSE)?1:0,		"AutoAcceptMUC");
 		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
 			JGetByte("AutoJoinConferences", FALSE)?1:0, "AutoJoinConferences");
+		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options),
+			JGetByte("IgnoreMUCInvites", FALSE)?1:0,	"IgnoreMUCInvites");
 		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
 			JGetByte("Disable3920auth", FALSE)?1:0,		"Disable3920auth");
 		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
 			JGetByte("EnableRemoteControl", FALSE)?1:0, "EnableRemoteControl");
 		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
-			JGetByte("AutoJoinBookmarks", FALSE)?1:0,	"AutoJoinBookmarks");
+			JGetByte("AutoJoinBookmarks", TRUE)?1:0,	"AutoJoinBookmarks");
 		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
 			JGetByte("EnableZlib", FALSE)?1:0,			"EnableZlib");
 		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
@@ -644,20 +843,22 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 				index++;
 			}
 
-			JSetByte("AutoAdd",             (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoAdd"));
-			JSetByte("MsgAck",              (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "MsgAck"));
-			JSetByte("Disable3920auth",     (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "Disable3920auth"));
-			JSetByte("EnableAvatars",       (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableAvatars"));
-			JSetByte("AutoAcceptMUC",       (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoAcceptMUC"));
-			JSetByte("AutoJoinConferences", (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoJoinConferences"));
-			JSetByte("EnableRemoteControl", (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableRemoteControl"));
-			JSetByte("AutoJoinBookmarks",   (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoJoinBookmarks"));
-			JSetByte("EnableZlib",          (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableZlib"));
-			JSetByte("LogChatstates",       (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "LogChatstates"));
-			JSetByte("EnableUserMood",      (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableUserMood"));
-			JSetByte("EnableUserTune",      (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableUserTune"));
-			JSetByte("ShowOSVersion",       (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "ShowOSVersion"));
-			JSetByte("BsOnlyIBB",           (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "BsOnlyIBB"));
+			JSetByte("AutoAdd",                  (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoAdd"));
+			JSetByte("AutoAcceptAuthorization",  (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoAcceptAuthorization"));
+			JSetByte("MsgAck",                   (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "MsgAck"));
+			JSetByte("Disable3920auth",          (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "Disable3920auth"));
+			JSetByte("EnableAvatars",            (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableAvatars"));
+			JSetByte("AutoAcceptMUC",            (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoAcceptMUC"));
+			JSetByte("AutoJoinConferences",      (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoJoinConferences"));
+			JSetByte("IgnoreMUCInvites",         (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "IgnoreMUCInvites"));
+			JSetByte("EnableRemoteControl",      (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableRemoteControl"));
+			JSetByte("AutoJoinBookmarks",        (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoJoinBookmarks"));
+			JSetByte("EnableZlib",               (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableZlib"));
+			JSetByte("LogChatstates",            (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "LogChatstates"));
+			JSetByte("EnableUserMood",           (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableUserMood"));
+			JSetByte("EnableUserTune",           (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableUserTune"));
+			JSetByte("ShowOSVersion",            (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "ShowOSVersion"));
+			JSetByte("BsOnlyIBB",                (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "BsOnlyIBB"));
 			JabberSendPresence( jabberStatus, true );
 			return TRUE;
 		}
@@ -771,10 +972,9 @@ static void _RosterHandleGetRequest( XmlNode* node, void* userdata )
 		_RosterListClear(rrud.hwndDlg);
 		XmlNode * query=JabberXmlGetChild(node, "query");
 		if (!query) return;
-		int i=1;
-		while (TRUE)
-		{
-			XmlNode *item=JabberXmlGetNthChild(query, "item", i++);
+		int i = 1;
+		while (TRUE) {
+			XmlNode *item = JabberXmlGetNthChild(query, "item", i++);
 			if (!item) break;
 			TCHAR *jid=JabberXmlGetAttrValue(item,"jid");
 			if (!jid) continue;
@@ -782,8 +982,8 @@ static void _RosterHandleGetRequest( XmlNode* node, void* userdata )
 			TCHAR *subscription=JabberXmlGetAttrValue(item,"subscription");
 			TCHAR *group=NULL;
 			XmlNode * groupNode=JabberXmlGetChild(item, "group");
-			if (groupNode) group=groupNode->text;
-			_RosterInsertListItem(hList, jid, name, group, subscription, TRUE);
+			if ( groupNode ) group = groupNode->text;
+			_RosterInsertListItem( hList, jid, name, group, subscription, TRUE );
 		}
 		// now it is require to process whole contact list to add not in roster contacts
 		{
@@ -797,52 +997,47 @@ static void _RosterHandleGetRequest( XmlNode* node, void* userdata )
 					if ( !JGetStringT( hContact, "jid", &dbv ))
 					{
 						LVFINDINFO lvfi={0};
-						lvfi.flags=LVFI_STRING | LVFI_PARTIAL;
-						lvfi.psz=dbv.ptszVal;
-						TCHAR *p=_tcschr(dbv.ptszVal,_T('@'));
-						if (p)
-						{
-							p=_tcschr(dbv.ptszVal,_T('\\'));
-							if (p) *p=_T('\0');
+						lvfi.flags = LVFI_STRING;
+						lvfi.psz = dbv.ptszVal;
+						TCHAR *p = _tcschr(dbv.ptszVal,_T('@'));
+						if ( p ) {
+							p = _tcschr( dbv.ptszVal, _T('/'));
+							if ( p ) *p = _T('\0');
 						}
-						if ( ListView_FindItem(hList, -1, &lvfi) == -1)
-						{
-							TCHAR *jid=mir_tstrdup(dbv.ptszVal);
-							TCHAR *name=NULL;
-							TCHAR *group=NULL;
+						if ( ListView_FindItem(hList, -1, &lvfi) == -1) {
+							TCHAR *jid = mir_tstrdup( dbv.ptszVal );
+							TCHAR *name = NULL;
+							TCHAR *group = NULL;
 							DBVARIANT dbvtemp;
-							if ( !DBGetContactSettingTString( hContact, "CList", "MyHandle", &dbvtemp ) )
-							{
-								name=mir_tstrdup(dbv.ptszVal);
-								DBFreeVariant(&dbvtemp);
+							if ( !DBGetContactSettingTString( hContact, "CList", "MyHandle", &dbvtemp )) {
+								name = mir_tstrdup( dbvtemp.ptszVal );
+								DBFreeVariant( &dbvtemp );
 							}
-							if ( !DBGetContactSettingTString( hContact, "CList", "Group", &dbvtemp ) )
-							{
-								group=mir_tstrdup(dbv.ptszVal);
-								DBFreeVariant(&dbvtemp);
+							if ( !DBGetContactSettingTString( hContact, "CList", "Group", &dbvtemp )) {
+								group = mir_tstrdup( dbvtemp.ptszVal );
+								DBFreeVariant( &dbvtemp );
 							}
-							_RosterInsertListItem(hList, jid, name, group, NULL, FALSE);
-							if (jid) mir_free(jid);
-							if (name) mir_free(name);
-							if (group) mir_free(group);
+							_RosterInsertListItem( hList, jid, name, group, NULL, FALSE );
+							if ( jid ) mir_free( jid );
+							if ( name ) mir_free( name );
+							if ( group ) mir_free( group );
 						}
-						DBFreeVariant(&dbv);
-
+						DBFreeVariant( &dbv );
 					}
 				}
 				hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 );
 			}
 		}
-		rrud.bReadyToDownload=FALSE;
-		rrud.bReadyToUpload=TRUE;
-		SetDlgItemText(rrud.hwndDlg,IDC_DOWNLOAD,TranslateT("Download"));
-		SetDlgItemText(rrud.hwndDlg,IDC_UPLOAD,TranslateT("Upload"));
-		SendMessage(rrud.hwndDlg, JM_STATUSCHANGED,0,0);
+		rrud.bReadyToDownload = FALSE;
+		rrud.bReadyToUpload = TRUE;
+		SetDlgItemText( rrud.hwndDlg, IDC_DOWNLOAD, TranslateT( "Download" ));
+		SetDlgItemText( rrud.hwndDlg, IDC_UPLOAD, TranslateT( "Upload" ));
+		SendMessage( rrud.hwndDlg, JM_STATUSCHANGED, 0, 0 );
         return;
 	}
-	else if (rrud.bRRAction==RRA_SYNCROSTER)
+	else if ( rrud.bRRAction == RRA_SYNCROSTER )
 	{
-		SetDlgItemText(rrud.hwndDlg,IDC_UPLOAD,TranslateT("Uploading..."));
+		SetDlgItemText(rrud.hwndDlg, IDC_UPLOAD, TranslateT("Uploading..."));
 		XmlNode * queryRoster=JabberXmlGetChild(node, "query");
 		if (!queryRoster) return;
 
@@ -853,7 +1048,7 @@ static void _RosterHandleGetRequest( XmlNode* node, void* userdata )
 		iq.addAttr( "type", "set" );
 		iq.addAttrID( iqId );
 		XmlNode* query = iq.addChild( "query" );
-		query->addAttr( "xmlns", "jabber:iq:roster" );
+		query->addAttr( "xmlns", JABBER_FEAT_IQ_ROSTER );
 		int itemCount=0;
 		int ListItemCount=ListView_GetItemCount(hList);
 		for (int index=0; index<ListItemCount; index++)
@@ -903,10 +1098,12 @@ static void _RosterHandleGetRequest( XmlNode* node, void* userdata )
 				if (bPushed)
 				{
 					XmlNode* item = query->addChild( "item" );
-					if (group)item->addChild("group", group);
-					item->addAttr( "name", name );
+					if ( group && _tcslen( group ))
+						item->addChild( "group", group );
+					if ( name && _tcslen( name ))
+						item->addAttr( "name", name );
 					item->addAttr( "jid", jid );
-					item->addAttr( "subscription",subscr[0] ? subscr : _T("none"));
+					item->addAttr( "subscription", subscr[0] ? subscr : _T("none"));
 					itemCount++;
 				}
 			}
@@ -941,7 +1138,7 @@ static void _RosterSendRequest(HWND hwndDlg, BYTE rrAction)
 	iq.addAttr( "type", "get" );
 	iq.addAttrID( iqId );
 	XmlNode* query = iq.addChild( "query" );
-	query->addAttr( "xmlns", "jabber:iq:roster" );
+	query->addAttr( "xmlns", JABBER_FEAT_IQ_ROSTER );
 	jabberThreadInfo->send( iq );
 }
 
@@ -1264,15 +1461,15 @@ static BOOL CALLBACK JabberRosterOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 	{
 	case JM_STATUSCHANGED:
 		{
-			int count=ListView_GetItemCount(GetDlgItem(hwndDlg,IDC_ROSTER));
-			EnableWindow( GetDlgItem( hwndDlg, IDC_DOWNLOAD ), rrud.bReadyToDownload && jabberConnected );
-			EnableWindow( GetDlgItem( hwndDlg, IDC_UPLOAD ),   rrud.bReadyToUpload && count && jabberConnected );
+			int count = ListView_GetItemCount(GetDlgItem(hwndDlg,IDC_ROSTER));
+			EnableWindow( GetDlgItem( hwndDlg, IDC_DOWNLOAD ), jabberConnected );
+			EnableWindow( GetDlgItem( hwndDlg, IDC_UPLOAD ), count && jabberConnected );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_EXPORT ), count > 0);
 			break;
 		}
 	case WM_DESTROY:
 		{
-			rrud.hwndDlg=NULL;
+			rrud.hwndDlg = NULL;
 			break;
 		}
 	case WM_INITDIALOG:
@@ -1285,7 +1482,7 @@ static BOOL CALLBACK JabberRosterOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			rrud.hwndDlg=hwndDlg;
 			rrud.bReadyToDownload=TRUE;
 			rrud.bReadyToUpload=FALSE;
-			SendMessage(hwndDlg, JM_STATUSCHANGED,0,0);
+			SendMessage( hwndDlg, JM_STATUSCHANGED, 0, 0 );
 			return TRUE;
 		}
 	case WM_COMMAND:
@@ -1294,29 +1491,29 @@ static BOOL CALLBACK JabberRosterOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			{
 			case IDC_DOWNLOAD:
 				{
-					rrud.bReadyToUpload=FALSE;
-					rrud.bReadyToDownload=FALSE;
+					rrud.bReadyToUpload = FALSE;
+					rrud.bReadyToDownload = FALSE;
 					SendMessage(rrud.hwndDlg, JM_STATUSCHANGED,0,0);
-					SetDlgItemText(rrud.hwndDlg,IDC_DOWNLOAD,TranslateT("Downloading..."));
-					_RosterSendRequest(hwndDlg,RRA_FILLLIST);
+					SetDlgItemText(rrud.hwndDlg, IDC_DOWNLOAD, TranslateT("Downloading..."));
+					_RosterSendRequest(hwndDlg, RRA_FILLLIST);
 					break;
 				}
 			case IDC_UPLOAD:
 				{
-					rrud.bReadyToUpload=FALSE;
-					SendMessage(rrud.hwndDlg, JM_STATUSCHANGED,0,0);
-					SetDlgItemText(rrud.hwndDlg,IDC_UPLOAD,TranslateT("Connecting..."));
-					_RosterSendRequest(hwndDlg,RRA_SYNCROSTER);
+					rrud.bReadyToUpload = FALSE;
+					SendMessage( rrud.hwndDlg, JM_STATUSCHANGED, 0, 0 );
+					SetDlgItemText( rrud.hwndDlg, IDC_UPLOAD, TranslateT("Connecting..."));
+					_RosterSendRequest( hwndDlg, RRA_SYNCROSTER );
 					break;
 				}
 			case IDC_EXPORT:
 				{
-					_RosterExportToFile(hwndDlg);
+					_RosterExportToFile( hwndDlg );
 					break;
 				}
 			case IDC_IMPORT:
 				{
-					_RosterImportFromFile(hwndDlg);
+					_RosterImportFromFile( hwndDlg );
 					break;
 				}
 

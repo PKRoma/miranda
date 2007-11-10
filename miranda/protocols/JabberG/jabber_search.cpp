@@ -743,7 +743,11 @@ int JabberSearchByAdvanced( WPARAM wParam, LPARAM lParam )
 	int iqId = JabberSerialNext();
 	XmlNodeIq iq( "set", iqId, szServerName );
 	XmlNode* query = iq.addChild( "query" ), *field;
-	iq.addAttr( "xml:lang", "en" ); //? not sure is it needed ?
+	TCHAR *szXmlLang = JabberGetXmlLang();
+	if ( szXmlLang ) {
+		iq.addAttr( "xml:lang", szXmlLang ); // i'm sure :)
+		mir_free( szXmlLang );
+	}
 	query->addAttr( "xmlns", "jabber:iq:search" );
 
 	// next can be 2 cases:

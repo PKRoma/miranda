@@ -106,6 +106,8 @@ typedef unsigned __int64 JabberCapsBits;
 #define JABBER_CAPS_USER_TUNE                   ((JabberCapsBits)1<<31)
 #define JABBER_FEAT_USER_TUNE_NOTIFY            "http://jabber.org/protocol/tune+notify"
 #define JABBER_CAPS_USER_TUNE_NOTIFY            ((JabberCapsBits)1<<32)
+#define JABBER_FEAT_PRIVATE_STORAGE             "jabber:iq:private"
+#define JABBER_CAPS_PRIVATE_STORAGE             ((JabberCapsBits)1<<33)
 
 #define JABBER_FEAT_PUBSUB_EVENT                "http://jabber.org/protocol/pubsub#event"
 #define JABBER_FEAT_PUBSUB_NODE_CONFIG          "http://jabber.org/protocol/pubsub#node_config"
@@ -123,6 +125,7 @@ typedef unsigned __int64 JabberCapsBits;
 #define JABBER_EXT_USER_TUNE                    "tune"
 
 #define JABBER_FEAT_EXT_ADDRESSING              "http://jabber.org/protocol/address"
+#define JABBER_FEAT_NESTED_ROSTER_GROUPS        "roster:delimiter"
 
 #define JABBER_FEAT_RC                          "http://jabber.org/protocol/rc"
 #define JABBER_FEAT_RC_SET_STATUS               "http://jabber.org/protocol/rc#set-status"
@@ -134,6 +137,8 @@ typedef unsigned __int64 JabberCapsBits;
 
 #define JABBER_FEAT_IQ_ROSTER                   "jabber:iq:roster"
 #define JABBER_FEAT_DELAY                       "jabber:x:delay"
+
+#define JABBER_FEAT_MUC_USER                    "http://jabber.org/protocol/muc#user"
 
 
 class CJabberClientPartialCaps
@@ -231,6 +236,7 @@ struct JabberFeatCapPair
 {
 	TCHAR *szFeature;
 	JabberCapsBits jcbCap;
+	TCHAR *szDescription;
 };
 
 extern JabberFeatCapPair g_JabberFeatCapPairs[];
@@ -239,5 +245,6 @@ extern JabberFeatCapPair g_JabberFeatCapPairsExt[];
 extern CJabberClientCapsManager g_JabberClientCapsManager;
 
 JabberCapsBits JabberGetResourceCapabilites( TCHAR *jid, BOOL appendBestResource = TRUE );
+JabberCapsBits JabberGetTotalJidCapabilites( TCHAR *jid );
 
 #endif

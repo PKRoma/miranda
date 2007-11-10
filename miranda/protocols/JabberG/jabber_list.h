@@ -33,7 +33,6 @@ Last change by : $Author$
 
 typedef enum {
 	LIST_ROSTER,        // Roster list
-	LIST_AGENT,         // Agent list to show on the Jabber Agents dialog
 	LIST_CHATROOM,      // Groupchat room currently joined
 	LIST_ROOM,          // Groupchat room list to show on the Jabber groupchat dialog
 	LIST_FILE,          // Current file transfer session
@@ -72,20 +71,6 @@ typedef enum {			// initial default to RSMODE_LASTSEEN
 	RSMODE_MANUAL		// specify resource manually ( see the defaultResource field - must not be NULL )
 } JABBER_RESOURCE_MODE;
 
-#define CLIENT_CAP_READY		( 1<<0 )		// have already done disco#info query
-#define CLIENT_CAP_SI			( 1<<1 )		// stream initiation ( si ) profile
-#define CLIENT_CAP_SIFILE		( 1<<2 )		// file transfer si profile
-#define CLIENT_CAP_BYTESTREAM	( 1<<3 )		// socks5 bytestream
-#define CLIENT_CAP_CHATSTAT		( 1<<4 )		// http://jabber.org/protocol/chatstates support (JEP-0085)
-
-#define AGENT_CAP_ADHOC			( 1<<12 )		// AdHoc Command support XEP-0050
-#define AGENT_CAP_REGISTER		( 1<<13 )
-#define AGENT_CAP_SEARCH		( 1<<14 )
-#define AGENT_CAP_GROUPCHAT		( 1<<15 )
-
-
-#define CLIENT_CAP_FILE			( CLIENT_CAP_SI | CLIENT_CAP_SIFILE )
-
 struct JABBER_RESOURCE_STATUS
 {
 	int status;
@@ -96,7 +81,6 @@ struct JABBER_RESOURCE_STATUS
 	TCHAR* system;
 	signed char priority; // resource priority, -128..+127
 	time_t idleStartTime;// XEP-0012 support
-	unsigned int cap;					// 0 = haven't done disco#info yet, see CLIENT_CAP_*
 	JABBER_GC_AFFILIATION affiliation;
 	JABBER_GC_ROLE role;
 	TCHAR* szRealJid; // real jid for jabber conferences
@@ -133,11 +117,9 @@ struct JABBER_LIST_ITEM
 	TCHAR* group;
 	char* photoFileName;
 	TCHAR* messageEventIdStr;
-	WORD cap;	// See CLIENT_CAP_* above
 
 	// LIST_AGENT
 	// jid = jid of the agent
-	// WORD cap;	// See AGENT_CAP_* above
 	TCHAR* name;
 	TCHAR* service;
 
@@ -170,10 +152,11 @@ struct JABBER_LIST_ITEM
 	// jid = string representation of stream id ( sid )
 	// ft = file transfer data
 
-	//LIST_BOOKMARKS
+	//LIST_BOOKMARK
 	// jid = room JID
 	// TCHAR* nick;	// my nick in this chat room
-	// TCHAR * name   // name of the bookmark
+	// TCHAR* name; // name of the bookmark
+	// TCHAR* type; // type of bookmark ("url" or "conference")
 	TCHAR* password;	// password for room
 	BOOL bAutoJoin;
 

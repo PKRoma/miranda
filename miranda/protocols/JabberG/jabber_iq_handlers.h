@@ -37,6 +37,8 @@ void JabberProcessIqAvatar( XmlNode* node, void* userdata, CJabberIqInfo *pInfo 
 void JabberHandleSiRequest( XmlNode* node, void* userdata, CJabberIqInfo *pInfo );
 void JabberHandleRosterPushRequest( XmlNode* node, void* userdata, CJabberIqInfo *pInfo );
 void JabberHandleIqRequestOOB( XmlNode* node, void* userdata, CJabberIqInfo *pInfo );
+void JabberHandleDiscoInfoRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
+void JabberHandleDiscoItemsRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
 
 
 #endif //_JABBER_IQ_HANDLERS_H_

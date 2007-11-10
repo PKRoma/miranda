@@ -37,6 +37,7 @@ Last change by : $Author$
 #include "sdk/m_folders.h"
 #include "sdk/m_wizard.h"
 #include "sdk/m_modernopt.h"
+#include "sdk/m_assocmgr.h"
 
 HINSTANCE hInst;
 PLUGINLINK *pluginLink;
@@ -65,6 +66,13 @@ UTF8_INTERFACE  utfi;
 MD5_INTERFACE   md5i;
 SHA1_INTERFACE  sha1i;
 
+/////////////////////////////////////////////////////////////////////////////
+// Theme API
+BOOL (WINAPI *JabberAlphaBlend)(HDC, int, int, int, int, HDC, int, int, int, int, BLENDFUNCTION) = NULL;
+BOOL (WINAPI *JabberIsThemeActive)() = NULL;
+HRESULT (WINAPI *JabberDrawThemeParentBackground)(HWND, HDC, RECT *) = NULL;
+/////////////////////////////////////////////////////////////////////////////
+
 HANDLE hMainThread = NULL;
 DWORD jabberMainThreadId;
 char* jabberProtoName;	// "JABBER"
@@ -85,7 +93,6 @@ BOOL   jabberChangeStatusMessageOnly = FALSE;
 TCHAR* jabberJID = NULL;
 char*  streamId = NULL;
 DWORD  jabberLocalIP;
-UINT   jabberCodePage;
 int    jabberSearchID;
 JABBER_MODEMSGS modeMsgs;
 CRITICAL_SECTION modeMsgMutex;
@@ -93,7 +100,6 @@ char* jabberVcardPhotoFileName = NULL;
 BOOL  jabberSendKeepAlive;
 
 BOOL jabberPepSupported = FALSE;
-JabberCapsBits jabberServerCaps = JABBER_RESOURCE_CAPS_NONE;
 
 // SSL-related global variable
 HMODULE hLibSSL = NULL;
@@ -119,7 +125,6 @@ HWND hwndMucOwnerList = NULL;
 HWND hwndJabberChangePassword = NULL;
 HWND hwndJabberBookmarks = NULL;
 HWND hwndJabberAddBookmark = NULL;
-HWND hwndJabberInfo = NULL;
 HWND hwndPrivacyLists = NULL;
 HWND hwndPrivacyRule = NULL;
 HWND hwndServiceDiscovery = NULL;
@@ -149,11 +154,15 @@ int JabberModernOptInit( WPARAM wParam, LPARAM lParam );
 int JabberUserInfoInit( WPARAM wParam, LPARAM lParam );
 int JabberMsgUserTyping( WPARAM wParam, LPARAM lParam );
 void JabberMenuInit( void );
+void JabberMenuUninit( void );
 int JabberSvcInit( void );
 int JabberSvcUninit( void );
 void InitCustomFolders( void );
 void JabberConsoleInit();
 void JabberConsoleUninit();
+void JabberUserInfoInit(void);
+void JabberPrivacyInit();
+void JabberPrivacyUninit();
 
 int bSecureIM;
 extern "C" BOOL WINAPI DllMain( HINSTANCE hModule, DWORD dwReason, LPVOID lpvReserved )
@@ -230,6 +239,7 @@ static int OnPreShutdown( WPARAM wParam, LPARAM lParam )
 	g_JabberIqManager.ExpireAll();
 	g_JabberIqManager.Shutdown();
 	JabberConsoleUninit();
+	JabberPrivacyUninit();
 	return 0;
 }
 
@@ -258,6 +268,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	JabberMenuInit();
 	JabberWsInit();
 	arHooks.insert( HookEvent( ME_USERINFO_INITIALISE, JabberUserInfoInit ));
+
 	bSecureIM = (ServiceExists("SecureIM/IsContactSecured"));
 
 	if ( ServiceExists( MS_GC_REGISTER )) {
@@ -317,6 +328,13 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 
 	JCallService( MS_DB_EVENT_REGISTERTYPE, 0, (LPARAM)&dbEventType );
 	arServices.insert( JCreateServiceFunction( JS_DB_GETEVENTTEXT_CHATSTATES, JabberGetEventTextChatStates ));
+
+	// file associations manager plugin support
+	if ( ServiceExists( MS_ASSOCMGR_ADDNEWURLTYPE )) {
+		char szService[ MAXMODULELABELLENGTH ];
+		mir_snprintf( szService, SIZEOF( szService ), "%s%s", jabberProtoName, JS_PARSE_XMPP_URI );
+		AssocMgr_AddNewUrlTypeT( "xmpp:", TranslateT("Jabber Link Protocol"), hInst, IDI_JABBER, szService, 0 );
+	}
 
 	JabberCheckAllContactsAreTransported();
 	InitCustomFolders();
@@ -398,16 +416,35 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	}
 
 	memset(( char* )&modeMsgs, 0, sizeof( JABBER_MODEMSGS ));
-	jabberCodePage = JGetWord( NULL, "CodePage", CP_ACP );
 
 	InitializeCriticalSection( &modeMsgMutex );
+
+	{	// Load some fuctions
+		HINSTANCE hDll;
+
+		if (hDll = LoadLibraryA("msimg32.dll"))
+		{
+			JabberAlphaBlend = (BOOL (WINAPI *)(HDC, int, int, int, int, HDC, int, int, int, int, BLENDFUNCTION)) GetProcAddress(hDll, "AlphaBlend");
+		}
+
+		if (IsWinVerXPPlus())
+		{
+			if (hDll = GetModuleHandleA("uxtheme"))
+			{
+				JabberDrawThemeParentBackground = (HRESULT (WINAPI *)(HWND,HDC,RECT *))GetProcAddress(hDll, "DrawThemeParentBackground");
+				JabberIsThemeActive = (BOOL (WINAPI *)())GetProcAddress(hDll, "IsThemeActive");
+			}
+		}
+	}
 
 	srand(( unsigned ) time( NULL ));
 	JabberSerialInit();
 	JabberIqInit();
 	JabberListInit();
 	JabberIconsInit();
+	JabberUserInfoInit();
 	JabberConsoleInit();
+	JabberPrivacyInit();
 	JabberSvcInit();
 	g_JabberIqManager.FillPermanentHandlers();
 	g_JabberIqManager.Start();
@@ -430,6 +467,7 @@ extern "C" int __declspec( dllexport ) Unload( void )
 		DestroyHookableEvent( hInitChat );
 
 	JabberXStatusUninit();
+	JabberMenuUninit();
 	JabberSvcUninit();
 	JabberSslUninit();
 	JabberListUninit();

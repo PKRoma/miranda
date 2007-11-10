@@ -33,6 +33,8 @@ Last change by : $Author: $
 HTREEITEM OptTree_FindNamedTreeItemAt(HWND hwndTree, HTREEITEM hItem, const TCHAR *name);
 HTREEITEM OptTree_AddItem(HWND hwndTree, char *name, LPARAM lParam = 0, int iconIndex = -1);
 
+enum { IMG_GROUP, IMG_CHECK, IMG_NOCHECK, IMG_RCHECK, IMG_NORCHECK, IMG_GRPOPEN, IMG_GRPCLOSED };
+
 static void OptTree_TranslateItem(HWND hwndTree, HTREEITEM hItem)
 {
 	TCHAR buf[128];
@@ -165,10 +167,55 @@ HTREEITEM OptTree_AddItem(HWND hwndTree, TCHAR *name, LPARAM lParam, int iconInd
 	return result;
 }
 
+static void OptTree_ProcessItemClick(HWND hwndTree, HTREEITEM hti, OPTTREE_OPTION *options, int optionCount)
+{
+	TVITEM tvi;
+	tvi.mask=TVIF_HANDLE|TVIF_PARAM|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
+	tvi.hItem=hti;
+	TreeView_GetItem(hwndTree,&tvi);
+	switch (tvi.iImage)
+	{
+		case IMG_GRPOPEN:
+			tvi.iImage = tvi.iSelectedImage = IMG_GRPCLOSED;
+			TreeView_Expand(hwndTree, tvi.hItem, TVE_COLLAPSE);
+			break;
+		case IMG_GRPCLOSED:
+			tvi.iImage = tvi.iSelectedImage = IMG_GRPOPEN;
+			TreeView_Expand(hwndTree, tvi.hItem, TVE_EXPAND);
+			break;
+
+		case IMG_CHECK:
+			tvi.iImage = tvi.iSelectedImage = IMG_NOCHECK;
+			SendMessage(GetParent(GetParent(hwndTree)), PSM_CHANGED, 0, 0);
+			break;
+		case IMG_NOCHECK:
+			tvi.iImage = tvi.iSelectedImage = IMG_CHECK;
+			SendMessage(GetParent(GetParent(hwndTree)), PSM_CHANGED, 0, 0);
+			break;
+		case IMG_NORCHECK:
+		{
+			int i;
+			for (i = 0; i < optionCount; ++i)
+			{
+				if (options[i].groupId == options[tvi.lParam].groupId)
+				{
+					TVITEM tvi_tmp;
+					tvi_tmp.mask = TVIF_HANDLE|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
+					tvi_tmp.hItem = options[i].hItem;
+					tvi_tmp.iImage = tvi_tmp.iSelectedImage = IMG_NORCHECK;
+					TreeView_SetItem(hwndTree, &tvi_tmp);
+				}
+			}
+			tvi.iImage = tvi.iSelectedImage = IMG_RCHECK;
+			SendMessage(GetParent(GetParent(hwndTree)), PSM_CHANGED, 0, 0);
+			break;
+		}
+	}
+	TreeView_SetItem(hwndTree,&tvi);
+}
+
 BOOL  OptTree_ProcessMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam, BOOL *result, int idcTree, OPTTREE_OPTION *options, int optionCount)
 {
-	enum { IMG_GROUP, IMG_CHECK, IMG_NOCHECK, IMG_RCHECK, IMG_NORCHECK, IMG_GRPOPEN, IMG_GRPCLOSED };
-
 	HWND hwndTree = GetDlgItem(hwnd, idcTree);
 	switch (msg)
 	{
@@ -271,6 +318,15 @@ BOOL  OptTree_ProcessMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam, 
 			if (lpnmhdr->idFrom != idcTree) break;
 			switch (lpnmhdr->code)
 			{
+				case TVN_KEYDOWN:
+				{
+					LPNMTVKEYDOWN lpnmtvkd = (LPNMTVKEYDOWN)lparam;
+					HTREEITEM hti;
+					if ((lpnmtvkd->wVKey == VK_SPACE) && (hti = TreeView_GetSelection(lpnmhdr->hwndFrom)))
+						OptTree_ProcessItemClick(lpnmhdr->hwndFrom, hti, options, optionCount);
+					break;
+				}
+
 				case NM_CLICK:
 				{
 					TVHITTESTINFO hti;
@@ -278,54 +334,8 @@ BOOL  OptTree_ProcessMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam, 
 					hti.pt.y=(short)HIWORD(GetMessagePos());
 					ScreenToClient(lpnmhdr->hwndFrom,&hti.pt);
 					if(TreeView_HitTest(lpnmhdr->hwndFrom,&hti))
-					{
 						if(hti.flags&TVHT_ONITEMICON)
-						{
-							TVITEM tvi;
-							tvi.mask=TVIF_HANDLE|TVIF_PARAM|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
-							tvi.hItem=hti.hItem;
-							TreeView_GetItem(lpnmhdr->hwndFrom,&tvi);
-							switch (tvi.iImage)
-							{
-								case IMG_GRPOPEN:
-									tvi.iImage = tvi.iSelectedImage = IMG_GRPCLOSED;
-									TreeView_Expand(lpnmhdr->hwndFrom, tvi.hItem, TVE_COLLAPSE);
-									break;
-								case IMG_GRPCLOSED:
-									tvi.iImage = tvi.iSelectedImage = IMG_GRPOPEN;
-									TreeView_Expand(lpnmhdr->hwndFrom, tvi.hItem, TVE_EXPAND);
-									break;
-
-								case IMG_CHECK:
-									tvi.iImage = tvi.iSelectedImage = IMG_NOCHECK;
-									SendMessage(GetParent(hwnd), PSM_CHANGED, 0, 0);
-									break;
-								case IMG_NOCHECK:
-									tvi.iImage = tvi.iSelectedImage = IMG_CHECK;
-									SendMessage(GetParent(hwnd), PSM_CHANGED, 0, 0);
-									break;
-								case IMG_NORCHECK:
-								{
-									int i;
-									for (i = 0; i < optionCount; ++i)
-									{
-										if (options[i].groupId == options[tvi.lParam].groupId)
-										{
-											TVITEM tvi_tmp;
-											tvi_tmp.mask = TVIF_HANDLE|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
-											tvi_tmp.hItem = options[i].hItem;
-											tvi_tmp.iImage = tvi_tmp.iSelectedImage = IMG_NORCHECK;
-											TreeView_SetItem(lpnmhdr->hwndFrom, &tvi_tmp);
-										}
-									}
-									tvi.iImage = tvi.iSelectedImage = IMG_RCHECK;
-									SendMessage(GetParent(hwnd), PSM_CHANGED, 0, 0);
-									break;
-								}
-							}
-							TreeView_SetItem(lpnmhdr->hwndFrom,&tvi);
-						}
-					}
+							OptTree_ProcessItemClick(lpnmhdr->hwndFrom, hti.hItem, options, optionCount);
 					break;
 				}
 				
@@ -361,8 +371,6 @@ BOOL  OptTree_ProcessMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam, 
 
 DWORD OptTree_GetOptions(HWND hwnd, int idcTree, OPTTREE_OPTION *options, int optionCount, char *szSettingName)
 {
-	enum { IMG_GROUP, IMG_CHECK, IMG_NOCHECK, IMG_RCHECK, IMG_NORCHECK, IMG_GRPOPEN, IMG_GRPCLOSED };
-
 	HWND hwndTree = GetDlgItem(hwnd, idcTree);
 	DWORD result = 0;
 	int i;
@@ -384,8 +392,6 @@ DWORD OptTree_GetOptions(HWND hwnd, int idcTree, OPTTREE_OPTION *options, int op
 
 void OptTree_SetOptions(HWND hwnd, int idcTree, OPTTREE_OPTION *options, int optionCount, DWORD dwOptions, char *szSettingName)
 {
-	enum { IMG_GROUP, IMG_CHECK, IMG_NOCHECK, IMG_RCHECK, IMG_NORCHECK, IMG_GRPOPEN, IMG_GRPCLOSED };
-
 	HWND hwndTree = GetDlgItem(hwnd, idcTree);
 	int i;
 	for (i = 0; i < optionCount; ++i)

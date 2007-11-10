@@ -196,8 +196,6 @@ JABBER_LIST_ITEM *JabberListAdd( JABBER_LIST list, const TCHAR* jid )
 	item->lastSeenResource = -1;
 	item->manualResource = -1;
 	item->bUseResource = bUseResource;
-	if ( list == LIST_ROSTER )
-		item->cap = CLIENT_CAP_CHATSTAT;
 
 	roster.insert( item );
 	LeaveCriticalSection( &csLists );
