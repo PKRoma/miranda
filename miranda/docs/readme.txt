@@ -27,13 +27,46 @@ Enhancements:
  - Jabber: Added "Toggle Member" item
  - Jabber: Added items count in jid lists
  - Jabber: Added display of quit messages
+ - Jabber: implemented XEP-0184 message delivery check
+ - Jabber: Cleanup for the menu entries
+ - Jabber: "Use hostname as resource" option
+ - Jabber: redesigned groupchat join dialog
+ - Jabber: redesigned privacy lists dialog, usability changes
+ - Jabber: redesigned jabber user info dialog
+ - Jabber: privacy lists menu
+ - Jabber: Auto reject invites to conferences
+ - Jabber: Auto accept authorization requests
+ - Jabber: resource selection from contact context menu
+ - Jabber: 'File Association Manager' Plugin support, URI handler
+ - Jabber: xml:lang support, localized forms and other resources
+ - Jabber: simple privacy list editor
+ - Jabber: XEP-0083: Nested Roster Groups
+ - Jabber: an admin can now view admin and owner lists
 
 Bugfixes:
  - IRC: Handle on the phone and out to lunch events
- - Jabber: Wrong timestamp for message forwarded from another client
  - MSN: Potential buffer overflow issue
  - MSN: Block MSN system alerts
  - Yahoo: Potential buffer overflow issue
+ - Jabber: Wrong timestamp for message forwarded from another client
+ - Jabber: Roster import/export create groups
+ - Jabber: On-trasport context menu issues
+ - Jabber: Custom status messages not propagated to Jabber 
+ - Jabber: Auto-join jabber conference don't work
+ - Jabber: scrolling doesn't work well in jabber forms (MUC configuration, ad-hoc, etc)
+ - Jabber: fixed closing internal form dialog by pressing ESC
+ - Jabber: Broken avatar transparency
+ - Jabber: fixed transport registration (transport was offline just after registration)
+ - Jabber: check default typing setting, if contact setting is not available
+ - Jabber: fixed jabber bookmarks error handling
+ - Jabber: fixed message send timeout problem with 0.7.0.13 module versions
+ - Jabber: remove user moods and privacy lists menus before going to offline
+ - Jabber: cannot close privacy lists editor, if miranda is offline
+ - Jabber: Data Forms eat some words
+ - Jabber: proper jabber advanced options tree checkbox checking by space key
+ - Jabber: removed 'from' attribute from muc invitations
+ - Jabber: skip xml console tag text indentation, if tag has no children => proper copy/paste
+
  
 * New in 0.7.1
 Enhancements:
