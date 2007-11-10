@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2007 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -228,7 +228,7 @@ void NetlibSaveUserSettingsStruct(const char *szSettingsModule,NETLIBUSERSETTING
 	int iUser,i;
 	NETLIBUSERSETTINGS combinedSettings={0};
 	DWORD flags;
-			
+
 	EnterCriticalSection(&csNetlibUser);
 	for(iUser=0;iUser<netlibUserCount;iUser++)
 		if(!lstrcmpA(szSettingsModule,netlibUser[iUser]->user.szSettingsModule)) break;
@@ -286,7 +286,7 @@ static BOOL CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		{	int iUser=SendDlgItemMessage(hwndDlg,IDC_NETLIBUSERS,CB_GETITEMDATA,SendDlgItemMessage(hwndDlg,IDC_NETLIBUSERS,CB_GETCURSEL,0,0),0);
 			NETLIBUSERSETTINGS settings={0};
 			DWORD flags;
-			
+
 			if(iUser==-1) {
 				int i;
 				settings.cbSize=sizeof(settings);
@@ -325,7 +325,7 @@ static BOOL CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			SetDlgItemTextA(hwndDlg,IDC_PORTSRANGEO,settings.szOutgoingPorts?settings.szOutgoingPorts:"");
 
 			CheckDlgButton(hwndDlg,IDC_ENABLEUPNP,settings.enableUPnP);
-            
+
 			NetlibFreeUserSettingsStruct(&settings);
 			SendMessage(hwndDlg,M_REFRESHENABLING,0,0);
 			break;
@@ -504,7 +504,7 @@ int NetlibOptInitialise(WPARAM wParam,LPARAM lParam)
 	for(i=0,optionsCount=0;i<netlibUserCount;i++)
 		if(!(netlibUser[i]->user.flags&NUF_NOOPTIONS)) optionsCount++;
 	LeaveCriticalSection(&csNetlibUser);
-	if ( optionsCount == 0 ) 
+	if ( optionsCount == 0 )
 		return 0;
 
 	odp.cbSize = sizeof(odp);

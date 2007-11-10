@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "netlib.h"
 
 extern CRITICAL_SECTION csNetlibCloseHandle;
-extern HANDLE hConnectionHeaderMutex;
+extern HANDLE hConnectionHeaderMutex,hSendEvent,hRecvEvent;
 
 int NetlibSend(WPARAM wParam,LPARAM lParam)
 {
@@ -50,6 +50,8 @@ int NetlibSend(WPARAM wParam,LPARAM lParam)
 		result=send(nlc->s,nlb->buf,nlb->len,nlb->flags&0xFFFF);
 	}
 	NetlibLeaveNestedCS(&nlc->ncsSend);
+
+	CallHookSubscribers( hSendEvent, lParam, (LPARAM)&nlc->nlu );
 	return result;
 }
 
@@ -71,6 +73,7 @@ int NetlibRecv(WPARAM wParam,LPARAM lParam)
 	NetlibLeaveNestedCS(&nlc->ncsRecv);
 	if(recvResult<=0) return recvResult;
 	NetlibDumpData(nlc,nlb->buf,recvResult,0,nlb->flags);
+	CallHookSubscribers( hRecvEvent, lParam, (LPARAM)&nlc->nlu );
 	return recvResult;
 }
 

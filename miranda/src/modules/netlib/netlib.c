@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 struct NetlibUser **netlibUser=NULL;
 int netlibUserCount=0;
 CRITICAL_SECTION csNetlibUser;
-HANDLE hConnectionHeaderMutex;
+HANDLE hConnectionHeaderMutex, hSendEvent=NULL, hRecvEvent=NULL;
 DWORD g_LastConnectionTick; // protected by csNetlibUser
 
 void NetlibFreeUserSettingsStruct(NETLIBUSERSETTINGS *settings)
@@ -451,9 +451,14 @@ static int NetlibShutdown(WPARAM wParam,LPARAM lParam)
 	NetlibSecurityDestroy();
 	NetlibUPnPDestroy();
 	NetlibLogShutdown();
+
+	DestroyHookableEvent(hRecvEvent);
+	DestroyHookableEvent(hSendEvent);
+
 	for(i=netlibUserCount;i>0;i--)
 		NetlibCloseHandle((WPARAM)netlibUser[i-1],0);
 	if(netlibUser) mir_free(netlibUser);
+
 	CloseHandle(hConnectionHeaderMutex);
 	DeleteCriticalSection(&csNetlibUser);
 	WSACleanup();
@@ -473,10 +478,12 @@ int LoadNetlibModule(void)
 
 	HookEvent(ME_SYSTEM_MODULESLOADED, NetlibModulesLoaded);
 	HookEvent(ME_OPT_INITIALISE,NetlibOptInitialise);
+
 	InitializeCriticalSection(&csNetlibUser);
 	hConnectionHeaderMutex=CreateMutex(NULL,FALSE,NULL);
 	g_LastConnectionTick=GetTickCount();
 	NetlibLogInit();
+
 	CreateServiceFunction(MS_NETLIB_REGISTERUSER,NetlibRegisterUser);
 	CreateServiceFunction(MS_NETLIB_GETUSERSETTINGS,NetlibGetUserSettings);
 	CreateServiceFunction(MS_NETLIB_SETUSERSETTINGS,NetlibSetUserSettings);
@@ -500,6 +507,9 @@ int LoadNetlibModule(void)
 	CreateServiceFunction(MS_NETLIB_CREATEPACKETRECVER,NetlibPacketRecverCreate);
 	CreateServiceFunction(MS_NETLIB_GETMOREPACKETS,NetlibPacketRecverGetMore);
 	CreateServiceFunction(MS_NETLIB_SETPOLLINGTIMEOUT,NetlibHttpSetPollingTimeout);
+
+	hRecvEvent = CreateHookableEvent( ME_NETLIB_FASTRECV );
+	hSendEvent = CreateHookableEvent( ME_NETLIB_FASTSEND );
 
 	NetlibUPnPInit();
 	NetlibSecurityInit();

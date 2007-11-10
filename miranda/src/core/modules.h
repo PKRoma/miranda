@@ -74,6 +74,13 @@ to return to the message loop so it can be interrupted neatly.
 */
 int NotifyEventHooks(HANDLE hEvent,WPARAM wParam,LPARAM lParam);
 
+/* CallHookSubscribers
+Works precisely like NotifyEventHooks, but without switching to the first thread
+It guarantees that the execution time for these events is always tiny
+*/
+
+int CallHookSubscribers( HANDLE hEvent, WPARAM wParam, LPARAM lParam );
+
 /*
 	hEvent : a HANDLE which has been returned by CreateHookableEvent()
 	pfnHook: a function pointer (MIRANDAHOOK) which is called when there are no hooks.

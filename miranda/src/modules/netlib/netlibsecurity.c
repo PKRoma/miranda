@@ -39,7 +39,7 @@ typedef struct
 }
 	NtlmHandleType;
 
-typedef struct 
+typedef struct
 {
 	WORD     len;
 	WORD     allocedSpace;
@@ -60,7 +60,7 @@ typedef struct
 	NtlmType2packet;
 
 static unsigned secCnt = 0, ntlmCnt = 0;
-static HANDLE hSecMutex; 
+static HANDLE hSecMutex;
 
 static void LoadSecurityLibrary(void)
 {
@@ -70,11 +70,11 @@ static void LoadSecurityLibrary(void)
 	if (g_hSecurity == NULL)
 		g_hSecurity = LoadLibraryA("security.dll");
 
-	if (g_hSecurity == NULL) 
+	if (g_hSecurity == NULL)
 		return;
 
 	pInitSecurityInterface = (INIT_SECURITY_INTERFACE_A)GetProcAddress(g_hSecurity, "InitSecurityInterfaceA");
-	if (pInitSecurityInterface != NULL) 
+	if (pInitSecurityInterface != NULL)
 		g_pSSPI = pInitSecurityInterface();
 
 	if (g_pSSPI == NULL) {
@@ -168,7 +168,7 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, char *szChallenge, const
 		nlb64.cbDecoded = Netlib_GetBase64DecodedBufferSize(nlb64.cchEncoded);
 		nlb64.pbDecoded = (PBYTE)mir_alloc(nlb64.cbDecoded);
 		if (!NetlibBase64Decode(0, (LPARAM)&nlb64)) {
-			mir_free(nlb64.pbDecoded); 
+			mir_free(nlb64.pbDecoded);
 			return NULL;
 		}
 
@@ -216,7 +216,7 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, char *szChallenge, const
 				if ( hNtlm->stage != 0 ) {
 					g_pSSPI->DeleteSecurityContext(&hNtlm->hClientContext);
 					g_pSSPI->FreeCredentialsHandle(&hNtlm->hClientCredential);
-				} 
+				}
 				{
 					SEC_WINNT_AUTH_IDENTITY_A auth = { 0 };
 					auth.User = (unsigned char*)loginName;
@@ -229,7 +229,7 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, char *szChallenge, const
 
 					g_pSSPI->AcquireCredentialsHandleA(NULL, "NTLM", SECPKG_CRED_BOTH,
 						NULL, &auth, NULL, NULL, &hNtlm->hClientCredential, &tokenExpiration);
-				}	
+				}
 			}
 
 			outputBufferDescriptor.cBuffers = 1;
@@ -239,7 +239,7 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, char *szChallenge, const
 			outputSecurityToken.cbBuffer = ntlmSecurityPackageInfo->cbMaxToken;
 			outputSecurityToken.pvBuffer = mir_alloc(outputSecurityToken.cbBuffer);
 
-			g_pSSPI->InitializeSecurityContextA(&hNtlm->hClientCredential, NULL, NULL, 0, 0, SECURITY_NATIVE_DREP, 
+			g_pSSPI->InitializeSecurityContextA(&hNtlm->hClientCredential, NULL, NULL, 0, 0, SECURITY_NATIVE_DREP,
 				NULL, 0, &hNtlm->hClientContext, &outputBufferDescriptor, &contextAttributes, &tokenExpiration);
 		}
 	}
@@ -263,9 +263,9 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, char *szChallenge, const
 	outputSecurityToken.cbBuffer = ntlmSecurityPackageInfo->cbMaxToken;
 	outputSecurityToken.pvBuffer = alloca(outputSecurityToken.cbBuffer);
 
-	sc = g_pSSPI->InitializeSecurityContextA(&hNtlm->hClientCredential, 
+	sc = g_pSSPI->InitializeSecurityContextA(&hNtlm->hClientCredential,
 		*szChallenge ? &hNtlm->hClientContext : NULL,
-		NULL, 0, 0, SECURITY_NATIVE_DREP, 
+		NULL, 0, 0, SECURITY_NATIVE_DREP,
 		*szChallenge ? &inputBufferDescriptor : NULL, 0, &hNtlm->hClientContext,
 		&outputBufferDescriptor, &contextAttributes, &tokenExpiration);
 
@@ -284,7 +284,7 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, char *szChallenge, const
 	nlb64.cchEncoded = Netlib_GetBase64EncodedBufferSize(nlb64.cbDecoded);
 	nlb64.pszEncoded = (char*)mir_alloc(nlb64.cchEncoded);
 	if (!NetlibBase64Encode(0,(LPARAM)&nlb64)) {
-		mir_free(nlb64.pszEncoded); 
+		mir_free(nlb64.pszEncoded);
 		return NULL;
 	}
 	return nlb64.pszEncoded;
