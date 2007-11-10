@@ -33,6 +33,170 @@ Last change by : $Author$
 
 #define GC_SERVER_LIST_SIZE 5
 
+struct JabberGcRecentInfo
+{
+	TCHAR *room, *server, *nick, *password;
+
+	JabberGcRecentInfo()
+	{
+		this->room = this->server = this->nick = this->password = NULL;
+	}
+	JabberGcRecentInfo(const TCHAR *room, const TCHAR *server, const TCHAR *nick = NULL, const TCHAR *password = NULL)
+	{
+		this->room = this->server = this->nick = this->password = NULL;
+		fillData(room, server, nick, password);
+	}
+	JabberGcRecentInfo(const TCHAR *jid)
+	{
+		this->room = this->server = this->nick = this->password = NULL;
+		fillData(jid);
+	}
+	JabberGcRecentInfo(int iRecent)
+	{
+		this->room = this->server = this->nick = this->password = NULL;
+		loadRecent(iRecent);
+	}
+
+	~JabberGcRecentInfo()
+	{
+		cleanup();
+	}
+
+	void cleanup()
+	{
+		if (room)		mir_free(room);
+		if (server)		mir_free(server);
+		if (nick)		mir_free(nick);
+		if (password)	mir_free(password);
+		room = server = nick = password = NULL;
+	}
+
+	BOOL equals(const TCHAR *room, const TCHAR *server, const TCHAR *nick = NULL, const TCHAR *password = NULL)
+	{
+		return
+			null_strequals(this->room, room) &&
+			null_strequals(this->server, server) &&
+			null_strequals(this->nick, nick) &&
+			null_strequals(this->password, password);
+	}
+
+	void fillForm(HWND hwndDlg)
+	{
+		SetDlgItemText(hwndDlg, IDC_SERVER, server ? server : _T(""));
+		SetDlgItemText(hwndDlg, IDC_ROOM, room ? room : _T(""));
+		SetDlgItemText(hwndDlg, IDC_NICK, nick ? nick : _T(""));
+		SetDlgItemText(hwndDlg, IDC_PASSWORD, password ? password : _T(""));
+	}
+
+	void fillData(const TCHAR *room, const TCHAR *server, const TCHAR *nick = NULL, const TCHAR *password = NULL)
+	{
+		cleanup();
+		this->room		= room		? mir_tstrdup(room)		: NULL;
+		this->server	= server	? mir_tstrdup(server)	: NULL;
+		this->nick		= nick		? mir_tstrdup(nick)		: NULL;
+		this->password	= password	? mir_tstrdup(password)	: NULL;
+	}
+
+	void fillData(const TCHAR *jid)
+	{
+		TCHAR *room, *server, *nick;
+		room = NEWTSTR_ALLOCA(jid);
+		server = _tcschr(room, _T('@'));
+		if (server)
+		{
+			*++server = 0;
+			nick = _tcschr(server, _T('/'));
+			if (nick) *++nick = 0;
+		}
+
+		fillData(room, server, nick);
+	}
+
+	BOOL loadRecent(int iRecent)
+	{
+		DBVARIANT dbv;
+		char setting[MAXMODULELABELLENGTH];
+
+		cleanup();
+
+		mir_snprintf(setting, sizeof(setting), "rcMuc_%d_server", iRecent);
+		if (!JGetStringT(NULL, setting, &dbv))
+		{
+			server = mir_tstrdup(dbv.ptszVal);
+			JFreeVariant(&dbv);
+		}
+
+		mir_snprintf(setting, sizeof(setting), "rcMuc_%d_room", iRecent);
+		if (!JGetStringT(NULL, setting, &dbv))
+		{
+			room = mir_tstrdup(dbv.ptszVal);
+			JFreeVariant(&dbv);
+		}
+
+		mir_snprintf(setting, sizeof(setting), "rcMuc_%d_nick", iRecent);
+		if (!JGetStringT(NULL, setting, &dbv))
+		{
+			nick = mir_tstrdup(dbv.ptszVal);
+			JFreeVariant(&dbv);
+		}
+
+		mir_snprintf(setting, sizeof(setting), "rcMuc_%d_password", iRecent);
+		if (!JGetStringT(NULL, setting, &dbv))
+		{
+			CallService(MS_DB_CRYPT_DECODESTRING, lstrlen(dbv.ptszVal)+1, (LPARAM)dbv.ptszVal);
+			password = mir_tstrdup(dbv.ptszVal);
+			JFreeVariant(&dbv);
+		}
+
+		return room || server || nick || password;
+	}
+
+	void saveRecent(int iRecent)
+	{
+		char setting[MAXMODULELABELLENGTH];
+
+		mir_snprintf(setting, sizeof(setting), "rcMuc_%d_server", iRecent);
+		if (server)
+			JSetStringT(NULL, setting, server);
+		else
+			JDeleteSetting(NULL, setting);
+
+		mir_snprintf(setting, sizeof(setting), "rcMuc_%d_room", iRecent);
+		if (room)
+			JSetStringT(NULL, setting, room);
+		else
+			JDeleteSetting(NULL, setting);
+
+		mir_snprintf(setting, sizeof(setting), "rcMuc_%d_nick", iRecent);
+		if (nick)
+			JSetStringT(NULL, setting, nick);
+		else
+			JDeleteSetting(NULL, setting);
+
+		mir_snprintf(setting, sizeof(setting), "rcMuc_%d_password", iRecent);
+		if (password)
+		{
+			TCHAR *password2 = NEWTSTR_ALLOCA(password);
+			CallService(MS_DB_CRYPT_ENCODESTRING, lstrlen(password2)+1, (LPARAM)password2);
+			JSetStringT(NULL, setting, password2);
+		} else
+			JDeleteSetting(NULL, setting);
+	}
+
+private:
+	BOOL null_strequals(const TCHAR *str1, const TCHAR *str2)
+	{
+		if (!str1 && !str2) return TRUE;
+		if (!str1 && str2 && !*str2) return TRUE;
+		if (!str2 && str1 && !*str1) return TRUE;
+
+		if (!str1 && str2) return FALSE;
+		if (!str2 && str1) return FALSE;
+
+		return !lstrcmp(str1, str2);
+	}
+};
+
 static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
 static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
 
@@ -380,98 +544,26 @@ void JabberGroupchatJoinRoom( const TCHAR* server, const TCHAR* room, const TCHA
 	bool found = false;
 	for (int i = 0 ; i < 5; ++i)
 	{
-		DBVARIANT dbv;
-		char setting[MAXMODULELABELLENGTH];
-
-		mir_snprintf(setting, sizeof(setting), "rcMuc_%d_server", i);
-		if (JGetStringT(NULL, setting, &dbv)) break;
-		if (lstrcmp(dbv.ptszVal, server))
-		{
-			JFreeVariant(&dbv);
+		JabberGcRecentInfo info;
+		if (!info.loadRecent(i))
 			continue;
-		}
-
-		mir_snprintf(setting, sizeof(setting), "rcMuc_%d_room", i);
-		if (JGetStringT(NULL, setting, &dbv)) break;
-		if (lstrcmp(dbv.ptszVal, room))
+		if (info.equals(room, server, nick, password))
 		{
-			JFreeVariant(&dbv);
-			continue;
+			found = true;
+			break;
 		}
-
-		mir_snprintf(setting, sizeof(setting), "rcMuc_%d_nick", i);
-		if (JGetStringT(NULL, setting, &dbv)) break;
-		if (lstrcmp(dbv.ptszVal, nick))
-		{
-			JFreeVariant(&dbv);
-			continue;
-		}
-
-		if ( password ) {
-			mir_snprintf(setting, sizeof(setting), "rcMuc_%d_password", i);
-			if (JGetStringT(NULL, setting, &dbv)) break;
-			CallService(MS_DB_CRYPT_DECODESTRING, lstrlen(dbv.ptszVal)+1, (LPARAM)dbv.ptszVal);
-			if (lstrcmp(dbv.ptszVal, password))
-			{
-				JFreeVariant(&dbv);
-				continue;
-			}
-		}
-
-		found = true;
-		break;
 	}
 
 	if (!found)
 	{
-		DBVARIANT dbv;
-		char setting[MAXMODULELABELLENGTH];
-
 		for (int i = 3; i >= 0; --i)
 		{
-			mir_snprintf(setting, sizeof(setting), "rcMuc_%d_server", i);
-			if (JGetStringT(NULL, setting, &dbv)) continue;
-			mir_snprintf(setting, sizeof(setting), "rcMuc_%d_server", i+1);
-			JSetStringT(NULL, setting, dbv.ptszVal);
-			JFreeVariant(&dbv);
-
-			mir_snprintf(setting, sizeof(setting), "rcMuc_%d_room", i);
-			JGetStringT(NULL, setting, &dbv);
-			mir_snprintf(setting, sizeof(setting), "rcMuc_%d_room", i+1);
-			JSetStringT(NULL, setting, dbv.ptszVal);
-			JFreeVariant(&dbv);
-
-			mir_snprintf(setting, sizeof(setting), "rcMuc_%d_nick", i);
-			JGetStringT(NULL, setting, &dbv);
-			mir_snprintf(setting, sizeof(setting), "rcMuc_%d_nick", i+1);
-			JSetStringT(NULL, setting, dbv.ptszVal);
-			JFreeVariant(&dbv);
-
-			mir_snprintf(setting, sizeof(setting), "rcMuc_%d_password", i);
-			int nResult = JGetStringT(NULL, setting, &dbv);
-			mir_snprintf(setting, sizeof(setting), "rcMuc_%d_password", i+1);
-			if ( !nResult )
-				JSetStringT(NULL, setting, dbv.ptszVal);
-			else
-				JDeleteSetting(NULL, setting);
+			JabberGcRecentInfo info;
+			if (info.loadRecent(i)) info.saveRecent(i+1);
 		}
 
-		mir_snprintf(setting, sizeof(setting), "rcMuc_%d_server", 0);
-		JSetStringT(NULL, setting, server);
-
-		mir_snprintf(setting, sizeof(setting), "rcMuc_%d_room", 0);
-		JSetStringT(NULL, setting, room);
-
-		mir_snprintf(setting, sizeof(setting), "rcMuc_%d_nick", 0);
-		JSetStringT(NULL, setting, nick);
-
-		// FIXME: temporary workaround
-		if ( password ) {
-			mir_snprintf(setting, sizeof(setting), "rcMuc_%d_password", 0);
-			TCHAR *password2 = NEWTSTR_ALLOCA(password);
-			CallService(MS_DB_CRYPT_DECODESTRING, lstrlen(password2)+1, (LPARAM)password2);
-			JSetStringT(NULL, setting, password2);
-		}
+		JabberGcRecentInfo info(room, server, nick, password);
+		info.saveRecent(0);
 	}
 
 	TCHAR text[128];
@@ -617,7 +709,6 @@ static void sttJoinDlgShowRecentItems(HWND hwndDlg, int newCount)
 static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	TCHAR text[128];
-	TCHAR* p;
 
 	switch ( msg ) {
 	case WM_INITDIALOG:
@@ -629,9 +720,9 @@ static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIconEx("group"));
 			SendMessage(hwndDlg, WM_SETICON, ICON_SMALL, (LPARAM)LoadIconEx("group"));
 
-			TCHAR *roomJid = NULL;
+			JabberGcRecentInfo *info = NULL;
 			if ( lParam ) {
-				roomJid = mir_tstrdup((TCHAR *)lParam);
+				info = new JabberGcRecentInfo((TCHAR *)lParam);
 			} else
 			{
 				OpenClipboard(hwndDlg);
@@ -644,28 +735,22 @@ static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 				{
 					TCHAR *buf = (TCHAR *)GlobalLock(hData);
 					if (buf && _tcschr(buf, _T('@')))
-						roomJid = mir_tstrdup(buf);
+						info = new JabberGcRecentInfo(buf);
 					GlobalUnlock(hData);
 				}
 				CloseClipboard();
 			}
 
-			if (roomJid)
+			if (info)
 			{
-				if (( p = _tcschr( roomJid, '@' )) != NULL ) {
-					*p = '\0';
-					// Need to save room name in UTF-8 in case the room codepage is different
-					// from the local code page
-					TCHAR* room = mir_tstrdup( roomJid );
-					SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG ) room );
-					SetDlgItemText( hwndDlg, IDC_ROOM, room );
-					SetDlgItemText( hwndDlg, IDC_SERVER, p+1 );
+				info->fillForm(hwndDlg);
+				delete info;
+
+				if (lParam)
+				{	// store original room jid. may be in utf8
+					SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG )mir_tstrdup((TCHAR *)lParam) );
 				}
-				else SetDlgItemText( hwndDlg, IDC_SERVER, roomJid );
-
-				mir_free(roomJid);
 			}
-
 
 			DBVARIANT dbv;
 			if ( !JGetStringT( NULL, "Nick", &dbv )) {
@@ -706,26 +791,18 @@ static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 			int i = 0;
 			for ( ; i < 5; ++i)
 			{
-				DBVARIANT dbv;
-				char setting[MAXMODULELABELLENGTH];
 				TCHAR jid[256];
-				mir_snprintf(setting, sizeof(setting), "rcMuc_%d_room", i);
-				if (JGetStringT(NULL, setting, &dbv)) break;
-				lstrcpy(jid, dbv.ptszVal);
-				JFreeVariant(&dbv);
-				mir_snprintf(setting, sizeof(setting), "rcMuc_%d_server", i);
-				if (JGetStringT(NULL, setting, &dbv)) break;
-				lstrcat(jid, _T("@"));
-				lstrcat(jid, dbv.ptszVal);
-				JFreeVariant(&dbv);
-				mir_snprintf(setting, sizeof(setting), "rcMuc_%d_nick", i);
-				if (JGetStringT(NULL, setting, &dbv)) break;
-				lstrcat(jid, _T(" ("));
-				lstrcat(jid, dbv.ptszVal);
-				lstrcat(jid, _T(")"));
-				JFreeVariant(&dbv);
-
-				SetDlgItemText(hwndDlg, IDC_RECENT1+i, jid);
+				JabberGcRecentInfo info;
+				if (info.loadRecent(i))
+				{
+					mir_sntprintf(jid, SIZEOF(jid), _T("%s@%s (%s)"),
+						info.room, info.server,
+						info.nick ? info.nick : TranslateT("<no nick>") );
+					SetDlgItemText(hwndDlg, IDC_RECENT1+i, jid);
+				} else
+				{
+					break;
+				}
 			}
 			sttJoinDlgShowRecentItems(hwndDlg, i);
 		}
@@ -951,39 +1028,8 @@ static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 		case IDC_RECENT4:
 		case IDC_RECENT5:
 			{
-				int i = LOWORD( wParam ) - IDC_RECENT1;
-
-				DBVARIANT dbv;
-				char setting[MAXMODULELABELLENGTH];
-
-				mir_snprintf(setting, sizeof(setting), "rcMuc_%d_server", i);
-				if (!JGetStringT(NULL, setting, &dbv))
-				{
-					SetDlgItemText(hwndDlg, IDC_SERVER, dbv.ptszVal);
-					JFreeVariant(&dbv);
-				}
-
-				mir_snprintf(setting, sizeof(setting), "rcMuc_%d_room", i);
-				if (!JGetStringT(NULL, setting, &dbv))
-				{
-					SetDlgItemText(hwndDlg, IDC_ROOM, dbv.ptszVal);
-					JFreeVariant(&dbv);
-				}
-
-				mir_snprintf(setting, sizeof(setting), "rcMuc_%d_nick", i);
-				if (!JGetStringT(NULL, setting, &dbv))
-				{
-					SetDlgItemText(hwndDlg, IDC_NICK, dbv.ptszVal);
-					JFreeVariant(&dbv);
-				}
-
-				mir_snprintf(setting, sizeof(setting), "rcMuc_%d_password", i);
-				if (!JGetStringT(NULL, setting, &dbv))
-				{
-					CallService(MS_DB_CRYPT_DECODESTRING, lstrlen(dbv.ptszVal)+1, (LPARAM)dbv.ptszVal);
-					SetDlgItemText(hwndDlg, IDC_PASSWORD, dbv.ptszVal);
-					JFreeVariant(&dbv);
-				}
+				JabberGcRecentInfo info(LOWORD( wParam ) - IDC_RECENT1);
+				info.fillForm(hwndDlg);
 			}
 			// fall through
 
