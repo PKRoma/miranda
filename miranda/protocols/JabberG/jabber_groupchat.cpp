@@ -460,10 +460,13 @@ void JabberGroupchatJoinRoom( const TCHAR* server, const TCHAR* room, const TCHA
 		mir_snprintf(setting, sizeof(setting), "rcMuc_%d_nick", 0);
 		JSetStringT(NULL, setting, nick);
 
-		mir_snprintf(setting, sizeof(setting), "rcMuc_%d_password", 0);
-		TCHAR *password2 = NEWTSTR_ALLOCA(password);
-		CallService(MS_DB_CRYPT_DECODESTRING, lstrlen(password2)+1, (LPARAM)password2);
-		JSetStringT(NULL, setting, password2);
+		// FIXME: temporary workaround
+		if ( password ) {
+			mir_snprintf(setting, sizeof(setting), "rcMuc_%d_password", 0);
+			TCHAR *password2 = NEWTSTR_ALLOCA(password);
+			CallService(MS_DB_CRYPT_DECODESTRING, lstrlen(password2)+1, (LPARAM)password2);
+			JSetStringT(NULL, setting, password2);
+		}
 	}
 
 	TCHAR text[128];
