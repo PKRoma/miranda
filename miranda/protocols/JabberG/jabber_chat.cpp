@@ -42,6 +42,19 @@ struct JabberEnterStringParams
 	size_t resultLen;
 };
 
+static int sttEnterStringResizer(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
+{
+	switch (urc->wId)
+	{
+	case IDC_TOPIC:
+		return RD_ANCHORX_LEFT|RD_ANCHORY_TOP|RD_ANCHORX_WIDTH|RD_ANCHORY_HEIGHT;
+	case IDOK:
+	case IDCANCEL:
+		return RD_ANCHORX_RIGHT|RD_ANCHORY_BOTTOM;
+	}
+	return RD_ANCHORX_LEFT|RD_ANCHORY_TOP;
+}
+
 BOOL CALLBACK JabberEnterStringDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	switch ( msg ) {
@@ -49,6 +62,8 @@ BOOL CALLBACK JabberEnterStringDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, L
 	{
 		//SetWindowPos( hwndDlg, HWND_TOPMOST ,0,0,0,0,SWP_NOSIZE|SWP_NOMOVE );
 		TranslateDialogDefault( hwndDlg );
+		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_OTHER_RENAME));
+		SendMessage(hwndDlg, WM_SETICON, ICON_SMALL, (LPARAM)LoadSkinnedIcon(SKINICON_OTHER_RENAME));
 		JabberEnterStringParams* params = ( JabberEnterStringParams* )lParam;
 		SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG )params );
 		SetWindowText( hwndDlg, params->caption );
@@ -61,6 +76,17 @@ BOOL CALLBACK JabberEnterStringDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, L
 		KillTimer(hwndDlg,1000);
 		EnableWindow(GetParent(hwndDlg), TRUE);
 		return TRUE;
+	}
+	case WM_SIZE:
+	{
+		UTILRESIZEDIALOG urd = {0};
+		urd.cbSize = sizeof(urd);
+		urd.hInstance = hInst;
+		urd.hwndDlg = hwndDlg;
+		urd.lpTemplate = MAKEINTRESOURCEA(IDD_GROUPCHAT_INPUT);
+		urd.pfnResizer = sttEnterStringResizer;
+		CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM)&urd);
+		break;
 	}
 	case WM_COMMAND:
 		switch ( LOWORD( wParam )) {

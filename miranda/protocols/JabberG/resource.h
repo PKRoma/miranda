@@ -343,6 +343,12 @@
 #define IDC_ICO_MESSAGE                 1285
 #define IDC_ICO_PRESENCEIN              1286
 #define IDC_ICO_PRESENCEOUT             1287
+#define IDC_RECENT1                     1288
+#define IDC_RECENT2                     1289
+#define IDC_RECENT3                     1290
+#define IDC_RECENT4                     1291
+#define IDC_RECENT5                     1292
+#define IDC_TXT_RECENT                  1293
 #define IDC_EMAILS                      1306
 #define IDC_PHONES                      1308
 #define IDC_UPDATE                      1313
@@ -403,7 +409,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        222
 #define _APS_NEXT_COMMAND_VALUE         40017
-#define _APS_NEXT_CONTROL_VALUE         1288
+#define _APS_NEXT_CONTROL_VALUE         1294
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
