@@ -349,6 +349,10 @@
 #define IDC_RECENT4                     1291
 #define IDC_RECENT5                     1292
 #define IDC_TXT_RECENT                  1293
+#define IDC_EDIT1                       1294
+#define IDC_FILTER                      1294
+#define IDC_BTN_FILTER                  1295
+#define IDC_BTN_NOFILTER                1295
 #define IDC_EMAILS                      1306
 #define IDC_PHONES                      1308
 #define IDC_UPDATE                      1313
@@ -409,7 +413,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        222
 #define _APS_NEXT_COMMAND_VALUE         40017
-#define _APS_NEXT_CONTROL_VALUE         1294
+#define _APS_NEXT_CONTROL_VALUE         1296
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

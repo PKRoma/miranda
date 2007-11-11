@@ -104,9 +104,9 @@ struct JabberGcRecentInfo
 		server = _tcschr(room, _T('@'));
 		if (server)
 		{
-			*++server = 0;
+			*server++ = 0;
 			nick = _tcschr(server, _T('/'));
-			if (nick) *++nick = 0;
+			if (nick) *nick++ = 0;
 		}
 
 		fillData(room, server, nick);
@@ -734,7 +734,7 @@ static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 				if (hData)
 				{
 					TCHAR *buf = (TCHAR *)GlobalLock(hData);
-					if (buf && _tcschr(buf, _T('@')))
+					if (buf && _tcschr(buf, _T('@')) && !_tcschr(buf, _T(' ')))
 						info = new JabberGcRecentInfo(buf);
 					GlobalUnlock(hData);
 				}
