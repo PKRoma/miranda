@@ -577,21 +577,6 @@ static BOOL CALLBACK JabberPrivacyRuleDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 	return FALSE;
 }
 
-BOOL JabberPrivacyListDlgCanExit( HWND hDlg )
-{
-	g_PrivacyListManager.Lock();
-	BOOL bModified = g_PrivacyListManager.IsModified();
-	g_PrivacyListManager.Unlock();
-	
-	if ( !bModified )
-		return TRUE;
-
-	if ( IDYES == MessageBox( hDlg, TranslateT("Privacy lists are not saved, discard any changes and exit?"), TranslateT("Are you sure?"), MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2 ))
-		return TRUE;
-
-	return FALSE;
-}
-
 static void sttShowAdvancedList(HWND hwndDlg, CPrivacyList *pList)
 {
 	int nLbSel = SendDlgItemMessage( hwndDlg, IDC_PL_RULES_LIST, LB_GETCURSEL, 0, 0 );
@@ -1440,6 +1425,25 @@ static void sttShowControls(HWND hwndDlg, int *idList, int nCmdShow)
 		ShowWindow(GetDlgItem(hwndDlg, *idList), nCmdShow);
 }
 
+BOOL JabberPrivacyListDlgCanExit( HWND hDlg )
+{
+	g_PrivacyListManager.Lock();
+	BOOL bModified = g_PrivacyListManager.IsModified();
+	g_PrivacyListManager.Unlock();
+
+	TCListInfo *info = (TCListInfo *)GetWindowLong(GetDlgItem(hDlg, IDC_CLIST), GWL_USERDATA);
+	if (info && info->bChanged)
+		bModified = TRUE;
+	
+	if ( !bModified )
+		return TRUE;
+
+	if ( IDYES == MessageBox( hDlg, TranslateT("Privacy lists are not saved, discard any changes and exit?"), TranslateT("Are you sure?"), MB_ICONWARNING | MB_YESNO | MB_DEFBUTTON2 ))
+		return TRUE;
+
+	return FALSE;
+}
+
 BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	static int idSimpleControls[] =
@@ -2098,7 +2102,6 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 							TCListInfo *info = (TCListInfo *)GetWindowLong(GetDlgItem(hwndDlg, IDC_CLIST), GWL_USERDATA);
 							info->bChanged = true;
-							g_PrivacyListManager.SetModified();
 
 							sttEnableEditorControls(hwndDlg);
 						}
