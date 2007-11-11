@@ -2098,6 +2098,7 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 							TCListInfo *info = (TCListInfo *)GetWindowLong(GetDlgItem(hwndDlg, IDC_CLIST), GWL_USERDATA);
 							info->bChanged = true;
+							g_PrivacyListManager.SetModified();
 
 							sttEnableEditorControls(hwndDlg);
 						}
