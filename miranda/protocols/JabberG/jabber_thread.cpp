@@ -1148,6 +1148,8 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 				mir_sntprintf( p, cbLen, TranslateT("Message redirected from: %s\r\n%s"), from, szMessage );
 				szMessage = p;
 				from = szJid;
+				// rewrite hContact
+				hContact = JabberHContactFromJID( from );
 			}
 		}
 	}
