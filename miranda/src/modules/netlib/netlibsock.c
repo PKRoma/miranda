@@ -32,48 +32,60 @@ int NetlibSend(WPARAM wParam,LPARAM lParam)
 	NETLIBBUFFER *nlb=(NETLIBBUFFER*)lParam;
 	int result;
 
-	if(nlb==NULL) {
+	if ( nlb == NULL ) {
 		SetLastError(ERROR_INVALID_PARAMETER);
 		return SOCKET_ERROR;
 	}
 
-	if(!NetlibEnterNestedCS(nlc,NLNCS_SEND)) return SOCKET_ERROR;
-	if(nlc->usingHttpGateway && !(nlb->flags&MSG_RAW)) {
-		if(!(nlb->flags&MSG_NOHTTPGATEWAYWRAP) && nlc->nlu->user.pfnHttpGatewayWrapSend) {
-			NetlibDumpData(nlc,nlb->buf,nlb->len,1,nlb->flags);
-			result=nlc->nlu->user.pfnHttpGatewayWrapSend((HANDLE)nlc,nlb->buf,nlb->len,nlb->flags|MSG_NOHTTPGATEWAYWRAP,NetlibSend);
+	if ( !NetlibEnterNestedCS( nlc, NLNCS_SEND ))
+		return SOCKET_ERROR;
+
+	if ( nlc->usingHttpGateway && !( nlb->flags & MSG_RAW )) {
+		if ( !( nlb->flags & MSG_NOHTTPGATEWAYWRAP ) && nlc->nlu->user.pfnHttpGatewayWrapSend ) {
+			NetlibDumpData( nlc, nlb->buf, nlb->len, 1, nlb->flags );
+			result = nlc->nlu->user.pfnHttpGatewayWrapSend(( HANDLE )nlc, nlb->buf, nlb->len, nlb->flags | MSG_NOHTTPGATEWAYWRAP, NetlibSend );
 		}
-		else result=NetlibHttpGatewayPost(nlc,nlb->buf,nlb->len,nlb->flags);
+		else result = NetlibHttpGatewayPost( nlc, nlb->buf, nlb->len, nlb->flags );
 	}
 	else {
-		NetlibDumpData(nlc,nlb->buf,nlb->len,1,nlb->flags);
-		result=send(nlc->s,nlb->buf,nlb->len,nlb->flags&0xFFFF);
+		NetlibDumpData( nlc, nlb->buf, nlb->len, 1, nlb->flags );
+		result = send( nlc->s, nlb->buf, nlb->len, nlb->flags & 0xFFFF );
 	}
-	NetlibLeaveNestedCS(&nlc->ncsSend);
+	NetlibLeaveNestedCS( &nlc->ncsSend );
 
-	CallHookSubscribers( hSendEvent, lParam, (LPARAM)&nlc->nlu );
+	{	NETLIBNOTIFY nln = { nlb, result };
+		CallHookSubscribers( hSendEvent, (WPARAM)&nln, (LPARAM)&nlc->nlu );
+	}
 	return result;
 }
 
 int NetlibRecv(WPARAM wParam,LPARAM lParam)
 {
-	struct NetlibConnection *nlc=(struct NetlibConnection*)wParam;
-	NETLIBBUFFER *nlb=(NETLIBBUFFER*)lParam;
+	struct NetlibConnection *nlc = (struct NetlibConnection*)wParam;
+	NETLIBBUFFER* nlb = ( NETLIBBUFFER* )lParam;
 	int recvResult;
 
-	if(nlb==NULL) {
-		SetLastError(ERROR_INVALID_PARAMETER);
+	if ( nlb == NULL ) {
+		SetLastError( ERROR_INVALID_PARAMETER );
 		return SOCKET_ERROR;
 	}
-	if(!NetlibEnterNestedCS(nlc,NLNCS_RECV)) return SOCKET_ERROR;
-	if(nlc->usingHttpGateway && !(nlb->flags&MSG_RAW))
-		recvResult=NetlibHttpGatewayRecv(nlc,nlb->buf,nlb->len,nlb->flags);
+
+	if ( !NetlibEnterNestedCS( nlc, NLNCS_RECV ))
+		return SOCKET_ERROR;
+
+	if ( nlc->usingHttpGateway && !( nlb->flags & MSG_RAW ))
+		recvResult = NetlibHttpGatewayRecv( nlc, nlb->buf, nlb->len, nlb->flags );
 	else
-		recvResult=recv(nlc->s,nlb->buf,nlb->len,nlb->flags&0xFFFF);
-	NetlibLeaveNestedCS(&nlc->ncsRecv);
-	if(recvResult<=0) return recvResult;
-	NetlibDumpData(nlc,nlb->buf,recvResult,0,nlb->flags);
-	CallHookSubscribers( hRecvEvent, lParam, (LPARAM)&nlc->nlu );
+		recvResult = recv( nlc->s, nlb->buf, nlb->len, nlb->flags & 0xFFFF );
+	NetlibLeaveNestedCS( &nlc->ncsRecv );
+	if ( recvResult <= 0 )
+		return recvResult;
+
+	NetlibDumpData( nlc, nlb->buf, recvResult, 0, nlb->flags );
+
+	{	NETLIBNOTIFY nln = { nlb, recvResult };
+		CallHookSubscribers( hRecvEvent, (WPARAM)&nln, (LPARAM)&nlc->nlu );
+	}
 	return recvResult;
 }
 

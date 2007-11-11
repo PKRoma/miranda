@@ -718,11 +718,16 @@ static __inline char* Netlib_NtlmCreateResponse( HANDLE hProvider, char* szChall
 // multithreaded mode
 //
 // Parameters:
-//    wParam: NETLIBBUFFER* - points to the data being sent/received
+//    wParam: NETLIBNOTIFY* - points to the data being sent/received
 //    lParam: NETLIBUSER*   - points to the protocol definition
+
+typedef struct {
+   NETLIBBUFFER* nlb;      // pointer to the request buffer
+	int           result;   // amount of bytes really sent/received
+}
+	NETLIBNOTIFY;
 
 #define ME_NETLIB_FASTRECV "Netlib/OnRecv"  // being called on every receive
 #define ME_NETLIB_FASTSEND "Netlib/OnSend"  // being called on every send
 
 #endif // M_NETLIB_H__
-
