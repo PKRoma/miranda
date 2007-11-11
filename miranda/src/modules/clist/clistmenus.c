@@ -1307,13 +1307,13 @@ static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
 
 			#ifdef _UNICODE
 			{
-				char *tmp = mir_u2a(item->mi.ptszName);
-				bPopupChanged = lstrcmpA(tmp, mi->pszPopupName);
+				TCHAR *tmp = mir_a2u(mi->pszPopupName);
+				bPopupChanged = lstrcmpW(item->mi.ptszName, TranslateTS(tmp));
 				mir_free(tmp);
 			}
 			#else
 			{
-				bPopupChanged = lstrcmpA(item->mi.pszName, mi->pszPopupName);
+				bPopupChanged = lstrcmpA(item->mi.pszName, Translate(mi->pszPopupName));
 			}
 			#endif
 
