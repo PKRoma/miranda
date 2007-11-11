@@ -1372,9 +1372,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		aspect = (double)dat->avatarHeight / (double)bminfo.bmHeight;
 		GetClientRect(hwndDlg, &rc);
 		dat->avatarWidth = (int)(bminfo.bmWidth * aspect);
-		/* include 1px border */
-		dat->avatarHeight+= 2;
-		dat->avatarWidth += 2;
 		// if edit box width < min then adjust avatarWidth
 		if (rc.right - dat->avatarWidth < dat->toolbarSize.cx) {
 			dat->avatarWidth = rc.right - dat->toolbarSize.cx;
