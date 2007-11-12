@@ -246,6 +246,36 @@ void JabberHandleSiRequest( XmlNode* node, void* userdata, CJabberIqInfo *pInfo 
 void JabberHandleRosterPushRequest( XmlNode* node, void* userdata, CJabberIqInfo *pInfo )
 {
 	XmlNode *queryNode = pInfo->GetChildNode();
+    
+   // RFC 3921 #7.2 Business Rules
+   if ( pInfo->GetFrom() ) {
+           TCHAR* szFrom = JabberPrepareJid( pInfo->GetFrom() );
+           if ( !szFrom )
+                   return;
+
+           TCHAR* szTo = JabberPrepareJid( jabberThreadInfo->fullJID );
+           if ( !szTo ) {
+                   mir_free( szFrom );
+                   return;
+           }
+
+           TCHAR* pDelimiter = _tcschr( szFrom, _T('/') );
+           if ( pDelimiter ) *pDelimiter = _T('\0');
+
+           pDelimiter = _tcschr( szTo, _T('/') );
+           if ( pDelimiter ) *pDelimiter = _T('\0');
+
+           BOOL bRetVal = _tcscmp( szFrom, szTo ) == 0;
+
+           mir_free( szFrom );
+           mir_free( szTo );
+
+           // invalid JID
+           if ( !bRetVal ) {
+                   JabberLog( "<iq/> attempt to hack via roster push from " TCHAR_STR_PARAM, pInfo->GetFrom() );
+                   return;
+           }
+   }
 
 	XmlNode *itemNode;
 	JABBER_LIST_ITEM *item;
