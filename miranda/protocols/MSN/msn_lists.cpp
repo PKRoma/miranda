@@ -170,11 +170,10 @@ void MSN_CreateContList(void)
 
 	bool *used = (bool*)mir_calloc(contList.getCount()*sizeof(bool));
 
-	size_t cxmlsz = 4096;
-	char* cxml = (char*)mir_alloc(cxmlsz); 
+	char cxml[2048]; 
 	size_t sz = 0;
 
-	sz += mir_snprintf(cxml , cxmlsz, "<ml l=\"1\">");
+	sz += mir_snprintf(cxml , sizeof(cxml), "<ml l=\"1\">");
 		
 	for ( int i=0; i < contList.getCount(); i++ )
 	{
@@ -182,8 +181,7 @@ void MSN_CreateContList(void)
 
 		const char* lastds = strchr(contList[i]->email, '@');
 
-		if ((cxmlsz - sz) < 128) cxml = (char*)mir_realloc(cxml, (cxmlsz += 4096)); 
-		sz += mir_snprintf(cxml+sz, cxmlsz-sz, lastds ? "<d n=\"%s\">" : "<t>", lastds+1);
+		sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz, lastds ? "<d n=\"%s\">" : "<t>", lastds+1);
 
 		for ( int j=0; j < contList.getCount(); j++ )
 		{
@@ -194,22 +192,27 @@ void MSN_CreateContList(void)
 			const char* dom = strchr(C->email, '@');
 			if (dom == NULL && lastds == NULL)
 			{
-				if ((cxmlsz - sz) < 128) cxml = (char*)mir_realloc(cxml, (cxmlsz += 4096)); 
-				sz += mir_snprintf(cxml+sz, cxmlsz-sz, "<c n=\"%s\" l=\"%d\"/>", C->email, C->list & ~LIST_RL);
+				sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz, "<c n=\"%s\" l=\"%d\"/>", C->email, C->list & ~LIST_RL);
 				used[j] = true;
 			}
 			else if (dom != NULL && lastds != NULL && _stricmp(lastds, dom) == 0)
 			{
-				if ((cxmlsz - sz) < 128) cxml = (char*)mir_realloc(cxml, (cxmlsz += 4096)); 
 				*(char*)dom = 0;
-				sz += mir_snprintf(cxml+sz, cxmlsz-sz, "<c n=\"%s\" l=\"%d\" t=\"%d\"/>", C->email, C->list & ~LIST_RL, C->netId);
+				sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz, "<c n=\"%s\" l=\"%d\" t=\"%d\"/>", C->email, C->list & ~LIST_RL, C->netId);
 				*(char*)dom = '@';
 				used[j] = true;
 			}
+			if (used[j] && sz > 1100)
+			{
+				sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz, "</%c></ml>", lastds ? 'd' : 't' );
+				msnNsThread->sendPacket("ADL", "%d\r\n%s", sz, cxml);
+
+				sz = mir_snprintf(cxml, sizeof(cxml), lastds ? "<ml l=\"1\"><d n=\"%s\">" : "<t>", lastds+1);
+			}
 		}
-		sz += mir_snprintf(cxml+sz, cxmlsz-sz, lastds ? "</d>" : "</t>" );
+		sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz, lastds ? "</d>" : "</t>" );
 	}
-	sz += mir_snprintf(cxml+sz, cxmlsz-sz,  "</ml>" );
+	sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz,  "</ml>" );
 	LeaveCriticalSection(&csLists);
 
 	msnNsThread->sendPacket("ADL", "%d\r\n%s", sz, cxml);
