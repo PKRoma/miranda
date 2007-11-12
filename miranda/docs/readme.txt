@@ -24,6 +24,7 @@ Contents
 ----------------------
 * New in 0.7.3
  - MSN: URL encoding of utf8 was broken
+ - Jabber: Contact list vulneratility fixed
 
 * New in 0.7.2
 Enhancements:
