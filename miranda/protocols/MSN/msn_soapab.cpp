@@ -24,6 +24,9 @@ extern char *authContactToken;
 static const char abReqHdr[] = 
 	"SOAPAction: http://www.msn.com/webservices/AddressBook/%s\r\n";
 
+static const char abUrl[] = "https://contacts.msn.com/abservice/abservice.asmx";
+static const char absUrl[] = "https://contacts.msn.com/abservice/SharingService.asmx";
+
 static ezxml_t abSoapHdr(const char* service, const char* scenario, ezxml_t& tbdy, char*& httphdr)
 {
 	ezxml_t xmlp = ezxml_new("soap:Envelope");
@@ -105,8 +108,7 @@ void MSN_SharingFindMembership(void)
 	MimeHeaders httpInfo;
 	char* htmlbody;
 
-	char* tResult = mAgent.getSslResult("https://by4.omega.contacts.msn.com/abservice/SharingService.asmx", 
-		szData, reqHdr, status, httpInfo, htmlbody);
+	char* tResult = mAgent.getSslResult(absUrl, szData, reqHdr, status, httpInfo, htmlbody);
 
 	mir_free(reqHdr);
 	free(szData);
@@ -126,6 +128,7 @@ void MSN_SharingFindMembership(void)
 			if (strcmp(szRole, "Allow") == 0)			lstId = LIST_AL;
 			else if (strcmp(szRole, "Block") == 0)		lstId = LIST_BL;
 			else if (strcmp(szRole, "Reverse") == 0)	lstId = LIST_RL;
+			else if (strcmp(szRole, "Pending") == 0)	lstId = LIST_PL;
 
 			ezxml_t memb = ezxml_get(mems, "Members", 0, "Member", -1);
 			while (memb != NULL)
@@ -249,8 +252,7 @@ bool MSN_SharingAddDelMember(const char* szEmail, const char* szRole, const char
 	MimeHeaders httpInfo;
 	char* htmlbody;
 
-	char* tResult = mAgent.getSslResult("https://by4.omega.contacts.msn.com/abservice/SharingService.asmx", 
-		szData, reqHdr, status, httpInfo, htmlbody);
+	char* tResult = mAgent.getSslResult(absUrl, szData, reqHdr, status, httpInfo, htmlbody);
 
 	mir_free(reqHdr);
 	free(szData);
@@ -283,8 +285,7 @@ void MSN_ABGetFull(void)
 	MimeHeaders httpInfo;
 	char* htmlbody;
 
-	char* tResult = mAgent.getSslResult("https://by4.omega.contacts.msn.com/abservice/abservice.asmx", 
-		szData, reqHdr, status, httpInfo, htmlbody);
+	char* tResult = mAgent.getSslResult(abUrl, szData, reqHdr, status, httpInfo, htmlbody);
 
 	mir_free(reqHdr);
 	free(szData);
@@ -395,6 +396,11 @@ void MSN_ABGetFull(void)
 						else if (( listId & LIST_AL ) && tApparentMode != 0 )
 							MSN_SetWord( hContact, "ApparentMode", 0 );
 					}
+					if (listId == LIST_PL)
+					{
+						MSN_AddAuthRequest( hContact, szEmail, szNick );
+					}
+
 					DBWriteContactSettingByte(hContact, msnProtocolName, "MobileAllowed", strcmp(szMOB, "true") != 0);
 					DBWriteContactSettingByte(hContact, msnProtocolName, "MobileEnabled", strcmp(szMBE, "true") == 0);
 
@@ -462,8 +468,7 @@ bool MSN_ABAddDelContactGroup(const char* szCntId, const char* szGrpId, const ch
 	MimeHeaders httpInfo;
 	char* htmlbody;
 
-	char* tResult = mAgent.getSslResult("https://by4.omega.contacts.msn.com/abservice/abservice.asmx", 
-		szData, reqHdr, status, httpInfo, htmlbody);
+	char* tResult = mAgent.getSslResult(abUrl, szData, reqHdr, status, httpInfo, htmlbody);
 
 	mir_free(reqHdr);
 	free(szData);
@@ -507,8 +512,7 @@ void MSN_ABAddGroup(const char* szGrpName)
 	MimeHeaders httpInfo;
 	char* htmlbody;
 
-	char* tResult = mAgent.getSslResult("https://by4.omega.contacts.msn.com/abservice/abservice.asmx", 
-		szData, reqHdr, status, httpInfo, htmlbody);
+	char* tResult = mAgent.getSslResult(abUrl, szData, reqHdr, status, httpInfo, htmlbody);
 
 	free(szData);
 	mir_free(reqHdr);
@@ -555,8 +559,7 @@ void MSN_ABRenameGroup(const char* szGrpName, const char* szGrpId)
 	MimeHeaders httpInfo;
 	char* htmlbody;
 
-	char* tResult = mAgent.getSslResult("https://by4.omega.contacts.msn.com/abservice/abservice.asmx", 
-		szData, reqHdr, status, httpInfo, htmlbody);
+	char* tResult = mAgent.getSslResult(abUrl, szData, reqHdr, status, httpInfo, htmlbody);
 
 	free(szData);
 	mir_free(reqHdr);
@@ -607,8 +610,7 @@ void MSN_ABUpdateNick(const char* szNick, const char* szCntId)
 	MimeHeaders httpInfo;
 	char* htmlbody;
 
-	char* tResult = mAgent.getSslResult("https://by4.omega.contacts.msn.com/abservice/abservice.asmx", 
-		szData, reqHdr, status, httpInfo, htmlbody);
+	char* tResult = mAgent.getSslResult(abUrl, szData, reqHdr, status, httpInfo, htmlbody);
 
 	mir_free(reqHdr);
 	free(szData);
@@ -651,8 +653,7 @@ void MSN_ABUpdateAttr(const char* szAttr, const int value)
 	MimeHeaders httpInfo;
 	char* htmlbody;
 
-	char* tResult = mAgent.getSslResult("https://by4.omega.contacts.msn.com/abservice/abservice.asmx", 
-		szData, reqHdr, status, httpInfo, htmlbody);
+	char* tResult = mAgent.getSslResult(abUrl, szData, reqHdr, status, httpInfo, htmlbody);
 
 	mir_free(reqHdr);
 	free(szData);
@@ -740,8 +741,7 @@ bool MSN_ABContactAdd(const char* szEmail, const char* szNick, const int typeId,
 	MimeHeaders httpInfo;
 	char* htmlbody;
 
-	char* tResult = mAgent.getSslResult("https://by4.omega.contacts.msn.com/abservice/abservice.asmx", 
-		szData, reqHdr, status, httpInfo, htmlbody);
+	char* tResult = mAgent.getSslResult(abUrl, szData, reqHdr, status, httpInfo, htmlbody);
 
 	mir_free(reqHdr);
 	free(szData);
