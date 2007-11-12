@@ -23,7 +23,7 @@ Contents
 1. New in this version
 ----------------------
 * New in 0.7.3
- - MSN: URL encoding was utf8 was broken
+ - MSN: URL encoding of utf8 was broken
 
 * New in 0.7.2
 Enhancements:
