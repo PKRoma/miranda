@@ -267,10 +267,10 @@ char*  HtmlEncode( const char* str )
 
 void  UrlEncode( const char* src, char* dest, size_t cbDest )
 {
-	char *d = dest;
+    BYTE* d = ( BYTE* )dest;
 	size_t   i = 0;
 
-	for ( const char *s = src; *s; s++ ) {
+	for( const BYTE* s = ( const BYTE* )src; *s; s++ ) {
 		if (( *s < '0' && *s != '.' && *s != '-' ) ||
 			 ( *s >= ':' && *s <= '?' ) ||
 			 ( *s >= '[' && *s <= '`' && *s != '_' ))
@@ -279,7 +279,7 @@ void  UrlEncode( const char* src, char* dest, size_t cbDest )
 				break;
 
 			*d++ = '%';
-			_itoa( *s, d, 16 );
+			_itoa( *s, ( char* )d, 16 );
 			d += 2;
 			i += 3;
 		}

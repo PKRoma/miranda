@@ -1,7 +1,7 @@
                    Miranda Instant Messenger Release Notes
                    ---------------------------------------
 
-                                   v0.7.2
+                                   v0.7.3
 
                           http://www.miranda-im.org
 
@@ -22,6 +22,9 @@ Contents
 
 1. New in this version
 ----------------------
+* New in 0.7.3
+ - MSN: URL encoding was utf8 was broken
+
 * New in 0.7.2
 Enhancements:
  - Jabber: Added "Toggle Member" item
