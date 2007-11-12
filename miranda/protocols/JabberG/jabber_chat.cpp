@@ -445,8 +445,8 @@ struct JabberGcLogInviteDlgJidData
 
 struct JabberGcLogInviteDlgData 
 {
-	JabberGcLogInviteDlgData(const TCHAR *room):
-		newJids(1), room(mir_tstrdup(room)) {}
+	JabberGcLogInviteDlgData(const TCHAR *room2):
+		newJids(1), room(mir_tstrdup(room2)) {}
 	~JabberGcLogInviteDlgData()
 	{
 		for (int i = 0; i < newJids.getCount(); ++i)
@@ -482,7 +482,6 @@ static BOOL CALLBACK JabberGcLogInviteDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 
 			// use new operator to properly construct LIST object
 			JabberGcLogInviteDlgData *data = new JabberGcLogInviteDlgData((TCHAR *)lParam);
-			data->room = mir_tstrdup((TCHAR *)lParam);
 			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)data);
 		}
 		return TRUE;
@@ -579,6 +578,7 @@ static BOOL CALLBACK JabberGcLogInviteDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 	case WM_DESTROY:
 		JabberGcLogInviteDlgData *data = (JabberGcLogInviteDlgData *)GetWindowLong(hwndDlg, GWL_USERDATA);
 		delete data;
+		SetWindowLong( hwndDlg, GWL_USERDATA, NULL );
 		break;
 	}
 
