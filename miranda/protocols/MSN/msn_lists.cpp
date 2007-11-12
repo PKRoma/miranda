@@ -33,7 +33,7 @@ struct MsnContact
 
 static int CompareLists( const MsnContact* p1, const MsnContact* p2 )
 {
-	return strcmp(p1->email, p2->email);
+	return _stricmp(p1->email, p2->email);
 }
 
 static LIST<MsnContact> contList( 10, CompareLists );
