@@ -237,8 +237,8 @@ typedef struct SESSION_INFO_TYPE
 	HWND        hwndStatus;
 	time_t      LastTime;
 
-	COMMAND_INFO*  lpCommands;
-	COMMAND_INFO*  lpCurrentCommand;
+	TCmdList *cmdList;
+	TCmdList *cmdListCurrent;
 	LOGINFO*       pLog;
 	LOGINFO*       pLogEnd;
 	USERINFO*      pUsers;
@@ -400,9 +400,6 @@ BOOL          SM_GiveStatus(const TCHAR* pszID, const char* pszModule, const TCH
 BOOL          SM_SetContactStatus(const TCHAR* pszID, const char* pszModule, const TCHAR* pszUID, WORD pszStatus);
 BOOL          SM_TakeStatus(const TCHAR* pszID, const char* pszModule, const TCHAR* pszUID, const TCHAR* pszStatus);
 BOOL          SM_MoveUser(const TCHAR* pszID, const char* pszModule, const TCHAR* pszUID);
-void          SM_AddCommand(const TCHAR* pszID, const char* pszModule, const char* lpNewCommand);
-char*         SM_GetPrevCommand(const TCHAR* pszID, const char* pszModule);
-char*         SM_GetNextCommand(const TCHAR* pszID, const char* pszModule);
 int           SM_GetCount(const char* pszModule);
 SESSION_INFO* SM_FindSessionByIndex(const char* pszModule, int iItem);
 char*         SM_GetUsers(SESSION_INFO* si);
@@ -461,7 +458,6 @@ BOOL          IsEventSupported(int eventType);
 BOOL          LogToFile(SESSION_INFO* si, GCEVENT * gce);
 
 // message.c
-char*         Message_GetFromStream(HWND hwndDlg, SESSION_INFO* si);
 TCHAR*        DoRtfToTags( char* pszRtfText, SESSION_INFO* si);
 
 //////////////////////////////////////////////////////////////////////////////////

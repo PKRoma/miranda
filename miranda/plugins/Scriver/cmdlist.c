@@ -1,10 +1,10 @@
 /*
 Scriver
 
-Copyright 2000-2005 Miranda ICQ/IM project, 
+Copyright 2000-2005 Miranda ICQ/IM project,
 Copyright 2005 Piotr Piastucki
 
-all portions of this codebase are copyrighted to the people 
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -26,42 +26,30 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <string.h>
 #include "commonheaders.h"
 
-static unsigned long tcmdlist_hash(const TCHAR *data) {
-	unsigned long hash = 0;
-	int i, shift = 0;
 
-	for(i=0; data[i]; i++) {
-		hash ^= data[i]<<shift;
-		if(shift>24) hash ^= (data[i]>>(32-shift))&0x7F;
-		shift = (shift+5)&0x1F;
-	}
-	return hash;
-}
-
-TCmdList *tcmdlist_append(TCmdList *list, TCHAR *data) {
+TCmdList *tcmdlist_append(TCmdList *list, const char *data, int maxSize, BOOL temporary) {
 	TCmdList *n;
 	TCmdList *new_list = mir_alloc(sizeof(TCmdList));
 	TCmdList *attach_to = NULL;
-	
+
 	if (!data) {
 		mir_free(new_list);
 		return list;
 	}
+	new_list->temporary = temporary;
 	new_list->next = NULL;
-	new_list->szCmd = mir_tstrdup(data);
-	new_list->hash = tcmdlist_hash(data);
+	new_list->szCmd = mir_strdup(data);
 	for (n=list; n!=NULL; n=n->next) {
 		attach_to = n;
 	}
 	if (attach_to==NULL) {
 		new_list->prev = NULL;
 		return new_list;
-	} 
-	else {
+	} else {
 		new_list->prev = attach_to;
 		attach_to->next = new_list;
-		if (tcmdlist_len(list)>20) {
-			list = tcmdlist_remove(list, list->szCmd);
+		if (tcmdlist_len(list)>maxSize) {
+			list = tcmdlist_remove_first(list);
 		}
 		return list;
 	}
@@ -77,39 +65,28 @@ TCmdList *tcmdlist_remove_first(TCmdList *list) {
 	return list;
 }
 
-
-TCmdList *tcmdlist_remove(TCmdList *list, TCHAR *data) {
-	TCmdList *n;
-	unsigned long hash;
-
-	if (!data) return list;
-	hash = tcmdlist_hash(data);
-	for (n=list; n!=NULL; n=n->next) {
-		if (n->hash==hash&&!_tcscmp(n->szCmd, data)) {
-			if (n->next) n->next->prev = n->prev;
-			if (n->prev) n->prev->next = n->next;
-			if (n==list) list = n->next;
-			mir_free(n->szCmd);
-			mir_free(n);
-			return list;
-		}
-	}
+TCmdList *tcmdlist_remove(TCmdList *list, TCmdList *n) {
+	if (n->next) n->next->prev = n->prev;
+	if (n->prev) n->prev->next = n->next;
+	if (n==list) list = n->next;
+	mir_free(n->szCmd);
+	mir_free(n);
 	return list;
 }
 
-TCmdList *tcmdlist_append2(TCmdList *list, HANDLE hContact, TCHAR *data) {
+TCmdList *tcmdlist_append2(TCmdList *list, HANDLE hContact, const char *data) {
 	TCmdList *n;
 	TCmdList *new_list = mir_alloc(sizeof(TCmdList));
 	TCmdList *attach_to = NULL;
-	
+
 	if (!data) {
 		mir_free(new_list);
 		return list;
 	}
+	new_list->temporary = FALSE;
 	new_list->next = NULL;
 	new_list->hContact = hContact;
-	new_list->szCmd = mir_tstrdup(data);
-	new_list->hash = tcmdlist_hash(data);
+	new_list->szCmd = mir_strdup(data);
 	list = tcmdlist_remove2(list, hContact);
 	for (n=list; n!=NULL; n=n->next) {
 		attach_to = n;
@@ -117,7 +94,7 @@ TCmdList *tcmdlist_append2(TCmdList *list, HANDLE hContact, TCHAR *data) {
 	if (attach_to==NULL) {
 		new_list->prev = NULL;
 		return new_list;
-	} 
+	}
 	else {
 		new_list->prev = attach_to;
 		attach_to->next = new_list;
@@ -164,7 +141,7 @@ TCmdList *tcmdlist_last(TCmdList *list) {
 	TCmdList *n;
 
 	for (n=list; n!=NULL; n=n->next) {
-		if (!n->next) 
+		if (!n->next)
 			return n;
 	}
 	return NULL;

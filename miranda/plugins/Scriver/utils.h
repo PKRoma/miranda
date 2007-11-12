@@ -38,5 +38,11 @@ extern char* u2a( const wchar_t* src, int codepage );
 extern wchar_t* a2u( const char* src, int codepage );
 extern void logInfo(const char *fmt, ...);
 extern int GetRichTextLength(HWND hwnd, int codepage, BOOL inBytes);
-extern void InputAreaContextMenu(HWND hwnd, WPARAM wOaram, LPARAM lParam, HANDLE hContact);
+extern TCHAR* GetRichText(HWND hwnd, int codepage);
+extern char* GetRichTextRTF(HWND hwndDlg);
+extern char* GetRichTextEncoded(HWND hwnd, int codepage);
+extern int SetRichTextRTF(HWND hwnd, const char *text);
+extern int SetRichTextEncoded(HWND hwnd, const char *text, int codepage);
+extern void InputAreaContextMenu(HWND hwnd, WPARAM wParam, LPARAM lParam, HANDLE hContact);
+extern int InputAreaShortcuts(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 #endif

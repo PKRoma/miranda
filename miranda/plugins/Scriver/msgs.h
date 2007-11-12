@@ -134,7 +134,6 @@ struct MessageWindowData
 	WORD wOldStatus;
 	TCmdList *cmdList;
 	TCmdList *cmdListCurrent;
-	TCmdList *cmdListNew;
 	time_t	startTime;
 	time_t 	lastEventTime;
 	int    	lastEventType;

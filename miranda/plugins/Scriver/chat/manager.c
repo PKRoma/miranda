@@ -102,7 +102,6 @@ int SM_RemoveSession( const TCHAR* pszID, const char* pszModule)
 	{
 		if (((!pszID && pTemp->iType != GCW_SERVER) || !lstrcmpi(pTemp->ptszID,pszID)) && !lstrcmpiA(pTemp->pszModule,pszModule)) // match
 		{
-			COMMAND_INFO *pCurComm;
 			DWORD dw = pTemp->dwItemData;
 
 			if (pTemp->hWnd )
@@ -143,15 +142,7 @@ int SM_RemoveSession( const TCHAR* pszID, const char* pszModule)
 			#endif
 
 			// delete commands
-			pCurComm = pTemp->lpCommands;
-			while (pCurComm != NULL)
-			{
-				COMMAND_INFO *pNext = pCurComm->next;
-				mir_free(pCurComm->lpCommand);
-				mir_free(pCurComm);
-				pCurComm = pNext;
-			}
-
+			tcmdlist_free(pTemp->cmdList);
 			mir_free(pTemp);
 			if (pszID)
 				return (int)dw;
@@ -703,88 +694,12 @@ BOOL SM_RemoveAll (void)
 		mir_free( m_WndList->ptszStatusbarText );
 		mir_free( m_WndList->ptszTopic );
 		mir_free( m_WndList->pszHeader);
-
-		while (m_WndList->lpCommands != NULL) {
-			COMMAND_INFO *pNext = m_WndList->lpCommands->next;
-			mir_free(m_WndList->lpCommands->lpCommand);
-			mir_free(m_WndList->lpCommands);
-			m_WndList->lpCommands = pNext;
-		}
-
+		tcmdlist_free(m_WndList->cmdList);
 		mir_free(m_WndList);
 		m_WndList = pLast;
 	}
 	m_WndList = NULL;
 	return TRUE;
-}
-
-void SM_AddCommand(const TCHAR* pszID, const char* pszModule, const char* lpNewCommand)
-{
-	SESSION_INFO* pTemp = m_WndList;
-	while ( pTemp != NULL ) {
-		if ( lstrcmpi( pTemp->ptszID, pszID ) == 0 && lstrcmpiA( pTemp->pszModule, pszModule ) == 0) { // match
-			COMMAND_INFO *node = mir_alloc(sizeof(COMMAND_INFO));
-			node->lpCommand = mir_strdup( lpNewCommand );
-			node->prev = NULL; // always added at beginning!
-			node->next = pTemp->lpCommands;
-			// new commands are added at start
-			if (pTemp->lpCommands != NULL) {
-				pTemp->lpCommands->prev = node;
-			}
-			pTemp->lpCommands = node;
-			pTemp->lpCurrentCommand = NULL; // current command
-			pTemp->wCommandsNum++;
-			// prune the list
-			if (pTemp->wCommandsNum > WINDOWS_COMMANDS_MAX) {
-				COMMAND_INFO *pCurComm = pTemp->lpCommands;
-				COMMAND_INFO *pLast;
-				while (pCurComm->next != NULL) { pCurComm = pCurComm->next; }
-				pLast = pCurComm->prev;
-				pLast->next = NULL;
-				mir_free(pCurComm->lpCommand);
-				mir_free(pCurComm);
-				pTemp->wCommandsNum--;
-		}	}
-		pTemp = pTemp->next;
-}	}
-
-char* SM_GetPrevCommand(const TCHAR* pszID, const char* pszModule) // get previous command. returns NULL if previous command does not exist. current command remains as it was.
-{
-	SESSION_INFO* pTemp = m_WndList;
-	while ( pTemp != NULL ) {
-		if ( lstrcmpi( pTemp->ptszID, pszID ) == 0 && lstrcmpiA( pTemp->pszModule, pszModule ) == 0) { // match
-			COMMAND_INFO *pPrevCmd = NULL;
-			if (pTemp->lpCurrentCommand != NULL) {
-				if (pTemp->lpCurrentCommand->next != NULL) // not NULL
-					pPrevCmd = pTemp->lpCurrentCommand->next; // next command (newest at beginning)
-				else
-					pPrevCmd = pTemp->lpCurrentCommand;
-			}
-			else pPrevCmd = pTemp->lpCommands;
-
-			pTemp->lpCurrentCommand = pPrevCmd; // make it the new command
-			return(((pPrevCmd) ? (pPrevCmd->lpCommand) : (NULL)));
-		}
-		pTemp = pTemp->next;
-	}
-	return(NULL);
-}
-
-char* SM_GetNextCommand(const TCHAR* pszID, const char* pszModule) // get next command. returns NULL if next command does not exist. current command becomes NULL (a prev command after this one will get you the last command)
-{
-	SESSION_INFO* pTemp = m_WndList;
-	while ( pTemp != NULL ) {
-		if ( lstrcmpi( pTemp->ptszID, pszID ) == 0 && lstrcmpiA( pTemp->pszModule, pszModule ) == 0) { // match
-			COMMAND_INFO *pNextCmd = NULL;
-			if (pTemp->lpCurrentCommand != NULL)
-				pNextCmd = pTemp->lpCurrentCommand->prev; // last command (newest at beginning)
-
-			pTemp->lpCurrentCommand = pNextCmd; // make it the new command
-			return(((pNextCmd) ? (pNextCmd->lpCommand) : (NULL)));
-		}
-		pTemp = pTemp->next;
-	}
-	return(NULL);
 }
 
 int SM_GetCount(const char* pszModule)

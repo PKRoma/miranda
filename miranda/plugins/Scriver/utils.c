@@ -198,6 +198,116 @@ int GetRichTextLength(HWND hwnd, int codepage, BOOL inBytes) {
 	return (int) SendMessage(hwnd, EM_GETTEXTLENGTHEX, (WPARAM)&gtl, 0);
 }
 
+
+TCHAR *GetRichText(HWND hwnd, int codepage) {
+	GETTEXTEX  gt = {0};
+	TCHAR *textBuffer = NULL;
+	int textBufferSize;
+#if defined( _UNICODE )
+	codepage = 1200;
+#endif
+	textBufferSize = GetRichTextLength(hwnd, codepage, TRUE);
+	if (textBufferSize > 0) {
+		textBufferSize += sizeof(TCHAR);
+		textBuffer = (TCHAR *) mir_alloc(textBufferSize);
+		gt.cb = textBufferSize;
+		gt.flags = GT_USECRLF;
+		gt.codepage = codepage;
+		SendMessage(hwnd, EM_GETTEXTEX, (WPARAM) &gt, (LPARAM) textBuffer);
+	}
+	return textBuffer;
+}
+
+char *GetRichTextEncoded(HWND hwnd, int codepage) {
+#if defined( _UNICODE )
+	TCHAR *textBuffer = GetRichText(hwnd, codepage);
+	char *textUtf = NULL;
+	if (textBuffer != NULL) {
+		textUtf = mir_utf8encodeW(textBuffer);
+		mir_free(textBuffer);
+	}
+	return textUtf;
+#else
+	return GetRichText(hwnd, codepage);
+#endif
+}
+
+int SetRichTextEncoded(HWND hwnd, const char *text, int codepage) {
+	TCHAR *textToSet;
+	SETTEXTEX  st;
+	st.flags = ST_DEFAULT;
+	st.codepage = codepage;
+	#ifdef _UNICODE
+		st.codepage = 1200;
+		textToSet = mir_utf8decodeW(text);
+	#else
+		textToSet = text;
+	#endif
+	SendMessage(hwnd, EM_SETTEXTEX, (WPARAM) &st, (LPARAM)textToSet);
+	#ifdef _UNICODE
+		mir_free(textToSet);
+	#endif
+	return GetRichTextLength(hwnd, st.codepage, FALSE);
+}
+
+int SetRichTextRTF(HWND hwnd, const char *text) {
+	TCHAR *textToSet;
+	SETTEXTEX  st;
+	st.flags = ST_DEFAULT;
+	st.codepage = CP_ACP;
+	SendMessage(hwnd, EM_SETTEXTEX, (WPARAM) &st, (LPARAM)text);
+	return GetRichTextLength(hwnd, st.codepage, FALSE);
+}
+
+static DWORD CALLBACK RichTextStreamCallback(DWORD dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
+{
+	static DWORD dwRead;
+	char ** ppText = (char **) dwCookie;
+
+	if (*ppText == NULL) {
+		*ppText = mir_alloc(cb + 1);
+		memcpy(*ppText, pbBuff, cb);
+		(*ppText)[cb] = 0;
+		*pcb = cb;
+		dwRead = cb;
+	}
+	else {
+		char  *p = mir_alloc(dwRead + cb + 1);
+		memcpy(p, *ppText, dwRead);
+		memcpy(p+dwRead, pbBuff, cb);
+		p[dwRead + cb] = 0;
+		mir_free(*ppText);
+		*ppText = p;
+		*pcb = cb;
+		dwRead += cb;
+	}
+
+	return 0;
+}
+
+char* GetRichTextRTF(HWND hwndDlg)
+{
+	EDITSTREAM stream;
+	char* pszText = NULL;
+	DWORD dwFlags;
+
+	if (hwndDlg == 0)
+		return NULL;
+
+	ZeroMemory(&stream, sizeof(stream));
+	stream.pfnCallback = RichTextStreamCallback;
+	stream.dwCookie = (DWORD) &pszText; // pass pointer to pointer
+
+	#if defined( _UNICODE )
+		dwFlags = SF_RTFNOOBJS | SFF_PLAINRTF | SF_USECODEPAGE | (CP_UTF8 << 16);
+	#else
+		dwFlags = SF_RTFNOOBJS | SFF_PLAINRTF;
+	#endif
+	SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), EM_STREAMOUT, dwFlags, (LPARAM) & stream);
+	return pszText; // pszText contains the text
+}
+
+
 void InputAreaContextMenu(HWND hwnd, WPARAM wParam, LPARAM lParam, HANDLE hContact) {
 
 	HMENU hMenu, hSubMenu;
@@ -279,4 +389,77 @@ void InputAreaContextMenu(HWND hwnd, WPARAM wParam, LPARAM lParam, HANDLE hConta
 	}
 	DestroyMenu(hMenu);
 	//PostMessage(hwnd, WM_KEYUP, 0, 0 );
+}
+
+int InputAreaShortcuts(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
+	BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
+	BOOL isCtrl = (GetKeyState(VK_CONTROL) & 0x8000) && !isAlt;
+	switch (msg) {
+		case WM_KEYDOWN:
+		{
+			if (wParam == VK_ESCAPE && isShift) { // shift+ESC
+				ShowWindow(GetParent(GetParent(hwnd)), SW_MINIMIZE);
+				return FALSE;
+			}
+			if (wParam == VK_TAB && isCtrl && isShift) { // ctrl-shift tab
+				SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEPREV, 0, (LPARAM)GetParent(hwnd));
+				return FALSE;
+			}
+			if (wParam == VK_TAB && isCtrl) { // ctrl tab
+				SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATENEXT, 0, (LPARAM)GetParent(hwnd));
+				return FALSE;
+			}
+			if (wParam == VK_PRIOR && isCtrl) { // page up
+				SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEPREV, 0, (LPARAM)GetParent(hwnd));
+				return FALSE;
+			}
+			if (wParam == VK_NEXT && isCtrl) { // page down
+				SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATENEXT, 0, (LPARAM)GetParent(hwnd));
+				return FALSE;
+			}
+			if (wParam == VK_F4 && isCtrl && !isShift) { // ctrl + F4
+				SendMessage(GetParent(hwnd), WM_CLOSE, 0, 0);
+				return FALSE;
+			}
+			if (wParam == 'A' && isCtrl) { //ctrl-a; select all
+				SendMessage(hwnd, EM_SETSEL, 0, -1);
+				return FALSE;
+			}
+			if (wParam == 'I' && isCtrl) { // ctrl-i (italics)
+				return FALSE;
+			}
+			if (wParam == 'L' && isCtrl) { // ctrl-l clear log
+				SendMessage(GetParent(hwnd), DM_CLEARLOG, 0, 0);
+				return FALSE;
+			}
+			if (wParam == VK_SPACE && isCtrl) // ctrl-space (paste clean text)
+				return FALSE;
+
+			if (wParam == 'T' && isCtrl && isShift) {     // ctrl-shift-t
+				SendMessage(GetParent(GetParent(hwnd)), DM_SWITCHTOOLBAR, 0, 0);
+				return FALSE;
+			}
+			if (wParam == 'S' && isCtrl && isShift) {     // ctrl-shift-s
+				SendMessage(GetParent(GetParent(hwnd)), DM_SWITCHSTATUSBAR, 0, 0);
+				return FALSE;
+			}
+			if (wParam == 'M' && isCtrl && isShift) {     // ctrl-shift-m
+				SendMessage(GetParent(GetParent(hwnd)), DM_SWITCHTITLEBAR, 0, 0);
+				return FALSE;
+			}
+			if (wParam == 'W' && isCtrl && !isAlt) {     // ctrl-w; close
+				SendMessage(GetParent(hwnd), WM_CLOSE, 0, 0);
+				return FALSE;
+			}
+			if (wParam == 'R' && isCtrl && isShift) {     // ctrl-shift-r
+				SendMessage(GetParent(hwnd), DM_SWITCHRTL, 0, 0);
+				return FALSE;
+			}
+		}
+		break;
+
+	}
+	return -1;
+
 }
