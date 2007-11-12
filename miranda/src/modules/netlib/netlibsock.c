@@ -54,7 +54,7 @@ int NetlibSend(WPARAM wParam,LPARAM lParam)
 	NetlibLeaveNestedCS( &nlc->ncsSend );
 
 	{	NETLIBNOTIFY nln = { nlb, result };
-		CallHookSubscribers( hSendEvent, (WPARAM)&nln, (LPARAM)&nlc->nlu );
+		CallHookSubscribers( hSendEvent, (WPARAM)&nln, (LPARAM)&nlc->nlu->user );
 	}
 	return result;
 }
@@ -84,7 +84,7 @@ int NetlibRecv(WPARAM wParam,LPARAM lParam)
 	NetlibDumpData( nlc, nlb->buf, recvResult, 0, nlb->flags );
 
 	{	NETLIBNOTIFY nln = { nlb, recvResult };
-		CallHookSubscribers( hRecvEvent, (WPARAM)&nln, (LPARAM)&nlc->nlu );
+		CallHookSubscribers( hRecvEvent, (WPARAM)&nln, (LPARAM)&nlc->nlu->user );
 	}
 	return recvResult;
 }
