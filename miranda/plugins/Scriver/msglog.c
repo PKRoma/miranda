@@ -434,7 +434,7 @@ static char *CreateRTFHeader(struct MessageWindowData *dat)
 	buffer = (char *) mir_alloc(bufferAlloced);
 	buffer[0] = '\0';
 	if (dat->flags & SMF_RTL)
-		AppendToBuffer(&buffer,&bufferEnd,&bufferAlloced,"{\\rtf1\\ansi\\deff0{\\fonttbl");
+		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced,"{\\rtf1\\ansi\\deff0{\\fonttbl");
 	else
 		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "{\\rtf1\\ansi\\deff0{\\fonttbl");
 	for (i = 0; i < fontOptionsListSize; i++) {

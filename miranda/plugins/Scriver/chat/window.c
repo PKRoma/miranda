@@ -1223,10 +1223,10 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
                if (si->iType != GCW_CHATROOM || !si->bFilterEnabled || (si->iLogFilterFlags&pLog->iType) != 0)
                   index++;
             }
-            Log_StreamInEvent(hwndDlg, pLog, si, TRUE, FALSE);
+            Log_StreamInEvent(hwndDlg, pLog, si, TRUE);
             forkthread(phase2, 0, (void *)si);
          }
-         else Log_StreamInEvent(hwndDlg, si->pLogEnd, si, TRUE, FALSE);
+         else Log_StreamInEvent(hwndDlg, si->pLogEnd, si, TRUE);
       }
       else SendMessage(hwndDlg, GC_EVENT_CONTROL + WM_USER+500, WINDOW_CLEARLOG, 0);
       break;
@@ -1234,18 +1234,18 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
    case GC_REDRAWLOG2:
       si->LastTime = 0;
       if (si->pLog)
-         Log_StreamInEvent(hwndDlg, si->pLogEnd, si, TRUE, FALSE);
+         Log_StreamInEvent(hwndDlg, si->pLogEnd, si, TRUE);
       break;
 
    case GC_REDRAWLOG3:
       si->LastTime = 0;
       if (si->pLog)
-         Log_StreamInEvent(hwndDlg, si->pLogEnd, si, TRUE, TRUE);
+         Log_StreamInEvent(hwndDlg, si->pLogEnd, si, TRUE);
       break;
 
    case GC_ADDLOG:
       if (si->pLogEnd)
-         Log_StreamInEvent(hwndDlg, si->pLog, si, FALSE, FALSE);
+         Log_StreamInEvent(hwndDlg, si->pLog, si, FALSE);
       else
          SendMessage(hwndDlg, GC_EVENT_CONTROL + WM_USER+500, WINDOW_CLEARLOG, 0);
       break;
@@ -1841,7 +1841,7 @@ LABEL_SHOWWINDOW:
             if (!IsWindowEnabled(GetDlgItem(hwndDlg,IDOK)))
                break;
 
-            pszRtf = GetRichTextRTF(hwndDlg);
+            pszRtf = GetRichTextRTF(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
            	si->cmdList = tcmdlist_append(si->cmdList, pszRtf, 20, FALSE);
             ptszText = DoRtfToTags(pszRtf, si);
             p1 = _tcschr(ptszText, '\0');

@@ -39,7 +39,7 @@ extern wchar_t* a2u( const char* src, int codepage );
 extern void logInfo(const char *fmt, ...);
 extern int GetRichTextLength(HWND hwnd, int codepage, BOOL inBytes);
 extern TCHAR* GetRichText(HWND hwnd, int codepage);
-extern char* GetRichTextRTF(HWND hwndDlg);
+extern char* GetRichTextRTF(HWND hwnd);
 extern char* GetRichTextEncoded(HWND hwnd, int codepage);
 extern int SetRichTextRTF(HWND hwnd, const char *text);
 extern int SetRichTextEncoded(HWND hwnd, const char *text, int codepage);

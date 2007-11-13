@@ -258,6 +258,7 @@ typedef struct
 	LOGINFO*      lin;
 	BOOL          bStripFormat;
 	BOOL          bRedraw;
+	BOOL		  isFirst;
 	SESSION_INFO* si;
 }
 	LOGSTREAMDATA;
@@ -328,7 +329,7 @@ void UpgradeCheck(void);
 BOOL CALLBACK DlgProcColorToolWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 //log.c
-void   Log_StreamInEvent(HWND hwndDlg, LOGINFO* lin, SESSION_INFO* si, BOOL bRedraw, BOOL bPhaseTwo);
+void   Log_StreamInEvent(HWND hwndDlg, LOGINFO* lin, SESSION_INFO* si, BOOL bRedraw);
 void   LoadMsgLogBitmaps(void);
 void   FreeMsgLogBitmaps(void);
 void   ValidateFilename (char * filename);

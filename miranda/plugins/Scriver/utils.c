@@ -285,13 +285,13 @@ static DWORD CALLBACK RichTextStreamCallback(DWORD dwCookie, LPBYTE pbBuff, LONG
 	return 0;
 }
 
-char* GetRichTextRTF(HWND hwndDlg)
+char* GetRichTextRTF(HWND hwnd)
 {
 	EDITSTREAM stream;
 	char* pszText = NULL;
 	DWORD dwFlags;
 
-	if (hwndDlg == 0)
+	if (hwnd == 0)
 		return NULL;
 
 	ZeroMemory(&stream, sizeof(stream));
@@ -303,7 +303,7 @@ char* GetRichTextRTF(HWND hwndDlg)
 	#else
 		dwFlags = SF_RTFNOOBJS | SFF_PLAINRTF;
 	#endif
-	SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), EM_STREAMOUT, dwFlags, (LPARAM) & stream);
+	SendMessage(hwnd, EM_STREAMOUT, dwFlags, (LPARAM) & stream);
 	return pszText; // pszText contains the text
 }
 

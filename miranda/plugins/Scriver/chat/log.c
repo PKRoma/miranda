@@ -374,8 +374,10 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 		if (streamData->si->iType != GCW_CHATROOM || !streamData->si->bFilterEnabled || (streamData->si->iLogFilterFlags&lin->iType) != 0)
 		{
 			// create new line, and set font and color
-			Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\par%s ", Log_SetStyle(0, 0));
-
+			if (!streamData->isFirst) {
+				Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\par");
+			}
+			Log_Append(&buffer, &bufferEnd, &bufferAlloced, "%s ", Log_SetStyle(0, 0));
 			// Insert icon
 			if ((lin->iType&g_Settings.dwIconFlags) || (lin->bIsHighlighted&&g_Settings.dwIconFlags&GC_EVENT_HIGHLIGHT))
 			{
@@ -442,12 +444,12 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 			}
 
 			// Insert the message
-			{
-				i = lin->bIsHighlighted?16:EventToIndex(lin);
-				Log_Append(&buffer, &bufferEnd, &bufferAlloced, "%s ", Log_SetStyle(i, i));
-				streamData->lin = lin;
-				AddEventToBuffer(&buffer, &bufferEnd, &bufferAlloced, streamData);
-			}
+			i = lin->bIsHighlighted?16:EventToIndex(lin);
+			Log_Append(&buffer, &bufferEnd, &bufferAlloced, "%s ", Log_SetStyle(i, i));
+			streamData->lin = lin;
+			AddEventToBuffer(&buffer, &bufferEnd, &bufferAlloced, streamData);
+
+			streamData->isFirst = FALSE;
 
 		}
 		lin = lin->prev;
@@ -488,7 +490,7 @@ static DWORD CALLBACK Log_StreamCallback(DWORD dwCookie, LPBYTE pbBuff, LONG cb,
 	return 0;
 }
 
-void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedraw, BOOL bPhaseTwo)
+void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedraw)
 {
 	EDITSTREAM stream;
 	LOGSTREAMDATA streamData;
@@ -507,6 +509,7 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 	streamData.si = si;
 	streamData.lin = lin;
 	streamData.bStripFormat = FALSE;
+	streamData.isFirst = bRedraw ? 1 : (GetRichTextLength(hwndRich, CP_ACP, FALSE) == 0);
 
 	//	bPhaseTwo = bRedraw && bPhaseTwo;
 
@@ -519,7 +522,7 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 		stream.dwCookie = (DWORD) & streamData;
 		scroll.cbSize= sizeof(SCROLLINFO);
 		scroll.fMask= SIF_RANGE | SIF_POS|SIF_PAGE;
-		GetScrollInfo(GetDlgItem(hwndDlg, IDC_CHAT_LOG), SB_VERT, &scroll);
+		GetScrollInfo(hwndRich, SB_VERT, &scroll);
 		SendMessage(hwndRich, EM_GETSCROLLPOS, 0, (LPARAM) &point);
 
 		// do not scroll to bottom if there is a selection
