@@ -170,7 +170,7 @@ void MSN_CreateContList(void)
 
 	bool *used = (bool*)mir_calloc(contList.getCount()*sizeof(bool));
 
-	char cxml[2048]; 
+	char cxml[8192]; 
 	size_t sz;
 
 	sz = mir_snprintf(cxml , sizeof(cxml), "<ml l=\"1\">");
