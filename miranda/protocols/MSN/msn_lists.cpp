@@ -171,9 +171,9 @@ void MSN_CreateContList(void)
 	bool *used = (bool*)mir_calloc(contList.getCount()*sizeof(bool));
 
 	char cxml[2048]; 
-	size_t sz = 0;
+	size_t sz;
 
-	sz += mir_snprintf(cxml , sizeof(cxml), "<ml l=\"1\">");
+	sz = mir_snprintf(cxml , sizeof(cxml), "<ml l=\"1\">");
 		
 	for ( int i=0; i < contList.getCount(); i++ )
 	{
@@ -202,7 +202,7 @@ void MSN_CreateContList(void)
 				*(char*)dom = '@';
 				used[j] = true;
 			}
-			if (used[j] && sz > 1100)
+			if (used[j] && sz > 7400)
 			{
 				sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz, "</%c></ml>", lastds ? 'd' : 't' );
 				msnNsThread->sendPacket("ADL", "%d\r\n%s", sz, cxml);
