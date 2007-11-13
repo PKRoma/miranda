@@ -647,6 +647,9 @@ DWORD  __stdcall  JSetStringUtf( HANDLE hContact, const char* valueName, const c
 DWORD  __stdcall  JSetWord( HANDLE hContact, const char* valueName, int parValue );
 char*  __stdcall  JTranslate( const char* str );
 
+TCHAR* __stdcall  JGetStringCrypt( HANDLE hContact, char* valueName );
+DWORD  __stdcall  JSetStringCrypt( HANDLE hContact, char* valueName, const TCHAR* parValue );
+
 //---- jabber_thread.cpp -------------------------------------------
 
 void __cdecl JabberServerThread( ThreadData* info );
@@ -718,6 +721,7 @@ TCHAR*                  JabberGetXmlLang();
 void JabberComboLoadRecentStrings(HWND hwndDlg, UINT idcCombo, char *param);
 void JabberComboAddRecentString(HWND hwndDlg, UINT idcCombo, char *param, TCHAR *string);
 void JabberUtilsRebuildStatusMenu();
+TCHAR *JabberStrIStr(TCHAR *str, TCHAR *substr);
 void JabberBitmapPremultiplyChannels(HBITMAP hBitmap);
 
 //---- jabber_vcard.c -----------------------------------------------

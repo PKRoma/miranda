@@ -508,7 +508,7 @@ static void sttTreeList_FilterItems(HTREELISTITEM hItem, LPARAM data)
 {
 	int i = 0;
 	for (i = 0; i < hItem->text.getCount(); ++i)
-		if (_tcsstr(hItem->text[i], (TCHAR *)data))
+		if (JabberStrIStr(hItem->text[i], (TCHAR *)data))
 			break;
 
 	if (i < hItem->text.getCount())

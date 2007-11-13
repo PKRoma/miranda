@@ -1270,6 +1270,20 @@ void JabberUtilsRebuildStatusMenu()
 }
 
 ////////////////////////////////////////////////////////////////////////
+// case-insensitive _tcsstr
+TCHAR *JabberStrIStr(TCHAR *str, TCHAR *substr)
+{
+	TCHAR *str_up = NEWTSTR_ALLOCA(str);
+	TCHAR *substr_up = NEWTSTR_ALLOCA(substr);
+
+	CharUpperBuff(str_up, lstrlen(str_up));
+	CharUpperBuff(substr_up, lstrlen(substr_up));
+
+	TCHAR *p = _tcsstr(str_up, substr_up);
+	return p ? (str + (p - str_up)) : NULL;
+}
+
+////////////////////////////////////////////////////////////////////////
 // Premultiply bitmap channels for 32-bit bitmaps
 void JabberBitmapPremultiplyChannels(HBITMAP hBitmap)
 {

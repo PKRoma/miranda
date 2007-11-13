@@ -313,6 +313,44 @@ static LRESULT CALLBACK JabberValidateUsernameWndProc( HWND hwndEdit, UINT msg, 
 	return CallWindowProc( oldProc, hwndEdit, msg, wParam, lParam );
 }
 
+static void sttQueryServerListXmlCallback( XmlNode *node, void *userdata )
+{
+	TCHAR *xmlns = JabberXmlGetAttrValue(node, "xmlns");
+	if (xmlns && !lstrcmp(xmlns, _T(JABBER_FEAT_DISCO_ITEMS)) && !lstrcmpA(node->name, "query") &&
+		IsWindow((HWND)userdata))
+		SendMessage((HWND)userdata, WM_JABBER_REFRESH, 0, (LPARAM)node);
+	else
+		SendMessage((HWND)userdata, WM_JABBER_REFRESH, 0, (LPARAM)NULL);
+}
+
+static void sttQueryServerListThread(void *arg)
+{
+	NETLIBHTTPREQUEST request = {0};
+	request.cbSize = sizeof(request);
+	request.requestType = REQUEST_GET;
+	request.flags = NLHRF_GENERATEHOST|NLHRF_SMARTREMOVEHOST|NLHRF_SMARTAUTHHEADER|NLHRF_HTTP11;
+	request.szUrl = "http://www.jabber.org/servers.xml";
+
+	NETLIBHTTPREQUEST *result = (NETLIBHTTPREQUEST *)CallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM)hNetlibUser, (LPARAM)&request);
+	if ( !result ) {
+		SendMessage((HWND)arg, WM_JABBER_REFRESH, 0, (LPARAM)NULL);
+		return;
+	}
+
+	if ((result->resultCode == 200) && result->dataLength && result->pData)
+	{
+		XmlState xmlstate;
+		JabberXmlInitState(&xmlstate);
+		JabberXmlSetCallback(&xmlstate, 1, ELEM_CLOSE, sttQueryServerListXmlCallback, arg);
+		JabberXmlParse(&xmlstate, result->pData);
+		JabberXmlDestroyState(&xmlstate);
+	}
+	else
+		SendMessage((HWND)arg, WM_JABBER_REFRESH, 0, (LPARAM)NULL);
+
+	CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)result);
+}
+
 static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	switch ( msg ) {
@@ -403,6 +441,9 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			CheckDlgButton( hwndDlg, IDC_KEEPALIVE, JGetByte( "KeepAlive", TRUE ));
 			CheckDlgButton( hwndDlg, IDC_ROSTER_SYNC, JGetByte( "RosterSync", FALSE ));
 
+			SendDlgItemMessage(hwndDlg, IDC_EDIT_LOGIN_SERVER, CB_ADDSTRING, 0, (LPARAM)TranslateT("Loading..."));
+			SetWindowLong(GetDlgItem(hwndDlg, IDC_EDIT_LOGIN_SERVER), GWL_USERDATA, 0);
+
 			if ( !DBGetContactSettingString( NULL, jabberProtoName, "Jud", &dbv )) {
 				SetDlgItemTextA( hwndDlg, IDC_JUD, dbv.pszVal );
 				JFreeVariant( &dbv );
@@ -423,8 +464,37 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			WNDPROC oldProc = ( WNDPROC ) GetWindowLong( GetDlgItem( hwndDlg, IDC_EDIT_USERNAME ), GWL_WNDPROC );
 			SetWindowLong( GetDlgItem( hwndDlg, IDC_EDIT_USERNAME ), GWL_USERDATA, ( LONG ) oldProc );
 			SetWindowLong( GetDlgItem( hwndDlg, IDC_EDIT_USERNAME ), GWL_WNDPROC, ( LONG ) JabberValidateUsernameWndProc );
+
 			return TRUE;
 		}
+	case WM_JABBER_REFRESH:
+		{
+			SetWindowLong(GetDlgItem(hwndDlg, IDC_EDIT_LOGIN_SERVER), GWL_USERDATA, lParam ? 1 : 0);
+
+			int len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_EDIT_LOGIN_SERVER)) + 1;
+			TCHAR *server = (TCHAR *)_alloca(len * sizeof(TCHAR));
+			GetDlgItemText(hwndDlg, IDC_EDIT_LOGIN_SERVER, server, len);
+
+			BOOL bDropdown = SendDlgItemMessage(hwndDlg, IDC_EDIT_LOGIN_SERVER, CB_GETDROPPEDSTATE, 0, 0);
+			if (bDropdown)
+				SendDlgItemMessage(hwndDlg, IDC_EDIT_LOGIN_SERVER, CB_SHOWDROPDOWN, FALSE, 0);
+
+			SendDlgItemMessage(hwndDlg, IDC_EDIT_LOGIN_SERVER, CB_RESETCONTENT, 0, 0);
+			XmlNode *node = (XmlNode *)lParam;
+			if ( node ) {
+				for (int i = 0; i < node->numChild; ++i)
+					if (!lstrcmpA(node->child[i]->name, "item"))
+						if (TCHAR *jid = JabberXmlGetAttrValue(node->child[i], "jid"))
+							if (SendDlgItemMessage(hwndDlg, IDC_EDIT_LOGIN_SERVER, CB_FINDSTRINGEXACT, -1, (LPARAM)jid) == CB_ERR)
+								SendDlgItemMessage(hwndDlg, IDC_EDIT_LOGIN_SERVER, CB_ADDSTRING, 0, (LPARAM)jid);
+			}
+
+			SetDlgItemText(hwndDlg, IDC_EDIT_LOGIN_SERVER, server);
+
+			if (bDropdown)
+				SendDlgItemMessage(hwndDlg, IDC_EDIT_LOGIN_SERVER, CB_SHOWDROPDOWN, TRUE, 0);
+		}
+		break;
 	case WM_COMMAND:
 		switch ( LOWORD( wParam )) {
 		case IDC_EDIT_USERNAME:
@@ -450,8 +520,12 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					EnableWindow( GetDlgItem( hwndDlg, IDC_PORT ), TRUE );
 				}
 				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
-			}
-			else {
+			} else
+			if ( LOWORD(wParam) == IDC_EDIT_LOGIN_SERVER && HIWORD(wParam) == CBN_DROPDOWN ) {
+				if (!GetWindowLong(GetDlgItem(hwndDlg, IDC_EDIT_LOGIN_SERVER), GWL_USERDATA))
+					mir_forkthread(sttQueryServerListThread, (void *)hwndDlg);
+			} else
+			{
 				WORD wHiParam = HIWORD( wParam );
 				if ( ((HWND)lParam==GetFocus() && wHiParam==EN_CHANGE) || ((HWND)lParam==GetParent(GetFocus()) && (wHiParam == CBN_EDITCHANGE || wHiParam == CBN_SELCHANGE)) )
 					SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );

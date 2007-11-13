@@ -219,7 +219,7 @@ static void sttFillJidList(HWND hwndDlg)
 									lvi.pszText = nickjid;
 							}	}
 
-							if (filter && *filter && !_tcsstr(lvi.pszText, filter))
+							if (filter && *filter && !JabberStrIStr(lvi.pszText, filter))
 								continue;
 
 							lvi.lParam = ( LPARAM )mir_tstrdup( jid );
