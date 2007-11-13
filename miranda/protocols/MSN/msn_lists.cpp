@@ -216,7 +216,6 @@ void MSN_CreateContList(void)
 	LeaveCriticalSection(&csLists);
 
 	msnNsThread->sendPacket("ADL", "%d\r\n%s", sz, cxml);
-	mir_free(cxml);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
