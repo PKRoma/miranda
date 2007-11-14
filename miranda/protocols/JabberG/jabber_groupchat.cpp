@@ -99,14 +99,18 @@ struct JabberGcRecentInfo
 
 	void fillData(const TCHAR *jid)
 	{
-		TCHAR *room, *server, *nick;
+		TCHAR *room, *server, *nick=NULL;
 		room = NEWTSTR_ALLOCA(jid);
 		server = _tcschr(room, _T('@'));
 		if (server)
 		{
-			*++server = 0;
+			*server++ = 0;
 			nick = _tcschr(server, _T('/'));
-			if (nick) *++nick = 0;
+			if (nick) *nick++ = 0;
+		} else
+		{
+			server = room;
+			room = NULL;
 		}
 
 		fillData(room, server, nick);
@@ -140,13 +144,8 @@ struct JabberGcRecentInfo
 			JFreeVariant(&dbv);
 		}
 
-		mir_snprintf(setting, sizeof(setting), "rcMuc_%d_password", iRecent);
-		if (!JGetStringT(NULL, setting, &dbv))
-		{
-			CallService(MS_DB_CRYPT_DECODESTRING, lstrlen(dbv.ptszVal)+1, (LPARAM)dbv.ptszVal);
-			password = mir_tstrdup(dbv.ptszVal);
-			JFreeVariant(&dbv);
-		}
+		mir_snprintf(setting, sizeof(setting), "rcMuc_%d_passwordW", iRecent);
+		password = JGetStringCrypt(NULL, setting);
 
 		return room || server || nick || password;
 	}
@@ -173,13 +172,10 @@ struct JabberGcRecentInfo
 		else
 			JDeleteSetting(NULL, setting);
 
-		mir_snprintf(setting, sizeof(setting), "rcMuc_%d_password", iRecent);
+		mir_snprintf(setting, sizeof(setting), "rcMuc_%d_passwordW", iRecent);
 		if (password)
-		{
-			TCHAR *password2 = NEWTSTR_ALLOCA(password);
-			CallService(MS_DB_CRYPT_ENCODESTRING, lstrlen(password2)+1, (LPARAM)password2);
-			JSetStringT(NULL, setting, password2);
-		} else
+			JSetStringCrypt(NULL, setting, password);
+		else
 			JDeleteSetting(NULL, setting);
 	}
 
@@ -734,7 +730,7 @@ static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 				if (hData)
 				{
 					TCHAR *buf = (TCHAR *)GlobalLock(hData);
-					if (buf && _tcschr(buf, _T('@')))
+					if (buf && _tcschr(buf, _T('@')) && !_tcschr(buf, _T(' ')))
 						info = new JabberGcRecentInfo(buf);
 					GlobalUnlock(hData);
 				}
@@ -745,11 +741,6 @@ static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 			{
 				info->fillForm(hwndDlg);
 				delete info;
-
-				if (lParam)
-				{	// store original room jid. may be in utf8
-					SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG )mir_tstrdup((TCHAR *)lParam) );
-				}
 			}
 
 			DBVARIANT dbv;
@@ -923,15 +914,6 @@ static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 
 		case IDC_ROOM:
 			switch (HIWORD(wParam)) {
-			case CBN_EDITCHANGE:
-				{
-					char* str = ( char* )GetWindowLong( hwndDlg, GWL_USERDATA );
-					if ( str != NULL ) {
-						mir_free( str );
-						SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG ) NULL );
-				}	}
-				break;
-
 			case CBN_DROPDOWN:
 				if (!SendDlgItemMessage(hwndDlg, IDC_ROOM, CB_GETCOUNT, 0, 0))
 				{
@@ -1040,12 +1022,8 @@ static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 
 				JabberComboAddRecentString(hwndDlg, IDC_SERVER, "joinWnd_rcSvr", server);
 
-				if (( room=( TCHAR* )GetWindowLong( hwndDlg, GWL_USERDATA )) != NULL )
-					room = NEWTSTR_ALLOCA( room );
-				else {
-					GetDlgItemText( hwndDlg, IDC_ROOM, text, SIZEOF( text ));
-					room = NEWTSTR_ALLOCA( text );
-				}
+				GetDlgItemText( hwndDlg, IDC_ROOM, text, SIZEOF( text ));
+				room = NEWTSTR_ALLOCA( text );
 
 				GetDlgItemText( hwndDlg, IDC_NICK, text, SIZEOF( text ));
 				TCHAR* nick = NEWTSTR_ALLOCA( text );
@@ -1066,10 +1044,6 @@ static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 		break;
 	case WM_DESTROY:
 		{
-			char* str = ( char* )GetWindowLong( hwndDlg, GWL_USERDATA );
-			if ( str != NULL )
-				mir_free( str );
-
 			hwndJabberJoinGroupchat = NULL;
 
 			DeleteObject((HFONT)SendDlgItemMessage(hwndDlg, IDC_TITLE, WM_GETFONT, 0, 0));

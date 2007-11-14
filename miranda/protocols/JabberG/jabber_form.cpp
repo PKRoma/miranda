@@ -529,6 +529,9 @@ void JabberFormCreateUI( HWND hwndStatic, XmlNode *xNode, int *formHeight, BOOL 
 
 					TJabberFormControlInfo *item = JabberFormAppendControl(hwndStatic, &layout_info, type, labelStr, valueStr);
 
+					mir_free( labelStr );
+					mir_free( valueStr );
+
 					if (type == JFORM_CTYPE_LIST_SINGLE)
 					{
 						for ( j=0; j<n->numChild; j++ ) {
@@ -575,6 +578,8 @@ void JabberFormDestroyUI(HWND hwndStatic)
 	TJabberFormControlList *controls = (TJabberFormControlList *)GetWindowLong(hwndStatic, GWL_USERDATA);
 	if (controls)
 	{
+		for ( int i = 0; i < controls->getCount(); i++ )
+			mir_free((*controls)[i]);
 		controls->destroy();
 		delete controls;
 		SetWindowLong(hwndStatic, GWL_USERDATA, 0);
@@ -836,10 +841,13 @@ static BOOL CALLBACK JabberFormDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, L
 		DestroyWindow( hwndDlg );
 		break;
 	case WM_DESTROY:
+		JabberFormDestroyUI( GetDlgItem( hwndDlg, IDC_FRAME ));
 		jfi = ( JABBER_FORM_INFO * ) GetWindowLong( hwndDlg, GWL_USERDATA );
 		if ( jfi != NULL ) {
 			if ( jfi->xNode != NULL )
 				delete jfi->xNode;
+			if ( jfi->userdata )
+				mir_free( jfi->userdata );
 			mir_free( jfi );
 		}
 		break;

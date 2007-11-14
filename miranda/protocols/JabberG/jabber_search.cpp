@@ -414,7 +414,7 @@ static void JabberSearchFreeData(HWND hwndDlg, JabberSearchData * dat)
 				free(dat->pJSInf[i].szFieldName);
 		}
 		free(dat->pJSInf);
-		dat->pJSInf=NULL;		
+		dat->pJSInf=NULL;
 	
 	}
 	else
@@ -542,9 +542,9 @@ static BOOL CALLBACK JabberSearchAdvancedDlgProc(HWND hwndDlg, UINT msg, WPARAM 
 	case WM_INITDIALOG:
 		{
 			TranslateDialogDefault(hwndDlg);
-			dat=(JabberSearchData *)malloc(sizeof(JabberSearchData));
-			memset(dat,0,sizeof(JabberSearchData));
-			SetWindowLong(hwndDlg,GWL_USERDATA,(LPARAM)dat);
+			dat = ( JabberSearchData * )mir_alloc( sizeof( JabberSearchData ));
+			memset( dat, 0, sizeof( JabberSearchData ));
+			SetWindowLong( hwndDlg, GWL_USERDATA, (LPARAM)dat );
 
 			/* Server Combo box */
 			char szServerName[100];
@@ -698,9 +698,10 @@ static BOOL CALLBACK JabberSearchAdvancedDlgProc(HWND hwndDlg, UINT msg, WPARAM 
 		return TRUE;
 
 	case WM_DESTROY:
-		JabberSearchFreeData(hwndDlg,dat);
-		JabberFormDestroyUI(GetDlgItem(hwndDlg, IDC_FRAME));
-		dat=NULL;
+		JabberSearchFreeData( hwndDlg, dat );
+		JabberFormDestroyUI( GetDlgItem( hwndDlg, IDC_FRAME ));
+		mir_free( dat );
+		SetWindowLong( hwndDlg, GWL_USERDATA, NULL );
 		return TRUE;
 	}
 	return FALSE;

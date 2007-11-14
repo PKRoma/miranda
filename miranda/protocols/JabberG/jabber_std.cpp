@@ -169,3 +169,38 @@ char* __stdcall JTranslate( const char* str )
 {
 	return Translate( str );
 }
+
+// save/load crypted strings
+static void __forceinline sttCryptString(char *str)
+{
+	while (*str) if (*str != 0xc3) *str++ ^= 0xc3;
+}
+
+TCHAR* __stdcall JGetStringCrypt( HANDLE hContact, char* valueName )
+{
+	DBVARIANT dbv;
+
+	if (DBGetContactSettingString( hContact, jabberProtoName, valueName, &dbv ))
+		return NULL;
+
+	sttCryptString(dbv.pszVal);
+
+#ifdef UNICODE
+	WCHAR *res = mir_utf8decodeW(dbv.pszVal);
+#else
+	mir_utf8decode(dbv.pszVal, NULL);
+	char *res = mir_strdup(dbv.pszVal);
+#endif
+
+	DBFreeVariant(&dbv);
+	return res;
+}
+
+DWORD __stdcall JSetStringCrypt( HANDLE hContact, char* valueName, const TCHAR* parValue )
+{
+	char *tmp = mir_utf8encodeT(parValue);
+	sttCryptString(tmp);
+	DWORD res = JSetString( hContact, valueName, tmp );
+	mir_free(tmp);
+	return res;
+}
