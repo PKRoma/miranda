@@ -99,7 +99,7 @@ struct JabberGcRecentInfo
 
 	void fillData(const TCHAR *jid)
 	{
-		TCHAR *room, *server, *nick;
+		TCHAR *room, *server, *nick=NULL;
 		room = NEWTSTR_ALLOCA(jid);
 		server = _tcschr(room, _T('@'));
 		if (server)
@@ -107,6 +107,10 @@ struct JabberGcRecentInfo
 			*server++ = 0;
 			nick = _tcschr(server, _T('/'));
 			if (nick) *nick++ = 0;
+		} else
+		{
+			server = room;
+			room = NULL;
 		}
 
 		fillData(room, server, nick);
