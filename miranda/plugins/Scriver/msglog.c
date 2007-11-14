@@ -237,15 +237,9 @@ struct EventData *getEventFromDB(struct MessageWindowData *dat, HANDLE hContact,
 }
 
 static void freeEvent(struct EventData *event) {
-#if defined( _UNICODE )
-	if (event->pszNickW != NULL) mir_free (event->pszNickW);
-	if (event->pszTextW != NULL) mir_free (event->pszTextW);
-	if (event->pszText2W != NULL) mir_free (event->pszText2W);
-#else
-	if (event->pszNick != NULL) mir_free (event->pszNick);
-	if (event->pszText != NULL) mir_free (event->pszText);
-	if (event->pszText2 != NULL) mir_free (event->pszText2);
-#endif
+	if (event->pszNickT != NULL) mir_free (event->pszNickT);
+	if (event->pszTextT != NULL) mir_free (event->pszTextT);
+	if (event->pszText2T != NULL) mir_free (event->pszText2T);
 	mir_free(event);
 }
 
