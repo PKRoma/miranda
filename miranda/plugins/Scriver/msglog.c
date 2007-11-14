@@ -237,7 +237,7 @@ struct EventData *getEventFromDB(struct MessageWindowData *dat, HANDLE hContact,
 		if ( *descr != 0 ) {
 			event->pszText2 = mir_strdup(descr);
 		}
-	} else if ( bNewDbApi && event->eventType == EVENTTYPE_MESSAGE ) {
+	} else if ( bNewDbApi ) {
 		event->pszText = DbGetEventTextA( &dbei, dat->codePage );
 	} else {
 		event->pszText = mir_strdup((char *) dbei.pBlob);
