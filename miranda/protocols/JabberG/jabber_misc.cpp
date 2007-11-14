@@ -444,6 +444,10 @@ void   JabberUpdateMirVer(JABBER_LIST_ITEM *item)
 
 void JabberFormatMirVer(JABBER_RESOURCE_STATUS *resource, TCHAR *buf, int bufSize)
 {
+	if ( !buf || !bufSize ) return;
+	buf[ 0 ] = _T('\0');
+	if ( !resource ) return;
+
 	// jabber:iq:version info requested and exists?
 	if ( resource->dwVersionRequestTime && resource->software ) {
 		JabberLog("JabberUpdateMirVer: for iq:version rc " TCHAR_STR_PARAM ": " TCHAR_STR_PARAM, resource->resourceName, resource->software);
