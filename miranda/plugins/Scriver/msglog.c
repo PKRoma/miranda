@@ -66,14 +66,17 @@ struct EventData {
 	union {
 		char *pszNick;		// Nick, usage depends on type of event
 		wchar_t *pszNickW;    // Nick - Unicode
+		TCHAR *pszNickT;
 	};
 	union {
 		char *pszText;			// Text, usage depends on type of event
 		wchar_t *pszTextW;			// Text - Unicode
+		TCHAR *pszTextT;
 	};
 	union {
 		char *pszText2;			// Text, usage depends on type of event
 		wchar_t *pszText2W;			// Text - Unicode
+		TCHAR *pszText2T;
 	};
 	DWORD	time;
 	DWORD	eventType;
@@ -185,62 +188,48 @@ struct EventData *getEventFromDB(struct MessageWindowData *dat, HANDLE hContact,
 	event->pszNick = NULL;
 #if defined( _UNICODE )
 	event->dwFlags |= IEEDF_UNICODE_TEXT | IEEDF_UNICODE_NICK | IEEDF_UNICODE_TEXT2;
+#endif
+
 	if (event->dwFlags & IEEDF_SENT) {
-		event->pszNickW = GetNickname(NULL, dat->szProto);
+		event->pszNickT = GetNickname(NULL, dat->szProto);
 	} else {
-		event->pszNickW = GetNickname(event->hContact, dat->szProto);
-	}
-	if (event->eventType == EVENTTYPE_FILE) {
-		char* filename = ((char *)dbei.pBlob) + sizeof(DWORD);
-		char* descr = filename + lstrlenA( filename ) + 1;
-		event->pszTextW = a2tcp(filename, dat->codePage);
-		if ( *descr != 0 ) {
-			event->pszText2W = a2tcp(descr, dat->codePage);
-		}
-	} else if ( bNewDbApi ) {
-		event->pszTextW = DbGetEventTextW( &dbei, dat->codePage );
-		if (dat->flags & SMF_DISABLE_UNICODE) {
-			char * tmpStr = t2acp(event->pszTextW, dat->codePage);
-			mir_free(event->pszTextW);
-			event->pszTextW = a2tcp(tmpStr, dat->codePage);
-			mir_free(tmpStr);
-		}
-	} else {
-		int msglen = strlen((char *) dbei.pBlob) + 1;
-		if (msglen != (int) dbei.cbBlob && !(dat->flags & SMF_DISABLE_UNICODE)) {
-			int wlen;
-			wlen = safe_wcslen((wchar_t*) &dbei.pBlob[msglen], (dbei.cbBlob - msglen) / 2);
-			if (wlen > 0 && wlen < msglen) {
-				event->pszTextW = mir_wstrdup((wchar_t*) &dbei.pBlob[msglen]);
-			} else {
-				event->pszTextW = a2tcp((char *) dbei.pBlob, dat->codePage);
-			}
-		} else {
-			event->pszTextW = a2tcp((char *) dbei.pBlob, dat->codePage);
-		}
+		event->pszNickT = GetNickname(event->hContact, dat->szProto);
 	}
 	if ( dat->flags & SMF_RTL) {
 		event->dwFlags |= IEEDF_RTL;
-	} else if ( RTL_Detect(event->pszTextW)) {
-		event->dwFlags |= IEEDF_RTL;
 	}
-#else
-	if (event->dwFlags & IEEDF_SENT) {
-		event->pszNick = GetNickname(NULL, dat->szProto);
-	} else {
-		event->pszNick = GetNickname(event->hContact, dat->szProto);
-	}
+#if defined( _UNICODE )
 	if (event->eventType == EVENTTYPE_FILE) {
 		char* filename = ((char *)dbei.pBlob) + sizeof(DWORD);
 		char* descr = filename + lstrlenA( filename ) + 1;
-		event->pszText = mir_strdup(filename);
+		event->pszTextT = a2tcp(filename, dat->codePage);
 		if ( *descr != 0 ) {
-			event->pszText2 = mir_strdup(descr);
+			event->pszText2T = a2tcp(descr, dat->codePage);
 		}
-	} else if ( bNewDbApi && event->eventType == EVENTTYPE_MESSAGE ) {
-		event->pszText = DbGetEventTextA( &dbei, dat->codePage );
 	} else {
-		event->pszText = mir_strdup((char *) dbei.pBlob);
+		event->pszTextT = DbGetEventTextT( &dbei, dat->codePage );
+		if (dat->flags & SMF_DISABLE_UNICODE) {
+			char * tmpStr = t2acp(event->pszTextT, dat->codePage);
+			mir_free(event->pszTextT);
+			event->pszTextT = a2tcp(tmpStr, dat->codePage);
+			mir_free(tmpStr);
+		}
+	}
+	if ( !(dat->flags & SMF_RTL)) {
+		if ( RTL_Detect(event->pszTextT)) {
+			event->dwFlags |= IEEDF_RTL;
+		}
+	}
+#else
+	if (event->eventType == EVENTTYPE_FILE) {
+		char* filename = ((char *)dbei.pBlob) + sizeof(DWORD);
+		char* descr = filename + lstrlenA( filename ) + 1;
+		event->pszTextT = mir_strdup(filename);
+		if ( *descr != 0 ) {
+			event->pszText2T = mir_strdup(descr);
+		}
+	} else {
+		event->pszTextT = DbGetEventTextT( &dbei, dat->codePage );
 	}
 #endif
 	mir_free(dbei.pBlob);
@@ -1137,6 +1126,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend)
         sel.cpMin = sel.cpMax = GetRichTextLength(GetDlgItem(hwndDlg, IDC_LOG), dat->codePage, FALSE);
         SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXSETSEL, 0, (LPARAM) & sel);
     } else {
+		SendDlgItemMessage(hwndDlg, IDC_LOG, WM_SETREDRAW, FALSE, 0);
 		SetDlgItemText(hwndDlg, IDC_LOG, _T(""));
         sel.cpMin = 0;
 		sel.cpMax = GetRichTextLength(GetDlgItem(hwndDlg, IDC_LOG), dat->codePage, FALSE);
@@ -1177,6 +1167,9 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend)
 		int len;
 		len = GetRichTextLength(GetDlgItem(hwndDlg, IDC_LOG), dat->codePage, FALSE);
 		SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETSEL, len - 1, len - 1);
+	}
+	if (!fAppend) {
+		SendDlgItemMessage(hwndDlg, IDC_LOG, WM_SETREDRAW, TRUE, 0);
 	}
 	dat->hDbEventLast = streamData.hDbEventLast;
 	PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);

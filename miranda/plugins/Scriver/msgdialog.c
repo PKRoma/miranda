@@ -1811,7 +1811,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				PostMessage(GetDlgItem(hwndDlg, IDC_LOG), WM_VSCROLL, MAKEWPARAM(SB_BOTTOM, 0), 0);
 			}
 			RedrawWindow(GetDlgItem(hwndDlg, IDC_LOG), NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
-			break;
 		} else {
 			IEVIEWWINDOW ieWindow;
 			ieWindow.cbSize = sizeof(IEVIEWWINDOW);
@@ -1819,6 +1818,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			ieWindow.hwnd = dat->hwndLog;
 			CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
 		}
+		break;
 	case HM_DBEVENTADDED:
 		if ((HANDLE) wParam == dat->hContact)
 		{
@@ -2265,37 +2265,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				dbei.pBlob = (PBYTE) mir_alloc(dbei.cbBlob);
 				CallService(MS_DB_EVENT_GET, (WPARAM)  dat->hDbEventLast, (LPARAM) & dbei);
 				if (dbei.eventType == EVENTTYPE_MESSAGE || dbei.eventType == EVENTTYPE_STATUSCHANGE) {
-					TCHAR *buffer = NULL;
-
-					if ( bNewDbApi )
-						buffer = DbGetEventTextT( &dbei, CP_ACP );
-					else {
-						#ifdef _UNICODE
-							DWORD aLen = strlen((char *)dbei.pBlob)+1;
-							if (dbei.eventType == EVENTTYPE_MESSAGE) {
-								if (dbei.cbBlob > aLen) {
-									DWORD wlen = safe_wcslen((wchar_t *)&dbei.pBlob[aLen], (dbei.cbBlob - aLen) / 2);
-									if (wlen > 0 && wlen < aLen) {
-										buffer = (TCHAR *)&dbei.pBlob[aLen];
-									}
-								}
-							}
-							if (buffer == NULL) {
-								buffer = a2t((char *) dbei.pBlob);
-								mir_free(dbei.pBlob);
-								dbei.pBlob = (char *)buffer;
-							}
-						#else
-							buffer = (TCHAR *)dbei.pBlob;
-						#endif
-					}
+					TCHAR *buffer = DbGetEventTextT( &dbei, CP_ACP );
 					if (buffer!=NULL) {
 						TCHAR *quotedBuffer = GetQuotedTextW(buffer);
 						SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SETTEXTEX, (WPARAM) &st, (LPARAM)quotedBuffer);
 						mir_free(quotedBuffer);
-					}
-					if ( bNewDbApi )
 						mir_free(buffer);
+					}
 				}
 				mir_free(dbei.pBlob);
 				SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));

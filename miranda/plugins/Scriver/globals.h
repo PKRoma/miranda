@@ -160,6 +160,5 @@ int ImageList_ReplaceIcon_ProtoEx(HIMAGELIST hIml, int nIndex, const char* szPro
 void ReleaseIconSmart(HICON hIcon);
 
 extern struct GlobalMessageData *g_dat;
-extern int bNewDbApi;
 
 #endif

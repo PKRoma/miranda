@@ -33,7 +33,6 @@ struct UTF8_INTERFACE utfi;
 
 PLUGINLINK *pluginLink;
 HINSTANCE g_hInst;
-int bNewDbApi = FALSE;
 
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
@@ -86,8 +85,6 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 	mir_getMMI( &mmi );
 	mir_getUTFI( &utfi );
 
-	if ( ServiceExists( MS_DB_EVENT_GETTEXT ))
-		bNewDbApi = TRUE;
 	InitSendQueue();
 	Chat_Load(link);
 	return LoadSendRecvMessageModule();
