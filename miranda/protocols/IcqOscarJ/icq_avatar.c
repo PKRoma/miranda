@@ -487,7 +487,7 @@ void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned
 
     if (memcmp(pHash+4, emptyItem, itemLen > 0x10 ? 0x10 : itemLen))
     { // Item types
-      // 0000: AIM avatar ?
+      // 0000: AIM mini avatar
       // 0001: AIM/ICQ avatar ID/hash (len 5 or 16 bytes)
       // 0002: iChat online message
       // 0008: ICQ Flash avatar hash (16 bytes)

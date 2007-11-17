@@ -1470,10 +1470,9 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
       { // we have unicode message, check if it is possible and reasonable to send it as unicode
         BOOL plain_ascii = IsUSASCII(puszText, strlennull(puszText));
 
-        if (wRecipientStatus == ID_STATUS_OFFLINE || plain_ascii ||
-          !gbUtfEnabled || !CheckContactCapabilities(ccs->hContact, CAPF_UTF) ||
+        if (plain_ascii || !gbUtfEnabled || !CheckContactCapabilities(ccs->hContact, CAPF_UTF) ||
           !ICQGetContactSettingByte(ccs->hContact, "UnicodeSend", 1))
-        {  // unicode is not available for target contact, convert to good codepage
+        { // unicode is not available for target contact, convert to good codepage
           if (!plain_ascii)
           { // do not convert plain ascii messages
             char* szUserAnsi = convertMsgToUserSpecificAnsi(ccs->hContact, puszText); 
@@ -1520,7 +1519,7 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
       {
         message_cookie_data* pCookieData;
 
-        if (!puszText && wRecipientStatus != ID_STATUS_OFFLINE && gbUtfEnabled==2 && !IsUSASCII(pszText, strlennull(pszText))
+        if (!puszText && gbUtfEnabled == 2 && !IsUSASCII(pszText, strlennull(pszText))
           && CheckContactCapabilities(ccs->hContact, CAPF_UTF) && ICQGetContactSettingByte(ccs->hContact, "UnicodeSend", 1))
         { // text is not unicode and contains national chars and we should send all this as Unicode, so do it
           puszText = ansi_to_utf8(pszText);

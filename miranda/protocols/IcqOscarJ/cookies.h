@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/cookies.h,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -45,6 +45,7 @@
 #define CKT_SERVICEREQUEST  0x0A
 #define CKT_REVERSEDIRECT   0x0C
 #define CKT_FAMILYSPECIAL   0x10
+#define CKT_OFFLINEMESSAGE  0x12
 #define CKT_AVATAR          0x20
 
 typedef struct icq_cookie_info_s
@@ -62,6 +63,11 @@ typedef struct familyrequest_rec_s
   void (*familyhandler)(HANDLE hConn, char* cookie, WORD cookieLen);
 } familyrequest_rec;
 
+
+typedef struct offline_message_cookie_s
+{
+  int nMessages;
+} offline_message_cookie;
 
 typedef struct message_cookie_data_s
 {

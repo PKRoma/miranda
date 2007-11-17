@@ -657,21 +657,20 @@ void unpackWideString(unsigned char **buf, WCHAR *string, WORD len)
 
 
 
-void unpackTypedTLV(unsigned char **buf, int buflen, WORD type, WORD *ttype, WORD *tlen, char **tlv)
+void unpackTypedTLV(unsigned char *buf, int buflen, WORD type, WORD *ttype, WORD *tlen, char **tlv)
 {
   WORD wType, wLen;
-  unsigned char *tmp = *buf;
 
 NextTLV:
   // Unpack type and length
-  unpackWord(&tmp, &wType);
-  unpackWord(&tmp, &wLen);
+  unpackWord(&buf, &wType);
+  unpackWord(&buf, &wLen);
   buflen -= 4;
 
   if (wType != type && buflen >= wLen + 4)
   { // Not the right TLV, try next
     buflen -= wLen;
-    tmp += wLen;
+    buf += wLen;
     goto NextTLV;
   }
   // Check buffer size
@@ -680,14 +679,14 @@ NextTLV:
   // Make sure we have a good pointer
   if (tlv)
   {
-    // Unpack and save value
-    *tlv = (char *)SAFE_MALLOC(wLen + 1); // Add 1 for \0
-    unpackString(&tmp, *tlv, wLen);
-    *(*tlv + wLen) = '\0';
-  }
-  else
-  {
-    *tmp += wLen;
+    if (wLen)
+    { // Unpack and save value
+      *tlv = (char *)SAFE_MALLOC(wLen + 1); // Add 1 for \0
+      unpackString(&buf, *tlv, wLen);
+      *(*tlv + wLen) = '\0';
+    }
+    else
+      *tlv = NULL;
   }
 
   // Save type and length
@@ -695,9 +694,6 @@ NextTLV:
     *ttype = wType;
   if (tlen)
     *tlen = wLen;
-
-  // Increase source pointer
-  *buf = tmp;
 }
 
 

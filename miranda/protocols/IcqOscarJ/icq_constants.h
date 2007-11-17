@@ -303,7 +303,9 @@
 #define ICQ_MSG_SRV_MISSED_MESSAGE  0x000A
 #define ICQ_MSG_RESPONSE            0x000B
 #define ICQ_MSG_SRV_ACK             0x000C
+#define ICQ_MSG_CLI_REQ_OFFLINE     0x0010
 #define ICQ_MSG_MTN                 0x0014
+#define ICQ_MSG_SRV_OFFLINE_REPLY   0x0017
 
 /* Subtypes for Privacy Family 0x0009 */
 #define ICQ_PRIVACY_REQ_RIGHTS      0x0002
@@ -381,10 +383,6 @@
 #define CLASS_WIRELESS              0x0080
 
 // Reply types for SNAC 15/02 & 15/03
-#define CLI_OFFLINE_MESSAGE_REQ     0x003C
-#define CLI_DELETE_OFFLINE_MSGS_REQ 0x003E
-#define SRV_OFFLINE_MESSAGE         0x0041
-#define SRV_END_OF_OFFLINE_MSGS     0x0042
 #define CLI_META_INFO_REQ           0x07D0
 #define SRV_META_INFO_REPLY         0x07DA
 
@@ -538,7 +536,7 @@
 
 
 // Internal Constants
-#define ICQ_PLUG_VERSION            0x80030A06
+#define ICQ_PLUG_VERSION            0x80030A07
 #define ICQ_VERSION                 8         // Protocol version
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_NICK_SIZE               32
@@ -559,13 +557,13 @@
 #define OSCAR_PROXY_HOST            "ars.oscar.aol.com"
 #define OSCAR_PROXY_VERSION         0x044A
 
-#define CLIENT_ID_STRING            "ICQBasic"  // Client identification, mimic icq5.1
+#define CLIENT_ID_STRING            "ICQ Client"  // Client identification, mimic ICQ 6
 #define CLIENT_ID_CODE              0x010a
-#define CLIENT_VERSION_MAJOR        0x0014
-#define CLIENT_VERSION_MINOR        0x0034
-#define CLIENT_VERSION_LESSER       0x0000
-#define CLIENT_VERSION_BUILD        0x0c18
-#define CLIENT_DISTRIBUTION         0x0000043d
+#define CLIENT_VERSION_MAJOR        0x0006
+#define CLIENT_VERSION_MINOR        0x0000
+#define CLIENT_VERSION_LESSER       0x0010
+#define CLIENT_VERSION_BUILD        0x1755
+#define CLIENT_DISTRIBUTION         0x00007533
 #define CLIENT_LANGUAGE             "en"
 #define CLIENT_COUNTRY              "us"
 

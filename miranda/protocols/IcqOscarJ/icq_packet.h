@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_packet.h,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -106,7 +106,7 @@ void __fastcall unpackDWord(unsigned char **, DWORD *);
 void __fastcall unpackQWord(unsigned char **, DWORD64 *);
 void unpackString(unsigned char **buf, char *string, WORD len);
 void unpackWideString(unsigned char **buf, WCHAR *string, WORD len);
-void unpackTypedTLV(unsigned char **, int, WORD, WORD *, WORD *, char **);
+void unpackTypedTLV(unsigned char *, int, WORD, WORD *, WORD *, char **);
 BOOL unpackUID(unsigned char** ppBuf, WORD* pwLen, DWORD *pdwUIN, uid_str* ppszUID);
 
 void __fastcall unpackLEWord(unsigned char **, WORD *);

@@ -64,6 +64,12 @@ Improvements:
   URL events are now received as normal messages
 
 
+0.3.9.5
+
+Improvements:
+  Use new offline messages protocol (supports unicode)
+
+
 0.3.9.4
 
 Improvements:

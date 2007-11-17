@@ -40,9 +40,6 @@
 
 static void handleExtensionError(unsigned char *buf, WORD wPackLen);
 static void handleExtensionServerInfo(unsigned char *buf, WORD wPackLen, WORD wFlags);
-static void parseOfflineMessage(unsigned char *databuf, WORD wPacketLen);
-static void parseOfflineGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, DWORD dwTimestamp, BYTE bFlags);
-static void parseEndOfOfflineMessages(unsigned char *databuf, WORD wPacketLen);
 static void handleExtensionMetaResponse(unsigned char *databuf, WORD wPacketLen, WORD wCookie, WORD wFlags);
 static void parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD wCookie, WORD wReplySubtype, BYTE bResultCode);
 static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen, WORD wCookie, WORD wFlags, WORD wReplySubtype, BYTE bResultCode);
@@ -103,15 +100,6 @@ static void handleExtensionError(unsigned char *buf, WORD wPackLen)
         unpackLEWord(&pBuffer, &wData); // get request type
         switch (wData)
         {
-        case CLI_OFFLINE_MESSAGE_REQ: 
-          NetLog_Server("Offline messages request failed with error 0x%02x", wData, wErrorCode);
-          break;
-
-        case CLI_DELETE_OFFLINE_MSGS_REQ:
-          NetLog_Server("Deleting offline messages from server failed with error 0x%02x", wErrorCode);
-          icq_LogMessage(LOG_WARNING, "Deleting Offline Messages from server failed.\nYou will probably receive them again.");
-          break;
-
         case CLI_META_INFO_REQ:
           if (pTLV->wLen >= 12)
           {
@@ -202,16 +190,12 @@ static void handleExtensionServerInfo(unsigned char *buf, WORD wPackLen, WORD wF
       wPackLen -= 10;      
       switch (wRequestType)
       {
-      case SRV_OFFLINE_MESSAGE:     // This is an offline message
-        parseOfflineMessage(databuf, wPackLen);
-        break;
-        
-      case SRV_END_OF_OFFLINE_MSGS: // This packets marks the end of offline messages
-        parseEndOfOfflineMessages(databuf, wPackLen);
-        break;
-        
       case SRV_META_INFO_REPLY:     // SRV_META request replies
         handleExtensionMetaResponse(databuf, wPackLen, wCookie, wFlags);
+        break;
+
+      default:
+        NetLog_Server("Warning: Ignoring Meta response - Unknown type %d", wRequestType);
         break;
       }
     }
@@ -223,227 +207,6 @@ static void handleExtensionServerInfo(unsigned char *buf, WORD wPackLen, WORD wF
 
   if (chain)
     disposeChain(&chain);
-}
-
-
-
-static void parseOfflineMessage(unsigned char *databuf, WORD wPacketLen)
-{
-  _ASSERTE(wPacketLen >= 14);
-  if (wPacketLen >= 14)
-  {
-    DWORD dwUin;
-    DWORD dwTimestamp;
-    WORD wYear;
-    WORD wMsgLen;
-    BYTE nMonth;
-    BYTE nDay;
-    BYTE nHour;
-    BYTE nMinute;
-    BYTE bType;
-    BYTE bFlags;
-    
-    
-    unpackLEDWord(&databuf, &dwUin);
-    unpackLEWord(&databuf, &wYear);
-    unpackByte(&databuf, &nMonth);
-    unpackByte(&databuf, &nDay);
-    unpackByte(&databuf, &nHour);
-    unpackByte(&databuf, &nMinute);
-    unpackByte(&databuf, &bType);
-    unpackByte(&databuf, &bFlags);
-    unpackLEWord(&databuf, &wMsgLen);
-    wPacketLen -=14;
-
-    
-    NetLog_Server("Offline message time: %u-%u-%u %u:%u", wYear, nMonth, nDay, nHour, nMinute);
-    NetLog_Server("Offline message type %u from %u", bType, dwUin);
-
-    if (wMsgLen == wPacketLen || bType == MTYPE_PLUGIN)
-    {
-      struct tm *sentTm;
-
-      // Hack around the timezone problem
-      // This is probably broken in some countries
-      // but I'll leave it like this for now (todo)
-      time(&dwTimestamp);
-      sentTm = gmtime(&dwTimestamp);
-      sentTm->tm_sec  = 28800;
-      sentTm->tm_min  = nMinute;
-      sentTm->tm_hour = nHour;
-      sentTm->tm_mday = nDay;
-      sentTm->tm_mon  = nMonth - 1;
-      sentTm->tm_year = wYear - 1900;
-      mktime(sentTm);
-
-      // I *guess* server runs in US time-8 hours.
-      // It might be UK time or something.
-      // More observations reqd at changeover.
-      if ((sentTm->tm_mon > 3 && sentTm->tm_mon < 9)
-        || (sentTm->tm_mon == 3
-          && (sentTm->tm_mday > 7
-            || (sentTm->tm_wday != 0 && sentTm->tm_mday > sentTm->tm_wday)
-            || (sentTm->tm_wday == 0 && sentTm->tm_hour >= 2)))
-        || (sentTm->tm_mon == 9
-          && (sentTm->tm_mday < 25
-            || (sentTm->tm_wday != 0 && sentTm->tm_mday < 25 + sentTm->tm_wday)
-            || (sentTm->tm_wday == 0 && sentTm->tm_hour <= 2))))
-        sentTm->tm_hour--;
-
-      sentTm->tm_sec -= 28800 + _timezone;
-      {  // _daylight global variable is reversed in southern hemisphere. Silly.
-        TIME_ZONE_INFORMATION tzinfo;
-        if (GetTimeZoneInformation(&tzinfo) == TIME_ZONE_ID_DAYLIGHT)
-          sentTm->tm_hour++;
-      }
-      dwTimestamp = mktime(sentTm);
-
-      // :NOTE:
-      // This is a check for the problem with offline messages being marked
-      // with the wrong year by the server. It can cause other problems when
-      // the internal system clock is incorrect but I think this is the most
-      // generic fix.
-      if (dwTimestamp > (unsigned long)time(NULL))
-        dwTimestamp = time(NULL);
-
-      { // Check if the time is not behind last user event, if yes, get current time
-        HANDLE hContact = HContactFromUIN(dwUin, NULL);
-
-        if (hContact)
-        { // we have contact
-          HANDLE hEvent = (HANDLE)CallService(MS_DB_EVENT_FINDLAST, (WPARAM)hContact, 0);
-          
-          if (hEvent)
-          { // contact has events
-            DBEVENTINFO dbei = {0};
-            
-            dbei.cbSize = sizeof(DBEVENTINFO);
-            if (!CallService(MS_DB_EVENT_GET, (WPARAM)hEvent, (LPARAM)&dbei))
-            { // got that event, if newer than ts then reset to current time
-              if (dwTimestamp<dbei.timestamp) dwTimestamp = time(NULL);
-            }
-          }
-        }
-      }
-
-      // Handle the actual message
-      if (bType == MTYPE_PLUGIN)
-        parseOfflineGreeting(databuf, wPacketLen, wMsgLen, dwUin, dwTimestamp, bFlags);
-      else
-      {
-        void* pFree = NULL;
-
-        if (bType == MTYPE_PLAIN)
-        { // It should be plain ANSI encoded message, but some clients send this UCS-2 encoded,
-          // so try to *identify* such messages and decode them properly
-          int wideLen = wMsgLen / sizeof(WCHAR);
-          int i, nAscii = 0, nWideMarks = 0;
-          WCHAR* pwMsg = (WORD*)databuf;
-
-          for (i = 0; i < wideLen; i++)
-          { // Cycle thru the message text (BE formatted) and look for word aligned WCHARs 0x0D, 0x0A, 0x20 
-            // and plain ascii WCHARs
-            if (*pwMsg == 0x0D00 || *pwMsg == 0x0A00 || *pwMsg == 0x2000)
-              nWideMarks++;
-            if (((*pwMsg & 0xFF) == 0) && (*pwMsg >= 0x2000) && (*pwMsg <= 0x8000))
-              nAscii++;
-
-            pwMsg++;
-          }
-          if (nWideMarks > 1 || nAscii >= 4)
-          { // a string with at least two WCHAR separators or at least 4 WCHAR ascii chars
-            // is considered as UCS-2 formatted
-            pwMsg = (WCHAR*)_alloca(wMsgLen + 4);
-
-            ZeroMemory(pwMsg, wMsgLen + 4);
-            unpackWideString(&databuf, pwMsg, (WORD)(wideLen * sizeof(WCHAR)));
-            pFree = databuf = make_utf8_string(pwMsg);
-            wMsgLen = strlennull(databuf) + 1;
-            databuf = (unsigned char*)realloc(databuf, wMsgLen + 50);
-            wPacketLen = wMsgLen + 50;
-            // prepare guid - to let handleMessageTypes handle the message as utf-8 encoded one
-            *(DWORD*)(databuf + wMsgLen + 8) = 38;
-            memcpy(databuf + wMsgLen + 12, CAP_UTF8MSGS, 38);
-          }
-        }
-        handleMessageTypes(dwUin, dwTimestamp, 0, 0, 0, 0, bType, bFlags, 0, wPacketLen, wMsgLen, databuf, FALSE, NULL);
-        // Release memory
-        SAFE_FREE(&pFree);
-      }
-
-      // Success
-      return; 
-    }
-  }
-
-  // Failure
-  NetLog_Server("Error: Broken offline message");
-}
-
-
-
-static void parseOfflineGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, DWORD dwTimestamp, BYTE bFlags)
-{
-  DWORD dwLengthToEnd;
-  DWORD dwDataLen;
-  int typeId;
-
-  NetLog_Server("Parsing Greeting message from offline server");
-
-  pDataBuf += wMsgLen;   // Message
-  wLen -= wMsgLen;
-
-  if (!unpackPluginTypeId(&pDataBuf, &wLen, &typeId, NULL, FALSE)) return;
-
-  if (wLen > 8)
-  {
-    // Length of remaining data
-    unpackLEDWord(&pDataBuf, &dwLengthToEnd);
-
-    // Length of message
-    unpackLEDWord(&pDataBuf, &dwDataLen);
-    wLen -= 8;
-
-    if (dwDataLen > wLen)
-      dwDataLen = wLen;
-
-    if (typeId)
-      handleMessageTypes(dwUin, dwTimestamp, 0, 0, 0, 0, typeId, bFlags, 0, dwLengthToEnd, (WORD)dwDataLen, pDataBuf, FALSE, NULL);
-    else
-      NetLog_Server("Unsupported plugin message type %d", typeId);
-  }
-}
-
-
-
-static void parseEndOfOfflineMessages(unsigned char *databuf, WORD wPacketLen)
-{
-  BYTE bMissedMessages = 0;
-  icq_packet packet;
-
-  if (wPacketLen == 1)
-  {
-    unpackByte(&databuf, &bMissedMessages);
-    NetLog_Server("End of offline msgs, %u dropped", bMissedMessages);
-  }
-  else
-  {
-    NetLog_Server("Error: Malformed end of offline msgs");
-  }
-
-  // Send 'got offline msgs'
-  // This will delete the messages stored on server
-  serverPacketInit(&packet, 24);
-  packFNACHeader(&packet, ICQ_EXTENSIONS_FAMILY, ICQ_META_CLI_REQ);
-  packWord(&packet, 1);             // TLV Type
-  packWord(&packet, 10);            // TLV Length
-  packLEWord(&packet, 8);           // Data length
-  packLEDWord(&packet, dwLocalUIN); // My UIN
-  packLEWord(&packet, CLI_DELETE_OFFLINE_MSGS_REQ); // Ack offline msgs
-  packLEWord(&packet, 0x0000);      // Request sequence number (we dont use this for now)
-
-  // Send it
-  sendServPacket(&packet);
 }
 
 

@@ -39,14 +39,15 @@
 
 static void handleReplyICBM(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
 static void handleRecvServMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
-static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwTS1, DWORD dwTS2);
+static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwMsgID1, DWORD dwMsgID2, DWORD dwRef);
 static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwTS1, DWORD dwTS2);
-static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwTS1, DWORD dwTS2);
+static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwMsgID1, DWORD dwMsgID2, DWORD dwRef);
 static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
 static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
 static void handleServerAck(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
 static void handleTypingNotification(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
 static void handleMissedMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
+static void handleOffineMessagesReply(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
 static void parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dwID2, WORD wAckType, oscar_tlv* tlv);
 static void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, BYTE bFlags, WORD wStatus, WORD wCookie, WORD wAckType, DWORD dwID1, DWORD dwID2, WORD wVersion);
 
@@ -79,6 +80,10 @@ void handleMsgFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnac
 
   case ICQ_MSG_MTN:                // SNAC(4, 0x14) Typing notifications
     handleTypingNotification(pBuffer, wBufferLength, pSnacHeader->wFlags, pSnacHeader->dwRef);
+    break;
+
+  case ICQ_MSG_SRV_OFFLINE_REPLY:  // SNAC(4, 0x17) Offline Messages response
+    handleOffineMessagesReply(pBuffer, wBufferLength, pSnacHeader->wFlags, pSnacHeader->dwRef);
     break;
 
   case ICQ_MSG_SRV_REPLYICBM:      // SNAC(4, 0x05) SRV_REPLYICBM
@@ -114,17 +119,16 @@ static void setMsgChannelParams(WORD wChan, DWORD dwFlags)
 
 static void handleReplyICBM(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef)
 { // we don't care about the stuff, just change the params
+  DWORD dwFlags = 0x00000303;
 
-  // Set message parameters for channel 1 (CLI_SET_ICBM_PARAMS)
-#ifdef DBG_CAPMTN
-  setMsgChannelParams(0x0001, 0x0000000B);
-#else
-  setMsgChannelParams(0x0001, 0x00000003);
+#ifdef DBG_CAPHTML
+  dwFlags |= 0x00000400;
 #endif
-  // Set message parameters for channel 2 (CLI_SET_ICBM_PARAMS)
-  setMsgChannelParams(0x0002, 0x00000003);
-  // Set message parameters for channel 4 (CLI_SET_ICBM_PARAMS)
-  setMsgChannelParams(0x0004, 0x00000003);
+#ifdef DBG_CAPMTN
+  dwFlags |= 0x00000008;
+#endif
+  // Set message parameters for all channels (imitate ICQ 6)
+  setMsgChannelParams(0x0000, dwFlags);
 }
 
 
@@ -207,7 +211,7 @@ static void handleRecvServMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD 
   {
 
   case 1: // Simple message format
-    handleRecvServMsgType1(buf, wLen, dwUin, szUID, dwID1, dwID2);
+    handleRecvServMsgType1(buf, wLen, dwUin, szUID, dwID1, dwID2, dwRef);
     break;
 
   case 2: // Encapsulated messages
@@ -215,7 +219,7 @@ static void handleRecvServMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD 
     break;
 
   case 4: // Typed messages
-    handleRecvServMsgType4(buf, wLen, dwUin, szUID, dwID1, dwID2);
+    handleRecvServMsgType4(buf, wLen, dwUin, szUID, dwID1, dwID2, dwRef);
     break;
 
   default:
@@ -240,12 +244,11 @@ static char* convertMsgToUserSpecificUtf(HANDLE hContact, const char* szMsg)
 
 
 
-static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwTS1, DWORD dwTS2)
+static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwMsgID1, DWORD dwMsgID2, DWORD dwRef)
 {
   WORD wTLVType;
   WORD wTLVLen;
-  BYTE* pDataBuf;
-  BYTE* pBuf;
+  BYTE* pMsgTLV;
 
   if (wLen < 4)
   { // just perform basic structure check
@@ -254,20 +257,20 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
   }
 
   // Unpack the first TLV(2)
-  unpackTypedTLV(&buf, wLen, 2, &wTLVType, &wTLVLen, &pDataBuf);
+  unpackTypedTLV(buf, wLen, 2, &wTLVType, &wTLVLen, &pMsgTLV);
   NetLog_Server("Message (format %u) - UID: %s", 1, strUID(dwUin, szUID));
-  pBuf = pDataBuf;
 
   // It must be TLV(2)
   if (wTLVType == 2)
   {
+    BYTE *pDataBuf = pMsgTLV;
     oscar_tlv_chain* pChain;
 
     pChain = readIntoTLVChain(&pDataBuf, wTLVLen, 0);
 
     // TLV(2) contains yet another TLV chain with the following TLVs:
     //   TLV(1281): Capability
-    //   TLV(257):  This TLV contains the actual message
+    //   TLV(257):  This TLV contains the actual message (can be fragmented)
 
     if (pChain)
     {
@@ -297,13 +300,14 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
       // Find the message TLV
       pMessageTLV = getTLV(pChain, 0x0101, 1);
       if (pMessageTLV)
-      {
+      { // TODO: parse all fragments
         if (pMessageTLV->wLen > 4)
         {
           WORD wMsgLen;
           BYTE* pMsgBuf;
           WORD wEncoding;
           WORD wCodePage;
+          DWORD dwRecvTime;
           char* szMsg = NULL;
           HANDLE hContact;
           CCSDATA ccs;
@@ -379,12 +383,40 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
               pre.flags = PREF_UTF;
             }
           }
+
+          dwRecvTime = (DWORD)time(NULL);
+
+          { // Check if the message was received as offline
+            offline_message_cookie *cookie;
+
+            if (!(dwRef & 0x80000000) && FindCookie(dwRef, NULL, &cookie))
+            {
+              WORD wTimeTLVType, wTimeTLVLen;
+              BYTE *pTimeTLV;
+
+              cookie->nMessages++;
+
+              unpackTypedTLV(buf, wLen, 0x16, &wTimeTLVType, &wTimeTLVLen, &pTimeTLV);
+              if (pTimeTLV && wTimeTLVType == 0x16 && wTimeTLVLen == 4)
+              { // found Offline timestamp
+                BYTE *pBuf = pTimeTLV;
+                char *szTime;
+
+                unpackDWord(&pBuf, &dwRecvTime);
+                // TODO: add some checking
+                szTime = asctime(localtime(&dwRecvTime));
+                szTime[24] = '\0'; // remove new line
+                NetLog_Server("Message (format %u) - Offline timestamp is %s", 1, szTime);
+              }
+              SAFE_FREE(&pTimeTLV);
+            }
+          }
           // Create and send the message event
           ccs.szProtoService = PSR_MESSAGE;
           ccs.hContact = hContact;
           ccs.wParam = 0;
           ccs.lParam = (LPARAM)&pre;
-          pre.timestamp = time(NULL);
+          pre.timestamp = dwRecvTime;
           pre.szMessage = (char *)szMsg;
           CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
 
@@ -393,7 +425,7 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
           NetLog_Server("Message (format 1) received");
 
           // Save tick value
-          ICQWriteContactSettingDword(ccs.hContact, "TickTS", time(NULL) - (dwTS1/1000));
+          ICQWriteContactSettingDword(ccs.hContact, "TickTS", time(NULL) - (dwMsgID1/1000));
         }
         else
         {
@@ -417,7 +449,7 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
   {
     NetLog_Server("Unsupported TLV (%u) in message (format %u)", wTLVType, 1);
   }
-  SAFE_FREE(&pBuf);
+  SAFE_FREE(&pMsgTLV);
 }
 
 
@@ -436,7 +468,7 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, c
   }
 
   // Unpack the first TLV(5)
-  unpackTypedTLV(&buf, wLen, 5, &wTLVType, &wTLVLen, &pDataBuf);
+  unpackTypedTLV(buf, wLen, 5, &wTLVType, &wTLVLen, &pDataBuf);
   NetLog_Server("Message (format %u) - UID: %s", 2, strUID(dwUin, szUID));
   pBuf = pDataBuf;
 
@@ -946,7 +978,7 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
 
 
 
-static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwTS1, DWORD dwTS2)
+static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwMsgID1, DWORD dwMsgID2, DWORD dwRef)
 {
   WORD wTLVType;
   WORD wTLVLen;
@@ -960,7 +992,7 @@ static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, c
   }
 
   // Unpack the first TLV(5)
-  unpackTypedTLV(&buf, wLen, 5, &wTLVType, &wTLVLen, &pDataBuf);
+  unpackTypedTLV(buf, wLen, 5, &wTLVType, &wTLVLen, &pDataBuf);
   NetLog_Server("Message (format %u) - UID: %s", 4, strUID(dwUin, szUID));
 
   // It must be TLV(5)
@@ -968,7 +1000,7 @@ static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, c
   {
     BYTE bMsgType;
     BYTE bFlags;
-    unsigned char* pmsg = pDataBuf;
+    BYTE* pmsg = pDataBuf;
     WORD wMsgLen;
 
 
@@ -985,7 +1017,32 @@ static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, c
         NetLog_Server("User %u probably checks his ignore state.", dwUin);
       }
       else
-      { 
+      {
+        offline_message_cookie *cookie;
+        DWORD dwRecvTime = (DWORD)time(NULL);
+
+        if (!(dwRef & 0x80000000) && FindCookie(dwRef, NULL, &cookie))
+        {
+          WORD wTimeTLVType, wTimeTLVLen;
+          BYTE *pTimeTLV;
+
+          cookie->nMessages++;
+
+          unpackTypedTLV(buf, wLen, 0x16, &wTimeTLVType, &wTimeTLVLen, &pTimeTLV);
+          if (pTimeTLV && wTimeTLVType == 0x16 && wTimeTLVLen == 4)
+          { // found Offline timestamp
+            BYTE *pBuf = pTimeTLV;
+            char *szTime;
+
+            unpackDWord(&pBuf, &dwRecvTime);
+            // TODO: add some checking
+            szTime = asctime(localtime(&dwRecvTime));
+            szTime[24] = '\0'; // remove new line
+            NetLog_Server("Message (format %u) - Offline timestamp is %s", 4, szTime);
+          }
+          SAFE_FREE(&pTimeTLV);
+        }
+
         if (bMsgType == MTYPE_PLUGIN)
         {
           WORD wLen = wTLVLen - 8;
@@ -1012,7 +1069,7 @@ static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, c
               dwDataLen = wLen;
 
             if (typeId)
-              handleMessageTypes(dwUin, time(NULL), dwTS1, dwTS2, 0, 0, typeId, bFlags, 0, dwLengthToEnd, (WORD)dwDataLen, pmsg, FALSE, NULL);
+              handleMessageTypes(dwUin, dwRecvTime, dwMsgID1, dwMsgID2, 0, 0, typeId, bFlags, 0, dwLengthToEnd, (WORD)dwDataLen, pmsg, FALSE, NULL);
             else
             {
               NetLog_Server("Unsupported plugin message type %d", typeId);
@@ -1020,7 +1077,7 @@ static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, c
           }
         }
         else
-          handleMessageTypes(dwUin, time(NULL), dwTS1, dwTS2, 0, 0, bMsgType, bFlags, 0, wTLVLen - 8, wMsgLen, pmsg, FALSE, NULL);
+          handleMessageTypes(dwUin, dwRecvTime, dwMsgID1, dwMsgID2, 0, 0, bMsgType, bFlags, 0, wTLVLen - 8, wMsgLen, pmsg, FALSE, NULL);
       }
     }
     else
@@ -2534,6 +2591,22 @@ static void handleMissedMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dw
     CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
   }
   SAFE_FREE(&pszErrorMsg);
+}
+
+
+
+static void handleOffineMessagesReply(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef)
+{
+  offline_message_cookie *cookie;
+
+  if (FindCookie(dwRef, NULL, &cookie))
+  {
+    NetLog_Server("End of offline msgs, %u received", cookie->nMessages);
+
+    ReleaseCookie(dwRef);
+  }
+  else
+    NetLog_Server("Error: Received unexpected end of offline msgs.");
 }
 
 
