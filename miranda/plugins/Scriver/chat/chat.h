@@ -236,9 +236,7 @@ typedef struct SESSION_INFO_TYPE
 	HANDLE      hContact;
 	HWND        hwndStatus;
 	time_t      LastTime;
-
-	TCmdList *cmdList;
-	TCmdList *cmdListCurrent;
+	CommonWindowData windowData;
 	LOGINFO*       pLog;
 	LOGINFO*       pLogEnd;
 	USERINFO*      pUsers;
@@ -247,7 +245,6 @@ typedef struct SESSION_INFO_TYPE
 
 	struct SESSION_INFO_TYPE *next;
 
-	int			codePage;
 }SESSION_INFO;
 
 typedef struct

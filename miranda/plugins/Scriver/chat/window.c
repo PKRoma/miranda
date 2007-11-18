@@ -262,14 +262,16 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 	int result;
 	MESSAGESUBDATA *dat;
 	SESSION_INFO* Parentsi;
+	CommonWindowData *windowData;
 	BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
 	BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
 	BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
 
 	Parentsi=(SESSION_INFO*)GetWindowLong(GetParent(hwnd),GWL_USERDATA);
 	dat = (MESSAGESUBDATA *) GetWindowLong(hwnd, GWL_USERDATA);
+	windowData = &Parentsi->windowData;
 
-	result = InputAreaShortcuts(hwnd, msg, wParam, lParam);
+	result = InputAreaShortcuts(hwnd, msg, wParam, lParam, windowData);
 	if (result != -1) {
 		return result;
 	}
@@ -468,48 +470,6 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
             SendDlgItemMessage(htemp, IDC_CHAT_LOG, msg, wParam, lParam);
             return TRUE;
          }
-
-         if ((wParam == VK_UP || wParam == VK_DOWN) && isCtrl && !isAlt) {
-         	TCmdList *cmdListNew = NULL;
-			if (wParam == VK_UP) {
-				if (Parentsi->cmdListCurrent == NULL) {
-					cmdListNew = tcmdlist_last(Parentsi->cmdList);
-					while (cmdListNew != NULL && cmdListNew->temporary) {
-						Parentsi->cmdList = tcmdlist_remove(Parentsi->cmdList, cmdListNew);
-						cmdListNew = tcmdlist_last(Parentsi->cmdList);
-					}
-					if (cmdListNew != NULL) {
-						char *textBuffer = GetRichTextRTF(hwnd);
-						if (textBuffer != NULL) {
-							Parentsi->cmdList = tcmdlist_append(Parentsi->cmdList, textBuffer, 20, TRUE);
-							mir_free(textBuffer);
-						}
-					}
-				} else if (Parentsi->cmdListCurrent->prev != NULL) {
-					cmdListNew = Parentsi->cmdListCurrent->prev;
-				}
-
-            } else {
-				if (Parentsi->cmdListCurrent != NULL) {
-					if (Parentsi->cmdListCurrent->next != NULL) {
-						cmdListNew = Parentsi->cmdListCurrent->next;
-					} else if (!Parentsi->cmdListCurrent->temporary) {
-						SetWindowText(hwnd, _T(""));
-					}
-				}
-            }
-            if (cmdListNew != NULL) {
-				int iLen;
-				SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
-				iLen = SetRichTextRTF(hwnd, cmdListNew->szCmd);
-				SendMessage(hwnd, EM_SCROLLCARET, 0,0);
-				SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
-				RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE);
-				SendMessage(hwnd, EM_SETSEL,iLen,iLen);
-				Parentsi->cmdListCurrent = cmdListNew;
-            }
-			return 0;
-         }
          break;
       }
    case WM_LBUTTONDOWN:
@@ -517,26 +477,6 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
    case WM_KILLFOCUS:
       dat->lastEnterTime = 0;
       break;
-
-	case WM_SYSKEYDOWN:
-		if ((wParam == VK_LEFT) && isAlt) {
-			SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEPREV, 0, (LPARAM)GetParent(hwnd));
-			return TRUE;
-		}
-		if ((wParam == VK_RIGHT) && isAlt) {
-			SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATENEXT, 0, (LPARAM)GetParent(hwnd));
-			return TRUE;
-		}
-		break;
-	case WM_SYSKEYUP:
-		if ((wParam == VK_LEFT) && isAlt) {
-			return TRUE;
-		}
-		if ((wParam == VK_RIGHT) && isAlt) {
-			return TRUE;
-		}
-		break;
-
    case WM_CONTEXTMENU:
 		InputAreaContextMenu(hwnd, wParam, lParam, Parentsi->hContact);
 		return TRUE;
@@ -1174,10 +1114,10 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		}
 		break;
 	case DM_GETCODEPAGE:
-		SetWindowLong(hwndDlg, DWL_MSGRESULT, si->codePage);
+		SetWindowLong(hwndDlg, DWL_MSGRESULT, si->windowData.codePage);
 		return TRUE;
 	case DM_SETCODEPAGE:
-		si->codePage = (int) lParam;
+		si->windowData.codePage = (int) lParam;
 		si->pszHeader = Log_CreateRtfHeader(MM_FindModule(si->pszModule), si);
         SendMessage(hwndDlg, GC_REDRAWLOG2, 0, 0);
 		break;
@@ -1842,7 +1782,14 @@ LABEL_SHOWWINDOW:
                break;
 
             pszRtf = GetRichTextRTF(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
-           	si->cmdList = tcmdlist_append(si->cmdList, pszRtf, 20, FALSE);
+            {
+				TCmdList *cmdListNew = tcmdlist_last(si->windowData.cmdList);
+				while (cmdListNew != NULL && cmdListNew->temporary) {
+					si->windowData.cmdList = tcmdlist_remove(si->windowData.cmdList, cmdListNew);
+					cmdListNew = tcmdlist_last(si->windowData.cmdList);
+				}
+            }
+           	si->windowData.cmdList = tcmdlist_append(si->windowData.cmdList, pszRtf, 20, FALSE);
             ptszText = DoRtfToTags(pszRtf, si);
             p1 = _tcschr(ptszText, '\0');
 
@@ -1884,8 +1831,8 @@ LABEL_SHOWWINDOW:
 
       case IDC_CHAT_MESSAGE:
 		if (HIWORD(wParam) == EN_CHANGE) {
-			si->cmdListCurrent = NULL;
-			EnableWindow(GetDlgItem(hwndDlg, IDOK), GetRichTextLength(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), si->codePage, FALSE) != 0);
+			si->windowData.cmdListCurrent = NULL;
+			EnableWindow(GetDlgItem(hwndDlg, IDOK), GetRichTextLength(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), si->windowData.codePage, FALSE) != 0);
 		}
 		break;
 

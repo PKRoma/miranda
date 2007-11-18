@@ -234,9 +234,12 @@ static int GetTabFromHWND(ParentWindowData *dat, HWND child)
 static MessageWindowTabData * GetChildFromTab(HWND hwndTabs, int tabId)
 {
 	TCITEM tci;
+	ZeroMemory(&tci, sizeof(TCITEM));
 	tci.mask = TCIF_PARAM;
-	TabCtrl_GetItem(hwndTabs, tabId, &tci);
-	return (MessageWindowTabData *) tci.lParam;
+	if (TabCtrl_GetItem(hwndTabs, tabId, &tci)) {
+		return (MessageWindowTabData *) tci.lParam;
+	}
+	return NULL;
 }
 
 static MessageWindowTabData * GetChildFromHWND(ParentWindowData *dat, HWND hwnd)
@@ -419,6 +422,16 @@ static void ActivatePrevChild(ParentWindowData *dat, HWND child)
 	ActivateChild(dat, GetChildFromTab(dat->hwndTabs, i)->hwnd);
 }
 
+static void ActivateChildByIndex(ParentWindowData *dat, int index)
+{
+	int l = TabCtrl_GetItemCount(dat->hwndTabs);
+	if (index < l) {
+		MessageWindowTabData *mwtd = GetChildFromTab(dat->hwndTabs, index);
+		if (mwtd != NULL) {
+			ActivateChild(dat, mwtd->hwnd);
+		}
+	}
+}
 
 static void SetContainerWindowStyle(ParentWindowData *dat)
 {
@@ -1012,6 +1025,10 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 		return TRUE;
 	case CM_ACTIVATENEXT:
 		ActivateNextChild(dat, (HWND) lParam);
+		SetFocus(dat->hwndActive);
+		return TRUE;
+	case CM_ACTIVATEBYINDEX:
+		ActivateChildByIndex(dat, (int) lParam);
 		SetFocus(dat->hwndActive);
 		return TRUE;
 	case CM_GETCHILDCOUNT:

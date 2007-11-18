@@ -251,7 +251,6 @@ int SetRichTextEncoded(HWND hwnd, const char *text, int codepage) {
 }
 
 int SetRichTextRTF(HWND hwnd, const char *text) {
-	TCHAR *textToSet;
 	SETTEXTEX  st;
 	st.flags = ST_DEFAULT;
 	st.codepage = CP_ACP;
@@ -391,7 +390,7 @@ void InputAreaContextMenu(HWND hwnd, WPARAM wParam, LPARAM lParam, HANDLE hConta
 	//PostMessage(hwnd, WM_KEYUP, 0, 0 );
 }
 
-int InputAreaShortcuts(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+int InputAreaShortcuts(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, CommonWindowData *windowData) {
 	BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
 	BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
 	BOOL isCtrl = (GetKeyState(VK_CONTROL) & 0x8000) && !isAlt;
@@ -417,6 +416,11 @@ int InputAreaShortcuts(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 			if (wParam == VK_NEXT && isCtrl) { // page down
 				SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATENEXT, 0, (LPARAM)GetParent(hwnd));
 				return FALSE;
+			}
+			if (wParam >= '1' && wParam <='9' && isCtrl) {
+				int index = wParam - '1';
+				SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEBYINDEX, 0, index);
+				return 0;
 			}
 			if (wParam == VK_F4 && isCtrl && !isShift) { // ctrl + F4
 				SendMessage(GetParent(hwnd), WM_CLOSE, 0, 0);
@@ -455,6 +459,79 @@ int InputAreaShortcuts(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 			if (wParam == 'R' && isCtrl && isShift) {     // ctrl-shift-r
 				SendMessage(GetParent(hwnd), DM_SWITCHRTL, 0, 0);
 				return FALSE;
+			}
+			if ((wParam == VK_UP || wParam == VK_DOWN) && isCtrl && (g_dat->flags & SMF_CTRLSUPPORT) && !DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE)) {
+				if (windowData->cmdList) {
+					TCmdList *cmdListNew = NULL;
+					if (wParam == VK_UP) {
+						if (windowData->cmdListCurrent == NULL) {
+							cmdListNew = tcmdlist_last(windowData->cmdList);
+							while (cmdListNew != NULL && cmdListNew->temporary) {
+								windowData->cmdList = tcmdlist_remove(windowData->cmdList, cmdListNew);
+								cmdListNew = tcmdlist_last(windowData->cmdList);
+							}
+							if (cmdListNew != NULL) {
+								char *textBuffer;
+								if (windowData->flags & CWDF_RTF_INPUT) {
+									 textBuffer = GetRichTextRTF(hwnd);
+								} else {
+									 textBuffer = GetRichTextEncoded(hwnd, windowData->codePage);
+								}
+								if (textBuffer != NULL) {
+									windowData->cmdList = tcmdlist_append(windowData->cmdList, textBuffer, 20, TRUE);
+									mir_free(textBuffer);
+								}
+							}
+						} else if (windowData->cmdListCurrent->prev != NULL) {
+							cmdListNew = windowData->cmdListCurrent->prev;
+						}
+					} else {
+						if (windowData->cmdListCurrent != NULL) {
+							if (windowData->cmdListCurrent->next != NULL) {
+								cmdListNew = windowData->cmdListCurrent->next;
+							} else if (!windowData->cmdListCurrent->temporary) {
+								SetWindowText(hwnd, _T(""));
+							}
+						}
+					}
+					if (cmdListNew != NULL) {
+						int iLen;
+						SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
+						if (windowData->flags & CWDF_RTF_INPUT) {
+							iLen = SetRichTextRTF(hwnd, cmdListNew->szCmd);
+						} else {
+							iLen = SetRichTextEncoded(hwnd, cmdListNew->szCmd, windowData->codePage);
+						}
+						SendMessage(hwnd, EM_SCROLLCARET, 0,0);
+						SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
+						RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE);
+						SendMessage(hwnd, EM_SETSEL, iLen, iLen);
+						windowData->cmdListCurrent = cmdListNew;
+					}
+				}
+				return FALSE;
+			}
+		}
+		break;
+		case WM_SYSKEYDOWN:
+		{
+			if ((wParam == VK_LEFT) && isAlt) {
+				SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEPREV, 0, (LPARAM)GetParent(hwnd));
+				return 0;
+			}
+			if ((wParam == VK_RIGHT) && isAlt) {
+				SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATENEXT, 0, (LPARAM)GetParent(hwnd));
+				return 0;
+			}
+		}
+		break;
+		case WM_SYSKEYUP:
+		{
+			if ((wParam == VK_LEFT) && isAlt) {
+				return 0;
+			}
+			if ((wParam == VK_RIGHT) && isAlt) {
+				return 0;
 			}
 		}
 		break;

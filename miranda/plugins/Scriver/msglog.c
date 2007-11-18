@@ -202,16 +202,16 @@ struct EventData *getEventFromDB(struct MessageWindowData *dat, HANDLE hContact,
 	if (event->eventType == EVENTTYPE_FILE) {
 		char* filename = ((char *)dbei.pBlob) + sizeof(DWORD);
 		char* descr = filename + lstrlenA( filename ) + 1;
-		event->pszTextT = a2tcp(filename, dat->codePage);
+		event->pszTextT = a2tcp(filename, dat->windowData.codePage);
 		if ( *descr != 0 ) {
-			event->pszText2T = a2tcp(descr, dat->codePage);
+			event->pszText2T = a2tcp(descr, dat->windowData.codePage);
 		}
 	} else {
-		event->pszTextT = DbGetEventTextT( &dbei, dat->codePage );
+		event->pszTextT = DbGetEventTextT( &dbei, dat->windowData.codePage );
 		if (dat->flags & SMF_DISABLE_UNICODE) {
-			char * tmpStr = t2acp(event->pszTextT, dat->codePage);
+			char * tmpStr = t2acp(event->pszTextT, dat->windowData.codePage);
 			mir_free(event->pszTextT);
-			event->pszTextT = a2tcp(tmpStr, dat->codePage);
+			event->pszTextT = a2tcp(tmpStr, dat->windowData.codePage);
 			mir_free(tmpStr);
 		}
 	}
@@ -1075,7 +1075,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend)
 		event.dwFlags = ((dat->flags & SMF_RTL) ? IEEF_RTL : 0) | ((dat->flags & SMF_DISABLE_UNICODE) ? IEEF_NO_UNICODE : 0);
 		event.hwnd = dat->hwndLog;
 		event.hContact = dat->hContact;
-		event.codepage = dat->codePage;
+		event.codepage = dat->windowData.codePage;
 		event.pszProto = dat->szProto;
 		if (!fAppend) {
 			event.iType = IEE_CLEAR_LOG;
@@ -1103,7 +1103,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend)
 	streamData.hDbEventLast = dat->hDbEventLast;
 	streamData.dlgDat = dat;
 	streamData.eventsToInsert = count;
-	streamData.isFirst = fAppend ? GetRichTextLength(GetDlgItem(hwndDlg, IDC_LOG), dat->codePage, FALSE) == 0 : 1;
+	streamData.isFirst = fAppend ? GetRichTextLength(GetDlgItem(hwndDlg, IDC_LOG), dat->windowData.codePage, FALSE) == 0 : 1;
 	stream.pfnCallback = LogStreamInEvents;
 	stream.dwCookie = (DWORD_PTR) & streamData;
 	sel.cpMin = 0;
@@ -1117,13 +1117,13 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend)
 #endif
         gtxl.codepage = 1200;
         fi.chrg.cpMin = SendDlgItemMessage(hwndDlg, IDC_LOG, EM_GETTEXTLENGTHEX, (WPARAM)&gtxl, 0);
-        sel.cpMin = sel.cpMax = GetRichTextLength(GetDlgItem(hwndDlg, IDC_LOG), dat->codePage, FALSE);
+        sel.cpMin = sel.cpMax = GetRichTextLength(GetDlgItem(hwndDlg, IDC_LOG), dat->windowData.codePage, FALSE);
         SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXSETSEL, 0, (LPARAM) & sel);
     } else {
 		SendDlgItemMessage(hwndDlg, IDC_LOG, WM_SETREDRAW, FALSE, 0);
 		SetDlgItemText(hwndDlg, IDC_LOG, _T(""));
         sel.cpMin = 0;
-		sel.cpMax = GetRichTextLength(GetDlgItem(hwndDlg, IDC_LOG), dat->codePage, FALSE);
+		sel.cpMax = GetRichTextLength(GetDlgItem(hwndDlg, IDC_LOG), dat->windowData.codePage, FALSE);
         SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXSETSEL, 0, (LPARAM) & sel);
         fi.chrg.cpMin = 0;
 		dat->isMixed = 0;
@@ -1159,7 +1159,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend)
 //	if (GetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_STYLE) & WS_VSCROLL)
 	{
 		int len;
-		len = GetRichTextLength(GetDlgItem(hwndDlg, IDC_LOG), dat->codePage, FALSE);
+		len = GetRichTextLength(GetDlgItem(hwndDlg, IDC_LOG), dat->windowData.codePage, FALSE);
 		SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETSEL, len - 1, len - 1);
 	}
 	if (!fAppend) {

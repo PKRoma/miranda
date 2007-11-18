@@ -261,9 +261,9 @@ static void AddEventToBuffer(char **buffer, int *bufferEnd, int *bufferAlloced, 
 				/* TODO: convert code page */
 				//streamData->si
 		#if defined( _UNICODE )
-				if (streamData->si->codePage != CP_ACP) {
+				if (streamData->si->windowData.codePage != CP_ACP) {
 					char *aText = t2acp(streamData->lin->ptszText, CP_ACP);
-					TCHAR *wText = a2tcp(aText, streamData->si->codePage);
+					TCHAR *wText = a2tcp(aText, streamData->si->windowData.codePage);
 					Log_AppendRTF( streamData, FALSE, buffer, bufferEnd, bufferAlloced, _T("%s"), wText );
 					mir_free(aText);
 					mir_free(wText);

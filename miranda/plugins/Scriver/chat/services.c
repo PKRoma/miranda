@@ -339,7 +339,7 @@ int Service_NewChat(WPARAM wParam, LPARAM lParam)
 			else
 				mir_sntprintf(szTemp, SIZEOF(szTemp), _T("%s"), si->ptszName);
 			si->hContact = CList_AddRoom( gcw->pszModule, ptszID, szTemp, si->iType);
-			si->codePage = DBGetContactSettingWord(si->hContact, si->pszModule, "CodePage", (WORD) CP_ACP);
+			si->windowData.codePage = DBGetContactSettingWord(si->hContact, si->pszModule, "CodePage", (WORD) CP_ACP);
 			si->pszHeader = Log_CreateRtfHeader(mi, si);
 			DBWriteContactSettingString(si->hContact, si->pszModule , "Topic", "");
 			DBDeleteContactSetting(si->hContact, "CList", "StatusMsg");

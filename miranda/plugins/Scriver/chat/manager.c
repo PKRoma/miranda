@@ -77,6 +77,7 @@ SESSION_INFO* SM_AddSession( const TCHAR* pszID, const char* pszModule)
 		ZeroMemory(node, sizeof(SESSION_INFO));
 		node->ptszID = mir_tstrdup( pszID );
 		node->pszModule = mir_strdup( pszModule );
+		node->windowData.flags = CWDF_RTF_INPUT;
 
 		if (m_WndList == NULL) { // list is empty
 			m_WndList = node;
@@ -142,7 +143,7 @@ int SM_RemoveSession( const TCHAR* pszID, const char* pszModule)
 			#endif
 
 			// delete commands
-			tcmdlist_free(pTemp->cmdList);
+			tcmdlist_free(pTemp->windowData.cmdList);
 			mir_free(pTemp);
 			if (pszID)
 				return (int)dw;
@@ -694,7 +695,7 @@ BOOL SM_RemoveAll (void)
 		mir_free( m_WndList->ptszStatusbarText );
 		mir_free( m_WndList->ptszTopic );
 		mir_free( m_WndList->pszHeader);
-		tcmdlist_free(m_WndList->cmdList);
+		tcmdlist_free(m_WndList->windowData.cmdList);
 		mir_free(m_WndList);
 		m_WndList = pLast;
 	}

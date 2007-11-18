@@ -119,7 +119,7 @@ static TCHAR *GetIEViewSelection(struct MessageWindowData *dat) {
 #else
 	event.dwFlags = IEEF_NO_UNICODE;
 #endif
-	event.codepage = dat->codePage;
+	event.codepage = dat->windowData.codePage;
 	event.hwnd = dat->hwndLog;
 	event.hContact = dat->hContact;
 	event.iType = IEE_GET_SELECTION;
@@ -339,7 +339,7 @@ static void SetDialogToType(HWND hwndDlg)
 	}
 	ShowWindow(GetDlgItem(hwndDlg, IDC_SPLITTER), SW_SHOW);
 	UpdateReadChars(hwndDlg, dat);
-	EnableWindow(GetDlgItem(hwndDlg, IDOK), GetRichTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE), dat->codePage, FALSE)?TRUE:FALSE);
+	EnableWindow(GetDlgItem(hwndDlg, IDOK), GetRichTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE), dat->windowData.codePage, FALSE)?TRUE:FALSE);
 	SendMessage(hwndDlg, DM_UPDATETITLEBAR, 0, 0);
 	SendMessage(hwndDlg, WM_SIZE, 0, 0);
 }
@@ -393,13 +393,15 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 	int result = -1;
 	struct MsgEditSubclassData *dat;
 	struct MessageWindowData *pdat;
+	CommonWindowData *windowData;
 	BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
 	BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
 	BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
-	pdat=(struct MessageWindowData *)GetWindowLong(GetParent(hwnd),GWL_USERDATA);
 	dat = (struct MsgEditSubclassData *) GetWindowLong(hwnd, GWL_USERDATA);
+	pdat=(struct MessageWindowData *)GetWindowLong(GetParent(hwnd),GWL_USERDATA);
+	windowData = &pdat->windowData;
 
-	result = InputAreaShortcuts(hwnd, msg, wParam, lParam);
+	result = InputAreaShortcuts(hwnd, msg, wParam, lParam, windowData);
 	if (result != -1) {
 		return result;
 	}
@@ -411,8 +413,6 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 		dat->lastEnterTime = 0;
 		return 0;
 
-	case WM_KEYUP:
-		break;
 	case WM_KEYDOWN:
 		{
 			if (wParam == VK_RETURN) {
@@ -438,52 +438,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			else
 				dat->lastEnterTime = 0;
 
-			if ((wParam == VK_UP || wParam == VK_DOWN) && isCtrl && (g_dat->flags & SMF_CTRLSUPPORT) && !DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE)) {
-				if (pdat->cmdList) {
-					TCmdList *cmdListNew = NULL;
-					if (wParam == VK_UP) {
-						if (pdat->cmdListCurrent == NULL) {
-							cmdListNew = tcmdlist_last(pdat->cmdList);
-							while (cmdListNew != NULL && cmdListNew->temporary) {
-								pdat->cmdList = tcmdlist_remove(pdat->cmdList, cmdListNew);
-								cmdListNew = tcmdlist_last(pdat->cmdList);
-							}
-							if (cmdListNew != NULL) {
-								char *textBuffer = GetRichTextEncoded(hwnd, pdat->codePage);
-								if (textBuffer != NULL) {
-									pdat->cmdList = tcmdlist_append(pdat->cmdList, textBuffer, 20, TRUE);
-									mir_free(textBuffer);
-								}
-							}
-						} else if (pdat->cmdListCurrent->prev != NULL) {
-							cmdListNew = pdat->cmdListCurrent->prev;
-						}
-					} else {
-						if (pdat->cmdListCurrent != NULL) {
-							if (pdat->cmdListCurrent->next != NULL) {
-								cmdListNew = pdat->cmdListCurrent->next;
-							} else if (!pdat->cmdListCurrent->temporary) {
-								SetWindowText(hwnd, _T(""));
-							}
-						}
-					}
-					if (cmdListNew != NULL) {
-						int iLen;
-						SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
-						iLen = SetRichTextEncoded(hwnd, cmdListNew->szCmd, pdat->codePage);
-						SendMessage(hwnd, EM_SCROLLCARET, 0,0);
-						SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
-						RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE);
-						SendMessage(hwnd, EM_SETSEL, iLen, iLen);
-						pdat->cmdListCurrent = cmdListNew;
-					}
-					UpdateReadChars(GetParent(hwnd), pdat);
-					EnableWindow(GetDlgItem(GetParent(hwnd), IDOK), GetRichTextLength(GetDlgItem(GetParent(hwnd), IDC_MESSAGE), pdat->codePage, FALSE) != 0);
-				}
-				return 0;
-			}
 		}
-
 		break;
 		//fall through
 	case WM_MOUSEWHEEL:
@@ -496,28 +451,6 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 	case WM_MBUTTONDOWN:
 	case WM_KILLFOCUS:
 		dat->lastEnterTime = 0;
-		break;
-	case WM_SYSKEYDOWN:
-		{
-			if ((wParam == VK_LEFT) && isAlt) {
-				SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEPREV, 0, (LPARAM)GetParent(hwnd));
-				return 0;
-			}
-			if ((wParam == VK_RIGHT) && isAlt) {
-				SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATENEXT, 0, (LPARAM)GetParent(hwnd));
-				return 0;
-			}
-		}
-		break;
-	case WM_SYSKEYUP:
-		{
-			if ((wParam == VK_LEFT) && isAlt) {
-				return 0;
-			}
-			if ((wParam == VK_RIGHT) && isAlt) {
-				return 0;
-			}
-		}
 		break;
 	case WM_SYSCHAR:
 		dat->lastEnterTime = 0;
@@ -663,7 +596,7 @@ static void UpdateReadChars(HWND hwndDlg, struct MessageWindowData * dat)
 	if (dat->parent->hwndActive == hwndDlg) {
 		TCHAR szText[256];
 		StatusBarData sbd;
-		int len = GetRichTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE), dat->codePage, FALSE);
+		int len = GetRichTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE), dat->windowData.codePage, FALSE);
 		sbd.iItem = 1;
 		sbd.iFlags = SBDF_TEXT | SBDF_ICON;
 		sbd.hIcon = NULL;
@@ -879,8 +812,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			dat->nLastTyping = 0;
 			dat->showTyping = 0;
 			dat->showUnread = 0;
-			dat->cmdList = NULL;
-			dat->cmdListCurrent = NULL;
 			dat->sendAllConfirm = 0;
 			dat->nTypeMode = PROTOTYPE_SELFTYPING_OFF;
 			SetTimer(hwndDlg, TIMERID_TYPE, 1000, NULL);
@@ -927,7 +858,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					SetWindowLong(GetDlgItem(hwndDlg, IDC_LOG),GWL_EXSTYLE,GetWindowLong(GetDlgItem(hwndDlg, IDC_LOG),GWL_EXSTYLE) & ~WS_EX_LEFTSCROLLBAR);
 				}
 			}
-			dat->codePage = DBGetContactSettingWord(dat->hContact, SRMMMOD, "CodePage", (WORD) CP_ACP);
+			dat->windowData.codePage = DBGetContactSettingWord(dat->hContact, SRMMMOD, "CodePage", (WORD) CP_ACP);
 			dat->ace = NULL;
 			GetWindowRect(GetDlgItem(hwndDlg, IDC_MESSAGE), &dat->minEditInit);
 			dat->minEditBoxHeight = dat->minEditInit.bottom - dat->minEditInit.top;
@@ -953,7 +884,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			} else if (g_dat->flags & SMF_SAVEDRAFTS) {
 				TCmdList *draft = tcmdlist_get2(g_dat->draftList, dat->hContact);
 				if (draft != NULL) {
-					len = SetRichTextEncoded(GetDlgItem(hwndDlg, IDC_MESSAGE), draft->szCmd, dat->codePage);
+					len = SetRichTextEncoded(GetDlgItem(hwndDlg, IDC_MESSAGE), draft->szCmd, dat->windowData.codePage);
 				}
 				PostMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SETSEL, len, len);
 			}
@@ -1603,10 +1534,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 //		SendMessage(dat->hwndParent, DM_SWITCHTOOLBAR, 0, 0);
 		break;
 	case DM_GETCODEPAGE:
-		SetWindowLong(hwndDlg, DWL_MSGRESULT, dat->codePage);
+		SetWindowLong(hwndDlg, DWL_MSGRESULT, dat->windowData.codePage);
 		return TRUE;
 	case DM_SETCODEPAGE:
-		dat->codePage = (int) lParam;
+		dat->windowData.codePage = (int) lParam;
 		SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
 		break;
 	case DM_SWITCHUNICODE:
@@ -1924,7 +1855,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			event.dwFlags = ((dat->flags & SMF_RTL) ? IEEF_RTL : 0) | ((dat->flags & SMF_DISABLE_UNICODE) ? IEEF_NO_UNICODE : 0);
 			event.hwnd = dat->hwndLog;
 			event.hContact = dat->hContact;
-			event.codepage = dat->codePage;
+			event.codepage = dat->windowData.codePage;
 			event.pszProto = dat->szProto;
 			CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&event);
 		}
@@ -1966,7 +1897,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			item->hContact = dat->hContact;
 			item->proto = mir_strdup(dat->szProto);
 			item->flags = msi->flags;
-			item->codepage = dat->codePage;
+			item->codepage = dat->windowData.codePage;
 			if ( IsUtfSendAvailable( dat->hContact )) {
 				char* szMsgUtf;
 				#if defined( _UNICODE )
@@ -2128,7 +2059,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				PARAFORMAT2 pf2;
 				MessageSendQueueItem msi = { 0 };
 				int bufSize;
-				int ansiBufSize = GetRichTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE), dat->codePage, TRUE) + 1;
+				int ansiBufSize = GetRichTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE), dat->windowData.codePage, TRUE) + 1;
 				bufSize = ansiBufSize;
 				ZeroMemory((void *)&pf2, sizeof(pf2));
 				pf2.cbSize = sizeof(pf2);
@@ -2145,7 +2076,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 				gt.flags = GT_USECRLF;
 				gt.cb = ansiBufSize;
-				gt.codepage = dat->codePage;
+				gt.codepage = dat->windowData.codePage;
 				SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETTEXTEX, (WPARAM) &gt, (LPARAM) msi.sendBuffer);
 				#if defined( _UNICODE )
 					gt.cb = bufSize - ansiBufSize;
@@ -2160,17 +2091,17 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				}
 				{
 					/* Store messaging history */
-					char *msgText = GetRichTextEncoded(GetDlgItem(hwndDlg, IDC_MESSAGE), dat->codePage);
-					TCmdList *cmdListNew = tcmdlist_last(dat->cmdList);
+					char *msgText = GetRichTextEncoded(GetDlgItem(hwndDlg, IDC_MESSAGE), dat->windowData.codePage);
+					TCmdList *cmdListNew = tcmdlist_last(dat->windowData.cmdList);
 					while (cmdListNew != NULL && cmdListNew->temporary) {
-						dat->cmdList = tcmdlist_remove(dat->cmdList, cmdListNew);
-						cmdListNew = tcmdlist_last(dat->cmdList);
+						dat->windowData.cmdList = tcmdlist_remove(dat->windowData.cmdList, cmdListNew);
+						cmdListNew = tcmdlist_last(dat->windowData.cmdList);
 					}
 					if (msgText != NULL) {
-						dat->cmdList = tcmdlist_append(dat->cmdList, msgText, 20, FALSE);
+						dat->windowData.cmdList = tcmdlist_append(dat->windowData.cmdList, msgText, 20, FALSE);
 						mir_free(msgText);
 					}
-					dat->cmdListCurrent = NULL;
+					dat->windowData.cmdListCurrent = NULL;
 				}
 				if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON)
 					NotifyTyping(dat, PROTOTYPE_SELFTYPING_OFF);
@@ -2291,8 +2222,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			}
 		case IDC_MESSAGE:
 			if (HIWORD(wParam) == EN_CHANGE) {
-				int len = GetRichTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE), dat->codePage, FALSE);
-				dat->cmdListCurrent = NULL;
+				int len = GetRichTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE), dat->windowData.codePage, FALSE);
+				dat->windowData.cmdListCurrent = NULL;
 				UpdateReadChars(hwndDlg, dat);
 				EnableWindow(GetDlgItem(hwndDlg, IDOK), len != 0);
 				if (!(GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_SHIFT) & 0x8000)) {
@@ -2487,11 +2418,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		dat->userMenuIcon = NULL;
 		ReleaseSendQueueItems(hwndDlg);
 		if (g_dat->flags & SMF_SAVEDRAFTS) {
-			saveDraftMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), dat->hContact, dat->codePage);
+			saveDraftMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), dat->hContact, dat->windowData.codePage);
 		} else {
 			g_dat->draftList = tcmdlist_remove2(g_dat->draftList, dat->hContact);
 		}
-		tcmdlist_free(dat->cmdList);
+		tcmdlist_free(dat->windowData.cmdList);
 		WindowList_Remove(g_dat->hMessageWindowList, hwndDlg);
 		SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_WNDPROC, (LONG) OldSplitterProc);
 		UnsubclassMessageEdit(GetDlgItem(hwndDlg, IDC_MESSAGE));
@@ -2504,7 +2435,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		}
 		DBWriteContactSettingByte(dat->hContact, SRMMMOD, "UseRTL", (BYTE) ((dat->flags & SMF_RTL) ? 1 : 0));
 		DBWriteContactSettingByte(dat->hContact, SRMMMOD, "DisableUnicode", (BYTE) ((dat->flags & SMF_DISABLE_UNICODE) ? 1 : 0));
-		DBWriteContactSettingWord(dat->hContact, SRMMMOD, "CodePage", (WORD) dat->codePage);
+		DBWriteContactSettingWord(dat->hContact, SRMMMOD, "CodePage", (WORD) dat->windowData.codePage);
 		DBWriteContactSettingDword((g_dat->flags & SMF_SAVESPLITTERPERCONTACT) ? dat->hContact : NULL, SRMMMOD, "splitterPos", dat->splitterPos);
 		DBWriteContactSettingDword((g_dat->flags & SMF_SAVESPLITTERPERCONTACT) ? dat->hContact : NULL, SRMMMOD, "splitterHeight", dat->toolbarSize.cy);
 		if (dat->avatarPic && !g_dat->avatarServiceExists)
