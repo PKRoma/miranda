@@ -1106,7 +1106,7 @@ static void sttCListApplyList(HWND hwndList, CPrivacyList *pList = NULL)
 	if (!pList)
 		goto lbl_return;
 
-	CPrivacyListRule *pRule = NULL;
+	CPrivacyListRule *pRule;
 	for (pRule = pList->GetFirstRule(); pRule; pRule = pRule->GetNext())
 	{
 		int hItem = 0;
