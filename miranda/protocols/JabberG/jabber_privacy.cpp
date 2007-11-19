@@ -445,6 +445,15 @@ static BOOL CALLBACK JabberPrivacyRuleDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 							hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 );
 						}
 
+						// append known chatroom jids from bookmarks
+						int i = 0;
+						while (( i = JabberListFindNext( LIST_BOOKMARK, i )) >= 0 ) {
+							JABBER_LIST_ITEM *item = 0;
+							if ( item = JabberListGetItemPtrFromIndex( i ))
+								SendDlgItemMessage( hwndDlg, IDC_COMBO_VALUES, CB_ADDSTRING, 0, (LPARAM)item->jid );
+							i++;
+						}
+
 						// FIXME: ugly code :)
 						if ( pRule->GetValue() ) {
 							SetDlgItemText( hwndDlg, IDC_COMBO_VALUES, pRule->GetValue() );
