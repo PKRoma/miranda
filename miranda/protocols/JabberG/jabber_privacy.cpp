@@ -1215,8 +1215,11 @@ static void sttCListBuildList(HWND hwndList, CPrivacyList *pList)
 		DBVARIANT dbv;
 		if (JGetStringT(hContact, "jid", &dbv))
 		{
-			JFreeVariant(&dbv);
-			continue;
+			if (JGetStringT(hContact, "ChatRoomID", &dbv))
+			{
+				JFreeVariant(&dbv);
+				continue;
+			}
 		}
 
 		szJid = dbv.ptszVal;

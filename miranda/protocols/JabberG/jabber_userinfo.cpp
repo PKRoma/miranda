@@ -84,8 +84,106 @@ struct JabberUserInfoDlgData
 	int					resourceCount;
 };
 
-static HTREEITEM sttFillInfoLine( HWND hwndTree, HTREEITEM htiRoot, HICON hIcon, TCHAR *title, TCHAR *value )
+enum
 {
+	INFOLINE_DELETE	= 0x80000000,
+	INFOLINE_MASK	= 0x7fffffff,
+	INFOLINE_BAD_ID	= 0x7fffffff,
+
+	INFOLINE_NAME	= 1,
+	INFOLINE_OFFLINE,
+	INFOLINE_MESSAGE,
+	INFOLINE_SOFTWARE,
+	INFOLINE_VERSION,
+	INFOLINE_SYSTEM,
+	INFOLINE_PRIORITY,
+	INFOLINE_IDLE,
+	INFOLINE_CAPS,
+	INFOLINE_SUBSCRIPTION,
+	INFOLINE_LOGOFF,
+	INFOLINE_LASTACTIVE,
+};
+
+static __forceinline DWORD sttInfoLineId(DWORD res, DWORD type, DWORD line=0)
+{
+	return
+		( type << 24 ) & 0x7f000000 |
+		( res  << 12 ) & 0x00fff000 |
+		( line       ) & 0x00000fff;
+}
+
+static HTREEITEM sttFindInfoLine( HWND hwndTree, HTREEITEM htiRoot, LPARAM id=INFOLINE_BAD_ID )
+{
+	if ( id == INFOLINE_BAD_ID ) return NULL;
+	for (HTREEITEM hti = TreeView_GetChild(hwndTree, htiRoot); hti; hti = TreeView_GetNextSibling(hwndTree, hti))
+	{
+		TVITEMEX tvi = {0};
+		tvi.mask = TVIF_HANDLE|TVIF_PARAM;
+		tvi.hItem = hti;
+		TreeView_GetItem(hwndTree, &tvi);
+		if ((tvi.lParam&INFOLINE_MASK) == (id&INFOLINE_MASK))
+			return hti;
+	}
+	return NULL;
+}
+
+void sttCleanupInfo(HWND hwndTree, int stage)
+{
+	HTREEITEM hItem = TreeView_GetRoot(hwndTree);
+	while (hItem)
+	{
+		TVITEMEX tvi = {0};
+		tvi.mask = TVIF_HANDLE|TVIF_PARAM;
+		tvi.hItem = hItem;
+		TreeView_GetItem(hwndTree, &tvi);
+
+		switch (stage)
+		{
+			case 0:
+			{
+				tvi.lParam |= INFOLINE_DELETE;
+				TreeView_SetItem(hwndTree, &tvi);
+				break;
+			}
+			case 1:
+			{
+				if (tvi.lParam & INFOLINE_DELETE)
+				{
+					hItem = TreeView_GetNextSibling(hwndTree, hItem);
+					TreeView_DeleteItem(hwndTree, tvi.hItem);
+					continue;
+				}
+				break;
+			}
+		}
+
+		HTREEITEM hItemTmp = 0;
+		if (hItemTmp = TreeView_GetChild(hwndTree, hItem))
+		{
+			hItem = hItemTmp;
+		} else
+		if (hItemTmp = TreeView_GetNextSibling(hwndTree, hItem))
+		{
+			hItem = hItemTmp;
+		} else
+		{
+			while (1)
+			{
+				if (!(hItem = TreeView_GetParent(hwndTree, hItem))) break;
+				if (hItemTmp = TreeView_GetNextSibling(hwndTree, hItem))
+				{
+					hItem = hItemTmp;
+					break;
+				}
+			}
+		}
+	}
+}
+
+static HTREEITEM sttFillInfoLine( HWND hwndTree, HTREEITEM htiRoot, HICON hIcon, TCHAR *title, TCHAR *value, LPARAM id=INFOLINE_BAD_ID, bool expand=false )
+{
+	HTREEITEM hti = sttFindInfoLine(hwndTree, htiRoot, id);
+
 	TCHAR buf[256];
 	if ( title )
 		mir_sntprintf( buf, SIZEOF(buf), _T("%s: %s"), title, value );
@@ -95,8 +193,9 @@ static HTREEITEM sttFillInfoLine( HWND hwndTree, HTREEITEM htiRoot, HICON hIcon,
 	TVINSERTSTRUCT tvis = {0};
 	tvis.hParent = htiRoot;
 	tvis.hInsertAfter = TVI_LAST;
-	tvis.itemex.mask = TVIF_TEXT;
+	tvis.itemex.mask = TVIF_TEXT|TVIF_PARAM;
 	tvis.itemex.pszText = buf;
+	tvis.itemex.lParam = id;
 
 	if ( hIcon ) {
 		HIMAGELIST himl = TreeView_GetImageList( hwndTree, TVSIL_NORMAL );
@@ -105,20 +204,36 @@ static HTREEITEM sttFillInfoLine( HWND hwndTree, HTREEITEM htiRoot, HICON hIcon,
 		tvis.itemex.iSelectedImage = ImageList_AddIcon( himl, hIcon );
 	}
 
-	return TreeView_InsertItem( hwndTree, &tvis );
+	if (hti)
+	{
+		tvis.itemex.mask |= TVIF_HANDLE;
+		tvis.itemex.hItem = hti;
+		TreeView_SetItem( hwndTree, &tvis.itemex );
+	} else
+	{
+		tvis.itemex.mask |= TVIF_STATE;
+		tvis.itemex.stateMask = TVIS_EXPANDED;
+		tvis.itemex.state = expand ? TVIS_EXPANDED : 0;
+		hti = TreeView_InsertItem( hwndTree, &tvis );
+	}
+
+	return hti;
 }
 
-static void sttFillResourceInfo( HWND hwndTree, HTREEITEM htiRoot, JABBER_LIST_ITEM *item, JABBER_RESOURCE_STATUS *res )
+static void sttFillResourceInfo( HWND hwndTree, HTREEITEM htiRoot, JABBER_LIST_ITEM *item, int resource )
 {
 	TCHAR buf[256];
 	HTREEITEM htiResource = htiRoot;
+	JABBER_RESOURCE_STATUS *res = resource ? &item->resource[resource-1] : &item->itemResource;
 
 	if ( res->resourceName && *res->resourceName )
-		htiResource = sttFillInfoLine( hwndTree, htiRoot, LoadSkinnedProtoIcon( jabberProtoName, res->status ), TranslateT("Resource"), res->resourceName );
+		htiResource = sttFillInfoLine( hwndTree, htiRoot, LoadSkinnedProtoIcon( jabberProtoName, res->status ), TranslateT("Resource"), res->resourceName,
+			sttInfoLineId(resource, INFOLINE_NAME), true );
 
 	{	// StatusMsg
 		sttFillInfoLine( hwndTree, htiResource, NULL /*LoadSkinnedIcon( SKINICON_EVENT_MESSAGE )*/,
-			TranslateT( "Message" ), res->statusMessage ? res->statusMessage : TranslateT( "<not specified>" ));
+			TranslateT( "Message" ), res->statusMessage ? res->statusMessage : TranslateT( "<not specified>" ),
+			sttInfoLineId(resource, INFOLINE_MESSAGE));
 	}
 
 	{	// Software
@@ -130,23 +245,26 @@ static void sttFillResourceInfo( HWND hwndTree, HTREEITEM htiRoot, JABBER_LIST_I
 		}
 
 		sttFillInfoLine( hwndTree, htiResource, hIcon, TranslateT( "Software" ),
-			res->software ? res->software : TranslateT( "<not specified>" ));
+			res->software ? res->software : TranslateT( "<not specified>" ),
+			sttInfoLineId(resource, INFOLINE_SOFTWARE));
 	}
 
 	{	// Version
 		sttFillInfoLine( hwndTree, htiResource, NULL, TranslateT( "Version" ),
-			res->version ? res->version : TranslateT( "<not specified>" ));
+			res->version ? res->version : TranslateT( "<not specified>" ),
+			sttInfoLineId(resource, INFOLINE_VERSION));
 	}
 
 	{	// System
 		sttFillInfoLine( hwndTree, htiResource, NULL, TranslateT( "System" ),
-			res->system ? res->system : TranslateT( "<not specified>" ));
+			res->system ? res->system : TranslateT( "<not specified>" ),
+			sttInfoLineId(resource, INFOLINE_SYSTEM));
 	}
 
 	{	// Resource priority
 		TCHAR szPriority[128];
 		mir_sntprintf( szPriority, SIZEOF( szPriority ), _T("%d"), (int)res->priority );
-		sttFillInfoLine( hwndTree, htiResource, NULL, TranslateT( "Resource priority" ), szPriority );
+		sttFillInfoLine( hwndTree, htiResource, NULL, TranslateT( "Resource priority" ), szPriority, sttInfoLineId(resource, INFOLINE_PRIORITY) );
 	}
 
 	{	// Idle
@@ -159,7 +277,7 @@ static void sttFillResourceInfo( HWND hwndTree, HTREEITEM htiRoot, JABBER_LIST_I
 		else
 			lstrcpyn(buf, TranslateT( "<not specified>" ), SIZEOF( buf ));
 
-		sttFillInfoLine( hwndTree, htiResource, NULL, TranslateT("Idle since"), buf );
+		sttFillInfoLine( hwndTree, htiResource, NULL, TranslateT("Idle since"), buf, sttInfoLineId(resource, INFOLINE_IDLE) );
 	}
 
 	{	// caps
@@ -168,7 +286,7 @@ static void sttFillResourceInfo( HWND hwndTree, HTREEITEM htiRoot, JABBER_LIST_I
 
 		if ( !( jcb & JABBER_RESOURCE_CAPS_ERROR ))
 		{
-			HTREEITEM htiCaps = sttFillInfoLine( hwndTree, htiResource, LoadIconEx( "main" ), NULL, TranslateT( "Client capabilities" ));
+			HTREEITEM htiCaps = sttFillInfoLine( hwndTree, htiResource, LoadIconEx( "main" ), NULL, TranslateT( "Client capabilities" ), sttInfoLineId(resource, INFOLINE_CAPS));
 			for ( int i = 0; g_JabberFeatCapPairs[i].szFeature; i++ ) 
 				if ( jcb & g_JabberFeatCapPairs[i].jcbCap ) {
 					TCHAR szDescription[ 1024 ];
@@ -176,36 +294,37 @@ static void sttFillResourceInfo( HWND hwndTree, HTREEITEM htiRoot, JABBER_LIST_I
 						mir_sntprintf( szDescription, SIZEOF( szDescription ), _T("%s (%s)"), g_JabberFeatCapPairs[i].szDescription, g_JabberFeatCapPairs[i].szFeature );
 					else
 						mir_sntprintf( szDescription, SIZEOF( szDescription ), _T("%s"), g_JabberFeatCapPairs[i].szFeature );
-					sttFillInfoLine( hwndTree, htiCaps, NULL, NULL, szDescription );
+					sttFillInfoLine( hwndTree, htiCaps, NULL, NULL, szDescription, sttInfoLineId(resource, INFOLINE_CAPS, i) );
 				}
 		}
 	}
 
-	TreeView_Expand( hwndTree, htiResource, TVE_EXPAND );
+//	TreeView_Expand( hwndTree, htiResource, TVE_EXPAND );
 }
 
 static void sttFillUserInfo( HWND hwndTree, JABBER_LIST_ITEM *item )
 {
 	SendMessage( hwndTree, WM_SETREDRAW, FALSE, 0 );
 
-	TreeView_DeleteAllItems( hwndTree );
+//	TreeView_DeleteAllItems( hwndTree );
+	sttCleanupInfo(hwndTree, 0);
 
-	HTREEITEM htiRoot = sttFillInfoLine( hwndTree, NULL, LoadIconEx( "main" ), _T( "JID" ), item->jid );
+	HTREEITEM htiRoot = sttFillInfoLine( hwndTree, NULL, LoadIconEx( "main" ), _T( "JID" ), item->jid, sttInfoLineId(0, INFOLINE_NAME), true );
 	TCHAR buf[256];
 
 	{	// subscription
 		switch ( item->subscription ) {
 			case SUB_BOTH:
-				sttFillInfoLine( hwndTree, htiRoot, NULL, TranslateT( "Subscription" ), TranslateT( "both" ));
+				sttFillInfoLine( hwndTree, htiRoot, NULL, TranslateT( "Subscription" ), TranslateT( "both" ), sttInfoLineId(0, INFOLINE_SUBSCRIPTION));
 				break;
 			case SUB_TO:
-				sttFillInfoLine( hwndTree, htiRoot, NULL, TranslateT( "Subscription" ), TranslateT( "to" ));
+				sttFillInfoLine( hwndTree, htiRoot, NULL, TranslateT( "Subscription" ), TranslateT( "to" ), sttInfoLineId(0, INFOLINE_SUBSCRIPTION));
 				break;
 			case SUB_FROM:
-				sttFillInfoLine( hwndTree, htiRoot, NULL, TranslateT( "Subscription" ), TranslateT( "from" ));
+				sttFillInfoLine( hwndTree, htiRoot, NULL, TranslateT( "Subscription" ), TranslateT( "from" ), sttInfoLineId(0, INFOLINE_SUBSCRIPTION));
 				break;
 			default:
-				sttFillInfoLine( hwndTree, htiRoot, NULL, TranslateT( "Subscription" ), TranslateT( "none" ));
+				sttFillInfoLine( hwndTree, htiRoot, NULL, TranslateT( "Subscription" ), TranslateT( "none" ), sttInfoLineId(0, INFOLINE_SUBSCRIPTION));
 				break;
 		}
 	}
@@ -221,7 +340,8 @@ static void sttFillUserInfo( HWND hwndTree, JABBER_LIST_ITEM *item )
 			lstrcpyn( buf, TranslateT( "<not specified>" ), SIZEOF( buf ));
 
 		sttFillInfoLine( hwndTree, htiRoot, NULL,
-			( item->jid && _tcschr( item->jid, _T( '@' ))) ? TranslateT( "Last logoff time" ) : TranslateT( "Uptime"), buf );
+			( item->jid && _tcschr( item->jid, _T( '@' ))) ? TranslateT( "Last logoff time" ) : TranslateT( "Uptime"), buf,
+			sttInfoLineId(0, INFOLINE_LOGOFF));
 	}
 
 	{	// activity
@@ -230,21 +350,24 @@ static void sttFillUserInfo( HWND hwndTree, JABBER_LIST_ITEM *item )
 		else
 			lstrcpyn( buf, TranslateT( "<no information available>" ), SIZEOF( buf ));
 
-		sttFillInfoLine( hwndTree, htiRoot, NULL, TranslateT( "Last active resource" ), buf );
+		sttFillInfoLine( hwndTree, htiRoot, NULL, TranslateT( "Last active resource" ), buf,
+			sttInfoLineId(0, INFOLINE_LASTACTIVE));
 	}
 
 	{	// resources
 		if ( item->resourceCount ) {
 			for (int i = 0; i < item->resourceCount; ++i)
-				sttFillResourceInfo( hwndTree, htiRoot, item, &item->resource[i] );
-		} else if ( item->itemResource.status != ID_STATUS_OFFLINE ) {
-			sttFillResourceInfo( hwndTree, htiRoot, item, &item->itemResource );
+				sttFillResourceInfo( hwndTree, htiRoot, item, i+1 );
+		} else if ( !_tcschr(item->jid, _T('@')) || (item->itemResource.status != ID_STATUS_OFFLINE) ) {
+			sttFillResourceInfo( hwndTree, htiRoot, item, 0 );
 		}
 	}
 
-	TreeView_Expand( hwndTree, htiRoot, TVE_EXPAND );
+//	TreeView_Expand( hwndTree, htiRoot, TVE_EXPAND );
 
+	sttCleanupInfo(hwndTree, 1);
 	SendMessage( hwndTree, WM_SETREDRAW, TRUE, 0 );
+
 	RedrawWindow( hwndTree, NULL, NULL, RDW_INVALIDATE );
 }
 
@@ -363,9 +486,20 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 				JABBER_LIST_ITEM *item = NULL;
 				if (!(dat->item = JabberListGetItemPtr(LIST_VCARD_TEMP, dbv.ptszVal)))
 					dat->item = JabberListGetItemPtr(LIST_ROSTER, dbv.ptszVal);
-				JFreeVariant(&dbv);
 
-				if (!dat->item) break;
+				if (!dat->item)
+				{
+					HWND hwndTree = GetDlgItem(hwndDlg, IDC_TV_INFO);
+					TreeView_DeleteAllItems( hwndTree );
+					HTREEITEM htiRoot = sttFillInfoLine( hwndTree, NULL, LoadIconEx( "main" ), _T( "JID" ), dbv.ptszVal, sttInfoLineId(0, INFOLINE_NAME), true );
+					sttFillInfoLine( hwndTree, htiRoot, LoadSkinnedProtoIcon( jabberModuleName, ID_STATUS_OFFLINE ), NULL, 
+						TranslateT("Please switch online to see more details.") );
+
+					JFreeVariant(&dbv);
+					break;
+				}
+
+				JFreeVariant(&dbv);
 			}
 			sttFillUserInfo(GetDlgItem(hwndDlg, IDC_TV_INFO), dat->item);
 			break;
@@ -433,7 +567,12 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 							tvi.cchTextMax = SIZEOF( szBuffer );
 							tvi.pszText = szBuffer;
 							if ( TreeView_GetItem( hwndTree, &tvi ))
-								SetClipboardText( hwndDlg, szBuffer );
+							{
+								if (TCHAR *str = _tcsstr(szBuffer, _T(": ")))
+									SetClipboardText( hwndDlg, str+2 );
+								else
+									SetClipboardText( hwndDlg, szBuffer );
+							}
 						}
 						DestroyMenu( hMenu );
 					}
