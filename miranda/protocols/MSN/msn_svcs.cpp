@@ -1005,7 +1005,7 @@ static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 	int seq; 
 	int rtlFlag = (ccs->wParam & PREF_RTL ) ? MSG_RTL : 0;
 	
-	if (netId == 1)
+	if (netId == 1 || netId == 0)
 	{
 		const char msgType = MyOptions.SlowSend ? 'A' : 'N';
 		bool isOffline;
