@@ -251,9 +251,9 @@ goto :eof
 
 :Pack
 if %2 == 00 (
-   set FileVer=v%1a%3.zip
+   set FileVer=v0%1a%3.zip
 ) else (
-   set FileVer=v%1%2a%3.zip
+   set FileVer=v0%1%2a%3.zip
 )
 
 del /Q /F "%Temp%\miranda-%FileVer%"
