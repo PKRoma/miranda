@@ -729,5 +729,6 @@ typedef struct {
 
 #define ME_NETLIB_FASTRECV "Netlib/OnRecv"  // being called on every receive
 #define ME_NETLIB_FASTSEND "Netlib/OnSend"  // being called on every send
+#define ME_NETLIB_FASTDUMP "Netlib/OnDump"  // being called on every dump
 
 #endif // M_NETLIB_H__

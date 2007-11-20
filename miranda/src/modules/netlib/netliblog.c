@@ -46,6 +46,7 @@ struct {
 } logOptions;
 static __int64 mirandaStartTime,perfCounterFreq;
 static int bIsActive = TRUE;
+static HANDLE hLogEvent = NULL;
 
 static const TCHAR* szTimeFormats[] =
 {
@@ -303,6 +304,9 @@ static int NetlibLog(WPARAM wParam,LPARAM lParam)
 	}	}
 
 	LeaveCriticalSection(&logOptions.cs);
+
+	CallHookSubscribers( hLogEvent, (WPARAM)nlu, (LPARAM)szLine );
+
 	if ( bNeedsFree )
 		free( szLine );
 
@@ -358,32 +362,28 @@ void NetlibDumpData(struct NetlibConnection *nlc,PBYTE buf,int len,int sent,int 
 	ReleaseMutex(hConnectionHeaderMutex);
 
 	// Text data
-	if (isText)
-	{
+	if (isText) {
 		szBuf = (char*)alloca(titleLineLen + len + 1);
 		CopyMemory(szBuf, szTitleLine, titleLineLen);
 		CopyMemory(szBuf + titleLineLen, (const char*)buf, len);
 		szBuf[titleLineLen + len] = '\0';
 	}
 	// Binary data
-	else
-	{
+	else {
 		int line, col, colsInLine;
 		char *pszBuf;
 
 		szBuf = (char*)alloca(titleLineLen + ((len+16)>>4) * 76 + 1);
 		CopyMemory(szBuf, szTitleLine, titleLineLen);
 		pszBuf = szBuf + titleLineLen;
-		for (line = 0; ; line += 16)
-		{
+		for (line = 0; ; line += 16) {
 			colsInLine = min(16, len - line);
 			pszBuf += wsprintfA(pszBuf, "%08X: ", line);
 			// Dump data as hex
 			for (col = 0; col < colsInLine; col++)
 				pszBuf += wsprintfA(pszBuf, "%02X%c", buf[line + col], ((col&3)==3 && col != 15)?'-':' ');
 			// Fill out last line with blanks
-			for ( ; col<16; col++)
-			{
+			for ( ; col<16; col++) {
 				lstrcpyA(pszBuf, "   ");
 				pszBuf += 3;
 			}
@@ -398,19 +398,20 @@ void NetlibDumpData(struct NetlibConnection *nlc,PBYTE buf,int len,int sent,int 
 	}
 
 	NetlibLog((WPARAM)nlu,(LPARAM)szBuf);
-
 }
 
 void NetlibLogInit(void)
 {
 	DBVARIANT dbv;
 	LARGE_INTEGER li;
-
-	CreateServiceFunction(MS_NETLIB_LOG,NetlibLog);
 	QueryPerformanceFrequency(&li);
 	perfCounterFreq=li.QuadPart;
 	QueryPerformanceCounter(&li);
 	mirandaStartTime=li.QuadPart;
+
+	CreateServiceFunction( MS_NETLIB_LOG, NetlibLog );
+	hLogEvent = CreateHookableEvent( ME_NETLIB_FASTDUMP );
+
 	InitializeCriticalSection(&logOptions.cs);
 	logOptions.dumpRecv=DBGetContactSettingByte(NULL,"Netlib","DumpRecv",1);
 	logOptions.dumpSent=DBGetContactSettingByte(NULL,"Netlib","DumpSent",1);
@@ -444,8 +445,11 @@ void NetlibLogInit(void)
 
 void NetlibLogShutdown(void)
 {
-	if(IsWindow(logOptions.hwndOpts)) DestroyWindow(logOptions.hwndOpts);
-	DeleteCriticalSection(&logOptions.cs);
-	if(logOptions.szFile) mir_free(logOptions.szFile);
+	DestroyHookableEvent( hLogEvent );
+	if ( IsWindow( logOptions.hwndOpts ))
+		DestroyWindow( logOptions.hwndOpts );
+	DeleteCriticalSection( &logOptions.cs );
+	if ( logOptions.szFile )
+		mir_free( logOptions.szFile );
 	bIsActive = FALSE;
 }
