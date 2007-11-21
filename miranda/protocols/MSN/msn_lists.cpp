@@ -48,19 +48,18 @@ void Lists_Init(void)
 void Lists_Uninit(void)
 {
 	Lists_Wipe();
-	contList.destroy();
 	DeleteCriticalSection( &csLists );
 }
 
 void  Lists_Wipe( void )
 {
 	EnterCriticalSection( &csLists );
-	for ( int i=contList.getCount(); i--; ) 
+	for ( int i=0; i<contList.getCount(); ++i ) 
 	{
 		mir_free( contList[i]->email );
 		mir_free( contList[i] );
-		contList.remove(i);
 	}
+	contList.destroy();
 	LeaveCriticalSection( &csLists );
 }
 
@@ -157,7 +156,6 @@ void MSN_CleanupLists(void)
 				mir_free(p);
 				contList.remove(i);
 			}
-
 			break;
 		}
 	}

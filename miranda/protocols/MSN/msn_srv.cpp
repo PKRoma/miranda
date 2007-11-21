@@ -32,7 +32,7 @@ struct ServerGroupItem
 
 static int CompareGrp( const ServerGroupItem* p1, const ServerGroupItem* p2 )
 {
-	return int( p1 - p2 );
+	return strcmp(p1->id, p2->id);
 }
 
 static LIST<ServerGroupItem> grpList( 10, CompareGrp );
@@ -43,7 +43,10 @@ static LIST<ServerGroupItem> grpList( 10, CompareGrp );
 
 void MSN_AddGroup( const char* grpName, const char *grpId, bool init )
 {
-	ServerGroupItem* p = new ServerGroupItem;
+	ServerGroupItem* p = grpList.find((ServerGroupItem*)&grpId);
+	if ( p != NULL ) return;
+
+	p = (ServerGroupItem*)mir_alloc(sizeof(ServerGroupItem));
 	p->id = mir_strdup( grpId );
 	p->name = mir_strdup( grpName );
 	
@@ -67,17 +70,14 @@ void MSN_AddGroup( const char* grpName, const char *grpId, bool init )
 
 void MSN_DeleteGroup( const char* pId )
 {
-	for ( int i=0; i < grpList.getCount(); i++ ) 
+	int i = grpList.getIndex((ServerGroupItem*)&pId);
+	if (i > -1) 
 	{
 		ServerGroupItem* p = grpList[i];
-		if ( !strcmp( p->id, pId )) 
-		{
-			mir_free( p->id );
-			mir_free( p->name );
-			delete p;
-			grpList.remove(i);
-			break;			
-		}
+		mir_free(p->id);
+		mir_free(p->name);
+		mir_free(p);
+		grpList.remove(i);
 	}
 }
 
@@ -115,7 +115,7 @@ void MSN_FreeGroups(void)
 		ServerGroupItem* p = grpList[i];
 		mir_free( p->id );
 		mir_free( p->name );
-		delete p;
+		mir_free ( p );
 	}
 	grpList.destroy();
 }
@@ -125,13 +125,8 @@ void MSN_FreeGroups(void)
 
 LPCSTR MSN_GetGroupById( const char* pId )
 {
-	for ( int i=0; i < grpList.getCount(); i++ ) 
-	{
-		const ServerGroupItem* p = grpList[i];
-		if ( strcmp( p->id, pId ) == 0 )
-			return p->name;
-	}
-	return NULL;
+	ServerGroupItem* p = grpList.find((ServerGroupItem*)&pId);
+	return p ? p->name : NULL;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -154,15 +149,8 @@ LPCSTR MSN_GetGroupByName( const char* pName )
 
 void MSN_SetGroupName( const char* pId, const char* pNewName )
 {
-	for ( int i=0; i < grpList.getCount(); i++ ) 
-	{
-		ServerGroupItem* p = grpList[i];
-		if ( strcmp( p->id, pId ) == 0 ) 
-		{
-			replaceStr(p->name, pNewName );
-			break;
-		}	
-	}	
+	ServerGroupItem* p = grpList.find((ServerGroupItem*)&pId);
+	if (p != NULL) replaceStr(p->name, pNewName );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -228,9 +216,9 @@ void MSN_RemoveEmptyGroups( void )
 			char szGroupID[ 100 ];
 			if ( !MSN_GetStaticString( "GroupID", hContact, szGroupID, sizeof( szGroupID ))) 
 			{
-				for ( int i=0; i < grpList.getCount(); i++ ) 
-					if ( strcmp( grpList[i]->id, szGroupID ) == 0 ) 
-					{ ++cCount[i]; break; }
+				const char *pId = szGroupID;
+				int i = grpList.getIndex((ServerGroupItem*)&pId);
+				if (i > -1) ++cCount[i];
 			}
 		}
 		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 );
