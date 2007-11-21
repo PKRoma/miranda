@@ -653,31 +653,21 @@ void snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)//fam
 				}
 				if(hContact)
 				{
-					int i=1;
-					#if _MSC_VER
-					#pragma warning( disable: 4127)
-					#endif
-					while(1)
+					char* item= new char[sizeof(AIM_KEY_BI)+10];
+					char* group= new char[sizeof(AIM_KEY_GI)+10];
+					for(int i=1; ;i++)
 					{
-						#if _MSC_VER
-						#pragma warning( default: 4127 )
-						#endif
-						char* item= new char[lstrlen(AIM_KEY_BI)+10];
-						char* group= new char[lstrlen(AIM_KEY_GI)+10];
-						mir_snprintf(item,lstrlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
-						mir_snprintf(group,lstrlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
+						mir_snprintf(item,sizeof(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
+						mir_snprintf(group,sizeof(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
 						if(!DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, item,0))
 						{
 							DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, item, item_id);	
                 			DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, group, group_id);
-							delete[] item;
-							delete[] group;
 							break;
 						}
-						delete[] item;
-						delete[] group;
-						i++;
 					}
+					delete[] item;
+					delete[] group;
 					DBWriteContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST, ID_STATUS_OFFLINE);
 				}
 			}

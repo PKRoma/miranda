@@ -89,10 +89,11 @@ HANDLE find_contact(char * sn)
 			char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 			if (protocol != NULL && !lstrcmp(protocol, AIM_PROTOCOL_NAME))
 			{
-				if (char* db_sn=getSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN))
+				DBVARIANT dbv;
+				if (!DBGetContactSettingString(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 				{
-					bool found = !lstrcmp(norm_sn,db_sn); 
-					delete[] db_sn;
+					bool found = !lstrcmp(norm_sn, dbv.pszVal); 
+					DBFreeVariant(&dbv);
 					if (found) break; 
 				}
 			}
