@@ -617,9 +617,9 @@ char * Log_CreateRtfHeader(MODULEINFO * mi, SESSION_INFO* si)
 	BOOL forceCharset = FALSE;
 
 #if !defined ( _UNICODE )
-		if (si->codePage != CP_ACP) {
+		if (si->windowData.codePage != CP_ACP) {
 			CHARSETINFO csi;
- 			if(TranslateCharsetInfo((DWORD*)si->codePage, &csi, TCI_SRCCODEPAGE)) {
+ 			if(TranslateCharsetInfo((DWORD*)si->windowData.codePage, &csi, TCI_SRCCODEPAGE)) {
 				forceCharset = TRUE;
 				charset = csi.ciCharset;
 			}

@@ -229,7 +229,7 @@ struct EventData *getEventFromDB(struct MessageWindowData *dat, HANDLE hContact,
 			event->pszText2T = mir_strdup(descr);
 		}
 	} else {
-		event->pszTextT = DbGetEventTextT( &dbei, dat->codePage );
+		event->pszTextT = DbGetEventTextT( &dbei, dat->windowData.codePage );
 	}
 #endif
 	mir_free(dbei.pBlob);
@@ -400,9 +400,9 @@ static char *CreateRTFHeader(struct MessageWindowData *dat)
 	int charset = 0;
 	BOOL forceCharset = FALSE;
 #if !defined ( _UNICODE )
-		if (dat->codePage != CP_ACP) {
+		if (dat->windowData.codePage != CP_ACP) {
 			CHARSETINFO csi;
- 			if(TranslateCharsetInfo((DWORD*)dat->codePage, &csi, TCI_SRCCODEPAGE)) {
+ 			if(TranslateCharsetInfo((DWORD*)dat->windowData.codePage, &csi, TCI_SRCCODEPAGE)) {
 				forceCharset = TRUE;
 				charset = csi.ciCharset;
 			}

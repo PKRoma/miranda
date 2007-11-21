@@ -41,7 +41,7 @@ PLUGININFOEX pluginInfo = {
 #else
 	"Scriver",
 #endif
-	PLUGIN_MAKE_VERSION(2, 8, 0, 1),
+	PLUGIN_MAKE_VERSION(2, 8, 0, 2),
 	"Scriver - send and receive instant messages",
 	"Miranda IM Development Team",
 	"the_leech@users.berlios.de",
