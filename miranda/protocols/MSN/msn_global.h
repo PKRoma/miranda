@@ -179,12 +179,6 @@ char*		MirandaStatusToMSN( int status );
 WORD		MSNStatusToMiranda( const char* status );
 void        HtmlDecode( char* str );
 char*       HtmlEncode( const char* str );
-WCHAR*      HtmlEncodeW( const WCHAR* str );
-#if defined( _UNICODE )
-	#define  HtmlEncodeT HtmlEncodeW
-#else
-	#define  HtmlEncodeT HtmlEncode
-#endif
 bool		txtParseParam (const char* szData, const char* presearch, const char* start, const char* finish, char* param, const int size);
 char*		MSN_Base64Decode( const char* str );
 
@@ -267,6 +261,7 @@ int			MSN_SendOIM(const char* szEmail, const char* msg);
 void		MSN_MakeDigest(const char* chl, char* dgst);
 int			MSN_GetPassportAuth( void );
 char*		GenerateLoginBlob(char* challenge);
+char*		HotmailLogin(const char* url, const char* id, bool ismail);
 void		FreeAuthTokens(void);
 char*		getNewUuid(void);
 
@@ -661,7 +656,7 @@ void MSN_ABAddGroup(const char* szGrpName);
 void MSN_ABRenameGroup(const char* szGrpName, const char* szGrpId);
 void MSN_ABUpdateNick(const char* szNick, const char* szCntId);
 void MSN_ABUpdateAttr(const char* szAttr, const int value);
-bool MSN_ABContactAdd(const char* szEmail, const char* szNick, const int typeId, const bool search);
+bool MSN_ABContactAdd(const char* szEmail, const char* szNick, int typeId, const bool search);
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN plugin options
@@ -819,7 +814,7 @@ public:
 	~SSLAgent();
 
 	char* getSslResult( const char* parUrl, const char* parAuthInfo, const char* hdrs,
-		unsigned& status, MimeHeaders& httpinfo, char*& htmlbody);
+		unsigned& status, char*& htmlbody);
 };
 
 
