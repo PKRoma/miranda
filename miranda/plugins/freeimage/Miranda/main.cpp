@@ -560,7 +560,8 @@ extern "C" BOOL __declspec(dllexport) mempng2dib(BYTE* pSource, DWORD cbSourceSi
 	png_uint_32				ulRowBytes;
 	png_byte*				pbImageData;
 	png_byte**				ppbRowPointers = NULL;
-	int						i, j;
+	int						i;
+	png_uint_32				j;
 	int						wDIRowBytes;
 	BYTE*                pImageData;
 
@@ -664,8 +665,8 @@ extern "C" BOOL __declspec(dllexport) mempng2dib(BYTE* pSource, DWORD cbSourceSi
 	ppbRowPointers = ( png_bytepp )alloca( iHeight * sizeof( png_bytep ));
 
 	// set the individual row-pointers to point at the correct offsets
-	for ( i = 0; i < iHeight; i++ )
-		ppbRowPointers[i] = ( png_bytep )&pImageData[ i*ulRowBytes ];
+	for ( j = 0; j < iHeight; j++ )
+		ppbRowPointers[j] = ( png_bytep )&pImageData[ j*ulRowBytes ];
 
 	// now we can go ahead and just read the whole image
 	png_read_image( png_ptr, ppbRowPointers );
