@@ -403,6 +403,8 @@
 #define IDC_RESETMENU                   1702
 #define IDC_MODULES                     1704
 #define IDC_STATIC_FILTERCAPTION        1705
+#define IDC_FILTER                      1706
+#define IDC_PATH                        1707
 #define IDI_SEARCHALL                   32548
 #define ID_ICQ_EXIT                     40001
 #define IDM_COPY                        40001
@@ -430,12 +432,12 @@
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        277
 #define _APS_NEXT_COMMAND_VALUE         40018
-#define _APS_NEXT_CONTROL_VALUE         1706
+#define _APS_NEXT_CONTROL_VALUE         1708
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

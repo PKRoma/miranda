@@ -33,6 +33,7 @@ struct NetlibUser {
 	NETLIBUSER user;
 	NETLIBUSERSETTINGS settings;
 	char * szStickyHeaders;
+	int toLog;
 };
 
 struct NetlibNestedCriticalSection {
