@@ -89,7 +89,6 @@ CLEAN :
 	-@erase "$(INTDIR)\jabber_vcard.obj"
 	-@erase "$(INTDIR)\jabber_ws.obj"
 	-@erase "$(INTDIR)\jabber_xml.obj"
-	-@erase "$(INTDIR)\jabber_xmlns.obj"
 	-@erase "$(INTDIR)\jabber_xstatus.obj"
 	-@erase "$(INTDIR)\jabber_zstream.obj"
 	-@erase "$(INTDIR)\msvc6.res"
@@ -188,7 +187,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_vcard.obj" \
 	"$(INTDIR)\jabber_ws.obj" \
 	"$(INTDIR)\jabber_xml.obj" \
-	"$(INTDIR)\jabber_xmlns.obj" \
 	"$(INTDIR)\jabber_xstatus.obj" \
 	"$(INTDIR)\jabber_zstream.obj" \
 	"$(INTDIR)\msvc6.res" \
@@ -305,8 +303,6 @@ CLEAN :
 	-@erase "$(INTDIR)\jabber_ws.sbr"
 	-@erase "$(INTDIR)\jabber_xml.obj"
 	-@erase "$(INTDIR)\jabber_xml.sbr"
-	-@erase "$(INTDIR)\jabber_xmlns.obj"
-	-@erase "$(INTDIR)\jabber_xmlns.sbr"
 	-@erase "$(INTDIR)\jabber_xstatus.obj"
 	-@erase "$(INTDIR)\jabber_xstatus.sbr"
 	-@erase "$(INTDIR)\jabber_zstream.obj"
@@ -405,7 +401,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\jabber_vcard.sbr" \
 	"$(INTDIR)\jabber_ws.sbr" \
 	"$(INTDIR)\jabber_xml.sbr" \
-	"$(INTDIR)\jabber_xmlns.sbr" \
 	"$(INTDIR)\jabber_xstatus.sbr" \
 	"$(INTDIR)\jabber_zstream.sbr"
 
@@ -458,7 +453,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_vcard.obj" \
 	"$(INTDIR)\jabber_ws.obj" \
 	"$(INTDIR)\jabber_xml.obj" \
-	"$(INTDIR)\jabber_xmlns.obj" \
 	"$(INTDIR)\jabber_xstatus.obj" \
 	"$(INTDIR)\jabber_zstream.obj" \
 	"$(INTDIR)\msvc6.res" \
@@ -531,7 +525,6 @@ CLEAN :
 	-@erase "$(INTDIR)\jabber_vcard.obj"
 	-@erase "$(INTDIR)\jabber_ws.obj"
 	-@erase "$(INTDIR)\jabber_xml.obj"
-	-@erase "$(INTDIR)\jabber_xmlns.obj"
 	-@erase "$(INTDIR)\jabber_xstatus.obj"
 	-@erase "$(INTDIR)\jabber_zstream.obj"
 	-@erase "$(INTDIR)\msvc6.res"
@@ -630,7 +623,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_vcard.obj" \
 	"$(INTDIR)\jabber_ws.obj" \
 	"$(INTDIR)\jabber_xml.obj" \
-	"$(INTDIR)\jabber_xmlns.obj" \
 	"$(INTDIR)\jabber_xstatus.obj" \
 	"$(INTDIR)\jabber_zstream.obj" \
 	"$(INTDIR)\msvc6.res" \
@@ -747,8 +739,6 @@ CLEAN :
 	-@erase "$(INTDIR)\jabber_ws.sbr"
 	-@erase "$(INTDIR)\jabber_xml.obj"
 	-@erase "$(INTDIR)\jabber_xml.sbr"
-	-@erase "$(INTDIR)\jabber_xmlns.obj"
-	-@erase "$(INTDIR)\jabber_xmlns.sbr"
 	-@erase "$(INTDIR)\jabber_xstatus.obj"
 	-@erase "$(INTDIR)\jabber_xstatus.sbr"
 	-@erase "$(INTDIR)\jabber_zstream.obj"
@@ -847,7 +837,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\jabber_vcard.sbr" \
 	"$(INTDIR)\jabber_ws.sbr" \
 	"$(INTDIR)\jabber_xml.sbr" \
-	"$(INTDIR)\jabber_xmlns.sbr" \
 	"$(INTDIR)\jabber_xstatus.sbr" \
 	"$(INTDIR)\jabber_zstream.sbr"
 
@@ -900,7 +889,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_vcard.obj" \
 	"$(INTDIR)\jabber_ws.obj" \
 	"$(INTDIR)\jabber_xml.obj" \
-	"$(INTDIR)\jabber_xmlns.obj" \
 	"$(INTDIR)\jabber_xstatus.obj" \
 	"$(INTDIR)\jabber_zstream.obj" \
 	"$(INTDIR)\msvc6.res" \
@@ -2449,50 +2437,6 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "JABBER_EXPORTS" /FAcs /Fa"$(INTDIR)\\" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\jabber.pch" /Yu"jabber.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
 
 "$(INTDIR)\jabber_xml.obj"	"$(INTDIR)\jabber_xml.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ENDIF
-
-SOURCE=.\jabber_xmlns.cpp
-
-!IF  "$(CFG)" == "jabberg - Win32 Release"
-
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "JABBER_EXPORTS" /FAcs /Fa"$(INTDIR)\\" /Fp"$(INTDIR)\jabber.pch" /Yu"jabber.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
-
-"$(INTDIR)\jabber_xmlns.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ELSEIF  "$(CFG)" == "jabberg - Win32 Debug"
-
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "JABBER_EXPORTS" /FAcs /Fa"$(INTDIR)\\" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\jabber.pch" /Yu"jabber.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
-
-"$(INTDIR)\jabber_xmlns.obj"	"$(INTDIR)\jabber_xmlns.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ELSEIF  "$(CFG)" == "jabberg - Win32 Release Unicode"
-
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "JABBER_EXPORTS" /FAcs /Fa"$(INTDIR)\\" /Fp"$(INTDIR)\jabber.pch" /Yu"jabber.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
-
-"$(INTDIR)\jabber_xmlns.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ELSEIF  "$(CFG)" == "jabberg - Win32 Debug Unicode"
-
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "JABBER_EXPORTS" /FAcs /Fa"$(INTDIR)\\" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\jabber.pch" /Yu"jabber.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
-
-"$(INTDIR)\jabber_xmlns.obj"	"$(INTDIR)\jabber_xmlns.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<

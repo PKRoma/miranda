@@ -615,7 +615,6 @@
 	
 
 .\chat\log.c : \
-	"..\..\..\..\vc\sdk\include\shtypes.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -790,7 +789,6 @@
 .\chat\options.c : \
 	"..\..\..\..\vc\sdk\include\shldisp.h"\
 	"..\..\..\..\vc\sdk\include\shobjidl.h"\
-	"..\..\..\..\vc\sdk\include\shtypes.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -877,7 +875,6 @@
 	
 
 .\chat\tools.c : \
-	"..\..\..\..\vc\sdk\include\shtypes.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
