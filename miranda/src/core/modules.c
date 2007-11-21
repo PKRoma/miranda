@@ -41,6 +41,7 @@ typedef struct
 	int  subscriberCount;
 	THookSubscriber* subscriber;
 	MIRANDAHOOK pfnHook;
+	CRITICAL_SECTION csHook;
 }
 	THook;
 
@@ -298,6 +299,7 @@ HANDLE CreateHookableEvent(const char *name)
 	ret->subscriberCount = 0;
 	ret->subscriber = NULL; 
 	ret->pfnHook = NULL;
+	InitializeCriticalSection( &ret->csHook );
 	List_Insert(( SortedList* )&hooks, ret, idx );
 
 	LeaveCriticalSection( &csHooks );
@@ -321,6 +323,7 @@ int DestroyHookableEvent( HANDLE hEvent )
 		p->subscriberCount = 0;
 	}
 	List_Remove(( SortedList* )&hooks, idx );
+	DeleteCriticalSection( &p->csHook );
 	mir_free( p );
 
 	LeaveCriticalSection( &csHooks );
@@ -348,6 +351,9 @@ int CallHookSubscribers( HANDLE hEvent, WPARAM wParam, LPARAM lParam )
 		LeaveCriticalSection( &csHooks );
 		return -1;
 	}
+	LeaveCriticalSection(&csHooks);
+
+	EnterCriticalSection( &p->csHook );
 
 	// NOTE: We've got the critical section while all this lot are called. That's mostly safe, though.
 	for ( i = 0; i < p->subscriberCount; i++ ) {
@@ -366,7 +372,7 @@ int CallHookSubscribers( HANDLE hEvent, WPARAM wParam, LPARAM lParam )
 	if ( p->subscriberCount == 0 && p->pfnHook != 0 )
 		returnVal = p->pfnHook( wParam, lParam );
 
-	LeaveCriticalSection(&csHooks);
+	LeaveCriticalSection( &p->csHook );
 	return returnVal;
 }
 
