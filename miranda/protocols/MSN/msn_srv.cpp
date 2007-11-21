@@ -224,10 +224,20 @@ void MSN_RemoveEmptyGroups( void )
 		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 );
 	}
 
-	for ( int i=0; i < grpList.getCount(); i++ ) 
+	for ( int i=grpList.getCount(); i--; ) 
 	{
 		if ( cCount[i] == 0 ) 
-			MSN_ABAddDelContactGroup(NULL, grpList[i]->id, "ABGroupDelete");
+		{
+			ServerGroupItem* p = grpList[i];
+
+			MSN_ABAddDelContactGroup(NULL, p->id, "ABGroupDelete");
+
+			mir_free(p->id);
+			mir_free(p->name);
+			mir_free(p);
+			grpList.remove(i);
+
+		}
 	}
 	mir_free( cCount );
 }
