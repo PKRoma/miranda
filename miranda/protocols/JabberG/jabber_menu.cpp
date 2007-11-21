@@ -171,7 +171,7 @@ int JabberMenuPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
 			sttEnableMenuItem( hMenuRequestAuth, item->subscription == SUB_FROM || item->subscription == SUB_NONE || bCtrlPressed );
 			sttEnableMenuItem( hMenuGrantAuth, item->subscription == SUB_TO || item->subscription == SUB_NONE || bCtrlPressed );
 			sttEnableMenuItem( hMenuRevokeAuth, item->subscription == SUB_FROM || item->subscription == SUB_BOTH || bCtrlPressed );
-			sttEnableMenuItem( hMenuCommands, ( jcb & JABBER_CAPS_COMMANDS ) != 0 );
+			sttEnableMenuItem( hMenuCommands, (( jcb & JABBER_CAPS_COMMANDS ) != 0) || bCtrlPressed);
 
 			if ( item->resourceCount >= 1 ) {
 				sttEnableMenuItem( hMenuResourcesRoot, TRUE );
