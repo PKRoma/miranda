@@ -74,12 +74,11 @@ void getOIMs(ezxml_t xmli)
 		char* szData = ezxml_toxml(xmlreq, true);
 
 		unsigned status;
-		MimeHeaders httpInfo;
 		char* htmlbody;
 
 		char* tResult = mAgent.getSslResult( "https://rsi.hotmail.com/rsi/rsi.asmx", szData,
 			"SOAPAction: \"http://www.hotmail.msn.com/ws/2004/09/oim/rsi/GetMessage\"\r\n",
-			status, httpInfo, htmlbody);
+			status, htmlbody);
 
 		free(szData);
 
@@ -142,12 +141,11 @@ void getOIMs(ezxml_t xmli)
 		char* szData = ezxml_toxml(xmldel, true);
 			
 		unsigned status;
-		MimeHeaders httpInfo;
 		char* htmlbody;
 
 		char* tResult = mAgent.getSslResult("https://rsi.hotmail.com/rsi/rsi.asmx", szData,
 			"SOAPAction: \"http://www.hotmail.msn.com/ws/2004/09/oim/rsi/DeleteMessages\"\r\n",
-			status, httpInfo, htmlbody);
+			status, htmlbody);
 		mir_free( tResult );
 		free(szData);
 	}
@@ -432,12 +430,11 @@ int MSN_SendOIM(const char* szEmail, const char* msg)
 		char* szData = ezxml_toxml(xmlp, true);
 		
 		unsigned status;
-		MimeHeaders httpInfo;
 		char* htmlbody;
 
 		char* tResult = mAgent.getSslResult( "https://ows.messenger.msn.com/OimWS/oim.asmx", szData,
 			"SOAPAction: \"http://messenger.live.com/ws/2006/09/oim/Store2\"\r\n",
-			status, httpInfo, htmlbody);
+			status, htmlbody);
 
 		free(szData);
 

@@ -153,10 +153,9 @@ int MSN_GetPassportAuth( void )
 	while (retVal == -1)
 	{
 		unsigned status;
-		MimeHeaders httpInfo;
 		char* htmlbody;
 
-		tResult = mAgent.getSslResult( szPassportHost, szAuthInfo, NULL, status, httpInfo, htmlbody);
+		tResult = mAgent.getSslResult( szPassportHost, szAuthInfo, NULL, status, htmlbody);
 		if ( tResult == NULL ) {
 			if ( defaultUrlAllow ) {
 				strcpy( szPassportHost, defaultPassportUrl );
@@ -196,7 +195,6 @@ int MSN_GetPassportAuth( void )
 						if (strcmp(id, "PPToken2")==0)
 						{
 							const char* tok = ezxml_txt(toks);
-							const size_t toklen = strlen(tok);
 							char* ch = (char*)strchr(tok, '&');
 							*ch = 0;
 							replaceStr(tAuthToken, tok+2);
@@ -410,7 +408,7 @@ char* GenerateLoginBlob(char* challenge)
 	unsigned char iv[8];
 
 	srand(time(NULL));
-	for (int i=0; i<sizeof(iv)/2; ++i) ((unsigned short*)iv)[i] = rand() + rand();
+	for (int i=0; i<sizeof(iv)/2; ++i) ((unsigned short*)iv)[i] = (unsigned short)(rand() + rand());
 	
 	memcpy(p, iv, sizeof(iv));
 	p += sizeof(iv);
@@ -433,6 +431,11 @@ char* GenerateLoginBlob(char* challenge)
 	return buf;
 }
 
+
+char* HotmailLogin(const char* url, const char* id, bool ismail)
+{
+	return NULL;
+}
 
 void FreeAuthTokens(void)
 {

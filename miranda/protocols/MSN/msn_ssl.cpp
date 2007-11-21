@@ -550,12 +550,13 @@ SSLAgent::~SSLAgent()
 
 
 char* SSLAgent::getSslResult(const char* parUrl, const char* parAuthInfo, const char* hdrs, 
-							 unsigned& status, MimeHeaders& httpinfo, char*& htmlbody)
+							 unsigned& status, char*& htmlbody)
 {
 	status = 0;
 	char* tResult = NULL;
 	if (pAgent != NULL)
 	{
+		MimeHeaders httpinfo;
 		char* url = mir_strdup(parUrl);
 
 lbl_retry:
