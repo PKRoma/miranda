@@ -34,6 +34,26 @@ typedef int (*MIRANDAHOOK)(WPARAM,LPARAM);
 typedef int (*MIRANDASERVICE)(WPARAM,LPARAM);
 typedef int (*MIRANDASERVICEPARAM)(WPARAM,LPARAM,LPARAM);
 
+typedef struct
+{
+	MIRANDAHOOK pfnHook;
+	HINSTANCE hOwner;
+	HWND hwnd;
+	UINT message;
+}
+	THookSubscriber;
+
+typedef struct
+{
+	char name[ MAXMODULELABELLENGTH ];
+	int  id;
+	int  subscriberCount;
+	THookSubscriber* subscriber;
+	MIRANDAHOOK pfnHook;
+	CRITICAL_SECTION csHook;
+}
+	THook;
+
 /**************************hook functions****************************/
 /* CreateHookableEvent
 Adds an named event to the list and returns a handle referring to it, or NULL

@@ -25,26 +25,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 // list of hooks
 
-typedef struct
-{
-	MIRANDAHOOK pfnHook;
-	HINSTANCE hOwner;
-	HWND hwnd;
-	UINT message;
-}
-	THookSubscriber;
-
-typedef struct
-{
-	char name[ MAXMODULELABELLENGTH ];
-	int  id;
-	int  subscriberCount;
-	THookSubscriber* subscriber;
-	MIRANDAHOOK pfnHook;
-	CRITICAL_SECTION csHook;
-}
-	THook;
-
 struct
 {
 	THook** items;
