@@ -170,33 +170,31 @@ void MSN_SetGroupName( const char* pId, const char* pNewName )
 
 void MSN_MoveContactToGroup( HANDLE hContact, const char* grpName )
 {
-	if ( !MyOptions.ManageServer ) return;
+	if (!MyOptions.ManageServer) return;
 
-	if ( strcmp( grpName, "MetaContacts Hidden Group" ) == 0 )
+	if (strcmp(grpName, "MetaContacts Hidden Group") == 0)
 		return;
 
 	LPCSTR szId = NULL;
-	char szContactID[ 100 ], szGroupID[ 100 ];
-	if ( MSN_GetStaticString( "ID", hContact, szContactID, sizeof( szContactID )))
+	char szContactID[100], szGroupID[100];
+	if ( MSN_GetStaticString("ID", hContact, szContactID, sizeof( szContactID)))
 		return;
 
-	if ( MSN_GetStaticString( "GroupID", hContact, szGroupID, sizeof( szGroupID )))
-		szGroupID[ 0 ] = 0;
+	if (MSN_GetStaticString("GroupID", hContact, szGroupID, sizeof( szGroupID)))
+		szGroupID[0] = 0;
 
 	bool bInsert = false, bDelete = szGroupID[0] != 0;
 
-	if ( grpName != NULL )
+	if (grpName != NULL)
 	{
-		szId = MSN_GetGroupByName( grpName );
-		if ( szId == NULL )
+		szId = MSN_GetGroupByName(grpName);
+		if (szId == NULL)
 		{
-			MSN_ABAddGroup( grpName );
-			szId = MSN_GetGroupByName( grpName );
+			MSN_ABAddGroup(grpName);
+			szId = MSN_GetGroupByName(grpName);
 		}
-		else {
-			if ( !strcmp( szGroupID, szId )) bDelete = false;
-			else                             bInsert = true;
-		}
+		if (strcmp(szGroupID, szId) == 0) bDelete = false;
+		else                              bInsert = true;
 	}
 
 	if ( bInsert )
