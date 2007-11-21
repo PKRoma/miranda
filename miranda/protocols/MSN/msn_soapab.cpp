@@ -39,7 +39,7 @@ static ezxml_t abSoapHdr(const char* service, const char* scenario, ezxml_t& tbd
 	ezxml_t apphdr = ezxml_add_child(hdr, "ABApplicationHeader", 0);
 	ezxml_set_attr(apphdr, "xmlns", "http://www.msn.com/webservices/AddressBook");
 	ezxml_t node = ezxml_add_child(apphdr, "ApplicationId", 0);
-	ezxml_set_txt(node, "09607671-1C32-421F-A6A6-CBFAA51AB5F4");
+	ezxml_set_txt(node, "996CDE1E-AA53-4477-B943-2BE802EA6166");
 	node = ezxml_add_child(apphdr, "IsMigration", 0);
 	ezxml_set_txt(node, ((abchMigrated == NULL || *abchMigrated == '1') ? "false" : "true"));
 	node = ezxml_add_child(apphdr, "PartnerScenario", 0);
@@ -105,10 +105,9 @@ void MSN_SharingFindMembership(void)
 	ezxml_free(xmlp);
 
 	unsigned status;
-	MimeHeaders httpInfo;
 	char* htmlbody;
 
-	char* tResult = mAgent.getSslResult(absUrl, szData, reqHdr, status, httpInfo, htmlbody);
+	char* tResult = mAgent.getSslResult(absUrl, szData, reqHdr, status, htmlbody);
 
 	mir_free(reqHdr);
 	free(szData);
@@ -249,10 +248,9 @@ bool MSN_SharingAddDelMember(const char* szEmail, const char* szRole, const char
 	ezxml_free(xmlp);
 
 	unsigned status;
-	MimeHeaders httpInfo;
 	char* htmlbody;
 
-	char* tResult = mAgent.getSslResult(absUrl, szData, reqHdr, status, httpInfo, htmlbody);
+	char* tResult = mAgent.getSslResult(absUrl, szData, reqHdr, status, htmlbody);
 
 	mir_free(reqHdr);
 	free(szData);
@@ -282,10 +280,9 @@ void MSN_ABGetFull(void)
 	ezxml_free(xmlp);
 
 	unsigned status;
-	MimeHeaders httpInfo;
 	char* htmlbody;
 
-	char* tResult = mAgent.getSslResult(abUrl, szData, reqHdr, status, httpInfo, htmlbody);
+	char* tResult = mAgent.getSslResult(abUrl, szData, reqHdr, status, htmlbody);
 
 	mir_free(reqHdr);
 	free(szData);
@@ -465,10 +462,9 @@ bool MSN_ABAddDelContactGroup(const char* szCntId, const char* szGrpId, const ch
 	ezxml_free(xmlp);
 
 	unsigned status;
-	MimeHeaders httpInfo;
 	char* htmlbody;
 
-	char* tResult = mAgent.getSslResult(abUrl, szData, reqHdr, status, httpInfo, htmlbody);
+	char* tResult = mAgent.getSslResult(abUrl, szData, reqHdr, status, htmlbody);
 
 	mir_free(reqHdr);
 	free(szData);
@@ -509,15 +505,13 @@ void MSN_ABAddGroup(const char* szGrpName)
 	ezxml_free(xmlp);
 
 	unsigned status;
-	MimeHeaders httpInfo;
 	char* htmlbody;
 
-	char* tResult = mAgent.getSslResult(abUrl, szData, reqHdr, status, httpInfo, htmlbody);
+	char* tResult = mAgent.getSslResult(abUrl, szData, reqHdr, status, htmlbody);
 
 	free(szData);
 	mir_free(reqHdr);
 
-	char* res = NULL;
 	if (tResult != NULL && status == 200)
 	{
 		ezxml_t xmlm = ezxml_parse_str(htmlbody, strlen(htmlbody));
@@ -556,10 +550,9 @@ void MSN_ABRenameGroup(const char* szGrpName, const char* szGrpId)
 	ezxml_free(xmlp);
 
 	unsigned status;
-	MimeHeaders httpInfo;
 	char* htmlbody;
 
-	char* tResult = mAgent.getSslResult(abUrl, szData, reqHdr, status, httpInfo, htmlbody);
+	char* tResult = mAgent.getSslResult(abUrl, szData, reqHdr, status, htmlbody);
 
 	free(szData);
 	mir_free(reqHdr);
@@ -607,10 +600,9 @@ void MSN_ABUpdateNick(const char* szNick, const char* szCntId)
 	ezxml_free(xmlp);
 
 	unsigned status;
-	MimeHeaders httpInfo;
 	char* htmlbody;
 
-	char* tResult = mAgent.getSslResult(abUrl, szData, reqHdr, status, httpInfo, htmlbody);
+	char* tResult = mAgent.getSslResult(abUrl, szData, reqHdr, status, htmlbody);
 
 	mir_free(reqHdr);
 	free(szData);
@@ -650,10 +642,9 @@ void MSN_ABUpdateAttr(const char* szAttr, const int value)
 	ezxml_free(xmlp);
 
 	unsigned status;
-	MimeHeaders httpInfo;
 	char* htmlbody;
 
-	char* tResult = mAgent.getSslResult(abUrl, szData, reqHdr, status, httpInfo, htmlbody);
+	char* tResult = mAgent.getSslResult(abUrl, szData, reqHdr, status, htmlbody);
 
 	mir_free(reqHdr);
 	free(szData);
@@ -662,7 +653,7 @@ void MSN_ABUpdateAttr(const char* szAttr, const int value)
 }
 
 
-bool MSN_ABContactAdd(const char* szEmail, const char* szNick, const int typeId, const bool search)
+bool MSN_ABContactAdd(const char* szEmail, const char* szNick, int typeId, const bool search)
 {
 	SSLAgent mAgent;
 
@@ -677,7 +668,7 @@ bool MSN_ABContactAdd(const char* szEmail, const char* szNick, const int typeId,
 	ezxml_t contp;
 
 	const char* szEmailNP = strchr(szEmail, ':');
-	if (szEmailNP != NULL) (int)typeId = 4;
+	if (szEmailNP != NULL) typeId = 4;
 
 	switch (typeId)
 	{
@@ -738,10 +729,9 @@ bool MSN_ABContactAdd(const char* szEmail, const char* szNick, const int typeId,
 	ezxml_free(xmlp);
 
 	unsigned status;
-	MimeHeaders httpInfo;
 	char* htmlbody;
 
-	char* tResult = mAgent.getSslResult(abUrl, szData, reqHdr, status, httpInfo, htmlbody);
+	char* tResult = mAgent.getSslResult(abUrl, szData, reqHdr, status, htmlbody);
 
 	mir_free(reqHdr);
 	free(szData);

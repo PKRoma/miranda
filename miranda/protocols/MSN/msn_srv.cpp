@@ -67,8 +67,6 @@ void MSN_AddGroup( const char* grpName, const char *grpId, bool init )
 
 void MSN_DeleteGroup( const char* pId )
 {
-	ServerGroupItem* prev = NULL;
-
 	for ( int i=0; i < grpList.getCount(); i++ ) 
 	{
 		ServerGroupItem* p = grpList[i];
