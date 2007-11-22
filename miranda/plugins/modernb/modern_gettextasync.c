@@ -109,7 +109,7 @@ static int gtaThreadProc(void * lpParam)
 				if (!MirandaExiting())
 				{
 					displayNameCacheEntry cacheEntry={0};
-					cacheEntry.hContact=mpChain.hContact;
+					cacheEntry.m_cache_hContact=mpChain.hContact;
 					if (!cache_CallProcSync(CLUI_SyncGetPDNCE,0,(LPARAM)&cacheEntry))
 					{
 						if (!MirandaExiting()) 
@@ -117,7 +117,7 @@ static int gtaThreadProc(void * lpParam)
 						if (!MirandaExiting()) 
 							Cache_GetThirdLineText(dat, &cacheEntry);
 						if (!MirandaExiting()) 
-							cache_CallProcSync(CLUI_SyncSetPDNCE,0,(LPARAM)&cacheEntry);  
+							cache_CallProcSync(CLUI_SyncSetPDNCE, CCI_LINES|CCI_TIME ,(LPARAM)&cacheEntry);  
 						CListSettings_FreeCacheItemData(&cacheEntry);
 					}
 				}

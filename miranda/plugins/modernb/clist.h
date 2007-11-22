@@ -39,37 +39,37 @@ typedef BOOL(WINAPI *pfnMyGetMonitorInfo) (HMONITOR, LPMONITORINFO);
 extern pfnMyGetMonitorInfo MyGetMonitorInfo;
 
 typedef struct  {
-	HANDLE hContact;
-	TCHAR *name;
-	#if defined( _UNICODE )
-		char *szName;
-	#endif
-	TCHAR* szGroup;
-	int Hidden;
-	int noHiddenOffline;
+	HANDLE	m_cache_hContact;
+	TCHAR*	m_cache_tcsName;
+#if defined( _UNICODE )
+	char*	m_cache_szName;
+#endif
+	TCHAR*	m_cache_tcsGroup;
+	int		m_cache_nHidden;
+	int		m_cache_nNoHiddenOffline;
 
-	char *szProto;
-	boolean protoNotExists;
-	int	status;
-	int HiddenSubcontact;
+	char*	m_cache_cszProto;
+	boolean m_cache_bProtoNotExists;
+	int		m_cache_nStatus;
+	int		m_cache_nHiddenSubcontact;
 
-	int i;
-	int ApparentMode;
-	int NotOnList;
-	int IdleTS;
-	void *ClcContact;
-	BYTE IsExpanded;
+	int		i;
+	int		ApparentMode;
+	int		NotOnList;
+	int		IdleTS;
+	void*	ClcContact;
+	BYTE	IsExpanded;
 	boolean isUnknown;
 
-	TCHAR *szSecondLineText;//[120-MAXEXTRACOLUMNS];
-	SortedList *plSecondLineText;				// List of ClcContactTextPiece
-	TCHAR *szThirdLineText;//[120-MAXEXTRACOLUMNS];
-	SortedList *plThirdLineText;				// List of ClcContactTextPiece
-	int iThirdLineMaxSmileyHeight;
-    int iSecondLineMaxSmileyHeight;
-	DWORD timezone;
-    DWORD timediff;
-	DWORD dwLastMsgTime;
+	TCHAR*	szSecondLineText;//[120-MAXEXTRACOLUMNS];
+	SortedList*	plSecondLineText;				// List of ClcContactTextPiece
+	TCHAR*	szThirdLineText;//[120-MAXEXTRACOLUMNS];
+	SortedList*	plThirdLineText;				// List of ClcContactTextPiece
+	int		iThirdLineMaxSmileyHeight;
+    int		iSecondLineMaxSmileyHeight;
+	DWORD	timezone;
+    DWORD	timediff;
+	DWORD	dwLastMsgTime;
 } displayNameCacheEntry,*pdisplayNameCacheEntry, *PDNCE;
 
 typedef struct tagEXTRASLOTINFO

@@ -1167,13 +1167,13 @@ static void CLUI_SnappingToEdge(HWND hwnd, WINDOWPOS * wp) //by ZORG
 int CLUI_SyncGetPDNCE(WPARAM wParam, LPARAM lParam)
 {
 	//log0("CLUI_SyncGetPDNCE");
-	return CListSettings_GetCopyFromCache((pdisplayNameCacheEntry)lParam);
+	return CListSettings_GetCopyFromCache((pdisplayNameCacheEntry)lParam, wParam ? CCI_ALL : (DWORD) wParam );
 }
 
 int CLUI_SyncSetPDNCE(WPARAM wParam, LPARAM lParam)
 {
 	//log0("CLUI_SyncSetPDNCE");
-	return CListSettings_SetToCache((pdisplayNameCacheEntry)lParam);
+	return CListSettings_SetToCache((pdisplayNameCacheEntry)lParam, wParam ? CCI_ALL : (DWORD) wParam);
 }
 
 int CLUI_SyncGetShortData(WPARAM wParam, LPARAM lParam)
@@ -2108,7 +2108,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 					char *email,buf[4096];
 					email=DBGetStringA(nm->hItem,"UserInfo", "Mye-mail0");
 					if (!email)
-						email=DBGetStringA(nm->hItem, pdnce->szProto, "e-mail");																						
+						email=DBGetStringA(nm->hItem, pdnce->m_cache_cszProto, "e-mail");																						
 					if (email)
 					{
 						sprintf(buf,"mailto:%s",email);
@@ -2118,9 +2118,9 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 				};	
 				if(nm->iColumn==w) {
 					char *homepage;
-					homepage=DBGetStringA(pdnce->hContact,"UserInfo", "Homepage");
+					homepage=DBGetStringA(pdnce->m_cache_hContact,"UserInfo", "Homepage");
 					if (!homepage)
-						homepage=DBGetStringA(pdnce->hContact,pdnce->szProto, "Homepage");
+						homepage=DBGetStringA(pdnce->m_cache_hContact,pdnce->m_cache_cszProto, "Homepage");
 					if (homepage!=NULL)
 					{											
 						ShellExecuteA(hwnd,"open",homepage,NULL,NULL,SW_SHOW);

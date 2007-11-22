@@ -169,7 +169,7 @@ typedef struct tagCLISTFrame {
 #define FU_FMPOS			4 //update Frame position
 
 #define FO_FLAGS		0x0001 //return set of F_VISIBLE,F_SHOWTB,F_UNCOLLAPSED,F_LOCKED,F_NOBORDER,F_SHOWTBTIP
-#define FO_NAME			0x0002 //Change name
+#define FO_NAME			0x0002 //Change m_cacheTName
 #define FO_TBNAME		0x0003 //Change TB caption
 #define FO_TBSTYLE		0x0004 //Change TB style
 #define FO_TBEXSTYLE	0x0005 //Change TB exstyle

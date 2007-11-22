@@ -68,8 +68,8 @@ void CLCPaint_FillQuickHash();
 int CListMod_ContactListShutdownProc(WPARAM wParam,LPARAM lParam);
 int CListMod_HideWindow(HWND hwndContactList, int mode);
 
-int CListSettings_GetCopyFromCache(pdisplayNameCacheEntry pDest);
-int CListSettings_SetToCache(pdisplayNameCacheEntry pSrc);
+int CListSettings_GetCopyFromCache(pdisplayNameCacheEntry pDest, DWORD flag);
+int CListSettings_SetToCache(pdisplayNameCacheEntry pSrc, DWORD flag);
 
 int CListTray_GetGlobalStatus(WPARAM wparam,LPARAM lparam);
 

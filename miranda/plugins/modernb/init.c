@@ -270,10 +270,9 @@ LBL_Error:
 
 	pcli->pfnCheckCacheItem	= (void (*)(ClcCacheEntryBase*)) cliCheckCacheItem;
 	pcli->pfnFreeCacheItem = (void(*)(ClcCacheEntryBase*)) cliFreeCacheItem;
-	
-	pcli->pfnTrayIconUpdateBase = cliTrayIconUpdateBase;	
-	
 	pcli->pfnInvalidateDisplayNameCacheEntry	= cliInvalidateDisplayNameCacheEntry;
+
+	pcli->pfnTrayIconUpdateBase = cliTrayIconUpdateBase;	
 	pcli->pfnCluiProtocolStatusChanged	= cliCluiProtocolStatusChanged;
 	pcli->pfnHotkeysProcessMessage		= cliHotkeysProcessMessage;
 	pcli->pfnHotKeysProcess		= cliHotKeysProcess;

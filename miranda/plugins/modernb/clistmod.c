@@ -148,10 +148,10 @@ int cli_IconFromStatusMode(const char *szProto,int nStatus, HANDLE hContact)
            {
                 pdisplayNameCacheEntry cacheEntry;
                 cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(hMostOnlineContact);
-                if (cacheEntry && cacheEntry->szProto)
+                if (cacheEntry && cacheEntry->m_cache_cszProto)
                 {
-                    szActProto=cacheEntry->szProto;
-                    nActStatus=cacheEntry->status;
+                    szActProto=cacheEntry->m_cache_cszProto;
+                    nActStatus=pdnce___GetStatus( cacheEntry );
                     hActContact=hMostOnlineContact;
                 }
            }
@@ -179,7 +179,7 @@ int cli_IconFromStatusMode(const char *szProto,int nStatus, HANDLE hContact)
 
 int GetContactIconC(pdisplayNameCacheEntry cacheEntry)
 {
-	return ExtIconFromStatusMode(cacheEntry->hContact,cacheEntry->szProto,cacheEntry->szProto==NULL ? ID_STATUS_OFFLINE : cacheEntry->status);
+	return ExtIconFromStatusMode(cacheEntry->m_cache_hContact,cacheEntry->m_cache_cszProto,cacheEntry->m_cache_cszProto==NULL ? ID_STATUS_OFFLINE : pdnce___GetStatus( cacheEntry ));
 }
 
 //lParam

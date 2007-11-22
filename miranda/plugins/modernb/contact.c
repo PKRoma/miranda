@@ -27,7 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 struct 
 {
-	int status,order;
+	int m_cache_nStatus,order;
 } statusModeOrder[]={
 	{ID_STATUS_OFFLINE,500},
 	{ID_STATUS_ONLINE,0},
@@ -55,7 +55,7 @@ static int GetStatusModeOrdering(int statusMode)
 {
 	int i;
 	for(i=0;i<sizeof(statusModeOrder)/sizeof(statusModeOrder[0]);i++)
-		if(statusModeOrder[i].status==statusMode) return statusModeOrder[i].order;
+		if(statusModeOrder[i].m_cache_nStatus==statusMode) return statusModeOrder[i].order;
 	return 1000;
 }
 

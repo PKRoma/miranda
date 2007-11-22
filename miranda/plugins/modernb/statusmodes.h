@@ -37,4 +37,4 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define ID_STATUS_INVISIBLE             40078
 #define ID_STATUS_ONTHEPHONE            40079
 #define ID_STATUS_OUTTOLUNCH            40080
-#define ID_STATUS_IDLE					40081 /* do not use as a status */
+#define ID_STATUS_IDLE					40081 /* do not use as a m_cache_nStatus */

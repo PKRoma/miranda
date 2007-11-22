@@ -137,7 +137,7 @@ static int amThreadProc(HWND hwnd)
 				}
 			}
 			CListSettings_FreeCacheItemData(&dnce);
-			dnce.hContact=(HANDLE)hContact;
+			dnce.m_cache_hContact=(HANDLE)hContact;
 			cache_CallProcSync(CLUI_SyncGetPDNCE,0,(LPARAM)&dnce);            
 			if (dnce.ApparentMode!=ID_STATUS_OFFLINE) //don't ask if contact is always invisible (should be done with protocol)
 				ACK=(HANDLE)CallContactService(hContact,PSS_GETAWAYMSG,0,0);		
@@ -147,8 +147,8 @@ static int amThreadProc(HWND hwnd)
 				ack.hContact=hContact;
 				ack.type=ACKTYPE_AWAYMSG;
 				ack.result=ACKRESULT_FAILED;
-				if (dnce.szProto)
-					ack.szModule=dnce.szProto;
+				if (dnce.m_cache_cszProto)
+					ack.szModule=dnce.m_cache_cszProto;
 				else
 					ack.szModule=NULL;
 				ClcProtoAck((WPARAM)hContact,(LPARAM) &ack);

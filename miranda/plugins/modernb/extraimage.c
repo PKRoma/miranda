@@ -284,7 +284,7 @@ void ExtraImage_SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 		if (pdnce==NULL) {continue;};
 
 		//		szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);		
-		szProto=pdnce->szProto;
+		szProto=pdnce->m_cache_cszProto;
 		{
 			boolean showweb;	
 			showweb=FALSE;     
@@ -294,9 +294,9 @@ void ExtraImage_SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 				if (szProto != NULL)
 				{
 					char *homepage;
-					homepage=DBGetStringA(pdnce->hContact,"UserInfo", "Homepage");
+					homepage=DBGetStringA(pdnce->m_cache_hContact,"UserInfo", "Homepage");
 					if (!homepage)
-						homepage=DBGetStringA(pdnce->hContact,pdnce->szProto, "Homepage");
+						homepage=DBGetStringA(pdnce->m_cache_hContact,pdnce->m_cache_cszProto, "Homepage");
 					if (homepage!=NULL)
 					{											
 						showweb=TRUE;				

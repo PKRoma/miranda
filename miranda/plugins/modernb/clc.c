@@ -377,7 +377,7 @@ static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam) {
 		SMADD_REGCAT rc;
 
 		rc.cbSize = sizeof(rc);
-		rc.name = "clist";
+		rc.m_cacheTName = "clist";
 		rc.dispname = Translate("Contact List smileys");
 
 		CallService(MS_SMILEYADD_REGISTERCATEGORY, 0, (LPARAM)&rc);
@@ -701,7 +701,7 @@ BOOL CLCItems_IsNotHiddenOffline(struct ClcData * dat, struct ClcGroup* group, s
 	
 	pdnce=(PDNCE)pcli->pfnGetCacheEntry( contact->hContact);
 	if (!pdnce) return FALSE;
-	if (pdnce->noHiddenOffline) return TRUE;
+	if (pdnce->m_cache_nNoHiddenOffline) return TRUE;
 
 	return FALSE;
 	
@@ -1129,21 +1129,21 @@ case INTM_STATUSCHANGED:
 		if (wParam != 0)
 		{
 			pdisplayNameCacheEntry pdnce = (pdisplayNameCacheEntry)pcli->pfnGetCacheEntry((HANDLE)wParam);
-			if (pdnce && pdnce->szProto)
+			if (pdnce && pdnce->m_cache_cszProto)
 			{
 				struct ClcContact *contact=NULL;
-				pdnce->status = GetStatusForContact(pdnce->hContact,pdnce->szProto);
+				pdnce___SetStatus( pdnce, GetStatusForContact(pdnce->m_cache_hContact,pdnce->m_cache_cszProto));
 				if (!dat->force_in_dialog && (
 					(dat->second_line_show)// && dat->second_line_type==TEXT_STATUS)
 					|| (dat->third_line_show)// && dat->third_line_type==TEXT_STATUS)
 					))
-					gtaRenewText(pdnce->hContact);
+					gtaRenewText(pdnce->m_cache_hContact);
 				SendMessage(hwnd,INTM_ICONCHANGED, wParam, (LPARAM) CallService(MS_CLIST_GETCONTACTICON, wParam, 1));
 				if(FindItem(hwnd,dat,(HANDLE)wParam,&contact,NULL,NULL,TRUE))
 				{
 					if (contact && contact->type==CLCIT_CONTACT)
 					{
-						if (!contact->image_is_special && pdnce->status>ID_STATUS_OFFLINE) 
+						if (!contact->image_is_special && pdnce___GetStatus( pdnce )>ID_STATUS_OFFLINE) 
 							contact->iImage=CallService(MS_CLIST_GETCONTACTICON, wParam, 1);
 						if (contact->isSubcontact 
 							&& contact->subcontacts 

@@ -340,14 +340,7 @@ int CLCPaint_GetBasicFontID(struct ClcContact * contact)
         }
         else
         {
-#ifdef _DEBUG
-			{
-				int nStatus=DBGetContactSettingWord( contact->hContact, contact->proto, "Status", 0);
-				if ( pdnce->status != nStatus)
-					DebugBreak();
-			}
-#endif
-            switch(pdnce->status)
+            switch(pdnce___GetStatus( pdnce ))
             {
             case ID_STATUS_OFFLINE: return FONTID_OFFLINE;
             case ID_STATUS_AWAY: return FONTID_AWAY;

@@ -388,9 +388,9 @@ int AniAva_SetAvatarPos(HANDLE hContact, RECT * rc, int overlayIdx, BYTE bAlpha)
 						char *temp;
 						PDNCE pdnce=(PDNCE)pcli->pfnGetCacheEntry(hContact);
 
-						if (pdnce && pdnce->name)
+						if ( pdnce && pdnce->m_cache_tcsName )
 						{
-							temp=mir_t2a(pdnce->name);
+							temp=mir_t2a(pdnce->m_cache_tcsName);
 							strcat(szName,"_");
 							strcat(szName,temp);
 							mir_free(temp);
