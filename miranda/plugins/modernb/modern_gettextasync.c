@@ -117,7 +117,7 @@ static int gtaThreadProc(void * lpParam)
 						if (!MirandaExiting()) 
 							Cache_GetThirdLineText(dat, &cacheEntry);
 						if (!MirandaExiting()) 
-							cache_CallProcSync(CLUI_SyncSetPDNCE, CCI_LINES|CCI_TIME ,(LPARAM)&cacheEntry);  
+							cache_CallProcSync(CLUI_SyncSetPDNCE, CCI_LINES,(LPARAM)&cacheEntry);  
 						CListSettings_FreeCacheItemData(&cacheEntry);
 					}
 				}

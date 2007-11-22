@@ -1167,13 +1167,13 @@ static void CLUI_SnappingToEdge(HWND hwnd, WINDOWPOS * wp) //by ZORG
 int CLUI_SyncGetPDNCE(WPARAM wParam, LPARAM lParam)
 {
 	//log0("CLUI_SyncGetPDNCE");
-	return CListSettings_GetCopyFromCache((pdisplayNameCacheEntry)lParam, wParam ? CCI_ALL : (DWORD) wParam );
+	return CListSettings_GetCopyFromCache((pdisplayNameCacheEntry)lParam, wParam ? (DWORD) wParam : CCI_ALL );
 }
 
 int CLUI_SyncSetPDNCE(WPARAM wParam, LPARAM lParam)
 {
 	//log0("CLUI_SyncSetPDNCE");
-	return CListSettings_SetToCache((pdisplayNameCacheEntry)lParam, wParam ? CCI_ALL : (DWORD) wParam);
+	return CListSettings_SetToCache((pdisplayNameCacheEntry)lParam, wParam ?  (DWORD) wParam : CCI_ALL );
 }
 
 int CLUI_SyncGetShortData(WPARAM wParam, LPARAM lParam)
