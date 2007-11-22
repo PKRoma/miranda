@@ -1152,6 +1152,14 @@ case INTM_STATUSCHANGED:
 					}
 				}
 			}
+#ifdef _DEBUG
+			else
+			{
+				DebugBreak();
+			}
+#endif
+			
+			
 		}
 		if (DBGetContactSettingByte(NULL,"CList","PlaceOfflineToRoot",SETTING_PLACEOOFLINETOROOT_DEFAULT) )
 		{

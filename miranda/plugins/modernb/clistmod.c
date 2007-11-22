@@ -55,7 +55,6 @@ int ContactChangeGroup(WPARAM wParam,LPARAM lParam);
 void InitTrayMenus(void);
 
 
-HANDLE hContactIconChangedEvent;
 HIMAGELIST hCListImages=NULL;
 
 BOOL (WINAPI *MySetProcessWorkingSetSize)(HANDLE,SIZE_T,SIZE_T);
@@ -272,8 +271,7 @@ int LoadContactListModule(void)
 	hookOptInitialise_CList      = HookEvent(ME_OPT_INITIALISE,CListOptInit);
 	hookOptInitialise_Skin       = HookEvent(ME_OPT_INITIALISE,SkinOptInit);
 	
-	hookContactAdded_CListSettings = HookEvent(ME_DB_CONTACT_ADDED,ContactAdded);
-	hContactIconChangedEvent     = CreateHookableEvent(ME_CLIST_CONTACTICONCHANGED);
+	hookContactAdded_CListSettings = HookEvent(ME_DB_CONTACT_ADDED,ContactAdded);	
 	CreateServiceFunction(MS_CLIST_TRAYICONPROCESSMESSAGE,cli_TrayIconProcessMessage);
 	CreateServiceFunction(MS_CLIST_PAUSEAUTOHIDE,TrayIconPauseAutoHide);
 	CreateServiceFunction(MS_CLIST_CONTACTCHANGEGROUP,ContactChangeGroup);
