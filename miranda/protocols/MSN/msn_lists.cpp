@@ -190,22 +190,29 @@ void MSN_CreateContList(void)
 			const char* dom = strchr(C->email, '@');
 			if (dom == NULL && lastds == NULL)
 			{
+				if (sz > 7400)
+				{
+					sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz, "</%c></ml>", lastds ? 'd' : 't' );
+					msnNsThread->sendPacket("ADL", "%d\r\n%s", sz, cxml);
+					sz = mir_snprintf(cxml, sizeof(cxml), lastds ? "<ml l=\"1\"><d n=\"%s\">" : "<t>", lastds+1);
+				}
+
 				sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz, "<c n=\"%s\" l=\"%d\"/>", C->email, C->list & ~LIST_RL);
 				used[j] = true;
 			}
 			else if (dom != NULL && lastds != NULL && _stricmp(lastds, dom) == 0)
 			{
+				if (sz > 7400)
+				{
+					sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz, "</%c></ml>", lastds ? 'd' : 't' );
+					msnNsThread->sendPacket("ADL", "%d\r\n%s", sz, cxml);
+					sz = mir_snprintf(cxml, sizeof(cxml), lastds ? "<ml l=\"1\"><d n=\"%s\">" : "<t>", lastds+1);
+				}
+
 				*(char*)dom = 0;
 				sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz, "<c n=\"%s\" l=\"%d\" t=\"%d\"/>", C->email, C->list & ~LIST_RL, C->netId);
 				*(char*)dom = '@';
 				used[j] = true;
-			}
-			if (used[j] && sz > 7400)
-			{
-				sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz, "</%c></ml>", lastds ? 'd' : 't' );
-				msnNsThread->sendPacket("ADL", "%d\r\n%s", sz, cxml);
-
-				sz = mir_snprintf(cxml, sizeof(cxml), lastds ? "<ml l=\"1\"><d n=\"%s\">" : "<t>", lastds+1);
 			}
 		}
 		sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz, lastds ? "</d>" : "</t>" );
