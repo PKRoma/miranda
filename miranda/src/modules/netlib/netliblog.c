@@ -111,14 +111,18 @@ static BOOL CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 
 			for( i=0; i<netlibUserCount; i++ )
 			{
+#ifdef  _UNICODE
+				wchar_t* tmp = a2u( netlibUser[i]->user.szSettingsModule );
+				tvis.item.pszText = tmp;
+#else
+				tvis.item.pszText=netlibUser[i]->user.szSettingsModule;
+#endif
 				tvis.item.lParam=i;
-				#ifdef  _UNICODE
-					tvis.item.pszText=a2u( netlibUser[i]->user.szSettingsModule );
-				#else
-					tvis.item.pszText=netlibUser[i]->user.szSettingsModule;
-				#endif
 				tvis.item.state=INDEXTOSTATEIMAGEMASK( (netlibUser[i]->toLog) ? 2 : 1 );
 				TreeView_InsertItem(hwndFilter, &tvis);
+#ifdef  _UNICODE
+				mir_free(tmp);
+#endif
 			}
 			tvis.item.lParam=-1;
 			tvis.item.pszText=_T("(NULL)");
@@ -272,9 +276,6 @@ static BOOL CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 						netlibUser[tvi.lParam]->toLog = checked;
 						if ( logOptions.save )
 							DBWriteContactSettingDword(NULL,netlibUser[tvi.lParam]->user.szSettingsModule,"NLlog",checked);
-						#ifdef  _UNICODE
-							mir_free( tvi.pszText );
-						#endif
 					}
 
 					tvi.hItem=TreeView_GetNextSibling(hwndFilter,tvi.hItem);
@@ -426,8 +427,8 @@ void NetlibDumpData(struct NetlibConnection *nlc,PBYTE buf,int len,int sent,int 
 		return;
 
 	// Check user's log settings
-	if (!( logOptions.toOutputDebugString || 
-		((THook*)hLogEvent)->subscriberCount || 
+	if (!( logOptions.toOutputDebugString ||
+		((THook*)hLogEvent)->subscriberCount ||
 		( logOptions.toFile && logOptions.szFile[0] )))
 		return;
 	if ((sent && !logOptions.dumpSent) ||
