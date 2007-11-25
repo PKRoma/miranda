@@ -150,7 +150,8 @@ struct MessageWindowData
 	struct avatarCacheEntry *ace;
 	int		isMixed;
 	int		sendAllConfirm;
-	HICON   userMenuIcon;
+	HICON   statusIcon;
+	HICON   statusIconOverlay;
 	CommonWindowData windowData;
 };
 
