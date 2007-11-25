@@ -121,15 +121,15 @@ int SM_RemoveSession( const TCHAR* pszID, const char* pszModule)
 			pTemp->iStatusCount = 0;
 			pTemp->nUsersInNicklist = 0;
 
-			if (pTemp->hContact)
+			if (pTemp->windowData.hContact)
 			{
-				CList_SetOffline(pTemp->hContact, pTemp->iType == GCW_CHATROOM?TRUE:FALSE);
+				CList_SetOffline(pTemp->windowData.hContact, pTemp->iType == GCW_CHATROOM?TRUE:FALSE);
 				if (pTemp->iType != GCW_SERVER)
-					DBWriteContactSettingByte(pTemp->hContact, "CList", "Hidden", 1);
+					DBWriteContactSettingByte(pTemp->windowData.hContact, "CList", "Hidden", 1);
 			}
-			DBWriteContactSettingString(pTemp->hContact, pTemp->pszModule , "Topic", "");
-			DBWriteContactSettingString(pTemp->hContact, pTemp->pszModule, "StatusBar", "");
-			DBDeleteContactSetting(pTemp->hContact, "CList", "StatusMsg");
+			DBWriteContactSettingString(pTemp->windowData.hContact, pTemp->pszModule , "Topic", "");
+			DBWriteContactSettingString(pTemp->windowData.hContact, pTemp->pszModule, "StatusBar", "");
+			DBDeleteContactSetting(pTemp->windowData.hContact, "CList", "StatusMsg");
 
 			mir_free( pTemp->pszModule );
 			mir_free( pTemp->ptszID );
@@ -182,7 +182,7 @@ HWND SM_FindWindowByContact(HANDLE hContact)
 	SESSION_INFO *pTemp = m_WndList;
 
 	while ( pTemp != NULL ) {
-		if ( pTemp->hContact == hContact)
+		if ( pTemp->windowData.hContact == hContact)
 			return pTemp->hWnd;
 
 		pTemp = pTemp->next;
@@ -581,11 +581,11 @@ BOOL SM_SetStatus(const TCHAR* pszID, const char* pszModule, int wStatus)
 		if (( !pszID || !lstrcmpi( pTemp->ptszID, pszID )) && !lstrcmpiA( pTemp->pszModule, pszModule )) {
 			pTemp->wStatus = wStatus;
 
-			if ( pTemp->hContact ) {
+			if ( pTemp->windowData.hContact ) {
 				if ( pTemp->iType != GCW_SERVER && wStatus != ID_STATUS_OFFLINE )
-						DBDeleteContactSetting(pTemp->hContact, "CList", "Hidden");
+						DBDeleteContactSetting(pTemp->windowData.hContact, "CList", "Hidden");
 
-				DBWriteContactSettingWord(pTemp->hContact, pTemp->pszModule, "Status", (WORD)wStatus);
+				DBWriteContactSettingWord(pTemp->windowData.hContact, pTemp->pszModule, "Status", (WORD)wStatus);
 			}
 
 			PostMessage(pTemp->hWnd, GC_FIXTABICONS, 0, 0);
@@ -677,11 +677,11 @@ BOOL SM_RemoveAll (void)
 		if (m_WndList->hWnd)
 			SendMessage(m_WndList->hWnd, GC_EVENT_CONTROL+WM_USER+500, SESSION_TERMINATE, 0);
 		DoEventHook(m_WndList->ptszID, m_WndList->pszModule, GC_SESSION_TERMINATE, NULL, NULL, (DWORD)m_WndList->dwItemData);
-		if (m_WndList->hContact)
-			CList_SetOffline(m_WndList->hContact, m_WndList->iType == GCW_CHATROOM?TRUE:FALSE);
-		DBWriteContactSettingString(m_WndList->hContact, m_WndList->pszModule , "Topic", "");
-		DBDeleteContactSetting(m_WndList->hContact, "CList", "StatusMsg");
-		DBWriteContactSettingString(m_WndList->hContact, m_WndList->pszModule, "StatusBar", "");
+		if (m_WndList->windowData.hContact)
+			CList_SetOffline(m_WndList->windowData.hContact, m_WndList->iType == GCW_CHATROOM?TRUE:FALSE);
+		DBWriteContactSettingString(m_WndList->windowData.hContact, m_WndList->pszModule , "Topic", "");
+		DBDeleteContactSetting(m_WndList->windowData.hContact, "CList", "StatusMsg");
+		DBWriteContactSettingString(m_WndList->windowData.hContact, m_WndList->pszModule, "StatusBar", "");
 
 		UM_RemoveAll(&m_WndList->pUsers);
 		TM_RemoveAll(&m_WndList->pStatuses);

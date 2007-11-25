@@ -478,7 +478,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
       dat->lastEnterTime = 0;
       break;
    case WM_CONTEXTMENU:
-		InputAreaContextMenu(hwnd, wParam, lParam, Parentsi->hContact);
+		InputAreaContextMenu(hwnd, wParam, lParam, Parentsi->windowData.hContact);
 		return TRUE;
 
    case WM_KEYUP:
@@ -972,7 +972,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SESSION_INFO* psi = (SESSION_INFO*)lParam;
 			int mask;
 			HWND hNickList = GetDlgItem(hwndDlg,IDC_CHAT_LIST);
-			NotifyLocalWinEvent(psi->hContact, hwndDlg, MSG_WINDOW_EVT_OPENING);
+			NotifyLocalWinEvent(psi->windowData.hContact, hwndDlg, MSG_WINDOW_EVT_OPENING);
 
 			TranslateDialogDefault(hwndDlg);
 			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)psi);
@@ -1001,9 +1001,9 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SendMessage(hwndDlg, DM_UPDATESTATUSBAR, 0, 0);
 			SendMessage(hwndDlg, DM_UPDATETITLEBAR, 0, 0);
 
-			SendMessage(GetParent(hwndDlg), CM_ADDCHILD, (WPARAM) hwndDlg, (LPARAM) psi->hContact);
+			SendMessage(GetParent(hwndDlg), CM_ADDCHILD, (WPARAM) hwndDlg, (LPARAM) psi->windowData.hContact);
 			PostMessage(hwndDlg, GC_UPDATENICKLIST, 0, 0);
-			NotifyLocalWinEvent(psi->hContact, hwndDlg, MSG_WINDOW_EVT_OPEN);
+			NotifyLocalWinEvent(psi->windowData.hContact, hwndDlg, MSG_WINDOW_EVT_OPEN);
 		}
 		break;
 
@@ -1109,7 +1109,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
    #else
 			sid.flags = MBF_DISABLED;
    #endif
-			CallService(MS_MSG_MODIFYICON, (WPARAM)si->hContact, (LPARAM) &sid);
+			CallService(MS_MSG_MODIFYICON, (WPARAM)si->windowData.hContact, (LPARAM) &sid);
       //   SendMessage(hwndDlg, GC_FIXTABICONS, 0, (LPARAM)si);
 		}
 		break;
@@ -1241,14 +1241,14 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
          if (si->wState & STATE_TALK) {
             si->wState &= ~STATE_TALK;
 
-            DBWriteContactSettingWord(si->hContact, si->pszModule ,"ApparentMode",(LPARAM) 0);
+            DBWriteContactSettingWord(si->windowData.hContact, si->pszModule ,"ApparentMode",(LPARAM) 0);
          }
 
          if (si->wState & GC_EVENT_HIGHLIGHT) {
             si->wState &= ~GC_EVENT_HIGHLIGHT;
 
-            if (CallService(MS_CLIST_GETEVENT, (WPARAM)si->hContact, (LPARAM)0))
-               CallService(MS_CLIST_REMOVEEVENT, (WPARAM)si->hContact, (LPARAM)"chaticon");
+            if (CallService(MS_CLIST_GETEVENT, (WPARAM)si->windowData.hContact, (LPARAM)0))
+               CallService(MS_CLIST_REMOVEEVENT, (WPARAM)si->windowData.hContact, (LPARAM)"chaticon");
          }
 
          SendMessage(hwndDlg, GC_FIXTABICONS, 0, 0);
@@ -1365,10 +1365,10 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
             return TRUE;
 
          case SESSION_TERMINATE:
-            if (CallService(MS_CLIST_GETEVENT, (WPARAM)si->hContact, (LPARAM)0))
-               CallService(MS_CLIST_REMOVEEVENT, (WPARAM)si->hContact, (LPARAM)"chaticon");
+            if (CallService(MS_CLIST_GETEVENT, (WPARAM)si->windowData.hContact, (LPARAM)0))
+               CallService(MS_CLIST_REMOVEEVENT, (WPARAM)si->windowData.hContact, (LPARAM)"chaticon");
             si->wState &= ~STATE_TALK;
-            DBWriteContactSettingWord(si->hContact, si->pszModule ,"ApparentMode",(LPARAM) 0);
+            DBWriteContactSettingWord(si->windowData.hContact, si->pszModule ,"ApparentMode",(LPARAM) 0);
             SendMessage(hwndDlg, GC_CLOSEWINDOW, 0, 0);
             return TRUE;
 
@@ -1524,10 +1524,10 @@ LABEL_SHOWWINDOW:
 
          SetActiveSession(si->ptszID, si->pszModule);
 
-         if (DBGetContactSettingWord(si->hContact, si->pszModule ,"ApparentMode", 0) != 0)
-            DBWriteContactSettingWord(si->hContact, si->pszModule ,"ApparentMode",(LPARAM) 0);
-         if (CallService(MS_CLIST_GETEVENT, (WPARAM)si->hContact, (LPARAM)0))
-            CallService(MS_CLIST_REMOVEEVENT, (WPARAM)si->hContact, (LPARAM)"chaticon");
+         if (DBGetContactSettingWord(si->windowData.hContact, si->pszModule ,"ApparentMode", 0) != 0)
+            DBWriteContactSettingWord(si->windowData.hContact, si->pszModule ,"ApparentMode",(LPARAM) 0);
+         if (CallService(MS_CLIST_GETEVENT, (WPARAM)si->windowData.hContact, (LPARAM)0))
+            CallService(MS_CLIST_REMOVEEVENT, (WPARAM)si->windowData.hContact, (LPARAM)"chaticon");
       }
       break;
 
@@ -1853,7 +1853,7 @@ LABEL_SHOWWINDOW:
 			smaddInfo.Direction = 0;
             smaddInfo.xPosition = rc.left;
             smaddInfo.yPosition = rc.bottom;
-            smaddInfo.hContact = si->hContact;
+            smaddInfo.hContact = si->windowData.hContact;
 			CallService(MS_SMILEYADD_SHOWSELECTION, 0, (LPARAM) &smaddInfo);
          }
          break;
@@ -2044,7 +2044,7 @@ LABEL_SHOWWINDOW:
 
    case WM_DESTROY:
 
-		NotifyLocalWinEvent(si->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSING);
+		NotifyLocalWinEvent(si->windowData.hContact, hwndDlg, MSG_WINDOW_EVT_CLOSING);
 		si->hWnd = NULL;
 		SetWindowLong(hwndDlg,GWL_USERDATA,0);
 		SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_SPLITTERX),GWL_WNDPROC,(LONG)OldSplitterProc);
@@ -2059,7 +2059,7 @@ LABEL_SHOWWINDOW:
 
 		SendMessage(GetParent(hwndDlg), CM_REMOVECHILD, 0, (LPARAM) hwndDlg);
 
-		NotifyLocalWinEvent(si->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSE);
+		NotifyLocalWinEvent(si->windowData.hContact, hwndDlg, MSG_WINDOW_EVT_CLOSE);
 		break;
    }
    return(FALSE);

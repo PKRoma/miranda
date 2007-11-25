@@ -106,6 +106,7 @@ typedef struct NewMessageWindowLParamStruct
 #define CWDF_RTF_INPUT 1
 
 typedef struct CommonWindowDataStruct {
+	HANDLE hContact;
 	TCmdList *cmdList;
 	TCmdList *cmdListCurrent;
 	int		  codePage;
@@ -116,7 +117,6 @@ struct MessageWindowData
 {
 	HWND hwnd;
 	int	tabId;
-	HANDLE hContact;
 	ParentWindowData *parent;
 	HWND hwndParent;
 	HWND hwndLog;

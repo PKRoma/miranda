@@ -580,7 +580,7 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 			sm.rangeToReplace = bRedraw?NULL:&newsel;
 			sm.flags = 0;
 			sm.disableRedraw = TRUE;
-			sm.hContact = si->hContact;
+			sm.hContact = si->windowData.hContact;
 			CallService(MS_SMILEYADD_REPLACESMILEYS, 0, (LPARAM)&sm);
 		}
 

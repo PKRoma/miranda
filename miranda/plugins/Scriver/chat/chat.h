@@ -233,8 +233,6 @@ typedef struct SESSION_INFO_TYPE
 	WORD        wCommandsNum;
 	DWORD       dwItemData;
 	DWORD       dwFlags;
-	HANDLE      hContact;
-	HWND        hwndStatus;
 	time_t      LastTime;
 	CommonWindowData windowData;
 	LOGINFO*       pLog;

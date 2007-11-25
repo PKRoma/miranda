@@ -1074,7 +1074,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend)
 		event.cbSize = sizeof(event);
 		event.dwFlags = ((dat->flags & SMF_RTL) ? IEEF_RTL : 0) | ((dat->flags & SMF_DISABLE_UNICODE) ? IEEF_NO_UNICODE : 0);
 		event.hwnd = dat->hwndLog;
-		event.hContact = dat->hContact;
+		event.hContact = dat->windowData.hContact;
 		event.codepage = dat->windowData.codePage;
 		event.pszProto = dat->szProto;
 		if (!fAppend) {
@@ -1098,7 +1098,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend)
 
 	SendDlgItemMessage(hwndDlg, IDC_LOG, EM_HIDESELECTION, TRUE, 0);
 	SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXGETSEL, 0, (LPARAM) & oldSel);
-	streamData.hContact = dat->hContact;
+	streamData.hContact = dat->windowData.hContact;
 	streamData.hDbEvent = hDbEventFirst;
 	streamData.hDbEventLast = dat->hDbEventLast;
 	streamData.dlgDat = dat;
@@ -1138,7 +1138,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend)
 		smre.hwndRichEditControl = GetDlgItem(hwndDlg, IDC_LOG);
 		smre.Protocolname = dat->szProto;
         if (dat->szProto!=NULL && strcmp(dat->szProto,"MetaContacts")==0) {
-            HANDLE hContact = (HANDLE) CallService(MS_MC_GETMOSTONLINECONTACT, (WPARAM) dat->hContact, 0);
+            HANDLE hContact = (HANDLE) CallService(MS_MC_GETMOSTONLINECONTACT, (WPARAM) dat->windowData.hContact, 0);
             if (hContact!=NULL) {
                 smre.Protocolname = (char*) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
             }
@@ -1152,7 +1152,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend)
 		}
 		//smre.rangeToReplace = NULL;
 		smre.disableRedraw = TRUE;
-		smre.hContact = dat->hContact;
+		smre.hContact = dat->windowData.hContact;
 		smre.flags = 0;
 		CallService(MS_SMILEYADD_REPLACESMILEYS, 0, (LPARAM) &smre);
 	}
