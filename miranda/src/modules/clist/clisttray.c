@@ -283,7 +283,7 @@ int fnTrayIconInit(HWND hwnd)
 				if ( protos[j]->type == PROTOTYPE_PROTOCOL && cli.pfnGetProtocolVisibility( protos[j]->szName ))
 					cli.pfnTrayIconAdd(hwnd, protos[j]->szName, NULL, CallProtoService(protos[j]->szName, PS_GETSTATUS, 0, 0));
 	}	}
-	else if (averageMode <= ID_STATUS_OFFLINE && DBGetContactSettingByte(NULL, "CList", "TrayIcon", SETTING_TRAYICON_DEFAULT) == SETTING_TRAYICON_SINGLE) {
+	else if (/*averageMode <= ID_STATUS_OFFLINE ||*/ DBGetContactSettingByte(NULL, "CList", "TrayIcon", SETTING_TRAYICON_DEFAULT) == SETTING_TRAYICON_SINGLE) {
 		DBVARIANT dbv = { DBVT_DELETED };
 		char *szProto;
 		if (!DBGetContactSettingString(NULL, "CList", "PrimaryStatus", &dbv)
