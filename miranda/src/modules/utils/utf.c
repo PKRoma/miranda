@@ -23,19 +23,85 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 
+// we assume that the output buffer has the appropriate lenght
+
+static wchar_t* Utf8toUcs2( const char* in, wchar_t* out )
+{
+	BOOL errFlag = FALSE;	
+	wchar_t* d = out;
+	BYTE* s = ( BYTE* )in;
+
+	while( *s ) {
+		if (( *s & 0x80 ) == 0 ) {
+			*d++ = *s++;
+			continue;
+		}
+
+		if (( s[0] & 0xE0 ) == 0xE0 ) {
+			if ( s[1] == 0 || ( s[1] & 0xC0 ) != 0x80 ) { errFlag = TRUE; goto LBL_Exit; }
+			if ( s[2] == 0 || ( s[2] & 0xC0 ) != 0x80 ) { errFlag = TRUE; goto LBL_Exit; }
+			*d++ = (( WORD )( s[0] & 0x0F) << 12 ) + ( WORD )(( s[1] & 0x3F ) << 6 ) + ( WORD )( s[2] & 0x3F );
+			s += 3;
+			continue;
+		}
+
+		if (( s[0] & 0xE0 ) == 0xC0 ) {
+			if ( s[1] == 0 || ( s[1] & 0xC0 ) != 0x80 ) { errFlag = TRUE; goto LBL_Exit; }
+			*d++ = ( WORD )(( s[0] & 0x1F ) << 6 ) + ( WORD )( s[1] & 0x3F );
+			s += 2;
+			continue;
+		}
+
+		*d++ = *s++;
+	}
+
+	*d = 0;
+
+LBL_Exit:
+
+	return ( errFlag ) ? NULL : out;
+}
+
+static char* Ucs2toUtf8( const wchar_t* in, char* out )
+{
+	const wchar_t* s = in;
+	BYTE* d = ( BYTE* )out;
+    int U;
+
+	while( *s ) {
+		U = *s++;
+
+		if ( U < 0x80 ) {
+			*d++ = ( BYTE )U;
+		}
+		else if ( U < 0x800 ) {
+			*d++ = 0xC0 + (( U >> 6 ) & 0x3F );
+			*d++ = 0x80 + ( U & 0x003F );
+		}
+		else {
+			*d++ = 0xE0 + ( U >> 12 );
+			*d++ = 0x80 + (( U >> 6 ) & 0x3F );
+			*d++ = 0x80 + ( U & 0x3F );
+	}	}
+
+	*d = 0;
+
+	return out;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // Utf8Decode - converts UTF8-encoded string to the UCS2/MBCS format
 
 char* Utf8DecodeCP( char* str, int codepage, wchar_t** ucs2 )
 {
 	int len, needs_free = 0;
-	wchar_t* tempBuf;
-	BOOL errFlag = FALSE;
-	
+	wchar_t* tempBuf = NULL;
+
 	if ( str == NULL )
 		return NULL;
 
 	len = strlen( str );
+
 	if ( len < 2 ) {
 		if ( ucs2 != NULL ) {
 			*ucs2 = ( wchar_t* )mir_alloc(( len+1 )*sizeof( wchar_t ));
@@ -45,60 +111,35 @@ char* Utf8DecodeCP( char* str, int codepage, wchar_t** ucs2 )
 		return str;
 	}
 
-	__try
-	{
-		tempBuf = ( wchar_t* )alloca(( len+1 )*sizeof( wchar_t ));
-	}
-	__except( EXCEPTION_EXECUTE_HANDLER )
-	{
-		tempBuf = ( wchar_t* )mir_alloc(( len+1 )*sizeof( wchar_t ));
-		needs_free = 1;
-	}
-	{
-		wchar_t* d = tempBuf;
-		BYTE* s = ( BYTE* )str;
-
-		while( *s )
+	if ( ucs2 == NULL ) {
+		__try
 		{
-			if (( *s & 0x80 ) == 0 ) {
-				*d++ = *s++;
-				continue;
-			}
-
-			if (( s[0] & 0xE0 ) == 0xE0 ) {
-				if ( s[1] == 0 || ( s[1] & 0xC0 ) != 0x80 ) { errFlag = 1; goto LBL_Exit; }
-				if ( s[2] == 0 || ( s[2] & 0xC0 ) != 0x80 ) { errFlag = 1; goto LBL_Exit; }
-				*d++ = (( WORD )( s[0] & 0x0F) << 12 ) + ( WORD )(( s[1] & 0x3F ) << 6 ) + ( WORD )( s[2] & 0x3F );
-				s += 3;
-				continue;
-			}
-
-			if (( s[0] & 0xE0 ) == 0xC0 ) {
-				if ( s[1] == 0 || ( s[1] & 0xC0 ) != 0x80 ) { errFlag = 1; goto LBL_Exit; }
-				*d++ = ( WORD )(( s[0] & 0x1F ) << 6 ) + ( WORD )( s[1] & 0x3F );
-				s += 2;
-				continue;
-			}
-
-			*d++ = *s++;
+			tempBuf = ( wchar_t* )alloca(( len+1 )*sizeof( wchar_t ));
 		}
-
-		*d = 0;
+		__except( EXCEPTION_EXECUTE_HANDLER )
+		{
+			tempBuf = NULL;
+			needs_free = 1;
+		}
 	}
 
-	if ( ucs2 != NULL ) {
-		int fullLen = ( len+1 )*sizeof( wchar_t );
-		*ucs2 = ( wchar_t* )mir_alloc( fullLen );
-		memcpy( *ucs2, tempBuf, fullLen );
+	if ( tempBuf == NULL )
+		tempBuf = ( wchar_t* )mir_alloc(( len+1 )*sizeof( wchar_t ));
+	
+	if ( Utf8toUcs2( str, tempBuf )) {
+		WideCharToMultiByte( codepage, 0, tempBuf, -1, str, len, "?", NULL );
+
+		if ( ucs2 )
+			*ucs2 = tempBuf;
+		else if ( needs_free )
+			mir_free( tempBuf );
+
+		return str;
 	}
-
-	WideCharToMultiByte( codepage, 0, tempBuf, -1, str, len, "?", NULL );
-
-LBL_Exit:
-   if ( needs_free )
+	else if ( ucs2 || needs_free )
 		mir_free( tempBuf );
 
-	return ( errFlag ) ? NULL : str;
+	return NULL;
 }
 
 char* Utf8Decode( char* str, wchar_t** ucs2 )
@@ -108,11 +149,29 @@ char* Utf8Decode( char* str, wchar_t** ucs2 )
 
 wchar_t* Utf8DecodeUcs2( const char* str )
 {
+	int len;
 	wchar_t* ucs2;
-	char *tempBuffer = mir_strdup(str);
-	Utf8Decode( tempBuffer, &ucs2 );
-	mir_free(tempBuffer);
-	return ucs2;
+
+	if ( str == NULL )
+		return NULL;
+
+	len = strlen( str );
+
+	if ( len < 2 ) {
+		ucs2 = ( wchar_t* )mir_alloc(( len+1 )*sizeof( wchar_t ));
+		MultiByteToWideChar( LangPackGetDefaultCodePage(), 0, str, len, ucs2, len );
+		( ucs2 )[ len ] = 0;
+		return ucs2;
+	}
+
+	ucs2 = ( wchar_t* )mir_alloc(( len+1 )*sizeof( wchar_t ));
+
+	if ( Utf8toUcs2( str, ucs2 ))
+		return ucs2;
+
+	mir_free( ucs2 );
+
+	return NULL;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -120,7 +179,7 @@ wchar_t* Utf8DecodeUcs2( const char* str )
 
 char* Utf8EncodeCP( const char* src, int codepage )
 {
-	int len;
+	int len, needs_free = 0;
 	char* result;
 	wchar_t* tempBuf;
 
@@ -132,31 +191,23 @@ char* Utf8EncodeCP( const char* src, int codepage )
 	if ( result == NULL )
 		return NULL;
 
-	tempBuf = ( wchar_t* )alloca(( len+1 )*sizeof( wchar_t ));
+	__try
+	{
+		tempBuf = ( wchar_t* )alloca(( len+1 )*sizeof( wchar_t ));
+	}
+	__except( EXCEPTION_EXECUTE_HANDLER )
+	{
+		tempBuf = ( wchar_t* )mir_alloc(( len+1 )*sizeof( wchar_t ));
+		needs_free = 1;
+	}
+
 	MultiByteToWideChar( codepage, 0, src, -1, tempBuf, len );
 	tempBuf[ len ] = 0;
-	{
-		wchar_t* s = tempBuf;
-		BYTE*		d = ( BYTE* )result;
 
-		while( *s ) {
-			int U = *s++;
+	Ucs2toUtf8( tempBuf, result );
 
-			if ( U < 0x80 ) {
-				*d++ = ( BYTE )U;
-			}
-			else if ( U < 0x800 ) {
-				*d++ = 0xC0 + (( U >> 6 ) & 0x3F );
-				*d++ = 0x80 + ( U & 0x003F );
-			}
-			else {
-				*d++ = 0xE0 + ( U >> 12 );
-				*d++ = 0x80 + (( U >> 6 ) & 0x3F );
-				*d++ = 0x80 + ( U & 0x3F );
-		}	}
-
-		*d = 0;
-	}
+	if ( needs_free )
+		mir_free( tempBuf );
 
 	return result;
 }
@@ -176,27 +227,7 @@ char* Utf8EncodeUcs2( const wchar_t* src )
 	if ( result == NULL )
 		return NULL;
 
-	{	const wchar_t* s = src;
-		BYTE*	d = ( BYTE* )result;
-
-		while( *s ) {
-			int U = *s++;
-
-			if ( U < 0x80 ) {
-				*d++ = ( BYTE )U;
-			}
-			else if ( U < 0x800 ) {
-				*d++ = 0xC0 + (( U >> 6 ) & 0x3F );
-				*d++ = 0x80 + ( U & 0x003F );
-			}
-			else {
-				*d++ = 0xE0 + ( U >> 12 );
-				*d++ = 0x80 + (( U >> 6 ) & 0x3F );
-				*d++ = 0x80 + ( U & 0x3F );
-		}	}
-
-		*d = 0;
-	}
+	Ucs2toUtf8( src, result );
 
 	return result;
 }
