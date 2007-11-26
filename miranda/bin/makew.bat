@@ -154,7 +154,6 @@ nmake /NOLOGO /f %1 CFG=%2
 goto :eof
 
 :WriteVer
-echo %1 %2 %3
 set /A Version = %1
 set /A SubVersion = %2
 call :WriteVer2 %Version% %SubVersion% %3
@@ -246,9 +245,9 @@ goto :eof
 
 :Pack
 if %2 == 00 (
-   set FileVer=v%1a%3w.zip
+   set FileVer=v0%1a%3.zip
 ) else (
-   set FileVer=v%1%2a%3w.zip
+   set FileVer=v0%1%2a%3.zip
 )
 
 del /Q /F "%Temp%\miranda-%FileVer%"

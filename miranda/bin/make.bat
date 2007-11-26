@@ -230,8 +230,8 @@ echo 			   ^<link^>http://files.miranda-im.org/builds/?%yy%%mm%%dd%%hh%%mn%^</li
 echo                ^<description^>                                                >>%temp%\index.xml
 echo                     Miranda 0.%1.%2 alpha %3 is now available at http://files.miranda-im.org/builds/miranda-v%1a%3.zip >>%temp%\index.xml
 echo                ^</description^>                                               >>%temp%\index.xml
-echo                ^<pubDate^>%yy%-%mm%-%dd% %hh%:%mn%^</pubDate^>                 >>%temp%\index.xml
-echo                ^<category^>Nightly Builds</category^>                         >>%temp%\index.xml
+echo                ^<pubDate^>%yy%-%mm%-%dd% %hh%:%mn%^</pubDate^>                >>%temp%\index.xml
+echo                ^<category^>Nightly Builds^</category^>                        >>%temp%\index.xml
 echo                ^<author^>Miranda IM Development Team^</author^>               >>%temp%\index.xml
 echo           ^</item^>                                                           >>%temp%\index.xml
 echo      ^</channel^>                                                             >>%temp%\index.xml
