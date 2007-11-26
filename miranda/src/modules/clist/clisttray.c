@@ -659,7 +659,9 @@ static void CALLBACK TrayToolTipTimerProc(HWND hwnd, UINT msg, UINT_PTR id, DWOR
 			ti.cbSize = sizeof( ti );
 			ti.isTreeFocused = GetFocus() == cli.hwndContactList ? 1 : 0;
 			#if defined( _UNICODE )
-			{	char* p = u2a( szTipCur );
+	        if (CallService( "mToolTip/ShowTipW", (WPARAM)szTipCur, (LPARAM)&ti ) == CALLSERVICE_NOTFOUND)
+			{	
+				char* p = u2a( szTipCur );
 	        	CallService( "mToolTip/ShowTip", (WPARAM)p, (LPARAM)&ti );
 				mir_free( p );
 			}
