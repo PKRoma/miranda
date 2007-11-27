@@ -89,9 +89,9 @@ static BOOL CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 		CheckDlgButton(hwndDlg,IDC_TOFILE,logOptions.toFile?BST_CHECKED:BST_UNCHECKED);
 		SetDlgItemText(hwndDlg,IDC_FILENAME,logOptions.szUserFile);
 		SetDlgItemText(hwndDlg,IDC_PATH,logOptions.szFile);
-		CheckDlgButton(hwndDlg,IDC_SHOWTHISDLGATSTART,DBGetContactSettingByte(NULL,"Netlib","ShowLogOptsAtStart",0)?BST_CHECKED:BST_UNCHECKED);
+		CheckDlgButton(hwndDlg,IDC_SHOWTHISDLGATSTART,DBGetContactSettingByte(NULL, "Netlib", "ShowLogOptsAtStart",0)?BST_CHECKED:BST_UNCHECKED);
 		{	DBVARIANT dbv;
-			if(!DBGetContactSettingString(NULL,"Netlib","RunAtStart",&dbv)) {
+			if(!DBGetContactSettingString(NULL, "Netlib", "RunAtStart",&dbv)) {
 				SetDlgItemTextA(hwndDlg,IDC_RUNATSTART,dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
@@ -153,7 +153,10 @@ static BOOL CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 			}
 			{	TCHAR newpath[MAX_PATH+1];
 				TCHAR path[MAX_PATH+1];
-				GetWindowText( (HWND)lParam, newpath, MAX_PATH );
+				GetWindowText( (HWND)lParam, path, MAX_PATH );
+				if ( !ExpandEnvironmentStrings(path, newpath, MAX_PATH) )
+					_tcscpy(newpath,path);
+
 				// convert relative path to absolute if needed
 				if( _tcsstr(newpath, _T(":")) ||    // X:
 					_tcsstr(newpath, _T("\\\\")) || // \\UNC
@@ -228,8 +231,8 @@ static BOOL CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 			    TCHAR str[MAX_PATH+1];
 
    				GetWindowText(GetDlgItem(hwndDlg,IDC_RUNATSTART),str,MAX_PATH);
-				DBWriteContactSettingTString(NULL,"Netlib","RunAtStart",str);
-	   			DBWriteContactSettingByte(NULL,"Netlib","ShowLogOptsAtStart",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SHOWTHISDLGATSTART));
+				DBWriteContactSettingTString(NULL, "Netlib", "RunAtStart",str);
+	   			DBWriteContactSettingByte(NULL, "Netlib", "ShowLogOptsAtStart",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SHOWTHISDLGATSTART));
 
 				EnterCriticalSection(&logOptions.cs);
 
@@ -269,7 +272,7 @@ static BOOL CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 					if (tvi.lParam == -1) {
 						logOptions.toLog = checked;
 					if ( logOptions.save )
-						DBWriteContactSettingDword(NULL,"Netlib","NLlog",checked);
+						DBWriteContactSettingDword(NULL, "Netlib", "NLlog",checked);
 					}
 					else
 					if (tvi.lParam < netlibUserCount) {
@@ -283,16 +286,16 @@ static BOOL CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 			}
 
 			if ( logOptions.save ) {
-				DBWriteContactSettingByte(NULL,"Netlib","DumpRecv",(BYTE)logOptions.dumpRecv);
-				DBWriteContactSettingByte(NULL,"Netlib","DumpSent",(BYTE)logOptions.dumpSent);
-				DBWriteContactSettingByte(NULL,"Netlib","DumpProxy",(BYTE)logOptions.dumpProxy);
-				DBWriteContactSettingByte(NULL,"Netlib","TextDumps",(BYTE)logOptions.textDumps);
-				DBWriteContactSettingByte(NULL,"Netlib","AutoDetectText",(BYTE)logOptions.autoDetectText);
-				DBWriteContactSettingByte(NULL,"Netlib","TimeFormat",(BYTE)logOptions.timeFormat);
-				DBWriteContactSettingByte(NULL,"Netlib","ShowUser",(BYTE)logOptions.showUser);
-				DBWriteContactSettingByte(NULL,"Netlib","ToOutputDebugString",(BYTE)logOptions.toOutputDebugString);
-				DBWriteContactSettingByte(NULL,"Netlib","ToFile",(BYTE)logOptions.toFile);
-				DBWriteContactSettingTString(NULL,"Netlib","File", logOptions.szFile ? logOptions.szUserFile: _T(""));
+				DBWriteContactSettingByte(NULL, "Netlib", "DumpRecv",(BYTE)logOptions.dumpRecv);
+				DBWriteContactSettingByte(NULL, "Netlib", "DumpSent",(BYTE)logOptions.dumpSent);
+				DBWriteContactSettingByte(NULL, "Netlib", "DumpProxy",(BYTE)logOptions.dumpProxy);
+				DBWriteContactSettingByte(NULL, "Netlib", "TextDumps",(BYTE)logOptions.textDumps);
+				DBWriteContactSettingByte(NULL, "Netlib", "AutoDetectText",(BYTE)logOptions.autoDetectText);
+				DBWriteContactSettingByte(NULL, "Netlib", "TimeFormat",(BYTE)logOptions.timeFormat);
+				DBWriteContactSettingByte(NULL, "Netlib", "ShowUser",(BYTE)logOptions.showUser);
+				DBWriteContactSettingByte(NULL, "Netlib", "ToOutputDebugString",(BYTE)logOptions.toOutputDebugString);
+				DBWriteContactSettingByte(NULL, "Netlib", "ToFile",(BYTE)logOptions.toFile);
+				DBWriteContactSettingTString(NULL, "Netlib", "File", logOptions.szFile ? logOptions.szUserFile: _T(""));
 				logOptions.save = 0;
 			}
 			else
@@ -462,10 +465,10 @@ void NetlibDumpData(struct NetlibConnection *nlc,PBYTE buf,int len,int sent,int 
 	}
 
 	// Text data
-	if (isText) {
+	if ( isText ) {
 		szBuf = (char*)alloca(titleLineLen + len + 1);
-		CopyMemory(szBuf, szTitleLine, titleLineLen);
-		CopyMemory(szBuf + titleLineLen, (const char*)buf, len);
+		CopyMemory( szBuf, szTitleLine, titleLineLen );
+		CopyMemory( szBuf + titleLineLen, (const char*)buf, len );
 		szBuf[titleLineLen + len] = '\0';
 	}
 	// Binary data
@@ -476,14 +479,14 @@ void NetlibDumpData(struct NetlibConnection *nlc,PBYTE buf,int len,int sent,int 
 		szBuf = (char*)alloca(titleLineLen + ((len+16)>>4) * 76 + 1);
 		CopyMemory(szBuf, szTitleLine, titleLineLen);
 		pszBuf = szBuf + titleLineLen;
-		for (line = 0; ; line += 16) {
+		for ( line = 0; ; line += 16 ) {
 			colsInLine = min(16, len - line);
 
 			if (colsInLine == 16) {
-				pszBuf += wsprintfA(pszBuf, "%08X: %02X %02X %02X %02X-%02X %02X %02X %02X-%02X %02X %02X %02X-%02X %02X %02X %02X  ",
-									line,buf[line],buf[line+1],buf[line+2],buf[line+3],buf[line+4],buf[line+5],buf[line+6],buf[line+7],
-									buf[line+8],buf[line+9],buf[line+10],buf[line+11],buf[line+12],buf[line+13],buf[line+14],buf[line+15]
-									);
+				PBYTE p = buf + line;
+				pszBuf += wsprintfA(
+					pszBuf, "%08X: %02X %02X %02X %02X-%02X %02X %02X %02X-%02X %02X %02X %02X-%02X %02X %02X %02X  ",
+					line, p[0],p[1],p[2],p[3],p[4],p[5],p[6],p[7],p[8],p[9],p[10],p[11],p[12],p[13],p[14],p[15] );
 			}
 			else {
 				pszBuf += wsprintfA(pszBuf, "%08X: ", line);
@@ -515,65 +518,76 @@ void NetlibDumpData(struct NetlibConnection *nlc,PBYTE buf,int len,int sent,int 
 
 void NetlibLogInit(void)
 {
-	TCHAR path[MAX_PATH+1];
 	DBVARIANT dbv;
 	LARGE_INTEGER li;
-	QueryPerformanceFrequency(&li);
-	perfCounterFreq=li.QuadPart;
-	QueryPerformanceCounter(&li);
-	mirandaStartTime=li.QuadPart;
+	TCHAR path[MAX_PATH+1];
+
+	QueryPerformanceFrequency( &li );
+	perfCounterFreq = li.QuadPart;
+	QueryPerformanceCounter( &li );
+	mirandaStartTime = li.QuadPart;
 
 	CreateServiceFunction( MS_NETLIB_LOGWIN, ShowOptions );
 	CreateServiceFunction( MS_NETLIB_LOG, NetlibLog );
 	hLogEvent = CreateHookableEvent( ME_NETLIB_FASTDUMP );
 
 	InitializeCriticalSection(&logOptions.cs);
-	logOptions.dumpRecv=DBGetContactSettingByte(NULL,"Netlib","DumpRecv",1);
-	logOptions.dumpSent=DBGetContactSettingByte(NULL,"Netlib","DumpSent",1);
-	logOptions.dumpProxy=DBGetContactSettingByte(NULL,"Netlib","DumpProxy",0);
-	logOptions.textDumps=DBGetContactSettingByte(NULL,"Netlib","TextDumps",1);
-	logOptions.autoDetectText=DBGetContactSettingByte(NULL,"Netlib","AutoDetectText",1);
-	logOptions.timeFormat=DBGetContactSettingByte(NULL,"Netlib","TimeFormat",TIMEFORMAT_HHMMSS);
-	logOptions.showUser=DBGetContactSettingByte(NULL,"Netlib","ShowUser",1);
-	logOptions.toOutputDebugString=DBGetContactSettingByte(NULL,"Netlib","ToOutputDebugString",0);
-	logOptions.toFile=DBGetContactSettingByte(NULL,"Netlib","ToFile",0);
-	logOptions.toLog=DBGetContactSettingDword(NULL,"Netlib","NLlog",1);
+	logOptions.dumpRecv = DBGetContactSettingByte( NULL, "Netlib", "DumpRecv", 1 );
+	logOptions.dumpSent = DBGetContactSettingByte( NULL, "Netlib", "DumpSent", 1 );
+	logOptions.dumpProxy = DBGetContactSettingByte( NULL, "Netlib", "DumpProxy", 0 );
+	logOptions.textDumps = DBGetContactSettingByte( NULL, "Netlib", "TextDumps", 1 );
+	logOptions.autoDetectText = DBGetContactSettingByte( NULL, "Netlib", "AutoDetectText", 1 );
+	logOptions.timeFormat = DBGetContactSettingByte( NULL, "Netlib", "TimeFormat", TIMEFORMAT_HHMMSS );
+	logOptions.showUser = DBGetContactSettingByte( NULL, "Netlib", "ShowUser", 1 );
+	logOptions.toOutputDebugString = DBGetContactSettingByte( NULL, "Netlib", "ToOutputDebugString", 0 );
+	logOptions.toFile = DBGetContactSettingByte( NULL, "Netlib", "ToFile", 0 );
+	logOptions.toLog = DBGetContactSettingDword( NULL, "Netlib", "NLlog", 1 );
 
-	if(!DBGetContactSettingTString(NULL, "Netlib", "File", &dbv)) {
-	  	if(_tfullpath(path, dbv.ptszVal, MAX_PATH) == NULL)
-			logOptions.szFile = mir_tstrdup(dbv.ptszVal);
+	if ( !DBGetContactSettingTString( NULL, "Netlib", "File", &dbv )) {
+		TCHAR newpath[MAX_PATH+1];
+		if ( !ExpandEnvironmentStrings( dbv.ptszVal, newpath, MAX_PATH ))
+			_tcscpy( newpath, dbv.ptszVal );
+
+		if( _tfullpath( path, newpath, MAX_PATH ) == NULL)
+			logOptions.szFile = mir_tstrdup( newpath );
 		else
-	    	logOptions.szFile = mir_tstrdup(path);
+	    	logOptions.szFile = mir_tstrdup( path );
 
-		logOptions.szUserFile = mir_tstrdup(dbv.ptszVal);
-
-		DBFreeVariant(&dbv);
+		DBFreeVariant( &dbv );
 	}
-
-	if(_tfullpath(path, _T( "." ), MAX_PATH) == NULL)
-		logOptions.szPath = mir_tstrdup(_T( "" ));
 	else {
-		_tcscat(path,_T("\\"));
-		logOptions.szPath = mir_tstrdup(path);
+		if ( !ExpandEnvironmentStrings( _T("%temp%\\netlog.txt"), path, MAX_PATH ))
+			_tcscpy( path, _T("netlog.txt"));
+		logOptions.szFile = mir_tstrdup( path );
 	}
 
-	if(logOptions.toFile && logOptions.szFile[0]) {
+	logOptions.szUserFile = mir_tstrdup( dbv.ptszVal );
+
+	if( _tfullpath( path, _T( "." ), MAX_PATH ) == NULL )
+		logOptions.szPath = mir_tstrdup( _T( "" ));
+	else {
+		_tcscat( path, _T("\\"));
+		logOptions.szPath = mir_tstrdup( path );
+	}
+
+	if ( logOptions.toFile && logOptions.szFile[0] ) {
 		FILE *fp;
-		fp = _tfopen(logOptions.szFile, _T("wt"));
-		if(fp) fclose(fp);
+		fp = _tfopen( logOptions.szFile, _T("wt"));
+		if ( fp )
+			fclose(fp);
 	}
 
-	if(DBGetContactSettingByte(NULL,"Netlib","ShowLogOptsAtStart",0))
+	if ( DBGetContactSettingByte( NULL, "Netlib", "ShowLogOptsAtStart", 0 ))
 		NetlibLogShowOptions();
 
-	if(!DBGetContactSettingTString(NULL,"Netlib","RunAtStart",&dbv)) {
-		STARTUPINFO si={0};
+	if ( !DBGetContactSettingTString( NULL, "Netlib", "RunAtStart", &dbv )) {
+		STARTUPINFO si = { 0 };
 		PROCESS_INFORMATION pi;
-		si.cb=sizeof(si);
-		if(dbv.ptszVal[0]) CreateProcess(NULL,dbv.ptszVal,NULL,NULL,FALSE,0,NULL,NULL,&si,&pi);
-		DBFreeVariant(&dbv);
+		si.cb = sizeof( si );
+		if ( dbv.ptszVal[0] )
+			CreateProcess( NULL, dbv.ptszVal, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi );
+		DBFreeVariant( &dbv );
 	}
-
 }
 
 void NetlibLogShutdown(void)
