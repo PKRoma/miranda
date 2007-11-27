@@ -37,8 +37,9 @@ $Id$
 
 static char *relnotes[] = {
     "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
-    "\\par\t\\b\\ul1 Release notes for version 2.0.0.2\\b0\\ul0\\par ",
-    "*\tBug fixes only.\\par",
+    "\\par\t\\b\\ul1 Release notes for version 2.0.0.3\\b0\\ul0\\par ",
+    "*\tBug fixes. See changelog.txt for details\\par",
+    "*\tremoved active status message retrieval.\\par",
     NULL
 };
 
@@ -364,41 +365,6 @@ static int ProtoAck(WPARAM wParam, LPARAM lParam)
             SendMessage(sendJobs[iFound].hwndOwner, HM_EVENTSENT, (WPARAM)MAKELONG(iFound, i), lParam);
             return 0;
         }
-    }
-    /*
-     * handle status message - pAck->lParam has the message (char *)
-     * only care about requests we have made from a message window, so check the hProcess
-     */
-    if(pAck->type == ACKTYPE_AWAYMSG) {
-        struct MessageWindowData *dat = 0;
-        HWND hwnd = WindowList_Find(hMessageWindowList, pAck->hContact);
-        if(hwnd)
-            dat = (struct MessageWindowData *)GetWindowLong(hwnd, GWL_USERDATA);
-        else
-            return 0;
-        
-        if(pAck->result == ACKRESULT_SUCCESS) {
-            if(dat && dat->hProcessAwayMsg == pAck->hProcess) {
-                dat->hProcessAwayMsg = 0;
-                if(pAck->lParam)
-#if defined(_UNICODE)
-                    MultiByteToWideChar(dat->codePage, 0, (char *)pAck->lParam, -1, dat->statusMsg, safe_sizeof(dat->statusMsg) - 1);
-#else
-                    strncpy(dat->statusMsg, (char *)pAck->lParam, sizeof(dat->statusMsg) - 1);
-#endif                
-                else
-                    lstrcpyn(dat->statusMsg, myGlobals.m_szNoStatus, safe_sizeof(dat->statusMsg) - 1);
-                dat->statusMsg[safe_sizeof(dat->statusMsg) - 1] = 0;
-                SendMessage(hwnd, DM_ACTIVATETOOLTIP, 0, 0);
-            }
-        }
-        else if(pAck->result = ACKRESULT_FAILED) {
-            if(dat && dat->hProcessAwayMsg == pAck->hProcess) {
-                dat->hProcessAwayMsg = 0;
-                SendMessage(hwnd, DM_ACTIVATETOOLTIP, 0, (LPARAM)_T("Either there is no status message available, or the protocol could not retrieve it."));
-            }
-        }
-        return 0;
     }
     return 0;
 }
@@ -1122,9 +1088,9 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	upd.szVersionURL = szFLVersionUrl;
 	upd.szUpdateURL = szFLUpdateurl;
 #if defined(_UNICODE)
-	upd.pbVersionPrefix = (BYTE *)"<span class=\"fileNameHeader\">tabSRMM Unicode ";
+	upd.pbVersionPrefix = (BYTE *)"<span class=\"fileNameHeader\">tabSRMM Unicode 2.0 ";
 #else
-	upd.pbVersionPrefix = (BYTE *)"<span class=\"fileNameHeader\">tabSRMM ";
+	upd.pbVersionPrefix = (BYTE *)"<span class=\"fileNameHeader\">tabSRMM 2.0 ";
 #endif
 	upd.cpbVersionPrefix = strlen((char *)upd.pbVersionPrefix);
 

@@ -19,11 +19,27 @@ the file listing the same day.
 Trunk is now using version numbers 1.1.0.x until the next major release. Bugfixes
 will be backported to stable branch, new features will only go into trunk.
 
+Version 2.0.0.3  - 2007/11/29
+
+        * changed per contact filter system in group chats
+        * "revert splitter" option fixed for group chats.
+        * "sync splitter with groupchats" option - fixed small (1px) alignment
+          bug
+        * fixed idle time for metacontacts (may not work with older versions of
+          metacontacts plugin, so please update).
+        * removed active status message retrieval when hovering info panel. 
+          tabSRMM now ONLY reads the status message from the database where it
+          should be stored by the protocol or 3rd party status message retrieval
+          plugin.
+
 Version 2.0.0.2  - 2007/10/02
 
         * fixed a few untranslatable strings.
         * fixed "revert to old" splitter option (was misaligned by a few pixels).
           (issue # 0000024)
+        * cleaned up "clickable nicks code" (groupchats, patch by ghazan).
+
+Version 2.0.0.1  - re-upload to enable updater support
 
 Version 2.0.0.0  - 2007/10/02
 

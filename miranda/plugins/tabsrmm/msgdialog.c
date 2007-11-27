@@ -1311,7 +1311,12 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 					if(dat) {
 						GetClientRect(hwnd, &rc);
 						dat->savedSplitter = rc.right > rc.bottom ? (short) HIWORD(GetMessagePos()) + rc.bottom / 2 : (short) LOWORD(GetMessagePos()) + rc.right / 2;
-                        dat->savedSplitY = dat->splitterY;
+                        if(dat->bType == SESSIONTYPE_IM)
+                            dat->savedSplitY = dat->splitterY;
+                        else {
+                            SESSION_INFO *si = (SESSION_INFO *)dat->si;
+                            dat->savedSplitY = si->iSplitterY;
+                        }
                         dat->savedDynaSplit = dat->dynaSplitter;
 					}
 				}
@@ -1426,11 +1431,11 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
                             if(bSync) {
                                 if(dat->bType == SESSIONTYPE_IM) {
                                     dwOff_IM = 0;
-                                    dwOff_CHAT = -1;
+                                    dwOff_CHAT = -2;
                                 }
                                 else if(dat->bType == SESSIONTYPE_CHAT) {
                                     dwOff_CHAT = 0;
-                                    dwOff_IM = 1;
+                                    dwOff_IM = 2;
                                 }
                             }
                             GetWindowRect(hwndParent, &rcWin);
@@ -1459,6 +1464,10 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
                             dat->splitterY = dat->savedSplitY;
                             dat->dynaSplitter = dat->savedDynaSplit;
                             DM_RecalcPictureSize(hwndParent, dat);
+                            if(dat->bType == SESSIONTYPE_CHAT) {
+                                SESSION_INFO *si = (SESSION_INFO *)dat->si;
+                                si->iSplitterY = dat->savedSplitY;
+                            }
                             SendMessage(hwndParent, WM_SIZE, 0, 0);
                             //SendMessage(hwndParent, DM_SPLITTERMOVEDGLOBAL, dat->savedSplitter, (LPARAM) hwnd);
                             DM_ScrollToBottom(hwndParent, dat, 0, 1);
@@ -2522,7 +2531,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         mir_snprintf(dat->szNickname, 80, "%s", (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hActContact, 0));
 #endif
                         iHasName = (int)dat->uin[0];        // dat->uin[0] == 0 if there is no valid UIN
-                        dat->idle = DBGetContactSettingDword(dat->hContact, szActProto, "IdleTS", 0);
+                        dat->idle = DBGetContactSettingDword(dat->hContact, dat->szProto, "IdleTS", 0);
                         dat->dwFlagsEx =  dat->idle ? dat->dwFlagsEx | MWF_SHOW_ISIDLE : dat->dwFlagsEx & ~MWF_SHOW_ISIDLE;
                         dat->xStatus = DBGetContactSettingByte(hActContact, szActProto, "XStatusId", 0);
 
@@ -2676,7 +2685,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
    							SetParent(dat->hwndFlash, GetDlgItem(hwndDlg, isInfoPanel ? IDC_PANELPIC : IDC_CONTACTPIC));
    						}
    					}
-                    dat->lastRetrievedStatusMsg = 0;
                 }
                 // care about MetaContacts and update the statusbar icon with the currently "most online" contact...
                 if(dat->bIsMeta) {
@@ -3231,14 +3239,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, IDC_PANELSTATUS + 1, (LPARAM)TranslateT("Unknown client"));
                 }
                 else if(wParam == TIMERID_AWAYMSG && PtInRect(&rc, pt)) {
-                    if(GetTickCount() - dat->lastRetrievedStatusMsg > 60000) {
-                        SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, 0, (LPARAM)TranslateT("Retrieving..."));
-                        if(!(dat->hProcessAwayMsg = (HANDLE)CallContactService(dat->bIsMeta ? dat->hSubContact : dat->hContact, PSS_GETAWAYMSG, 0, 0)))
-                            SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, 0, (LPARAM)myGlobals.m_szNoStatus);
-                        dat->lastRetrievedStatusMsg = GetTickCount();
-                    }
-                    else
-                        SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, 0, 0);
+                    SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, 0, 0);
                 }
                 else if(wParam == (TIMERID_AWAYMSG + 1) && PtInRect(&rcNick, pt) && dat->xStatus > 0) {
                     TCHAR szBuffer[1025];
@@ -3693,7 +3694,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 else*/ if(dat->dwFlagsEx & MWF_SHOW_INFOPANEL && !(dat->dwFlagsEx & MWF_SHOW_INFONOTES)) {
                     GetWindowRect(GetDlgItem(hwndDlg, IDC_PANELSTATUS), &rc);
                     GetWindowRect(GetDlgItem(hwndDlg, IDC_PANELNICK), &rcNick);
-                    if(PtInRect(&rc, pt) && (myGlobals.m_DoStatusMsg || dat->hClientIcon)) {
+                    if(PtInRect(&rc, pt)) {
                         if(!(dat->dwFlagsEx & MWF_SHOW_AWAYMSGTIMER)) {
                             if(dat->hClientIcon && pt.x >= rc.right - 20)
                                 SetTimer(hwndDlg, TIMERID_AWAYMSG + 2, 500, 0);
@@ -3703,7 +3704,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                         }
                         break;
                     }
-                    else if(PtInRect(&rcNick, pt) && myGlobals.m_DoStatusMsg) {
+                    else if(PtInRect(&rcNick, pt)) {
                         if(!(dat->dwFlagsEx & MWF_SHOW_AWAYMSGTIMER)) {
                             SetTimer(hwndDlg, TIMERID_AWAYMSG + 1, 500, 0);
                             dat->dwFlagsEx |= MWF_SHOW_AWAYMSGTIMER;

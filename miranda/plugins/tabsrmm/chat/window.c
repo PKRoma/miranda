@@ -1846,7 +1846,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				SendMessage(GetDlgItem(hwndDlg, IDC_LIST), LB_SETITEMHEIGHT, 0, (LPARAM)height > font ? height : font);
 				InvalidateRect(GetDlgItem(hwndDlg, IDC_LIST), NULL, TRUE);
 			}
-            Chat_SetFilters(si);
+            //Chat_SetFilters(si);
             SendDlgItemMessage(hwndDlg,IDC_FILTER,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(si->bFilterEnabled?IDI_FILTER:IDI_FILTER2, si->bFilterEnabled?"filter":"filter2", 0, 0 ));
 			SendMessage(hwndDlg, WM_SIZE, 0, 0);
 			SendMessage(hwndDlg, GC_REDRAWLOG2, 0, 0);

@@ -405,9 +405,7 @@ struct MessageWindowData {
     DWORD   idle;
     HWND    hwndTip;
     TOOLINFO ti;
-    DWORD   lastRetrievedStatusMsg;
     TCHAR   statusMsg[1025];
-    HANDLE  hProcessAwayMsg;
     DWORD   timezone, timediff;
     DWORD   panelStatusCX;
     BYTE    xStatus;

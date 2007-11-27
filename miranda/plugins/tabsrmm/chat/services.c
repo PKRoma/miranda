@@ -308,6 +308,8 @@ int Service_NewChat(WPARAM wParam, LPARAM lParam)
 				DBWriteContactSettingTString(si->hContact, si->pszModule, "StatusBar", si->ptszStatusbarText);
 			else
 				DBWriteContactSettingString(si->hContact, si->pszModule, "StatusBar", "");
+            if(si->hContact)
+                Chat_SetFilters(si);
 		}
 		else {
 			SESSION_INFO* si2 = SM_FindSession( ptszID, gcw->pszModule );
@@ -321,9 +323,12 @@ int Service_NewChat(WPARAM wParam, LPARAM lParam)
 				si2->iStatusCount = 0;
 				si2->nUsersInNicklist = 0;
 
+                if(si->hContact)
+                    Chat_SetFilters(si);
 				if (si2->hWnd )
 					RedrawWindow(GetDlgItem(si2->hWnd, IDC_LIST), NULL, NULL, RDW_INVALIDATE);
-		}	}
+            }	
+        }
 
 		LeaveCriticalSection(&cs);
 		mir_free( ptszID );

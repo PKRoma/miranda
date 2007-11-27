@@ -796,7 +796,7 @@ static HANDLE SI_hServiceIcon[3];
 
 int SI_InitStatusIcons() {
 	SI_hServiceIcon[0] = CreateServiceFunction(MS_MSG_ADDICON, SI_AddStatusIcon);
-	SI_hServiceIcon[1] = CreateServiceFunction(MS_MSG_ADDICON, SI_RemoveStatusIcon);
+	SI_hServiceIcon[1] = CreateServiceFunction(MS_MSG_REMOVEICON, SI_RemoveStatusIcon);
 	SI_hServiceIcon[2] = CreateServiceFunction(MS_MSG_MODIFYICON, SI_ModifyStatusIcon);
 	hHookIconPressedEvt = CreateHookableEvent(ME_MSG_ICONPRESSED);
 	return 0;
