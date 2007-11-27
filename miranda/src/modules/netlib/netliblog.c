@@ -515,6 +515,7 @@ void NetlibDumpData(struct NetlibConnection *nlc,PBYTE buf,int len,int sent,int 
 
 void NetlibLogInit(void)
 {
+	TCHAR path[MAX_PATH+1];
 	DBVARIANT dbv;
 	LARGE_INTEGER li;
 	QueryPerformanceFrequency(&li);
@@ -539,8 +540,6 @@ void NetlibLogInit(void)
 	logOptions.toLog=DBGetContactSettingDword(NULL,"Netlib","NLlog",1);
 
 	if(!DBGetContactSettingTString(NULL, "Netlib", "File", &dbv)) {
-		TCHAR path[MAX_PATH+1];
-
 	  	if(_tfullpath(path, dbv.ptszVal, MAX_PATH) == NULL)
 			logOptions.szFile = mir_tstrdup(dbv.ptszVal);
 		else
@@ -548,14 +547,14 @@ void NetlibLogInit(void)
 
 		logOptions.szUserFile = mir_tstrdup(dbv.ptszVal);
 
-	  	if(_tfullpath(path, _T( "." ), MAX_PATH) == NULL)
-			logOptions.szPath = mir_tstrdup(_T( "" ));
-		else {
-			_tcscat(path,_T("\\"));
-			logOptions.szPath = mir_tstrdup(path);
-		}
-
 		DBFreeVariant(&dbv);
+	}
+
+	if(_tfullpath(path, _T( "." ), MAX_PATH) == NULL)
+		logOptions.szPath = mir_tstrdup(_T( "" ));
+	else {
+		_tcscat(path,_T("\\"));
+		logOptions.szPath = mir_tstrdup(path);
 	}
 
 	if(logOptions.toFile && logOptions.szFile[0]) {
