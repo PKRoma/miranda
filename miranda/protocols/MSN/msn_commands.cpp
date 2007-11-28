@@ -93,6 +93,7 @@ void sttSetMirVer( HANDLE hContact, DWORD dwValue )
 		"WLM 8.0",
 		"WLM 8.1",
 		"WLM 8.5",
+		"WLM 9.0",
 		"WLM Unknown",
 	};
 
