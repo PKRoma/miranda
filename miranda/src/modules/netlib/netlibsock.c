@@ -53,7 +53,8 @@ int NetlibSend(WPARAM wParam,LPARAM lParam)
 	}
 	NetlibLeaveNestedCS( &nlc->ncsSend );
 
-	{	NETLIBNOTIFY nln = { nlb, result };
+	if ((( THook* )hSendEvent)->subscriberCount ) {
+		NETLIBNOTIFY nln = { nlb, result };
 		CallHookSubscribers( hSendEvent, (WPARAM)&nln, (LPARAM)&nlc->nlu->user );
 	}
 	return result;
@@ -83,7 +84,8 @@ int NetlibRecv(WPARAM wParam,LPARAM lParam)
 
 	NetlibDumpData( nlc, nlb->buf, recvResult, 0, nlb->flags );
 
-	{	NETLIBNOTIFY nln = { nlb, recvResult };
+	if ((( THook* )hRecvEvent)->subscriberCount ) {
+		NETLIBNOTIFY nln = { nlb, recvResult };
 		CallHookSubscribers( hRecvEvent, (WPARAM)&nln, (LPARAM)&nlc->nlu->user );
 	}
 	return recvResult;
@@ -160,7 +162,7 @@ int NetlibSelectEx(WPARAM wParam,LPARAM lParam)
 	for (j=0; j<FD_SETSIZE; j++) {
 		conn=(struct NetlibConnection*)nls->hReadConns[j];
 		if (conn==NULL || conn==INVALID_HANDLE_VALUE) break;
-		
+
 		if (conn->usingHttpGateway && conn->nlhpi.szHttpGetUrl == NULL && conn->dataBuffer == NULL)
 			nls->hReadStatus[j] = (conn->pHttpProxyPacketQueue != NULL);
 		else
