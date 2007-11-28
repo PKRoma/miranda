@@ -405,6 +405,25 @@ static DWORD MsgWaitForMultipleObjectsExWorkaround(DWORD nCount, const HANDLE *p
 	return rc;
 }
 
+static int SystemShutdownProc(WPARAM wParam,LPARAM lParam)
+{
+	UnloadNewPlugins();
+
+	UninitSkin2Icons();
+	UninitSkinSounds();
+	FreeWindowList();
+
+	UnloadButtonModule();
+	UnloadClcModule();
+	UnloadContactListModule();
+	UnloadEventsModule();
+	UnloadIdleModule();
+	UnloadUpdateNotifyModule();
+
+	UnloadLangPackModule();
+	return 0;
+}
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 	DWORD myPid=0;
@@ -423,6 +442,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 	InsertRegistryKey();
 	NotifyEventHooks(hModulesLoadedEvent,0,0);
+
+	// ensure that the kernel hooks the SystemShutdownProc() after all plugins
+	HookEvent(ME_SYSTEM_SHUTDOWN,SystemShutdownProc);
+
 	MyMsgWaitForMultipleObjectsEx=(DWORD (WINAPI *)(DWORD,CONST HANDLE*,DWORD,DWORD,DWORD))GetProcAddress(GetModuleHandleA("user32"),"MsgWaitForMultipleObjectsEx");
 	forkthread(compactHeapsThread,0,NULL);
 	CreateServiceFunction(MS_SYSTEM_SETIDLECALLBACK,SystemSetIdleCallback);
@@ -456,7 +479,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				dying++;
 				SetEvent(hMirandaShutdown);
 				NotifyEventHooks(hPreShutdownEvent, 0, 0);
-				
+
 				// this spins and processes the msg loop, objects and APC.
 				UnwindThreadWait();
 				NotifyEventHooks(hShutdownEvent, 0, 0);
@@ -473,25 +496,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	CloseHandle(hMirandaShutdown);
 	CloseHandle(hThreadQueueEmpty);
 	DestroyWindow(hAPCWindow);
-	return 0;
-}
-
-static int SystemShutdownProc(WPARAM wParam,LPARAM lParam)
-{
-	UnloadNewPlugins();
-
-	UninitSkin2Icons();
-	UninitSkinSounds();
-	FreeWindowList();
-
-	UnloadButtonModule();
-	UnloadClcModule();
-	UnloadContactListModule();
-	UnloadEventsModule();
-	UnloadIdleModule();
-	UnloadUpdateNotifyModule();
-
-	UnloadLangPackModule();
 	return 0;
 }
 
@@ -665,8 +669,6 @@ int LoadSystemModule(void)
 	hPreShutdownEvent=CreateHookableEvent(ME_SYSTEM_PRESHUTDOWN);
 	hModulesLoadedEvent=CreateHookableEvent(ME_SYSTEM_MODULESLOADED);
 	hOkToExitEvent=CreateHookableEvent(ME_SYSTEM_OKTOEXIT);
-
-	HookEvent(ME_SYSTEM_SHUTDOWN,SystemShutdownProc);
 
 	CreateServiceFunction(MS_SYSTEM_FORK_THREAD,ForkThreadService);
 	CreateServiceFunction(MS_SYSTEM_FORK_THREAD_EX,ForkThreadServiceEx);
