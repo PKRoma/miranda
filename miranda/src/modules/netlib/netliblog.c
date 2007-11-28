@@ -548,6 +548,7 @@ void NetlibLogInit(void)
 		if ( !ExpandEnvironmentStrings( dbv.ptszVal, newpath, MAX_PATH ))
 			_tcscpy( newpath, dbv.ptszVal );
 
+		logOptions.szUserFile = mir_tstrdup( dbv.ptszVal );
 		if( _tfullpath( path, newpath, MAX_PATH ) == NULL)
 			logOptions.szFile = mir_tstrdup( newpath );
 		else
@@ -556,12 +557,11 @@ void NetlibLogInit(void)
 		DBFreeVariant( &dbv );
 	}
 	else {
+		logOptions.szUserFile = mir_tstrdup(_T("%temp%\\netlog.txt"));
 		if ( !ExpandEnvironmentStrings( _T("%temp%\\netlog.txt"), path, MAX_PATH ))
 			_tcscpy( path, _T("netlog.txt"));
 		logOptions.szFile = mir_tstrdup( path );
 	}
-
-	logOptions.szUserFile = mir_tstrdup( dbv.ptszVal );
 
 	if( _tfullpath( path, _T( "." ), MAX_PATH ) == NULL )
 		logOptions.szPath = mir_tstrdup( _T( "" ));
