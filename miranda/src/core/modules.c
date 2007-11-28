@@ -81,6 +81,7 @@ static DWORD  mainThreadId;
 static int    hookId = 1;
 static HANDLE hMainThread;
 static HANDLE hMissingService;
+static THook *pLastHook = NULL;
 
 HINSTANCE GetInstByAddress( void* codePtr );
 
@@ -165,7 +166,7 @@ static int LoadDefaultModules(void)
 
 static int compareServices( const TService* p1, const TService* p2 )
 {
-	if ( p1->nameHash == p2->nameHash ) 
+	if ( p1->nameHash == p2->nameHash )
 		return 0;
 
 	return ( p1->nameHash > p2->nameHash ) ? 1 : -1;
@@ -277,7 +278,7 @@ HANDLE CreateHookableEvent(const char *name)
 	strncpy( ret->name, name, sizeof( ret->name )); ret->name[ MAXMODULELABELLENGTH-1 ] = 0;
 	ret->id = hookId++;
 	ret->subscriberCount = 0;
-	ret->subscriber = NULL; 
+	ret->subscriber = NULL;
 	ret->pfnHook = NULL;
 	InitializeCriticalSection( &ret->csHook );
 	List_Insert(( SortedList* )&hooks, ret, idx );
@@ -292,8 +293,11 @@ int DestroyHookableEvent( HANDLE hEvent )
 	THook* p;
 
 	EnterCriticalSection( &csHooks );
+	if ( pLastHook == ( THook* )hEvent )
+		pLastHook = NULL;
+
 	if (( idx = List_IndexOf(( SortedList* )&hooks, hEvent )) == -1 ) {
-      LeaveCriticalSection(&csHooks); 
+      LeaveCriticalSection(&csHooks);
 		return 1;
 	}
 	p = hooks.items[idx];
@@ -324,14 +328,17 @@ int SetHookDefaultForHookableEvent(HANDLE hEvent, MIRANDAHOOK pfnHook)
 int CallHookSubscribers( HANDLE hEvent, WPARAM wParam, LPARAM lParam )
 {
 	int i, returnVal = 0;
-	THook* p = ( THook* )hEvent; 
+	THook* p = ( THook* )hEvent;
 
 	EnterCriticalSection( &csHooks );
-	if ( List_IndexOf(( SortedList* )&hooks, p ) == -1 ) {
-		LeaveCriticalSection( &csHooks );
-		return -1;
+	if ( pLastHook != p || !pLastHook ) {
+		if ( List_IndexOf(( SortedList* )&hooks, p ) == -1 ) {
+			LeaveCriticalSection( &csHooks );
+			return -1;
+		}
+		pLastHook = p;
 	}
-	LeaveCriticalSection(&csHooks);
+	LeaveCriticalSection( &csHooks );
 
 	EnterCriticalSection( &p->csHook );
 
@@ -339,7 +346,7 @@ int CallHookSubscribers( HANDLE hEvent, WPARAM wParam, LPARAM lParam )
 	for ( i = 0; i < p->subscriberCount; i++ ) {
 		if ( p->subscriber[i].pfnHook != NULL ) {
 			returnVal = p->subscriber[i].pfnHook( wParam, lParam );
-			if ( returnVal ) 
+			if ( returnVal )
 				break;
 		}
 		else if ( p->subscriber[i].hwnd != NULL ) {
@@ -382,7 +389,7 @@ int NotifyEventHooks( HANDLE hEvent, WPARAM wParam, LPARAM lParam )
 		CloseHandle( item.hDoneEvent );
 		return item.result;
 	}
-	
+
    return CallHookSubscribers( hEvent, wParam, lParam );
 }
 
