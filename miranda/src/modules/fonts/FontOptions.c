@@ -322,7 +322,7 @@ static void sttFsuiCreateSettingsTreeNode(HWND hwndTree, const TCHAR *groupName)
 				char paramName[MAX_PATH];
 
 				tvis.hParent = hSection;
-				tvis.hInsertAfter = TVI_LAST;//TVI_SORT;
+				tvis.hInsertAfter = TVI_SORT;//TVI_LAST;
 				tvis.item.mask = TVIF_TEXT|TVIF_PARAM;
 				tvis.item.pszText = pItemName;
 				tvis.item.lParam = sectionName ? 0 : (LPARAM)mir_tstrdup(groupName);

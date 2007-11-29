@@ -49,7 +49,7 @@ int GetColourW(WPARAM wParam, LPARAM lParam);
 
 static int sttCompareFont( const TFontID* p1, const TFontID* p2 )
 {
-	int result = _tcscmp( TranslateTS(p1->group), TranslateTS(p2->group) );
+	int result = _tcscmp( p1->group, p2->group );
 	if ( result != 0 )
 		return result;
 	result = p1->order - p2->order;
@@ -60,7 +60,7 @@ static int sttCompareFont( const TFontID* p1, const TFontID* p2 )
 
 static int sttCompareColour( const TColourID* p1, const TColourID* p2 )
 {
-	int result = _tcscmp( TranslateTS(p1->group), TranslateTS(p2->group) );
+	int result = _tcscmp( p1->group, p2->group );
 	if ( result != 0 )
 		return result;
 	result = p1->order - p2->order;

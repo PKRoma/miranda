@@ -1230,7 +1230,7 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 							char paramName[MAX_PATH];
 
 							tvis.hParent = hSection;
-							tvis.hInsertAfter = TVI_LAST;//TVI_SORT;
+							tvis.hInsertAfter = TVI_SORT; //TVI_LAST;
 							tvis.item.mask = TVIF_TEXT|TVIF_PARAM|TVIF_STATE;
 							tvis.item.pszText = pItemName;
 							tvis.item.lParam = SECTIONPARAM_MAKE( indx, sectionLevel, sectionName?0:SECTIONPARAM_HAVEPAGE );
@@ -1510,7 +1510,7 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 // Module initialization and finalization procedure
 
 static int sttCompareSections( const SectionItem* p1, const SectionItem* p2 )
-{	return _tcscmp( TranslateTS(p1->name), TranslateTS(p2->name) );
+{	return _tcscmp( p1->name, p2->name );
 }
 
 static int sttCompareIcons( const IconItem* p1, const IconItem* p2 )
