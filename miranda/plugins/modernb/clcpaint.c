@@ -2005,7 +2005,7 @@ static void CLCPaint_InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT
     subindex=-1;
     line_num = -1;
     //---
-    if (rcPaint->top==0 && rcPaint->bottom==clRect.bottom)
+    if (rcPaint->top==0 && rcPaint->bottom==clRect.bottom && dat->avatars_show )
     {
         AniAva_InvalidateAvatarPositions(NULL);
     }
