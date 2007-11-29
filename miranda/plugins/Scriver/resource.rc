@@ -222,24 +222,27 @@ STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Typing Notification Options",IDC_STATIC,7,7,269,238
-    CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x348,18,42,248,
-                    131,WS_EX_CLIENTEDGE
+    GROUPBOX        "Typing Notification Options",IDC_STATIC,7,4,269,244
     LTEXT           "Send typing notifications to the following users when you are typing a message to them:",
                     IDC_STATIC,19,18,245,19
+    CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x348,18,37,248,
+                    130,WS_EX_CLIENTEDGE
+    CONTROL         "Show typing notification switch in the status bar",
+                    IDC_TYPINGSWITCH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,
+                    170,233,13
     CONTROL         "Show typing notifications when a user is typing a message",
                     IDC_SHOWNOTIFY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,
-                    178,233,13
+                    182,233,13
     CONTROL         "Update message window icons when a user is typing",
-                    IDC_TYPEWIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,193,
+                    IDC_TYPEWIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,197,
                     230,10
     CONTROL         "Show typing notification when no message dialog is open",
                     IDC_TYPETRAY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,
-                    206,230,10
+                    210,230,10
     CONTROL         "Flash in the system tray and in the contact list",
-                    IDC_NOTIFYTRAY,"Button",BS_AUTORADIOBUTTON,44,219,206,10
+                    IDC_NOTIFYTRAY,"Button",BS_AUTORADIOBUTTON,44,223,206,10
     CONTROL         "Show balloon popup",IDC_NOTIFYBALLOON,"Button",
-                    BS_AUTORADIOBUTTON,44,231,206,10
+                    BS_AUTORADIOBUTTON,44,235,206,10
 END
 
 
@@ -431,20 +434,16 @@ IDI_CLOSEX              ICON    DISCARDABLE     "res/closex.ico"
 IDI_BUNDERLINE          ICON                    "res/chat/underline.ico"
 IDI_BBOLD               ICON                    "res/chat/bold.ico"
 IDI_BITALICS            ICON                    "res/chat/italics.ico"
-//IDI_BSMILEY             ICON                    "res/chat/smiley.ico"
 IDI_JOIN                ICON                    "res/chat/join.ico"
 IDI_TOPIC               ICON                    "res/chat/topic.ico"
 IDI_ADDSTATUS           ICON                    "res/chat/addmode.ico"
 IDI_INFO                ICON                    "res/chat/info.ico"
 IDI_KICK                ICON                    "res/chat/kick.ico"
-//IDI_MESSAGE             ICON                    "res/chat/message.ico"
 IDI_NICK                ICON                    "res/chat/nick.ico"
 IDI_CHAT_NOTICE         ICON                    "res/chat/notice.ico"
 IDI_PART                ICON                    "res/chat/part.ico"
 IDI_QUIT                ICON                    "res/chat/quit.ico"
 IDI_REMSTATUS           ICON                    "res/chat/removestatus.ico"
-//IDI_HIGHLIGHT           ICON                    "res/chat/highlight.ico"
-//IDI_MESSAGEOUT          ICON                    "res/chat/messageout.ico"
 IDI_ACTION              ICON                    "res/chat/action.ico"
 IDI_TOPICBUT            ICON                    "res/chat/topicbut.ico"
 IDI_BKGCOLOR            ICON                    "res/chat/bkgcolor.ico"
@@ -462,6 +461,7 @@ IDI_STATUS5             ICON                    "res/chat/6.ico"
 IDI_OVERLAY             ICON                    "res/chat/overlay.ico"
 IDI_NICKLIST2           ICON                    "res/chat/nicklist2.ico"
 IDI_FILTER2             ICON                    "res/chat/filter2.ico"
+IDI_TYPINGOFF           ICON                    "res/typingoff.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -522,8 +522,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,8,0,2
- PRODUCTVERSION 2,8,0,2
+ FILEVERSION 2,8,0,4
+ PRODUCTVERSION 2,8,0,4
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -541,14 +541,14 @@ BEGIN
             VALUE "Comments", "http://www.miranda-im.org\0"
             VALUE "CompanyName", "Miranda IM Development Team\0"
             VALUE "FileDescription", "Scriver - send and receive instant messages\0"
-            VALUE "FileVersion", "2.8.0.2\0"
+            VALUE "FileVersion", "2.8.0.4\0"
             VALUE "InternalName", "scriver\0"
             VALUE "LegalCopyright", "Copyright © 2000-2007 Miranda IM Project\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "scriver.dll\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "Scriver\0"
-            VALUE "ProductVersion", "2.8.0.2\0"
+            VALUE "ProductVersion", "2.8.0.4\0"
             VALUE "SpecialBuild", "\0"
         END
     END

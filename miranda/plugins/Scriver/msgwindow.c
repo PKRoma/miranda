@@ -1092,6 +1092,7 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 		}
 	case DM_STATUSICONCHANGE:
 		SendMessage(dat->hwndStatus, SB_SETTEXT, (WPARAM)(SBT_OWNERDRAW) | 2, (LPARAM)0);
+		SetupStatusBar(dat);
 		RedrawWindow(dat->hwndStatus, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 		break;
 	case CM_UPDATETABCONTROL:
@@ -1207,7 +1208,6 @@ static void DrawTab(ParentWindowData *dat, HWND hwnd, WPARAM wParam, LPARAM lPar
 			int bSelected = lpDIS->itemState & ODS_SELECTED;
 			int	iOldBkMode = SetBkMode(lpDIS->hDC, TRANSPARENT);
 			int atTop = (GetWindowLong(hwnd, GWL_STYLE) & TCS_BOTTOM) == 0;
-	//		COLORREF crOldColor = SetTextColor(lpDIS->hDC, (tci.dwState & TCIS_HIGHLIGHTED) ? RGB(196, 0, 0) : GetSysColor(COLOR_BTNTEXT));
 			UINT dwFormat;
 			if (pfnIsAppThemed && !pfnIsAppThemed()) {
 				FillRect(lpDIS->hDC, &rect, GetSysColorBrush(COLOR_BTNFACE));

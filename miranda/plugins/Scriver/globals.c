@@ -92,45 +92,25 @@ static int buttonIcons[] = {SMF_ICON_CLOSEX, -1, SMF_ICON_USERDETAILS, SMF_ICON_
 
 void LoadGlobalIcons() {
 	int i;
-	if (hEventSkin2IconsChanged) {
-		g_dat->hIcons[SMF_ICON_ADD] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_ADD");
-		g_dat->hIcons[SMF_ICON_USERDETAILS] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_USERDETAILS");
-		g_dat->hIcons[SMF_ICON_HISTORY] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_HISTORY");
-		g_dat->hIcons[SMF_ICON_TYPING] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_TYPING");
-		g_dat->hIcons[SMF_ICON_SEND] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_SEND");
-		g_dat->hIcons[SMF_ICON_CANCEL] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_CANCEL");
-		g_dat->hIcons[SMF_ICON_SMILEY] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_SMILEY");
-		g_dat->hIcons[SMF_ICON_UNICODEON] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_UNICODEON");
-		g_dat->hIcons[SMF_ICON_UNICODEOFF] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_UNICODEOFF");
-		g_dat->hIcons[SMF_ICON_DELIVERING] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_DELIVERING");
-		g_dat->hIcons[SMF_ICON_QUOTE] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_QUOTE");
-		g_dat->hIcons[SMF_ICON_CLOSEX] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_CLOSEX");
-		g_dat->hIcons[SMF_ICON_OVERLAY] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_OVERLAY");
+	g_dat->hIcons[SMF_ICON_ADD] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_ADD");
+	g_dat->hIcons[SMF_ICON_USERDETAILS] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_USERDETAILS");
+	g_dat->hIcons[SMF_ICON_HISTORY] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_HISTORY");
+	g_dat->hIcons[SMF_ICON_TYPING] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_TYPING");
+	g_dat->hIcons[SMF_ICON_TYPINGOFF] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_TYPINGOFF");
 
-		g_dat->hIcons[SMF_ICON_INCOMING] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_INCOMING");
-		g_dat->hIcons[SMF_ICON_OUTGOING] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_OUTGOING");
-		g_dat->hIcons[SMF_ICON_NOTICE] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_NOTICE");
+	g_dat->hIcons[SMF_ICON_SEND] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_SEND");
+	g_dat->hIcons[SMF_ICON_CANCEL] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_CANCEL");
+	g_dat->hIcons[SMF_ICON_SMILEY] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_SMILEY");
+	g_dat->hIcons[SMF_ICON_UNICODEON] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_UNICODEON");
+	g_dat->hIcons[SMF_ICON_UNICODEOFF] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_UNICODEOFF");
+	g_dat->hIcons[SMF_ICON_DELIVERING] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_DELIVERING");
+	g_dat->hIcons[SMF_ICON_QUOTE] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_QUOTE");
+	g_dat->hIcons[SMF_ICON_CLOSEX] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_CLOSEX");
+	g_dat->hIcons[SMF_ICON_OVERLAY] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_OVERLAY");
 
-	} else {
-		g_dat->hIcons[SMF_ICON_ADD] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_ADDCONTACT), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-		g_dat->hIcons[SMF_ICON_USERDETAILS] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_USERDETAILS), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-		g_dat->hIcons[SMF_ICON_HISTORY] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_HISTORY), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-		g_dat->hIcons[SMF_ICON_SEND] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_SEND), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-		g_dat->hIcons[SMF_ICON_CANCEL] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_CANCEL), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-		g_dat->hIcons[SMF_ICON_SMILEY] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_SMILEY), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-		g_dat->hIcons[SMF_ICON_TYPING] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TYPING), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-		g_dat->hIcons[SMF_ICON_UNICODEON] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_UNICODEON), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-		g_dat->hIcons[SMF_ICON_UNICODEOFF] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_UNICODEOFF), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-		g_dat->hIcons[SMF_ICON_DELIVERING] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TIMESTAMP), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-		g_dat->hIcons[SMF_ICON_QUOTE] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_QUOTE), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-		g_dat->hIcons[SMF_ICON_CLOSEX] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_CLOSEX),IMAGE_ICON,0,0,0);
-		g_dat->hIcons[SMF_ICON_OVERLAY] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_OVERLAY),IMAGE_ICON,0,0,0);
-
-		g_dat->hIcons[SMF_ICON_INCOMING] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_INCOMING),IMAGE_ICON,0,0,0);
-		g_dat->hIcons[SMF_ICON_OUTGOING] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_OUTGOING),IMAGE_ICON,0,0,0);
-		g_dat->hIcons[SMF_ICON_NOTICE] = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_NOTICE),IMAGE_ICON,0,0,0);
-
-	}
+	g_dat->hIcons[SMF_ICON_INCOMING] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_INCOMING");
+	g_dat->hIcons[SMF_ICON_OUTGOING] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_OUTGOING");
+	g_dat->hIcons[SMF_ICON_NOTICE] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_NOTICE");
 	for (i=0; i<sizeof(buttonIcons)/sizeof(int); i++) {
 		if (buttonIcons[i] == -1) {
 			ImageList_AddIcon_ProtoEx(g_dat->hButtonIconList, NULL, ID_STATUS_OFFLINE);
@@ -147,28 +127,22 @@ void LoadGlobalIcons() {
 }
 
 void ReleaseGlobalIcons() {
-	if (hEventSkin2IconsChanged) {
-		CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_ADD");
-		CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_USERDETAILS");
-		CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_HISTORY");
-		CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_TYPING");
-		CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_SEND");
-		CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_CANCEL");
-		CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_SMILEY");
-		CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_UNICODEON");
-		CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_UNICODEOFF");
-		CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_DELIVERING");
-		CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_QUOTE");
-		CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_CLOSEX");
-		CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_OVERLAY");
-		CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_INCOMING");
-		CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_OUTGOING");
-		CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_NOTICE");
-	} else {
-		int i;
-		for (i=0;i<SIZEOF(g_dat->hIcons);i++)
-			DestroyIcon(g_dat->hIcons[i]);
-	}
+	CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_ADD");
+	CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_USERDETAILS");
+	CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_HISTORY");
+	CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_TYPING");
+	CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_SEND");
+	CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_CANCEL");
+	CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_SMILEY");
+	CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_UNICODEON");
+	CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_UNICODEOFF");
+	CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_DELIVERING");
+	CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_QUOTE");
+	CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_CLOSEX");
+	CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_OVERLAY");
+	CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_INCOMING");
+	CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_OUTGOING");
+	CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)"scriver_NOTICE");
 	ImageList_RemoveAll(g_dat->hButtonIconList);
 	ImageList_RemoveAll(g_dat->hHelperIconList);
 }
@@ -337,6 +311,8 @@ void ReloadGlobals() {
 		g_dat->flags2 |= SMF2_SHOWTYPINGTRAY;
 	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWTYPINGCLIST, SRMSGDEFSET_SHOWTYPINGCLIST))
 		g_dat->flags2 |= SMF2_SHOWTYPINGCLIST;
+	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWTYPINGSWITCH, SRMSGDEFSET_SHOWTYPINGSWITCH))
+		g_dat->flags2 |= SMF2_SHOWTYPINGSWITCH;
 
 	g_dat->limitAvatarMaxH = 100000;
 	g_dat->limitAvatarMinH = 0;

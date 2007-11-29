@@ -22,6 +22,8 @@
 #define IDI_NOTICE                      134
 #define IDI_CLOSEX                      135
 
+#define IDR_CONTEXT                     180
+
 /* chat dll */
 #define IDD_CHANNEL                     401
 #define IDD_OPTIONS1                    402
@@ -31,7 +33,7 @@
 #define IDI_BUNDERLINE                  420
 #define IDI_BBOLD                       421
 #define IDI_BITALICS                    422
-#define IDI_BSMILEY                     125
+#define IDI_BSMILEY                     423
 #define IDI_TOPICBUT                    424
 #define IDI_BKGCOLOR                    425
 #define IDI_CHANMGR                     426
@@ -45,14 +47,14 @@
 #define IDI_KICK                        434
 #define IDI_NICK                        435
 #define IDI_CHAT_NOTICE                 436
-#define IDI_MESSAGE                     132
-#define IDI_MESSAGEOUT                  133
+#define IDI_MESSAGE                     437
+#define IDI_MESSAGEOUT                  438
 #define IDI_TOPIC                       439
 #define IDI_INFO                        440
 #define IDI_ADDSTATUS                   441
 #define IDI_REMSTATUS                   442
 #define IDI_ACTION                      443
-#define IDI_HIGHLIGHT                   134
+#define IDI_HIGHLIGHT                   444
 #define IDR_MENU                        451
 #define IDD_COLORCHOOSER                452
 #define IDI_STATUS3                     453
@@ -64,11 +66,11 @@
 #define IDI_OVERLAY                     460
 #define IDI_NICKLIST2                   461
 #define IDI_FILTER2                     462
+#define IDI_TYPINGOFF                   463
 
+#define IDC_HYPERLINKHAND               600
+#define IDC_DRAGCURSOR					601
 
-#define IDR_CONTEXT                     180
-#define IDC_HYPERLINKHAND               214
-#define IDC_DRAGCURSOR					215
 #define IDC_TABS                        1000
 #define IDC_LOG                         1001
 #define IDC_MESSAGE                     1002
@@ -166,6 +168,8 @@
 #define IDC_INDENTSPIN					1637
 #define IDC_HIDECONTAINERS				1638
 #define IDC_ORIGINALAVATARH             1639
+#define IDC_TYPINGSWITCH				1640
+
 #define IDM_CUT                         40000
 #define IDM_COPY                        40001
 #define IDM_PASTE                       40002

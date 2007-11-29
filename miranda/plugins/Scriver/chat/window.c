@@ -1109,7 +1109,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
    #else
 			sid.flags = MBF_DISABLED;
    #endif
-			CallService(MS_MSG_MODIFYICON, (WPARAM)si->windowData.hContact, (LPARAM) &sid);
+			ModifyStatusIcon((WPARAM)si->windowData.hContact, (LPARAM) &sid);
       //   SendMessage(hwndDlg, GC_FIXTABICONS, 0, (LPARAM)si);
 		}
 		break;

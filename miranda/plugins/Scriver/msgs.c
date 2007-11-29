@@ -275,15 +275,12 @@ static int TypingMessageCommand(WPARAM wParam, LPARAM lParam)
 static int TypingMessage(WPARAM wParam, LPARAM lParam)
 {
    HWND hwnd;
-   int foundWin = 0;
 
    if (!(g_dat->flags2&SMF2_SHOWTYPING))
       return 0;
    if ((hwnd = WindowList_Find(g_dat->hMessageWindowList, (HANDLE) wParam))) {
       SendMessage(hwnd, DM_TYPING, 0, lParam);
-      foundWin = 1;
-   }
-   if ((int) lParam && !foundWin && (g_dat->flags2&SMF2_SHOWTYPINGTRAY)) {
+   } else if ((int) lParam && (g_dat->flags2&SMF2_SHOWTYPINGTRAY)) {
       TCHAR szTip[256];
 
       mir_sntprintf(szTip, sizeof(szTip), TranslateT("%s is typing a message"), (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, GCDNF_TCHAR));
@@ -437,6 +434,14 @@ static void RegisterStatusIcons() {
 	StatusIconData sid;
 	sid.cbSize = sizeof(sid);
 	sid.szModule = SRMMMOD;
+
+	sid.dwId = 1;
+	sid.hIcon = g_dat->hIcons[SMF_ICON_TYPING];
+	sid.hIconDisabled = g_dat->hIcons[SMF_ICON_TYPINGOFF];
+	sid.flags = MBF_HIDDEN;
+	sid.szTooltip = NULL;
+	AddStickyStatusIcon((WPARAM) 0, (LPARAM) &sid);
+
 	sid.dwId = 0;
 	sid.hIcon = g_dat->hIcons[SMF_ICON_UNICODEON];
 	sid.hIconDisabled = g_dat->hIcons[SMF_ICON_UNICODEOFF];
@@ -454,7 +459,14 @@ void ChangeStatusIcons() {
 	sid.hIconDisabled = CopyIcon(g_dat->hIcons[SMF_ICON_UNICODEOFF]);
 	sid.flags = 0;
 	sid.szTooltip = NULL;
-	CallService(MS_MSG_MODIFYICON, (WPARAM)NULL, (LPARAM) &sid);
+	ModifyStatusIcon((WPARAM)NULL, (LPARAM) &sid);
+
+	sid.dwId = 1;
+	sid.hIcon = CopyIcon(g_dat->hIcons[SMF_ICON_TYPING]);
+	sid.hIconDisabled = CopyIcon(g_dat->hIcons[SMF_ICON_UNICODEOFF]);
+	sid.flags = MBF_HIDDEN;
+	sid.szTooltip = NULL;
+	ModifyStatusIcon((WPARAM)NULL, (LPARAM) &sid);
 }
 
 int StatusIconPressed(WPARAM wParam, LPARAM lParam) {
@@ -466,27 +478,31 @@ int StatusIconPressed(WPARAM wParam, LPARAM lParam) {
 
 	}
 	if (hwnd != NULL) {
-		if (sicd->dwId == 0 && !strcmp(SRMMMOD, sicd->szModule)) {
-			if (sicd->flags & MBCF_RIGHTBUTTON) {
-				int codePage = (int) SendMessage(hwnd, DM_GETCODEPAGE, 0, 0);
-				if (codePage != 1200) {
-					int i, iSel;
-					for (i = 0; i < GetMenuItemCount(g_dat->hMenuANSIEncoding); i++) {
-						CheckMenuItem (g_dat->hMenuANSIEncoding, i, MF_BYPOSITION | MF_UNCHECKED);
+		if (!strcmp(SRMMMOD, sicd->szModule)) {
+			if (sicd->dwId == 0) {
+				if (sicd->flags & MBCF_RIGHTBUTTON) {
+					int codePage = (int) SendMessage(hwnd, DM_GETCODEPAGE, 0, 0);
+					if (codePage != 1200) {
+						int i, iSel;
+						for (i = 0; i < GetMenuItemCount(g_dat->hMenuANSIEncoding); i++) {
+							CheckMenuItem (g_dat->hMenuANSIEncoding, i, MF_BYPOSITION | MF_UNCHECKED);
+						}
+						if (codePage == CP_ACP) {
+							CheckMenuItem(g_dat->hMenuANSIEncoding, 0, MF_BYPOSITION | MF_CHECKED);
+						} else {
+							CheckMenuItem(g_dat->hMenuANSIEncoding, codePage, MF_BYCOMMAND | MF_CHECKED);
+						}
+						iSel = TrackPopupMenu(g_dat->hMenuANSIEncoding, TPM_RETURNCMD, sicd->clickLocation.x, sicd->clickLocation.y, 0, GetParent(hwnd), NULL);
+						if (iSel >= 500) {
+							if (iSel == 500) iSel = CP_ACP;
+							SendMessage(hwnd, DM_SETCODEPAGE, 0, iSel);
+						}
 					}
-					if (codePage == CP_ACP) {
-						CheckMenuItem(g_dat->hMenuANSIEncoding, 0, MF_BYPOSITION | MF_CHECKED);
-					} else {
-						CheckMenuItem(g_dat->hMenuANSIEncoding, codePage, MF_BYCOMMAND | MF_CHECKED);
-					}
-					iSel = TrackPopupMenu(g_dat->hMenuANSIEncoding, TPM_RETURNCMD, sicd->clickLocation.x, sicd->clickLocation.y, 0, GetParent(hwnd), NULL);
-					if (iSel >= 500) {
-						if (iSel == 500) iSel = CP_ACP;
-						SendMessage(hwnd, DM_SETCODEPAGE, 0, iSel);
-					}
+				} else {
+					SendMessage(hwnd, DM_SWITCHUNICODE, 0, 0);
 				}
 			} else {
-				SendMessage(hwnd, DM_SWITCHUNICODE, 0, 0);
+				SendMessage(hwnd, DM_SWITCHTYPING, 0, 0);
 			}
 		}
 	}

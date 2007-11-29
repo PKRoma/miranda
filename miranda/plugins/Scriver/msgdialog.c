@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 #include "m_metacontacts.h"
+#include "statusicon.h"
 
 #include <malloc.h>
 #include <commctrl.h>
@@ -641,38 +642,49 @@ void ShowAvatar(HWND hwndDlg, struct MessageWindowData *dat) {
 	SendMessage(hwndDlg, WM_SIZE, 0, 0);
 }
 
-static void NotifyTyping(struct MessageWindowData *dat, int mode)
-{
+static BOOL IsTypingNotificationSupported(struct MessageWindowData *dat) {
+	DWORD typeCaps;
+	if (!dat->windowData.hContact)
+		return FALSE;
+	if (!dat->szProto)
+		return FALSE;
+	typeCaps = CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0);
+	if (!(typeCaps & PF4_SUPPORTTYPING))
+		return FALSE;
+	return TRUE;
+}
+
+static BOOL IsTypingNotificationEnabled(struct MessageWindowData *dat) {
 	DWORD protoStatus;
 	DWORD protoCaps;
-	DWORD typeCaps;
-
-	if (!dat->windowData.hContact)
-		return;
-	// Don't send to protocols who don't support typing
-	// Don't send to users who are unchecked in the typing notification options
-	// Don't send to protocols that are offline
-	// Don't send to users who are not visible and
-	// Don't send to users who are not on the visible list when you are in invisible mode.
 	if (!DBGetContactSettingByte(dat->windowData.hContact, SRMMMOD, SRMSGSET_TYPING, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)))
-		return;
-	if (!dat->szProto)
-		return;
+		return FALSE;
 	protoStatus = CallProtoService(dat->szProto, PS_GETSTATUS, 0, 0);
-	protoCaps = CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_1, 0);
-	typeCaps = CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0);
-
-	if (!(typeCaps & PF4_SUPPORTTYPING))
-		return;
 	if (protoStatus < ID_STATUS_ONLINE)
-		return;
+		return FALSE;
+	protoCaps = CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_1, 0);
 	if (protoCaps & PF1_VISLIST && DBGetContactSettingWord(dat->windowData.hContact, dat->szProto, "ApparentMode", 0) == ID_STATUS_OFFLINE)
-		return;
+		return FALSE;
 	if (protoCaps & PF1_INVISLIST && protoStatus == ID_STATUS_INVISIBLE && DBGetContactSettingWord(dat->windowData.hContact, dat->szProto, "ApparentMode", 0) != ID_STATUS_ONLINE)
-		return;
+		return FALSE;
 	if (DBGetContactSettingByte(dat->windowData.hContact, "CList", "NotOnList", 0)
 		&& !DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_TYPINGUNKNOWN, SRMSGDEFSET_TYPINGUNKNOWN))
+		return FALSE;
+	return TRUE;
+}
+
+// Don't send to protocols who don't support typing
+// Don't send to users who are unchecked in the typing notification options
+// Don't send to protocols that are offline
+// Don't send to users who are not visible and
+// Don't send to users who are not on the visible list when you are in invisible mode.
+static void NotifyTyping(struct MessageWindowData *dat, int mode) {
+	if (!IsTypingNotificationSupported(dat)) {
 		return;
+	}
+	if (!IsTypingNotificationEnabled(dat)) {
+		return;
+	}
 	// End user check
 	dat->nTypeMode = mode;
 	CallService(MS_PROTO_SELFISTYPING, (WPARAM) dat->windowData.hContact, dat->nTypeMode);
@@ -1011,7 +1023,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				}
 			}
 			SendMessage(dat->hwndParent, CM_ADDCHILD, (WPARAM) hwndDlg, (LPARAM) dat->windowData.hContact);
-			SendMessage(hwndDlg, DM_OPTIONSAPPLIED, 0, 0);
 			{
 				DBEVENTINFO dbei = { 0 };
 				HANDLE hdbEvent;
@@ -1025,15 +1036,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						CallService(MS_DB_EVENT_GET, (WPARAM) hdbEvent, (LPARAM) & dbei);
 						if (dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & DBEF_SENT)) {
 							dat->lastMessage = dbei.timestamp;
-							SendMessage(hwndDlg, DM_UPDATESTATUSBAR, 0, 0);
 							break;
 						}
 					}
 					while ((hdbEvent = (HANDLE) CallService(MS_DB_EVENT_FINDPREV, (WPARAM) hdbEvent, 0)));
 				}
 			}
+			SendMessage(hwndDlg, DM_OPTIONSAPPLIED, 0, 0);
 			SendMessage(GetParent(hwndDlg), CM_POPUPWINDOW, (WPARAM) (newData->flags & NMWLP_INCOMING), (LPARAM) hwndDlg);
-			NotifyLocalWinEvent(dat->windowData.hContact, hwndDlg, MSG_WINDOW_EVT_OPEN);
 			if (notifyUnread) {
 				if (GetForegroundWindow() != dat->hwndParent || dat->parent->hwndActive != hwndDlg) {
 					dat->showUnread = 1;
@@ -1046,6 +1056,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			if (dat->messagesInProgress > 0) {
 				SendMessage(hwndDlg, DM_SHOWMESSAGESENDING, 0, 0);
 			}
+			NotifyLocalWinEvent(dat->windowData.hContact, hwndDlg, MSG_WINDOW_EVT_OPEN);
 			return TRUE;
 		}
 	case DM_GETCONTEXTMENU:
@@ -1355,8 +1366,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						}
 					}
 					SendMessage(GetDlgItem(hwndDlg, IDC_USERMENU), BUTTONADDTOOLTIP, (WPARAM) buf, 0);
-		//			SetDlgItemTextA(hwndDlg, IDC_NAME, buf[0] ? buf : contactName);
-
 					if (!cws || (!strcmp(cws->szModule, dat->szProto) && !strcmp(cws->szSetting, "Status"))) {
 						SendMessage(hwndDlg, DM_UPDATEICON, 0, 1);
 					}
@@ -1493,6 +1502,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 			SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
 			SendMessage(hwndDlg, DM_UPDATEICON, 0, 1);
+			SendMessage(hwndDlg, DM_UPDATESTATUSBAR, 0, 0);
 			break;
 		}
     case DM_USERNAMETOCLIP:
@@ -1548,10 +1558,23 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			sid.cbSize = sizeof(sid);
 			sid.szModule = SRMMMOD;
 			sid.flags = (dat->flags & SMF_DISABLE_UNICODE) ? MBF_DISABLED : 0;
-			CallService(MS_MSG_MODIFYICON, (WPARAM)dat->windowData.hContact, (LPARAM) &sid);
+			ModifyStatusIcon((WPARAM)dat->windowData.hContact, (LPARAM) &sid);
 			SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
 		}
 #endif
+		break;
+	case DM_SWITCHTYPING:
+		if (IsTypingNotificationSupported(dat)) {
+			StatusIconData sid = {0};
+			sid.cbSize = sizeof(sid);
+			sid.szModule = SRMMMOD;
+			sid.dwId = 1;
+			BYTE typingNotify = (DBGetContactSettingByte(dat->windowData.hContact, SRMMMOD, SRMSGSET_TYPING,
+				DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)));
+			DBWriteContactSettingByte(dat->windowData.hContact, SRMMMOD, SRMSGSET_TYPING, !typingNotify);
+			sid.flags = typingNotify ? MBF_DISABLED : 0;
+			ModifyStatusIcon((WPARAM)dat->windowData.hContact, (LPARAM) &sid);
+		}
 		break;
 	case DM_SWITCHRTL:
 		{
@@ -1715,6 +1738,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			//StreamInEvents(hwndDlg, dat->hDbEventFirst, 0, 0);
 			StreamInEvents(hwndDlg, dat->hDbEventFirst, -1, 0);
 		}
+		InvalidateRect(GetDlgItem(hwndDlg, IDC_LOG), NULL, FALSE);
 		break;
 	case DM_APPENDTOLOG:   //takes wParam=hDbEvent
 		StreamInEvents(hwndDlg, (HANDLE) wParam, 1, 1);
@@ -1840,7 +1864,15 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 #else
 			sid.flags = MBF_DISABLED;
 #endif
-			CallService(MS_MSG_MODIFYICON, (WPARAM)dat->windowData.hContact, (LPARAM) &sid);
+			ModifyStatusIcon((WPARAM)dat->windowData.hContact, (LPARAM) &sid);
+			sid.dwId = 1;
+			if (IsTypingNotificationSupported(dat) && g_dat->flags2 & SMF2_SHOWTYPINGSWITCH) {
+				sid.flags = (DBGetContactSettingByte(dat->windowData.hContact, SRMMMOD, SRMSGSET_TYPING,
+					DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW))) ? 0 : MBF_DISABLED;
+			} else {
+				sid.flags = MBF_HIDDEN;
+			}
+			ModifyStatusIcon((WPARAM)dat->windowData.hContact, (LPARAM) &sid);
 		}
 		break;
 	case DM_CLEARLOG:
