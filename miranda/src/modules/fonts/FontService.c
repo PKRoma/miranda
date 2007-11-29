@@ -49,25 +49,25 @@ int GetColourW(WPARAM wParam, LPARAM lParam);
 
 static int sttCompareFont( const TFontID* p1, const TFontID* p2 )
 {
-	int result = _tcscmp( p1->group, p2->group );
+	int result = _tcscmp( TranslateTS(p1->group), TranslateTS(p2->group) );
 	if ( result != 0 )
 		return result;
 	result = p1->order - p2->order;
 	if ( result != 0 )
 		return result;
-	return _tcscmp( p1->name, p2->name );
+	return _tcscmp( TranslateTS(p1->name), TranslateTS(p2->name) );
 }
 
 static int sttCompareColour( const TColourID* p1, const TColourID* p2 )
 {
-	int result = _tcscmp( p1->group, p2->group );
+	int result = _tcscmp( TranslateTS(p1->group), TranslateTS(p2->group) );
 	if ( result != 0 )
 		return result;
 	result = p1->order - p2->order;
 	if ( result != 0 )
 		return result;
 
-	return _tcscmp( p1->name, p2->name );
+	return _tcscmp( TranslateTS(p1->name), TranslateTS(p2->name) );
 }
 
 static int ModulesLoaded(WPARAM wParam, LPARAM lParam)

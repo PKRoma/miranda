@@ -1086,7 +1086,7 @@ BOOL CALLBACK DlgProcIconImport(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 // IcoLib options window procedure
 
 static int CALLBACK DoSortIconsFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
-{	return lstrcmpi(iconList.items[lParam1]->description, iconList.items[lParam2]->description);
+{	return lstrcmpi(TranslateTS(iconList.items[lParam1]->description), TranslateTS(iconList.items[lParam2]->description));
 }
 
 static int CALLBACK DoSortIconsFuncByOrder(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
@@ -1510,7 +1510,7 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 // Module initialization and finalization procedure
 
 static int sttCompareSections( const SectionItem* p1, const SectionItem* p2 )
-{	return _tcscmp( p1->name, p2->name );
+{	return _tcscmp( TranslateTS(p1->name), TranslateTS(p2->name) );
 }
 
 static int sttCompareIcons( const IconItem* p1, const IconItem* p2 )
