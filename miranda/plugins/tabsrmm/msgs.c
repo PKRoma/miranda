@@ -832,16 +832,16 @@ static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
             if(!strcmp(cws->szSetting, "XStatusId"))
                 PostMessage(hwnd, DM_UPDATESTATUSMSG, 0, 0);
             PostMessage(hwnd, DM_UPDATETITLE, 0, 0);
+            if(!strcmp(cws->szSetting, "StatusMsg"))
+                PostMessage(hwnd, DM_UPDATESTATUSMSG, 0, 0);
         }
-        else if(lstrlenA(cws->szSetting) > 6 && !strncmp(cws->szSetting, "Status", 6)) {
+        else if(lstrlenA(cws->szSetting) > 6 && lstrlenA(cws->szSetting) < 9 && !strncmp(cws->szSetting, "Status", 6))
             PostMessage(hwnd, DM_UPDATETITLE, 0, 1);
-        }
         else if(!strcmp(cws->szSetting, "MirVer"))
             PostMessage(hwnd, DM_CLIENTCHANGED, 0, 0);
         else if(strstr("StatusMsg,StatusDescr,XStatusMsg,XStatusName,YMsg", cws->szSetting))
             PostMessage(hwnd, DM_UPDATESTATUSMSG, 0, 0);
     }
-    
     return 0;
 }
 

@@ -2760,7 +2760,7 @@ LABEL_SHOWWINDOW:
 				DoEventHookAsync(hwndDlg, si->ptszID, si->pszModule, GC_USER_MESSAGE, NULL, ptszText, (LPARAM)NULL);
 				mir_free(pszRtf);
 				#if defined( _UNICODE )
-					mir_free(ptszText);
+					free(ptszText);
 				#endif
 				SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
 			}
@@ -2782,7 +2782,6 @@ LABEL_SHOWWINDOW:
 			break;
 
         case IDC_CHAT_MESSAGE:
-            //MessageBoxA(0, "command from message", "foo", MB_OK);
             if(g_Settings.MathMod)
                 MTH_updateMathWindow(hwndDlg, dat);
 

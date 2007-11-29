@@ -323,8 +323,8 @@ int Service_NewChat(WPARAM wParam, LPARAM lParam)
 				si2->iStatusCount = 0;
 				si2->nUsersInNicklist = 0;
 
-                if(si->hContact)
-                    Chat_SetFilters(si);
+                if(si2->hContact)
+                    Chat_SetFilters(si2);
 				if (si2->hWnd )
 					RedrawWindow(GetDlgItem(si2->hWnd, IDC_LIST), NULL, NULL, RDW_INVALIDATE);
             }	

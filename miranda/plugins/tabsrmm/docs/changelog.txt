@@ -29,7 +29,7 @@ Version 2.0.0.3  - 2007/11/29
           metacontacts plugin, so please update).
         * removed active status message retrieval when hovering info panel. 
           tabSRMM now ONLY reads the status message from the database where it
-          should be stored by the protocol or 3rd party status message retrieval
+          should be stored by the protocol or a 3rd party status message retrieval
           plugin.
 
 Version 2.0.0.2  - 2007/10/02

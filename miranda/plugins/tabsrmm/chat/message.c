@@ -76,6 +76,7 @@ static int ReadInteger( const char* p, int* result )
 	return i;
 }
 
+/*
 #if defined(_UNICODE)
 
 static WCHAR *__Utf8_Decode(const char *str)
@@ -110,6 +111,7 @@ static WCHAR *__Utf8_Decode(const char *str)
 }
 #endif
 
+*/
 TCHAR* Chat_DoRtfToTags( char* pszText, SESSION_INFO* si)
 {
 	char *p1;
@@ -302,7 +304,7 @@ TCHAR* Chat_DoRtfToTags( char* pszText, SESSION_INFO* si)
 	#if !defined( _UNICODE )
 		return pszText;
 	#else
-		ptszResult = __Utf8_Decode(pszText);
+		ptszResult = Utf8_Decode(pszText);
 		return ptszResult;
 	#endif
 }
