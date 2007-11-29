@@ -110,10 +110,7 @@ unsigned p2p_getMsgId( HANDLE hContact, int inc )
 }
 
 
-static bool sttCreateListener(
-	filetransfer* ft,
-	directconnection *dc,
-	MimeHeaders& chdrs )
+static bool p2p_createListener(filetransfer* ft, directconnection *dc, MimeHeaders& chdrs)
 {
 	if (MyConnection.extIP == 0) return 0;
 	
@@ -192,6 +189,8 @@ static void sttSavePicture2disk( filetransfer* ft )
 			_write( fileId, ft->fileBuffer, ft->std.currentFileSize );
 			_close( fileId );
 		}
+		else
+			MSN_ShowError( "Unable to save custom smiley file '%s', error %d", fileName, errno );
 		return;
 	}
 
@@ -221,19 +220,24 @@ static void sttSavePicture2disk( filetransfer* ft )
 		if ( *(unsigned short*)ft->fileBuffer == 0xd8ff )
 		{
 			AI.format =  PA_FORMAT_JPEG;
-		//		strcpy( end, "png" );
-		//		remove( AI.filename );
 			strcpy( end, "jpg" ); 
 		}
-		else
+		else if ( *(unsigned*)ft->fileBuffer == 0x474e5089 )
 		{
 			AI.format =  PA_FORMAT_PNG;
-		//		strcpy( end, "jpg" );
-		//		remove( AI.filename );
 			strcpy( end, "png" ); 
 		}
+		else if ( *(unsigned*)ft->fileBuffer == 0x38464947 )
+		{
+			AI.format =  PA_FORMAT_GIF;
+			strcpy( end, "gif" ); 
+		}
+		else 
+		{
+			AI.format =  PA_FORMAT_UNKNOWN;
+			strcpy( end, "unk" ); 
+		}
 
-		MSN_DebugLog( "Avatar for contact %08x saved to file '%s'", AI.hContact, AI.filename );
 		int fileId = _open( AI.filename, _O_CREAT | _O_TRUNC | _O_WRONLY | O_BINARY,  _S_IREAD | _S_IWRITE );
 		if ( fileId > -1 ) {
 			_write( fileId, ft->fileBuffer, ft->std.currentFileSize );
@@ -244,10 +248,12 @@ static void sttSavePicture2disk( filetransfer* ft )
 
 			// Store also avatar hash
 			MSN_SetString( ft->std.hContact, "AvatarSavedHash", szAvatarHash );
+			MSN_DebugLog( "Avatar for contact %08x saved to file '%s'", AI.hContact, AI.filename );
 		}
 		else {
 			MSN_DeleteSetting( ft->std.hContact, "AvatarHash" );
 			MSN_SendBroadcast( AI.hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, &AI, 0 );
+			MSN_ShowError( "Unable to save avatar file '%s', error %d", AI.filename, errno );
 		}	
 	}
 	mir_free(szSha);
@@ -884,9 +890,6 @@ void __cdecl p2p_filePassiveThread( ThreadData* info )
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////
-// p2p_processMsg - processes all MSN P2P incoming messages
-
 static void sttInitFileTransfer(
 	P2P_Header*		hdrdata,
 	ThreadData*		info,
@@ -973,7 +976,7 @@ static void sttInitFileTransfer(
 					if ( ft->fileId == -1 ) 
 					{
 						p2p_sendStatus( ft, 603 );
-						MSN_DebugLog( "Unable to open avatar file '%s', error %d", szFileName, errno );
+						MSN_ShowError("Unable to open avatar file '%s', error %d", szFileName, errno );
 						delete ft;
 					}
 					else
@@ -1142,7 +1145,7 @@ static void sttInitDirectTransfer(
 
 	MSN_DebugLog( "Connection weight His: %d mine: %d", conType.weight, MyConnection.weight);
 	if (conType.weight <= MyConnection.weight)
-		listen = sttCreateListener( ft, dc, chdrs);
+		listen = p2p_createListener( ft, dc, chdrs);
 
 	if ( !listen ) 
 	{
@@ -1332,7 +1335,8 @@ LBL_Close:
 		}
 
 		// no, send a file via server
-		if ( !sttCreateListener( ft, dc, chdrs )) {
+		if ( !p2p_createListener(ft, dc, chdrs)) 
+		{
 			MSN_StartP2PTransferByContact( ft->std.hContact );
 			return;
 		}
@@ -1353,7 +1357,7 @@ LBL_Close:
 		dc->xNonce = mir_strdup( szHashedNonce ? szHashedNonce : szNonce );
 
 		// no, send a file via server
-		if ( !sttCreateListener( ft, dc, chdrs )) {
+		if ( !p2p_createListener( ft, dc, chdrs )) {
 			MSN_StartP2PTransferByContact( ft->std.hContact );
 			return;
 		}
@@ -1371,6 +1375,7 @@ LBL_Close:
 	p2p_sendSlp( ft, tResult, -2, szBody, cbBody );
 	p2p_getMsgId( ft->std.hContact, 1 );
 }
+
 
 static void sttCloseTransfer( P2P_Header* hdrdata, ThreadData* info, MimeHeaders& tFileInfo )
 {
@@ -1391,6 +1396,10 @@ static void sttCloseTransfer( P2P_Header* hdrdata, ThreadData* info, MimeHeaders
 	p2p_sendAck( ft->std.hContact, hdrdata );
 	p2p_unregisterSession( ft );
 }
+
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// p2p_processMsg - processes all MSN P2P incoming messages
 
 void  p2p_processMsg( ThreadData* info,  char* msgbody )
 {

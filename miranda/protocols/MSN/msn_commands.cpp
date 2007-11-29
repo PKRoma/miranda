@@ -87,6 +87,7 @@ void sttSetMirVer( HANDLE hContact, DWORD dwValue )
 		"WLM 8.0",
 		"WLM 8.1",
 		"WLM 8.5",
+		"WLM 9.0",
 		"WLM Unknown",
 	};
 
@@ -123,7 +124,8 @@ static void sttInviteMessage( ThreadData* info, char* msgBody, char* email, char
 	const char* AuthCookie = tFileInfo[ "AuthCookie" ];
 	const char* SessionID = tFileInfo[ "Session-ID" ];
 	const char* SessionProtocol = tFileInfo[ "Session-Protocol" ];
-
+	const char* Connectivity = tFileInfo[ "Connectivity" ];
+ 
 	if ( AppGUID != NULL ) {
 		if ( !strcmp( AppGUID, "{02D3C01F-BF30-4825-A83A-DE7AF41648AA}" )) {
 			MSN_ShowPopup( info->mJoinedContacts[0],
@@ -564,10 +566,6 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 	mir_free( newbody );
 }
 
-
-// FDQ <ml><d n="yahoo.com"><c n="borkra1"/></d></ml>
-// FDQ <ml><d n="yahoo.com"><c n="borkra1" t="32" /></d></ml>
-// ADL <ml><d n="yahoo.com"><c n="borkra1" l="1" t="32"/></d></ml>
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Process Yahoo Find
