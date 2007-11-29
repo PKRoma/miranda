@@ -268,10 +268,13 @@ int IcoLibIconsChanged(WPARAM wParam, LPARAM lParam)
 	return IconsChanged(wParam, lParam);
 }
 
-void RegisterIcoLibIcons() {
-	hEventSkin2IconsChanged = HookEvent_Ex(ME_SKIN2_ICONSCHANGED, IcoLibIconsChanged);
+void RegisterIcoLibIcons()
+{
 	SKINICONDESC sid = { 0 };
 	TCHAR path[MAX_PATH];
+
+	hEventSkin2IconsChanged = HookEvent_Ex(ME_SKIN2_ICONSCHANGED, IcoLibIconsChanged);
+
 	GetModuleFileName(g_hInst, path, MAX_PATH);
 	sid.cbSize = sizeof(SKINICONDESC);
 	sid.cx = sid.cy = 16;

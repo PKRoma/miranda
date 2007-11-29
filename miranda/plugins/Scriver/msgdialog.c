@@ -1569,10 +1569,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			sid.cbSize = sizeof(sid);
 			sid.szModule = SRMMMOD;
 			sid.dwId = 1;
-			BYTE typingNotify = (DBGetContactSettingByte(dat->windowData.hContact, SRMMMOD, SRMSGSET_TYPING,
-				DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)));
-			DBWriteContactSettingByte(dat->windowData.hContact, SRMMMOD, SRMSGSET_TYPING, !typingNotify);
-			sid.flags = typingNotify ? MBF_DISABLED : 0;
+			{
+				BYTE typingNotify = (DBGetContactSettingByte(dat->windowData.hContact, SRMMMOD, SRMSGSET_TYPING,
+					DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)));
+				DBWriteContactSettingByte(dat->windowData.hContact, SRMMMOD, SRMSGSET_TYPING, !typingNotify);
+				sid.flags = typingNotify ? MBF_DISABLED : 0;
+			}
 			ModifyStatusIcon((WPARAM)dat->windowData.hContact, (LPARAM) &sid);
 		}
 		break;
