@@ -42,6 +42,8 @@ void UnloadNewPlugins(void);
 void UnloadUpdateNotifyModule(void);
 void UninitSkin2Icons(void);
 void UninitSkinSounds(void);
+void UnloadNetlibModule(void);
+void UnloadProtocolsModule(void);
 
 HINSTANCE GetInstByAddress( void* codePtr );
 
@@ -408,6 +410,7 @@ static DWORD MsgWaitForMultipleObjectsExWorkaround(DWORD nCount, const HANDLE *p
 static int SystemShutdownProc(WPARAM wParam,LPARAM lParam)
 {
 	UnloadNewPlugins();
+	UnloadProtocolsModule();
 
 	UninitSkin2Icons();
 	UninitSkinSounds();
@@ -420,6 +423,7 @@ static int SystemShutdownProc(WPARAM wParam,LPARAM lParam)
 	UnloadIdleModule();
 	UnloadUpdateNotifyModule();
 
+	UnloadNetlibModule();
 	UnloadLangPackModule();
 	return 0;
 }

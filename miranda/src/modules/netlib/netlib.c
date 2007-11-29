@@ -446,39 +446,33 @@ int NetlibBase64Decode(WPARAM wParam,LPARAM lParam)
 	return 1;
 }
 
-static int NetlibShutdown(WPARAM wParam,LPARAM lParam)
+void UnloadNetlibModule(void)
 {
-	int i;
+	if ( hRecvEvent != NULL ) {
+		int i;
 
-	NetlibSecurityDestroy();
-	NetlibUPnPDestroy();
-	NetlibLogShutdown();
+		NetlibSecurityDestroy();
+		NetlibUPnPDestroy();
+		NetlibLogShutdown();
 
-	DestroyHookableEvent(hRecvEvent);
-	DestroyHookableEvent(hSendEvent);
+		DestroyHookableEvent(hRecvEvent);
+		DestroyHookableEvent(hSendEvent);
 
-	for(i=netlibUserCount;i>0;i--)
-		NetlibCloseHandle((WPARAM)netlibUser[i-1],0);
-	if(netlibUser) mir_free(netlibUser);
+		for ( i = netlibUserCount; i > 0; i-- )
+			NetlibCloseHandle(( WPARAM )netlibUser[i-1], 0 );
+		if( netlibUser )
+			mir_free( netlibUser );
 
-	CloseHandle(hConnectionHeaderMutex);
-	DeleteCriticalSection(&csNetlibUser);
-	WSACleanup();
-	return 0;
-}
-
-static int NetlibModulesLoaded(WPARAM wParam, LPARAM lParam)
-{
-	HookEvent(ME_SYSTEM_SHUTDOWN,NetlibShutdown); // get shutdown hook _after_ all the other plugins
-	return 0;
-}
+		CloseHandle(hConnectionHeaderMutex);
+		DeleteCriticalSection(&csNetlibUser);
+		WSACleanup();
+}	}
 
 int LoadNetlibModule(void)
 {
 	WSADATA wsadata;
 	WSAStartup(MAKEWORD(1,1), &wsadata);
 
-	HookEvent(ME_SYSTEM_MODULESLOADED, NetlibModulesLoaded);
 	HookEvent(ME_OPT_INITIALISE,NetlibOptInitialise);
 
 	InitializeCriticalSection(&csNetlibUser);
