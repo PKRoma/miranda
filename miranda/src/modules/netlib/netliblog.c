@@ -593,7 +593,7 @@ void NetlibLogInit(void)
 void NetlibLogShutdown(void)
 {
 	bIsActive = FALSE;
-	DestroyHookableEvent( hLogEvent );
+	DestroyHookableEvent( hLogEvent ); hLogEvent = NULL;
 	if ( IsWindow( logOptions.hwndOpts ))
 		DestroyWindow( logOptions.hwndOpts );
 	DeleteCriticalSection( &logOptions.cs );

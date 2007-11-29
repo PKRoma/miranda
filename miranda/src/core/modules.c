@@ -329,16 +329,8 @@ int CallHookSubscribers( HANDLE hEvent, WPARAM wParam, LPARAM lParam )
 {
 	int i, returnVal = 0;
 	THook* p = ( THook* )hEvent;
-
-	EnterCriticalSection( &csHooks );
-	if ( pLastHook != p || !pLastHook ) {
-		if ( List_IndexOf(( SortedList* )&hooks, p ) == -1 ) {
-			LeaveCriticalSection( &csHooks );
-			return -1;
-		}
-		pLastHook = p;
-	}
-	LeaveCriticalSection( &csHooks );
+	if ( p == NULL )
+		return -1;
 
 	EnterCriticalSection( &p->csHook );
 
@@ -363,11 +355,28 @@ int CallHookSubscribers( HANDLE hEvent, WPARAM wParam, LPARAM lParam )
 	return returnVal;
 }
 
+static int checkHook( HANDLE hHook )
+{
+	EnterCriticalSection( &csHooks );
+	if ( pLastHook != hHook || !pLastHook ) {
+		if ( List_IndexOf(( SortedList* )&hooks, hHook ) == -1 ) {
+			LeaveCriticalSection( &csHooks );
+			return -1;
+		}
+		pLastHook = hHook;
+	}
+	LeaveCriticalSection( &csHooks );
+	return 0;
+}
+
 static void CALLBACK HookToMainAPCFunc(DWORD dwParam)
 {
 	THookToMainThreadItem* item = ( THookToMainThreadItem* )dwParam;
 
-	item->result = CallHookSubscribers( item->hook, item->wParam, item->lParam );
+	if ( checkHook( item->hook ) == -1 )
+		item->result = -1;
+	else
+		item->result = CallHookSubscribers( item->hook, item->wParam, item->lParam );
 	SetEvent( item->hDoneEvent );
 }
 
@@ -390,7 +399,7 @@ int NotifyEventHooks( HANDLE hEvent, WPARAM wParam, LPARAM lParam )
 		return item.result;
 	}
 
-   return CallHookSubscribers( hEvent, wParam, lParam );
+	return ( checkHook( hEvent ) == -1 ) ? -1 : CallHookSubscribers( hEvent, wParam, lParam );
 }
 
 HANDLE HookEvent( const char* name, MIRANDAHOOK hookProc )

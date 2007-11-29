@@ -455,8 +455,8 @@ void UnloadNetlibModule(void)
 		NetlibUPnPDestroy();
 		NetlibLogShutdown();
 
-		DestroyHookableEvent(hRecvEvent);
-		DestroyHookableEvent(hSendEvent);
+		DestroyHookableEvent(hRecvEvent); hRecvEvent = NULL;
+		DestroyHookableEvent(hSendEvent); hSendEvent = NULL;
 
 		for ( i = netlibUserCount; i > 0; i-- )
 			NetlibCloseHandle(( WPARAM )netlibUser[i-1], 0 );
