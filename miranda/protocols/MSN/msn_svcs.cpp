@@ -612,6 +612,11 @@ static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 			strcpy( AI->filename + len, "jpg" );
 			if ( _access( AI->filename, 0 ) == 0 )
 				AI->format = PA_FORMAT_JPEG;
+			else {
+				strcpy( AI->filename + len, "gif" );
+				if ( _access( AI->filename, 0 ) == 0 )
+					AI->format = PA_FORMAT_GIF;
+			}
 		}
 	}
 	else {

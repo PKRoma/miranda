@@ -700,6 +700,8 @@ void MSN_ShowError( const char* msgtext, ... )
 
 	mir_free(buf1);
 	mir_free(buf2);
+	
+	MSN_DebugLog("%s", tBuffer);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -921,7 +923,7 @@ int filetransfer::create( void )
 	#endif
 
 	if ( fileId == -1 )
-		MSN_DebugLog( "Cannot create file '%s' during a file transfer", std.currentFile );
+		MSN_ShowError( "Cannot create file '%s' during a file transfer", std.currentFile );
 //	else if ( std.currentFileSize != 0 )
 //		_chsize( fileId, std.currentFileSize );
 
@@ -951,7 +953,7 @@ int filetransfer::openNext( void )
 			mir_free( p2p_callID ); p2p_callID = NULL;
 		}
 		else
-			MSN_DebugLog( "Unable to open file '%s', error %d", std.currentFile, errno );
+			MSN_ShowError( "Unable to open file '%s', error %d", std.currentFile, errno );
 	}
 
 	return fileId;
