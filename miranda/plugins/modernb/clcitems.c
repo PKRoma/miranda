@@ -51,10 +51,11 @@ void AddSubcontacts(struct ClcData *dat, struct ClcContact * cont, BOOL showOffl
 	cont->SubAllocated=subcount;
 	i=0;
 	for (j=0; j<subcount; j++) {
-		WORD wStatus=pdnce___GetStatus( cacheEntry );
+		WORD wStatus;
+		
 		hsub=(HANDLE)CallService(MS_MC_GETSUBCONTACT,(WPARAM)cont->hContact,j);
 		cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(hsub);
-
+		wStatus=pdnce___GetStatus( cacheEntry );
 		if (showOfflineHereGroup||(!(DBGetContactSettingByte(NULL,"CLC","MetaHideOfflineSub",SETTING_METAHIDEOFFLINESUB_DEFAULT) && DBGetContactSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT) ) ||
 			wStatus!=ID_STATUS_OFFLINE )
 			//&&
