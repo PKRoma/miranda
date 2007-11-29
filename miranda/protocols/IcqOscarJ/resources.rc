@@ -428,7 +428,7 @@ CAPTION "Manage ICQ Server Contacts"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LTEXT           "Select contacts to store:",IDC_STATIC11,5,5,91,8
-    CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x2c8,5,14,155,
+    CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x2c9,5,14,155,
                     222,WS_EX_CLIENTEDGE
     DEFPUSHBUTTON   "Synchronize",IDOK,238,222,56,14
     PUSHBUTTON      "Cancel",IDCANCEL,298,222,55,14
