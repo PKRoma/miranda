@@ -54,5 +54,12 @@ typedef struct
 }
 	IconItem;
 
+typedef struct
+{
+	char *paramName;
+	DWORD value;
+}
+	TreeItem;
+
 // extracticon.c
 UINT _ExtractIconEx(LPCTSTR lpszFile, int iconIndex, int cxIcon, int cyIcon, HICON *phicon, UINT flags);

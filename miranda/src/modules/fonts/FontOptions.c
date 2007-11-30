@@ -264,34 +264,6 @@ static HTREEITEM sttFindNamedTreeItemAt(HWND hwndTree, HTREEITEM hItem, const TC
 	return NULL;
 }
 
-static BOOL sttGetTreeNodeText( HWND hwndTree, HTREEITEM hItem, char* szBuf, int cbLen )
-{
-	int codepage = CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
-	char *bufPtr = szBuf;
-	while (hItem)
-	{
-		TCHAR tmpBuf[128];
-		TVITEM tvi;
-		tvi.hItem = hItem;
-		tvi.pszText = tmpBuf;
-		tvi.cchTextMax = 128;
-		tvi.mask = TVIF_HANDLE|TVIF_TEXT;
-		TreeView_GetItem(hwndTree, &tvi);
-#ifdef _UNICODE
-		bufPtr += WideCharToMultiByte( codepage, 0, tvi.pszText, lstrlen(tvi.pszText), bufPtr, cbLen-(bufPtr-szBuf), NULL, NULL );
-#else
-		strncpy( bufPtr, tvi.pszText, cbLen-(bufPtr-szBuf) );
-		bufPtr += lstrlen(tvi.pszText);
-#endif
-		if ((bufPtr - szBuf) >= cbLen) break;
-		*bufPtr++ = '@';
-
-		hItem = TreeView_GetParent(hwndTree, hItem);
-	}
-	szBuf[min(bufPtr-szBuf, cbLen-1)] = 0;
-	return TRUE;
-}
-
 static void sttFsuiCreateSettingsTreeNode(HWND hwndTree, const TCHAR *groupName)
 {
 	TCHAR itemName[1024];
@@ -310,7 +282,6 @@ static void sttFsuiCreateSettingsTreeNode(HWND hwndTree, const TCHAR *groupName)
 		if (sectionName = _tcschr(sectionName, '/')) {
 			// one level deeper
 			*sectionName = 0;
-			sectionName++;
 		}
 
 		pItemName = TranslateTS( pItemName );
@@ -319,23 +290,28 @@ static void sttFsuiCreateSettingsTreeNode(HWND hwndTree, const TCHAR *groupName)
 		if (!sectionName || !hItem) {
 			if (!hItem) {
 				TVINSERTSTRUCT tvis = {0};
-				char paramName[MAX_PATH];
+				TreeItem *treeItem = (TreeItem *)mir_alloc(sizeof(TreeItem));
+				treeItem->groupName = sectionName ? NULL : mir_tstrdup(groupName);
+				treeItem->paramName = mir_t2a(itemName);
 
 				tvis.hParent = hSection;
 				tvis.hInsertAfter = TVI_SORT;//TVI_LAST;
 				tvis.item.mask = TVIF_TEXT|TVIF_PARAM;
 				tvis.item.pszText = pItemName;
-				tvis.item.lParam = sectionName ? 0 : (LPARAM)mir_tstrdup(groupName);
+				tvis.item.lParam = (LPARAM)treeItem;
 
 				hItem = TreeView_InsertItem(hwndTree, &tvis);
-				sttGetTreeNodeText( hwndTree, hItem, paramName, sizeof(paramName) );
 
 				ZeroMemory(&tvis.item, sizeof(tvis.item));
 				tvis.item.hItem = hItem;
 				tvis.item.mask = TVIF_HANDLE|TVIF_STATE;
-				tvis.item.state = tvis.item.stateMask = DBGetContactSettingByte(NULL, "FontServiceUI", paramName, TVIS_EXPANDED );
+				tvis.item.state = tvis.item.stateMask = DBGetContactSettingByte(NULL, "FontServiceUI", treeItem->paramName, TVIS_EXPANDED );
 				TreeView_SetItem(hwndTree, &tvis.item);
 			}
+		}
+		if (sectionName) {
+			*sectionName = '/';
+			sectionName++;
 		}
 
 		sectionLevel++;
@@ -347,13 +323,12 @@ static void sttFsuiCreateSettingsTreeNode(HWND hwndTree, const TCHAR *groupName)
 static void sttSaveCollapseState( HWND hwndTree )
 {
 	HTREEITEM hti;
-	int codepage = CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
 	TVITEM tvi;
 
 	hti = TreeView_GetRoot( hwndTree );
 	while( hti != NULL ) {
 		HTREEITEM ht;
-		char paramName[MAX_PATH];
+		TreeItem *treeItem;
 
 		tvi.mask = TVIF_STATE | TVIF_HANDLE | TVIF_CHILDREN | TVIF_PARAM;
 		tvi.hItem = hti;
@@ -361,20 +336,20 @@ static void sttSaveCollapseState( HWND hwndTree )
 		TreeView_GetItem( hwndTree, &tvi );
 
 		if( tvi.cChildren > 0 ) {
-			sttGetTreeNodeText( hwndTree, hti, paramName, sizeof(paramName) );
+			treeItem = (TreeItem *)tvi.lParam;
 			if ( tvi.state & TVIS_EXPANDED )
-				DBWriteContactSettingByte(NULL, "FontServiceUI", paramName, TVIS_EXPANDED );
+				DBWriteContactSettingByte(NULL, "FontServiceUI", treeItem->paramName, TVIS_EXPANDED );
 			else
-				DBWriteContactSettingByte(NULL, "FontServiceUI", paramName, 0 );
+				DBWriteContactSettingByte(NULL, "FontServiceUI", treeItem->paramName, 0 );
 		}
 
 		ht = TreeView_GetChild( hwndTree, hti );
 		if( ht == NULL ) {
 			ht = TreeView_GetNextSibling( hwndTree, hti );
-			if( ht == NULL ) {
-				ht = TreeView_GetParent( hwndTree, hti );
-				if( ht == NULL ) break;
-				ht = TreeView_GetNextSibling( hwndTree, ht );
+			while( ht == NULL ) {
+				hti = TreeView_GetParent( hwndTree, hti );
+				if( hti == NULL ) break;
+				ht = TreeView_GetNextSibling( hwndTree, hti );
 		}	}
 
 		hti = ht;
@@ -419,12 +394,14 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 		case UM_SETFONTGROUP:
 		{
+			TreeItem *treeItem;
 			TCHAR *group_buff = NULL;
 			TVITEM tvi = {0};
 			tvi.hItem = TreeView_GetSelection(GetDlgItem(hwndDlg, IDC_FONTGROUP));
 			tvi.mask = TVIF_HANDLE|TVIF_PARAM;
 			TreeView_GetItem(GetDlgItem(hwndDlg, IDC_FONTGROUP), &tvi);
-			group_buff = (TCHAR *)tvi.lParam;
+			treeItem = (TreeItem *)tvi.lParam;
+			group_buff = treeItem->groupName;
 
 			SendDlgItemMessage(hwndDlg, IDC_FONTLIST, LB_RESETCONTENT, 0, 0);
 			SendDlgItemMessage(hwndDlg, IDC_COLOURLIST, CB_RESETCONTENT, 0, 0);
@@ -1007,8 +984,12 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				case TVN_DELETEITEMA: // no idea why both TVN_SELCHANGEDA/W should be there but let's keep this both too...
 				case TVN_DELETEITEMW:
 					{
-						TCHAR *name = (TCHAR *)(((LPNMTREEVIEW)lParam)->itemOld.lParam);
-						if (name) mir_free(name);
+						TreeItem *treeItem = (TreeItem *)(((LPNMTREEVIEW)lParam)->itemOld.lParam);
+						if (treeItem) {
+							mir_free(treeItem->groupName);
+							mir_free(treeItem->paramName);
+							mir_free(treeItem);
+						}
 						break;
 					}
 				}

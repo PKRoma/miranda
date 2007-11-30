@@ -85,6 +85,13 @@ typedef struct
 }
 	ColourIdList;
 
+typedef struct
+{
+	char *paramName;
+	TCHAR *groupName;
+}
+	TreeItem;
+
 extern FontIdList   font_id_list;
 extern ColourIdList colour_id_list;
 
