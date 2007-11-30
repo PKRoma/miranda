@@ -20,14 +20,14 @@
 // ==========================================================
 
 #include "../ZLib/zlib.h"
-#include "../ZLib/zutil.h"
 #include "FreeImage.h"
 #include "Utilities.h"
+#include "../ZLib/zutil.h"
 
 /**
-Compresses a source buffer into a target buffer, using the ZLib library. 
-Upon entry, target_size is the total size of the destination buffer, 
-which must be at least 0.1% larger than source_size plus 12 bytes. 
+Compresses a source buffer into a target buffer, using the ZLib library.
+Upon entry, target_size is the total size of the destination buffer,
+which must be at least 0.1% larger than source_size plus 12 bytes.
 
 @param target Destination buffer
 @param target_size Size of the destination buffer, in bytes
@@ -36,7 +36,7 @@ which must be at least 0.1% larger than source_size plus 12 bytes.
 @return Returns the actual size of the compressed buffer, returns 0 if an error occured
 @see FreeImage_ZLibUncompress
 */
-DWORD DLL_CALLCONV 
+DWORD DLL_CALLCONV
 FreeImage_ZLibCompress(BYTE *target, DWORD target_size, BYTE *source, DWORD source_size) {
 	uLongf dest_len = (uLongf)target_size;
 
@@ -54,11 +54,11 @@ FreeImage_ZLibCompress(BYTE *target, DWORD target_size, BYTE *source, DWORD sour
 }
 
 /**
-Decompresses a source buffer into a target buffer, using the ZLib library. 
-Upon entry, target_size is the total size of the destination buffer, 
-which must be large enough to hold the entire uncompressed data. 
-The size of the uncompressed data must have been saved previously by the compressor 
-and transmitted to the decompressor by some mechanism outside the scope of this 
+Decompresses a source buffer into a target buffer, using the ZLib library.
+Upon entry, target_size is the total size of the destination buffer,
+which must be large enough to hold the entire uncompressed data.
+The size of the uncompressed data must have been saved previously by the compressor
+and transmitted to the decompressor by some mechanism outside the scope of this
 compression library.
 
 @param target Destination buffer
@@ -68,7 +68,7 @@ compression library.
 @return Returns the actual size of the uncompressed buffer, returns 0 if an error occured
 @see FreeImage_ZLibCompress
 */
-DWORD DLL_CALLCONV 
+DWORD DLL_CALLCONV
 FreeImage_ZLibUncompress(BYTE *target, DWORD target_size, BYTE *source, DWORD source_size) {
 	uLongf dest_len = (uLongf)target_size;
 
@@ -87,10 +87,10 @@ FreeImage_ZLibUncompress(BYTE *target, DWORD target_size, BYTE *source, DWORD so
 }
 
 /**
-Compresses a source buffer into a target buffer, using the ZLib library. 
+Compresses a source buffer into a target buffer, using the ZLib library.
 On success, the target buffer contains a GZIP compatible layout.
-Upon entry, target_size is the total size of the destination buffer, 
-which must be at least 0.1% larger than source_size plus 24 bytes. 
+Upon entry, target_size is the total size of the destination buffer,
+which must be at least 0.1% larger than source_size plus 24 bytes.
 
 @param target Destination buffer
 @param target_size Size of the destination buffer, in bytes
@@ -99,7 +99,7 @@ which must be at least 0.1% larger than source_size plus 24 bytes.
 @return Returns the actual size of the compressed buffer, returns 0 if an error occured
 @see FreeImage_ZLibCompress
 */
-DWORD DLL_CALLCONV 
+DWORD DLL_CALLCONV
 FreeImage_ZLibGZip(BYTE *target, DWORD target_size, BYTE *source, DWORD source_size) {
 	uLongf dest_len = (uLongf)target_size - 12;
 	DWORD crc = crc32(0L, NULL, 0);
@@ -126,11 +126,11 @@ FreeImage_ZLibGZip(BYTE *target, DWORD target_size, BYTE *source, DWORD source_s
 }
 
 /**
-Decompresses a gzipped source buffer into a target buffer, using the ZLib library. 
-Upon entry, target_size is the total size of the destination buffer, 
-which must be large enough to hold the entire uncompressed data. 
-The size of the uncompressed data must have been saved previously by the compressor 
-and transmitted to the decompressor by some mechanism outside the scope of this 
+Decompresses a gzipped source buffer into a target buffer, using the ZLib library.
+Upon entry, target_size is the total size of the destination buffer,
+which must be large enough to hold the entire uncompressed data.
+The size of the uncompressed data must have been saved previously by the compressor
+and transmitted to the decompressor by some mechanism outside the scope of this
 compression library.
 
 @param target Destination buffer
@@ -175,7 +175,7 @@ static int checkheader(z_stream *stream) {
     return Z_OK;
 }
 
-DWORD DLL_CALLCONV 
+DWORD DLL_CALLCONV
 FreeImage_ZLibGUnzip(BYTE *target, DWORD target_size, BYTE *source, DWORD source_size) {
     DWORD src_len  = source_size;
     DWORD dest_len = target_size;
@@ -197,7 +197,7 @@ FreeImage_ZLibGUnzip(BYTE *target, DWORD target_size, BYTE *source, DWORD source
 
                 if (zerr == Z_OK || zerr == Z_STREAM_END)
                     inflateEnd(&stream);
-            } 
+            }
         }
     }
     if (zerr != Z_OK && zerr != Z_STREAM_END) {
@@ -216,7 +216,7 @@ If source is NULL, this function returns the required initial value for the crc.
 @param source_size Size of the source buffer, in bytes
 @return Returns the new crc value
 */
-DWORD DLL_CALLCONV 
+DWORD DLL_CALLCONV
 FreeImage_ZLibCRC32(DWORD crc, BYTE *source, DWORD source_size) {
 
     return crc32(crc, source, source_size);
