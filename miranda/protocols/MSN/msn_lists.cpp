@@ -145,7 +145,7 @@ void MSN_CleanupLists(void)
 	{
 		MsnContact* p = contList[i];
 
-		if ((p->list & (LIST_FL | LIST_RL)) == 0 && (p->list & (LIST_AL | LIST_BL)) != 0) 
+		if ((p->list & (LIST_FL | LIST_RL)) == 0 && (p->list & (LIST_AL | LIST_BL)) != 0 && p->netId != 2) 
 		{
 			MSN_SharingAddDelMember(p->email, (p->list & LIST_AL) ? "Allow" : "Block", "DeleteMember");
 			p->list &= ~(LIST_AL | LIST_BL);
