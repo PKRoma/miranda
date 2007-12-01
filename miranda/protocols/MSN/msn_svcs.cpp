@@ -200,6 +200,7 @@ HANDLE msnSearchId = NULL;
 static void __cdecl MsnSearchAckThread( void* arg )
 {
 	const char* email = (char*)arg;
+
 	if (MSN_ABContactAdd(email, NULL, 1, true))
 	{
 		PROTOSEARCHRESULT isr = {0};
@@ -208,10 +209,11 @@ static void __cdecl MsnSearchAckThread( void* arg )
 		isr.email = (char*)arg;
 
 		MSN_SendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, arg, ( LPARAM )&isr );
+		MSN_SendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, arg, 0 );
 	}
 	else
 	{
-		if (strstr(email, "@yahoo.com") == 0)
+		if (strstr(email, "@yahoo.com") == NULL)
 			MSN_SendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, arg, 0 );
 		else
 		{
