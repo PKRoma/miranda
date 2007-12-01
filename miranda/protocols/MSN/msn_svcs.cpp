@@ -50,7 +50,10 @@ static HANDLE AddToListByEmail( const char *email, DWORD flags )
 
 		if ( msnLoggedIn ) 
 		{
-			int netId = strncmp(email, "tel:", 4) == 0 ? 4 : 1;
+			int netId = Lists_GetNetId(email);
+			if (netId == 0)
+				netId = strncmp(email, "tel:", 4) == 0 ? 4 : 1;
+
 			if (MSN_AddUser( hContact, email, netId, LIST_FL ))
 			{
 				MSN_AddUser( hContact, email, netId, LIST_BL + LIST_REMOVE );
