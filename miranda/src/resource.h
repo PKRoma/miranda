@@ -107,6 +107,7 @@
 #define IDI_TYPING                      274
 #define IDD_UPDATE_NOTIFY               275
 #define IDD_OPT_UPDATENOTIFY            276
+#define IDD_OPT_KEYBINDINGS             277
 #define IDC_SAVE                        1001
 #define IDI_ONTHEPHONE                  1002
 #define IDC_MESSAGE                     1002
@@ -435,7 +436,7 @@
 //
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        277
+#define _APS_NEXT_RESOURCE_VALUE        278
 #define _APS_NEXT_COMMAND_VALUE         40018
 #define _APS_NEXT_CONTROL_VALUE         1708
 #define _APS_NEXT_SYMED_VALUE           101
