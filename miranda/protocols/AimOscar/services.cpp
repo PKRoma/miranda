@@ -71,10 +71,10 @@ void set_status_thread(int status)
 			case ID_STATUS_ONTHEPHONE:
 				{
 					//start_connection(ID_STATUS_AWAY);// if not started
+					broadcast_status(ID_STATUS_AWAY);
 					if(conn.status != ID_STATUS_AWAY)
 					{
-						broadcast_status(ID_STATUS_AWAY);
-						assign_modmsg((char*)&DEFAULT_AWAY_MSG);
+						assign_modmsg(DEFAULT_AWAY_MSG);
 						aim_set_away(conn.hServerConn,conn.seqno,conn.szModeMsg);//set actual away message
 						aim_set_invis(conn.hServerConn,conn.seqno,AIM_STATUS_AWAY,AIM_STATUS_NULL);//away not invis
 					}
