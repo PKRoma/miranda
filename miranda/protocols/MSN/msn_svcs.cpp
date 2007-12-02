@@ -53,7 +53,6 @@ static HANDLE AddToListByEmail( const char *email, DWORD flags )
 			int netId = Lists_GetNetId(email);
 			if (netId == 0)
 				netId = strncmp(email, "tel:", 4) == 0 ? 4 : 1;
-
 			if (MSN_AddUser( hContact, email, netId, LIST_FL ))
 			{
 				MSN_AddUser( hContact, email, netId, LIST_BL + LIST_REMOVE );
@@ -195,7 +194,6 @@ static int MsnAuthDeny(WPARAM wParam,LPARAM lParam)
 	MSN_AddUser( NULL, urlEmail, 1, LIST_BL );
 	return 0;
 }
-
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnBasicSearch - search contacts by e-mail
 HANDLE msnSearchId = NULL;
@@ -204,25 +202,30 @@ static void __cdecl MsnSearchAckThread( void* arg )
 {
 	const char* email = (char*)arg;
 
-	if (MSN_ABContactAdd(email, NULL, 1, true))
+	unsigned res = MSN_ABContactAdd(email, NULL, 1, true);
+	switch(res)
 	{
-		PROTOSEARCHRESULT isr = {0};
-		isr.cbSize = sizeof( isr );
-		isr.nick = (char*)arg;
-		isr.email = (char*)arg;
+		case 0:
+		case 2:
+			{
+				PROTOSEARCHRESULT isr = {0};
+				isr.cbSize = sizeof( isr );
+				isr.nick = (char*)arg;
+				isr.email = (char*)arg;
 
-		MSN_SendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, arg, ( LPARAM )&isr );
-		MSN_SendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, arg, 0 );
-	}
-	else
-	{
-		if (strstr(email, "@yahoo.com") == NULL)
-			MSN_SendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, arg, 0 );
-		else
-		{
-			msnSearchId = arg;
-			MSN_FindYahooUser(email);
-		}
+				MSN_SendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, arg, ( LPARAM )&isr );
+				MSN_SendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, arg, 0 );
+			}
+			break;
+		
+		case 1:
+			if (strstr(email, "@yahoo.com") == NULL)
+				MSN_SendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, arg, 0 );
+			else
+			{
+				msnSearchId = arg;
+				MSN_FindYahooUser(email);
+			}
 	}
 
 	mir_free(arg);

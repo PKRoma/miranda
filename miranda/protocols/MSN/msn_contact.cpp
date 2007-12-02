@@ -155,7 +155,15 @@ bool MSN_AddUser( HANDLE hContact, const char* email, int netId, int flags )
 			if ( !strcmp( email, MyOptions.szEmail ))
 				DBGetContactSettingStringUtf( NULL, msnProtocolName, "Nick", &dbv );
 
-			res = MSN_ABContactAdd(email, dbv.pszVal, netId, false);
+			unsigned res1 = MSN_ABContactAdd(email, dbv.pszVal, netId, false);
+			if (netId == 1 && res1 == 2)
+			{
+				netId = 2;
+				res = MSN_ABContactAdd(email, dbv.pszVal, netId, false) == 0;
+			}
+			else
+				res = (res1 == 0);
+
 			if (res)
 				AddDelUserContList(email, flags, netId, false);
 			else

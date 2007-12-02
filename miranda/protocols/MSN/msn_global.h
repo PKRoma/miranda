@@ -656,7 +656,7 @@ void MSN_ABAddGroup(const char* szGrpName);
 void MSN_ABRenameGroup(const char* szGrpName, const char* szGrpId);
 void MSN_ABUpdateNick(const char* szNick, const char* szCntId);
 void MSN_ABUpdateAttr(const char* szAttr, const int value);
-bool MSN_ABContactAdd(const char* szEmail, const char* szNick, int typeId, const bool search);
+unsigned MSN_ABContactAdd(const char* szEmail, const char* szNick, int typeId, const bool search);
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN plugin options

@@ -206,9 +206,6 @@ bool MSN_SharingAddDelMember(const char* szEmail, const char* szRole, const char
 	ezxml_t node = ezxml_add_child(svchnd, "Id", 0);
 	ezxml_set_txt(node, "0");
 	node = ezxml_add_child(svchnd, "Type", 0);
-	ezxml_set_txt(node, "Messenger");
-	node = ezxml_add_child(svchnd, "ForeignId", 0);
-//	ezxml_set_txt(node, "");
 
 	const char* szMemberName = "";
 	const char* szTypeName = "";
@@ -221,6 +218,7 @@ bool MSN_SharingAddDelMember(const char* szEmail, const char* szRole, const char
 			szMemberName = "PassportMember";
 			szTypeName = "Passport";
 			szAccIdName = "PassportName";
+			ezxml_set_txt(node, "Messenger");
 			break;
 
 		case 4: 
@@ -228,6 +226,7 @@ bool MSN_SharingAddDelMember(const char* szEmail, const char* szRole, const char
 			szTypeName = "Phone";
 			szAccIdName = "PhoneNumber";
 			szEmail = strchr(szEmail, ':') + 1; 
+			ezxml_set_txt(node, "Messenger");
 			break;
 
 		case 2: 
@@ -235,9 +234,12 @@ bool MSN_SharingAddDelMember(const char* szEmail, const char* szRole, const char
 			szMemberName = "EmailMember";
 			szTypeName = "Email";
 			szAccIdName = "Email";
+			ezxml_set_txt(node, netId == 2 ? "Messenger3" : "Messenger2");
 			break;
 	}
 
+	node = ezxml_add_child(svchnd, "ForeignId", 0);
+//	ezxml_set_txt(node, "");
 	ezxml_t memb = ezxml_add_child(tbdy, "memberships", 0);
 	memb = ezxml_add_child(memb, "Membership", 0);
 	node = ezxml_add_child(memb, "MemberRole", 0);
@@ -718,7 +720,7 @@ void MSN_ABUpdateAttr(const char* szAttr, const int value)
 }
 
 
-bool MSN_ABContactAdd(const char* szEmail, const char* szNick, int typeId, const bool search)
+unsigned MSN_ABContactAdd(const char* szEmail, const char* szNick, int typeId, const bool search)
 {
 	SSLAgent mAgent;
 
@@ -802,26 +804,36 @@ bool MSN_ABContactAdd(const char* szEmail, const char* szNick, int typeId, const
 	mir_free(reqHdr);
 	free(szData);
 
-	if (tResult != NULL && status == 200)
+	if (tResult != NULL)
 	{
 		ezxml_t xmlm = ezxml_parse_str(htmlbody, strlen(htmlbody));
-		
-		const char* szContId = ezxml_txt(ezxml_get(xmlm, "soap:Body", 0, "ABContactAddResponse", 0, 
-			"ABContactAddResult", 0, "guid", -1));
-
-		UpdateABHost(xmlm, abUrl);
-
-		if (search) 
-			MSN_ABAddDelContactGroup(szContId , NULL, "ABContactDelete");
-		else
+		if (status == 200)
 		{
-			HANDLE hContact = MSN_HContactFromEmail( szEmail, szNick ? szNick : szEmail, 1, 0 );
-			MSN_SetString(hContact, "ID", szContId);
+		
+			const char* szContId = ezxml_txt(ezxml_get(xmlm, "soap:Body", 0, "ABContactAddResponse", 0, 
+				"ABContactAddResult", 0, "guid", -1));
+
+			UpdateABHost(xmlm, abUrl);
+
+			if (search) 
+				MSN_ABAddDelContactGroup(szContId , NULL, "ABContactDelete");
+			else
+			{
+				HANDLE hContact = MSN_HContactFromEmail( szEmail, szNick ? szNick : szEmail, 1, 0 );
+				MSN_SetString(hContact, "ID", szContId);
+			}
+			status = 0;
+		}
+		else 
+		{
+			const char* szErr = ezxml_txt(ezxml_get(xmlm, "soap:Body", 0, "soap:Fault", 0, 
+				"detail", 0, "errorcode", -1));
+			status = strcmp(szErr, "EmailDomainIsFederated") ? 1 : 2;
 		}
 		ezxml_free(xmlm);
 	}
 	mir_free(tResult);
 	mir_free(abUrl);
 
-	return status == 200;
+	return status;
 }
