@@ -258,7 +258,7 @@ LBL_Exit:
 		}
 	}
 
-	MSN_DebugLog( "Thread [%d] ending now", GetCurrentThreadId() );
+	MSN_DebugLog( "Thread [%08X] ending now", GetCurrentThreadId() );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
