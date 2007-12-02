@@ -7,13 +7,6 @@ void broadcast_status(int status)
 	conn.status=status;
 	if(conn.status==ID_STATUS_OFFLINE)
 	{
-		if(conn.hDirectBoundPort&&!conn.freeing_DirectBoundPort)
-		{
-			conn.freeing_DirectBoundPort=1;
-			Netlib_CloseHandle(conn.hDirectBoundPort);
-			conn.hDirectBoundPort=0;
-			conn.freeing_DirectBoundPort=0;
-		}
 		if(conn.hServerPacketRecver)
 		{
 			Netlib_CloseHandle(conn.hServerPacketRecver);
@@ -23,6 +16,13 @@ void broadcast_status(int status)
 		{
 			Netlib_CloseHandle(conn.hServerConn);
 			conn.hServerConn=0;
+		}
+		if(conn.hDirectBoundPort&&!conn.freeing_DirectBoundPort)
+		{
+			conn.freeing_DirectBoundPort=1;
+			Netlib_CloseHandle(conn.hDirectBoundPort);
+			conn.hDirectBoundPort=0;
+			conn.freeing_DirectBoundPort=0;
 		}
 		conn.idle=0;
 		conn.instantidle=0;

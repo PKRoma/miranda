@@ -71,10 +71,10 @@ void set_status_thread(int status)
 			case ID_STATUS_ONTHEPHONE:
 				{
 					//start_connection(ID_STATUS_AWAY);// if not started
-					if(conn.status!=ID_STATUS_AWAY)
+					if(conn.status != ID_STATUS_AWAY)
 					{
-						assign_modmsg((char*)&DEFAULT_AWAY_MSG);
 						broadcast_status(ID_STATUS_AWAY);
+						assign_modmsg((char*)&DEFAULT_AWAY_MSG);
 						aim_set_away(conn.hServerConn,conn.seqno,conn.szModeMsg);//set actual away message
 						aim_set_invis(conn.hServerConn,conn.seqno,AIM_STATUS_AWAY,AIM_STATUS_NULL);//away not invis
 					}
@@ -307,13 +307,10 @@ static int SetAwayMsg(WPARAM wParam, LPARAM lParam)
 			{
 				if(!lParam)
 					lParam=(int)&DEFAULT_AWAY_MSG;
+
 				assign_modmsg((char*)lParam);
-				if(conn.state==1)
-				{
-					broadcast_status(ID_STATUS_AWAY);
-					aim_set_away(conn.hServerConn,conn.seqno,conn.szModeMsg);//set actual away message
-					aim_set_invis(conn.hServerConn,conn.seqno,AIM_STATUS_AWAY,AIM_STATUS_NULL);//away not invis
-				}
+				aim_set_away(conn.hServerConn,conn.seqno,conn.szModeMsg);//set actual away message
+//				aim_set_invis(conn.hServerConn,conn.seqno,AIM_STATUS_AWAY,AIM_STATUS_NULL);//away not invis
 			}
 	}
 	LeaveCriticalSection(&modeMsgsMutex);
@@ -861,52 +858,52 @@ void CreateServices()
 	char service_name[300];
 	CLISTMENUITEM mi;
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PS_GETSTATUS);
-	CreateServiceFunction(service_name,GetStatus);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,GetStatus);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PS_SETSTATUS);
-	CreateServiceFunction(service_name,SetStatus);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,SetStatus);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PS_GETCAPS);
-	CreateServiceFunction(service_name,GetCaps);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,GetCaps);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PS_GETNAME);
-	CreateServiceFunction(service_name,GetName);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,GetName);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PS_LOADICON);
-	CreateServiceFunction(service_name,LoadIcons);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,LoadIcons);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PSS_MESSAGE);
-	CreateServiceFunction(service_name,SendMsg);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,SendMsg);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PSS_MESSAGE"W");
-	CreateServiceFunction(service_name,SendMsgW);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,SendMsgW);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PSR_MESSAGE);
-    CreateServiceFunction(service_name, RecvMsg);
+    conn.services[conn.services_size++]=CreateServiceFunction(service_name, RecvMsg);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PSS_GETAWAYMSG);
-    CreateServiceFunction(service_name, GetAwayMsg);
+    conn.services[conn.services_size++]=CreateServiceFunction(service_name, GetAwayMsg);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PS_SETAWAYMSG);
-    CreateServiceFunction(service_name, SetAwayMsg);
+    conn.services[conn.services_size++]=CreateServiceFunction(service_name, SetAwayMsg);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PSR_AWAYMSG);
-	CreateServiceFunction(service_name, RecvAwayMsg);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name, RecvAwayMsg);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PS_BASICSEARCH);
-	CreateServiceFunction(service_name,BasicSearch);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,BasicSearch);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PS_ADDTOLIST);
-	CreateServiceFunction(service_name,AddToList);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,AddToList);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PSS_FILE);
-	CreateServiceFunction(service_name,SendFile);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,SendFile);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PSR_FILE);
-	CreateServiceFunction(service_name,RecvFile);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,RecvFile);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PSS_FILEALLOW);
-	CreateServiceFunction(service_name,AllowFile);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,AllowFile);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PSS_FILEDENY);
-	CreateServiceFunction(service_name,DenyFile);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,DenyFile);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PSS_FILECANCEL);
-	CreateServiceFunction(service_name,CancelFile);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,CancelFile);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PSS_USERISTYPING);
-	CreateServiceFunction(service_name,UserIsTyping);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,UserIsTyping);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PSS_AUTHREQUEST);
-	CreateServiceFunction(service_name,AuthRequest);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,AuthRequest);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PS_GETAVATARINFO);
-	CreateServiceFunction(service_name,GetAvatarInfo);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,GetAvatarInfo);
 	
 	//Do not put any services below HTML get away message!!!
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/ManageAccount");
-	CreateServiceFunction(service_name,ManageAccount);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,ManageAccount);
 	memset( &mi, 0, sizeof( mi ));
 	mi.pszPopupName = AIM_PROTOCOL_NAME;
     mi.cbSize = sizeof( mi );
@@ -919,7 +916,7 @@ void CreateServices()
 	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/EditProfile");
-	CreateServiceFunction(service_name,EditProfile);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,EditProfile);
 	memset( &mi, 0, sizeof( mi ));
 	mi.pszPopupName = AIM_PROTOCOL_NAME;
     mi.cbSize = sizeof( mi );
@@ -932,7 +929,7 @@ void CreateServices()
 	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/CheckMail");
-	CreateServiceFunction(service_name,CheckMail);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,CheckMail);
 	memset( &mi, 0, sizeof( mi ));
 	mi.pszPopupName = AIM_PROTOCOL_NAME;
     mi.cbSize = sizeof( mi );
@@ -945,7 +942,7 @@ void CreateServices()
 	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/InstantIdle");
-	CreateServiceFunction(service_name,InstantIdle);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,InstantIdle);
 	memset( &mi, 0, sizeof( mi ));
 	mi.pszPopupName = AIM_PROTOCOL_NAME;
     mi.cbSize = sizeof( mi );
@@ -958,7 +955,7 @@ void CreateServices()
 	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/GetHTMLAwayMsg");
-	CreateServiceFunction(service_name,GetHTMLAwayMsg);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,GetHTMLAwayMsg);
 	ZeroMemory(&mi,sizeof(mi));
 	mi.pszPopupName=Translate("Read &HTML Away Message");
 	mi.cbSize=sizeof(mi);
@@ -972,7 +969,7 @@ void CreateServices()
 	conn.hHTMLAwayContextMenuItem=(HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
 	
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/GetProfile");
-	CreateServiceFunction(service_name,GetProfile);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,GetProfile);
 	ZeroMemory(&mi,sizeof(mi));
 	mi.pszPopupName=Translate("Read Profile");
 	mi.cbSize=sizeof(mi);
@@ -986,7 +983,7 @@ void CreateServices()
 	CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/AddToServerList");
-	CreateServiceFunction(service_name,AddToServerList);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,AddToServerList);
 	ZeroMemory(&mi,sizeof(mi));
 	mi.pszPopupName=Translate("Add To Server List");
 	mi.cbSize=sizeof(mi);

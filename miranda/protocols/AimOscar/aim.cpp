@@ -16,7 +16,7 @@ PLUGININFOEX pluginInfo={
 	0,		//doesn't replace anything built-in
     {0xb4ef58c4, 0x4458, 0x4e47, { 0xa7, 0x67, 0x5c, 0xae, 0xe5, 0xe7, 0xc, 0x81 }} //{B4EF58C4-4458-4e47-A767-5CAEE5E70C81}
 };
-oscar_data conn;
+oscar_data conn = {0};
 file_transfer* fu;
 MD5_INTERFACE  md5i;
 extern "C" __declspec(dllexport) bool WINAPI DllMain(HINSTANCE hinstDLL,DWORD /*fdwReason*/,LPVOID /*lpvReserved*/)
@@ -229,6 +229,8 @@ extern "C" int __declspec(dllexport) Unload(void)
 
 	for(unsigned int i=0;i<conn.hookEvent_size;i++)
 		UnhookEvent(conn.hookEvent[i]);
+	for(unsigned int j=0;j<conn.services_size;j++)
+		DestroyServiceFunction(conn.services[j]);
 	DeleteCriticalSection(&modeMsgsMutex);
 	DeleteCriticalSection(&statusMutex);
 	DeleteCriticalSection(&connectionMutex);
