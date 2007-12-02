@@ -206,6 +206,9 @@ bool MSN_SharingAddDelMember(const char* szEmail, const char* szRole, const char
 	ezxml_t node = ezxml_add_child(svchnd, "Id", 0);
 	ezxml_set_txt(node, "0");
 	node = ezxml_add_child(svchnd, "Type", 0);
+	ezxml_set_txt(node, "Messenger");
+	node = ezxml_add_child(svchnd, "ForeignId", 0);
+//	ezxml_set_txt(node, "");
 
 	const char* szMemberName = "";
 	const char* szTypeName = "";
@@ -218,7 +221,6 @@ bool MSN_SharingAddDelMember(const char* szEmail, const char* szRole, const char
 			szMemberName = "PassportMember";
 			szTypeName = "Passport";
 			szAccIdName = "PassportName";
-			ezxml_set_txt(node, "Messenger");
 			break;
 
 		case 4: 
@@ -226,7 +228,6 @@ bool MSN_SharingAddDelMember(const char* szEmail, const char* szRole, const char
 			szTypeName = "Phone";
 			szAccIdName = "PhoneNumber";
 			szEmail = strchr(szEmail, ':') + 1; 
-			ezxml_set_txt(node, "Messenger");
 			break;
 
 		case 2: 
@@ -234,12 +235,9 @@ bool MSN_SharingAddDelMember(const char* szEmail, const char* szRole, const char
 			szMemberName = "EmailMember";
 			szTypeName = "Email";
 			szAccIdName = "Email";
-			ezxml_set_txt(node, netId == 2 ? "Messenger3" : "Messenger2");
 			break;
 	}
 
-	node = ezxml_add_child(svchnd, "ForeignId", 0);
-//	ezxml_set_txt(node, "");
 	ezxml_t memb = ezxml_add_child(tbdy, "memberships", 0);
 	memb = ezxml_add_child(memb, "Membership", 0);
 	node = ezxml_add_child(memb, "MemberRole", 0);
