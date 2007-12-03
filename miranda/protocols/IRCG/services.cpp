@@ -273,7 +273,8 @@ static int Service_FileSend(WPARAM wParam,LPARAM lParam)
 			// is it an reverse filetransfer (receiver acts as server)
 			if (dci->bReverse) {
 				TCHAR szTemp[256];
-				PostIrcMessage( _T("/CTCP %s DCC SEND ") _T(TCHAR_STR_PARAM) _T(" 200 0 %u %u"), dci->sContactName.c_str(), sFileWithQuotes.c_str(), dci->dwSize, dcc->iToken);
+				PostIrcMessage( _T("/CTCP %s DCC SEND %s 200 0 %u %u"), 
+					dci->sContactName.c_str(), sFileWithQuotes.c_str(), dci->dwSize, dcc->iToken);
 
 				mir_sntprintf(szTemp, SIZEOF(szTemp), 
 					TranslateT("DCC reversed file transfer request sent to %s [%s]"), 
