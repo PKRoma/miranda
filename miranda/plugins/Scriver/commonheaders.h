@@ -76,6 +76,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_fontservice.h>
 #include <m_icoLib.h>
 #include <m_avatars.h>
+#include <m_keybindings.h>
 
 #include "globals.h"
 #include "msgs.h"

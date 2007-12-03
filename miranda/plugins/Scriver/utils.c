@@ -32,6 +32,7 @@ static unsigned hookNum = 0;
 static unsigned serviceNum = 0;
 static HANDLE* hHooks = NULL;
 static HANDLE* hServices = NULL;
+enum KB_ACTIONS {KB_PREV_TAB = 1, KB_NEXT_TAB};
 
 HANDLE HookEvent_Ex(const char *name, MIRANDAHOOK hook) {
 	hookNum ++;
@@ -391,9 +392,28 @@ void InputAreaContextMenu(HWND hwnd, WPARAM wParam, LPARAM lParam, HANDLE hConta
 }
 
 int InputAreaShortcuts(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, CommonWindowData *windowData) {
+
 	BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
 	BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
 	BOOL isCtrl = (GetKeyState(VK_CONTROL) & 0x8000) && !isAlt;
+
+	if (msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN) {
+		KEYBINDINGDESC desc;
+		ZeroMemory(&desc, sizeof(desc));
+		desc.cbSize = sizeof(desc);
+		desc.pszActionGroup = "Scriver";
+		desc.key[0] = wParam | (isShift ? KB_SHIFT_FLAG : 0) | (isAlt ? KB_ALT_FLAG : 0) | (isCtrl ? KB_CTRL_FLAG : 0);
+		if (CallService(MS_KEYBINDINGS_GET, 0, (LPARAM) &desc) == 0) {
+			switch (desc.action) {
+				case KB_PREV_TAB:
+					SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATENEXT, 0, (LPARAM)GetParent(hwnd));
+					return FALSE;
+				case KB_NEXT_TAB:
+					SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEPREV, 0, (LPARAM)GetParent(hwnd));
+					return FALSE;
+			}
+		}
+	}
 	switch (msg) {
 		case WM_KEYDOWN:
 		{
@@ -539,4 +559,30 @@ int InputAreaShortcuts(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, Common
 	}
 	return -1;
 
+}
+
+void RegisterKeyBindings() {
+	KEYBINDINGDESC desc;
+	ZeroMemory(&desc, sizeof(desc));
+	desc.cbSize = sizeof(desc);
+	#if defined( _UNICODE )
+	desc.flags = KBDF_UNICODE;
+	#else
+	desc.flags = 0;
+	#endif
+	desc.ptszSection = _T("Scriver/Navigation");
+	desc.pszActionGroup = "Scriver";
+
+	desc.action = KB_PREV_TAB;
+	desc.ptszActionName = _T("Next Tab");
+	desc.key[0] = VK_RIGHT | KB_ALT_FLAG;
+	desc.key[1] = VK_TAB | KB_CTRL_FLAG;
+	desc.key[2] = VK_NEXT | KB_CTRL_FLAG;
+	CallService(MS_KEYBINDINGS_REGISTER, 0, (LPARAM) &desc);
+	desc.action = KB_NEXT_TAB;
+	desc.ptszActionName = _T("Previous Tab");
+	desc.key[0] = VK_LEFT | KB_ALT_FLAG;
+	desc.key[1] = VK_TAB | KB_CTRL_FLAG | KB_SHIFT_FLAG;
+	desc.key[2] = VK_PRIOR | KB_CTRL_FLAG;
+	CallService(MS_KEYBINDINGS_REGISTER, 0, (LPARAM) &desc);
 }

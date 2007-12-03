@@ -43,6 +43,8 @@ extern char* GetRichTextRTF(HWND hwnd);
 extern char* GetRichTextEncoded(HWND hwnd, int codepage);
 extern int SetRichTextRTF(HWND hwnd, const char *text);
 extern int SetRichTextEncoded(HWND hwnd, const char *text, int codepage);
+
 extern void InputAreaContextMenu(HWND hwnd, WPARAM wParam, LPARAM lParam, HANDLE hContact);
+extern void RegisterKeyBindings();
 extern int InputAreaShortcuts(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, CommonWindowData *windowData);
 #endif

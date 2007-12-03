@@ -519,6 +519,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
    ReloadGlobals();
    RegisterIcoLibIcons();
    RegisterFontServiceFonts();
+   RegisterKeyBindings();
    LoadGlobalIcons();
    LoadMsgLogIcons();
    ZeroMemory(&mi, sizeof(mi));
