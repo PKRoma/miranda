@@ -36,6 +36,11 @@ static HANDLE   hMyAvatarsFolder = 0;
 static HANDLE   hGlobalAvatarFolder = 0;
 static HANDLE   hLoaderEvent = 0;
 static HANDLE   hLoaderThread = 0;
+static HANDLE	hOptInit = 0;
+static HANDLE   hModulesLoaded = 0;
+static HANDLE	hPresutdown = 0;
+static HANDLE	hOkToExit = 0;
+
 
 int g_protocount = 0;
 
@@ -1956,6 +1961,10 @@ static int DestroyServicesAndEvents()
     UnhookEvent(hContactSettingChanged);
     UnhookEvent(hProtoAckHook);
 	UnhookEvent(hUserInfoInitHook);
+	UnhookEvent(hOptInit);
+	UnhookEvent(hModulesLoaded);
+	UnhookEvent(hPresutdown);
+    UnhookEvent(hOkToExit);
 
     DestroyServiceFunction(hSvc_MS_AV_GETAVATARBITMAP);
     DestroyServiceFunction(hSvc_MS_AV_PROTECTAVATAR);
@@ -1969,6 +1978,7 @@ static int DestroyServicesAndEvents()
     DestroyServiceFunction(hSvc_MS_AV_LOADBITMAP32);
     DestroyServiceFunction(hSvc_MS_AV_SAVEBITMAP);
     DestroyServiceFunction(hSvc_MS_AV_CANSAVEBITMAP);
+    DestroyServiceFunction(hSvc_MS_AV_RESIZEBITMAP);
 
     DestroyHookableEvent(hEventChanged);
 	DestroyHookableEvent(hEventContactAvatarChanged);
@@ -2090,8 +2100,8 @@ static int ModulesLoaded(WPARAM wParam, LPARAM lParam)
         CallService(MS_UPDATE_REGISTER, 0, (LPARAM)&upd);
 	}
 
-	HookEvent(ME_SYSTEM_PRESHUTDOWN, ShutdownProc);
-    HookEvent(ME_SYSTEM_OKTOEXIT, OkToExitProc);
+	hPresutdown = HookEvent(ME_SYSTEM_PRESHUTDOWN, ShutdownProc);
+    hOkToExit = HookEvent(ME_SYSTEM_OKTOEXIT, OkToExitProc);
 	hUserInfoInitHook = HookEvent(ME_USERINFO_INITIALISE, OnDetailsInit);
 
 	return 0;
@@ -2408,8 +2418,8 @@ static int LoadAvatarModule()
 	InitializeCriticalSection(&cachecs);
     InitializeCriticalSection(&alloccs);
 
-	HookEvent(ME_OPT_INITIALISE, OptInit);
-    HookEvent(ME_SYSTEM_MODULESLOADED, ModulesLoaded);
+	hOptInit = HookEvent(ME_OPT_INITIALISE, OptInit);
+    hModulesLoaded = HookEvent(ME_SYSTEM_MODULESLOADED, ModulesLoaded);
     hContactSettingChanged = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, ContactSettingChanged);
     hEventDeleted = HookEvent(ME_DB_CONTACT_DELETED, ContactDeleted);
     hProtoAckHook = HookEvent(ME_PROTO_ACK, ProtocolAck);
