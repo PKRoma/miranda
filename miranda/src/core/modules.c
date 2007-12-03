@@ -119,6 +119,7 @@ int LoadButtonModule(void);		// window class: button class
 int LoadContactsModule(void);    // random: contact
 int LoadFontserviceModule(void); // ui: font manager
 int LoadIcoLibModule(void);   // ui: icons manager
+int LoadKeyBindingsModule(void);   // ui: key bindings
 int LoadUpdateNotifyModule(void); // random: update notification
 
 static int LoadDefaultModules(void)
@@ -131,6 +132,7 @@ static int LoadDefaultModules(void)
 	if (LoadUtilsModule()) return 1;		//order not important for this, but no dependencies and no point in pluginising
 	if (LoadNewPluginsModuleInfos()) return 1;
 	if (LoadProtocolsModule()) return 1;
+	if (LoadKeyBindingsModule()) return 1;
 	if (LoadIcoLibModule()) return 1;
 	if (LoadSkinModule()) return 1;
 	if (LoadButtonModule()) return 1;

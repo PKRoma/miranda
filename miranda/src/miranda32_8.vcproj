@@ -3682,6 +3682,18 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="keybindings"
+				>
+				<File
+					RelativePath=".\modules\keybindings\keybindings.c"
+					>
+				</File>
+				<File
+					RelativePath=".\modules\keybindings\keybindings.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Resources"

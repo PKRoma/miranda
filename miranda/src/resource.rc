@@ -1369,6 +1369,26 @@ BEGIN
                     21,35,227,10
 END
 
+IDD_OPT_KEYBINDINGS DIALOGEX 0, 0, 316, 251
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "Key Bindings",IDC_STATIC,0,0,315,250
+    CONTROL         "Tree1",IDC_CATEGORYLIST,"SysTreeView32",TVS_HASBUTTONS |
+                    TVS_HASLINES | TVS_LINESATROOT | TVS_SHOWSELALWAYS |
+                    TVS_FULLROWSELECT | WS_BORDER | WS_TABSTOP,4,10,102,235
+	LTEXT           "Shortcut:",IDC_STATIC,109,10,146,12
+	EDITTEXT         IDC_PREVIEW,109,21,146,12,WS_BORDER
+	CONTROL         "Add",IDC_ADD,"MButtonClass",WS_TABSTOP,260,19,
+                    50,14
+	LTEXT           "",IDC_MESSAGE,109,37,201,41
+	LISTBOX         IDC_LIST,109,80,146,52,WS_VSCROLL | WS_TABSTOP | LBS_NOTIFY
+    CONTROL         "Remove",IDC_DELETE,"MButtonClass",WS_TABSTOP,260,80,
+                    50,14
+	PUSHBUTTON      "Undo Changes",IDC_BTN_UNDO,109,140,96,14
+    PUSHBUTTON      "Reset To Default",IDC_BTN_RESET,214,140,96,14
+END
 
 /////////////////////////////////////////////////////////////////////////////
 //
