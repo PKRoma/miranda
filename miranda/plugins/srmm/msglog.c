@@ -520,18 +520,21 @@ void LoadMsgLogIcons(void)
 	for (i = 0; i < SIZEOF(pLogIconBmpBits); i++) {
 		switch (i) {
 			case LOGICON_MSG_IN:
-				hIcon = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_INCOMING));
+				hIcon = LoadImage(g_hInst, MAKEINTRESOURCE(IDI_INCOMING), IMAGE_ICON, 0, 0, 0);
 				ImageList_AddIcon(g_hImageList, hIcon);
+				DestroyIcon(hIcon);
 				hIcon = ImageList_GetIcon(g_hImageList, LOGICON_MSG_IN, ILD_NORMAL);
 				break;
 			case LOGICON_MSG_OUT:
-				hIcon = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_OUTGOING));
+				hIcon = LoadImage(g_hInst, MAKEINTRESOURCE(IDI_OUTGOING), IMAGE_ICON, 0, 0, 0);
 				ImageList_AddIcon(g_hImageList, hIcon);
+				DestroyIcon(hIcon);
 				hIcon = ImageList_GetIcon(g_hImageList, LOGICON_MSG_OUT, ILD_NORMAL);
 				break;
 			case LOGICON_MSG_NOTICE:
-				hIcon = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_NOTICE));
+				hIcon = LoadImage(g_hInst, MAKEINTRESOURCE(IDI_NOTICE), IMAGE_ICON, 0, 0, 0);
 				ImageList_AddIcon(g_hImageList, hIcon);
+				DestroyIcon(hIcon);
 				hIcon = ImageList_GetIcon(g_hImageList, LOGICON_MSG_NOTICE, ILD_NORMAL);
 				break;
 		}

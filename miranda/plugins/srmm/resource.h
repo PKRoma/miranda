@@ -2,6 +2,7 @@
 // Microsoft Visual C++ generated include file.
 // Used by resource.rc
 //
+#define IDC_STATIC                      -1
 #define IDD_MSGSENDERROR                102
 #define IDR_CONTEXT                     180
 #define IDC_DROP                        183
