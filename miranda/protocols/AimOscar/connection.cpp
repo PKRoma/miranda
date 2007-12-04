@@ -307,6 +307,8 @@ void __cdecl aim_mail_negotiation()
 				else if(flap.cmp(0x04))
 				{
 					Netlib_CloseHandle(hServerPacketRecver);
+					Netlib_CloseHandle(conn.hMailConn);
+					conn.hMailConn=0;
 					LOG("Mail Server Connection has ended");
 					return;
 				}
@@ -315,6 +317,8 @@ void __cdecl aim_mail_negotiation()
 	}
 	LOG("Mail Server Connection has ended");
 	Netlib_CloseHandle(hServerPacketRecver);
+	Netlib_CloseHandle(conn.hMailConn);
+	conn.hMailConn=0;
 }
 void __cdecl aim_avatar_negotiation()
 {
