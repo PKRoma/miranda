@@ -400,10 +400,12 @@ static void buildTree(HWND hwnd) {
 
 static void refreshListBox(HWND hwnd) {
 	int count = 0;
+	BOOL nonDefault = FALSE;
 	SendDlgItemMessage(hwnd, IDC_LIST, LB_RESETCONTENT, 0, 0);
 	if (currentTreeItem->keyBinding != NULL) {
 		int i;
 		for (i=0; i<5; i++) {
+			if (currentTreeItem->keyBinding->tempKey[i] != currentTreeItem->keyBinding->defaultKey[i]) nonDefault = TRUE;
 			if (currentTreeItem->keyBinding->tempKey[i] != 0) {
 				SendDlgItemMessage(hwnd, IDC_LIST, LB_ADDSTRING, 0, (LPARAM)getKeyName(currentTreeItem->keyBinding->tempKey[i]));
 				count++;
@@ -412,8 +414,10 @@ static void refreshListBox(HWND hwnd) {
 	}
 	EnableWindow(GetDlgItem(hwnd, IDC_PREVIEW), currentTreeItem->keyBinding != NULL && count < 5);
 	SetDlgItemText(hwnd, IDC_PREVIEW, _T(""));
+	SetDlgItemText(hwnd, IDC_MESSAGE, _T(""));
 	EnableWindow(GetDlgItem(hwnd, IDC_ADD), FALSE);
 	EnableWindow(GetDlgItem(hwnd, IDC_DELETE), FALSE);
+	EnableWindow(GetDlgItem(hwnd, IDC_BTN_RESET), nonDefault);
 }
 
 BOOL CALLBACK DlgProcKeyBindingsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -471,6 +475,7 @@ BOOL CALLBACK DlgProcKeyBindingsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			if (currentTreeItem->keyBinding != NULL) {
 				int i;
 				for (i = 0; i < 5; i++) {
+					removeTempKeyBinding(currentTreeItem->keyBinding->actionGroupName, currentTreeItem->keyBinding->defaultKey[i]);
 					currentTreeItem->keyBinding->tempKey[i] = currentTreeItem->keyBinding->defaultKey[i];
 				}
 			}
@@ -481,6 +486,7 @@ BOOL CALLBACK DlgProcKeyBindingsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			if (currentTreeItem->keyBinding != NULL) {
 				int i;
 				for (i = 0; i < 5; i++) {
+					removeTempKeyBinding(currentTreeItem->keyBinding->actionGroupName, currentTreeItem->keyBinding->key[i]);
 					currentTreeItem->keyBinding->tempKey[i] = currentTreeItem->keyBinding->key[i];
 				}
 			}
