@@ -420,6 +420,8 @@ extern "C" int __declspec( dllexport ) Unload( void )
 
 	mir_free( msnPreviousUUX );
 	mir_free( msnExternalIP );
+	mir_free( abchMigrated );
+
 	FreeAuthTokens();
 
 	return 0;

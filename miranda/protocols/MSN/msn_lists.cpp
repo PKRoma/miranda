@@ -225,6 +225,7 @@ void MSN_CreateContList(void)
 		if (!newdom) sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz, lastds ? "</d>" : "</t>" );
 	}
 	if (sz) sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz,  "</ml>" );
+	mir_free(used);
 	LeaveCriticalSection(&csLists);
 
 	msnNsThread->sendPacket("ADL", "%d\r\n%s", sz, cxml);
