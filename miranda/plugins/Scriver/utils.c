@@ -32,7 +32,9 @@ static unsigned hookNum = 0;
 static unsigned serviceNum = 0;
 static HANDLE* hHooks = NULL;
 static HANDLE* hServices = NULL;
-enum KB_ACTIONS {KB_PREV_TAB = 1, KB_NEXT_TAB};
+enum KB_ACTIONS {KB_PREV_TAB = 1, KB_NEXT_TAB, KB_SWITCHTOOLBAR,
+				 KB_SWITCHSTATUSBAR, KB_SWITCHTITLEBAR, KB_MINIMIZE, KB_CLOSE, KB_CLEAR_LOG,
+				 KB_TAB1, KB_TAB2, KB_TAB3, KB_TAB4, KB_TAB5, KB_TAB6, KB_TAB7, KB_TAB8, KB_TAB9};
 
 HANDLE HookEvent_Ex(const char *name, MIRANDAHOOK hook) {
 	hookNum ++;
@@ -406,10 +408,39 @@ int InputAreaShortcuts(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, Common
 		if (CallService(MS_KEYBINDINGS_GET, 0, (LPARAM) &desc) == 0) {
 			switch (desc.action) {
 				case KB_PREV_TAB:
-					SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATENEXT, 0, (LPARAM)GetParent(hwnd));
+					SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEPREV, 0, (LPARAM)GetParent(hwnd));
 					return FALSE;
 				case KB_NEXT_TAB:
-					SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEPREV, 0, (LPARAM)GetParent(hwnd));
+					SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATENEXT, 0, (LPARAM)GetParent(hwnd));
+					return FALSE;
+				case KB_SWITCHSTATUSBAR:
+					SendMessage(GetParent(GetParent(hwnd)), DM_SWITCHSTATUSBAR, 0, 0);
+					return FALSE;
+				case KB_SWITCHTITLEBAR:
+					SendMessage(GetParent(GetParent(hwnd)), DM_SWITCHTITLEBAR, 0, 0);
+					return FALSE;
+				case KB_SWITCHTOOLBAR:
+					SendMessage(GetParent(GetParent(hwnd)), DM_SWITCHTOOLBAR, 0, 0);
+					return FALSE;
+				case KB_MINIMIZE:
+					ShowWindow(GetParent(GetParent(hwnd)), SW_MINIMIZE);
+					return FALSE;
+				case KB_CLOSE:
+					SendMessage(GetParent(hwnd), WM_CLOSE, 0, 0);
+					return FALSE;
+				case KB_CLEAR_LOG:
+					SendMessage(GetParent(hwnd), DM_CLEARLOG, 0, 0);
+					return FALSE;
+				case KB_TAB1:
+				case KB_TAB2:
+				case KB_TAB3:
+				case KB_TAB4:
+				case KB_TAB5:
+				case KB_TAB6:
+				case KB_TAB7:
+				case KB_TAB8:
+				case KB_TAB9:
+					SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEBYINDEX, 0, desc.action - KB_TAB1);
 					return FALSE;
 			}
 		}
@@ -417,11 +448,11 @@ int InputAreaShortcuts(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, Common
 	switch (msg) {
 		case WM_KEYDOWN:
 		{
-			if (wParam == VK_ESCAPE && isShift) { // shift+ESC
-				ShowWindow(GetParent(GetParent(hwnd)), SW_MINIMIZE);
+			if (wParam == VK_TAB && isCtrl && isShift) { // ctrl-shift tab
+				SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEPREV, 0, (LPARAM)GetParent(hwnd));
 				return FALSE;
 			}
-			if (wParam == VK_TAB && isCtrl && isShift) { // ctrl-shift tab
+			if (wParam == VK_PRIOR && isCtrl) { // page up
 				SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEPREV, 0, (LPARAM)GetParent(hwnd));
 				return FALSE;
 			}
@@ -429,37 +460,10 @@ int InputAreaShortcuts(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, Common
 				SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATENEXT, 0, (LPARAM)GetParent(hwnd));
 				return FALSE;
 			}
-			if (wParam == VK_PRIOR && isCtrl) { // page up
-				SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEPREV, 0, (LPARAM)GetParent(hwnd));
-				return FALSE;
-			}
 			if (wParam == VK_NEXT && isCtrl) { // page down
 				SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATENEXT, 0, (LPARAM)GetParent(hwnd));
 				return FALSE;
 			}
-			if (wParam >= '1' && wParam <='9' && isCtrl) {
-				int index = wParam - '1';
-				SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEBYINDEX, 0, index);
-				return 0;
-			}
-			if (wParam == VK_F4 && isCtrl && !isShift) { // ctrl + F4
-				SendMessage(GetParent(hwnd), WM_CLOSE, 0, 0);
-				return FALSE;
-			}
-			if (wParam == 'A' && isCtrl) { //ctrl-a; select all
-				SendMessage(hwnd, EM_SETSEL, 0, -1);
-				return FALSE;
-			}
-			if (wParam == 'I' && isCtrl) { // ctrl-i (italics)
-				return FALSE;
-			}
-			if (wParam == 'L' && isCtrl) { // ctrl-l clear log
-				SendMessage(GetParent(hwnd), DM_CLEARLOG, 0, 0);
-				return FALSE;
-			}
-			if (wParam == VK_SPACE && isCtrl) // ctrl-space (paste clean text)
-				return FALSE;
-
 			if (wParam == 'T' && isCtrl && isShift) {     // ctrl-shift-t
 				SendMessage(GetParent(GetParent(hwnd)), DM_SWITCHTOOLBAR, 0, 0);
 				return FALSE;
@@ -472,10 +476,37 @@ int InputAreaShortcuts(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, Common
 				SendMessage(GetParent(GetParent(hwnd)), DM_SWITCHTITLEBAR, 0, 0);
 				return FALSE;
 			}
+			if (wParam == VK_ESCAPE && isShift) { // shift+ESC
+				ShowWindow(GetParent(GetParent(hwnd)), SW_MINIMIZE);
+				return FALSE;
+			}
+			if (wParam == VK_F4 && isCtrl && !isShift) { // ctrl + F4
+				SendMessage(GetParent(hwnd), WM_CLOSE, 0, 0);
+				return FALSE;
+			}
 			if (wParam == 'W' && isCtrl && !isAlt) {     // ctrl-w; close
 				SendMessage(GetParent(hwnd), WM_CLOSE, 0, 0);
 				return FALSE;
 			}
+			if (wParam == 'L' && isCtrl) { // ctrl-l clear log
+				SendMessage(GetParent(hwnd), DM_CLEARLOG, 0, 0);
+				return FALSE;
+			}
+			if (wParam >= '1' && wParam <='9' && isCtrl) {
+				SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEBYINDEX, 0, wParam - '1');
+				return 0;
+			}
+			/*
+			if (wParam == 'A' && isCtrl) { //ctrl-a; select all
+				SendMessage(hwnd, EM_SETSEL, 0, -1);
+				return FALSE;
+			}
+			*/
+			if (wParam == 'I' && isCtrl) { // ctrl-i (italics)
+				return FALSE;
+			}
+			if (wParam == VK_SPACE && isCtrl) // ctrl-space (paste clean text)
+				return FALSE;
 			if (wParam == 'R' && isCtrl && isShift) {     // ctrl-shift-r
 				SendMessage(GetParent(hwnd), DM_SWITCHRTL, 0, 0);
 				return FALSE;
@@ -562,6 +593,8 @@ int InputAreaShortcuts(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, Common
 }
 
 void RegisterKeyBindings() {
+	int i;
+	TCHAR str[64];
 	KEYBINDINGDESC desc;
 	ZeroMemory(&desc, sizeof(desc));
 	desc.cbSize = sizeof(desc);
@@ -573,16 +606,50 @@ void RegisterKeyBindings() {
 	desc.ptszSection = _T("Scriver/Navigation");
 	desc.pszActionGroup = "Scriver";
 
+	desc.ptszActionName = _T("Previous Tab");
 	desc.action = KB_PREV_TAB;
+	desc.key[0] = VK_LEFT | KB_ALT_FLAG;
+	desc.key[1] = VK_TAB | KB_CTRL_FLAG | KB_SHIFT_FLAG;
+	desc.key[2] = VK_PRIOR | KB_CTRL_FLAG;
+	CallService(MS_KEYBINDINGS_REGISTER, 0, (LPARAM) &desc);
 	desc.ptszActionName = _T("Next Tab");
+	desc.action = KB_NEXT_TAB;
 	desc.key[0] = VK_RIGHT | KB_ALT_FLAG;
 	desc.key[1] = VK_TAB | KB_CTRL_FLAG;
 	desc.key[2] = VK_NEXT | KB_CTRL_FLAG;
 	CallService(MS_KEYBINDINGS_REGISTER, 0, (LPARAM) &desc);
-	desc.action = KB_NEXT_TAB;
-	desc.ptszActionName = _T("Previous Tab");
-	desc.key[0] = VK_LEFT | KB_ALT_FLAG;
-	desc.key[1] = VK_TAB | KB_CTRL_FLAG | KB_SHIFT_FLAG;
-	desc.key[2] = VK_PRIOR | KB_CTRL_FLAG;
+	ZeroMemory(&desc.key, sizeof(desc.key));
+	desc.ptszActionName = str;
+	for (i = 0; i < 9; i++) {
+		mir_sntprintf(str, SIZEOF(str), _T("Tab %d"), i + 1);
+		desc.action = KB_TAB1 + i;
+		desc.key[0] = '1' + i | KB_CTRL_FLAG;
+		CallService(MS_KEYBINDINGS_REGISTER, 0, (LPARAM) &desc);
+	}
+	desc.ptszSection = _T("Scriver/Window");
+	desc.ptszActionName = _T("Toggle Statusbar");
+	desc.action = KB_SWITCHSTATUSBAR;
+	desc.key[0] = 'S' | KB_CTRL_FLAG | KB_SHIFT_FLAG;
+	CallService(MS_KEYBINDINGS_REGISTER, 0, (LPARAM) &desc);
+	desc.ptszActionName = _T("Toggle Titlebar");
+	desc.action = KB_SWITCHTITLEBAR;
+	desc.key[0] = 'M' | KB_CTRL_FLAG | KB_SHIFT_FLAG;
+	CallService(MS_KEYBINDINGS_REGISTER, 0, (LPARAM) &desc);
+	desc.ptszActionName = _T("Toggle Toolbar");
+	desc.action = KB_SWITCHTOOLBAR;
+	desc.key[0] = 'T' | KB_CTRL_FLAG | KB_SHIFT_FLAG;
+	CallService(MS_KEYBINDINGS_REGISTER, 0, (LPARAM) &desc);
+	desc.ptszActionName = _T("Clear Log");
+	desc.action = KB_CLEAR_LOG;
+	desc.key[0] = 'L' | KB_CTRL_FLAG;
+	CallService(MS_KEYBINDINGS_REGISTER, 0, (LPARAM) &desc);
+	desc.ptszActionName = _T("Minimize");
+	desc.action = KB_MINIMIZE;
+	desc.key[0] = VK_ESCAPE | KB_SHIFT_FLAG;
+	CallService(MS_KEYBINDINGS_REGISTER, 0, (LPARAM) &desc);
+	desc.ptszActionName = _T("Close Tab");
+	desc.action = KB_CLOSE;
+	desc.key[0] = VK_F4 | KB_CTRL_FLAG;
+	desc.key[1] = 'W' | KB_CTRL_FLAG;
 	CallService(MS_KEYBINDINGS_REGISTER, 0, (LPARAM) &desc);
 }
