@@ -603,6 +603,10 @@ SOURCE=.\modules\protocols\protodir.c
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\modules\skin\hotkeys.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\modules\skin\skin.c
 # End Source File
 # Begin Source File

@@ -8,6 +8,7 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #include <windows.h>
+#include <winres.h>
 #include "../include/statusmodes.h"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1390,6 +1391,16 @@ BEGIN
     PUSHBUTTON      "Reset To Default",IDC_BTN_RESET,214,140,96,14
 END
 
+IDD_OPT_HOTKEYS DIALOGEX 0, 0, 316, 251
+STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "Hotkeys",IDC_STICONSGROUP,0,0,315,250
+    CONTROL         "List1",IDC_LV_HOTKEYS,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_AUTOARRANGE | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,4,10,306,235
+    EDITTEXT        IDC_HOTKEY,161,199,118,14,ES_CENTER | ES_AUTOHSCROLL | NOT WS_VISIBLE
+END
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // DESIGNINFO
@@ -2015,4 +2026,5 @@ IDB_SORTCOLDOWN         BITMAP                  "res/arrow_sort_column_down.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
+
 

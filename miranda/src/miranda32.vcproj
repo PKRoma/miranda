@@ -1953,6 +1953,9 @@
 				Name="skin"
 				Filter="">
 				<File
+					RelativePath=".\modules\skin\hotkeys.c">
+				</File>
+				<File
 					RelativePath="modules\skin\skin.c">
 					<FileConfiguration
 						Name="Release|Win32">
@@ -3140,6 +3143,16 @@
 							PreprocessorDefinitions=""
 							BrowseInformation="1"/>
 					</FileConfiguration>
+				</File>
+			</Filter>
+			<Filter
+				Name="keybindings"
+				Filter="">
+				<File
+					RelativePath=".\modules\keybindings\keybindings.c">
+				</File>
+				<File
+					RelativePath=".\modules\keybindings\keybindings.h">
 				</File>
 			</Filter>
 		</Filter>

@@ -85,17 +85,6 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
 		}
 	}
 
-	ZeroMemory(&odp,sizeof(odp));
-	odp.cbSize=sizeof(odp);
-	odp.position=-200000000;
-	odp.hInstance=g_hInst;
-	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_HOTKEYS);
-	odp.pfnDlgProc=DlgProcHotKeyOpts2;
-	odp.pszGroup=Translate("Events");
-	odp.pszTitle=Translate("Hotkeys2");
-	odp.flags=ODPF_BOLDGROUPS;
-	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
-
 	return 0;
 }
 

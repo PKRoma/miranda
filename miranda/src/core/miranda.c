@@ -42,6 +42,7 @@ void UnloadNewPlugins(void);
 void UnloadUpdateNotifyModule(void);
 void UninitSkin2Icons(void);
 void UninitSkinSounds(void);
+int UninitSkinHotkeys(void);
 void UnloadNetlibModule(void);
 void UnloadProtocolsModule(void);
 
@@ -414,6 +415,7 @@ static int SystemShutdownProc(WPARAM wParam,LPARAM lParam)
 
 	UninitSkin2Icons();
 	UninitSkinSounds();
+	UninitSkinHotkeys();
 	FreeWindowList();
 
 	UnloadButtonModule();

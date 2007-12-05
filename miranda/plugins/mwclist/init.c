@@ -39,12 +39,8 @@ void  CluiProtocolStatusChanged( int, const char* );
 int   CompareContacts( const struct ClcContact *contact1, const struct ClcContact *contact2 );
 void  FreeDisplayNameCacheItem( pdisplayNameCacheEntry p );
 void  GetDefaultFontSetting(int i,LOGFONT *lf,COLORREF *colour);
-int   HotKeysProcess(HWND hwnd,WPARAM wParam,LPARAM lParam);
-int   HotkeysProcessMessage(WPARAM wParam,LPARAM lParam);
-int   HotKeysRegister(HWND hwnd);
 void  RebuildEntireList(HWND hwnd,struct ClcData *dat);
 void  RecalcScrollBar(HWND hwnd,struct ClcData *dat);
-int   UnRegistersAllHotkey(HWND hwnd);
 
 struct ClcGroup* ( *saveAddGroup )(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWORD flags,int groupId,int calcTotalMembers);
 struct ClcGroup* ( *saveRemoveItemFromGroup )(HWND hwnd,struct ClcGroup *group,struct ClcContact *contact,int updateTotalCount);
@@ -121,6 +117,7 @@ __declspec(dllexport) const MUUID * MirandaPluginInterfaces(void)
 int LoadContactListModule(void);
 int LoadCLCModule(void);
 int LoadCLUIModule();
+int InitSkinHotKeys();
 
 static int systemModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
@@ -133,6 +130,8 @@ static int systemModulesLoaded(WPARAM wParam, LPARAM lParam)
 	{
 		return 0;
 	}
+
+	InitSkinHotKeys();
 
 	return 0;
 }
@@ -206,10 +205,6 @@ LBL_Error:
 		pcli->pfnGetRowsPriorTo = GetRowsPriorTo;
 		pcli->pfnGetRowByIndex = GetRowByIndex;
 		pcli->pfnHitTest = HitTest;
-		pcli->pfnHotKeysProcess = HotKeysProcess;
-		pcli->pfnHotkeysProcessMessage = HotkeysProcessMessage;
-		pcli->pfnHotKeysRegister = HotKeysRegister;
-		pcli->pfnHotKeysUnregister = UnRegistersAllHotkey;
 		pcli->pfnPaintClc = PaintClc;
 		pcli->pfnRebuildEntireList = RebuildEntireList;
 		pcli->pfnRecalcScrollBar = RecalcScrollBar;

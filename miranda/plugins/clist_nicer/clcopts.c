@@ -40,7 +40,6 @@ extern BOOL CALLBACK OptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 extern BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-extern BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern BOOL (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD);
 extern void ReloadExtraIcons( void );
        
@@ -1426,16 +1425,6 @@ int ClcOptInit(WPARAM wParam, LPARAM lParam)
     odp.flags = ODPF_BOLDGROUPS;
     odp.nIDBottomSimpleControl = 0;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
-
-    odp.position = -900000000;
-    odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_HOTKEY);
-    odp.pszTitle = LPGEN("Hotkeys");
-    odp.pszGroup = LPGEN("Events");
-    odp.pfnDlgProc = DlgProcHotkeyOpts;
-    odp.nIDBottomSimpleControl = 0;
-    odp.nExpertOnlyControls = 0;
-    odp.expertOnlyControls = NULL;
-    CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
     return 0;
 }
 
@@ -1697,5 +1686,7 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
     }
     return FALSE;
 }
+
+
 
 

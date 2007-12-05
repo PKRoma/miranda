@@ -31,8 +31,6 @@ void LoadContactTree(void);
 void SortContacts(void);
 
 static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-extern BOOL CALLBACK DlgProcHotKeyOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 static UINT expertOnlyControls[]={IDC_ALWAYSSTATUS};
 int CListOptInit(WPARAM wParam,LPARAM lParam)
@@ -50,15 +48,6 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
 	odp.nIDBottomSimpleControl=IDC_STCLISTGROUP;
 	odp.expertOnlyControls=expertOnlyControls;
 	odp.nExpertOnlyControls=sizeof(expertOnlyControls)/sizeof(expertOnlyControls[0]);
-	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
-
-	odp.cbSize=sizeof(odp);
-	odp.pszGroup=LPGEN("Events");
-	odp.position=-200000000;
-	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_HOTKEYS);
-	odp.pszTitle=LPGEN("Hotkeys2");
-	odp.pfnDlgProc=DlgProcHotKeyOpts2;
-	odp.flags=ODPF_BOLDGROUPS;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 	return 0;
 }
@@ -224,87 +213,6 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 							return TRUE;
 					}
 					break;
-			}
-			break;
-	}
-	return FALSE;
-}
-
-static BOOL CALLBACK DlgProcHotkeyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	switch (msg)
-	{
-		case WM_INITDIALOG:
-		{	DBVARIANT dbv;
-
-			TranslateDialogDefault(hwndDlg);
-			
-			CheckDlgButton(hwndDlg, IDC_SHOWHIDE, DBGetContactSettingByte(NULL,"CList","HKEnShowHide",0) ? BST_CHECKED : BST_UNCHECKED);			
-			CheckDlgButton(hwndDlg, IDC_READMSG, DBGetContactSettingByte(NULL,"CList","HKEnReadMsg",0) ? BST_CHECKED : BST_UNCHECKED);			
-			CheckDlgButton(hwndDlg, IDC_NETSEARCH, DBGetContactSettingByte(NULL,"CList","HKEnNetSearch",0) ? BST_CHECKED : BST_UNCHECKED);			
-			CheckDlgButton(hwndDlg, IDC_SHOWOPTIONS, DBGetContactSettingByte(NULL,"CList","HKEnShowOptions",0) ? BST_CHECKED : BST_UNCHECKED);
-
-			EnableWindow(GetDlgItem(hwndDlg,IDC_HKSHOWHIDE),IsDlgButtonChecked(hwndDlg,IDC_SHOWHIDE));
-			EnableWindow(GetDlgItem(hwndDlg,IDC_HKREADMSG),IsDlgButtonChecked(hwndDlg,IDC_READMSG));
-			EnableWindow(GetDlgItem(hwndDlg,IDC_HKSEARCH),IsDlgButtonChecked(hwndDlg,IDC_NETSEARCH));
-			EnableWindow(GetDlgItem(hwndDlg,IDC_SEARCHURL),IsDlgButtonChecked(hwndDlg,IDC_NETSEARCH));
-			EnableWindow(GetDlgItem(hwndDlg,IDC_SEARCHNEWWND),IsDlgButtonChecked(hwndDlg,IDC_NETSEARCH));
-			EnableWindow(GetDlgItem(hwndDlg,IDC_HOTKEYURLSTR),IsDlgButtonChecked(hwndDlg,IDC_NETSEARCH));					
-			EnableWindow(GetDlgItem(hwndDlg,IDC_HKSHOWOPTIONS),IsDlgButtonChecked(hwndDlg,IDC_SHOWOPTIONS));
-			
-			SendDlgItemMessage(hwndDlg,IDC_HKSHOWHIDE,HKM_SETHOTKEY,DBGetContactSettingWord(NULL,"CList","HKShowHide",MAKEWORD('A',HOTKEYF_CONTROL|HOTKEYF_SHIFT)),0);
-			SendDlgItemMessage(hwndDlg,IDC_HKREADMSG,HKM_SETHOTKEY,DBGetContactSettingWord(NULL,"CList","HKReadMsg",MAKEWORD('I',HOTKEYF_CONTROL|HOTKEYF_SHIFT)),0);
-			SendDlgItemMessage(hwndDlg,IDC_HKSEARCH,HKM_SETHOTKEY,DBGetContactSettingWord(NULL,"CList","HKNetSearch",MAKEWORD('S',HOTKEYF_CONTROL|HOTKEYF_SHIFT)),0);
-			SendDlgItemMessage(hwndDlg,IDC_HKSHOWOPTIONS,HKM_SETHOTKEY,DBGetContactSettingWord(NULL,"CList","HKShowOptions",MAKEWORD('O',HOTKEYF_CONTROL|HOTKEYF_SHIFT)),0);
-			if(!DBGetContactSettingString(NULL,"CList","SearchUrl",&dbv)) {
-				SetDlgItemTextA(hwndDlg,IDC_SEARCHURL,dbv.pszVal);
-				DBFreeVariant(&dbv);
-			}
-			else SetDlgItemTextA(hwndDlg,IDC_SEARCHURL,"http://www.google.com/");
-			CheckDlgButton(hwndDlg, IDC_SEARCHNEWWND, DBGetContactSettingByte(NULL,"CList","HKSearchNewWnd",0) ? BST_CHECKED : BST_UNCHECKED);
-			return TRUE;
-		}
-		case WM_COMMAND:
-			if(LOWORD(wParam)==IDC_SEARCHURL && (HIWORD(wParam)!=EN_CHANGE || (HWND)lParam!=GetFocus())) return 0;
-			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-			switch(LOWORD(wParam)) {
-				case IDC_SHOWHIDE:
-					EnableWindow(GetDlgItem(hwndDlg,IDC_HKSHOWHIDE),IsDlgButtonChecked(hwndDlg,IDC_SHOWHIDE));
-					break;
-				case IDC_READMSG:
-					EnableWindow(GetDlgItem(hwndDlg,IDC_HKREADMSG),IsDlgButtonChecked(hwndDlg,IDC_READMSG));
-					break;
-				case IDC_NETSEARCH:
-					EnableWindow(GetDlgItem(hwndDlg,IDC_HKSEARCH),IsDlgButtonChecked(hwndDlg,IDC_NETSEARCH));
-					EnableWindow(GetDlgItem(hwndDlg,IDC_SEARCHURL),IsDlgButtonChecked(hwndDlg,IDC_NETSEARCH));
-					EnableWindow(GetDlgItem(hwndDlg,IDC_SEARCHNEWWND),IsDlgButtonChecked(hwndDlg,IDC_NETSEARCH));					
-					EnableWindow(GetDlgItem(hwndDlg,IDC_HOTKEYURLSTR),IsDlgButtonChecked(hwndDlg,IDC_NETSEARCH));					
-					break;
-				case IDC_SHOWOPTIONS:
-					EnableWindow(GetDlgItem(hwndDlg,IDC_HKSHOWOPTIONS),IsDlgButtonChecked(hwndDlg,IDC_SHOWOPTIONS));
-					break;
-			}
-			break;
-		case WM_NOTIFY:
-			switch (((LPNMHDR)lParam)->code)
-			{
-				case PSN_APPLY:
-				{	char str[256];
-					HotKeysUnregister(pcli->hwndContactList);
-					DBWriteContactSettingByte(NULL,"CList","HKEnShowHide",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SHOWHIDE));
-					DBWriteContactSettingWord(NULL,"CList","HKShowHide",(WORD)SendDlgItemMessage(hwndDlg,IDC_HKSHOWHIDE,HKM_GETHOTKEY,0,0));
-					DBWriteContactSettingByte(NULL,"CList","HKEnReadMsg",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_READMSG));
-					DBWriteContactSettingWord(NULL,"CList","HKReadMsg",(WORD)SendDlgItemMessage(hwndDlg,IDC_HKREADMSG,HKM_GETHOTKEY,0,0));
-					DBWriteContactSettingByte(NULL,"CList","HKEnNetSearch",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_NETSEARCH));
-					DBWriteContactSettingWord(NULL,"CList","HKNetSearch",(WORD)SendDlgItemMessage(hwndDlg,IDC_HKSEARCH,HKM_GETHOTKEY,0,0));
-					GetDlgItemTextA(hwndDlg,IDC_SEARCHURL,str,SIZEOF(str));
-					DBWriteContactSettingString(NULL,"CList","SearchUrl",str);
-					DBWriteContactSettingByte(NULL,"CList","HKSearchNewWnd",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SEARCHNEWWND));
-					DBWriteContactSettingByte(NULL,"CList","HKEnShowOptions",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SHOWOPTIONS));
-					DBWriteContactSettingWord(NULL,"CList","HKShowOptions",(WORD)SendDlgItemMessage(hwndDlg,IDC_HKSHOWOPTIONS,HKM_GETHOTKEY,0,0));
-					HotKeysRegister(pcli->hwndContactList);
-					return TRUE;
-				}
 			}
 			break;
 	}

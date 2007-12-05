@@ -29,7 +29,7 @@ void UninitCustomMenus(void);
 int ContactSettingChanged(WPARAM wParam,LPARAM lParam);
 int CListOptInit(WPARAM wParam,LPARAM lParam);
 int ContactChangeGroup(WPARAM wParam,LPARAM lParam);
-int HotkeysProcessMessage(WPARAM wParam,LPARAM lParam);
+int HotkeysProcessMessage(WPARAM wParam,LPARAM lParam) { return pcli->pfnHotkeysProcessMessage(wParam, lParam); }
 void InitTrayMenus(void);
 
 HIMAGELIST hCListImages;

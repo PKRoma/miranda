@@ -8,6 +8,7 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #include <windows.h>
+#include <winres.h>
 #include <statusmodes.h>
 
 /////////////////////////////////////////////////////////////////////////////
@@ -45,34 +46,6 @@ BEGIN
                     SS_SIMPLE | SS_NOPREFIX | WS_GROUP,7,7,270,8
     LTEXT           "This will erase all history and settings for this contact!",
                     IDC_STATIC,7,18,239,14
-END
-
-IDD_OPT_HOTKEY DIALOGEX 0, 0, 238, 136
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
-EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    GROUPBOX        "Hotkeys",IDC_STATIC,4,4,230,126
-    CONTROL         "Show/Hide:",IDC_SHOWHIDE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,14,19,78,9
-    CONTROL         "HotKey1",IDC_HKSHOWHIDE,"msctls_hotkey32",WS_BORDER | 
-                    WS_TABSTOP,92,17,93,12
-    CONTROL         "Read Message:",IDC_READMSG,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,14,36,78,9
-    CONTROL         "HotKey1",IDC_HKREADMSG,"msctls_hotkey32",WS_BORDER | 
-                    WS_TABSTOP,92,34,93,12
-    CONTROL         "Web Search:",IDC_NETSEARCH,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,14,53,78,9
-    CONTROL         "HotKey1",IDC_HKSEARCH,"msctls_hotkey32",WS_BORDER | 
-                    WS_TABSTOP,92,51,93,12
-    LTEXT           "URL:",IDC_HOTKEYURLSTR,26,71,22,8
-    EDITTEXT        IDC_SEARCHURL,92,69,136,12,ES_AUTOHSCROLL
-    CONTROL         "Open in new browser window",IDC_SEARCHNEWWND,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,92,86,136,10
-    CONTROL         "Show Options",IDC_SHOWOPTIONS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,14,107,71,9
-    CONTROL         "HotKey1",IDC_HKSHOWOPTIONS,"msctls_hotkey32",WS_BORDER | 
-                    WS_TABSTOP,92,105,93,12
 END
 
 IDD_OPT_CLIST DIALOGEX 0, 0, 314, 204
@@ -453,17 +426,6 @@ BEGIN
         BOTTOMMARGIN, 85
     END
 
-    IDD_OPT_HOTKEY, DIALOG
-    BEGIN
-        LEFTMARGIN, 4
-        RIGHTMARGIN, 234
-        TOPMARGIN, 4
-        BOTTOMMARGIN, 132
-        HORZGUIDE, 23
-        HORZGUIDE, 40
-        HORZGUIDE, 57
-    END
-
     IDD_OPT_CLIST, DIALOG
     BEGIN
         LEFTMARGIN, 2
@@ -702,4 +664,6 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
+
+
 

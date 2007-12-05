@@ -229,7 +229,6 @@ BOOL    wildcmp(char * name, char * mask, BYTE option);										//mod_skin_sele
 BOOL	wildcmpi(char * name, char * mask);													//mod_skin_selector.c
 int		cache_CallProcSync(PSYNCCALLBACKPROC pfnProc, WPARAM wParam, LPARAM lParam);		//cache_funcs.c
 BOOL	CALLBACK DlgSkinEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);	//SkinEditor.c
-BOOL	CALLBACK DlgProcHotKeyOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);	//Keyboard.c
 BOOL	CALLBACK DlgTmplEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);	//RowTemplate.c
 BOOL	FindMenuHanleByGlobalID(HMENU hMenu, int globalID, struct _MenuItemHandles * dat);	//GenMenu.c
 BOOL	MatchMask(char * name, char * mask);												//mod_skin_selector.c

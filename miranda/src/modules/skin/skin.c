@@ -24,6 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 int InitSkinIcons(void);
 int InitSkinSounds(void);
+int InitSkinHotkeys(void);
 
 BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -54,5 +55,6 @@ int LoadSkinModule(void)
 	HookEvent(ME_SYSTEM_MODULESLOADED,SkinSystemModulesLoaded);
 	if(InitSkinIcons()) return 1;
 	if(InitSkinSounds()) return 1;
+	if (InitSkinHotkeys()) return 1;
 	return 0;
 }

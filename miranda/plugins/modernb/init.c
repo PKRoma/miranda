@@ -45,10 +45,6 @@ void	cliCheckCacheItem(pdisplayNameCacheEntry pdnce);
 void	cliFreeCacheItem( pdisplayNameCacheEntry p );
 void	cliRebuildEntireList(HWND hwnd,struct ClcData *dat);
 void	cliRecalcScrollBar(HWND hwnd,struct ClcData *dat);
-int   cliHotKeysProcess(HWND hwnd,WPARAM wParam,LPARAM lParam);
-int   cliHotkeysProcessMessage(WPARAM wParam,LPARAM lParam);
-int   cliHotKeysRegister(HWND hwnd);
-int   cliHotKeysUnregister(HWND hwnd);
 void	CLUI_cliOnCreateClc(void);
 int   cli_AddItemToGroup(struct ClcGroup *group, int iAboveItem);
 int   cli_AddInfoItemToGroup(struct ClcGroup *group,int flags,const TCHAR *pszText);
@@ -274,10 +270,6 @@ LBL_Error:
 
 	pcli->pfnTrayIconUpdateBase = cliTrayIconUpdateBase;	
 	pcli->pfnCluiProtocolStatusChanged	= cliCluiProtocolStatusChanged;
-	pcli->pfnHotkeysProcessMessage		= cliHotkeysProcessMessage;
-	pcli->pfnHotKeysProcess		= cliHotKeysProcess;
-	pcli->pfnHotKeysRegister	= cliHotKeysRegister;
-	pcli->pfnHotKeysUnregister	= cliHotKeysUnregister;
 	pcli->pfnBeginRenameSelection		= cliBeginRenameSelection;
 	pcli->pfnCreateClcContact	= cliCreateClcContact;
 	pcli->pfnCreateCacheItem	= cliCreateCacheItem;

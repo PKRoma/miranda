@@ -38,6 +38,7 @@ int Docking_IsDocked(WPARAM wParam, LPARAM lParam);
 void InitDisplayNameCache(void);
 void FreeDisplayNameCache(void);
 void LoadCLUIModule();
+int InitClistHotKeys(void);
 
 pfnMyMonitorFromPoint  MyMonitorFromPoint = NULL;
 pfnMyMonitorFromWindow MyMonitorFromWindow = NULL;
@@ -232,6 +233,9 @@ static int ContactListModulesLoaded(WPARAM wParam, LPARAM lParam)
 	cli.pfnLoadContactTree();
 
 	LoadCLUIModule();
+
+	InitClistHotKeys();
+
 	return 0;
 }
 

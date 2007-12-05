@@ -131,6 +131,8 @@ static int LoadDefaultModules(void)
 	if (LoadLangPackModule()) return 1; // langpack will be a system module in the new order so this is moved 'ere
 	if (LoadUtilsModule()) return 1;		//order not important for this, but no dependencies and no point in pluginising
 	if (LoadNewPluginsModuleInfos()) return 1;
+
+	// database is available here
 	if (LoadProtocolsModule()) return 1;
 	if (LoadKeyBindingsModule()) return 1;
 	if (LoadIcoLibModule()) return 1;

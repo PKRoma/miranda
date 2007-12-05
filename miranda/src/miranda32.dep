@@ -37,6 +37,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\core\memory.c : \
@@ -76,6 +77,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\core\miranda.c : \
@@ -195,6 +197,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\autoaway\autoaway.c : \
@@ -234,6 +237,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\button\button.c : \
@@ -273,6 +277,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\contacts\contacts.c : \
@@ -312,6 +317,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\database\database.c : \
@@ -351,6 +357,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\database\profilemanager.h"\
 	".\modules\srfile\file.h"\
 	
@@ -392,6 +399,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\srfile\file.h"\
 	
 
@@ -472,9 +480,47 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\database\dbutils.c : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\database\profilemanager.h"\
 	
 
@@ -515,6 +561,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\database\profilemanager.h"\
 	
 
@@ -556,6 +603,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\findadd\findadd.h"\
 	
 
@@ -597,6 +645,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\findadd\findadd.h"\
 	
 
@@ -637,6 +686,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\help\help.c : \
@@ -676,6 +726,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\history\history.c : \
@@ -715,6 +766,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\idle\idle.c : \
@@ -754,6 +806,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\ignore\ignore.c : \
@@ -793,6 +846,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\langpack\langpack.c : \
@@ -832,6 +886,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\langpack\lpservices.c : \
@@ -871,6 +926,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\netlib\netlib.c : \
@@ -910,6 +966,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\netlib\netlib.h"\
 	
 
@@ -950,6 +1007,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\netlib\netlib.h"\
 	
 
@@ -990,6 +1048,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\netlib\netlib.h"\
 	
 
@@ -1030,6 +1089,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\netlib\netlib.h"\
 	
 
@@ -1070,7 +1130,9 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\netlib\netlib.h"\
+	".\modules\srfile\file.h"\
 	
 
 .\modules\netlib\netlibopenconn.c : \
@@ -1110,6 +1172,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\netlib\netlib.h"\
 	
 
@@ -1150,6 +1213,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\netlib\netlib.h"\
 	
 
@@ -1190,6 +1254,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\netlib\netlib.h"\
 	
 
@@ -1230,6 +1295,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\netlib\netlib.h"\
 	
 
@@ -1270,6 +1336,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\netlib\netlib.h"\
 	
 
@@ -1310,6 +1377,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\netlib\netlib.h"\
 	
 
@@ -1350,6 +1418,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\plugins\newplugins.c : \
@@ -1429,6 +1498,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\protocols\protocols.c : \
@@ -1468,6 +1538,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\protocols\protodir.c : \
@@ -1507,6 +1578,48 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\skin\hotkeys.c : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_hotkeys.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\skin\skin.c : \
@@ -1546,6 +1659,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\skin\skinicons.c : \
@@ -1585,6 +1699,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\skin\sounds.c : \
@@ -1624,6 +1739,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\srauth\auth.c : \
@@ -1663,6 +1779,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\srauth\authdialogs.c : \
@@ -1702,6 +1819,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\srawaymsg\awaymsg.c : \
@@ -1741,6 +1859,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\srawaymsg\sendmsg.c : \
@@ -1780,6 +1899,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\sremail\email.c : \
@@ -1819,6 +1939,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\srfile\file.c : \
@@ -1858,10 +1979,13 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\srfile\file.h"\
 	
 
 .\modules\srfile\fileexistsdlg.c : \
+	"..\..\..\vc\sdk\include\shldisp.h"\
+	"..\..\..\vc\sdk\include\shobjidl.h"\
 	"..\include\m_addcontact.h"\
 	"..\include\m_awaymsg.h"\
 	"..\include\m_button.h"\
@@ -1898,6 +2022,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\srfile\file.h"\
 	
 
@@ -1938,10 +2063,13 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\srfile\file.h"\
 	
 
 .\modules\srfile\filerecvdlg.c : \
+	"..\..\..\vc\sdk\include\shldisp.h"\
+	"..\..\..\vc\sdk\include\shobjidl.h"\
 	"..\include\m_addcontact.h"\
 	"..\include\m_awaymsg.h"\
 	"..\include\m_button.h"\
@@ -1978,6 +2106,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\srfile\file.h"\
 	
 
@@ -2018,6 +2147,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\srfile\file.h"\
 	
 
@@ -2058,6 +2188,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\srfile\file.h"\
 	
 
@@ -2099,6 +2230,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\srurl\url.h"\
 	
 
@@ -2139,6 +2271,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\srurl\url.h"\
 	
 
@@ -2179,6 +2312,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\userinfo\stdinfo.c : \
@@ -2218,6 +2352,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\userinfo\userinfo.c : \
@@ -2257,6 +2392,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\useronline\useronline.c : \
@@ -2296,6 +2432,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\utils\bmpfilter.c : \
@@ -2336,6 +2473,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\utils\colourpicker.c : \
@@ -2375,6 +2513,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\utils\hyperlink.c : \
@@ -2414,6 +2553,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\utils\md5.c : \
@@ -2453,6 +2593,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\utils\openurl.c : \
@@ -2492,6 +2633,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\utils\path.c : \
@@ -2531,6 +2673,8 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	".\modules\srfile\file.h"\
 	
 
 .\modules\utils\resizer.c : \
@@ -2570,6 +2714,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\utils\sha1.c : \
@@ -2609,6 +2754,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\utils\utf.c : \
@@ -2648,6 +2794,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\utils\utils.c : \
@@ -2687,6 +2834,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\utils\windowlist.c : \
@@ -2726,6 +2874,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\visibility\visibility.c : \
@@ -2765,6 +2914,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\clist\clc.c : \
@@ -2809,6 +2959,8 @@
 	
 
 .\modules\clist\clcfiledrop.c : \
+	"..\..\..\vc\sdk\include\shldisp.h"\
+	"..\..\..\vc\sdk\include\shobjidl.h"\
 	"..\include\m_addcontact.h"\
 	"..\include\m_awaymsg.h"\
 	"..\include\m_button.h"\
@@ -2846,6 +2998,7 @@
 	".\core\miranda.h"\
 	".\core\modules.h"\
 	".\modules\clist\clc.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\clist\clcidents.c : \
@@ -2886,6 +3039,7 @@
 	".\core\miranda.h"\
 	".\core\modules.h"\
 	".\modules\clist\clc.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\clist\clcitems.c : \
@@ -3008,6 +3162,7 @@
 	".\core\miranda.h"\
 	".\core\modules.h"\
 	".\modules\clist\clc.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\clist\clistcore.c : \
@@ -3049,6 +3204,7 @@
 	".\core\modules.h"\
 	".\modules\clist\clc.h"\
 	".\modules\clist\genmenu.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\clist\clistevents.c : \
@@ -3131,6 +3287,7 @@
 	".\core\modules.h"\
 	".\modules\clist\clc.h"\
 	".\modules\clist\genmenu.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\clist\clistmod.c : \
@@ -3171,6 +3328,7 @@
 	".\core\miranda.h"\
 	".\core\modules.h"\
 	".\modules\clist\clc.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\clist\clistsettings.c : \
@@ -3252,6 +3410,7 @@
 	".\core\miranda.h"\
 	".\core\modules.h"\
 	".\modules\clist\clc.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\clist\clui.c : \
@@ -3292,6 +3451,7 @@
 	".\core\miranda.h"\
 	".\core\modules.h"\
 	".\modules\clist\clc.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\clist\cluiservices.c : \
@@ -3332,6 +3492,7 @@
 	".\core\miranda.h"\
 	".\core\modules.h"\
 	".\modules\clist\clc.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\clist\contact.c : \
@@ -3372,6 +3533,7 @@
 	".\core\miranda.h"\
 	".\core\modules.h"\
 	".\modules\clist\clc.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\clist\Docking.c : \
@@ -3412,6 +3574,7 @@
 	".\core\miranda.h"\
 	".\core\modules.h"\
 	".\modules\clist\clc.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\clist\genmenu.c : \
@@ -3452,6 +3615,7 @@
 	".\core\miranda.h"\
 	".\core\modules.h"\
 	".\modules\clist\genmenu.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\clist\genmenuopt.c : \
@@ -3492,6 +3656,7 @@
 	".\core\miranda.h"\
 	".\core\modules.h"\
 	".\modules\clist\genmenu.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\clist\groups.c : \
@@ -3532,6 +3697,7 @@
 	".\core\miranda.h"\
 	".\core\modules.h"\
 	".\modules\clist\clc.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\clist\keyboard.c : \
@@ -3549,6 +3715,7 @@
 	"..\include\m_findadd.h"\
 	"..\include\m_genmenu.h"\
 	"..\include\m_history.h"\
+	"..\include\m_hotkeys.h"\
 	"..\include\m_icolib.h"\
 	"..\include\m_idle.h"\
 	"..\include\m_ignore.h"\
@@ -3572,6 +3739,7 @@
 	".\core\miranda.h"\
 	".\core\modules.h"\
 	".\modules\clist\clc.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\clist\movetogroup.c : \
@@ -3611,6 +3779,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\clist\protocolorder.c : \
@@ -3651,6 +3820,7 @@
 	".\core\miranda.h"\
 	".\core\modules.h"\
 	".\modules\clist\clc.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\fonts\FontOptions.c : \
@@ -3733,6 +3903,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\fonts\FontService.h"\
 	".\modules\fonts\module_fonts.h"\
 	
@@ -3775,6 +3946,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\fonts\module_fonts.h"\
 	
 
@@ -3857,6 +4029,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\modules\icolib\IcoLib.c : \
@@ -3896,6 +4069,7 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\icolib\IcoLib.h"\
 	
 
@@ -3977,6 +4151,49 @@
 	".\core\forkthread.h"\
 	".\core\miranda.h"\
 	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\keybindings\keybindings.c : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_keybindings.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	".\modules\keybindings\keybindings.h"\
 	
 
 .\vc6.rc : \

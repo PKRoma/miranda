@@ -44,6 +44,8 @@ int CLUIFramesGetMinHeight();			//cluiframes.c
 wndFrame * FindFrameByItsHWND(HWND FrameHwnd);						//cluiframes.c
 int		SizeFramesByWindowRect(RECT *r, HDWP * PosBatch, int mode);	//cluiframes.c
 
+int InitSkinHotKeys();
+
 extern BOOL amWakeThread();
 extern BOOL gtaWakeThread();
 
@@ -563,6 +565,8 @@ static int CLUI_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	g_flag_bOnModulesLoadedCalled=TRUE;	
 	///pcli->pfnInvalidateDisplayNameCacheEntry(INVALID_HANDLE_VALUE);   
 	PostMessage(pcli->hwndContactList,M_CREATECLC,0,0); //$$$
+
+	InitSkinHotKeys();
 
 	return 0;
 }
@@ -2897,6 +2901,8 @@ HANDLE RegisterIcolibIconHandle(char * szIcoID, char *szSectionName,  char * szD
 	if ( sid.hDefaultIcon )	DestroyIcon(sid.hDefaultIcon);
 	return hIcolibItem; 
 }
+
+
 
 
 

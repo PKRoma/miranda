@@ -125,34 +125,6 @@ BEGIN
                     "Hyperlink",WS_TABSTOP | 0x1,18,91,192,12
 END
 
-IDD_OPT_HOTKEY DIALOGEX 0, 0, 238, 136
-STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
-EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    GROUPBOX        "Hotkeys",IDC_STATIC,4,4,230,126
-    CONTROL         "Show/Hide:",IDC_SHOWHIDE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,14,19,78,9
-    CONTROL         "HotKey1",IDC_HKSHOWHIDE,"msctls_hotkey32",WS_BORDER | 
-                    WS_TABSTOP,92,17,93,12
-    CONTROL         "Read Msg:",IDC_READMSG,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,14,36,78,9
-    CONTROL         "HotKey1",IDC_HKREADMSG,"msctls_hotkey32",WS_BORDER | 
-                    WS_TABSTOP,92,34,93,12
-    CONTROL         "Net Search:",IDC_NETSEARCH,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,14,53,78,9
-    CONTROL         "HotKey1",IDC_HKSEARCH,"msctls_hotkey32",WS_BORDER | 
-                    WS_TABSTOP,92,51,93,12
-    LTEXT           "URL:",IDC_HOTKEYURLSTR,26,71,22,8
-    EDITTEXT        IDC_SEARCHURL,92,69,136,12,ES_AUTOHSCROLL
-    CONTROL         "Open in new browser window",IDC_SEARCHNEWWND,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,92,86,136,10
-    CONTROL         "Show Options",IDC_SHOWOPTIONS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,14,107,71,9
-    CONTROL         "HotKey1",IDC_HKSHOWOPTIONS,"msctls_hotkey32",WS_BORDER | 
-                    WS_TABSTOP,92,105,93,12
-END
-
 IDD_DELETECONTACT DIALOGEX 0, 0, 284, 90
 STYLE DS_MODALFRAME | DS_SETFOREGROUND | DS_FIXEDSYS | DS_CENTER | WS_POPUP | 
     WS_VISIBLE | WS_CAPTION | WS_SYSMENU
@@ -1126,4 +1098,6 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
+
+
 
