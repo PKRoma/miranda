@@ -226,7 +226,7 @@ static void createSettingsTreeNode(HWND hwndTree, KeyBindingItem *keyBindingItem
 				treeItem->keyBinding = !sectionName ? keyBindingItem : NULL;
 				treeItem->paramName = mir_t2a(itemName);
 				tvis.hParent = hSection;
-				tvis.hInsertAfter = !sectionName ? TVI_LAST : TVI_SORT;
+				tvis.hInsertAfter = TVI_SORT; //!sectionName ? TVI_LAST : TVI_SORT;
 				tvis.item.mask = TVIF_TEXT|TVIF_PARAM|TVIF_STATE;
 				tvis.item.pszText = pTranslatedItemName;
 				tvis.item.lParam = (LPARAM)treeItem;
@@ -401,11 +401,13 @@ static void buildTree(HWND hwnd) {
 static void refreshListBox(HWND hwnd) {
 	int count = 0;
 	BOOL nonDefault = FALSE;
+	BOOL canUndo = FALSE;
 	SendDlgItemMessage(hwnd, IDC_LIST, LB_RESETCONTENT, 0, 0);
 	if (currentTreeItem->keyBinding != NULL) {
 		int i;
 		for (i=0; i<5; i++) {
 			if (currentTreeItem->keyBinding->tempKey[i] != currentTreeItem->keyBinding->defaultKey[i]) nonDefault = TRUE;
+			if (currentTreeItem->keyBinding->tempKey[i] != currentTreeItem->keyBinding->key[i]) canUndo = TRUE;
 			if (currentTreeItem->keyBinding->tempKey[i] != 0) {
 				SendDlgItemMessage(hwnd, IDC_LIST, LB_ADDSTRING, 0, (LPARAM)getKeyName(currentTreeItem->keyBinding->tempKey[i]));
 				count++;
@@ -418,6 +420,7 @@ static void refreshListBox(HWND hwnd) {
 	EnableWindow(GetDlgItem(hwnd, IDC_ADD), FALSE);
 	EnableWindow(GetDlgItem(hwnd, IDC_DELETE), FALSE);
 	EnableWindow(GetDlgItem(hwnd, IDC_BTN_RESET), nonDefault);
+	EnableWindow(GetDlgItem(hwnd, IDC_BTN_UNDO), canUndo);
 }
 
 BOOL CALLBACK DlgProcKeyBindingsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
