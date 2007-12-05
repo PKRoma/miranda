@@ -990,6 +990,8 @@ static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 		msg = mir_utf8encode( msg );
 
 	int netId  = Lists_GetNetId(tEmail);
+	if (netId == 0) netId = 1;
+
 	if (netId == 4)
 	{
 		long id;
@@ -1018,7 +1020,7 @@ static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 	int seq; 
 	int rtlFlag = (ccs->wParam & PREF_RTL ) ? MSG_RTL : 0;
 	
-	if (netId == 1 || netId == 0)
+	if (netId == 1)
 	{
 		const char msgType = MyOptions.SlowSend ? 'A' : 'N';
 		bool isOffline;
