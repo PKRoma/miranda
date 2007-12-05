@@ -253,9 +253,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="3"
-				InlineFunctionExpansion="2"
+				InlineFunctionExpansion="1"
 				FavorSizeOrSpeed="2"
-				OmitFramePointers="true"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;JABBER_EXPORTS;_USE_32BIT_TIME_T"
@@ -766,10 +765,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\jabber_opttree.cpp"
-				>
-			</File>
-			<File
 				RelativePath="jabber_iq.cpp"
 				>
 				<FileConfiguration
@@ -1070,6 +1065,10 @@
 						BasicRuntimeChecks="3"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\jabber_opttree.cpp"
+				>
 			</File>
 			<File
 				RelativePath="jabber_password.cpp"
@@ -1533,10 +1532,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\jabber_opttree.h"
-				>
-			</File>
-			<File
 				RelativePath="jabber_byte.h"
 				>
 			</File>
@@ -1562,6 +1557,10 @@
 			</File>
 			<File
 				RelativePath="jabber_list.h"
+				>
+			</File>
+			<File
+				RelativePath=".\jabber_opttree.h"
 				>
 			</File>
 			<File
