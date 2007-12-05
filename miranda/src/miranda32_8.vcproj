@@ -2162,10 +2162,6 @@
 				Name="skin"
 				>
 				<File
-					RelativePath=".\modules\skin\hotkeys.c"
-					>
-				</File>
-				<File
 					RelativePath="modules\skin\skin.c"
 					>
 					<FileConfiguration
