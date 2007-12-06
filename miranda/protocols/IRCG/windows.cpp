@@ -72,14 +72,21 @@ BOOL CALLBACK InfoWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 	case WM_INITDIALOG:
 		TranslateDialogDefault( hwndDlg);
 		{
-			HFONT hFont;
+			HFONT hFont, hFont2;
 			LOGFONT lf;
 			hFont = ( HFONT )SendDlgItemMessage( hwndDlg, IDC_CAPTION, WM_GETFONT, 0, 0 );
 			GetObject( hFont, sizeof( lf ), &lf );
-			lf.lfHeight = (int)(lf.lfHeight*1.2);
+			lf.lfHeight = (int)(lf.lfHeight*1.6);
 			lf.lfWeight = FW_BOLD;
 			hFont = CreateFontIndirect( &lf );
 			SendDlgItemMessage( hwndDlg, IDC_CAPTION, WM_SETFONT, ( WPARAM )hFont, 0 );
+
+			hFont2 = ( HFONT )SendDlgItemMessage( hwndDlg, IDC_AWAYTIME, WM_GETFONT, 0, 0 );
+			GetObject( hFont2, sizeof( lf ), &lf );
+			//lf.lfHeight = (int)(lf.lfHeight*0.6);
+			lf.lfWeight = FW_BOLD;
+			hFont2 = CreateFontIndirect( &lf );
+			SendDlgItemMessage( hwndDlg, IDC_AWAYTIME, WM_SETFONT, ( WPARAM )hFont2, 0 );
 		}
 		SendDlgItemMessage( hwndDlg, IDC_LOGO, STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO), 0);
 		SendDlgItemMessage( hwndDlg, IDC_INFO_NAME, EM_SETREADONLY, true, 0);
@@ -98,6 +105,7 @@ BOOL CALLBACK InfoWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		if (( HWND )lParam == GetDlgItem( hwndDlg, IDC_WHITERECT ) ||
 			 ( HWND )lParam == GetDlgItem( hwndDlg, IDC_TEXT ) ||
 			 ( HWND )lParam == GetDlgItem( hwndDlg, IDC_CAPTION ) ||
+			 ( HWND )lParam == GetDlgItem( hwndDlg, IDC_AWAYTIME ) ||
 			 ( HWND )lParam == GetDlgItem( hwndDlg, IDC_LOGO ))
 			{
 				SetTextColor((HDC)wParam,RGB(0,0,0));
@@ -115,7 +123,7 @@ BOOL CALLBACK InfoWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				PostMessage ( hwndDlg, WM_CLOSE, 0,0);
 				break;
 			case ID_INFO_GO:
-				PostIrcMessage( _T("/WHOIS %s"), szTemp);
+				PostIrcMessage( _T("/WHOIS %s %s"), szTemp, szTemp);
 				break;
 			case ID_INFO_QUERY:
 				PostIrcMessage( _T("/QUERY %s"), szTemp);
@@ -146,10 +154,13 @@ BOOL CALLBACK InfoWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		
 	case WM_DESTROY:
 		{
-			HFONT hFont;
+			HFONT hFont, hFont2;
 			hFont=(HFONT)SendDlgItemMessage( hwndDlg,IDC_CAPTION,WM_GETFONT,0,0);
 			SendDlgItemMessage( hwndDlg,IDC_CAPTION,WM_SETFONT,SendDlgItemMessage( hwndDlg,IDNOK,WM_GETFONT,0,0),0);
 			DeleteObject(hFont);				
+			hFont2=(HFONT)SendDlgItemMessage( hwndDlg,IDC_AWAYTIME,WM_GETFONT,0,0);
+			SendDlgItemMessage( hwndDlg,IDC_CAPTION,WM_SETFONT,SendDlgItemMessage( hwndDlg,IDNOK,WM_GETFONT,0,0),0);
+			DeleteObject(hFont2);				
 			whois_hWnd = NULL;
 		}
 		break;
@@ -198,7 +209,7 @@ BOOL CALLBACK NickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		break;
 		
 	case WM_COMMAND:
-		if ( HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDNCANCEL )
+		if ( (HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDNCANCEL ) || (LOWORD(wParam) == IDCANCEL ) )
 			PostMessage( hwndDlg, WM_CLOSE, 0, 0 );
 
 		if ( HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDNOK ) {
@@ -221,7 +232,6 @@ BOOL CALLBACK NickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SendMessage( hwndDlg, WM_CLOSE, 0,0);
 		}
 		break;
-		
 	case WM_CLOSE:
 		DestroyWindow( hwndDlg);
 		break;
@@ -311,7 +321,7 @@ BOOL CALLBACK ListWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		return 0;		
 
 	case WM_COMMAND:
-		if ( HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDC_CLOSE )
+		if ((/* HIWORD(wParam) == BN_CLICKED && */LOWORD(wParam) == IDC_CLOSE ) || (LOWORD(wParam) == IDCANCEL) )
 			PostMessage ( hwndDlg, WM_CLOSE, 0,0);
 
 		if ( HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDC_JOIN ) {
@@ -396,7 +406,7 @@ BOOL CALLBACK JoinWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		break;
 		
 	case WM_COMMAND:
-		if ( HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDNCANCEL )
+		if ( ( /*HIWORD(wParam) == BN_CLICKED && */LOWORD(wParam) == IDNCANCEL ) || (LOWORD(wParam) == IDCANCEL) )
 			PostMessage( hwndDlg, WM_CLOSE, 0, 0 );
 
 		if ( HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDNOK ) {
@@ -474,7 +484,7 @@ BOOL CALLBACK InitWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		break;
 
 	case WM_COMMAND:
-		if ( HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDNCANCEL )
+		if ( ( /*HIWORD(wParam) == BN_CLICKED && */LOWORD(wParam) == IDNCANCEL ) || (LOWORD(wParam) == IDCANCEL) )
 			PostMessage( hwndDlg, WM_CLOSE, 0, 0 );
 
 		if ( HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDNOK ) {
@@ -537,8 +547,7 @@ BOOL CALLBACK QuickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			char * p1 = pszServerFile;
 			char * p2 = pszServerFile;
 			if ( pszServerFile ) 
-				while (strchr(p2, 'n'))
-				{
+				while (strchr(p2, 'n')) {
 					SERVER_INFO* pData = new SERVER_INFO;
 					p1 = strchr(p2, '=');
 					++p1;
@@ -549,8 +558,7 @@ BOOL CALLBACK QuickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					p1 = strchr(p2, ':');
 					++p1;
 					pData->iSSL = 0;
-					if(strstr(p1, "SSL") == p1)
-					{
+					if ( strstr(p1, "SSL") == p1 ) {
 						p1 +=3;
 						if(*p1 == '1')
 							pData->iSSL = 1;
@@ -573,7 +581,8 @@ BOOL CALLBACK QuickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					if (*p2 == 'G'){
 						pData->PortEnd = new char[p2-p1+1];
 						lstrcpyA(pData->PortEnd, pData->PortStart);
-					} else {
+					} 
+					else {
 						p1 = p2;
 						p1++;
 						p2 = strchr(p1, 'G');
@@ -594,17 +603,50 @@ BOOL CALLBACK QuickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					SendDlgItemMessage( hwndDlg, IDC_SERVERCOMBO, CB_SETITEMDATA, iItem,(LPARAM) pData);
 				}
 				else EnableWindow(GetDlgItem( hwndDlg, IDNOK), false);
+				
+				{
+					SERVER_INFO* pData = new SERVER_INFO;
+					pData->Group = "";
+					pData->Name = Translate("---- Not listed server ----");
+
+					DBVARIANT dbv;
+					if ( !DBGetContactSettingString( NULL, IRCPROTONAME, "ServerName", &dbv )) {
+						pData->Address = new char[strlen(dbv.pszVal)];
+						lstrcpyA(pData->Address, dbv.pszVal);
+						DBFreeVariant(&dbv);
+					}
+					else pData->Address = Translate("Type new server address here");
+
+					if ( !DBGetContactSettingString( NULL, IRCPROTONAME, "PortStart", &dbv )) {
+						pData->PortStart = new char[strlen(dbv.pszVal)];
+						lstrcpyA(pData->PortStart, dbv.pszVal);
+						DBFreeVariant(&dbv);
+					}
+					else pData->PortStart = "6667";
+
+					if ( !DBGetContactSettingString( NULL, IRCPROTONAME, "PortEnd", &dbv )) {
+						pData->PortEnd = new char[strlen(dbv.pszVal)];
+						lstrcpyA(pData->PortEnd, dbv.pszVal);
+						DBFreeVariant(&dbv);
+					}
+					else pData->PortEnd = "6667";
+
+					pData->iSSL = DBGetContactSettingByte(NULL, IRCPROTONAME, "UseSSL", 0);
 					
-				SendDlgItemMessage( hwndDlg, IDC_SERVER, EM_SETREADONLY, true, 0);
+					int iItem = SendDlgItemMessage( hwndDlg, IDC_SERVERCOMBO, CB_ADDSTRING,0,(LPARAM)  mir_a2t(pData->Name));
+					SendDlgItemMessage( hwndDlg, IDC_SERVERCOMBO, CB_SETITEMDATA, iItem,(LPARAM) pData);
+				}
+
+/*				SendDlgItemMessage( hwndDlg, IDC_SERVER, EM_SETREADONLY, true, 0);
 				SendDlgItemMessage( hwndDlg, IDC_PORT,   EM_SETREADONLY, true, 0);
 				SendDlgItemMessage( hwndDlg, IDC_PORT2,  EM_SETREADONLY, true, 0);
-
+				EnableWindow(GetDlgItem( hwndDlg, IDC_GRBOX_SSL), true);
+*/					
 				if ( prefs->QuickComboSelection != -1 ) {
 					SendDlgItemMessage( hwndDlg, IDC_SERVERCOMBO, CB_SETCURSEL, prefs->QuickComboSelection,0);				
 					SendMessage( hwndDlg, WM_COMMAND, MAKEWPARAM(IDC_SERVERCOMBO, CBN_SELCHANGE), 0);
 				}
-				else
-					EnableWindow(GetDlgItem( hwndDlg, IDNOK), false);
+				else EnableWindow(GetDlgItem( hwndDlg, IDNOK), false);
 			
 		} 
 		break;
@@ -623,7 +665,7 @@ BOOL CALLBACK QuickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		break;
 
 	case WM_COMMAND:
-		if ( HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDNCANCEL )
+		if ( ( /*HIWORD(wParam) == BN_CLICKED && */LOWORD(wParam) == IDNCANCEL ) || (LOWORD(wParam) == IDCANCEL) )
 			PostMessage ( hwndDlg, WM_CLOSE, 0,0);
 
 		if ( HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDNOK ) {
@@ -636,10 +678,15 @@ BOOL CALLBACK QuickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SERVER_INFO* pData = ( SERVER_INFO* )SendDlgItemMessage( hwndDlg, IDC_SERVERCOMBO, CB_GETITEMDATA, i, 0);
 			if ( pData && (int)pData != CB_ERR ) {
 				lstrcpyA( prefs->Network, pData->Group ); 
-				if( m_ssleay32 )
+				if( m_ssleay32 ) {
+					pData->iSSL = 0;
+					if(IsDlgButtonChecked( hwndDlg, IDC_SSL_ON))
+						pData->iSSL = 2;
+					if(IsDlgButtonChecked( hwndDlg, IDC_SSL_AUTO))
+						pData->iSSL = 1;
 					prefs->iSSL = pData->iSSL;
-				else
-					prefs->iSSL = 0;
+				}
+				else prefs->iSSL = 0;
 			}
 			
 			TCHAR windowname[20];
@@ -672,14 +719,38 @@ BOOL CALLBACK QuickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				SetDlgItemTextA( hwndDlg,IDC_PORT2,pData->PortEnd);
 				SetDlgItemTextA( hwndDlg,IDC_PASS,"");
 				if ( m_ssleay32 ) {
-					if ( pData->iSSL == 0 )
-						SetDlgItemText( hwndDlg, IDC_SSL, TranslateT("Off"));
-					if ( pData->iSSL == 1 )
-						SetDlgItemText( hwndDlg, IDC_SSL, TranslateT("Auto"));
-					if ( pData->iSSL == 2 )
-						SetDlgItemText( hwndDlg, IDC_SSL, TranslateT("On"));
+					if ( pData->iSSL == 0 ) {
+						CheckDlgButton( hwndDlg, IDC_SSL_OFF,  BST_CHECKED );
+						CheckDlgButton( hwndDlg, IDC_SSL_AUTO, BST_UNCHECKED );
+						CheckDlgButton( hwndDlg, IDC_SSL_ON,   BST_UNCHECKED );
+					}
+					if ( pData->iSSL == 1 ) {
+						CheckDlgButton( hwndDlg, IDC_SSL_AUTO, BST_CHECKED );
+						CheckDlgButton( hwndDlg, IDC_SSL_OFF,  BST_UNCHECKED );
+						CheckDlgButton( hwndDlg, IDC_SSL_ON,   BST_UNCHECKED );
+					}
+					if ( pData->iSSL == 2 ) {
+						CheckDlgButton( hwndDlg, IDC_SSL_ON,   BST_CHECKED );
+						CheckDlgButton( hwndDlg, IDC_SSL_OFF,  BST_UNCHECKED );
+						CheckDlgButton( hwndDlg, IDC_SSL_AUTO, BST_UNCHECKED );
+				}	}
+
+				if ( pData->Name == Translate("---- Not listed server ----" )) {
+					SendDlgItemMessage( hwndDlg, IDC_SERVER, EM_SETREADONLY, false, 0);
+					SendDlgItemMessage( hwndDlg, IDC_PORT,   EM_SETREADONLY, false, 0);
+					SendDlgItemMessage( hwndDlg, IDC_PORT2,  EM_SETREADONLY, false, 0);
+					EnableWindow(GetDlgItem( hwndDlg, IDC_SSL_OFF), TRUE);
+					EnableWindow(GetDlgItem( hwndDlg, IDC_SSL_AUTO),TRUE);
+					EnableWindow(GetDlgItem( hwndDlg, IDC_SSL_ON),  TRUE);
 				}
-				else SetDlgItemText( hwndDlg, IDC_SSL, TranslateT("N/A"));
+				else {
+					SendDlgItemMessage( hwndDlg, IDC_SERVER, EM_SETREADONLY, true, 0);
+					SendDlgItemMessage( hwndDlg, IDC_PORT,   EM_SETREADONLY, true, 0);
+					SendDlgItemMessage( hwndDlg, IDC_PORT2,  EM_SETREADONLY, true, 0);
+					EnableWindow(GetDlgItem( hwndDlg, IDC_SSL_OFF), FALSE);
+					EnableWindow(GetDlgItem( hwndDlg, IDC_SSL_AUTO),FALSE);
+					EnableWindow(GetDlgItem( hwndDlg, IDC_SSL_ON),  FALSE);
+				}
 
 				EnableWindow(GetDlgItem( hwndDlg, IDNOK), true);
 		}	}
@@ -910,7 +981,7 @@ BOOL CALLBACK QuestionWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 		break;
 		
 	case WM_COMMAND:
-		if ( HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDNCANCEL )
+		if ( ( /*HIWORD(wParam) == BN_CLICKED && */LOWORD(wParam) == IDNCANCEL ) || (LOWORD(wParam) == IDCANCEL) )
 			PostMessage ( hwndDlg, WM_CLOSE, 0,0);
 
 		if ( HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDNOK ) {
@@ -1180,7 +1251,7 @@ BOOL CALLBACK ManagerWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		TCHAR window[256];
 		GetDlgItemText( hwndDlg, IDC_CAPTION, window, SIZEOF(window));
 
-		if ( HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDCLOSE )
+		if ( (/*HIWORD(wParam) == BN_CLICKED && */ LOWORD(wParam) == IDCLOSE ) ||(LOWORD(wParam) == IDCANCEL) )
 			PostMessage ( hwndDlg, WM_CLOSE, 0,0);
 
 		if ( HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDC_REMOVE ) {

@@ -63,6 +63,9 @@ BOOL CList_AddDCCChat(TString name, TString hostmask, unsigned long adr, int por
 
 		g_ircSession.AddDCCSession(hContact, dcc);
 		dcc->Connect();
+		if (DBGetContactSettingByte(NULL, IRCPROTONAME,"MirVerAutoRequest", 1))
+		  PostIrcMessage( _T("/PRIVMSG %s \001VERSION\001"), name.c_str());
+
 	}
 	else {
 		CLISTEVENT cle = {0};

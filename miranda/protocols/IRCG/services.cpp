@@ -45,6 +45,41 @@ HANDLE hMenuServer = NULL;
 HANDLE hNetlib = NULL;
 HANDLE hNetlibDCC = NULL;
 
+HANDLE hpsAddToList     = NULL;    
+HANDLE hpsBasicSearch   = NULL;
+HANDLE hpsFileResume    = NULL;
+HANDLE hpsGetCaps	    = NULL;
+HANDLE hpsGetName	    = NULL;
+HANDLE hpsGetStatus	    = NULL;
+HANDLE hpsLoadIcon	    = NULL;
+HANDLE hpsSetAwayMsg    = NULL;
+HANDLE hpsSetStatus	    = NULL;
+
+HANDLE hpsRFile		    = NULL;
+HANDLE hpsRMessage	    = NULL;
+HANDLE hpsSFile		    = NULL;
+HANDLE hpsSFileAllow    = NULL;
+HANDLE hpsSFileCancel   = NULL;
+HANDLE hpsSFileDeny	    = NULL;
+HANDLE hpsSGetAwayMsg   = NULL;
+HANDLE hpsSMessage	    = NULL;
+
+HANDLE hpsJionChannel   = NULL;
+HANDLE hpsQuickConnect  = NULL;
+HANDLE hpsChangeNick    = NULL;
+HANDLE hpsShowList	    = NULL;
+HANDLE hpsShowServer    = NULL;
+HANDLE hpsMenu1Channel  = NULL;
+HANDLE hpsMenu2Channel  = NULL;
+HANDLE hpsMenu3Channel  = NULL;
+
+HANDLE hpsEDblCkick	    = NULL;
+HANDLE hpsCInsertRawIn  = NULL;
+HANDLE hpsCInsertRawOut = NULL;
+HANDLE hpsCInsertGuiIn  = NULL;
+HANDLE hpsCInsertGuiOut = NULL;
+HANDLE hpsCGetIrcData   = NULL;
+
 HWND   join_hWnd = NULL;
 HWND   quickconn_hWnd = NULL;
 
@@ -529,7 +564,7 @@ static int Service_Menu2Command(WPARAM wp, LPARAM lp)
 				if ( dcc )
 					dcc->Disconnect();
 			}
-			else PostIrcMessage( _T("/WHOIS %s"), dbv.ptszVal);
+			else PostIrcMessage( _T("/WHOIS %s %s"), dbv.ptszVal, dbv.ptszVal);
 		}
 		DBFreeVariant(&dbv);
 	}
@@ -745,11 +780,16 @@ int Service_GCEventHook(WPARAM wParam,LPARAM lParam)
 						*pTemp = '\0';
 				}
 				else gchtemp->pDest->ptszID = NULL;
-
+				//MBOT CORRECTIONS
+//*
 				gchook->pDest->pszModule = mir_strdup( gchook->pDest->pszModule );
 				gchook->ptszText = mir_tstrdup( gchook->ptszText );
 				gchook->ptszUID = mir_tstrdup( gchook->ptszUID );
-
+/*/
+				gchtemp->pDest->pszModule = mir_strdup( gchook->pDest->pszModule );
+				gchtemp->ptszText = mir_tstrdup( gchook->ptszText );
+				gchtemp->ptszUID = mir_tstrdup( gchook->ptszUID );
+*/
 				if ( Scripting_TriggerMSPGuiOut(gchtemp) && gchtemp)
 					gch = gchtemp;
 				else
@@ -813,9 +853,115 @@ int Service_GCEventHook(WPARAM wParam,LPARAM lParam)
 							CallChatEvent( SESSION_TERMINATE, (LPARAM)&gce);
 						}
 						break;
-					case 4:
+					case 4:		// show server window
 						PostIrcMessageWnd(p1, NULL, _T("/SERVERSHOW"));
 						break;
+/*					case 5:		// nickserv register nick
+						PostIrcMessage( _T("/nickserv REGISTER %%question=\"%s\",\"%s\""), 
+							TranslateT("Please enter your authentification code"), TranslateT("Authentificate nick") );
+						break;
+*/					case 6:		// nickserv Identify
+						PostIrcMessage( _T("/nickserv AUTH %%question=\"%s\",\"%s\""), 
+							TranslateT("Please enter your authentification code"), TranslateT("Authentificate nick") );
+						break;
+					case 7:		// nickserv drop nick
+						if (MessageBox(0, TranslateT("Are you sure you want to unregister your current nick?"), TranslateT("Delete nick"), 
+								MB_ICONERROR + MB_YESNO + MB_DEFBUTTON2) == IDYES)
+							PostIrcMessage( _T("/nickserv DROP"));
+						break;
+					case 8:		// nickserv Identify
+						{
+						HWND question_hWnd = CreateDialog( g_hInstance, MAKEINTRESOURCE(IDD_QUESTION), NULL, QuestionWndProc );
+						HWND hEditCtrl = GetDlgItem( question_hWnd, IDC_EDIT);
+						SetDlgItemText( question_hWnd, IDC_CAPTION, TranslateT("Identify nick"));
+						SetWindowText( GetDlgItem( question_hWnd, IDC_TEXT), TranslateT("Please enter your password") );
+						SetDlgItemText( question_hWnd, IDC_HIDDENEDIT, _T("/nickserv IDENTIFY %question=\"%s\",\"%s\""));
+						SetWindowLong(GetDlgItem( question_hWnd, IDC_EDIT), GWL_STYLE, 
+							(LONG)GetWindowLong(GetDlgItem( question_hWnd, IDC_EDIT), GWL_STYLE) | ES_PASSWORD);
+						SendMessage(hEditCtrl, EM_SETPASSWORDCHAR,(WPARAM)_T('*'),0 );
+						SetFocus(hEditCtrl);
+						PostMessage( question_hWnd, IRC_ACTIVATE, 0, 0);
+						}
+/*
+						PostIrcMessage( _T("/nickserv IDENTIFY %%question=\"%s\",\"%s\""), 
+							TranslateT("Please enter your password"), TranslateT("Identify nick") );
+*/
+						break;
+					case 9:		// nickserv remind password
+						{
+						DBVARIANT dbv;
+						if ( !DBGetContactSettingTString( NULL, IRCPROTONAME, "Nick", &dbv )) 
+							{	
+							PostIrcMessage( _T("/nickserv SENDPASS %s"), dbv.ptszVal);
+							DBFreeVariant( &dbv );
+							}
+						}
+						break;
+					case 10:		// nickserv set new password
+						PostIrcMessage( _T("/nickserv SET PASSWORD %%question=\"%s\",\"%s\""), 
+							TranslateT("Please enter your new password"), TranslateT("Set new password") );
+						break;
+					case 11:		// nickserv set language
+						PostIrcMessage( _T("/nickserv SET LANGUAGE %%question=\"%s\",\"%s\""), 
+							TranslateT("Please enter desired languageID (numeric value, depends on server)"), TranslateT("Change language of NickServ messages") );
+						break;
+					case 12:		// nickserv set homepage
+						PostIrcMessage( _T("/nickserv SET URL %%question=\"%s\",\"%s\""), 
+						TranslateT("Please enter URL that will be linked to your nick"), TranslateT("Set URL, linked to nick") );
+						break;
+					case 13:		// nickserv set email
+						PostIrcMessage( _T("/nickserv SET EMAIL %%question=\"%s\",\"%s\""), 
+							TranslateT("Please enter your e-mail, that will be linked to your nick"), TranslateT("Set e-mail, linked to nick") );
+						break;
+					case 14:		// nickserv set info
+						PostIrcMessage( _T("/nickserv SET INFO %%question=\"%s\",\"%s\""), 
+							TranslateT("Please enter some information about your nick"), TranslateT("Set information for nick") );
+						break;
+					case 15:		// nickserv kill unauth off
+						PostIrcMessage( _T("/nickserv SET KILL OFF"));
+							break;
+					case 16:		// nickserv kill unauth on
+						PostIrcMessage( _T("/nickserv SET KILL ON"));
+							break;
+					case 17:		// nickserv kill unauth quick
+						PostIrcMessage( _T("/nickserv SET KILL QUICK"));
+							break;
+					case 18:		// nickserv hide nick from /LIST
+						PostIrcMessage( _T("/nickserv SET PRIVATE ON"));
+						break;
+					case 19:		// nickserv show nick to /LIST
+						PostIrcMessage( _T("/nickserv SET PRIVATE OFF"));
+						break;
+					case 20:		// nickserv Hde e-mail from info
+						PostIrcMessage( _T("/nickserv SET HIDE EMAIL ON"));
+							break;
+					case 21:		// nickserv Show e-mail in info
+						PostIrcMessage( _T("/nickserv SET HIDE EMAIL OFF"));
+							break;
+					case 22:		// nickserv Set security for nick
+						PostIrcMessage( _T("/nickserv SET SECURE ON"));
+							break;
+					case 23:		// nickserv Remove security for nick
+						PostIrcMessage( _T("/nickserv SET SECURE OFF"));
+							break;
+					case 24:		// nickserv Link nick to current
+						PostIrcMessage( _T("/nickserv LINK %%question=\"%s\",\"%s\""), 
+							TranslateT("Please enter nick you want to link to your current nick"), TranslateT("Link another nick to current nick") );
+						break;
+					case 25:		// nickserv Unlink nick from current
+						PostIrcMessage( _T("/nickserv LINK %%question=\"%s\",\"%s\""), 
+							TranslateT("Please enter nick you want to unlink from your current nick"), TranslateT("Unlink another nick from current nick") );
+						break;
+					case 26:		// nickserv Set main nick
+						PostIrcMessage( _T("/nickserv LINK %%question=\"%s\",\"%s\""), 
+							TranslateT("Please enter nick you want to set as your main nick"), TranslateT("Set main nick") );
+						break;
+					case 27:		// nickserv list all linked nicks
+						PostIrcMessage( _T("/nickserv LISTLINKS"));
+							break;
+					case 28:		// nickserv list all channels owned
+						PostIrcMessage( _T("/nickserv LISTCHANS"));
+							break;
 					}
 					break;
 
@@ -850,7 +996,7 @@ int Service_GCEventHook(WPARAM wParam,LPARAM lParam)
 						DoUserhostWithReason(1, _T("L") + (TString)p1, true, _T("%s"), gch->ptszUID );
 						break;
 					case 10:
-						PostIrcMessage( _T("/WHOIS %s"), gch->ptszUID );
+						PostIrcMessage( _T("/WHOIS %s %s"), gch->ptszUID, gch->ptszUID );
 						break;
 				//	case 11:
 				//		DoUserhostWithReason(1, "I", true, "%s", gch->ptszUID );
@@ -908,6 +1054,27 @@ int Service_GCEventHook(WPARAM wParam,LPARAM lParam)
 							mir_free( psr.nick );
 						}
 						break;
+					case 31:	//slap
+						{
+							TCHAR tszTemp[4000];
+							mir_sntprintf(tszTemp, SIZEOF(tszTemp), _T("/slap %s"), gch->ptszUID);
+							PostIrcMessageWnd(p1, NULL, tszTemp);
+						}
+						break;
+					case 32:  //nickserv info
+						{
+							TCHAR tszTemp[4000];
+							mir_sntprintf(tszTemp, SIZEOF(tszTemp), _T("/nickserv INFO %s ALL"), gch->ptszUID);
+							PostIrcMessageWnd(p1, NULL, tszTemp);
+						}
+						break;
+					case 33:  //nickserv ghost
+						{
+							TCHAR tszTemp[4000];
+							mir_sntprintf(tszTemp, SIZEOF(tszTemp), _T("/nickserv GHOST %s"), gch->ptszUID);
+							PostIrcMessageWnd(p1, NULL, tszTemp);
+						}
+						break;
 					}
 					break;
 				}
@@ -934,10 +1101,41 @@ static int Service_GCMenuHook(WPARAM wParam,LPARAM lParam)
 			if (gcmi->Type == MENU_ON_LOG) {
 				if (lstrcmpi(gcmi->pszID, _T("Network log"))) {
 					static gc_item Item[] = {
-						{ TranslateT("&Change your nickname" ), 1, MENU_ITEM, FALSE},
-						{ TranslateT("Channel &settings" ), 2, MENU_ITEM, FALSE},
-						{ TranslateT("&Leave the channel" ), 3, MENU_ITEM, FALSE},
-						{ TranslateT("Show the server &window" ), 4, MENU_ITEM, FALSE}
+						{ TranslateT("&Change your nickname" ),		1, MENU_ITEM,		FALSE},
+						{ TranslateT("Channel &settings" ),			2, MENU_ITEM,		FALSE},
+						{ TranslateT("&Leave the channel" ),		3, MENU_ITEM,		FALSE},
+						{ TranslateT("Show the server &window" ),	4, MENU_ITEM,		FALSE},
+						{ _T(""),									0, MENU_SEPARATOR,	FALSE},
+						{ TranslateT("NickServ"),					0, MENU_NEWPOPUP,	FALSE},
+						{ TranslateT("Register nick" ),				5, MENU_POPUPITEM,	TRUE},
+						{ TranslateT("Auth nick" ),					6, MENU_POPUPITEM,	FALSE},
+						{ TranslateT("Delete nick" ),				7, MENU_POPUPITEM,	FALSE},
+						{ TranslateT("Identify nick" ),				8, MENU_POPUPITEM,	FALSE},
+						{ TranslateT("Remind password " ),			9, MENU_POPUPITEM,	FALSE},
+						{ TranslateT("Set new password" ),			10, MENU_POPUPITEM,	TRUE},
+						{ TranslateT("Set language" ),				11, MENU_POPUPITEM,	FALSE},
+						{ TranslateT("Set homepage" ),				12, MENU_POPUPITEM,	FALSE},
+						{ TranslateT("Set e-mail" ),				13, MENU_POPUPITEM,	FALSE},
+						{ TranslateT("Set info" ),					14, MENU_POPUPITEM,	FALSE},
+						{ _T("" ),									0,	MENU_POPUPSEPARATOR,FALSE},
+						{ TranslateT("Hde e-mail from info" ),		20, MENU_POPUPITEM,	FALSE},
+						{ TranslateT("Show e-mail in info" ),		21, MENU_POPUPITEM,	FALSE},
+						{ _T("" ),									0,	MENU_POPUPSEPARATOR,FALSE},
+						{ TranslateT("Set security for nick" ),		22, MENU_POPUPITEM,	FALSE},
+						{ TranslateT("Remove security for nick" ),	23, MENU_POPUPITEM,	FALSE},
+						{ _T("" ),									0,	MENU_POPUPSEPARATOR,FALSE},
+						{ TranslateT("Link nick to current" ),		24, MENU_POPUPITEM,	FALSE},
+						{ TranslateT("Unlink nick from current" ),	25, MENU_POPUPITEM,	FALSE},
+						{ TranslateT("Set main nick" ),				26, MENU_POPUPITEM,	FALSE},
+						{ TranslateT("List all your nicks" ),		27, MENU_POPUPITEM,	FALSE},
+						{ TranslateT("List your channels" ),		28, MENU_POPUPITEM,	FALSE},
+						{ _T("" ),									0,	MENU_POPUPSEPARATOR,FALSE},
+						{ TranslateT("Kill unauthorized: off" ),	15, MENU_POPUPITEM,	FALSE},
+						{ TranslateT("Kill unauthorized: on" ),		16, MENU_POPUPITEM,	FALSE},
+						{ TranslateT("Kill unauthorized: quick" ),	17, MENU_POPUPITEM,	FALSE},
+						{ _T("" ),									0,	MENU_POPUPSEPARATOR,FALSE},
+						{ TranslateT("Hide nick from list" ),		18, MENU_POPUPITEM,	FALSE},
+						{ TranslateT("Show nick to list" ),			19, MENU_POPUPITEM,	FALSE}
 						};
 						gcmi->nItems = SIZEOF(Item);
 						gcmi->Item = &Item[0];
@@ -957,6 +1155,9 @@ static int Service_GCMenuHook(WPARAM wParam,LPARAM lParam)
 					{ TranslateT("&WhoIs info"),         10, MENU_ITEM,           FALSE },
 					{ TranslateT("&Invite to channel"),  23, MENU_ITEM,           FALSE },
 					{ TranslateT("Send &notice"),        22, MENU_ITEM,           FALSE },
+					{ TranslateT("&Slap"),		         31, MENU_ITEM,           FALSE },
+					{ TranslateT("Nic&kserv info"),		 32, MENU_ITEM,           FALSE },
+					{ TranslateT("Nic&kserv kill ghost"),33, MENU_ITEM,           FALSE },
 					{ TranslateT("&Control"),             0, MENU_NEWPOPUP,       FALSE },
 					{ TranslateT("Give Owner"),          18, MENU_POPUPITEM,      FALSE },
 					{ TranslateT("Take Owner"),          19, MENU_POPUPITEM,      FALSE },
@@ -1196,9 +1397,12 @@ static int Service_AddToList(WPARAM wParam,LPARAM lParam)
 			if ( !DBGetContactSettingTString(hContact, IRCPROTONAME, "UWildcard", &dbv1 )) {
 				DoUserhostWithReason(2, ((TString)_T("S") + dbv1.ptszVal).c_str(), true, dbv1.ptszVal);
 				DBFreeVariant( &dbv1 );
-			}
+				}
 			else DoUserhostWithReason( 2, ((TString)_T("S") + user.name).c_str(), true, user.name );
-	}	}
+			}	
+			if (DBGetContactSettingByte(NULL, IRCPROTONAME,"MirVerAutoRequest", 1))
+				PostIrcMessage( _T("/PRIVMSG %s \001VERSION\001"), user.name);
+		}
 
 	mir_free( user.name );
 	return (int) hContact;
@@ -1721,56 +1925,92 @@ void UnhookEvents(void)
 	UnhookEvent(g_hMenuCreation);
 	UnhookEvent(g_hGCUserEvent);
 	UnhookEvent(g_hGCMenuBuild);
+	UnhookEvent(g_hOptionsInit);
 	Netlib_CloseHandle(hNetlib);
 	Netlib_CloseHandle(hNetlibDCC);
+
+	DestroyServiceFunction(hpsAddToList    );
+	DestroyServiceFunction(hpsBasicSearch  );
+	DestroyServiceFunction(hpsFileResume   );		
+	DestroyServiceFunction(hpsGetCaps	   );		
+	DestroyServiceFunction(hpsGetName	   );	
+	DestroyServiceFunction(hpsGetStatus	   );
+	DestroyServiceFunction(hpsLoadIcon	   );						   
+	DestroyServiceFunction(hpsSetAwayMsg   );						   
+	DestroyServiceFunction(hpsSetStatus	   );					   
+						   
+	DestroyServiceFunction(hpsRFile		   );					   
+	DestroyServiceFunction(hpsRMessage	   );						   
+	DestroyServiceFunction(hpsSFile		   );					   
+	DestroyServiceFunction(hpsSFileAllow   );						   
+	DestroyServiceFunction(hpsSFileCancel  );						   
+	DestroyServiceFunction(hpsSFileDeny	   );					   
+	DestroyServiceFunction(hpsSGetAwayMsg  );						   
+	DestroyServiceFunction(hpsSMessage	   );						   
+						   
+	DestroyServiceFunction(hpsJionChannel  );						   
+	DestroyServiceFunction(hpsQuickConnect );					   
+	DestroyServiceFunction(hpsChangeNick   );						   
+	DestroyServiceFunction(hpsShowList	   );						   
+	DestroyServiceFunction(hpsShowServer   );						   
+	DestroyServiceFunction(hpsMenu1Channel );					   
+	DestroyServiceFunction(hpsMenu2Channel );					   
+	DestroyServiceFunction(hpsMenu3Channel );					   
+						   
+	DestroyServiceFunction(hpsEDblCkick	   );					   
+	DestroyServiceFunction(hpsCInsertRawIn );					   
+	DestroyServiceFunction(hpsCInsertRawOut);				   
+	DestroyServiceFunction(hpsCInsertGuiIn );				   
+	DestroyServiceFunction(hpsCInsertGuiOut);				   
+	DestroyServiceFunction(hpsCGetIrcData  );					   
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Service function creation
 
-static void CreateProtoService( const char* serviceName, MIRANDASERVICE pFunc )
+static HANDLE CreateProtoService( const char* serviceName, MIRANDASERVICE pFunc )
 {
 	char temp[MAXMODULELABELLENGTH];
 	mir_snprintf( temp, sizeof(temp), "%s%s", IRCPROTONAME, serviceName );
-		CreateServiceFunction( temp, pFunc );
+	return CreateServiceFunction( temp, pFunc );
 }
 
 void CreateServiceFunctions( void )
 {
-	CreateProtoService( PS_ADDTOLIST,     Service_AddToList );
-	CreateProtoService( PS_BASICSEARCH,   Service_BasicSearch );
-	CreateProtoService( PS_FILERESUME,    Service_FileResume );
-	CreateProtoService( PS_GETCAPS,       Service_GetCaps );
-	CreateProtoService( PS_GETNAME,       Service_GetName );
-	CreateProtoService( PS_GETSTATUS,     Service_GetStatus );
-	CreateProtoService( PS_LOADICON,      Service_LoadIcon );
-	CreateProtoService( PS_SETAWAYMSG,    Service_SetAwayMsg );
-	CreateProtoService( PS_SETSTATUS,     Service_SetStatus );
+	hpsAddToList     = (HANDLE)CreateProtoService( PS_ADDTOLIST,     Service_AddToList );
+	hpsBasicSearch   = (HANDLE)CreateProtoService( PS_BASICSEARCH,   Service_BasicSearch );
+	hpsFileResume	 = (HANDLE)CreateProtoService( PS_FILERESUME,    Service_FileResume );
+	hpsGetCaps		 = (HANDLE)CreateProtoService( PS_GETCAPS,       Service_GetCaps );
+	hpsGetName		 = (HANDLE)CreateProtoService( PS_GETNAME,       Service_GetName );
+	hpsGetStatus	 = (HANDLE)CreateProtoService( PS_GETSTATUS,     Service_GetStatus );
+	hpsLoadIcon		 = (HANDLE)CreateProtoService( PS_LOADICON,      Service_LoadIcon );
+	hpsSetAwayMsg	 = (HANDLE)CreateProtoService( PS_SETAWAYMSG,    Service_SetAwayMsg );
+	hpsSetStatus	 = (HANDLE)CreateProtoService( PS_SETSTATUS,     Service_SetStatus );
 
-	CreateProtoService( PSR_FILE,         Service_FileReceive);
-	CreateProtoService( PSR_MESSAGE,      Service_AddIncMessToDB );
-	CreateProtoService( PSS_FILE,         Service_FileSend );
-	CreateProtoService( PSS_FILEALLOW,    Service_FileAllow );
-	CreateProtoService( PSS_FILECANCEL,   Service_FileCancel );
-	CreateProtoService( PSS_FILEDENY,     Service_FileDeny );
-	CreateProtoService( PSS_GETAWAYMSG,   Service_GetAwayMessage );
-	CreateProtoService( PSS_MESSAGE,      Service_GetMessFromSRMM );
+	hpsRFile		 = (HANDLE)CreateProtoService( PSR_FILE,         Service_FileReceive);
+	hpsRMessage		 = (HANDLE)CreateProtoService( PSR_MESSAGE,      Service_AddIncMessToDB );
+	hpsSFile		 = (HANDLE)CreateProtoService( PSS_FILE,         Service_FileSend );
+	hpsSFileAllow	 = (HANDLE)CreateProtoService( PSS_FILEALLOW,    Service_FileAllow );
+	hpsSFileCancel	 = (HANDLE)CreateProtoService( PSS_FILECANCEL,   Service_FileCancel );
+	hpsSFileDeny	 = (HANDLE)CreateProtoService( PSS_FILEDENY,     Service_FileDeny );
+	hpsSGetAwayMsg	 = (HANDLE)CreateProtoService( PSS_GETAWAYMSG,   Service_GetAwayMessage );
+	hpsSMessage		 = (HANDLE)CreateProtoService( PSS_MESSAGE,      Service_GetMessFromSRMM );
 
-	CreateProtoService( IRC_JOINCHANNEL,  Service_JoinMenuCommand );
-	CreateProtoService( IRC_QUICKCONNECT, Service_QuickConnectMenuCommand);
-	CreateProtoService( IRC_CHANGENICK,   Service_ChangeNickMenuCommand );
-	CreateProtoService( IRC_SHOWLIST,     Service_ShowListMenuCommand );
-	CreateProtoService( IRC_SHOWSERVER,   Service_ShowServerMenuCommand );
-	CreateProtoService( IRC_MENU1CHANNEL, Service_Menu1Command );
-	CreateProtoService( IRC_MENU2CHANNEL, Service_Menu2Command );
-	CreateProtoService( IRC_MENU3CHANNEL, Service_Menu3Command );
+	hpsJionChannel	 = (HANDLE)CreateProtoService( IRC_JOINCHANNEL,  Service_JoinMenuCommand );
+	hpsQuickConnect  = (HANDLE)CreateProtoService( IRC_QUICKCONNECT, Service_QuickConnectMenuCommand);
+	hpsChangeNick	 = (HANDLE)CreateProtoService( IRC_CHANGENICK,   Service_ChangeNickMenuCommand );
+	hpsShowList		 = (HANDLE)CreateProtoService( IRC_SHOWLIST,     Service_ShowListMenuCommand );
+	hpsShowServer	 = (HANDLE)CreateProtoService( IRC_SHOWSERVER,   Service_ShowServerMenuCommand );
+	hpsMenu1Channel  = (HANDLE)CreateProtoService( IRC_MENU1CHANNEL, Service_Menu1Command );
+	hpsMenu2Channel  = (HANDLE)CreateProtoService( IRC_MENU2CHANNEL, Service_Menu2Command );
+	hpsMenu3Channel  = (HANDLE)CreateProtoService( IRC_MENU3CHANNEL, Service_Menu3Command );
 
-	CreateProtoService( "/DblClickEvent", Service_EventDoubleclicked );
-	CreateProtoService( "/InsertRawIn",   Scripting_InsertRawIn );
-	CreateProtoService( "/InsertRawOut",  Scripting_InsertRawOut );
-	CreateProtoService( "/InsertGuiIn",   Scripting_InsertGuiIn );
-	CreateProtoService( "/InsertGuiOut",  Scripting_InsertGuiOut);
-	CreateProtoService( "/GetIrcData",    Scripting_GetIrcData);
+	hpsEDblCkick	 = (HANDLE)CreateProtoService( "/DblClickEvent", Service_EventDoubleclicked );
+	hpsCInsertRawIn  = (HANDLE)CreateProtoService( "/InsertRawIn",   Scripting_InsertRawIn );
+	hpsCInsertRawOut = (HANDLE)CreateProtoService( "/InsertRawOut",  Scripting_InsertRawOut );
+	hpsCInsertGuiIn  = (HANDLE)CreateProtoService( "/InsertGuiIn",   Scripting_InsertGuiIn );
+	hpsCInsertGuiOut = (HANDLE)CreateProtoService( "/InsertGuiOut",  Scripting_InsertGuiOut);
+	hpsCGetIrcData	 = (HANDLE)CreateProtoService( "/GetIrcData",    Scripting_GetIrcData);
 }
 
 VOID CALLBACK RetryTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime)

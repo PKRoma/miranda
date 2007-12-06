@@ -298,8 +298,10 @@ CMyMonitor::CMyMonitor() : irc::CIrcDefaultMonitor(g_ircSession)
 	IRC_MAP_ENTRY(CMyMonitor, "001", OnIrc_WELCOME)
 	IRC_MAP_ENTRY(CMyMonitor, "002", OnIrc_YOURHOST)
 	IRC_MAP_ENTRY(CMyMonitor, "005", OnIrc_SUPPORT)
+	IRC_MAP_ENTRY(CMyMonitor, "223", OnIrc_WHOIS_OTHER)			//CodePage info
 	IRC_MAP_ENTRY(CMyMonitor, "254", OnIrc_NOOFCHANNELS)
 	IRC_MAP_ENTRY(CMyMonitor, "263", OnIrc_TRYAGAIN)
+	IRC_MAP_ENTRY(CMyMonitor, "264", OnIrc_WHOIS_OTHER)			//Encryption info (SSL connect)
 	IRC_MAP_ENTRY(CMyMonitor, "301", OnIrc_WHOIS_AWAY)
 	IRC_MAP_ENTRY(CMyMonitor, "302", OnIrc_USERHOST_REPLY)
 	IRC_MAP_ENTRY(CMyMonitor, "305", OnIrc_BACKFROMAWAY)
@@ -342,6 +344,7 @@ CMyMonitor::CMyMonitor() : irc::CIrcDefaultMonitor(g_ircSession)
 	IRC_MAP_ENTRY(CMyMonitor, "473", OnIrc_JOINERROR)
 	IRC_MAP_ENTRY(CMyMonitor, "474", OnIrc_JOINERROR)
 	IRC_MAP_ENTRY(CMyMonitor, "475", OnIrc_JOINERROR)
+	IRC_MAP_ENTRY(CMyMonitor, "671", OnIrc_WHOIS_OTHER)			//Encryption info (SSL connect)
 }
 
 CMyMonitor::~CMyMonitor()
@@ -1262,6 +1265,15 @@ bool CMyMonitor::IsCTCP( const CIrcMessage* pmsg )
 			TCHAR szTemp[300]; 
 			szTemp[0] = '\0';
 
+			//if we got incoming CTCP Version for contact in CList - then write its as MirVer for that contact!
+			if (pmsg->m_bIncoming && command == _T("version"))
+				{
+				struct CONTACT user = { (TCHAR*)pmsg->prefix.sNick.c_str(), (TCHAR*)pmsg->prefix.sUser.c_str(), (TCHAR*)pmsg->prefix.sHost.c_str(), false, false, false};
+				HANDLE hContact = CList_FindContact(&user);
+				if (hContact) 
+					DBWriteContactSettingTString( hContact, IRCPROTONAME, "MirVer", DoColorCodes(GetWordAddress(mess.c_str(), 1), TRUE, FALSE)); 
+				}
+
 			// if the whois window is visible and the ctcp reply belongs to the user in it, then show the reply in the whois window
 			if ( whois_hWnd && IsWindowVisible( whois_hWnd )) {
 				GetDlgItemText( whois_hWnd, IDC_INFO_NICK, szTemp, SIZEOF(szTemp));
@@ -1288,11 +1300,11 @@ bool CMyMonitor::IsCTCP( const CIrcMessage* pmsg )
 			if ( pmsg->m_bIncoming && command == _T("ping")) {
 				int s = (int)time(0) - (int)_ttol(GetWordAddress(mess.c_str(), 1));
 				mir_sntprintf( szTemp, SIZEOF(szTemp), TranslateT("CTCP PING reply from %s: %u sec(s)"), pmsg->prefix.sNick.c_str(), s); 
-				DoEvent( GC_EVENT_INFORMATION, NULL, NULL, szTemp, NULL, NULL, NULL, true, false ); 
+				DoEvent( GC_EVENT_INFORMATION, _T("Network log"), NULL, szTemp, NULL, NULL, NULL, true, false ); 
 			}
 			else {
 				mir_sntprintf( szTemp, SIZEOF(szTemp), TranslateT("CTCP %s reply from %s: %s"), ocommand.c_str(), pmsg->prefix.sNick.c_str(), GetWordAddress(mess.c_str(), 1));	
-				DoEvent( GC_EVENT_INFORMATION, NULL, NULL, szTemp, NULL, NULL, NULL, true, false ); 
+				DoEvent( GC_EVENT_INFORMATION, _T("Network log"), NULL, szTemp, NULL, NULL, NULL, true, false ); 
 		}	}		
 		
 		return true;
@@ -1800,9 +1812,11 @@ bool CMyMonitor::OnIrc_WHOIS_IDLE( const CIrcMessage* pmsg )
 			mir_sntprintf(temp, 99, _T("%us"), S);
 
 		TCHAR temp2[256], temp3[256];
-		GetDlgItemText( whois_hWnd, IDC_CAPTION, temp2, SIZEOF( temp2 ));
-		mir_sntprintf( temp3, SIZEOF(temp3), _T("%s (idle %s)"), temp2, temp );
-		SetDlgItemText( whois_hWnd, IDC_CAPTION, temp3 );	
+		TCHAR tTimeBuf[128], *tStopStr;
+		time_t ttTime = _tcstol( pmsg->parameters[3].c_str(), &tStopStr, 10);
+		_tcsftime(tTimeBuf, 128, _T("%c"), localtime(&ttTime));
+		mir_sntprintf( temp3, SIZEOF(temp3), _T("online since %s, idle %s"), tTimeBuf, temp);
+		SetDlgItemText( whois_hWnd, IDC_AWAYTIME, temp3 );	
 	}
 	ShowMessage( pmsg );
 	return true;

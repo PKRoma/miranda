@@ -37,6 +37,7 @@
 #define IDI_DCC                         196
 #define IDI_PART                        197
 #define IDI_JOIN                        198
+#define IDD_QUESTION2                   199
 #define IDC_ENICK                       1000
 #define IDC_USERID                      1001
 #define IDC_INFO_NAME                   1001
@@ -175,6 +176,15 @@
 #define IDC_COMBO1                      1223
 #define IDC_CHECK9                      1224
 #define IDC_UTF_AUTODETECT              1225
+#define IDC_AWAYTIME                    1226
+#define IDC_SSL_ON                      1227
+#define IDC_SSL_AUTO                    1228
+#define IDC_SSL_OFF                     1229
+#define IDC_GRBOX_SSL                   1230
+#define IDC_LIST1                       1231
+#define IDC_EDIT1                       1232
+#define IDC_STATICTEXT1                 1233
+#define IDC_STATICTEXT2                 1234
 #define ID_MENU1_OP                     40013
 #define ID_MENU1_DEOP                   40014
 #define ID_MENU1_VOICE                  40015
@@ -207,14 +217,35 @@
 #define ID_MENU1_DEADMIN                40043
 #define ID_MENU1_SENDNOTICE             40044
 #define ID_MENU1_INVITETOCHANNEL        40045
+#define ID_MENU1_SLAP                   40046
+#define ID_MENU1_NICKSERV               40047
+#define ID_NICKSERV_REGISTERNICK        40048
+#define ID_NICKSERV_AUTHNICK            40049
+#define ID_NICKSERV_DELETENICK          40050
+#define ID_NICKSERV_IDENTIFY            40051
+#define ID_NICKSERV_SENDPASSWORD        40052
+#define ID_NICKSERV_SETTINGS            40053
+#define ID_SETTINGS_LANGUAGE            40054
+#define ID_SETTINGS_E                   40055
+#define ID_SETTINGS_INFO                40056
+#define ID_SETTINGS_KILL                40057
+#define ID_NICKSERV_KILL                40058
+#define ID_KILL_OFF                     40059
+#define ID_KILL_ON                      40060
+#define ID_KILL_QUICK                   40061
+#define ID_NICKSERV_PRIVATE             40062
+#define ID_PRIVATE_ON                   40063
+#define ID_PRIVATE_OFF                  40064
+#define ID_NICKSERV_SETNEWPASSWORD      40065
+#define ID_NICKSERV_                    40066
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        199
-#define _APS_NEXT_COMMAND_VALUE         40046
-#define _APS_NEXT_CONTROL_VALUE         1226
+#define _APS_NEXT_RESOURCE_VALUE        200
+#define _APS_NEXT_COMMAND_VALUE         40067
+#define _APS_NEXT_CONTROL_VALUE         1234
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

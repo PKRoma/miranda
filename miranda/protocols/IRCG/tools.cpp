@@ -445,7 +445,11 @@ int CallChatEvent(WPARAM wParam, LPARAM lParam)
 		gcetemp->ptszUserInfo = mir_tstrdup( gcevent->ptszUserInfo );
 
 		if ( Scripting_TriggerMSPGuiIn( &wp, gcetemp ) && gcetemp ) {
-			if ( gcetemp && gcetemp->pDest && gcetemp->pDest->ptszID ) {
+			//MBOT CORRECTIONS
+			//if ( gcetemp && gcetemp->pDest && gcetemp->pDest->ptszID ) {
+			if ( gcetemp && gcetemp->pDest && gcetemp->pDest->ptszID && 
+				!my_strstri(gcetemp->pDest->ptszID, (g_ircSession) ? g_ircSession.GetInfo().sNetwork.c_str() : TranslateT("Offline")) ) {
+
 				TString sTempId = MakeWndID( gcetemp->pDest->ptszID );
 				mir_realloc( gcetemp->pDest->ptszID, sizeof(TCHAR)*(sTempId.length() + 1));
 				lstrcpyn(gcetemp->pDest->ptszID, sTempId.c_str(), sTempId.length()+1); 
@@ -738,4 +742,6 @@ void ClearUserhostReasons(int type)
 		vWhoInProgress.clear();
 		break;
 }	}
+
+
 

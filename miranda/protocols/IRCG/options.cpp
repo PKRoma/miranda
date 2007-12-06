@@ -334,7 +334,7 @@ BOOL CALLBACK AddServerProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 	case WM_COMMAND:
 		{
-			if (HIWORD(wParam) == BN_CLICKED) {
+			/*if (HIWORD(wParam) == BN_CLICKED) */{
 				switch (LOWORD(wParam)) {	
 				case IDN_ADD_OK:
 					if (GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_SERVER)) && GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_ADDRESS)) && GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_PORT)) && GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_PORT2)) && GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_COMBO))) {
@@ -369,7 +369,8 @@ BOOL CALLBACK AddServerProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					}
 					else MessageBox( hwndDlg, TranslateT("Please complete all fields"), TranslateT("IRC error"), MB_OK | MB_ICONERROR );
 					break;
-
+				
+				case IDCANCEL:
 				case IDN_ADD_CANCEL:
 					PostMessage ( hwndDlg, WM_CLOSE, 0,0);
 					break;
@@ -436,7 +437,7 @@ BOOL CALLBACK EditServerProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		return TRUE;
 
 	case WM_COMMAND:
-		if (HIWORD(wParam) == BN_CLICKED)
+		//if (HIWORD(wParam) == BN_CLICKED)
 			switch (LOWORD(wParam)) {	
 			case IDN_ADD_OK:
 				if (GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_SERVER)) && GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_ADDRESS)) && GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_PORT)) && GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_PORT2)) && GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_COMBO))) {
@@ -483,6 +484,7 @@ BOOL CALLBACK EditServerProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				else MessageBox( hwndDlg, TranslateT("Please complete all fields"), TranslateT("IRC error"), MB_OK | MB_ICONERROR );
 				break;
 
+			case IDCANCEL:
 			case IDN_ADD_CANCEL:
 				PostMessage ( hwndDlg, WM_CLOSE, 0,0);
 				break;
