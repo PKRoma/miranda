@@ -193,7 +193,7 @@ void MSN_MoveContactToGroup( HANDLE hContact, const char* grpName )
 
 	if ( bDelete )
  	{
-		MSN_ABAddDelContactGroup(szContactID, szId, "ABGroupContactDelete");
+		MSN_ABAddDelContactGroup(szContactID, szGroupID, "ABGroupContactDelete");
 		MSN_DeleteSetting( hContact, "GroupID" );
 		MSN_RemoveEmptyGroups();
 	}
