@@ -31,6 +31,9 @@ Version 2.0.0.3  - 2007/11/29
           tabSRMM now ONLY reads the status message from the database where it
           should be stored by the protocol or a 3rd party status message retrieval
           plugin.
+        * fixed F12 hotkey (message log freeze). Will not be triggered anymore when
+          holding a modifier (alt, ctrl etc.).
+        * some internal code cleanup
 
 Version 2.0.0.2  - 2007/10/02
 

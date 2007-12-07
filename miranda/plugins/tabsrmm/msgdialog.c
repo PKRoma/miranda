@@ -4815,6 +4815,10 @@ quote_from_last:
 
                             }
                             if(msg == WM_KEYDOWN && wp == VK_F12) {
+                                if((GetKeyState(VK_SHIFT) & 0x8000) || 
+                                   (GetKeyState(VK_CONTROL) & 0x8000) ||
+                                   (GetKeyState(VK_MENU) & 0x8000))
+                                    return 1;
                                 if(dat->dwFlagsEx & MWF_SHOW_SCROLLINGDISABLED)
                                     SendMessage(hwndDlg, DM_REPLAYQUEUE, 0, 0);
                                 dat->dwFlagsEx ^= MWF_SHOW_SCROLLINGDISABLED;

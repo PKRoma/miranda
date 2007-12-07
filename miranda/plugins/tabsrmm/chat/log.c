@@ -43,7 +43,7 @@ static int logPixelSX = 0;
 static char *szDivider = "\\strike----------------------------------------------------------------------------\\strike0";
 static char CHAT_rtfFontsGlobal[OPTIONS_FONTCOUNT + 2][RTFCACHELINESIZE];
 static char *CHAT_rtffonts = 0;
-static char szMicroLFeed[150];
+//static char szMicroLFeed[150];
 
 void GetIconSize(HICON hIcon, int* sizeX, int* sizeY);
 
@@ -443,7 +443,7 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 
 	// guesstimate amount of memory for the RTF
 	bufferEnd = 0;
-	bufferAlloced = streamData->bRedraw ? 1024 * (streamData->si->iEventCount+2) : 2048;
+	bufferAlloced = streamData->bRedraw ? 2048 * (streamData->si->iEventCount+2) : 2048;
 	buffer = (char *) mir_alloc(bufferAlloced);
 	buffer[0] = '\0';
 
@@ -485,7 +485,7 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 				if (lin->iType&g_Settings.dwIconFlags || lin->bIsHighlighted&&g_Settings.dwIconFlags&GC_EVENT_HIGHLIGHT) {
 					int iIndex = (lin->bIsHighlighted&&g_Settings.dwIconFlags&GC_EVENT_HIGHLIGHT) ? ICON_HIGHLIGHT : EventToIcon(lin);
 					Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\f0\\fs14");
-					while (bufferAlloced - bufferEnd < logIconBmpSize[0])
+					while (bufferAlloced - bufferEnd < (logIconBmpSize[0] + 20))
 						bufferAlloced += 4096;
 					buffer = (char *) mir_realloc(buffer, bufferAlloced);
 					CopyMemory(buffer + bufferEnd, pLogIconBmpBits[iIndex], logIconBmpSize[iIndex]);
@@ -585,9 +585,11 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 					p1[1] = 's';
 
 				if (!lin->bIsMe) {
-					if (g_Settings.ClickableNicks)
-						_tcsnrplc(pszTemp, 300, _T("%s"), _T("~~++#%s#++~~"));
-						//Log_Append(&buffer, &bufferEnd, &bufferAlloced, "~~++#");
+					if (g_Settings.ClickableNicks) {
+                        _tcsnrplc(pszTemp, 300, _T("%s"), _T("~~++#%s#++~~"));
+                        pszTemp[299] = 0;
+                    }
+                        //Log_Append(&buffer, &bufferEnd, &bufferAlloced, "~~++#");
 					if (g_Settings.ColorizeNicks && pszIndicator[0])
 						Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\cf%u ", OPTIONS_FONTCOUNT + streamData->crCount + crNickIndex + 1);
 				}
@@ -1003,7 +1005,7 @@ void LoadMsgLogBitmaps(void)
 	for(i = 0; i < OPTIONS_FONTCOUNT; i++)
 		mir_snprintf(CHAT_rtfFontsGlobal[i], RTFCACHELINESIZE, "\\f%u\\cf%u\\ul0\\highlight0\\b%d\\i%d\\fs%u", i, i + 1, aFonts[i].lf.lfWeight >= FW_BOLD ? 1 : 0, aFonts[i].lf.lfItalic, 2 * abs(aFonts[i].lf.lfHeight) * 74 / logPixelSY);
 	CHAT_rtffonts = &(CHAT_rtfFontsGlobal[0][0]);
-	mir_snprintf(szMicroLFeed, sizeof(szMicroLFeed), "%s\\par\\sl-1%s", Log_SetStyle(0, 0), Log_SetStyle(0, 0));
+	//mir_snprintf(szMicroLFeed, sizeof(szMicroLFeed), "%s\\par\\sl-1%s", Log_SetStyle(0, 0), Log_SetStyle(0, 0));
 }
 
 void FreeMsgLogBitmaps(void)
