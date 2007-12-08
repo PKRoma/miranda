@@ -160,9 +160,6 @@ void MSN_MoveContactToGroup( HANDLE hContact, const char* grpName )
 {
 	if (!MyOptions.ManageServer) return;
 
-	if (strcmp(grpName, "MetaContacts Hidden Group") == 0)
-		return;
-
 	LPCSTR szId = NULL;
 	char szContactID[100], szGroupID[100];
 	if ( MSN_GetStaticString("ID", hContact, szContactID, sizeof( szContactID)))
@@ -175,6 +172,9 @@ void MSN_MoveContactToGroup( HANDLE hContact, const char* grpName )
 
 	if (grpName != NULL)
 	{
+		if (strcmp(grpName, "MetaContacts Hidden Group") == 0)
+			return;
+
 		szId = MSN_GetGroupByName(grpName);
 		if (szId == NULL)
 		{
