@@ -32,7 +32,7 @@ struct ServerGroupItem
 
 static int CompareGrp( const ServerGroupItem* p1, const ServerGroupItem* p2 )
 {
-	return strcmp(p1->id, p2->id);
+	return _stricmp(p1->id, p2->id);
 }
 
 static LIST<ServerGroupItem> grpList( 10, CompareGrp );
@@ -88,7 +88,6 @@ void MSN_DeleteServerGroup( LPCSTR szId )
 {
 	if ( !MyOptions.ManageServer ) return;
 
-	MSN_DeleteGroup(szId);
 	MSN_ABAddDelContactGroup(NULL, szId, "ABGroupDelete");
 
 	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
@@ -103,6 +102,7 @@ void MSN_DeleteServerGroup( LPCSTR szId )
 
 		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 );
 	}
+	MSN_DeleteGroup(szId);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -185,18 +185,19 @@ void MSN_MoveContactToGroup( HANDLE hContact, const char* grpName )
 		else                              bInsert = true;
 	}
 
+	if ( bDelete )
+ 	{
+		MSN_ABAddDelContactGroup(szContactID, szGroupID, "ABGroupContactDelete");
+		MSN_DeleteSetting( hContact, "GroupID" );
+	}
+
 	if ( bInsert )
 	{
 		MSN_ABAddDelContactGroup(szContactID, szId, "ABGroupContactAdd");
 		MSN_SetString( hContact, "GroupID", szId );
 	}
 
-	if ( bDelete )
- 	{
-		MSN_ABAddDelContactGroup(szContactID, szGroupID, "ABGroupContactDelete");
-		MSN_DeleteSetting( hContact, "GroupID" );
-		MSN_RemoveEmptyGroups();
-	}
+	if ( bDelete ) MSN_RemoveEmptyGroups();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -226,18 +227,7 @@ void MSN_RemoveEmptyGroups( void )
 
 	for ( int i=grpList.getCount(); i--; ) 
 	{
-		if ( cCount[i] == 0 ) 
-		{
-			ServerGroupItem* p = grpList[i];
-
-			MSN_ABAddDelContactGroup(NULL, p->id, "ABGroupDelete");
-
-			mir_free(p->id);
-			mir_free(p->name);
-			mir_free(p);
-			grpList.remove(i);
-
-		}
+		if ( cCount[i] == 0 ) MSN_DeleteServerGroup(grpList[i]->id);
 	}
 	mir_free( cCount );
 }
@@ -278,7 +268,7 @@ void  MSN_UploadServerGroups( char* group )
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_SyncContactToServerGroup - moves contact into appropriate group according to server
-// if contact in multiple server groups it get removed from all of them other themn it's
+// if contact in multiple server groups it get removed from all of them other them it's
 // in or the last one
 
 void MSN_SyncContactToServerGroup( HANDLE hContact, const char* szContId, ezxml_t cgrp )
