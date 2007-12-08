@@ -1050,7 +1050,7 @@ static void sttInitFileTransfer(
 			}
 			break;
 
-		case 4:
+		case MSN_APPID_WEBCAM:
 			if ( !strcmp( szEufGuid, "{4BD96FC0-AB17-4425-A14A-439185962DC8}" )) {
 				MSN_ShowPopup( ft->std.hContact,
 					TranslateT( "Contact tried to send its webcam data (currently not supported)" ), 
@@ -1061,6 +1061,8 @@ static void sttInitFileTransfer(
 					TranslateT( "Contact tried to view our webcam data (currently not supported)" ), 
 					MSN_ALLOW_MSGBOX );
 			}
+			p2p_sendStatus( ft, 603 );
+			delete ft;
 			break;
 
 		default:
