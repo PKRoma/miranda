@@ -1191,7 +1191,7 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 					cli.pfnGetRowByIndex(dat, dat->iDragItem, &contact, &group);
 					if (group->parent) {    //move to root
 						if (contact->type == CLCIT_CONTACT) //dropee is a contact
-							DBDeleteContactSetting(contact->hContact, "CList", "Group");
+							CallService(MS_CLIST_CONTACTCHANGEGROUP, (WPARAM)contact->hContact, 0);
 						else if (contact->type == CLCIT_GROUP) {    //dropee is a group
 							TCHAR szNewName[120];
 							lstrcpyn(szNewName, contact->szText, SIZEOF(szNewName));
