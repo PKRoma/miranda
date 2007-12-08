@@ -535,6 +535,7 @@ ThreadData*	 MSN_StartSB(HANDLE hContact, bool& isOffline);
 #define MSN_APPID_AVATAR		1
 #define MSN_APPID_AVATAR2   	12
 #define MSN_APPID_FILE			2
+#define MSN_APPID_WEBCAM		4
 
 #define MSN_APPID_CUSTOMSMILEY  3
 #define MSN_APPID_CUSTOMANIMATEDSMILEY  4
