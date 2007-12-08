@@ -104,9 +104,9 @@ void RecalcScrollBar(HWND hwnd, struct ClcData *dat);
 
 PLUGININFOEX pluginInfo = {
 #if defined(_UNICODE)
-		sizeof(PLUGININFOEX), "CList Nicer+ (Unicode)", PLUGIN_MAKE_VERSION(0, 8, 0, 2),
+		sizeof(PLUGININFOEX), "CList Nicer+ (Unicode)", PLUGIN_MAKE_VERSION(0, 8, 0, 0),
 #else
-		sizeof(PLUGININFOEX), "CList Nicer+", PLUGIN_MAKE_VERSION(0, 8, 0, 2),
+		sizeof(PLUGININFOEX), "CList Nicer+", PLUGIN_MAKE_VERSION(0, 8, 0, 0),
 #endif		
 		"Display contacts, event notifications, protocol status",
 		"Pixel, egoDust, cyreve, Nightwish", "", "Copyright 2000-2006 Miranda-IM project", "http://www.miranda-im.org",
@@ -217,7 +217,6 @@ static int systemModulesLoaded(WPARAM wParam, LPARAM lParam)
 
 	if(ServiceExists(MS_MC_DISABLEHIDDENGROUP))
 		CallService(MS_MC_DISABLEHIDDENGROUP, 1, 0);
-	g_CluiData.bMetaEnabled = DBGetContactSettingByte(NULL, g_CluiData.szMetaName, "Enabled", 1);
 
 	g_CluiData.bAvatarServiceAvail = ServiceExists(MS_AV_GETAVATARBITMAP) ? TRUE : FALSE;
 	if(g_CluiData.bAvatarServiceAvail)
@@ -284,6 +283,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 		InitializeCriticalSection(&cs_extcache);
 	}
 
+	g_CluiData.bMetaEnabled = DBGetContactSettingByte(NULL, "MetaContacts", "Enabled", 1);
 	g_CluiData.toolbarVisibility = DBGetContactSettingDword(NULL, "CLUI", "TBVisibility", DEFAULT_TB_VISIBILITY);
 	g_CluiData.hMenuButtons = GetSubMenu(LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CONTEXT)), 3);
 	g_CluiData.hMenuNotify = CreatePopupMenu();
@@ -317,8 +317,6 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	g_CluiData.bLayeredHack = DBGetContactSettingByte(NULL, "CLUI", "layeredhack", 1);
 	g_CluiData.bFirstRun = DBGetContactSettingByte(NULL, "CLUI", "firstrun", 1);
 	g_CluiData.langPackCP = CallService(MS_LANGPACK_GETCODEPAGE, 0, 0);
-    g_CluiData.realTimeSaving = DBGetContactSettingByte(NULL, "CLUI", "save_pos_always", 0);
-
 	{
 		DWORD sortOrder = DBGetContactSettingDword(NULL, "CList", "SortOrder", SORTBY_NAME);
 		g_CluiData.sortOrder[0] = LOBYTE(LOWORD(sortOrder));

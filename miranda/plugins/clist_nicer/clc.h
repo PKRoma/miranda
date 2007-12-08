@@ -425,6 +425,7 @@ struct CluiData {
     int  group_padding;
     DWORD t_now;
     BYTE exIconOrder[EXICON_COUNT];
+    BOOL realTimeSaving;
 };
 
 #define SORTBY_NAME 1
@@ -700,6 +701,8 @@ typedef BOOL (WINAPI *PGF)(HDC, PTRIVERTEX, ULONG, PVOID, ULONG, ULONG);
 #define FLT_SNAP			64
 #define FLT_BORDER			128
 #define FLT_ROUNDED			256
+#define FLT_FILLSTDCOLOR    512
+#define FLT_SHOWTOOLTIPS	1024
 
 typedef struct _floatopts {
 	DWORD dwFlags;
@@ -709,6 +712,8 @@ typedef struct _floatopts {
 	BYTE trans, act_trans;
 	BYTE radius;
 	BYTE enabled;
+    BYTE def_hover_time;
+    WORD hover_time;
 } FLOATINGOPTIONS;
 
 extern FLOATINGOPTIONS g_floatoptions;

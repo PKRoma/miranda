@@ -317,6 +317,7 @@
 #define IDI_CLINVISIBLE                 2110
 #define IDI_PROTOCONNECTING             2111
 #define IDI_TBTOPMENU                   2112
+#define IDC_FLT_DEFHOVERTIME            2200
 #define IDC_CLUIFRAMESBDR               25492
 #define IDC_FLT_PADLEFTSPIN             25494
 #define IDC_FLT_PADLEFT                 25495
@@ -373,6 +374,7 @@
 #define IDC_FLT_SYNCED                  40039
 #define POPUP_SHOWMETAICONS             40040
 #define IDC_FLT_AUTOHIDE                40040
+#define IDC_FLT_FILLSTD                 40041
 #define IDC_FLT_PADRIGHT                40043
 #define IDC_LASTMSGVALUE                40043
 #define IDC_FLT_PADRIGHTSPIN            40044
@@ -401,7 +403,7 @@
 #define IDC_DSP_APPLY                   40056
 #define IDC_FLT_ACTIVEOPACITY           40056
 #define POPUP_FLOATER                   40057
-#define IDC_FLT_OPACITYVALUE            -25479
+#define IDC_FLT_OPACITYVALUE            40070
 #define POPUP_FLOATER_AUTOHIDE          40058
 #define IDC_FLT_WIDTH                   40058
 #define IDC_AVATARDISPMODE              40059
@@ -411,13 +413,17 @@
 #define IDC_FLT_ACTIVEOPACITYVALUE      40061
 #define IDC_FLT_BORDER                  40062
 #define IDC_FLT_ROUNDED                 40063
-#define IDC_FLT_BGCOLOUR                -25472
-#define IDC_FLT_BORDERCOLOUR            -25472
+#define IDC_FLT_BGCOLOUR                40071
+#define IDC_FLT_BORDERCOLOUR            40072
 #define IDC_FLT_RADIUS                  40065
 #define IDC_CHECK1                      40065
 #define IDC_SNAPTOEDGES                 40065
 #define IDC_FLT_WIDTHSPIN2              40066
 #define IDC_FLT_RADIUSSPIN              40066
+#define IDC_FLT_HOVERTIME               40067
+#define IDC_FLT_SHOWTOOLTIPS            40068
+#define IDC_FLT_HOVERTIMESPIN           40069
+
 
 // Next default values for new objects
 // 

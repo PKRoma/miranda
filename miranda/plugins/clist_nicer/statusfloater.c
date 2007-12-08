@@ -34,6 +34,11 @@ Also implementes floating contacts (FLT_*() functions)
 
 #define SNAP_SCREEN_TOLERANCE	10
 #define SNAP_FLT_TOLERANCE		10
+#define	TOOLTIP_TIMER			1
+
+#define MS_TOOLTIP_SHOWTIP		"mToolTip/ShowTip"
+#define MS_TOOLTIP_HIDETIP		"mToolTip/HideTip"
+
 
 BYTE __forceinline percent_to_byte(UINT32 percent)
 {
@@ -50,6 +55,10 @@ HDC g_SFLCachedDC = 0;
 HBITMAP g_SFLhbmOld = 0, g_SFLhbm = 0;
 struct ContactFloater *pFirstFloater = 0;
 BOOL hover = FALSE;
+BOOL tooltip = FALSE;
+int hTooltipTimer = 0;
+POINT start_pos;
+
 
 extern StatusItems_t *StatusItems;
 extern BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
@@ -217,12 +226,29 @@ BOOL CALLBACK DlgProcFloatingContacts(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				CheckDlgButton(hwndDlg, IDC_FLT_BORDER, dwFlags & FLT_BORDER);
 				SendMessage(hwndDlg, WM_COMMAND, (WPARAM)IDC_FLT_BORDER, 0);
 				CheckDlgButton(hwndDlg, IDC_FLT_ROUNDED, dwFlags & FLT_ROUNDED);
+                CheckDlgButton(hwndDlg, IDC_FLT_FILLSTD, dwFlags & FLT_FILLSTDCOLOR);
+
 				SendMessage(hwndDlg, WM_COMMAND, (WPARAM)IDC_FLT_ROUNDED, 0);
+
+                if (ServiceExists(MS_TOOLTIP_SHOWTIP))
+                {
+                    CheckDlgButton(hwndDlg, IDC_FLT_SHOWTOOLTIPS, dwFlags & FLT_SHOWTOOLTIPS);
+                    SendMessage(hwndDlg, WM_COMMAND, (WPARAM)IDC_FLT_SHOWTOOLTIPS, 0);
+                    CheckDlgButton(hwndDlg, IDC_FLT_DEFHOVERTIME, g_floatoptions.def_hover_time);
+                    SendMessage(hwndDlg, WM_COMMAND, (WPARAM)IDC_FLT_DEFHOVERTIME, 0);
+                } 
+                else
+                {
+                    CheckDlgButton(hwndDlg, IDC_FLT_SHOWTOOLTIPS, 0);
+                    EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_SHOWTOOLTIPS), 0);
+                }
 
 				for(i = 0; padctrlIDs[i] != 0; i++)
 					SendDlgItemMessage(hwndDlg, padctrlIDs[i], UDM_SETRANGE, 0, MAKELONG(20, 0));
 				SendDlgItemMessage(hwndDlg, IDC_FLT_WIDTHSPIN, UDM_SETRANGE, 0, MAKELONG(200, 50));
 				SendDlgItemMessage(hwndDlg, IDC_FLT_RADIUSSPIN, UDM_SETRANGE, 0, MAKELONG(20, 1));
+                SendDlgItemMessage(hwndDlg, IDC_FLT_HOVERTIMESPIN, UDM_SETRANGE, 0, MAKELONG(5000, 1));
+
 
 				SendDlgItemMessage(hwndDlg, IDC_FLT_PADLEFTSPIN, UDM_SETPOS, 0, (LPARAM)g_floatoptions.pad_left);
 				SendDlgItemMessage(hwndDlg, IDC_FLT_PADRIGHTSPIN, UDM_SETPOS, 0, (LPARAM)g_floatoptions.pad_right);
@@ -230,6 +256,7 @@ BOOL CALLBACK DlgProcFloatingContacts(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				SendDlgItemMessage(hwndDlg, IDC_FLT_PADBOTTOMSPIN, UDM_SETPOS, 0, (LPARAM)g_floatoptions.pad_top);
 				SendDlgItemMessage(hwndDlg, IDC_FLT_WIDTHSPIN, UDM_SETPOS, 0, (LPARAM)g_floatoptions.width);
 				SendDlgItemMessage(hwndDlg, IDC_FLT_RADIUSSPIN, UDM_SETPOS, 0, (LPARAM)g_floatoptions.radius);
+                SendDlgItemMessage(hwndDlg, IDC_FLT_HOVERTIMESPIN, UDM_SETPOS, 0, (LPARAM)g_floatoptions.hover_time);
 
 				SendDlgItemMessage(hwndDlg, IDC_FLT_ACTIVEOPACITY, TBM_SETRANGE, FALSE, MAKELONG(1, 255));
 				SendDlgItemMessage(hwndDlg, IDC_FLT_ACTIVEOPACITY, TBM_SETPOS, TRUE, g_floatoptions.act_trans);
@@ -252,6 +279,9 @@ BOOL CALLBACK DlgProcFloatingContacts(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 						int isSimple = IsDlgButtonChecked(hwndDlg, IDC_FLT_SIMPLELAYOUT);
 						int isBorder = IsDlgButtonChecked(hwndDlg, IDC_FLT_BORDER);
 						int isRounded = IsDlgButtonChecked(hwndDlg, IDC_FLT_ROUNDED);
+                        int isTooltip = IsDlgButtonChecked(hwndDlg, IDC_FLT_SHOWTOOLTIPS);
+                        int isDefHoverTime = IsDlgButtonChecked(hwndDlg, IDC_FLT_DEFHOVERTIME);
+
 						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_SIMPLELAYOUT), isEnabled);		
 						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_SYNCED), isEnabled);	
 						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_AUTOHIDE), isEnabled);
@@ -273,6 +303,10 @@ BOOL CALLBACK DlgProcFloatingContacts(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_BORDERCOLOUR), isEnabled & isBorder);	
 						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_RADIUS), isEnabled & isRounded);
 						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_RADIUSSPIN), isEnabled & isRounded);
+                        EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_SHOWTOOLTIPS), isEnabled & ServiceExists(MS_TOOLTIP_SHOWTIP));	
+                        EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_DEFHOVERTIME), isEnabled & isTooltip);
+                        EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_HOVERTIME), isEnabled & isTooltip & !isDefHoverTime);
+                        EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_HOVERTIMESPIN), isEnabled & isTooltip & !isDefHoverTime);
 
 						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_AVATARS), isEnabled & !isSimple);
 						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_EXTRAICONS), isEnabled & !isSimple);
@@ -306,6 +340,27 @@ BOOL CALLBACK DlgProcFloatingContacts(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 						}
 					}
 					break;
+                case IDC_FLT_SHOWTOOLTIPS:
+                    {
+                        if (IsDlgButtonChecked(hwndDlg, IDC_FLT_ENABLED)){
+                            int isTooltip = IsDlgButtonChecked(hwndDlg, IDC_FLT_SHOWTOOLTIPS);
+                            int isDefHoverTime = IsDlgButtonChecked(hwndDlg, IDC_FLT_DEFHOVERTIME);
+                            EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_DEFHOVERTIME), isTooltip);
+                            EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_HOVERTIME), isTooltip & !isDefHoverTime);
+                            EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_HOVERTIMESPIN), isTooltip & !isDefHoverTime);
+                        }
+                    }
+                    break;
+                case IDC_FLT_DEFHOVERTIME:
+                    {
+                        if (IsDlgButtonChecked(hwndDlg, IDC_FLT_ENABLED) && IsDlgButtonChecked(hwndDlg, IDC_FLT_SHOWTOOLTIPS)){
+                            int isDefHoverTime = IsDlgButtonChecked(hwndDlg, IDC_FLT_DEFHOVERTIME);
+                            EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_HOVERTIME), !isDefHoverTime);
+                            EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_HOVERTIMESPIN), !isDefHoverTime);
+                        }
+                    }
+                    break;
+
 				case IDC_FLT_PADTOP:
 					{
 						if(HIWORD(wParam) == EN_CHANGE){
@@ -349,6 +404,8 @@ BOOL CALLBACK DlgProcFloatingContacts(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 														  (IsDlgButtonChecked(hwndDlg, IDC_FLT_AUTOHIDE) ? FLT_AUTOHIDE : 0) |
 														  (IsDlgButtonChecked(hwndDlg, IDC_FLT_SNAP) ? FLT_SNAP : 0) |
 														  (IsDlgButtonChecked(hwndDlg, IDC_FLT_BORDER) ? FLT_BORDER : 0) |
+                                                          (IsDlgButtonChecked(hwndDlg, IDC_FLT_FILLSTD) ? FLT_FILLSTDCOLOR : 0) |
+                                                          (IsDlgButtonChecked(hwndDlg, IDC_FLT_SHOWTOOLTIPS) ? FLT_SHOWTOOLTIPS : 0) |
 														  (IsDlgButtonChecked(hwndDlg, IDC_FLT_ROUNDED) ? FLT_ROUNDED : 0);
 								
 								g_floatoptions.act_trans = (BYTE)SendDlgItemMessage(hwndDlg, IDC_FLT_ACTIVEOPACITY, TBM_GETPOS, 0, 0);
@@ -360,6 +417,12 @@ BOOL CALLBACK DlgProcFloatingContacts(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 								g_floatoptions.width = (BYTE)SendDlgItemMessage(hwndDlg, IDC_FLT_WIDTHSPIN, UDM_GETPOS, 0, 0);
 								g_floatoptions.radius = (BYTE)SendDlgItemMessage(hwndDlg, IDC_FLT_RADIUSSPIN, UDM_GETPOS, 0, 0);
 								g_floatoptions.border_colour = SendDlgItemMessage(hwndDlg, IDC_FLT_BORDERCOLOUR, CPM_GETCOLOUR, 0, 0);
+
+                                g_floatoptions.def_hover_time= IsDlgButtonChecked(hwndDlg, IDC_FLT_DEFHOVERTIME) ? 1 : 0;
+                                if (g_floatoptions.def_hover_time)
+                                    g_floatoptions.hover_time = DBGetContactSettingWord(NULL, "CLC", "InfoTipHoverTime", 200); 
+                                else
+                                    g_floatoptions.hover_time = (WORD)SendDlgItemMessage(hwndDlg, IDC_FLT_HOVERTIMESPIN, UDM_GETPOS, 0, 0);
 
 								FLT_WriteOptions();
 								FLT_RefreshAll();
@@ -393,6 +456,13 @@ void FLT_ReadOptions()
 	g_floatoptions.trans = DBGetContactSettingByte(NULL, "CList", "flt_trans", 255);
 	g_floatoptions.radius = DBGetContactSettingByte(NULL, "CList", "flt_radius", 3);
 	g_floatoptions.border_colour = DBGetContactSettingDword(NULL, "CList", "flt_bordercolour", 0);
+    g_floatoptions.def_hover_time = DBGetContactSettingByte(NULL, "CList", "flt_defhovertime", 1);
+
+    if (g_floatoptions.def_hover_time)
+        g_floatoptions.hover_time = DBGetContactSettingWord(NULL, "CLC", "InfoTipHoverTime", 200); 
+    else
+        g_floatoptions.hover_time = DBGetContactSettingWord(NULL, "CList", "flt_hovertime", 200); 
+
 }
 
 void FLT_WriteOptions()
@@ -409,6 +479,10 @@ void FLT_WriteOptions()
 	DBWriteContactSettingByte(NULL, "CList", "flt_trans", g_floatoptions.trans);
 	DBWriteContactSettingByte(NULL, "CList", "flt_radius", g_floatoptions.radius);
 	DBWriteContactSettingDword(NULL, "CList", "flt_bordercolour", g_floatoptions.border_colour);
+    DBWriteContactSettingByte(NULL, "CList", "flt_defhovertime", g_floatoptions.def_hover_time);
+    if (!g_floatoptions.def_hover_time)
+        DBWriteContactSettingWord(NULL, "CList", "flt_hovertime", g_floatoptions.hover_time);
+
 }
 
 LRESULT CALLBACK StatusFloaterClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -477,6 +551,29 @@ LRESULT CALLBACK StatusFloaterClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 
 	}
 	return DefWindowProc(hwnd, msg, wParam, lParam);
+}
+
+void CALLBACK ShowTooltip(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime){
+	struct ContactFloater *pCurrent = pFirstFloater;
+	POINT pt;
+	CLCINFOTIP ti = {0};
+
+	KillTimer(hwnd, TOOLTIP_TIMER);
+	hTooltipTimer = 0;
+
+	GetCursorPos(&pt);
+	if ((abs(pt.x - start_pos.x) > 3) && (abs(pt.y - start_pos.y) > 3)) return;
+					
+	while(pCurrent->hwnd != hwnd)
+		pCurrent = pCurrent->pNextFloater;
+	
+	ti.cbSize = sizeof(ti);
+	ti.isGroup = 0;
+	ti.isTreeFocused = 0;
+	ti.hItem = pCurrent->hContact;
+	ti.ptCursor = pt;
+	CallService(MS_TOOLTIP_SHOWTIP, 0, (LPARAM)&ti);
+	tooltip = TRUE;
 }
 
 LRESULT CALLBACK ContactFloaterClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -549,6 +646,16 @@ LRESULT CALLBACK ContactFloaterClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 					TrackMouseEvent(&tme);
 					hover = TRUE;
 				}
+                if (ServiceExists(MS_TOOLTIP_SHOWTIP))
+                {
+                    if ((g_floatoptions.dwFlags & FLT_SHOWTOOLTIPS) && !tooltip)
+                    {
+                        GetCursorPos(&start_pos);
+                        if (hTooltipTimer) KillTimer(hwnd, TOOLTIP_TIMER);
+                        hTooltipTimer = SetTimer(hwnd, TOOLTIP_TIMER, g_floatoptions.hover_time, ShowTooltip);					
+                    }
+                }
+
 				return FALSE;
 			}
 		case WM_MOUSEHOVER:
@@ -579,7 +686,18 @@ LRESULT CALLBACK ContactFloaterClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 				if(FindItem(pcli->hwndContactTree, g_clcData, pCurrent->hContact, &contact, NULL, 0))
 					FLT_Update(g_clcData, contact);
 
-				hover = FALSE;
+                if (hTooltipTimer)
+                { 
+                    KillTimer(hwnd, TOOLTIP_TIMER);
+                    hTooltipTimer = 0;		
+                }
+
+                if (tooltip) CallService(MS_TOOLTIP_HIDETIP, 0, 0);
+
+                hover = FALSE;
+                tooltip = FALSE;
+
+
 				break;
 			}
 
@@ -907,6 +1025,9 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
 	struct ClcContact *newContact = NULL;
 	HRGN rgn;
 	HANDLE hbrBorder;
+    COLORREF clrKey;
+    HBRUSH   brKey;
+    float    greyLevel;
 
 	if(contact == NULL || dat == NULL)
 		return;
@@ -933,12 +1054,29 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
 	szDest.cx = rcWindow.right - rcWindow.left;
 	szDest.cy = rcWindow.bottom - rcWindow.top;
 
-	FillRect(hdc, &rcClient, GetSysColorBrush(COLOR_3DFACE));
+    /*
+     * fill with a DESATURATED representation of the clist bg color and use this later as a color key 
+     */
+
+    greyLevel = ((float)GetRValue(g_clcData->bkColour) * 0.299) + ((float)GetGValue(g_clcData->bkColour) *0.587) + ((float)GetBValue(g_clcData->bkColour) * 0.144);
+    if (greyLevel > 255)
+        greyLevel = 255;
+
+    clrKey = RGB((BYTE)greyLevel, (BYTE)greyLevel, (BYTE)greyLevel);
+    brKey = CreateSolidBrush(clrKey);
+	FillRect(hdc, &rcClient, brKey);
+    DeleteObject(brKey);
+
 	SetBkMode(hdc, TRANSPARENT);
 
 	if(g_floatoptions.dwFlags & FLT_ROUNDED){
 		rgn = CreateRoundRectRgn(0, 0, rcClient.right, rcClient.bottom, g_floatoptions.radius, g_floatoptions.radius);
 		SelectClipRgn(hdc, rgn);
+        if(g_floatoptions.dwFlags & FLT_FILLSTDCOLOR) {
+            HBRUSH br = CreateSolidBrush(g_clcData->bkColour);
+            FillRect(hdc, &rcClient, br);
+            DeleteObject(br);
+        }
 	}
 
 	if(FindItem(pcli->hwndContactTree, dat, contact->hContact, &newContact, &group, 0)) {
@@ -1024,7 +1162,7 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
 	bf.SourceConstantAlpha = g_floatoptions.trans;
 
 	if(MyUpdateLayeredWindow)
-		MyUpdateLayeredWindow(hwnd, 0, &ptDest, &szDest, hdc, &ptSrc, GetSysColor(COLOR_3DFACE), &bf, ULW_COLORKEY | ULW_ALPHA);
+		MyUpdateLayeredWindow(hwnd, 0, &ptDest, &szDest, hdc, &ptSrc, clrKey /*GetSysColor(COLOR_3DFACE)*/, &bf, ULW_COLORKEY | ULW_ALPHA);
 }
 
 /*

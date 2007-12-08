@@ -7,6 +7,19 @@
 + = new feature
 - = removed
 
+0.8.0.2  - 2007/10/20
+
+                * advanced option to save position while moving or resizing (old behaviour)
+                  Use DBEditor++ and set CLUI/save_pos_always (BYTE value) to 1. RESTART
+                  MIRANDA thereafter (the setting is only read at plugin startup).
+                  Deleting the value or set it to 0 to disable it (save position/size only
+                  when Miranda exits).
+
+                * new option for floating contacts (Fill with contact list background color).
+                  If enabled, floaters will be filled with this color before drawing the skin
+                  item. This allows people who don't use a skin at all to show the floaters w/o
+                  having them fully transparent.
+
 0.8.0.1  - 2007/10/02
 
                 * removed all hardcoded instances of the MetaContacts protocol name 

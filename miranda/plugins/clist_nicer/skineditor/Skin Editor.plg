@@ -1,0 +1,34 @@
+<html>
+<body>
+<pre>
+<h1>Erstellungsprotokoll</h1>
+<h3>
+--------------------Konfiguration: Skin Editor - Win32 Release--------------------
+</h3>
+<h3>Befehlszeilen</h3>
+Erstellen der temporären Datei  "c:\temp\RSP35.tmp" mit Inhalten
+[
+/nologo /MD /W3 /GX /O1 /I "../../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SKINEDITOR_EXPORTS" /Fp"Release/Skin Editor.pch" /YX /Fo"Release/" /Fd"Release/" /FD /c 
+"H:\tabsrmm\miranda\plugins\clist_nicer\SKINEDITOR\main.cpp"
+]
+Creating command line "cl.exe @c:\temp\RSP35.tmp" 
+Erstellen der temporären Datei  "c:\temp\RSP36.tmp" mit Inhalten
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:no /pdb:"Release/cln_skinedit.pdb" /machine:I386 /out:"../../../bin/release/plugins/cln_skinedit.dll" /implib:"Release/cln_skinedit.lib" /OPT:NOWIN98 
+.\Release\main.obj
+".\Release\Skin Editor.res"
+]
+Erstellen der Befehlzeile "link.exe @c:\temp\RSP36.tmp"
+<h3>Ausgabefenster</h3>
+Kompilierung läuft...
+main.cpp
+Linker-Vorgang läuft...
+   Bibliothek Release/cln_skinedit.lib und Objekt Release/cln_skinedit.exp wird erstellt
+
+
+
+<h3>Ergebnisse</h3>
+cln_skinedit.dll - 0 Fehler, 0 Warnung(en)
+</pre>
+</body>
+</html>

@@ -28,96 +28,49 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Dialog
 //
 
-IDD_OPT_FLOATING DIALOG DISCARDABLE  0, 0, 313, 251
+IDD_OPT_FLOATING DIALOGEX 0, 0, 313, 251
 STYLE DS_FIXEDSYS | WS_CHILD
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Floating contacts appearance",IDC_STATIC,3,4,307,131
+    GROUPBOX        "Floating contacts appearance",IDC_STATIC,3,4,307,75
     CONTROL         "Simple layout",IDC_FLT_SIMPLELAYOUT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,11,29,179,11
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,15,143,11
     CONTROL         "Show avatars",IDC_FLT_AVATARS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,11,41,179,11
+                    WS_TABSTOP,10,27,148,11
     CONTROL         "Show second text line",IDC_FLT_DUALROWS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,11,53,179,11
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,39,148,11
     CONTROL         "Show extra icons",IDC_FLT_EXTRAICONS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,11,65,179,11
-    GROUPBOX        "Behaviour",IDC_STATIC,3,192,307,52
-    CONTROL         "Synchronzie floater visibility with contact list",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,51,148,11
+    GROUPBOX        "Behaviour",IDC_STATIC,3,84,307,76
+    CONTROL         "Synchronize floater visibility with contact list",
                     IDC_FLT_SYNCED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,
-                    202,292,11
+                    94,292,11
     CONTROL         "Only show contact floaters when contact list is hidden or minimized",
                     IDC_FLT_AUTOHIDE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    11,214,292,11
-    EDITTEXT        IDC_FLT_PADLEFT,211,93,31,12,ES_RIGHT | ES_AUTOHSCROLL | 
+                    11,106,292,11
+    LTEXT           "NOTE: This is work in progress. Most options here do NOT yet work as they should, because the code is not yet implemented. Please don't report these issues as bugs, because they aren't bugs, just unfinished stuff.",
+                    IDC_STATIC,15,179,266,53
+    EDITTEXT        IDC_FLT_PADLEFT,211,58,31,12,ES_RIGHT | ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "",IDC_FLT_PADLEFTSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
-                    UDS_HOTTRACK,205,90,11,14
-    EDITTEXT        IDC_FLT_PADRIGHT,274,93,31,12,ES_RIGHT | ES_AUTOHSCROLL | 
+                    UDS_HOTTRACK,205,55,10,14
+    EDITTEXT        IDC_FLT_PADRIGHT,274,58,31,12,ES_RIGHT | ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "",IDC_FLT_PADRIGHTSPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS | UDS_HOTTRACK,267,90,11,14
-    EDITTEXT        IDC_FLT_PADTOP,243,87,31,12,ES_RIGHT | ES_AUTOHSCROLL | 
+                    UDS_ARROWKEYS | UDS_HOTTRACK,267,55,10,14
+    EDITTEXT        IDC_FLT_PADTOP,243,51,31,12,ES_RIGHT | ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "",IDC_FLT_PADTOPSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
-                    UDS_HOTTRACK,237,82,11,14
-    EDITTEXT        IDC_FLT_PADBOTTOM,243,98,31,12,ES_RIGHT | ES_AUTOHSCROLL | 
-                    ES_READONLY | ES_NUMBER
+                    UDS_HOTTRACK,237,48,10,14
+    EDITTEXT        IDC_FLT_PADBOTTOM,243,64,31,12,ES_RIGHT | ES_AUTOHSCROLL | 
+                    ES_NUMBER
     CONTROL         "",IDC_FLT_PADBOTTOMSPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS | UDS_HOTTRACK | WS_DISABLED,237,95,11,14
-    CTEXT           "Padding",IDC_STATIC,217,74,80,10
-    CONTROL         "Enable floating contacts (required restart)",
-                    IDC_FLT_ENABLED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,
-                    17,179,11
-    CONTROL         "",IDC_FLT_OPACITY,"msctls_trackbar32",TBS_TOP | 
-                    TBS_NOTICKS | WS_TABSTOP,231,43,45,12
-    RTEXT           "000%",IDC_FLT_OPACITYVALUE,277,44,20,8
-    GROUPBOX        "Opacity",IDC_STATIC,192,14,113,47
-    EDITTEXT        IDC_FLT_WIDTH,274,115,31,12,ES_RIGHT | ES_AUTOHSCROLL | 
-                    ES_NUMBER
-    CONTROL         "",IDC_FLT_WIDTHSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
-                    UDS_HOTTRACK,267,111,11,14
-    RTEXT           "Width",IDC_STATIC,212,118,53,8
-    CONTROL         "Snap to edges (hold CTRL for snap between floaters)",
-                    IDC_FLT_SNAP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,
-                    226,292,11
-    RTEXT           "Inactive",IDC_STATIC,193,44,36,8
-    CONTROL         "",IDC_FLT_ACTIVEOPACITY,"msctls_trackbar32",TBS_TOP | 
-                    TBS_NOTICKS | WS_TABSTOP,231,26,45,12
-    RTEXT           "000%",IDC_FLT_ACTIVEOPACITYVALUE,277,28,20,8
-    RTEXT           "Active",IDC_STATIC,193,28,36,8
-    CONTROL         "Border",IDC_FLT_BORDER,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,11,101,71,10
-    CONTROL         "Rounded corners",IDC_FLT_ROUNDED,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,11,116,71,10
-    CONTROL         "",IDC_FLT_BORDERCOLOUR,"ColourPicker",WS_TABSTOP,129,
-                    101,22,10
-    RTEXT           "Colour",IDC_STATIC,90,102,34,8
-    EDITTEXT        IDC_FLT_RADIUS,129,115,31,12,ES_RIGHT | ES_AUTOHSCROLL | 
-                    ES_NUMBER
-    CONTROL         "",IDC_FLT_RADIUSSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
-                    UDS_HOTTRACK,125,111,11,14
-    RTEXT           "Radius",IDC_STATIC,90,117,34,8
-    CONTROL         "Fill with contact list background color",
-                    IDC_FLT_FILLSTD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,
-                    78,190,11
-    GROUPBOX        "Tooltips",IDC_STATIC,3,138,307,40
-    CONTROL         "Show tooltips",IDC_FLT_SHOWTOOLTIPS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,11,150,90,10
-    RTEXT           "Hover time",IDC_STATIC,115,151,90,8
-    EDITTEXT        IDC_FLT_HOVERTIME,211,148,37,12,ES_RIGHT | 
-                    ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_FLT_HOVERTIMESPIN,"msctls_updown32",
-                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS | UDS_HOTTRACK,206,144,10,14
-    CONTROL         "Use default",IDC_FLT_DEFHOVERTIME,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,211,164,96,10
-    LTEXT           "ms",IDC_STATIC,254,151,42,8
+                    UDS_ARROWKEYS | UDS_HOTTRACK,237,61,10,14
+    CTEXT           "Padding",IDC_STATIC,217,38,80,10
 END
 
 IDD_CLNABOUT DIALOGEX 0, 0, 228, 140
@@ -138,6 +91,34 @@ BEGIN
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,117,228,1
     CONTROL         "Support and latest version information",IDC_SUPPORT,
                     "Hyperlink",WS_TABSTOP | 0x1,18,91,192,12
+END
+
+IDD_OPT_HOTKEY DIALOGEX 0, 0, 238, 136
+STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "Hotkeys",IDC_STATIC,4,4,230,126
+    CONTROL         "Show/Hide:",IDC_SHOWHIDE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,14,19,78,9
+    CONTROL         "HotKey1",IDC_HKSHOWHIDE,"msctls_hotkey32",WS_BORDER | 
+                    WS_TABSTOP,92,17,93,12
+    CONTROL         "Read Msg:",IDC_READMSG,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,14,36,78,9
+    CONTROL         "HotKey1",IDC_HKREADMSG,"msctls_hotkey32",WS_BORDER | 
+                    WS_TABSTOP,92,34,93,12
+    CONTROL         "Net Search:",IDC_NETSEARCH,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,14,53,78,9
+    CONTROL         "HotKey1",IDC_HKSEARCH,"msctls_hotkey32",WS_BORDER | 
+                    WS_TABSTOP,92,51,93,12
+    LTEXT           "URL:",IDC_HOTKEYURLSTR,26,71,22,8
+    EDITTEXT        IDC_SEARCHURL,92,69,136,12,ES_AUTOHSCROLL
+    CONTROL         "Open in new browser window",IDC_SEARCHNEWWND,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,92,86,136,10
+    CONTROL         "Show Options",IDC_SHOWOPTIONS,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,14,107,71,9
+    CONTROL         "HotKey1",IDC_HKSHOWOPTIONS,"msctls_hotkey32",WS_BORDER | 
+                    WS_TABSTOP,92,105,93,12
 END
 
 IDD_DELETECONTACT DIALOGEX 0, 0, 284, 90
@@ -163,24 +144,21 @@ END
 IDD_OPT_DSPPROFILES DIALOGEX 0, 0, 312, 247
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
-    GROUPBOX        "Profiles",IDC_STATIC,0,0,79,170
-    LISTBOX         IDC_PROFILELIST,5,11,68,92,LBS_SORT | 
+    GROUPBOX        "Profiles",IDC_STATIC,0,0,79,246
+    LISTBOX         IDC_PROFILELIST,5,11,68,144,LBS_SORT | 
                     LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "",IDC_DSP_ADD,"CLCButtonClass",WS_TABSTOP,6,109,68,15,
-                    0x18000000L
+    CONTROL         "",IDC_DSP_ADD,"CLCButtonClass",WS_TABSTOP,
+                    6,161,68,15,0x18000000L
     CONTROL         "",IDC_DSP_DELETE,"CLCButtonClass",WS_DISABLED | 
-                    WS_TABSTOP,6,128,68,15,0x18000000L
+                    WS_TABSTOP,6,180,68,15,0x18000000L
     CONTROL         "",IDC_DSP_RENAME,"CLCButtonClass",WS_DISABLED | 
-                    WS_TABSTOP,6,148,68,15,0x18000000L
+                    WS_TABSTOP,6,200,68,15,0x18000000L
     CONTROL         "",IDC_OPTIONSTAB,"SysTabControl32",WS_TABSTOP,81,1,230,
                     222
-    CONTROL         "",IDC_DSP_APPLY,"CLCButtonClass",WS_TABSTOP,218,229,89,
-                    15,0x18000000L
-    GROUPBOX        "Classes",IDC_STATIC,0,172,79,74
-    LISTBOX         IDC_CLASSLIST,5,184,68,55,LBS_SORT | 
-                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_DSP_APPLY,"CLCButtonClass",
+                    WS_TABSTOP,218,229,89,15,0x18000000L
 END
 
 IDD_OPTIONSDIALOG DIALOGEX 0, 0, 312, 247
@@ -408,8 +386,7 @@ IDD_OPT_XICONS DIALOG DISCARDABLE  0, 0, 227, 205
 STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg"
 BEGIN
-    GROUPBOX        "Extra icons (drag items to reorder them)",IDC_STATIC,1,
-                    102,224,80
+    GROUPBOX        "Extra icons (drag items to reorder them)",IDC_STATIC,1,102,224,80
     EDITTEXT        IDC_EXICONSCALE,141,185,31,12,ES_RIGHT | ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "",IDC_EXICONSCALESPIN,"msctls_updown32",UDS_SETBUDDYINT | 
@@ -1027,61 +1004,6 @@ BEGIN
     END
 END
 
-#ifndef APSTUDIO_INVOKED
-VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,8,0,2
- PRODUCTVERSION 0,8,0,2
- FILEFLAGSMASK 0x3fL
-#ifdef _DEBUG
- FILEFLAGS 0x21L
-#else
- FILEFLAGS 0x20L
-#endif
- FILEOS 0x40004L
- FILETYPE 0x1L
- FILESUBTYPE 0x0L
-BEGIN
-    BLOCK "StringFileInfo"
-#if defined(UNICODE)    
-    BEGIN
-        BLOCK "000004b0"
-        BEGIN
-            VALUE "Comments", "Licensed under the terms of the GNU General Public License"
-            VALUE "CompanyName", "Copyright © 2000-2004 Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari and Lyon Lim and others."
-            VALUE "FileDescription", "Clist Nicer+ (UNICODE)"
-            VALUE "FileVersion", "0.8.0.2"
-            VALUE "InternalName", "clist_nicer+ (UNICODE)"
-            VALUE "LegalCopyright", "Copyright © 2000-2006 The Miranda IM project members."
-            VALUE "OriginalFilename", "clist_nicer.dll"
-            VALUE "ProductName", "Miranda IM Contact List"
-            VALUE "ProductVersion", "0.8.0.2"
-            VALUE "SpecialBuild", "11"
-        END
-    END
-#else
-    BEGIN
-        BLOCK "000004b0"
-        BEGIN
-            VALUE "Comments", "Licensed under the terms of the GNU General Public License"
-            VALUE "CompanyName", "Copyright © 2000-2004 Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari and Lyon Lim and others."
-            VALUE "FileDescription", "Clist Nicer+ (ANSI)"
-            VALUE "FileVersion", "0.8.0.2"
-            VALUE "InternalName", "clist_nicer+ (ANSI)"
-            VALUE "LegalCopyright", "Copyright © 2000-2006 The Miranda IM project members."
-            VALUE "OriginalFilename", "clist_nicer.dll"
-            VALUE "ProductName", "Miranda IM Contact List"
-            VALUE "ProductVersion", "0.8.0.2"
-            VALUE "SpecialBuild", "11"
-        END
-    END
-#endif    
-    BLOCK "VarFileInfo"
-    BEGIN
-        VALUE "Translation", 0x0, 1200
-    END
-END
-#endif
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1113,6 +1035,4 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
-
-
 

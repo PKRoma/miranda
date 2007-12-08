@@ -1566,6 +1566,17 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				cluiPos.top = rc.top;
 			}
 			cluiPos.right = rc.right - rc.left;
+            if(g_CluiData.realTimeSaving) {
+    			RECT rc;
+    			GetWindowRect(hwnd, &rc);
+    
+    			if (!CallService(MS_CLIST_DOCKINGISDOCKED, 0, 0)) {     //if docked, dont remember pos (except for width)
+    				DBWriteContactSettingDword(NULL, "CList", "Height", (DWORD) (rc.bottom - rc.top));
+    				DBWriteContactSettingDword(NULL, "CList", "x", (DWORD) rc.left);
+    				DBWriteContactSettingDword(NULL, "CList", "y", (DWORD) rc.top);
+    			}
+    			DBWriteContactSettingDword(NULL, "CList", "Width", (DWORD) (rc.right - rc.left));
+            }
 		}
 		return TRUE;
 	case WM_SETFOCUS:
