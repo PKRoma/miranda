@@ -361,7 +361,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		case WM_NOTIFY:
 			switch (((LPNMHDR) lParam)->idFrom) {
 		case IDC_WINDOWOPTIONS:
-			if(((LPNMHDR)lParam)->code==NM_CLICK) {
+			if(((LPNMHDR)lParam)->code==NM_CLICK || (((LPNMHDR)lParam)->code == TVN_KEYDOWN && ((LPNMTVKEYDOWN)lParam)->wVKey == VK_SPACE)) {
 				TVHITTESTINFO hti;
 				TVITEM item = {0};
 
@@ -370,8 +370,13 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				hti.pt.x=(short)LOWORD(GetMessagePos());
 				hti.pt.y=(short)HIWORD(GetMessagePos());
 				ScreenToClient(((LPNMHDR)lParam)->hwndFrom, &hti.pt);
-				if(TreeView_HitTest(((LPNMHDR)lParam)->hwndFrom, &hti)) {
-					item.hItem = (HTREEITEM)hti.hItem;
+				if(TreeView_HitTest(((LPNMHDR)lParam)->hwndFrom, &hti) || ((LPNMHDR)lParam)->code == TVN_KEYDOWN) {
+                    if(((LPNMHDR)lParam)->code == TVN_KEYDOWN) {
+						hti.flags |= TVHT_ONITEMSTATEICON;
+                        item.hItem = TreeView_GetSelection(((LPNMHDR)lParam)->hwndFrom);
+					}
+                    else
+                        item.hItem = (HTREEITEM)hti.hItem;
 					SendDlgItemMessageA(hwndDlg, IDC_WINDOWOPTIONS, TVM_GETITEMA, 0, (LPARAM)&item);
 					if(item.state & TVIS_BOLD && hti.flags & TVHT_ONITEMSTATEICON) {
 						item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_BOLD;
@@ -636,32 +641,37 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 	case WM_NOTIFY:
 		switch (((LPNMHDR) lParam)->idFrom) {
 		case IDC_LOGOPTIONS:
-			if(((LPNMHDR)lParam)->code==NM_CLICK) {
-				TVHITTESTINFO hti;
-				TVITEM item = {0};
+            if(((LPNMHDR)lParam)->code==NM_CLICK || (((LPNMHDR)lParam)->code == TVN_KEYDOWN && ((LPNMTVKEYDOWN)lParam)->wVKey == VK_SPACE)) {
+                TVHITTESTINFO hti;
+                TVITEM item = {0};
 
-				item.mask = TVIF_HANDLE | TVIF_STATE;
-				item.stateMask = TVIS_STATEIMAGEMASK | TVIS_BOLD;
-				hti.pt.x=(short)LOWORD(GetMessagePos());
-				hti.pt.y=(short)HIWORD(GetMessagePos());
-				ScreenToClient(((LPNMHDR)lParam)->hwndFrom, &hti.pt);
-				if(TreeView_HitTest(((LPNMHDR)lParam)->hwndFrom, &hti)) {
-					item.hItem = (HTREEITEM)hti.hItem;
-					SendDlgItemMessageA(hwndDlg, IDC_LOGOPTIONS, TVM_GETITEMA, 0, (LPARAM)&item);
-					if(item.state & TVIS_BOLD && hti.flags & TVHT_ONITEMSTATEICON) {
-						item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_BOLD;
-						SendDlgItemMessageA(hwndDlg, IDC_LOGOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
-					}
-					else if(hti.flags&TVHT_ONITEMSTATEICON) {
-						if(((item.state & TVIS_STATEIMAGEMASK) >> 12) == 3) {
-							item.state = INDEXTOSTATEIMAGEMASK(1);
-							SendDlgItemMessageA(hwndDlg, IDC_LOGOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
-						}
-						SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-					}
-				}
-			}
-			break;
+                item.mask = TVIF_HANDLE | TVIF_STATE;
+                item.stateMask = TVIS_STATEIMAGEMASK | TVIS_BOLD;
+                hti.pt.x=(short)LOWORD(GetMessagePos());
+                hti.pt.y=(short)HIWORD(GetMessagePos());
+                ScreenToClient(((LPNMHDR)lParam)->hwndFrom, &hti.pt);
+                if(TreeView_HitTest(((LPNMHDR)lParam)->hwndFrom, &hti) || ((LPNMHDR)lParam)->code == TVN_KEYDOWN) {
+                    if(((LPNMHDR)lParam)->code == TVN_KEYDOWN) {
+                        hti.flags |= TVHT_ONITEMSTATEICON;
+                        item.hItem = TreeView_GetSelection(((LPNMHDR)lParam)->hwndFrom);
+                    }
+                    else
+                        item.hItem = (HTREEITEM)hti.hItem;
+                    SendDlgItemMessageA(hwndDlg, IDC_LOGOPTIONS, TVM_GETITEMA, 0, (LPARAM)&item);
+                    if(item.state & TVIS_BOLD && hti.flags & TVHT_ONITEMSTATEICON) {
+                        item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_BOLD;
+                        SendDlgItemMessageA(hwndDlg, IDC_LOGOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
+                    }
+                    else if(hti.flags&TVHT_ONITEMSTATEICON) {
+                        if(((item.state & TVIS_STATEIMAGEMASK) >> 12) == 3) {
+                            item.state = INDEXTOSTATEIMAGEMASK(1);
+                            SendDlgItemMessageA(hwndDlg, IDC_LOGOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
+                        }
+                        SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+                    }
+                }
+            }
+            break;
 		default:
 			switch (((LPNMHDR) lParam)->code) {
 			case PSN_APPLY: 
@@ -1011,32 +1021,37 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 	case WM_NOTIFY:
 		switch (((LPNMHDR) lParam)->idFrom) {
 		case IDC_TABMSGOPTIONS:
-			if(((LPNMHDR)lParam)->code==NM_CLICK) {
-				TVHITTESTINFO hti;
-				TVITEM item = {0};
+            if(((LPNMHDR)lParam)->code==NM_CLICK || (((LPNMHDR)lParam)->code == TVN_KEYDOWN && ((LPNMTVKEYDOWN)lParam)->wVKey == VK_SPACE)) {
+                TVHITTESTINFO hti;
+                TVITEM item = {0};
 
-				item.mask = TVIF_HANDLE | TVIF_STATE;
-				item.stateMask = TVIS_STATEIMAGEMASK | TVIS_BOLD;
-				hti.pt.x=(short)LOWORD(GetMessagePos());
-				hti.pt.y=(short)HIWORD(GetMessagePos());
-				ScreenToClient(((LPNMHDR)lParam)->hwndFrom, &hti.pt);
-				if(TreeView_HitTest(((LPNMHDR)lParam)->hwndFrom, &hti)) {
-					item.hItem = (HTREEITEM)hti.hItem;
-					SendDlgItemMessageA(hwndDlg, IDC_TABMSGOPTIONS, TVM_GETITEMA, 0, (LPARAM)&item);
-					if(item.state & TVIS_BOLD && hti.flags & TVHT_ONITEMSTATEICON) {
-						item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_BOLD;
-						SendDlgItemMessageA(hwndDlg, IDC_TABMSGOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
-					}
-					else if(hti.flags&TVHT_ONITEMSTATEICON) {
-						if(((item.state & TVIS_STATEIMAGEMASK) >> 12) == 3) {
-							item.state = INDEXTOSTATEIMAGEMASK(1);
-							SendDlgItemMessageA(hwndDlg, IDC_TABMSGOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
-						}
-						SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-					}
-				}
-			}
-			break;
+                item.mask = TVIF_HANDLE | TVIF_STATE;
+                item.stateMask = TVIS_STATEIMAGEMASK | TVIS_BOLD;
+                hti.pt.x=(short)LOWORD(GetMessagePos());
+                hti.pt.y=(short)HIWORD(GetMessagePos());
+                ScreenToClient(((LPNMHDR)lParam)->hwndFrom, &hti.pt);
+                if(TreeView_HitTest(((LPNMHDR)lParam)->hwndFrom, &hti) || ((LPNMHDR)lParam)->code == TVN_KEYDOWN) {
+                    if(((LPNMHDR)lParam)->code == TVN_KEYDOWN) {
+                        hti.flags |= TVHT_ONITEMSTATEICON;
+                        item.hItem = TreeView_GetSelection(((LPNMHDR)lParam)->hwndFrom);
+                    }
+                    else
+                        item.hItem = (HTREEITEM)hti.hItem;
+                    SendDlgItemMessageA(hwndDlg, IDC_TABMSGOPTIONS, TVM_GETITEMA, 0, (LPARAM)&item);
+                    if(item.state & TVIS_BOLD && hti.flags & TVHT_ONITEMSTATEICON) {
+                        item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_BOLD;
+                        SendDlgItemMessageA(hwndDlg, IDC_TABMSGOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
+                    }
+                    else if(hti.flags&TVHT_ONITEMSTATEICON) {
+                        if(((item.state & TVIS_STATEIMAGEMASK) >> 12) == 3) {
+                            item.state = INDEXTOSTATEIMAGEMASK(1);
+                            SendDlgItemMessageA(hwndDlg, IDC_TABMSGOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
+                        }
+                        SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+                    }
+                }
+            }
+            break;
 		case 0:
 			switch (((LPNMHDR) lParam)->code) {
 			case PSN_APPLY:

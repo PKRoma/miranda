@@ -618,17 +618,26 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 		switch(((LPNMHDR)lParam)->idFrom) 
 		{
 		case IDC_CHECKBOXES:
-			if (((LPNMHDR)lParam)->code==NM_CLICK) {
+            if(((LPNMHDR)lParam)->code==NM_CLICK || (((LPNMHDR)lParam)->code == TVN_KEYDOWN && ((LPNMTVKEYDOWN)lParam)->wVKey == VK_SPACE)) {
 				TVHITTESTINFO hti;
 				hti.pt.x=(short)LOWORD(GetMessagePos());
 				hti.pt.y=(short)HIWORD(GetMessagePos());
 				ScreenToClient(((LPNMHDR)lParam)->hwndFrom,&hti.pt);
-				if (TreeView_HitTest(((LPNMHDR)lParam)->hwndFrom,&hti))
-					if (hti.flags&TVHT_ONITEMSTATEICON) 
-					{
+				if (TreeView_HitTest(((LPNMHDR)lParam)->hwndFrom,&hti) || ((LPNMHDR)lParam)->code == TVN_KEYDOWN) { 
+                    if(((LPNMHDR)lParam)->code == TVN_KEYDOWN)
+                        hti.flags |= TVHT_ONITEMSTATEICON;
+					if (hti.flags&TVHT_ONITEMSTATEICON) {
 						TVITEM tvi = {0};
-						tvi.mask=TVIF_HANDLE|TVIF_STATE;
-						tvi.hItem=hti.hItem;
+						//tvi.mask=TVIF_HANDLE|TVIF_STATE;
+
+                        tvi.mask = TVIF_HANDLE | TVIF_STATE;
+                        tvi.stateMask = TVIS_STATEIMAGEMASK | TVIS_BOLD;
+
+                        if(((LPNMHDR)lParam)->code == TVN_KEYDOWN)
+                            tvi.hItem = TreeView_GetSelection(((LPNMHDR)lParam)->hwndFrom);
+                        else
+                            tvi.hItem = (HTREEITEM)hti.hItem;
+
 						TreeView_GetItem(((LPNMHDR)lParam)->hwndFrom,&tvi);
                         /*
 						if (tvi.hItem == branch1[0].hItem && INDEXTOSTATEIMAGEMASK(3)==tvi.state)
@@ -650,13 +659,27 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 						else if (tvi.hItem == hListHeading6)
 							CheckBranches(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading6);
 						else {
+
+                            if(tvi.state & TVIS_BOLD && hti.flags & TVHT_ONITEMSTATEICON) {
+                                tvi.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_BOLD;
+                                SendDlgItemMessageA(hwndDlg, IDC_CHECKBOXES, TVM_SETITEMA, 0, (LPARAM)&tvi);
+                            }
+                            else if(hti.flags&TVHT_ONITEMSTATEICON) {
+                                if(((tvi.state & TVIS_STATEIMAGEMASK) >> 12) == 3) {
+                                    tvi.state = INDEXTOSTATEIMAGEMASK(1);
+                                    SendDlgItemMessageA(hwndDlg, IDC_CHECKBOXES, TVM_SETITEMA, 0, (LPARAM)&tvi);
+                                }
+                                //SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+                            }
+                            /*
                             if (tvi.state == INDEXTOSTATEIMAGEMASK(3))
                                 TreeView_SetItemState(((LPNMHDR)lParam)->hwndFrom, tvi.hItem, INDEXTOSTATEIMAGEMASK(1), TVIS_STATEIMAGEMASK);
+                            */
                             PostMessage(hwndDlg, OPT_FIXHEADINGS, 0, 0);
                         }
 						SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 					}
-
+                }
 			}
 		
 			break;

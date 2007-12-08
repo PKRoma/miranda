@@ -16,29 +16,30 @@ View CHANGELOG.OLD to see pre-1.0 relevant changes. Version 1.0.0.0 was declared
 splitted from trunk and declared as "stable" branch 2006/07/30. Released to
 the file listing the same day.
 
-Trunk is now using version numbers 1.1.0.x until the next major release. Bugfixes
-will be backported to stable branch, new features will only go into trunk.
+Version 2.0.x.x was released in October 2007 and is the current "stable" version.
+It NEEDS Miranda 0.7.x and will not work on older versions.
 
 Version 2.0.0.3  - 2007/11/29
 
         * changed per contact filter system in group chats
-        * "revert splitter" option fixed for group chats.
-        * "sync splitter with groupchats" option - fixed small (1px) alignment
+        ! "revert splitter" option fixed for group chats.
+        ! "sync splitter with groupchats" option - fixed small (1px) alignment
           bug
-        * fixed idle time for metacontacts (may not work with older versions of
+        ! fixed idle time for metacontacts (may not work with older versions of
           metacontacts plugin, so please update).
-        * removed active status message retrieval when hovering info panel. 
+        - removed active status message retrieval when hovering info panel. 
           tabSRMM now ONLY reads the status message from the database where it
           should be stored by the protocol or a 3rd party status message retrieval
           plugin.
-        * fixed F12 hotkey (message log freeze). Will not be triggered anymore when
+        ! fixed F12 hotkey (message log freeze). Will not be triggered anymore when
           holding a modifier (alt, ctrl etc.).
         * some internal code cleanup
+        ! #0000214 (accessibility issue with option dialogs)
 
 Version 2.0.0.2  - 2007/10/02
 
-        * fixed a few untranslatable strings.
-        * fixed "revert to old" splitter option (was misaligned by a few pixels).
+        ! fixed a few untranslatable strings.
+        ! fixed "revert to old" splitter option (was misaligned by a few pixels).
           (issue # 0000024)
         * cleaned up "clickable nicks code" (groupchats, patch by ghazan).
 
