@@ -185,6 +185,8 @@
 #define IDC_GENMENU_SET                 1087
 #define IDC_GENMENU_SET2                1088
 #define IDC_GENMENU_DEFAULT             1089
+#define IDC_CANVAS                      1094
+#define IDC_CANVAS2                     1095
 #define IDC_BUILDTIME                   1108
 #define IDC_CREDITSFILE                 1109
 #define IDC_NUMBER                      1113
