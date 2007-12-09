@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 int InitSkinHotkeys(void);
 int UninitSkinHotkeys(void);
 
-#define DBMODULENAME "CoreSkinHotKeys"
+#define DBMODULENAME "SkinHotKeys"
 
 typedef enum { HKT_GLOBAL, HKT_LOCAL, HKT_MANUAL, HKT_COUNT } THotkeyType;
 
@@ -125,14 +125,14 @@ int InitSkinHotkeys(void)
 
 	HookEvent(ME_SYSTEM_MODULESLOADED, sttModulesLoaded);
 	{
-		DWORD key;
+		WORD key;
 		int i;
 		for ( i = 0; i < SIZEOF( oldSettings ); i++ ) {
 			char szSetting[ 100 ];
 			wsprintfA( szSetting, "HK%s", oldSettings[i] );
-			if (( key = DBGetContactSettingDword( NULL, "Clist", szSetting, 0 ))) {
+			if (( key = DBGetContactSettingWord( NULL, "Clist", szSetting, 0 ))) {
 				DBDeleteContactSetting( NULL, "Clist", szSetting );
-				DBWriteContactSettingDword( NULL, DBMODULENAME, newSettings[i], key );
+				DBWriteContactSettingWord( NULL, DBMODULENAME, newSettings[i], key );
 			}
 
 			wsprintfA( szSetting, "HKEn%s", oldSettings[i] );
