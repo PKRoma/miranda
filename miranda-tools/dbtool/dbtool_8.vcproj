@@ -345,7 +345,6 @@
 				Optimization="3"
 				InlineFunctionExpansion="1"
 				FavorSizeOrSpeed="2"
-				OmitFramePointers="true"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="../../miranda/include"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;DATABASE_INDEPENDANT"

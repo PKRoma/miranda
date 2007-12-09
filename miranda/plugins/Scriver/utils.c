@@ -394,57 +394,56 @@ void InputAreaContextMenu(HWND hwnd, WPARAM wParam, LPARAM lParam, HANDLE hConta
 }
 
 int InputAreaShortcuts(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, CommonWindowData *windowData) {
-
+	
 	BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
 	BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
 	BOOL isCtrl = (GetKeyState(VK_CONTROL) & 0x8000) && !isAlt;
 
-	if (msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN) {
-		KEYBINDINGDESC desc;
-		ZeroMemory(&desc, sizeof(desc));
-		desc.cbSize = sizeof(desc);
-		desc.pszActionGroup = "Scriver";
-		desc.key[0] = wParam | (isShift ? KB_SHIFT_FLAG : 0) | (isAlt ? KB_ALT_FLAG : 0) | (isCtrl ? KB_CTRL_FLAG : 0);
-		if (CallService(MS_KEYBINDINGS_GET, 0, (LPARAM) &desc) == 0) {
-			switch (desc.action) {
-				case KB_PREV_TAB:
-					SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEPREV, 0, (LPARAM)GetParent(hwnd));
-					return FALSE;
-				case KB_NEXT_TAB:
-					SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATENEXT, 0, (LPARAM)GetParent(hwnd));
-					return FALSE;
-				case KB_SWITCHSTATUSBAR:
-					SendMessage(GetParent(GetParent(hwnd)), DM_SWITCHSTATUSBAR, 0, 0);
-					return FALSE;
-				case KB_SWITCHTITLEBAR:
-					SendMessage(GetParent(GetParent(hwnd)), DM_SWITCHTITLEBAR, 0, 0);
-					return FALSE;
-				case KB_SWITCHTOOLBAR:
-					SendMessage(GetParent(GetParent(hwnd)), DM_SWITCHTOOLBAR, 0, 0);
-					return FALSE;
-				case KB_MINIMIZE:
-					ShowWindow(GetParent(GetParent(hwnd)), SW_MINIMIZE);
-					return FALSE;
-				case KB_CLOSE:
-					SendMessage(GetParent(hwnd), WM_CLOSE, 0, 0);
-					return FALSE;
-				case KB_CLEAR_LOG:
-					SendMessage(GetParent(hwnd), DM_CLEARLOG, 0, 0);
-					return FALSE;
-				case KB_TAB1:
-				case KB_TAB2:
-				case KB_TAB3:
-				case KB_TAB4:
-				case KB_TAB5:
-				case KB_TAB6:
-				case KB_TAB7:
-				case KB_TAB8:
-				case KB_TAB9:
-					SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEBYINDEX, 0, desc.action - KB_TAB1);
-					return FALSE;
-			}
-		}
+	int action;
+	MSG amsg;
+	amsg.hwnd = hwnd;
+	amsg.message = msg;
+	amsg.wParam = wParam;
+	amsg.lParam = lParam;
+	switch (action = CallService(MS_HOTKEY_CHECK, (WPARAM)&amsg, (LPARAM)"Scriver"))
+	{
+		case KB_PREV_TAB:
+			SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEPREV, 0, (LPARAM)GetParent(hwnd));
+			return FALSE;
+		case KB_NEXT_TAB:
+			SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATENEXT, 0, (LPARAM)GetParent(hwnd));
+			return FALSE;
+		case KB_SWITCHSTATUSBAR:
+			SendMessage(GetParent(GetParent(hwnd)), DM_SWITCHSTATUSBAR, 0, 0);
+			return FALSE;
+		case KB_SWITCHTITLEBAR:
+			SendMessage(GetParent(GetParent(hwnd)), DM_SWITCHTITLEBAR, 0, 0);
+			return FALSE;
+		case KB_SWITCHTOOLBAR:
+			SendMessage(GetParent(GetParent(hwnd)), DM_SWITCHTOOLBAR, 0, 0);
+			return FALSE;
+		case KB_MINIMIZE:
+			ShowWindow(GetParent(GetParent(hwnd)), SW_MINIMIZE);
+			return FALSE;
+		case KB_CLOSE:
+			SendMessage(GetParent(hwnd), WM_CLOSE, 0, 0);
+			return FALSE;
+		case KB_CLEAR_LOG:
+			SendMessage(GetParent(hwnd), DM_CLEARLOG, 0, 0);
+			return FALSE;
+		case KB_TAB1:
+		case KB_TAB2:
+		case KB_TAB3:
+		case KB_TAB4:
+		case KB_TAB5:
+		case KB_TAB6:
+		case KB_TAB7:
+		case KB_TAB8:
+		case KB_TAB9:
+			SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEBYINDEX, 0, action - KB_TAB1);
+			return FALSE;
 	}
+
 	switch (msg) {
 		case WM_KEYDOWN:
 		{
@@ -588,68 +587,84 @@ int InputAreaShortcuts(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, Common
 		break;
 
 	}
+
 	return -1;
 
 }
 
 void RegisterKeyBindings() {
 	int i;
-	TCHAR str[64];
-	KEYBINDINGDESC desc;
+	char strDesc[64], strName[64];
+	HOTKEYDESC desc;
 	ZeroMemory(&desc, sizeof(desc));
 	desc.cbSize = sizeof(desc);
-	#if defined( _UNICODE )
-	desc.flags = KBDF_UNICODE;
-	#else
-	desc.flags = 0;
-	#endif
-	desc.ptszSection = _T("Scriver/Navigation");
-	desc.pszActionGroup = "Scriver";
+	desc.pszSection = "Scriver";
+/*
+	desc.pszName = "Scriver/Nav/Previous Tab";
+	desc.pszDescription = LPGEN("Navigate: Previous Tab");
+	desc.lParam = KB_PREV_TAB;
+	desc.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL|HOTKEYF_SHIFT, VK_TAB);
+	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM) &desc);
+	desc.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL, VK_PRIOR);
+	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM) &desc);
+	desc.DefHotKey = HOTKEYCODE(HOTKEYF_ALT, VK_LEFT);
+	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM) &desc);
 
-	desc.ptszActionName = _T("Previous Tab");
-	desc.action = KB_PREV_TAB;
-	desc.key[0] = VK_LEFT | KB_ALT_FLAG;
-	desc.key[1] = VK_TAB | KB_CTRL_FLAG | KB_SHIFT_FLAG;
-	desc.key[2] = VK_PRIOR | KB_CTRL_FLAG;
-	CallService(MS_KEYBINDINGS_REGISTER, 0, (LPARAM) &desc);
-	desc.ptszActionName = _T("Next Tab");
-	desc.action = KB_NEXT_TAB;
-	desc.key[0] = VK_RIGHT | KB_ALT_FLAG;
-	desc.key[1] = VK_TAB | KB_CTRL_FLAG;
-	desc.key[2] = VK_NEXT | KB_CTRL_FLAG;
-	CallService(MS_KEYBINDINGS_REGISTER, 0, (LPARAM) &desc);
-	ZeroMemory(&desc.key, sizeof(desc.key));
-	desc.ptszActionName = str;
+	desc.pszName = "Scriver/Nav/Next Tab";
+	desc.pszDescription = LPGEN("Navigate: Next Tab");
+	desc.lParam = KB_NEXT_TAB;
+	desc.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL, VK_TAB);
+	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM) &desc);
+	desc.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL, VK_NEXT);
+	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM) &desc);
+	desc.DefHotKey = HOTKEYCODE(HOTKEYF_ALT, VK_RIGHT);
+	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM) &desc);
+*/
+	desc.pszName = strName;
+	desc.pszDescription = strDesc;
 	for (i = 0; i < 9; i++) {
-		mir_sntprintf(str, SIZEOF(str), _T("Tab %d"), i + 1);
-		desc.action = KB_TAB1 + i;
-		desc.key[0] = '1' + i | KB_CTRL_FLAG;
-		CallService(MS_KEYBINDINGS_REGISTER, 0, (LPARAM) &desc);
+		mir_snprintf(strName, SIZEOF(strName), "Scriver/Nav/Tab %d", i + 1);
+		mir_snprintf(strDesc, SIZEOF(strDesc), "Navigate: Tab %d", i + 1);
+		desc.lParam = KB_TAB1 + i;
+		desc.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL, '1' + i);
+		CallService(MS_HOTKEY_REGISTER, 0, (LPARAM) &desc);
 	}
-	desc.ptszSection = _T("Scriver/Window");
-	desc.ptszActionName = _T("Toggle Statusbar");
-	desc.action = KB_SWITCHSTATUSBAR;
-	desc.key[0] = 'S' | KB_CTRL_FLAG | KB_SHIFT_FLAG;
-	CallService(MS_KEYBINDINGS_REGISTER, 0, (LPARAM) &desc);
-	desc.ptszActionName = _T("Toggle Titlebar");
-	desc.action = KB_SWITCHTITLEBAR;
-	desc.key[0] = 'M' | KB_CTRL_FLAG | KB_SHIFT_FLAG;
-	CallService(MS_KEYBINDINGS_REGISTER, 0, (LPARAM) &desc);
-	desc.ptszActionName = _T("Toggle Toolbar");
-	desc.action = KB_SWITCHTOOLBAR;
-	desc.key[0] = 'T' | KB_CTRL_FLAG | KB_SHIFT_FLAG;
-	CallService(MS_KEYBINDINGS_REGISTER, 0, (LPARAM) &desc);
-	desc.ptszActionName = _T("Clear Log");
-	desc.action = KB_CLEAR_LOG;
-	desc.key[0] = 'L' | KB_CTRL_FLAG;
-	CallService(MS_KEYBINDINGS_REGISTER, 0, (LPARAM) &desc);
-	desc.ptszActionName = _T("Minimize");
-	desc.action = KB_MINIMIZE;
-	desc.key[0] = VK_ESCAPE | KB_SHIFT_FLAG;
-	CallService(MS_KEYBINDINGS_REGISTER, 0, (LPARAM) &desc);
-	desc.ptszActionName = _T("Close Tab");
-	desc.action = KB_CLOSE;
-	desc.key[0] = VK_F4 | KB_CTRL_FLAG;
-	desc.key[1] = 'W' | KB_CTRL_FLAG;
-	CallService(MS_KEYBINDINGS_REGISTER, 0, (LPARAM) &desc);
+
+	desc.pszName = "Scriver/Wnd/Toggle Statusbar";
+	desc.pszDescription = "Window: Toggle Statusbar";
+	desc.lParam = KB_SWITCHSTATUSBAR;
+	desc.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL|HOTKEYF_SHIFT, 'S');
+	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM) &desc);
+
+	desc.pszName = "Scriver/Wnd/Toggle Titlebar";
+	desc.pszDescription = "Window: Toggle Titlebar";
+	desc.lParam = KB_SWITCHTITLEBAR;
+	desc.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL|HOTKEYF_SHIFT, 'M');
+	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM) &desc);
+
+	desc.pszName = "Scriver/Wnd/Toggle Toolbar";
+	desc.pszDescription = "Window: Toggle Toolbar";
+	desc.lParam = KB_SWITCHTOOLBAR;
+	desc.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL|HOTKEYF_SHIFT, 'T');
+	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM) &desc);
+
+	desc.pszName = "Scriver/Wnd/Clear Log";
+	desc.pszDescription = "Window: Clear Log";
+	desc.lParam = KB_CLEAR_LOG;
+	desc.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL, 'L');
+	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM) &desc);
+
+	desc.pszName = "Scriver/Wnd/Minimize";
+	desc.pszDescription = "Window: Minimize";
+	desc.lParam = KB_MINIMIZE;
+	desc.DefHotKey = HOTKEYCODE(HOTKEYF_SHIFT, VK_ESCAPE);
+	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM) &desc);
+
+	desc.pszName = "Scriver/Wnd/Close Tab";
+	desc.pszDescription = "Window: Close Tab";
+	desc.lParam = KB_CLOSE;
+//	desc.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL, VK_F4);
+//	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM) &desc);
+	desc.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL, 'W');
+	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM) &desc);
 }

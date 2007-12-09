@@ -3145,16 +3145,6 @@
 					</FileConfiguration>
 				</File>
 			</Filter>
-			<Filter
-				Name="keybindings"
-				Filter="">
-				<File
-					RelativePath=".\modules\keybindings\keybindings.c">
-				</File>
-				<File
-					RelativePath=".\modules\keybindings\keybindings.h">
-				</File>
-			</Filter>
 		</Filter>
 		<Filter
 			Name="Resources"
@@ -3173,10 +3163,163 @@
 			</File>
 		</Filter>
 		<File
+			RelativePath=".\res\_blank.ico">
+		</File>
+		<File
+			RelativePath=".\res\arrow_sort_column_down.bmp">
+		</File>
+		<File
+			RelativePath=".\res\arrow_sort_column_up.bmp">
+		</File>
+		<File
+			RelativePath=".\res\check_off.ico">
+		</File>
+		<File
+			RelativePath=".\res\check_on.ico">
+		</File>
+		<File
+			RelativePath=".\res\contact_add.ico">
+		</File>
+		<File
+			RelativePath=".\res\contact_delete.ico">
+		</File>
+		<File
+			RelativePath=".\res\contact_rename.ico">
+		</File>
+		<File
+			RelativePath=".\res\contact_view_details.ico">
+		</File>
+		<File
 			RelativePath="..\docs\contributors.txt">
 		</File>
 		<File
+			RelativePath=".\res\cursor_drag_copy.cur">
+		</File>
+		<File
+			RelativePath=".\res\cursor_drop_user.cur">
+		</File>
+		<File
+			RelativePath=".\res\cursor_hyperlink.cur">
+		</File>
+		<File
+			RelativePath=".\res\group_closed.ico">
+		</File>
+		<File
+			RelativePath=".\res\group_opened.ico">
+		</File>
+		<File
+			RelativePath=".\res\icon_all.ico">
+		</File>
+		<File
+			RelativePath=".\res\icon_ansi.ico">
+		</File>
+		<File
+			RelativePath=".\res\icon_auth_request.ico">
+		</File>
+		<File
+			RelativePath=".\res\icon_connecting.ico">
+		</File>
+		<File
+			RelativePath=".\res\icon_down_arrow.ico">
+		</File>
+		<File
+			RelativePath=".\res\icon_file.ico">
+		</File>
+		<File
+			RelativePath=".\res\icon_find_user.ico">
+		</File>
+		<File
+			RelativePath=".\res\icon_help.ico">
+		</File>
+		<File
+			RelativePath=".\res\icon_history.ico">
+		</File>
+		<File
+			RelativePath=".\res\icon_loaded.ico">
+		</File>
+		<File
+			RelativePath=".\res\icon_mail.ico">
+		</File>
+		<File
+			RelativePath=".\res\icon_message.ico">
+		</File>
+		<File
+			RelativePath=".\res\icon_notloaded.ico">
+		</File>
+		<File
+			RelativePath=".\res\icon_options.ico">
+		</File>
+		<File
+			RelativePath=".\res\icon_search_all.ico">
+		</File>
+		<File
+			RelativePath=".\res\icon_small_dot.ico">
+		</File>
+		<File
+			RelativePath=".\res\icon_sms.ico">
+		</File>
+		<File
+			RelativePath=".\res\icon_typing.ico">
+		</File>
+		<File
+			RelativePath=".\res\icon_undo.ico">
+		</File>
+		<File
+			RelativePath=".\res\icon_unicode.ico">
+		</File>
+		<File
+			RelativePath=".\res\icon_url.ico">
+		</File>
+		<File
+			RelativePath=".\res\icon_window.ico">
+		</File>
+		<File
+			RelativePath=".\res\icon_windows.ico">
+		</File>
+		<File
 			RelativePath=".\res\load.ico">
+		</File>
+		<File
+			RelativePath=".\res\miranda_home.ico">
+		</File>
+		<File
+			RelativePath=".\res\miranda_logo.ico">
+		</File>
+		<File
+			RelativePath=".\res\miranda_manager.ico">
+		</File>
+		<File
+			RelativePath=".\res\status_away.ico">
+		</File>
+		<File
+			RelativePath=".\res\status_DND.ico">
+		</File>
+		<File
+			RelativePath=".\res\status_free4chat.ico">
+		</File>
+		<File
+			RelativePath=".\res\status_invisible.ico">
+		</File>
+		<File
+			RelativePath=".\res\status_NA.ico">
+		</File>
+		<File
+			RelativePath=".\res\status_occupied.ico">
+		</File>
+		<File
+			RelativePath=".\res\status_offline.ico">
+		</File>
+		<File
+			RelativePath=".\res\status_on_the_phone.ico">
+		</File>
+		<File
+			RelativePath=".\res\status_online.ico">
+		</File>
+		<File
+			RelativePath=".\res\status_out2lunch.ico">
+		</File>
+		<File
+			RelativePath=".\res\status_user_online.ico">
 		</File>
 		<File
 			RelativePath=".\res\typing.ico">

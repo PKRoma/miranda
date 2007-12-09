@@ -151,8 +151,6 @@ CLEAN :
 	-@erase "$(INTDIR)\idle.sbr"
 	-@erase "$(INTDIR)\ignore.obj"
 	-@erase "$(INTDIR)\ignore.sbr"
-	-@erase "$(INTDIR)\keybindings.obj"
-	-@erase "$(INTDIR)\keybindings.sbr"
 	-@erase "$(INTDIR)\keyboard.obj"
 	-@erase "$(INTDIR)\keyboard.sbr"
 	-@erase "$(INTDIR)\langpack.obj"
@@ -306,6 +304,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\protochains.sbr" \
 	"$(INTDIR)\protocols.sbr" \
 	"$(INTDIR)\protodir.sbr" \
+	"$(INTDIR)\hotkeys.sbr" \
 	"$(INTDIR)\skin.sbr" \
 	"$(INTDIR)\skinicons.sbr" \
 	"$(INTDIR)\sounds.sbr" \
@@ -367,9 +366,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\extracticon.sbr" \
 	"$(INTDIR)\IcoLib.sbr" \
 	"$(INTDIR)\skin2icons.sbr" \
-	"$(INTDIR)\updatenotify.sbr" \
-	"$(INTDIR)\keybindings.sbr" \
-	"$(INTDIR)\hotkeys.sbr"
+	"$(INTDIR)\updatenotify.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -418,6 +415,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\protochains.obj" \
 	"$(INTDIR)\protocols.obj" \
 	"$(INTDIR)\protodir.obj" \
+	"$(INTDIR)\hotkeys.obj" \
 	"$(INTDIR)\skin.obj" \
 	"$(INTDIR)\skinicons.obj" \
 	"$(INTDIR)\sounds.obj" \
@@ -480,9 +478,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\IcoLib.obj" \
 	"$(INTDIR)\skin2icons.obj" \
 	"$(INTDIR)\updatenotify.obj" \
-	"$(INTDIR)\keybindings.obj" \
-	"$(INTDIR)\vc6.res" \
-	"$(INTDIR)\hotkeys.obj"
+	"$(INTDIR)\vc6.res"
 
 "..\bin\release\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -609,8 +605,6 @@ CLEAN :
 	-@erase "$(INTDIR)\idle.sbr"
 	-@erase "$(INTDIR)\ignore.obj"
 	-@erase "$(INTDIR)\ignore.sbr"
-	-@erase "$(INTDIR)\keybindings.obj"
-	-@erase "$(INTDIR)\keybindings.sbr"
 	-@erase "$(INTDIR)\keyboard.obj"
 	-@erase "$(INTDIR)\keyboard.sbr"
 	-@erase "$(INTDIR)\langpack.obj"
@@ -765,6 +759,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\protochains.sbr" \
 	"$(INTDIR)\protocols.sbr" \
 	"$(INTDIR)\protodir.sbr" \
+	"$(INTDIR)\hotkeys.sbr" \
 	"$(INTDIR)\skin.sbr" \
 	"$(INTDIR)\skinicons.sbr" \
 	"$(INTDIR)\sounds.sbr" \
@@ -826,9 +821,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\extracticon.sbr" \
 	"$(INTDIR)\IcoLib.sbr" \
 	"$(INTDIR)\skin2icons.sbr" \
-	"$(INTDIR)\updatenotify.sbr" \
-	"$(INTDIR)\keybindings.sbr" \
-	"$(INTDIR)\hotkeys.sbr"
+	"$(INTDIR)\updatenotify.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -877,6 +870,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\protochains.obj" \
 	"$(INTDIR)\protocols.obj" \
 	"$(INTDIR)\protodir.obj" \
+	"$(INTDIR)\hotkeys.obj" \
 	"$(INTDIR)\skin.obj" \
 	"$(INTDIR)\skinicons.obj" \
 	"$(INTDIR)\sounds.obj" \
@@ -939,9 +933,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\IcoLib.obj" \
 	"$(INTDIR)\skin2icons.obj" \
 	"$(INTDIR)\updatenotify.obj" \
-	"$(INTDIR)\keybindings.obj" \
-	"$(INTDIR)\vc6.res" \
-	"$(INTDIR)\hotkeys.obj"
+	"$(INTDIR)\vc6.res"
 
 "..\bin\debug\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -1011,7 +1003,6 @@ CLEAN :
 	-@erase "$(INTDIR)\IcoLib.obj"
 	-@erase "$(INTDIR)\idle.obj"
 	-@erase "$(INTDIR)\ignore.obj"
-	-@erase "$(INTDIR)\keybindings.obj"
 	-@erase "$(INTDIR)\keyboard.obj"
 	-@erase "$(INTDIR)\langpack.obj"
 	-@erase "$(INTDIR)\lpservices.obj"
@@ -1120,6 +1111,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\protochains.obj" \
 	"$(INTDIR)\protocols.obj" \
 	"$(INTDIR)\protodir.obj" \
+	"$(INTDIR)\hotkeys.obj" \
 	"$(INTDIR)\skin.obj" \
 	"$(INTDIR)\skinicons.obj" \
 	"$(INTDIR)\sounds.obj" \
@@ -1182,9 +1174,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\IcoLib.obj" \
 	"$(INTDIR)\skin2icons.obj" \
 	"$(INTDIR)\updatenotify.obj" \
-	"$(INTDIR)\keybindings.obj" \
-	"$(INTDIR)\vc6.res" \
-	"$(INTDIR)\hotkeys.obj"
+	"$(INTDIR)\vc6.res"
 
 "..\bin\Release Unicode\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -1311,8 +1301,6 @@ CLEAN :
 	-@erase "$(INTDIR)\idle.sbr"
 	-@erase "$(INTDIR)\ignore.obj"
 	-@erase "$(INTDIR)\ignore.sbr"
-	-@erase "$(INTDIR)\keybindings.obj"
-	-@erase "$(INTDIR)\keybindings.sbr"
 	-@erase "$(INTDIR)\keyboard.obj"
 	-@erase "$(INTDIR)\keyboard.sbr"
 	-@erase "$(INTDIR)\langpack.obj"
@@ -1467,6 +1455,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\protochains.sbr" \
 	"$(INTDIR)\protocols.sbr" \
 	"$(INTDIR)\protodir.sbr" \
+	"$(INTDIR)\hotkeys.sbr" \
 	"$(INTDIR)\skin.sbr" \
 	"$(INTDIR)\skinicons.sbr" \
 	"$(INTDIR)\sounds.sbr" \
@@ -1528,9 +1517,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\extracticon.sbr" \
 	"$(INTDIR)\IcoLib.sbr" \
 	"$(INTDIR)\skin2icons.sbr" \
-	"$(INTDIR)\updatenotify.sbr" \
-	"$(INTDIR)\keybindings.sbr" \
-	"$(INTDIR)\hotkeys.sbr"
+	"$(INTDIR)\updatenotify.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -1579,6 +1566,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\protochains.obj" \
 	"$(INTDIR)\protocols.obj" \
 	"$(INTDIR)\protodir.obj" \
+	"$(INTDIR)\hotkeys.obj" \
 	"$(INTDIR)\skin.obj" \
 	"$(INTDIR)\skinicons.obj" \
 	"$(INTDIR)\sounds.obj" \
@@ -1641,9 +1629,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\IcoLib.obj" \
 	"$(INTDIR)\skin2icons.obj" \
 	"$(INTDIR)\updatenotify.obj" \
-	"$(INTDIR)\keybindings.obj" \
-	"$(INTDIR)\vc6.res" \
-	"$(INTDIR)\hotkeys.obj"
+	"$(INTDIR)\vc6.res"
 
 "..\bin\Debug Unicode\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -5024,38 +5010,6 @@ SOURCE=.\modules\updatenotify\updatenotify.c
 
 
 "$(INTDIR)\updatenotify.obj"	"$(INTDIR)\updatenotify.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF
-
-SOURCE=.\modules\keybindings\keybindings.c
-
-!IF  "$(CFG)" == "miranda32 - Win32 Release"
-
-
-"$(INTDIR)\keybindings.obj"	"$(INTDIR)\keybindings.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
-
-
-"$(INTDIR)\keybindings.obj"	"$(INTDIR)\keybindings.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
-
-
-"$(INTDIR)\keybindings.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
-
-
-"$(INTDIR)\keybindings.obj"	"$(INTDIR)\keybindings.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 

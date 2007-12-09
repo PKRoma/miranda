@@ -122,14 +122,14 @@ int InitClistHotKeys(void)
 	shk.pszName="ShowOptions";
 	shk.pszSection="Main";
 	shk.pszService="CLIST/HK/Opts";
-	shk.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL|HOTKEYF_SHIFT, 'O');
+	shk.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL|HOTKEYF_SHIFT, 'O') | HKF_MIRANDA_LOCAL;
 	CallService(MS_HOTKEY_REGISTER,0,(LPARAM)&shk);	
 
 	shk.pszDescription="Open Find User Dialog";
 	shk.pszName="FindUsers";
 	shk.pszSection="Main";
 	shk.pszService="FindAdd/FindAddCommand";
-	shk.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL|HOTKEYF_SHIFT, 'F');
+	shk.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL|HOTKEYF_SHIFT, 'F') | HKF_MIRANDA_LOCAL;
 	CallService(MS_HOTKEY_REGISTER,0,(LPARAM)&shk);	
 /*
 	shk.pszDescription="Close Miranda";

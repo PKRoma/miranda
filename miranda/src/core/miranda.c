@@ -663,6 +663,14 @@ int LoadSystemModule(void)
 {
 	InitCommonControls();
 
+	if (IsWinVerXPPlus())
+	{
+		hAPCWindow=CreateWindowEx(0,_T("ComboLBox"),NULL,0, 0,0,0,0, NULL,NULL,NULL,NULL);
+		SetClassLong(hAPCWindow, GCL_STYLE, GetClassLong(hAPCWindow, GCL_STYLE) | CS_DROPSHADOW);
+		DestroyWindow(hAPCWindow);
+		hAPCWindow = NULL;
+	}
+
 	hAPCWindow=CreateWindowEx(0,_T("STATIC"),NULL,0, 0,0,0,0, NULL,NULL,NULL,NULL); // lame
 	SetWindowLong(hAPCWindow,GWL_WNDPROC,(LONG)APCWndProc);
 	hStackMutex=CreateMutex(NULL,FALSE,NULL);

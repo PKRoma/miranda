@@ -28,20 +28,36 @@ int UninitSkinHotkeys(void);
 
 #define DBMODULENAME "CoreSkinHotKeys"
 
-typedef struct
+typedef enum { HKT_GLOBAL, HKT_LOCAL, HKT_MANUAL, HKT_COUNT } THotkeyType;
+
+typedef struct _THotkeyItem THotkeyItem;
+struct _THotkeyItem
 {
-	char	*pszService, *pszName;
-	TCHAR	*ptszSection, *ptszDescription;
-	LPARAM	lParam;
-	WORD	DefHotKey, HotKey;
-	ATOM	idHotkey;
-}
-	THotkeyItem;
+	THotkeyType	type;
+	char        *pszService, *pszName; // pszName is valid _only_ for "root"   hotkeys
+	TCHAR       *ptszSection, *ptszDescription;
+	LPARAM       lParam;
+	WORD         DefHotkey, Hotkey;
+	BOOL         Enabled;
+	ATOM         idHotkey;
+
+	THotkeyItem *rootHotkey;
+	BOOL         allowSubHotkeys;
+	int          nSubHotkeys;
+
+	BOOL         OptChanged, OptDeleted, OptNew;
+	WORD         OptHotkey;
+	THotkeyType  OptType;
+	BOOL         OptEnabled;
+};
 
 static int sttCompareHotkeys(const THotkeyItem *p1, const THotkeyItem *p2);
+static void sttFreeHotkey(THotkeyItem *item);
 
 static SortedList *lstHotkeys = NULL;
 static HWND g_hwndHotkeyHost = NULL;
+static DWORD g_pid = 0;
+static int g_hotkeyCount = 0;
 
 static LRESULT CALLBACK sttHotkeyHostWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -58,13 +74,21 @@ static int svcHotkeyUnsubclass(WPARAM wParam, LPARAM lParam);
 static int svcHotkeyVKey2Name(WPARAM wParam, LPARAM lParam);
 static int svcHotkeyHotkey2Name(WPARAM wParam, LPARAM lParam);
 static int svcHotkeyRegister(WPARAM wParam, LPARAM lParam);
+static int svcHotkeyCheck(WPARAM wParam, LPARAM lParam);
 
 static int sttModulesLoaded(WPARAM wParam, LPARAM lParam);
 static int sttOptionsInit(WPARAM wParam, LPARAM lParam);
 static LRESULT CALLBACK sttOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
+HHOOK hhkKeyboard = NULL;
+static LRESULT CALLBACK sttKeyboardProc(int code, WPARAM wParam, LPARAM lParam);
+
 ///////////////////////////////////////////////////////////////////////////////
 // Hotkey manager
+
+static const char* oldSettings[] = { "ShowHide", "ReadMsg", "NetSearch", "ShowOptions" };
+static const char* newSettings[] = { "ShowHide", "ReadMessage", "SearchInWeb", "ShowOptions" };
+
 int InitSkinHotkeys(void)
 {
 	WNDCLASSEX wcl = {0};
@@ -82,37 +106,40 @@ int InitSkinHotkeys(void)
 	wcl.hIconSm = NULL;
 	RegisterClassEx(&wcl);
 
+	lstHotkeys = List_Create(0, 5);
+	lstHotkeys->sortFunc = sttCompareHotkeys;
+
+	g_pid = GetCurrentProcessId();
+
 	g_hwndHotkeyHost = CreateWindow(_T("MirandaHotkeyHostWnd"), NULL, 0, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, HWND_DESKTOP, NULL, GetModuleHandle(NULL), NULL);
 	SetWindowPos(g_hwndHotkeyHost, 0, 0, 0, 0, 0, SWP_NOZORDER|SWP_NOMOVE|SWP_NOSIZE|SWP_NOACTIVATE|SWP_DEFERERASE|SWP_NOSENDCHANGING|SWP_HIDEWINDOW);
 
-	lstHotkeys = List_Create(0, 5);
-	lstHotkeys->sortFunc = sttCompareHotkeys;
+	hhkKeyboard = SetWindowsHookEx(WH_KEYBOARD, sttKeyboardProc, NULL, GetCurrentThreadId());
 
 	CreateServiceFunction(MS_HOTKEY_SUBCLASS, svcHotkeySubclass);
 	CreateServiceFunction(MS_HOTKEY_UNSUBCLASS, svcHotkeyUnsubclass);
 	CreateServiceFunction(MS_HOTKEY_VKEY2NAME, svcHotkeyVKey2Name);
 	CreateServiceFunction(MS_HOTKEY_HOTKEY2NAME, svcHotkeyHotkey2Name);
 	CreateServiceFunction(MS_HOTKEY_REGISTER, svcHotkeyRegister);
+	CreateServiceFunction(MS_HOTKEY_CHECK, svcHotkeyCheck);
 
 	HookEvent(ME_SYSTEM_MODULESLOADED, sttModulesLoaded);
 	{
 		DWORD key;
-		if (( key = DBGetContactSettingDword( NULL, "Clist", "HKEnShowHide", 0 ))) {
-			DBWriteContactSettingDword( NULL, DBMODULENAME, "ShowHide", key );
-			DBDeleteContactSetting( NULL, "Clist", "HKEnShowHide" );
-		}
-		if (( key = DBGetContactSettingDword( NULL, "Clist", "HKEnReadMsg", 0 ))) {
-			DBWriteContactSettingDword( NULL, DBMODULENAME, "ReadMessage", key );
-			DBDeleteContactSetting( NULL, "Clist", "HKEnReadMsg" );
-		}
-		if (( key = DBGetContactSettingDword( NULL, "Clist", "HKEnNetSearch", 0 ))) {
-			DBWriteContactSettingDword( NULL, DBMODULENAME, "SearchInWeb", key );
-			DBDeleteContactSetting( NULL, "Clist", "HKEnNetSearch" );
-		}
-		if (( key = DBGetContactSettingDword( NULL, "Clist", "HKEnShowOptions", 0 ))) {
-			DBWriteContactSettingDword( NULL, DBMODULENAME, "ShowOptions", key );
-			DBDeleteContactSetting( NULL, "Clist", "HKEnShowOptions" );
-	}	}
+		int i;
+		for ( i = 0; i < SIZEOF( oldSettings ); i++ ) {
+			char szSetting[ 100 ];
+			wsprintfA( szSetting, "HK%s", oldSettings[i] );
+			if (( key = DBGetContactSettingDword( NULL, "Clist", szSetting, 0 ))) {
+				DBDeleteContactSetting( NULL, "Clist", szSetting );
+				DBWriteContactSettingDword( NULL, DBMODULENAME, newSettings[i], key );
+			}
+
+			wsprintfA( szSetting, "HKEn%s", oldSettings[i] );
+			if (( key = DBGetContactSettingByte( NULL, "Clist", szSetting, 0 ))) {
+				DBDeleteContactSetting( NULL, "Clist", szSetting );
+				DBWriteContactSettingByte( NULL, DBMODULENAME "Off", newSettings[i], ( key == 0 ) ? TRUE : FALSE );
+	}	}	}
 
 	return 0;
 }
@@ -120,16 +147,11 @@ int InitSkinHotkeys(void)
 int UninitSkinHotkeys(void)
 {
 	int i;
+	UnhookWindowsHookEx(hhkKeyboard);
 	sttUnregisterHotkeys();
 	DestroyWindow(g_hwndHotkeyHost);
-	for ( i = 0; i < lstHotkeys->realCount; i++ ) {
-		THotkeyItem *item = (THotkeyItem *)lstHotkeys->items[i];
-		mir_free(item->pszName);
-		mir_free(item->pszService);
-		mir_free(item->ptszDescription);
-		mir_free(item->ptszSection);
-		mir_free(item);
-	}
+	for ( i = 0; i < lstHotkeys->realCount; i++ )
+		sttFreeHotkey((THotkeyItem *)lstHotkeys->items[i]);
 	List_Destroy(lstHotkeys);
 	return 0;
 }
@@ -156,15 +178,51 @@ static LRESULT CALLBACK sttHotkeyHostWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 		int i;
 		for (i = 0; i < lstHotkeys->realCount; i++) {
 			THotkeyItem *item = (THotkeyItem *)lstHotkeys->items[i];
-			if (wParam == item->idHotkey) {
+			if (item->type != HKT_GLOBAL) continue;
+			if (!item->Enabled) continue;
+			if (item->pszService && (wParam == item->idHotkey)) {
 				CallService(item->pszService, 0, item->lParam);
 				break;
 		}	}
 
-		return TRUE;
+		return FALSE;
 	}
 
 	return DefWindowProc(hwnd, msg, wParam, lParam);
+}
+
+static LRESULT CALLBACK sttKeyboardProc(int code, WPARAM wParam, LPARAM lParam)
+{
+	if (code == HC_ACTION)
+	{
+		int i;
+		BYTE mod=0, vk=wParam;
+
+		if (vk)
+		{
+			if (GetAsyncKeyState(VK_CONTROL)) mod |= MOD_CONTROL;
+			if (GetAsyncKeyState(VK_MENU)) mod |= MOD_ALT;
+			if (GetAsyncKeyState(VK_SHIFT)) mod |= MOD_SHIFT;
+			if (GetAsyncKeyState(VK_LWIN) || GetAsyncKeyState(VK_RWIN)) mod |= MOD_WIN;
+
+			for ( i = 0; i < lstHotkeys->realCount; i++ )
+			{
+				THotkeyItem *item = (THotkeyItem *)lstHotkeys->items[i];
+				BYTE hkMod, hkVk;
+				if (item->type != HKT_LOCAL) continue;
+				sttWordToModAndVk(item->Hotkey, &hkMod, &hkVk);
+				if (!hkVk) continue;
+				if (!item->Enabled) continue;
+				if (item->pszService && (vk == hkVk) && (mod == hkMod))
+				{
+					CallService(item->pszService, 0, item->lParam);
+					return TRUE;
+				}
+			}
+		}
+	}
+
+	return CallNextHookEx(hhkKeyboard, code, wParam, lParam);
 }
 
 static int svcHotkeySubclass(WPARAM wParam, LPARAM lParam)
@@ -192,29 +250,118 @@ static int svcHotkeyHotkey2Name(WPARAM wParam, LPARAM lParam)
 
 static int svcHotkeyRegister(WPARAM wParam, LPARAM lParam)
 {
-	char buf[256];
+	char nameBuf[MAXMODULELABELLENGTH], buf[256];
 
 	HOTKEYDESC *desc = (HOTKEYDESC *)lParam;
 	THotkeyItem *item = mir_alloc(sizeof(THotkeyItem));
 
-	item->pszName = mir_strdup(desc->pszName);
-	item->pszService = mir_strdup(desc->pszService);
-	item->ptszDescription = mir_a2t(desc->pszDescription);
 	item->ptszSection = mir_a2t(desc->pszSection);
-	item->DefHotKey = desc->DefHotKey;
-	item->HotKey = DBGetContactSettingWord(NULL, DBMODULENAME, item->pszName, item->DefHotKey);
+	item->ptszDescription = mir_a2t(desc->pszDescription);
+	item->allowSubHotkeys = TRUE;
+	item->rootHotkey = NULL;
+	item->nSubHotkeys = 0;
+
+	if (item->rootHotkey = List_Find(lstHotkeys, item))
+	{
+		if (item->rootHotkey->allowSubHotkeys)
+		{
+			mir_snprintf(nameBuf, SIZEOF(nameBuf), "%s$%d", item->rootHotkey->pszName, item->rootHotkey->nSubHotkeys);
+			item->pszName = nameBuf;
+			item->Enabled = TRUE;
+
+			item->rootHotkey->nSubHotkeys++;
+		} else
+		{
+			mir_free(item->ptszSection);
+			mir_free(item->ptszDescription);
+			mir_free(item);
+			return 0;
+		}
+	} else
+	{
+		item->pszName = mir_strdup(desc->pszName);
+		item->Enabled = !DBGetContactSettingByte(NULL, DBMODULENAME "Off", item->pszName, 0);
+	}
+
+	item->pszService = desc->pszService ? mir_strdup(desc->pszService) : 0;
+	item->DefHotkey = desc->DefHotKey & ~HKF_MIRANDA_LOCAL;
+	item->Hotkey = DBGetContactSettingWord(NULL, DBMODULENAME, item->pszName, item->DefHotkey);
+	item->type = item->pszService ?
+		DBGetContactSettingByte(NULL, DBMODULENAME "Types", item->pszName,
+			(desc->DefHotKey & HKF_MIRANDA_LOCAL) ? HKT_LOCAL : HKT_GLOBAL) :
+		HKT_MANUAL;
 	item->lParam = desc->lParam;
 
-	mir_snprintf(buf, SIZEOF(buf), "mir_hotkey_%s", item->pszName);
+	mir_snprintf(buf, SIZEOF(buf), "mir_hotkey_%d_%d", g_pid, g_hotkeyCount++);
 	item->idHotkey = GlobalAddAtomA(buf);
-	if ( !DBGetContactSettingByte(NULL, DBMODULENAME "Off", item->pszName, 0)) {
-		BYTE mod, vk;
-		sttWordToModAndVk(item->HotKey, &mod, &vk);
-		RegisterHotKey(g_hwndHotkeyHost, item->idHotkey, mod, vk);
+	if (item->type == HKT_GLOBAL) {
+		if (item->Enabled) {
+			BYTE mod, vk;
+			sttWordToModAndVk(item->Hotkey, &mod, &vk);
+			RegisterHotKey(g_hwndHotkeyHost, item->idHotkey, mod, vk);
+		}
 	}
 
 	List_InsertPtr(lstHotkeys, item);
+
+	if (!item->rootHotkey)
+	{	/* try to load alternatives from db */
+		int count, i;
+		mir_snprintf(buf, SIZEOF(buf), "%s$count", item->pszName);
+		count = (int)DBGetContactSettingDword(NULL, DBMODULENAME, buf, -1);
+		for (i = 0; i < count; i++)
+		{
+			mir_snprintf(buf, SIZEOF(buf), "%s$%d", item->pszName, i);
+			if (!DBGetContactSettingWord(NULL, DBMODULENAME, buf, 0))
+				continue;
+
+			svcHotkeyRegister(wParam, lParam);
+		}
+		item->allowSubHotkeys = (count >= 0) ? FALSE : TRUE;
+	} else
+	{
+		item->pszName = NULL;
+	}
+
 	return item->idHotkey;
+}
+
+static int svcHotkeyCheck(WPARAM wParam, LPARAM lParam)
+{
+	MSG *msg = (MSG *)wParam;
+	TCHAR *pszSection = mir_a2t((char *)lParam);
+
+	if ((msg->message == WM_KEYDOWN) || (msg->message == WM_SYSKEYDOWN))
+	{
+		int i;
+		BYTE mod=0, vk=msg->wParam;
+
+		if (vk)
+		{
+			if (GetAsyncKeyState(VK_CONTROL)) mod |= MOD_CONTROL;
+			if (GetAsyncKeyState(VK_MENU)) mod |= MOD_ALT;
+			if (GetAsyncKeyState(VK_SHIFT)) mod |= MOD_SHIFT;
+			if (GetAsyncKeyState(VK_LWIN) || GetAsyncKeyState(VK_RWIN)) mod |= MOD_WIN;
+
+			for ( i = 0; i < lstHotkeys->realCount; i++ )
+			{
+				THotkeyItem *item = (THotkeyItem *)lstHotkeys->items[i];
+				BYTE hkMod, hkVk;
+				if ((item->type != HKT_MANUAL) || lstrcmp(pszSection, item->ptszSection)) continue;
+				sttWordToModAndVk(item->Hotkey, &hkMod, &hkVk);
+				if (!hkVk) continue;
+				if (!item->Enabled) continue;
+				if ((vk == hkVk) && (mod == hkMod))
+				{
+					mir_free(pszSection);
+					return item->lParam;
+				}
+			}
+		}
+	}
+
+	mir_free(pszSection);
+	return 0;
 }
 
 static int sttCompareHotkeys(const THotkeyItem *p1, const THotkeyItem *p2)
@@ -222,7 +369,23 @@ static int sttCompareHotkeys(const THotkeyItem *p1, const THotkeyItem *p2)
 	int res;
 	if ( res = lstrcmp( p1->ptszSection, p2->ptszSection ))
 		return res;
-	return lstrcmp( p1->ptszDescription, p2->ptszDescription );
+	if ( res = lstrcmp( p1->ptszDescription, p2->ptszDescription ))
+		return res;
+	if (!p1->rootHotkey && p2->rootHotkey)
+		return -1;
+	if (p1->rootHotkey && !p2->rootHotkey)
+		return 1;
+	return 0;
+}
+
+static void sttFreeHotkey(THotkeyItem *item)
+{
+	GlobalDeleteAtom(item->idHotkey);
+	mir_free(item->pszName);
+	mir_free(item->pszService);
+	mir_free(item->ptszDescription);
+	mir_free(item->ptszSection);
+	mir_free(item);
 }
 
 static void sttRegisterHotkeys()
@@ -231,9 +394,10 @@ static void sttRegisterHotkeys()
 	for ( i = 0; i < lstHotkeys->realCount; i++ ) {
 		THotkeyItem *item = (THotkeyItem *)lstHotkeys->items[i];
 		UnregisterHotKey(g_hwndHotkeyHost, item->idHotkey);
-		if ( !DBGetContactSettingByte(NULL, DBMODULENAME "Off", item->pszName, 0 )) {
+		if (item->type != HKT_GLOBAL) continue;
+		if (item->Enabled) {
 			BYTE mod, vk;
-			sttWordToModAndVk(item->HotKey, &mod, &vk);
+			sttWordToModAndVk(item->Hotkey, &mod, &vk);
 			if (!vk) continue;
 			RegisterHotKey(g_hwndHotkeyHost, item->idHotkey, mod, vk);
 }	}	}
@@ -257,199 +421,39 @@ typedef struct
 
 static char *sttHokeyVkToName(WORD vkKey)
 {
-	switch (vkKey) {
-	case VK_LBUTTON        	: // 0x01
-		return LPGEN("Left Click");
-	case VK_RBUTTON        	: // 0x02
-		return LPGEN("Right Click");
-	case VK_CANCEL         	: // 0x03
-		return LPGEN("Ctrl+Break");
-	case VK_MBUTTON        	: // 0x04    /* NOT contiguous with L & RBUTTON */
-		return LPGEN("Wheel Click");
-	case VK_XBUTTON1       	: // 0x05    /* NOT contiguous with L & RBUTTON */
-		return LPGEN("Back Click");
-	case VK_XBUTTON2       	: // 0x06    /* NOT contiguous with L & RBUTTON */
-		return LPGEN("Forward Click");
-	case VK_BACK           	: // 0x08
-		return LPGEN("Backspace");
-	case VK_TAB            	: // 0x09
-		return LPGEN("Tab");
-	case VK_CLEAR          	: // 0x0C
-		return LPGEN("Clear");
-	case VK_RETURN         	: // 0x0D
-		return LPGEN("Enter");
-	case VK_PAUSE          	: // 0x13
-		return LPGEN("Pause");
-	case VK_CAPITAL        	: // 0x14
-		return LPGEN("Caps Lock");
-	case VK_ESCAPE         	: // 0x1B
-		return LPGEN("Esc");
-	case VK_SPACE          	: // 0x20
-		return LPGEN("Space");
-	case VK_PRIOR          	: // 0x21
-		return LPGEN("Page Up");
-	case VK_NEXT           	: // 0x22
-		return LPGEN("Page Down");
-	case VK_END            	: // 0x23
-			return LPGEN("End");
-	case VK_HOME           	: // 0x24
-		return LPGEN("Home");
-	case VK_LEFT           	: // 0x25
-		return LPGEN("Left");
-	case VK_UP             	: // 0x26
-		return LPGEN("Up");
-	case VK_RIGHT          	: // 0x27
-		return LPGEN("Right");
-	case VK_DOWN           	: // 0x28
-		return LPGEN("Down");
-	case VK_SELECT         	: // 0x29
-		return LPGEN("Select");
-	case VK_PRINT          	: // 0x2A
-		return LPGEN("Print");
-	case VK_EXECUTE        	: // 0x2B
-		return LPGEN("Execute");
-	case VK_SNAPSHOT       	: // 0x2C
-		return LPGEN("Print Screen");
-	case VK_INSERT         	: // 0x2D
-		return LPGEN("Ins");
-	case VK_DELETE         	: // 0x2E
-		return LPGEN("Del");
-	case VK_HELP           	: // 0x2F
-		return LPGEN("Help");
-	case VK_SLEEP          	: // 0x5F
-		return LPGEN("Sleep");
-	case VK_NUMPAD0        	: // 0x60
-		return LPGEN("Num 0");
-	case VK_NUMPAD1        	: // 0x61
-		return LPGEN("Num 1");
-	case VK_NUMPAD2        	: // 0x62
-		return LPGEN("Num 2");
-	case VK_NUMPAD3        	: // 0x63
-		return LPGEN("Num 3");
-	case VK_NUMPAD4        	: // 0x64
-		return LPGEN("Num 4");
-	case VK_NUMPAD5        	: // 0x65
-		return LPGEN("Num 5");
-	case VK_NUMPAD6        	: // 0x66
-		return LPGEN("Num 6");
-	case VK_NUMPAD7        	: // 0x67
-		return LPGEN("Num 7");
-	case VK_NUMPAD8        	: // 0x68
-		return LPGEN("Num 8");
-	case VK_NUMPAD9        	: // 0x69
-		return LPGEN("Num 9");
-	case VK_MULTIPLY       	: // 0x6A
-		return LPGEN("Num *");
-	case VK_ADD            	: // 0x6B
-		return LPGEN("Num +");
-	case VK_SEPARATOR      	: // 0x6C
-		return LPGEN("Separator");
-	case VK_SUBTRACT       	: // 0x6D
-		return LPGEN("Num -");
-	case VK_DECIMAL        	: // 0x6E
-		return LPGEN("Num .");
-	case VK_DIVIDE         	: // 0x6F
-		return LPGEN("Num /");
-	case VK_F1             	: // 0x70
-		return LPGEN("F1");
-	case VK_F2             	: // 0x71
-		return LPGEN("F2");
-	case VK_F3             	: // 0x72
-		return LPGEN("F3");
-	case VK_F4             	: // 0x73
-		return LPGEN("F4");
-	case VK_F5             	: // 0x74
-		return LPGEN("F5");
-	case VK_F6             	: // 0x75
-		return LPGEN("F6");
-	case VK_F7             	: // 0x76
-		return LPGEN("F7");
-	case VK_F8             	: // 0x77
-		return LPGEN("F8");
-	case VK_F9             	: // 0x78
-		return LPGEN("F9");
-	case VK_F10            	: // 0x79
-		return LPGEN("F10");
-	case VK_F11            	: // 0x7A
-		return LPGEN("F11");
-	case VK_F12            	: // 0x7B
-		return LPGEN("F12");
-	case VK_F13            	: // 0x7C
-		return LPGEN("F13");
-	case VK_F14            	: // 0x7D
-		return LPGEN("F14");
-	case VK_F15            	: // 0x7E
-		return LPGEN("F15");
-	case VK_F16            	: // 0x7F
-		return LPGEN("F16");
-	case VK_F17            	: // 0x80
-		return LPGEN("F17");
-	case VK_F18            	: // 0x81
-		return LPGEN("F18");
-	case VK_F19            	: // 0x82
-		return LPGEN("F19");
-	case VK_F20            	: // 0x83
-		return LPGEN("F20");
-	case VK_F21            	: // 0x84
-		return LPGEN("F21");
-	case VK_F22            	: // 0x85
-		return LPGEN("F22");
-	case VK_F23            	: // 0x86
-		return LPGEN("F23");
-	case VK_F24            	: // 0x87
-		return LPGEN("F24");
-	case VK_NUMLOCK        	: // 0x90
-		return LPGEN("Num Lock");
-	case VK_SCROLL         	: // 0x91
-		return LPGEN("Scroll Lock");
-	case VK_BROWSER_BACK        : // 0xA6
-		return LPGEN("Back");
-	case VK_BROWSER_FORWARD     : // 0xA7
-		return LPGEN("Forward");
-	case VK_BROWSER_REFRESH     : // 0xA8
-		return LPGEN("Refresh");
-	case VK_BROWSER_STOP        : // 0xA9
-		return LPGEN("Stop");
-	case VK_BROWSER_SEARCH      : // 0xAA
-		return LPGEN("Search");
-	case VK_BROWSER_FAVORITES   : // 0xAB
-		return LPGEN("Favorites");
-	case VK_BROWSER_HOME        : // 0xAC
-		return LPGEN("Home");
-	case VK_VOLUME_MUTE         : // 0xAD
-		return LPGEN("Mute");
-	case VK_VOLUME_DOWN         : // 0xAE
-		return LPGEN("Vol Down");
-	case VK_VOLUME_UP           : // 0xAF
-		return LPGEN("Vol Up");
-	case VK_MEDIA_NEXT_TRACK    : // 0xB0
-		return LPGEN("Prev Track");
-	case VK_MEDIA_PREV_TRACK    : // 0xB1
-		return LPGEN("Next Track");
-	case VK_MEDIA_STOP          : // 0xB2
-		return LPGEN("Stop");
-	case VK_MEDIA_PLAY_PAUSE    : // 0xB3
-			return LPGEN("Play/Pause");
-	case VK_LAUNCH_MAIL         : // 0xB4
-		return LPGEN("Main");
-	case VK_LAUNCH_MEDIA_SELECT : // 0xB5
-		return LPGEN("Media");
-	case VK_LAUNCH_APP1         : // 0xB6
-		return LPGEN("App1");
-	case VK_LAUNCH_APP2         : // 0xB7
-		return LPGEN("App2");
-	}
-	if ((vkKey >= 'A') && (vkKey <= 'Z'))
+	static char buf[256] = {0};
+	DWORD code = MapVirtualKey(vkKey, 0) << 16;
+
+	switch (vkKey)
 	{
-		static char letters[] = "A\0" "B\0" "C\0" "D\0" "E\0" "F\0" "G\0" "H\0" "I\0" "J\0" "K\0" "L\0" "M\0" "N\0" "O\0" "P\0" "Q\0" "R\0" "S\0" "T\0" "U\0" "V\0" "W\0" "X\0" "Y\0" "Z\0";
-		return letters + (vkKey - 'A') * 2;
+	case VK_CONTROL:
+	case VK_SHIFT:
+	case VK_MENU:
+	case VK_LWIN:
+	case VK_RWIN:
+	case VK_PAUSE:
+	case VK_CANCEL:
+	case VK_NUMLOCK:
+	case VK_CAPITAL:
+	case VK_SCROLL:
+		return "";
+
+	case VK_DIVIDE:
+	case VK_INSERT:
+	case VK_HOME:
+	case VK_PRIOR:
+	case VK_DELETE:
+	case VK_END:
+	case VK_NEXT:
+	case VK_LEFT:
+	case VK_RIGHT:
+	case VK_UP:
+	case VK_DOWN:
+		code |= (1UL << 24);
 	}
-	if ((vkKey >= '0') && (vkKey <= '9'))
-	{
-		static char digits[] = "0\0" "1\0" "2\0" "3\0" "4\0" "5\0" "6\0" "7\0" "8\0" "9\0";
-		return digits + (vkKey - '0') * 2;
-	}
-	return LPGEN("");
+
+	GetKeyNameTextA(code, buf, 256);
+	return buf;
 }
 
 static void sttHokeyToName(char *buf, int size, BYTE shift, BYTE key)
@@ -491,6 +495,7 @@ static LRESULT CALLBACK sttHotkeyEditProc(HWND hwnd, UINT msg, WPARAM wParam, LP
 		case WM_CHAR:
 		case WM_SYSCHAR:
 		case WM_PASTE:
+		case WM_CONTEXTMENU:
 			return TRUE;
 
 		case WM_KEYDOWN:
@@ -503,8 +508,9 @@ static LRESULT CALLBACK sttHotkeyEditProc(HWND hwnd, UINT msg, WPARAM wParam, LP
 			char buf[256] = {0};
 
 			BYTE shift = 0;
-			char *name = sttHokeyVkToName(wParam);
-			BYTE key = (*name && bKeyDown) ? wParam : 0;
+			BYTE key = wParam;
+			char *name = sttHokeyVkToName(key);
+			if (!*name || !bKeyDown) key = 0;
 
 			if (GetAsyncKeyState(VK_CONTROL)) shift |= HOTKEYF_CONTROL;
 			if (GetAsyncKeyState(VK_MENU)) shift |= HOTKEYF_ALT;
@@ -521,7 +527,6 @@ static LRESULT CALLBACK sttHotkeyEditProc(HWND hwnd, UINT msg, WPARAM wParam, LP
 
 			if (bKeyDown && data->key)
 				SendMessage(GetParent(hwnd), WM_COMMAND, MAKELONG(GetWindowLong(hwnd, GWL_ID), 0), (LPARAM)hwnd);
-
 			return TRUE;
 		}
 
@@ -569,9 +574,194 @@ static int sttOptionsInit(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+enum { COL_NAME, COL_TYPE, COL_KEY, COL_RESET, COL_ADDREMOVE };
+
+static void sttOptionsSetupItem(HWND hwndList, int idx, THotkeyItem *item)
+{
+	char buf[256];
+	LVITEM lvi = {0};
+	lvi.iItem = idx;
+
+	if ( !item->rootHotkey ) {
+		lvi.mask = 0;
+		lvi.iSubItem = COL_NAME;
+		lvi.mask |= LVIF_TEXT|LVIF_IMAGE;
+		lvi.pszText = TranslateTS(item->ptszDescription);
+		lvi.iImage = item->OptType;
+		ListView_SetItem(hwndList, &lvi);
+
+		ListView_SetCheckState(hwndList, lvi.iItem, item->Enabled);
+	}
+
+	lvi.mask = LVIF_TEXT;
+	lvi.iSubItem = COL_KEY;
+	sttHokeyToName(buf, SIZEOF(buf), HIBYTE(item->OptHotkey), LOBYTE(item->OptHotkey));
+	lvi.pszText = mir_a2t(buf);
+	ListView_SetItem(hwndList, &lvi);
+	mir_free(lvi.pszText);
+
+	if ( item->rootHotkey ) {
+		lvi.mask = LVIF_IMAGE;
+		lvi.iSubItem = COL_TYPE;
+		lvi.iImage = item->OptType;
+		ListView_SetItem(hwndList, &lvi);
+	}
+
+	lvi.mask = LVIF_IMAGE;
+	lvi.iSubItem = COL_RESET;
+	lvi.iImage = (item->Hotkey != item->OptHotkey) ? 5 : -1;
+	ListView_SetItem(hwndList, &lvi);
+
+	lvi.mask = LVIF_IMAGE|LVIF_TEXT;
+	lvi.iSubItem = COL_ADDREMOVE;
+	if (item->rootHotkey) {
+		lvi.iImage = 4;
+		lvi.pszText = TranslateT("Remove shortcut");
+	}
+	else {
+		lvi.iImage = 3;
+		lvi.pszText = TranslateT("Add another shortcut");
+	}
+	ListView_SetItem(hwndList, &lvi);
+}
+
+static void sttOptionsDeleteHotkey(HWND hwndList, int idx, THotkeyItem *item)
+{
+	item->OptDeleted = TRUE;
+	ListView_DeleteItem(hwndList, idx);
+	if (item->rootHotkey)
+		item->rootHotkey->OptChanged = TRUE;
+}
+
+static int CALLBACK sttOptionsSortList(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
+{
+	TCHAR title1[256] = {0}, title2[256] = {0};
+	THotkeyItem *item1 = NULL, *item2 = NULL;
+	LVITEM lvi = {0};
+	int res;
+
+	lvi.mask = LVIF_TEXT|LVIF_PARAM;
+	lvi.iItem = lParam1;
+	lvi.pszText = title1;
+	lvi.cchTextMax = SIZEOF(title1);
+	if (ListView_GetItem((HWND)lParamSort, &lvi))
+		item1 = (THotkeyItem *)lvi.lParam;
+
+	lvi.mask = LVIF_TEXT|LVIF_PARAM;
+	lvi.iItem = lParam2;
+	lvi.pszText = title2;
+	lvi.cchTextMax = SIZEOF(title2);
+	if (ListView_GetItem((HWND)lParamSort, &lvi))
+		item2 = (THotkeyItem *)lvi.lParam;
+
+	if (!item1 && !item2)
+		return lstrcmp(title1, title2);
+
+	if (!item1) {
+		if (res = lstrcmp(title1, item2->ptszSection))
+			return res;
+		return -1;
+	}
+
+	if (!item2) {
+		if (res = lstrcmp(item1->ptszSection, title2))
+			return res;
+		return 1;
+	}
+	return sttCompareHotkeys(item1, item2);
+}
+
+static void sttOptionsAddHotkey(HWND hwndList, int idx, THotkeyItem *item)
+{
+	char buf[256];
+	LVITEM lvi = {0};
+
+	THotkeyItem *newItem = (THotkeyItem *)mir_alloc(sizeof(THotkeyItem));
+	newItem->pszName = NULL;
+	newItem->pszService = item->pszService ? mir_strdup(item->pszService) : NULL;
+	newItem->ptszSection = mir_tstrdup(item->ptszSection);
+	newItem->ptszDescription = mir_tstrdup(item->ptszDescription);
+	newItem->lParam = item->lParam;
+	mir_snprintf(buf, SIZEOF(buf), "mir_hotkey_%d_%d", g_pid, g_hotkeyCount++);
+	newItem->idHotkey = GlobalAddAtomA(buf);
+	newItem->rootHotkey = item;
+	newItem->Hotkey = newItem->DefHotkey = newItem->OptHotkey = 0;
+	newItem->type = newItem->OptType = item->OptType;
+	newItem->Enabled = newItem->OptEnabled = TRUE;
+	newItem->OptChanged = newItem->OptDeleted = FALSE;
+	newItem->OptNew = TRUE;
+
+	List_InsertPtr(lstHotkeys, newItem);
+
+	SendMessage(hwndList, WM_SETREDRAW, FALSE, 0);
+
+	#ifdef _UNICODE
+	if ( IsWinVerXPPlus() ) {
+		lvi.mask = LVIF_GROUPID;
+		lvi.iItem = idx;
+		ListView_GetItem(hwndList, &lvi);
+	}
+	#endif
+
+	lvi.mask |= LVIF_PARAM;
+	lvi.lParam = (LPARAM)newItem;
+	sttOptionsSetupItem(hwndList, ListView_InsertItem(hwndList, &lvi), newItem);
+	ListView_SortItemsEx(hwndList, sttOptionsSortList, (LPARAM)hwndList);
+
+	SendMessage(hwndList, WM_SETREDRAW, TRUE, 0);
+	RedrawWindow(hwndList, NULL, NULL, RDW_INVALIDATE);
+
+	item->OptChanged = TRUE;
+}
+
+static void sttOptionsSetChanged(THotkeyItem *item)
+{
+	item->OptChanged = TRUE;
+	if (item->rootHotkey)
+		item->rootHotkey->OptChanged = TRUE;
+}
+
+static void sttOptionsSaveItem(THotkeyItem *item)
+{
+	int i;
+	char buf[MAXMODULELABELLENGTH];
+
+	if (item->rootHotkey) return;
+	if (!item->OptChanged) return;
+
+	item->Hotkey = item->OptHotkey;
+	item->type = item->OptType;
+	item->Enabled = item->OptEnabled;
+
+	DBWriteContactSettingWord(NULL, DBMODULENAME, item->pszName, item->Hotkey);
+	DBWriteContactSettingByte(NULL, DBMODULENAME "Off", item->pszName, item->Enabled ? 0 : 1);
+	if (item->type != HKT_MANUAL)
+		DBWriteContactSettingByte(NULL, DBMODULENAME "Types", item->pszName, item->type);
+
+	item->nSubHotkeys = 0;
+	for (i = 0; i < lstHotkeys->realCount; i++) {
+		THotkeyItem *subItem = (THotkeyItem *)lstHotkeys->items[i];
+		if (subItem->rootHotkey == item)
+		{
+			subItem->Hotkey = subItem->OptHotkey;
+			subItem->type = subItem->OptType;
+
+			mir_snprintf(buf, SIZEOF(buf), "%s$%d", item->pszName, item->nSubHotkeys);
+			DBWriteContactSettingWord(NULL, DBMODULENAME, buf, subItem->Hotkey);
+			if (subItem->type != HKT_MANUAL)
+				DBWriteContactSettingByte(NULL, DBMODULENAME "Types", buf, subItem->type);
+
+			++item->nSubHotkeys;
+	}	}
+
+	mir_snprintf(buf, SIZEOF(buf), "%s$count", item->pszName);
+	DBWriteContactSettingDword(NULL, DBMODULENAME, buf, item->nSubHotkeys);
+}
+
 static LRESULT CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	static BOOL initialized = FALSE;
+	static int colWidth = 0;
 
 	switch (msg) {
 	case WM_INITDIALOG:
@@ -579,28 +769,54 @@ static LRESULT CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 			int i, nItems=0, iGroupId=-1;
 			LVCOLUMN lvc;
 			RECT rc;
+			HIMAGELIST hIml;
 
 			initialized = FALSE;
 
 			TranslateDialogDefault(hwndDlg);
 
 			sttHotkeyEditCreate(GetDlgItem(hwndDlg, IDC_HOTKEY));
-			
-			ListView_SetExtendedListViewStyle(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), LVS_EX_CHECKBOXES|LVS_EX_FULLROWSELECT);
+
+			hIml = ImageList_Create(16, 16, ILC_MASK + ( IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16 ), 3, 1);
+			ImageList_AddIcon(hIml, (HICON)LoadSkinnedIcon(SKINICON_OTHER_WINDOWS));
+			ImageList_AddIcon(hIml, (HICON)LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
+			ImageList_AddIcon(hIml, (HICON)LoadSkinnedIcon(SKINICON_OTHER_WINDOW));
+			ImageList_AddIcon(hIml, (HICON)LoadSkinnedIcon(SKINICON_OTHER_ADDCONTACT));
+			ImageList_AddIcon(hIml, (HICON)LoadSkinnedIcon(SKINICON_OTHER_DELETE));
+			ImageList_AddIcon(hIml, (HICON)LoadSkinnedIcon(SKINICON_OTHER_UNDO));
+			ListView_SetImageList(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), hIml, LVSIL_SMALL);
+
+			ListView_SetExtendedListViewStyle(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), LVS_EX_CHECKBOXES|LVS_EX_SUBITEMIMAGES|LVS_EX_FULLROWSELECT);
 
 			GetClientRect(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), &rc);
-			lvc.mask = LVCF_WIDTH;
-			lvc.cx = (rc.right - GetSystemMetrics(SM_CXHTHUMB) - 1)/2;
-			ListView_InsertColumn(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), 0, &lvc);
-			ListView_InsertColumn(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), 1, &lvc);
+			colWidth = (rc.right - GetSystemMetrics(SM_CXHTHUMB) - 3*GetSystemMetrics(SM_CXSMICON) - 5)/2;
 
-			if ( IsWinVerXPPlus() )
+			lvc.mask = LVCF_WIDTH;
+			lvc.cx = colWidth;
+			ListView_InsertColumn(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), COL_NAME, &lvc);
+			lvc.cx = GetSystemMetrics(SM_CXSMICON);
+			ListView_InsertColumn(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), COL_TYPE, &lvc);
+			lvc.cx = colWidth;
+			ListView_InsertColumn(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), COL_KEY, &lvc);
+			lvc.cx = GetSystemMetrics(SM_CXSMICON);
+			ListView_InsertColumn(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), COL_RESET, &lvc);
+			lvc.cx = GetSystemMetrics(SM_CXSMICON);
+			ListView_InsertColumn(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), COL_ADDREMOVE, &lvc);
+
+			#ifdef _UNICODE
+			if (IsWinVerXPPlus())
 				ListView_EnableGroupView(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), TRUE);
+			#endif
 
 			for (i = 0; i < lstHotkeys->realCount; i++) {
 				LVITEM lvi = {0};
 				THotkeyItem *item = (THotkeyItem *)lstHotkeys->items[i];
-				char buf[256];
+
+				item->OptChanged = FALSE;
+				item->OptDeleted = item->OptNew = FALSE;
+				item->OptEnabled = item->Enabled;
+				item->OptHotkey = item->Hotkey;
+				item->OptType = item->type;
 
 				if ( !i || lstrcmp(item->ptszSection, ((THotkeyItem *)lstHotkeys->items[i-1])->ptszSection )) {
 					#ifdef _UNICODE
@@ -616,37 +832,31 @@ static LRESULT CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 					else
 					#endif
 					{
-						lvi.mask = LVIF_TEXT;
+						lvi.mask = LVIF_TEXT|LVIF_PARAM;
 						lvi.iItem = nItems++;
 						lvi.iSubItem = 0;
+						lvi.lParam = 0;
 						lvi.pszText = TranslateTS(item->ptszSection);
 						ListView_InsertItem(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), &lvi);
 				}	}
 
-				lvi.mask = LVIF_TEXT|LVIF_GROUPID|LVIF_PARAM;
+				lvi.mask = 0;
+				#ifdef _UNICODE
+				if (IsWinVerXPPlus())
+				{
+					lvi.mask = LVIF_GROUPID;
+					lvi.iGroupId = iGroupId;
+				}
+				#endif
+
+				lvi.mask |= LVIF_PARAM;
 				lvi.iItem = nItems++;
-				lvi.iSubItem = 0;
-				lvi.iGroupId = iGroupId;
-				lvi.pszText = TranslateTS(item->ptszDescription);
 				lvi.lParam = (LPARAM)item;
 				ListView_InsertItem(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), &lvi);
-
-				ListView_SetCheckState(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), lvi.iItem, 
-					DBGetContactSettingByte(NULL, DBMODULENAME "Off", item->pszName, 0) ? 0 : 1);
-
-				lvi.mask = LVIF_TEXT;
-				lvi.iSubItem = 1;
-				sttHokeyToName(buf, SIZEOF(buf), HIBYTE(item->HotKey), LOBYTE(item->HotKey));
-				lvi.pszText = mir_a2t(buf);
-				ListView_SetItem(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), &lvi);
-				mir_free(lvi.pszText);
+				sttOptionsSetupItem(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), nItems-1, item);
 		}	}
 		initialized = TRUE;
 		return TRUE;
-
-	case WM_DESTROY:
-		sttRegisterHotkeys();
-		break;
 
 	case WM_COMMAND:
 		if (( LOWORD( wParam ) == IDC_HOTKEY) && (( HIWORD( wParam ) == EN_KILLFOCUS) || (HIWORD(wParam) == 0 ))) {
@@ -663,16 +873,10 @@ static LRESULT CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 			if (lvi.iItem >= 0) {
 				ListView_GetItem(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), &lvi);
 				if (item = (THotkeyItem *)lvi.lParam) {
-					char buf[256];
-					item->HotKey = wHotkey;
+					item->OptHotkey = wHotkey;
 
-					lvi.mask = LVIF_TEXT;
-					lvi.iSubItem = 1;
-					sttHokeyToName(buf, SIZEOF(buf), HIBYTE(item->HotKey), LOBYTE(item->HotKey));
-					lvi.pszText = mir_a2t(buf);
-					ListView_SetItem(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), &lvi);
-					mir_free(lvi.pszText);
-
+					sttOptionsSetupItem(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), lvi.iItem, item);
+					sttOptionsSetChanged(item);
 					SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 		}	}	}
 		break;
@@ -683,37 +887,95 @@ static LRESULT CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 			switch (lpnmhdr->idFrom) {
 			case 0:
 				{
-					int i, count;
+					int i;
 
 					if (( lpnmhdr->code != PSN_APPLY) && (lpnmhdr->code != PSN_RESET ))
 						break;
 
-					count = ListView_GetItemCount(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS));
-					for (i = 0; i < count; i++) {
-						LVITEM lvi;
-						THotkeyItem *item;
-						lvi.mask = LVIF_PARAM;
-						lvi.iItem = i;
-						ListView_GetItem(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), &lvi);
-						if (( item = (THotkeyItem *)lvi.lParam ) == 0 )
-							continue;
+					sttUnregisterHotkeys();
 
-						if ( lpnmhdr->code == PSN_APPLY ) {
-							int state = ListView_GetCheckState(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), i) ? 0 : 1;
-
-							if (DBGetContactSettingWord(NULL, DBMODULENAME, item->pszName, item->DefHotKey) != item->HotKey)
-								DBWriteContactSettingWord(NULL, DBMODULENAME, item->pszName, item->HotKey);
-
-							if (DBGetContactSettingWord(NULL, DBMODULENAME "Off", item->pszName, 0) != state)
-								DBWriteContactSettingByte(NULL, DBMODULENAME "Off", item->pszName, state);
+					for (i = 0; i < lstHotkeys->realCount; i++)
+					{
+						THotkeyItem *item = (THotkeyItem *)lstHotkeys->items[i];
+						if (item->OptNew && item->OptDeleted ||
+							item->rootHotkey && !item->OptHotkey ||
+							(lpnmhdr->code == PSN_APPLY) && item->OptDeleted ||
+							(lpnmhdr->code == PSN_RESET) && item->OptNew)
+						{
+							sttFreeHotkey(item);
+							List_Remove(lstHotkeys, i);
+							--i;
 						}
-						else if (lpnmhdr->code == PSN_RESET)
-							item->HotKey = DBGetContactSettingWord(NULL, DBMODULENAME, item->pszName, item->DefHotKey);
 					}
+
+					if (lpnmhdr->code == PSN_APPLY)
+					{
+						LVITEM lvi = {0};
+						int count = ListView_GetItemCount(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS));
+
+						for (i = 0; i < lstHotkeys->realCount; i++)
+							sttOptionsSaveItem(lstHotkeys->items[i]);
+
+						lvi.mask = LVIF_IMAGE;
+						lvi.iSubItem = COL_RESET;
+						lvi.iImage = -1;
+						for (lvi.iItem = 0; lvi.iItem < count; ++lvi.iItem)
+							ListView_SetItem(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), &lvi);
+					}
+
+					sttRegisterHotkeys();
+
 					break;
 				}
 			case IDC_LV_HOTKEYS:
 				switch (lpnmhdr->code) {
+				case NM_CLICK:
+					{
+						THotkeyItem *item = NULL;
+						LPNMITEMACTIVATE lpnmia = (LPNMITEMACTIVATE)lParam;
+						LVHITTESTINFO lvhti = {0};
+						LVITEM lvi = {0};
+
+						lvi.mask = LVIF_PARAM|LVIF_IMAGE;
+						lvi.iItem = lpnmia->iItem;
+						ListView_GetItem(lpnmia->hdr.hwndFrom, &lvi);
+						item = (THotkeyItem *)lvi.lParam;
+
+						lvhti.pt = lpnmia->ptAction;
+						lvhti.iItem = lpnmia->iItem;
+						lvhti.iSubItem = lpnmia->iSubItem;
+						ListView_HitTest(lpnmia->hdr.hwndFrom, &lvhti);
+
+						if (item && 
+							(!item->rootHotkey && (lpnmia->iSubItem == COL_NAME) && ((lvhti.flags & LVHT_ONITEM) == LVHT_ONITEMICON) ||
+							 item->rootHotkey && (lpnmia->iSubItem == COL_TYPE)) &&
+							((item->OptType == HKT_GLOBAL) || (item->OptType == HKT_LOCAL)))
+						{
+							item->OptType = (item->OptType == HKT_GLOBAL) ? HKT_LOCAL : HKT_GLOBAL;
+							sttOptionsSetupItem(lpnmia->hdr.hwndFrom, lpnmia->iItem, item);
+							sttOptionsSetChanged(item);
+							SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+						} else
+						if (item && (lpnmia->iSubItem == COL_RESET))
+						{
+							item->OptHotkey = item->Hotkey;
+							sttOptionsSetupItem(lpnmia->hdr.hwndFrom, lpnmia->iItem, item);
+						} else
+						if (item && (lpnmia->iSubItem == COL_ADDREMOVE))
+						{
+							if (item->rootHotkey)
+							{
+								sttOptionsDeleteHotkey(lpnmia->hdr.hwndFrom, lpnmia->iItem, item);
+							} else
+							{
+								initialized = FALSE;
+								sttOptionsAddHotkey(lpnmia->hdr.hwndFrom, lpnmia->iItem, item);
+								initialized = TRUE;
+							}
+							SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+						}
+						break;
+					}
 				case LVN_KEYDOWN:
 					{
 						LPNMLVKEYDOWN param = (LPNMLVKEYDOWN)lParam;
@@ -734,9 +996,9 @@ static LRESULT CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 
 						if (item = (THotkeyItem *)lvi.lParam) {
 							RECT rc;	
-							ListView_GetSubItemRect(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), iItem, 1, LVIR_BOUNDS, &rc);
+							ListView_GetSubItemRect(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), iItem, COL_KEY, LVIR_BOUNDS, &rc);
 							MapWindowPoints(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), hwndDlg, (LPPOINT)&rc, 2);
-							SendDlgItemMessage(hwndDlg, IDC_HOTKEY, HKM_SETHOTKEY, MAKELONG(LOBYTE(item->HotKey), HIBYTE(item->HotKey)), 0);
+							SendDlgItemMessage(hwndDlg, IDC_HOTKEY, HKM_SETHOTKEY, MAKELONG(LOBYTE(item->OptHotkey), HIBYTE(item->OptHotkey)), 0);
 
 							SetWindowPos(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), HWND_BOTTOM, 0, 0, 0, 0, SWP_SHOWWINDOW|SWP_NOSIZE|SWP_NOMOVE|SWP_NOACTIVATE);
 							SetWindowPos(GetDlgItem(hwndDlg, IDC_HOTKEY), HWND_TOP, rc.left, rc.top, rc.right-rc.left, rc.bottom-rc.top, SWP_SHOWWINDOW);
@@ -750,8 +1012,13 @@ static LRESULT CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 				case LVN_ITEMCHANGED:
 					{
 						LPNMLISTVIEW param = (LPNMLISTVIEW)lParam;
-						if (initialized && param->lParam && (param->uNewState>>12 != param->uOldState>>12))
+						THotkeyItem *item = (THotkeyItem *)param->lParam;
+						if (initialized && item && !item->rootHotkey && (param->uNewState>>12 != param->uOldState>>12))
+						{
+							item->OptEnabled = ListView_GetCheckState(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), param->iItem) ? 1 : 0;
+							sttOptionsSetChanged(item);
 							SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+						}
 						break;
 					}
 				case NM_CUSTOMDRAW:
@@ -765,6 +1032,7 @@ static LRESULT CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 
 						case CDDS_SUBITEM|CDDS_ITEMPREPAINT:
 							{
+								THotkeyItem *item;
 								TCHAR buf[256];
 								LVITEM lvi = {0};
 								lvi.mask = LVIF_TEXT|LVIF_PARAM;
@@ -772,8 +1040,9 @@ static LRESULT CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 								lvi.pszText = buf;
 								lvi.cchTextMax = SIZEOF(buf);
 								ListView_GetItem(lpnmhdr->hwndFrom, &lvi);
+								item = (THotkeyItem *)lvi.lParam;
 
-								if (!lvi.lParam) {
+								if (!item) {
 									RECT rc;
 									HFONT hfnt;
 
@@ -787,6 +1056,14 @@ static LRESULT CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 										SelectObject(param->nmcd.hdc, hfnt);
 									}
 
+									SetWindowLong( hwndDlg, DWL_MSGRESULT, CDRF_SKIPDEFAULT );
+									return TRUE;
+								}
+								
+								if (item->rootHotkey && (param->iSubItem == 0)) {
+									RECT rc;
+									ListView_GetSubItemRect(lpnmhdr->hwndFrom, param->nmcd.dwItemSpec, param->iSubItem, LVIR_BOUNDS, &rc);
+									FillRect(param->nmcd.hdc, &rc, GetSysColorBrush(COLOR_WINDOW));
 									SetWindowLong( hwndDlg, DWL_MSGRESULT, CDRF_SKIPDEFAULT );
 									return TRUE;
 								}

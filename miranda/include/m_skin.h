@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2007 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -69,6 +69,9 @@ __inline static HANDLE LoadSkinnedIconHandle(int id) {return (HANDLE)CallService
 #define SKINICON_OTHER_ANSI         227     //v0.7.0.19+
 #define SKINICON_OTHER_LOADED       228     //v0.7.0.19+
 #define SKINICON_OTHER_NOTLOADED    229     //v0.7.0.19+
+#define SKINICON_OTHER_UNDO         230     //v0.8.0.4+
+#define SKINICON_OTHER_WINDOW       231     //v0.8.0.4+
+#define SKINICON_OTHER_WINDOWS      232     //v0.8.0.4+
 
 //menu icons are owned by the module that uses them so are not and should not
 //be skinnable. Except exit and show/hide
@@ -167,6 +170,3 @@ __inline static int SkinPlaySound(const char *name) {return CallService(MS_SKIN_
 // Skin/LoadNetworkAnim - get some silly spinner thing when we want to be busy
 
 #endif //M_SKIN_H__
-
-
-

@@ -935,18 +935,6 @@ SOURCE=.\modules\icolib\skin2icons.c
 SOURCE=.\modules\updatenotify\updatenotify.c
 # End Source File
 # End Group
-# Begin Group "keybindings"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\modules\keybindings\keybindings.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\modules\keybindings\keybindings.h
-# End Source File
-# End Group
 # End Group
 # Begin Group "Resources"
 

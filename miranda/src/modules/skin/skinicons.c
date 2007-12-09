@@ -65,6 +65,9 @@ struct StandardIconDescription mainIcons[] =
 	{ SKINICON_OTHER_ANSI,        LPGEN("ANSI plugin"),     -IDI_ANSI           },
 	{ SKINICON_OTHER_LOADED,      LPGEN("Running plugin"),  -IDI_LOADED         },
 	{ SKINICON_OTHER_NOTLOADED,   LPGEN("Unloaded plugin"), -IDI_NOTLOADED      },
+	{ SKINICON_OTHER_UNDO,	      LPGEN("Undo"),            -IDI_UNDO           },
+	{ SKINICON_OTHER_WINDOW,      LPGEN("Window"),          -IDI_WINDOW         },
+	{ SKINICON_OTHER_WINDOWS,     LPGEN("System"),          -IDI_WINDOWS        },
 };
 
 struct StandardIconDescription statusIcons[] =

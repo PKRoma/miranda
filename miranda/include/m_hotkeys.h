@@ -35,6 +35,8 @@ typedef struct
 	LPARAM lParam;					/* lParam to pass to service */
 } HOTKEYDESC;
 
+#define HKF_MIRANDA_LOCAL		0x8000
+
 /* use this macro to defile hotkey codes like this:
   hkd.DefHotkey = HOTKEYCODE(HOTKEYF_SHIFT|HOTKEYF_EXT, 'A');
 */
@@ -47,6 +49,14 @@ Registers new hotkey
 Returns 0 on success or nonzero otherwise
 */
 #define MS_HOTKEY_REGISTER			"CoreHotkeys/Register"
+
+/* CoreHotkeys/Register service
+Checks if "manual" hotkey was activated and returns its id.
+  wParam=(WPARAM)(MSG *)message
+  lParam=(LPARAM)(char *)pszSection
+Returns lParam associated with activated hotkey
+*/
+#define MS_HOTKEY_CHECK				"CoreHotkeys/Check"
 
 /* CoreHotkeys/VKey2Name service
 Converts VK key code to human-readable name
@@ -82,5 +92,7 @@ use it for own purposes.
 #define MS_HOTKEY_UNSUBCLASS		"CoreHotkeys/Unsubclass"
 
 #endif // M_HOTKEYS_H__
+
+
 
 
