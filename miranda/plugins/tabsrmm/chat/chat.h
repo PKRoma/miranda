@@ -266,7 +266,8 @@ typedef struct SESSION_INFO_TYPE
 	HANDLE      hContact;
 	HWND        hwndStatus;
 	time_t      LastTime;
-
+    TCHAR          szSearch[255];
+    int            iSearchItem;
 	COMMAND_INFO*  lpCommands; 
 	COMMAND_INFO*  lpCurrentCommand;
 	LOGINFO*       pLog;

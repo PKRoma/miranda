@@ -1452,13 +1452,80 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 		}	}	}	}
 		return 1;
 
-	case WM_KEYDOWN:
+    case WM_KEYDOWN:
+        //_DebugTraceW(_T("code: %d"), wParam);
 		if (wParam == 0x57 && GetKeyState(VK_CONTROL) & 0x8000) { // ctrl-w (close window)
 			PostMessage(hwndParent, WM_CLOSE, 0, 1);
 			return TRUE;
 		}
+        if(wParam == VK_ESCAPE || wParam == VK_UP || wParam == VK_DOWN || wParam == VK_NEXT ||
+           wParam == VK_PRIOR || wParam == VK_TAB || wParam == VK_HOME || wParam == VK_END) {
+            if(mwdat && mwdat->si) {
+                SESSION_INFO *si = (SESSION_INFO *)mwdat->si;
+                si->szSearch[0] = 0;
+                si->iSearchItem = -1;
+            }
+        }
 		break;
 
+    case WM_SETFOCUS:
+    case WM_KILLFOCUS:
+        if(mwdat && mwdat->si) {                    // set/kill focus invalidates incremental search status
+			SESSION_INFO *si = (SESSION_INFO *)mwdat->si;
+            si->szSearch[0] = 0;
+            si->iSearchItem = -1;
+        }
+        break;
+    case WM_CHAR:
+    case WM_UNICHAR:
+        {
+            if(mwdat && mwdat->si) {
+                SESSION_INFO *si = (SESSION_INFO *)mwdat->si;
+                if(wParam == 27 && si->szSearch[0]) {
+                    si->szSearch[0] = 0;
+                    si->iSearchItem = -1;
+                    break;
+                }
+                else if (wParam == '\b' && si->szSearch[0])
+                    si->szSearch[lstrlen(si->szSearch) - 1] = '\0';
+                else if (wParam < ' ')
+                    break;
+        		else {
+        			TCHAR szNew[2];
+        			szNew[0] = (TCHAR) wParam;
+        			szNew[1] = '\0';
+        			if (lstrlen(si->szSearch) >= SIZEOF(si->szSearch) - 2) {
+        				MessageBeep(MB_OK);
+        				break;
+        			}
+        			_tcscat(si->szSearch, szNew);
+                    //_DebugTraceW(_T("Buffer is: %s, char was: %d"), si->szSearch, wParam);
+        		}
+        		if (si->szSearch[0]) {
+                    int     iItems = SendMessage(hwnd, LB_GETCOUNT, 0, 0);
+					int     i;
+                    USERINFO *ui;
+
+                    for(i = 0; i < iItems; i++) {
+                        ui = UM_FindUserFromIndex(si->pUsers, i);
+                        if(ui) {
+                            if(!_tcsnicmp(ui->pszNick, si->szSearch, lstrlen(si->szSearch))) {
+                                SendMessage(hwnd, LB_SETSEL, FALSE, -1);
+                                SendMessage(hwnd, LB_SETSEL, TRUE, i);
+                                si->iSearchItem = i;
+                                InvalidateRect(hwnd, NULL, FALSE);
+                                return 0;
+                            }
+                        }
+                    }
+                    if(i == iItems) {
+                        MessageBeep(MB_OK);
+                        si->iSearchItem = -1;
+                    }
+        		}
+            }
+            break;
+        }
     case WM_RBUTTONDOWN:
         {
             int iCounts = SendMessage(hwnd, LB_GETSELCOUNT, 0, 0);
@@ -2148,9 +2215,21 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 					{
 						SIZE sz;
-						GetTextExtentPoint32(dis->hDC, ui->pszNick, lstrlen(ui->pszNick), &sz);
-						TextOut(dis->hDC, x_offset, (dis->rcItem.top+dis->rcItem.bottom-sz.cy)/2, ui->pszNick, lstrlen(ui->pszNick));
-						SelectObject(dis->hDC, hOldFont);
+
+                        if(si->iSearchItem != -1 && si->iSearchItem == index && si->szSearch[0]) {
+                            COLORREF clr_orig = GetTextColor(dis->hDC);
+                            GetTextExtentPoint32(dis->hDC, ui->pszNick, lstrlen(si->szSearch), &sz);
+                            SetTextColor(dis->hDC, RGB(250, 250, 0));
+                            TextOut(dis->hDC, x_offset, (dis->rcItem.top+dis->rcItem.bottom-sz.cy)/2, ui->pszNick, lstrlen(si->szSearch));
+                            SetTextColor(dis->hDC, clr_orig);
+                            x_offset += sz.cx;
+                            TextOut(dis->hDC, x_offset, (dis->rcItem.top+dis->rcItem.bottom-sz.cy)/2, ui->pszNick + lstrlen(si->szSearch), lstrlen(ui->pszNick) - lstrlen(si->szSearch));
+                        }
+                        else {
+                            GetTextExtentPoint32(dis->hDC, ui->pszNick, lstrlen(ui->pszNick), &sz);
+                            TextOut(dis->hDC, x_offset, (dis->rcItem.top+dis->rcItem.bottom-sz.cy)/2, ui->pszNick, lstrlen(ui->pszNick));
+                            SelectObject(dis->hDC, hOldFont);
+                        }
 					}
 				}
 				return TRUE;
@@ -2727,8 +2806,8 @@ LABEL_SHOWWINDOW:
 			ApplyContainerSetting(dat->pContainer, CNT_SIDEBAR, dat->pContainer->dwFlags & CNT_SIDEBAR ? 0 : 1);
 			break;
 
-		case IDCANCEL:
-			ShowWindow(dat->pContainer->hwnd, SW_MINIMIZE);
+        case IDCANCEL:
+            ShowWindow(dat->pContainer->hwnd, SW_MINIMIZE);
 			return FALSE;
 
 		case IDOK:

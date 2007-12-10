@@ -37,9 +37,9 @@ $Id$
 
 static char *relnotes[] = {
     "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
-    "\\par\t\\b\\ul1 Release notes for version 2.0.0.3\\b0\\ul0\\par ",
+    "\\par\t\\b\\ul1 Release notes for version 2.0.0.4\\b0\\ul0\\par ",
     "*\tBug fixes. See changelog.txt for details\\par",
-    "*\tremoved active status message retrieval.\\par",
+    "*\tAdded incremental search feature to group chat userlist.\\par",
     NULL
 };
 
