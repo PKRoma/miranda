@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="8,00"
 	Name="aim"
 	ProjectGUID="{736E59E5-CDCE-4C88-9C3A-E7913D45C9EC}"
-	RootNamespace="aim"
 	>
 	<Platforms>
 		<Platform
@@ -16,10 +15,9 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\Release"
-			IntermediateDirectory=".\Release"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -50,21 +48,15 @@
 				Optimization="3"
 				InlineFunctionExpansion="1"
 				FavorSizeOrSpeed="2"
-				OmitFramePointers="false"
-				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;AIM_EXPORTS"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
-				TreatWChar_tAsBuiltInType="false"
-				UsePrecompiledHeader="0"
-				PrecompiledHeaderFile=".\Release/aim.pch"
-				AssemblerListingLocation=".\Release/"
-				ObjectFile=".\Release/"
-				ProgramDataBaseFileName=".\Release/"
-				WarningLevel="4"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="aim.h"
+				WarningLevel="3"
 				SuppressStartupBanner="true"
 				CompileAs="0"
 			/>
@@ -81,11 +73,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="../../bin/release/plugins/Aim.dll"
+				AdditionalDependencies="wsock32.lib"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				ProgramDatabaseFile=".\Release/aim.pdb"
-				ImportLibrary=".\Release/aim.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -115,10 +105,9 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\Debug"
-			IntermediateDirectory=".\Debug"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -147,27 +136,17 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/GS"
 				Optimization="0"
-				FavorSizeOrSpeed="0"
-				WholeProgramOptimization="false"
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;AIM_EXPORTS"
-				IgnoreStandardIncludePath="false"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
-				TreatWChar_tAsBuiltInType="true"
-				UsePrecompiledHeader="0"
-				PrecompiledHeaderThrough=""
-				PrecompiledHeaderFile=".\Debug/aim.pch"
-				AssemblerListingLocation=".\Debug/"
-				ObjectFile=".\Debug/"
-				ProgramDataBaseFileName=".\Debug/"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="aim.h"
 				BrowseInformation="1"
-				WarningLevel="4"
+				WarningLevel="3"
 				SuppressStartupBanner="true"
-				Detect64BitPortabilityProblems="false"
-				DebugInformationFormat="3"
+				DebugInformationFormat="4"
 				CompileAs="0"
 			/>
 			<Tool
@@ -184,13 +163,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="wsock32.lib"
-				OutputFile="../../bin/debug/plugins/Aim.dll"
+				AdditionalOptions="Ws2_32.lib"
+				AdditionalDependencies="wsock32.lib"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Debug/aim.pdb"
-				ImportLibrary=".\Debug/aim.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -219,6 +196,191 @@
 				ExcludedFromBuild="false"
 			/>
 		</Configuration>
+		<Configuration
+			Name="Debug Unicode|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
+			ConfigurationType="2"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+				ExcludedFromBuild="false"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="1"
+				TypeLibraryName=".\Debug/aim.tlb"
+				HeaderFileName=""
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="../../include"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;AIM_EXPORTS"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="1"
+				PrecompiledHeaderThrough="aim.h"
+				BrowseInformation="1"
+				WarningLevel="3"
+				SuppressStartupBanner="true"
+				DebugInformationFormat="4"
+				CompileAs="0"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="2057"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+				ExcludedFromBuild="false"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalOptions="Ws2_32.lib"
+				AdditionalDependencies="wsock32.lib"
+				LinkIncremental="1"
+				SuppressStartupBanner="true"
+				GenerateDebugInformation="true"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+				ExcludedFromBuild="false"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release Unicode|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
+			ConfigurationType="2"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="1"
+				TypeLibraryName=".\Release/aim.tlb"
+				HeaderFileName=""
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="3"
+				InlineFunctionExpansion="1"
+				FavorSizeOrSpeed="2"
+				WholeProgramOptimization="true"
+				AdditionalIncludeDirectories="../../include"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;AIM_EXPORTS"
+				StringPooling="true"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="true"
+				PrecompiledHeaderThrough="aim.h"
+				WarningLevel="3"
+				SuppressStartupBanner="true"
+				CompileAs="0"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="2057"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="wsock32.lib"
+				LinkIncremental="1"
+				SuppressStartupBanner="true"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				OptimizeForWindows98="1"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
 	</Configurations>
 	<References>
 	</References>
@@ -231,11 +393,37 @@
 				RelativePath=".\aim.cpp"
 				>
 				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
 						RuntimeLibrary="1"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						RuntimeLibrary="1"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
 					/>
 				</FileConfiguration>
 			</File>
@@ -249,6 +437,10 @@
 			</File>
 			<File
 				RelativePath=".\away.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\client.cpp"
 				>
 			</File>
 			<File
@@ -272,6 +464,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\flap.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\links.cpp"
 				>
 			</File>
@@ -288,7 +484,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\server.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\services.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\snac.cpp"
 				>
 			</File>
 			<File
@@ -304,6 +508,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\tlv.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\utility.cpp"
 				>
 			</File>
@@ -311,34 +519,43 @@
 				RelativePath=".\windows.cpp"
 				>
 			</File>
-			<Filter
-				Name="classes"
+		</Filter>
+		<Filter
+			Name="Resource Files"
+			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
+			>
+			<File
+				RelativePath=".\icons\admin.ico"
 				>
-				<File
-					RelativePath=".\flap.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\snac.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\tlv.cpp"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="commands"
+			</File>
+			<File
+				RelativePath=".\icons\aol.ico"
 				>
-				<File
-					RelativePath=".\client.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\server.cpp"
-					>
-				</File>
-			</Filter>
+			</File>
+			<File
+				RelativePath=".\icons\bot.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icons\confirmed.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icons\hiptop.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icons\icq.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icons\oscar.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icons\unconfirmed.ico"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -354,6 +571,10 @@
 			</File>
 			<File
 				RelativePath=".\away.h"
+				>
+			</File>
+			<File
+				RelativePath=".\client.h"
 				>
 			</File>
 			<File
@@ -381,6 +602,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\flap.h"
+				>
+			</File>
+			<File
 				RelativePath=".\links.h"
 				>
 			</File>
@@ -405,7 +630,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\server.h"
+				>
+			</File>
+			<File
 				RelativePath=".\services.h"
+				>
+			</File>
+			<File
+				RelativePath=".\snac.h"
 				>
 			</File>
 			<File
@@ -421,6 +654,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\tlv.h"
+				>
+			</File>
+			<File
 				RelativePath=".\utility.h"
 				>
 			</File>
@@ -428,147 +665,6 @@
 				RelativePath=".\windows.h"
 				>
 			</File>
-			<Filter
-				Name="classes"
-				>
-				<File
-					RelativePath=".\flap.h"
-					>
-				</File>
-				<File
-					RelativePath=".\snac.h"
-					>
-				</File>
-				<File
-					RelativePath=".\tlv.h"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="commands"
-				>
-				<File
-					RelativePath=".\client.h"
-					>
-				</File>
-				<File
-					RelativePath=".\server.h"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="Resource Files"
-				Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
-				>
-				<File
-					RelativePath=".\icons\add.ico"
-					>
-				</File>
-				<File
-					RelativePath=".\icons\admin.ico"
-					>
-				</File>
-				<File
-					RelativePath=".\icons\aol.ico"
-					>
-				</File>
-				<File
-					RelativePath=".\icons\away.ico"
-					>
-				</File>
-				<File
-					RelativePath=".\icons\backgroundcolor.ico"
-					>
-				</File>
-				<File
-					RelativePath=".\icons\bold.ico"
-					>
-				</File>
-				<File
-					RelativePath=".\icons\bot.ico"
-					>
-				</File>
-				<File
-					RelativePath=".\icons\confirmed.ico"
-					>
-				</File>
-				<File
-					RelativePath=".\icons\foregroundcolor.ico"
-					>
-				</File>
-				<File
-					RelativePath=".\icons\hiptop.ico"
-					>
-				</File>
-				<File
-					RelativePath=".\icons\icq.ico"
-					>
-				</File>
-				<File
-					RelativePath=".\icons\idle.ico"
-					>
-				</File>
-				<File
-					RelativePath=".\icons\inbox.ico"
-					>
-				</File>
-				<File
-					RelativePath=".\icons\italic.ico"
-					>
-				</File>
-				<File
-					RelativePath=".\icons\nbold.ico"
-					>
-				</File>
-				<File
-					RelativePath=".\icons\nitalic.ico"
-					>
-				</File>
-				<File
-					RelativePath=".\icons\nnormalscript.ico"
-					>
-				</File>
-				<File
-					RelativePath=".\icons\normalscript.ico"
-					>
-				</File>
-				<File
-					RelativePath=".\icons\nsubscript.ico"
-					>
-				</File>
-				<File
-					RelativePath=".\icons\nsuperscript.ico"
-					>
-				</File>
-				<File
-					RelativePath=".\icons\nunderline.ico"
-					>
-				</File>
-				<File
-					RelativePath=".\icons\oscar.ico"
-					>
-				</File>
-				<File
-					RelativePath=".\icons\profile.ico"
-					>
-				</File>
-				<File
-					RelativePath=".\icons\subscript.ico"
-					>
-				</File>
-				<File
-					RelativePath=".\icons\superscript.ico"
-					>
-				</File>
-				<File
-					RelativePath=".\icons\unconfirmed.ico"
-					>
-				</File>
-				<File
-					RelativePath=".\icons\underline.ico"
-					>
-				</File>
-			</Filter>
 		</Filter>
 		<File
 			RelativePath=".\Makefile"
