@@ -568,6 +568,7 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 			mir_sntprintf(szBuffer, SIZEOF(szBuffer), _T("%s * %s"), gce->ptszNick, RemoveFormatting(gce->ptszText));
 			break;
 		case GC_EVENT_ACTION:
+		case GC_EVENT_ACTION|GC_EVENT_HIGHLIGHT:
 			p = '*';
 			mir_sntprintf(szBuffer, SIZEOF(szBuffer), _T("%s %s"), gce->ptszNick, RemoveFormatting(gce->ptszText));
 			break;
@@ -827,7 +828,7 @@ BOOL DoEventHook(const TCHAR* pszID, const char* pszModule, int iType, const TCH
 	gch.dwData = dwItem;
 	gch.pDest = &gcd;
 	NotifyEventHooks(hSendEvent,0,(WPARAM)&gch);
-	
+
 	mir_free( gcd.pszID );
 	mir_free( gch.ptszUID );
 	mir_free( gch.ptszText );
