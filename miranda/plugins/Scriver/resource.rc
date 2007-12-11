@@ -462,7 +462,6 @@ IDI_OVERLAY             ICON                    "res/chat/overlay.ico"
 IDI_NICKLIST2           ICON                    "res/chat/nicklist2.ico"
 IDI_FILTER2             ICON                    "res/chat/filter2.ico"
 IDI_TYPINGOFF           ICON                    "res/typingoff.ico"
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // Cursor

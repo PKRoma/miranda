@@ -51,7 +51,7 @@ HANDLE CreateServiceFunction_Ex(const char *name, MIRANDASERVICE service) {
 }
 
 void UnhookEvents_Ex() {
-	int i;
+	unsigned i;
 	for (i=0; i<hookNum ; ++i) {
 		if (hHooks[i] != NULL) {
 			UnhookEvent(hHooks[i]);
@@ -63,7 +63,7 @@ void UnhookEvents_Ex() {
 }
 
 void DestroyServices_Ex() {
-	int i;
+	unsigned i;
 	for (i=0; i<serviceNum; ++i) {
 		if (hServices[i] != NULL) {
 			DestroyServiceFunction(hServices[i]);
@@ -599,9 +599,8 @@ void RegisterKeyBindings() {
 	ZeroMemory(&desc, sizeof(desc));
 	desc.cbSize = sizeof(desc);
 	desc.pszSection = "Scriver";
-/*
 	desc.pszName = "Scriver/Nav/Previous Tab";
-	desc.pszDescription = LPGEN("Navigate: Previous Tab");
+	desc.pszDescription = "Navigate: Previous Tab";
 	desc.lParam = KB_PREV_TAB;
 	desc.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL|HOTKEYF_SHIFT, VK_TAB);
 	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM) &desc);
@@ -611,7 +610,7 @@ void RegisterKeyBindings() {
 	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM) &desc);
 
 	desc.pszName = "Scriver/Nav/Next Tab";
-	desc.pszDescription = LPGEN("Navigate: Next Tab");
+	desc.pszDescription = "Navigate: Next Tab";
 	desc.lParam = KB_NEXT_TAB;
 	desc.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL, VK_TAB);
 	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM) &desc);
@@ -619,7 +618,6 @@ void RegisterKeyBindings() {
 	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM) &desc);
 	desc.DefHotKey = HOTKEYCODE(HOTKEYF_ALT, VK_RIGHT);
 	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM) &desc);
-*/
 	desc.pszName = strName;
 	desc.pszDescription = strDesc;
 	for (i = 0; i < 9; i++) {

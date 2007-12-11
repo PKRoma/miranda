@@ -33,7 +33,6 @@
 #define IDI_BUNDERLINE                  420
 #define IDI_BBOLD                       421
 #define IDI_BITALICS                    422
-#define IDI_BSMILEY                     423
 #define IDI_TOPICBUT                    424
 #define IDI_BKGCOLOR                    425
 #define IDI_CHANMGR                     426
@@ -47,14 +46,11 @@
 #define IDI_KICK                        434
 #define IDI_NICK                        435
 #define IDI_CHAT_NOTICE                 436
-#define IDI_MESSAGE                     437
-#define IDI_MESSAGEOUT                  438
 #define IDI_TOPIC                       439
 #define IDI_INFO                        440
 #define IDI_ADDSTATUS                   441
 #define IDI_REMSTATUS                   442
 #define IDI_ACTION                      443
-#define IDI_HIGHLIGHT                   444
 #define IDR_MENU                        451
 #define IDD_COLORCHOOSER                452
 #define IDI_STATUS3                     453
