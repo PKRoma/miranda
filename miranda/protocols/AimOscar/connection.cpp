@@ -257,7 +257,7 @@ void __cdecl aim_mail_negotiation()
 	#if _MSC_VER
 	#pragma warning( disable: 4127)
 	#endif
-	while(1)
+	while(conn.status!=ID_STATUS_OFFLINE)
 	{
 		#if _MSC_VER
 		#pragma warning( default: 4127)
