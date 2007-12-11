@@ -1164,13 +1164,10 @@ int JabberSendMessage( WPARAM wParam, LPARAM lParam )
 	char* pszSrc = ( char* )ccs->lParam, *msg;
 	int  isEncrypted;
 
-	char* pdest = strstr( pszSrc, PGP_PROLOG );//pdest-string+1 is index of first occurence
-	if ( pdest != NULL ) {
-		pdest = strstr( pszSrc, PGP_EPILOG );
-		int result = ( pdest ) ? strlen( PGP_PROLOG ) : 0;
-
+	if ( !strncmp( pszSrc, PGP_PROLOG, strlen( PGP_PROLOG ))) {
+		char* szEnd = strstr( pszSrc, PGP_EPILOG );
 		char* tempstring = ( char* )alloca( strlen( pszSrc ) + 1 );
-		int nStrippedLength = strlen(pszSrc) - strlen(PGP_EPILOG) - result;
+		int nStrippedLength = strlen(pszSrc) - strlen(PGP_PROLOG) - (szEnd ? strlen(szEnd) : 0);
 		strncpy( tempstring, pszSrc + strlen(PGP_PROLOG), nStrippedLength );
 		tempstring[ nStrippedLength ] = 0;
 		pszSrc = tempstring;
