@@ -1811,7 +1811,7 @@ bool CMyMonitor::OnIrc_WHOIS_IDLE( const CIrcMessage* pmsg )
 		else if (S)
 			mir_sntprintf(temp, 99, _T("%us"), S);
 
-		TCHAR temp2[256], temp3[256];
+		TCHAR temp3[256];
 		TCHAR tTimeBuf[128], *tStopStr;
 		time_t ttTime = _tcstol( pmsg->parameters[3].c_str(), &tStopStr, 10);
 		_tcsftime(tTimeBuf, 128, _T("%c"), localtime(&ttTime));
