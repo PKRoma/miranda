@@ -109,6 +109,11 @@ void UnpackGlobalId( int id, int* MenuObjectId, int* MenuItemId )
 int MO_MeasureMenuItem( LPMEASUREITEMSTRUCT mis )
 {
 	PMO_IntMenuItem pimi = NULL;
+
+	// prevent win9x from ugly menus displaying when there is no icon
+	mis->itemWidth = 0;
+	mis->itemHeight = 0;
+
 	if ( !isGenMenuInited )
 		return -1;
 
