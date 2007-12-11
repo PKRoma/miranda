@@ -109,6 +109,11 @@ void UnpackGlobalId( int id, int* MenuObjectId, int* MenuItemId )
 int MO_MeasureMenuItem( LPMEASUREITEMSTRUCT mis )
 {
 	PMO_IntMenuItem pimi = NULL;
+
+	// prevent win9x from ugly menus displaying when there is no icon
+	mis->itemWidth = 0;
+	mis->itemHeight = 0;
+
 	if ( !isGenMenuInited )
 		return -1;
 
@@ -470,7 +475,7 @@ int MO_SetOptionsMenuItem( int handle, int setting, int value )
 		return res;
 
 	EnterCriticalSection( &csMenuHook );
-	__try 
+	__try
 	{
 		PMO_IntMenuItem pimi = MO_GetIntMenuItem( handle );
 		if ( pimi != NULL ) {
@@ -499,7 +504,7 @@ int MO_SetOptionsMenuObject( int handle, int setting, int value )
 		return -1;
 
 	EnterCriticalSection( &csMenuHook );
-	__try 
+	__try
 	{
 		pimoidx = GetMenuObjbyId( handle );
 		res = pimoidx != -1;
@@ -587,14 +592,14 @@ static int GetNextObjectMenuItemId()
 	    // TODO: try to reuse not used (removed menus) ids
 	    menuID=NextObjectMenuItemId++;
 	}
-	else 
+	else
 	{
 		// TODO: otherwise simple increase
 		menuID=NextObjectMenuItemId++;
 	}
 
-	if (menuID>CLISTMENUIDMAX) 
-	{	
+	if (menuID>CLISTMENUIDMAX)
+	{
 		MessageBox(NULL,TranslateT("Too many menu items registered, please restart your Miranda to avoid unpredictable behaviour"),
 			            TranslateT("Error"),
 						MB_OK|MB_ICONERROR);
@@ -639,7 +644,7 @@ int MO_AddNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi )
 		p->OverrideShow = TRUE;
 		p->originalPosition = pmi->position;
 		#if defined( _UNICODE )
-			if ( pmi->flags & CMIF_UNICODE ) 
+			if ( pmi->flags & CMIF_UNICODE )
 				p->mi.ptszName = mir_tstrdup(( pmi->flags & CMIF_KEEPUNTRANSLATED ) ? pmi->ptszName : TranslateTS( pmi->ptszName ));
 			else {
 				if ( pmi->flags & CMIF_KEEPUNTRANSLATED ) {
