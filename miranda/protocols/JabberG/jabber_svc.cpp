@@ -1169,8 +1169,10 @@ int JabberSendMessage( WPARAM wParam, LPARAM lParam )
 		pdest = strstr( pszSrc, PGP_EPILOG );
 		int result = ( pdest ) ? strlen( PGP_PROLOG ) : 0;
 
-		char* tempstring = ( char* )alloca( strlen( pszSrc ));
-		strncpy( tempstring, pszSrc+strlen(PGP_PROLOG), strlen(pszSrc)-strlen(PGP_EPILOG)-result );
+		char* tempstring = ( char* )alloca( strlen( pszSrc ) + 1 );
+		int nStrippedLength = strlen(pszSrc) - strlen(PGP_EPILOG) - result;
+		strncpy( tempstring, pszSrc + strlen(PGP_PROLOG), nStrippedLength );
+		tempstring[ nStrippedLength ] = 0;
 		pszSrc = tempstring;
 		isEncrypted = 1;
 		ccs->wParam &= ~PREF_UNICODE;

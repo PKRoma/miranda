@@ -1247,10 +1247,10 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 
 			TCHAR* prolog = _T("-----BEGIN PGP MESSAGE-----\r\n\r\n");
 			TCHAR* epilog = _T("\r\n-----END PGP MESSAGE-----\r\n");
-			TCHAR* tempstring = ( TCHAR* )alloca( sizeof( TCHAR )*( _tcslen( prolog ) + _tcslen( xNode->text ) + _tcslen( epilog )));
-			_tcsncpy( tempstring, prolog, _tcslen( prolog )+1 );
-			_tcsncpy(tempstring + _tcslen( prolog ), xNode->text, _tcslen( xNode->text )+1);
-			_tcsncpy(tempstring + _tcslen( prolog )+_tcslen(xNode->text ), epilog, _tcslen( epilog )+1);
+			TCHAR* tempstring = ( TCHAR* )alloca( sizeof( TCHAR ) * ( _tcslen( prolog ) + _tcslen( xNode->text ) + _tcslen( epilog ) + 3 ));
+			_tcsncpy( tempstring, prolog, _tcslen( prolog ) + 1 );
+			_tcsncpy( tempstring + _tcslen( prolog ), xNode->text, _tcslen( xNode->text ) + 1);
+			_tcsncpy( tempstring + _tcslen( prolog ) + _tcslen(xNode->text ), epilog, _tcslen( epilog ) + 1);
 			szMessage = tempstring;
       }
 		else if ( !_tcscmp( ptszXmlns, _T("jabber:x:delay")) && msgTime == 0 ) {
@@ -1264,8 +1264,9 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 			JabberCapsBits jcbCaps = JabberGetResourceCapabilites( from );
 			if ( jcbCaps & JABBER_RESOURCE_CAPS_ERROR )
 				jcbCaps = JABBER_RESOURCE_CAPS_NONE;
-			if ( jcbCaps && resourceStatus && (!(jcbCaps & JABBER_CAPS_MESSAGE_EVENTS)) )
-				resourceStatus->jcbManualDiscoveredCaps |= (JABBER_CAPS_MESSAGE_EVENTS | JABBER_CAPS_MESSAGE_EVENTS_NO_DELIVERY);
+			// FIXME: disabled due to expired XEP-0022 and problems with bombus delivery checks
+//			if ( jcbCaps && resourceStatus && (!(jcbCaps & JABBER_CAPS_MESSAGE_EVENTS)) )
+//				resourceStatus->jcbManualDiscoveredCaps |= (JABBER_CAPS_MESSAGE_EVENTS | JABBER_CAPS_MESSAGE_EVENTS_NO_DELIVERY);
 
 			if ( bodyNode == NULL ) {
 				idNode = JabberXmlGetChild( xNode, "id" );
