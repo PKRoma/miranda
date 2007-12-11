@@ -75,7 +75,7 @@ static void removeSpaces( TCHAR* p )
 static char* getControlText( HWND hWnd, int ctrlID )
 {
 	size_t size = GetWindowTextLength( GetDlgItem( hWnd, ctrlID ))+1;
-	char* result = new char[size];
+	char* result = ( char* )mir_alloc( size );
 	GetDlgItemTextA( hWnd, ctrlID, result, size );
 	return result;
 }
@@ -974,7 +974,7 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 				p1 = strchr(p2, '=');
 				++p1;
 				p2 = strstr(p1, "SERVER:");
-				pData->Name=new char[p2-p1+1];
+				pData->Name = ( char* )mir_alloc( p2-p1+1 );
 				lstrcpynA(pData->Name, p1, p2-p1+1);
 
 				p1 = strchr(p2, ':');
@@ -989,25 +989,25 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 					p1++;
 				}
 				p2 = strchr(p1, ':');
-				pData->Address=new char[p2-p1+1];
-				lstrcpynA(pData->Address, p1, p2-p1+1);
+				pData->Address = ( char* )mir_alloc( p2-p1+1 );
+				lstrcpynA( pData->Address, p1, p2-p1+1 );
 
 				p1 = p2;
 				p1++;
 				while (*p2 !='G' && *p2 != '-')
 					p2++;
-				pData->PortStart = new char[p2-p1+1];
-				lstrcpynA(pData->PortStart, p1, p2-p1+1);
+				pData->PortStart = ( char* )mir_alloc( p2-p1+1 );
+				lstrcpynA( pData->PortStart, p1, p2-p1+1 );
 
 				if (*p2 == 'G'){
-					pData->PortEnd = new char[p2-p1+1];
-					lstrcpyA(pData->PortEnd, pData->PortStart);
+					pData->PortEnd = ( char* )mir_alloc( p2-p1+1 );
+					lstrcpyA( pData->PortEnd, pData->PortStart );
 				}
 				else {
 					p1 = p2;
 					p1++;
 					p2 = strchr(p1, 'G');
-					pData->PortEnd = new char[p2-p1+1];
+					pData->PortEnd = ( char* )mir_alloc( p2-p1+1 );
 					lstrcpynA(pData->PortEnd, p1, p2-p1+1);
 				}
 
@@ -1018,7 +1018,7 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 					p2 = strchr(p1, '\n');
 				if (!p2)
 					p2 = strchr(p1, '\0');
-				pData->Group = new char[p2-p1+1];
+				pData->Group = ( char* )mir_alloc( p2-p1+1 );
 				lstrcpynA(pData->Group, p1, p2-p1+1);
 				int iItem = SendDlgItemMessageA( hwndDlg, IDC_SERVERCOMBO, CB_ADDSTRING,0,(LPARAM) pData->Name);
 				SendDlgItemMessage( hwndDlg, IDC_SERVERCOMBO, CB_SETITEMDATA, iItem,(LPARAM) pData);
@@ -1121,10 +1121,10 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 			int i = SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_GETCURSEL, 0, 0);
 			SERVER_INFO* pData = ( SERVER_INFO* )SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_GETITEMDATA, i, 0);
 			if (pData && (int)pData != CB_ERR ) {
-				SetDlgItemTextA( hwndDlg,IDC_SERVER,pData->Address);
-				SetDlgItemTextA( hwndDlg,IDC_PORT,pData->PortStart);
-				SetDlgItemTextA( hwndDlg,IDC_PORT2,pData->PortEnd);
-				SetDlgItemTextA( hwndDlg,IDC_PASS,"");
+				SetDlgItemTextA( hwndDlg,IDC_SERVER, pData->Address );
+				SetDlgItemTextA( hwndDlg,IDC_PORT,   pData->PortStart );
+				SetDlgItemTextA( hwndDlg,IDC_PORT2,  pData->PortEnd );
+				SetDlgItemTextA( hwndDlg,IDC_PASS,   "" );
 				if ( m_ssleay32 ) {
 					if ( pData->iSSL == 0 )
 						SetDlgItemText( hwndDlg, IDC_SSL, TranslateT( "Off" ));
@@ -1155,12 +1155,8 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 						TCHAR temp[200];
 						mir_sntprintf( temp, SIZEOF(temp), TranslateT("Do you want to delete\r\n%s"), (TCHAR*)_A2T(pData->Name));
 						if ( MessageBox( hwndDlg, temp, TranslateT("Delete server"), MB_YESNO | MB_ICONQUESTION ) == IDYES ) {
-							delete []pData->Name;
-							delete []pData->Address;
-							delete []pData->PortStart;
-							delete []pData->PortEnd;
-							delete []pData->Group;
 							delete pData;	
+
 							SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_DELETESTRING, i, 0);
 							if (i >= SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_GETCOUNT, 0, 0))
 								i--;
@@ -1403,14 +1399,9 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 			if (j !=CB_ERR && j !=0 ) {
 				for (int index2 = 0; index2 < j; index2++) {
 					SERVER_INFO* pData = ( SERVER_INFO* )SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_GETITEMDATA, index2, 0);
-					if (pData != NULL && (int)pData != CB_ERR) {
-						delete []pData->Name;
-						delete []pData->Address;
-						delete []pData->PortStart;
-						delete []pData->PortEnd;
-						delete []pData->Group;
+					if ( pData != NULL && (int)pData != CB_ERR )
 						delete pData;	
-		}	}	}	}
+		}	}	}
 		break;
 	}
 

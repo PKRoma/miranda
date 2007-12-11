@@ -200,17 +200,20 @@ struct CHANNELINFO   // Contains info about the channels
 	TCHAR* pszMode;
 	TCHAR* pszPassword;
 	TCHAR* pszLimit;
+	BYTE   OwnMode;	
 	int    codepage;
 };
 
 struct SERVER_INFO  // Contains info about different servers
 {
+	~SERVER_INFO();
+
 	char* Group;
 	char* Address;
 	char* Name;
 	char* PortStart;
 	char* PortEnd;	
-	int iSSL;
+	int   iSSL;
 };
 
 struct PERFORM_INFO  // Contains 'Perform buffer' for different networks
@@ -449,6 +452,7 @@ BOOL Scripting_TriggerMSPGuiOut(GCHOOK * gch);
 #pragma comment(lib,"comctl32.lib")
 
 #endif
+
 
 
 

@@ -1096,10 +1096,10 @@ int Service_GCEventHook(WPARAM wParam,LPARAM lParam)
 static int Service_GCMenuHook(WPARAM wParam,LPARAM lParam)
 {
 	GCMENUITEMS *gcmi= (GCMENUITEMS*) lParam;
-	if (gcmi) {
-		if (!lstrcmpiA(gcmi->pszModule, IRCPROTONAME)) {
-			if (gcmi->Type == MENU_ON_LOG) {
-				if (lstrcmpi(gcmi->pszID, _T("Network log"))) {
+	if ( gcmi ) {
+		if ( !lstrcmpiA( gcmi->pszModule, IRCPROTONAME )) {
+			if ( gcmi->Type == MENU_ON_LOG ) {
+				if ( lstrcmpi( gcmi->pszID, _T("Network log"))) {
 					static gc_item Item[] = {
 						{ TranslateT("&Change your nickname" ),		1, MENU_ITEM,		FALSE},
 						{ TranslateT("Channel &settings" ),			2, MENU_ITEM,		FALSE},
@@ -1146,61 +1146,66 @@ static int Service_GCMenuHook(WPARAM wParam,LPARAM lParam)
 			if (gcmi->Type == MENU_ON_NICKLIST) {
 				CONTACT user ={ (TCHAR*)gcmi->pszUID, NULL, NULL, false, false, false};
 				HANDLE hContact = CList_FindContact(&user);
-				BOOL bFlag = FALSE;
-
-				if (hContact && DBGetContactSettingByte(hContact, "CList", "NotOnList", 0) == 0)
-					bFlag = TRUE;
 
 				static gc_item Item[] = {
-					{ TranslateT("&WhoIs info"),         10, MENU_ITEM,           FALSE },
+					{ TranslateT("&WhoIs info"),         10, MENU_ITEM,           FALSE },		//0
 					{ TranslateT("&Invite to channel"),  23, MENU_ITEM,           FALSE },
 					{ TranslateT("Send &notice"),        22, MENU_ITEM,           FALSE },
 					{ TranslateT("&Slap"),		         31, MENU_ITEM,           FALSE },
-					{ TranslateT("Nic&kserv info"),		 32, MENU_ITEM,           FALSE },
-					{ TranslateT("Nic&kserv kill ghost"),33, MENU_ITEM,           FALSE },
+					{ TranslateT("Nickserv info"),		 32, MENU_ITEM,           FALSE },
+					{ TranslateT("Nickserv kill ghost"), 33, MENU_ITEM,           FALSE },		//5
 					{ TranslateT("&Control"),             0, MENU_NEWPOPUP,       FALSE },
-					{ TranslateT("Give Owner"),          18, MENU_POPUPITEM,      FALSE },
+					{ TranslateT("Give Owner"),          18, MENU_POPUPITEM,      FALSE },		//7
 					{ TranslateT("Take Owner"),          19, MENU_POPUPITEM,      FALSE },
 					{ TranslateT("Give Admin"),          20, MENU_POPUPITEM,      FALSE },
-					{ TranslateT("Take Admin"),          21, MENU_POPUPITEM,      FALSE },
+					{ TranslateT("Take Admin"),          21, MENU_POPUPITEM,      FALSE },		//10
 					{ TranslateT("Give &Op"),             1, MENU_POPUPITEM,      FALSE },
 					{ TranslateT("Take O&p"),             2, MENU_POPUPITEM,      FALSE },
 					{ TranslateT("Give &Halfop"),        16, MENU_POPUPITEM,      FALSE },
 					{ TranslateT("Take H&alfop"),        17, MENU_POPUPITEM,      FALSE },
-					{ TranslateT("Give &Voice"),          3, MENU_POPUPITEM,      FALSE },
+					{ TranslateT("Give &Voice"),          3, MENU_POPUPITEM,      FALSE },		//15
 					{ TranslateT("Take V&oice"),          4, MENU_POPUPITEM,      FALSE },
 					{ _T(""),                             0, MENU_POPUPSEPARATOR, FALSE },
 					{ TranslateT("&Kick"),                5, MENU_POPUPITEM,      FALSE },
 					{ TranslateT("Ki&ck (reason)"),       6, MENU_POPUPITEM,      FALSE },
-					{ TranslateT("&Ban"),                 7, MENU_POPUPITEM,      FALSE },
+					{ TranslateT("&Ban"),                 7, MENU_POPUPITEM,      FALSE },		//20
 					{ TranslateT("Ban'&n kick"),          8, MENU_POPUPITEM,      FALSE },
 					{ TranslateT("Ban'n kick (&reason)"), 9, MENU_POPUPITEM,      FALSE },
 					{ TranslateT("&Direct Connection"),   0, MENU_NEWPOPUP,       FALSE },
 					{ TranslateT("Request &Chat"),       13, MENU_POPUPITEM,      FALSE },
-					{ TranslateT("Send &File"),          14, MENU_POPUPITEM,      FALSE },
+					{ TranslateT("Send &File"),          14, MENU_POPUPITEM,      FALSE },		//25
 					{ TranslateT("Add to &ignore list"), 15, MENU_ITEM,           FALSE },
 					{ _T(""),                            12, MENU_SEPARATOR,      FALSE },
-					{ TranslateT("&Add User"),           30, MENU_ITEM,           bFlag }
+					{ TranslateT("&Add User"),           30, MENU_ITEM,           FALSE }
 				};
+
 				gcmi->nItems = SIZEOF(Item);
 				gcmi->Item = &Item[0];
-				gcmi->Item[gcmi->nItems-1].bDisabled = bFlag;
-
+				if (hContact && DBGetContactSettingByte(hContact, "CList", "NotOnList", 0) == 0)
+					gcmi->Item[gcmi->nItems-1].bDisabled = TRUE;
+				
 				unsigned long ulAdr = 0;
 				if (prefs->ManualHost)
 					ulAdr = ConvertIPToInteger(prefs->MySpecifiedHostIP);
 				else
 					ulAdr = ConvertIPToInteger(prefs->IPFromServer?prefs->MyHost:prefs->MyLocalHost);
+				gcmi->Item[23].bDisabled = ulAdr == 0?TRUE:FALSE;		//DCC submenu
 
-				bool bDcc = ulAdr == 0 ?false:true;
+				TCHAR stzChanName[100];
+				const TCHAR* temp = _tcschr( gcmi->pszID, ' ' );
+				int len = min((( temp == NULL ) ? lstrlen( gcmi->pszID ) : ( int )( temp - gcmi->pszID + 1 )), SIZEOF(stzChanName)-1 );
+				lstrcpyn( stzChanName, gcmi->pszID, len );
+				stzChanName[ len ] = 0;
 
-				gcmi->Item[14].bDisabled = !bDcc;
-				gcmi->Item[15].bDisabled = !bDcc;
-				gcmi->Item[16].bDisabled = !bDcc;
-
-				bool bHalfop = strchr(sUserModes.c_str(), 'h') == NULL?false:true;
-				gcmi->Item[5].bDisabled = !bHalfop;
-				gcmi->Item[4].bDisabled = !bHalfop;
+				CHANNELINFO* wi = (CHANNELINFO *)DoEvent(GC_EVENT_GETITEMDATA,stzChanName, NULL, NULL, NULL, NULL, NULL, false, false, 0);
+				bool bOwner  = strchr(sUserModes.c_str(), 'q') == NULL?FALSE:((wi->OwnMode>>4)&01);
+				bool bAdmin  = strchr(sUserModes.c_str(), 'a') == NULL?FALSE:((wi->OwnMode>>3)&01);
+				bool bOp	 = strchr(sUserModes.c_str(), 'o') == NULL?FALSE:((wi->OwnMode>>2)&01);
+				bool bHalfop = strchr(sUserModes.c_str(), 'h') == NULL?FALSE:((wi->OwnMode>>1)&01);
+				gcmi->Item[6].bDisabled /*Control submenu*/ = !(bHalfop || bOp);
+				gcmi->Item[7].bDisabled = gcmi->Item[8].bDisabled = !bOwner;
+				gcmi->Item[9].bDisabled = gcmi->Item[10].bDisabled = !bAdmin;
+				gcmi->Item[11].bDisabled = gcmi->Item[12].bDisabled = gcmi->Item[13].bDisabled = gcmi->Item[14].bDisabled = !bOp;
 	}	}	}
 
 	return 0;

@@ -597,6 +597,41 @@ bool CMyMonitor::OnIrc_MODE( const CIrcMessage* pmsg )
 				if ( strchr( sUserModes.c_str(), (char)*p1 )) {
 					TString sStatus = ModeToStatus( *p1 );
 					if (( int )pmsg->parameters.size() > iParametercount ) {
+						CHANNELINFO* wi = (CHANNELINFO *)DoEvent(GC_EVENT_GETITEMDATA, pmsg->parameters[0].c_str(), NULL, NULL, NULL, NULL, NULL, false, false, 0);
+						switch (*p1)
+							{
+							case 'v':
+								  if (bAdd)
+									wi->OwnMode |= (1<<0);
+								  else
+								    wi->OwnMode &= ~(1<<0);
+								break;
+							case 'h':
+								  if (bAdd)
+									wi->OwnMode |= (1<<1);
+								  else
+								    wi->OwnMode &= ~(1<<1);
+								break;
+							case 'o':
+								  if (bAdd)
+									wi->OwnMode |= (1<<2);
+								  else
+								    wi->OwnMode &= ~(1<<2);
+								break;
+							case 'a':
+								  if (bAdd)
+									wi->OwnMode |= (1<<3);
+								  else
+								    wi->OwnMode &= ~(1<<3);
+								break;
+							case 'q':
+								  if (bAdd)
+									wi->OwnMode |= (1<<4);
+								  else
+								    wi->OwnMode &= ~(1<<4);
+								break;
+							}
+						DoEvent(GC_EVENT_SETITEMDATA, pmsg->parameters[0].c_str(), NULL, NULL, NULL, NULL, (DWORD)wi, false, false, 0);
 						DoEvent( bAdd ? GC_EVENT_ADDSTATUS : GC_EVENT_REMOVESTATUS, pmsg->parameters[0].c_str(), pmsg->parameters[iParametercount].c_str(), pmsg->prefix.sNick.c_str(), sStatus.c_str(), NULL, NULL, prefs->OldStyleModes?false:true, false); 
 						iParametercount++;
 					}
@@ -1437,6 +1472,7 @@ bool CMyMonitor::OnIrc_ENDNAMES( const CIrcMessage* pmsg )
 					wi->pszMode = 0;
 					wi->pszPassword = 0;
 					wi->pszTopic = 0;
+					wi->OwnMode = 0;
 					wi->codepage = g_ircSession.getCodepage();
 					DoEvent(GC_EVENT_SETITEMDATA, sChanName, NULL, NULL, NULL, NULL, (DWORD)wi, false, false, 0);
 

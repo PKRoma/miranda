@@ -743,5 +743,13 @@ void ClearUserhostReasons(int type)
 		break;
 }	}
 
+////////////////////////////////////////////////////////////////////
 
-
+SERVER_INFO::~SERVER_INFO()
+{
+	mir_free( Name );
+	mir_free( Address );
+	mir_free( PortStart );
+	mir_free( PortEnd );
+	mir_free( Group );
+}

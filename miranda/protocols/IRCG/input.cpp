@@ -791,7 +791,7 @@ bool PostIrcMessageWnd( TCHAR* window, HANDLE hContact, const TCHAR* szBuf )
 		if ( index == string::npos )
 			index = Message.length();
 
-		if ( index > 480 )
+		if ( index > 512 )
 			index = 480;
 		DoThis = Message.substr(0, index);
 		Message.erase(0, index);

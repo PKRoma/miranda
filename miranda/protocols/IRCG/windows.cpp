@@ -552,8 +552,8 @@ BOOL CALLBACK QuickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					p1 = strchr(p2, '=');
 					++p1;
 					p2 = strstr(p1, "SERVER:");
-					pData->Name = new char[ p2-p1+1 ];
-					lstrcpynA(pData->Name, p1, p2-p1+1);
+					pData->Name = ( char* )mir_alloc( p2-p1+1 );
+					lstrcpynA( pData->Name, p1, p2-p1+1 );
 					
 					p1 = strchr(p2, ':');
 					++p1;
@@ -568,25 +568,25 @@ BOOL CALLBACK QuickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					}
 
 					p2 = strchr(p1, ':');
-					pData->Address=new char[p2-p1+1];
-					lstrcpynA(pData->Address, p1, p2-p1+1);
+					pData->Address = ( char* )mir_alloc( p2-p1+1 );
+					lstrcpynA( pData->Address, p1, p2-p1+1 );
 					
 					p1 = p2;
 					p1++;
 					while (*p2 !='G' && *p2 != '-')
 						p2++;
-					pData->PortStart = new char[p2-p1+1];
-					lstrcpynA(pData->PortStart, p1, p2-p1+1);
+					pData->PortStart = ( char* )mir_alloc( p2-p1+1 );
+					lstrcpynA( pData->PortStart, p1, p2-p1+1 );
 
 					if (*p2 == 'G'){
-						pData->PortEnd = new char[p2-p1+1];
+						pData->PortEnd = ( char* )mir_alloc( p2-p1+1 );
 						lstrcpyA(pData->PortEnd, pData->PortStart);
 					} 
 					else {
 						p1 = p2;
 						p1++;
 						p2 = strchr(p1, 'G');
-						pData->PortEnd = new char[p2-p1+1];
+						pData->PortEnd = ( char* )mir_alloc( p2-p1+1 );
 						lstrcpynA(pData->PortEnd, p1, p2-p1+1);
 					}
 
@@ -597,7 +597,7 @@ BOOL CALLBACK QuickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 						p2 = strchr(p1, '\n');
 					if (!p2)
 						p2 = strchr(p1, '\0');
-					pData->Group = new char[p2-p1+1];
+					pData->Group = ( char* )mir_alloc( p2-p1+1 );
 					lstrcpynA(pData->Group, p1, p2-p1+1);
 					int iItem = SendDlgItemMessageA( hwndDlg, IDC_SERVERCOMBO, CB_ADDSTRING,0,(LPARAM) pData->Name);
 					SendDlgItemMessage( hwndDlg, IDC_SERVERCOMBO, CB_SETITEMDATA, iItem,(LPARAM) pData);
@@ -606,30 +606,27 @@ BOOL CALLBACK QuickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				
 				{
 					SERVER_INFO* pData = new SERVER_INFO;
-					pData->Group = "";
-					pData->Name = Translate("---- Not listed server ----");
+					pData->Group = mir_strdup( "" );
+					pData->Name = mir_strdup( Translate("---- Not listed server ----"));
 
 					DBVARIANT dbv;
 					if ( !DBGetContactSettingString( NULL, IRCPROTONAME, "ServerName", &dbv )) {
-						pData->Address = new char[strlen(dbv.pszVal)];
-						lstrcpyA(pData->Address, dbv.pszVal);
+						pData->Address = mir_strdup( dbv.pszVal );
 						DBFreeVariant(&dbv);
 					}
-					else pData->Address = Translate("Type new server address here");
+					else pData->Address = mir_strdup( Translate("Type new server address here"));
 
 					if ( !DBGetContactSettingString( NULL, IRCPROTONAME, "PortStart", &dbv )) {
-						pData->PortStart = new char[strlen(dbv.pszVal)];
-						lstrcpyA(pData->PortStart, dbv.pszVal);
+						pData->PortStart = mir_strdup( dbv.pszVal );
 						DBFreeVariant(&dbv);
 					}
-					else pData->PortStart = "6667";
+					else pData->PortStart = mir_strdup( "6667" );
 
 					if ( !DBGetContactSettingString( NULL, IRCPROTONAME, "PortEnd", &dbv )) {
-						pData->PortEnd = new char[strlen(dbv.pszVal)];
-						lstrcpyA(pData->PortEnd, dbv.pszVal);
+						pData->PortEnd = mir_strdup( dbv.pszVal );
 						DBFreeVariant(&dbv);
 					}
-					else pData->PortEnd = "6667";
+					else pData->PortEnd = mir_strdup( "6667" );
 
 					pData->iSSL = DBGetContactSettingByte(NULL, IRCPROTONAME, "UseSSL", 0);
 					
@@ -637,11 +634,6 @@ BOOL CALLBACK QuickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					SendDlgItemMessage( hwndDlg, IDC_SERVERCOMBO, CB_SETITEMDATA, iItem,(LPARAM) pData);
 				}
 
-/*				SendDlgItemMessage( hwndDlg, IDC_SERVER, EM_SETREADONLY, true, 0);
-				SendDlgItemMessage( hwndDlg, IDC_PORT,   EM_SETREADONLY, true, 0);
-				SendDlgItemMessage( hwndDlg, IDC_PORT2,  EM_SETREADONLY, true, 0);
-				EnableWindow(GetDlgItem( hwndDlg, IDC_GRBOX_SSL), true);
-*/					
 				if ( prefs->QuickComboSelection != -1 ) {
 					SendDlgItemMessage( hwndDlg, IDC_SERVERCOMBO, CB_SETCURSEL, prefs->QuickComboSelection,0);				
 					SendMessage( hwndDlg, WM_COMMAND, MAKEWPARAM(IDC_SERVERCOMBO, CBN_SELCHANGE), 0);
@@ -714,10 +706,10 @@ BOOL CALLBACK QuickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			int i = SendDlgItemMessage( hwndDlg, IDC_SERVERCOMBO, CB_GETCURSEL, 0, 0);
 			SERVER_INFO* pData = ( SERVER_INFO* )SendDlgItemMessage( hwndDlg, IDC_SERVERCOMBO, CB_GETITEMDATA, i, 0);
 			if ( i != CB_ERR ) {
-				SetDlgItemTextA( hwndDlg,IDC_SERVER,pData->Address);
-				SetDlgItemTextA( hwndDlg,IDC_PORT,pData->PortStart);
-				SetDlgItemTextA( hwndDlg,IDC_PORT2,pData->PortEnd);
-				SetDlgItemTextA( hwndDlg,IDC_PASS,"");
+				SetDlgItemTextA( hwndDlg,IDC_SERVER, pData->Address );
+				SetDlgItemTextA( hwndDlg,IDC_PORT,   pData->PortStart );
+				SetDlgItemTextA( hwndDlg,IDC_PORT2,  pData->PortEnd );
+				SetDlgItemTextA( hwndDlg,IDC_PASS,   "" );
 				if ( m_ssleay32 ) {
 					if ( pData->iSSL == 0 ) {
 						CheckDlgButton( hwndDlg, IDC_SSL_OFF,  BST_CHECKED );
@@ -735,7 +727,7 @@ BOOL CALLBACK QuickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 						CheckDlgButton( hwndDlg, IDC_SSL_AUTO, BST_UNCHECKED );
 				}	}
 
-				if ( pData->Name == Translate("---- Not listed server ----" )) {
+				if ( !strcmp( pData->Name, Translate("---- Not listed server ----" ))) {
 					SendDlgItemMessage( hwndDlg, IDC_SERVER, EM_SETREADONLY, false, 0);
 					SendDlgItemMessage( hwndDlg, IDC_PORT,   EM_SETREADONLY, false, 0);
 					SendDlgItemMessage( hwndDlg, IDC_PORT2,  EM_SETREADONLY, false, 0);
@@ -767,15 +759,8 @@ BOOL CALLBACK QuickWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			DeleteObject(hFont);				
 			
 			int j = (int) SendDlgItemMessage( hwndDlg, IDC_SERVERCOMBO, CB_GETCOUNT, 0, 0);
-			for ( int index2 = 0; index2 < j; index2++ ) {
-				SERVER_INFO* pData = ( SERVER_INFO* )SendDlgItemMessage( hwndDlg, IDC_SERVERCOMBO, CB_GETITEMDATA, index2, 0);
-				delete []pData->Name;
-				delete []pData->Address;
-				delete []pData->PortStart;
-				delete []pData->PortEnd;
-				delete []pData->Group;
-				delete pData;						
-			}
+			for ( int index2 = 0; index2 < j; index2++ )
+				delete ( SERVER_INFO* )SendDlgItemMessage( hwndDlg, IDC_SERVERCOMBO, CB_GETITEMDATA, index2, 0);
 			
 			quickconn_hWnd = NULL;
 		}
