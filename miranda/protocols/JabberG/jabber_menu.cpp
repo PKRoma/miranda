@@ -34,6 +34,10 @@ Last change by : $Author$
 #include "jabber_disco.h"
 
 #include <m_contacts.h>
+#include <m_hotkeys.h>
+
+#include "sdk/m_toolbar.h"
+
 
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -470,7 +474,7 @@ void JabberMenuInit()
 	CLISTMENUITEM mi = { 0 };
 	mi.cbSize = sizeof( CLISTMENUITEM );
 
-	char text[ 200 ];
+	char text[ 200 ], tmpbuf[ 256 ];
 	strcpy( text, jabberProtoName );
 	char* tDest = text + strlen( text );
 
@@ -613,7 +617,7 @@ void JabberMenuInit()
 
 	// "Service Discovery..."
 	strcpy( tDest, "/ServiceDiscovery" );
-	arServices.insert( CreateServiceFunction( text, JabberMenuHandleServiceDiscovery ));
+	if (!ServiceExists(text)) arServices.insert( CreateServiceFunction( text, JabberMenuHandleServiceDiscovery ));
 	mi.pszName = LPGEN("Service Discovery...");
 	mi.position = 2000050000;
 	mi.icolibItem = GetIconHandle( IDI_SERVICE_DISCOVERY );
@@ -622,7 +626,7 @@ void JabberMenuInit()
 
 	// "Bookmarks..."
 	strcpy( tDest, "/Bookmarks" );
-	arServices.insert( CreateServiceFunction( text, JabberMenuHandleBookmarks ));
+	if (!ServiceExists(text)) arServices.insert( CreateServiceFunction( text, JabberMenuHandleBookmarks ));
 	mi.pszName = LPGEN("Bookmarks...");
 	mi.position = 2000050001;
 	mi.icolibItem = GetIconHandle( IDI_BOOKMARKS );
@@ -654,7 +658,7 @@ void JabberMenuInit()
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuSDConferences, ( LPARAM )&clmi );
 
 	strcpy( tDest, "/Groupchat" );
-	arServices.insert( CreateServiceFunction( text, JabberMenuHandleJoinGroupchat ));
+	if (!ServiceExists(text)) arServices.insert( CreateServiceFunction( text, JabberMenuHandleJoinGroupchat ));
 	mi.pszName = LPGEN("Create/Join groupchat...");
 	mi.position = 2000050006;
 	mi.icolibItem = GetIconHandle( IDI_GROUP );
@@ -694,6 +698,73 @@ void JabberMenuInit()
 	mi.position = 2000050010;
 	mi.icolibItem = GetIconHandle( IDI_CONSOLE );
 	JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// Hotkeys
+
+	HOTKEYDESC hkd = {0};
+	hkd.cbSize = sizeof(hkd);
+	hkd.pszName = text;
+	hkd.pszService = text;
+	hkd.pszDescription = tmpbuf;
+
+	hkd.pszSection = "Main";
+	strcpy(tDest, "/Groupchat");
+	mir_snprintf(tmpbuf, SIZEOF(tmpbuf), "Join conference (%s)", jabberModuleName);
+	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM)&hkd);
+
+	hkd.pszSection = "Main";
+	strcpy(tDest, "/Bookmarks");
+	mir_snprintf(tmpbuf, SIZEOF(tmpbuf), "Open bookmarks (%s)", jabberModuleName);
+	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM)&hkd);
+
+	hkd.pszSection = "Status";
+	strcpy(tDest, "/PrivacyLists");
+	mir_snprintf(tmpbuf, SIZEOF(tmpbuf), "Privacy lists (%s)", jabberModuleName);
+	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM)&hkd);
+
+	hkd.pszSection = "Main";
+	strcpy(tDest, "/ServiceDiscovery");
+	mir_snprintf(tmpbuf, SIZEOF(tmpbuf), "Service discovery (%s)", jabberModuleName);
+	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM)&hkd);
+}
+
+int JabberModernToolbarInit(WPARAM, LPARAM)
+{
+	char text[100], tmpbuf[256];
+	strcpy(text, jabberProtoName);
+	char *tDest = text + strlen(text);
+
+	TBButton button = {0};
+	button.cbSize = sizeof(button);
+	button.pszButtonID = text;
+	button.pszServiceName = text;
+	button.pszTooltipUp = button.pszTooltipUp = button.pszButtonName = tmpbuf;
+	button.defPos = 1000;
+	button.tbbFlags = TBBF_SHOWTOOLTIP|TBBF_VISIBLE;
+
+	strcpy(tDest, "/Groupchat");
+	if (!ServiceExists(text)) arServices.insert( CreateServiceFunction( text, JabberMenuHandleJoinGroupchat ));
+	mir_snprintf(tmpbuf, SIZEOF(tmpbuf), "Join conference (%s)", jabberModuleName);
+	button.hSecondaryIconHandle = button.hPrimaryIconHandle = (HANDLE)GetIconHandle(IDI_GROUP);
+	CallService(MS_TB_ADDBUTTON, 0, (LPARAM)&button);
+	button.defPos++;
+
+	strcpy(tDest, "/Bookmarks");
+	if (!ServiceExists(text)) arServices.insert( CreateServiceFunction( text, JabberMenuHandleBookmarks ));
+	mir_snprintf(tmpbuf, SIZEOF(tmpbuf), "Open bookmarks (%s)", jabberModuleName);
+	button.hSecondaryIconHandle = button.hPrimaryIconHandle = (HANDLE)GetIconHandle(IDI_BOOKMARKS);
+	CallService(MS_TB_ADDBUTTON, 0, (LPARAM)&button);
+	button.defPos++;
+
+	strcpy(tDest, "/ServiceDiscovery");
+	if (!ServiceExists(text)) arServices.insert( CreateServiceFunction( text, JabberMenuHandleServiceDiscovery ));
+	mir_snprintf(tmpbuf, SIZEOF(tmpbuf), "Service discovery (%s)", jabberModuleName);
+	button.hSecondaryIconHandle = button.hPrimaryIconHandle = (HANDLE)GetIconHandle(IDI_SERVICE_DISCOVERY);
+	CallService(MS_TB_ADDBUTTON, 0, (LPARAM)&button);
+	button.defPos++;
+
+	return 0;
 }
 
 void JabberMenuUninit()

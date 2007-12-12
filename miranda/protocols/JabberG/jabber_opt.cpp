@@ -1506,13 +1506,8 @@ static BOOL CALLBACK _RosterNewListProc( HWND hList, UINT msg, WPARAM wParam, LP
 			SetWindowText(hEditor, buff);
 			ClientToScreen(hList, &pt);
 			ScreenToClient(hEditor, &pt);
-			INPUT inp[2]={0};
-			inp[0].type=INPUT_MOUSE;
-			inp[0].mi.dwFlags=MOUSEEVENTF_LEFTDOWN;
-			inp[1].type=INPUT_MOUSE;
-			inp[1].mi.dwFlags=MOUSEEVENTF_LEFTUP;
-			SendInput(2, inp, sizeof(inp[0]));
-
+			mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
+			mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
 
 			ROSTEREDITDAT * edat=(ROSTEREDITDAT *)malloc(sizeof(ROSTEREDITDAT));
 			edat->OldEditProc=(WNDPROC)GetWindowLong(hEditor, GWL_WNDPROC);

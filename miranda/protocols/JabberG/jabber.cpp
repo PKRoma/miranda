@@ -33,11 +33,13 @@ Last change by : $Author$
 #include "jabber_rc.h"
 #include "resource.h"
 #include "version.h"
+
 #include "sdk/m_icolib.h"
 #include "sdk/m_folders.h"
 #include "sdk/m_wizard.h"
 #include "sdk/m_modernopt.h"
 #include "sdk/m_assocmgr.h"
+#include "sdk/m_toolbar.h"
 
 HINSTANCE hInst;
 PLUGINLINK *pluginLink;
@@ -148,6 +150,7 @@ static int sttCompareHandles( const void* p1, const void* p2 )
 }
 LIST<void> arHooks( 20, sttCompareHandles );
 LIST<void> arServices( 20, sttCompareHandles );
+HANDLE hhkModernToolbar = NULL;
 
 int JabberOptInit( WPARAM wParam, LPARAM lParam );
 int JabberWizardInit( WPARAM wParam, LPARAM lParam );
@@ -156,6 +159,7 @@ int JabberUserInfoInit( WPARAM wParam, LPARAM lParam );
 int JabberMsgUserTyping( WPARAM wParam, LPARAM lParam );
 void JabberMenuInit( void );
 void JabberMenuUninit( void );
+int JabberModernToolbarInit(WPARAM, LPARAM);
 int JabberSvcInit( void );
 int JabberSvcUninit( void );
 void InitCustomFolders( void );
@@ -269,6 +273,9 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	JabberMenuInit();
 	JabberWsInit();
 	arHooks.insert( HookEvent( ME_USERINFO_INITIALISE, JabberUserInfoInit ));
+
+	if (!hhkModernToolbar)
+		hhkModernToolbar = HookEvent(ME_TB_MODULELOADED, JabberModernToolbarInit);
 
 	bSecureIM = (ServiceExists("SecureIM/IsContactSecured"));
 
@@ -387,6 +394,8 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	arHooks.insert( HookEvent( ME_SYSTEM_MODULESLOADED, OnModulesLoaded ));
 	arHooks.insert( HookEvent( ME_SYSTEM_PRESHUTDOWN, OnPreShutdown ));
 
+	hhkModernToolbar = HookEvent(ME_TB_MODULELOADED, JabberModernToolbarInit);
+
 	// Register protocol module
 	PROTOCOLDESCRIPTOR pd;
 	ZeroMemory( &pd, sizeof( PROTOCOLDESCRIPTOR ));
@@ -463,6 +472,8 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	for ( i=0; i < arHooks.getCount(); i++ )
 		UnhookEvent( arHooks[i] );
 	arHooks.destroy();
+
+	UnhookEvent(hhkModernToolbar);
 
 	if ( hInitChat )
 		DestroyHookableEvent( hInitChat );

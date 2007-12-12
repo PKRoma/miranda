@@ -1083,8 +1083,6 @@ static void sttCListApplyList(HWND hwndList, CPrivacyList *pList = NULL)
 
 	info->pList = pList;
 
-	SendMessage(hwndList, WM_SETREDRAW, FALSE, 0);
-
 	bool bHideIcons = pList ? false : true;
 
 	sttCListResetIcons(hwndList, info->hItemDefault, bHideIcons);
@@ -1159,8 +1157,6 @@ static void sttCListApplyList(HWND hwndList, CPrivacyList *pList = NULL)
 
 lbl_return:
 	info->bChanged = false;
-	SendMessage(hwndList, WM_SETREDRAW, TRUE, 0);
-	RedrawWindow(hwndList, NULL, NULL, RDW_INVALIDATE);
 }
 
 static DWORD sttCListGetPackets(HWND hwndList, int hItem, bool bAction)
