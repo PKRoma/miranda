@@ -68,6 +68,7 @@ JabberFeatCapPair g_JabberFeatCapPairs[] = {
 	{	_T(JABBER_FEAT_USER_TUNE),        JABBER_CAPS_USER_TUNE,         _T("Can report information about the music to which a user is listening"), },
 	{	_T(JABBER_FEAT_USER_TUNE_NOTIFY), JABBER_CAPS_USER_TUNE_NOTIFY,  _T("Receives information about the music to which a user is listening"), },
 	{	_T(JABBER_FEAT_PRIVATE_STORAGE),  JABBER_CAPS_PRIVATE_STORAGE,   _T("Supports private XML Storage (for bookmakrs and other)"), },
+	{	_T(JABBER_FEAT_ATTENTION),        JABBER_CAPS_ATTENTION,         _T("Supports attention requests ('nudge')"), },
 	{	NULL,                             0                            }
 };
 

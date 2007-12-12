@@ -1739,6 +1739,27 @@ static int JabberServiceParseXmppURI( WPARAM wParam, LPARAM lParam )
 	return 1; /* parse failed */
 }
 
+// XEP-0224 support (Attention/Nudge)
+static int JabberSendNudge( WPARAM wParam, LPARAM lParam )
+{
+	if (!jabberOnline)
+		return 0;
+
+	HANDLE hContact = ( HANDLE )wParam;
+	DBVARIANT dbv;
+	if ( !JGetStringT( hContact, "jid", &dbv )) {
+		XmlNode m( "message" );
+		m.addAttr( "type", "headline" );
+		m.addAttr( "to", dbv.ptszVal );
+		XmlNode *pAttention = m.addChild( "attention" );
+		pAttention->addAttr( "xmlns", JABBER_FEAT_ATTENTION );
+		jabberThreadInfo->send( m );
+
+		JFreeVariant( &dbv );
+	}
+	return 0;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // Service initialization code
 
@@ -1779,6 +1800,7 @@ int JabberSvcInit( void )
 	arServices.insert( JCreateServiceFunction( PS_SEARCHBYADVANCED, JabberSearchByAdvanced ));
 
 	// Protocol services and events...
+	heventNudge = JCreateHookableEvent( JE_NUDGE );
 	heventRawXMLIn = JCreateHookableEvent( JE_RAWXMLIN );
 	heventRawXMLOut = JCreateHookableEvent( JE_RAWXMLOUT );
 	heventXStatusIconChanged = JCreateHookableEvent( JE_CUSTOMSTATUS_EXTRAICON_CHANGED );
@@ -1791,6 +1813,9 @@ int JabberSvcInit( void )
 	arServices.insert( JCreateServiceFunction( PS_GETMYAVATAR, JabberGetAvatar ));
 	arServices.insert( JCreateServiceFunction( PS_GETAVATARCAPS, JabberGetAvatarCaps ));
 	arServices.insert( JCreateServiceFunction( PS_SETMYAVATAR, JabberSetAvatar ));
+
+	// XEP-0224 support (Attention/Nudge)
+	arServices.insert( JCreateServiceFunction( JS_SEND_NUDGE, JabberSendNudge ));
 
 	// service to get from protocol chat buddy info
 	arServices.insert( JCreateServiceFunction( MS_GC_PROTO_GETTOOLTIPTEXT, JabberGCGetToolTipText ));
@@ -1807,6 +1832,7 @@ int JabberSvcUninit()
 		DestroyServiceFunction( arServices[i] );
 	arServices.destroy();
 
+	DestroyHookableEvent( heventNudge );
 	DestroyHookableEvent( heventRawXMLIn );
 	DestroyHookableEvent( heventRawXMLOut );
 	DestroyHookableEvent( heventXStatusIconChanged );

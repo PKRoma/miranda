@@ -1197,7 +1197,7 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 	}
 
 	// message receipts delivery notification
-	if ( JabberXmlGetChildWithGivenAttrValue( node, "received", "xmlns",_T( JABBER_FEAT_MESSAGE_RECEIPTS ))) {
+	if ( JabberXmlGetChildWithGivenAttrValue( node, "received", "xmlns", _T( JABBER_FEAT_MESSAGE_RECEIPTS ))) {
 		int nPacketId = JabberGetPacketID( node );
 		if ( nPacketId != -1)
 			JSendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE ) nPacketId, 0 );
@@ -1220,6 +1220,11 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 			msgTime = JabberIsoToUnixTime( szStamp );
 			mir_free( szStamp );
 		}
+	}
+
+	// XEP-0224 support (Attention/Nudge)
+	if ( hContact && JabberXmlGetChildWithGivenAttrValue( node, "attention", "xmlns", _T( JABBER_FEAT_ATTENTION ))) {
+		NotifyEventHooks( heventNudge, (WPARAM)hContact, 0 );
 	}
 
 	// chatstates gone event

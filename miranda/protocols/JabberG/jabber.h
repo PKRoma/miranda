@@ -185,6 +185,10 @@ enum {
 
 #define JS_PARSE_XMPP_URI          "/ParseXmppURI"
 
+// XEP-0224 support (Attention/Nudge)
+#define JS_SEND_NUDGE              "/SendNudge"
+#define JE_NUDGE                   "/Nudge"
+
 // Called when contact changes custom status and extra icon is set to clist_mw
 //wParam = hContact    // contact changing status
 //lParam = hIcon       // HANDLE to clist extra icon set as custom status
@@ -439,6 +443,7 @@ extern HWND hwndServiceDiscovery;
 
 extern const char xmlnsOwner[], xmlnsAdmin[];
 // Service and event handles
+extern HANDLE heventNudge;
 extern HANDLE heventRawXMLIn;
 extern HANDLE heventRawXMLOut;
 extern HANDLE heventXStatusIconChanged;

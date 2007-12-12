@@ -134,6 +134,7 @@ HANDLE heventRawXMLIn;
 HANDLE heventRawXMLOut;
 HANDLE heventXStatusIconChanged;
 HANDLE heventXStatusChanged;
+HANDLE heventNudge;
 
 HANDLE hInitChat = NULL;
 
