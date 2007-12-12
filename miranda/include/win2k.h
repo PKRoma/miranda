@@ -48,6 +48,7 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 #define IsWinVerMEPlus()   (WinVerMajor()>=5 || WinVerMinor()>10)
 #define IsWinVer2000Plus() (WinVerMajor()>=5)
 #define IsWinVerXPPlus()   (WinVerMajor()>=5 && LOWORD(GetVersion())!=5)
+#define IsWinVerVistaPlus() (WinVerMajor()>=6)
 
 // put stuff that's not apart of any SDKs but is used nonetheless
 
@@ -68,6 +69,11 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 #define BIGI(x) x##i64
 #else
 #define BIGI(x) x##LL
+#endif
+
+// collapsible groups for Vista
+#ifndef LVGS_COLLAPSIBLE
+	#define LVGS_COLLAPSIBLE        0x00000008
 #endif
 
 #if _MSC_VER
@@ -95,6 +101,15 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 		#define SP_PANE				1	// STATUS
 		#define	SP_GRIPPERPANE		2
 		#define SP_GRIPPER			3
+		#define EP_EDITTEXT			1 // Edit
+		#define EP_CARET			2
+		#define ETS_NORMAL			1
+		#define ETS_HOT				2
+		#define ETS_SELECTED		3
+		#define ETS_DISABLED		4
+		#define ETS_FOCUSED			5
+		#define ETS_READONLY		6
+		#define ETS_ASSIST			7
 	#endif
 #endif
 
@@ -144,6 +159,15 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 	#define CBS_UNCHECKEDHOT    2
 	#define CBS_CHECKEDNORMAL   5
 	#define CBS_CHECKEDHOT      6
+	#define EP_EDITTEXT			1 // Edit
+	#define EP_CARET			2
+	#define ETS_NORMAL			1
+	#define ETS_HOT				2
+	#define ETS_SELECTED		3
+	#define ETS_DISABLED		4
+	#define ETS_FOCUSED			5
+	#define ETS_READONLY		6
+	#define ETS_ASSIST			7
 // SDK isn't present or some older VC compiler was used, include missing things.
 #elif !defined(NOWIN2K) && (!defined WS_EX_LAYERED || !defined IDC_HAND)
 
