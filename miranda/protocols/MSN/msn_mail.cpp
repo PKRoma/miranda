@@ -306,6 +306,28 @@ static char oimDigest[64] = "";
 static unsigned oimMsgNum = 0;
 static char oimUID[64] = "";
 
+
+static void TruncUtf8(char *str, size_t sz)
+{
+	size_t len = strlen(str);
+	if (sz > len) sz = len;
+
+	size_t cntl = 0, cnt = 0;
+	for (;;)
+	{
+		unsigned char p = (unsigned char)str[cnt];
+		
+		if (p >= 0xE0) cnt += 3;
+		else if (p >= 0xC0) cnt += 2;
+		else if (p != 0) ++cnt;
+		else break;
+		
+		if (cnt <= sz) cntl = cnt;
+		else break;
+	}
+	str[cntl] = 0;
+}
+
 int MSN_SendOIM(const char* szEmail, const char* msg)
 {
 	char szAuth[530];
@@ -335,9 +357,10 @@ int MSN_SendOIM(const char* szEmail, const char* msg)
 			mynick = dbv.pszVal;
 		else 
 		{
-			mynick = MyOptions.szEmail;
+			mynick = NEWSTR_ALLOCA(MyOptions.szEmail);
 			dbv.pszVal = NULL;
 		}
+		TruncUtf8(mynick, 48);
 
 		size_t omlen = strlen(mynick);
 		size_t emlen = Netlib_GetBase64EncodedBufferSize(omlen);
