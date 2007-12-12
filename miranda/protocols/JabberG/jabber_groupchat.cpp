@@ -1466,6 +1466,9 @@ void JabberGroupchatProcessInvite( TCHAR* roomJid, TCHAR* from, TCHAR* reason, T
 	if ( roomJid == NULL )
 		return;
 
+	if (JabberListGetItemPtr( LIST_CHATROOM, roomJid ))
+		return;
+
 	if ( JGetByte( "AutoAcceptMUC", FALSE ) == FALSE ) {
 		JABBER_GROUPCHAT_INVITE_INFO* inviteInfo = ( JABBER_GROUPCHAT_INVITE_INFO * ) mir_alloc( sizeof( JABBER_GROUPCHAT_INVITE_INFO ));
 		inviteInfo->roomJid  = mir_tstrdup( roomJid );
