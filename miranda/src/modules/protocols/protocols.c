@@ -173,7 +173,7 @@ static int CompareProtos( const PROTOCOLDESCRIPTOR* p1, const PROTOCOLDESCRIPTOR
 	return strcmp( p1->szName, p2->szName );
 }
 
-static int ProtoShutdown(WPARAM wParam,LPARAM lParam)
+void UnloadProtocolsModule()
 {
 	if ( hAckEvent ) {
 		DestroyHookableEvent(hAckEvent);
@@ -190,12 +190,10 @@ static int ProtoShutdown(WPARAM wParam,LPARAM lParam)
 	}
 
 	UninitContactDir();
-	return 0;
 }
 
 int LoadProtocolsModule(void)
 {
-	HookEvent(ME_SYSTEM_SHUTDOWN,ProtoShutdown);
 	if(LoadProtoChains())
 		return 1;
 
