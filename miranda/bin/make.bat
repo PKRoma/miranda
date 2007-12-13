@@ -123,11 +123,6 @@ call :Nmake mwclist.mak "mwclist - Win32 Release"
 popd
 if errorlevel 1 goto :Error
 
-pushd ..\..\miranda\plugins\scriver
-call :Nmake scriver.mak "scriver - Win32 Release"
-popd
-if errorlevel 1 goto :Error
-
 pushd ..\..\miranda\plugins\srmm
 call :Nmake srmm.mak "srmm - Win32 Release"
 popd
