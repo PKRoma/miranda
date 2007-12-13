@@ -490,25 +490,55 @@ static void handleUserOffline(BYTE *buf, WORD wLen)
   DWORD dwUIN;
   uid_str szUID;
 
-  // Unpack the sender's user ID
-  if (!unpackUID(&buf, &wLen, &dwUIN, &szUID)) return;
+  do {
+    WORD wTLVCount;
 
-  hContact = HContactFromUID(dwUIN, szUID, NULL);
+    // Unpack the sender's user ID
+    if (!unpackUID(&buf, &wLen, &dwUIN, &szUID)) return;
 
-  // Skip contacts that are not already on our list
-  if (hContact != INVALID_HANDLE_VALUE)
-  {
-    NetLog_Server("%s went offline.", strUID(dwUIN, szUID));
+    // Warning level?
+    buf += 2;
 
-    ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
-    ICQWriteContactSettingDword(hContact, "IdleTS", 0);
-    // close Direct Connections to that user
-    CloseContactDirectConns(hContact);
-    // Reset DC status
-    ICQWriteContactSettingByte(hContact, "DCStatus", 0);
-    // clear Xtraz status
-    handleXStatusCaps(hContact, NULL, 0, NULL, 0);
-  }
+    // TLV Count
+    unpackWord(&buf, &wTLVCount);
+    wLen -= 4;
+
+    // Skip the TLV chain
+    while (wTLVCount && wLen >= 4)
+    {
+      WORD wTLVType;
+      WORD wTLVLen;
+
+      unpackWord(&buf, &wTLVType);
+      unpackWord(&buf, &wTLVLen);
+      wLen -= 4;
+
+      // stop parsing overflowed packet
+      if (wTLVLen > wLen) return;
+
+      buf += wTLVLen;
+      wLen -= wTLVLen;
+      wTLVCount--;
+    }
+    
+    // Determine contact
+    hContact = HContactFromUID(dwUIN, szUID, NULL);
+
+    // Skip contacts that are not already on our list or are already offline
+    if (hContact != INVALID_HANDLE_VALUE && ICQGetContactStatus(hContact) != ID_STATUS_OFFLINE)
+    {
+      NetLog_Server("%s went offline.", strUID(dwUIN, szUID));
+
+      ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
+      ICQWriteContactSettingDword(hContact, "IdleTS", 0);
+      // close Direct Connections to that user
+      CloseContactDirectConns(hContact);
+      // Reset DC status
+      ICQWriteContactSettingByte(hContact, "DCStatus", 0);
+      // clear Xtraz status
+      handleXStatusCaps(hContact, NULL, 0, NULL, 0);
+    }
+  } while (wLen >= 1);
 }
 
 

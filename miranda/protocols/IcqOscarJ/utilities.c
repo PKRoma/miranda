@@ -749,6 +749,27 @@ char* __fastcall null_strdup(const char *string)
 
 
 
+size_t __fastcall null_strcut(char *string, size_t maxlen)
+{ // limit the string to max length (null & utf-8 strings ready)
+  size_t len = strlennull(string);
+
+  if (len < maxlen) 
+    return len;
+
+  len = maxlen;
+
+  if (UTF8_IsValid(string)) // handle utf-8 string
+  { // find the first byte of possible multi-byte character
+    while ((string[len] & 0xc0) == 0x80) len--;
+  }
+  // simply cut the string
+  string[len] = '\0';
+
+  return len;
+}
+
+
+
 void parseServerAddress(char* szServer, WORD* wPort)
 {
   int i = 0;

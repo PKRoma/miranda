@@ -65,9 +65,9 @@ void __fastcall packByte(icq_packet *, BYTE);
 void __fastcall packWord(icq_packet *, WORD);
 void __fastcall packDWord(icq_packet *, DWORD);
 void __fastcall packQWord(icq_packet *, DWORD64);
-void packTLV(icq_packet* pPacket, WORD wType, WORD wLength, BYTE* pbyValue);
-void packTLVWord(icq_packet *d, unsigned short nType, WORD wData);
-void packTLVDWord(icq_packet *d, unsigned short nType, DWORD dwData);
+void packTLV(icq_packet *pPacket, WORD wType, WORD wLength, const BYTE *pbyValue);
+void packTLVWord(icq_packet *pPacket, WORD wType, WORD wData);
+void packTLVDWord(icq_packet *pPacket, WORD wType, DWORD dwData);
 
 void packBuffer(icq_packet* pPacket, const BYTE* pbyBuffer, WORD wLength);
 //void packLEWordSizedBuffer(icq_packet* pPacket, const BYTE* pbyBuffer, WORD wLength);

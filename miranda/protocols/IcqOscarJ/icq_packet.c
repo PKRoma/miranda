@@ -150,7 +150,7 @@ void __fastcall packQWord(icq_packet* pPacket, DWORD64 qwValue)
 
 
 
-void packTLV(icq_packet* pPacket, WORD wType, WORD wLength, BYTE* pbyValue)
+void packTLV(icq_packet *pPacket, WORD wType, WORD wLength, const BYTE *pbyValue)
 {
   packWord(pPacket, wType);
   packWord(pPacket, wLength);

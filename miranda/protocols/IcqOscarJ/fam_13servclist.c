@@ -1055,11 +1055,14 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
                   if (szOldNick = UniGetContactSettingUtf(hContact,"CList","MyHandle",""))
                   {
                     if ((strcmpnull(szOldNick, pszNick)) && (strlennull(pszNick) > 0))
-                    {
-                      // Yes, we really do need to delete it first. Otherwise the CLUI nick
-                      // cache isn't updated (I'll look into it)
-                      DBDeleteContactSetting(hContact,"CList","MyHandle");
-                      UniWriteContactSettingUtf(hContact, "CList", "MyHandle", pszNick);
+                    { // check if the truncated nick changed, i.e. do not overwrite locally stored longer nick
+                      if (strlennull(szOldNick) <= strlennull(pszNick) || strncmp(szOldNick, pszNick, null_strcut(szOldNick, MAX_SSI_TLV_NAME_SIZE)))
+                      {
+                        // Yes, we really do need to delete it first. Otherwise the CLUI nick
+                        // cache isn't updated (I'll look into it)
+                        DBDeleteContactSetting(hContact,"CList","MyHandle");
+                        UniWriteContactSettingUtf(hContact, "CList", "MyHandle", pszNick);
+                      }
                     }
                     SAFE_FREE(&szOldNick);
                   }
@@ -1105,8 +1108,11 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
                   if (szOldComment = UniGetContactSettingUtf(hContact,"UserInfo","MyNotes",""))
                   {
                     if ((strcmpnull(szOldComment, pszComment)) && (strlennull(pszComment) > 0))
-                    {
-                      UniWriteContactSettingUtf(hContact, "UserInfo", "MyNotes", pszComment);
+                    { // check if the truncated comment changed, i.e. do not overwrite locally stored longer comment
+                      if (strlennull(szOldComment) <= strlennull(pszComment) || strncmp(szOldComment, pszComment, null_strcut(szOldComment, MAX_SSI_TLV_COMMENT_SIZE)))
+                      {
+                        UniWriteContactSettingUtf(hContact, "UserInfo", "MyNotes", pszComment);
+                      }
                     }
                     SAFE_FREE(&szOldComment);
                   }

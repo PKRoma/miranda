@@ -2293,7 +2293,7 @@ static void proxy_sendInitTunnel(oscar_connection *oc)
   packLEDWord(&packet, oc->ft->pMessage.dwMsgID1);
   packLEDWord(&packet, oc->ft->pMessage.dwMsgID2);
   packDWord(&packet, 0x00010010);               // TLV(1)
-  packGUID(&packet, MCAP_OSCAR_FT);
+  packGUID(&packet, MCAP_FILE_TRANSFER);
 
   sendOscarPacket(oc, &packet);
 }
@@ -2318,7 +2318,7 @@ static void proxy_sendJoinTunnel(oscar_connection *oc, WORD wPort)
   packLEDWord(&packet, oc->ft->pMessage.dwMsgID1);
   packLEDWord(&packet, oc->ft->pMessage.dwMsgID2);
   packDWord(&packet, 0x00010010);               // TLV(1)
-  packGUID(&packet, MCAP_OSCAR_FT);
+  packGUID(&packet, MCAP_FILE_TRANSFER);
 
   sendOscarPacket(oc, &packet);
 }

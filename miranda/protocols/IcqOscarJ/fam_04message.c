@@ -50,7 +50,7 @@ static void handleMissedMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dw
 static void handleOffineMessagesReply(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
 static void parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dwID2, WORD wAckType, oscar_tlv* tlv);
 static void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, BYTE bFlags, WORD wStatus, WORD wCookie, WORD wAckType, DWORD dwID1, DWORD dwID2, WORD wVersion);
-
+static void handleRecvServMsgContacts(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwID1, DWORD dwID2, WORD wCommand);
 
 
 void handleMsgFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader)
@@ -502,10 +502,10 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, c
     unpackDWord(&pDataBuf, &q1);
     unpackDWord(&pDataBuf, &q2);
     unpackDWord(&pDataBuf, &q3);
-    unpackDWord(&pDataBuf, &q4); // Capability (CAP_SRV_RELAY)
+    unpackDWord(&pDataBuf, &q4); // Message Capability
     wTLVLen -= 16;
 
-    if (CompareGUIDs(q1,q2,q3,q4, MCAP_TLV2711_FMT))
+    if (CompareGUIDs(q1,q2,q3,q4, MCAP_SRV_RELAY_FMT))
     { // we surely have at least 4 bytes for TLV chain
       HANDLE hContact = HContactFromUIN(dwUin, NULL);
 
@@ -519,11 +519,13 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, c
       if (wTLVLen < 4)
       { // just check if at least one tlv is there
         NetLog_Server("Message (format %u) - Ignoring empty message", 2);
+        SAFE_FREE(&pBuf);
         return;
       }
       if (!dwUin)
       { // AIM cannot send this, just sanity
         NetLog_Server("Error: Malformed UIN in packet");
+        SAFE_FREE(&pBuf);
         return;
       }
 
@@ -566,7 +568,7 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, c
       // Clean up
       disposeChain(&chain);
     }
-    else if (CompareGUIDs(q1,q2,q3,q4,MCAP_REVERSE_REQ))
+    else if (CompareGUIDs(q1,q2,q3,q4, MCAP_REVERSE_DC_REQ))
     { // Handle reverse DC request
       if (wCommand == 1)
       {
@@ -577,11 +579,13 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, c
       if (wTLVLen < 4)
       { // just check if at least one tlv is there
         NetLog_Server("Message (format %u) - Ignoring empty message", 2);
+        SAFE_FREE(&pBuf);
         return;
       }
       if (!dwUin)
       { // AIM cannot send this, just sanity
         NetLog_Server("Error: Malformed UIN in packet");
+        SAFE_FREE(&pBuf);
         return;
       }
       chain = readIntoTLVChain(&pDataBuf, wTLVLen, 0);
@@ -647,9 +651,13 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, c
       // Clean up
       disposeChain(&chain);
     }
-    else if (CompareGUIDs(q1,q2,q3,q4,MCAP_OSCAR_FT))
+    else if (CompareGUIDs(q1,q2,q3,q4, MCAP_FILE_TRANSFER))
     { // this is an OFT packet
       handleRecvServMsgOFT(pDataBuf, wTLVLen, dwUin, szUID, dwID1, dwID2, wCommand);
+    }
+    else if (CompareGUIDs(q1,q2,q3,q4, MCAP_CONTACTS))
+    { // this is Contacts Transfer
+      handleRecvServMsgContacts(pDataBuf, wTLVLen, dwUin, szUID, dwID1, dwID2, wCommand);
     }
     else // here should be detection of extra data streams (Xtraz)
     {
@@ -973,6 +981,244 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
     {
       NetLog_Server("Unsupported plugin message type %d", typeId);
     }
+  }
+}
+
+
+
+static void handleRecvServMsgContacts(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwID1, DWORD dwID2, WORD wCommand)
+{
+  HANDLE hContact = HContactFromUID(dwUin, szUID, NULL);
+
+  if (wCommand == 0)
+  { // received contacts
+    oscar_tlv_chain *chain;
+    WORD wAckType;
+
+    if (wLen < 4)
+    { // just check if at least one tlv is there
+      NetLog_Server("Message (format %u) - Ignoring empty contacts message", 2);
+      return;
+    }
+    chain = readIntoTLVChain(&buf, wLen, 0);
+
+    wAckType = getWordFromChain(chain, 0x0A, 1);
+
+    if (wAckType == 1)
+    { // it is really message containing contacts, parse them
+      oscar_tlv *tlvUins, *tlvNames;
+      ICQSEARCHRESULT **contacts;
+      int nContacts = 0x10, iContact = 0;
+      WORD wContactsGroup = 0;
+      int i, valid;
+      char* pBuffer;
+      int nLen;
+
+      tlvUins = getTLV(chain, 0x2711, 1);
+      tlvNames = getTLV(chain, 0x2712, 1);
+      
+      if (!tlvUins || tlvUins->wLen < 4)
+      {
+        NetLog_Server("Malformed '%s' message", "contacts");
+        disposeChain(&chain);
+        return;
+      }
+      valid = 1;
+      contacts = (ICQSEARCHRESULT**)SAFE_MALLOC(nContacts * sizeof(ICQSEARCHRESULT*));
+      pBuffer = tlvUins->pData;
+      nLen = tlvUins->wLen;
+
+      while (nLen > 2)
+      { // parse UIDs
+        if (!wContactsGroup)
+        {
+          WORD wGroupLen;
+
+          unpackWord(&pBuffer, &wGroupLen);
+          nLen -= 2;
+          if (nLen >= wGroupLen + 2)
+          {
+            pBuffer += wGroupLen;
+            unpackWord(&pBuffer, &wContactsGroup);
+            nLen -= wGroupLen + 2;
+          }
+          else
+            break;
+        }
+        else
+        { // group parsed, UIDs waiting
+          WORD wUidLen;
+
+          unpackWord(&pBuffer, &wUidLen);
+          nLen -= 2;
+          if (nLen >= wUidLen)
+          {
+            if (iContact >= nContacts)
+            { // the list is too small, resize it
+              nContacts += 0x10;
+              contacts = (ICQSEARCHRESULT**)realloc(contacts, nContacts * sizeof(ICQSEARCHRESULT*));
+            }
+            contacts[iContact] = (ICQSEARCHRESULT*)SAFE_MALLOC(sizeof(ICQSEARCHRESULT));
+            contacts[iContact]->hdr.cbSize = sizeof(ICQSEARCHRESULT);
+            contacts[iContact]->hdr.nick = null_strdup("");
+            contacts[iContact]->uid = (char*)SAFE_MALLOC(wUidLen + 1);
+            unpackString(&pBuffer, contacts[iContact]->uid, wUidLen);
+            nLen -= wUidLen;
+
+            if (IsStringUIN(contacts[iContact]->uid))
+            { // icq contact
+              contacts[iContact]->uin = atoi(contacts[iContact]->uid);
+              if (contacts[iContact]->uin == 0)
+                valid = 0;
+
+              SAFE_FREE(&contacts[iContact]->uid);
+            }
+            else
+            { // aim contact
+              if (!strlennull(contacts[iContact]->uid))
+                valid = 0;
+            }
+            iContact++;
+          }
+          else 
+          {
+            if (wContactsGroup) valid = 0;
+            break;
+          }
+
+          wContactsGroup--;
+        }
+      }
+      if (!iContact || !valid)
+      {
+        NetLog_Server("Malformed '%s' message", "contacts");
+        disposeChain(&chain);
+        for (i = 0; i < iContact; i++)
+        {
+          SAFE_FREE(&contacts[i]->uid);
+          SAFE_FREE(&contacts[i]->hdr.nick);
+          SAFE_FREE(&contacts[i]);
+        }
+        SAFE_FREE((void**)&contacts);
+        return;
+      }
+      nContacts = iContact;
+      if (tlvNames && tlvNames->wLen >= 4)
+      { // parse names, if available
+        pBuffer = tlvNames->pData;
+        nLen = tlvNames->wLen;
+        iContact = 0;
+
+        while (nLen > 2)
+        { // parse Names
+          if (!wContactsGroup)
+          {
+            WORD wGroupLen;
+
+            unpackWord(&pBuffer, &wGroupLen);
+            nLen -= 2;
+            if (nLen >= wGroupLen + 2)
+            {
+              pBuffer += wGroupLen;
+              unpackWord(&pBuffer, &wContactsGroup);
+              nLen -= wGroupLen + 2;
+            }
+            else
+              break;
+          }
+          else
+          { // group parsed, Names waiting
+            WORD wNickLen;
+
+            unpackWord(&pBuffer, &wNickLen);
+            nLen -= 2;
+            if (nLen >= wNickLen)
+            {
+              WORD wNickTLV, wNickTLVLen;
+              char* pNick = NULL;
+
+              unpackTypedTLV(pBuffer, wNickLen, 0x01, &wNickTLV, &wNickTLVLen, &pNick);
+              if (wNickTLV == 0x01)
+              {
+                SAFE_FREE(&contacts[iContact]->hdr.nick);
+                contacts[iContact]->hdr.nick = pNick;
+              }
+              else
+                SAFE_FREE(&pNick);
+              pBuffer += wNickLen;
+              nLen -= wNickLen;
+
+              iContact++;
+              if (iContact >= nContacts) break;
+            }
+            else 
+              break;
+
+            wContactsGroup--;
+          }
+        }
+      }
+
+      if (!valid)
+      {
+        NetLog_Server("Malformed '%s' message", "contacts");
+      }
+      else
+      {
+        int bAdded;
+        CCSDATA ccs;
+        PROTORECVEVENT pre = {0};
+
+        hContact = HContactFromUID(dwUin, szUID, &bAdded);
+        
+        // ack the message
+        icq_sendContactsAck(dwUin, szUID, dwID1, dwID2);
+
+        ccs.szProtoService = PSR_CONTACTS;
+        ccs.hContact = hContact;
+        ccs.wParam = 0;
+        ccs.lParam = (LPARAM)&pre;
+        pre.timestamp = (DWORD)time(NULL);
+        pre.szMessage = (char *)contacts;
+        pre.lParam = nContacts;
+        pre.flags = PREF_UTF;
+        CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
+      }
+
+      for (i = 0; i < iContact; i++)
+      {
+        SAFE_FREE(&contacts[i]->uid);
+        SAFE_FREE(&contacts[i]->hdr.nick);
+        SAFE_FREE(&contacts[i]);
+      }
+      SAFE_FREE((void**)&contacts);
+    }
+    else
+      NetLog_Server("Error: Received unknown contacts message, ignoring.");
+    // Clean up
+    disposeChain(&chain);
+  }
+  else if (wCommand == 1)
+  {
+    NetLog_Server("Cannot handle abort messages yet... :(");
+    return;
+  }
+  else if (wCommand == 2)
+  { // acknowledgement
+    DWORD dwCookie;
+    HANDLE hCookieContact;
+
+    if (FindMessageCookie(dwID1, dwID2, &dwCookie, &hCookieContact, NULL))
+    {
+      if (hCookieContact != hContact)
+        NetLog_Server("Warning: Ack Contact does not match Cookie Contact(0x%x != 0x%x)", hContact, hCookieContact);
+
+      ICQBroadcastAck(hContact, ACKTYPE_CONTACTS, ACKRESULT_SUCCESS, (HANDLE)dwCookie, 0);
+
+      ReleaseCookie(dwCookie);
+    }
+    else
+      NetLog_Server("Warning: Unexpected Contact Transfer ack from %s", strUID(dwUin, szUID));
   }
 }
 

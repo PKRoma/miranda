@@ -101,7 +101,7 @@ static void packServTLV5HeaderBasic(icq_packet *p, WORD wLen, DWORD ID1, DWORD I
 
 static void packServTLV5HeaderMsg(icq_packet *p, WORD wLen, DWORD ID1, DWORD ID2, WORD wAckType)
 {
-  packServTLV5HeaderBasic(p, (WORD)(wLen + 10), ID1, ID2, 0, MCAP_TLV2711_FMT);
+  packServTLV5HeaderBasic(p, (WORD)(wLen + 10), ID1, ID2, 0, MCAP_SRV_RELAY_FMT);
 
   packTLVWord(p, 0x0A, wAckType);   // TLV: 0x0A Acktype: 1 for normal, 2 for ack
   packDWord(p, 0x000F0000);         // TLV: 0x0F empty
@@ -151,7 +151,7 @@ static void packServChannel2Header(icq_packet *p, DWORD dwUin, WORD wLen, DWORD 
   packWord(p, (WORD)(isAck ? 2: 0));     /* not aborting anything */
   packLEDWord(p, dwID1);        // Msg ID part 1
   packLEDWord(p, dwID2);        // Msg ID part 2
-  packGUID(p, MCAP_TLV2711_FMT); /* capability (4 dwords) */
+  packGUID(p, MCAP_SRV_RELAY_FMT); /* capability (4 dwords) */
   packDWord(p, 0x000A0002);     // TLV: 0x0A WORD: 1 for normal, 2 for ack
   packWord(p, (WORD)(isAck ? 2 : 1));
 
@@ -433,6 +433,39 @@ DWORD icq_SendChannel2Message(DWORD dwUin, HANDLE hContact, const char *szMessag
   }
 
   // Pack request server ack TLV
+  if (pCookieData->nAckType == ACKTYPE_SERVER)
+  {
+    packDWord(&packet, 0x00030000); // TLV(3)
+  }
+
+  sendServPacket(&packet);
+
+  return dwCookie;
+}
+
+
+
+DWORD icq_SendChannel2Contacts(DWORD dwUin, char *szUid, HANDLE hContact, const char *pData, WORD wDataLen, const char *pNames, WORD wNamesLen, message_cookie_data *pCookieData)
+{
+  icq_packet packet;
+  WORD wPacketLength;
+  DWORD dwCookie;
+
+  dwCookie = AllocateCookie(CKT_MESSAGE, 0, hContact, pCookieData);
+
+  wPacketLength = wDataLen + wNamesLen + 0x12;
+
+  // Pack the standard header
+  packServMsgSendHeader(&packet, dwCookie, pCookieData->dwMsgID1, pCookieData->dwMsgID2, dwUin, szUid, 2, (WORD)(wPacketLength + ((pCookieData->nAckType == ACKTYPE_SERVER)?0x22:0x1E)));
+
+  packServTLV5HeaderBasic(&packet, wPacketLength, pCookieData->dwMsgID1, pCookieData->dwMsgID2, 0, MCAP_CONTACTS);
+
+  packTLVWord(&packet, 0x0A, 1);              // TLV: 0x0A Acktype: 1 for normal, 2 for ack
+  packDWord(&packet, 0x000F0000);             // TLV: 0x0F empty
+  packTLV(&packet, 0x2711, wDataLen, pData);  // TLV: 0x2711 Content (Contact UIDs)
+  packTLV(&packet, 0x2712, wNamesLen, pNames);// TLV: 0x2712 Extended Content (Contact NickNames)
+
+  // Pack request ack TLV
   if (pCookieData->nAckType == ACKTYPE_SERVER)
   {
     packDWord(&packet, 0x00030000); // TLV(3)
@@ -958,6 +991,18 @@ void icq_sendAdvancedMsgAck(DWORD dwUin, DWORD dwTimestamp, DWORD dwTimestamp2, 
   packServAdvancedMsgReply(&packet, dwUin, dwTimestamp, dwTimestamp2, wCookie, ICQ_VERSION, bMsgType, bMsgFlags, 11);
   packEmptyMsg(&packet);       // Status message
   packMsgColorInfo(&packet);
+
+  sendServPacket(&packet);
+}
+
+
+
+void icq_sendContactsAck(DWORD dwUin, char *szUid, DWORD dwMsgID1, DWORD dwMsgID2)
+{
+  icq_packet packet;
+
+  packServMsgSendHeader(&packet, 0, dwMsgID1, dwMsgID2, dwUin, szUid, 2, 0x1E);
+  packServTLV5HeaderBasic(&packet, 0, dwMsgID1, dwMsgID2, 2, MCAP_CONTACTS);
 
   sendServPacket(&packet);
 }
@@ -1564,7 +1609,7 @@ void icq_sendReverseReq(directconnect *dc, DWORD dwCookie, message_cookie_data *
 
   packServMsgSendHeader(&packet, dwCookie, pCookie->dwMsgID1, pCookie->dwMsgID2, dc->dwRemoteUin, NULL, 2, 0x47);
 
-  packServTLV5HeaderBasic(&packet, 0x29, pCookie->dwMsgID1, pCookie->dwMsgID2, 0, MCAP_REVERSE_REQ);
+  packServTLV5HeaderBasic(&packet, 0x29, pCookie->dwMsgID1, pCookie->dwMsgID2, 0, MCAP_REVERSE_DC_REQ);
 
   packTLVWord(&packet, 0x0A, 1);            // TLV: 0x0A Acktype: 1 for normal, 2 for ack
   packDWord(&packet, 0x000F0000);           // TLV: 0x0F empty
@@ -1623,7 +1668,7 @@ void oft_sendFileRequest(DWORD dwUin, char *szUid, oscar_filetransfer* ft, char*
   if (ft->bUseProxy) wDataLen += 4;
 
   packServMsgSendHeader(&packet, ft->dwCookie, ft->pMessage.dwMsgID1, ft->pMessage.dwMsgID2, dwUin, szUid, 2, (WORD)(wDataLen + 0x1E));
-  packServTLV5HeaderBasic(&packet, wDataLen, ft->pMessage.dwMsgID1, ft->pMessage.dwMsgID2, 0, MCAP_OSCAR_FT);
+  packServTLV5HeaderBasic(&packet, wDataLen, ft->pMessage.dwMsgID1, ft->pMessage.dwMsgID2, 0, MCAP_FILE_TRANSFER);
 
   packTLVWord(&packet, 0x0A, ++ft->wReqNum);        // Request sequence
   packDWord(&packet, 0x000F0000);                   // Unknown
@@ -1679,7 +1724,7 @@ static void oft_sendFileReply(DWORD dwUin, char *szUid, oscar_filetransfer* ft, 
   icq_packet packet;
 
   packServMsgSendHeader(&packet, 0, ft->pMessage.dwMsgID1, ft->pMessage.dwMsgID2, dwUin, szUid, 2, 0x1E);
-  packServTLV5HeaderBasic(&packet, 0, ft->pMessage.dwMsgID1, ft->pMessage.dwMsgID2, wResult, MCAP_OSCAR_FT);
+  packServTLV5HeaderBasic(&packet, 0, ft->pMessage.dwMsgID1, ft->pMessage.dwMsgID2, wResult, MCAP_FILE_TRANSFER);
 
   sendServPacket(&packet);
 }
@@ -1730,7 +1775,7 @@ void oft_sendFileRedirect(DWORD dwUin, char *szUid, oscar_filetransfer* ft, DWOR
   icq_packet packet;
 
   packServMsgSendHeader(&packet, 0, ft->pMessage.dwMsgID1, ft->pMessage.dwMsgID2, dwUin, szUid, 2, (WORD)(bProxy ? 0x4a : 0x4e));
-  packServTLV5HeaderBasic(&packet, (WORD)(bProxy ? 0x2C : 0x30), ft->pMessage.dwMsgID1, ft->pMessage.dwMsgID2, 0, MCAP_OSCAR_FT);
+  packServTLV5HeaderBasic(&packet, (WORD)(bProxy ? 0x2C : 0x30), ft->pMessage.dwMsgID1, ft->pMessage.dwMsgID2, 0, MCAP_FILE_TRANSFER);
   // Connection point data
   packTLVWord(&packet, 0x0A, ++ft->wReqNum);                // Ack Type
   packTLVWord(&packet, 0x14, 0x0A);                         // Unknown ?

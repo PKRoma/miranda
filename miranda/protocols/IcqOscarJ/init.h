@@ -45,4 +45,4 @@ void UpdateGlobalSettings(void);
 #undef DBG_CAPXTRAZ_MUC
 #define DBG_NEWCAPS
 #define DBG_OSCARFT
-
+#define DBG_AIMCONTACTSEND

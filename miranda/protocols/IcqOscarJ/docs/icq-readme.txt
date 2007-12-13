@@ -50,7 +50,7 @@ __________
 
 0.5
   Account management (together with Miranda core changes)
-  Multi-user chat (Xtraz based)
+  Multi-user chat
   Mid-NetLib module for HTTP gateway (for Avatars to work) [icq_net]
 
 
@@ -60,8 +60,12 @@ _______
 
 0.3.10 Development
 
+Bugfixes:
+  Do not lose server-list contacts due to too long nicknames
+
 Improvements:
   URL events are now received as normal messages
+  Ability to send/receive contacts to/from ICQ6 and AIM
 
 
 0.3.9.5

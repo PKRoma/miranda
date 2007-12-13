@@ -847,6 +847,9 @@ void setUserInfo()
 #ifdef DBG_CAPHTML
   wAdditionalData += 16;
 #endif
+#ifdef DBG_AIMCONTACTSEND
+  wAdditionalData += 16;
+#endif
 
   serverPacketInit(&packet, (WORD)(62 + wAdditionalData));
   packFNACHeader(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_SET_USER_INFO);
@@ -897,6 +900,11 @@ void setUserInfo()
   {
     packNewCap(&packet, 0x134D);    // Tells the server we can speak to AIM
   }
+#ifdef DBG_AIMCONTACTSEND
+  {
+    packNewCap(&packet, 0x134B);    // CAP_AIM_SENDBUDDYLIST
+  }
+#endif
   if (bXStatus)
   {
     packBuffer(&packet, capXStatus[bXStatus-1], 0x10);

@@ -361,3 +361,18 @@ HANDLE __fastcall ICQFindNextContact(HANDLE hContact)
   }
   return hContact;
 }
+
+
+
+char* __stdcall ICQGetContactCListGroup(HANDLE hContact)
+{
+  return UniGetContactSettingUtf(hContact, "CList", "Group", NULL);
+}
+
+
+
+int __stdcall ICQSetContactCListGroup(HANDLE hContact, const char *szGroup)
+{
+  /// TODO
+  return 0;
+}

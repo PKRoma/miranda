@@ -75,4 +75,8 @@ int __fastcall IsICQContact(HANDLE hContact);
 HANDLE __fastcall ICQFindFirstContact();
 HANDLE __fastcall ICQFindNextContact(HANDLE hContact);
 
+char* __stdcall ICQGetContactCListGroup(HANDLE hContact);
+int __stdcall ICQSetContactCListGroup(HANDLE hContact, const char *szGroup);
+
+
 #endif /* __ICQ_DB_H */

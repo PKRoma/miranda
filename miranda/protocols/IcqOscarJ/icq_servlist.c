@@ -601,6 +601,7 @@ DWORD icq_sendServerContact(HANDLE hContact, DWORD dwCookie, WORD wAction, WORD 
   int nNickLen, nNoteLen, nDataLen;
   WORD wTLVlen;
   BYTE bAuth;
+  int bDataTooLong = FALSE;
 
   // Prepare UID
   if (ICQGetContactSettingUID(hContact, &dwUin, &szUid))
@@ -633,6 +634,23 @@ DWORD icq_sendServerContact(HANDLE hContact, DWORD dwCookie, WORD wAction, WORD 
 
   nNickLen = strlennull(szNick);
   nNoteLen = strlennull(szNote);
+
+  // Limit the strings
+  if (nNickLen > MAX_SSI_TLV_NAME_SIZE)
+  {
+    bDataTooLong = TRUE;
+    nNickLen = null_strcut(szNick, MAX_SSI_TLV_NAME_SIZE);
+  }
+  if (nNoteLen > MAX_SSI_TLV_COMMENT_SIZE)
+  {
+    bDataTooLong = TRUE;
+    nNoteLen = null_strcut(szNote, MAX_SSI_TLV_COMMENT_SIZE);
+  }
+  if (bDataTooLong)
+  { // Inform the user
+    /// TODO: do something with this for Manage Server-List dialog.
+    icq_LogMessage(LOG_WARNING, "The contact's information was too big and was truncated.");
+  }
 
   // Build the packet
   wTLVlen = (nNickLen?4+nNickLen:0) + (nNoteLen?4+nNoteLen:0) + (bAuth?4:0) + nDataLen;

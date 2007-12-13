@@ -76,7 +76,6 @@ void icq_sendRemoveContact(DWORD dwUin, char* szUid);
 void icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, char* szUID, int list, int add);
 void icq_sendEntireVisInvisList(int);
 void icq_sendAwayMsgReplyServ(DWORD, DWORD, DWORD, WORD, WORD, BYTE, const char **);
-void icq_sendAdvancedMsgAck(DWORD, DWORD, DWORD, WORD, BYTE, BYTE);
 DWORD icq_sendSMSServ(const char *szPhoneNumber, const char *szMsg);
 void icq_sendMessageCapsServ(DWORD dwUin);
 void icq_sendRevokeAuthServ(DWORD dwUin, char *szUid);
@@ -91,7 +90,11 @@ void sendUserInfoAutoRequest(HANDLE hContact, DWORD dwUin);
 DWORD icq_SendChannel1Message(DWORD dwUin, char *szUID, HANDLE hContact, char *pszText, message_cookie_data *pCookieData);
 DWORD icq_SendChannel1MessageW(DWORD dwUin, char *szUID, HANDLE hContact, wchar_t *pszText, message_cookie_data *pCookieData); // UTF-16
 DWORD icq_SendChannel2Message(DWORD dwUin, HANDLE hContact, const char *szMessage, int nBodyLength, WORD wPriority, message_cookie_data *pCookieData, char *szCap);
+DWORD icq_SendChannel2Contacts(DWORD dwUin, char *szUid, HANDLE hContact, const char *pData, WORD wDataLen, const char *pNames, WORD wNamesLen, message_cookie_data *pCookieData);
 DWORD icq_SendChannel4Message(DWORD dwUin, HANDLE hContact, BYTE bMsgType, WORD wMsgLen, const char *szMsg, message_cookie_data *pCookieData);
+
+void icq_sendAdvancedMsgAck(DWORD, DWORD, DWORD, WORD, BYTE, BYTE);
+void icq_sendContactsAck(DWORD dwUin, char *szUid, DWORD dwMsgID1, DWORD dwMsgID2);
 
 void icq_sendReverseReq(directconnect *dc, DWORD dwCookie, message_cookie_data *pCookie);
 void icq_sendReverseFailed(directconnect* dc, DWORD dwMsgID1, DWORD dwMsgID2, DWORD dwCookie);
