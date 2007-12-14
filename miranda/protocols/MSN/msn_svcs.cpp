@@ -1193,7 +1193,11 @@ static int MsnSetAvatar( WPARAM wParam, LPARAM lParam )
 			if ( fileId > -1 ) {
 				_write( fileId, pResult, dwPngSize );
 				_close( fileId );
-		}	}
+			}
+			else
+				MSN_ShowError("Cannot set avatar. File '%s' could not be created/overwritten", tFileName);
+
+		}
 
 		delete pResult;
 	}

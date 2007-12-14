@@ -976,7 +976,8 @@ static void sttInitFileTransfer(
 					if ( ft->fileId == -1 ) 
 					{
 						p2p_sendStatus( ft, 603 );
-						MSN_ShowError("Unable to open avatar file '%s', error %d", szFileName, errno );
+						MSN_ShowError("Your avatar not set correctly. Avatar should be set in View/Change My Details | Avatar");
+						MSN_DebugLog("Unable to open avatar file '%s', error %d", szFileName, errno );
 						delete ft;
 					}
 					else
