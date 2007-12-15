@@ -185,7 +185,7 @@ static int connectNewServer(serverthread_info *info)
     hServerConn = NetLib_OpenConnection(ghServerNetlibUser, NULL, &nloc);
     if (hServerConn)
     { /* Time to recreate the packet receiver */
-      info->hPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hServerConn, 8192);
+      info->hPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hServerConn, 0x2400);
       if (!info->hPacketRecver)
       {
         NetLog_Server("Error: Failed to create packet receiver.");

@@ -114,7 +114,7 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
     int recvResult;
     NETLIBPACKETRECVER packetRecv = {0};
 
-    info.hPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hServerConn, 8192);
+    info.hPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hServerConn, 0x2400);
     packetRecv.cbSize = sizeof(packetRecv);
     packetRecv.dwTimeout = INFINITE;
     while(hServerConn)

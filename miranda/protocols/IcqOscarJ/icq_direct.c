@@ -424,6 +424,7 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
   NETLIBPACKETRECVER packetRecv={0};
   HANDLE hPacketRecver;
   BOOL bFirstPacket = TRUE;
+  int nSkipPacketBytes = 0;
   DWORD dwReqMsgID1;
   DWORD dwReqMsgID2;
 
@@ -636,11 +637,16 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
 
     if (dc.type == DIRECTCONN_CLOSING)
       packetRecv.bytesUsed = packetRecv.bytesAvailable;
+    else if (packetRecv.bytesAvailable < nSkipPacketBytes)
+    { // the whole buffer needs to be skipped
+      nSkipPacketBytes -= packetRecv.bytesAvailable;
+      packetRecv.bytesUsed = packetRecv.bytesAvailable;
+    }
     else
     {
       int i;
 
-      for (i = 0; i + 2 <= packetRecv.bytesAvailable;)
+      for (i = nSkipPacketBytes, nSkipPacketBytes = 0; i + 2 <= packetRecv.bytesAvailable;)
       { 
         WORD wLen = *(WORD*)(packetRecv.buffer + i);
 
@@ -653,6 +659,16 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
             break;
           }
           bFirstPacket = FALSE;
+        }
+        else
+        {
+          if (packetRecv.bytesAvailable >= i + 2 && wLen > 8190)
+          { // check for too big packages
+            NetLog_Direct("Error: Package too big: %d bytes, skipping.");
+            nSkipPacketBytes = wLen;
+            packetRecv.bytesUsed = i + 2;
+            break;
+          }
         }
 
         if (wLen + 2 + i > packetRecv.bytesAvailable)
