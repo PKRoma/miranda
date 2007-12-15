@@ -26,6 +26,7 @@ struct _tag_iconList
 	char*  szDescr;
 	char*  szName;
 	int    defIconID;
+	char*  szSection;
 	HANDLE hIconLibItem;
 }
 static iconList[] =
@@ -43,20 +44,21 @@ static iconList[] =
 	{	"Blocked list",           "away",        IDI_AWAY            },
 	{	"Idle",                   "idle",        IDI_IDLE            },
 	{	"AOL",                    "aol",         IDI_AOL             },
-	{	"Foreground Color",       "foreclr",     IDI_FOREGROUNDCOLOR },
-	{	"Background Color",       "backclr",     IDI_BACKGROUNDCOLOR },
-	{	"Bold",                   "bold",        IDI_BOLD            },
-	{	"Not Bold",               "nbold",       IDI_NBOLD           },
-	{	"Italic",                 "italic",      IDI_ITALIC          },
-	{	"Not Italic",             "nitalic",     IDI_NITALIC         },
-	{	"Underline",              "undrln",      IDI_UNDERLINE       },
-	{	"Not Underline",          "nundrln",     IDI_NUNDERLINE      },
-	{	"Subscript",              "sub_scrpt",   IDI_SUBSCRIPT       },
-	{	"Not Subscript",          "nsub_scrpt",  IDI_NSUBSCRIPT      },
-	{	"Superscript",            "sup_scrpt",   IDI_SUPERSCRIPT     },
-	{	"Not Superscript",        "nsup_scrpt",  IDI_NSUPERSCRIPT    },
-	{	"Normal Script",          "norm_scrpt",  IDI_NORMALSCRIPT    },
-	{	"Not Normal Script",      "nnorm_scrpt", IDI_NNORMALSCRIPT   },
+
+	{	"Foreground Color",       "foreclr",     IDI_FOREGROUNDCOLOR, "Profile Editor" },
+	{	"Background Color",       "backclr",     IDI_BACKGROUNDCOLOR, "Profile Editor" },
+	{	"Bold",                   "bold",        IDI_BOLD,            "Profile Editor" },
+	{	"Not Bold",               "nbold",       IDI_NBOLD,           "Profile Editor" },
+	{	"Italic",                 "italic",      IDI_ITALIC,          "Profile Editor" },
+	{	"Not Italic",             "nitalic",     IDI_NITALIC,         "Profile Editor" },
+	{	"Underline",              "undrln",      IDI_UNDERLINE,       "Profile Editor" },
+	{	"Not Underline",          "nundrln",     IDI_NUNDERLINE,      "Profile Editor" },
+	{	"Subscript",              "sub_scrpt",   IDI_SUBSCRIPT,       "Profile Editor" },
+	{	"Not Subscript",          "nsub_scrpt",  IDI_NSUBSCRIPT,      "Profile Editor" },
+	{	"Superscript",            "sup_scrpt",   IDI_SUPERSCRIPT,     "Profile Editor" },
+	{	"Not Superscript",        "nsup_scrpt",  IDI_NSUPERSCRIPT,    "Profile Editor" },
+	{	"Normal Script",          "norm_scrpt",  IDI_NORMALSCRIPT,    "Profile Editor" },
+	{	"Not Normal Script",      "nnorm_scrpt", IDI_NNORMALSCRIPT,   "Profile Editor" },
 };
 
 static const size_t icolstsz = sizeof(iconList)/sizeof(iconList[0]); 
@@ -66,16 +68,27 @@ void InitIcons(void)
 	char szFile[MAX_PATH];
 	GetModuleFileNameA(conn.hInstance, szFile, MAX_PATH);
 
+	char szSettingName[100];
+
 	SKINICONDESC sid = {0};
 	sid.cbSize = sizeof(SKINICONDESC);
 	sid.pszDefaultFile = szFile;
 	sid.cx = sid.cy = 16;
-	sid.pszSection = Translate( AIM_PROTOCOL_NAME );
+	sid.pszName = szSettingName;
 
-	for ( int i = 0; i < icolstsz; i++ ) {
-		char szSettingName[100];
+	for ( int i = 0; i < icolstsz; i++ ) 
+	{
 		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", AIM_PROTOCOL_NAME, iconList[i].szName );
-		sid.pszName = szSettingName;
+
+		char szSectionName[100];
+		if (iconList[i].szSection)
+		{
+			mir_snprintf( szSectionName, sizeof( szSectionName ), "%s/%s", AIM_PROTOCOL_NAME, iconList[i].szSection );
+			sid.pszSection = Translate(szSectionName);
+		}
+		else
+			sid.pszSection = Translate( AIM_PROTOCOL_NAME );
+
 		sid.pszDescription = Translate( iconList[i].szDescr );
 		sid.iDefaultIndex = -iconList[i].defIconID;
 		iconList[i].hIconLibItem = ( HANDLE )CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
