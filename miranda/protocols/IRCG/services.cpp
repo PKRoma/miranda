@@ -45,7 +45,7 @@ HANDLE hMenuServer = NULL;
 HANDLE hNetlib = NULL;
 HANDLE hNetlibDCC = NULL;
 
-HANDLE hpsAddToList     = NULL;    
+HANDLE hpsAddToList     = NULL;
 HANDLE hpsBasicSearch   = NULL;
 HANDLE hpsFileResume    = NULL;
 HANDLE hpsGetCaps	    = NULL;
@@ -308,16 +308,16 @@ static int Service_FileSend(WPARAM wParam,LPARAM lParam)
 			// is it an reverse filetransfer (receiver acts as server)
 			if (dci->bReverse) {
 				TCHAR szTemp[256];
-				PostIrcMessage( _T("/CTCP %s DCC SEND %s 200 0 %u %u"), 
+				PostIrcMessage( _T("/CTCP %s DCC SEND %s 200 0 %u %u"),
 					dci->sContactName.c_str(), sFileWithQuotes.c_str(), dci->dwSize, dcc->iToken);
 
-				mir_sntprintf(szTemp, SIZEOF(szTemp), 
-					TranslateT("DCC reversed file transfer request sent to %s [%s]"), 
+				mir_sntprintf(szTemp, SIZEOF(szTemp),
+					TranslateT("DCC reversed file transfer request sent to %s [%s]"),
 					dci->sContactName.c_str(), sFileCorrect.c_str());
 				DoEvent(GC_EVENT_INFORMATION, 0, g_ircSession.GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false);
 
 				if (prefs->SendNotice) {
-					mir_sntprintf(szTemp, SIZEOF(szTemp), 
+					mir_sntprintf(szTemp, SIZEOF(szTemp),
 						_T("/NOTICE %s I am sending the file \'\002%s\002\' (%u kB) to you, please accept it. [Reverse transfer]"),
 						dci->sContactName.c_str(), sFileCorrect.c_str(), dci->dwSize/1024);
 					PostIrcMessage(szTemp);
@@ -327,22 +327,22 @@ static int Service_FileSend(WPARAM wParam,LPARAM lParam)
 				iPort = dcc->Connect();
 				if ( iPort ) {
 					TCHAR szTemp[256];
-					PostIrcMessage( _T("/CTCP %s DCC SEND %s %u %u %u"), 
+					PostIrcMessage( _T("/CTCP %s DCC SEND %s %u %u %u"),
 						dci->sContactName.c_str(), sFileWithQuotes.c_str(), ulAdr, iPort, dci->dwSize);
 
-					mir_sntprintf(szTemp, SIZEOF(szTemp), 
-						TranslateT("DCC file transfer request sent to %s [%s]"), 
+					mir_sntprintf(szTemp, SIZEOF(szTemp),
+						TranslateT("DCC file transfer request sent to %s [%s]"),
 						dci->sContactName.c_str(), sFileCorrect.c_str());
 					DoEvent(GC_EVENT_INFORMATION, 0, g_ircSession.GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false);
 
 					if ( prefs->SendNotice ) {
-						mir_sntprintf(szTemp, SIZEOF(szTemp), 
+						mir_sntprintf(szTemp, SIZEOF(szTemp),
 							_T("/NOTICE %s I am sending the file \'\002%s\002\' (%u kB) to you, please accept it. [IP: %s]"),
 							dci->sContactName.c_str(), sFileCorrect.c_str(), dci->dwSize/1024, (TCHAR*)_A2T(ConvertIntegerToIP(ulAdr)));
 						PostIrcMessage(szTemp);
 					}
 				}
-				else DoEvent(GC_EVENT_INFORMATION, 0, g_ircSession.GetInfo().sNick.c_str(), 
+				else DoEvent(GC_EVENT_INFORMATION, 0, g_ircSession.GetInfo().sNick.c_str(),
 					TranslateT("DCC ERROR: Unable to bind local port"), NULL, NULL, NULL, true, false);
 			}
 
@@ -450,7 +450,7 @@ static int Service_EventDoubleclicked(WPARAM wParam,LPARAM lParam)
 		DCCINFO* pdci = ( DCCINFO* )pcle->lParam;
 		HWND hWnd = CreateDialogParam(g_hInstance,MAKEINTRESOURCE(IDD_MESSAGEBOX),NULL,MessageboxWndProc, (LPARAM)pdci);
 		TCHAR szTemp[500];
-		mir_sntprintf( szTemp, SIZEOF(szTemp), TranslateT("%s (%s) is requesting a client-to-client chat connection."), 
+		mir_sntprintf( szTemp, SIZEOF(szTemp), TranslateT("%s (%s) is requesting a client-to-client chat connection."),
 			pdci->sContactName.c_str(), pdci->sHostmask.c_str());
 		SetDlgItemText( hWnd, IDC_TEXT, szTemp );
 		ShowWindow( hWnd, SW_SHOW );
@@ -592,7 +592,7 @@ static int Service_Menu3Command(WPARAM wp, LPARAM lp)
 				else
 					S = "+qnidc";
 				PostIrcMessage( _T("/IGNORE %%question=\"%s\",\"%s\",\"*!*@") _T(TCHAR_STR_PARAM) _T("\" %s"),
-					TranslateT("Please enter the hostmask (nick!user@host) \nNOTE! Contacts on your contact list are never ignored"), 
+					TranslateT("Please enter the hostmask (nick!user@host) \nNOTE! Contacts on your contact list are never ignored"),
 					TranslateT("Ignore"), host, S.c_str());
 				DBFreeVariant(&dbv1);
 			}
@@ -857,15 +857,15 @@ int Service_GCEventHook(WPARAM wParam,LPARAM lParam)
 						PostIrcMessageWnd(p1, NULL, _T("/SERVERSHOW"));
 						break;
 /*					case 5:		// nickserv register nick
-						PostIrcMessage( _T("/nickserv REGISTER %%question=\"%s\",\"%s\""), 
+						PostIrcMessage( _T("/nickserv REGISTER %%question=\"%s\",\"%s\""),
 							TranslateT("Please enter your authentification code"), TranslateT("Authentificate nick") );
 						break;
 */					case 6:		// nickserv Identify
-						PostIrcMessage( _T("/nickserv AUTH %%question=\"%s\",\"%s\""), 
+						PostIrcMessage( _T("/nickserv AUTH %%question=\"%s\",\"%s\""),
 							TranslateT("Please enter your authentification code"), TranslateT("Authentificate nick") );
 						break;
 					case 7:		// nickserv drop nick
-						if (MessageBox(0, TranslateT("Are you sure you want to unregister your current nick?"), TranslateT("Delete nick"), 
+						if (MessageBox(0, TranslateT("Are you sure you want to unregister your current nick?"), TranslateT("Delete nick"),
 								MB_ICONERROR + MB_YESNO + MB_DEFBUTTON2) == IDYES)
 							PostIrcMessage( _T("/nickserv DROP"));
 						break;
@@ -876,45 +876,45 @@ int Service_GCEventHook(WPARAM wParam,LPARAM lParam)
 						SetDlgItemText( question_hWnd, IDC_CAPTION, TranslateT("Identify nick"));
 						SetWindowText( GetDlgItem( question_hWnd, IDC_TEXT), TranslateT("Please enter your password") );
 						SetDlgItemText( question_hWnd, IDC_HIDDENEDIT, _T("/nickserv IDENTIFY %question=\"%s\",\"%s\""));
-						SetWindowLong(GetDlgItem( question_hWnd, IDC_EDIT), GWL_STYLE, 
+						SetWindowLong(GetDlgItem( question_hWnd, IDC_EDIT), GWL_STYLE,
 							(LONG)GetWindowLong(GetDlgItem( question_hWnd, IDC_EDIT), GWL_STYLE) | ES_PASSWORD);
 						SendMessage(hEditCtrl, EM_SETPASSWORDCHAR,(WPARAM)_T('*'),0 );
 						SetFocus(hEditCtrl);
 						PostMessage( question_hWnd, IRC_ACTIVATE, 0, 0);
 						}
 /*
-						PostIrcMessage( _T("/nickserv IDENTIFY %%question=\"%s\",\"%s\""), 
+						PostIrcMessage( _T("/nickserv IDENTIFY %%question=\"%s\",\"%s\""),
 							TranslateT("Please enter your password"), TranslateT("Identify nick") );
 */
 						break;
 					case 9:		// nickserv remind password
 						{
 						DBVARIANT dbv;
-						if ( !DBGetContactSettingTString( NULL, IRCPROTONAME, "Nick", &dbv )) 
-							{	
+						if ( !DBGetContactSettingTString( NULL, IRCPROTONAME, "Nick", &dbv ))
+							{
 							PostIrcMessage( _T("/nickserv SENDPASS %s"), dbv.ptszVal);
 							DBFreeVariant( &dbv );
 							}
 						}
 						break;
 					case 10:		// nickserv set new password
-						PostIrcMessage( _T("/nickserv SET PASSWORD %%question=\"%s\",\"%s\""), 
+						PostIrcMessage( _T("/nickserv SET PASSWORD %%question=\"%s\",\"%s\""),
 							TranslateT("Please enter your new password"), TranslateT("Set new password") );
 						break;
 					case 11:		// nickserv set language
-						PostIrcMessage( _T("/nickserv SET LANGUAGE %%question=\"%s\",\"%s\""), 
+						PostIrcMessage( _T("/nickserv SET LANGUAGE %%question=\"%s\",\"%s\""),
 							TranslateT("Please enter desired languageID (numeric value, depends on server)"), TranslateT("Change language of NickServ messages") );
 						break;
 					case 12:		// nickserv set homepage
-						PostIrcMessage( _T("/nickserv SET URL %%question=\"%s\",\"%s\""), 
+						PostIrcMessage( _T("/nickserv SET URL %%question=\"%s\",\"%s\""),
 						TranslateT("Please enter URL that will be linked to your nick"), TranslateT("Set URL, linked to nick") );
 						break;
 					case 13:		// nickserv set email
-						PostIrcMessage( _T("/nickserv SET EMAIL %%question=\"%s\",\"%s\""), 
+						PostIrcMessage( _T("/nickserv SET EMAIL %%question=\"%s\",\"%s\""),
 							TranslateT("Please enter your e-mail, that will be linked to your nick"), TranslateT("Set e-mail, linked to nick") );
 						break;
 					case 14:		// nickserv set info
-						PostIrcMessage( _T("/nickserv SET INFO %%question=\"%s\",\"%s\""), 
+						PostIrcMessage( _T("/nickserv SET INFO %%question=\"%s\",\"%s\""),
 							TranslateT("Please enter some information about your nick"), TranslateT("Set information for nick") );
 						break;
 					case 15:		// nickserv kill unauth off
@@ -932,7 +932,7 @@ int Service_GCEventHook(WPARAM wParam,LPARAM lParam)
 					case 19:		// nickserv show nick to /LIST
 						PostIrcMessage( _T("/nickserv SET PRIVATE OFF"));
 						break;
-					case 20:		// nickserv Hde e-mail from info
+					case 20:		// nickserv Hide e-mail from info
 						PostIrcMessage( _T("/nickserv SET HIDE EMAIL ON"));
 							break;
 					case 21:		// nickserv Show e-mail in info
@@ -945,15 +945,15 @@ int Service_GCEventHook(WPARAM wParam,LPARAM lParam)
 						PostIrcMessage( _T("/nickserv SET SECURE OFF"));
 							break;
 					case 24:		// nickserv Link nick to current
-						PostIrcMessage( _T("/nickserv LINK %%question=\"%s\",\"%s\""), 
+						PostIrcMessage( _T("/nickserv LINK %%question=\"%s\",\"%s\""),
 							TranslateT("Please enter nick you want to link to your current nick"), TranslateT("Link another nick to current nick") );
 						break;
 					case 25:		// nickserv Unlink nick from current
-						PostIrcMessage( _T("/nickserv LINK %%question=\"%s\",\"%s\""), 
+						PostIrcMessage( _T("/nickserv LINK %%question=\"%s\",\"%s\""),
 							TranslateT("Please enter nick you want to unlink from your current nick"), TranslateT("Unlink another nick from current nick") );
 						break;
 					case 26:		// nickserv Set main nick
-						PostIrcMessage( _T("/nickserv LINK %%question=\"%s\",\"%s\""), 
+						PostIrcMessage( _T("/nickserv LINK %%question=\"%s\",\"%s\""),
 							TranslateT("Please enter nick you want to set as your main nick"), TranslateT("Set main nick") );
 						break;
 					case 27:		// nickserv list all linked nicks
@@ -983,7 +983,7 @@ int Service_GCEventHook(WPARAM wParam,LPARAM lParam)
 						PostIrcMessage( _T("/KICK %s %s"), p1, gch->ptszUID );
 						break;
 					case 6:
-						PostIrcMessage( _T("/KICK %s %s %%question=\"%s\",\"%s\",\"%s\""), 
+						PostIrcMessage( _T("/KICK %s %s %%question=\"%s\",\"%s\",\"%s\""),
 							p1, gch->ptszUID, TranslateT("Please enter the reason"), TranslateT("Kick"), TranslateT("Jerk") );
 						break;
 					case 7:
@@ -1032,11 +1032,11 @@ int Service_GCEventHook(WPARAM wParam,LPARAM lParam)
 						PostIrcMessage( _T("/MODE %s -a %s"), p1, gch->ptszUID );
 						break;
 					case 22:
-						PostIrcMessage( _T("/NOTICE %s %%question=\"%s\",\"%s\""), 
+						PostIrcMessage( _T("/NOTICE %s %%question=\"%s\",\"%s\""),
 							gch->ptszUID, TranslateT("Please enter the notice text"), TranslateT("Send notice") );
 						break;
 					case 23:
-						PostIrcMessage( _T("/INVITE %s %%question=\"%s\",\"%s\""), 
+						PostIrcMessage( _T("/INVITE %s %%question=\"%s\",\"%s\""),
 							gch->ptszUID, TranslateT("Please enter the channel name to invite to"), TranslateT("Invite to channel") );
 						break;
 					case 30:
@@ -1118,7 +1118,7 @@ static int Service_GCMenuHook(WPARAM wParam,LPARAM lParam)
 						{ TranslateT("Set e-mail" ),				13, MENU_POPUPITEM,	FALSE},
 						{ TranslateT("Set info" ),					14, MENU_POPUPITEM,	FALSE},
 						{ _T("" ),									0,	MENU_POPUPSEPARATOR,FALSE},
-						{ TranslateT("Hde e-mail from info" ),		20, MENU_POPUPITEM,	FALSE},
+						{ TranslateT("Hide e-mail from info" ),		20, MENU_POPUPITEM,	FALSE},
 						{ TranslateT("Show e-mail in info" ),		21, MENU_POPUPITEM,	FALSE},
 						{ _T("" ),									0,	MENU_POPUPSEPARATOR,FALSE},
 						{ TranslateT("Set security for nick" ),		22, MENU_POPUPITEM,	FALSE},
@@ -1183,7 +1183,7 @@ static int Service_GCMenuHook(WPARAM wParam,LPARAM lParam)
 				gcmi->Item = &Item[0];
 				if (hContact && DBGetContactSettingByte(hContact, "CList", "NotOnList", 0) == 0)
 					gcmi->Item[gcmi->nItems-1].bDisabled = TRUE;
-				
+
 				unsigned long ulAdr = 0;
 				if (prefs->ManualHost)
 					ulAdr = ConvertIPToInteger(prefs->MySpecifiedHostIP);
@@ -1404,7 +1404,7 @@ static int Service_AddToList(WPARAM wParam,LPARAM lParam)
 				DBFreeVariant( &dbv1 );
 				}
 			else DoUserhostWithReason( 2, ((TString)_T("S") + user.name).c_str(), true, user.name );
-			}	
+			}
 			if (DBGetContactSettingByte(NULL, IRCPROTONAME,"MirVerAutoRequest", 1))
 				PostIrcMessage( _T("/PRIVMSG %s \001VERSION\001"), user.name);
 		}
@@ -1439,7 +1439,7 @@ static void __cdecl ConnectServerThread(LPVOID di)
 			if ( lstrlenA( prefs->MySpecifiedHost ))
 				mir_forkthread( ResolveIPThread, new IPRESOLVE( prefs->MySpecifiedHost, IP_MANUAL ));
 
-			DoEvent(GC_EVENT_CHANGESESSIONAME, _T("Network log"), NULL, g_ircSession.GetInfo().sNetwork.c_str(), NULL, NULL, NULL, FALSE, TRUE); 
+			DoEvent(GC_EVENT_CHANGESESSIONAME, _T("Network log"), NULL, g_ircSession.GetInfo().sNetwork.c_str(), NULL, NULL, NULL, FALSE, TRUE);
 		}
 		else {
 			Temp = OldStatus;
@@ -1503,7 +1503,7 @@ void ConnectToServer(void)
 		InterlockedIncrement((long *) &bConnectRequested);
 
 	TCHAR szTemp[300];
-	mir_sntprintf(szTemp, SIZEOF(szTemp), _T("\0033%s \002%s\002 (") _T(TCHAR_STR_PARAM) _T(": %u)"), 
+	mir_sntprintf(szTemp, SIZEOF(szTemp), _T("\0033%s \002%s\002 (") _T(TCHAR_STR_PARAM) _T(": %u)"),
 		TranslateT("Connecting to"), si.sNetwork.c_str(), si.sServer.c_str(), si.iPort);
 	DoEvent(GC_EVENT_INFORMATION, _T("Network log"), NULL, szTemp, NULL, NULL, NULL, true, false);
 }
@@ -1936,38 +1936,38 @@ void UnhookEvents(void)
 
 	DestroyServiceFunction(hpsAddToList    );
 	DestroyServiceFunction(hpsBasicSearch  );
-	DestroyServiceFunction(hpsFileResume   );		
-	DestroyServiceFunction(hpsGetCaps	   );		
-	DestroyServiceFunction(hpsGetName	   );	
+	DestroyServiceFunction(hpsFileResume   );
+	DestroyServiceFunction(hpsGetCaps	   );
+	DestroyServiceFunction(hpsGetName	   );
 	DestroyServiceFunction(hpsGetStatus	   );
-	DestroyServiceFunction(hpsLoadIcon	   );						   
-	DestroyServiceFunction(hpsSetAwayMsg   );						   
-	DestroyServiceFunction(hpsSetStatus	   );					   
-						   
-	DestroyServiceFunction(hpsRFile		   );					   
-	DestroyServiceFunction(hpsRMessage	   );						   
-	DestroyServiceFunction(hpsSFile		   );					   
-	DestroyServiceFunction(hpsSFileAllow   );						   
-	DestroyServiceFunction(hpsSFileCancel  );						   
-	DestroyServiceFunction(hpsSFileDeny	   );					   
-	DestroyServiceFunction(hpsSGetAwayMsg  );						   
-	DestroyServiceFunction(hpsSMessage	   );						   
-						   
-	DestroyServiceFunction(hpsJionChannel  );						   
-	DestroyServiceFunction(hpsQuickConnect );					   
-	DestroyServiceFunction(hpsChangeNick   );						   
-	DestroyServiceFunction(hpsShowList	   );						   
-	DestroyServiceFunction(hpsShowServer   );						   
-	DestroyServiceFunction(hpsMenu1Channel );					   
-	DestroyServiceFunction(hpsMenu2Channel );					   
-	DestroyServiceFunction(hpsMenu3Channel );					   
-						   
-	DestroyServiceFunction(hpsEDblCkick	   );					   
-	DestroyServiceFunction(hpsCInsertRawIn );					   
-	DestroyServiceFunction(hpsCInsertRawOut);				   
-	DestroyServiceFunction(hpsCInsertGuiIn );				   
-	DestroyServiceFunction(hpsCInsertGuiOut);				   
-	DestroyServiceFunction(hpsCGetIrcData  );					   
+	DestroyServiceFunction(hpsLoadIcon	   );
+	DestroyServiceFunction(hpsSetAwayMsg   );
+	DestroyServiceFunction(hpsSetStatus	   );
+
+	DestroyServiceFunction(hpsRFile		   );
+	DestroyServiceFunction(hpsRMessage	   );
+	DestroyServiceFunction(hpsSFile		   );
+	DestroyServiceFunction(hpsSFileAllow   );
+	DestroyServiceFunction(hpsSFileCancel  );
+	DestroyServiceFunction(hpsSFileDeny	   );
+	DestroyServiceFunction(hpsSGetAwayMsg  );
+	DestroyServiceFunction(hpsSMessage	   );
+
+	DestroyServiceFunction(hpsJionChannel  );
+	DestroyServiceFunction(hpsQuickConnect );
+	DestroyServiceFunction(hpsChangeNick   );
+	DestroyServiceFunction(hpsShowList	   );
+	DestroyServiceFunction(hpsShowServer   );
+	DestroyServiceFunction(hpsMenu1Channel );
+	DestroyServiceFunction(hpsMenu2Channel );
+	DestroyServiceFunction(hpsMenu3Channel );
+
+	DestroyServiceFunction(hpsEDblCkick	   );
+	DestroyServiceFunction(hpsCInsertRawIn );
+	DestroyServiceFunction(hpsCInsertRawOut);
+	DestroyServiceFunction(hpsCInsertGuiIn );
+	DestroyServiceFunction(hpsCInsertGuiOut);
+	DestroyServiceFunction(hpsCGetIrcData  );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
