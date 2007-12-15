@@ -448,8 +448,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 	InsertRegistryKey();
 	NotifyEventHooks(hModulesLoadedEvent,0,0);
+
 	// ensure that the kernel hooks the SystemShutdownProc() after all plugins
 	HookEvent(ME_SYSTEM_SHUTDOWN,SystemShutdownProc);
+
 	MyMsgWaitForMultipleObjectsEx=(DWORD (WINAPI *)(DWORD,CONST HANDLE*,DWORD,DWORD,DWORD))GetProcAddress(GetModuleHandleA("user32"),"MsgWaitForMultipleObjectsEx");
 	forkthread(compactHeapsThread,0,NULL);
 	CreateServiceFunction(MS_SYSTEM_SETIDLECALLBACK,SystemSetIdleCallback);

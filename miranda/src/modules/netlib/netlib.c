@@ -448,7 +448,7 @@ int NetlibBase64Decode(WPARAM wParam,LPARAM lParam)
 
 void UnloadNetlibModule(void)
 {
-	if ( hRecvEvent != NULL ) {
+	if ( hConnectionHeaderMutex != NULL ) {
 		int i;
 
 		NetlibSecurityDestroy();
