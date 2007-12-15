@@ -77,6 +77,9 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	InitializeCriticalSection(&connectionMutex);
 	InitializeCriticalSection(&SendingMutex);
 	InitializeCriticalSection(&avatarMutex);
+
+	InitIcons();
+
 	if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_FR, 0)==0)
 		DialogBox(conn.hInstance, MAKEINTRESOURCE(IDD_AIMACCOUNT), NULL, first_run_dialog);
 	if(DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_KA, 0))
@@ -110,7 +113,7 @@ int ModulesLoaded(WPARAM /*wParam*/,LPARAM /*lParam*/)
 	nlu.szSettingsModule = szP2P;
 	nlu.minIncomingPorts = 1;
 	conn.hNetlibPeer = (HANDLE) CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM) & nlu);
-	
+
 	if (DBGetContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HN, &dbv))
 		DBWriteContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_HN, AIM_DEFAULT_SERVER);
 	else

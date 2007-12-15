@@ -856,7 +856,6 @@ int ExtraIconsApply(WPARAM wParam, LPARAM /*lParam*/)
 void CreateServices()
 {
 	char service_name[300];
-	CLISTMENUITEM mi;
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PS_GETSTATUS);
 	conn.services[conn.services_size++]=CreateServiceFunction(service_name,GetStatus);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PS_SETSTATUS);
@@ -902,98 +901,68 @@ void CreateServices()
 	
 	//Do not put any services below HTML get away message!!!
 
-	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/ManageAccount");
-	conn.services[conn.services_size++]=CreateServiceFunction(service_name,ManageAccount);
-	memset( &mi, 0, sizeof( mi ));
+	CLISTMENUITEM mi = {0};
+
 	mi.pszPopupName = AIM_PROTOCOL_NAME;
     mi.cbSize = sizeof( mi );
     mi.popupPosition = 500090000;
 	mi.position = 500090000;
-    mi.hIcon = LoadIcon(conn.hInstance,MAKEINTRESOURCE( IDI_AIM ));
-	mi.pszContactOwner = AIM_PROTOCOL_NAME;
-    mi.pszName = LPGEN( "Manage Account" );
     mi.pszService = service_name;
+	mi.pszContactOwner = AIM_PROTOCOL_NAME;
+	mi.flags = CMIF_ICONFROMICOLIB;
+
+	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/ManageAccount");
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,ManageAccount);
+    mi.icolibItem = GetIconHandle("aim");
+    mi.pszName = LPGEN( "Manage Account" );
 	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/EditProfile");
 	conn.services[conn.services_size++]=CreateServiceFunction(service_name,EditProfile);
-	memset( &mi, 0, sizeof( mi ));
-	mi.pszPopupName = AIM_PROTOCOL_NAME;
-    mi.cbSize = sizeof( mi );
-    mi.popupPosition = 500090000;
-	mi.position = 500090000;
-    mi.hIcon = LoadIcon(conn.hInstance,MAKEINTRESOURCE( IDI_AIM ));
-	mi.pszContactOwner = AIM_PROTOCOL_NAME;
+    mi.icolibItem = GetIconHandle("aim");
     mi.pszName = LPGEN( "Edit Profile" );
-    mi.pszService = service_name;
 	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/CheckMail");
 	conn.services[conn.services_size++]=CreateServiceFunction(service_name,CheckMail);
-	memset( &mi, 0, sizeof( mi ));
-	mi.pszPopupName = AIM_PROTOCOL_NAME;
-    mi.cbSize = sizeof( mi );
-    mi.popupPosition = 500090000;
-	mi.position = 500090000;
-    mi.hIcon = LoadIcon(conn.hInstance,MAKEINTRESOURCE( IDI_MAIL ));
-	mi.pszContactOwner = AIM_PROTOCOL_NAME;
+    mi.icolibItem = GetIconHandle("mail");
     mi.pszName = LPGEN( "Check Mail" );
-    mi.pszService = service_name;
 	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/InstantIdle");
 	conn.services[conn.services_size++]=CreateServiceFunction(service_name,InstantIdle);
-	memset( &mi, 0, sizeof( mi ));
-	mi.pszPopupName = AIM_PROTOCOL_NAME;
-    mi.cbSize = sizeof( mi );
-    mi.popupPosition = 500090000;
-	mi.position = 500090000;
-    mi.hIcon = LoadIcon(conn.hInstance,MAKEINTRESOURCE( IDI_IDLE ));
-	mi.pszContactOwner = AIM_PROTOCOL_NAME;
+	mi.icolibItem = GetIconHandle("idle");
     mi.pszName = LPGEN( "Instant Idle" );
-    mi.pszService = service_name;
 	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/GetHTMLAwayMsg");
 	conn.services[conn.services_size++]=CreateServiceFunction(service_name,GetHTMLAwayMsg);
-	ZeroMemory(&mi,sizeof(mi));
 	mi.pszPopupName=Translate("Read &HTML Away Message");
-	mi.cbSize=sizeof(mi);
 	mi.popupPosition=-2000006000;
 	mi.position=-2000006000;
-	mi.hIcon=LoadIcon(conn.hInstance,MAKEINTRESOURCE( IDI_AWAY ));
+    mi.icolibItem = GetIconHandle("away");
 	mi.pszName = LPGEN("Read &HTML Away Message");
-	mi.pszContactOwner = AIM_PROTOCOL_NAME;
-	mi.pszService=service_name;
-	mi.flags=CMIF_NOTOFFLINE|CMIF_HIDDEN;
+	mi.flags=CMIF_NOTOFFLINE|CMIF_HIDDEN|CMIF_ICONFROMICOLIB;
 	conn.hHTMLAwayContextMenuItem=(HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
 	
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/GetProfile");
 	conn.services[conn.services_size++]=CreateServiceFunction(service_name,GetProfile);
-	ZeroMemory(&mi,sizeof(mi));
 	mi.pszPopupName=Translate("Read Profile");
-	mi.cbSize=sizeof(mi);
 	mi.popupPosition=-2000006500;
 	mi.position=-2000006500;
-	mi.hIcon=LoadIcon(conn.hInstance,MAKEINTRESOURCE( IDI_PROFILE ));
+    mi.icolibItem = GetIconHandle("profile");
 	mi.pszName = LPGEN("Read Profile");
-	mi.pszContactOwner = AIM_PROTOCOL_NAME;
-	mi.pszService=service_name;
-	mi.flags=CMIF_NOTOFFLINE;
+	mi.flags=CMIF_NOTOFFLINE|CMIF_ICONFROMICOLIB;
 	CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/AddToServerList");
 	conn.services[conn.services_size++]=CreateServiceFunction(service_name,AddToServerList);
-	ZeroMemory(&mi,sizeof(mi));
 	mi.pszPopupName=Translate("Add To Server List");
-	mi.cbSize=sizeof(mi);
 	mi.popupPosition=-2000006500;
 	mi.position=-2000006500;
-	mi.hIcon=LoadIcon(conn.hInstance,MAKEINTRESOURCE( IDI_ADD ));
+    mi.icolibItem = GetIconHandle("add");
 	mi.pszName = LPGEN("Add To Server List");
-	mi.pszContactOwner = AIM_PROTOCOL_NAME;
-	mi.pszService=service_name;
-	mi.flags=CMIF_NOTONLINE|CMIF_HIDDEN;
+	mi.flags=CMIF_NOTONLINE|CMIF_HIDDEN|CMIF_ICONFROMICOLIB;
 	conn.hAddToServerListContextMenuItem=(HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
 
 	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_SYSTEM_MODULESLOADED, ModulesLoaded);

@@ -44,6 +44,7 @@
 #include <m_system.h>
 #include <m_userinfo.h>
 #include <m_addcontact.h>
+#include <m_icolib.h>
 #pragma warning( default: 4100 )
 #pragma warning( default: 4244 )
 #pragma warning( default: 4201 )
@@ -344,4 +345,10 @@ public:
 	HANDLE confirmed_icon;
 	HANDLE unconfirmed_icon;
 } extern conn;
+
+void   InitIcons(void);
+HICON  LoadIconEx(const char* name);
+HANDLE GetIconHandle(const char* name);
+void   ReleaseIconEx(const char* name);
+
 #endif
