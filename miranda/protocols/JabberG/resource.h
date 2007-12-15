@@ -2,7 +2,6 @@
 // Microsoft Visual C++ generated include file.
 // Used by jabber.rc
 //
-#define IDC_STATIC                      -1
 #define IDCANCEL2                       3
 #define IDD_OPT_JABBER                  101
 #define IDI_JABBER                      102
@@ -89,6 +88,9 @@
 #define IDI_ARROW_DOWN                  220
 #define IDI_ICON4                       221
 #define IDI_ARROW_UP                    221
+#define IDI_TRANSPORT                   222
+#define IDI_ICON5                       223
+#define IDI_TRANSPORTL                  223
 #define IDC_EDIT_USERNAME               1000
 #define IDC_SAVE                        1000
 #define IDC_EDIT_PASSWORD               1001
@@ -418,7 +420,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        222
+#define _APS_NEXT_RESOURCE_VALUE        224
 #define _APS_NEXT_COMMAND_VALUE         40017
 #define _APS_NEXT_CONTROL_VALUE         1297
 #define _APS_NEXT_SYMED_VALUE           101

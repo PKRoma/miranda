@@ -29,6 +29,10 @@ Last change by : $Author$
 #include "resource.h"
 #include "jabber_caps.h"
 
+// defined in winres.h so NOT NEEDED in resources.h, define this here too
+#ifndef IDC_STATIC
+#define IDC_STATIC -1
+#endif
 
 static BOOL CALLBACK JabberFormMultiLineWndProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 {

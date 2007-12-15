@@ -77,6 +77,8 @@ IDI_PL_QUERY_DENY       ICON                    "icos\\query_deny.ico"
 IDI_PL_LIST_ACTIVE      ICON                    "icos\\plist_active.ico"
 IDI_PL_LIST_ANY         ICON                    "icos\\plist_any.ico"
 IDI_PL_LIST_DEFAULT     ICON                    "icos\\plist_default.ico"
+IDI_TRANSPORT           ICON                    "icos\\transport.ico"
+IDI_TRANSPORTL          ICON                    "icos\\transport_local.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -957,5 +959,6 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
+
 
 
