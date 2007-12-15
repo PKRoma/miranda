@@ -98,25 +98,137 @@ static HWND hwndJabberConsole = NULL;
 static HANDLE hThreadConsole = NULL;
 static UINT sttJabberConsoleThreadId = 0;
 
+struct TFilterInfo
+{
+	enum Type { T_JID, T_XMLNS, T_ANY, T_OFF };
+
+	volatile BOOL msg, presence, iq;
+	volatile Type type;
+
+	CRITICAL_SECTION csPatternLock;
+	TCHAR pattern[256];
+};
+static TFilterInfo g_filterInfo = {0};
+static bool sttFilterXml(XmlNode *node, DWORD flags);
+
 void JabberConsoleProcessXml(XmlNode *node, DWORD flags)
 {
-	if (node && hwndJabberConsole)
-	{
-		if (node->name)
-		{
-			StringBuf buf = {0};
-			sttAppendBufRaw(&buf, RTF_HEADER);
-			sttRtfAppendXml(&buf, node, flags, 1);
-			sttAppendBufRaw(&buf, RTF_SEPARATOR);
-			sttAppendBufRaw(&buf, RTF_FOOTER);
-			SendMessage(hwndJabberConsole, WM_JABBER_REFRESH, 0, (LPARAM)&buf);
-			sttEmptyBuf(&buf);
-		} else
-		{
-			for (int i = 0; i < node->numChild; ++i)
-				JabberConsoleProcessXml(node->child[i], flags);
+	if ( node && hwndJabberConsole ) {
+		if ( node->name ) {
+			if ( sttFilterXml( node, flags )) {
+				StringBuf buf = {0};
+				sttAppendBufRaw(&buf, RTF_HEADER);
+				sttRtfAppendXml(&buf, node, flags, 1);
+				sttAppendBufRaw(&buf, RTF_SEPARATOR);
+				sttAppendBufRaw(&buf, RTF_FOOTER);
+				SendMessage(hwndJabberConsole, WM_JABBER_REFRESH, 0, (LPARAM)&buf);
+				sttEmptyBuf(&buf);
+			}
+		}
+		else {
+			for ( int i = 0; i < node->numChild; ++i )
+				JabberConsoleProcessXml( node->child[i], flags );
 		}
 	}
+}
+
+static bool sttRecursiveCheckFilter(XmlNode *node, DWORD flags)
+{
+	int i;
+
+	for (i = 0; i < node->numAttr; ++i)
+	{
+		TCHAR *attrValue = node->attr[i]->value;
+		if (flags & JCPF_UTF8)
+		{
+			wchar_t *tmp = mir_utf8decodeW(node->attr[i]->sendValue);
+			#ifdef UNICODE
+			attrValue = tmp;
+			#else
+			attrValue = mir_u2a(tmp);
+			mir_free(tmp);
+			#endif
+		}
+
+		if (JabberStrIStr(attrValue, g_filterInfo.pattern))
+		{
+			if (flags & JCPF_UTF8)  mir_free(attrValue);
+			return true;
+		}
+
+		if (flags & JCPF_UTF8) mir_free(attrValue);
+	}
+
+	for (i = 0; i < node->numChild; ++i)
+		if (sttRecursiveCheckFilter(node->child[i], flags))
+			return true;
+
+	return false;
+}
+
+static bool sttFilterXml(XmlNode *node, DWORD flags)
+{
+	if (!g_filterInfo.msg && !lstrcmpA(node->name, "message")) return false;
+	if (!g_filterInfo.presence && !lstrcmpA(node->name, "presence")) return false;
+	if (!g_filterInfo.iq && !lstrcmpA(node->name, "iq")) return false;
+	if (g_filterInfo.type == TFilterInfo::T_OFF) return true;
+
+	bool result = false;
+	EnterCriticalSection(&g_filterInfo.csPatternLock);
+
+	switch (g_filterInfo.type)
+	{
+		case TFilterInfo::T_JID:
+		{
+			TCHAR *attrValue = JabberXmlGetAttrValue(node, (flags&JCPF_OUT)?"to":"from");
+			if (!attrValue) break;
+
+			if (flags & JCPF_UTF8)
+			{
+				wchar_t *tmp = mir_utf8decodeW((char *)attrValue);
+				#ifdef UNICODE
+				attrValue = tmp;
+				#else
+				attrValue = mir_u2a(tmp);
+				mir_free(tmp);
+				#endif
+			}
+			result = JabberStrIStr(attrValue, g_filterInfo.pattern) ? true : false;
+			if (flags & JCPF_UTF8) mir_free(attrValue);
+			break;
+		}
+		case TFilterInfo::T_XMLNS:
+		{
+			if (node->numChild != 1) break;
+
+			TCHAR *attrValue = JabberXmlGetAttrValue(node->child[0], "xmlns");
+			if (!attrValue) break;
+
+			if (flags & JCPF_UTF8)
+			{
+				wchar_t *tmp = mir_utf8decodeW((char *)attrValue);
+				#ifdef UNICODE
+				attrValue = tmp;
+				#else
+				attrValue = mir_u2a(tmp);
+				mir_free(tmp);
+				#endif
+			}
+			result = JabberStrIStr(attrValue, g_filterInfo.pattern) ? true : false;
+			if (flags & JCPF_UTF8) mir_free(attrValue);
+
+			break;
+		}
+
+		case TFilterInfo::T_ANY:
+		{
+			result = sttRecursiveCheckFilter(node, flags);
+			break;
+		}
+	}
+
+	LeaveCriticalSection(&g_filterInfo.csPatternLock);
+	return result;
 }
 
 static void sttAppendBufRaw(StringBuf *buf, char *str)
@@ -321,6 +433,22 @@ static int JabberConsoleDlgResizer(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTRO
 			return RD_ANCHORX_WIDTH|RD_ANCHORY_HEIGHT;
 		case IDC_CONSOLEIN:
 			return RD_ANCHORX_WIDTH|RD_ANCHORY_BOTTOM;
+
+		case IDC_BTN_MSG:
+		case IDC_BTN_PRESENCE:
+		case IDC_BTN_IQ:
+		case IDC_BTN_FILTER:
+			return RD_ANCHORX_LEFT|RD_ANCHORY_BOTTOM;
+
+		case IDC_CB_FILTER:
+		{
+			RECT rc;
+			GetWindowRect(GetDlgItem(hwndDlg, urc->wId), &rc);
+			urc->rcItem.right += (urc->dlgNewSize.cx - urc->dlgOriginalSize.cx);
+			urc->rcItem.top += (urc->dlgNewSize.cy - urc->dlgOriginalSize.cy);
+			urc->rcItem.bottom = urc->rcItem.top + rc.bottom - rc.top;
+			return 0;
+		}
 	}
 	return RD_ANCHORX_RIGHT|RD_ANCHORY_BOTTOM;
 }
@@ -330,16 +458,107 @@ static void JabberConsoleXmlCallback(XmlNode *node, void *userdata)
 	JabberConsoleProcessXml(node, JCPF_OUT);
 }
 
+static void sttJabberConsoleRebuildStrings(HWND hwndCombo)
+{
+	int i;
+	JABBER_LIST_ITEM *item = NULL;
+
+	int len = GetWindowTextLength(hwndCombo) + 1;
+	TCHAR *buf = (TCHAR *)_alloca(len * sizeof(TCHAR));
+	GetWindowText(hwndCombo, buf, len);
+
+	SendMessage(hwndCombo, CB_RESETCONTENT, 0, 0);
+
+	for (i = 0; g_JabberFeatCapPairs[i].szFeature; ++i)
+		SendMessage(hwndCombo, CB_ADDSTRING, 0, (LPARAM)g_JabberFeatCapPairs[i].szFeature);
+	for (i = 0; g_JabberFeatCapPairsExt[i].szFeature; ++i)
+		SendMessage(hwndCombo, CB_ADDSTRING, 0, (LPARAM)g_JabberFeatCapPairsExt[i].szFeature);
+
+	for (i = 0; i >= 0; i = JabberListFindNext(LIST_ROSTER, i+1))
+		if (item = JabberListGetItemPtrFromIndex(i))
+			SendMessage(hwndCombo, CB_ADDSTRING, 0, (LPARAM)item->jid);
+	for (i = 0; i >= 0; i = JabberListFindNext(LIST_CHATROOM, i+1))
+		if (item = JabberListGetItemPtrFromIndex(i))
+			SendMessage(hwndCombo, CB_ADDSTRING, 0, (LPARAM)item->jid);
+
+	SetWindowText(hwndCombo, buf);
+}
+
 static BOOL CALLBACK JabberConsoleDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
+	static struct
+	{
+		int type;
+		TCHAR *title;
+		char *icon;
+	} filter_modes[] =
+	{
+		{TFilterInfo::T_JID,	_T("JID"),				"main"},
+		{TFilterInfo::T_XMLNS,	_T("xmlns"),			"xmlconsole"},
+		{TFilterInfo::T_ANY,	_T("all attributes"),	"sd_filter_apply"},
+		{TFilterInfo::T_OFF,	_T("disabled"),			"sd_filter_reset"},
+	};
+
 	switch ( msg )
 	{
 		case WM_INITDIALOG:
 		{
+			int i;
+
 			TranslateDialogDefault(hwndDlg);
 			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIconEx("xmlconsole"));
 			SendDlgItemMessage(hwndDlg, IDC_CONSOLE, EM_SETEDITSTYLE, SES_EXTENDBACKCOLOR, SES_EXTENDBACKCOLOR);
 			SendDlgItemMessage(hwndDlg, IDC_CONSOLE, EM_EXLIMITTEXT, 0, 0x80000000);
+
+			g_filterInfo.msg = DBGetContactSettingByte(NULL, jabberProtoName, "consoleWnd_msg", TRUE);
+			g_filterInfo.presence = DBGetContactSettingByte(NULL, jabberProtoName, "consoleWnd_presence", TRUE);
+			g_filterInfo.iq = DBGetContactSettingByte(NULL, jabberProtoName, "consoleWnd_iq", TRUE);
+			g_filterInfo.type = (TFilterInfo::Type)DBGetContactSettingByte(NULL, jabberProtoName, "consoleWnd_ftype", TFilterInfo::T_OFF);
+
+			DBVARIANT dbv;
+			*g_filterInfo.pattern = 0;
+			if (!JGetStringT(NULL, "consoleWnd_fpattern", &dbv))
+			{
+				lstrcpyn(g_filterInfo.pattern, dbv.ptszVal, SIZEOF(g_filterInfo.pattern));
+				JFreeVariant(&dbv);
+			}
+
+			sttJabberConsoleRebuildStrings(GetDlgItem(hwndDlg, IDC_CB_FILTER));
+			SetWindowText(GetDlgItem(hwndDlg, IDC_CB_FILTER), g_filterInfo.pattern);
+
+			static struct
+			{
+				int idc;
+				TCHAR *title;
+				char *icon;
+				bool push;
+				BOOL pushed;
+			} buttons[] =
+			{
+				{IDC_BTN_MSG,				_T("Messages"),		"pl_msg_allow",		true,	g_filterInfo.msg},
+				{IDC_BTN_PRESENCE,			_T("Presences"),	"pl_prin_allow",	true,	g_filterInfo.presence},
+				{IDC_BTN_IQ,				_T("Queries"),		"pl_iq_allow",		true,	g_filterInfo.iq},
+				{IDC_BTN_FILTER,			_T("Filter mode"),	"sd_filter_apply",	true,	FALSE},
+				{IDC_BTN_FILTER_REFRESH,	_T("Refresh list"),	"sd_nav_refresh",	false,	FALSE},
+			};
+			for (i = 0; i < SIZEOF(buttons); ++i)
+			{
+				SendDlgItemMessage(hwndDlg, buttons[i].idc, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx(buttons[i].icon));
+				SendDlgItemMessage(hwndDlg, buttons[i].idc, BUTTONSETASFLATBTN, 0, 0);
+				SendDlgItemMessage(hwndDlg, buttons[i].idc, BUTTONADDTOOLTIP, (WPARAM)TranslateTS(buttons[i].title), BATF_TCHAR);
+				if (buttons[i].push) SendDlgItemMessage(hwndDlg, buttons[i].idc, BUTTONSETASPUSHBTN, 0, 0);
+				if (buttons[i].pushed) CheckDlgButton(hwndDlg, buttons[i].idc, TRUE);
+			}
+
+			for (i = 0; i < SIZEOF(filter_modes); ++i)
+				if (filter_modes[i].type == g_filterInfo.type)
+				{
+					SendDlgItemMessage(hwndDlg, IDC_BTN_FILTER, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx(filter_modes[i].icon));
+					break;
+				}
+			EnableWindow(GetDlgItem(hwndDlg, IDC_CB_FILTER), (g_filterInfo.type == TFilterInfo::T_OFF) ? FALSE : TRUE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_BTN_FILTER_REFRESH), (g_filterInfo.type == TFilterInfo::T_OFF) ? FALSE : TRUE);
+
 			Utils_RestoreWindowPosition(hwndDlg, NULL, jabberProtoName, "consoleWnd_");
 			return TRUE;
 		}
@@ -390,7 +609,7 @@ static BOOL CALLBACK JabberConsoleDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam
 		{
 			LPMINMAXINFO lpmmi = (LPMINMAXINFO)lParam;
 			lpmmi->ptMinTrackSize.x = 300;
-			lpmmi->ptMinTrackSize.y = 200;
+			lpmmi->ptMinTrackSize.y = 400;
 			return 0;
 		}
 
@@ -458,11 +677,93 @@ static BOOL CALLBACK JabberConsoleDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam
 					SetDlgItemText(hwndDlg, IDC_CONSOLE, _T(""));
 					break;
 				}
+
+				case IDC_BTN_MSG:
+				case IDC_BTN_PRESENCE:
+				case IDC_BTN_IQ:
+				{
+					g_filterInfo.msg = IsDlgButtonChecked(hwndDlg, IDC_BTN_MSG);
+					g_filterInfo.presence = IsDlgButtonChecked(hwndDlg, IDC_BTN_PRESENCE);
+					g_filterInfo.iq = IsDlgButtonChecked(hwndDlg, IDC_BTN_IQ);
+					break;
+				}
+
+				case IDC_BTN_FILTER_REFRESH:
+				{
+					sttJabberConsoleRebuildStrings(GetDlgItem(hwndDlg, IDC_CB_FILTER));
+					break;
+				}
+
+				case IDC_BTN_FILTER:
+				{
+					int i;
+					HMENU hMenu = CreatePopupMenu();
+					for (i = 0; i < SIZEOF(filter_modes); ++i)
+					{
+						AppendMenu(hMenu,
+							MF_STRING | ((filter_modes[i].type == g_filterInfo.type) ? MF_CHECKED : 0),
+							filter_modes[i].type+1, TranslateTS(filter_modes[i].title));
+					}
+					RECT rc; GetWindowRect(GetDlgItem(hwndDlg, IDC_BTN_FILTER), &rc);
+					CheckDlgButton(hwndDlg, IDC_BTN_FILTER, TRUE);
+					int res = TrackPopupMenu(hMenu, TPM_RETURNCMD|TPM_BOTTOMALIGN, rc.left, rc.top, 0, hwndDlg, NULL);
+					CheckDlgButton(hwndDlg, IDC_BTN_FILTER, FALSE);
+					DestroyMenu(hMenu);
+
+					if (res)
+					{
+						g_filterInfo.type = (TFilterInfo::Type)(res - 1);
+						for (i = 0; i < SIZEOF(filter_modes); ++i)
+							if (filter_modes[i].type == g_filterInfo.type)
+							{
+								SendDlgItemMessage(hwndDlg, IDC_BTN_FILTER, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx(filter_modes[i].icon));
+								break;
+							}
+						EnableWindow(GetDlgItem(hwndDlg, IDC_CB_FILTER), (g_filterInfo.type == TFilterInfo::T_OFF) ? FALSE : TRUE);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_BTN_FILTER_REFRESH), (g_filterInfo.type == TFilterInfo::T_OFF) ? FALSE : TRUE);
+					}
+
+					break;
+				}
+
+				case IDC_CB_FILTER:
+				{
+					if (HIWORD(wParam) == CBN_SELCHANGE)
+					{
+						int idx = SendDlgItemMessage(hwndDlg, IDC_CB_FILTER, CB_GETCURSEL, 0, 0);
+						int len = SendDlgItemMessage(hwndDlg, IDC_CB_FILTER, CB_GETLBTEXTLEN, idx, 0) + 1;
+
+						EnterCriticalSection(&g_filterInfo.csPatternLock);
+						if (len > SIZEOF(g_filterInfo.pattern))
+						{
+							TCHAR *buf = (TCHAR *)_alloca(len * sizeof(TCHAR));
+							SendDlgItemMessage(hwndDlg, IDC_CB_FILTER, CB_GETLBTEXT, idx, (LPARAM)buf);
+							lstrcpyn(g_filterInfo.pattern, buf, SIZEOF(g_filterInfo.pattern));
+						} else
+						{
+							SendDlgItemMessage(hwndDlg, IDC_CB_FILTER, CB_GETLBTEXT, idx, (LPARAM)g_filterInfo.pattern);
+						}
+						LeaveCriticalSection(&g_filterInfo.csPatternLock);
+					} else
+					if (HIWORD(wParam) == CBN_EDITCHANGE)
+					{
+						EnterCriticalSection(&g_filterInfo.csPatternLock);
+						GetWindowText(GetDlgItem(hwndDlg, IDC_CB_FILTER), g_filterInfo.pattern, SIZEOF(g_filterInfo.pattern));
+						LeaveCriticalSection(&g_filterInfo.csPatternLock);
+					}
+					break;
+				}
 			}
 			break;
 		}
 
 		case WM_CLOSE:
+			DBWriteContactSettingByte(NULL, jabberProtoName, "consoleWnd_msg", g_filterInfo.msg);
+			DBWriteContactSettingByte(NULL, jabberProtoName, "consoleWnd_presence", g_filterInfo.presence);
+			DBWriteContactSettingByte(NULL, jabberProtoName, "consoleWnd_iq", g_filterInfo.iq);
+			DBWriteContactSettingByte(NULL, jabberProtoName, "consoleWnd_ftype", g_filterInfo.type);
+			JSetStringT(NULL, "consoleWnd_fpattern", g_filterInfo.pattern);
+
 			Utils_SaveWindowPosition(hwndDlg, NULL, jabberProtoName, "consoleWnd_");
 			DestroyWindow(hwndDlg);
 			return TRUE;
@@ -494,6 +795,7 @@ static UINT WINAPI sttJabberConsoleThread(void *)
 void JabberConsoleInit()
 {
 	LoadLibraryA("riched20.dll");
+	InitializeCriticalSection(&g_filterInfo.csPatternLock);
 	hThreadConsole = (HANDLE)mir_forkthreadex(sttJabberConsoleThread, NULL, 0, &sttJabberConsoleThreadId);
 }
 
@@ -501,6 +803,10 @@ void JabberConsoleUninit()
 {
 	if ( hThreadConsole ) 
 		PostThreadMessage(sttJabberConsoleThreadId, WM_QUIT, 0, 0);
+
+	g_filterInfo.iq = g_filterInfo.msg = g_filterInfo.presence = FALSE;
+	g_filterInfo.type = TFilterInfo::T_OFF;
+	DeleteCriticalSection(&g_filterInfo.csPatternLock);
 }
 
 int JabberMenuHandleConsole(WPARAM wParam, LPARAM lParam)

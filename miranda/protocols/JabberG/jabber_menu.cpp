@@ -474,7 +474,7 @@ void JabberMenuInit()
 	CLISTMENUITEM mi = { 0 };
 	mi.cbSize = sizeof( CLISTMENUITEM );
 
-	char text[ 200 ], tmpbuf[ 256 ];
+	char text[ 200 ];
 	strcpy( text, jabberProtoName );
 	char* tDest = text + strlen( text );
 
@@ -706,26 +706,22 @@ void JabberMenuInit()
 	hkd.cbSize = sizeof(hkd);
 	hkd.pszName = text;
 	hkd.pszService = text;
-	hkd.pszDescription = tmpbuf;
+	hkd.pszSection = jabberModuleName;
 
-	hkd.pszSection = "Main";
 	strcpy(tDest, "/Groupchat");
-	mir_snprintf(tmpbuf, SIZEOF(tmpbuf), "Join conference (%s)", jabberModuleName);
+	hkd.pszDescription = "Join conference";
 	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM)&hkd);
 
-	hkd.pszSection = "Main";
 	strcpy(tDest, "/Bookmarks");
-	mir_snprintf(tmpbuf, SIZEOF(tmpbuf), "Open bookmarks (%s)", jabberModuleName);
+	hkd.pszDescription = "Open bookmarks";
 	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM)&hkd);
 
-	hkd.pszSection = "Status";
 	strcpy(tDest, "/PrivacyLists");
-	mir_snprintf(tmpbuf, SIZEOF(tmpbuf), "Privacy lists (%s)", jabberModuleName);
+	hkd.pszDescription = "Privacy lists";
 	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM)&hkd);
 
-	hkd.pszSection = "Main";
 	strcpy(tDest, "/ServiceDiscovery");
-	mir_snprintf(tmpbuf, SIZEOF(tmpbuf), "Service discovery (%s)", jabberModuleName);
+	hkd.pszDescription = "Service discovery";
 	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM)&hkd);
 }
 

@@ -326,7 +326,10 @@
 #define IDC_CUSTOM1                     1270
 #define IDC_BOOKMARKS                   1270
 #define IDC_STATUSBAR                   1270
+#define IDC_BTN_MSG                     1270
+#define IDC_BTN_PRESENCE                1271
 #define IDC_SET_DEFAULT                 1272
+#define IDC_BTN_IQ                      1272
 #define IDC_TXT_RULES                   1273
 #define IDC_TXT_LISTS                   1274
 #define IDC_TREE2                       1276
@@ -353,6 +356,10 @@
 #define IDC_FILTER                      1294
 #define IDC_BTN_FILTER                  1295
 #define IDC_BTN_NOFILTER                1295
+#define IDC_COMBO1                      1296
+#define IDC_CB_FILTER                   1296
+#define IDC_BTN_FILTER2                 1297
+#define IDC_BTN_FILTER_REFRESH          1297
 #define IDC_EMAILS                      1306
 #define IDC_PHONES                      1308
 #define IDC_UPDATE                      1313
@@ -413,7 +420,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        222
 #define _APS_NEXT_COMMAND_VALUE         40017
-#define _APS_NEXT_CONTROL_VALUE         1296
+#define _APS_NEXT_CONTROL_VALUE         1297
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
