@@ -346,14 +346,6 @@ static void SetDialogToType(HWND hwndDlg)
 	SendMessage(hwndDlg, WM_SIZE, 0, 0);
 }
 
-struct SavedMessageData
-{
-	UINT message;
-	WPARAM wParam;
-	LPARAM lParam;
-	DWORD keyStates;            //use MOD_ defines from RegisterHotKey()
-};
-
 struct MsgEditSubclassData
 {
 	DWORD lastEnterTime;
@@ -361,35 +353,48 @@ struct MsgEditSubclassData
 
 static LRESULT CALLBACK LogEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-/*	switch (msg) {
-
-		case WM_CHAR:
-			if (!(GetKeyState(VK_CONTROL) & 0x8000)) {
-				SetFocus(GetDlgItem(GetParent(hwnd), IDC_MESSAGE));
-				SendMessage(GetDlgItem(GetParent(hwnd), IDC_MESSAGE), msg, wParam, lParam);
-				return 0;
-			}
-			break;
-
-		case WM_KEYDOWN:
-			if (GetKeyState(VK_CONTROL) & 0x8000) {
-				if (wParam == VK_TAB) {	// ctrl-(shift) tab
-					if (GetKeyState(VK_SHIFT) & 0x8000) {
-						SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEPREV, 0, (LPARAM)GetParent(hwnd));
-						return 0;
-					} else {
-						SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATENEXT, 0, (LPARAM)GetParent(hwnd));
-						return 0;
-					}
+	switch (msg) {
+		case WM_CONTEXTMENU:
+			{
+				HMENU hMenu, hSubMenu;
+				POINT pt;
+				CHARRANGE sel, all = { 0, -1 };
+				hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CONTEXT));
+				hSubMenu = GetSubMenu(hMenu, 0);
+				CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hSubMenu, 0);
+				SendMessage(hwnd, EM_EXGETSEL, 0, (LPARAM) & sel);
+				if (sel.cpMin == sel.cpMax)
+					EnableMenuItem(hSubMenu, IDM_COPY, MF_BYCOMMAND | MF_GRAYED);
+				if (lParam == 0xFFFFFFFF) {
+					SendMessage(hwnd, EM_POSFROMCHAR, (WPARAM) & pt, (LPARAM) sel.cpMax);
+					ClientToScreen(hwnd, &pt);
 				}
+				else {
+					pt.x = (short) LOWORD(lParam);
+					pt.y = (short) HIWORD(lParam);
+				}
+				switch (TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwnd, NULL)) {
+				case IDM_COPY:
+					SendMessage(hwnd, WM_COPY, 0, 0);
+					break;
+				case IDM_COPYALL:
+					SendMessage(hwnd, EM_EXSETSEL, 0, (LPARAM) & all);
+					SendMessage(hwnd, WM_COPY, 0, 0);
+					SendMessage(hwnd, EM_EXSETSEL, 0, (LPARAM) & sel);
+					break;
+				case IDM_SELECTALL:
+					SendMessage(hwnd, EM_EXSETSEL, 0, (LPARAM) & all);
+					break;
+				case IDM_CLEAR:
+					SendMessage(GetParent(hwnd), DM_CLEARLOG, 0, 0);
+				}
+				DestroyMenu(hMenu);
+				return TRUE;
 			}
-			break;
-
-	}*/
+	}
 	return CallWindowProc(OldLogEditProc, hwnd, msg, wParam, lParam);
 }
 
-                                                  //todo: decide if this should be set or not
 static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	int result = -1;
@@ -2332,35 +2337,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						}
 					case WM_RBUTTONUP:
 						{
-							HMENU hMenu, hSubMenu;
-							POINT pt;
-							CHARRANGE sel, all = { 0, -1 };
-
-							hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CONTEXT));
-							hSubMenu = GetSubMenu(hMenu, 0);
-							CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hSubMenu, 0);
-							SendMessage(((NMHDR *) lParam)->hwndFrom, EM_EXGETSEL, 0, (LPARAM) & sel);
-							if (sel.cpMin == sel.cpMax)
-								EnableMenuItem(hSubMenu, IDM_COPY, MF_BYCOMMAND | MF_GRAYED);
-							pt.x = (short) LOWORD(((MSGFILTER *) lParam)->lParam);
-							pt.y = (short) HIWORD(((MSGFILTER *) lParam)->lParam);
-							ClientToScreen(((NMHDR *) lParam)->hwndFrom, &pt);
-							switch (TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL)) {
-							case IDM_COPY:
-								SendMessage(((NMHDR *) lParam)->hwndFrom, WM_COPY, 0, 0);
-								break;
-							case IDM_COPYALL:
-								SendMessage(((NMHDR *) lParam)->hwndFrom, EM_EXSETSEL, 0, (LPARAM) & all);
-								SendMessage(((NMHDR *) lParam)->hwndFrom, WM_COPY, 0, 0);
-								SendMessage(((NMHDR *) lParam)->hwndFrom, EM_EXSETSEL, 0, (LPARAM) & sel);
-								break;
-							case IDM_SELECTALL:
-								SendMessage(((NMHDR *) lParam)->hwndFrom, EM_EXSETSEL, 0, (LPARAM) & all);
-								break;
-							case IDM_CLEAR:
-								SendMessage(hwndDlg, DM_CLEARLOG, 0, 0);
-							}
-							DestroyMenu(hMenu);
 							SetWindowLong(hwndDlg, DWL_MSGRESULT, TRUE);
 							return TRUE;
 						}
