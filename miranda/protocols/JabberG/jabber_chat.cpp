@@ -140,7 +140,7 @@ enum {
 
 };
 
-static struct
+struct TRoleOrAffiliationInfo
 {
 	int value;
 	int id;
@@ -166,15 +166,17 @@ static struct
 		this->title = TranslateTS(this->title_en);
 		this->title_active = TranslateTS(this->title_active_en);
 	}
-}
-sttAffiliationItems[] =
+};
+
+static TRoleOrAffiliationInfo sttAffiliationItems[] =
 {
 	{ AFFILIATION_NONE,		IDM_SET_NONE,			LPGENT("None"),			LPGENT("None *"),			ROLE_NONE,		AFFILIATION_ADMIN	},
 	{ AFFILIATION_MEMBER,	IDM_SET_MEMBER,			LPGENT("Member"),		LPGENT("Member *"),			ROLE_NONE,		AFFILIATION_ADMIN	},
 	{ AFFILIATION_ADMIN,	IDM_SET_ADMIN,			LPGENT("Admin"),		LPGENT("Admin *"),			ROLE_NONE,		AFFILIATION_OWNER	},
 	{ AFFILIATION_OWNER,	IDM_SET_OWNER,			LPGENT("Owner"),		LPGENT("Owner *"),			ROLE_NONE,		AFFILIATION_OWNER	},
-},
-sttRoleItems[] =
+};
+
+static TRoleOrAffiliationInfo sttRoleItems[] =
 {
 	{ ROLE_VISITOR,			IDM_SET_VISITOR,		LPGENT("Visitor"),		LPGENT("Visitor *"),		ROLE_MODERATOR,	AFFILIATION_NONE	},
 	{ ROLE_PARTICIPANT,		IDM_SET_PARTICIPANT,	LPGENT("Participant"),	LPGENT("Participant *"),	ROLE_MODERATOR,	AFFILIATION_NONE	},
@@ -227,7 +229,7 @@ int JabberGcInit( WPARAM wParam, LPARAM lParam )
 	gce.cbSize = sizeof(GCEVENT);
 	gce.pDest = &gcd;
 	gce.dwFlags = GC_TCHAR;
-	for ( int i = SIZEOF(sttRoles)-1; i >= 0; i-- ) {
+	for (i = SIZEOF(sttRoles)-1; i >= 0; i-- ) {
 		gce.ptszStatus = TranslateTS( sttRoles[i] );
 		CallServiceSync( MS_GC_EVENT, NULL, ( LPARAM )&gce );
 	}
@@ -364,7 +366,7 @@ void JabberGcQuit( JABBER_LIST_ITEM* item, int code, XmlNode* reason )
 /////////////////////////////////////////////////////////////////////////////////////////
 // Context menu hooks
 
-static struct gc_item *sttFindGcMenuItem(GCMENUITEMS *items, int id)
+static struct gc_item *sttFindGcMenuItem(GCMENUITEMS *items, DWORD id)
 {
 	for (int i = 0; i < items->nItems; ++i)
 		if (items->Item[i].dwID == id)
@@ -372,14 +374,14 @@ static struct gc_item *sttFindGcMenuItem(GCMENUITEMS *items, int id)
 	return NULL;
 }
 
-static void sttSetupGcMenuItem(GCMENUITEMS *items, int id, bool disabled)
+static void sttSetupGcMenuItem(GCMENUITEMS *items, DWORD id, bool disabled)
 {
 	for (int i = 0; i < items->nItems; ++i)
 		if (!id || (items->Item[i].dwID == id))
 			items->Item[i].bDisabled = disabled;
 }
 
-static void sttSetupGcMenuItems(GCMENUITEMS *items, int *ids, bool disabled)
+static void sttSetupGcMenuItems(GCMENUITEMS *items, DWORD *ids, bool disabled)
 {
 	for ( ; *ids; ++ids)
 		sttSetupGcMenuItem(items, *ids, disabled);
@@ -439,9 +441,9 @@ int JabberGcMenuHook( WPARAM wParam, LPARAM lParam )
 		gcmi->nItems = sizeof( sttLogListItems ) / sizeof( sttLogListItems[0] );
 		gcmi->Item = sttLogListItems;
 
-		static int sttModeratorItems[] = { IDM_LST_PARTICIPANT, 0 };
-		static int sttAdminItems[] = { IDM_LST_MODERATOR, IDM_LST_MEMBER, IDM_LST_ADMIN, IDM_LST_OWNER, IDM_LST_BAN, 0 };
-		static int sttOwnerItems[] = { IDM_CONFIG, IDM_DESTROY, 0 };
+		static DWORD sttModeratorItems[] = { IDM_LST_PARTICIPANT, 0 };
+		static DWORD sttAdminItems[] = { IDM_LST_MODERATOR, IDM_LST_MEMBER, IDM_LST_ADMIN, IDM_LST_OWNER, IDM_LST_BAN, 0 };
+		static DWORD sttOwnerItems[] = { IDM_CONFIG, IDM_DESTROY, 0 };
 		
 		sttSetupGcMenuItem(gcmi, 0, FALSE);
 
