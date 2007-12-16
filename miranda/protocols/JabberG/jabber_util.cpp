@@ -1284,6 +1284,27 @@ TCHAR *JabberStrIStr(TCHAR *str, TCHAR *substr)
 }
 
 ////////////////////////////////////////////////////////////////////////
+// clipboard processing
+void JabberCopyText(HWND hwnd, TCHAR *text)
+{
+	if (!hwnd || !text) return;
+
+	OpenClipboard(hwnd);
+	EmptyClipboard();
+	int a = lstrlen(text);
+	HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, sizeof(TCHAR)*(lstrlen(text)+1));
+	TCHAR *s = (TCHAR *)GlobalLock(hMem);
+	lstrcpy(s, text);
+	GlobalUnlock(hMem);
+#ifdef UNICODE
+	SetClipboardData(CF_UNICODETEXT, hMem);
+#else
+	SetClipboardData(CF_TEXT, hMem);
+#endif
+	CloseClipboard();
+}
+
+////////////////////////////////////////////////////////////////////////
 // Premultiply bitmap channels for 32-bit bitmaps
 void JabberBitmapPremultiplyChannels(HBITMAP hBitmap)
 {

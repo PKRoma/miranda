@@ -1140,23 +1140,6 @@ void JabberRegisterAgent( HWND hwndDlg, TCHAR* jid );
 void JabberSearchAddToRecent( TCHAR* szAddr, HWND hwndDialog = NULL );
 //void JabberUserInfoShowBox(JABBER_LIST_ITEM *item);
 
-static void sttCopyText(HWND hwnd, TCHAR *text)
-{
-	OpenClipboard(hwnd);
-	EmptyClipboard();
-	int a = lstrlen(text);
-	HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, sizeof(TCHAR)*(lstrlen(text)+1));
-	TCHAR *s = (TCHAR *)GlobalLock(hMem);
-	lstrcpy(s, text);
-	GlobalUnlock(hMem);
-#ifdef UNICODE
-	SetClipboardData(CF_UNICODETEXT, hMem);
-#else
-	SetClipboardData(CF_TEXT, hMem);
-#endif
-	CloseClipboard();
-}
-
 void JabberServiceDiscoveryShowMenu(CJabberSDNode *pNode, HTREELISTITEM hItem, POINT pt)
 {
 	ClientToScreen(GetDlgItem(hwndServiceDiscovery, IDC_TREE_DISCO), &pt);
@@ -1337,18 +1320,18 @@ void JabberServiceDiscoveryShowMenu(CJabberSDNode *pNode, HTREELISTITEM hItem, P
 		}
 
 		case SD_ACT_COPYJID:
-			sttCopyText(hwndServiceDiscovery, pNode->GetJid());
+			JabberCopyText(hwndServiceDiscovery, pNode->GetJid());
 			break;
 
 		case SD_ACT_COPYNODE:
-			sttCopyText(hwndServiceDiscovery, pNode->GetNode());
+			JabberCopyText(hwndServiceDiscovery, pNode->GetNode());
 			break;
 
 		case SD_ACT_COPYINFO:
 		{
 			TCHAR buf[8192];
 			pNode->GetTooltipText(buf, SIZEOF(buf));
-			sttCopyText(hwndServiceDiscovery, buf);
+			JabberCopyText(hwndServiceDiscovery, buf);
 			break;
 		}
 

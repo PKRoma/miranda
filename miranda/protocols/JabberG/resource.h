@@ -91,6 +91,8 @@
 #define IDI_TRANSPORT                   222
 #define IDI_ICON5                       223
 #define IDI_TRANSPORTL                  223
+#define IDD_DIALOG1                     224
+#define IDD_GROUPCHAT_INFO              224
 #define IDC_EDIT_USERNAME               1000
 #define IDC_SAVE                        1000
 #define IDC_EDIT_PASSWORD               1001
@@ -329,10 +331,13 @@
 #define IDC_BOOKMARKS                   1270
 #define IDC_STATUSBAR                   1270
 #define IDC_BTN_MSG                     1270
+#define IDC_BTN_ROLE                    1270
 #define IDC_BTN_PRESENCE                1271
+#define IDC_BTN_AFFILIATION             1271
 #define IDC_SET_DEFAULT                 1272
 #define IDC_BTN_IQ                      1272
 #define IDC_TXT_RULES                   1273
+#define IDC_BTN_AFFILIATION2            1273
 #define IDC_TXT_LISTS                   1274
 #define IDC_TREE2                       1276
 #define IDC_TV_INFO                     1276
@@ -356,12 +361,18 @@
 #define IDC_TXT_RECENT                  1293
 #define IDC_EDIT1                       1294
 #define IDC_FILTER                      1294
+#define IDC_TXT_NICK                    1294
 #define IDC_BTN_FILTER                  1295
 #define IDC_BTN_NOFILTER                1295
 #define IDC_COMBO1                      1296
 #define IDC_CB_FILTER                   1296
+#define IDC_TXT_ROLE                    1296
 #define IDC_BTN_FILTER2                 1297
 #define IDC_BTN_FILTER_REFRESH          1297
+#define IDC_EDIT5                       1298
+#define IDC_TXT_STATUS                  1298
+#define IDC_TXT_AFFILIATION             1299
+#define IDC_ICO_STATUS                  1300
 #define IDC_EMAILS                      1306
 #define IDC_PHONES                      1308
 #define IDC_UPDATE                      1313
@@ -400,29 +411,14 @@
 #define IDI_SERVICE_DISCOVERY           3017
 #define IDC_ENABLE_USER_MOOD            3017
 #define IDC_ENABLE_USER_TUNE            3018
-#define IDM_MESSAGE                     10002
-#define IDM_CLEAR                       10003
-#define IDM_VOICE                       10005
-#define IDM_BAN                         10006
-#define IDM_ADMIN                       10007
-#define IDM_OWNER                       10008
-#define IDM_CONFIG                      10009
-#define IDM_KICK                        10011
-#define IDM_NICK                        10012
-#define IDM_MODERATOR                   10013
-#define IDM_DESTROY                     10014
-#define IDM_MEMBER                      10015
-#define IDM_INVITE                      10016
-#define IDM_BOOKMARKS                   10017
-#define IDM_VCARD                       10018
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        224
+#define _APS_NEXT_RESOURCE_VALUE        225
 #define _APS_NEXT_COMMAND_VALUE         40017
-#define _APS_NEXT_CONTROL_VALUE         1297
+#define _APS_NEXT_CONTROL_VALUE         1301
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

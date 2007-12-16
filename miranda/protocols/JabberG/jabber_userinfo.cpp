@@ -395,30 +395,6 @@ static void sttGetNodeText( HWND hwndTree, HTREEITEM hti, UserInfoStringBuf *buf
 			sttGetNodeText( hwndTree, hti, buf, indent + 1 );
 }
 
-BOOL SetClipboardText(HWND hwndDlg, TCHAR *szText)
-{
-	if ( !hwndDlg || !szText)
-		return FALSE;
-
-	if (! OpenClipboard( hwndDlg ))
-		return FALSE;
-	
-	EmptyClipboard();
-	HGLOBAL hMem = GlobalAlloc( GMEM_MOVEABLE, sizeof( TCHAR ) * ( lstrlen( szText ) + 1 ));
-	TCHAR *s = ( TCHAR * )GlobalLock( hMem );
-	lstrcpy( s, szText );
-	GlobalUnlock( hMem );
-#ifdef UNICODE
-	SetClipboardData( CF_UNICODETEXT, hMem );
-#else
-	SetClipboardData( CF_TEXT, hMem );
-#endif
-	
-	CloseClipboard();
-	
-	return TRUE;
-}
-
 static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	JabberUserInfoDlgData *dat = (JabberUserInfoDlgData *)GetWindowLong( hwndDlg, GWL_USERDATA );
@@ -557,7 +533,7 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 						if ( nReturnCmd == 1 ) {
 							UserInfoStringBuf buf;
 							sttGetNodeText( hwndTree, hItem, &buf );
-							SetClipboardText( hwndDlg, buf.buf );
+							JabberCopyText( hwndDlg, buf.buf );
 						}
 						else if ( nReturnCmd == 2 ) {
 							TCHAR szBuffer[ 1024 ];
@@ -569,9 +545,9 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 							if ( TreeView_GetItem( hwndTree, &tvi ))
 							{
 								if (TCHAR *str = _tcsstr(szBuffer, _T(": ")))
-									SetClipboardText( hwndDlg, str+2 );
+									JabberCopyText( hwndDlg, str+2 );
 								else
-									SetClipboardText( hwndDlg, szBuffer );
+									JabberCopyText( hwndDlg, szBuffer );
 							}
 						}
 						DestroyMenu( hMenu );

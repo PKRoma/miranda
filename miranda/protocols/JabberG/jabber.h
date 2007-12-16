@@ -727,6 +727,7 @@ void JabberComboLoadRecentStrings(HWND hwndDlg, UINT idcCombo, char *param);
 void JabberComboAddRecentString(HWND hwndDlg, UINT idcCombo, char *param, TCHAR *string);
 void JabberUtilsRebuildStatusMenu();
 TCHAR *JabberStrIStr(TCHAR *str, TCHAR *substr);
+void JabberCopyText(HWND hwnd, TCHAR *text);
 void JabberBitmapPremultiplyChannels(HBITMAP hBitmap);
 
 //---- jabber_vcard.c -----------------------------------------------
