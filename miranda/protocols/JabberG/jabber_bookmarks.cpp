@@ -215,15 +215,69 @@ int JabberBookmarksDlgResizer(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *ur
 	return RD_ANCHORX_LEFT|RD_ANCHORY_TOP;
 }
 
+static void sttOpenBookmarkItem(HWND hwndDlg)
+{
+	TCHAR room[ 512 ], *server, *p;
+	TCHAR text[ 512 ];
+	LVITEM lvItem={0};
+	HWND lv = GetDlgItem( hwndDlg, IDC_BM_LIST);
+
+	if (( lvItem.iItem=ListView_GetNextItem( lv, -1, LVNI_SELECTED )) >= 0 ) {
+
+		lvItem.iSubItem = 0;
+		lvItem.mask = LVIF_PARAM;
+		ListView_GetItem( lv, &lvItem );
+
+		JABBER_LIST_ITEM *item = JabberListGetItemPtr(LIST_BOOKMARK, ( TCHAR* )lvItem.lParam);
+
+		if(!lstrcmpi(item->type, _T("conference") )){
+			if ( jabberChatDllPresent ) {
+				_tcsncpy( text, ( TCHAR* )lvItem.lParam, SIZEOF( text ));
+				_tcsncpy( room, text, SIZEOF( room ));
+
+				p = _tcstok( room, _T( "@" ));
+				server = _tcstok( NULL, _T( "@" ));
+
+				lvItem.iSubItem = 2;
+				lvItem.mask = LVIF_TEXT;
+				lvItem.cchTextMax = SIZEOF(text);
+				lvItem.pszText = text;
+
+				ListView_GetItem( lv, &lvItem );
+
+				ListView_SetItemState( lv, lvItem.iItem, 0, LVIS_SELECTED ); // Unselect the item
+				/* some hack for using bookmark to transport not under XEP-0048 */
+				if (!server) {	//the room name is not provided let consider that it is transport and send request to registration
+					JabberRegisterAgent( NULL, room );
+				}
+				else {
+					if ( text[0] != _T('\0') )
+						JabberGroupchatJoinRoom( server, p, text, item->password );
+					else
+					{
+						TCHAR* nick = JabberNickFromJID( jabberJID );
+						JabberGroupchatJoinRoom( server, p, nick, item->password );
+						mir_free( nick );
+					}
+				}
+			}
+			else JabberChatDllError();
+		}
+		else {
+			char* szUrl = mir_t2a( (TCHAR*)lvItem.lParam );
+			JCallService( MS_UTILS_OPENURL, 1, (LPARAM)szUrl );
+			mir_free( szUrl );
+		}
+	}
+}
+
 static BOOL CALLBACK JabberBookmarksDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	HWND lv;
-	LVCOLUMN lvCol;
-	LVITEM lvItem;
+	LVCOLUMN lvCol={0};
+	LVITEM lvItem={0};
 	JABBER_LIST_ITEM *item;
 	HIMAGELIST hIml;    // A handle to the image list.
-	TCHAR room[ 512 ], *server, *p;
-	TCHAR text[ 512 ];
 
 	switch ( msg ) {
 	case WM_INITDIALOG:
@@ -314,7 +368,6 @@ static BOOL CALLBACK JabberBookmarksDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			lv = GetDlgItem( hwndDlg, IDC_BM_LIST);
 			ListView_DeleteAllItems( lv );
 
-			LVITEM lvItem;
 			lvItem.iItem = 0;
 			for ( int i=0; ( i = JabberListFindNext( LIST_BOOKMARK, i )) >= 0; i++ ) {
 				if (( item = JabberListGetItemPtrFromIndex( i )) != NULL ) {
@@ -391,55 +444,8 @@ static BOOL CALLBACK JabberBookmarksDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 					}
 				}
 				break;
-			case NM_DBLCLK:
-				lv = GetDlgItem( hwndDlg, IDC_BM_LIST);
-				if (( lvItem.iItem=ListView_GetNextItem( lv, -1, LVNI_SELECTED )) >= 0 ) {
-
-					lvItem.iSubItem = 0;
-					lvItem.mask = LVIF_PARAM;
-					ListView_GetItem( lv, &lvItem );
-
-					item = JabberListGetItemPtr(LIST_BOOKMARK, ( TCHAR* )lvItem.lParam);
-
-					if(!lstrcmpi(item->type, _T("conference") )){
-						if ( jabberChatDllPresent ) {
-							_tcsncpy( text, ( TCHAR* )lvItem.lParam, SIZEOF( text ));
-							_tcsncpy( room, text, SIZEOF( room ));
-
-							p = _tcstok( room, _T( "@" ));
-							server = _tcstok( NULL, _T( "@" ));
-
-							lvItem.iSubItem = 2;
-							lvItem.mask = LVIF_TEXT;
-							lvItem.cchTextMax = SIZEOF(text);
-							lvItem.pszText = text;
-
-							ListView_GetItem( lv, &lvItem );
-
-							ListView_SetItemState( lv, lvItem.iItem, 0, LVIS_SELECTED ); // Unselect the item
-							/* some hack for using bookmark to transport not under XEP-0048 */
-							if (!server) {	//the room name is not provided let consider that it is transport and send request to registration
-								JabberRegisterAgent( NULL, room );
-							}
-							else {
-								if ( text[0] != _T('\0') )
-									JabberGroupchatJoinRoom( server, p, text, item->password );
-								else
-								{
-									TCHAR* nick = JabberNickFromJID( jabberJID );
-									JabberGroupchatJoinRoom( server, p, nick, item->password );
-									mir_free( nick );
-								}
-							}
-						}
-						else JabberChatDllError();
-					}
-					else {
-						char* szUrl = mir_t2a( (TCHAR*)lvItem.lParam );
-						JCallService( MS_UTILS_OPENURL, 1, (LPARAM)szUrl );
-						mir_free( szUrl );
-					}
-				}
+			case LVN_ITEMACTIVATE:
+				sttOpenBookmarkItem(hwndDlg);
 				return TRUE;
 			}
 			break;
@@ -467,6 +473,10 @@ static BOOL CALLBACK JabberBookmarksDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 
 				jabberThreadInfo->send( iq );
 			}
+			return TRUE;
+
+		case IDOK:
+			sttOpenBookmarkItem(hwndDlg);
 			return TRUE;
 
 		case IDC_ADD:

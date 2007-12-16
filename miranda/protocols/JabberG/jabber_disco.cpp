@@ -845,6 +845,33 @@ BOOL CALLBACK JabberServiceDiscoveryDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 		}
 		return FALSE;
 
+	case WM_CONTEXTMENU:
+		if (GetWindowLong((HWND)wParam, GWL_ID) == IDC_TREE_DISCO)
+		{
+			HWND hwndList = (HWND)wParam;
+			POINT pt = { (signed short)LOWORD( lParam ), (signed short)HIWORD( lParam ) };
+
+			if (( pt.x == -1 ) && ( pt.y == -1 )) {
+				LVITEM lvi = {0};
+				lvi.iItem = ListView_GetNextItem(hwndList, -1, LVNI_SELECTED);
+				if (lvi.iItem < 0) return FALSE;
+
+				RECT rc;
+				ListView_GetItemRect(hwndList, lvi.iItem, &rc, LVIR_LABEL);
+				pt.x = rc.left;
+				pt.y = rc.bottom;
+				ClientToScreen(hwndList, &pt);
+			}
+
+			HTREELISTITEM hItem = TreeList_GetActiveItem(hwndList);
+			if (!hItem) break;
+			CJabberSDNode *pNode = (CJabberSDNode *)TreeList_GetData(hItem);
+			if (!pNode) break;
+
+			JabberServiceDiscoveryShowMenu(pNode, hItem, pt);
+		}
+		return FALSE;
+
 	case WM_NOTIFY:
 		if ( wParam == IDC_TREE_DISCO ) {
 			NMHDR* pHeader = (NMHDR* )lParam;
@@ -880,13 +907,6 @@ BOOL CALLBACK JabberServiceDiscoveryDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 				if ( packet->numChild )
 					jabberThreadInfo->send( *packet );
 				delete packet;
-			}
-			else if ( pHeader->code == NM_RCLICK ) {
-				HTREELISTITEM hItem = TreeList_GetActiveItem(GetDlgItem(hwndDlg, IDC_TREE_DISCO));
-				if (!hItem) break;
-				CJabberSDNode *pNode = (CJabberSDNode *)TreeList_GetData(hItem);
-				if (!pNode) break;
-				JabberServiceDiscoveryShowMenu(pNode, hItem, ((LPNMITEMACTIVATE)lParam)->ptAction);
 			}
 			else if ( pHeader->code == NM_CUSTOMDRAW ) {
 				LPNMLVCUSTOMDRAW lpnmlvcd = (LPNMLVCUSTOMDRAW)lParam;
@@ -1142,7 +1162,7 @@ void JabberSearchAddToRecent( TCHAR* szAddr, HWND hwndDialog = NULL );
 
 void JabberServiceDiscoveryShowMenu(CJabberSDNode *pNode, HTREELISTITEM hItem, POINT pt)
 {
-	ClientToScreen(GetDlgItem(hwndServiceDiscovery, IDC_TREE_DISCO), &pt);
+	//ClientToScreen(GetDlgItem(hwndServiceDiscovery, IDC_TREE_DISCO), &pt);
 
 	enum { // This values are below CLISTMENUIDMAX and won't overlap
 		SD_ACT_REFRESH = 1, SD_ACT_REFRESHCHILDREN, SD_ACT_FAVORITE,

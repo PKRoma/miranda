@@ -442,7 +442,7 @@ BOOL TreeList_ProcessMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam, 
 				ListView_HitTest(lpnmia->hdr.hwndFrom, &lvhti);
 
 				HTREELISTITEM ptli = ( HTREELISTITEM )lvi.lParam;
-				if ((lvhti.iSubItem == 0) && ( lvhti.flags & LVHT_ONITEMSTATEICON ) &&
+				if ((lvhti.iSubItem == 0) && ( (lvhti.flags&LVHT_ONITEM) == LVHT_ONITEMSTATEICON ) &&
 					(ptli->subItems.getCount() || ptli->flags & TLIF_FAKEPARENT))
 				{
 					if ( ptli->flags & TLIF_EXPANDED )
