@@ -410,6 +410,12 @@ int JabberAdhocSetStatusHandler( XmlNode* iqNode, void* usedata, CJabberIqInfo* 
 		fieldNode->addAttr( "label", "Status message" );
 		fieldNode->addAttr( "type", "text-multi" );
 		fieldNode->addAttr( "var", "status-message" );
+		
+		// global status
+		fieldNode = xNode->addChild( "field" );
+		fieldNode->addAttr( "label", "Change global status" );
+		fieldNode->addAttr( "type", "boolean" );
+		fieldNode->addAttr( "var", "status-global" );
 
 		char* szStatusMsg = (char *)JCallService( MS_AWAYMSG_GETSTATUSMSG, status, 0 );
 		if ( szStatusMsg ) {
@@ -471,7 +477,14 @@ int JabberAdhocSetStatusHandler( XmlNode* iqNode, void* usedata, CJabberIqInfo* 
 		DBWriteContactSettingByte( NULL, "SRAway", StatusModeToDbSetting( status, "NoDlg" ), 1 );
 
 		DBWriteContactSettingString( NULL, "SRAway", StatusModeToDbSetting( status, "Msg" ), szStatusMessage );
-		JCallService( MS_CLIST_SETSTATUSMODE, status, NULL );
+
+		fieldNode = JabberXmlGetChildWithGivenAttrValue( xNode, "field", "var", _T("status-global") );
+		if ( fieldNode && (valueNode = JabberXmlGetChild( fieldNode, "value" ))) {
+			if ( valueNode->text && _ttoi( valueNode->text ))
+				JCallService( MS_CLIST_SETSTATUSMODE, status, NULL );
+			else
+				CallProtoService( jabberProtoName, PS_SETSTATUS, status, NULL );
+		}
 		JabberSetAwayMsg( status, (LPARAM)szStatusMessage );
 
 		// return NoDlg setting
@@ -933,7 +946,7 @@ int JabberAdhocLeaveGroupchatsHandler( XmlNode *iqNode, void *usedata, CJabberIq
 
 		// Groupchats
 		fieldNode = xNode->addChild( "field" );
-		fieldNode->addAttr( "label", "Groupchats" );
+		fieldNode->addAttr( "label", "" );
 		fieldNode->addAttr( "type", "list-multi" );
 		fieldNode->addAttr( "var", "groupchats" );
 		fieldNode->addChild( "required" );

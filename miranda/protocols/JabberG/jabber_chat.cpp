@@ -631,8 +631,13 @@ static BOOL CALLBACK JabberGcLogInviteDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 				GetWindowText(GetDlgItem(hwndDlg, IDC_NEWJID), buf, SIZEOF(buf));
 				SetWindowText(GetDlgItem(hwndDlg, IDC_NEWJID), _T(""));
 
-				if (JabberHContactFromJID(buf))
+				HANDLE hContact = JabberHContactFromJID(buf);
+				if ( hContact ) {
+					int hItem = SendDlgItemMessage( hwndDlg, IDC_CLIST, CLM_FINDCONTACT, (WPARAM)hContact, 0 );
+					if ( hItem )
+						SendDlgItemMessage( hwndDlg, IDC_CLIST, CLM_SETCHECKMARK, hItem, 1 );
 					break;
+				}
 
 				JabberGcLogInviteDlgData *data = (JabberGcLogInviteDlgData *)GetWindowLong(hwndDlg, GWL_USERDATA);
 
