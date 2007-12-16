@@ -626,8 +626,9 @@ static void sttIqResultDiscovery(XmlNode *iqNode, void *userdata, CJabberIqInfo 
 				_T(""));
 		} else
 		{
+			bool found = false;
 			XmlNode *item;
-			for ( int i = 1; ( item = JabberXmlGetNthChild( query, "item", i )) != NULL; i++ )
+			for ( int i = 1; item = JabberXmlGetNthChild( query, "item", i ); i++ )
 			{
 				TCHAR *jid = JabberXmlGetAttrValue(item, "jid");
 				TCHAR *name = NEWTSTR_ALLOCA(jid);
@@ -644,6 +645,16 @@ static void sttIqResultDiscovery(XmlNode *iqNode, void *userdata, CJabberIqInfo 
 					JabberListGetItemPtr(LIST_BOOKMARK, jid) ? RoomInfo::ROOM_BOOKMARK : RoomInfo::ROOM_DEFAULT,
 					JabberXmlGetAttrValue(item, "name"),
 					jid, name);
+
+				found = true;
+			}
+
+			if (!found)
+			{
+				sttRoomListAppend(hwndList, RoomInfo::ROOM_FAIL,
+					TranslateT("Jabber Error"),
+					TranslateT("No rooms available on server."),
+					_T(""));
 			}
 		}
 	} else
