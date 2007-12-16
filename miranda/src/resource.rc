@@ -1204,6 +1204,7 @@ END
 
 IDD_OPT_FONTS DIALOGEX 0, 0, 316, 251
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Fonts and Colors",IDC_STATIC,0,0,315,250
@@ -1302,6 +1303,7 @@ END
 
 IDD_OPT_GENMENU DIALOGEX 0, 0, 306, 241
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Tree1",IDC_MENUITEMS,"SysTreeView32",TVS_SHOWSELALWAYS | 
@@ -1327,6 +1329,7 @@ END
 
 IDD_OPT_PROTOCOLORDER DIALOGEX 0, 0, 300, 211
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CTEXT           "Note: Miranda IM will have to be restarted for changes to take effect.",
@@ -2031,5 +2034,6 @@ IDB_SORTCOLDOWN         BITMAP                  "res/arrow_sort_column_down.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
+
 
 
