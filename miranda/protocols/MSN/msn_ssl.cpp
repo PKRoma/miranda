@@ -250,7 +250,7 @@ LBL_Restart:
 #ifndef _DEBUG
 			if (strstr(parUrl, "login") == NULL)
 #endif
-				MSN_DebugLog( parAuthInfo );
+				MSN_CallService( MS_NETLIB_LOG, ( WPARAM )hNetlibUser, ( LPARAM )parAuthInfo );
 
 			DWORD tErrorCode = f_HttpSendRequest( tRequest, headers, strlen( headers ), 
 				(void*)parAuthInfo, strlen( parAuthInfo ));

@@ -130,7 +130,7 @@ static int MsnAuthAllow(WPARAM wParam,LPARAM lParam)
 	DBEVENTINFO dbei = { 0 };
 	dbei.cbSize = sizeof( dbei );
 
-	if (( dbei.cbBlob = MSN_CallService( MS_DB_EVENT_GETBLOBSIZE, wParam, 0 )) == -1 )
+	if ((int)( dbei.cbBlob = MSN_CallService( MS_DB_EVENT_GETBLOBSIZE, wParam, 0 )) == -1 )
 		return 1;
 
 	dbei.pBlob = ( PBYTE )alloca( dbei.cbBlob );
@@ -168,7 +168,7 @@ static int MsnAuthDeny(WPARAM wParam,LPARAM lParam)
 	DBEVENTINFO dbei = { 0 };
 	dbei.cbSize = sizeof( dbei );
 
-	if (( dbei.cbBlob = MSN_CallService( MS_DB_EVENT_GETBLOBSIZE, wParam, 0 )) == -1 )
+	if ((int)( dbei.cbBlob = MSN_CallService( MS_DB_EVENT_GETBLOBSIZE, wParam, 0 )) == -1 )
 		return 1;
 
 	dbei.pBlob = ( PBYTE )alloca( dbei.cbBlob );
@@ -364,11 +364,11 @@ int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 
 	if ( !strcmp( cws->szModule, "CList" )) 
 	{
-		if ( !MSN_IsMyContact( hContact ))
-			return 0;
-
 		if ( !strcmp( cws->szSetting, "MyHandle" )) 
 		{
+			if ( !MSN_IsMyContact( hContact ))
+				return 0;
+
 			char szContactID[ 100 ];
 			if ( !MSN_GetStaticString( "ID", hContact, szContactID, sizeof( szContactID ))) 
 			{
@@ -1211,10 +1211,10 @@ static int MsnSetAvatar( WPARAM wParam, LPARAM lParam )
 
 static int MsnSetAwayMsg(WPARAM wParam,LPARAM lParam)
 {
-	int i;
+	unsigned i;
 
 	for ( i=0; i < MSN_NUM_MODES; i++ )
-		if ( msnModeMsgs[i].m_mode == (int)wParam )
+		if ( msnModeMsgs[i].m_mode == wParam )
 			break;
 
 	if ( i == MSN_NUM_MODES )
@@ -1222,7 +1222,7 @@ static int MsnSetAwayMsg(WPARAM wParam,LPARAM lParam)
 
 	replaceStr( msnModeMsgs[i].m_msg, ( char* )lParam );
 
-	if ( (int)wParam == msnDesiredStatus )
+	if ( wParam == msnDesiredStatus )
 		MSN_SendStatusMessage(( char* )lParam );
 
 	return 0;
