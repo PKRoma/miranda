@@ -317,14 +317,14 @@ BOOL CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 				if(!isBold)
 				{
 					DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_BOLD),hThemeButton,lpDIS->itemState, lpDIS->rcItem);
-					DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("nbold_scrpt"), 16, 16, 0, 0, DI_NORMAL);
-					ReleaseIconEx("nbold_scrpt");
+					DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("nbold"), 16, 16, 0, 0, DI_NORMAL);
+					ReleaseIconEx("nbold");
 				}
 				else
 				{
 					DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_BOLD),hThemeButton,lpDIS->itemState|ODS_SELECTED, lpDIS->rcItem);
-					DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("bold_scrpt"), 16, 16, 0, 0, DI_NORMAL);
-					ReleaseIconEx("bold_scrpt");
+					DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("bold"), 16, 16, 0, 0, DI_NORMAL);
+					ReleaseIconEx("bold");
 				}
 			}
 			else if(lpDIS->CtlID == IDC_ITALIC)
@@ -337,14 +337,14 @@ BOOL CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 				if(!isItalic)
 				{
 					DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_ITALIC),hThemeButton,lpDIS->itemState, lpDIS->rcItem);
-					DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("nitalic_scrpt"), 16, 16, 0, 0, DI_NORMAL);
-					ReleaseIconEx("nitalic_scrpt");
+					DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("nitalic"), 16, 16, 0, 0, DI_NORMAL);
+					ReleaseIconEx("nitalic");
 				}
 				else
 				{
 					DrawMyControl(lpDIS->hDC,GetDlgItem(hwndDlg, IDC_ITALIC),hThemeButton,lpDIS->itemState|ODS_SELECTED, lpDIS->rcItem);
-					DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("italic_scrpt"), 16, 16, 0, 0, DI_NORMAL);
-					ReleaseIconEx("italic_scrpt");
+					DrawIconEx(lpDIS->hDC, 4, 5, LoadIconEx("italic"), 16, 16, 0, 0, DI_NORMAL);
+					ReleaseIconEx("italic");
 				}
 			}
 			else if(lpDIS->CtlID == IDC_UNDERLINE)
