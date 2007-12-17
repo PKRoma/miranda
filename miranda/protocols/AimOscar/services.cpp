@@ -353,7 +353,7 @@ static int RecvAwayMsg(WPARAM /*wParam*/,LPARAM lParam)
 }
 static int LoadIcons(WPARAM wParam, LPARAM /*lParam*/)
 {
-	return (LOWORD(wParam) == PLI_PROTOCOL) ? (int)CopyIcon(LoadIconEx("main")) : 0;
+	return (LOWORD(wParam) == PLI_PROTOCOL) ? (int)CopyIcon(LoadIconEx("aim")) : 0;
 }
 static int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 {
