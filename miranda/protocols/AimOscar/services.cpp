@@ -353,7 +353,7 @@ static int RecvAwayMsg(WPARAM /*wParam*/,LPARAM lParam)
 }
 static int LoadIcons(WPARAM wParam, LPARAM /*lParam*/)
 {
-	return (int) LoadImage(conn.hInstance, MAKEINTRESOURCE(IDI_AIM), IMAGE_ICON, GetSystemMetrics(wParam & PLIF_SMALL ? SM_CXSMICON : SM_CXICON),GetSystemMetrics(wParam & PLIF_SMALL ? SM_CYSMICON : SM_CYICON), 0);
+	return (LOWORD(wParam) & PLI_PROTOCOL) ? (int)CopyIcon(LoadIconEx("main")) : 0;
 }
 static int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 {
