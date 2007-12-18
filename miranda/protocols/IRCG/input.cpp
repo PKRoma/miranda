@@ -47,11 +47,10 @@ static TString FormatMsg(TString text)
 	return S;
 }
 
-static TString AddCR( TString text )
+static void AddCR( TString& text )
 {
-	text = ReplaceString( text, _T("\n"), _T("\r\n"));
-	text = ReplaceString( text, _T("\r\r"), _T("\r"));
-	return text;
+	ReplaceString( text, _T("\n"), _T("\r\n"));
+	ReplaceString( text, _T("\r\r"), _T("\r"));
 }
 
 static TString DoAlias( const TCHAR *text, TCHAR *window)
@@ -94,26 +93,27 @@ static TString DoAlias( const TCHAR *text, TCHAR *window)
 					p4 = _tcschr( p3, '\0' );
 
 				*( TCHAR* )p4 = 0;
-				TString S = ReplaceString( p3, _T("##"), window );
-				S = ReplaceString(S.c_str(), _T("$?"), _T("%question"));
+				TString S = p3;
+				ReplaceString( S, _T("##"), window );
+				ReplaceString( S, _T("$?"), _T("%question"));
 
 				for ( int index = 1; index < 8; index++ ) {
 					TCHAR str[5];
 					mir_sntprintf( str, SIZEOF(str), _T("#$%u"), index );
 					if ( !GetWord(line, index).empty() && IsChannel( GetWord( line, index )))
-						S = ReplaceString( S, str, GetWord(line, index).c_str());
+						ReplaceString( S, str, GetWord(line, index).c_str());
 					else
-						S = ReplaceString( S, str, (TString(_T("#")) + GetWord( line, index )).c_str());
+						ReplaceString( S, str, (TString(_T("#")) + GetWord( line, index )).c_str());
 				}
 				for ( int index2 = 1; index2 <8; index2++ ) {
 					TCHAR str[5];
 					mir_sntprintf( str, SIZEOF(str), _T("$%u-"), index2 );
-					S = ReplaceString( S, str, GetWordAddress( line, index2 ));
+					ReplaceString( S, str, GetWordAddress( line, index2 ));
 				}
 				for ( int index3 = 1; index3 <8; index3++ ) {
 					TCHAR str[5];
 					mir_sntprintf( str, SIZEOF(str), _T("$%u"), index3 );
-					S = ReplaceString( S, str, GetWord(line, index3).c_str());
+					ReplaceString( S, str, GetWord(line, index3).c_str());
 				}
 				Messageout += GetWordAddress(S.c_str(), 1);
 			} 
@@ -142,32 +142,32 @@ static TString DoIdentifiers( TString text, const TCHAR* window )
 	int  i = 0;
 
 	GetLocalTime( &time );
-	text = ReplaceString( text, _T("%mnick"), prefs->Nick);
-	text = ReplaceString( text, _T("%anick"), prefs->AlternativeNick);
-	text = ReplaceString( text, _T("%awaymsg"), StatusMessage.c_str());
-	text = ReplaceString( text, _T("%module"), _A2T(IRCPROTONAME));
-	text = ReplaceString( text, _T("%name"), prefs->Name);
-	text = ReplaceString( text, _T("%newl"), _T("\r\n"));
-	text = ReplaceString( text, _T("%network"), g_ircSession.GetInfo().sNetwork.c_str());
-	text = ReplaceString( text, _T("%me"), g_ircSession.GetInfo().sNick.c_str());
+	ReplaceString( text, _T("%mnick"), prefs->Nick);
+	ReplaceString( text, _T("%anick"), prefs->AlternativeNick);
+	ReplaceString( text, _T("%awaymsg"), StatusMessage.c_str());
+	ReplaceString( text, _T("%module"), _A2T(IRCPROTONAME));
+	ReplaceString( text, _T("%name"), prefs->Name);
+	ReplaceString( text, _T("%newl"), _T("\r\n"));
+	ReplaceString( text, _T("%network"), g_ircSession.GetInfo().sNetwork.c_str());
+	ReplaceString( text, _T("%me"), g_ircSession.GetInfo().sNick.c_str());
 
 	mir_sntprintf( str, SIZEOF(str), _T("%d.%d.%d.%d"),(mirVersion>>24)&0xFF,(mirVersion>>16)&0xFF,(mirVersion>>8)&0xFF,mirVersion&0xFF);
-	text = ReplaceString(text, _T("%mirver"), str);
+	ReplaceString(text, _T("%mirver"), str);
 
 	mir_sntprintf( str, SIZEOF(str), _T("%d.%d.%d.%d"),(pluginInfo.version>>24)&0xFF,(pluginInfo.version>>16)&0xFF,(pluginInfo.version>>8)&0xFF,pluginInfo.version&0xFF);
-	text = ReplaceString(text, _T("%version"), str);
+	ReplaceString(text, _T("%version"), str);
 
 	str[0] = (char)3; str[1] = '\0';
-	text = ReplaceString(text, _T("%color"), str);
+	ReplaceString(text, _T("%color"), str);
 
 	str[0] = (char)2;
-	text = ReplaceString(text, _T("%bold"), str);
+	ReplaceString(text, _T("%bold"), str);
 
 	str[0] = (char)31;
-	text = ReplaceString(text, _T("%underline"), str);
+	ReplaceString(text, _T("%underline"), str);
 
 	str[0] = (char)22;
-	text = ReplaceString(text, _T("%italics"), str);
+	ReplaceString(text, _T("%italics"), str);
 	return text;
 }
 
@@ -484,7 +484,7 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 			return true;
 
 		TString S = _T("/ME ") + DoIdentifiers(GetWordAddress(text.c_str(), 1), window);
-		S = ReplaceString(S, _T("%"), _T("%%"));
+		ReplaceString( S, _T("%"), _T("%%"));
 		DoEvent( GC_EVENT_SENDMESSAGE, NULL, NULL, S.c_str(), NULL, NULL, NULL, FALSE, FALSE);
 		return true;
 	}
@@ -494,7 +494,7 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 			return true;
 		
 		TString S = DoIdentifiers( GetWordAddress(text.c_str(), 1), window );
-		S = ReplaceString( S, _T("%"), _T("%%"));
+		ReplaceString( S, _T("%"), _T("%%"));
 		DoEvent( GC_EVENT_SENDMESSAGE, NULL, NULL, S.c_str(), NULL, NULL, NULL, FALSE, FALSE);
 		return true;
 	}
@@ -766,14 +766,14 @@ bool PostIrcMessageWnd( TCHAR* window, HANDLE hContact, const TCHAR* szBuf )
 
 	// remove unecessary linebreaks, and do the aliases
 	TString Message = szBuf;
-	Message = AddCR( Message );
-	Message = RemoveLinebreaks( Message );
+	AddCR( Message );
+	RemoveLinebreaks( Message );
 	if ( !hContact && g_ircSession ) {
 		Message = DoAlias( Message.c_str(), windowname );
 		if ( DoInputRequestAlias(( TCHAR* )Message.c_str()))
 			return 1;
-		Message = ReplaceString( Message, _T("%newl"), _T("\r\n"));
-		Message = RemoveLinebreaks( Message );
+		ReplaceString( Message, _T("%newl"), _T("\r\n"));
+		RemoveLinebreaks( Message );
 	}
 
 	if ( Message.empty())

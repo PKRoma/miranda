@@ -51,6 +51,7 @@ TString		   sTopicTime;
 TString        NamesToWho = _T("");
 TString        ChannelsToWho = _T("");
 TString        NamesToUserhost = _T("");
+TString        sNick4Perform = _T("");
 
 extern int     OldStatus;
 extern int     GlobalStatus;
@@ -830,7 +831,7 @@ bool CMyMonitor::OnIrc_PRIVMSG( const CIrcMessage* pmsg )
 		if ( bIsChannel ) {
 			if ( !(pmsg->m_bIncoming && prefs->Ignore && IsIgnored(pmsg->prefix.sNick, pmsg->prefix.sUser, pmsg->prefix.sHost, 'm' ))) {
 				if ( !pmsg->m_bIncoming )
-					mess = ReplaceString( mess, _T("%%"), _T("%"));
+					ReplaceString( mess, _T("%%"), _T("%"));
 				DoEvent(GC_EVENT_MESSAGE, pmsg->parameters[0].c_str(), pmsg->m_bIncoming?pmsg->prefix.sNick.c_str():m_session.GetInfo().sNick.c_str(), mess.c_str(), NULL, NULL, NULL, true, pmsg->m_bIncoming?false:true); 				
 			}
 			return true;
@@ -890,7 +891,7 @@ bool CMyMonitor::IsCTCP( const CIrcMessage* pmsg )
 					if ( mess.length() > 1 ) {
 						mess.erase(0,1);
 						if ( !pmsg->m_bIncoming )
-							mess = ReplaceString(mess, _T("%%"), _T("%"));
+							ReplaceString(mess, _T("%%"), _T("%"));
 
 						DoEvent(GC_EVENT_ACTION, pmsg->parameters[0].c_str(), pmsg->m_bIncoming?pmsg->prefix.sNick.c_str():m_session.GetInfo().sNick.c_str(), mess.c_str(), NULL, NULL, NULL, true, pmsg->m_bIncoming?false:true); 
 					}
@@ -1701,7 +1702,7 @@ bool CMyMonitor::OnIrc_BANLIST( const CIrcMessage* pmsg )
 					S += _T(" -  ( ");
 					time_t time = StrToInt( pmsg->parameters[4].c_str());
 					S += _tctime( &time );
-					S = ReplaceString(S.c_str(), _T("\n"), _T(" "));
+					ReplaceString( S, _T("\n"), _T(" "));
 					S += _T(")");
 			}	}
 
@@ -2493,7 +2494,7 @@ bool DoOnConnect( const CIrcMessage* pmsg )
 	if ( !StatusMessage.empty()) {
 		TString S = _T("/AWAY ");
 		S += StatusMessage;
-		S = ReplaceString( S.c_str(), _T("\r\n"), _T(" "));
+		ReplaceString( S, _T("\r\n"), _T(" "));
 		PostIrcMessage( S.c_str());
 	}
 	

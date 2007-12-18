@@ -303,7 +303,8 @@ static int Service_FileSend(WPARAM wParam,LPARAM lParam)
 			g_ircSession.AddDCCSession(dci, dcc);
 
 			// need to make sure that %'s are doubled to avoid having chat interpret as color codes
-			TString sFileCorrect = ReplaceString(dci->sFile, _T("%"), _T("%%"));
+			TString sFileCorrect = dci->sFile;
+			ReplaceString(sFileCorrect, _T("%"), _T("%%"));
 
 			// is it an reverse filetransfer (receiver acts as server)
 			if (dci->bReverse) {
@@ -1617,11 +1618,12 @@ static int Service_SetAwayMsg(WPARAM wParam, LPARAM lParam)
 {
 	if ( wParam != ID_STATUS_ONLINE && wParam != ID_STATUS_INVISIBLE && wParam != ID_STATUS_FREECHAT && wParam != ID_STATUS_CONNECTING && wParam != ID_STATUS_OFFLINE) {
 		TString newStatus = _A2T(( char* )lParam, g_ircSession.getCodepage());
-		if ( StatusMessage.empty() || lParam == NULL || StatusMessage != ReplaceString( newStatus, _T("\r\n"), _T(" "))) {
+		ReplaceString( newStatus, _T("\r\n"), _T(" "));
+		if ( StatusMessage.empty() || lParam == NULL || StatusMessage != newStatus ) {
 			if (lParam == NULL ||  *(char*)lParam == '\0')
 				StatusMessage = _T(STR_AWAYMESSAGE);
 			else
-				StatusMessage =  ReplaceString( newStatus, _T("\r\n"), _T(" "));
+				StatusMessage = newStatus;
 
 			PostIrcMessage( _T("/AWAY %s"), StatusMessage.substr(0,450).c_str());
 	}	}

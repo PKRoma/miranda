@@ -139,7 +139,7 @@ BOOL ShowMessage (const CIrcMessage* pmsg)
 	TString mess = FormatOutput(pmsg);
 
 	if ( !pmsg->m_bIncoming )
-		mess = ReplaceString(mess, _T("%%"), _T("%"));
+		ReplaceString( mess, _T("%%"), _T("%"));
 
 	int iTemp = StrToInt( pmsg->sCommand.c_str() );
 

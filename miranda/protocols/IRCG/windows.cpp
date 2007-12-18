@@ -385,7 +385,8 @@ BOOL CALLBACK JoinWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
   			if ( !DBGetContactSettingTString( NULL, IRCPROTONAME, "RecentChannels", &dbv)) {
 				for ( int i = 0; i < 20; i++ ) {
 					if ( !GetWord( dbv.ptszVal, i).empty()) {
-						TString S = ReplaceString( GetWord(dbv.ptszVal, i), _T("%newl"), _T(" "));
+						TString S = GetWord(dbv.ptszVal, i);
+						ReplaceString( S, _T("%newl"), _T(" "));
 						SendDlgItemMessage( hwndDlg, IDC_ENICK, CB_ADDSTRING, 0, (LPARAM)S.c_str());
 				}	}
 				DBFreeVariant(&dbv);
@@ -417,7 +418,8 @@ BOOL CALLBACK JoinWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			else
 				PostIrcMessage( _T("/JOIN #%s"), szTemp );
 
-			TString S = ReplaceString( szTemp, _T(" "), _T("%newl"));
+			TString S = szTemp;
+			ReplaceString( S, _T(" "), _T("%newl"));
 			TString SL = S;
 			
 			DBVARIANT dbv;
@@ -1000,16 +1002,15 @@ BOOL CALLBACK QuestionWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 					else *p1 = '\0';
 				}
 				
-				TCHAR* n = new TCHAR[ j+2 ];
+				TCHAR* n = ( TCHAR* )alloca( sizeof( TCHAR )*( j+2 ));
 				GetDlgItemText( hwndDlg, IDC_HIDDENEDIT, n, j+1 );
-			
-				TString S = ReplaceString(n, text, l);
-
+				TString S( n );
+				ReplaceString( S, text, l );
 				PostIrcMessageWnd( NULL, NULL, (TCHAR*)S.c_str());
 
 				delete []m;
 				delete []l;
-				delete []n;
+
 				HWND hwnd = GetParent( hwndDlg);
 				if( hwnd )
 					SendMessage(hwnd, IRC_QUESTIONAPPLY, 0, 0);
@@ -1150,7 +1151,8 @@ BOOL CALLBACK ManagerWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
   					if ( !DBGetContactSettingTString(NULL, IRCPROTONAME, p, &dbv )) {
 						for ( int i = 0; i<5; i++ ) {
 							if ( !GetWord(dbv.ptszVal, i).empty()) {
-								TString S = ReplaceString(GetWord(dbv.ptszVal, i), _T("%¤"), _T(" "));
+								TString S = GetWord(dbv.ptszVal, i);
+								ReplaceString( S, _T("%¤"), _T(" "));
 								SendDlgItemMessage( hwndDlg, IDC_TOPIC, CB_ADDSTRING, 0, (LPARAM)S.c_str());
 						}	}
 						DBFreeVariant(&dbv);
@@ -1559,12 +1561,14 @@ BOOL CALLBACK ManagerWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 			TCHAR window[256];
 			GetDlgItemText( hwndDlg, IDC_CAPTION, window, 255 );
-			TString S = _T(""); 
+			TString S = _T("");
 			TCHAR temp[1000];
 			for ( int i = 0; i < 5; i++ ) {
 				if ( SendDlgItemMessage( hwndDlg, IDC_TOPIC, CB_GETLBTEXT, i, (LPARAM)temp) != LB_ERR) {
+					TString S1 = temp;
+					ReplaceString( S1, _T(" "), _T("%¤"));
 					S += _T(" ");
-					S += ReplaceString( temp, _T(" "), _T("%¤"));
+					S += S1;
 			}	}
 
 			if ( !S.empty() && g_ircSession ) {

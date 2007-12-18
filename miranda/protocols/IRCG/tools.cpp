@@ -112,24 +112,22 @@ TCHAR* GetWordAddress(const TCHAR* text, int index)
 	return temp;
 }
 
-TString RemoveLinebreaks(TString Message)
+void RemoveLinebreaks( TString& Message )
 {
-	while (Message.find( _T("\r\n\r\n"), 0) != string::npos)
-		Message = ReplaceString(Message, _T("\r\n\r\n"), _T("\r\n"));
+	while ( Message.find( _T("\r\n\r\n"), 0) != string::npos )
+		ReplaceString( Message, _T("\r\n\r\n"), _T("\r\n"));
 
 	if (Message.find( _T("\r\n"), 0) == 0)
 		Message.erase(0,2);
 
 	if (Message.length() >1 && Message.rfind( _T("\r\n"), Message.length()) == Message.length()-2)
 		Message.erase(Message.length()-2, 2);
-
-	return Message;
 }
 
 #if defined( _UNICODE )
-String ReplaceString (String text, const char* replaceme, const char* newword)
+String& ReplaceString ( String& text, const char* replaceme, const char* newword )
 {
-	if ( text != "" && replaceme != NULL) {
+	if ( !text.empty() && replaceme != NULL) {
 		int i = 0;
 		while (( i = text.find(replaceme, i)) != string::npos ) {
 			text.erase(i,lstrlenA(replaceme));
@@ -141,7 +139,7 @@ String ReplaceString (String text, const char* replaceme, const char* newword)
 }
 #endif
 
-TString ReplaceString (TString text, const TCHAR* replaceme, const TCHAR* newword)
+TString& ReplaceString ( TString& text, const TCHAR* replaceme, const TCHAR* newword)
 {
 	if ( !text.empty() && replaceme != NULL) {
 		int i = 0;

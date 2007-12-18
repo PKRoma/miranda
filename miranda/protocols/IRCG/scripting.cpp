@@ -40,7 +40,8 @@ int Scripting_InsertRawOut( WPARAM wParam, LPARAM lParam )
 {
 	char* pszRaw = ( char* ) lParam;
 	if ( bMbotInstalled && prefs->ScriptingEnabled && pszRaw && g_ircSession ) {	
-		String S = ReplaceString(pszRaw, "%", "%%%%");
+		String S = pszRaw;
+		ReplaceString( S, "%", "%%%%");
 		g_ircSession.NLSendNoScript((const unsigned char *)S.c_str(), lstrlenA(S.c_str()));
 		return 0;
 	}

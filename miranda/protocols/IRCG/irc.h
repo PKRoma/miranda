@@ -351,35 +351,35 @@ void    RewriteIgnoreSettings( void );
 void    InitIgnore(void);
 
 //tools.cpp
-int     WCCmp(const TCHAR* wild, const TCHAR* string);
-char*   IrcLoadFile(char * szPath);
-void    AddToJTemp(TString sCommand);
-TString GetWord(const TCHAR* text, int index);
-TString ReplaceString (TString text, const TCHAR* replaceme, const TCHAR* newword);
-bool    IsChannel(TString sName); 
-TCHAR*  GetWordAddress(const TCHAR* text, int index);
-TString RemoveLinebreaks(TString Message);
-TCHAR*  my_strstri(const TCHAR *s1, const TCHAR *s2) ;
-TCHAR*  DoColorCodes (const TCHAR* text, bool bStrip, bool bReplacePercent);
-int     DoEvent(int iEvent, const TCHAR* pszWindow, const TCHAR* pszNick, const TCHAR* pszText, const TCHAR* pszStatus, const TCHAR* pszUserInfo, DWORD dwItemData, bool bAddToLog, bool bIsMe,time_t timestamp = 1);
-int     CallChatEvent(WPARAM wParam, LPARAM lParam);
-TString ModeToStatus(int sMode);
-TString PrefixToStatus(int cPrefix);
-void    SetChatTimer(UINT_PTR &nIDEvent,UINT uElapse,TIMERPROC lpTimerFunc);
-void    KillChatTimer(UINT_PTR &nIDEvent);
-int     SetChannelSBText(TString sWindow, CHANNELINFO * wi);
-TString MakeWndID(const TCHAR* sWindow);
-bool    FreeWindowItemData(TString window, CHANNELINFO* wis);
-bool    AddWindowItemData(TString window, const TCHAR* pszLimit, const TCHAR* pszMode, const TCHAR* pszPassword, const TCHAR* pszTopic);
-void    FindLocalIP(HANDLE con);
-void    DoUserhostWithReason(int type, TString reason, bool bSendCommand, TString userhostparams, ...);
-TString GetNextUserhostReason(int type);
-void    ClearUserhostReasons(int type);
-TString PeekAtReasons(int type);
-char*   rtrim( char *string );
+int      WCCmp(const TCHAR* wild, const TCHAR* string);
+char*    IrcLoadFile(char * szPath);
+void     AddToJTemp(TString sCommand);
+TString  GetWord(const TCHAR* text, int index);
+TString& ReplaceString (TString& text, const TCHAR* replaceme, const TCHAR* newword);
+bool     IsChannel(TString sName); 
+TCHAR*   GetWordAddress(const TCHAR* text, int index);
+void     RemoveLinebreaks( TString& Message );
+TCHAR*   my_strstri(const TCHAR *s1, const TCHAR *s2) ;
+TCHAR*   DoColorCodes (const TCHAR* text, bool bStrip, bool bReplacePercent);
+int      DoEvent(int iEvent, const TCHAR* pszWindow, const TCHAR* pszNick, const TCHAR* pszText, const TCHAR* pszStatus, const TCHAR* pszUserInfo, DWORD dwItemData, bool bAddToLog, bool bIsMe,time_t timestamp = 1);
+int      CallChatEvent(WPARAM wParam, LPARAM lParam);
+TString  ModeToStatus(int sMode);
+TString  PrefixToStatus(int cPrefix);
+void     SetChatTimer(UINT_PTR &nIDEvent,UINT uElapse,TIMERPROC lpTimerFunc);
+void     KillChatTimer(UINT_PTR &nIDEvent);
+int      SetChannelSBText(TString sWindow, CHANNELINFO * wi);
+TString  MakeWndID(const TCHAR* sWindow);
+bool     FreeWindowItemData(TString window, CHANNELINFO* wis);
+bool     AddWindowItemData(TString window, const TCHAR* pszLimit, const TCHAR* pszMode, const TCHAR* pszPassword, const TCHAR* pszTopic);
+void     FindLocalIP(HANDLE con);
+void     DoUserhostWithReason(int type, TString reason, bool bSendCommand, TString userhostparams, ...);
+TString  GetNextUserhostReason(int type);
+void     ClearUserhostReasons(int type);
+TString  PeekAtReasons(int type);
+char*    rtrim( char *string );
 
 #if defined( _UNICODE )
-String  ReplaceString (String text, const char* replaceme, const char* newword);
+String& ReplaceString (String& text, const char* replaceme, const char* newword);
 bool    IsChannel(String sName); 
 String  GetWord(const char* text, int index);
 char*   GetWordAddress(const char* text, int index);
@@ -452,6 +452,7 @@ BOOL Scripting_TriggerMSPGuiOut(GCHOOK * gch);
 #pragma comment(lib,"comctl32.lib")
 
 #endif
+
 
 
 
