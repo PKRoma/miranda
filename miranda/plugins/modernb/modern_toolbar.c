@@ -33,7 +33,6 @@ COLORREF sttGetColor(char * module, char * color, COLORREF defColor);
 
 #define MS_CLUI_SHOWMAINMENU    "CList/ShowMainMenu"
 #define MS_CLUI_SHOWSTATUSMENU  "CList/ShowStatusMenu"
-#define MS_JABBER_SHOWBOOKMARK  "JABBER/Bookmarks"
 #define MS_TTB_TOGGLEHIDEOFFLINE  "CList/ToggleHideOffline"
 
 #define MIRANDATOOLBARCLASSNAME "MirandaToolBar"
@@ -648,9 +647,6 @@ static void	ToolBar_DefaultButtonRegistration()
 					    "Hide offline contacts", "Show offline contacts", 110 /*and 111 */ , IDI_RESETVIEW, IDI_RESETVIEW, TRUE  );
 	
 	sttSetButtonPressed( "ShowHideOffline", (BOOL) DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT) );
-
-    sttRegisterToolBarButton( "JabberBookmarks","Jabber Bookmarks", MS_JABBER_SHOWBOOKMARK,
-		"Jabber Bookmark", NULL,  120 , IDI_RESETVIEW, IDI_RESETVIEW, TRUE  );
 
 	sttRegisterToolBarButton( "DatabaseEditor","DBEditor++", "DBEditorpp/MenuCommand",
 		"Database Editor", NULL,  130 , IDI_RESETVIEW, IDI_RESETVIEW, TRUE  );
