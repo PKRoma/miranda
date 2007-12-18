@@ -1408,7 +1408,10 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 		}	}
 
 		time_t now = time( NULL );
-		if ( msgTime == 0 || msgTime > now || ( msgTime < ( time_t )JabberGetLastContactMessageTime( hContact )))
+		if ( !msgTime )
+			msgTime = now;
+
+		if ( JGetByte( "FixIncorrectTimestamps", TRUE ) && ( msgTime > now || ( msgTime < ( time_t )JabberGetLastContactMessageTime( hContact ))))
 			msgTime = now;
 
 		PROTORECVEVENT recv;

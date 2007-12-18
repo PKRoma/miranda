@@ -780,6 +780,8 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 				OPTTREE_CHECK,	1,	NULL,	"AutoAdd"},
 		{0,	LPGENT("Other") _T("/") LPGENT("Automatically accept authorization requests"),
 				OPTTREE_CHECK,	1,	NULL,	"AutoAcceptAuthorization"},
+		{0,	LPGENT("Other") _T("/") LPGENT("Fix incorrect timestamps in incoming messages"),
+				OPTTREE_CHECK,	1,	NULL,	"FixIncorrectTimestamps"},
 		
 		{0, LPGENT("Security") _T("/") LPGENT("Show information about operating system in version replies"),
 				OPTTREE_CHECK,	1,	NULL,	"ShowOSVersion"},
@@ -857,6 +859,8 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			JGetByte("ShowOSVersion", TRUE)?1:0,		"ShowOSVersion");
 		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
 			JGetByte("BsOnlyIBB", FALSE)?1:0,			"BsOnlyIBB");
+		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
+			JGetByte("FixIncorrectTimestamps", TRUE)?1:0,"FixIncorrectTimestamps");
 		return TRUE;
 	}
 	case WM_COMMAND:
@@ -933,6 +937,7 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			JSetByte("EnableUserTune",           (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableUserTune"));
 			JSetByte("ShowOSVersion",            (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "ShowOSVersion"));
 			JSetByte("BsOnlyIBB",                (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "BsOnlyIBB"));
+			JSetByte("FixIncorrectTimestamps",   (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "FixIncorrectTimestamps"));
 			JabberSendPresence( jabberStatus, true );
 			return TRUE;
 		}
