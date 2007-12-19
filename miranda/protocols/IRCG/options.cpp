@@ -353,8 +353,8 @@ BOOL CALLBACK AddServerProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 						char temp[255];
 						mir_snprintf( temp, sizeof(temp), "%s: %s", pData->Group, pData->Name );
-						delete pData->Name;
-						strcpy( pData->Name = new char[ strlen(temp)+1 ], temp );
+						mir_free( pData->Name );
+						pData->Name = mir_strdup( temp );
 
 						int iItem = SendMessageA(GetDlgItem(connect_hWnd, IDC_SERVERCOMBO),CB_ADDSTRING,0,(LPARAM) pData->Name);
 						SendMessage(GetDlgItem(connect_hWnd, IDC_SERVERCOMBO),CB_SETITEMDATA,iItem,(LPARAM) pData);
@@ -443,13 +443,7 @@ BOOL CALLBACK EditServerProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				if (GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_SERVER)) && GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_ADDRESS)) && GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_PORT)) && GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_PORT2)) && GetWindowTextLength(GetDlgItem( hwndDlg, IDC_ADD_COMBO))) {
 					int i = SendMessage(GetDlgItem(connect_hWnd, IDC_SERVERCOMBO), CB_GETCURSEL, 0, 0);
 
-					SERVER_INFO* pData1 = ( SERVER_INFO* )SendMessage(GetDlgItem(connect_hWnd, IDC_SERVERCOMBO), CB_GETITEMDATA, i, 0);
-					delete []pData1->Name;
-					delete []pData1->Address;
-					delete []pData1->PortStart;
-					delete []pData1->PortEnd;
-					delete []pData1->Group;
-					delete pData1;	
+					delete ( SERVER_INFO* )SendMessage(GetDlgItem(connect_hWnd, IDC_SERVERCOMBO), CB_GETITEMDATA, i, 0);
 					SendMessage(GetDlgItem(connect_hWnd, IDC_SERVERCOMBO), CB_DELETESTRING, i, 0);
 
 					SERVER_INFO* pData = new SERVER_INFO;
@@ -467,8 +461,8 @@ BOOL CALLBACK EditServerProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 					char temp[255];
 					mir_snprintf( temp, sizeof(temp), "%s: %s", pData->Group, pData->Name );
-					delete pData->Name;
-					strcpy( pData->Name = new char[ strlen(temp)+1 ], temp );
+					mir_free( pData->Name );
+					pData->Name = mir_strdup( temp );
 
 					int iItem = SendMessageA(GetDlgItem(connect_hWnd, IDC_SERVERCOMBO),CB_ADDSTRING,0,(LPARAM) pData->Name);
 					SendMessage(GetDlgItem(connect_hWnd, IDC_SERVERCOMBO),CB_SETITEMDATA,iItem,(LPARAM) pData);
