@@ -213,6 +213,7 @@ int MSN_GetPassportAuth( void )
 					else
 					{
 						ezxml_t node = ezxml_get(tokr, "wst:RequestedSecurityToken", 0, "EncryptedData", -1);
+						free(hotAuthToken);
 						hotAuthToken = ezxml_toxml(node, 0);
 						
 						node = ezxml_get(tokr, "wst:RequestedProofToken", 0, "wst:BinarySecret", -1);
@@ -432,7 +433,7 @@ char* GenerateLoginBlob(char* challenge)
 }
 
 
-char* HotmailLogin(const char* url, const char* id, bool ismail)
+char* HotmailLogin(const char* url)
 {
 	return NULL;
 }

@@ -33,7 +33,6 @@ static pIncrementFunc  MyInterlockedIncrementInit;
 pIncrementFunc *MyInterlockedIncrement = MyInterlockedIncrementInit;
 
 static CRITICAL_SECTION csInterlocked95;
-extern HANDLE msnMainThread;
 extern char* msnPreviousUUX;
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -590,10 +589,23 @@ void MsnInvokeMyURL( bool ismail, char* url )
 	char* hippy = NULL;
 	if (passport && requrl && id)
 	{
-		char* post = HotmailLogin(requrl, id, ismail);
+		static const char postdataM[] = "ct=%u&bver=4&id=%s&rru=%s&svc=mail&js=yes&pl=%%3Fid%%3D%s";
+		static const char postdataS[] = "ct=%u&bver=4&id=%s&ru=%s&js=yes&pl=%%3Fid%%3D%s";
+		const char *postdata = ismail ? postdataM : postdataS;
+	  
+		char rruenc[256];
+		UrlEncode(requrl, rruenc, sizeof(rruenc));
+ 
+		const size_t fnpstlen = strlen(postdata) +  strlen(rruenc) + 2*strlen(id) + 30;
+		char* fnpst = (char*)alloca(fnpstlen);
+
+		mir_snprintf(fnpst, fnpstlen, postdata, time(NULL), id, rruenc, id);
+
+		char* post = HotmailLogin(fnpst);
 		if (post)
 		{
-			hippy = (char*)alloca(strlen(passport) + strlen(post) + 20);
+			size_t hipsz = strlen(passport) + 3*strlen(post) + 50;
+			hippy = (char*)alloca(hipsz);
 
 			strcpy(hippy, passport);
 			char* ch = strstr(hippy, "md5auth");
@@ -602,7 +614,9 @@ void MsnInvokeMyURL( bool ismail, char* url )
 				memmove(ch + 1, ch, strlen(ch)+1);
 				memcpy(ch, "sha1", 4);  
 			}
-			strcat(hippy, "&"); strcat(hippy, post);
+			strcat(hippy, "&token="); 
+			size_t hiplen = strlen(hippy);
+			UrlEncode(post, hippy+hiplen, hipsz-hiplen);
 			mir_free(post);
 		}
 	}
@@ -684,7 +698,7 @@ LRESULT CALLBACK NullWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_ShowPopup - popup plugin support
 
-void CALLBACK sttMainThreadCallback( ULONG dwParam )
+void CALLBACK sttMainThreadCallback( PVOID dwParam )
 {
 	LPPOPUPDATAT ppd = ( LPPOPUPDATAT )dwParam;
 
@@ -735,7 +749,7 @@ void MSN_ShowPopup( const TCHAR* nickname, const TCHAR* msg, int flags, const ch
 	pud->hIcon = ppd->lchIcon;
 	pud->url = mir_strdup( url );
 
-	QueueUserAPC( sttMainThreadCallback , msnMainThread, ( DWORD )ppd );
+	CallFunctionAsync( sttMainThreadCallback, ppd );
 }
 
 
@@ -855,7 +869,7 @@ int filetransfer::create( void )
 	#endif
 
 	if ( fileId == -1 )
-		MSN_DebugLog( "Cannot create file '%s' during a file transfer", std.currentFile );
+		MSN_ShowError( "Cannot create file '%s' during a file transfer", std.currentFile );
 //	else if ( std.currentFileSize != 0 )
 //		_chsize( fileId, std.currentFileSize );
 
@@ -885,7 +899,7 @@ int filetransfer::openNext( void )
 			mir_free( p2p_callID ); p2p_callID = NULL;
 		}
 		else
-			MSN_DebugLog( "Unable to open file '%s', error %d", std.currentFile, errno );
+			MSN_ShowError( "Unable to open file '%s' for the file transfer, error %d", std.currentFile, errno );
 	}
 
 	return fileId;

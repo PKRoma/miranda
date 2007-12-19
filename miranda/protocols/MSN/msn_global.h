@@ -261,7 +261,7 @@ int			MSN_SendOIM(const char* szEmail, const char* msg);
 void		MSN_MakeDigest(const char* chl, char* dgst);
 int			MSN_GetPassportAuth( void );
 char*		GenerateLoginBlob(char* challenge);
-char*		HotmailLogin(const char* url, const char* id, bool ismail);
+char*		HotmailLogin(const char* url);
 void		FreeAuthTokens(void);
 char*		getNewUuid(void);
 
