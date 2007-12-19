@@ -1541,7 +1541,15 @@ LBL_InvalidCommand:
 				if ( sttDivideWords( params, 4, tWords ) != 4 )
 					goto LBL_InvalidCommand;
 
-				if ( !strcmp( data.security, "SSO" )) {
+				if ( !strcmp( data.security, "SSO" )) 
+				{
+					if ( MSN_GetPassportAuth()) 
+					{
+						MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
+						MSN_GoOffline();
+						return 1;
+					}
+
 					char* sec = GenerateLoginBlob(data.nonce);
 					info->sendPacket( "USR", "SSO S %s %s", authStrToken ? authStrToken : "", sec );
 					mir_free(sec);

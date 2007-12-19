@@ -156,12 +156,6 @@ void __cdecl MSNServerThread( ThreadData* info )
 			MyOptions.szEmail );
 
 		info->sendPacket( "USR", "SSO I %s", MyOptions.szEmail );
-
-		if ( MSN_GetPassportAuth()) {
-			MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
-			MSN_GoOffline();
-			return;
-		}
 	}
 	else if ( info->mType == SERVER_SWITCHBOARD ) {
 		info->sendPacket( info->mCaller ? "USR" : "ANS", "%s %s", MyOptions.szEmail, info->mCookie );
