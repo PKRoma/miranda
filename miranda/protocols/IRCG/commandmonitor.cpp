@@ -51,7 +51,6 @@ TString		   sTopicTime;
 TString        NamesToWho = _T("");
 TString        ChannelsToWho = _T("");
 TString        NamesToUserhost = _T("");
-TString        sNick4Perform = _T("");
 
 extern int     OldStatus;
 extern int     GlobalStatus;
@@ -424,7 +423,7 @@ bool CMyMonitor::OnIrc_SETAWAY( const CIrcMessage* pmsg )
 				DoPerform( "Event: Out for lunch" );
 				break;
 			case ID_STATUS_ONTHEPHONE:
-            DoPerform( "Event: On the phone" );
+				DoPerform( "Event: On the phone" );
 				break;
 			default:
 				GlobalStatus = ID_STATUS_AWAY;
@@ -441,6 +440,7 @@ bool CMyMonitor::OnIrc_JOIN( const CIrcMessage* pmsg )
 	if (pmsg->parameters.size() > 0 && pmsg->m_bIncoming && pmsg->prefix.sNick != g_ircSession.GetInfo().sNick) {
 		TString host = pmsg->prefix.sUser + _T("@") + pmsg->prefix.sHost;
 		DoEvent(GC_EVENT_JOIN, pmsg->parameters[0].c_str(), pmsg->prefix.sNick.c_str(), NULL, _T("Normal"), host.c_str(), NULL, true, false); 
+		DoEvent(GC_EVENT_SETCONTACTSTATUS, pmsg->parameters[0].c_str(),pmsg->prefix.sNick.c_str(), NULL, NULL, NULL, ID_STATUS_ONLINE, FALSE, FALSE); 
 	}
 	else ShowMessage( pmsg ); 
 
@@ -597,42 +597,26 @@ bool CMyMonitor::OnIrc_MODE( const CIrcMessage* pmsg )
 				}
 				if ( strchr( sUserModes.c_str(), (char)*p1 )) {
 					TString sStatus = ModeToStatus( *p1 );
-					if (( int )pmsg->parameters.size() > iParametercount ) {
-						CHANNELINFO* wi = (CHANNELINFO *)DoEvent(GC_EVENT_GETITEMDATA, pmsg->parameters[0].c_str(), NULL, NULL, NULL, NULL, NULL, false, false, 0);
-						switch (*p1)
-							{
-							case 'v':
-								  if (bAdd)
-									wi->OwnMode |= (1<<0);
-								  else
-								    wi->OwnMode &= ~(1<<0);
-								break;
-							case 'h':
-								  if (bAdd)
-									wi->OwnMode |= (1<<1);
-								  else
-								    wi->OwnMode &= ~(1<<1);
-								break;
-							case 'o':
-								  if (bAdd)
-									wi->OwnMode |= (1<<2);
-								  else
-								    wi->OwnMode &= ~(1<<2);
-								break;
-							case 'a':
-								  if (bAdd)
-									wi->OwnMode |= (1<<3);
-								  else
-								    wi->OwnMode &= ~(1<<3);
-								break;
-							case 'q':
-								  if (bAdd)
-									wi->OwnMode |= (1<<4);
-								  else
-								    wi->OwnMode &= ~(1<<4);
-								break;
+					if (( int )pmsg->parameters.size() > iParametercount ) {	
+						if ( !_tcscmp(pmsg->parameters[2].c_str(), g_ircSession.GetInfo().sNick.c_str() )) {
+							char cModeBit = -1;
+							CHANNELINFO* wi = (CHANNELINFO *)DoEvent( GC_EVENT_GETITEMDATA, pmsg->parameters[0].c_str(), NULL, NULL, NULL, NULL, NULL, false, false, 0 );
+							switch (*p1) {
+								case 'v':      cModeBit = 0;       break;
+								case 'h':      cModeBit = 1;       break;
+								case 'o':      cModeBit = 2;       break;
+								case 'a':      cModeBit = 3;       break;
+								case 'q':      cModeBit = 4;       break;
 							}
-						DoEvent(GC_EVENT_SETITEMDATA, pmsg->parameters[0].c_str(), NULL, NULL, NULL, NULL, (DWORD)wi, false, false, 0);
+
+							// set bit for own mode on this channel (voice/hop/op/admin/owner)
+							if ( bAdd && cModeBit >= 0 )
+								wi->OwnMode |= ( 1 << cModeBit );
+							else
+								wi->OwnMode &= ~( 1 << cModeBit );
+
+							DoEvent( GC_EVENT_SETITEMDATA, pmsg->parameters[0].c_str(), NULL, NULL, NULL, NULL, (DWORD)wi, false, false, 0 );
+						}
 						DoEvent( bAdd ? GC_EVENT_ADDSTATUS : GC_EVENT_REMOVESTATUS, pmsg->parameters[0].c_str(), pmsg->parameters[iParametercount].c_str(), pmsg->prefix.sNick.c_str(), sStatus.c_str(), NULL, NULL, prefs->OldStyleModes?false:true, false); 
 						iParametercount++;
 					}
@@ -1353,7 +1337,6 @@ bool CMyMonitor::OnIrc_NAMES( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming && pmsg->parameters.size() > 3 )
 		sNamesList += pmsg->parameters[3] + _T(" ");
-
 	ShowMessage( pmsg );
 	return true;
 }
@@ -1388,7 +1371,7 @@ bool CMyMonitor::OnIrc_ENDNAMES( const CIrcMessage* pmsg )
 			// Add a new chat window
 			GCSESSION gcw = {0};
 			TString sID = MakeWndID( sChanName );
-
+			BYTE btOwnMode = 0;
 			gcw.cbSize = sizeof(GCSESSION);
 			gcw.iType = GCW_CHATROOM;
 			gcw.dwFlags = GC_TCHAR;
@@ -1444,18 +1427,29 @@ bool CMyMonitor::OnIrc_ENDNAMES( const CIrcMessage* pmsg )
 					gce.ptszUID = sTemp.c_str();
 					gce.ptszNick = sTemp.c_str();
 					gce.ptszStatus = sStat.c_str();
-					BOOL bIsMe = (lstrcmpi(gce.ptszNick, m_session.GetInfo().sNick.c_str()) == 0) ? TRUE : FALSE;
+					BOOL bIsMe = ( !lstrcmpi( gce.ptszNick, m_session.GetInfo().sNick.c_str())) ? TRUE : FALSE;
+					if ( bIsMe ) {
+						BYTE BitNr = 0;
+						switch ( sTemp2[0] ) {
+							case '+':   BitNr = 0;   break;
+							case '%':   BitNr = 1;   break;
+							case '@':   BitNr = 2;   break;
+							case '!':   BitNr = 3;   break;
+							case '*':   BitNr = 4;   break;
+						}
+						btOwnMode = ( 1 << BitNr );
+					}
 					gce.dwFlags = GC_TCHAR;
 					gce.bIsMe = bIsMe;
 					gce.time = bIsMe?time(0):0;
 					CallChatEvent(0, (LPARAM)&gce);
-
+					DoEvent( GC_EVENT_SETCONTACTSTATUS, sChanName, sTemp.c_str(), NULL, NULL, NULL, ID_STATUS_ONLINE, FALSE, FALSE );
 					// fix for networks like freshirc where they allow more than one prefix
 					if ( PrefixToStatus( sTemp2[0]) != _T("Normal")) {
 						sTemp2.erase(0,1);
 						sStat = PrefixToStatus(sTemp2[0]);
 						while ( sStat != _T("Normal")) {
-							DoEvent(GC_EVENT_ADDSTATUS, sID.c_str(), sTemp.c_str(), _T("system"), sStat.c_str(), NULL, NULL, false, false, 0); 
+							DoEvent( GC_EVENT_ADDSTATUS, sID.c_str(), sTemp.c_str(), _T("system"), sStat.c_str(), NULL, NULL, false, false, 0 );
 							sTemp2.erase(0,1);
 							sStat = PrefixToStatus(sTemp2[0]);
 					}	}
@@ -1466,14 +1460,14 @@ bool CMyMonitor::OnIrc_ENDNAMES( const CIrcMessage* pmsg )
 				
 				//Set the item data for the window
 				{
-					FreeWindowItemData(sChanName, NULL);
-
-					CHANNELINFO* wi = new CHANNELINFO;
+					CHANNELINFO* wi = (CHANNELINFO *)DoEvent(GC_EVENT_GETITEMDATA, sChanName, NULL, NULL, NULL, NULL, NULL, FALSE, FALSE, 0);					
+					if (!wi)
+						wi = new CHANNELINFO;
+					wi->OwnMode = btOwnMode;
 					wi->pszLimit = 0;
 					wi->pszMode = 0;
 					wi->pszPassword = 0;
 					wi->pszTopic = 0;
-					wi->OwnMode = 0;
 					wi->codepage = g_ircSession.getCodepage();
 					DoEvent(GC_EVENT_SETITEMDATA, sChanName, NULL, NULL, NULL, NULL, (DWORD)wi, false, false, 0);
 
@@ -1564,7 +1558,7 @@ bool CMyMonitor::OnIrc_INITIALTOPIC( const CIrcMessage* pmsg )
 
 bool CMyMonitor::OnIrc_INITIALTOPICNAME( const CIrcMessage* pmsg )
 {
-	if ( (pmsg->m_bIncoming) && (pmsg->parameters.size() > 3 )) {
+	if ( pmsg->m_bIncoming && pmsg->parameters.size() > 3 ) {
 		TCHAR tTimeBuf[128], *tStopStr;
 		time_t ttTopicTime;
 		sTopicName = pmsg->parameters[2];
@@ -2058,7 +2052,10 @@ bool CMyMonitor::OnIrc_WHO_END( const CIrcMessage* pmsg )
 					if ( GetWord( WhoReply.c_str(), 3)[0] == 'G' ) {
 						S += User;
 						S += _T("\t");
+						DoEvent( GC_EVENT_SETCONTACTSTATUS, pmsg->parameters[1].c_str(), User.c_str(), NULL, NULL, NULL, ID_STATUS_AWAY, FALSE, FALSE);
 					}
+					else DoEvent( GC_EVENT_SETCONTACTSTATUS, pmsg->parameters[1].c_str(), User.c_str(), NULL, NULL, NULL, ID_STATUS_ONLINE, FALSE, FALSE);
+
 					SS = GetWordAddress( WhoReply.c_str(), 4 );
 					if ( SS.empty())
 						break;

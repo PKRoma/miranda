@@ -21,9 +21,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "irc.h"
 
+#define NICKSUBSTITUTE _T("!_nick_!")
+
 bool bEcho = true;
 bool bTempDisableCheck = false;
 bool bTempForceCheck = false;
+TString sNick4Perform = _T("");
 
 static TString FormatMsg(TString text)
 {
@@ -41,8 +44,26 @@ static TString FormatMsg(TString text)
 	}
 	else if (command == _T("/kick"))
 		S = GetWord(text.c_str(), 0) + _T(" ") + GetWord(text.c_str(), 1) + _T(" ") + GetWord(text.c_str(), 2)+ _T(" :") + GetWordAddress(text.c_str(), 3);
-	else 
-		S = GetWordAddress(text.c_str(), 0);
+	else if (command == _T("/nick")) {
+		if ( !_tcsstr(GetWord(text.c_str(), 1).c_str(), NICKSUBSTITUTE )) {
+			sNick4Perform = GetWord(text.c_str(), 1);
+			S = GetWordAddress(text.c_str(), 0);
+		}
+		else {
+			TString sNewNick = GetWord(text.c_str(), 1);
+			if ( sNick4Perform == _T("")) {
+				DBVARIANT dbv;
+				if ( !DBGetContactSettingTString(NULL, IRCPROTONAME, "PNick", &dbv )) {
+					sNick4Perform = dbv.ptszVal;
+					DBFreeVariant(&dbv);
+			}	}
+
+			ReplaceString( sNewNick, NICKSUBSTITUTE, sNick4Perform.c_str());
+			S = GetWord(text.c_str(), 0) + _T(" ") + sNewNick;
+		}
+	}
+	else S = GetWordAddress(text.c_str(), 0);
+
 	S.erase(0,1);
 	return S;
 }
@@ -791,8 +812,8 @@ bool PostIrcMessageWnd( TCHAR* window, HANDLE hContact, const TCHAR* szBuf )
 		if ( index == string::npos )
 			index = Message.length();
 
-		if ( index > 512 )
-			index = 480;
+		if ( index > 464 )
+			index = 432;
 		DoThis = Message.substr(0, index);
 		Message.erase(0, index);
 		if ( Message.find( _T("\r\n"), 0 ) == 0 )

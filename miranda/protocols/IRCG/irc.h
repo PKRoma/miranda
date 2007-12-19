@@ -200,7 +200,12 @@ struct CHANNELINFO   // Contains info about the channels
 	TCHAR* pszMode;
 	TCHAR* pszPassword;
 	TCHAR* pszLimit;
-	BYTE   OwnMode;	
+	BYTE   OwnMode;	/* own mode on the channel. Bitmask: 
+												0: voice
+												1: halfop
+												2: op
+												3: admin
+												4: owner		*/
 	int    codepage;
 };
 
@@ -452,6 +457,7 @@ BOOL Scripting_TriggerMSPGuiOut(GCHOOK * gch);
 #pragma comment(lib,"comctl32.lib")
 
 #endif
+
 
 
 

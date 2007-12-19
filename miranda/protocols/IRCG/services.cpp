@@ -883,10 +883,6 @@ int Service_GCEventHook(WPARAM wParam,LPARAM lParam)
 						SetFocus(hEditCtrl);
 						PostMessage( question_hWnd, IRC_ACTIVATE, 0, 0);
 						}
-/*
-						PostIrcMessage( _T("/nickserv IDENTIFY %%question=\"%s\",\"%s\""),
-							TranslateT("Please enter your password"), TranslateT("Identify nick") );
-*/
 						break;
 					case 9:		// nickserv remind password
 						{
@@ -1182,8 +1178,8 @@ static int Service_GCMenuHook(WPARAM wParam,LPARAM lParam)
 
 				gcmi->nItems = SIZEOF(Item);
 				gcmi->Item = &Item[0];
-				if (hContact && DBGetContactSettingByte(hContact, "CList", "NotOnList", 0) == 0)
-					gcmi->Item[gcmi->nItems-1].bDisabled = TRUE;
+				BOOL bIsInList = (hContact && DBGetContactSettingByte(hContact, "CList", "NotOnList", 0) == 0);
+				gcmi->Item[gcmi->nItems-1].bDisabled = bIsInList;
 
 				unsigned long ulAdr = 0;
 				if (prefs->ManualHost)
@@ -1197,16 +1193,23 @@ static int Service_GCMenuHook(WPARAM wParam,LPARAM lParam)
 				int len = min((( temp == NULL ) ? lstrlen( gcmi->pszID ) : ( int )( temp - gcmi->pszID + 1 )), SIZEOF(stzChanName)-1 );
 				lstrcpyn( stzChanName, gcmi->pszID, len );
 				stzChanName[ len ] = 0;
-
 				CHANNELINFO* wi = (CHANNELINFO *)DoEvent(GC_EVENT_GETITEMDATA,stzChanName, NULL, NULL, NULL, NULL, NULL, false, false, 0);
-				bool bOwner  = strchr(sUserModes.c_str(), 'q') == NULL?FALSE:((wi->OwnMode>>4)&01);
-				bool bAdmin  = strchr(sUserModes.c_str(), 'a') == NULL?FALSE:((wi->OwnMode>>3)&01);
-				bool bOp	 = strchr(sUserModes.c_str(), 'o') == NULL?FALSE:((wi->OwnMode>>2)&01);
-				bool bHalfop = strchr(sUserModes.c_str(), 'h') == NULL?FALSE:((wi->OwnMode>>1)&01);
-				gcmi->Item[6].bDisabled /*Control submenu*/ = !(bHalfop || bOp);
-				gcmi->Item[7].bDisabled = gcmi->Item[8].bDisabled = !bOwner;
-				gcmi->Item[9].bDisabled = gcmi->Item[10].bDisabled = !bAdmin;
-				gcmi->Item[11].bDisabled = gcmi->Item[12].bDisabled = gcmi->Item[13].bDisabled = gcmi->Item[14].bDisabled = !bOp;
+				BOOL bServOwner  = strchr(sUserModes.c_str(), 'q') == NULL?FALSE:TRUE;
+				BOOL bServAdmin  = strchr(sUserModes.c_str(), 'a') == NULL?FALSE:TRUE;
+				BOOL bOwner  = bServOwner?((wi->OwnMode>>4)&01):FALSE;
+				BOOL bAdmin  = bServAdmin?((wi->OwnMode>>3)&01):FALSE;
+				BOOL bOp	 = strchr(sUserModes.c_str(), 'o') == NULL?FALSE:((wi->OwnMode>>2)&01);
+				BOOL bHalfop = strchr(sUserModes.c_str(), 'h') == NULL?FALSE:((wi->OwnMode>>1)&01);
+
+				BOOL bForceEnable = GetAsyncKeyState(VK_CONTROL);
+
+				gcmi->Item[6].bDisabled /* "Control" submenu */ = !(bForceEnable|| bHalfop || bOp || bAdmin || bOwner);
+				gcmi->Item[7].uType = gcmi->Item[8].uType  = /* +/- Owner */ bServOwner?MENU_POPUPITEM:0;
+				gcmi->Item[9].uType = gcmi->Item[10].uType = /* +/- Admin */ bServAdmin?MENU_POPUPITEM:0;
+				gcmi->Item[7].bDisabled  = gcmi->Item[8].bDisabled  = gcmi->Item[9].bDisabled  = gcmi->Item[10].bDisabled = /* +/- Owner/Admin */
+					!(bForceEnable || bOwner);
+				gcmi->Item[11].bDisabled = gcmi->Item[12].bDisabled = gcmi->Item[13].bDisabled = gcmi->Item[14].bDisabled = /* +/- Op/hop */
+					!(bForceEnable || bOp || bAdmin || bOwner);
 	}	}	}
 
 	return 0;
