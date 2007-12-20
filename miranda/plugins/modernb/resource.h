@@ -684,6 +684,7 @@
 #define IDC_CHECK_COLOR                 1762
 #define IDC_SHOW_STATUS_IF_NOAWAY       1762
 #define IDC_CHECK6                      1762
+#define IDC_CHECK_AUTOSIZE              1762
 #define IDC_DISCOVER_AWAYMSG            1763
 #define IDC_OFFSETSPIN                  1763
 #define IDC_CHECK_IMAGE                 1763
@@ -906,6 +907,8 @@
 #define IDC_SPIN_W                      2014
 #define IDC_SPIN_H                      2015
 #define IDC_SPIN_S                      2016
+#define IDC_CHECK_MULTILINE             2017
+#define IDC_CHECK_ATOSIZE               2018
 #define IDC_CLSORT1                     6666
 #define IDC_CLSORT2                     6667
 #define IDC_CLSORT3                     6668
@@ -1004,7 +1007,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        508
 #define _APS_NEXT_COMMAND_VALUE         40022
-#define _APS_NEXT_CONTROL_VALUE         2017
+#define _APS_NEXT_CONTROL_VALUE         2019
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

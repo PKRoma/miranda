@@ -275,6 +275,87 @@ static int ToggleDBValue(char * ValueDBSection,char *ValueTypeDef)
 return 0;
 }
 
+static char *_skipblank(char * str) //str will be modified;
+{
+	char * endstr=str+strlen(str);
+	while ((*str==' ' || *str=='\t') && str!='\0') str++;
+	while ((*endstr==' ' || *endstr=='\t') && endstr!='\0' && endstr<str) endstr--;
+	if (*endstr!='\0') 
+	{
+		endstr++; 
+		*endstr='\0';
+	}
+	return str;
+}
+
+static int _CallServiceStrParams(IN char * toParce, OUT int *Return)
+{
+	char * pszService;
+	char * param1=NULL;
+	char * param2=NULL;
+	int paramCount=0;
+	int result=0;
+	pszService=mir_strdup(toParce);
+	param2=strrchr(pszService, '%');
+	if (param2)
+	{
+		paramCount++;
+		*param2='\0';	param2++;
+		_skipblank(param2);					
+		if (strlen(param2)==0) param2=NULL;
+	}
+	param1=strrchr(pszService, '%');
+	if (param1)
+	{
+		paramCount++;
+		*param1='\0';	param1++;
+		_skipblank(param1);
+		if (strlen(param1)==0) param1=NULL;
+	}
+	if (!pszService) return 0;
+	if (strlen(pszService)==0)
+	{
+		mir_free(pszService);
+		return 0;
+	}
+	if (param1 && *param1=='\"')
+	{
+		param1++;
+		*(param1+strlen(param1))='\0';
+	}
+	else if (param1)
+	{
+		param1=(char*)atoi(param1);
+	}
+	if (param2 && *param2=='\"')
+	{
+		param2++;
+		*(param2+strlen(param2))='\0';
+	}
+	else if (param2)
+		param2=(char*)atoi(param2);
+
+	if (paramCount==1) 
+	{
+		param1=param2;
+		param2=NULL;
+	}
+	if (!ServiceExists(pszService))
+	{
+		result=0;
+	}
+	else 
+	{
+		int ret=0;
+		result=1;		
+		ret=CallService(pszService, (WPARAM)param1, (WPARAM)param2);
+		if (Return) *Return=ret;
+	}
+	mir_free(pszService);
+	return result;
+}
+
+
 static LRESULT CALLBACK ModernButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, LPARAM lParam)
 {
     ModernButtonCtrl* bct =  (msg!=WM_NCCREATE)?(ModernButtonCtrl *)GetWindowLong(hwndDlg, GWL_USERDATA):0;
@@ -418,10 +499,14 @@ static LRESULT CALLBACK ModernButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wPar
 		if (bct->Imm)
         {
         if (bct->CommandService)
-            if (ServiceExists(bct->CommandService))
-				CallService(bct->CommandService,0,0);
-            else if (bct->ValueDBSection && bct->ValueTypeDef)          
-            ToggleDBValue(bct->ValueDBSection,bct->ValueTypeDef);                      
+		{
+
+            if (_CallServiceStrParams(bct->CommandService, NULL))
+			{}
+            else 
+				if (bct->ValueDBSection && bct->ValueTypeDef)          
+					ToggleDBValue(bct->ValueDBSection,bct->ValueTypeDef);      
+		}
         bct->down=0;
 
         PaintWorker(bct->hwnd,0);
@@ -441,8 +526,8 @@ static LRESULT CALLBACK ModernButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wPar
 		if (bct && bct->CommandService && IsBadStringPtrA(bct->CommandService,255))
 			bct->CommandService=NULL;
         if (bct->CommandService)
-        if (ServiceExists(bct->CommandService))
-            CallService(bct->CommandService,0,0);
+        		if (_CallServiceStrParams(bct->CommandService, NULL))
+				{}
         else if (bct->ValueDBSection && bct->ValueTypeDef)          
             ToggleDBValue(bct->ValueDBSection,bct->ValueTypeDef); 
     }

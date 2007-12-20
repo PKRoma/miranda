@@ -449,6 +449,10 @@ BEGIN
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_NOTHOUSANDS | UDS_HOTTRACK,276,133,11,12
     RTEXT           "Height",IDC_STATIC_H,156,136,77,10
+    CONTROL         "Multiline toolbar",IDC_CHECK_MULTILINE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,164,86,122,10
+    CONTROL         "Autosize toolbar",IDC_CHECK_AUTOSIZE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,164,101,122,10
 END
 
 
@@ -1811,7 +1815,5 @@ END
 
 #endif    // English (Canada) resources
 /////////////////////////////////////////////////////////////////////////////
-
-
 
 

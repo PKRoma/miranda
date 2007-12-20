@@ -1415,11 +1415,13 @@ static int CLUIFramesSetFrameOptions(WPARAM wParam,LPARAM lParam)
 		TRACEVAR("FO_HEIGHT: %d\n",lParam);
 		if (Frames[pos].collapsed)
 		{
+			int oldHeight=Frames[pos].height;
 			retval=Frames[pos].height;
 			Frames[pos].height=lParam;
-			if(!CLUIFramesFitInSize()) Frames[pos].height=retval;
+			if(!CLUIFramesFitInSize()) Frames[pos].height=retval;			 
 			retval=Frames[pos].height;
-
+			if (Frames[pos].height != oldHeight)
+				CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,(LPARAM)0);
 		}
 		else
 		{

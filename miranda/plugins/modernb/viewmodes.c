@@ -1528,5 +1528,16 @@ void ApplyViewMode(const char *Name)
 //    SetButtonStates(pcli->hwndContactList);
 }
 
-
+static int SkinSetViewMode(WPARAM wParam /*char * name*/, LPARAM lParam /*int index*/)
+{
+	if (wParam==0 && lParam==0)
+	{
+		ApplyViewMode( NULL );
+	}
+	else
+	{
+		if (wParam && !IsBadStringPtrA((const char*)wParam, -1));
+			ApplyViewMode((const char*)wParam);
+	}
+}
 
