@@ -1,32 +1,32 @@
 #include "services.h"
 static int GetCaps(WPARAM wParam, LPARAM /*lParam*/)
 {
-    int ret = 0;
-    switch (wParam)
-	{
-		case PFLAGNUM_1:
-            ret = PF1_IM | PF1_MODEMSG | PF1_BASICSEARCH | PF1_FILE;
-            break;
-        case PFLAGNUM_2:
-            ret = PF2_ONLINE | PF2_INVISIBLE | PF2_SHORTAWAY | PF2_ONTHEPHONE;
-            break;
-		case PFLAGNUM_3:
-            ret = PF2_SHORTAWAY;
-            break;
-		case PFLAGNUM_4:
-			ret = PF4_SUPPORTTYPING | PF4_FORCEAUTH | PF4_FORCEADDED | PF4_SUPPORTIDLE | PF4_AVATARS;
-            break;
-		case PFLAGNUM_5:                
-            ret = PF2_ONTHEPHONE;
-            break;
-		case PFLAG_MAXLENOFMESSAGE:
-            ret = 1024;
-            break;
-		case PFLAG_UNIQUEIDSETTING:
-            ret = (int) AIM_KEY_SN;
-            break;
-    }
-    return ret;
+	switch (wParam) {
+	case PFLAGNUM_1:
+		return PF1_IM | PF1_MODEMSG | PF1_BASICSEARCH | PF1_FILE;
+
+	case PFLAGNUM_2:
+		return PF2_ONLINE | PF2_INVISIBLE | PF2_SHORTAWAY | PF2_ONTHEPHONE;
+
+	case PFLAGNUM_3:
+		return PF2_SHORTAWAY;
+
+	case PFLAGNUM_4:
+		return PF4_SUPPORTTYPING | PF4_FORCEAUTH | PF4_FORCEADDED | PF4_SUPPORTIDLE | PF4_AVATARS;
+
+	case PFLAGNUM_5:
+		return PF2_ONTHEPHONE;
+
+	case PFLAG_MAXLENOFMESSAGE:
+		return 1024;
+
+	case PFLAG_UNIQUEIDTEXT:
+		return (int) "Screen Name";
+
+	case PFLAG_UNIQUEIDSETTING:
+		return (int) AIM_KEY_SN;
+	}
+	return 0;
 }
 static int GetName(WPARAM wParam, LPARAM lParam)
 {
@@ -54,7 +54,7 @@ void set_status_thread(int status)
 				{
 					broadcast_status(ID_STATUS_ONLINE);
 					aim_set_away(conn.hServerConn,conn.seqno,NULL);//unset away message
-					aim_set_invis(conn.hServerConn,conn.seqno,AIM_STATUS_ONLINE,AIM_STATUS_NULL);//online not invis	
+					aim_set_invis(conn.hServerConn,conn.seqno,AIM_STATUS_ONLINE,AIM_STATUS_NULL);//online not invis
 					break;
 				}
 			case ID_STATUS_INVISIBLE:
@@ -85,7 +85,7 @@ void set_status_thread(int status)
 	LeaveCriticalSection(&statusMutex);
 }
 static int SetStatus(WPARAM wParam, LPARAM /*lParam*/)
-{ 
+{
 	if (wParam==conn.status)
 		return 0;
 	//ForkThread((pThreadFunc)set_status_thread,(void*)wParam);
@@ -96,7 +96,7 @@ static int SetStatus(WPARAM wParam, LPARAM /*lParam*/)
 }
 
 int IdleChanged(WPARAM /*wParam*/, LPARAM lParam)
-{ 
+{
 	if (conn.state!=1)
 	{
 		conn.idle=0;
@@ -328,7 +328,7 @@ static int GetAwayMsg(WPARAM /*wParam*/, LPARAM lParam)
 	{
 		awaymsg_request_handler(sn);
 		delete[] sn;
-	}	
+	}
 	return 1;
 }
 static int GetHTMLAwayMsg(WPARAM wParam, LPARAM /*lParam*/)
@@ -491,7 +491,7 @@ int ContactDeleted(WPARAM wParam,LPARAM /*lParam*/)
 			delete[] item;
 			delete[] group;
 			i++;
-		}	
+		}
 		DBFreeVariant(&dbv);
 	}
 	return 0;
@@ -672,7 +672,7 @@ static int InstantIdle(WPARAM /*wParam*/, LPARAM /*lParam*/)
 	return 0;
 }
 static int CheckMail(WPARAM /*wParam*/, LPARAM /*lParam*/)
-{ 
+{
 	if(conn.state==1)
 	{
 		conn.checking_mail=1;
@@ -681,12 +681,12 @@ static int CheckMail(WPARAM /*wParam*/, LPARAM /*lParam*/)
 	return 0;
 }
 static int ManageAccount(WPARAM /*wParam*/, LPARAM /*lParam*/)
-{ 
+{
 	execute_cmd("http","https://my.screenname.aol.com");
 	return 0;
 }
 static int EditProfile(WPARAM /*wParam*/, LPARAM /*lParam*/)
-{ 
+{
 	DialogBox(conn.hInstance, MAKEINTRESOURCE(IDD_AIM), NULL, userinfo_dialog);
 	return 0;
 }
@@ -720,14 +720,14 @@ static int GetAvatarInfo(WPARAM /*wParam*/,LPARAM lParam)
 				else if(!lstrcmpi(filetype,".bmp"))
 					AI->format=PA_FORMAT_BMP;
 				strlcpy(AI->filename,photo_path,lstrlen(photo_path));
-			//mir_snprintf(avatar_path, length, "%s\\%s\\%s\\avatar.",CWD,AIM_PROTOCOL_NAME,sn);	
+			//mir_snprintf(avatar_path, length, "%s\\%s\\%s\\avatar.",CWD,AIM_PROTOCOL_NAME,sn);
 			//photo_path[lstrlen(photo_path)-4]='\0';
 			//if(!lstrcmpi(photo_path,avatar_path)&&!photopath[length+4])
 			//{
 				//photo_path[lstrlen(photo_path)+1]='.';
 				delete[] photo_path;
 				delete[] sn;
-				return GAIR_SUCCESS; 
+				return GAIR_SUCCESS;
 			}
 			//}
 			delete[] photo_path;
@@ -743,7 +743,7 @@ static int GetAvatarInfo(WPARAM /*wParam*/,LPARAM lParam)
 	//AI.cbSize = sizeof AI;
 	//AI.hContact = hContact;
 	//DBVARIANT dbv;
-///	if(!DBGetContactSettingString( AI->hContact, "ContactPhoto", "File",&dbv))//check for image type in db 
+///	if(!DBGetContactSettingString( AI->hContact, "ContactPhoto", "File",&dbv))//check for image type in db
 	//{
 //		memcpy(&filetype,&filename[lstrlen(filename)]-3,4);
 	//	DBFreeVariant(&dbv);
@@ -767,7 +767,7 @@ static int GetAvatarInfo(WPARAM /*wParam*/,LPARAM lParam)
 */
 		return 1;
 }
-int ExtraIconsRebuild(WPARAM /*wParam*/, LPARAM /*lParam*/) 
+int ExtraIconsRebuild(WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
 	if (ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
 	{
@@ -775,13 +775,13 @@ int ExtraIconsRebuild(WPARAM /*wParam*/, LPARAM /*lParam*/)
 	}
 	return 0;
 }
-int ExtraIconsApply(WPARAM wParam, LPARAM /*lParam*/) 
+int ExtraIconsApply(WPARAM wParam, LPARAM /*lParam*/)
 {
-	if (ServiceExists(MS_CLIST_EXTRA_SET_ICON)) 
+	if (ServiceExists(MS_CLIST_EXTRA_SET_ICON))
 	{
 		if(!DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_AT,0))
 		{
-			int account_type=DBGetContactSettingByte((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_AC,0);		
+			int account_type=DBGetContactSettingByte((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_AC,0);
 			if(account_type==ACCOUNT_TYPE_ADMIN)
 			{
 				char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
@@ -830,7 +830,7 @@ int ExtraIconsApply(WPARAM wParam, LPARAM /*lParam*/)
 		}
 		if(!DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_ES,0))
 		{
-			int es_type=DBGetContactSettingByte((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_ET,0);		
+			int es_type=DBGetContactSettingByte((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_ET,0);
 			if(es_type==EXTENDED_STATUS_BOT)
 			{
 				char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
@@ -898,7 +898,7 @@ void CreateServices()
 	conn.services[conn.services_size++]=CreateServiceFunction(service_name,AuthRequest);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PS_GETAVATARINFO);
 	conn.services[conn.services_size++]=CreateServiceFunction(service_name,GetAvatarInfo);
-	
+
 	//Do not put any services below HTML get away message!!!
 
 	CLISTMENUITEM mi = {0};
@@ -944,7 +944,7 @@ void CreateServices()
 	mi.pszName = LPGEN("Read &HTML Away Message");
 	mi.flags=CMIF_NOTOFFLINE|CMIF_HIDDEN|CMIF_ICONFROMICOLIB;
 	conn.hHTMLAwayContextMenuItem=(HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
-	
+
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/GetProfile");
 	conn.services[conn.services_size++]=CreateServiceFunction(service_name,GetProfile);
 	mi.pszPopupName=Translate("Read Profile");
