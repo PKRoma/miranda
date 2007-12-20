@@ -402,6 +402,7 @@ static TCHAR *sttHokeyVkToName(WORD vkKey)
 
 	switch (vkKey)
 	{
+	case 0:
 	case VK_CONTROL:
 	case VK_SHIFT:
 	case VK_MENU:
@@ -434,12 +435,6 @@ static TCHAR *sttHokeyVkToName(WORD vkKey)
 
 static void sttHokeyToName(TCHAR *buf, int size, BYTE shift, BYTE key)
 {
-	if (!key)
-	{
-		*buf = 0;
-		return;
-	}
-
 	mir_sntprintf(buf, size, _T("%s%s%s%s%s"),
 		(shift & HOTKEYF_CONTROL)	? _T("Ctrl + ")		: _T(""),
 		(shift & HOTKEYF_ALT)		? _T("Alt + ")		: _T(""),
