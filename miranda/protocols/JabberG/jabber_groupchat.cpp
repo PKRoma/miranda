@@ -688,12 +688,7 @@ static void sttJoinDlgShowRecentItems(HWND hwndDlg, int newCount)
 
 	int oldCount = 5;
 	for (int idc = IDC_RECENT1; idc <= IDC_RECENT5; ++idc)
-	{
-//		if (IsWindowVisible(GetDlgItem(hwndDlg, idc)))
-//			++oldCount;
-
 		ShowWindow(GetDlgItem(hwndDlg, idc), (idc - IDC_RECENT1 < newCount) ? SW_SHOW : SW_HIDE);
-	}
 
 	int curRecentHeight = rcLastItem.bottom - rcTitle.top - (5 - oldCount) * (rcLastItem.bottom - rcLastItem.top);
 	int newRecentHeight = rcLastItem.bottom - rcTitle.top - (5 - newCount) * (rcLastItem.bottom - rcLastItem.top);
@@ -1275,7 +1270,7 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 					JabberGcLogUpdateMemberStatus( item, nick, str, GC_EVENT_KICK, reasonNode, iStatus );
 					return;
 		}	}	}
-		
+
 		statusNode = JabberXmlGetChild( node, "status" );
 		JabberListRemoveResource( LIST_CHATROOM, from );
 		JabberGcLogUpdateMemberStatus( item, nick, str, GC_EVENT_PART, statusNode );
@@ -1290,7 +1285,7 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 		MessageBox( NULL, str, TranslateT( "Jabber Error Message" ), MB_OK|MB_SETFOREGROUND );
 		//JabberListRemoveResource( LIST_CHATROOM, from );
 		JABBER_LIST_ITEM* item = JabberListGetItemPtr (LIST_CHATROOM, from );
-		if ( item != NULL) 
+		if ( item != NULL)
 			if (!item->bChatActive) JabberListRemove( LIST_CHATROOM, from );
 		mir_free( str );
 }	}
