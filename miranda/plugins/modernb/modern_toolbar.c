@@ -398,6 +398,7 @@ static int   sttReposButtons(MTBINFO * mti)
 
 	GetClientRect(mti->hWnd, &rcClient);
     nBarSize=rcClient.right-rcClient.left;
+	if (nBarSize == 0) return 0; 
 	mti->nLineCount=0;
 	hdwp=BeginDeferWindowPos( mti->pButtonList->realCount );
 	do
@@ -798,6 +799,7 @@ static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 				{
 					res=CallService(MS_CLIST_FRAMES_GETFRAMEOPTIONS, MAKEWPARAM(FO_FLAGS,ID),0);
 					if (res>=0) DBWriteContactSettingByte(0,"CLUI","ShowButtonBar",(BYTE)(wParam/*(res&F_VISIBLE)*/?1:0));
+					if (wParam) SendMessage(hwnd, MTBM_REPOSBUTTONS, 0, 0);
 				}
 			}
 			break;
@@ -924,7 +926,7 @@ static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 					if (rcClient.bottom-rcClient.top != Height)
 					{
 						supressRepos=TRUE;
-						SendMessage(pMTBInfo->hWnd,MTBM_UPDATEFRAMEVISIBILITY, -1, 0);
+						PostMessage(pMTBInfo->hWnd,MTBM_UPDATEFRAMEVISIBILITY, -1, 0);
 					}
 				}
 
