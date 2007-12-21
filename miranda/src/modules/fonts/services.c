@@ -46,7 +46,7 @@ void ConvertFontID( FontID *fid, TFontID* fidw )
 
 	MultiByteToWideChar( code_page, 0, fid->group, -1, fidw->group, 64);
 	MultiByteToWideChar( code_page, 0, fid->name, -1, fidw->name, 64);
-	if (fid->cbSize >= FontID_SIZEOF_V2) {
+	if (fid->cbSize >= FontID_SIZEOF_V2A) {
 		MultiByteToWideChar( code_page, 0, fid->backgroundGroup, -1, fidw->backgroundGroup, 64);
 		MultiByteToWideChar( code_page, 0, fid->backgroundName, -1, fidw->backgroundName, 64);
 	}
