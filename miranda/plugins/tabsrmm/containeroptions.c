@@ -170,7 +170,7 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					tvis.hParent = NULL;
 					tvis.hInsertAfter = TVI_LAST;
 					tvis.item.mask = TVIF_TEXT | TVIF_PARAM;
-					tvis.item.pszText = o_pages[i].szTitle;
+					tvis.item.pszText = TranslateTS(o_pages[i].szTitle);
                     tvis.item.lParam = i;
 					hItem = TreeView_InsertItem(hwndTree, &tvis);
                     if(i == 0)

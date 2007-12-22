@@ -1683,7 +1683,7 @@ static BOOL CALLBACK SkinOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
          if(MyEnableThemeDialogTexture)
              MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
-         if(myGlobals.m_WinVerMajor >= 5) {
+         if(0 && myGlobals.m_WinVerMajor >= 5) {
              if(ServiceExists(MS_CLNSE_INVOKE)) {
 
                  ZeroMemory(&sd, sizeof(sd));

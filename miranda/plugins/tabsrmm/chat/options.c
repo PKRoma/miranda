@@ -868,6 +868,7 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
         SendDlgItemMessage(hwndDlg, IDC_NICKCOLORS, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Extended mode 2"));
         SendDlgItemMessage(hwndDlg, IDC_NICKCOLORS, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Selection background"));
         SendDlgItemMessage(hwndDlg, IDC_NICKCOLORS, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Selected text"));
+        SendDlgItemMessage(hwndDlg, IDC_NICKCOLORS, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Incremental search highlight"));
 
         SendDlgItemMessage(hwndDlg, IDC_NICKCOLOR, CPM_SETCOLOUR, 0, g_Settings.nickColors[0]);
         
@@ -977,7 +978,7 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
         else if (LOWORD(wParam) == IDC_NICKCOLORS && HIWORD(wParam) == CBN_SELCHANGE) {
             int iSel = SendDlgItemMessage(hwndDlg, IDC_NICKCOLORS, CB_GETCURSEL, 0, 0);
 
-            if (iSel >= 0 && iSel <= 6)
+            if (iSel >= 0 && iSel <= 7)
                 SendDlgItemMessage(hwndDlg, IDC_NICKCOLOR, CPM_SETCOLOUR, 0, g_Settings.nickColors[iSel]);
             break;
         }
@@ -994,7 +995,7 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
         case IDC_NICKCOLOR:
         {
             int iSel = (int)SendDlgItemMessage(hwndDlg, IDC_NICKCOLORS, CB_GETCURSEL, 0, 0);
-            if (iSel >= 0 && iSel <= 6)
+            if (iSel >= 0 && iSel <= 7)
                 g_Settings.nickColors[iSel] = SendDlgItemMessage(hwndDlg, IDC_NICKCOLOR, CPM_GETCOLOUR, 0, 0);
             break;
         }
@@ -1224,7 +1225,7 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
                 FreeMsgLogBitmaps();
                 LoadMsgLogBitmaps();
 
-                for(i = 0; i <= 6; i++) {
+                for(i = 0; i <= 7; i++) {
                     mir_snprintf(szBuf, 20, "NickColor%d", i);
                     DBWriteContactSettingDword(NULL, "Chat", szBuf, g_Settings.nickColors[i]);
                 }
@@ -1445,7 +1446,7 @@ void LoadGlobalSettings(void)
 	LoadMsgDlgFont(19, &lf, NULL, CHAT_FONTMODULE);
 	g_Settings.UserListHeadingsFont = CreateFontIndirect(&lf);
 
-    for(i = 0; i < 6; i++) {
+    for(i = 0; i < 7; i++) {
         mir_snprintf(szBuf, 20, "NickColor%d", i);
         g_Settings.nickColors[i] = DBGetContactSettingDword(NULL, "Chat", szBuf, g_Settings.crUserListColor);
     }

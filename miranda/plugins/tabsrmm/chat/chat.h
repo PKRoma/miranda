@@ -347,7 +347,7 @@ struct GlobalLogSettings_t {
 	BYTE        UseDividers;
 	BYTE        DividersUsePopupConfig;
     BYTE        MathMod;
-	COLORREF    nickColors[7];
+	COLORREF    nickColors[8];
 	HBRUSH      SelectionBGBrush;
 	BOOL		DoubleClick4Privat;
 	BOOL		ShowContactStatus;

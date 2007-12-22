@@ -381,7 +381,7 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
                                 DrawText(hdcMem, szText, -1, &itemRect, DT_VCENTER | DT_END_ELLIPSIS | DT_SINGLELINE | DT_NOPREFIX);
                             }
                             else
-                                DrawIconEx(hdcMem, itemRect.left + ((width - 16) / 2), (height / 2 - 8) + itemRect.top, hIcon, 16, 16, 0, 0, DI_NORMAL);
+                                DrawIconEx(hdcMem, itemRect.left + 3, (height / 2 - 8) + itemRect.top, hIcon, 16, 16, 0, 0, DI_NORMAL);
                         }
                         else {
                             itemRect.left +=2;
@@ -930,25 +930,30 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 							DrawIconEx(dcMem, rc->left + ((rc->right - rc->left) / 2 - 8), rc->top + ((rc->bottom - rc->top) / 2 - 8), hIcon, 16, 16, 0, 0, DI_NORMAL);
 						}
 					}
-                    GetWindowRect(hwndDlg, &rcWindow);
-                    SetBkMode(dcMem, TRANSPARENT);
-                    if(!(pContainer->dwFlags & CNT_NOMENUBAR) && pContainer->hMenu) {
-                        RECT rcItem;
+//					GetWindowRect(hwndDlg, &rcWindow);
+					SetBkMode(dcMem, TRANSPARENT);
+					if(!(pContainer->dwFlags & CNT_NOMENUBAR) && pContainer->hMenu)
+					{
+						RECT rcItem;
+						RECT rcWindow2;
 
-                        dis.hDC = dcMem;
-                        dis.CtlType = ODT_MENU;
-                        for(i = 0; i <= 4; i++) {
-                            dis.itemID = 0xffff5000 + i;
-                            GetMenuItemRect(hwndDlg, pContainer->hMenu, i, &rcItem);
+						GetWindowRect(hwndDlg, &rcWindow2);
 
-                            dis.rcItem.left = rcItem.left - rcWindow.left;
-                            dis.rcItem.top = rcItem.top - rcWindow.top;
+						dis.hDC = dcMem;
+						dis.CtlType = ODT_MENU;
+						for(i = 0; i <= 4; i++)
+						{
+							dis.itemID = 0xffff5000 + i;
+							GetMenuItemRect(hwndDlg, pContainer->hMenu, i, &rcItem);
 
-                            dis.rcItem.right = dis.rcItem.left + (rcItem.right - rcItem.left);
-                            dis.rcItem.bottom = dis.rcItem.top + (rcItem.bottom - rcItem.top);
-                            SendMessage(hwndDlg, WM_DRAWITEM, 0, (LPARAM)&dis);
-                        }
-                    }
+							dis.rcItem.left = rcItem.left - rcWindow2.left;
+							dis.rcItem.top = rcItem.top - rcWindow2.top;
+
+							dis.rcItem.right = dis.rcItem.left + (rcItem.right - rcItem.left);
+							dis.rcItem.bottom = dis.rcItem.top + (rcItem.bottom - rcItem.top);
+							SendMessage(hwndDlg, WM_DRAWITEM, 0, (LPARAM)&dis);
+						}
+					}
                     BitBlt(dcFrame, 0, 0, rcWindow.right, rcWindow.bottom, dcMem, 0, 0, SRCCOPY);
 					SelectObject(dcMem, hbmOld);
 					DeleteObject(hbmMem);
@@ -2312,7 +2317,7 @@ panel_found:
             CheckMenuItem(hMenu, ID_WINDOWFLASHING_DISABLEFLASHING, MF_BYCOMMAND | pContainer->dwFlags & CNT_NOFLASH ? MF_CHECKED : MF_UNCHECKED);
             CheckMenuItem(hMenu, ID_WINDOWFLASHING_FLASHUNTILFOCUSED, MF_BYCOMMAND | pContainer->dwFlags & CNT_FLASHALWAYS ? MF_CHECKED : MF_UNCHECKED);
 
-            submenu = GetSubMenu(hMenu, 3);
+            submenu = GetSubMenu(hMenu, 2);
             if(dat && submenu) {
                 MsgWindowUpdateMenu(pContainer->hwndActive, dat, submenu, MENU_LOGMENU);
                 //submenu = GetSubMenu(hMenu, 1);
@@ -3686,6 +3691,4 @@ void UpdateContainerMenu(HWND hwndDlg, struct MessageWindowData *dat)
     if(dat->bType == SESSIONTYPE_IM)
         EnableWindow(GetDlgItem(hwndDlg, IDC_TIME), fDisable ? FALSE : TRUE);
 }
-
-
 

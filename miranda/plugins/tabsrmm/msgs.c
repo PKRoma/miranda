@@ -40,6 +40,7 @@ static char *relnotes[] = {
     "\\par\t\\b\\ul1 Release notes for version 2.0.0.4\\b0\\ul0\\par ",
     "*\tBug fixes. See changelog.txt for details\\par",
     "*\tAdded incremental search feature to group chat userlist.\\par",
+    "*\tDisabled skin editor pages (they weren't exactly useful anyway).\\par",
     NULL
 };
 
@@ -551,7 +552,7 @@ nowindowcreate:
             cle.cbSize = sizeof(cle);
             cle.hContact = (HANDLE) wParam;
             cle.hDbEvent = (HANDLE) lParam;
-              cle.flags = CLEF_TCHAR;
+            cle.flags = CLEF_TCHAR;
             cle.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
             cle.pszService = "SRMsg/ReadMessage";
             contactName = (TCHAR*) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, GCDNF_TCHAR);
@@ -2100,8 +2101,3 @@ HICON *BTN_GetIcon(char *szIconName)
     }
     return NULL;
 }
-
-
-
-
-

@@ -320,7 +320,7 @@ void WriteThemeToINI(const char *szIniFilename, struct MessageWindowData *dat)
         else
             WritePrivateProfileStringA("Custom Colors", szTemp, _itoa(dat->theme.custom_colors[i], szBuf, 10), szIniFilename);
     }
-    for(i = 0; i <= 6; i++)
+    for(i = 0; i <= 7; i++)
         WritePrivateProfileStringA("Nick Colors", _itoa(i, szBuf, 10), _itoa(g_Settings.nickColors[i], szTemp, 10), szIniFilename);
 }
 
@@ -413,7 +413,7 @@ void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, 
                 else
                     dat->theme.custom_colors[i] = GetPrivateProfileIntA("Custom Colors", szTemp, RGB(224, 224, 224), szIniFilename);
             }
-            for(i = 0; i <= 6; i++) {
+            for(i = 0; i <= 7; i++) {
                 if(i == 5)
                     defclr = GetSysColor(COLOR_HIGHLIGHT);
                 else if(i == 6)
