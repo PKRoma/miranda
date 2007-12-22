@@ -195,14 +195,14 @@ BEGIN
     END
     POPUP "Log"
     BEGIN
-        MENUITEM "Clear lo&g",                  ID_CLEARLOG
+        MENUITEM "Clear lo&g",                  IDM_CLEAR
         MENUITEM SEPARATOR
         MENUITEM "Co&py all",                   ID_COPYALL
         MENUITEM SEPARATOR
         POPUP "Word lookup", GRAYED
         BEGIN
-            MENUITEM "Google",                      ID_SEARCH_GOOGLE
-            MENUITEM "Wikipedia",                   ID_SEARCH_WIKIPEDIA
+            MENUITEM "Google",                      IDM_SEARCH_GOOGLE
+            MENUITEM "Wikipedia",                   IDM_SEARCH_WIKIPEDIA
         END
     END
     POPUP "Link"

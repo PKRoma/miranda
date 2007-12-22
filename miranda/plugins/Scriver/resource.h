@@ -181,6 +181,8 @@
 #define IDM_CLOSETAB					40020
 #define IDM_CLOSEOTHERTABS				40021
 #define IDM_TOPMOST						40040
+#define IDM_SEARCH_GOOGLE                40080
+#define IDM_SEARCH_WIKIPEDIA             40081
 
 /* chat.dll resources */
 
@@ -241,8 +243,4 @@
 #define ID_CURR                         50003
 #define ID_COPY                         50004
 #define ID_COPYALL                      50006
-#define ID_CLEARLOG                     50009
 #define ID_Menu                         50026
-#define ID_SEARCH_GOOGLE                50027
-#define ID_SEARCH_WIKIPEDIA             50028
-#define ID_WIKIPEDIA_                   50029

@@ -160,6 +160,10 @@ SOURCE=.\globals.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\input.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\msgdialog.c
 # End Source File
 # Begin Source File
@@ -217,6 +221,10 @@ SOURCE=.\globals.h
 # Begin Source File
 
 SOURCE=.\chat\IcoLib.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\input.h
 # End Source File
 # Begin Source File
 

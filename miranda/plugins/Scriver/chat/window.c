@@ -694,13 +694,79 @@ static LRESULT CALLBACK LogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
       }   }
       break;
 
-   case WM_CHAR:
-      SetFocus(GetDlgItem(GetParent(hwnd), IDC_CHAT_MESSAGE));
-      SendMessage(GetDlgItem(GetParent(hwnd), IDC_CHAT_MESSAGE), WM_CHAR, wParam, lParam);
-      break;
-   }
+	case WM_CONTEXTMENU:
+	{
+		CHARRANGE sel, all = { 0, -1 };
+		POINT pt;
+		UINT uID = 0;
+		HMENU hMenu = 0;
+		TCHAR *pszWord = NULL;
+		POINTL ptl;
+		SESSION_INFO* si =(SESSION_INFO*)GetWindowLong(GetParent(hwnd),GWL_USERDATA);
 
-   return CallWindowProc(OldLogProc, hwnd, msg, wParam, lParam);
+		SendMessage(hwnd, EM_EXGETSEL, 0, (LPARAM) & sel);
+		if (lParam == 0xFFFFFFFF) {
+			SendMessage(hwnd, EM_POSFROMCHAR, (WPARAM) & pt, (LPARAM) sel.cpMax);
+			ClientToScreen(hwnd, &pt);
+		} else {
+			pt.x = (short) LOWORD(lParam);
+			pt.y = (short) HIWORD(lParam);
+		}
+		ptl.x = (LONG)pt.x;
+		ptl.y = (LONG)pt.y;
+		ScreenToClient(hwnd, (LPPOINT)&ptl);
+		pszWord = GetRichTextWord(hwnd, &ptl);
+		uID = CreateGCMenu(hwnd, &hMenu, 1, pt, si, NULL, pszWord);
+		switch (uID) {
+		case 0:
+			PostMessage(GetParent(hwnd), WM_MOUSEACTIVATE, 0, 0 );
+			break;
+
+		case ID_COPYALL:
+			SendMessage(hwnd, EM_EXGETSEL, 0, (LPARAM) & sel);
+			SendMessage(hwnd, EM_EXSETSEL, 0, (LPARAM) & all);
+			SendMessage(hwnd, WM_COPY, 0, 0);
+			SendMessage(hwnd, EM_EXSETSEL, 0, (LPARAM) & sel);
+			PostMessage(GetParent(hwnd), WM_MOUSEACTIVATE, 0, 0 );
+			break;
+
+		case IDM_CLEAR:
+			if (si)
+			{
+				SetWindowText(hwnd, _T(""));
+				LM_RemoveAll(&si->pLog, &si->pLogEnd);
+				si->iEventCount = 0;
+				si->LastTime = 0;
+				PostMessage(GetParent(hwnd), WM_MOUSEACTIVATE, 0, 0 );
+			}
+			break;
+
+		case IDM_SEARCH_GOOGLE:
+			SearchWord(pszWord, SEARCHENGINE_GOOGLE);
+			PostMessage(GetParent(hwnd), WM_MOUSEACTIVATE, 0, 0 );
+			break;
+
+		case IDM_SEARCH_WIKIPEDIA:
+			SearchWord(pszWord, SEARCHENGINE_WIKIPEDIA);
+			PostMessage(GetParent(hwnd), WM_MOUSEACTIVATE, 0, 0 );
+			break;
+
+		default:
+			PostMessage(GetParent(hwnd), WM_MOUSEACTIVATE, 0, 0 );
+			DoEventHookAsync(GetParent(hwnd), si->ptszID, si->pszModule, GC_USER_LOGMENU, NULL, NULL, (LPARAM)uID);
+			break;
+		}
+		DestroyGCMenu(&hMenu, 5);
+		mir_free(pszWord);
+		break;
+	}
+	case WM_CHAR:
+		SetFocus(GetDlgItem(GetParent(hwnd), IDC_CHAT_MESSAGE));
+		SendMessage(GetDlgItem(GetParent(hwnd), IDC_CHAT_MESSAGE), WM_CHAR, wParam, lParam);
+		break;
+	}
+
+	return CallWindowProc(OldLogProc, hwnd, msg, wParam, lParam);
 }
 
 static void ProcessNickListHovering(HWND hwnd, int hoveredItem, POINT * pt, SESSION_INFO * parentdat)
@@ -1540,109 +1606,8 @@ LABEL_SHOWWINDOW:
          switch (pNmhdr->code) {
          case EN_MSGFILTER:
             if (pNmhdr->idFrom == IDC_CHAT_LOG && ((MSGFILTER *) lParam)->msg == WM_RBUTTONUP){
-               CHARRANGE sel, all = { 0, -1 };
-               POINT pt;
-               UINT uID = 0;
-               HMENU hMenu = 0;
-               TCHAR pszWord[4096];
-
-               pt.x = (short) LOWORD(((ENLINK *) lParam)->lParam);
-               pt.y = (short) HIWORD(((ENLINK *) lParam)->lParam);
-               ClientToScreen(pNmhdr->hwndFrom, &pt);
-
-               { // fixing stuff for searches
-                  long iCharIndex, iLineIndex, iChars, start, end, iRes;
-                  POINTL ptl;
-
-                  pszWord[0] = _T('\0');
-                  ptl.x = (LONG)pt.x;
-                  ptl.y = (LONG)pt.y;
-                  ScreenToClient(GetDlgItem(hwndDlg, IDC_CHAT_LOG), (LPPOINT)&ptl);
-                  iCharIndex = SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_LOG), EM_CHARFROMPOS, 0, (LPARAM)&ptl);
-                  if (iCharIndex < 0)
-                     break;
-                  iLineIndex = SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_LOG), EM_EXLINEFROMCHAR, 0, (LPARAM)iCharIndex);
-                  iChars = SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_LOG), EM_LINEINDEX, (WPARAM)iLineIndex, 0 );
-                  start = SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_LOG), EM_FINDWORDBREAK, WB_LEFT, iCharIndex);//-iChars;
-                  end = SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_LOG), EM_FINDWORDBREAK, WB_RIGHT, iCharIndex);//-iChars;
-
-                  if (end - start > 0) {
-                     TEXTRANGE tr;
-                     CHARRANGE cr;
-                     static TCHAR szTrimString[] = _T(":;,.!?\'\"><()[]- \r\n");
-                     ZeroMemory(&tr, sizeof(TEXTRANGE));
-
-                     cr.cpMin = start;
-                     cr.cpMax = end;
-                     tr.chrg = cr;
-                     tr.lpstrText = pszWord;
-                     iRes = SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_LOG), EM_GETTEXTRANGE, 0, (LPARAM)&tr);
-                     if (iRes > 0) {
-                        int iLen = lstrlen(pszWord)-1;
-                        while(iLen >= 0 && _tcschr(szTrimString, pszWord[iLen])) {
-                           pszWord[iLen] = _T('\0');
-                           iLen--;
-               }   }   }   }
-
-               uID = CreateGCMenu(hwndDlg, &hMenu, 1, pt, si, NULL, pszWord);
-               switch (uID) {
-               case 0:
-                  PostMessage(hwndDlg, WM_MOUSEACTIVATE, 0, 0 );
-                  break;
-
-               case ID_COPYALL:
-                  SendMessage(pNmhdr->hwndFrom, EM_EXGETSEL, 0, (LPARAM) & sel);
-                  SendMessage(pNmhdr->hwndFrom, EM_EXSETSEL, 0, (LPARAM) & all);
-                  SendMessage(pNmhdr->hwndFrom, WM_COPY, 0, 0);
-                  SendMessage(pNmhdr->hwndFrom, EM_EXSETSEL, 0, (LPARAM) & sel);
-                  PostMessage(hwndDlg, WM_MOUSEACTIVATE, 0, 0 );
-                  break;
-
-               case ID_CLEARLOG:
-                  {
-                     SESSION_INFO* s = SM_FindSession(si->ptszID, si->pszModule);
-                     if (s)
-                     {
-                        SetDlgItemText(hwndDlg, IDC_CHAT_LOG, _T(""));
-                        LM_RemoveAll(&s->pLog, &s->pLogEnd);
-                        s->iEventCount = 0;
-                        s->LastTime = 0;
-                        si->iEventCount = 0;
-                        si->LastTime = 0;
-                        si->pLog = s->pLog;
-                        si->pLogEnd = s->pLogEnd;
-                        PostMessage(hwndDlg, WM_MOUSEACTIVATE, 0, 0 );
-                  }   }
-                  break;
-
-               case ID_SEARCH_GOOGLE:
-                  {
-                     char szURL[4096];
-                     if (pszWord[0]) {
-                        mir_snprintf( szURL, sizeof( szURL ), "http://www.google.com/search?q=" TCHAR_STR_PARAM, pszWord );
-                        CallService(MS_UTILS_OPENURL, 1, (LPARAM) szURL);
-                     }
-                     PostMessage(hwndDlg, WM_MOUSEACTIVATE, 0, 0 );
-                  }
-                  break;
-
-               case ID_SEARCH_WIKIPEDIA:
-                  {
-                     char szURL[4096];
-                     if (pszWord[0]) {
-                        mir_snprintf( szURL, sizeof( szURL ), "http://en.wikipedia.org/wiki/" TCHAR_STR_PARAM, pszWord );
-                        CallService(MS_UTILS_OPENURL, 1, (LPARAM) szURL);
-                     }
-                     PostMessage(hwndDlg, WM_MOUSEACTIVATE, 0, 0 );
-                  }
-                  break;
-
-               default:
-                  PostMessage(hwndDlg, WM_MOUSEACTIVATE, 0, 0 );
-                  DoEventHookAsync(hwndDlg, si->ptszID, si->pszModule, GC_USER_LOGMENU, NULL, NULL, (LPARAM)uID);
-                  break;
-               }
-               DestroyGCMenu(&hMenu, 5);
+				SetWindowLong(hwndDlg, DWL_MSGRESULT, TRUE);
+				return TRUE;
             }
             break;
 

@@ -24,6 +24,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef UTILS_H
 #define UTILS_H
 
+enum SEARCHENGINES {
+	SEARCHENGINE_GOOGLE = 1,
+	SEARCHENGINE_WIKIPEDIA = 2
+};
+
 HANDLE HookEvent_Ex(const char *name, MIRANDAHOOK hook);
 HANDLE CreateServiceFunction_Ex(const char *name, MIRANDASERVICE service);
 extern void UnhookEvents_Ex();
@@ -41,10 +46,9 @@ extern int GetRichTextLength(HWND hwnd, int codepage, BOOL inBytes);
 extern TCHAR* GetRichText(HWND hwnd, int codepage);
 extern char* GetRichTextRTF(HWND hwnd);
 extern char* GetRichTextEncoded(HWND hwnd, int codepage);
+extern TCHAR *GetRichTextWord(HWND hwnd, POINTL *pt);
 extern int SetRichTextRTF(HWND hwnd, const char *text);
 extern int SetRichTextEncoded(HWND hwnd, const char *text, int codepage);
+extern void SearchWord(TCHAR * word, int engine);
 
-extern void InputAreaContextMenu(HWND hwnd, WPARAM wParam, LPARAM lParam, HANDLE hContact);
-extern void RegisterKeyBindings();
-extern int InputAreaShortcuts(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, CommonWindowData *windowData);
 #endif
