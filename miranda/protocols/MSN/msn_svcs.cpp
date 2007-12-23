@@ -1389,21 +1389,31 @@ static int MsnUserIsTyping(WPARAM wParam, LPARAM lParam)
 	bool typing = lParam == PROTOTYPE_SELFTYPING_ON;
 
 	int netId = Lists_GetNetId(tEmail);
-	if (netId == 1)
+	switch (netId)
 	{
-		bool isOffline;
-		ThreadData* thread = MSN_StartSB(hContact, isOffline);
-
-		if ( thread == NULL ) 
+	case 0:
+	case 1:
 		{
-			if (isOffline) return 0;
-			MsgQueue_Add( hContact, 2571, NULL, 0, NULL, typing );
+			bool isOffline;
+			ThreadData* thread = MSN_StartSB(hContact, isOffline);
+
+			if ( thread == NULL ) 
+			{
+				if (isOffline) return 0;
+				MsgQueue_Add( hContact, 2571, NULL, 0, NULL, typing );
+			}
+			else
+				MSN_StartStopTyping( thread, typing );
 		}
-		else
-			MSN_StartStopTyping( thread, typing );
-	}
-	else
+		break;
+
+	case 4:
+		break;
+
+	default:
 		if (typing) MSN_SendTyping(msnNsThread, tEmail, netId);
+		break;
+	}
 
 	return 0;
 }
