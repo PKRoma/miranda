@@ -1901,8 +1901,7 @@ int CoolSB_SetupScrollBar()
         !StatusItems[ID_EXTBKSCROLLBUTTONPRESSED - ID_STATUS_OFFLINE].imageItem)
 
         g_CluiData.bSkinnedScrollbar = FALSE;
-
-
+    
     if(DBGetContactSettingByte(NULL, "CLC", "NoVScrollBar", 0)) {
         UninitializeCoolSB(pcli->hwndContactTree);
         return 0;

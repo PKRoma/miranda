@@ -2073,7 +2073,8 @@ static int CLUIFramesRemoveFrame(WPARAM wParam,LPARAM lParam)
     ulockfrm();
     InvalidateRect(pcli->hwndContactList,NULL,TRUE);
     CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,0);
-    InvalidateRect(pcli->hwndContactList,NULL,TRUE);
+    //InvalidateRect(pcli->hwndContactList,NULL,TRUE);
+    RedrawWindow(pcli->hwndContactList,NULL,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_FRAME|RDW_UPDATENOW|RDW_ALLCHILDREN);
     return(0);
 }
 
