@@ -24,6 +24,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include <ctype.h>
 #include <mbstring.h>
+#include <winsock.h>
+#include <m_netlib.h>
+
 
 static unsigned hookNum = 0;
 static unsigned serviceNum = 0;
@@ -338,18 +341,22 @@ void SearchWord(TCHAR * word, int engine)
 {
 	char szURL[4096];
 	if (word && word[0]) {
+		char *wordUTF = mir_utf8encodeT(word);
+		char *wordURL = (char *)CallService(MS_NETLIB_URLENCODE, 0, (LPARAM)wordUTF);
+		mir_free(wordUTF);
 		switch (engine) {
 			case SEARCHENGINE_WIKIPEDIA:
-				mir_snprintf( szURL, sizeof( szURL ), "http://en.wikipedia.org/wiki/" TCHAR_STR_PARAM, word );
+				mir_snprintf( szURL, sizeof( szURL ), "http://en.wikipedia.org/wiki/%s", wordURL );
+				break;
+			case SEARCHENGINE_YAHOO:
+				mir_snprintf( szURL, sizeof( szURL ), "http://search.yahoo.com/search?p=%s&ei=UTF-8", wordURL );
 				break;
 			case SEARCHENGINE_GOOGLE:
 			default:
-				mir_snprintf( szURL, sizeof( szURL ), "http://www.google.com/search?q=" TCHAR_STR_PARAM, word );
+				mir_snprintf( szURL, sizeof( szURL ), "http://www.google.com/search?q=%s&ie=utf-8&oe=utf-8", wordURL );
 				break;
-				/*
-				http://search.yahoo.com/search?p=sas
-				*/
 		}
+		HeapFree(GetProcessHeap(), 0, wordURL);
 		CallService(MS_UTILS_OPENURL, 1, (LPARAM) szURL);
 	}
 }

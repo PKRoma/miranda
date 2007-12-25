@@ -487,6 +487,7 @@ BEGIN
         POPUP "Word lookup", GRAYED
         BEGIN
             MENUITEM "Google",                      IDM_SEARCH_GOOGLE
+            MENUITEM "Yahoo",                       IDM_SEARCH_YAHOO
             MENUITEM "Wikipedia",                   IDM_SEARCH_WIKIPEDIA
         END
         MENUITEM SEPARATOR

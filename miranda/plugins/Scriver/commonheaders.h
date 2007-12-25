@@ -41,20 +41,21 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define WIN32_LEAN_AND_MEAN
 #define _USE_32BIT_TIME_T
 
-#include <wchar.h>
-#include <tchar.h>
-#include <stdio.h>
 #include <windows.h>
 #include <process.h>
+#include <stdio.h>
+#include <stdarg.h>
+#include <time.h>
+#include <limits.h>
+#include <wchar.h>
+#include <tchar.h>
 #include <shellapi.h>
 #include <commctrl.h>
 #include <commdlg.h>
 #include <ole2.h>
-#include <time.h>
 #include <stddef.h>
-#include <process.h>
-#include "resource.h"
 #include <win2k.h>
+
 #include <newpluginapi.h>
 #include <m_system.h>
 #include <m_database.h>
@@ -79,6 +80,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_keybindings.h>
 #include <m_hotkeys.h>
 
+#include "resource.h"
 #include "globals.h"
 #include "msgs.h"
 #include "msgwindow.h"

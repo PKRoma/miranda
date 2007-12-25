@@ -26,7 +26,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 enum SEARCHENGINES {
 	SEARCHENGINE_GOOGLE = 1,
-	SEARCHENGINE_WIKIPEDIA = 2
+	SEARCHENGINE_YAHOO = 2,
+	SEARCHENGINE_WIKIPEDIA = 3
 };
 
 HANDLE HookEvent_Ex(const char *name, MIRANDAHOOK hook);

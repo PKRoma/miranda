@@ -360,6 +360,7 @@ static LRESULT CALLBACK LogEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			TCHAR *pszWord;
 			POINT pt;
 			POINTL ptl;
+			int uID;
 			CHARRANGE sel, all = { 0, -1 };
 			hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CONTEXT));
 			hSubMenu = GetSubMenu(hMenu, 0);
@@ -385,8 +386,8 @@ static LRESULT CALLBACK LogEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				ModifyMenu( hSubMenu, 5, MF_STRING|MF_BYPOSITION, 4, szMenuText );
 			}
 			else ModifyMenu( hSubMenu, 5, MF_STRING|MF_GRAYED|MF_BYPOSITION, 4, TranslateT( "No word to look up" ));
-
-			switch (TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwnd, NULL)) {
+			uID = TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwnd, NULL);
+			switch (uID) {
 			case IDM_COPY:
 				SendMessage(hwnd, WM_COPY, 0, 0);
 				break;
@@ -402,10 +403,9 @@ static LRESULT CALLBACK LogEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				SendMessage(GetParent(hwnd), DM_CLEARLOG, 0, 0);
 				break;
 			case IDM_SEARCH_GOOGLE:
-				SearchWord(pszWord, SEARCHENGINE_GOOGLE);
-				break;
+			case IDM_SEARCH_YAHOO:
 			case IDM_SEARCH_WIKIPEDIA:
-				SearchWord(pszWord, SEARCHENGINE_WIKIPEDIA);
+				SearchWord(pszWord, uID - IDM_SEARCH_GOOGLE + SEARCHENGINE_GOOGLE);
 				break;
 			}
 			DestroyMenu(hMenu);

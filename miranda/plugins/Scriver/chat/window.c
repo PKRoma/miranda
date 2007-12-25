@@ -742,15 +742,11 @@ static LRESULT CALLBACK LogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 			break;
 
 		case IDM_SEARCH_GOOGLE:
-			SearchWord(pszWord, SEARCHENGINE_GOOGLE);
-			PostMessage(GetParent(hwnd), WM_MOUSEACTIVATE, 0, 0 );
-			break;
-
+		case IDM_SEARCH_YAHOO:
 		case IDM_SEARCH_WIKIPEDIA:
-			SearchWord(pszWord, SEARCHENGINE_WIKIPEDIA);
+			SearchWord(pszWord, uID - IDM_SEARCH_GOOGLE + SEARCHENGINE_GOOGLE);
 			PostMessage(GetParent(hwnd), WM_MOUSEACTIVATE, 0, 0 );
 			break;
-
 		default:
 			PostMessage(GetParent(hwnd), WM_MOUSEACTIVATE, 0, 0 );
 			DoEventHookAsync(GetParent(hwnd), si->ptszID, si->pszModule, GC_USER_LOGMENU, NULL, NULL, (LPARAM)uID);
