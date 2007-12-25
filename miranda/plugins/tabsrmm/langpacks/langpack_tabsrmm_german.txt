@@ -1268,4 +1268,7 @@ Aussehen der tabs festlegen
 Windows - Standardfarben verwenden
 [Default width for button-style tabs]
 Standardbreite bei Schaltflächen Stil
-
+[Window layout]
+Fensterlayout
+[Notifications]
+Benachrichtigungen

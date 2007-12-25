@@ -5,7 +5,7 @@
 1.Requirements
 ---------------
 
-a) Miranda IM, Version 0.7.0.0 or later (released in October 2006) IT WILL NOT
+a) Miranda IM, Version 0.7.0.0 or later (released in October 2007) IT WILL NOT
    WORK with older Miranda (0.6 or earlier)
 b) The unicode version of tabSRMM requires Windows 2000 or XP and will not 
    run under Windows 9x or ME. The ANSI version may run under Windows 98 

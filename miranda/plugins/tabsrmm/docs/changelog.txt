@@ -21,7 +21,7 @@ It NEEDS Miranda 0.7.x and will not work on older versions.
 
 Version 2.0.0.4  - 2007/12/23
 
-        + added incremental search feature to the group chat userlist. Simple
+        + added incremental search feature to the group chat userlist. Simply
           type what you want to find and it will be highlighted. Using cursor keys
           to move the selection will clear the current search string. Typing
           something which does not exist will also clear the current seach string
@@ -34,7 +34,7 @@ Version 2.0.0.4  - 2007/12/23
         ! fixed minor issue with double icons in status bar (on rare occasions)
         ! fixed skin drawing on multimonitor systems (patch by Bryan)
 
-Version 2.0.0.3  - 2007/11/29
+Version 2.0.0.3  - 2007/11/29 (released with 0.8 alpha #5)
 
         * changed per contact filter system in group chats
         ! "revert splitter" option fixed for group chats.

@@ -16,12 +16,3 @@ If none can be found, you'll get a warning message. You can still continue
 to run tabSRMM, but you'll get no icons on the toolbar and most likely 
 icons will be missing in other places too (status bar, for example).
 
-You can also use the IcoLib plugin.
------------------------------------
-
-http://www.miranda-im.org/download/details.php?action=viewfile&id=1895
-
-If installed, tabSRMM will support the configuration of icons at runtime, 
-using the services provided by IcoLib. You still need to install a tabSRMM
-icon pack, because the icons from the icon pack will be used to setup the 
-default icons for IcoLib.

@@ -110,7 +110,7 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 	if ( ServiceExists( MS_DB_EVENT_GETTEXT ))
 		bNewDbApi = TRUE;
 
-	fnSetMenuInfo = ( pfnSetMenuInfo )GetProcAddress( GetModuleHandleA( "USER32.DLL" ), "GetMenuInfo" );
+	fnSetMenuInfo = ( pfnSetMenuInfo )GetProcAddress( GetModuleHandleA( "USER32.DLL" ), "SetMenuInfo" );
 
 	Chat_Load(pluginLink);
 	return LoadSendRecvMessageModule();

@@ -1321,13 +1321,6 @@ static BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
                 }
             }
             SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
-            /*
-            if(hContact && lParam == 0) {
-                //_DebugTraceA("menu command (container): %d", LOWORD(wParam));
-                if(CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam), MPCF_CONTACTMENU), (LPARAM) hContact))
-                    break;
-            }
-            */
             if(LOWORD(wParam) == IDC_TBFIRSTUID - 1)
                 break;
             else if(LOWORD(wParam) >= IDC_TBFIRSTUID) {                     // skinnable buttons handling

@@ -34,6 +34,7 @@ extern      NEN_OPTIONS nen_options;
 extern      BOOL g_skinnedContainers;
 extern      BOOL g_framelessSkinmode;
 
+
 static void MY_CheckDlgButton(HWND hWnd, UINT id, int iCheck)
 {
     CheckDlgButton(hWnd, id, iCheck ? BST_CHECKED : BST_UNCHECKED);
@@ -42,6 +43,7 @@ static void MY_CheckDlgButton(HWND hWnd, UINT id, int iCheck)
 static void ReloadGlobalContainerSettings()
 {
     struct ContainerWindowData *pC = pFirstContainer;
+    
     while(pC) {
         if(pC->dwPrivateFlags & CNT_GLOBALSETTINGS) {
             DWORD dwOld = pC->dwFlags;
