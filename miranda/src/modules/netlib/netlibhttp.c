@@ -609,6 +609,9 @@ int NetlibHttpRecvChunkHeader(HANDLE hConnection, BOOL first)
 				NLRecv((struct NetlibConnection*)hConnection, data, peol2 - data + 2, 0);
 				return strtol(first ? data : peol1+2, NULL, 16);
 			}
+			else
+				if (recvResult >= 31) return SOCKET_ERROR;
+
 		}
 	}
 }
