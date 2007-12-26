@@ -208,6 +208,7 @@ void FreeGlobals() {
 			ImageList_Destroy(g_dat->hButtonIconList);
 		if (g_dat->hHelperIconList)
 			ImageList_Destroy(g_dat->hHelperIconList);
+		mir_free(g_dat->tabIconListUsage);
 		mir_free(g_dat);
 	}
 }
