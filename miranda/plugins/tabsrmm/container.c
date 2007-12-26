@@ -2483,15 +2483,6 @@ panel_found:
             ShowWindow(GetDlgItem(hwndDlg, IDC_SIDEBARUP), pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
             ShowWindow(GetDlgItem(hwndDlg, IDC_SIDEBARDOWN), pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
 
-            /*
-            for(i = 0; sbarItems[i].uId != 0; i++) {
-                HWND hwndItem = GetDlgItem(hwndDlg, sbarItems[i].uId);
-                SendMessage(hwndItem, BUTTONSETASFLATBTN, 0, isFlat ? 0 : 1);
-                SendMessage(hwndItem, BUTTONSETASFLATBTN + 10, 0, isThemed ? 1 : 0);
-                SendMessage(hwndItem, BUTTONSETASFLATBTN + 12, 0, (LPARAM)pContainer);
-                ShowWindow(hwndItem, pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
-            }*/
-
             SendDlgItemMessage(hwndDlg, IDC_SIDEBARUP, BUTTONSETASFLATBTN + 10, 0, 0);
             SendDlgItemMessage(hwndDlg, IDC_SIDEBARUP, BUTTONSETASFLATBTN + 12, 0, (LPARAM)pContainer);
             SendDlgItemMessage(hwndDlg, IDC_SIDEBARUP, BUTTONSETASFLATBTN, 0, 0);
@@ -2790,31 +2781,9 @@ panel_found:
                 SetTextColor(dis->hDC, !(dis->itemState & ODS_DISABLED) ? (bSkinned ? myGlobals.skinDefaultFontColor : GetSysColor(COLOR_MENUTEXT)) : GetSysColor(COLOR_GRAYTEXT)); ;
                 DrawText(dis->hDC, menuName, lstrlen(menuName), &dis->rcItem,
                          DT_VCENTER | DT_SINGLELINE | DT_CENTER);
-                //DrawState(dis->hDC, 0, NULL, menuBarNames[dis->itemID - 100], lstrlen(menuBarNames[dis->itemID - 100]),
-                //          3 + ((dis->rcItem.left + dis->rcItem.right) / 2 - sz.cx / 2),
-                //          (dis->rcItem.top + dis->rcItem.bottom) / 2 - sz.cy / 2,
-                //          sz.cx, sz.cy, DST_TEXT | ((dis->itemState & ODS_GRAYED || dis->itemState & ODS_DISABLED) ? DSS_DISABLED : DSS_NORMAL));
                 SelectObject(dis->hDC, hOldFont);
                 return TRUE;
             }
-			/*
-            LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
-            if(dis->CtlType == ODT_BUTTON && (dis->CtlID == IDC_SIDEBARUP || dis->CtlID == IDC_SIDEBARDOWN)) {
-                HICON hIcon;
-                DWORD bStyle = 0;
-                if(dis->itemState & ODS_DISABLED)
-                    bStyle = DFCS_FLAT;
-                else
-                    bStyle = DFCS_MONO;
-                DrawFrameControl(dis->hDC, &dis->rcItem, DFC_BUTTON, DFCS_BUTTONPUSH | (dis->itemState & ODS_SELECTED ? DFCS_PUSHED : 0) | bStyle);
-                hIcon = dis->CtlID == IDC_SIDEBARUP ? myGlobals.g_buttonBarIcons[26] : myGlobals.g_buttonBarIcons[16];
-                DrawState(dis->hDC, NULL, NULL, (LPARAM) hIcon, 0,
-                          (dis->rcItem.right + dis->rcItem.left - cx) / 2,
-                          (dis->rcItem.bottom + dis->rcItem.top - cy) / 2,
-                          cx, cy,
-                          DST_ICON | (dis->itemState & ODS_DISABLED ? DSS_DISABLED : DSS_NORMAL));
-                return TRUE;
-            }*/
             return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
         }
         case WM_MEASUREITEM:
@@ -2830,7 +2799,6 @@ panel_found:
                     hOldFont = SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
                     GetTextExtentPoint32(hdc, menuName, lstrlen(menuName), &sz);
                     lpmi->itemWidth = sz.cx;
-                    //lpmi->itemHeight = myGlobals.ncm.iMenuHeight;
                     SelectObject(hdc, hOldFont);
                     ReleaseDC(hwndDlg, hdc);
                     return TRUE;
@@ -2866,7 +2834,6 @@ panel_found:
 					fa.cProto = dat ? dat->szProto : NULL;
 					CallService(MS_FAVATAR_DESTROY, (WPARAM)&fa, 0);
   	  			}
-                //DestroyWindow(hwndTab);
                 ZeroMemory((void *)&item, sizeof(item));
                 for(i = 0; i < TabCtrl_GetItemCount(hwndTab); i++) {
                     item.mask = TCIF_PARAM;
@@ -2881,7 +2848,6 @@ panel_found:
                 SetMenu(hwndDlg, NULL);
                 if(pContainer->hwndStatus) {
                     DestroyWindow(pContainer->hwndSlist);
-                    //SetWindowLong(pContainer->hwndStatus, GWL_WNDPROC, (LONG)OldStatusBarproc);
                     DestroyWindow(pContainer->hwndStatus);
                 }
 
@@ -3660,7 +3626,8 @@ void UpdateContainerMenu(HWND hwndDlg, struct MessageWindowData *dat)
     BYTE IEViewMode = 0;
     BOOL fDisable = FALSE;
 
-    if(dat->bType == SESSIONTYPE_CHAT)              // TODO: chat sessions may get their own message log submenu in the future. for now, its just disabled
+    if(dat->bType == SESSIONTYPE_CHAT)              // TODO: chat sessions may get their own message log submenu 
+    												// in the future. for now, its just disabled
         fDisable = TRUE;
     else {
         if(dat->hwndIEView != 0) {

@@ -413,6 +413,10 @@ LRESULT DM_UpdateLastMessage(HWND hwndDlg, struct MessageWindowData *dat)
     return 0;
 }
 
+/*
+ * save current keyboard layout for the given contact
+ */
+
 LRESULT DM_SaveLocale(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 {
     if(dat) {
@@ -501,7 +505,6 @@ HWND DM_CreateClist(HWND hwndParent, struct MessageWindowData *dat)
     else
         SendMessage(hwndClist, CLM_SETHIDEEMPTYGROUPS, (WPARAM) FALSE, 0);
     SendMessage(hwndClist, CLM_FIRST + 106, 0, 1);
-    //SendMessage(hwndClist, CLM_SETHIDEOFFLINEROOT, TRUE, 0);
     SendMessage(hwndClist, CLM_AUTOREBUILD, 0, 0);
 
     return hwndClist;
@@ -594,6 +597,7 @@ LRESULT DM_ThemeChanged(HWND hwnd, struct MessageWindowData *dat)
 
 /*
  * status icon stuff (by sje, used for indicating encryption status in the status bar
+ * this is now part of the message window api
  */
 
 static HANDLE hHookIconPressedEvt;
@@ -783,7 +787,6 @@ void SI_CheckStatusIconClick(struct MessageWindowData *dat, HWND hwndFrom, POINT
     else if(clicked) {
         sicd.cbSize = sizeof(StatusIconClickData);
         GetCursorPos(&sicd.clickLocation);
-        //sicd.clickLocation = pt;
         sicd.dwId = clicked->sid.dwId;
         sicd.szModule = clicked->sid.szModule;
         sicd.flags = (code == NM_RCLICK ? MBCF_RIGHTBUTTON : 0);
@@ -814,7 +817,3 @@ int SI_DeinitStatusIcons() {
 int SI_GetStatusIconsCount() {
 	return status_icon_list_size;
 }
-
-
-
-

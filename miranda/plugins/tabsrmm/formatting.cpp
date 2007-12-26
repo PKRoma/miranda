@@ -505,14 +505,15 @@ nosimpletags:
 
 #endif
 
-// formatting the titlebar
-// free() the return value
-//
+/*
+ * format the title bar string for IM chat sessions.
+ * the caller must free() the return value
+ */
 
 #if defined(_UNICODE) || defined(UNICODE)
 
 static TCHAR *title_variables[] = { _T("%n"), _T("%s"), _T("%u"), _T("%p"), _T("%c"), _T("%x"), _T("%m")};
-#define NR_VARS 7
+#define NR_VARS 7		// nr. of variables we can handle
 
 extern "C" int MY_DBGetContactSettingTString(HANDLE hContact, char *szModule, char *szSetting, DBVARIANT *dbv);
 extern "C" int MY_DBFreeVariant(DBVARIANT *dbv);

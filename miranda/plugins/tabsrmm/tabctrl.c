@@ -1738,7 +1738,7 @@ void FreeTabConfig()
  * options dialog for setting up tab options
  */
 
-BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+void CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg) {
         case WM_INITDIALOG:
@@ -1896,4 +1896,3 @@ BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
     }
     return FALSE;
 }
-

@@ -1479,14 +1479,18 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
     case WM_CHAR:
     case WM_UNICHAR:
         {
-            if(mwdat && mwdat->si) {
+            /*
+             * simple incremental search for the user (nick) - list control
+             */
+        	
+        	if(mwdat && mwdat->si) {
                 SESSION_INFO *si = (SESSION_INFO *)mwdat->si;
-                if(wParam == 27 && si->szSearch[0]) {
+                if(wParam == 27 && si->szSearch[0]) {						// escape - reset everything
                     si->szSearch[0] = 0;
                     si->iSearchItem = -1;
                     break;
                 }
-                else if (wParam == '\b' && si->szSearch[0])
+                else if (wParam == '\b' && si->szSearch[0])					// backspace
                     si->szSearch[lstrlen(si->szSearch) - 1] = '\0';
                 else if (wParam < ' ')
                     break;
@@ -1499,13 +1503,17 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
         				break;
         			}
         			_tcscat(si->szSearch, szNew);
-                    //_DebugTraceW(_T("Buffer is: %s, char was: %d"), si->szSearch, wParam);
         		}
         		if (si->szSearch[0]) {
                     int     iItems = SendMessage(hwnd, LB_GETCOUNT, 0, 0);
 					int     i;
                     USERINFO *ui;
 
+                    /*
+                     * iterate over the (sorted) list of nicknames and search for the
+                     * string we have
+                     */
+                    
                     for(i = 0; i < iItems; i++) {
                         ui = UM_FindUserFromIndex(si->pUsers, i);
                         if(ui) {
@@ -1895,7 +1903,8 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				SendDlgItemMessageA(hwndDlg, IDC_CHAT_MESSAGE, EM_SETCHARFORMAT, 0, (LPARAM)&cf2);
 			}
 			SendDlgItemMessage(hwndDlg, IDOK, BUTTONSETASFLATBTN + 14, 0, 0);
-			{ // nicklist
+			{ 
+				// nicklist
 				int ih;
 				int ih2;
 				int font;
@@ -1913,7 +1922,6 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				SendMessage(GetDlgItem(hwndDlg, IDC_LIST), LB_SETITEMHEIGHT, 0, (LPARAM)height > font ? height : font);
 				InvalidateRect(GetDlgItem(hwndDlg, IDC_LIST), NULL, TRUE);
 			}
-            //Chat_SetFilters(si);
             SendDlgItemMessage(hwndDlg,IDC_FILTER,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(si->bFilterEnabled?IDI_FILTER:IDI_FILTER2, si->bFilterEnabled?"filter":"filter2", 0, 0 ));
 			SendMessage(hwndDlg, WM_SIZE, 0, 0);
 			SendMessage(hwndDlg, GC_REDRAWLOG2, 0, 0);

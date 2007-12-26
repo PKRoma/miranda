@@ -246,10 +246,7 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				mir_snprintf(str,sizeof(str),Translate("Built %s %s"),__DATE__,__TIME__);
 				SetDlgItemTextA(hwndDlg,IDC_BUILDTIME,str);
 			}
-            //hIcon = LoadIcon(GetModuleHandleA("miranda32.exe"), MAKEINTRESOURCE(102));
-            //SendDlgItemMessage(hwndDlg, IDC_LOGO, STM_SETICON, (WPARAM)hIcon, 0);
 			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)myGlobals.g_iconContainer);
-            //DestroyIcon(hIcon);
 			return TRUE;
 		case WM_COMMAND:
 			switch(LOWORD(wParam))

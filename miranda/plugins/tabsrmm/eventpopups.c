@@ -59,6 +59,7 @@ static void CheckForRemoveMask()
 	}
 }
 
+
 int NEN_ReadOptions(NEN_OPTIONS *options)
 {
 	options->bPreview = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_PREVIEW, TRUE);

@@ -26,8 +26,6 @@ $Id$
 
 #include "commonheaders.h"
 #pragma hdrstop
-// IEVIew MOD Begin
-// IEVIew MOD End
 #include "sendqueue.h"
 #include "chat/chat.h"
 #include <uxtheme.h>
@@ -681,9 +679,6 @@ UINT DrawRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, 
 	LRESULT result = 0;
     BOOL isMultipleReason;
 
-    //SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~WS_VSCROLL);
-    //ShowScrollBar(hwnd, SB_VERT, FALSE);
-    //EnableScrollBar(hwnd, SB_VERT, ESB_DISABLE_BOTH);
     result = CallWindowProc(OldWndProc, hwnd, msg, wParam, lParam);			// do default processing (otherwise, NO scrollbar as it is painted in NC_PAINT)
     if(!mwdat)
         return result;
@@ -695,8 +690,6 @@ UINT DrawRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, 
 		RECT rcWindow;
 		POINT pt;
 		LONG left_off, top_off, right_off, bottom_off;
-		//HDC dcMem;
-		//HBITMAP hbm, hbmOld;
         LONG dwStyle = GetWindowLong(hwnd, GWL_STYLE);
         LONG dwExStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
 
@@ -720,31 +713,10 @@ UINT DrawRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, 
 		rcWindow.bottom -= rcWindow.top;
 		rcWindow.left = rcWindow.top = 0;
 
-        //right_off += myGlobals.ncm.iScrollWidth;
-		// clip the client area from the dc
-
         ExcludeClipRect(hdc, left_off, top_off, rcWindow.right - right_off, rcWindow.bottom - bottom_off);
         if(mwdat->pContainer->bSkinned && !item->IGNORED) {
             ReleaseDC(hwnd, hdc);
             return result;
-            /*
-            dcMem = CreateCompatibleDC(hdc);
-			hbm = CreateCompatibleBitmap(hdc, rcWindow.right, rcWindow.bottom);
-			hbmOld = SelectObject(dcMem, hbm);
-			ExcludeClipRect(dcMem, left_off, top_off, rcWindow.right - right_off, rcWindow.bottom - bottom_off);
-			SkinDrawBG(hwnd, mwdat->pContainer->hwnd, mwdat->pContainer, &rcWindow, dcMem);
-            if(isMultipleReason) {
-                HBRUSH br = CreateSolidBrush(RGB(255, 130, 130));
-                FillRect(dcMem, &rcWindow, br);
-                DeleteObject(br);
-            }
-			DrawAlpha(dcMem, &rcWindow, item->COLOR, isMultipleReason ? (item->ALPHA * 3) / 4 : item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
-					  item->CORNER, item->RADIUS, item->imageItem);
-			BitBlt(hdc, 0, 0, rcWindow.right, rcWindow.bottom, dcMem, 0, 0, SRCCOPY);
-			SelectObject(dcMem, hbmOld);
-			DeleteObject(hbm);
-			DeleteDC(dcMem);
-            */
 		}
 		else if(pfnDrawThemeBackground) {
             if(isMultipleReason) {
@@ -759,6 +731,15 @@ UINT DrawRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, 
 		return result;
 	}
 	return result;
+}
+
+static LRESULT CALLBACK TestFunction(HWND hwnd, UINT msg)
+{
+	int iTest;
+	
+	for(i = 0; i < 20; i++) {
+		
+	}
 }
 
 static LRESULT CALLBACK MessageLogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -1137,13 +1118,6 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
             break;
         case WM_INPUTLANGCHANGEREQUEST:
         {
-            /*
-            if (myGlobals.m_AutoLocaleSupport) {
-                SendMessage(hwndParent, DM_SETLOCALE, wParam, lParam);
-                PostMessage(hwndParent, DM_SAVELOCALE, 0, 0);
-            }
-            break;
-            */
             return DefWindowProc(hwnd, WM_INPUTLANGCHANGEREQUEST, wParam, lParam);
         }
         case WM_INPUTLANGCHANGE:
@@ -1152,35 +1126,12 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
                 SendMessage(hwnd, EM_SETLANGOPTIONS, 0, (LPARAM) SendMessage(hwnd, EM_GETLANGOPTIONS, 0, 0) & ~IMF_AUTOKEYBOARD);
             }
             return 1;
+            
         case WM_ERASEBKGND:
         {
-			if(mwdat->pContainer->bSkinned) {
-				/*
-				StatusItems_t *item = &StatusItems[ID_EXTBKINPUTBOX];
-
-				if(!item->IGNORED) {
-					HDC hdcMem = CreateCompatibleDC((HDC)wParam);
-					HBITMAP bm, bmOld;
-					LONG width, height;
-					RECT rc;
-
-					GetClientRect(hwnd, &rc);
-					width = rc.right - rc.left; height = rc.bottom - rc.top;
-					bm = CreateCompatibleBitmap((HDC)wParam, width, height);
-					bmOld = SelectObject(hdcMem, bm);
-					SkinDrawBG(hwnd, mwdat->pContainer->hwnd, mwdat->pContainer, &rc, hdcMem);
-					DrawAlpha(hdcMem, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
-							  item->GRADIENT, item->CORNER, item->RADIUS, item->imageItem);
-					BitBlt((HDC)wParam, rc.left, rc.top, width, height,hdcMem, 0, 0, SRCCOPY);
-					SelectObject(hdcMem, bmOld);
-					DeleteObject(bm);
-					DeleteDC(hdcMem);
-				}
-				else*/
-					return 0;
-			}
-            return 1;
+			return(mwdat->pContainer->bSkinned ? 0 : 1);
         }
+        
         /*
          * sent by smileyadd when the smiley selection window dies
          * just grab the focus :)
@@ -1484,7 +1435,6 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
  *  resizer proc for the "new" layout.
  */
 
-
 static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * urc)
 {
     struct MessageWindowData *dat = (struct MessageWindowData *) lParam;
@@ -1764,44 +1714,48 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
     return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
 }
 
+/*
+ * send out typing notifications
+ */
+
 static void NotifyTyping(struct MessageWindowData *dat, int mode)
 {
     DWORD protoStatus;
     DWORD protoCaps;
     DWORD typeCaps;
 
-    if (!dat->hContact)
-        return;
+    if (dat && dat->hContact) {
+        DeletePopupsForContact(dat->hContact, PU_REMOVE_ON_TYPE);
 
-    DeletePopupsForContact(dat->hContact, PU_REMOVE_ON_TYPE);
+        // Don't send to protocols who don't support typing
+        // Don't send to users who are unchecked in the typing notification options
+        // Don't send to protocols that are offline
+        // Don't send to users who are not visible and
+        // Don't send to users who are not on the visible list when you are in invisible mode.
+        
+        if (!DBGetContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)))
+            return;
+        if (!dat->szProto)
+            return;
+        protoStatus = CallProtoService(dat->szProto, PS_GETSTATUS, 0, 0);
+        protoCaps = CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_1, 0);
+        typeCaps = CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0);
 
-    // Don't send to protocols who don't support typing
-    // Don't send to users who are unchecked in the typing notification options
-    // Don't send to protocols that are offline
-    // Don't send to users who are not visible and
-    // Don't send to users who are not on the visible list when you are in invisible mode.
-    if (!DBGetContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)))
-        return;
-    if (!dat->szProto)
-        return;
-    protoStatus = CallProtoService(dat->szProto, PS_GETSTATUS, 0, 0);
-    protoCaps = CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_1, 0);
-    typeCaps = CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0);
-
-    if (!(typeCaps & PF4_SUPPORTTYPING))
-        return;
-    if (protoStatus < ID_STATUS_ONLINE)
-        return;
-    if (protoCaps & PF1_VISLIST && DBGetContactSettingWord(dat->hContact, dat->szProto, "ApparentMode", 0) == ID_STATUS_OFFLINE)
-        return;
-    if (protoCaps & PF1_INVISLIST && protoStatus == ID_STATUS_INVISIBLE && DBGetContactSettingWord(dat->hContact, dat->szProto, "ApparentMode", 0) != ID_STATUS_ONLINE)
-        return;
-    if (DBGetContactSettingByte(dat->hContact, "CList", "NotOnList", 0)
-        && !DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGUNKNOWN, SRMSGDEFSET_TYPINGUNKNOWN))
-        return;
-    // End user check
-    dat->nTypeMode = mode;
-    CallService(MS_PROTO_SELFISTYPING, (WPARAM) dat->hContact, dat->nTypeMode);
+        if (!(typeCaps & PF4_SUPPORTTYPING))
+            return;
+        if (protoStatus < ID_STATUS_ONLINE)
+            return;
+        if (protoCaps & PF1_VISLIST && DBGetContactSettingWord(dat->hContact, dat->szProto, "ApparentMode", 0) == ID_STATUS_OFFLINE)
+            return;
+        if (protoCaps & PF1_INVISLIST && protoStatus == ID_STATUS_INVISIBLE && DBGetContactSettingWord(dat->hContact, dat->szProto, "ApparentMode", 0) != ID_STATUS_ONLINE)
+            return;
+        if (DBGetContactSettingByte(dat->hContact, "CList", "NotOnList", 0)
+            && !DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGUNKNOWN, SRMSGDEFSET_TYPINGUNKNOWN))
+            return;
+        // End user check
+        dat->nTypeMode = mode;
+        CallService(MS_PROTO_SELFISTYPING, (WPARAM) dat->hContact, dat->nTypeMode);
+    }
 }
 
 BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -2998,15 +2952,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             StreamInEvents(hwndDlg, dat->hDbEventFirst, -1, 0, NULL);
             return 0;
         case DM_APPENDTOLOG:
-            //if((HANDLE)wParam != dat->hDbEventLastFeed) {
-                dat->hDbEventLastFeed = (HANDLE)wParam;
-                StreamInEvents(hwndDlg, (HANDLE) wParam, 1, 1, NULL);
-            /*}
-            else {
-                TCHAR szBuffer[256];
-                mir_sntprintf(szBuffer, safe_sizeof(szBuffer), TranslateT("Duplicate event handle detected"));
-                SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, IDC_MESSAGE, (LPARAM)szBuffer);
-            }*/
+        	dat->hDbEventLastFeed = (HANDLE)wParam;
+        	StreamInEvents(hwndDlg, (HANDLE) wParam, 1, 1, NULL);
             return 0;
             /*
              * replays queued events after the message log has been frozen for a while
@@ -3055,7 +3002,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 if(dat->hwndIEView == 0 && dat->hwndHPP == 0) {
                     len = GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_LOG));
                     SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETSEL, len - 1, len - 1);
-                    //SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETSEL, -1, -1);
                 }
 
                 if(psi == NULL)
@@ -3147,14 +3093,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     else
                         SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
 
-                    /*
-                    if (dat->iTabID == -1)
-                        MessageBoxA(0, "DBEVENTADDED Critical: iTabID == -1", "Error", MB_OK);
-                    */
-                    //dat->dwLastActivity = GetTickCount();
-                    //dat->pContainer->dwLastActivity = dat->dwLastActivity;
-                    // tab flashing
-                    if ((/*IsIconic(hwndContainer) ||*/ TabCtrl_GetCurSel(hwndTab) != dat->iTabID) && !(dbei.flags & DBEF_SENT) && !fIsStatusChangeEvent) {
+                    // handle tab flashing
+                    
+                    if ((TabCtrl_GetCurSel(hwndTab) != dat->iTabID) && !(dbei.flags & DBEF_SENT) && !fIsStatusChangeEvent) {
                         switch (dbei.eventType) {
                             case EVENTTYPE_MESSAGE:
                                 dat->iFlashIcon = myGlobals.g_IconMsgEvent;
@@ -3333,11 +3274,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                                 }
                             }
                         }
-                        if ((GetForegroundWindow() != hwndContainer) || (m_pContainer->hwndStatus == 0)) {
+                        if ((GetForegroundWindow() != hwndContainer) || (m_pContainer->hwndStatus == 0))
                             SendMessage(hwndContainer, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM) myGlobals.g_buttonBarIcons[5]);
-                            //if(dat->pContainer->hwndSlist)
-                            //    SendMessage(dat->pContainer->hwndSlist, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[5]);
-                        }
                         dat->showTyping = 1;
                     }
                 }
@@ -4163,10 +4101,10 @@ quote_from_last:
                         }
                         break;
                     }
-                case IDCANCEL: {
-                    ShowWindow(hwndContainer, SW_MINIMIZE);
-                    return FALSE;
-                    break;
+                case IDCANCEL: 
+                	{
+                		ShowWindow(hwndContainer, SW_MINIMIZE);
+                		return FALSE;
                     }
                 case IDC_SAVE:
                     SendMessage(hwndDlg, WM_CLOSE, 1, 0);
@@ -4194,7 +4132,6 @@ quote_from_last:
                     }
                     break;
                 case IDC_HISTORY:
-                    // OnO: RTF log
                     CallService(MS_HISTORY_SHOWCONTACTHISTORY, (WPARAM) dat->hContact, 0);
                     break;
                 case IDC_SMILEYBTN:

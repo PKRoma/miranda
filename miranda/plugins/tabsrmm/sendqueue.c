@@ -771,20 +771,6 @@ int AckMessage(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam, LPARA
     iFound = (int)(LOWORD(wParam));
     i = (int)(HIWORD(wParam));
 
-    /*      -- not longer needed, none of this happened once in more than 2 years --
-
-    if(iFound < 0 || iFound >= NR_SENDJOBS || i < 0 || i >= SENDJOBS_MAX_SENDS) {       // sanity checks (unlikely to happen).
-        _DebugPopup(dat->hContact, "Warning: HM_EVENTSENT with invalid data (sq-index = %d, sendId-index = %d", iFound, i);
-        break;
-    }
-    */
-    /*
-    if (ack->type != ACKTYPE_MESSAGE) {
-        _DebugPopup(dat->hContact, "Warning: HM_EVENTSENT received unknown/invalid ACKTYPE (%d)", ack->type);
-        break;                                       // should not happen, but who knows...
-    }
-    */
-
     if(sendJobs[iFound].iStatus == SQ_ERROR) {       // received ack for a job which is already in error state...
         if(hwndDlg && dat) {                         // window still open
             if(dat->iCurrentQueueError == iFound) {

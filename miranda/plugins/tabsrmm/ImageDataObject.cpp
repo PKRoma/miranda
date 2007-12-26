@@ -18,7 +18,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 // $Id$
-// code taken partly from public example on the internet, source unknown.
+// code partially taken from public example on the internet, source unknown.
 
 #define __TSR_CXX
 #include "commonheaders.h"

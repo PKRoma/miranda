@@ -123,18 +123,6 @@ static int SmileyAddOptionsChanged(WPARAM wParam, LPARAM lParam)
 }
 
 /*
-static int ContactSecureChanged(WPARAM wParam, LPARAM lParam)
-{
-    HWND hwnd;
-
-    if (hwnd = WindowList_Find(hMessageWindowList, (HANDLE) wParam))
-	{
-        SendMessage(hwnd, DM_SECURE_CHANGED, 0, 0);
-    }
-    return 0;
-}
-*/
-/*
  * Message API 0.0.0.3 services
  */
 
@@ -192,7 +180,7 @@ static int GetWindowData(WPARAM wParam, LPARAM lParam)
  * service function. retrieves the message window data for a given hcontact or window
  * wParam == hContact of the window to find
  * lParam == window handle (set it to 0 if you want search for hcontact, otherwise it
-            * is directly used as the handle for the target window
+ * is directly used as the handle for the target window
  */
             
 static int SetUserPrefs(WPARAM wParam, LPARAM lParam)
@@ -244,7 +232,7 @@ static int Service_OpenTrayMenu(WPARAM wParam, LPARAM lParam)
  * service function. retrieves the message window flags for a given hcontact or window
  * wParam == hContact of the window to find
  * lParam == window handle (set it to 0 if you want search for hcontact, otherwise it
-            * is directly used as the handle for the target window
+ * is directly used as the handle for the target window
  */
             
 static int GetMessageWindowFlags(WPARAM wParam, LPARAM lParam)
@@ -444,17 +432,10 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
     
 	CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
 
-    if (hwnd) {
-        /*
-        struct ContainerWindowData *pTargetContainer = 0;
-        if(dbei.eventType == EVENTTYPE_MESSAGE) {
-            SendMessage(hwnd, DM_QUERYCONTAINER, 0, (LPARAM)&pTargetContainer);
-            if (pTargetContainer)
-                PostMessage(hwnd, DM_PLAYINCOMINGSOUND, 0, 0);
-        }*/
-        return 0;
-    }
-
+    if (hwnd)
+        return 0;			/*  do not process it here, when a session window is open for this contact. 
+        						DispatchNewEvent() will handle this */
+    
     /*
      * if no window is open, we are not interested in anything else but unread message events
      */
@@ -1050,14 +1031,8 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 #if defined(_UNICODE)
 	if(ServiceExists(MS_POPUP_ADDPOPUPW))
 		myGlobals.g_PopupWAvail = 1;
-#endif    
-	/*
-	if(ServiceExists(MS_FONT_REGISTER)) {
-	myGlobals.g_FontServiceAvail = 1;
-	FS_RegisterFonts();
-	hEvent_FontService = HookEvent(ME_FONT_RELOAD, FS_ReloadFonts);
-	}
-	*/
+#endif
+	
 	if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", -1) == -1)
 		DBWriteContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", 2);
 
@@ -1135,8 +1110,6 @@ static int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
 
     if(g_chat_integration_enabled)
         Chat_PreShutdown(0, 0);
-
-    //SM_BroadcastMessage(NULL, GC_CLOSEWINDOW, 0, 2, FALSE);         // lParam == 2 -> close at end
 
     while(pFirstContainer)
         SendMessage(pFirstContainer->hwnd, WM_CLOSE, 0, 1);
@@ -1347,12 +1320,6 @@ int LoadSendRecvMessageModule(void)
           break;
 
         }
-
-/*
-        const time_t now = time(NULL);
-        struct tm gmt = *gmtime(&now);
-        time_t gmt_time = mktime(&gmt);
-        myGlobals.local_gmt_diff = (int)difftime(now, gmt_time);*/
     }
 
 tzdone:
@@ -1403,7 +1370,6 @@ tzdone:
         myGlobals.hCurHyperlinkHand = LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_HYPERLINKHAND));
 
     LoadTSButtonModule();
-    //RegisterContainer();
     RegisterTabCtrlClass();
     ReloadGlobals();
     myGlobals.dwThreadID = GetCurrentThreadId();
@@ -1578,8 +1544,6 @@ int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild)
             SetForegroundWindow(pContainer->hwnd);
         if(dat->bType == SESSIONTYPE_IM)
             SetFocus(GetDlgItem(hwndChild, IDC_MESSAGE));
-        //if(myGlobals.m_ExtraRedraws)
-        //    RedrawWindow(pContainer->hwndActive, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
 		return TRUE;
 	} else
 		return FALSE;
