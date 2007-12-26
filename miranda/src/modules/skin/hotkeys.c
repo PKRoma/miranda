@@ -150,6 +150,7 @@ int UninitSkinHotkeys(void)
 	for ( i = 0; i < lstHotkeys->realCount; i++ )
 		sttFreeHotkey((THotkeyItem *)lstHotkeys->items[i]);
 	List_Destroy(lstHotkeys);
+	mir_free(lstHotkeys);
 
 	return 0;
 }
