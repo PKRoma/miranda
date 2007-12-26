@@ -733,15 +733,6 @@ UINT DrawRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, 
 	return result;
 }
 
-static LRESULT CALLBACK TestFunction(HWND hwnd, UINT msg)
-{
-	int iTest;
-	
-	for(i = 0; i < 20; i++) {
-		
-	}
-}
-
 static LRESULT CALLBACK MessageLogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	HWND hwndParent = GetParent(hwnd);
