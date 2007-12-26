@@ -452,7 +452,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         unsigned ver4 = (*capId)[0xF];
 
         makeClientVersion(szClientBuf, "climm ", ver1, ver2, ver3, ver4);
-        if (ver1 & 0x80 == 0x80) 
+        if ((ver1 & 0x80) == 0x80) 
           strcat(szClientBuf, " alpha");
         if (dwFT3 == 0x02000020)
           strcat(szClientBuf, "/Win32");
@@ -469,7 +469,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         unsigned ver4 = (*capId)[0xF];
 
         makeClientVersion(szClientBuf, "mICQ ", ver1, ver2, ver3, ver4);
-        if (ver1 & 0x80 == 0x80) strcat(szClientBuf, " alpha");
+        if ((ver1 & 0x80) == 0x80) strcat(szClientBuf, " alpha");
 
         szClient = szClientBuf;
       }
