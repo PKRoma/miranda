@@ -1,7 +1,7 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on scriver.dsp
 !IF "$(CFG)" == ""
 CFG=scriver - Win32 Release Unicode
-!MESSAGE No configuration specified. Defaulting to scriver - Win32 Debug Unicode.
+!MESSAGE No configuration specified. Defaulting to scriver - Win32 Release Unicode.
 !ENDIF
 
 !IF "$(CFG)" != "scriver - Win32 Release" && "$(CFG)" != "scriver - Win32 Debug" && "$(CFG)" != "scriver - Win32 Release Unicode" && "$(CFG)" != "scriver - Win32 Debug Unicode"
@@ -40,6 +40,7 @@ CLEAN :
 	-@erase "$(INTDIR)\cmdlist.obj"
 	-@erase "$(INTDIR)\colorchooser.obj"
 	-@erase "$(INTDIR)\globals.obj"
+	-@erase "$(INTDIR)\input.obj"
 	-@erase "$(INTDIR)\log.obj"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\manager.obj"
@@ -114,6 +115,7 @@ LINK32_FLAGS=comctl32.lib kernel32.lib user32.lib gdi32.lib shell32.lib ole32.li
 LINK32_OBJS= \
 	"$(INTDIR)\cmdlist.obj" \
 	"$(INTDIR)\globals.obj" \
+	"$(INTDIR)\input.obj" \
 	"$(INTDIR)\msgdialog.obj" \
 	"$(INTDIR)\msglog.obj" \
 	"$(INTDIR)\msgoptions.obj" \
@@ -154,6 +156,7 @@ CLEAN :
 	-@erase "$(INTDIR)\cmdlist.obj"
 	-@erase "$(INTDIR)\colorchooser.obj"
 	-@erase "$(INTDIR)\globals.obj"
+	-@erase "$(INTDIR)\input.obj"
 	-@erase "$(INTDIR)\log.obj"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\manager.obj"
@@ -229,6 +232,7 @@ LINK32_FLAGS=comctl32.lib kernel32.lib user32.lib gdi32.lib shell32.lib ole32.li
 LINK32_OBJS= \
 	"$(INTDIR)\cmdlist.obj" \
 	"$(INTDIR)\globals.obj" \
+	"$(INTDIR)\input.obj" \
 	"$(INTDIR)\msgdialog.obj" \
 	"$(INTDIR)\msglog.obj" \
 	"$(INTDIR)\msgoptions.obj" \
@@ -269,6 +273,7 @@ CLEAN :
 	-@erase "$(INTDIR)\cmdlist.obj"
 	-@erase "$(INTDIR)\colorchooser.obj"
 	-@erase "$(INTDIR)\globals.obj"
+	-@erase "$(INTDIR)\input.obj"
 	-@erase "$(INTDIR)\log.obj"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\manager.obj"
@@ -343,6 +348,7 @@ LINK32_FLAGS=comctl32.lib kernel32.lib user32.lib gdi32.lib shell32.lib ole32.li
 LINK32_OBJS= \
 	"$(INTDIR)\cmdlist.obj" \
 	"$(INTDIR)\globals.obj" \
+	"$(INTDIR)\input.obj" \
 	"$(INTDIR)\msgdialog.obj" \
 	"$(INTDIR)\msglog.obj" \
 	"$(INTDIR)\msgoptions.obj" \
@@ -383,6 +389,7 @@ CLEAN :
 	-@erase "$(INTDIR)\cmdlist.obj"
 	-@erase "$(INTDIR)\colorchooser.obj"
 	-@erase "$(INTDIR)\globals.obj"
+	-@erase "$(INTDIR)\input.obj"
 	-@erase "$(INTDIR)\log.obj"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\manager.obj"
@@ -458,6 +465,7 @@ LINK32_FLAGS=comctl32.lib kernel32.lib user32.lib gdi32.lib shell32.lib ole32.li
 LINK32_OBJS= \
 	"$(INTDIR)\cmdlist.obj" \
 	"$(INTDIR)\globals.obj" \
+	"$(INTDIR)\input.obj" \
 	"$(INTDIR)\msgdialog.obj" \
 	"$(INTDIR)\msglog.obj" \
 	"$(INTDIR)\msgoptions.obj" \
@@ -506,6 +514,11 @@ SOURCE=.\cmdlist.c
 SOURCE=.\globals.c
 
 "$(INTDIR)\globals.obj" : $(SOURCE) "$(INTDIR)"
+
+
+SOURCE=.\input.c
+
+"$(INTDIR)\input.obj" : $(SOURCE) "$(INTDIR)"
 
 
 SOURCE=.\msgdialog.c
