@@ -75,6 +75,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="comctl32.lib shlwapi.lib"
+				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				DelayLoadDLLs=""
 				GenerateDebugInformation="true"
@@ -390,6 +391,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="comctl32.lib shlwapi.lib"
+				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				DelayLoadDLLs=""
 				GenerateDebugInformation="true"

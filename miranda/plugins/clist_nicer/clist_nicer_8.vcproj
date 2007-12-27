@@ -78,6 +78,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="comctl32.lib msimg32.lib gdiplus.lib shlwapi.lib"
+				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				DelayLoadDLLs=""
 				GenerateDebugInformation="true"
@@ -283,6 +284,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="comctl32.lib msimg32.lib gdiplus.lib shlwapi.lib"
+				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				DelayLoadDLLs=""
 				GenerateDebugInformation="true"
