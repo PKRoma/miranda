@@ -24,6 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 // block these plugins
 #define DEFMOD_REMOVED_UIPLUGINOPTS     21
+#define DEFMOD_REMOVED_PROTOCOLNETLIB   22
 
 // basic export prototypes
 typedef int (__cdecl * Miranda_Plugin_Load) ( PLUGINLINK * );
@@ -177,7 +178,35 @@ static char* expiredModulesToSkip[] = { "scriver.dll", "nconvers.dll", "tabsrmm.
                                         "tabsrmm_unicode.dll", "clist_nicer_plus.dll", "changeinfo.dll", "png2dib.dll", "dbx_mmap.dll", "dbx_3x.dll",
                                         "sramm.dll", "srmm_mod.dll", "srmm_mod (no Unicode).dll", "singlemodeSRMM.dll", "msg_export.dll" };
 
-static int checkAPI(char * plugin, BASIC_PLUGIN_INFO * bpi, DWORD mirandaVersion, int checkTypeAPI, int * exports)
+static int checkPI( BASIC_PLUGIN_INFO* bpi, PLUGININFOEX* pi )
+{
+	if ( pi == NULL )
+		return FALSE;
+
+	if ( bpi->Info && pi->cbSize != sizeof(PLUGININFO))
+		return FALSE;
+
+	if ( bpi->InfoEx ) {
+		if ( pi->cbSize != sizeof(PLUGININFOEX))
+			return FALSE;
+		
+		if ( !validInterfaceList(bpi->Interfaces) || isPluginBanned( pi->uuid ))
+			return FALSE;
+	}
+
+	if ( pi->shortName == NULL || pi->description == NULL || pi->author == NULL ||
+		  pi->authorEmail == NULL || pi->copyright == NULL || pi->homepage == NULL )
+		return FALSE;
+
+	if ( pi->replacesDefaultModule > DEFMOD_HIGHEST || 
+		  pi->replacesDefaultModule == DEFMOD_REMOVED_UIPLUGINOPTS || 
+		  pi->replacesDefaultModule == DEFMOD_REMOVED_PROTOCOLNETLIB )
+		return FALSE;
+
+	return TRUE;
+}
+
+static int checkAPI(char* plugin, BASIC_PLUGIN_INFO* bpi, DWORD mirandaVersion, int checkTypeAPI, int* exports)
 {
 	HINSTANCE h = NULL;
 	// this is evil but these plugins are buggy/old and people are blaming Miranda
@@ -199,33 +228,27 @@ static int checkAPI(char * plugin, BASIC_PLUGIN_INFO * bpi, DWORD mirandaVersion
 	bpi->Info = (Miranda_Plugin_Info) GetProcAddress(h, "MirandaPluginInfo");
 	bpi->InfoEx = (Miranda_Plugin_InfoEx) GetProcAddress(h, "MirandaPluginInfoEx");
 	bpi->Interfaces = (Miranda_Plugin_Interfaces) GetProcAddress(h, "MirandaPluginInterfaces");
+
 	// if they were present
-	if ( bpi->Load && bpi->Unload && (bpi->Info||(bpi->InfoEx&&bpi->Interfaces)) )
-	{
-		PLUGININFOEX * pi = 0;
+	if ( bpi->Load && bpi->Unload && ( bpi->Info || ( bpi->InfoEx && bpi->Interfaces ))) {
+		PLUGININFOEX* pi = 0;
 		if (bpi->InfoEx)
 			pi = bpi->InfoEx(mirandaVersion);
 		else
 			pi = (PLUGININFOEX*)bpi->Info(mirandaVersion);
-        {
-            // similar to the above hack but these plugins are checked for a valid interface first (in case there are updates to the plugin later)
-            char * p = strrchr(plugin,'\\');
-            if ( p != NULL && ++p ) {
-                if (!bpi->InfoEx||pi->cbSize!=sizeof(PLUGININFOEX)) {
-                    int i;
-                    for ( i = 0; i < SIZEOF(expiredModulesToSkip); i++ ) {
-                        if ( lstrcmpiA( p, expiredModulesToSkip[i] ) == 0 ) {
-                            FreeLibrary(h);
-                            return 0;
-                        }
-                    }   
-                }
-            }
-        }
-		if ( pi && ((bpi->Info&&pi->cbSize==sizeof(PLUGININFO))||(bpi->InfoEx&&pi->cbSize==sizeof(PLUGININFOEX)&&validInterfaceList(bpi->Interfaces)&&!isPluginBanned(pi->uuid))) && pi->shortName && pi->description
-				&& pi->author && pi->authorEmail && pi->copyright && pi->homepage
-				&& pi->replacesDefaultModule <= DEFMOD_HIGHEST
-				&& pi->replacesDefaultModule != DEFMOD_REMOVED_UIPLUGINOPTS)
+		{
+			// similar to the above hack but these plugins are checked for a valid interface first (in case there are updates to the plugin later)
+			char* p = strrchr(plugin,'\\');
+			if ( p != NULL && ++p ) {
+				if ( !bpi->InfoEx || pi->cbSize != sizeof(PLUGININFOEX)) {
+					int i;
+					for ( i = 0; i < SIZEOF(expiredModulesToSkip); i++ ) {
+						if ( lstrcmpiA( p, expiredModulesToSkip[i] ) == 0 ) {
+							FreeLibrary(h);
+							return 0;
+		}	}	}	}	}
+
+		if ( checkPI( bpi, pi )) {
 		{
 			bpi->pluginInfo = pi;
 			// basic API is present
