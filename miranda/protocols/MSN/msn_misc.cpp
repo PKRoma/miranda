@@ -33,7 +33,6 @@ static pIncrementFunc  MyInterlockedIncrementInit;
 pIncrementFunc *MyInterlockedIncrement = MyInterlockedIncrementInit;
 
 static CRITICAL_SECTION csInterlocked95;
-extern HANDLE msnMainThread;
 extern char* msnPreviousUUX;
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -693,10 +692,7 @@ void MSN_ShowError( const char* msgtext, ... )
 	TCHAR* buf1 = mir_a2t( msnProtocolName );
 	TCHAR* buf2 = mir_a2t( tBuffer );
 
-	if ( MyOptions.ShowErrorsAsPopups )
-		MSN_ShowPopup( buf1, buf2, MSN_ALLOW_MSGBOX | MSN_SHOW_ERROR, NULL );
-	else
-		MessageBox( NULL, buf2, buf1, MB_OK );
+	MSN_ShowPopup( buf1, buf2, MSN_ALLOW_MSGBOX | MSN_SHOW_ERROR, NULL );
 
 	mir_free(buf1);
 	mir_free(buf2);
@@ -752,27 +748,30 @@ LRESULT CALLBACK NullWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_ShowPopup - popup plugin support
 
-void CALLBACK sttMainThreadCallback( ULONG dwParam )
+void CALLBACK sttMainThreadCallback( PVOID dwParam )
 {
 	LPPOPUPDATAT ppd = ( LPPOPUPDATAT )dwParam;
+	PopupData* pud = ( PopupData* )ppd->PluginData;
 
-	PUAddPopUpT(ppd);
-
+	bool iserr = (pud->flags & MSN_SHOW_ERROR) != 0;
+	if ((iserr && !MyOptions.ShowErrorsAsPopups) || PUAddPopUpT(ppd) == CALLSERVICE_NOTFOUND) 
+	{
+		if ( pud->flags & MSN_ALLOW_MSGBOX ) 
+		{
+			TCHAR szMsg[ MAX_SECONDLINE + MAX_CONTACTNAME ];
+			mir_sntprintf( szMsg, SIZEOF( szMsg ), _T("%s:\n%s"), ppd->lptzContactName, ppd->lptzText );
+			MessageBox( NULL, szMsg, _T("MSN Protocol"), 
+				MB_OK | (iserr ? MB_ICONERROR : MB_ICONINFORMATION));
+		}
+		CallService( MS_SKIN2_RELEASEICON, (WPARAM)pud->hIcon, 0 );
+		mir_free( pud->url );
+		mir_free( pud );
+	}
 	mir_free( ppd );
 }
 
 void MSN_ShowPopup( const TCHAR* nickname, const TCHAR* msg, int flags, const char* url )
 {
-	if ( !ServiceExists( MS_POPUP_ADDPOPUPT )) {
-		if ( flags & MSN_ALLOW_MSGBOX ) {
-			TCHAR szMsg[ MAX_SECONDLINE + MAX_CONTACTNAME ];
-			mir_sntprintf( szMsg, SIZEOF( szMsg ), _T("%s:\n%s"), nickname, msg );
-			MessageBox( NULL, szMsg, _T("MSN Protocol"), 
-				MB_OK + ( flags & MSN_SHOW_ERROR ) ? MB_ICONERROR : MB_ICONINFORMATION );
-		}
-		return;
-	}
-
 	LPPOPUPDATAT ppd = ( LPPOPUPDATAT )mir_calloc( sizeof( POPUPDATAT ));
 
 	ppd->lchContact = NULL;
@@ -803,7 +802,7 @@ void MSN_ShowPopup( const TCHAR* nickname, const TCHAR* msg, int flags, const ch
 	pud->hIcon = ppd->lchIcon;
 	pud->url = mir_strdup( url );
 
-	QueueUserAPC( sttMainThreadCallback , msnMainThread, ( DWORD )ppd );
+	CallFunctionAsync( sttMainThreadCallback, ppd );
 }
 
 

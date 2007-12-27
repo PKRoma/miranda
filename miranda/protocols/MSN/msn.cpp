@@ -55,7 +55,6 @@ void	UninitSsl( void );
 int      msnSearchID = -1;
 char*    msnExternalIP = NULL;
 char*    msnPreviousUUX = NULL;
-HANDLE   msnMainThread;
 unsigned msnOtherContactsBlocked = 0;
 HANDLE   hMSNNudge = NULL;
 bool	 msnHaveChatDll = false;
@@ -264,7 +263,6 @@ static int OnPreShutdown( WPARAM wParam, LPARAM lParam )
 extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )  
 {
 	pluginLink = link;
-	DuplicateHandle( GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &msnMainThread, THREAD_SET_CONTEXT, FALSE, 0 );
 
 	// get the internal malloc/mir_free()
 	mir_getLI( &li );
@@ -406,8 +404,6 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	mir_free( alertsoundname );
 	mir_free( msnProtocolName );
 	mir_free( ModuleName );
-
-	CloseHandle( msnMainThread );
 
 	for ( i=0; i < MSN_NUM_MODES; i++ )
 		if ( msnModeMsgs[ i ].m_msg )
