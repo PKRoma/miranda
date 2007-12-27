@@ -193,6 +193,8 @@ bool		MSN_IsMyContact( HANDLE hContact );
 bool		MSN_IsMeByContact( HANDLE hContact, char* szEmail  = NULL );
 bool        MSN_AddUser( HANDLE hContact, const char* email, int netId, int flags );
 void        MSN_AddAuthRequest( HANDLE hContact, const char *email, const char *nick );
+void		MSN_SetContactDb( HANDLE hContact, int listId );
+
 void        MSN_DebugLog( const char* fmt, ... );
 
 void     __cdecl     MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP, void* );
@@ -385,8 +387,8 @@ struct filetransfer
 
 	unsigned    p2p_sessionid;	// session id
 	unsigned    p2p_acksessid;	// acknowledged session id
-	unsigned    p2p_sendmsgid; // send message id
-	unsigned    p2p_byemsgid;  // bye message id
+	unsigned    p2p_sendmsgid;  // send message id
+	unsigned    p2p_byemsgid;   // bye message id
 	unsigned    p2p_waitack;    // invite message id
 	unsigned    p2p_ackID;		// number of ack's state
 	unsigned    p2p_appID;		// application id: 1 = avatar, 2 = file transfer
@@ -550,6 +552,7 @@ void  p2p_redirectSessions( HANDLE hContact );
 
 void  p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft = NULL );
 void  p2p_processMsg( ThreadData* info, char* msgbody );
+void  p2p_processSIP( ThreadData* info, char* msgbody, void* hdr );
 void  p2p_sendStatus( filetransfer* ft, long lStatus );
 void  p2p_sendBye( filetransfer* ft );
 void  p2p_sendCancel( filetransfer* ft );

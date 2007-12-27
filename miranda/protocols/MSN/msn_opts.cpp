@@ -663,7 +663,7 @@ int MsnOptInit(WPARAM wParam,LPARAM lParam)
 
 	odp.pszTab      = LPGEN("Notifications");
 	odp.pszTemplate	= MAKEINTRESOURCEA( IDD_HOTMAIL_OPT_POPUP );
-	odp.pfnDlgProc		= DlgProcHotmailPopUpOpts;
+	odp.pfnDlgProc	= DlgProcHotmailPopUpOpts;
 	MSN_CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
 
 	return 0;

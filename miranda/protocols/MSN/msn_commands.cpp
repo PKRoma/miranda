@@ -641,22 +641,11 @@ static void sttProcessAdd( char* buf, size_t len )
 			HANDLE hContact = MSN_HContactFromEmail(szEmail, szNick, 1, 0);
 			int mask = Lists_Add(listId, netId, szEmail);
 
+			MSN_SetContactDb(hContact, mask);
+
 			if ( listId == LIST_RL && ( mask & ( LIST_FL+LIST_AL+LIST_BL )) == 0 )
 				MSN_AddAuthRequest( hContact, szEmail, szNick );
 
-			if (( mask & ( LIST_AL | LIST_BL | LIST_FL )) == LIST_BL ) {
-				DBDeleteContactSetting( hContact, "CList", "NotOnList" );
-				DBWriteContactSettingByte( hContact, "CList", "Hidden", 1 );
-			}
-
-			if ( listId & LIST_AL ) {
-				DBDeleteContactSetting( hContact, "CList", "NotOnList" );
-			}
-
-			if ( listId & LIST_FL ) {
-				DBDeleteContactSetting( hContact, "CList", "NotOnList" );
-				DBDeleteContactSetting( hContact, "CList", "Hidden" );
-			}
 			cont = ezxml_next(cont);
 		}
 		dom = ezxml_next(dom);
@@ -1473,7 +1462,43 @@ LBL_InvalidCommand:
 			sttProcessStatusMessage( (char*)HReadBuffer( info, 0 ).surelyRead( len ), len, hContact );
 			break;
 		}
-		case ' LRU':
+
+		case ' NBU':	// UBN : MSNP13+ File sharing, P2P Bootstrap.
+		{
+			union {
+				char* tWords[ 3 ];
+				struct { char *email, *typeId, *datalen; } data;
+			};
+
+			if ( sttDivideWords( params, 3, tWords ) != 3 )
+				goto LBL_InvalidCommand;
+
+			HANDLE hContact = MSN_HContactFromEmail( data.email, data.email, 0, 0 );
+			if ( hContact == NULL )
+				break;
+
+			int len = atol( data.datalen );
+			if ( len < 0 || len > 4000 )
+				goto LBL_InvalidCommand;
+
+			HReadBuffer buf(info, 0);
+			char* msgBody = (char*)buf.surelyRead(len);
+
+			switch (*data.typeId)
+			{
+				case '1':
+					// File sharing stuff
+					// sttProcessFileSharing(msgBody, len, hContact);
+					break;
+
+				case '3':
+					// P2P Bootstrap
+					p2p_processSIP(info, msgBody, NULL);
+					break;
+			}
+		}
+
+		case ' LRU':    // URL : Hotmail, Spaces URL 
 		{
 			union {
 				char* tWords[ 3 ];
@@ -1491,6 +1516,7 @@ LBL_InvalidCommand:
 			}
 			break;
 		}
+
 		case ' RSU':	//********* USR: sections 7.3 Authentication, 8.2 Switchboard Connections and Authentication
 			if ( info->mType == SERVER_SWITCHBOARD ) { //(section 8.2)
 				union {

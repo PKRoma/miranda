@@ -155,9 +155,17 @@ void MSN_CleanupLists(void)
 				mir_free(p->email);
 				mir_free(p);
 				contList.remove(i);
+				continue;
 			}
-			break;
 		}
+
+		HANDLE hContact = MSN_HContactFromEmail(p->email, p->email, 1, 0);
+		MSN_SetContactDb(hContact, p->list);
+		if (p->list & LIST_PL)
+		{
+			MSN_AddAuthRequest( hContact, p->email, p->email );
+		}
+
 	}
 	LeaveCriticalSection(&csLists);
 }
@@ -310,24 +318,7 @@ static void SaveSettings( HWND hwndList )
 		SaveListItem( hContact, szEmail, LIST_AL, ( dwMask & LIST_AL )?2:0, SendMessage( hwndList, CLM_GETEXTRAIMAGE, ( WPARAM )hItem, MAKELPARAM(1,0)));
 		SaveListItem( hContact, szEmail, LIST_BL, ( dwMask & LIST_BL )?3:0, SendMessage( hwndList, CLM_GETEXTRAIMAGE, ( WPARAM )hItem, MAKELPARAM(2,0)));
 
-		dwMask = Lists_GetMask( szEmail );
-		if (( dwMask & ( LIST_AL | LIST_BL | LIST_FL )) == LIST_BL ) {
-			DBDeleteContactSetting( hContact, "CList", "NotOnList" );
-			DBWriteContactSettingByte( hContact, "CList", "Hidden", 1 );
-		}
-
-		if ( dwMask == LIST_RL ) {
-			DBWriteContactSettingByte( hContact, "CList", "NotOnList", 1 );
-			DBWriteContactSettingByte( hContact, "CList", "Hidden", 1 );
-		}
-
-		if ( dwMask & ( LIST_BL | LIST_AL )) {
-			WORD tApparentMode = MSN_GetWord( hContact, "ApparentMode", 0 );
-			if (( dwMask & LIST_BL ) && tApparentMode == 0 )
-				MSN_SetWord( hContact, "ApparentMode", ID_STATUS_OFFLINE );
-			else if (( dwMask & LIST_AL ) && tApparentMode != 0 )
-				MSN_SetWord( hContact, "ApparentMode", 0 );
-		}
+		MSN_SetContactDb(hContact, Lists_GetMask( szEmail ));
 	}
 }
 

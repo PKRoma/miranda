@@ -45,9 +45,6 @@ static HANDLE AddToListByEmail( const char *email, DWORD flags )
 	}
 	else 
 	{
-		DBDeleteContactSetting( hContact, "CList", "NotOnList" );
-		DBDeleteContactSetting( hContact, "CList", "Hidden" );
-
 		if ( msnLoggedIn ) 
 		{
 			int netId = Lists_GetNetId(email);
@@ -63,6 +60,7 @@ static HANDLE AddToListByEmail( const char *email, DWORD flags )
 					MSN_SetString( hContact, "MirVer", "SMS" );
 				}
 			}
+			MSN_SetContactDb(hContact, Lists_GetMask(email));
 		}
 		else hContact = NULL;
 	}

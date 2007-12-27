@@ -561,6 +561,7 @@ void  MSN_SetServerStatus( int newStatus )
 			 MSN_GetStaticString( "PictObject", NULL, szMsnObject, sizeof( szMsnObject )))
 			szMsnObject[ 0 ] = 0;
 
+		// Capabilties: WLM 8.1, Chunking 
 		unsigned flags = 0x70000020;
 		if (MSN_GetByte( "MobileEnabled", 0) && MSN_GetByte( "MobileAllowed", 0))
 			flags |= 0x40;

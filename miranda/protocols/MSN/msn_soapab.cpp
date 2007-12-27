@@ -402,29 +402,7 @@ void MSN_ABGetFull(void)
 					if (anot == NULL)
 						DBDeleteContactSetting(hContact, "CList", "MyHandle");
 
-					int listId = Lists_Add(lstFlg, typeId, szEmail);
-					if ((listId & (LIST_AL | LIST_BL | LIST_FL)) == LIST_BL) 
-					{
-						DBDeleteContactSetting( hContact, "CList", "NotOnList" );
-						DBWriteContactSettingByte( hContact, "CList", "Hidden", 1 );
-					}
-					if (listId == LIST_RL)
-					{
-						DBWriteContactSettingByte( hContact, "CList", "NotOnList", 1 );
-						DBWriteContactSettingByte( hContact, "CList", "Hidden", 1 );
-					}
-					if (listId & (LIST_BL | LIST_AL)) 
-					{
-						WORD tApparentMode = MSN_GetWord( hContact, "ApparentMode", 0 );
-						if (( listId & LIST_BL ) && tApparentMode == 0 )
-							MSN_SetWord( hContact, "ApparentMode", ID_STATUS_OFFLINE );
-						else if (( listId & LIST_AL ) && tApparentMode != 0 )
-							MSN_SetWord( hContact, "ApparentMode", 0 );
-					}
-					if (listId == LIST_PL)
-					{
-						MSN_AddAuthRequest( hContact, szEmail, szNick );
-					}
+					Lists_Add(lstFlg, typeId, szEmail);
 
 					DBWriteContactSettingByte(hContact, msnProtocolName, "MobileAllowed", strcmp(szMOB, "true") != 0);
 					DBWriteContactSettingByte(hContact, msnProtocolName, "MobileEnabled", strcmp(szMBE, "true") == 0);
