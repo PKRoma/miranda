@@ -10,6 +10,9 @@
  * I want to thank Robert Rainwater and George Hazan for their code and support
  * and for answering some of my questions during development of this plugin.
  */
+
+#define _USE_32BIT_TIME_T
+
 #include <time.h>
 #include <malloc.h>
 #include <io.h>
