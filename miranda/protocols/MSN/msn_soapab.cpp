@@ -363,7 +363,7 @@ void MSN_ABGetFull(void)
 					else 
 					{
 						ezxml_t eml = ezxml_get(contInf, "emails", 0, "ContactEmail", -1);
-						if (eml != NULL)
+						while (eml != NULL)
 						{
 							szMsgUsr = ezxml_txt(ezxml_child(eml, "isMessengerEnabled"));
 							szEmail = ezxml_txt(ezxml_child(eml, "email"));
@@ -372,7 +372,8 @@ void MSN_ABGetFull(void)
 								typeId = 32;
 							else if (strcmp(szCntType, "Messenger3") == 0)
 								typeId = 2;
-
+							if (strcmp(szMsgUsr, "true") == 0) break;
+							eml = ezxml_next(eml);
 						}
 					}
 				}
@@ -400,6 +401,9 @@ void MSN_ABGetFull(void)
 						DBDeleteContactSetting(hContact, "CList", "MyHandle");
 
 					Lists_Add(lstFlg, typeId, szEmail);
+
+					ezxml_t cgrp = ezxml_get(contInf, "groupIds", 0, "guid", -1);
+					MSN_SyncContactToServerGroup( hContact, szContId, cgrp );
 
 					const char *szTmp;
 
@@ -432,8 +436,6 @@ void MSN_ABGetFull(void)
 //						MSN_DeleteSetting(hContact, "BirthDay");
 					}
 
-					ezxml_t cgrp = ezxml_get(contInf, "groupIds", 0, "guid", -1);
-					MSN_SyncContactToServerGroup( hContact, szContId, cgrp );
 				}
 			}
 			else
