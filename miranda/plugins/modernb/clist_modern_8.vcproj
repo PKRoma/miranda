@@ -68,6 +68,7 @@
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
 				CompileAs="0"
+				DisableSpecificWarnings="4996"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -169,6 +170,7 @@
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
+				DisableSpecificWarnings="4996"
 				ShowIncludes="false"
 			/>
 			<Tool
@@ -269,6 +271,7 @@
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
+				DisableSpecificWarnings="4996"
 				ShowIncludes="false"
 			/>
 			<Tool
@@ -373,6 +376,7 @@
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
 				CompileAs="0"
+				DisableSpecificWarnings="4996"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -930,11 +934,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\m_clui.h"
+				RelativePath=".\m_api\m_clui.h"
 				>
 			</File>
 			<File
-				RelativePath=".\m_api\m_clui.h"
+				RelativePath="..\..\include\m_clui.h"
 				>
 			</File>
 			<File
