@@ -1067,6 +1067,32 @@ DWORD JabberGetLastContactMessageTime( HANDLE hContact )
 	return dwTime;
 }
 
+HANDLE JabberCreateTemporaryContact( TCHAR *szJid, JABBER_LIST_ITEM* chatItem )
+{
+	HANDLE hContact = NULL;
+	if ( chatItem ) {
+		TCHAR* p = _tcschr( szJid, '/' );
+		if ( p != NULL && p[1] != '\0' )
+			p++;
+		else
+			p = szJid;
+		hContact = JabberDBCreateContact( szJid, p, TRUE, FALSE );
+
+		for ( int i=0; i < chatItem->resourceCount; i++ ) {
+			if ( !lstrcmp( chatItem->resource[i].resourceName, p )) {
+				JSetWord( hContact, "Status", chatItem->resource[i].status );
+				break;
+			}
+		}
+	}
+	else {
+		TCHAR *nick = JabberNickFromJID( szJid );
+		hContact = JabberDBCreateContact( szJid, nick, TRUE, TRUE );
+		mir_free( nick );
+	}
+	return hContact;
+}
+
 static void JabberProcessMessage( XmlNode *node, void *userdata )
 {
 	ThreadData* info;
@@ -1223,8 +1249,11 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 	}
 
 	// XEP-0224 support (Attention/Nudge)
-	if ( hContact && JabberXmlGetChildWithGivenAttrValue( node, "attention", "xmlns", _T( JABBER_FEAT_ATTENTION ))) {
-		NotifyEventHooks( heventNudge, (WPARAM)hContact, 0 );
+	if ( JabberXmlGetChildWithGivenAttrValue( node, "attention", "xmlns", _T( JABBER_FEAT_ATTENTION ))) {
+		if ( !hContact )
+			hContact = JabberCreateTemporaryContact( from, chatItem );
+		if ( hContact )
+			NotifyEventHooks( heventNudge, (WPARAM)hContact, 0 );
 	}
 
 	// chatstates gone event
@@ -1385,27 +1414,9 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 							break;
 		}	}	}	}	}
 
-		if ( hContact == NULL ) {
-			// Create a temporary contact
-			if ( isChatRoomJid ) {
-				TCHAR* p = _tcschr( from, '/' );
-				if ( p != NULL && p[1] != '\0' )
-					p++;
-				else
-					p = from;
-				hContact = JabberDBCreateContact( from, p, TRUE, FALSE );
-
-				for ( int i=0; i < chatItem->resourceCount; i++ ) {
-					if ( !lstrcmp( chatItem->resource[i].resourceName, p )) {
-						JSetWord( hContact, "Status", chatItem->resource[i].status );
-						break;
-				}	}
-			}
-			else {
-				nick = JabberNickFromJID( from );
-				hContact = JabberDBCreateContact( from, nick, TRUE, TRUE );
-				mir_free( nick );
-		}	}
+		// Create a temporary contact
+		if ( hContact == NULL )
+			hContact = JabberCreateTemporaryContact( from, chatItem );
 
 		time_t now = time( NULL );
 		if ( !msgTime )
