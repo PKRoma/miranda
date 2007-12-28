@@ -116,6 +116,11 @@ DWORD  MSN_SetByte( const char* valueName, BYTE parValue )
 	return DBWriteContactSettingByte( NULL, msnProtocolName, valueName, parValue );
 }
 
+DWORD  MSN_SetByte( HANDLE hContact, const char* valueName, BYTE parValue )
+{
+	return DBWriteContactSettingByte( hContact, msnProtocolName, valueName, parValue );
+}
+
 DWORD  MSN_SetDword( HANDLE hContact, const char* valueName, DWORD parValue )
 {
 	return DBWriteContactSettingDword( hContact, msnProtocolName, valueName, parValue );

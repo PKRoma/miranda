@@ -978,8 +978,7 @@ TWinErrorCode::TWinErrorCode() :
 
 TWinErrorCode::~TWinErrorCode()
 {
-	if ( mErrorText != NULL )
-		::LocalFree( mErrorText );
+	mir_free( mErrorText );
 }
 
 char* TWinErrorCode::getText()
@@ -987,22 +986,22 @@ char* TWinErrorCode::getText()
 	if ( mErrorText == NULL )
 	{
 		int tBytes = 0;
+		mErrorText = (char*)mir_alloc(256);
 
 		if ( mErrorCode >= 12000 && mErrorCode < 12500 )
 			tBytes = FormatMessageA(
-				FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_HMODULE,
-				::GetModuleHandleA( "WININET.DLL" ),
-				mErrorCode, LANG_NEUTRAL, (LPSTR)&mErrorText, 0, NULL );
+				FORMAT_MESSAGE_FROM_HMODULE,
+				GetModuleHandleA( "WININET.DLL" ),
+				mErrorCode, LANG_NEUTRAL, mErrorText, 256, NULL );
 
 		if ( tBytes == 0 )
 			tBytes = FormatMessageA(
-				FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL,
-				mErrorCode, LANG_NEUTRAL, (LPSTR)&mErrorText, 0, NULL );
+				FORMAT_MESSAGE_FROM_SYSTEM, NULL,
+				mErrorCode, LANG_NEUTRAL, mErrorText, 256, NULL );
 
 		if ( tBytes == 0 )
 		{
-			mErrorText = ( LPSTR )LocalAlloc( LMEM_FIXED, 100 );
-			tBytes = mir_snprintf( mErrorText, 100, "unknown Windows error code %d", mErrorCode );
+			tBytes = mir_snprintf( mErrorText, 256, "unknown Windows error code %d", mErrorCode );
 		}
 
 		*mErrorText = (char)tolower( *mErrorText );

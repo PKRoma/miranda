@@ -380,14 +380,11 @@ void MSN_ABGetFull(void)
 				const int lstFlg = strcmp(szMsgUsr, "true") ? 0 : LIST_FL; 
 				if (Lists_IsInList(-1, szEmail) || lstFlg != 0)
 				{
-					const char* szMBE   = ezxml_txt(ezxml_child(contInf, "isMobileIMEnabled"));
-					const char* szMOB   = ezxml_txt(ezxml_child(contInf, "IsNotMobileVisible"));
-
 					const char* szNick  = ezxml_txt(ezxml_child(contInf, "displayName"));
 					if (*szNick == '\0') szNick = szEmail;
 					HANDLE hContact = MSN_HContactFromEmail(szEmail, szNick, 1, 0);
 					MSN_SetStringUtf(hContact, "Nick", (char*)szNick);
-
+					
 					ezxml_t anot = ezxml_get(contInf, "annotations", 0, "Annotation", -1);
 					while (anot != NULL)
 					{
@@ -404,8 +401,36 @@ void MSN_ABGetFull(void)
 
 					Lists_Add(lstFlg, typeId, szEmail);
 
-					DBWriteContactSettingByte(hContact, msnProtocolName, "MobileAllowed", strcmp(szMOB, "true") != 0);
-					DBWriteContactSettingByte(hContact, msnProtocolName, "MobileEnabled", strcmp(szMBE, "true") == 0);
+					const char *szTmp;
+
+					szTmp  = ezxml_txt(ezxml_child(contInf, "IsNotMobileVisible"));
+					MSN_SetByte(hContact, "MobileAllowed", strcmp(szTmp, "true") != 0);
+
+					szTmp = ezxml_txt(ezxml_child(contInf, "isMobileIMEnabled"));
+					MSN_SetByte(hContact, "MobileEnabled", strcmp(szTmp, "true") == 0);
+
+					szTmp = ezxml_txt(ezxml_child(contInf, "firstName"));
+					if (*szTmp) MSN_SetStringUtf(hContact, "FirstName", (char*)szTmp);
+//					else MSN_DeleteSetting(hContact, "FirstName");
+
+					szTmp = ezxml_txt(ezxml_child(contInf, "lastName"));
+					if (*szTmp) MSN_SetStringUtf(hContact, "LastName", (char*)szTmp);
+//					else MSN_DeleteSetting(hContact, "LastName");
+
+					szTmp = ezxml_txt(ezxml_child(contInf, "birthdate"));
+					char *szPtr;
+					if (strtol(szTmp, &szPtr, 10) > 1)
+					{
+						MSN_SetWord(hContact, "BirthYear", (WORD)strtol(szTmp, &szPtr, 10));
+						MSN_SetByte(hContact, "BirthMonth", (BYTE)strtol(szPtr+1, &szPtr, 10));
+						MSN_SetByte(hContact, "BirthDay", (BYTE)strtol(szPtr+1, &szPtr, 10));
+					}
+					else
+					{
+//						MSN_DeleteSetting(hContact, "BirthYear");
+//						MSN_DeleteSetting(hContact, "BirthMonth");
+//						MSN_DeleteSetting(hContact, "BirthDay");
+					}
 
 					ezxml_t cgrp = ezxml_get(contInf, "groupIds", 0, "guid", -1);
 					MSN_SyncContactToServerGroup( hContact, szContId, cgrp );

@@ -232,6 +232,7 @@ int         MSN_GetStringT( const char* valueName, HANDLE hContact, DBVARIANT* d
 WORD        MSN_GetWord( HANDLE hContact, const char* valueName, int parDefltValue );
 int         MSN_SendBroadcast( HANDLE hContact, int type, int result, HANDLE hProcess, LPARAM lParam );
 DWORD       MSN_SetByte( const char* valueName, BYTE parValue );
+DWORD       MSN_SetByte( HANDLE hContact, const char* valueName, BYTE parValue );
 DWORD       MSN_SetDword( HANDLE hContact, const char* valueName, DWORD parValue );
 DWORD       MSN_SetWord( HANDLE hContact, const char* valueName, WORD parValue );
 DWORD       MSN_SetString( HANDLE hContact, const char* valueName, const char* parValue );
