@@ -1345,7 +1345,7 @@ LBL_InvalidCommand:
 					}
 					else MSN_ChatStart( info );
 			}	}
-			return 0;
+			break;
 		}
 
 		case ' GSM':   //********* MSG: sections 8.7 Instant Messages, 8.8 Receiving an Instant Message
@@ -1572,7 +1572,6 @@ LBL_InvalidCommand:
 					if ( MSN_GetPassportAuth()) 
 					{
 						MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
-						MSN_GoOffline();
 						return 1;
 					}
 
@@ -1582,9 +1581,9 @@ LBL_InvalidCommand:
 				}
 				else if ( !strcmp( data.security, "OK" )) 
 				{
-					MSN_RefreshContactList();
-
-					msnLoggedIn = true;
+					if ( !MSN_RefreshContactList()) {
+						MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER );
+					}
 
 					DBVARIANT dbv;
 					if ( !DBGetContactSettingStringUtf( NULL, msnProtocolName, "Nick", &dbv )) {
@@ -1607,14 +1606,16 @@ LBL_InvalidCommand:
 
 					if ( info->mType == SERVER_NOTIFICATION || info->mType == SERVER_DISPATCH ) {
 						MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPROTOCOL );
-						MSN_GoOffline();
 					}
 					return 1;
 			}	}
 			break;
 
 		case ' SFR':   // RFS: Refresh Contact List 
-			MSN_RefreshContactList();
+			if (!MSN_RefreshContactList()) {
+				MSN_ShowError("Cannot retrieve contact list");
+				return 1;
+			}
 			break;
 
 		case ' XUU':   // UUX: MSNP11 addition
@@ -1642,9 +1643,7 @@ LBL_InvalidCommand:
 
 				if ( info->mType == SERVER_NOTIFICATION || info->mType == SERVER_DISPATCH ) {
 					MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPROTOCOL );
-					MSN_GoOffline();
 				}
-
 				return 1;
 			}
 			break;

@@ -630,7 +630,7 @@ void	 Lists_Wipe( void );
 void	 MSN_CreateContList(void);
 void	 MSN_CleanupLists(void);
 void	 MSN_FindYahooUser(const char* email);
-void	 MSN_RefreshContactList(void);
+bool	 MSN_RefreshContactList(void);
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN server groups
@@ -652,10 +652,10 @@ void   MSN_UploadServerGroups( char* group );
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN SOAP Address Book
 
-void MSN_SharingFindMembership(void);
+bool MSN_SharingFindMembership(void);
 bool MSN_SharingAddDelMember(const char* szEmail, const char* szRole, const char* szMethod);
 
-void MSN_ABGetFull(void);
+bool MSN_ABGetFull(void);
 bool MSN_ABAddDelContactGroup(const char* szCntId, const char* szGrpId, const char* szMethod);
 void MSN_ABAddGroup(const char* szGrpName);
 void MSN_ABRenameGroup(const char* szGrpName, const char* szGrpId);

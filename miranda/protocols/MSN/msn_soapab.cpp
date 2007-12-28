@@ -96,7 +96,7 @@ static char* GetABHost(bool isSharing)
 	return fullhost;
 }
 
-void MSN_SharingFindMembership(void)
+bool MSN_SharingFindMembership(void)
 {
 	SSLAgent mAgent;
 
@@ -190,7 +190,7 @@ void MSN_SharingFindMembership(void)
 	mir_free(tResult);
 	mir_free(abUrl);
 
-//	return status == 200;
+	return status == 200;
 }
 
 // AddMember, DeleteMember
@@ -292,7 +292,7 @@ static void SetAbParam(HANDLE hContact, const char *name, const char *par)
 }
 
 
-void MSN_ABGetFull(void)
+bool MSN_ABGetFull(void)
 {
 	SSLAgent mAgent;
 
@@ -488,7 +488,6 @@ void MSN_ABGetFull(void)
 						}
 						web = ezxml_next(web);
 					}
-
 				}
 			}
 			else
@@ -518,6 +517,8 @@ void MSN_ABGetFull(void)
 	}
 	mir_free(tResult);
 	mir_free(abUrl);
+
+	return status == 200;
 }
 
 //		"ABGroupContactAdd" : "ABGroupContactDelete", "ABGroupDelete", "ABContactDelete"

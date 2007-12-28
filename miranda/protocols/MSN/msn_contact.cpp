@@ -226,14 +226,15 @@ void MSN_FindYahooUser(const char* email)
 	}
 }
 
-void MSN_RefreshContactList(void)
+bool MSN_RefreshContactList(void)
 {
 	Lists_Wipe();
-	MSN_SharingFindMembership();
-	MSN_ABGetFull();
+	if (!MSN_SharingFindMembership()) return false;
+	if (!MSN_ABGetFull()) return false;
 	MSN_CleanupLists();
 
 	msnLoggedIn = true;
 
 	MSN_CreateContList();
+	return true;
 }
