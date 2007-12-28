@@ -27,6 +27,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // this plugin is for Miranda 0.7 only
 #define MIRANDA_VER 0x0700
 
+#define _USE_32BIT_TIME_T
+
 #if defined(UNICODE) && !defined(_UNICODE)
 	#define _UNICODE
 #endif

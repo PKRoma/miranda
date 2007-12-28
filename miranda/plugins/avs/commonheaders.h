@@ -24,6 +24,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #if defined( UNICODE ) && !defined( _UNICODE )
 	#define _UNICODE
 #endif
+
+#define _USE_32BIT_TIME_T
+
 #include <tchar.h>
 
 #ifdef _DEBUG

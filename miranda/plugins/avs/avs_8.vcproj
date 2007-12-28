@@ -48,15 +48,15 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../../include"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;UNICODE;_USRDLL;LOADAVATARS_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_USE_32BIT_TIME_T"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;UNICODE;_USRDLL;LOADAVATARS_EXPORTS"
 				StringPooling="false"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="true"
 				FloatingPointModel="0"
-				UsePrecompiledHeader="0"
-				PrecompiledHeaderThrough=""
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="commonheaders.h"
 				AssemblerListingLocation=""
 				BrowseInformation="0"
 				WarningLevel="3"
@@ -146,13 +146,13 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../../include"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;LOADAVATARS_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_USE_32BIT_TIME_T"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;LOADAVATARS_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="true"
-				UsePrecompiledHeader="0"
-				PrecompiledHeaderThrough=""
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="commonheaders.h"
 				AssemblerListingLocation=""
 				BrowseInformation="0"
 				WarningLevel="3"
@@ -245,12 +245,12 @@
 				FavorSizeOrSpeed="2"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="../../include"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;UNICODE;_USRDLL;LOADAVATARS_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_USE_32BIT_TIME_T"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;UNICODE;_USRDLL;LOADAVATARS_EXPORTS"
 				StringPooling="true"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
-				UsePrecompiledHeader="0"
-				PrecompiledHeaderThrough=""
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="commonheaders.h"
 				AssemblerListingLocation=""
 				BrowseInformation="0"
 				WarningLevel="3"
@@ -349,12 +349,12 @@
 				OmitFramePointers="true"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="../../include"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;LOADAVATARS_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_USE_32BIT_TIME_T"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;LOADAVATARS_EXPORTS"
 				StringPooling="true"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
-				UsePrecompiledHeader="0"
-				PrecompiledHeaderThrough=""
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="commonheaders.h"
 				AssemblerListingLocation=""
 				BrowseInformation="0"
 				WarningLevel="3"
@@ -431,6 +431,38 @@
 			<File
 				RelativePath="main.cpp"
 				>
+				<FileConfiguration
+					Name="Debug Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="mir_dblists.cpp"

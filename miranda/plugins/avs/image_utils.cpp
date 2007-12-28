@@ -1,6 +1,5 @@
-#include "image_utils.h"
-
 #include "commonheaders.h"
+#include "image_utils.h"
 
 #include <ocidl.h>
 #include <olectl.h>

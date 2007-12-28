@@ -25,6 +25,8 @@
 #define DEBUGMODE				// Debug Mode
 #endif
 
+#define _USE_32BIT_TIME_T
+
 #if _WIN32_WINNT < 0x0500
 #define _WIN32_WINNT 0x0500
 #endif

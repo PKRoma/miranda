@@ -276,7 +276,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="odbc32.lib odbccp32.lib comctl32.lib"
-				LinkIncremental="2"
+				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
 				SubSystem="2"

@@ -36,6 +36,8 @@
 
 #define MIRANDA_VER 0x0700
 
+#define _USE_32BIT_TIME_T
+
 // Windows includes
 #include <windows.h>
 #include <commctrl.h>

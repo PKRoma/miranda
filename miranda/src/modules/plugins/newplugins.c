@@ -249,7 +249,6 @@ static int checkAPI(char* plugin, BASIC_PLUGIN_INFO* bpi, DWORD mirandaVersion, 
 		}	}	}	}	}
 
 		if ( checkPI( bpi, pi )) {
-		{
 			bpi->pluginInfo = pi;
 			// basic API is present
 			if ( checkTypeAPI == CHECKAPI_NONE ) {

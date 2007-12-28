@@ -132,6 +132,7 @@ static int LoadDefaultModules(void)
 	if (LoadNewPluginsModuleInfos()) return 1;
 
 	// database is available here
+	if (LoadNetlibModule()) return 1;
 	if (LoadProtocolsModule()) return 1;
 	if (LoadIcoLibModule()) return 1;
 	if (LoadSkinModule()) return 1;
@@ -144,7 +145,6 @@ static int LoadDefaultModules(void)
 
 	//this info will be available at LoadNewPluginsModule()
 	disableDefaultModule=(int*)CallService(MS_PLUGINS_GETDISABLEDEFAULTARRAY,0,0);
-	if (!disableDefaultModule[DEFMOD_PROTOCOLNETLIB]) if (LoadNetlibModule()) return 1;
 
 	//order becomes less important below here
 	if (!disableDefaultModule[DEFMOD_FONTSERVICE]) if (LoadFontserviceModule()) return 1;
