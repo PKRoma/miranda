@@ -344,6 +344,8 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		AssocMgr_AddNewUrlTypeT( "xmpp:", TranslateT("Jabber Link Protocol"), hInst, IDI_JABBER, szService, 0 );
 	}
 
+	g_JabberClientCapsManager.TranslateCaps();
+
 	JabberCheckAllContactsAreTransported();
 	InitCustomFolders();
 

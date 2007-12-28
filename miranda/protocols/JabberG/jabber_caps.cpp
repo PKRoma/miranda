@@ -69,7 +69,7 @@ JabberFeatCapPair g_JabberFeatCapPairs[] = {
 	{	_T(JABBER_FEAT_USER_TUNE_NOTIFY), JABBER_CAPS_USER_TUNE_NOTIFY,  _T("Receives information about the music to which a user is listening"), },
 	{	_T(JABBER_FEAT_PRIVATE_STORAGE),  JABBER_CAPS_PRIVATE_STORAGE,   _T("Supports private XML Storage (for bookmakrs and other)"), },
 	{	_T(JABBER_FEAT_ATTENTION),        JABBER_CAPS_ATTENTION,         _T("Supports attention requests ('nudge')"), },
-	{	NULL,                             0                            }
+	{	NULL,                             0,                             NULL}
 };
 
 JabberFeatCapPair g_JabberFeatCapPairsExt[] = {
@@ -583,5 +583,12 @@ BOOL CJabberClientCapsManager::HandleInfoRequest( XmlNode* iqNode, void* userdat
 
 	jabberThreadInfo->send( iq );
 	
+	return TRUE;
+}
+
+BOOL CJabberClientCapsManager::TranslateCaps()
+{
+	for ( int i = 0; g_JabberFeatCapPairs[i].szFeature; i++ )
+		g_JabberFeatCapPairs[i].szDescription = TranslateTS( g_JabberFeatCapPairs[i].szDescription );
 	return TRUE;
 }

@@ -1097,7 +1097,7 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 {
 	ThreadData* info;
 	XmlNode *subjectNode, *xNode, *inviteNode, *idNode, *n;
-	TCHAR* from, *type, *nick, *idStr, *fromResource;
+	TCHAR* from, *type, *idStr, *fromResource;
 	HANDLE hContact;
 
 	if ( !node->name || strcmp( node->name, "message" )) return;
