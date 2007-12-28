@@ -285,6 +285,12 @@ bool MSN_SharingAddDelMember(const char* szEmail, const char* szRole, const char
 	return status == 200;
 }
 
+static void SetAbParam(HANDLE hContact, const char *name, const char *par)
+{
+	if (*par) MSN_SetStringUtf(hContact, name, (char*)par);
+//	else MSN_DeleteSetting(hContact, "FirstName");
+}
+
 
 void MSN_ABGetFull(void)
 {
@@ -381,6 +387,8 @@ void MSN_ABGetFull(void)
 				const int lstFlg = strcmp(szMsgUsr, "true") ? 0 : LIST_FL; 
 				if (Lists_IsInList(-1, szEmail) || lstFlg != 0)
 				{
+					const char *szTmp;
+
 					const char* szNick  = ezxml_txt(ezxml_child(contInf, "displayName"));
 					if (*szNick == '\0') szNick = szEmail;
 					HANDLE hContact = MSN_HContactFromEmail(szEmail, szNick, 1, 0);
@@ -391,9 +399,13 @@ void MSN_ABGetFull(void)
 					{
 						if (strcmp(ezxml_txt(ezxml_child(anot, "Name")), "AB.NickName") == 0)
 						{
-							DBWriteContactSettingStringUtf(hContact, "CList", "MyHandle", 
-								ezxml_txt(ezxml_child(anot, "Value")));
-							break;
+							szTmp = ezxml_txt(ezxml_child(anot, "Value"));
+							DBWriteContactSettingStringUtf(hContact, "CList", "MyHandle", szTmp);
+						}
+						if (strcmp(ezxml_txt(ezxml_child(anot, "Name")), "AB.JobTitle") == 0)
+						{
+							szTmp = ezxml_txt(ezxml_child(anot, "Value"));
+							SetAbParam(hContact, "CompanyPosition", szTmp);
 						}
 						anot = ezxml_next(anot);
 					}
@@ -405,8 +417,6 @@ void MSN_ABGetFull(void)
 					ezxml_t cgrp = ezxml_get(contInf, "groupIds", 0, "guid", -1);
 					MSN_SyncContactToServerGroup( hContact, szContId, cgrp );
 
-					const char *szTmp;
-
 					szTmp  = ezxml_txt(ezxml_child(contInf, "IsNotMobileVisible"));
 					MSN_SetByte(hContact, "MobileAllowed", strcmp(szTmp, "true") != 0);
 
@@ -414,12 +424,10 @@ void MSN_ABGetFull(void)
 					MSN_SetByte(hContact, "MobileEnabled", strcmp(szTmp, "true") == 0);
 
 					szTmp = ezxml_txt(ezxml_child(contInf, "firstName"));
-					if (*szTmp) MSN_SetStringUtf(hContact, "FirstName", (char*)szTmp);
-//					else MSN_DeleteSetting(hContact, "FirstName");
+					SetAbParam(hContact, "FirstName", szTmp);
 
 					szTmp = ezxml_txt(ezxml_child(contInf, "lastName"));
-					if (*szTmp) MSN_SetStringUtf(hContact, "LastName", (char*)szTmp);
-//					else MSN_DeleteSetting(hContact, "LastName");
+					SetAbParam(hContact, "LastName", szTmp);
 
 					szTmp = ezxml_txt(ezxml_child(contInf, "birthdate"));
 					char *szPtr;
@@ -434,6 +442,51 @@ void MSN_ABGetFull(void)
 //						MSN_DeleteSetting(hContact, "BirthYear");
 //						MSN_DeleteSetting(hContact, "BirthMonth");
 //						MSN_DeleteSetting(hContact, "BirthDay");
+					}
+
+					szTmp = ezxml_txt(ezxml_child(contInf, "comment"));
+					if (*szTmp) DBWriteContactSettingString(hContact, "UserInfo", "MyNotes", szTmp);
+//					else DBDeleteContactSetting(hContact, "UserInfo", "MyNotes");
+
+					ezxml_t loc = ezxml_get(contInf, "locations", 0, "ContactLocation", -1);
+					while (loc != NULL)
+					{
+						const char* szCntType = ezxml_txt(ezxml_child(loc, "contactLocationType"));
+						
+						int locid = -1;
+						if (strcmp(szCntType, "ContactLocationPersonal") == 0)
+							locid = 0;
+						else if (strcmp(szCntType, "ContactLocationBusiness") == 0)
+							locid = 1;
+
+						if (locid >= 0)
+						{
+							szTmp = ezxml_txt(ezxml_child(loc, "name"));
+							SetAbParam(hContact, "Company", szTmp);
+							szTmp = ezxml_txt(ezxml_child(loc, "street"));
+							SetAbParam(hContact, locid ? "CompanyStreet" : "Street", szTmp);
+							szTmp = ezxml_txt(ezxml_child(loc, "city"));
+							SetAbParam(hContact, locid ? "CompanyCity" : "City", szTmp);
+							szTmp = ezxml_txt(ezxml_child(loc, "state"));
+							SetAbParam(hContact, locid ? "CompanyState" : "State", szTmp);
+							szTmp = ezxml_txt(ezxml_child(loc, "country"));
+							SetAbParam(hContact, locid ? "CompanyCountry" : "Country", szTmp);
+							szTmp = ezxml_txt(ezxml_child(loc, "postalCode"));
+							SetAbParam(hContact, locid ? "CompanyZIP" : "ZIP", szTmp);
+						}
+						loc = ezxml_next(loc);
+					}
+
+					ezxml_t web = ezxml_get(contInf, "webSites", 0, "ContactWebSite", -1);
+					while (web != NULL)
+					{
+						const char* szCntType = ezxml_txt(ezxml_child(web, "contactWebSiteType"));
+						if (strcmp(szCntType, "ContactWebSiteBusiness") == 0)
+						{
+							szTmp = ezxml_txt(ezxml_child(web, "webURL"));
+							SetAbParam(hContact, "CompanyHomepage", szTmp);
+						}
+						web = ezxml_next(web);
 					}
 
 				}
