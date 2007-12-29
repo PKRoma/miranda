@@ -76,8 +76,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
     return TRUE;
 }
 
-__declspec(dllexport)
-     PLUGININFOEX *MirandaPluginInfoEx(DWORD mirandaVersion)
+__declspec(dllexport) PLUGININFOEX *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
     g_mirandaVersion = mirandaVersion;
 	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 6, 0, 0))
@@ -86,8 +85,8 @@ __declspec(dllexport)
 }
 
 static const MUUID interfaces[] = {MIID_SRMM, MIID_CHAT, MIID_LAST};
-__declspec(dllexport) 
-     const MUUID* MirandaPluginInterfaces(void)
+
+__declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
 {
 	return interfaces;
 }
@@ -122,7 +121,6 @@ int __declspec(dllexport) Unload(void)
 	return SplitmsgShutdown();
 }
 
-#ifdef _DEBUG
 #if defined(_UNICODE)
 int _DebugTraceW(const wchar_t *fmt, ...)
 {
@@ -134,10 +132,28 @@ int _DebugTraceW(const wchar_t *fmt, ...)
 	lstrcpyW(debug, L"TABSRMM: ");
 
     _vsnwprintf(&debug[9], ibsize - 10, fmt, va);
+#ifdef _DEBUG    
     OutputDebugStringW(debug);
+#else
+    {
+        char szLogFileName[MAX_PATH], szDataPath[MAX_PATH];
+        FILE *f;
+
+        CallService(MS_DB_GETPROFILEPATH, MAX_PATH, (LPARAM)szDataPath);
+        mir_snprintf(szLogFileName, MAX_PATH, "%s\\%s", szDataPath, "tabsrmm_debug.log");
+        f = fopen(szLogFileName, "a+");
+        if(f) {
+        	char *szDebug = Utf8_Encode(debug);
+            fputs(szDebug, f);
+            fputs("\n", f);
+            fclose(f);
+            if(szDebug)
+            	free(szDebug);
+        }
+    }
+#endif    
 	return 0;
 }
-#endif
 #endif
 
 int _DebugTraceA(const char *fmt, ...)

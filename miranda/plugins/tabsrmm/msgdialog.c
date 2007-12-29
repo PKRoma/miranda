@@ -33,9 +33,7 @@ $Id$
 #define TOOLBAR_PROTO_HIDDEN 1
 #define TOOLBAR_SEND_HIDDEN 2
 
-#ifdef __MATHMOD_SUPPORT
-	#include "m_MathModule.h"
-#endif
+#include "m_MathModule.h"
 
 extern MYGLOBALS myGlobals;
 extern NEN_OPTIONS nen_options;
@@ -264,8 +262,6 @@ static void ShowPopupMenu(HWND hwndDlg, struct MessageWindowData *dat, int idFro
                 DBWriteContactSettingByte(NULL, SRMSGMOD_T, "msgsizebar", (BYTE)myGlobals.m_visualMessageSizeIndicator);
                 WindowList_Broadcast(hMessageWindowList, DM_CONFIGURETOOLBAR, 0, 0);
                 SendMessage(hwndDlg, WM_SIZE, 0, 0);
-                //SetWindowPos(GetDlgItem(hwndDlg, IDC_SPLITTER), 0, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
-                //RedrawWindow(GetDlgItem(hwndDlg, IDC_SPLITTER), NULL, NULL, RDW_ERASE | RDW_UPDATENOW | RDW_INVALIDATE | RDW_FRAME);
                 break;
             case ID_EDITOR_PASTEANDSENDIMMEDIATELY:
                 HandlePasteAndSend(hwndDlg, dat);
@@ -354,7 +350,6 @@ static void MsgWindowUpdateState(HWND hwndDlg, struct MessageWindowData *dat, UI
             return;
 
         dat->pContainer->hwndSaved = hwndDlg;
-        //_DebugTraceW(L"activate handler for %s with %x", dat->szNickname, msg);
         dat->dwTickLastEvent = 0;
         dat->dwFlags &= ~MWF_DIVIDERSET;
         if (KillTimer(hwndDlg, TIMERID_FLASHWND)) {
@@ -371,10 +366,9 @@ static void MsgWindowUpdateState(HWND hwndDlg, struct MessageWindowData *dat, UI
                 CallService(MS_CLIST_REMOVEEVENT, (WPARAM)dat->hContact, (LPARAM)dat->hFlashingEvent);
             dat->hFlashingEvent = 0;
         }
-        if(dat->pContainer->dwFlags & CNT_NEED_UPDATETITLE) {
+        if(dat->pContainer->dwFlags & CNT_NEED_UPDATETITLE)
             dat->pContainer->dwFlags &= ~CNT_NEED_UPDATETITLE;
-            //SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
-        }
+        
         if (dat->dwFlags & MWF_DEFERREDREMAKELOG) {
             SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
             dat->dwFlags &= ~MWF_DEFERREDREMAKELOG;
@@ -397,12 +391,10 @@ static void MsgWindowUpdateState(HWND hwndDlg, struct MessageWindowData *dat, UI
         UpdateTrayMenuState(dat, FALSE);
         if(myGlobals.m_TipOwner == dat->hContact)
             RemoveBalloonTip();
-    #if defined(__MATHMOD_SUPPORT)
         if(myGlobals.m_MathModAvail) {
             CallService(MTH_Set_ToolboxEditHwnd,0,(LPARAM)GetDlgItem(hwndDlg, IDC_MESSAGE));
             MTH_updateMathWindow(hwndDlg, dat);
         }
-    #endif
         dat->dwLastUpdate = GetTickCount();
         if(dat->hContact)
             PostMessage(hwndDlg, DM_REMOVEPOPUPS, PU_REMOVE_ON_FOCUS, 0);
@@ -638,10 +630,11 @@ UINT NcCalcRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID
         StatusItems_t *item = &StatusItems[skinID];
         if(!item->IGNORED) {
             /*
-            nccp->rgrc[0].left += item->MARGIN_LEFT;
-            nccp->rgrc[0].right -= item->MARGIN_RIGHT;
-            nccp->rgrc[0].bottom -= item->MARGIN_BOTTOM;
-            nccp->rgrc[0].top += item->MARGIN_TOP;*/
+            	nccp->rgrc[0].left += item->MARGIN_LEFT;
+            	nccp->rgrc[0].right -= item->MARGIN_RIGHT;
+            	nccp->rgrc[0].bottom -= item->MARGIN_BOTTOM;
+            	nccp->rgrc[0].top += item->MARGIN_TOP;
+            */
             return WVR_REDRAW;
         }
     }
@@ -2196,9 +2189,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 }
                 if(m_pContainer->dwFlags & CNT_CREATE_MINIMIZED) {
                     m_pContainer->dwFlags &= ~CNT_CREATE_MINIMIZED;
-                    //dat->pContainer->dwFlags |= CNT_DEFERREDCONFIGURE;
                     m_pContainer->hwndActive = hwndDlg;
-                    //SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
                     return FALSE;
                 }
                 return newData->iActivate ? TRUE : FALSE;
@@ -2421,7 +2412,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     free(szStreamOut);
                 }
             }
-// END MOD#23
             if (hwndDlg == m_pContainer->hwndActive)
                 SendMessage(hwndContainer, WM_SIZE, 0, 0);
             InvalidateRect(GetDlgItem(hwndDlg, IDC_MESSAGE), NULL, FALSE);
@@ -2694,14 +2684,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 GetWindowRect(GetDlgItem(hwndDlg, IDC_LOG), &rcLog);
                 mmi->ptMinTrackSize.x = rcWindow.right - rcWindow.left - ((rcLog.right - rcLog.left) - dat->minEditBoxSize.cx);
                 mmi->ptMinTrackSize.y = rcWindow.bottom - rcWindow.top - ((rcLog.bottom - rcLog.top) - dat->minEditBoxSize.cy);
-#ifdef __MATHMOD_SUPPORT
                 //mathMod begin		// set maximum size, to fit formula-preview on the screen.
     			if (CallService(MTH_GET_PREVIEW_SHOWN,0,0))	//when preview is shown, fit the maximum size of message-dialog.
     				mmi->ptMaxSize.y = GetSystemMetrics(SM_CYSCREEN)-CallService(MTH_GET_PREVIEW_HEIGHT ,0,0);//max-height
     			else
     				mmi->ptMaxSize.y = GetSystemMetrics(SM_CYSCREEN);
     			//mathMod end
-#endif
                 return 0;
             }
         case WM_SIZE:
@@ -4570,21 +4558,14 @@ quote_from_last:
                             dat->nTypeMode = PROTOTYPE_SELFTYPING_OFF;
                         }
                         DBWriteContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, (BYTE)!iCurrentTypingMode);
-                        /*if(m_pContainer->hwndStatus) {
-                            if(iCurrentTypingMode)
-                                SetSelftypingIcon(hwndDlg, dat, FALSE);
-                            else
-                                SetSelftypingIcon(hwndDlg, dat, TRUE);
-                        }*/
                     }
                     break;
                 case IDC_MESSAGE:
-#ifdef __MATHMOD_SUPPORT
                     //mathMod begin
 					if(myGlobals.m_MathModAvail && HIWORD(wParam) == EN_CHANGE)
                         MTH_updateMathWindow(hwndDlg, dat);
 					//mathMod end
-#endif
+					
                     if (HIWORD(wParam) == EN_CHANGE) {
                         if(m_pContainer->hwndActive == hwndDlg)
                             UpdateReadChars(hwndDlg, dat);

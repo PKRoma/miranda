@@ -73,6 +73,7 @@ END_GROUPLOOP:
 	}
 
 	// here we create a new one since no one is to be found
+	
 	if (( hContact = (HANDLE) CallService(MS_DB_CONTACT_ADD, 0, 0)) == NULL )
 		return NULL;
 
@@ -85,8 +86,7 @@ END_GROUPLOOP:
 	DBWriteContactSettingTString( hContact, pszModule, "ChatRoomID", pszRoom );
 	DBWriteContactSettingByte( hContact, pszModule, "ChatRoom", (BYTE)iType );
 	DBWriteContactSettingWord( hContact, pszModule, "Status", ID_STATUS_OFFLINE );
-//	if (iType == GCW_SERVER)
-		DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
+	DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
 	return hContact;
 }
 

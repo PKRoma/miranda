@@ -198,50 +198,69 @@ static BOOL CALLBACK OpenFileSubclass(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 /*                                                              
  * saves a contact picture to disk
  * takes hbm (bitmap handle) and bool isOwnPic (1 == save the picture as your own avatar)
- * needs loadavatars plugin 0.0.1.20+
+ * requires AVS and ADVAIMG services (Miranda 0.7+)
  */
 
 static void SaveAvatarToFile(struct MessageWindowData *dat, HBITMAP hbm, int isOwnPic)
 {
-    char szFinalPath[MAX_PATH];
-    char szFinalFilename[MAX_PATH];
-    char szBaseName[MAX_PATH];
-    char szTimestamp[100];
-    OPENFILENAMEA ofn = {0};
+    TCHAR szFinalPath[MAX_PATH];
+    TCHAR szFinalFilename[MAX_PATH];
+    TCHAR szBaseName[MAX_PATH];
+    TCHAR szTimestamp[100];
+    OPENFILENAME ofn = {0};
     time_t t = time(NULL);
     struct tm *lt = localtime(&t);
-    static char *forbiddenCharacters = "%/\\'";
+    static TCHAR *forbiddenCharacters = _T("%/\\'");
     int i;
     DWORD setView = 1;
 
-    mir_snprintf(szTimestamp, 100, "%04u %02u %02u_%02u%02u", lt->tm_year + 1900, lt->tm_mon, lt->tm_mday, lt->tm_hour, lt->tm_min);
+    mir_sntprintf(szTimestamp, 100, _T("%04u %02u %02u_%02u%02u"), lt->tm_year + 1900, lt->tm_mon, lt->tm_mday, lt->tm_hour, lt->tm_min);
 
-    mir_snprintf(szFinalPath, MAX_PATH, "%sSaved Contact Pictures\\%s", myGlobals.szDataPath, dat->bIsMeta ? dat->szMetaProto : dat->szProto);
-    if(CreateDirectoryA(szFinalPath, 0) == 0) {
+#if defined(_UNICODE)
+    {
+        char     *szFinalProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
+        wchar_t  wszProto[100];
+        
+        MultiByteToWideChar(CP_ACP, 0, szFinalProto, 100, wszProto, 100);
+        wszProto[99] = 0;
+        mir_sntprintf(szFinalPath, MAX_PATH, _T("%sSaved Contact Pictures\\%s"), myGlobals.szDataPath, wszProto);
+    }
+#else
+    mir_sntprintf(szFinalPath, MAX_PATH, _T("%sSaved Contact Pictures\\%s"), myGlobals.szDataPath, dat->bIsMeta ? dat->szMetaProto : dat->szProto);
+#endif    
+    if(CreateDirectory(szFinalPath, 0) == 0) {
         if(GetLastError() != ERROR_ALREADY_EXISTS) {
             MessageBox(0, TranslateT("Error creating destination directory"), TranslateT("Save contact picture"), MB_OK | MB_ICONSTOP);
             return;
         }
     }
     if(isOwnPic)
-        mir_snprintf(szBaseName, MAX_PATH, "My Avatar_%s", szTimestamp);
-    else
-        mir_snprintf(szBaseName, MAX_PATH, "%s_%s", dat->uin, szTimestamp);
-
-    mir_snprintf(szFinalFilename, MAX_PATH, "%s.png", szBaseName);
-    ofn.lpstrDefExt = "png";
-    if(CallService(MS_AV_CANSAVEBITMAP, 0, PA_FORMAT_PNG) == 0) {
-        ofn.lpstrDefExt = "bmp";
-        mir_snprintf(szFinalFilename, MAX_PATH, "%s.bmp", szBaseName);
+        mir_sntprintf(szBaseName, MAX_PATH, _T("My Avatar_%s"), szTimestamp);
+    else {
+#if defined(_UNICODE)
+        wchar_t wszUin[100];
+        MultiByteToWideChar(CP_ACP, 0, dat->uin, 100, wszUin, 100);
+        wszUin[99] = 0;
+        mir_sntprintf(szBaseName, MAX_PATH, _T("%s_%s"), wszUin, szTimestamp);
+#else
+        mir_sntprintf(szBaseName, MAX_PATH, _T("%s_%s"), dat->uin, szTimestamp);
+#endif        
     }
 
-    for(i = 0; i < lstrlenA(forbiddenCharacters); i++) {
-        char *szFound = 0;
+    mir_sntprintf(szFinalFilename, MAX_PATH, _T("%s.png"), szBaseName);
+    ofn.lpstrDefExt = _T("png");
+    if(CallService(MS_AV_CANSAVEBITMAP, 0, PA_FORMAT_PNG) == 0) {
+        ofn.lpstrDefExt = _T("bmp");
+        mir_sntprintf(szFinalFilename, MAX_PATH, _T("%s.bmp"), szBaseName);
+    }
 
-        while((szFound = strchr(szFinalFilename, (int)forbiddenCharacters[i])) != NULL)
+    for(i = 0; i < lstrlen(forbiddenCharacters); i++) {
+        TCHAR *szFound = 0;
+
+        while((szFound = _tcschr(szFinalFilename, (int)forbiddenCharacters[i])) != NULL)
             *szFound = '_';
     }
-    ofn.lpstrFilter = "Image files\0*.bmp;*.png;*.jpg;*.gif\0\0";
+    ofn.lpstrFilter = _T("Image files\0*.bmp;*.png;*.jpg;*.gif\0\0");
     if(IsWinVer2000Plus()) {
         ofn.Flags = OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ENABLESIZING | OFN_ENABLEHOOK;
         ofn.lpfnHook = (LPOFNHOOKPROC)OpenFileSubclass;
@@ -257,12 +276,12 @@ static void SaveAvatarToFile(struct MessageWindowData *dat, HBITMAP hbm, int isO
     ofn.nMaxFile = MAX_PATH;
     ofn.nMaxFileTitle = MAX_PATH;
     ofn.lCustData = (LPARAM)&setView;
-    if(GetSaveFileNameA(&ofn)) {
-        if(PathFileExistsA(szFinalFilename)) {
+    if(GetSaveFileName(&ofn)) {
+        if(PathFileExists(szFinalFilename)) {
             if(MessageBox(0, TranslateT("The file exists. Do you want to overwrite it?"), TranslateT("Save contact picture"), MB_YESNO | MB_ICONQUESTION) == IDNO)
                 return;
         }
-        CallService(MS_AV_SAVEBITMAP, (WPARAM)hbm, (LPARAM)szFinalFilename);
+        CallService(MS_AV_SAVEBITMAPT, (WPARAM)hbm, (LPARAM)szFinalFilename);
     }
 }
 
@@ -1231,19 +1250,12 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
      * font
      */
 
-    //lf = logfonts[MSGFONTID_MESSAGEAREA];
-    //color = fontcolors[MSGFONTID_MESSAGEAREA];
-
     lf = dat->theme.logFonts[MSGFONTID_MESSAGEAREA];
     color = dat->theme.fontColors[MSGFONTID_MESSAGEAREA];
     
 	// create an index of colors in the module and map them to
 	// corresponding colors in the RTF color table
 
-    /*
-	pIndex = malloc(sizeof(int) * MM_FindModule(dat->pszModule)->nColorCount);
-	for(i = 0; i < MM_FindModule(dat->pszModule)->nColorCount ; i++)
-		pIndex[i] = -1;*/
 	CreateColorMap(pszText);
 	// scan the file for rtf commands and remove or parse them
     inColor = 0;
@@ -1947,7 +1959,11 @@ void GetLocaleID(struct MessageWindowData *dat, char *szKLName)
     }
 }
 
-// Returns true if the unicode buffer only contains 7-bit characters.
+/*
+ * Returns true if the unicode buffer only contains 7-bit characters.
+ * The resulting message could be sent and stored as ANSI then
+ */ 
+ 
 BOOL IsUnicodeAscii(const wchar_t* pBuffer, int nSize)
 {
 	BOOL bResult = TRUE;
@@ -1973,17 +1989,24 @@ BYTE GetInfoPanelSetting(HWND hwndDlg, struct MessageWindowData *dat)
 
 void GetDataDir()
 {
-    char pszDBPath[MAX_PATH + 1], pszDataPath[MAX_PATH + 1];
+    TCHAR pszDBPath[MAX_PATH + 1], pszDataPath[MAX_PATH + 1];
     
+#if defined(_UNICODE)
+    char szTemp[MAX_PATH + 1];
+    CallService(MS_DB_GETPROFILEPATH, MAX_PATH, (LPARAM)szTemp);
+    MultiByteToWideChar(CP_ACP, 0, szTemp, MAX_PATH, pszDBPath, MAX_PATH);
+    pszDBPath[MAX_PATH] = 0;
+#else    
     CallService(MS_DB_GETPROFILEPATH, MAX_PATH, (LPARAM)pszDBPath);
-    mir_snprintf(pszDataPath, MAX_PATH, "%s\\tabSRMM\\", pszDBPath);
-    CreateDirectoryA(pszDataPath, NULL);
-    strncpy(myGlobals.szDataPath, pszDataPath, MAX_PATH);
+#endif    
+    mir_sntprintf(pszDataPath, MAX_PATH, _T("%s\\tabSRMM\\"), pszDBPath);
+    CreateDirectory(pszDataPath, NULL);
+    _tcsncpy(myGlobals.szDataPath, pszDataPath, MAX_PATH);
     myGlobals.szDataPath[MAX_PATH] = 0;
-    mir_snprintf(pszDataPath, MAX_PATH, "%sskins\\", myGlobals.szDataPath);
-    CreateDirectoryA(pszDataPath, NULL);
-    mir_snprintf(pszDataPath, MAX_PATH, "%sSaved Contact Pictures\\", myGlobals.szDataPath);
-    CreateDirectoryA(pszDataPath, NULL);
+    mir_sntprintf(pszDataPath, MAX_PATH, _T("%sskins\\"), myGlobals.szDataPath);
+    CreateDirectory(pszDataPath, NULL);
+    mir_sntprintf(pszDataPath, MAX_PATH, _T("%sSaved Contact Pictures\\"), myGlobals.szDataPath);
+    CreateDirectory(pszDataPath, NULL);
 }
 
 void LoadContactAvatar(HWND hwndDlg, struct MessageWindowData *dat)
@@ -2936,6 +2959,11 @@ void GetMaxMessageLength(HWND hwndDlg, struct MessageWindowData *dat)
 #define STATUSMSG_GG 4
 #define STATUSMSG_XSTATUS 5
 
+/*
+ * read status message from the database. Standard clist status message has priority,
+ * but if not available, custom messages like xStatus can be used.
+ */
+
 void GetCachedStatusMsg(HWND hwndDlg, struct MessageWindowData *dat)
 {
 	DBVARIANT dbv = {0};
@@ -3140,9 +3168,6 @@ int FindRTLLocale(struct MessageWindowData *dat)
     
     if(dat->iHaveRTLLang == 0) {
         ZeroMemory(layouts, 20 * sizeof(HKL));
-        //EnumSystemLanguageGroups(pfnEnumProc, LGRPID_INSTALLED, 0);
-        //EnumSystemLocales(pfnEnumProc, LCID_INSTALLED);
-        //EnumUILanguages(pfnEnumProc, 0, 0);
         GetKeyboardLayoutList(20, layouts);
         for(i = 0; i < 20 && layouts[i]; i++) {
             lcid = MAKELCID(LOWORD(layouts[i]), 0);
@@ -3205,16 +3230,6 @@ void MTH_updateMathWindow(HWND hwndDlg, struct MessageWindowData *dat)
     cWinPlace.length=sizeof(WINDOWPLACEMENT);
     GetWindowPlacement(dat->pContainer->hwnd, &cWinPlace);
     return;
-    /*
-    if (cWinPlace.showCmd == SW_SHOWMAXIMIZED)
-    {
-        RECT rcWindow;
-        GetWindowRect(hwndDlg, &rcWindow);
-        if(CallService(MTH_GET_PREVIEW_SHOWN,0,0))
-            MoveWindow(dat->pContainer->hwnd,rcWindow.left,rcWindow.top,rcWindow.right-rcWindow.left,GetSystemMetrics(SM_CYSCREEN)-CallService(MTH_GET_PREVIEW_HEIGHT ,0,0),1);
-        else
-            MoveWindow(dat->pContainer->hwnd,rcWindow.left,rcWindow.top,rcWindow.right-rcWindow.left,GetSystemMetrics(SM_CYSCREEN),1);
-    }*/
 }
 #endif
 

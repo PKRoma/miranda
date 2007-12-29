@@ -867,7 +867,7 @@ static void __forceinline gradientVertical(UCHAR *ubRedFinal, UCHAR *ubGreenFina
  * all parameters are in ImageItem already pre-configured
  */
 
-// XXX add support for more stretching options (stretch/tile divided image parts etc.
+// TODO: add support for more stretching options (stretch/tile divided image parts etc.
 
 void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc)
 {
@@ -876,7 +876,6 @@ void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc)
     LONG height = rc->bottom - rc->top;
     BOOL isGlyph = (item->dwFlags & IMAGE_GLYPH) && g_glyphItem;
     BOOL fCleanUp = TRUE;
-    //HDC hdcSrc = isGlyph ? g_glyphItem->hdc : item->hdc;
     HDC hdcSrc = 0;
     HBITMAP hbmOld;
     LONG srcOrigX = isGlyph ? item->glyphMetrics[0] : 0;
@@ -1258,8 +1257,6 @@ static void ReadItem(StatusItems_t *this_item, char *szItem, char *file)
     COLORREF clr;
 	StatusItems_t *defaults = &StatusItem_Default;
 
-	//MessageBoxA(0, szItem, this_item->szName, MB_OK);
-
 	this_item->ALPHA = (int)GetPrivateProfileIntA(szItem, "Alpha", defaults->ALPHA, file);
     this_item->ALPHA = min(this_item->ALPHA, 100);
     
@@ -1429,7 +1426,6 @@ done_with_glyph:
                                 pItem->nextItem = newItem;
                             }
                             alloced = TRUE;
-                            //_DebugPopup(0, "successfully assigned %s to %s with %s (handle: %d), p = %d", itemname, buffer, szFinalName, newItem->hbm, newItem);
                         }
                     }
                     else if(newItem != NULL)
@@ -1466,26 +1462,18 @@ static void CorrectBitmap32Alpha(HBITMAP hBitmap)
 	for (y = 0; y < bmp.bmHeight; ++y) {
         BYTE *px = p + bmp.bmWidth * 4 * y;
 
-        for (x = 0; x < bmp.bmWidth; ++x) 
-		{
+        for (x = 0; x < bmp.bmWidth; ++x) {
 			if (px[3] != 0) 
-			{
 				fixIt = FALSE;
-			}
-			else
-			{
+			else 
 				px[3] = 255;
-			}
-
 			px += 4;
 		}
 	}
 
 	if (fixIt)
-	{
 		SetBitmapBits(hBitmap, bmp.bmWidth * bmp.bmHeight * 4, p);
-	}
-
+	
 	free(p);
 }
 
@@ -1567,25 +1555,10 @@ static void IMG_CreateItem(ImageItem *item, const char *fileName, HDC hdc)
                 return;
             }
         }
-        //item->hdc = CreateCompatibleDC(hdc);
-        //item->hbmOld = SelectObject(item->hdc, item->hbm);
         item->hdc = 0;
         item->hbmOld = 0;
     }
 }
-
-/*
-static void IMG_RefreshItem(ImageItem *item, HDC hdc)
-{
-    if(item && !(item->dwFlags & IMAGE_GLYPH)) {
-        SelectObject(item->hdc, item->hbmOld);
-        DeleteDC(item->hdc);
-
-        item->hdc = CreateCompatibleDC(hdc);
-        item->hbmOld = SelectObject(item->hdc, item->hbm);
-    }
-}
-*/
 
 static void IMG_DeleteItem(ImageItem *item)
 {
@@ -1597,25 +1570,6 @@ static void IMG_DeleteItem(ImageItem *item)
 	if(item->fillBrush)
 		DeleteObject(item->fillBrush);
 }
-
-/*
-void IMG_RefreshItems()
-{
-    HDC hdc = GetDC(0);
-    ImageItem *pItem = g_ImageItems;
-
-    return;
-#ifdef _DEBUG
-    _DebugTraceA("Refreshing cached DCs");
-#endif
-    while(pItem) {
-        IMG_RefreshItem(pItem, hdc);
-        pItem = pItem->nextItem;
-    }
-    IMG_RefreshItem(g_glyphItem, hdc);
-    ReleaseDC(0, hdc);
-}
-*/
 
 void IMG_DeleteItems()
 {
@@ -1727,7 +1681,6 @@ static void IMG_LoadItems(char *szFileName)
             *p1 = 0;
         if(g_nrSkinIcons < NR_MAXSKINICONS && p1) {
             SkinLoadIcon(szFileName, "Icons", p, (HICON *)&tmpIconDesc.uId);
-            //_DebugTraceA("trying to load: %s -> %d", p, tmpIconDesc.uId);
             if(tmpIconDesc.uId) {
                 ZeroMemory(&g_skinIcons[g_nrSkinIcons], sizeof(ICONDESC));
                 g_skinIcons[g_nrSkinIcons].uId = tmpIconDesc.uId;
@@ -1771,15 +1724,11 @@ static void IMG_LoadItems(char *szFileName)
 
 static void SkinCalcFrameWidth()
 {
-	//NONCLIENTMETRICS ncm = {0};
 	int xBorder, yBorder, yCaption;
 
 	xBorder = GetSystemMetrics(SM_CXSIZEFRAME);
 	yBorder = GetSystemMetrics(SM_CYSIZEFRAME);
 	yCaption = GetSystemMetrics(SM_CYCAPTION);
-
-	//SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(ncm), &ncm, 0);
-	//SystemParametersInfo(SPI_GETBORDER, sizeof(nBorder), &nBorder, 0);
 
 #ifdef _DEBUG
 	_DebugTraceA("SPI: %d, %d, %d", xBorder, yBorder, yCaption);
@@ -1874,8 +1823,6 @@ static void LoadSkinItems(char *file, int onStartup)
     SkinLoadIcon(file, "Global", "CloseGlyph", &myGlobals.g_closeGlyph);
 	SkinLoadIcon(file, "Global", "MaximizeGlyph", &myGlobals.g_maxGlyph);
 	SkinLoadIcon(file, "Global", "MinimizeGlyph", &myGlobals.g_minGlyph);
-    
-	//GetPrivateProfileStringA("Global", "FontColor", "None", buffer, 500, file);
     
 	g_framelessSkinmode = GetPrivateProfileIntA("Global", "framelessmode", 0, file);
     myGlobals.g_DisableScrollbars = GetPrivateProfileIntA("Global", "NoScrollbars", 0, file);
@@ -2038,5 +1985,3 @@ void DrawDimmedIcon(HDC hdc, LONG left, LONG top, LONG dx, LONG dy, HICON hIcon,
     DeleteObject(hbm);
     DeleteDC(dcMem);
 }
-
-

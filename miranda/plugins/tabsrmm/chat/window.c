@@ -21,9 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../commonheaders.h"
 #include "../resource.h"
 
-#ifdef __MATHMOD_SUPPORT
-	#include "../m_MathModule.h"
-#endif
+#include "../m_MathModule.h"
 
 extern PSLWA pSetLayeredWindowAttributes;
 extern COLORREF g_ContainerColorKey;
@@ -161,12 +159,10 @@ static void Chat_UpdateWindowState(HWND hwndDlg, struct MessageWindowData *dat, 
 		UpdateTrayMenuState(dat, FALSE);
 		DM_SetDBButtonStates(hwndDlg, dat);
 
-#if defined(__MATHMOD_SUPPORT)
         if(g_Settings.MathMod) {
             CallService(MTH_Set_ToolboxEditHwnd,0,(LPARAM)GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE)); 
             MTH_updateMathWindow(hwndDlg, dat);
         }
-#endif                
 
         if (dat->dwFlagsEx & MWF_EX_DELAYEDSPLITTER) {
 			dat->dwFlagsEx &= ~MWF_EX_DELAYEDSPLITTER;
@@ -174,7 +170,9 @@ static void Chat_UpdateWindowState(HWND hwndDlg, struct MessageWindowData *dat, 
 			PostMessage(hwndDlg, DM_SPLITTERMOVEDGLOBAL, dat->wParam, dat->lParam);
 			PostMessage(hwndDlg, WM_SIZE, 0, 0);
 			dat->wParam = dat->lParam = 0;
-}	}	}
+        }	
+	}	
+}
 
 static void	InitButtons(HWND hwndDlg, SESSION_INFO* si)
 {

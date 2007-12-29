@@ -437,7 +437,7 @@ do_apply:
             *dwOut = dwNewFlags;
             break;
         }
-        case WM_DESTROY:
+    case WM_DESTROY:
         {
             HFONT hFont;
 

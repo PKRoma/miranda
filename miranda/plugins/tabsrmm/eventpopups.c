@@ -1,11 +1,11 @@
 /*
-  Name: NewEventNotify - Plugin for Miranda ICQ
-  File: neweventnotify.h - Main Header File
-  Version: 0.0.4
-  Description: Notifies you when you receive a message
-  Author: icebreaker, <icebreaker@newmail.net>
-  Date: 18.07.02 13:59 / Update: 16.09.02 17:45
-  Copyright: (C) 2002 Starzinger Michael
+  	Name: NewEventNotify - Plugin for Miranda ICQ
+  	File: neweventnotify.h - Main Header File
+  	Version: 0.0.4
+  	Description: Notifies you when you receive a message
+  	Author: icebreaker, <icebreaker@newmail.net>
+  	Date: 18.07.02 13:59 / Update: 16.09.02 17:45
+  	Copyright: (C) 2002 Starzinger Michael
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,13 +21,12 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-$Id$
+	$Id$
 
-Event popups for tabSRMM - most of the code taken from NewEventNotify (see copyright above)
+	Event popups for tabSRMM - most of the code taken from NewEventNotify (see copyright above)
 
-  Code modified and adapted for tabSRMM by Nightwish (silvercircle@gmail.com)
-  Additional code (popup merging, options) by Prezes
-  
+  	Code modified and adapted for tabSRMM by Nightwish (silvercircle@gmail.com)
+  	Additional code (popup merging, options) by Prezes
 */
 
 #include "commonheaders.h"
@@ -278,6 +277,7 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 		EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_FILE), !options->bDefaultColorFile);
 		EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_OTHERS), !options->bDefaultColorOthers);
 		EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_OTHERS), !options->bDefaultColorOthers);
+		
 		//disable merge messages options when is not using
 
 		EnableWindow(GetDlgItem(hWnd, IDC_DELAY_MESSAGE), options->iDelayMsg != -1);
@@ -328,67 +328,67 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 	case WM_COMMAND:
 		if (!bWmNotify) {
 			switch (LOWORD(wParam)) {
-	case IDC_PREVIEW:
-		PopupPreview(options);
-		break;
-	case IDC_SIMPLEMODE:
-		options->bSimpleMode = (BYTE)SendDlgItemMessage(hWnd, IDC_SIMPLEMODE, CB_GETCURSEL, 0, 0);
-		EnableWindow(GetDlgItem(hWnd, IDC_EVENTOPTIONS), options->bSimpleMode == 0);
-		break;
-	case IDC_POPUPSTATUSMODES:
-		{   
-			HWND hwndNew = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CHOOSESTATUSMODES), hWnd, DlgProcSetupStatusModes, DBGetContactSettingDword(0, MODULE, "statusmask", (DWORD)-1));
-			SendMessage(hwndNew, DM_SETPARENTDIALOG, 0, (LPARAM)hWnd);
-			break;
-		}
-	default:
-		{
-			options->bDefaultColorMsg = IsDlgButtonChecked(hWnd, IDC_CHKDEFAULTCOL_MESSAGE);
-			options->bDefaultColorUrl = IsDlgButtonChecked(hWnd, IDC_CHKDEFAULTCOL_URL);
-			options->bDefaultColorFile = IsDlgButtonChecked(hWnd, IDC_CHKDEFAULTCOL_FILE);
-			options->bDefaultColorOthers = IsDlgButtonChecked(hWnd, IDC_CHKDEFAULTCOL_OTHERS);
-			options->iDelayMsg = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_MESSAGE)?(DWORD)-1:(DWORD)GetDlgItemInt(hWnd, IDC_DELAY_MESSAGE, NULL, FALSE);
-			options->iDelayUrl = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_URL)?(DWORD)-1:(DWORD)GetDlgItemInt(hWnd, IDC_DELAY_URL, NULL, FALSE);
-			options->iDelayFile = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_FILE)?(DWORD)-1:(DWORD)GetDlgItemInt(hWnd, IDC_DELAY_FILE, NULL, FALSE);
-			options->iDelayOthers = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_OTHERS)?(DWORD)-1:(DWORD)GetDlgItemInt(hWnd, IDC_DELAY_OTHERS, NULL, FALSE);
-			options->iAnnounceMethod = SendDlgItemMessage(hWnd, IDC_ANNOUNCEMETHOD, CB_GETITEMDATA, (WPARAM)SendDlgItemMessage(hWnd, IDC_ANNOUNCEMETHOD, CB_GETCURSEL, 0, 0), 0);
-			options->bSimpleMode = (BYTE)SendDlgItemMessage(hWnd, IDC_SIMPLEMODE, CB_GETCURSEL, 0, 0);
-
-			if(IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW))
-				options->iLimitPreview = GetDlgItemInt(hWnd, IDC_MESSAGEPREVIEWLIMIT, NULL, FALSE);
-			else
-				options->iLimitPreview = 0;
-			EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_MESSAGE), !options->bDefaultColorMsg);
-			EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_MESSAGE), !options->bDefaultColorMsg);
-			EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_URL), !options->bDefaultColorUrl);
-			EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_URL), !options->bDefaultColorUrl);
-			EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_FILE), !options->bDefaultColorFile);
-			EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_FILE), !options->bDefaultColorFile);
-			EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_OTHERS), !options->bDefaultColorOthers);
-			EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_OTHERS), !options->bDefaultColorOthers);
-
-			EnableWindow(GetDlgItem(hWnd, IDC_MESSAGEPREVIEWLIMIT), IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW));
-			EnableWindow(GetDlgItem(hWnd, IDC_MESSAGEPREVIEWLIMITSPIN), IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW));
-			//disable delay textbox when infinite is checked
-			EnableWindow(GetDlgItem(hWnd, IDC_DELAY_MESSAGE), options->iDelayMsg != -1);
-			EnableWindow(GetDlgItem(hWnd, IDC_DELAY_URL), options->iDelayUrl != -1);
-			EnableWindow(GetDlgItem(hWnd, IDC_DELAY_FILE), options->iDelayFile != -1);
-			EnableWindow(GetDlgItem(hWnd, IDC_DELAY_OTHERS), options->iDelayOthers != -1);
-			EnableWindow(GetDlgItem(hWnd, IDC_ANIMATED), options->bMinimizeToTray);
-			if (HIWORD(wParam) == CPN_COLOURCHANGED) {
-				options->colBackMsg = SendDlgItemMessage(hWnd, IDC_COLBACK_MESSAGE, CPM_GETCOLOUR, 0, 0);
-				options->colTextMsg = SendDlgItemMessage(hWnd, IDC_COLTEXT_MESSAGE, CPM_GETCOLOUR, 0, 0);
-				options->colBackUrl = SendDlgItemMessage(hWnd, IDC_COLBACK_URL, CPM_GETCOLOUR, 0, 0);
-				options->colTextUrl = SendDlgItemMessage(hWnd, IDC_COLTEXT_URL, CPM_GETCOLOUR, 0, 0);
-				options->colBackFile = SendDlgItemMessage(hWnd, IDC_COLBACK_FILE, CPM_GETCOLOUR, 0, 0);
-				options->colTextFile = SendDlgItemMessage(hWnd, IDC_COLTEXT_FILE, CPM_GETCOLOUR, 0, 0);
-				options->colBackOthers = SendDlgItemMessage(hWnd, IDC_COLBACK_OTHERS, CPM_GETCOLOUR, 0, 0);
-				options->colTextOthers = SendDlgItemMessage(hWnd, IDC_COLTEXT_OTHERS, CPM_GETCOLOUR, 0, 0);
-			}
-			EnableWindow(GetDlgItem(hWnd, IDC_USESHELLNOTIFY), options->bTraySupport);
-			SendMessage(GetParent(hWnd), PSM_CHANGED, 0, 0);
-			break;
-		}
+				case IDC_PREVIEW:
+					PopupPreview(options);
+					break;
+				case IDC_SIMPLEMODE:
+					options->bSimpleMode = (BYTE)SendDlgItemMessage(hWnd, IDC_SIMPLEMODE, CB_GETCURSEL, 0, 0);
+					EnableWindow(GetDlgItem(hWnd, IDC_EVENTOPTIONS), options->bSimpleMode == 0);
+					break;
+				case IDC_POPUPSTATUSMODES:
+				{   
+					HWND hwndNew = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CHOOSESTATUSMODES), hWnd, DlgProcSetupStatusModes, DBGetContactSettingDword(0, MODULE, "statusmask", (DWORD)-1));
+					SendMessage(hwndNew, DM_SETPARENTDIALOG, 0, (LPARAM)hWnd);
+					break;
+				}	
+				default:
+				{
+					options->bDefaultColorMsg = IsDlgButtonChecked(hWnd, IDC_CHKDEFAULTCOL_MESSAGE);
+					options->bDefaultColorUrl = IsDlgButtonChecked(hWnd, IDC_CHKDEFAULTCOL_URL);
+					options->bDefaultColorFile = IsDlgButtonChecked(hWnd, IDC_CHKDEFAULTCOL_FILE);
+					options->bDefaultColorOthers = IsDlgButtonChecked(hWnd, IDC_CHKDEFAULTCOL_OTHERS);
+					options->iDelayMsg = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_MESSAGE)?(DWORD)-1:(DWORD)GetDlgItemInt(hWnd, IDC_DELAY_MESSAGE, NULL, FALSE);
+					options->iDelayUrl = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_URL)?(DWORD)-1:(DWORD)GetDlgItemInt(hWnd, IDC_DELAY_URL, NULL, FALSE);
+					options->iDelayFile = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_FILE)?(DWORD)-1:(DWORD)GetDlgItemInt(hWnd, IDC_DELAY_FILE, NULL, FALSE);
+					options->iDelayOthers = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_OTHERS)?(DWORD)-1:(DWORD)GetDlgItemInt(hWnd, IDC_DELAY_OTHERS, NULL, FALSE);
+					options->iAnnounceMethod = SendDlgItemMessage(hWnd, IDC_ANNOUNCEMETHOD, CB_GETITEMDATA, (WPARAM)SendDlgItemMessage(hWnd, IDC_ANNOUNCEMETHOD, CB_GETCURSEL, 0, 0), 0);
+					options->bSimpleMode = (BYTE)SendDlgItemMessage(hWnd, IDC_SIMPLEMODE, CB_GETCURSEL, 0, 0);
+		
+					if(IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW))
+						options->iLimitPreview = GetDlgItemInt(hWnd, IDC_MESSAGEPREVIEWLIMIT, NULL, FALSE);
+					else
+						options->iLimitPreview = 0;
+					EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_MESSAGE), !options->bDefaultColorMsg);
+					EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_MESSAGE), !options->bDefaultColorMsg);
+					EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_URL), !options->bDefaultColorUrl);
+					EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_URL), !options->bDefaultColorUrl);
+					EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_FILE), !options->bDefaultColorFile);
+					EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_FILE), !options->bDefaultColorFile);
+					EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_OTHERS), !options->bDefaultColorOthers);
+					EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_OTHERS), !options->bDefaultColorOthers);
+		
+					EnableWindow(GetDlgItem(hWnd, IDC_MESSAGEPREVIEWLIMIT), IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW));
+					EnableWindow(GetDlgItem(hWnd, IDC_MESSAGEPREVIEWLIMITSPIN), IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW));
+					//disable delay textbox when infinite is checked
+					EnableWindow(GetDlgItem(hWnd, IDC_DELAY_MESSAGE), options->iDelayMsg != -1);
+					EnableWindow(GetDlgItem(hWnd, IDC_DELAY_URL), options->iDelayUrl != -1);
+					EnableWindow(GetDlgItem(hWnd, IDC_DELAY_FILE), options->iDelayFile != -1);
+					EnableWindow(GetDlgItem(hWnd, IDC_DELAY_OTHERS), options->iDelayOthers != -1);
+					EnableWindow(GetDlgItem(hWnd, IDC_ANIMATED), options->bMinimizeToTray);
+					if (HIWORD(wParam) == CPN_COLOURCHANGED) {
+						options->colBackMsg = SendDlgItemMessage(hWnd, IDC_COLBACK_MESSAGE, CPM_GETCOLOUR, 0, 0);
+						options->colTextMsg = SendDlgItemMessage(hWnd, IDC_COLTEXT_MESSAGE, CPM_GETCOLOUR, 0, 0);
+						options->colBackUrl = SendDlgItemMessage(hWnd, IDC_COLBACK_URL, CPM_GETCOLOUR, 0, 0);
+						options->colTextUrl = SendDlgItemMessage(hWnd, IDC_COLTEXT_URL, CPM_GETCOLOUR, 0, 0);
+						options->colBackFile = SendDlgItemMessage(hWnd, IDC_COLBACK_FILE, CPM_GETCOLOUR, 0, 0);
+						options->colTextFile = SendDlgItemMessage(hWnd, IDC_COLTEXT_FILE, CPM_GETCOLOUR, 0, 0);
+						options->colBackOthers = SendDlgItemMessage(hWnd, IDC_COLBACK_OTHERS, CPM_GETCOLOUR, 0, 0);
+						options->colTextOthers = SendDlgItemMessage(hWnd, IDC_COLTEXT_OTHERS, CPM_GETCOLOUR, 0, 0);
+					}
+					EnableWindow(GetDlgItem(hWnd, IDC_USESHELLNOTIFY), options->bTraySupport);
+					SendMessage(GetParent(hWnd), PSM_CHANGED, 0, 0);
+					break;
+				}
 			}
 		}
 		break;
@@ -686,8 +686,6 @@ static BOOL CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM
             PopupAct(hWnd, pdata->pluginOptions->maskActR, pdata);
             break;
         case UM_FREEPLUGINDATA:
-            //if(!pdata->iActionTaken)
-            //    PopupAct(hWnd, pdata->pluginOptions->maskActTE, pdata);
             PopUpList[NumberPopupData(pdata->hContact)] = NULL;
             PopupCount--;
             if(pdata->eventData)
@@ -700,19 +698,8 @@ static BOOL CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM
                 SetTimer(hWnd, TIMER_TO_ACTION, pdata->iSeconds * 1000, NULL);
             break;
         case WM_MOUSEWHEEL:
-            /*
-            if ((short)HIWORD(wParam) > 0 && pdata->firstShowEventData->prev) {
-                pdata->firstShowEventData = pdata->firstShowEventData->prev;
-                PopupUpdate(pdata->hContact, NULL);
-            }
-            if ((short)HIWORD(wParam) < 0 && pdata->firstShowEventData->next && 
-                pdata->countEvent - pdata->firstShowEventData->number >= pdata->pluginOptions->iNumberMsg) {
-                pdata->firstShowEventData = pdata->firstShowEventData->next;
-                PopupUpdate(pdata->hContact, NULL);
-            } */
             break;
         case WM_SETCURSOR:
-            /*SetFocus(hWnd);*/ // prevents popups from stealing focus
             break;
         case WM_TIMER:
             if (wParam != TIMER_TO_ACTION)
@@ -737,6 +724,7 @@ static int PopupShow(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent,
     int iPreviewLimit = nen_options.iLimitPreview;
     
     //there has to be a maximum number of popups shown at the same time
+    
     if (PopupCount >= MAX_POPUPS)
         return 2;
 
@@ -746,6 +734,7 @@ static int PopupShow(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent,
     //check if we should report this kind of event
     //get the prefered icon as well
     //CHANGE: iSeconds is -1 because I use my timer to hide popup
+    
     switch (eventType) {
         case EVENTTYPE_MESSAGE:
             if (!(pluginOptions->maskNotify&MASK_MESSAGE)) return 1;
@@ -785,6 +774,7 @@ static int PopupShow(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent,
     dbe.cbSize = sizeof(dbe);
     
     // fix for a crash
+    
     if (hEvent && (pluginOptions->bPreview || hContact == 0)) {
         dbe.cbBlob = CallService(MS_DB_EVENT_GETBLOBSIZE, (WPARAM)hEvent, 0);
         dbe.pBlob = (PBYTE)malloc(dbe.cbBlob);
@@ -1039,7 +1029,6 @@ static int PopupUpdateW(HANDLE hContact, HANDLE hEvent)
             free(dbe.pBlob);
         
         SendMessage(pdata->hWnd, WM_SETREDRAW, FALSE, 0);
-        //MessageBoxW(0, lpzText, L"foo", MB_OK);
         CallService(MS_POPUP_CHANGETEXTW, (WPARAM)pdata->hWnd, (LPARAM)lpzText);
         SendMessage(pdata->hWnd, WM_SETREDRAW, TRUE, 0);
     }
@@ -1084,8 +1073,6 @@ static BOOL CALLBACK PopupDlgProcW(HWND hWnd, UINT message, WPARAM wParam, LPARA
             PopupActW(hWnd, pdata->pluginOptions->maskActR, pdata);
             break;
         case UM_FREEPLUGINDATA:
-            //if(!pdata->iActionTaken)
-            //    PopupActW(hWnd, pdata->pluginOptions->maskActTE, pdata);
             PopUpList[NumberPopupData(pdata->hContact)] = NULL;
             PopupCount--;
             if(pdata->eventData)
@@ -1098,16 +1085,6 @@ static BOOL CALLBACK PopupDlgProcW(HWND hWnd, UINT message, WPARAM wParam, LPARA
                 SetTimer(hWnd, TIMER_TO_ACTION, pdata->iSeconds * 1000, NULL);
             break;
         case WM_MOUSEWHEEL:
-            /*
-            if ((short)HIWORD(wParam) > 0 && pdata->firstShowEventData->prev) {
-                pdata->firstShowEventData = pdata->firstShowEventData->prev;
-                PopupUpdate(pdata->hContact, NULL);
-            }
-            if ((short)HIWORD(wParam) < 0 && pdata->firstShowEventData->next && 
-                pdata->countEvent - pdata->firstShowEventData->number >= pdata->pluginOptions->iNumberMsg) {
-                pdata->firstShowEventData = pdata->firstShowEventData->next;
-                PopupUpdate(pdata->hContact, NULL);
-            } */
             break;
         case WM_SETCURSOR:
             SetFocus(hWnd);
@@ -1476,7 +1453,6 @@ int UpdateTrayMenu(struct MessageWindowData *dat, WORD wStatus, char *szProto, c
             myGlobals.m_UnreadInTray++;
             if(myGlobals.m_UnreadInTray)
                 SetEvent(g_hEvent);
-                //ResumeThread(hTrayAnimThread);
             SetMenuItemInfo(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
         }
         else {
@@ -1500,7 +1476,6 @@ int UpdateTrayMenu(struct MessageWindowData *dat, WORD wStatus, char *szProto, c
                 myGlobals.m_UnreadInTray += (mii.dwItemData & 0x0000ffff);
                 if(myGlobals.m_UnreadInTray)
                     SetEvent(g_hEvent);
-                    //ResumeThread(hTrayAnimThread);
                 if(fromEvent == 2)
                     mii.dwItemData |= 0x10000000;
             }
@@ -1510,7 +1485,6 @@ int UpdateTrayMenu(struct MessageWindowData *dat, WORD wStatus, char *szProto, c
                 myGlobals.m_UnreadInTray += (fromEvent ? 1 : 0);
                 if(myGlobals.m_UnreadInTray)
                     SetEvent(g_hEvent);
-                    //ResumeThread(hTrayAnimThread);
                 mii.fMask |= MIIM_STRING;
                 if(fromEvent == 2)
                     mii.dwItemData |= 0x10000000;
@@ -1630,12 +1604,6 @@ void DeletePopupsForContact(HANDLE hContact, DWORD dwMask)
     if(!(dwMask & nen_options.dwRemoveMask) || nen_options.iDisable || !myGlobals.g_PopupAvail)
         return;
         
-    //_DebugTraceA("removing popups for: %d", hContact);
-    /*
-    for(i = 0; i < 20; i++) {
-        if(PopUpList[i] != NULL && PopUpList[i]->hContact == hContact && PopUpList[i]->hWnd != 0 && IsWindow(PopUpList[i]->hWnd))
-            PUDeletePopUp(PopUpList[i]->hWnd);
-    }*/
     while((i = NumberPopupData(hContact)) != -1) {
         if(PopUpList[i]->hWnd != 0 && IsWindow(PopUpList[i]->hWnd))
             PUDeletePopUp(PopUpList[i]->hWnd);

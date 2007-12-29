@@ -24,8 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _MSGS_H
 #define _MSGS_H
 
-#define __MATHMOD_SUPPORT 1
-
 #ifdef __GNUWIN32__
 #define COLOR_HOTLIGHT 26
 #if !defined(SB_SETICON)
@@ -553,7 +551,7 @@ typedef struct _globals {
     int         m_VSApiEnabled;
     struct      myTabCtrl tabConfig;
     //BYTE        m_ExtraRedraws;
-    char        szDataPath[MAX_PATH + 1];
+    TCHAR       szDataPath[MAX_PATH + 1];
     int         m_panelHeight;
     TCHAR       szDefaultTitleFormat[256];
     DWORD       m_GlobalContainerFlags;

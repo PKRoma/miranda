@@ -23,9 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <mbstring.h>
 #include <shlwapi.h>
 
-#ifdef __MATHMOD_SUPPORT
-    #include "../m_MathModule.h"
-#endif
+#include "../m_MathModule.h"
 
 
 // The code for streaming the text is to a large extent copied from
@@ -740,8 +738,6 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 			sm.hContact = si->hContact;
 			CallService(MS_SMILEYADD_REPLACESMILEYS, 0, (LPARAM)&sm);
 		}
-
-#ifdef __MATHMOD_SUPPORT
         if (g_Settings.MathMod && fDoReplace) {
             TMathRicheditInfo mathReplaceInfo;
             CHARRANGE mathNewSel;
@@ -763,13 +759,11 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
             CallService(MATH_RTF_REPLACE_FORMULAE,0, (LPARAM)&mathReplaceInfo);
 			bFlag = TRUE;
         }
-#endif
 
         if (g_Settings.ClickableNicks) {
 			CHARFORMAT2 cf2 = {0};
 			FINDTEXTEX fi, fi2;
 
-			//fi2.lpstrText = _T(" ");
 			fi2.lpstrText = _T("#++~~");
 			fi.chrg.cpMin = bRedraw ? 0 : sel.cpMin;
 			fi.chrg.cpMax = -1;
@@ -777,8 +771,6 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 			cf2.cbSize = sizeof(cf2);
 
 			while (SendMessage(hwndRich, EM_FINDTEXTEX, FR_DOWN, (LPARAM)&fi) > -1) {
-				//SendMessage(hwndRich, EM_EXSETSEL, 0, (LPARAM)&fi.chrgText);
-				//SendMessage(hwndRich, EM_REPLACESEL, TRUE, (LPARAM)_T(""));
 				fi2.chrg.cpMin = fi.chrgText.cpMin;
 				fi2.chrg.cpMax = -1;
 
@@ -793,7 +785,6 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 					fi2.chrgText.cpMax = fi2.chrgText.cpMin;
 
 					fi2.chrgText.cpMin = fi.chrgText.cpMin;
-					//fi2.chrgText.cpMax--;
 					SendMessage(hwndRich, EM_EXSETSEL, 0, (LPARAM)&fi2.chrgText);
 					cf2.dwMask = CFM_LINK;
 					cf2.dwEffects = CFE_LINK;
@@ -824,28 +815,26 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 
 		// scroll log to bottom if the log was previously scrolled to bottom, else restore old position
 		if (bRedraw ||  (UINT)scroll.nPos >= (UINT)scroll.nMax-scroll.nPage-5 || scroll.nMax-scroll.nMin-scroll.nPage < 50)
-		{
 			SendMessage(GetParent(hwndRich), GC_SCROLLTOBOTTOM, 0, 0);
-		}
 		else
 			SendMessage(hwndRich, EM_SETSCROLLPOS, 0, (LPARAM) &point);
 
 		// do we need to restore the selection
-		if (oldsel.cpMax != oldsel.cpMin)
-		{
+		if (oldsel.cpMax != oldsel.cpMin) {
 			SendMessage(hwndRich, EM_EXSETSEL, 0, (LPARAM) & oldsel);
 			SendMessage(hwndRich, WM_SETREDRAW, TRUE, 0);
 			InvalidateRect(hwndRich, NULL, TRUE);
 		}
 
 		// need to invalidate the window
-		if (bFlag)
-		{
+		if (bFlag) {
 			sel.cpMin = sel.cpMax = GetRichTextLength(hwndRich);
 			SendMessage(hwndRich, EM_EXSETSEL, 0, (LPARAM) & sel);
 			SendMessage(hwndRich, WM_SETREDRAW, TRUE, 0);
 			InvalidateRect(hwndRich, NULL, TRUE);
-}	}	}
+		}
+	}
+}
 
 char * Log_CreateRtfHeader(MODULEINFO * mi)
 {
@@ -912,14 +901,12 @@ char * Log_CreateRtfHeader(MODULEINFO * mi)
 			iIndent += ((g_Settings.ScaleIcons ? 14 : 20) * 1440)/logPixelSX;
 			Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\tx%u", iIndent);
 		}
-		if (g_Settings.ShowTime)
-		{
+		if (g_Settings.ShowTime) {
 			int iSize = (g_Settings.LogTextIndent*1440)/logPixelSX;
 			Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\tx%u", iIndent + iSize );
 			if (g_Settings.LogIndentEnabled)
 				iIndent += iSize;
 		}
-
 		Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\fi-%u\\li%u", iIndent, iIndent);
 	}
 	return buffer;
@@ -1005,7 +992,6 @@ void LoadMsgLogBitmaps(void)
 	for(i = 0; i < OPTIONS_FONTCOUNT; i++)
 		mir_snprintf(CHAT_rtfFontsGlobal[i], RTFCACHELINESIZE, "\\f%u\\cf%u\\ul0\\highlight0\\b%d\\i%d\\fs%u", i, i + 1, aFonts[i].lf.lfWeight >= FW_BOLD ? 1 : 0, aFonts[i].lf.lfItalic, 2 * abs(aFonts[i].lf.lfHeight) * 74 / logPixelSY);
 	CHAT_rtffonts = &(CHAT_rtfFontsGlobal[0][0]);
-	//mir_snprintf(szMicroLFeed, sizeof(szMicroLFeed), "%s\\par\\sl-1%s", Log_SetStyle(0, 0), Log_SetStyle(0, 0));
 }
 
 void FreeMsgLogBitmaps(void)

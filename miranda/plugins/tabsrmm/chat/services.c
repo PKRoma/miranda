@@ -19,9 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "../commonheaders.h"
 
-#ifdef __MATHMOD_SUPPORT
-	#include "../m_MathModule.h"
-#endif
+#include "../m_MathModule.h"
 
 extern HANDLE		hMessageWindowList;
 extern BOOL			IEviewInstalled;
@@ -128,7 +126,6 @@ int Chat_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 
 int Chat_PreShutdown(WPARAM wParam,LPARAM lParam)
 {
-	//SM_BroadcastMessage(NULL, GC_CLOSEWINDOW, 0, 1, FALSE);
 	SM_RemoveAll();
 	MM_RemoveAll();
 	return 0;

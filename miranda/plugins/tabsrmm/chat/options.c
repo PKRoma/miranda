@@ -54,7 +54,7 @@ struct FontOptionsList
 	char     size;
 };
 
-//remeber to put these in the Translate( ) template file too
+//remember to put these in the Translate( ) template file too
 static struct FontOptionsList CHAT_fontOptionsList[] = {
 	{LPGENT("Timestamp"), RGB(50, 50, 240), _T("Terminal"), DEFAULT_CHARSET, 0, -8},
 	{LPGENT("Others nicknames"), RGB(0, 0, 0), _T("Verdana"), DEFAULT_CHARSET, FONTF_BOLD, -12},
@@ -111,7 +111,7 @@ static struct FontOptionsList IP_fontOptionsList[] = {
 	{LPGENT("Infopanel / Status"), RGB(0, 0, 0), _T("Verdana"), DEFAULT_CHARSET, FONTF_BOLD, -10},
 	{LPGENT("Infopanel / Protocol"), RGB(0, 0, 0), _T("Verdana"), DEFAULT_CHARSET, 0, -10},
     {LPGENT("Infopanel / Contacts local time"), RGB(255, 0, 0), _T("Verdana"), DEFAULT_CHARSET, 0, -10},
-    {LPGENT("Window caption (skinned mode"), RGB(255, 255, 255), _T("Verdana"), DEFAULT_CHARSET, 0, -10},
+    {LPGENT("Window caption (skinned mode)"), RGB(255, 255, 255), _T("Verdana"), DEFAULT_CHARSET, 0, -10},
 };
 
 static struct FontOptionsList *fontOptionsList = IM_fontOptionsList;
@@ -628,7 +628,6 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
                         hti.flags |= TVHT_ONITEMSTATEICON;
 					if (hti.flags&TVHT_ONITEMSTATEICON) {
 						TVITEM tvi = {0};
-						//tvi.mask=TVIF_HANDLE|TVIF_STATE;
 
                         tvi.mask = TVIF_HANDLE | TVIF_STATE;
                         tvi.stateMask = TVIS_STATEIMAGEMASK | TVIS_BOLD;
@@ -639,13 +638,7 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
                             tvi.hItem = (HTREEITEM)hti.hItem;
 
 						TreeView_GetItem(((LPNMHDR)lParam)->hwndFrom,&tvi);
-                        /*
-						if (tvi.hItem == branch1[0].hItem && INDEXTOSTATEIMAGEMASK(3)==tvi.state)
-							TreeView_SetItemState(((LPNMHDR)lParam)->hwndFrom, branch1[1].hItem, INDEXTOSTATEIMAGEMASK(1),  TVIS_STATEIMAGEMASK);
-						if (tvi.hItem == branch1[1].hItem && INDEXTOSTATEIMAGEMASK(3)==tvi.state)
-							TreeView_SetItemState(((LPNMHDR)lParam)->hwndFrom, branch1[0].hItem, INDEXTOSTATEIMAGEMASK(1),  TVIS_STATEIMAGEMASK);
-                        */
-
+						
                         if (tvi.hItem == hListHeading1)
 							CheckBranches(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading1);
 						else if (tvi.hItem == hListHeading2)
@@ -669,12 +662,7 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
                                     tvi.state = INDEXTOSTATEIMAGEMASK(1);
                                     SendDlgItemMessageA(hwndDlg, IDC_CHECKBOXES, TVM_SETITEMA, 0, (LPARAM)&tvi);
                                 }
-                                //SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
                             }
-                            /*
-                            if (tvi.state == INDEXTOSTATEIMAGEMASK(3))
-                                TreeView_SetItemState(((LPNMHDR)lParam)->hwndFrom, tvi.hItem, INDEXTOSTATEIMAGEMASK(1), TVIS_STATEIMAGEMASK);
-                            */
                             PostMessage(hwndDlg, OPT_FIXHEADINGS, 0, 0);
                         }
 						SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
@@ -1534,5 +1522,3 @@ int OptionsUnInit(void)
 	DeleteObject(g_Settings.NameFont);
 	return 0;
 }
-
-

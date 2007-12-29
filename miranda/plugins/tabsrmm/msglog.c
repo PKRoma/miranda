@@ -29,10 +29,7 @@ $Id$
 #include <mbstring.h>
 #include <time.h>
 #include <locale.h>
-
-#ifdef __MATHMOD_SUPPORT
 #include "m_MathModule.h"
-#endif
 
 extern      void ReleaseRichEditOle(IRichEditOle *ole);
 extern      MYGLOBALS myGlobals;
@@ -155,10 +152,8 @@ void CacheLogFonts()
     ZeroMemory((void *)logfonts, sizeof(LOGFONTA) * MSGDLGFONTCOUNT + 2);
     for(i = 0; i < MSGDLGFONTCOUNT; i++) {
         LoadLogfont(i, &logfonts[i], &fontcolors[i], FONTMODULE);
-        //wsprintfA(rtfFontsGlobal[i], "\\f%u\\cf%u\\b%d\\i%d\\ul%d\\fs%u", i, i, logfonts[i].lfWeight >= FW_BOLD ? 1 : 0, logfonts[i].lfItalic, logfonts[i].lfUnderline, 2 * abs(logfonts[i].lfHeight) * 74 / logPixelSY);
         wsprintfA(rtfFontsGlobal[i], "\\f%u\\cf%u\\b%d\\i%d\\fs%u", i, i, logfonts[i].lfWeight >= FW_BOLD ? 1 : 0, logfonts[i].lfItalic, 2 * abs(logfonts[i].lfHeight) * 74 / logPixelSY);
     }
-    //wsprintfA(rtfFontsGlobal[MSGDLGFONTCOUNT], "\\f%u\\cf%u\\b%d\\i%d\\ul%d\\fs%u", MSGDLGFONTCOUNT, MSGDLGFONTCOUNT, 0, 0, 0, 0);
     wsprintfA(rtfFontsGlobal[MSGDLGFONTCOUNT], "\\f%u\\cf%u\\b%d\\i%d\\fs%u", MSGDLGFONTCOUNT, MSGDLGFONTCOUNT, 0, 0, 0);
 
     _tcsncpy(szToday, TranslateT("Today"), 20);
@@ -180,7 +175,6 @@ void CacheLogFonts()
                 DeleteObject(myGlobals.ipConfig.hFonts[i]);
             LoadLogfont(i + 100, &lf, &clr, FONTMODULE);
             lf.lfHeight = MulDiv(lf.lfHeight, logPixelSY, 72);
-            //lf.lfHeight = 2 * abs(lf.lfHeight) * 74 / logPixelSY;
             myGlobals.ipConfig.hFonts[i] = CreateFontIndirectA(&lf);
             myGlobals.ipConfig.clrs[i] = clr;
         }
@@ -202,90 +196,6 @@ void CacheLogFonts()
 
 /*
 #define RTFPICTHEADERMAXSIZE   78
-
-static void LoadMsgLogIcons(void)
-{
-	HICON hIcon = NULL;
-	HBITMAP hBmp, hoBmp;
-	HDC hdc, hdcMem;
-	BITMAPINFOHEADER bih = { 0 };
-	int widthBytes, i, iBrush;
-	RECT rc;
-	HBRUSH hBrush;
-	HBRUSH hBrushes[3];
-	int rtfHeaderSize;
-	PBYTE pBmpBits;
-    int   iIndex = 0, j = 0;
-    DWORD iSize = DBGetContactSettingDword(NULL, SRMSGMOD_T, "iconscale", 16);
-
-	g_hImageList = ImageList_Create(iSize, iSize, IsWinVerXPPlus()? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, sizeof(pLogIconBmpBits) / sizeof(pLogIconBmpBits[0]), 0);
-
-    hBrushes[0] = CreateSolidBrush(DBGetContactSettingDword(NULL, FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR));
-    hBrushes[1] = CreateSolidBrush(myGlobals.crIncoming = DBGetContactSettingDword(NULL, FONTMODULE, "inbg", GetSysColor(COLOR_WINDOW)));
-    hBrushes[2] = CreateSolidBrush(DBGetContactSettingDword(NULL, FONTMODULE, "outbg", GetSysColor(COLOR_WINDOW)));
-
-	bih.biSize = sizeof(bih);
-	bih.biBitCount = 24;
-	bih.biCompression = BI_RGB;
-	bih.biHeight = iSize;
-	bih.biPlanes = 1;
-	bih.biWidth = iSize;
-	widthBytes = ((bih.biWidth * bih.biBitCount + 31) >> 5) * 4;
-	rc.top = rc.left = 0;
-	rc.right = bih.biWidth;
-	rc.bottom = bih.biHeight;
-	hdc = GetDC(NULL);
-	hBmp = CreateCompatibleBitmap(hdc, bih.biWidth, bih.biHeight);
-	hdcMem = CreateCompatibleDC(hdc);
-	pBmpBits = (PBYTE) malloc(widthBytes * bih.biHeight);
-
-    for(iBrush = 0; iBrush < 3; iBrush++) {
-        hBrush = hBrushes[iBrush];
-
-        for (i = 0; i < 7; i++) {
-
-            iIndex = ImageList_AddIcon(g_hImageList, Logicons[i]);
-            hIcon = ImageList_GetIcon(g_hImageList, iIndex, ILD_NORMAL);
-
-            pLogIconBmpBits[j] = (PBYTE) malloc(RTFPICTHEADERMAXSIZE + (bih.biSize + widthBytes * bih.biHeight) * 2);
-            //I can't seem to get binary mode working. No matter.
-            rtfHeaderSize = sprintf(pLogIconBmpBits[j], "{\\pict\\dibitmap0\\wbmbitspixel%u\\wbmplanes1\\wbmwidthbytes%u\\picw%u\\pich%u ", bih.biBitCount, widthBytes, (UINT) bih.biWidth, (UINT)bih.biHeight);
-            hoBmp = (HBITMAP) SelectObject(hdcMem, hBmp);
-            FillRect(hdcMem, &rc, hBrush);
-            DrawIconEx(hdcMem, 0, 0, hIcon, bih.biWidth, bih.biHeight, 0, NULL, DI_NORMAL);
-            SelectObject(hdcMem, hoBmp);
-            GetDIBits(hdc, hBmp, 0, bih.biHeight, pBmpBits, (BITMAPINFO *) & bih, DIB_RGB_COLORS);
-            DestroyIcon(hIcon);
-            {
-                int n;
-                for (n = 0; n < sizeof(BITMAPINFOHEADER); n++)
-                    sprintf(pLogIconBmpBits[j] + rtfHeaderSize + n * 2, "%02X", ((PBYTE) & bih)[n]);
-                for (n = 0; n < widthBytes * bih.biHeight; n += 4)
-                    sprintf(pLogIconBmpBits[j] + rtfHeaderSize + (bih.biSize + n) * 2, "%02X%02X%02X%02X", pBmpBits[n], pBmpBits[n + 1], pBmpBits[n + 2], pBmpBits[n + 3]);
-            }
-            logIconBmpSize[j] = rtfHeaderSize + (bih.biSize + widthBytes * bih.biHeight) * 2 + 1;
-            pLogIconBmpBits[j][logIconBmpSize[j] - 1] = '}';
-            j++;
-        }
-    }
-	free(pBmpBits);
-	DeleteDC(hdcMem);
-	DeleteObject(hBmp);
-	ReleaseDC(NULL, hdc);
-	DeleteObject(hBrushes[0]);
-    DeleteObject(hBrushes[1]);
-    DeleteObject(hBrushes[2]);
-    g_plogIcons_mustfree = TRUE;
-    ImageList_RemoveAll(g_hImageList);
-    ImageList_Destroy(g_hImageList);
-}
-
-static void FreeMsgLogIcons(void)
-{
-	int i;
-	for (i = 0; i < sizeof(pLogIconBmpBits) / sizeof(pLogIconBmpBits[0]); i++)
-		free(pLogIconBmpBits[i]);
-}
 */
 
 /*
@@ -302,11 +212,6 @@ void CacheMsgLogIcons()
     Logicons[4] = myGlobals.g_iconIn;
     Logicons[5] = myGlobals.g_iconStatus;
     Logicons[6] = myGlobals.g_iconErr;
-    /*
-    if(g_plogIcons_mustfree)
-        FreeMsgLogIcons();
-    LoadMsgLogIcons();
-    */
 }
 
 /*
@@ -1404,8 +1309,6 @@ skip:
     if(dat->hHistoryEvents)
         AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, dat->szMicroLf, MSGDLGFONTCOUNT + 1 + ((isSent) ? 1 : 0), hDbEvent);
 
-    //AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par\\sl-1\\slmult0\\highlight%d\\cf%d\\-\\par", H_MSGFONTID_DIVIDERS, H_MSGFONTID_DIVIDERS);
-
     AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par");
 
     if(streamData->dbei == 0)
@@ -1545,7 +1448,6 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
         event.hDbEventFirst = hDbEventFirst;
         event.count = count;
         CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&event);
-        //SendMessage(hwndDlg, DM_FORCESCROLL, (WPARAM)&pt, (LPARAM)&si);
         DM_ScrollToBottom(hwndDlg, dat, 0, 0);
         if(fAppend)
             dat->hDbEventLast = hDbEventFirst;
@@ -1671,7 +1573,6 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
     SendMessage(hwndDlg, DM_FORCESCROLL, (WPARAM)&pt, (LPARAM)psi);
     SendDlgItemMessage(hwndDlg, IDC_LOG, WM_SETREDRAW, TRUE, 0);
     InvalidateRect(GetDlgItem(hwndDlg, IDC_LOG), NULL, FALSE);
-    //SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
     EnableWindow(GetDlgItem(hwndDlg, IDC_QUOTE), dat->hDbEventLast != NULL);
     if (streamData.buffer) free(streamData.buffer);
 }
@@ -1779,12 +1680,10 @@ static void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG start
         else
             smadd.rangeToReplace = NULL;
         smadd.disableRedraw = TRUE;
-        //smadd.flags = SAFLRE_INSERTEMF;
         if(dat->doSmileys)
             CallService(MS_SMILEYADD_REPLACESMILEYS, TABSRMM_SMILEYADD_BKGCOLORMODE, (LPARAM)&smadd);
     }
 
-#ifdef __MATHMOD_SUPPORT
 	if (myGlobals.m_MathModAvail)
 	{
 			 TMathRicheditInfo mathReplaceInfo;
@@ -1796,7 +1695,6 @@ static void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG start
 			 mathReplaceInfo.disableredraw = TRUE;
 			 CallService(MATH_RTF_REPLACE_FORMULAE,0, (LPARAM)&mathReplaceInfo);
 	}
-#endif
 
 	if(dat->hHistoryEvents && dat->curHistory == dat->maxHistory) {
 		char szPattern[50];
@@ -1983,5 +1881,4 @@ char *Utf8_Encode(const WCHAR *str)
 	szOut[i] = '\0';
 	return (char *) szOut;
 }
-
 #endif

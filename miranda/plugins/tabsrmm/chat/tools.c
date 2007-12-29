@@ -227,8 +227,8 @@ static BOOL DoTrayIcon(SESSION_INFO* si, GCEVENT * gce)
 		case GC_EVENT_REMOVESTATUS:
 			CList_AddEvent(si->hContact, hIcons[ICON_REMSTATUS], szChatIconString, CLEF_ONLYAFEW, TranslateT("%s disables \'%s\' status for %s in %s"), gce->pszText, gce->pszStatus, gce->ptszNick, si->ptszName);
 			break;
-	}	}
-
+		}	
+	}
 	return TRUE;
 }
 
@@ -238,8 +238,7 @@ static BOOL DoPopup(SESSION_INFO* si, GCEVENT* gce, struct MessageWindowData* da
 	struct ContainerWindowData *pContainer = dat ? dat->pContainer : NULL;
 	char *szProto = dat ? dat->szProto : si->pszModule;
 
-	if (si && (iEvent & si->iLogPopupFlags))
-	{
+	if (si && (iEvent & si->iLogPopupFlags)) {
 
 		if (nen_options.iDisable || (dat == 0 && g_Settings.SkipWhenNoWindow))                          // no popups at all. Period
 			return 0;
@@ -363,8 +362,7 @@ typedef struct
 	int   iEvent;
 	HICON hNotifyIcon;
 	BOOL  bActiveTab, bHighlight, bInactive, bMustFlash, bMustAutoswitch;
-}
-	FLASH_PARAMS;
+} FLASH_PARAMS;
 
 static void DoFlashAndSoundThread( FLASH_PARAMS* p )
 {
@@ -379,8 +377,7 @@ static void DoFlashAndSoundThread( FLASH_PARAMS* p )
 		HWND hwndTab = GetParent(p->si->hWnd);
 		BOOL bForcedIcon = ( p->hNotifyIcon == hIcons[ICON_HIGHLIGHT] || p->hNotifyIcon == hIcons[ICON_MESSAGE] );
 
-		//if (IsIconic(dat->pContainer->hwnd) || 1) { //dat->pContainer->hwndActive != si->hWnd) {
-		if ((p->iEvent & p->si->iLogTrayFlags) || bForcedIcon) { //dat->pContainer->hwndActive != si->hWnd) {
+		if ((p->iEvent & p->si->iLogTrayFlags) || bForcedIcon) {
 			if (!p->bActiveTab) {
 				if (p->hNotifyIcon == hIcons[ICON_HIGHLIGHT])
 					p->dat->iFlashIcon = p->hNotifyIcon;
@@ -417,7 +414,7 @@ static void DoFlashAndSoundThread( FLASH_PARAMS* p )
 
 			if (p->bMustFlash)
 				p->dat->hTabIcon = p->hNotifyIcon;
-			else if (p->dat->iFlashIcon) { //if (!bActiveTab) {
+			else if (p->dat->iFlashIcon) {
 				TCITEM item = {0};
 
 				p->dat->hTabIcon = p->dat->iFlashIcon;
@@ -721,11 +718,11 @@ BOOL IsHighlighted(SESSION_INFO* si, const TCHAR* pszText)
 					// compare the words, using wildcards
 					if (WCCmp(szWord1, RemoveFormatting(szWord2)))
 						return TRUE;
-			} 	}
-
+				} 	
+			}
 			p3 = pszText;
-	}	}
-
+		}	
+	}
 	return FALSE;
 }
 
@@ -765,8 +762,7 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 	lstrcpyn(szTime, MakeTimeStamp(g_Settings.pszTimeStampLog, gce->time), 99);
 
 	hFile = fopen(szFile,"at+");
-	if (hFile)
-	{
+	if (hFile) {
 		TCHAR szTemp[512], szTemp2[512];
 		TCHAR* pszNick = NULL;
 		if ( gce->ptszNick ) {
@@ -892,13 +888,14 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 					}	}
 
 					mir_free(pBuffer);
-		}	}	}
+				}	
+			}	
+		}
 
 		if (hFile)
 			fclose(hFile); hFile = NULL;
 		return TRUE;
 	}
-
 	return FALSE;
 }
 
@@ -1126,12 +1123,12 @@ void ValidateFilename (char * filename)
 {
 	char *p1 = filename;
 	char szForbidden[] = "\\/:*?\"<>|";
-	while(*p1 != '\0')
-	{
+	while(*p1 != '\0') {
 		if (strchr(szForbidden, *p1))
 			*p1 = '_';
 		p1 +=1;
-}	}
+	}	
+}
 
 TCHAR* a2tf( const TCHAR* str, int flags, DWORD cp )
 {
@@ -1253,6 +1250,4 @@ void Chat_SetFilters(SESSION_INFO *si)
     if(si->iLogFilterFlags == 0)
         si->bFilterEnabled = 0;
 }
-
-
 

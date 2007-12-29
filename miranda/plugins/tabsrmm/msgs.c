@@ -1353,8 +1353,6 @@ tzdone:
     HookEvent(ME_SYSTEM_PRESHUTDOWN, PreshutdownSendRecv);
     HookEvent(ME_SYSTEM_OKTOEXIT, OkToExit);
 
-	//HookEvent("SecureIM/Established",ContactSecureChanged);
-	//HookEvent("SecureIM/Disabled",ContactSecureChanged);
     InitAPI();
     
     SkinAddNewSoundEx("RecvMsgActive", Translate("Messages"), Translate("Incoming (Focused Window)"));

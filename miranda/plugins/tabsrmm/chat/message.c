@@ -76,42 +76,6 @@ static int ReadInteger( const char* p, int* result )
 	return i;
 }
 
-/*
-#if defined(_UNICODE)
-
-static WCHAR *__Utf8_Decode(const char *str)
-{
-	int i, len;
-	char *p;
-	WCHAR *wszTemp = NULL;
-
-	if (str == NULL) return NULL;
-
-	len = strlen(str);
-
-    if ((wszTemp = (WCHAR *) mir_alloc(sizeof(TCHAR) * (len + 2))) == NULL)
-		return NULL;
-	p = (char *) str;
-	i = 0;
-	while (*p) {
-		if ((*p & 0x80) == 0)
-			wszTemp[i++] = *(p++);
-		else if ((*p & 0xe0) == 0xe0) {
-			wszTemp[i] = (*(p++) & 0x1f) << 12;
-			wszTemp[i] |= (*(p++) & 0x3f) << 6;
-			wszTemp[i++] |= (*(p++) & 0x3f);
-		}
-		else {
-			wszTemp[i] = (*(p++) & 0x3f) << 6;
-			wszTemp[i++] |= (*(p++) & 0x3f);
-		}
-	}
-	wszTemp[i] = (TCHAR)'\0';
-	return wszTemp;
-}
-#endif
-
-*/
 TCHAR* Chat_DoRtfToTags( char* pszText, SESSION_INFO* si)
 {
 	char *p1;
