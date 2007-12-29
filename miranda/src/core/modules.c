@@ -132,12 +132,12 @@ static int LoadDefaultModules(void)
 	if (LoadNewPluginsModuleInfos()) return 1;
 
 	// database is available here
-	if (LoadNetlibModule()) return 1;
 	if (LoadProtocolsModule()) return 1;
 	if (LoadIcoLibModule()) return 1;
 	if (LoadSkinModule()) return 1;
 	if (LoadButtonModule()) return 1;
 	if (LoadOptionsModule()) return 1;
+	if (LoadNetlibModule()) return 1;
 	if (LoadContactsModule()) return 1;
 	if (LoadContactListModule()) return 1;
 	if (LoadAddContactModule()) return 1;
