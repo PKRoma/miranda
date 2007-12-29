@@ -236,5 +236,6 @@ bool MSN_RefreshContactList(void)
 	msnLoggedIn = true;
 
 	MSN_CreateContList();
+	MSN_StoreGetProfile();
 	return true;
 }

@@ -314,7 +314,8 @@ void  MSN_SendNicknameUtf(char* nickname)
 	MSN_SetStringUtf(NULL, "Nick", nickname);
 	
 	MSN_SetNicknameUtf(nickname);
-	MSN_ABUpdateNick(nickname, NULL);
+	MSN_StoreUpdateNick(nickname);
+//	MSN_ABUpdateNick(nickname, NULL);
 	mir_free(nickname);
 }
 

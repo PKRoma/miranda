@@ -24,6 +24,9 @@ extern char *authContactToken;
 static const char abReqHdr[] = 
 	"SOAPAction: http://www.msn.com/webservices/AddressBook/%s\r\n";
 
+char mycid[32] = "";
+char mypuid[32] = "";
+
 static ezxml_t abSoapHdr(const char* service, const char* scenario, ezxml_t& tbdy, char*& httphdr)
 {
 	ezxml_t xmlp = ezxml_new("soap:Envelope");
@@ -54,7 +57,7 @@ static ezxml_t abSoapHdr(const char* service, const char* scenario, ezxml_t& tbd
 	tbdy = ezxml_add_child(bdy, service, 0);
 	ezxml_set_attr(tbdy, "xmlns", "http://www.msn.com/webservices/AddressBook");
 
-	if (strncmp(service,"AB", 2) == 0)
+	if (strstr(service, "Member") == NULL)
 	{
 		ezxml_t node = ezxml_add_child(tbdy, "abId", 0);
 		ezxml_set_txt(node, "00000000-0000-0000-0000-000000000000");
@@ -87,7 +90,7 @@ static char* GetABHost(bool isSharing)
 {
 	char host[128];
 	if (MSN_GetStaticString("MsnABHost", NULL, host, sizeof(host)))
-		strcpy(host, "contacts.msn.com");
+		strcpy(host, "byrdr.omega.contacts.msn.com");
 
 	char* fullhost = (char*)mir_alloc(256);;
 	mir_snprintf(fullhost, 256, "https://%s/abservice/%s.asmx", host, 
@@ -389,18 +392,20 @@ bool MSN_ABGetFull(void)
 				{
 					const char *szTmp;
 
-					const char* szNick  = ezxml_txt(ezxml_child(contInf, "displayName"));
-					if (*szNick == '\0') szNick = szEmail;
-					HANDLE hContact = MSN_HContactFromEmail(szEmail, szNick, 1, 0);
-					MSN_SetStringUtf(hContact, "Nick", (char*)szNick);
+//					Depricated in WLM 8.1
+//					const char* szNick  = ezxml_txt(ezxml_child(contInf, "displayName"));
+//					if (*szNick == '\0') szNick = szEmail;
+					HANDLE hContact = MSN_HContactFromEmail(szEmail, szEmail, 1, 0);
+//					MSN_SetStringUtf(hContact, "Nick", (char*)szNick);
 					
+					const char* szNick = NULL;
 					ezxml_t anot = ezxml_get(contInf, "annotations", 0, "Annotation", -1);
 					while (anot != NULL)
 					{
 						if (strcmp(ezxml_txt(ezxml_child(anot, "Name")), "AB.NickName") == 0)
 						{
-							szTmp = ezxml_txt(ezxml_child(anot, "Value"));
-							DBWriteContactSettingStringUtf(hContact, "CList", "MyHandle", szTmp);
+							szNick = ezxml_txt(ezxml_child(anot, "Value"));
+							DBWriteContactSettingStringUtf(hContact, "CList", "MyHandle", szNick);
 						}
 						if (strcmp(ezxml_txt(ezxml_child(anot, "Name")), "AB.JobTitle") == 0)
 						{
@@ -409,7 +414,7 @@ bool MSN_ABGetFull(void)
 						}
 						anot = ezxml_next(anot);
 					}
-					if (anot == NULL)
+					if (szNick == NULL)
 						DBDeleteContactSetting(hContact, "CList", "MyHandle");
 
 					Lists_Add(lstFlg, typeId, szEmail);
@@ -492,15 +497,24 @@ bool MSN_ABGetFull(void)
 			}
 			else
 			{
-				if (!MSN_GetByte( "NeverUpdateNickname", 0 ))
-				{
-					const char* szNick  = ezxml_txt(ezxml_child(contInf, "displayName"));
-					MSN_SetStringUtf(NULL, "Nick", (char*)szNick);
-				}
-				const char* szMBE   = ezxml_txt(ezxml_child(contInf, "isMobileIMEnabled"));
-				MSN_SetByte( "MobileEnabled", strcmp(szMBE, "true") == 0);
-				const char* szMOB   = ezxml_txt(ezxml_child(contInf, "IsNotMobileVisible"));
-				MSN_SetByte( "MobileAllowed", strcmp(szMOB, "true") != 0);
+//              This depricated in WLM 8.1
+//				if (!MSN_GetByte( "NeverUpdateNickname", 0 ))
+//				{
+//					const char* szNick  = ezxml_txt(ezxml_child(contInf, "displayName"));
+//					MSN_SetStringUtf(NULL, "Nick", (char*)szNick);
+//				}
+				const char *szTmp;
+
+				szTmp = ezxml_txt(ezxml_child(contInf, "isMobileIMEnabled"));
+				MSN_SetByte( "MobileEnabled", strcmp(szTmp, "true") == 0);
+				szTmp = ezxml_txt(ezxml_child(contInf, "IsNotMobileVisible"));
+				MSN_SetByte( "MobileAllowed", strcmp(szTmp, "true") != 0);
+
+				szTmp = ezxml_txt(ezxml_child(contInf, "CID"));
+				mir_snprintf(mycid, sizeof(mycid), "%s", szTmp);
+				szTmp = ezxml_txt(ezxml_child(contInf, "puid"));
+				mir_snprintf(mypuid, sizeof(mycid), "%s", szTmp);
+
 
 				ezxml_t anot = ezxml_get(contInf, "annotations", 0, "Annotation", -1);
 				while (anot != NULL)
@@ -893,4 +907,90 @@ unsigned MSN_ABContactAdd(const char* szEmail, const char* szNick, int typeId, c
 	mir_free(abUrl);
 
 	return status;
+}
+
+
+void MSN_ABUpdateDynamicItem(void)
+{
+	SSLAgent mAgent;
+
+	char* reqHdr;
+	ezxml_t tbdy;
+	ezxml_t xmlp = abSoapHdr("UpdateDynamicItem", "RoamingIdentityChanged", tbdy, reqHdr);
+
+	ezxml_t dynitms = ezxml_add_child(tbdy, "dynamicItems", 0);
+	ezxml_t dynitm = ezxml_add_child(dynitms, "DynamicItem", 0);
+	
+	ezxml_set_attr(dynitm, "xsi:type", "PassportDynamicItem");
+	ezxml_t node = ezxml_add_child(dynitm, "Type", 0);
+	ezxml_set_txt(node, "Passport");
+	node = ezxml_add_child(dynitm, "PassportName", 0);
+	ezxml_set_txt(node, MyOptions.szEmail);
+
+	ezxml_t nots = ezxml_add_child(dynitm, "Notifications", 0);
+	ezxml_t notd = ezxml_add_child(nots, "NotificationData", 0);
+	ezxml_t strsvc = ezxml_add_child(notd, "StoreService", 0);
+	ezxml_t info = ezxml_add_child(strsvc, "Info", 0);
+
+	ezxml_t hnd = ezxml_add_child(info, "Handle", 0);
+	node = ezxml_add_child(hnd, "Id", 0);
+	ezxml_set_txt(node, "0");
+	node = ezxml_add_child(hnd, "Type", 0);
+	ezxml_set_txt(node, "Profile");
+	node = ezxml_add_child(hnd, "ForeignId", 0);
+	ezxml_set_txt(node, "MyProfile");
+	
+	node = ezxml_add_child(info, "InverseRequired", 0);
+	ezxml_set_txt(node, "false");
+	node = ezxml_add_child(info, "IsBot", 0);
+	ezxml_set_txt(node, "false");
+
+	node = ezxml_add_child(strsvc, "Changes", 0);
+	node = ezxml_add_child(strsvc, "LastChange", 0);
+	ezxml_set_txt(node, "0001-01-01T00:00:00");
+	node = ezxml_add_child(strsvc, "Deleted", 0);
+	ezxml_set_txt(node, "false");
+
+	node = ezxml_add_child(notd, "Status", 0);
+	ezxml_set_txt(node, "Exist Access");
+	node = ezxml_add_child(notd, "LastChanged", 0);
+	
+	time_t timer;
+	time(&timer);
+	tm *tmst = gmtime(&timer);
+
+	char tmstr[32];
+	mir_snprintf(tmstr, sizeof(tmstr), "%04u-%02u-%02uT%02u:%02u:%02uZ", 
+		tmst->tm_year + 1900, tmst->tm_mon+1, tmst->tm_mday, 
+		tmst->tm_hour, tmst->tm_min, tmst->tm_sec);
+
+	ezxml_set_txt(node, tmstr);
+	node = ezxml_add_child(notd, "Gleam", 0);
+	ezxml_set_txt(node, "false");
+	node = ezxml_add_child(notd, "InstanceId", 0);
+	ezxml_set_txt(node, "0");
+
+	node = ezxml_add_child(dynitm, "Changes", 0);
+	ezxml_set_txt(node, "Notifications");
+
+	char* szData = ezxml_toxml(xmlp, true);
+	ezxml_free(xmlp);
+
+	unsigned status;
+	char* htmlbody;
+
+	char* abUrl = GetABHost(false);
+	char* tResult = mAgent.getSslResult(abUrl, szData, reqHdr, status, htmlbody);
+
+	mir_free(reqHdr);
+	free(szData);
+
+	if (tResult != NULL)
+	{
+		ezxml_t xmlm = ezxml_parse_str(htmlbody, strlen(htmlbody));
+		UpdateABHost(xmlm, abUrl);
+		ezxml_free(xmlm);
+	}
+	mir_free(tResult);
+	mir_free(abUrl);
 }
