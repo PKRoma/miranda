@@ -183,13 +183,7 @@ bool MSN_StoreUpdateNick(const char* szNick)
 	ezxml_set_txt(node, szNick);
 	node = ezxml_add_child(expro, "Flags", 0);
 	ezxml_set_txt(node, "0");
-/*
-	ezxml_t proattrdel = ezxml_add_child(tbdy, "profileAttributesToDelete", 0);
-	ezxml_t exattr = ezxml_add_child(proattrdel, "ExpressionProfileAttributes", 0);
-	ezxml_t proattrdel = ezxml_add_child(tbdy, "profileAttributesToDelete", 0);
-	node = ezxml_add_child(exproattr, "PersonalStatus", 0);
-	ezxml_set_txt(node, "true");
-*/
+
 	char* szData = ezxml_toxml(xmlp, true);
 
 	ezxml_free(xmlp);
