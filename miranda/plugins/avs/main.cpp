@@ -29,6 +29,9 @@ PLUGINLINK  *pluginLink;
 
 static          PROTOCOLDESCRIPTOR **g_protocols = NULL;
 static char     g_szDBPath[MAX_PATH];		// database profile path (read at startup only)
+#if defined(_UNICODE)
+	static wchar_t  g_wszDBPath[MAX_PATH];
+#endif
 static BOOL     g_MetaAvail = FALSE;
 BOOL            g_AvatarHistoryAvail = FALSE;
 static long     hwndSetMyAvatar = 0;
@@ -213,6 +216,16 @@ static int AVS_pathIsAbsolute(const char *path)
     return 0;
 }
 
+#if defined(_UNICODE)
+static int AVS_pathIsAbsoluteW(const wchar_t *path)
+{
+    if (!path || !(lstrlenW(path) > 2))
+        return 0;
+    if ((path[1]==':'&&path[2]=='\\')||(path[0]=='\\'&&path[1]=='\\')) return 1;
+    return 0;
+}
+#endif
+
 int AVS_pathToRelative(const char *pSrc, char *pOut)
 {
     if (!pSrc||!strlen(pSrc)||strlen(pSrc)>MAX_PATH) return 0;
@@ -248,6 +261,22 @@ int AVS_pathToAbsolute(const char *pSrc, char *pOut)
         return strlen(pOut);
     }
 }
+
+#if defined(_UNICODE)
+int AVS_pathToAbsoluteW(const wchar_t *pSrc, wchar_t *pOut)
+{
+    if (!pSrc || !lstrlenW(pSrc) || lstrlenW(pSrc) > MAX_PATH) 
+        return 0;
+    if (AVS_pathIsAbsoluteW(pSrc) || !iswalnum(pSrc[0])) {
+        mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc);
+        return lstrlenW(pOut);
+    }
+    else {
+        mir_sntprintf(pOut, MAX_PATH, _T("%s\\%s"), g_wszDBPath, pSrc);
+        return lstrlenW(pOut);
+    }
+}
+#endif
 
 static void NotifyMetaAware(HANDLE hContact, struct CacheNode *node = NULL, AVATARCACHEENTRY *ace = (AVATARCACHEENTRY *)0xffffffff)
 {
@@ -1954,7 +1983,7 @@ static int MetaChanged(WPARAM wParam, LPARAM lParam)
 static HANDLE hSvc_MS_AV_GETAVATARBITMAP = 0, hSvc_MS_AV_PROTECTAVATAR = 0,
 	hSvc_MS_AV_SETAVATAR = 0, hSvc_MS_AV_SETMYAVATAR = 0, hSvc_MS_AV_CANSETMYAVATAR, hSvc_MS_AV_CONTACTOPTIONS,
 	hSvc_MS_AV_DRAWAVATAR = 0, hSvc_MS_AV_GETMYAVATAR = 0, hSvc_MS_AV_REPORTMYAVATARCHANGED = 0,
-	hSvc_MS_AV_LOADBITMAP32 = 0, hSvc_MS_AV_SAVEBITMAP = 0, hSvc_MS_AV_CANSAVEBITMAP = 0, hSvc_MS_AV_RESIZEBITMAP = 0;
+	hSvc_MS_AV_LOADBITMAP32 = 0, hSvc_MS_AV_SAVEBITMAP = 0, hSvc_MS_AV_CANSAVEBITMAP = 0, hSvc_MS_AV_RESIZEBITMAP = 0, hSvc_MS_AV_SAVEBITMAPW = 0;
 
 static int DestroyServicesAndEvents()
 {
@@ -1977,6 +2006,9 @@ static int DestroyServicesAndEvents()
     DestroyServiceFunction(hSvc_MS_AV_REPORTMYAVATARCHANGED);
     DestroyServiceFunction(hSvc_MS_AV_LOADBITMAP32);
     DestroyServiceFunction(hSvc_MS_AV_SAVEBITMAP);
+#if defined(_UNICODE)    
+    DestroyServiceFunction(hSvc_MS_AV_SAVEBITMAPW);
+#endif    
     DestroyServiceFunction(hSvc_MS_AV_CANSAVEBITMAP);
     DestroyServiceFunction(hSvc_MS_AV_RESIZEBITMAP);
 
@@ -2435,6 +2467,9 @@ static int LoadAvatarModule()
 	hSvc_MS_AV_REPORTMYAVATARCHANGED = CreateServiceFunction(MS_AV_REPORTMYAVATARCHANGED, ReportMyAvatarChanged);
 	hSvc_MS_AV_LOADBITMAP32 = CreateServiceFunction(MS_AV_LOADBITMAP32, BmpFilterLoadBitmap32);
 	hSvc_MS_AV_SAVEBITMAP = CreateServiceFunction(MS_AV_SAVEBITMAP, BmpFilterSaveBitmap);
+#if defined(_UNICODE)    
+	hSvc_MS_AV_SAVEBITMAPW = CreateServiceFunction(MS_AV_SAVEBITMAPW, BmpFilterSaveBitmapW);
+#endif    
 	hSvc_MS_AV_CANSAVEBITMAP = CreateServiceFunction(MS_AV_CANSAVEBITMAP, BmpFilterCanSaveBitmap);
 	hSvc_MS_AV_RESIZEBITMAP = CreateServiceFunction(MS_AV_RESIZEBITMAP, BmpFilterResizeBitmap);
 
@@ -2445,8 +2480,12 @@ static int LoadAvatarModule()
 	AllocCacheBlock();
 
     CallService(MS_DB_GETPROFILEPATH, MAX_PATH, (LPARAM)g_szDBPath);
+	g_szDBPath[MAX_PATH - 1] = 0;
     _strlwr(g_szDBPath);
-
+#if defined(_UNICODE)
+	MultiByteToWideChar(CP_ACP, 0, g_szDBPath, MAX_PATH, g_wszDBPath, MAX_PATH);
+	g_wszDBPath[MAX_PATH - 1] = 0;
+#endif
 	return 0;
 }
 

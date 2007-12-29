@@ -23,6 +23,7 @@ extern int _DebugTrace(HANDLE hContact, const char *fmt, ...);
 
 extern int AVS_pathToRelative(const char *sPrc, char *pOut);
 extern int AVS_pathToAbsolute(const char *pSrc, char *pOut);
+extern int AVS_pathToAbsoluteW(const wchar_t *pSrc, wchar_t *pOut);
 extern FI_INTERFACE *fei;
 
 // Make a bitmap all transparent, but only if it is a 32bpp
@@ -286,6 +287,19 @@ int BmpFilterSaveBitmap(HBITMAP hBmp, char *szFile, int flags)
     return !CallService(MS_IMG_SAVE, (WPARAM) &i, MAKELONG(0, flags));
 }
 
+
+int BmpFilterSaveBitmapW(HBITMAP hBmp, wchar_t *wszFile, int flags)
+{
+	IMGSRVC_INFO i = {0};
+	i.cbSize = sizeof(IMGSRVC_INFO);
+	i.wszName = wszFile;
+	i.hbm = hBmp;
+	i.dwMask = IMGI_HBITMAP;
+	i.fif = FIF_UNKNOWN;
+
+    return !CallService(MS_IMG_SAVE, (WPARAM) &i, MAKELONG(IMGL_WCHAR, flags));
+}
+
 // Save an HBITMAP to an image
 // wParam = HBITMAP
 // lParam = filename
@@ -310,6 +324,27 @@ int BmpFilterSaveBitmap(WPARAM wParam,LPARAM lParam)
 	return -1;
 }
 
+#if defined(_UNICODE)
+int BmpFilterSaveBitmapW(WPARAM wParam,LPARAM lParam)
+{
+	HBITMAP hBmp = (HBITMAP) wParam;
+	const wchar_t *wszFile=(const wchar_t *)lParam;
+	wchar_t wszFilename[MAX_PATH];
+	int filenameLen;
+
+    if(fei == NULL)
+        return -1;
+
+    if (!AVS_pathToAbsoluteW(wszFile, wszFilename))
+		mir_sntprintf(wszFilename, SIZEOF(wszFilename), _T("%s"), wszFile);
+	filenameLen=lstrlenW(wszFilename);
+	if(filenameLen > 4) 
+	{
+        return BmpFilterSaveBitmapW(hBmp, wszFilename, 0);
+	}
+	return -1;
+}
+#endif
 
 // Returns != 0 if can save that type of image, = 0 if cant
 // wParam = 0
