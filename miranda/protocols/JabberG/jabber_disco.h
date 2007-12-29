@@ -32,9 +32,10 @@ Last change by : $Author$
 #include "commctrl.h"
 
 #ifdef _UNICODE
-	#define	STR_BULLET	L" \u2022 "
+	#define	CHR_BULLET	((WCHAR)0x2022)
+//	#define	STR_BULLET	L" \u2022 "
 #else
-	#define	STR_BULLET	" - "
+	#define	CHR_BULLET	'-'
 #endif
 
 int JabberMenuHandleServiceDiscovery( WPARAM wParam, LPARAM lParam );
@@ -380,20 +381,26 @@ public:
 		AppendString( &szBuffer, szTmp );
 
 		if ( m_szNode ) {
-			mir_sntprintf( szTmp, SIZEOF( szTmp ), _T("Node: %s\r\n"), m_szNode );
+			mir_sntprintf( szTmp, SIZEOF( szTmp ), _T("%s: %s\r\n"), TranslateT("Node"), m_szNode );
 			AppendString( &szBuffer, szTmp );
 		}
 
 		if ( m_pIdentities ) {
-			mir_sntprintf( szTmp, SIZEOF( szTmp ), _T("\r\nIdentities:\r\n"));
+			mir_sntprintf( szTmp, SIZEOF( szTmp ), _T("\r\n%s:\r\n"), TranslateT("Identities"));
 			AppendString( &szBuffer, szTmp );
 
 			CJabberSDIdentity *pIdentity = m_pIdentities;
 			while ( pIdentity ) {
 				if ( pIdentity->GetName() )
-					mir_sntprintf( szTmp, SIZEOF( szTmp ), STR_BULLET _T("%s (category: %s, type: %s)\r\n"), pIdentity->GetName(), pIdentity->GetCategory(), pIdentity->GetType() );
+					mir_sntprintf( szTmp, SIZEOF( szTmp ), _T(" %c %s (%s: %s, %s: %s)\r\n"),
+						CHR_BULLET, pIdentity->GetName(),
+							TranslateT("category"), pIdentity->GetCategory(),
+							TranslateT("type"), pIdentity->GetType() );
 				else
-					mir_sntprintf( szTmp, SIZEOF( szTmp ), STR_BULLET _T("Category: %s, Type: %s\r\n"), pIdentity->GetCategory(), pIdentity->GetType() );
+					mir_sntprintf( szTmp, SIZEOF( szTmp ), _T(" %c %s: %s, %s: %s\r\n"),
+						CHR_BULLET,
+						TranslateT("Category"), pIdentity->GetCategory(),
+						TranslateT("Type"), pIdentity->GetType() );
 
 				AppendString( &szBuffer, szTmp );
 
@@ -402,12 +409,12 @@ public:
 		}
 
 		if ( m_pFeatures ) {
-			mir_sntprintf( szTmp, SIZEOF( szTmp ), _T("\r\nSupported features:\r\n"));
+			mir_sntprintf( szTmp, SIZEOF( szTmp ), _T("\r\n%s:\r\n"), TranslateT("Supported features"));
 			AppendString( &szBuffer, szTmp );
 
 			CJabberSDFeature *pFeature = m_pFeatures;
 			while ( pFeature ) {
-				mir_sntprintf( szTmp, SIZEOF( szTmp ), STR_BULLET _T("%s\r\n"), pFeature->GetVar() );
+				mir_sntprintf( szTmp, SIZEOF( szTmp ), _T(" %c %s\r\n"), CHR_BULLET, pFeature->GetVar() );
 
 				AppendString( &szBuffer, szTmp );
 
@@ -416,12 +423,12 @@ public:
 		}
 
 		if ( m_szInfoError ) {
-			mir_sntprintf( szTmp, SIZEOF( szTmp ), _T("\r\nInfo request error: %s\r\n"), m_szInfoError );
+			mir_sntprintf( szTmp, SIZEOF( szTmp ), _T("\r\n%s: %s\r\n"), TranslateT("Info request error"), m_szInfoError );
 			AppendString( &szBuffer, szTmp );
 		}
 
 		if ( m_szItemsError ) {
-			mir_sntprintf( szTmp, SIZEOF( szTmp ), _T("\r\nItems request error: %s\r\n"), m_szItemsError );
+			mir_sntprintf( szTmp, SIZEOF( szTmp ), _T("\r\n%s: %s\r\n"), TranslateT("Items request error"), m_szItemsError );
 			AppendString( &szBuffer, szTmp );
 		}
 

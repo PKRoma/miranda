@@ -585,10 +585,3 @@ BOOL CJabberClientCapsManager::HandleInfoRequest( XmlNode* iqNode, void* userdat
 	
 	return TRUE;
 }
-
-BOOL CJabberClientCapsManager::TranslateCaps()
-{
-	for ( int i = 0; g_JabberFeatCapPairs[i].szFeature; i++ )
-		g_JabberFeatCapPairs[i].szDescription = TranslateTS( g_JabberFeatCapPairs[i].szDescription );
-	return TRUE;
-}

@@ -26,9 +26,12 @@ Last change by : $Author$
 */
 
 #include "jabber.h"
+#include <richedit.h>
+
 #include "jabber_ssl.h"
 #include "jabber_list.h"
 #include "jabber_caps.h"
+#include "resource.h"
 
 #include "m_clistint.h"
 
@@ -1222,9 +1225,9 @@ const char* TStringPairs::operator[]( const char* key ) const
 
 ////////////////////////////////////////////////////////////////////////
 // Manage combo boxes with recent item list
-void JabberComboLoadRecentStrings(HWND hwndDlg, UINT idcCombo, char *param)
+void JabberComboLoadRecentStrings(HWND hwndDlg, UINT idcCombo, char *param, int recentCount)
 {
-	for (int i = 0; i < JABBER_COMBO_RECENT_COUNT; ++i) {
+	for (int i = 0; i < recentCount; ++i) {
 		DBVARIANT dbv;
 		char setting[MAXMODULELABELLENGTH];
 		mir_snprintf(setting, sizeof(setting), "%s%d", param, i);
@@ -1236,7 +1239,7 @@ void JabberComboLoadRecentStrings(HWND hwndDlg, UINT idcCombo, char *param)
 		SendDlgItemMessage(hwndDlg, idcCombo, CB_ADDSTRING, 0, (LPARAM)_T(""));
 }
 
-void JabberComboAddRecentString(HWND hwndDlg, UINT idcCombo, char *param, TCHAR *string)
+void JabberComboAddRecentString(HWND hwndDlg, UINT idcCombo, char *param, TCHAR *string, int recentCount)
 {
 	if (!string || !*string)
 		return;
@@ -1252,7 +1255,7 @@ void JabberComboAddRecentString(HWND hwndDlg, UINT idcCombo, char *param, TCHAR 
 	char setting[MAXMODULELABELLENGTH];
 	mir_snprintf(setting, sizeof(setting), "%s%d", param, id);
 	JSetStringT(NULL, setting, string);
-	JSetByte(NULL, param, (id+1)%JABBER_COMBO_RECENT_COUNT);
+	JSetByte(NULL, param, (id+1)%recentCount);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -1302,6 +1305,181 @@ void JabberCopyText(HWND hwnd, TCHAR *text)
 	SetClipboardData(CF_TEXT, hMem);
 #endif
 	CloseClipboard();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// One string entry dialog
+
+struct JabberEnterStringParams
+{
+	int type;
+	TCHAR* caption;
+	TCHAR* result;
+	size_t resultLen;
+	char *windowName;
+	int recentCount;
+
+	int idcControl;
+	int height;
+};
+
+static int sttEnterStringResizer(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
+{
+	switch (urc->wId)
+	{
+	case IDC_TXT_MULTILINE:
+	case IDC_TXT_COMBO:
+	case IDC_TXT_RICHEDIT:
+		return RD_ANCHORX_LEFT|RD_ANCHORY_TOP|RD_ANCHORX_WIDTH|RD_ANCHORY_HEIGHT;
+	case IDOK:
+	case IDCANCEL:
+		return RD_ANCHORX_RIGHT|RD_ANCHORY_BOTTOM;
+	}
+	return RD_ANCHORX_LEFT|RD_ANCHORY_TOP;
+}
+
+static BOOL CALLBACK sttEnterStringDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+{
+	switch ( msg ) {
+	case WM_INITDIALOG:
+	{
+		//SetWindowPos( hwndDlg, HWND_TOPMOST ,0,0,0,0,SWP_NOSIZE|SWP_NOMOVE );
+		TranslateDialogDefault( hwndDlg );
+		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_OTHER_RENAME));
+		SendMessage(hwndDlg, WM_SETICON, ICON_SMALL, (LPARAM)LoadSkinnedIcon(SKINICON_OTHER_RENAME));
+		JabberEnterStringParams *params = (JabberEnterStringParams *)lParam;
+		SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG )params );
+		SetWindowText( hwndDlg, params->caption );
+
+		RECT rc; GetWindowRect(hwndDlg, &rc);
+		switch (params->type)
+		{
+			case JES_MULTINE:
+			{
+				params->idcControl = IDC_TXT_MULTILINE;
+				params->height = 0;
+				rc.bottom += (rc.bottom-rc.top) * 2;
+				SetWindowPos(hwndDlg, NULL, 0, 0, rc.right-rc.left, rc.bottom-rc.top, SWP_NOMOVE|SWP_NOREPOSITION);
+				break;
+			}
+			case JES_COMBO:
+			{
+				params->idcControl = IDC_TXT_COMBO;
+				params->height = rc.bottom-rc.top;
+				if (params->windowName && params->recentCount)
+					JabberComboLoadRecentStrings(hwndDlg, IDC_TXT_COMBO, params->windowName, params->recentCount);
+				break;
+			}
+			case JES_RICHEDIT:
+			{
+				params->idcControl = IDC_TXT_RICHEDIT;
+				SendDlgItemMessage(hwndDlg, IDC_TXT_RICHEDIT, EM_AUTOURLDETECT, TRUE, 0);
+				SendDlgItemMessage(hwndDlg, IDC_TXT_RICHEDIT, EM_SETEVENTMASK, 0, ENM_LINK);
+				params->height = 0;
+				rc.bottom += (rc.bottom-rc.top) * 2;
+				SetWindowPos(hwndDlg, NULL, 0, 0, rc.right-rc.left, rc.bottom-rc.top, SWP_NOMOVE|SWP_NOREPOSITION);
+				break;
+			}
+		}
+
+		ShowWindow(GetDlgItem(hwndDlg, params->idcControl), SW_SHOW);
+		SetDlgItemText( hwndDlg, params->idcControl, params->result );
+
+		if (params->windowName)
+			Utils_RestoreWindowPosition(hwndDlg, NULL, jabberProtoName, params->windowName);
+
+		SetTimer(hwndDlg, 1000, 50, NULL);
+		return TRUE;
+	}
+	case WM_TIMER:
+	{
+		KillTimer(hwndDlg,1000);
+		EnableWindow(GetParent(hwndDlg), TRUE);
+		return TRUE;
+	}
+	case WM_SIZE:
+	{
+		UTILRESIZEDIALOG urd = {0};
+		urd.cbSize = sizeof(urd);
+		urd.hInstance = hInst;
+		urd.hwndDlg = hwndDlg;
+		urd.lpTemplate = MAKEINTRESOURCEA(IDD_GROUPCHAT_INPUT);
+		urd.pfnResizer = sttEnterStringResizer;
+		CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM)&urd);
+		break;
+	}
+	case WM_GETMINMAXINFO:
+	{
+		LPMINMAXINFO lpmmi = (LPMINMAXINFO)lParam;
+		JabberEnterStringParams *params = (JabberEnterStringParams *)GetWindowLong( hwndDlg, GWL_USERDATA );
+		if (params && params->height)
+			lpmmi->ptMaxSize.y = lpmmi->ptMaxTrackSize.y = params->height;
+		break;
+	}
+	case WM_NOTIFY:
+	{
+		ENLINK *param = (ENLINK *)lParam;
+		if (param->nmhdr.idFrom != IDC_TXT_RICHEDIT) break;
+		if (param->nmhdr.code != EN_LINK) break;
+		if (param->msg != WM_LBUTTONUP) break;
+
+		CHARRANGE sel;
+		SendMessage(param->nmhdr.hwndFrom, EM_EXGETSEL, 0, (LPARAM) & sel);
+		if (sel.cpMin != sel.cpMax) break; // allow link selection
+
+		TEXTRANGEA tr;
+		tr.chrg = param->chrg;
+		tr.lpstrText = (char *)mir_alloc(sizeof(char)*(tr.chrg.cpMax - tr.chrg.cpMin + 2));
+        SendMessage(param->nmhdr.hwndFrom, EM_GETTEXTRANGE, 0, (LPARAM) & tr);
+
+		CallService(MS_UTILS_OPENURL, 1, (LPARAM)tr.lpstrText);
+        mir_free(tr.lpstrText);
+        return TRUE;
+	}
+	case WM_COMMAND:
+	{
+		JabberEnterStringParams *params = (JabberEnterStringParams *)GetWindowLong( hwndDlg, GWL_USERDATA );
+		switch ( LOWORD( wParam ))
+		{
+			case IDOK:
+				GetDlgItemText( hwndDlg, params->idcControl, params->result, params->resultLen );
+				params->result[ params->resultLen-1 ] = 0;
+
+				if ((params->type == JES_COMBO) && params->windowName && params->recentCount)
+					JabberComboAddRecentString(hwndDlg, IDC_TXT_COMBO, params->windowName, params->result, params->recentCount);
+				if (params->windowName)
+					Utils_SaveWindowPosition(hwndDlg, NULL, jabberProtoName, params->windowName);
+				EndDialog( hwndDlg, 1 );
+				break;
+
+			case IDCANCEL:
+				if (params->windowName)
+					Utils_SaveWindowPosition(hwndDlg, NULL, jabberProtoName, params->windowName);
+				EndDialog( hwndDlg, 0 );
+				break;
+		}
+	}
+	}
+
+	return FALSE;
+}
+
+BOOL JabberEnterString(TCHAR *result, size_t resultLen, TCHAR *caption, int type, char *windowName, int recentCount)
+{
+	bool free_caption = false;
+	if (!caption || (caption==result))
+	{
+		free_caption = true;
+		caption = mir_tstrdup( result );
+		result[ 0 ] = _T('\0');
+	}
+
+	JabberEnterStringParams params = { type, caption, result, resultLen, windowName, recentCount };
+	BOOL bRetVal = DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_GROUPCHAT_INPUT ), GetForegroundWindow(), sttEnterStringDlgProc, LPARAM( &params ));
+
+	if (free_caption) mir_free( caption );
+
+	return bRetVal;
 }
 
 ////////////////////////////////////////////////////////////////////////

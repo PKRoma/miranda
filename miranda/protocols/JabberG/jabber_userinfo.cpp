@@ -292,7 +292,7 @@ static void sttFillResourceInfo( HWND hwndTree, HTREEITEM htiRoot, JABBER_LIST_I
 				if ( jcb & g_JabberFeatCapPairs[i].jcbCap ) {
 					TCHAR szDescription[ 1024 ];
 					if ( g_JabberFeatCapPairs[i].szDescription )
-						mir_sntprintf( szDescription, SIZEOF( szDescription ), _T("%s (%s)"), g_JabberFeatCapPairs[i].szDescription, g_JabberFeatCapPairs[i].szFeature );
+						mir_sntprintf( szDescription, SIZEOF( szDescription ), _T("%s (%s)"), TranslateTS(g_JabberFeatCapPairs[i].szDescription), g_JabberFeatCapPairs[i].szFeature );
 					else
 						mir_sntprintf( szDescription, SIZEOF( szDescription ), _T("%s"), g_JabberFeatCapPairs[i].szFeature );
 					sttFillInfoLine( hwndTree, htiCaps, NULL, NULL, szDescription, sttInfoLineId(resource, INFOLINE_CAPS, i) );

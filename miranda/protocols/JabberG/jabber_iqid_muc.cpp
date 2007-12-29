@@ -34,7 +34,6 @@ Last change by : $Author$
 
 void JabberAddMucListItem( JABBER_MUC_JIDLIST_INFO* jidListInfo, TCHAR* str );
 void JabberDeleteMucListItem( JABBER_MUC_JIDLIST_INFO* jidListInfo, TCHAR* str );
-BOOL JabberEnterString( TCHAR* result, size_t resultLen );
 
 void JabberIqResultBrowseRooms( XmlNode *iqNode, void *userdata )
 {
@@ -262,9 +261,11 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 			HWND hwndList;
 
 			TranslateDialogDefault( hwndDlg );
+
 			hwndList = GetDlgItem( hwndDlg, IDC_LIST );
+			ListView_SetExtendedListViewStyle(hwndList, LVS_EX_FULLROWSELECT|LVS_EX_GRIDLINES);
 			GetClientRect( hwndList, &rc );
-			rc.right -= GetSystemMetrics( SM_CXVSCROLL );
+			//rc.right -= GetSystemMetrics( SM_CXVSCROLL );
 			lvc.mask = LVCF_WIDTH;
 			lvc.cx = rc.right - 20;
 			ListView_InsertColumn( hwndList, 0, &lvc );
@@ -310,7 +311,7 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 			HWND hwndList = GetDlgItem( hwndDlg, IDC_LIST );
 			GetClientRect( hwndList, &listrc );
 			lvc.mask = LVCF_WIDTH;
-			listrc.right -= GetSystemMetrics( SM_CXVSCROLL );
+			//listrc.right -= GetSystemMetrics( SM_CXVSCROLL );
 			lvc.cx = listrc.right - 20;
 			SendMessage(hwndList, LVM_SETCOLUMN, 0, (LPARAM)&lvc);
 			break;
@@ -422,7 +423,7 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 					if ( lvi.lParam == ( LPARAM )( -1 )) {
 						TCHAR szBuffer[ 1024 ];
 						_tcscpy( szBuffer, jidListInfo->type2str());
-						if ( !JabberEnterString( szBuffer, SIZEOF(szBuffer)))
+						if (!JabberEnterString(szBuffer, SIZEOF(szBuffer), NULL, JES_COMBO, "gcAddNick_"))
 							break;
 
 						// Trim leading and trailing whitespaces

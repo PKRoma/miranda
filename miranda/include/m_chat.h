@@ -621,6 +621,12 @@ typedef struct {
 #define MENU_SEPARATOR		4		// add separator to menu
 #define MENU_ITEM			5		// add item
 
+// Added in Miranda IM 0.8.0.6+
+#define MENU_POPUPCHECK		6		// add checked item to current submenu
+#define MENU_CHECK			7		// add checked item
+#define MENU_POPUPHMENU		8		// add custom submenu to current submenu, use dwID to specify HMENU
+#define MENU_HMENU			9		// add custom submenu, use dwID to specify HMENU
+
 // type of menu that is being requested
 #define MENU_ON_LOG			1		// pop up menu on the message log
 #define MENU_ON_NICKLIST	2		// pop up menu on the user list

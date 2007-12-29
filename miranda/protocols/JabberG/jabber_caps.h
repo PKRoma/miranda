@@ -232,8 +232,6 @@ public:
 	BOOL SetClientCaps( int nIqId, JabberCapsBits jcbCaps );
 
 	BOOL HandleInfoRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo, TCHAR* szNode );
-
-	BOOL TranslateCaps();
 };
 
 struct JabberFeatCapPair

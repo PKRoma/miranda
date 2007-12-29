@@ -229,6 +229,7 @@
 #define IDC_SET                         1140
 #define IDC_TABS                        1141
 #define IDC_TOPIC                       1141
+#define IDC_TXT_MULTILINE               1141
 #define IDC_FONT                        1143
 #define IDC_ENTER                       1144
 #define IDC_CTRLENTER                   1145
@@ -367,12 +368,14 @@
 #define IDC_COMBO1                      1296
 #define IDC_CB_FILTER                   1296
 #define IDC_TXT_ROLE                    1296
+#define IDC_TXT_COMBO                   1296
 #define IDC_BTN_FILTER2                 1297
 #define IDC_BTN_FILTER_REFRESH          1297
 #define IDC_EDIT5                       1298
 #define IDC_TXT_STATUS                  1298
 #define IDC_TXT_AFFILIATION             1299
 #define IDC_ICO_STATUS                  1300
+#define IDC_TXT_RICHEDIT                1302
 #define IDC_EMAILS                      1306
 #define IDC_PHONES                      1308
 #define IDC_UPDATE                      1313
@@ -418,7 +421,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        225
 #define _APS_NEXT_COMMAND_VALUE         40017
-#define _APS_NEXT_CONTROL_VALUE         1301
+#define _APS_NEXT_CONTROL_VALUE         1303
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -869,6 +869,20 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
       SendMessage(hwnd, WM_LBUTTONUP, wParam, lParam);
       break;
 
+	case WM_MEASUREITEM:
+		{
+			MEASUREITEMSTRUCT *mis = (MEASUREITEMSTRUCT *) lParam;
+			if (mis->CtlType == ODT_MENU)
+				return CallService(MS_CLIST_MENUMEASUREITEM, wParam, lParam);
+			return FALSE;
+		}
+	case WM_DRAWITEM:
+		{
+			DRAWITEMSTRUCT *dis = (DRAWITEMSTRUCT *) lParam;
+			if (dis->CtlType == ODT_MENU)
+				return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
+			return FALSE;
+		}
    case WM_CONTEXTMENU:
       {
          TVHITTESTINFO hti;
@@ -1335,21 +1349,32 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
    case WM_MEASUREITEM:
       {
          MEASUREITEMSTRUCT *mis = (MEASUREITEMSTRUCT *) lParam;
-         int ih = GetTextPixelSize( _T("AQGgl'"), g_Settings.UserListFont,FALSE);
-         int ih2 = GetTextPixelSize( _T("AQGg'"), g_Settings.UserListHeadingsFont,FALSE);
-         int font = ih > ih2?ih:ih2;
-         int height = DBGetContactSettingByte(NULL, "Chat", "NicklistRowDist", 12);
-		// make sure we have space for icon!
-		if (DBGetContactSettingByte(NULL, "Chat", "ShowContactStatus", 0))
-			font = font > 16 ? font : 16;
 
-         mis->itemHeight = height > font?height:font;
+		 if (mis->CtlType == ODT_MENU)
+		 {
+			 return CallService(MS_CLIST_MENUMEASUREITEM, wParam, lParam);
+		 } else
+		 {
+		    int ih = GetTextPixelSize( _T("AQGgl'"), g_Settings.UserListFont,FALSE);
+            int ih2 = GetTextPixelSize( _T("AQGg'"), g_Settings.UserListHeadingsFont,FALSE);
+            int font = ih > ih2?ih:ih2;
+            int height = DBGetContactSettingByte(NULL, "Chat", "NicklistRowDist", 12);
+		   // make sure we have space for icon!
+		   if (DBGetContactSettingByte(NULL, "Chat", "ShowContactStatus", 0))
+			   font = font > 16 ? font : 16;
+	        mis->itemHeight = height > font?height:font;
+		 }
+
          return TRUE;
       }
 
    case WM_DRAWITEM:
       {
          DRAWITEMSTRUCT *dis = (DRAWITEMSTRUCT *) lParam;
+		 if (dis->CtlType == ODT_MENU)
+		 {
+			 return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
+		 } else
          if (dis->CtlID == IDC_CHAT_LIST) {
             HFONT  hFont, hOldFont;
             HICON  hIcon;

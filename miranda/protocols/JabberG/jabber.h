@@ -729,9 +729,13 @@ TCHAR*                  JabberGetXmlLang();
 	#define JabberUnixToDosT JabberUnixToDos
 #endif
 
-#define JABBER_COMBO_RECENT_COUNT 10
-void JabberComboLoadRecentStrings(HWND hwndDlg, UINT idcCombo, char *param);
-void JabberComboAddRecentString(HWND hwndDlg, UINT idcCombo, char *param, TCHAR *string);
+#define JABBER_DEFAULT_RECENT_COUNT 10
+void JabberComboLoadRecentStrings(HWND hwndDlg, UINT idcCombo, char *param, int recentCount=JABBER_DEFAULT_RECENT_COUNT);
+void JabberComboAddRecentString(HWND hwndDlg, UINT idcCombo, char *param, TCHAR *string, int recentCount=JABBER_DEFAULT_RECENT_COUNT);
+
+enum { JES_MULTINE, JES_COMBO, JES_RICHEDIT };
+BOOL JabberEnterString(TCHAR *result, size_t resultLen, TCHAR *caption=NULL, int type=0, char *windowName=NULL, int recentCount=JABBER_DEFAULT_RECENT_COUNT);
+
 void JabberUtilsRebuildStatusMenu();
 TCHAR *JabberStrIStr(TCHAR *str, TCHAR *substr);
 void JabberCopyText(HWND hwnd, TCHAR *text);
