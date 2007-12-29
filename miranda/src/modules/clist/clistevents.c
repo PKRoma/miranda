@@ -434,6 +434,9 @@ void fnFreeEvent( struct CListEvent* p )
 void UninitCListEvents(void)
 {
 	int i;
+
+	if (cli.events.count) KillTimer(NULL, flashTimerId);
+
 	for (i = 0; i < cli.events.count; i++)
 		cli.pfnFreeEvent(( struct CListEvent* )cli.events.items[i] );
 	List_Destroy(( SortedList* )&cli.events );
