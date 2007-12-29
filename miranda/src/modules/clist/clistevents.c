@@ -436,7 +436,7 @@ void UninitCListEvents(void)
 	int i;
 	for (i = 0; i < cli.events.count; i++)
 		cli.pfnFreeEvent(( struct CListEvent* )cli.events.items[i] );
-	mir_free( cli.events.items );
+	List_Destroy(( SortedList* )&cli.events );
 
 	if ( imlIcon != NULL )
 		mir_free( imlIcon );
