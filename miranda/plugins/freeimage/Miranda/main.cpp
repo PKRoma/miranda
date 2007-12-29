@@ -955,7 +955,7 @@ static int serviceSave(WPARAM wParam, LPARAM lParam)
 		if(isi->cbSize != sizeof(IMGSRVC_INFO))
 			return 0;
 
-		if(isi->szName) {
+		if(isi->szName || isi->wszName) {
 			if(isi->fif == FIF_UNKNOWN) {
 				if(lParam & IMGL_WCHAR)
 					fif = FreeImage_GetFIFFromFilenameU(isi->wszName);
