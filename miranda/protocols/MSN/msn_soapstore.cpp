@@ -45,7 +45,7 @@ static ezxml_t storeSoapHdr(const char* service, const char* scenario, ezxml_t& 
 	ezxml_t apphdr = ezxml_add_child(hdr, "StorageApplicationHeader", 0);
 	ezxml_set_attr(apphdr, "xmlns", "http://www.msn.com/webservices/storage/w10");
 	ezxml_t node = ezxml_add_child(apphdr, "ApplicationID", 0);
-	ezxml_set_txt(node, "Messenger Client 8.0");
+	ezxml_set_txt(node, "Messenger Client 8.5");
 	node = ezxml_add_child(apphdr, "Scenario", 0);
 	ezxml_set_txt(node, scenario);
 

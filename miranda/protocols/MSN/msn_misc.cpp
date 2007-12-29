@@ -562,7 +562,7 @@ void  MSN_SetServerStatus( int newStatus )
 			szMsnObject[ 0 ] = 0;
 
 		// Capabilties: WLM 8.1, Chunking 
-		unsigned flags = 0x70000020;
+		unsigned flags = 0x80000020;
 		if (MSN_GetByte( "MobileEnabled", 0) && MSN_GetByte( "MobileAllowed", 0))
 			flags |= 0x40;
 

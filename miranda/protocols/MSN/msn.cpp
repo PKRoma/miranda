@@ -75,8 +75,6 @@ MSN_StatusMessage msnModeMsgs[ MSN_NUM_MODES ] = {
 LISTENINGTOINFO msnCurrentMedia;
 
 char* msnProtocolName = NULL;
-char* msnProtChallenge = NULL;
-char* msnProductID  = NULL;
 
 char* mailsoundname;
 char* alertsoundname;

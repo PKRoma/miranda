@@ -151,9 +151,9 @@ void __cdecl MSNServerThread( ThreadData* info )
 		osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
 	    GetVersionEx(&osvi);
 
-		info->sendPacket( "CVR","0x0409 %s %d.%d i386 MSNMSGR 8.1.0178 MSFT %s",
+		info->sendPacket( "CVR","0x0409 %s %d.%d i386 MSNMSGR %s msmsgs %s",
 			osvi.dwPlatformId >= 2 ? "winnt" : "win", osvi.dwMajorVersion, osvi.dwMinorVersion, 
-			MyOptions.szEmail );
+			msnProductVer, MyOptions.szEmail );
 
 		info->sendPacket( "USR", "SSO I %s", MyOptions.szEmail );
 	}

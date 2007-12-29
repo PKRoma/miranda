@@ -1633,12 +1633,8 @@ LBL_InvalidCommand:
 				return 1;
 			}
 
-            if ( !strcmp( protocol1, "MSNP15" )) 
+            if ( strcmp( protocol1, msnProtID )) 
 			{
-				msnProtChallenge = "PK}_A_0N_K%O?A9S";
-				msnProductID = "PROD0114ES4Z%Q5W";
-			}
-			else {
 				MSN_ShowError( "Server has requested an unknown protocol set (%s)", params );
 
 				if ( info->mType == SERVER_NOTIFICATION || info->mType == SERVER_DISPATCH ) {

@@ -724,6 +724,11 @@ struct MSN_StatusMessage
 	char*     m_msg;
 };
 
+const char msnProtChallenge[] = "ILTXC!4IXB5FB*PX";
+const char msnProductID[] = "PROD0119GSJUC$18";
+const char msnProductVer[] = "8.5.1302";
+const char msnProtID[] = "MSNP15"; 
+
 extern  MSN_StatusMessage    msnModeMsgs[ MSN_NUM_MODES ];
 
 extern  LISTENINGTOINFO      msnCurrentMedia;
@@ -735,9 +740,6 @@ extern	char*	    msnProtocolName;
 extern	char*       msnExternalIP;
 extern	unsigned	msnStatusMode,
 					msnDesiredStatus;
-
-extern	char*       msnProtChallenge;
-extern	char*       msnProductID;
 
 extern	char*		ModuleName;
 extern	char*	    mailsoundname;
