@@ -565,8 +565,9 @@ static int CLUI_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	g_flag_bOnModulesLoadedCalled=TRUE;	
 	///pcli->pfnInvalidateDisplayNameCacheEntry(INVALID_HANDLE_VALUE);   
 	PostMessage(pcli->hwndContactList,M_CREATECLC,0,0); //$$$
-
+#ifndef FORCE_HOTKEY_IN_MODERN
 	InitSkinHotKeys();
+#endif FORCE_HOTKEY_IN_MODERN
 
 	return 0;
 }

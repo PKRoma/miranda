@@ -972,9 +972,12 @@ static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 			int i;
 			RECT MyRect={0};
 			HDC hDC=(HDC)wParam;
-			if (!pMTBInfo->pButtonList) return TRUE;
 			GetWindowRect(hwnd,&MyRect);
-			SkinDrawGlyph(hDC,&MyRect,&MyRect,"Bar,ID=ToolBar,Part=Background");
+			{
+				RECT rcClient;
+				GetClientRect(hwnd, &rcClient);
+				SkinDrawGlyph(hDC,&rcClient,&rcClient,"Bar,ID=ToolBar,Part=Background");
+			}
 			for (i=0; i<pMTBInfo->pButtonList->realCount; i++)
 			{
 				RECT childRect;

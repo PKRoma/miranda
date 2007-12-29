@@ -166,6 +166,17 @@ struct ClcGroup;
 #define CLUI_SetDrawerService "CLUI/SETDRAWERSERVICE"
 #define CLUI_EXT_FUNC_PAINTCLC	1
 
+#ifdef FORCE_HOTKEY_IN_MODERN
+
+//add a new hotkey so it has a default and can be changed in the options dialog
+//wParam=0
+//lParam=(LPARAM)(SKINHOTKEYDESC*)ssd;
+//returns 0 on success, nonzero otherwise
+#define MS_SKIN_ADDHOTKEY      "Skin/HotKeys/AddNew"
+#define MS_SKIN_PLAYHOTKEY		"Skin/HotKeys/Run"
+
+#endif //FORCE_HOTKEY_IN_MODERN
+
 #define IsHContactGroup(h)  (((unsigned)(h)^HCONTACT_ISGROUP)<(HCONTACT_ISGROUP^HCONTACT_ISINFO))
 #define IsHContactInfo(h)   (((unsigned)(h)&HCONTACT_ISINFO)==HCONTACT_ISINFO)
 #define IsHContactContact(h) (((unsigned)(h)&HCONTACT_ISGROUP)==0)
@@ -475,6 +486,20 @@ typedef struct {
 
 } ExternDrawer,*pExternDrawer ;
 
+#ifdef FORCE_HOTKEY_IN_MODERN
+
+typedef struct {
+	int cbSize;
+	const char *pszName;		   //name to refer to sound when playing and in db
+	const char *pszDescription;	   //description for options dialog
+//    const char *pszDefaultFile;    //default sound file to use
+    const char *pszSection;        //section name used to group sounds (NULL is acceptable)
+	const char *pszService;        //Service to call when HotKey Pressed
+
+	int DefHotKey; //default hot key for action
+} SKINHOTKEYDESCEX;
+
+#endif //FORCE_HOTKEY_IN_MODERN
 //clc.c
 void    ClcOptionsChanged(void);
 

@@ -1,9 +1,15 @@
-#define BUILD_NUM 33
-#define BUILD_NUM_STR  "33"
+#define BUILD_NUM 35
+#define BUILD_NUM_STR  "35"
 #define REVISION  "$Revision$"
 
-#define COREVERSION_NUM 0, 7, 100,
-#define COREVERSION_NUM_STR  "0, 7, 100 "
+#ifdef FORCE_HOTKEY_IN_MODERN
+	#define COREVERSION_NUM 0, 7, 100,
+	#define COREVERSION_NUM_STR  "0, 7, 100 "
+#else
+	#define COREVERSION_NUM 0, 8, 0,
+	#define COREVERSION_NUM_STR  "0, 8, 0 "
+#endif //FORCE_HOTKEY_IN_MODERN
+
 
 #define MINIMAL_COREVERSION_NUM PLUGIN_MAKE_VERSION(0, 7, 0, 34)
 #define MINIMAL_COREVERSION 0, 7, 0, 34
