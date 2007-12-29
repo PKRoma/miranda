@@ -739,7 +739,9 @@ HReadBuffer::~HReadBuffer()
 
 BYTE* HReadBuffer::surelyRead( int parBytes )
 {
-	if ( startOffset + parBytes > totalDataSize )
+	const int bufferSize = sizeof( owner->mData );
+
+	if (( startOffset + parBytes ) > bufferSize )
 	{
 		int tNewLen = totalDataSize - startOffset;
 		if ( tNewLen > 0 )
@@ -749,15 +751,14 @@ BYTE* HReadBuffer::surelyRead( int parBytes )
 
 		startOffset = 0;
 		totalDataSize = tNewLen;
+
+		if ( parBytes > bufferSize ) {
+			MSN_DebugLog( "HReadBuffer::surelyRead: not enough memory, %d %d %d", parBytes, bufferSize, startOffset );
+			return NULL;
+		}
 	}
 
-	int bufferSize = sizeof( owner->mData );
-	if ( parBytes > bufferSize - startOffset ) {
-		MSN_DebugLog( "HReadBuffer::surelyRead: not enough memory, %d %d %d", parBytes, bufferSize, startOffset );
-		return NULL;
-	}
-
-	while( totalDataSize - startOffset < parBytes )
+	while(( startOffset + parBytes ) > totalDataSize )
 	{
 		int recvResult = owner->recv(( char* )buffer + totalDataSize, bufferSize - totalDataSize );
 
