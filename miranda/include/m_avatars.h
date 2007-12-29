@@ -251,8 +251,15 @@ typedef struct _contactAvatarChangedNotification {
 
 // Save an HBITMAP to an image
 // wParam = HBITMAP
-// lParam = full path of filename
-#define MS_AV_SAVEBITMAP "SV_Avatars/SaveBitmap"
+// lParam = full path of filename 
+#define MS_AV_SAVEBITMAP  "SV_Avatars/SaveBitmap"
+#define MS_AV_SAVEBITMAPW "SV_Avatars/SaveBitmapW"
+
+#if defined(UNICODE)
+	#define MS_AV_SAVEBITMAPT MS_AV_SAVEBITMAPW
+#else
+	#define MS_AV_SAVEBITMAPT MS_AV_SAVEBITMAP
+#endif
 
 // Returns != 0 if can save that type of image, = 0 if cant
 // wParam = 0
