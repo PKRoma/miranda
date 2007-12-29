@@ -793,7 +793,7 @@ void __cdecl p2p_sendFeedThread( ThreadData* info )
 
 	bool fault = false;
 	while ( WaitForSingleObject( hLockHandle, 2000 ) == WAIT_OBJECT_0 &&
-			ft->std.currentFileProgress < ft->std.currentFileSize )
+		ft->std.currentFileProgress < ft->std.currentFileSize && !ft->bCanceled)
 	{
 		ThreadData* T = MSN_GetThreadByContact( ft->std.hContact, ft->tType );
 		bool cfault = (T == NULL || p2p_sendPortion( ft, T ) == 0);
