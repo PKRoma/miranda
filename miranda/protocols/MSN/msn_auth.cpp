@@ -120,6 +120,7 @@ char *pAuthToken = NULL, *tAuthToken = NULL;
 char *oimSendToken = NULL;
 char *authStrToken = NULL, *authSecretToken = NULL; 
 char *authContactToken = NULL;
+char *authStorageToken = NULL;
 char *hotSecretToken = NULL, *hotAuthToken = NULL;
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -208,6 +209,10 @@ int MSN_GetPassportAuth( void )
 						else if (strcmp(id, "Compact4")==0)
 						{
 							replaceStr(oimSendToken, ezxml_txt(toks));
+						}
+						else if (strcmp(id, "Compact6")==0)
+						{
+							replaceStr(authStorageToken, ezxml_txt(toks));
 						}
 					}
 					else
@@ -446,6 +451,7 @@ void FreeAuthTokens(void)
 	mir_free(authStrToken);
 	mir_free(authSecretToken); 
 	mir_free(authContactToken);
+	mir_free(authStorageToken);
 	mir_free(hotSecretToken);
 	free(hotAuthToken);
 }
