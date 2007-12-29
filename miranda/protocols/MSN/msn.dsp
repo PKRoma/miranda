@@ -273,6 +273,10 @@ SOURCE=.\msn_soapab.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\msn_soapstore.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\msn_srv.cpp
 # End Source File
 # Begin Source File

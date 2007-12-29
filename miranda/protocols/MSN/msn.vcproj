@@ -789,6 +789,9 @@
 				RelativePath=".\msn_soapab.cpp">
 			</File>
 			<File
+				RelativePath=".\msn_soapstore.cpp">
+			</File>
+			<File
 				RelativePath=".\msn_srv.cpp">
 			</File>
 			<File
