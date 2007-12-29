@@ -19,13 +19,12 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-File name      : $Source: /cvsroot/miranda/miranda/protocols/JabberG/jabber_privacy.cpp,v $
-Revision       : $Revision: 5337 $
-Last change on : $Date: 2007-04-28 13:26:31 +0300 (бс, 28 ря№ 2007) $
-Last change by : $Author: ghazan $
+File name      : $URL$
+Revision       : $Revision$
+Last change on : $Date$
+Last change by : $Author$
 
 */
-
 
 #include "jabber.h"
 

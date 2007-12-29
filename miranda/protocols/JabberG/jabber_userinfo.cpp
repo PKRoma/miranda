@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-File name      : $Source: /cvsroot/miranda/miranda/protocols/JabberG/jabber_userinfo.cpp,v $
+File name      : $URL$
 Revision       : $Revision$
 Last change on : $Date$
 Last change by : $Author$
@@ -101,6 +101,7 @@ enum
 	INFOLINE_CAPS,
 	INFOLINE_SUBSCRIPTION,
 	INFOLINE_LOGOFF,
+	INFOLINE_LOGOFF_MSG,
 	INFOLINE_LASTACTIVE,
 };
 
@@ -342,6 +343,11 @@ static void sttFillUserInfo( HWND hwndTree, JABBER_LIST_ITEM *item )
 		sttFillInfoLine( hwndTree, htiRoot, NULL,
 			( item->jid && _tcschr( item->jid, _T( '@' ))) ? TranslateT( "Last logoff time" ) : TranslateT( "Uptime"), buf,
 			sttInfoLineId(0, INFOLINE_LOGOFF));
+	}
+
+	{	// logoff msg
+		sttFillInfoLine( hwndTree, htiRoot, NULL, TranslateT( "Logoff message" ),
+			item->itemResource.statusMessage ? item->itemResource.statusMessage : TranslateT( "<not specified>" ), sttInfoLineId(0, INFOLINE_LOGOFF_MSG));
 	}
 
 	{	// activity

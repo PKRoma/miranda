@@ -20,10 +20,10 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-File name      : $Source: /cvsroot/miranda/miranda/protocols/JabberG/jabber_misc.cpp,v $
-Revision       : $Revision: 3322 $
+File name      : $URL$
+Revision       : $Revision$
 Last change on : $Date: 2006-07-13 16:11:29 +0400
-Last change by : $Author: rainwater $
+Last change by : $Author$
 
 */
 

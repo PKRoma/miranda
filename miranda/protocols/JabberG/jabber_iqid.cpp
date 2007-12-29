@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-File name      : $Source: /cvsroot/miranda/miranda/protocols/JabberG/jabber_iqid.cpp,v $
+File name      : $URL$
 Revision       : $Revision$
 Last change on : $Date$
 Last change by : $Author$
@@ -1598,9 +1598,13 @@ void JabberIqResultLastActivity( XmlNode *iqNode, void *userdata, CJabberIqInfo*
 			TCHAR *seconds = JabberXmlGetAttrValue( queryNode, "seconds" );
 			if ( seconds ) {
 				int nSeconds = _ttoi( seconds );
-				if ( nSeconds > 0 ) {
+				if ( nSeconds > 0 )
 					lastActivity = time( 0 ) - nSeconds;
-	}	}	}	}
+			}
+			if ( queryNode->text && *queryNode->text )
+				replaceStr( r->statusMessage, queryNode->text );
+		}
+	}
 
 	r->idleStartTime = lastActivity;
 
