@@ -847,9 +847,6 @@ static int CLUIFramesGetalClientFrame(void)
 	int i;
 	if (FramesSysNotStarted) return -1;
 
-	if(alclientFrame!=-1)
-		return alclientFrame;
-
 	if(alclientFrame!=-1) {
 		/* this value could become invalid if RemoveItemFromList was called,
 		* so we double-check */
