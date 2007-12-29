@@ -183,14 +183,15 @@ static int checkPI( BASIC_PLUGIN_INFO* bpi, PLUGININFOEX* pi )
 	if ( pi == NULL )
 		return FALSE;
 
-	if ( bpi->Info && pi->cbSize != sizeof(PLUGININFO))
-		return FALSE;
-
 	if ( bpi->InfoEx ) {
 		if ( pi->cbSize != sizeof(PLUGININFOEX))
 			return FALSE;
 		
 		if ( !validInterfaceList(bpi->Interfaces) || isPluginBanned( pi->uuid ))
+			return FALSE;
+	}
+	else {
+		if ( bpi->Info && pi->cbSize != sizeof(PLUGININFO))
 			return FALSE;
 	}
 
