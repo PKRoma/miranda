@@ -631,7 +631,6 @@ extern "C" WCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
     return szResult;
 }
 
-
 extern "C" const WCHAR *EncodeWithNickname(const char *string, const WCHAR *szNick, UINT codePage)
 {
     static std::wstring msg;

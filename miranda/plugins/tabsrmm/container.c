@@ -46,7 +46,6 @@ $Id$
 
 #include "commonheaders.h"
 #include "sendqueue.h"
-
 #pragma hdrstop
 
 #include "m_MathModule.h"
