@@ -206,3 +206,216 @@ bool MSN_StoreUpdateNick(const char* szNick)
 
 	return status == 200;
 }
+
+
+bool MSN_StoreCreateRelationships(const char *szSrcId, const char *szTgtId)
+{
+	SSLAgent mAgent;
+
+	char* reqHdr;
+	ezxml_t tbdy;
+	ezxml_t xmlp = storeSoapHdr("CreateRelationships", "RoamingIdentityChanged", tbdy, reqHdr);
+
+	ezxml_t rels = ezxml_add_child(tbdy, "relationships", 0);
+	ezxml_t rel = ezxml_add_child(rels, "Relationship", 0);
+	ezxml_t node = ezxml_add_child(rel, "SourceID", 0);
+	ezxml_set_txt(node, szSrcId);
+	node = ezxml_add_child(rel, "SourceType", 0);
+	ezxml_set_txt(node, "SubProfile");
+	node = ezxml_add_child(rel, "TargetID", 0);
+	ezxml_set_txt(node, szTgtId);
+	node = ezxml_add_child(rel, "TargetType", 0);
+	ezxml_set_txt(node, "Photo");
+	node = ezxml_add_child(rel, "RelationshipName", 0);
+	ezxml_set_txt(node, "ProfilePhoto");
+
+	char* szData = ezxml_toxml(xmlp, true);
+
+	ezxml_free(xmlp);
+
+	unsigned status;
+	char* htmlbody;
+
+	char* storeUrl = GetStoreHost();
+	char* tResult = mAgent.getSslResult(storeUrl, szData, reqHdr, status, htmlbody);
+
+	mir_free(reqHdr);
+	free(szData);
+
+	if (tResult != NULL && status == 200)
+	{
+	}
+	mir_free(tResult);
+	mir_free(storeUrl);
+
+	return status == 200;
+}
+
+
+bool MSN_StoreDeleteRelationships(const char *szResId)
+{
+	SSLAgent mAgent;
+
+	char* reqHdr;
+	ezxml_t tbdy;
+	ezxml_t xmlp = storeSoapHdr("DeleteRelationships", "RoamingIdentityChanged", tbdy, reqHdr);
+
+	ezxml_t srch = ezxml_add_child(tbdy, "sourceHandle", 0);
+	ezxml_t node = ezxml_add_child(srch, "RelationshipName", 0);
+	ezxml_set_txt(node, "/UserTiles");
+
+	ezxml_t alias = ezxml_add_child(srch, "Alias", 0);
+	node = ezxml_add_child(alias, "Name", 0);
+	ezxml_set_txt(node, mycid);
+	node = ezxml_add_child(alias, "NameSpace", 0);
+	ezxml_set_txt(node, "MyCidStuff");
+
+	node = ezxml_add_child(tbdy, "targetHandles", 0);
+	node = ezxml_add_child(node, "ObjectHandle", 0);
+	node = ezxml_add_child(node, "ResourceID", 0);
+	ezxml_set_txt(node, szResId);
+
+	char* szData = ezxml_toxml(xmlp, true);
+
+	ezxml_free(xmlp);
+
+	unsigned status;
+	char* htmlbody;
+
+	char* storeUrl = GetStoreHost();
+	char* tResult = mAgent.getSslResult(storeUrl, szData, reqHdr, status, htmlbody);
+
+	mir_free(reqHdr);
+	free(szData);
+
+	if (tResult != NULL && status == 200)
+	{
+	}
+	mir_free(tResult);
+	mir_free(storeUrl);
+
+	return status == 200;
+}
+
+
+bool MSN_StoreCreateDocument(const char *szName, const char *szMimeType, const char *szPicData)
+{
+	SSLAgent mAgent;
+
+	char* reqHdr;
+	ezxml_t tbdy;
+	ezxml_t xmlp = storeSoapHdr("CreateDocument", "RoamingIdentityChanged", tbdy, reqHdr);
+
+	ezxml_t hndl = ezxml_add_child(tbdy, "parentHandle", 0);
+	ezxml_t node = ezxml_add_child(hndl, "RelationshipName", 0);
+	ezxml_set_txt(node, "/UserTiles");
+
+	ezxml_t alias = ezxml_add_child(hndl, "Alias", 0);
+	node = ezxml_add_child(alias, "Name", 0);
+	ezxml_set_txt(node, mycid);
+	node = ezxml_add_child(alias, "NameSpace", 0);
+	ezxml_set_txt(node, "MyCidStuff");
+
+	ezxml_t doc = ezxml_add_child(tbdy, "document", 0);
+	ezxml_set_attr(doc, "xsi:type", "Photo");
+	node = ezxml_add_child(doc, "Name", 0);
+	ezxml_set_txt(node, szName);
+
+	doc = ezxml_add_child(tbdy, "DocumentStreams", 0);
+	doc = ezxml_add_child(tbdy, "DocumentStream", 0);
+	ezxml_set_attr(doc, "xsi:type", "PhotoStream");
+	node = ezxml_add_child(doc, "DocumentStreamType", 0);
+
+	ezxml_set_txt(node, "UserTileStatic");
+	node = ezxml_add_child(doc, "MimeType", 0);
+	ezxml_set_txt(node, szMimeType);
+	node = ezxml_add_child(doc, "Data", 0);
+	ezxml_set_txt(node, szPicData);
+	node = ezxml_add_child(doc, "DataSize", 0);
+	ezxml_set_txt(node, "0");
+
+	node = ezxml_add_child(tbdy, "relationshipName", 0);
+	ezxml_set_txt(node, "Messenger User Tile");
+
+	char* szData = ezxml_toxml(xmlp, true);
+
+	ezxml_free(xmlp);
+
+	unsigned status;
+	char* htmlbody;
+
+	char* storeUrl = GetStoreHost();
+	char* tResult = mAgent.getSslResult(storeUrl, szData, reqHdr, status, htmlbody);
+
+	mir_free(reqHdr);
+	free(szData);
+
+	if (tResult != NULL && status == 200)
+	{
+	}
+	mir_free(tResult);
+	mir_free(storeUrl);
+
+	return status == 200;
+}
+
+
+bool MSN_StoreFindDocuments(void)
+{
+	SSLAgent mAgent;
+
+	char* reqHdr;
+	ezxml_t tbdy;
+	ezxml_t xmlp = storeSoapHdr("FindDocuments", "RoamingIdentityChanged", tbdy, reqHdr);
+
+	ezxml_t srch = ezxml_add_child(tbdy, "objectHandle", 0);
+	ezxml_t node = ezxml_add_child(srch, "RelationshipName", 0);
+	ezxml_set_txt(node, "/UserTiles");
+
+	ezxml_t alias = ezxml_add_child(srch, "Alias", 0);
+	node = ezxml_add_child(alias, "Name", 0);
+	ezxml_set_txt(node, mycid);
+	node = ezxml_add_child(alias, "NameSpace", 0);
+	ezxml_set_txt(node, "MyCidStuff");
+
+	ezxml_t doc = ezxml_add_child(tbdy, "documentAttributes", 0);
+	node = ezxml_add_child(doc, "ResourceID", 0);
+	ezxml_set_txt(node, "true");
+	node = ezxml_add_child(doc, "Name", 0);
+	ezxml_set_txt(node, "true");
+
+	doc = ezxml_add_child(tbdy, "documentFilter", 0);
+	node = ezxml_add_child(doc, "FilterAttributes", 0);
+	ezxml_set_txt(node, "None");
+
+	doc = ezxml_add_child(tbdy, "documentSort", 0);
+	node = ezxml_add_child(doc, "SortBy", 0);
+	ezxml_set_txt(node, "DateModified");
+
+	doc = ezxml_add_child(tbdy, "findContext", 0);
+	node = ezxml_add_child(doc, "FindMethod", 0);
+	ezxml_set_txt(node, "Default");
+	node = ezxml_add_child(doc, "ChunkSize", 0);
+	ezxml_set_txt(node, "25");
+
+	char* szData = ezxml_toxml(xmlp, true);
+
+	ezxml_free(xmlp);
+
+	unsigned status;
+	char* htmlbody;
+
+	char* storeUrl = GetStoreHost();
+	char* tResult = mAgent.getSslResult(storeUrl, szData, reqHdr, status, htmlbody);
+
+	mir_free(reqHdr);
+	free(szData);
+
+	if (tResult != NULL && status == 200)
+	{
+	}
+	mir_free(tResult);
+	mir_free(storeUrl);
+
+	return status == 200;
+}
