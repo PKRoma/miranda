@@ -32,7 +32,6 @@
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -80,7 +79,6 @@
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -128,7 +126,6 @@
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -177,7 +174,6 @@
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -225,7 +221,6 @@
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -273,7 +268,6 @@
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -321,7 +315,6 @@
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -370,7 +363,6 @@
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -419,7 +411,6 @@
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -467,7 +458,6 @@
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -516,7 +506,6 @@
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -565,7 +554,6 @@
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -614,7 +602,6 @@ eventpopups.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -662,7 +649,6 @@ eventpopups.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -711,7 +697,6 @@ eventpopups.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -759,7 +744,6 @@ eventpopups.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -809,7 +793,6 @@ ImageDataObject.cpp : \
 	".\functions.h"\
 	".\generic_msghandlers.h"\
 	".\ImageDataObject.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -857,7 +840,6 @@ msgdialog.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -908,7 +890,6 @@ msgdlgutils.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -957,7 +938,6 @@ msglog.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -1006,7 +986,6 @@ msgoptions.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -1056,7 +1035,6 @@ msgs.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -1107,7 +1085,6 @@ msgs.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -1155,7 +1132,6 @@ sendqueue.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -1204,7 +1180,6 @@ srmm.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -1252,7 +1227,6 @@ srmm.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -1301,7 +1275,6 @@ templates.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -1349,7 +1322,6 @@ templates.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -1397,7 +1369,6 @@ trayicon.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -1446,7 +1417,6 @@ TSButton.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -1494,7 +1464,6 @@ userprefs.c : \
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
