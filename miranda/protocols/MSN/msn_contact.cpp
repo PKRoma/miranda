@@ -113,8 +113,11 @@ void MSN_SetContactDb(HANDLE hContact, int listId)
 	}
 	if (listId & LIST_FL)
 	{
-		DBDeleteContactSetting( hContact, "CList", "NotOnList" );
-		DBDeleteContactSetting( hContact, "CList", "Hidden" );
+		if (DBGetContactSettingByte( hContact, "CList", "NotOnList", 0 ) == 1)
+		{
+			DBDeleteContactSetting( hContact, "CList", "NotOnList" );
+			DBDeleteContactSetting( hContact, "CList", "Hidden" );
+		}
 	}
 }
 
