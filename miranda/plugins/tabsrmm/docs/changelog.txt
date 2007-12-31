@@ -34,27 +34,6 @@ Version 2.0.0.4  - 2007/12/23
         ! fixed minor issue with double icons in status bar (on rare occasions)
         ! fixed skin drawing on multimonitor systems (patch by Bryan)
         
-        + added project and setting files for Eclipse platform. Requires Eclipse
-          3.3+ with CDT 4. Build targets are available for ANSI and UNICODE builds
-          using a properly installed Visual C++ 6.0 (VC98) with nmake utility.
-          
-          To build with Eclipse, you need to configure a few things in the project:
-          
-          1) load the project into your eclipse workspace.
-          2) Configure include directories (C/C++ general - paths and symbols - includes)
-             in the project properties. VC runtime, PSDK and Miranda include paths
-             must be set. This may be optional, but you should do it, to make things
-             like code completion and parameter hints work.
-          3) Configure the environment variables for PATH, INCLUDE and LIB to
-             reflect your local settings (Project settings - C/C++ Build - environment)
-             You must set $MSVCDir, $VSCommonDir and $MSDevDir, $LIB, $INCLUDE and
-             $PATH. Make sure, you are using LIB and INCLUDE directories of the latest
-             PSDK installation.
-		  4) Make sure, Visual C++ 6.0 (VC98) and the latest update of the PSDK are
-		     installed.
-		  5) Subclipse (Eclipse subversion provider) maybe needed too. You can get
-		     it from http://subclipse.tigris.org).  
-		  
 Version 2.0.0.3  - 2007/11/29 (released with 0.8 alpha #5)
 
         * changed per contact filter system in group chats
