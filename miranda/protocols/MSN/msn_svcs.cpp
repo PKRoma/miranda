@@ -52,6 +52,7 @@ static HANDLE AddToListByEmail( const char *email, DWORD flags )
 				netId = strncmp(email, "tel:", 4) == 0 ? 4 : 1;
 			if (MSN_AddUser( hContact, email, netId, LIST_FL ))
 			{
+				MSN_AddUser( hContact, email, netId, LIST_PL + LIST_REMOVE );
 				MSN_AddUser( hContact, email, netId, LIST_BL + LIST_REMOVE );
 				MSN_AddUser( hContact, email, netId, LIST_AL );
 				if (netId == 4)
@@ -151,7 +152,18 @@ static int MsnAuthAllow(WPARAM wParam,LPARAM lParam)
 	UrlEncode( UTF8( nick ), urlNick, sizeof( urlNick ));
 	UrlEncode( email, urlEmail, sizeof( urlEmail ));
 
-	AddToListByEmail( email, 0 );
+	HANDLE hContact = MSN_HContactFromEmail(email, urlNick, true, 0);
+	int netId = Lists_GetNetId(email);
+
+	MSN_AddUser( hContact, email, netId, LIST_PL + LIST_REMOVE );
+	MSN_AddUser( hContact, email, netId, LIST_BL + LIST_REMOVE );
+	MSN_AddUser( hContact, email, netId, LIST_AL );
+	MSN_AddUser( hContact, email, netId, LIST_RL );
+
+	if (DBGetContactSettingByte( hContact, "CList", "NotOnList", 0 ) == 0)
+		MSN_AddUser( hContact, email, netId, LIST_FL );
+
+	MSN_SetContactDb(hContact, Lists_GetMask(email));
 	return 0;
 }
 
@@ -189,7 +201,11 @@ static int MsnAuthDeny(WPARAM wParam,LPARAM lParam)
 	UrlEncode( UTF8(nick), urlNick, sizeof( urlNick ));
 	UrlEncode( email, urlEmail, sizeof( urlEmail ));
 
-	MSN_AddUser( NULL, urlEmail, 1, LIST_BL );
+	HANDLE hContact = MSN_HContactFromEmail(email, urlNick, true, 0);
+	int netId = Lists_GetNetId(email);
+	MSN_AddUser( NULL, urlEmail, netId, LIST_BL );
+	MSN_AddUser( hContact, email, netId, LIST_PL + LIST_REMOVE );
+	MSN_SetContactDb(hContact, Lists_GetMask(email));
 	return 0;
 }
 /////////////////////////////////////////////////////////////////////////////////////////

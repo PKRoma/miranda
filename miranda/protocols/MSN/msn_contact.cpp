@@ -203,8 +203,7 @@ bool MSN_AddUser( HANDLE hContact, const char* email, int netId, int flags )
 		}
 	}
 	else {
-		const char* listName = (flags & LIST_AL) ? "Allow" :  "Block";
-		res = MSN_SharingAddDelMember(email, listName, needRemove ? "DeleteMember" : "AddMember");
+		res = MSN_SharingAddDelMember(email, flags, needRemove ? "DeleteMember" : "AddMember");
 		if (res) AddDelUserContList(email, flags, Lists_GetNetId(email), needRemove);
 	}
 	return res;

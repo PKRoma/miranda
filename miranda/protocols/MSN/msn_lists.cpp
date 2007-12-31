@@ -147,7 +147,7 @@ void MSN_CleanupLists(void)
 
 		if ((p->list & (LIST_FL | LIST_RL)) == 0 && (p->list & (LIST_AL | LIST_BL)) != 0 && p->netId != 2) 
 		{
-			MSN_SharingAddDelMember(p->email, (p->list & LIST_AL) ? "Allow" : "Block", "DeleteMember");
+			MSN_SharingAddDelMember(p->email, p->list, "DeleteMember");
 			p->list &= ~(LIST_AL | LIST_BL);
 
 			if (p->list == 0) 
@@ -161,11 +161,8 @@ void MSN_CleanupLists(void)
 
 		HANDLE hContact = MSN_HContactFromEmail(p->email, p->email, 1, 0);
 		MSN_SetContactDb(hContact, p->list);
-		if (p->list & LIST_PL)
-		{
+		if (p->list & LIST_PL || p->list == LIST_RL )
 			MSN_AddAuthRequest( hContact, p->email, p->email );
-		}
-
 	}
 	LeaveCriticalSection(&csLists);
 }

@@ -655,7 +655,7 @@ void   MSN_UploadServerGroups( char* group );
 //	MSN SOAP Address Book
 
 bool MSN_SharingFindMembership(void);
-bool MSN_SharingAddDelMember(const char* szEmail, const char* szRole, const char* szMethod);
+bool MSN_SharingAddDelMember(const char* szEmail, const int listId, const char* szMethod);
 
 bool MSN_ABGetFull(void);
 bool MSN_ABAddDelContactGroup(const char* szCntId, const char* szGrpId, const char* szMethod);

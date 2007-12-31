@@ -197,8 +197,15 @@ bool MSN_SharingFindMembership(void)
 }
 
 // AddMember, DeleteMember
-bool MSN_SharingAddDelMember(const char* szEmail, const char* szRole, const char* szMethod)
+bool MSN_SharingAddDelMember(const char* szEmail, const int listId, const char* szMethod)
 {
+	const char* szRole;
+	if (listId & LIST_AL) szRole = "Allow";
+	else if (listId & LIST_BL) szRole = "Block";
+	else if (listId & LIST_PL) szRole = "Pending";
+	else if (listId & LIST_RL) szRole = "Reverse";
+	else return false;
+
 	SSLAgent mAgent;
 
 	char* reqHdr;
