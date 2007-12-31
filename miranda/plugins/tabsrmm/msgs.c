@@ -37,10 +37,8 @@ $Id$
 
 static char *relnotes[] = {
     "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
-    "\\par\t\\b\\ul1 Release notes for version 2.0.0.4\\b0\\ul0\\par ",
-    "*\tBug fixes. See changelog.txt for details\\par",
-    "*\tAdded incremental search feature to group chat userlist.\\par",
-    "*\tDisabled skin editor pages (they weren't exactly useful anyway).\\par",
+    "\\par\t\\b\\ul1 Release notes for version 2.0.0.5\\b0\\ul0\\par ",
+    "*\tIncreased tiemr for info panel tooltips to 1 sec (from 500msec).\\par",
     NULL
 };
 

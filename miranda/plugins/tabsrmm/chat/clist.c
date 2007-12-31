@@ -16,6 +16,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+Group chat module: contact list support functions. Add chat rooms as
+contacts and handle default action for such contacts.
+
+This code was taken in almost unmodified from from the chat.dll
+plugin, originally written by Jörgen Persson
+
 */
 
 #include "../commonheaders.h"
@@ -89,7 +96,6 @@ END_GROUPLOOP:
 	DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
 	return hContact;
 }
-
 BOOL CList_SetOffline(HANDLE hContact, BOOL bHide)
 {
 	if ( hContact ) {

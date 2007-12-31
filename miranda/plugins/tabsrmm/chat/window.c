@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "../m_MathModule.h"
 
+// externs...
 extern PSLWA pSetLayeredWindowAttributes;
 extern COLORREF g_ContainerColorKey;
 extern StatusItems_t StatusItems[];
@@ -101,6 +102,11 @@ static BOOL IsStringValidLink( TCHAR* pszText )
 	return( _tcsstr(pszText, _T("://")) == NULL ? FALSE : TRUE);
 }
 
+/*
+ * called whenever a group chat tab becomes active (either by switching tabs or activating a 
+ * container window
+ */
+
 static void Chat_UpdateWindowState(HWND hwndDlg, struct MessageWindowData *dat, UINT msg)
 {
 	HWND hwndTab = GetParent(hwndDlg);
@@ -174,6 +180,11 @@ static void Chat_UpdateWindowState(HWND hwndDlg, struct MessageWindowData *dat, 
 	}	
 }
 
+
+/*
+ * initialize button bar, set all the icons and ensure proper button state
+ */
+
 static void	InitButtons(HWND hwndDlg, SESSION_INFO* si)
 {
 	BOOL isFlat = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tbflat", 0);
@@ -227,6 +238,11 @@ static int splitterEdges = FALSE;
 
 static UINT _toolbarCtrls[] = { IDC_SMILEY, IDC_CHAT_BOLD, IDC_CHAT_UNDERLINE, IDC_ITALICS, IDC_COLOR, IDC_BKGCOLOR,
 IDC_CHAT_HISTORY, IDC_SHOWNICKLIST, IDC_FILTER, IDC_CHANMGR, IDOK, IDC_CHAT_CLOSE, 0 };
+
+/*
+ * resizer callback for the group chat session window. Called from Mirandas dialog 
+ * resizing service
+ */
 
 static int RoomWndResize(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
 {
@@ -381,6 +397,11 @@ static int RoomWndResize(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
 
 	return RD_ANCHORX_LEFT|RD_ANCHORY_TOP;
 }
+
+
+/*
+ * subclassing for the message input control (a richedit text control)
+ */
 
 static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -1006,6 +1027,12 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 	return CallWindowProc(OldMessageProc, hwnd, msg, wParam, lParam);
 }
 
+
+/*
+ * subclassing for the message filter dialog (set and configure event filters for the current
+ * session
+ */
+
 static BOOL CALLBACK FilterWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
 	SESSION_INFO * si = (SESSION_INFO *)GetWindowLong(hwndDlg, GWL_USERDATA);
@@ -1269,6 +1296,7 @@ static BOOL CALLBACK FilterWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM l
 	return(FALSE);
 }
 
+
 static LRESULT CALLBACK ButtonSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	HWND hwndParent = GetParent(hwnd);
@@ -1293,6 +1321,11 @@ static LRESULT CALLBACK ButtonSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, L
 
 	return CallWindowProc(OldFilterButtonProc, hwnd, msg, wParam, lParam);
 }
+
+
+/*
+ * subclassing for the message history display (rich edit control in which the chat history appears)
+ */
 
 static LRESULT CALLBACK LogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -1351,6 +1384,12 @@ static LRESULT CALLBACK LogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 	return CallWindowProc(OldLogProc, hwnd, msg, wParam, lParam);
 }
 
+
+/*
+ * process mouse - hovering for the nickname list. fires events so the protocol can
+ * show the userinfo - tooltip.
+ */
+
 static void ProcessNickListHovering(HWND hwnd, int hoveredItem, POINT * pt, SESSION_INFO * parentdat)
 {
 	static int currentHovered=-1;
@@ -1380,7 +1419,6 @@ static void ProcessNickListHovering(HWND hwnd, int hoveredItem, POINT * pt, SESS
 				WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP,		
 				CW_USEDEFAULT, CW_USEDEFAULT,  CW_USEDEFAULT,  CW_USEDEFAULT,
 				hwnd, NULL, g_hInst,  NULL  );
-			//SetWindowPos(hwndToolTip,  HWND_TOPMOST,  0,  0,  0,  0,  SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);	  
 			bNewTip=TRUE;
 		}
 
@@ -1396,9 +1434,6 @@ static void ProcessNickListHovering(HWND hwnd, int hoveredItem, POINT * pt, SESS
 
 		ui1 = SM_GetUserFromIndex(parentdat->ptszID, parentdat->pszModule, currentHovered);
 		if(ui1) {	
-			// /GetChatToolTipText
-			// wParam = roomID parentdat->ptszID
-			// lParam = userID ui1->pszUID
 			char serviceName[256];
 			_snprintf(serviceName,SIZEOF(serviceName), "%s"MS_GC_PROTO_GETTOOLTIPTEXT, parentdat->pszModule);
 			if (ServiceExists(serviceName))
@@ -1412,6 +1447,11 @@ static void ProcessNickListHovering(HWND hwnd, int hoveredItem, POINT * pt, SESS
 			mir_free(ti.lpszText);
 	}	
 }
+
+/*
+ * subclassing for the nickname list control. It is an ownerdrawn listbox
+ */
+
 static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	HWND hwndParent = GetParent(hwnd);
@@ -1447,11 +1487,13 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 					if (rc.bottom-rc.top > items * height) {
 						rc.top = items*height;
 						FillRect(dc, &rc, hListBkgBrush);
-		}	}	}	}
+					}	
+				}	
+			}	
+		}
 		return 1;
 
     case WM_KEYDOWN:
-        //_DebugTraceW(_T("code: %d"), wParam);
 		if (wParam == 0x57 && GetKeyState(VK_CONTROL) & 0x8000) { // ctrl-w (close window)
 			PostMessage(hwndParent, WM_CLOSE, 0, 1);
 			return TRUE;
@@ -1479,6 +1521,7 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
         {
             /*
              * simple incremental search for the user (nick) - list control
+			 * typing esc or movement keys will clear the current search string
              */
         	
         	if(mwdat && mwdat->si) {
@@ -1674,34 +1717,10 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 	return CallWindowProc(OldNicklistProc, hwnd, msg, wParam, lParam);
 }
 
-static int RestoreWindowPosition(HWND hwnd, HANDLE hContact, char * szModule, char * szNamePrefix, UINT showCmd)
-{
-	WINDOWPLACEMENT wp;
-	char szSettingName[64];
-	int x,y, width, height;;
-
-	wp.length=sizeof(wp);
-	GetWindowPlacement(hwnd,&wp);
-	wsprintfA(szSettingName,"%sx",szNamePrefix);
-	x=DBGetContactSettingDword(hContact,szModule,szSettingName,-1);
-	wsprintfA(szSettingName,"%sy",szNamePrefix);
-	y=(int)DBGetContactSettingDword(hContact,szModule,szSettingName,-1);
-	wsprintfA(szSettingName,"%swidth",szNamePrefix);
-	width=DBGetContactSettingDword(hContact,szModule,szSettingName,-1);
-	wsprintfA(szSettingName,"%sheight",szNamePrefix);
-	height=DBGetContactSettingDword(hContact,szModule,szSettingName,-1);
-
-	if ( x == -1 )
-		return 0;
-
-	wp.rcNormalPosition.left=x;
-	wp.rcNormalPosition.top=y;
-	wp.rcNormalPosition.right=wp.rcNormalPosition.left+width;
-	wp.rcNormalPosition.bottom=wp.rcNormalPosition.top+height;
-	wp.showCmd = showCmd;
-	SetWindowPlacement(hwnd,&wp);
-	return 1;
-}
+/*
+ * calculate the required rectangle for a string using the given font. This is more
+ * precise than using GetTextExtentPoint...()
+ */
 
 int GetTextPixelSize( TCHAR* pszText, HFONT hFont, BOOL bWidth)
 {
@@ -1728,6 +1747,13 @@ struct FORK_ARG {
 	void *arg;
 };
 
+
+/*
+ * thread supporting functions. Needed when a large chunk of evetns must be sent to the message
+ * history display. This is done in a separate thread to avoid blocking the main thread for
+ * longer than absolutely needed.
+ */
+
 static void __cdecl forkthread_r(void *param)
 {
 	struct FORK_ARG *fa=(struct FORK_ARG*)param;
@@ -1742,7 +1768,9 @@ static void __cdecl forkthread_r(void *param)
 		callercode(arg);
 	} __finally {
 		CallService(MS_SYSTEM_THREAD_POP,0,0);
-	}	}
+	}	
+}
+
 
 static unsigned long forkthread (	void (__cdecl *threadcode)(void*),unsigned long stacksize,void *arg)
 {
@@ -1762,6 +1790,7 @@ static unsigned long forkthread (	void (__cdecl *threadcode)(void*),unsigned lon
 	return rc;
 }
 
+
 static void __cdecl phase2(void * lParam)
 {
 	SESSION_INFO* si = (SESSION_INFO*) lParam;
@@ -1769,6 +1798,12 @@ static void __cdecl phase2(void * lParam)
 	if (si && si->hWnd)
 		PostMessage(si->hWnd, GC_REDRAWLOG3, 0, 0);
 }
+
+
+/*
+ * the actual group chat session window procedure. Handles the entire chat session window
+ * which is usually a (tabbed) child of a container class window.
+ */
 
 BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
@@ -3445,3 +3480,5 @@ LABEL_SHOWWINDOW:
 
 	return(FALSE);
 }
+
+

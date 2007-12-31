@@ -19,6 +19,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+$Id:$
 */
 
 #include "commonheaders.h"
@@ -55,11 +57,11 @@ PLUGININFOEX pluginInfo = {
         "tabSRMsg",
     #endif    
 #endif
-    PLUGIN_MAKE_VERSION(2, 0, 0, 4),
+    PLUGIN_MAKE_VERSION(2, 0, 0, 5),
     "Chat module for instant messaging and group chat, offering a tabbed interface and many advanced features.",
     "The Miranda developers team",
     "silvercircle@gmail.com",
-    "© 2000-2007 Miranda Project",
+    "© 2000-2008 Miranda Project",
     "http://tabsrmm.sourceforge.net",
     UNICODE_AWARE,
     DEFMOD_SRMESSAGE,            // replace internal version (if any)

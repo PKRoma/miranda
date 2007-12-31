@@ -16,6 +16,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+log.c implements the group chat message history display using a 
+rich edit text control.
+
+$Id:$
 */
 
 #include "../commonheaders.h"
@@ -138,9 +143,11 @@ static TCHAR * _tcsrplc(TCHAR **src, const TCHAR *ptrn, const TCHAR *rplc)
 	return *src;
 }
 
-/* replace pattern `ptrn' with the string `rplc' in string `src',
-   `src' is supposed to be `n' character long (or no checking is done if n < 0).
-   This function is useful for statically allocated buffers */
+/* 
+ * replace pattern `ptrn' with the string `rplc' in string `src',
+ * `src' is supposed to be `n' character long (or no checking is done if n < 0).
+ * This function is useful for statically allocated buffers 
+ */
 static TCHAR * _tcsnrplc(TCHAR *src, size_t n, const TCHAR *ptrn, const TCHAR *rplc)
 {
 	size_t lSrc, lPtrn, lRplc;
@@ -738,7 +745,7 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 			sm.hContact = si->hContact;
 			CallService(MS_SMILEYADD_REPLACESMILEYS, 0, (LPARAM)&sm);
 		}
-        if (g_Settings.MathMod && fDoReplace) {
+	    if (g_Settings.MathMod && fDoReplace) {
             TMathRicheditInfo mathReplaceInfo;
             CHARRANGE mathNewSel;
             mathNewSel.cpMin = sel.cpMin;

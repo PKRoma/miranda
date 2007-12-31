@@ -763,5 +763,3 @@ extern "C" const char *FilterEventMarkersA(char *szText)
     lstrcpyA(szText, text.c_str());
     return szText;
 }
-
-

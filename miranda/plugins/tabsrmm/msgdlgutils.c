@@ -257,7 +257,7 @@ static void SaveAvatarToFile(struct MessageWindowData *dat, HBITMAP hbm, int isO
     for(i = 0; i < lstrlen(forbiddenCharacters); i++) {
         TCHAR *szFound = 0;
 
-        while((szFound = _tcschr(szFinalFilename, (int)forbiddenCharacters[i])) != NULL)
+        while((szFound = _tcschr(szFinalFilename, forbiddenCharacters[i])) != NULL)
             *szFound = '_';
     }
     ofn.lpstrFilter = _T("Image files\0*.bmp;*.png;*.jpg;*.gif\0\0");
@@ -308,6 +308,9 @@ void FlashTab(struct MessageWindowData *dat, HWND hwndTab, int iTabindex, BOOL *
 /*
  * draw transparent avatar image. Get around crappy image rescaling quality of the
  * AlphaBlend() API.
+ *
+ * hdcMem contains the bitmap to draw (must be premultiplied for proper per-pixel alpha
+ * rendering in AlphaBlend().
  */
 
 static void MY_AlphaBlend(HDC hdcDraw, DWORD left, DWORD top,  int width, int height, int bmWidth, int bmHeight, HDC hdcMem)
@@ -368,13 +371,10 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
         picAspect = (double)(bminfo->bmWidth / (double)bminfo->bmHeight);
     picProjectedWidth = (double)((dat->dynaSplitter + ((dat->showUIElements != 0) ? 28 : 2))) * picAspect;
 
-    if(((rc.right) - (int)picProjectedWidth) > (dat->iButtonBarNeeds) && !myGlobals.m_AlwaysFullToolbarWidth) {
+    if(((rc.right) - (int)picProjectedWidth) > (dat->iButtonBarNeeds) && !myGlobals.m_AlwaysFullToolbarWidth)
         dat->iRealAvatarHeight = dat->dynaSplitter + ((dat->showUIElements != 0) ? 31 : 6);
-        //dat->iRealAvatarHeight += (myGlobals.m_visualMessageSizeIndicator ? 2 : 0);
-    }
-    else {
+    else
         dat->iRealAvatarHeight = dat->dynaSplitter + 6;
-    }
 
     if(myGlobals.m_LimitStaticAvatarHeight > 0)
         dat->iRealAvatarHeight = min(dat->iRealAvatarHeight, myGlobals.m_LimitStaticAvatarHeight);
@@ -394,6 +394,10 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
     dat->pic.cx = (int)newWidth + 2;
 }
 
+/*
+ + returns TRUE if the contact is handled by the MetaContacts protocol
+ */
+
 int IsMetaContact(HWND hwndDlg, struct MessageWindowData *dat) 
 {
     if(dat->hContact == 0 || dat->szProto == NULL)
@@ -401,6 +405,12 @@ int IsMetaContact(HWND hwndDlg, struct MessageWindowData *dat)
     
     return (myGlobals.g_MetaContactsAvail && !strcmp(dat->szProto, myGlobals.szMetaName));
 }
+
+/*
+ * retrieve the current (active) protocol of a given metacontact. Usually, this is the
+ * "most online" protocol, unless a specific protocol is forced
+ */
+
 char *GetCurrentMetaContactProto(HWND hwndDlg, struct MessageWindowData *dat)
 {
     dat->hSubContact = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT, (WPARAM)dat->hContact, 0);
@@ -455,7 +465,7 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
         EnableMenuItem(submenu, ID_TABMENU_CLEARSAVEDTABPOSITION, (DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "tabindex", -1) != -1) ? MF_ENABLED : MF_GRAYED);
     }
     else if(menuID == MENU_LOGMENU) {
-        int iLocalTime = dat->dwFlagsEx & MWF_SHOW_USELOCALTIME ? 1 : 0; // DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "uselocaltime", 0);
+        int iLocalTime = dat->dwFlagsEx & MWF_SHOW_USELOCALTIME ? 1 : 0;
         int iRtl = (myGlobals.m_RTLDefault == 0 ? DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 0) : DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 1));
         int iLogStatus = (myGlobals.m_LogStatusChanges != 0) && (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) != 0);
 
@@ -635,7 +645,7 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
         }
     }
     else if(menuId == MENU_LOGMENU) {
-        int iLocalTime = dat->dwFlagsEx & MWF_SHOW_USELOCALTIME ? 1 : 0; // DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "uselocaltime", 0);
+        int iLocalTime = dat->dwFlagsEx & MWF_SHOW_USELOCALTIME ? 1 : 0;
         int iRtl = (myGlobals.m_RTLDefault == 0 ? DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 0) : DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 1));
         int iLogStatus = (myGlobals.m_LogStatusChanges != 0) && (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) != 0);
 
@@ -679,11 +689,9 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
                 return 1;
             case ID_MESSAGEICONS_SHOWICONS:
                 dat->dwFlags ^= MWF_LOG_SHOWICONS;
-                //dat->dwFlags = dat->dwFlags & MWF_LOG_SHOWICONS ? dat->dwFlags & ~MWF_LOG_SYMBOLS : dat->dwFlags;
                 return 1;
             case ID_MESSAGEICONS_SYMBOLSINSTEADOFICONS:
                 dat->dwFlags ^= MWF_LOG_SYMBOLS;
-                //dat->dwFlags = dat->dwFlags & MWF_LOG_SYMBOLS ? dat->dwFlags & ~MWF_LOG_SHOWICONS : dat->dwFlags;
                 return 1;
             case ID_MESSAGEICONS_USEINCOMING:
                 dat->dwFlags ^= MWF_LOG_INOUTICONS;
@@ -740,6 +748,11 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
     return 0;
 }
 
+/*
+ * update the status bar field which displays the number of characters in the input area
+ * and various indicators (caps lock, num lock, insert mode).
+ */
+
 void UpdateReadChars(HWND hwndDlg, struct MessageWindowData *dat)
 {
 
@@ -754,6 +767,9 @@ void UpdateReadChars(HWND hwndDlg, struct MessageWindowData *dat)
             len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
         else {
 #if defined(_UNICODE)
+			/*
+			 * retrieve text length in UTF8 bytes, because this is the relevant length for most protocols
+			 */
             GETTEXTLENGTHEX gtxl = {0};
             gtxl.codepage = CP_UTF8;
             gtxl.flags = GTL_DEFAULT | GTL_PRECISE | GTL_NUMBYTES;
@@ -781,6 +797,10 @@ void UpdateReadChars(HWND hwndDlg, struct MessageWindowData *dat)
     }
 }
 
+/*
+ * update all status bar fields and force a redraw of the status bar.
+ */
+
 void UpdateStatusBar(HWND hwndDlg, struct MessageWindowData *dat)
 {
     if(dat && dat->pContainer->hwndStatus && dat->pContainer->hwndActive == hwndDlg) {
@@ -791,6 +811,14 @@ void UpdateStatusBar(HWND hwndDlg, struct MessageWindowData *dat)
         SendMessage(dat->pContainer->hwndStatus, WM_USER + 101, 0, (LPARAM)dat);
     }
 }
+
+/*
+ * provide user feedback via icons on tabs. Used to indicate "send in progress" or
+ * any error state.
+ *
+ * NOT used for typing notification feedback as this is handled directly from the 
+ * MTN handler.
+ */
 
 void HandleIconFeedback(HWND hwndDlg, struct MessageWindowData *dat, HICON iIcon)
 {
@@ -1027,22 +1055,11 @@ void AdjustBottomAvatarDisplay(HWND hwndDlg, struct MessageWindowData *dat)
 		}
     }
     	
-    /*
-    if(dat->iAvatarDisplayMode != AVATARMODE_DYNAMIC)
-        dat->iRealAvatarHeight = 0;
-    */
     if(hbm) {
         dat->showPic = GetAvatarVisibility(hwndDlg, dat);
         if(dat->dynaSplitter == 0 || dat->splitterY == 0)
             LoadSplitter(hwndDlg, dat);
         dat->dynaSplitter = dat->splitterY - 34;
-        /*
-        if(dat->iAvatarDisplayMode != AVATARMODE_DYNAMIC) {
-            BITMAP bm;
-            GetObject(hbm, sizeof(bm), &bm);
-            CalcDynamicAvatarSize(hwndDlg, dat, &bm);
-        }
-        */
         DM_RecalcPictureSize(hwndDlg, dat);
         ShowWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), dat->showPic ? SW_SHOW : SW_HIDE);
         InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
@@ -1089,7 +1106,6 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL showNewPic)
 void FlashOnClist(HWND hwndDlg, struct MessageWindowData *dat, HANDLE hEvent, DBEVENTINFO *dbei)
 {
     CLISTEVENT cle;
-    //char toolTip[256];
 
     dat->dwTickLastEvent = GetTickCount();
     if((GetForegroundWindow() != dat->pContainer->hwnd || dat->pContainer->hwndActive != hwndDlg) && !(dbei->flags & DBEF_SENT) && dbei->eventType == EVENTTYPE_MESSAGE) {
@@ -1110,13 +1126,15 @@ void FlashOnClist(HWND hwndDlg, struct MessageWindowData *dat, HANDLE hEvent, DB
         cle.hDbEvent = hEvent;
         cle.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
         cle.pszService = "SRMsg/ReadMessage";
-        //_snprintf(toolTip, sizeof(toolTip), Translate("Message from %s"), dat->szNickname);
-        //cle.pszTooltip = toolTip;
         CallService(MS_CLIST_ADDEVENT, 0, (LPARAM) & cle);
         dat->dwFlagsEx |= MWF_SHOW_FLASHCLIST;
         dat->hFlashingEvent = hEvent;
     }
 }
+
+/*
+ * callback function for text streaming
+ */
 
 static DWORD CALLBACK Message_StreamCallback(DWORD dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
 {
@@ -1132,17 +1150,21 @@ static DWORD CALLBACK Message_StreamCallback(DWORD dwCookie, LPBYTE pbBuff, LONG
 	}
 	else {
 		char  *p = realloc(*ppText, dwRead + cb + 2);
-		//memcpy(p, *ppText, dwRead);
 		CopyMemory(p+dwRead, pbBuff, cb);
-		//free(*ppText);
 		*ppText = p;
 		*pcb = cb;
 		dwRead += cb;
         *(*ppText + dwRead) = '\0';
 	}
-
     return 0;
 }
+
+/*
+ * retrieve contents of the richedit control by streaming. Used to get the
+ * typed message before sending it.
+ * caller must free the returned pointer.
+ * UNICODE version returns UTF-8 encoded string.
+ */
 
 char * Message_GetFromStream(HWND hwndRtf, struct MessageWindowData* dat, DWORD dwPassedFlags)
 {
@@ -1181,11 +1203,8 @@ static void CreateColorMap(TCHAR *Text)
 	int iIndex = 1, i = 0;
     COLORREF default_color;
     
-//	static const char* lpszFmt = "/red%[^ \x5b,]/red%[^ \x5b,]/red%[^ \x5b,]";
 	static const TCHAR *lpszFmt = _T("\\red%[^ \x5b\\]\\green%[^ \x5b\\]\\blue%[^ \x5b;];");
 	TCHAR szRed[10], szGreen[10], szBlue[10];
-
-	//pszText = _tcsdup(Text);
 
 	p1 = _tcsstr(pszText, _T("\\colortbl"));
 	if(!p1)
@@ -1216,9 +1235,6 @@ static void CreateColorMap(TCHAR *Text)
 
 		p2 = _tcsstr(p1, _T("\\red"));
 	}
-
-	//free(pszText);
-
 	return ;
 }
 
@@ -1232,10 +1248,14 @@ int RTFColorToIndex(int iCol)
     return 0;
 }
 
+/*
+ * convert rich edit code to bbcode (if wanted). Otherwise, strip all RTF formatting
+ * tags and return plain text
+ */
+
 BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 {
 	TCHAR * p1;
-	//int * pIndex;
 	BOOL bJustRemovedRTF = TRUE;
 	BOOL bTextHasStarted = FALSE;
     LOGFONTA lf;
@@ -1414,30 +1434,8 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
                             InsertThis[2] = 0;
 						}
 						// convert string containing char in hex format to int.
-						// i'm sure there is a better way than this lame stuff that came out of me
-                        
                         p3 = InsertThis;
                         iLame = _tcstol(p3, &stoppedHere, 16);
-                        /*
-						while (*p3)
-						{
-							if(*p3 == (TCHAR)'a')
-								iLame += 10 * (int)pow(16, _tcslen(p3) -1);
-							else if(*p3 == (TCHAR)'b')
-								iLame += 11 * (int)pow(16, _tcslen(p3) -1);
-							else if(*p3 == (TCHAR)'c')
-								iLame += 12 * (int)pow(16, _tcslen(p3) -1);
-							else if(*p3 == (TCHAR)'d')
-								iLame += 13 * (int)pow(16, _tcslen(p3) -1);
-							else if(*p3 == (TCHAR)'e')
-								iLame += 14 * (int)pow(16, _tcslen(p3) -1);
-							else if(*p3 == (TCHAR)'f')
-								iLame += 15 * (int)pow(16, _tcslen(p3) -1);
-							else
-								iLame += (*p3 - 48) * (int)pow(16, _tcslen(p3) -1);
-							p3++;
-						}
-                        */
 						_sntprintf(InsertThis, safe_sizeof(InsertThis), _T("%c"), (TCHAR)iLame);
                         
 					}
@@ -2148,26 +2146,6 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
     if(dat->dwFlags & MWF_INITMODE)
         return 0;
 
-    /*if(dis->CtlType == ODT_BUTTON && dis->CtlID == IDC_TOGGLESIDEBAR) {
-        HICON hIcon;
-        DWORD bStyle = 0;
-		if(dat->pContainer->bSkinned)
-			SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &dis->rcItem, dis->hDC);
-		else {
-			if(dat->pContainer->dwFlags & CNT_SIDEBAR)
-				bStyle = DFCS_PUSHED;
-			else
-				bStyle = DFCS_FLAT;
-			DrawFrameControl(dis->hDC, &dis->rcItem, DFC_BUTTON, DFCS_BUTTONPUSH | bStyle);
-		}
-        hIcon = myGlobals.g_buttonBarIcons[25];
-        DrawState(dis->hDC, NULL, NULL, (LPARAM) hIcon, 0,
-                  (dis->rcItem.right + dis->rcItem.left - myGlobals.m_smcxicon) / 2,
-                  (dis->rcItem.bottom + dis->rcItem.top - myGlobals.m_smcyicon) / 2,
-                  myGlobals.m_smcxicon, myGlobals.m_smcyicon,
-                  DST_ICON | DSS_NORMAL);
-        return TRUE;
-    } else */
 	if (dis->CtlType == ODT_MENU && dis->hwndItem == (HWND)GetSubMenu(myGlobals.g_hMenuContext, 7)) {
         RECT rc = { 0 };
         HBRUSH old, col;
@@ -2660,7 +2638,6 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
                     base_hour = base_hour > 11 ? base_hour - 12 : base_hour;
                     symbolic_time[0] = (char)(0xB7 + base_hour);
                     symbolic_time[1] = 0;
-                    //DrawIconEx(dis->hDC, dis->rcItem.left, (dis->rcItem.bottom + dis->rcItem.top - myGlobals.m_smcyicon) / 2, myGlobals.g_IconClock, myGlobals.m_smcxicon, myGlobals.m_smcyicon, 0, 0, DI_NORMAL | DI_COMPAT);
                     DrawTextA(dis->hDC, symbolic_time, 1, &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
                     SelectObject(dis->hDC, oldFont);
                     dis->rcItem.left += 16;
@@ -3197,7 +3174,6 @@ HICON MY_GetContactIcon(struct MessageWindowData *dat)
     return CopyIcon(LoadSkinnedProtoIcon(dat->szProto, dat->wStatus));
 }
 
-#ifdef __MATHMOD_SUPPORT
 void MTH_updatePreview(HWND hwndDlg, struct MessageWindowData *dat)
 {	
 	TMathWindowInfo mathWndInfo;
@@ -3231,6 +3207,3 @@ void MTH_updateMathWindow(HWND hwndDlg, struct MessageWindowData *dat)
     GetWindowPlacement(dat->pContainer->hwnd, &cWinPlace);
     return;
 }
-#endif
-
-

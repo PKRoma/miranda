@@ -16,12 +16,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+$Id:$
+
 */
 
 #include "../commonheaders.h"
 
 //globals
-
 HANDLE      g_hWindowList;
 HMENU       g_hMenu = NULL;
 
@@ -32,12 +34,14 @@ HBRUSH      hListBkgBrush = NULL;
 
 struct GlobalLogSettings_t g_Settings;
 
-//HIMAGELIST		hIconsList = NULL;
-
 char *			pszActiveWndID = 0;
 char *			pszActiveWndModule = 0;
 int             g_chat_integration_enabled = 0;
 int             g_chat_fully_initialized = 0;
+
+/*
+ * load the group chat module
+ */
 
 int Chat_Load(PLUGINLINK *link)
 {
@@ -56,6 +60,10 @@ int Chat_Load(PLUGINLINK *link)
 	TabsInit();
 	return 0;
 }
+
+/*
+ * unload the module. final cleanup
+ */
 
 int Chat_Unload(void)
 {
@@ -85,26 +93,26 @@ int Chat_Unload(void)
 void LoadLogIcons(void)
 {
 	ZeroMemory(hIcons, sizeof(HICON) * (ICON_STATUS5 - ICON_ACTION));
-	hIcons[ICON_ACTION] = LoadIconEx(IDI_ACTION, "log_action", 16, 16); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_ACTION),IMAGE_ICON,0,0,0);
-	hIcons[ICON_ADDSTATUS] = LoadIconEx(IDI_ADDSTATUS, "log_addstatus", 16, 16); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_ADDSTATUS),IMAGE_ICON,0,0,0);
-	hIcons[ICON_HIGHLIGHT] = LoadIconEx(IDI_HIGHLIGHT, "log_highlight", 16, 16); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_HIGHLIGHT),IMAGE_ICON,0,0,0);
-	hIcons[ICON_INFO] = LoadIconEx(IDI_INFO, "log_info", 16, 16); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_INFO),IMAGE_ICON,0,0,0);
-	hIcons[ICON_JOIN] = LoadIconEx(IDI_JOIN, "log_join", 16, 16); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_JOIN),IMAGE_ICON,0,0,0);
-	hIcons[ICON_KICK] = LoadIconEx(IDI_KICK, "log_kick", 16, 16); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_KICK),IMAGE_ICON,0,0,0);
-	hIcons[ICON_MESSAGE] = LoadIconEx(IDI_MESSAGE, "log_message_in", 16, 16); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_MESSAGE),IMAGE_ICON,0,0,0);
-	hIcons[ICON_MESSAGEOUT] = LoadIconEx(IDI_MESSAGEOUT, "log_message_out", 16, 16); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_MESSAGEOUT),IMAGE_ICON,0,0,0);
-	hIcons[ICON_NICK] = LoadIconEx(IDI_NICK, "log_nick", 16, 16); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_NICK),IMAGE_ICON,0,0,0);
-	hIcons[ICON_NOTICE] = LoadIconEx(IDI_NOTICE, "log_notice", 16, 16); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_NOTICE),IMAGE_ICON,0,0,0);
-	hIcons[ICON_PART] = LoadIconEx(IDI_PART, "log_part", 16, 16); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_PART),IMAGE_ICON,0,0,0);
-	hIcons[ICON_QUIT] = LoadIconEx(IDI_QUIT, "log_quit", 16, 16); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_QUIT),IMAGE_ICON,0,0,0);
-	hIcons[ICON_REMSTATUS] = LoadIconEx(IDI_REMSTATUS, "log_removestatus", 16, 16); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_REMSTATUS),IMAGE_ICON,0,0,0);
-	hIcons[ICON_TOPIC] = LoadIconEx(IDI_TOPIC, "log_topic", 16, 16); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_TOPIC),IMAGE_ICON,0,0,0);
-	hIcons[ICON_STATUS1] = LoadIconEx(IDI_STATUS1, "status1", 16, 16); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_STATUS1),IMAGE_ICON,0,0,0);
-	hIcons[ICON_STATUS2] = LoadIconEx(IDI_STATUS2, "status2", 16, 16); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_STATUS2),IMAGE_ICON,0,0,0);
-	hIcons[ICON_STATUS3] = LoadIconEx(IDI_STATUS3, "status3", 16, 16); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_STATUS3),IMAGE_ICON,0,0,0);
-	hIcons[ICON_STATUS4] = LoadIconEx(IDI_STATUS4, "status4", 16, 16); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_STATUS4),IMAGE_ICON,0,0,0);
-	hIcons[ICON_STATUS0] = LoadIconEx(IDI_STATUS0, "status0", 16, 16); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_STATUS0),IMAGE_ICON,0,0,0);
-	hIcons[ICON_STATUS5] = LoadIconEx(IDI_STATUS5, "status5", 16, 16); //LoadImage(g_hInst,MAKEINTRESOURCE(IDI_STATUS5),IMAGE_ICON,0,0,0);
+	hIcons[ICON_ACTION] = LoadIconEx(IDI_ACTION, "log_action", 16, 16);
+	hIcons[ICON_ADDSTATUS] = LoadIconEx(IDI_ADDSTATUS, "log_addstatus", 16, 16);
+	hIcons[ICON_HIGHLIGHT] = LoadIconEx(IDI_HIGHLIGHT, "log_highlight", 16, 16);
+	hIcons[ICON_INFO] = LoadIconEx(IDI_INFO, "log_info", 16, 16);
+	hIcons[ICON_JOIN] = LoadIconEx(IDI_JOIN, "log_join", 16, 16);
+	hIcons[ICON_KICK] = LoadIconEx(IDI_KICK, "log_kick", 16, 16);
+	hIcons[ICON_MESSAGE] = LoadIconEx(IDI_MESSAGE, "log_message_in", 16, 16);
+	hIcons[ICON_MESSAGEOUT] = LoadIconEx(IDI_MESSAGEOUT, "log_message_out", 16, 16);
+	hIcons[ICON_NICK] = LoadIconEx(IDI_NICK, "log_nick", 16, 16);
+	hIcons[ICON_NOTICE] = LoadIconEx(IDI_NOTICE, "log_notice", 16, 16);
+	hIcons[ICON_PART] = LoadIconEx(IDI_PART, "log_part", 16, 16);
+	hIcons[ICON_QUIT] = LoadIconEx(IDI_QUIT, "log_quit", 16, 16);
+	hIcons[ICON_REMSTATUS] = LoadIconEx(IDI_REMSTATUS, "log_removestatus", 16, 16);
+	hIcons[ICON_TOPIC] = LoadIconEx(IDI_TOPIC, "log_topic", 16, 16);
+	hIcons[ICON_STATUS1] = LoadIconEx(IDI_STATUS1, "status1", 16, 16);
+	hIcons[ICON_STATUS2] = LoadIconEx(IDI_STATUS2, "status2", 16, 16);
+	hIcons[ICON_STATUS3] = LoadIconEx(IDI_STATUS3, "status3", 16, 16);
+	hIcons[ICON_STATUS4] = LoadIconEx(IDI_STATUS4, "status4", 16, 16);
+	hIcons[ICON_STATUS0] = LoadIconEx(IDI_STATUS0, "status0", 16, 16);
+	hIcons[ICON_STATUS5] = LoadIconEx(IDI_STATUS5, "status5", 16, 16);
 
 	return;
 }

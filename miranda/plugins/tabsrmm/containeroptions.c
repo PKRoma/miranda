@@ -152,7 +152,6 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				SetWindowText(hwndDlg, TranslateT("Container options"));
 
                 EnableWindow(GetDlgItem(hwndDlg, IDC_O_HIDETITLE), g_framelessSkinmode ? FALSE : TRUE);
-                //ShowWindow(hwndDlg, SW_SHOWNORMAL);
                 CheckDlgButton(hwndDlg, IDC_CNTPRIVATE, !(pContainer->dwPrivateFlags & CNT_GLOBALSETTINGS));
                 EnableWindow(GetDlgItem(hwndDlg, IDC_TITLEFORMAT), IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATETITLE));
 
@@ -451,4 +450,3 @@ do_apply:
     }
     return FALSE;
 }
-

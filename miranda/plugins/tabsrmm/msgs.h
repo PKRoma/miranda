@@ -550,7 +550,6 @@ typedef struct _globals {
     int         m_TabAppearance;
     int         m_VSApiEnabled;
     struct      myTabCtrl tabConfig;
-    //BYTE        m_ExtraRedraws;
     TCHAR       szDataPath[MAX_PATH + 1];
     int         m_panelHeight;
     TCHAR       szDefaultTitleFormat[256];
@@ -640,11 +639,11 @@ struct NewMessageWindowLParam {
 	HANDLE  hContact;
 	int     isWchar;
 	const   char *szInitialText;
-	int     iTabID;				// XXX mod: tab support
-	int     iTabImage;			// XXX mod tabs...
+	int     iTabID;
+	int     iTabImage;
     int     iActivate;
     TCITEM  item;
-	struct  ContainerWindowData *pContainer;		// parent container description
+	struct  ContainerWindowData *pContainer;
     BOOL    bWantPopup;
     HANDLE  hdbEvent;
 };
@@ -696,12 +695,6 @@ struct NewMessageWindowLParam {
         MWF_LOG_SHOWICONS | MWF_LOG_GRID | MWF_LOG_INDIVIDUALBKG | MWF_LOG_GROUPMODE)
         
 #define MWF_LOG_DEFAULT (MWF_LOG_SHOWTIME | MWF_LOG_NORMALTEMPLATES | MWF_LOG_SHOWDATES | MWF_LOG_SYMBOLS | MWF_LOG_INDIVIDUALBKG | MWF_LOG_GRID | MWF_LOG_GROUPMODE)
-
-/*
-struct ProtocolData {
-    char szName[30];
-    int  iFirstIconID;
-};*/
 
 #define EM_SUBCLASSED             (WM_USER+0x101)
 #define EM_SEARCHSCROLLER         (WM_USER+0x103)

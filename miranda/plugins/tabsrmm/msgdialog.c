@@ -3519,19 +3519,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             break;
         }
 
-            /*
-        case WM_LBUTTONDOWN:
-            dat->dwFlags |= MWF_MOUSEDOWN;
-            GetCursorPos(&dat->ptLast);
-            SetCapture(hwndDlg);
-            SendMessage(dat->hwndTip, TTM_TRACKACTIVATE, FALSE, 0);
-            break;
-        case WM_LBUTTONUP:
-            dat->dwFlags &= ~MWF_MOUSEDOWN;
-            ReleaseCapture();
-            break;
-            */
-
         case WM_RBUTTONUP: {
             POINT pt;
             int iSelection;
@@ -3616,14 +3603,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                             if(dat->hClientIcon && pt.x >= rc.right - 20)
                                 SetTimer(hwndDlg, TIMERID_AWAYMSG + 2, 500, 0);
                             else
-                                SetTimer(hwndDlg, TIMERID_AWAYMSG, 500, 0);
+                                SetTimer(hwndDlg, TIMERID_AWAYMSG, 1000, 0);
                             dat->dwFlagsEx |= MWF_SHOW_AWAYMSGTIMER;
                         }
                         break;
                     }
                     else if(PtInRect(&rcNick, pt)) {
                         if(!(dat->dwFlagsEx & MWF_SHOW_AWAYMSGTIMER)) {
-                            SetTimer(hwndDlg, TIMERID_AWAYMSG + 1, 500, 0);
+                            SetTimer(hwndDlg, TIMERID_AWAYMSG + 1, 1000, 0);
                             dat->dwFlagsEx |= MWF_SHOW_AWAYMSGTIMER;
                         }
                         break;
@@ -5766,8 +5753,7 @@ static DWORD CALLBACK StreamOut(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG
     HANDLE hFile;
 
     char *szFilename = (char *)dwCookie;
-    if(( hFile = CreateFileA(szFilename, GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL)) != INVALID_HANDLE_VALUE )
-    {
+    if(( hFile = CreateFileA(szFilename, GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL)) != INVALID_HANDLE_VALUE ) {
         SetFilePointer(hFile, 0, NULL, FILE_END);
         WriteFile(hFile, pbBuff, cb, (DWORD *)pcb, NULL);
         *pcb = cb;
