@@ -147,12 +147,7 @@ static int MsnAuthAllow(WPARAM wParam,LPARAM lParam)
 	char* lastName = firstName + strlen( firstName ) + 1;
 	char* email = lastName + strlen( lastName ) + 1;
 
-	char urlNick[388],urlEmail[130];
-
-	UrlEncode( UTF8( nick ), urlNick, sizeof( urlNick ));
-	UrlEncode( email, urlEmail, sizeof( urlEmail ));
-
-	HANDLE hContact = MSN_HContactFromEmail(email, urlNick, true, 0);
+	HANDLE hContact = MSN_HContactFromEmail(email, email, true, 0);
 	int netId = Lists_GetNetId(email);
 
 	MSN_AddUser( hContact, email, netId, LIST_PL + LIST_REMOVE );
@@ -196,15 +191,16 @@ static int MsnAuthDeny(WPARAM wParam,LPARAM lParam)
 	char* lastName = firstName + strlen( firstName ) + 1;
 	char* email = lastName + strlen( lastName ) + 1;
 
-	char urlNick[388],urlEmail[130];
-
-	UrlEncode( UTF8(nick), urlNick, sizeof( urlNick ));
-	UrlEncode( email, urlEmail, sizeof( urlEmail ));
-
-	HANDLE hContact = MSN_HContactFromEmail(email, urlNick, true, 0);
+	HANDLE hContact = MSN_HContactFromEmail(email, email, true, 0);
 	int netId = Lists_GetNetId(email);
-	MSN_AddUser( NULL, urlEmail, netId, LIST_BL );
+
 	MSN_AddUser( hContact, email, netId, LIST_PL + LIST_REMOVE );
+	MSN_AddUser( hContact, email, netId, LIST_BL );
+	MSN_AddUser( hContact, email, netId, LIST_RL );
+
+	if (DBGetContactSettingByte( hContact, "CList", "NotOnList", 0 ) == 0)
+		MSN_AddUser( hContact, email, netId, LIST_FL );
+
 	MSN_SetContactDb(hContact, Lists_GetMask(email));
 	return 0;
 }
