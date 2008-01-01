@@ -869,6 +869,10 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 								TreeView_SetItem(((LPNMHDR) lParam)->hwndFrom, &tvi);
 								MarkChanges(2, hwndDlg);
 							}
+					} else if (((LPNMHDR) lParam)->code == TVN_KEYDOWN) {
+						if (((LPNMTVKEYDOWN) lParam)->wVKey == VK_SPACE) {
+							MarkChanges(2, hwndDlg);
+						}
 					}
 				    break;
 				case 0:

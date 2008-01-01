@@ -23,6 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <shlobj.h>
 #include <shlwapi.h>
 
+#define UM_CHECKSTATECHANGE (WM_USER+100)
+
 extern HANDLE			g_hInst;
 extern HBRUSH 			hListBkgBrush;
 extern HBRUSH 			hListSelectedBkgBrush;
@@ -686,6 +688,33 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 		if(lParam != (LPARAM)NULL)
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 		break;
+	case UM_CHECKSTATECHANGE:
+		{
+			TVITEM tvi = {0};
+			tvi.mask=TVIF_HANDLE|TVIF_STATE;
+			tvi.hItem=(HTREEITEM) lParam;
+			TreeView_GetItem((HWND)wParam,&tvi);
+			if(tvi.hItem == branch1[0].hItem && INDEXTOSTATEIMAGEMASK(1)==tvi.state)
+				TreeView_SetItemState((HWND)wParam, branch1[1].hItem, INDEXTOSTATEIMAGEMASK(1),  TVIS_STATEIMAGEMASK);
+			if(tvi.hItem == branch1[1].hItem && INDEXTOSTATEIMAGEMASK(1)==tvi.state)
+				TreeView_SetItemState((HWND)wParam, branch1[0].hItem, INDEXTOSTATEIMAGEMASK(1),  TVIS_STATEIMAGEMASK);
+			if (tvi.hItem == hListHeading1)
+				CheckBranches(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading1);
+			else if (tvi.hItem == hListHeading2)
+				CheckBranches(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading2);
+			else if (tvi.hItem == hListHeading3)
+				CheckBranches(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading3);
+			else if (tvi.hItem == hListHeading4)
+				CheckBranches(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading4);
+			else if (tvi.hItem == hListHeading5)
+				CheckBranches(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading5);
+			else if (tvi.hItem == hListHeading6)
+				CheckBranches(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading6);
+			else
+				PostMessage(hwndDlg, OPT_FIXHEADINGS, 0, 0);
+			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+			break;
+		}
 
 	case WM_NOTIFY:
 	{
@@ -698,36 +727,16 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 				hti.pt.y=(short)HIWORD(GetMessagePos());
 				ScreenToClient(((LPNMHDR)lParam)->hwndFrom,&hti.pt);
 				if(TreeView_HitTest(((LPNMHDR)lParam)->hwndFrom,&hti))
-					if(hti.flags&TVHT_ONITEMSTATEICON)
-					{
-						TVITEM tvi = {0};
-						tvi.mask=TVIF_HANDLE|TVIF_STATE;
-						tvi.hItem=hti.hItem;
-						TreeView_GetItem(((LPNMHDR)lParam)->hwndFrom,&tvi);
-						if(tvi.hItem == branch1[0].hItem && INDEXTOSTATEIMAGEMASK(1)==tvi.state)
-							TreeView_SetItemState(((LPNMHDR)lParam)->hwndFrom, branch1[1].hItem, INDEXTOSTATEIMAGEMASK(1),  TVIS_STATEIMAGEMASK);
-						if(tvi.hItem == branch1[1].hItem && INDEXTOSTATEIMAGEMASK(1)==tvi.state)
-							TreeView_SetItemState(((LPNMHDR)lParam)->hwndFrom, branch1[0].hItem, INDEXTOSTATEIMAGEMASK(1),  TVIS_STATEIMAGEMASK);
-
-						if (tvi.hItem == hListHeading1)
-							CheckBranches(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading1);
-						else if (tvi.hItem == hListHeading2)
-							CheckBranches(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading2);
-						else if (tvi.hItem == hListHeading3)
-							CheckBranches(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading3);
-						else if (tvi.hItem == hListHeading4)
-							CheckBranches(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading4);
-						else if (tvi.hItem == hListHeading5)
-							CheckBranches(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading5);
-						else if (tvi.hItem == hListHeading6)
-							CheckBranches(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading6);
-						else
-							PostMessage(hwndDlg, OPT_FIXHEADINGS, 0, 0);
-						SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+					if(hti.flags&TVHT_ONITEMSTATEICON) {
+						SendMessage(hwndDlg, UM_CHECKSTATECHANGE, (WPARAM)((LPNMHDR)lParam)->hwndFrom, (LPARAM)hti.hItem);
 					}
 
+			} else if (((LPNMHDR) lParam)->code == TVN_KEYDOWN) {
+				if (((LPNMTVKEYDOWN) lParam)->wVKey == VK_SPACE) {
+					SendMessage(hwndDlg, UM_CHECKSTATECHANGE, (WPARAM)((LPNMHDR)lParam)->hwndFrom,
+						(LPARAM)TreeView_GetSelection(((LPNMHDR)lParam)->hwndFrom));
+				}
 			}
-
 			break;
 
 			case 0:

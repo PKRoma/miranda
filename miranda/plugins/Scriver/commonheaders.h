@@ -108,5 +108,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define	CFM_WEIGHT			0x00400000
 #endif
 
+#ifndef _MSC_VER
+typedef struct tagTVKEYDOWN {
+    NMHDR hdr;
+    WORD wVKey;
+    UINT flags;
+} NMTVKEYDOWN, FAR *LPNMTVKEYDOWN;
+#endif
+
 extern HWND SM_FindWindowByContact(HANDLE hContact);
 #endif
