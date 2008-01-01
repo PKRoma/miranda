@@ -37,6 +37,8 @@ HANDLE hIcoLib_AddNewIcon, hIcoLib_RemoveIcon, hIcoLib_GetIcon, hIcoLib_GetIcon2
 static HIMAGELIST hCacheIconList;
 static int iconEventActive = 0;
 
+static BOOL bNeedRebuild = FALSE;
+
 struct IcoLibOptsData {
 	HWND hwndIndex;
 };
@@ -187,6 +189,7 @@ static SectionItem* IcoLib_AddSection(TCHAR *sectionName, BOOL create_new)
 		newItem->name = mir_tstrdup( sectionName );
 		newItem->flags = 0;
 		List_Insert(( SortedList* )&sectionList, newItem, indx );
+		bNeedRebuild = TRUE;
 		return newItem;
 	}
 
@@ -864,14 +867,14 @@ BOOL CALLBACK DlgProcIconImport(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 	static HWND hwndParent,hwndDragOver;
 	static int dragging;
 	static int dragItem,dropHiLite;
-
-	HWND hPreview = GetDlgItem(hwndDlg, IDC_PREVIEW);
+	static HWND hPreview = NULL;
 
 	switch (msg) {
 	case WM_INITDIALOG:
-		hwndParent = (HWND)lParam;
-		dragging = dragItem = 0;
 		TranslateDialogDefault(hwndDlg);
+		hwndParent = (HWND)lParam;
+		hPreview = GetDlgItem(hwndDlg, IDC_PREVIEW);
+		dragging = dragItem = 0;
 		ListView_SetImageList(hPreview, ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,0,100), LVSIL_NORMAL);
 		ListView_SetIconSpacing(hPreview, 56, 67);
 		{  
@@ -1136,13 +1139,13 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 {
 	struct IcoLibOptsData *dat;
 	static HTREEITEM prevItem = 0;
-	HWND hPreview = GetDlgItem(hwndDlg, IDC_PREVIEW);
+	static HWND hPreview = NULL;
 
 	dat = (struct IcoLibOptsData*)GetWindowLong(hwndDlg, GWL_USERDATA);
 	switch (msg) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
-
+		hPreview = GetDlgItem(hwndDlg, IDC_PREVIEW);
 		dat = (struct IcoLibOptsData*)mir_alloc(sizeof(struct IcoLibOptsData));
 		dat->hwndIndex = NULL;
 		SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)dat);
@@ -1157,6 +1160,7 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				iconList.items[indx]->temp_icon = NULL;
 				iconList.items[indx]->temp_reset = FALSE;
 			}
+			bNeedRebuild = FALSE;
 		}
 		LeaveCriticalSection(&csIconList);
 		//
@@ -1444,6 +1448,15 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			}	}
 			break;
 
+		case IDC_PREVIEW:
+			if ( bNeedRebuild )	{
+				EnterCriticalSection(&csIconList);
+				bNeedRebuild = FALSE;
+				LeaveCriticalSection(&csIconList);
+				SendMessage(hwndDlg, DM_REBUILD_CTREE, 0, 0);
+			}
+			break;
+
 		case IDC_CATEGORYLIST:
 			switch(((NMHDR*)lParam)->code) {
 			case TVN_SELCHANGEDA: // !!!! This needs to be here - both !!
@@ -1452,9 +1465,10 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					NMTREEVIEW *pnmtv = (NMTREEVIEW*)lParam;
 					TVITEM tvi = pnmtv->itemNew;
 					TreeItem *treeItem = (TreeItem *)tvi.lParam;
-					SendMessage(hwndDlg, DM_REBUILDICONSPREVIEW, 0, ( LPARAM )(
-					    (SECTIONPARAM_FLAGS(treeItem->value)&SECTIONPARAM_HAVEPAGE)?
-						sectionList.items[ SECTIONPARAM_INDEX(treeItem->value) ] : NULL ) );
+					if ( treeItem )
+						SendMessage(hwndDlg, DM_REBUILDICONSPREVIEW, 0, ( LPARAM )(
+							(SECTIONPARAM_FLAGS(treeItem->value)&SECTIONPARAM_HAVEPAGE)?
+							sectionList.items[ SECTIONPARAM_INDEX(treeItem->value) ] : NULL ) );
 					break;
 				}
 			case TVN_DELETEITEMA: // no idea why both TVN_SELCHANGEDA/W should be there but let's keep this both too...
