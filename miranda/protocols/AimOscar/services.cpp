@@ -916,13 +916,13 @@ void CreateServices()
     mi.icolibItem = GetIconHandle("aim");
     mi.pszName = LPGEN( "Manage Account" );
 	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
-
+/*
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/EditProfile");
 	conn.services[conn.services_size++]=CreateServiceFunction(service_name,EditProfile);
     mi.icolibItem = GetIconHandle("aim");
     mi.pszName = LPGEN( "Edit Profile" );
 	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
-
+*/
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/CheckMail");
 	conn.services[conn.services_size++]=CreateServiceFunction(service_name,CheckMail);
     mi.icolibItem = GetIconHandle("mail");
