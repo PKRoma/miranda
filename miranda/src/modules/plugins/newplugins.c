@@ -180,20 +180,22 @@ static char* expiredModulesToSkip[] = { "scriver.dll", "nconvers.dll", "tabsrmm.
 
 static int checkPI( BASIC_PLUGIN_INFO* bpi, PLUGININFOEX* pi )
 {
+	int bHasValidInfo = FALSE;
+
 	if ( pi == NULL )
 		return FALSE;
 
 	if ( bpi->InfoEx ) {
-		if ( pi->cbSize != sizeof(PLUGININFOEX))
-			return FALSE;
-		
-		if ( !validInterfaceList(bpi->Interfaces) || isPluginBanned( pi->uuid ))
-			return FALSE;
+		if ( pi->cbSize == sizeof(PLUGININFOEX))
+			if ( !validInterfaceList(bpi->Interfaces) || isPluginBanned( pi->uuid ))
+				return FALSE;
+
+		bHasValidInfo = TRUE;
 	}
-	else {
+	
+	if ( !bHasValidInfo )
 		if ( bpi->Info && pi->cbSize != sizeof(PLUGININFO))
 			return FALSE;
-	}
 
 	if ( pi->shortName == NULL || pi->description == NULL || pi->author == NULL ||
 		  pi->authorEmail == NULL || pi->copyright == NULL || pi->homepage == NULL )
