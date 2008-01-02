@@ -34,9 +34,6 @@ struct
 }
 static protos;
 
-void InitContactDir(void);
-void UninitContactDir(void);
-
 static int Proto_BroadcastAck(WPARAM wParam,LPARAM lParam)
 {
 	return NotifyEventHooks(hAckEvent,wParam,lParam);
@@ -188,8 +185,6 @@ void UnloadProtocolsModule()
 		}
 		List_Destroy(( SortedList* )&protos );
 	}
-
-	UninitContactDir();
 }
 
 int LoadProtocolsModule(void)
@@ -212,7 +207,5 @@ int LoadProtocolsModule(void)
 
 	CreateServiceFunction( MS_PROTO_RECVFILE,         Proto_RecvFile         );
 	CreateServiceFunction( MS_PROTO_RECVMSG,          Proto_RecvMessage      );
-
-	InitContactDir();
 	return 0;
 }

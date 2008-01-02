@@ -208,8 +208,6 @@ CLEAN :
 	-@erase "$(INTDIR)\protocolorder.sbr"
 	-@erase "$(INTDIR)\protocols.obj"
 	-@erase "$(INTDIR)\protocols.sbr"
-	-@erase "$(INTDIR)\protodir.obj"
-	-@erase "$(INTDIR)\protodir.sbr"
 	-@erase "$(INTDIR)\resizer.obj"
 	-@erase "$(INTDIR)\resizer.sbr"
 	-@erase "$(INTDIR)\searchresults.obj"
@@ -303,7 +301,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\newplugins.sbr" \
 	"$(INTDIR)\protochains.sbr" \
 	"$(INTDIR)\protocols.sbr" \
-	"$(INTDIR)\protodir.sbr" \
 	"$(INTDIR)\hotkeys.sbr" \
 	"$(INTDIR)\skin.sbr" \
 	"$(INTDIR)\skinicons.sbr" \
@@ -414,7 +411,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\newplugins.obj" \
 	"$(INTDIR)\protochains.obj" \
 	"$(INTDIR)\protocols.obj" \
-	"$(INTDIR)\protodir.obj" \
 	"$(INTDIR)\hotkeys.obj" \
 	"$(INTDIR)\skin.obj" \
 	"$(INTDIR)\skinicons.obj" \
@@ -662,8 +658,6 @@ CLEAN :
 	-@erase "$(INTDIR)\protocolorder.sbr"
 	-@erase "$(INTDIR)\protocols.obj"
 	-@erase "$(INTDIR)\protocols.sbr"
-	-@erase "$(INTDIR)\protodir.obj"
-	-@erase "$(INTDIR)\protodir.sbr"
 	-@erase "$(INTDIR)\resizer.obj"
 	-@erase "$(INTDIR)\resizer.sbr"
 	-@erase "$(INTDIR)\searchresults.obj"
@@ -758,7 +752,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\newplugins.sbr" \
 	"$(INTDIR)\protochains.sbr" \
 	"$(INTDIR)\protocols.sbr" \
-	"$(INTDIR)\protodir.sbr" \
 	"$(INTDIR)\hotkeys.sbr" \
 	"$(INTDIR)\skin.sbr" \
 	"$(INTDIR)\skinicons.sbr" \
@@ -869,7 +862,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\newplugins.obj" \
 	"$(INTDIR)\protochains.obj" \
 	"$(INTDIR)\protocols.obj" \
-	"$(INTDIR)\protodir.obj" \
 	"$(INTDIR)\hotkeys.obj" \
 	"$(INTDIR)\skin.obj" \
 	"$(INTDIR)\skinicons.obj" \
@@ -1032,7 +1024,6 @@ CLEAN :
 	-@erase "$(INTDIR)\protochains.obj"
 	-@erase "$(INTDIR)\protocolorder.obj"
 	-@erase "$(INTDIR)\protocols.obj"
-	-@erase "$(INTDIR)\protodir.obj"
 	-@erase "$(INTDIR)\resizer.obj"
 	-@erase "$(INTDIR)\searchresults.obj"
 	-@erase "$(INTDIR)\sendmsg.obj"
@@ -1110,7 +1101,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\newplugins.obj" \
 	"$(INTDIR)\protochains.obj" \
 	"$(INTDIR)\protocols.obj" \
-	"$(INTDIR)\protodir.obj" \
 	"$(INTDIR)\hotkeys.obj" \
 	"$(INTDIR)\skin.obj" \
 	"$(INTDIR)\skinicons.obj" \
@@ -1358,8 +1348,6 @@ CLEAN :
 	-@erase "$(INTDIR)\protocolorder.sbr"
 	-@erase "$(INTDIR)\protocols.obj"
 	-@erase "$(INTDIR)\protocols.sbr"
-	-@erase "$(INTDIR)\protodir.obj"
-	-@erase "$(INTDIR)\protodir.sbr"
 	-@erase "$(INTDIR)\resizer.obj"
 	-@erase "$(INTDIR)\resizer.sbr"
 	-@erase "$(INTDIR)\searchresults.obj"
@@ -1454,7 +1442,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\newplugins.sbr" \
 	"$(INTDIR)\protochains.sbr" \
 	"$(INTDIR)\protocols.sbr" \
-	"$(INTDIR)\protodir.sbr" \
 	"$(INTDIR)\hotkeys.sbr" \
 	"$(INTDIR)\skin.sbr" \
 	"$(INTDIR)\skinicons.sbr" \
@@ -1565,7 +1552,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\newplugins.obj" \
 	"$(INTDIR)\protochains.obj" \
 	"$(INTDIR)\protocols.obj" \
-	"$(INTDIR)\protodir.obj" \
 	"$(INTDIR)\hotkeys.obj" \
 	"$(INTDIR)\skin.obj" \
 	"$(INTDIR)\skinicons.obj" \
@@ -2950,38 +2936,6 @@ SOURCE=.\modules\protocols\protocols.c
 
 
 "$(INTDIR)\protocols.obj"	"$(INTDIR)\protocols.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF
-
-SOURCE=.\modules\protocols\protodir.c
-
-!IF  "$(CFG)" == "miranda32 - Win32 Release"
-
-
-"$(INTDIR)\protodir.obj"	"$(INTDIR)\protodir.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
-
-
-"$(INTDIR)\protodir.obj"	"$(INTDIR)\protodir.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
-
-
-"$(INTDIR)\protodir.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
-
-
-"$(INTDIR)\protodir.obj"	"$(INTDIR)\protodir.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
