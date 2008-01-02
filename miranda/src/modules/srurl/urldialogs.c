@@ -255,7 +255,7 @@ static HWND hwndDde;
 static HGLOBAL hGlobalDdeData;
 static LRESULT DdeMessage(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lParam)
 {
-	ATOM hSzItem;
+	UINT hSzItem;
 
 	switch(msg) {
 	case WM_DDE_ACK:
@@ -264,19 +264,18 @@ static LRESULT DdeMessage(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lParam)
 		break;
 
 	case WM_DDE_DATA:
-		UnpackDDElParam(msg,lParam,(PUINT)&hGlobalDdeData,(PUINT)&hSzItem);
-		ddeData=1;
-		if(hGlobalDdeData) {
-			DDEDATA *data;
-			data=(DDEDATA*)GlobalLock(hGlobalDdeData);
-			if(data->fAckReq) {
-				DDEACK ack={0};
-				PostMessage((HWND)wParam,WM_DDE_ACK,(WPARAM)hwndDlg,PackDDElParam(WM_DDE_ACK,*(PUINT)&ack,(UINT)hSzItem));
+		UnpackDDElParam( msg, lParam, ( PUINT )&hGlobalDdeData, &hSzItem );
+		ddeData = 1;
+		if( hGlobalDdeData ) {
+			DDEDATA* data = ( DDEDATA* )GlobalLock( hGlobalDdeData );
+			if ( data->fAckReq ) {
+				DDEACK ack = {0};
+				PostMessage(( HWND )wParam, WM_DDE_ACK, ( WPARAM )hwndDlg, PackDDElParam( WM_DDE_ACK, *(PUINT)&ack, hSzItem ));
 			}
-			else GlobalDeleteAtom(hSzItem);
-			GlobalUnlock(hGlobalDdeData);
+			else GlobalDeleteAtom(( ATOM )hSzItem );
+			GlobalUnlock( hGlobalDdeData );
 		}
-		else GlobalDeleteAtom(hSzItem);
+		else GlobalDeleteAtom(( ATOM )hSzItem );
 		break;
 	}
 	return 0;
