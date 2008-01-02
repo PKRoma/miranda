@@ -1,5 +1,5 @@
-#define BUILD_NUM 35
-#define BUILD_NUM_STR  "35"
+#define BUILD_NUM 36
+#define BUILD_NUM_STR  "36"
 #define REVISION  "$Revision$"
 
 #ifdef FORCE_HOTKEY_IN_MODERN

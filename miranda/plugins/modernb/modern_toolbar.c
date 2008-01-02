@@ -767,16 +767,19 @@ static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 	
 			Frame.height=DBGetContactSettingDword(NULL, "ModernToolBar", "option_Bar0_OldHeight", pMTBInfo->nButtonHeight);
 			pMTBInfo->wLastHeight=Frame.height;
+          
+            pMTBInfo->nLineCount   = 1;
+            pMTBInfo->pButtonList=li.List_Create(0,1);
+
 			Frame.name=(char*) lpcs->lpCreateParams;
 			hFrame=(HANDLE)CallService(MS_CLIST_FRAMES_ADDFRAME,(WPARAM)&Frame,(LPARAM)0);
 			CallService(MS_SKINENG_REGISTERPAINTSUB,(WPARAM)Frame.hWnd,(LPARAM)ToolBar_LayeredPaintProc); //$$$$$ register sub for frame		
 			pMTBInfo->hFrame = hFrame;
 			pMTBInfo->hWnd = hwnd;
 
-			pMTBInfo->nLineCount   = 1;
 
-			pMTBInfo->pButtonList=li.List_Create(0,1);
-			//add self to window list
+
+            //add self to window list
 			WindowList_Add(tbdat.hToolBarWindowList, hwnd, NULL);
 			pMTBInfo->mtbXPTheme=xpt_AddThemeHandle(hwnd,L"TOOLBAR");
 			SetTimer(hwnd,123,1000,NULL);
