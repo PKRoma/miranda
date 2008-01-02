@@ -19,16 +19,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "../commonheaders.h"
 
-extern TCHAR* pszActiveWndID ;
-extern char*  pszActiveWndModule ;
+extern TCHAR*			pszActiveWndID ;
+extern char*			pszActiveWndModule ;
 extern SESSION_INFO	g_TabSession;
-extern HICON	hIcons[30];
+extern HICON			hIcons[30];
 
-#define WINDOWS_COMMANDS_MAX 30
+#define	WINDOWS_COMMANDS_MAX 30
 #define	STATUSICONCOUNT 6
 
-SESSION_INFO* m_WndList = 0;
-MODULEINFO *m_ModList = 0;
+SESSION_INFO	*m_WndList = 0;
+MODULEINFO		*m_ModList = 0;
 
 void SetActiveSession(const TCHAR* pszID, const char* pszModule)
 {
@@ -42,7 +42,8 @@ void SetActiveSessionEx(SESSION_INFO* si)
 	if ( si ) {
 		replaceStr( &pszActiveWndID, si->ptszID );
 		replaceStrA( &pszActiveWndModule, si->pszModule );
-}	}
+	}
+}
 
 SESSION_INFO* GetActiveSession( void )
 {
@@ -97,15 +98,15 @@ int SM_RemoveSession( const TCHAR* pszID, const char* pszModule)
 			COMMAND_INFO *pCurComm;
 			DWORD dw = pTemp->dwItemData;
 
-			if(pTemp->hWnd )
+			if (pTemp->hWnd )
 				SendMessage(pTemp->hWnd, GC_EVENT_CONTROL+WM_USER+500, SESSION_TERMINATE, 0);
 
 			if (pTemp->hWnd)
 				g_TabSession.nUsersInNicklist = 0;
 
-            DoEventHook(pTemp->ptszID, pTemp->pszModule, GC_SESSION_TERMINATE, NULL, NULL, (DWORD)pTemp->dwItemData);
+			DoEventHook(pTemp->ptszID, pTemp->pszModule, GC_SESSION_TERMINATE, NULL, NULL, (DWORD)pTemp->dwItemData);
 
-            if (pLast == NULL)
+			if (pLast == NULL)
 				m_WndList = pTemp->next;
 			else
 				pLast->next = pTemp->next;
@@ -131,10 +132,10 @@ int SM_RemoveSession( const TCHAR* pszID, const char* pszModule)
 			mir_free( pTemp->ptszName );
 			mir_free( pTemp->ptszStatusbarText );
 			mir_free( pTemp->ptszTopic );
-			#if defined( _UNICODE )
-				mir_free( pTemp->pszID );
-				mir_free( pTemp->pszName );
-			#endif
+#if defined( _UNICODE )
+			mir_free( pTemp->pszID );
+			mir_free( pTemp->pszName );
+#endif
 
 			// delete commands
 			pCurComm = pTemp->lpCommands;
@@ -236,8 +237,8 @@ HICON SM_GetStatusIcon(SESSION_INFO* si, USERINFO* ui, char *szIndicator)
 	if (!ui || !si)
 		return NULL;
 
-    *szIndicator = 0;
-    
+	*szIndicator = 0;
+
 	ti = TM_FindStatus(si->pStatuses, TM_WordToString(si->pStatuses, ui->Status));
 	if (ti)
 	{
@@ -248,23 +249,23 @@ HICON SM_GetStatusIcon(SESSION_INFO* si, USERINFO* ui, char *szIndicator)
 				*szIndicator = 0;
 				return hIcons[ICON_STATUS0];
 			}
-			if(id == 1) {
+			if (id == 1) {
 				*szIndicator = '+';
 				return hIcons[ICON_STATUS1];
 			}
-			if(id == 2) {
+			if (id == 2) {
 				*szIndicator = '%';
 				return hIcons[ICON_STATUS2];
 			}
-			if(id == 3) {
+			if (id == 3) {
 				*szIndicator = '@';
 				return hIcons[ICON_STATUS3];
 			}
-			if(id == 4) {
+			if (id == 4) {
 				*szIndicator = '!';
 				return hIcons[ICON_STATUS4];
 			}
-			if(id == 5) {
+			if (id == 5) {
 				*szIndicator = '*';
 				return hIcons[ICON_STATUS5];
 			}
@@ -298,7 +299,9 @@ BOOL SM_AddEventToAllMatchingUID(GCEVENT * gce)
 					bManyFix ++;
 					if ((gce->dwFlags & GCEF_ADDTOLOG) && g_Settings.LoggingEnabled)
 						LogToFile(pTemp, gce);
-		}	}	}
+				}
+			}
+		}
 
 		pLast = pTemp;
 		pTemp = pTemp->next;
@@ -407,7 +410,8 @@ BOOL SM_RemoveUser(const TCHAR* pszID, const char* pszModule, const TCHAR* pszUI
 
 				if (pszID)
 					return TRUE;
-		}	}
+			}
+		}
 
 		pLast = pTemp;
 		pTemp = pTemp->next;
@@ -605,7 +609,7 @@ BOOL SM_SetStatus(const TCHAR* pszID, const char* pszModule, int wStatus)
 
 			if ( pTemp->hContact ) {
 				if ( pTemp->iType != GCW_SERVER && wStatus != ID_STATUS_OFFLINE )
-						DBDeleteContactSetting(pTemp->hContact, "CList", "Hidden");
+					DBDeleteContactSetting(pTemp->hContact, "CList", "Hidden");
 
 				DBWriteContactSettingWord(pTemp->hContact, pTemp->pszModule, "Status", (WORD)wStatus);
 			}
@@ -823,16 +827,20 @@ void SM_AddCommand(const TCHAR* pszID, const char* pszModule, const char* lpNewC
 			if (pTemp->wCommandsNum > WINDOWS_COMMANDS_MAX) {
 				COMMAND_INFO *pCurComm = pTemp->lpCommands;
 				COMMAND_INFO *pLast;
-				while (pCurComm->next != NULL) { pCurComm = pCurComm->next; }
+				while (pCurComm->next != NULL) {
+					pCurComm = pCurComm->next;
+				}
 				pLast = pCurComm->last;
 				mir_free(pCurComm->lpCommand);
 				mir_free(pCurComm);
 				pLast->next = NULL;
 				// done
 				pTemp->wCommandsNum--;
-		}	}
+			}
+		}
 		pTemp = pTemp->next;
-}	}
+	}
+}
 
 char* SM_GetPrevCommand(const TCHAR* pszID, const char* pszModule) // get previous command. returns NULL if previous command does not exist. current command remains as it was.
 {
@@ -890,35 +898,35 @@ int SM_GetCount(const char* pszModule)
 
 int SM_IsIRC(SESSION_INFO *si)
 {
-    char szServiceName[512];
+	char szServiceName[512];
 
-    mir_snprintf(szServiceName, 512, "%s/GetIrcData", si->pszModule);
+	mir_snprintf(szServiceName, 512, "%s/GetIrcData", si->pszModule);
 
-    return(ServiceExists(szServiceName));
+	return(ServiceExists(szServiceName));
 }
 
 SESSION_INFO* SM_FindSessionByHWND(HWND hWnd)
 {
-    SESSION_INFO *pTemp = m_WndList;
+	SESSION_INFO *pTemp = m_WndList;
 
-    while(pTemp) {
-        if(pTemp->hWnd == hWnd)
-            return pTemp;
-        pTemp = pTemp->next;
-    }
-    return NULL;
+	while (pTemp) {
+		if (pTemp->hWnd == hWnd)
+			return pTemp;
+		pTemp = pTemp->next;
+	}
+	return NULL;
 }
 
 SESSION_INFO *	SM_FindSessionByHCONTACT(HANDLE h)
 {
-    SESSION_INFO *pTemp = m_WndList;
+	SESSION_INFO *pTemp = m_WndList;
 
-    while(pTemp) {
-        if(pTemp->hContact == h)
-            return pTemp;
-        pTemp = pTemp->next;
-    }
-    return NULL;
+	while (pTemp) {
+		if (pTemp->hContact == h)
+			return pTemp;
+		pTemp = pTemp->next;
+	}
+	return NULL;
 }
 
 SESSION_INFO* SM_FindSessionByIndex(const char* pszModule, int iItem)
@@ -967,15 +975,15 @@ char* SM_GetUsers(SESSION_INFO* si)
 		if ( pLen + nameLen + 2 > alloced )
 			p = mir_realloc( p, alloced += 4096 );
 
-		#if !defined( _UNICODE )
-			lstrcpy( p + pLen, utemp->pszUID );
-		#else
-			WideCharToMultiByte( CP_ACP, 0, utemp->pszUID, -1, p + pLen, nameLen+1, 0, 0 );
-		#endif
+#if !defined( _UNICODE )
+		lstrcpy( p + pLen, utemp->pszUID );
+#else
+		WideCharToMultiByte( CP_ACP, 0, utemp->pszUID, -1, p + pLen, nameLen+1, 0, 0 );
+#endif
 		lstrcpyA( p + pLen + nameLen, " " );
 		utemp = utemp->next;
 	}
-		while ( utemp != NULL );
+	while ( utemp != NULL );
 	return p;
 }
 
@@ -1032,16 +1040,16 @@ void MM_IconsChanged(void)
 		if (pTemp->hOfflineTalkIcon)
 			DestroyIcon(pTemp->hOfflineTalkIcon);
 
-        /*
-        pTemp->hOfflineIcon = ImageList_GetIcon(hIconsList, pTemp->OfflineIconIndex, ILD_TRANSPARENT);
+		/*
+		pTemp->hOfflineIcon = ImageList_GetIcon(hIconsList, pTemp->OfflineIconIndex, ILD_TRANSPARENT);
 		pTemp->hOnlineIcon = ImageList_GetIcon(hIconsList, pTemp->OnlineIconIndex, ILD_TRANSPARENT);
 
 		pTemp->hOnlineTalkIcon = ImageList_GetIcon(hIconsList, pTemp->OnlineIconIndex, ILD_TRANSPARENT|INDEXTOOVERLAYMASK(1));
-		ImageList_ReplaceIcon(hIconsList, pTemp->OnlineIconIndex+1, pTemp->hOnlineTalkIcon); 
+		ImageList_ReplaceIcon(hIconsList, pTemp->OnlineIconIndex+1, pTemp->hOnlineTalkIcon);
 
 		pTemp->hOfflineTalkIcon = ImageList_GetIcon(hIconsList, pTemp->OfflineIconIndex, ILD_TRANSPARENT|INDEXTOOVERLAYMASK(1));
-		ImageList_ReplaceIcon(hIconsList, pTemp->OfflineIconIndex+1, pTemp->hOfflineTalkIcon); 
-        */
+		ImageList_ReplaceIcon(hIconsList, pTemp->OfflineIconIndex+1, pTemp->hOfflineTalkIcon);
+		*/
 		pLast = pTemp;
 		pTemp = pTemp->next;
 	}
@@ -1265,7 +1273,7 @@ USERINFO * UM_SortUser(USERINFO** ppUserList, const TCHAR* pszUID)
 	if (!pTemp || !pszUID)
 		return NULL;
 
-	while(pTemp && lstrcmpi( pTemp->pszUID, pszUID)) {
+	while (pTemp && lstrcmpi( pTemp->pszUID, pszUID)) {
 		pLast = pTemp;
 		pTemp = pTemp->next;
 	}
@@ -1297,7 +1305,8 @@ USERINFO * UM_SortUser(USERINFO** ppUserList, const TCHAR* pszUID)
 			else {
 				node->next = *ppUserList;
 				*ppUserList = node;
-		}	}
+			}
+		}
 
 		return node;
 	}
@@ -1311,7 +1320,7 @@ USERINFO* UM_AddUser(STATUSINFO* pStatusList, USERINFO** ppUserList, const TCHAR
 	if (!pStatusList || !ppUserList || !ppUserList)
 		return NULL;
 
-	while(pTemp && UM_CompareItem(pTemp, pszNick, wStatus) <= 0)
+	while (pTemp && UM_CompareItem(pTemp, pszNick, wStatus) <= 0)
 	{
 		pLast = pTemp;
 		pTemp = pTemp->next;
@@ -1335,7 +1344,8 @@ USERINFO* UM_AddUser(STATUSINFO* pStatusList, USERINFO** ppUserList, const TCHAR
 			else {
 				node->next = *ppUserList;
 				*ppUserList = node;
-		}	}
+			}
+		}
 
 		return node;
 	}
@@ -1434,7 +1444,9 @@ BOOL UM_SetStatusEx(USERINFO* pUserList, const TCHAR* pszText, int flags )
 					int len = lstrlen( pTemp->pszUID );
 					if ( s[len] == cDelimiter || s[len] == '\0' )
 						pTemp->iStatusEx = ( !bOnlyMe || bSetStatus ) ? 1 : 0;
-		}	}	}
+				}
+			}
+		}
 
 		pLast = pTemp;
 		pTemp = pTemp->next;

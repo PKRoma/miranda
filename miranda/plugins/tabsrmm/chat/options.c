@@ -20,17 +20,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 Option and settings handling for the group chat module. Implements
 the option pages and various support functions.
 
-$Id:$
+$Id$
 
 */
 
 #include "../commonheaders.h"
 #include <shlobj.h>
 #include <shlwapi.h>
-
-#ifdef __MATHMOD_SUPPORT
-	#include "../m_MathModule.h"
-#endif
+#include "../m_MathModule.h"
 
 extern HBRUSH 			hListBkgBrush;
 extern HICON			hIcons[30];	

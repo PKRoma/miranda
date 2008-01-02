@@ -69,7 +69,8 @@ HANDLE CList_AddRoom(const char* pszModule, const TCHAR* pszRoom, const TCHAR* p
 					DBFreeVariant(&dbv2);
 				}
 				DBFreeVariant(&dbv);
-		}	}
+			}
+		}
 
 END_GROUPLOOP:
 		DBWriteContactSettingWord( hContact, pszModule, "Status", ID_STATUS_OFFLINE );
@@ -80,7 +81,7 @@ END_GROUPLOOP:
 	}
 
 	// here we create a new one since no one is to be found
-	
+
 	if (( hContact = (HANDLE) CallService(MS_DB_CONTACT_ADD, 0, 0)) == NULL )
 		return NULL;
 
@@ -119,14 +120,15 @@ BOOL CList_SetAllOffline(BOOL bHide)
 	hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 	while ( hContact ) {
 		szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-      if ( MM_FindModule( szProto )) {
-		   int i = DBGetContactSettingByte(hContact, szProto, "ChatRoom", 0);
+		if ( MM_FindModule( szProto )) {
+			int i = DBGetContactSettingByte(hContact, szProto, "ChatRoom", 0);
 			if ( i != 0 ) {
 				DBWriteContactSettingWord(hContact, szProto,"ApparentMode",(LPARAM)(WORD) 0);
 				DBWriteContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE);
 				if (bHide && i == GCW_CHATROOM)
 					DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
-		}	}
+			}
+		}
 
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
@@ -153,10 +155,10 @@ int CList_RoomDoubleclicked( WPARAM wParam, LPARAM lParam )
 			if ( si ) {
 				// is the "toggle visibility option set, so we need to close the window?
 				if (si->hWnd != NULL
-					&& DBGetContactSettingByte(NULL, "Chat", "ToggleVisibility", 0)==1
-					&& !CallService(MS_CLIST_GETEVENT, (WPARAM)hContact, 0)
-					&& IsWindowVisible(si->hWnd)
-					&& !IsIconic(si->pContainer->hwnd))
+						&& DBGetContactSettingByte(NULL, "Chat", "ToggleVisibility", 0)==1
+						&& !CallService(MS_CLIST_GETEVENT, (WPARAM)hContact, 0)
+						&& IsWindowVisible(si->hWnd)
+						&& !IsIconic(si->pContainer->hwnd))
 				{
 					PostMessage(si->hWnd, GC_CLOSEWINDOW, 0, 0);
 					DBFreeVariant(&dbv);
@@ -166,7 +168,8 @@ int CList_RoomDoubleclicked( WPARAM wParam, LPARAM lParam )
 			}
 			DBFreeVariant(&dbv);
 			return 1;
-	}	}
+		}
+	}
 
 	return 0;
 }
@@ -253,7 +256,9 @@ HANDLE CList_FindRoom ( const char* pszModule, const TCHAR* pszRoom)
 						return hContact;
 					}
 					DBFreeVariant(&dbv);
-		}	}	}
+				}
+			}
+		}
 
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
@@ -289,7 +294,8 @@ int WCCmp(TCHAR* wild, TCHAR* string)
 		else {
 			wild = mp;
 			string = cp++;
-	}	}
+		}
+	}
 
 	while (*wild == '*')
 		wild++;

@@ -69,8 +69,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
 #endif
 
-#define __MATHMOD_SUPPORT 1
-
 //defines
 #define OPTIONS_FONTCOUNT 20
 #define GC_UPDATETITLE			(WM_USER+100)

@@ -19,11 +19,13 @@ the file listing the same day.
 Version 2.0.x.x was released in October 2007 and is the current "stable" version.
 It NEEDS Miranda 0.7.x and will not work on older versions.
 
-Version 2.0.0.5  - 2007/12/31
+Version 2.0.0.5  - 2008/01/02
 
 		* increased timer for info panel tooltips to 1 sec (previously, it was set
 		  to 500msec which may be too short and trigger unwanted tooltips).
 
+		* some better automatic detection for the MathMod plugin.
+		
 Version 2.0.0.4  - 2007/12/23
 
         + added incremental search feature to the group chat userlist. Simply

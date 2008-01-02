@@ -17,27 +17,27 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-$Id:$
+$Id$
 
 */
 
 #include "../commonheaders.h"
 
 //globals
-HANDLE      g_hWindowList;
-HMENU       g_hMenu = NULL;
+HANDLE		g_hWindowList;
+HMENU		g_hMenu = NULL;
 
-FONTINFO    aFonts[OPTIONS_FONTCOUNT];
-HICON       hIcons[30];
-BOOL        IEviewInstalled = FALSE;
-HBRUSH      hListBkgBrush = NULL;
+FONTINFO	aFonts[OPTIONS_FONTCOUNT];
+HICON		hIcons[30];
+BOOL		IEviewInstalled = FALSE;
+HBRUSH		hListBkgBrush = NULL;
 
 struct GlobalLogSettings_t g_Settings;
 
-char *			pszActiveWndID = 0;
-char *			pszActiveWndModule = 0;
-int             g_chat_integration_enabled = 0;
-int             g_chat_fully_initialized = 0;
+char		*pszActiveWndID = 0;
+char		*pszActiveWndModule = 0;
+int			g_chat_integration_enabled = 0;
+int			g_chat_fully_initialized = 0;
 
 /*
  * load the group chat module
@@ -46,12 +46,12 @@ int             g_chat_fully_initialized = 0;
 int Chat_Load(PLUGINLINK *link)
 {
 	BOOL bFlag = FALSE;
-	
-   if(!DBGetContactSettingByte(NULL, SRMSGMOD_T, "enable_chat", 0))
-        return 0;
-    
-    g_chat_integration_enabled = 1;
-    
+
+	if (!DBGetContactSettingByte(NULL, SRMSGMOD_T, "enable_chat", 0))
+		return 0;
+
+	g_chat_integration_enabled = 1;
+
 	g_hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENU));
 	HookEvents();
 	CreateServiceFunctions();
@@ -67,9 +67,9 @@ int Chat_Load(PLUGINLINK *link)
 
 int Chat_Unload(void)
 {
-    if(!g_chat_integration_enabled)
-        return 0;
-    
+	if (!g_chat_integration_enabled)
+		return 0;
+
 	DBWriteContactSettingWord(NULL, "Chat", "SplitterX", (WORD)g_Settings.iSplitterX);
 	DBWriteContactSettingWord(NULL, "Chat", "splitY", (WORD)g_Settings.iSplitterY);
 	DBWriteContactSettingDword(NULL, "Chat", "roomx", g_Settings.iX);
@@ -121,7 +121,7 @@ void LoadIcons(void)
 {
 	int i;
 
-	for(i = 0; i < 20; i++)
+	for (i = 0; i < 20; i++)
 		hIcons[i] = NULL;
 
 	LoadLogIcons();
