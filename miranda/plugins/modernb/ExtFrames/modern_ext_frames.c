@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project,
+Copyright 2000-2008 Miranda ICQ/IM project,
 all portions of this code base are copyrighted to Artem Shpynov and/or
 the people listed in contributors.txt.
 

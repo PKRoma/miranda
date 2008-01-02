@@ -154,7 +154,7 @@ static PLUGININFOEX pluginInfo = {
 	"Provides Miranda database support: global settings, contacts, history, settings per contact.",
 	"Miranda-IM project",
 	"bio@msx.ru; ghazan@miranda-im.org",
-	"Copyright 2000-2007 Miranda IM project",
+	"Copyright 2000-2008 Miranda IM project",
 	"",
 	UNICODE_AWARE,
 	DEFMOD_DB,

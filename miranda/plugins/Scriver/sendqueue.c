@@ -1,7 +1,7 @@
 /*
 Scriver
 
-Copyright 2000-2007 Miranda ICQ/IM project,
+Copyright 2000-2008 Miranda ICQ/IM project,
 
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.

@@ -66,7 +66,7 @@ PLUGININFOEX pluginInfo = {
 	"Imports contacts and messages from Mirabilis ICQ and Miranda IM.",
 	"Miranda team",
 	"info@miranda-im.org",
-	"© 2000-2007 Martin Öberg, Richard Hughes, Dmitry Kuzkin, George Hazan",
+	"© 2000-2008 Martin Öberg, Richard Hughes, Dmitry Kuzkin, George Hazan",
 	"http://www.miranda-im.org",
 	UNICODE_AWARE,
 	0,	//{2D77A746-00A6-4343-BFC5-F808CDD772EA}

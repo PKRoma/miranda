@@ -56,7 +56,7 @@ PLUGININFO pluginInfo = {
 	"Generic image services for Miranda IM",
 	"Nightwish, The FreeImage project (http://freeimage.sourceforge.net/)",
 	"",
-	"Copyright 2000-2007 Miranda-IM project, uses the FreeImage distribution",
+	"Copyright 2000-2008 Miranda-IM project, uses the FreeImage distribution",
 	"http://www.miranda-im.org",
 	UNICODE_AWARE,
 	0
@@ -69,7 +69,7 @@ PLUGININFOEX pluginInfoEx = {
 	"Generic image services for Miranda IM",
 	"Nightwish, The FreeImage project (http://freeimage.sourceforge.net/)",
 	"",
-	"Copyright 2000-2007 Miranda-IM project, uses the FreeImage distribution",
+	"Copyright 2000-2008 Miranda-IM project, uses the FreeImage distribution",
 	"http://www.miranda-im.org",
 	UNICODE_AWARE,
 	0,
