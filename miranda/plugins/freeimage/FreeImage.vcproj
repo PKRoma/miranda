@@ -4,10 +4,8 @@
 	Version="7.10"
 	Name="FreeImage"
 	ProjectGUID="{D0C4EACD-F264-4CFA-9AFC-3918FEC31A9A}"
-	SccProjectName="SAK"
-	SccAuxPath="SAK"
-	SccLocalPath="SAK"
-	SccProvider="SAK">
+	SccProjectName=""
+	SccLocalPath="">
 	<Platforms>
 		<Platform
 			Name="Win32"/>

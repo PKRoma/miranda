@@ -4,6 +4,8 @@
 	Version="8,00"
 	Name="GG"
 	ProjectGUID="{6DA1396F-2A44-4D5C-8442-012F71006217}"
+	SccProjectName=""
+	SccLocalPath=""
 	>
 	<Platforms>
 		<Platform

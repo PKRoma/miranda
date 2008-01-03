@@ -5,10 +5,8 @@
 	Name="avs"
 	ProjectGUID="{7711F563-6473-4ABD-B5E3-477CE8384AD6}"
 	RootNamespace="avs"
-	SccProjectName="SAK"
-	SccAuxPath="SAK"
-	SccLocalPath="SAK"
-	SccProvider="SAK">
+	SccProjectName=""
+	SccLocalPath="">
 	<Platforms>
 		<Platform
 			Name="Win32"/>

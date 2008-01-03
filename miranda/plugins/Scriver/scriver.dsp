@@ -25,8 +25,8 @@ CFG=scriver - Win32 Debug Unicode
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
-# PROP Scc_ProjName ""$/Miranda32/Plugins/scriver", DSEAAAAA"
-# PROP Scc_LocalPath "."
+# PROP Scc_ProjName ""
+# PROP Scc_LocalPath ""
 CPP=cl.exe
 MTL=midl.exe
 RSC=rc.exe

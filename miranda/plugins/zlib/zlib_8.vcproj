@@ -5,6 +5,8 @@
 	Name="zlib"
 	ProjectGUID="{E2A369CD-EDA3-414F-8AD0-E732CD7EE68C}"
 	RootNamespace="zlib"
+	SccProjectName=""
+	SccLocalPath=""
 	>
 	<Platforms>
 		<Platform

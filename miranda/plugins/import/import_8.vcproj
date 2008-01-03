@@ -5,6 +5,8 @@
 	Name="import"
 	ProjectGUID="{9299B507-1AF9-4C93-9560-5F637D1E0C9E}"
 	RootNamespace="import"
+	SccProjectName=""
+	SccLocalPath=""
 	>
 	<Platforms>
 		<Platform

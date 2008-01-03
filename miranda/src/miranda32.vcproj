@@ -4,10 +4,8 @@
 	Version="7.10"
 	Name="miranda32"
 	RootNamespace="miranda32"
-	SccProjectName="SAK"
-	SccAuxPath="SAK"
-	SccLocalPath="SAK"
-	SccProvider="SAK">
+	SccProjectName=""
+	SccLocalPath="">
 	<Platforms>
 		<Platform
 			Name="Win32"/>

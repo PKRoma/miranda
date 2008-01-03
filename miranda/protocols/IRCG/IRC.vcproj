@@ -4,10 +4,8 @@
 	Version="7.10"
 	Name="IRC"
 	ProjectGUID="{3A12F777-56A8-42EC-BD17-8F325524241E}"
-	SccProjectName="SAK"
-	SccAuxPath="SAK"
-	SccLocalPath="SAK"
-	SccProvider="SAK">
+	SccProjectName=""
+	SccLocalPath="">
 	<Platforms>
 		<Platform
 			Name="Win32"/>

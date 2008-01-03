@@ -4,6 +4,8 @@
 	Version="8.00"
 	Name="ICONSXP"
 	ProjectGUID="{987C5A57-A46B-4779-BB85-077E21F7BF7F}"
+	SccProjectName=""
+	SccLocalPath=""
 	>
 	<Platforms>
 		<Platform

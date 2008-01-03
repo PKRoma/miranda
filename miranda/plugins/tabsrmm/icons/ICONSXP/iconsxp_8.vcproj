@@ -6,6 +6,8 @@
 	ProjectGUID="{987C5A57-A46B-4779-BB85-077E21F7BF7F}"
 	RootNamespace="ICONSXP"
 	Keyword="Win32Proj"
+	SccProjectName=""
+	SccLocalPath=""
 	>
 	<Platforms>
 		<Platform

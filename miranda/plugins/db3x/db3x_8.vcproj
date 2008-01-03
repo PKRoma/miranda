@@ -5,6 +5,8 @@
 	Name="db3x"
 	ProjectGUID="{8B778B6A-F5EF-49A4-8437-424832F2B280}"
 	RootNamespace="db3x"
+	SccProjectName=""
+	SccLocalPath=""
 	>
 	<Platforms>
 		<Platform

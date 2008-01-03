@@ -5,9 +5,7 @@
 	Name="clist_nicer"
 	ProjectGUID="{3C42510C-A29E-4A53-899C-203BFA874E0B}"
 	SccProjectName=""
-	SccAuxPath=""
-	SccLocalPath=""
-	SccProvider="">
+	SccLocalPath="">
 	<Platforms>
 		<Platform
 			Name="Win32"/>

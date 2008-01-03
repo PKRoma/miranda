@@ -5,6 +5,8 @@
 	Name="miranda32"
 	ProjectGUID="{F9916510-9055-4C9F-997A-3755DEC1511B}"
 	RootNamespace="miranda32"
+	SccProjectName=""
+	SccLocalPath=""
 	>
 	<Platforms>
 		<Platform

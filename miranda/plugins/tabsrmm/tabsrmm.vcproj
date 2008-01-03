@@ -5,10 +5,8 @@
 	Name="tabSRMM"
 	ProjectGUID="{99D26CA1-BFD4-4E77-9A1E-919E54CF33F7}"
 	RootNamespace="srmm"
-	SccProjectName="SAK"
-	SccAuxPath="SAK"
-	SccLocalPath="SAK"
-	SccProvider="SAK">
+	SccProjectName=""
+	SccLocalPath="">
 	<Platforms>
 		<Platform
 			Name="Win32"/>

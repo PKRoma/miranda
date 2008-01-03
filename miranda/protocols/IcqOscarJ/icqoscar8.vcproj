@@ -5,9 +5,7 @@
 	Name="icqoscar8"
 	ProjectGUID="{01DDCB36-4DE2-405D-BC36-2C8BDEB86659}"
 	SccProjectName=""
-	SccAuxPath=""
-	SccLocalPath=""
-	SccProvider="">
+	SccLocalPath="">
 	<Platforms>
 		<Platform
 			Name="Win32"/>

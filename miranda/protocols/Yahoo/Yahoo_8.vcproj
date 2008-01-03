@@ -5,6 +5,8 @@
 	Name="Yahoo"
 	ProjectGUID="{E42870DB-9FED-44E7-9C93-4E64D0C87F51}"
 	RootNamespace="Yahoo"
+	SccProjectName=""
+	SccLocalPath=""
 	>
 	<Platforms>
 		<Platform

@@ -5,10 +5,8 @@
 	Name="jabber"
 	ProjectGUID="{33276462-8313-4192-8306-13717ECCA60A}"
 	RootNamespace="jabber"
-	SccProjectName="SAK"
-	SccAuxPath="SAK"
-	SccLocalPath="SAK"
-	SccProvider="SAK">
+	SccProjectName=""
+	SccLocalPath="">
 	<Platforms>
 		<Platform
 			Name="Win32"/>

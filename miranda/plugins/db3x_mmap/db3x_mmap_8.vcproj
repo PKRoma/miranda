@@ -5,6 +5,8 @@
 	Name="db3x_mmap"
 	ProjectGUID="{20D781FB-4A20-4B75-B863-304A47182966}"
 	RootNamespace="db3x_mmap"
+	SccProjectName=""
+	SccLocalPath=""
 	>
 	<Platforms>
 		<Platform

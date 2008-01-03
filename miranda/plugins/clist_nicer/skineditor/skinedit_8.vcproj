@@ -5,6 +5,8 @@
 	Name="cln_skinedit"
 	ProjectGUID="{987F026D-EB1F-4013-ADA8-2406ACCDA526}"
 	RootNamespace="clist"
+	SccProjectName=""
+	SccLocalPath=""
 	>
 	<Platforms>
 		<Platform

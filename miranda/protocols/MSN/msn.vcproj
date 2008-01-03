@@ -4,10 +4,8 @@
 	Version="7.10"
 	Name="msn"
 	ProjectGUID="{5088F15E-E7EF-4037-BD9F-402E3C5A9A8B}"
-	SccProjectName="SAK"
-	SccAuxPath="SAK"
-	SccLocalPath="SAK"
-	SccProvider="SAK">
+	SccProjectName=""
+	SccLocalPath="">
 	<Platforms>
 		<Platform
 			Name="Win32"/>

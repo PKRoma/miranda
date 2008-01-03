@@ -5,6 +5,8 @@
 	Name="chat"
 	ProjectGUID="{268BD296-8DD3-4715-A386-CF120398EC98}"
 	RootNamespace="chat"
+	SccProjectName=""
+	SccLocalPath=""
 	>
 	<Platforms>
 		<Platform

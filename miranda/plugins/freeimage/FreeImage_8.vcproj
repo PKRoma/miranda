@@ -4,6 +4,8 @@
 	Version="8,00"
 	Name="FreeImage"
 	ProjectGUID="{D0C4EACD-F264-4CFA-9AFC-3918FEC31A9A}"
+	SccProjectName=""
+	SccLocalPath=""
 	>
 	<Platforms>
 		<Platform

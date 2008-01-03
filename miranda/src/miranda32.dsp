@@ -25,8 +25,8 @@ CFG=miranda32 - Win32 Debug Unicode
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
-# PROP Scc_ProjName ""$/miranda32", UBAAAAAA"
-# PROP Scc_LocalPath "."
+# PROP Scc_ProjName ""
+# PROP Scc_LocalPath ""
 CPP=cl.exe
 MTL=midl.exe
 RSC=rc.exe

@@ -5,6 +5,8 @@
 	Name="clist_modern"
 	ProjectGUID="{D9057E63-AAAA-4FE7-800A-20C02F4761F3}"
 	RootNamespace="clist_modern"
+	SccProjectName=""
+	SccLocalPath=""
 	>
 	<Platforms>
 		<Platform

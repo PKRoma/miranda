@@ -5,6 +5,8 @@
 	Name="scriver"
 	ProjectGUID="{B8928210-546C-4AE3-956B-E2B724E6B8E5}"
 	RootNamespace="scriver"
+	SccProjectName=""
+	SccLocalPath=""
 	>
 	<Platforms>
 		<Platform
