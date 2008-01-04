@@ -190,14 +190,17 @@ void MSN_CreateContList(void)
 			const char* dom = strchr(C->email, '@');
 			if (dom == NULL && lastds == NULL)
 			{
-				if (sz == 0) sz = mir_snprintf(cxml+sz, sizeof(cxml), "<ml l=\"1\">");
-				if (newdom)
+				if (C->list != LIST_RL)
 				{
-					sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz, "<t>");
-					newdom = false;
-				}
+					if (sz == 0) sz = mir_snprintf(cxml+sz, sizeof(cxml), "<ml l=\"1\">");
+					if (newdom)
+					{
+						sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz, "<t>");
+						newdom = false;
+					}
 
-				sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz, "<c n=\"%s\" l=\"%d\"/>", C->email, C->list & ~LIST_RL);
+					sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz, "<c n=\"%s\" l=\"%d\"/>", C->email, C->list & ~LIST_RL);
+				}
 				used[j] = true;
 			}
 			else if (dom != NULL && lastds != NULL && _stricmp(lastds, dom) == 0)
