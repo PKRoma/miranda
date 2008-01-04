@@ -21,25 +21,13 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#if defined( UNICODE ) && !defined( _UNICODE )
-#define _UNICODE
-#endif
-
-#define _USE_32BIT_TIME_T
 #define MIRANDA_VER 0x0700
-
-#include <tchar.h>
-
-#ifdef _DEBUG
-#   define _CRTDBG_MAP_ALLOC
-#   include <stdlib.h>
-#   include <crtdbg.h>
-#else
-#	include <malloc.h>
-#endif
 
 #define _WIN32_WINNT 0x0501
 #define _WIN32_IE 0x0500
+
+#include "m_stdhdr.h"
+
 #include <windows.h>
 #include <commctrl.h>
 #include <stdio.h>

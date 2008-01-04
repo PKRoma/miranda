@@ -32,23 +32,10 @@ Last change by : $Author$
 // this plugin is for Miranda 0.7 only
 #define MIRANDA_VER 0x0700
 
-#define _USE_32BIT_TIME_T
-
-#if defined(UNICODE) && !defined(_UNICODE)
-	#define _UNICODE
-#endif
+#include "m_stdhdr.h"
 
 #define NEWSTR_ALLOCA(A) (A==NULL)?NULL:strcpy((char*)alloca(strlen(A)+1),A)
 #define NEWTSTR_ALLOCA(A) (A==NULL)?NULL:_tcscpy((TCHAR*)alloca(sizeof(TCHAR)*(_tcslen(A)+1)),A)
-
-#include <tchar.h>
-#include <malloc.h>
-
-#ifdef _DEBUG
-#define _CRTDBG_MAP_ALLOC
-#include <stdlib.h>
-#include <crtdbg.h>
-#endif
 
 /*******************************************************************
  * Global header files

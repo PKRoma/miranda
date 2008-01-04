@@ -21,27 +21,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // this plugin is for Miranda 0.6 only
 #define MIRANDA_VER 0x0700
 
-#define _USE_32BIT_TIME_T
-
-#if defined(UNICODE) && !defined(_UNICODE)
-	#define _UNICODE
-#endif
-
-#if _MSC_VER < 1400
-	#include <malloc.h>
-#endif
-
-#if defined(_DEBUG) && !defined(__GNUC__)
-	#define _CRTDBG_MAP_ALLOC
-	#include <stdlib.h>
-	#include <crtdbg.h>
-#endif
-
-#if _MSC_VER >= 1400
-	#include <malloc.h>
-#endif
-
 #define _WIN32_WINNT 0x0400
+
+#include "m_stdhdr.h"
+
 #include <windows.h>
 #include <commctrl.h>
 
@@ -243,7 +226,7 @@ HANDLE      GetIconHandle( int iconId );
 HICON       LoadIconEx( const char* );
 void        ReleaseIconEx( const char* );
 
-int         addCachedMsg( const char* id, const char* msg, const size_t offset, 
+int         addCachedMsg( const char* id, const char* msg, const size_t offset,
 						 const size_t portion, const size_t totsz, const bool bychunk );
 bool        getCachedMsg( const int idx, char*& msg, size_t& size );
 bool        getCachedMsg( const char* id, char*& msg, size_t& size );
@@ -400,7 +383,7 @@ struct filetransfer
 	//---- receiving a file
 	wchar_t*    wszFileName;	// file name in Unicode, for receiving
 	char*       szInvcookie;	// cookie for receiving
-	
+
 	unsigned __int64 lstFilePtr;
 };
 
@@ -723,7 +706,7 @@ struct MSN_StatusMessage
 const char msnProtChallenge[] = "ILTXC!4IXB5FB*PX";
 const char msnProductID[] = "PROD0119GSJUC$18";
 const char msnProductVer[] = "8.5.1302";
-const char msnProtID[] = "MSNP15"; 
+const char msnProtID[] = "MSNP15";
 
 extern  MSN_StatusMessage    msnModeMsgs[ MSN_NUM_MODES ];
 
@@ -756,7 +739,7 @@ extern	bool		msnHaveChatDll;
 ///////////////////////////////////////////////////////////////////////////////
 // UTF8 encode helper
 
-class UTFEncoder 
+class UTFEncoder
 {
 private:
 	char* m_body;
@@ -828,5 +811,3 @@ public:
 	char* getSslResult( const char* parUrl, const char* parAuthInfo, const char* hdrs,
 		unsigned& status, char*& htmlbody);
 };
-
-

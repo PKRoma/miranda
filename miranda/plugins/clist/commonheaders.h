@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2005 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2005 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -23,20 +23,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define MIRANDA_VER 0x0700
 
-#if defined(UNICODE)
-	#define _UNICODE 1
-#endif
-
-#include <tchar.h>
-#include <malloc.h>
-
-#ifdef _DEBUG
-	#define _CRTDBG_MAP_ALLOC
-	#include <stdlib.h>
-	#include <crtdbg.h>
-#endif
-
 #define _WIN32_WINNT 0x0501
+
+#include "m_stdhdr.h"
+
 #include <windows.h>
 #include <commctrl.h>
 #include <stdio.h>

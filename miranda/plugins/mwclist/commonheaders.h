@@ -25,19 +25,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define MIRANDA_VER 0x0700
 
-#if defined( UNICODE ) && !defined( _UNICODE )
-#define _UNICODE
-#endif
-
-#include <malloc.h>
-
-#ifdef _DEBUG
-#	define _CRTDBG_MAP_ALLOC
-#	include <stdlib.h>
-#	include <crtdbg.h>
-#endif
-
 #define _WIN32_WINNT 0x0501
+
+#include "m_stdhdr.h"
+
 #include <windows.h>
 #include <commctrl.h>
 #include <stdio.h>

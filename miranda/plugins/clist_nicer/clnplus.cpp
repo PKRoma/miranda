@@ -2,19 +2,9 @@
  * test for gdi+
  */
 
-#if defined(UNICODE) && !defined(_UNICODE)
-#	define _UNICODE
-#endif
+#include "m_stdhdr.h"
 
-#include <malloc.h>
 #include <string>
-#include <tchar.h>
-
-#ifdef _DEBUG
-#	define _CRTDBG_MAP_ALLOC
-#	include <stdlib.h>
-#	include <crtdbg.h>
-#endif
 
 #define _CLN_GDIP
 
@@ -72,4 +62,3 @@ extern "C" void RemoveFromTaskBar(HWND hWnd)
         pTaskbarList->Release();
     }
 }
-

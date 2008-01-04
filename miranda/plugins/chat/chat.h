@@ -17,9 +17,6 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
-#if defined(UNICODE) && !defined( _UNICODE)
-#define _UNICODE
-#endif
 
 #ifndef _CHAT_H_
 #define _CHAT_H_
@@ -29,10 +26,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #pragma warning( disable : 4786 ) // limitation in MSVC's debugger.
 #pragma warning( disable : 4996 ) // limitation in MSVC's debugger.
 
-#define WIN32_LEAN_AND_MEAN	
+#define WIN32_LEAN_AND_MEAN
 #define _WIN32_WINNT 0x0501
 
-#define _USE_32BIT_TIME_T
+#include "m_stdhdr.h"
 
 #include <tchar.h>
 #include <windows.h>
@@ -68,7 +65,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "IcoLib.h"
 
 #ifndef NDEBUG
-#include <crtdbg.h>
 #define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
 #endif
 
@@ -286,7 +282,7 @@ typedef struct SESSION_INFO_TYPE
 	HWND        hwndStatus;
 	time_t      LastTime;
 
-	COMMAND_INFO*  lpCommands; 
+	COMMAND_INFO*  lpCommands;
 	COMMAND_INFO*  lpCurrentCommand;
 	LOGINFO*       pLog;
 	LOGINFO*       pLogEnd;

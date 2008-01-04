@@ -17,9 +17,6 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
-#if defined(UNICODE) && !defined( _UNICODE)
-#define _UNICODE
-#endif
 
 #ifndef _CHAT_H_
 #define _CHAT_H_
@@ -27,19 +24,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #pragma warning( disable : 4786 ) // limitation in MSVC's debugger.
 #pragma warning( disable : 4996 ) // limitation in MSVC's debugger.
 
-#define WIN32_LEAN_AND_MEAN	
+#define WIN32_LEAN_AND_MEAN
+
 #define _WIN32_WINNT 0x0501
 
-#define _USE_32BIT_TIME_T
+#include "m_stdhdr.h"
 
-#include <tchar.h>
 #include <windows.h>
 #include <commctrl.h>
 #include <richedit.h>
 #include <process.h>
 #include <ole2.h>
 #include <richole.h>
-#include <malloc.h>
 #include <commdlg.h>
 #include <time.h>
 #include <stdio.h>
@@ -178,7 +174,7 @@ typedef struct LOG_INFO_TYPE
 {
 	TCHAR*  ptszText;
 	TCHAR*  ptszNick;
-	TCHAR*  ptszUID;	
+	TCHAR*  ptszUID;
 	TCHAR*  ptszStatus;
 	TCHAR*  ptszUserInfo;
 	BOOL    bIsMe;
@@ -204,7 +200,7 @@ typedef struct  USERINFO_TYPE
 {
 	TCHAR* pszNick;
 	TCHAR* pszUID;
-	WORD   Status;	
+	WORD   Status;
 	int    iStatusEx;
 	WORD   ContactStatus;
 	struct USERINFO_TYPE *next;
@@ -266,7 +262,7 @@ typedef struct SESSION_INFO_TYPE
 	time_t      LastTime;
     TCHAR          szSearch[255];
     int            iSearchItem;
-	COMMAND_INFO*  lpCommands; 
+	COMMAND_INFO*  lpCommands;
 	COMMAND_INFO*  lpCurrentCommand;
 	LOGINFO*       pLog;
 	LOGINFO*       pLogEnd;

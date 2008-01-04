@@ -1,9 +1,5 @@
-#define _WIN32_IE 0x0560
-#define _WIN32_WINNT 0x0501
+
 #include "commonheaders.h"
-//#include "AggressiveOptimize.h"
-
-
 
 #define DEFAULT_BKCOLOUR      GetSysColor(COLOR_3DFACE)
 #define DEFAULT_USEBITMAP     0

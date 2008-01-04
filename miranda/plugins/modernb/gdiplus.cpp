@@ -2,20 +2,10 @@
  * test for gdi+
  */
 
-#if defined( UNICODE ) && !defined( _UNICODE )
-	#define _UNICODE
-#endif
-
-#include <malloc.h>
-
-#ifdef _DEBUG
-#	define _CRTDBG_MAP_ALLOC
-#	include <stdlib.h>
-//#	include <crtdbg.h>
-#endif
-
 #define _WIN32_WINNT 0x0501
-#include <tchar.h>
+
+#include "m_stdhdr.h"
+
 #include <windows.h>
 #include <commctrl.h>
 #include <stdio.h>
@@ -80,7 +70,7 @@ extern "C" void ShutdownGdiPlus(void)
 
 using namespace Gdiplus;
 
-static ColorMatrix ClrMatrix =         { 
+static ColorMatrix ClrMatrix =         {
             1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
             0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
             0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
@@ -100,7 +90,7 @@ extern "C" HBITMAP GDIPlus_LoadGlyphImage(char *szFileName)
 {
   WCHAR *string;
   string=(WCHAR*)malloc(sizeof(WCHAR)*(mir_strlen(szFileName)+2));
-  MultiByteToWideChar(CP_ACP, 0, szFileName, -1, string, (mir_strlen(szFileName)+2)*sizeof(WCHAR)); 
+  MultiByteToWideChar(CP_ACP, 0, szFileName, -1, string, (mir_strlen(szFileName)+2)*sizeof(WCHAR));
   // Create a Bitmap object from a JPEG file.
   Bitmap bitmap(string,0);
   free(string);
@@ -109,18 +99,18 @@ extern "C" HBITMAP GDIPlus_LoadGlyphImage(char *szFileName)
   HBITMAP hbmp=NULL;
   if (clone)
   {
-    clone->GetHBITMAP(Color(0,0,0),&hbmp); 
+    clone->GetHBITMAP(Color(0,0,0),&hbmp);
     delete clone;
   }
   return hbmp;
 }
 extern "C" void TextOutWithGDIp(HDC hDestDC, int x, int y, LPCTSTR lpString, int nCount)
 {
-//   Graphics s(hDestDC);  
+//   Graphics s(hDestDC);
 //   HBITMAP hs;
 //   hs=(HBITMAP)GetCurrentObject(hDestDC,OBJ_BITMAP);
 //   Bitmap sb(hs,NULL);
-//   Bitmap *b=(sb.Clone(x,y,150,30,PixelFormat32bppARGB));   
+//   Bitmap *b=(sb.Clone(x,y,150,30,PixelFormat32bppARGB));
 //   Graphics g(b);//(100,100,PixelFormat32bppPARGB);
 //   //g.DrawImage(sb);
 //  // s.SetCompositingMode(CompositingModeSourceCopy);
@@ -129,12 +119,12 @@ extern "C" void TextOutWithGDIp(HDC hDestDC, int x, int y, LPCTSTR lpString, int
 //   //s.SetCompositingMode(CompositingModeSourceCopy);
 //   //g.SetCompositingMode(CompositingModeSourceCopy);
 //   // Create a string.
-//   
+//
 //   WCHAR *string;
 //   string=(WCHAR*)malloc(sizeof(WCHAR)*(nCount+2));
 //   MultiByteToWideChar(CP_ACP, 0, lpString, -1, string, (nCount+2)*sizeof(WCHAR));
 //   Font myFont(hDestDC);
-//   
+//
 //   PointF origin((float)0, (float)0);
 //   PointF origin2((float)x, (float)y);
 //   g.SetTextRenderingHint(TextRenderingHintSystemDefault);
@@ -142,13 +132,13 @@ extern "C" void TextOutWithGDIp(HDC hDestDC, int x, int y, LPCTSTR lpString, int
 //   COLORREF ref=GetTextColor(hDestDC);
 //   SolidBrush blackBrush(Color(255, GetRValue(ref),GetGValue(ref),GetBValue(ref)));
 //   g.SetInterpolationMode(InterpolationModeHighQualityBicubic);
-//   g.DrawString(string,nCount,&myFont,origin, &blackBrush);   
+//   g.DrawString(string,nCount,&myFont,origin, &blackBrush);
 //   //g.SetCompositingMode(CompositingModeSourceCopy);
 //   //s.SetCompositingMode(CompositingModeSourceCopy);
 //   free(string);
 //   //HDC temp=g.GetHDC();
 //   //BitBlt(hDestDC,x,y,100,100,temp,0,0,SRCCOPY);
-//   //g.ReleaseHDC(temp);	
+//   //g.ReleaseHDC(temp);
 //   s.DrawImage(b,origin2);
 //
 }
@@ -159,9 +149,9 @@ extern "C" void DrawAvatarImageWithGDIp(HDC hDestDC,int x, int y, DWORD width, D
    Bitmap *bm;
    BYTE * bmbits=NULL;
    GetObject(hbmp,sizeof(BITMAP),&bmp);
-   Graphics g(hDestDC);   
+   Graphics g(hDestDC);
    if (bmp.bmBitsPixel==32 && (flag&AVS_PREMULTIPLIED))
-   {   
+   {
       bmbits=(BYTE*)bmp.bmBits;
       if (!bmbits)
       {
@@ -170,18 +160,18 @@ extern "C" void DrawAvatarImageWithGDIp(HDC hDestDC,int x, int y, DWORD width, D
       }
       bm= new Bitmap(bmp.bmWidth,bmp.bmHeight,bmp.bmWidthBytes,PixelFormat32bppPARGB,bmbits);
       bm->RotateFlip(RotateNoneFlipY);
-      if (!bmp.bmBits) 
+      if (!bmp.bmBits)
       {
       bm->RotateFlip(RotateNoneFlipY);
         free(bmbits);
       }
    }
-   else 
+   else
      bm=new Bitmap(hbmp,NULL);
-   
+
    ImageAttributes attr;
-    ColorMatrix ClrMatrix = 
-    { 
+    ColorMatrix ClrMatrix =
+    {
             1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
             0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
             0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
@@ -195,7 +185,7 @@ extern "C" void DrawAvatarImageWithGDIp(HDC hDestDC,int x, int y, DWORD width, D
     delete bm;
 }
 extern "C" bool GDIPlus_AlphaBlend(HDC hdcDest,int nXOriginDest,int nYOriginDest,int nWidthDest,int nHeightDest,
-								  HDC hdcSrc,int nXOriginSrc,int nYOriginSrc,int nWidthSrc,int nHeightSrc, 
+								  HDC hdcSrc,int nXOriginSrc,int nYOriginSrc,int nWidthSrc,int nHeightSrc,
 								  BLENDFUNCTION * bf)
 {
 	Graphics g(hdcDest);
@@ -204,15 +194,15 @@ extern "C" bool GDIPlus_AlphaBlend(HDC hdcDest,int nXOriginDest,int nYOriginDest
 	GetObject(hbmp,sizeof(BITMAP),&bmp);
 	Bitmap *bm=new Bitmap(hbmp,NULL);
 	if (bmp.bmBitsPixel==32 && bf->AlphaFormat)
-	{   
+	{
 		bm= new Bitmap(bmp.bmWidth,bmp.bmHeight,bmp.bmWidthBytes,PixelFormat32bppPARGB,(BYTE*)bmp.bmBits);
 		bm->RotateFlip(RotateNoneFlipY);
 	}
-	else 
+	else
 		bm=new Bitmap(hbmp,NULL);
 	ImageAttributes attr;
-	ColorMatrix ClrMatrix = 
-	{ 
+	ColorMatrix ClrMatrix =
+	{
 		1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
 			0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
 			0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
@@ -220,7 +210,7 @@ extern "C" bool GDIPlus_AlphaBlend(HDC hdcDest,int nXOriginDest,int nYOriginDest
 			0.0f, 0.0f, 0.0f, 0.0f, 1.0f
 	};
 	attr.SetColorMatrix(&ClrMatrix, ColorMatrixFlagsDefault,ColorAdjustTypeBitmap);
-  
+
  if (bf->BlendFlags&128 && nWidthDest<nWidthSrc && nHeightDest<nHeightSrc)
   {
 		g.SetInterpolationMode(InterpolationModeHighQualityBicubic);
@@ -232,7 +222,7 @@ extern "C" bool GDIPlus_AlphaBlend(HDC hdcDest,int nXOriginDest,int nYOriginDest
 		g.SetInterpolationMode(InterpolationModeLowQuality);
 		//g.SetPixelOffsetMode(PixelOffsetModeHalf);
 	}
-	
+
 	RectF rect((float)nXOriginDest,(float)nYOriginDest,(float)nWidthDest,(float)nHeightDest);
 	g.DrawImage(bm, rect, (float)nXOriginSrc, (float)nYOriginSrc, (float)nWidthSrc, (float)nHeightSrc , UnitPixel, &attr, NULL, NULL);
 	delete bm;
@@ -284,7 +274,7 @@ extern "C" void GDIPlus_ExtractAnimatedGIF(TCHAR * szName, int width, int height
 #else
 	Bitmap image(szName);
 #endif
-	PropertyItem * pPropertyItem; 
+	PropertyItem * pPropertyItem;
 
 	UINT count = 0;
 
@@ -305,7 +295,7 @@ extern "C" void GDIPlus_ExtractAnimatedGIF(TCHAR * szName, int width, int height
 	pPropertyItem = (PropertyItem*) malloc(nSize);
 
 	image.GetPropertyItem(PropertyTagFrameDelay, nSize, pPropertyItem);
-	
+
 	int clipWidth;
 	int clipHeight;
 	int imWidth=image.GetWidth();
@@ -321,8 +311,8 @@ extern "C" void GDIPlus_ExtractAnimatedGIF(TCHAR * szName, int width, int height
 	HBITMAP oldBmp=(HBITMAP)SelectObject(hdc,hBitmap);
 	Graphics graphics(hdc);
 	ImageAttributes attr;
-	ColorMatrix ClrMatrix = 
-	{ 
+	ColorMatrix ClrMatrix =
+	{
 		1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
 			0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
 			0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
@@ -339,7 +329,7 @@ extern "C" void GDIPlus_ExtractAnimatedGIF(TCHAR * szName, int width, int height
 	{
 		GUID   pageGuid = FrameDimensionTime;
 		RectF rect((float)(i-1)*clipWidth,(float)0,(float)clipWidth,(float)clipHeight);
-		graphics.DrawImage(&image, rect, (float)0, (float)0, (float)imWidth, (float)imHeight , UnitPixel, &attr, NULL, NULL);		
+		graphics.DrawImage(&image, rect, (float)0, (float)0, (float)imWidth, (float)imHeight , UnitPixel, &attr, NULL, NULL);
 		image.SelectActiveFrame(&pageGuid, i);
 		long lPause = ((long*) pPropertyItem->value)[i-1] * 10;
 		delays[i-1]=(int)lPause;

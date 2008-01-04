@@ -36,14 +36,20 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #	include <malloc.h>   // to avoid a crazy bug in VS2003 header files
 #endif
 
-#ifdef _DEBUG
-#	define _CRTDBG_MAP_ALLOC
+#ifndef __GNUC__
+#	ifdef _DEBUG
+#		define _CRTDBG_MAP_ALLOC
+#		include <stdlib.h>
+#		include <crtdbg.h>
+#  else
+#		include <stdlib.h>
+#	endif
+#else
 #	include <stdlib.h>
-#	include <crtdbg.h>
 #endif
 
 #if _MSC_VER >= 1400
-#	include <malloc.h>   // to avoid a warning
+#	include <malloc.h>   // to avoid a warning in VS2005 & 2008
 #endif
 
 #endif // M_STDHDR_H__

@@ -24,25 +24,19 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define MIRANDA_VER 0x0700
 
-#define _USE_32BIT_TIME_T
-
-#if defined( UNICODE ) && !defined( _UNICODE )
-	#define _UNICODE 
-#endif
+#include "m_stdhdr.h"
 
 // disable a lot of warnings. It should comppile on VS 6 also
-#pragma warning( disable : 4076 ) 
-#pragma warning( disable : 4786 ) 
-#pragma warning( disable : 4996 ) 
+#pragma warning( disable : 4076 )
+#pragma warning( disable : 4786 )
+#pragma warning( disable : 4996 )
 
-#define WIN32_LEAN_AND_MEAN	
-#include <tchar.h>
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <shlwapi.h>
 #include <shlobj.h>
 #include <objbase.h>
 #include <shellapi.h>
-#include <malloc.h>
 #include <stdio.h>
 #include <process.h>
 #include <math.h>
@@ -78,7 +72,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commandmonitor.h"
 
 #ifndef NDEBUG
-#include <crtdbg.h>
 #define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
 #endif
 
@@ -202,7 +195,7 @@ struct CHANNELINFO   // Contains info about the channels
 	TCHAR* pszMode;
 	TCHAR* pszPassword;
 	TCHAR* pszLimit;
-	BYTE   OwnMode;	/* own mode on the channel. Bitmask: 
+	BYTE   OwnMode;	/* own mode on the channel. Bitmask:
 												0: voice
 												1: halfop
 												2: op
@@ -219,7 +212,7 @@ struct SERVER_INFO  // Contains info about different servers
 	char* Address;
 	char* Name;
 	char* PortStart;
-	char* PortEnd;	
+	char* PortEnd;
 	int   iSSL;
 };
 
@@ -260,7 +253,7 @@ struct PREFERENCES  // Preferences structure
 	TCHAR    IdentPort[10];
 	TCHAR    RetryWait[10];
 	TCHAR    RetryCount[10];
-			 
+
 	TCHAR    Nick[30];
 	TCHAR    AlternativeNick[30];
 	TCHAR    Name[200];
@@ -312,7 +305,7 @@ struct PREFERENCES  // Preferences structure
 };
 
 //main.cpp
-extern char* IRCPROTONAME; 
+extern char* IRCPROTONAME;
 extern char* ALTIRCPROTONAME;
 extern char* pszServerFile;
 extern char  mirandapath[MAX_PATH];
@@ -324,8 +317,8 @@ extern CRITICAL_SECTION cs;
 extern CRITICAL_SECTION m_gchook;
 
 extern HMODULE      m_ssleay32;
-extern HINSTANCE    g_hInstance;	
-extern PREFERENCES* prefs;	
+extern HINSTANCE    g_hInstance;
+extern PREFERENCES* prefs;
 extern PLUGININFOEX pluginInfo;
 
 void   UpgradeCheck(void);
@@ -363,7 +356,7 @@ char*    IrcLoadFile(char * szPath);
 void     AddToJTemp(TString sCommand);
 TString  GetWord(const TCHAR* text, int index);
 TString& ReplaceString (TString& text, const TCHAR* replaceme, const TCHAR* newword);
-bool     IsChannel(TString sName); 
+bool     IsChannel(TString sName);
 TCHAR*   GetWordAddress(const TCHAR* text, int index);
 void     RemoveLinebreaks( TString& Message );
 TCHAR*   my_strstri(const TCHAR *s1, const TCHAR *s2) ;
@@ -387,7 +380,7 @@ char*    rtrim( char *string );
 
 #if defined( _UNICODE )
 String& ReplaceString (String& text, const char* replaceme, const char* newword);
-bool    IsChannel(String sName); 
+bool    IsChannel(String sName);
 String  GetWord(const char* text, int index);
 char*   GetWordAddress(const char* text, int index);
 #endif
@@ -429,11 +422,11 @@ extern	bool     bPerformDone;
 extern	HWND     join_hWnd, list_hWnd, manager_hWnd, nick_hWnd, whois_hWnd, quickconn_hWnd;
 extern   HWND     IgnoreWndHwnd;
 extern	int      NoOfChannels, ManualWhoisCount;
-extern   UINT_PTR KeepAliveTimer;	
+extern   UINT_PTR KeepAliveTimer;
 extern	String   sChannelModes, sUserModes;
 extern	TString  sChannelPrefixes, sUserModePrefixes, WhoisAwayReply;
 
-VOID    CALLBACK KeepAliveTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime); 
+VOID    CALLBACK KeepAliveTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime);
 VOID    CALLBACK OnlineNotifTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime);
 VOID    CALLBACK OnlineNotifTimerProc3(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime);
 
@@ -459,9 +452,3 @@ BOOL Scripting_TriggerMSPGuiOut(GCHOOK * gch);
 #pragma comment(lib,"comctl32.lib")
 
 #endif
-
-
-
-
-
-

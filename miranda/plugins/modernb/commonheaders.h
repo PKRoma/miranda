@@ -26,27 +26,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define MIRANDA_VER 0x0700
 
-#if defined(UNICODE)
-#define _UNICODE 1
-#define UNICODE_AWARE 1
-#else
-	#define UNICODE_AWARE 0
-#endif
+#define _WIN32_WINNT 0x0501
+#define _WIN32_IE 0x0501
 
-//#include "AggressiveOptimize.h"
-
-#include <malloc.h>
-
-#ifdef _DEBUG
-#	define _CRTDBG_MAP_ALLOC
-#	include <stdlib.h>
-#	include <crtdbg.h>
-#endif
+#include "m_stdhdr.h"
 
 #if defined (_DEBUG)
 #define TRACE(str)  { log0(str); }
 #else
-  #define TRACE(str)  
+  #define TRACE(str)
 #endif
 
 #if defined (_DEBUG)
@@ -63,8 +51,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 //   OutputDebugString(str)
 
-#define _WIN32_WINNT 0x0501
-#define _WIN32_IE 0x0501
 #include <windows.h>
 
 #include <commctrl.h>
@@ -167,7 +153,7 @@ extern HANDLE mod_HookEvent(char *EventID, MIRANDAHOOK HookProc
                             , char * file, int line);
                 #else
                             );
-                #endif                  
+                #endif
 
 extern int mod_UnhookEvent(HANDLE hHook);
 extern int UnhookAll();
@@ -220,7 +206,7 @@ extern int CLUI_ShowWindowMod(HWND hwnd, int cmd);
 
 //#ifdef _DEBUG
 //#define DeleteObject(a) DebugDeleteObject(a)
-//#endif 
+//#endif
 
 #define strsetA(a,b) {if (a) mir_free_and_nill(a); a=mir_strdup(b);}
 #define strsetT(a,b) {if (a) mir_free_and_nill(a); a=mir_tstrdup(b);}
@@ -282,15 +268,15 @@ extern __inline char * strdupn(const char * src, int len);
 #define _BOOL(a) (a != 0)
 
 /* modern_animated_avatars.c */
-int AniAva_InitModule();								   // HAVE TO BE AFTER GDI+ INITIALIZED	
+int AniAva_InitModule();								   // HAVE TO BE AFTER GDI+ INITIALIZED
 int AniAva_UnloadModule();
 int AniAva_UpdateOptions();								   //reload options, //hot enable/disable engine
 
 int AniAva_AddAvatar(HANDLE hContact, TCHAR * szFilename, int width, int heigth);  // adds avatars to be displayed
-int AniAva_SetAvatarPos(HANDLE hContact, RECT * rc, int overlayIdx, BYTE bAlpha);	   // update avatars pos	
-int AniAva_InvalidateAvatarPositions(HANDLE hContact);	   // reset positions of avatars to be drawn (still be painted at same place)	
+int AniAva_SetAvatarPos(HANDLE hContact, RECT * rc, int overlayIdx, BYTE bAlpha);	   // update avatars pos
+int AniAva_InvalidateAvatarPositions(HANDLE hContact);	   // reset positions of avatars to be drawn (still be painted at same place)
 int AniAva_RemoveInvalidatedAvatars();					   // all avatars without validated position will be stop painted and probably removed
-int AniAva_RemoveAvatar(HANDLE hContact);				   // remove avatar	
+int AniAva_RemoveAvatar(HANDLE hContact);				   // remove avatar
 int AniAva_RedrawAllAvatars(BOOL updateZOrder);			   // request to repaint all
 void AniAva_UpdateParent();
 
