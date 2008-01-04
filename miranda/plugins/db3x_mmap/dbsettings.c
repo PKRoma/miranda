@@ -230,14 +230,14 @@ static __inline int GetContactSettingWorker(HANDLE hContact,DBCONTACTGETSETTING 
 	if ( settingNameLen > 0xFE )
 	{
 		#ifdef _DEBUG
-			OutputDebugString("GetContactSettingWorker() got a > 255 setting name length. \n");
+			OutputDebugStringA("GetContactSettingWorker() got a > 255 setting name length. \n");
 		#endif
 		return 1;
 	}
 	if ( moduleNameLen > 0xFE )
 	{
 		#ifdef _DEBUG
-			OutputDebugString("GetContactSettingWorker() got a > 255 module name length. \n");
+			OutputDebugStringA("GetContactSettingWorker() got a > 255 module name length. \n");
 		#endif
 		return 1;
 	}
@@ -553,14 +553,14 @@ static int WriteContactSetting(WPARAM wParam,LPARAM lParam)
 	if ( settingNameLen > 0xFE )
 	{
 		#ifdef _DEBUG
-			OutputDebugString("WriteContactSetting() got a > 255 setting name length. \n");
+			OutputDebugStringA("WriteContactSetting() got a > 255 setting name length. \n");
 		#endif
 		return 1;
 	}
 	if ( moduleNameLen > 0xFE )
 	{
 		#ifdef _DEBUG
-			OutputDebugString("WriteContactSetting() got a > 255 module name length. \n");
+			OutputDebugStringA("WriteContactSetting() got a > 255 module name length. \n");
 		#endif
 		return 1;
 	}
@@ -590,7 +590,7 @@ static int WriteContactSetting(WPARAM wParam,LPARAM lParam)
 		{	int len = ( dbcws->value.type != DBVT_BLOB ) ? strlen(dbcws->value.pszVal) : dbcws->value.cpbVal;
 			if ( len >= 0xFFFF ) {
 				#ifdef _DEBUG
-					OutputDebugString("WriteContactSetting() writing huge string/blob, rejecting ( >= 0xFFFF ) \n");
+					OutputDebugStringA("WriteContactSetting() writing huge string/blob, rejecting ( >= 0xFFFF ) \n");
 				#endif
 				return 1;
 			}
@@ -819,14 +819,14 @@ static int DeleteContactSetting(WPARAM wParam,LPARAM lParam)
 	if ( settingNameLen > 0xFE )
 	{
 		#ifdef _DEBUG
-			OutputDebugString("DeleteContactSetting() got a > 255 setting name length. \n");
+			OutputDebugStringA("DeleteContactSetting() got a > 255 setting name length. \n");
 		#endif
 		return 1;
 	}
 	if ( moduleNameLen > 0xFE )
 	{
 		#ifdef _DEBUG
-			OutputDebugString("DeleteContactSetting() got a > 255 module name length. \n");
+			OutputDebugStringA("DeleteContactSetting() got a > 255 module name length. \n");
 		#endif
 		return 1;
 	}

@@ -21,38 +21,20 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#if defined( UNICODE ) && !defined( _UNICODE )
-#  define _UNICODE
-#endif
-
 // to enable all 0.8.0 core functions
 #define MIRANDA_VER 0x800
-
-#define _USE_32BIT_TIME_T
-
-#include <tchar.h>
-#if _MSC_VER < 1400
-#	include <malloc.h>   // to avoid a crazy bug in VS2003 header files
-#endif
 
 #define _ALPHA_BASE_ 1	// defined for CVS builds
 #define _ALPHA_FUSE_ 1	// defined for fuse powered core
 
-#ifdef _DEBUG
-#	define _CRTDBG_MAP_ALLOC
-#	include <stdlib.h>
-#	include <crtdbg.h>
-#endif
-
 #define _WIN32_WINNT 0x0501
 #define _WIN32_IE 0x0500
+
+#include "m_stdhdr.h"
 
 #include <windows.h>
 #include <commctrl.h>
 #include <stdio.h>
-#if _MSC_VER >= 1400
-#	include <malloc.h>   // to avoid a warning 
-#endif
 #include <time.h>
 #include <stddef.h>
 #include <process.h>
