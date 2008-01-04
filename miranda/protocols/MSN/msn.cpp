@@ -1,11 +1,8 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2006-7 Boris Krasnovskiy.
-Copyright (c) 2003-5 George Hazan.
-Copyright (c) 2002-3 Richard Hughes (original version).
-
-Miranda IM: the free icq client for MS Windows
-Copyright (C) 2000-2002 Richard Hughes, Roland Rabien & Tristan Van de Vreede
+Copyright (c) 2006-2008 Boris Krasnovskiy.
+Copyright (c) 2003-2005 George Hazan.
+Copyright (c) 2002-2003 Richard Hughes (original version).
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -18,8 +15,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "msn_global.h"
@@ -90,7 +86,7 @@ PLUGININFOEX pluginInfo =
 	"Adds support for communicating with users of the MSN Messenger network",
 	"Boris Krasnovskiy, George Hazan, Richard Hughes",
 	"borkra@miranda-im.org",
-	"© 2001-2007 Richard Hughes, George Hazan, Boris Krasnovskiy",
+	"© 2001-2008 Richard Hughes, George Hazan, Boris Krasnovskiy",
 	"http://miranda-im.org",
 	UNICODE_AWARE,	
 	0,
