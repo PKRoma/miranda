@@ -20,7 +20,6 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
 			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -129,7 +128,6 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
 			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			UseOfATL="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
@@ -228,7 +226,6 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
 			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			UseOfATL="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
@@ -328,7 +325,6 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
 			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="1"
@@ -932,11 +928,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\m_api\m_clui.h"
+				RelativePath="..\..\include\m_clui.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\m_clui.h"
+				RelativePath=".\m_api\m_clui.h"
 				>
 			</File>
 			<File
