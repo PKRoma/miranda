@@ -474,7 +474,6 @@
 	
 
 .\jabber_thread.cpp : \
-	"..\..\..\..\vc\sdk\include\windns.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
