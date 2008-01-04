@@ -96,8 +96,10 @@ void JabberFtInitiate( TCHAR* jid, filetransfer* ft )
 	XmlNode* option = NULL;
 
 	if ( jid==NULL || ft==NULL || !jabberOnline || ( rs=JabberListGetBestClientResourceNamePtr( jid ))==NULL ) {
-		JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
-		delete ft;
+		if ( ft ) {
+			JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
+			delete ft;
+		}
 		return;
 	}
 	ft->type = FT_SI;

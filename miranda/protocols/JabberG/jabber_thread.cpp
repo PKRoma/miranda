@@ -1681,9 +1681,6 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 			XmlNode p( "presence" ); p.addAttr( "to", from ); p.addAttr( "type", "subscribed" );
 			info->send( p );
 			if ( JGetByte( "AutoAdd", TRUE ) == TRUE ) {
-				HANDLE hContact;
-				JABBER_LIST_ITEM *item;
-
 				if (( item = JabberListGetItemPtr( LIST_ROSTER, from )) == NULL || ( item->subscription != SUB_BOTH && item->subscription != SUB_TO )) {
 					JabberLog( "Try adding contact automatically jid = " TCHAR_STR_PARAM, from );
 					if (( hContact=AddToListByJID( from, 0 )) != NULL ) {

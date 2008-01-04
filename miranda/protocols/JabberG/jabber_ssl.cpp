@@ -25,8 +25,6 @@ Last change by : $Author$
 
 */
 
-#define _JABBER_SSL_C_
-
 #include "jabber.h"
 #include "jabber_ssl.h"
 

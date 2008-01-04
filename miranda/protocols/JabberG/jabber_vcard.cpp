@@ -966,8 +966,8 @@ static void SetServerVcard()
 							mir_sha1_finish( &sha1ctx, digest );
 
 							char buf[MIR_SHA1_HASH_SIZE*2+1];
-							for ( int i=0; i<MIR_SHA1_HASH_SIZE; i++ )
-								sprintf( buf+( i<<1 ), "%02x", digest[i] );
+							for ( int j=0; j<MIR_SHA1_HASH_SIZE; j++ )
+								sprintf( buf+( j<<1 ), "%02x", digest[j] );
 
 							JSetByte( "AvatarType", JabberGetPictureType( buffer ));	
 							JSetString( NULL, "AvatarHash", buf );

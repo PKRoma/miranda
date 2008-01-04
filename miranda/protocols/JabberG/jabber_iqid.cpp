@@ -70,11 +70,17 @@ void JabberIqResultServerDiscoInfo( XmlNode* iqNode, void* userdata )
 			for ( i = 1; ( feature = JabberXmlGetNthChild( query, "feature", i )) != NULL; i++ ) {
 				TCHAR *featureName = JabberXmlGetAttrValue( feature, "var" );
 				if ( featureName ) {
-					for ( int i = 0; g_JabberFeatCapPairs[i].szFeature; i++ ) {
-						if ( !_tcscmp( g_JabberFeatCapPairs[i].szFeature, featureName )) {
-							jabberThreadInfo->jabberServerCaps |= g_JabberFeatCapPairs[i].jcbCap;
+					for ( int j = 0; g_JabberFeatCapPairs[j].szFeature; j++ ) {
+						if ( !_tcscmp( g_JabberFeatCapPairs[j].szFeature, featureName )) {
+							jabberThreadInfo->jabberServerCaps |= g_JabberFeatCapPairs[j].jcbCap;
 							break;
-}	}	}	}	}	}	}
+						}	
+					}	
+				}	
+			}	
+		}	
+	}	
+}
 
 
 void JabberIqResultNestedRosterGroups( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
@@ -539,7 +545,7 @@ void JabberIqResultGetRoster( XmlNode* iqNode, void* userdata, CJabberIqInfo* pI
 	JabberSetServerStatus( jabberDesiredStatus );
 
 	if ( JGetByte( "AutoJoinConferences", 0 )) {
-		for ( int i=0; i < chatRooms.realCount; i++ )
+		for ( i=0; i < chatRooms.realCount; i++ )
 			sttGroupchatJoinByHContact(( HANDLE )chatRooms.items[i] );
 	}
 	li.List_Destroy( &chatRooms );
@@ -889,7 +895,7 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 									mir_sntprintf( text, SIZEOF( text ), _T("%s\r\n%s"), m->text, o->text );
 								else
 									_tcsncpy( text, m->text, SIZEOF( text ));
-								text[sizeof( text )-1] = '\0';
+								text[SIZEOF(text)-1] = '\0';
 								JSetStringT( hContact, "Street", text );
 							}
 							else {
@@ -935,7 +941,7 @@ void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 									mir_sntprintf( text, SIZEOF( text ), _T("%s\r\n%s"), m->text, o->text );
 								else
 									_tcsncpy( text, m->text, SIZEOF( text ));
-								text[sizeof( text )-1] = '\0';
+								text[SIZEOF( text )-1] = '\0';
 								JSetStringT( hContact, "CompanyStreet", text );
 							}
 							else {

@@ -138,10 +138,10 @@ static int JabberAdHoc_ExecuteCommand( HWND hwndDlg, TCHAR * jid, JabberAdHocDat
 			if ( itemNode ) {
 				TCHAR * node = JabberXmlGetAttrValue( itemNode, "node" );
 				if ( node ) {
-					TCHAR * jid			= JabberXmlGetAttrValue( itemNode, "jid" );
+					TCHAR *jid2 = JabberXmlGetAttrValue( itemNode, "jid" );
 
 					int iqId = (int)hwndDlg;
-					XmlNodeIq iq( "set", iqId, jid );
+					XmlNodeIq iq( "set", iqId, jid2 );
 					XmlNode* query = iq.addChild( "command" );
 					query->addAttr( "xmlns", JABBER_FEAT_COMMANDS );
 					query->addAttr( "node", node );
@@ -154,7 +154,7 @@ static int JabberAdHoc_ExecuteCommand( HWND hwndDlg, TCHAR * jid, JabberAdHocDat
 		}	}	}
 	if ( dat->CommandsNode ) delete dat->CommandsNode;
 	dat->CommandsNode = NULL;
-	return (TRUE);
+	return TRUE;
 }
 
 //Messages handlers
