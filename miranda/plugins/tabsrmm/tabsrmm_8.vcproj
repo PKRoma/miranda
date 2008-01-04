@@ -5,8 +5,6 @@
 	Name="tabsrmm"
 	ProjectGUID="{99D26CA1-BFD4-4E77-9A1E-919E54CF33F7}"
 	RootNamespace="srmm"
-	SccProjectName=""
-	SccLocalPath=""
 	>
 	<Platforms>
 		<Platform
@@ -633,10 +631,6 @@
 			</File>
 			<File
 				RelativePath="m_smileyadd.h"
-				>
-			</File>
-			<File
-				RelativePath="m_Snapping_windows.h"
 				>
 			</File>
 			<File
