@@ -1,4 +1,6 @@
 /*
+astyle --force-indent=tab=4 --brackets=linux --indent-switches
+		--pad=oper --one-line=keep-blocks  --unpad=paren
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
@@ -50,7 +52,7 @@ static BOOL CALLBACK FillCpCombo(LPCTSTR str)
 	UINT cp;
 
 	cp = _ttoi(str);
-	for (i=0; cpTable[i].cpName != NULL && cpTable[i].cpId!=cp; i++);
+	for (i = 0; cpTable[i].cpName != NULL && cpTable[i].cpId != cp; i++);
 	if (cpTable[i].cpName != NULL) {
 		LRESULT iIndex = SendMessage(hCpCombo, CB_ADDSTRING, -1, (LPARAM) TranslateTS(cpTable[i].cpName));
 		SendMessage(hCpCombo, CB_SETITEMDATA, (WPARAM)iIndex, cpTable[i].cpId);
@@ -65,8 +67,7 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 	HANDLE hContact = (HANDLE)GetWindowLong(hwndDlg, GWL_USERDATA);
 
 	switch (msg) {
-		case WM_INITDIALOG:
-		{
+		case WM_INITDIALOG: {
 			TCHAR szBuffer[180];
 #if defined(_UNICODE)
 			TCHAR contactName[100];
@@ -167,7 +168,7 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			CheckDlgButton(hwndDlg, IDC_IGNORETIMEOUTS, DBGetContactSettingByte(hContact, SRMSGMOD_T, "no_ack", 0));
 			SetWindowText(hwndDlg, szBuffer);
 			SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("<default, no change>"));
-			timezone = (DWORD)DBGetContactSettingByte(hContact,"UserInfo","Timezone", DBGetContactSettingByte(hContact, (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0), "Timezone",-1));
+			timezone = (DWORD)DBGetContactSettingByte(hContact, "UserInfo", "Timezone", DBGetContactSettingByte(hContact, (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0), "Timezone", -1));
 			for (i = -12; i <= 12; i++) {
 				_sntprintf(szBuffer, 20, TranslateT("GMT %c %d"), i < 0 ? '-' : '+', abs(i));
 				SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_INSERTSTRING, -1, (LPARAM)szBuffer);
@@ -176,8 +177,7 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 				contact_gmt_diff = timezone > 128 ? 256 - timezone : 0 - timezone;
 				offset = 13 + ((int)contact_gmt_diff / 2);
 				SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_SETCURSEL, (WPARAM)offset, 0);
-			}
-			else
+			} else
 				SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_SETCURSEL, 0, 0);
 			ShowWindow(hwndDlg, SW_SHOW);
 			CheckDlgButton(hwndDlg, IDC_NOAUTOCLOSE, DBGetContactSettingByte(hContact, SRMSGMOD_T, "NoAutoClose", 0));
@@ -192,8 +192,7 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 					EnableWindow(GetDlgItem(hwndDlg, IDC_TRIMSPIN), IsDlgButtonChecked(hwndDlg, IDC_ALWAYSTRIM2));
 					EnableWindow(GetDlgItem(hwndDlg, IDC_TRIM), IsDlgButtonChecked(hwndDlg, IDC_ALWAYSTRIM2));
 					break;
-				case IDOK:
-				{
+				case IDOK: {
 					struct MessageWindowData *dat = 0;
 					int iIndex = CB_ERR;
 					DWORD newCodePage;
@@ -201,7 +200,7 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 					unsigned int iOldIEView;
 					HWND hWnd = WindowList_Find(hMessageWindowList, hContact);
 					DWORD sCodePage = DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", 0);
-					DWORD oldTZ = (DWORD)DBGetContactSettingByte(hContact,"UserInfo","Timezone", DBGetContactSettingByte(hContact, (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0), "Timezone",-1));
+					DWORD oldTZ = (DWORD)DBGetContactSettingByte(hContact, "UserInfo", "Timezone", DBGetContactSettingByte(hContact, (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0), "Timezone", -1));
 					BYTE bInfoPanel, bOldInfoPanel = DBGetContactSettingByte(hContact, SRMSGMOD_T, "infopanel", 0);
 
 					if (hWnd) {
@@ -285,8 +284,7 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 					if (IsDlgButtonChecked(hwndDlg, IDC_ISFAVORITE)) {
 						if (!DBGetContactSettingWord(hContact, SRMSGMOD_T, "isFavorite", 0))
 							AddContactToFavorites(hContact, NULL, NULL, NULL, 0, 0, 1, myGlobals.g_hMenuFavorites, newCodePage);
-					}
-					else
+					} else
 						DeleteMenu(myGlobals.g_hMenuFavorites, (UINT_PTR)hContact, MF_BYCOMMAND);
 
 					DBWriteContactSettingWord(hContact, SRMSGMOD_T, "isFavorite", (WORD)(IsDlgButtonChecked(hwndDlg, IDC_ISFAVORITE) ? 1 : 0));
@@ -300,8 +298,7 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 						BYTE timezone = (13 - offset) * 2;
 						if (timezone != (BYTE)oldTZ)
 							DBWriteContactSettingByte(hContact, "UserInfo", "Timezone", (BYTE)timezone);
-					}
-					else
+					} else
 						DBDeleteContactSetting(hContact, "UserInfo", "Timezone");
 
 					if (hWnd && dat) {
@@ -324,8 +321,7 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 						DBWriteContactSettingByte(hContact, SRMSGMOD_T, "no_ack", 1);
 						if (hWnd && dat)
 							dat->sendMode |= SMODE_NOACK;
-					}
-					else {
+					} else {
 						DBDeleteContactSetting(hContact, SRMSGMOD_T, "no_ack");
 						if (hWnd && dat)
 							dat->sendMode &= ~SMODE_NOACK;

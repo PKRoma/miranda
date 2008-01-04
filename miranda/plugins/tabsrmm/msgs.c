@@ -1,4 +1,6 @@
 /*
+astyle --force-indent=tab=4 --brackets=linux --indent-switches
+		--pad=oper --one-line=keep-blocks  --unpad=paren
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
@@ -96,7 +98,8 @@ HANDLE g_hEvent_MsgWin;
 HANDLE g_hEvent_MsgPopup;
 
 static struct MsgLogIcon ttb_Slist = {
-	0}, ttb_Traymenu = {0};
+	0
+}, ttb_Traymenu = {0};
 
 HMODULE g_hIconDLL = 0;
 
@@ -137,7 +140,7 @@ static int GetWindowData(WPARAM wParam, LPARAM lParam)
 	HWND hwnd;
 	SESSION_INFO *si = NULL;
 
-	if ( mwid == NULL || mwod == NULL)
+	if (mwid == NULL || mwod == NULL)
 		return 1;
 	if (mwid->cbSize != sizeof(MessageWindowInputData) || mwod->cbSize != sizeof(MessageWindowOutputData))
 		return 1;
@@ -153,16 +156,14 @@ static int GetWindowData(WPARAM wParam, LPARAM lParam)
 		SendMessage(hwnd, DM_GETWINDOWSTATE, 0, 0);
 		mwod->uState = GetWindowLong(hwnd, DWL_MSGRESULT);
 		return 0;
-	}
-	else if ((si = SM_FindSessionByHCONTACT(mwid->hContact)) != NULL && si->hWnd != 0) {
+	} else if ((si = SM_FindSessionByHCONTACT(mwid->hContact)) != NULL && si->hWnd != 0) {
 		mwod->uFlags = MSG_WINDOW_UFLAG_MSG_BOTH;
 		mwod->hwndWindow = si->hWnd;
 		mwod->local = GetParent(GetParent(si->hWnd));
 		SendMessage(si->hWnd, DM_GETWINDOWSTATE, 0, 0);
 		mwod->uState = GetWindowLong(si->hWnd, DWL_MSGRESULT);
 		return 0;
-	}
-	else {
+	} else {
 		mwod->uState = 0;
 		mwod->hContact = 0;
 		mwod->hwndWindow = 0;
@@ -205,13 +206,13 @@ static int TTB_Loaded(WPARAM wParam, LPARAM lParam)
 		ttb.wParamUp = 0;
 		ttb.name = "tabSRMM Session List";
 		ttb.dwFlags = TTBBF_VISIBLE | TTBBF_SHOWTOOLTIP;
-		hTTB_Slist = (HANDLE)CallService(MS_TTB_ADDBUTTON, (WPARAM)&ttb, 0);
+		hTTB_Slist = (HANDLE)CallService(MS_TTB_ADDBUTTON, (WPARAM) & ttb, 0);
 		ttb.hbBitmapUp = ttb_Traymenu.hBmp;
 		ttb.hbBitmapDown = ttb_Traymenu.hBmp;
 		ttb.lParamDown = 1;
 		ttb.lParamUp = 1;
 		ttb.name = "tabSRMM Tray Menu";
-		hTTB_Tray = (HANDLE)CallService(MS_TTB_ADDBUTTON, (WPARAM)&ttb, 0);
+		hTTB_Tray = (HANDLE)CallService(MS_TTB_ADDBUTTON, (WPARAM) & ttb, 0);
 	}
 	UnhookEvent(hEvent_ttbInit);
 	return 0;
@@ -244,8 +245,7 @@ static int GetMessageWindowFlags(WPARAM wParam, LPARAM lParam)
 			return (dat->dwFlags);
 		else
 			return 0;
-	}
-	else
+	} else
 		return 0;
 }
 
@@ -255,7 +255,7 @@ static int GetMessageWindowFlags(WPARAM wParam, LPARAM lParam)
 
 static int GetWindowAPI(WPARAM wParam, LPARAM lParam)
 {
-	return PLUGIN_MAKE_VERSION(0,0,0,2);
+	return PLUGIN_MAKE_VERSION(0, 0, 0, 2);
 }
 
 /*
@@ -302,8 +302,7 @@ int MessageWindowOpened(WPARAM wParam, LPARAM lParam)
 			}
 		}
 		return 1;
-	}
-	else
+	} else
 		return 0;
 }
 
@@ -332,8 +331,7 @@ static int ProtoAck(WPARAM wParam, LPARAM lParam)
 							iFound = j;
 							break;
 						}
-					}
-					else {       // ack message w/o an open window...
+					} else {      // ack message w/o an open window...
 						AckMessage(0, NULL, (WPARAM)MAKELONG(j, i), lParam);
 						return 0;
 					}
@@ -363,7 +361,8 @@ static int ProtoAck(WPARAM wParam, LPARAM lParam)
  * improve the overall responsiveness when receiving messages.
  */
 
-static int DispatchNewEvent(WPARAM wParam, LPARAM lParam) {
+static int DispatchNewEvent(WPARAM wParam, LPARAM lParam)
+{
 	if (wParam) {
 		HWND h = WindowList_Find(hMessageWindowList, (HANDLE)wParam);
 		if (h)
@@ -385,14 +384,13 @@ static int ReadMessageCommand(WPARAM wParam, LPARAM lParam)
 		SendMessage(hwndExisting, DM_QUERYCONTAINER, 0, (LPARAM) &pContainer);          // ask the message window about its parent...
 		if (pContainer != NULL)
 			ActivateExistingTab(pContainer, hwndExisting);
-	}
-	else {
+	} else {
 		TCHAR szName[CONTAINER_NAMELEN + 1];
 		GetContainerNameForContact(hContact, szName, CONTAINER_NAMELEN);
 		pContainer = FindContainerByName(szName);
 		if (pContainer == NULL)
 			pContainer = CreateContainer(szName, FALSE, hContact);
-		CreateNewTabForContact (pContainer, hContact, 0, NULL, TRUE, TRUE, FALSE, 0);
+		CreateNewTabForContact(pContainer, hContact, 0, NULL, TRUE, TRUE, FALSE, 0);
 	}
 	//LeaveCriticalSection(&cs_sessions);
 	return 0;
@@ -465,7 +463,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 		}
 		if (szProto) {
 			dwStatus = (DWORD)CallProtoService(szProto, PS_GETSTATUS, 0, 0);
-			if (dwStatus == 0 || dwStatus <= ID_STATUS_OFFLINE || ((1<<(dwStatus - ID_STATUS_ONLINE)) & dwStatusMask))             // should never happen, but...
+			if (dwStatus == 0 || dwStatus <= ID_STATUS_OFFLINE || ((1 << (dwStatus - ID_STATUS_ONLINE)) & dwStatusMask))           // should never happen, but...
 				bAllowAutoCreate = TRUE;
 		}
 	}
@@ -477,8 +475,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 				pContainer = CreateContainer(szName, FALSE, (HANDLE)wParam);
 			CreateNewTabForContact(pContainer, (HANDLE) wParam, 0, NULL, bActivate, bPopup, FALSE, 0);
 			return 0;
-		}
-		else {
+		} else {
 			bActivate = FALSE;
 			bPopup = (BOOL) DBGetContactSettingByte(NULL, SRMSGMOD_T, "cpopup", 0);
 			pContainer = FindContainerByName(szName);
@@ -491,24 +488,21 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 					if ((pContainer = FindMatchingContainer(_T("default"), (HANDLE)wParam)) != NULL) {
 						CreateNewTabForContact(pContainer, (HANDLE) wParam, 0, NULL, bActivate, bPopup, TRUE, (HANDLE)lParam);
 						return 0;
-					}
-					else if (bAutoContainer) {
+					} else if (bAutoContainer) {
 						pContainer = CreateContainer(szName, CNT_CREATEFLAG_MINIMIZED, (HANDLE)wParam);         // 2 means create minimized, don't popup...
-						CreateNewTabForContact(pContainer,  (HANDLE) wParam,  0, NULL, bActivate, bPopup, TRUE, (HANDLE)lParam);
+						CreateNewTabForContact(pContainer, (HANDLE) wParam,  0, NULL, bActivate, bPopup, TRUE, (HANDLE)lParam);
 						SendMessage(pContainer->hwnd, WM_SIZE, 0, 0);
 						return 0;
 					}
-				}
-				else {
+				} else {
 					CreateNewTabForContact(pContainer, (HANDLE) wParam, 0, NULL, bActivate, bPopup, TRUE, (HANDLE)lParam);
 					return 0;
 				}
 
-			}
-			else {
+			} else {
 				if (bAutoContainer) {
 					pContainer = CreateContainer(szName, CNT_CREATEFLAG_MINIMIZED, (HANDLE)wParam);         // 2 means create minimized, don't popup...
-					CreateNewTabForContact(pContainer,  (HANDLE) wParam,  0, NULL, bActivate, bPopup, TRUE, (HANDLE)lParam);
+					CreateNewTabForContact(pContainer, (HANDLE) wParam,  0, NULL, bActivate, bPopup, TRUE, (HANDLE)lParam);
 					SendMessage(pContainer->hwnd, WM_SIZE, 0, 0);
 					return 0;
 				}
@@ -548,7 +542,8 @@ int SendMessageCommand_W(WPARAM wParam, LPARAM lParam)
 	HWND hwnd;
 	char *szProto;
 	struct NewMessageWindowLParam newData = {
-		0 };
+		0
+	};
 	struct ContainerWindowData *pContainer = 0;
 	int isSplit = 1;
 
@@ -560,8 +555,7 @@ int SendMessageCommand_W(WPARAM wParam, LPARAM lParam)
 			wcsncpy(tszText, (wchar_t *)lParam, iLen + 1);
 			tszText[iLen] = 0;
 			PostMessage(myGlobals.g_hwndHotkeyHandler, DM_SENDMESSAGECOMMANDW, wParam, (LPARAM)tszText);
-		}
-		else
+		} else
 			PostMessage(myGlobals.g_hwndHotkeyHandler, DM_SENDMESSAGECOMMANDW, wParam, 0);
 		return 0;
 	}
@@ -571,8 +565,7 @@ int SendMessageCommand_W(WPARAM wParam, LPARAM lParam)
 	if (szProto) {
 		if (!CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_1, 0) & PF1_IMSEND)
 			return 0;
-	}
-	else {
+	} else {
 		/* unknown contact */
 		return 0;
 	}
@@ -583,12 +576,11 @@ int SendMessageCommand_W(WPARAM wParam, LPARAM lParam)
 			HWND hEdit;
 			hEdit = GetDlgItem(hwnd, IDC_MESSAGE);
 			SendMessage(hEdit, EM_SETSEL, -1, SendMessage(hEdit, WM_GETTEXTLENGTH, 0, 0));
-			SendMessage(hEdit, EM_REPLACESEL, FALSE, (LPARAM) (TCHAR *) lParam);
+			SendMessage(hEdit, EM_REPLACESEL, FALSE, (LPARAM)(TCHAR *) lParam);
 		}
 		SendMessage(hwnd, DM_QUERYCONTAINER, 0, (LPARAM) &pContainer);          // ask the message window about its parent...
 		ActivateExistingTab(pContainer, hwnd);
-	}
-	else {
+	} else {
 		TCHAR szName[CONTAINER_NAMELEN + 1];
 		/*
 		 * attempt to fix "double tabs" opened by MS_MSG_SENDMESSAGE
@@ -618,7 +610,8 @@ int SendMessageCommand(WPARAM wParam, LPARAM lParam)
 	HWND hwnd;
 	char *szProto;
 	struct NewMessageWindowLParam newData = {
-		0 };
+		0
+	};
 	struct ContainerWindowData *pContainer = 0;
 	int isSplit = 1;
 
@@ -630,8 +623,7 @@ int SendMessageCommand(WPARAM wParam, LPARAM lParam)
 			strncpy(szText, (char *)lParam, iLen + 1);
 			szText[iLen] = 0;
 			PostMessage(myGlobals.g_hwndHotkeyHandler, DM_SENDMESSAGECOMMAND, wParam, (LPARAM)szText);
-		}
-		else
+		} else
 			PostMessage(myGlobals.g_hwndHotkeyHandler, DM_SENDMESSAGECOMMAND, wParam, 0);
 		return 0;
 	}
@@ -641,8 +633,7 @@ int SendMessageCommand(WPARAM wParam, LPARAM lParam)
 	if (szProto) {
 		if (!CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_1, 0) & PF1_IMSEND)
 			return 0;
-	}
-	else {
+	} else {
 		/* unknown contact */
 		return 0;
 	}
@@ -653,12 +644,11 @@ int SendMessageCommand(WPARAM wParam, LPARAM lParam)
 			HWND hEdit;
 			hEdit = GetDlgItem(hwnd, IDC_MESSAGE);
 			SendMessage(hEdit, EM_SETSEL, -1, SendMessage(hEdit, WM_GETTEXTLENGTH, 0, 0));
-			SendMessageA(hEdit, EM_REPLACESEL, FALSE, (LPARAM) (char *) lParam);
+			SendMessageA(hEdit, EM_REPLACESEL, FALSE, (LPARAM)(char *) lParam);
 		}
 		SendMessage(hwnd, DM_QUERYCONTAINER, 0, (LPARAM) &pContainer);          // ask the message window about its parent...
 		ActivateExistingTab(pContainer, hwnd);
-	}
-	else {
+	} else {
 		TCHAR szName[CONTAINER_NAMELEN + 1];
 		/*
 		 * attempt to fix "double tabs" opened by MS_MSG_SENDMESSAGE
@@ -734,8 +724,7 @@ static int TypingMessage(WPARAM wParam, LPARAM lParam)
 	// check popup config to decide wheter tray notification should be shown.. even for open windows/tabs
 	if (hwnd) {
 		foundWin = MessageWindowOpened(0, (LPARAM)hwnd);
-	}
-	else
+	} else
 		foundWin = 0;
 
 	if ((int) lParam && !foundWin && DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGNOWIN, SRMSGDEFSET_SHOWTYPINGNOWIN)) {
@@ -755,8 +744,7 @@ static int TypingMessage(WPARAM wParam, LPARAM lParam)
 #endif
 			tn.uTimeout = 1000 * 4;
 			CallService(MS_CLIST_SYSTRAY_NOTIFY, 0, (LPARAM) & tn);
-		}
-		else {
+		} else {
 			CLISTEVENT cle;
 
 			ZeroMemory(&cle, sizeof(cle));
@@ -779,7 +767,7 @@ static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
 	DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) lParam;
 	char *szProto = NULL;
 
-	HANDLE hwnd = WindowList_Find(hMessageWindowList,(HANDLE)wParam);
+	HANDLE hwnd = WindowList_Find(hMessageWindowList, (HANDLE)wParam);
 
 	if (hwnd == 0 && wParam != 0) {     // we are not interested in this event if there is no open message window/tab
 		szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
@@ -814,8 +802,7 @@ static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
 			PostMessage(hwnd, DM_UPDATETITLE, 0, 0);
 			if (!strcmp(cws->szSetting, "StatusMsg"))
 				PostMessage(hwnd, DM_UPDATESTATUSMSG, 0, 0);
-		}
-		else if (lstrlenA(cws->szSetting) > 6 && lstrlenA(cws->szSetting) < 9 && !strncmp(cws->szSetting, "Status", 6))
+		} else if (lstrlenA(cws->szSetting) > 6 && lstrlenA(cws->szSetting) < 9 && !strncmp(cws->szSetting, "Status", 6))
 			PostMessage(hwnd, DM_UPDATETITLE, 0, 1);
 		else if (!strcmp(cws->szSetting, "MirVer"))
 			PostMessage(hwnd, DM_CLIENTCHANGED, 0, 0);
@@ -868,12 +855,12 @@ static void RestoreUnreadMessageAlerts(void)
 
 				if (0) {
 					struct NewMessageWindowLParam newData = {
-						0 };
+						0
+					};
 					newData.hContact = hContact;
 					newData.isWchar = 0;
 					CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSPLITNEW), NULL, DlgProcMessage, (LPARAM) & newData);
-				}
-				else {
+				} else {
 					cle.hContact = hContact;
 					cle.hDbEvent = hDbEvent;
 					_snprintf(toolTip, sizeof(toolTip), Translate("Message from %s"), (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) hContact, 0));
@@ -921,8 +908,8 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	static char *szPrefix = "tabsrmm ";
 
 #if defined(_UNICODE)
-	if ( !ServiceExists( MS_DB_CONTACT_GETSETTING_STR )) {
-		MessageBox(NULL, TranslateT( "This plugin requires db3x plugin version 0.5.1.0 or later" ), _T("tabSRMM (Unicode)"), MB_OK );
+	if (!ServiceExists(MS_DB_CONTACT_GETSETTING_STR)) {
+		MessageBox(NULL, TranslateT("This plugin requires db3x plugin version 0.5.1.0 or later"), _T("tabSRMM (Unicode)"), MB_OK);
 		return 1;
 	}
 #endif
@@ -936,11 +923,10 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	ZeroMemory(&mi, sizeof(mi));
 	mi.cbSize = sizeof(mi);
 	mi.position = -2000090000;
-	if ( ServiceExists( MS_SKIN2_GETICONBYHANDLE )) {
+	if (ServiceExists(MS_SKIN2_GETICONBYHANDLE)) {
 		mi.flags = CMIF_ICONFROMICOLIB;
-		mi.icolibItem = LoadSkinnedIconHandle( SKINICON_EVENT_MESSAGE );
-	}
-	else {
+		mi.icolibItem = LoadSkinnedIconHandle(SKINICON_EVENT_MESSAGE);
+	} else {
 		mi.flags = 0;
 		mi.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
 	}
@@ -1003,8 +989,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 			DBWriteContactSettingByte(NULL, SRMSGMOD_T, "default_ieview", 1);
 		DBWriteContactSettingByte(NULL, SRMSGMOD_T, "ieview_installed", 1);
 		HookEvent(ME_IEVIEW_OPTIONSCHANGED, IEViewOptionsChanged);
-	}
-	else
+	} else
 		DBWriteContactSettingByte(NULL, SRMSGMOD_T, "ieview_installed", 0);
 
 	myGlobals.m_hwndClist = (HWND)CallService(MS_CLUI_GETHWND, 0, 0);
@@ -1055,9 +1040,9 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	mi.position = -500050005;
 	mi.hIcon = myGlobals.g_iconContainer;
 	mi.pszContactOwner = NULL;
-	mi.pszName = LPGEN( "&tabSRMM settings" );
+	mi.pszName = LPGEN("&tabSRMM settings");
 	mi.pszService = MS_TABMSG_SETUSERPREFS;
-	myGlobals.m_UserMenuItem = ( HANDLE )CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
+	myGlobals.m_UserMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
 	PreTranslateDates();
 	hEvent_ttbInit = HookEvent("TopToolBar/ModuleLoaded", TTB_Loaded);
 
@@ -1067,7 +1052,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 
 	upd.cbSize = sizeof(upd);
 	upd.szComponentName = pluginInfo.shortName;
-	upd.pbVersion = (BYTE *)CreateVersionStringPlugin((PLUGININFOEX *)&pluginInfo, szCurrentVersion);
+	upd.pbVersion = (BYTE *)CreateVersionStringPlugin((PLUGININFOEX *) & pluginInfo, szCurrentVersion);
 	upd.cpbVersion = strlen((char *)upd.pbVersion);
 	upd.szVersionURL = szFLVersionUrl;
 	upd.szUpdateURL = szFLUpdateurl;
@@ -1269,7 +1254,7 @@ static int IcoLibIconsChanged(WPARAM wParam, LPARAM lParam)
 
 static int IconsChanged(WPARAM wParam, LPARAM lParam)
 {
-	if ( hMsgMenuItem && !ServiceExists( MS_SKIN2_GETICONBYHANDLE )) {
+	if (hMsgMenuItem && !ServiceExists(MS_SKIN2_GETICONBYHANDLE)) {
 		int j;
 		CLISTMENUITEM mi;
 
@@ -1297,7 +1282,7 @@ int LoadSendRecvMessageModule(void)
 	INITCOMMONCONTROLSEX icex;
 
 	icex.dwSize = sizeof(INITCOMMONCONTROLSEX);
-	icex.dwICC   = ICC_COOL_CLASSES|ICC_BAR_CLASSES;
+	icex.dwICC   = ICC_COOL_CLASSES | ICC_BAR_CLASSES;
 	InitCommonControlsEx(&icex);
 
 	{
@@ -1310,8 +1295,7 @@ int LoadSendRecvMessageModule(void)
 		nOffset = -(tzinfo.Bias + tzinfo.StandardBias) * 60;
 		goto tzdone;
 
-		switch (dwResult)
-		{
+		switch (dwResult) {
 
 			case TIME_ZONE_ID_STANDARD:
 				nOffset = -(tzinfo.Bias + tzinfo.StandardBias) * 60;
@@ -1399,7 +1383,7 @@ tzdone:
 	myGlobals.local_gmt_diff = nOffset;
 
 	hDLL = GetModuleHandleA("user32");
-	pSetLayeredWindowAttributes = (PSLWA) GetProcAddress(hDLL,"SetLayeredWindowAttributes");
+	pSetLayeredWindowAttributes = (PSLWA) GetProcAddress(hDLL, "SetLayeredWindowAttributes");
 	pUpdateLayeredWindow = (PULW) GetProcAddress(hDLL, "UpdateLayeredWindow");
 	MyFlashWindowEx = (PFWEX) GetProcAddress(hDLL, "FlashWindowEx");
 	MyAlphaBlend = (PAB) GetProcAddress(GetModuleHandleA("msimg32"), "AlphaBlend");
@@ -1500,20 +1484,20 @@ static STDMETHODIMP_(HRESULT) CREOleCallback_ShowContainerUI(struct CREOleCallba
 static void InitREOleCallback(void)
 {
 	reOleCallback.lpVtbl = &reOleCallbackVtbl;
-	reOleCallback.lpVtbl->AddRef = (ULONG(__stdcall *) (IRichEditOleCallback *)) CREOleCallback_AddRef;
-	reOleCallback.lpVtbl->Release = (ULONG(__stdcall *) (IRichEditOleCallback *)) CREOleCallback_Release;
-	reOleCallback.lpVtbl->QueryInterface = (ULONG(__stdcall *) (IRichEditOleCallback *, REFIID, PVOID *)) CREOleCallback_QueryInterface;
-	reOleCallback.lpVtbl->ContextSensitiveHelp = (HRESULT(__stdcall *) (IRichEditOleCallback *, BOOL)) CREOleCallback_ContextSensitiveHelp;
-	reOleCallback.lpVtbl->DeleteObject = (HRESULT(__stdcall *) (IRichEditOleCallback *, LPOLEOBJECT)) CREOleCallback_DeleteObject;
-	reOleCallback.lpVtbl->GetClipboardData = (HRESULT(__stdcall *) (IRichEditOleCallback *, CHARRANGE *, DWORD, LPDATAOBJECT *)) CREOleCallback_GetClipboardData;
-	reOleCallback.lpVtbl->GetContextMenu = (HRESULT(__stdcall *) (IRichEditOleCallback *, WORD, LPOLEOBJECT, CHARRANGE *, HMENU *)) CREOleCallback_GetContextMenu;
-	reOleCallback.lpVtbl->GetDragDropEffect = (HRESULT(__stdcall *) (IRichEditOleCallback *, BOOL, DWORD, LPDWORD)) CREOleCallback_GetDragDropEffect;
-	reOleCallback.lpVtbl->GetInPlaceContext = (HRESULT(__stdcall *) (IRichEditOleCallback *, LPOLEINPLACEFRAME *, LPOLEINPLACEUIWINDOW *, LPOLEINPLACEFRAMEINFO))
+	reOleCallback.lpVtbl->AddRef = (ULONG(__stdcall *)(IRichEditOleCallback *)) CREOleCallback_AddRef;
+	reOleCallback.lpVtbl->Release = (ULONG(__stdcall *)(IRichEditOleCallback *)) CREOleCallback_Release;
+	reOleCallback.lpVtbl->QueryInterface = (ULONG(__stdcall *)(IRichEditOleCallback *, REFIID, PVOID *)) CREOleCallback_QueryInterface;
+	reOleCallback.lpVtbl->ContextSensitiveHelp = (HRESULT(__stdcall *)(IRichEditOleCallback *, BOOL)) CREOleCallback_ContextSensitiveHelp;
+	reOleCallback.lpVtbl->DeleteObject = (HRESULT(__stdcall *)(IRichEditOleCallback *, LPOLEOBJECT)) CREOleCallback_DeleteObject;
+	reOleCallback.lpVtbl->GetClipboardData = (HRESULT(__stdcall *)(IRichEditOleCallback *, CHARRANGE *, DWORD, LPDATAOBJECT *)) CREOleCallback_GetClipboardData;
+	reOleCallback.lpVtbl->GetContextMenu = (HRESULT(__stdcall *)(IRichEditOleCallback *, WORD, LPOLEOBJECT, CHARRANGE *, HMENU *)) CREOleCallback_GetContextMenu;
+	reOleCallback.lpVtbl->GetDragDropEffect = (HRESULT(__stdcall *)(IRichEditOleCallback *, BOOL, DWORD, LPDWORD)) CREOleCallback_GetDragDropEffect;
+	reOleCallback.lpVtbl->GetInPlaceContext = (HRESULT(__stdcall *)(IRichEditOleCallback *, LPOLEINPLACEFRAME *, LPOLEINPLACEUIWINDOW *, LPOLEINPLACEFRAMEINFO))
 			CREOleCallback_GetInPlaceContext;
-	reOleCallback.lpVtbl->GetNewStorage = (HRESULT(__stdcall *) (IRichEditOleCallback *, LPSTORAGE *)) CREOleCallback_GetNewStorage;
-	reOleCallback.lpVtbl->QueryAcceptData = (HRESULT(__stdcall *) (IRichEditOleCallback *, LPDATAOBJECT, CLIPFORMAT *, DWORD, BOOL, HGLOBAL)) CREOleCallback_QueryAcceptData;
-	reOleCallback.lpVtbl->QueryInsertObject = (HRESULT(__stdcall *) (IRichEditOleCallback *, LPCLSID, LPSTORAGE, LONG)) CREOleCallback_QueryInsertObject;
-	reOleCallback.lpVtbl->ShowContainerUI = (HRESULT(__stdcall *) (IRichEditOleCallback *, BOOL)) CREOleCallback_ShowContainerUI;
+	reOleCallback.lpVtbl->GetNewStorage = (HRESULT(__stdcall *)(IRichEditOleCallback *, LPSTORAGE *)) CREOleCallback_GetNewStorage;
+	reOleCallback.lpVtbl->QueryAcceptData = (HRESULT(__stdcall *)(IRichEditOleCallback *, LPDATAOBJECT, CLIPFORMAT *, DWORD, BOOL, HGLOBAL)) CREOleCallback_QueryAcceptData;
+	reOleCallback.lpVtbl->QueryInsertObject = (HRESULT(__stdcall *)(IRichEditOleCallback *, LPCLSID, LPSTORAGE, LONG)) CREOleCallback_QueryInsertObject;
+	reOleCallback.lpVtbl->ShowContainerUI = (HRESULT(__stdcall *)(IRichEditOleCallback *, BOOL)) CREOleCallback_ShowContainerUI;
 	reOleCallback.refCount = 0;
 }
 
@@ -1545,8 +1529,7 @@ int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild)
 		if (IsIconic(pContainer->hwnd)) {
 			SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
 			SetForegroundWindow(pContainer->hwnd);
-		}
-		else if (GetForegroundWindow() != pContainer->hwnd)
+		} else if (GetForegroundWindow() != pContainer->hwnd)
 			SetForegroundWindow(pContainer->hwnd);
 		if (dat->bType == SESSIONTYPE_IM)
 			SetFocus(GetDlgItem(hwndChild, IDC_MESSAGE));
@@ -1570,12 +1553,13 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
 	HWND hwndNew = 0;
 	HWND hwndTab;
 	struct NewMessageWindowLParam newData = {
-		0};
+		0
+	};
 #if defined(_UNICODE)
 	WCHAR contactNameW[100];
 #endif
 	if (WindowList_Find(hMessageWindowList, hContact) != 0) {
-		_DebugPopup(hContact, "Warning: trying to create duplicate window");
+		_DebugPopup(hContact, _T("Warning: trying to create duplicate window"));
 		return 0;
 	}
 	// if we have a max # of tabs/container set and want to open something in the default container...
@@ -1615,8 +1599,7 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
 			lstrcpyn(newcontactname, contactName, safe_sizeof(newcontactname));
 			newcontactname[127] = 0;
 		}
-	}
-	else
+	} else
 		lstrcpyn(newcontactname, _T("_U_"), safe_sizeof(newcontactname));
 
 	wStatus = szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord((HANDLE) newData.hContact, szProto, "Status", ID_STATUS_OFFLINE);
@@ -1672,7 +1655,7 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
 	pContainer->iChilds++;
 	newData.bWantPopup = bWantPopup;
 	newData.hdbEvent = hdbEvent;
-	hwndNew = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSPLITNEW), GetDlgItem(pContainer->hwnd, IDC_MSGTABS), DlgProcMessage, (LPARAM) &newData);
+	hwndNew = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSPLITNEW), GetDlgItem(pContainer->hwnd, IDC_MSGTABS), DlgProcMessage, (LPARAM) & newData);
 	SendMessage(pContainer->hwnd, WM_SIZE, 0, 0);
 
 	// if the container is minimized, then pop it up...
@@ -1681,8 +1664,7 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
 		if (bPopupContainer) {
 			SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
 			SetFocus(pContainer->hwndActive);
-		}
-		else {
+		} else {
 			if (pContainer->dwFlags & CNT_NOFLASH)
 				SendMessage(pContainer->hwnd, DM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
 			else
@@ -1705,8 +1687,7 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
  * a new (cloned) one.
  */
 
-struct ContainerWindowData *FindMatchingContainer(const TCHAR *szName, HANDLE hContact)
-{
+struct ContainerWindowData *FindMatchingContainer(const TCHAR *szName, HANDLE hContact) {
 	struct ContainerWindowData *pDesired = 0;
 	int iMaxTabs = DBGetContactSettingDword(NULL, SRMSGMOD_T, "maxtabs", 0);
 
@@ -1721,8 +1702,7 @@ struct ContainerWindowData *FindMatchingContainer(const TCHAR *szName, HANDLE hC
 			pCurrent = pCurrent->pNextContainer;
 		}
 		return(pDesired != NULL ? pDesired : NULL);
-	}
-	else
+	} else
 		return FindContainerByName(szName);
 }
 /*
@@ -1743,11 +1723,10 @@ static void CreateImageList(BOOL bInitial)
 
 	if (bInitial) {
 		myGlobals.g_hImageList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 2, 0);
-		myGlobals.g_IconFolder = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TREEVIEWEXPAND), IMAGE_ICON, 16, 16, LR_SHARED);
-		myGlobals.g_IconUnchecked = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TREEVIEWUNCHECKED), IMAGE_ICON, 16, 16, LR_SHARED);
-		myGlobals.g_IconChecked = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TREEVIEWCHECKED), IMAGE_ICON, 16, 16, LR_SHARED);
-	}
-	else
+		//myGlobals.g_IconFolder = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TREEVIEWEXPAND), IMAGE_ICON, 16, 16, LR_SHARED);
+		//myGlobals.g_IconUnchecked = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TREEVIEWUNCHECKED), IMAGE_ICON, 16, 16, LR_SHARED);
+		//myGlobals.g_IconChecked = (HICON) LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TREEVIEWCHECKED), IMAGE_ICON, 16, 16, LR_SHARED);
+	} else
 		ImageList_RemoveAll(myGlobals.g_hImageList);
 
 	hIcon = CreateIcon(g_hInst, 16, 16, 1, 4, NULL, NULL);
@@ -1788,10 +1767,10 @@ static void InitAPI()
 	 * tabSRMM - specific services
 	 */
 
-	hSVC[H_MS_MSG_MOD_MESSAGEDIALOGOPENED] =  CreateServiceFunction(MS_MSG_MOD_MESSAGEDIALOGOPENED,MessageWindowOpened);
+	hSVC[H_MS_MSG_MOD_MESSAGEDIALOGOPENED] =  CreateServiceFunction(MS_MSG_MOD_MESSAGEDIALOGOPENED, MessageWindowOpened);
 	hSVC[H_MS_TABMSG_SETUSERPREFS] = CreateServiceFunction(MS_TABMSG_SETUSERPREFS, SetUserPrefs);
 	hSVC[H_MS_TABMSG_TRAYSUPPORT] =  CreateServiceFunction(MS_TABMSG_TRAYSUPPORT, Service_OpenTrayMenu);
-	hSVC[H_MSG_MOD_GETWINDOWFLAGS] =  CreateServiceFunction(MS_MSG_MOD_GETWINDOWFLAGS,GetMessageWindowFlags);
+	hSVC[H_MSG_MOD_GETWINDOWFLAGS] =  CreateServiceFunction(MS_MSG_MOD_GETWINDOWFLAGS, GetMessageWindowFlags);
 
 	SI_InitStatusIcons();
 
@@ -1807,7 +1786,8 @@ int TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned in
 {
 	MessageWindowEventData mwe = { 0 };
 	struct TABSRMM_SessionInfo se = {
-		0 };
+		0
+	};
 	struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwnd, GWL_USERDATA);
 	BYTE bType = dat ? dat->bType : SESSIONTYPE_IM;
 
@@ -1834,9 +1814,8 @@ int TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned in
 		se.hwnd = hwnd;
 		se.extraFlags = (unsigned int)(LOWORD(subType));
 		se.local = (void *)dat->sendBuffer;
-		mwe.local = (void *)&se;
-	}
-	else
+		mwe.local = (void *) & se;
+	} else
 		mwe.local = NULL;
 	return(NotifyEventHooks(g_hEvent_MsgWin, 0, (LPARAM)&mwe));
 }

@@ -1,4 +1,6 @@
 /*
+astyle --force-indent=tab=4 --brackets=linux --indent-switches
+		--pad=oper --one-line=keep-blocks  --unpad=paren
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
@@ -167,8 +169,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 	}
 
 	switch (msg) {
-		case WM_INITDIALOG:
-		{
+		case WM_INITDIALOG: {
 			TemplateEditorNew *teNew = (TemplateEditorNew *)lParam;
 			COLORREF url_visited = RGB(128, 0, 128);
 			COLORREF url_unvisited = RGB(0, 0, 255);
@@ -251,8 +252,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					break;
 				case IDC_TEMPLATELIST:
 					switch (HIWORD(wParam)) {
-						case LBN_DBLCLK:
-						{
+						case LBN_DBLCLK: {
 							LRESULT iIndex = SendDlgItemMessage(hwndDlg, IDC_TEMPLATELIST, LB_GETCURSEL, 0, 0);
 							if (iIndex != LB_ERR) {
 								SetDlgItemText(hwndDlg, IDC_EDITTEMPLATE, tSet->szTemplates[iIndex]);
@@ -264,8 +264,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 							}
 							break;
 						}
-						case LBN_SELCHANGE:
-						{
+						case LBN_SELCHANGE: {
 							LRESULT iIndex = SendDlgItemMessage(hwndDlg, IDC_TEMPLATELIST, LB_GETCURSEL, 0, 0);
 							teInfo->selchanging = TRUE;
 							if (iIndex != LB_ERR) {
@@ -294,8 +293,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 						InvalidateRect(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), NULL, FALSE);
 					}
 					break;
-				case IDC_SAVETEMPLATE:
-				{
+				case IDC_SAVETEMPLATE: {
 					TCHAR newTemplate[TEMPLATE_LENGTH + 2];
 
 					GetWindowText(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), newTemplate, TEMPLATE_LENGTH);
@@ -311,8 +309,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					SendMessage(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), EM_SETREADONLY, TRUE, 0);
 					break;
 				}
-				case IDC_FORGET:
-				{
+				case IDC_FORGET: {
 					teInfo->changed = FALSE;
 					teInfo->updateInfo[teInfo->inEdit] = FALSE;
 					teInfo->selchanging = TRUE;
@@ -327,8 +324,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					SendMessage(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), EM_SETREADONLY, TRUE, 0);
 					break;
 				}
-				case IDC_REVERT:
-				{
+				case IDC_REVERT: {
 					teInfo->changed = FALSE;
 					teInfo->updateInfo[teInfo->inEdit] = FALSE;
 					teInfo->selchanging = TRUE;
@@ -350,8 +346,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					break;
 			}
 			break;
-		case WM_DRAWITEM:
-		{
+		case WM_DRAWITEM: {
 			DRAWITEMSTRUCT *dis = (DRAWITEMSTRUCT *) lParam;
 			int iItem = dis->itemData;
 			HBRUSH bkg, oldBkg;
@@ -364,13 +359,11 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					FillRect(dis->hDC, &dis->rcItem, bkg);
 					SelectObject(dis->hDC, oldBkg);
 					DeleteObject(bkg);
-				}
-				else
+				} else
 					FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_HIGHLIGHT));
 
 				SetTextColor(dis->hDC, GetSysColor(COLOR_HIGHLIGHTTEXT));
-			}
-			else {
+			} else {
 				if (teInfo->updateInfo[iItem] == TRUE)
 					SetTextColor(dis->hDC, RGB(255, 0, 0));
 				else
@@ -381,8 +374,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			}
 			return TRUE;
 		}
-		case DM_UPDATETEMPLATEPREVIEW:
-		{
+		case DM_UPDATETEMPLATEPREVIEW: {
 			DBEVENTINFO dbei = {0};
 			int iIndex = SendDlgItemMessage(hwndDlg, IDC_TEMPLATELIST, LB_GETCURSEL, 0, 0);
 			TCHAR szTemp[TEMPLATE_LENGTH + 2];
@@ -484,8 +476,7 @@ static char *var_helptxt[] = {
 BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
-		case WM_INITDIALOG:
-		{
+		case WM_INITDIALOG: {
 			int i = 1;
 			char szHeader[2048];
 			SETTEXTEX stx = {ST_SELECTION, myGlobals.m_LangPackCP};
@@ -506,8 +497,7 @@ BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					SendDlgItemMessage(hwndDlg, IDC_HELPTEXT, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)szHeader);
 				}
 				SetWindowText(hwndDlg, TranslateT("Template editor help"));
-			}
-			else {
+			} else {
 				HANDLE hFile;
 				DWORD size, actual_read;
 				BYTE *buffer = 0;
@@ -527,7 +517,7 @@ BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				}
 				MY_pathToAbsolute((char *)lParam, final_path);
 				_splitpath(final_path, NULL, NULL, szBasename, szExt);
-				if ((hFile = CreateFileA(final_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE ) {
+				if ((hFile = CreateFileA(final_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE) {
 					DestroyWindow(hwndDlg);
 					return FALSE;
 				}
@@ -556,8 +546,7 @@ dl_done:
 									SetCursor(myGlobals.hCurHyperlinkHand);
 									SetWindowLong(hwndDlg, DWL_MSGRESULT, TRUE);
 									return TRUE;
-								case WM_LBUTTONUP:
-								{
+								case WM_LBUTTONUP: {
 									TEXTRANGEA tr;
 									CHARRANGE sel;
 									SendDlgItemMessage(hwndDlg, IDC_HELPTEXT, EM_EXGETSEL, 0, (LPARAM) & sel);

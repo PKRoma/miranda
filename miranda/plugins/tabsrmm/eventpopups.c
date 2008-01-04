@@ -1,4 +1,7 @@
 /*
+astyle --force-indent=tab=4 --brackets=linux --indent-switches
+		--pad=oper --one-line=keep-blocks  --unpad=paren
+
   	Name: NewEventNotify - Plugin for Miranda ICQ
   	File: neweventnotify.h - Main Header File
   	Version: 0.0.4
@@ -91,7 +94,7 @@ int NEN_ReadOptions(NEN_OPTIONS *options)
 	options->bShowON = (BYTE)DBGetContactSettingByte(NULL, MODULE, OPT_SHOW_ON, TRUE);
 	options->bNoRSS = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_NORSS, FALSE);
 	options->iDisable = (BYTE)DBGetContactSettingByte(NULL, MODULE, OPT_DISABLE, 0);
-	options->dwStatusMask = (DWORD)DBGetContactSettingDword(NULL, MODULE, "statusmask", (DWORD)-1);
+	options->dwStatusMask = (DWORD)DBGetContactSettingDword(NULL, MODULE, "statusmask", (DWORD) - 1);
 	options->bTraySupport = (BOOL)DBGetContactSettingByte(NULL, MODULE, "traysupport", 0);
 	options->bMinimizeToTray = (BOOL)DBGetContactSettingByte(NULL, MODULE, "mintotray", 0);
 	options->iAutoRestore = 0;
@@ -218,7 +221,7 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 			int i = 0;
 
 			SetWindowLong(GetDlgItem(hWnd, IDC_EVENTOPTIONS), GWL_STYLE, GetWindowLong(GetDlgItem(hWnd, IDC_EVENTOPTIONS), GWL_STYLE) | (TVS_NOHSCROLL | TVS_CHECKBOXES));
-			SendDlgItemMessage(hWnd, IDC_EVENTOPTIONS, TVM_SETIMAGELIST, TVSIL_STATE, (LPARAM)CreateStateImageList());
+			//SendDlgItemMessage(hWnd, IDC_EVENTOPTIONS, TVM_SETIMAGELIST, TVSIL_STATE, (LPARAM)CreateStateImageList());
 			TranslateDialogDefault(hWnd);
 
 			/*
@@ -232,7 +235,7 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 				tvi.item.pszText = TranslateTS(lGroups[i].szName);
 				tvi.item.stateMask = TVIS_STATEIMAGEMASK | TVIS_EXPANDED | TVIS_BOLD;
 				tvi.item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_EXPANDED | TVIS_BOLD;
-				lGroups[i++].handle = (LRESULT)TreeView_InsertItem( GetDlgItem(hWnd, IDC_EVENTOPTIONS), &tvi);
+				lGroups[i++].handle = (LRESULT)TreeView_InsertItem(GetDlgItem(hWnd, IDC_EVENTOPTIONS), &tvi);
 			}
 			i = 0;
 
@@ -244,12 +247,12 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 				tvi.item.lParam = i;
 				tvi.item.stateMask = TVIS_STATEIMAGEMASK;
 				if (defaultItems[i].uType == LOI_TYPE_SETTING)
-					tvi.item.state = INDEXTOSTATEIMAGEMASK(*((BOOL *)defaultItems[i].lParam) ? 3 : 2);
+					tvi.item.state = INDEXTOSTATEIMAGEMASK(*((BOOL *)defaultItems[i].lParam) ? 2 : 1);
 				else if (defaultItems[i].uType == LOI_TYPE_FLAG) {
 					UINT uVal = *((UINT *)defaultItems[i].lParam);
-					tvi.item.state = INDEXTOSTATEIMAGEMASK(uVal & defaultItems[i].id ? 3 : 2);
+					tvi.item.state = INDEXTOSTATEIMAGEMASK(uVal & defaultItems[i].id ? 2 : 1);
 				}
-				defaultItems[i].handle = (LRESULT)TreeView_InsertItem( GetDlgItem(hWnd, IDC_EVENTOPTIONS), &tvi);
+				defaultItems[i].handle = (LRESULT)TreeView_InsertItem(GetDlgItem(hWnd, IDC_EVENTOPTIONS), &tvi);
 				i++;
 			}
 			SendDlgItemMessage(hWnd, IDC_COLBACK_MESSAGE, CPM_SETCOLOUR, 0, options->colBackMsg);
@@ -260,14 +263,14 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 			SendDlgItemMessage(hWnd, IDC_COLTEXT_FILE, CPM_SETCOLOUR, 0, options->colTextFile);
 			SendDlgItemMessage(hWnd, IDC_COLBACK_OTHERS, CPM_SETCOLOUR, 0, options->colBackOthers);
 			SendDlgItemMessage(hWnd, IDC_COLTEXT_OTHERS, CPM_SETCOLOUR, 0, options->colTextOthers);
-			CheckDlgButton(hWnd, IDC_CHKDEFAULTCOL_MESSAGE, options->bDefaultColorMsg?BST_CHECKED:BST_UNCHECKED);
-			CheckDlgButton(hWnd, IDC_CHKDEFAULTCOL_URL, options->bDefaultColorUrl?BST_CHECKED:BST_UNCHECKED);
-			CheckDlgButton(hWnd, IDC_CHKDEFAULTCOL_FILE, options->bDefaultColorFile?BST_CHECKED:BST_UNCHECKED);
-			CheckDlgButton(hWnd, IDC_CHKDEFAULTCOL_OTHERS, options->bDefaultColorOthers?BST_CHECKED:BST_UNCHECKED);
-			SetDlgItemInt(hWnd, IDC_DELAY_MESSAGE, options->iDelayMsg != -1?options->iDelayMsg:0, TRUE);
-			SetDlgItemInt(hWnd, IDC_DELAY_URL, options->iDelayUrl != -1?options->iDelayUrl:0, TRUE);
-			SetDlgItemInt(hWnd, IDC_DELAY_FILE, options->iDelayFile != -1?options->iDelayFile:0, TRUE);
-			SetDlgItemInt(hWnd, IDC_DELAY_OTHERS, options->iDelayOthers != -1?options->iDelayOthers:0, TRUE);
+			CheckDlgButton(hWnd, IDC_CHKDEFAULTCOL_MESSAGE, options->bDefaultColorMsg ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hWnd, IDC_CHKDEFAULTCOL_URL, options->bDefaultColorUrl ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hWnd, IDC_CHKDEFAULTCOL_FILE, options->bDefaultColorFile ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hWnd, IDC_CHKDEFAULTCOL_OTHERS, options->bDefaultColorOthers ? BST_CHECKED : BST_UNCHECKED);
+			SetDlgItemInt(hWnd, IDC_DELAY_MESSAGE, options->iDelayMsg != -1 ? options->iDelayMsg : 0, TRUE);
+			SetDlgItemInt(hWnd, IDC_DELAY_URL, options->iDelayUrl != -1 ? options->iDelayUrl : 0, TRUE);
+			SetDlgItemInt(hWnd, IDC_DELAY_FILE, options->iDelayFile != -1 ? options->iDelayFile : 0, TRUE);
+			SetDlgItemInt(hWnd, IDC_DELAY_OTHERS, options->iDelayOthers != -1 ? options->iDelayOthers : 0, TRUE);
 
 			EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_MESSAGE), !options->bDefaultColorMsg);
 			EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_MESSAGE), !options->bDefaultColorMsg);
@@ -335,22 +338,20 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 						options->bSimpleMode = (BYTE)SendDlgItemMessage(hWnd, IDC_SIMPLEMODE, CB_GETCURSEL, 0, 0);
 						EnableWindow(GetDlgItem(hWnd, IDC_EVENTOPTIONS), options->bSimpleMode == 0);
 						break;
-					case IDC_POPUPSTATUSMODES:
-					{
-						HWND hwndNew = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CHOOSESTATUSMODES), hWnd, DlgProcSetupStatusModes, DBGetContactSettingDword(0, MODULE, "statusmask", (DWORD)-1));
+					case IDC_POPUPSTATUSMODES: {
+						HWND hwndNew = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CHOOSESTATUSMODES), hWnd, DlgProcSetupStatusModes, DBGetContactSettingDword(0, MODULE, "statusmask", (DWORD) - 1));
 						SendMessage(hwndNew, DM_SETPARENTDIALOG, 0, (LPARAM)hWnd);
 						break;
 					}
-					default:
-					{
+					default: {
 						options->bDefaultColorMsg = IsDlgButtonChecked(hWnd, IDC_CHKDEFAULTCOL_MESSAGE);
 						options->bDefaultColorUrl = IsDlgButtonChecked(hWnd, IDC_CHKDEFAULTCOL_URL);
 						options->bDefaultColorFile = IsDlgButtonChecked(hWnd, IDC_CHKDEFAULTCOL_FILE);
 						options->bDefaultColorOthers = IsDlgButtonChecked(hWnd, IDC_CHKDEFAULTCOL_OTHERS);
-						options->iDelayMsg = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_MESSAGE)?(DWORD)-1:(DWORD)GetDlgItemInt(hWnd, IDC_DELAY_MESSAGE, NULL, FALSE);
-						options->iDelayUrl = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_URL)?(DWORD)-1:(DWORD)GetDlgItemInt(hWnd, IDC_DELAY_URL, NULL, FALSE);
-						options->iDelayFile = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_FILE)?(DWORD)-1:(DWORD)GetDlgItemInt(hWnd, IDC_DELAY_FILE, NULL, FALSE);
-						options->iDelayOthers = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_OTHERS)?(DWORD)-1:(DWORD)GetDlgItemInt(hWnd, IDC_DELAY_OTHERS, NULL, FALSE);
+						options->iDelayMsg = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_MESSAGE) ? (DWORD) - 1 : (DWORD)GetDlgItemInt(hWnd, IDC_DELAY_MESSAGE, NULL, FALSE);
+						options->iDelayUrl = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_URL) ? (DWORD) - 1 : (DWORD)GetDlgItemInt(hWnd, IDC_DELAY_URL, NULL, FALSE);
+						options->iDelayFile = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_FILE) ? (DWORD) - 1 : (DWORD)GetDlgItemInt(hWnd, IDC_DELAY_FILE, NULL, FALSE);
+						options->iDelayOthers = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_OTHERS) ? (DWORD) - 1 : (DWORD)GetDlgItemInt(hWnd, IDC_DELAY_OTHERS, NULL, FALSE);
 						options->iAnnounceMethod = SendDlgItemMessage(hWnd, IDC_ANNOUNCEMETHOD, CB_GETITEMDATA, (WPARAM)SendDlgItemMessage(hWnd, IDC_ANNOUNCEMETHOD, CB_GETCURSEL, 0, 0), 0);
 						options->bSimpleMode = (BYTE)SendDlgItemMessage(hWnd, IDC_SIMPLEMODE, CB_GETCURSEL, 0, 0);
 
@@ -395,14 +396,14 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 		case WM_NOTIFY:
 			switch (((LPNMHDR) lParam)->idFrom) {
 				case IDC_EVENTOPTIONS:
-					if (((LPNMHDR)lParam)->code==NM_CLICK) {
+					if (((LPNMHDR)lParam)->code == NM_CLICK) {
 						TVHITTESTINFO hti;
 						TVITEM item = {0};
 
 						item.mask = TVIF_HANDLE | TVIF_STATE;
 						item.stateMask = TVIS_STATEIMAGEMASK | TVIS_BOLD;
-						hti.pt.x=(short)LOWORD(GetMessagePos());
-						hti.pt.y=(short)HIWORD(GetMessagePos());
+						hti.pt.x = (short)LOWORD(GetMessagePos());
+						hti.pt.y = (short)HIWORD(GetMessagePos());
 						ScreenToClient(((LPNMHDR)lParam)->hwndFrom, &hti.pt);
 						if (TreeView_HitTest(((LPNMHDR)lParam)->hwndFrom, &hti)) {
 							item.hItem = (HTREEITEM)hti.hItem;
@@ -410,12 +411,13 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 							if (item.state & TVIS_BOLD && hti.flags & TVHT_ONITEMSTATEICON) {
 								item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_BOLD;
 								SendDlgItemMessageA(hWnd, IDC_EVENTOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
-							}
-							else if (hti.flags&TVHT_ONITEMSTATEICON) {
+							} else if (hti.flags&TVHT_ONITEMSTATEICON) {
+								/*
 								if (((item.state & TVIS_STATEIMAGEMASK) >> 12) == 3) {
 									item.state = INDEXTOSTATEIMAGEMASK(1);
 									SendDlgItemMessageA(hWnd, IDC_EVENTOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
 								}
+								*/
 								SendMessage(GetParent(hWnd), PSM_CHANGED, 0, 0);
 							}
 						}
@@ -436,11 +438,10 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 						SendDlgItemMessageA(hWnd, IDC_EVENTOPTIONS, TVM_GETITEMA, 0, (LPARAM)&item);
 						if (defaultItems[i].uType == LOI_TYPE_SETTING) {
 							BOOL *ptr = (BOOL *)defaultItems[i].lParam;
-							*ptr = (item.state >> 12) == 3 ? TRUE : FALSE;
-						}
-						else if (defaultItems[i].uType == LOI_TYPE_FLAG) {
+							*ptr = (item.state >> 12) == 2 ? TRUE : FALSE;
+						} else if (defaultItems[i].uType == LOI_TYPE_FLAG) {
 							UINT *uVal = (UINT *)defaultItems[i].lParam;
-							*uVal = ((item.state >> 12) == 3) ? *uVal | defaultItems[i].id : *uVal & ~defaultItems[i].id;
+							*uVal = ((item.state >> 12) == 2) ? *uVal | defaultItems[i].id : *uVal & ~defaultItems[i].id;
 						}
 						i++;
 					}
@@ -474,8 +475,7 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 					break;
 			}
 			break;
-		case WM_DESTROY:
-		{
+		case WM_DESTROY: {
 			SendDlgItemMessage(hWnd, IDC_EVENTOPTIONS, TVM_GETIMAGELIST, TVSIL_STATE, 0);
 			bWmNotify = TRUE;
 			break;
@@ -490,7 +490,7 @@ static int NumberPopupData(HANDLE hContact)
 {
 	int n;
 
-	for (n=0;n<20;n++) {
+	for (n = 0;n < 20;n++) {
 		if (!PopUpList[n] && !hContact)
 			return n;
 
@@ -593,12 +593,12 @@ static int PopupUpdate(HANDLE hContact, HANDLE hEvent)
 		}
 		CallService(MS_DB_EVENT_GET, (WPARAM)hEvent, (LPARAM)&dbe);
 		if (pdata->pluginOptions->bShowDate || pdata->pluginOptions->bShowTime) {
-			strncpy(formatTime,"",sizeof(formatTime));
+			strncpy(formatTime, "", sizeof(formatTime));
 			if (pdata->pluginOptions->bShowDate)
 				strncpy(formatTime, "%Y.%m.%d ", sizeof(formatTime));
 			if (pdata->pluginOptions->bShowTime)
 				strncat(formatTime, "%H:%M", sizeof(formatTime));
-			strftime(timestamp,sizeof(timestamp), formatTime, localtime((time_t *)&dbe.timestamp));
+			strftime(timestamp, sizeof(timestamp), formatTime, localtime((time_t *)&dbe.timestamp));
 			mir_snprintf(pdata->eventData[pdata->nrMerged].szText, MAX_SECONDLINE, "\n[b][i]%s[/i][/b]\n", timestamp);
 		}
 		strncat(pdata->eventData[pdata->nrMerged].szText, GetPreview(dbe.eventType, (char *)dbe.pBlob), MAX_SECONDLINE);
@@ -619,7 +619,7 @@ static int PopupUpdate(HANDLE hContact, HANDLE hEvent)
 			if (available <= 0)
 				break;
 		}
-		i = (available > 0) ? i + 1: i + 2;
+		i = (available > 0) ? i + 1 : i + 2;
 		for (; i <= pdata->nrMerged; i++) {
 			strncat(lpzText, pdata->eventData[i].szText, MAX_SECONDLINE);
 		}
@@ -778,8 +778,7 @@ static int PopupShow(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent,
 	if (hEvent && (pluginOptions->bPreview || hContact == 0)) {
 		dbe.cbBlob = CallService(MS_DB_EVENT_GETBLOBSIZE, (WPARAM)hEvent, 0);
 		dbe.pBlob = (PBYTE)malloc(dbe.cbBlob);
-	}
-	else
+	} else
 		dbe.cbBlob = 0;
 	CallService(MS_DB_EVENT_GET, (WPARAM)hEvent, (LPARAM)&dbe);
 
@@ -801,8 +800,7 @@ static int PopupShow(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent,
 	if (hContact == 0 && (eventType == EVENTTYPE_MESSAGE || eventType == EVENTTYPE_FILE || eventType == EVENTTYPE_URL || eventType == -1)) {
 		strncpy(pud.lpzContactName, "Plugin Test", MAX_CONTACTNAME);
 		strncpy(pud.lpzText, sampleEvent, MAX_SECONDLINE);
-	}
-	else {
+	} else {
 		if (hContact)
 			mir_snprintf(pud.lpzContactName, MAX_CONTACTNAME, "%s", (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0));
 		else
@@ -858,10 +856,10 @@ static char *GetPreviewW(UINT eventType, DBEVENTINFO* dbe, BOOL *isWstring)
 	//now get text
 	switch (eventType) {
 		case EVENTTYPE_MESSAGE:
-			if ( pBlob && ServiceExists( MS_DB_EVENT_GETTEXT )) {
-				WCHAR* buf = DbGetEventTextW( dbe, CP_ACP );
-				wcsncpy(( WCHAR* )szPreviewHelp, buf, sizeof(szPreviewHelp) / sizeof(WCHAR));
-				mir_free( buf );
+			if (pBlob && ServiceExists(MS_DB_EVENT_GETTEXT)) {
+				WCHAR* buf = DbGetEventTextW(dbe, CP_ACP);
+				wcsncpy((WCHAR*)szPreviewHelp, buf, sizeof(szPreviewHelp) / sizeof(WCHAR));
+				mir_free(buf);
 				*isWstring = 1;
 				return (char *)szPreviewHelp;
 			}
@@ -872,16 +870,14 @@ static char *GetPreviewW(UINT eventType, DBEVENTINFO* dbe, BOOL *isWstring)
 				int wlen;
 
 				if ((dbe->cbBlob >= (DWORD)(2 * msglen))) {
-					msg = (wchar_t *) &pBlob[msglen];
+					msg = (wchar_t *) & pBlob[msglen];
 					wlen = safe_wcslen(msg, (dbe->cbBlob - msglen) / 2);
-					if (wlen <= (msglen - 1) && wlen > 0){
+					if (wlen <= (msglen - 1) && wlen > 0) {
 						*isWstring = 1;
 						return (char *)msg;
-					}
-					else
+					} else
 						goto nounicode;
-				}
-				else {
+				} else {
 nounicode:
 					*isWstring = 0;
 					return (char *)pBlob;
@@ -993,8 +989,7 @@ static int PopupUpdateW(HANDLE hContact, HANDLE hEvent)
 				temp[MAX_SECONDLINE - 1] = 0;
 				wcsncat(pdata->eventData[pdata->nrMerged].szText, temp, MAX_SECONDLINE);
 			}
-		}
-		else
+		} else
 			wcsncat(pdata->eventData[pdata->nrMerged].szText, L"No body", MAX_SECONDLINE);
 
 		pdata->eventData[pdata->nrMerged].szText[MAX_SECONDLINE - 1] = 0;
@@ -1014,7 +1009,7 @@ static int PopupUpdateW(HANDLE hContact, HANDLE hEvent)
 			if (available <= 0)
 				break;
 		}
-		i = (available > 0) ? i + 1: i + 2;
+		i = (available > 0) ? i + 1 : i + 2;
 		for (; i <= pdata->nrMerged; i++) {
 			wcsncat(lpzText, pdata->eventData[i].szText, MAX_SECONDLINE);
 		}
@@ -1165,8 +1160,7 @@ static int PopupShowW(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent
 	if (hEvent && (pluginOptions->bPreview || hContact == 0)) {
 		dbe.cbBlob = CallService(MS_DB_EVENT_GETBLOBSIZE, (WPARAM)hEvent, 0);
 		dbe.pBlob = (PBYTE)malloc(dbe.cbBlob);
-	}
-	else
+	} else
 		dbe.cbBlob = 0;
 	CallService(MS_DB_EVENT_GET, (WPARAM)hEvent, (LPARAM)&dbe);
 
@@ -1190,8 +1184,7 @@ static int PopupShowW(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent
 	if (hContact) {
 		MY_GetContactDisplayNameW(hContact, pud.lpwzContactName, MAX_CONTACTNAME, (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0), 0);
 		pud.lpwzContactName[MAX_CONTACTNAME - 1] = 0;
-	}
-	else {
+	} else {
 		MultiByteToWideChar(myGlobals.m_LangPackCP, 0, dbe.szModule, -1, pud.lpwzContactName, MAX_CONTACTNAME);
 		pud.lpwzContactName[MAX_CONTACTNAME - 1] = 0;
 	}
@@ -1204,8 +1197,7 @@ static int PopupShowW(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent
 			MultiByteToWideChar(codePage, 0, szPreview, -1, pud.lpwzText, MAX_SECONDLINE);
 			pud.lpwzText[MAX_SECONDLINE - 1] = 0;
 		}
-	}
-	else
+	} else
 		wcsncpy(pud.lpwzText, L"No body", MAX_SECONDLINE);
 
 	if (iPreviewLimit > 4 && iPreviewLimit < lstrlenW(pud.lpwzText)) {
@@ -1249,7 +1241,7 @@ static int PopupPreview(NEN_OPTIONS *pluginOptions)
 	PopupShow(pluginOptions, NULL, NULL, EVENTTYPE_MESSAGE);
 	PopupShow(pluginOptions, NULL, NULL, EVENTTYPE_URL);
 	PopupShow(pluginOptions, NULL, NULL, EVENTTYPE_FILE);
-	PopupShow(pluginOptions, NULL, NULL, (DWORD)-1);
+	PopupShow(pluginOptions, NULL, NULL, (DWORD) - 1);
 
 	return 0;
 }
@@ -1296,8 +1288,7 @@ static int tabSRMM_ShowBalloon(WPARAM wParam, LPARAM lParam, UINT eventType)
 			mir_snprintf(szTitle, 64, "%27.27s...", nickName);
 		else
 			mir_snprintf(szTitle, 64, "%s", nickName);
-	}
-	else
+	} else
 		mir_snprintf(szTitle, 64, "No Nickname");
 
 #if defined(_UNICODE)
@@ -1313,18 +1304,16 @@ static int tabSRMM_ShowBalloon(WPARAM wParam, LPARAM lParam, UINT eventType)
 		int wlen;
 
 		if (dbei.cbBlob >= (DWORD)(2 * msglen))  {
-			msg = (wchar_t *) &dbei.pBlob[msglen];
+			msg = (wchar_t *) & dbei.pBlob[msglen];
 			wlen = safe_wcslen(msg, (dbei.cbBlob - msglen) / 2);
 			if (wlen <= (msglen - 1) && wlen > 0) {
 				if (lstrlenW(msg) >= iPreviewLimit) {
 					wcsncpy(&msg[iPreviewLimit - 3], L"...", 3);
 					msg[iPreviewLimit] = 0;
 				}
-			}
-			else
+			} else
 				goto nounicode;
-		}
-		else {
+		} else {
 nounicode:
 			msg = (wchar_t *)alloca(2 * (msglen + 1));
 			MultiByteToWideChar(myGlobals.m_LangPackCP, 0, (char *)dbei.pBlob, -1, msg, msglen);
@@ -1343,8 +1332,7 @@ nounicode:
 		strncpy(nim.szInfo, (char *)dbei.pBlob, 256);
 		nim.szInfo[255] = 0;
 #endif
-	}
-	else {
+	} else {
 #if defined(_UNICODE)
 		MultiByteToWideChar(myGlobals.m_LangPackCP, 0, (char *)szPreview, -1, nim.szInfo, 250);
 #else
@@ -1359,8 +1347,7 @@ nounicode:
 		mir_sntprintf(finalOSDString, iLen, TranslateT("Message from %s: %s"), nim.szInfoTitle, nim.szInfo);
 		CallService("OSD/Announce", (WPARAM)finalOSDString, 0);
 		free(finalOSDString);
-	}
-	else {
+	} else {
 		myGlobals.m_TipOwner = (HANDLE)wParam;
 		Shell_NotifyIcon(NIM_MODIFY, (NOTIFYICONDATA *)&nim);
 	}
@@ -1454,8 +1441,7 @@ int UpdateTrayMenu(struct MessageWindowData *dat, WORD wStatus, char *szProto, c
 			if (myGlobals.m_UnreadInTray)
 				SetEvent(g_hEvent);
 			SetMenuItemInfo(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
-		}
-		else {
+		} else {
 			UINT codePage = DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", myGlobals.m_LangPackCP);
 #if defined(_UNICODE)
 			MY_GetContactDisplayNameW(hContact, szWNick, 100, (const char *)szProto, codePage);
@@ -1478,8 +1464,7 @@ int UpdateTrayMenu(struct MessageWindowData *dat, WORD wStatus, char *szProto, c
 					SetEvent(g_hEvent);
 				if (fromEvent == 2)
 					mii.dwItemData |= 0x10000000;
-			}
-			else {
+			} else {
 				GetMenuItemInfo(myGlobals.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
 				mii.dwItemData += (fromEvent ? 1 : 0);
 				myGlobals.m_UnreadInTray += (fromEvent ? 1 : 0);
@@ -1542,7 +1527,7 @@ int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOp
 		DWORD dwStatus = 0;
 		if (szProto != NULL) {
 			dwStatus = (DWORD)CallProtoService(szProto, PS_GETSTATUS, 0, 0);
-			if (!(dwStatus == 0 || dwStatus <= ID_STATUS_OFFLINE || ((1<<(dwStatus - ID_STATUS_ONLINE)) & nen_options.dwStatusMask)))             // should never happen, but...
+			if (!(dwStatus == 0 || dwStatus <= ID_STATUS_OFFLINE || ((1 << (dwStatus - ID_STATUS_ONLINE)) & nen_options.dwStatusMask)))           // should never happen, but...
 				return 0;
 		}
 	}

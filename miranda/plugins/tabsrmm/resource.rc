@@ -1186,9 +1186,9 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_TREEVIEWEXPAND      ICON    DISCARDABLE     "res/expand.ico"
-IDI_TREEVIEWCHECKED     ICON    DISCARDABLE     "res/checked.ico"
-IDI_TREEVIEWUNCHECKED   ICON    DISCARDABLE     "res/unchecked.ico"
+// IDI_TREEVIEWEXPAND      ICON    DISCARDABLE     "res/expand.ico"
+// IDI_TREEVIEWCHECKED     ICON    DISCARDABLE     "res/checked.ico"
+// IDI_TREEVIEWUNCHECKED   ICON    DISCARDABLE     "res/unchecked.ico"
 #endif    // Neutral resources
 /////////////////////////////////////////////////////////////////////////////
 

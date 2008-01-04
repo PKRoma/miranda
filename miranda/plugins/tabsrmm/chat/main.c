@@ -1,4 +1,7 @@
 /*
+astyle --force-indent=tab=4 --brackets=linux --indent-switches
+		--pad=oper --one-line=keep-blocks  --unpad=paren
+
 Chat module plugin for Miranda IM
 
 Copyright (C) 2003 Jörgen Persson
@@ -79,8 +82,8 @@ int Chat_Unload(void)
 
 	CList_SetAllOffline(TRUE);
 
-	mir_free( pszActiveWndID );
-	mir_free( pszActiveWndModule );
+	mir_free(pszActiveWndID);
+	mir_free(pszActiveWndModule);
 
 	DestroyMenu(g_hMenu);
 	DestroyServiceFunctions();

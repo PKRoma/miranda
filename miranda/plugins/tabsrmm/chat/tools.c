@@ -1,4 +1,7 @@
 /*
+astyle --force-indent=tab=4 --brackets=linux --indent-switches
+		--pad=oper --one-line=keep-blocks  --unpad=paren
+
 Chat module plugin for Miranda IM
 
 Copyright (C) 2003 Jörgen Persson
@@ -61,12 +64,12 @@ TCHAR* RemoveFormatting(const TCHAR* pszWord)
 	int i = 0;
 	int j = 0;
 
-	if ( pszWord == 0 || lstrlen(pszWord) == 0 )
+	if (pszWord == 0 || lstrlen(pszWord) == 0)
 		return NULL;
 
-	while (j < 9999 && i <= lstrlen( pszWord )) {
+	while (j < 9999 && i <= lstrlen(pszWord)) {
 		if (pszWord[i] == '%') {
-			switch ( pszWord[i+1] ) {
+			switch (pszWord[i+1]) {
 				case '%':
 					szTemp[j] = '%';
 					j++;
@@ -97,8 +100,7 @@ TCHAR* RemoveFormatting(const TCHAR* pszWord)
 					i++;
 					break;
 			}
-		}
-		else {
+		} else {
 			szTemp[j] = pszWord[i];
 			j++;
 			i++;
@@ -119,7 +121,7 @@ static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 	switch (message) {
 		case WM_COMMAND:
 			if (HIWORD(wParam) == STN_CLICKED) {
-				SESSION_INFO* si = (SESSION_INFO*)CallService(MS_POPUP_GETPLUGINDATA, (WPARAM)hWnd,(LPARAM)0);;
+				SESSION_INFO* si = (SESSION_INFO*)CallService(MS_POPUP_GETPLUGINDATA, (WPARAM)hWnd, (LPARAM)0);;
 
 				CallFunctionAsync(ShowRoomFromPopup, si);
 
@@ -127,9 +129,8 @@ static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 				return TRUE;
 			}
 			break;
-		case WM_CONTEXTMENU:
-		{
-			SESSION_INFO* si = (SESSION_INFO*)CallService(MS_POPUP_GETPLUGINDATA, (WPARAM)hWnd,(LPARAM)0);
+		case WM_CONTEXTMENU: {
+			SESSION_INFO* si = (SESSION_INFO*)CallService(MS_POPUP_GETPLUGINDATA, (WPARAM)hWnd, (LPARAM)0);
 			if (si->hContact)
 				if (CallService(MS_CLIST_GETEVENT, (WPARAM)si->hContact, (LPARAM)0))
 					CallService(MS_CLIST_REMOVEEVENT, (WPARAM)si->hContact, (LPARAM)szChatIconString);
@@ -137,14 +138,14 @@ static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 			if (si->hWnd && KillTimer(si->hWnd, TIMERID_FLASHWND))
 				FlashWindow(si->hWnd, FALSE);
 
-			PUDeletePopUp( hWnd );
+			PUDeletePopUp(hWnd);
 		}
 		break;
 	}
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
-static int ShowPopup (HANDLE hContact, SESSION_INFO* si, HICON hIcon,  char* pszProtoName,  TCHAR* pszRoomName, COLORREF crBkg, const TCHAR* fmt, ...)
+static int ShowPopup(HANDLE hContact, SESSION_INFO* si, HICON hIcon,  char* pszProtoName,  TCHAR* pszRoomName, COLORREF crBkg, const TCHAR* fmt, ...)
 {
 	POPUPDATAT pd = {0};
 	va_list marker;
@@ -159,25 +160,23 @@ static int ShowPopup (HANDLE hContact, SESSION_INFO* si, HICON hIcon,  char* psz
 
 	pd.lchContact = hContact;
 
-	if ( hIcon )
+	if (hIcon)
 		pd.lchIcon = hIcon ;
 	else
-		pd.lchIcon = LoadIconEx(IDI_CHANMGR, "window", 0, 0 );
+		pd.lchIcon = LoadIconEx(IDI_CHANMGR, "window", 0, 0);
 
-	mir_sntprintf(pd.lptzContactName, MAX_CONTACTNAME-1, _T(TCHAR_STR_PARAM) _T(" - %s"),
-				  pszProtoName, CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR ));
-	lstrcpyn( pd.lptzText, TranslateTS(szBuf), MAX_SECONDLINE-1);
+	mir_sntprintf(pd.lptzContactName, MAX_CONTACTNAME - 1, _T(TCHAR_STR_PARAM) _T(" - %s"),
+				  pszProtoName, CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR));
+	lstrcpyn(pd.lptzText, TranslateTS(szBuf), MAX_SECONDLINE - 1);
 	pd.iSeconds = g_Settings.iPopupTimeout;
 
 	if (g_Settings.iPopupStyle == 2) {
 		pd.colorBack = 0;
 		pd.colorText = 0;
-	}
-	else if (g_Settings.iPopupStyle == 3) {
+	} else if (g_Settings.iPopupStyle == 3) {
 		pd.colorBack = g_Settings.crPUBkgColour;
 		pd.colorText = g_Settings.crPUTextColour;
-	}
-	else {
+	} else {
 		pd.colorBack = g_Settings.crLogBackground;
 		pd.colorText = crBkg;
 	}
@@ -191,10 +190,10 @@ static BOOL DoTrayIcon(SESSION_INFO* si, GCEVENT * gce)
 {
 	int iEvent = gce->pDest->iType;
 
-	if ( si && (iEvent & si->iLogTrayFlags) ) {
-		switch ( iEvent ) {
-			case GC_EVENT_MESSAGE|GC_EVENT_HIGHLIGHT :
-			case GC_EVENT_ACTION|GC_EVENT_HIGHLIGHT :
+	if (si && (iEvent & si->iLogTrayFlags)) {
+		switch (iEvent) {
+			case GC_EVENT_MESSAGE | GC_EVENT_HIGHLIGHT :
+			case GC_EVENT_ACTION | GC_EVENT_HIGHLIGHT :
 				CList_AddEvent(si->hContact, myGlobals.g_IconMsgEvent, szChatIconString, 0, TranslateT("%s wants your attention in %s"), gce->ptszNick, si->ptszName);
 				break;
 			case GC_EVENT_MESSAGE :
@@ -278,7 +277,7 @@ static BOOL DoPopup(SESSION_INFO* si, GCEVENT* gce, struct MessageWindowData* da
 			DWORD dwStatus = 0;
 			if (szProto != NULL) {
 				dwStatus = (DWORD)CallProtoService(szProto, PS_GETSTATUS, 0, 0);
-				if (!(dwStatus == 0 || dwStatus <= ID_STATUS_OFFLINE || ((1<<(dwStatus - ID_STATUS_ONLINE)) & nen_options.dwStatusMask)))              // should never happen, but...
+				if (!(dwStatus == 0 || dwStatus <= ID_STATUS_OFFLINE || ((1 << (dwStatus - ID_STATUS_ONLINE)) & nen_options.dwStatusMask)))            // should never happen, but...
 					return 0;
 			}
 		}
@@ -301,14 +300,14 @@ static BOOL DoPopup(SESSION_INFO* si, GCEVENT* gce, struct MessageWindowData* da
 		}
 passed:
 		switch (iEvent) {
-			case GC_EVENT_MESSAGE|GC_EVENT_HIGHLIGHT :
-				ShowPopup(si->hContact, si, LoadSkinnedIcon(SKINICON_EVENT_MESSAGE), si->pszModule, si->ptszName, aFonts[16].color, TranslateT("%s says: %s"), gce->ptszNick, RemoveFormatting( gce->ptszText ));
+			case GC_EVENT_MESSAGE | GC_EVENT_HIGHLIGHT :
+				ShowPopup(si->hContact, si, LoadSkinnedIcon(SKINICON_EVENT_MESSAGE), si->pszModule, si->ptszName, aFonts[16].color, TranslateT("%s says: %s"), gce->ptszNick, RemoveFormatting(gce->ptszText));
 				break;
-			case GC_EVENT_ACTION|GC_EVENT_HIGHLIGHT :
+			case GC_EVENT_ACTION | GC_EVENT_HIGHLIGHT :
 				ShowPopup(si->hContact, si, LoadSkinnedIcon(SKINICON_EVENT_MESSAGE), si->pszModule, si->ptszName, aFonts[16].color, _T("%s %s"), gce->ptszNick, RemoveFormatting(gce->ptszText));
 				break;
 			case GC_EVENT_MESSAGE :
-				ShowPopup(si->hContact, si, hIcons[ICON_MESSAGE], si->pszModule, si->ptszName, aFonts[9].color, TranslateT("%s says: %s"), gce->ptszNick, RemoveFormatting( gce->ptszText));
+				ShowPopup(si->hContact, si, hIcons[ICON_MESSAGE], si->pszModule, si->ptszName, aFonts[9].color, TranslateT("%s says: %s"), gce->ptszNick, RemoveFormatting(gce->ptszText));
 				break;
 			case GC_EVENT_ACTION:
 				ShowPopup(si->hContact, si, hIcons[ICON_ACTION], si->pszModule, si->ptszName, aFonts[15].color, _T("%s %s"), gce->ptszNick, RemoveFormatting(gce->ptszText));
@@ -326,7 +325,7 @@ passed:
 				if (!gce->pszText)
 					ShowPopup(si->hContact, si, hIcons[ICON_QUIT], si->pszModule, si->ptszName, aFonts[5].color, TranslateT("%s has disconnected"), gce->ptszNick);
 				else
-					ShowPopup(si->hContact, si, hIcons[ICON_QUIT], si->pszModule, si->ptszName, aFonts[5].color, TranslateT("%s has disconnected (%s)"), gce->ptszNick,RemoveFormatting(gce->ptszText));
+					ShowPopup(si->hContact, si, hIcons[ICON_QUIT], si->pszModule, si->ptszName, aFonts[5].color, TranslateT("%s has disconnected (%s)"), gce->ptszNick, RemoveFormatting(gce->ptszText));
 				break;
 			case GC_EVENT_NICK:
 				ShowPopup(si->hContact, si, hIcons[ICON_NICK], si->pszModule, si->ptszName, aFonts[7].color, TranslateT("%s is now known as %s"), gce->ptszNick, gce->ptszText);
@@ -361,8 +360,7 @@ passed:
 	return TRUE;
 }
 
-typedef struct
-{
+typedef struct {
 	struct MessageWindowData *dat;
 	SESSION_INFO* si;
 	const char* sound;
@@ -371,18 +369,18 @@ typedef struct
 	BOOL  bActiveTab, bHighlight, bInactive, bMustFlash, bMustAutoswitch;
 } FLASH_PARAMS;
 
-static void DoFlashAndSoundThread( FLASH_PARAMS* p )
+static void DoFlashAndSoundThread(FLASH_PARAMS* p)
 {
 	if (p->sound) {
-		if ( !lstrcmpA( p->sound, "ChatHighlight"))
-			SkinPlaySound( p->sound );
+		if (!lstrcmpA(p->sound, "ChatHighlight"))
+			SkinPlaySound(p->sound);
 		else
-			Chat_PlaySound( p->sound, p->si->hWnd, p->dat);
+			Chat_PlaySound(p->sound, p->si->hWnd, p->dat);
 	}
 
 	if (p->si->hWnd && p->dat) {
 		HWND hwndTab = GetParent(p->si->hWnd);
-		BOOL bForcedIcon = ( p->hNotifyIcon == hIcons[ICON_HIGHLIGHT] || p->hNotifyIcon == hIcons[ICON_MESSAGE] );
+		BOOL bForcedIcon = (p->hNotifyIcon == hIcons[ICON_HIGHLIGHT] || p->hNotifyIcon == hIcons[ICON_MESSAGE]);
 
 		if ((p->iEvent & p->si->iLogTrayFlags) || bForcedIcon) {
 			if (!p->bActiveTab) {
@@ -444,7 +442,7 @@ static void DoFlashAndSoundThread( FLASH_PARAMS* p )
 	if (p->bMustFlash)
 		UpdateTrayMenu(p->dat, p->si->wStatus, p->si->pszModule, p->dat ? p->dat->szStatus : NULL, p->si->hContact, p->bHighlight ? 2 : 1);
 
-	free( p );
+	free(p);
 }
 
 BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO* si, GCEVENT * gce, BOOL bHighlight, int bManyFix)
@@ -456,7 +454,7 @@ BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO* si, GCEVENT * gce, BOOL bHighligh
 	if (!gce || si == NULL || gce->bIsMe || si->iType == GCW_SERVER)
 		return FALSE;
 
-	params = (FLASH_PARAMS*)calloc( 1, sizeof(FLASH_PARAMS));
+	params = (FLASH_PARAMS*)calloc(1, sizeof(FLASH_PARAMS));
 	params->si = si;
 	params->bInactive = TRUE;
 	params->bActiveTab = params->bMustFlash = params->bMustAutoswitch = FALSE;
@@ -471,7 +469,7 @@ BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO* si, GCEVENT * gce, BOOL bHighligh
 	}
 	params->iEvent = gce->pDest->iType;
 
-	if ( bHighlight ) {
+	if (bHighlight) {
 		gce->pDest->iType |= GC_EVENT_HIGHLIGHT;
 		if (params->bInactive || !g_Settings.SoundsFocus)
 			params->sound = "ChatHighlight";
@@ -487,8 +485,7 @@ BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO* si, GCEVENT * gce, BOOL bHighligh
 			params->bMustFlash = TRUE;
 		params->bMustAutoswitch = TRUE;
 		params->hNotifyIcon = hIcons[ICON_HIGHLIGHT];
-	}
-	else {
+	} else {
 		// do blinking icons in tray
 		if (params->bInactive || !g_Settings.TrayIconInactiveOnly)
 			DoTrayIcon(si, gce);
@@ -537,7 +534,7 @@ BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO* si, GCEVENT * gce, BOOL bHighligh
 						params->sound = "ChatMessage";
 					if (params->bInactive && !(si->wState&STATE_TALK)) {
 						si->wState |= STATE_TALK;
-						DBWriteContactSettingWord(si->hContact, si->pszModule,"ApparentMode",(LPARAM)(WORD) 40071);
+						DBWriteContactSettingWord(si->hContact, si->pszModule, "ApparentMode", (LPARAM)(WORD) 40071);
 					}
 					break;
 				case GC_EVENT_ACTION:
@@ -565,8 +562,7 @@ BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO* si, GCEVENT * gce, BOOL bHighligh
 					}
 					break;
 			}
-		}
-		else {
+		} else {
 			switch (params->iEvent) {
 				case GC_EVENT_JOIN:
 					params->hNotifyIcon = hIcons[ICON_JOIN];
@@ -609,7 +605,7 @@ BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO* si, GCEVENT * gce, BOOL bHighligh
 		}
 	}
 
-	mir_forkthread( DoFlashAndSoundThread, params );
+	mir_forkthread(DoFlashAndSoundThread, params);
 	return TRUE;
 }
 
@@ -635,19 +631,19 @@ int Chat_GetColorIndex(const char* pszModule, COLORREF cr)
 
 void CheckColorsInModule(const char* pszModule)
 {
-	MODULEINFO * pMod = MM_FindModule( pszModule );
+	MODULEINFO * pMod = MM_FindModule(pszModule);
 	int i = 0;
 	COLORREF crFG;
 	COLORREF crBG = (COLORREF)DBGetContactSettingDword(NULL, FONTMODULE, "inputbg", GetSysColor(COLOR_WINDOW));
 
 	LoadLogfont(MSGFONTID_MESSAGEAREA, NULL, &crFG, FONTMODULE);
 
-	if ( !pMod )
+	if (!pMod)
 		return;
 
 	for (i = 0; i < pMod->nColorCount; i++) {
 		if (pMod->crColors[i] == crFG || pMod->crColors[i] == crBG) {
-			if (pMod->crColors[i] == RGB(255,255,255))
+			if (pMod->crColors[i] == RGB(255, 255, 255))
 				pMod->crColors[i]--;
 			else
 				pMod->crColors[i]++;
@@ -655,13 +651,13 @@ void CheckColorsInModule(const char* pszModule)
 	}
 }
 
-TCHAR* my_strstri( const TCHAR* s1, const TCHAR* s2)
+TCHAR* my_strstri(const TCHAR* s1, const TCHAR* s2)
 {
-	int i,j,k;
-	for (i=0;s1[i];i++)
-		for (j=i,k=0; tolower(s1[j]) == tolower(s2[k]);j++,k++)
+	int i, j, k;
+	for (i = 0;s1[i];i++)
+		for (j = i, k = 0; tolower(s1[j]) == tolower(s2[k]);j++, k++)
 			if (!s2[k+1])
-				return (TCHAR*)(s1+i);
+				return (TCHAR*)(s1 + i);
 
 	return NULL;
 }
@@ -672,7 +668,7 @@ TCHAR* my_strstri( const TCHAR* s1, const TCHAR* s2)
 
 BOOL IsHighlighted(SESSION_INFO* si, const TCHAR* pszText)
 {
-	if ( g_Settings.HighlightEnabled && g_Settings.pszHighlightWords && pszText && si->pMe ) {
+	if (g_Settings.HighlightEnabled && g_Settings.pszHighlightWords && pszText && si->pMe) {
 		TCHAR* p1 = g_Settings.pszHighlightWords;
 		TCHAR* p2 = NULL;
 		const TCHAR* p3 = pszText;
@@ -695,7 +691,7 @@ BOOL IsHighlighted(SESSION_INFO* si, const TCHAR* pszText)
 				return FALSE;
 
 			// copy the word into szWord1
-			lstrcpyn(szWord1, p1, p2-p1>998?999:p2-p1+1);
+			lstrcpyn(szWord1, p1, p2 - p1 > 998 ? 999 : p2 - p1 + 1);
 			p1 = p2;
 
 			// replace %m with the users nickname
@@ -709,8 +705,7 @@ BOOL IsHighlighted(SESSION_INFO* si, const TCHAR* pszText)
 			}
 
 			// time to get the next/first word in the incoming text string
-			while (*p3 != '\0')
-			{
+			while (*p3 != '\0') {
 				// skip 'spaces' be4 the word
 				while (*p3 == ' ' && *p3 != '\0')
 					p3 += 1;
@@ -723,11 +718,11 @@ BOOL IsHighlighted(SESSION_INFO* si, const TCHAR* pszText)
 
 				if (p3 != p2) {
 					// eliminate ending character if needed
-					if (p2-p3 > 1 && _tcschr(szTrimString, p2[-1]))
+					if (p2 - p3 > 1 && _tcschr(szTrimString, p2[-1]))
 						p2 -= 1;
 
 					// copy the word into szWord2 and remove formatting
-					lstrcpyn(szWord2, p3, p2-p3>998?999:p2-p3+1);
+					lstrcpyn(szWord2, p3, p2 - p3 > 998 ? 999 : p2 - p3 + 1);
 
 					// reset the pointer if it was touched because of an ending character
 					if (*p2 != '\0' && *p2 != ' ')
@@ -765,34 +760,33 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 		return FALSE;
 
 	mi = MM_FindModule(si->pszModule);
-	if ( !mi )
+	if (!mi)
 		return FALSE;
 
-	mir_snprintf(szName, MAX_PATH,"%s",mi->pszModDispName);
+	mir_snprintf(szName, MAX_PATH, "%s", mi->pszModDispName);
 	ValidateFilename(szName);
-	mir_snprintf(szFolder, MAX_PATH,"%s\\%s", g_Settings.pszLogDir, szName );
+	mir_snprintf(szFolder, MAX_PATH, "%s\\%s", g_Settings.pszLogDir, szName);
 
 	if (!PathIsDirectoryA(szFolder))
 		CreateDirectoryA(szFolder, NULL);
 
-	pszSessionName = t2a( si->ptszID, 0 );
-	mir_snprintf( szName, MAX_PATH,"%s.log", pszSessionName );
+	pszSessionName = t2a(si->ptszID, 0);
+	mir_snprintf(szName, MAX_PATH, "%s.log", pszSessionName);
 	ValidateFilename(szName);
-	mir_free( pszSessionName );
+	mir_free(pszSessionName);
 
-	mir_snprintf(szFile, MAX_PATH,"%s\\%s", szFolder, szName );
+	mir_snprintf(szFile, MAX_PATH, "%s\\%s", szFolder, szName);
 	lstrcpyn(szTime, MakeTimeStamp(g_Settings.pszTimeStampLog, gce->time), 99);
 
-	hFile = fopen(szFile,"at+");
+	hFile = fopen(szFile, "at+");
 	if (hFile) {
 		TCHAR szTemp[512], szTemp2[512];
 		TCHAR* pszNick = NULL;
-		if ( gce->ptszNick ) {
-			if ( g_Settings.LogLimitNames && lstrlen(gce->ptszNick) > 20 ) {
+		if (gce->ptszNick) {
+			if (g_Settings.LogLimitNames && lstrlen(gce->ptszNick) > 20) {
 				lstrcpyn(szTemp2, gce->ptszNick, 20);
-				lstrcpyn(szTemp2+20, _T("..."), 4);
-			}
-			else lstrcpyn(szTemp2, gce->ptszNick, 511);
+				lstrcpyn(szTemp2 + 20, _T("..."), 4);
+			} else lstrcpyn(szTemp2, gce->ptszNick, 511);
 
 			if (gce->pszUserInfo)
 				mir_sntprintf(szTemp, SIZEOF(szTemp), _T("%s (%s)"), szTemp2, gce->pszUserInfo);
@@ -802,12 +796,12 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 		}
 		switch (gce->pDest->iType) {
 			case GC_EVENT_MESSAGE:
-			case GC_EVENT_MESSAGE|GC_EVENT_HIGHLIGHT:
+			case GC_EVENT_MESSAGE | GC_EVENT_HIGHLIGHT:
 				p = '*';
 				mir_sntprintf(szBuffer, SIZEOF(szBuffer), _T("%s * %s"), gce->ptszNick, RemoveFormatting(gce->ptszText));
 				break;
 			case GC_EVENT_ACTION:
-			case GC_EVENT_ACTION|GC_EVENT_HIGHLIGHT:
+			case GC_EVENT_ACTION | GC_EVENT_HIGHLIGHT:
 				p = '*';
 				mir_sntprintf(szBuffer, SIZEOF(szBuffer), _T("%s %s"), gce->ptszNick, RemoveFormatting(gce->ptszText));
 				break;
@@ -827,7 +821,7 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 				if (!gce->pszText)
 					mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s has disconnected"), (char *)pszNick);
 				else
-					mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s has disconnected (%s)"), (char *)pszNick,RemoveFormatting(gce->ptszText));
+					mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s has disconnected (%s)"), (char *)pszNick, RemoveFormatting(gce->ptszText));
 				break;
 			case GC_EVENT_NICK:
 				p = '^';
@@ -869,42 +863,41 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 		else
 			mir_sntprintf(szLine, SIZEOF(szLine), TranslateT("%s %s\n"), szTime, szBuffer);
 
-		if ( szLine[0] ) {
-			char* p = t2a( szLine, 0 );
+		if (szLine[0]) {
+			char* p = t2a(szLine, 0);
 			fputs(p, hFile);
-			mir_free( p );
+			mir_free(p);
 
-			if ( g_Settings.LoggingLimit > 0 ) {
+			if (g_Settings.LoggingLimit > 0) {
 				DWORD dwSize;
 				DWORD trimlimit;
 
-				fseek(hFile,0,SEEK_END);
+				fseek(hFile, 0, SEEK_END);
 				dwSize = ftell(hFile);
-				rewind (hFile);
-				trimlimit = g_Settings.LoggingLimit*1024+ 1024*10;
+				rewind(hFile);
+				trimlimit = g_Settings.LoggingLimit * 1024 + 1024 * 10;
 				if (dwSize > trimlimit) {
 					BYTE * pBuffer = 0;
 					BYTE * pBufferTemp = 0;
 					int read = 0;
 
-					pBuffer = (BYTE *)mir_alloc(g_Settings.LoggingLimit*1024+1);
+					pBuffer = (BYTE *)mir_alloc(g_Settings.LoggingLimit * 1024 + 1);
 					pBuffer[g_Settings.LoggingLimit*1024] = '\0';
-					fseek(hFile,-g_Settings.LoggingLimit*1024,SEEK_END);
-					read = fread(pBuffer, 1, g_Settings.LoggingLimit*1024, hFile);
+					fseek(hFile, -g_Settings.LoggingLimit*1024, SEEK_END);
+					read = fread(pBuffer, 1, g_Settings.LoggingLimit * 1024, hFile);
 					fclose(hFile);
 					hFile = NULL;
 
 					// trim to whole lines, should help with broken log files I hope.
 					pBufferTemp = strchr(pBuffer, '\n');
-					if ( pBufferTemp ) {
+					if (pBufferTemp) {
 						pBufferTemp++;
 						read = read - (pBufferTemp - pBuffer);
-					}
-					else pBufferTemp = pBuffer;
+					} else pBufferTemp = pBuffer;
 
 					if (read > 0) {
-						hFile = fopen(szFile,"wt");
-						if (hFile ) {
+						hFile = fopen(szFile, "wt");
+						if (hFile) {
 							fwrite(pBufferTemp, 1, read, hFile);
 							fclose(hFile);
 							hFile = NULL;
@@ -943,34 +936,31 @@ UINT CreateGCMenu(HWND hwndDlg, HMENU *hMenu, int iIndex, POINT pt, SESSION_INFO
 
 		EnableMenuItem(*hMenu, ID_CLEARLOG, MF_ENABLED);
 		EnableMenuItem(*hMenu, ID_COPYALL, MF_ENABLED);
-		ModifyMenu(*hMenu, 4, MF_GRAYED|MF_BYPOSITION, 4, NULL);
+		ModifyMenu(*hMenu, 4, MF_GRAYED | MF_BYPOSITION, 4, NULL);
 		if (!i) {
 			EnableMenuItem(*hMenu, ID_COPYALL, MF_BYCOMMAND | MF_GRAYED);
 			EnableMenuItem(*hMenu, ID_CLEARLOG, MF_BYCOMMAND | MF_GRAYED);
 			if (pszWordText && pszWordText[0])
-				ModifyMenu(*hMenu, 4, MF_ENABLED|MF_BYPOSITION, 4, NULL);
+				ModifyMenu(*hMenu, 4, MF_ENABLED | MF_BYPOSITION, 4, NULL);
 		}
 
-		if ( pszWordText && pszWordText[0] ) {
+		if (pszWordText && pszWordText[0]) {
 			TCHAR szMenuText[4096];
-			mir_sntprintf( szMenuText, 4096, _T("Look up \'%s\':"), pszWordText );
-			ModifyMenu( *hMenu, 4, MF_STRING|MF_BYPOSITION, 4, szMenuText );
-		}
-		else ModifyMenu( *hMenu, 4, MF_STRING|MF_GRAYED|MF_BYPOSITION, 4, TranslateT( "No word to look up" ));
+			mir_sntprintf(szMenuText, 4096, _T("Look up \'%s\':"), pszWordText);
+			ModifyMenu(*hMenu, 4, MF_STRING | MF_BYPOSITION, 4, szMenuText);
+		} else ModifyMenu(*hMenu, 4, MF_STRING | MF_GRAYED | MF_BYPOSITION, 4, TranslateT("No word to look up"));
 		gcmi.Type = MENU_ON_LOG;
-	}
-	else if (iIndex == 0)
-	{
+	} else if (iIndex == 0) {
 		TCHAR szTemp[30], szTemp2[30];
 		lstrcpyn(szTemp, TranslateT("&Message"), 24);
-		if ( pszUID )
-			mir_sntprintf( szTemp2, SIZEOF(szTemp2), _T("%s %s"), szTemp, pszUID);
+		if (pszUID)
+			mir_sntprintf(szTemp2, SIZEOF(szTemp2), _T("%s %s"), szTemp, pszUID);
 		else
 			lstrcpyn(szTemp2, szTemp, 24);
 
-		if ( lstrlen(szTemp2) > 22 )
-			lstrcpyn( szTemp2+22, _T("..."), 4 );
-		ModifyMenu( *hMenu, ID_MESS, MF_STRING|MF_BYCOMMAND, ID_MESS, szTemp2 );
+		if (lstrlen(szTemp2) > 22)
+			lstrcpyn(szTemp2 + 22, _T("..."), 4);
+		ModifyMenu(*hMenu, ID_MESS, MF_STRING | MF_BYCOMMAND, ID_MESS, szTemp2);
 		gcmi.Type = MENU_ON_NICKLIST;
 	}
 
@@ -980,31 +970,30 @@ UINT CreateGCMenu(HWND hwndDlg, HMENU *hMenu, int iIndex, POINT pt, SESSION_INFO
 		AppendMenu(*hMenu, MF_SEPARATOR, 0, 0);
 
 	for (i = 0; i < gcmi.nItems; i++) {
-		TCHAR* ptszDescr = a2tf( gcmi.Item[i].pszDesc, si->dwFlags, 0 );
+		TCHAR* ptszDescr = a2tf(gcmi.Item[i].pszDesc, si->dwFlags, 0);
 		DWORD dwState = gcmi.Item[i].bDisabled ? MF_GRAYED : 0;
 
-		if ( gcmi.Item[i].uType == MENU_NEWPOPUP ) {
+		if (gcmi.Item[i].uType == MENU_NEWPOPUP) {
 			hSubMenu = CreateMenu();
-			AppendMenu( *hMenu, dwState|MF_POPUP, (UINT)hSubMenu, ptszDescr );
-		}
-		else if (gcmi.Item[i].uType == MENU_POPUPHMENU)
-			AppendMenu( hSubMenu==0?*hMenu:hSubMenu, dwState|MF_POPUP, gcmi.Item[i].dwID, ptszDescr);
+			AppendMenu(*hMenu, dwState | MF_POPUP, (UINT)hSubMenu, ptszDescr);
+		} else if (gcmi.Item[i].uType == MENU_POPUPHMENU)
+			AppendMenu(hSubMenu == 0 ? *hMenu : hSubMenu, dwState | MF_POPUP, gcmi.Item[i].dwID, ptszDescr);
 		else if (gcmi.Item[i].uType == MENU_POPUPITEM)
-			AppendMenu( hSubMenu==0?*hMenu:hSubMenu, dwState|MF_STRING, gcmi.Item[i].dwID, ptszDescr);
+			AppendMenu(hSubMenu == 0 ? *hMenu : hSubMenu, dwState | MF_STRING, gcmi.Item[i].dwID, ptszDescr);
 		else if (gcmi.Item[i].uType == MENU_POPUPCHECK)
-			AppendMenu( hSubMenu==0?*hMenu:hSubMenu, dwState|MF_CHECKED|MF_STRING, gcmi.Item[i].dwID, ptszDescr);
+			AppendMenu(hSubMenu == 0 ? *hMenu : hSubMenu, dwState | MF_CHECKED | MF_STRING, gcmi.Item[i].dwID, ptszDescr);
 		else if (gcmi.Item[i].uType == MENU_POPUPSEPARATOR)
-			AppendMenu( hSubMenu==0?*hMenu:hSubMenu, MF_SEPARATOR, 0, ptszDescr );
+			AppendMenu(hSubMenu == 0 ? *hMenu : hSubMenu, MF_SEPARATOR, 0, ptszDescr);
 		else if (gcmi.Item[i].uType == MENU_SEPARATOR)
-			AppendMenu( *hMenu, MF_SEPARATOR, 0, ptszDescr );
+			AppendMenu(*hMenu, MF_SEPARATOR, 0, ptszDescr);
 		else if (gcmi.Item[i].uType == MENU_HMENU)
-			AppendMenu( *hMenu, dwState|MF_POPUP, gcmi.Item[i].dwID, ptszDescr);
+			AppendMenu(*hMenu, dwState | MF_POPUP, gcmi.Item[i].dwID, ptszDescr);
 		else if (gcmi.Item[i].uType == MENU_ITEM)
-			AppendMenu( *hMenu, dwState|MF_STRING, gcmi.Item[i].dwID, ptszDescr );
+			AppendMenu(*hMenu, dwState | MF_STRING, gcmi.Item[i].dwID, ptszDescr);
 		else if (gcmi.Item[i].uType == MENU_CHECK)
-			AppendMenu( *hMenu, dwState|MF_CHECKED|MF_STRING, gcmi.Item[i].dwID, ptszDescr );
+			AppendMenu(*hMenu, dwState | MF_CHECKED | MF_STRING, gcmi.Item[i].dwID, ptszDescr);
 
-		mir_free( ptszDescr );
+		mir_free(ptszDescr);
 	}
 
 	if (iIndex == 1 && si->iType != GCW_SERVER && !(si->dwFlags && GC_UNICODE)) {
@@ -1029,8 +1018,7 @@ void DestroyGCMenu(HMENU *hMenu, int iIndex)
 	MENUITEMINFO mi;
 	mi.cbSize = sizeof(mi);
 	mi.fMask = MIIM_SUBMENU;
-	while (GetMenuItemInfo(*hMenu, iIndex, TRUE, &mi))
-	{
+	while (GetMenuItemInfo(*hMenu, iIndex, TRUE, &mi)) {
 		if (mi.hSubMenu != NULL)
 			DestroyMenu(mi.hSubMenu);
 		RemoveMenu(*hMenu, iIndex, MF_BYPOSITION);
@@ -1040,28 +1028,27 @@ void DestroyGCMenu(HMENU *hMenu, int iIndex)
 BOOL DoEventHookAsync(HWND hwnd, const TCHAR* pszID, const char* pszModule, int iType, TCHAR* pszUID, TCHAR* pszText, DWORD dwItem)
 {
 	SESSION_INFO* si;
-	GCHOOK* gch = (GCHOOK*)mir_alloc( sizeof( GCHOOK ));
-	GCDEST* gcd = (GCDEST*)mir_alloc( sizeof( GCDEST ));
+	GCHOOK* gch = (GCHOOK*)mir_alloc(sizeof(GCHOOK));
+	GCDEST* gcd = (GCDEST*)mir_alloc(sizeof(GCDEST));
 
-	memset( gch, 0, sizeof( GCHOOK ));
-	memset( gcd, 0, sizeof( GCDEST ));
+	memset(gch, 0, sizeof(GCHOOK));
+	memset(gcd, 0, sizeof(GCDEST));
 
-	replaceStrA( &gcd->pszModule, pszModule);
+	replaceStrA(&gcd->pszModule, pszModule);
 #if defined( _UNICODE )
-	if (( si = SM_FindSession(pszID, pszModule)) == NULL )
+	if ((si = SM_FindSession(pszID, pszModule)) == NULL)
 		return FALSE;
 
-	if ( !( si->dwFlags & GC_UNICODE )) {
+	if (!(si->dwFlags & GC_UNICODE)) {
 		DWORD dwCP = DBGetContactSettingDword(si->hContact, SRMSGMOD_T, "ANSIcodepage", 0);
-		gcd->pszID = t2a( pszID, 0 );
-		gch->pszUID = t2a( pszUID, 0 );
-		gch->pszText = t2a( pszText, dwCP );
-	}
-	else {
+		gcd->pszID = t2a(pszID, 0);
+		gch->pszUID = t2a(pszUID, 0);
+		gch->pszText = t2a(pszText, dwCP);
+	} else {
 #endif
-		replaceStr( &gcd->ptszID, pszID );
-		replaceStr( &gch->ptszUID, pszUID);
-		replaceStr( &gch->ptszText, pszText);
+		replaceStr(&gcd->ptszID, pszID);
+		replaceStr(&gch->ptszUID, pszUID);
+		replaceStr(&gch->ptszText, pszText);
 #if defined( _UNICODE )
 	}
 #endif
@@ -1080,20 +1067,19 @@ BOOL DoEventHook(const TCHAR* pszID, const char* pszModule, int iType, const TCH
 
 	gcd.pszModule = (char*)pszModule;
 #if defined( _UNICODE )
-	if (( si = SM_FindSession(pszID, pszModule)) == NULL )
+	if ((si = SM_FindSession(pszID, pszModule)) == NULL)
 		return FALSE;
 
-	if ( !( si->dwFlags & GC_UNICODE )) {
+	if (!(si->dwFlags & GC_UNICODE)) {
 		DWORD dwCP = DBGetContactSettingDword(si->hContact, SRMSGMOD_T, "ANSIcodepage", 0);
-		gcd.pszID = t2a( pszID, 0 );
-		gch.pszUID = t2a( pszUID, 0 );
-		gch.pszText = t2a( pszText, dwCP );
-	}
-	else {
+		gcd.pszID = t2a(pszID, 0);
+		gch.pszUID = t2a(pszUID, 0);
+		gch.pszText = t2a(pszText, dwCP);
+	} else {
 #endif
-		gcd.ptszID = mir_tstrdup( pszID );
-		gch.ptszUID = mir_tstrdup( pszUID );
-		gch.ptszText = mir_tstrdup( pszText );
+		gcd.ptszID = mir_tstrdup(pszID);
+		gch.ptszUID = mir_tstrdup(pszUID);
+		gch.ptszText = mir_tstrdup(pszText);
 #if defined( _UNICODE )
 	}
 #endif
@@ -1101,18 +1087,17 @@ BOOL DoEventHook(const TCHAR* pszID, const char* pszModule, int iType, const TCH
 	gcd.iType = iType;
 	gch.dwData = dwItem;
 	gch.pDest = &gcd;
-	NotifyEventHooks(hSendEvent,0,(WPARAM)&gch);
+	NotifyEventHooks(hSendEvent, 0, (WPARAM)&gch);
 
-	mir_free( gcd.pszID );
-	mir_free( gch.ptszUID );
-	mir_free( gch.ptszText );
+	mir_free(gcd.pszID);
+	mir_free(gch.ptszUID);
+	mir_free(gch.ptszText);
 	return TRUE;
 }
 
 BOOL IsEventSupported(int eventType)
 {
-	switch (eventType)
-	{
+	switch (eventType) {
 			// Supported events
 		case GC_EVENT_JOIN:
 		case GC_EVENT_PART:
@@ -1144,25 +1129,25 @@ BOOL IsEventSupported(int eventType)
 	return FALSE;
 }
 
-void ValidateFilename (char * filename)
+void ValidateFilename(char * filename)
 {
 	char *p1 = filename;
 	char szForbidden[] = "\\/:*?\"<>|";
 	while (*p1 != '\0') {
 		if (strchr(szForbidden, *p1))
 			*p1 = '_';
-		p1 +=1;
+		p1 += 1;
 	}
 }
 
-TCHAR* a2tf( const TCHAR* str, int flags, DWORD cp )
+TCHAR* a2tf(const TCHAR* str, int flags, DWORD cp)
 {
-	if ( str == NULL )
+	if (str == NULL)
 		return NULL;
 
 #if defined( _UNICODE )
-	if ( flags & GC_UNICODE )
-		return mir_tstrdup( str );
+	if (flags & GC_UNICODE)
+		return mir_tstrdup(str);
 	else {
 		int cbLen;
 		TCHAR *result;
@@ -1172,21 +1157,21 @@ TCHAR* a2tf( const TCHAR* str, int flags, DWORD cp )
 
 		if (cp == 0)
 			cp = myGlobals.m_LangPackCP; // CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
-		cbLen = MultiByteToWideChar( cp, 0, (char*)str, -1, 0, 0 );
-		result = ( TCHAR* )mir_alloc( sizeof(TCHAR)*( cbLen+1 ));
-		if ( result == NULL )
+		cbLen = MultiByteToWideChar(cp, 0, (char*)str, -1, 0, 0);
+		result = (TCHAR*)mir_alloc(sizeof(TCHAR) * (cbLen + 1));
+		if (result == NULL)
 			return NULL;
 
-		MultiByteToWideChar( cp, 0, (char*)str, -1, result, cbLen );
+		MultiByteToWideChar(cp, 0, (char*)str, -1, result, cbLen);
 		result[ cbLen ] = 0;
 		return result;
 	}
 #else
-	return mir_strdup( str );
+	return mir_strdup(str);
 #endif
 }
 
-static char* u2a( const wchar_t* src, DWORD cp )
+static char* u2a(const wchar_t* src, DWORD cp)
 {
 	int  cbLen;
 	char *result;
@@ -1196,36 +1181,36 @@ static char* u2a( const wchar_t* src, DWORD cp )
 	else if (cp == CP_UTF8)
 		return(Utf8_Encode(src));
 
-	cbLen = WideCharToMultiByte( cp, 0, src, -1, NULL, 0, NULL, NULL );
-	result = ( char* )mir_alloc( cbLen+1 );
-	if ( result == NULL )
+	cbLen = WideCharToMultiByte(cp, 0, src, -1, NULL, 0, NULL, NULL);
+	result = (char*)mir_alloc(cbLen + 1);
+	if (result == NULL)
 		return NULL;
 
-	WideCharToMultiByte( cp, 0, src, -1, result, cbLen, NULL, NULL );
+	WideCharToMultiByte(cp, 0, src, -1, result, cbLen, NULL, NULL);
 	result[ cbLen ] = 0;
 	return result;
 }
 
-char* t2a( const TCHAR* src, DWORD cp )
+char* t2a(const TCHAR* src, DWORD cp)
 {
 #if defined( _UNICODE )
-	return u2a( src, cp );
+	return u2a(src, cp);
 #else
-	return mir_strdup( src );
+	return mir_strdup(src);
 #endif
 }
 
-TCHAR* replaceStr( TCHAR** dest, const TCHAR* src )
+TCHAR* replaceStr(TCHAR** dest, const TCHAR* src)
 {
-	mir_free( *dest );
-	*dest = mir_tstrdup( src );
+	mir_free(*dest);
+	*dest = mir_tstrdup(src);
 	return *dest;
 }
 
-char* replaceStrA( char** dest, const char* src )
+char* replaceStrA(char** dest, const char* src)
 {
-	mir_free( *dest );
-	*dest = mir_strdup( src );
+	mir_free(*dest);
+	*dest = mir_strdup(src);
 	return *dest;
 }
 

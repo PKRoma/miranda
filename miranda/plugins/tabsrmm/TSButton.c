@@ -1,6 +1,6 @@
 /*
-Miranda IM
-Copyright (C) 2002 Robert Rainwater
+astyle --force-indent=tab=4 --brackets=linux --indent-switches
+		--pad=oper --one-line=keep-blocks  --unpad=paren
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -15,6 +15,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+$Id:$
+
+skinable button class for tabSRMM
+
 */
 
 #include "commonheaders.h"
@@ -69,7 +74,8 @@ extern PITBPT pfnIsThemeBackgroundPartiallyTransparent;
 extern PDTPB  pfnDrawThemeParentBackground;
 extern PGTBCR pfnGetThemeBackgroundContentRect;
 
-int UnloadTSButtonModule(WPARAM wParam, LPARAM lParam) {
+int UnloadTSButtonModule(WPARAM wParam, LPARAM lParam)
+{
 	DeleteCriticalSection(&csTips);
 	if (hdc_buttonglyph) {
 		SelectObject(hdc_buttonglyph, hbm_buttonglyph_old);
@@ -102,7 +108,8 @@ int LoadTSButtonModule(void)
 
 #define MGPROC(x) GetProcAddress(themeAPIHandle,x)
 
-static void DestroyTheme(MButtonCtrl *ctl) {
+static void DestroyTheme(MButtonCtrl *ctl)
+{
 	if (myGlobals.m_VSApiEnabled) {
 		if (ctl->hThemeButton) {
 			pfnCloseThemeData(ctl->hThemeButton);
@@ -115,16 +122,18 @@ static void DestroyTheme(MButtonCtrl *ctl) {
 	}
 }
 
-static void LoadTheme(MButtonCtrl *ctl) {
+static void LoadTheme(MButtonCtrl *ctl)
+{
 	if (myGlobals.m_VSApiEnabled) {
 		DestroyTheme(ctl);
-		ctl->hThemeButton = pfnOpenThemeData(ctl->hwnd,L"BUTTON");
-		ctl->hThemeToolbar = pfnOpenThemeData(ctl->hwnd,L"TOOLBAR");
+		ctl->hThemeButton = pfnOpenThemeData(ctl->hwnd, L"BUTTON");
+		ctl->hThemeToolbar = pfnOpenThemeData(ctl->hwnd, L"TOOLBAR");
 		ctl->bThemed = TRUE;
 	}
 }
 
-static TBStateConvert2Flat(int state) {
+static TBStateConvert2Flat(int state)
+{
 	switch (state) {
 		case PBS_NORMAL:
 			return TS_NORMAL;
@@ -140,7 +149,8 @@ static TBStateConvert2Flat(int state) {
 	return TS_NORMAL;
 }
 
-static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
+static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
+{
 	if (hdc_buttonglyph == 0) {
 		hdc_buttonglyph = CreateCompatibleDC(hdcPaint);
 		hbm_buttonglyph = CreateCompatibleBitmap(hdcPaint, 16, 16);
@@ -161,7 +171,7 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint) {
 		CopyRect(&rcContent, &rcClient);
 
 		hdcMem = CreateCompatibleDC(hdcPaint);
-		hbmMem = CreateCompatibleBitmap(hdcPaint, rcClient.right-rcClient.left, rcClient.bottom-rcClient.top);
+		hbmMem = CreateCompatibleBitmap(hdcPaint, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top);
 		hOld = SelectObject(hdcMem, hbmMem);
 
 		if (ctl->pushBtn && ctl->pbState)
@@ -226,15 +236,13 @@ default_draw_bg:
 						DrawAlpha(hdcMem, &rc1, realItem->COLOR, realItem->ALPHA, realItem->COLOR2, realItem->COLOR2_TRANSPARENT,
 								  realItem->GRADIENT, realItem->CORNER, realItem->BORDERSTYLE, realItem->imageItem);
 					}
-				}
-				else
+				} else
 					goto flat_themed;
-			}
-			else {
+			} else {
 flat_themed:
 				if (ctl->hThemeToolbar && ctl->bThemed) {
 					RECT rc = rcClient;
-					int state = IsWindowEnabled(ctl->hwnd)?(ctl->stateId==PBS_NORMAL&&ctl->defbutton?PBS_DEFAULTED:ctl->stateId):PBS_DISABLED;
+					int state = IsWindowEnabled(ctl->hwnd) ? (ctl->stateId == PBS_NORMAL && ctl->defbutton ? PBS_DEFAULTED : ctl->stateId) : PBS_DISABLED;
 					int realState = state;
 
 					if (clip)
@@ -250,40 +258,36 @@ flat_themed:
 						SelectClipRgn(hdcMem, clip);
 						pfnDrawThemeBackground(ctl->hThemeToolbar, hdcMem, TP_BUTTON, TBStateConvert2Flat(realState), &rc, &rc);
 					}
-				}
-				else {
+				} else {
 					HBRUSH hbr;
 					RECT rc = rcClient;
 
-					if (ctl->stateId==PBS_PRESSED||ctl->stateId==PBS_HOT) {
+					if (ctl->stateId == PBS_PRESSED || ctl->stateId == PBS_HOT) {
 						hbr = GetSysColorBrush(COLOR_3DLIGHT);
 						FillRect(hdcMem, &rc, hbr);
-					}
-					else {
+					} else {
 						HDC dc;
 						HWND hwndParent;
 
 						hwndParent = GetParent(ctl->hwnd);
-						dc=GetDC(hwndParent);
+						dc = GetDC(hwndParent);
 						hbr = (HBRUSH)SendMessage(hwndParent, WM_CTLCOLORDLG, (WPARAM)dc, (LPARAM)hwndParent);
-						ReleaseDC(hwndParent,dc);
+						ReleaseDC(hwndParent, dc);
 						if (hbr) {
 							FillRect(hdcMem, &rc, hbr);
 							DeleteObject(hbr);
 						}
 					}
-					if (ctl->stateId==PBS_HOT||ctl->focus) {
+					if (ctl->stateId == PBS_HOT || ctl->focus) {
 						if (ctl->pbState)
-							DrawEdge(hdcMem,&rc, EDGE_ETCHED,BF_RECT|BF_SOFT);
+							DrawEdge(hdcMem, &rc, EDGE_ETCHED, BF_RECT | BF_SOFT);
 						else
-							DrawEdge(hdcMem,&rc, BDR_RAISEDOUTER,BF_RECT|BF_SOFT);
-					}
-					else if (ctl->stateId==PBS_PRESSED)
-						DrawEdge(hdcMem, &rc, BDR_SUNKENOUTER,BF_RECT|BF_SOFT);
+							DrawEdge(hdcMem, &rc, BDR_RAISEDOUTER, BF_RECT | BF_SOFT);
+					} else if (ctl->stateId == PBS_PRESSED)
+						DrawEdge(hdcMem, &rc, BDR_SUNKENOUTER, BF_RECT | BF_SOFT);
 				}
 			}
-		}
-		else {
+		} else {
 			if (ctl->pContainer && ctl->pContainer->bSkinned) {
 				StatusItems_t *item, *realItem = 0;
 				if (ctl->bTitleButton)
@@ -308,14 +312,12 @@ flat_themed:
 						DrawAlpha(hdcMem, &rc1, realItem->COLOR, realItem->ALPHA, realItem->COLOR2, realItem->COLOR2_TRANSPARENT,
 								  realItem->GRADIENT, realItem->CORNER, realItem->BORDERSTYLE, realItem->imageItem);
 					}
-				}
-				else
+				} else
 					goto nonflat_themed;
-			}
-			else {
+			} else {
 nonflat_themed:
 				if (ctl->hThemeButton && ctl->bThemed) {
-					int state = IsWindowEnabled(ctl->hwnd)?(ctl->stateId==PBS_NORMAL&&ctl->defbutton?PBS_DEFAULTED:ctl->stateId):PBS_DISABLED;
+					int state = IsWindowEnabled(ctl->hwnd) ? (ctl->stateId == PBS_NORMAL && ctl->defbutton ? PBS_DEFAULTED : ctl->stateId) : PBS_DISABLED;
 					int realState = state;
 
 					if (clip)
@@ -331,8 +333,7 @@ nonflat_themed:
 						pfnDrawThemeBackground(ctl->hThemeButton, hdcMem, BP_PUSHBUTTON, realState, &rcClient, &rcClient);
 					}
 					pfnGetThemeBackgroundContentRect(ctl->hThemeToolbar, hdcMem, BP_PUSHBUTTON, PBS_NORMAL, &rcClient, &rcContent);
-				}
-				else {
+				} else {
 					RECT rcFill = rcClient;
 					UINT uType = ctl->stateId == PBS_PRESSED ? EDGE_ETCHED : EDGE_BUMP;
 					DrawEdge(hdcMem, &rcClient, uType, BF_RECT | BF_SOFT | (ctl->stateId == PBS_HOT ? BF_MONO : 0));
@@ -359,7 +360,7 @@ bg_done:
 			rcContent.left = rcClient.right - 12;
 			rcContent.right = rcContent.left;
 
-			DrawIconEx(hdcMem, rcClient.right - 13, (rcClient.bottom-rcClient.top)/2 - (myGlobals.m_smcyicon / 2),
+			DrawIconEx(hdcMem, rcClient.right - 13, (rcClient.bottom - rcClient.top) / 2 - (myGlobals.m_smcyicon / 2),
 					   myGlobals.g_buttonBarIcons[16], 16, 16, 0, 0, DI_NORMAL);
 			if (!ctl->flatBtn)
 				DrawEdge(hdcMem, &rcContent, EDGE_BUMP, BF_LEFT);
@@ -405,8 +406,7 @@ bg_done:
 					MyAlphaBlend(hdcMem, rcClient.right / 2 - szText.cx / 2, rcClient.bottom / 2 - 8, 16, 16, hdc_buttonglyph, 0, 0, 16, 16, bf_buttonglyph);
 				}
 				xOff = 18;
-			}
-			else {
+			} else {
 				szText.cx += glyphMetrics[2];
 				if (g_glyphItem) {
 					MyAlphaBlend(hdcMem, (rcClient.right - szText.cx / 2), (rcClient.bottom - glyphMetrics[3]) / 2,
@@ -422,16 +422,15 @@ bg_done:
 				if (ctl->pContainer && ctl->pContainer->bSkinned)
 					SetTextColor(hdcMem, ctl->stateId != PBS_DISABLED ? myGlobals.skinDefaultFontColor : GetSysColor(COLOR_GRAYTEXT));
 				else
-					SetTextColor(hdcMem, ctl->stateId != PBS_DISABLED ? GetSysColor(COLOR_BTNTEXT):GetSysColor(COLOR_GRAYTEXT));
+					SetTextColor(hdcMem, ctl->stateId != PBS_DISABLED ? GetSysColor(COLOR_BTNTEXT) : GetSysColor(COLOR_GRAYTEXT));
 				SetBkMode(hdcMem, TRANSPARENT);
 				rc.left = (rcClient.right - szText.cx) / 2 + xOff;
 				DrawText(hdcMem, ctl->item->tszLabel, -1, &rc, DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX);
 				SelectObject(hdcMem, hOldFont);
 			}
-		}
-		else if (ctl->hIcon || ctl->hIconPrivate) {
-			int ix = (rcClient.right-rcClient.left)/2 - (myGlobals.m_smcxicon / 2);
-			int iy = (rcClient.bottom-rcClient.top)/2 - (myGlobals.m_smcyicon / 2);
+		} else if (ctl->hIcon || ctl->hIconPrivate) {
+			int ix = (rcClient.right - rcClient.left) / 2 - (myGlobals.m_smcxicon / 2);
+			int iy = (rcClient.bottom - rcClient.top) / 2 - (myGlobals.m_smcyicon / 2);
 			HICON hIconNew = ctl->hIconPrivate != 0 ? ctl->hIconPrivate : ctl->hIcon;
 
 			if (ctl->stateId == PBS_PRESSED) {
@@ -453,8 +452,7 @@ bg_done:
 					MyAlphaBlend(hdcMem, ix, iy, 16, 16, hdc_buttonglyph, 0, 0, 16, 16, bf_buttonglyph);
 				}
 			}
-		}
-		else if (GetWindowTextLength(ctl->hwnd)) {
+		} else if (GetWindowTextLength(ctl->hwnd)) {
 			// Draw the text and optinally the arrow
 			TCHAR szText[MAX_PATH];
 			SIZE sz;
@@ -469,7 +467,7 @@ bg_done:
 			if (ctl->pContainer && ctl->pContainer->bSkinned)
 				SetTextColor(hdcMem, IsWindowEnabled(ctl->hwnd) ? myGlobals.skinDefaultFontColor : GetSysColor(COLOR_GRAYTEXT));
 			else
-				SetTextColor(hdcMem, IsWindowEnabled(ctl->hwnd)||!ctl->hThemeButton?GetSysColor(COLOR_BTNTEXT):GetSysColor(COLOR_GRAYTEXT));
+				SetTextColor(hdcMem, IsWindowEnabled(ctl->hwnd) || !ctl->hThemeButton ? GetSysColor(COLOR_BTNTEXT) : GetSysColor(COLOR_GRAYTEXT));
 			GetTextExtentPoint32(hdcMem, szText, lstrlen(szText), &sz);
 			if (ctl->cHot) {
 				SIZE szHot;
@@ -478,12 +476,12 @@ bg_done:
 				sz.cx -= szHot.cx;
 			}
 			if (ctl->arrow)
-				DrawState(hdcMem,NULL,NULL,(LPARAM)ctl->arrow,0,rcClient.right-rcClient.left-5-myGlobals.m_smcxicon+(!ctl->hThemeButton&&ctl->stateId==PBS_PRESSED?1:0),(rcClient.bottom-rcClient.top)/2-myGlobals.m_smcyicon/2+(!ctl->hThemeButton&&ctl->stateId==PBS_PRESSED?1:0),myGlobals.m_smcxicon,myGlobals.m_smcyicon,IsWindowEnabled(ctl->hwnd)?DST_ICON:DST_ICON|DSS_DISABLED);
+				DrawState(hdcMem, NULL, NULL, (LPARAM)ctl->arrow, 0, rcClient.right - rcClient.left - 5 - myGlobals.m_smcxicon + (!ctl->hThemeButton && ctl->stateId == PBS_PRESSED ? 1 : 0), (rcClient.bottom - rcClient.top) / 2 - myGlobals.m_smcyicon / 2 + (!ctl->hThemeButton && ctl->stateId == PBS_PRESSED ? 1 : 0), myGlobals.m_smcxicon, myGlobals.m_smcyicon, IsWindowEnabled(ctl->hwnd) ? DST_ICON : DST_ICON | DSS_DISABLED);
 			SelectObject(hdcMem, ctl->hFont);
-			DrawState(hdcMem,NULL,NULL,(LPARAM)szText,lstrlen(szText),(rcText.right-rcText.left-sz.cx)/2+(!ctl->hThemeButton&&ctl->stateId==PBS_PRESSED?1:0),ctl->hThemeButton?(rcText.bottom-rcText.top-sz.cy)/2:(rcText.bottom-rcText.top-sz.cy)/2-(ctl->stateId==PBS_PRESSED?0:1),sz.cx,sz.cy,IsWindowEnabled(ctl->hwnd)||ctl->hThemeButton?DST_PREFIXTEXT|DSS_NORMAL:DST_PREFIXTEXT|DSS_DISABLED);
+			DrawState(hdcMem, NULL, NULL, (LPARAM)szText, lstrlen(szText), (rcText.right - rcText.left - sz.cx) / 2 + (!ctl->hThemeButton && ctl->stateId == PBS_PRESSED ? 1 : 0), ctl->hThemeButton ? (rcText.bottom - rcText.top - sz.cy) / 2 : (rcText.bottom - rcText.top - sz.cy) / 2 - (ctl->stateId == PBS_PRESSED ? 0 : 1), sz.cx, sz.cy, IsWindowEnabled(ctl->hwnd) || ctl->hThemeButton ? DST_PREFIXTEXT | DSS_NORMAL : DST_PREFIXTEXT | DSS_DISABLED);
 			SelectObject(hdcMem, hOldFont);
 		}
-		BitBlt(hdcPaint, 0, 0, rcClient.right-rcClient.left, rcClient.bottom-rcClient.top, hdcMem, 0, 0, SRCCOPY);
+		BitBlt(hdcPaint, 0, 0, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top, hdcMem, 0, 0, SRCCOPY);
 		SelectObject(hdcMem, hOld);
 		DeleteObject(hbmMem);
 		DeleteDC(hdcMem);
@@ -491,14 +489,14 @@ bg_done:
 	}
 }
 
-static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, LPARAM lParam) {
-	MButtonCtrl* bct =  (MButtonCtrl *)GetWindowLong(hwndDlg, 0);
+static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, LPARAM lParam)
+{
+	MButtonCtrl* bct = (MButtonCtrl *)GetWindowLong(hwndDlg, 0);
 	switch (msg) {
-		case WM_NCCREATE:
-		{
-			SetWindowLong(hwndDlg, GWL_STYLE, GetWindowLong(hwndDlg, GWL_STYLE)|BS_OWNERDRAW);
+		case WM_NCCREATE: {
+			SetWindowLong(hwndDlg, GWL_STYLE, GetWindowLong(hwndDlg, GWL_STYLE) | BS_OWNERDRAW);
 			bct = malloc(sizeof(MButtonCtrl));
-			if (bct==NULL) return FALSE;
+			if (bct == NULL) return FALSE;
 			bct->hwnd = hwndDlg;
 			bct->stateId = PBS_NORMAL;
 			bct->focus = 0;
@@ -522,8 +520,7 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			if (((CREATESTRUCTA *)lParam)->lpszName) SetWindowTextA(hwndDlg, ((CREATESTRUCTA *)lParam)->lpszName);
 			return TRUE;
 		}
-		case WM_DESTROY:
-		{
+		case WM_DESTROY: {
 			if (bct) {
 				EnterCriticalSection(&csTips);
 				if (hwndToolTips) {
@@ -537,7 +534,7 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 					if (SendMessage(hwndToolTips, TTM_GETTOOLINFO, 0, (LPARAM)&ti)) {
 						SendMessage(hwndToolTips, TTM_DELTOOL, 0, (LPARAM)&ti);
 					}
-					if (SendMessage(hwndToolTips, TTM_GETTOOLCOUNT, 0, (LPARAM)&ti)==0) {
+					if (SendMessage(hwndToolTips, TTM_GETTOOLCOUNT, 0, (LPARAM)&ti) == 0) {
 						DestroyWindow(hwndToolTips);
 						hwndToolTips = NULL;
 					}
@@ -548,17 +545,16 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 				DestroyTheme(bct);
 				free(bct);
 			}
-			SetWindowLong(hwndDlg,0,(LONG)NULL);
+			SetWindowLong(hwndDlg, 0, (LONG)NULL);
 			break;	// DONT! fall thru
 		}
-		case WM_SETTEXT:
-		{
+		case WM_SETTEXT: {
 			bct->cHot = 0;
 			if ((TCHAR *)lParam) {
 				TCHAR *tmp = (TCHAR *)lParam;
 				while (*tmp) {
-					if (*tmp == (TCHAR)'&' && *(tmp+1)) {
-						bct->cHot = _totlower(*(tmp+1));
+					if (*tmp == (TCHAR)'&' && *(tmp + 1)) {
+						bct->cHot = _totlower(*(tmp + 1));
 						break;
 					}
 					tmp++;
@@ -568,7 +564,7 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			break;
 		}
 		case WM_KEYUP:
-			if (bct->stateId!=PBS_DISABLED && wParam == VK_SPACE && !(GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_SHIFT) & 0x8000)) {
+			if (bct->stateId != PBS_DISABLED && wParam == VK_SPACE && !(GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_SHIFT) & 0x8000)) {
 				if (bct->pushBtn) {
 					if (bct->pbState) bct->pbState = 0;
 					else bct->pbState = 1;
@@ -579,7 +575,7 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			}
 			break;
 		case WM_SYSKEYUP:
-			if (bct->stateId!=PBS_DISABLED && bct->cHot && bct->cHot == tolower((int)wParam)) {
+			if (bct->stateId != PBS_DISABLED && bct->cHot && bct->cHot == tolower((int)wParam)) {
 				if (bct->pushBtn) {
 					if (bct->pbState) bct->pbState = 0;
 					else bct->pbState = 1;
@@ -596,14 +592,12 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			InvalidateRect(bct->hwnd, NULL, TRUE); // repaint it
 			break;
 		}
-		case WM_SETFONT: // remember the font so we can use it later
-		{
+		case WM_SETFONT: { // remember the font so we can use it later
 			bct->hFont = (HFONT)wParam; // maybe we should redraw?
 			break;
 		}
 		case WM_NCPAINT:
-		case WM_PAINT:
-		{
+		case WM_PAINT: {
 			PAINTSTRUCT ps;
 			HDC hdcPaint;
 
@@ -626,14 +620,13 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 				GetObject(ii.hbmColor, sizeof(bm), &bm);
 				if (bm.bmWidth != myGlobals.m_smcxicon || bm.bmHeight != myGlobals.m_smcyicon) {
 					HIMAGELIST hImageList;
-					hImageList = ImageList_Create(myGlobals.m_smcxicon,myGlobals.m_smcyicon, IsWinVerXPPlus()? ILC_COLOR32 | ILC_MASK : ILC_COLOR16 | ILC_MASK, 1, 0);
+					hImageList = ImageList_Create(myGlobals.m_smcxicon, myGlobals.m_smcyicon, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR16 | ILC_MASK, 1, 0);
 					ImageList_AddIcon(hImageList, (HICON)lParam);
 					bct->hIconPrivate = ImageList_GetIcon(hImageList, 0, ILD_NORMAL);
 					ImageList_RemoveAll(hImageList);
 					ImageList_Destroy(hImageList);
 					bct->hIcon = 0;
-				}
-				else {
+				} else {
 					bct->hIcon = (HICON)lParam;
 					bct->hIconPrivate = 0;
 				}
@@ -642,8 +635,7 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 				DeleteObject(ii.hbmColor);
 				bct->hBitmap = NULL;
 				InvalidateRect(bct->hwnd, NULL, TRUE);
-			}
-			else if (wParam == IMAGE_BITMAP) {
+			} else if (wParam == IMAGE_BITMAP) {
 				bct->hBitmap = (HBITMAP)lParam;
 				if (bct->hIconPrivate)
 					DestroyIcon(bct->hIconPrivate);
@@ -656,8 +648,7 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			if (wParam == BST_CHECKED) {
 				bct->pbState = 1;
 				bct->stateId = PBS_PRESSED;
-			}
-			else if (wParam == BST_UNCHECKED) {
+			} else if (wParam == BST_UNCHECKED) {
 				bct->pbState = 0;
 				bct->stateId = PBS_NORMAL;
 			}
@@ -665,7 +656,7 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			break;
 		case BM_GETCHECK:
 			if (bct->pushBtn) {
-				return bct->pbState?BST_CHECKED:BST_UNCHECKED;
+				return bct->pbState ? BST_CHECKED : BST_UNCHECKED;
 			}
 			return 0;
 		case BUTTONSETARROW: // turn arrow on/off
@@ -673,7 +664,7 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			InvalidateRect(bct->hwnd, NULL, TRUE);
 			break;
 		case BUTTONSETDEFAULT:
-			bct->defbutton = wParam?1:0;
+			bct->defbutton = wParam ? 1 : 0;
 			InvalidateRect(bct->hwnd, NULL, TRUE);
 			break;
 		case BUTTONSETASPUSHBTN:
@@ -707,8 +698,7 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			bct->item = (ButtonItem *)lParam;
 			break;
 
-		case BUTTONADDTOOLTIP:
-		{
+		case BUTTONADDTOOLTIP: {
 			TOOLINFO ti;
 
 			if (!(char*)wParam)
@@ -725,10 +715,10 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			if (SendMessage(hwndToolTips, TTM_GETTOOLINFO, 0, (LPARAM)&ti)) {
 				SendMessage(hwndToolTips, TTM_DELTOOL, 0, (LPARAM)&ti);
 			}
-			ti.uFlags = TTF_IDISHWND|TTF_SUBCLASS;
+			ti.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
 			ti.uId = (UINT)bct->hwnd;
-			ti.lpszText=(TCHAR *)wParam;
-			SendMessage(hwndToolTips,TTM_ADDTOOL,0,(LPARAM)&ti);
+			ti.lpszText = (TCHAR *)wParam;
+			SendMessage(hwndToolTips, TTM_ADDTOOL, 0, (LPARAM)&ti);
 			SendMessage(hwndToolTips, TTM_SETMAXTIPWIDTH, 0, 300);
 			LeaveCriticalSection(&csTips);
 			break;
@@ -744,22 +734,19 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 		case WM_WINDOWPOSCHANGED:
 			InvalidateRect(bct->hwnd, NULL, TRUE);
 			break;
-		case WM_ENABLE: // windows tells us to enable/disable
-		{
-			bct->stateId = wParam?PBS_NORMAL:PBS_DISABLED;
+		case WM_ENABLE: { // windows tells us to enable/disable
+			bct->stateId = wParam ? PBS_NORMAL : PBS_DISABLED;
 			InvalidateRect(bct->hwnd, NULL, TRUE);
 			break;
 		}
-		case WM_MOUSELEAVE: // faked by the WM_TIMER
-		{
-			if (bct->stateId!=PBS_DISABLED) { // don't change states if disabled
+		case WM_MOUSELEAVE: { // faked by the WM_TIMER
+			if (bct->stateId != PBS_DISABLED) { // don't change states if disabled
 				bct->stateId = PBS_NORMAL;
 				InvalidateRect(bct->hwnd, NULL, TRUE);
 			}
 			break;
 		}
-		case WM_LBUTTONDOWN:
-		{
+		case WM_LBUTTONDOWN: {
 			RECT rc;
 
 			if (bct->arrow && bct->stateId != PBS_DISABLED) {
@@ -769,23 +756,21 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 				else
 					bct->stateId = PBS_PUSHDOWNPRESSED;
 				InvalidateRect(bct->hwnd, NULL, TRUE);
-			}
-			else if (bct->stateId != PBS_DISABLED) {
+			} else if (bct->stateId != PBS_DISABLED) {
 				bct->stateId = PBS_PRESSED;
 				InvalidateRect(bct->hwnd, NULL, TRUE);
 			}
 			break;
 		}
-		case WM_LBUTTONUP:
-		{
+		case WM_LBUTTONUP: {
 			RECT rc;
 
 			if (bct->pushBtn) {
 				if (bct->pbState) bct->pbState = 0;
 				else bct->pbState = 1;
 			}
-			if (bct->stateId!=PBS_DISABLED) { // don't change states if disabled
-				if (msg==WM_LBUTTONUP) bct->stateId = PBS_HOT;
+			if (bct->stateId != PBS_DISABLED) { // don't change states if disabled
+				if (msg == WM_LBUTTONUP) bct->stateId = PBS_HOT;
 				else bct->stateId = PBS_NORMAL;
 				InvalidateRect(bct->hwnd, NULL, TRUE);
 			}
@@ -807,18 +792,17 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 				InvalidateRect(bct->hwnd, NULL, TRUE);
 			}
 			// Call timer, used to start cheesy TrackMouseEvent faker
-			SetTimer(hwndDlg,BUTTON_POLLID,BUTTON_POLLDELAY,NULL);
+			SetTimer(hwndDlg, BUTTON_POLLID, BUTTON_POLLDELAY, NULL);
 			break;
-		case WM_TIMER: // use a timer to check if they have did a mouseout
-		{
-			if (wParam==BUTTON_POLLID) {
+		case WM_TIMER: { // use a timer to check if they have did a mouseout
+			if (wParam == BUTTON_POLLID) {
 				RECT rc;
 				POINT pt;
-				GetWindowRect(hwndDlg,&rc);
+				GetWindowRect(hwndDlg, &rc);
 				GetCursorPos(&pt);
-				if (!PtInRect(&rc,pt)) { // mouse must be gone, trigger mouse leave
-					PostMessage(hwndDlg,WM_MOUSELEAVE,0,0L);
-					KillTimer(hwndDlg,BUTTON_POLLID);
+				if (!PtInRect(&rc, pt)) { // mouse must be gone, trigger mouse leave
+					PostMessage(hwndDlg, WM_MOUSELEAVE, 0, 0L);
+					KillTimer(hwndDlg, BUTTON_POLLID);
 				}
 			}
 			break;

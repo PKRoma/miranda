@@ -1,4 +1,6 @@
 /*
+astyle --force-indent=tab=4 --brackets=linux --indent-switches
+		--pad=oper --one-line=keep-blocks  --unpad=paren
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
@@ -73,8 +75,7 @@ void ApplyContainerSetting(struct ContainerWindowData *pContainer, DWORD flags, 
 				}
 				pC = pC->pNextContainer;
 			}
-		}
-		else
+		} else
 			ReloadGlobalContainerSettings();
 	} else {
 		pContainer->dwPrivateFlags = (mode ? pContainer->dwPrivateFlags | flags : pContainer->dwPrivateFlags & ~flags);
@@ -130,8 +131,7 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 	pContainer = (struct ContainerWindowData *) GetWindowLong(hwndDlg, GWL_USERDATA);
 
 	switch (msg) {
-		case WM_INITDIALOG:
-		{
+		case WM_INITDIALOG: {
 			TCHAR szNewTitle[128];
 			struct ContainerWindowData *pContainer = 0;
 			DWORD dwFlags = 0;
@@ -143,8 +143,8 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			HTREEITEM hItem;
 
 			GetObject(hFont, sizeof(lf), &lf);
-			lf.lfHeight=(int)(lf.lfHeight*1.5);
-			lf.lfWeight=FW_BOLD;
+			lf.lfHeight = (int)(lf.lfHeight * 1.5);
+			lf.lfWeight = FW_BOLD;
 			hFont = CreateFontIndirect(&lf);
 			SendDlgItemMessage(hwndDlg, IDC_WHITERECT, WM_SETFONT, (WPARAM)hFont, 0);
 
@@ -204,16 +204,16 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			break;
 		case WM_CTLCOLOREDIT:
 		case WM_CTLCOLORSTATIC:
-			if ((HWND)lParam==GetDlgItem(hwndDlg,IDC_WHITERECT)
-					|| (HWND)lParam==GetDlgItem(hwndDlg,IDC_CURRENTNAME)
-					|| (HWND)lParam==GetDlgItem(hwndDlg,IDC_LOGO)) {
-				if ((HWND)lParam==GetDlgItem(hwndDlg,IDC_WHITERECT))
-					SetTextColor((HDC)wParam,RGB(180,10,10));
-				else if ((HWND)lParam==GetDlgItem(hwndDlg,IDC_CURRENTNAME))
-					SetTextColor((HDC)wParam,RGB(70,70,70));
+			if ((HWND)lParam == GetDlgItem(hwndDlg, IDC_WHITERECT)
+					|| (HWND)lParam == GetDlgItem(hwndDlg, IDC_CURRENTNAME)
+					|| (HWND)lParam == GetDlgItem(hwndDlg, IDC_LOGO)) {
+				if ((HWND)lParam == GetDlgItem(hwndDlg, IDC_WHITERECT))
+					SetTextColor((HDC)wParam, RGB(180, 10, 10));
+				else if ((HWND)lParam == GetDlgItem(hwndDlg, IDC_CURRENTNAME))
+					SetTextColor((HDC)wParam, RGB(70, 70, 70));
 				else
-					SetTextColor((HDC)wParam, RGB(0,0,0));
-				SetBkColor((HDC)wParam,RGB(255,255,255));
+					SetTextColor((HDC)wParam, RGB(0, 0, 0));
+				SetBkColor((HDC)wParam, RGB(255, 255, 255));
 				return (BOOL)GetStockObject(WHITE_BRUSH);
 			}
 			break;
@@ -227,24 +227,21 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			break;
 		case WM_COMMAND:
 			switch (LOWORD(wParam)) {
-				case IDC_CNTPRIVATE:
-				{
+				case IDC_CNTPRIVATE: {
 					DWORD dwTemp[2];
 
 					if (IsDlgButtonChecked(hwndDlg, IDC_CNTPRIVATE)) {
 						dwTemp[0] = pContainer->dwPrivateFlags;
 						dwTemp[1] = pContainer->dwTransparency;
 						SendMessage(hwndDlg, DM_SC_INITDIALOG, 0, (LPARAM)dwTemp);
-					}
-					else {
+					} else {
 						dwTemp[0] = myGlobals.m_GlobalContainerFlags;;
 						dwTemp[1] = pContainer->dwTransparency;
 						SendMessage(hwndDlg, DM_SC_INITDIALOG, 0, (LPARAM)dwTemp);
 					}
 					goto do_apply;
 				}
-				case IDC_TRANSPARENCY:
-				{
+				case IDC_TRANSPARENCY: {
 					int isTrans = IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENCY);
 
 					EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENCY_ACTIVE), isTrans ? TRUE : FALSE);
@@ -254,8 +251,7 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				case IDC_SECTIONTREE:
 				case IDC_DESC:
 					return 0;
-				case IDC_SAVESIZEASGLOBAL:
-				{
+				case IDC_SAVESIZEASGLOBAL: {
 					WINDOWPLACEMENT wp = {0};
 
 					wp.length = sizeof(wp);
@@ -274,8 +270,7 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					if (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus())
 						return TRUE;
 					goto do_apply;
-				case IDC_SELECTTHEME:
-				{
+				case IDC_SELECTTHEME: {
 					char *szFileName = GetThemeFileName(0);
 
 					if (PathFileExistsA(szFileName)) {
@@ -285,8 +280,7 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					break;
 				}
 				case IDOK:
-				case IDC_APPLY:
-				{
+				case IDC_APPLY: {
 					DWORD dwNewFlags = 0, dwNewTrans = 0;
 
 					SendMessage(hwndDlg, DM_SC_BUILDLIST, 0, (LPARAM)&dwNewFlags);
@@ -296,8 +290,7 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 
 					if (IsDlgButtonChecked(hwndDlg, IDC_CNTPRIVATE)) {
 						pContainer->dwPrivateFlags = pContainer->dwFlags = (dwNewFlags & ~CNT_GLOBALSETTINGS);
-					}
-					else {
+					} else {
 						myGlobals.m_GlobalContainerFlags = dwNewFlags;
 						pContainer->dwPrivateFlags |= CNT_GLOBALSETTINGS;
 						DBWriteContactSettingDword(NULL, SRMSGMOD_T, "containerflags", dwNewFlags);
@@ -312,8 +305,7 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					if (dwNewFlags & CNT_TITLE_PRIVATE) {
 						GetDlgItemText(hwndDlg, IDC_TITLEFORMAT, pContainer->szTitleFormat, TITLE_FORMATLEN);
 						pContainer->szTitleFormat[TITLE_FORMATLEN - 1] = 0;
-					}
-					else
+					} else
 						_tcsncpy(pContainer->szTitleFormat, myGlobals.szDefaultTitleFormat, TITLE_FORMATLEN);
 
 					pContainer->szThemeFile[0] = 0;
@@ -440,12 +432,11 @@ do_apply:
 			*dwOut = dwNewFlags;
 			break;
 		}
-		case WM_DESTROY:
-		{
+		case WM_DESTROY: {
 			HFONT hFont;
 
-			hFont=(HFONT)SendDlgItemMessage(hwndDlg, IDC_WHITERECT, WM_GETFONT,0,0);
-			SendDlgItemMessage(hwndDlg, IDC_WHITERECT, WM_SETFONT, SendDlgItemMessage(hwndDlg, IDOK, WM_GETFONT,0,0),0);
+			hFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_WHITERECT, WM_GETFONT, 0, 0);
+			SendDlgItemMessage(hwndDlg, IDC_WHITERECT, WM_SETFONT, SendDlgItemMessage(hwndDlg, IDOK, WM_GETFONT, 0, 0), 0);
 			DeleteObject(hFont);
 			pContainer->hWndOptions = 0;
 			SetWindowLong(hwndDlg, GWL_USERDATA, 0);

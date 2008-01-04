@@ -1,4 +1,6 @@
 /*
+astyle --force-indent=tab=4 --brackets=linux --indent-switches
+		--pad=oper --one-line=keep-blocks  --unpad=paren
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
@@ -105,13 +107,13 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 	}
 #endif
 
-	mir_getMMI( &mmi );
-	mir_getUTFI( &utfi );
+	mir_getMMI(&mmi);
+	mir_getUTFI(&utfi);
 
-	if ( ServiceExists( MS_DB_EVENT_GETTEXT ))
+	if (ServiceExists(MS_DB_EVENT_GETTEXT))
 		bNewDbApi = TRUE;
 
-	fnSetMenuInfo = ( pfnSetMenuInfo )GetProcAddress( GetModuleHandleA( "USER32.DLL" ), "SetMenuInfo" );
+	fnSetMenuInfo = (pfnSetMenuInfo)GetProcAddress(GetModuleHandleA("USER32.DLL"), "SetMenuInfo");
 
 	Chat_Load(pluginLink);
 	return LoadSendRecvMessageModule();
@@ -196,25 +198,33 @@ int _DebugTraceA(const char *fmt, ...)
  * popup plugin.
  */
 
-int _DebugPopup(HANDLE hContact, const char *fmt, ...)
+int _DebugPopup(HANDLE hContact, const TCHAR *fmt, ...)
 {
-	va_list va;
-	char    debug[1024];
-	int     ibsize = 1023;
+	va_list	va;
+	TCHAR		debug[1024];
+	int			ibsize = 1023;
 
 	va_start(va, fmt);
-	_vsnprintf(debug, ibsize, fmt, va);
+	_vsntprintf(debug, ibsize, fmt, va);
 
 	if (ServiceExists(MS_CLIST_SYSTRAY_NOTIFY)) {
 		MIRANDASYSTRAYNOTIFY tn;
-		char szTitle[128];
+		TCHAR	szTitle[128];
 
 		tn.szProto = NULL;
 		tn.cbSize = sizeof(tn);
-		_snprintf(szTitle, sizeof(szTitle), Translate("tabSRMM Message (%s)"), (hContact != 0) ? (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0) : Translate("Global"));
+		mir_sntprintf(szTitle, safe_sizeof(szTitle), TranslateT("tabSRMM Message (%s)"), (hContact != 0) ? (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR) : TranslateT("Global"));
+#if defined(_UNICODE)
+		tn.tszInfoTitle = szTitle;
+		tn.tszInfo = debug;
+#else
 		tn.szInfoTitle = szTitle;
 		tn.szInfo = debug;
+#endif
 		tn.dwInfoFlags = NIIF_INFO;
+#if defined(_UNICODE)
+		tn.dwInfoFlags |= NIIF_INTERN_UNICODE;
+#endif
 		tn.uTimeout = 1000 * 4;
 		CallService(MS_CLIST_SYSTRAY_NOTIFY, 0, (LPARAM) & tn);
 	}
@@ -226,8 +236,7 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	COLORREF url_visited = RGB(128, 0, 128);
 	COLORREF url_unvisited = RGB(0, 0, 255);
 
-	switch (msg)
-	{
+	switch (msg) {
 		case WM_INITDIALOG:
 			TranslateDialogDefault(hwndDlg);
 			{
@@ -235,16 +244,16 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				HFONT hFont;
 				LOGFONT lf;
 
-				hFont=(HFONT)SendDlgItemMessage(hwndDlg,IDC_TABSRMM,WM_GETFONT,0,0);
-				GetObject(hFont,sizeof(lf),&lf);
-				h=lf.lfHeight;
-				lf.lfHeight=(int)(lf.lfHeight*1.5);
-				lf.lfWeight=FW_BOLD;
-				hFont=CreateFontIndirect(&lf);
-				SendDlgItemMessage(hwndDlg,IDC_TABSRMM,WM_SETFONT,(WPARAM)hFont,0);
-				lf.lfHeight=h;
-				hFont=CreateFontIndirect(&lf);
-				SendDlgItemMessage(hwndDlg,IDC_VERSION,WM_SETFONT,(WPARAM)hFont,0);
+				hFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_TABSRMM, WM_GETFONT, 0, 0);
+				GetObject(hFont, sizeof(lf), &lf);
+				h = lf.lfHeight;
+				lf.lfHeight = (int)(lf.lfHeight * 1.5);
+				lf.lfWeight = FW_BOLD;
+				hFont = CreateFontIndirect(&lf);
+				SendDlgItemMessage(hwndDlg, IDC_TABSRMM, WM_SETFONT, (WPARAM)hFont, 0);
+				lf.lfHeight = h;
+				hFont = CreateFontIndirect(&lf);
+				SendDlgItemMessage(hwndDlg, IDC_VERSION, WM_SETFONT, (WPARAM)hFont, 0);
 			}
 			{
 				char str[64];
@@ -258,19 +267,18 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 					mir_snprintf(buildstr, 50, "[Build #%d]", build_nr);
 				}
 #if defined(_UNICODE)
-				mir_snprintf(str,sizeof(str),"%s %d.%d.%d.%d (Unicode) %s", Translate("Version"), HIBYTE(HIWORD(v)), LOBYTE(HIWORD(v)), HIBYTE(LOWORD(v)), LOBYTE(LOWORD(v)), buildstr);
+				mir_snprintf(str, sizeof(str), "%s %d.%d.%d.%d (Unicode) %s", Translate("Version"), HIBYTE(HIWORD(v)), LOBYTE(HIWORD(v)), HIBYTE(LOWORD(v)), LOBYTE(LOWORD(v)), buildstr);
 #else
-				mir_snprintf(str,sizeof(str),"%s %d.%d.%d.%d %s", Translate("Version"), HIBYTE(HIWORD(v)), LOBYTE(HIWORD(v)), HIBYTE(LOWORD(v)), LOBYTE(LOWORD(v)), buildstr);
+				mir_snprintf(str, sizeof(str), "%s %d.%d.%d.%d %s", Translate("Version"), HIBYTE(HIWORD(v)), LOBYTE(HIWORD(v)), HIBYTE(LOWORD(v)), LOBYTE(LOWORD(v)), buildstr);
 #endif
-				SetDlgItemTextA(hwndDlg,IDC_VERSION,str);
-				mir_snprintf(str,sizeof(str),Translate("Built %s %s"),__DATE__,__TIME__);
-				SetDlgItemTextA(hwndDlg,IDC_BUILDTIME,str);
+				SetDlgItemTextA(hwndDlg, IDC_VERSION, str);
+				mir_snprintf(str, sizeof(str), Translate("Built %s %s"), __DATE__, __TIME__);
+				SetDlgItemTextA(hwndDlg, IDC_BUILDTIME, str);
 			}
 			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)myGlobals.g_iconContainer);
 			return TRUE;
 		case WM_COMMAND:
-			switch (LOWORD(wParam))
-			{
+			switch (LOWORD(wParam)) {
 				case IDOK:
 				case IDCANCEL:
 					DestroyWindow(hwndDlg);
@@ -282,32 +290,31 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			break;
 		case WM_CTLCOLOREDIT:
 		case WM_CTLCOLORSTATIC:
-			if ((HWND)lParam==GetDlgItem(hwndDlg,IDC_WHITERECT)
-					|| (HWND)lParam==GetDlgItem(hwndDlg,IDC_TABSRMM)
-					|| (HWND)lParam==GetDlgItem(hwndDlg,IDC_VERSION)
-					|| (HWND)lParam==GetDlgItem(hwndDlg,IDC_BUILDTIME)
-					|| (HWND)lParam==GetDlgItem(hwndDlg,IDC_COPYRIGHT)
-					|| (HWND)lParam==GetDlgItem(hwndDlg,IDC_SUPPORT)
-					|| (HWND)lParam==GetDlgItem(hwndDlg,IDC_LOGO)) {
-				if ((HWND)lParam==GetDlgItem(hwndDlg,IDC_TABSRMM))
-					SetTextColor((HDC)wParam,RGB(180,10,10));
-				else if ((HWND)lParam==GetDlgItem(hwndDlg,IDC_VERSION))
-					SetTextColor((HDC)wParam,RGB(70,70,70));
+			if ((HWND)lParam == GetDlgItem(hwndDlg, IDC_WHITERECT)
+					|| (HWND)lParam == GetDlgItem(hwndDlg, IDC_TABSRMM)
+					|| (HWND)lParam == GetDlgItem(hwndDlg, IDC_VERSION)
+					|| (HWND)lParam == GetDlgItem(hwndDlg, IDC_BUILDTIME)
+					|| (HWND)lParam == GetDlgItem(hwndDlg, IDC_COPYRIGHT)
+					|| (HWND)lParam == GetDlgItem(hwndDlg, IDC_SUPPORT)
+					|| (HWND)lParam == GetDlgItem(hwndDlg, IDC_LOGO)) {
+				if ((HWND)lParam == GetDlgItem(hwndDlg, IDC_TABSRMM))
+					SetTextColor((HDC)wParam, RGB(180, 10, 10));
+				else if ((HWND)lParam == GetDlgItem(hwndDlg, IDC_VERSION))
+					SetTextColor((HDC)wParam, RGB(70, 70, 70));
 				else
-					SetTextColor((HDC)wParam,RGB(0,0,0));
-				SetBkColor((HDC)wParam,RGB(255,255,255));
+					SetTextColor((HDC)wParam, RGB(0, 0, 0));
+				SetBkColor((HDC)wParam, RGB(255, 255, 255));
 				return (BOOL)GetStockObject(WHITE_BRUSH);
 			}
 			break;
-		case WM_DESTROY:
-		{
+		case WM_DESTROY: {
 			HFONT hFont;
 
-			hFont=(HFONT)SendDlgItemMessage(hwndDlg,IDC_TABSRMM,WM_GETFONT,0,0);
-			SendDlgItemMessage(hwndDlg,IDC_TABSRMM,WM_SETFONT,SendDlgItemMessage(hwndDlg,IDOK,WM_GETFONT,0,0),0);
+			hFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_TABSRMM, WM_GETFONT, 0, 0);
+			SendDlgItemMessage(hwndDlg, IDC_TABSRMM, WM_SETFONT, SendDlgItemMessage(hwndDlg, IDOK, WM_GETFONT, 0, 0), 0);
 			DeleteObject(hFont);
-			hFont=(HFONT)SendDlgItemMessage(hwndDlg,IDC_VERSION,WM_GETFONT,0,0);
-			SendDlgItemMessage(hwndDlg,IDC_VERSION,WM_SETFONT,SendDlgItemMessage(hwndDlg,IDOK,WM_GETFONT,0,0),0);
+			hFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_VERSION, WM_GETFONT, 0, 0);
+			SendDlgItemMessage(hwndDlg, IDC_VERSION, WM_SETFONT, SendDlgItemMessage(hwndDlg, IDOK, WM_GETFONT, 0, 0), 0);
 			DeleteObject(hFont);
 		}
 		break;

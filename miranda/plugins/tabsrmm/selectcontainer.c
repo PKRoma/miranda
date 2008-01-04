@@ -1,4 +1,6 @@
 /*
+astyle --force-indent=tab=4 --brackets=linux --indent-switches
+		--pad=oper --one-line=keep-blocks  --unpad=paren
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
@@ -39,8 +41,7 @@ BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 	hwndMsgDlg = (HWND) GetWindowLong(hwndDlg, GWL_USERDATA);
 
 	switch (msg) {
-		case WM_INITDIALOG:
-		{
+		case WM_INITDIALOG: {
 			TCHAR szNewTitle[128];
 			RECT rc, rcParent;
 			struct ContainerWindowData *pContainer = 0;
@@ -70,8 +71,7 @@ BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
 		case WM_COMMAND:
 			switch (LOWORD(wParam)) {
-				case IDOK:
-				{
+				case IDOK: {
 					TCHAR szName[CONTAINER_NAMELEN];
 					LRESULT iItem;
 
@@ -105,8 +105,7 @@ BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					}
 					break;
 				}
-				case IDC_RENAMECONTAINER:
-				{
+				case IDC_RENAMECONTAINER: {
 					TCHAR szNewName[CONTAINER_NAMELEN], szName[CONTAINER_NAMELEN + 1];
 					int iLen, iItem;
 					struct ContainerWindowData *pCurrent = pFirstContainer;
@@ -114,7 +113,7 @@ BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_NEWCONTAINERNAME));
 					if (iLen) {
 						GetWindowText(GetDlgItem(hwndDlg, IDC_NEWCONTAINERNAME), szNewName, CONTAINER_NAMELEN * sizeof(TCHAR));
-						iItem = SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_FINDSTRING,  (WPARAM) -1, (LPARAM) szNewName);
+						iItem = SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_FINDSTRING, (WPARAM) - 1, (LPARAM) szNewName);
 						if (iItem != LB_ERR) {
 							TCHAR szOldName[CONTAINER_NAMELEN + 1];
 							SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_GETTEXT, (WPARAM) iItem, (LPARAM) szOldName);
@@ -146,15 +145,14 @@ BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					}
 					break;
 				}
-				case IDC_CREATENEW:
-				{
+				case IDC_CREATENEW: {
 					int iLen, iItem;
 					TCHAR szNewName[CONTAINER_NAMELEN], szName[CONTAINER_NAMELEN + 1];
 
 					iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_NEWCONTAINER));
 					if (iLen) {
 						GetWindowText(GetDlgItem(hwndDlg, IDC_NEWCONTAINER), szNewName, CONTAINER_NAMELEN * sizeof(TCHAR));
-						iItem = SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_FINDSTRING, (WPARAM) -1, (LPARAM) szNewName);
+						iItem = SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_FINDSTRING, (WPARAM) - 1, (LPARAM) szNewName);
 						if (iItem != LB_ERR) {
 							SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_GETTEXT, (WPARAM)iItem, (LPARAM)szName);
 							if (_tcslen(szName) == _tcslen(szNewName)) {
@@ -212,7 +210,7 @@ BOOL CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			if (pContainer) {
 				LRESULT iItem;
 
-				iItem = SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_FINDSTRING, (WPARAM) -1, (LPARAM) pContainer->szName);
+				iItem = SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_FINDSTRING, (WPARAM) - 1, (LPARAM) pContainer->szName);
 				if (iItem != LB_ERR)
 					SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_SETCURSEL, (WPARAM) iItem, 0);
 			}

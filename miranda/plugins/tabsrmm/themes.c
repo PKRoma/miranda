@@ -1,4 +1,6 @@
 /*
+astyle --force-indent=tab=4 --brackets=linux --indent-switches
+		--pad=oper --one-line=keep-blocks  --unpad=paren
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
@@ -52,9 +54,9 @@ static void __inline gradientVertical(UCHAR *ubRedFinal, UCHAR *ubGreenFinal, UC
 									  ULONG ulBitmapHeight, UCHAR ubRed, UCHAR ubGreen, UCHAR ubBlue, UCHAR ubRed2,
 									  UCHAR ubGreen2, UCHAR ubBlue2, DWORD FLG_GRADIENT, BOOL transparent, UINT32 y, UCHAR *ubAlpha);
 
-static void __inline gradientHorizontal( UCHAR *ubRedFinal, UCHAR *ubGreenFinal, UCHAR *ubBlueFinal,
-		ULONG ulBitmapWidth, UCHAR ubRed, UCHAR ubGreen, UCHAR ubBlue,  UCHAR ubRed2,
-		UCHAR ubGreen2, UCHAR ubBlue2, DWORD FLG_GRADIENT, BOOL transparent, UINT32 x, UCHAR *ubAlpha);
+static void __inline gradientHorizontal(UCHAR *ubRedFinal, UCHAR *ubGreenFinal, UCHAR *ubBlueFinal,
+										ULONG ulBitmapWidth, UCHAR ubRed, UCHAR ubGreen, UCHAR ubBlue,  UCHAR ubRed2,
+										UCHAR ubGreen2, UCHAR ubBlue2, DWORD FLG_GRADIENT, BOOL transparent, UINT32 x, UCHAR *ubAlpha);
 
 
 static ImageItem *g_ImageItems = NULL;
@@ -84,91 +86,91 @@ StatusItems_t StatusItems[] = {
 		CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT,
 		CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
 	}, {"Toolbar", "TSKIN_Container", ID_EXTBKBUTTONBAR,
-		CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+		CLCDEFAULT_GRADIENT, CLCDEFAULT_CORNER,
 		CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT,
 		CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
 	   }, {"{-}Buttonpressed", "TSKIN_BUTTONSPRESSED", ID_EXTBKBUTTONSPRESSED,
-		   CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+		   CLCDEFAULT_GRADIENT, CLCDEFAULT_CORNER,
 		   CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT,
 		   CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
 		  }, {"Buttonnotpressed", "TSKIN_BUTTONSNPRESSED", ID_EXTBKBUTTONSNPRESSED,
-			  CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+			  CLCDEFAULT_GRADIENT, CLCDEFAULT_CORNER,
 			  CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT,
 			  CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
 			 }, {"Buttonmouseover", "TSKIN_BUTTONSMOUSEOVER", ID_EXTBKBUTTONSMOUSEOVER,
-				 CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+				 CLCDEFAULT_GRADIENT, CLCDEFAULT_CORNER,
 				 CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT,
 				 CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
 				}, {"Infopanelfield", "TSKIN_INFOPANELFIELD", ID_EXTBKINFOPANEL,
-					CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+					CLCDEFAULT_GRADIENT, CLCDEFAULT_CORNER,
 					CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT,
 					CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
 				   }, {"Titlebutton", "TSKIN_TITLEBUTTON", ID_EXTBKTITLEBUTTON,
-					   CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+					   CLCDEFAULT_GRADIENT, CLCDEFAULT_CORNER,
 					   CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT,
 					   CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
 					  }, {"Titlebuttonmouseover", "TSKIN_TITLEBUTTONHOVER", ID_EXTBKTITLEBUTTONMOUSEOVER,
-						  CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+						  CLCDEFAULT_GRADIENT, CLCDEFAULT_CORNER,
 						  CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT,
 						  CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
 						 }, {"Titlebuttonpressed", "TSKIN_TITLEBUTTONPRESSED", ID_EXTBKTITLEBUTTONPRESSED,
-							 CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+							 CLCDEFAULT_GRADIENT, CLCDEFAULT_CORNER,
 							 CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT,
 							 CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
 							}, {"Tabpage", "TSKIN_TABPAGE", ID_EXTBKTABPAGE,
-								CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+								CLCDEFAULT_GRADIENT, CLCDEFAULT_CORNER,
 								CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT,
 								CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
 							   }, {"Tabitem", "TSKIN_TABITEM", ID_EXTBKTABITEM,
-								   CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+								   CLCDEFAULT_GRADIENT, CLCDEFAULT_CORNER,
 								   CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT,
 								   CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
 								  }, {"Tabitem_active", "TSKIN_TABITEMACTIVE", ID_EXTBKTABITEMACTIVE,
-									  CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+									  CLCDEFAULT_GRADIENT, CLCDEFAULT_CORNER,
 									  CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT,
 									  CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
 									 }, {"Tabitem_bottom", "TSKIN_TABITEMBOTTOM", ID_EXTBKTABITEMBOTTOM,
-										 CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+										 CLCDEFAULT_GRADIENT, CLCDEFAULT_CORNER,
 										 CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT,
 										 CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
 										}, {"Tabitem_active_bottom", "TSKIN_TABITEMACTIVEBOTTOM", ID_EXTBKTABITEMACTIVEBOTTOM,
-											CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+											CLCDEFAULT_GRADIENT, CLCDEFAULT_CORNER,
 											CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT,
 											CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
 										   }, {"Frame", "TSKIN_FRAME", ID_EXTBKFRAME,
-											   CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+											   CLCDEFAULT_GRADIENT, CLCDEFAULT_CORNER,
 											   CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT,
 											   CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
 											  }, {"MessageLog", "TSKIN_MLOG", ID_EXTBKHISTORY,
-												  CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+												  CLCDEFAULT_GRADIENT, CLCDEFAULT_CORNER,
 												  CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT,
 												  CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
 												 }, {"InputArea", "TSKIN_INPUT", ID_EXTBKINPUTAREA,
-													 CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+													 CLCDEFAULT_GRADIENT, CLCDEFAULT_CORNER,
 													 CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT,
 													 CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
 													}, {"FrameInactive", "TSKIN_FRAMEINACTIVE", ID_EXTBKFRAMEINACTIVE,
-														CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+														CLCDEFAULT_GRADIENT, CLCDEFAULT_CORNER,
 														CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT,
 														CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
 													   }, {"Tabitem_hottrack", "TSKIN_TABITEMHOTTRACK", ID_EXTBKTABITEMHOTTRACK,
-														   CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+														   CLCDEFAULT_GRADIENT, CLCDEFAULT_CORNER,
 														   CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT,
 														   CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
 														  }, {"Tabitem_hottrack_bottom", "TSKIN_TABITEMHOTTRACKBOTTOM", ID_EXTBKTABITEMHOTTRACKBOTTOM,
-															  CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+															  CLCDEFAULT_GRADIENT, CLCDEFAULT_CORNER,
 															  CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT,
 															  CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
 															 }, {"Statusbarpanel", "TSKIN_STATUSBARPANEL", ID_EXTBKSTATUSBARPANEL,
-																 CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+																 CLCDEFAULT_GRADIENT, CLCDEFAULT_CORNER,
 																 CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT,
 																 CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
 																}, {"Statusbar", "TSKIN_STATUSBAR", ID_EXTBKSTATUSBAR,
-																	CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+																	CLCDEFAULT_GRADIENT, CLCDEFAULT_CORNER,
 																	CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT,
 																	CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
 																   }, {"Userlist", "TSKIN_USERLIST", ID_EXTBKUSERLIST,
-																	   CLCDEFAULT_GRADIENT,CLCDEFAULT_CORNER,
+																	   CLCDEFAULT_GRADIENT, CLCDEFAULT_CORNER,
 																	   CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, CLCDEFAULT_TEXTCOLOR, CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT,
 																	   CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
 																	  }
@@ -194,7 +196,7 @@ static void LoadLogfontFromINI(int i, char *szKey, LOGFONTA *lf, COLORREF *colou
 				lf->lfHeight = bSize;
 		}
 
-		ReleaseDC(NULL,hdc);
+		ReleaseDC(NULL, hdc);
 
 		lf->lfWidth = 0;
 		lf->lfEscapement = 0;
@@ -215,8 +217,7 @@ static void LoadLogfontFromINI(int i, char *szKey, LOGFONTA *lf, COLORREF *colou
 		if (i == MSGFONTID_SYMBOLS_IN || i == MSGFONTID_SYMBOLS_OUT) {
 			lstrcpynA(lf->lfFaceName, "Webdings", LF_FACESIZE);
 			lf->lfCharSet = SYMBOL_CHARSET;
-		}
-		else
+		} else
 			GetPrivateProfileStringA(szKey, "Face", "Tahoma", lf->lfFaceName, LF_FACESIZE - 1, szIniFilename);
 	}
 }
@@ -312,8 +313,7 @@ void WriteThemeToINI(const char *szIniFilename, struct MessageWindowData *dat)
 		if (dat == 0) {
 			WritePrivateProfileStringA("Templates", TemplateNames[i], LTR_Active.szTemplates[i], szIniFilename);
 			WritePrivateProfileStringA("RTLTemplates", TemplateNames[i], RTL_Active.szTemplates[i], szIniFilename);
-		}
-		else {
+		} else {
 			WritePrivateProfileStringA("Templates", TemplateNames[i], dat->ltr_templates->szTemplates[i], szIniFilename);
 			WritePrivateProfileStringA("RTLTemplates", TemplateNames[i], dat->rtl_templates->szTemplates[i], szIniFilename);
 		}
@@ -431,8 +431,7 @@ void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, 
 				DBWriteContactSettingDword(NULL, "Chat", szTemp, g_Settings.nickColors[i]);
 			}
 		}
-	}
-	else {
+	} else {
 		HDC hdc = GetDC(NULL);
 		int SY = GetDeviceCaps(hdc, LOGPIXELSY);
 		ReleaseDC(NULL, hdc);
@@ -502,8 +501,7 @@ void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, 
 					DBWriteContactSettingString(NULL, TEMPLATES_MODULE, TemplateNames[i], LTR_Active.szTemplates[i]);
 					GetPrivateProfileStringA("RTLTemplates", TemplateNames[i], "", RTL_Active.szTemplates[i], TEMPLATE_LENGTH - 1, szIniFilename);
 					DBWriteContactSettingString(NULL, RTLTEMPLATES_MODULE, TemplateNames[i], RTL_Active.szTemplates[i]);
-				}
-				else {
+				} else {
 					GetPrivateProfileStringA("Templates", TemplateNames[i], "", dat->ltr_templates->szTemplates[i], TEMPLATE_LENGTH - 1, szIniFilename);
 					GetPrivateProfileStringA("RTLTemplates", TemplateNames[i], "", dat->rtl_templates->szTemplates[i], TEMPLATE_LENGTH - 1, szIniFilename);
 				}
@@ -522,7 +520,7 @@ void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, 
 char *GetThemeFileName(int iMode)
 {
 	static char szFilename[MAX_PATH];
-	OPENFILENAMEA ofn={0};
+	OPENFILENAMEA ofn = {0};
 	char szInitialDir[MAX_PATH];
 
 	mir_snprintf(szInitialDir, MAX_PATH, "%sskins\\", myGlobals.szDataPath);
@@ -530,8 +528,8 @@ char *GetThemeFileName(int iMode)
 	szFilename[0] = 0;
 
 	ofn.lpstrFilter = "tabSRMM themes\0*.tabsrmm\0\0";
-	ofn.lStructSize= OPENFILENAME_SIZE_VERSION_400;
-	ofn.hwndOwner=0;
+	ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
+	ofn.hwndOwner = 0;
 	ofn.lpstrFile = szFilename;
 	ofn.lpstrInitialDir = szInitialDir;
 	ofn.nMaxFile = MAX_PATH;
@@ -543,8 +541,7 @@ char *GetThemeFileName(int iMode)
 			return szFilename;
 		else
 			return NULL;
-	}
-	else {
+	} else {
 		if (GetSaveFileNameA(&ofn))
 			return szFilename;
 		else
@@ -554,7 +551,7 @@ char *GetThemeFileName(int iMode)
 
 BYTE __forceinline percent_to_byte(UINT32 percent)
 {
-	return(BYTE) ((FLOAT) (((FLOAT) percent) / 100) * 255);
+	return(BYTE)((FLOAT)(((FLOAT) percent) / 100) * 255);
 }
 
 COLORREF __forceinline revcolref(COLORREF colref)
@@ -680,12 +677,12 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor
 	basecolor = argb_from_cola(revcolref(basecolor), alpha);
 	basecolor2 = argb_from_cola(revcolref(basecolor2), alpha);
 
-	ubRed = (UCHAR) (basecolor >> 16);
-	ubGreen = (UCHAR) (basecolor >> 8);
+	ubRed = (UCHAR)(basecolor >> 16);
+	ubGreen = (UCHAR)(basecolor >> 8);
 	ubBlue = (UCHAR) basecolor;
 
-	ubRed2 = (UCHAR) (basecolor2 >> 16);
-	ubGreen2 = (UCHAR) (basecolor2 >> 8);
+	ubRed2 = (UCHAR)(basecolor2 >> 16);
+	ubGreen2 = (UCHAR)(basecolor2 >> 8);
 	ubBlue2 = (UCHAR) basecolor2;
 
 	//DRAW BASE - make corner space 100% transparent
@@ -700,7 +697,7 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor
 					gradientVertical(&ubRedFinal, &ubGreenFinal, &ubBlueFinal, ulBitmapHeight, ubRed, ubGreen, ubBlue, ubRed2, ubGreen2, ubBlue2, FLG_GRADIENT, transparent, y, &ubAlpha);
 
 				fAlphaFactor = (float) ubAlpha / (float) 0xff;
-				((UINT32 *) pvBits)[x + y * ulBitmapWidth] = (ubAlpha << 24) | ((UCHAR) (ubRedFinal * fAlphaFactor) << 16) | ((UCHAR) (ubGreenFinal * fAlphaFactor) << 8) | ((UCHAR) (ubBlueFinal * fAlphaFactor));
+				((UINT32 *) pvBits)[x + y * ulBitmapWidth] = (ubAlpha << 24) | ((UCHAR)(ubRedFinal * fAlphaFactor) << 16) | ((UCHAR)(ubGreenFinal * fAlphaFactor) << 8) | ((UCHAR)(ubBlueFinal * fAlphaFactor));
 			} else {
 				ubAlpha = percent_to_byte(alpha);
 				ubRedFinal = ubRed;
@@ -708,13 +705,13 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor
 				ubBlueFinal = ubBlue;
 				fAlphaFactor = (float) ubAlpha / (float) 0xff;
 
-				((UINT32 *) pvBits)[x + y * ulBitmapWidth] = (ubAlpha << 24) | ((UCHAR) (ubRedFinal * fAlphaFactor) << 16) | ((UCHAR) (ubGreenFinal * fAlphaFactor) << 8) | ((UCHAR) (ubBlueFinal * fAlphaFactor));
+				((UINT32 *) pvBits)[x + y * ulBitmapWidth] = (ubAlpha << 24) | ((UCHAR)(ubRedFinal * fAlphaFactor) << 16) | ((UCHAR)(ubGreenFinal * fAlphaFactor) << 8) | ((UCHAR)(ubBlueFinal * fAlphaFactor));
 			}
 		}
 	}
 	bf.BlendOp = AC_SRC_OVER;
 	bf.BlendFlags = 0;
-	bf.SourceConstantAlpha = (UCHAR) (basecolor >> 24);
+	bf.SourceConstantAlpha = (UCHAR)(basecolor >> 24);
 	bf.AlphaFormat = AC_SRC_ALPHA; // so it will use our specified alpha value
 
 	MyAlphaBlend(hdcwnd, rc->left + realHeightHalf, rc->top, (realWidth - realHeightHalf * 2), realHeight, hdc, 0, 0, ulBitmapWidth, ulBitmapHeight, bf);
@@ -750,7 +747,7 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor
 
 		for (y = 0; y < ulBitmapHeight; y++) {
 			for (x = 0; x < ulBitmapWidth; x++) {
-				if (((((UINT32 *) pvBits)[x + y * ulBitmapWidth]) << 8) == 0xFF00FF00 || (y< ulBitmapHeight >> 1 && !(FLG_CORNER & CORNER_BL && FLG_CORNER & CORNER_ACTIVE)) || (y > ulBitmapHeight >> 2 && !(FLG_CORNER & CORNER_TL && FLG_CORNER & CORNER_ACTIVE))) {
+				if (((((UINT32 *) pvBits)[x + y * ulBitmapWidth]) << 8) == 0xFF00FF00 || (y < ulBitmapHeight >> 1 && !(FLG_CORNER & CORNER_BL && FLG_CORNER & CORNER_ACTIVE)) || (y > ulBitmapHeight >> 2 && !(FLG_CORNER & CORNER_TL && FLG_CORNER & CORNER_ACTIVE))) {
 					if (FLG_GRADIENT & GRADIENT_ACTIVE) {
 						if (FLG_GRADIENT & GRADIENT_LR || FLG_GRADIENT & GRADIENT_RL)
 							gradientHorizontal(&ubRedFinal, &ubGreenFinal, &ubBlueFinal, realWidth, ubRed, ubGreen, ubBlue, ubRed2, ubGreen2, ubBlue2, FLG_GRADIENT, transparent, x, &ubAlpha);
@@ -758,7 +755,7 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor
 							gradientVertical(&ubRedFinal, &ubGreenFinal, &ubBlueFinal, ulBitmapHeight, ubRed, ubGreen, ubBlue, ubRed2, ubGreen2, ubBlue2, FLG_GRADIENT, transparent, y, &ubAlpha);
 
 						fAlphaFactor = (float) ubAlpha / (float) 0xff;
-						((UINT32 *) pvBits)[x + y * ulBitmapWidth] = (ubAlpha << 24) | ((UCHAR) (ubRedFinal * fAlphaFactor) << 16) | ((UCHAR) (ubGreenFinal * fAlphaFactor) << 8) | ((UCHAR) (ubBlueFinal * fAlphaFactor));
+						((UINT32 *) pvBits)[x + y * ulBitmapWidth] = (ubAlpha << 24) | ((UCHAR)(ubRedFinal * fAlphaFactor) << 16) | ((UCHAR)(ubGreenFinal * fAlphaFactor) << 8) | ((UCHAR)(ubBlueFinal * fAlphaFactor));
 					} else {
 						ubAlpha = percent_to_byte(alpha);
 						ubRedFinal = ubRed;
@@ -766,7 +763,7 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor
 						ubBlueFinal = ubBlue;
 						fAlphaFactor = (float) ubAlpha / (float) 0xff;
 
-						((UINT32 *) pvBits)[x + y * ulBitmapWidth] = (ubAlpha << 24) | ((UCHAR) (ubRedFinal * fAlphaFactor) << 16) | ((UCHAR) (ubGreenFinal * fAlphaFactor) << 8) | ((UCHAR) (ubBlueFinal * fAlphaFactor));
+						((UINT32 *) pvBits)[x + y * ulBitmapWidth] = (ubAlpha << 24) | ((UCHAR)(ubRedFinal * fAlphaFactor) << 16) | ((UCHAR)(ubGreenFinal * fAlphaFactor) << 8) | ((UCHAR)(ubBlueFinal * fAlphaFactor));
 					}
 				}
 			}
@@ -784,7 +781,7 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor
 
 		for (y = 0; y < ulBitmapHeight; y++) {
 			for (x = 0; x < ulBitmapWidth; x++) {
-				if (((((UINT32 *) pvBits)[x + y * ulBitmapWidth]) << 8) == 0xFF00FF00 || (y< ulBitmapHeight >> 1 && !(FLG_CORNER & CORNER_BR && FLG_CORNER & CORNER_ACTIVE)) || (y > ulBitmapHeight >> 1 && !(FLG_CORNER & CORNER_TR && FLG_CORNER & CORNER_ACTIVE))) {
+				if (((((UINT32 *) pvBits)[x + y * ulBitmapWidth]) << 8) == 0xFF00FF00 || (y < ulBitmapHeight >> 1 && !(FLG_CORNER & CORNER_BR && FLG_CORNER & CORNER_ACTIVE)) || (y > ulBitmapHeight >> 1 && !(FLG_CORNER & CORNER_TR && FLG_CORNER & CORNER_ACTIVE))) {
 					if (FLG_GRADIENT & GRADIENT_ACTIVE) {
 						if (FLG_GRADIENT & GRADIENT_LR || FLG_GRADIENT & GRADIENT_RL) {
 							realx = x + realWidth;
@@ -794,7 +791,7 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor
 							gradientVertical(&ubRedFinal, &ubGreenFinal, &ubBlueFinal, ulBitmapHeight, ubRed, ubGreen, ubBlue, ubRed2, ubGreen2, ubBlue2, FLG_GRADIENT, transparent, y, &ubAlpha);
 
 						fAlphaFactor = (float) ubAlpha / (float) 0xff;
-						((UINT32 *) pvBits)[x + y * ulBitmapWidth] = (ubAlpha << 24) | ((UCHAR) (ubRedFinal * fAlphaFactor) << 16) | ((UCHAR) (ubGreenFinal * fAlphaFactor) << 8) | ((UCHAR) (ubBlueFinal * fAlphaFactor));
+						((UINT32 *) pvBits)[x + y * ulBitmapWidth] = (ubAlpha << 24) | ((UCHAR)(ubRedFinal * fAlphaFactor) << 16) | ((UCHAR)(ubGreenFinal * fAlphaFactor) << 8) | ((UCHAR)(ubBlueFinal * fAlphaFactor));
 					} else {
 						ubAlpha = percent_to_byte(alpha);
 						ubRedFinal = ubRed;
@@ -802,7 +799,7 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor
 						ubBlueFinal = ubBlue;
 						fAlphaFactor = (float) ubAlpha / (float) 0xff;
 
-						((UINT32 *) pvBits)[x + y * ulBitmapWidth] = (ubAlpha << 24) | ((UCHAR) (ubRedFinal * fAlphaFactor) << 16) | ((UCHAR) (ubGreenFinal * fAlphaFactor) << 8) | ((UCHAR) (ubBlueFinal * fAlphaFactor));
+						((UINT32 *) pvBits)[x + y * ulBitmapWidth] = (ubAlpha << 24) | ((UCHAR)(ubRedFinal * fAlphaFactor) << 16) | ((UCHAR)(ubGreenFinal * fAlphaFactor) << 8) | ((UCHAR)(ubBlueFinal * fAlphaFactor));
 					}
 				}
 			}
@@ -822,7 +819,7 @@ static void __forceinline gradientHorizontal(UCHAR *ubRedFinal, UCHAR *ubGreenFi
 
 	// solid to transparent
 	if (transparent) {
-		*ubAlpha = (UCHAR) ((float) x / (float) ulBitmapWidth * 255);
+		*ubAlpha = (UCHAR)((float) x / (float) ulBitmapWidth * 255);
 		*ubAlpha = FLG_GRADIENT & GRADIENT_LR ? 0xFF - (*ubAlpha) : (*ubAlpha);
 		*ubRedFinal = ubRed;
 		*ubGreenFinal = ubGreen;
@@ -836,9 +833,9 @@ static void __forceinline gradientHorizontal(UCHAR *ubRedFinal, UCHAR *ubGreenFi
 			fSolidMulti = 1 - fInvSolidMulti;
 		}
 
-		*ubRedFinal = (UCHAR) ((((float) ubRed * (float) fInvSolidMulti)) + (((float) ubRed2 * (float) fSolidMulti)));
-		*ubGreenFinal = (UCHAR) ((UCHAR) (((float) ubGreen * (float) fInvSolidMulti)) + (((float) ubGreen2 * (float) fSolidMulti)));
-		*ubBlueFinal = (UCHAR) ((((float) ubBlue * (float) fInvSolidMulti)) + (UCHAR) (((float) ubBlue2 * (float) fSolidMulti)));
+		*ubRedFinal = (UCHAR)((((float) ubRed * (float) fInvSolidMulti)) + (((float) ubRed2 * (float) fSolidMulti)));
+		*ubGreenFinal = (UCHAR)((UCHAR)(((float) ubGreen * (float) fInvSolidMulti)) + (((float) ubGreen2 * (float) fSolidMulti)));
+		*ubBlueFinal = (UCHAR)((((float) ubBlue * (float) fInvSolidMulti)) + (UCHAR)(((float) ubBlue2 * (float) fSolidMulti)));
 
 		*ubAlpha = 0xFF;
 	}
@@ -850,7 +847,7 @@ static void __forceinline gradientVertical(UCHAR *ubRedFinal, UCHAR *ubGreenFina
 
 	// solid to transparent
 	if (transparent) {
-		*ubAlpha = (UCHAR) ((float) y / (float) ulBitmapHeight * 255);
+		*ubAlpha = (UCHAR)((float) y / (float) ulBitmapHeight * 255);
 		*ubAlpha = FLG_GRADIENT & GRADIENT_BT ? 0xFF - *ubAlpha : *ubAlpha;
 		*ubRedFinal = ubRed;
 		*ubGreenFinal = ubGreen;
@@ -864,9 +861,9 @@ static void __forceinline gradientVertical(UCHAR *ubRedFinal, UCHAR *ubGreenFina
 			fSolidMulti = 1 - fInvSolidMulti;
 		}
 
-		*ubRedFinal = (UCHAR) ((((float) ubRed * (float) fInvSolidMulti)) + (((float) ubRed2 * (float) fSolidMulti)));
-		*ubGreenFinal = (UCHAR) ((((float) ubGreen * (float) fInvSolidMulti)) + (((float) ubGreen2 * (float) fSolidMulti)));
-		*ubBlueFinal = (UCHAR) (((float) ubBlue * (float) fInvSolidMulti)) + (UCHAR) (((float) ubBlue2 * (float) fSolidMulti));
+		*ubRedFinal = (UCHAR)((((float) ubRed * (float) fInvSolidMulti)) + (((float) ubRed2 * (float) fSolidMulti)));
+		*ubGreenFinal = (UCHAR)((((float) ubGreen * (float) fInvSolidMulti)) + (((float) ubGreen2 * (float) fSolidMulti)));
+		*ubBlueFinal = (UCHAR)(((float) ubBlue * (float) fInvSolidMulti)) + (UCHAR)(((float) ubBlue2 * (float) fSolidMulti));
 
 		*ubAlpha = 0xFF;
 	}
@@ -895,8 +892,7 @@ void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc)
 	if (item->hdc == 0) {
 		hdcSrc = CreateCompatibleDC(hdc);
 		hbmOld = SelectObject(hdcSrc, isGlyph ? g_glyphItem->hbm : item->hbm);
-	}
-	else {
+	} else {
 		hdcSrc = isGlyph ? g_glyphItem->hdc : item->hdc;
 		fCleanUp = FALSE;
 	}
@@ -918,12 +914,11 @@ void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc)
 		if (item->dwFlags & IMAGE_FILLSOLID && item->fillBrush) {
 			RECT rcFill;
 			rcFill.left = rc->left + l;
-			rcFill.top = rc->top +t;
+			rcFill.top = rc->top + t;
 			rcFill.right = rc->right - r;
 			rcFill.bottom = rc->bottom - b;
 			FillRect(hdc, &rcFill, item->fillBrush);
-		}
-		else
+		} else
 			MyAlphaBlend(hdc, rc->left + l, rc->top + t, width - l - r, height - t - b, hdcSrc, srcOrigX + l, srcOrigY + t, item->inner_width, item->inner_height, item->bf);
 
 		MyAlphaBlend(hdc, rc->right - r, rc->top + t, r, height - t - b, hdcSrc, srcOrigX + (item->width - r), srcOrigY + t, r, item->inner_height, item->bf);
@@ -933,8 +928,7 @@ void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc)
 		MyAlphaBlend(hdc, rc->left, rc->bottom - b, l, b, hdcSrc, srcOrigX, srcOrigY + (item->height - b), l, b, item->bf);
 		MyAlphaBlend(hdc, rc->left + l, rc->bottom - b, width - l - r, b, hdcSrc, srcOrigX + l, srcOrigY + (item->height - b), item->inner_width, b, item->bf);
 		MyAlphaBlend(hdc, rc->right - r, rc->bottom - b, r, b, hdcSrc, srcOrigX + (item->width - r), srcOrigY + (item->height - b), r, b, item->bf);
-	}
-	else {
+	} else {
 		switch (item->bStretch) {
 			case IMAGE_STRETCH_H:
 				// tile image vertically, stretch to width
@@ -945,8 +939,7 @@ void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc)
 					if (top + item->height <= rc->bottom) {
 						MyAlphaBlend(hdc, rc->left, top, width, item->height, hdcSrc, srcOrigX, srcOrigY, item->width, item->height, item->bf);
 						top += item->height;
-					}
-					else {
+					} else {
 						MyAlphaBlend(hdc, rc->left, top, width, rc->bottom - top, hdcSrc, srcOrigX, srcOrigY, item->width, rc->bottom - top, item->bf);
 						break;
 					}
@@ -962,8 +955,7 @@ void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc)
 					if (left + item->width <= rc->right) {
 						MyAlphaBlend(hdc, left, rc->top, item->width, height, hdcSrc, srcOrigX, srcOrigY, item->width, item->height, item->bf);
 						left += item->width;
-					}
-					else {
+					} else {
 						MyAlphaBlend(hdc, left, rc->top, rc->right - left, height, hdcSrc, srcOrigX, srcOrigY, rc->right - left, item->height, item->bf);
 						break;
 					}
@@ -1090,8 +1082,7 @@ static void BTN_ReadItem(char *itemName, char *file)
 			tmpItem.dwFlags |= BUTTON_ISSERVICE;
 			tmpItem.uId = nextButtonID++;
 		}
-	}
-	else if (!stricmp(szBuffer, "protoservice")) {
+	} else if (!stricmp(szBuffer, "protoservice")) {
 		tmpItem.szService[0] = 0;
 		GetPrivateProfileStringA(itemName, "Service", "None", szBuffer, 1000, file);
 		if (stricmp(szBuffer, "None")) {
@@ -1099,8 +1090,7 @@ static void BTN_ReadItem(char *itemName, char *file)
 			tmpItem.dwFlags |= BUTTON_ISPROTOSERVICE;
 			tmpItem.uId = nextButtonID++;
 		}
-	}
-	else if (!stricmp(szBuffer, "database")) {
+	} else if (!stricmp(szBuffer, "database")) {
 		int n;
 
 		GetPrivateProfileStringA(itemName, "Module", "None", szBuffer, 1000, file);
@@ -1121,29 +1111,25 @@ static void BTN_ReadItem(char *itemName, char *file)
 
 			GetPrivateProfileStringA(itemName, szKey, "None", szBuffer, 1000, file);
 			switch (szBuffer[0]) {
-				case 'b':
-				{
+				case 'b': {
 					BYTE value = (BYTE)atol(&szBuffer[1]);
 					pValue[0] = value;
 					tmpItem.type = DBVT_BYTE;
 					break;
 				}
-				case 'w':
-				{
+				case 'w': {
 					WORD value = (WORD)atol(&szBuffer[1]);
 					*((WORD *)&pValue[0]) = value;
 					tmpItem.type = DBVT_WORD;
 					break;
 				}
-				case 'd':
-				{
+				case 'd': {
 					DWORD value = (DWORD)atol(&szBuffer[1]);
 					*((DWORD *)&pValue[0]) = value;
 					tmpItem.type = DBVT_DWORD;
 					break;
 				}
-				case 's':
-				{
+				case 's': {
 					mir_snprintf((char *)pValue, 256, &szBuffer[1]);
 					tmpItem.type = DBVT_ASCIIZ;
 					break;
@@ -1156,8 +1142,7 @@ static void BTN_ReadItem(char *itemName, char *file)
 				tmpItem.dwFlags |= BUTTON_ISCONTACTDBACTION;
 			tmpItem.uId = nextButtonID++;
 		}
-	}
-	else if (stricmp(szBuffer, "Custom")) {
+	} else if (stricmp(szBuffer, "Custom")) {
 		if (BTN_GetStockItem(&tmpItem, szBuffer))
 			goto create_it;
 	}
@@ -1177,8 +1162,7 @@ static void BTN_ReadItem(char *itemName, char *file)
 #else
 		mir_snprintf(tmpItem.szTip, 256, "%s", szBuffer);
 #endif
-	}
-	else
+	} else
 		tmpItem.szTip[0] = 0;
 
 create_it:
@@ -1192,8 +1176,7 @@ create_it:
 		mir_snprintf(tmpItem.tszLabel, 40, "%s", szBuffer);
 #endif
 		tmpItem.dwFlags |= BUTTON_HASLABEL;
-	}
-	else
+	} else
 		tmpItem.tszLabel[0] = 0;
 
 	GetPrivateProfileStringA(itemName, "NormalGlyph", "0, 0, 0, 0", szBuffer, 1000, file);
@@ -1202,8 +1185,7 @@ create_it:
 		if ((phIcon = BTN_GetIcon(szBuffer)) != 0) {
 			tmpItem.dwFlags |= BUTTON_NORMALGLYPHISICON;
 			tmpItem.normalGlyphMetrics[0] = (LONG)phIcon;
-		}
-		else {
+		} else {
 			sscanf(szBuffer, "%d,%d,%d,%d", &tmpItem.normalGlyphMetrics[0], &tmpItem.normalGlyphMetrics[1],
 				   &tmpItem.normalGlyphMetrics[2], &tmpItem.normalGlyphMetrics[3]);
 			tmpItem.normalGlyphMetrics[2] = (tmpItem.normalGlyphMetrics[2] - tmpItem.normalGlyphMetrics[0]) + 1;
@@ -1217,8 +1199,7 @@ create_it:
 		if ((phIcon = BTN_GetIcon(szBuffer)) != 0) {
 			tmpItem.pressedGlyphMetrics[0] = (LONG)phIcon;
 			tmpItem.dwFlags |= BUTTON_PRESSEDGLYPHISICON;
-		}
-		else {
+		} else {
 			sscanf(szBuffer, "%d,%d,%d,%d", &tmpItem.pressedGlyphMetrics[0], &tmpItem.pressedGlyphMetrics[1],
 				   &tmpItem.pressedGlyphMetrics[2], &tmpItem.pressedGlyphMetrics[3]);
 			tmpItem.pressedGlyphMetrics[2] = (tmpItem.pressedGlyphMetrics[2] - tmpItem.pressedGlyphMetrics[0]) + 1;
@@ -1232,8 +1213,7 @@ create_it:
 		if ((phIcon = BTN_GetIcon(szBuffer)) != 0) {
 			tmpItem.hoverGlyphMetrics[0] = (LONG)phIcon;
 			tmpItem.dwFlags |= BUTTON_HOVERGLYPHISICON;
-		}
-		else {
+		} else {
 			sscanf(szBuffer, "%d,%d,%d,%d", &tmpItem.hoverGlyphMetrics[0], &tmpItem.hoverGlyphMetrics[1],
 				   &tmpItem.hoverGlyphMetrics[2], &tmpItem.hoverGlyphMetrics[3]);
 			tmpItem.hoverGlyphMetrics[2] = (tmpItem.hoverGlyphMetrics[2] - tmpItem.hoverGlyphMetrics[0]) + 1;
@@ -1251,8 +1231,7 @@ create_it:
 		g_ButtonSet.items = newItem;
 		*newItem = tmpItem;
 		newItem->nextItem = 0;
-	}
-	else {
+	} else {
 		ButtonItem *curItem = g_ButtonSet.items;
 		while (curItem->nextItem)
 			curItem = curItem->nextItem;
@@ -1381,8 +1360,7 @@ done_with_glyph:
 			COLORREF fillColor = HexStringToLong(buffer);
 			tmpItem.fillBrush = CreateSolidBrush(fillColor);
 			tmpItem.dwFlags |= IMAGE_FILLSOLID;
-		}
-		else
+		} else
 			tmpItem.fillBrush = 0;
 		GetPrivateProfileStringA(itemname, "Colorkey", "None", buffer, 500, szFileName);
 		if (strcmp(buffer, "None")) {
@@ -1439,8 +1417,7 @@ done_with_glyph:
 							}
 							alloced = TRUE;
 						}
-					}
-					else if (newItem != NULL)
+					} else if (newItem != NULL)
 						StatusItems[i].imageItem = newItem;
 				}
 			}
@@ -1510,11 +1487,10 @@ static void PreMultiply(HBITMAP hBitmap, int mode)
 			for (x = 0; x < width; ++x) {
 				if (mode) {
 					alpha = px[3];
-					px[0] = px[0] * alpha/255;
-					px[1] = px[1] * alpha/255;
-					px[2] = px[2] * alpha/255;
-				}
-				else
+					px[0] = px[0] * alpha / 255;
+					px[1] = px[1] * alpha / 255;
+					px[2] = px[2] * alpha / 255;
+				} else
 					px[3] = 255;
 				px += 4;
 			}
@@ -1953,8 +1929,7 @@ void ReloadContainerSkin(int doLoad, int onStartup)
 			struct ContainerWindowData *pContainer = pFirstContainer;
 			while (pFirstContainer)
 				SendMessage(pFirstContainer->hwnd, WM_CLOSE, 0, 1);
-		}
-		else
+		} else
 			return;
 	}
 

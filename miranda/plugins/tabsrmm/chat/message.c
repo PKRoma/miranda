@@ -1,4 +1,7 @@
 /*
+astyle --force-indent=tab=4 --brackets=linux --indent-switches
+		--pad=oper --one-line=keep-blocks  --unpad=paren
+
 Chat module plugin for Miranda IM
 
 Copyright (C) 2003 Jörgen Persson
@@ -16,6 +19,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+$Id:$
 */
 
 #include "../commonheaders.h"
@@ -27,13 +32,13 @@ static int RTFColorToIndex(int *pIndex, int iCol, SESSION_INFO* si)
 	MODULEINFO * pMod = MM_FindModule(si->pszModule);
 
 	for (i = 0; i < pMod->nColorCount ; i++)
-		if ( pIndex[i] == iCol )
+		if (pIndex[i] == iCol)
 			return i;
 
 	return -1;
 }
 
-static void CreateColorMap( char* Text, int *pIndex, SESSION_INFO* si)
+static void CreateColorMap(char* Text, int *pIndex, SESSION_INFO* si)
 {
 	char *p1, *p2, *pEnd;
 	int iIndex = 1;
@@ -41,43 +46,43 @@ static void CreateColorMap( char* Text, int *pIndex, SESSION_INFO* si)
 	static const char* lpszFmt = "\\red%[^ \x5b\\]\\green%[^ \x5b\\]\\blue%[^ \x5b;];";
 	char szRed[10], szGreen[10], szBlue[10];
 
-	p1 = strstr(Text, "\\colortbl" );
-	if ( !p1 )
+	p1 = strstr(Text, "\\colortbl");
+	if (!p1)
 		return;
 
 	pEnd = strchr(p1, '}');
-	p2 = strstr(p1, "\\red" );
+	p2 = strstr(p1, "\\red");
 
 	while (p2 && p2 < pEnd) {
-		if ( sscanf( p2, lpszFmt, &szRed, &szGreen, &szBlue) > 0 ) {
+		if (sscanf(p2, lpszFmt, &szRed, &szGreen, &szBlue) > 0) {
 			int i;
 			MODULEINFO * pMod = MM_FindModule(si->pszModule);
 			for (i = 0; i < pMod->nColorCount ; i ++)
-				if (pMod->crColors[i] == RGB( atoi(szRed), atoi(szGreen), atoi(szBlue)))
+				if (pMod->crColors[i] == RGB(atoi(szRed), atoi(szGreen), atoi(szBlue)))
 					pIndex[i] = iIndex;
 		}
 		iIndex++;
 		p1 = p2;
 		p1 ++;
-		p2 = strstr(p1, "\\red" );
+		p2 = strstr(p1, "\\red");
 	}
 }
 
-static int ReadInteger( const char* p, int* result )
+static int ReadInteger(const char* p, int* result)
 {
 	char temp[10];
-	int i=0;
-	while ( isdigit( *p ))
+	int i = 0;
+	while (isdigit(*p))
 		temp[i++] = *p++;
 	temp[i] = 0;
 
-	if ( result != NULL )
-		*result = atoi( temp );
+	if (result != NULL)
+		*result = atoi(temp);
 
 	return i;
 }
 
-TCHAR* Chat_DoRtfToTags( char* pszText, SESSION_INFO* si)
+TCHAR* Chat_DoRtfToTags(char* pszText, SESSION_INFO* si)
 {
 	char *p1;
 	int*  pIndex;
@@ -90,7 +95,7 @@ TCHAR* Chat_DoRtfToTags( char* pszText, SESSION_INFO* si)
 #endif
 	int iUcMode = 0;
 
-	if ( !pszText )
+	if (!pszText)
 		return FALSE;
 
 	// create an index of colors in the module and map them to
@@ -99,80 +104,71 @@ TCHAR* Chat_DoRtfToTags( char* pszText, SESSION_INFO* si)
 	for (i = 0; i < MM_FindModule(si->pszModule)->nColorCount ; i++)
 		pIndex[i] = -1;
 
-	CreateColorMap( pszText, pIndex, si );
+	CreateColorMap(pszText, pIndex, si);
 
 	// scan the file for rtf commands and remove or parse them
-	p1 = strstr( pszText, "\\pard" );
-	if ( p1 == NULL ) {
+	p1 = strstr(pszText, "\\pard");
+	if (p1 == NULL) {
 		mir_free(pIndex);
 		return FALSE;
 	}
 
 	p1 += 5;
 
-	MoveMemory( pszText, p1, lstrlenA( p1 ) + 1 );
+	MoveMemory(pszText, p1, lstrlenA(p1) + 1);
 	p1 = pszText;
 
 	// iterate through all characters, if rtf control character found then take action
-	while ( *p1 != '\0' ) {
+	while (*p1 != '\0') {
 		InsertThis[0] = 0;
 		iRemoveChars = 0;
 
 		switch (*p1) {
 			case '\\':
-				if ( !memcmp(p1, "\\cf", 3 )) { // foreground color
+				if (!memcmp(p1, "\\cf", 3)) {   // foreground color
 					int iCol, iInd;
-					iRemoveChars = 3 + ReadInteger(p1+3, &iCol);
+					iRemoveChars = 3 + ReadInteger(p1 + 3, &iCol);
 					iInd = RTFColorToIndex(pIndex, iCol, si);
 					bJustRemovedRTF = TRUE;
 
 					if (bTextHasStarted || iInd >= 0)
-						mir_snprintf( InsertThis, SIZEOF(InsertThis), ( iInd >= 0 ) ? "%%c%02u" : "%%C", iInd);
-				}
-				else if ( !memcmp(p1, "\\highlight", 10 )) { //background color
+						mir_snprintf(InsertThis, SIZEOF(InsertThis), (iInd >= 0) ? "%%c%02u" : "%%C", iInd);
+				} else if (!memcmp(p1, "\\highlight", 10)) {  //background color
 					int iCol, iInd;
-					iRemoveChars = 10 + ReadInteger(p1+10, &iCol);
+					iRemoveChars = 10 + ReadInteger(p1 + 10, &iCol);
 					iInd = RTFColorToIndex(pIndex, iCol, si);
 					bJustRemovedRTF = TRUE;
 
 					if (bTextHasStarted || iInd >= 0)
-						mir_snprintf( InsertThis, SIZEOF(InsertThis), ( iInd >= 0 ) ? "%%f%02u" : "%%F", iInd);
-				}
-				else if ( !memcmp(p1, "\\lang", 5 )) { // language id
+						mir_snprintf(InsertThis, SIZEOF(InsertThis), (iInd >= 0) ? "%%f%02u" : "%%F", iInd);
+				} else if (!memcmp(p1, "\\lang", 5)) {  // language id
 					bTextHasStarted = bJustRemovedRTF = TRUE;
-					iRemoveChars = 5 + ReadInteger( p1+5, NULL );
-				}
-				else if ( !memcmp(p1, "\\par", 4 )) { // newline
+					iRemoveChars = 5 + ReadInteger(p1 + 5, NULL);
+				} else if (!memcmp(p1, "\\par", 4)) {  // newline
 					bTextHasStarted = bJustRemovedRTF = TRUE;
 					iRemoveChars = 4;
-					strcpy(InsertThis, "\n" );
-				}
-				else if ( !memcmp(p1, "\\emdash", 7 ) || !memcmp(p1, "\\endash", 7 )) { // dashes
+					strcpy(InsertThis, "\n");
+				} else if (!memcmp(p1, "\\emdash", 7) || !memcmp(p1, "\\endash", 7)) {   // dashes
 					bTextHasStarted = bJustRemovedRTF = TRUE;
 					iRemoveChars = 7;
-					strcpy(InsertThis, "-" );
-				}
-				else if ( !memcmp(p1, "\\line", 5 )) { // newline
+					strcpy(InsertThis, "-");
+				} else if (!memcmp(p1, "\\line", 5)) {  // newline
 					bTextHasStarted = bJustRemovedRTF = TRUE;
 					iRemoveChars = 5;
-					strcpy(InsertThis, "\n" );
-				}
-				else if ( !memcmp(p1, "\\b", 2 )) { //bold
+					strcpy(InsertThis, "\n");
+				} else if (!memcmp(p1, "\\b", 2)) {  //bold
 					bTextHasStarted = bJustRemovedRTF = TRUE;
-					iRemoveChars = (p1[2] != '0')?2:3;
-					mir_snprintf(InsertThis, SIZEOF(InsertThis), (p1[2] != '0') ? "%%b": "%%B" );
-				}
-				else if ( !memcmp(p1, "\\i", 2 )) { // italics
+					iRemoveChars = (p1[2] != '0') ? 2 : 3;
+					mir_snprintf(InsertThis, SIZEOF(InsertThis), (p1[2] != '0') ? "%%b" : "%%B");
+				} else if (!memcmp(p1, "\\i", 2)) {  // italics
 					bTextHasStarted = bJustRemovedRTF = TRUE;
-					iRemoveChars = (p1[2] != '0')?2:3;
-					mir_snprintf(InsertThis, SIZEOF(InsertThis), (p1[2] != '0') ? "%%i" : "%%I" );
-				}
-				else if ( !memcmp(p1, "\\uc", 3 )) { // number of Unicode chars
+					iRemoveChars = (p1[2] != '0') ? 2 : 3;
+					mir_snprintf(InsertThis, SIZEOF(InsertThis), (p1[2] != '0') ? "%%i" : "%%I");
+				} else if (!memcmp(p1, "\\uc", 3)) {  // number of Unicode chars
 					bTextHasStarted = bJustRemovedRTF = TRUE;
 					iUcMode = p1[3] - '0';
 					iRemoveChars = 4;
-				}
-				else if ( !memcmp(p1, "\\ul", 3 )) { // underlined
+				} else if (!memcmp(p1, "\\ul", 3)) {  // underlined
 					bTextHasStarted = bJustRemovedRTF = TRUE;
 					if (p1[3] == 'n')
 						iRemoveChars = 7;
@@ -180,49 +176,42 @@ TCHAR* Chat_DoRtfToTags( char* pszText, SESSION_INFO* si)
 						iRemoveChars = 4;
 					else
 						iRemoveChars = 3;
-					mir_snprintf(InsertThis, SIZEOF(InsertThis), (p1[3] != '0' && p1[3] != 'n') ? "%%u" : "%%U" );
-				}
-				else if ( p1[1] == 'f' && isdigit( p1[2] )) { // unicode char
+					mir_snprintf(InsertThis, SIZEOF(InsertThis), (p1[3] != '0' && p1[3] != 'n') ? "%%u" : "%%U");
+				} else if (p1[1] == 'f' && isdigit(p1[2])) {   // unicode char
 					bTextHasStarted = bJustRemovedRTF = TRUE;
-					iRemoveChars = 2 + ReadInteger( p1+2, NULL );
-				}
-				else if ( !memcmp(p1, "\\tab", 4 )) { // tab
+					iRemoveChars = 2 + ReadInteger(p1 + 2, NULL);
+				} else if (!memcmp(p1, "\\tab", 4)) {  // tab
 					bTextHasStarted = TRUE;
 					bJustRemovedRTF = TRUE;
 					iRemoveChars = 4;
-					strcpy(InsertThis, " " );
-				}
-				else if ( p1[1] == '\\' ||  p1[1] == '{' || p1[1] == '}' ) { // escaped characters
+					strcpy(InsertThis, " ");
+				} else if (p1[1] == '\\' ||  p1[1] == '{' || p1[1] == '}') {  // escaped characters
 					bTextHasStarted = TRUE;
 					bJustRemovedRTF = FALSE;
 					iRemoveChars = 2;
 					mir_snprintf(InsertThis, SIZEOF(InsertThis), "%c", p1[1]);
-				}
-				else if ( p1[1] == '~' ) { // non-breaking space
+				} else if (p1[1] == '~') {  // non-breaking space
 					bTextHasStarted = TRUE;
 					bJustRemovedRTF = FALSE;
 					iRemoveChars = 2;
-					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\xA0" );
-				}
-				else if ( p1[1] == '\'' ) { // special character
+					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\xA0");
+				} else if (p1[1] == '\'') {  // special character
 					char tmp[4], *p3 = tmp;
 					bTextHasStarted = TRUE;
 					bJustRemovedRTF = FALSE;
 					if (p1[2] != ' ' && p1[2] != '\\') {
 						*p3++ = p1[2];
 						iRemoveChars = 3;
-						if ( p1[3] != ' ' && p1[3] != '\\') {
+						if (p1[3] != ' ' && p1[3] != '\\') {
 							*p3++ = p1[3];
 							iRemoveChars++;
 						}
 						*p3 = 0;
-						sscanf( tmp, "%x", InsertThis );
+						sscanf(tmp, "%x", InsertThis);
 
 						InsertThis[1] = 0;
-					}
-					else iRemoveChars = 2;
-				}
-				else if ( bJustRemovedRTF ) { // remove unknown RTF command
+					} else iRemoveChars = 2;
+				} else if (bJustRemovedRTF) {  // remove unknown RTF command
 					int j = 1;
 					bJustRemovedRTF = TRUE;
 					while (p1[j] != ' ' && p1[j] != '\\' && p1[j] != '\0')
@@ -240,7 +229,7 @@ TCHAR* Chat_DoRtfToTags( char* pszText, SESSION_INFO* si)
 				bTextHasStarted = TRUE;
 				bJustRemovedRTF = FALSE;
 				iRemoveChars = 1;
-				mir_snprintf(InsertThis, SIZEOF(InsertThis), "%%%%" );
+				mir_snprintf(InsertThis, SIZEOF(InsertThis), "%%%%");
 				break;
 			case ' ': // remove spaces following a RTF command
 				if (bJustRemovedRTF)
@@ -256,12 +245,11 @@ TCHAR* Chat_DoRtfToTags( char* pszText, SESSION_INFO* si)
 		}
 
 		// move the memory and paste in new commands instead of the old RTF
-		if ( InsertThis[0] || iRemoveChars ) {
-			MoveMemory(p1 + lstrlenA(InsertThis) , p1 + iRemoveChars, lstrlenA(p1) - iRemoveChars +1 );
+		if (InsertThis[0] || iRemoveChars) {
+			MoveMemory(p1 + lstrlenA(InsertThis) , p1 + iRemoveChars, lstrlenA(p1) - iRemoveChars + 1);
 			CopyMemory(p1, InsertThis, lstrlenA(InsertThis));
 			p1 += lstrlenA(InsertThis);
-		}
-		else p1++;
+		} else p1++;
 	}
 
 	mir_free(pIndex);
@@ -285,11 +273,10 @@ static DWORD CALLBACK Chat_Message_StreamCallback(DWORD dwCookie, LPBYTE pbBuff,
 		(*ppText)[cb] = 0;
 		*pcb = cb;
 		dwRead = cb;
-	}
-	else {
+	} else {
 		char  *p = mir_alloc(dwRead + cb + 1);
 		memcpy(p, *ppText, dwRead);
-		memcpy(p+dwRead, pbBuff, cb);
+		memcpy(p + dwRead, pbBuff, cb);
 		p[dwRead + cb] = 0;
 		mir_free(*ppText);
 		*ppText = p;
@@ -310,7 +297,7 @@ char* Chat_Message_GetFromStream(HWND hwndDlg, SESSION_INFO* si)
 
 	ZeroMemory(&stream, sizeof(stream));
 	stream.pfnCallback = Chat_Message_StreamCallback;
-	stream.dwCookie = (DWORD) &pszText; // pass pointer to pointer
+	stream.dwCookie = (DWORD) & pszText; // pass pointer to pointer
 
 #if defined(_UNICODE)
 	dwFlags = SF_RTFNOOBJS | SFF_PLAINRTF | SF_USECODEPAGE | (CP_UTF8 << 16);

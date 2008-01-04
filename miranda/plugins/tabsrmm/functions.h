@@ -72,7 +72,7 @@ int         CutContactName(TCHAR *oldname, TCHAR *newname, unsigned int size);
 struct      ContainerWindowData *FindContainerByName(const TCHAR *name);
 void        BroadCastContainer(struct ContainerWindowData *pContainer, UINT message, WPARAM wParam, LPARAM lParam);
 int         GetTabIndexFromHWND(HWND hwndTab, HWND hwnd);
-int  GetTabItemFromMouse(HWND hwndTab, POINT *pt);
+int			  GetTabItemFromMouse(HWND hwndTab, POINT *pt);
 int         ActivateTabFromHWND(HWND hwndTab, HWND hwnd);
 int         GetProtoIconFromList(const char *szProto, int iStatus);
 void        AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc);
@@ -160,7 +160,7 @@ int         UnloadTSButtonModule(WPARAM wParam, LPARAM lParam);
 
 int         _DebugTraceW(const wchar_t *fmt, ...);
 int         _DebugTraceA(const char *fmt, ...);
-int         _DebugPopup(HANDLE hContact, const char *fmt, ...);
+int         _DebugPopup(HANDLE hContact, const TCHAR *fmt, ...);
 int         _DebugMessage(HWND hwndDlg, struct MessageWindowData *dat, const char *fmt, ...);
 
 // themes

@@ -1,4 +1,7 @@
 /*
+astyle --force-indent=tab=4 --brackets=linux --indent-switches
+		--pad=oper --one-line=keep-blocks  --unpad=paren
+
 Miranda IM: the free IM client for Microsoft* Windows*
 
 Copyright 2000-2003 Miranda ICQ/IM project,
@@ -42,7 +45,6 @@ License: GPL
 #define MSGDLGFONTCOUNT 22
 
 extern "C" RTFColorTable *rtf_ctable;
-extern "C" int _DebugPopup(HANDLE hContact, const char *fmt, ...);
 extern "C" char *xStatusDescr[];
 extern "C" TCHAR *MY_DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSetting);
 extern "C" DWORD m_LangPackCP;
@@ -51,9 +53,9 @@ extern "C" int MY_ServiceExists(const char *svc);
 extern "C" void RTF_ColorAdd(const TCHAR *tszColname, size_t length);
 extern "C" int  haveMathMod;
 extern "C" TCHAR *mathModDelimiter;
+extern "C" unsigned int g_ctable_size;
 
 static int iHaveSmileyadd = -1;
-extern "C" unsigned int g_ctable_size;
 
 #if defined(UNICODE)
 
@@ -86,11 +88,9 @@ extern "C" const WCHAR *FilterEventMarkers(WCHAR *wszText)
 			if (endmark != text.npos && (endmark - beginmark) > 5) {
 				text.erase(beginmark, (endmark - beginmark) + 3);
 				continue;
-			}
-			else
+			} else
 				break;
-		}
-		else
+		} else
 			break;
 	}
 	lstrcpyW(wszText, text.c_str());
@@ -143,8 +143,7 @@ extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags, co
 			if (closing == message.npos) {                      // must be an invalid [color=] tag w/o closing bracket
 				message[beginmark] = ' ';
 				continue;
-			}
-			else {
+			} else {
 				std::wstring colorname = message.substr(beginmark + 7, 8);
 search_again:
 				bool  clr_found = false;
@@ -182,11 +181,9 @@ search_again:
 						if (!was_added) {
 							clr_was_added = was_added = true;
 							goto search_again;
-						}
-						else
+						} else
 							goto invalid_code;
-					}
-					else {
+					} else {
 invalid_code:
 						if (endmark != message.npos)
 							message.erase(endmark, 8);
@@ -226,8 +223,7 @@ nobbcode:
 				tempmark = endmark + 1;
 			}
 			break;
-		}
-		else {
+		} else {
 			if ((endmark = message.find(endmarker, beginmark + 1)) == message.npos)
 				break;
 		}
@@ -265,7 +261,7 @@ ok:
 			smbp.flag = SAFL_TCHAR | SAFL_PATH;
 			smbp.str = (TCHAR *)smcode.c_str();
 			smbp.hContact = hContact;
-			smbpr = (SMADD_BATCHPARSERES *)MY_CallService(MS_SMILEYADD_BATCHPARSE, 0, (LPARAM)&smbp);
+			smbpr = (SMADD_BATCHPARSERES *)MY_CallService(MS_SMILEYADD_BATCHPARSE, 0, (LPARAM) & smbp);
 			if (smbpr) {
 				MY_CallService(MS_SMILEYADD_BATCHFREE, 0, (LPARAM)smbpr);
 				beginmark = endmark + 1;
@@ -345,8 +341,7 @@ extern "C" const char *FormatRaw(DWORD dwFlags, const char *msg, int flags, cons
 			if (closing == message.npos) {                      // must be an invalid [color=] tag w/o closing bracket
 				message[beginmark] = ' ';
 				continue;
-			}
-			else {
+			} else {
 				std::string colorname = message.substr(beginmark + 7, 8);
 search_again:
 				bool  clr_found = false;
@@ -384,11 +379,9 @@ search_again:
 						if (!was_added) {
 							clr_was_added = was_added = true;
 							goto search_again;
-						}
-						else
+						} else
 							goto invalid_code;
-					}
-					else {
+					} else {
 invalid_code:
 						if (endmark != message.npos)
 							message.erase(endmark, 8);
@@ -429,8 +422,7 @@ nobbcode:
 				tempmark = endmark + 1;
 			}
 			break;
-		}
-		else {
+		} else {
 			if ((endmark = message.find(endmarker, beginmark + 1)) == message.npos)
 				break;
 		}
@@ -462,7 +454,7 @@ ok:
 			smbp.flag = SAFL_TCHAR | SAFL_PATH;
 			smbp.str = (TCHAR *)smcode.c_str();
 			smbp.hContact = hContact;
-			smbpr = (SMADD_BATCHPARSERES *)MY_CallService(MS_SMILEYADD_BATCHPARSE, 0, (LPARAM)&smbp);
+			smbpr = (SMADD_BATCHPARSERES *)MY_CallService(MS_SMILEYADD_BATCHPARSE, 0, (LPARAM) & smbp);
 			if (smbpr) {
 				MY_CallService(MS_SMILEYADD_BATCHFREE, 0, (LPARAM)smbpr);
 				beginmark = endmark + 1;
@@ -558,8 +550,7 @@ extern "C" WCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
 						_tcsncpy(szTemp, dbv.ptszVal, 500);
 						szTemp[500] = 0;
 						MY_DBFreeVariant(&dbv);
-					}
-					else
+					} else
 						szFinalStatus = (char *)xStatusDescr[xStatus - 1];
 					if (szFinalStatus)
 						MultiByteToWideChar(m_LangPackCP, 0, szFinalStatus, -1, szTemp, 500);
@@ -579,11 +570,9 @@ extern "C" WCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
 						_tcsncpy(szTemp, dbv.ptszVal, 500);
 						szTemp[500] = 0;
 						MY_DBFreeVariant(&dbv);
-					}
-					else
+					} else
 						szFinalStatus = (char *)xStatusDescr[xStatus - 1];
-				}
-				else
+				} else
 					szFinalStatus = (char *)(szStatus && szStatus[0] ? szStatus : "(undef)");
 
 				if (szFinalStatus)
@@ -688,11 +677,9 @@ extern "C" char *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *s
 				if (wStatus != ID_STATUS_OFFLINE && xStatus > 0 && xStatus <= 32) {
 					if ((result = MY_DBGetContactSettingString(hContact, (char *)szProto, "XStatusName")) != NULL) {
 						szFinalStatus = result;
-					}
-					else
+					} else
 						szFinalStatus = (char *)(szStatus && szStatus[0] ? szStatus : "(undef)");
-				}
-				else
+				} else
 					szFinalStatus = (char *)(szStatus && szStatus[0] ? szStatus : "(undef)");
 
 				title.insert(tempmark + 2, szFinalStatus);
@@ -730,11 +717,9 @@ extern "C" const char *FilterEventMarkersA(char *szText)
 			if (endmark != text.npos && (endmark - beginmark) > 5) {
 				text.erase(beginmark, (endmark - beginmark) + 3);
 				continue;
-			}
-			else
+			} else
 				break;
-		}
-		else
+		} else
 			break;
 	}
 	lstrcpyA(szText, text.c_str());

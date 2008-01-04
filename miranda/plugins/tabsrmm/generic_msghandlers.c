@@ -1,4 +1,7 @@
 /*
+astyle --force-indent=tab=4 --brackets=linux --indent-switches
+		--pad=oper --one-line=keep-blocks  --unpad=paren
+
 Miranda IM: the free IM client for Microsoft* Windows*
 
 Copyright 2000-2003 Miranda ICQ/IM project,
@@ -19,7 +22,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-$Id$
+$Id:$
 */
 
 /*
@@ -64,8 +67,7 @@ static void BTN_StockAction(ButtonItem *item, HWND hwndDlg, struct MessageWindow
 			case IDC_SBAR_SLIST:
 				SendMessage(myGlobals.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 101, WM_LBUTTONUP);
 				break;
-			case IDC_SBAR_FAVORITES:
-			{
+			case IDC_SBAR_FAVORITES: {
 				POINT pt;
 				int iSelection;
 				GetCursorPos(&pt);
@@ -73,8 +75,7 @@ static void BTN_StockAction(ButtonItem *item, HWND hwndDlg, struct MessageWindow
 				HandleMenuEntryFromhContact(iSelection);
 				break;
 			}
-			case IDC_SBAR_RECENT:
-			{
+			case IDC_SBAR_RECENT: {
 				POINT pt;
 				int iSelection;
 				GetCursorPos(&pt);
@@ -82,22 +83,19 @@ static void BTN_StockAction(ButtonItem *item, HWND hwndDlg, struct MessageWindow
 				HandleMenuEntryFromhContact(iSelection);
 				break;
 			}
-			case IDC_SBAR_USERPREFS:
-			{
+			case IDC_SBAR_USERPREFS: {
 				HANDLE hContact = 0;
 				SendMessage(hwndDlg, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
 				if (hContact != 0)
 					CallService(MS_TABMSG_SETUSERPREFS, (WPARAM)hContact, 0);
 				break;
 			}
-			case IDC_SBAR_TOGGLEFORMAT:
-			{
+			case IDC_SBAR_TOGGLEFORMAT: {
 				if (dat) {
 					if (IsDlgButtonChecked(hwndDlg, IDC_SBAR_TOGGLEFORMAT) == BST_UNCHECKED) {
 						dat->SendFormat = 0;
 						GetSendFormat(hwndDlg, dat, 0);
-					}
-					else {
+					} else {
 						dat->SendFormat = SENDFORMAT_BBCODE;
 						GetSendFormat(hwndDlg, dat, 0);
 					}
@@ -204,8 +202,7 @@ void DM_SetDBButtonStates(HWND hwndChild, struct MessageWindowData *dat)
 			if (buttonItem->dwFlags & BUTTON_ISCONTACTDBACTION)
 				szModule = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 			hFinalContact = hContact;
-		}
-		else
+		} else
 			hFinalContact = 0;
 
 		if (buttonItem->type == DBVT_ASCIIZ) {
@@ -217,22 +214,19 @@ void DM_SetDBButtonStates(HWND hwndChild, struct MessageWindowData *dat)
 			}
 		} else {
 			switch (buttonItem->type) {
-				case DBVT_BYTE:
-				{
+				case DBVT_BYTE: {
 					BYTE val = DBGetContactSettingByte(hFinalContact, szModule, szSetting, 0);
 					result = (val == buttonItem->bValuePush[0]);
 					break;
 				}
-				case DBVT_WORD:
-				{
+				case DBVT_WORD: {
 					WORD val = DBGetContactSettingWord(hFinalContact, szModule, szSetting, 0);
-					result = (val == *((WORD *)&buttonItem->bValuePush));
+					result = (val == *((WORD *) & buttonItem->bValuePush));
 					break;
 				}
-				case DBVT_DWORD:
-				{
+				case DBVT_DWORD: {
 					DWORD val = DBGetContactSettingDword(hFinalContact, szModule, szSetting, 0);
-					result = (val == *((DWORD *)&buttonItem->bValuePush));
+					result = (val == *((DWORD *) & buttonItem->bValuePush));
 					break;
 				}
 			}
@@ -260,12 +254,10 @@ LRESULT DM_ScrollToBottom(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wP
 		if (dat->hwndIEView) {
 			PostMessage(hwndDlg, DM_SCROLLIEVIEW, 0, 0);
 			return 0;
-		}
-		else if (dat->hwndHPP) {
+		} else if (dat->hwndHPP) {
 			SendMessage(hwndDlg, DM_SCROLLIEVIEW, 0, 0);
 			return 0;
-		}
-		else {
+		} else {
 			HWND hwnd = GetDlgItem(hwndDlg, dat->bType == SESSIONTYPE_IM ? IDC_LOG : IDC_CHAT_LOG);
 
 			if (lParam)
@@ -394,8 +386,7 @@ LRESULT DM_UpdateLastMessage(HWND hwndDlg, struct MessageWindowData *dat)
 				char fmt[100];
 				mir_snprintf(fmt, sizeof(fmt), Translate("UIN: %s"), dat->uin);
 				SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM) fmt);
-			}
-			else {
+			} else {
 				TCHAR fmt[100];
 				mir_sntprintf(fmt, safe_sizeof(fmt), TranslateT("Last received: %s at %s"), date, time);
 				SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM) fmt);
@@ -550,8 +541,7 @@ LRESULT DM_MouseWheelHandler(HWND hwnd, HWND hwndParent, struct MessageWindowDat
 				SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(SB_PAGEDOWN, 0), 0);
 			else if (wDirection > 0)
 				SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(SB_PAGEUP, 0), 0);
-		}
-		else
+		} else
 			SendMessage(hwnd, WM_MOUSEWHEEL, wParam, lParam);
 		return 0;
 	}
@@ -583,8 +573,7 @@ LRESULT DM_ThemeChanged(HWND hwnd, struct MessageWindowData *dat)
 			SetWindowLong(GetDlgItem(hwnd, IDC_LOG), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwnd, IDC_LOG), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
 		if (dat->bFlatMsgLog || dat->hTheme != 0 || (dat->pContainer->bSkinned && !item_msg->IGNORED))
 			SetWindowLong(GetDlgItem(hwnd, IDC_MESSAGE), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwnd, IDC_MESSAGE), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
-	}
-	else {
+	} else {
 		if (dat->bFlatMsgLog || dat->hTheme != 0 || (dat->pContainer->bSkinned && !item_log->IGNORED)) {
 			SetWindowLong(GetDlgItem(hwnd, IDC_CHAT_LOG), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwnd, IDC_CHAT_LOG), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
 			SetWindowLong(GetDlgItem(hwnd, IDC_LIST), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwnd, IDC_LIST), GWL_EXSTYLE) & ~(WS_EX_CLIENTEDGE | WS_EX_STATICEDGE));
@@ -604,7 +593,8 @@ static HANDLE hHookIconPressedEvt;
 struct StatusIconListNode *status_icon_list = 0;
 int status_icon_list_size = 0;
 
-static int SI_AddStatusIcon(WPARAM wParam, LPARAM lParam) {
+static int SI_AddStatusIcon(WPARAM wParam, LPARAM lParam)
+{
 	StatusIconData *sid = (StatusIconData *)lParam;
 	struct StatusIconListNode *siln = (struct StatusIconListNode *)mir_alloc(sizeof(struct StatusIconListNode));
 
@@ -625,7 +615,8 @@ static int SI_AddStatusIcon(WPARAM wParam, LPARAM lParam) {
 	return 0;
 }
 
-static int SI_RemoveStatusIcon(WPARAM wParam, LPARAM lParam) {
+static int SI_RemoveStatusIcon(WPARAM wParam, LPARAM lParam)
+{
 	StatusIconData *sid = (StatusIconData *)lParam;
 	struct StatusIconListNode *current = status_icon_list, *prev = 0;
 
@@ -651,7 +642,8 @@ static int SI_RemoveStatusIcon(WPARAM wParam, LPARAM lParam) {
 	return 1;
 }
 
-static void SI_RemoveAllStatusIcons(void) {
+static void SI_RemoveAllStatusIcons(void)
+{
 	struct StatusIconListNode *current;
 
 	while (status_icon_list) {
@@ -668,7 +660,8 @@ static void SI_RemoveAllStatusIcons(void) {
 	WindowList_Broadcast(hMessageWindowList, DM_STATUSICONCHANGE, 0, 0);
 }
 
-static int SI_ModifyStatusIcon(WPARAM wParam, LPARAM lParam) {
+static int SI_ModifyStatusIcon(WPARAM wParam, LPARAM lParam)
+{
 	HANDLE hContact = (HANDLE)wParam;
 
 	StatusIconData *sid = (StatusIconData *)lParam;
@@ -710,7 +703,8 @@ static int SI_ModifyStatusIcon(WPARAM wParam, LPARAM lParam) {
 	return 1;
 }
 
-void DrawStatusIcons(struct MessageWindowData *dat, HDC hDC, RECT r, int gap) {
+void DrawStatusIcons(struct MessageWindowData *dat, HDC hDC, RECT r, int gap)
+{
 	struct StatusIconListNode *current = status_icon_list;
 	HICON hIcon;
 	char buff[256];
@@ -745,7 +739,8 @@ void DrawStatusIcons(struct MessageWindowData *dat, HDC hDC, RECT r, int gap) {
 					   DBGetContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)) ? myGlobals.g_buttonBarIcons[12] : myGlobals.g_buttonBarIcons[13], 50);
 }
 
-void SI_CheckStatusIconClick(struct MessageWindowData *dat, HWND hwndFrom, POINT pt, RECT r, int gap, int code) {
+void SI_CheckStatusIconClick(struct MessageWindowData *dat, HWND hwndFrom, POINT pt, RECT r, int gap, int code)
+{
 	StatusIconClickData sicd;
 	struct StatusIconListNode *current = status_icon_list;
 	struct StatusIconListNode *clicked = NULL;
@@ -774,17 +769,14 @@ void SI_CheckStatusIconClick(struct MessageWindowData *dat, HWND hwndFrom, POINT
 				InvalidateRect(dat->pContainer->hwndStatus, NULL, TRUE);
 				piContainer = piContainer->pNextContainer;
 			}
-		}
-		else {
+		} else {
 			dat->pContainer->dwFlags ^= CNT_NOSOUND;
 			InvalidateRect(dat->pContainer->hwndStatus, NULL, TRUE);
 		}
-	}
-	else if ((int)iconNum == list_icons + 1 && code != NM_RCLICK && dat->bType == SESSIONTYPE_IM) {
+	} else if ((int)iconNum == list_icons + 1 && code != NM_RCLICK && dat->bType == SESSIONTYPE_IM) {
 		SendMessage(dat->pContainer->hwndActive, WM_COMMAND, IDC_SELFTYPING, 0);
 		InvalidateRect(dat->pContainer->hwndStatus, NULL, TRUE);
-	}
-	else if (clicked) {
+	} else if (clicked) {
 		sicd.cbSize = sizeof(StatusIconClickData);
 		GetCursorPos(&sicd.clickLocation);
 		sicd.dwId = clicked->sid.dwId;
@@ -797,7 +789,8 @@ void SI_CheckStatusIconClick(struct MessageWindowData *dat, HWND hwndFrom, POINT
 
 static HANDLE SI_hServiceIcon[3];
 
-int SI_InitStatusIcons() {
+int SI_InitStatusIcons()
+{
 	SI_hServiceIcon[0] = CreateServiceFunction(MS_MSG_ADDICON, SI_AddStatusIcon);
 	SI_hServiceIcon[1] = CreateServiceFunction(MS_MSG_REMOVEICON, SI_RemoveStatusIcon);
 	SI_hServiceIcon[2] = CreateServiceFunction(MS_MSG_MODIFYICON, SI_ModifyStatusIcon);
@@ -805,7 +798,8 @@ int SI_InitStatusIcons() {
 	return 0;
 }
 
-int SI_DeinitStatusIcons() {
+int SI_DeinitStatusIcons()
+{
 	int i;
 	DestroyHookableEvent(hHookIconPressedEvt);
 	for (i = 0; i < 3; i++)
@@ -814,6 +808,7 @@ int SI_DeinitStatusIcons() {
 	return 0;
 }
 
-int SI_GetStatusIconsCount() {
+int SI_GetStatusIconsCount()
+{
 	return status_icon_list_size;
 }

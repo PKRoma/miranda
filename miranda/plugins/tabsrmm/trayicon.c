@@ -1,4 +1,6 @@
 /*
+astyle --force-indent=tab=4 --brackets=linux --indent-switches
+		--pad=oper --one-line=keep-blocks  --unpad=paren
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
@@ -74,8 +76,7 @@ static DWORD WINAPI TrayAnimThread(LPVOID vParam)
 				if (dwAnimStep > 3)
 					dwAnimStep = 0;
 				FlashTrayIcon(myGlobals.m_AnimTrayIcons[dwAnimStep]);                        // restore default icon
-			}
-			else {                                  // simple flashing
+			} else {                                 // simple flashing
 				dwElapsed += 200;
 				if (dwElapsed >= 600) {
 					myGlobals.m_TrayFlashState = !myGlobals.m_TrayFlashState;
@@ -115,15 +116,13 @@ void CreateTrayMenus(int mode)
 			ModifyMenu(myGlobals.g_hMenuTrayContext, 0, MF_BYPOSITION | MF_POPUP, (UINT_PTR)myGlobals.g_hMenuFavorites, TranslateT("Favorites"));
 			ModifyMenu(myGlobals.g_hMenuTrayContext, 2, MF_BYPOSITION | MF_POPUP, (UINT_PTR)myGlobals.g_hMenuRecent, TranslateT("Recent Sessions"));
 			LoadFavoritesAndRecent();
-		}
-		else {
+		} else {
 			DeleteMenu(myGlobals.g_hMenuTrayContext, 2, MF_BYPOSITION);
 			DeleteMenu(myGlobals.g_hMenuTrayContext, 0, MF_BYPOSITION);
 			DeleteMenu(myGlobals.g_hMenuTrayContext, 0, MF_BYPOSITION);
 			DeleteMenu(myGlobals.g_hMenuTrayContext, 0, MF_BYPOSITION);
 		}
-	}
-	else {
+	} else {
 		isAnimThreadRunning = FALSE;
 		SetEvent(g_hEvent);
 		WaitForSingleObject(hTrayAnimThread, 5000);
@@ -165,8 +164,7 @@ void CreateSystrayIcon(int create)
 		nen_options.bTrayExist = TRUE;
 		hIconTrayCurrent = 0;
 		SetEvent(g_hEvent);
-	}
-	else if (create == FALSE && nen_options.bTrayExist) {
+	} else if (create == FALSE && nen_options.bTrayExist) {
 		Shell_NotifyIcon(NIM_DELETE, &nim);
 		nen_options.bTrayExist = FALSE;
 	}
@@ -187,7 +185,7 @@ static BOOL CALLBACK FindTrayWnd(HWND hwnd, LPARAM lParam)
 		RECT *pRect = (RECT *) lParam;
 		RECT rectClock;
 		GetWindowRect(hwnd, &rectClock);
-		if (rectClock.bottom < pRect->bottom-5) // 10 = random fudge factor.
+		if (rectClock.bottom < pRect->bottom - 5) // 10 = random fudge factor.
 			pRect->top = rectClock.bottom;
 		else
 			pRect->right = rectClock.left;
@@ -247,8 +245,7 @@ void MaximiseFromTray(HWND hWnd, BOOL bForceAnimation, RECT *rectTo)
 			GetWindowRect(myGlobals.g_hwndHotkeyHandler, &rectFrom);
 		SetParent(hWnd, NULL);
 		DrawAnimatedRects(hWnd, IDANI_CAPTION, &rectFrom, rectTo);
-	}
-	else
+	} else
 		SetParent(hWnd, NULL);
 
 	ShowWindow(hWnd, SW_SHOW);
@@ -286,8 +283,7 @@ void FlashTrayIcon(HICON hIcon)
 		//myGlobals.m_TrayFlashState = !myGlobals.m_TrayFlashState;
 		//if(mode)
 		//    myGlobals.m_TrayFlashState = 0;
-	}
-	else if (IsWindowVisible(myGlobals.g_hwndHotkeyHandler) && !nen_options.bTraySupport) {
+	} else if (IsWindowVisible(myGlobals.g_hwndHotkeyHandler) && !nen_options.bTraySupport) {
 		SendDlgItemMessage(myGlobals.g_hwndHotkeyHandler, IDC_TRAYICON, BM_SETIMAGE, IMAGE_ICON, (LPARAM) hIcon);
 	}
 }
@@ -334,8 +330,7 @@ void AddContactToFavorites(HANDLE hContact, TCHAR *szNickname, char *szProto, ch
 		strncpy(szFinalNick, (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0), 100);
 		szFinalNick[99] = 0;
 #endif
-	}
-	else {
+	} else {
 		_tcsncpy(szFinalNick, szNickname, 100);
 		szFinalNick[99] = 0;
 	}
@@ -347,8 +342,7 @@ void AddContactToFavorites(HANDLE hContact, TCHAR *szNickname, char *szProto, ch
 			wStatus = DBGetContactSettingWord((HANDLE)hContact, szProto, "Status", ID_STATUS_OFFLINE);
 		if (szStatus == NULL)
 			szStatus = (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, wStatus, 0);
-	}
-	else
+	} else
 		return;
 
 	if (hIcon == 0)
@@ -381,8 +375,7 @@ addnew:
 #else
 			AppendMenuA(hMenu, MF_BYCOMMAND, (UINT_PTR)hContact, szMenuEntry);
 #endif
-		}
-		else if (hMenu == myGlobals.g_hMenuFavorites) {             // insert the item sorted...
+		} else if (hMenu == myGlobals.g_hMenuFavorites) {            // insert the item sorted...
 			MENUITEMINFO mii2 = {0};
 			TCHAR szBuffer[142];
 			int i, c = GetMenuItemCount(myGlobals.g_hMenuFavorites);
@@ -450,7 +443,7 @@ void LoadFavoritesAndRecent()
 	DWORD dwRecent;
 	int iIndex = 0, i, j;
 	HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-	recentEntries = (RCENTRY *)malloc((nen_options.wMaxRecent + 1 )* sizeof(RCENTRY));
+	recentEntries = (RCENTRY *)malloc((nen_options.wMaxRecent + 1) * sizeof(RCENTRY));
 	if (recentEntries != NULL) {
 		while (hContact != 0) {
 			if (DBGetContactSettingWord(hContact, SRMSGMOD_T, "isFavorite", 0))

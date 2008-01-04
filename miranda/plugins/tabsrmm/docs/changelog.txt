@@ -26,6 +26,9 @@ Version 2.0.0.5  - 2008/01/02
 
 		* some better automatic detection for the MathMod plugin.
 		
+		* changed tree controls on option pages to use simple checkboxes 
+		  instead of image lists.
+		
 Version 2.0.0.4  - 2007/12/23
 
         + added incremental search feature to the group chat userlist. Simply
