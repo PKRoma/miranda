@@ -264,14 +264,13 @@ static void JabberSearchReturnResults( HANDLE  id, void * pvUsersInfo /*LIST<voi
 								  _T("given"),		_T("first"),
 								  _T("jid"), NULL };
 		   TCHAR * nick=NULL;
-		   // FIXME: Local declaration of 'i' hides declaration of the same name in outer scope.
-		   int i=0;
-		   while (nickfields[i] && !nick)   nick=pmUserData->operator [](nickfields[i++]);
+		   int k=0;
+		   while (nickfields[k] && !nick)   nick=pmUserData->operator [](nickfields[k++]);
 		   TCHAR buff[200]={0};
 		   if (_tcsicmp(nick, Results.jsr.jid))
 			   _sntprintf(buff,SIZEOF(buff),_T("%s ( %s )"),nick, Results.jsr.jid);
 		   else
-				_tcsncpy(buff, nick, SIZEOF(buff));	   
+				_tcsncpy(buff, nick, SIZEOF(buff));
 		   Results.jsr.hdr.nick=nick ? mir_t2a(buff): NULL;
 	   }
 	   JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SEARCHRESULT, id, (LPARAM) &Results );

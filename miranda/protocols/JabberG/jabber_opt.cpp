@@ -472,7 +472,9 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			SetWindowLong(GetDlgItem(hwndDlg, IDC_EDIT_LOGIN_SERVER), GWL_USERDATA, lParam ? 1 : 0);
 
 			int len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_EDIT_LOGIN_SERVER)) + 1;
-			TCHAR *server = (TCHAR *)_alloca(len * sizeof(TCHAR));
+			TCHAR *server = (TCHAR *)mir_alloc(len * sizeof(TCHAR));
+			if ( !server )
+				break;
 			GetDlgItemText(hwndDlg, IDC_EDIT_LOGIN_SERVER, server, len);
 
 			BOOL bDropdown = SendDlgItemMessage(hwndDlg, IDC_EDIT_LOGIN_SERVER, CB_GETDROPPEDSTATE, 0, 0);
@@ -493,6 +495,7 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 			if (bDropdown)
 				SendDlgItemMessage(hwndDlg, IDC_EDIT_LOGIN_SERVER, CB_SHOWDROPDOWN, TRUE, 0);
+			mir_free( server );
 		}
 		break;
 	case WM_COMMAND:
@@ -1228,12 +1231,13 @@ static void _RosterItemEditEnd( HWND hEditor, ROSTEREDITDAT * edat, BOOL bCancel
 {
 	if (!bCancel)
 	{
-		TCHAR *buff;
-		int len=GetWindowTextLength(hEditor)+1;
-		buff=(TCHAR*)malloc(len*sizeof(TCHAR));
-		GetWindowText(hEditor,buff,len);
-		ListView_SetItemText(edat->hList,edat->index, edat->subindex,buff);
-		free(buff);
+		int len = GetWindowTextLength(hEditor) + 1;
+		TCHAR *buff=(TCHAR*)mir_alloc(len*sizeof(TCHAR));
+		if ( buff ) {
+			GetWindowText(hEditor,buff,len);
+			ListView_SetItemText(edat->hList,edat->index, edat->subindex,buff);
+		}
+		mir_free(buff);
 	}
 	DestroyWindow(hEditor);
 
@@ -1258,11 +1262,10 @@ static BOOL CALLBACK _RosterItemNewEditProc( HWND hEditor, UINT msg, WPARAM wPar
 		}
 		break;
 	case WM_GETDLGCODE:
-		if(lParam)
-		{
-			MSG *msg=(MSG*)lParam;
-			if(msg->message==WM_KEYDOWN && msg->wParam==VK_TAB) return 0;
-			if(msg->message==WM_CHAR && msg->wParam=='\t') return 0;
+		if ( lParam ) {
+			MSG *msg2 = (MSG*)lParam;
+			if (msg2->message==WM_KEYDOWN && msg2->wParam==VK_TAB) return 0;
+			if (msg2->message==WM_CHAR && msg2->wParam=='\t') return 0;
 		}
 		return DLGC_WANTMESSAGE;
 	case WM_KILLFOCUS:

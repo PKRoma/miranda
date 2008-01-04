@@ -128,11 +128,11 @@ void JabberFormSetInstruction( HWND hwndForm, TCHAR *text )
 	int len = lstrlen(text);
 	int fixedLen = len;
 	for (int i = 1; i < len; ++i)
-		if ((text[i] == _T('\n')) && (text[i] != _T('\r')))
+		if ((text[i - 1] == _T('\n')) && (text[i] != _T('\r')))
 			++fixedLen;
-	char *fixedText = NULL;
+	TCHAR *fixedText = NULL;
 	if (fixedLen != len) {
-		TCHAR *fixedText = (TCHAR *)mir_alloc(sizeof(TCHAR) * (fixedLen+1));
+		fixedText = (TCHAR *)mir_alloc(sizeof(TCHAR) * (fixedLen+1));
 		TCHAR *p = fixedText;
 		for (int i = 0; i < len; ++i) {
 			*p = text[i];

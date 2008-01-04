@@ -273,7 +273,6 @@ void TreeList_Update(HWND hwnd)
 {
 	TTreeList_Data *data = (TTreeList_Data *)GetWindowLong(hwnd, GWL_USERDATA);
 	HTREELISTITEM hItem = data->root;
-	LVITEM lvi = {0};
 	int sortIndex = 0;
 
 	SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
