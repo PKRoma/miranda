@@ -94,11 +94,14 @@ static void JabberIqResultCapsDiscoInfo( XmlNode* iqNode, void* userdata, CJabbe
 		for ( int i = 1; ( feature = JabberXmlGetNthChild( query, "feature", i )) != NULL; i++ ) {
 			TCHAR *featureName = JabberXmlGetAttrValue( feature, "var" );
 			if ( featureName ) {
-				for ( int i = 0; g_JabberFeatCapPairs[i].szFeature; i++ ) {
-					if ( !_tcscmp( g_JabberFeatCapPairs[i].szFeature, featureName )) {
-						jcbCaps |= g_JabberFeatCapPairs[i].jcbCap;
+				for ( int j = 0; g_JabberFeatCapPairs[j].szFeature; j++ ) {
+					if ( !_tcscmp( g_JabberFeatCapPairs[j].szFeature, featureName )) {
+						jcbCaps |= g_JabberFeatCapPairs[j].jcbCap;
 						break;
-		}	}	}	}
+					}
+				}
+			}
+		}
 
 		// no version info support and no XEP-0115 support?
 		if ( r && r->dwVersionRequestTime == -1 && !r->version && !r->software && !r->szCapsNode ) {

@@ -1293,7 +1293,7 @@ void JabberIqResultExtSearch( XmlNode *iqNode, void *userdata )
 
 				if ( !lstrcmp( fieldName, _T("jid"))) {
 					_tcsncpy( jsr.jid, n->text, SIZEOF( jsr.jid ));
-					jsr.jid[sizeof( jsr.jid )-1] = '\0';
+					jsr.jid[SIZEOF( jsr.jid )-1] = '\0';
 					JabberLog( "Result jid = " TCHAR_STR_PARAM, jsr.jid );
 				}
 				else if ( !lstrcmp( fieldName, _T("nickname")))

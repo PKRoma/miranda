@@ -244,13 +244,13 @@ BOOL CJabberAdhocManager::HandleCommandRequest( XmlNode* iqNode, void* userdata,
 
 	if ( nResultCode == JABBER_ADHOC_HANDLER_STATUS_COMPLETED ) {
 		XmlNodeIq iq( "result", pInfo );
-		XmlNode* commandNode = iq.addChild( "command" );
-		commandNode->addAttr( "xmlns", JABBER_FEAT_COMMANDS );
-		commandNode->addAttr( "node", szNode );
-		commandNode->addAttr( "sessionid", pSession->GetSessionId() );
-		commandNode->addAttr( "status", "completed" );
+		XmlNode* commandNode2 = iq.addChild( "command" );
+		commandNode2->addAttr( "xmlns", JABBER_FEAT_COMMANDS );
+		commandNode2->addAttr( "node", szNode );
+		commandNode2->addAttr( "sessionid", pSession->GetSessionId() );
+		commandNode2->addAttr( "status", "completed" );
 
-		XmlNode* noteNode = commandNode->addChild( "note", "Command completed successfully" );
+		XmlNode* noteNode = commandNode2->addChild( "note", "Command completed successfully" );
 		noteNode->addAttr( "type", "info" );
 
 		jabberThreadInfo->send( iq );
@@ -260,13 +260,13 @@ BOOL CJabberAdhocManager::HandleCommandRequest( XmlNode* iqNode, void* userdata,
 	}
 	else if ( nResultCode == JABBER_ADHOC_HANDLER_STATUS_CANCEL ) {
 		XmlNodeIq iq( "result", pInfo );
-		XmlNode* commandNode = iq.addChild( "command" );
-		commandNode->addAttr( "xmlns", JABBER_FEAT_COMMANDS );
-		commandNode->addAttr( "node", szNode );
-		commandNode->addAttr( "sessionid", pSession->GetSessionId() );
-		commandNode->addAttr( "status", "canceled" );
+		XmlNode* commandNode2 = iq.addChild( "command" );
+		commandNode2->addAttr( "xmlns", JABBER_FEAT_COMMANDS );
+		commandNode2->addAttr( "node", szNode );
+		commandNode2->addAttr( "sessionid", pSession->GetSessionId() );
+		commandNode2->addAttr( "status", "canceled" );
 
-		XmlNode* noteNode = commandNode->addChild( "note", "Error occured during processing command" );
+		XmlNode* noteNode = commandNode2->addChild( "note", "Error occured during processing command" );
 		noteNode->addAttr( "type", "error" );
 
 		jabberThreadInfo->send( iq );

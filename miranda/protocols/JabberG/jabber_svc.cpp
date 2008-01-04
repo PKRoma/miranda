@@ -1368,7 +1368,7 @@ static int JabberSetAvatar( WPARAM wParam, LPARAM lParam )
 			fwrite( pResult, dwPngSize, 1, out );
 			fclose( out );
 		}
-		delete pResult;
+		delete[] pResult;
 	}
 
 	return 0;
@@ -1582,46 +1582,46 @@ int JabberGCGetToolTipText(WPARAM wParam, LPARAM lParam)
 
 	//JID:
 	if ( _tcschr(info->resourceName,_T('@') != NULL ) ) {
-		_tcsncat( outBuf, TranslateT("JID:\t\t"), sizeof(outBuf) );
-		_tcsncat( outBuf, info->resourceName, sizeof(outBuf) );
+		_tcsncat( outBuf, TranslateT("JID:\t\t"), SIZEOF(outBuf) );
+		_tcsncat( outBuf, info->resourceName, SIZEOF(outBuf) );
 	} else if (lParam) { //or simple nick
-		_tcsncat( outBuf, TranslateT("Nick:\t\t"), sizeof(outBuf) );
-		_tcsncat( outBuf, (TCHAR*) lParam, sizeof(outBuf) );
+		_tcsncat( outBuf, TranslateT("Nick:\t\t"), SIZEOF(outBuf) );
+		_tcsncat( outBuf, (TCHAR*) lParam, SIZEOF(outBuf) );
 	}
 
 	// status
 	if ( info->status >= ID_STATUS_OFFLINE && info->status <= ID_STATUS_IDLE  ) {
-		_tcsncat( outBuf, szSeparator, sizeof(outBuf) );
-		_tcsncat( outBuf, TranslateT("Status:\t\t"), sizeof(outBuf) );
-		_tcsncat( outBuf, TranslateTS( JabberEnum2StatusStr [ info->status-ID_STATUS_OFFLINE ]), sizeof(outBuf) );
+		_tcsncat( outBuf, szSeparator, SIZEOF(outBuf) );
+		_tcsncat( outBuf, TranslateT("Status:\t\t"), SIZEOF(outBuf) );
+		_tcsncat( outBuf, TranslateTS( JabberEnum2StatusStr [ info->status-ID_STATUS_OFFLINE ]), SIZEOF(outBuf) );
 	}
 
 	// status text
 	if ( info->statusMessage ) {
-		_tcsncat( outBuf, szSeparator, sizeof(outBuf) );
-		_tcsncat( outBuf, TranslateT("Status text:\t"), sizeof(outBuf) );
-		_tcsncat( outBuf, info->statusMessage, sizeof(outBuf) );
+		_tcsncat( outBuf, szSeparator, SIZEOF(outBuf) );
+		_tcsncat( outBuf, TranslateT("Status text:\t"), SIZEOF(outBuf) );
+		_tcsncat( outBuf, info->statusMessage, SIZEOF(outBuf) );
 	}
 
 	// Role
 	if ( TRUE || info->role ) {
-		_tcsncat( outBuf, szSeparator, sizeof(outBuf) );
-		_tcsncat( outBuf, TranslateT("Role:\t\t"), sizeof(outBuf) );
-		_tcsncat( outBuf, TranslateTS( JabberEnum2RoleStr[info->role] ), sizeof(outBuf) );
+		_tcsncat( outBuf, szSeparator, SIZEOF(outBuf) );
+		_tcsncat( outBuf, TranslateT("Role:\t\t"), SIZEOF(outBuf) );
+		_tcsncat( outBuf, TranslateTS( JabberEnum2RoleStr[info->role] ), SIZEOF(outBuf) );
 	}
 
 	// Affiliation
 	if ( TRUE || info->affiliation ) {
-		_tcsncat( outBuf, szSeparator, sizeof(outBuf) );
-		_tcsncat( outBuf, TranslateT("Affiliation:\t"), sizeof(outBuf) );
-		_tcsncat( outBuf, TranslateTS( JabberEnum2AffilationStr[info->affiliation] ), sizeof(outBuf) );
+		_tcsncat( outBuf, szSeparator, SIZEOF(outBuf) );
+		_tcsncat( outBuf, TranslateT("Affiliation:\t"), SIZEOF(outBuf) );
+		_tcsncat( outBuf, TranslateTS( JabberEnum2AffilationStr[info->affiliation] ), SIZEOF(outBuf) );
 	}
 
 	// real jid
 	if ( info->szRealJid ) {
-		_tcsncat( outBuf, szSeparator, sizeof(outBuf) );
-		_tcsncat( outBuf, TranslateT("Real JID:\t"), sizeof(outBuf) );
-		_tcsncat( outBuf, info->szRealJid, sizeof(outBuf) );
+		_tcsncat( outBuf, szSeparator, SIZEOF(outBuf) );
+		_tcsncat( outBuf, TranslateT("Real JID:\t"), SIZEOF(outBuf) );
+		_tcsncat( outBuf, info->szRealJid, SIZEOF(outBuf) );
 	}
 
 	if ( lstrlen( outBuf ) == 0)

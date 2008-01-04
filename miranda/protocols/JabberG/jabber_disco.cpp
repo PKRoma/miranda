@@ -312,8 +312,8 @@ void JabberIqResultServiceDiscoveryRootItems( XmlNode* iqNode, void* userdata, C
 				pNewInfo->m_pUserData = pInfo->m_pUserData;
 				pNewInfo->SetTimeout( 30000 );
 				XmlNodeIq* iq = new XmlNodeIq( pNewInfo );
-				XmlNode* query = iq->addQuery( JABBER_FEAT_DISCO_INFO );
-				if ( szNode ) query->addAttr( "node", szNode );
+				XmlNode* query2 = iq->addQuery( JABBER_FEAT_DISCO_INFO );
+				if ( szNode ) query2->addAttr( "node", szNode );
 				packet->addChild( iq );
 	}	}	}
 	g_SDManager.Unlock();

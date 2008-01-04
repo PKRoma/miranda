@@ -264,6 +264,7 @@ static void JabberSearchReturnResults( HANDLE  id, void * pvUsersInfo /*LIST<voi
 								  _T("given"),		_T("first"),
 								  _T("jid"), NULL };
 		   TCHAR * nick=NULL;
+		   // FIXME: Local declaration of 'i' hides declaration of the same name in outer scope.
 		   int i=0;
 		   while (nickfields[i] && !nick)   nick=pmUserData->operator [](nickfields[i++]);
 		   TCHAR buff[200]={0};
@@ -355,7 +356,6 @@ static void JabberIqResultAdvancedSearch( XmlNode *iqNode, void *userdata )
 					if ( child->name ) {
 						TCHAR* szColumnName = mir_a2t(child->name);
 						if ( child->text && child->text[0] != _T('\0')) {
-							TCHAR *keyReturned;
 							mColumnsNames.insertCopyKey(szColumnName,_T(""),&keyReturned, CopyKey, DestroyKey);
 							mColumnsNames.insert(szColumnName,keyReturned);
 							pUserColumn->insertCopyKey(szColumnName,child->text,NULL, CopyKey, DestroyKey);

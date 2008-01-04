@@ -76,8 +76,8 @@ int JabberCompareJids( const TCHAR* jid1, const TCHAR* jid2 )
 	// match only node@domain part
 	TCHAR szTempJid1[ JABBER_MAX_JID_LEN ], szTempJid2[ JABBER_MAX_JID_LEN ];
 	return lstrcmpi(
-		JabberStripJid( jid1, szTempJid1, sizeof szTempJid1 ),
-		JabberStripJid( jid2, szTempJid2, sizeof szTempJid2 ));
+		JabberStripJid( jid1, szTempJid1, SIZEOF(szTempJid1) ),
+		JabberStripJid( jid2, szTempJid2, SIZEOF(szTempJid2)) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////

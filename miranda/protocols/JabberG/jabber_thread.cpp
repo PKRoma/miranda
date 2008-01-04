@@ -798,7 +798,7 @@ static void JabberProcessError( XmlNode *node, void *userdata )
 	int pos;
 //failure xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\"
 	if ( !node->numChild ) return;
-	buff = (TCHAR *)mir_alloc(1024*SIZEOF(buff));
+	buff = (TCHAR *)mir_alloc(1024*sizeof(TCHAR));
 	pos=0;
 	for (i=0;i<node->numChild;i++) {
 		pos += mir_sntprintf(buff+pos,1024-pos,
