@@ -512,7 +512,7 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			TranslateDialogDefault(hwndDlg);
 			if (g_chat_integration_enabled) {
 				char szTemp[MAX_PATH];
-				HIMAGELIST himlOptions;
+				/* HIMAGELIST himlOptions; */
 
 				SetWindowLong(GetDlgItem(hwndDlg, IDC_CHECKBOXES), GWL_STYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_CHECKBOXES), GWL_STYLE) | TVS_NOHSCROLL | TVS_CHECKBOXES);
 				/*

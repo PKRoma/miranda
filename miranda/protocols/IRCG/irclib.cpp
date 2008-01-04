@@ -370,7 +370,7 @@ bool CIrcSession::Connect(const CIrcSessionInfo& info)
 
 		TString UserID = GetWord(info.sUserID.c_str(), 0);
 		TCHAR szHostName[MAX_PATH];
-		DWORD cbHostName = sizeof( szHostName );
+		DWORD cbHostName = SIZEOF( szHostName );
 		GetComputerName(szHostName, &cbHostName);
 		TString HostName = GetWord(szHostName, 0);
 		if ( UserID.empty() )

@@ -1205,7 +1205,7 @@ static int MsnSetAvatar( WPARAM wParam, LPARAM lParam )
 
 		}
 
-		delete pResult;
+		delete[] pResult;
 	}
 
 	MSN_SetServerStatus( msnStatusMode );

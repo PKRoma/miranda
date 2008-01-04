@@ -2334,7 +2334,7 @@ bool CMyMonitor::OnIrc_SUPPORT( const CIrcMessage* pmsg )
 	TCHAR szAltPort[20];
 	if ( pmsg->parameters.size() > 1 && _stscanf(pmsg->parameters[1].c_str(), lpszFmt, &szAltServer, &szAltPort) == 2 ) {
 		ShowMessage( pmsg );
-		lstrcpynA(prefs->ServerName, _T2A(szAltServer), 101);
+		lstrcpynA(prefs->ServerName, _T2A(szAltServer), 99);
 		lstrcpynA(prefs->PortStart, _T2A(szAltPort), 9);
 
 		NoOfChannels = 0;

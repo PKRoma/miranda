@@ -336,7 +336,7 @@ static bool IsIcfEnabled(void)
 	GetModuleFileNameA(NULL, szFileName, sizeof(szFileName));
 
 	wchar_t wszFileName[MAX_PATH];
-	MultiByteToWideChar(CP_ACP, 0, szFileName, -1, wszFileName, sizeof(wszFileName));
+	MultiByteToWideChar(CP_ACP, 0, szFileName, -1, wszFileName, SIZEOF(wszFileName));
 
     // Allocate a BSTR for the process image file name.
     fwBstrProcessImageFileName = SysAllocString(wszFileName);

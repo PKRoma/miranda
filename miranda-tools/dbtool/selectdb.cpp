@@ -29,7 +29,7 @@ void GetProfileDirectory(TCHAR* szMirandaDir, TCHAR* szPath, int cbPath)
 	lstrcpy(szMirandaBootIni,szMirandaDir);
 	lstrcat(szMirandaBootIni,_T("\\mirandaboot.ini"));
 	GetPrivateProfileString(_T("Database"),_T("ProfileDir"),_T("."),szProfileDir,SIZEOF(szProfileDir),szMirandaBootIni);
-	ExpandEnvironmentStrings(szProfileDir,szExpandedProfileDir,sizeof(szExpandedProfileDir));
+	ExpandEnvironmentStrings(szProfileDir,szExpandedProfileDir,SIZEOF(szExpandedProfileDir));
 	_tchdir(szMirandaDir);
 	if(!_tfullpath(szPath,szExpandedProfileDir,cbPath))
 		lstrcpyn(szPath,szMirandaDir,cbPath);

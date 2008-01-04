@@ -258,7 +258,7 @@ LBL_Continue:
 				MSN_SetString( NULL, "Password", password );
 			}
 
-			GetDlgItemText( hwndDlg, IDC_HANDLE2, screenStr, sizeof( screenStr ));
+			GetDlgItemText( hwndDlg, IDC_HANDLE2, screenStr, SIZEOF( screenStr ));
 			if	( !MSN_GetStringT( "Nick", NULL, &dbv )) {
 				if ( lstrcmp( dbv.ptszVal, screenStr ))
 					MSN_SendNicknameT( screenStr );
@@ -287,7 +287,7 @@ LBL_Continue:
 			MSN_SetByte( "AwayAsBrb", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_AWAY_AS_BRB ));
 			MSN_SetByte( "ManageServer", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_MANAGEGROUPS ));
 
-			GetDlgItemText( hwndDlg, IDC_MAILER_APP, screenStr, sizeof( screenStr ));
+			GetDlgItemText( hwndDlg, IDC_MAILER_APP, screenStr, SIZEOF( screenStr ));
 			MSN_SetStringT( NULL, "MailerPath", screenStr );
 
 			if ( reconnectRequired && msnLoggedIn )

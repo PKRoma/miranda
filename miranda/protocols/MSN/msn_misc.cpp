@@ -841,7 +841,7 @@ int filetransfer::create( void )
 	#if defined( _UNICODE )	
 		if ( wszFileName != NULL ) {
 			WCHAR wszTemp[ MAX_PATH ];
-			_snwprintf( wszTemp, sizeof wszTemp, L"%S\\%s", std.workingDir, wszFileName );
+			_snwprintf( wszTemp, SIZEOF(wszTemp), L"%S\\%s", std.workingDir, wszFileName );
 			wszTemp[ MAX_PATH-1 ] = 0;
 			fileId = _wopen( wszTemp, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
 			if ( fileId != -1 ) {

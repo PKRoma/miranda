@@ -1237,7 +1237,7 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 				{
 					//Save the setting in the CONNECT dialog
 					if(IsDlgButtonChecked( hwndDlg, IDC_STARTUP)== BST_CHECKED) {
-						GetDlgItemTextA( hwndDlg,IDC_SERVER, prefs->ServerName, 101);
+						GetDlgItemTextA( hwndDlg,IDC_SERVER, prefs->ServerName, 99);
 						DBWriteContactSettingString(NULL,IRCPROTONAME,"ServerName",prefs->ServerName);
 						GetDlgItemTextA( hwndDlg,IDC_PORT, prefs->PortStart, 6);
 						DBWriteContactSettingString(NULL,IRCPROTONAME,"PortStart",prefs->PortStart);
