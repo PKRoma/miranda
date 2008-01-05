@@ -218,7 +218,7 @@ int NetlibBindPort(WPARAM wParam,LPARAM lParam)
 
 			gethostname(hostname,SIZEOF(hostname));
 			he=gethostbyname(hostname);
-			if(he->h_addr_list[0])
+			if(he && he->h_addr_list[0])
 				nlb->dwInternalIP=ntohl(*(PDWORD)he->h_addr_list[0]);
 		}
 		if (nlu->settings.enableUPnP && 
