@@ -76,7 +76,8 @@ static DWORD WINAPI TrayAnimThread(LPVOID vParam)
 				if (dwAnimStep > 3)
 					dwAnimStep = 0;
 				FlashTrayIcon(myGlobals.m_AnimTrayIcons[dwAnimStep]);                        // restore default icon
-			} else {                                 // simple flashing
+			}
+			else {                                 // simple flashing
 				dwElapsed += 200;
 				if (dwElapsed >= 600) {
 					myGlobals.m_TrayFlashState = !myGlobals.m_TrayFlashState;
@@ -96,7 +97,8 @@ static DWORD WINAPI TrayAnimThread(LPVOID vParam)
 					ShowWindow(myGlobals.g_hwndHotkeyHandler, SW_SHOW);
 			}
 		}
-	} while (isAnimThreadRunning);
+	}
+	while (isAnimThreadRunning);
 	CloseHandle(hEvent);
 	return 0;
 }
@@ -116,13 +118,15 @@ void CreateTrayMenus(int mode)
 			ModifyMenu(myGlobals.g_hMenuTrayContext, 0, MF_BYPOSITION | MF_POPUP, (UINT_PTR)myGlobals.g_hMenuFavorites, TranslateT("Favorites"));
 			ModifyMenu(myGlobals.g_hMenuTrayContext, 2, MF_BYPOSITION | MF_POPUP, (UINT_PTR)myGlobals.g_hMenuRecent, TranslateT("Recent Sessions"));
 			LoadFavoritesAndRecent();
-		} else {
+		}
+		else {
 			DeleteMenu(myGlobals.g_hMenuTrayContext, 2, MF_BYPOSITION);
 			DeleteMenu(myGlobals.g_hMenuTrayContext, 0, MF_BYPOSITION);
 			DeleteMenu(myGlobals.g_hMenuTrayContext, 0, MF_BYPOSITION);
 			DeleteMenu(myGlobals.g_hMenuTrayContext, 0, MF_BYPOSITION);
 		}
-	} else {
+	}
+	else {
 		isAnimThreadRunning = FALSE;
 		SetEvent(g_hEvent);
 		WaitForSingleObject(hTrayAnimThread, 5000);
@@ -164,7 +168,8 @@ void CreateSystrayIcon(int create)
 		nen_options.bTrayExist = TRUE;
 		hIconTrayCurrent = 0;
 		SetEvent(g_hEvent);
-	} else if (create == FALSE && nen_options.bTrayExist) {
+	}
+	else if (create == FALSE && nen_options.bTrayExist) {
 		Shell_NotifyIcon(NIM_DELETE, &nim);
 		nen_options.bTrayExist = FALSE;
 	}
@@ -245,7 +250,8 @@ void MaximiseFromTray(HWND hWnd, BOOL bForceAnimation, RECT *rectTo)
 			GetWindowRect(myGlobals.g_hwndHotkeyHandler, &rectFrom);
 		SetParent(hWnd, NULL);
 		DrawAnimatedRects(hWnd, IDANI_CAPTION, &rectFrom, rectTo);
-	} else
+	}
+	else
 		SetParent(hWnd, NULL);
 
 	ShowWindow(hWnd, SW_SHOW);
@@ -280,10 +286,8 @@ void FlashTrayIcon(HICON hIcon)
 		nim.uFlags = NIF_ICON;
 		nim.hIcon = hIcon;
 		Shell_NotifyIcon(NIM_MODIFY, &nim);
-		//myGlobals.m_TrayFlashState = !myGlobals.m_TrayFlashState;
-		//if(mode)
-		//    myGlobals.m_TrayFlashState = 0;
-	} else if (IsWindowVisible(myGlobals.g_hwndHotkeyHandler) && !nen_options.bTraySupport) {
+	}
+	else if (IsWindowVisible(myGlobals.g_hwndHotkeyHandler) && !nen_options.bTraySupport) {
 		SendDlgItemMessage(myGlobals.g_hwndHotkeyHandler, IDC_TRAYICON, BM_SETIMAGE, IMAGE_ICON, (LPARAM) hIcon);
 	}
 }
@@ -315,22 +319,26 @@ void RemoveBalloonTip()
  * is deleted, if necessary.
  */
 
-void AddContactToFavorites(HANDLE hContact, TCHAR *szNickname, char *szProto, char *szStatus, WORD wStatus, HICON hIcon, BOOL mode, HMENU hMenu, UINT codePage)
+// TODO correct all calls, szStatus is now TCHAR *
+
+void AddContactToFavorites(HANDLE hContact, TCHAR *szNickname, char *szProto, TCHAR *szStatus, WORD wStatus, HICON hIcon, BOOL mode, HMENU hMenu, UINT codePage)
 {
-	MENUITEMINFO mii = {0};
-	char szMenuEntry[80];
-	TCHAR szFinalNick[100];
-#if defined(_UNICODE)
-	const wchar_t *szMenuEntryW = 0;
-#endif
+	MENUITEMINFO	mii = {0};
+	TCHAR			szMenuEntry[80];
+	TCHAR			szFinalNick[100];
+	TCHAR			*szFinalProto = NULL;
+
 	if (szNickname == NULL) {
+/*
 #if defined(_UNICODE)
 		MY_GetContactDisplayNameW(hContact, szFinalNick, 100, szProto, 0);
 #else
 		strncpy(szFinalNick, (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0), 100);
 		szFinalNick[99] = 0;
 #endif
-	} else {
+*/		mir_sntprintf(szFinalNick, safe_sizeof(szFinalNick), _T("%s"), (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR));
+	}
+	else {
 		_tcsncpy(szFinalNick, szNickname, 100);
 		szFinalNick[99] = 0;
 	}
@@ -341,20 +349,17 @@ void AddContactToFavorites(HANDLE hContact, TCHAR *szNickname, char *szProto, ch
 		if (wStatus == 0)
 			wStatus = DBGetContactSettingWord((HANDLE)hContact, szProto, "Status", ID_STATUS_OFFLINE);
 		if (szStatus == NULL)
-			szStatus = (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, wStatus, 0);
-	} else
+			szStatus = (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, wStatus, GCMDF_TCHAR);
+	}
+	else
 		return;
 
 	if (hIcon == 0)
 		hIcon = LoadSkinnedProtoIcon(szProto, wStatus);
 
+	szFinalProto = a2tf((TCHAR *)szProto, 0, 0);
 	mii.cbSize = sizeof(mii);
-#if defined(_UNICODE)
-	mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s)", szProto, "%nick%", szStatus);
-	szMenuEntryW = EncodeWithNickname(szMenuEntry, szFinalNick, myGlobals.m_LangPackCP);
-#else
-	mir_snprintf(szMenuEntry, sizeof(szMenuEntry), "%s: %s (%s)", szProto, szFinalNick, szStatus);
-#endif
+	mir_sntprintf(szMenuEntry, safe_sizeof(szMenuEntry), _T("%s: %s (%s)"), szFinalProto, szFinalNick, szStatus);
 	if (mode) {
 		if (hMenu == myGlobals.g_hMenuRecent) {
 			if (CheckMenuItem(hMenu, (UINT_PTR)hContact, MF_BYCOMMAND | MF_UNCHECKED) == 0) {
@@ -370,23 +375,16 @@ void AddContactToFavorites(HANDLE hContact, TCHAR *szNickname, char *szProto, ch
 			}
 addnew:
 			DBWriteContactSettingDword(hContact, SRMSGMOD_T, "isRecent", time(NULL));
-#if defined(_UNICODE)
-			AppendMenuW(hMenu, MF_BYCOMMAND, (UINT_PTR)hContact, szMenuEntryW);
-#else
-			AppendMenuA(hMenu, MF_BYCOMMAND, (UINT_PTR)hContact, szMenuEntry);
-#endif
-		} else if (hMenu == myGlobals.g_hMenuFavorites) {            // insert the item sorted...
+			AppendMenu(hMenu, MF_BYCOMMAND, (UINT_PTR)hContact, szMenuEntry);
+		}
+		else if (hMenu == myGlobals.g_hMenuFavorites) {            // insert the item sorted...
 			MENUITEMINFO mii2 = {0};
 			TCHAR szBuffer[142];
 			int i, c = GetMenuItemCount(myGlobals.g_hMenuFavorites);
 			mii2.fMask = MIIM_STRING;
 			mii2.cbSize = sizeof(mii2);
 			if (c == 0)
-#if defined(_UNICODE)
-				InsertMenuW(myGlobals.g_hMenuFavorites, 0, MF_BYPOSITION, (UINT_PTR)hContact, szMenuEntryW);
-#else
-				InsertMenuA(myGlobals.g_hMenuFavorites, 0, MF_BYPOSITION, (UINT_PTR)hContact, szMenuEntry);
-#endif
+				InsertMenu(myGlobals.g_hMenuFavorites, 0, MF_BYPOSITION, (UINT_PTR)hContact, szMenuEntry);
 			else {
 				for (i = 0; i <= c; i++) {
 					mii2.cch = 0;
@@ -395,17 +393,10 @@ addnew:
 					mii2.cch++;
 					mii2.dwTypeData = szBuffer;
 					GetMenuItemInfo(myGlobals.g_hMenuFavorites, i, TRUE, &mii2);
-#if defined(_UNICODE)
-					if (wcsncmp((wchar_t *)mii2.dwTypeData, szMenuEntryW, 140) > 0 || i == c) {
-						InsertMenuW(myGlobals.g_hMenuFavorites, i, MF_BYPOSITION, (UINT_PTR)hContact, szMenuEntryW);
+					if (_tcsncmp((TCHAR *)mii2.dwTypeData, szMenuEntry, 140) > 0 || i == c) {
+						InsertMenu(myGlobals.g_hMenuFavorites, i, MF_BYPOSITION, (UINT_PTR)hContact, szMenuEntry);
 						break;
 					}
-#else
-					if (strncmp((char *)mii2.dwTypeData, szMenuEntry, 140) > 0 || i == c) {
-						InsertMenuA(myGlobals.g_hMenuFavorites, i, MF_BYPOSITION, (UINT_PTR)hContact, szMenuEntry);
-						break;
-					}
-#endif
 				}
 			}
 		}
@@ -413,17 +404,15 @@ addnew:
 	mii.fMask = MIIM_BITMAP | MIIM_DATA;
 	if (!mode) {
 		mii.fMask |= MIIM_STRING;
-#if defined(_UNICODE)
-		mii.dwTypeData = (LPWSTR)szMenuEntryW;
-		mii.cch = lstrlenW(szMenuEntryW) + 1;
-#else
-		mii.dwTypeData = szMenuEntry;
-		mii.cch = lstrlenA(szMenuEntry) + 1;
-#endif
+		mii.dwTypeData = (LPWSTR)szMenuEntry;
+		mii.cch = lstrlen(szMenuEntry) + 1;
 	}
 	mii.hbmpItem = HBMMENU_CALLBACK;
 	mii.dwItemData = (ULONG)hIcon;
 	SetMenuItemInfo(hMenu, (UINT)hContact, FALSE, &mii);
+
+	if(szFinalProto)
+		mir_free(szFinalProto);
 }
 
 /*

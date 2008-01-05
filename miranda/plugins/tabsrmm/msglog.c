@@ -514,24 +514,11 @@ static void Build_RTF_Header(char **buffer, int *bufferEnd, int *bufferAlloced, 
 	/*
 	 * paragraph header
 	*/
-	//AppendToBuffer(buffer, bufferEnd, bufferAlloced, "}\\pard");
 	AppendToBuffer(buffer, bufferEnd, bufferAlloced, "}");
 
 	// indent
-	if (dat->dwFlags & MWF_LOG_INDENT) {
-		int iIndent = dat->theme.left_indent;
-		int rIndent = dat->theme.right_indent;
-
-		if (iIndent) {
-			//if(dat->dwFlags & MWF_LOG_RTL)
-			//    AppendToBuffer(buffer,bufferEnd,bufferAlloced,"\\ri%u\\fi-%u\\li%u\\tx%u", iIndent + 30, iIndent, rIndent, iIndent + 30);
-			//else
-			//AppendToBuffer(buffer,bufferEnd,bufferAlloced,"\\li%u\\fi-%u\\ri%u\\tx%u", iIndent + 30, iIndent, rIndent, iIndent + 30);
-			//AppendToBuffer(buffer,bufferEnd,bufferAlloced,"\\li-%u\\fi-%u\\ri%u\\tx%u", 2 * (iIndent + 30), iIndent, rIndent, iIndent + 30);
-		}
-	} else {
+	if (!(dat->dwFlags & MWF_LOG_INDENT))
 		AppendToBuffer(buffer, bufferEnd, bufferAlloced, "\\li%u\\ri%u\\fi%u\\tx%u", 2*15, 2*15, 0, 70 * 15);
-	}
 }
 
 
@@ -659,7 +646,9 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 		TrimMessage(msg);
 		formatted = FormatRaw(dat->dwFlags, msg, dwFormattingParams, szProto, dat->hContact, &dat->clr_added);
 		mir_free(msg);
-	} else
+	} 
+	/*
+	else
 	{
 #if defined( _UNICODE ) 
 		int wlen;
@@ -686,6 +675,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 		formatted = FormatRaw(dat->dwFlags, msg, dwFormattingParams, szProto, dat->hContact, &dat->clr_added);
 #endif
 	}
+	*/
 
 	dat->stats.lastReceivedChars = 0;
 	fIsStatusChangeEvent = IsStatusEvent(dbei.eventType);
@@ -878,19 +868,6 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 								icon = LOGICON_STATUS;
 						}
 						AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s\\fs1  #~#%01d%c%s ", GetRTFFont(MSGFONTID_SYMBOLS_IN), icon, isSent ? '>' : '<', GetRTFFont(isSent ? MSGFONTID_MYMSG + iFontIDOffset : MSGFONTID_YOURMSG + iFontIDOffset));
-						//AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s #~#%01d%c%s ", GetRTFFont(MSGDLGFONTCOUNT), icon, isSent ? '>' : '<', GetRTFFont(isSent ? MSGFONTID_MYMSG + iFontIDOffset : MSGFONTID_YOURMSG + iFontIDOffset));
-
-						/*
-						if(dwEffectiveFlags & MWF_LOG_INDIVIDUALBKG)
-							icon += isSent ? 14 : 7;
-
-						AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\f0\\-");
-						while (bufferAlloced - bufferEnd < logIconBmpSize[icon])
-							bufferAlloced += 1024;
-						buffer = (char *) realloc(buffer, bufferAlloced);
-						CopyMemory(buffer + bufferEnd, pLogIconBmpBits[icon], logIconBmpSize[icon]);
-						bufferEnd += logIconBmpSize[icon];
-						AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " ");*/
 					} else
 						skipToNext = TRUE;
 					break;

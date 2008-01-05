@@ -61,14 +61,16 @@ extern PITBPT pfnIsThemeBackgroundPartiallyTransparent;
 extern PDTPB  pfnDrawThemeParentBackground;
 extern PGTBCR pfnGetThemeBackgroundContentRect;
 
-extern          char  *FilterEventMarkersA(char *szText);
-extern			WCHAR *FilterEventMarkers(WCHAR *wszText);
+extern	char  *FilterEventMarkersA(char *szText);
+extern	WCHAR *FilterEventMarkers(WCHAR *wszText);
 
-char *xStatusDescr[] = {	"Angry", "Duck", "Tired", "Party", "Beer", "Thinking", "Eating", "TV", "Friends", "Coffee",
-						 "Music", "Business", "Camera", "Funny", "Phone", "Games", "College", "Shopping", "Sick", "Sleeping",
-						 "Surfing", "@Internet", "Engineering", "Typing", "Eating... yummy", "Having fun", "Chit chatting",
-						 "Crashing", "Going to toilet", "<undef>", "<undef>", "<undef>"
-					   };
+TCHAR *xStatusDescr[] = {	_T("Angry"), _T("Duck"), _T("Tired"), _T("Party"), _T("Beer"), _T("Thinking"), _T("Eating"), 
+								_T("TV"), _T("Friends"), _T("Coffee"),	_T("Music"), _T("Business"), _T("Camera"), _T("Funny"), 
+								_T("Phone"), _T("Games"), _T("College"), _T("Shopping"), _T("Sick"), _T("Sleeping"),
+								_T("Surfing"), _T("@Internet"), _T("Engineering"), _T("Typing"), _T("Eating... yummy"), 
+								_T("Having fun"), _T("Chit chatting"),	_T("Crashing"), _T("Going to toilet"), _T("<undef>"), 
+								_T("<undef>"), _T("<undef>")
+							};
 
 static DWORD CALLBACK StreamOut(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb);
 
@@ -1772,12 +1774,15 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			dat->bIsMeta = IsMetaContact(hwndDlg, dat) ? TRUE : FALSE;
 			if (dat->hContact && dat->szProto != NULL) {
 				dat->wStatus = DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE);
+/*
 #if defined(_UNICODE)
 				MY_GetContactDisplayNameW(dat->hContact, dat->szNickname, 84, dat->szProto, dat->codePage);
 #else
 				mir_snprintf(dat->szNickname, 80, "%s", (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, 0));
 #endif
-				mir_snprintf(dat->szStatus, safe_sizeof(dat->szStatus), "%s", (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, dat->szProto == NULL ? ID_STATUS_OFFLINE : dat->wStatus, 0));
+*/
+				mir_sntprintf(dat->szNickname, 80, _T("%s"), (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, GCDNF_TCHAR));
+				mir_sntprintf(dat->szStatus, safe_sizeof(dat->szStatus), _T("%s"), (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, dat->szProto == NULL ? ID_STATUS_OFFLINE : dat->wStatus, GCMDF_TCHAR));
 				dat->avatarbg = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "avbg", GetSysColor(COLOR_3DFACE));
 			} else
 				dat->wStatus = ID_STATUS_OFFLINE;
@@ -1987,7 +1992,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			SetWindowText(GetDlgItem(hwndDlg, IDC_CANCELSEND), TranslateT("Cancel"));
 			SetWindowText(GetDlgItem(hwndDlg, IDC_MSGSENDLATER), TranslateT("Send later"));
 
-			//SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETOLECALLBACK, 0, (LPARAM) & reOleCallback);
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETUNDOLIMIT, 0, 0);
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_KEYEVENTS | ENM_LINK);
 			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_SCROLL | ENM_KEYEVENTS | ENM_CHANGE);
@@ -2020,7 +2024,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			SetWindowLong(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), GWL_WNDPROC, (LONG) SplitterSubclassProc);
 			SetWindowLong(GetDlgItem(hwndDlg, IDC_PANELSPLITTER), GWL_WNDPROC, (LONG) SplitterSubclassProc);
 			SetWindowLong(GetDlgItem(hwndDlg, IDC_MSGINDICATOR), GWL_WNDPROC, (LONG) MsgIndicatorSubclassProc);
-			//SetMessageLog(hwndDlg, dat);
 
 			/*
 			 * load old messages from history (if wanted...)
@@ -2378,15 +2381,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			if (!lParam)
 				SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
 
-			//if(m_pContainer->hwndStatus && dat->hContact)
-			//    SetSelftypingIcon(hwndDlg, dat, DBGetContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)));
-
 			SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
 
 			break;
 		case DM_UPDATETITLE: {
-			char newtitle[128], *szProto = 0, *szOldMetaProto = 0;
-			char *pszNewTitleEnd;
+			TCHAR newtitle[128];
+			char  *szProto = 0, *szOldMetaProto = 0;
+			TCHAR *pszNewTitleEnd;
 			TCHAR newcontactname[128];
 			TCHAR *temp;
 			TCITEM item;
@@ -2402,7 +2403,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			dat->szNickname[0] = 0;
 			dat->szStatus[0] = 0;
 
-			pszNewTitleEnd = "Message Session";
+			pszNewTitleEnd = _T("Message Session");
 
 			if (dat->iTabID == -1)
 				break;
@@ -2411,6 +2412,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				int iHasName;
 				TCHAR fulluin[128];
 				if (dat->szProto) {
+					TCHAR	*wUIN = NULL;
 
 					if (dat->bIsMeta) {
 						szOldMetaProto = dat->szMetaProto;
@@ -2418,12 +2420,15 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						GetContactUIN(hwndDlg, dat);
 					}
 					szActProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
-					hActContact = dat->bIsMeta ? dat->hSubContact : dat->hContact;
+					hActContact = /* dat->bIsMeta ? dat->hSubContact :*/ dat->hContact;
+/*
 #if defined(_UNICODE)
 					MY_GetContactDisplayNameW(dat->hContact, dat->szNickname, 84, dat->szProto, dat->codePage);
 #else
 					mir_snprintf(dat->szNickname, 80, "%s", (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hActContact, 0));
 #endif
+*/
+					mir_sntprintf(dat->szNickname, 80, _T("%s"), (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hActContact, GCDNF_TCHAR));
 					iHasName = (int)dat->uin[0];        // dat->uin[0] == 0 if there is no valid UIN
 					dat->idle = DBGetContactSettingDword(dat->hContact, dat->szProto, "IdleTS", 0);
 					dat->dwFlagsEx =  dat->idle ? dat->dwFlagsEx | MWF_SHOW_ISIDLE : dat->dwFlagsEx & ~MWF_SHOW_ISIDLE;
@@ -2437,81 +2442,65 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						iHash += (*(temp++) * (int)(temp - dat->szNickname + 1));
 
 					dat->wStatus = DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE);
-					mir_snprintf(dat->szStatus, safe_sizeof(dat->szStatus), "%s", (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, dat->szProto == NULL ? ID_STATUS_OFFLINE : dat->wStatus, 0));
+					mir_sntprintf(dat->szStatus, safe_sizeof(dat->szStatus), _T("%s"), (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, dat->szProto == NULL ? ID_STATUS_OFFLINE : dat->wStatus, GCMDF_TCHAR));
 					wOldApparentMode = dat->wApparentMode;
 					dat->wApparentMode = DBGetContactSettingWord(hActContact, szActProto, "ApparentMode", 0);
 
 					if (iHash != dat->iOldHash || dat->wStatus != dat->wOldStatus || dat->xStatus != oldXStatus || lParam != 0) {
 						if (myGlobals.m_CutContactNameOnTabs)
-							CutContactName(dat->szNickname, newcontactname, sizeof(newcontactname) / sizeof(TCHAR));
+							CutContactName(dat->szNickname, newcontactname, safe_sizeof(newcontactname));
 						else
-							lstrcpyn(newcontactname, dat->szNickname, sizeof(newcontactname) / sizeof(TCHAR));
+							lstrcpyn(newcontactname, dat->szNickname, safe_sizeof(newcontactname));
 
 						if (lstrlen(newcontactname) != 0 && dat->szStatus != NULL) {
 							if (myGlobals.m_StatusOnTabs)
-#if defined(_UNICODE)
-								mir_snprintf(newtitle, 127, "%s (%s)", "%nick%", dat->szStatus);
-#else
-								mir_snprintf(newtitle, 127, "%s (%s)", newcontactname, dat->szStatus);
-#endif
+								mir_sntprintf(newtitle, 127, _T("%s (%s)"), newcontactname, dat->szStatus);
 							else
-#if defined(_UNICODE)
-								mir_snprintf(newtitle, 127, "%s", "%nick%");
-#else
-								mir_snprintf(newtitle, 127, "%s", newcontactname);
-#endif
+								mir_sntprintf(newtitle, 127, _T("%s"), newcontactname);
 						} else
-							mir_snprintf(newtitle, 127, "%s", "Forward");
+							mir_sntprintf(newtitle, 127, _T("%s"), _T("Forward"));
 
 						item.mask |= TCIF_TEXT;
 					}
 					SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
-#if defined _UNICODE
-					{
-						WCHAR wUIN[80];
-						MultiByteToWideChar(dat->codePage, 0, dat->uin, -1, wUIN, 80);
-						wUIN[79] = 0;
-						mir_sntprintf(fulluin, safe_sizeof(fulluin), TranslateT("UIN: %s (SHIFT click -> copy to clipboard)\nClick for contact menu\nClick dropdown for infopanel settings."), iHasName ? wUIN : TranslateT("No UIN"));
-					}
-#else
-					mir_sntprintf(fulluin, safe_sizeof(fulluin), TranslateT("UIN: %s (SHIFT click -> copy to clipboard)\nClick for contact menu\nClick dropdown for infopanel settings."), iHasName ? dat->uin : TranslateT("No UIN"));
-#endif
+					wUIN = a2tf((TCHAR *)dat->uin, 0, 0);
+					mir_sntprintf(fulluin, safe_sizeof(fulluin), TranslateT("UIN: %s (SHIFT click -> copy to clipboard)\nClick for contact menu\nClick dropdown for infopanel settings."), iHasName ? wUIN : TranslateT("No UIN"));
 					SendMessage(GetDlgItem(hwndDlg, IDC_NAME), BUTTONADDTOOLTIP, iHasName ? (WPARAM)fulluin : (WPARAM)"", 0);
-
+					if(wUIN)
+						mir_free(wUIN);
 				}
 			} else
-				lstrcpynA(newtitle, pszNewTitleEnd, sizeof(newtitle));
+				lstrcpyn(newtitle, pszNewTitleEnd, safe_sizeof(newtitle));
 
 			if (dat->xStatus != oldXStatus || dat->idle != dwOldIdle || iHash != dat->iOldHash || dat->wApparentMode != wOldApparentMode || dat->wStatus != dat->wOldStatus || lParam != 0 || (dat->bIsMeta && dat->szMetaProto != szOldMetaProto)) {
 				if (dat->hContact != 0 && myGlobals.m_LogStatusChanges != 0 && DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) != 0) {
 					if (dat->wStatus != dat->wOldStatus && dat->hContact != 0 && dat->wOldStatus != (WORD) - 1 && !(dat->dwFlags & MWF_INITMODE)) {          // log status changes to message log
 						DBEVENTINFO dbei;
-						char buffer[450];
+						TCHAR buffer[450];
 						HANDLE hNewEvent;
-						int iLen;
 
-						char *szOldStatus = (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)dat->wOldStatus, 0);
-						char *szNewStatus = dat->szStatus;
+						TCHAR *szOldStatus = (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)dat->wOldStatus, GCMDF_TCHAR);
+						TCHAR *szNewStatus = (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)dat->wStatus, GCMDF_TCHAR);
 
 						if (dat->szProto != NULL) {
 							if (dat->wStatus == ID_STATUS_OFFLINE)
-								mir_snprintf(buffer, sizeof(buffer), Translate("signed off."));
+								mir_sntprintf(buffer, safe_sizeof(buffer), TranslateT("signed off."));
 							else if (dat->wOldStatus == ID_STATUS_OFFLINE)
-								mir_snprintf(buffer, sizeof(buffer), Translate("signed on and is now %s."), szNewStatus);
+								mir_sntprintf(buffer, safe_sizeof(buffer), TranslateT("signed on and is now %s."), szNewStatus);
 							else
-								mir_snprintf(buffer, sizeof(buffer), Translate("changed status from %s to %s."), szOldStatus, szNewStatus);
+								mir_sntprintf(buffer, safe_sizeof(buffer), TranslateT("changed status from %s to %s."), szOldStatus, szNewStatus);
 						}
-						iLen = strlen(buffer) + 1;
 #if defined(_UNICODE)
-						MultiByteToWideChar(myGlobals.m_LangPackCP, 0, buffer, iLen, (LPWSTR)&buffer[iLen], (450 - iLen) / sizeof(wchar_t));
-						dbei.cbBlob = iLen * (sizeof(TCHAR) + 1);
+						dbei.pBlob = (PBYTE)Utf8_Encode(buffer);
+						dbei.cbBlob = lstrlenA((char *)dbei.pBlob) + 1;
+						dbei.flags = DBEF_UTF | DBEF_READ;
 #else
-						dbei.cbBlob = iLen;
+						dbei.cbBlob = lstrlenA(buffer) + 1;
+						dbei.pBlob = (PBYTE)buffer;
+						dbei.flags = DBEF_READ;
 #endif
 						dbei.cbSize = sizeof(dbei);
-						dbei.pBlob = (PBYTE) buffer;
 						dbei.eventType = EVENTTYPE_STATUSCHANGE;
-						dbei.flags = DBEF_READ;
 						dbei.timestamp = time(NULL);
 						dbei.szModule = dat->szProto;
 						hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM) dat->hContact, (LPARAM) & dbei);
@@ -2519,25 +2508,17 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 							dat->hDbEventFirst = hNewEvent;
 							SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
 						}
+#if defined(_UNICODE)
+						free((void *)dbei.pBlob);
+#endif
 					}
 				}
 
 				if (item.mask & TCIF_TEXT) {
-#ifdef _UNICODE
-					const wchar_t *newTitle = EncodeWithNickname(newtitle, newcontactname, myGlobals.m_LangPackCP);
-					int len = lstrlenW(newTitle);
-					if (len != 0) {
-						wcsncpy(dat->newtitle, newTitle, 127);
-						dat->newtitle[127] = 0;
-						item.pszText = dat->newtitle;
-						item.cchTextMax = 128;
-					}
-#else
 					item.pszText = newtitle;
-					strncpy(dat->newtitle, newtitle, sizeof(dat->newtitle));
+					_tcsncpy(dat->newtitle, newtitle, safe_sizeof(dat->newtitle));
 					dat->newtitle[127] = 0;
 					item.cchTextMax = 127;;
-#endif
 				}
 				if (dat->iTabID  >= 0)
 					TabCtrl_SetItem(hwndTab, dat->iTabID, &item);
@@ -2641,12 +2622,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			GetWindowRect(GetDlgItem(hwndDlg, IDC_LOG), &rcLog);
 			mmi->ptMinTrackSize.x = rcWindow.right - rcWindow.left - ((rcLog.right - rcLog.left) - dat->minEditBoxSize.cx);
 			mmi->ptMinTrackSize.y = rcWindow.bottom - rcWindow.top - ((rcLog.bottom - rcLog.top) - dat->minEditBoxSize.cy);
-			//mathMod begin		// set maximum size, to fit formula-preview on the screen.
 			if (CallService(MTH_GET_PREVIEW_SHOWN, 0, 0))	//when preview is shown, fit the maximum size of message-dialog.
 				mmi->ptMaxSize.y = GetSystemMetrics(SM_CYSCREEN) - CallService(MTH_GET_PREVIEW_HEIGHT , 0, 0);//max-height
 			else
 				mmi->ptMaxSize.y = GetSystemMetrics(SM_CYSCREEN);
-			//mathMod end
 			return 0;
 		}
 		case WM_SIZE: {
@@ -2730,17 +2709,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						if (hideThisControls[i] == IDC_PROTOCOL) {
 							dat->controlsHidden |= TOOLBAR_PROTO_HIDDEN;
 							saved += 8; //10;
-							//ShowWindow(GetDlgItem(hwndDlg, IDC_INFOPANELMENU), SW_HIDE);
 						}
 						if (hideThisControls[i] == IDOK)
 							dat->controlsHidden |= TOOLBAR_SEND_HIDDEN;
 						saved += (hideThisControls[i] == IDOK ? 50 : 23);
 					} else {
-						if (!IsWindowVisible(GetDlgItem(hwndDlg, hideThisControls[i]))) {
+						if (!IsWindowVisible(GetDlgItem(hwndDlg, hideThisControls[i])))
 							ShowWindow(GetDlgItem(hwndDlg, hideThisControls[i]), SW_SHOW);
-							//if(hideThisControls[i] == IDC_PROTOCOL)
-							//    ShowWindow(GetDlgItem(hwndDlg, IDC_INFOPANELMENU), SW_SHOW);
-						}
 					}
 				}
 			}
@@ -4283,7 +4258,6 @@ quote_from_last:
 						DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "infopanel", bNewLocal);
 
 					if (bNewGlobal != bGlobal);
-					//WindowList_Broadcast(hMessageWindowList, DM_SETINFOPANEL, 0, 0);
 					else {
 						dat->dwFlagsEx = GetInfoPanelSetting(hwndDlg, dat) ? dat->dwFlagsEx | MWF_SHOW_INFOPANEL : dat->dwFlagsEx & ~MWF_SHOW_INFOPANEL;
 						if (dat->dwFlagsEx != dwOld) {
@@ -4443,10 +4417,8 @@ quote_from_last:
 					}
 					break;
 				case IDC_MESSAGE:
-					//mathMod begin
 					if (myGlobals.m_MathModAvail && HIWORD(wParam) == EN_CHANGE)
 						MTH_updateMathWindow(hwndDlg, dat);
-					//mathMod end
 
 					if (HIWORD(wParam) == EN_CHANGE) {
 						if (m_pContainer->hwndActive == hwndDlg)
@@ -4970,9 +4942,7 @@ quote_from_last:
 							DBFreeVariant(&dbv);
 						}
 						if (dat->xStatus > 0 && dat->xStatus <= 32) {
-							WCHAR xStatusDescW[100];
-							MultiByteToWideChar(myGlobals.m_LangPackCP, 0, xStatusDescr[dat->xStatus - 1], -1, xStatusDescW, 90);
-							_sntprintf(szTitle, safe_sizeof(szTitle), TranslateT("Extended status for %s: %s"), dat->szNickname, xStatusDescW);
+							_sntprintf(szTitle, safe_sizeof(szTitle), TranslateT("Extended status for %s: %s"), dat->szNickname, xStatusDescr[dat->xStatus - 1]);
 							szTitle[safe_sizeof(szTitle) - 1] = 0;
 						} else
 							return 0;
@@ -4984,10 +4954,7 @@ quote_from_last:
 						break;
 					}
 					case IDC_PANELSTATUS: {
-						WCHAR szwStatus[100];
-						MultiByteToWideChar(myGlobals.m_LangPackCP, 0, dat->szStatus, -1, szwStatus, 90);
-						_sntprintf(szTitle, safe_sizeof(szTitle), TranslateT("Status message for %s (%s)"), dat->szNickname, szwStatus);
-						szTitle[safe_sizeof(szTitle) - 1] = 0;
+						mir_sntprintf(szTitle, safe_sizeof(szTitle), TranslateT("Status message for %s (%s)"), dat->szNickname, dat->szStatus);
 						break;
 					}
 					default:
@@ -5270,7 +5237,6 @@ quote_from_last:
 						for (i = 0;i < totalCount;i++) {
 							char *szTemp;
 							szTemp = (char*)CallService(MS_HTTPSERVER_ADDFILENAME, (WPARAM)ppFiles[i], 0);
-							//lstrcat(szHTTPText,szTemp);
 						}
 						szHTTPText = "DEBUG";
 						SendDlgItemMessageA(hwndDlg, IDC_MESSAGE, EM_REPLACESEL, TRUE, (LPARAM)szHTTPText);

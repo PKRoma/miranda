@@ -167,7 +167,8 @@ entry_found:
 				iLength = HISTORY_INITIAL_ALLOCSIZE;
 			sendJobs[iFound].sendBuffer = (char *)mir_alloc(iLength);
 			sendJobs[iFound].dwLen = iLength;
-		} else {
+		}
+		else {
 			if (iLength > sendJobs[iFound].dwLen) {
 				sendJobs[iFound].sendBuffer = (char *)mir_realloc(sendJobs[iFound].sendBuffer, iLength);
 				sendJobs[iFound].dwLen = iLength;
@@ -195,7 +196,6 @@ entry_found:
 #define SPLIT_WORD_CUTOFF 20
 
 #if defined(_UNICODE)
-
 static int SendChunkW(WCHAR *chunk, HANDLE hContact, char *szSvc, DWORD dwFlags)
 {
 	BYTE	*pBuf = NULL;
@@ -212,7 +212,6 @@ static int SendChunkW(WCHAR *chunk, HANDLE hContact, char *szSvc, DWORD dwFlags)
 	mir_free(pBuf);
 	return id;
 }
-
 #endif
 
 static int SendChunkA(char *chunk, HANDLE hContact, char *szSvc, DWORD dwFlags)
@@ -293,7 +292,8 @@ static DWORD WINAPI DoSplitSendW(LPVOID param)
 				wszTemp++;
 				iCur++;
 			}
-		} else {
+		}
+		else {
 			id = SendChunkW(wszTemp, hContact, svcName, dwFlags);
 			if (!fFirstSend) {
 				job->hSendId[0] = (HANDLE)id;
@@ -302,7 +302,8 @@ static DWORD WINAPI DoSplitSendW(LPVOID param)
 			}
 		}
 		Sleep(500L);
-	} while (fSplitting);
+	}
+	while (fSplitting);
 	mir_free(wszBegin);
 	return 0;
 }
@@ -365,7 +366,8 @@ static DWORD WINAPI DoSplitSendA(LPVOID param)
 				szTemp++;
 				iCur++;
 			}
-		} else {
+		}
+		else {
 			id = SendChunkA(szTemp, hContact, PSS_MESSAGE, dwFlags);
 			if (!fFirstSend) {
 				job->hSendId[0] = (HANDLE)id;
@@ -374,7 +376,8 @@ static DWORD WINAPI DoSplitSendA(LPVOID param)
 			}
 		}
 		Sleep(500L);
-	} while (fSplitting);
+	}
+	while (fSplitting);
 	mir_free(szBegin);
 	return 0;
 }
@@ -394,7 +397,8 @@ static int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iE
 				sendJobs[iEntry].hContact[sendJobs[iEntry].sendCount - 1] = hContact;
 				sendJobs[iEntry].hSendId[sendJobs[iEntry].sendCount - 1] = 0;
 			}
-		} while (hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0));
+		}
+		while (hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0));
 		if (sendJobs[iEntry].sendCount == 0) {
 			LogErrorMessage(hwndDlg, dat, -1, TranslateT("You haven't selected any contacts from the list. Click the checkbox box next to a name to send the message to that person."));
 			return 0;
@@ -407,7 +411,8 @@ static int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iE
 		sendJobs[iEntry].hwndOwner = hwndDlg;
 		sendJobs[iEntry].iAcksNeeded = sendJobs[iEntry].sendCount;
 		dat->hMultiSendThread = CreateThread(NULL, 0, DoMultiSend, (LPVOID)iEntry, 0, &dwThreadId);
-	} else {
+	}
+	else {
 		if (dat->hContact == NULL)
 			return 0;  //never happens
 
@@ -435,7 +440,8 @@ static int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iE
 				if (lstrlenA(utf8) >= dat->nMax)
 					fSplit = TRUE;
 				free(utf8);
-			} else {
+			}
+			else {
 				if (lstrlenA(sendJobs[iEntry].sendBuffer) >= dat->nMax)
 					fSplit = TRUE;
 			}
@@ -468,7 +474,8 @@ static int SendQueuedMessage(HWND hwndDlg, struct MessageWindowData *dat, int iE
 			CloseHandle(CreateThread(NULL, 0, DoSplitSendA, (LPVOID)iEntry, 0, &dwThreadId));
 #endif
 			sendJobs[iEntry].dwFlags = dwOldFlags;
-		} else {
+		}
+		else {
 
 send_unsplitted:
 
@@ -487,7 +494,8 @@ send_unsplitted:
 				ack.type = ACKTYPE_MESSAGE;
 				ack.result = ACKRESULT_SUCCESS;
 				SendMessage(hwndDlg, HM_EVENTSENT, (WPARAM)MAKELONG(iEntry, 0), (LPARAM)&ack);
-			} else
+			}
+			else
 				SetTimer(hwndDlg, TIMERID_MSGSEND + iEntry, myGlobals.m_MsgTimeout, NULL);
 		}
 	}
@@ -533,7 +541,8 @@ void CheckSendQueue(HWND hwndDlg, struct MessageWindowData *dat)
 {
 	if (dat->iOpenJobs == 0) {
 		HandleIconFeedback(hwndDlg, dat, (HICON) - 1);
-	} else if (!(dat->sendMode & SMODE_NOACK))
+	}
+	else if (!(dat->sendMode & SMODE_NOACK))
 		HandleIconFeedback(hwndDlg, dat, myGlobals.g_IconSend);
 
 	if (dat->pContainer->hwndActive == hwndDlg)
@@ -555,7 +564,8 @@ void LogErrorMessage(HWND hwndDlg, struct MessageWindowData *dat, int iSendJobIn
 	if (iSendJobIndex >= 0) {
 		dbei.pBlob = (BYTE *)sendJobs[iSendJobIndex].sendBuffer;
 		iMsgLen = lstrlenA(sendJobs[iSendJobIndex].sendBuffer) + 1;
-	} else {
+	}
+	else {
 		iMsgLen = 0;
 		dbei.pBlob = NULL;
 	}
@@ -606,7 +616,8 @@ void ShowErrorControls(HWND hwndDlg, struct MessageWindowData *dat, int showCmd)
 		item.iImage = 0;
 		TabCtrl_SetItem(GetDlgItem(dat->pContainer->hwnd, IDC_MSGTABS), dat->iTabID, &item);
 		dat->dwFlags |= MWF_ERRORSTATE;
-	} else {
+	}
+	else {
 		dat->dwFlags &= ~MWF_ERRORSTATE;
 		dat->hTabIcon = dat->hTabStatusIcon;
 	}
@@ -675,7 +686,8 @@ void UpdateSaveAndSendButton(HWND hwndDlg, struct MessageWindowData *dat)
 			SendDlgItemMessage(hwndDlg, IDC_SAVE, BUTTONADDTOOLTIP, (WPARAM) pszIDCSAVE_save, 0);
 			dat->dwFlags |= MWF_SAVEBTN_SAV;
 		}
-	} else {
+	}
+	else {
 		SendDlgItemMessage(hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[6]);
 		SendDlgItemMessage(hwndDlg, IDC_SAVE, BUTTONADDTOOLTIP, (WPARAM) pszIDCSAVE_close, 0);
 		dat->dwFlags &= ~MWF_SAVEBTN_SAV;
@@ -831,7 +843,8 @@ int AckMessage(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam, LPARA
 				LogErrorMessage(hwndDlg, dat, -1, szErrMsg);
 #endif
 				goto verify;
-			} else {
+			}
+			else {
 				mir_snprintf(sendJobs[iFound].szErrorMsg, sizeof(sendJobs[iFound].szErrorMsg), Translate("Delivery failure: %s"), (char *)ack->lParam);
 				sendJobs[iFound].iStatus = SQ_ERROR;
 				KillTimer(hwndDlg, TIMERID_MSGSEND + iFound);
@@ -839,7 +852,8 @@ int AckMessage(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam, LPARA
 					HandleQueueError(hwndDlg, dat, iFound);
 			}
 			return 0;
-		} else {
+		}
+		else {
 inform_and_discard:
 			_DebugPopup(sendJobs[iFound].hOwner, TranslateT("A message delivery has failed after the contacts chat window was closed. You may want to resend the last message"));
 			ClearSendJob(iFound);

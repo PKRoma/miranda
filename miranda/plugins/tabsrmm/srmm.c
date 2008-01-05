@@ -83,7 +83,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 __declspec(dllexport) PLUGININFOEX *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
 	g_mirandaVersion = mirandaVersion;
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 6, 0, 0))
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 7, 0, 0))
 		return NULL;
 	return &pluginInfo;
 }
@@ -112,6 +112,8 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 
 	if (ServiceExists(MS_DB_EVENT_GETTEXT))
 		bNewDbApi = TRUE;
+	else
+		MessageBox(0, _T("tabSRMM"), _T("Critical error. Unsupported database driver found. tabSRMM will be disabled"), MB_OK);
 
 	fnSetMenuInfo = (pfnSetMenuInfo)GetProcAddress(GetModuleHandleA("USER32.DLL"), "SetMenuInfo");
 

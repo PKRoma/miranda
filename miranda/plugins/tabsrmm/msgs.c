@@ -37,7 +37,8 @@ $Id$
 static char *relnotes[] = {
 	"{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
 	"\\par\t\\b\\ul1 Release notes for version 2.0.0.5\\b0\\ul0\\par ",
-	"*\tIncreased tiemr for info panel tooltips to 1 sec (from 500msec).\\par",
+	"*\tIncreased timer for info panel tooltips to 1 sec (from 500msec).\\par",
+	"*\tRequires Miranda 0.7.x now, lots of legacy code has been removed.\\par",
 	NULL
 };
 
@@ -156,14 +157,16 @@ static int GetWindowData(WPARAM wParam, LPARAM lParam)
 		SendMessage(hwnd, DM_GETWINDOWSTATE, 0, 0);
 		mwod->uState = GetWindowLong(hwnd, DWL_MSGRESULT);
 		return 0;
-	} else if ((si = SM_FindSessionByHCONTACT(mwid->hContact)) != NULL && si->hWnd != 0) {
+	} 
+	else if ((si = SM_FindSessionByHCONTACT(mwid->hContact)) != NULL && si->hWnd != 0) {
 		mwod->uFlags = MSG_WINDOW_UFLAG_MSG_BOTH;
 		mwod->hwndWindow = si->hWnd;
 		mwod->local = GetParent(GetParent(si->hWnd));
 		SendMessage(si->hWnd, DM_GETWINDOWSTATE, 0, 0);
 		mwod->uState = GetWindowLong(si->hWnd, DWL_MSGRESULT);
 		return 0;
-	} else {
+	} 
+	else {
 		mwod->uState = 0;
 		mwod->hContact = 0;
 		mwod->hwndWindow = 0;
@@ -1336,8 +1339,6 @@ tzdone:
 	ZeroMemory(sendJobs, NR_SENDJOBS * sizeof(struct SendJob));
 
 	InitOptions();
-	//hEventDbSettingChange = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, MessageSettingChanged);
-	//hEventContactDeleted = HookEvent(ME_DB_CONTACT_DELETED, ContactDeleted);
 	hModulesLoadedEvent = HookEvent(ME_SYSTEM_MODULESLOADED, SplitmsgModulesLoaded);
 	HookEvent(ME_SKIN_ICONSCHANGED, IconsChanged);
 	HookEvent(ME_PROTO_CONTACTISTYPING, TypingMessage);
@@ -1580,6 +1581,7 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
 	ZeroMemory((void *)&newData.item, sizeof(newData.item));
 
 	// obtain various status information about the contact
+/*
 #if defined(_UNICODE)
 	contactNameW[0] = 0;
 	MY_GetContactDisplayNameW(hContact, contactNameW, 100, szProto, 0);
@@ -1587,6 +1589,8 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
 #else
 	contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) newData.hContact, 0);
 #endif
+*/
+	contactName = (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) newData.hContact, GCDNF_TCHAR);
 
 	/*
 	 * cut nickname if larger than x chars...

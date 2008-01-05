@@ -75,9 +75,11 @@ void ApplyContainerSetting(struct ContainerWindowData *pContainer, DWORD flags, 
 				}
 				pC = pC->pNextContainer;
 			}
-		} else
+		}
+		else
 			ReloadGlobalContainerSettings();
-	} else {
+	}
+	else {
 		pContainer->dwPrivateFlags = (mode ? pContainer->dwPrivateFlags | flags : pContainer->dwPrivateFlags & ~flags);
 		pContainer->dwFlags = pContainer->dwPrivateFlags;
 		if (flags & CNT_SIDEBAR)
@@ -234,7 +236,8 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 						dwTemp[0] = pContainer->dwPrivateFlags;
 						dwTemp[1] = pContainer->dwTransparency;
 						SendMessage(hwndDlg, DM_SC_INITDIALOG, 0, (LPARAM)dwTemp);
-					} else {
+					}
+					else {
 						dwTemp[0] = myGlobals.m_GlobalContainerFlags;;
 						dwTemp[1] = pContainer->dwTransparency;
 						SendMessage(hwndDlg, DM_SC_INITDIALOG, 0, (LPARAM)dwTemp);
@@ -290,7 +293,8 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 
 					if (IsDlgButtonChecked(hwndDlg, IDC_CNTPRIVATE)) {
 						pContainer->dwPrivateFlags = pContainer->dwFlags = (dwNewFlags & ~CNT_GLOBALSETTINGS);
-					} else {
+					}
+					else {
 						myGlobals.m_GlobalContainerFlags = dwNewFlags;
 						pContainer->dwPrivateFlags |= CNT_GLOBALSETTINGS;
 						DBWriteContactSettingDword(NULL, SRMSGMOD_T, "containerflags", dwNewFlags);
@@ -305,7 +309,8 @@ BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					if (dwNewFlags & CNT_TITLE_PRIVATE) {
 						GetDlgItemText(hwndDlg, IDC_TITLEFORMAT, pContainer->szTitleFormat, TITLE_FORMATLEN);
 						pContainer->szTitleFormat[TITLE_FORMATLEN - 1] = 0;
-					} else
+					}
+					else
 						_tcsncpy(pContainer->szTitleFormat, myGlobals.szDefaultTitleFormat, TITLE_FORMATLEN);
 
 					pContainer->szThemeFile[0] = 0;

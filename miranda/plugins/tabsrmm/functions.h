@@ -32,7 +32,7 @@ $Id$
  
 int         NEN_ReadOptions(NEN_OPTIONS *options);
 int         NEN_WriteOptions(NEN_OPTIONS *options);
-int         UpdateTrayMenu(struct MessageWindowData *dat, WORD wStatus, char *szProto, char *szStatus, HANDLE hContact, DWORD fromEvent);
+int         UpdateTrayMenu(struct MessageWindowData *dat, WORD wStatus, char *szProto, TCHAR *szStatus, HANDLE hContact, DWORD fromEvent);
 static int  PopupPreview(NEN_OPTIONS *pluginOptions);
 void        DeletePopupsForContact(HANDLE hContact, DWORD dwMask);
 void        RemoveBalloonTip();
@@ -47,7 +47,7 @@ void        MaximiseFromTray(HWND hWnd, BOOL bForceAnimation, RECT *rc);
 void        FlashTrayIcon(HICON hIcon);
 void        UpdateTrayMenuState(struct MessageWindowData *dat, BOOL bForced);
 void        LoadFavoritesAndRecent();
-void        AddContactToFavorites(HANDLE hContact, TCHAR *szNickname, char *szProto, char *szStatus, WORD wStatus, HICON hIcon, BOOL mode, HMENU hMenu, UINT codePage);
+void        AddContactToFavorites(HANDLE hContact, TCHAR *szNickname, char *szProto, TCHAR *szStatus, WORD wStatus, HICON hIcon, BOOL mode, HMENU hMenu, UINT codePage);
 void        CreateTrayMenus(int mode);
 void        HandleMenuEntryFromhContact(int iSelection);
 
@@ -65,14 +65,13 @@ void        LoadMsgAreaBackground();
 int         CacheIconToBMP(struct MsgLogIcon *theIcon, HICON hIcon, COLORREF backgroundColor, int sizeX, int sizeY);
 void        DeleteCachedIcon(struct MsgLogIcon *theIcon);
 int         MY_GetContactDisplayNameW(HANDLE hContact, wchar_t *szwBuf, unsigned int size, const char *szProto, UINT codePage);
-int         GetTabIndexFromHWND(HWND, HWND);
 struct      ContainerWindowData *FindMatchingContainer(const TCHAR *szName, HANDLE hContact);
 struct      ContainerWindowData *CreateContainer(const TCHAR *name, int iTemp, HANDLE hContactFrom);
 int         CutContactName(TCHAR *oldname, TCHAR *newname, unsigned int size);
 struct      ContainerWindowData *FindContainerByName(const TCHAR *name);
 void        BroadCastContainer(struct ContainerWindowData *pContainer, UINT message, WPARAM wParam, LPARAM lParam);
 int         GetTabIndexFromHWND(HWND hwndTab, HWND hwnd);
-int			  GetTabItemFromMouse(HWND hwndTab, POINT *pt);
+int			GetTabItemFromMouse(HWND hwndTab, POINT *pt);
 int         ActivateTabFromHWND(HWND hwndTab, HWND hwnd);
 int         GetProtoIconFromList(const char *szProto, int iStatus);
 void        AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc);

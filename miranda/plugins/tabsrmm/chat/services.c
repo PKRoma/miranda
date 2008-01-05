@@ -483,9 +483,7 @@ HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOO
 	};
 	HANDLE hContact = si->hContact;
 	HWND hwndTab;
-#if defined(_UNICODE)
-	WCHAR contactNameW[100];
-#endif
+
 	if (WindowList_Find(hMessageWindowList, hContact) != 0)
 		return 0;
 	if (hContact != 0 && DBGetContactSettingByte(NULL, SRMSGMOD_T, "limittabs", 0) &&  !_tcsncmp(pContainer->szName, _T("default"), 6)) {
@@ -503,6 +501,7 @@ HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOO
 
 	ZeroMemory((void *)&newData.item, sizeof(newData.item));
 
+/*
 #if defined(_UNICODE)
 	contactNameW[0] = 0;
 	MY_GetContactDisplayNameW(hContact, contactNameW, 100, szProto, 0);
@@ -510,6 +509,8 @@ HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOO
 #else
 	contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) newData.hContact, 0);
 #endif
+*/
+	contactName = (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) newData.hContact, GCDNF_TCHAR);
 
 	/*
 	 * cut nickname if larger than x chars...

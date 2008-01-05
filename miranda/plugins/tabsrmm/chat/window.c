@@ -48,8 +48,8 @@ extern struct		CREOleCallback reOleCallback;
 extern HMENU		g_hMenu;
 extern int        g_sessionshutdown;
 extern char*      szWarnClose;
-
 extern WNDPROC OldSplitterProc;
+
 static WNDPROC OldMessageProc;
 static WNDPROC OldNicklistProc;
 static WNDPROC OldFilterButtonProc;
@@ -191,6 +191,7 @@ static void Chat_UpdateWindowState(HWND hwndDlg, struct MessageWindowData *dat, 
 
 /*
  * initialize button bar, set all the icons and ensure proper button state
+
  */
 
 static void	InitButtons(HWND hwndDlg, SESSION_INFO* si)
@@ -2015,7 +2016,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				ZeroMemory(&item, sizeof(item));
 				item.mask = TCIF_TEXT;
 
-				lstrcpynA(dat->szStatus, (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)dat->wStatus, 0), 50);
+				lstrcpyn(dat->szStatus, (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)dat->wStatus, GCMDF_TCHAR), 50);
 				dat->szStatus[49] = 0;
 				item.pszText = dat->newtitle;
 				item.cchTextMax = 120;

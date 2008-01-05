@@ -105,7 +105,6 @@ typedef unsigned short wchar_t;
 #include "m_ieview.h"
 #include "m_popup.h"
 #include "m_metacontacts.h"
-#include "m_snapping_windows.h"
 #include "m_fingerprint.h"
 #include "m_nudge.h"
 

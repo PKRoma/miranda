@@ -369,7 +369,7 @@ struct MessageWindowData {
 	char    *szProto;
 	char    *szMetaProto;
 	TCHAR   szNickname[130], szMyNickname[130];
-	char    szStatus[50];
+	TCHAR	szStatus[50];
 	WORD    wStatus, wMetaStatus;
 	int     iLastEventType;
 	time_t  lastEventTime;

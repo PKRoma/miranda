@@ -45,7 +45,7 @@ License: GPL
 #define MSGDLGFONTCOUNT 22
 
 extern "C" RTFColorTable *rtf_ctable;
-extern "C" char *xStatusDescr[];
+extern "C" TCHAR *xStatusDescr[];
 extern "C" TCHAR *MY_DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSetting);
 extern "C" DWORD m_LangPackCP;
 extern "C" int MY_CallService(const char *svc, WPARAM wParam, LPARAM lParam);
@@ -487,7 +487,7 @@ static TCHAR *title_variables[] = { _T("%n"), _T("%s"), _T("%u"), _T("%p"), _T("
 extern "C" int MY_DBGetContactSettingTString(HANDLE hContact, char *szModule, char *szSetting, DBVARIANT *dbv);
 extern "C" int MY_DBFreeVariant(DBVARIANT *dbv);
 
-extern "C" WCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNickname, const char *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage, BYTE xStatus, WORD wStatus)
+extern "C" WCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNickname, const TCHAR *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage, BYTE xStatus, WORD wStatus)
 {
 	TCHAR *szResult = 0;
 	int length = 0;
@@ -512,10 +512,8 @@ extern "C" WCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
 				break;
 			}
 			case 's': {
-				if (szStatus && szStatus[0]) {
-					MultiByteToWideChar(m_LangPackCP, 0, szStatus, -1, szTemp, 500);
-					title.insert(tempmark + 2, szTemp);
-				}
+				if (szStatus && szStatus[0])
+					title.insert(tempmark + 2, szStatus);
 				title.erase(tempmark, 2);
 				break;
 			}
@@ -541,7 +539,7 @@ extern "C" WCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
 				break;
 			}
 			case 'x': {
-				char *szFinalStatus = NULL;
+				TCHAR *szFinalStatus = NULL;
 
 				if (wStatus != ID_STATUS_OFFLINE && xStatus > 0 && xStatus <= 31) {
 					DBVARIANT dbv = {0};
@@ -550,18 +548,16 @@ extern "C" WCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
 						_tcsncpy(szTemp, dbv.ptszVal, 500);
 						szTemp[500] = 0;
 						MY_DBFreeVariant(&dbv);
-					} else
-						szFinalStatus = (char *)xStatusDescr[xStatus - 1];
-					if (szFinalStatus)
-						MultiByteToWideChar(m_LangPackCP, 0, szFinalStatus, -1, szTemp, 500);
-
-					title.insert(tempmark + 2, szTemp);
+						title.insert(tempmark + 2, szTemp);
+					} 
+					else
+						title.insert(tempmark + 2, xStatusDescr[xStatus - 1]);
 				}
 				title.erase(tempmark, 2);
 				break;
 			}
 			case 'm': {
-				char *szFinalStatus = NULL;
+				TCHAR *szFinalStatus = NULL;
 
 				if (wStatus != ID_STATUS_OFFLINE && xStatus > 0 && xStatus <= 31) {
 					DBVARIANT dbv = {0};
@@ -570,15 +566,15 @@ extern "C" WCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
 						_tcsncpy(szTemp, dbv.ptszVal, 500);
 						szTemp[500] = 0;
 						MY_DBFreeVariant(&dbv);
+						title.insert(tempmark + 2, szTemp);
 					} else
-						szFinalStatus = (char *)xStatusDescr[xStatus - 1];
+						szFinalStatus = xStatusDescr[xStatus - 1];
 				} else
-					szFinalStatus = (char *)(szStatus && szStatus[0] ? szStatus : "(undef)");
+					szFinalStatus = (TCHAR *)(szStatus && szStatus[0] ? szStatus : _T("(undef)"));
 
 				if (szFinalStatus)
-					MultiByteToWideChar(m_LangPackCP, 0, szFinalStatus, -1, szTemp, 500);
+					title.insert(tempmark + 2, szFinalStatus);
 
-				title.insert(tempmark + 2, szTemp);
 				title.erase(tempmark, 2);
 				break;
 			}
@@ -597,6 +593,7 @@ extern "C" WCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
 	return szResult;
 }
 
+/*
 extern "C" const WCHAR *EncodeWithNickname(const char *string, const WCHAR *szNick, UINT codePage)
 {
 	static std::wstring msg;
@@ -612,6 +609,7 @@ extern "C" const WCHAR *EncodeWithNickname(const char *string, const WCHAR *szNi
 	}
 	return msg.c_str();
 }
+*/
 
 #else
 

@@ -156,9 +156,9 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 						SendDlgItemMessage(hwndDlg, IDC_CODEPAGES, CB_SETCURSEL, (WPARAM)i, 0);
 				}
 			}
-			MY_GetContactDisplayNameW(hContact, contactName, 84, szProto, sCodePage);
-			_sntprintf(szBuffer, safe_sizeof(szBuffer), TranslateT("Set options for %s"), contactName);
-			szBuffer[safe_sizeof(szBuffer) - 1] = 0;
+			//MY_GetContactDisplayNameW(hContact, contactName, 84, szProto, sCodePage);
+			mir_sntprintf(szBuffer, safe_sizeof(szBuffer), TranslateT("Set options for %s"), (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR));
+			//szBuffer[safe_sizeof(szBuffer) - 1] = 0;
 			CheckDlgButton(hwndDlg, IDC_FORCEANSI, DBGetContactSettingByte(hContact, SRMSGMOD_T, "forceansi", 0) ? 1 : 0);
 #else
 			mir_snprintf(szBuffer, sizeof(szBuffer), Translate("Set options for %s"), (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0));
