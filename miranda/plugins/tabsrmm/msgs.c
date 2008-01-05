@@ -1556,9 +1556,7 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
 	struct NewMessageWindowLParam newData = {
 		0
 	};
-#if defined(_UNICODE)
-	WCHAR contactNameW[100];
-#endif
+
 	if (WindowList_Find(hMessageWindowList, hContact) != 0) {
 		_DebugPopup(hContact, _T("Warning: trying to create duplicate window"));
 		return 0;
@@ -1581,15 +1579,6 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
 	ZeroMemory((void *)&newData.item, sizeof(newData.item));
 
 	// obtain various status information about the contact
-/*
-#if defined(_UNICODE)
-	contactNameW[0] = 0;
-	MY_GetContactDisplayNameW(hContact, contactNameW, 100, szProto, 0);
-	contactName = contactNameW;
-#else
-	contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) newData.hContact, 0);
-#endif
-*/
 	contactName = (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) newData.hContact, GCDNF_TCHAR);
 
 	/*
