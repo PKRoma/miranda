@@ -26,7 +26,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern struct NetlibUser **netlibUser;
 extern int netlibUserCount;
 extern CRITICAL_SECTION csNetlibUser;
-
 static const char search_request_msg[] =
 	"M-SEARCH * HTTP/1.1\r\n"
 	"HOST: 239.255.255.250:1900\r\n"
@@ -72,6 +71,17 @@ static const char soap_action[] =
 	"  </s:Body>\r\n"
 	"</s:Envelope>\r\n";
 
+static const char soap_query[] =
+	"<s:Envelope\r\n"
+	"  xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\"\r\n" 
+	"  s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">\r\n" 
+	"<s:Body>\r\n"
+	"	<u:QueryStateVariable xmlns:u=\"urn:schemas-upnp-org:control-1-0\">\r\n"
+	"	  <u:varName>%s</u:varName>\r\n"
+	"   </u:QueryStateVariable>\r\n"
+	"</s:Body>\r\n"
+	"</s:Envelope>\r\n";
+
 static const char add_port_mapping[] =
 	"      <NewRemoteHost></NewRemoteHost>\r\n"
 	"      <NewExternalPort>%i</NewExternalPort>\r\n"
@@ -101,6 +111,12 @@ HANDLE portListMutex;
 
 static char szCtlUrl[256], szDev[256];
 
+typedef enum
+{
+	DeviceGetReq,
+	ControlAction,
+	ControlQuery
+} ReqType;
 
 static BOOL txtParseParam(char* szData, char* presearch,
 						  char* start, char* finish, char* param, int size)
@@ -194,7 +210,7 @@ static LongLog(char* szData)
 }
 
 
-static int httpTransact(char* szUrl, char* szResult, int resSize, char* szActionName)
+static int httpTransact(char* szUrl, char* szResult, int resSize, char* szActionName, ReqType reqtype)
 {
 	// Parse URL
 	char szHost[256], szPath[256], szRes[16];
@@ -204,26 +220,46 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 
 	const char* szPostHdr = soap_post_hdr;
 	char* szData = mir_alloc(4096);
-	char* szReq = szActionName ? mir_strdup(szResult) : NULL;
-	szResult[0] = 0;
+	char* szReq =  NULL;
 
 	parseURL(szUrl, szHost, &sPort, szPath);
 
 	for (;;)
 	{
-		if (szActionName == NULL)
-			sz = mir_snprintf (szData, 4096, xml_get_hdr, szPath, szHost, sPort);
-		else
+		switch(reqtype)
 		{
-			char szData1[1024];
+		case DeviceGetReq:
+			sz = mir_snprintf (szData, 4096, xml_get_hdr, szPath, szHost, sPort);
+			break;
 
-			sz = mir_snprintf (szData1, sizeof(szData1),
-				soap_action, szActionName, szDev, szReq, szActionName);
+		case ControlAction:
+			{
+				char szData1[1024];
 
-			sz = mir_snprintf (szData, 4096,
-				szPostHdr, szPath, szHost, sPort,
-				sz, szDev, szActionName, szData1);
+				szReq = mir_strdup(szResult);
+				sz = mir_snprintf (szData1, sizeof(szData1),
+					soap_action, szActionName, szDev, szReq, szActionName);
+
+				sz = mir_snprintf (szData, 4096,
+					szPostHdr, szPath, szHost, sPort,
+					sz, szDev, szActionName, szData1);
+			}
+			break;
+
+		case ControlQuery:
+			{
+				char szData1[1024];
+
+				sz = mir_snprintf (szData1, sizeof(szData1),
+					soap_query, szActionName);
+
+				sz = mir_snprintf (szData, 4096,
+					szPostHdr, szPath, szHost, sPort,
+					sz, "schemas-upnp-org:control-1-0", "QueryStateVariable", szData1);
+			}
+			break;
 		}
+		szResult[0] = 0;
 
 		{
 			static TIMEVAL tv = { 5, 0 };
@@ -422,7 +458,7 @@ static BOOL getUPnPURLs(char* szUrl, size_t sizeUrl)
 {
 	char* szData = (char*)alloca(8192);
 
-	gatewayFound = httpTransact(szUrl, szData, 8192, NULL) == 200;
+	gatewayFound = httpTransact(szUrl, szData, 8192, NULL, DeviceGetReq) == 200;
 	if (gatewayFound)
 	{
 		char szTemp[256], *rpth;
@@ -617,7 +653,7 @@ BOOL NetlibUPnPAddPortMapping(WORD intport, char *proto, WORD *extport, DWORD *e
 			++*extport;
 			mir_snprintf(szData, 4096, add_port_mapping,
 				*extport, proto, intport, inet_ntoa(locIP.sin_addr));
-			res = httpTransact(szCtlUrl, szData, 4096, "AddPortMapping");
+			res = httpTransact(szCtlUrl, szData, 4096, "AddPortMapping", ControlAction);
 			txtParseParam(szData, NULL, "<errorCode>", "</errorCode>", szExtIP, sizeof(szExtIP));
 
 		}
@@ -626,7 +662,7 @@ BOOL NetlibUPnPAddPortMapping(WORD intport, char *proto, WORD *extport, DWORD *e
 		if (res == 200)
 		{
 			szData[0] = 0;
-			res = httpTransact(szCtlUrl, szData, 4096, "GetExternalIPAddress");
+			res = httpTransact(szCtlUrl, szData, 4096, "GetExternalIPAddress", ControlAction);
 			if (res == 200 && txtParseParam(szData, "<NewExternalIPAddress", ">", "<", szExtIP, sizeof(szExtIP)))
 				*extip = ntohl(inet_addr(szExtIP));
 
@@ -656,7 +692,7 @@ void NetlibUPnPDeletePortMapping(WORD extport, char* proto)
 
 		WaitForSingleObject(portListMutex, INFINITE);
 		mir_snprintf(szData, 4096, delete_port_mapping, extport, proto);
-		httpTransact(szCtlUrl, szData, 4096, "DeletePortMapping");
+		httpTransact(szCtlUrl, szData, 4096, "DeletePortMapping", ControlAction);
 
 		for ( i=0; i < numports; ++i )
 			if ( portList[i] == extport && --numports > 0)
@@ -687,20 +723,27 @@ void NetlibUPnPCleanup(void* extra)
 	{
 		char* szData = ( char* )alloca(4096);
 		char buf[50], lip[50];
-		unsigned i, j = 0, k;
+		unsigned i, j = 0, k, num;
 
 		WORD ports[30];
 
 		strcpy(lip, inet_ntoa(locIP.sin_addr));
 
-		for (i=0; !Miranda_Terminated(); ++i)
+		if (httpTransact(szCtlUrl, szData, 4096, "PortMappingNumberOfEntries", ControlQuery) != 200)
+			return;
+
+		if (!txtParseParam(szData, "QueryStateVariableResponse", "<return>", "<", buf, sizeof(buf)))
+			return;
+
+		num = atol(buf);
+		for (i=0; i<num && !Miranda_Terminated(); ++i)
 		{
 			mir_snprintf(szData, 4096, get_port_mapping, i);
 
 			ReleaseMutex(portListMutex);
 			WaitForSingleObject(portListMutex, INFINITE);
 
-			if (httpTransact(szCtlUrl, szData, 4096, "GetGenericPortMappingEntry") != 200)
+			if (httpTransact(szCtlUrl, szData, 4096, "GetGenericPortMappingEntry", ControlAction) != 200)
 				break;
 
 			if (!txtParseParam(szData, "<NewPortMappingDescription", ">", "<", buf, sizeof(buf)) || strcmp(buf, "Miranda") != 0)
