@@ -1128,7 +1128,7 @@ static int MsnSetAvatar( WPARAM wParam, LPARAM lParam )
 			return 1;
 
 		long  dwPngSize = _filelength( fileId );
-		BYTE* pResult = new BYTE[ dwPngSize ];
+		BYTE* pResult = (BYTE*)mir_alloc(dwPngSize);
 		if ( pResult == NULL )
 			return 2;
 
@@ -1205,7 +1205,7 @@ static int MsnSetAvatar( WPARAM wParam, LPARAM lParam )
 
 		}
 
-		delete[] pResult;
+		mir_free(pResult);
 	}
 
 	MSN_SetServerStatus( msnStatusMode );
