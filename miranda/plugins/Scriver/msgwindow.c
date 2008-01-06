@@ -1209,7 +1209,9 @@ static void DrawTab(ParentWindowData *dat, HWND hwnd, WPARAM wParam, LPARAM lPar
 			int	iOldBkMode = SetBkMode(lpDIS->hDC, TRANSPARENT);
 			int atTop = (GetWindowLong(hwnd, GWL_STYLE) & TCS_BOTTOM) == 0;
 			UINT dwFormat;
-			if (pfnIsAppThemed && !pfnIsAppThemed()) {
+			if (!pfnIsAppThemed) {
+				FillRect(lpDIS->hDC, &rect, GetSysColorBrush(COLOR_BTNFACE));
+			} else if (!pfnIsAppThemed()) {
 				FillRect(lpDIS->hDC, &rect, GetSysColorBrush(COLOR_BTNFACE));
 			}
 			if (bSelected) {
