@@ -292,7 +292,7 @@ static void SaveListItem( HANDLE hContact, const char* szEmail, int list, int iP
 	if ( iNewValue == 0 )
 		list += LIST_REMOVE;
 
-	MSN_AddUser( hContact, szEmail, 0, list );
+	MSN_AddUser( hContact, szEmail, Lists_GetNetId( szEmail ), list );
 }
 
 static void SaveSettings( HWND hwndList )
