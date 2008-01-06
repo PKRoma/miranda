@@ -307,8 +307,8 @@ static void NotifyMetaAware(HANDLE hContact, struct CacheNode *node = NULL, AVAT
 			char *szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 			if (szProto != NULL) {
 				DBVARIANT dbv = {0};
-				if (!DBGetContactSettingStringUtf(hContact, szProto, "AvatarHash", &dbv)) {
-					if (dbv.type == DBVT_ASCIIZ || dbv.type == DBVT_UTF8) {
+				if (!DBGetContactSetting(hContact, szProto, "AvatarHash", &dbv)) {
+					if (dbv.type == DBVT_ASCIIZ) {
 						strncpy(cacn.hash, dbv.pszVal, sizeof(cacn.hash));
 						DBFreeVariant(&dbv);
 					} else if (dbv.type == DBVT_BLOB) {
