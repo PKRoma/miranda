@@ -28,6 +28,8 @@
  * \brief Obsługa zdarzeń
  */
 
+#include "libgadu-config.h"
+
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/ioctl.h>

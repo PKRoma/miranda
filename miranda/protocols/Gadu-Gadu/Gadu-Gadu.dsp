@@ -98,6 +98,7 @@ LINK32=link.exe
 # Begin Source File
 
 SOURCE=.\libgadu\common.c
+# SUBTRACT CPP /YX
 # End Source File
 # Begin Source File
 
@@ -106,18 +107,22 @@ SOURCE=.\libgadu\compat.h
 # Begin Source File
 
 SOURCE=.\libgadu\dcc.c
+# SUBTRACT CPP /YX
 # End Source File
 # Begin Source File
 
 SOURCE=.\libgadu\dcc7.c
+# SUBTRACT CPP /YX
 # End Source File
 # Begin Source File
 
 SOURCE=.\libgadu\events.c
+# SUBTRACT CPP /YX
 # End Source File
 # Begin Source File
 
 SOURCE=.\libgadu\http.c
+# SUBTRACT CPP /YX
 # End Source File
 # Begin Source File
 
@@ -126,6 +131,7 @@ SOURCE=".\libgadu\libgadu-config.h"
 # Begin Source File
 
 SOURCE=.\libgadu\libgadu.c
+# SUBTRACT CPP /YX
 # End Source File
 # Begin Source File
 
@@ -134,14 +140,17 @@ SOURCE=.\libgadu\libgadu.h
 # Begin Source File
 
 SOURCE=.\libgadu\pubdir.c
+# SUBTRACT CPP /YX
 # End Source File
 # Begin Source File
 
 SOURCE=.\libgadu\pubdir50.c
+# SUBTRACT CPP /YX
 # End Source File
 # Begin Source File
 
 SOURCE=.\libgadu\sha1.c
+# SUBTRACT CPP /YX
 # End Source File
 # End Group
 # Begin Source File
@@ -163,6 +172,7 @@ SOURCE=.\filetransfer.c
 # Begin Source File
 
 SOURCE=.\gg.c
+# ADD CPP /Yc"gg.h"
 # End Source File
 # Begin Source File
 

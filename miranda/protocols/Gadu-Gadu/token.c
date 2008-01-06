@@ -38,7 +38,7 @@ typedef struct _GGTOKENDLGDATA
 
 BOOL CALLBACK gg_tokendlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	GGTOKENDLGDATA *dat = (GGTOKENDLGDATA *)GetWindowLongPtr(hwndDlg, GWL_USERDATA);
+	GGTOKENDLGDATA *dat = (GGTOKENDLGDATA *)GetWindowLong(hwndDlg, GWL_USERDATA);
 
 	switch(msg)
 	{
@@ -48,7 +48,7 @@ BOOL CALLBACK gg_tokendlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			TranslateDialogDefault(hwndDlg);
 			GetClientRect(GetDlgItem(hwndDlg, IDC_WHITERECT), &rc);
 			InvalidateRect(hwndDlg, &rc, TRUE);
-			SetWindowLongPtr(hwndDlg, GWL_USERDATA, lParam);
+			SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
 			return TRUE;
 		}
 		case WM_CTLCOLORSTATIC:

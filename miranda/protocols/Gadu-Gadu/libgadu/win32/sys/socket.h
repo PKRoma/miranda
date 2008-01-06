@@ -53,7 +53,7 @@
 #define WNOHANG     WHOHANG
 #define SHUT_RDWR 2
 
-#define vsnprintf _vsnprintf
+//#define vsnprintf _vsnprintf
 #define snprintf _snprintf
 
 // win32 WinSocket wrapper

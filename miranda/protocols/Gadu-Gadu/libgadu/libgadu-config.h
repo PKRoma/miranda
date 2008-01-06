@@ -15,6 +15,7 @@
 
 /* MSC have no va_copy */
 #ifdef _MSC_VER
+#define _USE_32BIT_TIME_T
 #define strcasecmp  stricmp
 #else
 
