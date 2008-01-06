@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 //
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -502,7 +502,7 @@ int IcqSetStatus(WPARAM wParam, LPARAM lParam)
           {
             if (gbSsiEnabled)
               updateServVisibilityCode(3);
-            icq_setstatus(MirandaStatusToIcq(gnCurrentStatus));
+            icq_setstatus(MirandaStatusToIcq(gnCurrentStatus), FALSE);
             // Tell whos on our visible list
             icq_sendEntireVisInvisList(0);
             if (gbAimEnabled)
@@ -510,7 +510,7 @@ int IcqSetStatus(WPARAM wParam, LPARAM lParam)
           }
           else
           {
-            icq_setstatus(MirandaStatusToIcq(gnCurrentStatus));
+            icq_setstatus(MirandaStatusToIcq(gnCurrentStatus), FALSE);
             if (gbSsiEnabled)
               updateServVisibilityCode(4);
             // Tell whos on our invisible list

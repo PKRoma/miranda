@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 //
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -69,7 +69,7 @@ extern int bHideXStatusUI;
 PLUGININFOEX pluginInfo = {
   sizeof(PLUGININFOEX),
   NULL,
-  PLUGIN_MAKE_VERSION(0,3,10,8),
+  PLUGIN_MAKE_VERSION(0,3,10,9),
   "Support for ICQ network, enhanced.",
   "Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
   "jokusoftware@miranda-im.org",
@@ -566,7 +566,7 @@ static int icq_PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
   else
     CListShowMenuItem(hUserMenuAddServ, 0);
 
-  bXStatus = ICQGetContactSettingByte((HANDLE)wParam, DBSETTING_XSTATUSID, 0);
+  bXStatus = ICQGetContactXStatus((HANDLE)wParam);
   CListShowMenuItem(hUserMenuXStatus, (BYTE)(bHideXStatusUI ? 0 : bXStatus));
   if (bXStatus && !bHideXStatusUI)
   {

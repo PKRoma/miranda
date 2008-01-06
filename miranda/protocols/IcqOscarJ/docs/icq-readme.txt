@@ -66,6 +66,7 @@ Bugfixes:
 Improvements:
   URL events are now received as normal messages
   Ability to send/receive contacts to/from ICQ6 and AIM
+  Ability to view/set ICQ6 compatible custom statuses (icons only)
 
 
 0.3.9.5
@@ -458,7 +459,7 @@ Thanks to Angeli-Ka for nice custom status icons.
 License and Copyright
 _____________________
 
-Copyright (C) 2000-2007 Joe Kucera, Martin Öberg, Richard Hughes, Jon Keating
+Copyright (C) 2000-2008 Joe Kucera, Martin Öberg, Richard Hughes, Jon Keating
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License

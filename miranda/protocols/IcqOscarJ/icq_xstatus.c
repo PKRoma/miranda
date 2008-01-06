@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Angeli-Ka, Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Angeli-Ka, Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -55,6 +55,17 @@ static HANDLE hXStatusIconsHandle[XSTATUS_COUNT];
 static HANDLE hXStatusItems[XSTATUS_COUNT + 1];
 
 void CListShowMenuItem(HANDLE hMenuItem, BYTE bShow);
+
+
+BYTE __stdcall ICQGetContactXStatus(HANDLE hContact)
+{
+  BYTE bXStatus = ICQGetContactSettingByte(hContact, DBSETTING_XSTATUSID, 0);
+
+  if (!gbXStatusEnabled || bXStatus < 1 || bXStatus > XSTATUS_COUNT) return 0;
+
+  return bXStatus;
+}
+
 
 
 DWORD sendXStatusDetailsRequest(HANDLE hContact, int bForced)
@@ -204,9 +215,9 @@ static int CListMW_ExtraIconsApply(WPARAM wParam, LPARAM lParam)
   {
     if (IsICQContact((HANDLE)wParam))
     { // only apply icons to our contacts, do not mess others
-      DWORD bXStatus = ICQGetContactSettingByte((HANDLE)wParam, DBSETTING_XSTATUSID, 0);
+      DWORD bXStatus = ICQGetContactXStatus((HANDLE)wParam);
 
-      if (bXStatus > 0 && bXStatus <= XSTATUS_COUNT) 
+      if (bXStatus) 
       {
         setContactExtraIcon((HANDLE)wParam, hXStatusIcons[bXStatus-1]);
       } 
@@ -381,7 +392,7 @@ void handleXStatusCaps(HANDLE hContact, char* caps, int capsize, char* moods, in
         BYTE bXStatusId = (BYTE)(i+1);
         char str[MAX_PATH];
 
-        if (ICQGetContactSettingByte(hContact, DBSETTING_XSTATUSID, -1) != bXStatusId)
+        if (ICQGetContactXStatus(hContact) != bXStatusId)
         { // only write default name when it is really needed, i.e. on Custom Status change
           ICQWriteContactSettingByte(hContact, DBSETTING_XSTATUSID, bXStatusId);
           ICQWriteContactSettingUtf(hContact, DBSETTING_XSTATUSNAME, ICQTranslateUtfStatic(nameXStatus[i], str, MAX_PATH));
@@ -417,7 +428,7 @@ void handleXStatusCaps(HANDLE hContact, char* caps, int capsize, char* moods, in
         BYTE bXStatusId = (BYTE)(i+1);
         char str[MAX_PATH];
 
-        if (ICQGetContactSettingByte(hContact, DBSETTING_XSTATUSID, -1) != bXStatusId)
+        if (ICQGetContactXStatus(hContact) != bXStatusId)
         { // only write default name when it is really needed, i.e. on Custom Status change
           ICQWriteContactSettingByte(hContact, DBSETTING_XSTATUSID, bXStatusId);
           ICQWriteContactSettingUtf(hContact, DBSETTING_XSTATUSNAME, ICQTranslateUtfStatic(nameXStatus[i], str, MAX_PATH));
@@ -450,6 +461,15 @@ void handleXStatusCaps(HANDLE hContact, char* caps, int capsize, char* moods, in
   }
 }
 
+
+static void updateServerCustomStatus()
+{
+  setUserInfo();
+
+  icq_setstatus(MirandaStatusToIcq(gnCurrentStatus), TRUE);
+  // Tell whos on our invisible/visible list
+  icq_sendEntireVisInvisList(gnCurrentStatus == ID_STATUS_INVISIBLE ? 0 : 1);
+}
 
 static WNDPROC OldMessageEditProc;
 
@@ -572,7 +592,7 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
       else
       { // retrieve contact's xStatus
         dat->hContact = init->hContact;
-        dat->bXStatus = ICQGetContactSettingByte(dat->hContact, DBSETTING_XSTATUSID, 0);
+        dat->bXStatus = ICQGetContactXStatus(dat->hContact);
         dat->okButtonFormat = NULL;
         SendMessage(GetDlgItem(hwndDlg, IDC_XTITLE), EM_SETREADONLY, 1, 0);
         SendMessage(GetDlgItem(hwndDlg, IDC_XMSG), EM_SETREADONLY, 1, 0);
@@ -664,7 +684,7 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
         ICQWriteContactSettingUtf(NULL, DBSETTING_XSTATUSNAME, szValue);
         SAFE_FREE(&szValue);
 
-        setUserInfo();
+        updateServerCustomStatus();
 
         SetWindowLongUtf(GetDlgItem(hwndDlg,IDC_XMSG),GWL_WNDPROC,(LONG)OldMessageEditProc);
         SetWindowLongUtf(GetDlgItem(hwndDlg,IDC_XTITLE),GWL_WNDPROC,(LONG)OldMessageEditProc);
@@ -727,7 +747,7 @@ static void setXStatusEx(BYTE bXStatus, BYTE bQuiet)
       ICQWriteContactSettingUtf(NULL, DBSETTING_XSTATUSNAME, szName);
       ICQWriteContactSettingUtf(NULL, DBSETTING_XSTATUSMSG, szMsg);
 
-      setUserInfo();
+      updateServerCustomStatus();
     }
     SAFE_FREE(&szName);
     SAFE_FREE(&szMsg);
@@ -738,7 +758,7 @@ static void setXStatusEx(BYTE bXStatus, BYTE bQuiet)
     ICQDeleteContactSetting(NULL, DBSETTING_XSTATUSNAME);
     ICQDeleteContactSetting(NULL, DBSETTING_XSTATUSMSG);
 
-    setUserInfo();
+    updateServerCustomStatus();
   }
 }
 
@@ -762,7 +782,7 @@ void InitXStatusItems(BOOL bAllowStatus)
   HANDLE hXStatusRoot;
   int bXStatusMenuBuilt = 0;
 
-  BYTE bXStatus = ICQGetContactSettingByte(NULL, DBSETTING_XSTATUSID, 0);
+  BYTE bXStatus = ICQGetContactXStatus(NULL);
 
   if (!gbXStatusEnabled) return;
 
@@ -863,13 +883,11 @@ int IcqSetXStatus(WPARAM wParam, LPARAM lParam)
 
 int IcqGetXStatus(WPARAM wParam, LPARAM lParam)
 { // obsolete (TODO: remove in next version)
-  BYTE status = ICQGetContactSettingByte(NULL, DBSETTING_XSTATUSID, 0);
+  BYTE status = ICQGetContactXStatus(NULL);
 
   if (!gbXStatusEnabled) return 0;
 
   if (!icqOnline) return 0;
-
-  if (status < 1 || status > XSTATUS_COUNT) status = 0;
 
   if (wParam) *((char**)wParam) = DBSETTING_XSTATUSNAME;
   if (lParam) *((char**)lParam) = DBSETTING_XSTATUSMSG;
@@ -901,9 +919,9 @@ int IcqSetXStatusEx(WPARAM wParam, LPARAM lParam)
 
   if (pData->flags & (CSSF_MASK_NAME | CSSF_MASK_MESSAGE))
   {
-    BYTE status = ICQGetContactSettingByte(NULL, DBSETTING_XSTATUSID, 0);
+    BYTE status = ICQGetContactXStatus(NULL);
 
-    if (status < 1 || status > XSTATUS_COUNT) return 1; // Failure
+    if (!status) return 1; // Failure
 
     if (pData->flags & CSSF_MASK_NAME)
     { // set custom status name
@@ -957,7 +975,7 @@ int IcqGetXStatusEx(WPARAM wParam, LPARAM lParam)
 
   if (pData->flags & CSSF_MASK_STATUS)
   { // fill status member
-    *pData->status = ICQGetContactSettingByte(hContact, DBSETTING_XSTATUSID, 0);
+    *pData->status = ICQGetContactXStatus(hContact);
   }
 
   if (pData->flags & CSSF_MASK_NAME)
@@ -1072,7 +1090,7 @@ int IcqGetXStatusIcon(WPARAM wParam, LPARAM lParam)
   if (!gbXStatusEnabled) return 0;
 
   if (!wParam)
-    wParam = ICQGetContactSettingByte(NULL, DBSETTING_XSTATUSID, 0);
+    wParam = ICQGetContactXStatus(NULL);
 
   if (wParam >= 1 && wParam <= XSTATUS_COUNT)
   {
@@ -1093,7 +1111,7 @@ int IcqRequestXStatusDetails(WPARAM wParam, LPARAM lParam)
   if (!gbXStatusEnabled) return 0;
 
   if (hContact && !ICQGetContactSettingByte(NULL, "XStatusAuto", DEFAULT_XSTATUS_AUTO) &&
-    ICQGetContactSettingByte(hContact, DBSETTING_XSTATUSID, 0))
+    ICQGetContactXStatus(hContact))
   { // user has xstatus, no auto-retrieve details, valid contact, request details
     return requestXStatusDetails(hContact, TRUE);
   }
@@ -1108,9 +1126,9 @@ int IcqRequestAdvStatusIconIdx(WPARAM wParam, LPARAM lParam)
 
   if (!gbXStatusEnabled) return -1;
 
-  bXStatus = ICQGetContactSettingByte((HANDLE)wParam, DBSETTING_XSTATUSID, 0);
+  bXStatus = ICQGetContactXStatus((HANDLE)wParam);
 
-  if (bXStatus > 0 && bXStatus <= XSTATUS_COUNT)
+  if (bXStatus)
   {
     int idx=-1;
 

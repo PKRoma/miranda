@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 //
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -44,6 +44,7 @@ extern WORD wListenPort;
 extern CRITICAL_SECTION modeMsgsMutex;
 
 extern const capstr capXStatus[];
+extern const int moodXStatus[];
 
 void setUserInfo();
 
@@ -822,7 +823,7 @@ void setUserInfo()
 { // CLI_SETUSERINFO
   icq_packet packet;
   WORD wAdditionalData = 0;
-  BYTE bXStatus = gbXStatusEnabled?ICQGetContactSettingByte(NULL, DBSETTING_XSTATUSID, 0):0;
+  BYTE bXStatus = ICQGetContactXStatus(NULL);
 
   if (gbAimEnabled)
     wAdditionalData += 16;
@@ -967,12 +968,22 @@ void handleServUINSettings(int nPort, serverthread_info *info)
   {
     WORD wStatus;
     DWORD dwDirectCookie = rand() ^ (rand() << 16);
-
+    BYTE bXStatus = ICQGetContactXStatus(NULL);
+    char szMoodId[32];
+    WORD cbMoodId = 0;
+    WORD cbMoodData = 0;
 
     // Get status
     wStatus = MirandaStatusToIcq(icqGoingOnlineStatus);
 
-    serverPacketInit(&packet, 71);
+    if (bXStatus && moodXStatus[bXStatus-1] != -1)
+    { // prepare mood id
+      null_snprintf(szMoodId, SIZEOF(szMoodId), "icqmood%d", moodXStatus[bXStatus-1]);
+      cbMoodId = strlennull(szMoodId);
+      cbMoodData = 8;
+    }
+
+    serverPacketInit(&packet, (WORD)(71 + cbMoodId + cbMoodData));
     packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_STATUS);
     packDWord(&packet, 0x00060004);             // TLV 6: Status mode and security flags
     packWord(&packet, GetMyStatusFlags());      // Status flags
@@ -994,6 +1005,15 @@ void handleServUINSettings(int nPort, serverthread_info *info)
       packDWord(&packet, 0x00000000);           // Timestamp
     packWord(&packet, 0x0000);                  // Unknown
     packTLVWord(&packet, 0x001F, 0x0000);
+
+    if (cbMoodId)
+    { // Pack mood data
+      packWord(&packet, 0x1D);              // TLV 1D
+      packWord(&packet, (WORD)(cbMoodId + 4)); // TLV length
+      packWord(&packet, 0x0E);              // Item Type
+      packWord(&packet, cbMoodId);          // Flags + Item Length
+      packBuffer(&packet, szMoodId, cbMoodId); // Mood
+    }
 
     sendServPacket(&packet);
   }

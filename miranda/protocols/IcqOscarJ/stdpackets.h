@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 //
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -52,7 +52,7 @@ void icq_sendCloseConnection();
 void icq_requestnewfamily(WORD wFamily, void (*familyhandler)(HANDLE hConn, char* cookie, WORD cookieLen));
 
 void icq_setidle(int bAllow);
-void icq_setstatus(WORD wStatus);
+void icq_setstatus(WORD wStatus, int bSetMood);
 DWORD icq_sendGetInfoServ(HANDLE, DWORD, int, int);
 DWORD icq_sendGetAimProfileServ(HANDLE hContact, char *szUid);
 DWORD icq_sendGetAwayMsgServ(HANDLE, DWORD, int, WORD);

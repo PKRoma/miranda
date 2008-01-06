@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -92,7 +92,7 @@ void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, cha
             char *szResponse;
             int nResponseLen;
             char *szXName, *szXMsg, *tmp;
-            BYTE dwXId = ICQGetContactSettingByte(NULL, DBSETTING_XSTATUSID, 0);
+            BYTE dwXId = ICQGetContactXStatus(NULL);
 
             if (dwXId && validateStatusMessageRequest(hContact, MTYPE_SCRIPT_NOTIFY))
             { // apply privacy rules
@@ -122,7 +122,6 @@ void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, cha
               SAFE_FREE(&szXName);
               SAFE_FREE(&szXMsg);
 
-              if (gbXStatusEnabled)
               {
                 rate_record rr = {0};
 
@@ -140,8 +139,6 @@ void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, cha
                 if (bThruDC || !handleRateItem(&rr, TRUE))
                   SendXtrazNotifyResponse(dwUin, dwMID, dwMID2, wCookie, szResponse, nResponseLen, bThruDC);
               }
-              else
-                NetLog_Server("Error: XStatus Disabled");
             }
             else if (dwXId)
               NetLog_Server("Privacy: Ignoring XStatus request");
@@ -228,7 +225,7 @@ NextVal:
             {
               szNode += 7;
               *szEnd = '\0';
-              if (atoi(szNode) != ICQGetContactSettingByte(hContact, DBSETTING_XSTATUSID, 0))
+              if (atoi(szNode) != ICQGetContactXStatus(hContact))
               { // this is strange - but go on
                 NetLog_Server("Warning: XStatusIds do not match!");
               }
