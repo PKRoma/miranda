@@ -124,8 +124,8 @@ int SM_RemoveSession( const TCHAR* pszID, const char* pszModule)
 			if (pTemp->windowData.hContact)
 			{
 				CList_SetOffline(pTemp->windowData.hContact, pTemp->iType == GCW_CHATROOM?TRUE:FALSE);
-				if (pTemp->iType != GCW_SERVER)
-					DBWriteContactSettingByte(pTemp->windowData.hContact, "CList", "Hidden", 1);
+/*				if (pTemp->iType != GCW_SERVER)
+					DBWriteContactSettingByte(pTemp->windowData.hContact, "CList", "Hidden", 1);*/
 			}
 			DBWriteContactSettingString(pTemp->windowData.hContact, pTemp->pszModule , "Topic", "");
 			DBWriteContactSettingString(pTemp->windowData.hContact, pTemp->pszModule, "StatusBar", "");

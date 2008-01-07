@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-$Id:$
+$Id$
 */
 
 #include "../commonheaders.h"
@@ -122,8 +122,8 @@ int SM_RemoveSession(const TCHAR* pszID, const char* pszModule)
 
 			if (pTemp->hContact) {
 				CList_SetOffline(pTemp->hContact, pTemp->iType == GCW_CHATROOM ? TRUE : FALSE);
-				if (pTemp->iType != GCW_SERVER)
-					DBWriteContactSettingByte(pTemp->hContact, "CList", "Hidden", 1);
+				//if (pTemp->iType != GCW_SERVER)
+				//	DBWriteContactSettingByte(pTemp->hContact, "CList", "Hidden", 1);
 			}
 			DBWriteContactSettingString(pTemp->hContact, pTemp->pszModule , "Topic", "");
 			DBWriteContactSettingString(pTemp->hContact, pTemp->pszModule, "StatusBar", "");
