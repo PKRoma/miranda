@@ -272,7 +272,9 @@ int MSN_GCEventHook(WPARAM wParam,LPARAM lParam) {
 			}
 			break;
 		case GC_USER_NICKLISTMENU: {
-			HANDLE hContact = MSN_HContactFromEmailT( gch->ptszUID );
+			char *email = mir_u2a(gch->ptszUID);
+			HANDLE hContact = MSN_HContactFromEmail( email, email, 0, 0 );
+			mir_free(email);
 
 			switch(gch->dwData) {
 			case 10:

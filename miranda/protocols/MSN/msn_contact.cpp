@@ -50,42 +50,6 @@ HANDLE  MSN_HContactFromEmail( const char* msnEmail, const char* msnNick, int ad
 	return NULL;
 }
 
-HANDLE  MSN_HContactFromEmailT( const TCHAR* msnEmail )
-{
-	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
-	while ( hContact != NULL )
-	{
-		if ( MSN_IsMyContact( hContact )) {
-			DBVARIANT dbv;
-			if ( !MSN_GetStringT( "e-mail", hContact, &dbv ))
-				if ( !lstrcmpi( msnEmail, dbv.ptszVal ))
-					return hContact;
-		}
-
-		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 );
-	}
-
-	return NULL;
-}
-
-HANDLE  MSN_HContactById( const char* szGuid )
-{
-	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
-	while ( hContact != NULL )
-	{
-		if ( MSN_IsMyContact( hContact )) {
-			char tId[ 100 ];
-			if ( !MSN_GetStaticString( "ID", hContact, tId, sizeof tId ))
-				if ( !_stricmp( szGuid, tId ))
-					return hContact;
-		}
-
-		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 );
-	}
-
-	return NULL;
-}
-
 
 void MSN_SetContactDb(HANDLE hContact, int listId)
 {

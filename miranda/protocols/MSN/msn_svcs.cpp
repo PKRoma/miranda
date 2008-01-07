@@ -56,6 +56,7 @@ static HANDLE AddToListByEmail( const char *email, DWORD flags )
 					MSN_SetWord( hContact, "Status", ID_STATUS_ONTHEPHONE );
 					MSN_SetString( hContact, "MirVer", "SMS" );
 				}
+				DBDeleteContactSetting( hContact, "CList", "Hidden" );
 			}
 			MSN_SetContactDb(hContact, Lists_GetMask(email));
 		}
@@ -150,9 +151,6 @@ static int MsnAuthAllow(WPARAM wParam,LPARAM lParam)
 	MSN_AddUser( hContact, email, netId, LIST_BL + LIST_REMOVE );
 	MSN_AddUser( hContact, email, netId, LIST_AL );
 	MSN_AddUser( hContact, email, netId, LIST_RL );
-
-	if (DBGetContactSettingByte( hContact, "CList", "NotOnList", 0 ) == 0)
-		MSN_AddUser( hContact, email, netId, LIST_FL );
 
 	MSN_SetContactDb(hContact, Lists_GetMask(email));
 	return 0;

@@ -167,8 +167,6 @@ void     	UrlDecode( char* str );
 void     	UrlEncode( const char* src, char* dest, size_t cbDest );
 
 HANDLE      MSN_HContactFromEmail( const char* msnEmail, const char* msnNick, int addIfNeeded, int temporary );
-HANDLE      MSN_HContactFromEmailT( const TCHAR* msnEmail );
-HANDLE      MSN_HContactById( const char* szGuid );
 
 bool		MSN_IsMyContact( HANDLE hContact );
 bool		MSN_IsMeByContact( HANDLE hContact, char* szEmail  = NULL );

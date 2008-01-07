@@ -69,8 +69,6 @@ WORD  MSNStatusToMiranda(const char *status)
 
 void  MSN_AddAuthRequest( HANDLE hContact, const char *email, const char *nick )
 {
-	DBWriteContactSettingByte( hContact, "CList", "Hidden", 1 );
-
 	//blob is: UIN=0(DWORD), hContact(DWORD), nick(ASCIIZ), ""(ASCIIZ), ""(ASCIIZ), email(ASCIIZ), ""(ASCIIZ)
 
 	CCSDATA ccs = { 0 };
