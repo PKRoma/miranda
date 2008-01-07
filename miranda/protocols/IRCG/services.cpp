@@ -1343,6 +1343,8 @@ static int Service_MenuPreBuild(WPARAM wParam,LPARAM lParam)
 				{ // for offline chatrooms
 				clmi.icolibItem = GetIconHandle(IDI_JOIN);
 				clmi.pszName = LPGEN("&Join channel");
+				if ( !g_ircSession )
+					clmi.flags |= CMIF_HIDDEN;				
 				}
 			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuJoinLeave, ( LPARAM )&clmi );
 
