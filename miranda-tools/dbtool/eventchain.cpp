@@ -25,6 +25,51 @@ static DWORD ofsFirstUnread,timestampFirstUnread;
 static DWORD memsize = 0;
 static DBEvent* memblock = NULL;
 
+//based on the code (C) 2001, 2002 Peter Verthez
+//under GNU LGPL
+
+BOOL is_utf8_string(LPCSTR str)
+{
+	int expect_bytes = 0, utf_found = 0;
+
+	if (!str) return 0;
+
+	while (*str) {
+		if ((*str & 0x80) == 0) {
+			/* Looks like an ASCII character */
+			if (expect_bytes)
+				/* byte of UTF-8 character expected */
+				return 0;
+		}
+		else {
+			/* Looks like byte of an UTF-8 character */
+			if (expect_bytes) {
+				/* expect_bytes already set: first byte of UTF-8 char already seen */
+				if ((*str & 0xC0) != 0x80) {
+					/* again first byte ?!?! */
+					return 0;
+				}
+			}
+			else {
+				/* First byte of the UTF-8 character */
+				/* count initial one bits and set expect_bytes to 1 less */
+				char ch = *str;
+				while (ch & 0x80) {
+					expect_bytes++;
+					ch = (ch & 0x7f) << 1;
+				}
+			}
+			/* OK, next byte of UTF-8 character */
+			/* Decrement number of expected bytes */
+			if ( --expect_bytes == 0 )
+				utf_found = 1;
+		}
+		str++;
+	}
+
+	return (utf_found && expect_bytes == 0);
+}
+
 char* Utf8EncodeUcs2( const wchar_t* src )
 {
 	int len = wcslen( src );
@@ -68,6 +113,10 @@ static void ConvertOldEvent( DBEvent* dbei )
 				msglenW = i;
 				break;
 	}	}	}
+	else {
+		if( !is_utf8_string(( char* )dbei->blob) )
+			dbei->flags &= ~DBEF_UTF;
+	}
 
 	if ( msglenW > 0 && msglenW <= msglen ) {
 		char* utf8str = Utf8EncodeUcs2(( WCHAR* )&dbei->blob[ msglen ] );
@@ -204,7 +253,7 @@ int WorkEventChain(DWORD ofsContact,DBContact *dbc,int firstTime)
 	dbeNew->ofsPrev=dbeOld.ofsPrev;
 	dbeNew->ofsNext=0;
 
-	if ( dbeOld.eventType == EVENTTYPE_MESSAGE && opts.bConvertUtf && !( dbeOld.flags & DBEF_UTF ))
+	if ( dbeOld.eventType == EVENTTYPE_MESSAGE && opts.bConvertUtf )
 		ConvertOldEvent(dbeNew);
 
 	if((ofsDestThis=WriteSegment(WSOFS_END,dbeNew,offsetof(DBEvent,blob)+dbeNew->cbBlob))==WS_ERROR) {
