@@ -34,9 +34,13 @@ HANDLE g_hMenuCreation = NULL;
 HANDLE g_hGCUserEvent = NULL;
 HANDLE g_hGCMenuBuild = NULL;
 HANDLE g_hOptionsInit = NULL;
-HANDLE hContactMenu1 = NULL;
-HANDLE hContactMenu2 = NULL;
-HANDLE hContactMenu3 = NULL;
+HANDLE hUMenuShowChannel = NULL;
+HANDLE hUMenuJoinLeave = NULL;
+HANDLE hUMenuChanSettings = NULL;
+HANDLE hUMenuWhois = NULL;
+HANDLE hUMenuDisconnect = NULL;
+HANDLE hUMenuIgnore = NULL;
+HANDLE hMenuRoot = NULL;
 HANDLE hMenuQuick = NULL;
 HANDLE hMenuJoin = NULL;
 HANDLE hMenuNick = NULL;
@@ -69,9 +73,12 @@ HANDLE hpsQuickConnect  = NULL;
 HANDLE hpsChangeNick    = NULL;
 HANDLE hpsShowList	    = NULL;
 HANDLE hpsShowServer    = NULL;
-HANDLE hpsMenu1Channel  = NULL;
-HANDLE hpsMenu2Channel  = NULL;
-HANDLE hpsMenu3Channel  = NULL;
+HANDLE hpsMenuShowChannel = NULL;
+HANDLE hpsMenuJoinLeave = NULL;
+HANDLE hpsMenuChanSettings = NULL;
+HANDLE hpsMenuWhois		= NULL;
+HANDLE hpsMenuDisconnect= NULL;
+HANDLE hpsMenuIgnore	= NULL;
 
 HANDLE hpsEDblCkick	    = NULL;
 HANDLE hpsCInsertRawIn  = NULL;
@@ -111,62 +118,96 @@ static void InitMenus(void)
 	mi.flags = CMIF_ICONFROMICOLIB;
 
 	if ( bChatInstalled ) {
+		// Root popupmenuitem
+		mi.pszName = ALTIRCPROTONAME;
+		mi.position = -1999901010;
+		mi.pszPopupName = (char *)-1;
+		mi.flags |= CMIF_ROOTPOPUP;
+		mi.icolibItem = GetIconHandle(IDI_MAIN);
+		hMenuRoot = (HANDLE)CallService( MS_CLIST_ADDMAINMENUITEM,  (WPARAM)0, (LPARAM)&mi);
+		
+		mi.flags &= ~CMIF_ROOTPOPUP;
+		mi.flags |= CMIF_CHILDPOPUP;
+
 		mi.pszName = LPGEN("&Quick connect");
 		mi.icolibItem = GetIconHandle(IDI_QUICK);
 		strcpy( d, IRC_QUICKCONNECT );
-		mi.popupPosition = 500090000;
-		mi.pszPopupName = ALTIRCPROTONAME;
-		hMenuQuick= (void *)CallService( MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
+		mi.position = 500090000;
+		mi.pszPopupName = (char *)hMenuRoot;
+		hMenuQuick= (HANDLE)CallService( MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
 
-		mi.pszName = LPGEN("&Join a channel");
+		mi.pszName = LPGEN("&Join channel");
 		mi.icolibItem = GetIconHandle(IDI_JOIN);
 		strcpy( d, IRC_JOINCHANNEL );
-		mi.popupPosition = 500090001;
-		mi.pszPopupName = ALTIRCPROTONAME;
-		hMenuJoin = (void *)CallService( MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
+		mi.position = 500090001;
+		mi.pszPopupName = (char *)hMenuRoot;
+		hMenuJoin = (HANDLE)CallService( MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
 
 		mi.pszName = LPGEN("&Change your nickname");
 		mi.icolibItem = GetIconHandle(IDI_WHOIS);
 		strcpy( d, IRC_CHANGENICK );
-		mi.popupPosition = 500090002;
-		mi.pszPopupName = ALTIRCPROTONAME;
-		hMenuNick = (void *)CallService( MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
+		mi.position = 500090002;
+		mi.pszPopupName = (char *)hMenuRoot;
+		hMenuNick = (HANDLE)CallService( MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
 
 		mi.pszName = LPGEN("Show the &list of available channels");
 		mi.icolibItem = GetIconHandle(IDI_LIST);
 		strcpy( d, IRC_SHOWLIST );
-		mi.popupPosition = 500090003;
-		mi.pszPopupName = ALTIRCPROTONAME;
-		hMenuList = (void *)CallService( MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
+		mi.position = 500090003;
+		mi.pszPopupName = (char *)hMenuRoot;
+		hMenuList = (HANDLE)CallService( MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
 
 		mi.pszName = LPGEN("&Show the server window");
 		mi.icolibItem = GetIconHandle(IDI_SERVER);
 		strcpy( d, IRC_SHOWSERVER );
-		mi.popupPosition = 500090004;
-		mi.pszPopupName = ALTIRCPROTONAME;
-		hMenuServer = (void *)CallService( MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
+		mi.position = 500090004;
+		mi.pszPopupName = (char *)hMenuRoot;
+		hMenuServer = (HANDLE)CallService( MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
 	}
+	
+	mi.flags &= ~CMIF_CHILDPOPUP;
 
-	mi.pszName = LPGEN("&Leave the channel");
-	mi.icolibItem = GetIconHandle(IDI_DELETE);
-	strcpy( d, IRC_MENU1CHANNEL );
+	mi.pszName = LPGEN("Sho&w channel");
+	mi.icolibItem = GetIconHandle(IDI_SHOW);
+	strcpy( d, IRC_UM_SHOWCHANNEL );
 	mi.pszContactOwner = IRCPROTONAME;
 	mi.popupPosition = 500090000;
-	hContactMenu1 = (void *)CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
+	hUMenuShowChannel = (void *)CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
 
-	mi.pszName = LPGEN("&User details");
-	mi.icolibItem = GetIconHandle(IDI_WHOIS);
-	strcpy( d, IRC_MENU2CHANNEL );
+	mi.pszName = LPGEN("&Leave channel");
+	mi.icolibItem = GetIconHandle(IDI_PART);
+	strcpy( d, IRC_UM_JOINLEAVE );
 	mi.pszContactOwner = IRCPROTONAME;
 	mi.popupPosition = 500090001;
-	hContactMenu2 = (void *)CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
+	hUMenuJoinLeave = (void *)CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
 
-	mi.pszName = LPGEN("&Ignore");
-	mi.icolibItem = GetIconHandle(IDI_BLOCK);
-	strcpy( d, IRC_MENU3CHANNEL );
+	mi.pszName = LPGEN("Channel &settings");
+	mi.icolibItem = GetIconHandle(IDI_MANAGER);
+	strcpy( d, IRC_UM_CHANSETTINGS );
 	mi.pszContactOwner = IRCPROTONAME;
 	mi.popupPosition = 500090002;
-	hContactMenu3 = (void *)CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
+	hUMenuChanSettings = (void *)CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
+
+	mi.pszName = LPGEN("&WhoIs info");
+	mi.icolibItem = GetIconHandle(IDI_WHOIS);
+	strcpy( d, IRC_UM_WHOIS );
+	mi.pszContactOwner = IRCPROTONAME;
+	mi.popupPosition = 500090001;
+	hUMenuWhois = (void *)CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
+
+	mi.pszName = LPGEN("Di&sconnect");
+	mi.icolibItem = GetIconHandle(IDI_DELETE);
+	strcpy( d, IRC_UM_DISCONNECT );
+	mi.pszContactOwner = IRCPROTONAME;
+	mi.popupPosition = 500090001;
+	hUMenuDisconnect = (void *)CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
+
+	mi.pszName = LPGEN("&Add to ignore list");
+	mi.icolibItem = GetIconHandle(IDI_BLOCK);
+	strcpy( d, IRC_UM_IGNORE );
+	mi.pszContactOwner = IRCPROTONAME;
+	mi.popupPosition = 500090002;
+	hUMenuIgnore = (void *)CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
 
 	CLISTMENUITEM clmi;
 	memset( &clmi, 0, sizeof( clmi ));
@@ -400,7 +441,7 @@ static int Service_FileResume(WPARAM wParam,LPARAM lParam)
 	if (dcc) {
 		InterlockedExchange(&dcc->dwWhatNeedsDoing, i);
 		if (pfr->action == FILERESUME_RENAME) {
-			char * szTemp = strdup(pfr->szFilename);
+			char * szTemp = _strdup(pfr->szFilename);
 			InterlockedExchange((long*)&dcc->NewFileName, (long)szTemp);
 		}
 
@@ -476,7 +517,7 @@ int Service_UserDeletedContact(WPARAM wp, LPARAM lp)
 			if (type == GCW_CHATROOM)
 				S = MakeWndID( dbv.ptszVal );
 			if (type == GCW_SERVER)
-				S = _T("Network log");
+				S = SERVERWINDOW;
 			gce.cbSize = sizeof(GCEVENT);
 			gce.dwItemData = 0;
 			gcd.iType = GC_EVENT_CONTROL;
@@ -501,7 +542,7 @@ int Service_UserDeletedContact(WPARAM wp, LPARAM lp)
 	return 0;
 }
 
-static int Service_Menu1Command(WPARAM wp, LPARAM lp)
+static int Service_MenuShowChannel(WPARAM wp, LPARAM lp)
 {
 	if ( !wp )
 		return 0;
@@ -516,7 +557,7 @@ static int Service_Menu1Command(WPARAM wp, LPARAM lp)
 			if ( type == GCW_CHATROOM)
 				S = MakeWndID( dbv.ptszVal );
 			if ( type == GCW_SERVER )
-				S = _T("Network log");
+				S = SERVERWINDOW;
 			gcd.iType = GC_EVENT_CONTROL;
 			gcd.ptszID = ( TCHAR* )S.c_str();
 			gce.dwFlags = GC_TCHAR;
@@ -530,7 +571,7 @@ static int Service_Menu1Command(WPARAM wp, LPARAM lp)
 	return 0;
 }
 
-static int Service_Menu2Command(WPARAM wp, LPARAM lp)
+static int Service_MenuJoinLeave(WPARAM wp, LPARAM lp)
 {
 	DBVARIANT dbv;
 
@@ -541,40 +582,70 @@ static int Service_Menu2Command(WPARAM wp, LPARAM lp)
 		int type = DBGetContactSettingByte((HANDLE)wp, IRCPROTONAME, "ChatRoom", 0);
 		if ( type != 0 ) {
 			if (type == GCW_CHATROOM)
-				PostIrcMessage( _T("/PART %s"), dbv.ptszVal);
+				{
+				if (DBGetContactSettingWord((HANDLE)wp, IRCPROTONAME, "Status", ID_STATUS_OFFLINE)== ID_STATUS_OFFLINE)
+					PostIrcMessage( _T("/JOIN %s"), dbv.ptszVal);
+				else
+					{
+					PostIrcMessage( _T("/PART %s"), dbv.ptszVal);
+					GCEVENT gce = {0};
+					GCDEST gcd = {0};
+					TString S = MakeWndID(dbv.ptszVal);
+					gce.cbSize = sizeof(GCEVENT);
+					gce.dwFlags = GC_TCHAR;
+					gcd.iType = GC_EVENT_CONTROL;
+					gcd.pszModule = IRCPROTONAME;
+					gce.pDest = &gcd;
+					gcd.ptszID = ( TCHAR* )S.c_str();
+					CallChatEvent( SESSION_TERMINATE, (LPARAM)&gce);
+					}
+				}
 
-			GCEVENT gce = {0};
-			GCDEST gcd = {0};
-			TString S = _T("");
-			if (type == GCW_CHATROOM)
-				S = MakeWndID(dbv.ptszVal);
-			if (type == GCW_SERVER)
-				S = _T("Network log");
-			gce.cbSize = sizeof(GCEVENT);
-			gce.dwFlags = GC_TCHAR;
-			gcd.iType = GC_EVENT_CONTROL;
-			gcd.pszModule = IRCPROTONAME;
-			gce.pDest = &gcd;
-			gcd.ptszID = ( TCHAR* )S.c_str();
-			CallChatEvent( SESSION_TERMINATE, (LPARAM)&gce);
-		}
-		else {
-			BYTE bDCC = DBGetContactSettingByte((HANDLE)wp, IRCPROTONAME, "DCC", 0) ;
-			if (bDCC) {
-				CDccSession* dcc = g_ircSession.FindDCCSession((HANDLE)wp);
-				if ( dcc )
-					dcc->Disconnect();
-			}
-			else PostIrcMessage( _T("/WHOIS %s %s"), dbv.ptszVal, dbv.ptszVal);
 		}
 		DBFreeVariant(&dbv);
 	}
 	return 0;
 }
 
-static int Service_Menu3Command(WPARAM wp, LPARAM lp)
+static int Service_MenuChanSettings(WPARAM wp, LPARAM lp)
 {
 	if (!wp )
+		return 0;
+
+	HANDLE hContact = (HANDLE) wp;
+	DBVARIANT dbv;
+	if ( !DBGetContactSettingTString(hContact, IRCPROTONAME, "Nick", &dbv )) {
+		PostIrcMessageWnd(dbv.ptszVal, NULL, _T("/CHANNELMANAGER"));
+		DBFreeVariant(&dbv);
+	}
+	return 0;
+}
+
+static int Service_MenuWhois(WPARAM wp, LPARAM lp)
+{
+	if ( !wp )
+		return 0;
+
+	DBVARIANT dbv;
+
+	if (!DBGetContactSettingTString((HANDLE)wp, IRCPROTONAME, "Nick", &dbv)) {
+		PostIrcMessage( _T("/WHOIS %s %s"), dbv.ptszVal, dbv.ptszVal);
+		DBFreeVariant(&dbv);
+	}
+	return 0;
+}
+
+static int Service_MenuDisconnect(WPARAM wp, LPARAM lp)
+{
+	CDccSession* dcc = g_ircSession.FindDCCSession((HANDLE)wp);
+	if ( dcc )
+		dcc->Disconnect();
+	return 0;
+}
+
+static int Service_MenuIgnore(WPARAM wp, LPARAM lp)
+{
+	if ( !wp )
 		return 0;
 
 	HANDLE hContact = (HANDLE) wp;
@@ -598,8 +669,6 @@ static int Service_Menu3Command(WPARAM wp, LPARAM lp)
 				DBFreeVariant(&dbv1);
 			}
 		}
-		else PostIrcMessageWnd(dbv.ptszVal, NULL, _T("/CHANNELMANAGER"));
-
 		DBFreeVariant(&dbv);
 	}
 	return 0;
@@ -643,7 +712,7 @@ static int Service_ShowServerMenuCommand(WPARAM wp, LPARAM lp)
 	GCEVENT gce = {0};
 	GCDEST gcd = {0};
 	gcd.iType = GC_EVENT_CONTROL;
-	gcd.ptszID = _T("Network log");
+	gcd.ptszID = SERVERWINDOW;
 	gce.dwFlags = GC_TCHAR;
 	gcd.pszModule = IRCPROTONAME;
 	gce.cbSize = sizeof(GCEVENT);
@@ -1096,12 +1165,10 @@ static int Service_GCMenuHook(WPARAM wParam,LPARAM lParam)
 	if ( gcmi ) {
 		if ( !lstrcmpiA( gcmi->pszModule, IRCPROTONAME )) {
 			if ( gcmi->Type == MENU_ON_LOG ) {
-				if ( lstrcmpi( gcmi->pszID, _T("Network log"))) {
+				if ( lstrcmpi( gcmi->pszID, SERVERWINDOW)) {
 					static gc_item Item[] = {
 						{ TranslateT("&Change your nickname" ),		1, MENU_ITEM,		FALSE},
 						{ TranslateT("Channel &settings" ),			2, MENU_ITEM,		FALSE},
-						{ TranslateT("&Leave the channel" ),		3, MENU_ITEM,		FALSE},
-						{ TranslateT("Show the server &window" ),	4, MENU_ITEM,		FALSE},
 						{ _T(""),									0, MENU_SEPARATOR,	FALSE},
 						{ TranslateT("NickServ"),					0, MENU_NEWPOPUP,	FALSE},
 						{ TranslateT("Register nick" ),				5, MENU_POPUPITEM,	TRUE},
@@ -1132,7 +1199,10 @@ static int Service_GCMenuHook(WPARAM wParam,LPARAM lParam)
 						{ TranslateT("Kill unauthorized: quick" ),	17, MENU_POPUPITEM,	FALSE},
 						{ _T("" ),									0,	MENU_POPUPSEPARATOR,FALSE},
 						{ TranslateT("Hide nick from list" ),		18, MENU_POPUPITEM,	FALSE},
-						{ TranslateT("Show nick to list" ),			19, MENU_POPUPITEM,	FALSE}
+						{ TranslateT("Show nick to list" ),			19, MENU_POPUPITEM,	FALSE},
+						{ TranslateT("Show the server &window" ),	4, MENU_ITEM,		FALSE},
+						{ _T(""),									0, MENU_SEPARATOR,	FALSE},
+						{ TranslateT("&Leave the channel" ),		3, MENU_ITEM,		FALSE}
 						};
 						gcmi->nItems = SIZEOF(Item);
 						gcmi->Item = &Item[0];
@@ -1241,7 +1311,6 @@ static int Service_SystemPreShutdown(WPARAM wParam,LPARAM lParam)
 static int Service_MenuPreBuild(WPARAM wParam,LPARAM lParam)
 {
 	DBVARIANT dbv;
-
 	HANDLE hContact = ( HANDLE )wParam;
 	if ( !hContact )
 		return 0;
@@ -1252,69 +1321,88 @@ static int Service_MenuPreBuild(WPARAM wParam,LPARAM lParam)
 
 	char *szProto = ( char* ) CallService( MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) wParam, 0);
 	if (szProto && !lstrcmpiA(szProto, IRCPROTONAME)) {
+		bool bIsOnline = DBGetContactSettingWord(hContact, IRCPROTONAME, "Status", ID_STATUS_OFFLINE)== ID_STATUS_OFFLINE ? false : true;
 		if (DBGetContactSettingByte(hContact, IRCPROTONAME, "ChatRoom", 0) == GCW_CHATROOM) {
-			clmi.icolibItem = GetIconHandle(IDI_PART);
-			clmi.pszName = LPGEN("&Leave channel");
-			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hContactMenu2, ( LPARAM )&clmi );
-
-			clmi.icolibItem = GetIconHandle(IDI_MANAGER);
-			clmi.pszName = LPGEN("Channel &settings");
-			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hContactMenu3, ( LPARAM )&clmi );
-
+			// context menu for chatrooms
+			clmi.flags |= CMIF_NOTOFFLINE;
 			clmi.icolibItem = GetIconHandle(IDI_SHOW);
 			clmi.pszName = LPGEN("Show channel");
-			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hContactMenu1, ( LPARAM )&clmi );
-		}
-		else if ( DBGetContactSettingByte(hContact, IRCPROTONAME, "ChatRoom", 0) == GCW_SERVER ) {
-			clmi.icolibItem = GetIconHandle(IDI_SERVER);
-			clmi.pszName = LPGEN("&Show server");
-			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hContactMenu1, ( LPARAM )&clmi );
+			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuShowChannel, ( LPARAM )&clmi );
+
+			clmi.flags = CMIM_FLAGS | CMIF_NOTOFFLINE;
+			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuChanSettings, ( LPARAM )&clmi );
+
+			clmi.flags = CMIM_FLAGS | CMIM_NAME | CMIM_ICON;
+
+			if (bIsOnline)
+				{ // for online chatrooms
+				clmi.icolibItem = GetIconHandle(IDI_PART);
+				clmi.pszName = LPGEN("&Leave channel");
+				}
+			else
+				{ // for offline chatrooms
+				clmi.icolibItem = GetIconHandle(IDI_JOIN);
+				clmi.pszName = LPGEN("&Join channel");
+				}
+			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuJoinLeave, ( LPARAM )&clmi );
 
 			clmi.flags = CMIM_FLAGS | CMIF_HIDDEN;
-			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hContactMenu2, ( LPARAM )&clmi );
-			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hContactMenu3, ( LPARAM )&clmi );
+			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuWhois,			( LPARAM )&clmi );
+			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuDisconnect,		( LPARAM )&clmi );
+			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuIgnore,			( LPARAM )&clmi );
+		}
+		else if ( DBGetContactSettingByte(hContact, IRCPROTONAME, "ChatRoom", 0) == GCW_SERVER ) {
+			//context menu for server window
+			clmi.icolibItem = GetIconHandle(IDI_SERVER);
+			clmi.pszName = LPGEN("&Show server");
+			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuShowChannel,		( LPARAM )&clmi );
+
+			clmi.flags = CMIM_FLAGS | CMIF_HIDDEN;
+			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuJoinLeave,		( LPARAM )&clmi );
+			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuChanSettings,		( LPARAM )&clmi );
+			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuWhois,			( LPARAM )&clmi );
+			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuDisconnect,		( LPARAM )&clmi );
+			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuIgnore,			( LPARAM )&clmi );
 		}
 		else if ( !DBGetContactSettingTString( hContact, IRCPROTONAME, "Default", &dbv )) {
+			// context menu for contact
 			BYTE bDcc = DBGetContactSettingByte( hContact, IRCPROTONAME, "DCC", 0) ;
 
 			clmi.flags = CMIM_FLAGS | CMIF_HIDDEN;
-			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hContactMenu1, ( LPARAM )&clmi );
+			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuShowChannel,		( LPARAM )&clmi );
+			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuJoinLeave,		( LPARAM )&clmi );
+			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuChanSettings,		( LPARAM )&clmi );
 
-			clmi.flags = CMIM_NAME | CMIM_ICON | CMIM_FLAGS;
+			clmi.flags = CMIM_FLAGS;
 			if ( bDcc ) {
-				if (DBGetContactSettingWord( hContact, IRCPROTONAME, "Status", ID_STATUS_OFFLINE) == ID_STATUS_OFFLINE)
-					clmi.flags = CMIM_NAME|CMIM_ICON | CMIM_FLAGS |CMIF_HIDDEN;
-				clmi.icolibItem = GetIconHandle(IDI_DELETE);
-				clmi.pszName = LPGEN("Di&sconnect");
-				CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hContactMenu2, ( LPARAM )&clmi );
+				// for DCC contact
+				clmi.flags = CMIM_FLAGS | CMIF_NOTOFFLINE;
+				CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuDisconnect,		( LPARAM )&clmi );
+
+				clmi.flags = CMIM_FLAGS | CMIF_HIDDEN;
+				CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuWhois,			( LPARAM )&clmi );
+				CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuIgnore,			( LPARAM )&clmi );
 			}
 			else {
+				// for normal contact
+				clmi.flags = CMIM_FLAGS | CMIF_HIDDEN;
+				CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuDisconnect,		( LPARAM )&clmi );
+
+				clmi.flags = CMIM_FLAGS | CMIF_NOTOFFLINE;
 				if ( !g_ircSession )
-					clmi.flags = CMIM_NAME | CMIM_ICON | CMIM_FLAGS |CMIF_HIDDEN;
-				clmi.icolibItem = GetIconHandle(IDI_WHOIS);
-				clmi.pszName = LPGEN("&WhoIs info");
-				CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hContactMenu2, ( LPARAM )&clmi );
-			}
+					clmi.flags = CMIM_FLAGS | CMIF_HIDDEN;
+				CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuWhois, ( LPARAM )&clmi );
 
-			if (!g_ircSession || bDcc)
-				clmi.flags = CMIM_NAME | CMIM_ICON | CMIM_FLAGS |CMIF_HIDDEN;
-			else
-				clmi.flags = CMIM_NAME | CMIM_ICON | CMIM_FLAGS;
-
-			clmi.icolibItem = GetIconHandle(IDI_BLOCK);
-			if (DBGetContactSettingWord( hContact, IRCPROTONAME, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE) {
-				char * host = NULL;
-				DBVARIANT dbv3;
-				if ( !DBGetContactSettingString( hContact, IRCPROTONAME, "Host", &dbv3) ) {
-					host = dbv3.pszVal;
-					clmi.pszName = LPGEN("&Add to ignore list");
-					DBFreeVariant( &dbv3 );
+				if (bIsOnline) {
+					DBVARIANT dbv3;
+					if ( !DBGetContactSettingString( hContact, IRCPROTONAME, "Host", &dbv3) ) {
+						if (dbv3.pszVal[0] == 0)  
+							clmi.flags = CMIM_FLAGS | CMIF_HIDDEN;
+						DBFreeVariant( &dbv3 );
+					}
 				}
-				else clmi.flags = CMIM_NAME | CMIM_ICON | CMIM_FLAGS |CMIF_HIDDEN;
+				CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuIgnore, ( LPARAM )&clmi );
 			}
-			else clmi.flags = CMIM_NAME | CMIM_ICON | CMIM_FLAGS |CMIF_HIDDEN;
-
-			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hContactMenu3, ( LPARAM )&clmi );
 			DBFreeVariant( &dbv );
 	}	}
 
@@ -1443,7 +1531,7 @@ static void __cdecl ConnectServerThread(LPVOID di)
 			if ( lstrlenA( prefs->MySpecifiedHost ))
 				mir_forkthread( ResolveIPThread, new IPRESOLVE( prefs->MySpecifiedHost, IP_MANUAL ));
 
-			DoEvent(GC_EVENT_CHANGESESSIONAME, _T("Network log"), NULL, g_ircSession.GetInfo().sNetwork.c_str(), NULL, NULL, NULL, FALSE, TRUE);
+			DoEvent(GC_EVENT_CHANGESESSIONAME, SERVERWINDOW, NULL, g_ircSession.GetInfo().sNetwork.c_str(), NULL, NULL, NULL, FALSE, TRUE);
 		}
 		else {
 			Temp = OldStatus;
@@ -1509,7 +1597,7 @@ void ConnectToServer(void)
 	TCHAR szTemp[300];
 	mir_sntprintf(szTemp, SIZEOF(szTemp), _T("\0033%s \002%s\002 (") _T(TCHAR_STR_PARAM) _T(": %u)"),
 		TranslateT("Connecting to"), si.sNetwork.c_str(), si.sServer.c_str(), si.iPort);
-	DoEvent(GC_EVENT_INFORMATION, _T("Network log"), NULL, szTemp, NULL, NULL, NULL, true, false);
+	DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, NULL, szTemp, NULL, NULL, NULL, true, false);
 }
 
 void DisconnectFromServer(void)
@@ -1757,7 +1845,7 @@ static int Service_InitUserInfo(WPARAM wParam, LPARAM lParam)
 
 static int sttCheckPerform( const char *szSetting, LPARAM lParam )
 {
-	if ( !memicmp( szSetting, "PERFORM:", 8 )) {
+	if ( !_memicmp( szSetting, "PERFORM:", 8 )) {
 		String s = szSetting;
 		transform( s.begin(), s.end(), s.begin(), toupper );
 		if ( s != szSetting ) {
@@ -1822,7 +1910,7 @@ static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 		gcw.cbSize = sizeof(GCSESSION);
 		gcw.dwFlags = GC_TCHAR;
 		gcw.iType = GCW_SERVER;
-		gcw.ptszID = _T("Network log");
+		gcw.ptszID = SERVERWINDOW;
 		gcw.pszModule = IRCPROTONAME;
 		gcw.ptszName = NEWTSTR_ALLOCA( _A2T( prefs->Network ));
 		CallServiceSync( MS_GC_NEWSESSION, 0, (LPARAM)&gcw );
@@ -1830,7 +1918,7 @@ static int Service_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 		gce.cbSize = sizeof(GCEVENT);
 		gce.dwFlags = GC_TCHAR;
 		gce.pDest = &gcd;
-		gcd.ptszID = _T("Network log");
+		gcd.ptszID = SERVERWINDOW;
 		gcd.pszModule = IRCPROTONAME;
 		gcd.iType = GC_EVENT_CONTROL;
 
@@ -1963,9 +2051,12 @@ void UnhookEvents(void)
 	DestroyServiceFunction(hpsChangeNick   );
 	DestroyServiceFunction(hpsShowList	   );
 	DestroyServiceFunction(hpsShowServer   );
-	DestroyServiceFunction(hpsMenu1Channel );
-	DestroyServiceFunction(hpsMenu2Channel );
-	DestroyServiceFunction(hpsMenu3Channel );
+	DestroyServiceFunction(hpsMenuShowChannel );
+	DestroyServiceFunction(hpsMenuJoinLeave);
+	DestroyServiceFunction(hpsMenuChanSettings );
+	DestroyServiceFunction(hpsMenuWhois	   );
+	DestroyServiceFunction(hpsMenuDisconnect );
+	DestroyServiceFunction(hpsMenuIgnore   );
 
 	DestroyServiceFunction(hpsEDblCkick	   );
 	DestroyServiceFunction(hpsCInsertRawIn );
@@ -2011,9 +2102,12 @@ void CreateServiceFunctions( void )
 	hpsChangeNick	 = (HANDLE)CreateProtoService( IRC_CHANGENICK,   Service_ChangeNickMenuCommand );
 	hpsShowList		 = (HANDLE)CreateProtoService( IRC_SHOWLIST,     Service_ShowListMenuCommand );
 	hpsShowServer	 = (HANDLE)CreateProtoService( IRC_SHOWSERVER,   Service_ShowServerMenuCommand );
-	hpsMenu1Channel  = (HANDLE)CreateProtoService( IRC_MENU1CHANNEL, Service_Menu1Command );
-	hpsMenu2Channel  = (HANDLE)CreateProtoService( IRC_MENU2CHANNEL, Service_Menu2Command );
-	hpsMenu3Channel  = (HANDLE)CreateProtoService( IRC_MENU3CHANNEL, Service_Menu3Command );
+	hpsMenuShowChannel  = (HANDLE)CreateProtoService( IRC_UM_SHOWCHANNEL,  Service_MenuShowChannel );
+	hpsMenuJoinLeave = (HANDLE)CreateProtoService( IRC_UM_JOINLEAVE, Service_MenuJoinLeave );
+	hpsMenuChanSettings = (HANDLE)CreateProtoService( IRC_UM_CHANSETTINGS, Service_MenuChanSettings );
+	hpsMenuWhois	 = (HANDLE)CreateProtoService( IRC_UM_WHOIS,     Service_MenuWhois );
+	hpsMenuDisconnect= (HANDLE)CreateProtoService( IRC_UM_DISCONNECT,Service_MenuDisconnect );
+	hpsMenuIgnore    = (HANDLE)CreateProtoService( IRC_UM_IGNORE,    Service_MenuIgnore );
 
 	hpsEDblCkick	 = (HANDLE)CreateProtoService( "/DblClickEvent", Service_EventDoubleclicked );
 	hpsCInsertRawIn  = (HANDLE)CreateProtoService( "/InsertRawIn",   Scripting_InsertRawIn );
@@ -2035,7 +2129,7 @@ VOID CALLBACK RetryTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime)
 		mir_sntprintf(szTemp, SIZEOF(szTemp), _T("\0033%s \002%s\002 (") _T(TCHAR_STR_PARAM) _T(": %u, try %u)"),
 			TranslateT("Reconnecting to"), si.sNetwork.c_str(), si.sServer.c_str(), si.iPort, RetryCount);
 
-		DoEvent(GC_EVENT_INFORMATION, _T("Network log"), NULL, szTemp, NULL, NULL, NULL, true, false);
+		DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, NULL, szTemp, NULL, NULL, NULL, true, false);
 
 		if (!bConnectThreadRunning)
 			mir_forkthread(ConnectServerThread, NULL  );

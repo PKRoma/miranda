@@ -421,7 +421,7 @@ int CallChatEvent(WPARAM wParam, LPARAM lParam)
 	// first see if the scripting module should modify or stop this event
 	if ( bMbotInstalled && prefs->ScriptingEnabled && gce 
 		&& gce->time != 0 && (gce->pDest->pszID == NULL 
-		|| lstrlen(gce->pDest->ptszID) != 0 && lstrcmpi(gce->pDest->ptszID , _T("Network Log"))))
+		|| lstrlen(gce->pDest->ptszID) != 0 && lstrcmpi(gce->pDest->ptszID , SERVERWINDOW)))
 	{
 		GCEVENT *gcevent= (GCEVENT*) lParam;
 		GCEVENT *gcetemp = NULL;
@@ -494,7 +494,7 @@ int DoEvent(int iEvent, const TCHAR* pszWindow, const TCHAR* pszNick,
 	}
 
 	if ( pszWindow ) {
-		if ( lstrcmpi( pszWindow, _T("Network log")))
+		if ( lstrcmpi( pszWindow, SERVERWINDOW))
 			sID = pszWindow + (TString)_T(" - ") + g_ircSession.GetInfo().sNetwork;
 		else
 			sID = pszWindow;

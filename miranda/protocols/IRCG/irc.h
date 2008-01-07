@@ -26,10 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "m_stdhdr.h"
 
-// disable a lot of warnings. It should comppile on VS 6 also
-#pragma warning( disable : 4076 )
-#pragma warning( disable : 4786 )
-#pragma warning( disable : 4996 )
+#define _CRT_SECURE_NO_WARNINGS
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -89,14 +86,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define IRC_CHANGENICK        "/ChangeNickMenu"
 #define IRC_SHOWLIST          "/ShowListMenu"
 #define IRC_SHOWSERVER        "/ShowServerMenu"
-#define IRC_MENU1CHANNEL      "/Menu1ChannelMenu"
-#define IRC_MENU2CHANNEL      "/Menu2ChannelMenu"
-#define IRC_MENU3CHANNEL      "/Menu3ChannelMenu"
+#define IRC_UM_SHOWCHANNEL    "/UMenuShowChannel"
+#define IRC_UM_JOINLEAVE      "/UMenuJoinLeave"
+#define IRC_UM_CHANSETTINGS	  "/UMenuChanSettings"
+#define IRC_UM_WHOIS	      "/UMenuWhois"
+#define IRC_UM_DISCONNECT     "/UMenuDisconnect"
+#define IRC_UM_IGNORE		  "/UMenuIgnore"
 
 #define STR_QUITMESSAGE  "\002Miranda IM!\002 Smaller, Faster, Easier. http://miranda-im.org"
 #define STR_USERINFO     "I'm a happy Miranda IM user! Get it here: http://miranda-im.org"
 #define STR_AWAYMESSAGE  "I'm away from the computer." // Default away
 #define DCCSTRING        " (DCC)"
+#define SERVERWINDOW	 _T("Network log")
 
 #define DCC_CHAT		1
 #define DCC_SEND		2
@@ -253,7 +254,6 @@ struct PREFERENCES  // Preferences structure
 	TCHAR    IdentPort[10];
 	TCHAR    RetryWait[10];
 	TCHAR    RetryCount[10];
-
 	TCHAR    Nick[30];
 	TCHAR    AlternativeNick[30];
 	TCHAR    Name[200];
@@ -327,7 +327,7 @@ void   UpgradeCheck(void);
 extern TString StatusMessage;
 extern bool    bMbotInstalled;
 extern int     iTempCheckTime;
-extern HANDLE  hMenuQuick, hMenuServer, hMenuJoin, hMenuNick, hMenuList;
+extern HANDLE  hMenuRoot, hMenuQuick, hMenuServer, hMenuJoin, hMenuNick, hMenuList;
 extern HANDLE  hNetlib, hNetlibDCC;
 
 void   HookEvents(void);

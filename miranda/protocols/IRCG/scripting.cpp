@@ -124,7 +124,7 @@ int Scripting_InsertGuiOut( WPARAM wParam,LPARAM lParam )
 		else gchook->pDest->ptszID = NULL;
 
 		if ( gch->pDest->pszModule )
-			gchook->pDest->pszModule = strdup(gch->pDest->pszModule);
+			gchook->pDest->pszModule = _strdup(gch->pDest->pszModule);
 		else gchook->pDest->pszModule = NULL;
 
 		mir_forkthread( GuiOutThread, gchook );
@@ -244,7 +244,7 @@ int Scripting_GetIrcData(WPARAM wparam, LPARAM lparam)
 					gci.pszModule = IRCPROTONAME;
 					gci.iItem = j;
 					if ( !CallServiceSync( MS_GC_GETINFO, 0, ( LPARAM )&gci )) {
-						if ( lstrcmpi( gci.pszID, _T("network log"))) {
+						if ( lstrcmpi( gci.pszID, SERVERWINDOW)) {
 							TString S1 = gci.pszID;
 							int k = S1.find(_T(" "), 0);
 							if ( k != string::npos )

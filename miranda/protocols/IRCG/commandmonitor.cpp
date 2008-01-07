@@ -662,7 +662,7 @@ bool CMyMonitor::OnIrc_MODE( const CIrcMessage* pmsg )
 			for ( int i=2; i < (int)pmsg->parameters.size(); i++ )
 				sMessage = sMessage  + _T(" ") + pmsg->parameters[i];
 
-			DoEvent(GC_EVENT_INFORMATION, _T("Network Log"), pmsg->prefix.sNick.c_str(), sMessage.c_str(), NULL, NULL, NULL, true, false); 
+			DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, pmsg->prefix.sNick.c_str(), sMessage.c_str(), NULL, NULL, NULL, true, false); 
 		}
 	}
 	else ShowMessage( pmsg ); 
@@ -896,7 +896,7 @@ bool CMyMonitor::IsCTCP( const CIrcMessage* pmsg )
 				
 				TCHAR temp[300];
 				mir_sntprintf( temp, SIZEOF(temp), TranslateT("CTCP FINGER requested by %s"), pmsg->prefix.sNick.c_str());
-				DoEvent(GC_EVENT_INFORMATION, _T("Network log"), NULL, temp, NULL, NULL, NULL, true, false); 
+				DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, NULL, temp, NULL, NULL, NULL, true, false); 
 			}
 
 			// incoming VERSION
@@ -911,7 +911,7 @@ bool CMyMonitor::IsCTCP( const CIrcMessage* pmsg )
 
 				TCHAR temp[300];
 				mir_sntprintf( temp, SIZEOF(temp), TranslateT("CTCP VERSION requested by %s"), pmsg->prefix.sNick.c_str());
-				DoEvent(GC_EVENT_INFORMATION, _T("Network log"), NULL, temp, NULL, NULL, NULL, true, false); 
+				DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, NULL, temp, NULL, NULL, NULL, true, false); 
 			}
 
 			// incoming SOURCE
@@ -920,7 +920,7 @@ bool CMyMonitor::IsCTCP( const CIrcMessage* pmsg )
 				
 				TCHAR temp[300];
 				mir_sntprintf( temp, SIZEOF(temp), TranslateT("CTCP SOURCE requested by %s"), pmsg->prefix.sNick.c_str());
-				DoEvent(GC_EVENT_INFORMATION, _T("Network log"), NULL, temp, NULL, NULL, NULL, true, false); 
+				DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, NULL, temp, NULL, NULL, NULL, true, false); 
 			}
 
 			// incoming USERINFO
@@ -929,7 +929,7 @@ bool CMyMonitor::IsCTCP( const CIrcMessage* pmsg )
 				
 				TCHAR temp[300];
 				mir_sntprintf( temp, SIZEOF(temp), TranslateT("CTCP USERINFO requested by %s") , pmsg->prefix.sNick.c_str());
-				DoEvent(GC_EVENT_INFORMATION, _T("Network log"), NULL, temp, NULL, NULL, NULL, true, false); 
+				DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, NULL, temp, NULL, NULL, NULL, true, false); 
 			}
 
 			// incoming PING
@@ -938,7 +938,7 @@ bool CMyMonitor::IsCTCP( const CIrcMessage* pmsg )
 				
 				TCHAR temp[300];
 				mir_sntprintf( temp, SIZEOF(temp), TranslateT("CTCP PING requested by %s"), pmsg->prefix.sNick.c_str());
-				DoEvent(GC_EVENT_INFORMATION, _T("Network log"), NULL, temp, NULL, NULL, NULL, true, false); 
+				DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, NULL, temp, NULL, NULL, NULL, true, false); 
 			}
 
 			// incoming TIME
@@ -949,7 +949,7 @@ bool CMyMonitor::IsCTCP( const CIrcMessage* pmsg )
 				PostIrcMessage( _T("/NOTICE %s \001TIME %s\001"), pmsg->prefix.sNick.c_str(), temp);
 				
 				mir_sntprintf(temp, SIZEOF(temp), TranslateT("CTCP TIME requested by %s"), pmsg->prefix.sNick.c_str());
-				DoEvent(GC_EVENT_INFORMATION, _T("Network log"), NULL, temp, NULL, NULL, NULL, true, false); 
+				DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, NULL, temp, NULL, NULL, NULL, true, false); 
 			}
 
 			// incoming DCC request... lots of stuff happening here...
@@ -1277,7 +1277,7 @@ bool CMyMonitor::IsCTCP( const CIrcMessage* pmsg )
 			else if ( pmsg->m_bIncoming ) {
 				TCHAR temp[300];
 				mir_sntprintf(temp, SIZEOF(temp), TranslateT("CTCP %s requested by %s"), ocommand.c_str(), pmsg->prefix.sNick.c_str());
-				DoEvent(GC_EVENT_INFORMATION, _T("Network log"), NULL, temp, NULL, NULL, NULL, true, false); 
+				DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, NULL, temp, NULL, NULL, NULL, true, false); 
 		}	}
 
 		// handle incoming ctcp in notices. This technique is used for replying to CTCP queries
@@ -1320,11 +1320,11 @@ bool CMyMonitor::IsCTCP( const CIrcMessage* pmsg )
 			if ( pmsg->m_bIncoming && command == _T("ping")) {
 				int s = (int)time(0) - (int)_ttol(GetWordAddress(mess.c_str(), 1));
 				mir_sntprintf( szTemp, SIZEOF(szTemp), TranslateT("CTCP PING reply from %s: %u sec(s)"), pmsg->prefix.sNick.c_str(), s); 
-				DoEvent( GC_EVENT_INFORMATION, _T("Network log"), NULL, szTemp, NULL, NULL, NULL, true, false ); 
+				DoEvent( GC_EVENT_INFORMATION, SERVERWINDOW, NULL, szTemp, NULL, NULL, NULL, true, false ); 
 			}
 			else {
 				mir_sntprintf( szTemp, SIZEOF(szTemp), TranslateT("CTCP %s reply from %s: %s"), ocommand.c_str(), pmsg->prefix.sNick.c_str(), GetWordAddress(mess.c_str(), 1));	
-				DoEvent( GC_EVENT_INFORMATION, _T("Network log"), NULL, szTemp, NULL, NULL, NULL, true, false ); 
+				DoEvent( GC_EVENT_INFORMATION, SERVERWINDOW, NULL, szTemp, NULL, NULL, NULL, true, false ); 
 		}	}		
 		
 		return true;
@@ -1429,7 +1429,7 @@ bool CMyMonitor::OnIrc_ENDNAMES( const CIrcMessage* pmsg )
 					gce.ptszStatus = sStat.c_str();
 					BOOL bIsMe = ( !lstrcmpi( gce.ptszNick, m_session.GetInfo().sNick.c_str())) ? TRUE : FALSE;
 					if ( bIsMe ) {
-						BYTE BitNr = 0;
+						char BitNr = -1;
 						switch ( sTemp2[0] ) {
 							case '+':   BitNr = 0;   break;
 							case '%':   BitNr = 1;   break;
@@ -1437,7 +1437,10 @@ bool CMyMonitor::OnIrc_ENDNAMES( const CIrcMessage* pmsg )
 							case '!':   BitNr = 3;   break;
 							case '*':   BitNr = 4;   break;
 						}
-						btOwnMode = ( 1 << BitNr );
+						if (BitNr >=0)
+							btOwnMode = ( 1 << BitNr );
+						else
+							btOwnMode = 0;
 					}
 					gce.dwFlags = GC_TCHAR;
 					gce.bIsMe = bIsMe;
@@ -2431,7 +2434,7 @@ void CMyMonitor::OnIrcDisconnected()
 
 	TString sDisconn = _T("\0035\002");
 	sDisconn += TranslateT("*Disconnected*");
-	DoEvent(GC_EVENT_INFORMATION, _T("Network log"), NULL, sDisconn.c_str(), NULL, NULL, NULL, true, false); 
+	DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, NULL, sDisconn.c_str(), NULL, NULL, NULL, true, false); 
 
 	{
 		GCDEST gcd = {0};
@@ -2516,14 +2519,14 @@ bool DoOnConnect( const CIrcMessage* pmsg )
 					PostIrcMessage( _T("/JOIN %s"), gci.pszName);
 	}	}	}
 
-	DoEvent( GC_EVENT_ADDGROUP, _T("Network log"), NULL, NULL, _T("Normal"), NULL, NULL, FALSE, TRUE); 
+	DoEvent( GC_EVENT_ADDGROUP, SERVERWINDOW, NULL, NULL, _T("Normal"), NULL, NULL, FALSE, TRUE); 
 	{
 		GCDEST gcd = {0};
 		GCEVENT gce = {0};
 
 		gce.dwFlags = GC_TCHAR;
 		gce.cbSize = sizeof(GCEVENT);
-		gcd.ptszID = _T("Network log");
+		gcd.ptszID = SERVERWINDOW;
 		gcd.pszModule = IRCPROTONAME;
 		gcd.iType = GC_EVENT_CONTROL;
 		gce.pDest = &gcd;

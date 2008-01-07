@@ -1018,7 +1018,7 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 				SendDlgItemMessage( hwndDlg, IDC_SERVERCOMBO, CB_SETITEMDATA, iItem,(LPARAM) pData);
 		}	}
 
-		SendDlgItemMessage( hwndDlg, IDC_SERVERCOMBO, CB_SETCURSEL, prefs->ServerComboSelection,0);				
+		SendDlgItemMessage( hwndDlg, IDC_SERVERCOMBO, CB_SETCURSEL, prefs->ServerComboSelection - 1,0);				
 		SetDlgItemTextA( hwndDlg,IDC_SERVER, prefs->ServerName);
 		SetDlgItemTextA( hwndDlg,IDC_PORT, prefs->PortStart);
 		SetDlgItemTextA( hwndDlg,IDC_PORT2, prefs->PortEnd);
@@ -1033,7 +1033,7 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 		else SetDlgItemText( hwndDlg, IDC_SSL, TranslateT( "N/A" ));
 
 		if ( prefs->ServerComboSelection != -1 ) {
-			SERVER_INFO* pData = ( SERVER_INFO* )SendDlgItemMessage( hwndDlg, IDC_SERVERCOMBO, CB_GETITEMDATA, prefs->ServerComboSelection, 0);
+			SERVER_INFO* pData = ( SERVER_INFO* )SendDlgItemMessage( hwndDlg, IDC_SERVERCOMBO, CB_GETITEMDATA, prefs->ServerComboSelection - 1, 0);
 			if ((int)pData != CB_ERR) {
 				SetDlgItemTextA( hwndDlg, IDC_SERVER, pData->Address   );
 				SetDlgItemTextA( hwndDlg, IDC_PORT,   pData->PortStart );
@@ -1324,7 +1324,7 @@ BOOL CALLBACK ConnectPrefsProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lPara
 					DBWriteContactSettingByte(NULL,IRCPROTONAME,"JoinOnInvite",prefs->JoinOnInvite);
 					prefs->HideServerWindow = IsDlgButtonChecked( hwndDlg, IDC_SHOWSERVER )== BST_UNCHECKED;
 					DBWriteContactSettingByte(NULL,IRCPROTONAME,"HideServerWindow",prefs->HideServerWindow);
-					prefs->ServerComboSelection = SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_GETCURSEL, 0, 0);
+					prefs->ServerComboSelection = SendMessage(GetDlgItem( hwndDlg, IDC_SERVERCOMBO), CB_GETCURSEL, 0, 0) + 1;
 					DBWriteContactSettingDword(NULL,IRCPROTONAME,"ServerComboSelection",prefs->ServerComboSelection);
 					prefs->SendKeepAlive = IsDlgButtonChecked( hwndDlg, IDC_KEEPALIVE )== BST_CHECKED;
 					DBWriteContactSettingByte(NULL,IRCPROTONAME,"SendKeepAlive",prefs->SendKeepAlive);

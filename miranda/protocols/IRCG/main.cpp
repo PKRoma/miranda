@@ -93,7 +93,7 @@ static void GetModuleName( void )	 // ripped from msn
 			p2++;
 		}
 
-		IRCPROTONAME = strdup( p );
+		IRCPROTONAME = _strdup( p );
 		ALTIRCPROTONAME = new char[lstrlenA( IRCPROTONAME ) + 7 ];
 		CharUpperA(IRCPROTONAME);
 

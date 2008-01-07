@@ -155,7 +155,7 @@ BOOL ShowMessage (const CIrcMessage* pmsg)
 	}
 
 	if ( prefs->UseServer ) {
-		DoEvent( GC_EVENT_INFORMATION, _T("Network log"), 
+		DoEvent( GC_EVENT_INFORMATION, SERVERWINDOW, 
 			( pmsg->m_bIncoming ) ? pmsg->prefix.sNick.c_str() : g_ircSession.GetInfo().sNick.c_str(),
 			mess.c_str(), NULL, NULL, NULL, true, pmsg->m_bIncoming ? false : true ); 
 		return true;

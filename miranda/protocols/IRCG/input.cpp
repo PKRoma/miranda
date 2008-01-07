@@ -224,7 +224,7 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 			GCDEST gcd = {0};
 			gce.dwFlags = GC_TCHAR;
 			gcd.iType = GC_EVENT_CONTROL;
-			gcd.ptszID = _T("Network log");
+			gcd.ptszID = SERVERWINDOW;
 			gcd.pszModule = IRCPROTONAME;
 			gce.cbSize = sizeof(GCEVENT);
 			gce.pDest = &gcd;
@@ -237,11 +237,11 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 		TString S;
 		if ( !one.empty() ) {
 			if ( one == _T("server"))
-				S = _T("Network log");
+				S = SERVERWINDOW;
 			else
 				S = MakeWndID( one.c_str() );
 		}
-		else if ( lstrcmpi( window, _T("Network log")) == 0 )
+		else if ( lstrcmpi( window, SERVERWINDOW) == 0 )
 			S = window;
 		else
 			S = MakeWndID( window );
@@ -581,7 +581,7 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 
 		if ( lstrcmpi(two.c_str(), _T("dcc")) != 0 ) {
 			mir_sntprintf( szTemp, SIZEOF(szTemp), TranslateT("CTCP %s request sent to %s"), two.c_str(), one.c_str());
-			DoEvent(GC_EVENT_INFORMATION, _T("Network Log"), g_ircSession.GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
+			DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, g_ircSession.GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
 		}
 
 		return true;
@@ -777,9 +777,9 @@ bool PostIrcMessageWnd( TCHAR* window, HANDLE hContact, const TCHAR* szBuf )
 	else if( window )
 		lstrcpyn( windowname, window, 255 );
 	else 
-		lstrcpyn( windowname, _T("Network log"), 255 );
+		lstrcpyn( windowname, SERVERWINDOW, 255 );
 
-	if ( lstrcmpi( window, _T("Network log")) != 0 ) {
+	if ( lstrcmpi( window, SERVERWINDOW) != 0 ) {
 		TCHAR* p1 = _tcschr( windowname, ' ' );
 		if ( p1 )
 			*p1 = '\0';
@@ -833,7 +833,7 @@ bool PostIrcMessageWnd( TCHAR* window, HANDLE hContact, const TCHAR* szBuf )
 		if (  (GetWord( DoThis.c_str(), 0)[0] != '/') ||													// not a command
 			  ( (GetWord( DoThis.c_str(), 0)[0] == '/') && (GetWord( DoThis.c_str(), 0)[1] == '/') ) ||		// or double backslash at the beginning
 			  hContact ) {
-			if ( lstrcmpi(window, _T("Network log")) == 0 && !g_ircSession.GetInfo().sServerName.empty() )
+			if ( lstrcmpi(window, SERVERWINDOW) == 0 && !g_ircSession.GetInfo().sServerName.empty() )
 				DoThis = (TString)_T("/PRIVMSG ") + g_ircSession.GetInfo().sServerName + _T(" ") + DoThis;
 			else
 				DoThis = (TString)_T("/PRIVMSG ") + windowname + _T(" ") + DoThis;
