@@ -210,7 +210,7 @@ void ProcessAvatarInfo(HANDLE hContact, int type, PROTO_AVATAR_INFORMATION *pai,
 		}
 		else
 		{
-			// As we can't load it, notify as deleted
+			// As we can't load it, notify but don't load
 			ChangeAvatar(hContact, FALSE, TRUE, pai->format);
 		}
 	}
