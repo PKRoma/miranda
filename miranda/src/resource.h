@@ -111,8 +111,9 @@
 #define IDD_OPT_HOTKEYS                 278
 #define IDI_UNDO                        279
 #define IDI_WINDOW                      280
-#define IDI_ICON3                       281
 #define IDI_WINDOWS                     281
+#define IDI_ACCMGR                      282
+#define IDD_ACCMGR                      282
 #define IDC_SAVE                        1001
 #define IDI_ONTHEPHONE                  1002
 #define IDC_MESSAGE                     1002
@@ -415,6 +416,9 @@
 #define IDC_PATH                        1707
 #define IDC_LV_HOTKEYS                  1708
 #define IDC_HOTKEY                      1709
+#define IDC_REMOVE                      1712
+#define IDC_LIST1                       1713
+#define IDC_ACCLIST                     1713
 #define IDI_SEARCHALL                   32548
 #define ID_ICQ_EXIT                     40001
 #define IDM_COPY                        40001
@@ -439,15 +443,14 @@
 #define POPUP_NEWGROUP                  40050
 #define POPUP_RENAMEGROUP               40052
 #define POPUP_DELETEGROUP               40053
-#define IDC_STATIC						-1
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        282
+#define _APS_NEXT_RESOURCE_VALUE        283
 #define _APS_NEXT_COMMAND_VALUE         40018
-#define _APS_NEXT_CONTROL_VALUE         1710
+#define _APS_NEXT_CONTROL_VALUE         1714
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

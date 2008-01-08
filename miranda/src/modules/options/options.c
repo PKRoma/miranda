@@ -296,8 +296,8 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 			else dat->opd[i].pszTab = ( TCHAR* )mir_strdup( odp[i].pszTab );
 
 			if ( !lstrcmp( lastPage, odp[i].ptszTitle ) &&
-				!lstrcmpnull( lastGroup, odp[i].ptszGroup ) &&
-				!lstrcmpnull( lastTab, odp[i].ptszTab ) )
+				  !lstrcmpnull( lastGroup, odp[i].ptszGroup ) &&
+				  ( ood->pszTab == NULL || !lstrcmpnull( lastTab, odp[i].ptszTab )))
 				dat->currentPage = i;
 		}
 		mir_free( lastGroup );

@@ -33,6 +33,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_stdhdr.h"
 
 #include <windows.h>
+#include <windowsx.h>
 #include <commctrl.h>
 #include <stdio.h>
 #include <time.h>
@@ -41,7 +42,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <io.h>
 #include <string.h>
 #include <direct.h>
-#include "../resource.h"
 #include <win2k.h>
 #include "modules.h"
 #include <m_system.h>

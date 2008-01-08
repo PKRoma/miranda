@@ -1907,6 +1907,12 @@
 							BrowseInformation="1"/>
 					</FileConfiguration>
 				</File>
+				<File
+					RelativePath=".\modules\protocols\protoint.c">
+				</File>
+				<File
+					RelativePath=".\modules\protocols\protoopts.c">
+				</File>
 			</Filter>
 			<Filter
 				Name="skin"

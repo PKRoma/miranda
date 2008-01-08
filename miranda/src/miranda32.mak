@@ -208,6 +208,10 @@ CLEAN :
 	-@erase "$(INTDIR)\protocolorder.sbr"
 	-@erase "$(INTDIR)\protocols.obj"
 	-@erase "$(INTDIR)\protocols.sbr"
+	-@erase "$(INTDIR)\protoint.obj"
+	-@erase "$(INTDIR)\protoint.sbr"
+	-@erase "$(INTDIR)\protoopts.obj"
+	-@erase "$(INTDIR)\protoopts.sbr"
 	-@erase "$(INTDIR)\resizer.obj"
 	-@erase "$(INTDIR)\resizer.sbr"
 	-@erase "$(INTDIR)\searchresults.obj"
@@ -363,7 +367,9 @@ BSC32_SBRS= \
 	"$(INTDIR)\extracticon.sbr" \
 	"$(INTDIR)\IcoLib.sbr" \
 	"$(INTDIR)\skin2icons.sbr" \
-	"$(INTDIR)\updatenotify.sbr"
+	"$(INTDIR)\updatenotify.sbr" \
+	"$(INTDIR)\protoopts.sbr" \
+	"$(INTDIR)\protoint.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -474,7 +480,9 @@ LINK32_OBJS= \
 	"$(INTDIR)\IcoLib.obj" \
 	"$(INTDIR)\skin2icons.obj" \
 	"$(INTDIR)\updatenotify.obj" \
-	"$(INTDIR)\vc6.res"
+	"$(INTDIR)\vc6.res" \
+	"$(INTDIR)\protoopts.obj" \
+	"$(INTDIR)\protoint.obj"
 
 "..\bin\release\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -658,6 +666,10 @@ CLEAN :
 	-@erase "$(INTDIR)\protocolorder.sbr"
 	-@erase "$(INTDIR)\protocols.obj"
 	-@erase "$(INTDIR)\protocols.sbr"
+	-@erase "$(INTDIR)\protoint.obj"
+	-@erase "$(INTDIR)\protoint.sbr"
+	-@erase "$(INTDIR)\protoopts.obj"
+	-@erase "$(INTDIR)\protoopts.sbr"
 	-@erase "$(INTDIR)\resizer.obj"
 	-@erase "$(INTDIR)\resizer.sbr"
 	-@erase "$(INTDIR)\searchresults.obj"
@@ -814,7 +826,9 @@ BSC32_SBRS= \
 	"$(INTDIR)\extracticon.sbr" \
 	"$(INTDIR)\IcoLib.sbr" \
 	"$(INTDIR)\skin2icons.sbr" \
-	"$(INTDIR)\updatenotify.sbr"
+	"$(INTDIR)\updatenotify.sbr" \
+	"$(INTDIR)\protoopts.sbr" \
+	"$(INTDIR)\protoint.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -925,7 +939,9 @@ LINK32_OBJS= \
 	"$(INTDIR)\IcoLib.obj" \
 	"$(INTDIR)\skin2icons.obj" \
 	"$(INTDIR)\updatenotify.obj" \
-	"$(INTDIR)\vc6.res"
+	"$(INTDIR)\vc6.res" \
+	"$(INTDIR)\protoopts.obj" \
+	"$(INTDIR)\protoint.obj"
 
 "..\bin\debug\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -1024,6 +1040,8 @@ CLEAN :
 	-@erase "$(INTDIR)\protochains.obj"
 	-@erase "$(INTDIR)\protocolorder.obj"
 	-@erase "$(INTDIR)\protocols.obj"
+	-@erase "$(INTDIR)\protoint.obj"
+	-@erase "$(INTDIR)\protoopts.obj"
 	-@erase "$(INTDIR)\resizer.obj"
 	-@erase "$(INTDIR)\searchresults.obj"
 	-@erase "$(INTDIR)\sendmsg.obj"
@@ -1164,7 +1182,9 @@ LINK32_OBJS= \
 	"$(INTDIR)\IcoLib.obj" \
 	"$(INTDIR)\skin2icons.obj" \
 	"$(INTDIR)\updatenotify.obj" \
-	"$(INTDIR)\vc6.res"
+	"$(INTDIR)\vc6.res" \
+	"$(INTDIR)\protoopts.obj" \
+	"$(INTDIR)\protoint.obj"
 
 "..\bin\Release Unicode\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -1348,6 +1368,10 @@ CLEAN :
 	-@erase "$(INTDIR)\protocolorder.sbr"
 	-@erase "$(INTDIR)\protocols.obj"
 	-@erase "$(INTDIR)\protocols.sbr"
+	-@erase "$(INTDIR)\protoint.obj"
+	-@erase "$(INTDIR)\protoint.sbr"
+	-@erase "$(INTDIR)\protoopts.obj"
+	-@erase "$(INTDIR)\protoopts.sbr"
 	-@erase "$(INTDIR)\resizer.obj"
 	-@erase "$(INTDIR)\resizer.sbr"
 	-@erase "$(INTDIR)\searchresults.obj"
@@ -1504,7 +1528,9 @@ BSC32_SBRS= \
 	"$(INTDIR)\extracticon.sbr" \
 	"$(INTDIR)\IcoLib.sbr" \
 	"$(INTDIR)\skin2icons.sbr" \
-	"$(INTDIR)\updatenotify.sbr"
+	"$(INTDIR)\updatenotify.sbr" \
+	"$(INTDIR)\protoopts.sbr" \
+	"$(INTDIR)\protoint.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -1615,7 +1641,9 @@ LINK32_OBJS= \
 	"$(INTDIR)\IcoLib.obj" \
 	"$(INTDIR)\skin2icons.obj" \
 	"$(INTDIR)\updatenotify.obj" \
-	"$(INTDIR)\vc6.res"
+	"$(INTDIR)\vc6.res" \
+	"$(INTDIR)\protoopts.obj" \
+	"$(INTDIR)\protoint.obj"
 
 "..\bin\Debug Unicode\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -2936,6 +2964,70 @@ SOURCE=.\modules\protocols\protocols.c
 
 
 "$(INTDIR)\protocols.obj"	"$(INTDIR)\protocols.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF
+
+SOURCE=.\modules\protocols\protoint.c
+
+!IF  "$(CFG)" == "miranda32 - Win32 Release"
+
+
+"$(INTDIR)\protoint.obj"	"$(INTDIR)\protoint.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
+
+
+"$(INTDIR)\protoint.obj"	"$(INTDIR)\protoint.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
+
+
+"$(INTDIR)\protoint.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
+
+
+"$(INTDIR)\protoint.obj"	"$(INTDIR)\protoint.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF
+
+SOURCE=.\modules\protocols\protoopts.c
+
+!IF  "$(CFG)" == "miranda32 - Win32 Release"
+
+
+"$(INTDIR)\protoopts.obj"	"$(INTDIR)\protoopts.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
+
+
+"$(INTDIR)\protoopts.obj"	"$(INTDIR)\protoopts.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
+
+
+"$(INTDIR)\protoopts.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
+
+
+"$(INTDIR)\protoopts.obj"	"$(INTDIR)\protoopts.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 

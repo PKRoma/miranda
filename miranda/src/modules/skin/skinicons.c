@@ -68,6 +68,7 @@ struct StandardIconDescription mainIcons[] =
 	{ SKINICON_OTHER_UNDO,	      LPGEN("Undo"),            -IDI_UNDO           },
 	{ SKINICON_OTHER_WINDOW,      LPGEN("Window"),          -IDI_WINDOW         },
 	{ SKINICON_OTHER_WINDOWS,     LPGEN("System"),          -IDI_WINDOWS        },
+	{ SKINICON_OTHER_ACCMGR,      LPGEN("Accounts"),        -IDI_ACCMGR         },
 };
 
 struct StandardIconDescription statusIcons[] =

@@ -5,8 +5,6 @@
 	Name="miranda32"
 	ProjectGUID="{F9916510-9055-4C9F-997A-3755DEC1511B}"
 	RootNamespace="miranda32"
-	SccProjectName=""
-	SccLocalPath=""
 	>
 	<Platforms>
 		<Platform
@@ -2116,6 +2114,14 @@
 							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\modules\protocols\protoint.c"
+					>
+				</File>
+				<File
+					RelativePath=".\modules\protocols\protoopts.c"
+					>
 				</File>
 			</Filter>
 			<Filter

@@ -593,6 +593,14 @@ SOURCE=.\modules\protocols\protochains.c
 
 SOURCE=.\modules\protocols\protocols.c
 # End Source File
+# Begin Source File
+
+SOURCE=.\modules\protocols\protoint.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\protocols\protoopts.c
+# End Source File
 # End Group
 # Begin Group "skin"
 

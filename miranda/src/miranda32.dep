@@ -27,6 +27,7 @@
 	"..\include\m_protomod.h"\
 	"..\include\m_protosvc.h"\
 	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
 	"..\include\m_system.h"\
 	"..\include\m_userinfo.h"\
 	"..\include\m_utils.h"\
@@ -67,6 +68,7 @@
 	"..\include\m_protomod.h"\
 	"..\include\m_protosvc.h"\
 	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
 	"..\include\m_system.h"\
 	"..\include\m_userinfo.h"\
 	"..\include\m_utils.h"\
@@ -107,6 +109,7 @@
 	"..\include\m_protomod.h"\
 	"..\include\m_protosvc.h"\
 	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
 	"..\include\m_system.h"\
 	"..\include\m_userinfo.h"\
 	"..\include\m_utils.h"\
@@ -147,6 +150,7 @@
 	"..\include\m_protomod.h"\
 	"..\include\m_protosvc.h"\
 	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
 	"..\include\m_system.h"\
 	"..\include\m_userinfo.h"\
 	"..\include\m_utils.h"\
@@ -192,6 +196,7 @@
 	"..\include\m_protomod.h"\
 	"..\include\m_protosvc.h"\
 	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
 	"..\include\m_system.h"\
 	"..\include\m_userinfo.h"\
 	"..\include\m_utils.h"\
@@ -273,6 +278,14 @@
 	"..\include\m_protocols.h"\
 	"..\include\m_protomod.h"\
 	"..\include\statusmodes.h"\
+	
+
+.\modules\protocols\protoint.c : \
+	"..\include\m_protoint.h"\
+	
+
+.\modules\protocols\protoopts.c : \
+	"..\include\m_protoint.h"\
 	
 
 .\modules\skin\hotkeys.c : \
@@ -468,6 +481,7 @@
 	"..\include\m_protomod.h"\
 	"..\include\m_protosvc.h"\
 	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
 	"..\include\m_system.h"\
 	"..\include\m_userinfo.h"\
 	"..\include\m_utils.h"\
@@ -507,6 +521,7 @@
 	".\res\cursor_hyperlink.cur"\
 	".\res\group_closed.ico"\
 	".\res\group_opened.ico"\
+	".\res\icon_accmgr.ico"\
 	".\res\icon_all.ico"\
 	".\res\icon_ansi.ico"\
 	".\res\icon_auth_request.ico"\

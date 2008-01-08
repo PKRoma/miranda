@@ -72,21 +72,22 @@ __inline static HANDLE LoadSkinnedIconHandle(int id) {return (HANDLE)CallService
 #define SKINICON_OTHER_UNDO         230     //v0.8.0.4+
 #define SKINICON_OTHER_WINDOW       231     //v0.8.0.4+
 #define SKINICON_OTHER_WINDOWS      232     //v0.8.0.4+
+#define SKINICON_OTHER_ACCMGR       233     //v0.8.0.4+
 
 //menu icons are owned by the module that uses them so are not and should not
 //be skinnable. Except exit and show/hide
 
 //status mode icons. NOTE: These are deprecated in favour of LoadSkinnedProtoIcon()
-#define SKINICON_STATUS_OFFLINE		0
-#define SKINICON_STATUS_ONLINE		1
-#define SKINICON_STATUS_AWAY		2
-#define SKINICON_STATUS_NA			3
-#define SKINICON_STATUS_OCCUPIED	4
-#define SKINICON_STATUS_DND			5
-#define SKINICON_STATUS_FREE4CHAT	6
-#define SKINICON_STATUS_INVISIBLE	7
-#define SKINICON_STATUS_ONTHEPHONE	8
-#define SKINICON_STATUS_OUTTOLUNCH	9
+#define SKINICON_STATUS_OFFLINE     0
+#define SKINICON_STATUS_ONLINE      1
+#define SKINICON_STATUS_AWAY        2
+#define SKINICON_STATUS_NA          3
+#define SKINICON_STATUS_OCCUPIED    4
+#define SKINICON_STATUS_DND         5
+#define SKINICON_STATUS_FREE4CHAT   6
+#define SKINICON_STATUS_INVISIBLE   7
+#define SKINICON_STATUS_ONTHEPHONE  8
+#define SKINICON_STATUS_OUTTOLUNCH  9
 
 //Loads an icon representing the status mode for a particular protocol.
 //wParam=(WPARAM)(const char*)szProto

@@ -2025,6 +2025,10 @@
 				Name="protocols"
 				>
 				<File
+					RelativePath="..\include\m_protoint.h"
+					>
+				</File>
+				<File
 					RelativePath="modules\protocols\protochains.c"
 					>
 					<FileConfiguration
@@ -2111,6 +2115,14 @@
 							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\modules\protocols\protoint.c"
+					>
+				</File>
+				<File
+					RelativePath=".\modules\protocols\protoopts.c"
+					>
 				</File>
 			</Filter>
 			<Filter
@@ -3710,6 +3722,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\res\icon_accmgr.ico"
+				>
+			</File>
+			<File
 				RelativePath=".\res\icon_all.ico"
 				>
 			</File>
@@ -3782,11 +3798,23 @@
 				>
 			</File>
 			<File
+				RelativePath=".\res\icon_undo.ico"
+				>
+			</File>
+			<File
 				RelativePath=".\res\icon_unicode.ico"
 				>
 			</File>
 			<File
 				RelativePath=".\res\icon_url.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\icon_window.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\icon_windows.ico"
 				>
 			</File>
 			<File
@@ -3858,6 +3886,10 @@
 				>
 			</File>
 		</Filter>
+		<File
+			RelativePath=".\miranda32.exe.manifest"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

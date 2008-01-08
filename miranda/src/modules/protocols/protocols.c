@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 
 int LoadProtoChains(void);
+int LoadProtoOptions( void );
 
 static HANDLE hAckEvent,hTypeEvent;
 
@@ -207,5 +208,6 @@ int LoadProtocolsModule(void)
 
 	CreateServiceFunction( MS_PROTO_RECVFILE,         Proto_RecvFile         );
 	CreateServiceFunction( MS_PROTO_RECVMSG,          Proto_RecvMessage      );
-	return 0;
+
+	return LoadProtoOptions();
 }
