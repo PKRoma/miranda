@@ -172,7 +172,12 @@ static int isPluginBanned(MUUID u1) {
 #define CHECKAPI_DB 	1
 #define CHECKAPI_CLIST  2
 
-static char* modulesToSkip[] = { "autoloadavatars.dll", "multiwindow.dll", "fontservice.dll", "icolib.dll" };
+/*
+ * historyeditor added by nightwish - plugin is problematic and can ruin database as it does not understand UTF-8 message
+ * storage
+ */
+     
+static char* modulesToSkip[] = { "autoloadavatars.dll", "multiwindow.dll", "fontservice.dll", "icolib.dll", "historyeditor.dll" };
 // The following plugins will be checked for a valid MUUID or they will not be loaded
 static char* expiredModulesToSkip[] = { "scriver.dll", "nconvers.dll", "tabsrmm.dll", "nhistory.dll", "historypp.dll", "help.dll", "loadavatars.dll",
                                         "tabsrmm_unicode.dll", "clist_nicer_plus.dll", "changeinfo.dll", "png2dib.dll", "dbx_mmap.dll", "dbx_3x.dll",
