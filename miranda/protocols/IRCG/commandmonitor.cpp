@@ -213,7 +213,7 @@ VOID CALLBACK OnlineNotifTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime
 
 	if ( !name2.empty()) {
 		TString params;
-		for ( int i = 0; i < 2; i++ ) {
+		for ( int i = 0; i < 3; i++ ) {
 			params = _T("");
 			for ( int j = 0; j < 5; j++ ) 
 				params += GetWord(NamesToUserhost.c_str(), i *5 + j) + _T(" ");
