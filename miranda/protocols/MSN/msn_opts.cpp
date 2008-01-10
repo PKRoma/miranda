@@ -247,7 +247,7 @@ LBL_Continue:
 			GetDlgItemTextA( hwndDlg, IDC_PASSWORD, password, sizeof( password ));
 			MSN_CallService( MS_DB_CRYPT_ENCODESTRING, sizeof( password ),( LPARAM )password );
 			if ( !DBGetContactSettingString( NULL, msnProtocolName, "Password", &dbv )) {
-				if ( lstrcmpA( password, dbv.pszVal )) {
+				if ( strcmp( password, dbv.pszVal )) {
 					reconnectRequired = true;
 					MSN_SetString( NULL, "Password", password );
 				}
@@ -260,11 +260,10 @@ LBL_Continue:
 
 			GetDlgItemText( hwndDlg, IDC_HANDLE2, screenStr, SIZEOF( screenStr ));
 			if	( !MSN_GetStringT( "Nick", NULL, &dbv )) {
-				if ( lstrcmp( dbv.ptszVal, screenStr ))
+				if ( _tcscmp( dbv.ptszVal, screenStr ))
 					MSN_SendNicknameT( screenStr );
 				MSN_FreeVariant( &dbv );
 			}
-			MSN_SetStringT( NULL, "Nick", screenStr );
 
 			unsigned mblsnd = IsDlgButtonChecked( hwndDlg, IDC_MOBILESEND );
 			if (mblsnd != MSN_GetByte( "MobileAllowed", 0))
