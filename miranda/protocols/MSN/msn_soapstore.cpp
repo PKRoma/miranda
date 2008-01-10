@@ -153,7 +153,7 @@ bool MSN_StoreGetProfile(void)
 		if (!MSN_GetByte( "NeverUpdateNickname", 0 ))
 		{
 			const char* szNick = ezxml_txt(ezxml_child(expr, "DisplayName"));
-			MSN_SetStringUtf(NULL, "Nick", (char*)szNick);
+			if (*szNick) MSN_SetStringUtf(NULL, "Nick", (char*)szNick);
 		}
 
 		ezxml_free(xmlm);
