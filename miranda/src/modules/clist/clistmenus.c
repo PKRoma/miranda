@@ -697,9 +697,11 @@ int StatusMenuExecService(WPARAM wParam,LPARAM lParam)
 
 				cli.currentDesiredStatusMode=smep->status;
 				//	NotifyEventHooks(hStatusModeChangeEvent,currentDesiredStatusMode,0);
-				for(i=0;i<protoCount;i++)
+				for(i=0;i<protoCount;i++) {
+					if (proto[i]->type != PROTOTYPE_PROTOCOL) continue;
 					if (!(MenusProtoCount>1 && DBGetContactSettingByte(NULL,proto[i]->szName,"LockMainStatus",0)))
 						CallProtoService(proto[i]->szName,PS_SETSTATUS,cli.currentDesiredStatusMode,0);
+				}
 				NotifyEventHooks(hStatusModeChangeEvent,cli.currentDesiredStatusMode,0);
 
 				DBWriteContactSettingWord(NULL,"CList","Status",(WORD)cli.currentDesiredStatusMode);
