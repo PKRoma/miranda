@@ -164,10 +164,13 @@ char * GetUniqueProtoName(char * proto)
     CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) & count, (LPARAM) & protos);
     for (i=0; i<count; i++)
     {
-        name[0] = '\0';
-        CallProtoService(protos[i]->szName, PS_GETNAME, sizeof(name), (LPARAM) name);
-        if (!_strcmpi(proto,name))
-            return protos[i]->szName;
+		if (protos[i]->type == PROTOTYPE_PROTOCOL)
+		{
+	        name[0] = '\0';
+	        CallProtoService(protos[i]->szName, PS_GETNAME, sizeof(name), (LPARAM) name);
+	        if (!_strcmpi(proto,name))
+	            return protos[i]->szName;
+		}
     }
     return NULL;
 }

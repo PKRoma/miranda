@@ -401,7 +401,13 @@ static int AwayMsgSendModulesLoaded(WPARAM wParam,LPARAM lParam)
 	protoModeMsgFlags=0;
 	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&proto);
 	for(i=0;i<protoCount;i++)
-		protoModeMsgFlags|=CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_3,0);
+	{
+		if (proto[i]->type == PROTOTYPE_PROTOCOL)
+		{
+			protoModeMsgFlags|=CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_3,0);
+		}
+	}
+
 	if(protoModeMsgFlags) {
 		HookEvent(ME_CLIST_STATUSMODECHANGE,StatusModeChange);
 		HookEvent(ME_OPT_INITIALISE,AwayMsgOptInitialise);
