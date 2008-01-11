@@ -140,15 +140,17 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd,UINT msg,WPARAM wParam
 
 void ChangeAllProtoMessages(char *szProto, int statusMode,char *msg)
 {
-	int protoCount,i;
-	PROTOCOLDESCRIPTOR **proto;
-
-	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&proto);
 	if (szProto) CallProtoService(szProto,PS_SETAWAYMSG,statusMode,(LPARAM)msg);
 	else {
+		int protoCount,i;
+		PROTOCOLDESCRIPTOR **proto;
+		CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&proto);
+		
 		for(i=0;i<protoCount;i++) {
-			if (CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_1,0)&PF1_MODEMSGSEND)
-				CallProtoService(proto[i]->szName,PS_SETAWAYMSG,statusMode,(LPARAM)msg);
+			if (proto[i]->type == PROTOTYPE_PROTOCOL) {
+				if (CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_1,0)&PF1_MODEMSGSEND)
+					CallProtoService(proto[i]->szName,PS_SETAWAYMSG,statusMode,(LPARAM)msg);
+			}
 		}
 	}
 }
@@ -403,9 +405,7 @@ static int AwayMsgSendModulesLoaded(WPARAM wParam,LPARAM lParam)
 	for(i=0;i<protoCount;i++)
 	{
 		if (proto[i]->type == PROTOTYPE_PROTOCOL)
-		{
 			protoModeMsgFlags|=CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_3,0);
-		}
 	}
 
 	if(protoModeMsgFlags) {

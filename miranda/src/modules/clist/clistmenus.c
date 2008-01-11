@@ -164,8 +164,7 @@ char * GetUniqueProtoName(char * proto)
     CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) & count, (LPARAM) & protos);
     for (i=0; i<count; i++)
     {
-		if (protos[i]->type == PROTOTYPE_PROTOCOL)
-		{
+		if (protos[i]->type == PROTOTYPE_PROTOCOL) {
 	        name[0] = '\0';
 	        CallProtoService(protos[i]->szName, PS_GETNAME, sizeof(name), (LPARAM) name);
 	        if (!_strcmpi(proto,name))
@@ -651,11 +650,8 @@ int StatusMenuExecService(WPARAM wParam,LPARAM lParam)
 				CallService(smep->svc, 0, (LPARAM)smep->hMenuItem);
 		}
 		else {
-			PROTOCOLDESCRIPTOR **proto;
-			int protoCount;
 			int i;
 
-			CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&proto);
 			if ( smep->status == 0 && smep->protoindex !=0 && smep->proto != NULL ) {
 				PMO_IntMenuItem pimi;
 				//char *prot = GetUniqueProtoName(smep->proto);
@@ -691,8 +687,13 @@ int StatusMenuExecService(WPARAM wParam,LPARAM lParam)
 			}
 			else {
 				int MenusProtoCount = 0;
+
+				PROTOCOLDESCRIPTOR **proto;
+				int protoCount;
+				CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&proto);
+
 				for( i=0; i < protoCount; i++ )
-					MenusProtoCount += ( cli.pfnGetProtocolVisibility( proto[i]->szName )) ? 1 : 0;
+					MenusProtoCount += ( proto[i]->type == PROTOTYPE_PROTOCOL && cli.pfnGetProtocolVisibility( proto[i]->szName )) ? 1 : 0;
 
 				cli.currentDesiredStatusMode=smep->status;
 				//	NotifyEventHooks(hStatusModeChangeEvent,currentDesiredStatusMode,0);
