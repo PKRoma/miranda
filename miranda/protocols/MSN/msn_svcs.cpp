@@ -628,12 +628,17 @@ static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 	if (( MSN_GetDword( AI->hContact, "FlagBits", 0 ) & 0xf0000000 ) == 0 )
 		return GAIR_NOAVATAR;
 
-	if ( MSN_IsMeByContact( AI->hContact )) return GAIR_NOAVATAR;
-
 	char szContext[ MAX_PATH ];
 	if ( MSN_GetStaticString(( AI->hContact == NULL ) ? "PictObject" : "PictContext", AI->hContact,
 		szContext, sizeof( szContext )))
 		return GAIR_NOAVATAR;
+
+	if ( MSN_IsMeByContact( AI->hContact ))
+	{
+		MSN_GetAvatarFileName( NULL, AI->filename, sizeof( AI->filename ));
+		AI->format = PA_FORMAT_PNG;
+		return 	(_access(AI->filename, 4) ? GAIR_NOAVATAR : GAIR_SUCCESS);
+	}
 
 	MSN_GetAvatarFileName( AI->hContact, AI->filename, sizeof( AI->filename ));
 	AI->format = PA_FORMAT_UNKNOWN;
