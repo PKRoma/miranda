@@ -28,8 +28,11 @@ typedef struct tagPROTO_INTERFACE
 {
 	int    iStatus,
           iDesiredStatus,
-          iXStatus;
+          iXStatus,
+			 iVersion;
+	BOOL	 bOldProto;
 	char*  szPhysName;
+	char*  szProtoName;
 	TCHAR* tszUserName;
 
 	DWORD  reserved[ 40 ];
@@ -49,7 +52,7 @@ typedef struct tagPROTO_INTERFACE
 	int    ( *FileDeny )( HANDLE hTransfer, const char* szReason );
 	int    ( *FileResume )( HANDLE hTransfer, int* action, const char** szFilename );
 
-	DWORD  ( *GetCaps )( void );
+	DWORD  ( *GetCaps )( int type );
 	HICON  ( *GetIcon )( int iconIndex );
 	int    ( *GetInfo )( int infoType );
 

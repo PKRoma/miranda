@@ -21,6 +21,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
+#include "m_protoint.h"
+
 #define NEWSTR_ALLOCA(A) (A==NULL)?NULL:strcpy((char*)alloca(strlen(A)+1),A)
 
 /**** memory.c *************************************************************************/
@@ -103,3 +105,8 @@ void Window_FreeIcon_IcoLib(HWND hWnd);
 extern int statusModeList[ MAX_STATUS_COUNT ];
 extern int skinIconStatusList[ MAX_STATUS_COUNT ];
 extern int skinIconStatusFlags[ MAX_STATUS_COUNT ];
+
+/**** protocols.c ***********************************************************************/
+
+PROTO_INTERFACE* AddDefaultAccount( const char* szProtoName );
+int CallProtoService( const char* szModule, const char* szService, WPARAM, LPARAM );

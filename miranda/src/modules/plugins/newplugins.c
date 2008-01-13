@@ -922,22 +922,23 @@ int LoadNewPluginsModuleInfos(void)
 	CreateServiceFunction(MS_PLUGINS_ENUMDBPLUGINS, PluginsEnum);
 	CreateServiceFunction(MS_PLUGINS_GETDISABLEDEFAULTARRAY, PluginsGetDefaultArray);
 	// make sure plugins can get internal core APIs
-	pluginCoreLink.CallService=CallService;
-	pluginCoreLink.ServiceExists=ServiceExists;
-	pluginCoreLink.CreateServiceFunction=CreateServiceFunction;
-	pluginCoreLink.CreateTransientServiceFunction=CreateServiceFunction;
-	pluginCoreLink.CreateServiceFunctionParam=CreateServiceFunctionParam;
-	pluginCoreLink.DestroyServiceFunction=DestroyServiceFunction;
-	pluginCoreLink.CreateHookableEvent=CreateHookableEvent;
-	pluginCoreLink.DestroyHookableEvent=DestroyHookableEvent;
-	pluginCoreLink.HookEvent=HookEvent;
-	pluginCoreLink.HookEventMessage=HookEventMessage;
-	pluginCoreLink.UnhookEvent=UnhookEvent;
-	pluginCoreLink.NotifyEventHooks=NotifyEventHooks;
-	pluginCoreLink.SetHookDefaultForHookableEvent=SetHookDefaultForHookableEvent;
-	pluginCoreLink.CallServiceSync=CallServiceSync;
-	pluginCoreLink.CallFunctionAsync=CallFunctionAsync;
-	pluginCoreLink.NotifyEventHooksDirect=CallHookSubscribers;
+	pluginCoreLink.CallService                    = CallService;
+	pluginCoreLink.ServiceExists                  = ServiceExists;
+	pluginCoreLink.CreateServiceFunction          = CreateServiceFunction;
+	pluginCoreLink.CreateTransientServiceFunction = CreateServiceFunction;
+	pluginCoreLink.CreateServiceFunctionParam     = CreateServiceFunctionParam;
+	pluginCoreLink.DestroyServiceFunction         = DestroyServiceFunction;
+	pluginCoreLink.CreateHookableEvent            = CreateHookableEvent;
+	pluginCoreLink.DestroyHookableEvent           = DestroyHookableEvent;
+	pluginCoreLink.HookEvent                      = HookEvent;
+	pluginCoreLink.HookEventMessage               = HookEventMessage;
+	pluginCoreLink.UnhookEvent                    = UnhookEvent;
+	pluginCoreLink.NotifyEventHooks               = NotifyEventHooks;
+	pluginCoreLink.SetHookDefaultForHookableEvent = SetHookDefaultForHookableEvent;
+	pluginCoreLink.CallServiceSync                = CallServiceSync;
+	pluginCoreLink.CallFunctionAsync              = CallFunctionAsync;
+	pluginCoreLink.NotifyEventHooksDirect         = CallHookSubscribers;
+	pluginCoreLink.CallProtoService               = CallProtoService;
 	// remember where the mirandaboot.ini goes
 	{
 		char exe[MAX_PATH];

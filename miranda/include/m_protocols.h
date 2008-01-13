@@ -29,6 +29,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "statusmodes.h"
 
 //call a specific protocol service. See the PS_ constants in m_protosvc.h
+#if MIRANDA_VER < 0x800
 __inline static int CallProtoService(const char *szModule,const char *szService,WPARAM wParam,LPARAM lParam)
 {
 	char str[MAXMODULELABELLENGTH];
@@ -36,6 +37,7 @@ __inline static int CallProtoService(const char *szModule,const char *szService,
 	strcat(str,szService);
 	return CallService(str,wParam,lParam);
 }
+#endif
 
 //send a general request through the protocol chain for a contact
 //wParam=0
@@ -144,11 +146,28 @@ typedef struct {
 //they can be encryption and loads of other things, too.
 //And yes, before you ask, that is triple indirection. Deal with it.
 //Access members using ppProtocolDescriptors[index]->element
+
+#define PROTOCOLDESCRIPTOR_V3_SIZE (sizeof(int)*2+sizeof(char*))
+
+typedef int ( *pfnInitProto )( struct PROTO_INTERFACE* ); // initializes an empty account
+typedef int ( *pfnUninitProto )( struct PROTO_INTERFACE* ); // deallocates an account instance
+typedef int ( *pfnDestroyProto )( struct PROTO_INTERFACE* ); // removes an account from the database
+
 typedef struct {
-	int cbSize;
-	char *szName;    //unique name of the module
-	int type;      //module type, see PROTOTYPE_ constants
-} PROTOCOLDESCRIPTOR;
+	int   cbSize;
+	char *szName;        // unique name of the module
+	int   type;          // module type, see PROTOTYPE_ constants
+
+	// 0.8.0+ additions
+	#if MIRANDA_VER >= 0x800
+		int   instanceSize; // protocol structure sizeof()
+		pfnInitProto fnInit; // initializes an empty account
+		pfnUninitProto fnUninit; // deallocates an account instance
+		pfnDestroyProto fnDestroy; // removes an account
+	#endif
+}
+	PROTOCOLDESCRIPTOR;
+
 // v0.3.3+:
 //
 // For recv, it will go from lower to higher, so in this case:
@@ -220,6 +239,17 @@ typedef struct {
 //lParam=(LPARAM)(int)typing state
 #define ME_PROTO_CONTACTISTYPING "Proto/ContactIsTypingEvent"
 
+// -------------- accounts support --------------------- 0.8.0+ 
+
+//account enumeration service
+//wParam=(WPARAM)(int*)piNumAccounts
+//lParam=(LPARAM)(PROTO_INTERFACE**)paAccounts
+#define MS_PROTO_ENUMACCOUNTS "Proto/EnumAccounts"
+
+//retrieves an account's interface by its physical name (database module)
+//wParam=0
+//lParam=(LPARAM)(char*)szAccountName
+#define MS_PROTO_GETACCOUNT "Proto/GetAccount"
 
 /* -------------- avatar support ---------------------
 

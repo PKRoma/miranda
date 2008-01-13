@@ -261,7 +261,7 @@
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
-				AssemblerListingLocation=""
+				AssemblerOutput="4"
 				BrowseInformation="0"
 				BrowseInformationFile=""
 				WarningLevel="3"
@@ -387,7 +387,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="wsock32.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib"
-				LinkIncremental="1"
+				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				AdditionalManifestDependencies="type=&apos;win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;*&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
 				GenerateDebugInformation="true"
@@ -3886,10 +3886,6 @@
 				>
 			</File>
 		</Filter>
-		<File
-			RelativePath=".\miranda32.exe.manifest"
-			>
-		</File>
 	</Files>
 	<Globals>
 	</Globals>

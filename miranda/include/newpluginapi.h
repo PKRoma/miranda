@@ -131,10 +131,10 @@ typedef struct {
 } PLUGININFOEX;
 
 #ifndef MODULES_H_
-typedef int (*MIRANDAHOOK)(WPARAM,LPARAM);
-typedef int (*MIRANDASERVICE)(WPARAM,LPARAM);
-typedef int (*MIRANDASERVICEPARAM)(WPARAM,LPARAM,LPARAM);
-#define CALLSERVICE_NOTFOUND      ((int)0x80000000)
+	typedef int (*MIRANDAHOOK)(WPARAM,LPARAM);
+	typedef int (*MIRANDASERVICE)(WPARAM,LPARAM);
+	typedef int (*MIRANDASERVICEPARAM)(WPARAM,LPARAM,LPARAM);
+	#define CALLSERVICE_NOTFOUND      ((int)0x80000000)
 #endif
 
 //see modules.h for what all this stuff is
@@ -155,29 +155,35 @@ typedef struct {
 	int (*SetHookDefaultForHookableEvent) (HANDLE, MIRANDAHOOK); // v0.3.4 (2004/09/15)
 	HANDLE (*CreateServiceFunctionParam)(const char *,MIRANDASERVICEPARAM,LPARAM); // v0.7+ (2007/04/24)
 	int (*NotifyEventHooksDirect)(HANDLE,WPARAM,LPARAM); // v0.7+
+	#if MIRANDA_VER >= 0x800
+		int (*CallProtoService)(const char *, const char *, WPARAM, LPARAM );
+	#endif
 } PLUGINLINK;
 
 #ifndef MODULES_H_
-#ifndef NODEFINEDLINKFUNCTIONS
-//relies on a global variable 'pluginLink' in the plugins
-extern PLUGINLINK *pluginLink;
-#define CreateHookableEvent(a)               pluginLink->CreateHookableEvent(a)
-#define DestroyHookableEvent(a)              pluginLink->DestroyHookableEvent(a)
-#define NotifyEventHooks(a,b,c)              pluginLink->NotifyEventHooks(a,b,c)
-#define HookEventMessage(a,b,c)              pluginLink->HookEventMessage(a,b,c)
-#define HookEvent(a,b)                       pluginLink->HookEvent(a,b)
-#define UnhookEvent(a)                       pluginLink->UnhookEvent(a)
-#define CreateServiceFunction(a,b)           pluginLink->CreateServiceFunction(a,b)
-#define CreateTransientServiceFunction(a,b)  pluginLink->CreateTransientServiceFunction(a,b)
-#define DestroyServiceFunction(a)            pluginLink->DestroyServiceFunction(a)
-#define CallService(a,b,c)                   pluginLink->CallService(a,b,c)
-#define ServiceExists(a)                     pluginLink->ServiceExists(a)
-#define CallServiceSync(a,b,c)               pluginLink->CallServiceSync(a,b,c)
-#define CallFunctionAsync(a,b)               pluginLink->CallFunctionAsync(a,b)
-#define SetHookDefaultForHookableEvent(a,b)  pluginLink->SetHookDefaultForHookableEvent(a,b)
-#define CreateServiceFunctionParam(a,b,c)    pluginLink->CreateServiceFunctionParam(a,b,c)
-#define NotifyEventHooksDirect(a,b,c)        pluginLink->NotifyEventHooksDirect(a,b,c)
-#endif
+	#ifndef NODEFINEDLINKFUNCTIONS
+		//relies on a global variable 'pluginLink' in the plugins
+		extern PLUGINLINK *pluginLink;
+		#define CreateHookableEvent(a)               pluginLink->CreateHookableEvent(a)
+		#define DestroyHookableEvent(a)              pluginLink->DestroyHookableEvent(a)
+		#define NotifyEventHooks(a,b,c)              pluginLink->NotifyEventHooks(a,b,c)
+		#define HookEventMessage(a,b,c)              pluginLink->HookEventMessage(a,b,c)
+		#define HookEvent(a,b)                       pluginLink->HookEvent(a,b)
+		#define UnhookEvent(a)                       pluginLink->UnhookEvent(a)
+		#define CreateServiceFunction(a,b)           pluginLink->CreateServiceFunction(a,b)
+		#define CreateTransientServiceFunction(a,b)  pluginLink->CreateTransientServiceFunction(a,b)
+		#define DestroyServiceFunction(a)            pluginLink->DestroyServiceFunction(a)
+		#define CallService(a,b,c)                   pluginLink->CallService(a,b,c)
+		#define ServiceExists(a)                     pluginLink->ServiceExists(a)
+		#define CallServiceSync(a,b,c)               pluginLink->CallServiceSync(a,b,c)
+		#define CallFunctionAsync(a,b)               pluginLink->CallFunctionAsync(a,b)
+		#define SetHookDefaultForHookableEvent(a,b)  pluginLink->SetHookDefaultForHookableEvent(a,b)
+		#define CreateServiceFunctionParam(a,b,c)    pluginLink->CreateServiceFunctionParam(a,b,c)
+		#define NotifyEventHooksDirect(a,b,c)        pluginLink->NotifyEventHooksDirect(a,b,c)
+		#if MIRANDA_VER >= 0x800
+			#define CallProtoService(a,b,c,d)         pluginLink->CallProtoService(a,b,c,d)
+		#endif
+	#endif
 #endif
 
 /*
