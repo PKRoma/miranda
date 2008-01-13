@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -145,7 +145,7 @@ static void ResizeDirectList(int nSize)
     else
       directConnSize -= 4;
 
-    directConnList = (directconnect**)realloc(directConnList, sizeof(directconnect*) * directConnSize);
+    directConnList = (directconnect**)SAFE_REALLOC(directConnList, sizeof(directconnect*) * directConnSize);
   }
 }
 
@@ -212,7 +212,7 @@ void AddExpectedFileRecv(filetransfer* ft)
 {
   EnterCriticalSection(&expectedFileRecvMutex);
 
-  expectedFileRecv = (filetransfer** )realloc(expectedFileRecv, sizeof(filetransfer *) * (expectedFileRecvCount + 1));
+  expectedFileRecv = (filetransfer** )SAFE_REALLOC(expectedFileRecv, sizeof(filetransfer *) * (expectedFileRecvCount + 1));
   expectedFileRecv[expectedFileRecvCount++] = ft;
 
   LeaveCriticalSection(&expectedFileRecvMutex);
@@ -235,7 +235,7 @@ filetransfer *FindExpectedFileRecv(DWORD dwUin, DWORD dwTotalSize)
       pFt = expectedFileRecv[i];
       expectedFileRecvCount--;
       memmove(expectedFileRecv + i, expectedFileRecv + i + 1, sizeof(filetransfer*) * (expectedFileRecvCount - i));
-      expectedFileRecv = (filetransfer**)realloc(expectedFileRecv, sizeof(filetransfer*) * expectedFileRecvCount);
+      expectedFileRecv = (filetransfer**)SAFE_REALLOC(expectedFileRecv, sizeof(filetransfer*) * expectedFileRecvCount);
 
       // Filereceive found, exit loop
       break;

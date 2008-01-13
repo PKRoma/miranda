@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 //
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -276,6 +276,7 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
     {
       oscar_tlv* pMessageTLV;
       oscar_tlv* pCapabilityTLV;
+      WORD wMsgPart = 1;
 
       // Find the capability TLV
       pCapabilityTLV = getTLV(pChain, 0x0501, 1);
@@ -297,79 +298,103 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
         NetLog_Server("Message (format 1) - No message cap.");
       }
 
-      // Find the message TLV
-      pMessageTLV = getTLV(pChain, 0x0101, 1);
-      if (pMessageTLV)
-      { // TODO: parse all fragments
-        if (pMessageTLV->wLen > 4)
-        {
-          WORD wMsgLen;
-          BYTE* pMsgBuf;
-          WORD wEncoding;
-          WORD wCodePage;
-          DWORD dwRecvTime;
-          char* szMsg = NULL;
-          HANDLE hContact;
-          CCSDATA ccs;
-          PROTORECVEVENT pre = {0};
-          int bAdded;
+      { // Parse the message parts, usually only one 0x0101 TLV containing the message,
+        // but in some cases there can be more 0x0101 TLVs containing message parts in
+        // different encodings (just like the new format of Offline Messages).
+        DWORD dwRecvTime;
+        char* szMsg = NULL;
+        HANDLE hContact;
+        CCSDATA ccs;
+        PROTORECVEVENT pre = {0};
+        int bAdded;
 
-          // The message begins with a encoding specification
-          // The first WORD is believed to have the following meaning:
-          //  0x00: US-ASCII
-          //  0x02: Unicode UCS-2 Big Endian encoding
-          //  0x03: local 8bit encoding
-          pMsgBuf = pMessageTLV->pData;
-          unpackWord(&pMsgBuf, &wEncoding);
-          unpackWord(&pMsgBuf, &wCodePage);
+        hContact = HContactFromUID(dwUin, szUID, &bAdded);
 
-          wMsgLen = pMessageTLV->wLen - 4;
-          NetLog_Server("Message (format 1) - Encoding is 0x%X, page is 0x%X", wEncoding, wCodePage);
-
-          hContact = HContactFromUID(dwUin, szUID, &bAdded);
-
-          switch (wEncoding)
+        while (pMessageTLV = getTLV(pChain, 0x0101, wMsgPart))
+        { // Loop thru all message parts
+          if (pMessageTLV->wLen > 4)
           {
+            WORD wMsgLen;
+            BYTE* pMsgBuf;
+            WORD wEncoding;
+            WORD wCodePage;
+            char* szMsgPart = NULL;
+            int bMsgPartUnicode = FALSE;
 
-          case 2: // UCS-2
+            // The message begins with a encoding specification
+            // The first WORD is believed to have the following meaning:
+            //  0x00: US-ASCII
+            //  0x02: Unicode UCS-2 Big Endian encoding
+            //  0x03: local 8bit encoding
+            pMsgBuf = pMessageTLV->pData;
+            unpackWord(&pMsgBuf, &wEncoding);
+            unpackWord(&pMsgBuf, &wCodePage);
+
+            wMsgLen = pMessageTLV->wLen - 4;
+            NetLog_Server("Message (format 1) - Part %d: Encoding is 0x%X, page is 0x%X", wMsgPart, wEncoding, wCodePage);
+
+            switch (wEncoding)
             {
-              WCHAR* usMsg;
 
-              usMsg = (WCHAR*)SAFE_MALLOC(wMsgLen + 2);
-              unpackWideString(&pMsgBuf, usMsg, wMsgLen);
-              usMsg[wMsgLen/sizeof(WCHAR)] = 0;
+            case 2: // UCS-2
+              {
+                WCHAR* usMsgPart = (WCHAR*)SAFE_MALLOC(wMsgLen + 2);
 
-              szMsg = make_utf8_string(usMsg);
-              SAFE_FREE(&usMsg);
+                unpackWideString(&pMsgBuf, usMsgPart, wMsgLen);
+                usMsgPart[wMsgLen/sizeof(WCHAR)] = 0;
 
-              if (!dwUin)
-              { // strip HTML formating from AIM message
-                szMsg = EliminateHtml(szMsg, strlennull(szMsg));
+                szMsgPart = make_utf8_string(usMsgPart);
+                if (!IsUSASCII(szMsgPart, strlennull(szMsgPart)))
+                  bMsgPartUnicode = TRUE;
+                SAFE_FREE(&usMsgPart);
 
-                SetContactCapabilities(hContact, CAPF_UTF);
+                break;
               }
 
-              if (!IsUSASCII(szMsg, strlennull(szMsg)))
-                pre.flags = PREF_UTF; // only mark real non-ascii messages as utf-8
+            case 0: // us-ascii
+            case 3: // ANSI
+            default:
+              {
+                // Copy the message text into a new proper string.
+                szMsgPart = (char *)SAFE_MALLOC(wMsgLen + 1);
+                memcpy(szMsgPart, pMsgBuf, wMsgLen);
+                szMsgPart[wMsgLen] = '\0';
 
-              break;
-            }
-
-          case 0: // us-ascii
-          case 3: // ANSI
-          default:
-            {
-              // Copy the message text into a new proper string.
-              szMsg = (char *)SAFE_MALLOC(wMsgLen + 1);
-              memcpy(szMsg, pMsgBuf, wMsgLen);
-              szMsg[wMsgLen] = '\0';
-              if (!dwUin)
-              { // strip HTML formating from AIM message
-                szMsg = EliminateHtml(szMsg, wMsgLen);
+                break;
               }
-
-              break;
             }
+            // Check if the new part is compatible with the message
+            if (!pre.flags && bMsgPartUnicode)
+            { // make the resulting message utf-8 encoded - need to append utf-8 encoded part
+              if (szMsg)
+              { // not necessary to convert - appending first part, only set flags
+                char* szUtfMsg = ansi_to_utf8_codepage(szMsg, ICQGetContactSettingWord(hContact, "CodePage", gwAnsiCodepage));
+
+                SAFE_FREE(&szMsg);
+                szMsg = szUtfMsg;
+              }
+              pre.flags = PREF_UTF;
+            }
+            if (!bMsgPartUnicode && pre.flags == PREF_UTF)
+            { // convert message part to utf-8 and append
+              char* szUtfPart = ansi_to_utf8_codepage(szMsgPart, ICQGetContactSettingWord(hContact, "CodePage", gwAnsiCodepage));
+
+              SAFE_FREE(&szMsgPart);
+              szMsgPart = szUtfPart;
+            }
+            // Append the new message part
+            szMsg = (char*)SAFE_REALLOC(szMsg, strlennull(szMsg) + strlennull(szMsgPart) + 1);
+
+            strcat(szMsg, szMsgPart);
+            SAFE_FREE(&szMsgPart);
+          }
+          wMsgPart++;
+        }
+        if (strlennull(szMsg))
+        { /// TODO: Add inteligent HTML detection & stripping - support for CAPF_HTML
+          if (!dwUin)
+          { // strip HTML formating from AIM message
+            szMsg = EliminateHtml(szMsg, strlennull(szMsg));
           }
 
           if (!pre.flags && !IsUSASCII(szMsg, strlennull(szMsg)))
@@ -420,8 +445,6 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
           pre.szMessage = (char *)szMsg;
           CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
 
-          SAFE_FREE(&szMsg);
-
           NetLog_Server("Message (format 1) received");
 
           // Save tick value
@@ -431,10 +454,7 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
         {
           NetLog_Server("Message (format %u) - Ignoring empty message", 1);
         }
-      }
-      else
-      {
-        NetLog_Server("Failed to find TLV(1281) message (format 1)");
+        SAFE_FREE(&szMsg);
       }
 
       // Free the chain memory
@@ -1056,7 +1076,7 @@ static void handleRecvServMsgContacts(unsigned char *buf, WORD wLen, DWORD dwUin
             if (iContact >= nContacts)
             { // the list is too small, resize it
               nContacts += 0x10;
-              contacts = (ICQSEARCHRESULT**)realloc(contacts, nContacts * sizeof(ICQSEARCHRESULT*));
+              contacts = (ICQSEARCHRESULT**)SAFE_REALLOC(contacts, nContacts * sizeof(ICQSEARCHRESULT*));
             }
             contacts[iContact] = (ICQSEARCHRESULT*)SAFE_MALLOC(sizeof(ICQSEARCHRESULT));
             contacts[iContact]->hdr.cbSize = sizeof(ICQSEARCHRESULT);

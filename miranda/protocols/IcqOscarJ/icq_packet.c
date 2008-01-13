@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera, Bio
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera, Bio
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -299,7 +299,7 @@ void __fastcall packLEDWord(icq_packet* pPacket, DWORD dwValue)
 
 void ppackByte(PBYTE *buf,int *buflen,BYTE b)
 {
-  *buf=(PBYTE)realloc(*buf,1+*buflen);
+  *buf=(PBYTE)SAFE_REALLOC(*buf,1+*buflen);
   *(*buf+*buflen)=b;
   ++*buflen;
 }
@@ -308,7 +308,7 @@ void ppackByte(PBYTE *buf,int *buflen,BYTE b)
 
 void ppackLEWord(PBYTE *buf,int *buflen,WORD w)
 {
-  *buf=(PBYTE)realloc(*buf,2+*buflen);
+  *buf=(PBYTE)SAFE_REALLOC(*buf,2+*buflen);
   *(PWORD)(*buf+*buflen)=w;
   *buflen+=2;
 }
@@ -317,7 +317,7 @@ void ppackLEWord(PBYTE *buf,int *buflen,WORD w)
 
 void ppackLEDWord(PBYTE *buf, int *buflen, DWORD d)
 {
-  *buf = (PBYTE)realloc(*buf, 4 + *buflen);
+  *buf = (PBYTE)SAFE_REALLOC(*buf, 4 + *buflen);
   *(PDWORD)(*buf + *buflen) = d;
   *buflen += 4;
 }
@@ -328,7 +328,7 @@ void ppackLEDWord(PBYTE *buf, int *buflen, DWORD d)
 {
   WORD len = strlennull(str);
   ppackWord(buf, buflen, len);
-  *buf = (PBYTE)realloc(*buf, *buflen + len);
+  *buf = (PBYTE)SAFE_REALLOC(*buf, *buflen + len);
   memcpy(*buf + *buflen, str, len);
   *buflen += len;
 }*/
@@ -339,7 +339,7 @@ void ppackLELNTS(PBYTE *buf, int *buflen, const char *str)
 {
   WORD len = strlennull(str);
   ppackLEWord(buf, buflen, len);
-  *buf = (PBYTE)realloc(*buf, *buflen + len);
+  *buf = (PBYTE)SAFE_REALLOC(*buf, *buflen + len);
   memcpy(*buf + *buflen, str, len);
   *buflen += len;
 }
@@ -368,7 +368,7 @@ void ppackTLVByte(PBYTE *buf, int *buflen, BYTE b, WORD wType, BYTE always)
 {
   if (!always && !b) return;
 
-  *buf = (PBYTE)realloc(*buf, 5 + *buflen);
+  *buf = (PBYTE)SAFE_REALLOC(*buf, 5 + *buflen);
   *(PWORD)(*buf + *buflen) = wType;
   *(PWORD)(*buf + *buflen + 2) = 1;
   *(*buf + *buflen + 4) = b;
@@ -381,7 +381,7 @@ void ppackTLVWord(PBYTE *buf, int *buflen, WORD w, WORD wType, BYTE always)
 {
   if (!always && !w) return;
 
-  *buf = (PBYTE)realloc(*buf, 6 + *buflen);
+  *buf = (PBYTE)SAFE_REALLOC(*buf, 6 + *buflen);
   *(PWORD)(*buf + *buflen) = wType;
   *(PWORD)(*buf + *buflen + 2) = 2;
   *(PWORD)(*buf + *buflen + 4) = w;
@@ -394,7 +394,7 @@ void ppackTLVDWord(PBYTE *buf, int *buflen, DWORD d, WORD wType, BYTE always)
 {
   if (!always && !d) return;
 
-  *buf = (PBYTE)realloc(*buf, 8 + *buflen);
+  *buf = (PBYTE)SAFE_REALLOC(*buf, 8 + *buflen);
   *(PWORD)(*buf + *buflen) = wType;
   *(PWORD)(*buf + *buflen + 2) = 4;
   *(PDWORD)(*buf + *buflen + 4) = d;
@@ -422,7 +422,7 @@ void ppackTLVLNTS(PBYTE *buf, int *buflen, const char *str, WORD wType, BYTE alw
 
   if (!always && len < 2) return;
 
-  *buf = (PBYTE)realloc(*buf, 6 + *buflen + len);
+  *buf = (PBYTE)SAFE_REALLOC(*buf, 6 + *buflen + len);
   packTLVLNTS(buf, buflen, str, wType);
 }
 
@@ -434,7 +434,7 @@ void ppackTLVWordLNTS(PBYTE *buf, int *buflen, WORD w, const char *str, WORD wTy
 
   if (!always && len < 2 && !w) return;
 
-  *buf = (PBYTE)realloc(*buf, 8 + *buflen + len);
+  *buf = (PBYTE)SAFE_REALLOC(*buf, 8 + *buflen + len);
   *(PWORD)(*buf + *buflen) = wType;
   *(PWORD)(*buf + *buflen + 2) = len + 4;
   *(PWORD)(*buf + *buflen + 4) = w;
@@ -449,7 +449,7 @@ void ppackTLVLNTSByte(PBYTE *buf, int *buflen, const char *str, BYTE b, WORD wTy
 {
   int len = strlennull(str) + 1;
 
-  *buf = (PBYTE)realloc(*buf, 7 + *buflen + len);
+  *buf = (PBYTE)SAFE_REALLOC(*buf, 7 + *buflen + len);
   *(PWORD)(*buf + *buflen) = wType;
   *(PWORD)(*buf + *buflen + 2) = len + 3;
   *(PWORD)(*buf + *buflen + 4) = len;
