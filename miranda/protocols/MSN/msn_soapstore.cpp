@@ -280,9 +280,9 @@ bool MSN_StoreCreateRelationships(const char *szSrcId, const char *szTgtId)
 	mir_free(reqHdr);
 	free(szData);
 
-	if (tResult != NULL && status == 200)
-	{
-	}
+//	if (tResult != NULL && status == 200)
+//	{
+//	}
 	mir_free(tResult);
 	mir_free(storeUrl);
 
@@ -326,9 +326,9 @@ bool MSN_StoreDeleteRelationships(const char *szResId)
 	mir_free(reqHdr);
 	free(szData);
 
-	if (tResult != NULL && status == 200)
-	{
-	}
+//	if (tResult != NULL && status == 200)
+//	{
+//	}
 	mir_free(tResult);
 	mir_free(storeUrl);
 
@@ -388,9 +388,9 @@ bool MSN_StoreCreateDocument(const char *szName, const char *szMimeType, const c
 	mir_free(reqHdr);
 	free(szData);
 
-	if (tResult != NULL && status == 200)
-	{
-	}
+//	if (tResult != NULL && status == 200)
+//	{
+//	}
 	mir_free(tResult);
 	mir_free(storeUrl);
 
@@ -449,9 +449,9 @@ bool MSN_StoreFindDocuments(void)
 	mir_free(reqHdr);
 	free(szData);
 
-	if (tResult != NULL && status == 200)
-	{
-	}
+//	if (tResult != NULL && status == 200)
+//	{
+//	}
 	mir_free(tResult);
 	mir_free(storeUrl);
 

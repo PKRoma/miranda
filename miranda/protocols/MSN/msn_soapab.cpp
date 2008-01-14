@@ -140,6 +140,7 @@ bool MSN_ABAdd(void)
 	return status == 200;
 }
 
+
 bool MSN_SharingFindMembership(void)
 {
 	SSLAgent mAgent;
