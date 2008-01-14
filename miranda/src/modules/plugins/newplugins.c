@@ -939,6 +939,8 @@ int LoadNewPluginsModuleInfos(void)
 	pluginCoreLink.CallFunctionAsync              = CallFunctionAsync;
 	pluginCoreLink.NotifyEventHooksDirect         = CallHookSubscribers;
 	pluginCoreLink.CallProtoService               = CallProtoService;
+	pluginCoreLink.CallContactService             = CallContactService;
+
 	// remember where the mirandaboot.ini goes
 	{
 		char exe[MAX_PATH];

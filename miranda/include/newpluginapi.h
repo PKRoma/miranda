@@ -157,6 +157,7 @@ typedef struct {
 	int (*NotifyEventHooksDirect)(HANDLE,WPARAM,LPARAM); // v0.7+
 	#if MIRANDA_VER >= 0x800
 		int (*CallProtoService)(const char *, const char *, WPARAM, LPARAM );
+		int (*CallContactService)( HANDLE, const char *, WPARAM, LPARAM );
 	#endif
 } PLUGINLINK;
 
@@ -182,6 +183,7 @@ typedef struct {
 		#define NotifyEventHooksDirect(a,b,c)        pluginLink->NotifyEventHooksDirect(a,b,c)
 		#if MIRANDA_VER >= 0x800
 			#define CallProtoService(a,b,c,d)         pluginLink->CallProtoService(a,b,c,d)
+			#define CallContactService(a,b,c,d)       pluginLink->CallContactService(a,b,c,d)
 		#endif
 	#endif
 #endif

@@ -43,13 +43,17 @@ __inline static int CallProtoService(const char *szModule,const char *szService,
 //wParam=0
 //lParam=(LPARAM)(CCSDATA*)&ccs
 //returns the value as documented in the PS_ definition (m_protosvc.h)
+
 typedef struct {
 	HANDLE hContact;
 	const char *szProtoService;   //a PS_ constant
 	WPARAM wParam;
 	LPARAM lParam;
 } CCSDATA;
+
 #define MS_PROTO_CALLCONTACTSERVICE    "Proto/CallContactService"
+
+#if MIRANDA_VER < 0x800
 __inline static int CallContactService(HANDLE hContact,const char *szProtoService,WPARAM wParam,LPARAM lParam)
 {
 	CCSDATA ccs;
@@ -59,6 +63,7 @@ __inline static int CallContactService(HANDLE hContact,const char *szProtoServic
 	ccs.lParam=lParam;
 	return CallService(MS_PROTO_CALLCONTACTSERVICE,0,(LPARAM)&ccs);
 }
+#endif
 
 //a general network 'ack'
 //wParam=0

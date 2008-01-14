@@ -37,50 +37,50 @@ typedef struct tagPROTO_INTERFACE
 
 	DWORD  reserved[ 40 ];
 
-	HANDLE ( *AddToList )( int flags, PROTOSEARCHRESULT* psr );
-	HANDLE ( *AddToListByEvent )( int flags, int iContact, HANDLE hDbEvent );
+	HANDLE ( *AddToList )( struct tagPROTO_INTERFACE*, int flags, PROTOSEARCHRESULT* psr );
+	HANDLE ( *AddToListByEvent )( struct tagPROTO_INTERFACE*, int flags, int iContact, HANDLE hDbEvent );
 
-	int    ( *Authorize )( HANDLE hContact );
-	int    ( *AuthDeny )( HANDLE hContact );
-	int    ( *AuthRecv )( PROTORECVEVENT* );
-	int    ( *AuthRequest )( const char* szMessage );
+	int    ( *Authorize )( struct tagPROTO_INTERFACE*, HANDLE hContact );
+	int    ( *AuthDeny )( struct tagPROTO_INTERFACE*, HANDLE hContact, const char* szReason );
+	int    ( *AuthRecv )( struct tagPROTO_INTERFACE*, HANDLE hContact, PROTORECVEVENT* );
+	int    ( *AuthRequest )( struct tagPROTO_INTERFACE*, HANDLE hContact, const char* szMessage );
 
-	HANDLE ( *ChangeInfo )( int iInfoType, void* pInfoData );
+	HANDLE ( *ChangeInfo )( struct tagPROTO_INTERFACE*, int iInfoType, void* pInfoData );
 
-	int    ( *FileAllow )( HANDLE hTransfer, const char* szPath );
-	int    ( *FileCancel )( HANDLE hTransfer );
-	int    ( *FileDeny )( HANDLE hTransfer, const char* szReason );
-	int    ( *FileResume )( HANDLE hTransfer, int* action, const char** szFilename );
+	int    ( *FileAllow )( struct tagPROTO_INTERFACE*, HANDLE hContact, HANDLE hTransfer, const char* szPath );
+	int    ( *FileCancel )( struct tagPROTO_INTERFACE*, HANDLE hContact, HANDLE hTransfer );
+	int    ( *FileDeny )( struct tagPROTO_INTERFACE*, HANDLE hContact, HANDLE hTransfer, const char* szReason );
+	int    ( *FileResume )( struct tagPROTO_INTERFACE*, HANDLE hTransfer, int* action, const char** szFilename );
 
-	DWORD  ( *GetCaps )( int type );
-	HICON  ( *GetIcon )( int iconIndex );
-	int    ( *GetInfo )( int infoType );
+	DWORD  ( *GetCaps )( struct tagPROTO_INTERFACE*, int type );
+	HICON  ( *GetIcon )( struct tagPROTO_INTERFACE*, int iconIndex );
+	int    ( *GetInfo )( struct tagPROTO_INTERFACE*, HANDLE hContact, int infoType );
 
-	HANDLE ( *SearchBasic )( const char* id );
-	HANDLE ( *SearchByEmail )( const char* email );
-	HANDLE ( *SearchByName )( const char* nick, const char* firstName, const char* lastName );
-	HWND   ( *SearchAdvanced )( HWND owner );
-	HWND   ( *CreateExtendedSearchUI )( HWND owner );
+	HANDLE ( *SearchBasic )( struct tagPROTO_INTERFACE*, const char* id );
+	HANDLE ( *SearchByEmail )( struct tagPROTO_INTERFACE*, const char* email );
+	HANDLE ( *SearchByName )( struct tagPROTO_INTERFACE*, const char* nick, const char* firstName, const char* lastName );
+	HWND   ( *SearchAdvanced )( struct tagPROTO_INTERFACE*, HWND owner );
+	HWND   ( *CreateExtendedSearchUI )( struct tagPROTO_INTERFACE*, HWND owner );
 
-	int    ( *RecvContacts )( PROTORECVEVENT* );
-	int    ( *RecvFile )( PROTORECVFILE* );
-	int    ( *RecvMessage )( PROTORECVEVENT* );
-	int    ( *RecvUrl )( PROTORECVEVENT* );
+	int    ( *RecvContacts )( struct tagPROTO_INTERFACE*, HANDLE hContact, PROTORECVEVENT* );
+	int    ( *RecvFile )( struct tagPROTO_INTERFACE*, HANDLE hContact, PROTORECVFILE* );
+	int    ( *RecvMessage )( struct tagPROTO_INTERFACE*, HANDLE hContact, PROTORECVEVENT* );
+	int    ( *RecvUrl )( struct tagPROTO_INTERFACE*, HANDLE hContact, PROTORECVEVENT* );
 
-	int    ( *SendContacts )( int flags, int nContacts, HANDLE* hContactsList );
-	int    ( *SendFile )( const char* szDescription, char** ppszFiles );
-	int    ( *SendMessage )( int flags, const char* msg );
-	int    ( *SendUrl )( int flags, const char* url );
+	int    ( *SendContacts )( struct tagPROTO_INTERFACE*, HANDLE hContact, int flags, int nContacts, HANDLE* hContactsList );
+	int    ( *SendFile )( struct tagPROTO_INTERFACE*, HANDLE hContact, const char* szDescription, char** ppszFiles );
+	int    ( *SendMessage )( struct tagPROTO_INTERFACE*, HANDLE hContact, int flags, const char* msg );
+	int    ( *SendUrl )( struct tagPROTO_INTERFACE*, HANDLE hContact, int flags, const char* url );
 
-	int    ( *SetApparentMode )( int mode );
-	int    ( *SetStatus )( int iNewStatus );
+	int    ( *SetApparentMode )( struct tagPROTO_INTERFACE*, HANDLE hContact, int mode );
+	int    ( *SetStatus )( struct tagPROTO_INTERFACE*, int iNewStatus );
 
-	int    ( *GetAwayMsg )( void );
-	int    ( *RecvAwayMsg )( PROTORECVEVENT* );
-	int    ( *SendAwayMsg )( HANDLE hContact, const char* msg );
-	int    ( *SetAwayMsg )( int iStatus, const char* msg );
+	int    ( *GetAwayMsg )( struct tagPROTO_INTERFACE*, HANDLE hContact );
+	int    ( *RecvAwayMsg )( struct tagPROTO_INTERFACE*, HANDLE hContact, int mode, PROTORECVEVENT* evt );
+	int    ( *SendAwayMsg )( struct tagPROTO_INTERFACE*, HANDLE hContact, HANDLE hProcess, const char* msg );
+	int    ( *SetAwayMsg )( struct tagPROTO_INTERFACE*, int iStatus, const char* msg );
 
-	int    ( *UserIsTyping )( HANDLE hContact, int type );
+	int    ( *UserIsTyping )( struct tagPROTO_INTERFACE*, HANDLE hContact, int type );
 }
 	PROTO_INTERFACE;
 

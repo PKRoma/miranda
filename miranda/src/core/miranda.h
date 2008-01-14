@@ -109,4 +109,10 @@ extern int skinIconStatusFlags[ MAX_STATUS_COUNT ];
 /**** protocols.c ***********************************************************************/
 
 PROTO_INTERFACE* AddDefaultAccount( const char* szProtoName );
-int CallProtoService( const char* szModule, const char* szService, WPARAM, LPARAM );
+int CallProtoServiceInt( HANDLE hContact, const char* szModule, const char* szService, WPARAM, LPARAM );
+int CallContactService( HANDLE hContact, const char *szProtoService, WPARAM, LPARAM );
+
+__inline int CallProtoService( const char* szModule, const char* szService, WPARAM wParam, LPARAM lParam )
+{
+	return CallProtoServiceInt( NULL, szModule, szService, wParam, lParam );
+}

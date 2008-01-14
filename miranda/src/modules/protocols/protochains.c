@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 int Proto_IsProtocolLoaded(WPARAM wParam,LPARAM lParam);
 
 //Protocol chain is list of integers "0".."n", with network protocol named "p"
-static int Proto_CallContactService(WPARAM wParam,LPARAM lParam)
+int Proto_CallContactService(WPARAM wParam,LPARAM lParam)
 //note that this is ChainSend() too, due to a quirk of function definitions
 {
 	CCSDATA *ccs=(CCSDATA*)lParam;

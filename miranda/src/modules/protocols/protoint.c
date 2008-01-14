@@ -25,6 +25,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "m_protoint.h"
 
+int Proto_CallContactService(WPARAM wParam,LPARAM lParam);
+
 static int MyCallProtoService( const char *szModule, const char *szService, WPARAM wParam, LPARAM lParam )
 {
 	char str[MAXMODULELABELLENGTH];
@@ -48,28 +50,33 @@ static int fnAuthDeny( PROTO_INTERFACE* ppi, HANDLE hContact, const char* szReas
 {	return MyCallProtoService( ppi->szPhysName, PS_AUTHDENY, (WPARAM)hContact, (LPARAM)szReason );
 }
 
-static int fnAuthRecv( PROTO_INTERFACE* ppi, PROTORECVEVENT* evt )
-{	return MyCallProtoService( ppi->szPhysName, PSS_ADDED, 0, 0 );   // !!!!
+static int fnAuthRecv( PROTO_INTERFACE* ppi, HANDLE hContact, PROTORECVEVENT* evt )
+{	CCSDATA ccs = { hContact, PSS_ADDED, 0, (LPARAM)evt };
+	return Proto_CallContactService( 0, (LPARAM)&ccs );
 }
 
-static int fnAuthRequest( PROTO_INTERFACE* ppi, const char* szMessage )
-{	return MyCallProtoService( ppi->szPhysName, PSS_AUTHREQUEST, 0, (LPARAM)szMessage );
+static int fnAuthRequest( PROTO_INTERFACE* ppi, HANDLE hContact, const char* szMessage )
+{	CCSDATA ccs = { hContact, PSS_AUTHREQUEST, 0, (LPARAM)szMessage };
+	return Proto_CallContactService( 0, (LPARAM)&ccs );
 }
 
 static HANDLE fnChangeInfo( PROTO_INTERFACE* ppi, int iInfoType, void* pInfoData )
 {	return ( HANDLE )MyCallProtoService( ppi->szPhysName, PS_CHANGEINFO, iInfoType, ( LPARAM )pInfoData );
 }
 
-static int fnFileAllow( PROTO_INTERFACE* ppi, HANDLE hTransfer, const char* szPath )
-{	return MyCallProtoService( ppi->szPhysName, "", 0, 0 ); // !!!!
+static int fnFileAllow( PROTO_INTERFACE* ppi, HANDLE hContact, HANDLE hTransfer, const char* szPath )
+{	CCSDATA ccs = { hContact, PSS_FILEALLOW, (WPARAM)hTransfer, (LPARAM)szPath };
+	return Proto_CallContactService( 0, (LPARAM)&ccs );
 }
 
-static int fnFileCancel( PROTO_INTERFACE* ppi, HANDLE hTransfer )
-{	return MyCallProtoService( ppi->szPhysName, "", 0, 0 ); // !!!!
+static int fnFileCancel( PROTO_INTERFACE* ppi, HANDLE hContact, HANDLE hTransfer )
+{	CCSDATA ccs = { hContact, PSS_FILECANCEL, (WPARAM)hTransfer, 0 };
+	return Proto_CallContactService( 0, (LPARAM)&ccs );
 }
 
-static int fnFileDeny( PROTO_INTERFACE* ppi, HANDLE hTransfer, const char* szReason )
-{	return MyCallProtoService( ppi->szPhysName, "", 0, 0 ); // !!!!
+static int fnFileDeny( PROTO_INTERFACE* ppi, HANDLE hContact, HANDLE hTransfer, const char* szReason )
+{	CCSDATA ccs = { hContact, PSS_FILEDENY, (WPARAM)hTransfer, (LPARAM)szReason };
+	return Proto_CallContactService( 0, (LPARAM)&ccs );
 }
 
 static int fnFileResume( PROTO_INTERFACE* ppi, HANDLE hTransfer, int* action, const char** szFilename )
@@ -87,8 +94,9 @@ static HICON fnGetIcon( PROTO_INTERFACE* ppi, int iconIndex )
 {	return ( HICON )MyCallProtoService( ppi->szPhysName, PS_LOADICON, iconIndex, 0 );
 }
 
-static int fnGetInfo( PROTO_INTERFACE* ppi, int infoType )
-{	return MyCallProtoService( ppi->szPhysName, "", 0, 0 ); // !!!!
+static int fnGetInfo( PROTO_INTERFACE* ppi, HANDLE hContact, int flags )
+{	CCSDATA ccs = { hContact, PSS_GETINFO, flags, 0 };
+	return Proto_CallContactService( 0, (LPARAM)&ccs );
 }
 
 static HANDLE fnSearchBasic( PROTO_INTERFACE* ppi, const char* id )
@@ -115,56 +123,68 @@ static HWND fnCreateExtendedSearchUI( PROTO_INTERFACE* ppi, HWND owner )
 {	return ( HWND )MyCallProtoService( ppi->szPhysName, PS_CREATEADVSEARCHUI, 0, ( LPARAM )owner );
 }
 
-static int fnRecvContacts( PROTO_INTERFACE* ppi, PROTORECVEVENT* evt )
-{	return MyCallProtoService( ppi->szPhysName, "", 0, 0 ); // !!!!
+static int fnRecvContacts( PROTO_INTERFACE* ppi, HANDLE hContact, PROTORECVEVENT* evt )
+{	CCSDATA ccs = { hContact, PSR_CONTACTS, 0, (LPARAM)evt };
+	return Proto_CallContactService( 0, (LPARAM)&ccs );
 }
 
-static int fnRecvFile( PROTO_INTERFACE* ppi, PROTORECVFILE* evt )
-{	return MyCallProtoService( ppi->szPhysName, "", 0, 0 ); // !!!!
+static int fnRecvFile( PROTO_INTERFACE* ppi, HANDLE hContact, PROTORECVFILE* evt )
+{	CCSDATA ccs = { hContact, PSR_FILE, 0, (LPARAM)evt };
+	return Proto_CallContactService( 0, (LPARAM)&ccs );
 }
 
-static int fnRecvMessage( PROTO_INTERFACE* ppi, PROTORECVEVENT* evt )
-{	return MyCallProtoService( ppi->szPhysName, "", 0, 0 ); // !!!!
+static int fnRecvMessage( PROTO_INTERFACE* ppi, HANDLE hContact, PROTORECVEVENT* evt )
+{	CCSDATA ccs = { hContact, PSR_MESSAGE, 0, (LPARAM)evt };
+	return Proto_CallContactService( 0, (LPARAM)&ccs );
 }
 
-static int fnRecvUrl( PROTO_INTERFACE* ppi, PROTORECVEVENT* evt )
-{	return MyCallProtoService( ppi->szPhysName, "", 0, 0 ); // !!!!
+static int fnRecvUrl( PROTO_INTERFACE* ppi, HANDLE hContact, PROTORECVEVENT* evt )
+{	CCSDATA ccs = { hContact, PSR_URL, 0, (LPARAM)evt };
+	return Proto_CallContactService( 0, (LPARAM)&ccs );
 }
 
-static int fnSendContacts( PROTO_INTERFACE* ppi, int flags, int nContacts, HANDLE* hContactsList )
-{	return MyCallProtoService( ppi->szPhysName, "", 0, 0 ); // !!!!
+static int fnSendContacts( PROTO_INTERFACE* ppi, HANDLE hContact, int flags, int nContacts, HANDLE* hContactsList )
+{	CCSDATA ccs = { hContact, PSS_CONTACTS, MAKEWPARAM(flags,nContacts), (LPARAM)hContactsList };
+	return Proto_CallContactService( 0, (LPARAM)&ccs );
 }
 
-static int fnSendFile( PROTO_INTERFACE* ppi, const char* szDescription, char** ppszFiles )
-{	return MyCallProtoService( ppi->szPhysName, "", 0, 0 ); // !!!!
+static int fnSendFile( PROTO_INTERFACE* ppi, HANDLE hContact, const char* szDescription, char** ppszFiles )
+{	CCSDATA ccs = { hContact, PSS_FILE, (WPARAM)szDescription, (LPARAM)ppszFiles };
+	return Proto_CallContactService( 0, (LPARAM)&ccs );
 }
 
-static int fnSendMessage( PROTO_INTERFACE* ppi, int flags, const char* msg )
-{	return MyCallProtoService( ppi->szPhysName, "", 0, 0 ); // !!!!
+static int fnSendMessage( PROTO_INTERFACE* ppi, HANDLE hContact, int flags, const char* msg )
+{	CCSDATA ccs = { hContact, PSS_MESSAGE, flags, (LPARAM)msg };
+	return Proto_CallContactService( 0, (LPARAM)&ccs );
 }
 
-static int fnSendUrl( PROTO_INTERFACE* ppi, int flags, const char* url )
-{	return MyCallProtoService( ppi->szPhysName, "", 0, 0 ); // !!!!
+static int fnSendUrl( PROTO_INTERFACE* ppi, HANDLE hContact, int flags, const char* url )
+{	CCSDATA ccs = { hContact, PSS_URL, flags, (LPARAM)url };
+	return Proto_CallContactService( 0, (LPARAM)&ccs );
 }
 
-static int fnSetApparentMode( PROTO_INTERFACE* ppi, int mode )
-{	return MyCallProtoService( ppi->szPhysName, "", 0, 0 ); // !!!!
+static int fnSetApparentMode( PROTO_INTERFACE* ppi, HANDLE hContact, int mode )
+{	CCSDATA ccs = { hContact, PSS_SETAPPARENTMODE, mode, 0 };
+	return Proto_CallContactService( 0, (LPARAM)&ccs );
 }
 
 static int fnSetStatus( PROTO_INTERFACE* ppi, int iNewStatus )
 {	return MyCallProtoService( ppi->szPhysName, PS_SETSTATUS, iNewStatus, 0 );
 }
 
-static int fnGetAwayMsg( PROTO_INTERFACE* ppi )
-{	return MyCallProtoService( ppi->szPhysName, "", 0, 0 ); // !!!!
+static int fnGetAwayMsg( PROTO_INTERFACE* ppi, HANDLE hContact )
+{	CCSDATA ccs = { hContact, PSS_GETAWAYMSG, 0, 0 };
+	return Proto_CallContactService( 0, (LPARAM)&ccs );
 }
 
-static int fnRecvAwayMsg( PROTO_INTERFACE* ppi, PROTORECVEVENT* evt )
-{	return MyCallProtoService( ppi->szPhysName, "", 0, 0 ); // !!!!
+static int fnRecvAwayMsg( PROTO_INTERFACE* ppi, HANDLE hContact, int statusMode, PROTORECVEVENT* evt )
+{	CCSDATA ccs = { hContact, PSR_AWAYMSG, statusMode, (LPARAM)evt };
+	return Proto_CallContactService( 0, (LPARAM)&ccs );
 }
 
-static int fnSendAwayMsg( PROTO_INTERFACE* ppi, HANDLE hContact, const char* msg )
-{	return MyCallProtoService( ppi->szPhysName, "", 0, 0 ); // !!!!
+static int fnSendAwayMsg( PROTO_INTERFACE* ppi, HANDLE hContact, HANDLE hProcess, const char* msg )
+{	CCSDATA ccs = { hContact, PSS_AWAYMSG, (WPARAM)hProcess, (LPARAM)msg };
+	return Proto_CallContactService( 0, (LPARAM)&ccs );
 }
 
 static int fnSetAwayMsg( PROTO_INTERFACE* ppi, int iStatus, const char* msg )
@@ -172,7 +192,8 @@ static int fnSetAwayMsg( PROTO_INTERFACE* ppi, int iStatus, const char* msg )
 }
 
 static int fnUserIsTyping( PROTO_INTERFACE* ppi, HANDLE hContact, int type )
-{	return MyCallProtoService( ppi->szPhysName, "", 0, 0 ); // !!!!
+{	CCSDATA ccs = { hContact, PSS_USERISTYPING, (WPARAM)hContact, type };
+	return Proto_CallContactService( 0, (LPARAM)&ccs );
 }
 
 // creates the default protocol container for compatibility with the old plugins
