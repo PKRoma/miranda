@@ -206,6 +206,16 @@ static void __cdecl MsnSearchAckThread( void* arg )
 {
 	const char* email = (char*)arg;
 
+	if (Lists_IsInList(LIST_FL, email))
+	{
+		TCHAR *title = mir_a2t(email);
+		MSN_ShowPopup(title, _T("Contact already in your contact list"), MSN_ALLOW_MSGBOX, NULL);
+		MSN_SendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, arg, 0 );
+		mir_free(title);
+		mir_free(arg);
+		return;
+	}
+
 	unsigned res = MSN_ABContactAdd(email, NULL, 1, true);
 	switch(res)
 	{
@@ -231,7 +241,6 @@ static void __cdecl MsnSearchAckThread( void* arg )
 				MSN_FindYahooUser(email);
 			}
 	}
-
 	mir_free(arg);
 }
 

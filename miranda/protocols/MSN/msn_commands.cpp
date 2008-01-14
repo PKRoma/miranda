@@ -634,6 +634,8 @@ static void sttProcessAdd( char* buf, size_t len )
 			char szEmail[128];
 			mir_snprintf(szEmail, sizeof(szEmail), "%s@%s", szCont, szDom);
 
+			HtmlDecode((char*)szNick);
+
 			HANDLE hContact = MSN_HContactFromEmail(szEmail, szNick, 1, 0);
 			int mask = Lists_Add(listId, netId, szEmail);
 
@@ -1579,6 +1581,7 @@ LBL_InvalidCommand:
 				{
 					if ( !MSN_RefreshContactList()) {
 						MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER );
+						MSN_GoOffline();
 					}
 
 					DBVARIANT dbv;

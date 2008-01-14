@@ -399,8 +399,8 @@ void  MSN_StartStopTyping( ThreadData* info, bool start )
 long MSN_SendSMS(char* tel, char* txt)
 {
 	static const char *pgd = 
-		"<TEXT xml:space=\"preserve\" enc=\"utf-8\">%s</TEXT> "
-		"<LCID>%u</LCID> <CS>iso-8859-1</CS>";
+		"<TEXT xml:space=\"preserve\" enc=\"utf-8\">%s</TEXT>"
+		"<LCID>%u</LCID><CS>iso-8859-1</CS>";
 
 	char* etxt = HtmlEncode(txt);
 	char pgda[1024];
