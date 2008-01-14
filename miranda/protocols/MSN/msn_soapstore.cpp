@@ -82,6 +82,41 @@ static ezxml_t storeSoapHdr(const char* service, const char* scenario, ezxml_t& 
 	return fullhost;
 }
 
+bool MSN_StoreCreateProfile(void)
+{
+	SSLAgent mAgent;
+
+	char* reqHdr;
+	ezxml_t tbdy;
+	ezxml_t xmlp = storeSoapHdr("CreateProfile", "RoamingIdentityChanged", tbdy, reqHdr);
+
+	ezxml_t pro = ezxml_add_child(tbdy, "profile", 0);
+	ezxml_t node;
+
+	pro = ezxml_add_child(pro, "ExpressionProfile", 0);
+	ezxml_add_child(pro, "PersonalStatus", 0);
+	node = ezxml_add_child(pro, "RoleDefinitionName", 0);
+	ezxml_set_txt(node, "ExpressionProfileDefault");
+
+	char* szData = ezxml_toxml(xmlp, true);
+
+	ezxml_free(xmlp);
+
+	unsigned status;
+	char* htmlbody;
+
+	char* storeUrl = GetStoreHost();
+	char* tResult = mAgent.getSslResult(storeUrl, szData, reqHdr, status, htmlbody);
+
+	mir_free(reqHdr);
+	free(szData);
+
+	mir_free(tResult);
+	mir_free(storeUrl);
+
+	return status == 200;
+}
+
 bool MSN_StoreGetProfile(void)
 {
 	SSLAgent mAgent;
@@ -149,13 +184,16 @@ bool MSN_StoreGetProfile(void)
 		mir_snprintf(proresid, sizeof(proresid), "%s", ezxml_txt(ezxml_child(resxml, "ResourceID")));
 
 		ezxml_t expr = ezxml_child(resxml, "ExpressionProfile");
-
-		if (!MSN_GetByte( "NeverUpdateNickname", 0 ))
+		if (expr == NULL) 
+			MSN_StoreCreateProfile();
+		else
 		{
-			const char* szNick = ezxml_txt(ezxml_child(expr, "DisplayName"));
-			if (*szNick) MSN_SetStringUtf(NULL, "Nick", (char*)szNick);
+			if (!MSN_GetByte( "NeverUpdateNickname", 0 ))
+			{
+				const char* szNick = ezxml_txt(ezxml_child(expr, "DisplayName"));
+				MSN_SetStringUtf(NULL, "Nick", (char*)szNick);
+			}
 		}
-
 		ezxml_free(xmlm);
 	}
 	mir_free(tResult);
