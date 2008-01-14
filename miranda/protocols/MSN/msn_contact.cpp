@@ -148,6 +148,13 @@ bool MSN_AddUser( HANDLE hContact, const char* email, int netId, int flags )
 				netId = 2;
 				res = MSN_ABContactAdd(email, dbv.pszVal, netId, false) == 0;
 			}
+			else if (netId == 1 && res1 == 3)
+			{
+				char szContactID[100];
+				if (MSN_GetStaticString("ID", hContact, szContactID, sizeof(szContactID)) == 0)
+					MSN_ABUpdateProperty(szContactID, "isMessengerUser", "1");
+			}
+
 			else
 				res = (res1 == 0);
 

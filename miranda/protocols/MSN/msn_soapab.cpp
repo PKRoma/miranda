@@ -743,7 +743,7 @@ void MSN_ABRenameGroup(const char* szGrpName, const char* szGrpId)
 }
 
 
-void MSN_ABUpdateNick(const char* szNick, const char* szCntId)
+void MSN_ABUpdateProperty(const char* szCntId, const char* propName, const char* propValue)
 {
 	SSLAgent mAgent;
 
@@ -754,33 +754,29 @@ void MSN_ABUpdateNick(const char* szNick, const char* szCntId)
 	ezxml_t node = ezxml_add_child(tbdy, "contacts", 0);
 	ezxml_t cont = ezxml_add_child(node, "Contact", 0);
 	ezxml_set_attr(cont, "xmlns", "http://www.msn.com/webservices/AddressBook");
-	if (szCntId != NULL)
+
+	ezxml_t conti = ezxml_add_child(cont, "contactInfo", 0);
+	if (szCntId == NULL)
 	{
-		node = ezxml_add_child(cont, "contactId", 0);
-		ezxml_set_txt(node, szCntId);
-		node = ezxml_add_child(cont, "contactInfo", 0);
-		node = ezxml_add_child(node, "annotations", 0);
-		ezxml_t anot = ezxml_add_child(node, "Annotation", 0);
-		node = ezxml_add_child(anot, "Name", 0);
-		ezxml_set_txt(node, "AB.NickName");
- 		node = ezxml_add_child(anot, "Value", 0);
-		if (szNick) ezxml_set_txt(node, szNick);
-		node = ezxml_add_child(cont, "propertiesChanged", 0);
-		ezxml_set_txt(node, "Annotation");
+		node = ezxml_add_child(conti, "contactType", 0);
+		ezxml_set_txt(node, "Me");
 	}
 	else
 	{
-		ezxml_t conti = ezxml_add_child(cont, "contactInfo", 0);
-		node = ezxml_add_child(conti, "contactType", 0);
-		ezxml_set_txt(node, "Me");
-		node = ezxml_add_child(conti, "displayName", 0);
-		ezxml_set_txt(node, szNick);
-		node = ezxml_add_child(cont, "propertiesChanged", 0);
-		ezxml_set_txt(node, "DisplayName");
+		node = ezxml_add_child(cont, "contactId", 0);
+		ezxml_set_txt(node, szCntId);
 	}
+	node = ezxml_add_child(conti, propName, 0);
+	ezxml_set_txt(node, propValue);
+
+	node = ezxml_add_child(cont, "propertiesChanged", 0);
+	char* szPrpChg = mir_strdup(propName); 
+	*szPrpChg = _toupper(*szPrpChg);
+	ezxml_set_txt(node, szPrpChg);
 
 	char* szData = ezxml_toxml(xmlp, true);
 	ezxml_free(xmlp);
+	mir_free(szPrpChg);
 
 	unsigned status;
 	char* htmlbody;
@@ -802,7 +798,7 @@ void MSN_ABUpdateNick(const char* szNick, const char* szCntId)
 }
 
 
-void MSN_ABUpdateAttr(const char* szAttr, const int value)
+void MSN_ABUpdateAttr(const char* szCntId, const char* szAttr, const char* szValue)
 {
 	SSLAgent mAgent;
 
@@ -814,17 +810,22 @@ void MSN_ABUpdateAttr(const char* szAttr, const int value)
 	ezxml_t cont = ezxml_add_child(node, "Contact", 0);
 	ezxml_set_attr(cont, "xmlns", "http://www.msn.com/webservices/AddressBook");
 	ezxml_t conti = ezxml_add_child(cont, "contactInfo", 0);
-	node = ezxml_add_child(conti, "contactType", 0);
-	ezxml_set_txt(node, "Me");
+	if (szCntId == NULL)
+	{
+		node = ezxml_add_child(conti, "contactType", 0);
+		ezxml_set_txt(node, "Me");
+	}
+	else
+	{
+		node = ezxml_add_child(cont, "contactId", 0);
+		ezxml_set_txt(node, szCntId);
+	}
 	node = ezxml_add_child(conti, "annotations", 0);
 	ezxml_t anot = ezxml_add_child(node, "Annotation", 0);
 	node = ezxml_add_child(anot, "Name", 0);
 	ezxml_set_txt(node, szAttr);
 	node = ezxml_add_child(anot, "Value", 0);
-
-	char buf[64];
-	mir_snprintf(buf, sizeof(buf), "%d", value);
-	ezxml_set_txt(node, buf);
+	ezxml_set_txt(node, szValue);
 
 	node = ezxml_add_child(cont, "propertiesChanged", 0);
 	ezxml_set_txt(node, "Annotation");
@@ -849,6 +850,15 @@ void MSN_ABUpdateAttr(const char* szAttr, const int value)
 	}
 	mir_free(tResult);
 	mir_free(abUrl);
+}
+
+
+void MSN_ABUpdateNick(const char* szNick, const char* szCntId)
+{
+	if (szCntId != NULL)
+		MSN_ABUpdateAttr(szCntId, "AB.NickName", szNick);
+	else
+		MSN_ABUpdateProperty(szCntId, "displayName", szNick);
 }
 
 
@@ -961,6 +971,7 @@ unsigned MSN_ABContactAdd(const char* szEmail, const char* szNick, int typeId, c
 			const char* szErr = ezxml_txt(ezxml_get(xmlm, "soap:Body", 0, "soap:Fault", 0, 
 				"detail", 0, "errorcode", -1));
 			status = strcmp(szErr, "EmailDomainIsFederated") ? 1 : 2;
+			status = strcmp(szErr, "ContactAlreadyExists") ? status : 3;
 		}
 		ezxml_free(xmlm);
 	}

@@ -276,7 +276,7 @@ LBL_Continue:
 			if ( tValue != msnOtherContactsBlocked && msnLoggedIn ) {
 				msnOtherContactsBlocked = tValue;
 				msnNsThread->sendPacket( "BLP", tValue ? "BL" : "AL" );
-				MSN_ABUpdateAttr("MSN.IM.BLP", !tValue);
+				MSN_ABUpdateAttr(NULL, "MSN.IM.BLP", tValue ? "0" : "1");
 				break;
 			}
 

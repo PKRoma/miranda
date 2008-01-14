@@ -219,27 +219,29 @@ static void __cdecl MsnSearchAckThread( void* arg )
 	unsigned res = MSN_ABContactAdd(email, NULL, 1, true);
 	switch(res)
 	{
-		case 0:
-		case 2:
-			{
-				PROTOSEARCHRESULT isr = {0};
-				isr.cbSize = sizeof( isr );
-				isr.nick = (char*)arg;
-				isr.email = (char*)arg;
+	case 0:
+	case 2:
+	case 3:
+		{
+			PROTOSEARCHRESULT isr = {0};
+			isr.cbSize = sizeof( isr );
+			isr.nick = (char*)arg;
+			isr.email = (char*)arg;
 
-				MSN_SendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, arg, ( LPARAM )&isr );
-				MSN_SendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, arg, 0 );
-			}
-			break;
-		
-		case 1:
-			if (strstr(email, "@yahoo.com") == NULL)
-				MSN_SendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, arg, 0 );
-			else
-			{
-				msnSearchId = arg;
-				MSN_FindYahooUser(email);
-			}
+			MSN_SendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, arg, ( LPARAM )&isr );
+			MSN_SendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, arg, 0 );
+		}
+		break;
+	
+	case 1:
+		if (strstr(email, "@yahoo.com") == NULL)
+			MSN_SendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, arg, 0 );
+		else
+		{
+			msnSearchId = arg;
+			MSN_FindYahooUser(email);
+		}
+		break;
 	}
 	mir_free(arg);
 }
