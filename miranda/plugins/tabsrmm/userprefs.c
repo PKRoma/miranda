@@ -70,7 +70,6 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 		case WM_INITDIALOG: {
 			TCHAR szBuffer[180];
 #if defined(_UNICODE)
-			TCHAR contactName[100];
 			DWORD sCodePage;
 #endif
 			DWORD contact_gmt_diff;
@@ -156,16 +155,13 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 						SendDlgItemMessage(hwndDlg, IDC_CODEPAGES, CB_SETCURSEL, (WPARAM)i, 0);
 				}
 			}
-			//MY_GetContactDisplayNameW(hContact, contactName, 84, szProto, sCodePage);
-			mir_sntprintf(szBuffer, safe_sizeof(szBuffer), TranslateT("Set options for %s"), (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR));
-			//szBuffer[safe_sizeof(szBuffer) - 1] = 0;
 			CheckDlgButton(hwndDlg, IDC_FORCEANSI, DBGetContactSettingByte(hContact, SRMSGMOD_T, "forceansi", 0) ? 1 : 0);
 #else
-			mir_snprintf(szBuffer, sizeof(szBuffer), Translate("Set options for %s"), (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0));
 			EnableWindow(GetDlgItem(hwndDlg, IDC_CODEPAGES), FALSE);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_FORCEANSI), FALSE);
 #endif
 			CheckDlgButton(hwndDlg, IDC_IGNORETIMEOUTS, DBGetContactSettingByte(hContact, SRMSGMOD_T, "no_ack", 0));
+			mir_sntprintf(szBuffer, safe_sizeof(szBuffer), TranslateT("Set options for %s"), (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR));
 			SetWindowText(hwndDlg, szBuffer);
 			SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("<default, no change>"));
 			timezone = (DWORD)DBGetContactSettingByte(hContact, "UserInfo", "Timezone", DBGetContactSettingByte(hContact, (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0), "Timezone", -1));
