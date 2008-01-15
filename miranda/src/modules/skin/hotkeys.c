@@ -192,7 +192,7 @@ static LRESULT CALLBACK sttHotkeyHostWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 
 static LRESULT CALLBACK sttKeyboardProc(int code, WPARAM wParam, LPARAM lParam)
 {
-	if (code == HC_ACTION) {
+	if (code == HC_ACTION && !(HIWORD(lParam) & KF_UP)) {
 		int i;
 		BYTE mod=0, vk=wParam;
 
