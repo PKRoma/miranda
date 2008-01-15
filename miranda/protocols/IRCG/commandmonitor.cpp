@@ -2240,6 +2240,8 @@ bool CMyMonitor::OnIrc_USERHOST_REPLY( const CIrcMessage* pmsg )
 				}
 				p2 = _tcschr(p1, '=');
 				if ( p2 ) {
+					if (*(p2-1) == '*')
+						*(p2-1) = '\0';  //  remove special char for IRCOps
 					*p2 = '\0';
 					p2++;
 					awaystatus = *p2;
@@ -2267,10 +2269,11 @@ bool CMyMonitor::OnIrc_USERHOST_REPLY( const CIrcMessage* pmsg )
 						DBWriteContactSettingWord(hContact, IRCPROTONAME, "Status", awaystatus == '-'? ID_STATUS_AWAY : ID_STATUS_ONLINE);
 						DBWriteContactSettingTString(hContact, IRCPROTONAME, "User", user.c_str());
 						DBWriteContactSettingTString(hContact, IRCPROTONAME, "Host", host.c_str());
+						DBWriteContactSettingTString(hContact, IRCPROTONAME, "Nick", nick.c_str());
 
 						// If user found, remove from checklist
 						for ( i = 0; i < (int)checklist.size(); i++ )
-							if ( checklist[i] == nick )
+							if ( !lstrcmpi(checklist[i].c_str(), nick.c_str() ))
 								checklist.erase(checklist.begin() + i);
 					}
 					break;
