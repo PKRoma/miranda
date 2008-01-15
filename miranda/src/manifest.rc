@@ -3,4 +3,6 @@
 // RT_MANIFEST
 //
 
+#include <winres.h>
+
 1                       RT_MANIFEST             "miranda32.exe.manifest"

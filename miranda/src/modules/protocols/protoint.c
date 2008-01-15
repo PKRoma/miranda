@@ -246,3 +246,11 @@ PROTO_INTERFACE* AddDefaultAccount( const char* szProtoName )
 	}
 	return ppi;
 }
+
+int FreeDefaultAccount( PROTO_INTERFACE* ppi )
+{
+	mir_free( ppi->szPhysName );
+	mir_free( ppi->szProtoName );
+	mir_free( ppi->tszUserName );
+	return 0;
+}

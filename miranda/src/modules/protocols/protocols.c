@@ -97,6 +97,7 @@ static int Proto_RegisterModule(WPARAM wParam,LPARAM lParam)
 		memset( p, 0, sizeof( PROTOCOLDESCRIPTOR ));
 		p->cbSize = sizeof( PROTOCOLDESCRIPTOR );
 		p->type = pd->type;
+		p->fnUninit = FreeDefaultAccount;
 		{
 			PROTO_INTERFACE* ppi = AddDefaultAccount( pd->szName );
 			if ( ppi )
@@ -223,25 +224,24 @@ static int Proto_EnumAccounts(WPARAM wParam, LPARAM lParam)
 
 int CallProtoServiceInt( HANDLE hContact, const char *szModule, const char *szService, WPARAM wParam, LPARAM lParam )
 {
-	int idx, idx2;
-	PROTO_INTERFACE temp, *ppi;
-	TServiceListItem item;
-	temp.szPhysName = ( char* )szModule;
-	if ( List_GetIndex(( SortedList* )&accounts, &temp, &idx ) == 0 )
+	int idx;
+	PROTO_INTERFACE *ppi = ( PROTO_INTERFACE* )Proto_GetAccount( 0, ( LPARAM )szModule );
+	if ( ppi == NULL )
 		return CALLSERVICE_NOTFOUND;
 
-	ppi = accounts.items[ idx ];
 	if ( ppi->bOldProto ) {
 		char svcName[ MAXMODULELABELLENGTH ];
 		mir_snprintf( svcName, sizeof(svcName), "%s%s", szModule, szService );
 		return CallService( svcName, wParam, lParam );
 	}
+	else {
+		TServiceListItem item;
+		item.name = szService;
+		if ( List_GetIndex(( SortedList* )&serviceItems, &item, &idx ) == 0 )
+			return CALLSERVICE_NOTFOUND;
+	}
 
-	item.name = szService;
-	if ( List_GetIndex(( SortedList* )&serviceItems, &item, &idx2 ) == 0 )
-		return CALLSERVICE_NOTFOUND;
-
-	switch( serviceItems.items[ idx2 ]->id ) {
+	switch( serviceItems.items[ idx ]->id ) {
 		case  1: return ( int )ppi->AddToList( ppi, wParam, (PROTOSEARCHRESULT*)lParam ); break;
 		case  2: return ( int )ppi->AddToListByEvent( ppi, HIWORD(wParam), LOWORD(wParam), (HANDLE)lParam ); break;
 		case  3: return ( int )ppi->Authorize( ppi, ( HANDLE )wParam ); break;
@@ -324,19 +324,36 @@ int CallContactService( HANDLE hContact, const char *szProtoService, WPARAM wPar
 
 void UnloadProtocolsModule()
 {
+	int i;
 	if ( hAckEvent ) {
 		DestroyHookableEvent(hAckEvent);
 		hAckEvent = NULL;
 	}
 
+	if ( accounts.count ) {
+		for( i=0; i < accounts.count; i++ ) {
+			int idx;
+			PROTOCOLDESCRIPTOR temp;
+			temp.szName = accounts.items[i]->szPhysName;
+			if ( List_GetIndex(( SortedList* )&protos, &temp, &idx ))
+				if ( protos.items[idx]->fnUninit != NULL )
+					protos.items[idx]->fnUninit( accounts.items[i] );
+			mir_free( accounts.items[i] );
+		}
+		List_Destroy(( SortedList* )&accounts );
+	}
+
 	if ( protos.count ) {
-		int i;
 		for( i=0; i < protos.count; i++ ) {
 			mir_free( protos.items[i]->szName);
 			mir_free( protos.items[i] );
 		}
 		List_Destroy(( SortedList* )&protos );
 	}
+
+	for ( i=0; i < serviceItems.count; i++ )
+		mir_free( serviceItems.items[i] );
+	List_Destroy(( SortedList* )&serviceItems );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
