@@ -171,6 +171,14 @@ bool MSN_AddUser( HANDLE hContact, const char* email, int netId, int flags )
 	else {
 		res = MSN_SharingAddDelMember(email, flags, needRemove ? "DeleteMember" : "AddMember");
 		if (res) AddDelUserContList(email, flags, Lists_GetNetId(email), needRemove);
+		if ((flags & LIST_BL) && !needRemove)
+		{
+			if (hContact == NULL)
+				hContact = MSN_HContactFromEmail( email, NULL, 0, 0 );
+
+			ThreadData* thread =  MSN_GetThreadByContact(hContact, SERVER_SWITCHBOARD);
+			thread->sendPacket( "OUT", NULL );
+		}
 	}
 	return res;
 }
