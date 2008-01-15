@@ -4,7 +4,7 @@ Locale: 0404
 Last-Modified-Using: Miranda IM 0.6.0
 Authors: Stark Wong
 Author-email: starkwong@hotmail.com
-Plugins-included: 
+Plugins-included:
 
 ; Generated on Jan 17 2007 11:12:35 China Standard Time (CST/GMT+8)
 
@@ -26,6 +26,7 @@ Plugins-included:
 
 ; /dbtool/eventchain.cpp
 [Event count marked wrongly: correcting]
+[Event chain corrupted, trying to recover...]
 [Event chain corrupted, further entries ignored]
 [First event not marked as such: correcting]
 [Event marked as first which is not: correcting]
@@ -33,6 +34,8 @@ Plugins-included:
 [First unread event marked wrong: fixing]
 [Infeasibly large event blob: skipping]
 [Event not backlinked correctly: fixing]
+[Duplicate event was found: skipping]
+[Event position in chain is not correct: fixing]
 
 ; /dbtool/finaltasks.cpp
 [Processing final tasks]
@@ -54,14 +57,11 @@ Plugins-included:
 [Database is corrupted and too small to contain any recoverable data]
 [Database signature is corrupted, automatic repair is impossible]
 [Database is marked as belonging to an unknown version of Miranda]
-[(Working Copy).dat]
-[Creating working database (aggressive mode)]
-[Can't create working file (%u)]
-[Error writing file, probably disk full - try without aggressive mode (%u)]
-[Can't read from working file (%u)]
 [<check only>]
 [(Output).dat]
 [Can't create output file (%u)]
+[Can't create file mapping (%u)]
+[Can't create map view of file (%u)]
 
 ; /dbtool/modulechain.cpp
 [Processing module name chain]
@@ -134,6 +134,8 @@ Plugins-included:
 [Database]
 [Total size]
 [Wasted]
+[Miranda Databases (*.dat)]
+[All Files]
 
 ; /dbtool/settingschain.cpp
 [Settings chain corrupted, further entries ignored]
@@ -148,6 +150,6 @@ Plugins-included:
 ; /dbtool/worker.cpp
 [Database worker thread activated]
 [Processing aborted by user]
-[All tasks completed but with %d error%s]
-[s]
+[Elapsed time: %d sec]
+[All tasks completed but with errors (%d)]
 [All tasks completed successfully]

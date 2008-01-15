@@ -1046,6 +1046,9 @@
 				RelativePath="res\dbtool.ico">
 			</File>
 			<File
+				RelativePath=".\res\delete.ico">
+			</File>
+			<File
 				RelativePath="res\profileg.ico">
 			</File>
 			<File

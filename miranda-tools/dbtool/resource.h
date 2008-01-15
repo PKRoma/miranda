@@ -18,6 +18,7 @@
 #define IDD_CLEANING                    110
 #define IDD_PROGRESS                    111
 #define IDD_FINISHED                    112
+#define IDI_BAD                         113
 #define IDC_WATERMARK                   1000
 #define IDC_TITLE                       1001
 #define IDC_HDRLOGO                     1002

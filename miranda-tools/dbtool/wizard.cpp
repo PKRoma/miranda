@@ -18,8 +18,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "dbtool.h"
 
-BOOL CALLBACK WelcomeDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
-
 static HFONT hBoldFont=NULL;
 static HENHMETAFILE hEmfHeaderLogo=NULL;
 
@@ -124,6 +122,10 @@ BOOL CALLBACK WizardDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam)
 			}
 			break;
 		case WM_DESTROY:
+			if (opts.hFile)
+				CloseHandle(opts.hFile);
+			if (opts.hOutFile)
+				CloseHandle(opts.hOutFile);
 			DestroyWindow(hdlgPage);
 			LangPackShutdown();
 			if(hBoldFont!=NULL) DeleteObject(hBoldFont);

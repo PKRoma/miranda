@@ -18,9 +18,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "dbtool.h"
 
+static BOOL backLookup;
 static DWORD ofsThisEvent,ofsPrevEvent;
 static DWORD ofsDestPrevEvent;
 static DWORD eventCount;
+static DWORD lastTimestamp;
 static DWORD ofsFirstUnread,timestampFirstUnread;
 static DWORD memsize = 0;
 static DBEvent* memblock = NULL;
@@ -160,6 +162,18 @@ static void FinishUp(DWORD ofsLast,DBContact *dbc)
 	}
 }
 
+static DWORD WriteEvent(DBEvent *dbe)
+{
+	DWORD ofs = WriteSegment( WSOFS_END, dbe, offsetof(DBEvent,blob)+dbe->cbBlob );
+	if ( ofs == WS_ERROR ) {
+		free( memblock );
+		memblock = NULL;
+		memsize = 0;
+		return 0;
+	}
+	return ofs;
+}
+
 int WorkEventChain(DWORD ofsContact,DBContact *dbc,int firstTime)
 {
 	DBEvent *dbeNew,dbeOld;
@@ -171,6 +185,8 @@ int WorkEventChain(DWORD ofsContact,DBContact *dbc,int firstTime)
 		ofsDestPrevEvent=0;
 		ofsThisEvent=dbc->ofsFirstEvent;
 		eventCount=0;
+		backLookup=0;
+		lastTimestamp=0;
 		ofsFirstUnread=timestampFirstUnread=0;
 		if(opts.bEraseHistory) {
 			dbc->eventCount=0;
@@ -185,11 +201,29 @@ int WorkEventChain(DWORD ofsContact,DBContact *dbc,int firstTime)
 		FinishUp(ofsDestPrevEvent,dbc);
 		return ERROR_NO_MORE_ITEMS;
 	}
+	if(!SignatureValid(ofsThisEvent,DBEVENT_SIGNATURE))
+	{
+		DWORD ofsNew = 0;
+		DWORD ofsTmp = dbc->ofsLastEvent;
 
-	if(!SignatureValid(ofsThisEvent,DBEVENT_SIGNATURE)) {
-		AddToStatus(STATUS_ERROR,TranslateT("Event chain corrupted, further entries ignored"));
-		FinishUp(ofsDestPrevEvent,dbc);
-		return ERROR_NO_MORE_ITEMS;
+		if (!backLookup && ofsTmp) {
+			backLookup = 1;
+			while(SignatureValid(ofsTmp,DBEVENT_SIGNATURE))
+			{
+				if(PeekSegment(ofsTmp,&dbeOld,sizeof(dbeOld))!=ERROR_SUCCESS)
+					break;
+				ofsNew = ofsTmp;
+				ofsTmp = dbeOld.ofsPrev;
+			}
+		}
+		if (ofsNew) {
+			AddToStatus(STATUS_WARNING,TranslateT("Event chain corrupted, trying to recover..."));
+			ofsThisEvent = ofsNew;
+		} else {
+			AddToStatus(STATUS_ERROR,TranslateT("Event chain corrupted, further entries ignored"));
+			FinishUp(ofsDestPrevEvent,dbc);
+			return ERROR_NO_MORE_ITEMS;
+		}
 	}
 
 	if(PeekSegment(ofsThisEvent,&dbeOld,sizeof(dbeOld))!=ERROR_SUCCESS) {
@@ -203,6 +237,7 @@ int WorkEventChain(DWORD ofsContact,DBContact *dbc,int firstTime)
 			dbeOld.flags|=DBEF_FIRST;
 		}
 		dbeOld.ofsPrev=ofsContact;
+		lastTimestamp=dbeOld.timestamp;
 	}
 	else if(dbeOld.flags&DBEF_FIRST) {
 		AddToStatus(STATUS_WARNING,TranslateT("Event marked as first which is not: correcting"));
@@ -237,12 +272,13 @@ int WorkEventChain(DWORD ofsContact,DBContact *dbc,int firstTime)
 		AddToStatus(STATUS_WARNING,TranslateT("Event not backlinked correctly: fixing"));
 
 	dbeOld.ofsPrev=ofsDestPrevEvent;
+
 	if (offsetof(DBEvent,blob)+dbeOld.cbBlob > memsize) {
 		memsize = offsetof(DBEvent,blob)+dbeOld.cbBlob;
 		memblock = (DBEvent*)realloc(memblock, memsize);
 	}
-
 	dbeNew=memblock;
+
 	if(ReadSegment(ofsThisEvent,dbeNew,offsetof(DBEvent,blob)+dbeOld.cbBlob)!=ERROR_SUCCESS) {
 		FinishUp(ofsDestPrevEvent,dbc);
 		return ERROR_NO_MORE_ITEMS;
@@ -256,20 +292,123 @@ int WorkEventChain(DWORD ofsContact,DBContact *dbc,int firstTime)
 	if ( dbeOld.eventType == EVENTTYPE_MESSAGE && opts.bConvertUtf )
 		ConvertOldEvent(dbeNew);
 
-	if((ofsDestThis=WriteSegment(WSOFS_END,dbeNew,offsetof(DBEvent,blob)+dbeNew->cbBlob))==WS_ERROR) {
-		free(memblock);
-		memblock = NULL;
-		memsize=0;
-		return ERROR_HANDLE_DISK_FULL;
+	if ( !firstTime && dbeNew->timestamp == lastTimestamp ) {
+
+		DBEvent dbeTmp;
+
+		if ( PeekSegment(ofsDestPrevEvent,&dbeTmp,sizeof(dbeTmp))==ERROR_SUCCESS &&
+			dbeNew->cbBlob == dbeTmp.cbBlob &&
+			dbeNew->ofsModuleName == dbeTmp.ofsModuleName &&
+			dbeNew->eventType == dbeTmp.eventType &&
+			dbeNew->flags == dbeTmp.flags
+			) {
+
+			int len = offsetof(DBEvent,blob)+dbeTmp.cbBlob;
+			DBEvent *dbePrev = (DBEvent*)malloc( len );
+
+			if ( PeekSegment(ofsDestPrevEvent,dbePrev,len)==ERROR_SUCCESS &&
+				!memcmp( dbePrev->blob, dbeNew->blob, dbeTmp.cbBlob )
+				) {
+
+				AddToStatus(STATUS_WARNING,TranslateT("Duplicate event was found: skipping"));
+				if (dbc->eventCount)
+					dbc->eventCount--;
+				free(dbePrev);
+				// ofsDestPrevEvent is still the same!
+				ofsPrevEvent=ofsThisEvent;
+				ofsThisEvent=dbeOld.ofsNext;
+				return ERROR_SUCCESS;
+			}
+			free(dbePrev);
+		}
+	}
+	else if ( dbeNew->timestamp < lastTimestamp ) {
+	    DWORD found = 0;
+		DBEvent dbeTmp;
+		DWORD ofsTmp = ofsDestPrevEvent;
+
+		if (ofsTmp) {
+
+			AddToStatus(STATUS_WARNING,TranslateT("Event position in chain is not correct: fixing"));
+
+			while(PeekSegment(ofsTmp,&dbeTmp,sizeof(dbeTmp))==ERROR_SUCCESS)
+			{
+			    if (dbeTmp.ofsPrev==ofsContact) {
+			    	found = 1;
+			    	break;
+			    }
+			    if (dbeTmp.timestamp < dbeNew->timestamp) {
+			    	found = 2;
+			    	break;
+			    }
+				ofsTmp = dbeTmp.ofsPrev;
+			}
+
+			// insert before FIRST
+			if (found == 1) {
+				dbeNew->flags|=DBEF_FIRST;
+				dbeNew->ofsPrev=ofsContact;
+				dbeNew->ofsNext=dbc->ofsFirstEvent;
+
+				ofsDestThis = WriteEvent(dbeNew);
+				if ( !ofsDestThis )
+					return ERROR_HANDLE_DISK_FULL;
+
+				if ( isUnread && timestampFirstUnread >= dbeNew->timestamp ) {
+					ofsFirstUnread=ofsDestThis;
+					timestampFirstUnread=dbeNew->timestamp;
+				}
+				// fix first event
+				WriteOfsNextToPrevious(0,dbc,ofsDestThis);
+				// fix next event
+				WriteSegment(dbeNew->ofsNext+offsetof(DBEvent,ofsPrev),&ofsDestThis,sizeof(DWORD));
+				dbeTmp.flags &=~DBEF_FIRST;
+				WriteSegment(dbeNew->ofsNext+offsetof(DBEvent,flags),&dbeTmp.flags,sizeof(DWORD));
+			}
+			else if (found == 2) {
+
+				dbeNew->ofsPrev=ofsTmp;
+				dbeNew->ofsNext=dbeTmp.ofsNext;
+
+				ofsDestThis = WriteEvent(dbeNew);
+				if ( !ofsDestThis )
+					return ERROR_HANDLE_DISK_FULL;
+
+				if ( isUnread && timestampFirstUnread >= dbeNew->timestamp ) {
+					ofsFirstUnread=ofsDestThis;
+					timestampFirstUnread=dbeNew->timestamp;
+				}
+				// fix previous event
+				WriteOfsNextToPrevious(dbeNew->ofsPrev,dbc,ofsDestThis);
+				// fix next event
+				WriteSegment(dbeNew->ofsNext+offsetof(DBEvent,ofsPrev),&ofsDestThis,sizeof(DWORD));
+
+			}
+
+			if (found) {
+				eventCount++;
+				// ofsDestPrevEvent is still the same!
+				ofsPrevEvent=ofsThisEvent;
+				ofsThisEvent=dbeOld.ofsNext;
+				return ERROR_SUCCESS;
+			}
+		}
 	}
 
-	if(isUnread) {
+	lastTimestamp=dbeNew->timestamp;
+
+	ofsDestThis = WriteEvent(dbeNew);
+	if ( !ofsDestThis )
+		return ERROR_HANDLE_DISK_FULL;
+
+	if ( isUnread ) {
 		ofsFirstUnread=ofsDestThis;
 		timestampFirstUnread=dbeOld.timestamp;
 	}
 
 	eventCount++;
 	WriteOfsNextToPrevious(ofsDestPrevEvent,dbc,ofsDestThis);
+
 	ofsDestPrevEvent=ofsDestThis;
 	ofsPrevEvent=ofsThisEvent;
 	ofsThisEvent=dbeOld.ofsNext;
