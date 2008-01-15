@@ -154,9 +154,9 @@ typedef struct {
 
 #define PROTOCOLDESCRIPTOR_V3_SIZE (sizeof(int)*2+sizeof(char*))
 
-typedef int ( *pfnInitProto )( struct PROTO_INTERFACE* ); // initializes an empty account
-typedef int ( *pfnUninitProto )( struct PROTO_INTERFACE* ); // deallocates an account instance
-typedef int ( *pfnDestroyProto )( struct PROTO_INTERFACE* ); // removes an account from the database
+typedef int ( *pfnInitProto )( struct tagPROTO_INTERFACE* ); // initializes an empty account
+typedef int ( *pfnUninitProto )( struct tagPROTO_INTERFACE* ); // deallocates an account instance
+typedef int ( *pfnDestroyProto )( struct tagPROTO_INTERFACE* ); // removes an account from the database
 
 typedef struct {
 	int   cbSize;
