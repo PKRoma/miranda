@@ -714,7 +714,7 @@ void MSN_ABRenameGroup(const char* szGrpName, const char* szGrpId)
 
 	node = ezxml_add_child(grp, "groupId", 0);
 	ezxml_set_txt(node, szGrpId);
-	ezxml_t grpi = ezxml_add_child(grp, "GroupInfo", 0);
+	ezxml_t grpi = ezxml_add_child(grp, "groupInfo", 0);
 	node = ezxml_add_child(grpi, "name", 0);
 	ezxml_set_txt(node, szGrpName);
 	node = ezxml_add_child(grp, "propertiesChanged", 0);
