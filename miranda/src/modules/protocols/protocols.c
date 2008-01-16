@@ -291,19 +291,18 @@ int CallProtoServiceInt( HANDLE hContact, const char *szModule, const char *szSe
 int CallContactService( HANDLE hContact, const char *szProtoService, WPARAM wParam, LPARAM lParam )
 {
 	int i;
-	char str[10];
 	DBVARIANT dbv;
 	int ret;
+	PROTO_INTERFACE *ppi;
+	CCSDATA ccs = { hContact, szProtoService, wParam, lParam };
 
-	if ( wParam == (WPARAM)(-1))
-		return 1;
-
-	for ( i = wParam;; i++ ) {
+	for ( i = 0;; i++ ) {
+		char str[10];
 		_itoa( i, str, 10 );
 		if ( DBGetContactSettingString( hContact, "_Filter", str, &dbv ))
 			break;
 
-		if (( ret = CallProtoService( dbv.pszVal, szProtoService, i+1, lParam )) != CALLSERVICE_NOTFOUND ) {
+		if (( ret = CallProtoServiceInt( hContact, dbv.pszVal, szProtoService, i+1, lParam )) != CALLSERVICE_NOTFOUND ) {
 			//chain was started, exit
 			mir_free( dbv.pszVal );
 			return ret;
@@ -313,8 +312,17 @@ int CallContactService( HANDLE hContact, const char *szProtoService, WPARAM wPar
 	if ( DBGetContactSettingString( hContact, "Protocol", "p", &dbv ))
 		return 1;
 
-	if (( ret = CallProtoService( dbv.pszVal, szProtoService, (WPARAM)(-1), lParam )) == CALLSERVICE_NOTFOUND )
+	ppi = ( PROTO_INTERFACE* )Proto_GetAccount( 0, ( LPARAM )dbv.pszVal );
+	if ( ppi == NULL )
 		ret = 1;
+	else {
+		if ( ppi->bOldProto )
+			ret = CallProtoServiceInt( hContact, dbv.pszVal, szProtoService, (WPARAM)(-1), ( LPARAM)&ccs );
+		else
+			ret = CallProtoServiceInt( hContact, dbv.pszVal, szProtoService, wParam, lParam );
+		if ( ret == CALLSERVICE_NOTFOUND )
+			ret = 1;
+	}
 
 	mir_free( dbv.pszVal );
 	return ret;
