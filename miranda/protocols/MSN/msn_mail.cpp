@@ -493,7 +493,7 @@ int MSN_SendOIM(const char* szEmail, const char* msg)
 
 	int success = -1;
 	bool retry = true;
-	for (unsigned i=0; i<2 && retry; ++i)
+	for (unsigned i=0; i<3 && retry; ++i)
 	{
 		retry = false;
 
@@ -519,11 +519,15 @@ int MSN_SendOIM(const char* szEmail, const char* msg)
 				if (strcmp(szFltCode, "q0:AuthenticationFailed") == 0)
 				{
 					ezxml_t det = ezxml_child(flt, "detail");
-					const char* szTwChl = ezxml_txt(ezxml_child(det, "TweenerChallenge"));
+					const char* szAuthChl = ezxml_txt(ezxml_child(det, "RequiredAuthPolicy"));
 					const char* szChl   = ezxml_txt(ezxml_child(det, "LockKeyChallenge"));
 
-					if (*szTwChl) 
+					if (*szAuthChl)
+					{
 						MSN_GetPassportAuth();
+						*oimDigest = 0;
+						retry = true;
+					}
 					if (*szChl)
 					{
 						MSN_MakeDigest(szChl, oimDigest);
