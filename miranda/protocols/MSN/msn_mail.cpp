@@ -525,7 +525,6 @@ int MSN_SendOIM(const char* szEmail, const char* msg)
 					if (*szAuthChl)
 					{
 						MSN_GetPassportAuth();
-						*oimDigest = 0;
 						retry = true;
 					}
 					if (*szChl)
