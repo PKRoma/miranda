@@ -4357,6 +4357,7 @@ static void yahoo_process_yab_connection(struct yahoo_input_data *yid, int over)
 	YList *buds;
 	int changed=0;
 	int id = yd->client_id;
+	BOOL yab_used = FALSE;
 
 	if(over)
 		return;
@@ -4367,9 +4368,11 @@ static void yahoo_process_yab_connection(struct yahoo_input_data *yid, int over)
 			continue;
 		
 		changed=1;
+		yab_used = FALSE;
 		for(buds = yd->buddies; buds; buds=buds->next) {
 			struct yahoo_buddy * bud = buds->data;
 			if(!strcmp(bud->id, yab->id)) {
+				yab_used = TRUE;
 				bud->yab_entry = yab;
 				if(yab->nname) {
 					bud->real_name = strdup(yab->nname);
@@ -4386,6 +4389,21 @@ static void yahoo_process_yab_connection(struct yahoo_input_data *yid, int over)
 				break; /* for */
 			}
 		}
+		
+		if (!yab_used)
+		{
+			//need to free the yab entry
+			FREE(yab->fname);
+			FREE(yab->lname);
+			FREE(yab->nname);
+			FREE(yab->id);
+			FREE(yab->email);
+			FREE(yab->hphone);
+			FREE(yab->wphone);
+			FREE(yab->mphone);
+			FREE(yab);
+		}
+
 	}
 
 	if(changed)
