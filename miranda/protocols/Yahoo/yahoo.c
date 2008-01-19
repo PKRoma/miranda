@@ -378,6 +378,7 @@ void ext_yahoo_status_changed(int id, const char *who, int stat, const char *msg
 	}
 
 	if ( (away == 2) || (stat == YAHOO_STATUS_IDLE) || (idle > 0)) {
+		/* TODO: set Idle=-1, because of key 138=1 and don't set idlets then */
 		if (stat > 0) {
 			YAHOO_DebugLog("[ext_yahoo_status_changed] %s idle for %d:%02d:%02d", who, idle/3600, (idle/60)%60, idle%60);
 			
@@ -406,6 +407,10 @@ void ext_yahoo_status_logon(int id, const char *who, int stat, const char *msg, 
 	} 
 	
 	switch (client_version) {
+		case 3075:
+				s = "Yahoo Web Messenger";
+				break;
+
 		case 262651: 
 				s = "libyahoo2"; 
 				break;
@@ -416,12 +421,17 @@ void ext_yahoo_status_logon(int id, const char *who, int stat, const char *msg, 
 				s = "Yahoo 6.x"; 
 				break;
 		case 524223: 
+				//Yahoo 7.4
+				//Yahoo 7.5
 				s = "Yahoo 7.x"; 
 				break;
 		case 822543:  /* ? "Yahoo Version 3.0 beta 1 (build 18274) OSX" */
 		case 1572799: /* 8.0.x ??  */ 
 		case 2097087: /* 8.1.0.195 */ 
 				s = "Yahoo 8.x"; 
+				break;
+		case 2088895:
+				s = "Yahoo 9.0";
 				break;
 	}
 	
