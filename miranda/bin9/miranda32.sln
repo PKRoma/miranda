@@ -1,5 +1,5 @@
 Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual C++ Express 2008
+# Visual Studio 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "clist", "..\plugins\clist\clist_9.vcproj", "{E71C1722-A41D-4475-87F4-29961A3654BB}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "db3x", "..\plugins\db3x\db3x_9.vcproj", "{8B778B6A-F5EF-49A4-8437-424832F2B280}"
@@ -49,6 +49,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FreeImage", "..\plugins\fre
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IRC", "..\protocols\IRCG\IRC_9.vcproj", "{3A12F777-56A8-42EC-BD17-8F325524241E}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "aim", "..\protocols\AimOscar\aim_9.vcproj", "{736E59E5-CDCE-4C88-9C3A-E7913D45C9EC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -234,6 +236,14 @@ Global
 		{3A12F777-56A8-42EC-BD17-8F325524241E}.Release Unicode|Win32.Build.0 = Release Unicode|Win32
 		{3A12F777-56A8-42EC-BD17-8F325524241E}.Release|Win32.ActiveCfg = Release|Win32
 		{3A12F777-56A8-42EC-BD17-8F325524241E}.Release|Win32.Build.0 = Release|Win32
+		{736E59E5-CDCE-4C88-9C3A-E7913D45C9EC}.Debug Unicode|Win32.ActiveCfg = Debug Unicode|Win32
+		{736E59E5-CDCE-4C88-9C3A-E7913D45C9EC}.Debug Unicode|Win32.Build.0 = Debug Unicode|Win32
+		{736E59E5-CDCE-4C88-9C3A-E7913D45C9EC}.Debug|Win32.ActiveCfg = Debug|Win32
+		{736E59E5-CDCE-4C88-9C3A-E7913D45C9EC}.Debug|Win32.Build.0 = Debug|Win32
+		{736E59E5-CDCE-4C88-9C3A-E7913D45C9EC}.Release Unicode|Win32.ActiveCfg = Release Unicode|Win32
+		{736E59E5-CDCE-4C88-9C3A-E7913D45C9EC}.Release Unicode|Win32.Build.0 = Release Unicode|Win32
+		{736E59E5-CDCE-4C88-9C3A-E7913D45C9EC}.Release|Win32.ActiveCfg = Release|Win32
+		{736E59E5-CDCE-4C88-9C3A-E7913D45C9EC}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
