@@ -522,9 +522,10 @@ LONG ThreadData::sendPacket( const char* cmd, const char* fmt,...)
 			va_start( vararg, fmt );
 
 			int paramStart = mir_snprintf( str, strsize, "%s %d ", cmd, thisTrid );
-			while ( _vsnprintf( str+paramStart, strsize-paramStart-2, fmt, vararg ) == -1 )
+			while ( _vsnprintf( str+paramStart, strsize-paramStart-3, fmt, vararg ) == -1 )
 				str = (char*)mir_realloc( str, strsize += 512 );
 
+			str[strsize-paramStart-3] = 0;
 			va_end( vararg );
 		}
 	}
