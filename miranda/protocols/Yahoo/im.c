@@ -124,7 +124,7 @@ void ext_yahoo_got_im(int id, const char *me, const char *who, const char *msg, 
 
 		pre.timestamp = tm;
 	} else
-		pre.timestamp = time(NULL);
+		pre.timestamp = (DWORD)time(NULL);
 		
 	pre.szMessage = umsg;
 	pre.lParam = 0;

@@ -31,7 +31,7 @@ int YAHOO_avt_hash(const char *key, DWORD ksize)
 {
   const char *p = key;
   int h = *p;
-  long l = 1;
+  unsigned long l = 1;
   
   if (h)
 	for (p += 1; l < ksize; p++, l++)
@@ -46,7 +46,7 @@ int YAHOO_avt_hash(const char *key, DWORD ksize)
 void upload_avt(int id, int fd, int error, void *data)
 {
     y_filetransfer *sf = (y_filetransfer*) data;
-    long size = 0;
+    unsigned long size = 0;
 	char buf[1024];
 	int rw;			/* */
 	DWORD dw;		/* needed for ReadFile */
@@ -549,7 +549,7 @@ void YAHOO_request_avatar(const char* who)
 	if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) == 0 || 
 		last_chk == 0 || (cur_time - last_chk) > 60) {
 			
-		DBWriteContactSettingDword(hContact, yahooProtocolName, "PictLastCheck", cur_time);
+		DBWriteContactSettingDword(hContact, yahooProtocolName, "PictLastCheck", (DWORD)cur_time);
 
 		LOG(("Requesting Avatar for: %s", who));
 		yahoo_request_buddy_avatar(ylad->id, who);
