@@ -401,6 +401,8 @@ void JabberIqResultGetRoster( XmlNode* iqNode, void* userdata, CJabberIqInfo* pI
 		TCHAR* jid = JabberXmlGetAttrValue( itemNode, "jid" );
 		if ( jid == NULL )
 			continue;
+		if ( _tcschr( jid, '@' ) == NULL )
+			bIsTransport = TRUE;
 
 		if (( name = JabberXmlGetAttrValue( itemNode, "name" )) != NULL )
 			nick = mir_tstrdup( name );
@@ -486,10 +488,12 @@ void JabberIqResultGetRoster( XmlNode* iqNode, void* userdata, CJabberIqInfo* pI
 			else DBWriteContactSettingTString( hContact, "CList", "Group", item->group );
 		}
 		else DBDeleteContactSetting( hContact, "CList", "Group" );
-		if ( hContact != NULL && bIsTransport)
-			JSetByte( hContact, "IsTransport", TRUE );
-		else
-			JSetByte( hContact, "IsTransport", FALSE );
+		if ( hContact != NULL ) {
+			if ( bIsTransport)
+				JSetByte( hContact, "IsTransport", TRUE );
+			else
+				JSetByte( hContact, "IsTransport", FALSE );
+		}
 	}
 
 	// Delete orphaned contacts ( if roster sync is enabled )
