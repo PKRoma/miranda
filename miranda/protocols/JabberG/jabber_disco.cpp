@@ -1393,7 +1393,10 @@ void JabberServiceDiscoveryShowMenu(CJabberSDNode *pNode, HTREELISTITEM hItem, P
 		}
 
 		case SD_ACT_JOIN:
-			JabberGroupchatJoinRoomByJid(hwndServiceDiscovery, pNode->GetJid());
+			if ( jabberChatDllPresent )
+				JabberGroupchatJoinRoomByJid(hwndServiceDiscovery, pNode->GetJid());
+			else
+				JabberChatDllError();
 			break;
 
 		case SD_ACT_BOOKMARK:

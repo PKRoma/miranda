@@ -760,7 +760,7 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 				OPTTREE_CHECK,	1,	NULL,	"EnableUserMood"},
 		{0,	LPGENT("Messaging") _T("/") LPGENT("Enable user tunes receiving"),
 				OPTTREE_CHECK,	1,	NULL,	"EnableUserTune"},
-
+/*
 		{0,	LPGENT("Conferences") _T("/") LPGENT("Autoaccept multiuser chat invitations"),
 				OPTTREE_CHECK,	1,	NULL,	"AutoAcceptMUC"},
 		{0,	LPGENT("Conferences") _T("/") LPGENT("Automatically join Bookmarks on login"),
@@ -769,7 +769,7 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 				OPTTREE_CHECK,	1,	NULL,	"AutoJoinConferences"},
 		{0, LPGENT("Conferences") _T("/") LPGENT("Do not show multiuser chat invitations"),
 				OPTTREE_CHECK,  1,	NULL,	"IgnoreMUCInvites"},
-
+*/
 		{0,	LPGENT("Server options") _T("/") LPGENT("Disable SASL authentication (for old servers)"),
 				OPTTREE_CHECK,	1,	NULL,	"Disable3920auth"},
 		{0,	LPGENT("Server options") _T("/") LPGENT("Enable stream compression (if possible)"),
@@ -838,18 +838,18 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			JGetByte("MsgAck", FALSE)?1:0,				"MsgAck");
 		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
 			JGetByte("EnableAvatars", TRUE)?1:0,		"EnableAvatars");
-		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
-			JGetByte("AutoAcceptMUC", FALSE)?1:0,		"AutoAcceptMUC");
-		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
-			JGetByte("AutoJoinConferences", FALSE)?1:0, "AutoJoinConferences");
-		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options),
-			JGetByte("IgnoreMUCInvites", FALSE)?1:0,	"IgnoreMUCInvites");
+//		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
+//			JGetByte("AutoAcceptMUC", FALSE)?1:0,		"AutoAcceptMUC");
+//		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
+//			JGetByte("AutoJoinConferences", FALSE)?1:0, "AutoJoinConferences");
+//		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options),
+//			JGetByte("IgnoreMUCInvites", FALSE)?1:0,	"IgnoreMUCInvites");
 		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
 			JGetByte("Disable3920auth", FALSE)?1:0,		"Disable3920auth");
 		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
 			JGetByte("EnableRemoteControl", FALSE)?1:0, "EnableRemoteControl");
-		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
-			JGetByte("AutoJoinBookmarks", TRUE)?1:0,	"AutoJoinBookmarks");
+//		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
+//			JGetByte("AutoJoinBookmarks", TRUE)?1:0,	"AutoJoinBookmarks");
 		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
 			JGetByte("EnableZlib", FALSE)?1:0,			"EnableZlib");
 		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
@@ -929,11 +929,11 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			JSetByte("MsgAck",                   (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "MsgAck"));
 			JSetByte("Disable3920auth",          (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "Disable3920auth"));
 			JSetByte("EnableAvatars",            (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableAvatars"));
-			JSetByte("AutoAcceptMUC",            (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoAcceptMUC"));
-			JSetByte("AutoJoinConferences",      (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoJoinConferences"));
-			JSetByte("IgnoreMUCInvites",         (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "IgnoreMUCInvites"));
+//			JSetByte("AutoAcceptMUC",            (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoAcceptMUC"));
+//			JSetByte("AutoJoinConferences",      (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoJoinConferences"));
+//			JSetByte("IgnoreMUCInvites",         (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "IgnoreMUCInvites"));
 			JSetByte("EnableRemoteControl",      (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableRemoteControl"));
-			JSetByte("AutoJoinBookmarks",        (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoJoinBookmarks"));
+//			JSetByte("AutoJoinBookmarks",        (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoJoinBookmarks"));
 			JSetByte("EnableZlib",               (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableZlib"));
 			JSetByte("LogChatstates",            (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "LogChatstates"));
 			JSetByte("EnableUserMood",           (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableUserMood"));
@@ -942,6 +942,106 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			JSetByte("BsOnlyIBB",                (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "BsOnlyIBB"));
 			JSetByte("FixIncorrectTimestamps",   (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "FixIncorrectTimestamps"));
 			JabberSendPresence( jabberStatus, true );
+			return TRUE;
+		}
+		break;
+	}
+
+	return FALSE;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// JabberGcOptDlgProc - chat options dialog procedure
+
+static BOOL CALLBACK JabberGcOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+{
+	static OPTTREE_OPTION options[] =
+	{
+		{0,	LPGENT("General") _T("/") LPGENT("Autoaccept multiuser chat invitations"),		OPTTREE_CHECK,	1,	NULL,	"AutoAcceptMUC"},
+		{0,	LPGENT("General") _T("/") LPGENT("Automatically join bookmarks on login"),		OPTTREE_CHECK,	1,	NULL,	"AutoJoinBookmarks"},
+		{0,	LPGENT("General") _T("/") LPGENT("Automatically join conferences on login"),	OPTTREE_CHECK,	1,	NULL,	"AutoJoinConferences"},
+		{0, LPGENT("General") _T("/") LPGENT("Do not show multiuser chat invitations"),		OPTTREE_CHECK,  1,	NULL,	"IgnoreMUCInvites"},
+
+		{0, LPGENT("Log events") _T("/") LPGENT("Ban notifications"),						OPTTREE_CHECK,  1,	NULL,	"GcLogBans"},
+		{0, LPGENT("Log events") _T("/") LPGENT("Room configuration changes"),				OPTTREE_CHECK,  1,	NULL,	"GcLogConfig"},
+		{0, LPGENT("Log events") _T("/") LPGENT("Affiliation changes"),						OPTTREE_CHECK,  1,	NULL,	"GcLogAffiliations"},
+		{0, LPGENT("Log events") _T("/") LPGENT("Role changes"),							OPTTREE_CHECK,  1,	NULL,	"GcLogRoles"},
+	};
+
+	BOOL result;
+	if (OptTree_ProcessMessage(hwndDlg, msg, wParam, lParam, &result, IDC_OPTTREE, options, SIZEOF(options)))
+		return result;
+
+	switch ( msg ) {
+	case WM_INITDIALOG:
+	{
+		TranslateDialogDefault( hwndDlg );
+		OptTree_Translate(GetDlgItem(hwndDlg, IDC_OPTTREE));
+
+		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), JGetByte("AutoAcceptMUC",		FALSE)?1:0,	"AutoAcceptMUC");
+		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), JGetByte("AutoJoinConferences",	FALSE)?1:0,	"AutoJoinConferences");
+		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), JGetByte("IgnoreMUCInvites",		FALSE)?1:0,	"IgnoreMUCInvites");
+		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), JGetByte("AutoJoinBookmarks",	TRUE)?1:0,	"AutoJoinBookmarks");
+
+		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), JGetByte("GcLogBans",			TRUE)?1:0,	"GcLogBans");
+		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), JGetByte("GcLogConfig",			FALSE)?1:0,	"GcLogConfig");
+		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), JGetByte("GcLogAffiliations",	FALSE)?1:0,	"GcLogAffiliations");
+		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), JGetByte("GcLogRoles",			FALSE)?1:0,	"GcLogRoles");
+
+		DBVARIANT dbv;
+		if (!DBGetContactSettingTString( NULL, jabberProtoName, "GcMsgQuit", &dbv))
+		{
+			SetDlgItemText(hwndDlg, IDC_TXT_QUIT, dbv.ptszVal);
+			JFreeVariant( &dbv );
+		} else
+		{
+			SetDlgItemText(hwndDlg, IDC_TXT_QUIT, TranslateTS(JABBER_GC_MSG_QUIT));
+		}
+
+		if (!DBGetContactSettingTString( NULL, jabberProtoName, "GcMsgSlap", &dbv))
+		{
+			SetDlgItemText(hwndDlg, IDC_TXT_SLAP, dbv.ptszVal);
+			JFreeVariant( &dbv );
+		} else
+		{
+			SetDlgItemText(hwndDlg, IDC_TXT_SLAP, TranslateTS(JABBER_GC_MSG_SLAP));
+		}
+
+		return TRUE;
+	}
+
+	case WM_COMMAND:
+	{
+		switch ( LOWORD( wParam ))
+		{
+		case IDC_TXT_SLAP:
+		case IDC_TXT_QUIT:
+			if (HIWORD(wParam) == EN_CHANGE)
+				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
+			break;
+		}
+		break;
+	}
+
+	case WM_NOTIFY:
+		if (( ( LPNMHDR ) lParam )->code == PSN_APPLY ) {
+			TCHAR text[256];
+			GetDlgItemText(hwndDlg, IDC_TXT_QUIT, text, SIZEOF(text));
+			JSetStringT(NULL, "GcMsgQuit", text);
+			GetDlgItemText(hwndDlg, IDC_TXT_SLAP, text, SIZEOF(text));
+			JSetStringT(NULL, "GcMsgSlap", text);
+
+			JSetByte("AutoAcceptMUC",           (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoAcceptMUC"));
+			JSetByte("AutoJoinConferences",     (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoJoinConferences"));
+			JSetByte("IgnoreMUCInvites",        (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "IgnoreMUCInvites"));
+			JSetByte("AutoJoinBookmarks",		(BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoJoinBookmarks"));
+
+			JSetByte("GcLogBans",				(BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "GcLogBans"));
+			JSetByte("GcLogConfig",				(BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "GcLogConfig"));
+			JSetByte("GcLogAffiliations",		(BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "GcLogAffiliations"));
+			JSetByte("GcLogRoles",				(BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "GcLogRoles"));
+
 			return TRUE;
 		}
 		break;
@@ -1532,6 +1632,29 @@ static BOOL CALLBACK _RosterNewListProc( HWND hList, UINT msg, WPARAM wParam, LP
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberRosterOptDlgProc - advanced options dialog procedure
 
+static int sttRosterEditorResizer(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
+{
+	switch (urc->wId)
+	{
+	case IDC_WHITERECT:
+	case IDC_TITLE:
+	case IDC_DESCRIPTION:
+	case IDC_FRAME1:
+		return RD_ANCHORX_LEFT|RD_ANCHORY_TOP|RD_ANCHORX_WIDTH;
+	case IDC_ROSTER:
+		return RD_ANCHORX_LEFT|RD_ANCHORY_TOP|RD_ANCHORY_HEIGHT|RD_ANCHORX_WIDTH;
+	case IDC_DOWNLOAD:
+	case IDC_UPLOAD:
+		return RD_ANCHORX_LEFT|RD_ANCHORY_BOTTOM;
+	case IDC_EXPORT:
+	case IDC_IMPORT:
+		return RD_ANCHORX_RIGHT|RD_ANCHORY_BOTTOM;
+//	case IDC_STATUSBAR:
+//		return RD_ANCHORX_LEFT|RD_ANCHORX_WIDTH|RD_ANCHORY_BOTTOM;
+	}
+	return RD_ANCHORX_LEFT|RD_ANCHORY_TOP;
+}
+
 static BOOL CALLBACK JabberRosterOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	switch ( msg )
@@ -1544,14 +1667,31 @@ static BOOL CALLBACK JabberRosterOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			EnableWindow( GetDlgItem( hwndDlg, IDC_EXPORT ), count > 0);
 			break;
 		}
+	case WM_CLOSE:
+		{
+			DestroyWindow(hwndDlg);
+			break;
+		}
 	case WM_DESTROY:
 		{
+			Utils_SaveWindowPosition(hwndDlg, NULL, jabberProtoName, "rosterCtrlWnd_");
+			DeleteObject((HFONT)SendDlgItemMessage(hwndDlg, IDC_TITLE, WM_GETFONT, 0, 0));
 			rrud.hwndDlg = NULL;
 			break;
 		}
 	case WM_INITDIALOG:
 		{
 			TranslateDialogDefault( hwndDlg );
+			SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )LoadIconEx( "Agents" ));
+
+			LOGFONT lf;
+			GetObject((HFONT)SendDlgItemMessage(hwndDlg, IDC_TITLE, WM_GETFONT, 0, 0), sizeof(lf), &lf);
+			lf.lfWeight = FW_BOLD;
+			HFONT hfnt = CreateFontIndirect(&lf);
+			SendDlgItemMessage(hwndDlg, IDC_TITLE, WM_SETFONT, (WPARAM)hfnt, TRUE);
+
+			Utils_RestoreWindowPosition(hwndDlg, NULL, jabberProtoName, "rosterCtrlWnd_");
+
 			ListView_SetExtendedListViewStyle(GetDlgItem(hwndDlg,IDC_ROSTER),  LVS_EX_CHECKBOXES | LVS_EX_BORDERSELECT /*| LVS_EX_FULLROWSELECT*/ | LVS_EX_GRIDLINES /*| LVS_EX_HEADERDRAGDROP*/ );
 			_RosterOldListProc=(WNDPROC) GetWindowLong(GetDlgItem(hwndDlg,IDC_ROSTER), GWL_WNDPROC);
 			SetWindowLong(GetDlgItem(hwndDlg,IDC_ROSTER), GWL_WNDPROC, (LONG) _RosterNewListProc);
@@ -1560,8 +1700,33 @@ static BOOL CALLBACK JabberRosterOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			rrud.bReadyToDownload=TRUE;
 			rrud.bReadyToUpload=FALSE;
 			SendMessage( hwndDlg, JM_STATUSCHANGED, 0, 0 );
+
 			return TRUE;
 		}
+	case WM_CTLCOLORSTATIC:
+		if ( ((HWND)lParam == GetDlgItem(hwndDlg, IDC_WHITERECT)) ||
+			 ((HWND)lParam == GetDlgItem(hwndDlg, IDC_TITLE)) ||
+			 ((HWND)lParam == GetDlgItem(hwndDlg, IDC_DESCRIPTION)) )
+			return (BOOL)GetStockObject(WHITE_BRUSH);
+		return FALSE;
+	case WM_GETMINMAXINFO:
+		{
+			LPMINMAXINFO lpmmi = (LPMINMAXINFO)lParam;
+			lpmmi->ptMinTrackSize.x = 550;
+			lpmmi->ptMinTrackSize.y = 390;
+			return 0;
+		}
+	case WM_SIZE:
+	{
+		UTILRESIZEDIALOG urd = {0};
+		urd.cbSize = sizeof(urd);
+		urd.hInstance = hInst;
+		urd.hwndDlg = hwndDlg;
+		urd.lpTemplate = MAKEINTRESOURCEA(IDD_OPT_JABBER3);
+		urd.pfnResizer = sttRosterEditorResizer;
+		CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM)&urd);
+		break;
+	}
 	case WM_COMMAND:
 		{
 			switch ( LOWORD( wParam ))
@@ -1601,6 +1766,16 @@ static BOOL CALLBACK JabberRosterOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 	return FALSE;
 }
 
+int JabberMenuHandleRosterControl( WPARAM wParam, LPARAM lParam )
+{
+	if ( rrud.hwndDlg && IsWindow( rrud.hwndDlg ))
+		SetForegroundWindow( rrud.hwndDlg );
+	else
+		CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_OPT_JABBER3 ), NULL, JabberRosterOptDlgProc, 0 );
+
+	return 0;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberOptInit - initializes all options dialogs
 
@@ -1618,15 +1793,14 @@ int JabberOptInit( WPARAM wParam, LPARAM lParam )
 	odp.flags       = ODPF_BOLDGROUPS;
 	JCallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
 
+	odp.pszTab      = LPGEN("Conferences");
+	odp.pszTemplate = MAKEINTRESOURCEA( IDD_OPT_JABBER4 );
+	odp.pfnDlgProc  = JabberGcOptDlgProc;
+	JCallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
+
 	odp.pszTab      = LPGEN("Advanced");
 	odp.pszTemplate = MAKEINTRESOURCEA( IDD_OPT_JABBER2 );
 	odp.pfnDlgProc  = JabberAdvOptDlgProc;
-	JCallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
-
-	odp.pszTab      = "Roster control";
-	odp.flags	   |= ODPF_EXPERTONLY;
-	odp.pszTemplate = MAKEINTRESOURCEA( IDD_OPT_JABBER3 );
-	odp.pfnDlgProc  = JabberRosterOptDlgProc;
 	JCallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
 
 	return 0;

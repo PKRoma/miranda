@@ -38,6 +38,7 @@ Last change by : $Author$
 
 extern char* jabberVcardPhotoFileName;
 
+static void JabberProcessLoginRq( ThreadData* info, DWORD rq );
 void JabberIqResultGetRoster( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
 
 void JabberIqResultServerDiscoInfo( XmlNode* iqNode, void* userdata )
@@ -78,7 +79,8 @@ void JabberIqResultServerDiscoInfo( XmlNode* iqNode, void* userdata )
 					}	
 				}	
 			}	
-		}	
+		}
+		JabberProcessLoginRq((ThreadData *)userdata, JABBER_LOGIN_SERVERINFO);
 	}	
 }
 
@@ -118,11 +120,43 @@ void JabberIqResultNestedRosterGroups( XmlNode* iqNode, void* userdata, CJabberI
 	jabberThreadInfo->send( iq );
 }
 
+static void JabberProcessLoginRq( ThreadData* info, DWORD rq )
+{
+	info->dwLoginRqs |= rq;
+
+	if ((info->dwLoginRqs & JABBER_LOGIN_ROSTER) && (info->dwLoginRqs & JABBER_LOGIN_BOOKMARKS) &&
+		(info->dwLoginRqs & JABBER_LOGIN_SERVERINFO) && !(info->dwLoginRqs & JABBER_LOGIN_BOOKMARKS_AJ))
+	{
+		if ( jabberChatDllPresent && JGetByte( "AutoJoinBookmarks", TRUE ) ) {
+			JABBER_LIST_ITEM* item;
+			for ( int i=0; ( i = JabberListFindNext( LIST_BOOKMARK, i )) >= 0; i++ ) {
+				if ((( item = JabberListGetItemPtrFromIndex( i )) != NULL ) && !lstrcmp( item->type, _T("conference") )) {
+					if ( item->bAutoJoin && JabberListGetItemPtr( LIST_ROOM, item->jid ) == NULL ) {
+						TCHAR room[256], *server, *p;
+						TCHAR text[128];
+						_tcsncpy( text, item->jid, SIZEOF( text ));
+						_tcsncpy( room, text, SIZEOF( room ));
+						p = _tcstok( room, _T( "@" ));
+						server = _tcstok( NULL, _T( "@" ));
+						if ( item->nick && item->nick[0] != 0 )
+							JabberGroupchatJoinRoom( server, p, item->nick, item->password );
+						else {
+							TCHAR* nick = JabberNickFromJID( jabberJID );
+							JabberGroupchatJoinRoom( server, p, nick, item->password );
+							mir_free( nick );
+		}	}	}	}	}
+
+		JabberProcessLoginRq( info, JABBER_LOGIN_BOOKMARKS_AJ );
+	}
+}
+
 static void JabberOnLoggedIn( ThreadData* info )
 {
 	jabberOnline = TRUE;
 	jabberLoggedInTime = time(0);
 
+
+	info->dwLoginRqs = 0;
 
 	// XEP-0083 support
 	{
@@ -563,6 +597,8 @@ void JabberIqResultGetRoster( XmlNode* iqNode, void* userdata, CJabberIqInfo* pI
 
 	if ( szGroupDelimeter )
 		mir_free( szGroupDelimeter );
+
+	JabberProcessLoginRq((ThreadData *)userdata, JABBER_LOGIN_ROSTER);
 }
 
 void JabberIqResultGetRegister( XmlNode *iqNode, void *userdata )
@@ -1501,29 +1537,10 @@ void JabberIqResultDiscoBookmarks( XmlNode *iqNode, void *userdata )
 								item->type = mir_tstrdup( _T("url") );
 			}	}	}	}	}
 
-			if ( JGetByte( "AutoJoinBookmarks", TRUE ) == TRUE && !( info->bBookmarksLoaded )) {
-				JABBER_LIST_ITEM* item;
-				for ( int i=0; ( i = JabberListFindNext( LIST_BOOKMARK, i )) >= 0; i++ ) {
-					if ((( item = JabberListGetItemPtrFromIndex( i )) != NULL ) && !lstrcmp( item->type, _T("conference") )) {
-						if ( item->bAutoJoin && JabberListGetItemPtr( LIST_ROOM, item->jid ) == NULL ) {
-							if ( jabberChatDllPresent ) {
-								TCHAR room[256], *server, *p;
-								TCHAR text[128];
-								_tcsncpy( text, item->jid, SIZEOF( text ));
-								_tcsncpy( room, text, SIZEOF( room ));
-								p = _tcstok( room, _T( "@" ));
-								server = _tcstok( NULL, _T( "@" ));
-								if ( item->nick && item->nick[0] != 0 )
-									JabberGroupchatJoinRoom( server, p, item->nick, item->password );
-								else {
-									TCHAR* nick = JabberNickFromJID( jabberJID );
-									JabberGroupchatJoinRoom( server, p, nick, item->password );
-									mir_free( nick );
-			}	}	}	}	}	}
-
 			if ( hwndJabberBookmarks != NULL )
 				SendMessage( hwndJabberBookmarks, WM_JABBER_REFRESH, 0, 0);
 			info->bBookmarksLoaded = TRUE;
+			JabberProcessLoginRq(info, JABBER_LOGIN_BOOKMARKS);
 		}
 	}
 	else if ( !lstrcmp( type, _T("error"))) {

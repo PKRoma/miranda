@@ -93,6 +93,8 @@
 #define IDI_TRANSPORTL                  223
 #define IDD_DIALOG1                     224
 #define IDD_GROUPCHAT_INFO              224
+#define IDD_NOTES                       225
+#define IDD_OPT_JABBER4                 226
 #define IDC_EDIT_USERNAME               1000
 #define IDC_SAVE                        1000
 #define IDC_EDIT_PASSWORD               1001
@@ -363,6 +365,8 @@
 #define IDC_EDIT1                       1294
 #define IDC_FILTER                      1294
 #define IDC_TXT_NICK                    1294
+#define IDC_TEXT                        1294
+#define IDC_TXT_QUIT                    1294
 #define IDC_BTN_FILTER                  1295
 #define IDC_BTN_NOFILTER                1295
 #define IDC_COMBO1                      1296
@@ -376,6 +380,9 @@
 #define IDC_TXT_AFFILIATION             1299
 #define IDC_ICO_STATUS                  1300
 #define IDC_TXT_RICHEDIT                1302
+#define IDC_TREE                        1303
+#define IDC_EDIT2                       1304
+#define IDC_TXT_SLAP                    1304
 #define IDC_EMAILS                      1306
 #define IDC_PHONES                      1308
 #define IDC_UPDATE                      1313
@@ -397,6 +404,7 @@
 #define IDD_PRIVACY_LISTS               3007
 #define IDC_DOWN                        3007
 #define IDC_DOWN_RULE                   3007
+#define IDC_REMOVE3                     3007
 #define IDC_ROSTER2BOOKMARK             3008
 #define IDC_APPLY                       3008
 #define IDD_PRIVACY_RULE                3008
@@ -419,9 +427,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        225
+#define _APS_NEXT_RESOURCE_VALUE        227
 #define _APS_NEXT_COMMAND_VALUE         40017
-#define _APS_NEXT_CONTROL_VALUE         1303
+#define _APS_NEXT_CONTROL_VALUE         1305
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

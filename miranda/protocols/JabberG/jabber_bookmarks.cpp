@@ -201,16 +201,20 @@ static int CALLBACK BookmarkCompare( LPARAM lParam1, LPARAM lParam2, LPARAM lPar
 int JabberBookmarksDlgResizer(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 {
 	switch ( urc->wId ) {
+		case IDC_WHITERECT:
+		case IDC_TITLE:
+		case IDC_DESCRIPTION:
+		case IDC_FRAME1:
+			return RD_ANCHORX_LEFT|RD_ANCHORY_TOP|RD_ANCHORX_WIDTH;
+
 		case IDC_BM_LIST:
 			return RD_ANCHORX_WIDTH|RD_ANCHORY_HEIGHT;
 
-		case IDCLOSE:
-			return RD_ANCHORX_RIGHT|RD_ANCHORY_BOTTOM;
-
+//		case IDCLOSE:
 		case IDC_ADD:
 		case IDC_EDIT:
 		case IDC_REMOVE:
-			return RD_ANCHORX_LEFT|RD_ANCHORY_BOTTOM;
+			return RD_ANCHORX_RIGHT|RD_ANCHORY_BOTTOM;
 	}
 	return RD_ANCHORX_LEFT|RD_ANCHORY_TOP;
 }
@@ -228,45 +232,48 @@ static void sttOpenBookmarkItem(HWND hwndDlg)
 		lvItem.mask = LVIF_PARAM;
 		ListView_GetItem( lv, &lvItem );
 
-		JABBER_LIST_ITEM *item = JabberListGetItemPtr(LIST_BOOKMARK, ( TCHAR* )lvItem.lParam);
+		if (lvItem.lParam)
+		{
+			JABBER_LIST_ITEM *item = JabberListGetItemPtr(LIST_BOOKMARK, ( TCHAR* )lvItem.lParam);
 
-		if(!lstrcmpi(item->type, _T("conference") )){
-			if ( jabberChatDllPresent ) {
-				_tcsncpy( text, ( TCHAR* )lvItem.lParam, SIZEOF( text ));
-				_tcsncpy( room, text, SIZEOF( room ));
+			if(!lstrcmpi(item->type, _T("conference") )){
+				if ( jabberChatDllPresent ) {
+					_tcsncpy( text, ( TCHAR* )lvItem.lParam, SIZEOF( text ));
+					_tcsncpy( room, text, SIZEOF( room ));
 
-				p = _tcstok( room, _T( "@" ));
-				server = _tcstok( NULL, _T( "@" ));
+					p = _tcstok( room, _T( "@" ));
+					server = _tcstok( NULL, _T( "@" ));
 
-				lvItem.iSubItem = 2;
-				lvItem.mask = LVIF_TEXT;
-				lvItem.cchTextMax = SIZEOF(text);
-				lvItem.pszText = text;
+					lvItem.iSubItem = 2;
+					lvItem.mask = LVIF_TEXT;
+					lvItem.cchTextMax = SIZEOF(text);
+					lvItem.pszText = text;
 
-				ListView_GetItem( lv, &lvItem );
+					ListView_GetItem( lv, &lvItem );
 
-				ListView_SetItemState( lv, lvItem.iItem, 0, LVIS_SELECTED ); // Unselect the item
-				/* some hack for using bookmark to transport not under XEP-0048 */
-				if (!server) {	//the room name is not provided let consider that it is transport and send request to registration
-					JabberRegisterAgent( NULL, room );
-				}
-				else {
-					if ( text[0] != _T('\0') )
-						JabberGroupchatJoinRoom( server, p, text, item->password );
-					else
-					{
-						TCHAR* nick = JabberNickFromJID( jabberJID );
-						JabberGroupchatJoinRoom( server, p, nick, item->password );
-						mir_free( nick );
+					ListView_SetItemState( lv, lvItem.iItem, 0, LVIS_SELECTED ); // Unselect the item
+					/* some hack for using bookmark to transport not under XEP-0048 */
+					if (!server) {	//the room name is not provided let consider that it is transport and send request to registration
+						JabberRegisterAgent( NULL, room );
+					}
+					else {
+						if ( text[0] != _T('\0') )
+							JabberGroupchatJoinRoom( server, p, text, item->password );
+						else
+						{
+							TCHAR* nick = JabberNickFromJID( jabberJID );
+							JabberGroupchatJoinRoom( server, p, nick, item->password );
+							mir_free( nick );
+						}
 					}
 				}
+				else JabberChatDllError();
 			}
-			else JabberChatDllError();
-		}
-		else {
-			char* szUrl = mir_t2a( (TCHAR*)lvItem.lParam );
-			JCallService( MS_UTILS_OPENURL, 1, (LPARAM)szUrl );
-			mir_free( szUrl );
+			else {
+				char* szUrl = mir_t2a( (TCHAR*)lvItem.lParam );
+				JCallService( MS_UTILS_OPENURL, 1, (LPARAM)szUrl );
+				mir_free( szUrl );
+			}
 		}
 	}
 }
@@ -281,6 +288,7 @@ static BOOL CALLBACK JabberBookmarksDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 
 	switch ( msg ) {
 	case WM_INITDIALOG:
+	{
 		TranslateDialogDefault( hwndDlg );
 		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )LoadIconEx( "bookmarks" ));
 		hwndJabberBookmarks = hwndDlg;
@@ -317,6 +325,28 @@ static BOOL CALLBACK JabberBookmarksDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 		lvCol.cx = DBGetContactSettingWord( NULL, jabberProtoName, "bookmarksWnd_cx2", 90 );
 		lvCol.iSubItem = 2;
 		ListView_InsertColumn( lv, 2, &lvCol );
+
+#ifdef UNICODE
+		if (IsWinVerXPPlus())
+		{
+			ListView_EnableGroupView(lv, TRUE);
+
+			LVGROUP group = {0};
+			group.cbSize = sizeof(group);
+			group.mask = LVGF_HEADER|LVGF_GROUPID;
+
+			group.pszHeader = TranslateT("Conferences");
+			group.cchHeader = lstrlen(group.pszHeader);
+			group.iGroupId = 0;
+			ListView_InsertGroup(lv, -1, &group);
+
+			group.pszHeader = TranslateT("Links");
+			group.cchHeader = lstrlen(group.pszHeader);
+			group.iGroupId = 1;
+			ListView_InsertGroup(lv, -1, &group);
+		}
+#endif
+
 		if ( jabberOnline ) {
 			if ( !( jabberThreadInfo->bBookmarksLoaded )) {
 				int iqId = JabberSerialNext();
@@ -331,8 +361,49 @@ static BOOL CALLBACK JabberBookmarksDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			}
 			else SendMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0);
 		}
+
+		static struct
+		{
+			int idc;
+			TCHAR *title;
+			char *icon;
+			int coreIcon;
+			bool push;
+		} buttons[] =
+		{
+			{IDC_ADD,		_T("Add"),		NULL, SKINICON_OTHER_ADDCONTACT,	false},
+			{IDC_EDIT,		_T("Edit"),		NULL, SKINICON_OTHER_RENAME,		false},
+			{IDC_REMOVE,	_T("Remove"),	NULL, SKINICON_OTHER_DELETE,		false},
+		};
+		for (int i = 0; i < SIZEOF(buttons); ++i)
+		{
+			SendDlgItemMessage(hwndDlg, buttons[i].idc, BM_SETIMAGE, IMAGE_ICON,
+				(LPARAM)(buttons[i].icon ?
+					LoadIconEx(buttons[i].icon) :
+					LoadSkinnedIcon(buttons[i].coreIcon)));
+			SendDlgItemMessage(hwndDlg, buttons[i].idc, BUTTONSETASFLATBTN, 0, 0);
+			SendDlgItemMessage(hwndDlg, buttons[i].idc, BUTTONADDTOOLTIP, (WPARAM)TranslateTS(buttons[i].title), BATF_TCHAR);
+			if (buttons[i].push)
+				SendDlgItemMessage(hwndDlg, buttons[i].idc, BUTTONSETASPUSHBTN, 0, 0);
+		}
+
+		LOGFONT lf;
+		GetObject((HFONT)SendDlgItemMessage(hwndDlg, IDC_TITLE, WM_GETFONT, 0, 0), sizeof(lf), &lf);
+		lf.lfWeight = FW_BOLD;
+		HFONT hfnt = CreateFontIndirect(&lf);
+		SendDlgItemMessage(hwndDlg, IDC_TITLE, WM_SETFONT, (WPARAM)hfnt, TRUE);
+
+
 		Utils_RestoreWindowPosition( hwndDlg, NULL, jabberProtoName, "bookmarksWnd_" );
 		return TRUE;
+	}
+
+	case WM_CTLCOLORSTATIC:
+		if ( ((HWND)lParam == GetDlgItem(hwndDlg, IDC_WHITERECT)) ||
+			 ((HWND)lParam == GetDlgItem(hwndDlg, IDC_TITLE)) ||
+			 ((HWND)lParam == GetDlgItem(hwndDlg, IDC_DESCRIPTION)) )
+			return (BOOL)GetStockObject(WHITE_BRUSH);
+		return FALSE;
 
 	case WM_GETMINMAXINFO:
 		{
@@ -375,8 +446,10 @@ static BOOL CALLBACK JabberBookmarksDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 					lvItem.mask = LVIF_PARAM | LVIF_TEXT | LVIF_IMAGE;
 					lvItem.iSubItem = 0;
 
-					if(!lstrcmpi(item->type, _T("conference") )) lvItem.iImage = 0;
-					else lvItem.iImage = 1;
+					if (IsWinVerXPPlus()) lvItem.mask |= LVIF_GROUPID;
+
+					if(!lstrcmpi(item->type, _T("conference") )) lvItem.iGroupId = lvItem.iImage = 0;
+					else lvItem.iGroupId = lvItem.iImage = 1;
 
 					lvItem.lParam = ( LPARAM )item->jid;
 					lvItem.pszText = item->name;
@@ -552,6 +625,7 @@ static BOOL CALLBACK JabberBookmarksDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 		}
 
 	case WM_DESTROY:
+		DeleteObject((HFONT)SendDlgItemMessage(hwndDlg, IDC_TITLE, WM_GETFONT, 0, 0));
 		hwndJabberBookmarks= NULL;
 		break;
 	}

@@ -65,10 +65,11 @@ static HANDLE hMenuChangePassword = NULL;
 static HANDLE hMenuGroupchat = NULL;
 static HANDLE hMenuBookmarks = NULL;
 static HANDLE hMenuPrivacyLists = NULL;
+static HANDLE hMenuRosterControl = NULL;
 static HANDLE hMenuServiceDiscovery = NULL;
-static HANDLE hMenuSDMyTransports;
-static HANDLE hMenuSDTransports;
-static HANDLE hMenuSDConferences;
+static HANDLE hMenuSDMyTransports = NULL;
+static HANDLE hMenuSDTransports = NULL;
+static HANDLE hMenuSDConferences = NULL;
 
 
 
@@ -78,6 +79,7 @@ int JabberMenuHandleVcard( WPARAM wParam, LPARAM lParam );
 int JabberMenuHandleRequestAuth( WPARAM wParam, LPARAM lParam );
 int JabberMenuHandleGrantAuth( WPARAM wParam, LPARAM lParam );
 int JabberMenuHandleConsole(WPARAM wParam, LPARAM lParam);
+int JabberMenuHandleRosterControl(WPARAM wParam, LPARAM lParam);
 
 #define MENUITEM_LASTSEEN	1
 #define MENUITEM_SERVER		2
@@ -600,7 +602,7 @@ void JabberMenuInit()
 
 	mi.popupPosition = 500083000;
 	mi.pszService = text;
-	mi.pszName = jabberProtoName;
+	mi.pszName = jabberModuleName;
 	mi.position = -1999901009;
 	mi.pszPopupName = (char *)-1;
 	mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTPOPUP;
@@ -694,6 +696,15 @@ void JabberMenuInit()
 	hMenuPrivacyLists = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuPrivacyLists, ( LPARAM )&clmi );
 
+	// "Roster editor"
+	strcpy( tDest, "/RosterEditor" );
+	arServices.insert( CreateServiceFunction( text, JabberMenuHandleRosterControl ));
+	mi.pszName = LPGEN("Roster editor");
+	mi.position = 2000050009;
+	mi.icolibItem = GetIconHandle( IDI_AGENTS );
+	hMenuRosterControl = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuRosterControl, ( LPARAM )&clmi );
+
 	// "XML Console"
 	strcpy( tDest, "/XMLConsole" );
 	arServices.insert( CreateServiceFunction( text, JabberMenuHandleConsole ));
@@ -786,6 +797,7 @@ void JabberEnableMenuItems( BOOL bEnable )
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuGroupchat, ( LPARAM )&clmi );
 
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuPrivacyLists, ( LPARAM )&clmi );
+	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuRosterControl, ( LPARAM )&clmi );
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuServiceDiscovery, ( LPARAM )&clmi );
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuSDMyTransports, ( LPARAM )&clmi );
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuSDTransports, ( LPARAM )&clmi );

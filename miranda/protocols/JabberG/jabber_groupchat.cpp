@@ -33,6 +33,9 @@ Last change by : $Author$
 
 #define GC_SERVER_LIST_SIZE 5
 
+int JabberGcGetStatus(JABBER_GC_AFFILIATION a, JABBER_GC_ROLE r);
+int JabberGcGetStatus(JABBER_RESOURCE_STATUS *r);
+
 struct JabberGcRecentInfo
 {
 	TCHAR *room, *server, *nick, *password;
@@ -222,7 +225,10 @@ int JabberMenuHandleGroupchat( WPARAM wParam, LPARAM lParam )
 
 int JabberMenuHandleJoinGroupchat( WPARAM wParam, LPARAM lParam )
 {
-	JabberGroupchatJoinRoomByJid( NULL, NULL );
+	if ( jabberChatDllPresent )
+		JabberGroupchatJoinRoomByJid( NULL, NULL );
+	else
+		JabberChatDllError();
 	return 0;
 }
 
@@ -1179,27 +1185,39 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 				JABBER_RESOURCE_STATUS* r = item->resource;
 				for ( i=0; i<item->resourceCount && _tcscmp( r->resourceName, nick ); i++, r++ );
 				if ( i < item->resourceCount ) {
+					JABBER_GC_AFFILIATION affiliation = r->affiliation;
+					JABBER_GC_ROLE role = r->role;
+
 					if (( str=JabberXmlGetAttrValue( itemNode, "affiliation" )) != NULL ) {
-						if ( !_tcscmp( str, _T("owner")))        r->affiliation = AFFILIATION_OWNER;
-						else if ( !_tcscmp( str, _T("admin")))   r->affiliation = AFFILIATION_ADMIN;
-						else if ( !_tcscmp( str, _T("member")))  r->affiliation = AFFILIATION_MEMBER;
-						else if ( !_tcscmp( str, _T("none")))	 r->affiliation = AFFILIATION_NONE;
-						else if ( !_tcscmp( str, _T("outcast"))) r->affiliation = AFFILIATION_OUTCAST;
+						     if ( !_tcscmp( str, _T("owner")))       affiliation = AFFILIATION_OWNER;
+						else if ( !_tcscmp( str, _T("admin")))       affiliation = AFFILIATION_ADMIN;
+						else if ( !_tcscmp( str, _T("member")))      affiliation = AFFILIATION_MEMBER;
+						else if ( !_tcscmp( str, _T("none")))	     affiliation = AFFILIATION_NONE;
+						else if ( !_tcscmp( str, _T("outcast")))     affiliation = AFFILIATION_OUTCAST;
 					}
 					if (( str=JabberXmlGetAttrValue( itemNode, "role" )) != NULL ) {
-						JABBER_GC_ROLE newRole = r->role;
-
-						if ( !_tcscmp( str, _T("moderator")))        newRole = ROLE_MODERATOR;
-						else if ( !_tcscmp( str, _T("participant"))) newRole = ROLE_PARTICIPANT;
-						else if ( !_tcscmp( str, _T("visitor")))     newRole = ROLE_VISITOR;
-						else                                         newRole = ROLE_NONE;
-
-						if ( newRole != r->role && r->role != ROLE_NONE ) {
-							JabberGcLogUpdateMemberStatus( item, nick, NULL, GC_EVENT_REMOVESTATUS, NULL );
-							newRes = GC_EVENT_ADDSTATUS;
-						}
-						r->role = newRole;
+						     if ( !_tcscmp( str, _T("moderator")))   role = ROLE_MODERATOR;
+						else if ( !_tcscmp( str, _T("participant"))) role = ROLE_PARTICIPANT;
+						else if ( !_tcscmp( str, _T("visitor")))     role = ROLE_VISITOR;
+						else                                         role = ROLE_NONE;
 					}
+
+					if ( (role != ROLE_NONE) && (JabberGcGetStatus(r) != JabberGcGetStatus(affiliation, role)) ) {
+						JabberGcLogUpdateMemberStatus( item, nick, NULL, GC_EVENT_REMOVESTATUS, NULL );
+						if (!newRes) newRes = GC_EVENT_ADDSTATUS;
+					}
+
+					if (affiliation != r->affiliation) {
+						r->affiliation = affiliation;
+						JabberGcLogShowInformation(item, r, INFO_AFFILIATION);
+					}
+
+					if (role != r->role) {
+						r->role = role;
+						if (r->role != ROLE_NONE)
+							JabberGcLogShowInformation(item, r, INFO_ROLE);
+					}
+
 					if ( str = JabberXmlGetAttrValue( itemNode, "jid" ))
 						replaceStr( r->szRealJid, str );
 			}	}
@@ -1246,6 +1264,16 @@ void JabberGroupchatProcessPresence( XmlNode *node, void *userdata )
 			XmlNode* reasonNode = JabberXmlGetChild( itemNode, "reason" );
 			str = JabberXmlGetAttrValue( itemNode, "jid" );
 			int iStatus = sttGetStatusCode( xNode );
+			if (iStatus == 301)
+			{
+				JABBER_RESOURCE_STATUS *r = NULL;
+				for (int i = 0; i < item->resourceCount; ++i)
+					if (!lstrcmp(item->resource[i].resourceName, nick))
+					{
+						JabberGcLogShowInformation(item, item->resource + i, INFO_BAN);
+						break;
+					}
+			}
 			if ( !lstrcmp( nick, item->nick )) {
 				switch( iStatus ) {
 				case 301:

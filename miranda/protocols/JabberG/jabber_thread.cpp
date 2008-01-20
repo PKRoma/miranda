@@ -1139,10 +1139,19 @@ static void JabberProcessMessage( XmlNode *node, void *userdata )
 		return;
 	}
 
-	JABBER_LIST_ITEM* chatItem = JabberListGetItemPtr( LIST_CHATROOM, from );
-	BOOL isChatRoomJid = ( chatItem != NULL );
-	if ( isChatRoomJid && !lstrcmp( type, _T("groupchat"))) {
-		JabberGroupchatProcessMessage( node, userdata );
+	JABBER_LIST_ITEM *chatItem = JabberListGetItemPtr( LIST_CHATROOM, from );
+	if (!lstrcmp( type, _T("groupchat")))
+	{
+		if ( chatItem )
+		{	// process GC message
+			JabberGroupchatProcessMessage( node, userdata );
+		} else
+		{	// got message from onknown conference... let's leave it :)
+			TCHAR *conference = NEWTSTR_ALLOCA(from);
+			if (TCHAR *s = _tcschr(conference, _T('/'))) *s = 0;
+			XmlNode p( "presence" ); p.addAttr( "to", conference ); p.addAttr( "type", "unavailable" );
+			info->send( p );
+		}
 		return;
 	}
 

@@ -40,7 +40,7 @@ Last change by : $Author$
 /*******************************************************************
  * Global header files
  *******************************************************************/
-#define _WIN32_WINNT 0x500
+#define _WIN32_WINNT 0x510
 #include <windows.h>
 #include <process.h>
 #include <stdio.h>
@@ -85,6 +85,9 @@ Last change by : $Author$
 #define JABBER_DEFAULT_PORT 5222
 #define JABBER_IQID "mir_"
 #define JABBER_MAX_JID_LEN  256
+
+#define JABBER_GC_MSG_QUIT				LPGENT("I'm happy Miranda IM user. Get it at http://miranda-im.org/.")
+#define JABBER_GC_MSG_SLAP				LPGENT("/me slaps %s around a bit with a large trout")
 
 // registered db event types
 #define JABBER_DB_EVENT_TYPE_CHATSTATES          2000
@@ -217,6 +220,11 @@ enum JABBER_SESSION_TYPE
 
 #include "jabber_caps.h"
 
+#define JABBER_LOGIN_ROSTER				0x0001
+#define JABBER_LOGIN_BOOKMARKS			0x0002
+#define JABBER_LOGIN_SERVERINFO			0x0004
+#define JABBER_LOGIN_BOOKMARKS_AJ		0x0008
+
 struct ThreadData
 {
 	ThreadData( JABBER_SESSION_TYPE parType );
@@ -253,6 +261,7 @@ struct ThreadData
 	class TJabberAuth* auth;
 	JabberCapsBits jabberServerCaps;
 	BOOL bBookmarksLoaded;
+	DWORD	dwLoginRqs;
 
 	// connection & login data
 	TCHAR username[128];
@@ -459,8 +468,11 @@ void JabberUpdateDialogs( BOOL bEnable );
 
 //---- jabber_chat.cpp ----------------------------------------------
 
+enum TJabberGcLogInfoType { INFO_BAN, INFO_STATUS, INFO_CONFIG, INFO_AFFILIATION, INFO_ROLE };
+
 void JabberGcLogCreate( JABBER_LIST_ITEM* item );
 void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, TCHAR* nick, TCHAR* jid, int action, XmlNode* reason, int nStatusCode = -1 );
+void JabberGcLogShowInformation( JABBER_LIST_ITEM *item, JABBER_RESOURCE_STATUS *user, TJabberGcLogInfoType type );
 void JabberGcQuit( JABBER_LIST_ITEM* jid, int code, XmlNode* reason );
 
 //---- jabber_file.c ------------------------------------------------
