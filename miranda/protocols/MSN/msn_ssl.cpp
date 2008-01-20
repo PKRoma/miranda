@@ -1,11 +1,8 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2006-7 Boris Krasnovskiy.
-Copyright (c) 2003-5 George Hazan.
-Copyright (c) 2002-3 Richard Hughes (original version).
-
-Miranda IM: the free icq client for MS Windows
-Copyright (C) 2000-2002 Richard Hughes, Roland Rabien & Tristan Van de Vreede
+Copyright (c) 2006-2008 Boris Krasnovskiy.
+Copyright (c) 2003-2005 George Hazan.
+Copyright (c) 2002-2003 Richard Hughes (original version).
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -18,8 +15,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "msn_global.h"
@@ -74,11 +70,10 @@ static const char authPacket[] =
 	"</Body>"
 "</Envelope>";
 
-char pAuthToken[256], tAuthToken[256]; 
+char pAuthToken[512], tAuthToken[256]; 
 
 
 SSL_Base::~SSL_Base() {}
-
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // WinInet class
@@ -93,6 +88,7 @@ typedef BOOL  ( WINAPI *ft_HttpSendRequest )( HINTERNET, LPCSTR, DWORD, LPVOID, 
 typedef BOOL  ( WINAPI *ft_InternetCloseHandle )( HINTERNET );
 typedef DWORD ( WINAPI *ft_InternetErrorDlg )( HWND, HINTERNET, DWORD, DWORD, LPVOID* );
 typedef BOOL  ( WINAPI *ft_InternetSetOption )( HINTERNET, DWORD, LPVOID, DWORD );
+typedef BOOL  ( WINAPI *ft_InternetQueryOption )( HINTERNET, DWORD, LPVOID, LPDWORD );
 typedef BOOL  ( WINAPI *ft_InternetReadFile )( HINTERNET, LPVOID, DWORD, LPDWORD );
 typedef BOOL  ( WINAPI *ft_InternetCrackUrl )( LPCSTR, DWORD, DWORD, LPURL_COMPONENTSA );
 
@@ -121,6 +117,7 @@ private:
 	ft_InternetOpen        f_InternetOpen;
 	ft_InternetReadFile    f_InternetReadFile;
 	ft_InternetSetOption   f_InternetSetOption;
+	ft_InternetQueryOption f_InternetQueryOption;
 	ft_HttpOpenRequest     f_HttpOpenRequest;
 	ft_HttpQueryInfo       f_HttpQueryInfo;
 	ft_HttpSendRequest     f_HttpSendRequest;
@@ -135,15 +132,16 @@ int SSL_WinInet::init()
 		return 10;
 
 	f_InternetCloseHandle = (ft_InternetCloseHandle)GetProcAddress( m_dll, "InternetCloseHandle" );
-	f_InternetConnect = (ft_InternetConnect)GetProcAddress( m_dll, "InternetConnectA" );
-	f_InternetErrorDlg = (ft_InternetErrorDlg)GetProcAddress( m_dll, "InternetErrorDlg" );
-	f_InternetOpen = (ft_InternetOpen)GetProcAddress( m_dll, "InternetOpenA" );
-	f_InternetReadFile = (ft_InternetReadFile)GetProcAddress( m_dll, "InternetReadFile" );
-	f_InternetSetOption = (ft_InternetSetOption)GetProcAddress( m_dll, "InternetSetOptionA" );
-	f_HttpOpenRequest = (ft_HttpOpenRequest)GetProcAddress( m_dll, "HttpOpenRequestA" );
-	f_HttpQueryInfo = (ft_HttpQueryInfo)GetProcAddress( m_dll, "HttpQueryInfoA" );
-	f_HttpSendRequest = (ft_HttpSendRequest)GetProcAddress( m_dll, "HttpSendRequestA" );
-	f_InternetCrackUrl = (ft_InternetCrackUrl)GetProcAddress( m_dll, "InternetCrackUrlA" );
+	f_InternetConnect     = (ft_InternetConnect)GetProcAddress( m_dll, "InternetConnectA" );
+	f_InternetErrorDlg    = (ft_InternetErrorDlg)GetProcAddress( m_dll, "InternetErrorDlg" );
+	f_InternetOpen        = (ft_InternetOpen)GetProcAddress( m_dll, "InternetOpenA" );
+	f_InternetReadFile    = (ft_InternetReadFile)GetProcAddress( m_dll, "InternetReadFile" );
+	f_InternetSetOption   = (ft_InternetSetOption)GetProcAddress( m_dll, "InternetSetOptionA" );
+	f_InternetQueryOption = (ft_InternetQueryOption)GetProcAddress( m_dll, "InternetQueryOptionA" );
+	f_HttpOpenRequest     = (ft_HttpOpenRequest)GetProcAddress( m_dll, "HttpOpenRequestA" );
+	f_HttpQueryInfo       = (ft_HttpQueryInfo)GetProcAddress( m_dll, "HttpQueryInfoA" );
+	f_HttpSendRequest     = (ft_HttpSendRequest)GetProcAddress( m_dll, "HttpSendRequestA" );
+	f_InternetCrackUrl    = (ft_InternetCrackUrl)GetProcAddress( m_dll, "InternetCrackUrlA" );
 	return 0;
 }
 
@@ -215,11 +213,11 @@ char* SSL_WinInet::readData( HINTERNET hRequest )
 char* SSL_WinInet::getSslResult( const char* parUrl, const char* parAuthInfo, const char* hdrs )
 {
 	const DWORD tFlags =
-		INTERNET_FLAG_IGNORE_REDIRECT_TO_HTTPS |
-		INTERNET_FLAG_IGNORE_REDIRECT_TO_HTTP |
-		INTERNET_FLAG_IGNORE_CERT_CN_INVALID |
-		INTERNET_FLAG_IGNORE_CERT_DATE_INVALID |
-		INTERNET_FLAG_KEEP_CONNECTION |
+//		INTERNET_FLAG_IGNORE_REDIRECT_TO_HTTPS |
+//		INTERNET_FLAG_IGNORE_REDIRECT_TO_HTTP |
+//		INTERNET_FLAG_IGNORE_CERT_CN_INVALID |
+//		INTERNET_FLAG_IGNORE_CERT_DATE_INVALID |
+//		INTERNET_FLAG_KEEP_CONNECTION |
 		INTERNET_FLAG_NO_AUTO_REDIRECT |
 		INTERNET_FLAG_NO_CACHE_WRITE |
 		INTERNET_FLAG_NO_COOKIES |
@@ -284,7 +282,7 @@ char* SSL_WinInet::getSslResult( const char* parUrl, const char* parAuthInfo, co
 		HINTERNET tRequest = f_HttpOpenRequest( tUrlHandle, "POST", tObjectName, NULL, NULL, NULL, tFlags, 0 );
 		if ( tRequest != NULL ) {
 
-			unsigned tm = 6000;
+			unsigned tm = 8000;
 			f_InternetSetOption( tRequest, INTERNET_OPTION_CONNECT_TIMEOUT, &tm, sizeof(tm));
 			f_InternetSetOption( tRequest, INTERNET_OPTION_SEND_TIMEOUT, &tm, sizeof(tm));
 			f_InternetSetOption( tRequest, INTERNET_OPTION_RECEIVE_TIMEOUT, &tm, sizeof(tm));
@@ -301,9 +299,11 @@ char* SSL_WinInet::getSslResult( const char* parUrl, const char* parAuthInfo, co
 
 LBL_Restart:
 			MSN_DebugLog( "Sending request..." );
-#ifdef _DEBUG
-			MSN_DebugLog( parAuthInfo );
+#ifndef _DEBUG
+			if (strstr(parUrl, "login") == NULL)
 #endif
+				MSN_CallService( MS_NETLIB_LOG, ( WPARAM )hNetlibUser, ( LPARAM )parAuthInfo );
+
 			DWORD tErrorCode = f_HttpSendRequest( tRequest, headers, strlen( headers ), 
 				(void*)parAuthInfo, strlen( parAuthInfo ));
 			if ( tErrorCode == 0 ) {
@@ -321,14 +321,22 @@ LBL_Restart:
 					case ERROR_INTERNET_SEC_CERT_REV_FAILED:
 						if (!restart)
 						{
-							DWORD dwFlags = SECURITY_FLAG_IGNORE_UNKNOWN_CA  |
-								  			SECURITY_FLAG_IGNORE_REVOCATION  |   
-											SECURITY_FLAG_IGNORE_CERT_DATE_INVALID;
+							DWORD dwFlags;
+							DWORD dwBuffLen = sizeof(dwFlags);
 
+							f_InternetQueryOption (tRequest, INTERNET_OPTION_SECURITY_FLAGS, &dwFlags, &dwBuffLen);
+						    
+							dwFlags |= SECURITY_FLAG_IGNORE_UNKNOWN_CA |//								  	   SECURITY_FLAG_IGNORE_REVOCATION  |   
+//									   SECURITY_FLAG_IGNORE_CERT_DATE_INVALID |
+									   SECURITY_FLAG_IGNORE_CERT_CN_INVALID; 
+//									   0x00000200;
+//									   SECURITY_FLAG_IGNORE_CERT_WRONG_USAGE;
+  
 							f_InternetSetOption( tRequest, INTERNET_OPTION_SECURITY_FLAGS, 
 								&dwFlags, sizeof( dwFlags ));
 							mir_free( readData( tRequest ));
 							restart = true;
+							MSN_DebugLog("Restarting qqqqq.....");
 							goto LBL_Restart;
 						}
 
@@ -521,10 +529,12 @@ char* SSL_OpenSsl::getSslResult( const char* parUrl, const char* parAuthInfo, co
 					"Cache-Control: no-cache\r\n\r\n", path, chdrs,
 					MSN_USER_AGENT, strlen( parAuthInfo ), url+8 );
 
-#ifdef _DEBUG
-				MSN_DebugLog( "Sending SSL query:\n%s", headers );
-				MSN_DebugLog( "Sending SSL query:\n%s", parAuthInfo );
+					MSN_DebugLog( "Sending SSL query:\n%s", headers );
+#ifndef _DEBUG
+				if (strstr(parUrl, "login") == NULL)
 #endif
+					MSN_DebugLog( "Sending SSL query:\n%s", parAuthInfo );
+
 				pfn_SSL_write( ssl, headers, strlen( headers ));
 				pfn_SSL_write( ssl, (void*)parAuthInfo, strlen( parAuthInfo ));
 				

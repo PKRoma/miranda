@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2007 Boris Krasnovskiy.
+Copyright (c) 2007-2008 Boris Krasnovskiy.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -13,8 +13,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "msn_global.h"
@@ -22,7 +21,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // Global Email counters
 int  mUnreadMessages = 0, mUnreadJunkEmails = 0;
 
-ezxml_t oimRecvHdr(void)
+
+static const char oimRecvUrl[] = "https://rsi.hotmail.com/rsi/rsi.asmx";
+static const char mailReqHdr[] = 
+	"SOAPAction: \"http://www.hotmail.msn.com/ws/2004/09/oim/rsi/%s\"\r\n";
+
+static ezxml_t oimRecvHdr(const char* service, ezxml_t& tbdy, char*& httphdr)
 {
 	ezxml_t xmlp = ezxml_new("soap:Envelope");
 	ezxml_set_attr(xmlp, "xmlns:xsi",  "http://www.w3.org/2001/XMLSchema-instance");
@@ -37,10 +41,19 @@ ezxml_t oimRecvHdr(void)
 	ezxml_t pcook = ezxml_add_child(cook, "p", 0);
 	ezxml_set_txt(pcook, pAuthToken);
 
-	ezxml_add_child(xmlp, "soap:Body", 0);
+	ezxml_t bdy = ezxml_add_child(xmlp, "soap:Body", 0);
+	
+	tbdy = ezxml_add_child(bdy, service, 0);
+	ezxml_set_attr(tbdy, "xmlns", "http://www.hotmail.msn.com/ws/2004/09/oim/rsi");
+
+	size_t hdrsz = strlen(service) + sizeof(mailReqHdr) + 20;
+	httphdr = (char*)mir_alloc(hdrsz);
+
+	mir_snprintf(httphdr, hdrsz, mailReqHdr, service);
 
 	return xmlp;
 }
+
 
 void getOIMs(ezxml_t xmli)
 {
@@ -49,18 +62,17 @@ void getOIMs(ezxml_t xmli)
 
 	SSLAgent mAgent;
 
-	ezxml_t xmlreq = oimRecvHdr();
-	ezxml_t reqbdy = ezxml_child(xmlreq, "soap:Body");
-	ezxml_t reqmsg = ezxml_add_child(reqbdy, "GetMessage", 0);
-	ezxml_set_attr(reqmsg, "xmlns", "http://www.hotmail.msn.com/ws/2004/09/oim/rsi");
+	char* getReqHdr;
+	ezxml_t reqmsg;
+	ezxml_t xmlreq = oimRecvHdr("GetMessage", reqmsg, getReqHdr);
+
 	ezxml_t reqmid = ezxml_add_child(reqmsg, "messageId", 0);
 	ezxml_t reqmrk = ezxml_add_child(reqmsg, "alsoMarkAsRead", 0);
 	ezxml_set_txt(reqmrk, "false");
 
-	ezxml_t xmldel = oimRecvHdr();
-	ezxml_t delbdy = ezxml_child(xmldel, "soap:Body");
-	ezxml_t delmsg = ezxml_add_child(delbdy, "DeleteMessages", 0);
-	ezxml_set_attr(delmsg, "xmlns", "http://www.hotmail.msn.com/ws/2004/09/oim/rsi");
+	char* delReqHdr;
+	ezxml_t delmsg;
+	ezxml_t xmldel = oimRecvHdr("DeleteMessages", delmsg, delReqHdr);
 	ezxml_t delmids = ezxml_add_child(delmsg, "messageIds", 0);
 
 	while (toki != NULL)
@@ -75,9 +87,7 @@ void getOIMs(ezxml_t xmli)
 		MimeHeaders httpInfo;
 		char* htmlbody;
 
-		char* tResult = mAgent.getSslResult( "https://rsi.hotmail.com/rsi/rsi.asmx", szData,
-			"SOAPAction: \"http://www.hotmail.msn.com/ws/2004/09/oim/rsi/GetMessage\"\r\n",
-			status, httpInfo, htmlbody);
+		char* tResult = mAgent.getSslResult(oimRecvUrl, szData, getReqHdr, status, httpInfo, htmlbody);
 
 		free(szData);
 
@@ -134,6 +144,7 @@ void getOIMs(ezxml_t xmli)
 		toki = ezxml_next(toki);
 	}
 	ezxml_free(xmlreq);
+	mir_free(getReqHdr);
 	
 	if (ezxml_child(delmids, "messageId") != NULL)
 	{
@@ -143,30 +154,68 @@ void getOIMs(ezxml_t xmli)
 		MimeHeaders httpInfo;
 		char* htmlbody;
 
-		char* tResult = mAgent.getSslResult("https://rsi.hotmail.com/rsi/rsi.asmx", szData,
-			"SOAPAction: \"http://www.hotmail.msn.com/ws/2004/09/oim/rsi/DeleteMessages\"\r\n",
-			status, httpInfo, htmlbody);
-		mir_free( tResult );
+		char* tResult = mAgent.getSslResult(oimRecvUrl, szData, delReqHdr, status, httpInfo, htmlbody);
+		mir_free(tResult);
 		free(szData);
 	}
 	ezxml_free(xmldel);
+	mir_free(delReqHdr);
 }
+
+
+void getMetaData(void)
+{
+	SSLAgent mAgent;
+
+	char* getReqHdr;
+	ezxml_t reqbdy;
+	ezxml_t xmlreq = oimRecvHdr("GetMetadata", reqbdy, getReqHdr);
+
+	char* szData = ezxml_toxml(xmlreq, true);
+	ezxml_free(xmlreq);
+
+	unsigned status;
+	MimeHeaders httpInfo;
+	char* htmlbody;
+
+	char* tResult = mAgent.getSslResult(oimRecvUrl, szData, getReqHdr, status, httpInfo, htmlbody);
+
+	free(szData);
+	mir_free(getReqHdr);
+
+	if (tResult != NULL && status == 200)
+	{
+		ezxml_t xmlm = ezxml_parse_str(htmlbody, strlen(htmlbody));
+		ezxml_t xmli = ezxml_get(xmlm, "soap:Body", 0, "GetMetadataResponse", 0, "MD", -1);
+		getOIMs(xmli);
+		ezxml_free(xmlm);
+	}
+	mir_free(tResult);
+}
+
 
 void processMailData(char* mailData)
 {
-	ezxml_t xmli = ezxml_parse_str(mailData, strlen(mailData));
+	if (strcmp(mailData, "too-large") == 0)
+	{
+		getMetaData();
+	}
+	else
+	{
+		ezxml_t xmli = ezxml_parse_str(mailData, strlen(mailData));
 
-	ezxml_t toke = ezxml_child(xmli, "E");
+		ezxml_t toke = ezxml_child(xmli, "E");
 
-	const char* szIU = ezxml_txt(ezxml_child(toke, "IU"));
-	if (*szIU) mUnreadMessages = atol(szIU);
+		const char* szIU = ezxml_txt(ezxml_child(toke, "IU"));
+		if (*szIU) mUnreadMessages = atol(szIU);
 
-	const char* szOU = ezxml_txt(ezxml_child(toke, "OU"));
-	if (*szOU) mUnreadJunkEmails = atol(szOU);
+		const char* szOU = ezxml_txt(ezxml_child(toke, "OU"));
+		if (*szOU) mUnreadJunkEmails = atol(szOU);
 
-	getOIMs(xmli);
+		getOIMs(xmli);
 
-	ezxml_free(xmli);
+		ezxml_free(xmli);
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -330,7 +379,7 @@ static void TruncUtf8(char *str, size_t sz)
 
 int MSN_SendOIM(const char* szEmail, const char* msg)
 {
-	char szAuth[530];
+	char szAuth[768];
 	char num[32];
 	mir_snprintf(num, sizeof(num), "%u", ++oimMsgNum);
 
@@ -447,7 +496,7 @@ int MSN_SendOIM(const char* szEmail, const char* msg)
 
 	int success = -1;
 	bool retry = true;
-	for (unsigned i=0; i<2 && retry; ++i)
+	for (unsigned i=0; i<3 && retry; ++i)
 	{
 		retry = false;
 
@@ -460,7 +509,6 @@ int MSN_SendOIM(const char* szEmail, const char* msg)
 
 		char* tResult = mAgent.getSslResult( "https://ows.messenger.msn.com/OimWS/oim.asmx", szData,
 			"SOAPAction: \"http://messenger.msn.com/ws/2004/09/oim/Store\"\r\n",
-//			"SOAPAction: \"http://messenger.live.com/ws/2006/09/oim/Store2\"\r\n",
 			status, httpInfo, htmlbody);
 
 		free(szData);
@@ -480,7 +528,10 @@ int MSN_SendOIM(const char* szEmail, const char* msg)
 					const char* szChl   = ezxml_txt(ezxml_child(det, "LockKeyChallenge"));
 
 					if (*szTwChl) 
+					{
 						MSN_GetPassportAuth((char*)szTwChl);
+						retry = true;
+					}
 					if (*szChl)
 					{
 						MSN_MakeDigest(szChl, oimDigest);
