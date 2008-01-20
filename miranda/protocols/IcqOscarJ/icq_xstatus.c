@@ -54,6 +54,10 @@ static HANDLE hXStatusIcons[XSTATUS_COUNT];
 static HANDLE hXStatusIconsHandle[XSTATUS_COUNT];
 static HANDLE hXStatusItems[XSTATUS_COUNT + 1];
 
+static int hXStatusCListIcons[XSTATUS_COUNT];
+static BOOL bXStatusCListIconsValid[XSTATUS_COUNT];
+
+
 void CListShowMenuItem(HANDLE hMenuItem, BYTE bShow);
 
 
@@ -251,8 +255,6 @@ void InitXStatusEvents()
 
   if (!hHookExtraIconsApply)
     hHookExtraIconsApply = HookEvent(ME_CLIST_EXTRA_IMAGE_APPLY, CListMW_ExtraIconsApply);
-  
-  memset(gpiXStatusIconsIdx,-1,sizeof(gpiXStatusIconsIdx));
 }
 
 
@@ -842,13 +844,17 @@ void InitXStatusIcons()
     null_snprintf(szTemp, sizeof(szTemp), "xstatus%d", i);
     hXStatusIconsHandle[i] = IconLibDefine(nameXStatus[i], szSection, szTemp, icon_lib, -(IDI_XSTATUS1+i));
   }
+
+  // initialize arrays for CList custom status icons
+  memset(bXStatusCListIconsValid,0,sizeof(bXStatusCListIconsValid));
+  memset(hXStatusCListIcons,-1,sizeof(hXStatusCListIcons));
 }
 
 
 
 void ChangedIconsXStatus()
 {
-  memset(gpbXStatusIconsValid,0,sizeof(gpbXStatusIconsValid));
+  memset(bXStatusCListIconsValid,0,sizeof(bXStatusCListIconsValid));
 }
 
 
@@ -1132,25 +1138,27 @@ int IcqRequestAdvStatusIconIdx(WPARAM wParam, LPARAM lParam)
   {
     int idx=-1;
 
-    if (!gpbXStatusIconsValid[bXStatus-1])
-    {	// adding icon
-			int idx = gpiXStatusIconsIdx[bXStatus-1] ? gpiXStatusIconsIdx[bXStatus-1] : 0; 
-			HIMAGELIST hCListImageList = (HIMAGELIST)CallService(MS_CLIST_GETICONSIMAGELIST,0,0);
+    if (!bXStatusCListIconsValid[bXStatus-1])
+    { // adding icon
+      int idx = hXStatusCListIcons[bXStatus-1]; 
+      HIMAGELIST hCListImageList = (HIMAGELIST)CallService(MS_CLIST_GETICONSIMAGELIST,0,0);
 
-			if (hCListImageList)
-			{
-				if (idx > 0)
-					ImageList_ReplaceIcon(hCListImageList, idx, GetXStatusIcon(bXStatus, LR_SHARED));
-				else
-					gpiXStatusIconsIdx[bXStatus-1] = ImageList_AddIcon(hCListImageList, GetXStatusIcon(bXStatus, LR_SHARED));
-				gpbXStatusIconsValid[bXStatus-1] = TRUE;
-			}
-				
-		}
-		idx = gpbXStatusIconsValid[bXStatus-1] ? gpiXStatusIconsIdx[bXStatus-1] : -1;
-		
-    if (idx > 0) 
-			return (idx & 0xFFFF) << 16;
-	}
-	return -1;
+      if (hCListImageList)
+      {
+        HICON hXStatusIcon = GetXStatusIcon(bXStatus, LR_SHARED);
+
+        if (idx > 0)
+          ImageList_ReplaceIcon(hCListImageList, idx, hXStatusIcon);
+        else
+          hXStatusCListIcons[bXStatus-1] = ImageList_AddIcon(hCListImageList, hXStatusIcon);
+        // mark icon index in the array as valid
+        bXStatusCListIconsValid[bXStatus-1] = TRUE;
+      }		
+    }
+    idx = bXStatusCListIconsValid[bXStatus-1] ? hXStatusCListIcons[bXStatus-1] : -1;
+
+    if (idx > 0)
+      return (idx & 0xFFFF) << 16;
+  }
+  return -1;
 }
