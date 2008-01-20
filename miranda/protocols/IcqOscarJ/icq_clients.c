@@ -159,6 +159,7 @@ const capstr capIMadering = {'I', 'M', 'a', 'd', 'e', 'r', 'i', 'n', 'g', ' ', '
 const capstr capmChat     = {'m', 'C', 'h', 'a', 't', ' ', 'i', 'c', 'q', ' ', 0, 0, 0, 0, 0, 0};
 const capstr capJimm      = {'J', 'i', 'm', 'm', ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capVmIcq     = {'V', 'm', 'I', 'C', 'Q', ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+const capstr capSmapeR    = {'S', 'm', 'a', 'p', 'e', 'r', ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capAnastasia = {0x44, 0xE5, 0xBF, 0xCE, 0xB0, 0x96, 0xE5, 0x47, 0xBD, 0x65, 0xEF, 0xD6, 0xA3, 0x7E, 0x36, 0x02};
 const capstr capPalmJicq  = {'J', 'I', 'C', 'Q', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capInluxMsgr = {0xA7, 0xE4, 0x0A, 0x96, 0xB3, 0xA0, 0x47, 0x9A, 0xB8, 0x45, 0xC9, 0xE4, 0x67, 0xC5, 0x6B, 0x1F};
@@ -618,6 +619,12 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
       {
         strcpy(szClientBuf, "VmICQ");
         strncat(szClientBuf, (*capId) + 5, 11);
+        szClient = szClientBuf;
+      }
+      else if (capId = MatchCap(caps, wLen, &capSmapeR, 0x07))
+      { // http://www.smape.com/smaper
+        strcpy(szClientBuf, "SmapeR");
+        strncat(szClientBuf, (*capId) + 6, 10);
         szClient = szClientBuf;
       }
       else if (capId = MatchCap(caps, wLen, &capYapp, 0x04))
