@@ -625,8 +625,12 @@ void ShowRoom(SESSION_INFO* si, WPARAM wp, BOOL bSetForeground)
 
 int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 {
-	GCEVENT *gce = (GCEVENT*)lParam, save_gce;
-	GCDEST *gcd = NULL, save_gcd;
+	GCEVENT *gce = (GCEVENT*)lParam;
+	GCDEST *gcd = NULL;
+#if defined(_UNICODE)
+	GCEVENT save_gce;
+	GCDEST	save_gcd;
+#endif
 	TCHAR* pWnd = NULL;
 	char* pMod = NULL;
 	BOOL bIsHighlighted = FALSE;

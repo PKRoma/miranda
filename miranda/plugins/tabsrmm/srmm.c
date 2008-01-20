@@ -1,5 +1,5 @@
 /*
-astyle --force-indent=tab=4 --brackets=linux --indent-switches
+astyle	--force-indent=tab=4 --brackets=linux --indent-switches
 		--pad=oper --one-line=keep-blocks  --unpad=paren
 
 Miranda IM: the free IM client for Microsoft* Windows*
@@ -40,7 +40,6 @@ HINSTANCE g_hInst;
 extern MYGLOBALS myGlobals;
 struct MM_INTERFACE mmi;
 struct UTF8_INTERFACE utfi;
-int bNewDbApi = FALSE;
 
 pfnSetMenuInfo fnSetMenuInfo = NULL;
 
@@ -110,10 +109,10 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 	mir_getMMI(&mmi);
 	mir_getUTFI(&utfi);
 
-	if (ServiceExists(MS_DB_EVENT_GETTEXT))
-		bNewDbApi = TRUE;
-	else
+	if (!ServiceExists(MS_DB_EVENT_GETTEXT)) {
 		MessageBox(0, _T("tabSRMM"), _T("Critical error. Unsupported database driver found. tabSRMM will be disabled"), MB_OK);
+		return 1;
+	}
 
 	fnSetMenuInfo = (pfnSetMenuInfo)GetProcAddress(GetModuleHandleA("USER32.DLL"), "SetMenuInfo");
 
@@ -318,21 +317,23 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			hFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_VERSION, WM_GETFONT, 0, 0);
 			SendDlgItemMessage(hwndDlg, IDC_VERSION, WM_SETFONT, SendDlgItemMessage(hwndDlg, IDOK, WM_GETFONT, 0, 0), 0);
 			DeleteObject(hFont);
+
 		}
 		break;
 	}
 	return FALSE;
 }
 
+#define _DBG_STR_LENGTH_MAX 2048
 int _DebugMessage(HWND hwndDlg, struct MessageWindowData *dat, const char *fmt, ...)
 {
-	va_list va;
-	char    debug[1024];
-	int     ibsize = 1023;
+	va_list	va;
+	char		szDebug[_DBG_STR_LENGTH_MAX];
 
 	va_start(va, fmt);
-	_vsnprintf(debug, ibsize, fmt, va);
+	_vsnprintf(szDebug, _DBG_STR_LENGTH_MAX, fmt, va);
+	szDebug[_DBG_STR_LENGTH_MAX - 1] = '\0';
 
-	LogErrorMessage(hwndDlg, dat, -1, debug);
+	LogErrorMessage(hwndDlg, dat, -1, szDebug);
 	return 0;
 }

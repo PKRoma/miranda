@@ -1027,7 +1027,9 @@ void DestroyGCMenu(HMENU *hMenu, int iIndex)
 
 BOOL DoEventHookAsync(HWND hwnd, const TCHAR* pszID, const char* pszModule, int iType, TCHAR* pszUID, TCHAR* pszText, DWORD dwItem)
 {
+#if defined(_UNICODE)
 	SESSION_INFO* si;
+#endif
 	GCHOOK* gch = (GCHOOK*)mir_alloc(sizeof(GCHOOK));
 	GCDEST* gcd = (GCDEST*)mir_alloc(sizeof(GCDEST));
 
@@ -1061,7 +1063,9 @@ BOOL DoEventHookAsync(HWND hwnd, const TCHAR* pszID, const char* pszModule, int 
 
 BOOL DoEventHook(const TCHAR* pszID, const char* pszModule, int iType, const TCHAR* pszUID, const TCHAR* pszText, DWORD dwItem)
 {
+#if defined(_UNICODE)
 	SESSION_INFO* si;
+#endif
 	GCHOOK gch = {0};
 	GCDEST gcd = {0};
 

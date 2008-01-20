@@ -837,7 +837,7 @@ static int PopupShow(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent,
 
 #if defined(_UNICODE)
 
-static char *GetPreviewW(UINT eventType, DBEVENTINFO* dbe, BOOL *isWstring)
+static char *GetPreviewW(UINT eventType, DBEVENTINFO *dbe, BOOL *isWstring)
 {
 	char* comment1 = NULL;
 	char* comment2 = NULL;
@@ -853,11 +853,12 @@ static char *GetPreviewW(UINT eventType, DBEVENTINFO* dbe, BOOL *isWstring)
 			if (pBlob && ServiceExists(MS_DB_EVENT_GETTEXT)) {
 				WCHAR* buf = DbGetEventTextW(dbe, CP_ACP);
 				wcsncpy((WCHAR*)szPreviewHelp, buf, sizeof(szPreviewHelp) / sizeof(WCHAR));
+				szPreviewHelp[2047] = 0;
 				mir_free(buf);
 				*isWstring = 1;
 				return (char *)szPreviewHelp;
 			}
-
+/*
 			if (pBlob) {
 				int msglen = lstrlenA((char *) pBlob) + 1;
 				wchar_t *msg;
@@ -877,6 +878,7 @@ nounicode:
 					return (char *)pBlob;
 				}
 			}
+*/
 			commentFix = Translate(POPUP_COMMENT_MESSAGE);
 			break;
 		case EVENTTYPE_AUTHREQUEST:
@@ -1378,7 +1380,7 @@ void UpdateTrayMenuState(struct MessageWindowData *dat, BOOL bForced)
 				mii.dwItemData = 0;
 			mii.fMask |= MIIM_STRING;
 			mir_sntprintf(szMenuEntry, safe_sizeof(szMenuEntry), _T("%s: %s (%s) [%d]"), tszProto, dat->szNickname, dat->szStatus[0] ? dat->szStatus : _T("(undef)"), mii.dwItemData & 0x0000ffff);
-			mii.dwTypeData = (LPWSTR)szMenuEntry;
+			mii.dwTypeData = (LPTSTR)szMenuEntry;
 			mii.cch = lstrlen(szMenuEntry) + 1;
 		}
 		mii.hbmpItem = HBMMENU_CALLBACK;

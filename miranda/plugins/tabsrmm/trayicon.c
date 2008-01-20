@@ -404,7 +404,7 @@ addnew:
 	mii.fMask = MIIM_BITMAP | MIIM_DATA;
 	if (!mode) {
 		mii.fMask |= MIIM_STRING;
-		mii.dwTypeData = (LPWSTR)szMenuEntry;
+		mii.dwTypeData = (LPTSTR)szMenuEntry;
 		mii.cch = lstrlen(szMenuEntry) + 1;
 	}
 	mii.hbmpItem = HBMMENU_CALLBACK;

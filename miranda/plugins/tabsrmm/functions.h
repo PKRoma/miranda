@@ -172,5 +172,5 @@ void        ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData
 
 // compatibility
 
-typedef     BOOL ( *pfnSetMenuInfo )( HMENU hmenu, LPCMENUINFO lpcmi );
+typedef     BOOL (WINAPI *pfnSetMenuInfo )( HMENU hmenu, LPCMENUINFO lpcmi );
 extern      pfnSetMenuInfo fnSetMenuInfo;
