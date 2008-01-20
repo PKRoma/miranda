@@ -136,7 +136,7 @@ void ext_yahoo_got_im(int id, const char *me, const char *who, const char *msg, 
 	if (buddy_icon < 0) return;
 	
 	//?? Don't generate floods!!
-	DBWriteContactSettingByte(hContact, yahooProtocolName, "AvatarType", buddy_icon);
+	DBWriteContactSettingByte(hContact, yahooProtocolName, "AvatarType", (BYTE)buddy_icon);
 	if (buddy_icon != 2) {
 		yahoo_reset_avatar(hContact);
 	} else if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) == 0) {
