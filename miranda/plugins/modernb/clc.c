@@ -653,7 +653,7 @@ int SearchNextContact(HWND hwnd, struct ClcData *dat, int index, const TCHAR *te
 		}
 		if (group->cl.items[group->scanIndex]->type != CLCIT_DIVIDER) 
 		{
-			if ((prefixOk && !CompareString(LOCALE_INVARIANT, NORM_IGNORECASE, text, -1, group->cl.items[group->scanIndex]->szText, testlen)) ||
+			if ((prefixOk && CSTR_EQUAL==CompareString(LOCALE_INVARIANT, NORM_IGNORECASE, text, -1, group->cl.items[group->scanIndex]->szText, testlen)) ||
 				(!prefixOk && !lstrcmpi(text, group->cl.items[group->scanIndex]->szText))) 
 				{
 					struct ClcGroup *contactGroup = group;
