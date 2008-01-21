@@ -139,7 +139,16 @@ static int MsnAuthAllow(WPARAM wParam,LPARAM lParam)
 	char* lastName = firstName + strlen( firstName ) + 1;
 	char* email = lastName + strlen( lastName ) + 1;
 
-	AddToListByEmail(email, 0);
+	HANDLE hContact = MSN_HContactFromEmail(email, email, true, 0);
+	int netId = Lists_GetNetId(email);
+
+	MSN_AddUser( hContact, email, netId, LIST_PL + LIST_REMOVE );
+	MSN_AddUser( hContact, email, netId, LIST_BL + LIST_REMOVE );
+	MSN_AddUser( hContact, email, netId, LIST_AL );
+	MSN_AddUser( hContact, email, netId, LIST_FL );
+	MSN_AddUser( hContact, email, netId, LIST_RL );
+
+	MSN_SetContactDb(hContact, email);
 	return 0;
 }
 
