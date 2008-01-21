@@ -45,14 +45,6 @@ static protos;
 
 struct
 {
-	PROTO_INTERFACE** items;
-	int count, limit, increment;
-	FSortFunc sortFunc;
-}
-static accounts;
-
-struct
-{
 	TServiceListItem** items;
 	int count, limit, increment;
 	FSortFunc sortFunc;
@@ -97,11 +89,23 @@ static int Proto_RegisterModule(WPARAM wParam,LPARAM lParam)
 		memset( p, 0, sizeof( PROTOCOLDESCRIPTOR ));
 		p->cbSize = sizeof( PROTOCOLDESCRIPTOR );
 		p->type = pd->type;
-		p->fnUninit = FreeDefaultAccount;
-		{
+		if ( p->type == PROTOTYPE_PROTOCOL ) { 
+			// let's create a new container
 			PROTO_INTERFACE* ppi = AddDefaultAccount( pd->szName );
-			if ( ppi )
-				List_InsertPtr(( SortedList* )&accounts, ppi );
+			if ( ppi ) {
+				PROTOACCOUNT* pa = ProtoGetAccount( pd->szName );
+				if ( pa == NULL ) {
+					pa = (PROTOACCOUNT*)malloc( sizeof( PROTOACCOUNT ));
+					memset( pa, 0, sizeof( PROTOACCOUNT ));
+					pa->szModuleName = mir_strdup( pd->szName );
+					pa->szProtoName = mir_strdup( pd->szName );
+					pa->tszAccountName = mir_a2t( pd->szName );
+					pa->bIsVisible = pa->bIsEnabled = TRUE;
+					List_InsertPtr(( SortedList* )&accounts, pa );
+				}
+				pa->ppro = ppi;
+				p->fnUninit = FreeDefaultAccount;
+			}
 		}
 	}
 	else *p = *pd;
@@ -205,8 +209,8 @@ static int Proto_ContactIsTyping(WPARAM wParam,LPARAM lParam)
 static int Proto_GetAccount(WPARAM wParam, LPARAM lParam)
 {
 	int idx;
-	PROTO_INTERFACE temp;
-	temp.szPhysName = ( char* )lParam;
+	PROTOACCOUNT temp;
+	temp.szModuleName = ( char* )lParam;
 	if ( List_GetIndex(( SortedList* )&accounts, &temp, &idx ) == 0 )
 		return ( int )NULL;
 
@@ -216,7 +220,7 @@ static int Proto_GetAccount(WPARAM wParam, LPARAM lParam)
 static int Proto_EnumAccounts(WPARAM wParam, LPARAM lParam)
 {
 	*( int* )wParam = accounts.count;
-	*( PROTO_INTERFACE*** )lParam = accounts.items;
+	*( PROTOACCOUNT*** )lParam = accounts.items;
 	return 0;
 }
 
@@ -225,8 +229,12 @@ static int Proto_EnumAccounts(WPARAM wParam, LPARAM lParam)
 int CallProtoServiceInt( HANDLE hContact, const char *szModule, const char *szService, WPARAM wParam, LPARAM lParam )
 {
 	int idx;
-	PROTO_INTERFACE *ppi = ( PROTO_INTERFACE* )Proto_GetAccount( 0, ( LPARAM )szModule );
-	if ( ppi == NULL )
+	PROTO_INTERFACE* ppi;
+	PROTOACCOUNT* pa = ( PROTOACCOUNT* )Proto_GetAccount( 0, ( LPARAM )szModule );
+	if ( pa == NULL )
+		return CALLSERVICE_NOTFOUND;
+
+	if (( ppi = pa->ppro ) == NULL )
 		return CALLSERVICE_NOTFOUND;
 
 	if ( ppi->bOldProto ) {
@@ -293,7 +301,7 @@ int CallContactService( HANDLE hContact, const char *szProtoService, WPARAM wPar
 	int i;
 	DBVARIANT dbv;
 	int ret;
-	PROTO_INTERFACE *ppi;
+	PROTOACCOUNT* pa;
 	CCSDATA ccs = { hContact, szProtoService, wParam, lParam };
 
 	for ( i = 0;; i++ ) {
@@ -312,11 +320,11 @@ int CallContactService( HANDLE hContact, const char *szProtoService, WPARAM wPar
 	if ( DBGetContactSettingString( hContact, "Protocol", "p", &dbv ))
 		return 1;
 
-	ppi = ( PROTO_INTERFACE* )Proto_GetAccount( 0, ( LPARAM )dbv.pszVal );
-	if ( ppi == NULL )
+	pa = ProtoGetAccount( dbv.pszVal );
+	if ( pa == NULL || pa->ppro == NULL )
 		ret = 1;
 	else {
-		if ( ppi->bOldProto )
+		if ( pa->ppro->bOldProto )
 			ret = CallProtoServiceInt( hContact, dbv.pszVal, szProtoService, (WPARAM)(-1), ( LPARAM)&ccs );
 		else
 			ret = CallProtoServiceInt( hContact, dbv.pszVal, szProtoService, wParam, lParam );
@@ -340,13 +348,17 @@ void UnloadProtocolsModule()
 
 	if ( accounts.count ) {
 		for( i=0; i < accounts.count; i++ ) {
+			PROTOACCOUNT* pa = accounts.items[ i ];
 			int idx;
 			PROTOCOLDESCRIPTOR temp;
-			temp.szName = accounts.items[i]->szPhysName;
+			temp.szName = accounts.items[i]->szModuleName;
 			if ( List_GetIndex(( SortedList* )&protos, &temp, &idx ))
 				if ( protos.items[idx]->fnUninit != NULL )
-					protos.items[idx]->fnUninit( accounts.items[i] );
-			mir_free( accounts.items[i] );
+					protos.items[idx]->fnUninit( accounts.items[i]->ppro );
+			mir_free( pa->tszAccountName );
+			mir_free( pa->szModuleName );
+			mir_free( pa->szProtoName );
+			mir_free( pa );
 		}
 		List_Destroy(( SortedList* )&accounts );
 	}
@@ -371,9 +383,9 @@ static int CompareProtos( const PROTOCOLDESCRIPTOR* p1, const PROTOCOLDESCRIPTOR
 	return strcmp( p1->szName, p2->szName );
 }
 
-static int CompareAccounts( const PROTO_INTERFACE* p1, const PROTO_INTERFACE* p2 )
+static int CompareAccounts( const PROTOACCOUNT* p1, const PROTOACCOUNT* p2 )
 {
-	return strcmp( p1->szPhysName, p2->szPhysName );
+	return strcmp( p1->szModuleName, p2->szModuleName );
 }
 
 static int CompareServiceItems( const TServiceListItem* p1, const TServiceListItem* p2 )

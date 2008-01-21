@@ -885,48 +885,29 @@ static int MenuGetStatus(WPARAM wParam,LPARAM lParam)
 int fnGetProtocolVisibility(const char *ProtoName)
 {
 	int i;
-	int res=0;
-	DBVARIANT dbv;
-	char buf2[10];
-	int count;
 
 	if ( ProtoName == NULL )
-		return 0;
+		return FALSE;
 
-	count = (int)DBGetContactSettingDword(0, "Protocols", "ProtoCount", -1);
-	if (count == -1)
-		return 1;
-	for (i = 0; i < count; i++) {
-		_itoa(i, buf2, 10);
-		if (!DBGetContactSetting(NULL, "Protocols", buf2, &dbv)) {
-			if (strcmp(ProtoName, dbv.pszVal) == 0) {
-				mir_free(dbv.pszVal);
-				_itoa(i + 400, buf2, 10);
-				res= DBGetContactSettingDword(NULL, "Protocols", buf2, 0);
-				return res;
-			}
-			mir_free(dbv.pszVal);
-	}	}
+	for (i = 0; i < accounts.count; i++) {
+		PROTOACCOUNT* pa = accounts.items[i];
+		if ( strcmp( pa->szModuleName, ProtoName ) == 0 )
+			return pa->bIsVisible;
+	}
 
-	return 0;
+	return FALSE;
 }
 
 int GetProtoIndexByPos(PROTOCOLDESCRIPTOR ** proto, int protoCnt, int Pos)
 {
 	int p;
-	char buf[10];
-	DBVARIANT dbv;
 
-	_itoa( Pos, buf, 10 );
-	if ( !DBGetContactSetting( NULL, "Protocols", buf, &dbv )) {
-		for ( p=0; p < protoCnt; p++ ) {
-			if ( lstrcmpA( proto[p]->szName, dbv.pszVal ) == 0 ) {
-				DBFreeVariant( &dbv );
-				return p;
-		}	}
-
-		DBFreeVariant( &dbv );
-	}
+	if ( Pos < 0 || Pos >= accounts.count )
+		return -1;
+	
+	for ( p=0; p < protoCnt; p++ )
+		if ( lstrcmpA( proto[p]->szName, accounts.items[Pos]->szModuleName ) == 0 )
+			return p;
 
 	return -1;
 }

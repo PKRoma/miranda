@@ -34,18 +34,12 @@ Last change by : $Author$
 class CJabberAdhocSession;
 
 void JabberHandleAdhocCommandRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
-int JabberAdhocSetStatusHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
-int JabberAdhocOptionsHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
-int JabberAdhocForwardHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
-int JabberAdhocLockWSHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
-int JabberAdhocQuitMirandaHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
-int JabberAdhocLeaveGroupchatsHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
 
 #define JABBER_ADHOC_HANDLER_STATUS_EXECUTING            1
 #define JABBER_ADHOC_HANDLER_STATUS_COMPLETED            2
 #define JABBER_ADHOC_HANDLER_STATUS_CANCEL               3
 #define JABBER_ADHOC_HANDLER_STATUS_REMOVE_SESSION       4
-typedef int ( *JABBER_ADHOC_HANDLER )( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
+typedef int ( CJabberProto::*JABBER_ADHOC_HANDLER )( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
 
 // 5 minutes to fill out form :)
 #define JABBER_ADHOC_SESSION_EXPIRE_TIME                 300000
@@ -62,14 +56,8 @@ protected:
 
 	DWORD m_dwStage;
 public:
-	CJabberAdhocSession()
-	{
-		ZeroMemory( this, sizeof(CJabberAdhocSession) );
-		TCHAR szId[ 128 ];
-		mir_sntprintf( szId, SIZEOF(szId), _T("%u%u"), JabberSerialNext(), GetTickCount() );
-		m_szSessionId = mir_tstrdup( szId );
-		m_dwStartTime = GetTickCount();
-	}
+	CJabberProto* ppro;
+	CJabberAdhocSession( CJabberProto* global );
 	~CJabberAdhocSession()
 	{
 		if ( m_szSessionId )
@@ -126,14 +114,16 @@ protected:
 	TCHAR* m_szName;
 	CJabberAdhocNode* m_pNext;
 	JABBER_ADHOC_HANDLER m_pHandler;
+	CJabberProto* m_pProto;
 public:
-	CJabberAdhocNode( TCHAR* szJid, TCHAR* szNode, TCHAR* szName, JABBER_ADHOC_HANDLER pHandler )
+	CJabberAdhocNode( CJabberProto* pProto, TCHAR* szJid, TCHAR* szNode, TCHAR* szName, JABBER_ADHOC_HANDLER pHandler )
 	{
 		ZeroMemory( this, sizeof( CJabberAdhocNode ));
 		replaceStr( m_szJid, szJid );
 		replaceStr( m_szNode, szNode );
 		replaceStr( m_szName, szName );
 		m_pHandler = pHandler;
+		m_pProto = pProto;
 	}
 	~CJabberAdhocNode()
 	{
@@ -172,13 +162,14 @@ public:
 	{
 		if ( !m_pHandler )
 			return FALSE;
-		return m_pHandler( iqNode, usedata, pInfo, pSession );
+		return (m_pProto->*m_pHandler)( iqNode, usedata, pInfo, pSession );
 	}
 };
 
 class CJabberAdhocManager
 {
 protected:
+	CJabberProto* m_pProto;
 	CJabberAdhocNode* m_pNodes;
 	CJabberAdhocSession* m_pSessions;
 	CRITICAL_SECTION m_cs;
@@ -196,7 +187,7 @@ protected:
 
 	CJabberAdhocSession* AddNewSession()
 	{
-		CJabberAdhocSession* pSession = new CJabberAdhocSession();
+		CJabberAdhocSession* pSession = new CJabberAdhocSession( m_pProto );
 		if ( !pSession )
 			return NULL;
 
@@ -269,9 +260,10 @@ protected:
 	}
 
 public:
-	CJabberAdhocManager()
+	CJabberAdhocManager( CJabberProto* pProto )
 	{
 		ZeroMemory( this, sizeof( CJabberAdhocManager ));
+		m_pProto = pProto;
 		InitializeCriticalSection( &m_cs );
 	}
 	~CJabberAdhocManager()
@@ -290,19 +282,10 @@ public:
 	{
 		LeaveCriticalSection( &m_cs );
 	}
-	BOOL FillDefaultNodes()
-	{
-		AddNode( NULL, _T(JABBER_FEAT_RC_SET_STATUS), _T("Set status"), JabberAdhocSetStatusHandler );
-		AddNode( NULL, _T(JABBER_FEAT_RC_SET_OPTIONS), _T("Set options"), JabberAdhocOptionsHandler );
-		AddNode( NULL, _T(JABBER_FEAT_RC_FORWARD), _T("Forward unread messages"), JabberAdhocForwardHandler );
-		AddNode( NULL, _T(JABBER_FEAT_RC_LEAVE_GROUPCHATS), _T("Leave groupchats"), JabberAdhocLeaveGroupchatsHandler );
-		AddNode( NULL, _T(JABBER_FEAT_RC_WS_LOCK), _T("Lock workstation"), JabberAdhocLockWSHandler );
-		AddNode( NULL, _T(JABBER_FEAT_RC_QUIT_MIRANDA), _T("Quit Miranda IM"), JabberAdhocQuitMirandaHandler );
-		return TRUE;
-	}
+	BOOL FillDefaultNodes();
 	BOOL AddNode( TCHAR* szJid, TCHAR* szNode, TCHAR* szName, JABBER_ADHOC_HANDLER pHandler )
 	{
-		CJabberAdhocNode* pNode = new CJabberAdhocNode( szJid, szNode, szName, pHandler );
+		CJabberAdhocNode* pNode = new CJabberAdhocNode( m_pProto, szJid, szNode, szName, pHandler );
 		if ( !pNode )
 			return FALSE;
 
@@ -336,7 +319,5 @@ public:
 		return TRUE;
 	}
 };
-
-extern CJabberAdhocManager g_JabberAdhocManager;
 
 #endif //_JABBER_RC_H_

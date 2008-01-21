@@ -584,6 +584,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\jabber_events.cpp"
+				>
+			</File>
+			<File
 				RelativePath="jabber_file.cpp"
 				>
 				<FileConfiguration
@@ -1112,6 +1116,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\jabber_proto.cpp"
+				>
+			</File>
+			<File
 				RelativePath="jabber_proxy.cpp"
 				>
 				<FileConfiguration
@@ -1560,6 +1568,10 @@
 			</File>
 			<File
 				RelativePath=".\jabber_privacy.h"
+				>
+			</File>
+			<File
+				RelativePath=".\jabber_proto.h"
 				>
 			</File>
 			<File

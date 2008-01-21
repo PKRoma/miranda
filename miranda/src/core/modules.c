@@ -91,6 +91,7 @@ int LoadNewPluginsModule(void);	// core: N.O. plugins
 int LoadNetlibModule(void);		// core: network
 int LoadLangPackModule(void);	// core: translation
 int LoadProtocolsModule(void);	// core: protocol manager
+int LoadAccountsModule(void);    // core: account manager
 int LoadIgnoreModule(void);		// protocol filter: ignore
 
 int LoadSendRecvUrlModule(void);	//send/recv
@@ -138,10 +139,12 @@ static int LoadDefaultModules(void)
 	if (LoadOptionsModule()) return 1;
 	if (LoadNetlibModule()) return 1;
 	if (LoadProtocolsModule()) return 1;
+	    LoadDbAccounts();                    // retrieves the account array from a database
 	if (LoadContactsModule()) return 1;
 	if (LoadContactListModule()) return 1;
 	if (LoadAddContactModule()) return 1;
-	if (LoadNewPluginsModule()) return 1; // will call Load() on everything, clist will load first
+	if (LoadNewPluginsModule()) return 1;    // will call Load() on everything, clist will load first
+	if (LoadAccountsModule()) return 1;
 
 	//this info will be available at LoadNewPluginsModule()
 	disableDefaultModule=(int*)CallService(MS_PLUGINS_GETDISABLEDEFAULTARRAY,0,0);

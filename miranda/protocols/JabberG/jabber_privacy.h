@@ -31,7 +31,7 @@ Last change by : $Author$
 
 void JabberProcessIqPrivacyLists( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
 void JabberIqResultPrivacyLists( XmlNode* iqNode, void* userdata, CJabberIqInfo *pInfo );
-int JabberMenuHandlePrivacyLists( WPARAM wParam, LPARAM lParam );
+int JabberMenuHandlePrivacyLists( WPARAM wParam, LPARAM lParam, CJabberProto* );
 
 #define JABBER_PL_RULE_TYPE_MESSAGE			1
 #define JABBER_PL_RULE_TYPE_PRESENCE_IN		2
@@ -57,13 +57,13 @@ struct CPrivacyListModifyUserParam
 };
 
 class CPrivacyList;
-class CPrivacyListRule;
+
 class CPrivacyListRule
 {
 protected:
 	friend class CPrivacyList;
 public:
-	CPrivacyListRule(PrivacyListRuleType type = Else, TCHAR *szValue = _T(""), BOOL bAction = TRUE, DWORD dwOrder = 90, DWORD dwPackets = 0)
+	CPrivacyListRule( PrivacyListRuleType type = Else, TCHAR *szValue = _T(""), BOOL bAction = TRUE, DWORD dwOrder = 90, DWORD dwPackets = 0)
 	{
 		m_szValue = mir_tstrdup(szValue);
 		m_nType = type;
@@ -331,9 +331,10 @@ protected:
 public:
 	CPrivacyListManager()
 	{
-		InitializeCriticalSection(&m_cs);
 		m_szActiveListName = NULL;
 		m_szDefaultListName = NULL;
+		m_pLists = NULL;
+		InitializeCriticalSection(&m_cs);
 		m_bModified = FALSE;
 	};
 	~CPrivacyListManager()
@@ -428,15 +429,7 @@ public:
 		}
 		return TRUE;
 	}
-
-	void QueryLists()
-	{
-		XmlNodeIq iq( g_JabberIqManager.AddHandler( JabberIqResultPrivacyLists ) );
-		XmlNode* query = iq.addQuery( JABBER_FEAT_PRIVACY_LISTS );
-		jabberThreadInfo->send( iq );
-	}
 };
 
-extern CPrivacyListManager g_PrivacyListManager;
 
 #endif //_JABBER_PRIVACY_H_

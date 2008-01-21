@@ -29,10 +29,6 @@ Last change by : $Author$
 #include "resource.h"
 #include "jabber_caps.h"
 
-// defined in winres.h so NOT NEEDED in resources.h, define this here too
-#ifndef IDC_STATIC
-#define IDC_STATIC -1
-#endif
 
 static BOOL CALLBACK JabberFormMultiLineWndProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 {
@@ -306,7 +302,7 @@ void JabberFormLayoutSingleControl(TJabberFormControlInfo *item, TJabberFormLayo
 
 #define JabberFormCreateLabel()	\
 	CreateWindow( _T("static"), labelStr, WS_CHILD|WS_VISIBLE|SS_CENTERIMAGE, \
-		0, 0, 0, 0, hwndStatic, ( HMENU ) IDC_STATIC, hInst, NULL )
+		0, 0, 0, 0, hwndStatic, ( HMENU )-1, hInst, NULL )
 
 TJabberFormControlInfo *JabberFormAppendControl(HWND hwndStatic, TJabberFormLayoutInfo *layout_info, TJabberFormControlType type, TCHAR *labelStr, TCHAR *valueStr)
 {
@@ -381,7 +377,7 @@ TJabberFormControlInfo *JabberFormAppendControl(HWND hwndStatic, TJabberFormLayo
 			item->hCtrl = CreateWindow( _T("edit"), valueStr,
 				WS_CHILD|WS_VISIBLE|ES_MULTILINE|ES_READONLY|ES_AUTOHSCROLL,
 				0, 0, 0, 0,
-				hwndStatic, ( HMENU ) IDC_STATIC, hInst, NULL );
+				hwndStatic, ( HMENU )-1, hInst, NULL );
 			break;
 		}
 		case JFORM_CTYPE_HIDDEN:
@@ -695,6 +691,7 @@ XmlNode* JabberFormGetData( HWND hwndStatic, XmlNode* xNode )
 }
 
 typedef struct {
+	CJabberProto* ppro;
 	XmlNode *xNode;
 	TCHAR defTitle[128];	// Default title if no <title/> in xNode
 	RECT frameRect;		// Clipping region of the frame to scroll
@@ -832,7 +829,7 @@ static BOOL CALLBACK JabberFormDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, L
 			jfi = ( JABBER_FORM_INFO * ) GetWindowLong( hwndDlg, GWL_USERDATA );
 			if ( jfi != NULL ) {
 				XmlNode* n = JabberFormGetData( GetDlgItem( hwndDlg, IDC_FRAME ), jfi->xNode );
-				( jfi->pfnSubmit )( n, jfi->userdata );
+				( jfi->ppro->*(jfi->pfnSubmit))( n, jfi->userdata );
 			}
 			// fall through
 		case IDCANCEL:
@@ -865,12 +862,13 @@ static VOID CALLBACK JabberFormCreateDialogApcProc( DWORD param )
 	CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_FORM ), NULL, JabberFormDlgProc, ( LPARAM )param );
 }
 
-void JabberFormCreateDialog( XmlNode *xNode, TCHAR* defTitle, JABBER_FORM_SUBMIT_FUNC pfnSubmit, void *userdata )
+void CJabberProto::JabberFormCreateDialog( XmlNode *xNode, TCHAR* defTitle, JABBER_FORM_SUBMIT_FUNC pfnSubmit, void *userdata )
 {
 	JABBER_FORM_INFO *jfi;
 
 	jfi = ( JABBER_FORM_INFO * ) mir_alloc( sizeof( JABBER_FORM_INFO ));
 	memset( jfi, 0, sizeof( JABBER_FORM_INFO ));
+	jfi->ppro = this;
 	jfi->xNode = JabberXmlCopyNode( xNode );
 	if ( defTitle )
 		_tcsncpy( jfi->defTitle, defTitle, SIZEOF( jfi->defTitle ));

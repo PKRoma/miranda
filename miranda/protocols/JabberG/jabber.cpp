@@ -34,12 +34,13 @@ Last change by : $Author$
 #include "resource.h"
 #include "version.h"
 
+#include "m_genmenu.h"
 #include "sdk/m_icolib.h"
 #include "sdk/m_folders.h"
 #include "sdk/m_wizard.h"
-#include "sdk/m_modernopt.h"
 #include "sdk/m_assocmgr.h"
 #include "sdk/m_toolbar.h"
+#include "sdk/m_modernopt.h"
 
 HINSTANCE hInst;
 PLUGINLINK *pluginLink;
@@ -76,32 +77,9 @@ HRESULT (WINAPI *JabberDrawThemeParentBackground)(HWND, HDC, RECT *) = NULL;
 /////////////////////////////////////////////////////////////////////////////
 
 HANDLE hMainThread = NULL;
-DWORD jabberMainThreadId;
-char* jabberProtoName;	// "JABBER"
-char* jabberModuleName;	// "Jabber"
-HANDLE hNetlibUser;
-
-// Main jabber server connection thread global variables
-ThreadData* jabberThreadInfo = NULL;
-BOOL   jabberConnected = FALSE;
-time_t jabberLoggedInTime = 0;
-time_t jabberIdleStartTime = 0;
-BOOL   jabberOnline = FALSE;
+DWORD  jabberMainThreadId;
 BOOL   jabberChatDllPresent = FALSE;
-int    jabberStatus = ID_STATUS_OFFLINE;
-int    jabberDesiredStatus;
-BOOL   modeMsgStatusChangePending = FALSE;
-BOOL   jabberChangeStatusMessageOnly = FALSE;
-TCHAR* jabberJID = NULL;
-char*  streamId = NULL;
-DWORD  jabberLocalIP;
-int    jabberSearchID;
-JABBER_MODEMSGS modeMsgs;
-CRITICAL_SECTION modeMsgMutex;
-char* jabberVcardPhotoFileName = NULL;
-BOOL  jabberSendKeepAlive;
-
-BOOL jabberPepSupported = FALSE;
+HANDLE hNetlibUser;
 
 // SSL-related global variable
 HMODULE hLibSSL = NULL;
@@ -110,66 +88,20 @@ PVOID jabberSslCtx;
 const char xmlnsAdmin[] = "http://jabber.org/protocol/muc#admin";
 const char xmlnsOwner[] = "http://jabber.org/protocol/muc#owner";
 
-HWND hwndJabberAgents = NULL;
-HWND hwndJabberGroupchat = NULL;
-HWND hwndJabberJoinGroupchat = NULL;
-HWND hwndAgentReg = NULL;
-HWND hwndAgentRegInput = NULL;
-HWND hwndAgentManualReg = NULL;
-HWND hwndRegProgress = NULL;
-HWND hwndJabberVcard = NULL;
-HWND hwndMucVoiceList = NULL;
-HWND hwndMucMemberList = NULL;
-HWND hwndMucModeratorList = NULL;
-HWND hwndMucBanList = NULL;
-HWND hwndMucAdminList = NULL;
-HWND hwndMucOwnerList = NULL;
-HWND hwndJabberChangePassword = NULL;
-HWND hwndJabberBookmarks = NULL;
-HWND hwndJabberAddBookmark = NULL;
-HWND hwndPrivacyLists = NULL;
-HWND hwndPrivacyRule = NULL;
-HWND hwndServiceDiscovery = NULL;
-
-// Service and event handles
-HANDLE heventRawXMLIn;
-HANDLE heventRawXMLOut;
-HANDLE heventXStatusIconChanged;
-HANDLE heventXStatusChanged;
-HANDLE heventNudge;
-
-HANDLE hInitChat = NULL;
-
-static int compareTransports( const TCHAR* p1, const TCHAR* p2 )
-{	return _tcsicmp( p1, p2 );
-}
-LIST<TCHAR> jabberTransports( 50, compareTransports );
-
 static int sttCompareHandles( const void* p1, const void* p2 )
 {	return (long)p1 - (long)p2;
 }
 LIST<void> arHooks( 20, sttCompareHandles );
 LIST<void> arServices( 20, sttCompareHandles );
-HANDLE hhkModernToolbar = NULL;
 
-int JabberOptInit( WPARAM wParam, LPARAM lParam );
-int JabberWizardInit( WPARAM wParam, LPARAM lParam );
-int JabberModernOptInit( WPARAM wParam, LPARAM lParam );
-int JabberUserInfoInit( WPARAM wParam, LPARAM lParam );
 int JabberMsgUserTyping( WPARAM wParam, LPARAM lParam );
 void JabberMenuInit( void );
 void JabberMenuUninit( void );
 int JabberModernToolbarInit(WPARAM, LPARAM);
-int JabberSvcInit( void );
-int JabberSvcUninit( void );
-void InitCustomFolders( void );
-void JabberConsoleInit();
-void JabberConsoleUninit();
 void JabberUserInfoInit(void);
-void JabberPrivacyInit();
-void JabberPrivacyUninit();
 
 int bSecureIM;
+
 extern "C" BOOL WINAPI DllMain( HINSTANCE hModule, DWORD dwReason, LPVOID lpvReserved )
 {
 	#ifdef _DEBUG
@@ -181,8 +113,8 @@ extern "C" BOOL WINAPI DllMain( HINSTANCE hModule, DWORD dwReason, LPVOID lpvRes
 
 extern "C" __declspec( dllexport ) PLUGININFOEX *MirandaPluginInfoEx( DWORD mirandaVersion )
 {
-	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0,7,0,3 )) {
-		MessageBoxA( NULL, "The Jabber protocol plugin cannot be loaded. It requires Miranda IM 0.7.0.3 or later.", "Jabber Protocol Plugin", MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
+	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0,8,0,8 )) {
+		MessageBoxA( NULL, "The Jabber protocol plugin cannot be loaded. It requires Miranda IM 0.8.0.8 or later.", "Jabber Protocol Plugin", MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 		return NULL;
 	}
 
@@ -198,86 +130,128 @@ extern "C" __declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
 ///////////////////////////////////////////////////////////////////////////////
 // OnPreShutdown - prepares Miranda to be shut down
 
-static int OnPreShutdown( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::OnPreShutdown( WPARAM wParam, LPARAM lParam )
 {
-	if ( hwndJabberAgents ) SendMessage( hwndJabberAgents, WM_CLOSE, 0, 0 );
-	if ( hwndJabberGroupchat ) SendMessage( hwndJabberGroupchat, WM_CLOSE, 0, 0 );
-	if ( hwndJabberJoinGroupchat ) SendMessage( hwndJabberJoinGroupchat, WM_CLOSE, 0, 0 );
-	if ( hwndAgentReg ) SendMessage( hwndAgentReg, WM_CLOSE, 0, 0 );
-	if ( hwndAgentRegInput ) SendMessage( hwndAgentRegInput, WM_CLOSE, 0, 0 );
-	if ( hwndRegProgress ) SendMessage( hwndRegProgress, WM_CLOSE, 0, 0 );
-	if ( hwndJabberVcard ) SendMessage( hwndJabberVcard, WM_CLOSE, 0, 0 );
-	if ( hwndMucVoiceList ) SendMessage( hwndMucVoiceList, WM_CLOSE, 0, 0 );
-	if ( hwndMucMemberList ) SendMessage( hwndMucMemberList, WM_CLOSE, 0, 0 );
-	if ( hwndMucModeratorList ) SendMessage( hwndMucModeratorList, WM_CLOSE, 0, 0 );
-	if ( hwndMucBanList ) SendMessage( hwndMucBanList, WM_CLOSE, 0, 0 );
-	if ( hwndMucAdminList ) SendMessage( hwndMucAdminList, WM_CLOSE, 0, 0 );
-	if ( hwndMucOwnerList ) SendMessage( hwndMucOwnerList, WM_CLOSE, 0, 0 );
-	if ( hwndJabberChangePassword ) SendMessage( hwndJabberChangePassword, WM_CLOSE, 0, 0 );
-	if ( hwndJabberBookmarks ) SendMessage( hwndJabberBookmarks, WM_CLOSE, 0, 0 );
-	if ( hwndJabberAddBookmark ) SendMessage( hwndJabberAddBookmark, WM_CLOSE, 0, 0 );
-	if ( hwndPrivacyRule ) SendMessage( hwndPrivacyRule, WM_CLOSE, 0, 0 );
-	if ( hwndPrivacyLists ) SendMessage( hwndPrivacyLists, WM_CLOSE, 0, 0 );
-	if ( hwndServiceDiscovery ) SendMessage (hwndServiceDiscovery, WM_CLOSE, 0, 0 );
-
-	hwndJabberAgents = NULL;
-	hwndJabberGroupchat = NULL;
-	hwndJabberJoinGroupchat = NULL;
-	hwndAgentReg = NULL;
-	hwndAgentRegInput = NULL;
+	if ( hwndJabberAgents ) {
+		::SendMessage( hwndJabberAgents, WM_CLOSE, 0, 0 );
+		hwndJabberAgents = NULL;
+	}
+	if ( hwndJabberGroupchat ) {
+		::SendMessage( hwndJabberGroupchat, WM_CLOSE, 0, 0 );
+		hwndJabberGroupchat = NULL;
+	}
+	if ( hwndJabberJoinGroupchat ) {
+		::SendMessage( hwndJabberJoinGroupchat, WM_CLOSE, 0, 0 );
+		hwndJabberJoinGroupchat = NULL;
+	}
+	if ( hwndAgentReg ) {
+		::SendMessage( hwndAgentReg, WM_CLOSE, 0, 0 );
+		hwndAgentReg = NULL;
+	}
+	if ( hwndAgentRegInput ) {
+		::SendMessage( hwndAgentRegInput, WM_CLOSE, 0, 0 );
+		hwndAgentRegInput = NULL;
+	}
+	if ( hwndRegProgress ) {
+		::SendMessage( hwndRegProgress, WM_CLOSE, 0, 0 );
+		hwndRegProgress = NULL;
+	}
+	if ( hwndJabberVcard ) {
+		::SendMessage( hwndJabberVcard, WM_CLOSE, 0, 0 );
+		hwndJabberVcard = NULL;
+	}
+	if ( hwndMucVoiceList ) {
+		::SendMessage( hwndMucVoiceList, WM_CLOSE, 0, 0 );
+		hwndMucVoiceList = NULL;
+	}
+	if ( hwndMucMemberList ) {
+		::SendMessage( hwndMucMemberList, WM_CLOSE, 0, 0 );
+		hwndMucMemberList = NULL;
+	}
+	if ( hwndMucModeratorList ) {
+		::SendMessage( hwndMucModeratorList, WM_CLOSE, 0, 0 );
+		hwndMucModeratorList = NULL;
+	}
+	if ( hwndMucBanList ) {
+		::SendMessage( hwndMucBanList, WM_CLOSE, 0, 0 );
+		hwndMucBanList = NULL;
+	}
+	if ( hwndMucAdminList ) {
+		::SendMessage( hwndMucAdminList, WM_CLOSE, 0, 0 );
+		hwndMucAdminList = NULL;
+	}
+	if ( hwndMucOwnerList ) {
+		::SendMessage( hwndMucOwnerList, WM_CLOSE, 0, 0 );
+		hwndMucOwnerList = NULL;
+	}
+	if ( hwndJabberChangePassword ) {
+		::SendMessage( hwndJabberChangePassword, WM_CLOSE, 0, 0 );
+		hwndJabberChangePassword = NULL;
+	}
+	if ( hwndJabberBookmarks ) {
+		::SendMessage( hwndJabberBookmarks, WM_CLOSE, 0, 0 );
+		hwndJabberBookmarks = NULL;
+	}
+	if ( hwndJabberAddBookmark ) {
+		::SendMessage( hwndJabberAddBookmark, WM_CLOSE, 0, 0 );
+		hwndJabberAddBookmark = NULL;
+	}
+	if ( hwndPrivacyRule ) {
+		::SendMessage( hwndPrivacyRule, WM_CLOSE, 0, 0 );
+		hwndPrivacyRule = NULL;
+	}
+	if ( hwndPrivacyLists ) {
+		::SendMessage( hwndPrivacyLists, WM_CLOSE, 0, 0 );
+		hwndPrivacyLists = NULL;
+	}
+	if ( hwndServiceDiscovery ) {
+		::SendMessage( hwndServiceDiscovery, WM_CLOSE, 0, 0 );
+		hwndServiceDiscovery = NULL;
+	}
 	hwndAgentManualReg = NULL;
-	hwndRegProgress = NULL;
-	hwndJabberVcard = NULL;
-	hwndMucVoiceList = NULL;
-	hwndMucMemberList = NULL;
-	hwndMucModeratorList = NULL;
-	hwndMucBanList = NULL;
-	hwndMucAdminList = NULL;
-	hwndMucOwnerList = NULL;
-	hwndJabberChangePassword = NULL;
-	hwndJabberBookmarks = NULL;
-	hwndJabberAddBookmark = NULL;
-	hwndPrivacyLists = NULL;
-	hwndPrivacyRule = NULL;
-	hwndServiceDiscovery = NULL;
 
-	g_JabberIqManager.ExpireAll();
-	g_JabberIqManager.Shutdown();
+	m_iqManager.ExpireAll();
+	m_iqManager.Shutdown();
 	JabberConsoleUninit();
-	JabberPrivacyUninit();
 	return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // OnModulesLoaded - execute some code when all plugins are initialized
 
-int JabberGcEventHook( WPARAM, LPARAM );
-int JabberGcMenuHook( WPARAM, LPARAM );
-int JabberGcInit( WPARAM, LPARAM );
-
-int JabberContactDeleted( WPARAM wParam, LPARAM lParam );
-int JabberIdleChanged( WPARAM wParam, LPARAM lParam );
-int JabberDbSettingChanged( WPARAM wParam, LPARAM lParam );
 int JabberMenuPrebuildContactMenu( WPARAM wParam, LPARAM lParam );
 void JabberMenuHideSrmmIcon(HANDLE hContact);
-int JabberMenuProcessSrmmIconClick( WPARAM wParam, LPARAM lParam );
-int JabberMenuProcessSrmmEvent( WPARAM wParam, LPARAM lParam );
-
-int JabberMenuHandleConsole(WPARAM,LPARAM);
 
 static COLORREF crCols[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 
 static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
-	JabberXStatusInit();
 	JabberMenuInit();
-	JabberWsInit();
-	arHooks.insert( HookEvent( ME_USERINFO_INITIALISE, JabberUserInfoInit ));
-
-	if (!hhkModernToolbar)
-		hhkModernToolbar = HookEvent(ME_TB_MODULELOADED, JabberModernToolbarInit);
 
 	bSecureIM = (ServiceExists("SecureIM/IsContactSecured"));
+
+	arHooks.insert( HookEvent( ME_CLIST_PREBUILDCONTACTMENU, JabberMenuPrebuildContactMenu ));
+	return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// OnLoad - initialize the plugin instance
+
+int CJabberProto::OnModulesLoadedEx( WPARAM wParam, LPARAM lParam )
+{
+	JabberWsInit();
+	JabberXStatusInit();
+
+	JHookEvent( ME_CLIST_PREBUILDSTATUSMENU, &CJabberProto::OnBuildPrivacyMenu );
+	JHookEvent( ME_DB_CONTACT_DELETED, &CJabberProto::OnContactDeleted );
+	JHookEvent( ME_DB_CONTACT_SETTINGCHANGED, &CJabberProto::OnDbSettingChanged );
+	JHookEvent( ME_IDLE_CHANGED, &CJabberProto::OnIdleChanged );
+	JHookEvent( ME_MODERNOPT_INITIALIZE, &CJabberProto::OnModernOptInit );
+	JHookEvent( ME_TB_MODULELOADED, &CJabberProto::OnModernToolbarInit );
+	JHookEvent( ME_OPT_INITIALISE, &CJabberProto::OnOptionsInit );
+	JHookEvent( ME_SYSTEM_PRESHUTDOWN, &CJabberProto::OnPreShutdown );
+	JHookEvent( ME_SKIN2_ICONSCHANGED, &CJabberProto::OnReloadIcons );
+	JHookEvent( ME_USERINFO_INITIALISE, &CJabberProto::OnUserInfoInit );
 
 	if ( ServiceExists( MS_GC_REGISTER )) {
 		jabberChatDllPresent = true;
@@ -288,42 +262,38 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		gcr.iMaxText = 0;
 		gcr.nColors = 16;
 		gcr.pColors = &crCols[0];
-		gcr.pszModuleDispName = jabberProtoName;
-		gcr.pszModule = jabberProtoName;
+		gcr.pszModuleDispName = szProtoName;
+		gcr.pszModule = szProtoName;
 		CallServiceSync( MS_GC_REGISTER, NULL, ( LPARAM )&gcr );
 
-		arHooks.insert( HookEvent( ME_GC_EVENT, JabberGcEventHook ));
-		arHooks.insert( HookEvent( ME_GC_BUILDMENU, JabberGcMenuHook ));
+		JHookEvent( ME_GC_EVENT, &CJabberProto::JabberGcEventHook );
+		JHookEvent( ME_GC_BUILDMENU, &CJabberProto::JabberGcMenuHook );
 
 		char szEvent[ 200 ];
-		mir_snprintf( szEvent, sizeof szEvent, "%s\\ChatInit", jabberProtoName );
+		mir_snprintf( szEvent, sizeof szEvent, "%s\\ChatInit", szProtoName );
 		hInitChat = CreateHookableEvent( szEvent );
-		arHooks.insert( HookEvent( szEvent, JabberGcInit ));
+		JHookEvent( szEvent, &CJabberProto::JabberGcInit );
 	}
 
-	arServices.insert( JCreateServiceFunction( JS_GETADVANCEDSTATUSICON, JGetAdvancedStatusIcon ));
-	arHooks.insert( HookEvent( ME_SKIN2_ICONSCHANGED, ReloadIconsEventHook ));
-	arHooks.insert( HookEvent( ME_DB_CONTACT_SETTINGCHANGED, JabberDbSettingChanged ));
-	arHooks.insert( HookEvent( ME_DB_CONTACT_DELETED, JabberContactDeleted ));
-	arHooks.insert( HookEvent( ME_CLIST_PREBUILDCONTACTMENU, JabberMenuPrebuildContactMenu ));
-	arHooks.insert( HookEvent( ME_IDLE_CHANGED, JabberIdleChanged ));
+	JCreateService( JS_GETADVANCEDSTATUSICON, JGetAdvancedStatusIcon );
+	JCreateService( JS_DB_GETEVENTTEXT_CHATSTATES, JabberGetEventTextChatStates );
 
 	if ( ServiceExists( MS_MSG_ADDICON )) {
 		StatusIconData sid = {0};
 		sid.cbSize = sizeof(sid);
-		sid.szModule = jabberProtoName;
+		sid.szModule = szProtoName;
 		sid.hIcon = LoadIconEx("main");
 		sid.hIconDisabled = LoadIconEx("main");
 		sid.flags = MBF_HIDDEN;
 		sid.szTooltip = "Jabber Resource";
 		CallService(MS_MSG_ADDICON, 0, (LPARAM) &sid);
-		arHooks.insert( HookEvent( ME_MSG_ICONPRESSED, JabberMenuProcessSrmmIconClick ));
-		arHooks.insert( HookEvent( ME_MSG_WINDOWEVENT, JabberMenuProcessSrmmEvent ));
+		JHookEvent( ME_MSG_ICONPRESSED, &CJabberProto::JabberMenuProcessSrmmIconClick );
+		JHookEvent( ME_MSG_WINDOWEVENT, &CJabberProto::JabberMenuProcessSrmmEvent );
 
 		HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 		while ( hContact != NULL ) {
 			char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-			if ( szProto != NULL && !strcmp( szProto, jabberProtoName ))
+			if ( szProto != NULL && !strcmp( szProto, szProtoName ))
 				JabberMenuHideSrmmIcon(hContact);
 			hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 );
 	}	}
@@ -331,84 +301,24 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	DBEVENTTYPEDESCR dbEventType = {0};
 	dbEventType.cbSize = sizeof(DBEVENTTYPEDESCR);
 	dbEventType.eventType = JABBER_DB_EVENT_TYPE_CHATSTATES;
-	dbEventType.module = jabberProtoName;
+	dbEventType.module = szProtoName;
 	dbEventType.descr = "Chat state notifications";
-
 	JCallService( MS_DB_EVENT_REGISTERTYPE, 0, (LPARAM)&dbEventType );
-	arServices.insert( JCreateServiceFunction( JS_DB_GETEVENTTEXT_CHATSTATES, JabberGetEventTextChatStates ));
 
 	// file associations manager plugin support
 	if ( ServiceExists( MS_ASSOCMGR_ADDNEWURLTYPE )) {
 		char szService[ MAXMODULELABELLENGTH ];
-		mir_snprintf( szService, SIZEOF( szService ), "%s%s", jabberProtoName, JS_PARSE_XMPP_URI );
+		mir_snprintf( szService, SIZEOF( szService ), "%s%s", szProtoName, JS_PARSE_XMPP_URI );
 		AssocMgr_AddNewUrlTypeT( "xmpp:", TranslateT("Jabber Link Protocol"), hInst, IDI_JABBER, szService, 0 );
 	}
 
 	JabberCheckAllContactsAreTransported();
-	InitCustomFolders();
-
-	return 0;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// OnLoad - initialize the plugin instance
-
-extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
-{
-	pluginLink = link;
-
-	// set the memory, lists & utf8 managers
-	mir_getMMI( &mmi );
-	mir_getLI( &li );
-	mir_getUTFI( &utfi );
-	mir_getMD5I( &md5i );
-	mir_getSHA1I( &sha1i );
-
-	// creating the plugins name
-	char text[_MAX_PATH];
-	char* p, *q;
-
-	GetModuleFileNameA( hInst, text, sizeof( text ));
-	p = strrchr( text, '\\' );
-	p++;
-	q = strrchr( p, '.' );
-	*q = '\0';
-	jabberProtoName = mir_strdup( p );
-	_strupr( jabberProtoName );
-
-	mir_snprintf( text, sizeof( text ), "%s/Status", jabberProtoName );
-	JCallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )text );
-
-	jabberModuleName = mir_strdup( jabberProtoName );
-	_strlwr( jabberModuleName );
-	jabberModuleName[0] = toupper( jabberModuleName[0] );
-
-	JabberLog( "Setting protocol/module name to '%s/%s'", jabberProtoName, jabberModuleName );
-
-	DuplicateHandle( GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &hMainThread, THREAD_SET_CONTEXT, FALSE, 0 );
-	jabberMainThreadId = GetCurrentThreadId();
-
-	arHooks.insert( HookEvent( ME_OPT_INITIALISE, JabberOptInit ));
-	arHooks.insert( HookEvent( ME_WIZARD_INITIALISE, JabberWizardInit ));
-	arHooks.insert( HookEvent( ME_MODERNOPT_INITIALIZE, JabberModernOptInit ));
-	arHooks.insert( HookEvent( ME_SYSTEM_MODULESLOADED, OnModulesLoaded ));
-	arHooks.insert( HookEvent( ME_SYSTEM_PRESHUTDOWN, OnPreShutdown ));
-
-	hhkModernToolbar = HookEvent(ME_TB_MODULELOADED, JabberModernToolbarInit);
-
-	// Register protocol module
-	PROTOCOLDESCRIPTOR pd;
-	ZeroMemory( &pd, sizeof( PROTOCOLDESCRIPTOR ));
-	pd.cbSize = sizeof( PROTOCOLDESCRIPTOR );
-	pd.szName = jabberProtoName;
-	pd.type = PROTOTYPE_PROTOCOL;
-	JCallService( MS_PROTO_REGISTERMODULE, 0, ( LPARAM )&pd );
 
 	// Set all contacts to offline
-	HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
+	HANDLE hContact = ( HANDLE )CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL ) {
-		char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-		if ( szProto != NULL && !strcmp( szProto, jabberProtoName )) {
+		char* szProto = ( char* )CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
+		if ( szProto != NULL && !strcmp( szProto, szProtoName )) {
 			JabberSetContactOfflineStatus( hContact );
 
 			if ( JGetByte( hContact, "IsTransport", 0 )) {
@@ -422,44 +332,74 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 					JFreeVariant( &dbv );
 		}	}	}
 
-		hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 );
+		hContact = ( HANDLE )CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 );
 	}
+	return 0;
+}
 
-	memset(( char* )&modeMsgs, 0, sizeof( JABBER_MODEMSGS ));
+static CJabberProto* jabberProtoInit( const char* szProtoName, const TCHAR* tszUserName )
+{
+	CJabberProto* ppro = new CJabberProto( szProtoName );
+	if ( !ppro )
+		return NULL;
 
-	InitializeCriticalSection( &modeMsgMutex );
+	ppro->tszUserName = mir_tstrdup( tszUserName );
+	ppro->szModuleName = mir_strdup( ppro->szProtoName );
+	_strlwr( ppro->szModuleName );
+	ppro->szModuleName[0] = toupper( ppro->szModuleName[0] );
+	ppro->JabberLog( "Setting protocol/module name to '%s/%s'", ppro->szProtoName, ppro->szModuleName );
 
-	{	// Load some fuctions
-		HINSTANCE hDll;
+	ppro->JHookEvent( ME_SYSTEM_MODULESLOADED, &CJabberProto::OnModulesLoadedEx );
 
-		if (hDll = LoadLibraryA("msimg32.dll"))
-		{
-			JabberAlphaBlend = (BOOL (WINAPI *)(HDC, int, int, int, int, HDC, int, int, int, int, BLENDFUNCTION)) GetProcAddress(hDll, "AlphaBlend");
-		}
+	char text[ MAX_PATH ];
+	mir_snprintf( text, sizeof( text ), "%s/Status", ppro->szProtoName );
+	JCallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )text );
+	return ppro;
+}
 
-		if (IsWinVerXPPlus())
-		{
-			if (hDll = GetModuleHandleA("uxtheme"))
-			{
-				JabberDrawThemeParentBackground = (HRESULT (WINAPI *)(HWND,HDC,RECT *))GetProcAddress(hDll, "DrawThemeParentBackground");
-				JabberIsThemeActive = (BOOL (WINAPI *)())GetProcAddress(hDll, "IsThemeActive");
-			}
-		}
-	}
+static int jabberProtoUninit( CJabberProto* ppro )
+{
+	delete ppro;
+	return 0;
+}
+
+extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
+{
+	pluginLink = link;
+
+	// set the memory, lists & utf8 managers
+	mir_getMMI( &mmi );
+	mir_getLI( &li );
+	mir_getUTFI( &utfi );
+	mir_getMD5I( &md5i );
+	mir_getSHA1I( &sha1i );
+
+	DuplicateHandle( GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &hMainThread, THREAD_SET_CONTEXT, FALSE, 0 );
+	jabberMainThreadId = GetCurrentThreadId();
+
+	// Register protocol module
+	PROTOCOLDESCRIPTOR pd;
+	ZeroMemory( &pd, sizeof( PROTOCOLDESCRIPTOR ));
+	pd.cbSize = sizeof( PROTOCOLDESCRIPTOR );
+	pd.szName = "JABBER";
+	pd.fnInit = ( pfnInitProto )jabberProtoInit;
+	pd.fnUninit = ( pfnUninitProto )jabberProtoUninit;
+	pd.type = PROTOTYPE_PROTOCOL;
+	CallService( MS_PROTO_REGISTERMODULE, 0, ( LPARAM )&pd );
+
+	// Load some fuctions
+	HINSTANCE hDll;
+	if ( hDll = LoadLibraryA("msimg32.dll" ))
+		JabberAlphaBlend = (BOOL (WINAPI *)(HDC, int, int, int, int, HDC, int, int, int, int, BLENDFUNCTION)) GetProcAddress(hDll, "AlphaBlend");
+
+	if ( IsWinVerXPPlus() ) {
+		if ( hDll = GetModuleHandleA("uxtheme")) {
+			JabberDrawThemeParentBackground = (HRESULT (WINAPI *)(HWND,HDC,RECT *))GetProcAddress(hDll, "DrawThemeParentBackground");
+			JabberIsThemeActive = (BOOL (WINAPI *)())GetProcAddress(hDll, "IsThemeActive");
+	}	}
 
 	srand(( unsigned ) time( NULL ));
-	JabberSerialInit();
-	JabberIqInit();
-	JabberListInit();
-	JabberIconsInit();
 	JabberUserInfoInit();
-	JabberConsoleInit();
-	JabberPrivacyInit();
-	JabberSvcInit();
-	g_JabberIqManager.FillPermanentHandlers();
-	g_JabberIqManager.Start();
-	g_JabberAdhocManager.FillDefaultNodes();
-	g_JabberClientCapsManager.AddDefaultCaps();
 	return 0;
 }
 
@@ -473,37 +413,13 @@ extern "C" int __declspec( dllexport ) Unload( void )
 		UnhookEvent( arHooks[i] );
 	arHooks.destroy();
 
-	UnhookEvent(hhkModernToolbar);
-
-	if ( hInitChat )
-		DestroyHookableEvent( hInitChat );
-
-	JabberXStatusUninit();
 	JabberMenuUninit();
-	JabberSvcUninit();
-	JabberSslUninit();
-	JabberListUninit();
-	JabberIqUninit();
-	JabberSerialUninit();
-	JabberWsUninit();
-	DeleteCriticalSection( &modeMsgMutex );
-	mir_free( modeMsgs.szOnline );
-	mir_free( modeMsgs.szAway );
-	mir_free( modeMsgs.szNa );
-	mir_free( modeMsgs.szDnd );
-	mir_free( modeMsgs.szFreechat );
-	mir_free( jabberModuleName );
-	mir_free( jabberProtoName );
-	if ( jabberVcardPhotoFileName ) {
-		DeleteFileA( jabberVcardPhotoFileName );
-		mir_free( jabberVcardPhotoFileName );
-	}
-	if ( streamId ) mir_free( streamId );
 
-	for ( i=0; i < jabberTransports.getCount(); i++ )
-		free( jabberTransports[i] );
-	jabberTransports.destroy();
+	for ( i=0; i < arServices.getCount(); i++ )
+		DestroyServiceFunction( arServices[i] );
+	arServices.destroy();
 
-	if ( hMainThread ) CloseHandle( hMainThread );
+	if ( hMainThread )
+		CloseHandle( hMainThread );
 	return 0;
 }

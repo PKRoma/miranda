@@ -31,7 +31,7 @@ Last change by : $Author$
 
 BOOL ThreadData::zlibInit( void )
 {
-	JabberLog( "Zlib init..." );
+	proto->JabberLog( "Zlib init..." );
 	zStreamIn.zalloc = Z_NULL;
 	zStreamIn.zfree = Z_NULL;
 	zStreamIn.opaque = Z_NULL;
@@ -68,16 +68,16 @@ int ThreadData::zlibSend( char* data, int datalen )
 		zStreamOut.next_out = ( unsigned char* )send_data;
 
 		switch ( deflate( &zStreamOut, Z_SYNC_FLUSH )) {
-			case Z_OK:         JabberLog( "Deflate: Z_OK" );         break;
-			case Z_BUF_ERROR:  JabberLog( "Deflate: Z_BUF_ERROR" );  break;
-			case Z_DATA_ERROR: JabberLog( "Deflate: Z_DATA_ERROR" ); break;
-			case Z_MEM_ERROR:  JabberLog( "Deflate: Z_MEM_ERROR" );  break;
+			case Z_OK:         proto->JabberLog( "Deflate: Z_OK" );         break;
+			case Z_BUF_ERROR:  proto->JabberLog( "Deflate: Z_BUF_ERROR" );  break;
+			case Z_DATA_ERROR: proto->JabberLog( "Deflate: Z_DATA_ERROR" ); break;
+			case Z_MEM_ERROR:  proto->JabberLog( "Deflate: Z_MEM_ERROR" );  break;
 		}
 
 		int len, send_datalen = ZLIB_CHUNK_SIZE - zStreamOut.avail_out;
 
 		if (( len = sendws( send_data, send_datalen, MSG_NODUMP )) == SOCKET_ERROR || len != send_datalen ) {
-			JabberLog( "Netlib_Send() failed, error=%d", WSAGetLastError());
+			proto->JabberLog( "Netlib_Send() failed, error=%d", WSAGetLastError());
 			return FALSE;
 		}
 
@@ -86,7 +86,7 @@ int ThreadData::zlibSend( char* data, int datalen )
 		while ( zStreamOut.avail_out == 0 );
 
 	if ( DBGetContactSettingByte( NULL, "Netlib", "DumpSent", TRUE ) == TRUE )
-		JabberLog( "(ZLIB) Data sent\n%s\n===OUT: %d(%d) bytes", data, datalen, bytesOut );
+		proto->JabberLog( "(ZLIB) Data sent\n%s\n===OUT: %d(%d) bytes", data, datalen, bytesOut );
 
 	return TRUE;
 }
@@ -96,7 +96,7 @@ int ThreadData::zlibRecv( char* data, long datalen )
 	if ( zRecvReady ) {
 		zRecvDatalen = recvws( zRecvData, ZLIB_CHUNK_SIZE, MSG_NODUMP );
 		if ( zRecvDatalen == SOCKET_ERROR ) {
-			JabberLog( "Netlib_Recv() failed, error=%d", WSAGetLastError());
+			proto->JabberLog( "Netlib_Recv() failed, error=%d", WSAGetLastError());
 			return SOCKET_ERROR;
 		}
 		if ( zRecvDatalen == 0 )
@@ -110,10 +110,10 @@ int ThreadData::zlibRecv( char* data, long datalen )
 	zStreamIn.next_out = ( BYTE* )data;
 
 	switch ( inflate( &zStreamIn, Z_NO_FLUSH )) {
-		case Z_OK:         JabberLog( "Inflate: Z_OK" );         break;
-		case Z_BUF_ERROR:  JabberLog( "Inflate: Z_BUF_ERROR" );  break;
-		case Z_DATA_ERROR: JabberLog( "Inflate: Z_DATA_ERROR" ); break;
-		case Z_MEM_ERROR:  JabberLog( "Inflate: Z_MEM_ERROR" );  break;
+		case Z_OK:         proto->JabberLog( "Inflate: Z_OK" );         break;
+		case Z_BUF_ERROR:  proto->JabberLog( "Inflate: Z_BUF_ERROR" );  break;
+		case Z_DATA_ERROR: proto->JabberLog( "Inflate: Z_DATA_ERROR" ); break;
+		case Z_MEM_ERROR:  proto->JabberLog( "Inflate: Z_MEM_ERROR" );  break;
 	}
 
 	int len = datalen - zStreamIn.avail_out;
@@ -122,7 +122,7 @@ int ThreadData::zlibRecv( char* data, long datalen )
 		char* szLogBuffer = ( char* )alloca( len+32 );
 		memcpy( szLogBuffer, data, len );
 		szLogBuffer[ len ]='\0';
-		JabberLog( "(ZLIB) Data received\n%s\n===IN: %d(%d) bytes", szLogBuffer, len, zRecvDatalen );
+		proto->JabberLog( "(ZLIB) Data received\n%s\n===IN: %d(%d) bytes", szLogBuffer, len, zRecvDatalen );
 	}
 
 	zRecvReady = ( zStreamIn.avail_out != 0 );

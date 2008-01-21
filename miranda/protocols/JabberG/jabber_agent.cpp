@@ -31,21 +31,43 @@ Last change by : $Author$
 #include "jabber_iq.h"
 #include "jabber_caps.h"
 
-
+static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
 static BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
 static BOOL CALLBACK JabberAgentRegDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
+static BOOL CALLBACK JabberAgentManualRegDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
 
 struct TJabberRegWndData
 {
+	CJabberProto* ppro;
 	int curPos;
 	int formHeight, frameHeight;
 	RECT frameRect;
 };
 
-void JabberRegisterAgent( HWND hwndDlg, TCHAR* jid )
+/*
+int JabberMenuHandleAgents( WPARAM wParam, LPARAM lParam, CJabberProto* ppro )
 {
+	if ( IsWindow( ppro->hwndJabberAgents ))
+		SetForegroundWindow( ppro->hwndJabberAgents );
+	else
+		CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_AGENTS ), NULL, JabberAgentsDlgProc, ( LPARAM )ppro );
+
+	return 0;
+}
+*/
+
+struct JabberAgentRegInputDlgProcParam {
+	CJabberProto* ppro;
+	TCHAR* m_jid;
+};
+
+void CJabberProto::JabberRegisterAgent( HWND hwndDlg, TCHAR* jid )
+{
+	JabberAgentRegInputDlgProcParam param;
+	param.ppro = this;
+	param.m_jid = jid;
 	CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_FORM ),
-		hwndDlg, JabberAgentRegInputDlgProc, ( LPARAM )jid );
+		hwndDlg, JabberAgentRegInputDlgProc, ( LPARAM )&param );
 }
 
 static BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
@@ -60,22 +82,22 @@ static BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 	switch ( msg ) {
 	case WM_INITDIALOG:
 	{
-		SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)0);
+		JabberAgentRegInputDlgProcParam* param = (JabberAgentRegInputDlgProcParam*)lParam;
+		SetWindowLong(hwndDlg, GWL_USERDATA, ( LPARAM )param->ppro );
 
 		EnableWindow( GetParent( hwndDlg ), FALSE );
 		TranslateDialogDefault( hwndDlg );
 		agentRegIqNode = NULL;
-		hwndAgentRegInput = hwndDlg;
+		param->ppro->hwndAgentRegInput = hwndDlg;
 		SetWindowText( hwndDlg, TranslateT( "Jabber Agent Registration" ));
 		SetDlgItemText( hwndDlg, IDC_SUBMIT, TranslateT( "Register" ));
 		SetDlgItemText( hwndDlg, IDC_FRAME_TEXT, TranslateT( "Please wait..." ));
 
-		{	TCHAR* jid = ( TCHAR* )lParam;
-			int iqId = JabberSerialNext();
-			JabberIqAdd( iqId, IQ_PROC_GETREGISTER, JabberIqResultGetRegister );
-			XmlNodeIq iq( "get", iqId, jid );
+		{	int iqId = param->ppro->JabberSerialNext();
+			param->ppro->JabberIqAdd( iqId, IQ_PROC_GETREGISTER, &CJabberProto::JabberIqResultGetRegister );
+			XmlNodeIq iq( "get", iqId, param->m_jid );
 			XmlNode* query = iq.addQuery( JABBER_FEAT_REGISTER );
-			jabberThreadInfo->send( iq );
+			param->ppro->jabberThreadInfo->send( iq );
 		}
 
 		// Enable WS_EX_CONTROLPARENT on IDC_FRAME ( so tab stop goes through all its children )
@@ -111,8 +133,8 @@ static BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 			str2 = ( TCHAR* )alloca( sizeof(TCHAR) * 128 );
 			id = 0;
 
-			int iqId = JabberSerialNext();
-			JabberIqAdd( iqId, IQ_PROC_SETREGISTER, JabberIqResultSetRegister );
+			int iqId = dat->ppro->JabberSerialNext();
+			dat->ppro->JabberIqAdd( iqId, IQ_PROC_SETREGISTER, &CJabberProto::JabberIqResultSetRegister );
 
 			XmlNodeIq iq( "set", iqId, from );
 			XmlNode* query = iq.addQuery( JABBER_FEAT_REGISTER );
@@ -142,8 +164,8 @@ static BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 							id++;
 			}	}	}	}
 
-			jabberThreadInfo->send( iq );
-			DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_OPT_REGISTER ), hwndDlg, JabberAgentRegDlgProc, 0 );
+			dat->ppro->jabberThreadInfo->send( iq );
+			DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_OPT_REGISTER ), hwndDlg, JabberAgentRegDlgProc, (LPARAM)dat->ppro );
 			// Fall through to IDCANCEL
 		}
 		case IDCANCEL:
@@ -263,7 +285,7 @@ static BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 		break;
 	case WM_DESTROY:
 		JabberFormDestroyUI(GetDlgItem(hwndDlg, IDC_FRAME));
-		hwndAgentRegInput = NULL;
+		dat->ppro->hwndAgentRegInput = NULL;
 		EnableWindow( GetParent( hwndDlg ), TRUE );
 		SetActiveWindow( GetParent( hwndDlg ));
 		if (dat) mir_free(dat);
@@ -275,9 +297,13 @@ static BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 
 static BOOL CALLBACK JabberAgentRegDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
+	CJabberProto* ppro = (CJabberProto*)GetWindowLong( hwndDlg, GWL_USERDATA );
 	switch ( msg ) {
 	case WM_INITDIALOG:
-		hwndRegProgress = hwndDlg;
+		ppro = (CJabberProto*)lParam;
+		SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG )ppro );
+
+		ppro->hwndRegProgress = hwndDlg;
 		SetWindowTextA( hwndDlg, "Jabber Agent Registration" );
 		TranslateDialogDefault( hwndDlg );
 		ShowWindow( GetDlgItem( hwndDlg, IDOK ), SW_HIDE );
@@ -289,7 +315,7 @@ static BOOL CALLBACK JabberAgentRegDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 		switch ( LOWORD( wParam )) {
 		case IDCANCEL2:
 		case IDOK2:
-			hwndRegProgress = NULL;
+			ppro->hwndRegProgress = NULL;
 			EndDialog( hwndDlg, 0 );
 			return TRUE;
 		}

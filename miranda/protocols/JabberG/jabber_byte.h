@@ -31,7 +31,11 @@ Last change by : $Author$
 
 typedef enum { JBT_INIT, JBT_AUTH, JBT_CONNECT, JBT_SOCKSERR, JBT_SENDING, JBT_RECVING, JBT_DONE, JBT_ERROR } JABBER_BYTE_STATE;
 
+struct CJabberProto;
+
 typedef struct {
+	CJabberProto* ppro;
+
 	TCHAR* sid;
 	TCHAR* srcJID;
 	TCHAR* dstJID;
@@ -41,9 +45,9 @@ typedef struct {
 	HANDLE hConn;
 	HANDLE hEvent;
 	XmlNode *iqNode;
-	BOOL ( *pfnSend )( HANDLE hConn, void *userdata );
-	int ( *pfnRecv )( HANDLE hConn, void *userdata, char* buffer, int datalen );
-	void ( *pfnFinal )( BOOL success, void *userdata );
+	BOOL ( CJabberProto::*pfnSend )( HANDLE hConn, void *userdata );
+	int ( CJabberProto::*pfnRecv )( HANDLE hConn, void *userdata, char* buffer, int datalen );
+	void ( CJabberProto::*pfnFinal )( BOOL success, void *userdata );
 	void *userdata;
 
 	// XEP-0065 proxy support

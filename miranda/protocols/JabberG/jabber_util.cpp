@@ -37,22 +37,20 @@ Last change by : $Author$
 
 extern CRITICAL_SECTION mutex;
 
-static CRITICAL_SECTION serialMutex;
-static unsigned int serial;
 extern int bSecureIM;
 
-void __stdcall JabberSerialInit( void )
+void CJabberProto::JabberSerialInit( void )
 {
 	InitializeCriticalSection( &serialMutex );
 	serial = 0;
 }
 
-void __stdcall JabberSerialUninit( void )
+void CJabberProto::JabberSerialUninit( void )
 {
 	DeleteCriticalSection( &serialMutex );
 }
 
-unsigned int __stdcall JabberSerialNext( void )
+int CJabberProto::JabberSerialNext( void )
 {
 	unsigned int ret;
 
@@ -63,7 +61,7 @@ unsigned int __stdcall JabberSerialNext( void )
 	return ret;
 }
 
-void __stdcall JabberLog( const char* fmt, ... )
+void CJabberProto::JabberLog( const char* fmt, ... )
 {
 	va_list vararg;
 	va_start( vararg, fmt );
@@ -77,7 +75,7 @@ void __stdcall JabberLog( const char* fmt, ... )
 ///////////////////////////////////////////////////////////////////////////////
 // JabberChatRoomHContactFromJID - looks for the char room HCONTACT with required JID
 
-HANDLE __stdcall JabberChatRoomHContactFromJID( const TCHAR* jid )
+HANDLE CJabberProto::JabberChatRoomHContactFromJID( const TCHAR* jid )
 {
 	if ( jid == NULL )
 		return ( HANDLE )NULL;
@@ -88,27 +86,20 @@ HANDLE __stdcall JabberChatRoomHContactFromJID( const TCHAR* jid )
 	HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL ) {
 		char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-		if ( szProto != NULL && !strcmp( jabberProtoName, szProto )) 
-		{
+		if ( szProto != NULL && !strcmp( szProtoName, szProto )) {
 			DBVARIANT dbv;
 			int result = JGetStringT( hContact, "ChatRoomID", &dbv );
 			if ( result )
 				result = JGetStringT( hContact, "jid", &dbv );	
 
-			if ( !result ) 
-			{
+			if ( !result ) {
 				int result;
 				result = lstrcmpi( jid, dbv.ptszVal );
 				JFreeVariant( &dbv );
-				if ( !result && JGetByte( hContact, "ChatRoom", 0 )!=0 ) 
-				{
-
+				if ( !result && JGetByte( hContact, "ChatRoom", 0 ) != 0 ) {
 					hContactMatched = hContact;
 					break;
-
-				}
-			}
-		}
+		}	}	}
 
 		hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 );
 	}
@@ -119,7 +110,7 @@ HANDLE __stdcall JabberChatRoomHContactFromJID( const TCHAR* jid )
 ///////////////////////////////////////////////////////////////////////////////
 // JabberHContactFromJID - looks for the HCONTACT with required JID
 
-HANDLE __stdcall JabberHContactFromJID( const TCHAR* jid , BOOL bStripResource )
+HANDLE CJabberProto::JabberHContactFromJID( const TCHAR* jid , BOOL bStripResource )
 {
 	if ( jid == NULL )
 		return ( HANDLE )NULL;
@@ -130,7 +121,7 @@ HANDLE __stdcall JabberHContactFromJID( const TCHAR* jid , BOOL bStripResource )
 	HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL ) {
 		char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-		if ( szProto != NULL && !strcmp( jabberProtoName, szProto )) {
+		if ( szProto != NULL && !strcmp( szProtoName, szProto )) {
 			DBVARIANT dbv;
 			int result = JGetStringT( hContact, "jid", &dbv );
 			if ( result )
@@ -140,11 +131,8 @@ HANDLE __stdcall JabberHContactFromJID( const TCHAR* jid , BOOL bStripResource )
 				int result;
 				if ( item != NULL )
 					result = lstrcmpi( jid, dbv.ptszVal );
-				else
-				{
-					//if (bStripResource == 3)
-					if (bStripResource==3)
-					{
+				else {
+					if ( bStripResource == 3 ) {
 						if (JGetByte(hContact, "ChatRoom", 0))
 							result = lstrcmpi( jid, dbv.ptszVal );  // for chat room we have to have full contact matched
 						else if ( TRUE )
@@ -187,7 +175,7 @@ TCHAR* __stdcall JabberNickFromJID( const TCHAR* jid )
 	return nick;
 }
 
-JABBER_RESOURCE_STATUS* __stdcall JabberResourceInfoFromJID( TCHAR* jid )
+JABBER_RESOURCE_STATUS* CJabberProto::JabberResourceInfoFromJID( TCHAR* jid )
 {
 	if ( !jid )
 		return NULL;
@@ -575,7 +563,7 @@ TCHAR* __stdcall JabberErrorMsg( XmlNode *errorNode )
 	return errorStr;
 }
 
-void __stdcall JabberSendVisibleInvisiblePresence( BOOL invisible )
+void CJabberProto::JabberSendVisibleInvisiblePresence( BOOL invisible )
 {
 	if ( !jabberOnline ) return;
 
@@ -594,7 +582,7 @@ void __stdcall JabberSendVisibleInvisiblePresence( BOOL invisible )
 			jabberThreadInfo->send( p );
 		}
 		else if ( invisible==FALSE && apparentMode==ID_STATUS_ONLINE )
-			JabberSendPresenceTo( jabberStatus, item->jid, NULL );
+			JabberSendPresenceTo( iStatus, item->jid, NULL );
 }	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -927,7 +915,7 @@ int __stdcall JabberCountryNameToId( TCHAR* ptszCountryName )
 	return 0xffff;
 }
 
-void __stdcall JabberSendPresenceTo( int status, TCHAR* to, XmlNode* extra )
+void CJabberProto::JabberSendPresenceTo( int status, TCHAR* to, XmlNode* extra )
 {
 	if ( !jabberOnline ) return;
 
@@ -1037,7 +1025,7 @@ void __stdcall JabberSendPresenceTo( int status, TCHAR* to, XmlNode* extra )
 	LeaveCriticalSection( &modeMsgMutex );
 }
 
-void __stdcall JabberSendPresence( int status, bool bSendToAll )
+void CJabberProto::JabberSendPresence( int status, bool bSendToAll )
 {
 	JabberSendPresenceTo( status, NULL, NULL );
 	JabberSendVisibleInvisiblePresence( status == ID_STATUS_INVISIBLE );
@@ -1097,7 +1085,7 @@ int __stdcall JabberGetPacketID( XmlNode* n )
 ///////////////////////////////////////////////////////////////////////////////
 // JabberGetClientJID - adds a resource postfix to a JID
 
-TCHAR* __stdcall JabberGetClientJID( const TCHAR* jid, TCHAR* dest, size_t destLen )
+TCHAR* CJabberProto::JabberGetClientJID( const TCHAR* jid, TCHAR* dest, size_t destLen )
 {
 	if ( jid == NULL )
 		return NULL;
@@ -1145,7 +1133,7 @@ TCHAR* __stdcall JabberStripJid( const TCHAR* jid, TCHAR* dest, size_t destLen )
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberGetXmlLang() - returns language code for xml:lang attribute, caller must free return value
 
-TCHAR* JabberGetXmlLang()
+TCHAR* CJabberProto::JabberGetXmlLang()
 {
 	DBVARIANT dbv;
 	TCHAR *szSelectedLang = NULL;
@@ -1225,7 +1213,8 @@ const char* TStringPairs::operator[]( const char* key ) const
 
 ////////////////////////////////////////////////////////////////////////
 // Manage combo boxes with recent item list
-void JabberComboLoadRecentStrings(HWND hwndDlg, UINT idcCombo, char *param, int recentCount)
+
+void CJabberProto::JabberComboLoadRecentStrings(HWND hwndDlg, UINT idcCombo, char *param, int recentCount)
 {
 	for (int i = 0; i < recentCount; ++i) {
 		DBVARIANT dbv;
@@ -1239,7 +1228,7 @@ void JabberComboLoadRecentStrings(HWND hwndDlg, UINT idcCombo, char *param, int 
 		SendDlgItemMessage(hwndDlg, idcCombo, CB_ADDSTRING, 0, (LPARAM)_T(""));
 }
 
-void JabberComboAddRecentString(HWND hwndDlg, UINT idcCombo, char *param, TCHAR *string, int recentCount)
+void CJabberProto::JabberComboAddRecentString(HWND hwndDlg, UINT idcCombo, char *param, TCHAR *string, int recentCount)
 {
 	if (!string || !*string)
 		return;
@@ -1267,7 +1256,7 @@ static VOID CALLBACK sttRebuildMenusApcProc( DWORD param )
 		pcli->pfnReloadProtoMenus();
 }
 
-void JabberUtilsRebuildStatusMenu()
+void CJabberProto::JabberRebuildStatusMenu()
 {
 	QueueUserAPC(sttRebuildMenusApcProc, hMainThread, 0);
 }
@@ -1312,6 +1301,8 @@ void JabberCopyText(HWND hwnd, TCHAR *text)
 
 struct JabberEnterStringParams
 {
+	CJabberProto* ppro;
+
 	int type;
 	TCHAR* caption;
 	TCHAR* result;
@@ -1340,6 +1331,8 @@ static int sttEnterStringResizer(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL 
 
 static BOOL CALLBACK sttEnterStringDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
+	JabberEnterStringParams *params = (JabberEnterStringParams *)GetWindowLong( hwndDlg, GWL_USERDATA );
+
 	switch ( msg ) {
 	case WM_INITDIALOG:
 	{
@@ -1367,7 +1360,7 @@ static BOOL CALLBACK sttEnterStringDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 				params->idcControl = IDC_TXT_COMBO;
 				params->height = rc.bottom-rc.top;
 				if (params->windowName && params->recentCount)
-					JabberComboLoadRecentStrings(hwndDlg, IDC_TXT_COMBO, params->windowName, params->recentCount);
+					params->ppro->JabberComboLoadRecentStrings(hwndDlg, IDC_TXT_COMBO, params->windowName, params->recentCount);
 				break;
 			}
 			case JES_RICHEDIT:
@@ -1386,7 +1379,7 @@ static BOOL CALLBACK sttEnterStringDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 		SetDlgItemText( hwndDlg, params->idcControl, params->result );
 
 		if (params->windowName)
-			Utils_RestoreWindowPosition(hwndDlg, NULL, jabberProtoName, params->windowName);
+			Utils_RestoreWindowPosition(hwndDlg, NULL, params->ppro->szProtoName, params->windowName);
 
 		SetTimer(hwndDlg, 1000, 50, NULL);
 		return TRUE;
@@ -1411,7 +1404,6 @@ static BOOL CALLBACK sttEnterStringDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 	case WM_GETMINMAXINFO:
 	{
 		LPMINMAXINFO lpmmi = (LPMINMAXINFO)lParam;
-		JabberEnterStringParams *params = (JabberEnterStringParams *)GetWindowLong( hwndDlg, GWL_USERDATA );
 		if (params && params->height)
 			lpmmi->ptMaxSize.y = lpmmi->ptMaxTrackSize.y = params->height;
 		break;
@@ -1437,34 +1429,29 @@ static BOOL CALLBACK sttEnterStringDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
         return TRUE;
 	}
 	case WM_COMMAND:
-	{
-		JabberEnterStringParams *params = (JabberEnterStringParams *)GetWindowLong( hwndDlg, GWL_USERDATA );
-		switch ( LOWORD( wParam ))
-		{
-			case IDOK:
-				GetDlgItemText( hwndDlg, params->idcControl, params->result, params->resultLen );
-				params->result[ params->resultLen-1 ] = 0;
+		switch ( LOWORD( wParam )) {
+		case IDOK:
+			GetDlgItemText( hwndDlg, params->idcControl, params->result, params->resultLen );
+			params->result[ params->resultLen-1 ] = 0;
 
-				if ((params->type == JES_COMBO) && params->windowName && params->recentCount)
-					JabberComboAddRecentString(hwndDlg, IDC_TXT_COMBO, params->windowName, params->result, params->recentCount);
-				if (params->windowName)
-					Utils_SaveWindowPosition(hwndDlg, NULL, jabberProtoName, params->windowName);
-				EndDialog( hwndDlg, 1 );
-				break;
+			if ((params->type == JES_COMBO) && params->windowName && params->recentCount)
+				params->ppro->JabberComboAddRecentString(hwndDlg, IDC_TXT_COMBO, params->windowName, params->result, params->recentCount);
+			if (params->windowName)
+				Utils_SaveWindowPosition(hwndDlg, NULL, params->ppro->szProtoName, params->windowName);
+			EndDialog( hwndDlg, 1 );
+			break;
 
-			case IDCANCEL:
-				if (params->windowName)
-					Utils_SaveWindowPosition(hwndDlg, NULL, jabberProtoName, params->windowName);
-				EndDialog( hwndDlg, 0 );
-				break;
-		}
-	}
-	}
+		case IDCANCEL:
+			if (params->windowName)
+				Utils_SaveWindowPosition(hwndDlg, NULL, params->ppro->szProtoName, params->windowName);
+			EndDialog( hwndDlg, 0 );
+			break;
+	}	}
 
 	return FALSE;
 }
 
-BOOL JabberEnterString(TCHAR *result, size_t resultLen, TCHAR *caption, int type, char *windowName, int recentCount)
+BOOL CJabberProto::JabberEnterString(TCHAR *result, size_t resultLen, TCHAR *caption, int type, char *windowName, int recentCount)
 {
 	bool free_caption = false;
 	if (!caption || (caption==result))
@@ -1474,7 +1461,7 @@ BOOL JabberEnterString(TCHAR *result, size_t resultLen, TCHAR *caption, int type
 		result[ 0 ] = _T('\0');
 	}
 
-	JabberEnterStringParams params = { type, caption, result, resultLen, windowName, recentCount };
+	JabberEnterStringParams params = { this, type, caption, result, resultLen, windowName, recentCount };
 	BOOL bRetVal = DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_GROUPCHAT_INPUT ), GetForegroundWindow(), sttEnterStringDlgProc, LPARAM( &params ));
 
 	if (free_caption) mir_free( caption );

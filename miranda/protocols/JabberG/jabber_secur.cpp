@@ -98,7 +98,6 @@ char* TMD5Auth::getChallenge( const TCHAR* challenge )
 
 	int resultLen;
 	char* text = JabberBase64Decode( challenge, &resultLen );
-	JabberLog( "MD5 challenge = <%s>", text );
 
 	TStringPairs pairs( text );
 	const char *realm = pairs["realm"], *nonce = pairs["nonce"];
@@ -188,7 +187,6 @@ char* TPlainAuth::getInitialRequest()
 	mir_snprintf( toEncode, size+1, "%s@%s%c%s%c%s", temp, info->server, 0, temp, 0, info->password );
 	char* result = JabberBase64Encode( toEncode, size );
 	mir_free(temp);
-	JabberLog( "Never publish the hash below" );
 	return result;
 }
 

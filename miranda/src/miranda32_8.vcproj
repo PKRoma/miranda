@@ -2028,6 +2028,10 @@
 				Name="protocols"
 				>
 				<File
+					RelativePath=".\modules\protocols\protoaccs.c"
+					>
+				</File>
+				<File
 					RelativePath="modules\protocols\protochains.c"
 					>
 					<FileConfiguration

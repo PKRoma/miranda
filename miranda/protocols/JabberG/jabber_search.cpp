@@ -33,7 +33,6 @@ Last change by : $Author$
 #include <CommCtrl.h>
 #include "jabber_iq.h"
 #include "resource.h"
-#include "jabber_search.h"
 #include "jabber_caps.h"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -135,7 +134,7 @@ static int JabberSearchAddField(HWND hwndDlg, Data* FieldDat )
 ////////////////////////////////////////////////////////////////////////////////
 // Available search field request result handler  (XEP-0055. Examples 2, 7)
 
-static void JabberIqResultGetSearchFields( XmlNode *iqNode, void *userdata )
+void CJabberProto::JabberIqResultGetSearchFields( XmlNode *iqNode, void *userdata )
 {
 	if  ( !searchHandleDlg )
 		return;
@@ -194,14 +193,12 @@ static void JabberIqResultGetSearchFields( XmlNode *iqNode, void *userdata )
 	else SetDlgItemText( searchHandleDlg, IDC_INSTRUCTIONS, TranslateT( "Error Unknown reply recieved\r\nPlease select other server" ));
 }
 
-typedef UNIQUE_MAP<TCHAR,TCharKeyCmp> U_TCHAR_MAP;
-
 //////////////////////////////////////////////////////////////////////////////////////////
 //  Return results to search dialog
 //  The	pmFields is the pointer to map of <field Name, field Label> Not unical but ordered
 //	This can help to made result parser routines more simple
 
-static void JabberSearchReturnResults( HANDLE  id, void * pvUsersInfo /*LIST<void>* */, U_TCHAR_MAP * pmAllFields /*U_TCHAR_MAP*/ )
+void CJabberProto::JabberSearchReturnResults( HANDLE  id, void * pvUsersInfo, U_TCHAR_MAP * pmAllFields )
 {
 	LIST<TCHAR> ListOfNonEmptyFields(20,(LIST<TCHAR>::FTSortFunc)TCharKeyCmp);
 	LIST<TCHAR> ListOfFields(20);
@@ -294,7 +291,7 @@ TCHAR* CopyKey( TCHAR* key )
 ////////////////////////////////////////////////////////////////////////////////
 // Search field request result handler  (XEP-0055. Examples 3, 8)
 
-static void JabberIqResultAdvancedSearch( XmlNode *iqNode, void *userdata )
+void CJabberProto::JabberIqResultAdvancedSearch( XmlNode *iqNode, void *userdata )
 {
 	TCHAR* type;
 	int    id;
@@ -444,10 +441,9 @@ static void JabberSearchRefreshFrameScroll(HWND hwndDlg, JabberSearchData * dat)
 	else ShowWindow( hwndScroll, SW_HIDE );
 
 	SetScrollRange( hwndScroll, SB_CTL, 0, dat->CurrentHeight-dat->frameHeight, FALSE );
-
 }
 
-static int JabbeSearchrRenewFields(HWND hwndDlg, JabberSearchData * dat)
+int CJabberProto::JabberSearchRenewFields(HWND hwndDlg, JabberSearchData * dat)
 {
 	char szServerName[100];
 	EnableWindow(GetDlgItem(hwndDlg, IDC_GO),FALSE);
@@ -458,7 +454,6 @@ static int JabbeSearchrRenewFields(HWND hwndDlg, JabberSearchData * dat)
 
 	JabberSearchFreeData( hwndDlg, dat );
 	JabberSearchRefreshFrameScroll( hwndDlg, dat );
-	
 
 	if ( jabberOnline )
 		SetDlgItemText(hwndDlg,IDC_INSTRUCTIONS,TranslateT("Please wait...\r\nConnecting search server..."));
@@ -474,7 +469,7 @@ static int JabbeSearchrRenewFields(HWND hwndDlg, JabberSearchData * dat)
 	XmlNodeIq iq( "get", iqId, szServerName );
 	XmlNode* query = iq.addChild( "query" );
 	query->addAttr( "xmlns", "jabber:iq:search" );
-	JabberIqAdd( iqId, IQ_PROC_GETSEARCHFIELDS, JabberIqResultGetSearchFields );
+	JabberIqAdd( iqId, IQ_PROC_GETSEARCHFIELDS, &CJabberProto::JabberIqResultGetSearchFields );
 	jabberThreadInfo->send( iq );
 	return iqId;
 }
@@ -486,7 +481,7 @@ static void JabberSearchAddUrlToRecentCombo(HWND hwndDlg, TCHAR * szAddr)
 		SendDlgItemMessage( hwndDlg, IDC_SERVER, CB_ADDSTRING, 0, ( LPARAM )szAddr );
 }
 
-static void JabberSearchDeleteFromRecent(TCHAR * szAddr,BOOL deleteLastFromDB=TRUE)
+void CJabberProto::JabberSearchDeleteFromRecent( TCHAR* szAddr, BOOL deleteLastFromDB )
 {
 	DBVARIANT dbv;
 	char key[30];
@@ -515,7 +510,7 @@ static void JabberSearchDeleteFromRecent(TCHAR * szAddr,BOOL deleteLastFromDB=TR
 			else JFreeVariant( &dbv );
 }	}	}
 
-void JabberSearchAddToRecent( TCHAR* szAddr, HWND hwndDialog = NULL )
+void CJabberProto::JabberSearchAddToRecent( TCHAR* szAddr, HWND hwndDialog )
 {
 	DBVARIANT dbv;
 	char key[30];
@@ -543,18 +538,19 @@ static BOOL CALLBACK JabberSearchAdvancedDlgProc(HWND hwndDlg, UINT msg, WPARAM 
 			TranslateDialogDefault(hwndDlg);
 			dat = ( JabberSearchData * )mir_alloc( sizeof( JabberSearchData ));
 			memset( dat, 0, sizeof( JabberSearchData ));
+			dat->ppro = ( CJabberProto* )lParam;
 			SetWindowLong( hwndDlg, GWL_USERDATA, (LPARAM)dat );
 
 			/* Server Combo box */
 			char szServerName[100];
-			if ( JGetStaticString( "Jud", NULL, szServerName, sizeof szServerName ))
+			if ( dat->ppro->JGetStaticString( "Jud", NULL, szServerName, sizeof szServerName ))
 				strcpy( szServerName, "users.jabber.org" );
 			SetDlgItemTextA(hwndDlg,IDC_SERVER,szServerName);
 			SendDlgItemMessageA(hwndDlg,IDC_SERVER,CB_ADDSTRING,0,(LPARAM)szServerName);
 			//TO DO: Add Transports here
-			int i, transpCount = jabberTransports.getCount();
+			int i, transpCount = dat->ppro->jabberTransports.getCount();
 			for ( i=0; i < transpCount; i++ ) {
-				TCHAR* szTransp = jabberTransports[i];
+				TCHAR* szTransp = dat->ppro->jabberTransports[i];
 				if ( szTransp )
 					JabberSearchAddUrlToRecentCombo(hwndDlg, szTransp );
 			}
@@ -563,13 +559,13 @@ static BOOL CALLBACK JabberSearchAdvancedDlgProc(HWND hwndDlg, UINT msg, WPARAM 
 			char key[30];
 			for ( i=0; i < 10; i++ ) {
 				sprintf(key,"RecentlySearched_%d",i);
-				if (!JGetStringT( NULL, key, &dbv )) {
+				if ( !dat->ppro->JGetStringT( NULL, key, &dbv )) {
 					JabberSearchAddUrlToRecentCombo(hwndDlg, dbv.ptszVal );
 					JFreeVariant( &dbv );
 			}	}
 
 			//TO DO: Add 4 recently used
-			dat->lastRequestIq=JabbeSearchrRenewFields(hwndDlg,dat);
+			dat->lastRequestIq = dat->ppro->JabberSearchRenewFields(hwndDlg,dat);
 		}
 		return TRUE;
 
@@ -596,7 +592,7 @@ static BOOL CALLBACK JabberSearchAdvancedDlgProc(HWND hwndDlg, UINT msg, WPARAM 
 			}
 		}
 		else if ( LOWORD(wParam) == IDC_GO && HIWORD(wParam) == BN_CLICKED ) {
-			JabbeSearchrRenewFields( hwndDlg, dat );
+			dat->ppro->JabberSearchRenewFields( hwndDlg, dat );
 			return TRUE;
 		}
 		break;
@@ -706,24 +702,22 @@ static BOOL CALLBACK JabberSearchAdvancedDlgProc(HWND hwndDlg, UINT msg, WPARAM 
 	return FALSE;
 }
 
-int JabberSearchCreateAdvUI(WPARAM wParam, LPARAM lParam)
+HWND __cdecl CJabberProto::CreateExtendedSearchUI( HWND parent )
 {
-	if ( lParam && hInst ) {
-		HWND hwnd = CreateDialog(hInst, MAKEINTRESOURCE(IDD_SEARCHUSER), (HWND)lParam, JabberSearchAdvancedDlgProc);
-		return	(int)hwnd;
-	}
+	if ( parent && hInst )
+		return CreateDialogParam( hInst, MAKEINTRESOURCE(IDD_SEARCHUSER), parent, JabberSearchAdvancedDlgProc, ( LPARAM )this );
+
 	return 0; // Failure
 }
 
 //////////////////////////////////////////////////////////////////////////
 // The function formats request to server
 
-int JabberSearchByAdvanced( WPARAM wParam, LPARAM lParam )
+HWND __cdecl CJabberProto::SearchAdvanced( HWND hwndDlg )
 {
-	if ( !jabberOnline || !lParam)
+	if ( !jabberOnline || !hwndDlg )
 		return 0;	//error
 
-	HWND hwndDlg=(HWND) lParam;
 	JabberSearchData * dat=(JabberSearchData *)GetWindowLong(hwndDlg,GWL_USERDATA);
 	if ( !dat )
 		return 0; //error
@@ -769,10 +763,10 @@ int JabberSearchByAdvanced( WPARAM wParam, LPARAM lParam )
 
 	if ( fRequestNotEmpty ) {
 		// register search request result handler
-		JabberIqAdd( iqId, IQ_PROC_GETSEARCH, JabberIqResultAdvancedSearch );
+		JabberIqAdd( iqId, IQ_PROC_GETSEARCH, &CJabberProto::JabberIqResultAdvancedSearch );
 		// send request
 		jabberThreadInfo->send( iq );
-		return iqId;
+		return ( HWND )iqId;
 	}
 	return 0;
 }

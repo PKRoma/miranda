@@ -79,9 +79,10 @@ struct UserInfoStringBuf
 
 struct JabberUserInfoDlgData
 {
-	HANDLE				hContact;
-	JABBER_LIST_ITEM	*item;
-	int					resourceCount;
+	CJabberProto*     ppro;
+	HANDLE            hContact;
+	JABBER_LIST_ITEM* item;
+	int               resourceCount;
 };
 
 enum
@@ -221,14 +222,14 @@ static HTREEITEM sttFillInfoLine( HWND hwndTree, HTREEITEM htiRoot, HICON hIcon,
 	return hti;
 }
 
-static void sttFillResourceInfo( HWND hwndTree, HTREEITEM htiRoot, JABBER_LIST_ITEM *item, int resource )
+static void sttFillResourceInfo( CJabberProto* ppro, HWND hwndTree, HTREEITEM htiRoot, JABBER_LIST_ITEM *item, int resource )
 {
 	TCHAR buf[256];
 	HTREEITEM htiResource = htiRoot;
 	JABBER_RESOURCE_STATUS *res = resource ? &item->resource[resource-1] : &item->itemResource;
 
 	if ( res->resourceName && *res->resourceName )
-		htiResource = sttFillInfoLine( hwndTree, htiRoot, LoadSkinnedProtoIcon( jabberProtoName, res->status ), TranslateT("Resource"), res->resourceName,
+		htiResource = sttFillInfoLine( hwndTree, htiRoot, LoadSkinnedProtoIcon( ppro->szProtoName, res->status ), TranslateT("Resource"), res->resourceName,
 			sttInfoLineId(resource, INFOLINE_NAME), true );
 
 	{	// StatusMsg
@@ -283,11 +284,11 @@ static void sttFillResourceInfo( HWND hwndTree, HTREEITEM htiRoot, JABBER_LIST_I
 
 	{	// caps
 		mir_sntprintf( buf, SIZEOF(buf), _T("%s/%s"), item->jid, res->resourceName );
-		JabberCapsBits jcb = JabberGetResourceCapabilites( buf );
+		JabberCapsBits jcb = ppro->JabberGetResourceCapabilites( buf, TRUE );
 
 		if ( !( jcb & JABBER_RESOURCE_CAPS_ERROR ))
 		{
-			HTREEITEM htiCaps = sttFillInfoLine( hwndTree, htiResource, LoadIconEx( "main" ), NULL, TranslateT( "Client capabilities" ), sttInfoLineId(resource, INFOLINE_CAPS));
+			HTREEITEM htiCaps = sttFillInfoLine( hwndTree, htiResource, ppro->LoadIconEx( "main" ), NULL, TranslateT( "Client capabilities" ), sttInfoLineId(resource, INFOLINE_CAPS));
 			for ( int i = 0; g_JabberFeatCapPairs[i].szFeature; i++ ) 
 				if ( jcb & g_JabberFeatCapPairs[i].jcbCap ) {
 					TCHAR szDescription[ 1024 ];
@@ -303,14 +304,14 @@ static void sttFillResourceInfo( HWND hwndTree, HTREEITEM htiRoot, JABBER_LIST_I
 //	TreeView_Expand( hwndTree, htiResource, TVE_EXPAND );
 }
 
-static void sttFillUserInfo( HWND hwndTree, JABBER_LIST_ITEM *item )
+static void sttFillUserInfo( CJabberProto* ppro, HWND hwndTree, JABBER_LIST_ITEM *item )
 {
 	SendMessage( hwndTree, WM_SETREDRAW, FALSE, 0 );
 
 //	TreeView_DeleteAllItems( hwndTree );
 	sttCleanupInfo(hwndTree, 0);
 
-	HTREEITEM htiRoot = sttFillInfoLine( hwndTree, NULL, LoadIconEx( "main" ), _T( "JID" ), item->jid, sttInfoLineId(0, INFOLINE_NAME), true );
+	HTREEITEM htiRoot = sttFillInfoLine( hwndTree, NULL, ppro->LoadIconEx( "main" ), _T( "JID" ), item->jid, sttInfoLineId(0, INFOLINE_NAME), true );
 	TCHAR buf[256];
 
 	{	// subscription
@@ -360,14 +361,13 @@ static void sttFillUserInfo( HWND hwndTree, JABBER_LIST_ITEM *item )
 			sttInfoLineId(0, INFOLINE_LASTACTIVE));
 	}
 
-	{	// resources
-		if ( item->resourceCount ) {
-			for (int i = 0; i < item->resourceCount; ++i)
-				sttFillResourceInfo( hwndTree, htiRoot, item, i+1 );
-		} else if ( !_tcschr(item->jid, _T('@')) || (item->itemResource.status != ID_STATUS_OFFLINE) ) {
-			sttFillResourceInfo( hwndTree, htiRoot, item, 0 );
-		}
-	}
+	// resources
+	if ( item->resourceCount ) {
+		for (int i = 0; i < item->resourceCount; ++i)
+			sttFillResourceInfo( ppro, hwndTree, htiRoot, item, i+1 );
+	} 
+	else if ( !_tcschr(item->jid, _T('@')) || (item->itemResource.status != ID_STATUS_OFFLINE) )
+		sttFillResourceInfo( ppro, hwndTree, htiRoot, item, 0 );
 
 //	TreeView_Expand( hwndTree, htiRoot, TVE_EXPAND );
 
@@ -415,18 +415,18 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 
 			dat = (JabberUserInfoDlgData *)mir_alloc(sizeof(JabberUserInfoDlgData));
 			dat->resourceCount = -1;
+			dat->ppro = ( CJabberProto* )lParam;
 
 			if ( CallService(MS_DB_CONTACT_IS, (WPARAM)lParam, 0 )) {
 				dat->hContact = (HANDLE)lParam;
 				DBVARIANT dbv = {0};
-				if (JGetStringT(dat->hContact, "jid", &dbv)) break;
+				if ( dat->ppro->JGetStringT(dat->hContact, "jid", &dbv)) break;
 				JABBER_LIST_ITEM *item = NULL;
-				if (!(dat->item = JabberListGetItemPtr( LIST_VCARD_TEMP, dbv.ptszVal )))
-					dat->item = JabberListGetItemPtr( LIST_ROSTER, dbv.ptszVal );
+				if ( !(dat->item = dat->ppro->JabberListGetItemPtr( LIST_VCARD_TEMP, dbv.ptszVal )))
+					dat->item = dat->ppro->JabberListGetItemPtr( LIST_ROSTER, dbv.ptszVal );
 				JFreeVariant(&dbv);
-			} else
-			if (!IsBadReadPtr((void *)lParam, sizeof(JABBER_LIST_ITEM)))
-			{
+			} 
+			else if (!IsBadReadPtr((void *)lParam, sizeof(JABBER_LIST_ITEM))) {
 				dat->hContact = NULL;
 				dat->item = (JABBER_LIST_ITEM *)lParam;
 			}
@@ -464,17 +464,19 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 			if (!dat->item)
 			{
 				DBVARIANT dbv = {0};
-				if (JGetStringT(dat->hContact, "jid", &dbv)) break;
+				if ( dat->ppro->JGetStringT(dat->hContact, "jid", &dbv))
+					break;
+
 				JABBER_LIST_ITEM *item = NULL;
-				if (!(dat->item = JabberListGetItemPtr(LIST_VCARD_TEMP, dbv.ptszVal)))
-					dat->item = JabberListGetItemPtr(LIST_ROSTER, dbv.ptszVal);
+				if (!(dat->item = dat->ppro->JabberListGetItemPtr(LIST_VCARD_TEMP, dbv.ptszVal)))
+					dat->item = dat->ppro->JabberListGetItemPtr(LIST_ROSTER, dbv.ptszVal);
 
 				if (!dat->item)
 				{
 					HWND hwndTree = GetDlgItem(hwndDlg, IDC_TV_INFO);
 					TreeView_DeleteAllItems( hwndTree );
-					HTREEITEM htiRoot = sttFillInfoLine( hwndTree, NULL, LoadIconEx( "main" ), _T( "JID" ), dbv.ptszVal, sttInfoLineId(0, INFOLINE_NAME), true );
-					sttFillInfoLine( hwndTree, htiRoot, LoadSkinnedProtoIcon( jabberModuleName, ID_STATUS_OFFLINE ), NULL, 
+					HTREEITEM htiRoot = sttFillInfoLine( hwndTree, NULL, dat->ppro->LoadIconEx( "main" ), _T( "JID" ), dbv.ptszVal, sttInfoLineId(0, INFOLINE_NAME), true );
+					sttFillInfoLine( hwndTree, htiRoot, LoadSkinnedProtoIcon( dat->ppro->szModuleName, ID_STATUS_OFFLINE ), NULL, 
 						TranslateT("Please switch online to see more details.") );
 
 					JFreeVariant(&dbv);
@@ -483,7 +485,7 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 
 				JFreeVariant(&dbv);
 			}
-			sttFillUserInfo(GetDlgItem(hwndDlg, IDC_TV_INFO), dat->item);
+			sttFillUserInfo( dat->ppro, GetDlgItem(hwndDlg, IDC_TV_INFO), dat->item);
 			break;
 		}
 
@@ -588,10 +590,12 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberUserPhotoDlgProc - Jabber photo dialog
 
-typedef struct {
-	HANDLE hContact;
-	HBITMAP hBitmap;
-} USER_PHOTO_INFO;
+struct USER_PHOTO_INFO
+{
+	HANDLE        hContact;
+	HBITMAP       hBitmap;
+	CJabberProto* ppro;
+};
 
 static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
@@ -606,6 +610,7 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 		photoInfo = ( USER_PHOTO_INFO * ) mir_alloc( sizeof( USER_PHOTO_INFO ));
 		photoInfo->hContact = ( HANDLE ) lParam;
 		photoInfo->hBitmap = NULL;
+		photoInfo->ppro = ( CJabberProto* )lParam;
 		SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG ) photoInfo );
 		SendMessage( GetDlgItem( hwndDlg, IDC_SAVE ), BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadImage( hInst, MAKEINTRESOURCE( IDI_SAVE ), IMAGE_ICON, GetSystemMetrics( SM_CXSMICON ), GetSystemMetrics( SM_CYSMICON ), 0 ));
 		ShowWindow( GetDlgItem( hwndDlg, IDC_LOAD ), SW_HIDE );
@@ -633,13 +638,13 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 				photoInfo->hBitmap = NULL;
 			}
 			ShowWindow( GetDlgItem( hwndDlg, IDC_SAVE ), SW_HIDE );
-			if ( !JGetStringT( photoInfo->hContact, "jid", &dbv )) {
+			if ( !photoInfo->ppro->JGetStringT( photoInfo->hContact, "jid", &dbv )) {
 				TCHAR* jid = dbv.ptszVal;
-				if (( item = JabberListGetItemPtr( LIST_VCARD_TEMP, jid )) == NULL)
-					item = JabberListGetItemPtr( LIST_ROSTER, jid );
+				if (( item = photoInfo->ppro->JabberListGetItemPtr( LIST_VCARD_TEMP, jid )) == NULL)
+					item = photoInfo->ppro->JabberListGetItemPtr( LIST_ROSTER, jid );
 				if ( item != NULL ) {
 					if ( item->photoFileName ) {
-						JabberLog( "Showing picture from %s", item->photoFileName );
+						photoInfo->ppro->JabberLog( "Showing picture from %s", item->photoFileName );
 						photoInfo->hBitmap = ( HBITMAP ) JCallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )item->photoFileName );
 						JabberBitmapPremultiplyChannels(photoInfo->hBitmap);
 						ShowWindow( GetDlgItem( hwndDlg, IDC_SAVE ), SW_SHOW );
@@ -664,12 +669,12 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 				char szFileName[_MAX_PATH];
 				DWORD n;
 
-				if ( JGetStringT( photoInfo->hContact, "jid", &dbv ))
+				if ( photoInfo->ppro->JGetStringT( photoInfo->hContact, "jid", &dbv ))
 					break;
 
 				TCHAR* jid = dbv.ptszVal;
-				if (( item = JabberListGetItemPtr( LIST_VCARD_TEMP, jid )) == NULL)
-					item = JabberListGetItemPtr( LIST_ROSTER, jid );
+				if (( item = photoInfo->ppro->JabberListGetItemPtr( LIST_VCARD_TEMP, jid )) == NULL)
+					item = photoInfo->ppro->JabberListGetItemPtr( LIST_ROSTER, jid );
 				if ( item != NULL ) {
 					if (( hFile=CreateFileA( item->photoFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL )) != INVALID_HANDLE_VALUE ) {
 						if ( ReadFile( hFile, buffer, 3, &n, NULL ) && n==3 ) {
@@ -717,7 +722,7 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 							ofn.lpTemplateName = NULL;
 							szFileName[0] = '\0';
 							if ( GetSaveFileNameA( &ofn )) {
-								JabberLog( "File selected is %s", szFileName );
+								photoInfo->ppro->JabberLog( "File selected is %s", szFileName );
 								CopyFileA( item->photoFileName, szFileName, FALSE );
 							}
 						}
@@ -731,7 +736,7 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 		}
 		break;
 	case WM_PAINT:
-		if ( !jabberOnline )
+		if ( !photoInfo->ppro->jabberOnline )
 			SetDlgItemText( hwndDlg, IDC_CANVAS, TranslateT( "<Photo not available while offline>" ));
 		else if ( !photoInfo->hBitmap )
 			SetDlgItemText( hwndDlg, IDC_CANVAS, TranslateT( "<No photo>" ));
@@ -804,7 +809,7 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 		break;
 	case WM_DESTROY:
 		if ( photoInfo->hBitmap ) {
-			JabberLog( "Delete bitmap" );
+			photoInfo->ppro->JabberLog( "Delete bitmap" );
 			DeleteObject( photoInfo->hBitmap );
 		}
 		if ( photoInfo ) mir_free( photoInfo );
@@ -814,25 +819,26 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// JabberUserInfoInit - initializes user info option dialogs
+// OnInfoInit - initializes user info option dialogs
 
-int JabberUserInfoInit( WPARAM wParam, LPARAM lParam )
+int CJabberProto::OnUserInfoInit( WPARAM wParam, LPARAM lParam )
 {
-	if ( !JCallService( MS_PROTO_ISPROTOCOLLOADED, 0, ( LPARAM )jabberProtoName ))
+	if ( !JCallService( MS_PROTO_ISPROTOCOLLOADED, 0, ( LPARAM )szProtoName ))
 		return 0;
 
 	OPTIONSDIALOGPAGE odp = {0};
 	odp.cbSize = sizeof( odp );
 	odp.hInstance = hInst;
+	odp.dwInitParam = ( LPARAM )this;
 
 	HANDLE hContact = ( HANDLE )lParam;
 	if ( hContact ) {
 		char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-		if ( szProto != NULL && !strcmp( szProto, jabberProtoName )) {
+		if ( szProto != NULL && !strcmp( szProto, szProtoName )) {
 			odp.pfnDlgProc = JabberUserInfoDlgProc;
 			odp.position = -2000000000;
 			odp.pszTemplate = MAKEINTRESOURCEA( IDD_INFO_JABBER );
-			odp.pszTitle = jabberModuleName;
+			odp.pszTitle = szModuleName;
 			JCallService( MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp );
 
 			odp.pfnDlgProc = JabberUserPhotoDlgProc;
@@ -841,6 +847,7 @@ int JabberUserInfoInit( WPARAM wParam, LPARAM lParam )
 			odp.pszTitle = LPGEN("Photo");
 			JCallService( MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp );
 	}	}
+
 	return 0;
 }
 
@@ -857,11 +864,8 @@ void JabberUserInfoInit()
 
 void JabberUserInfoUpdate( HANDLE hContact )
 {
-	if ( !hContact ) {
+	if ( !hContact )
 		WindowList_BroadcastAsync( hUserInfoList, WM_JABBER_REFRESH, 0, 0 );
-	} else
-	if ( HWND hwnd = WindowList_Find( hUserInfoList, hContact ))
-	{
+	else if ( HWND hwnd = WindowList_Find( hUserInfoList, hContact ))
 		PostMessage( hwnd, WM_JABBER_REFRESH, 0, 0 );
-	}
 }

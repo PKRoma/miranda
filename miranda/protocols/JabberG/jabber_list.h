@@ -163,25 +163,4 @@ struct JABBER_LIST_ITEM
 	BOOL bUseResource;
 };
 
-void JabberListInit( void );
-void JabberListUninit( void );
-void JabberListWipe( void );
-int JabberListExist( JABBER_LIST list, const TCHAR* jid );
-
-BOOL JabberListLock();
-BOOL JabberListUnlock();
-
-JABBER_LIST_ITEM *JabberListAdd( JABBER_LIST list, const TCHAR* jid );
-void JabberListRemove( JABBER_LIST list, const TCHAR* jid );
-void JabberListRemoveList( JABBER_LIST list );
-void JabberListRemoveByIndex( int index );
-int JabberListFindNext( JABBER_LIST list, int fromOffset );
-JABBER_LIST_ITEM *JabberListGetItemPtr( JABBER_LIST list, const TCHAR* jid );
-JABBER_LIST_ITEM *JabberListGetItemPtrFromIndex( int index );
-
-int    JabberListAddResource( JABBER_LIST list, const TCHAR* jid, int status, const TCHAR* statusMessage, char priority = 0 );
-void   JabberListRemoveResource( JABBER_LIST list, const TCHAR* jid );
-TCHAR* JabberListGetBestResourceNamePtr( const TCHAR* jid );
-TCHAR* JabberListGetBestClientResourceNamePtr( const TCHAR* jid );
-
 #endif

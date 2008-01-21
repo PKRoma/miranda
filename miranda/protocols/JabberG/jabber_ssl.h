@@ -49,7 +49,4 @@ extern PFN_SSL_int_pvoid_pvoid_int	pfn_SSL_read;				// int SSL_read( SSL *ssl, v
 extern PFN_SSL_int_pvoid_pvoid_int	pfn_SSL_write;				// int SSL_write( SSL *ssl, void *buffer, int bufsize )
 #endif
 
-BOOL JabberSslInit();
-void JabberSslUninit();
-
 #endif

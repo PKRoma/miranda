@@ -34,6 +34,7 @@ int Proto_CallContactService(WPARAM wParam,LPARAM lParam)
 	char str[10];
 	DBVARIANT dbv;
 	int ret;
+	PROTOACCOUNT* pa;
 
 	if ( wParam == (WPARAM)(-1))
 		return 1;
@@ -53,8 +54,17 @@ int Proto_CallContactService(WPARAM wParam,LPARAM lParam)
 	if ( DBGetContactSettingString( ccs->hContact, "Protocol", "p", &dbv ))
 		return 1;
 
-	if (( ret = CallProtoService( dbv.pszVal, ccs->szProtoService, (WPARAM)(-1), lParam )) == CALLSERVICE_NOTFOUND )
+	pa = ProtoGetAccount( dbv.pszVal );
+	if ( pa == NULL || pa->ppro == NULL )
 		ret = 1;
+	else {
+		if ( pa->ppro->bOldProto )
+			ret = CallProtoServiceInt( ccs->hContact, dbv.pszVal, ccs->szProtoService, (WPARAM)(-1), ( LPARAM)&ccs );
+		else
+			ret = CallProtoServiceInt( ccs->hContact, dbv.pszVal, ccs->szProtoService, ccs->wParam, ccs->lParam );
+		if ( ret == CALLSERVICE_NOTFOUND )
+			ret = 1;
+	}
 
 	mir_free(dbv.pszVal);
 	return ret;
@@ -66,6 +76,7 @@ static int CallRecvChain(WPARAM wParam,LPARAM lParam)
 	int i,ret;
 	char str[10];
 	DBVARIANT dbv;
+	PROTOACCOUNT* pa;
 
 	if ( wParam == (WPARAM)(-1)) return 1;   //shouldn't happen - sanity check
 	if ( wParam == 0 ) {	   //begin processing by finding end of chain
@@ -95,8 +106,17 @@ static int CallRecvChain(WPARAM wParam,LPARAM lParam)
 	if ( DBGetContactSettingString( ccs->hContact, "Protocol", "p", &dbv ))
 		return 1;
 
-	if (( ret = CallProtoService( dbv.pszVal, ccs->szProtoService, (WPARAM)(-1), lParam )) == CALLSERVICE_NOTFOUND )
+	pa = ProtoGetAccount( dbv.pszVal );
+	if ( pa == NULL || pa->ppro == NULL )
 		ret = 1;
+	else {
+		if ( pa->ppro->bOldProto )
+			ret = CallProtoServiceInt( ccs->hContact, dbv.pszVal, ccs->szProtoService, (WPARAM)(-1), ( LPARAM)&ccs );
+		else
+			ret = CallProtoServiceInt( ccs->hContact, dbv.pszVal, ccs->szProtoService, ccs->wParam, ccs->lParam );
+		if ( ret == CALLSERVICE_NOTFOUND )
+			ret = 1;
+	}
 
 	mir_free( dbv.pszVal );
 	return ret;

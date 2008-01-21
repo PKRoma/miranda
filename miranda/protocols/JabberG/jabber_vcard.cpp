@@ -34,29 +34,26 @@ Last change by : $Author$
 #include "resource.h"
 #include "jabber_caps.h"
 
-extern char* jabberVcardPhotoFileName;
-
 /////////////////////////////////////////////////////////////////////////////////////////
 
 static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
 
-int JabberMenuHandleVcard( WPARAM wParam, LPARAM lParam )
+int JabberMenuHandleVcard( WPARAM wParam, LPARAM lParam, CJabberProto* ppro )
 {
-	if ( IsWindow( hwndJabberVcard ))
-		SetForegroundWindow( hwndJabberVcard );
-	else {
-		hwndJabberVcard = CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_VCARD ), NULL, JabberVcardDlgProc, ( LPARAM )NULL );
-	}
+	if ( IsWindow( ppro->hwndJabberVcard ))
+		SetForegroundWindow( ppro->hwndJabberVcard );
+	else
+		ppro->hwndJabberVcard = CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_VCARD ), NULL, JabberVcardDlgProc, ( LPARAM )ppro );
 
 	return 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-int JabberSendGetVcard( const TCHAR* jid )
+int CJabberProto::JabberSendGetVcard( const TCHAR* jid )
 {
 	int iqId = JabberSerialNext();
-	JabberIqAdd( iqId, ( jid == jabberJID ) ? IQ_PROC_GETVCARD : IQ_PROC_NONE, JabberIqResultGetVcard );
+	JabberIqAdd( iqId, ( jid == jabberJID ) ? IQ_PROC_GETVCARD : IQ_PROC_NONE, &CJabberProto::JabberIqResultGetVcard );
 
 	XmlNodeIq iq( "get", iqId, jid );
 	XmlNode* vs = iq.addChild( "vCard" ); vs->addAttr( "xmlns", JABBER_FEAT_VCARD_TEMP ); 
@@ -67,13 +64,16 @@ int JabberSendGetVcard( const TCHAR* jid )
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-typedef struct {
+struct VcardPage
+{
 	HWND hwnd;
 	int dlgId;
 	DLGPROC dlgProc;
-} VcardPage;
+};
 
-typedef struct {
+struct VcardTab
+{
+	CJabberProto* ppro;
 	int pageCount;
 	int currentPage;
 	RECT rectTab;
@@ -82,13 +82,13 @@ typedef struct {
 	int updateAnimFrame;
 	TCHAR* szUpdating;
 	BOOL animating;
-} VcardTab;
+};
 
-static void SetDialogField( HWND hwndDlg, int nDlgItem, char* key )
+static void SetDialogField( CJabberProto* ppro, HWND hwndDlg, int nDlgItem, char* key )
 {
 	DBVARIANT dbv;
 
-	if ( !DBGetContactSettingTString( NULL, jabberProtoName, key, &dbv )) {
+	if ( !DBGetContactSettingTString( NULL, ppro->szProtoName, key, &dbv )) {
 		SetDlgItemText( hwndDlg, nDlgItem, dbv.ptszVal );
 		JFreeVariant( &dbv );
 	}
@@ -103,18 +103,22 @@ static BOOL CALLBACK PersonalDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		SendMessage( GetDlgItem( hwndDlg, IDC_GENDER ), CB_ADDSTRING, 0, ( LPARAM )TranslateT( "Male" ));
 		SendMessage( GetDlgItem( hwndDlg, IDC_GENDER ), CB_ADDSTRING, 0, ( LPARAM )TranslateT( "Female" ));
 		SendMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0 );
+		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
 		return TRUE;
 	case WM_JABBER_REFRESH:
-		SetDialogField( hwndDlg, IDC_FULLNAME, "FullName" );
-		SetDialogField( hwndDlg, IDC_NICKNAME, "Nick" );
-		SetDialogField( hwndDlg, IDC_FIRSTNAME, "FirstName" );
-		SetDialogField( hwndDlg, IDC_MIDDLE, "MiddleName" );
-		SetDialogField( hwndDlg, IDC_LASTNAME, "LastName" );
-		SetDialogField( hwndDlg, IDC_BIRTH, "BirthDate" );
-		SetDialogField( hwndDlg, IDC_GENDER, "GenderString" );
-		SetDialogField( hwndDlg, IDC_OCCUPATION, "Role" );
-		SetDialogField( hwndDlg, IDC_HOMEPAGE, "Homepage" );
+	{
+		CJabberProto* ppro = ( CJabberProto* )GetWindowLong( hwndDlg, GWL_USERDATA );
+		SetDialogField( ppro, hwndDlg, IDC_FULLNAME, "FullName" );
+		SetDialogField( ppro, hwndDlg, IDC_NICKNAME, "Nick" );
+		SetDialogField( ppro, hwndDlg, IDC_FIRSTNAME, "FirstName" );
+		SetDialogField( ppro, hwndDlg, IDC_MIDDLE, "MiddleName" );
+		SetDialogField( ppro, hwndDlg, IDC_LASTNAME, "LastName" );
+		SetDialogField( ppro, hwndDlg, IDC_BIRTH, "BirthDate" );
+		SetDialogField( ppro, hwndDlg, IDC_GENDER, "GenderString" );
+		SetDialogField( ppro, hwndDlg, IDC_OCCUPATION, "Role" );
+		SetDialogField( ppro, hwndDlg, IDC_HOMEPAGE, "Homepage" );
 		break;
+	}
 	case WM_COMMAND:
 		if (( ( HWND )lParam==GetFocus() && HIWORD( wParam )==EN_CHANGE ) ||
 			(( HWND )lParam==GetDlgItem( hwndDlg, IDC_GENDER ) && ( HIWORD( wParam )==CBN_EDITCHANGE||HIWORD( wParam )==CBN_SELCHANGE )) )
@@ -130,15 +134,19 @@ static BOOL CALLBACK HomeDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 	case WM_INITDIALOG:
 		TranslateDialogDefault( hwndDlg );
 		SendMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0 );
+		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
 		return TRUE;
 	case WM_JABBER_REFRESH:
-		SetDialogField( hwndDlg, IDC_ADDRESS1, "Street" );
-		SetDialogField( hwndDlg, IDC_ADDRESS2, "Street2" );
-		SetDialogField( hwndDlg, IDC_CITY, "City" );
-		SetDialogField( hwndDlg, IDC_STATE, "State" );
-		SetDialogField( hwndDlg, IDC_ZIP, "ZIP" );
-		SetDialogField( hwndDlg, IDC_COUNTRY, "CountryName" );
+	{
+		CJabberProto* ppro = ( CJabberProto* )GetWindowLong( hwndDlg, GWL_USERDATA );
+		SetDialogField( ppro, hwndDlg, IDC_ADDRESS1, "Street" );
+		SetDialogField( ppro, hwndDlg, IDC_ADDRESS2, "Street2" );
+		SetDialogField( ppro, hwndDlg, IDC_CITY, "City" );
+		SetDialogField( ppro, hwndDlg, IDC_STATE, "State" );
+		SetDialogField( ppro, hwndDlg, IDC_ZIP, "ZIP" );
+		SetDialogField( ppro, hwndDlg, IDC_COUNTRY, "CountryName" );
 		break;
+	}
 	case WM_COMMAND:
 		if (( HWND )lParam==GetFocus() && HIWORD( wParam )==EN_CHANGE )
 			SendMessage( GetParent( hwndDlg ), WM_JABBER_CHANGED, 0, 0 );
@@ -153,18 +161,22 @@ static BOOL CALLBACK WorkDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 	case WM_INITDIALOG:
 		TranslateDialogDefault( hwndDlg );
 		SendMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0 );
+		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
 		return TRUE;
 	case WM_JABBER_REFRESH:
-		SetDialogField( hwndDlg, IDC_COMPANY, "Company" );
-		SetDialogField( hwndDlg, IDC_DEPARTMENT, "CompanyDepartment" );
-		SetDialogField( hwndDlg, IDC_TITLE, "CompanyPosition" );
-		SetDialogField( hwndDlg, IDC_ADDRESS1, "CompanyStreet" );
-		SetDialogField( hwndDlg, IDC_ADDRESS2, "CompanyStreet2" );
-		SetDialogField( hwndDlg, IDC_CITY, "CompanyCity" );
-		SetDialogField( hwndDlg, IDC_STATE, "CompanyState" );
-		SetDialogField( hwndDlg, IDC_ZIP, "CompanyZIP" );
-		SetDialogField( hwndDlg, IDC_COUNTRY, "CompanyCountryName" );
+	{
+		CJabberProto* ppro = ( CJabberProto* )GetWindowLong( hwndDlg, GWL_USERDATA );
+		SetDialogField( ppro, hwndDlg, IDC_COMPANY, "Company" );
+		SetDialogField( ppro, hwndDlg, IDC_DEPARTMENT, "CompanyDepartment" );
+		SetDialogField( ppro, hwndDlg, IDC_TITLE, "CompanyPosition" );
+		SetDialogField( ppro, hwndDlg, IDC_ADDRESS1, "CompanyStreet" );
+		SetDialogField( ppro, hwndDlg, IDC_ADDRESS2, "CompanyStreet2" );
+		SetDialogField( ppro, hwndDlg, IDC_CITY, "CompanyCity" );
+		SetDialogField( ppro, hwndDlg, IDC_STATE, "CompanyState" );
+		SetDialogField( ppro, hwndDlg, IDC_ZIP, "CompanyZIP" );
+		SetDialogField( ppro, hwndDlg, IDC_COUNTRY, "CompanyCountryName" );
 		break;
+	}
 	case WM_COMMAND:
 		if (( HWND )lParam==GetFocus() && HIWORD( wParam )==EN_CHANGE )
 			SendMessage( GetParent( hwndDlg ), WM_JABBER_CHANGED, 0, 0 );
@@ -172,6 +184,8 @@ static BOOL CALLBACK WorkDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 	}
 	return FALSE;
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////
 
 static char szPhotoFileName[MAX_PATH];
 static char szPhotoType[33];
@@ -181,6 +195,7 @@ static BOOL CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 {
 	static HBITMAP hBitmap;
 	char szTempPath[MAX_PATH], szTempFileName[MAX_PATH];
+	CJabberProto* ppro = ( CJabberProto* )GetWindowLong( hwndDlg, GWL_USERDATA );
 
 	switch ( msg ) {
 	case WM_INITDIALOG:
@@ -190,6 +205,7 @@ static BOOL CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 		SendMessage( GetDlgItem( hwndDlg, IDC_DELETE ), BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadImage( hInst, MAKEINTRESOURCE( IDI_DELETE ), IMAGE_ICON, GetSystemMetrics( SM_CXSMICON ), GetSystemMetrics( SM_CYSMICON ), 0 ));
 		ShowWindow( GetDlgItem( hwndDlg, IDC_SAVE ), SW_HIDE );
 		SendMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0 );
+		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
 		return TRUE;
 
 	case WM_JABBER_REFRESH:
@@ -200,12 +216,12 @@ static BOOL CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			szPhotoFileName[0] = '\0';
 		}
 		EnableWindow( GetDlgItem( hwndDlg, IDC_DELETE ), FALSE );
-		if ( jabberVcardPhotoFileName ) {
+		if ( ppro->jabberVcardPhotoFileName ) {
 			if ( GetTempPathA( sizeof( szTempPath ), szTempPath ) <= 0 )
 				strcpy( szTempPath, ".\\" );
 			if ( GetTempFileNameA( szTempPath, "jab", 0, szTempFileName ) > 0 ) {
-				JabberLog( "Temp file = %s", szTempFileName );
-				if ( CopyFileA( jabberVcardPhotoFileName, szTempFileName, FALSE ) == TRUE ) {
+				ppro->JabberLog( "Temp file = %s", szTempFileName );
+				if ( CopyFileA( ppro->jabberVcardPhotoFileName, szTempFileName, FALSE ) == TRUE ) {
 					if (( hBitmap=( HBITMAP ) JCallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )szTempFileName )) != NULL ) {
 						JabberBitmapPremultiplyChannels(hBitmap);
 						strcpy( szPhotoFileName, szTempFileName );
@@ -243,7 +259,7 @@ static BOOL CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 					struct _stat st;
 					HBITMAP hNewBitmap;
 
-					JabberLog( "File selected is %s", szFileName );
+					ppro->JabberLog( "File selected is %s", szFileName );
 					if ( _stat( szFileName, &st )<0 || st.st_size>40*1024 ) {
 						MessageBox( hwndDlg, TranslateT( "Only JPG, GIF, and BMP image files smaller than 40 KB are supported." ), TranslateT( "Jabber vCard" ), MB_OK|MB_SETFOREGROUND );
 						break;
@@ -251,7 +267,7 @@ static BOOL CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 					if ( GetTempPathA( sizeof( szTempPath ), szTempPath ) <= 0 )
 						strcpy( szTempPath, ".\\" );
 					if ( GetTempFileNameA( szTempPath, "jab", 0, szTempFileName ) > 0 ) {
-						JabberLog( "Temp file = %s", szTempFileName );
+						ppro->JabberLog( "Temp file = %s", szTempFileName );
 						if ( CopyFileA( szFileName, szTempFileName, FALSE ) == TRUE ) {
 							if (( hNewBitmap=( HBITMAP ) JCallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )szTempFileName )) != NULL ) {
 								if ( hBitmap ) {
@@ -371,7 +387,7 @@ static BOOL CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 		break;
 	case WM_DESTROY:
 		if ( hBitmap ) {
-			JabberLog( "Delete bitmap" );
+			ppro->JabberLog( "Delete bitmap" );
 			DeleteObject( hBitmap );
 			DeleteFileA( szPhotoFileName );
 			szPhotoFileName[0] = '\0';
@@ -381,16 +397,22 @@ static BOOL CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 	return FALSE;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
+
 static BOOL CALLBACK NoteDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	switch ( msg ) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault( hwndDlg );
 		SendMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0 );
+		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
 		return TRUE;
 	case WM_JABBER_REFRESH:
-		SetDialogField( hwndDlg, IDC_DESC, "About" );
+	{
+		CJabberProto* ppro = ( CJabberProto* )GetWindowLong( hwndDlg, GWL_USERDATA );
+		SetDialogField( ppro, hwndDlg, IDC_DESC, "About" );
 		break;
+	}
 	case WM_COMMAND:
 		if (( HWND )lParam==GetFocus() && HIWORD( wParam )==EN_CHANGE )
 			SendMessage( GetParent( hwndDlg ), WM_JABBER_CHANGED, 0, 0 );
@@ -399,58 +421,71 @@ static BOOL CALLBACK NoteDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 	return FALSE;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
+
+struct EditDlgParam
+{
+	int id;
+	CJabberProto* ppro;
+};
+
 static BOOL CALLBACK EditEmailDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
+	EditDlgParam* dat = ( EditDlgParam* )GetWindowLong( hwndDlg, GWL_USERDATA );
+
 	switch ( msg ) {
 	case WM_INITDIALOG:
-		TranslateDialogDefault( hwndDlg );
-		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
-		if ( lParam >= 0 ) {
-			DBVARIANT dbv;
-			char idstr[33];
-			WORD nFlag;
+		{
+			EditDlgParam* dat = ( EditDlgParam* )lParam;
+			SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
 
-			SetWindowText( hwndDlg, TranslateT( "Jabber vCard: Edit Email Address" ));
-			wsprintfA( idstr, "e-mail%d", lParam );
-			if ( !DBGetContactSettingString( NULL, jabberProtoName, idstr, &dbv )) {
-				SetDlgItemTextA( hwndDlg, IDC_EMAIL, dbv.pszVal );
-				JFreeVariant( &dbv );
-				wsprintfA( idstr, "e-mailFlag%d", lParam );
-				nFlag = DBGetContactSettingWord( NULL, jabberProtoName, idstr, 0 );
-				if ( nFlag & JABBER_VCEMAIL_HOME ) CheckDlgButton( hwndDlg, IDC_HOME, TRUE );
-				if ( nFlag & JABBER_VCEMAIL_WORK ) CheckDlgButton( hwndDlg, IDC_WORK, TRUE );
-				if ( nFlag & JABBER_VCEMAIL_INTERNET ) CheckDlgButton( hwndDlg, IDC_INTERNET, TRUE );
-				if ( nFlag & JABBER_VCEMAIL_X400 ) CheckDlgButton( hwndDlg, IDC_X400, TRUE );
-			}
-		}
+			TranslateDialogDefault( hwndDlg );
+
+			if ( lParam >= 0 ) {
+				DBVARIANT dbv;
+				char idstr[33];
+				WORD nFlag;
+
+				SetWindowText( hwndDlg, TranslateT( "Jabber vCard: Edit Email Address" ));
+				wsprintfA( idstr, "e-mail%d", lParam );
+				if ( !DBGetContactSettingString( NULL, dat->ppro->szProtoName, idstr, &dbv )) {
+					SetDlgItemTextA( hwndDlg, IDC_EMAIL, dbv.pszVal );
+					JFreeVariant( &dbv );
+					wsprintfA( idstr, "e-mailFlag%d", lParam );
+					nFlag = DBGetContactSettingWord( NULL, dat->ppro->szProtoName, idstr, 0 );
+					if ( nFlag & JABBER_VCEMAIL_HOME ) CheckDlgButton( hwndDlg, IDC_HOME, TRUE );
+					if ( nFlag & JABBER_VCEMAIL_WORK ) CheckDlgButton( hwndDlg, IDC_WORK, TRUE );
+					if ( nFlag & JABBER_VCEMAIL_INTERNET ) CheckDlgButton( hwndDlg, IDC_INTERNET, TRUE );
+					if ( nFlag & JABBER_VCEMAIL_X400 ) CheckDlgButton( hwndDlg, IDC_X400, TRUE );
+		}	}	}
 		return TRUE;
+
 	case WM_COMMAND:
 		switch ( LOWORD( wParam )) {
 		case IDOK:
 			{
 				TCHAR text[128];
 				char idstr[33];
-				int id = ( int ) GetWindowLong( hwndDlg, GWL_USERDATA );
 				DBVARIANT dbv;
 				WORD nFlag;
 
-				if ( id < 0 ) {
-					for ( id=0;;id++ ) {
-						mir_snprintf( idstr, SIZEOF(idstr), "e-mail%d", id );
-						if ( DBGetContactSettingString( NULL, jabberProtoName, idstr, &dbv )) break;
+				if ( dat->id < 0 ) {
+					for ( dat->id=0;;dat->id++ ) {
+						mir_snprintf( idstr, SIZEOF(idstr), "e-mail%d", dat->id );
+						if ( DBGetContactSettingString( NULL, dat->ppro->szProtoName, idstr, &dbv )) break;
 						JFreeVariant( &dbv );
 				}	}
 				GetDlgItemText( hwndDlg, IDC_EMAIL, text, SIZEOF( text ));
-				mir_snprintf( idstr, SIZEOF(idstr), "e-mail%d", id );
-				JSetStringT( NULL, idstr, text );
+				mir_snprintf( idstr, SIZEOF(idstr), "e-mail%d", dat->id );
+				dat->ppro->JSetStringT( NULL, idstr, text );
 
 				nFlag = 0;
 				if ( IsDlgButtonChecked( hwndDlg, IDC_HOME )) nFlag |= JABBER_VCEMAIL_HOME;
 				if ( IsDlgButtonChecked( hwndDlg, IDC_WORK )) nFlag |= JABBER_VCEMAIL_WORK;
 				if ( IsDlgButtonChecked( hwndDlg, IDC_INTERNET )) nFlag |= JABBER_VCEMAIL_INTERNET;
 				if ( IsDlgButtonChecked( hwndDlg, IDC_X400 )) nFlag |= JABBER_VCEMAIL_X400;
-				mir_snprintf( idstr, SIZEOF(idstr), "e-mailFlag%d", id );
-				JSetWord( NULL, idstr, nFlag );
+				mir_snprintf( idstr, SIZEOF(idstr), "e-mailFlag%d", dat->id );
+				dat->ppro->JSetWord( NULL, idstr, nFlag );
 			}
 			// fall through
 		case IDCANCEL:
@@ -463,57 +498,61 @@ static BOOL CALLBACK EditEmailDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 static BOOL CALLBACK EditPhoneDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
+	EditDlgParam* dat = ( EditDlgParam* )GetWindowLong( hwndDlg, GWL_USERDATA );
+
 	switch ( msg ) {
 	case WM_INITDIALOG:
-		TranslateDialogDefault( hwndDlg );
-		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
-		if ( lParam >= 0 ) {
-			DBVARIANT dbv;
-			char idstr[33];
-			WORD nFlag;
+		{
+			EditDlgParam* dat = ( EditDlgParam* )lParam;
+			SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
 
-			SetWindowText( hwndDlg, TranslateT( "Jabber vCard: Edit Phone Number" ));
-			wsprintfA( idstr, "Phone%d", lParam );
-			if ( !DBGetContactSettingString( NULL, jabberProtoName, idstr, &dbv )) {
-				SetDlgItemTextA( hwndDlg, IDC_PHONE, dbv.pszVal );
-				JFreeVariant( &dbv );
-				wsprintfA( idstr, "PhoneFlag%d", lParam );
-				nFlag = JGetWord( NULL, idstr, 0 );
-				if ( nFlag & JABBER_VCTEL_HOME ) CheckDlgButton( hwndDlg, IDC_HOME, TRUE );
-				if ( nFlag & JABBER_VCTEL_WORK ) CheckDlgButton( hwndDlg, IDC_WORK, TRUE );
-				if ( nFlag & JABBER_VCTEL_VOICE ) CheckDlgButton( hwndDlg, IDC_VOICE, TRUE );
-				if ( nFlag & JABBER_VCTEL_FAX ) CheckDlgButton( hwndDlg, IDC_FAX, TRUE );
-				if ( nFlag & JABBER_VCTEL_PAGER ) CheckDlgButton( hwndDlg, IDC_PAGER, TRUE );
-				if ( nFlag & JABBER_VCTEL_MSG ) CheckDlgButton( hwndDlg, IDC_MSG, TRUE );
-				if ( nFlag & JABBER_VCTEL_CELL ) CheckDlgButton( hwndDlg, IDC_CELL, TRUE );
-				if ( nFlag & JABBER_VCTEL_VIDEO ) CheckDlgButton( hwndDlg, IDC_VIDEO, TRUE );
-				if ( nFlag & JABBER_VCTEL_BBS ) CheckDlgButton( hwndDlg, IDC_BBS, TRUE );
-				if ( nFlag & JABBER_VCTEL_MODEM ) CheckDlgButton( hwndDlg, IDC_MODEM, TRUE );
-				if ( nFlag & JABBER_VCTEL_ISDN ) CheckDlgButton( hwndDlg, IDC_ISDN, TRUE );
-				if ( nFlag & JABBER_VCTEL_PCS ) CheckDlgButton( hwndDlg, IDC_PCS, TRUE );
-			}
-		}
+			TranslateDialogDefault( hwndDlg );
+			if ( dat->id >= 0 ) {
+				DBVARIANT dbv;
+				char idstr[33];
+				WORD nFlag;
+
+				SetWindowText( hwndDlg, TranslateT( "Jabber vCard: Edit Phone Number" ));
+				wsprintfA( idstr, "Phone%d", dat->id );
+				if ( !DBGetContactSettingString( NULL, dat->ppro->szProtoName, idstr, &dbv )) {
+					SetDlgItemTextA( hwndDlg, IDC_PHONE, dbv.pszVal );
+					JFreeVariant( &dbv );
+					wsprintfA( idstr, "PhoneFlag%d", dat->id );
+					nFlag = dat->ppro->JGetWord( NULL, idstr, 0 );
+					if ( nFlag & JABBER_VCTEL_HOME ) CheckDlgButton( hwndDlg, IDC_HOME, TRUE );
+					if ( nFlag & JABBER_VCTEL_WORK ) CheckDlgButton( hwndDlg, IDC_WORK, TRUE );
+					if ( nFlag & JABBER_VCTEL_VOICE ) CheckDlgButton( hwndDlg, IDC_VOICE, TRUE );
+					if ( nFlag & JABBER_VCTEL_FAX ) CheckDlgButton( hwndDlg, IDC_FAX, TRUE );
+					if ( nFlag & JABBER_VCTEL_PAGER ) CheckDlgButton( hwndDlg, IDC_PAGER, TRUE );
+					if ( nFlag & JABBER_VCTEL_MSG ) CheckDlgButton( hwndDlg, IDC_MSG, TRUE );
+					if ( nFlag & JABBER_VCTEL_CELL ) CheckDlgButton( hwndDlg, IDC_CELL, TRUE );
+					if ( nFlag & JABBER_VCTEL_VIDEO ) CheckDlgButton( hwndDlg, IDC_VIDEO, TRUE );
+					if ( nFlag & JABBER_VCTEL_BBS ) CheckDlgButton( hwndDlg, IDC_BBS, TRUE );
+					if ( nFlag & JABBER_VCTEL_MODEM ) CheckDlgButton( hwndDlg, IDC_MODEM, TRUE );
+					if ( nFlag & JABBER_VCTEL_ISDN ) CheckDlgButton( hwndDlg, IDC_ISDN, TRUE );
+					if ( nFlag & JABBER_VCTEL_PCS ) CheckDlgButton( hwndDlg, IDC_PCS, TRUE );
+		}	}	}
 		return TRUE;
+
 	case WM_COMMAND:
 		switch ( LOWORD( wParam )) {
 		case IDOK:
 			{
 				char text[128];
 				char idstr[33];
-				int id = ( int ) GetWindowLong( hwndDlg, GWL_USERDATA );
 				DBVARIANT dbv;
 				WORD nFlag;
 
-				if ( id < 0 ) {
-					for ( id=0;;id++ ) {
-						wsprintfA( idstr, "Phone%d", id );
-						if ( DBGetContactSettingString( NULL, jabberProtoName, idstr, &dbv )) break;
+				if ( dat->id < 0 ) {
+					for ( dat->id=0;;dat->id++ ) {
+						wsprintfA( idstr, "Phone%d", dat->id );
+						if ( DBGetContactSettingString( NULL, dat->ppro->szProtoName, idstr, &dbv )) break;
 						JFreeVariant( &dbv );
 					}
 				}
 				GetDlgItemTextA( hwndDlg, IDC_PHONE, text, SIZEOF( text ));
-				wsprintfA( idstr, "Phone%d", id );
-				JSetString( NULL, idstr, text );
+				wsprintfA( idstr, "Phone%d", dat->id );
+				dat->ppro->JSetString( NULL, idstr, text );
 				nFlag = 0;
 				if ( IsDlgButtonChecked( hwndDlg, IDC_HOME )) nFlag |= JABBER_VCTEL_HOME;
 				if ( IsDlgButtonChecked( hwndDlg, IDC_WORK )) nFlag |= JABBER_VCTEL_WORK;
@@ -527,8 +566,8 @@ static BOOL CALLBACK EditPhoneDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				if ( IsDlgButtonChecked( hwndDlg, IDC_MODEM )) nFlag |= JABBER_VCTEL_MODEM;
 				if ( IsDlgButtonChecked( hwndDlg, IDC_ISDN )) nFlag |= JABBER_VCTEL_ISDN;
 				if ( IsDlgButtonChecked( hwndDlg, IDC_PCS )) nFlag |= JABBER_VCTEL_PCS;
-				wsprintfA( idstr, "PhoneFlag%d", id );
-				JSetWord( NULL, idstr, nFlag );
+				wsprintfA( idstr, "PhoneFlag%d", dat->id );
+				dat->ppro->JSetWord( NULL, idstr, nFlag );
 			}
 			// fall through
 		case IDCANCEL:
@@ -542,11 +581,15 @@ static BOOL CALLBACK EditPhoneDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 #define M_REMAKELISTS  ( WM_USER+1 )
 static BOOL CALLBACK ContactDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
+	CJabberProto* ppro = ( CJabberProto* )GetWindowLong( hwndDlg, GWL_USERDATA );
+
 	switch( msg ) {
 	case WM_INITDIALOG:
 		{
 			LVCOLUMN lvc;
 			RECT rc;
+
+			SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
 
 			TranslateDialogDefault( hwndDlg );
 			GetClientRect( GetDlgItem( hwndDlg,IDC_EMAILS ), &rc );
@@ -581,7 +624,7 @@ static BOOL CALLBACK ContactDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			lvi.iItem = 0;
 			for ( i=0;;i++ ) {
 				wsprintfA( idstr, "e-mail%d", i );
-				if ( DBGetContactSettingTString( NULL, jabberProtoName, idstr, &dbv )) break;
+				if ( DBGetContactSettingTString( NULL, ppro->szProtoName, idstr, &dbv )) break;
 				wsprintf( number, _T("%d"), i+1 );
 				lvi.pszText = number;
 				lvi.lParam = ( LPARAM )i;
@@ -600,7 +643,7 @@ static BOOL CALLBACK ContactDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			lvi.iItem = 0;
 			for ( i=0;;i++ ) {
 				wsprintfA( idstr, "Phone%d", i );
-				if ( DBGetContactSettingTString( NULL, jabberProtoName, idstr, &dbv )) break;
+				if ( DBGetContactSettingTString( NULL, ppro->szProtoName, idstr, &dbv )) break;
 				wsprintf( number, _T("%d"), i+1 );
 				lvi.pszText = number;
 				lvi.lParam = ( LPARAM )i;
@@ -686,19 +729,19 @@ static BOOL CALLBACK ContactDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 								WORD nFlag;
 
 								wsprintfA( idstr, szIdTemplate, i+1 );
-								if ( DBGetContactSettingString( NULL, jabberProtoName, idstr, &dbv )) break;
+								if ( DBGetContactSettingString( NULL, ppro->szProtoName, idstr, &dbv )) break;
 								wsprintfA( idstr,szIdTemplate,i );
-								JSetString( NULL, idstr, dbv.pszVal );
+								ppro->JSetString( NULL, idstr, dbv.pszVal );
 								wsprintfA( idstr, szFlagTemplate, i+1 );
 								JFreeVariant( &dbv );
-								nFlag = JGetWord( NULL, idstr, 0 );
+								nFlag = ppro->JGetWord( NULL, idstr, 0 );
 								wsprintfA( idstr, szFlagTemplate, i );
-								JSetWord( NULL, idstr, nFlag );
+								ppro->JSetWord( NULL, idstr, nFlag );
 							}
 							wsprintfA( idstr, szIdTemplate, i );
-							JDeleteSetting( NULL, idstr );
+							ppro->JDeleteSetting( NULL, idstr );
 							wsprintfA( idstr, szFlagTemplate, i );
-							JDeleteSetting( NULL, idstr );
+							ppro->JDeleteSetting( NULL, idstr );
 							SendMessage( hwndDlg, M_REMAKELISTS, 0, 0 );
 							SendMessage( GetParent( hwndDlg ), WM_JABBER_CHANGED, 0, 0 );
 						}
@@ -729,7 +772,7 @@ static BOOL CALLBACK ContactDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 	return FALSE;
 }
 
-static void SaveVcardToDB( VcardTab *dat )
+void CJabberProto::SaveVcardToDB( VcardTab *dat )
 {
 	HWND hwndPage;
 	TCHAR text[2048];
@@ -804,21 +847,20 @@ static void SaveVcardToDB( VcardTab *dat )
 	}
 }
 
-static void AppendVcardFromDB( XmlNode* n, char* tag, char* key )
+void CJabberProto::AppendVcardFromDB( XmlNode* n, char* tag, char* key )
 {
 	if ( n == NULL || tag == NULL || key == NULL )
 		return;
 
 	DBVARIANT dbv;
-	if ( DBGetContactSettingTString( NULL, jabberProtoName, key, &dbv ))
+	if ( DBGetContactSettingTString( NULL, szProtoName, key, &dbv ))
 		n->addChild( tag );
 	else {
 		n->addChild( tag, dbv.ptszVal );
 		JFreeVariant( &dbv );
 }	}
 
-
-static void SetServerVcard()
+void CJabberProto::SetServerVcard()
 {
 	DBVARIANT dbv;
 	int  iqId;
@@ -828,7 +870,7 @@ static void SetServerVcard()
 	WORD nFlag;
 
 	iqId = JabberSerialNext();
-	JabberIqAdd( iqId, IQ_PROC_SETVCARD, JabberIqResultSetVcard );
+	JabberIqAdd( iqId, IQ_PROC_SETVCARD, &CJabberProto::JabberIqResultSetVcard );
 
 	XmlNodeIq iq( "set", iqId );
 	XmlNode* v = iq.addChild( "vCard" ); v->addAttr( "xmlns", JABBER_FEAT_VCARD_TEMP );
@@ -846,7 +888,7 @@ static void SetServerVcard()
 
 	for ( i=0;;i++ ) {
 		wsprintfA( idstr, "e-mail%d", i );
-		if ( DBGetContactSettingTString( NULL, jabberProtoName, idstr, &dbv )) 
+		if ( DBGetContactSettingTString( NULL, szProtoName, idstr, &dbv )) 
 			break;
 
 		XmlNode* e = v->addChild( "EMAIL", dbv.ptszVal );
@@ -854,7 +896,7 @@ static void SetServerVcard()
 		AppendVcardFromDB( e, "USERID", idstr );
 
 		wsprintfA( idstr, "e-mailFlag%d", i );
-		nFlag = DBGetContactSettingWord( NULL, jabberProtoName, idstr, 0 );
+		nFlag = DBGetContactSettingWord( NULL, szProtoName, idstr, 0 );
 		if ( nFlag & JABBER_VCEMAIL_HOME ) e->addChild( "HOME" );
 		if ( nFlag & JABBER_VCEMAIL_WORK ) e->addChild( "WORK" );
 		if ( nFlag & JABBER_VCEMAIL_INTERNET ) e->addChild( "INTERNET" );
@@ -894,7 +936,7 @@ static void SetServerVcard()
 
 	for ( i=0;;i++ ) {
 		wsprintfA( idstr, "Phone%d", i );
-		if ( DBGetContactSettingTString( NULL, jabberProtoName, idstr, &dbv )) break;
+		if ( DBGetContactSettingTString( NULL, szProtoName, idstr, &dbv )) break;
 		JFreeVariant( &dbv );
 
 		n = v->addChild( "TEL" );
@@ -997,8 +1039,7 @@ static void SetServerVcard()
 	jabberThreadInfo->send( iq );
 }
 
-
-void JabberUpdateVCardPhoto( char * szFileName )
+void CJabberProto::JabberUpdateVCardPhoto( char * szFileName )
 {
 	bPhotoChanged=1;
 	strncpy( szPhotoFileName,szFileName,MAX_PATH );
@@ -1022,12 +1063,12 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 	switch ( msg ) {
 	case WM_INITDIALOG:
 	{
-		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )LoadIconEx( "vcard" ));
+		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )dat->ppro->LoadIconEx( "vcard" ));
 		TranslateDialogDefault( hwndDlg );
-		EnableWindow( GetDlgItem( hwndDlg, IDC_UPDATE ), jabberOnline );
 
 		dat = ( VcardTab * ) mir_alloc( sizeof( VcardTab ));
 		memset( dat, 0, sizeof( VcardTab ));
+		dat->ppro = ( CJabberProto* )lParam;
 		dat->pageCount = 6;
 		dat->currentPage = 0;
 		dat->changed = FALSE;
@@ -1036,10 +1077,13 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		dat->page = ( VcardPage * ) mir_alloc( dat->pageCount * sizeof( VcardPage ));
 		memset( dat->page, 0, dat->pageCount * sizeof( VcardPage ));
 
+		EnableWindow( GetDlgItem( hwndDlg, IDC_UPDATE ), dat->ppro->jabberOnline );
+
 		HWND hwndTabs = GetDlgItem( hwndDlg, IDC_TABS );
 
 		TCITEM tci = { 0 };
 		tci.mask = TCIF_TEXT;
+		tci.lParam = lParam;
 		// Page 0: Personal
 		dat->page[0].dlgId = IDD_VCARD_PERSONAL;
 		dat->page[0].dlgProc = PersonalDlgProc;
@@ -1068,6 +1112,7 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		// Page 5: Note
 		dat->page[5].dlgId = IDD_VCARD_NOTE;
 		dat->page[5].dlgProc = NoteDlgProc;
+
 		tci.pszText = TranslateT( "Note" );
 		TabCtrl_InsertItem( hwndTabs, 5, &tci );
 
@@ -1089,7 +1134,7 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		bPhotoChanged = FALSE;
 		szPhotoFileName[0] = '\0';
 
-		if ( jabberOnline )
+		if ( dat->ppro->jabberOnline )
 			SendMessage( hwndDlg, WM_COMMAND, IDC_UPDATE, 0 );
 		return TRUE;
 	}
@@ -1131,7 +1176,7 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		break;
 	case WM_JABBER_CHANGED:
 		dat->changed = TRUE;
-		EnableWindow( GetDlgItem( hwndDlg, IDC_SAVE ), jabberOnline );
+		EnableWindow( GetDlgItem( hwndDlg, IDC_SAVE ), dat->ppro->jabberOnline );
 		break;
 	case WM_COMMAND:
 		switch ( LOWORD( wParam )) {
@@ -1141,7 +1186,7 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 			dat->szUpdating = TranslateT( "Updating" );
 			SetDlgItemText( hwndDlg, IDC_UPDATING, dat->szUpdating );
 			ShowWindow( GetDlgItem( hwndDlg, IDC_UPDATING ), SW_SHOW );
-			JabberSendGetVcard( jabberJID );
+			dat->ppro->JabberSendGetVcard( dat->ppro->jabberJID );
 			dat->animating = TRUE;
 			SetTimer( hwndDlg, 1, 200, NULL );
 			break;
@@ -1153,8 +1198,8 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 			ShowWindow( GetDlgItem( hwndDlg, IDC_UPDATING ), SW_SHOW );
 			dat->animating = TRUE;
 			SetTimer( hwndDlg, 1, 200, NULL );
-			SaveVcardToDB( dat );
-			SetServerVcard();
+			dat->ppro->SaveVcardToDB( dat );
+			dat->ppro->SetServerVcard();
 			break;
 		case IDCLOSE:
 			DestroyWindow( hwndDlg );
@@ -1169,9 +1214,9 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		}
 		break;
 	case WM_JABBER_CHECK_ONLINE:
-		EnableWindow( GetDlgItem( hwndDlg, IDC_UPDATE ), jabberOnline );
+		EnableWindow( GetDlgItem( hwndDlg, IDC_UPDATE ), dat->ppro->jabberOnline );
 		if ( dat->changed )
-			EnableWindow( GetDlgItem( hwndDlg, IDC_SAVE ), jabberOnline );
+			EnableWindow( GetDlgItem( hwndDlg, IDC_SAVE ), dat->ppro->jabberOnline );
 		break;
 	case WM_JABBER_REFRESH:
 		if ( dat->animating ) {
@@ -1191,7 +1236,7 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		DestroyWindow( hwndDlg );
 		break;
 	case WM_DESTROY:
-		hwndJabberVcard = NULL;
+		dat->ppro->hwndJabberVcard = NULL;
 		for ( int i=0; i<dat->pageCount; i++ )
 			if ( dat->page[i].hwnd != NULL )
 				DestroyWindow( dat->page[i].hwnd );

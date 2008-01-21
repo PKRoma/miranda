@@ -6,9 +6,6 @@
 #include "commonheaders.h"
 #include "clc.h"
 
-#define OFFSET_PROTOPOS 200
-#define OFFSET_VISIBLE 400
-
 typedef struct tagProtocolData
 {
 	char *RealName;
@@ -29,22 +26,6 @@ typedef struct {
 }
 	tempProtoItem;
 
-#define PrVer 3
-
-char **pszSettingName;
-int arrlen;
-
-int enumDB_ProtoProc( const char* szSetting, LPARAM lParam )
-{
-	if ( szSetting == NULL )
-		return 0;
-
-	arrlen++;
-	pszSettingName = ( char** )mir_realloc( pszSettingName, arrlen*sizeof( char* ));
-	pszSettingName[arrlen-1] = mir_strdup( szSetting );
-	return 0;
-}
-
 char* DBGetStringA( HANDLE hContact,const char *szModule,const char *szSetting )
 {
 	char* str = NULL;
@@ -57,163 +38,54 @@ char* DBGetStringA( HANDLE hContact,const char *szModule,const char *szSetting )
 	return str;
 }
 
-int DeleteAllSettingInProtocols()
-{
-	DBCONTACTENUMSETTINGS dbces;
-	arrlen=0;
-
-	dbces.pfnEnumProc = enumDB_ProtoProc;
-	dbces.szModule = "Protocols";
-	dbces.ofsSettings = 0;
-
-	CallService(MS_DB_CONTACT_ENUMSETTINGS,0,(LPARAM)&dbces);
-
-	//delete all settings
-	if ( arrlen ) {
-		int i;
-		for ( i=0; i < arrlen; i++ ) {
-			DBDeleteContactSetting( 0, "Protocols", pszSettingName[i] );
-			mir_free( pszSettingName[i] );
-		}
-		mir_free( pszSettingName );
-		pszSettingName = NULL;
-	}
-	return 0;
-}
-
-static int __inline isProtoSuitable( const char* szProto )
-{
-   return CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_2, 0 ) & 
-				~CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_5, 0 );
-}
-
 int CheckProtocolOrder()
 {
-	BOOL protochanged=FALSE;
-	int StoredProtoCount;
-	PROTOCOLDESCRIPTOR **protos;
-	int i,j,count,v;
-	char *curproto;
-	char buf[10];
-	tempProtoItem *items = NULL, *found;
-
+	BOOL protochanged = FALSE;
 	int ver = DBGetContactSettingDword( 0, "Protocols", "PrVer", -1 );
-	if ( ver != PrVer )
+	if ( ver != 4 )
 		protochanged = TRUE;
 
-	StoredProtoCount = DBGetContactSettingDword( 0,"Protocols","ProtoCount",-1 );
-	if ( StoredProtoCount == -1 )
+	if ( accounts.count == 0 )
 		protochanged = TRUE;
-	else
-		items = ( tempProtoItem* )alloca( sizeof( tempProtoItem )*StoredProtoCount );
-
-	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&count,(LPARAM)&protos);
-
-	if ( !protochanged ) {
-		v=0;
-
-		//calc only needed protocols
-		for ( i=0; i < count; i++ ) {
-			if ( protos[i]->type != PROTOTYPE_PROTOCOL || !isProtoSuitable( protos[i]->szName ))
-				continue;
-			v++;
-		}
-
-		if ( StoredProtoCount != v )
-			protochanged = TRUE;
-
-		for ( i=0; i < StoredProtoCount; i++ ) {
-			_itoa( i, buf, 10 );
-			curproto = DBGetStringA( NULL, "Protocols", buf );
-			if ( curproto == NULL )
-				protochanged = TRUE;
-			else
-				items[i].protoName = NEWSTR_ALLOCA( curproto );
-
-			if ( CallService( MS_PROTO_ISPROTOCOLLOADED, 0, ( LPARAM )curproto ) == 0 )
-				protochanged = TRUE;
-
-			mir_free( curproto );
-
-			_itoa( OFFSET_VISIBLE+i, buf, 10 );
-			items[i].visible = DBGetContactSettingDword( NULL, "Protocols", buf, 1 );
-	}	}
+	else if ( accounts.count != DBGetContactSettingDword( 0, "Protocols", "ProtoCount", -1 ))
+		protochanged = TRUE;
 
 	if ( !protochanged )
 		return 0;
 
-	//reseting all settings;
-	DeleteAllSettingInProtocols();
-
-	CallService( MS_PROTO_ENUMPROTOCOLS, ( WPARAM )&count, ( LPARAM )&protos );
-
-	v=0;
-	for ( i = 0; i < count; i++ ) {
-		if ( protos[i]->type != PROTOTYPE_PROTOCOL || !isProtoSuitable( protos[i]->szName ))
-			continue;
-
-		found = NULL;
-		for ( j = 0; j < StoredProtoCount; j++ )
-			if ( !lstrcmpA( items[j].protoName, protos[i]->szName )) {
-				found = items + j;
-				break;
-			}
-
-		_itoa( v, buf, 10 );
-		DBWriteContactSettingString( 0, "Protocols", buf, protos[i]->szName );
-
-		_itoa( OFFSET_PROTOPOS + v, buf, 10 );//save pos in protos
-		DBWriteContactSettingDword( 0, "Protocols", buf, v );
-
-		_itoa( OFFSET_VISIBLE + v, buf, 10 );//save default visible status
-		DBWriteContactSettingDword( 0, "Protocols", buf, ( found ) ? found->visible : 1 );
-
-		v++;
-	}
-
-	DBDeleteContactSetting( 0, "Protocols", "ProtoCount" );
-	DBWriteContactSettingDword( 0, "Protocols", "ProtoCount", v );
-	DBWriteContactSettingDword( 0, "Protocols", "PrVer", PrVer );
+	WriteDbAccounts();
 	return 1;
 }
 
 int FillTree(HWND hwnd)
 {
-	TVINSERTSTRUCT tvis;
 	ProtocolData *PD;
 	char szName[64];
 	char *szSTName;
-	char buf[10];
 	TCHAR *buf2=NULL;
-	int i,count;
+	int i;
 
+	TVINSERTSTRUCT tvis;
 	tvis.hParent=NULL;
 	tvis.hInsertAfter=TVI_LAST;
 	tvis.item.mask=TVIF_PARAM|TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE;	
 
 	//	ProtocolOrder_CheckOrder();
 	TreeView_DeleteAllItems(hwnd);
-	count=DBGetContactSettingDword(0,"Protocols","ProtoCount",-1);
-	if (count==-1){return(FALSE);};
+	if ( accounts.count == 0 )
+		return FALSE;
 
-	for ( i = 0; i < count; i++ ) {
-		_itoa(i,	(char *)&buf,10);
-		szSTName = DBGetStringA(0,"Protocols",(char *)&buf);		
-        if ( szSTName == NULL )
-			continue;
+	for ( i = 0; i < accounts.count; i++ ) {
+		PROTOACCOUNT* pa = accounts.items[i];
 
-		CallProtoService( szSTName, PS_GETNAME, sizeof( szName ), ( LPARAM )szName );
+		CallProtoService( pa->szModuleName, PS_GETNAME, sizeof( szName ), ( LPARAM )szName );
 
 		PD = ( ProtocolData* )mir_alloc( sizeof( ProtocolData ));
 		PD->RealName = GetUniqueProtoName(szName); //it return static pointer to protocol name-> not net to be freed
-		mir_free(szSTName);
-		szSTName=PD->RealName;
+		szSTName = PD->RealName;
 
-		_itoa( OFFSET_VISIBLE+i, buf, 10 );
-		PD->show=(boolean)DBGetContactSettingDword(0,"Protocols", buf, 1 );
-
-		_itoa( OFFSET_PROTOPOS+i, buf, 10 );
-		PD->protopos = DBGetContactSettingDword(0,"Protocols", buf, -1 );
+		PD->show = pa->bIsVisible;
+		PD->protopos = pa->iOrder;
 
 		tvis.item.lParam = ( LPARAM )PD;
 		#ifdef UNICODE
@@ -263,7 +135,7 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 	case WM_COMMAND:
 		if ( HIWORD( wParam ) == BN_CLICKED ) {
 			if (lParam==(LPARAM)GetDlgItem(hwndDlg,IDC_RESETPROTOCOLDATA))	{
-				DBWriteContactSettingDword(0,"Protocols","ProtoCount",-1);
+				DBWriteContactSettingDword( 0, "Protocols", "PrVer", -1 );
 				CheckProtocolOrder();
 				FillTree(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER));
 				SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
@@ -290,6 +162,11 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 					if (tvi.lParam!=0) {
 						ProtocolData* ppd = ( ProtocolData* )tvi.lParam;
+						PROTOACCOUNT* pa = ProtoGetAccount( ppd->RealName );
+						if ( pa != NULL ) {
+							pa->iOrder = ppd->protopos;
+							pa->bIsVisible = ppd->show;
+						}
 						DBWriteContactSettingString( NULL, "Protocols", buf, ppd->RealName );
 
 						_itoa( OFFSET_PROTOPOS + count, buf, 10 );  //save position in protos

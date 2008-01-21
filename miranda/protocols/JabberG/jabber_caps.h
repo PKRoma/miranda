@@ -210,12 +210,13 @@ class CJabberClientCapsManager
 protected:
 	CRITICAL_SECTION m_cs;
 	CJabberClientCaps *m_pClients;
+	CJabberProto* ppro;
 
 protected:
 	CJabberClientCaps *FindClient( TCHAR *szNode );
 
 public:
-	CJabberClientCapsManager();
+	CJabberClientCapsManager( CJabberProto* proto );
 	~CJabberClientCapsManager();
 
 	__inline void Lock()
@@ -243,10 +244,5 @@ struct JabberFeatCapPair
 
 extern JabberFeatCapPair g_JabberFeatCapPairs[];
 extern JabberFeatCapPair g_JabberFeatCapPairsExt[];
-
-extern CJabberClientCapsManager g_JabberClientCapsManager;
-
-JabberCapsBits JabberGetResourceCapabilites( TCHAR *jid, BOOL appendBestResource = TRUE );
-JabberCapsBits JabberGetTotalJidCapabilites( TCHAR *jid );
 
 #endif

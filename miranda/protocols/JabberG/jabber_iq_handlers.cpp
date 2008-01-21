@@ -39,7 +39,7 @@ extern int bSecureIM;
 
 static int JGetMirandaProductText(WPARAM wParam,LPARAM lParam)
 {
-	char filename[MAX_PATH],*productName;
+	char filename[MAX_PATH],*productName = NULL;
 	DWORD unused;
 	DWORD verInfoSize;
 	UINT blockSize;
@@ -47,18 +47,23 @@ static int JGetMirandaProductText(WPARAM wParam,LPARAM lParam)
 	GetModuleFileNameA(NULL,filename,SIZEOF(filename));
 	verInfoSize=GetFileVersionInfoSizeA(filename,&unused);
 	pVerInfo=mir_alloc(verInfoSize);
-	GetFileVersionInfoA(filename,0,verInfoSize,pVerInfo);
-	VerQueryValueA(pVerInfo,"\\StringFileInfo\\000004b0\\ProductName",(void**)&productName,&blockSize);
-#if defined( _UNICODE )
-	mir_snprintf(( char* )lParam, wParam, "%s", productName );
-#else
-	lstrcpynA((char*)lParam,productName,wParam);
-#endif
-	mir_free(pVerInfo);
+	if( GetFileVersionInfoA(filename,0,verInfoSize,pVerInfo) ) {
+		VerQueryValueA(pVerInfo,"\\StringFileInfo\\000004b0\\ProductName",(void**)&productName,&blockSize);
+		if( productName )
+		#if defined( _UNICODE )
+			mir_snprintf(( char* )lParam, wParam, "%s", productName );
+		#else
+			lstrcpynA((char*)lParam,productName,wParam);
+		#endif
+		else
+			*(char*)lParam = 0;
+		mir_free(pVerInfo);
+	} else
+		*(char*)lParam = 0;
 	return 0;
 }
 
-void JabberProcessIqVersion( XmlNode* node, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::JabberProcessIqVersion( XmlNode* node, void* userdata, CJabberIqInfo* pInfo )
 {
 	if ( !pInfo->GetFrom() )
 		return;
@@ -71,25 +76,25 @@ void JabberProcessIqVersion( XmlNode* node, void* userdata, CJabberIqInfo* pInfo
 		osvi.dwOSVersionInfoSize = sizeof( OSVERSIONINFO );
 		if ( GetVersionEx( &osvi )) {
 			switch ( osvi.dwPlatformId ) {
-		case VER_PLATFORM_WIN32_NT:
-			if ( osvi.dwMajorVersion == 6 )
-				os = TranslateT( "Windows Vista" );
-			else if ( osvi.dwMajorVersion == 5 ) {
-				if ( osvi.dwMinorVersion == 2 ) os = TranslateT( "Windows Server 2003" );
-				else if ( osvi.dwMinorVersion == 1 ) os = TranslateT( "Windows XP" );
-				else if ( osvi.dwMinorVersion == 0 ) os = TranslateT( "Windows 2000" );
-			}
-			else if ( osvi.dwMajorVersion <= 4 ) {
-				os = TranslateT( "Windows NT" );
-			}
-			break;
-		case VER_PLATFORM_WIN32_WINDOWS:
-			if ( osvi.dwMajorVersion == 4 ) {
-				if ( osvi.dwMinorVersion == 0 ) os = TranslateT( "Windows 95" );
-				if ( osvi.dwMinorVersion == 10 ) os = TranslateT( "Windows 98" );
-				if ( osvi.dwMinorVersion == 90 ) os = TranslateT( "Windows ME" );
-			}
-			break;
+			case VER_PLATFORM_WIN32_NT:
+				if ( osvi.dwMajorVersion == 6 )
+					os = TranslateT( "Windows Vista" );
+				else if ( osvi.dwMajorVersion == 5 ) {
+					if ( osvi.dwMinorVersion == 2 ) os = TranslateT( "Windows Server 2003" );
+					else if ( osvi.dwMinorVersion == 1 ) os = TranslateT( "Windows XP" );
+					else if ( osvi.dwMinorVersion == 0 ) os = TranslateT( "Windows 2000" );
+				}
+				else if ( osvi.dwMajorVersion <= 4 ) {
+					os = TranslateT( "Windows NT" );
+				}
+				break;
+			case VER_PLATFORM_WIN32_WINDOWS:
+				if ( osvi.dwMajorVersion == 4 ) {
+					if ( osvi.dwMinorVersion == 0 ) os = TranslateT( "Windows 95" );
+					if ( osvi.dwMinorVersion == 10 ) os = TranslateT( "Windows 98" );
+					if ( osvi.dwMinorVersion == 90 ) os = TranslateT( "Windows ME" );
+				}
+				break;
 		}	}
 
 		if ( os == NULL ) os = TranslateT( "Windows" );
@@ -116,7 +121,7 @@ void JabberProcessIqVersion( XmlNode* node, void* userdata, CJabberIqInfo* pInfo
 }
 
 // last activity (XEP-0012) support
-void JabberProcessIqLast( XmlNode* node, void* userdata, CJabberIqInfo *pInfo )
+void CJabberProto::JabberProcessIqLast( XmlNode* node, void* userdata, CJabberIqInfo *pInfo )
 {
 	XmlNodeIq iq( "result", pInfo );
 	XmlNode* query = iq.addQuery( JABBER_FEAT_LAST_ACTIVITY );
@@ -125,7 +130,7 @@ void JabberProcessIqLast( XmlNode* node, void* userdata, CJabberIqInfo *pInfo )
 }
 
 // XEP-0199: XMPP Ping support
-void JabberProcessIqPing( XmlNode* node, void* userdata, CJabberIqInfo *pInfo )
+void CJabberProto::JabberProcessIqPing( XmlNode* node, void* userdata, CJabberIqInfo *pInfo )
 {
 	XmlNodeIq iq( "result", pInfo );
 	jabberThreadInfo->send( iq );
@@ -157,7 +162,7 @@ int GetGMTOffset(void)
 }
 
 // entity time (XEP-0202) support
-void JabberProcessIqTime202( XmlNode* node, void* userdata, CJabberIqInfo *pInfo )
+void CJabberProto::JabberProcessIqTime202( XmlNode* node, void* userdata, CJabberIqInfo *pInfo )
 {
 	struct tm *gmt;
 	time_t ltime;
@@ -184,7 +189,7 @@ void JabberProcessIqTime202( XmlNode* node, void* userdata, CJabberIqInfo *pInfo
 	jabberThreadInfo->send(iq);
 }
 
-void JabberProcessIqAvatar( XmlNode* node, void* userdata, CJabberIqInfo *pInfo )
+void CJabberProto::JabberProcessIqAvatar( XmlNode* node, void* userdata, CJabberIqInfo *pInfo )
 {
 	if ( !JGetByte( "EnableAvatars", TRUE ))
 		return;
@@ -228,7 +233,7 @@ void JabberProcessIqAvatar( XmlNode* node, void* userdata, CJabberIqInfo *pInfo 
 	mir_free( buffer );
 }
 
-void JabberHandleSiRequest( XmlNode* node, void* userdata, CJabberIqInfo *pInfo )
+void CJabberProto::JabberHandleSiRequest( XmlNode* node, void* userdata, CJabberIqInfo *pInfo )
 {
 	TCHAR* szProfile = JabberXmlGetAttrValue( pInfo->GetChildNode(), "profile" );
 
@@ -243,7 +248,7 @@ void JabberHandleSiRequest( XmlNode* node, void* userdata, CJabberIqInfo *pInfo 
 	}
 }
 
-void JabberHandleRosterPushRequest( XmlNode* node, void* userdata, CJabberIqInfo *pInfo )
+void CJabberProto::JabberHandleRosterPushRequest( XmlNode* node, void* userdata, CJabberIqInfo *pInfo )
 {
 	XmlNode *queryNode = pInfo->GetChildNode();
 
@@ -335,7 +340,7 @@ void JabberHandleRosterPushRequest( XmlNode* node, void* userdata, CJabberIqInfo
 					else DBDeleteContactSetting( hContact, "CList", "Group" );
 				}
 				else mir_free( nick );
-			}	}
+		}	}
 
 		if (( item=JabberListGetItemPtr( LIST_ROSTER, jid )) != NULL ) {
 			if ( !_tcscmp( str, _T("both"))) item->subscription = SUB_BOTH;
@@ -350,10 +355,10 @@ void JabberHandleRosterPushRequest( XmlNode* node, void* userdata, CJabberIqInfo
 				if (( hContact=JabberHContactFromJID( jid )) != NULL ) {
 					JabberSetContactOfflineStatus( hContact );
 					JabberListRemove( LIST_ROSTER, jid );
-				}	}
+			}	}
 			else if ( JGetByte( hContact, "ChatRoom", 0 ))
 				DBDeleteContactSetting( hContact, "CList", "Hidden" );
-		}	}
+	}	}
 
 	if ( hwndJabberAgents )
 		SendMessage( hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
@@ -361,7 +366,7 @@ void JabberHandleRosterPushRequest( XmlNode* node, void* userdata, CJabberIqInfo
 		SendMessage( hwndServiceDiscovery, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
 }
 
-void JabberHandleIqRequestOOB( XmlNode* node, void* userdata, CJabberIqInfo *pInfo )
+void CJabberProto::JabberHandleIqRequestOOB( XmlNode* node, void* userdata, CJabberIqInfo *pInfo )
 {
 	if ( !pInfo->GetFrom() || !pInfo->GetHContact() )
 		return;
@@ -381,7 +386,7 @@ void JabberHandleIqRequestOOB( XmlNode* node, void* userdata, CJabberIqInfo *pIn
 	TCHAR *str, *p, *q;
 	
 	str = n->text;	// URL of the file to get
-	filetransfer* ft = new filetransfer;
+	filetransfer* ft = new filetransfer( this );
 	ft->std.totalFiles = 1;
 	ft->jid = mir_tstrdup( pInfo->GetFrom() );
 	ft->std.hContact = pInfo->GetHContact();
@@ -402,7 +407,6 @@ void JabberHandleIqRequestOOB( XmlNode* node, void* userdata, CJabberIqInfo *pIn
 					*p = '\0';
 				}
 				ft->httpHostName = mir_t2a( text );
-				ft->httpPath = mir_t2a( ++q );
 	}	}	}
 
 	if ( pInfo->GetIdStr() )
@@ -455,18 +459,18 @@ void JabberHandleIqRequestOOB( XmlNode* node, void* userdata, CJabberIqInfo *pIn
 	}
 }
 
-void JabberHandleDiscoInfoRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::JabberHandleDiscoInfoRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	if ( !pInfo->GetChildNode() )
 		return;
 
 	TCHAR* szNode = JabberXmlGetAttrValue( pInfo->GetChildNode(), "node" );
 	// caps hack
-	if ( g_JabberClientCapsManager.HandleInfoRequest( iqNode, userdata, pInfo, szNode ))
+	if ( m_clientCapsManager.HandleInfoRequest( iqNode, userdata, pInfo, szNode ))
 		return;
 
 	// ad-hoc hack:
-	if ( szNode && g_JabberAdhocManager.HandleInfoRequest( iqNode, userdata, pInfo, szNode ))
+	if ( szNode && m_adhocManager.HandleInfoRequest( iqNode, userdata, pInfo, szNode ))
 		return;
 
 	// another request, send empty result
@@ -481,14 +485,14 @@ void JabberHandleDiscoInfoRequest( XmlNode* iqNode, void* userdata, CJabberIqInf
 	jabberThreadInfo->send( iq );
 }
 
-void JabberHandleDiscoItemsRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::JabberHandleDiscoItemsRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	if ( !pInfo->GetChildNode() )
 		return;
 
 	// ad-hoc commands check:
 	TCHAR* szNode = JabberXmlGetAttrValue( pInfo->GetChildNode(), "node" );
-	if ( szNode && g_JabberAdhocManager.HandleItemsRequest( iqNode, userdata, pInfo, szNode ))
+	if ( szNode && m_adhocManager.HandleItemsRequest( iqNode, userdata, pInfo, szNode ))
 		return;
 
 	// another request, send empty result

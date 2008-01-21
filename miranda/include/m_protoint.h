@@ -24,6 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef M_PROTOINT_H__
 #define M_PROTOINT_H__ 1
 
+#error THIS VERSION IS BUGGY AND IS PROVIDED FOR DEVELOPERS ONLY. IF YOU COMPILE JABBER FOR YOURSELF OR FOR PRODUCTION PURPOSES, DO NOT GET THIS PATCH.
+
 #ifndef __cplusplus
 typedef struct tagPROTO_INTERFACE_VTBL
 {
@@ -94,50 +96,50 @@ typedef struct tagPROTO_INTERFACE
 	DWORD  reserved[ 40 ];
 
 	#ifdef __cplusplus
-	virtual	HANDLE CDECL AddToList( int flags, PROTOSEARCHRESULT* psr );
-	virtual	HANDLE CDECL AddToListByEvent( int flags, int iContact, HANDLE hDbEvent );
+	virtual	HANDLE __cdecl AddToList( int flags, PROTOSEARCHRESULT* psr ) = 0;
+	virtual	HANDLE __cdecl AddToListByEvent( int flags, int iContact, HANDLE hDbEvent ) = 0;
 
-	virtual	int    CDECL Authorize( HANDLE hContact );
-	virtual	int    CDECL AuthDeny( HANDLE hContact, const char* szReason );
-	virtual	int    CDECL AuthRecv( HANDLE hContact, PROTORECVEVENT* );
-	virtual	int    CDECL AuthRequest( HANDLE hContact, const char* szMessage );
+	virtual	int    __cdecl Authorize( HANDLE hContact ) = 0;
+	virtual	int    __cdecl AuthDeny( HANDLE hContact, const char* szReason ) = 0;
+	virtual	int    __cdecl AuthRecv( HANDLE hContact, PROTORECVEVENT* ) = 0;
+	virtual	int    __cdecl AuthRequest( HANDLE hContact, const char* szMessage ) = 0;
 
-	virtual	HANDLE CDECL ChangeInfo( int iInfoType, void* pInfoData );
+	virtual	HANDLE __cdecl ChangeInfo( int iInfoType, void* pInfoData ) = 0;
 
-	virtual	int    CDECL FileAllow( HANDLE hContact, HANDLE hTransfer, const char* szPath );
-	virtual	int    CDECL FileCancel( HANDLE hContact, HANDLE hTransfer );
-	virtual	int    CDECL FileDeny( HANDLE hContact, HANDLE hTransfer, const char* szReason );
-	virtual	int    CDECL FileResume( HANDLE hTransfer, int* action, const char** szFilename );
+	virtual	int    __cdecl FileAllow( HANDLE hContact, HANDLE hTransfer, const char* szPath ) = 0;
+	virtual	int    __cdecl FileCancel( HANDLE hContact, HANDLE hTransfer ) = 0;
+	virtual	int    __cdecl FileDeny( HANDLE hContact, HANDLE hTransfer, const char* szReason ) = 0;
+	virtual	int    __cdecl FileResume( HANDLE hTransfer, int* action, const char** szFilename ) = 0;
 
-	virtual	DWORD  CDECL GetCaps( int type );
-	virtual	HICON  CDECL GetIcon( int iconIndex );
-	virtual	int    CDECL GetInfo( HANDLE hContact, int infoType );
+	virtual	DWORD  __cdecl GetCaps( int type ) = 0;
+	virtual	HICON  __cdecl GetIcon( int iconIndex ) = 0;
+	virtual	int    __cdecl GetInfo( HANDLE hContact, int infoType ) = 0;
 
-	virtual	HANDLE CDECL SearchBasic( const char* id );
-	virtual	HANDLE CDECL SearchByEmail( const char* email );
-	virtual	HANDLE CDECL SearchByName( const char* nick, const char* firstName, const char* lastName );
-	virtual	HWND   CDECL SearchAdvanced( HWND owner );
-	virtual	HWND   CDECL CreateExtendedSearchUI( HWND owner );
+	virtual	HANDLE __cdecl SearchBasic( const char* id ) = 0;
+	virtual	HANDLE __cdecl SearchByEmail( const char* email ) = 0;
+	virtual	HANDLE __cdecl SearchByName( const char* nick, const char* firstName, const char* lastName ) = 0;
+	virtual	HWND   __cdecl SearchAdvanced( HWND owner ) = 0;
+	virtual	HWND   __cdecl CreateExtendedSearchUI( HWND owner ) = 0;
 
-	virtual	int    CDECL RecvContacts( HANDLE hContact, PROTORECVEVENT* );
-	virtual	int    CDECL RecvFile( HANDLE hContact, PROTORECVFILE* );
-	virtual	int    CDECL RecvMsg( HANDLE hContact, PROTORECVEVENT* );
-	virtual	int    CDECL RecvUrl( HANDLE hContact, PROTORECVEVENT* );
+	virtual	int    __cdecl RecvContacts( HANDLE hContact, PROTORECVEVENT* ) = 0;
+	virtual	int    __cdecl RecvFile( HANDLE hContact, PROTORECVFILE* ) = 0;
+	virtual	int    __cdecl RecvMsg( HANDLE hContact, PROTORECVEVENT* ) = 0;
+	virtual	int    __cdecl RecvUrl( HANDLE hContact, PROTORECVEVENT* ) = 0;
 
-	virtual	int    CDECL SendContacts( HANDLE hContact, int flags, int nContacts, HANDLE* hContactsList );
-	virtual	int    CDECL SendFile( HANDLE hContact, const char* szDescription, char** ppszFiles );
-	virtual	int    CDECL SendMsg( HANDLE hContact, int flags, const char* msg );
-	virtual	int    CDECL SendUrl( HANDLE hContact, int flags, const char* url );
+	virtual	int    __cdecl SendContacts( HANDLE hContact, int flags, int nContacts, HANDLE* hContactsList ) = 0;
+	virtual	int    __cdecl SendFile( HANDLE hContact, const char* szDescription, char** ppszFiles ) = 0;
+	virtual	int    __cdecl SendMsg( HANDLE hContact, int flags, const char* msg ) = 0;
+	virtual	int    __cdecl SendUrl( HANDLE hContact, int flags, const char* url ) = 0;
 
-	virtual	int    CDECL SetApparentMode( HANDLE hContact, int mode );
-	virtual	int    CDECL SetStatus( int iNewStatus );
+	virtual	int    __cdecl SetApparentMode( HANDLE hContact, int mode ) = 0;
+	virtual	int    __cdecl SetStatus( int iNewStatus ) = 0;
 
-	virtual	int    CDECL GetAwayMsg( HANDLE hContact );
-	virtual	int    CDECL RecvAwayMsg( HANDLE hContact, int mode, PROTORECVEVENT* evt );
-	virtual	int    CDECL SendAwayMsg( HANDLE hContact, HANDLE hProcess, const char* msg );
-	virtual	int    CDECL SetAwayMsg( int iStatus, const char* msg );
+	virtual	int    __cdecl GetAwayMsg( HANDLE hContact ) = 0;
+	virtual	int    __cdecl RecvAwayMsg( HANDLE hContact, int mode, PROTORECVEVENT* evt ) = 0;
+	virtual	int    __cdecl SendAwayMsg( HANDLE hContact, HANDLE hProcess, const char* msg ) = 0;
+	virtual	int    __cdecl SetAwayMsg( int iStatus, const char* msg ) = 0;
 
-	virtual	int    CDECL UserIsTyping( HANDLE hContact, int type );
+	virtual	int    __cdecl UserIsTyping( HANDLE hContact, int type ) = 0;
 	#endif
 }
 	PROTO_INTERFACE;

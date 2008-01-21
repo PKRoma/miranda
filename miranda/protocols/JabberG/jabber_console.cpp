@@ -40,11 +40,6 @@ Last change by : $Author$
 
 #define WM_CREATECONSOLE  WM_USER+1000
 
-void JabberConsoleProcessXml(XmlNode *node, DWORD flags);
-int JabberMenuHandleConsole(WPARAM wParam, LPARAM lParam);
-void JabberConsoleInit();
-void JabberConsoleUninit();
-
 /* increment buffer with 1K steps */
 #define STRINGBUF_INCREMENT		1024
 
@@ -94,9 +89,6 @@ static void sttEmptyBuf(StringBuf *buf);
 
 static void sttRtfAppendXml(StringBuf *buf, XmlNode *node, DWORD flags, int indent);
 
-static HWND hwndJabberConsole = NULL;
-static HANDLE hThreadConsole = NULL;
-static UINT sttJabberConsoleThreadId = 0;
 
 struct TFilterInfo
 {
@@ -111,7 +103,7 @@ struct TFilterInfo
 static TFilterInfo g_filterInfo = {0};
 static bool sttFilterXml(XmlNode *node, DWORD flags);
 
-void JabberConsoleProcessXml(XmlNode *node, DWORD flags)
+void CJabberProto::JabberConsoleProcessXml(XmlNode *node, DWORD flags)
 {
 	if ( node && hwndJabberConsole ) {
 		if ( node->name ) {
@@ -453,12 +445,12 @@ static int JabberConsoleDlgResizer(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTRO
 	return RD_ANCHORX_RIGHT|RD_ANCHORY_BOTTOM;
 }
 
-static void JabberConsoleXmlCallback(XmlNode *node, void *userdata)
+static void JabberConsoleXmlCallback(XmlNode *node, CJabberProto *ppro)
 {
-	JabberConsoleProcessXml(node, JCPF_OUT);
+	ppro->JabberConsoleProcessXml(node, JCPF_OUT);
 }
 
-static void sttJabberConsoleRebuildStrings(HWND hwndCombo)
+static void sttJabberConsoleRebuildStrings(CJabberProto* ppro, HWND hwndCombo)
 {
 	int i;
 	JABBER_LIST_ITEM *item = NULL;
@@ -474,11 +466,11 @@ static void sttJabberConsoleRebuildStrings(HWND hwndCombo)
 	for (i = 0; g_JabberFeatCapPairsExt[i].szFeature; ++i)
 		SendMessage(hwndCombo, CB_ADDSTRING, 0, (LPARAM)g_JabberFeatCapPairsExt[i].szFeature);
 
-	for (i = 0; i >= 0; i = JabberListFindNext(LIST_ROSTER, i+1))
-		if (item = JabberListGetItemPtrFromIndex(i))
+	for (i = 0; i >= 0; i = ppro->JabberListFindNext(LIST_ROSTER, i+1))
+		if (item = ppro->JabberListGetItemPtrFromIndex(i))
 			SendMessage(hwndCombo, CB_ADDSTRING, 0, (LPARAM)item->jid);
-	for (i = 0; i >= 0; i = JabberListFindNext(LIST_CHATROOM, i+1))
-		if (item = JabberListGetItemPtrFromIndex(i))
+	for (i = 0; i >= 0; i = ppro->JabberListFindNext(LIST_CHATROOM, i+1))
+		if (item = ppro->JabberListGetItemPtrFromIndex(i))
 			SendMessage(hwndCombo, CB_ADDSTRING, 0, (LPARAM)item->jid);
 
 	SetWindowText(hwndCombo, buf);
@@ -499,31 +491,35 @@ static BOOL CALLBACK JabberConsoleDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam
 		{TFilterInfo::T_OFF,	_T("disabled"),			"sd_filter_reset"},
 	};
 
+	CJabberProto* ppro = (CJabberProto*)GetWindowLong( hwndDlg, GWL_USERDATA );
+
 	switch ( msg )
 	{
 		case WM_INITDIALOG:
 		{
 			int i;
+			ppro = (CJabberProto*)lParam;
+			SetWindowLong( hwndDlg, GWL_USERDATA, (LPARAM)ppro );
 
 			TranslateDialogDefault(hwndDlg);
-			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIconEx("xmlconsole"));
+			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)ppro->LoadIconEx("xmlconsole"));
 			SendDlgItemMessage(hwndDlg, IDC_CONSOLE, EM_SETEDITSTYLE, SES_EXTENDBACKCOLOR, SES_EXTENDBACKCOLOR);
 			SendDlgItemMessage(hwndDlg, IDC_CONSOLE, EM_EXLIMITTEXT, 0, 0x80000000);
 
-			g_filterInfo.msg = DBGetContactSettingByte(NULL, jabberProtoName, "consoleWnd_msg", TRUE);
-			g_filterInfo.presence = DBGetContactSettingByte(NULL, jabberProtoName, "consoleWnd_presence", TRUE);
-			g_filterInfo.iq = DBGetContactSettingByte(NULL, jabberProtoName, "consoleWnd_iq", TRUE);
-			g_filterInfo.type = (TFilterInfo::Type)DBGetContactSettingByte(NULL, jabberProtoName, "consoleWnd_ftype", TFilterInfo::T_OFF);
+			g_filterInfo.msg = DBGetContactSettingByte(NULL, ppro->szProtoName, "consoleWnd_msg", TRUE);
+			g_filterInfo.presence = DBGetContactSettingByte(NULL, ppro->szProtoName, "consoleWnd_presence", TRUE);
+			g_filterInfo.iq = DBGetContactSettingByte(NULL, ppro->szProtoName, "consoleWnd_iq", TRUE);
+			g_filterInfo.type = (TFilterInfo::Type)DBGetContactSettingByte(NULL, ppro->szProtoName, "consoleWnd_ftype", TFilterInfo::T_OFF);
 
 			DBVARIANT dbv;
 			*g_filterInfo.pattern = 0;
-			if (!JGetStringT(NULL, "consoleWnd_fpattern", &dbv))
+			if ( !ppro->JGetStringT(NULL, "consoleWnd_fpattern", &dbv))
 			{
 				lstrcpyn(g_filterInfo.pattern, dbv.ptszVal, SIZEOF(g_filterInfo.pattern));
 				JFreeVariant(&dbv);
 			}
 
-			sttJabberConsoleRebuildStrings(GetDlgItem(hwndDlg, IDC_CB_FILTER));
+			sttJabberConsoleRebuildStrings(ppro, GetDlgItem(hwndDlg, IDC_CB_FILTER));
 			SetWindowText(GetDlgItem(hwndDlg, IDC_CB_FILTER), g_filterInfo.pattern);
 
 			static struct
@@ -543,7 +539,7 @@ static BOOL CALLBACK JabberConsoleDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam
 			};
 			for (i = 0; i < SIZEOF(buttons); ++i)
 			{
-				SendDlgItemMessage(hwndDlg, buttons[i].idc, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx(buttons[i].icon));
+				SendDlgItemMessage(hwndDlg, buttons[i].idc, BM_SETIMAGE, IMAGE_ICON, (LPARAM)ppro->LoadIconEx(buttons[i].icon));
 				SendDlgItemMessage(hwndDlg, buttons[i].idc, BUTTONSETASFLATBTN, 0, 0);
 				SendDlgItemMessage(hwndDlg, buttons[i].idc, BUTTONADDTOOLTIP, (WPARAM)TranslateTS(buttons[i].title), BATF_TCHAR);
 				if (buttons[i].push) SendDlgItemMessage(hwndDlg, buttons[i].idc, BUTTONSETASPUSHBTN, 0, 0);
@@ -553,13 +549,13 @@ static BOOL CALLBACK JabberConsoleDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam
 			for (i = 0; i < SIZEOF(filter_modes); ++i)
 				if (filter_modes[i].type == g_filterInfo.type)
 				{
-					SendDlgItemMessage(hwndDlg, IDC_BTN_FILTER, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx(filter_modes[i].icon));
+					SendDlgItemMessage(hwndDlg, IDC_BTN_FILTER, BM_SETIMAGE, IMAGE_ICON, (LPARAM)ppro->LoadIconEx(filter_modes[i].icon));
 					break;
 				}
 			EnableWindow(GetDlgItem(hwndDlg, IDC_CB_FILTER), (g_filterInfo.type == TFilterInfo::T_OFF) ? FALSE : TRUE);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_BTN_FILTER_REFRESH), (g_filterInfo.type == TFilterInfo::T_OFF) ? FALSE : TRUE);
 
-			Utils_RestoreWindowPosition(hwndDlg, NULL, jabberProtoName, "consoleWnd_");
+			Utils_RestoreWindowPosition(hwndDlg, NULL, ppro->szProtoName, "consoleWnd_");
 			return TRUE;
 		}
 
@@ -632,7 +628,7 @@ static BOOL CALLBACK JabberConsoleDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam
 			{
 				case IDOK:
 				{
-					if (!jabberOnline)
+					if (!ppro->jabberOnline)
 					{
 						MessageBox(hwndDlg, TranslateT("Can't send data while you are offline."), TranslateT("Jabber Error"), MB_ICONSTOP|MB_OK);
 						break;
@@ -642,7 +638,7 @@ static BOOL CALLBACK JabberConsoleDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam
 					TCHAR *textToSend = (TCHAR *)mir_alloc(length * sizeof(TCHAR));
 					GetWindowText(GetDlgItem(hwndDlg, IDC_CONSOLEIN), textToSend, length);
 					char *tmp = mir_utf8encodeT(textToSend);
-					jabberThreadInfo->send(tmp, lstrlenA(tmp));
+					ppro->jabberThreadInfo->send(tmp, lstrlenA(tmp));
 
 					StringBuf buf = {0};
 					sttAppendBufRaw(&buf, RTF_HEADER);
@@ -656,8 +652,8 @@ static BOOL CALLBACK JabberConsoleDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam
 
 					XmlState xmlstate;
 					JabberXmlInitState(&xmlstate);
-					JabberXmlSetCallback(&xmlstate, 1, ELEM_CLOSE, JabberConsoleXmlCallback, NULL);
-					JabberXmlParse(&xmlstate,tmp);
+					JabberXmlSetCallback(&xmlstate, 1, ELEM_CLOSE, ( JABBER_XML_CALLBACK )JabberConsoleXmlCallback, ppro);
+					ppro->JabberXmlParse(&xmlstate,tmp);
 					xmlstate=xmlstate;
 					JabberXmlDestroyState(&xmlstate);
 
@@ -690,7 +686,7 @@ static BOOL CALLBACK JabberConsoleDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam
 
 				case IDC_BTN_FILTER_REFRESH:
 				{
-					sttJabberConsoleRebuildStrings(GetDlgItem(hwndDlg, IDC_CB_FILTER));
+					sttJabberConsoleRebuildStrings(ppro, GetDlgItem(hwndDlg, IDC_CB_FILTER));
 					break;
 				}
 
@@ -716,7 +712,7 @@ static BOOL CALLBACK JabberConsoleDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam
 						for (i = 0; i < SIZEOF(filter_modes); ++i)
 							if (filter_modes[i].type == g_filterInfo.type)
 							{
-								SendDlgItemMessage(hwndDlg, IDC_BTN_FILTER, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx(filter_modes[i].icon));
+								SendDlgItemMessage(hwndDlg, IDC_BTN_FILTER, BM_SETIMAGE, IMAGE_ICON, (LPARAM)ppro->LoadIconEx(filter_modes[i].icon));
 								break;
 							}
 						EnableWindow(GetDlgItem(hwndDlg, IDC_CB_FILTER), (g_filterInfo.type == TFilterInfo::T_OFF) ? FALSE : TRUE);
@@ -758,31 +754,32 @@ static BOOL CALLBACK JabberConsoleDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam
 		}
 
 		case WM_CLOSE:
-			DBWriteContactSettingByte(NULL, jabberProtoName, "consoleWnd_msg", g_filterInfo.msg);
-			DBWriteContactSettingByte(NULL, jabberProtoName, "consoleWnd_presence", g_filterInfo.presence);
-			DBWriteContactSettingByte(NULL, jabberProtoName, "consoleWnd_iq", g_filterInfo.iq);
-			DBWriteContactSettingByte(NULL, jabberProtoName, "consoleWnd_ftype", g_filterInfo.type);
-			JSetStringT(NULL, "consoleWnd_fpattern", g_filterInfo.pattern);
+			DBWriteContactSettingByte(NULL, ppro->szProtoName, "consoleWnd_msg", g_filterInfo.msg);
+			DBWriteContactSettingByte(NULL, ppro->szProtoName, "consoleWnd_presence", g_filterInfo.presence);
+			DBWriteContactSettingByte(NULL, ppro->szProtoName, "consoleWnd_iq", g_filterInfo.iq);
+			DBWriteContactSettingByte(NULL, ppro->szProtoName, "consoleWnd_ftype", g_filterInfo.type);
+			ppro->JSetStringT(NULL, "consoleWnd_fpattern", g_filterInfo.pattern);
 
-			Utils_SaveWindowPosition(hwndDlg, NULL, jabberProtoName, "consoleWnd_");
+			Utils_SaveWindowPosition(hwndDlg, NULL, ppro->szProtoName, "consoleWnd_");
 			DestroyWindow(hwndDlg);
 			return TRUE;
 
 		case WM_DESTROY:
-			hwndJabberConsole = NULL;
+			ppro->hwndJabberConsole = NULL;
 			break;
 	}
 
 	return FALSE;
 }
 
-static UINT WINAPI sttJabberConsoleThread(void *)
+static UINT WINAPI sttJabberConsoleThread( void* param )
 {
+	CJabberProto* ppro = (CJabberProto*)param;
 	MSG msg;
 	while ( GetMessage(&msg, NULL, 0, 0 )) {
 		if ( msg.message == WM_CREATECONSOLE ) {
-			hwndJabberConsole = CreateDialog(hInst, MAKEINTRESOURCE(IDD_CONSOLE), NULL, JabberConsoleDlgProc);
-			ShowWindow(hwndJabberConsole, SW_SHOW);
+			ppro->hwndJabberConsole = CreateDialogParam( hInst, MAKEINTRESOURCE(IDD_CONSOLE), NULL, JabberConsoleDlgProc, (LPARAM)ppro );
+			ShowWindow( ppro->hwndJabberConsole, SW_SHOW );
 			continue;
 		}
 
@@ -792,14 +789,14 @@ static UINT WINAPI sttJabberConsoleThread(void *)
 	return 0;
 }
 
-void JabberConsoleInit()
+void CJabberProto::JabberConsoleInit()
 {
 	LoadLibraryA("riched20.dll");
 	InitializeCriticalSection(&g_filterInfo.csPatternLock);
-	hThreadConsole = (HANDLE)mir_forkthreadex(sttJabberConsoleThread, NULL, 0, &sttJabberConsoleThreadId);
+	hThreadConsole = (HANDLE)mir_forkthreadex( ::sttJabberConsoleThread, this, 0, &sttJabberConsoleThreadId);
 }
 
-void JabberConsoleUninit()
+void CJabberProto::JabberConsoleUninit()
 {
 	if ( hThreadConsole ) 
 		PostThreadMessage(sttJabberConsoleThreadId, WM_QUIT, 0, 0);
@@ -809,12 +806,13 @@ void JabberConsoleUninit()
 	DeleteCriticalSection(&g_filterInfo.csPatternLock);
 }
 
-int JabberMenuHandleConsole(WPARAM wParam, LPARAM lParam)
+int JabberMenuHandleConsole(WPARAM wParam, LPARAM lParam, CJabberProto* ppro)
 {
+	HWND hwndJabberConsole = ppro->hwndJabberConsole;
 	if (hwndJabberConsole && IsWindow(hwndJabberConsole))
 		SetForegroundWindow(hwndJabberConsole);
 	else
-		if (hThreadConsole)
-			PostThreadMessage(sttJabberConsoleThreadId, WM_CREATECONSOLE, 0, 0);
+		if (ppro->hThreadConsole)
+			PostThreadMessage(ppro->sttJabberConsoleThreadId, WM_CREATECONSOLE, 0, 0);
 	return 0;
 }

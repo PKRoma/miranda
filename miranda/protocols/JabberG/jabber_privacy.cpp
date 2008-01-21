@@ -37,31 +37,29 @@ Last change by : $Author$
 
 #define JABBER_PL_BUSY_MSG				"Sending request, please wait..."
 
-CPrivacyListManager g_PrivacyListManager;
+static CJabberProto* glob; // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-static void sttStatusMessage(TCHAR *msg = NULL)
+static void sttStatusMessage(HWND hWnd, TCHAR *msg = NULL)
 {
-	SendDlgItemMessage(hwndPrivacyLists, IDC_STATUSBAR, SB_SETTEXT, SB_SIMPLEID,
+	SendDlgItemMessage(hWnd, IDC_STATUSBAR, SB_SETTEXT, SB_SIMPLEID,
 		(LPARAM)(msg ? msg : TranslateT("Ready.")));
 }
 
-void JabberProcessIqPrivacyLists( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::JabberProcessIqPrivacyLists( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_SET ) {
 		if ( !hwndPrivacyLists )
 		{
-			g_PrivacyListManager.RemoveAllLists();
-			g_PrivacyListManager.QueryLists();
-		} else
-		{
-			sttStatusMessage(TranslateT("Warning: privacy lists were changed on server."));
-		}
+			m_privacyListManager.RemoveAllLists();
+			QueryPrivacyLists();
+		} 
+		else sttStatusMessage( hwndPrivacyLists, TranslateT("Warning: privacy lists were changed on server."));
 
 		XmlNodeIq iq( "result", pInfo );
 		jabberThreadInfo->send( iq );
 }	}
 
-void JabberIqResultPrivacyListModify( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::JabberIqResultPrivacyListModify( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	if ( !pInfo->m_pUserData )
 		return;
@@ -71,19 +69,19 @@ void JabberIqResultPrivacyListModify( XmlNode* iqNode, void* userdata, CJabberIq
 	if ( pInfo->m_nIqType != JABBER_IQ_TYPE_RESULT )
 		pParam->m_bAllOk = FALSE;
 
-	if ( !g_JabberIqManager.GetGroupPendingIqCount( pInfo->m_dwGroupId )) {
+	if ( !m_iqManager.GetGroupPendingIqCount( pInfo->m_dwGroupId )) {
 		TCHAR szText[ 512 ];
 		if ( !pParam->m_bAllOk )
 			mir_sntprintf( szText, SIZEOF( szText ), TranslateT("Error occurred while applying changes"));
 		else
 			mir_sntprintf( szText, SIZEOF( szText ), TranslateT("Privacy lists successfully saved"));
-		sttStatusMessage(szText);
+		sttStatusMessage( hwndPrivacyLists, szText );
 		// FIXME: enable apply button
 		delete pParam;
 	}
 }
 
-void JabberIqResultPrivacyList( XmlNode* iqNode, void* userdata )
+void CJabberProto::JabberIqResultPrivacyList( XmlNode* iqNode, void* userdata )
 {
 	if ( !iqNode )
 		return;
@@ -102,13 +100,13 @@ void JabberIqResultPrivacyList( XmlNode* iqNode, void* userdata )
 		TCHAR *szListName = JabberXmlGetAttrValue( list, "name" );
 		if ( !szListName )
 			return;
-		g_PrivacyListManager.Lock();
-		CPrivacyList* pList = g_PrivacyListManager.FindList( szListName );
+		m_privacyListManager.Lock();
+		CPrivacyList* pList = m_privacyListManager.FindList( szListName );
 		if ( !pList ) {
-			g_PrivacyListManager.AddList( szListName );
-			pList = g_PrivacyListManager.FindList( szListName );
+			m_privacyListManager.AddList( szListName );
+			pList = m_privacyListManager.FindList( szListName );
 			if ( !pList ) {
-				g_PrivacyListManager.Unlock();
+				m_privacyListManager.Unlock();
 				return;
 		}	}
 
@@ -152,7 +150,7 @@ void JabberIqResultPrivacyList( XmlNode* iqNode, void* userdata )
 		pList->Reorder();
 		pList->SetLoaded();
 		pList->SetModified(FALSE);
-		g_PrivacyListManager.Unlock();
+		m_privacyListManager.Unlock();
 
 		if ( hwndPrivacyLists )
 			SendMessage( hwndPrivacyLists, WM_JABBER_REFRESH, 0, 0);
@@ -184,7 +182,7 @@ CPrivacyListRule* GetSelectedRule(HWND hDlg)
 	return (CPrivacyListRule* )nItemData;
 }
 
-void JabberIqResultPrivacyListActive( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::JabberIqResultPrivacyListActive( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	CPrivacyList *pList = (CPrivacyList *)pInfo->GetUserData();
 
@@ -200,32 +198,32 @@ void JabberIqResultPrivacyListActive( XmlNode* iqNode, void* userdata, CJabberIq
 
 	TCHAR szText[ 512 ];
 	szText[0] = _T('\0');
-	g_PrivacyListManager.Lock();
+	m_privacyListManager.Lock();
 	if ( !_tcscmp( type, _T("result"))) {
 		if ( pList ) {
-			g_PrivacyListManager.SetActiveListName( pList->GetListName() );
+			m_privacyListManager.SetActiveListName( pList->GetListName() );
 			mir_sntprintf( szText, SIZEOF( szText ), TranslateT("Privacy list %s set as active"), pList->GetListName() );
 		}
 		else {
-			g_PrivacyListManager.SetActiveListName( NULL );
+			m_privacyListManager.SetActiveListName( NULL );
 			mir_sntprintf( szText, SIZEOF( szText ), TranslateT("Active privacy list successfully declined"));
 		}
 	}
 	else {
 		mir_sntprintf( szText, SIZEOF( szText ), TranslateT("Error occurred while setting active list") );
 	}
-	g_PrivacyListManager.Unlock();
+	m_privacyListManager.Unlock();
 
 	if ( hwndPrivacyLists )
 	{
-		sttStatusMessage(szText);
+		sttStatusMessage( hwndPrivacyLists, szText );
 		RedrawWindow(GetDlgItem(hwndPrivacyLists, IDC_LB_LISTS), NULL, NULL, RDW_INVALIDATE);
 	}
 
-	JabberUtilsRebuildStatusMenu();
+	JabberRebuildStatusMenu();
 }
 
-void JabberIqResultPrivacyListDefault( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::JabberIqResultPrivacyListDefault( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	CPrivacyList *pList = (CPrivacyList *)pInfo->GetUserData();
 
@@ -241,30 +239,30 @@ void JabberIqResultPrivacyListDefault( XmlNode* iqNode, void* userdata, CJabberI
 
 	TCHAR szText[ 512 ];
 	szText[0] = _T('\0');
-	g_PrivacyListManager.Lock();
+	m_privacyListManager.Lock();
 	if ( !_tcscmp( type, _T("result"))) {
 		if ( pList ) {
-			g_PrivacyListManager.SetDefaultListName( pList->GetListName() );
+			m_privacyListManager.SetDefaultListName( pList->GetListName() );
 			mir_sntprintf( szText, SIZEOF( szText ), TranslateT("Privacy list %s set as default"), pList->GetListName() );
 		}
 		else {
-			g_PrivacyListManager.SetDefaultListName( NULL );
+			m_privacyListManager.SetDefaultListName( NULL );
 			mir_sntprintf( szText, SIZEOF( szText ), TranslateT("Default privacy list successfully declined"));
 		}
 	}
 	else {
 		mir_sntprintf( szText, SIZEOF( szText ), TranslateT("Error occurred while setting default list") );
 	}
-	g_PrivacyListManager.Unlock();
+	m_privacyListManager.Unlock();
 
 	if ( hwndPrivacyLists )
 	{
-		sttStatusMessage(szText);
+		sttStatusMessage( hwndPrivacyLists, szText );
 		RedrawWindow(GetDlgItem(hwndPrivacyLists, IDC_LB_LISTS), NULL, NULL, RDW_INVALIDATE);
 	}
 }
 
-void JabberIqResultPrivacyLists( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::JabberIqResultPrivacyLists( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	if ( pInfo->m_nIqType != JABBER_IQ_TYPE_RESULT )
 		return;
@@ -276,19 +274,19 @@ void JabberIqResultPrivacyLists( XmlNode* iqNode, void* userdata, CJabberIqInfo*
 	if ( jabberThreadInfo )
 		jabberThreadInfo->jabberServerCaps |= JABBER_CAPS_PRIVACY_LISTS;
 
-	g_PrivacyListManager.Lock();
-	g_PrivacyListManager.RemoveAllLists();
+	m_privacyListManager.Lock();
+	m_privacyListManager.RemoveAllLists();
 
 	XmlNode *list;
 	for ( int i = 1; ( list = JabberXmlGetNthChild( query, "list", i )) != NULL; i++ ) {
 		TCHAR *listName = JabberXmlGetAttrValue( list, "name" );
 		if ( listName ) {
-			g_PrivacyListManager.AddList(listName);
+			m_privacyListManager.AddList(listName);
 
 			// Query contents only if list editior is visible!
 			if ( hwndPrivacyLists ) {
 				int iqId = JabberSerialNext();
-				JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultPrivacyList);
+				JabberIqAdd( iqId, IQ_PROC_NONE, &CJabberProto::JabberIqResultPrivacyList);
 				XmlNodeIq iq( "get", iqId);
 				XmlNode* queryNode = iq.addQuery( JABBER_FEAT_PRIVACY_LISTS );
 				XmlNode* listNode = queryNode->addChild( "list" );
@@ -300,27 +298,38 @@ void JabberIqResultPrivacyLists( XmlNode* iqNode, void* userdata, CJabberIqInfo*
 	XmlNode *node = JabberXmlGetChild( query, "active" );
 	if ( node )
 		szName = JabberXmlGetAttrValue( node, "name" );
-	g_PrivacyListManager.SetActiveListName( szName );
+	m_privacyListManager.SetActiveListName( szName );
 
 	szName = NULL;
 	node = JabberXmlGetChild( query, "default" );
 	if ( node )
 		szName = JabberXmlGetAttrValue( node, "name" );
-	g_PrivacyListManager.SetDefaultListName( szName );
+	m_privacyListManager.SetDefaultListName( szName );
 
-	g_PrivacyListManager.Unlock();
+	m_privacyListManager.Unlock();
 
 	if ( hwndPrivacyLists )
 		SendMessage( hwndPrivacyLists, WM_JABBER_REFRESH, 0, 0);
 
-	JabberUtilsRebuildStatusMenu();
+	JabberRebuildStatusMenu();
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+struct JabberPrivacyAddListDlgParam
+{
+	TCHAR* dest;
+	size_t size;
+};
 
 static BOOL CALLBACK JabberPrivacyAddListDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	switch ( msg ) {
 	case WM_INITDIALOG:
-		hwndPrivacyRule = hwndDlg;
+		{
+			JabberPrivacyAddListDlgParam* param = ( JabberPrivacyAddListDlgParam* )lParam;
+			glob->hwndPrivacyRule = hwndDlg;
+		}
 		TranslateDialogDefault( hwndDlg );
 		SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG )lParam );
 		return TRUE;
@@ -329,9 +338,8 @@ static BOOL CALLBACK JabberPrivacyAddListDlgProc( HWND hwndDlg, UINT msg, WPARAM
 		switch ( LOWORD( wParam )) {
 		case IDOK:
 			{
-				TCHAR *szText = ( TCHAR * )GetWindowLong( hwndDlg, GWL_USERDATA );
-				// FIXME: hard coded line length
-				GetDlgItemText( hwndDlg, IDC_EDIT_NAME, szText, 511 );
+				JabberPrivacyAddListDlgParam* param = ( JabberPrivacyAddListDlgParam* )GetWindowLong( hwndDlg, GWL_USERDATA );
+				GetDlgItemText( hwndDlg, IDC_EDIT_NAME, param->dest, param->size );
 				EndDialog( hwndDlg, 1 );
 			}
 			return TRUE;
@@ -347,7 +355,7 @@ static BOOL CALLBACK JabberPrivacyAddListDlgProc( HWND hwndDlg, UINT msg, WPARAM
 		return TRUE;
 
 	case WM_DESTROY:
-		hwndPrivacyRule = NULL;
+		glob->hwndPrivacyRule = NULL;
 		break;
 	}
 	return FALSE;
@@ -358,13 +366,13 @@ static BOOL CALLBACK JabberPrivacyRuleDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 	switch ( msg ) {
 	case WM_INITDIALOG:
 		{
-			hwndPrivacyRule = hwndDlg;
+			glob->hwndPrivacyRule = hwndDlg;
 			TranslateDialogDefault( hwndDlg );
 
-			SendDlgItemMessage(hwndDlg, IDC_ICO_MESSAGE,		STM_SETICON, (WPARAM)LoadIconEx("pl_msg_allow"), 0);
-			SendDlgItemMessage(hwndDlg, IDC_ICO_QUERY,			STM_SETICON, (WPARAM)LoadIconEx("pl_iq_allow"), 0);
-			SendDlgItemMessage(hwndDlg, IDC_ICO_PRESENCEIN,		STM_SETICON, (WPARAM)LoadIconEx("pl_prin_allow"), 0);
-			SendDlgItemMessage(hwndDlg, IDC_ICO_PRESENCEOUT,	STM_SETICON, (WPARAM)LoadIconEx("pl_prout_allow"), 0);
+			SendDlgItemMessage(hwndDlg, IDC_ICO_MESSAGE,     STM_SETICON, (WPARAM)glob->LoadIconEx("pl_msg_allow"), 0);
+			SendDlgItemMessage(hwndDlg, IDC_ICO_QUERY,       STM_SETICON, (WPARAM)glob->LoadIconEx("pl_iq_allow"), 0);
+			SendDlgItemMessage(hwndDlg, IDC_ICO_PRESENCEIN,  STM_SETICON, (WPARAM)glob->LoadIconEx("pl_prin_allow"), 0);
+			SendDlgItemMessage(hwndDlg, IDC_ICO_PRESENCEOUT, STM_SETICON, (WPARAM)glob->LoadIconEx("pl_prout_allow"), 0);
 
 			SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG )lParam );
 
@@ -435,9 +443,9 @@ static BOOL CALLBACK JabberPrivacyRuleDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 						HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 						while ( hContact != NULL ) {
 							char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-							if ( szProto != NULL && !strcmp( szProto, jabberProtoName )) {
+							if ( szProto != NULL && !strcmp( szProto, glob->szProtoName )) {
 								DBVARIANT dbv;
-								if ( !JGetStringT( hContact, "jid", &dbv )) {
+								if ( !glob->JGetStringT( hContact, "jid", &dbv )) {
 									SendDlgItemMessage( hwndDlg, IDC_COMBO_VALUES, CB_ADDSTRING, 0, (LPARAM)dbv.ptszVal );
 									JFreeVariant( &dbv );
 								}
@@ -447,12 +455,13 @@ static BOOL CALLBACK JabberPrivacyRuleDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 
 						// append known chatroom jids from bookmarks
 						int i = 0;
-						while (( i = JabberListFindNext( LIST_BOOKMARK, i )) >= 0 ) {
+						/*while (( i = JabberListFindNext( LIST_BOOKMARK, i )) >= 0 ) {  !!!!!!!!!!!!!!!!!!!!!
 							JABBER_LIST_ITEM *item = 0;
 							if ( item = JabberListGetItemPtrFromIndex( i ))
 								SendDlgItemMessage( hwndDlg, IDC_COMBO_VALUES, CB_ADDSTRING, 0, (LPARAM)item->jid );
 							i++;
 						}
+						*/
 
 						// FIXME: ugly code :)
 						if ( pRule->GetValue() ) {
@@ -580,7 +589,7 @@ static BOOL CALLBACK JabberPrivacyRuleDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 		return TRUE;
 
 	case WM_DESTROY:
-		hwndPrivacyRule = NULL;
+		// hwndPrivacyRule = NULL; !!!!!!!!!!!!!!!!!!!!!!
 		break;
 	}
 	return FALSE;
@@ -747,8 +756,7 @@ static void sttDrawRulesList(HWND hwndDlg, LPDRAWITEMSTRUCT lpdis)
 
 	RECT rc;
 
-	if (!pRule)
-	{
+	if ( !pRule ) {
 		rc = lpdis->rcItem;
 		rc.left += 25;
 
@@ -756,16 +764,15 @@ static void sttDrawRulesList(HWND hwndDlg, LPDRAWITEMSTRUCT lpdis)
 		TCHAR *str = (TCHAR *)_alloca(len * sizeof(TCHAR));
 		SendDlgItemMessage(hwndDlg, lpdis->CtlID, LB_GETTEXT, lpdis->itemID, (LPARAM)str);
 		sttDrawNextRulePart(lpdis->hDC, clLine1, str, &rc);
-	} else
-	if (pRule->GetType() == Else)
-	{
+	} 
+	else if (pRule->GetType() == Else) {
 		rc = lpdis->rcItem;
 		rc.left += 25;
 
 		sttDrawNextRulePart(lpdis->hDC, clLine2, TranslateT("Else "), &rc);
 		sttDrawRuleAction(lpdis->hDC, clLine1, clLine2, pRule, &rc);
-	} else
-	{
+	} 
+	else {
 		rc = lpdis->rcItem;
 		rc.bottom -= (rc.bottom - rc.top) / 2;
 		rc.left += 25;
@@ -778,16 +785,13 @@ static void sttDrawRulesList(HWND hwndDlg, LPDRAWITEMSTRUCT lpdis)
 				sttDrawNextRulePart(lpdis->hDC, clLine1, pRule->GetValue(), &rc);
 				sttDrawNextRulePart(lpdis->hDC, clLine2, TranslateT("'"), &rc);
 				
-				if (HANDLE hContact = JabberHContactFromJID(pRule->GetValue()))
-				{
+				if (HANDLE hContact = glob->JabberHContactFromJID(pRule->GetValue())) {
 					TCHAR *szName = (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR);
-					if (szName)
-					{
+					if ( szName ) {
 						sttDrawNextRulePart(lpdis->hDC, clLine2, TranslateT(" (nickname: "), &rc);
 						sttDrawNextRulePart(lpdis->hDC, clLine1, szName, &rc);
 						sttDrawNextRulePart(lpdis->hDC, clLine2, TranslateT(")"), &rc);
-					}
-				}
+				}	}
 				break;
 			}
 
@@ -812,12 +816,12 @@ static void sttDrawRulesList(HWND hwndDlg, LPDRAWITEMSTRUCT lpdis)
 	}
 
 	DrawIconEx(lpdis->hDC, lpdis->rcItem.left+4, (lpdis->rcItem.top+lpdis->rcItem.bottom-16)/2,
-		LoadIconEx("main"), 16, 16, 0, NULL, DI_NORMAL);
+		glob->LoadIconEx("main"), 16, 16, 0, NULL, DI_NORMAL);
 
 	if (pRule)
 	{
 		DrawIconEx(lpdis->hDC, lpdis->rcItem.left+4, (lpdis->rcItem.top+lpdis->rcItem.bottom-16)/2,
-			LoadIconEx(pRule->GetAction() ? "disco_ok" : "disco_fail"),
+			glob->LoadIconEx(pRule->GetAction() ? "disco_ok" : "disco_fail"),
 			16, 16, 0, NULL, DI_NORMAL);
 	}
 
@@ -857,11 +861,11 @@ static void sttDrawLists(HWND hwndDlg, LPDRAWITEMSTRUCT lpdis)
 	SetBkMode(lpdis->hDC, TRANSPARENT);
 
 	RECT rc;
-
-	g_PrivacyListManager.Lock();
-	TCHAR *szDefault = NEWTSTR_ALLOCA(g_PrivacyListManager.GetDefaultListName());
-	TCHAR *szActive = NEWTSTR_ALLOCA(g_PrivacyListManager.GetActiveListName());
-	g_PrivacyListManager.Unlock();
+/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	m_privacyListManager.Lock(); */
+	TCHAR *szDefault = _T(""); //NEWTSTR_ALLOCA(m_privacyListManager.GetDefaultListName());
+	TCHAR *szActive = _T(""); //NEWTSTR_ALLOCA(m_privacyListManager.GetActiveListName());
+	//m_privacyListManager.Unlock();
 
 	rc = lpdis->rcItem;
 	rc.left +=3;
@@ -901,12 +905,12 @@ static void sttDrawLists(HWND hwndDlg, LPDRAWITEMSTRUCT lpdis)
 		sttDrawNextRulePart(lpdis->hDC, clLine2, TranslateT(" (default)"), &rc);
 
 	DrawIconEx(lpdis->hDC, lpdis->rcItem.right-16-4, (lpdis->rcItem.top+lpdis->rcItem.bottom-16)/2,
-		LoadIconEx(bActive ? "pl_list_active" : "pl_list_any"),
+		glob->LoadIconEx(bActive ? "pl_list_active" : "pl_list_any"),
 		16, 16, 0, NULL, DI_NORMAL);
 
 	if (bDefault)
 		DrawIconEx(lpdis->hDC, lpdis->rcItem.right-16-4, (lpdis->rcItem.top+lpdis->rcItem.bottom-16)/2,
-			LoadIconEx("disco_ok"),
+			glob->LoadIconEx("disco_ok"),
 			16, 16, 0, NULL, DI_NORMAL);
 
 	if (hfnt)
@@ -991,7 +995,7 @@ static void sttCListFilter(HWND hwndList)
 			hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0))
 	{
 		char *proto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-		if (!proto || lstrcmpA(proto, jabberProtoName))
+//		if (!proto || lstrcmpA(proto, szProtoName)) !!!!!!!
 			if (int hItem = SendMessage(hwndList, CLM_FINDCONTACT, (WPARAM)hContact, 0))
 				SendMessage(hwndList, CLM_DELETEITEM, (WPARAM)hItem, 0);
 	}
@@ -1054,10 +1058,8 @@ static int sttCListAddContact(HWND hwndList, TCHAR *jid)
 	int hItem = 0;
 	TCListInfo *info = (TCListInfo *)GetWindowLong(hwndList, GWL_USERDATA);
 
-	HANDLE hContact = JabberHContactFromJID(jid);
-
-	if (!hContact)
-	{
+	HANDLE hContact = glob->JabberHContactFromJID(jid);
+	if ( !hContact ) {
 		hItem = info->findJid(jid);
 		if (!hItem)
 		{
@@ -1218,10 +1220,8 @@ static void sttCListBuildList(HWND hwndList, CPrivacyList *pList)
 		hItem = SendMessage(hwndList, CLM_FINDCONTACT, (WPARAM)hContact, 0);
 
 		DBVARIANT dbv;
-		if (JGetStringT(hContact, "jid", &dbv))
-		{
-			if (JGetStringT(hContact, "ChatRoomID", &dbv))
-			{
+		if ( glob->JGetStringT(hContact, "jid", &dbv)) {
+			if ( glob->JGetStringT(hContact, "ChatRoomID", &dbv)) {
 				JFreeVariant(&dbv);
 				continue;
 			}
@@ -1303,10 +1303,10 @@ static void sttEnableEditorControls(HWND hwndDlg)
 {
 	TCListInfo *info = (TCListInfo *)GetWindowLong(GetDlgItem(hwndDlg, IDC_CLIST), GWL_USERDATA);
 
-	g_PrivacyListManager.Lock();
-	BOOL bListsLoaded = g_PrivacyListManager.IsAllListsLoaded();
-	BOOL bListsModified = g_PrivacyListManager.IsModified() || info->bChanged;
-	g_PrivacyListManager.Unlock();
+	glob->m_privacyListManager.Lock();
+	BOOL bListsLoaded = glob->m_privacyListManager.IsAllListsLoaded();
+	BOOL bListsModified = glob->m_privacyListManager.IsModified() || info->bChanged;
+	glob->m_privacyListManager.Unlock();
 
 	int nCurSel = SendDlgItemMessage( hwndDlg, IDC_PL_RULES_LIST, LB_GETCURSEL, 0, 0 );
 	int nItemCount = SendDlgItemMessage( hwndDlg, IDC_PL_RULES_LIST, LB_GETCOUNT, 0, 0 );
@@ -1328,7 +1328,7 @@ static void sttEnableEditorControls(HWND hwndDlg)
 	EnableWindow( GetDlgItem( hwndDlg, IDC_APPLY ), bListsLoaded && bListsModified );
 
 	if (bListsLoaded)
-		sttStatusMessage( NULL );
+		sttStatusMessage( hwndDlg, NULL );
 }
 
 static int sttPrivacyListsResizer(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
@@ -1436,9 +1436,9 @@ static void sttShowControls(HWND hwndDlg, int *idList, int nCmdShow)
 
 BOOL JabberPrivacyListDlgCanExit( HWND hDlg )
 {
-	g_PrivacyListManager.Lock();
-	BOOL bModified = g_PrivacyListManager.IsModified();
-	g_PrivacyListManager.Unlock();
+	glob->m_privacyListManager.Lock();
+	BOOL bModified = glob->m_privacyListManager.IsModified();
+	glob->m_privacyListManager.Unlock();
 
 	TCListInfo *info = (TCListInfo *)GetWindowLong(GetDlgItem(hDlg, IDC_CLIST), GWL_USERDATA);
 	if (info && info->bChanged)
@@ -1475,8 +1475,8 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 	case WM_INITDIALOG:
 		{
 			TranslateDialogDefault( hwndDlg );
-			SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )LoadIconEx( "privacylists" ));
-			hwndPrivacyLists = hwndDlg;
+			SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )glob->LoadIconEx( "privacylists" ));
+			glob->hwndPrivacyLists = hwndDlg;
 
 			EnableWindow( GetDlgItem( hwndDlg, IDC_ADD_RULE ), FALSE );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_EDIT_RULE ), FALSE );
@@ -1484,7 +1484,7 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 			EnableWindow( GetDlgItem( hwndDlg, IDC_UP_RULE ), FALSE );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_DOWN_RULE ), FALSE );
 
-			g_PrivacyListManager.QueryLists();
+			glob->QueryPrivacyLists();
 
 			LOGFONT lf;
 			GetObject((HFONT)SendDlgItemMessage(hwndDlg, IDC_TXT_LISTS, WM_GETFONT, 0, 0), sizeof(lf), &lf);
@@ -1503,14 +1503,14 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 			HIMAGELIST hIml = ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),(IsWinVerXPPlus()?ILC_COLOR32:ILC_COLOR16)|ILC_MASK,9,9);
 			ImageList_AddIcon(hIml, LoadSkinnedIcon(SKINICON_OTHER_SMALLDOT));
-			ImageList_AddIcon(hIml, LoadIconEx("pl_msg_allow"));
-			ImageList_AddIcon(hIml, LoadIconEx("pl_msg_deny"));
-			ImageList_AddIcon(hIml, LoadIconEx("pl_prin_allow"));
-			ImageList_AddIcon(hIml, LoadIconEx("pl_prin_deny"));
-			ImageList_AddIcon(hIml, LoadIconEx("pl_prout_allow"));
-			ImageList_AddIcon(hIml, LoadIconEx("pl_prout_deny"));
-			ImageList_AddIcon(hIml, LoadIconEx("pl_iq_allow"));
-			ImageList_AddIcon(hIml, LoadIconEx("pl_iq_deny"));
+			ImageList_AddIcon(hIml, glob->LoadIconEx("pl_msg_allow"));
+			ImageList_AddIcon(hIml, glob->LoadIconEx("pl_msg_deny"));
+			ImageList_AddIcon(hIml, glob->LoadIconEx("pl_prin_allow"));
+			ImageList_AddIcon(hIml, glob->LoadIconEx("pl_prin_deny"));
+			ImageList_AddIcon(hIml, glob->LoadIconEx("pl_prout_allow"));
+			ImageList_AddIcon(hIml, glob->LoadIconEx("pl_prout_deny"));
+			ImageList_AddIcon(hIml, glob->LoadIconEx("pl_iq_allow"));
+			ImageList_AddIcon(hIml, glob->LoadIconEx("pl_iq_deny"));
 			SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETEXTRAIMAGELIST, 0, (LPARAM)hIml);
 			SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETEXTRACOLUMNS, 4, 0);
 
@@ -1560,7 +1560,7 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 			{
 				SendDlgItemMessage(hwndDlg, buttons[i].idc, BM_SETIMAGE, IMAGE_ICON,
 					(LPARAM)(buttons[i].icon ?
-						LoadIconEx(buttons[i].icon) :
+						glob->LoadIconEx(buttons[i].icon) :
 						LoadSkinnedIcon(buttons[i].coreIcon)));
 				SendDlgItemMessage(hwndDlg, buttons[i].idc, BUTTONSETASFLATBTN, 0, 0);
 				SendDlgItemMessage(hwndDlg, buttons[i].idc, BUTTONADDTOOLTIP, (WPARAM)TranslateTS(buttons[i].title), BATF_TCHAR);
@@ -1568,7 +1568,7 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 					SendDlgItemMessage(hwndDlg, buttons[i].idc, BUTTONSETASPUSHBTN, 0, 0);
 			}
 
-			if (DBGetContactSettingByte(NULL, jabberProtoName, "plistsWnd_simpleMode", 1))
+			if ( DBGetContactSettingByte(NULL, glob->szProtoName, "plistsWnd_simpleMode", 1))
 			{
 				sttShowControls(hwndDlg, idSimpleControls, SW_SHOW);
 				sttShowControls(hwndDlg, idAdvancedControls, SW_HIDE);
@@ -1587,9 +1587,9 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 			SendDlgItemMessage(hwndDlg, IDC_STATUSBAR, SB_SETMINHEIGHT, GetSystemMetrics(SM_CYSMICON), 0);
 			SendDlgItemMessage(hwndDlg, IDC_STATUSBAR, SB_SIMPLE, TRUE, 0);
-			sttStatusMessage(TranslateT("Loading..."));
+			sttStatusMessage( hwndDlg, TranslateT("Loading..."));
 
-			Utils_RestoreWindowPosition(hwndDlg, NULL, jabberProtoName, "plistsWnd_sz");
+			Utils_RestoreWindowPosition(hwndDlg, NULL, glob->szProtoName, "plistsWnd_sz");
 
 			return TRUE;
 		}
@@ -1608,8 +1608,8 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 			nItemId = SendDlgItemMessage( hwndDlg, IDC_LB_LISTS, LB_ADDSTRING, 0, (LPARAM)TranslateT( "<none>" ));
 			SendDlgItemMessage( hwndDlg, IDC_LB_LISTS, LB_SETITEMDATA, nItemId, (LPARAM)NULL );
 
-			g_PrivacyListManager.Lock();
-			CPrivacyList* pList = g_PrivacyListManager.GetFirstList();
+			glob->m_privacyListManager.Lock();
+			CPrivacyList* pList = glob->m_privacyListManager.GetFirstList();
 			while ( pList ) {
 				if ( !pList->IsDeleted() ) {
 					nItemId = SendDlgItemMessage( hwndDlg, IDC_LB_LISTS, LB_ADDSTRING, 0, (LPARAM)pList->GetListName() );
@@ -1621,7 +1621,7 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 			if ( SendDlgItemMessage( hwndDlg, IDC_LB_LISTS, LB_SELECTSTRING, -1, (LPARAM)szCurrentSelectedList ) == LB_ERR )
 				SendDlgItemMessage( hwndDlg, IDC_LB_LISTS, LB_SETCURSEL, 0, 0 );
 
-			g_PrivacyListManager.Unlock();
+			glob->m_privacyListManager.Unlock();
 
 			PostMessage( hwndDlg, WM_COMMAND, MAKEWPARAM( IDC_LB_LISTS, LBN_SELCHANGE ), 0 );
 			sttEnableEditorControls(hwndDlg);
@@ -1687,7 +1687,7 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 			for (i = 0; i < SIZEOF(items); ++i)
 			{
-				DrawIconEx(lpdis->hDC, rc.left, (rc.top+rc.bottom-16)/2, LoadIconEx(items[i].icon),
+				DrawIconEx(lpdis->hDC, rc.left, (rc.top+rc.bottom-16)/2, glob->LoadIconEx(items[i].icon),
 					16, 16, 0, NULL, DI_NORMAL);
 				rc.left += 18;
 				sttDrawNextRulePart(lpdis->hDC, clText, items[i].text, &rc);
@@ -1741,41 +1741,41 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 			break;
 
 		case IDC_ACTIVATE:
-			if ( jabberOnline ) {
-				g_PrivacyListManager.Lock();
+			if ( glob->jabberOnline ) {
+				glob->m_privacyListManager.Lock();
 				EnableWindow( GetDlgItem( hwndDlg, IDC_ACTIVATE ), FALSE );
 				CPrivacyList* pList = GetSelectedList(hwndDlg);
 				SetWindowLong( GetDlgItem( hwndDlg, IDC_ACTIVATE ), GWL_USERDATA, (DWORD)pList );
-				XmlNodeIq iq( g_JabberIqManager.AddHandler( JabberIqResultPrivacyListActive, JABBER_IQ_TYPE_SET, NULL, 0, -1, pList ) );
+				XmlNodeIq iq( glob->m_iqManager.AddHandler( &CJabberProto::JabberIqResultPrivacyListActive, JABBER_IQ_TYPE_SET, NULL, 0, -1, pList ) );
 				XmlNode* query = iq.addQuery( JABBER_FEAT_PRIVACY_LISTS );
 				XmlNode* active = query->addChild( "active" );
 				if ( pList )
 					active->addAttr( "name", pList->GetListName() );
-				g_PrivacyListManager.Unlock();
+				glob->m_privacyListManager.Unlock();
 
-				sttStatusMessage( TranslateT( JABBER_PL_BUSY_MSG ));
+				sttStatusMessage( hwndDlg, TranslateT( JABBER_PL_BUSY_MSG ));
 
-				jabberThreadInfo->send( iq );
+				glob->jabberThreadInfo->send( iq );
 			}
 			return TRUE;
 
 		case IDC_SET_DEFAULT:
-			if ( jabberOnline ) {
-				g_PrivacyListManager.Lock();
+			if ( glob->jabberOnline ) {
+				glob->m_privacyListManager.Lock();
 				EnableWindow( GetDlgItem( hwndDlg, IDC_SET_DEFAULT ), FALSE );
 				CPrivacyList* pList = GetSelectedList(hwndDlg);
 				SetWindowLong( GetDlgItem( hwndDlg, IDC_SET_DEFAULT ), GWL_USERDATA, (DWORD)pList );
-				int iqId = JabberSerialNext();
-				XmlNodeIq iq( g_JabberIqManager.AddHandler( JabberIqResultPrivacyListDefault, JABBER_IQ_TYPE_SET, NULL, 0, -1, pList ) );
+				int iqId = glob->JabberSerialNext();
+				XmlNodeIq iq( glob->m_iqManager.AddHandler( &CJabberProto::JabberIqResultPrivacyListDefault, JABBER_IQ_TYPE_SET, NULL, 0, -1, pList ) );
 				XmlNode* query = iq.addQuery( JABBER_FEAT_PRIVACY_LISTS );
 				XmlNode* defaultTag = query->addChild( "default" );
 				if ( pList )
 					defaultTag->addAttr( "name", pList->GetListName() );
-				g_PrivacyListManager.Unlock();
+				glob->m_privacyListManager.Unlock();
 
-				sttStatusMessage( TranslateT( JABBER_PL_BUSY_MSG ));
+				sttStatusMessage( hwndDlg, TranslateT( JABBER_PL_BUSY_MSG ));
 
-				jabberThreadInfo->send( iq );
+				glob->jabberThreadInfo->send( iq );
 			}
 			return TRUE;
 
@@ -1805,7 +1805,7 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 					return TRUE;
 				}
 
-				g_PrivacyListManager.Lock();
+				glob->m_privacyListManager.Lock();
 				if (IsWindowVisible(GetDlgItem(hwndDlg, IDC_CLIST)))
 				{
 					TCListInfo *info = (TCListInfo *)GetWindowLong(GetDlgItem(hwndDlg, IDC_CLIST), GWL_USERDATA);
@@ -1815,7 +1815,7 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 				{
 					sttShowAdvancedList(hwndDlg, (CPrivacyList* )nErr);
 				}
-				g_PrivacyListManager.Unlock();
+				glob->m_privacyListManager.Unlock();
 
 				sttEnableEditorControls(hwndDlg);
 			}
@@ -1834,7 +1834,7 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 		case IDC_EDIT_RULE:
 			// FIXME: potential deadlock due to PLM lock while editing rule
-			g_PrivacyListManager.Lock();
+			glob->m_privacyListManager.Lock();
 			{
 				CPrivacyListRule* pRule = GetSelectedRule( hwndDlg );
 				CPrivacyList* pList = GetSelectedList(hwndDlg);
@@ -1844,12 +1844,12 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 						pList->SetModified();
 						PostMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0 );
 			}	}	}
-			g_PrivacyListManager.Unlock();
+			glob->m_privacyListManager.Unlock();
 			return TRUE;
 
 		case IDC_ADD_RULE:
 			// FIXME: potential deadlock due to PLM lock while editing rule
-			g_PrivacyListManager.Lock();
+			glob->m_privacyListManager.Lock();
 			{
 				CPrivacyList* pList = GetSelectedList(hwndDlg);
 				if ( pList ) {
@@ -1863,11 +1863,11 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 					}
 					else delete pRule;
 			}	}
-			g_PrivacyListManager.Unlock();
+			glob->m_privacyListManager.Unlock();
 			return TRUE;
 
 		case IDC_REMOVE_RULE:
-			g_PrivacyListManager.Lock();
+			glob->m_privacyListManager.Lock();
 			{
 				CPrivacyList* pList = GetSelectedList(hwndDlg);
 				CPrivacyListRule* pRule = GetSelectedRule( hwndDlg );
@@ -1882,11 +1882,11 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 					PostMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0 );
 			}	}
 
-			g_PrivacyListManager.Unlock();
+			glob->m_privacyListManager.Unlock();
 			return TRUE;
 
 		case IDC_UP_RULE:
-			g_PrivacyListManager.Lock();
+			glob->m_privacyListManager.Lock();
 			{
 				CPrivacyList* pList = GetSelectedList(hwndDlg);
 				CPrivacyListRule* pRule = GetSelectedRule( hwndDlg );
@@ -1900,11 +1900,11 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 					PostMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0 );
 			}	}
 
-			g_PrivacyListManager.Unlock();
+			glob->m_privacyListManager.Unlock();
 			return TRUE;
 
 		case IDC_DOWN_RULE:
-			g_PrivacyListManager.Lock();
+			glob->m_privacyListManager.Lock();
 			{
 				CPrivacyList* pList = GetSelectedList(hwndDlg);
 				CPrivacyListRule* pRule = GetSelectedRule( hwndDlg );
@@ -1919,7 +1919,7 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 					PostMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0 );
 			}	}
 
-			g_PrivacyListManager.Unlock();
+			glob->m_privacyListManager.Unlock();
 			return TRUE;
 
 		case IDC_ADD_LIST:
@@ -1927,13 +1927,16 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 				// FIXME: line length is hard coded in dialog procedure
 				TCHAR szLine[ 512 ];
 				szLine[0] = _T( '\0' );
+
+				JabberPrivacyAddListDlgParam param = { szLine, SIZEOF( szLine ) };
+
 				int nRetVal = DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_PRIVACY_ADD_LIST ), hwndDlg, JabberPrivacyAddListDlgProc, (LPARAM)szLine );
 				if ( nRetVal && _tcslen( szLine ) ) {
-					g_PrivacyListManager.Lock();
-					CPrivacyList* pList = g_PrivacyListManager.FindList( szLine );
+					glob->m_privacyListManager.Lock();
+					CPrivacyList* pList = glob->m_privacyListManager.FindList( szLine );
 					if ( !pList ) {
-						g_PrivacyListManager.AddList( szLine );
-						pList = g_PrivacyListManager.FindList( szLine );
+						glob->m_privacyListManager.AddList( szLine );
+						pList = glob->m_privacyListManager.FindList( szLine );
 						if ( pList ) {
 							pList->SetModified( TRUE );
 							pList->SetLoaded( TRUE );
@@ -1947,21 +1950,21 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 						SendDlgItemMessage( hwndDlg, IDC_LB_LISTS, LB_SETITEMDATA, nSelected, (LPARAM)pList );
 						SendDlgItemMessage( hwndDlg, IDC_LB_LISTS, LB_SETCURSEL, nSelected, 0 );
 					}
-					g_PrivacyListManager.Unlock();
+					glob->m_privacyListManager.Unlock();
 					PostMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0 );
 				}
 				return TRUE;
 			}
 
 		case IDC_REMOVE_LIST:
-			g_PrivacyListManager.Lock();
+			glob->m_privacyListManager.Lock();
 			{
 				CPrivacyList* pList = GetSelectedList(hwndDlg);
 				if ( pList ) {
 					TCHAR *szListName = pList->GetListName();
-					if ( ( g_PrivacyListManager.GetActiveListName() && !_tcscmp( szListName, g_PrivacyListManager.GetActiveListName()))
-						|| ( g_PrivacyListManager.GetDefaultListName() && !_tcscmp( szListName, g_PrivacyListManager.GetDefaultListName()) )) {
-						g_PrivacyListManager.Unlock();
+					if ( ( glob->m_privacyListManager.GetActiveListName() && !_tcscmp( szListName, glob->m_privacyListManager.GetActiveListName()))
+						|| ( glob->m_privacyListManager.GetDefaultListName() && !_tcscmp( szListName, glob->m_privacyListManager.GetDefaultListName()) )) {
+						glob->m_privacyListManager.Unlock();
 						MessageBox( hwndDlg, TranslateTS(_T("Can't remove active or default list")), TranslateTS(_T("Sorry")), MB_OK | MB_ICONSTOP );
 						return TRUE;
 					}
@@ -1969,17 +1972,17 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 					pList->SetModified();
 			}	}
 
-			g_PrivacyListManager.Unlock();
+			glob->m_privacyListManager.Unlock();
 			PostMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0 );
 			return TRUE;
 
 		case IDC_APPLY:
-			if ( !jabberOnline ) {
-				sttStatusMessage(TranslateT("Unable to save list because you are currently offline."));
+			if ( !glob->jabberOnline ) {
+				sttStatusMessage( hwndDlg, TranslateT("Unable to save list because you are currently offline."));
 				return TRUE;
 			}
 
-			g_PrivacyListManager.Lock();
+			glob->m_privacyListManager.Lock();
 			{
 				if (IsWindowVisible(GetDlgItem(hwndDlg, IDC_CLIST)))
 				{
@@ -1989,7 +1992,7 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 				DWORD dwGroupId = 0;
 				CPrivacyListModifyUserParam *pUserData = NULL;
-				CPrivacyList* pList = g_PrivacyListManager.GetFirstList();
+				CPrivacyList* pList = glob->m_privacyListManager.GetFirstList();
 				while ( pList ) {
 					if ( pList->IsModified() ) {
 						CPrivacyListRule* pRule = pList->GetFirstRule();
@@ -2002,12 +2005,12 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 						pList->SetModified( FALSE );
 
 						if ( !dwGroupId ) {
-							dwGroupId = g_JabberIqManager.GetNextFreeGroupId();
+							dwGroupId = glob->m_iqManager.GetNextFreeGroupId();
 							pUserData = new CPrivacyListModifyUserParam;
 							pUserData->m_bAllOk = TRUE;
 						}
 
-						XmlNodeIq iq( g_JabberIqManager.AddHandler( JabberIqResultPrivacyListModify, JABBER_IQ_TYPE_SET, NULL, 0, -1, pUserData, dwGroupId ));
+						XmlNodeIq iq( glob->m_iqManager.AddHandler( &CJabberProto::JabberIqResultPrivacyListModify, JABBER_IQ_TYPE_SET, NULL, 0, -1, pUserData, dwGroupId ));
 						XmlNode* query = iq.addQuery( JABBER_FEAT_PRIVACY_LISTS );
 						XmlNode* listTag = query->addChild( "list" );
 						listTag->addAttr( "name", pList->GetListName() );
@@ -2046,12 +2049,12 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 							pRule = pRule->GetNext();
 						}
 
-						jabberThreadInfo->send( iq );
+						glob->jabberThreadInfo->send( iq );
 					}
 					pList = pList->GetNext();
 			}	}
-			g_PrivacyListManager.Unlock();
-			sttStatusMessage( TranslateT( JABBER_PL_BUSY_MSG ));
+			glob->m_privacyListManager.Unlock();
+			sttStatusMessage( hwndDlg, TranslateT( JABBER_PL_BUSY_MSG ));
 			PostMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0 );
 			return TRUE;
 
@@ -2156,12 +2159,12 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 	}
 
 	case WM_DESTROY:
-		hwndPrivacyLists = NULL;
+		glob->hwndPrivacyLists = NULL;
 
 		// Wipe all data and query lists without contents
-		g_PrivacyListManager.RemoveAllLists();
-		g_PrivacyListManager.QueryLists();
-		g_PrivacyListManager.SetModified( FALSE );
+		glob->m_privacyListManager.RemoveAllLists();
+		glob->QueryPrivacyLists();
+		glob->m_privacyListManager.SetModified( FALSE );
 
 		// Delete custom bold font
 		DeleteObject((HFONT)SendDlgItemMessage(hwndDlg, IDC_TXT_LISTS, WM_GETFONT, 0, 0));
@@ -2171,52 +2174,64 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 			delete info;
 		}
 
-		DBWriteContactSettingByte(NULL, jabberProtoName, "plistsWnd_simpleMode", IsDlgButtonChecked(hwndDlg, IDC_BTN_SIMPLE));
+		DBWriteContactSettingByte(NULL, glob->szProtoName, "plistsWnd_simpleMode", IsDlgButtonChecked(hwndDlg, IDC_BTN_SIMPLE));
 
-		Utils_SaveWindowPosition(hwndDlg, NULL, jabberProtoName, "plistsWnd_sz");
+		Utils_SaveWindowPosition(hwndDlg, NULL, glob->szProtoName, "plistsWnd_sz");
 
 		break;
 	}
 	return FALSE;
 }
 
-int JabberMenuHandlePrivacyLists( WPARAM wParam, LPARAM lParam )
+int JabberMenuHandlePrivacyLists( WPARAM wParam, LPARAM lParam, CJabberProto* ppro )
 {
-	if ( hwndPrivacyLists && IsWindow( hwndPrivacyLists ))
-		SetForegroundWindow( hwndPrivacyLists );
+	glob = ppro;
+	if ( ppro->hwndPrivacyLists && IsWindow( ppro->hwndPrivacyLists ))
+		SetForegroundWindow( ppro->hwndPrivacyLists );
 	else
 		CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_PRIVACY_LISTS ), NULL, JabberPrivacyListsDlgProc, lParam );
 
 	return 0;
 }
 
+void CJabberProto::QueryPrivacyLists()
+{
+	XmlNodeIq iq( m_iqManager.AddHandler( &CJabberProto::JabberIqResultPrivacyLists ) );
+	XmlNode* query = iq.addQuery( JABBER_FEAT_PRIVACY_LISTS );
+	jabberThreadInfo->send( iq );
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // builds privacy menu
+
 static int menuSetPrivacyList( WPARAM wParam, LPARAM lParam, LPARAM iList )
 {
-	g_PrivacyListManager.Lock();
+	glob->m_privacyListManager.Lock();
 	CPrivacyList *pList = NULL;
 
 	if (iList)
 	{
-		pList = g_PrivacyListManager.GetFirstList();
+		pList = glob->m_privacyListManager.GetFirstList();
 		for (int i = 1; pList && (i < iList); ++i)
 			pList = pList->GetNext();
 	}
 
-	XmlNodeIq iq( g_JabberIqManager.AddHandler( JabberIqResultPrivacyListActive, JABBER_IQ_TYPE_SET, NULL, 0, -1, pList ) );
+	XmlNodeIq iq( glob->m_iqManager.AddHandler( &CJabberProto::JabberIqResultPrivacyListActive, JABBER_IQ_TYPE_SET, NULL, 0, -1, pList ) );
 	XmlNode* query = iq.addQuery( JABBER_FEAT_PRIVACY_LISTS );
 	XmlNode* active = query->addChild( "active" );
 	if ( pList )
 		active->addAttr( "name", pList->GetListName() );
-	g_PrivacyListManager.Unlock();
+	glob->m_privacyListManager.Unlock();
 
-	jabberThreadInfo->send( iq );
+	glob->jabberThreadInfo->send( iq );
 
 	return 0;
 }
 
-static int CListMW_BuildPrivacyMenu( WPARAM wParam, LPARAM lParam )
+/////////////////////////////////////////////////////////////////////////////////////////
+// init privacy menu
+
+int CJabberProto::OnBuildPrivacyMenu( WPARAM wParam, LPARAM lParam )
 {
 	if ( !jabberOnline )
 		return 0;
@@ -2234,7 +2249,7 @@ static int CListMW_BuildPrivacyMenu( WPARAM wParam, LPARAM lParam )
 
 	mi.cbSize = sizeof(mi);
 	mi.popupPosition= 500084000;
-	mi.pszContactOwner = jabberProtoName;
+	mi.pszContactOwner = szProtoName;
 	mi.pszService = srvFce;
 	mi.pszPopupName = (char *)hRoot;
 
@@ -2243,72 +2258,51 @@ static int CListMW_BuildPrivacyMenu( WPARAM wParam, LPARAM lParam )
 
 	mi.icolibItem = GetIconHandle(IDI_PRIVACY_LISTS);
 	mi.ptszName = LPGENT("List Editor...");
-	mir_snprintf( srvFce, sizeof(srvFce), "%s/PrivacyLists", jabberProtoName );
+	mir_snprintf( srvFce, sizeof(srvFce), "%s/PrivacyLists", szProtoName );
 	CallService( MS_CLIST_ADDSTATUSMENUITEM, ( WPARAM )&hPrivacyRoot, ( LPARAM )&mi );
 
-	{
-		CLISTMENUITEM miTmp = {0};
-		miTmp.cbSize = sizeof(miTmp);
-		miTmp.flags = CMIM_ICON|CMIM_FLAGS | CMIF_ICONFROMICOLIB;
-		miTmp.icolibItem = GetIconHandle(IDI_PRIVACY_LISTS);
-		CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hPrivacyRoot, (LPARAM)&miTmp);
-	}
+	CLISTMENUITEM miTmp = {0};
+	miTmp.cbSize = sizeof(miTmp);
+	miTmp.flags = CMIM_ICON|CMIM_FLAGS | CMIF_ICONFROMICOLIB;
+	miTmp.icolibItem = GetIconHandle(IDI_PRIVACY_LISTS);
+	CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hPrivacyRoot, (LPARAM)&miTmp);
 
 	mi.position = 2000040000;
 	mi.flags = CMIF_ICONFROMICOLIB|CMIF_TCHAR;
 
-	g_PrivacyListManager.Lock();
+	m_privacyListManager.Lock();
 
-	mir_snprintf( srvFce, sizeof(srvFce), "%s/menuPrivacy%d", jabberProtoName, i );
-	if ( i > serviceAllocated )
-	{
+	mir_snprintf( srvFce, sizeof(srvFce), "%s/menuPrivacy%d", szProtoName, i );
+	if ( i > serviceAllocated ) {
 		CreateServiceFunctionParam( srvFce, menuSetPrivacyList, i );
 		serviceAllocated = i;
 	}
 	mi.position++;
 	mi.icolibItem = LoadSkinnedIconHandle(
-		g_PrivacyListManager.GetActiveListName() ?
+		m_privacyListManager.GetActiveListName() ?
 			SKINICON_OTHER_SMALLDOT :
 			SKINICON_OTHER_EMPTYBLOB);
 	mi.ptszName = LPGENT("<none>");
 	CallService( MS_CLIST_ADDSTATUSMENUITEM, ( WPARAM )&hPrivacyRoot, ( LPARAM )&mi );
 
-	for (CPrivacyList *pList = g_PrivacyListManager.GetFirstList(); pList; pList = pList->GetNext())
-	{
+	for ( CPrivacyList *pList = m_privacyListManager.GetFirstList(); pList; pList = pList->GetNext()) {
 		++i;
-		mir_snprintf( srvFce, sizeof(srvFce), "%s/menuPrivacy%d", jabberProtoName, i );
+		mir_snprintf( srvFce, sizeof(srvFce), "%s/menuPrivacy%d", szProtoName, i );
 
-		if ( i > serviceAllocated )
-		{
+		if ( i > serviceAllocated ) {
 			CreateServiceFunctionParam( srvFce, menuSetPrivacyList, i );
 			serviceAllocated = i;
 		}
 
 		mi.position++;
 		mi.icolibItem = LoadSkinnedIconHandle(
-			lstrcmp(g_PrivacyListManager.GetActiveListName(), pList->GetListName()) ?
+			lstrcmp( m_privacyListManager.GetActiveListName(), pList->GetListName()) ?
 				SKINICON_OTHER_SMALLDOT :
 				SKINICON_OTHER_EMPTYBLOB);
 		mi.ptszName = pList->GetListName();
 		CallService( MS_CLIST_ADDSTATUSMENUITEM, ( WPARAM )&hPrivacyRoot, ( LPARAM )&mi );
 	}
 
-	g_PrivacyListManager.Unlock();
-
+	m_privacyListManager.Unlock();
 	return 0;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// init privacy menu
-
-static HANDLE hhkPrebuildStatusMenu = NULL;
-void JabberPrivacyInit()
-{
-	hhkPrebuildStatusMenu = HookEvent( ME_CLIST_PREBUILDSTATUSMENU, CListMW_BuildPrivacyMenu );
-}
-
-void JabberPrivacyUninit()
-{
-	UnhookEvent(hhkPrebuildStatusMenu);
 }

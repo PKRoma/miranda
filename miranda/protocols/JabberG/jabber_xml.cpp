@@ -139,7 +139,7 @@ static char* findClose( char* p )
 	return NULL;
 }
 
-int JabberXmlParse( XmlState *xmlState, char* buffer )
+int CJabberProto::JabberXmlParse( XmlState *xmlState, char* buffer )
 {
 	char* r;
 	int num = 0;
@@ -318,10 +318,8 @@ static BOOL JabberXmlProcessElem( XmlState *xmlState, XmlElemType elemType, char
 
 	if ( elemText == NULL ) return FALSE;
 
-	if ( elemType==ELEM_OPEN && !strcmp( elemText, "?xml" )) {
-		JabberLog( "XML: skip <?xml> tag" );
+	if ( elemType==ELEM_OPEN && !strcmp( elemText, "?xml" ))
 		return TRUE;
-	}
 
 	// Find active node
 	node = &( xmlState->root );
@@ -384,19 +382,17 @@ static BOOL JabberXmlProcessElem( XmlState *xmlState, XmlElemType elemType, char
 		}
 		break;
 	case ELEM_CLOSE:
-		if ( node->name!=NULL && !strcmp( node->name, elemText )) {
-			node->state = NODE_CLOSE;
-			if ( node->depth==1 && xmlState->callback1_close!=NULL ) {
-				( *( xmlState->callback1_close ))( node, xmlState->userdata1_close );
-				JabberXmlRemoveChild( parentNode, node );
-			}
-			else if ( node->depth==2 && xmlState->callback2_close!=NULL ) {
-				( *xmlState->callback2_close )( node, xmlState->userdata2_close );
-				JabberXmlRemoveChild( parentNode, node );
-		}	}
-		else {
-			JabberLog( "XML: Closing </%s> without opening tag", elemText );
+		if ( node->name == NULL || strcmp( node->name, elemText ))
 			return FALSE;
+
+		node->state = NODE_CLOSE;
+		if ( node->depth==1 && xmlState->callback1_close!=NULL ) {
+			( *( xmlState->callback1_close ))( node, xmlState->userdata1_close );
+			JabberXmlRemoveChild( parentNode, node );
+		}
+		else if ( node->depth==2 && xmlState->callback2_close!=NULL ) {
+			( *xmlState->callback2_close )( node, xmlState->userdata2_close );
+			JabberXmlRemoveChild( parentNode, node );
 		}
 		break;
 

@@ -108,8 +108,26 @@ extern int skinIconStatusFlags[ MAX_STATUS_COUNT ];
 
 /**** protocols.c ***********************************************************************/
 
+#define OFFSET_PROTOPOS 200
+#define OFFSET_VISIBLE  400
+#define OFFSET_ENABLED  600
+#define OFFSET_NAME     800
+
+typedef struct
+{
+	PROTOACCOUNT** items;
+	int count, limit, increment;
+	FSortFunc sortFunc;
+}
+	TAccounts;
+
+extern TAccounts accounts;
+
 PROTO_INTERFACE* AddDefaultAccount( const char* szProtoName );
 int FreeDefaultAccount( PROTO_INTERFACE* ppi );
+
+void LoadDbAccounts( void );
+void WriteDbAccounts( void );
 
 int CallProtoServiceInt( HANDLE hContact, const char* szModule, const char* szService, WPARAM, LPARAM );
 int CallContactService( HANDLE hContact, const char *szProtoService, WPARAM, LPARAM );

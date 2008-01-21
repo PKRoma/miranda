@@ -144,7 +144,7 @@ static iconList[] =
 	{   LPGEN("Deny Queries"),          "pl_iq_deny",       IDI_PL_QUERY_DENY,      LPGEN("Dialogs/Privacy") },
 };
 
-void JabberIconsInit( void )
+void CJabberProto::JabberIconsInit( void )
 {
 	SKINICONDESC sid = {0};
 	char szFile[MAX_PATH];
@@ -154,27 +154,25 @@ void JabberIconsInit( void )
 	sid.pszDefaultFile = szFile;
 	sid.cx = sid.cy = 16;
 
-	char *szRootSection = Translate( jabberProtoName );
+	char *szRootSection = Translate( szProtoName );
 
 	for ( int i = 0; i < SIZEOF(iconList); i++ ) {
 		char szSettingName[100];
 		char szSectionName[100];
-		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", jabberProtoName, iconList[i].szName );
-		if (iconList[i].szSection)
-		{
+		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", szProtoName, iconList[i].szName );
+		if ( iconList[i].szSection ) {
 			mir_snprintf( szSectionName, sizeof( szSectionName ), "%s/%s", szRootSection, iconList[i].szSection );
 			sid.pszSection = szSectionName;
-		} else
-		{
-			sid.pszSection = szRootSection;
 		}
+		else sid.pszSection = szRootSection;
+
 		sid.pszName = szSettingName;
 		sid.pszDescription = Translate( iconList[i].szDescr );
 		sid.iDefaultIndex = -iconList[i].defIconID;
 		iconList[i].hIconLibItem = ( HANDLE )CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 }	}
 
-HANDLE __stdcall GetIconHandle( int iconId )
+HANDLE CJabberProto::GetIconHandle( int iconId )
 {
 	for ( int i=0; i < SIZEOF(iconList); i++ )
 		if ( iconList[i].defIconID == iconId )
@@ -183,10 +181,10 @@ HANDLE __stdcall GetIconHandle( int iconId )
 	return NULL;
 }
 
-HICON LoadIconEx( const char* name )
+HICON CJabberProto::LoadIconEx( const char* name )
 {
 	char szSettingName[100];
-	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", jabberProtoName, name );
+	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", szProtoName, name );
 	return ( HICON )JCallService( MS_SKIN2_GETICON, 0, (LPARAM)szSettingName );
 }
 
@@ -319,7 +317,7 @@ static HICON LoadSmallIcon(HINSTANCE hInstance, LPCTSTR lpIconName)
 	return hIcon;
 }
 
-static int LoadAdvancedIcons(int iID)
+int CJabberProto::LoadAdvancedIcons(int iID)
 {
 	int i;
 	char * proto=TransportProtoTable[iID].proto;
@@ -329,7 +327,7 @@ static int LoadAdvancedIcons(int iID)
 	int first=-1;
 	HICON empty=LoadSmallIcon(NULL,MAKEINTRESOURCE(102));
 
-	_snprintf((char *)Group, sizeof(Group),"%s/%s/%s %s",Translate("Status Icons"), jabberModuleName, proto, Translate("transport"));
+	_snprintf((char *)Group, sizeof(Group),"%s/%s/%s %s",Translate("Status Icons"), szModuleName, proto, Translate("transport"));
 	_snprintf((char *)defFile, sizeof(defFile),"proto_%s.dll",proto);
 	if (!hAdvancedStatusIcon)
 		hAdvancedStatusIcon=(HIMAGELIST)CallService(MS_CLIST_GETICONSIMAGELIST,0,0);
@@ -340,7 +338,7 @@ static int LoadAdvancedIcons(int iID)
 		BOOL needFree;
 		int n=skinStatusToJabberStatus[i];
 		char * descr=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,n+ID_STATUS_OFFLINE,0);
-		_snprintf((char *)Uname, sizeof(Uname),"%s_Transport_%s_%d",jabberProtoName,proto,n);
+		_snprintf((char *)Uname, sizeof(Uname),"%s_Transport_%s_%d",szProtoName,proto,n);
 		hicon=(HICON)LoadTransportIcon((char*)defFile,-skinIconStatusToResourceId[i],(char*)Uname,(char*)Group,(char*)descr,-(n+ID_STATUS_OFFLINE),&needFree);
 		int index=(TransportProtoTable[iID].startIndex == -1)?-1:TransportProtoTable[iID].startIndex+n;
 		int added=ImageList_ReplaceIcon(hAdvancedStatusIcon,index,hicon?hicon:empty);
@@ -363,7 +361,7 @@ static int GetTransportProtoID( TCHAR* TransportDomain )
 	return -1;
 }
 
-static int GetTransportStatusIconIndex(int iID, int Status)
+int CJabberProto::GetTransportStatusIconIndex(int iID, int Status)
 {
 	if ( iID < 0 || iID >= SIZEOF( TransportProtoTable ))
 		return -1;
@@ -385,7 +383,7 @@ static int GetTransportStatusIconIndex(int iID, int Status)
 /////////////////////////////////////////////////////////////////////////////////////////
 // a hook for the IcoLib plugin
 
-int ReloadIconsEventHook(WPARAM wParam, LPARAM lParam)
+int CJabberProto::OnReloadIcons(WPARAM wParam, LPARAM lParam)
 {
 	for ( int i=0; i < SIZEOF(TransportProtoTable); i++ )
 		if ( TransportProtoTable[i].startIndex != -1 )
@@ -403,29 +401,29 @@ int ReloadIconsEventHook(WPARAM wParam, LPARAM lParam)
 // if imagelist require advanced painting status overlay(like xStatus)
 // index should be shifted to HIWORD, LOWORD should be 0
 
-int JGetAdvancedStatusIcon(WPARAM wParam, LPARAM lParam)
+int JGetAdvancedStatusIcon(WPARAM wParam, LPARAM lParam, CJabberProto* ppro)
 {
 	HANDLE hContact=(HANDLE) wParam;
 	if ( !hContact )
 		return -1;
 
-	if ( !JGetByte( hContact, "IsTransported", 0 ))
+	if ( !ppro->JGetByte( hContact, "IsTransported", 0 ))
 		return -1;
 
 	DBVARIANT dbv;
-	if ( JGetStringT( hContact, "Transport", &dbv ))
+	if ( ppro->JGetStringT( hContact, "Transport", &dbv ))
 		return -1;
 
 	int iID = GetTransportProtoID( dbv.ptszVal );
 	DBFreeVariant(&dbv);
 	if ( iID >= 0 ) {
 		WORD Status = ID_STATUS_OFFLINE;
-		Status = JGetWord( hContact, "Status", ID_STATUS_OFFLINE );
+		Status = ppro->JGetWord( hContact, "Status", ID_STATUS_OFFLINE );
 		if ( Status < ID_STATUS_OFFLINE )
 			Status = ID_STATUS_OFFLINE;
 		else if (Status > ID_STATUS_INVISIBLE )
 			Status = ID_STATUS_ONLINE;
-		return GetTransportStatusIconIndex( iID, Status );
+		return ppro->GetTransportStatusIconIndex( iID, Status );
 	}
 	return -1;
 }
@@ -433,15 +431,7 @@ int JGetAdvancedStatusIcon(WPARAM wParam, LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 //   Transport check functions
 
-static int PushIconLibRegistration( TCHAR* TransportDomain ) //need to push Imagelist addition to
-{
-	if ( ServiceExists( MS_SKIN2_ADDICON ))
-		return GetTransportStatusIconIndex( GetTransportProtoID( TransportDomain ), ID_STATUS_OFFLINE );
-
-	return 0;
-}
-
-BOOL JabberDBCheckIsTransportedContact(const TCHAR* jid, HANDLE hContact)
+BOOL CJabberProto::JabberDBCheckIsTransportedContact(const TCHAR* jid, HANDLE hContact)
 {
 	// check if transport is already set
 	if ( !jid || !hContact )
@@ -462,7 +452,7 @@ BOOL JabberDBCheckIsTransportedContact(const TCHAR* jid, HANDLE hContact)
 
 	for ( int i=0; i < SIZEOF(TransportProtoTable); i++ ) {
 		if ( MatchMask( domain, TransportProtoTable[i].mask )) {
-			PushIconLibRegistration( domain );
+			GetTransportStatusIconIndex( GetTransportProtoID( domain ), ID_STATUS_OFFLINE );
 			isTransported = TRUE;
 			break;
 	}	}
@@ -480,12 +470,12 @@ BOOL JabberDBCheckIsTransportedContact(const TCHAR* jid, HANDLE hContact)
 	return isTransported;
 }
 
-void JabberCheckAllContactsAreTransported()
+void CJabberProto::JabberCheckAllContactsAreTransported()
 {
 	HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL ) {
 		char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-		if ( !lstrcmpA( jabberProtoName, szProto )) {
+		if ( !lstrcmpA( szProtoName, szProto )) {
 			DBVARIANT dbv;
 			if ( !JGetStringT( hContact, "jid", &dbv )) {
 				JabberDBCheckIsTransportedContact( dbv.ptszVal, hContact );

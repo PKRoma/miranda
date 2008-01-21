@@ -38,10 +38,10 @@ Last change by : $Author$
 	#define	CHR_BULLET	'-'
 #endif
 
-int JabberMenuHandleServiceDiscovery( WPARAM wParam, LPARAM lParam );
-int JabberMenuHandleServiceDiscoveryMyTransports( WPARAM wParam, LPARAM lParam );
-int JabberMenuHandleServiceDiscoveryTransports( WPARAM wParam, LPARAM lParam );
-int JabberMenuHandleServiceDiscoveryConferences( WPARAM wParam, LPARAM lParam );
+int JabberMenuHandleServiceDiscovery( WPARAM wParam, LPARAM lParam, struct CJabberProto* );
+int JabberMenuHandleServiceDiscoveryMyTransports( WPARAM wParam, LPARAM lParam, struct CJabberProto* );
+int JabberMenuHandleServiceDiscoveryTransports( WPARAM wParam, LPARAM lParam, struct CJabberProto* );
+int JabberMenuHandleServiceDiscoveryConferences( WPARAM wParam, LPARAM lParam, struct CJabberProto* );
 
 #define JABBER_DISCO_RESULT_NOT_REQUESTED			0
 #define JABBER_DISCO_RESULT_ERROR					-1

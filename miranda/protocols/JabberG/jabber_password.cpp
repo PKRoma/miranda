@@ -32,33 +32,36 @@ Last change by : $Author$
 
 static BOOL CALLBACK JabberChangePasswordDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
 
-int JabberMenuHandleChangePassword( WPARAM wParam, LPARAM lParam )
+int JabberMenuHandleChangePassword( WPARAM wParam, LPARAM lParam, CJabberProto* ppro )
 {
-	if ( IsWindow( hwndJabberChangePassword ))
-		SetForegroundWindow( hwndJabberChangePassword );
-	else {
-		hwndJabberChangePassword = CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_CHANGEPASSWORD ), NULL, JabberChangePasswordDlgProc, 0 );
-	}
+	if ( IsWindow( ppro->hwndJabberChangePassword ))
+		SetForegroundWindow( ppro->hwndJabberChangePassword );
+	else
+		ppro->hwndJabberChangePassword = CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_CHANGEPASSWORD ), NULL, JabberChangePasswordDlgProc, ( LPARAM )ppro );
 
 	return 0;
 }
 
 static BOOL CALLBACK JabberChangePasswordDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
+	CJabberProto* ppro = (CJabberProto*)GetWindowLong( hwndDlg, GWL_USERDATA );
 	switch ( msg ) {
 	case WM_INITDIALOG:
-		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )LoadIconEx( "key" ));
+		ppro = (CJabberProto*)lParam;
+		SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG )lParam );
+
+		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )ppro->LoadIconEx( "key" ));
 		TranslateDialogDefault( hwndDlg );
-		if ( jabberOnline && jabberThreadInfo!=NULL ) {
+		if ( ppro->jabberOnline && ppro->jabberThreadInfo!=NULL ) {
 			TCHAR text[128];
-			mir_sntprintf( text, SIZEOF( text ), _T("%s %s@") _T(TCHAR_STR_PARAM), TranslateT( "Set New Password for" ), jabberThreadInfo->username, jabberThreadInfo->server );
+			mir_sntprintf( text, SIZEOF( text ), _T("%s %s@") _T(TCHAR_STR_PARAM), TranslateT( "Set New Password for" ), ppro->jabberThreadInfo->username, ppro->jabberThreadInfo->server );
 			SetWindowText( hwndDlg, text );
 		}
 		return TRUE;
 	case WM_COMMAND:
 		switch ( LOWORD( wParam )) {
 		case IDOK:
-			if ( jabberOnline && jabberThreadInfo!=NULL ) {
+			if ( ppro->jabberOnline && ppro->jabberThreadInfo!=NULL ) {
 				char newPasswd[128], text[128];
 				GetDlgItemTextA( hwndDlg, IDC_NEWPASSWD, newPasswd, SIZEOF( newPasswd ));
 				GetDlgItemTextA( hwndDlg, IDC_NEWPASSWD2, text, SIZEOF( text ));
@@ -67,20 +70,20 @@ static BOOL CALLBACK JabberChangePasswordDlgProc( HWND hwndDlg, UINT msg, WPARAM
 					break;
 				}
 				GetDlgItemTextA( hwndDlg, IDC_OLDPASSWD, text, SIZEOF( text ));
-				if ( strcmp( text, jabberThreadInfo->password )) {
+				if ( strcmp( text, ppro->jabberThreadInfo->password )) {
 					MessageBox( hwndDlg, TranslateT( "Current password is incorrect." ), TranslateT( "Change Password" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
 					break;
 				}
-				strncpy( jabberThreadInfo->newPassword, newPasswd, SIZEOF( jabberThreadInfo->newPassword ));
+				strncpy( ppro->jabberThreadInfo->newPassword, newPasswd, SIZEOF( ppro->jabberThreadInfo->newPassword ));
 
-				int iqId = JabberSerialNext();
-				JabberIqAdd( iqId, IQ_PROC_NONE, JabberIqResultSetPassword );
+				int iqId = ppro->JabberSerialNext();
+				ppro->JabberIqAdd( iqId, IQ_PROC_NONE, &CJabberProto::JabberIqResultSetPassword );
 
-				XmlNodeIq iq( "set", iqId, jabberThreadInfo->server );
+				XmlNodeIq iq( "set", iqId, ppro->jabberThreadInfo->server );
 				XmlNode* q = iq.addQuery( JABBER_FEAT_REGISTER );
-				q->addChild( "username", jabberThreadInfo->username );
+				q->addChild( "username", ppro->jabberThreadInfo->username );
 				q->addChild( "password", newPasswd );
-				jabberThreadInfo->send( iq );
+				ppro->jabberThreadInfo->send( iq );
 			}
 			DestroyWindow( hwndDlg );
 			break;
@@ -93,7 +96,7 @@ static BOOL CALLBACK JabberChangePasswordDlgProc( HWND hwndDlg, UINT msg, WPARAM
 		DestroyWindow( hwndDlg );
 		break;
 	case WM_DESTROY:
-		hwndJabberChangePassword = NULL;
+		ppro->hwndJabberChangePassword = NULL;
 		break;
 	}
 

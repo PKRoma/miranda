@@ -27,17 +27,17 @@ Last change by : $Author$
 
 #include "jabber.h"
 
-BOOL JabberWsInit( void )
+BOOL CJabberProto::JabberWsInit( void )
 {
 	NETLIBUSER nlu = {0};
 	char name[128];
 
-	sprintf( name, "%s %s", jabberModuleName, JTranslate( "connection" ));
+	sprintf( name, "%s %s", szModuleName, JTranslate( "connection" ));
 
 	nlu.cbSize = sizeof( nlu );
 	nlu.flags = NUF_OUTGOING | NUF_INCOMING | NUF_HTTPCONNS;	// | NUF_HTTPGATEWAY;
 	nlu.szDescriptiveName = name;
-	nlu.szSettingsModule = jabberProtoName;
+	nlu.szSettingsModule = szProtoName;
 	//nlu.szHttpGatewayHello = "http://http.proxy.icq.com/hello";
 	//nlu.szHttpGatewayUserAgent = "Mozilla/4.08 [en] ( WinNT; U ;Nav )";
 	//nlu.pfnHttpGatewayInit = JabberHttpGatewayInit;
@@ -49,13 +49,13 @@ BOOL JabberWsInit( void )
 	return ( hNetlibUser!=NULL )?TRUE:FALSE;
 }
 
-void JabberWsUninit( void )
+void CJabberProto::JabberWsUninit( void )
 {
 	Netlib_CloseHandle( hNetlibUser );
 	hNetlibUser = NULL;
 }
 
-JABBER_SOCKET JabberWsConnect( char* host, WORD port )
+JABBER_SOCKET CJabberProto::JabberWsConnect( char* host, WORD port )
 {
 	NETLIBOPENCONNECTION nloc = { 0 };
 	nloc.cbSize = sizeof( nloc );
@@ -64,7 +64,7 @@ JABBER_SOCKET JabberWsConnect( char* host, WORD port )
 	return ( HANDLE )JCallService( MS_NETLIB_OPENCONNECTION, ( WPARAM ) hNetlibUser, ( LPARAM )&nloc );
 }
 
-int JabberWsSend( JABBER_SOCKET hConn, char* data, int datalen, int flags )
+int CJabberProto::JabberWsSend( JABBER_SOCKET hConn, char* data, int datalen, int flags )
 {
 	int len;
 
@@ -75,7 +75,7 @@ int JabberWsSend( JABBER_SOCKET hConn, char* data, int datalen, int flags )
 	return len;
 }
 
-int JabberWsRecv( JABBER_SOCKET hConn, char* data, long datalen, int flags )
+int CJabberProto::JabberWsRecv( JABBER_SOCKET hConn, char* data, long datalen, int flags )
 {
 	int ret;
 

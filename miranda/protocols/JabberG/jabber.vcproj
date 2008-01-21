@@ -411,9 +411,6 @@
 				RelativePath=".\jabber_caps.cpp">
 			</File>
 			<File
-				RelativePath=".\jabber_opttree.cpp">
-			</File>
-			<File
 				RelativePath=".\jabber_chat.cpp">
 			</File>
 			<File
@@ -421,6 +418,9 @@
 			</File>
 			<File
 				RelativePath=".\jabber_disco.cpp">
+			</File>
+			<File
+				RelativePath=".\jabber_events.cpp">
 			</File>
 			<File
 				RelativePath="jabber_file.cpp">
@@ -798,6 +798,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\jabber_opttree.cpp">
+			</File>
+			<File
 				RelativePath="jabber_password.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -832,6 +835,9 @@
 			</File>
 			<File
 				RelativePath=".\jabber_privacy.cpp">
+			</File>
+			<File
+				RelativePath=".\jabber_proto.cpp">
 			</File>
 			<File
 				RelativePath="jabber_proxy.cpp">
@@ -1180,6 +1186,9 @@
 				RelativePath="jabber_list.h">
 			</File>
 			<File
+				RelativePath=".\jabber_opttree.h">
+			</File>
+			<File
 				RelativePath="jabber_proxy.h">
 			</File>
 			<File
@@ -1187,9 +1196,6 @@
 			</File>
 			<File
 				RelativePath=".\jabber_search.h">
-			</File>
-			<File
-				RelativePath=".\jabber_opttree.h">
 			</File>
 			<File
 				RelativePath=".\jabber_secur.h">

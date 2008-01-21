@@ -154,9 +154,14 @@ typedef struct {
 
 #define PROTOCOLDESCRIPTOR_V3_SIZE (sizeof(int)*2+sizeof(char*))
 
-typedef int ( *pfnInitProto )( struct tagPROTO_INTERFACE* ); // initializes an empty account
-typedef int ( *pfnUninitProto )( struct tagPROTO_INTERFACE* ); // deallocates an account instance
-typedef int ( *pfnDestroyProto )( struct tagPROTO_INTERFACE* ); // removes an account from the database
+ // initializes an empty account
+typedef struct tagPROTO_INTERFACE* ( *pfnInitProto )( const char* szModuleName, const TCHAR* szUserName );
+
+// deallocates an account instance
+typedef int ( *pfnUninitProto )( struct tagPROTO_INTERFACE* );
+
+// removes an account from the database
+typedef int ( *pfnDestroyProto )( struct tagPROTO_INTERFACE* );
 
 typedef struct {
 	int   cbSize;
@@ -165,7 +170,6 @@ typedef struct {
 
 	// 0.8.0+ additions
 	#if MIRANDA_VER >= 0x800
-		int   instanceSize; // protocol structure sizeof()
 		pfnInitProto fnInit; // initializes an empty account
 		pfnUninitProto fnUninit; // deallocates an account instance
 		pfnDestroyProto fnDestroy; // removes an account
@@ -246,15 +250,36 @@ typedef struct {
 
 // -------------- accounts support --------------------- 0.8.0+ 
 
+typedef struct tagACCOUNT
+{
+	TCHAR* tszAccountName;  // user-defined account name
+	char*  szModuleName;    // unique physical account name (matches database module name)
+	char*  szProtoName;     // physical protocol name
+	int    bIsEnabled;      // is account enabled?
+	int    bIsVisible;      // is account visible?
+	int    iOrder;          // account order in various menus & lists
+	struct tagPROTO_INTERFACE* ppro;  // pointer to the underlying object
+}
+	PROTOACCOUNT;
+
 //account enumeration service
 //wParam=(WPARAM)(int*)piNumAccounts
-//lParam=(LPARAM)(PROTO_INTERFACE**)paAccounts
+//lParam=(LPARAM)(PROTOACCOUNT**)paAccounts
 #define MS_PROTO_ENUMACCOUNTS "Proto/EnumAccounts"
+
+__inline int ProtoEnumAccounts( int* accNumber, PROTOACCOUNT*** accArray )
+{	return CallService( MS_PROTO_ENUMACCOUNTS, ( WPARAM )accNumber, (LPARAM)accArray );
+}
 
 //retrieves an account's interface by its physical name (database module)
 //wParam=0
 //lParam=(LPARAM)(char*)szAccountName
+//return value = PROTOACCOUNT* or NULL
 #define MS_PROTO_GETACCOUNT "Proto/GetAccount"
+
+__inline PROTOACCOUNT* ProtoGetAccount( const char* accName )
+{	return (PROTOACCOUNT*)CallService( MS_PROTO_GETACCOUNT, 0, (LPARAM)accName );
+}
 
 /* -------------- avatar support ---------------------
 

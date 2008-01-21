@@ -5,8 +5,6 @@
 	Name="jabber"
 	ProjectGUID="{33276462-8313-4192-8306-13717ECCA60A}"
 	RootNamespace="jabber"
-	SccProjectName=""
-	SccLocalPath=""
 	>
 	<Platforms>
 		<Platform
@@ -589,6 +587,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\jabber_events.cpp"
+				>
+			</File>
+			<File
 				RelativePath="jabber_file.cpp"
 				>
 				<FileConfiguration
@@ -1114,6 +1116,10 @@
 			</File>
 			<File
 				RelativePath=".\jabber_privacy.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\jabber_proto.cpp"
 				>
 			</File>
 			<File
