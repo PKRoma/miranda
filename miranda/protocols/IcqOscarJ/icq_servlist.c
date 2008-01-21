@@ -649,7 +649,8 @@ DWORD icq_sendServerContact(HANDLE hContact, DWORD dwCookie, WORD wAction, WORD 
   if (bDataTooLong)
   { // Inform the user
     /// TODO: do something with this for Manage Server-List dialog.
-    icq_LogMessage(LOG_WARNING, "The contact's information was too big and was truncated.");
+    if (wAction != ICQ_LISTS_REMOVEFROMLIST) // do not report this when removing from list
+      icq_LogMessage(LOG_WARNING, "The contact's information was too big and was truncated.");
   }
 
   // Build the packet
