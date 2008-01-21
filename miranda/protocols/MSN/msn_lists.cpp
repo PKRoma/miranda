@@ -88,7 +88,7 @@ int Lists_GetNetId( const char* email )
 	EnterCriticalSection( &csLists );
 
 	MsnContact* p = contList.find((MsnContact*)&email);
-	int res = p ? p->netId : 0;
+	int res = p ? p->netId : NETID_UNKNOWN;
 
 	LeaveCriticalSection( &csLists );
 	return res;
@@ -136,12 +136,14 @@ void  Lists_Remove( int list, const char* email )
 
 void MSN_CleanupLists(void)
 {
+	CallService(MS_CLIST_GROUPCREATE, 0, (LPARAM)TranslateT("Non IM Contacts"));
+
 	EnterCriticalSection(&csLists);
 	for (int i=contList.getCount(); i--; )
 	{
 		MsnContact* p = contList[i];
 
-		if ((p->list & (LIST_FL | LIST_RL)) == 0 && (p->list & (LIST_AL | LIST_BL)) != 0 && p->netId != 2) 
+		if ((p->list & (LIST_FL | LIST_RL)) == 0 && (p->list & (LIST_AL | LIST_BL)) != 0 && p->netId != NETID_LCS) 
 		{
 			MSN_SharingAddDelMember(p->email, p->list, "DeleteMember");
 			p->list &= ~(LIST_AL | LIST_BL);
@@ -155,8 +157,8 @@ void MSN_CleanupLists(void)
 			}
 		}
 
-		HANDLE hContact = MSN_HContactFromEmail(p->email, p->email, 1, 0);
-		MSN_SetContactDb(hContact, p->list);
+		HANDLE hContact = MSN_HContactFromEmail(p->email, p->email, true, false);
+		MSN_SetContactDb(hContact, p->email);
 		if (p->list & LIST_PL || p->list == LIST_RL )
 			MSN_AddAuthRequest( hContact, p->email, p->email );
 	}
@@ -190,7 +192,7 @@ void MSN_CreateContList(void)
 			const char* dom = strchr(C->email, '@');
 			if (dom == NULL && lastds == NULL)
 			{
-				if (C->list != LIST_RL)
+				if (C->list != LIST_RL && C->list != LIST_FL)
 				{
 					if (sz == 0) sz = mir_snprintf(cxml+sz, sizeof(cxml), "<ml l=\"1\">");
 					if (newdom)
@@ -314,7 +316,7 @@ static void SaveSettings( HWND hwndList )
 		SaveListItem( hContact, szEmail, LIST_AL, ( dwMask & LIST_AL )?2:0, SendMessage( hwndList, CLM_GETEXTRAIMAGE, ( WPARAM )hItem, MAKELPARAM(1,0)));
 		SaveListItem( hContact, szEmail, LIST_BL, ( dwMask & LIST_BL )?3:0, SendMessage( hwndList, CLM_GETEXTRAIMAGE, ( WPARAM )hItem, MAKELPARAM(2,0)));
 
-		MSN_SetContactDb(hContact, Lists_GetMask( szEmail ));
+		MSN_SetContactDb(hContact, szEmail );
 	}
 }
 

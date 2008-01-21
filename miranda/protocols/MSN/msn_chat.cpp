@@ -252,7 +252,7 @@ int MSN_GCEventHook(WPARAM wParam,LPARAM lParam) {
 			break;
 		}
 		case GC_USER_PRIVMESS: {
-			HANDLE hContact = MSN_HContactFromEmail((char*)gch->pszUID, NULL, 0, 0);
+			HANDLE hContact = MSN_HContactFromEmail((char*)gch->pszUID, NULL, false, false);
 			MSN_CallService(MS_MSG_SENDMESSAGE, (WPARAM)hContact, 0);
 			break;
 		}
@@ -274,10 +274,10 @@ int MSN_GCEventHook(WPARAM wParam,LPARAM lParam) {
 		case GC_USER_NICKLISTMENU: {
 #ifdef _UNICODE
 			char *email = mir_u2a(gch->ptszUID);
-			HANDLE hContact = MSN_HContactFromEmail( email, email, 0, 0 );
+			HANDLE hContact = MSN_HContactFromEmail( email, email, false, false );
 			mir_free(email);
 #else
-			HANDLE hContact = MSN_HContactFromEmail( gch->ptszUID, gch->ptszUID, 0, 0 );
+			HANDLE hContact = MSN_HContactFromEmail( gch->ptszUID, gch->ptszUID, false, false );
 #endif
 
 			switch(gch->dwData) {

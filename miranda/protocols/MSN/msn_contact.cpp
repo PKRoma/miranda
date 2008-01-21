@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "msn_global.h"
 
-HANDLE  MSN_HContactFromEmail( const char* msnEmail, const char* msnNick, int addIfNeeded, int temporary )
+HANDLE  MSN_HContactFromEmail( const char* msnEmail, const char* msnNick, bool addIfNeeded, bool temporary )
 {
 	HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL )
@@ -46,13 +46,14 @@ HANDLE  MSN_HContactFromEmail( const char* msnEmail, const char* msnNick, int ad
 
 		return hContact;
 	}
-
 	return NULL;
 }
 
 
-void MSN_SetContactDb(HANDLE hContact, int listId)
+void MSN_SetContactDb(HANDLE hContact, const char *szEmail)
 {
+	int listId = Lists_GetMask( szEmail );
+	TCHAR* szNonIm = TranslateT("Non IM Contacts");
 	if (listId & LIST_FL)
 	{
 		if (DBGetContactSettingByte( hContact, "CList", "NotOnList", 0 ) == 1)
@@ -69,11 +70,36 @@ void MSN_SetContactDb(HANDLE hContact, int listId)
 			else if (( listId & LIST_AL ) && tApparentMode != 0 )
 				DBDeleteContactSetting( hContact, msnProtocolName, "ApparentMode" );
 		}
+
+		int netId = Lists_GetNetId(szEmail);
+		if (netId == NETID_EMAIL)
+		{
+			DBWriteContactSettingTString( hContact, "CList", "Group", szNonIm);
+			MSN_SetWord( hContact, "Status", ID_STATUS_ONLINE );
+			MSN_SetString( hContact, "MirVer", "E-Mail Only" );
+		}
+		else
+		{
+			DBVARIANT dbv;
+			if (DBGetContactSettingTString( hContact, "CList", "Group", &dbv ) == 0 && 
+				_tcscmp(dbv.ptszVal, szNonIm) == 0)
+			{
+				DBDeleteContactSetting(hContact, "CList", "Group" );
+				MSN_FreeVariant( &dbv );
+			}
+		}
+
+		if (netId == NETID_MOB)
+		{
+			MSN_SetWord( hContact, "Status", ID_STATUS_ONTHEPHONE );
+			MSN_SetString( hContact, "MirVer", "SMS" );
+		}
 	}
 	else
 	{
 		DBWriteContactSettingByte( hContact, "CList", "NotOnList", 1 );
 		DBWriteContactSettingByte( hContact, "CList", "Hidden", 1 );
+		DBWriteContactSettingTString( hContact, "CList", "Group", szNonIm);
 	}
 }
 
@@ -115,17 +141,16 @@ bool MSN_AddUser( HANDLE hContact, const char* email, int netId, int flags )
 	bool needRemove = (flags & LIST_REMOVE) != 0;
 	flags &= 0xFF;
 
-	if (needRemove != Lists_IsInList(flags, email))
-		return true;
-
 	bool res = false;
 	if (flags == LIST_FL) 
 	{
 		if (needRemove) 
 		{
+			if (!Lists_IsInList(flags, email)) return true;
+
 			if (hContact == NULL)
 			{
-				hContact = MSN_HContactFromEmail( email, NULL, 0, 0 );
+				hContact = MSN_HContactFromEmail( email, NULL, false, false );
 				if ( hContact == NULL ) return false;
 			}
 
@@ -138,21 +163,26 @@ bool MSN_AddUser( HANDLE hContact, const char* email, int netId, int flags )
 		}
 		else 
 		{
+			if (Lists_IsInList(flags, email) && Lists_GetNetId(email) != NETID_EMAIL)
+				return true;
+
 			DBVARIANT dbv = {0};
 			if ( !strcmp( email, MyOptions.szEmail ))
 				DBGetContactSettingStringUtf( NULL, msnProtocolName, "Nick", &dbv );
 
 			unsigned res1 = MSN_ABContactAdd(email, dbv.pszVal, netId, false);
-			if (netId == 1 && res1 == 2)
+			if (netId == NETID_MSN && res1 == 2)
 			{
 				netId = 2;
 				res = MSN_ABContactAdd(email, dbv.pszVal, netId, false) == 0;
 			}
-			else if (netId == 1 && res1 == 3)
+			else if (netId == NETID_MSN && res1 == 3)
 			{
 				char szContactID[100];
 				if (MSN_GetStaticString("ID", hContact, szContactID, sizeof(szContactID)) == 0)
+				{
 					MSN_ABUpdateProperty(szContactID, "isMessengerUser", "1");
+				}
 			}
 
 			else
@@ -168,13 +198,17 @@ bool MSN_AddUser( HANDLE hContact, const char* email, int netId, int flags )
 			MSN_FreeVariant( &dbv );
 		}
 	}
-	else {
+	else 
+	{
+		if (needRemove != Lists_IsInList(flags, email))
+			return true;
+
 		res = MSN_SharingAddDelMember(email, flags, needRemove ? "DeleteMember" : "AddMember");
 		if (res) AddDelUserContList(email, flags, Lists_GetNetId(email), needRemove);
 		if ((flags & LIST_BL) && !needRemove)
 		{
 			if (hContact == NULL)
-				hContact = MSN_HContactFromEmail( email, NULL, 0, 0 );
+				hContact = MSN_HContactFromEmail( email, NULL, false, false );
 
 			ThreadData* thread =  MSN_GetThreadByContact(hContact, SERVER_SWITCHBOARD);
 			thread->sendPacket( "OUT", NULL );

@@ -129,7 +129,7 @@ void getOIMs(ezxml_t xmli)
 			pre.timestamp = evtm;
 
 			CCSDATA ccs = {0};
-			ccs.hContact = MSN_HContactFromEmail( szEmail, szEmail, 0, 0 );
+			ccs.hContact = MSN_HContactFromEmail( szEmail, szEmail, false, false );
 			ccs.szProtoService = PSR_MESSAGE;
 			ccs.lParam = ( LPARAM )&pre;
 			MSN_CallService( MS_PROTO_CHAINRECV, 0, ( LPARAM )&ccs );

@@ -238,7 +238,7 @@ void  MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, size_t cbLen,
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_GoOffline - performs several actions when a server goes offline
 
-void 	MSN_GoOffline()
+void MSN_GoOffline(void)
 {
 	int msnOldStatus = msnStatusMode; msnStatusMode = msnDesiredStatus = ID_STATUS_OFFLINE; 
 	MSN_SendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)msnOldStatus, ID_STATUS_OFFLINE );
@@ -371,7 +371,7 @@ void MSN_SendTyping( ThreadData* info, const char* email, int netId  )
 		"Content-Type: text/x-msmsgscontrol\r\n"
 		"TypingUser: %s\r\n\r\n\r\n", MyOptions.szEmail );
 
-	info->sendMessage( netId == 1 ? 'U' : '2', email, netId, tCommand, MSG_DISABLE_HDR );
+	info->sendMessage( netId == NETID_MSN ? 'U' : '2', email, netId, tCommand, MSG_DISABLE_HDR );
 }
 
 
@@ -616,7 +616,7 @@ void MsnInvokeMyURL( bool ismail, char* url )
 			mir_free(post);
 		}
 	}
-	if (hippy == NULL) hippy = ismail ? "http://mail.live.com" : "http://spaces.live.com";
+	if (hippy == NULL) hippy = (char*)(ismail ? "http://mail.live.com" : "http://spaces.live.com");
 
 	MSN_DebugLog( "Starting URL: '%s'", hippy );
 	MSN_CallService( MS_UTILS_OPENURL, 1, ( LPARAM )hippy );

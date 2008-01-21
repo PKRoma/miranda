@@ -166,17 +166,17 @@ char*		MSN_Base64Decode( const char* str );
 void     	UrlDecode( char* str );
 void     	UrlEncode( const char* src, char* dest, size_t cbDest );
 
-HANDLE      MSN_HContactFromEmail( const char* msnEmail, const char* msnNick, int addIfNeeded, int temporary );
+HANDLE      MSN_HContactFromEmail( const char* msnEmail, const char* msnNick, bool addIfNeeded, bool temporary );
 
 bool		MSN_IsMyContact( HANDLE hContact );
 bool		MSN_IsMeByContact( HANDLE hContact, char* szEmail  = NULL );
 bool        MSN_AddUser( HANDLE hContact, const char* email, int netId, int flags );
 void        MSN_AddAuthRequest( HANDLE hContact, const char *email, const char *nick );
-void		MSN_SetContactDb( HANDLE hContact, int listId );
+void		MSN_SetContactDb( HANDLE hContact, const char *szEmail );
 
 void        MSN_DebugLog( const char* fmt, ... );
 
-void     __cdecl     MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP, void* );
+void		__cdecl MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP, void* );
 void        MSN_GoOffline( void );
 char*		MSN_GetAvatarHash(char* szContext);
 void        MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, size_t cbLen );
@@ -591,6 +591,14 @@ void     MsgQueue_Clear( HANDLE hContact = NULL, bool msg = false );
 /////////////////////////////////////////////////////////////////////////////////////////
 //	User lists
 
+
+#define NETID_UNKNOWN	0x0000
+#define NETID_MSN		0x0001
+#define NETID_LCS		0x0002
+#define NETID_MOB		0x0004
+#define NETID_YAHOO		0x0020
+#define NETID_EMAIL		0x8000
+
 #define	LIST_FL		0x0001
 #define	LIST_AL		0x0002
 #define	LIST_BL		0x0004
@@ -641,7 +649,7 @@ void MSN_ABRenameGroup(const char* szGrpName, const char* szGrpId);
 void MSN_ABUpdateNick(const char* szNick, const char* szCntId);
 void MSN_ABUpdateAttr(const char* szCntId, const char* szAttr, const char* szValue);
 void MSN_ABUpdateProperty(const char* szCntId, const char* propName, const char* propValue);
-unsigned MSN_ABContactAdd(const char* szEmail, const char* szNick, int typeId, const bool search);
+unsigned MSN_ABContactAdd(const char* szEmail, const char* szNick, int netId, const bool search);
 void MSN_ABUpdateDynamicItem(void);
 
 /////////////////////////////////////////////////////////////////////////////////////////

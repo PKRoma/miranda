@@ -138,7 +138,7 @@ static void sttInviteMessage( ThreadData* info, char* msgBody, char* email, char
 	if ( Appname != NULL && Appfile != NULL && Appfilesize != NULL ) { // receive first
 		filetransfer* ft = info->mMsnFtp = new filetransfer();
 
-		ft->std.hContact = MSN_HContactFromEmail( email, nick, 1, 1 );
+		ft->std.hContact = MSN_HContactFromEmail( email, nick, true, true );
 		replaceStr( ft->std.currentFile, Appfile );
 		mir_utf8decode( ft->std.currentFile, &ft->wszFileName );
 		ft->fileId = -1;
@@ -162,7 +162,7 @@ static void sttInviteMessage( ThreadData* info, char* msgBody, char* email, char
 		pre.lParam = ( LPARAM )( char* )Invcookie;
 
 		CCSDATA ccs;
-		ccs.hContact = MSN_HContactFromEmail( email, nick, 1, 1 );
+		ccs.hContact = MSN_HContactFromEmail( email, nick, true, true );
 		ccs.szProtoService = PSR_FILE;
 		ccs.wParam = 0;
 		ccs.lParam = ( LPARAM )&pre;
@@ -263,7 +263,7 @@ static void sttInviteMessage( ThreadData* info, char* msgBody, char* email, char
 
 static void sttCustomSmiley( const char* msgBody, char* email, char* nick, int iSmileyType )
 {
-	HANDLE hContact = MSN_HContactFromEmail( email, nick, 1, 1 );
+	HANDLE hContact = MSN_HContactFromEmail( email, nick, true, true );
 
 	char smileyList[500] = "";
 
@@ -419,7 +419,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		tFileInfo.readFromBuffer( msgBody );
 		info->firstMsgRecv = true;
 
-		HANDLE hContact = MSN_HContactFromEmail(email, nick, 0, 0 );
+		HANDLE hContact = MSN_HContactFromEmail(email, nick, false, false );
 		const char* mirver = tFileInfo[ "Client-Name" ];
 		if ( hContact != NULL && mirver != NULL )
 			MSN_SetString( hContact, "MirVer", mirver );
@@ -427,14 +427,14 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 	else {
 		if ( !info->firstMsgRecv ) {
 			info->firstMsgRecv = true;
-			HANDLE hContact = MSN_HContactFromEmail(email, nick, 0, 0 );
+			HANDLE hContact = MSN_HContactFromEmail(email, nick, false, false );
 			if ( hContact != NULL )
 				sttSetMirVer( hContact, MSN_GetDword( hContact, "FlagBits", 0 ));
 	}	}
 
 	if ( !_strnicmp( tContentType, "text/plain", 10 )) {
 		CCSDATA ccs = {0};
-		HANDLE tContact = MSN_HContactFromEmail(email, nick, 1, 1 );
+		HANDLE tContact = MSN_HContactFromEmail(email, nick, true, true );
 
 		const char* p = tHeader[ "X-MMS-IM-Format" ];
 		bool isRtl =  p != NULL && strstr( p, "RL=1" ) != NULL;
@@ -513,12 +513,12 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		const char* tTypingUser = tHeader[ "TypingUser" ];
 
 		if ( tTypingUser != NULL && info->mChatID[0] == 0 ) {
-			HANDLE hContact = MSN_HContactFromEmail( tTypingUser, tTypingUser, 1, 1 );
+			HANDLE hContact = MSN_HContactFromEmail( tTypingUser, tTypingUser, true, true );
 			MSN_CallService( MS_PROTO_CONTACTISTYPING, ( WPARAM ) hContact, 7 );
 		}
 	}
 	else if ( !_strnicmp( tContentType, "text/x-msnmsgr-datacast", 23 )) {
-		HANDLE tContact = MSN_HContactFromEmail(email, nick, 1, 1 );
+		HANDLE tContact = MSN_HContactFromEmail(email, nick, true, true );
 
 		MimeHeaders tFileInfo;
 		tFileInfo.readFromBuffer( msgBody );
@@ -636,10 +636,10 @@ static void sttProcessAdd( char* buf, size_t len )
 
 			HtmlDecode((char*)szNick);
 
-			HANDLE hContact = MSN_HContactFromEmail(szEmail, szNick, 1, 0);
+			HANDLE hContact = MSN_HContactFromEmail(szEmail, szNick, true, false);
 			int mask = Lists_Add(listId, netId, szEmail);
 
-			MSN_SetContactDb(hContact, mask);
+			MSN_SetContactDb(hContact, szEmail);
 
 			if ( listId == LIST_RL && ( mask & ( LIST_FL+LIST_AL+LIST_BL )) == 0 )
 				MSN_AddAuthRequest( hContact, szEmail, szNick );
@@ -673,7 +673,7 @@ static void sttProcessRemove( char* buf, size_t len )
 
 			if ((listId & ( LIST_RL | LIST_FL )) == 0) 
 			{
-				HANDLE hContact = MSN_HContactFromEmail(szEmail, NULL, 0, 0);
+				HANDLE hContact = MSN_HContactFromEmail(szEmail, NULL, false, false);
 				MSN_CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
 			}
 
@@ -851,7 +851,7 @@ static void sttProcessPage( char* buf, unsigned len )
 		pre.timestamp = time(NULL);
 
 		CCSDATA ccs = {0};
-		ccs.hContact = MSN_HContactFromEmail( szEmail, szEmail, 1, 1 );
+		ccs.hContact = MSN_HContactFromEmail( szEmail, szEmail, true, true );
 		ccs.szProtoService = PSR_MESSAGE;
 		ccs.lParam = ( LPARAM )&pre;
 		MSN_CallService( MS_PROTO_CHAINRECV, 0, ( LPARAM )&ccs );
@@ -1033,7 +1033,7 @@ LBL_InvalidCommand:
 			sttDivideWords( params, 2, tWords );
 			UrlDecode( data.userEmail );
 
-			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, NULL, 0, 0 );
+			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, NULL, false, false );
 
 			if ( MSN_GetByte( "EnableSessionPopup", 0 ))
 				MSN_ShowPopup( hContact, TranslateT( "Contact left channel" ), 0 );
@@ -1105,12 +1105,12 @@ LBL_InvalidCommand:
 			{
 				HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 				while ( hContact != NULL ) {
-					if ( MSN_IsMyContact( hContact )) {
+					if ( MSN_IsMyContact( hContact )) 
+					{
 						char tEmail[ MSN_MAX_EMAIL_LEN ];
 						if ( MSN_GetStaticString( "e-mail", hContact, tEmail, sizeof( tEmail )) == 0 && strncmp(tEmail, "tel:", 4) == 0 )
 						{
 							MSN_SetWord( hContact, "Status", ID_STATUS_ONTHEPHONE );
-							MSN_SetString( hContact, "MirVer", "SMS" );
 						}
 					}
 					hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 );
@@ -1149,7 +1149,7 @@ LBL_InvalidCommand:
 			if ( tArgs < 2 )
 				goto LBL_InvalidCommand;
 
-			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, NULL, 0, 0 );
+			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, NULL, false, false );
 			if ( hContact != NULL )
 			{
 				MSN_SetWord( hContact, "Status", ID_STATUS_OFFLINE );
@@ -1173,7 +1173,7 @@ LBL_InvalidCommand:
 			UrlDecode( data.userNick );
 
 			WORD lastStatus = ID_STATUS_OFFLINE;
-			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, NULL, 0, 0 );
+			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, NULL, false, false );
 			if ( hContact != NULL ) 
 			{
 				MSN_SetStringUtf( hContact, "Nick", data.userNick );
@@ -1246,7 +1246,7 @@ LBL_InvalidCommand:
 			UrlDecode( data.userEmail );
 			UrlDecode( data.userNick );
 
-			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, data.userNick, 1, 1 );
+			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, data.userNick, true, true );
 			if ( tNumTokens == 5 )
 				MSN_SetDword( hContact, "FlagBits", strtoul( data.flags, NULL, 10 ));
 
@@ -1278,7 +1278,7 @@ LBL_InvalidCommand:
 				goto LBL_InvalidCommand;
 
 			UrlDecode( data.userEmail ); UrlDecode( data.userNick );
-			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, data.userNick, 1, 1 );
+			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, data.userNick, true, true );
 			if ( tNumTokens == 3 )
 				MSN_SetDword( hContact, "FlagBits", strtoul( data.flags, NULL, 10 ));
 
@@ -1450,7 +1450,7 @@ LBL_InvalidCommand:
 			if ( sttDivideWords( params, 3, tWords ) != 3 )
 				goto LBL_InvalidCommand;
 
-			HANDLE hContact = MSN_HContactFromEmail( data.email, data.email, 0, 0 );
+			HANDLE hContact = MSN_HContactFromEmail( data.email, data.email, false, false );
 			if ( hContact == NULL )
 				break;
 
@@ -1472,7 +1472,7 @@ LBL_InvalidCommand:
 			if ( sttDivideWords( params, 3, tWords ) != 3 )
 				goto LBL_InvalidCommand;
 
-			HANDLE hContact = MSN_HContactFromEmail( data.email, data.email, 0, 0 );
+			HANDLE hContact = MSN_HContactFromEmail( data.email, data.email, false, false );
 			if ( hContact == NULL )
 				break;
 

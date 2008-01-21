@@ -44,21 +44,16 @@ static HANDLE AddToListByEmail( const char *email, DWORD flags )
 		if ( msnLoggedIn ) 
 		{
 			int netId = Lists_GetNetId(email);
-			if (netId == 0)
-				netId = strncmp(email, "tel:", 4) == 0 ? 4 : 1;
+			if (netId == NETID_UNKNOWN || netId == NETID_EMAIL)
+				netId = strncmp(email, "tel:", 4) == 0 ? NETID_MOB : NETID_MSN;
 			if (MSN_AddUser( hContact, email, netId, LIST_FL ))
 			{
 				MSN_AddUser( hContact, email, netId, LIST_PL + LIST_REMOVE );
 				MSN_AddUser( hContact, email, netId, LIST_BL + LIST_REMOVE );
 				MSN_AddUser( hContact, email, netId, LIST_AL );
-				if (netId == 4)
-				{
-					MSN_SetWord( hContact, "Status", ID_STATUS_ONTHEPHONE );
-					MSN_SetString( hContact, "MirVer", "SMS" );
-				}
 				DBDeleteContactSetting( hContact, "CList", "Hidden" );
 			}
-			MSN_SetContactDb(hContact, Lists_GetMask(email));
+			MSN_SetContactDb(hContact, email);
 		}
 		else hContact = NULL;
 	}
@@ -144,15 +139,7 @@ static int MsnAuthAllow(WPARAM wParam,LPARAM lParam)
 	char* lastName = firstName + strlen( firstName ) + 1;
 	char* email = lastName + strlen( lastName ) + 1;
 
-	HANDLE hContact = MSN_HContactFromEmail(email, email, true, 0);
-	int netId = Lists_GetNetId(email);
-
-	MSN_AddUser( hContact, email, netId, LIST_PL + LIST_REMOVE );
-	MSN_AddUser( hContact, email, netId, LIST_BL + LIST_REMOVE );
-	MSN_AddUser( hContact, email, netId, LIST_AL );
-	MSN_AddUser( hContact, email, netId, LIST_RL );
-
-	MSN_SetContactDb(hContact, Lists_GetMask(email));
+	AddToListByEmail(email, 0);
 	return 0;
 }
 
@@ -185,7 +172,7 @@ static int MsnAuthDeny(WPARAM wParam,LPARAM lParam)
 	char* lastName = firstName + strlen( firstName ) + 1;
 	char* email = lastName + strlen( lastName ) + 1;
 
-	HANDLE hContact = MSN_HContactFromEmail(email, email, true, 0);
+	HANDLE hContact = MSN_HContactFromEmail(email, email, true, false);
 	int netId = Lists_GetNetId(email);
 
 	MSN_AddUser( hContact, email, netId, LIST_PL + LIST_REMOVE );
@@ -195,7 +182,7 @@ static int MsnAuthDeny(WPARAM wParam,LPARAM lParam)
 	if (DBGetContactSettingByte( hContact, "CList", "NotOnList", 0 ) == 0)
 		MSN_AddUser( hContact, email, netId, LIST_FL );
 
-	MSN_SetContactDb(hContact, Lists_GetMask(email));
+	MSN_SetContactDb(hContact, email);
 	return 0;
 }
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -206,7 +193,7 @@ static void __cdecl MsnSearchAckThread( void* arg )
 {
 	const char* email = (char*)arg;
 
-	if (Lists_IsInList(LIST_FL, email))
+	if (Lists_IsInList(LIST_FL, email) && Lists_GetNetId(email) != NETID_EMAIL)
 	{
 		TCHAR *title = mir_a2t(email);
 		MSN_ShowPopup(title, _T("Contact already in your contact list"), MSN_ALLOW_MSGBOX, NULL);
@@ -434,7 +421,7 @@ int MsnWindowEvent(WPARAM wParam, LPARAM lParam)
 		char tEmail[ MSN_MAX_EMAIL_LEN ];
 		if ( MSN_IsMeByContact( msgEvData->hContact, tEmail )) return 0;
 
-		if (Lists_GetNetId(tEmail) != 1) return 0;
+		if (Lists_GetNetId(tEmail) != NETID_MSN) return 0;
 
 		if (msnStatusMode == ID_STATUS_OFFLINE || msnStatusMode == ID_STATUS_INVISIBLE)
 			return 0;
@@ -1010,9 +997,18 @@ static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 		msg = mir_utf8encode( msg );
 
 	int netId  = Lists_GetNetId(tEmail);
-	if (netId == 0) netId = 1;
+	if (netId == NETID_UNKNOWN) netId = NETID_MSN;
 
-	if (netId == 4)
+	if (netId == NETID_EMAIL)
+	{
+		long id = 999997;
+		errMsg = MSN_Translate( "Cannot send messages to E-mail only contacts" );
+		mir_free( msg );
+		mir_forkthread( sttFakeAck, new TFakeAckParams( ccs->hContact, id, errMsg ));
+		return id;
+	}
+
+	if (netId == NETID_MOB)
 	{
 		long id;
 		if ( strlen( msg ) > 133 ) {
@@ -1040,7 +1036,7 @@ static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 	int seq; 
 	int rtlFlag = (ccs->wParam & PREF_RTL ) ? MSG_RTL : 0;
 	
-	if (netId == 1)
+	if (netId == NETID_MSN)
 	{
 		const char msgType = MyOptions.SlowSend ? 'A' : 'N';
 		bool isOffline;
@@ -1411,8 +1407,8 @@ static int MsnUserIsTyping(WPARAM wParam, LPARAM lParam)
 	int netId = Lists_GetNetId(tEmail);
 	switch (netId)
 	{
-	case 0:
-	case 1:
+	case NETID_UNKNOWN:
+	case NETID_MSN:
 		{
 			bool isOffline;
 			ThreadData* thread = MSN_StartSB(hContact, isOffline);
@@ -1427,7 +1423,8 @@ static int MsnUserIsTyping(WPARAM wParam, LPARAM lParam)
 		}
 		break;
 
-	case 4:
+	case NETID_MOB:
+	case NETID_EMAIL:
 		break;
 
 	default:

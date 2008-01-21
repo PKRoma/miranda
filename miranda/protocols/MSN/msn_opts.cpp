@@ -60,7 +60,7 @@ void MsnInitIcons( void )
 	sid.cx = sid.cy = 16;
 	sid.pszSection = MSN_Translate( msnProtocolName );
 
-	for ( int i = 0; i < SIZEOF(iconList); i++ ) {
+	for ( unsigned i = 0; i < SIZEOF(iconList); i++ ) {
 		char szSettingName[100];
 		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", msnProtocolName, iconList[i].szName );
 		sid.pszName = szSettingName;
@@ -78,7 +78,7 @@ HICON  LoadIconEx( const char* name )
 
 HANDLE  GetIconHandle( int iconId )
 {
-	for ( int i=0; i < SIZEOF(iconList); i++ )
+	for ( unsigned i=0; i < SIZEOF(iconList); i++ )
 		if ( iconList[i].defIconID == iconId )
 			return iconList[i].hIconLibItem;
 
@@ -231,7 +231,7 @@ LBL_Continue:
 		break;
 
 	case WM_NOTIFY:
-		if (((LPNMHDR)lParam)->code == PSN_APPLY ) {
+		if (((LPNMHDR)lParam)->code == (UINT)PSN_APPLY ) {
 			bool reconnectRequired = false;
 			TCHAR screenStr[ MAX_PATH ];
 			char  password[ 100 ], szEmail[MSN_MAX_EMAIL_LEN];
@@ -427,7 +427,7 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 		break;
 
 	case WM_NOTIFY:
-		if (((LPNMHDR)lParam)->code == PSN_APPLY ) {
+		if (((LPNMHDR)lParam)->code == (UINT)PSN_APPLY ) {
 			bool restartRequired = false, reconnectRequired = false;
 			char str[ MAX_PATH ];
 
