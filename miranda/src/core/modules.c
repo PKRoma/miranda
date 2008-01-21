@@ -338,16 +338,15 @@ int CallHookSubscribers( HANDLE hEvent, WPARAM wParam, LPARAM lParam )
 
 	// NOTE: We've got the critical section while all this lot are called. That's mostly safe, though.
 	for ( i = 0; i < p->subscriberCount; i++ ) {
-		if ( p->subscriber[i].pfnHook != NULL ) {
-			returnVal = p->subscriber[i].pfnHook( wParam, lParam );
-			if ( returnVal )
-				break;
+		switch ( p->subscriber[i].type ) {
+			case 1:	returnVal = p->subscriber[i].pfnHook( wParam, lParam );	break;
+			case 2:	returnVal = p->subscriber[i].pfnHookEx( p->subscriber[i].lParam, wParam, lParam );	break;
+			case 3:	returnVal = SendMessage( p->subscriber[i].hwnd, p->subscriber[i].message, wParam, lParam ); break;
+			default: continue;
 		}
-		else if ( p->subscriber[i].hwnd != NULL ) {
-			returnVal = SendMessage( p->subscriber[i].hwnd, p->subscriber[i].message, wParam, lParam );
-			if ( returnVal )
-				break;
-	}	}
+		if ( returnVal )
+			break;
+	}
 
 	// check for no hooks and call the default hook if any
 	if ( p->subscriberCount == 0 && p->pfnHook != 0 )
@@ -423,9 +422,39 @@ HANDLE HookEvent( const char* name, MIRANDAHOOK hookProc )
 
 	p = hooks.items[ idx ];
 	p->subscriber = ( THookSubscriber* )mir_realloc( p->subscriber, sizeof( THookSubscriber )*( p->subscriberCount+1 ));
+	p->subscriber[ p->subscriberCount ].type = 1;
 	p->subscriber[ p->subscriberCount ].pfnHook = hookProc;
 	p->subscriber[ p->subscriberCount ].hOwner  = GetInstByAddress( hookProc );
-	p->subscriber[ p->subscriberCount ].hwnd    = NULL;
+	p->subscriberCount++;
+
+	ret = ( HANDLE )(( p->id << 16 ) | p->subscriberCount );
+	LeaveCriticalSection( &csHooks );
+	return ret;
+}
+
+HANDLE HookEventParam( const char* name, MIRANDAHOOKPARAM hookProc, LPARAM lParam )
+{
+	int idx;
+	THook* p;
+	HANDLE ret;
+
+	EnterCriticalSection( &csHooks );
+	if ( !List_GetIndex(( SortedList* )&hooks, ( void* )name, &idx )) {
+		#ifdef _DEBUG
+			OutputDebugStringA("Attempt to hook: \t");
+			OutputDebugStringA(name);
+			OutputDebugStringA("\n");
+		#endif
+		LeaveCriticalSection(&csHooks);
+		return NULL;
+	}
+
+	p = hooks.items[ idx ];
+	p->subscriber = ( THookSubscriber* )mir_realloc( p->subscriber, sizeof( THookSubscriber )*( p->subscriberCount+1 ));
+	p->subscriber[ p->subscriberCount ].type = 2;
+	p->subscriber[ p->subscriberCount ].pfnHookEx = hookProc;
+	p->subscriber[ p->subscriberCount ].lParam = lParam;
+	p->subscriber[ p->subscriberCount ].hOwner  = GetInstByAddress( hookProc );
 	p->subscriberCount++;
 
 	ret = ( HANDLE )(( p->id << 16 ) | p->subscriberCount );
@@ -450,7 +479,7 @@ HANDLE HookEventMessage( const char* name, HWND hwnd, UINT message )
 
 	p = hooks.items[ idx ];
 	p->subscriber = ( THookSubscriber* )mir_realloc( p->subscriber, sizeof( THookSubscriber )*( p->subscriberCount+1 ));
-	p->subscriber[ p->subscriberCount ].pfnHook = NULL;
+	p->subscriber[ p->subscriberCount ].type = 3;
 	p->subscriber[ p->subscriberCount ].hwnd = hwnd;
 	p->subscriber[ p->subscriberCount ].message = message;
 	p->subscriberCount++;
@@ -484,10 +513,10 @@ int UnhookEvent( HANDLE hHook )
 		return 1;
 	}
 
+	p->subscriber[subscriberId].type    = 0;
 	p->subscriber[subscriberId].pfnHook = NULL;
-	p->subscriber[subscriberId].hwnd    = NULL;
 	p->subscriber[subscriberId].hOwner  = NULL;
-	while( p->subscriberCount && p->subscriber[p->subscriberCount-1].pfnHook == NULL && p->subscriber[p->subscriberCount-1].hwnd == NULL )
+	while( p->subscriberCount && p->subscriber[p->subscriberCount-1].type == 0 )
 		p->subscriberCount--;
 	if ( p->subscriberCount == 0 ) {
 		if ( p->subscriber ) mir_free( p->subscriber );

@@ -31,15 +31,27 @@ restructuring modules.c for performance.
 #define MAXMODULELABELLENGTH 64
 
 typedef int (*MIRANDAHOOK)(WPARAM,LPARAM);
+typedef int (*MIRANDAHOOKPARAM)(LPARAM,WPARAM,LPARAM);
 typedef int (*MIRANDASERVICE)(WPARAM,LPARAM);
 typedef int (*MIRANDASERVICEPARAM)(WPARAM,LPARAM,LPARAM);
 
 typedef struct
 {
-	MIRANDAHOOK pfnHook;
 	HINSTANCE hOwner;
-	HWND hwnd;
-	UINT message;
+	int type;
+	union {
+		struct {
+			union {
+				MIRANDAHOOK pfnHook;
+				MIRANDAHOOKPARAM pfnHookEx;
+			};
+			LPARAM lParam;
+		};
+		struct {
+			HWND hwnd;
+			UINT message;
+		};
+	};
 }
 	THookSubscriber;
 
@@ -129,6 +141,7 @@ NotifyEventHooks() and should not be -1 since that is a special return code
 for NotifyEventHooks() (see above)
 */
 HANDLE HookEvent(const char *name,MIRANDAHOOK hookProc);
+HANDLE HookEventParam(const char *name, MIRANDAHOOKPARAM hookProc, LPARAM lParam);
 
 /* HookEventMessage
 Works as for HookEvent(), except that when the notifier is called a message is

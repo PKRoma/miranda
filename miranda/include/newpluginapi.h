@@ -132,6 +132,7 @@ typedef struct {
 
 #ifndef MODULES_H_
 	typedef int (*MIRANDAHOOK)(WPARAM,LPARAM);
+	typedef int (*MIRANDAHOOKPARAM)(LPARAM param,WPARAM,LPARAM);
 	typedef int (*MIRANDASERVICE)(WPARAM,LPARAM);
 	typedef int (*MIRANDASERVICEPARAM)(WPARAM,LPARAM,LPARAM);
 	#define CALLSERVICE_NOTFOUND      ((int)0x80000000)
@@ -158,6 +159,7 @@ typedef struct {
 	#if MIRANDA_VER >= 0x800
 		int (*CallProtoService)(const char *, const char *, WPARAM, LPARAM );
 		int (*CallContactService)( HANDLE, const char *, WPARAM, LPARAM );
+		HANDLE (*HookEventParam)(const char *,MIRANDAHOOKPARAM,LPARAM);
 	#endif
 } PLUGINLINK;
 
@@ -184,6 +186,7 @@ typedef struct {
 		#if MIRANDA_VER >= 0x800
 			#define CallProtoService(a,b,c,d)         pluginLink->CallProtoService(a,b,c,d)
 			#define CallContactService(a,b,c,d)       pluginLink->CallContactService(a,b,c,d)
+			#define HookEventParam(a,b,c)             pluginLink->HookEventParam(a,b,c)
 		#endif
 	#endif
 #endif

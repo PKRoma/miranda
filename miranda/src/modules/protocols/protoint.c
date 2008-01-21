@@ -198,6 +198,8 @@ static int fnUserIsTyping( PROTO_INTERFACE* ppi, HANDLE hContact, int type )
 
 // creates the default protocol container for compatibility with the old plugins
 
+static PROTO_INTERFACE_VTBL defaultVtbl;
+
 PROTO_INTERFACE* AddDefaultAccount( const char* szProtoName )
 {
 	PROTO_INTERFACE* ppi = ( PROTO_INTERFACE* )mir_alloc( sizeof( PROTO_INTERFACE ));
@@ -209,40 +211,41 @@ PROTO_INTERFACE* AddDefaultAccount( const char* szProtoName )
 		ppi->szProtoName = mir_strdup( szProtoName );
 		ppi->tszUserName = mir_a2t( szProtoName );
 
-		ppi->AddToList              = fnAddToList;
-		ppi->AddToListByEvent       = fnAddToListByEvent;
-		ppi->Authorize              = fnAuthorize;
-		ppi->AuthDeny               = fnAuthDeny;
-		ppi->AuthRecv               = fnAuthRecv;
-		ppi->AuthRequest            = fnAuthRequest;
-		ppi->ChangeInfo             = fnChangeInfo;
-		ppi->FileAllow              = fnFileAllow;
-		ppi->FileCancel             = fnFileCancel;
-		ppi->FileDeny               = fnFileDeny;
-		ppi->FileResume             = fnFileResume;
-		ppi->GetCaps                = fnGetCaps;
-		ppi->GetIcon                = fnGetIcon;
-		ppi->GetInfo                = fnGetInfo;
-		ppi->SearchBasic            = fnSearchBasic;
-		ppi->SearchByEmail          = fnSearchByEmail;
-		ppi->SearchByName           = fnSearchByName;
-		ppi->SearchAdvanced         = fnSearchAdvanced;
-		ppi->CreateExtendedSearchUI = fnCreateExtendedSearchUI;
-		ppi->RecvContacts           = fnRecvContacts;
-		ppi->RecvFile               = fnRecvFile;
-		ppi->RecvMessage            = fnRecvMessage;
-		ppi->RecvUrl                = fnRecvUrl;
-		ppi->SendContacts           = fnSendContacts;
-		ppi->SendFile               = fnSendFile;
-		ppi->SendMessage            = fnSendMessage;
-		ppi->SendUrl                = fnSendUrl;
-		ppi->SetApparentMode        = fnSetApparentMode;
-		ppi->SetStatus              = fnSetStatus;
-		ppi->GetAwayMsg             = fnGetAwayMsg;
-		ppi->RecvAwayMsg            = fnRecvAwayMsg;
-		ppi->SendAwayMsg            = fnSendAwayMsg;
-		ppi->SetAwayMsg             = fnSetAwayMsg;
-		ppi->UserIsTyping           = fnUserIsTyping;
+		ppi->vtbl = &defaultVtbl;
+		ppi->vtbl->AddToList              = fnAddToList;
+		ppi->vtbl->AddToListByEvent       = fnAddToListByEvent;
+		ppi->vtbl->Authorize              = fnAuthorize;
+		ppi->vtbl->AuthDeny               = fnAuthDeny;
+		ppi->vtbl->AuthRecv               = fnAuthRecv;
+		ppi->vtbl->AuthRequest            = fnAuthRequest;
+		ppi->vtbl->ChangeInfo             = fnChangeInfo;
+		ppi->vtbl->FileAllow              = fnFileAllow;
+		ppi->vtbl->FileCancel             = fnFileCancel;
+		ppi->vtbl->FileDeny               = fnFileDeny;
+		ppi->vtbl->FileResume             = fnFileResume;
+		ppi->vtbl->GetCaps                = fnGetCaps;
+		ppi->vtbl->GetIcon                = fnGetIcon;
+		ppi->vtbl->GetInfo                = fnGetInfo;
+		ppi->vtbl->SearchBasic            = fnSearchBasic;
+		ppi->vtbl->SearchByEmail          = fnSearchByEmail;
+		ppi->vtbl->SearchByName           = fnSearchByName;
+		ppi->vtbl->SearchAdvanced         = fnSearchAdvanced;
+		ppi->vtbl->CreateExtendedSearchUI = fnCreateExtendedSearchUI;
+		ppi->vtbl->RecvContacts           = fnRecvContacts;
+		ppi->vtbl->RecvFile               = fnRecvFile;
+		ppi->vtbl->RecvMsg                = fnRecvMessage;
+		ppi->vtbl->RecvUrl                = fnRecvUrl;
+		ppi->vtbl->SendContacts           = fnSendContacts;
+		ppi->vtbl->SendFile               = fnSendFile;
+		ppi->vtbl->SendMsg                = fnSendMessage;
+		ppi->vtbl->SendUrl                = fnSendUrl;
+		ppi->vtbl->SetApparentMode        = fnSetApparentMode;
+		ppi->vtbl->SetStatus              = fnSetStatus;
+		ppi->vtbl->GetAwayMsg             = fnGetAwayMsg;
+		ppi->vtbl->RecvAwayMsg            = fnRecvAwayMsg;
+		ppi->vtbl->SendAwayMsg            = fnSendAwayMsg;
+		ppi->vtbl->SetAwayMsg             = fnSetAwayMsg;
+		ppi->vtbl->UserIsTyping           = fnUserIsTyping;
 	}
 	return ppi;
 }

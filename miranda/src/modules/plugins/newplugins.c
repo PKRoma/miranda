@@ -931,6 +931,7 @@ int LoadNewPluginsModuleInfos(void)
 	pluginCoreLink.CreateHookableEvent            = CreateHookableEvent;
 	pluginCoreLink.DestroyHookableEvent           = DestroyHookableEvent;
 	pluginCoreLink.HookEvent                      = HookEvent;
+	pluginCoreLink.HookEventParam                 = HookEventParam;
 	pluginCoreLink.HookEventMessage               = HookEventMessage;
 	pluginCoreLink.UnhookEvent                    = UnhookEvent;
 	pluginCoreLink.NotifyEventHooks               = NotifyEventHooks;
