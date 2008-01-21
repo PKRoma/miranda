@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -81,6 +81,7 @@ size_t __fastcall strlennull(const char *string);
 int __fastcall strcmpnull(const char *str1, const char *str2);
 int null_snprintf(char *buffer, size_t count, const char* fmt, ...);
 char* __fastcall null_strdup(const char *string);
+size_t __fastcall null_strcut(char *string, size_t maxlen);
 
 void parseServerAddress(char *szServer, WORD* wPort);
 
@@ -115,10 +116,12 @@ BOOL validateStatusMessageRequest(HANDLE hContact, WORD byMessageType);
 
 void __fastcall SAFE_FREE(void** p);
 void* __fastcall SAFE_MALLOC(size_t size);
+void* __fastcall SAFE_REALLOC(void* p, size_t size);
 
 HANDLE NetLib_OpenConnection(HANDLE hUser, const char* szIdent, NETLIBOPENCONNECTION* nloc);
 HANDLE NetLib_BindPort(NETLIBNEWCONNECTIONPROC_V2 pFunc, void* lParam, WORD* pwPort, DWORD* pdwIntIP);
-void NetLib_SafeCloseHandle(HANDLE *hConnection, int bServerConn);
+void NetLib_CloseConnection(HANDLE *hConnection, int bServerConn);
+void NetLib_SafeCloseHandle(HANDLE *hConnection);
 int NetLog_Server(const char *fmt,...);
 int NetLog_Direct(const char *fmt,...);
 int NetLog_Uni(BOOL bDC, const char *fmt,...);

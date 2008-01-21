@@ -2,8 +2,8 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2001,2002,2003,2004 Richard Hughes, Martin Öberg
-// Copyright © 2004,2005,2006 Joe Kucera, Bio
+// Copyright © 2001-2004 Richard Hughes, Martin Öberg
+// Copyright © 2004-2008 Joe Kucera, Bio
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -21,7 +21,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/changeinfo/editstring.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -124,7 +124,7 @@ char *BinaryToEscapes(char *str)
     if(extra<3) 
     {
       extra+=8; len+=8;
-      pout=out=(char*)realloc(out,len);
+      pout=out=(char*)SAFE_REALLOC(out,len);
     }
     *pout++='\\';
     for(i=0;i<sizeof(escapes)/sizeof(escapes[0]);i+=2)

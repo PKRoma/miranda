@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/capabilities.c,v $
+// File name      : $URL: https://miranda.svn.sourceforge.net/svnroot/miranda/trunk/miranda/protocols/IcqOscarJ/capabilities.c $
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -53,8 +53,10 @@ static icq_capability CapabilityRecord[] =
   {CAPF_SRV_RELAY, {CAP_SRV_RELAY }},
   {CAPF_UTF,       {CAP_UTF       }},
   {CAPF_RTF,       {CAP_RTF       }},
-  {CAPF_ICQDIRECT, {CAP_ICQDIRECT }},
+  {CAPF_HTML,      {CAP_HTML      }},
+  {CAPF_CONTACTS,  {CAP_CONTACTS  }},
   {CAPF_TYPING,    {CAP_TYPING    }},
+  {CAPF_ICQDIRECT, {CAP_ICQDIRECT }},
   {CAPF_XTRAZ,     {CAP_XTRAZ     }},
   {CAPF_OSCAR_FILE,{CAP_OSCAR_FILE}}
 };

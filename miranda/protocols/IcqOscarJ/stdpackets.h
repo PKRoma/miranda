@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 //
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -52,7 +52,7 @@ void icq_sendCloseConnection();
 void icq_requestnewfamily(WORD wFamily, void (*familyhandler)(HANDLE hConn, char* cookie, WORD cookieLen));
 
 void icq_setidle(int bAllow);
-void icq_setstatus(WORD wStatus);
+void icq_setstatus(WORD wStatus, int bSetMood);
 DWORD icq_sendGetInfoServ(HANDLE, DWORD, int, int);
 DWORD icq_sendGetAimProfileServ(HANDLE hContact, char *szUid);
 DWORD icq_sendGetAwayMsgServ(HANDLE, DWORD, int, WORD);
@@ -76,7 +76,6 @@ void icq_sendRemoveContact(DWORD dwUin, char* szUid);
 void icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, char* szUID, int list, int add);
 void icq_sendEntireVisInvisList(int);
 void icq_sendAwayMsgReplyServ(DWORD, DWORD, DWORD, WORD, WORD, BYTE, const char **);
-void icq_sendAdvancedMsgAck(DWORD, DWORD, DWORD, WORD, BYTE, BYTE);
 DWORD icq_sendSMSServ(const char *szPhoneNumber, const char *szMsg);
 void icq_sendMessageCapsServ(DWORD dwUin);
 void icq_sendRevokeAuthServ(DWORD dwUin, char *szUid);
@@ -91,7 +90,11 @@ void sendUserInfoAutoRequest(HANDLE hContact, DWORD dwUin);
 DWORD icq_SendChannel1Message(DWORD dwUin, char *szUID, HANDLE hContact, char *pszText, message_cookie_data *pCookieData);
 DWORD icq_SendChannel1MessageW(DWORD dwUin, char *szUID, HANDLE hContact, wchar_t *pszText, message_cookie_data *pCookieData); // UTF-16
 DWORD icq_SendChannel2Message(DWORD dwUin, HANDLE hContact, const char *szMessage, int nBodyLength, WORD wPriority, message_cookie_data *pCookieData, char *szCap);
+DWORD icq_SendChannel2Contacts(DWORD dwUin, char *szUid, HANDLE hContact, const char *pData, WORD wDataLen, const char *pNames, WORD wNamesLen, message_cookie_data *pCookieData);
 DWORD icq_SendChannel4Message(DWORD dwUin, HANDLE hContact, BYTE bMsgType, WORD wMsgLen, const char *szMsg, message_cookie_data *pCookieData);
+
+void icq_sendAdvancedMsgAck(DWORD, DWORD, DWORD, WORD, BYTE, BYTE);
+void icq_sendContactsAck(DWORD dwUin, char *szUid, DWORD dwMsgID1, DWORD dwMsgID2);
 
 void icq_sendReverseReq(directconnect *dc, DWORD dwCookie, message_cookie_data *pCookie);
 void icq_sendReverseFailed(directconnect* dc, DWORD dwMsgID1, DWORD dwMsgID2, DWORD dwCookie);

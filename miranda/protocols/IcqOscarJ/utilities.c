@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 //
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -311,7 +311,7 @@ void SetGatewayIndex(HANDLE hConn, DWORD dwIndex)
     }
   }
 
-  gateways = (gateway_index *)realloc(gateways, sizeof(gateway_index) * (gatewayCount + 1));
+  gateways = (gateway_index *)SAFE_REALLOC(gateways, sizeof(gateway_index) * (gatewayCount + 1));
   gateways[gatewayCount].hConn = hConn;
   gateways[gatewayCount].dwIndex = dwIndex;
   gatewayCount++;
@@ -359,7 +359,7 @@ void FreeGatewayIndex(HANDLE hConn)
     {
       gatewayCount--;
       memmove(&gateways[i], &gateways[i+1], sizeof(gateway_index) * (gatewayCount - i));
-      gateways = (gateway_index*)realloc(gateways, sizeof(gateway_index) * gatewayCount);
+      gateways = (gateway_index*)SAFE_REALLOC(gateways, sizeof(gateway_index) * gatewayCount);
 
       // Gateway found, exit loop
       break;
@@ -375,7 +375,7 @@ void AddToSpammerList(DWORD dwUIN)
 {
   EnterCriticalSection(&cookieMutex);
 
-  spammerList = (DWORD *)realloc(spammerList, sizeof(DWORD) * (spammerListCount + 1));
+  spammerList = (DWORD *)SAFE_REALLOC(spammerList, sizeof(DWORD) * (spammerListCount + 1));
   spammerList[spammerListCount] = dwUIN;
   spammerListCount++;
 
@@ -420,7 +420,7 @@ static void AddToCache(HANDLE hContact, DWORD dwUin)
   if (cacheCount + 1 >= cacheListSize)
   {
     cacheListSize += 100;
-    contacts_cache = (icq_contacts_cache *)realloc(contacts_cache, sizeof(icq_contacts_cache) * cacheListSize);
+    contacts_cache = (icq_contacts_cache *)SAFE_REALLOC(contacts_cache, sizeof(icq_contacts_cache) * cacheListSize);
   }
 
 #ifdef _DEBUG
@@ -745,6 +745,27 @@ char* __fastcall null_strdup(const char *string)
     return strdup(string);
 
   return NULL;
+}
+
+
+
+size_t __fastcall null_strcut(char *string, size_t maxlen)
+{ // limit the string to max length (null & utf-8 strings ready)
+  size_t len = strlennull(string);
+
+  if (len < maxlen) 
+    return len;
+
+  len = maxlen;
+
+  if (UTF8_IsValid(string)) // handle utf-8 string
+  { // find the first byte of possible multi-byte character
+    while ((string[len] & 0xc0) == 0x80) len--;
+  }
+  // simply cut the string
+  string[len] = '\0';
+
+  return len;
 }
 
 
@@ -1330,6 +1351,18 @@ void* __fastcall SAFE_MALLOC(size_t size)
 
 
 
+void* __fastcall SAFE_REALLOC(void* p, size_t size)
+{
+  if (p)
+  {
+    return realloc(p, size);
+  }
+  else
+    return SAFE_MALLOC(size);
+}
+
+
+
 HANDLE NetLib_OpenConnection(HANDLE hUser, const char* szIdent, NETLIBOPENCONNECTION* nloc)
 {
   HANDLE hConnection;
@@ -1373,13 +1406,28 @@ HANDLE NetLib_BindPort(NETLIBNEWCONNECTIONPROC_V2 pFunc, void* lParam, WORD* pwP
 
 
 
-void NetLib_SafeCloseHandle(HANDLE *hConnection, int bServerConn)
+void NetLib_CloseConnection(HANDLE *hConnection, int bServerConn)
+{
+  if (*hConnection)
+  {
+    int sck = CallService(MS_NETLIB_GETSOCKET, (WPARAM)*hConnection, (LPARAM)0);
+
+    if (sck!=INVALID_SOCKET) shutdown(sck, 2); // close gracefully
+
+    NetLib_SafeCloseHandle(hConnection);
+
+    if (bServerConn)
+      FreeGatewayIndex(*hConnection);
+  }
+}
+
+
+
+void NetLib_SafeCloseHandle(HANDLE *hConnection)
 {
   if (*hConnection)
   {
     Netlib_CloseHandle(*hConnection);
-    if (bServerConn)
-      FreeGatewayIndex(*hConnection);
     *hConnection = NULL;
   }
 }

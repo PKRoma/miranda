@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 //
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -44,6 +44,7 @@ extern WORD wListenPort;
 extern CRITICAL_SECTION modeMsgsMutex;
 
 extern const capstr capXStatus[];
+extern const int moodXStatus[];
 
 void setUserInfo();
 
@@ -133,8 +134,9 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 #ifdef _DEBUG
       NetLog_Server("Requesting roster rights");
 #endif
-      serverPacketInit(&packet, 10);
+      serverPacketInit(&packet, 16);
       packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_REQLISTS);
+      packTLVWord(&packet, 0x0B, 0x000F); // mimic ICQ 6
       sendServPacket(&packet);
 
       if (!wRecordCount) // CLI_REQROSTER
@@ -198,8 +200,9 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 #ifdef _DEBUG
     NetLog_Server("Requesting Client-side contactlist rights");
 #endif
-    serverPacketInit(&packet, 10);
+    serverPacketInit(&packet, 16);
     packFNACHeader(&packet, ICQ_BUDDY_FAMILY, ICQ_USER_CLI_REQBUDDY);
+    packTLVWord(&packet, 0x05, 0x0003); // mimic ICQ 6
     sendServPacket(&packet);
 
     // CLI_REQICBM
@@ -820,17 +823,11 @@ void setUserInfo()
 { // CLI_SETUSERINFO
   icq_packet packet;
   WORD wAdditionalData = 0;
-  BYTE bXStatus = gbXStatusEnabled?ICQGetContactSettingByte(NULL, DBSETTING_XSTATUSID, 0):0;
+  BYTE bXStatus = ICQGetContactXStatus(NULL);
 
   if (gbAimEnabled)
     wAdditionalData += 16;
 #ifdef DBG_CAPMTN
-  wAdditionalData += 16;
-#endif
-#ifdef DBG_CAPCH2
-  wAdditionalData += 16;
-#endif
-#ifdef DBG_CAPRTF
   wAdditionalData += 16;
 #endif
   if (gbUtfEnabled)
@@ -848,13 +845,19 @@ void setUserInfo()
     wAdditionalData += 16;
   if (bXStatus)
     wAdditionalData += 16;
+#ifdef DBG_CAPHTML
+  wAdditionalData += 16;
+#endif
+#ifdef DBG_AIMCONTACTSEND
+  wAdditionalData += 16;
+#endif
 
-  serverPacketInit(&packet, (WORD)(46 + wAdditionalData));
+  serverPacketInit(&packet, (WORD)(62 + wAdditionalData));
   packFNACHeader(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_SET_USER_INFO);
 
   /* TLV(5): capability data */
   packWord(&packet, 0x0005);
-  packWord(&packet, (WORD)(32 + wAdditionalData));
+  packWord(&packet, (WORD)(48 + wAdditionalData));
 
 
 #ifdef DBG_CAPMTN
@@ -865,19 +868,9 @@ void setUserInfo()
     packDWord(&packet, 0x09DFA2F3);
   }
 #endif
-#ifdef DBG_CAPCH2
   {
     packNewCap(&packet, 0x1349);    // AIM_CAPS_ICQSERVERRELAY
   }
-#endif
-#ifdef DBG_CAPRTF
-  {
-    packDWord(&packet, 0x97B12751); // AIM_CAPS_ICQRTF
-    packDWord(&packet, 0x243C4334); // Broadcasts the capability to receive
-    packDWord(&packet, 0xAD22D6AB); // RTF messages
-    packDWord(&packet, 0xF73F1492);
-  }
-#endif
   if (gbUtfEnabled)
   {
     packNewCap(&packet, 0x134E);    // CAP_UTF8MSGS
@@ -908,12 +901,31 @@ void setUserInfo()
   {
     packNewCap(&packet, 0x134D);    // Tells the server we can speak to AIM
   }
+#ifdef DBG_AIMCONTACTSEND
+  {
+    packNewCap(&packet, 0x134B);    // CAP_AIM_SENDBUDDYLIST
+  }
+#endif
   if (bXStatus)
   {
     packBuffer(&packet, capXStatus[bXStatus-1], 0x10);
   }
 
   packNewCap(&packet, 0x1344);      // AIM_CAPS_ICQDIRECT
+
+  /*packDWord(&packet, 0x178c2d9b); // Unknown cap
+  packDWord(&packet, 0xdaa545bb);
+  packDWord(&packet, 0x8ddbf3bd);
+  packDWord(&packet, 0xbd53a10a);*/
+
+#ifdef DBG_CAPHTML
+  {
+    packDWord(&packet, 0x0138ca7b); // CAP_HTMLMSGS
+    packDWord(&packet, 0x769a4915); // Broadcasts the capability to receive
+    packDWord(&packet, 0x88f213fc); // HTML messages
+    packDWord(&packet, 0x00979ea8);
+  }
+#endif
 
   packDWord(&packet, 0x4D697261);   // Miranda Signature
   packDWord(&packet, 0x6E64614D);
@@ -956,12 +968,22 @@ void handleServUINSettings(int nPort, serverthread_info *info)
   {
     WORD wStatus;
     DWORD dwDirectCookie = rand() ^ (rand() << 16);
-
+    BYTE bXStatus = ICQGetContactXStatus(NULL);
+    char szMoodId[32];
+    WORD cbMoodId = 0;
+    WORD cbMoodData = 0;
 
     // Get status
     wStatus = MirandaStatusToIcq(icqGoingOnlineStatus);
 
-    serverPacketInit(&packet, 71);
+    if (bXStatus && moodXStatus[bXStatus-1] != -1)
+    { // prepare mood id
+      null_snprintf(szMoodId, SIZEOF(szMoodId), "icqmood%d", moodXStatus[bXStatus-1]);
+      cbMoodId = strlennull(szMoodId);
+      cbMoodData = 8;
+    }
+
+    serverPacketInit(&packet, (WORD)(71 + cbMoodId + cbMoodData));
     packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_STATUS);
     packDWord(&packet, 0x00060004);             // TLV 6: Status mode and security flags
     packWord(&packet, GetMyStatusFlags());      // Status flags
@@ -984,6 +1006,15 @@ void handleServUINSettings(int nPort, serverthread_info *info)
     packWord(&packet, 0x0000);                  // Unknown
     packTLVWord(&packet, 0x001F, 0x0000);
 
+    if (cbMoodId)
+    { // Pack mood data
+      packWord(&packet, 0x1D);              // TLV 1D
+      packWord(&packet, (WORD)(cbMoodId + 4)); // TLV length
+      packWord(&packet, 0x0E);              // Item Type
+      packWord(&packet, cbMoodId);          // Flags + Item Length
+      packBuffer(&packet, szMoodId, cbMoodId); // Mood
+    }
+
     sendServPacket(&packet);
   }
 
@@ -1002,27 +1033,27 @@ void handleServUINSettings(int nPort, serverthread_info *info)
   serverPacketInit(&packet, 98);
   packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_READY);
   packDWord(&packet, 0x00220001); // imitate ICQ 6 behaviour
-  packDWord(&packet, 0x0110157f);
+  packDWord(&packet, 0x0110161b);
   packDWord(&packet, 0x00010004);
-  packDWord(&packet, 0x0110157f);
+  packDWord(&packet, 0x0110161b);
   packDWord(&packet, 0x00130004);
-  packDWord(&packet, 0x0110157f);
+  packDWord(&packet, 0x0110161b);
   packDWord(&packet, 0x00020001);
-  packDWord(&packet, 0x0110157f);
+  packDWord(&packet, 0x0110161b);
   packDWord(&packet, 0x00030001);
-  packDWord(&packet, 0x0110157f);
+  packDWord(&packet, 0x0110161b);
   packDWord(&packet, 0x00150001);
-  packDWord(&packet, 0x0110157f);
+  packDWord(&packet, 0x0110161b);
   packDWord(&packet, 0x00040001);
-  packDWord(&packet, 0x0110157f);
+  packDWord(&packet, 0x0110161b);
   packDWord(&packet, 0x00060001);
-  packDWord(&packet, 0x0110157f);
+  packDWord(&packet, 0x0110161b);
   packDWord(&packet, 0x00090001);
-  packDWord(&packet, 0x0110157f);
+  packDWord(&packet, 0x0110161b);
   packDWord(&packet, 0x000A0001);
-  packDWord(&packet, 0x0110157f);
+  packDWord(&packet, 0x0110161b);
   packDWord(&packet, 0x000B0001);
-  packDWord(&packet, 0x0110157f);
+  packDWord(&packet, 0x0110161b);
 
   sendServPacket(&packet);
 
@@ -1036,14 +1067,20 @@ void handleServUINSettings(int nPort, serverthread_info *info)
 
   if (!info->isMigrating)
   { /* Get Offline Messages Reqeust */
-    serverPacketInit(&packet, 24);
-    packFNACHeaderFull(&packet, ICQ_EXTENSIONS_FAMILY, ICQ_META_CLI_REQ, 0, 0x00020001);
-    packDWord(&packet, 0x0001000a);    /* TLV */
-    packLEWord(&packet, 8);            /* bytes remaining */
-    packLEDWord(&packet, dwLocalUIN);
-    packDWord(&packet, 0x3c000200);    /* get offline msgs */
+    offline_message_cookie *ack;
 
-    sendServPacket(&packet);
+    ack = (offline_message_cookie*)SAFE_MALLOC(sizeof(offline_message_cookie));
+    if (ack)
+    {
+      DWORD dwCookie = AllocateCookie(CKT_OFFLINEMESSAGE, ICQ_MSG_CLI_REQ_OFFLINE, 0, ack);
+
+      serverPacketInit(&packet, 10);
+      packFNACHeaderFull(&packet, ICQ_MSG_FAMILY, ICQ_MSG_CLI_REQ_OFFLINE, 0, dwCookie);
+
+      sendServPacket(&packet);
+    }
+    else
+      icq_LogMessage(LOG_WARNING, "Failed to request offline messages. They may be received next time you log in.");
 
     // Update our information from the server
     sendOwnerInfoRequest();

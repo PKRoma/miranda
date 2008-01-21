@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 //
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -132,7 +132,7 @@ static oscar_filetransfer* CreateOscarTransfer()
 
   EnterCriticalSection(&oftMutex);
 
-  fileTransferList = (basic_filetransfer**)realloc(fileTransferList, sizeof(basic_filetransfer*)*(fileTransferCount + 1));
+  fileTransferList = (basic_filetransfer**)SAFE_REALLOC(fileTransferList, sizeof(basic_filetransfer*)*(fileTransferCount + 1));
   fileTransferList[fileTransferCount++] = (basic_filetransfer*)ft;
 
 #ifdef _DEBUG
@@ -153,7 +153,7 @@ filetransfer *CreateIcqFileTransfer()
 
   EnterCriticalSection(&oftMutex);
 
-  fileTransferList = (basic_filetransfer**)realloc(fileTransferList, sizeof(basic_filetransfer*)*(fileTransferCount + 1));
+  fileTransferList = (basic_filetransfer**)SAFE_REALLOC(fileTransferList, sizeof(basic_filetransfer*)*(fileTransferCount + 1));
   fileTransferList[fileTransferCount++] = (basic_filetransfer*)ft;
 
 #ifdef _DEBUG
@@ -188,7 +188,7 @@ static void ReleaseFileTransfer(void *ft)
   {
     fileTransferCount--;
     fileTransferList[i] = fileTransferList[fileTransferCount];
-    fileTransferList = (basic_filetransfer**)realloc(fileTransferList, sizeof(basic_filetransfer*)*fileTransferCount);
+    fileTransferList = (basic_filetransfer**)SAFE_REALLOC(fileTransferList, sizeof(basic_filetransfer*)*fileTransferCount);
   }
 }
 
@@ -435,7 +435,7 @@ void ReleaseOscarListener(oscar_listener **pListener)
   if (listener)
   { // Close listening port
     if (listener->hBoundPort)
-      NetLib_SafeCloseHandle(&listener->hBoundPort, FALSE);
+      NetLib_SafeCloseHandle(&listener->hBoundPort);
 
     NetLog_Direct("Oscar listener on port %d released.", listener->wPort);
   }
@@ -882,7 +882,7 @@ static char* oftGetFileContainer(oscar_filetransfer* oft, const char** files, in
 
   // create new container
   i = oft->containerCount++;
-  oft->file_containers = (char**)realloc(oft->file_containers, (sizeof(char*) * oft->containerCount));
+  oft->file_containers = (char**)SAFE_REALLOC(oft->file_containers, (sizeof(char*) * oft->containerCount));
   oft->file_containers[i] = szPathUtf;
 
   return oft->file_containers[i];
@@ -1045,7 +1045,7 @@ DWORD oftFileAllow(HANDLE hContact, WPARAM wParam, LPARAM lParam)
   ft->szSavePath = ansi_to_utf8((char *)lParam);
   if (ft->szThisPath)
   { // Append Directory name to the save path, when transfering a directory
-    ft->szSavePath = (char*)realloc(ft->szSavePath, strlennull(ft->szSavePath) + strlennull(ft->szThisPath) + 4);
+    ft->szSavePath = (char*)SAFE_REALLOC(ft->szSavePath, strlennull(ft->szSavePath) + strlennull(ft->szThisPath) + 4);
     NormalizeBackslash(ft->szSavePath);
     strcat(ft->szSavePath, ft->szThisPath);
     NormalizeBackslash(ft->szSavePath);
@@ -1263,7 +1263,7 @@ void CloseOscarConnection(oscar_connection *oc)
 
     if (oc->hConnection)
     { // we need this for Netlib handle consistency
-      NetLib_SafeCloseHandle(&oc->hConnection, FALSE);
+      NetLib_CloseConnection(&oc->hConnection, FALSE);
     }
   }
   LeaveCriticalSection(&oftMutex);
@@ -1607,7 +1607,7 @@ static DWORD __stdcall oft_connectionThread(oscarthreadstartinfo *otsi)
 
   // End of packet receiving loop
 
-  NetLib_SafeCloseHandle(&hPacketRecver, FALSE);
+  NetLib_SafeCloseHandle(&hPacketRecver);
 
   CloseOscarConnection(&oc);
 
@@ -2293,7 +2293,7 @@ static void proxy_sendInitTunnel(oscar_connection *oc)
   packLEDWord(&packet, oc->ft->pMessage.dwMsgID1);
   packLEDWord(&packet, oc->ft->pMessage.dwMsgID2);
   packDWord(&packet, 0x00010010);               // TLV(1)
-  packGUID(&packet, MCAP_OSCAR_FT);
+  packGUID(&packet, MCAP_FILE_TRANSFER);
 
   sendOscarPacket(oc, &packet);
 }
@@ -2318,7 +2318,7 @@ static void proxy_sendJoinTunnel(oscar_connection *oc, WORD wPort)
   packLEDWord(&packet, oc->ft->pMessage.dwMsgID1);
   packLEDWord(&packet, oc->ft->pMessage.dwMsgID2);
   packDWord(&packet, 0x00010010);               // TLV(1)
-  packGUID(&packet, MCAP_OSCAR_FT);
+  packGUID(&packet, MCAP_FILE_TRANSFER);
 
   sendOscarPacket(oc, &packet);
 }

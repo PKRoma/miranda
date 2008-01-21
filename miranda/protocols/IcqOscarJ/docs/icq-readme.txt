@@ -50,7 +50,7 @@ __________
 
 0.5
   Account management (together with Miranda core changes)
-  Multi-user chat (Xtraz based)
+  Multi-user chat
   Mid-NetLib module for HTTP gateway (for Avatars to work) [icq_net]
 
 
@@ -60,8 +60,23 @@ _______
 
 0.3.10 Development
 
+Bugfixes:
+  Do not lose server-list contacts due to too long nicknames/comments
+  Fixed receiving of multi-part messages (only first part was received)
+
 Improvements:
   URL events are now received as normal messages
+  Ability to send/receive contacts to/from ICQ6 and AIM
+  Ability to view/set ICQ6 compatible custom statuses (icons only)
+
+
+0.3.9.5
+
+Bugfixes:
+  Fixed connection problems with many contacts in server-list
+
+Improvements:
+  Use new offline messages protocol (supports unicode)
 
 
 0.3.9.4
@@ -448,7 +463,7 @@ Thanks to Angeli-Ka for nice custom status icons.
 License and Copyright
 _____________________
 
-Copyright (C) 2000-2007 Joe Kucera, Martin Öberg, Richard Hughes, Jon Keating
+Copyright (C) 2000-2008 Joe Kucera, Martin Öberg, Richard Hughes, Jon Keating
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License

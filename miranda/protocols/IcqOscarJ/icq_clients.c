@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -152,15 +152,18 @@ const capstr capSimOld    = {0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34, 0xa
 const capstr capLicq      = {'L', 'i', 'c', 'q', ' ', 'c', 'l', 'i', 'e', 'n', 't', ' ', 0, 0, 0, 0};
 const capstr capKopete    = {'K', 'o', 'p', 'e', 't', 'e', ' ', 'I', 'C', 'Q', ' ', ' ', 0, 0, 0, 0};
 const capstr capmIcq      = {'m', 'I', 'C', 'Q', ' ', 0xA9, ' ', 'R', '.', 'K', '.', ' ', 0, 0, 0, 0};
+const capstr capClimm     = {'c', 'l', 'i', 'm', 'm', 0xA9, ' ', 'R', '.', 'K', '.', ' ', 0, 0, 0, 0};
 const capstr capAndRQ     = {'&', 'R', 'Q', 'i', 'n', 's', 'i', 'd', 'e', 0, 0, 0, 0, 0, 0, 0};
 const capstr capRAndQ     = {'R', '&', 'Q', 'i', 'n', 's', 'i', 'd', 'e', 0, 0, 0, 0, 0, 0, 0};
 const capstr capIMadering = {'I', 'M', 'a', 'd', 'e', 'r', 'i', 'n', 'g', ' ', 'C', 'l', 'i', 'e', 'n', 't'};
 const capstr capmChat     = {'m', 'C', 'h', 'a', 't', ' ', 'i', 'c', 'q', ' ', 0, 0, 0, 0, 0, 0};
 const capstr capJimm      = {'J', 'i', 'm', 'm', ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capVmIcq     = {'V', 'm', 'I', 'C', 'Q', ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+const capstr capSmapeR    = {'S', 'm', 'a', 'p', 'e', 'r', ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capAnastasia = {0x44, 0xE5, 0xBF, 0xCE, 0xB0, 0x96, 0xE5, 0x47, 0xBD, 0x65, 0xEF, 0xD6, 0xA3, 0x7E, 0x36, 0x02};
 const capstr capPalmJicq  = {'J', 'I', 'C', 'Q', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capInluxMsgr = {0xA7, 0xE4, 0x0A, 0x96, 0xB3, 0xA0, 0x47, 0x9A, 0xB8, 0x45, 0xC9, 0xE4, 0x67, 0xC5, 0x6B, 0x1F};
+const capstr capYapp      = {'Y', 'a', 'p', 'p', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capMipClient = {0x4d, 0x49, 0x50, 0x20, 0x43, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x20, 0x76, 0x00, 0x00, 0x00, 0x00};
 const capstr capNaim      = {0xFF, 0xFF, 0xFF, 0xFF, 'n', 'a', 'i', 'm', 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capQip       = {0x56, 0x3F, 0xC8, 0x09, 0x0B, 0x6F, 0x41, 'Q', 'I', 'P', ' ', '2', '0', '0', '5', 'a'};
@@ -176,6 +179,7 @@ const capstr capComm20012 = {0xa0, 0xe9, 0x3f, 0x37, 0x4c, 0x7f, 0x11, 0xd1, 0x8
 const capstr capStrIcq    = {0xa0, 0xe9, 0x3f, 0x37, 0x4f, 0xe9, 0xd3, 0x11, 0xbc, 0xd2, 0x00, 0x04, 0xac, 0x96, 0xdd, 0x96};
 const capstr capAimIcon   = {0x09, 0x46, 0x13, 0x46, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}; // CAP_AIM_BUDDYICON
 const capstr capAimDirect = {0x09, 0x46, 0x13, 0x45, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}; // CAP_AIM_DIRECTIM
+const capstr capAimFileShare = {0x09, 0x46, 0x13, 0x48, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}; // CAP_AIM_FILE_SHARE
 const capstr capIcqLite   = {0x17, 0x8C, 0x2D, 0x9B, 0xDA, 0xA5, 0x45, 0xBB, 0x8D, 0xDB, 0xF3, 0xBD, 0xBD, 0x53, 0xA1, 0x0A};
 const capstr capAimChat   = {0x74, 0x8F, 0x24, 0x20, 0x62, 0x87, 0x11, 0xD1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00};
 const capstr capUim       = {0xA7, 0xE4, 0x0A, 0x96, 0xB3, 0xA0, 0x47, 0x9A, 0xB8, 0x45, 0xC9, 0xE4, 0x67, 0xC5, 0x6B, 0x1F};
@@ -183,7 +187,6 @@ const capstr capRambler   = {0x7E, 0x11, 0xB7, 0x78, 0xA3, 0x53, 0x49, 0x26, 0xA
 const capstr capAbv       = {0x00, 0xE7, 0xE0, 0xDF, 0xA9, 0xD0, 0x4F, 0xe1, 0x91, 0x62, 0xC8, 0x90, 0x9A, 0x13, 0x2A, 0x1B};
 const capstr capNetvigator= {0x4C, 0x6B, 0x90, 0xA3, 0x3D, 0x2D, 0x48, 0x0E, 0x89, 0xD6, 0x2E, 0x4B, 0x2C, 0x10, 0xD9, 0x9F};
 const capstr captZers     = {0xb2, 0xec, 0x8f, 0x16, 0x7c, 0x6f, 0x45, 0x1b, 0xbd, 0x79, 0xdc, 0x58, 0x49, 0x78, 0x88, 0xb9}; // CAP_TZERS
-const capstr capHtmlMsgs  = {0x01, 0x38, 0xca, 0x7b, 0x76, 0x9a, 0x49, 0x15, 0x88, 0xf2, 0x13, 0xfc, 0x00, 0x97, 0x9e, 0xa8}; // icq6
 const capstr capSimpLite  = {0x53, 0x49, 0x4D, 0x50, 0x53, 0x49, 0x4D, 0x50, 0x53, 0x49, 0x4D, 0x50, 0x53, 0x49, 0x4D, 0x50};
 const capstr capSimpPro   = {0x53, 0x49, 0x4D, 0x50, 0x5F, 0x50, 0x52, 0x4F, 0x53, 0x49, 0x4D, 0x50, 0x5F, 0x50, 0x52, 0x4F};
 const capstr capIMsecure  = {'I', 'M', 's', 'e', 'c', 'u', 'r', 'e', 'C', 'p', 'h', 'r', 0x00, 0x00, 0x06, 0x01}; // ZoneLabs
@@ -206,7 +209,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
   LPSTR szClient = NULL;
   int bMirandaIM = FALSE;
 
-  *bClientId = 1; // Most clients does not tick as MsgIDs
+  *bClientId = CLID_ALTERNATIVE; // Most clients does not tick as MsgIDs
 
   // Is this a Miranda IM client?
   if (dwFT1 == 0xffffffff)
@@ -226,14 +229,14 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
     else 
     { // Yes this is most probably Miranda, get the version info
       szClient = MirandaVersionToString(szClientBuf, 0, dwFT2, 0);
-      *bClientId = 2;
+      *bClientId = CLID_MIRANDA;
       bMirandaIM = TRUE;
     }
   }
   else if (dwFT1 == 0x7fffffff)
   { // This is Miranda with unicode core
     szClient = MirandaVersionToString(szClientBuf, 1, dwFT2, 0);
-    *bClientId = 2;
+    *bClientId = CLID_MIRANDA;
     bMirandaIM = TRUE;
   }
   else if ((dwFT1 & 0xFF7F0000) == 0x7D000000)
@@ -359,7 +362,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
           if (dwFT3 == 0x5AFEC0DE)
             strcat(szClient, " + SecureIM");
         }
-        *bClientId = 2;
+        *bClientId = CLID_MIRANDA;
         bMirandaIM = TRUE;
       }
       else if (capId = MatchCap(caps, wLen, &capIcqJs7, 4))
@@ -384,7 +387,10 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
           if (CheckContactCapabilities(hContact, CAPF_OSCAR_FILE))
             szClient = "Trillian Astra";
           else
+          { // workaroud for a bug in Trillian - make it receive msgs, other features will not work!
+            ClearContactCapabilities(hContact, CAPF_SRV_RELAY);
             szClient = "Trillian v3";
+          }
         }
         else
           szClient = cliTrillian;
@@ -440,6 +446,23 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
 
         szClient = szClientBuf;
       }
+      else if (capId = MatchCap(caps, wLen, &capClimm, 0xC))
+      {
+        unsigned ver1 = (*capId)[0xC];
+        unsigned ver2 = (*capId)[0xD];
+        unsigned ver3 = (*capId)[0xE];
+        unsigned ver4 = (*capId)[0xF];
+
+        makeClientVersion(szClientBuf, "climm ", ver1, ver2, ver3, ver4);
+        if ((ver1 & 0x80) == 0x80) 
+          strcat(szClientBuf, " alpha");
+        if (dwFT3 == 0x02000020)
+          strcat(szClientBuf, "/Win32");
+        else if (dwFT3 == 0x03000800)
+          strcat(szClientBuf, "/MacOS X");
+
+        szClient = szClientBuf;
+      }
       else if (capId = MatchCap(caps, wLen, &capmIcq, 0xC))
       {
         unsigned ver1 = (*capId)[0xC];
@@ -448,6 +471,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         unsigned ver4 = (*capId)[0xF];
 
         makeClientVersion(szClientBuf, "mICQ ", ver1, ver2, ver3, ver4);
+        if ((ver1 & 0x80) == 0x80) strcat(szClientBuf, " alpha");
 
         szClient = szClientBuf;
       }
@@ -597,6 +621,18 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         strncat(szClientBuf, (*capId) + 5, 11);
         szClient = szClientBuf;
       }
+      else if (capId = MatchCap(caps, wLen, &capSmapeR, 0x07))
+      { // http://www.smape.com/smaper
+        strcpy(szClientBuf, "SmapeR");
+        strncat(szClientBuf, (*capId) + 6, 10);
+        szClient = szClientBuf;
+      }
+      else if (capId = MatchCap(caps, wLen, &capYapp, 0x04))
+      { // http://yapp.ru
+        strcpy(szClientBuf, "Yapp! v");
+        strncat(szClientBuf, (*capId) + 8, 5);
+        szClient = szClientBuf;
+      }
       else if (szClient == cliLibicq2k)
       { // try to determine which client is behind libicq2000
         if (CheckContactCapabilities(hContact, CAPF_RTF))
@@ -622,13 +658,13 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
                 szClient = "ICQ for Pocket PC";
             else
             {
-              *bClientId = 0;
+              *bClientId = CLID_GENERIC;
               szClient = "ICQ 2001";
             }
           }
           else if (MatchCap(caps, wLen, &capIs2002, 0x10))
           {
-            *bClientId = 0;
+            *bClientId = CLID_GENERIC;
             szClient = "ICQ 2002";
           }
           else if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY | CAPF_UTF | CAPF_RTF))
@@ -642,7 +678,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
               }
             else
             {
-              *bClientId = 0;
+              *bClientId = CLID_GENERIC;
               szClient = "ICQ 2002/2003a";
             }
           }
@@ -658,14 +694,15 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         { // try to determine lite versions
           if (CheckContactCapabilities(hContact, CAPF_XTRAZ))
           {
-            *bClientId = 0;
+            *bClientId = CLID_GENERIC;
             if (CheckContactCapabilities(hContact, CAPF_OSCAR_FILE))
             {
               if (MatchCap(caps, wLen, &captZers, 0x10))
               { // capable of tZers ?
-                if (MatchCap(caps, wLen, &capHtmlMsgs, 0x10))
+                if (CheckContactCapabilities(hContact, CAPF_HTML))
                 {
                   strcpy(szClientBuf, "ICQ 6");
+                  *bClientId = CLID_ICQ6;
                 }
                 else
                 {
@@ -719,7 +756,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
               szClient = "&RQ";
             else
             {
-              *bClientId = 0;
+              *bClientId = CLID_GENERIC;
               szClient = "ICQ 2000";
             }
           }
@@ -774,6 +811,8 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
               szClient = "PyICQ-t Jabber Transport";
             else if (CheckContactCapabilities(hContact, CAPF_UTF | CAPF_SRV_RELAY | CAPF_ICQDIRECT | CAPF_TYPING) && wLen == 0x40)
               szClient = "Agile Messenger"; // Smartphone 2002
+            else if (CheckContactCapabilities(hContact, CAPF_UTF | CAPF_SRV_RELAY | CAPF_ICQDIRECT | CAPF_OSCAR_FILE) && MatchCap(caps, wLen, &capAimFileShare, 0x10))
+              szClient = "Slick"; // http://lonelycatgames.com/?app=slick
           }
         }
       }
@@ -849,7 +888,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
   {
     NetLog_Server("No client identification, put default ICQ client for protocol.");
 
-    *bClientId = 0;
+    *bClientId = CLID_GENERIC;
 
     switch (wVersion)
     {  // client detection failed, provide default clients

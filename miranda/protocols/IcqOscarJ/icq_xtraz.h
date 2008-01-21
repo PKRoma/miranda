@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_xtraz.h,v $
+// File name      : $URL: https://miranda.svn.sourceforge.net/svnroot/miranda/trunk/miranda/protocols/IcqOscarJ/icq_xtraz.h $
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -46,6 +46,9 @@ void handleXtrazData(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char*
 DWORD SendXtrazNotifyRequest(HANDLE hContact, char* szQuery, char* szNotify, int bForced);
 void SendXtrazNotifyResponse(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char* szResponse, int nResponseLen, BOOL bThruDC);
 
+// helper functions
+BYTE __stdcall ICQGetContactXStatus(HANDLE hContact);
+
 // custom status support
 void InitXStatusItems(BOOL bAllowStatus);
 void InitXStatusEvents();
@@ -55,7 +58,7 @@ void InitXStatusIcons();
 void ChangedIconsXStatus();
 HICON GetXStatusIcon(int bStatus, UINT flags);
 
-void handleXStatusCaps(HANDLE hContact, char* caps, int capsize);
+void handleXStatusCaps(HANDLE hContact, char* caps, int capsize, char* moods, int moodsize);
 
 int IcqShowXStatusDetails(WPARAM wParam, LPARAM lParam);
 

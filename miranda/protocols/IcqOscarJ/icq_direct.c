@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -123,11 +123,9 @@ void CloseContactDirectConns(HANDLE hContact)
     if (!hContact || directConnList[i]->hContact == hContact)
     {
       HANDLE hConnection = directConnList[i]->hConnection;
-      int sck = CallService(MS_NETLIB_GETSOCKET, (WPARAM)hConnection, 0);
 
       directConnList[i]->hConnection = NULL; // do not allow reuse
-      if (sck!=INVALID_SOCKET) shutdown(sck, 2); // close gracefully
-      NetLib_SafeCloseHandle(&hConnection, FALSE);
+      NetLib_CloseConnection(&hConnection, FALSE);
     }
   }
 
@@ -145,7 +143,7 @@ static void ResizeDirectList(int nSize)
     else
       directConnSize -= 4;
 
-    directConnList = (directconnect**)realloc(directConnList, sizeof(directconnect*) * directConnSize);
+    directConnList = (directconnect**)SAFE_REALLOC(directConnList, sizeof(directconnect*) * directConnSize);
   }
 }
 
@@ -212,7 +210,7 @@ void AddExpectedFileRecv(filetransfer* ft)
 {
   EnterCriticalSection(&expectedFileRecvMutex);
 
-  expectedFileRecv = (filetransfer** )realloc(expectedFileRecv, sizeof(filetransfer *) * (expectedFileRecvCount + 1));
+  expectedFileRecv = (filetransfer** )SAFE_REALLOC(expectedFileRecv, sizeof(filetransfer *) * (expectedFileRecvCount + 1));
   expectedFileRecv[expectedFileRecvCount++] = ft;
 
   LeaveCriticalSection(&expectedFileRecvMutex);
@@ -235,7 +233,7 @@ filetransfer *FindExpectedFileRecv(DWORD dwUin, DWORD dwTotalSize)
       pFt = expectedFileRecv[i];
       expectedFileRecvCount--;
       memmove(expectedFileRecv + i, expectedFileRecv + i + 1, sizeof(filetransfer*) * (expectedFileRecvCount - i));
-      expectedFileRecv = (filetransfer**)realloc(expectedFileRecv, sizeof(filetransfer*) * expectedFileRecvCount);
+      expectedFileRecv = (filetransfer**)SAFE_REALLOC(expectedFileRecv, sizeof(filetransfer*) * expectedFileRecvCount);
 
       // Filereceive found, exit loop
       break;
@@ -365,7 +363,7 @@ void CloseDirectConnection(directconnect *dc)
 {
   EnterCriticalSection(&directConnListMutex);
 
-  NetLib_SafeCloseHandle(&dc->hConnection, FALSE);
+  NetLib_CloseConnection(&dc->hConnection, FALSE);
 #ifdef _DEBUG
   if (dc->hConnection)
     NetLog_Direct("Direct conn closed (%p)", dc->hConnection);
@@ -424,6 +422,7 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
   NETLIBPACKETRECVER packetRecv={0};
   HANDLE hPacketRecver;
   BOOL bFirstPacket = TRUE;
+  int nSkipPacketBytes = 0;
   DWORD dwReqMsgID1;
   DWORD dwReqMsgID2;
 
@@ -636,11 +635,16 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
 
     if (dc.type == DIRECTCONN_CLOSING)
       packetRecv.bytesUsed = packetRecv.bytesAvailable;
+    else if (packetRecv.bytesAvailable < nSkipPacketBytes)
+    { // the whole buffer needs to be skipped
+      nSkipPacketBytes -= packetRecv.bytesAvailable;
+      packetRecv.bytesUsed = packetRecv.bytesAvailable;
+    }
     else
     {
       int i;
 
-      for (i = 0; i + 2 <= packetRecv.bytesAvailable;)
+      for (i = nSkipPacketBytes, nSkipPacketBytes = 0; i + 2 <= packetRecv.bytesAvailable;)
       { 
         WORD wLen = *(WORD*)(packetRecv.buffer + i);
 
@@ -653,6 +657,16 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
             break;
           }
           bFirstPacket = FALSE;
+        }
+        else
+        {
+          if (packetRecv.bytesAvailable >= i + 2 && wLen > 8190)
+          { // check for too big packages
+            NetLog_Direct("Error: Package too big: %d bytes, skipping.");
+            nSkipPacketBytes = wLen;
+            packetRecv.bytesUsed = i + 2;
+            break;
+          }
         }
 
         if (wLen + 2 + i > packetRecv.bytesAvailable)
@@ -683,7 +697,7 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
 
   // End of packet receiving loop
 
-  NetLib_SafeCloseHandle(&hPacketRecver, FALSE);
+  NetLib_SafeCloseHandle(&hPacketRecver);
   CloseDirectConnection(&dc);
 
   if (dc.ft)

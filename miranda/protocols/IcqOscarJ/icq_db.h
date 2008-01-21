@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $URL$
+// File name      : $URL: https://miranda.svn.sourceforge.net/svnroot/miranda/trunk/miranda/protocols/IcqOscarJ/icq_db.h $
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -74,5 +74,9 @@ HANDLE __stdcall ICQAddEvent(HANDLE hContact, WORD wType, DWORD dwTime, DWORD fl
 int __fastcall IsICQContact(HANDLE hContact);
 HANDLE __fastcall ICQFindFirstContact();
 HANDLE __fastcall ICQFindNextContact(HANDLE hContact);
+
+char* __stdcall ICQGetContactCListGroup(HANDLE hContact);
+int __stdcall ICQSetContactCListGroup(HANDLE hContact, const char *szGroup);
+
 
 #endif /* __ICQ_DB_H */

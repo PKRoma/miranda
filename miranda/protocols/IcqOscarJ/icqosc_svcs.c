@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 //
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -97,7 +97,29 @@ int IcqGetCaps(WPARAM wParam, LPARAM lParam)
     break;
 
   case PFLAG_MAXCONTACTSPERPACKET:
-    nReturn = MAX_CONTACTSSEND;
+    if (lParam)
+    { // determine per contact
+      BYTE bClientId = ICQGetContactSettingByte((HANDLE)lParam, "ClientID", CLID_GENERIC);
+
+      if (bClientId == CLID_MIRANDA)
+      {
+        if (CheckContactCapabilities((HANDLE)lParam, CAPF_CONTACTS) && ICQGetContactStatus((HANDLE)lParam) != ID_STATUS_OFFLINE)
+          nReturn = 0x100; // limited only by packet size
+        else
+          nReturn = MAX_CONTACTSSEND;
+      }
+      else if (bClientId == CLID_ICQ6)
+      {
+        if (CheckContactCapabilities((HANDLE)lParam, CAPF_CONTACTS))
+          nReturn = 1; // crapy ICQ6 cannot handle multiple contacts in the transfer
+        else
+          nReturn = 0; // this version does not support contacts transfer at all
+      }
+      else
+        nReturn = MAX_CONTACTSSEND;
+    }
+    else // return generic limit
+      nReturn = MAX_CONTACTSSEND;
     break;
 
   case PFLAG_MAXLENOFMESSAGE:
@@ -480,7 +502,7 @@ int IcqSetStatus(WPARAM wParam, LPARAM lParam)
           {
             if (gbSsiEnabled)
               updateServVisibilityCode(3);
-            icq_setstatus(MirandaStatusToIcq(gnCurrentStatus));
+            icq_setstatus(MirandaStatusToIcq(gnCurrentStatus), FALSE);
             // Tell whos on our visible list
             icq_sendEntireVisInvisList(0);
             if (gbAimEnabled)
@@ -488,7 +510,7 @@ int IcqSetStatus(WPARAM wParam, LPARAM lParam)
           }
           else
           {
-            icq_setstatus(MirandaStatusToIcq(gnCurrentStatus));
+            icq_setstatus(MirandaStatusToIcq(gnCurrentStatus), FALSE);
             if (gbSsiEnabled)
               updateServVisibilityCode(4);
             // Tell whos on our invisible list
@@ -1388,15 +1410,15 @@ int IcqGetAwayMsg(WPARAM wParam,LPARAM lParam)
 
 
 
-static message_cookie_data* CreateMsgCookieData(BYTE bMsgType, HANDLE hContact, DWORD dwUin)
+static message_cookie_data* CreateMsgCookieData(BYTE bMsgType, HANDLE hContact, DWORD dwUin, int bUseSrvRelay)
 {
   BYTE bAckType;
   WORD wStatus = ICQGetContactStatus(hContact);
 
   if (!ICQGetContactSettingByte(NULL, "SlowSend", DEFAULT_SLOWSEND))
     bAckType = ACKTYPE_NONE;
-  else if ((!dwUin) || (!CheckContactCapabilities(hContact, CAPF_SRV_RELAY)) ||
-      (wStatus == ID_STATUS_OFFLINE) || ICQGetContactSettingByte(NULL, "OnlyServerAcks", DEFAULT_ONLYSERVERACKS))
+  else if ((bUseSrvRelay && ((!dwUin) || (!CheckContactCapabilities(hContact, CAPF_SRV_RELAY)) ||
+      (wStatus == ID_STATUS_OFFLINE))) || ICQGetContactSettingByte(NULL, "OnlyServerAcks", DEFAULT_ONLYSERVERACKS))
     bAckType = ACKTYPE_SERVER;
   else
     bAckType = ACKTYPE_CLIENT;
@@ -1470,10 +1492,9 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
       { // we have unicode message, check if it is possible and reasonable to send it as unicode
         BOOL plain_ascii = IsUSASCII(puszText, strlennull(puszText));
 
-        if (wRecipientStatus == ID_STATUS_OFFLINE || plain_ascii ||
-          !gbUtfEnabled || !CheckContactCapabilities(ccs->hContact, CAPF_UTF) ||
+        if (plain_ascii || !gbUtfEnabled || !CheckContactCapabilities(ccs->hContact, CAPF_UTF) ||
           !ICQGetContactSettingByte(ccs->hContact, "UnicodeSend", 1))
-        {  // unicode is not available for target contact, convert to good codepage
+        { // unicode is not available for target contact, convert to good codepage
           if (!plain_ascii)
           { // do not convert plain ascii messages
             char* szUserAnsi = convertMsgToUserSpecificAnsi(ccs->hContact, puszText); 
@@ -1520,7 +1541,7 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
       {
         message_cookie_data* pCookieData;
 
-        if (!puszText && wRecipientStatus != ID_STATUS_OFFLINE && gbUtfEnabled==2 && !IsUSASCII(pszText, strlennull(pszText))
+        if (!puszText && gbUtfEnabled == 2 && !IsUSASCII(pszText, strlennull(pszText))
           && CheckContactCapabilities(ccs->hContact, CAPF_UTF) && ICQGetContactSettingByte(ccs->hContact, "UnicodeSend", 1))
         { // text is not unicode and contains national chars and we should send all this as Unicode, so do it
           puszText = ansi_to_utf8(pszText);
@@ -1555,7 +1576,7 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
           }
         }
         // Set up the ack type
-        pCookieData = CreateMsgCookieData(MTYPE_PLAIN, ccs->hContact, dwUin);
+        pCookieData = CreateMsgCookieData(MTYPE_PLAIN, ccs->hContact, dwUin, TRUE);
 
 #ifdef _DEBUG
         NetLog_Server("Send %s message - Message cap is %u", puszText ? "unicode" : "", CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY));
@@ -1662,6 +1683,12 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
 
             return dwCookie;
           }
+          // WORKAROUND!!
+          // Nasty workaround for ICQ6 client's bug - it does not send acknowledgement when in temporary visible mode
+          // - This uses only server ack, but also for visible invisible contact!
+          if (wRecipientStatus == ID_STATUS_INVISIBLE && pCookieData->nAckType == ACKTYPE_CLIENT && ICQGetContactSettingByte(ccs->hContact, "ClientID", CLID_GENERIC) == CLID_ICQ6)
+            pCookieData->nAckType = ACKTYPE_SERVER;
+
           dwCookie = icq_SendChannel2Message(dwUin, ccs->hContact, srv_msg, strlennull(srv_msg), wPriority, pCookieData, srv_cap);
         }
 
@@ -1723,7 +1750,7 @@ int IcqSendUrl(WPARAM wParam, LPARAM lParam)
 
 
         // Set up the ack type
-        pCookieData = CreateMsgCookieData(MTYPE_URL, ccs->hContact, dwUin);
+        pCookieData = CreateMsgCookieData(MTYPE_URL, ccs->hContact, dwUin, TRUE);
 
         // Format the body
         szUrl = (char*)ccs->lParam;
@@ -1800,10 +1827,11 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
       int i;
       HANDLE* hContactsList = (HANDLE*)ccs->lParam;
       DWORD dwUin;
+      uid_str szUid;
       WORD wRecipientStatus;
       DWORD dwCookie;
 
-      if (ICQGetContactSettingUID(ccs->hContact, &dwUin, NULL))
+      if (ICQGetContactSettingUID(ccs->hContact, &dwUin, &szUid))
       { // Invalid contact
         return reportGenericSendError(ccs->hContact, ACKTYPE_CONTACTS, "The receiver has an invalid user ID.");
       }
@@ -1823,152 +1851,263 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
       // OK
       else
       {
-        int nBodyLength;
-        char szUin[UINMAXLEN];
-        char szCount[17];
-        struct icq_contactsend_s* contacts = NULL;
-        uid_str szUid;
+        if (CheckContactCapabilities(ccs->hContact, CAPF_CONTACTS) && wRecipientStatus != ID_STATUS_OFFLINE)
+        { // Use the new format if possible
+          int nDataLen, nNamesLen;
+          struct icq_contactsend_s* contacts = NULL;
 
-
-        // Format the body
-        // This is kinda messy, but there is no simple way to do it. First
-        // we need to calculate the length of the packet.
-        if (contacts = (struct icq_contactsend_s*)SAFE_MALLOC(sizeof(struct icq_contactsend_s)*nContacts))
-        {
-          nBodyLength = 0;
-          for (i = 0; i < nContacts; i++)
+          // Format the data part and the names part
+          // This is kinda messy, but there is no simple way to do it. First
+          // we need to calculate the length of the packet.
+          contacts = (struct icq_contactsend_s*)_alloca(sizeof(struct icq_contactsend_s)*nContacts);
+          ZeroMemory(contacts, sizeof(struct icq_contactsend_s)*nContacts);
           {
-            if (!IsICQContact(hContactsList[i]))
-              break; // Abort if a non icq contact is found
-            if (ICQGetContactSettingUID(hContactsList[i], &contacts[i].uin, &szUid))
-              break; // Abort if invalid contact
-            contacts[i].uid = contacts[i].uin?NULL:null_strdup(szUid);
-            contacts[i].szNick = NickFromHandle(hContactsList[i]);
-            // Compute this contact's length
-            nBodyLength += getUIDLen(contacts[i].uin, contacts[i].uid) + 1;
-            nBodyLength += strlennull(contacts[i].szNick) + 1;
-          }
-
-          if (i == nContacts)
-          {
-            message_cookie_data* pCookieData;
-            char* pBody;
-            char* pBuffer;
-
-#ifdef _DEBUG
-            NetLog_Server("Sending contacts to %d.", dwUin);
-#endif
-            // Compute count record's length
-            _itoa(nContacts, szCount, 10);
-            nBodyLength += strlennull(szCount) + 1;
-
-            // Finally we need to copy the contact data into the packet body
-            pBuffer = pBody = (char *)SAFE_MALLOC(nBodyLength);
-            strncpy(pBuffer, szCount, nBodyLength);
-            pBuffer += strlennull(pBuffer);
-            *pBuffer++ = (char)0xFE;
+            nDataLen = 0; nNamesLen = 0;
             for (i = 0; i < nContacts; i++)
             {
-              if (contacts[i].uin)
-              {
-                _itoa(contacts[i].uin, szUin, 10);
-                strcpy(pBuffer, szUin);
-              }
-              else
-                strcpy(pBuffer, contacts[i].uid);
-              pBuffer += strlennull(pBuffer);
-              *pBuffer++ = (char)0xFE;
-              strcpy(pBuffer, contacts[i].szNick);
-              pBuffer += strlennull(pBuffer);
-              *pBuffer++ = (char)0xFE;
+              uid_str szContactUid;
+
+              if (!IsICQContact(hContactsList[i]))
+                break; // Abort if a non icq contact is found
+              if (ICQGetContactSettingUID(hContactsList[i], &contacts[i].uin, &szContactUid))
+                break; // Abort if invalid contact
+              contacts[i].uid = contacts[i].uin?NULL:null_strdup(szContactUid);
+              contacts[i].szNick = NickFromHandleUtf(hContactsList[i]);
+              nDataLen += getUIDLen(contacts[i].uin, contacts[i].uid) + 4;
+              nNamesLen += strlennull(contacts[i].szNick) + 8;
             }
 
-            // Set up the ack type
-            pCookieData = CreateMsgCookieData(MTYPE_CONTACTS, ccs->hContact, dwUin);
-
-            if (gbDCMsgEnabled && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD, 0))
+            if (i == nContacts)
             {
-              int iRes = icq_SendDirectMessage(ccs->hContact, pBody, nBodyLength, 1, pCookieData, NULL);
+              message_cookie_data* pCookieData;
+              icq_packet mData, mNames;
 
-              if (iRes)
+#ifdef _DEBUG
+              NetLog_Server("Sending contacts to %s.", strUID(dwUin, szUid));
+#endif
+              // Do not calculate the exact size of the data packet - only the maximal size (easier)
+              // Sumarize size of group information
+              // - we do not utilize the full power of the protocol and send all contacts with group "General"
+              //   just like ICQ6 does
+              nDataLen += 9;
+              nNamesLen += 9;
+
+              // Create data structures
+              mData.wPlace = 0;
+              mData.pData = (char*)SAFE_MALLOC(nDataLen);
+              mData.wLen = nDataLen;
+              mNames.wPlace = 0;
+              mNames.pData = (char*)SAFE_MALLOC(nNamesLen);
+
+              // pack Group Name
+              packWord(&mData, 7);
+              packBuffer(&mData, "General", 7);
+              packWord(&mNames, 7);
+              packBuffer(&mNames, "General", 7);
+
+              // all contacts in one group
+              packWord(&mData, (WORD)nContacts);
+              packWord(&mNames, (WORD)nContacts);
+              for (i = 0; i < nContacts; i++)
               {
-                SAFE_FREE(&pBody);
+                uid_str szContactUid;
+                WORD wLen;
+                    
+                if (contacts[i].uin)
+                  strUID(contacts[i].uin, szContactUid);
+                else
+                  strcpy(szContactUid, contacts[i].uid);
 
-                for(i = 0; i < nContacts; i++)
-                { // release memory
-                  SAFE_FREE(&contacts[i].szNick);
-                  SAFE_FREE(&contacts[i].uid);
-                }
+                // prepare UID
+                wLen = strlennull(szContactUid);
+                packWord(&mData, wLen);
+                packBuffer(&mData, szContactUid, wLen);
 
-                SAFE_FREE(&contacts);
-
-                return iRes; // we succeded, return
+                // prepare Nick
+                wLen = strlennull(contacts[i].szNick);
+                packWord(&mNames, (WORD)(wLen + 4));
+                packTLV(&mNames, 0x01, wLen, contacts[i].szNick);
               }
-            }
 
-            // Rate check
-            if (IsServerOverRate(ICQ_MSG_FAMILY, ICQ_MSG_SRV_SEND, RML_LIMIT))
-            { // rate is too high, the message will not go thru...
-              SAFE_FREE(&pCookieData);
-              SAFE_FREE(&pBody);
+              // Cleanup temporary list
               for(i = 0; i < nContacts; i++)
               {
                 SAFE_FREE(&contacts[i].szNick);
                 SAFE_FREE(&contacts[i].uid);
               }
 
-              SAFE_FREE(&contacts);
+              // Rate check
+              if (IsServerOverRate(ICQ_MSG_FAMILY, ICQ_MSG_SRV_SEND, RML_LIMIT))
+              { // rate is too high, the message will not go thru...
+                SAFE_FREE(&mData.pData);
+                SAFE_FREE(&mNames.pData);
 
-              return reportGenericSendError(ccs->hContact, ACKTYPE_CONTACTS, "The message could not be delivered. You are sending too fast. Wait a while and try again.");
-            }
-            // Select channel and send
-            if (!CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY) ||
-              wRecipientStatus == ID_STATUS_OFFLINE)
-            {
-              dwCookie = icq_SendChannel4Message(dwUin, ccs->hContact, MTYPE_CONTACTS,
-                (WORD)nBodyLength, pBody, pCookieData);
+                return reportGenericSendError(ccs->hContact, ACKTYPE_CONTACTS, "The message could not be delivered. You are sending too fast. Wait a while and try again.");
+              }
+
+              // Set up the ack type
+              pCookieData = CreateMsgCookieData(MTYPE_CONTACTS, ccs->hContact, dwUin, FALSE);
+
+              // AIM clients do not send acknowledgement
+              if (!dwUin && pCookieData->nAckType == ACKTYPE_CLIENT)
+                pCookieData->nAckType = ACKTYPE_SERVER;
+              // Send the message
+              dwCookie = icq_SendChannel2Contacts(dwUin, szUid, ccs->hContact, mData.pData, mData.wPlace, mNames.pData, mNames.wPlace, pCookieData);
+
+              // This will stop the message dialog from waiting for the real message delivery ack
+              if (pCookieData->nAckType == ACKTYPE_NONE)
+               {
+                icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_SUCCESS, ACKTYPE_CONTACTS, NULL);
+                // We need to free this here since we will never see the real ack
+                // The actual cookie value will still have to be returned to the message dialog though
+                ReleaseCookie(dwCookie);
+              }
+              // Release our buffers
+              SAFE_FREE(&mData.pData);
+              SAFE_FREE(&mNames.pData);
             }
             else
             {
-              WORD wPriority;
+              dwCookie = reportGenericSendError(ccs->hContact, ACKTYPE_CONTACTS, "Bad data (internal error #2)");
+            }
 
-              if (wRecipientStatus == ID_STATUS_ONLINE || wRecipientStatus == ID_STATUS_FREECHAT)
-                wPriority = 0x0001;
+            for(i = 0; i < nContacts; i++)
+            {
+              SAFE_FREE(&contacts[i].szNick);
+              SAFE_FREE(&contacts[i].uid);
+            }
+          }
+        }
+        else if (dwUin)
+        { // old format is only understood by ICQ clients
+          int nBodyLength;
+          char szContactUin[UINMAXLEN];
+          char szCount[17];
+          struct icq_contactsend_s* contacts = NULL;
+          uid_str szContactUid;
+
+
+          // Format the body
+          // This is kinda messy, but there is no simple way to do it. First
+          // we need to calculate the length of the packet.
+          contacts = (struct icq_contactsend_s*)_alloca(sizeof(struct icq_contactsend_s)*nContacts);
+          ZeroMemory(contacts, sizeof(struct icq_contactsend_s)*nContacts);
+          {
+            nBodyLength = 0;
+            for (i = 0; i < nContacts; i++)
+            {
+              if (!IsICQContact(hContactsList[i]))
+                break; // Abort if a non icq contact is found
+              if (ICQGetContactSettingUID(hContactsList[i], &contacts[i].uin, &szContactUid))
+                break; // Abort if invalid contact
+              contacts[i].uid = contacts[i].uin?NULL:null_strdup(szContactUid);
+              contacts[i].szNick = NickFromHandle(hContactsList[i]);
+              // Compute this contact's length
+              nBodyLength += getUIDLen(contacts[i].uin, contacts[i].uid) + 1;
+              nBodyLength += strlennull(contacts[i].szNick) + 1;
+            }
+
+            if (i == nContacts)
+            {
+              message_cookie_data* pCookieData;
+              char* pBody;
+              char* pBuffer;
+
+#ifdef _DEBUG
+              NetLog_Server("Sending contacts to %d.", dwUin);
+#endif
+              // Compute count record's length
+              _itoa(nContacts, szCount, 10);
+              nBodyLength += strlennull(szCount) + 1;
+
+              // Finally we need to copy the contact data into the packet body
+              pBuffer = pBody = (char *)SAFE_MALLOC(nBodyLength);
+              strncpy(pBuffer, szCount, nBodyLength);
+              pBuffer += strlennull(pBuffer);
+              *pBuffer++ = (char)0xFE;
+              for (i = 0; i < nContacts; i++)
+              {
+                if (contacts[i].uin)
+                {
+                  _itoa(contacts[i].uin, szContactUin, 10);
+                  strcpy(pBuffer, szContactUin);
+                }
+                else
+                  strcpy(pBuffer, contacts[i].uid);
+                pBuffer += strlennull(pBuffer);
+                *pBuffer++ = (char)0xFE;
+                strcpy(pBuffer, contacts[i].szNick);
+                pBuffer += strlennull(pBuffer);
+                *pBuffer++ = (char)0xFE;
+              }
+
+              for (i = 0; i < nContacts; i++)
+              { // release memory
+                SAFE_FREE(&contacts[i].szNick);
+                SAFE_FREE(&contacts[i].uid);
+              }
+
+              // Set up the ack type
+              pCookieData = CreateMsgCookieData(MTYPE_CONTACTS, ccs->hContact, dwUin, TRUE);
+
+              if (gbDCMsgEnabled && IsDirectConnectionOpen(ccs->hContact, DIRECTCONN_STANDARD, 0))
+              {
+                int iRes = icq_SendDirectMessage(ccs->hContact, pBody, nBodyLength, 1, pCookieData, NULL);
+
+                if (iRes)
+                {
+                  SAFE_FREE(&pBody);
+
+                  return iRes; // we succeded, return
+                }
+              }
+
+              // Rate check
+              if (IsServerOverRate(ICQ_MSG_FAMILY, ICQ_MSG_SRV_SEND, RML_LIMIT))
+              { // rate is too high, the message will not go thru...
+                SAFE_FREE(&pCookieData);
+                SAFE_FREE(&pBody);
+
+                return reportGenericSendError(ccs->hContact, ACKTYPE_CONTACTS, "The message could not be delivered. You are sending too fast. Wait a while and try again.");
+              }
+              // Select channel and send
+              if (!CheckContactCapabilities(ccs->hContact, CAPF_SRV_RELAY) || wRecipientStatus == ID_STATUS_OFFLINE)
+              {
+                dwCookie = icq_SendChannel4Message(dwUin, ccs->hContact, MTYPE_CONTACTS, (WORD)nBodyLength, pBody, pCookieData);
+              }
               else
-                wPriority = 0x0021;
+              {
+                WORD wPriority;
 
-              dwCookie = icq_SendChannel2Message(dwUin, ccs->hContact, pBody, nBodyLength, wPriority, pCookieData, NULL);
+                if (wRecipientStatus == ID_STATUS_ONLINE || wRecipientStatus == ID_STATUS_FREECHAT)
+                  wPriority = 0x0001;
+                else
+                  wPriority = 0x0021;
+
+                dwCookie = icq_SendChannel2Message(dwUin, ccs->hContact, pBody, nBodyLength, wPriority, pCookieData, NULL);
+              }
+
+              // This will stop the message dialog from waiting for the real message delivery ack
+              if (pCookieData->nAckType == ACKTYPE_NONE)
+               {
+                icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_SUCCESS, ACKTYPE_CONTACTS, NULL);
+                // We need to free this here since we will never see the real ack
+                // The actual cookie value will still have to be returned to the message dialog though
+                ReleaseCookie(dwCookie);
+              }
+              SAFE_FREE(&pBody);
             }
-
-            // This will stop the message dialog from waiting for the real message delivery ack
-            if (pCookieData->nAckType == ACKTYPE_NONE)
-             {
-              icq_SendProtoAck(ccs->hContact, dwCookie, ACKRESULT_SUCCESS, ACKTYPE_CONTACTS, NULL);
-              // We need to free this here since we will never see the real ack
-              // The actual cookie value will still have to be returned to the message dialog though
-              ReleaseCookie(dwCookie);
+            else
+            {
+              dwCookie = reportGenericSendError(ccs->hContact, ACKTYPE_CONTACTS, "Bad data (internal error #2)");
             }
-            SAFE_FREE(&pBody);
           }
-          else
-          {
-            dwCookie = reportGenericSendError(ccs->hContact, ACKTYPE_CONTACTS, "Bad data (internal error #2)");
-          }
-
-          for(i = 0; i < nContacts; i++)
-          {
-            SAFE_FREE(&contacts[i].szNick);
-            SAFE_FREE(&contacts[i].uid);
-          }
-
-          SAFE_FREE(&contacts);
         }
         else
         {
-          dwCookie = 0;
+          dwCookie = reportGenericSendError(ccs->hContact, ACKTYPE_CONTACTS, "The reciever does not support receiving of contacts.");
         }
       }
-
       return dwCookie;
     }
   }
@@ -2249,7 +2388,7 @@ int IcqAddServerContact(WPARAM wParam, LPARAM lParam)
     char *pszGroup;
 
     // Read group from DB
-    pszGroup = UniGetContactSettingUtf((HANDLE)wParam, "CList", "Group", NULL);
+    pszGroup = ICQGetContactCListGroup((HANDLE)wParam);
 
     addServContact((HANDLE)wParam, pszGroup);
 
@@ -2339,6 +2478,7 @@ int IcqRecvContacts(WPARAM wParam, LPARAM lParam)
   char szUin[UINMAXLEN];
   DWORD cbBlob = 0;
   PBYTE pBlob,pCurBlob;
+  DWORD flags = 0;
 
   for (i = 0; i < pre->lParam; i++)
   {
@@ -2362,8 +2502,10 @@ int IcqRecvContacts(WPARAM wParam, LPARAM lParam)
       strcpy(pCurBlob, isrList[i]->uid);
     pCurBlob += strlennull(pCurBlob) + 1;
   }
+  if (pre->flags & PREF_UTF)
+    flags |= DBEF_UTF;
 
-  ICQAddRecvEvent(ccs->hContact, EVENTTYPE_CONTACTS, pre, cbBlob, pBlob, 0);
+  ICQAddRecvEvent(ccs->hContact, EVENTTYPE_CONTACTS, pre, cbBlob, pBlob, flags);
 
   return 0;
 }

@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 //
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -69,11 +69,11 @@ extern int bHideXStatusUI;
 PLUGININFOEX pluginInfo = {
   sizeof(PLUGININFOEX),
   NULL,
-  PLUGIN_MAKE_VERSION(0,3,10,6),
+  PLUGIN_MAKE_VERSION(0,3,10,10),
   "Support for ICQ network, enhanced.",
   "Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
   "jokusoftware@miranda-im.org",
-  "(C) 2000-2007 M.Öberg, R.Hughes, J.Keating, Bio, Angeli-Ka, J.Kucera",
+  "(C) 2000-2008 M.Öberg, R.Hughes, J.Keating, Bio, Angeli-Ka, J.Kucera",
   "http://addons.miranda-im.org/details.php?action=viewfile&id=1683",
   0,  //not transient
   0,   //doesn't replace anything built-in
@@ -348,8 +348,8 @@ int __declspec(dllexport) Unload(void)
   UninitOscarFileTransfer();
   UninitDirectConns();
 
-  NetLib_SafeCloseHandle(&ghDirectNetlibUser, FALSE);
-  NetLib_SafeCloseHandle(&ghServerNetlibUser, FALSE);
+  NetLib_SafeCloseHandle(&ghDirectNetlibUser);
+  NetLib_SafeCloseHandle(&ghServerNetlibUser);
   UninitRates();
   UninitCookies();
   UninitCache();
@@ -566,7 +566,7 @@ static int icq_PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
   else
     CListShowMenuItem(hUserMenuAddServ, 0);
 
-  bXStatus = ICQGetContactSettingByte((HANDLE)wParam, DBSETTING_XSTATUSID, 0);
+  bXStatus = ICQGetContactXStatus((HANDLE)wParam);
   CListShowMenuItem(hUserMenuXStatus, (BYTE)(bHideXStatusUI ? 0 : bXStatus));
   if (bXStatus && !bHideXStatusUI)
   {

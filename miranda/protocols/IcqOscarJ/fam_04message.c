@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 //
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -39,17 +39,18 @@
 
 static void handleReplyICBM(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
 static void handleRecvServMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
-static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwTS1, DWORD dwTS2);
+static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwMsgID1, DWORD dwMsgID2, DWORD dwRef);
 static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwTS1, DWORD dwTS2);
-static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwTS1, DWORD dwTS2);
+static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwMsgID1, DWORD dwMsgID2, DWORD dwRef);
 static void handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
 static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
 static void handleServerAck(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
 static void handleTypingNotification(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
 static void handleMissedMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
+static void handleOffineMessagesReply(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
 static void parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dwID2, WORD wAckType, oscar_tlv* tlv);
 static void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, BYTE bFlags, WORD wStatus, WORD wCookie, WORD wAckType, DWORD dwID1, DWORD dwID2, WORD wVersion);
-
+static void handleRecvServMsgContacts(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwID1, DWORD dwID2, WORD wCommand);
 
 
 void handleMsgFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader)
@@ -79,6 +80,10 @@ void handleMsgFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnac
 
   case ICQ_MSG_MTN:                // SNAC(4, 0x14) Typing notifications
     handleTypingNotification(pBuffer, wBufferLength, pSnacHeader->wFlags, pSnacHeader->dwRef);
+    break;
+
+  case ICQ_MSG_SRV_OFFLINE_REPLY:  // SNAC(4, 0x17) Offline Messages response
+    handleOffineMessagesReply(pBuffer, wBufferLength, pSnacHeader->wFlags, pSnacHeader->dwRef);
     break;
 
   case ICQ_MSG_SRV_REPLYICBM:      // SNAC(4, 0x05) SRV_REPLYICBM
@@ -114,17 +119,16 @@ static void setMsgChannelParams(WORD wChan, DWORD dwFlags)
 
 static void handleReplyICBM(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef)
 { // we don't care about the stuff, just change the params
+  DWORD dwFlags = 0x00000303;
 
-  // Set message parameters for channel 1 (CLI_SET_ICBM_PARAMS)
-#ifdef DBG_CAPMTN
-  setMsgChannelParams(0x0001, 0x0000000B);
-#else
-  setMsgChannelParams(0x0001, 0x00000003);
+#ifdef DBG_CAPHTML
+  dwFlags |= 0x00000400;
 #endif
-  // Set message parameters for channel 2 (CLI_SET_ICBM_PARAMS)
-  setMsgChannelParams(0x0002, 0x00000003);
-  // Set message parameters for channel 4 (CLI_SET_ICBM_PARAMS)
-  setMsgChannelParams(0x0004, 0x00000003);
+#ifdef DBG_CAPMTN
+  dwFlags |= 0x00000008;
+#endif
+  // Set message parameters for all channels (imitate ICQ 6)
+  setMsgChannelParams(0x0000, dwFlags);
 }
 
 
@@ -207,7 +211,7 @@ static void handleRecvServMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD 
   {
 
   case 1: // Simple message format
-    handleRecvServMsgType1(buf, wLen, dwUin, szUID, dwID1, dwID2);
+    handleRecvServMsgType1(buf, wLen, dwUin, szUID, dwID1, dwID2, dwRef);
     break;
 
   case 2: // Encapsulated messages
@@ -215,7 +219,7 @@ static void handleRecvServMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD 
     break;
 
   case 4: // Typed messages
-    handleRecvServMsgType4(buf, wLen, dwUin, szUID, dwID1, dwID2);
+    handleRecvServMsgType4(buf, wLen, dwUin, szUID, dwID1, dwID2, dwRef);
     break;
 
   default:
@@ -240,12 +244,11 @@ static char* convertMsgToUserSpecificUtf(HANDLE hContact, const char* szMsg)
 
 
 
-static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwTS1, DWORD dwTS2)
+static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwMsgID1, DWORD dwMsgID2, DWORD dwRef)
 {
   WORD wTLVType;
   WORD wTLVLen;
-  BYTE* pDataBuf;
-  BYTE* pBuf;
+  BYTE* pMsgTLV;
 
   if (wLen < 4)
   { // just perform basic structure check
@@ -254,25 +257,26 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
   }
 
   // Unpack the first TLV(2)
-  unpackTypedTLV(&buf, wLen, 2, &wTLVType, &wTLVLen, &pDataBuf);
+  unpackTypedTLV(buf, wLen, 2, &wTLVType, &wTLVLen, &pMsgTLV);
   NetLog_Server("Message (format %u) - UID: %s", 1, strUID(dwUin, szUID));
-  pBuf = pDataBuf;
 
   // It must be TLV(2)
   if (wTLVType == 2)
   {
+    BYTE *pDataBuf = pMsgTLV;
     oscar_tlv_chain* pChain;
 
     pChain = readIntoTLVChain(&pDataBuf, wTLVLen, 0);
 
     // TLV(2) contains yet another TLV chain with the following TLVs:
     //   TLV(1281): Capability
-    //   TLV(257):  This TLV contains the actual message
+    //   TLV(257):  This TLV contains the actual message (can be fragmented)
 
     if (pChain)
     {
       oscar_tlv* pMessageTLV;
       oscar_tlv* pCapabilityTLV;
+      WORD wMsgPart = 1;
 
       // Find the capability TLV
       pCapabilityTLV = getTLV(pChain, 0x0501, 1);
@@ -294,78 +298,103 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
         NetLog_Server("Message (format 1) - No message cap.");
       }
 
-      // Find the message TLV
-      pMessageTLV = getTLV(pChain, 0x0101, 1);
-      if (pMessageTLV)
-      {
-        if (pMessageTLV->wLen > 4)
-        {
-          WORD wMsgLen;
-          BYTE* pMsgBuf;
-          WORD wEncoding;
-          WORD wCodePage;
-          char* szMsg = NULL;
-          HANDLE hContact;
-          CCSDATA ccs;
-          PROTORECVEVENT pre = {0};
-          int bAdded;
+      { // Parse the message parts, usually only one 0x0101 TLV containing the message,
+        // but in some cases there can be more 0x0101 TLVs containing message parts in
+        // different encodings (just like the new format of Offline Messages).
+        DWORD dwRecvTime;
+        char* szMsg = NULL;
+        HANDLE hContact;
+        CCSDATA ccs;
+        PROTORECVEVENT pre = {0};
+        int bAdded;
 
-          // The message begins with a encoding specification
-          // The first WORD is believed to have the following meaning:
-          //  0x00: US-ASCII
-          //  0x02: Unicode UCS-2 Big Endian encoding
-          //  0x03: local 8bit encoding
-          pMsgBuf = pMessageTLV->pData;
-          unpackWord(&pMsgBuf, &wEncoding);
-          unpackWord(&pMsgBuf, &wCodePage);
+        hContact = HContactFromUID(dwUin, szUID, &bAdded);
 
-          wMsgLen = pMessageTLV->wLen - 4;
-          NetLog_Server("Message (format 1) - Encoding is 0x%X, page is 0x%X", wEncoding, wCodePage);
-
-          hContact = HContactFromUID(dwUin, szUID, &bAdded);
-
-          switch (wEncoding)
+        while (pMessageTLV = getTLV(pChain, 0x0101, wMsgPart))
+        { // Loop thru all message parts
+          if (pMessageTLV->wLen > 4)
           {
+            WORD wMsgLen;
+            BYTE* pMsgBuf;
+            WORD wEncoding;
+            WORD wCodePage;
+            char* szMsgPart = NULL;
+            int bMsgPartUnicode = FALSE;
 
-          case 2: // UCS-2
+            // The message begins with a encoding specification
+            // The first WORD is believed to have the following meaning:
+            //  0x00: US-ASCII
+            //  0x02: Unicode UCS-2 Big Endian encoding
+            //  0x03: local 8bit encoding
+            pMsgBuf = pMessageTLV->pData;
+            unpackWord(&pMsgBuf, &wEncoding);
+            unpackWord(&pMsgBuf, &wCodePage);
+
+            wMsgLen = pMessageTLV->wLen - 4;
+            NetLog_Server("Message (format 1) - Part %d: Encoding is 0x%X, page is 0x%X", wMsgPart, wEncoding, wCodePage);
+
+            switch (wEncoding)
             {
-              WCHAR* usMsg;
 
-              usMsg = (WCHAR*)SAFE_MALLOC(wMsgLen + 2);
-              unpackWideString(&pMsgBuf, usMsg, wMsgLen);
-              usMsg[wMsgLen/sizeof(WCHAR)] = 0;
+            case 2: // UCS-2
+              {
+                WCHAR* usMsgPart = (WCHAR*)SAFE_MALLOC(wMsgLen + 2);
 
-              szMsg = make_utf8_string(usMsg);
-              SAFE_FREE(&usMsg);
+                unpackWideString(&pMsgBuf, usMsgPart, wMsgLen);
+                usMsgPart[wMsgLen/sizeof(WCHAR)] = 0;
 
-              if (!dwUin)
-              { // strip HTML formating from AIM message
-                szMsg = EliminateHtml(szMsg, strlennull(szMsg));
+                szMsgPart = make_utf8_string(usMsgPart);
+                if (!IsUSASCII(szMsgPart, strlennull(szMsgPart)))
+                  bMsgPartUnicode = TRUE;
+                SAFE_FREE(&usMsgPart);
 
-                SetContactCapabilities(hContact, CAPF_UTF);
+                break;
               }
 
-              if (!IsUSASCII(szMsg, strlennull(szMsg)))
-                pre.flags = PREF_UTF; // only mark real non-ascii messages as utf-8
+            case 0: // us-ascii
+            case 3: // ANSI
+            default:
+              {
+                // Copy the message text into a new proper string.
+                szMsgPart = (char *)SAFE_MALLOC(wMsgLen + 1);
+                memcpy(szMsgPart, pMsgBuf, wMsgLen);
+                szMsgPart[wMsgLen] = '\0';
 
-              break;
-            }
-
-          case 0: // us-ascii
-          case 3: // ANSI
-          default:
-            {
-              // Copy the message text into a new proper string.
-              szMsg = (char *)SAFE_MALLOC(wMsgLen + 1);
-              memcpy(szMsg, pMsgBuf, wMsgLen);
-              szMsg[wMsgLen] = '\0';
-              if (!dwUin)
-              { // strip HTML formating from AIM message
-                szMsg = EliminateHtml(szMsg, wMsgLen);
+                break;
               }
-
-              break;
             }
+            // Check if the new part is compatible with the message
+            if (!pre.flags && bMsgPartUnicode)
+            { // make the resulting message utf-8 encoded - need to append utf-8 encoded part
+              if (szMsg)
+              { // not necessary to convert - appending first part, only set flags
+                char* szUtfMsg = ansi_to_utf8_codepage(szMsg, ICQGetContactSettingWord(hContact, "CodePage", gwAnsiCodepage));
+
+                SAFE_FREE(&szMsg);
+                szMsg = szUtfMsg;
+              }
+              pre.flags = PREF_UTF;
+            }
+            if (!bMsgPartUnicode && pre.flags == PREF_UTF)
+            { // convert message part to utf-8 and append
+              char* szUtfPart = ansi_to_utf8_codepage(szMsgPart, ICQGetContactSettingWord(hContact, "CodePage", gwAnsiCodepage));
+
+              SAFE_FREE(&szMsgPart);
+              szMsgPart = szUtfPart;
+            }
+            // Append the new message part
+            szMsg = (char*)SAFE_REALLOC(szMsg, strlennull(szMsg) + strlennull(szMsgPart) + 1);
+
+            strcat(szMsg, szMsgPart);
+            SAFE_FREE(&szMsgPart);
+          }
+          wMsgPart++;
+        }
+        if (strlennull(szMsg))
+        { /// TODO: Add inteligent HTML detection & stripping - support for CAPF_HTML
+          if (!dwUin)
+          { // strip HTML formating from AIM message
+            szMsg = EliminateHtml(szMsg, strlennull(szMsg));
           }
 
           if (!pre.flags && !IsUSASCII(szMsg, strlennull(szMsg)))
@@ -379,30 +408,53 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
               pre.flags = PREF_UTF;
             }
           }
+
+          dwRecvTime = (DWORD)time(NULL);
+
+          { // Check if the message was received as offline
+            offline_message_cookie *cookie;
+
+            if (!(dwRef & 0x80000000) && FindCookie(dwRef, NULL, &cookie))
+            {
+              WORD wTimeTLVType, wTimeTLVLen;
+              BYTE *pTimeTLV;
+
+              cookie->nMessages++;
+
+              unpackTypedTLV(buf, wLen, 0x16, &wTimeTLVType, &wTimeTLVLen, &pTimeTLV);
+              if (pTimeTLV && wTimeTLVType == 0x16 && wTimeTLVLen == 4)
+              { // found Offline timestamp
+                BYTE *pBuf = pTimeTLV;
+                char *szTime;
+
+                unpackDWord(&pBuf, &dwRecvTime);
+                // TODO: add some checking
+                szTime = asctime(localtime(&dwRecvTime));
+                szTime[24] = '\0'; // remove new line
+                NetLog_Server("Message (format %u) - Offline timestamp is %s", 1, szTime);
+              }
+              SAFE_FREE(&pTimeTLV);
+            }
+          }
           // Create and send the message event
           ccs.szProtoService = PSR_MESSAGE;
           ccs.hContact = hContact;
           ccs.wParam = 0;
           ccs.lParam = (LPARAM)&pre;
-          pre.timestamp = time(NULL);
+          pre.timestamp = dwRecvTime;
           pre.szMessage = (char *)szMsg;
           CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
-
-          SAFE_FREE(&szMsg);
 
           NetLog_Server("Message (format 1) received");
 
           // Save tick value
-          ICQWriteContactSettingDword(ccs.hContact, "TickTS", time(NULL) - (dwTS1/1000));
+          ICQWriteContactSettingDword(ccs.hContact, "TickTS", time(NULL) - (dwMsgID1/1000));
         }
         else
         {
           NetLog_Server("Message (format %u) - Ignoring empty message", 1);
         }
-      }
-      else
-      {
-        NetLog_Server("Failed to find TLV(1281) message (format 1)");
+        SAFE_FREE(&szMsg);
       }
 
       // Free the chain memory
@@ -417,7 +469,7 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
   {
     NetLog_Server("Unsupported TLV (%u) in message (format %u)", wTLVType, 1);
   }
-  SAFE_FREE(&pBuf);
+  SAFE_FREE(&pMsgTLV);
 }
 
 
@@ -436,7 +488,7 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, c
   }
 
   // Unpack the first TLV(5)
-  unpackTypedTLV(&buf, wLen, 5, &wTLVType, &wTLVLen, &pDataBuf);
+  unpackTypedTLV(buf, wLen, 5, &wTLVType, &wTLVLen, &pDataBuf);
   NetLog_Server("Message (format %u) - UID: %s", 2, strUID(dwUin, szUID));
   pBuf = pDataBuf;
 
@@ -470,10 +522,10 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, c
     unpackDWord(&pDataBuf, &q1);
     unpackDWord(&pDataBuf, &q2);
     unpackDWord(&pDataBuf, &q3);
-    unpackDWord(&pDataBuf, &q4); // Capability (CAP_SRV_RELAY)
+    unpackDWord(&pDataBuf, &q4); // Message Capability
     wTLVLen -= 16;
 
-    if (CompareGUIDs(q1,q2,q3,q4, MCAP_TLV2711_FMT))
+    if (CompareGUIDs(q1,q2,q3,q4, MCAP_SRV_RELAY_FMT))
     { // we surely have at least 4 bytes for TLV chain
       HANDLE hContact = HContactFromUIN(dwUin, NULL);
 
@@ -487,11 +539,13 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, c
       if (wTLVLen < 4)
       { // just check if at least one tlv is there
         NetLog_Server("Message (format %u) - Ignoring empty message", 2);
+        SAFE_FREE(&pBuf);
         return;
       }
       if (!dwUin)
       { // AIM cannot send this, just sanity
         NetLog_Server("Error: Malformed UIN in packet");
+        SAFE_FREE(&pBuf);
         return;
       }
 
@@ -534,7 +588,7 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, c
       // Clean up
       disposeChain(&chain);
     }
-    else if (CompareGUIDs(q1,q2,q3,q4,MCAP_REVERSE_REQ))
+    else if (CompareGUIDs(q1,q2,q3,q4, MCAP_REVERSE_DC_REQ))
     { // Handle reverse DC request
       if (wCommand == 1)
       {
@@ -545,11 +599,13 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, c
       if (wTLVLen < 4)
       { // just check if at least one tlv is there
         NetLog_Server("Message (format %u) - Ignoring empty message", 2);
+        SAFE_FREE(&pBuf);
         return;
       }
       if (!dwUin)
       { // AIM cannot send this, just sanity
         NetLog_Server("Error: Malformed UIN in packet");
+        SAFE_FREE(&pBuf);
         return;
       }
       chain = readIntoTLVChain(&pDataBuf, wTLVLen, 0);
@@ -615,9 +671,13 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, c
       // Clean up
       disposeChain(&chain);
     }
-    else if (CompareGUIDs(q1,q2,q3,q4,MCAP_OSCAR_FT))
+    else if (CompareGUIDs(q1,q2,q3,q4, MCAP_FILE_TRANSFER))
     { // this is an OFT packet
       handleRecvServMsgOFT(pDataBuf, wTLVLen, dwUin, szUID, dwID1, dwID2, wCommand);
+    }
+    else if (CompareGUIDs(q1,q2,q3,q4, MCAP_CONTACTS))
+    { // this is Contacts Transfer
+      handleRecvServMsgContacts(pDataBuf, wTLVLen, dwUin, szUID, dwID1, dwID2, wCommand);
     }
     else // here should be detection of extra data streams (Xtraz)
     {
@@ -946,7 +1006,245 @@ void parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, B
 
 
 
-static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwTS1, DWORD dwTS2)
+static void handleRecvServMsgContacts(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwID1, DWORD dwID2, WORD wCommand)
+{
+  HANDLE hContact = HContactFromUID(dwUin, szUID, NULL);
+
+  if (wCommand == 0)
+  { // received contacts
+    oscar_tlv_chain *chain;
+    WORD wAckType;
+
+    if (wLen < 4)
+    { // just check if at least one tlv is there
+      NetLog_Server("Message (format %u) - Ignoring empty contacts message", 2);
+      return;
+    }
+    chain = readIntoTLVChain(&buf, wLen, 0);
+
+    wAckType = getWordFromChain(chain, 0x0A, 1);
+
+    if (wAckType == 1)
+    { // it is really message containing contacts, parse them
+      oscar_tlv *tlvUins, *tlvNames;
+      ICQSEARCHRESULT **contacts;
+      int nContacts = 0x10, iContact = 0;
+      WORD wContactsGroup = 0;
+      int i, valid;
+      char* pBuffer;
+      int nLen;
+
+      tlvUins = getTLV(chain, 0x2711, 1);
+      tlvNames = getTLV(chain, 0x2712, 1);
+      
+      if (!tlvUins || tlvUins->wLen < 4)
+      {
+        NetLog_Server("Malformed '%s' message", "contacts");
+        disposeChain(&chain);
+        return;
+      }
+      valid = 1;
+      contacts = (ICQSEARCHRESULT**)SAFE_MALLOC(nContacts * sizeof(ICQSEARCHRESULT*));
+      pBuffer = tlvUins->pData;
+      nLen = tlvUins->wLen;
+
+      while (nLen > 2)
+      { // parse UIDs
+        if (!wContactsGroup)
+        {
+          WORD wGroupLen;
+
+          unpackWord(&pBuffer, &wGroupLen);
+          nLen -= 2;
+          if (nLen >= wGroupLen + 2)
+          {
+            pBuffer += wGroupLen;
+            unpackWord(&pBuffer, &wContactsGroup);
+            nLen -= wGroupLen + 2;
+          }
+          else
+            break;
+        }
+        else
+        { // group parsed, UIDs waiting
+          WORD wUidLen;
+
+          unpackWord(&pBuffer, &wUidLen);
+          nLen -= 2;
+          if (nLen >= wUidLen)
+          {
+            if (iContact >= nContacts)
+            { // the list is too small, resize it
+              nContacts += 0x10;
+              contacts = (ICQSEARCHRESULT**)SAFE_REALLOC(contacts, nContacts * sizeof(ICQSEARCHRESULT*));
+            }
+            contacts[iContact] = (ICQSEARCHRESULT*)SAFE_MALLOC(sizeof(ICQSEARCHRESULT));
+            contacts[iContact]->hdr.cbSize = sizeof(ICQSEARCHRESULT);
+            contacts[iContact]->hdr.nick = null_strdup("");
+            contacts[iContact]->uid = (char*)SAFE_MALLOC(wUidLen + 1);
+            unpackString(&pBuffer, contacts[iContact]->uid, wUidLen);
+            nLen -= wUidLen;
+
+            if (IsStringUIN(contacts[iContact]->uid))
+            { // icq contact
+              contacts[iContact]->uin = atoi(contacts[iContact]->uid);
+              if (contacts[iContact]->uin == 0)
+                valid = 0;
+
+              SAFE_FREE(&contacts[iContact]->uid);
+            }
+            else
+            { // aim contact
+              if (!strlennull(contacts[iContact]->uid))
+                valid = 0;
+            }
+            iContact++;
+          }
+          else 
+          {
+            if (wContactsGroup) valid = 0;
+            break;
+          }
+
+          wContactsGroup--;
+        }
+      }
+      if (!iContact || !valid)
+      {
+        NetLog_Server("Malformed '%s' message", "contacts");
+        disposeChain(&chain);
+        for (i = 0; i < iContact; i++)
+        {
+          SAFE_FREE(&contacts[i]->uid);
+          SAFE_FREE(&contacts[i]->hdr.nick);
+          SAFE_FREE(&contacts[i]);
+        }
+        SAFE_FREE((void**)&contacts);
+        return;
+      }
+      nContacts = iContact;
+      if (tlvNames && tlvNames->wLen >= 4)
+      { // parse names, if available
+        pBuffer = tlvNames->pData;
+        nLen = tlvNames->wLen;
+        iContact = 0;
+
+        while (nLen > 2)
+        { // parse Names
+          if (!wContactsGroup)
+          {
+            WORD wGroupLen;
+
+            unpackWord(&pBuffer, &wGroupLen);
+            nLen -= 2;
+            if (nLen >= wGroupLen + 2)
+            {
+              pBuffer += wGroupLen;
+              unpackWord(&pBuffer, &wContactsGroup);
+              nLen -= wGroupLen + 2;
+            }
+            else
+              break;
+          }
+          else
+          { // group parsed, Names waiting
+            WORD wNickLen;
+
+            unpackWord(&pBuffer, &wNickLen);
+            nLen -= 2;
+            if (nLen >= wNickLen)
+            {
+              WORD wNickTLV, wNickTLVLen;
+              char* pNick = NULL;
+
+              unpackTypedTLV(pBuffer, wNickLen, 0x01, &wNickTLV, &wNickTLVLen, &pNick);
+              if (wNickTLV == 0x01)
+              {
+                SAFE_FREE(&contacts[iContact]->hdr.nick);
+                contacts[iContact]->hdr.nick = pNick;
+              }
+              else
+                SAFE_FREE(&pNick);
+              pBuffer += wNickLen;
+              nLen -= wNickLen;
+
+              iContact++;
+              if (iContact >= nContacts) break;
+            }
+            else 
+              break;
+
+            wContactsGroup--;
+          }
+        }
+      }
+
+      if (!valid)
+      {
+        NetLog_Server("Malformed '%s' message", "contacts");
+      }
+      else
+      {
+        int bAdded;
+        CCSDATA ccs;
+        PROTORECVEVENT pre = {0};
+
+        hContact = HContactFromUID(dwUin, szUID, &bAdded);
+        
+        // ack the message
+        icq_sendContactsAck(dwUin, szUID, dwID1, dwID2);
+
+        ccs.szProtoService = PSR_CONTACTS;
+        ccs.hContact = hContact;
+        ccs.wParam = 0;
+        ccs.lParam = (LPARAM)&pre;
+        pre.timestamp = (DWORD)time(NULL);
+        pre.szMessage = (char *)contacts;
+        pre.lParam = nContacts;
+        pre.flags = PREF_UTF;
+        CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
+      }
+
+      for (i = 0; i < iContact; i++)
+      {
+        SAFE_FREE(&contacts[i]->uid);
+        SAFE_FREE(&contacts[i]->hdr.nick);
+        SAFE_FREE(&contacts[i]);
+      }
+      SAFE_FREE((void**)&contacts);
+    }
+    else
+      NetLog_Server("Error: Received unknown contacts message, ignoring.");
+    // Clean up
+    disposeChain(&chain);
+  }
+  else if (wCommand == 1)
+  {
+    NetLog_Server("Cannot handle abort messages yet... :(");
+    return;
+  }
+  else if (wCommand == 2)
+  { // acknowledgement
+    DWORD dwCookie;
+    HANDLE hCookieContact;
+
+    if (FindMessageCookie(dwID1, dwID2, &dwCookie, &hCookieContact, NULL))
+    {
+      if (hCookieContact != hContact)
+        NetLog_Server("Warning: Ack Contact does not match Cookie Contact(0x%x != 0x%x)", hContact, hCookieContact);
+
+      ICQBroadcastAck(hContact, ACKTYPE_CONTACTS, ACKRESULT_SUCCESS, (HANDLE)dwCookie, 0);
+
+      ReleaseCookie(dwCookie);
+    }
+    else
+      NetLog_Server("Warning: Unexpected Contact Transfer ack from %s", strUID(dwUin, szUID));
+  }
+}
+
+
+
+static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwMsgID1, DWORD dwMsgID2, DWORD dwRef)
 {
   WORD wTLVType;
   WORD wTLVLen;
@@ -960,7 +1258,7 @@ static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, c
   }
 
   // Unpack the first TLV(5)
-  unpackTypedTLV(&buf, wLen, 5, &wTLVType, &wTLVLen, &pDataBuf);
+  unpackTypedTLV(buf, wLen, 5, &wTLVType, &wTLVLen, &pDataBuf);
   NetLog_Server("Message (format %u) - UID: %s", 4, strUID(dwUin, szUID));
 
   // It must be TLV(5)
@@ -968,7 +1266,7 @@ static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, c
   {
     BYTE bMsgType;
     BYTE bFlags;
-    unsigned char* pmsg = pDataBuf;
+    BYTE* pmsg = pDataBuf;
     WORD wMsgLen;
 
 
@@ -985,7 +1283,32 @@ static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, c
         NetLog_Server("User %u probably checks his ignore state.", dwUin);
       }
       else
-      { 
+      {
+        offline_message_cookie *cookie;
+        DWORD dwRecvTime = (DWORD)time(NULL);
+
+        if (!(dwRef & 0x80000000) && FindCookie(dwRef, NULL, &cookie))
+        {
+          WORD wTimeTLVType, wTimeTLVLen;
+          BYTE *pTimeTLV;
+
+          cookie->nMessages++;
+
+          unpackTypedTLV(buf, wLen, 0x16, &wTimeTLVType, &wTimeTLVLen, &pTimeTLV);
+          if (pTimeTLV && wTimeTLVType == 0x16 && wTimeTLVLen == 4)
+          { // found Offline timestamp
+            BYTE *pBuf = pTimeTLV;
+            char *szTime;
+
+            unpackDWord(&pBuf, &dwRecvTime);
+            // TODO: add some checking
+            szTime = asctime(localtime(&dwRecvTime));
+            szTime[24] = '\0'; // remove new line
+            NetLog_Server("Message (format %u) - Offline timestamp is %s", 4, szTime);
+          }
+          SAFE_FREE(&pTimeTLV);
+        }
+
         if (bMsgType == MTYPE_PLUGIN)
         {
           WORD wLen = wTLVLen - 8;
@@ -1012,7 +1335,7 @@ static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, c
               dwDataLen = wLen;
 
             if (typeId)
-              handleMessageTypes(dwUin, time(NULL), dwTS1, dwTS2, 0, 0, typeId, bFlags, 0, dwLengthToEnd, (WORD)dwDataLen, pmsg, FALSE, NULL);
+              handleMessageTypes(dwUin, dwRecvTime, dwMsgID1, dwMsgID2, 0, 0, typeId, bFlags, 0, dwLengthToEnd, (WORD)dwDataLen, pmsg, FALSE, NULL);
             else
             {
               NetLog_Server("Unsupported plugin message type %d", typeId);
@@ -1020,7 +1343,7 @@ static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, c
           }
         }
         else
-          handleMessageTypes(dwUin, time(NULL), dwTS1, dwTS2, 0, 0, bMsgType, bFlags, 0, wTLVLen - 8, wMsgLen, pmsg, FALSE, NULL);
+          handleMessageTypes(dwUin, dwRecvTime, dwMsgID1, dwMsgID2, 0, 0, bMsgType, bFlags, 0, wTLVLen - 8, wMsgLen, pmsg, FALSE, NULL);
       }
     }
     else
@@ -2534,6 +2857,22 @@ static void handleMissedMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dw
     CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
   }
   SAFE_FREE(&pszErrorMsg);
+}
+
+
+
+static void handleOffineMessagesReply(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef)
+{
+  offline_message_cookie *cookie;
+
+  if (FindCookie(dwRef, NULL, &cookie))
+  {
+    NetLog_Server("End of offline msgs, %u received", cookie->nMessages);
+
+    ReleaseCookie(dwRef);
+  }
+  else
+    NetLog_Server("Error: Received unexpected end of offline msgs.");
 }
 
 

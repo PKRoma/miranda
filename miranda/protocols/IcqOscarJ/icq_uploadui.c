@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -217,7 +217,7 @@ static int GroupEnumIdsEnumProc(const char *szSetting,LPARAM lParam)
     { // it is not a cached server-group name
       return 0;
     }
-    pwGroupIds = (WORD*)realloc(pwGroupIds, (cbGroupIds+1)*sizeof(WORD));
+    pwGroupIds = (WORD*)SAFE_REALLOC(pwGroupIds, (cbGroupIds+1)*sizeof(WORD));
     pwGroupIds[cbGroupIds] = (WORD)strtoul(szSetting, NULL, 0x10);
     cbGroupIds++;
   }
@@ -456,7 +456,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
           setServerGroupIDUtf(szNewGroupName, wNewGroupId); // grouppath is known
 
           groupData = collectGroups(&groupSize);
-          groupData = realloc(groupData, groupSize+2);
+          groupData = SAFE_REALLOC(groupData, groupSize+2);
           *(((WORD*)groupData)+(groupSize>>1)) = wNewGroupId; // add this new group id
           groupSize += 2;
 

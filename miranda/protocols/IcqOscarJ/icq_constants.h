@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 //
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -146,8 +146,10 @@
 #define CAP_SRV_RELAY               0x09, 0x46, 0x13, 0x49, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00
 #define CAP_UTF                     0x09, 0x46, 0x13, 0x4e, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00
 #define CAP_RTF                     0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34, 0xad, 0x22, 0xd6, 0xab, 0xf7, 0x3f, 0x14, 0x92
-#define CAP_ICQDIRECT               0x09, 0x46, 0x13, 0x44, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00
+#define CAP_HTML                    0x01, 0x38, 0xca, 0x7b, 0x76, 0x9a, 0x49, 0x15, 0x88, 0xf2, 0x13, 0xfc, 0x00, 0x97, 0x9e, 0xa8
+#define CAP_CONTACTS                0x09, 0x46, 0x13, 0x4b, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00 
 #define CAP_TYPING                  0x56, 0x3f, 0xc8, 0x09, 0x0b, 0x6f, 0x41, 0xbd, 0x9f, 0x79, 0x42, 0x26, 0x09, 0xdf, 0xa2, 0xf3
+#define CAP_ICQDIRECT               0x09, 0x46, 0x13, 0x44, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00
 #define CAP_XTRAZ                   0x1A, 0x09, 0x3C, 0x6C, 0xD7, 0xFD, 0x4E, 0xC5, 0x9D, 0x51, 0xA6, 0x47, 0x4E, 0x34, 0xF5, 0xA0
 #define CAP_OSCAR_FILE              0x09, 0x46, 0x13, 0x43, 0x4C, 0x7F, 0x11, 0xD1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00
 
@@ -155,17 +157,20 @@
 #define CAPF_SRV_RELAY              0x00000001
 #define CAPF_UTF                    0x00000002
 #define CAPF_RTF                    0x00000004
-#define CAPF_ICQDIRECT              0x00000010
+#define CAPF_HTML                   0x00000008
+#define CAPF_CONTACTS               0x00000010
 #define CAPF_TYPING                 0x00000020
+#define CAPF_ICQDIRECT              0x00000080
 #define CAPF_XTRAZ                  0x00000100
 #define CAPF_OSCAR_FILE             0x00000400
 #define CAPF_STATUSMSGEXT           0x01000000
 
 
 // Message Capability IDs
-#define MCAP_TLV2711_FMT_s          0x09461349, 0x4c7f11d1, 0x82224445, 0x53540000
-#define MCAP_REVERSE_REQ_s          0x09461344, 0x4c7f11d1, 0x82224445, 0x53540000
-#define MCAP_OSCAR_FT_s             0x09461343, 0x4c7f11d1, 0x82224445, 0x53540000
+#define MCAP_SRV_RELAY_FMT_s        0x09461349, 0x4c7f11d1, 0x82224445, 0x53540000
+#define MCAP_REVERSE_DC_REQ_s       0x09461344, 0x4c7f11d1, 0x82224445, 0x53540000
+#define MCAP_FILE_TRANSFER_s        0x09461343, 0x4c7f11d1, 0x82224445, 0x53540000
+#define MCAP_CONTACTS_s             0x0946134b, 0x4c7f11d1, 0x82224445, 0x53540000
 
 // Plugin Type GUIDs
 #define PSIG_MESSAGE_s              0x00000000, 0x00000000, 0x00000000, 0x00000000
@@ -303,7 +308,9 @@
 #define ICQ_MSG_SRV_MISSED_MESSAGE  0x000A
 #define ICQ_MSG_RESPONSE            0x000B
 #define ICQ_MSG_SRV_ACK             0x000C
+#define ICQ_MSG_CLI_REQ_OFFLINE     0x0010
 #define ICQ_MSG_MTN                 0x0014
+#define ICQ_MSG_SRV_OFFLINE_REPLY   0x0017
 
 /* Subtypes for Privacy Family 0x0009 */
 #define ICQ_PRIVACY_REQ_RIGHTS      0x0002
@@ -381,10 +388,6 @@
 #define CLASS_WIRELESS              0x0080
 
 // Reply types for SNAC 15/02 & 15/03
-#define CLI_OFFLINE_MESSAGE_REQ     0x003C
-#define CLI_DELETE_OFFLINE_MSGS_REQ 0x003E
-#define SRV_OFFLINE_MESSAGE         0x0041
-#define SRV_END_OF_OFFLINE_MSGS     0x0042
 #define CLI_META_INFO_REQ           0x07D0
 #define SRV_META_INFO_REPLY         0x07DA
 
@@ -535,13 +538,20 @@
 #define SSI_TLV_PHONE               0x013A  // Custom contact SMS number
 #define SSI_TLV_COMMENT             0x013C  // User comment
 
+#define MAX_SSI_TLV_NAME_SIZE       0x40
+#define MAX_SSI_TLV_COMMENT_SIZE    0x50
+
+// Client ID constants (internal)
+#define CLID_GENERIC                0x00  // Generic clients (eg. older official clients)
+#define CLID_ALTERNATIVE            0x01  // Clients not using tick for MsgID (most third-party clients)
+#define CLID_MIRANDA                0x02  // Hey, that's mate!
+#define CLID_ICQ6                   0x10  // Mark ICQ6 as it has some non obvious limitations!
 
 
 // Internal Constants
-#define ICQ_PLUG_VERSION            0x00030A06
+#define ICQ_PLUG_VERSION            0x00030A0A
 #define ICQ_VERSION                 8         // Protocol version
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
-#define MAX_NICK_SIZE               32
 #define MAX_CONTACTSSEND            15
 #define MAX_MESSAGESNACSIZE         8000
 #define CLIENTRATELIMIT             0
@@ -559,13 +569,13 @@
 #define OSCAR_PROXY_HOST            "ars.oscar.aol.com"
 #define OSCAR_PROXY_VERSION         0x044A
 
-#define CLIENT_ID_STRING            "ICQBasic"  // Client identification, mimic icq5.1
+#define CLIENT_ID_STRING            "ICQ Client"  // Client identification, mimic ICQ 6
 #define CLIENT_ID_CODE              0x010a
-#define CLIENT_VERSION_MAJOR        0x0014
-#define CLIENT_VERSION_MINOR        0x0034
+#define CLIENT_VERSION_MAJOR        0x0006
+#define CLIENT_VERSION_MINOR        0x0000
 #define CLIENT_VERSION_LESSER       0x0000
-#define CLIENT_VERSION_BUILD        0x0c18
-#define CLIENT_DISTRIBUTION         0x0000043d
+#define CLIENT_VERSION_BUILD        0x1797
+#define CLIENT_DISTRIBUTION         0x00007535
 #define CLIENT_LANGUAGE             "en"
 #define CLIENT_COUNTRY              "us"
 

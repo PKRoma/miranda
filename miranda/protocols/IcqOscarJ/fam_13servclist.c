@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 //
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -526,7 +526,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         setServerGroupIDUtf(makeGroupPathUtf(sc->wGroupId), sc->wGroupId); // add group to known
 
         groupData = collectGroups(&groupSize);
-        groupData = realloc(groupData, groupSize+2);
+        groupData = SAFE_REALLOC(groupData, groupSize+2);
         *(((WORD*)groupData)+(groupSize>>1)) = sc->wGroupId; // add this new group id
         groupSize += 2;
 
@@ -1055,11 +1055,14 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
                   if (szOldNick = UniGetContactSettingUtf(hContact,"CList","MyHandle",""))
                   {
                     if ((strcmpnull(szOldNick, pszNick)) && (strlennull(pszNick) > 0))
-                    {
-                      // Yes, we really do need to delete it first. Otherwise the CLUI nick
-                      // cache isn't updated (I'll look into it)
-                      DBDeleteContactSetting(hContact,"CList","MyHandle");
-                      UniWriteContactSettingUtf(hContact, "CList", "MyHandle", pszNick);
+                    { // check if the truncated nick changed, i.e. do not overwrite locally stored longer nick
+                      if (strlennull(szOldNick) <= strlennull(pszNick) || strncmp(szOldNick, pszNick, null_strcut(szOldNick, MAX_SSI_TLV_NAME_SIZE)))
+                      {
+                        // Yes, we really do need to delete it first. Otherwise the CLUI nick
+                        // cache isn't updated (I'll look into it)
+                        DBDeleteContactSetting(hContact,"CList","MyHandle");
+                        UniWriteContactSettingUtf(hContact, "CList", "MyHandle", pszNick);
+                      }
                     }
                     SAFE_FREE(&szOldNick);
                   }
@@ -1105,8 +1108,11 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
                   if (szOldComment = UniGetContactSettingUtf(hContact,"UserInfo","MyNotes",""))
                   {
                     if ((strcmpnull(szOldComment, pszComment)) && (strlennull(pszComment) > 0))
-                    {
-                      UniWriteContactSettingUtf(hContact, "UserInfo", "MyNotes", pszComment);
+                    { // check if the truncated comment changed, i.e. do not overwrite locally stored longer comment
+                      if (strlennull(szOldComment) <= strlennull(pszComment) || strncmp(szOldComment, pszComment, null_strcut(szOldComment, MAX_SSI_TLV_COMMENT_SIZE)))
+                      {
+                        UniWriteContactSettingUtf(hContact, "UserInfo", "MyNotes", pszComment);
+                      }
                     }
                     SAFE_FREE(&szOldComment);
                   }

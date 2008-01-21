@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 //
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -37,8 +37,6 @@
 #include "icqoscar.h"
 
 
-
-extern void handleXStatusCaps(HANDLE hContact, char* caps, int capsize);
 
 extern CRITICAL_SECTION connectionHandleMutex;
 extern WORD wLocalSequence;
@@ -116,7 +114,7 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
     int recvResult;
     NETLIBPACKETRECVER packetRecv = {0};
 
-    info.hPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hServerConn, 8192);
+    info.hPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hServerConn, 0x2400);
     packetRecv.cbSize = sizeof(packetRecv);
     packetRecv.dwTimeout = INFINITE;
     while(hServerConn)
@@ -148,10 +146,10 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
     }
 
     // Close the packet receiver (connection may still be open)
-    NetLib_SafeCloseHandle(&info.hPacketRecver, FALSE);
+    NetLib_SafeCloseHandle(&info.hPacketRecver);
 
     // Close DC port
-    NetLib_SafeCloseHandle(&info.hDirectBoundPort, FALSE);
+    NetLib_SafeCloseHandle(&info.hDirectBoundPort);
   }
 
   // signal keep-alive thread to stop
@@ -195,7 +193,7 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
         {
           ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
 
-          handleXStatusCaps(hContact, NULL, 0);
+          handleXStatusCaps(hContact, NULL, 0, NULL, 0);
         }
       }
 
@@ -222,9 +220,7 @@ void icq_serverDisconnect(BOOL bBlock)
 
   if (hServerConn)
   {
-    int sck = CallService(MS_NETLIB_GETSOCKET, (WPARAM)hServerConn, (LPARAM)0);
-    if (sck!=INVALID_SOCKET) shutdown(sck, 2); // close gracefully
-    NetLib_SafeCloseHandle(&hServerConn, TRUE);
+    NetLib_CloseConnection(&hServerConn, TRUE);
     LeaveCriticalSection(&connectionHandleMutex);
     
     // Not called from network thread?

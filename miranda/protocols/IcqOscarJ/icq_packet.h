@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_packet.h,v $
+// File name      : $URL: https://miranda.svn.sourceforge.net/svnroot/miranda/trunk/miranda/protocols/IcqOscarJ/icq_packet.h $
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -65,9 +65,9 @@ void __fastcall packByte(icq_packet *, BYTE);
 void __fastcall packWord(icq_packet *, WORD);
 void __fastcall packDWord(icq_packet *, DWORD);
 void __fastcall packQWord(icq_packet *, DWORD64);
-void packTLV(icq_packet* pPacket, WORD wType, WORD wLength, BYTE* pbyValue);
-void packTLVWord(icq_packet *d, unsigned short nType, WORD wData);
-void packTLVDWord(icq_packet *d, unsigned short nType, DWORD dwData);
+void packTLV(icq_packet *pPacket, WORD wType, WORD wLength, const BYTE *pbyValue);
+void packTLVWord(icq_packet *pPacket, WORD wType, WORD wData);
+void packTLVDWord(icq_packet *pPacket, WORD wType, DWORD dwData);
 
 void packBuffer(icq_packet* pPacket, const BYTE* pbyBuffer, WORD wLength);
 //void packLEWordSizedBuffer(icq_packet* pPacket, const BYTE* pbyBuffer, WORD wLength);
@@ -106,7 +106,7 @@ void __fastcall unpackDWord(unsigned char **, DWORD *);
 void __fastcall unpackQWord(unsigned char **, DWORD64 *);
 void unpackString(unsigned char **buf, char *string, WORD len);
 void unpackWideString(unsigned char **buf, WCHAR *string, WORD len);
-void unpackTypedTLV(unsigned char **, int, WORD, WORD *, WORD *, char **);
+void unpackTypedTLV(unsigned char *, int, WORD, WORD *, WORD *, char **);
 BOOL unpackUID(unsigned char** ppBuf, WORD* pwLen, DWORD *pdwUIN, uid_str* ppszUID);
 
 void __fastcall unpackLEWord(unsigned char **, WORD *);

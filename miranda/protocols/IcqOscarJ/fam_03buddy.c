@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $URL$
+// File name      : $URL: https://miranda.svn.sourceforge.net/svnroot/miranda/trunk/miranda/protocols/IcqOscarJ/fam_03buddy.c $
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -82,6 +82,39 @@ void handleBuddyFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSn
   default:
     NetLog_Server("Warning: Ignoring SNAC(x%02x,x%02x) - Unknown SNAC (Flags: %u, Ref: %u)", ICQ_BUDDY_FAMILY, pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
     break;
+  }
+}
+
+
+
+void extractMoodData(oscar_tlv_chain* pChain, char** pMood, int* cbMood)
+{
+  oscar_tlv* tlv = getTLV(pChain, 0x1D, 1);
+  int len = 0;
+  char* data;
+
+  if (tlv) 
+  {
+    len = tlv->wLen;
+    data = tlv->pData;
+  }
+  
+  while (len >= 4)
+  { // parse online message items one by one
+    WORD itemType = data[0] << 8 | data[1];
+    BYTE itemLen = data[3];
+
+    // just some validity check
+    if (itemLen + 4 > len) 
+      itemLen = len - 4;
+
+    if (itemType == 0x0E)
+    { // mood data
+      *pMood = data + 4;
+      *cbMood = itemLen;
+    }
+    data += itemLen + 4;
+    len -= itemLen + 4;
   }
 }
 
@@ -340,8 +373,13 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
             NetLog_Server("No capability info TLVs");
           }
 
-          // handle Xtraz status
-          handleXStatusCaps(hContact, capBuf, capLen);
+          { // handle Xtraz status
+            char* moodData = NULL;
+            int moodSize = 0;
+
+            extractMoodData(pChain, &moodData, &moodSize);
+            handleXStatusCaps(hContact, capBuf, capLen, moodData, moodSize);
+          }
 
           szClient = detectUserClient(hContact, dwUIN, wVersion, dwFT1, dwFT2, dwFT3, dwOnlineSince, nTCPFlag, dwDirectConnCookie, dwWebPort, capBuf, capLen, &bClientId, szStrBuf);
         }
@@ -367,9 +405,12 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
         pTLV = getTLV(pChain, 0x0D, 1);
 
         if (pTLV && (pTLV->wLen >= 16))
-        {
-          // handle Xtraz status
-          handleXStatusCaps(hContact, pTLV->pData, pTLV->wLen);
+        { // handle Xtraz status
+          char* moodData = NULL;
+          int moodSize = 0;
+
+          extractMoodData(pChain, &moodData, &moodSize);
+          handleXStatusCaps(hContact, pTLV->pData, pTLV->wLen, moodData, moodSize);
         }
       }
     }
@@ -449,25 +490,55 @@ static void handleUserOffline(BYTE *buf, WORD wLen)
   DWORD dwUIN;
   uid_str szUID;
 
-  // Unpack the sender's user ID
-  if (!unpackUID(&buf, &wLen, &dwUIN, &szUID)) return;
+  do {
+    WORD wTLVCount;
 
-  hContact = HContactFromUID(dwUIN, szUID, NULL);
+    // Unpack the sender's user ID
+    if (!unpackUID(&buf, &wLen, &dwUIN, &szUID)) return;
 
-  // Skip contacts that are not already on our list
-  if (hContact != INVALID_HANDLE_VALUE)
-  {
-    NetLog_Server("%s went offline.", strUID(dwUIN, szUID));
+    // Warning level?
+    buf += 2;
 
-    ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
-    ICQWriteContactSettingDword(hContact, "IdleTS", 0);
-    // close Direct Connections to that user
-    CloseContactDirectConns(hContact);
-    // Reset DC status
-    ICQWriteContactSettingByte(hContact, "DCStatus", 0);
-    // clear Xtraz status
-    handleXStatusCaps(hContact, NULL, 0);
-  }
+    // TLV Count
+    unpackWord(&buf, &wTLVCount);
+    wLen -= 4;
+
+    // Skip the TLV chain
+    while (wTLVCount && wLen >= 4)
+    {
+      WORD wTLVType;
+      WORD wTLVLen;
+
+      unpackWord(&buf, &wTLVType);
+      unpackWord(&buf, &wTLVLen);
+      wLen -= 4;
+
+      // stop parsing overflowed packet
+      if (wTLVLen > wLen) return;
+
+      buf += wTLVLen;
+      wLen -= wTLVLen;
+      wTLVCount--;
+    }
+    
+    // Determine contact
+    hContact = HContactFromUID(dwUIN, szUID, NULL);
+
+    // Skip contacts that are not already on our list or are already offline
+    if (hContact != INVALID_HANDLE_VALUE && ICQGetContactStatus(hContact) != ID_STATUS_OFFLINE)
+    {
+      NetLog_Server("%s went offline.", strUID(dwUIN, szUID));
+
+      ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
+      ICQWriteContactSettingDword(hContact, "IdleTS", 0);
+      // close Direct Connections to that user
+      CloseContactDirectConns(hContact);
+      // Reset DC status
+      ICQWriteContactSettingByte(hContact, "DCStatus", 0);
+      // clear Xtraz status
+      handleXStatusCaps(hContact, NULL, 0, NULL, 0);
+    }
+  } while (wLen >= 1);
 }
 
 
