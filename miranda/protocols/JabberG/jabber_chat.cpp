@@ -235,7 +235,7 @@ void JabberGcLogShowInformation( JABBER_LIST_ITEM *item, JABBER_RESOURCE_STATUS 
 					case ROLE_NONE:			name = TranslateT("None"); break;
 					case ROLE_VISITOR:		name = TranslateT("Visitor"); break;
 					case ROLE_PARTICIPANT:	name = TranslateT("Participant"); break;
-					case ROLE_MODERATOR:	name = TranslateT("Modertor"); break;
+					case ROLE_MODERATOR:	name = TranslateT("Moderator"); break;
 				}
 				if (name) mir_sntprintf(buf, SIZEOF(buf), TranslateT("Role of %s was changed to '%s'."), user->resourceName, name);
 			}
@@ -311,7 +311,7 @@ void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, TCHAR* nick, TCHAR* 
 					}
 					gce.ptszText = TranslateT( "Moderator" );
 				}
-				gce.ptszStatus = sttStatuses[JabberGcGetStatus(&JS)];
+				gce.ptszStatus = TranslateTS( sttStatuses[JabberGcGetStatus(&JS)] );
 				gce.bIsMe = ( lstrcmp( nick, myNick ) == 0 );
 				statusToSet = JS.status;
 				break;

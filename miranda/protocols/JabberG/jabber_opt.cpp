@@ -1786,11 +1786,12 @@ int JabberOptInit( WPARAM wParam, LPARAM lParam )
 	odp.cbSize      = sizeof( odp );
 	odp.hInstance   = hInst;
 	odp.pszGroup    = LPGEN("Network");
+	odp.pszTitle    = jabberModuleName;
+	odp.flags       = ODPF_BOLDGROUPS;
+
 	odp.pszTab      = LPGEN("Account");
 	odp.pszTemplate = MAKEINTRESOURCEA( IDD_OPT_JABBER );
-	odp.pszTitle    = jabberModuleName;
 	odp.pfnDlgProc  = JabberOptDlgProc;
-	odp.flags       = ODPF_BOLDGROUPS;
 	JCallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
 
 	odp.pszTab      = LPGEN("Conferences");
