@@ -173,7 +173,7 @@ bool MSN_AddUser( HANDLE hContact, const char* email, int netId, int flags )
 			unsigned res1 = MSN_ABContactAdd(email, dbv.pszVal, netId, false);
 			if (netId == NETID_MSN && res1 == 2)
 			{
-				netId = 2;
+				netId = NETID_LCS;
 				res = MSN_ABContactAdd(email, dbv.pszVal, netId, false) == 0;
 			}
 			else if (netId == NETID_MSN && res1 == 3)
@@ -182,6 +182,7 @@ bool MSN_AddUser( HANDLE hContact, const char* email, int netId, int flags )
 				if (MSN_GetStaticString("ID", hContact, szContactID, sizeof(szContactID)) == 0)
 				{
 					MSN_ABUpdateProperty(szContactID, "isMessengerUser", "1");
+					res = true;
 				}
 			}
 
