@@ -440,58 +440,7 @@ char* GenerateLoginBlob(char* challenge)
 
 char* HotmailLogin(const char* url)
 {
-	unsigned char nonce[24];
-	srand(time(NULL));
-	for (unsigned i=0; i<sizeof(nonce)/2; ++i) 
-		((unsigned short*)nonce)[i] = (unsigned short)(rand() + rand());
-
-	const size_t hotSecretlen = strlen(hotSecretToken);
-	size_t key1len = Netlib_GetBase64DecodedBufferSize(hotSecretlen);
-	unsigned char* key1 = (unsigned char*)alloca(key1len);
-
-	NETLIBBASE64 nlb = { hotSecretToken, hotSecretlen, key1, key1len };
-	MSN_CallService( MS_NETLIB_BASE64DECODE, 0, LPARAM( &nlb ));
-	key1len = nlb.cbDecoded; 
-
-	static const unsigned char encdata[] = "WS-SecureConversation";
-	const size_t data1len = sizeof(nonce) + sizeof(encdata) - 1;
-	
-	unsigned char* data1 = (unsigned char*)alloca(data1len);
-	memcpy(data1, encdata, sizeof(encdata) - 1);
-	memcpy(data1 + sizeof(encdata) - 1, nonce, sizeof(nonce));
-
-	unsigned char key2[MIR_SHA1_HASH_SIZE+4];
-	derive_key(key2, key1, key1len, data1, data1len);
-
-	static const char postdata[] = "%s&da=%s&nonce=";
-  
-	const size_t xmlenclen = 3 * strlen(hotAuthToken) + 1;
-	char* xmlenc = (char*)alloca(xmlenclen);
-	UrlEncode(hotAuthToken, xmlenc, xmlenclen);
-
-	size_t noncenclen = Netlib_GetBase64EncodedBufferSize(sizeof(nonce));
-	char* noncenc = (char*)alloca(noncenclen);
-	NETLIBBASE64 nlb1 = { noncenc, noncenclen, nonce, sizeof(nonce) };
-	MSN_CallService( MS_NETLIB_BASE64ENCODE, 0, LPARAM( &nlb1 ));
-	noncenclen = nlb1.cchEncoded - 1;
-	
-	const size_t fnpstlen = sizeof(postdata) + strlen(xmlenc) + strlen(url) + 3*noncenclen + 100;
-	char* fnpst = (char*)mir_alloc(fnpstlen);
-
-	size_t sz = mir_snprintf(fnpst, fnpstlen, postdata, url, xmlenc);
-
-	UrlEncode(noncenc, fnpst + sz, fnpstlen - sz);
-	sz = strlen(fnpst);
-
-	mir_sha1_byte_t hash[MIR_SHA1_HASH_SIZE];
-	hmac_sha1(hash, key2, sizeof(key2), (mir_sha1_byte_t*)fnpst, sz);
-	
-	sz += mir_snprintf(fnpst + sz, fnpstlen - sz, "&hash=");
-
-	NETLIBBASE64 nlb2 = { fnpst + sz, fnpstlen - sz, hash, sizeof(hash) };
-	MSN_CallService( MS_NETLIB_BASE64ENCODE, 0, LPARAM( &nlb2 ));
-
-	return fnpst;
+	return NULL;
 }
 
 void FreeAuthTokens(void)
