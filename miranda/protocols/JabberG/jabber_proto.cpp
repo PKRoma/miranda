@@ -777,7 +777,7 @@ int __cdecl CJabberProto::RecvFile( HANDLE hContact, PROTORECVFILE* evt )
 int __cdecl CJabberProto::RecvMsg( HANDLE hContact, PROTORECVEVENT* evt )
 {
 	CCSDATA ccs = { hContact, PSR_MESSAGE, 0, ( LPARAM )evt };
-	return JCallService( MS_PROTO_RECVFILE, 0, ( LPARAM )&ccs );
+	return JCallService( MS_PROTO_RECVMSG, 0, ( LPARAM )&ccs );
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
