@@ -70,7 +70,8 @@ CJabberProto::CJabberProto( const char* aProtoName ) :
 	roster( 50, compareListItems ),
 	m_iqManager( this ),
 	m_adhocManager( this ),
-	m_clientCapsManager( this )
+	m_clientCapsManager( this ),
+	m_privacyListManager( this )
 {
 	InitializeCriticalSection( &modeMsgMutex );
 

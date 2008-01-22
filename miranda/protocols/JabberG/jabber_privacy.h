@@ -63,8 +63,9 @@ class CPrivacyListRule
 protected:
 	friend class CPrivacyList;
 public:
-	CPrivacyListRule( PrivacyListRuleType type = Else, TCHAR *szValue = _T(""), BOOL bAction = TRUE, DWORD dwOrder = 90, DWORD dwPackets = 0)
+	CPrivacyListRule( CJabberProto* ppro, PrivacyListRuleType type = Else, TCHAR *szValue = _T(""), BOOL bAction = TRUE, DWORD dwOrder = 90, DWORD dwPackets = 0)
 	{
+		m_proto = ppro;
 		m_szValue = mir_tstrdup(szValue);
 		m_nType = type;
 		m_bAction = bAction;
@@ -80,7 +81,7 @@ public:
 		if (m_pNext)
 			delete m_pNext;
 	};
-	CPrivacyListRule* GetNext()
+	__inline CPrivacyListRule* GetNext()
 	{
 		return m_pNext;
 	}
@@ -90,7 +91,7 @@ public:
 		m_pNext = pNext;
 		return pRetVal;
 	}
-	DWORD GetOrder()
+	__inline DWORD GetOrder()
 	{
 		return m_dwOrder;
 	}
@@ -100,42 +101,43 @@ public:
 		m_dwOrder = dwOrder;
 		return dwRetVal;
 	}
-	PrivacyListRuleType GetType()
+	__inline PrivacyListRuleType GetType()
 	{
 		return m_nType;
 	}
-	BOOL SetType( PrivacyListRuleType type )
+	__inline BOOL SetType( PrivacyListRuleType type )
 	{
 		m_nType = type;
 		return TRUE;
 	}
-	TCHAR* GetValue()
+	__inline TCHAR* GetValue()
 	{
 		return m_szValue;
 	}
-	BOOL SetValue( TCHAR *szValue )
+	__inline BOOL SetValue( TCHAR *szValue )
 	{
 		replaceStr( m_szValue, szValue );
 		return TRUE;
 	}
-	DWORD GetPackets()
+	__inline DWORD GetPackets()
 	{
 		return m_dwPackets;
 	}
-	BOOL SetPackets( DWORD dwPackets )
+	__inline BOOL SetPackets( DWORD dwPackets )
 	{
 		m_dwPackets = dwPackets;
 		return TRUE;
 	}
-	BOOL GetAction()
+	__inline BOOL GetAction()
 	{
 		return m_bAction;
 	}
-	BOOL SetAction( BOOL bAction )
+	__inline BOOL SetAction( BOOL bAction )
 	{
 		m_bAction = bAction;
 		return TRUE;
 	}
+	CJabberProto* m_proto;
 protected:
 	PrivacyListRuleType m_nType;
 	TCHAR *m_szValue;
@@ -156,8 +158,11 @@ protected:
 	BOOL m_bModified;
 	BOOL m_bDeleted;
 public:
-	CPrivacyList(TCHAR *szListName)
+	CJabberProto* m_proto;
+
+	CPrivacyList(CJabberProto* ppro, TCHAR *szListName)
 	{
+		m_proto = ppro;
 		m_szListName = mir_tstrdup(szListName);
 		m_pRules = NULL;
 		m_pNext = NULL;
@@ -180,15 +185,15 @@ public:
 		m_pRules = NULL;
 		return TRUE;
 	}
-	TCHAR* GetListName()
+	__inline TCHAR* GetListName()
 	{
 		return m_szListName;
 	}
-	CPrivacyListRule* GetFirstRule()
+	__inline CPrivacyListRule* GetFirstRule()
 	{
 		return m_pRules;
 	}
-	CPrivacyList* GetNext()
+	__inline CPrivacyList* GetNext()
 	{
 		return m_pNext;
 	}
@@ -200,7 +205,7 @@ public:
 	}
 	BOOL AddRule(PrivacyListRuleType type, TCHAR *szValue, BOOL bAction, DWORD dwOrder, DWORD dwPackets)
 	{
-		CPrivacyListRule *pRule = new CPrivacyListRule( type, szValue, bAction, dwOrder, dwPackets );
+		CPrivacyListRule *pRule = new CPrivacyListRule( m_proto, type, szValue, bAction, dwOrder, dwPackets );
 		if ( !pRule )
 			return FALSE;
 		pRule->SetNext( m_pRules );
@@ -293,27 +298,27 @@ public:
 
 		return TRUE;
 	}
-	void SetLoaded(BOOL bLoaded = TRUE)
+	__inline void SetLoaded(BOOL bLoaded = TRUE)
 	{
 		m_bLoaded = bLoaded;
 	}
-	BOOL IsLoaded()
+	__inline BOOL IsLoaded()
 	{
 		return m_bLoaded;
 	}
-	void SetModified(BOOL bModified = TRUE)
+	__inline void SetModified(BOOL bModified = TRUE)
 	{
 		m_bModified = bModified;
 	}
-	BOOL IsModified()
+	__inline BOOL IsModified()
 	{
 		return m_bModified;
 	}
-	void SetDeleted(BOOL bDeleted = TRUE)
+	__inline void SetDeleted(BOOL bDeleted = TRUE)
 	{
 		m_bDeleted = bDeleted;
 	}
-	BOOL IsDeleted()
+	__inline BOOL IsDeleted()
 	{
 		return m_bDeleted;
 	}
@@ -329,8 +334,11 @@ protected:
 	BOOL m_bModified;
 
 public:
-	CPrivacyListManager()
+	CJabberProto* m_proto;
+
+	CPrivacyListManager( CJabberProto* ppro )
 	{
+		m_proto = ppro;
 		m_szActiveListName = NULL;
 		m_szDefaultListName = NULL;
 		m_pLists = NULL;
@@ -397,7 +405,7 @@ public:
 	{
 		if (FindList(szListName))
 			return FALSE;
-		CPrivacyList *pList = new CPrivacyList( szListName );
+		CPrivacyList *pList = new CPrivacyList( m_proto, szListName );
 		pList->SetNext( m_pLists );
 		m_pLists = pList;
 		return TRUE;
