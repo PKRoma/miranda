@@ -59,7 +59,7 @@ int Proto_CallContactService(WPARAM wParam,LPARAM lParam)
 		ret = 1;
 	else {
 		if ( pa->ppro->bOldProto )
-			ret = CallProtoServiceInt( ccs->hContact, dbv.pszVal, ccs->szProtoService, (WPARAM)(-1), ( LPARAM)&ccs );
+			ret = CallProtoServiceInt( ccs->hContact, dbv.pszVal, ccs->szProtoService, (WPARAM)(-1), ( LPARAM)ccs );
 		else
 			ret = CallProtoServiceInt( ccs->hContact, dbv.pszVal, ccs->szProtoService, ccs->wParam, ccs->lParam );
 		if ( ret == CALLSERVICE_NOTFOUND )
@@ -111,7 +111,7 @@ static int CallRecvChain(WPARAM wParam,LPARAM lParam)
 		ret = 1;
 	else {
 		if ( pa->ppro->bOldProto )
-			ret = CallProtoServiceInt( ccs->hContact, dbv.pszVal, ccs->szProtoService, (WPARAM)(-1), ( LPARAM)&ccs );
+			ret = CallProtoServiceInt( ccs->hContact, dbv.pszVal, ccs->szProtoService, (WPARAM)(-1), ( LPARAM)ccs );
 		else
 			ret = CallProtoServiceInt( ccs->hContact, dbv.pszVal, ccs->szProtoService, ccs->wParam, ccs->lParam );
 		if ( ret == CALLSERVICE_NOTFOUND )
