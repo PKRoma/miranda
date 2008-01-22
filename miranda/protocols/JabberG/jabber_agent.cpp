@@ -45,12 +45,12 @@ struct TJabberRegWndData
 };
 
 /*
-int JabberMenuHandleAgents( WPARAM wParam, LPARAM lParam, CJabberProto* ppro )
+int __cdecl CJabberProto::JabberMenuHandleAgents( WPARAM wParam, LPARAM lParam )
 {
-	if ( IsWindow( ppro->hwndJabberAgents ))
-		SetForegroundWindow( ppro->hwndJabberAgents );
+	if ( IsWindow( hwndJabberAgents ))
+		SetForegroundWindow( hwndJabberAgents );
 	else
-		CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_AGENTS ), NULL, JabberAgentsDlgProc, ( LPARAM )ppro );
+		CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_AGENTS ), NULL, JabberAgentsDlgProc, ( LPARAM )this );
 
 	return 0;
 }

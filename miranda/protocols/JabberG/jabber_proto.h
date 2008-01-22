@@ -39,7 +39,8 @@ Last change by : $Author: m_mluhov $
 
 struct CJabberProto;
 typedef int ( __cdecl CJabberProto::*JEventFunc )( WPARAM, LPARAM );
-typedef int ( __cdecl *JServiceFunc )( WPARAM, LPARAM, CJabberProto* );
+typedef int ( __cdecl CJabberProto::*JServiceFunc )( WPARAM, LPARAM );
+typedef int ( __cdecl CJabberProto::*JServiceFuncParam )( WPARAM, LPARAM, LPARAM );
 
 // for JabberEnterString
 enum { JES_MULTINE, JES_COMBO, JES_RICHEDIT };
@@ -301,6 +302,8 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	//---- jabber_adhoc.cpp --------------------------------------------------------------
 
+	int    __cdecl JabberContactMenuRunCommands(WPARAM wParam, LPARAM lParam);
+
 	HWND   sttGetWindowFromIq( XmlNode *iqNode );
 	void   JabberHandleAdhocCommandRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
 	BOOL   IsRcRequestAllowedByACL( CJabberIqInfo* pInfo );
@@ -323,6 +326,8 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   JabberContactMenuAdhocCommands( struct CJabberAdhocStartupParams* param );
 	
 	//---- jabber_bookmarks.c ------------------------------------------------------------
+
+	int    __cdecl JabberMenuHandleBookmarks( WPARAM wParam, LPARAM lParam );
 
 	int    JabberAddEditBookmark( JABBER_LIST_ITEM* item );
 
@@ -361,10 +366,17 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	//---- jabber_console.cpp ------------------------------------------------------------
 
+	int    __cdecl JabberMenuHandleConsole( WPARAM wParam, LPARAM lParam );
+
 	void   JabberConsoleInit( void );
 	void   JabberConsoleUninit( void );
 
 	//---- jabber_disco.cpp --------------------------------------------------------------
+
+	int    __cdecl JabberMenuHandleServiceDiscovery( WPARAM wParam, LPARAM lParam );
+	int    __cdecl JabberMenuHandleServiceDiscoveryMyTransports( WPARAM wParam, LPARAM lParam );
+	int    __cdecl JabberMenuHandleServiceDiscoveryTransports( WPARAM wParam, LPARAM lParam );
+	int    __cdecl JabberMenuHandleServiceDiscoveryConferences( WPARAM wParam, LPARAM lParam );
 
 	void   JabberIqResultServiceDiscoveryInfo( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
 	void   JabberIqResultServiceDiscoveryItems( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
@@ -415,6 +427,8 @@ struct CJabberProto : public PROTO_INTERFACE
 	
 	//---- jabber_groupchat.c ------------------------------------------------------------
 
+	int    __cdecl JabberMenuHandleJoinGroupchat( WPARAM wParam, LPARAM lParam );
+
 	void   JabberGroupchatJoinRoom( const TCHAR* server, const TCHAR* room, const TCHAR* nick, const TCHAR* password );
 	void   JabberGroupchatProcessPresence( XmlNode *node, void *userdata );
 	void   JabberGroupchatProcessMessage( XmlNode *node, void *userdata );
@@ -431,6 +445,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	int    GetTransportStatusIconIndex(int iID, int Status);
 	BOOL   JabberDBCheckIsTransportedContact(const TCHAR* jid, HANDLE hContact);
 	void   JabberCheckAllContactsAreTransported( void );
+	int    __cdecl JGetAdvancedStatusIcon(WPARAM wParam, LPARAM lParam );
 
 	//---- jabber_iq.c -------------------------------------------------------------------
 
@@ -532,6 +547,17 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	//---- jabber_menu.cpp ---------------------------------------------------------------
 
+	int    __cdecl JabberMenuConvertChatContact( WPARAM wParam, LPARAM lParam );
+	int    __cdecl JabberMenuRosterAdd( WPARAM wParam, LPARAM lParam );
+	int    __cdecl JabberMenuHandleRequestAuth( WPARAM wParam, LPARAM lParam );
+	int    __cdecl JabberMenuHandleGrantAuth( WPARAM wParam, LPARAM lParam );
+	int    __cdecl JabberMenuJoinLeave( WPARAM wParam, LPARAM lParam );
+	int    __cdecl JabberMenuTransportLogin( WPARAM wParam, LPARAM lParam );
+	int    __cdecl JabberMenuTransportResolve( WPARAM wParam, LPARAM lParam );
+	int    __cdecl JabberMenuBookmarkAdd( WPARAM wParam, LPARAM lParam );
+	int    __cdecl JabberMenuRevokeAuth( WPARAM wParam, LPARAM lParam );
+	int    __cdecl JabberMenuHandleResource(WPARAM wParam, LPARAM lParam, LPARAM res);
+
 	void   JabberMenuInit( void );
 	void   JabberMenuUninit( void );
 
@@ -541,6 +567,8 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   JabberAuthWorker( HANDLE hContact, char* authReqType );
 
 	//---- jabber_misc.c -----------------------------------------------------------------
+
+	int    __cdecl JabberGetEventTextChatStates( WPARAM wParam, LPARAM lParam );
 
 	void   JabberAddContactToRoster( const TCHAR* jid, const TCHAR* nick, const TCHAR* grpName, JABBER_SUBSCRIPTION subscription );
 	void   JabberDBAddAuthRequest( TCHAR* jid, TCHAR* nick );
@@ -556,13 +584,22 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	//---- jabber_opt.cpp ----------------------------------------------------------------
 
+	int    __cdecl JabberMenuHandleRosterControl( WPARAM wParam, LPARAM lParam );
+
 	void   _RosterExportToFile(HWND hwndDlg);
 	void   _RosterImportFromFile(HWND hwndDlg);
 	void   _RosterSendRequest(HWND hwndDlg, BYTE rrAction);
 	void   _RosterHandleGetRequest( XmlNode* node, void* userdata );
 
+	//---- jabber_password.cpp --------------------------------------------------------------
+	
+	int    __cdecl JabberMenuHandleChangePassword( WPARAM wParam, LPARAM lParam );
+
 	//---- jabber_privacy.cpp ------------------------------------------------------------
 	ROSTERREQUSERDATA rrud;
+
+	int    __cdecl menuSetPrivacyList( WPARAM wParam, LPARAM lParam, LPARAM iList );
+	int    __cdecl JabberMenuHandlePrivacyLists( WPARAM wParam, LPARAM lParam );
 
 	void   QueryPrivacyLists( void );
 		  
@@ -593,7 +630,9 @@ struct CJabberProto : public PROTO_INTERFACE
 	//---- jabber_std.cpp ----------------------------------------------
 
 	void   JCreateService( const char* szService, JServiceFunc serviceProc );
+	void   JCreateServiceParam( const char* szService, JServiceFuncParam serviceProc, LPARAM lParam );
 	HANDLE JCreateHookableEvent( const char* szService );
+
 	void   JDeleteSetting( HANDLE hContact, const char* valueName );
 	DWORD  JGetByte( const char* valueName, int parDefltValue );
 	DWORD  JGetByte( HANDLE hContact, const char* valueName, int parDefltValue );
@@ -619,6 +658,17 @@ struct CJabberProto : public PROTO_INTERFACE
 	//---- jabber_svc.c ------------------------------------------------------------------
 
 	void   JabberEnableMenuItems( BOOL bEnable );
+
+	int    __cdecl JabberGetName( WPARAM wParam, LPARAM lParam );
+	int    __cdecl JabberGetAvatar( WPARAM wParam, LPARAM lParam );
+	int    __cdecl JabberGetAvatarCaps( WPARAM wParam, LPARAM lParam );
+	int    __cdecl JabberGetAvatarInfo( WPARAM wParam, LPARAM lParam );
+	int    __cdecl JabberGetStatus( WPARAM wParam, LPARAM lParam );
+	int    __cdecl ServiceSendXML( WPARAM wParam, LPARAM lParam );
+	int    __cdecl JabberSetAvatar( WPARAM wParam, LPARAM lParam );
+	int    __cdecl JabberSendNudge( WPARAM wParam, LPARAM lParam );
+	int    __cdecl JabberGCGetToolTipText( WPARAM wParam, LPARAM lParam );
+	int    __cdecl JabberServiceParseXmppURI( WPARAM wParam, LPARAM lParam );
 
 	//---- jabber_thread.c ----------------------------------------------
 
@@ -673,6 +723,8 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	//---- jabber_vcard.c -----------------------------------------------
 
+	int    __cdecl JabberMenuHandleVcard( WPARAM wParam, LPARAM lParam );
+
 	void   JabberGroupchatJoinByHContact( HANDLE hContact );
 	void   JabberUpdateVCardPhoto( char * szFileName );
 	int    JabberSendGetVcard( const TCHAR* jid );
@@ -703,6 +755,12 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   JabberHandleDiscoItemsRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
 
 	//---- jabber_xstatus.c --------------------------------------------------------------
+
+	int    __cdecl JabberSetListeningTo( WPARAM wParam, LPARAM lParams );
+	int    __cdecl JabberGetXStatusIcon( WPARAM wParam, LPARAM lParams );
+	int    __cdecl JabberGetXStatus( WPARAM wParam, LPARAM lParams );
+	int    __cdecl JabberSetXStatus( WPARAM wParam, LPARAM lParams );
+	int    __cdecl menuSetXStatus( WPARAM wParam, LPARAM lParam, LPARAM param );
 
 	HICON  GetXStatusIcon(int bStatus, UINT flags);
 	void   JabberUpdateContactExtraIcon( HANDLE hContact );

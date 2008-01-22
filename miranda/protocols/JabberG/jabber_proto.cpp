@@ -90,28 +90,28 @@ CJabberProto::CJabberProto( const char* aProtoName ) :
 	heventXStatusIconChanged = JCreateHookableEvent( JE_CUSTOMSTATUS_EXTRAICON_CHANGED );
 	heventXStatusChanged = JCreateHookableEvent( JE_CUSTOMSTATUS_CHANGED );
 
-	JCreateService( PS_GETNAME, JabberGetName );
-	JCreateService( PS_GETAVATARINFO, JabberGetAvatarInfo );
-	JCreateService( PS_GETSTATUS, JabberGetStatus );
-	JCreateService( PS_SET_LISTENINGTO, JabberSetListeningTo );
+	JCreateService( PS_GETNAME, &CJabberProto::JabberGetName );
+	JCreateService( PS_GETAVATARINFO, &CJabberProto::JabberGetAvatarInfo );
+	JCreateService( PS_GETSTATUS, &CJabberProto::JabberGetStatus );
+	JCreateService( PS_SET_LISTENINGTO, &CJabberProto::JabberSetListeningTo );
 
-	JCreateService( JS_GETCUSTOMSTATUSICON, JabberGetXStatusIcon );
-	JCreateService( JS_GETXSTATUS, JabberGetXStatus );
-	JCreateService( JS_SETXSTATUS, JabberSetXStatus );
+	JCreateService( JS_GETCUSTOMSTATUSICON, &CJabberProto::JabberGetXStatusIcon );
+	JCreateService( JS_GETXSTATUS, &CJabberProto::JabberGetXStatus );
+	JCreateService( JS_SETXSTATUS, &CJabberProto::JabberSetXStatus );
 
-	JCreateService( JS_SENDXML, ServiceSendXML );
-	JCreateService( PS_GETMYAVATAR, JabberGetAvatar );
-	JCreateService( PS_GETAVATARCAPS, JabberGetAvatarCaps );
-	JCreateService( PS_SETMYAVATAR, JabberSetAvatar );
+	JCreateService( JS_SENDXML, &CJabberProto::ServiceSendXML );
+	JCreateService( PS_GETMYAVATAR, &CJabberProto::JabberGetAvatar );
+	JCreateService( PS_GETAVATARCAPS, &CJabberProto::JabberGetAvatarCaps );
+	JCreateService( PS_SETMYAVATAR, &CJabberProto::JabberSetAvatar );
 
 	// XEP-0224 support (Attention/Nudge)
-	JCreateService( JS_SEND_NUDGE, JabberSendNudge );
+	JCreateService( JS_SEND_NUDGE, &CJabberProto::JabberSendNudge );
 
 	// service to get from protocol chat buddy info
-	JCreateService( MS_GC_PROTO_GETTOOLTIPTEXT, JabberGCGetToolTipText );
+	JCreateService( MS_GC_PROTO_GETTOOLTIPTEXT, &CJabberProto::JabberGCGetToolTipText );
 
 	// XMPP URI parser service for "File Association Manager" plugin
-	JCreateService( JS_PARSE_XMPP_URI, JabberServiceParseXmppURI );
+	JCreateService( JS_PARSE_XMPP_URI, &CJabberProto::JabberServiceParseXmppURI );
 
 	m_iqManager.FillPermanentHandlers();
 	m_iqManager.Start();

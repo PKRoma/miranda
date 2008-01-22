@@ -401,29 +401,29 @@ int CJabberProto::OnReloadIcons(WPARAM wParam, LPARAM lParam)
 // if imagelist require advanced painting status overlay(like xStatus)
 // index should be shifted to HIWORD, LOWORD should be 0
 
-int JGetAdvancedStatusIcon(WPARAM wParam, LPARAM lParam, CJabberProto* ppro)
+int __cdecl CJabberProto::JGetAdvancedStatusIcon(WPARAM wParam, LPARAM lParam)
 {
 	HANDLE hContact=(HANDLE) wParam;
 	if ( !hContact )
 		return -1;
 
-	if ( !ppro->JGetByte( hContact, "IsTransported", 0 ))
+	if ( !JGetByte( hContact, "IsTransported", 0 ))
 		return -1;
 
 	DBVARIANT dbv;
-	if ( ppro->JGetStringT( hContact, "Transport", &dbv ))
+	if ( JGetStringT( hContact, "Transport", &dbv ))
 		return -1;
 
 	int iID = GetTransportProtoID( dbv.ptszVal );
 	DBFreeVariant(&dbv);
 	if ( iID >= 0 ) {
 		WORD Status = ID_STATUS_OFFLINE;
-		Status = ppro->JGetWord( hContact, "Status", ID_STATUS_OFFLINE );
+		Status = JGetWord( hContact, "Status", ID_STATUS_OFFLINE );
 		if ( Status < ID_STATUS_OFFLINE )
 			Status = ID_STATUS_OFFLINE;
 		else if (Status > ID_STATUS_INVISIBLE )
 			Status = ID_STATUS_ONLINE;
-		return ppro->GetTransportStatusIconIndex( iID, Status );
+		return GetTransportStatusIconIndex( iID, Status );
 	}
 	return -1;
 }

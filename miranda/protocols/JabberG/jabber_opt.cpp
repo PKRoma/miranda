@@ -1765,12 +1765,12 @@ static BOOL CALLBACK JabberRosterOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 	return FALSE;
 }
 
-int JabberMenuHandleRosterControl( WPARAM wParam, LPARAM lParam, CJabberProto* ppro )
+int __cdecl CJabberProto::JabberMenuHandleRosterControl( WPARAM wParam, LPARAM lParam )
 {
-	if ( ppro->rrud.hwndDlg && IsWindow( ppro->rrud.hwndDlg ))
-		SetForegroundWindow( ppro->rrud.hwndDlg );
+	if ( rrud.hwndDlg && IsWindow( rrud.hwndDlg ))
+		SetForegroundWindow( rrud.hwndDlg );
 	else
-		CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_OPT_JABBER3 ), NULL, JabberRosterOptDlgProc, ( LPARAM )ppro );
+		CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_OPT_JABBER3 ), NULL, JabberRosterOptDlgProc, ( LPARAM )this );
 
 	return 0;
 }

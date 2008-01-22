@@ -38,7 +38,20 @@ void CJabberProto::JCreateService( const char* szService, JServiceFunc servicePr
 	char str[ MAXMODULELABELLENGTH ];
 	strcpy( str, szProtoName );
 	strcat( str, szService );
-	arServices.insert( ::CreateServiceFunctionParam( str, ( MIRANDASERVICEPARAM )serviceProc, ( LPARAM )this ));
+	arServices.insert( ::CreateServiceFunctionObj( str, ( MIRANDASERVICEOBJ )*( void** )&serviceProc, this ));
+}
+
+void CJabberProto::JCreateServiceParam( const char* szService, JServiceFuncParam serviceProc, LPARAM lParam )
+{
+	char str[ MAXMODULELABELLENGTH ];
+	strcpy( str, szProtoName );
+	strcat( str, szService );
+	arServices.insert( ::CreateServiceFunctionObjParam( str, ( MIRANDASERVICEOBJPARAM )*( void** )&serviceProc, this, lParam ));
+}
+
+void CJabberProto::JHookEvent( const char* szEvent, JEventFunc handler )
+{
+	arHooks.insert( ::HookEventObj( szEvent, ( MIRANDAHOOKOBJ )*( void** )&handler, this ));
 }
 
 HANDLE CJabberProto::JCreateHookableEvent( const char* szService )
@@ -48,6 +61,8 @@ HANDLE CJabberProto::JCreateHookableEvent( const char* szService )
 	strcat( str, szService );
 	return CreateHookableEvent( str );
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////
 
 #if !defined( _DEBUG )
 int __stdcall JCallService( const char* szSvcName, WPARAM wParam, LPARAM lParam )
@@ -116,11 +131,6 @@ WORD CJabberProto::JGetWord( HANDLE hContact, const char* valueName, int parDefl
 void __fastcall JFreeVariant( DBVARIANT* dbv )
 {
 	DBFreeVariant( dbv );
-}
-
-void CJabberProto::JHookEvent( const char* szEvent, JEventFunc handler )
-{
-	arHooks.insert( HookEventParam( szEvent, ( MIRANDAHOOKPARAM )*( void** )&handler, ( LPARAM )this ));
 }
 
 int CJabberProto::JSendBroadcast( HANDLE hContact, int type, int result, HANDLE hProcess, LPARAM lParam )

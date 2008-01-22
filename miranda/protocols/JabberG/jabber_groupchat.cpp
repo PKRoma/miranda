@@ -226,10 +226,10 @@ int JabberMenuHandleGroupchat( WPARAM wParam, LPARAM lParam )
 }
 */
 
-int JabberMenuHandleJoinGroupchat( WPARAM wParam, LPARAM lParam, CJabberProto* ppro )
+int __cdecl CJabberProto::JabberMenuHandleJoinGroupchat( WPARAM wParam, LPARAM lParam )
 {
-	if ( ppro->jabberChatDllPresent )
-		ppro->JabberGroupchatJoinRoomByJid( NULL, NULL );
+	if ( jabberChatDllPresent )
+		JabberGroupchatJoinRoomByJid( NULL, NULL );
 	else
 		JabberChatDllError();
 	return 0;
@@ -1020,8 +1020,8 @@ static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 				CheckDlgButton(hwndDlg, IDC_BOOKMARKS, FALSE);
 				DestroyMenu(hMenu);
 
-				if (res == -1)
-					JabberMenuHandleBookmarks(0, 0, param->ppro);
+				if ( res == -1 )
+					param->ppro->JabberMenuHandleBookmarks( 0, 0 );
 				else if (res) {
 					JABBER_LIST_ITEM *item = (JABBER_LIST_ITEM *)res;
 					TCHAR *room = NEWTSTR_ALLOCA(item->jid);

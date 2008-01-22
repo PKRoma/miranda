@@ -38,12 +38,12 @@ Last change by : $Author$
 
 static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
 
-int JabberMenuHandleVcard( WPARAM wParam, LPARAM lParam, CJabberProto* ppro )
+int __cdecl CJabberProto::JabberMenuHandleVcard( WPARAM wParam, LPARAM lParam )
 {
-	if ( IsWindow( ppro->hwndJabberVcard ))
-		SetForegroundWindow( ppro->hwndJabberVcard );
+	if ( IsWindow( hwndJabberVcard ))
+		SetForegroundWindow( hwndJabberVcard );
 	else
-		ppro->hwndJabberVcard = CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_VCARD ), NULL, JabberVcardDlgProc, ( LPARAM )ppro );
+		hwndJabberVcard = CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_VCARD ), NULL, JabberVcardDlgProc, ( LPARAM )this );
 
 	return 0;
 }

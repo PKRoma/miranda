@@ -269,8 +269,8 @@ int CJabberProto::OnModulesLoadedEx( WPARAM wParam, LPARAM lParam )
 		JHookEvent( szEvent, &CJabberProto::JabberGcInit );
 	}
 
-	JCreateService( JS_GETADVANCEDSTATUSICON, JGetAdvancedStatusIcon );
-	JCreateService( JS_DB_GETEVENTTEXT_CHATSTATES, JabberGetEventTextChatStates );
+	JCreateService( JS_GETADVANCEDSTATUSICON, &CJabberProto::JGetAdvancedStatusIcon );
+	JCreateService( JS_DB_GETEVENTTEXT_CHATSTATES, &CJabberProto::JabberGetEventTextChatStates );
 
 	if ( ServiceExists( MS_MSG_ADDICON )) {
 		StatusIconData sid = {0};

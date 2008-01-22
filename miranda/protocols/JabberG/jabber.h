@@ -476,8 +476,6 @@ XmlNode* JabberFormGetData( HWND hwndStatic, XmlNode *xNode );
 
 //---- jabber_icolib.c ----------------------------------------------
 
-int    JGetAdvancedStatusIcon(WPARAM wParam, LPARAM lParam, CJabberProto* );
-
 int    ReloadIconsEventHook(WPARAM wParam, LPARAM lParam);
 
 //---- jabber_libstr.c ----------------------------------------------
@@ -496,7 +494,6 @@ int    JabberCompareJids( const TCHAR* jid1, const TCHAR* jid2 );
 void   JabberContactListCreateGroup( TCHAR* groupName );
 TCHAR* EscapeChatTags(TCHAR* pszText);
 char*  UnEscapeChatTags(char* str_in);
-int    JabberGetEventTextChatStates( WPARAM wParam, LPARAM lParam, CJabberProto* );
 
 //---- jabber_adhoc.cpp	---------------------------------------------
 
@@ -532,21 +529,6 @@ struct JabberAdHocData
 	XmlNode* CommandsNode;
 	TCHAR* ResponderJID;
 };
-
-int JabberContactMenuRunCommands(WPARAM wParam, LPARAM lParam, CJabberProto* ppro);
-
-//---- jabber_svc.c ---------------------------------------------------------------------
-
-int  JabberGetName( WPARAM wParam, LPARAM lParam, CJabberProto* ppro );
-int  JabberGetAvatar( WPARAM wParam, LPARAM lParam, CJabberProto* ppro );
-int  JabberGetAvatarCaps( WPARAM wParam, LPARAM lParam, CJabberProto* ppro );
-int  JabberGetAvatarInfo( WPARAM wParam, LPARAM lParam, CJabberProto* ppro );
-int  JabberGetStatus( WPARAM wParam, LPARAM lParam, CJabberProto* ppro );
-int  ServiceSendXML( WPARAM wParam, LPARAM lParam, CJabberProto* ppro );
-int  JabberSetAvatar( WPARAM wParam, LPARAM lParam, CJabberProto* ppro );
-int  JabberSendNudge( WPARAM wParam, LPARAM lParam, CJabberProto* ppro );
-int  JabberGCGetToolTipText( WPARAM wParam, LPARAM lParam, CJabberProto* ppro );
-int  JabberServiceParseXmppURI( WPARAM wParam, LPARAM lParam, CJabberProto* ppro );
 
 //---- jabber_std.cpp -------------------------------------------------------------------
 
@@ -622,45 +604,8 @@ void JabberBitmapPremultiplyChannels(HBITMAP hBitmap);
 
 char* skipSpaces( char* p, int* num = NULL );
 
-//---- jabber_xstatus.cpp ---------------------------------------------------------------
-
-int  JabberSetListeningTo( WPARAM wParam, LPARAM lParam, CJabberProto* ppro );
-
-int  JabberGetXStatusIcon( WPARAM wParam, LPARAM lParam, CJabberProto* ppro );
-int  JabberGetXStatus( WPARAM wParam, LPARAM lParam, CJabberProto* ppro );
-int  JabberSetXStatus( WPARAM wParam, LPARAM lParam, CJabberProto* ppro );
-
 //---- jabber_userinfo.cpp --------------------------------------------------------------
 
 void JabberUserInfoUpdate( HANDLE hContact );
-
-//---- jabber_bookmarks.cpp -------------------------------------------------------------
-
-int  JabberMenuHandleBookmarks( WPARAM wParam, LPARAM lParam, CJabberProto* ppro );
-
-//---- jabber_groupchat.cpp -------------------------------------------------------------
-
-int JabberMenuHandleJoinGroupchat( WPARAM wParam, LPARAM lParam, CJabberProto* );
-
-//---- jabber_password.cpp --------------------------------------------------------------
-
-int JabberMenuHandleChangePassword( WPARAM wParam, LPARAM lParam, CJabberProto* );
-
-//---- jabber_vcard.cpp -----------------------------------------------------------------
-
-int JabberMenuHandleVcard( WPARAM wParam, LPARAM lParam, CJabberProto* );
-
-//---- jabber_password.cpp --------------------------------------------------------------
-
-int JabberMenuHandleRequestAuth( WPARAM wParam, LPARAM lParam, CJabberProto* );
-int JabberMenuHandleGrantAuth( WPARAM wParam, LPARAM lParam, CJabberProto* );
-
-//---- jabber_console.cpp ---------------------------------------------------------------
-
-int JabberMenuHandleConsole(WPARAM wParam, LPARAM lParam, CJabberProto* );
-
-//---- jabber_opt.cpp -------------------------------------------------------------------
-
-int JabberMenuHandleRosterControl(WPARAM wParam, LPARAM lParam, CJabberProto*);
 
 #endif

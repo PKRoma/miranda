@@ -44,7 +44,6 @@ Last change by : $Author$
 #define MENUITEM_LASTSEEN	1
 #define MENUITEM_SERVER		2
 #define MENUITEM_RESOURCES	10
-int JabberMenuHandleResource(WPARAM wParam, LPARAM lParam, LPARAM resource);
 
 extern LIST<void> arHooks;
 extern LIST<void> arServices;
@@ -163,8 +162,8 @@ int CJabberProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
 				for (int i = 0; i < nMenuResourceItemsNew; ++i) {
 					mir_snprintf(tDest, SIZEOF(text)-(tDest-text), "/UseResource_%d", i);
 					if ( i >= nMenuResourceItems ) {
-						arServices.insert( CreateServiceFunctionParam( text, JabberMenuHandleResource, MENUITEM_RESOURCES+i ));
-						JCreateService( text, JabberMenuHandleRequestAuth );
+						JCreateServiceParam( text, &CJabberProto::JabberMenuHandleResource, MENUITEM_RESOURCES+i );
+						JCreateService( text, &CJabberProto::JabberMenuHandleRequestAuth );
 						mi.pszName = "";
 						mi.position = i;
 						mi.pszPopupName = (char *)hMenuResourcesRoot;
@@ -214,54 +213,54 @@ int CJabberProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
-int JabberMenuConvertChatContact( WPARAM wParam, LPARAM lParam, CJabberProto* ppro )
+int __cdecl CJabberProto::JabberMenuConvertChatContact( WPARAM wParam, LPARAM lParam )
 {
-	BYTE bIsChatRoom = (BYTE)ppro->JGetByte( (HANDLE ) wParam, "ChatRoom", 0 );
+	BYTE bIsChatRoom = (BYTE)JGetByte( (HANDLE ) wParam, "ChatRoom", 0 );
 	if ((bIsChatRoom == GCW_CHATROOM) || bIsChatRoom == 0 ) {
 		DBVARIANT dbv;
-		if ( !ppro->JGetStringT( (HANDLE ) wParam, (bIsChatRoom == GCW_CHATROOM)?(char*)"ChatRoomID":(char*)"jid", &dbv )) {
-			ppro->JDeleteSetting( (HANDLE ) wParam, (bIsChatRoom == GCW_CHATROOM)?"ChatRoomID":"jid");
-			ppro->JSetStringT( (HANDLE ) wParam, (bIsChatRoom != GCW_CHATROOM)?"ChatRoomID":"jid", dbv.ptszVal);
+		if ( !JGetStringT( (HANDLE ) wParam, (bIsChatRoom == GCW_CHATROOM)?(char*)"ChatRoomID":(char*)"jid", &dbv )) {
+			JDeleteSetting( (HANDLE ) wParam, (bIsChatRoom == GCW_CHATROOM)?"ChatRoomID":"jid");
+			JSetStringT( (HANDLE ) wParam, (bIsChatRoom != GCW_CHATROOM)?"ChatRoomID":"jid", dbv.ptszVal);
 			JFreeVariant( &dbv );
-			ppro->JSetByte((HANDLE ) wParam, "ChatRoom", (bIsChatRoom == GCW_CHATROOM)?0:GCW_CHATROOM);
+			JSetByte((HANDLE ) wParam, "ChatRoom", (bIsChatRoom == GCW_CHATROOM)?0:GCW_CHATROOM);
 	}	}
 	return 0;
 }
 
-int JabberMenuRosterAdd( WPARAM wParam, LPARAM lParam, CJabberProto* ppro )
+int __cdecl CJabberProto::JabberMenuRosterAdd( WPARAM wParam, LPARAM lParam )
 {
 	DBVARIANT dbv;
 	if ( !wParam ) return 0; // we do not add ourself to the roster. (buggy situation - should not happen)
-	if ( !ppro->JGetStringT( ( HANDLE ) wParam, "ChatRoomID", &dbv )) {
+	if ( !JGetStringT( ( HANDLE ) wParam, "ChatRoomID", &dbv )) {
 		TCHAR *roomID = mir_tstrdup(dbv.ptszVal);
 		JFreeVariant( &dbv );
-		if ( ppro->JabberListGetItemPtr( LIST_ROSTER, roomID ) == NULL ) {
+		if ( JabberListGetItemPtr( LIST_ROSTER, roomID ) == NULL ) {
 			TCHAR *nick = 0;
 			TCHAR *group = 0;
 			if ( !DBGetContactSettingTString( ( HANDLE ) wParam, "CList", "Group", &dbv ) ) {
 				group = mir_tstrdup(dbv.ptszVal);
 				JFreeVariant( &dbv );
 			}
-			if ( !ppro->JGetStringT( ( HANDLE ) wParam, "Nick", &dbv ) ) {
+			if ( !JGetStringT( ( HANDLE ) wParam, "Nick", &dbv ) ) {
 				nick = mir_tstrdup(dbv.ptszVal);
 				JFreeVariant( &dbv );
 			}
-			ppro->JabberAddContactToRoster(roomID, nick, group, SUB_NONE);
-			if ( ppro->JGetByte( "AddRoster2Bookmarks", TRUE ) == TRUE ) {
+			JabberAddContactToRoster(roomID, nick, group, SUB_NONE);
+			if ( JGetByte( "AddRoster2Bookmarks", TRUE ) == TRUE ) {
 
 				JABBER_LIST_ITEM* item = NULL;
 				
-				item = ppro->JabberListGetItemPtr(LIST_BOOKMARK, roomID);
+				item = JabberListGetItemPtr(LIST_BOOKMARK, roomID);
 				if (!item) {
 					item = ( JABBER_LIST_ITEM* )mir_alloc( sizeof( JABBER_LIST_ITEM ));
 					ZeroMemory( item, sizeof( JABBER_LIST_ITEM ));
 					item->jid = mir_tstrdup(roomID);
 					item->name = mir_tstrdup(nick);
-					if ( !ppro->JGetStringT( ( HANDLE ) wParam, "MyNick", &dbv ) ) {
+					if ( !JGetStringT( ( HANDLE ) wParam, "MyNick", &dbv ) ) {
 						item->nick = mir_tstrdup(dbv.ptszVal);
 						JFreeVariant( &dbv );
 					}
-					ppro->JabberAddEditBookmark( item );
+					JabberAddEditBookmark( item );
 					mir_free(item);
 				}
 			}
@@ -273,65 +272,65 @@ int JabberMenuRosterAdd( WPARAM wParam, LPARAM lParam, CJabberProto* ppro )
 	return 0;
 }
 
-int JabberMenuHandleRequestAuth( WPARAM wParam, LPARAM lParam, CJabberProto* ppro )
+int __cdecl CJabberProto::JabberMenuHandleRequestAuth( WPARAM wParam, LPARAM lParam )
 {
 	HANDLE hContact;
 	DBVARIANT dbv;
 
-	if (( hContact=( HANDLE ) wParam )!=NULL && ppro->jabberOnline ) {
-		if ( !ppro->JGetStringT( hContact, "jid", &dbv )) {
+	if (( hContact=( HANDLE ) wParam )!=NULL && jabberOnline ) {
+		if ( !JGetStringT( hContact, "jid", &dbv )) {
 			XmlNode presence( "presence" ); presence.addAttr( "to", dbv.ptszVal ); presence.addAttr( "type", "subscribe" );
-			ppro->jabberThreadInfo->send( presence );
+			jabberThreadInfo->send( presence );
 			JFreeVariant( &dbv );
 	}	}
 
 	return 0;
 }
 
-int JabberMenuHandleGrantAuth( WPARAM wParam, LPARAM lParam, CJabberProto* ppro )
+int __cdecl CJabberProto::JabberMenuHandleGrantAuth( WPARAM wParam, LPARAM lParam )
 {
 	HANDLE hContact;
 	DBVARIANT dbv;
 
-	if (( hContact=( HANDLE ) wParam )!=NULL && ppro->jabberOnline ) {
-		if ( !ppro->JGetStringT( hContact, "jid", &dbv )) {
+	if (( hContact=( HANDLE ) wParam )!=NULL && jabberOnline ) {
+		if ( !JGetStringT( hContact, "jid", &dbv )) {
 			XmlNode presence( "presence" ); presence.addAttr( "to", dbv.ptszVal ); presence.addAttr( "type", "subscribed" );
-			ppro->jabberThreadInfo->send( presence );
+			jabberThreadInfo->send( presence );
 			JFreeVariant( &dbv );
 	}	}
 
 	return 0;
 }
 
-int JabberMenuRevokeAuth( WPARAM wParam, LPARAM lParam, CJabberProto* ppro )
+int __cdecl CJabberProto::JabberMenuRevokeAuth( WPARAM wParam, LPARAM lParam )
 {
 	HANDLE hContact;
 	DBVARIANT dbv;
 
-	if (( hContact=( HANDLE ) wParam ) != NULL && ppro->jabberOnline ) {
-		if ( !ppro->JGetStringT( hContact, "jid", &dbv )) {
+	if (( hContact=( HANDLE ) wParam ) != NULL && jabberOnline ) {
+		if ( !JGetStringT( hContact, "jid", &dbv )) {
 			XmlNode presence( "presence" ); presence.addAttr( "to", dbv.ptszVal ); presence.addAttr( "type", "unsubscribed" );
-			ppro->jabberThreadInfo->send( presence );
+			jabberThreadInfo->send( presence );
 			JFreeVariant( &dbv );
 	}	}
 
 	return 0;
 }
 
-int JabberMenuJoinLeave( WPARAM wParam, LPARAM lParam, CJabberProto* ppro )
+int __cdecl CJabberProto::JabberMenuJoinLeave( WPARAM wParam, LPARAM lParam )
 {
 	DBVARIANT dbv, jid;
-	if ( ppro->JGetStringT(( HANDLE )wParam, "ChatRoomID", &jid ))
+	if ( JGetStringT(( HANDLE )wParam, "ChatRoomID", &jid ))
 		return 0;
 
-	if ( ppro->JGetStringT(( HANDLE )wParam, "MyNick", &dbv ))
-		if ( ppro->JGetStringT( NULL, "Nick", &dbv )) {
+	if ( JGetStringT(( HANDLE )wParam, "MyNick", &dbv ))
+		if ( JGetStringT( NULL, "Nick", &dbv )) {
 			JFreeVariant( &jid );
 			return 0;
 		}
 
-	if ( ppro->JGetWord(( HANDLE )wParam, "Status", 0 ) != ID_STATUS_ONLINE ) {
-		if ( !ppro->jabberChatDllPresent ) {
+	if ( JGetWord(( HANDLE )wParam, "Status", 0 ) != ID_STATUS_ONLINE ) {
+		if ( !jabberChatDllPresent ) {
 			JabberChatDllError();
 			goto LBL_Return;
 		}
@@ -341,12 +340,12 @@ int JabberMenuJoinLeave( WPARAM wParam, LPARAM lParam, CJabberProto* ppro )
 			goto LBL_Return;
 
 		*p++ = 0;
-		ppro->JabberGroupchatJoinRoom( p, jid.ptszVal, dbv.ptszVal, _T(""));
+		JabberGroupchatJoinRoom( p, jid.ptszVal, dbv.ptszVal, _T(""));
 	}
 	else {
-		JABBER_LIST_ITEM* item = ppro->JabberListGetItemPtr( LIST_CHATROOM, jid.ptszVal );
+		JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_CHATROOM, jid.ptszVal );
 		if ( item != NULL )
-			ppro->JabberGcQuit( item, 0, NULL );
+			JabberGcQuit( item, 0, NULL );
 	}
 
 LBL_Return:
@@ -355,52 +354,52 @@ LBL_Return:
 	return 0;
 }
 
-int JabberMenuTransportLogin( WPARAM wParam, LPARAM lParam, CJabberProto* ppro )
+int __cdecl CJabberProto::JabberMenuTransportLogin( WPARAM wParam, LPARAM lParam )
 {
 	HANDLE hContact = ( HANDLE )wParam;
-	if ( !ppro->JGetByte( hContact, "IsTransport", 0 ))
+	if ( !JGetByte( hContact, "IsTransport", 0 ))
 		return 0;
 
 	DBVARIANT jid;
-	if ( ppro->JGetStringT( hContact, "jid", &jid ))
+	if ( JGetStringT( hContact, "jid", &jid ))
 		return 0;
 
-	JABBER_LIST_ITEM* item = ppro->JabberListGetItemPtr( LIST_ROSTER, jid.ptszVal );
+	JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, jid.ptszVal );
 	if ( item != NULL ) {
 		XmlNode p( "presence" ); p.addAttr( "to", item->jid );
 		if ( item->itemResource.status == ID_STATUS_ONLINE )
 			p.addAttr( "type", "unavailable" );
-		ppro->jabberThreadInfo->send( p );
+		jabberThreadInfo->send( p );
 	}
 
 	JFreeVariant( &jid );
 	return 0;
 }
 
-int JabberMenuTransportResolve( WPARAM wParam, LPARAM lParam, CJabberProto* ppro )
+int __cdecl CJabberProto::JabberMenuTransportResolve( WPARAM wParam, LPARAM lParam )
 {
 	HANDLE hContact = ( HANDLE )wParam;
-	if ( !ppro->JGetByte( hContact, "IsTransport", 0 ))
+	if ( !JGetByte( hContact, "IsTransport", 0 ))
 		return 0;
 
 	DBVARIANT jid;
-	if ( !ppro->JGetStringT( hContact, "jid", &jid )) {
-		ppro->JabberResolveTransportNicks( jid.ptszVal );
+	if ( !JGetStringT( hContact, "jid", &jid )) {
+		JabberResolveTransportNicks( jid.ptszVal );
 		JFreeVariant( &jid );
 	}
 	return 0;
 }
 
-int JabberMenuBookmarkAdd( WPARAM wParam, LPARAM lParam, CJabberProto* ppro )
+int __cdecl CJabberProto::JabberMenuBookmarkAdd( WPARAM wParam, LPARAM lParam )
 {
 	DBVARIANT dbv;
 	if ( !wParam ) return 0; // we do not add ourself to the roster. (buggy situation - should not happen)
-	if ( !ppro->JGetStringT( ( HANDLE ) wParam, "ChatRoomID", &dbv )) {
+	if ( !JGetStringT( ( HANDLE ) wParam, "ChatRoomID", &dbv )) {
 		TCHAR *roomID = mir_tstrdup(dbv.ptszVal);
 		JFreeVariant( &dbv );
-		if ( ppro->JabberListGetItemPtr( LIST_BOOKMARK, roomID ) == NULL ) {
+		if ( JabberListGetItemPtr( LIST_BOOKMARK, roomID ) == NULL ) {
 			TCHAR *nick = 0;
-			if ( !ppro->JGetStringT( ( HANDLE ) wParam, "Nick", &dbv ) ) {
+			if ( !JGetStringT( ( HANDLE ) wParam, "Nick", &dbv ) ) {
 				nick = mir_tstrdup(dbv.ptszVal);
 				JFreeVariant( &dbv );
 			}
@@ -411,11 +410,11 @@ int JabberMenuBookmarkAdd( WPARAM wParam, LPARAM lParam, CJabberProto* ppro )
 			item->jid = mir_tstrdup(roomID);
 			item->name = ( TCHAR* )JCallService( MS_CLIST_GETCONTACTDISPLAYNAME, wParam, GCDNF_TCHAR );
 			item->type = _T("conference");
-			if ( !ppro->JGetStringT(( HANDLE ) wParam, "MyNick", &dbv ) ) {
+			if ( !JGetStringT(( HANDLE ) wParam, "MyNick", &dbv ) ) {
 				item->nick = mir_tstrdup(dbv.ptszVal);
 				JFreeVariant( &dbv );
 			}
-			ppro->JabberAddEditBookmark( item );
+			JabberAddEditBookmark( item );
 			mir_free(item);
 			
 			if (nick) mir_free(nick);
@@ -442,7 +441,7 @@ void CJabberProto::JabberMenuInit()
 
 	// "Request authorization"
 	strcpy( tDest, "/RequestAuth" );
-	JCreateService( text, JabberMenuHandleRequestAuth );
+	JCreateService( text, &CJabberProto::JabberMenuHandleRequestAuth );
 	mi.pszName = LPGEN("Request authorization");
 	mi.flags = CMIF_ICONFROMICOLIB;
 	mi.position = -2000001000;
@@ -453,7 +452,7 @@ void CJabberProto::JabberMenuInit()
 
 	// "Grant authorization"
 	strcpy( tDest, "/GrantAuth" );
-	JCreateService( text, JabberMenuHandleGrantAuth );
+	JCreateService( text, &CJabberProto::JabberMenuHandleGrantAuth );
 	mi.pszName = LPGEN("Grant authorization");
 	mi.position = -2000001001;
 	mi.icolibItem = GetIconHandle( IDI_GRANT );
@@ -461,7 +460,7 @@ void CJabberProto::JabberMenuInit()
 
 	// Revoke auth
 	strcpy( tDest, "/RevokeAuth" );
-	JCreateService( text, JabberMenuRevokeAuth );
+	JCreateService( text, &CJabberProto::JabberMenuRevokeAuth );
 	mi.pszName = LPGEN("Revoke authorization");
 	mi.position = -2000001002;
 	mi.icolibItem = GetIconHandle( IDI_AUTHREVOKE );
@@ -469,7 +468,7 @@ void CJabberProto::JabberMenuInit()
 
 	// "Grant authorization"
 	strcpy( tDest, "/JoinChat" );
-	JCreateService( text, JabberMenuJoinLeave );
+	JCreateService( text, &CJabberProto::JabberMenuJoinLeave );
 	mi.pszName = LPGEN("Join chat");
 	mi.position = -2000001003;
 	mi.icolibItem = GetIconHandle( IDI_GROUP );
@@ -477,7 +476,7 @@ void CJabberProto::JabberMenuInit()
 
 	// "Convert Chat/Contact"
 	strcpy( tDest, "/ConvertChatContact" );
-	JCreateService( text, JabberMenuConvertChatContact );
+	JCreateService( text, &CJabberProto::JabberMenuConvertChatContact );
 	mi.pszName = LPGEN("Convert");
 	mi.position = -1999901004;
 	mi.icolibItem = GetIconHandle( IDI_USER2ROOM );
@@ -485,7 +484,7 @@ void CJabberProto::JabberMenuInit()
 
 	// "Add to roster"
 	strcpy( tDest, "/AddToRoster" );
-	JCreateService( text, JabberMenuRosterAdd );
+	JCreateService( text, &CJabberProto::JabberMenuRosterAdd );
 	mi.pszName = LPGEN("Add to roster");
 	mi.position = -1999901005;
 	mi.icolibItem = GetIconHandle( IDI_ADDROSTER );
@@ -493,7 +492,7 @@ void CJabberProto::JabberMenuInit()
 
 	// "Add to Bookmarks"
 	strcpy( tDest, "/AddToBookmarks" );
-	JCreateService( text, JabberMenuBookmarkAdd );
+	JCreateService( text, &CJabberProto::JabberMenuBookmarkAdd );
 	mi.pszName = LPGEN("Add to Bookmarks");
 	mi.position = -1999901006;
 	mi.icolibItem = GetIconHandle( IDI_BOOKMARKS);
@@ -501,7 +500,7 @@ void CJabberProto::JabberMenuInit()
 
 	// Login/logout
 	strcpy( tDest, "/TransportLogin" );
-	JCreateService( text, JabberMenuTransportLogin );
+	JCreateService( text, &CJabberProto::JabberMenuTransportLogin );
 	mi.pszName = LPGEN("Login/logout");
 	mi.position = -1999901007;
 	mi.icolibItem = GetIconHandle( IDI_LOGIN );
@@ -509,7 +508,7 @@ void CJabberProto::JabberMenuInit()
 
 	// Retrieve nicks
 	strcpy( tDest, "/TransportGetNicks" );
-	JCreateService( text, JabberMenuTransportResolve );
+	JCreateService( text, &CJabberProto::JabberMenuTransportResolve );
 	mi.pszName = LPGEN("Resolve nicks");
 	mi.position = -1999901008;
 	mi.icolibItem = GetIconHandle( IDI_REFRESH );
@@ -517,7 +516,7 @@ void CJabberProto::JabberMenuInit()
 
 	// Run Commands
 	strcpy( tDest, "/RunCommands" );
-	JCreateService( text, JabberContactMenuRunCommands );
+	JCreateService( text, &CJabberProto::JabberContactMenuRunCommands );
 	mi.pszName = LPGEN("Commands");
 	mi.position = -1999901009;
 	mi.icolibItem = GetIconHandle( IDI_COMMAND );
@@ -535,7 +534,7 @@ void CJabberProto::JabberMenuInit()
 	mi.flags |= CMIF_CHILDPOPUP;
 
 	strcpy( tDest, "/UseResource_last" );
-	arServices.insert( CreateServiceFunctionParam( text, JabberMenuHandleResource, MENUITEM_LASTSEEN ));
+	JCreateServiceParam( text, &CJabberProto::JabberMenuHandleResource, MENUITEM_LASTSEEN );
 	mi.pszName = LPGEN("Last Active");
 	mi.position = -1999901000;
 	mi.pszPopupName = (char *)hMenuResourcesRoot;
@@ -543,7 +542,7 @@ void CJabberProto::JabberMenuInit()
 	hMenuResourcesActive = ( HANDLE )CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
 
 	strcpy( tDest, "/UseResource_server" );
-	arServices.insert( CreateServiceFunctionParam( text, JabberMenuHandleResource, MENUITEM_SERVER ));
+	JCreateServiceParam( text, &CJabberProto::JabberMenuHandleResource, MENUITEM_SERVER );
 	mi.pszName = LPGEN("Server's Choice");
 	mi.position = -1999901000;
 	mi.pszPopupName = (char *)hMenuResourcesRoot;
@@ -578,7 +577,7 @@ void CJabberProto::JabberMenuInit()
 
 	// "Service Discovery..."
 	strcpy( tDest, "/ServiceDiscovery" );
-	if (!ServiceExists(text)) JCreateService( text, JabberMenuHandleServiceDiscovery );
+	if (!ServiceExists(text)) JCreateService( text, &CJabberProto::JabberMenuHandleServiceDiscovery );
 	mi.flags = CMIF_ICONFROMICOLIB | CMIF_CHILDPOPUP;
 	mi.pszName = LPGEN("Service Discovery");
 	mi.position = 2000050001;
@@ -590,7 +589,7 @@ void CJabberProto::JabberMenuInit()
 	// "Bookmarks..."
 	strcpy( tDest, "/Bookmarks" );
 	if ( !ServiceExists( text ))
-		JCreateService( text, JabberMenuHandleBookmarks );
+		JCreateService( text, &CJabberProto::JabberMenuHandleBookmarks );
 	mi.pszName = LPGEN("Bookmarks");
 	mi.position = 2000050002;
 	mi.icolibItem = GetIconHandle( IDI_BOOKMARKS );
@@ -598,7 +597,7 @@ void CJabberProto::JabberMenuInit()
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuBookmarks, ( LPARAM )&clmi );
 
 	strcpy( tDest, "/SD/MyTransports" );
-	JCreateService( text, JabberMenuHandleServiceDiscoveryMyTransports );
+	JCreateService( text, &CJabberProto::JabberMenuHandleServiceDiscoveryMyTransports );
 	mi.pszName = LPGEN("Registered Transports");
 	mi.position = 2000050003;
 	mi.icolibItem = GetIconHandle( IDI_TRANSPORTL );
@@ -606,7 +605,7 @@ void CJabberProto::JabberMenuInit()
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuSDMyTransports, ( LPARAM )&clmi );
 
 	strcpy( tDest, "/SD/Transports" );
-	JCreateService( text, JabberMenuHandleServiceDiscoveryTransports );
+	JCreateService( text, &CJabberProto::JabberMenuHandleServiceDiscoveryTransports );
 	mi.pszName = LPGEN("Local Server Transports");
 	mi.position = 2000050004;
 	mi.icolibItem = GetIconHandle( IDI_TRANSPORT );
@@ -614,7 +613,7 @@ void CJabberProto::JabberMenuInit()
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) hMenuSDTransports, ( LPARAM )&clmi );
 
 	strcpy( tDest, "/SD/Conferences" );
-	JCreateService( text, JabberMenuHandleServiceDiscoveryConferences );
+	JCreateService( text, &CJabberProto::JabberMenuHandleServiceDiscoveryConferences );
 	mi.pszName = LPGEN("Browse Chatrooms");
 	mi.position = 2000050005;
 	mi.icolibItem = GetIconHandle( IDI_GROUP );
@@ -623,7 +622,7 @@ void CJabberProto::JabberMenuInit()
 
 	strcpy( tDest, "/Groupchat" );
 	if ( !ServiceExists( text ))
-		JCreateService( text, JabberMenuHandleJoinGroupchat );
+		JCreateService( text, &CJabberProto::JabberMenuHandleJoinGroupchat );
 	mi.pszName = LPGEN("Create/Join groupchat");
 	mi.position = 2000050006;
 	mi.icolibItem = GetIconHandle( IDI_GROUP );
@@ -632,7 +631,7 @@ void CJabberProto::JabberMenuInit()
 
 	// "Change Password..."
 	strcpy( tDest, "/ChangePassword" );
-	JCreateService( text, JabberMenuHandleChangePassword );
+	JCreateService( text, &CJabberProto::JabberMenuHandleChangePassword );
 	mi.pszName = LPGEN("Change Password");
 	mi.position = 2000050007;
 	mi.icolibItem = GetIconHandle( IDI_KEYS );
@@ -641,7 +640,7 @@ void CJabberProto::JabberMenuInit()
 
 	// "Personal vCard..."
 	strcpy( tDest,  "/Vcard" );
-	JCreateService( text, JabberMenuHandleVcard );
+	JCreateService( text, &CJabberProto::JabberMenuHandleVcard );
 	mi.pszName = LPGEN("Personal vCard");
 	mi.position = 2000050008;
 	mi.icolibItem = GetIconHandle( IDI_VCARD );
@@ -649,7 +648,7 @@ void CJabberProto::JabberMenuInit()
 
 	// "Privacy lists..."
 	strcpy( tDest, "/PrivacyLists" );
-	JCreateService( text, JabberMenuHandlePrivacyLists );
+	JCreateService( text, &CJabberProto::JabberMenuHandlePrivacyLists );
 	mi.pszName = LPGEN("Privacy Lists");
 	mi.position = 2000050009;
 	mi.icolibItem = GetIconHandle( IDI_PRIVACY_LISTS );
@@ -658,7 +657,7 @@ void CJabberProto::JabberMenuInit()
 
 	// "Roster editor"
 	strcpy( tDest, "/RosterEditor" );
-	JCreateService( text, JabberMenuHandleRosterControl );
+	JCreateService( text, &CJabberProto::JabberMenuHandleRosterControl );
 	mi.pszName = LPGEN("Roster editor");
 	mi.position = 2000050009;
 	mi.icolibItem = GetIconHandle( IDI_AGENTS );
@@ -667,7 +666,7 @@ void CJabberProto::JabberMenuInit()
 
 	// "XML Console"
 	strcpy( tDest, "/XMLConsole" );
-	JCreateService( text, JabberMenuHandleConsole );
+	JCreateService( text, &CJabberProto::JabberMenuHandleConsole );
 	mi.pszName = LPGEN("XML Console");
 	mi.position = 2000050010;
 	mi.icolibItem = GetIconHandle( IDI_CONSOLE );
@@ -715,7 +714,7 @@ int CJabberProto::OnModernToolbarInit(WPARAM, LPARAM)
 
 	strcpy(tDest, "/Groupchat");
 	if ( !ServiceExists( text ))
-		JCreateService( text, JabberMenuHandleJoinGroupchat );
+		JCreateService( text, &CJabberProto::JabberMenuHandleJoinGroupchat );
 	mir_snprintf(tmpbuf, SIZEOF(tmpbuf), "Join conference (%s)", szModuleName);
 	button.hSecondaryIconHandle = button.hPrimaryIconHandle = (HANDLE)GetIconHandle(IDI_GROUP);
 	CallService(MS_TB_ADDBUTTON, 0, (LPARAM)&button);
@@ -723,7 +722,7 @@ int CJabberProto::OnModernToolbarInit(WPARAM, LPARAM)
 
 	strcpy(tDest, "/Bookmarks");
 	if ( !ServiceExists( text ))
-		JCreateService( text, JabberMenuHandleBookmarks );
+		JCreateService( text, &CJabberProto::JabberMenuHandleBookmarks );
 	mir_snprintf(tmpbuf, SIZEOF(tmpbuf), "Open bookmarks (%s)", szModuleName);
 	button.hSecondaryIconHandle = button.hPrimaryIconHandle = (HANDLE)GetIconHandle(IDI_BOOKMARKS);
 	CallService(MS_TB_ADDBUTTON, 0, (LPARAM)&button);
@@ -731,7 +730,7 @@ int CJabberProto::OnModernToolbarInit(WPARAM, LPARAM)
 
 	strcpy(tDest, "/ServiceDiscovery");
 	if ( !ServiceExists( text ))
-		JCreateService( text, JabberMenuHandleServiceDiscovery );
+		JCreateService( text, &CJabberProto::JabberMenuHandleServiceDiscovery );
 	mir_snprintf(tmpbuf, SIZEOF(tmpbuf), "Service discovery (%s)", szModuleName);
 	button.hSecondaryIconHandle = button.hPrimaryIconHandle = (HANDLE)GetIconHandle(IDI_SERVICE_DISCOVERY);
 	CallService(MS_TB_ADDBUTTON, 0, (LPARAM)&button);
@@ -913,8 +912,8 @@ int CJabberProto::OnProcessSrmmIconClick( WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
-int JabberMenuHandleResource(WPARAM wParam, LPARAM lParam, LPARAM res)
-{/* !!!!!!!!!!!!!!!!!!!!!!!!!!
+int __cdecl CJabberProto::JabberMenuHandleResource(WPARAM wParam, LPARAM lParam, LPARAM res)
+{
 	if ( !jabberOnline || !wParam )
 		return 0;
 
@@ -945,5 +944,5 @@ int JabberMenuHandleResource(WPARAM wParam, LPARAM lParam, LPARAM res)
 
 	JabberUpdateMirVer(LI);
 	JabberMenuUpdateSrmmIcon(LI);
-*/	return 0;
+	return 0;
 }

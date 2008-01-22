@@ -660,16 +660,14 @@ static BOOL CALLBACK JabberBookmarksDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 /////////////////////////////////////////////////////////////////////////////////////////
 // Launches the Bookmarks manager window
 
-int JabberMenuHandleBookmarks( WPARAM wParam, LPARAM lParam, CJabberProto* ppro )
+int __cdecl CJabberProto::JabberMenuHandleBookmarks( WPARAM wParam, LPARAM lParam )
 {
-	HWND hwndJabberBookmarks = ppro->hwndJabberBookmarks;
-
 	if ( IsWindow( hwndJabberBookmarks )) {
 		SetForegroundWindow( hwndJabberBookmarks );
 
 		SendMessage( hwndJabberBookmarks, WM_JABBER_ACTIVATE, 0, 0 );	// Just to clear the list
-		int iqId = ppro->JabberSerialNext();
-		ppro->JabberIqAdd( iqId, IQ_PROC_DISCOBOOKMARKS, &CJabberProto::JabberIqResultDiscoBookmarks);
+		int iqId = JabberSerialNext();
+		JabberIqAdd( iqId, IQ_PROC_DISCOBOOKMARKS, &CJabberProto::JabberIqResultDiscoBookmarks);
 
 		XmlNodeIq iq( "get", iqId);
 
@@ -678,9 +676,9 @@ int JabberMenuHandleBookmarks( WPARAM wParam, LPARAM lParam, CJabberProto* ppro 
 		storage->addAttr("xmlns","storage:bookmarks");
 
 		// <iq/> result will send WM_JABBER_REFRESH to update the list with real data
-		ppro->jabberThreadInfo->send( iq );
+		jabberThreadInfo->send( iq );
 	}
-	else CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_BOOKMARKS ), NULL, JabberBookmarksDlgProc, (LPARAM)ppro );
+	else CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_BOOKMARKS ), NULL, JabberBookmarksDlgProc, (LPARAM)this );
 
 	return 0;
 }

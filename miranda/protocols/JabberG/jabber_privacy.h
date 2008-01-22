@@ -29,10 +29,6 @@ Last change by : $Author$
 #ifndef _JABBER_PRIVACY_H_
 #define _JABBER_PRIVACY_H_
 
-void JabberProcessIqPrivacyLists( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
-void JabberIqResultPrivacyLists( XmlNode* iqNode, void* userdata, CJabberIqInfo *pInfo );
-int JabberMenuHandlePrivacyLists( WPARAM wParam, LPARAM lParam, CJabberProto* );
-
 #define JABBER_PL_RULE_TYPE_MESSAGE			1
 #define JABBER_PL_RULE_TYPE_PRESENCE_IN		2
 #define JABBER_PL_RULE_TYPE_PRESENCE_OUT	4

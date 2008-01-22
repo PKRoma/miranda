@@ -49,9 +49,15 @@ typedef struct
 {
 	DWORD nameHash;
 	HINSTANCE hOwner;
-	MIRANDASERVICE pfnService;
-	int isParam;
+	union {
+		MIRANDASERVICE pfnService;
+		MIRANDASERVICEPARAM pfnServiceParam;
+		MIRANDASERVICEOBJ pfnServiceObj;
+		MIRANDASERVICEOBJPARAM pfnServiceObjParam;
+	};
+	int flags;
 	LPARAM lParam;
+	void* object;
 	char name[1];
 }
 	TService;
@@ -341,10 +347,13 @@ int CallHookSubscribers( HANDLE hEvent, WPARAM wParam, LPARAM lParam )
 
 	// NOTE: We've got the critical section while all this lot are called. That's mostly safe, though.
 	for ( i = 0; i < p->subscriberCount; i++ ) {
-		switch ( p->subscriber[i].type ) {
-			case 1:	returnVal = p->subscriber[i].pfnHook( wParam, lParam );	break;
-			case 2:	returnVal = p->subscriber[i].pfnHookEx( p->subscriber[i].lParam, wParam, lParam );	break;
-			case 3:	returnVal = SendMessage( p->subscriber[i].hwnd, p->subscriber[i].message, wParam, lParam ); break;
+		THookSubscriber* s = &p->subscriber[i];
+		switch ( s->type ) {
+			case 1:	returnVal = s->pfnHook( wParam, lParam );	break;
+			case 2:	returnVal = s->pfnHookParam( wParam, lParam, s->lParam ); break;
+			case 3:	returnVal = s->pfnHookObj( s->object, wParam, lParam ); break;
+			case 4:	returnVal = s->pfnHookObjParam( s->object, wParam, lParam, s->lParam ); break;
+			case 5:	returnVal = SendMessage( s->hwnd, s->message, wParam, lParam ); break;
 			default: continue;
 		}
 		if ( returnVal )
@@ -406,7 +415,7 @@ int NotifyEventHooks( HANDLE hEvent, WPARAM wParam, LPARAM lParam )
 	return ( checkHook( hEvent ) == -1 ) ? -1 : CallHookSubscribers( hEvent, wParam, lParam );
 }
 
-HANDLE HookEvent( const char* name, MIRANDAHOOK hookProc )
+static HANDLE HookEventInt( int type, const char* name, MIRANDAHOOK hookProc, void* object, LPARAM lParam )
 {
 	int idx;
 	THook* p;
@@ -425,8 +434,10 @@ HANDLE HookEvent( const char* name, MIRANDAHOOK hookProc )
 
 	p = hooks.items[ idx ];
 	p->subscriber = ( THookSubscriber* )mir_realloc( p->subscriber, sizeof( THookSubscriber )*( p->subscriberCount+1 ));
-	p->subscriber[ p->subscriberCount ].type = 1;
+	p->subscriber[ p->subscriberCount ].type = type;
 	p->subscriber[ p->subscriberCount ].pfnHook = hookProc;
+	p->subscriber[ p->subscriberCount ].object = object;
+	p->subscriber[ p->subscriberCount ].lParam = lParam;
 	p->subscriber[ p->subscriberCount ].hOwner  = GetInstByAddress( hookProc );
 	p->subscriberCount++;
 
@@ -435,34 +446,24 @@ HANDLE HookEvent( const char* name, MIRANDAHOOK hookProc )
 	return ret;
 }
 
+HANDLE HookEvent( const char* name, MIRANDAHOOK hookProc )
+{
+	return HookEventInt( 1, name, hookProc, 0, 0 );
+}
+
 HANDLE HookEventParam( const char* name, MIRANDAHOOKPARAM hookProc, LPARAM lParam )
 {
-	int idx;
-	THook* p;
-	HANDLE ret;
+	return HookEventInt( 2, name, (MIRANDAHOOK)hookProc, 0, lParam );
+}
 
-	EnterCriticalSection( &csHooks );
-	if ( !List_GetIndex(( SortedList* )&hooks, ( void* )name, &idx )) {
-		#ifdef _DEBUG
-			OutputDebugStringA("Attempt to hook: \t");
-			OutputDebugStringA(name);
-			OutputDebugStringA("\n");
-		#endif
-		LeaveCriticalSection(&csHooks);
-		return NULL;
-	}
+HANDLE HookEventObj( const char* name, MIRANDAHOOKOBJ hookProc, void* object)
+{
+	return HookEventInt( 3, name, (MIRANDAHOOK)hookProc, object, 0 );
+}
 
-	p = hooks.items[ idx ];
-	p->subscriber = ( THookSubscriber* )mir_realloc( p->subscriber, sizeof( THookSubscriber )*( p->subscriberCount+1 ));
-	p->subscriber[ p->subscriberCount ].type = 2;
-	p->subscriber[ p->subscriberCount ].pfnHookEx = hookProc;
-	p->subscriber[ p->subscriberCount ].lParam = lParam;
-	p->subscriber[ p->subscriberCount ].hOwner  = GetInstByAddress( hookProc );
-	p->subscriberCount++;
-
-	ret = ( HANDLE )(( p->id << 16 ) | p->subscriberCount );
-	LeaveCriticalSection( &csHooks );
-	return ret;
+HANDLE HookEventObjParam( const char* name, MIRANDAHOOKOBJPARAM hookProc, void* object, LPARAM lParam )
+{
+	return HookEventInt( 4, name, (MIRANDAHOOK)hookProc, object, lParam );
 }
 
 HANDLE HookEventMessage( const char* name, HWND hwnd, UINT message )
@@ -482,7 +483,7 @@ HANDLE HookEventMessage( const char* name, HWND hwnd, UINT message )
 
 	p = hooks.items[ idx ];
 	p->subscriber = ( THookSubscriber* )mir_realloc( p->subscriber, sizeof( THookSubscriber )*( p->subscriberCount+1 ));
-	p->subscriber[ p->subscriberCount ].type = 3;
+	p->subscriber[ p->subscriberCount ].type = 5;
 	p->subscriber[ p->subscriberCount ].hwnd = hwnd;
 	p->subscriber[ p->subscriberCount ].message = message;
 	p->subscriberCount++;
@@ -567,7 +568,7 @@ static __inline TService* FindServiceByName( const char *name )
 	return FindServiceByHash( NameHashFunction( name ));
 }
 
-HANDLE CreateServiceFunction( const char *name, MIRANDASERVICE serviceProc )
+static HANDLE CreateServiceInt( int type, const char *name, MIRANDASERVICE serviceProc, void* object, LPARAM lParam)
 {
 	DWORD hash;
 	int   idx;
@@ -594,46 +595,33 @@ HANDLE CreateServiceFunction( const char *name, MIRANDASERVICE serviceProc )
 	p->nameHash   = hash;
 	p->pfnService = serviceProc;
 	p->hOwner     = GetInstByAddress( serviceProc );
-	p->isParam    = 0;
+	p->flags      = type;
+	p->lParam     = lParam;
+	p->object     = object;
 	List_Insert(( SortedList* )&services, p, idx );
 
 	LeaveCriticalSection( &csServices );
 	return ( HANDLE )hash;
 }
 
+HANDLE CreateServiceFunction( const char *name, MIRANDASERVICE serviceProc )
+{
+	return CreateServiceInt( 0, name, serviceProc, 0, 0 );
+}
+
 HANDLE CreateServiceFunctionParam(const char *name,MIRANDASERVICEPARAM serviceProc,LPARAM lParam)
 {
-	DWORD hash;
-	int   idx;
-	TService* p;
-#ifdef _DEBUG
-	if ( name == NULL ) {
-		MessageBoxA(0,"Someone tried to create a NULL'd service, see call stack for more info","",0);
-		DebugBreak();
-		return NULL;
-	}
-#else
-	if ( name == NULL ) return NULL;
-#endif
-	hash = NameHashFunction( name );
-	EnterCriticalSection( &csServices );
+	return CreateServiceInt( 1, name, (MIRANDASERVICE)serviceProc, 0, lParam );
+}
 
-	if ( List_GetIndex(( SortedList* )&services, &hash, &idx )) {
-		LeaveCriticalSection( &csServices );
-		return NULL;
-	}
+HANDLE CreateServiceFunctionObj(const char *name,MIRANDASERVICEOBJ serviceProc,void* object)
+{
+	return CreateServiceInt( 2, name, (MIRANDASERVICE)serviceProc, object, 0 );
+}
 
-	p = mir_alloc( sizeof( *p ) + strlen( name ));
-	strcpy( p->name, name );
-	p->nameHash   = hash;
-	p->pfnService = ( MIRANDASERVICE )serviceProc;
-	p->hOwner     = GetInstByAddress( serviceProc );
-	p->isParam    = 1;
-	p->lParam     = lParam;
-	List_Insert(( SortedList* )&services, p, idx );
-
-	LeaveCriticalSection( &csServices );
-	return (HANDLE)hash;
+HANDLE CreateServiceFunctionObjParam(const char *name,MIRANDASERVICEOBJPARAM serviceProc,void* object,LPARAM lParam)
+{
+	return CreateServiceInt( 3, name, (MIRANDASERVICE)serviceProc, object, lParam );
 }
 
 int DestroyServiceFunction(HANDLE hService)
@@ -666,8 +654,9 @@ int CallService(const char *name,WPARAM wParam,LPARAM lParam)
 {
 	TService *pService;
 	MIRANDASERVICE pfnService;
-	int isParam;
+	int flags;
 	LPARAM fnParam;
+	void* object;
 
 #ifdef _DEBUG
 	if (name==NULL) {
@@ -696,15 +685,17 @@ int CallService(const char *name,WPARAM wParam,LPARAM lParam)
 		} */
 		return CALLSERVICE_NOTFOUND;
 	}
-	pfnService=pService->pfnService;
-	isParam=pService->isParam;
-	fnParam=pService->lParam;
+	pfnService = pService->pfnService;
+	flags = pService->flags;
+	fnParam = pService->lParam;
+	object = pService->object;
 	LeaveCriticalSection(&csServices);
-	if (isParam)
-		return ((int (*)(WPARAM,LPARAM,LPARAM))pfnService)(wParam,lParam,fnParam);
-	else
-		return ((int (*)(WPARAM,LPARAM))pfnService)(wParam,lParam);
-}
+	switch( flags ) {
+		case 1:  return ((MIRANDASERVICEPARAM)pfnService)(wParam,lParam,fnParam);
+		case 2:  return ((MIRANDASERVICEOBJ)pfnService)(object,wParam,lParam);
+		case 3:  return ((MIRANDASERVICEOBJPARAM)pfnService)(object,wParam,lParam,fnParam);
+		default: return pfnService(wParam,lParam);
+}	}
 
 static void CALLBACK CallServiceToMainAPCFunc(DWORD dwParam)
 {

@@ -191,17 +191,17 @@ void CJabberProto::JabberSetContactMood( HANDLE hContact, const char* moodType, 
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberGetXStatus - gets the extended status info (mood)
 
-int JabberGetXStatus( WPARAM wParam, LPARAM lParam, CJabberProto* ppro )
+int __cdecl CJabberProto::JabberGetXStatus( WPARAM wParam, LPARAM lParam )
 {
-	if ( !ppro->jabberOnline || !ppro->jabberPepSupported )
+	if ( !jabberOnline || !jabberPepSupported )
 		return 0;
 
-	if ( ppro->jabberXStatus < 1 || ppro->jabberXStatus > NUM_XMODES )
-		ppro->jabberXStatus = 0;
+	if ( jabberXStatus < 1 || jabberXStatus > NUM_XMODES )
+		jabberXStatus = 0;
 
 	if ( wParam ) *(( char** )wParam ) = DBSETTING_XSTATUSNAME;
 	if ( lParam ) *(( char** )lParam ) = DBSETTING_XSTATUSMSG;
-	return ppro->jabberXStatus;
+	return jabberXStatus;
 }
 
 
@@ -210,21 +210,22 @@ int JabberGetXStatus( WPARAM wParam, LPARAM lParam, CJabberProto* ppro )
 //wParam = (int)N  // custom status id, 0 = my current custom status
 //lParam = flags   // use LR_SHARED for shared HICON
 //return = HICON   // custom status icon (use DestroyIcon to release resources if not LR_SHARED)
-int JabberGetXStatusIcon( WPARAM wParam, LPARAM lParam, CJabberProto* ppro )
+
+int __cdecl CJabberProto::JabberGetXStatusIcon( WPARAM wParam, LPARAM lParam )
 {
-	if ( !ppro->jabberOnline )
+	if ( !jabberOnline )
 		return 0;
 
 	if ( !wParam )
-		wParam = ppro->JGetByte( DBSETTING_XSTATUSID, 0 );
+		wParam = JGetByte( DBSETTING_XSTATUSID, 0 );
 
 	if ( wParam < 1 || wParam > NUM_XMODES || !ServiceExists( MS_SKIN2_GETICONBYHANDLE ))
 		return 0;
 
 	if ( lParam & LR_SHARED )
-		return (int)ppro->GetXStatusIcon( wParam, LR_SHARED );
+		return (int)GetXStatusIcon( wParam, LR_SHARED );
 
-	return (int)ppro->GetXStatusIcon( wParam, 0 );
+	return (int)GetXStatusIcon( wParam, 0 );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -351,12 +352,12 @@ void overrideStr( TCHAR*& dest, const TCHAR* src, BOOL unicode, const TCHAR* def
 		dest = mir_tstrdup( def );
 }
 
-int JabberSetListeningTo( WPARAM wParam, LPARAM lParam, CJabberProto* ppro )
+int __cdecl CJabberProto::JabberSetListeningTo( WPARAM wParam, LPARAM lParam )
 {
 	LISTENINGTOINFO *cm = (LISTENINGTOINFO *)lParam;
 	if ( !cm || cm->cbSize != sizeof(LISTENINGTOINFO) ) {
-		ppro->JabberSendPepTune( NULL, NULL, NULL, NULL, NULL, NULL );
-		ppro->JDeleteSetting( NULL, "ListeningTo" );
+		JabberSendPepTune( NULL, NULL, NULL, NULL, NULL, NULL );
+		JDeleteSetting( NULL, "ListeningTo" );
 	}
 	else {
 		TCHAR *szArtist = NULL, *szLength = NULL, *szSource = NULL;
@@ -391,8 +392,8 @@ int JabberSetListeningTo( WPARAM wParam, LPARAM lParam, CJabberProto* ppro )
 			mir_sntprintf( szLengthInSec, SIZEOF( szLengthInSec ), _T("%d"), result );
 		}
 
-		ppro->JabberSendPepTune( szArtist, szLength ? szLengthInSec : NULL, szSource, szTitle, szTrack, NULL );
-		ppro->JabberSetContactTune( NULL, szArtist, szLength, szSource, szTitle, szTrack, NULL );
+		JabberSendPepTune( szArtist, szLength ? szLengthInSec : NULL, szSource, szTitle, szTrack, NULL );
+		JabberSetContactTune( NULL, szArtist, szLength, szSource, szTitle, szTrack, NULL );
 		
 		mir_free( szArtist );
 		mir_free( szLength );
@@ -406,9 +407,9 @@ int JabberSetListeningTo( WPARAM wParam, LPARAM lParam, CJabberProto* ppro )
 /////////////////////////////////////////////////////////////////////////////////////////
 // menuSetXStatus - a stub for status menus
 
-static int menuSetXStatus( WPARAM wParam, LPARAM lParam, LPARAM param )
+int __cdecl CJabberProto::menuSetXStatus( WPARAM wParam, LPARAM lParam, LPARAM param )
 {
-	//JabberSetXStatus( param, 0 );  !!!!!!!!!!!! FIXME
+	JabberSetXStatus( param, 0 );
 	return 0;
 }
 
@@ -437,7 +438,7 @@ int CJabberProto::CListMW_BuildStatusItems( WPARAM wParam, LPARAM lParam )
 		mir_snprintf( srvFce, sizeof(srvFce), "%s/menuXStatus%d", szProtoName, i );
 
 		if ( !bXStatusMenuBuilt )
-			CreateServiceFunctionParam( srvFce, menuSetXStatus, i );
+			JCreateServiceParam( srvFce, &CJabberProto::menuSetXStatus, i );
 
 		if ( i ) {
 			char szIcon[ MAX_PATH ];
@@ -665,24 +666,24 @@ static BOOL CALLBACK SetMoodMsgDlgProc( HWND hwndDlg, UINT message, WPARAM wPara
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberSetXStatus - sets the extended status info (mood)
 
-int JabberSetXStatus( WPARAM wParam, LPARAM lParam, CJabberProto* ppro )
+int __cdecl CJabberProto::JabberSetXStatus( WPARAM wParam, LPARAM lParam )
 {
-	if ( !ppro->jabberPepSupported || !ppro->jabberOnline || ( wParam > NUM_XMODES ))
+	if ( !jabberPepSupported || !jabberOnline || ( wParam > NUM_XMODES ))
 		return 0;
 
 	if ( !wParam ) {
-		ppro->JabberSendPepMood( 0, NULL );
-		ppro->JDeleteSetting( NULL, DBSETTING_XSTATUSMSG );
-		ppro->JDeleteSetting( NULL, DBSETTING_XSTATUSNAME );
-		ppro->JDeleteSetting( NULL, DBSETTING_XSTATUSID );
+		JabberSendPepMood( 0, NULL );
+		JDeleteSetting( NULL, DBSETTING_XSTATUSMSG );
+		JDeleteSetting( NULL, DBSETTING_XSTATUSNAME );
+		JDeleteSetting( NULL, DBSETTING_XSTATUSID );
 	}
 	else {
 		SetMoodMsgDlgProcParam* param = new SetMoodMsgDlgProcParam;
 		param->mood = wParam;
-		param->ppro = ppro;
+		param->ppro = this;
 		CreateDialogParam( hInst, MAKEINTRESOURCE(IDD_SETMOODMSG), NULL, SetMoodMsgDlgProc, ( LPARAM )param );
 	}
 
-	ppro->jabberXStatus = wParam;
+	jabberXStatus = wParam;
 	return wParam;
 }

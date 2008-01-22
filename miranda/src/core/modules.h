@@ -31,9 +31,14 @@ restructuring modules.c for performance.
 #define MAXMODULELABELLENGTH 64
 
 typedef int (*MIRANDAHOOK)(WPARAM,LPARAM);
-typedef int (*MIRANDAHOOKPARAM)(LPARAM,WPARAM,LPARAM);
+typedef int (*MIRANDAHOOKPARAM)(WPARAM,LPARAM,LPARAM);
+typedef int (*MIRANDAHOOKOBJ)(void*,WPARAM,LPARAM);
+typedef int (*MIRANDAHOOKOBJPARAM)(void*,WPARAM,LPARAM,LPARAM);
+
 typedef int (*MIRANDASERVICE)(WPARAM,LPARAM);
 typedef int (*MIRANDASERVICEPARAM)(WPARAM,LPARAM,LPARAM);
+typedef int (*MIRANDASERVICEOBJ)(void*,LPARAM,LPARAM);
+typedef int (*MIRANDASERVICEOBJPARAM)(void*,WPARAM,LPARAM,LPARAM);
 
 typedef struct
 {
@@ -43,8 +48,11 @@ typedef struct
 		struct {
 			union {
 				MIRANDAHOOK pfnHook;
-				MIRANDAHOOKPARAM pfnHookEx;
+				MIRANDAHOOKPARAM pfnHookParam;
+				MIRANDAHOOKOBJ pfnHookObj;
+				MIRANDAHOOKOBJPARAM pfnHookObjParam;
 			};
+			void* object;
 			LPARAM lParam;
 		};
 		struct {
@@ -142,6 +150,8 @@ for NotifyEventHooks() (see above)
 */
 HANDLE HookEvent(const char *name,MIRANDAHOOK hookProc);
 HANDLE HookEventParam(const char *name, MIRANDAHOOKPARAM hookProc, LPARAM lParam);
+HANDLE HookEventObj(const char *name,MIRANDAHOOKOBJ hookProc, void* object);
+HANDLE HookEventObjParam(const char *name, MIRANDAHOOKOBJPARAM hookProc, void* object, LPARAM lParam);
 
 /* HookEventMessage
 Works as for HookEvent(), except that when the notifier is called a message is
@@ -188,6 +198,20 @@ with the same function.
 added during 0.7+ (2007/04/24) 
 */
 HANDLE CreateServiceFunctionParam(const char *name,MIRANDASERVICEPARAM serviceProc,LPARAM lParam);
+
+/* CreateServiceFunctionObj
+   CreateServiceFunctionObjParam
+Same as CreateServiceFunction - adds new parameter, an object, to pass to service handler function.
+serviceProc is defined by the caller as
+  int ServiceProc(void* object, WPARAM wParam,LPARAM lParam[,LPARAM fnParam])
+where fnParam does not need to be publicly known. Gives the ability to handle multiple services
+with the same function.
+
+added during 0.7+ (2007/04/24) 
+*/
+
+HANDLE CreateServiceFunctionObj(const char *name,MIRANDASERVICEOBJ serviceProc,void* object);
+HANDLE CreateServiceFunctionObjParam(const char *name,MIRANDASERVICEOBJPARAM serviceProc,void* object,LPARAM lParam);
 
 /* DestroyServiceFunction
 Removes the function associated with hService from the global service function

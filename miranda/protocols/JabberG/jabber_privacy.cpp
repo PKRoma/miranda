@@ -2167,12 +2167,12 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 	return FALSE;
 }
 
-int JabberMenuHandlePrivacyLists( WPARAM wParam, LPARAM lParam, CJabberProto* ppro )
+int __cdecl CJabberProto::JabberMenuHandlePrivacyLists( WPARAM wParam, LPARAM lParam )
 {
-	if ( ppro->hwndPrivacyLists && IsWindow( ppro->hwndPrivacyLists ))
-		SetForegroundWindow( ppro->hwndPrivacyLists );
+	if ( hwndPrivacyLists && IsWindow( hwndPrivacyLists ))
+		SetForegroundWindow( hwndPrivacyLists );
 	else
-		CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_PRIVACY_LISTS ), NULL, JabberPrivacyListsDlgProc, ( LPARAM )ppro );
+		CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_PRIVACY_LISTS ), NULL, JabberPrivacyListsDlgProc, ( LPARAM )this );
 
 	return 0;
 }
@@ -2187,28 +2187,26 @@ void CJabberProto::QueryPrivacyLists()
 /////////////////////////////////////////////////////////////////////////////////////////
 // builds privacy menu
 
-static int menuSetPrivacyList( WPARAM wParam, LPARAM lParam, CJabberProto* ppro /*LPARAM iList*/ )
+int __cdecl CJabberProto::menuSetPrivacyList( WPARAM wParam, LPARAM lParam, LPARAM iList )
 {
-	LPARAM iList = 0; //!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	ppro->m_privacyListManager.Lock();
+	m_privacyListManager.Lock();
 	CPrivacyList *pList = NULL;
 
 	if (iList)
 	{
-		pList = ppro->m_privacyListManager.GetFirstList();
+		pList = m_privacyListManager.GetFirstList();
 		for (int i = 1; pList && (i < iList); ++i)
 			pList = pList->GetNext();
 	}
 
-	XmlNodeIq iq( ppro->m_iqManager.AddHandler( &CJabberProto::JabberIqResultPrivacyListActive, JABBER_IQ_TYPE_SET, NULL, 0, -1, pList ) );
+	XmlNodeIq iq( m_iqManager.AddHandler( &CJabberProto::JabberIqResultPrivacyListActive, JABBER_IQ_TYPE_SET, NULL, 0, -1, pList ) );
 	XmlNode* query = iq.addQuery( JABBER_FEAT_PRIVACY_LISTS );
 	XmlNode* active = query->addChild( "active" );
 	if ( pList )
 		active->addAttr( "name", pList->GetListName() );
-	ppro->m_privacyListManager.Unlock();
+	m_privacyListManager.Unlock();
 
-	ppro->jabberThreadInfo->send( iq );
-
+	jabberThreadInfo->send( iq );
 	return 0;
 }
 
@@ -2258,7 +2256,7 @@ int CJabberProto::OnBuildPrivacyMenu( WPARAM wParam, LPARAM lParam )
 
 	mir_snprintf( srvFce, sizeof(srvFce), "%s/menuPrivacy%d", szProtoName, i );
 	if ( i > serviceAllocated ) {
-		JCreateService( srvFce, menuSetPrivacyList /* i */ ); //!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		JCreateServiceParam( srvFce, &CJabberProto::menuSetPrivacyList, i );
 		serviceAllocated = i;
 	}
 	mi.position++;
@@ -2274,7 +2272,7 @@ int CJabberProto::OnBuildPrivacyMenu( WPARAM wParam, LPARAM lParam )
 		mir_snprintf( srvFce, sizeof(srvFce), "%s/menuPrivacy%d", szProtoName, i );
 
 		if ( i > serviceAllocated ) {
-			JCreateService( srvFce, menuSetPrivacyList /* i */ ); //!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+			JCreateServiceParam( srvFce, &CJabberProto::menuSetPrivacyList, i );
 			serviceAllocated = i;
 		}
 

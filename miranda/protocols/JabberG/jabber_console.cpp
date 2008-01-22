@@ -806,13 +806,12 @@ void CJabberProto::JabberConsoleUninit()
 	DeleteCriticalSection(&g_filterInfo.csPatternLock);
 }
 
-int JabberMenuHandleConsole(WPARAM wParam, LPARAM lParam, CJabberProto* ppro)
+int __cdecl CJabberProto::JabberMenuHandleConsole(WPARAM wParam, LPARAM lParam )
 {
-	HWND hwndJabberConsole = ppro->hwndJabberConsole;
-	if (hwndJabberConsole && IsWindow(hwndJabberConsole))
-		SetForegroundWindow(hwndJabberConsole);
+	if ( hwndJabberConsole && IsWindow( hwndJabberConsole ))
+		SetForegroundWindow( hwndJabberConsole );
 	else
-		if (ppro->hThreadConsole)
-			PostThreadMessage(ppro->sttJabberConsoleThreadId, WM_CREATECONSOLE, 0, 0);
+		if ( hThreadConsole )
+			PostThreadMessage( sttJabberConsoleThreadId, WM_CREATECONSOLE, 0, 0 );
 	return 0;
 }

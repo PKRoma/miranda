@@ -562,22 +562,22 @@ static BOOL CALLBACK JabberAdHoc_CommandDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 	return FALSE;
 }
 
-int JabberContactMenuRunCommands(WPARAM wParam, LPARAM lParam, CJabberProto* ppro)
+int __cdecl CJabberProto::JabberContactMenuRunCommands(WPARAM wParam, LPARAM lParam )
 {
 	HANDLE hContact;
 	DBVARIANT dbv;
-	int res=-1;
+	int res = -1;
 	JABBER_LIST_ITEM * item=NULL;
 	
-	if ((( hContact=( HANDLE ) wParam )!=NULL || (lParam!=0)) && ppro->jabberOnline ) {
-		if ( wParam && !ppro->JGetStringT( hContact, "jid", &dbv )) {
+	if ((( hContact=( HANDLE ) wParam )!=NULL || (lParam!=0)) && jabberOnline ) {
+		if ( wParam && !JGetStringT( hContact, "jid", &dbv )) {
 			TCHAR jid[ 512 ];
 			int selected = 0;
 			_tcsncpy(jid, dbv.ptszVal, SIZEOF(jid));
 
-			ppro->JabberListLock();
+			JabberListLock();
 			{
-				item = ppro->JabberListGetItemPtr( LIST_ROSTER, jid);
+				item = JabberListGetItemPtr( LIST_ROSTER, jid);
 				if (item)
 				{
 					if (item->resourceCount>1)
@@ -608,10 +608,10 @@ int JabberContactMenuRunCommands(WPARAM wParam, LPARAM lParam, CJabberProto* ppr
 					}
 				}
 			}
-			ppro->JabberListUnlock();
+			JabberListUnlock();
 
 			if (!item || selected) {
-				CJabberAdhocStartupParams* pStartupParams = new CJabberAdhocStartupParams( ppro, jid, NULL );
+				CJabberAdhocStartupParams* pStartupParams = new CJabberAdhocStartupParams( this, jid, NULL );
 				CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_FORM ), NULL, JabberAdHoc_CommandDlgProc, ( LPARAM )(pStartupParams) );
 			}
 			JFreeVariant( &dbv );

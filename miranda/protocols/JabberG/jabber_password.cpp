@@ -32,12 +32,12 @@ Last change by : $Author$
 
 static BOOL CALLBACK JabberChangePasswordDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
 
-int JabberMenuHandleChangePassword( WPARAM wParam, LPARAM lParam, CJabberProto* ppro )
+int __cdecl CJabberProto::JabberMenuHandleChangePassword( WPARAM wParam, LPARAM lParam )
 {
-	if ( IsWindow( ppro->hwndJabberChangePassword ))
-		SetForegroundWindow( ppro->hwndJabberChangePassword );
+	if ( IsWindow( hwndJabberChangePassword ))
+		SetForegroundWindow( hwndJabberChangePassword );
 	else
-		ppro->hwndJabberChangePassword = CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_CHANGEPASSWORD ), NULL, JabberChangePasswordDlgProc, ( LPARAM )ppro );
+		hwndJabberChangePassword = CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_CHANGEPASSWORD ), NULL, JabberChangePasswordDlgProc, ( LPARAM )this );
 
 	return 0;
 }
