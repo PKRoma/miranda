@@ -344,10 +344,6 @@ static CJabberProto* jabberProtoInit( const char* szProtoName, const TCHAR* tszU
 		return NULL;
 
 	ppro->tszUserName = mir_tstrdup( tszUserName );
-	ppro->szModuleName = mir_strdup( ppro->szProtoName );
-	_strlwr( ppro->szModuleName );
-	ppro->szModuleName[0] = toupper( ppro->szModuleName[0] );
-	ppro->JabberLog( "Setting protocol/module name to '%s/%s'", ppro->szProtoName, ppro->szModuleName );
 
 	ppro->JHookEvent( ME_SYSTEM_MODULESLOADED, &CJabberProto::OnModulesLoadedEx );
 

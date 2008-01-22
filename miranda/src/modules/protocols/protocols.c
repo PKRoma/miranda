@@ -338,29 +338,37 @@ int CallContactService( HANDLE hContact, const char *szProtoService, WPARAM wPar
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
+void UnloadAccountsModule()
+{
+	int i;
+	for( i=0; i < accounts.count; i++ ) {
+		PROTOACCOUNT* pa = accounts.items[ i ];
+		PROTOCOLDESCRIPTOR temp;
+		int idx;
+		if ( pa->ppro ) {
+			for ( idx = 0; idx < SIZEOF(pa->ppro->services); idx++ )
+				if ( pa->ppro->services[i] )
+					DestroyServiceFunction( pa->ppro->services[i] );
+		
+			temp.szName = accounts.items[i]->szModuleName;
+			if ( List_GetIndex(( SortedList* )&protos, &temp, &idx ))
+				if ( protos.items[idx]->fnUninit != NULL )
+					protos.items[idx]->fnUninit( pa->ppro );
+		}
+		mir_free( pa->tszAccountName );
+		mir_free( pa->szModuleName );
+		mir_free( pa->szProtoName );
+		mir_free( pa );
+	}
+	List_Destroy(( SortedList* )&accounts );
+}
+
 void UnloadProtocolsModule()
 {
 	int i;
 	if ( hAckEvent ) {
 		DestroyHookableEvent(hAckEvent);
 		hAckEvent = NULL;
-	}
-
-	if ( accounts.count ) {
-		for( i=0; i < accounts.count; i++ ) {
-			PROTOACCOUNT* pa = accounts.items[ i ];
-			int idx;
-			PROTOCOLDESCRIPTOR temp;
-			temp.szName = accounts.items[i]->szModuleName;
-			if ( List_GetIndex(( SortedList* )&protos, &temp, &idx ))
-				if ( protos.items[idx]->fnUninit != NULL )
-					protos.items[idx]->fnUninit( accounts.items[i]->ppro );
-			mir_free( pa->tszAccountName );
-			mir_free( pa->szModuleName );
-			mir_free( pa->szProtoName );
-			mir_free( pa );
-		}
-		List_Destroy(( SortedList* )&accounts );
 	}
 
 	if ( protos.count ) {

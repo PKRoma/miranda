@@ -525,7 +525,7 @@ void CJabberProto::JabberMenuInit()
 	mi.pszName = LPGEN("Commands");
 	mi.position = -1999901009;
 	mi.icolibItem = GetIconHandle( IDI_COMMAND );
-	hMenuCommands = ( HANDLE ) JCallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
+	hMenuCommands = ( HANDLE )JCallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 
 	// Resource selector
 	mi.pszName = LPGEN("Jabber Resource");
@@ -533,7 +533,7 @@ void CJabberProto::JabberMenuInit()
 	mi.pszPopupName = (char *)-1;
 	mi.flags |= CMIF_ROOTPOPUP;
 	mi.icolibItem = GetIconHandle( IDI_JABBER );
-	hMenuResourcesRoot = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
+	hMenuResourcesRoot = ( HANDLE )JCallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
 
 	mi.flags &= ~CMIF_ROOTPOPUP;
 	mi.flags |= CMIF_CHILDPOPUP;
@@ -544,7 +544,7 @@ void CJabberProto::JabberMenuInit()
 	mi.position = -1999901000;
 	mi.pszPopupName = (char *)hMenuResourcesRoot;
 	mi.icolibItem = GetIconHandle( IDI_JABBER );
-	hMenuResourcesActive = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
+	hMenuResourcesActive = ( HANDLE )CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
 
 	strcpy( tDest, "/UseResource_server" );
 	arServices.insert( CreateServiceFunctionParam( text, JabberMenuHandleResource, MENUITEM_SERVER ));

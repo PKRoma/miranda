@@ -35,19 +35,19 @@ static int MyCallProtoService( const char *szModule, const char *szService, WPAR
 }
 
 static HANDLE fnAddToList( PROTO_INTERFACE* ppi, int flags, PROTOSEARCHRESULT* psr )
-{	return ( HANDLE )MyCallProtoService( ppi->szPhysName, PS_ADDTOLIST, flags, (LPARAM)psr );
+{	return ( HANDLE )MyCallProtoService( ppi->szModuleName, PS_ADDTOLIST, flags, (LPARAM)psr );
 }
 
 static HANDLE fnAddToListByEvent( PROTO_INTERFACE* ppi, int flags, int iContact, HANDLE hDbEvent )
-{	return ( HANDLE )MyCallProtoService( ppi->szPhysName, PS_ADDTOLISTBYEVENT, MAKELONG(flags, iContact), (LPARAM)hDbEvent );
+{	return ( HANDLE )MyCallProtoService( ppi->szModuleName, PS_ADDTOLISTBYEVENT, MAKELONG(flags, iContact), (LPARAM)hDbEvent );
 }
 
 static int fnAuthorize( PROTO_INTERFACE* ppi, HANDLE hContact )
-{	return MyCallProtoService( ppi->szPhysName, PS_AUTHALLOW, (WPARAM)hContact, 0 );
+{	return MyCallProtoService( ppi->szModuleName, PS_AUTHALLOW, (WPARAM)hContact, 0 );
 }
 
 static int fnAuthDeny( PROTO_INTERFACE* ppi, HANDLE hContact, const char* szReason )
-{	return MyCallProtoService( ppi->szPhysName, PS_AUTHDENY, (WPARAM)hContact, (LPARAM)szReason );
+{	return MyCallProtoService( ppi->szModuleName, PS_AUTHDENY, (WPARAM)hContact, (LPARAM)szReason );
 }
 
 static int fnAuthRecv( PROTO_INTERFACE* ppi, HANDLE hContact, PROTORECVEVENT* evt )
@@ -61,7 +61,7 @@ static int fnAuthRequest( PROTO_INTERFACE* ppi, HANDLE hContact, const char* szM
 }
 
 static HANDLE fnChangeInfo( PROTO_INTERFACE* ppi, int iInfoType, void* pInfoData )
-{	return ( HANDLE )MyCallProtoService( ppi->szPhysName, PS_CHANGEINFO, iInfoType, ( LPARAM )pInfoData );
+{	return ( HANDLE )MyCallProtoService( ppi->szModuleName, PS_CHANGEINFO, iInfoType, ( LPARAM )pInfoData );
 }
 
 static int fnFileAllow( PROTO_INTERFACE* ppi, HANDLE hContact, HANDLE hTransfer, const char* szPath )
@@ -81,17 +81,17 @@ static int fnFileDeny( PROTO_INTERFACE* ppi, HANDLE hContact, HANDLE hTransfer, 
 
 static int fnFileResume( PROTO_INTERFACE* ppi, HANDLE hTransfer, int* action, const char** szFilename )
 {	PROTOFILERESUME pfr = { *action, *szFilename };
-	int res = MyCallProtoService( ppi->szPhysName, PS_FILERESUME, ( WPARAM )hTransfer, ( LPARAM )&pfr );
+	int res = MyCallProtoService( ppi->szModuleName, PS_FILERESUME, ( WPARAM )hTransfer, ( LPARAM )&pfr );
 	*action = pfr.action; *szFilename = pfr.szFilename;
 	return res;
 }
 
 static int fnGetCaps( PROTO_INTERFACE* ppi, int type )
-{	return MyCallProtoService( ppi->szPhysName, PS_GETCAPS, type, 0 );
+{	return MyCallProtoService( ppi->szModuleName, PS_GETCAPS, type, 0 );
 }
 
 static HICON fnGetIcon( PROTO_INTERFACE* ppi, int iconIndex )
-{	return ( HICON )MyCallProtoService( ppi->szPhysName, PS_LOADICON, iconIndex, 0 );
+{	return ( HICON )MyCallProtoService( ppi->szModuleName, PS_LOADICON, iconIndex, 0 );
 }
 
 static int fnGetInfo( PROTO_INTERFACE* ppi, HANDLE hContact, int flags )
@@ -100,11 +100,11 @@ static int fnGetInfo( PROTO_INTERFACE* ppi, HANDLE hContact, int flags )
 }
 
 static HANDLE fnSearchBasic( PROTO_INTERFACE* ppi, const char* id )
-{	return ( HANDLE )MyCallProtoService( ppi->szPhysName, PS_BASICSEARCH, 0, ( LPARAM )id );
+{	return ( HANDLE )MyCallProtoService( ppi->szModuleName, PS_BASICSEARCH, 0, ( LPARAM )id );
 }
 
 static HANDLE fnSearchByEmail( PROTO_INTERFACE* ppi, const char* email )
-{	return ( HANDLE )MyCallProtoService( ppi->szPhysName, PS_SEARCHBYEMAIL, 0, ( LPARAM )email );
+{	return ( HANDLE )MyCallProtoService( ppi->szModuleName, PS_SEARCHBYEMAIL, 0, ( LPARAM )email );
 }
 
 static HANDLE fnSearchByName( PROTO_INTERFACE* ppi, const char* nick, const char* firstName, const char* lastName )
@@ -112,15 +112,15 @@ static HANDLE fnSearchByName( PROTO_INTERFACE* ppi, const char* nick, const char
 	psn.pszNick = ( char* )nick;
 	psn.pszFirstName = ( char* )firstName;
 	psn.pszLastName = ( char* )lastName;
-	return ( HANDLE )MyCallProtoService( ppi->szPhysName, PS_SEARCHBYNAME, 0, ( LPARAM )&psn );
+	return ( HANDLE )MyCallProtoService( ppi->szModuleName, PS_SEARCHBYNAME, 0, ( LPARAM )&psn );
 }
 
 static HWND fnSearchAdvanced( PROTO_INTERFACE* ppi, HWND owner )
-{	return ( HWND )MyCallProtoService( ppi->szPhysName, PS_SEARCHBYADVANCED, 0, ( LPARAM )owner );
+{	return ( HWND )MyCallProtoService( ppi->szModuleName, PS_SEARCHBYADVANCED, 0, ( LPARAM )owner );
 }
 
 static HWND fnCreateExtendedSearchUI( PROTO_INTERFACE* ppi, HWND owner )
-{	return ( HWND )MyCallProtoService( ppi->szPhysName, PS_CREATEADVSEARCHUI, 0, ( LPARAM )owner );
+{	return ( HWND )MyCallProtoService( ppi->szModuleName, PS_CREATEADVSEARCHUI, 0, ( LPARAM )owner );
 }
 
 static int fnRecvContacts( PROTO_INTERFACE* ppi, HANDLE hContact, PROTORECVEVENT* evt )
@@ -169,7 +169,7 @@ static int fnSetApparentMode( PROTO_INTERFACE* ppi, HANDLE hContact, int mode )
 }
 
 static int fnSetStatus( PROTO_INTERFACE* ppi, int iNewStatus )
-{	return MyCallProtoService( ppi->szPhysName, PS_SETSTATUS, iNewStatus, 0 );
+{	return MyCallProtoService( ppi->szModuleName, PS_SETSTATUS, iNewStatus, 0 );
 }
 
 static int fnGetAwayMsg( PROTO_INTERFACE* ppi, HANDLE hContact )
@@ -188,7 +188,7 @@ static int fnSendAwayMsg( PROTO_INTERFACE* ppi, HANDLE hContact, HANDLE hProcess
 }
 
 static int fnSetAwayMsg( PROTO_INTERFACE* ppi, int iStatus, const char* msg )
-{	return MyCallProtoService( ppi->szPhysName, PS_SETAWAYMSG, iStatus, ( LPARAM )msg );
+{	return MyCallProtoService( ppi->szModuleName, PS_SETAWAYMSG, iStatus, ( LPARAM )msg );
 }
 
 static int fnUserIsTyping( PROTO_INTERFACE* ppi, HANDLE hContact, int type )
@@ -207,7 +207,7 @@ PROTO_INTERFACE* AddDefaultAccount( const char* szProtoName )
 		memset( ppi, 0, sizeof( PROTO_INTERFACE ));
 		ppi->iVersion = 1;
 		ppi->bOldProto = TRUE;
-		ppi->szPhysName = mir_strdup( szProtoName );
+		ppi->szModuleName = mir_strdup( szProtoName );
 		ppi->szProtoName = mir_strdup( szProtoName );
 		ppi->tszUserName = mir_a2t( szProtoName );
 
@@ -252,7 +252,7 @@ PROTO_INTERFACE* AddDefaultAccount( const char* szProtoName )
 
 int FreeDefaultAccount( PROTO_INTERFACE* ppi )
 {
-	mir_free( ppi->szPhysName );
+	mir_free( ppi->szModuleName );
 	mir_free( ppi->szProtoName );
 	mir_free( ppi->tszUserName );
 	return 0;

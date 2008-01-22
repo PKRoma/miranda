@@ -45,6 +45,7 @@ void UninitSkinSounds(void);
 int UninitSkinHotkeys(void);
 void UnloadNetlibModule(void);
 void UnloadProtocolsModule(void);
+void UnloadAccountsModule(void);
 
 HINSTANCE GetInstByAddress( void* codePtr );
 
@@ -410,6 +411,7 @@ static DWORD MsgWaitForMultipleObjectsExWorkaround(DWORD nCount, const HANDLE *p
 
 static int SystemShutdownProc(WPARAM wParam,LPARAM lParam)
 {
+	UnloadAccountsModule();
 	UnloadNewPlugins();
 	UnloadProtocolsModule();
 

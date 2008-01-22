@@ -89,9 +89,9 @@ typedef struct tagPROTO_INTERFACE
 			 iVersion;
 	BOOL	 bOldProto;
 	TCHAR* tszUserName;
-	char*  szPhysName;
 	char*  szProtoName;
 	char*  szModuleName;
+	HANDLE services[ 20 ];
 
 	DWORD  reserved[ 40 ];
 

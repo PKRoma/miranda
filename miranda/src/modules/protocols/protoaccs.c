@@ -157,12 +157,82 @@ void WriteDbAccounts()
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
+static int stub1( WPARAM wParam, LPARAM lParam, PROTO_INTERFACE* ppi )
+{	return ( int )ppi->vtbl->AddToList( ppi, wParam, (PROTOSEARCHRESULT*)lParam );
+}
+
+static int stub2( WPARAM wParam, LPARAM lParam, PROTO_INTERFACE* ppi )
+{	return ( int )ppi->vtbl->AddToListByEvent( ppi, HIWORD(wParam), LOWORD(wParam), (HANDLE)lParam );
+}
+
+static int stub3( WPARAM wParam, LPARAM lParam, PROTO_INTERFACE* ppi )
+{	return ( int )ppi->vtbl->Authorize( ppi, ( HANDLE )wParam );
+}
+
+static int stub4( WPARAM wParam, LPARAM lParam, PROTO_INTERFACE* ppi )
+{	return ( int )ppi->vtbl->AuthDeny( ppi, ( HANDLE )wParam, ( const char* )lParam );
+}
+
+static int stub7( WPARAM wParam, LPARAM lParam, PROTO_INTERFACE* ppi )
+{	return ( int )ppi->vtbl->ChangeInfo( ppi, wParam, ( void* )lParam );
+}
+
+static int stub11( WPARAM wParam, LPARAM lParam, PROTO_INTERFACE* ppi )
+{	PROTOFILERESUME* pfr = ( PROTOFILERESUME* )lParam;
+	return ( int )ppi->vtbl->FileResume( ppi, ( HANDLE )wParam, &pfr->action, &pfr->szFilename );
+}
+
+static int stub12( WPARAM wParam, LPARAM lParam, PROTO_INTERFACE* ppi )
+{	return ( int )ppi->vtbl->GetCaps( ppi, wParam );
+}
+
+static int stub13( WPARAM wParam, LPARAM lParam, PROTO_INTERFACE* ppi )
+{	return ( int )ppi->vtbl->GetIcon( ppi, wParam );
+}
+
+static int stub15( WPARAM wParam, LPARAM lParam, PROTO_INTERFACE* ppi )
+{	return ( int )ppi->vtbl->SearchBasic( ppi, ( char* )lParam );
+}
+
+static int stub16( WPARAM wParam, LPARAM lParam, PROTO_INTERFACE* ppi )
+{	return ( int )ppi->vtbl->SearchByEmail( ppi, ( char* )lParam );
+}
+
+static int stub17( WPARAM wParam, LPARAM lParam, PROTO_INTERFACE* ppi )
+{	PROTOSEARCHBYNAME* psbn = ( PROTOSEARCHBYNAME* )lParam;
+	return ( int )ppi->vtbl->SearchByName( ppi, psbn->pszNick, psbn->pszFirstName, psbn->pszLastName );
+}
+
+static int stub18( WPARAM wParam, LPARAM lParam, PROTO_INTERFACE* ppi )
+{	return ( int )ppi->vtbl->SearchAdvanced( ppi, ( HWND )lParam );
+}
+
+static int stub19( WPARAM wParam, LPARAM lParam, PROTO_INTERFACE* ppi )
+{	return ( int )ppi->vtbl->CreateExtendedSearchUI ( ppi, ( HWND )lParam );
+}
+
+static int stub29( WPARAM wParam, LPARAM lParam, PROTO_INTERFACE* ppi )
+{	return ( int )ppi->vtbl->SetStatus( ppi, wParam );
+}
+
+static int stub33( WPARAM wParam, LPARAM lParam, PROTO_INTERFACE* ppi )
+{	return ( int )ppi->vtbl->SetAwayMsg( ppi, wParam, ( const char* )lParam );
+}
+
+static HANDLE CreateProtoServiceEx( const char* szModule, const char* szService, MIRANDASERVICEPARAM pFunc, void* param )
+{
+	char tmp[100];
+	mir_snprintf( tmp, sizeof( tmp ), "%s%s", szModule, szService );
+	return CreateServiceFunctionParam( tmp, pFunc, ( LPARAM )param );
+}
+
 int LoadAccountsModule( void )
 {
 	int i;
 	for ( i = 0; i < accounts.count; i++ ) {
 		PROTOCOLDESCRIPTOR* ppd;
 		PROTOACCOUNT* pa = accounts.items[i];
+		PROTO_INTERFACE* ppi;
 		if ( pa->ppro != NULL )
 			continue;
 
@@ -176,7 +246,26 @@ int LoadAccountsModule( void )
 			continue;
 		}
 
-		pa->ppro = ppd->fnInit( pa->szModuleName, pa->tszAccountName );
+		ppi = ppd->fnInit( pa->szModuleName, pa->tszAccountName );
+		if ( ppi != NULL ) {
+			pa->ppro = ppi;
+			ppi->services[0] = CreateProtoServiceEx( pa->szModuleName, PS_ADDTOLIST, (MIRANDASERVICEPARAM)stub1, pa->ppro );
+			ppi->services[1] = CreateProtoServiceEx( pa->szModuleName, PS_ADDTOLISTBYEVENT, (MIRANDASERVICEPARAM)stub2, pa->ppro );
+			ppi->services[2] = CreateProtoServiceEx( pa->szModuleName, PS_AUTHALLOW, (MIRANDASERVICEPARAM)stub3, pa->ppro );
+			ppi->services[3] = CreateProtoServiceEx( pa->szModuleName, PS_AUTHDENY, (MIRANDASERVICEPARAM)stub4, pa->ppro );
+			ppi->services[4] = CreateProtoServiceEx( pa->szModuleName, PS_CHANGEINFO, (MIRANDASERVICEPARAM)stub7, pa->ppro );
+			ppi->services[5] = CreateProtoServiceEx( pa->szModuleName, PS_FILERESUME, (MIRANDASERVICEPARAM)stub11, pa->ppro );
+			ppi->services[6] = CreateProtoServiceEx( pa->szModuleName, PS_GETCAPS, (MIRANDASERVICEPARAM)stub12, pa->ppro );
+			ppi->services[7] = CreateProtoServiceEx( pa->szModuleName, PS_LOADICON, (MIRANDASERVICEPARAM)stub13, pa->ppro );
+			ppi->services[8] = CreateProtoServiceEx( pa->szModuleName, PS_BASICSEARCH, (MIRANDASERVICEPARAM)stub15, pa->ppro );
+			ppi->services[9] = CreateProtoServiceEx( pa->szModuleName, PS_SEARCHBYEMAIL, (MIRANDASERVICEPARAM)stub16, pa->ppro );
+			ppi->services[10] = CreateProtoServiceEx( pa->szModuleName, PS_SEARCHBYNAME, (MIRANDASERVICEPARAM)stub17, pa->ppro );
+			ppi->services[11] = CreateProtoServiceEx( pa->szModuleName, PS_SEARCHBYADVANCED, (MIRANDASERVICEPARAM)stub18, pa->ppro );
+			ppi->services[12] = CreateProtoServiceEx( pa->szModuleName, PS_CREATEADVSEARCHUI, (MIRANDASERVICEPARAM)stub19, pa->ppro );
+			ppi->services[13] = CreateProtoServiceEx( pa->szModuleName, PS_SETSTATUS, (MIRANDASERVICEPARAM)stub29, pa->ppro );
+			ppi->services[14] = CreateProtoServiceEx( pa->szModuleName, PS_SETAWAYMSG, (MIRANDASERVICEPARAM)stub33, pa->ppro );
+		}
+		else pa->bIsEnabled = FALSE;
 	}
 
 	return 0;

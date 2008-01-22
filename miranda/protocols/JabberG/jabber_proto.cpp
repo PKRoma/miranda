@@ -77,6 +77,10 @@ CJabberProto::CJabberProto( const char* aProtoName ) :
 	InitializeCriticalSection( &csLists );
 
 	szProtoName = mir_strdup( aProtoName );
+	szModuleName = mir_strdup( szProtoName );
+	_strlwr( szModuleName );
+	szModuleName[0] = toupper( szModuleName[0] );
+	JabberLog( "Setting protocol/module name to '%s/%s'", szProtoName, szModuleName );
 
 	// Protocol services and events...
 	heventNudge = JCreateHookableEvent( JE_NUDGE );
