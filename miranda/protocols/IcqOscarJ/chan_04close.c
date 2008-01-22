@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 //
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -90,7 +90,7 @@ void handleCloseChannel(unsigned char *buf, WORD datalen, serverthread_info *inf
     disposeChain(&chain);
   }
   // Server closed connection on error, or sign off
-  NetLib_SafeCloseHandle(&hServerConn, TRUE);
+  NetLib_CloseConnection(&hServerConn, TRUE);
 }
 
 
@@ -105,7 +105,7 @@ void handleLoginReply(unsigned char *buf, WORD datalen, serverthread_info *info)
   if (!(chain = readIntoTLVChain(&buf, datalen, 0)))
   {
     NetLog_Server("Error: Missing chain on close channel");
-    NetLib_SafeCloseHandle(&hServerConn, TRUE);
+    NetLib_CloseConnection(&hServerConn, TRUE);
     return; // Invalid data
   }
 
@@ -120,7 +120,7 @@ void handleLoginReply(unsigned char *buf, WORD datalen, serverthread_info *info)
     {
       disposeChain(&chain);
       SetCurrentStatus(ID_STATUS_OFFLINE);
-      NetLib_SafeCloseHandle(&hServerConn, TRUE);
+      NetLib_CloseConnection(&hServerConn, TRUE);
       return; // Failure
     }
   }
@@ -143,7 +143,7 @@ void handleLoginReply(unsigned char *buf, WORD datalen, serverthread_info *info)
     info->cookieDataLen = 0;
 
     SetCurrentStatus(ID_STATUS_OFFLINE);
-    NetLib_SafeCloseHandle(&hServerConn, TRUE);
+    NetLib_CloseConnection(&hServerConn, TRUE);
     return; // Failure
   }
 
@@ -163,7 +163,7 @@ static int connectNewServer(serverthread_info *info)
 
   if (!gbGatewayMode)
   { // close connection only if not in gateway mode
-    NetLib_SafeCloseHandle(&hServerConn, TRUE);
+    NetLib_CloseConnection(&hServerConn, TRUE);
   }
 
   /* Get the ip and port */
@@ -177,7 +177,7 @@ static int connectNewServer(serverthread_info *info)
   if (!gbGatewayMode)
   {
     { /* Time to release packet receiver, connection already closed */
-      NetLib_SafeCloseHandle(&info->hPacketRecver, FALSE);
+      NetLib_SafeCloseHandle(&info->hPacketRecver);
 
       NetLog_Server("Closed connection to login server");
     }

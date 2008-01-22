@@ -120,7 +120,8 @@ void* __fastcall SAFE_REALLOC(void* p, size_t size);
 
 HANDLE NetLib_OpenConnection(HANDLE hUser, const char* szIdent, NETLIBOPENCONNECTION* nloc);
 HANDLE NetLib_BindPort(NETLIBNEWCONNECTIONPROC_V2 pFunc, void* lParam, WORD* pwPort, DWORD* pdwIntIP);
-void NetLib_SafeCloseHandle(HANDLE *hConnection, int bServerConn);
+void NetLib_CloseConnection(HANDLE *hConnection, int bServerConn);
+void NetLib_SafeCloseHandle(HANDLE *hConnection);
 int NetLog_Server(const char *fmt,...);
 int NetLog_Direct(const char *fmt,...);
 int NetLog_Uni(BOOL bDC, const char *fmt,...);

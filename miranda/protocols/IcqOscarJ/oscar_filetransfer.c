@@ -435,7 +435,7 @@ void ReleaseOscarListener(oscar_listener **pListener)
   if (listener)
   { // Close listening port
     if (listener->hBoundPort)
-      NetLib_SafeCloseHandle(&listener->hBoundPort, FALSE);
+      NetLib_SafeCloseHandle(&listener->hBoundPort);
 
     NetLog_Direct("Oscar listener on port %d released.", listener->wPort);
   }
@@ -1263,7 +1263,7 @@ void CloseOscarConnection(oscar_connection *oc)
 
     if (oc->hConnection)
     { // we need this for Netlib handle consistency
-      NetLib_SafeCloseHandle(&oc->hConnection, FALSE);
+      NetLib_CloseConnection(&oc->hConnection, FALSE);
     }
   }
   LeaveCriticalSection(&oftMutex);
@@ -1607,7 +1607,7 @@ static DWORD __stdcall oft_connectionThread(oscarthreadstartinfo *otsi)
 
   // End of packet receiving loop
 
-  NetLib_SafeCloseHandle(&hPacketRecver, FALSE);
+  NetLib_SafeCloseHandle(&hPacketRecver);
 
   CloseOscarConnection(&oc);
 

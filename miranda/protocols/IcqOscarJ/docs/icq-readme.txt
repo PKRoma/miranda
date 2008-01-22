@@ -61,7 +61,8 @@ _______
 0.3.10 Development
 
 Bugfixes:
-  Do not lose server-list contacts due to too long nicknames
+  Do not lose server-list contacts due to too long nicknames/comments
+  Fixed receiving of multi-part messages (only first part was received)
 
 Improvements:
   URL events are now received as normal messages
@@ -70,6 +71,9 @@ Improvements:
 
 
 0.3.9.5
+
+Bugfixes:
+  Fixed connection problems with many contacts in server-list
 
 Improvements:
   Use new offline messages protocol (supports unicode)

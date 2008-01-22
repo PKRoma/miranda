@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -411,7 +411,7 @@ void StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen) // called fro
   if (atsi && atsi->pendingLogin) // this is not safe...
   {
     NetLog_Server("Avatar, Multiple start thread attempt, ignored.");
-    NetLib_SafeCloseHandle(&hConn, FALSE);
+    NetLib_CloseConnection(&hConn, FALSE);
     SAFE_FREE(&cookie);
     return;
   }
@@ -1040,9 +1040,9 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
         LeaveCriticalSection(&cookieMutex);
       }
     }
-    NetLib_SafeCloseHandle(&atsi->hAvatarPacketRecver, FALSE); // Close the packet receiver 
+    NetLib_SafeCloseHandle(&atsi->hAvatarPacketRecver); // Close the packet receiver 
   }
-  NetLib_SafeCloseHandle(&atsi->hConnection, FALSE); // Close the connection
+  NetLib_CloseConnection(&atsi->hConnection, FALSE); // Close the connection
 
   // release rates
   ratesRelease(&atsi->rates);

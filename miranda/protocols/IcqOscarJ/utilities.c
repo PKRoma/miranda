@@ -1406,13 +1406,28 @@ HANDLE NetLib_BindPort(NETLIBNEWCONNECTIONPROC_V2 pFunc, void* lParam, WORD* pwP
 
 
 
-void NetLib_SafeCloseHandle(HANDLE *hConnection, int bServerConn)
+void NetLib_CloseConnection(HANDLE *hConnection, int bServerConn)
+{
+  if (*hConnection)
+  {
+    int sck = CallService(MS_NETLIB_GETSOCKET, (WPARAM)*hConnection, (LPARAM)0);
+
+    if (sck!=INVALID_SOCKET) shutdown(sck, 2); // close gracefully
+
+    NetLib_SafeCloseHandle(hConnection);
+
+    if (bServerConn)
+      FreeGatewayIndex(*hConnection);
+  }
+}
+
+
+
+void NetLib_SafeCloseHandle(HANDLE *hConnection)
 {
   if (*hConnection)
   {
     Netlib_CloseHandle(*hConnection);
-    if (bServerConn)
-      FreeGatewayIndex(*hConnection);
     *hConnection = NULL;
   }
 }

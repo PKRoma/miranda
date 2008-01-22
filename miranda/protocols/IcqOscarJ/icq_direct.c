@@ -123,11 +123,9 @@ void CloseContactDirectConns(HANDLE hContact)
     if (!hContact || directConnList[i]->hContact == hContact)
     {
       HANDLE hConnection = directConnList[i]->hConnection;
-      int sck = CallService(MS_NETLIB_GETSOCKET, (WPARAM)hConnection, 0);
 
       directConnList[i]->hConnection = NULL; // do not allow reuse
-      if (sck!=INVALID_SOCKET) shutdown(sck, 2); // close gracefully
-      NetLib_SafeCloseHandle(&hConnection, FALSE);
+      NetLib_CloseConnection(&hConnection, FALSE);
     }
   }
 
@@ -365,7 +363,7 @@ void CloseDirectConnection(directconnect *dc)
 {
   EnterCriticalSection(&directConnListMutex);
 
-  NetLib_SafeCloseHandle(&dc->hConnection, FALSE);
+  NetLib_CloseConnection(&dc->hConnection, FALSE);
 #ifdef _DEBUG
   if (dc->hConnection)
     NetLog_Direct("Direct conn closed (%p)", dc->hConnection);
@@ -699,7 +697,7 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
 
   // End of packet receiving loop
 
-  NetLib_SafeCloseHandle(&hPacketRecver, FALSE);
+  NetLib_SafeCloseHandle(&hPacketRecver);
   CloseDirectConnection(&dc);
 
   if (dc.ft)

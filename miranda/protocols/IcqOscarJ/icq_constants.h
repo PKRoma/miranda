@@ -549,7 +549,7 @@
 
 
 // Internal Constants
-#define ICQ_PLUG_VERSION            0x80030A09
+#define ICQ_PLUG_VERSION            0x80030A0A
 #define ICQ_VERSION                 8         // Protocol version
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_CONTACTSSEND            15
