@@ -3,8 +3,8 @@
 !include "WinVer.nsh"
 
 !define MIM_NAME                "Miranda IM"
-!define MIM_VERSION             "0.7.2"
-;!define MIM_PREVIEW             "1" ; comment out for final build
+!define MIM_VERSION             "0.7.4"
+!define MIM_PREVIEW             "1" ; comment out for final build
 
 !define MIM_BUILD_UNICODE
 
