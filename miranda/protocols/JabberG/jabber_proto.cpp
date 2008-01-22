@@ -133,6 +133,7 @@ CJabberProto::~CJabberProto()
 	JabberSerialUninit();
 	JabberConsoleUninit();
 	JabberSslUninit();
+	JabberMenuUninit();
 
 	DestroyHookableEvent( heventNudge );
 	DestroyHookableEvent( heventRawXMLIn );

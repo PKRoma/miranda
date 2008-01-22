@@ -41,9 +41,6 @@ Last change by : $Author$
 /////////////////////////////////////////////////////////////////////////////////////////
 // module data
 
-static int    nMenuResourceItems = 0;
-static HANDLE *hMenuResourceItems = NULL;
-
 #define MENUITEM_LASTSEEN	1
 #define MENUITEM_SERVER		2
 #define MENUITEM_RESOURCES	10
@@ -66,7 +63,7 @@ static void sttEnableMenuItem( HANDLE hMenuItem, BOOL bEnable )
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuItem, ( LPARAM )&clmi );
 }
 
-int CJabberProto::JabberMenuPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
+int CJabberProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
 {
 	sttEnableMenuItem( hMenuRequestAuth, FALSE );
 	sttEnableMenuItem( hMenuGrantAuth, FALSE );
@@ -428,7 +425,6 @@ int JabberMenuBookmarkAdd( WPARAM wParam, LPARAM lParam, CJabberProto* ppro )
 	return 0;
 }
 
-
 /////////////////////////////////////////////////////////////////////////////////////////
 // contact menu initialization code
 
@@ -744,7 +740,7 @@ int CJabberProto::OnModernToolbarInit(WPARAM, LPARAM)
 	return 0;
 }
 
-void JabberMenuUninit()
+void CJabberProto::JabberMenuUninit()
 {
 	mir_free(hMenuResourceItems);
 	hMenuResourceItems = NULL;
@@ -807,7 +803,7 @@ void CJabberProto::JabberMenuUpdateSrmmIcon(JABBER_LIST_ITEM *item)
 	CallService(MS_MSG_MODIFYICON, (WPARAM)hContact, (LPARAM)&sid);
 }
 
-int CJabberProto::JabberMenuProcessSrmmEvent( WPARAM wParam, LPARAM lParam )
+int CJabberProto::OnProcessSrmmEvent( WPARAM wParam, LPARAM lParam )
 {
 	MessageWindowEventData *event = (MessageWindowEventData *)lParam;
 
@@ -855,7 +851,7 @@ int CJabberProto::JabberMenuProcessSrmmEvent( WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
-int CJabberProto::JabberMenuProcessSrmmIconClick( WPARAM wParam, LPARAM lParam )
+int CJabberProto::OnProcessSrmmIconClick( WPARAM wParam, LPARAM lParam )
 {
 	StatusIconClickData *sicd = (StatusIconClickData *)lParam;
 	if (lstrcmpA(sicd->szModule, szProtoName))

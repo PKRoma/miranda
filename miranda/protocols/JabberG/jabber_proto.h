@@ -144,7 +144,10 @@ struct CJabberProto : public PROTO_INTERFACE
 	int  __cdecl OnModulesLoadedEx( WPARAM, LPARAM );
 	int  __cdecl OnOptionsInit( WPARAM, LPARAM );
 	int  __cdecl OnPreShutdown( WPARAM, LPARAM );
+	int  __cdecl OnPrebuildContactMenu( WPARAM, LPARAM );
 	int  __cdecl OnMsgUserTyping( WPARAM, LPARAM );
+	int  __cdecl OnProcessSrmmIconClick( WPARAM, LPARAM );
+	int  __cdecl OnProcessSrmmEvent( WPARAM, LPARAM );
 	int  __cdecl OnReloadIcons( WPARAM, LPARAM );
 	void __cdecl OnRenameContact( DBCONTACTWRITESETTING* cws, HANDLE hContact );
 	void __cdecl OnRenameGroup( DBCONTACTWRITESETTING* cws, HANDLE hContact );
@@ -294,67 +297,250 @@ struct CJabberProto : public PROTO_INTERFACE
 	* Function declarations
 	*******************************************************************/
 
-	void JabberUpdateDialogs( BOOL bEnable );
+	void   JabberUpdateDialogs( BOOL bEnable );
 
-	//---- jabber_proto.cpp ---------------------------------------------
-	HANDLE AddToListByJID( const TCHAR* newJid, DWORD flags );
+	//---- jabber_adhoc.cpp --------------------------------------------------------------
 
-	//---- jabber_chat.cpp ----------------------------------------------
-	void JabberGcLogCreate( JABBER_LIST_ITEM* item );
-	void JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, TCHAR* nick, TCHAR* jid, int action, XmlNode* reason, int nStatusCode = -1 );
-	void JabberGcLogShowInformation( JABBER_LIST_ITEM *item, JABBER_RESOURCE_STATUS *user, enum TJabberGcLogInfoType type );
-	void JabberGcQuit( JABBER_LIST_ITEM* jid, int code, XmlNode* reason );
+	HWND   sttGetWindowFromIq( XmlNode *iqNode );
+	void   JabberHandleAdhocCommandRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
+	BOOL   IsRcRequestAllowedByACL( CJabberIqInfo* pInfo );
+		  
+	int    JabberAdhocSetStatusHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
+	int    JabberAdhocOptionsHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
+	int    JabberAdhocForwardHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
+	int    JabberAdhocLockWSHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
+	int    JabberAdhocQuitMirandaHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
+		  
+	void   JabberIqResult_ListOfCommands( XmlNode *iqNode, void *userdata );
+	void   JabberIqResult_CommandExecution( XmlNode *iqNode, void *userdata );
+	int    JabberAdHoc_RequestListOfCommands( TCHAR * szResponder, HWND hwndDlg );
+	int    JabberAdHoc_ExecuteCommand( HWND hwndDlg, TCHAR * jid, struct JabberAdHocData* dat );
+	int    JabberAdHoc_SubmitCommandForm(HWND hwndDlg, JabberAdHocData * dat, char * action);
+	int    JabberAdHoc_AddCommandRadio(HWND hFrame, TCHAR * labelStr, int id, int ypos, int value);
+	int    JabberAdHoc_OnJAHMCommandListResult( HWND hwndDlg, XmlNode * iqNode, JabberAdHocData* dat );
+	int    JabberAdHoc_OnJAHMProcessResult( HWND hwndDlg, XmlNode *workNode, JabberAdHocData* dat );
 
-	void FilterList(HWND hwndList);
-	void ResetListOptions(HWND hwndList);
-	void InviteUser(TCHAR *room, TCHAR *pUser, TCHAR *text);
-
-	void JabberAdminSet( const TCHAR* to, const char* ns, const char* szItem, const TCHAR* itemVal, const char* var, const TCHAR* varVal );
-	void JabberAdminGet( const TCHAR* to, const char* ns, const char* var, const TCHAR* varVal, JABBER_IQ_PFUNC foo );
-	void JabberAddMucListItem( JABBER_MUC_JIDLIST_INFO* jidListInfo, TCHAR* str );
-	void JabberDeleteMucListItem( JABBER_MUC_JIDLIST_INFO* jidListInfo, TCHAR* jid );
-
-	//---- jabber_form.c ------------------------------------------------
-
-	void JabberFormCreateDialog( XmlNode *xNode, TCHAR* defTitle, JABBER_FORM_SUBMIT_FUNC pfnSubmit, void *userdata );
+	void   JabberContactMenuAdhocCommands( struct CJabberAdhocStartupParams* param );
 	
-	//---- jabber_ft.c --------------------------------------------------
+	//---- jabber_bookmarks.c ------------------------------------------------------------
 
-	void JabberFtCancel( filetransfer* ft );
-	void JabberFtInitiate( TCHAR* jid, filetransfer* ft );
-	void JabberFtHandleSiRequest( XmlNode *iqNode );
-	void JabberFtAcceptSiRequest( filetransfer* ft );
-	void JabberFtAcceptIbbRequest( filetransfer* ft );
-	void JabberFtHandleBytestreamRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
-	BOOL JabberFtHandleIbbRequest( XmlNode *iqNode, BOOL bOpen );
-	void JabberFileReceiveThread( filetransfer* ft );
-	void JabberFileServerThread( filetransfer* ft );
+	int    JabberAddEditBookmark( JABBER_LIST_ITEM* item );
+
+	//---- jabber_byte.c -----------------------------------------------------------------
+
+	void   JabberByteSendThread( JABBER_BYTE_TRANSFER *jbt );
+	void   JabberByteReceiveThread( JABBER_BYTE_TRANSFER *jbt );
+	void   JabberIqResultProxyDiscovery( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
+	void   JabberByteInitiateResult( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo );
+	void   JabberByteSendViaProxy( JABBER_BYTE_TRANSFER *jbt );
+	int    JabberByteSendParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char* buffer, int datalen );
+	void   JabberIqResultStreamActivate( XmlNode* iqNode, void* userdata );
+	int    JabberByteReceiveParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char* buffer, int datalen );
+	int    JabberByteSendProxyParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char* buffer, int datalen );
+
+	//---- jabber_caps.cpp ---------------------------------------------------------------
+
+	JabberCapsBits JabberGetTotalJidCapabilites( TCHAR *jid );
+	JabberCapsBits JabberGetResourceCapabilites( TCHAR *jid, BOOL appendBestResource );
+
+	//---- jabber_chat.cpp ---------------------------------------------------------------
+
+	void   JabberGcLogCreate( JABBER_LIST_ITEM* item );
+	void   JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, TCHAR* nick, TCHAR* jid, int action, XmlNode* reason, int nStatusCode = -1 );
+	void   JabberGcLogShowInformation( JABBER_LIST_ITEM *item, JABBER_RESOURCE_STATUS *user, enum TJabberGcLogInfoType type );
+	void   JabberGcQuit( JABBER_LIST_ITEM* jid, int code, XmlNode* reason );
+		  
+	void   FilterList(HWND hwndList);
+	void   ResetListOptions(HWND hwndList);
+	void   InviteUser(TCHAR *room, TCHAR *pUser, TCHAR *text);
+		  
+	void   JabberAdminSet( const TCHAR* to, const char* ns, const char* szItem, const TCHAR* itemVal, const char* var, const TCHAR* varVal );
+	void   JabberAdminGet( const TCHAR* to, const char* ns, const char* var, const TCHAR* varVal, JABBER_IQ_PFUNC foo );
+	void   JabberAddMucListItem( JABBER_MUC_JIDLIST_INFO* jidListInfo, TCHAR* str );
+	void   JabberDeleteMucListItem( JABBER_MUC_JIDLIST_INFO* jidListInfo, TCHAR* jid );
+
+	//---- jabber_console.cpp ------------------------------------------------------------
+
+	void   JabberConsoleInit( void );
+	void   JabberConsoleUninit( void );
+
+	//---- jabber_disco.cpp --------------------------------------------------------------
+
+	void   JabberIqResultServiceDiscoveryInfo( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
+	void   JabberIqResultServiceDiscoveryItems( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
+	void   JabberIqResultServiceDiscoveryRootInfo( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
+	void   JabberIqResultServiceDiscoveryRoot( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
+	void   JabberIqResultServiceDiscoveryRootItems( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
+	BOOL   SendInfoRequest(CJabberSDNode* pNode, XmlNode* parent);
+	BOOL   SendBothRequests(CJabberSDNode* pNode, XmlNode* parent);
+	void   sttPerformBrowse(HWND hwndDlg);
+	BOOL   sttIsNodeRegistered(CJabberSDNode *pNode);
+	void   sttApplyNodeIcon(HTREELISTITEM hItem, CJabberSDNode *pNode);
+	BOOL   SyncTree(HTREELISTITEM hIndex, CJabberSDNode* pNode);
+	void   JabberServiceDiscoveryShowMenu(CJabberSDNode *node, HTREELISTITEM hItem, POINT pt);
+		  
+	int    JabberSetupServiceDiscoveryDlg( TCHAR* jid );
+		  
+	void   JabberIqResultCapsDiscoInfo( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
+		  
+	void   JabberRegisterAgent( HWND hwndDlg, TCHAR* jid );
+
+	//---- jabber_file.cpp ---------------------------------------------------------------
+
+	int    JabberFileReceiveParse( filetransfer* ft, char* buffer, int datalen );
+	int    JabberFileSendParse( JABBER_SOCKET s, filetransfer* ft, char* buffer, int datalen );
+		  
+	void   JabberUpdateChatUserStatus( wchar_t* chat_jid, wchar_t* jid, wchar_t* nick, int role, int affil, int status, BOOL update_nick );
+		  
+	void   JabberGroupchatJoinRoomByJid(HWND hwndParent, TCHAR *jid);
+		  
+	void   JabberRenameParticipantNick( JABBER_LIST_ITEM* item, TCHAR* oldNick, XmlNode *itemNode );
+	void   JabberAcceptGroupchatInvite( TCHAR* roomJid, TCHAR* reason, TCHAR* password );
+
+	//---- jabber_form.c -----------------------------------------------------------------
+
+	void   JabberFormCreateDialog( XmlNode *xNode, TCHAR* defTitle, JABBER_FORM_SUBMIT_FUNC pfnSubmit, void *userdata );
 	
-	//---- jabber_ft.c --------------------------------------------------
+	//---- jabber_ft.c -------------------------------------------------------------------
 
-	void JabberByteSendThread( JABBER_BYTE_TRANSFER *jbt );
-	void JabberByteReceiveThread( JABBER_BYTE_TRANSFER *jbt );
-	void JabberIqResultProxyDiscovery( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
-	void JabberByteInitiateResult( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo );
-	void JabberByteSendViaProxy( JABBER_BYTE_TRANSFER *jbt );
-	int  JabberByteSendParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char* buffer, int datalen );
-	void JabberIqResultStreamActivate( XmlNode* iqNode, void* userdata );
-	int  JabberByteReceiveParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char* buffer, int datalen );
-	int  JabberByteSendProxyParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char* buffer, int datalen );
+	void   JabberFtCancel( filetransfer* ft );
+	void   JabberFtInitiate( TCHAR* jid, filetransfer* ft );
+	void   JabberFtHandleSiRequest( XmlNode *iqNode );
+	void   JabberFtAcceptSiRequest( filetransfer* ft );
+	void   JabberFtAcceptIbbRequest( filetransfer* ft );
+	void   JabberFtHandleBytestreamRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
+	BOOL   JabberFtHandleIbbRequest( XmlNode *iqNode, BOOL bOpen );
+	void   JabberFileReceiveThread( filetransfer* ft );
+	void   JabberFileServerThread( filetransfer* ft );
+	
+	//---- jabber_groupchat.c ------------------------------------------------------------
 
-	//---- jabber_groupchat.c -------------------------------------------
+	void   JabberGroupchatJoinRoom( const TCHAR* server, const TCHAR* room, const TCHAR* nick, const TCHAR* password );
+	void   JabberGroupchatProcessPresence( XmlNode *node, void *userdata );
+	void   JabberGroupchatProcessMessage( XmlNode *node, void *userdata );
+	void   JabberGroupchatProcessInvite( TCHAR* roomJid, TCHAR* from, TCHAR* reason, TCHAR* password );
+	void   JabberGroupchatJoinDlg( TCHAR* roomJid );
+	void   JabberIqResultDiscovery(XmlNode *iqNode, void *userdata, CJabberIqInfo *pInfo);
 
-	void JabberGroupchatJoinRoom( const TCHAR* server, const TCHAR* room, const TCHAR* nick, const TCHAR* password );
-	void JabberGroupchatProcessPresence( XmlNode *node, void *userdata );
-	void JabberGroupchatProcessMessage( XmlNode *node, void *userdata );
-	void JabberGroupchatProcessInvite( TCHAR* roomJid, TCHAR* from, TCHAR* reason, TCHAR* password );
-	void JabberGroupchatJoinDlg( TCHAR* roomJid );
-	void JabberIqResultDiscovery(XmlNode *iqNode, void *userdata, CJabberIqInfo *pInfo);
+	//---- jabber_icolib.cpp -------------------------------------------------------------
 
-	//---- jabber_bookmarks.c -------------------------------------------
-	int JabberAddEditBookmark( JABBER_LIST_ITEM* item );
+	void   JabberIconsInit( void );
+	HANDLE GetIconHandle( int iconId );
+	HICON  LoadIconEx( const char* name );
+	int    LoadAdvancedIcons(int iID);
+	int    GetTransportStatusIconIndex(int iID, int Status);
+	BOOL   JabberDBCheckIsTransportedContact(const TCHAR* jid, HANDLE hContact);
+	void   JabberCheckAllContactsAreTransported( void );
 
-	//---- jabber_misc.c ------------------------------------------------
+	//---- jabber_iq.c -------------------------------------------------------------------
+
+	JABBER_IQ_PFUNC JabberIqFetchFunc( int iqId );
+
+	void   JabberIqInit();
+	void   JabberIqUninit();
+	void   JabberIqAdd( unsigned int iqId, JABBER_IQ_PROCID procId, JABBER_IQ_PFUNC func );
+	void   JabberIqRemove( int index );
+	void   JabberIqExpire();
+		  
+	void   JabberIqResultBind( XmlNode *iqNode, void *userdata );
+	void   JabberIqResultBrowseRooms( XmlNode *iqNode, void *userdata );
+	void   JabberIqResultDiscoAgentInfo( XmlNode *iqNode, void *userdata );
+	void   JabberIqResultDiscoAgentItems( XmlNode *iqNode, void *userdata );
+	void   JabberIqResultDiscoRoomItems( XmlNode *iqNode, void *userdata );
+	void   JabberIqResultDiscoBookmarks( XmlNode *iqNode, void *userdata );
+	void   JabberIqResultSetBookmarks( XmlNode *iqNode, void *userdata );
+	void   JabberIqResultExtSearch( XmlNode *iqNode, void *userdata );
+	void   JabberIqResultGetAgents( XmlNode *iqNode, void *userdata );
+	void   JabberIqResultGetAuth( XmlNode *iqNode, void *userdata );
+	void   JabberIqResultGetAvatar( XmlNode *iqNode, void *userdata );
+	void   JabberIqResultGetMuc( XmlNode *iqNode, void *userdata );
+	void   JabberIqResultGetRegister( XmlNode *iqNode, void *userdata );
+	void   JabberIqResultGetRoster( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo );
+	void   JabberIqResultGetVcard( XmlNode *iqNode, void *userdata );
+	void   JabberIqResultMucGetAdminList( XmlNode *iqNode, void *userdata );
+	void   JabberIqResultMucGetBanList( XmlNode *iqNode, void *userdata );
+	void   JabberIqResultMucGetMemberList( XmlNode *iqNode, void *userdata );
+	void   JabberIqResultMucGetModeratorList( XmlNode *iqNode, void *userdata );
+	void   JabberIqResultMucGetOwnerList( XmlNode *iqNode, void *userdata );
+	void   JabberIqResultMucGetVoiceList( XmlNode *iqNode, void *userdata );
+	void   JabberIqResultNestedRosterGroups( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
+	void   JabberIqResultSession( XmlNode *iqNode, void *userdata );
+	void   JabberIqResultSetAuth( XmlNode *iqNode, void *userdata );
+	void   JabberIqResultSetPassword( XmlNode *iqNode, void *userdata );
+	void   JabberIqResultSetRegister( XmlNode *iqNode, void *userdata );
+	void   JabberIqResultSetSearch( XmlNode *iqNode, void *userdata );
+	void   JabberIqResultSetVcard( XmlNode *iqNode, void *userdata );
+	void   JabberIqResultEntityTime( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo );
+	void   JabberIqResultLastActivity( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo );
+	void   JabberProcessIqResultVersion( XmlNode* node, void* userdata, CJabberIqInfo *pInfo );
+	void   JabberProcessLoginRq( ThreadData* info, DWORD rq );
+	void   JabberOnLoggedIn( ThreadData* info );
+
+	//---- jabber_iq_handlers.cpp --------------------------------------------------------
+
+	void   JabberProcessIqVersion( XmlNode* node, void* userdata, CJabberIqInfo* pInfo );
+	void   JabberProcessIqLast( XmlNode* node, void* userdata, CJabberIqInfo *pInfo );
+	void   JabberProcessIqPing( XmlNode* node, void* userdata, CJabberIqInfo *pInfo );
+	void   JabberProcessIqTime202( XmlNode* node, void* userdata, CJabberIqInfo *pInfo );
+	void   JabberProcessIqAvatar( XmlNode* node, void* userdata, CJabberIqInfo *pInfo );
+	void   JabberHandleSiRequest( XmlNode* node, void* userdata, CJabberIqInfo *pInfo );
+	void   JabberHandleRosterPushRequest( XmlNode* node, void* userdata, CJabberIqInfo *pInfo );
+	void   JabberHandleIqRequestOOB( XmlNode* node, void* userdata, CJabberIqInfo *pInfo );
+		  
+	void   JabberIbbInitiateResult( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo );
+	void   JabberIbbCloseResult( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo );
+	void   JabberFtHandleIbbIq( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo );
+	void   JabberIbbSendThread( JABBER_IBB_TRANSFER *jibb );
+	void   JabberIbbReceiveThread( JABBER_IBB_TRANSFER *jibb );
+	BOOL   JabberIbbProcessRecvdData( TCHAR *data, TCHAR *sid, TCHAR *seq );
+		  
+	void   JabberFtSiResult( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo );
+	BOOL   JabberFtIbbSend( int blocksize, void *userdata );
+	BOOL   JabberFtSend( HANDLE hConn, void *userdata );
+	void   JabberFtSendFinal( BOOL success, void *userdata );
+	int    JabberFtReceive( HANDLE hConn, void *userdata, char* buffer, int datalen );
+	void   JabberFtReceiveFinal( BOOL success, void *userdata );
+
+	//---- jabber_list.cpp ---------------------------------------------------------------
+
+	JABBER_LIST_ITEM *JabberListAdd( JABBER_LIST list, const TCHAR* jid );
+	JABBER_LIST_ITEM *JabberListGetItemPtr( JABBER_LIST list, const TCHAR* jid );
+	JABBER_LIST_ITEM *JabberListGetItemPtrFromIndex( int index );
+
+	void   JabberListWipe( void );
+	int    JabberListExist( JABBER_LIST list, const TCHAR* jid );
+
+	BOOL   JabberListLock();
+	BOOL   JabberListUnlock();
+
+	void   JabberListRemove( JABBER_LIST list, const TCHAR* jid );
+	void   JabberListRemoveList( JABBER_LIST list );
+	void   JabberListRemoveByIndex( int index );
+	int    JabberListFindNext( JABBER_LIST list, int fromOffset );
+
+	int    JabberListAddResource( JABBER_LIST list, const TCHAR* jid, int status, const TCHAR* statusMessage, char priority = 0 );
+	void   JabberListRemoveResource( JABBER_LIST list, const TCHAR* jid );
+	TCHAR* JabberListGetBestResourceNamePtr( const TCHAR* jid );
+	TCHAR* JabberListGetBestClientResourceNamePtr( const TCHAR* jid );
+
+	void   JabberSetMucConfig( XmlNode* node, void *from );
+	void   JabberIqResultMucGetJidList( XmlNode *iqNode, JABBER_MUC_JIDLIST_TYPE listType );
+		  
+	void   JabberIqResultServerDiscoInfo( XmlNode* iqNode, void* userdata );
+	void   JabberIqResultGetVcardPhoto( const TCHAR* jid, XmlNode* n, HANDLE hContact, BOOL& hasPhoto );
+	void   JabberSetBookmarkRequest (XmlNodeIq& iqId);
+
+	//---- jabber_menu.cpp ---------------------------------------------------------------
+
+	void   JabberMenuInit( void );
+	void   JabberMenuUninit( void );
+
+	void   JabberMenuHideSrmmIcon(HANDLE hContact);
+	void   JabberMenuUpdateSrmmIcon(JABBER_LIST_ITEM *item);
+	
+	void   JabberAuthWorker( HANDLE hContact, char* authReqType );
+
+	//---- jabber_misc.c -----------------------------------------------------------------
 
 	void   JabberAddContactToRoster( const TCHAR* jid, const TCHAR* nick, const TCHAR* grpName, JABBER_SUBSCRIPTION subscription );
 	void   JabberDBAddAuthRequest( TCHAR* jid, TCHAR* nick );
@@ -368,29 +554,101 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   JabberSetContactOfflineStatus( HANDLE hContact );
 	void   InitCustomFolders( void );
 
-	//---- jabber_adhoc.cpp	---------------------------------------------
+	//---- jabber_opt.cpp ----------------------------------------------------------------
 
-	HWND sttGetWindowFromIq( XmlNode *iqNode );
-	void JabberHandleAdhocCommandRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
-	BOOL IsRcRequestAllowedByACL( CJabberIqInfo* pInfo );
+	void   _RosterExportToFile(HWND hwndDlg);
+	void   _RosterImportFromFile(HWND hwndDlg);
+	void   _RosterSendRequest(HWND hwndDlg, BYTE rrAction);
+	void   _RosterHandleGetRequest( XmlNode* node, void* userdata );
 
-	int JabberAdhocSetStatusHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
-	int JabberAdhocOptionsHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
-	int JabberAdhocForwardHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
-	int JabberAdhocLockWSHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
-	int JabberAdhocQuitMirandaHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
+	//---- jabber_privacy.cpp ------------------------------------------------------------
+	ROSTERREQUSERDATA rrud;
 
-	//---- jabber_svc.c -------------------------------------------------
+	void   QueryPrivacyLists( void );
+		  
+	void   JabberProcessIqPrivacyLists( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
+	void   JabberIqResultPrivacyList( XmlNode* iqNode, void* userdata );
+	void   JabberIqResultPrivacyLists( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
+	void   JabberIqResultPrivacyListActive( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
+	void   JabberIqResultPrivacyListDefault( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
+	void   JabberIqResultPrivacyListModify( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
 
-	void JabberEnableMenuItems( BOOL bEnable );
+	//---- jabber_proto.cpp --------------------------------------------------------------
+
+	HANDLE AddToListByJID( const TCHAR* newJid, DWORD flags );
+
+	//---- jabber_rc.cpp -----------------------------------------------------------------
+
+	int    JabberRcGetUnreadEventsCount( void );
+
+	//---- jabber_search.cpp -------------------------------------------------------------
+
+	void   JabberSearchReturnResults( HANDLE id, void* pvUsersInfo, U_TCHAR_MAP* pmAllFields );
+	void   JabberIqResultAdvancedSearch( XmlNode *iqNode, void *userdata );
+	void   JabberIqResultGetSearchFields( XmlNode *iqNode, void *userdata );
+	int    JabberSearchRenewFields( HWND hwndDlg, JabberSearchData * dat);
+	void   JabberSearchDeleteFromRecent( TCHAR* szAddr, BOOL deleteLastFromDB = TRUE );
+	void   JabberSearchAddToRecent( TCHAR* szAddr, HWND hwndDialog = NULL );
 
 	//---- jabber_std.cpp ----------------------------------------------
 
-	void JabberMenuInit( CJabberProto* pProto );
-	void JabberConsoleInit();
-	void JabberConsoleUninit();
+	void   JCreateService( const char* szService, JServiceFunc serviceProc );
+	HANDLE JCreateHookableEvent( const char* szService );
+	void   JDeleteSetting( HANDLE hContact, const char* valueName );
+	DWORD  JGetByte( const char* valueName, int parDefltValue );
+	DWORD  JGetByte( HANDLE hContact, const char* valueName, int parDefltValue );
+	char*  JGetContactName( HANDLE hContact );
+	DWORD  JGetDword( HANDLE hContact, const char* valueName, DWORD parDefltValue );
+	int    JGetStaticString( const char* valueName, HANDLE hContact, char* dest, int dest_len );
+	int    JGetStringUtf( HANDLE hContact, char* valueName, DBVARIANT* dbv );
+	int    JGetStringT( HANDLE hContact, char* valueName, DBVARIANT* dbv );
+	WORD   JGetWord( HANDLE hContact, const char* valueName, int parDefltValue );
+	void   JHookEvent( const char*, JEventFunc );
+	int    JSendBroadcast( HANDLE hContact, int type, int result, HANDLE hProcess, LPARAM lParam );
+	DWORD  JSetByte( const char* valueName, int parValue );
+	DWORD  JSetByte( HANDLE hContact, const char* valueName, int parValue );
+	DWORD  JSetDword( HANDLE hContact, const char* valueName, DWORD parValue );
+	DWORD  JSetString( HANDLE hContact, const char* valueName, const char* parValue );
+	DWORD  JSetStringT( HANDLE hContact, const char* valueName, const TCHAR* parValue );
+	DWORD  JSetStringUtf( HANDLE hContact, const char* valueName, const char* parValue );
+	DWORD  JSetWord( HANDLE hContact, const char* valueName, int parValue );
 
-	//---- jabber_util.c ----------------------------------------------
+	TCHAR* JGetStringCrypt( HANDLE hContact, char* valueName );
+	DWORD  JSetStringCrypt( HANDLE hContact, char* valueName, const TCHAR* parValue );
+
+	//---- jabber_svc.c ------------------------------------------------------------------
+
+	void   JabberEnableMenuItems( BOOL bEnable );
+
+	//---- jabber_thread.c ----------------------------------------------
+
+	void   ServerThread( ThreadData* info );
+		  
+	void   JabberProcessFailure( XmlNode *node, void *userdata );
+	void   JabberProcessError( XmlNode *node, void *userdata );
+	void   JabberProcessSuccess( XmlNode *node, void *userdata );
+	void   JabberProcessChallenge( XmlNode *node, void *userdata );
+	void   JabberProcessProceed( XmlNode *node, void *userdata );	
+	void   JabberProcessCompressed( XmlNode *node, void *userdata );
+	void   JabberProcessMessage( XmlNode *node, void *userdata );
+	void   JabberProcessPresence( XmlNode *node, void *userdata );
+	void   JabberProcessPresenceCapabilites( XmlNode *node );
+	void   JabberProcessPubsubEvent( XmlNode *node );
+
+	void   JabberUpdateJidDbSettings( TCHAR *jid );
+	HANDLE JabberCreateTemporaryContact( TCHAR *szJid, JABBER_LIST_ITEM* chatItem );
+
+	void   JabberPerformRegistration( ThreadData* info );
+	void   JabberPerformIqAuth( ThreadData* info );
+	void   JabberProcessFeatures( XmlNode *node, void *userdata );
+
+	void   xmlStreamInitialize( char *which );
+	void   xmlStreamInitializeNow(ThreadData* info);
+
+	void   JabberProcessIq( XmlNode *node, void *userdata );
+	void   JabberProcessRegIq( XmlNode *node, void *userdata );
+
+	//---- jabber_util.c -----------------------------------------------------------------
 
 	JABBER_RESOURCE_STATUS* JabberResourceInfoFromJID( TCHAR* jid );
 
@@ -415,306 +673,49 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	//---- jabber_vcard.c -----------------------------------------------
 
-	void JabberGroupchatJoinByHContact( HANDLE hContact );
-	void JabberUpdateVCardPhoto( char * szFileName );
-	int  JabberSendGetVcard( const TCHAR* jid );
-	void AppendVcardFromDB( XmlNode* n, char* tag, char* key );
-	void SetServerVcard();
-	void SaveVcardToDB( struct VcardTab *dat );
+	void   JabberGroupchatJoinByHContact( HANDLE hContact );
+	void   JabberUpdateVCardPhoto( char * szFileName );
+	int    JabberSendGetVcard( const TCHAR* jid );
+	void   AppendVcardFromDB( XmlNode* n, char* tag, char* key );
+	void   SetServerVcard();
+	void   SaveVcardToDB( struct VcardTab *dat );
 
 	//---- jabber_ws.c -------------------------------------------------
 
 	JABBER_SOCKET JabberWsConnect( char* host, WORD port );
 
-	BOOL JabberWsInit(void);
-	void JabberWsUninit(void);
-	int  JabberWsSend( JABBER_SOCKET s, char* data, int datalen, int flags );
-	int  JabberWsRecv( JABBER_SOCKET s, char* data, long datalen, int flags );
+	BOOL   JabberWsInit(void);
+	void   JabberWsUninit(void);
+	int    JabberWsSend( JABBER_SOCKET s, char* data, int datalen, int flags );
+	int    JabberWsRecv( JABBER_SOCKET s, char* data, long datalen, int flags );
 
-	JABBER_SOCKET JabberWsBindPort( NETLIBBIND* nlb );
-	BOOL JabberSslInit();
-	BOOL JabberSslUninit();
+	BOOL   JabberSslInit();
+	BOOL   JabberSslUninit();
 
-	//---- jabber_xstatus.c --------------------------------------------
+	//---- jabber_xml.c ------------------------------------------------------------------
 
-	HICON GetXStatusIcon(int bStatus, UINT flags);
-	void  JabberUpdateContactExtraIcon( HANDLE hContact );
-
-	BOOL  JabberSendPepMood( int nMoodNumber, TCHAR* szMoodText );
-	BOOL  JabberSendPepTune( TCHAR* szArtist, TCHAR* szLength, TCHAR* szSource, TCHAR* szTitle, TCHAR* szTrack, TCHAR* szUri );
-
-	void  JabberXStatusInit( void );
-	void  JabberXStatusUninit( void );
-	void  InitXStatusIcons( void );
-
-	void  JabberSetContactMood( HANDLE hContact, const char* moodName, const TCHAR* moodText );
-	void  JabberSetContactTune( HANDLE hContact,  TCHAR* szArtist, TCHAR* szLength, TCHAR* szSource, TCHAR* szTitle, TCHAR* szTrack, TCHAR* szUri );
-
-	//---- jabber_iq.c ----------------------------------------------
-
-	void JabberIqInit();
-	void JabberIqUninit();
-	JABBER_IQ_PFUNC JabberIqFetchFunc( int iqId );
-	void JabberIqAdd( unsigned int iqId, JABBER_IQ_PROCID procId, JABBER_IQ_PFUNC func );
-	void JabberIqRemove( int index );
-	void JabberIqExpire();
-
-	void JabberIqResultBind( XmlNode *iqNode, void *userdata );
-	void JabberIqResultBrowseRooms( XmlNode *iqNode, void *userdata );
-	void JabberIqResultDiscoAgentInfo( XmlNode *iqNode, void *userdata );
-	void JabberIqResultDiscoAgentItems( XmlNode *iqNode, void *userdata );
-	void JabberIqResultDiscoRoomItems( XmlNode *iqNode, void *userdata );
-	void JabberIqResultDiscoBookmarks( XmlNode *iqNode, void *userdata );
-	void JabberIqResultSetBookmarks( XmlNode *iqNode, void *userdata );
-	void JabberIqResultExtSearch( XmlNode *iqNode, void *userdata );
-	void JabberIqResultGetAgents( XmlNode *iqNode, void *userdata );
-	void JabberIqResultGetAuth( XmlNode *iqNode, void *userdata );
-	void JabberIqResultGetAvatar( XmlNode *iqNode, void *userdata );
-	void JabberIqResultGetMuc( XmlNode *iqNode, void *userdata );
-	void JabberIqResultGetRegister( XmlNode *iqNode, void *userdata );
-	void JabberIqResultGetRoster( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo );
-	void JabberIqResultGetVcard( XmlNode *iqNode, void *userdata );
-	void JabberIqResultMucGetAdminList( XmlNode *iqNode, void *userdata );
-	void JabberIqResultMucGetBanList( XmlNode *iqNode, void *userdata );
-	void JabberIqResultMucGetMemberList( XmlNode *iqNode, void *userdata );
-	void JabberIqResultMucGetModeratorList( XmlNode *iqNode, void *userdata );
-	void JabberIqResultMucGetOwnerList( XmlNode *iqNode, void *userdata );
-	void JabberIqResultMucGetVoiceList( XmlNode *iqNode, void *userdata );
-	void JabberIqResultNestedRosterGroups( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
-	void JabberIqResultSession( XmlNode *iqNode, void *userdata );
-	void JabberIqResultSetAuth( XmlNode *iqNode, void *userdata );
-	void JabberIqResultSetPassword( XmlNode *iqNode, void *userdata );
-	void JabberIqResultSetRegister( XmlNode *iqNode, void *userdata );
-	void JabberIqResultSetSearch( XmlNode *iqNode, void *userdata );
-	void JabberIqResultSetVcard( XmlNode *iqNode, void *userdata );
-	void JabberIqResultEntityTime( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo );
-	void JabberIqResultLastActivity( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo );
-	void JabberProcessIqResultVersion( XmlNode* node, void* userdata, CJabberIqInfo *pInfo );
-	void JabberProcessLoginRq( ThreadData* info, DWORD rq );
-	void JabberOnLoggedIn( ThreadData* info );
-
-	//---- jabber_thread.c ----------------------------------------------
-
-	void __cdecl ServerThread( ThreadData* info );
-
-	void JabberProcessFailure( XmlNode *node, void *userdata );
-	void JabberProcessError( XmlNode *node, void *userdata );
-	void JabberProcessSuccess( XmlNode *node, void *userdata );
-	void JabberProcessChallenge( XmlNode *node, void *userdata );
-	void JabberProcessProceed( XmlNode *node, void *userdata );	
-	void JabberProcessCompressed( XmlNode *node, void *userdata );
-	void JabberProcessMessage( XmlNode *node, void *userdata );
-	void JabberProcessPresence( XmlNode *node, void *userdata );
-	void JabberProcessPresenceCapabilites( XmlNode *node );
-	void JabberProcessPubsubEvent( XmlNode *node );
-
-	void JabberUpdateJidDbSettings( TCHAR *jid );
-	HANDLE JabberCreateTemporaryContact( TCHAR *szJid, JABBER_LIST_ITEM* chatItem );
-
-	void JabberPerformRegistration( ThreadData* info );
-	void JabberPerformIqAuth( ThreadData* info );
-	void JabberProcessFeatures( XmlNode *node, void *userdata );
-
-	void xmlStreamInitialize( char *which );
-	void xmlStreamInitializeNow(ThreadData* info);
-
-	void JabberProcessIq( XmlNode *node, void *userdata );
-	void JabberProcessRegIq( XmlNode *node, void *userdata );
+	int    JabberXmlParse( XmlState *xmlState, char* buffer );
+	void   JabberConsoleProcessXml(XmlNode *node, DWORD flags);
 
 	//---- jabber_xmlns.c ----------------------------------------------------------------
 
-	void JabberHandleDiscoInfoRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
-	void JabberHandleDiscoItemsRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
+	void   JabberHandleDiscoInfoRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
+	void   JabberHandleDiscoItemsRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
 
-	//---- jabber_xml.c ------------------------------------------------------------------
-	int JabberXmlParse( XmlState *xmlState, char* buffer );
-	void JabberConsoleProcessXml(XmlNode *node, DWORD flags);
+	//---- jabber_xstatus.c --------------------------------------------------------------
 
-	//---- jabber_menu.cpp ---------------------------------------------------------------
-
-	void JabberMenuInit( void );
-	void JabberMenuUninit( void );
-
-	void JabberMenuHideSrmmIcon(HANDLE hContact);
-	void JabberMenuUpdateSrmmIcon(JABBER_LIST_ITEM *item);
-	
-	int  __cdecl JabberMenuProcessSrmmIconClick( WPARAM, LPARAM );
-	int  __cdecl JabberMenuProcessSrmmEvent( WPARAM, LPARAM );
-
-	int  __cdecl JabberMenuPrebuildContactMenu( WPARAM, LPARAM );
-	void JabberAuthWorker( HANDLE hContact, char* authReqType );
-
-	//---- jabber_list.cpp ---------------------------------------------------------------
-
-	void JabberListWipe( void );
-	int JabberListExist( JABBER_LIST list, const TCHAR* jid );
-
-	BOOL JabberListLock();
-	BOOL JabberListUnlock();
-
-	JABBER_LIST_ITEM *JabberListAdd( JABBER_LIST list, const TCHAR* jid );
-	void JabberListRemove( JABBER_LIST list, const TCHAR* jid );
-	void JabberListRemoveList( JABBER_LIST list );
-	void JabberListRemoveByIndex( int index );
-	int JabberListFindNext( JABBER_LIST list, int fromOffset );
-	JABBER_LIST_ITEM *JabberListGetItemPtr( JABBER_LIST list, const TCHAR* jid );
-	JABBER_LIST_ITEM *JabberListGetItemPtrFromIndex( int index );
-
-	int    JabberListAddResource( JABBER_LIST list, const TCHAR* jid, int status, const TCHAR* statusMessage, char priority = 0 );
-	void   JabberListRemoveResource( JABBER_LIST list, const TCHAR* jid );
-	TCHAR* JabberListGetBestResourceNamePtr( const TCHAR* jid );
-	TCHAR* JabberListGetBestClientResourceNamePtr( const TCHAR* jid );
-
-	void JabberSetMucConfig( XmlNode* node, void *from );
-	void JabberIqResultMucGetJidList( XmlNode *iqNode, JABBER_MUC_JIDLIST_TYPE listType );
-
-	void JabberIqResultServerDiscoInfo( XmlNode* iqNode, void* userdata );
-	void JabberIqResultGetVcardPhoto( const TCHAR* jid, XmlNode* n, HANDLE hContact, BOOL& hasPhoto );
-	void JabberSetBookmarkRequest (XmlNodeIq& iqId);
-
-	//---- jabber_iq_handlers.cpp --------------------------------------------------------
-
-	void JabberProcessIqVersion( XmlNode* node, void* userdata, CJabberIqInfo* pInfo );
-	void JabberProcessIqLast( XmlNode* node, void* userdata, CJabberIqInfo *pInfo );
-	void JabberProcessIqPing( XmlNode* node, void* userdata, CJabberIqInfo *pInfo );
-	void JabberProcessIqTime202( XmlNode* node, void* userdata, CJabberIqInfo *pInfo );
-	void JabberProcessIqAvatar( XmlNode* node, void* userdata, CJabberIqInfo *pInfo );
-	void JabberHandleSiRequest( XmlNode* node, void* userdata, CJabberIqInfo *pInfo );
-	void JabberHandleRosterPushRequest( XmlNode* node, void* userdata, CJabberIqInfo *pInfo );
-	void JabberHandleIqRequestOOB( XmlNode* node, void* userdata, CJabberIqInfo *pInfo );
-
-	void JabberIbbInitiateResult( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo );
-	void JabberIbbCloseResult( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo );
-	void JabberFtHandleIbbIq( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo );
-	void JabberIbbSendThread( JABBER_IBB_TRANSFER *jibb );
-	void JabberIbbReceiveThread( JABBER_IBB_TRANSFER *jibb );
-	BOOL JabberIbbProcessRecvdData( TCHAR *data, TCHAR *sid, TCHAR *seq );
-
-	void JabberFtSiResult( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo );
-	BOOL JabberFtIbbSend( int blocksize, void *userdata );
-	BOOL JabberFtSend( HANDLE hConn, void *userdata );
-	void JabberFtSendFinal( BOOL success, void *userdata );
-	int  JabberFtReceive( HANDLE hConn, void *userdata, char* buffer, int datalen );
-	void JabberFtReceiveFinal( BOOL success, void *userdata );
-
-	//---- jabber_privacy.cpp ----------------------------------------------
-	ROSTERREQUSERDATA rrud;
-
-	void QueryPrivacyLists( void );
-
-	void JabberProcessIqPrivacyLists( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
-	void JabberIqResultPrivacyList( XmlNode* iqNode, void* userdata );
-	void JabberIqResultPrivacyLists( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
-	void JabberIqResultPrivacyListActive( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
-	void JabberIqResultPrivacyListDefault( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
-	void JabberIqResultPrivacyListModify( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
-
-	//---- jabber_file.cpp ----------------------------------------------
-
-	int  JabberFileReceiveParse( filetransfer* ft, char* buffer, int datalen );
-	int  JabberFileSendParse( JABBER_SOCKET s, filetransfer* ft, char* buffer, int datalen );
-
-	void JabberUpdateChatUserStatus( wchar_t* chat_jid, wchar_t* jid, wchar_t* nick, int role, int affil, int status, BOOL update_nick );
-	
-	void JabberGroupchatJoinRoomByJid(HWND hwndParent, TCHAR *jid);
-
-	void JabberRenameParticipantNick( JABBER_LIST_ITEM* item, TCHAR* oldNick, XmlNode *itemNode );
-	void JabberAcceptGroupchatInvite( TCHAR* roomJid, TCHAR* reason, TCHAR* password );
-
-	//---- jabber_adhoc.cpp ----------------------------------------------
-
-	void JabberIqResult_ListOfCommands( XmlNode *iqNode, void *userdata );
-	void JabberIqResult_CommandExecution( XmlNode *iqNode, void *userdata );
-	int  JabberAdHoc_RequestListOfCommands( TCHAR * szResponder, HWND hwndDlg );
-	int  JabberAdHoc_ExecuteCommand( HWND hwndDlg, TCHAR * jid, struct JabberAdHocData* dat );
-	int  JabberAdHoc_SubmitCommandForm(HWND hwndDlg, JabberAdHocData * dat, char * action);
-	int  JabberAdHoc_AddCommandRadio(HWND hFrame, TCHAR * labelStr, int id, int ypos, int value);
-	int  JabberAdHoc_OnJAHMCommandListResult( HWND hwndDlg, XmlNode * iqNode, JabberAdHocData* dat );
-	int  JabberAdHoc_OnJAHMProcessResult( HWND hwndDlg, XmlNode *workNode, JabberAdHocData* dat );
-
-	void JabberContactMenuAdhocCommands( struct CJabberAdhocStartupParams* param );
-	
-	//---- jabber_disco.cpp ----------------------------------------------
-
-	void JabberIqResultServiceDiscoveryInfo( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
-	void JabberIqResultServiceDiscoveryItems( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
-	void JabberIqResultServiceDiscoveryRootInfo( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
-	void JabberIqResultServiceDiscoveryRoot( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
-	void JabberIqResultServiceDiscoveryRootItems( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
-	BOOL SendInfoRequest(CJabberSDNode* pNode, XmlNode* parent);
-	BOOL SendBothRequests(CJabberSDNode* pNode, XmlNode* parent);
-	void sttPerformBrowse(HWND hwndDlg);
-	BOOL sttIsNodeRegistered(CJabberSDNode *pNode);
-	void sttApplyNodeIcon(HTREELISTITEM hItem, CJabberSDNode *pNode);
-	BOOL SyncTree(HTREELISTITEM hIndex, CJabberSDNode* pNode);
-	void JabberServiceDiscoveryShowMenu(CJabberSDNode *node, HTREELISTITEM hItem, POINT pt);
-	
-	int JabberSetupServiceDiscoveryDlg( TCHAR* jid );
-
-	void JabberIqResultCapsDiscoInfo( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
-	
-	void JabberRegisterAgent( HWND hwndDlg, TCHAR* jid );
-
-	//---- jabber_opt.cpp ----------------------------------------------
-
-	void _RosterExportToFile(HWND hwndDlg);
-	void _RosterImportFromFile(HWND hwndDlg);
-	void _RosterSendRequest(HWND hwndDlg, BYTE rrAction);
-	void _RosterHandleGetRequest( XmlNode* node, void* userdata );
-
-	//---- jabber_search.cpp -------------------------------------------
-
-	void  JabberSearchReturnResults( HANDLE id, void* pvUsersInfo, U_TCHAR_MAP* pmAllFields );
-	void  JabberIqResultAdvancedSearch( XmlNode *iqNode, void *userdata );
-	void  JabberIqResultGetSearchFields( XmlNode *iqNode, void *userdata );
-	int   JabberSearchRenewFields( HWND hwndDlg, JabberSearchData * dat);
-	void  JabberSearchDeleteFromRecent( TCHAR* szAddr, BOOL deleteLastFromDB = TRUE );
-	void  JabberSearchAddToRecent( TCHAR* szAddr, HWND hwndDialog = NULL );
-
-	//---- jabber_std.cpp ----------------------------------------------
-
-	void     JCreateService( const char* szService, JServiceFunc serviceProc );
-	HANDLE   JCreateHookableEvent( const char* szService );
-	void     JDeleteSetting( HANDLE hContact, const char* valueName );
-	DWORD    JGetByte( const char* valueName, int parDefltValue );
-	DWORD    JGetByte( HANDLE hContact, const char* valueName, int parDefltValue );
-	char*    JGetContactName( HANDLE hContact );
-	DWORD    JGetDword( HANDLE hContact, const char* valueName, DWORD parDefltValue );
-	int      JGetStaticString( const char* valueName, HANDLE hContact, char* dest, int dest_len );
-	int      JGetStringUtf( HANDLE hContact, char* valueName, DBVARIANT* dbv );
-	int      JGetStringT( HANDLE hContact, char* valueName, DBVARIANT* dbv );
-	WORD     JGetWord( HANDLE hContact, const char* valueName, int parDefltValue );
-	void     JHookEvent( const char*, JEventFunc );
-	int      JSendBroadcast( HANDLE hContact, int type, int result, HANDLE hProcess, LPARAM lParam );
-	DWORD    JSetByte( const char* valueName, int parValue );
-	DWORD    JSetByte( HANDLE hContact, const char* valueName, int parValue );
-	DWORD    JSetDword( HANDLE hContact, const char* valueName, DWORD parValue );
-	DWORD    JSetString( HANDLE hContact, const char* valueName, const char* parValue );
-	DWORD    JSetStringT( HANDLE hContact, const char* valueName, const TCHAR* parValue );
-	DWORD    JSetStringUtf( HANDLE hContact, const char* valueName, const char* parValue );
-	DWORD    JSetWord( HANDLE hContact, const char* valueName, int parValue );
-
-	TCHAR*   JGetStringCrypt( HANDLE hContact, char* valueName );
-	DWORD    JSetStringCrypt( HANDLE hContact, char* valueName, const TCHAR* parValue );
-
-	//---- jabber_rc.cpp -----------------------------------------------------------------
-
-	int      JabberRcGetUnreadEventsCount( void );
-
-	//---- jabber_icolib.cpp -----------------------------------------------------------------
-
-	void     JabberIconsInit( void );
-	HANDLE   GetIconHandle( int iconId );
-	HICON    LoadIconEx( const char* name );
-	int      LoadAdvancedIcons(int iID);
-	int      GetTransportStatusIconIndex(int iID, int Status);
-	BOOL     JabberDBCheckIsTransportedContact(const TCHAR* jid, HANDLE hContact);
-	void     JabberCheckAllContactsAreTransported( void );
-
-	//---- jabber_caps.cpp ---------------------------------------------------------------
-
-	JabberCapsBits JabberGetTotalJidCapabilites( TCHAR *jid );
-	JabberCapsBits JabberGetResourceCapabilites( TCHAR *jid, BOOL appendBestResource );
+	HICON  GetXStatusIcon(int bStatus, UINT flags);
+	void   JabberUpdateContactExtraIcon( HANDLE hContact );
+			
+	BOOL   JabberSendPepMood( int nMoodNumber, TCHAR* szMoodText );
+	BOOL   JabberSendPepTune( TCHAR* szArtist, TCHAR* szLength, TCHAR* szSource, TCHAR* szTitle, TCHAR* szTrack, TCHAR* szUri );
+			
+	void   JabberXStatusInit( void );
+	void   JabberXStatusUninit( void );
+	void   InitXStatusIcons( void );
+			
+	void   JabberSetContactMood( HANDLE hContact, const char* moodName, const TCHAR* moodText );
+	void   JabberSetContactTune( HANDLE hContact,  TCHAR* szArtist, TCHAR* szLength, TCHAR* szSource, TCHAR* szTitle, TCHAR* szTrack, TCHAR* szUri );
 
 private:
 	CRITICAL_SECTION serialMutex;
@@ -722,6 +723,9 @@ private:
 
 	HANDLE hInitChat;
 	HANDLE hPrebuildStatusMenu;
+	
+	int     nMenuResourceItems;
+	HANDLE* hMenuResourceItems;
 };
 
 #endif

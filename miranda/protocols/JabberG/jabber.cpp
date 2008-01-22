@@ -94,9 +94,6 @@ static int sttCompareHandles( const void* p1, const void* p2 )
 LIST<void> arHooks( 20, sttCompareHandles );
 LIST<void> arServices( 20, sttCompareHandles );
 
-int JabberMsgUserTyping( WPARAM wParam, LPARAM lParam );
-void JabberMenuInit( void );
-void JabberMenuUninit( void );
 int JabberModernToolbarInit(WPARAM, LPARAM);
 void JabberUserInfoInit(void);
 
@@ -219,18 +216,13 @@ int __cdecl CJabberProto::OnPreShutdown( WPARAM wParam, LPARAM lParam )
 ///////////////////////////////////////////////////////////////////////////////
 // OnModulesLoaded - execute some code when all plugins are initialized
 
-int JabberMenuPrebuildContactMenu( WPARAM wParam, LPARAM lParam );
 void JabberMenuHideSrmmIcon(HANDLE hContact);
 
 static COLORREF crCols[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 
 static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
-	JabberMenuInit();
-
 	bSecureIM = (ServiceExists("SecureIM/IsContactSecured"));
-
-	arHooks.insert( HookEvent( ME_CLIST_PREBUILDCONTACTMENU, JabberMenuPrebuildContactMenu ));
 	return 0;
 }
 
@@ -239,6 +231,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 
 int CJabberProto::OnModulesLoadedEx( WPARAM wParam, LPARAM lParam )
 {
+	JabberMenuInit();
 	JabberWsInit();
 	JabberXStatusInit();
 
@@ -246,6 +239,7 @@ int CJabberProto::OnModulesLoadedEx( WPARAM wParam, LPARAM lParam )
 	JHookEvent( ME_DB_CONTACT_DELETED, &CJabberProto::OnContactDeleted );
 	JHookEvent( ME_DB_CONTACT_SETTINGCHANGED, &CJabberProto::OnDbSettingChanged );
 	JHookEvent( ME_IDLE_CHANGED, &CJabberProto::OnIdleChanged );
+	JHookEvent( ME_CLIST_PREBUILDCONTACTMENU, &CJabberProto::OnPrebuildContactMenu );
 	JHookEvent( ME_MODERNOPT_INITIALIZE, &CJabberProto::OnModernOptInit );
 	JHookEvent( ME_TB_MODULELOADED, &CJabberProto::OnModernToolbarInit );
 	JHookEvent( ME_OPT_INITIALISE, &CJabberProto::OnOptionsInit );
@@ -287,8 +281,8 @@ int CJabberProto::OnModulesLoadedEx( WPARAM wParam, LPARAM lParam )
 		sid.flags = MBF_HIDDEN;
 		sid.szTooltip = "Jabber Resource";
 		CallService(MS_MSG_ADDICON, 0, (LPARAM) &sid);
-		JHookEvent( ME_MSG_ICONPRESSED, &CJabberProto::JabberMenuProcessSrmmIconClick );
-		JHookEvent( ME_MSG_WINDOWEVENT, &CJabberProto::JabberMenuProcessSrmmEvent );
+		JHookEvent( ME_MSG_ICONPRESSED, &CJabberProto::OnProcessSrmmIconClick );
+		JHookEvent( ME_MSG_WINDOWEVENT, &CJabberProto::OnProcessSrmmEvent );
 
 		HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 		while ( hContact != NULL ) {
@@ -408,8 +402,6 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	for ( i=0; i < arHooks.getCount(); i++ )
 		UnhookEvent( arHooks[i] );
 	arHooks.destroy();
-
-	JabberMenuUninit();
 
 	for ( i=0; i < arServices.getCount(); i++ )
 		DestroyServiceFunction( arServices[i] );
