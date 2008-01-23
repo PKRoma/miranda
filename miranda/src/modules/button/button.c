@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2008 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2008 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -42,6 +42,7 @@ typedef struct {
 	HANDLE  hThemeToolbar;
 	char	cHot;
 	int     flatBtn;
+	HWND    hwndToolTips;
 } MButtonCtrl;
 
 
@@ -55,14 +56,30 @@ static HRESULT  (WINAPI *MyDrawThemeBackground)(HANDLE,HDC,int,int,const RECT *,
 static HRESULT  (WINAPI *MyDrawThemeText)(HANDLE,HDC,int,int,LPCWSTR,int,DWORD,DWORD,const RECT *);
 
 static CRITICAL_SECTION csTips;
-static HWND hwndToolTips = NULL;
-static BOOL buttonIntialized = FALSE;
+static SortedList lToolTips;
+static BOOL bModuleInitialized = FALSE;
+
+typedef struct
+{
+	DWORD ThreadId;
+	HWND  hwnd;
+} TTooltips;
+
+static int compareThreads( const TTooltips* p1, const TTooltips* p2 )
+{
+	if ( p1->ThreadId == p2->ThreadId )
+		return 0;
+
+	return ( p1->ThreadId > p2->ThreadId ) ? 1 : -1;
+}
 
 int LoadButtonModule(void)
 {
-	WNDCLASSEX wc;
-	
-	ZeroMemory(&wc, sizeof(wc));
+	WNDCLASSEX wc = {0};
+
+	if ( bModuleInitialized ) return 0;
+	bModuleInitialized = TRUE;
+
 	wc.cbSize         = sizeof(wc);
 	wc.lpszClassName  = MIRANDABUTTONCLASS;
 	wc.lpfnWndProc    = MButtonWndProc;
@@ -71,15 +88,19 @@ int LoadButtonModule(void)
 	wc.hbrBackground  = 0;
 	wc.style          = CS_GLOBALCLASS;
 	RegisterClassEx(&wc);
+
 	InitializeCriticalSection(&csTips);
-	buttonIntialized = TRUE;
+	lToolTips.increment = 1;
+	lToolTips.sortFunc = compareThreads;
+
 	return 0;
 }
 
 void UnloadButtonModule()
 {
-	if (buttonIntialized)
-		DeleteCriticalSection(&csTips);
+	if ( !bModuleInitialized ) return;
+	List_Destroy(&lToolTips);
+	DeleteCriticalSection(&csTips);
 }
 
 // Used for our own cheap TrackMouseEvent
@@ -87,6 +108,7 @@ void UnloadButtonModule()
 #define BUTTON_POLLDELAY    50
 
 #define MGPROC(x) GetProcAddress(themeAPIHandle,x)
+
 static int ThemeSupport() {
 	if (IsWinVerXPPlus()) {
 		if (!themeAPIHandle) {
@@ -174,7 +196,7 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
 			}
 			else {
 				HBRUSH hbr;
-				
+
 				if (ctl->stateId==PBS_PRESSED||ctl->stateId==PBS_HOT)
 					hbr = GetSysColorBrush(COLOR_3DLIGHT);
 				else {
@@ -271,7 +293,7 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
 			GetTextExtentPoint32(hdcMem, szText, lstrlen(szText), &sz);
 			if (ctl->cHot) {
 				SIZE szHot;
-				
+
 				GetTextExtentPoint32 (hdcMem, _T("&"), 1, &szHot);
 				sz.cx -= szHot.cx;
 			}
@@ -312,6 +334,7 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 		bct->hThemeToolbar = NULL;
 		bct->cHot = 0;
 		bct->flatBtn = 0;
+		bct->hwndToolTips = NULL;
 		LoadTheme(bct);
 		SetWindowLong(hwndDlg, 0, (LONG)bct);
 		if (((CREATESTRUCT *)lParam)->lpszName) SetWindowText(hwndDlg, ((CREATESTRUCT *)lParam)->lpszName);
@@ -320,20 +343,25 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 	case WM_DESTROY:
 		if (bct) {
 			EnterCriticalSection(&csTips);
-			if (hwndToolTips) {
-				TOOLINFO ti;
-
-				ZeroMemory(&ti, sizeof(ti));
+			if (bct->hwndToolTips) {
+				TOOLINFO ti = {0};
 				ti.cbSize = sizeof(ti);
 				ti.uFlags = TTF_IDISHWND;
 				ti.hwnd = bct->hwnd;
 				ti.uId = (UINT)bct->hwnd;
-				if (SendMessage(hwndToolTips, TTM_GETTOOLINFO, 0, (LPARAM)&ti)) {
-					SendMessage(hwndToolTips, TTM_DELTOOL, 0, (LPARAM)&ti);
+				if (SendMessage(bct->hwndToolTips, TTM_GETTOOLINFO, 0, (LPARAM)&ti)) {
+					SendMessage(bct->hwndToolTips, TTM_DELTOOL, 0, (LPARAM)&ti);
 				}
-				if (SendMessage(hwndToolTips, TTM_GETTOOLCOUNT, 0, (LPARAM)&ti)==0) {
-					DestroyWindow(hwndToolTips);
-					hwndToolTips = NULL;
+				if ( SendMessage(bct->hwndToolTips, TTM_GETTOOLCOUNT, 0, (LPARAM)&ti) == 0 ) {
+					int idx;
+					TTooltips tt;
+					tt.ThreadId = GetCurrentThreadId();
+					if ( List_GetIndex( &lToolTips, &tt, &idx ) ) {
+						mir_free( lToolTips.items[idx] );
+						List_Remove( &lToolTips, idx );
+						DestroyWindow( bct->hwndToolTips );
+					}
+					bct->hwndToolTips = NULL;
 				}
 			}
 			LeaveCriticalSection(&csTips);
@@ -398,7 +426,7 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 	{
 		PAINTSTRUCT ps;
 		HDC hdcPaint;
-		
+
 		hdcPaint = BeginPaint(hwndDlg, &ps);
 		if (hdcPaint) {
 			PaintWorker(bct, hdcPaint);
@@ -472,18 +500,28 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 		break;
 	case BUTTONADDTOOLTIP:
 		if ( wParam ) {
-			TOOLINFO ti;
-         EnterCriticalSection(&csTips);
-			if ( !hwndToolTips )
-				hwndToolTips = CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS, _T(""), WS_POPUP, 0, 0, 0, 0, NULL, NULL, GetModuleHandle(NULL), NULL);
-
-			ZeroMemory(&ti, sizeof(ti));
+			TOOLINFO ti = {0};
+			EnterCriticalSection(&csTips);
+			if ( !bct->hwndToolTips ) {
+				int idx;
+				TTooltips tt;
+				tt.ThreadId = GetCurrentThreadId();
+				if ( List_GetIndex( &lToolTips, &tt, &idx )) {
+					bct->hwndToolTips = ((TTooltips*)lToolTips.items[idx])->hwnd;
+				} else {
+					TTooltips *ptt = mir_alloc( sizeof(TTooltips) );
+					ptt->ThreadId = tt.ThreadId;
+					ptt->hwnd = CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS, _T(""), TTS_ALWAYSTIP, 0, 0, 0, 0, NULL, NULL, GetModuleHandle(NULL), NULL);
+					List_Insert( &lToolTips, ptt, idx );
+					bct->hwndToolTips = ptt->hwnd;
+				}
+			}
 			ti.cbSize = sizeof(ti);
 			ti.uFlags = TTF_IDISHWND;
 			ti.hwnd = bct->hwnd;
 			ti.uId = (UINT)bct->hwnd;
-			if (SendMessage(hwndToolTips, TTM_GETTOOLINFO, 0, (LPARAM)&ti))
-				SendMessage(hwndToolTips, TTM_DELTOOL, 0, (LPARAM)&ti);
+			if (SendMessage(bct->hwndToolTips, TTM_GETTOOLINFO, 0, (LPARAM)&ti))
+				SendMessage(bct->hwndToolTips, TTM_DELTOOL, 0, (LPARAM)&ti);
 			ti.uFlags = TTF_IDISHWND|TTF_SUBCLASS;
 			ti.uId = (UINT)bct->hwnd;
 			#if defined( _UNICODE )
@@ -494,7 +532,7 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 			#else
 				ti.lpszText = Translate(( char* )wParam );
 			#endif
-			SendMessage( hwndToolTips, TTM_ADDTOOL, 0, (LPARAM)&ti);
+			SendMessage( bct->hwndToolTips, TTM_ADDTOOL, 0, (LPARAM)&ti);
 			LeaveCriticalSection(&csTips);
 			#if defined( _UNICODE )
 				mir_free( ti.lpszText );
