@@ -406,31 +406,23 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 	JabberUserInfoDlgData *dat = (JabberUserInfoDlgData *)GetWindowLong( hwndDlg, GWL_USERDATA );
 
 	switch ( msg ) {
-		case WM_INITDIALOG:
-			{
-			// lParam is hContact
-			TranslateDialogDefault( hwndDlg );
+	case WM_INITDIALOG:
+		// lParam is hContact
+		TranslateDialogDefault( hwndDlg );
 
-			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_OTHER_USERDETAILS));
+		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_OTHER_USERDETAILS));
 
-			dat = (JabberUserInfoDlgData *)mir_alloc(sizeof(JabberUserInfoDlgData));
-			dat->resourceCount = -1;
-			dat->ppro = ( CJabberProto* )lParam;
+		dat = (JabberUserInfoDlgData *)mir_alloc(sizeof(JabberUserInfoDlgData));
+		dat->resourceCount = -1;
+		dat->ppro = ( CJabberProto* )lParam;
 
-			if ( CallService(MS_DB_CONTACT_IS, (WPARAM)lParam, 0 )) {
-				dat->hContact = (HANDLE)lParam;
-				DBVARIANT dbv = {0};
-				if ( dat->ppro->JGetStringT(dat->hContact, "jid", &dbv)) break;
-				JABBER_LIST_ITEM *item = NULL;
-				if ( !(dat->item = dat->ppro->JabberListGetItemPtr( LIST_VCARD_TEMP, dbv.ptszVal )))
-					dat->item = dat->ppro->JabberListGetItemPtr( LIST_ROSTER, dbv.ptszVal );
-				JFreeVariant(&dbv);
-			} 
-			else if (!IsBadReadPtr((void *)lParam, sizeof(JABBER_LIST_ITEM))) {
-				dat->hContact = NULL;
-				dat->item = (JABBER_LIST_ITEM *)lParam;
-			}
-
+		if ( CallService(MS_DB_CONTACT_IS, (WPARAM)lParam, 0 ))
+			dat->hContact = (HANDLE)lParam;
+		else if (!IsBadReadPtr((void *)lParam, sizeof(JABBER_LIST_ITEM))) {
+			dat->hContact = NULL;
+			dat->item = (JABBER_LIST_ITEM *)lParam;
+		}
+		{
 			RECT rc; GetClientRect( hwndDlg, &rc );
 			MoveWindow( GetDlgItem( hwndDlg, IDC_TV_INFO ), 5, 5, rc.right-10, rc.bottom-10, TRUE );
 
@@ -440,149 +432,135 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 
 			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)dat);
 			WindowList_Add(hUserInfoList, hwndDlg, dat->hContact);
-
-			SendMessage(hwndDlg, WM_JABBER_REFRESH, 0, 0);
-			return TRUE;
 		}
+		return TRUE;
 
-		case WM_DESTROY:
-		{
-			WindowList_Remove(hUserInfoList, hwndDlg);
-			if (dat)
-			{
-				mir_free(dat);
-				SetWindowLong(hwndDlg, GWL_USERDATA, 0);
-			}
-			ImageList_Destroy(TreeView_SetImageList(GetDlgItem(hwndDlg, IDC_TV_INFO), NULL, TVSIL_NORMAL));
-			break;
+	case WM_DESTROY:
+		WindowList_Remove(hUserInfoList, hwndDlg);
+		if ( dat ) { 
+			mir_free(dat);
+			SetWindowLong(hwndDlg, GWL_USERDATA, 0);
 		}
+		ImageList_Destroy(TreeView_SetImageList(GetDlgItem(hwndDlg, IDC_TV_INFO), NULL, TVSIL_NORMAL));
+		break;
 
-		case WM_JABBER_REFRESH:
-		{
-			if (!dat) break;
+	case WM_JABBER_REFRESH:
+		if ( !dat ) break;
+
+		if ( !dat->item ) {
+			DBVARIANT dbv = {0};
+			if ( dat->ppro->JGetStringT(dat->hContact, "jid", &dbv))
+				break;
+
+			JABBER_LIST_ITEM *item = NULL;
+			if (!(dat->item = dat->ppro->JabberListGetItemPtr(LIST_VCARD_TEMP, dbv.ptszVal)))
+				dat->item = dat->ppro->JabberListGetItemPtr(LIST_ROSTER, dbv.ptszVal);
 
 			if (!dat->item)
 			{
-				DBVARIANT dbv = {0};
-				if ( dat->ppro->JGetStringT(dat->hContact, "jid", &dbv))
-					break;
-
-				JABBER_LIST_ITEM *item = NULL;
-				if (!(dat->item = dat->ppro->JabberListGetItemPtr(LIST_VCARD_TEMP, dbv.ptszVal)))
-					dat->item = dat->ppro->JabberListGetItemPtr(LIST_ROSTER, dbv.ptszVal);
-
-				if (!dat->item)
-				{
-					HWND hwndTree = GetDlgItem(hwndDlg, IDC_TV_INFO);
-					TreeView_DeleteAllItems( hwndTree );
-					HTREEITEM htiRoot = sttFillInfoLine( hwndTree, NULL, dat->ppro->LoadIconEx( "main" ), _T( "JID" ), dbv.ptszVal, sttInfoLineId(0, INFOLINE_NAME), true );
-					sttFillInfoLine( hwndTree, htiRoot, LoadSkinnedProtoIcon( dat->ppro->szModuleName, ID_STATUS_OFFLINE ), NULL, 
-						TranslateT("Please switch online to see more details.") );
-
-					JFreeVariant(&dbv);
-					break;
-				}
+				HWND hwndTree = GetDlgItem(hwndDlg, IDC_TV_INFO);
+				TreeView_DeleteAllItems( hwndTree );
+				HTREEITEM htiRoot = sttFillInfoLine( hwndTree, NULL, dat->ppro->LoadIconEx( "main" ), _T( "JID" ), dbv.ptszVal, sttInfoLineId(0, INFOLINE_NAME), true );
+				sttFillInfoLine( hwndTree, htiRoot, LoadSkinnedProtoIcon( dat->ppro->szModuleName, ID_STATUS_OFFLINE ), NULL, 
+					TranslateT("Please switch online to see more details.") );
 
 				JFreeVariant(&dbv);
-			}
-			sttFillUserInfo( dat->ppro, GetDlgItem(hwndDlg, IDC_TV_INFO), dat->item);
-			break;
-		}
-
-		case WM_SIZE:
-		{
-			MoveWindow(GetDlgItem(hwndDlg, IDC_TV_INFO), 5, 5, LOWORD(lParam)-10, HIWORD(lParam)-10, TRUE);
-			break;
-		}
-
-		case WM_CLOSE:
-		{
-			DestroyWindow(hwndDlg);
-			break;
-		}
-
-		case WM_CONTEXTMENU:
-		{
-			switch ( GetWindowLong(( HWND )wParam, GWL_ID ))
-			{
-				case IDC_TV_INFO:
-				{
-					HWND hwndTree = GetDlgItem( hwndDlg, IDC_TV_INFO );
-					POINT pt = { (signed short)LOWORD( lParam ), (signed short)HIWORD( lParam ) };
-					HTREEITEM hItem = 0;
-
-					if (( pt.x == -1 ) && ( pt.y == -1 )) {
-						if (hItem = TreeView_GetSelection( hwndTree )) {
-							RECT rc;
-							TreeView_GetItemRect( hwndTree, hItem, &rc, TRUE );
-							pt.x = rc.left;
-							pt.y = rc.bottom;
-							ClientToScreen( hwndTree, &pt );
-						}
-					}
-					else {
-						TVHITTESTINFO tvhti = {0};
-						tvhti.pt = pt;
-						ScreenToClient( hwndTree, &tvhti.pt );
-						TreeView_HitTest( hwndTree, &tvhti );
-						if ( tvhti.flags & TVHT_ONITEM ) {
-							hItem = tvhti.hItem;
-							TreeView_Select(hwndTree, hItem, TVGN_CARET);
-						}
-					}
-
-					if ( hItem ) {
-						HMENU hMenu = CreatePopupMenu();
-						AppendMenu(hMenu, MF_STRING, (UINT_PTR)1, TranslateT("Copy"));
-						AppendMenu(hMenu, MF_STRING, (UINT_PTR)2, TranslateT("Copy only this value"));
-						AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
-						AppendMenu(hMenu, MF_STRING, (UINT_PTR)0, TranslateT("Cancel"));
-						int nReturnCmd = TrackPopupMenu( hMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL );
-						if ( nReturnCmd == 1 ) {
-							UserInfoStringBuf buf;
-							sttGetNodeText( hwndTree, hItem, &buf );
-							JabberCopyText( hwndDlg, buf.buf );
-						}
-						else if ( nReturnCmd == 2 ) {
-							TCHAR szBuffer[ 1024 ];
-							TVITEMEX tvi = {0};
-							tvi.mask = TVIF_HANDLE|TVIF_TEXT|TVIF_STATE;
-							tvi.hItem = hItem;
-							tvi.cchTextMax = SIZEOF( szBuffer );
-							tvi.pszText = szBuffer;
-							if ( TreeView_GetItem( hwndTree, &tvi ))
-							{
-								if (TCHAR *str = _tcsstr(szBuffer, _T(": ")))
-									JabberCopyText( hwndDlg, str+2 );
-								else
-									JabberCopyText( hwndDlg, szBuffer );
-							}
-						}
-						DestroyMenu( hMenu );
-					}
-
-					break;
-				}
-			}
-			break;
-		}
-
-		case WM_NOTIFY:
-		{
-			switch (( ( LPNMHDR )lParam )->idFrom ) {
-			case 0:
-				switch (( ( LPNMHDR )lParam )->code ) {
-				case PSN_INFOCHANGED:
-					{
-						HANDLE hContact = ( HANDLE ) (( LPPSHNOTIFY ) lParam )->lParam;
-						SendMessage( hwndDlg, WM_JABBER_REFRESH, 0, ( LPARAM )hContact );
-					}
-					break;
-				}
 				break;
 			}
-			break;
+
+			JFreeVariant(&dbv);
 		}
+		sttFillUserInfo( dat->ppro, GetDlgItem(hwndDlg, IDC_TV_INFO), dat->item);
+		break;
+
+	case WM_SIZE:
+		MoveWindow(GetDlgItem(hwndDlg, IDC_TV_INFO), 5, 5, LOWORD(lParam)-10, HIWORD(lParam)-10, TRUE);
+		break;
+
+	case WM_CLOSE:
+		DestroyWindow(hwndDlg);
+		break;
+
+	case WM_CONTEXTMENU:
+		if ( GetWindowLong(( HWND )wParam, GWL_ID ) == IDC_TV_INFO ) {
+			HWND hwndTree = GetDlgItem( hwndDlg, IDC_TV_INFO );
+			POINT pt = { (signed short)LOWORD( lParam ), (signed short)HIWORD( lParam ) };
+			HTREEITEM hItem = 0;
+
+			if (( pt.x == -1 ) && ( pt.y == -1 )) {
+				if (hItem = TreeView_GetSelection( hwndTree )) {
+					RECT rc;
+					TreeView_GetItemRect( hwndTree, hItem, &rc, TRUE );
+					pt.x = rc.left;
+					pt.y = rc.bottom;
+					ClientToScreen( hwndTree, &pt );
+				}
+			}
+			else {
+				TVHITTESTINFO tvhti = {0};
+				tvhti.pt = pt;
+				ScreenToClient( hwndTree, &tvhti.pt );
+				TreeView_HitTest( hwndTree, &tvhti );
+				if ( tvhti.flags & TVHT_ONITEM ) {
+					hItem = tvhti.hItem;
+					TreeView_Select(hwndTree, hItem, TVGN_CARET);
+			}	}
+
+			if ( hItem ) {
+				HMENU hMenu = CreatePopupMenu();
+				AppendMenu(hMenu, MF_STRING, (UINT_PTR)1, TranslateT("Copy"));
+				AppendMenu(hMenu, MF_STRING, (UINT_PTR)2, TranslateT("Copy only this value"));
+				AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
+				AppendMenu(hMenu, MF_STRING, (UINT_PTR)0, TranslateT("Cancel"));
+				int nReturnCmd = TrackPopupMenu( hMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL );
+				if ( nReturnCmd == 1 ) {
+					UserInfoStringBuf buf;
+					sttGetNodeText( hwndTree, hItem, &buf );
+					JabberCopyText( hwndDlg, buf.buf );
+				}
+				else if ( nReturnCmd == 2 ) {
+					TCHAR szBuffer[ 1024 ];
+					TVITEMEX tvi = {0};
+					tvi.mask = TVIF_HANDLE|TVIF_TEXT|TVIF_STATE;
+					tvi.hItem = hItem;
+					tvi.cchTextMax = SIZEOF( szBuffer );
+					tvi.pszText = szBuffer;
+					if ( TreeView_GetItem( hwndTree, &tvi )) {
+						if (TCHAR *str = _tcsstr(szBuffer, _T(": ")))
+							JabberCopyText( hwndDlg, str+2 );
+						else
+							JabberCopyText( hwndDlg, szBuffer );
+				}	}
+				DestroyMenu( hMenu );
+		}	}
+		break;
+
+	case WM_NOTIFY:
+		if (( ( LPNMHDR )lParam )->idFrom == 0 ) {
+			switch (( ( LPNMHDR )lParam )->code ) {
+			case PSN_INFOCHANGED:
+				{
+					HANDLE hContact = ( HANDLE ) (( LPPSHNOTIFY ) lParam )->lParam;
+					SendMessage( hwndDlg, WM_JABBER_REFRESH, 0, ( LPARAM )hContact );
+				}
+				break;
+
+			case PSN_PARAMCHANGED:
+				dat->ppro = ( CJabberProto* )( CJabberProto* )(( PSHNOTIFY* )lParam )->lParam;
+				if ( dat->hContact != NULL ) {
+					DBVARIANT dbv = {0};
+					if ( dat->ppro->JGetStringT(dat->hContact, "jid", &dbv))
+						break;
+					
+					JABBER_LIST_ITEM *item = NULL;
+					if ( !(dat->item = dat->ppro->JabberListGetItemPtr( LIST_VCARD_TEMP, dbv.ptszVal )))
+						dat->item = dat->ppro->JabberListGetItemPtr( LIST_ROSTER, dbv.ptszVal );
+					JFreeVariant(&dbv);
+				}
+				SendMessage(hwndDlg, WM_JABBER_REFRESH, 0, 0);
+				break;
+		}	}
+		break;
 	}
 	return FALSE;
 }
@@ -609,25 +587,30 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 		TranslateDialogDefault( hwndDlg );
 		photoInfo = ( USER_PHOTO_INFO * ) mir_alloc( sizeof( USER_PHOTO_INFO ));
 		photoInfo->hContact = ( HANDLE ) lParam;
+		photoInfo->ppro = NULL;
 		photoInfo->hBitmap = NULL;
-		photoInfo->ppro = ( CJabberProto* )lParam;
 		SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG ) photoInfo );
 		SendMessage( GetDlgItem( hwndDlg, IDC_SAVE ), BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadImage( hInst, MAKEINTRESOURCE( IDI_SAVE ), IMAGE_ICON, GetSystemMetrics( SM_CXSMICON ), GetSystemMetrics( SM_CYSMICON ), 0 ));
 		ShowWindow( GetDlgItem( hwndDlg, IDC_LOAD ), SW_HIDE );
 		ShowWindow( GetDlgItem( hwndDlg, IDC_DELETE ), SW_HIDE );
-		SendMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0 );
 		return TRUE;
+
 	case WM_NOTIFY:
-		switch (( ( LPNMHDR )lParam )->idFrom ) {
+		switch ((( LPNMHDR )lParam )->idFrom ) {
 		case 0:
-			switch (( ( LPNMHDR )lParam )->code ) {
+			switch ((( LPNMHDR )lParam )->code ) {
 			case PSN_INFOCHANGED:
 				SendMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0 );
+				break;
+
+			case PSN_PARAMCHANGED:
+				photoInfo->ppro = ( CJabberProto* )(( PSHNOTIFY* )lParam )->lParam;
 				break;
 			}
 			break;
 		}
 		break;
+
 	case WM_JABBER_REFRESH:
 		{
 			JABBER_LIST_ITEM *item;
@@ -656,6 +639,7 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			UpdateWindow( hwndDlg );
 		}
 		break;
+
 	case WM_COMMAND:
 		switch ( LOWORD( wParam )) {
 		case IDC_SAVE:
@@ -735,6 +719,7 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			break;
 		}
 		break;
+
 	case WM_PAINT:
 		if ( !photoInfo->ppro->jabberOnline )
 			SetDlgItemText( hwndDlg, IDC_CANVAS, TranslateT( "<Photo not available while offline>" ));
@@ -807,6 +792,9 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			DeleteDC( hdcMem );
 		}
 		break;
+
+		photoInfo->ppro = ( CJabberProto* )lParam;
+
 	case WM_DESTROY:
 		if ( photoInfo->hBitmap ) {
 			photoInfo->ppro->JabberLog( "Delete bitmap" );

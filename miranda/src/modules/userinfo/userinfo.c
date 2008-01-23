@@ -37,6 +37,7 @@ struct DetailsPageData {
 	DLGTEMPLATE *pTemplate;
 	HINSTANCE hInst;
 	DLGPROC dlgProc;
+	LPARAM  dlgParam;
 	HWND hwnd;
 	HTREEITEM hItem;
 	int changed;
@@ -131,6 +132,8 @@ static int AddDetailsPage(WPARAM wParam,LPARAM lParam)
 	dst->groupPosition = odp->groupPosition;
 	dst->hGroupIcon = odp->hGroupIcon;
 	dst->hIcon = odp->hIcon;
+	if ( odp->cbSize == sizeof(OPTIONSDIALOGPAGE))
+		dst->dwInitParam = odp->dwInitParam;
 	opi->pageCount++;
 	return 0;
 }
@@ -197,26 +200,26 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				TVINSERTSTRUCT tvis;
 				DBVARIANT dbv;
 
-				dat->currentPage=0;
-				if(DBGetContactSettingTString(NULL,"UserInfo","LastTab",&dbv))
-					dbv.type=DBVT_DELETED;
-				dat->pageCount=psh->nPages;
-				dat->opd=(struct DetailsPageData*)mir_alloc(sizeof(struct DetailsPageData)*dat->pageCount);
-				odp=(OPTIONSDIALOGPAGE*)psh->ppsp;
+				dat->currentPage = 0;
+				if ( DBGetContactSettingTString( NULL, "UserInfo", "LastTab", &dbv ))
+					dbv.type = DBVT_DELETED;
+				dat->pageCount = psh->nPages;
+				dat->opd = (struct DetailsPageData*)mir_calloc(sizeof(struct DetailsPageData)*dat->pageCount);
+				odp = (OPTIONSDIALOGPAGE*)psh->ppsp;
 
-				for(i=0;i<dat->pageCount;i++) {
-					dat->opd[i].pTemplate=(DLGTEMPLATE *)LockResource(LoadResource(odp[i].hInstance,FindResourceA(odp[i].hInstance,odp[i].pszTemplate,MAKEINTRESOURCEA(5))));
-					dat->opd[i].dlgProc=odp[i].pfnDlgProc;
-					dat->opd[i].hInst=odp[i].hInstance;
-					dat->opd[i].hwnd=NULL;
-					dat->opd[i].changed=0;
+				for ( i=0; i < dat->pageCount; i++ ) {
+					dat->opd[i].pTemplate = (DLGTEMPLATE *)LockResource(LoadResource(odp[i].hInstance,FindResourceA(odp[i].hInstance,odp[i].pszTemplate,MAKEINTRESOURCEA(5))));
+					dat->opd[i].dlgProc = odp[i].pfnDlgProc;
+					dat->opd[i].dlgParam = odp[i].dwInitParam;
+					dat->opd[i].hInst = odp[i].hInstance;
+
 					tvis.hParent = NULL;
 					tvis.hInsertAfter = TVI_LAST;
 					tvis.item.mask = TVIF_TEXT | TVIF_PARAM;
 					tvis.item.lParam = (LPARAM) i;
 					tvis.item.pszText = odp[i].ptszTitle;
-					if(dbv.type!=DBVT_DELETED && !lstrcmp(tvis.item.pszText,dbv.ptszVal))
-						dat->currentPage=i;
+					if ( dbv.type != DBVT_DELETED && !lstrcmp( tvis.item.pszText, dbv.ptszVal ))
+						dat->currentPage = i;
 					dat->opd[i].hItem = TreeView_InsertItem(GetDlgItem(hwndDlg, IDC_PAGETREE), &tvis);
 				}
 				DBFreeVariant(&dbv);
@@ -239,8 +242,8 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				pshn.lParam=(LPARAM)dat->hContact;
 				SendMessage(dat->opd[dat->currentPage].hwnd,WM_NOTIFY,0,(LPARAM)&pshn);
 			}
-			ShowWindow(dat->opd[dat->currentPage].hwnd,SW_SHOW);
-			dat->updateAnimFrame=0;
+			ShowWindow( dat->opd[dat->currentPage].hwnd, SW_SHOW );
+			dat->updateAnimFrame = 0;
 			GetDlgItemText(hwndDlg,IDC_UPDATING,dat->szUpdating,SIZEOF(dat->szUpdating));
 			SendMessage(hwndDlg,M_CHECKONLINE,0,0);
 			if (!CallContactService(dat->hContact,PSS_GETINFO,SGIF_ONOPEN,0)) {
@@ -374,6 +377,13 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 							dat->opd[dat->currentPage].hwnd=CreateDialogIndirectParam(dat->opd[dat->currentPage].hInst,dat->opd[dat->currentPage].pTemplate,hwndDlg,dat->opd[dat->currentPage].dlgProc,(LPARAM)dat->hContact);
 							ThemeDialogBackground(dat->opd[dat->currentPage].hwnd);
 							SetWindowPos(dat->opd[dat->currentPage].hwnd, HWND_TOP, dat->rcDisplay.left, dat->rcDisplay.top, dat->rcDisplay.right - dat->rcDisplay.left, dat->rcDisplay.bottom - dat->rcDisplay.top, 0);
+							
+							pshn.hdr.code = PSN_PARAMCHANGED;
+							pshn.hdr.hwndFrom = dat->opd[dat->currentPage].hwnd;
+							pshn.hdr.idFrom = 0;
+							pshn.lParam = (LPARAM)dat->opd[dat->currentPage].dlgParam;
+							SendMessage(dat->opd[dat->currentPage].hwnd,WM_NOTIFY,0,(LPARAM)&pshn);
+
 							pshn.hdr.code=PSN_INFOCHANGED;
 							pshn.hdr.hwndFrom=dat->opd[dat->currentPage].hwnd;
 							pshn.hdr.idFrom=0;
