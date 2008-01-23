@@ -94,3 +94,19 @@ DWORD WriteSegment(DWORD ofs,PVOID buf,int cbBytes)
 	}
 	return ofs;
 }
+
+
+int ReadWrittenSegment(DWORD ofs,PVOID buf,int cbBytes)
+{
+	DWORD bytesRead;
+	if(opts.bCheckOnly) return 0xbfbfbfbf;
+	if(ofs + cbBytes > dbhdr.ofsFileEnd )
+		return ERROR_SEEK;
+
+	SetFilePointer(opts.hOutFile,ofs,NULL,FILE_BEGIN);
+	ReadFile(opts.hOutFile,buf,cbBytes,&bytesRead,NULL);
+	if((int)bytesRead<cbBytes)
+		return ERROR_READ_FAULT;
+
+	return ERROR_SUCCESS;
+}

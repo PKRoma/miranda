@@ -65,10 +65,15 @@ int WorkContactChain(int firstTime)
 			}
 			ofsNextContact=dbc.ofsNext;
 			dbc.ofsNext=0;
-			if((ofsDestThis=WriteSegment(WSOFS_END,&dbc,sizeof(dbc)))==WS_ERROR)
-				return ERROR_HANDLE_DISK_FULL;
-			if(ofsDestPrevContact) WriteSegment(ofsDestPrevContact+offsetof(DBContact,ofsNext),&ofsDestThis,sizeof(DWORD));
-			else dbhdr.ofsFirstContact=ofsDestThis;
+			if (!opts.bCheckOnly) {
+				if((ofsDestThis=WriteSegment(WSOFS_END,&dbc,sizeof(dbc)))==WS_ERROR)
+					return ERROR_HANDLE_DISK_FULL;
+				if(ofsDestPrevContact) 
+					WriteSegment(ofsDestPrevContact+offsetof(DBContact,ofsNext),&ofsDestThis,sizeof(DWORD));
+				else 
+					dbhdr.ofsFirstContact=ofsDestThis;
+			} else 
+				ofsDestThis = ofsThisContact; // needed in event chain worker
 			contactCount++;
 			phase++; first=1;
 			//fall thru

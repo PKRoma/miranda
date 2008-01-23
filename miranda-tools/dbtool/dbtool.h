@@ -97,6 +97,7 @@ int ReadSegment(DWORD ofs,PVOID buf,int cbBytes);
 #define WSOFS_END   0xFFFFFFFF
 #define WS_ERROR    0xFFFFFFFF
 DWORD WriteSegment(DWORD ofs,PVOID buf,int cbBytes);
+int ReadWrittenSegment(DWORD ofs,PVOID buf,int cbBytes);
 int SignatureValid(DWORD ofs,DWORD signature);
 DWORD ConvertModuleNameOfs(DWORD ofsOld);
 void FreeModuleChain();

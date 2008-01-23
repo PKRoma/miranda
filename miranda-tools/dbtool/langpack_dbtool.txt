@@ -35,7 +35,9 @@ Plugins-included:
 [Infeasibly large event blob: skipping]
 [Event not backlinked correctly: fixing]
 [Duplicate event was found: skipping]
+[Event position in chain is not correct]
 [Event position in chain is not correct: fixing]
+[Event position in chain is not correct: unable to fix]
 
 ; /dbtool/finaltasks.cpp
 [Processing final tasks]
@@ -140,7 +142,7 @@ Plugins-included:
 ; /dbtool/settingschain.cpp
 [Settings chain corrupted, further entries ignored]
 [Infeasibly large settings blob: skipping]
-[Empty settings group at %08X: deleting]
+[Empty settings group at %08X: skipping]
 
 ; /dbtool/user.cpp
 [Processing user data]
