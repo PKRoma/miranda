@@ -587,6 +587,10 @@ SOURCE=.\modules\plugins\newplugins.c
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\modules\protocols\protoaccs.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\modules\protocols\protochains.c
 # End Source File
 # Begin Source File
@@ -608,10 +612,6 @@ SOURCE=.\modules\protocols\protoopts.c
 # Begin Source File
 
 SOURCE=.\modules\skin\hotkeys.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\modules\skin\skin.c
 # End Source File
 # Begin Source File
 
@@ -917,10 +917,6 @@ SOURCE=.\modules\fonts\services.c
 
 SOURCE=.\modules\icolib\extracticon.c
 # SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\modules\icolib\IcoLib.c
 # End Source File
 # Begin Source File
 

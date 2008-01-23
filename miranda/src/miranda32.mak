@@ -145,8 +145,6 @@ CLEAN :
 	-@erase "$(INTDIR)\hotkeys.sbr"
 	-@erase "$(INTDIR)\hyperlink.obj"
 	-@erase "$(INTDIR)\hyperlink.sbr"
-	-@erase "$(INTDIR)\IcoLib.obj"
-	-@erase "$(INTDIR)\IcoLib.sbr"
 	-@erase "$(INTDIR)\idle.obj"
 	-@erase "$(INTDIR)\idle.sbr"
 	-@erase "$(INTDIR)\ignore.obj"
@@ -202,6 +200,8 @@ CLEAN :
 	-@erase "$(INTDIR)\path.sbr"
 	-@erase "$(INTDIR)\profilemanager.obj"
 	-@erase "$(INTDIR)\profilemanager.sbr"
+	-@erase "$(INTDIR)\protoaccs.obj"
+	-@erase "$(INTDIR)\protoaccs.sbr"
 	-@erase "$(INTDIR)\protochains.obj"
 	-@erase "$(INTDIR)\protochains.sbr"
 	-@erase "$(INTDIR)\protocolorder.obj"
@@ -222,8 +222,6 @@ CLEAN :
 	-@erase "$(INTDIR)\services.sbr"
 	-@erase "$(INTDIR)\sha1.obj"
 	-@erase "$(INTDIR)\sha1.sbr"
-	-@erase "$(INTDIR)\skin.obj"
-	-@erase "$(INTDIR)\skin.sbr"
 	-@erase "$(INTDIR)\skin2icons.obj"
 	-@erase "$(INTDIR)\skin2icons.sbr"
 	-@erase "$(INTDIR)\skinicons.obj"
@@ -305,8 +303,9 @@ BSC32_SBRS= \
 	"$(INTDIR)\newplugins.sbr" \
 	"$(INTDIR)\protochains.sbr" \
 	"$(INTDIR)\protocols.sbr" \
+	"$(INTDIR)\protoint.sbr" \
+	"$(INTDIR)\protoopts.sbr" \
 	"$(INTDIR)\hotkeys.sbr" \
-	"$(INTDIR)\skin.sbr" \
 	"$(INTDIR)\skinicons.sbr" \
 	"$(INTDIR)\sounds.sbr" \
 	"$(INTDIR)\auth.sbr" \
@@ -365,11 +364,9 @@ BSC32_SBRS= \
 	"$(INTDIR)\module_fonts.sbr" \
 	"$(INTDIR)\services.sbr" \
 	"$(INTDIR)\extracticon.sbr" \
-	"$(INTDIR)\IcoLib.sbr" \
 	"$(INTDIR)\skin2icons.sbr" \
 	"$(INTDIR)\updatenotify.sbr" \
-	"$(INTDIR)\protoopts.sbr" \
-	"$(INTDIR)\protoint.sbr"
+	"$(INTDIR)\protoaccs.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -417,8 +414,9 @@ LINK32_OBJS= \
 	"$(INTDIR)\newplugins.obj" \
 	"$(INTDIR)\protochains.obj" \
 	"$(INTDIR)\protocols.obj" \
+	"$(INTDIR)\protoint.obj" \
+	"$(INTDIR)\protoopts.obj" \
 	"$(INTDIR)\hotkeys.obj" \
-	"$(INTDIR)\skin.obj" \
 	"$(INTDIR)\skinicons.obj" \
 	"$(INTDIR)\sounds.obj" \
 	"$(INTDIR)\auth.obj" \
@@ -477,12 +475,10 @@ LINK32_OBJS= \
 	"$(INTDIR)\module_fonts.obj" \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\extracticon.obj" \
-	"$(INTDIR)\IcoLib.obj" \
 	"$(INTDIR)\skin2icons.obj" \
 	"$(INTDIR)\updatenotify.obj" \
 	"$(INTDIR)\vc6.res" \
-	"$(INTDIR)\protoopts.obj" \
-	"$(INTDIR)\protoint.obj"
+	"$(INTDIR)\protoaccs.obj"
 
 "..\bin\release\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -603,8 +599,6 @@ CLEAN :
 	-@erase "$(INTDIR)\hotkeys.sbr"
 	-@erase "$(INTDIR)\hyperlink.obj"
 	-@erase "$(INTDIR)\hyperlink.sbr"
-	-@erase "$(INTDIR)\IcoLib.obj"
-	-@erase "$(INTDIR)\IcoLib.sbr"
 	-@erase "$(INTDIR)\idle.obj"
 	-@erase "$(INTDIR)\idle.sbr"
 	-@erase "$(INTDIR)\ignore.obj"
@@ -660,6 +654,8 @@ CLEAN :
 	-@erase "$(INTDIR)\path.sbr"
 	-@erase "$(INTDIR)\profilemanager.obj"
 	-@erase "$(INTDIR)\profilemanager.sbr"
+	-@erase "$(INTDIR)\protoaccs.obj"
+	-@erase "$(INTDIR)\protoaccs.sbr"
 	-@erase "$(INTDIR)\protochains.obj"
 	-@erase "$(INTDIR)\protochains.sbr"
 	-@erase "$(INTDIR)\protocolorder.obj"
@@ -680,8 +676,6 @@ CLEAN :
 	-@erase "$(INTDIR)\services.sbr"
 	-@erase "$(INTDIR)\sha1.obj"
 	-@erase "$(INTDIR)\sha1.sbr"
-	-@erase "$(INTDIR)\skin.obj"
-	-@erase "$(INTDIR)\skin.sbr"
 	-@erase "$(INTDIR)\skin2icons.obj"
 	-@erase "$(INTDIR)\skin2icons.sbr"
 	-@erase "$(INTDIR)\skinicons.obj"
@@ -764,8 +758,9 @@ BSC32_SBRS= \
 	"$(INTDIR)\newplugins.sbr" \
 	"$(INTDIR)\protochains.sbr" \
 	"$(INTDIR)\protocols.sbr" \
+	"$(INTDIR)\protoint.sbr" \
+	"$(INTDIR)\protoopts.sbr" \
 	"$(INTDIR)\hotkeys.sbr" \
-	"$(INTDIR)\skin.sbr" \
 	"$(INTDIR)\skinicons.sbr" \
 	"$(INTDIR)\sounds.sbr" \
 	"$(INTDIR)\auth.sbr" \
@@ -824,11 +819,9 @@ BSC32_SBRS= \
 	"$(INTDIR)\module_fonts.sbr" \
 	"$(INTDIR)\services.sbr" \
 	"$(INTDIR)\extracticon.sbr" \
-	"$(INTDIR)\IcoLib.sbr" \
 	"$(INTDIR)\skin2icons.sbr" \
 	"$(INTDIR)\updatenotify.sbr" \
-	"$(INTDIR)\protoopts.sbr" \
-	"$(INTDIR)\protoint.sbr"
+	"$(INTDIR)\protoaccs.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -876,8 +869,9 @@ LINK32_OBJS= \
 	"$(INTDIR)\newplugins.obj" \
 	"$(INTDIR)\protochains.obj" \
 	"$(INTDIR)\protocols.obj" \
+	"$(INTDIR)\protoint.obj" \
+	"$(INTDIR)\protoopts.obj" \
 	"$(INTDIR)\hotkeys.obj" \
-	"$(INTDIR)\skin.obj" \
 	"$(INTDIR)\skinicons.obj" \
 	"$(INTDIR)\sounds.obj" \
 	"$(INTDIR)\auth.obj" \
@@ -936,12 +930,10 @@ LINK32_OBJS= \
 	"$(INTDIR)\module_fonts.obj" \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\extracticon.obj" \
-	"$(INTDIR)\IcoLib.obj" \
 	"$(INTDIR)\skin2icons.obj" \
 	"$(INTDIR)\updatenotify.obj" \
 	"$(INTDIR)\vc6.res" \
-	"$(INTDIR)\protoopts.obj" \
-	"$(INTDIR)\protoint.obj"
+	"$(INTDIR)\protoaccs.obj"
 
 "..\bin\debug\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -1008,7 +1000,6 @@ CLEAN :
 	-@erase "$(INTDIR)\history.obj"
 	-@erase "$(INTDIR)\hotkeys.obj"
 	-@erase "$(INTDIR)\hyperlink.obj"
-	-@erase "$(INTDIR)\IcoLib.obj"
 	-@erase "$(INTDIR)\idle.obj"
 	-@erase "$(INTDIR)\ignore.obj"
 	-@erase "$(INTDIR)\keyboard.obj"
@@ -1037,6 +1028,7 @@ CLEAN :
 	-@erase "$(INTDIR)\options.obj"
 	-@erase "$(INTDIR)\path.obj"
 	-@erase "$(INTDIR)\profilemanager.obj"
+	-@erase "$(INTDIR)\protoaccs.obj"
 	-@erase "$(INTDIR)\protochains.obj"
 	-@erase "$(INTDIR)\protocolorder.obj"
 	-@erase "$(INTDIR)\protocols.obj"
@@ -1047,7 +1039,6 @@ CLEAN :
 	-@erase "$(INTDIR)\sendmsg.obj"
 	-@erase "$(INTDIR)\services.obj"
 	-@erase "$(INTDIR)\sha1.obj"
-	-@erase "$(INTDIR)\skin.obj"
 	-@erase "$(INTDIR)\skin2icons.obj"
 	-@erase "$(INTDIR)\skinicons.obj"
 	-@erase "$(INTDIR)\sounds.obj"
@@ -1119,8 +1110,9 @@ LINK32_OBJS= \
 	"$(INTDIR)\newplugins.obj" \
 	"$(INTDIR)\protochains.obj" \
 	"$(INTDIR)\protocols.obj" \
+	"$(INTDIR)\protoint.obj" \
+	"$(INTDIR)\protoopts.obj" \
 	"$(INTDIR)\hotkeys.obj" \
-	"$(INTDIR)\skin.obj" \
 	"$(INTDIR)\skinicons.obj" \
 	"$(INTDIR)\sounds.obj" \
 	"$(INTDIR)\auth.obj" \
@@ -1179,12 +1171,10 @@ LINK32_OBJS= \
 	"$(INTDIR)\module_fonts.obj" \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\extracticon.obj" \
-	"$(INTDIR)\IcoLib.obj" \
 	"$(INTDIR)\skin2icons.obj" \
 	"$(INTDIR)\updatenotify.obj" \
 	"$(INTDIR)\vc6.res" \
-	"$(INTDIR)\protoopts.obj" \
-	"$(INTDIR)\protoint.obj"
+	"$(INTDIR)\protoaccs.obj"
 
 "..\bin\Release Unicode\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -1305,8 +1295,6 @@ CLEAN :
 	-@erase "$(INTDIR)\hotkeys.sbr"
 	-@erase "$(INTDIR)\hyperlink.obj"
 	-@erase "$(INTDIR)\hyperlink.sbr"
-	-@erase "$(INTDIR)\IcoLib.obj"
-	-@erase "$(INTDIR)\IcoLib.sbr"
 	-@erase "$(INTDIR)\idle.obj"
 	-@erase "$(INTDIR)\idle.sbr"
 	-@erase "$(INTDIR)\ignore.obj"
@@ -1362,6 +1350,8 @@ CLEAN :
 	-@erase "$(INTDIR)\path.sbr"
 	-@erase "$(INTDIR)\profilemanager.obj"
 	-@erase "$(INTDIR)\profilemanager.sbr"
+	-@erase "$(INTDIR)\protoaccs.obj"
+	-@erase "$(INTDIR)\protoaccs.sbr"
 	-@erase "$(INTDIR)\protochains.obj"
 	-@erase "$(INTDIR)\protochains.sbr"
 	-@erase "$(INTDIR)\protocolorder.obj"
@@ -1382,8 +1372,6 @@ CLEAN :
 	-@erase "$(INTDIR)\services.sbr"
 	-@erase "$(INTDIR)\sha1.obj"
 	-@erase "$(INTDIR)\sha1.sbr"
-	-@erase "$(INTDIR)\skin.obj"
-	-@erase "$(INTDIR)\skin.sbr"
 	-@erase "$(INTDIR)\skin2icons.obj"
 	-@erase "$(INTDIR)\skin2icons.sbr"
 	-@erase "$(INTDIR)\skinicons.obj"
@@ -1466,8 +1454,9 @@ BSC32_SBRS= \
 	"$(INTDIR)\newplugins.sbr" \
 	"$(INTDIR)\protochains.sbr" \
 	"$(INTDIR)\protocols.sbr" \
+	"$(INTDIR)\protoint.sbr" \
+	"$(INTDIR)\protoopts.sbr" \
 	"$(INTDIR)\hotkeys.sbr" \
-	"$(INTDIR)\skin.sbr" \
 	"$(INTDIR)\skinicons.sbr" \
 	"$(INTDIR)\sounds.sbr" \
 	"$(INTDIR)\auth.sbr" \
@@ -1526,11 +1515,9 @@ BSC32_SBRS= \
 	"$(INTDIR)\module_fonts.sbr" \
 	"$(INTDIR)\services.sbr" \
 	"$(INTDIR)\extracticon.sbr" \
-	"$(INTDIR)\IcoLib.sbr" \
 	"$(INTDIR)\skin2icons.sbr" \
 	"$(INTDIR)\updatenotify.sbr" \
-	"$(INTDIR)\protoopts.sbr" \
-	"$(INTDIR)\protoint.sbr"
+	"$(INTDIR)\protoaccs.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -1578,8 +1565,9 @@ LINK32_OBJS= \
 	"$(INTDIR)\newplugins.obj" \
 	"$(INTDIR)\protochains.obj" \
 	"$(INTDIR)\protocols.obj" \
+	"$(INTDIR)\protoint.obj" \
+	"$(INTDIR)\protoopts.obj" \
 	"$(INTDIR)\hotkeys.obj" \
-	"$(INTDIR)\skin.obj" \
 	"$(INTDIR)\skinicons.obj" \
 	"$(INTDIR)\sounds.obj" \
 	"$(INTDIR)\auth.obj" \
@@ -1638,12 +1626,10 @@ LINK32_OBJS= \
 	"$(INTDIR)\module_fonts.obj" \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\extracticon.obj" \
-	"$(INTDIR)\IcoLib.obj" \
 	"$(INTDIR)\skin2icons.obj" \
 	"$(INTDIR)\updatenotify.obj" \
 	"$(INTDIR)\vc6.res" \
-	"$(INTDIR)\protoopts.obj" \
-	"$(INTDIR)\protoint.obj"
+	"$(INTDIR)\protoaccs.obj"
 
 "..\bin\Debug Unicode\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -2905,6 +2891,38 @@ SOURCE=.\modules\plugins\newplugins.c
 
 !ENDIF
 
+SOURCE=.\modules\protocols\protoaccs.c
+
+!IF  "$(CFG)" == "miranda32 - Win32 Release"
+
+
+"$(INTDIR)\protoaccs.obj"	"$(INTDIR)\protoaccs.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
+
+
+"$(INTDIR)\protoaccs.obj"	"$(INTDIR)\protoaccs.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
+
+
+"$(INTDIR)\protoaccs.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
+
+
+"$(INTDIR)\protoaccs.obj"	"$(INTDIR)\protoaccs.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF
+
 SOURCE=.\modules\protocols\protochains.c
 
 !IF  "$(CFG)" == "miranda32 - Win32 Release"
@@ -3060,38 +3078,6 @@ SOURCE=.\modules\skin\hotkeys.c
 
 
 "$(INTDIR)\hotkeys.obj"	"$(INTDIR)\hotkeys.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF
-
-SOURCE=.\modules\skin\skin.c
-
-!IF  "$(CFG)" == "miranda32 - Win32 Release"
-
-
-"$(INTDIR)\skin.obj"	"$(INTDIR)\skin.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
-
-
-"$(INTDIR)\skin.obj"	"$(INTDIR)\skin.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
-
-
-"$(INTDIR)\skin.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
-
-
-"$(INTDIR)\skin.obj"	"$(INTDIR)\skin.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -4961,38 +4947,6 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WI
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
-
-
-!ENDIF
-
-SOURCE=.\modules\icolib\IcoLib.c
-
-!IF  "$(CFG)" == "miranda32 - Win32 Release"
-
-
-"$(INTDIR)\IcoLib.obj"	"$(INTDIR)\IcoLib.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
-
-
-"$(INTDIR)\IcoLib.obj"	"$(INTDIR)\IcoLib.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
-
-
-"$(INTDIR)\IcoLib.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
-
-
-"$(INTDIR)\IcoLib.obj"	"$(INTDIR)\IcoLib.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 !ENDIF

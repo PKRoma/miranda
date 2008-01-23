@@ -195,6 +195,10 @@ SOURCE=.\jabber_disco.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\jabber_events.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\jabber_file.cpp
 # ADD CPP /Yu
 # End Source File
@@ -216,10 +220,6 @@ SOURCE=.\jabber_groupchat.cpp
 # Begin Source File
 
 SOURCE=.\jabber_ibb.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\jabber_opttree.cpp
 # End Source File
 # Begin Source File
 
@@ -270,12 +270,20 @@ SOURCE=.\jabber_opt.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\jabber_opttree.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\jabber_password.cpp
 # ADD CPP /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_privacy.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\jabber_proto.cpp
 # End Source File
 # Begin Source File
 
@@ -388,7 +396,15 @@ SOURCE=.\jabber_list.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\jabber_opttree.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\jabber_privacy.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\jabber_proto.h
 # End Source File
 # Begin Source File
 
@@ -397,10 +413,6 @@ SOURCE=.\jabber_proxy.h
 # Begin Source File
 
 SOURCE=.\jabber_rc.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\jabber_opttree.h
 # End Source File
 # Begin Source File
 

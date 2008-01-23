@@ -160,7 +160,7 @@ public:
 	}
 	BOOL CallHandler( XmlNode* iqNode, void* usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
 	{
-		if ( !m_pHandler )
+		if ( m_pHandler == NULL )
 			return FALSE;
 		return (m_pProto->*m_pHandler)( iqNode, usedata, pInfo, pSession );
 	}
