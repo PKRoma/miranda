@@ -1,11 +1,8 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2006-7 Boris Krasnovskiy.
-Copyright (c) 2003-5 George Hazan.
-Copyright (c) 2002-3 Richard Hughes (original version).
-
-Miranda IM: the free icq client for MS Windows
-Copyright (C) 2000-2002 Richard Hughes, Roland Rabien & Tristan Van de Vreede
+Copyright (c) 2006-2008 Boris Krasnovskiy.
+Copyright (c) 2003-2005 George Hazan.
+Copyright (c) 2002-2003 Richard Hughes (original version).
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -18,8 +15,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "msn_global.h"
@@ -593,12 +589,17 @@ static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 	if (( MSN_GetDword( AI->hContact, "FlagBits", 0 ) & 0xf0000000 ) == 0 )
 		return GAIR_NOAVATAR;
 
-	if ( MSN_IsMeByContact( AI->hContact )) return GAIR_NOAVATAR;
-
 	char szContext[ MAX_PATH ];
 	if ( MSN_GetStaticString(( AI->hContact == NULL ) ? "PictObject" : "PictContext", AI->hContact,
 		szContext, sizeof( szContext )))
 		return GAIR_NOAVATAR;
+
+	if ( MSN_IsMeByContact( AI->hContact ))
+	{
+		MSN_GetAvatarFileName( NULL, AI->filename, sizeof( AI->filename ));
+		AI->format = PA_FORMAT_PNG;
+		return 	(_access(AI->filename, 4) ? GAIR_NOAVATAR : GAIR_SUCCESS);
+	}
 
 	MSN_GetAvatarFileName( AI->hContact, AI->filename, sizeof( AI->filename ));
 	AI->format = PA_FORMAT_UNKNOWN;
