@@ -29,23 +29,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 int InitialiseModularEngine(void);
 void DestroyModularEngine(void);
-void FreeWindowList(void);
-int UnloadNewPluginsModule(void);
-void UnloadButtonModule(void);
-void UnloadClcModule(void);
-void UnloadContactListModule(void);
-void UnloadEventsModule(void);
-void UnloadIdleModule(void);
-void UnloadLangPackModule(void);
-void UnloadNetlibModule(void);
-void UnloadNewPlugins(void);
-void UnloadUpdateNotifyModule(void);
-void UninitSkin2Icons(void);
-void UninitSkinSounds(void);
-int UninitSkinHotkeys(void);
-void UnloadNetlibModule(void);
-void UnloadProtocolsModule(void);
-void UnloadAccountsModule(void);
+void UnloadNewPluginsModule(void);
+void UnloadDefaultModules(void);
 
 HINSTANCE GetInstByAddress( void* codePtr );
 
@@ -411,24 +396,7 @@ static DWORD MsgWaitForMultipleObjectsExWorkaround(DWORD nCount, const HANDLE *p
 
 static int SystemShutdownProc(WPARAM wParam,LPARAM lParam)
 {
-	UnloadAccountsModule();
-	UnloadNewPlugins();
-	UnloadProtocolsModule();
-
-	UninitSkin2Icons();
-	UninitSkinSounds();
-	UninitSkinHotkeys();
-	FreeWindowList();
-
-	UnloadButtonModule();
-	UnloadClcModule();
-	UnloadContactListModule();
-	UnloadEventsModule();
-	UnloadIdleModule();
-	UnloadUpdateNotifyModule();
-
-	UnloadNetlibModule();
-	UnloadLangPackModule();
+	UnloadDefaultModules();
 	return 0;
 }
 
@@ -444,6 +412,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	if (InitialiseModularEngine())
 	{
 		NotifyEventHooks(hShutdownEvent,0,0);
+		UnloadDefaultModules();
 		UnloadNewPluginsModule();
 		DestroyModularEngine();
 		return 1;

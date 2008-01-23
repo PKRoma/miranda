@@ -81,7 +81,7 @@ typedef struct
 	TServiceToMainThreadItem;
 
 // other static variables
-
+static BOOL bServiceMode = FALSE;
 static CRITICAL_SECTION csHooks,csServices;
 static DWORD  mainThreadId;
 static int    hookId = 1;
@@ -108,7 +108,9 @@ int LoadSendRecvFileModule(void);	//send/recv
 int LoadContactListModule(void);// ui: clist
 int LoadOptionsModule(void);	// ui: options dialog
 int LoadFindAddModule(void);	// ui: search/add users
-int LoadSkinModule(void);		// ui: skin
+int LoadSkinIcons(void);
+int LoadSkinSounds(void);
+int LoadSkinHotkeys(void);
 int LoadHelpModule(void);		// ui: help stuff
 int LoadUserInfoModule(void);	// ui: user info
 int LoadHistoryModule(void);	// ui: history viewer
@@ -127,6 +129,24 @@ int LoadContactsModule(void);    // random: contact
 int LoadFontserviceModule(void); // ui: font manager
 int LoadIcoLibModule(void);   // ui: icons manager
 int LoadUpdateNotifyModule(void); // random: update notification
+int LoadServiceModePlugin(void);
+
+void UnloadUtilsModule(void);
+void UnloadButtonModule(void);
+void UnloadClcModule(void);
+void UnloadContactListModule(void);
+void UnloadEventsModule(void);
+void UnloadIdleModule(void);
+void UnloadLangPackModule(void);
+void UnloadNetlibModule(void);
+void UnloadNewPlugins(void);
+void UnloadUpdateNotifyModule(void);
+void UnloadIcoLibModule(void);
+void UnloadSkinSounds(void);
+void UnloadSkinHotkeys(void);
+void UnloadNetlibModule(void);
+void UnloadProtocolsModule(void);
+void UnloadAccountsModule(void);
 
 static int LoadDefaultModules(void)
 {
@@ -141,7 +161,18 @@ static int LoadDefaultModules(void)
 	// database is available here
 	if (LoadButtonModule()) return 1;
 	if (LoadIcoLibModule()) return 1;
-	if (LoadSkinModule()) return 1;
+	if (LoadSkinIcons()) return 1;
+
+	bServiceMode = LoadServiceModePlugin();
+	switch ( bServiceMode )
+	{
+		case 1:	return 0; // stop loading here
+		case 0: break;
+		default: return 1;
+	}
+
+	if (LoadSkinSounds()) return 1;
+	if (LoadSkinHotkeys()) return 1;
 	if (LoadOptionsModule()) return 1;
 	if (LoadNetlibModule()) return 1;
 	if (LoadProtocolsModule()) return 1;
@@ -173,6 +204,25 @@ static int LoadDefaultModules(void)
 	if (!disableDefaultModule[DEFMOD_UIVISIBILITY]) if (LoadVisibilityModule()) return 1;
 	if (!disableDefaultModule[DEFMOD_UPDATENOTIFY]) if (LoadUpdateNotifyModule()) return 1;
 	return 0;
+}
+
+void UnloadDefaultModules(void)
+{
+	UnloadAccountsModule();
+	UnloadNewPlugins();
+	UnloadProtocolsModule();
+	UnloadSkinSounds();
+	UnloadSkinHotkeys();
+	UnloadIcoLibModule();
+	UnloadUtilsModule();
+	UnloadButtonModule();
+	UnloadClcModule();
+	UnloadContactListModule();
+	UnloadEventsModule();
+	UnloadIdleModule();
+	UnloadUpdateNotifyModule();
+	UnloadNetlibModule();
+	UnloadLangPackModule();
 }
 
 static int compareServices( const TService* p1, const TService* p2 )
@@ -209,11 +259,14 @@ int InitialiseModularEngine(void)
 void DestroyModularEngine(void)
 {
 	int i;
+	THook* p;
 	EnterCriticalSection( &csHooks );
 	for( i=0; i < hooks.count; i++ ) {
- 		if ( hooks.items[i]->subscriberCount )
-			mir_free( hooks.items[i]->subscriber );
-		mir_free( hooks.items[i] );
+		p = hooks.items[i];
+ 		if ( p->subscriberCount )
+			mir_free( p->subscriber );
+		DeleteCriticalSection( &p->csHook );
+		mir_free( p );
 	}
 	List_Destroy(( SortedList* )&hooks );
 	LeaveCriticalSection( &csHooks );

@@ -23,6 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "netlib.h"
 
+static BOOL bModuleInitialized = FALSE;
+
 struct NetlibUser **netlibUser=NULL;
 int netlibUserCount=0;
 CRITICAL_SECTION csNetlibUser;
@@ -448,6 +450,8 @@ int NetlibBase64Decode(WPARAM wParam,LPARAM lParam)
 
 void UnloadNetlibModule(void)
 {
+	if ( !bModuleInitialized ) return;
+
 	if ( hConnectionHeaderMutex != NULL ) {
 		int i;
 
@@ -471,6 +475,9 @@ void UnloadNetlibModule(void)
 int LoadNetlibModule(void)
 {
 	WSADATA wsadata;
+
+	bModuleInitialized = TRUE;
+	
 	WSAStartup(MAKEWORD(1,1), &wsadata);
 
 	HookEvent(ME_OPT_INITIALISE,NetlibOptInitialise);

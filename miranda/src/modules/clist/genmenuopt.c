@@ -213,12 +213,9 @@ static int BuildTree(HWND hwndDlg,int MenuObjectId, BOOL bReread)
 	int i,count,menupos,lastpos;
 	PIntMenuObject pimo;
 
-	FreeTreeData( hwndDlg );
-
 	dat = ( struct OrderData* )GetWindowLong( GetDlgItem(hwndDlg,IDC_MENUITEMS),GWL_USERDATA);
-	tvis.hParent = NULL;
-	tvis.hInsertAfter = TVI_LAST;
-	tvis.item.mask = TVIF_PARAM | TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
+
+	FreeTreeData( hwndDlg );
 	TreeView_DeleteAllItems(GetDlgItem(hwndDlg,IDC_MENUITEMS));
 
 	menupos = GetMenuObjbyId( MenuObjectId );
@@ -246,8 +243,7 @@ static int BuildTree(HWND hwndDlg,int MenuObjectId, BOOL bReread)
 		if ( pimo->MenuItems[i].mi.root != -1 )
 			continue;
 
-		PD = ( MenuItemOptData* )mir_alloc( sizeof( MenuItemOptData ));
-		ZeroMemory( PD, sizeof( MenuItemOptData ));
+		PD = ( MenuItemOptData* )mir_calloc( sizeof( MenuItemOptData ));
 		GetMenuItemName( &pimo->MenuItems[i], menuItemName, sizeof( menuItemName ));
 		{
 			DBVARIANT dbv;
@@ -285,10 +281,12 @@ static int BuildTree(HWND hwndDlg,int MenuObjectId, BOOL bReread)
 	SendDlgItemMessage(hwndDlg, IDC_MENUITEMS, WM_SETREDRAW, FALSE, 0);
 	lastpos = 0;
 	first = TRUE;
+	tvis.hParent = NULL;
+	tvis.hInsertAfter = TVI_LAST;
+	tvis.item.mask = TVIF_PARAM | TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
 	for ( i=0; i < count; i++ ) {
 		if ( PDar[i]->pos - lastpos >= SEPARATORPOSITIONINTERVAL ) {
-			PD = ( MenuItemOptData* )mir_alloc( sizeof( MenuItemOptData ));
-			ZeroMemory( PD, sizeof( MenuItemOptData ));
+			PD = ( MenuItemOptData* )mir_calloc( sizeof( MenuItemOptData ));
 			PD->id = -1;
 			PD->name = mir_tstrdup( STR_SEPARATOR );
 			PD->pos = PDar[i]->pos - 1;

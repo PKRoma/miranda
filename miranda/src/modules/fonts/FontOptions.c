@@ -355,6 +355,22 @@ static void sttSaveCollapseState( HWND hwndTree )
 		hti = ht;
 }	}
 
+static void sttFreeListItems(HWND hList) 
+{
+	int idx = 0;
+	int res;
+	FSUIListItemData *itemData;
+	int count = SendMessage( hList, LB_GETCOUNT, 0, 0 ); 
+	if ( count > 0 ) {
+		while ( idx < count) {
+			res = SendMessage( hList, LB_GETITEMDATA, idx++, 0 );
+			itemData = (FSUIListItemData *)res;
+			if ( itemData && res != LB_ERR )
+				mir_free( itemData );
+		}
+	}
+}
+
 static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	int i;
@@ -403,6 +419,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			treeItem = (TreeItem *)tvi.lParam;
 			group_buff = treeItem->groupName;
 
+			sttFreeListItems(GetDlgItem(hwndDlg, IDC_FONTLIST));
 			SendDlgItemMessage(hwndDlg, IDC_FONTLIST, LB_RESETCONTENT, 0, 0);
 			SendDlgItemMessage(hwndDlg, IDC_COLOURLIST, CB_RESETCONTENT, 0, 0);
 
@@ -777,7 +794,6 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 							}
 							InvalidateRect(GetDlgItem(hwndDlg, IDC_FONTLIST), NULL, TRUE);
 							EnableWindow(GetDlgItem(hwndDlg, IDC_BTN_UNDO), TRUE);
-							break;
 						}
 
 						mir_free(selItems);
@@ -1004,6 +1020,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			DestroyList(( SortedList* )&font_id_list_w3 );
 			DestroyList(( SortedList* )&colour_id_list_w2 );
 			DestroyList(( SortedList* )&colour_id_list_w3 );
+			sttFreeListItems(GetDlgItem(hwndDlg, IDC_FONTLIST));
 			break;
 	}
 	return FALSE;

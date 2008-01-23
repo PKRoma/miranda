@@ -26,6 +26,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_protoint.h"
 
 int Proto_IsProtocolLoaded(WPARAM wParam,LPARAM lParam);
+void UninitAccount(char *szModule, PROTOACCOUNT *pa);
+
+static BOOL bModuleInitialized = FALSE;
 
 TAccounts accounts;
 
@@ -41,9 +44,8 @@ void LoadDbAccounts()
 		char buf[10];
 		_itoa( i, buf, 10 );
 		if ( !DBGetContactSettingString( NULL, "Protocols", buf, &dbv )) {
-			PROTOACCOUNT* pa = mir_alloc( sizeof( PROTOACCOUNT ));
+			PROTOACCOUNT* pa = mir_calloc( sizeof( PROTOACCOUNT ));
 			if ( pa ) {
-				memset( pa, 0, sizeof( PROTOACCOUNT ));
 				pa->szModuleName = mir_strdup( dbv.pszVal );
 				DBFreeVariant( &dbv );
 
@@ -70,7 +72,7 @@ void LoadDbAccounts()
 					}
 				}
 				else pa->bIsEnabled = TRUE;
-				
+
 				if ( !pa->szProtoName ) {
 					pa->szProtoName = mir_strdup( pa->szModuleName );
 					DBWriteContactSettingString( NULL, pa->szModuleName, "AM_BaseProto", pa->szProtoName );
@@ -91,7 +93,7 @@ typedef struct
 	int  arrlen;
 	char **pszSettingName;
 }
-	enumDB_ProtoProcParam;	
+	enumDB_ProtoProcParam;
 
 static int enumDB_ProtoProc( const char* szSetting, LPARAM lParam )
 {
@@ -229,6 +231,9 @@ static HANDLE CreateProtoServiceEx( const char* szModule, const char* szService,
 int LoadAccountsModule( void )
 {
 	int i;
+
+	bModuleInitialized = TRUE;
+
 	for ( i = 0; i < accounts.count; i++ ) {
 		PROTOCOLDESCRIPTOR* ppd;
 		PROTOACCOUNT* pa = accounts.items[i];
@@ -269,4 +274,28 @@ int LoadAccountsModule( void )
 	}
 
 	return 0;
+}
+
+void UnloadAccountsModule()
+{
+	int i;
+
+	if ( !bModuleInitialized ) return;
+
+	for( i=0; i < accounts.count; i++ ) {
+		PROTOACCOUNT* pa = accounts.items[ i ];
+		int idx;
+		if ( pa->ppro ) {
+			for ( idx = 0; idx < SIZEOF(pa->ppro->services); idx++ )
+				if ( pa->ppro->services[i] )
+					DestroyServiceFunction( pa->ppro->services[i] );
+
+			UninitAccount(accounts.items[i]->szModuleName, pa);
+		}
+		mir_free( pa->tszAccountName );
+		mir_free( pa->szModuleName );
+		mir_free( pa->szProtoName );
+		mir_free( pa );
+	}
+	List_Destroy(( SortedList* )&accounts );
 }

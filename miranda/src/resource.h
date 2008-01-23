@@ -416,6 +416,8 @@
 #define IDC_PATH                        1707
 #define IDC_LV_HOTKEYS                  1708
 #define IDC_HOTKEY                      1709
+#define IDC_SM_COMBO                    1710
+#define IDC_SM_LABEL                    1711
 #define IDC_REMOVE                      1712
 #define IDC_LIST1                       1713
 #define IDC_ACCLIST                     1713
@@ -445,7 +447,7 @@
 #define POPUP_DELETEGROUP               40053
 
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        283

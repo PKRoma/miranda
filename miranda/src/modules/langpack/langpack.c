@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2008 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2008 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -23,6 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 
 int LoadLangPackServices(void);
+
+static BOOL bModuleInitialized = FALSE;
 
 struct LangPackEntry {
 	unsigned linePos;
@@ -53,7 +55,7 @@ static void TrimString(char *str)
 	MoveMemory(str,str+start,len-start+1);
 }
 
-static void TrimStringSimple(char *str) 
+static void TrimStringSimple(char *str)
 {
 	if (str[lstrlenA(str)-1] == '\n') str[lstrlenA(str)-1] = '\0';
 	if (str[lstrlenA(str)-1] == '\r') str[lstrlenA(str)-1] = '\0';
@@ -186,7 +188,7 @@ static int LoadLangPack(const TCHAR *szLangPack)
 	int startOfLine=0;
 	unsigned int linePos=1;
 	USHORT langID;
-	
+
 	lstrcpy(langPack.filename,szLangPack);
 	fp = _tfopen(szLangPack,_T("rt"));
 	if(fp==NULL) return 1;
@@ -326,6 +328,8 @@ int LoadLangPackModule(void)
 	TCHAR szSearch[MAX_PATH],*str2,szLangPack[MAX_PATH];
 	WIN32_FIND_DATA fd;
 
+	bModuleInitialized = TRUE;
+
 	ZeroMemory(&langPack,sizeof(langPack));
 	LoadLangPackServices();
 	GetModuleFileName(GetModuleHandle(NULL),szSearch,SIZEOF(szSearch));
@@ -346,6 +350,9 @@ int LoadLangPackModule(void)
 void UnloadLangPackModule()
 {
 	int i;
+
+	if ( !bModuleInitialized ) return;
+
 	for ( i=0; i < langPack.entryCount; i++ ) {
 		mir_free(langPack.entry[i].english);
 		mir_free(langPack.entry[i].local);

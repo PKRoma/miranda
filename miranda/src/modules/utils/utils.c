@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 int ResizeDialog(WPARAM wParam,LPARAM lParam);
 int InitOpenUrl(void);
 int InitWindowList(void);
+void FreeWindowList(void);
 int InitHyperlink(void);
 int InitColourPicker(void);
 int InitBitmapFilter(void);
@@ -37,6 +38,8 @@ void shaInit(mir_sha1_ctx *ctx);
 void shaUpdate(mir_sha1_ctx *ctx, mir_sha1_byte_t *dataIn, int len);
 void shaFinal(mir_sha1_ctx *ctx, mir_sha1_byte_t hashout[20]);
 void shaBlock(mir_sha1_byte_t *dataIn, int len, mir_sha1_byte_t hashout[20]);
+
+static BOOL bModuleInitialized = FALSE;
 
 static struct CountryListEntry countries[]={
 	{0   ,"Unspecified"},
@@ -406,7 +409,7 @@ int GetMD5Interface(WPARAM wParam, LPARAM lParam)
 		return 1;
 	if ( md5i->cbSize != sizeof( struct MD5_INTERFACE ))
 		return 1;
-    
+
 	md5i->md5_init = md5_init;
 	md5i->md5_append = md5_append;
 	md5i->md5_finish = md5_finish;
@@ -421,7 +424,7 @@ int GetSHA1Interface(WPARAM wParam, LPARAM lParam)
 		return 1;
 	if ( sha1i->cbSize != sizeof( struct SHA1_INTERFACE ))
 		return 1;
-    
+
 	sha1i->sha1_init = shaInit;
 	sha1i->sha1_append = shaUpdate;
 	sha1i->sha1_finish = shaFinal;
@@ -431,6 +434,8 @@ int GetSHA1Interface(WPARAM wParam, LPARAM lParam)
 
 int LoadUtilsModule(void)
 {
+	bModuleInitialized = TRUE;
+
 	CreateServiceFunction(MS_UTILS_RESIZEDIALOG,ResizeDialog);
 	CreateServiceFunction(MS_UTILS_SAVEWINDOWPOSITION,SaveWindowPosition);
 	CreateServiceFunction(MS_UTILS_RESTOREWINDOWPOSITION,RestoreWindowPosition);
@@ -445,4 +450,11 @@ int LoadUtilsModule(void)
 	InitBitmapFilter();
 	InitPathUtils();
 	return 0;
+}
+
+void UnloadUtilsModule(void)
+{
+	if ( !bModuleInitialized ) return;
+
+	FreeWindowList();
 }

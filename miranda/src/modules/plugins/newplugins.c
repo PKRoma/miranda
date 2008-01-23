@@ -57,7 +57,8 @@ typedef struct { // can all be NULL
 #define PCLASS_OK		 0x10   // plugin should be loaded, if DB means nothing
 #define PCLASS_LOADED	 0x20   // Load() has been called, Unload() should be called.
 #define PCLASS_STOPPED   0x40 	// wasn't loaded cos plugin name not on white list
-#define PCLASS_CLIST 	 0x80  // a CList implementation
+#define PCLASS_CLIST 	 0x80   // a CList implementation
+#define PCLASS_SERVICE 	 0x100  // has Service Mode implementation
 
 typedef struct pluginEntry {
 	char pluginname[64];
@@ -77,9 +78,13 @@ const int pluginBannedListCount = SIZEOF(pluginBannedList);
 
 SortedList pluginList = { 0 }, pluginListAddr = { 0 };
 
+static BOOL bModuleInitialized = FALSE;
+
 PLUGINLINK pluginCoreLink;
 char   mirandabootini[MAX_PATH];
 static DWORD mirandaVersion;
+static int serviceModeIdx = -1;
+static pluginEntry * pluginListSM;
 static pluginEntry * pluginListDb;
 static pluginEntry * pluginListUI;
 static pluginEntry * pluginList_freeimg = NULL;
@@ -142,13 +147,14 @@ static int equalUUID(MUUID u1, MUUID u2)
     return memcmp(&u1, &u2, sizeof(MUUID))?0:1;
 }
 
-static 	MUUID miid_last = MIID_LAST;
+static MUUID miid_last = MIID_LAST;
+static MUUID miid_servicemode = MIID_SERVICEMODE;
 
 static int validInterfaceList(Miranda_Plugin_Interfaces ifaceProc)
 {
 	MUUID *piface = ( ifaceProc ) ? ifaceProc() : NULL;
 
-	if (!piface) 
+	if (!piface)
 		return 0;
 	if (equalUUID(miid_last, piface[0]))
 		return 0;
@@ -157,7 +163,7 @@ static int validInterfaceList(Miranda_Plugin_Interfaces ifaceProc)
 
 static int isPluginBanned(MUUID u1) {
     int i;
-    
+
     for (i=0; i<pluginBannedListCount; i++) {
         if (equalUUID(pluginBannedList[i].uuid, u1))
             return 1;
@@ -166,9 +172,9 @@ static int isPluginBanned(MUUID u1) {
 }
 
 // returns true if the API exports were good, otherwise, passed in data is returned
-#define CHECKAPI_NONE 	0
-#define CHECKAPI_DB 	1
-#define CHECKAPI_CLIST  2
+#define CHECKAPI_NONE 	 0
+#define CHECKAPI_DB 	 1
+#define CHECKAPI_CLIST   2
 
 static int checkPI( BASIC_PLUGIN_INFO* bpi, PLUGININFOEX* pi )
 {
@@ -184,8 +190,8 @@ static int checkPI( BASIC_PLUGIN_INFO* bpi, PLUGININFOEX* pi )
 		  pi->authorEmail == NULL || pi->copyright == NULL || pi->homepage == NULL )
 		return FALSE;
 
-	if ( pi->replacesDefaultModule > DEFMOD_HIGHEST || 
-		  pi->replacesDefaultModule == DEFMOD_REMOVED_UIPLUGINOPTS || 
+	if ( pi->replacesDefaultModule > DEFMOD_HIGHEST ||
+		  pi->replacesDefaultModule == DEFMOD_REMOVED_UIPLUGINOPTS ||
 		  pi->replacesDefaultModule == DEFMOD_REMOVED_PROTOCOLNETLIB )
 		return FALSE;
 
@@ -244,6 +250,7 @@ static int checkAPI(char* plugin, BASIC_PLUGIN_INFO* bpi, DWORD mirandaVersion, 
 					return 1;
 				}
 			}
+
 		} // if
 		if ( exports != NULL ) *exports=1;
 	} //if
@@ -284,6 +291,18 @@ static int validguess_clist_name(char * name)
 	name[6]=0;
 	rc=lstrcmpiA(name,"clist_") == 0;
 	name[6]=x;
+	return rc;
+}
+
+// returns true if the given file matches svc_*.dll
+static int validguess_servicemode_name(char * name)
+{
+	int rc=0;
+	// argh evil
+	char x = name[4];
+	name[4]=0;
+	rc=lstrcmpiA(name,"svc_") == 0;
+	name[4]=x;
 	return rc;
 }
 
@@ -404,6 +423,29 @@ static BOOL scanPluginsDir (WIN32_FIND_DATAA * fd, char * path, WPARAM wParam, L
 		pluginListUI=p;
 		p->pclass |= PCLASS_CLIST;
 	}
+	else if ( validguess_servicemode_name(fd->cFileName) ) {
+		char buf[MAX_PATH];
+		mir_snprintf(buf,SIZEOF(buf),"%s\\Plugins\\%s", path, fd->cFileName);
+		if ( checkAPI(buf, &bpi, mirandaVersion, CHECKAPI_NONE, NULL)) {
+			p->pclass |= (PCLASS_OK|PCLASS_BASICAPI);
+			p->bpi=bpi;
+			if ( bpi.Interfaces ) {
+				int i = 0;
+				MUUID *piface = bpi.Interfaces();
+				while ( !equalUUID(miid_last, piface[i]) ) {
+					if ( !equalUUID(miid_servicemode, piface[i++]) )
+						continue;
+					p->pclass |= (PCLASS_SERVICE);
+					if ( pluginListSM != NULL ) p->nextclass=pluginListSM;
+					pluginListSM=p;
+					break;
+				}
+			}
+		}
+		else
+			// didn't have basic APIs or DB exports - failed.
+			p->pclass |= PCLASS_FAILED;
+	}
 	else if ( lstrcmpiA(fd->cFileName, "advaimg.dll") == 0)
 		pluginList_freeimg = p;
 
@@ -458,6 +500,60 @@ static pluginEntry* getCListModule(char * exe, char * slice, int useWhiteList)
 	return NULL;
 }
 
+char **GetSeviceModePluginsList(void)
+{
+    int i = 0;
+    char **list = NULL;
+	pluginEntry * p = pluginListSM;
+	while ( p != NULL ) {
+	    i++;
+		p = p->nextclass;
+	}
+	if ( i ) {
+		list = (char**)mir_calloc( (i + 1) * sizeof(char*) );
+		p = pluginListSM;
+		i = 0;
+		while ( p != NULL ) {
+			list[i++] = p->bpi.pluginInfo->shortName;
+			p = p->nextclass;
+			break;
+		}
+	}
+	return list;
+}
+
+void SetServiceModePlugin( int idx )
+{
+	serviceModeIdx = idx;
+}
+
+int LoadServiceModePlugin(void)
+{
+	int i = 0;
+	pluginEntry * p = pluginListSM;
+
+	if ( serviceModeIdx < 0 )
+		return 0;
+
+	while ( p != NULL ) {
+		if ( serviceModeIdx == i++ ) {
+			if ( p->bpi.Load(&pluginCoreLink) == 0 ) {
+				p->pclass |= PCLASS_LOADED;
+				if ( CallService( MS_SERVICEMODE_LAUNCH, 0, 0 ) != CALLSERVICE_NOTFOUND )
+					return 1;
+				else {
+					MessageBoxA(NULL,Translate("Unable to load plugin in Service Mode!"), p->pluginname, 0);
+					return -1;
+				}
+			}
+			Plugin_Uninit( p );
+			return -1;
+		}
+		p = p->nextclass;
+	}
+	return -1;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 //
 //   Event hook to unload all non-core plugins
@@ -478,7 +574,7 @@ void UnloadNewPlugins(void)
 //
 //   Plugins options page dialog
 
-typedef struct 
+typedef struct
 {
 	int   flags;
 	char* author;
@@ -516,7 +612,7 @@ static BOOL dialogListPlugins(WIN32_FIND_DATAA * fd, char * path, WPARAM wParam,
 	it.iImage = ( pi.pluginInfo->flags & 1 ) ? 0 : 1;
 	it.lParam = (LPARAM)( dat = (PluginListItemData*)mir_alloc( sizeof( PluginListItemData )));
 	iRow=SendMessageA( hwndList, LVM_INSERTITEMA, 0, (LPARAM)&it );
-	if ( isPluginOnWhiteList(fd->cFileName) ) 
+	if ( isPluginOnWhiteList(fd->cFileName) )
 		ListView_SetItemState(hwndList, iRow, !isdb ? 0x2000 : 0x3000, LVIS_STATEIMAGEMASK);
 	if ( iRow != -1 ) {
 		dat->flags = pi.pluginInfo->replacesDefaultModule;
@@ -612,7 +708,7 @@ static BOOL CALLBACK DlgPluginOpt(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 		// sort out the headers
         {
             int w, max;
-            
+
             ListView_SetColumnWidth( hwndList, 0, LVSCW_AUTOSIZE ); // dll name
             w = ListView_GetColumnWidth( hwndList, 0 );
             if (w>140) {
@@ -862,6 +958,8 @@ static int sttComparePluginsByName( pluginEntry* p1, pluginEntry* p2 )
 
 int LoadNewPluginsModuleInfos(void)
 {
+	bModuleInitialized = TRUE;
+
 	pluginList.increment = 10;
 	pluginList.sortFunc = sttComparePluginsByName;
 
@@ -921,9 +1019,11 @@ int LoadNewPluginsModuleInfos(void)
 //   Plugins module unloading
 //   called at the end of module chain unloading, just modular engine left at this point
 
-int UnloadNewPluginsModule(void)
+void UnloadNewPluginsModule(void)
 {
 	int i;
+
+	if ( !bModuleInitialized ) return;
 
 	// unload everything but the DB
 	for ( i = pluginList.realCount-1; i >= 0; i-- ) {
@@ -944,5 +1044,4 @@ int UnloadNewPluginsModule(void)
 	List_Destroy( &pluginList );
 	List_Destroy( &pluginListAddr );
 	UninitIni();
-	return 0;
 }

@@ -53,7 +53,6 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM l
 					break;
 
 				idx = SendMessageA( hList, LB_ADDSTRING, 0, (LPARAM)dbv.pszVal );
-				ListBox_SetItemData( hList, idx, (LPARAM)mir_strdup(dbv.pszVal));
 				DBFreeVariant( &dbv );
 			}
 		}
@@ -71,9 +70,12 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM l
 				int idx = ListBox_GetCurSel( hList );
 				if ( idx != -1 ) {
 					OPENOPTIONSDIALOG ood;
+					int len = SendMessageA( hList, LB_GETTEXTLEN, idx, 0 );
+					char* str = (char*)alloca( len + 2 );
+					if ( SendMessageA( hList, LB_GETTEXT, idx, (LPARAM)str ) == LB_ERR ) break;
 					ood.cbSize = sizeof(ood);
 					ood.pszGroup = "Network";
-					ood.pszPage = (char*)ListBox_GetItemData( hList, idx );
+					ood.pszPage = str;
 					ood.pszTab = NULL;
 					CallService( MS_OPT_OPENOPTIONS, 0, (LPARAM)&ood );
 			}	}

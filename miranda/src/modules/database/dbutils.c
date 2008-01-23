@@ -32,6 +32,8 @@ struct
 }
 static eventTypes;
 
+static BOOL bModuleInitialized = FALSE;
+
 static int DbEventTypeRegister(WPARAM wParam, LPARAM lParam)
 {
 	DBEVENTTYPEDESCR* et = ( DBEVENTTYPEDESCR* )lParam;
@@ -176,6 +178,8 @@ static int CompareEventTypes( const DBEVENTTYPEDESCR* p1, const DBEVENTTYPEDESCR
 
 int InitUtils()
 {
+	bModuleInitialized = TRUE;
+	
 	eventTypes.increment = 10;
 	eventTypes.sortFunc = CompareEventTypes;
 
@@ -189,6 +193,9 @@ int InitUtils()
 void UnloadEventsModule()
 {
 	int i;
+
+	if ( !bModuleInitialized ) return;
+
 	for ( i=0; i < eventTypes.count; i++ ) {
 		DBEVENTTYPEDESCR* p = eventTypes.items[i];
 		mir_free( p->module );

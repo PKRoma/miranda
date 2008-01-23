@@ -61,7 +61,6 @@ int FillTree(HWND hwnd)
 {
 	ProtocolData *PD;
 	char szName[64];
-	char *szSTName;
 	TCHAR *buf2=NULL;
 	int i;
 
@@ -82,7 +81,6 @@ int FillTree(HWND hwnd)
 
 		PD = ( ProtocolData* )mir_alloc( sizeof( ProtocolData ));
 		PD->RealName = GetUniqueProtoName(szName); //it return static pointer to protocol name-> not net to be freed
-		szSTName = PD->RealName;
 
 		PD->show = pa->bIsVisible;
 		PD->protopos = pa->iOrder;
@@ -182,8 +180,8 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 				cli.pfnReloadProtoMenus();
 				cli.pfnTrayIconIconsChanged();
-            cli.pfnClcBroadcast( INTM_RELOADOPTIONS, 0, 0 );
-            cli.pfnClcBroadcast( INTM_INVALIDATE, 0, 0 );
+				cli.pfnClcBroadcast( INTM_RELOADOPTIONS, 0, 0 );
+				cli.pfnClcBroadcast( INTM_INVALIDATE, 0, 0 );
 			}
 			break;
 

@@ -27,6 +27,7 @@ int LoadProtoChains(void);
 int LoadProtoOptions( void );
 
 static HANDLE hAckEvent,hTypeEvent;
+static BOOL bModuleInitialized = FALSE;
 
 typedef struct
 {
@@ -89,7 +90,7 @@ static int Proto_RegisterModule(WPARAM wParam,LPARAM lParam)
 		memset( p, 0, sizeof( PROTOCOLDESCRIPTOR ));
 		p->cbSize = sizeof( PROTOCOLDESCRIPTOR );
 		p->type = pd->type;
-		if ( p->type == PROTOTYPE_PROTOCOL ) { 
+		if ( p->type == PROTOTYPE_PROTOCOL ) {
 			// let's create a new container
 			PROTO_INTERFACE* ppi = AddDefaultAccount( pd->szName );
 			if ( ppi ) {
@@ -333,54 +334,6 @@ int CallContactService( HANDLE hContact, const char *szProtoService, WPARAM wPar
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-void UnloadAccountsModule()
-{
-	int i;
-	for( i=0; i < accounts.count; i++ ) {
-		PROTOACCOUNT* pa = accounts.items[ i ];
-		PROTOCOLDESCRIPTOR temp;
-		int idx;
-		if ( pa->ppro ) {
-			for ( idx = 0; idx < SIZEOF(pa->ppro->services); idx++ )
-				if ( pa->ppro->services[i] )
-					DestroyServiceFunction( pa->ppro->services[i] );
-		
-			temp.szName = accounts.items[i]->szModuleName;
-			if ( List_GetIndex(( SortedList* )&protos, &temp, &idx ))
-				if ( protos.items[idx]->fnUninit != NULL )
-					protos.items[idx]->fnUninit( pa->ppro );
-		}
-		mir_free( pa->tszAccountName );
-		mir_free( pa->szModuleName );
-		mir_free( pa->szProtoName );
-		mir_free( pa );
-	}
-	List_Destroy(( SortedList* )&accounts );
-}
-
-void UnloadProtocolsModule()
-{
-	int i;
-	if ( hAckEvent ) {
-		DestroyHookableEvent(hAckEvent);
-		hAckEvent = NULL;
-	}
-
-	if ( protos.count ) {
-		for( i=0; i < protos.count; i++ ) {
-			mir_free( protos.items[i]->szName);
-			mir_free( protos.items[i] );
-		}
-		List_Destroy(( SortedList* )&protos );
-	}
-
-	for ( i=0; i < serviceItems.count; i++ )
-		mir_free( serviceItems.items[i] );
-	List_Destroy(( SortedList* )&serviceItems );
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-
 static int CompareProtos( const PROTOCOLDESCRIPTOR* p1, const PROTOCOLDESCRIPTOR* p2 )
 {
 	return strcmp( p1->szName, p2->szName );
@@ -406,6 +359,8 @@ static void InsertServiceListItem( int id, const char* szName )
 
 int LoadProtocolsModule(void)
 {
+	bModuleInitialized = TRUE;
+
 	if ( LoadProtoChains() )
 		return 1;
 
@@ -416,7 +371,7 @@ int LoadProtocolsModule(void)
 	accounts.sortFunc = CompareAccounts;
 
 	serviceItems.increment = 10;
-	serviceItems.sortFunc = CompareServiceItems;	
+	serviceItems.sortFunc = CompareServiceItems;
 
 	InsertServiceListItem(  1, PS_ADDTOLIST );
 	InsertServiceListItem(  2, PS_ADDTOLISTBYEVENT );
@@ -470,4 +425,41 @@ int LoadProtocolsModule(void)
 	CreateServiceFunction( MS_PROTO_GETACCOUNT,       Proto_GetAccount       );
 
 	return LoadProtoOptions();
+}
+
+void UnloadProtocolsModule()
+{
+	int i;
+
+	if ( !bModuleInitialized ) return;
+
+	if ( hAckEvent ) {
+		DestroyHookableEvent(hAckEvent);
+		hAckEvent = NULL;
+	}
+
+	if ( protos.count ) {
+		for( i=0; i < protos.count; i++ ) {
+			mir_free( protos.items[i]->szName);
+			mir_free( protos.items[i] );
+		}
+		List_Destroy(( SortedList* )&protos );
+	}
+
+	for ( i=0; i < serviceItems.count; i++ )
+		mir_free( serviceItems.items[i] );
+	List_Destroy(( SortedList* )&serviceItems );
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+void UninitAccount(char *szModule, PROTOACCOUNT *pa)
+{
+	int idx;	
+	PROTOCOLDESCRIPTOR temp;
+	temp.szName = szModule;
+	if ( List_GetIndex(( SortedList* )&protos, &temp, &idx ))
+		if ( protos.items[idx]->fnUninit != NULL )
+			protos.items[idx]->fnUninit( pa->ppro );
+
 }

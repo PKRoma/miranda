@@ -103,7 +103,7 @@ static HICON LoadSmallIconShared(HINSTANCE hInstance, LPCTSTR lpIconName)
 // load small icon (not shared) it IS NEED to be destroyed
 static HICON LoadSmallIcon(HINSTANCE hInstance, LPCTSTR lpIconName)
 {
-	HICON hIcon = NULL;				  // icon handle 
+	HICON hIcon = NULL;				  // icon handle
 	int index = -( int )lpIconName;
 	TCHAR filename[MAX_PATH] = {0};
 	GetModuleFileName( hInstance, filename, MAX_PATH );
@@ -123,16 +123,16 @@ HICON LoadIconEx(HINSTANCE hInstance, LPCTSTR lpIconName, BOOL bShared)
 	return hResIcon;
 }
 
-int ImageList_AddIcon_NotShared(HIMAGELIST hIml, LPCTSTR szResource) 
-{   
+int ImageList_AddIcon_NotShared(HIMAGELIST hIml, LPCTSTR szResource)
+{
 	HICON hTempIcon=LoadIconEx( GetModuleHandle(NULL), szResource, 0);
 	int res = ImageList_AddIcon(hIml, hTempIcon);
-	Safe_DestroyIcon(hTempIcon); 
+	Safe_DestroyIcon(hTempIcon);
 	return res;
 }
 
-int ImageList_AddIcon_IconLibLoaded(HIMAGELIST hIml, int iconId) 
-{  
+int ImageList_AddIcon_IconLibLoaded(HIMAGELIST hIml, int iconId)
+{
 	HICON hIcon = LoadSkinIcon( iconId );
 	int res = ImageList_AddIcon(hIml, hIcon);
 	IconLib_ReleaseIcon(hIcon,0);
@@ -140,23 +140,23 @@ int ImageList_AddIcon_IconLibLoaded(HIMAGELIST hIml, int iconId)
 }
 
 int ImageList_AddIcon_ProtoIconLibLoaded(HIMAGELIST hIml, const char* szProto, int iconId)
-{  
+{
 	HICON hIcon = LoadSkinProtoIcon( szProto, iconId );
 	int res = ImageList_AddIcon(hIml, hIcon);
 	IconLib_ReleaseIcon(hIcon,0);
 	return res;
 }
 
-int ImageList_ReplaceIcon_NotShared(HIMAGELIST hIml, int iIndex, HINSTANCE hInstance, LPCTSTR szResource) 
-{   
+int ImageList_ReplaceIcon_NotShared(HIMAGELIST hIml, int iIndex, HINSTANCE hInstance, LPCTSTR szResource)
+{
 	HICON hTempIcon = LoadIconEx(hInstance, szResource, 0);
 	int res = ImageList_ReplaceIcon(hIml, iIndex, hTempIcon);
-	Safe_DestroyIcon(hTempIcon); 
+	Safe_DestroyIcon(hTempIcon);
 	return res;
 }
 
-int ImageList_ReplaceIcon_IconLibLoaded(HIMAGELIST hIml, int nIndex, HICON hIcon) 
-{   
+int ImageList_ReplaceIcon_IconLibLoaded(HIMAGELIST hIml, int nIndex, HICON hIcon)
+{
 	int res = ImageList_ReplaceIcon(hIml,nIndex, hIcon);
 	IconLib_ReleaseIcon(hIcon,0);
 	return res;
@@ -213,7 +213,7 @@ HICON LoadSkinProtoIcon( const char* szProto, int status )
 
 	for ( i = 0; i < SIZEOF(statusIcons); i++ ) {
 		if ( statusIcons[i].id == status ) {
-			statusIndx = i; 
+			statusIndx = i;
 			break;
 	}	}
 
@@ -314,7 +314,7 @@ HICON LoadSkinProtoIcon( const char* szProto, int status )
 		strcat(iconName, szProto);
 		itoa(statusIndx, iconName + strlen(iconName), 10);
 		hIcon = IcoLib_GetIcon( iconName );
-		if ( hIcon ) 
+		if ( hIcon )
 			return hIcon;
 	}
 
@@ -322,7 +322,7 @@ HICON LoadSkinProtoIcon( const char* szProto, int status )
 		mir_snprintf( iconName, SIZEOF(iconName), "%s%s%d", statusIconsFmt, GLOBAL_PROTO_NAME, statusIndx );
 		hIcon = IcoLib_GetIcon( iconName );
 	}
- 
+
 	return hIcon;
 }
 
@@ -390,7 +390,7 @@ static int SRV_LoadSkinIcon( WPARAM wParam, LPARAM lParam )
 	return ( int )GetSkinIconHandle( wParam );
 }
 
-int InitSkinIcons(void)
+int LoadSkinIcons(void)
 {
 	SKINICONDESC sid;
 	int i, j = 0;

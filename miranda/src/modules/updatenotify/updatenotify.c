@@ -41,6 +41,7 @@ typedef struct {
     char downloadUrl[256];
 } UpdateNotifyData;
 
+static BOOL bModuleInitialized = FALSE;
 static HANDLE hNetlibUser = 0, hHookModules, hHookPreShutdown;
 static UINT updateTimerId;
 static DWORD dwUpdateThreadID = 0;
@@ -71,7 +72,10 @@ static int UpdateNotifyPreShutdown(WPARAM wParam, LPARAM lParam) {
 	return 0;
 }
 
-int LoadUpdateNotifyModule(void) {
+int LoadUpdateNotifyModule(void)
+{
+	bModuleInitialized = TRUE;
+
 	hHookModules = HookEvent(ME_SYSTEM_MODULESLOADED, UpdateNotifyModulesLoaded);
 	hHookPreShutdown = HookEvent(ME_SYSTEM_PRESHUTDOWN, UpdateNotifyPreShutdown);
 	HookEvent(ME_OPT_INITIALISE, UpdateNotifyOptInit);
@@ -81,6 +85,8 @@ int LoadUpdateNotifyModule(void) {
 
 void UnloadUpdateNotifyModule()
 {
+	if ( !bModuleInitialized ) return;
+
 	UnhookEvent(hHookModules);
 	UnhookEvent(hHookPreShutdown);
 }

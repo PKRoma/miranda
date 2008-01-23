@@ -106,6 +106,8 @@ BOOL (WINAPI *_WTSQuerySessionInformation)(HANDLE, DWORD, WTS_INFO_CLASS, PVOID,
 
 BOOL bIsWTSApiPresent = FALSE;
 
+static BOOL bModuleInitialized = FALSE;
+
 BOOL InitWTSAPI()
 {
 	HMODULE hDll = LoadLibraryA("wtsapi32.dll");
@@ -394,6 +396,8 @@ static int IdleGetInfo(WPARAM wParam, LPARAM lParam)
 
 int LoadIdleModule(void)
 {
+	bModuleInitialized = TRUE;
+
 	bIsWTSApiPresent = InitWTSAPI();
 	MyGetLastInputInfo=(BOOL (WINAPI *)(LASTINPUTINFO*))GetProcAddress(GetModuleHandleA("user32"), "GetLastInputInfo");
 	hIdleEvent=CreateHookableEvent(ME_IDLE_CHANGED);
@@ -405,6 +409,8 @@ int LoadIdleModule(void)
 
 void UnloadIdleModule()
 {
+	if ( !bModuleInitialized ) return;
+
 	IdleObject_Destroy(&gIdleObject);
 	DestroyHookableEvent(hIdleEvent);
 	hIdleEvent=NULL;

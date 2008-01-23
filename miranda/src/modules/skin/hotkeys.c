@@ -23,9 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include <m_hotkeys.h>
 
-int InitSkinHotkeys(void);
-int UninitSkinHotkeys(void);
-
 #define DBMODULENAME "SkinHotKeys"
 
 typedef enum { HKT_GLOBAL, HKT_LOCAL, HKT_MANUAL, HKT_COUNT } THotkeyType;
@@ -55,6 +52,7 @@ struct _THotkeyItem
 static int sttCompareHotkeys(const THotkeyItem *p1, const THotkeyItem *p2);
 static void sttFreeHotkey(THotkeyItem *item);
 
+static BOOL bModuleInitialized = FALSE;
 static SortedList *lstHotkeys = NULL;
 static HWND g_hwndHotkeyHost = NULL;
 static DWORD g_pid = 0;
@@ -88,9 +86,12 @@ static LRESULT CALLBACK sttKeyboardProc(int code, WPARAM wParam, LPARAM lParam);
 static const char* oldSettings[] = { "ShowHide", "ReadMsg", "NetSearch", "ShowOptions" };
 static const char* newSettings[] = { "ShowHide", "ReadMessage", "SearchInWeb", "ShowOptions" };
 
-int InitSkinHotkeys(void)
+int LoadSkinHotkeys(void)
 {
 	WNDCLASSEX wcl = {0};
+
+	bModuleInitialized = TRUE;
+
 	wcl.cbSize = sizeof(wcl);
 	wcl.lpfnWndProc = sttHotkeyHostWndProc;
 	wcl.style = 0;
@@ -141,9 +142,12 @@ int InitSkinHotkeys(void)
 	return 0;
 }
 
-int UninitSkinHotkeys(void)
+void UnloadSkinHotkeys(void)
 {
 	int i;
+
+	if ( !bModuleInitialized ) return;
+
 	UnhookWindowsHookEx(hhkKeyboard);
 	sttUnregisterHotkeys();
 	DestroyWindow(g_hwndHotkeyHost);
@@ -151,8 +155,6 @@ int UninitSkinHotkeys(void)
 		sttFreeHotkey((THotkeyItem *)lstHotkeys->items[i]);
 	List_Destroy(lstHotkeys);
 	mir_free(lstHotkeys);
-
-	return 0;
 }
 
 static int sttModulesLoaded(WPARAM wParam, LPARAM lParam)

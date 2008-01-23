@@ -202,9 +202,8 @@ static PROTO_INTERFACE_VTBL defaultVtbl;
 
 PROTO_INTERFACE* AddDefaultAccount( const char* szProtoName )
 {
-	PROTO_INTERFACE* ppi = ( PROTO_INTERFACE* )mir_alloc( sizeof( PROTO_INTERFACE ));
+	PROTO_INTERFACE* ppi = ( PROTO_INTERFACE* )mir_calloc( sizeof( PROTO_INTERFACE ));
 	if ( ppi != NULL ) {
-		memset( ppi, 0, sizeof( PROTO_INTERFACE ));
 		ppi->iVersion = 1;
 		ppi->bOldProto = TRUE;
 		ppi->szModuleName = mir_strdup( szProtoName );

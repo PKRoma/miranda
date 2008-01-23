@@ -25,10 +25,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "IcoLib.h"
 
+static BOOL bModuleInitialized = FALSE;
 static HANDLE hIcons2ChangedEvent, hIconsChangedEvent;
 static HICON hIconBlank = NULL;
 
-HANDLE hIcoLib_AddNewIcon, hIcoLib_RemoveIcon, hIcoLib_GetIcon, hIcoLib_GetIcon2, 
+HANDLE hIcoLib_AddNewIcon, hIcoLib_RemoveIcon, hIcoLib_GetIcon, hIcoLib_GetIcon2,
        hIcoLib_IsManaged, hIcoLib_AddRef, hIcoLib_ReleaseIcon;
 
 static HIMAGELIST hCacheIconList;
@@ -95,7 +96,7 @@ static HICON ImageList_GetIcon_Fixed( HIMAGELIST himl, int i, UINT fStyle )
 	if (IsWinVerXPPlus() && i != -1) {
 		ImageList_GetImageInfo( himl, i, &imi );
 		GetObject( imi.hbmImage, sizeof(bm), &bm);
-		if ( bm.bmBitsPixel == 32 ) //stupid bug of Microsoft 
+		if ( bm.bmBitsPixel == 32 ) //stupid bug of Microsoft
 			// Icons bitmaps are not premultiplied
 			// So Imagelist_AddIcon - premultiply alpha
 			// But incorrect - it is possible that alpha will
@@ -134,7 +135,7 @@ static HICON ImageList_GetIcon_Fixed( HIMAGELIST himl, int i, UINT fStyle )
 					}
 					bcbits += bm.bmWidthBytes;
 			}	}
-			if ( !bm.bmBits ) { 
+			if ( !bm.bmBits ) {
 				SetBitmapBits( imi.hbmImage, bm.bmWidthBytes * bm.bmHeight, bits );
 				free( bits );
 	}	}	}
@@ -158,7 +159,7 @@ static HICON ExtractIconFromPath( const TCHAR *path, int cxIcon, int cyIcon )
 	comma = _tcsrchr( file, ',' );
 	if ( !comma )
 		n = 0;
-	else {  
+	else {
 		n = _ttoi( comma+1 );
 		*comma = 0;
 	}
@@ -172,7 +173,7 @@ static HICON ExtractIconFromPath( const TCHAR *path, int cxIcon, int cyIcon )
 
 static SectionItem* IcoLib_AddSection(TCHAR *sectionName, BOOL create_new)
 {
-	SectionItem key = { sectionName, 0 };    
+	SectionItem key = { sectionName, 0 };
 	int indx;
 
 	if ( !sectionName )
@@ -182,7 +183,7 @@ static SectionItem* IcoLib_AddSection(TCHAR *sectionName, BOOL create_new)
 		return sectionList.items[ indx ];
 
 	if ( create_new ) {
-		SectionItem* newItem = ( SectionItem* )mir_alloc( sizeof( SectionItem ));
+		SectionItem* newItem = ( SectionItem* )mir_calloc( sizeof( SectionItem ));
 		newItem->name = mir_tstrdup( sectionName );
 		newItem->flags = 0;
 		List_Insert(( SortedList* )&sectionList, newItem, indx );
@@ -534,7 +535,7 @@ HICON IcoLib_GetIconByHandle( HANDLE hItem )
 	else result = hIconBlank;
 
 	LeaveCriticalSection( &csIconList );
-	return result;			
+	return result;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -759,7 +760,7 @@ static TCHAR* OpenFileDlg( HWND hParent, const TCHAR* szFile, BOOL bAll )
 	ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
 	ofn.nMaxFile = MAX_PATH*2;
 
-	if (!GetOpenFileName(&ofn)) 
+	if (!GetOpenFileName(&ofn))
 		return NULL;
 
 	return mir_tstrdup(file);
@@ -851,7 +852,7 @@ static int IconDlg_Resize(HWND hwndDlg,LPARAM lParam, UTILRESIZECONTROL *urc)
 		return RD_ANCHORX_RIGHT | RD_ANCHORY_TOP;
 
 	case IDC_PREVIEW:
-		return RD_ANCHORX_WIDTH | RD_ANCHORY_HEIGHT;      
+		return RD_ANCHORX_WIDTH | RD_ANCHORY_HEIGHT;
 
 	case IDC_GETMORE:
 		return RD_ANCHORX_CENTRE | RD_ANCHORY_BOTTOM;
@@ -874,7 +875,7 @@ BOOL CALLBACK DlgProcIconImport(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		dragging = dragItem = 0;
 		ListView_SetImageList(hPreview, ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,0,100), LVSIL_NORMAL);
 		ListView_SetIconSpacing(hPreview, 56, 67);
-		{  
+		{
 			RECT rcThis, rcParent;
 			int cxScreen = GetSystemMetrics(SM_CXSCREEN);
 
@@ -892,7 +893,7 @@ BOOL CALLBACK DlgProcIconImport(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			GetClientRect(hwndDlg, &rcThis);
 			SendMessage(hwndDlg, WM_SIZE, 0, MAKELPARAM(rcThis.right-rcThis.left, rcThis.bottom-rcThis.top));
 		}
-		{  
+		{
 			HRESULT (STDAPICALLTYPE *MySHAutoComplete)(HWND,DWORD);
 
 			MySHAutoComplete = (HRESULT (STDAPICALLTYPE*)(HWND,DWORD))GetProcAddress(GetModuleHandleA("shlwapi"),"SHAutoComplete");
@@ -902,7 +903,7 @@ BOOL CALLBACK DlgProcIconImport(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		return TRUE;
 
 	case DM_REBUILDICONSPREVIEW:
-		{  
+		{
 			LVITEM lvi;
 			TCHAR filename[MAX_PATH],caption[64];
 			HIMAGELIST hIml;
@@ -914,7 +915,7 @@ BOOL CALLBACK DlgProcIconImport(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			hIml = ListView_GetImageList(hPreview, LVSIL_NORMAL);
 			ImageList_RemoveAll(hIml);
 			GetDlgItemText(hwndDlg, IDC_ICONSET, filename, SIZEOF(filename));
-			{  
+			{
 				RECT rcPreview,rcGroup;
 
 				GetWindowRect(hPreview, &rcPreview);
@@ -948,7 +949,7 @@ BOOL CALLBACK DlgProcIconImport(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 	case WM_COMMAND:
 		switch( LOWORD( wParam )) {
 		case IDC_BROWSE:
-			{ 
+			{
 				TCHAR str[MAX_PATH];
 				TCHAR *file;
 
@@ -1048,7 +1049,7 @@ BOOL CALLBACK DlgProcIconImport(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				dragItem = ((LPNMLISTVIEW)lParam)->iItem;
 				dropHiLite = -1;
 				ImageList_BeginDrag(ListView_GetImageList(hPreview, LVSIL_NORMAL), dragItem, GetSystemMetrics(SM_CXICON)/2, GetSystemMetrics(SM_CYICON)/2);
-				{  
+				{
 					POINT pt;
 					RECT rc;
 
@@ -1176,6 +1177,8 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			TCHAR itemName[1024];
 			HTREEITEM hSection;
 
+			if (!hwndTree) break;
+
 			TreeView_SelectItem(hwndTree, NULL);
 			TreeView_DeleteAllItems(hwndTree);
 
@@ -1232,7 +1235,6 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					}
 					sectionLevel++;
 
-
 					hSection = hItem;
 			}	}
 
@@ -1244,7 +1246,7 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 	//  Rebuild preview to new section
 	case DM_REBUILDICONSPREVIEW:
-		{  
+		{
 			LVITEM lvi = {0};
 			HIMAGELIST hIml;
 			HICON hIcon;
@@ -1291,7 +1293,7 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 	// Refresh preview to new section
 	case DM_UPDATEICONSPREVIEW:
-		{  
+		{
 			LVITEM lvi = {0};
 			HICON hIcon;
 			int indx, count;
@@ -1507,6 +1509,32 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 	return FALSE;
 }
 
+static UINT iconsExpertOnlyControls[]={IDC_IMPORT};
+
+static int SkinOptionsInit(WPARAM wParam,LPARAM lParam)
+{
+	OPTIONSDIALOGPAGE odp = {0};
+
+	odp.cbSize = sizeof(odp);
+	odp.hInstance = GetModuleHandle(NULL);
+	odp.flags = ODPF_BOLDGROUPS | ODPF_TCHAR;
+	odp.position = -180000000;
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_ICOLIB);
+	odp.ptszTitle = TranslateT("Icons");
+	odp.ptszGroup = TranslateT("Customize");
+	odp.pfnDlgProc = DlgProcIcoLibOpts;
+	odp.expertOnlyControls = iconsExpertOnlyControls;
+	odp.nExpertOnlyControls = SIZEOF(iconsExpertOnlyControls);
+	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM)&odp);
+	return 0;
+}
+
+static int SkinSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
+{
+	HookEvent(ME_OPT_INITIALISE, SkinOptionsInit);
+	return 0;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // Module initialization and finalization procedure
 
@@ -1530,8 +1558,10 @@ static int sttIcoLib_GetIconByHandle( WPARAM wParam, LPARAM lParam )
 {	return (int)IcoLib_GetIconByHandle(( HANDLE )lParam );
 }
 
-int InitSkin2Icons(void)
+int LoadIcoLibModule(void)
 {
+	bModuleInitialized = TRUE;
+
 	sectionList.increment = iconList.increment = 20;
 	sectionList.sortFunc  = ( FSortFunc )sttCompareSections;
 	iconList.sortFunc     = ( FSortFunc )sttCompareIcons;
@@ -1546,19 +1576,22 @@ int InitSkin2Icons(void)
 	hIcoLib_GetIcon     = CreateServiceFunction(MS_SKIN2_GETICON,         sttIcoLib_GetIcon);
 	hIcoLib_GetIcon2    = CreateServiceFunction(MS_SKIN2_GETICONBYHANDLE, sttIcoLib_GetIconByHandle);
 	hIcoLib_IsManaged   = CreateServiceFunction(MS_SKIN2_ISMANAGEDICON,   ( MIRANDASERVICE )IcoLib_IsManaged);
-	hIcoLib_AddRef      = CreateServiceFunction(MS_SKIN2_ADDREFICON,      IcoLib_AddRef); 
+	hIcoLib_AddRef      = CreateServiceFunction(MS_SKIN2_ADDREFICON,      IcoLib_AddRef);
 	hIcoLib_ReleaseIcon = CreateServiceFunction(MS_SKIN2_RELEASEICON,     ( MIRANDASERVICE )IcoLib_ReleaseIcon);
 
 	hIcons2ChangedEvent = CreateHookableEvent(ME_SKIN2_ICONSCHANGED);
 	hIconsChangedEvent = CreateHookableEvent(ME_SKIN_ICONSCHANGED);
+
+	HookEvent(ME_SYSTEM_MODULESLOADED, SkinSystemModulesLoaded);
+
 	return 0;
 }
 
-void UninitSkin2Icons(void)
+void UnloadIcoLibModule(void)
 {
 	int indx;
 
-	if (hIconBlank == NULL) return;
+	if ( !bModuleInitialized ) return;
 
 	DestroyHookableEvent(hIconsChangedEvent);
 	DestroyHookableEvent(hIcons2ChangedEvent);

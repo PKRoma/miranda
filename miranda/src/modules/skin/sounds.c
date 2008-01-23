@@ -29,6 +29,7 @@ struct SoundItem {
 	char*  tempFile;
 };
 
+static BOOL bModuleInitialized = FALSE;
 static struct SoundItem *soundList = NULL;
 static int soundCount;
 static HANDLE hPlayEvent = NULL;
@@ -382,20 +383,49 @@ BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 	return FALSE;
 }
 
-int InitSkinSounds(void)
+static UINT iconsExpertOnlyControls[]={IDC_IMPORT};
+
+static int SkinOptionsInit(WPARAM wParam,LPARAM lParam)
 {
+	OPTIONSDIALOGPAGE odp = { 0 };
+	odp.cbSize = sizeof(odp);
+	odp.position = -200000000;
+	odp.hInstance = GetModuleHandle(NULL);
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_SOUND);
+	odp.pszGroup = LPGEN("Customize");
+	odp.pszTitle = LPGEN("Sounds");
+	odp.pfnDlgProc = DlgProcSoundOpts;
+	odp.flags = ODPF_BOLDGROUPS;
+	CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
+	return 0;
+}
+
+static int SkinSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
+{
+	HookEvent(ME_OPT_INITIALISE,SkinOptionsInit);
+	return 0;
+}
+
+int LoadSkinSounds(void)
+{
+	bModuleInitialized = TRUE;
+
 	soundList=NULL;
 	soundCount=0;
 	CreateServiceFunction(MS_SKIN_ADDNEWSOUND,ServiceSkinAddNewSound);
 	CreateServiceFunction(MS_SKIN_PLAYSOUND,ServiceSkinPlaySound);
+	HookEvent(ME_SYSTEM_MODULESLOADED,SkinSystemModulesLoaded);
 	hPlayEvent=CreateHookableEvent(ME_SKIN_PLAYINGSOUND);
 	SetHookDefaultForHookableEvent(hPlayEvent, SkinPlaySoundDefault);
 	return 0;
 }
 
-void UninitSkinSounds(void)
+void UnloadSkinSounds(void)
 {
 	int i;
+
+	if ( !bModuleInitialized ) return;
+
 	for(i=0;i<soundCount;i++) {
 		mir_free(soundList[i].name);
 		mir_free(soundList[i].section);

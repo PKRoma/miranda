@@ -24,6 +24,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../../core/commonheaders.h"
 #include "../srfile/file.h"
 
+
+
+static BOOL bModuleInitialized = FALSE;
 static HANDLE hIniChangeNotification;
 extern char mirandabootini[MAX_PATH];
 
@@ -474,6 +477,8 @@ int InitIni(void)
 	char szMirandaDir[MAX_PATH];
 	char *str2;
 
+	bModuleInitialized = TRUE;
+
 	DoAutoExec();
 	GetModuleFileNameA(GetModuleHandle(NULL),szMirandaDir,sizeof(szMirandaDir));
 	str2=strrchr(szMirandaDir,'\\');
@@ -488,6 +493,7 @@ int InitIni(void)
 
 void UninitIni(void)
 {
+	if ( !bModuleInitialized ) return;
 	CallService(MS_SYSTEM_REMOVEWAIT,(WPARAM)hIniChangeNotification,0);
 	FindCloseChangeNotification(hIniChangeNotification);
 }

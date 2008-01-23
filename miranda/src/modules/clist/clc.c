@@ -33,6 +33,7 @@ int UninitCustomMenus( void );
 
 void MTG_OnmodulesLoad( void );
 
+static BOOL bModuleInitialized = FALSE;
 static HANDLE hClcWindowList;
 static HANDLE hShowInfoTipEvent;
 HANDLE hHideInfoTipEvent;
@@ -202,6 +203,8 @@ static void SortClcByTimer( HWND hwnd )
 
 int LoadCLCModule(void)
 {
+	bModuleInitialized = TRUE;
+	
 	g_IconWidth = GetSystemMetrics(SM_CXSMICON);
 	g_IconHeight = GetSystemMetrics(SM_CYSMICON);
 
@@ -227,6 +230,8 @@ int LoadCLCModule(void)
 
 void UnloadClcModule()
 {
+	if ( !bModuleInitialized ) return;
+	
 	UnhookEvent(hAckHook);
 	UnhookEvent(hClcSettingsChanged);
 
