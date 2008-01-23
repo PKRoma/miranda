@@ -2222,7 +2222,7 @@ int CJabberProto::OnBuildPrivacyMenu( WPARAM wParam, LPARAM lParam )
 
 	CLISTMENUITEM mi = { 0 };
 	int i=0;
-	char srvFce[MAX_PATH + 64];
+	char srvFce[MAX_PATH + 64], *svcName = srvFce+strlen( szProtoName );
 	char szItem[MAX_PATH + 64];
 	HANDLE hPrivacyRoot;
 	HANDLE hRoot = ( HANDLE )szItem;
@@ -2256,7 +2256,7 @@ int CJabberProto::OnBuildPrivacyMenu( WPARAM wParam, LPARAM lParam )
 
 	mir_snprintf( srvFce, sizeof(srvFce), "%s/menuPrivacy%d", szProtoName, i );
 	if ( i > serviceAllocated ) {
-		JCreateServiceParam( srvFce, &CJabberProto::menuSetPrivacyList, i );
+		JCreateServiceParam( svcName, &CJabberProto::menuSetPrivacyList, i );
 		serviceAllocated = i;
 	}
 	mi.position++;
@@ -2272,7 +2272,7 @@ int CJabberProto::OnBuildPrivacyMenu( WPARAM wParam, LPARAM lParam )
 		mir_snprintf( srvFce, sizeof(srvFce), "%s/menuPrivacy%d", szProtoName, i );
 
 		if ( i > serviceAllocated ) {
-			JCreateServiceParam( srvFce, &CJabberProto::menuSetPrivacyList, i );
+			JCreateServiceParam( svcName, &CJabberProto::menuSetPrivacyList, i );
 			serviceAllocated = i;
 		}
 

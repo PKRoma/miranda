@@ -423,7 +423,7 @@ int CJabberProto::CListMW_BuildStatusItems( WPARAM wParam, LPARAM lParam )
 
 	CLISTMENUITEM mi = { 0 };
 	int i;
-	char srvFce[MAX_PATH + 64];
+	char srvFce[MAX_PATH + 64], *svcName = srvFce+strlen( szProtoName );
 	char szItem[MAX_PATH + 64];
 	HANDLE hXStatusRoot;
 	HANDLE hRoot = ( HANDLE )szItem;
@@ -438,7 +438,7 @@ int CJabberProto::CListMW_BuildStatusItems( WPARAM wParam, LPARAM lParam )
 		mir_snprintf( srvFce, sizeof(srvFce), "%s/menuXStatus%d", szProtoName, i );
 
 		if ( !bXStatusMenuBuilt )
-			JCreateServiceParam( srvFce, &CJabberProto::menuSetXStatus, i );
+			JCreateServiceParam( svcName, &CJabberProto::menuSetXStatus, i );
 
 		if ( i ) {
 			char szIcon[ MAX_PATH ];
