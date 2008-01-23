@@ -89,29 +89,28 @@ struct
 	char*  szName;
 	int    defIconID;
 	char*  szSection;
-	HANDLE hIconLibItem;
 }
 static iconList[] =
 {
-	{   LPGEN("Protocol icon"),         "main",             IDI_JABBER            },
-	{   LPGEN("Agents list"),           "Agents",           IDI_AGENTS            },
-	{   LPGEN("Transports"),            "transport",        IDI_TRANSPORT         },
-	{   LPGEN("Registered transports"), "transport_loc",    IDI_TRANSPORTL        },
-	{   LPGEN("Change password"),       "key",              IDI_KEYS              },
-	{   LPGEN("Multi-User Conference"), "group",            IDI_GROUP             },
-	{   LPGEN("Personal vCard"),        "vcard",            IDI_VCARD             },
-	{   LPGEN("Request authorization"), "Request",          IDI_REQUEST           },
-	{   LPGEN("Grant authorization"),   "Grant",            IDI_GRANT             },
-	{   LPGEN("Revoke authorization"),  "Revoke",           IDI_AUTHREVOKE        },
-	{   LPGEN("Convert to room"),       "convert",          IDI_USER2ROOM         },
-	{   LPGEN("Add to roster"),         "addroster",        IDI_ADDROSTER         },
-	{   LPGEN("Login/logout"),          "trlogonoff",       IDI_LOGIN             },
-	{   LPGEN("Resolve nicks"),         "trresolve",        IDI_REFRESH           },
-	{   LPGEN("Bookmarks"),             "bookmarks",        IDI_BOOKMARKS         }, 
-	{   LPGEN("Privacy Lists"),         "privacylists",     IDI_PRIVACY_LISTS     },
-	{   LPGEN("Service Discovery"),     "servicediscovery", IDI_SERVICE_DISCOVERY },
-	{   LPGEN("AdHoc Command"),         "adhoc",            IDI_COMMAND           },
-	{   LPGEN("XML Console"),           "xmlconsole",       IDI_CONSOLE           },
+	{   LPGEN("Protocol icon"),         "main",             IDI_JABBER,             NULL },
+	{   LPGEN("Agents list"),           "Agents",           IDI_AGENTS,             NULL },
+	{   LPGEN("Transports"),            "transport",        IDI_TRANSPORT,          NULL },
+	{   LPGEN("Registered transports"), "transport_loc",    IDI_TRANSPORTL,         NULL },
+	{   LPGEN("Change password"),       "key",              IDI_KEYS,               NULL },
+	{   LPGEN("Multi-User Conference"), "group",            IDI_GROUP,              NULL },
+	{   LPGEN("Personal vCard"),        "vcard",            IDI_VCARD,              NULL },
+	{   LPGEN("Request authorization"), "Request",          IDI_REQUEST,            NULL },
+	{   LPGEN("Grant authorization"),   "Grant",            IDI_GRANT,              NULL },
+	{   LPGEN("Revoke authorization"),  "Revoke",           IDI_AUTHREVOKE,         NULL },
+	{   LPGEN("Convert to room"),       "convert",          IDI_USER2ROOM,          NULL },
+	{   LPGEN("Add to roster"),         "addroster",        IDI_ADDROSTER,          NULL },
+	{   LPGEN("Login/logout"),          "trlogonoff",       IDI_LOGIN,              NULL },
+	{   LPGEN("Resolve nicks"),         "trresolve",        IDI_REFRESH,            NULL },
+	{   LPGEN("Bookmarks"),             "bookmarks",        IDI_BOOKMARKS,          NULL }, 
+	{   LPGEN("Privacy Lists"),         "privacylists",     IDI_PRIVACY_LISTS,      NULL },
+	{   LPGEN("Service Discovery"),     "servicediscovery", IDI_SERVICE_DISCOVERY,  NULL },
+	{   LPGEN("AdHoc Command"),         "adhoc",            IDI_COMMAND,            NULL },
+	{   LPGEN("XML Console"),           "xmlconsole",       IDI_CONSOLE,            NULL },
 
 	{   LPGEN("Discovery succeeded"),   "disco_ok",         IDI_DISCO_OK,           LPGEN("Dialogs") },
 	{   LPGEN("Discovery failed"),      "disco_fail",       IDI_DISCO_FAIL,         LPGEN("Dialogs") },
@@ -132,8 +131,8 @@ static iconList[] =
 	{   LPGEN("Generic privacy list"),  "pl_list_any",      IDI_PL_LIST_ANY,        LPGEN("Dialogs/Privacy") },
 	{   LPGEN("Active privacy list"),   "pl_list_active",   IDI_PL_LIST_ACTIVE,     LPGEN("Dialogs/Privacy") },
 	{   LPGEN("Default privacy list"),  "pl_list_default",  IDI_PL_LIST_DEFAULT,    LPGEN("Dialogs/Privacy") },
-	{   LPGEN("Move up"),				"arrow_up",			IDI_ARROW_UP,			LPGEN("Dialogs/Privacy") },
-	{   LPGEN("Move down"),				"arrow_down",		IDI_ARROW_DOWN,			LPGEN("Dialogs/Privacy") },
+	{   LPGEN("Move up"),               "arrow_up",         IDI_ARROW_UP,           LPGEN("Dialogs/Privacy") },
+	{   LPGEN("Move down"),             "arrow_down",       IDI_ARROW_DOWN,         LPGEN("Dialogs/Privacy") },
 	{   LPGEN("Allow Messages"),        "pl_msg_allow",     IDI_PL_MSG_ALLOW,       LPGEN("Dialogs/Privacy") },
 	{   LPGEN("Allow Presences (in)"),  "pl_prin_allow",    IDI_PL_PRIN_ALLOW,      LPGEN("Dialogs/Privacy") },
 	{   LPGEN("Allow Presences (out)"), "pl_prout_allow",   IDI_PL_PROUT_ALLOW,     LPGEN("Dialogs/Privacy") },
@@ -154,6 +153,8 @@ void CJabberProto::JabberIconsInit( void )
 	sid.pszDefaultFile = szFile;
 	sid.cx = sid.cy = 16;
 
+	hIconLibItems = ( HANDLE* )mir_alloc( sizeof( HANDLE )*SIZEOF(iconList));
+
 	char *szRootSection = Translate( szProtoName );
 
 	for ( int i = 0; i < SIZEOF(iconList); i++ ) {
@@ -169,14 +170,14 @@ void CJabberProto::JabberIconsInit( void )
 		sid.pszName = szSettingName;
 		sid.pszDescription = Translate( iconList[i].szDescr );
 		sid.iDefaultIndex = -iconList[i].defIconID;
-		iconList[i].hIconLibItem = ( HANDLE )CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+		hIconLibItems[i] = ( HANDLE )CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 }	}
 
 HANDLE CJabberProto::GetIconHandle( int iconId )
 {
 	for ( int i=0; i < SIZEOF(iconList); i++ )
 		if ( iconList[i].defIconID == iconId )
-			return iconList[i].hIconLibItem;
+			return hIconLibItems[i];
 
 	return NULL;
 }

@@ -138,11 +138,11 @@ CJabberProto::CJabberProto( const char* aProtoName ) :
 	m_adhocManager.FillDefaultNodes();
 	m_clientCapsManager.AddDefaultCaps();
 
+	JabberIconsInit();
 	JabberMenuInit();
 	JabberWsInit();
 	JabberXStatusInit();
 	JabberIqInit();
-	JabberIconsInit();
 	JabberSerialInit();
 	JabberConsoleInit();
 	InitCustomFolders();
@@ -168,6 +168,8 @@ CJabberProto::~CJabberProto()
 
 	JabberListWipe();
 	DeleteCriticalSection( &csLists );
+
+	mir_free( hIconLibItems );
 
 	DeleteCriticalSection( &modeMsgMutex );
 	mir_free( modeMsgs.szOnline );

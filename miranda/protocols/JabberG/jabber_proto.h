@@ -781,6 +781,8 @@ private:
 	
 	int     nMenuResourceItems;
 	HANDLE* hMenuResourceItems;
+
+	HANDLE* hIconLibItems;
 };
 
 #endif
