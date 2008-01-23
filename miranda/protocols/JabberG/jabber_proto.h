@@ -164,10 +164,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	int  __cdecl OnBuildPrivacyMenu( WPARAM, LPARAM );
 
 	//====| Data |========================================================================
-	HANDLE hMainThread;
-	DWORD jabberMainThreadId;
-	char* szProtoName;
-	char* szModuleName;
+
 	HANDLE hNetlibUser;
 
 	ThreadData* jabberThreadInfo;

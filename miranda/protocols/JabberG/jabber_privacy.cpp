@@ -452,13 +452,12 @@ static BOOL CALLBACK JabberPrivacyRuleDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 
 						// append known chatroom jids from bookmarks
 						int i = 0;
-						/*while (( i = JabberListFindNext( LIST_BOOKMARK, i )) >= 0 ) {  !!!!!!!!!!!!!!!!!!!!!
+						while (( i = pRule->m_proto->JabberListFindNext( LIST_BOOKMARK, i )) >= 0 ) {
 							JABBER_LIST_ITEM *item = 0;
-							if ( item = JabberListGetItemPtrFromIndex( i ))
+							if ( item = pRule->m_proto->JabberListGetItemPtrFromIndex( i ))
 								SendDlgItemMessage( hwndDlg, IDC_COMBO_VALUES, CB_ADDSTRING, 0, (LPARAM)item->jid );
 							i++;
 						}
-						*/
 
 						// FIXME: ugly code :)
 						if ( pRule->GetValue() ) {
@@ -723,7 +722,7 @@ static void sttDrawRuleAction(HDC hdc, COLORREF clLine1, COLORREF clLine2, CPriv
 	}
 }
 
-static void sttDrawRulesList(HWND hwndDlg, LPDRAWITEMSTRUCT lpdis)
+static void sttDrawRulesList(HWND hwndDlg, LPDRAWITEMSTRUCT lpdis, CJabberProto* ppro)
 {
 	if (lpdis->itemID == -1)
 		return;
@@ -781,7 +780,7 @@ static void sttDrawRulesList(HWND hwndDlg, LPDRAWITEMSTRUCT lpdis)
 				sttDrawNextRulePart(lpdis->hDC, clLine1, pRule->GetValue(), &rc);
 				sttDrawNextRulePart(lpdis->hDC, clLine2, TranslateT("'"), &rc);
 				
-				if (HANDLE hContact = pRule->m_proto->JabberHContactFromJID(pRule->GetValue())) {
+				if (HANDLE hContact = ppro->JabberHContactFromJID(pRule->GetValue())) {
 					TCHAR *szName = (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR);
 					if ( szName ) {
 						sttDrawNextRulePart(lpdis->hDC, clLine2, TranslateT(" (nickname: "), &rc);
@@ -812,12 +811,12 @@ static void sttDrawRulesList(HWND hwndDlg, LPDRAWITEMSTRUCT lpdis)
 	}
 
 	DrawIconEx(lpdis->hDC, lpdis->rcItem.left+4, (lpdis->rcItem.top+lpdis->rcItem.bottom-16)/2,
-		pRule->m_proto->LoadIconEx("main"), 16, 16, 0, NULL, DI_NORMAL);
+		ppro->LoadIconEx("main"), 16, 16, 0, NULL, DI_NORMAL);
 
 	if (pRule)
 	{
 		DrawIconEx(lpdis->hDC, lpdis->rcItem.left+4, (lpdis->rcItem.top+lpdis->rcItem.bottom-16)/2,
-			pRule->m_proto->LoadIconEx(pRule->GetAction() ? "disco_ok" : "disco_fail"),
+			ppro->LoadIconEx(pRule->GetAction() ? "disco_ok" : "disco_fail"),
 			16, 16, 0, NULL, DI_NORMAL);
 	}
 
@@ -984,14 +983,14 @@ static void sttCListResetOptions(HWND hwndList)
 		SendMessage( hwndList, CLM_SETTEXTCOLOR, i, GetSysColor( COLOR_WINDOWTEXT ));
 }
 
-static void sttCListFilter(HWND hwndList)
+static void sttCListFilter(HWND hwndList, CJabberProto* ppro)
 {
 	for	(HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 			hContact;
 			hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0))
 	{
 		char *proto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-//		if (!proto || lstrcmpA(proto, szProtoName)) !!!!!!!
+		if (!proto || lstrcmpA(proto, ppro->szProtoName))
 			if (int hItem = SendMessage(hwndList, CLM_FINDCONTACT, (WPARAM)hContact, 0))
 				SendMessage(hwndList, CLM_DELETEITEM, (WPARAM)hItem, 0);
 	}
@@ -1531,7 +1530,7 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 			info->hItemSubNone = SendDlgItemMessage(hwndDlg,IDC_CLIST,CLM_ADDINFOITEM,0,(LPARAM)&cii);
 
 			sttCListResetOptions(GetDlgItem(hwndDlg, IDC_CLIST));
-			sttCListFilter(GetDlgItem(hwndDlg, IDC_CLIST));
+			sttCListFilter(GetDlgItem(hwndDlg, IDC_CLIST), ppro);
 			sttCListApplyList(GetDlgItem(hwndDlg, IDC_CLIST));
 
 			static struct
@@ -1653,7 +1652,7 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		LPDRAWITEMSTRUCT lpdis = (LPDRAWITEMSTRUCT)lParam;
 
 		if (lpdis->CtlID == IDC_PL_RULES_LIST)
-			sttDrawRulesList(hwndDlg, lpdis);
+			sttDrawRulesList(hwndDlg, lpdis, info->ppro);
 		else if (lpdis->CtlID == IDC_LB_LISTS)
 			sttDrawLists(hwndDlg, lpdis, info->ppro);
 		else if (lpdis->CtlID == IDC_CANVAS)
@@ -2070,7 +2069,7 @@ BOOL CALLBACK JabberPrivacyListsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 				{
 					case CLN_NEWCONTACT:
 					case CLN_LISTREBUILT:
-						sttCListFilter(GetDlgItem(hwndDlg, IDC_CLIST));
+						sttCListFilter(GetDlgItem(hwndDlg, IDC_CLIST), info->ppro);
 						sttCListApplyList(GetDlgItem(hwndDlg, IDC_CLIST), GetSelectedList(hwndDlg));
 						break;
 					case CLN_OPTIONSCHANGED:

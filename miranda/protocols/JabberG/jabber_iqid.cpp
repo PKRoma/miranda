@@ -56,8 +56,8 @@ void CJabberProto::JabberIqResultServerDiscoInfo( XmlNode* iqNode, void* userdat
 			if ( identityCategory && identityType && !_tcscmp( identityCategory, _T("pubsub") ) && !_tcscmp( identityType, _T("pep")) ) {
 				jabberPepSupported = TRUE;
 
-			JabberRebuildStatusMenu();
-			break;
+				JabberRebuildStatusMenu();
+				break;
 			}
 		}
 		if ( jabberThreadInfo ) {

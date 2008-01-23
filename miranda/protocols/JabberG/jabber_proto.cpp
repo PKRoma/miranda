@@ -33,14 +33,20 @@ Last change by : $Author: m_mluhov $
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "resource.h"
+#include <m_addcontact.h>
+#include <m_file.h>
+#include <m_genmenu.h>
+#include <m_icolib.h>
+
 #include "jabber_list.h"
 #include "jabber_iq.h"
 #include "jabber_caps.h"
-#include "m_file.h"
-#include "m_addcontact.h"
 #include "jabber_disco.h"
+
 #include "sdk/m_proto_listeningto.h"
+#include "sdk/m_modernopt.h"
+
+#include "resource.h"
 
 #pragma warning(disable:4355)
 
@@ -104,6 +110,9 @@ CJabberProto::CJabberProto( const char* aProtoName ) :
 	JCreateService( PS_GETAVATARCAPS, &CJabberProto::JabberGetAvatarCaps );
 	JCreateService( PS_SETMYAVATAR, &CJabberProto::JabberSetAvatar );
 
+	JCreateService( JS_GETADVANCEDSTATUSICON, &CJabberProto::JGetAdvancedStatusIcon );
+	JCreateService( JS_DB_GETEVENTTEXT_CHATSTATES, &CJabberProto::JabberGetEventTextChatStates );
+
 	// XEP-0224 support (Attention/Nudge)
 	JCreateService( JS_SEND_NUDGE, &CJabberProto::JabberSendNudge );
 
@@ -113,11 +122,25 @@ CJabberProto::CJabberProto( const char* aProtoName ) :
 	// XMPP URI parser service for "File Association Manager" plugin
 	JCreateService( JS_PARSE_XMPP_URI, &CJabberProto::JabberServiceParseXmppURI );
 
+	JHookEvent( ME_CLIST_PREBUILDSTATUSMENU, &CJabberProto::OnBuildPrivacyMenu );
+	JHookEvent( ME_DB_CONTACT_DELETED, &CJabberProto::OnContactDeleted );
+	JHookEvent( ME_DB_CONTACT_SETTINGCHANGED, &CJabberProto::OnDbSettingChanged );
+	JHookEvent( ME_IDLE_CHANGED, &CJabberProto::OnIdleChanged );
+	JHookEvent( ME_CLIST_PREBUILDCONTACTMENU, &CJabberProto::OnPrebuildContactMenu );
+	JHookEvent( ME_MODERNOPT_INITIALIZE, &CJabberProto::OnModernOptInit );
+	JHookEvent( ME_OPT_INITIALISE, &CJabberProto::OnOptionsInit );
+	JHookEvent( ME_SYSTEM_PRESHUTDOWN, &CJabberProto::OnPreShutdown );
+	JHookEvent( ME_SKIN2_ICONSCHANGED, &CJabberProto::OnReloadIcons );
+	JHookEvent( ME_USERINFO_INITIALISE, &CJabberProto::OnUserInfoInit );
+
 	m_iqManager.FillPermanentHandlers();
 	m_iqManager.Start();
 	m_adhocManager.FillDefaultNodes();
 	m_clientCapsManager.AddDefaultCaps();
 
+	JabberMenuInit();
+	JabberWsInit();
+	JabberXStatusInit();
 	JabberIqInit();
 	JabberIconsInit();
 	JabberSerialInit();

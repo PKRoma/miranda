@@ -34,13 +34,11 @@ Last change by : $Author$
 #include "resource.h"
 #include "version.h"
 
-#include "m_genmenu.h"
 #include "sdk/m_icolib.h"
 #include "sdk/m_folders.h"
 #include "sdk/m_wizard.h"
 #include "sdk/m_assocmgr.h"
 #include "sdk/m_toolbar.h"
-#include "sdk/m_modernopt.h"
 
 HINSTANCE hInst;
 PLUGINLINK *pluginLink;
@@ -94,7 +92,6 @@ static int sttCompareHandles( const void* p1, const void* p2 )
 LIST<void> arHooks( 20, sttCompareHandles );
 LIST<void> arServices( 20, sttCompareHandles );
 
-int JabberModernToolbarInit(WPARAM, LPARAM);
 void JabberUserInfoInit(void);
 
 int bSecureIM;
@@ -231,21 +228,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 
 int CJabberProto::OnModulesLoadedEx( WPARAM wParam, LPARAM lParam )
 {
-	JabberMenuInit();
-	JabberWsInit();
-	JabberXStatusInit();
-
-	JHookEvent( ME_CLIST_PREBUILDSTATUSMENU, &CJabberProto::OnBuildPrivacyMenu );
-	JHookEvent( ME_DB_CONTACT_DELETED, &CJabberProto::OnContactDeleted );
-	JHookEvent( ME_DB_CONTACT_SETTINGCHANGED, &CJabberProto::OnDbSettingChanged );
-	JHookEvent( ME_IDLE_CHANGED, &CJabberProto::OnIdleChanged );
-	JHookEvent( ME_CLIST_PREBUILDCONTACTMENU, &CJabberProto::OnPrebuildContactMenu );
-	JHookEvent( ME_MODERNOPT_INITIALIZE, &CJabberProto::OnModernOptInit );
 	JHookEvent( ME_TB_MODULELOADED, &CJabberProto::OnModernToolbarInit );
-	JHookEvent( ME_OPT_INITIALISE, &CJabberProto::OnOptionsInit );
-	JHookEvent( ME_SYSTEM_PRESHUTDOWN, &CJabberProto::OnPreShutdown );
-	JHookEvent( ME_SKIN2_ICONSCHANGED, &CJabberProto::OnReloadIcons );
-	JHookEvent( ME_USERINFO_INITIALISE, &CJabberProto::OnUserInfoInit );
 
 	if ( ServiceExists( MS_GC_REGISTER )) {
 		jabberChatDllPresent = true;
@@ -268,9 +251,6 @@ int CJabberProto::OnModulesLoadedEx( WPARAM wParam, LPARAM lParam )
 		hInitChat = CreateHookableEvent( szEvent );
 		JHookEvent( szEvent, &CJabberProto::JabberGcInit );
 	}
-
-	JCreateService( JS_GETADVANCEDSTATUSICON, &CJabberProto::JGetAdvancedStatusIcon );
-	JCreateService( JS_DB_GETEVENTTEXT_CHATSTATES, &CJabberProto::JabberGetEventTextChatStates );
 
 	if ( ServiceExists( MS_MSG_ADDICON )) {
 		StatusIconData sid = {0};
