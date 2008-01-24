@@ -66,6 +66,7 @@ struct MessageWindowData
 	WORD wOldStatus;
 	TCmdList *cmdList;
 	TCmdList *cmdListCurrent;
+	TCHAR* lastMsg;
 	int bIsRtl, bIsFirstAppend, bIsAutoRTL, bIsUtf;
 	int lastEventType;
 	HWND hwndErrorDlg;
@@ -131,7 +132,9 @@ extern const int msgDlgFontCount;
 #define LOADHISTORY_COUNT     1
 #define LOADHISTORY_TIME      2
 
-#define SRMMMOD                    "SRMM"
+#define SRMMMOD 	"SRMM"
+#define SRMSGMOD 	"SRMsg"
+#define DBSAVEDMSG 	"SavedMsg"
 
 #define SRMSGSET_POPFLAGS          "PopupFlags"
 #define SRMSGDEFSET_POPFLAGS       0

@@ -249,6 +249,14 @@ static void SaveKeyboardMessage(struct MsgEditSubclassData *dat, UINT message, W
 	dat->msgQueueCount++;
 }
 
+static void SetEditorText(HWND hwnd, const TCHAR* txt)
+{
+	SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
+	SetWindowText(hwnd, txt);
+	SendMessage(hwnd, EM_SCROLLCARET, 0,0);
+	SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
+}
+
 #define EM_REPLAYSAVEDKEYSTROKES  (WM_USER+0x100)
 #define EM_SUBCLASSED             (WM_USER+0x101)
 #define EM_UNSUBCLASSED           (WM_USER+0x102)
@@ -257,11 +265,9 @@ static void SaveKeyboardMessage(struct MsgEditSubclassData *dat, UINT message, W
                                                   //todo: decide if this should be set or not
 static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct MsgEditSubclassData *dat;
-	struct MessageWindowData *pdat;
+	struct MessageWindowData *pdat = (struct MessageWindowData *)GetWindowLong(GetParent(hwnd),GWL_USERDATA);
+	struct MsgEditSubclassData *dat = (struct MsgEditSubclassData *) GetWindowLong(hwnd, GWL_USERDATA);
 
-	pdat=(struct MessageWindowData *)GetWindowLong(GetParent(hwnd),GWL_USERDATA);
-	dat = (struct MsgEditSubclassData *) GetWindowLong(hwnd, GWL_USERDATA);
 	switch (msg) {
 	case WM_DROPFILES:
 		SendMessage(GetParent(hwnd), WM_DROPFILES, (WPARAM)wParam, (LPARAM)lParam);
@@ -403,47 +409,49 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			SaveKeyboardMessage(dat, msg, wParam, lParam);
 			return 0;
 		}
+		{
+			int len;
+			if (wParam == VK_UP && (GetKeyState(VK_CONTROL) & 0x8000) && DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_CTRLSUPPORT, SRMSGDEFSET_CTRLSUPPORT) && !DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE)) {
+				if (pdat->cmdList) {
+					if (!pdat->cmdListCurrent) {
+						len = GetWindowTextLength(hwnd)+1;
+						if(pdat->lastMsg){
+							mir_free(pdat->lastMsg);
+							pdat->lastMsg = 0;
+						}
+						pdat->lastMsg = (TCHAR*)mir_alloc(sizeof(TCHAR)*len);
+						SendMessage(hwnd, WM_GETTEXT, (WPARAM) len, (LPARAM)pdat->lastMsg);
+						pdat->cmdListCurrent = tcmdlist_last(pdat->cmdList);
+						SetEditorText(hwnd, pdat->cmdListCurrent->szCmd);
+					}
+					else if (pdat->cmdListCurrent->prev) {
+						pdat->cmdListCurrent = pdat->cmdListCurrent->prev;
+						SetEditorText(hwnd, pdat->cmdListCurrent->szCmd);
+					}
+					len = GetWindowTextLength(hwnd);
+					SendMessage(hwnd, EM_SETSEL, (WPARAM) len, (LPARAM) len);
+				}
+			}
+			else if (wParam == VK_DOWN && (GetKeyState(VK_CONTROL) & 0x8000) && DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_CTRLSUPPORT, SRMSGDEFSET_CTRLSUPPORT) && !DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE)) {
+				if (pdat->cmdList) {
+					if (!pdat->cmdListCurrent)
+						pdat->cmdListCurrent = tcmdlist_last(pdat->cmdList);
+					if (pdat->cmdListCurrent->next) {
+						pdat->cmdListCurrent = pdat->cmdListCurrent->next;
+						SetEditorText(hwnd, pdat->cmdListCurrent->szCmd);
+					}
+					else {
+						pdat->cmdListCurrent = 0;
+						if(pdat->lastMsg)
+							SetEditorText(hwnd, pdat->lastMsg);
+						else
+							SendMessage(hwnd, WM_SETTEXT, (WPARAM) 0, (LPARAM)_T(""));
 
-		if (wParam == VK_UP && (GetKeyState(VK_CONTROL) & 0x8000) && DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_CTRLSUPPORT, SRMSGDEFSET_CTRLSUPPORT) && !DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE)) {
-			if (pdat->cmdList) {
-				if (!pdat->cmdListCurrent) {
-					pdat->cmdListCurrent = tcmdlist_last(pdat->cmdList);
-					SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
-					SetWindowText(hwnd, pdat->cmdListCurrent->szCmd);
-					SendMessage(hwnd, EM_SCROLLCARET, 0,0);
-					SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
-					SendMessage(hwnd, EM_SETSEL, 0, -1);
-				}
-				else if (pdat->cmdListCurrent->prev) {
-					pdat->cmdListCurrent = pdat->cmdListCurrent->prev;
-					SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
-					SetWindowText(hwnd, pdat->cmdListCurrent->szCmd);
-					SendMessage(hwnd, EM_SCROLLCARET, 0,0);
-					SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
-					SendMessage(hwnd, EM_SETSEL, 0, -1);
-				}
-			}
-			EnableWindow(GetDlgItem(GetParent(hwnd), IDOK), GetWindowTextLength(GetDlgItem(GetParent(hwnd), IDC_MESSAGE)) != 0);
-			UpdateReadChars(GetParent(hwnd), pdat->hwndStatus);
-		}
-		else if (wParam == VK_DOWN && (GetKeyState(VK_CONTROL) & 0x8000) && DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_CTRLSUPPORT, SRMSGDEFSET_CTRLSUPPORT) && !DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE)) {
-			if (pdat->cmdList) {
-				if (!pdat->cmdListCurrent)
-					pdat->cmdListCurrent = tcmdlist_last(pdat->cmdList);
-				if (pdat->cmdListCurrent->next) {
-					pdat->cmdListCurrent = pdat->cmdListCurrent->next;
-					SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
-					SetWindowText(hwnd, pdat->cmdListCurrent->szCmd);
-					SendMessage(hwnd, EM_SCROLLCARET, 0,0);
-					SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
-					SendMessage(hwnd, EM_SETSEL, 0, -1);
-				}
-				else {
-					pdat->cmdListCurrent = 0;
-					SetWindowTextA(hwnd, "");
-				}
-			}
-			EnableWindow(GetDlgItem(GetParent(hwnd), IDOK), GetWindowTextLength(GetDlgItem(GetParent(hwnd), IDC_MESSAGE)) != 0);
+						len = GetWindowTextLength(hwnd);
+						SendMessage(hwnd, EM_SETSEL, (WPARAM) len, (LPARAM) len);
+			}	}	}
+
+			EnableWindow(GetDlgItem(GetParent(hwnd), IDOK), GetWindowTextLength(hwnd) != 0);
 			UpdateReadChars(GetParent(hwnd), pdat->hwndStatus);
 		}
 		if (wParam == VK_RETURN)
@@ -741,6 +749,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			dat->showTyping = 0;
 			dat->cmdList = 0;
 			dat->cmdListCurrent = 0;
+			dat->lastMsg = 0;
 			dat->nTypeMode = PROTOTYPE_SELFTYPING_OFF;
 			SetTimer(hwndDlg, TIMERID_TYPE, 1000, NULL);
 			dat->lastMessage = 0;
@@ -773,8 +782,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			Button_SetIcon_IcoLib(hwndDlg, IDC_DETAILS, SKINICON_OTHER_USERDETAILS, "View User's Details" );
 			Button_SetIcon_IcoLib(hwndDlg, IDC_HISTORY, SKINICON_OTHER_HISTORY, "View User's History" );
 			Button_SetIcon_IcoLib(hwndDlg, IDC_USERMENU, SKINICON_OTHER_DOWNARROW, "User Menu" );
-            SendDlgItemMessage(hwndDlg, IDC_NAME, BUTTONSETASFLATBTN, 0, 0 );
-            
+			SendDlgItemMessage(hwndDlg, IDC_NAME, BUTTONSETASFLATBTN, 0, 0 );
+			
 			EnableWindow(GetDlgItem(hwndDlg, IDC_PROTOCOL), FALSE);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_AVATAR), FALSE);
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETOLECALLBACK, 0, (LPARAM) & reOleCallback);
@@ -882,6 +891,22 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 			SendMessage(hwndDlg, DM_GETAVATAR, 0, 0);
 			ShowWindow(hwndDlg, SW_SHOWNORMAL);
+			//restore saved msg if any...
+			if(dat->hContact) {
+				DBVARIANT dbv;
+				if(!DBGetContactSettingTString(dat->hContact, SRMSGMOD, DBSAVEDMSG, &dbv)) {
+					int len;
+					SETTEXTEX stx = {ST_DEFAULT, CP_UTF8};
+					if(dbv.ptszVal && lstrlen(dbv.ptszVal) > 0){
+						SetDlgItemText(hwndDlg, IDC_MESSAGE, dbv.ptszVal);
+						DBFreeVariant(&dbv);
+						len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
+						EnableWindow(GetDlgItem(hwndDlg, IDOK), len != 0);
+						UpdateReadChars(hwndDlg, dat->hwndStatus);
+						PostMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SETSEL, (WPARAM) - 1, (LPARAM) - 1);
+					}
+				}
+			}
 			NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPEN);
 		}
 		return TRUE;
@@ -1142,7 +1167,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, WM_SETFONT, (WPARAM) hFont, MAKELPARAM(TRUE, 0));
 		}
 
-        /*
+		/*
 		 * configure message history for proper RTL formatting
 		 */
 
@@ -1456,8 +1481,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 	case WM_TIMER:
 		if (wParam == TIMERID_MSGSEND) {
 			KillTimer(hwndDlg, wParam);
-			ShowWindow(hwndDlg, SW_SHOWNORMAL);
-			EnableWindow(hwndDlg, FALSE);
+			//ShowWindow(hwndDlg, SW_SHOWNORMAL); //usability
+			//EnableWindow(hwndDlg, FALSE); //usability
 			dat->hwndErrorDlg = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSENDERROR), hwndDlg, ErrorDlgProc, (LPARAM) Translate("The message send timed out."));
 		}
 		else if (wParam == TIMERID_FLASHWND) {
@@ -1893,8 +1918,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				break;
 			if (ack->result == ACKRESULT_FAILED) {
 				KillTimer(hwndDlg, TIMERID_MSGSEND);
-				ShowWindow(hwndDlg, SW_SHOWNORMAL);
-				EnableWindow(hwndDlg, FALSE);
+				//ShowWindow(hwndDlg, SW_SHOWNORMAL); //usability
+				//EnableWindow(hwndDlg, FALSE); //usability
 				dat->hwndErrorDlg = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSENDERROR), hwndDlg, ErrorDlgProc, ack->lParam);
 				return 0;
 			}
@@ -1951,6 +1976,18 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 	case WM_DESTROY:
 		NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSING);
+		//save string from the editor
+		if(dat->hContact) {
+			TCHAR* msg;
+			int len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE))+1;
+			msg = (TCHAR*)mir_alloc(sizeof(TCHAR)*len);
+			GetDlgItemText(hwndDlg, IDC_MESSAGE, msg, len);
+			if(msg) {
+				DBWriteContactSettingTString(dat->hContact, SRMSGMOD, DBSAVEDMSG, msg);
+				mir_free(msg);
+			}
+			else DBDeleteContactSetting(dat->hContact, SRMSGMOD, DBSAVEDMSG );
+		}
 		if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON)
 			NotifyTyping(dat, PROTOTYPE_SELFTYPING_OFF);
 
