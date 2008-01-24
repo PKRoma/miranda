@@ -184,7 +184,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	JABBER_MODEMSGS modeMsgs;
 	BOOL modeMsgStatusChangePending;
 
-	CJabberMoodIcon xstatusIcons[ NUM_XMODES ];
+	CJabberMoodIcon xstatusIcons[ NUM_XMODES + 1 ]; // moods + none
 	HANDLE hHookExtraIconsRebuild;
 	HANDLE hHookStatusBuild;
 	HANDLE hHookExtraIconsApply;

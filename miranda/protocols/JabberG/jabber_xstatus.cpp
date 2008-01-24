@@ -583,7 +583,7 @@ static BOOL CALLBACK SetMoodMsgDlgProc( HWND hwndDlg, UINT message, WPARAM wPara
 
 			TCHAR str[256], format[128];
 			GetWindowText( hwndDlg, format, SIZEOF( format ));
-			TCHAR* szMood = mir_a2t( Translate(g_arrMoods[ lParam ].szName));
+			TCHAR* szMood = mir_a2t( Translate(g_arrMoods[ param->mood ].szName));
 			mir_sntprintf( str, SIZEOF(str), format, szMood );
 			mir_free( szMood );
 			SetWindowText( hwndDlg, str );
@@ -597,7 +597,7 @@ static BOOL CALLBACK SetMoodMsgDlgProc( HWND hwndDlg, UINT message, WPARAM wPara
 				SetDlgItemText( hwndDlg, IDC_MSG_MOOD, dbv.ptszVal );
 				JFreeVariant( &dbv );
 			}
-			else SetDlgItemTextA( hwndDlg, IDC_MSG_MOOD, g_arrMoods[ lParam ].szName );
+			else SetDlgItemTextA( hwndDlg, IDC_MSG_MOOD, g_arrMoods[ param->mood ].szName );
 
 			gnCountdown = 5;
 			SendMessage( hwndDlg, WM_TIMER, 0, 0 );
@@ -643,7 +643,7 @@ static BOOL CALLBACK SetMoodMsgDlgProc( HWND hwndDlg, UINT message, WPARAM wPara
 
 			SetMoodMsgDlgProcParam* param = ( SetMoodMsgDlgProcParam* )GetWindowLong( hwndDlg, GWL_USERDATA );
 
-			int nStatus = GetWindowLong( hwndDlg, GWL_USERDATA );
+			int nStatus = param->mood;
 			if ( !nStatus || nStatus > NUM_XMODES )
 				nStatus = 1;
 			
