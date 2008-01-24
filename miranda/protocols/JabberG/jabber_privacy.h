@@ -435,5 +435,112 @@ public:
 	}
 };
 
+class CJabberDlgPrivacyLists: public CJabberDlgBase
+{
+public:
+	CJabberDlgPrivacyLists(CJabberProto *proto);
+
+protected:
+	static int idSimpleControls[];
+	static int idAdvancedControls[];
+
+	bool OnInitDialog();
+	bool OnDestroy();
+	int Resizer(UTILRESIZECONTROL *urc);
+	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
+
+	BOOL OnCommand_Simple(HWND hwndCtrl, WORD idCtrl, WORD idCode);
+	BOOL OnCommand_Advanced(HWND hwndCtrl, WORD idCtrl, WORD idCode);
+	BOOL OnCommand_AddJid(HWND hwndCtrl, WORD idCtrl, WORD idCode);
+	BOOL OnCommand_Activate(HWND hwndCtrl, WORD idCtrl, WORD idCode);
+	BOOL OnCommand_SetDefault(HWND hwndCtrl, WORD idCtrl, WORD idCode);
+	BOOL OnCommand_LbLists(HWND hwndCtrl, WORD idCtrl, WORD idCode);
+	BOOL OnCommand_PlRulesList(HWND hwndCtrl, WORD idCtrl, WORD idCode);
+	BOOL OnCommand_EditRule(HWND hwndCtrl, WORD idCtrl, WORD idCode);
+	BOOL OnCommand_AddRule(HWND hwndCtrl, WORD idCtrl, WORD idCode);
+	BOOL OnCommand_RemoveRule(HWND hwndCtrl, WORD idCtrl, WORD idCode);
+	BOOL OnCommand_UpRule(HWND hwndCtrl, WORD idCtrl, WORD idCode);
+	BOOL OnCommand_DownRule(HWND hwndCtrl, WORD idCtrl, WORD idCode);
+	BOOL OnCommand_AddList(HWND hwndCtrl, WORD idCtrl, WORD idCode);
+	BOOL OnCommand_RemoveList(HWND hwndCtrl, WORD idCtrl, WORD idCode);
+	BOOL OnCommand_Apply(HWND hwndCtrl, WORD idCtrl, WORD idCode);
+	BOOL OnCommand_Close(HWND hwndCtrl, WORD idCtrl, WORD idCode);
+	BOOL OnNotify_CList(int idCtrl, NMHDR *pnmh);
+
+	void ShowAdvancedList(CPrivacyList *pList);
+	void DrawNextRulePart(HDC hdc, COLORREF color, TCHAR *text, RECT *rc);
+	void DrawRuleAction(HDC hdc, COLORREF clLine1, COLORREF clLine2, CPrivacyListRule *pRule, RECT *rc);
+	void DrawRulesList(LPDRAWITEMSTRUCT lpdis);
+	void DrawLists(LPDRAWITEMSTRUCT lpdis);
+
+	void CListResetOptions(HWND hwndList);
+	void CListFilter(HWND hwndList);
+	bool CListIsGroup(int hGroup);
+	HANDLE CListFindGroupByName(TCHAR *name);
+	void CListResetIcons(HWND hwndList, int hItem, bool hide=false);
+	void CListSetupIcons(HWND hwndList, int hItem, int iSlot, DWORD dwProcess, BOOL bAction);
+	int CListAddContact(HWND hwndList, TCHAR *jid);
+	void CListApplyList(HWND hwndList, CPrivacyList *pList = NULL);
+	DWORD CListGetPackets(HWND hwndList, int hItem, bool bAction);
+	void CListBuildList(HWND hwndList, CPrivacyList *pList);
+
+	void EnableEditorControls();
+	BOOL CanExit();
+	
+	static LRESULT CALLBACK LstListsSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK LstRulesSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+	struct TCLCInfo
+	{
+		struct TJidData
+		{
+			int hItem;
+			TCHAR *jid;
+
+			static int cmp(const TJidData *p1, const TJidData *p2) { return lstrcmp(p1->jid, p2->jid); }
+		};
+
+		int hItemDefault;
+		int hItemSubNone;
+		int hItemSubTo;
+		int hItemSubFrom;
+		int hItemSubBoth;
+
+		LIST<TJidData> newJids;
+
+		bool bChanged;
+
+		CPrivacyList *pList;
+
+		TCLCInfo(): newJids(1, TJidData::cmp), bChanged(false), pList(0) {}
+		~TCLCInfo()
+		{
+			for (int i = 0; i < newJids.getCount(); ++i)
+			{
+				mir_free(newJids[i]->jid);
+				mir_free(newJids[i]);
+			}
+			newJids.destroy();
+		}
+
+		void addJid(int hItem, TCHAR *jid)
+		{
+			TJidData *data = (TJidData *)mir_alloc(sizeof(TJidData));
+			data->hItem = hItem;
+			data->jid = mir_tstrdup(jid);
+			newJids.insert(data);
+		}
+
+		int findJid(TCHAR *jid)
+		{
+			TJidData data = {0};
+			data.jid = jid;
+			TJidData *found = newJids.find(&data);
+			return found ? found->hItem : 0;
+		}
+	};
+
+	TCLCInfo clc_info;
+};
 
 #endif //_JABBER_PRIVACY_H_

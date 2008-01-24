@@ -172,7 +172,6 @@ static struct
 };
 
 static void sttApplyNodeIcon(HTREELISTITEM hItem, CJabberSDNode *pNode);
-static void sttAddRecentString(HWND hwndDlg, UINT idcCombo, char *param, TCHAR *string);
 
 void CJabberProto::JabberIqResultServiceDiscoveryInfo( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
 {

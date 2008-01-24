@@ -90,6 +90,7 @@ CLEAN :
 	-@erase "$(INTDIR)\jabber_svc.obj"
 	-@erase "$(INTDIR)\jabber_thread.obj"
 	-@erase "$(INTDIR)\jabber_treelist.obj"
+	-@erase "$(INTDIR)\jabber_ui_utils.obj"
 	-@erase "$(INTDIR)\jabber_userinfo.obj"
 	-@erase "$(INTDIR)\jabber_util.obj"
 	-@erase "$(INTDIR)\jabber_vcard.obj"
@@ -127,12 +128,12 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_chat.obj" \
 	"$(INTDIR)\jabber_console.obj" \
 	"$(INTDIR)\jabber_disco.obj" \
+	"$(INTDIR)\jabber_events.obj" \
 	"$(INTDIR)\jabber_file.obj" \
 	"$(INTDIR)\jabber_form.obj" \
 	"$(INTDIR)\jabber_ft.obj" \
 	"$(INTDIR)\jabber_groupchat.obj" \
 	"$(INTDIR)\jabber_ibb.obj" \
-	"$(INTDIR)\jabber_opttree.obj" \
 	"$(INTDIR)\jabber_icolib.obj" \
 	"$(INTDIR)\jabber_iq.obj" \
 	"$(INTDIR)\jabber_iq_handlers.obj" \
@@ -143,8 +144,10 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_menu.obj" \
 	"$(INTDIR)\jabber_misc.obj" \
 	"$(INTDIR)\jabber_opt.obj" \
+	"$(INTDIR)\jabber_opttree.obj" \
 	"$(INTDIR)\jabber_password.obj" \
 	"$(INTDIR)\jabber_privacy.obj" \
+	"$(INTDIR)\jabber_proto.obj" \
 	"$(INTDIR)\jabber_proxy.obj" \
 	"$(INTDIR)\jabber_rc.obj" \
 	"$(INTDIR)\jabber_search.obj" \
@@ -162,8 +165,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_xstatus.obj" \
 	"$(INTDIR)\jabber_zstream.obj" \
 	"$(INTDIR)\msvc6.res" \
-	"$(INTDIR)\jabber_proto.obj" \
-	"$(INTDIR)\jabber_events.obj" \
+	"$(INTDIR)\jabber_ui_utils.obj" \
 	"..\..\plugins\zlib\Release\zlib.lib"
 
 "..\..\bin\release\plugins\jabber.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -271,6 +273,8 @@ CLEAN :
 	-@erase "$(INTDIR)\jabber_thread.sbr"
 	-@erase "$(INTDIR)\jabber_treelist.obj"
 	-@erase "$(INTDIR)\jabber_treelist.sbr"
+	-@erase "$(INTDIR)\jabber_ui_utils.obj"
+	-@erase "$(INTDIR)\jabber_ui_utils.sbr"
 	-@erase "$(INTDIR)\jabber_userinfo.obj"
 	-@erase "$(INTDIR)\jabber_userinfo.sbr"
 	-@erase "$(INTDIR)\jabber_util.obj"
@@ -313,12 +317,12 @@ BSC32_SBRS= \
 	"$(INTDIR)\jabber_chat.sbr" \
 	"$(INTDIR)\jabber_console.sbr" \
 	"$(INTDIR)\jabber_disco.sbr" \
+	"$(INTDIR)\jabber_events.sbr" \
 	"$(INTDIR)\jabber_file.sbr" \
 	"$(INTDIR)\jabber_form.sbr" \
 	"$(INTDIR)\jabber_ft.sbr" \
 	"$(INTDIR)\jabber_groupchat.sbr" \
 	"$(INTDIR)\jabber_ibb.sbr" \
-	"$(INTDIR)\jabber_opttree.sbr" \
 	"$(INTDIR)\jabber_icolib.sbr" \
 	"$(INTDIR)\jabber_iq.sbr" \
 	"$(INTDIR)\jabber_iq_handlers.sbr" \
@@ -329,8 +333,10 @@ BSC32_SBRS= \
 	"$(INTDIR)\jabber_menu.sbr" \
 	"$(INTDIR)\jabber_misc.sbr" \
 	"$(INTDIR)\jabber_opt.sbr" \
+	"$(INTDIR)\jabber_opttree.sbr" \
 	"$(INTDIR)\jabber_password.sbr" \
 	"$(INTDIR)\jabber_privacy.sbr" \
+	"$(INTDIR)\jabber_proto.sbr" \
 	"$(INTDIR)\jabber_proxy.sbr" \
 	"$(INTDIR)\jabber_rc.sbr" \
 	"$(INTDIR)\jabber_search.sbr" \
@@ -347,8 +353,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\jabber_xml.sbr" \
 	"$(INTDIR)\jabber_xstatus.sbr" \
 	"$(INTDIR)\jabber_zstream.sbr" \
-	"$(INTDIR)\jabber_proto.sbr" \
-	"$(INTDIR)\jabber_events.sbr"
+	"$(INTDIR)\jabber_ui_utils.sbr"
 
 "$(OUTDIR)\jabber.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -367,12 +372,12 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_chat.obj" \
 	"$(INTDIR)\jabber_console.obj" \
 	"$(INTDIR)\jabber_disco.obj" \
+	"$(INTDIR)\jabber_events.obj" \
 	"$(INTDIR)\jabber_file.obj" \
 	"$(INTDIR)\jabber_form.obj" \
 	"$(INTDIR)\jabber_ft.obj" \
 	"$(INTDIR)\jabber_groupchat.obj" \
 	"$(INTDIR)\jabber_ibb.obj" \
-	"$(INTDIR)\jabber_opttree.obj" \
 	"$(INTDIR)\jabber_icolib.obj" \
 	"$(INTDIR)\jabber_iq.obj" \
 	"$(INTDIR)\jabber_iq_handlers.obj" \
@@ -383,8 +388,10 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_menu.obj" \
 	"$(INTDIR)\jabber_misc.obj" \
 	"$(INTDIR)\jabber_opt.obj" \
+	"$(INTDIR)\jabber_opttree.obj" \
 	"$(INTDIR)\jabber_password.obj" \
 	"$(INTDIR)\jabber_privacy.obj" \
+	"$(INTDIR)\jabber_proto.obj" \
 	"$(INTDIR)\jabber_proxy.obj" \
 	"$(INTDIR)\jabber_rc.obj" \
 	"$(INTDIR)\jabber_search.obj" \
@@ -402,8 +409,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_xstatus.obj" \
 	"$(INTDIR)\jabber_zstream.obj" \
 	"$(INTDIR)\msvc6.res" \
-	"$(INTDIR)\jabber_proto.obj" \
-	"$(INTDIR)\jabber_events.obj" \
+	"$(INTDIR)\jabber_ui_utils.obj" \
 	"..\..\plugins\zlib\Debug\zlib.lib"
 
 "..\..\bin\debug\plugins\jabber.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -470,6 +476,7 @@ CLEAN :
 	-@erase "$(INTDIR)\jabber_svc.obj"
 	-@erase "$(INTDIR)\jabber_thread.obj"
 	-@erase "$(INTDIR)\jabber_treelist.obj"
+	-@erase "$(INTDIR)\jabber_ui_utils.obj"
 	-@erase "$(INTDIR)\jabber_userinfo.obj"
 	-@erase "$(INTDIR)\jabber_util.obj"
 	-@erase "$(INTDIR)\jabber_vcard.obj"
@@ -507,12 +514,12 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_chat.obj" \
 	"$(INTDIR)\jabber_console.obj" \
 	"$(INTDIR)\jabber_disco.obj" \
+	"$(INTDIR)\jabber_events.obj" \
 	"$(INTDIR)\jabber_file.obj" \
 	"$(INTDIR)\jabber_form.obj" \
 	"$(INTDIR)\jabber_ft.obj" \
 	"$(INTDIR)\jabber_groupchat.obj" \
 	"$(INTDIR)\jabber_ibb.obj" \
-	"$(INTDIR)\jabber_opttree.obj" \
 	"$(INTDIR)\jabber_icolib.obj" \
 	"$(INTDIR)\jabber_iq.obj" \
 	"$(INTDIR)\jabber_iq_handlers.obj" \
@@ -523,8 +530,10 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_menu.obj" \
 	"$(INTDIR)\jabber_misc.obj" \
 	"$(INTDIR)\jabber_opt.obj" \
+	"$(INTDIR)\jabber_opttree.obj" \
 	"$(INTDIR)\jabber_password.obj" \
 	"$(INTDIR)\jabber_privacy.obj" \
+	"$(INTDIR)\jabber_proto.obj" \
 	"$(INTDIR)\jabber_proxy.obj" \
 	"$(INTDIR)\jabber_rc.obj" \
 	"$(INTDIR)\jabber_search.obj" \
@@ -542,8 +551,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_xstatus.obj" \
 	"$(INTDIR)\jabber_zstream.obj" \
 	"$(INTDIR)\msvc6.res" \
-	"$(INTDIR)\jabber_proto.obj" \
-	"$(INTDIR)\jabber_events.obj" \
+	"$(INTDIR)\jabber_ui_utils.obj" \
 	"..\..\plugins\zlib\Release_Unicode\zlib.lib"
 
 "..\..\bin\Release Unicode\plugins\jabber.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -651,6 +659,8 @@ CLEAN :
 	-@erase "$(INTDIR)\jabber_thread.sbr"
 	-@erase "$(INTDIR)\jabber_treelist.obj"
 	-@erase "$(INTDIR)\jabber_treelist.sbr"
+	-@erase "$(INTDIR)\jabber_ui_utils.obj"
+	-@erase "$(INTDIR)\jabber_ui_utils.sbr"
 	-@erase "$(INTDIR)\jabber_userinfo.obj"
 	-@erase "$(INTDIR)\jabber_userinfo.sbr"
 	-@erase "$(INTDIR)\jabber_util.obj"
@@ -693,12 +703,12 @@ BSC32_SBRS= \
 	"$(INTDIR)\jabber_chat.sbr" \
 	"$(INTDIR)\jabber_console.sbr" \
 	"$(INTDIR)\jabber_disco.sbr" \
+	"$(INTDIR)\jabber_events.sbr" \
 	"$(INTDIR)\jabber_file.sbr" \
 	"$(INTDIR)\jabber_form.sbr" \
 	"$(INTDIR)\jabber_ft.sbr" \
 	"$(INTDIR)\jabber_groupchat.sbr" \
 	"$(INTDIR)\jabber_ibb.sbr" \
-	"$(INTDIR)\jabber_opttree.sbr" \
 	"$(INTDIR)\jabber_icolib.sbr" \
 	"$(INTDIR)\jabber_iq.sbr" \
 	"$(INTDIR)\jabber_iq_handlers.sbr" \
@@ -709,8 +719,10 @@ BSC32_SBRS= \
 	"$(INTDIR)\jabber_menu.sbr" \
 	"$(INTDIR)\jabber_misc.sbr" \
 	"$(INTDIR)\jabber_opt.sbr" \
+	"$(INTDIR)\jabber_opttree.sbr" \
 	"$(INTDIR)\jabber_password.sbr" \
 	"$(INTDIR)\jabber_privacy.sbr" \
+	"$(INTDIR)\jabber_proto.sbr" \
 	"$(INTDIR)\jabber_proxy.sbr" \
 	"$(INTDIR)\jabber_rc.sbr" \
 	"$(INTDIR)\jabber_search.sbr" \
@@ -727,8 +739,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\jabber_xml.sbr" \
 	"$(INTDIR)\jabber_xstatus.sbr" \
 	"$(INTDIR)\jabber_zstream.sbr" \
-	"$(INTDIR)\jabber_proto.sbr" \
-	"$(INTDIR)\jabber_events.sbr"
+	"$(INTDIR)\jabber_ui_utils.sbr"
 
 "$(OUTDIR)\jabber.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -747,12 +758,12 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_chat.obj" \
 	"$(INTDIR)\jabber_console.obj" \
 	"$(INTDIR)\jabber_disco.obj" \
+	"$(INTDIR)\jabber_events.obj" \
 	"$(INTDIR)\jabber_file.obj" \
 	"$(INTDIR)\jabber_form.obj" \
 	"$(INTDIR)\jabber_ft.obj" \
 	"$(INTDIR)\jabber_groupchat.obj" \
 	"$(INTDIR)\jabber_ibb.obj" \
-	"$(INTDIR)\jabber_opttree.obj" \
 	"$(INTDIR)\jabber_icolib.obj" \
 	"$(INTDIR)\jabber_iq.obj" \
 	"$(INTDIR)\jabber_iq_handlers.obj" \
@@ -763,8 +774,10 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_menu.obj" \
 	"$(INTDIR)\jabber_misc.obj" \
 	"$(INTDIR)\jabber_opt.obj" \
+	"$(INTDIR)\jabber_opttree.obj" \
 	"$(INTDIR)\jabber_password.obj" \
 	"$(INTDIR)\jabber_privacy.obj" \
+	"$(INTDIR)\jabber_proto.obj" \
 	"$(INTDIR)\jabber_proxy.obj" \
 	"$(INTDIR)\jabber_rc.obj" \
 	"$(INTDIR)\jabber_search.obj" \
@@ -782,8 +795,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_xstatus.obj" \
 	"$(INTDIR)\jabber_zstream.obj" \
 	"$(INTDIR)\msvc6.res" \
-	"$(INTDIR)\jabber_proto.obj" \
-	"$(INTDIR)\jabber_events.obj" \
+	"$(INTDIR)\jabber_ui_utils.obj" \
 	"..\..\plugins\zlib\Debug_Unicode\zlib.lib"
 
 "..\..\bin\debug unicode\plugins\jabber.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -2198,6 +2210,34 @@ SOURCE=.\jabber_treelist.cpp
 
 
 "$(INTDIR)\jabber_treelist.obj"	"$(INTDIR)\jabber_treelist.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
+
+
+!ENDIF
+
+SOURCE=.\jabber_ui_utils.cpp
+
+!IF  "$(CFG)" == "jabberg - Win32 Release"
+
+
+"$(INTDIR)\jabber_ui_utils.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
+
+
+!ELSEIF  "$(CFG)" == "jabberg - Win32 Debug"
+
+
+"$(INTDIR)\jabber_ui_utils.obj"	"$(INTDIR)\jabber_ui_utils.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
+
+
+!ELSEIF  "$(CFG)" == "jabberg - Win32 Release Unicode"
+
+
+"$(INTDIR)\jabber_ui_utils.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
+
+
+!ELSEIF  "$(CFG)" == "jabberg - Win32 Debug Unicode"
+
+
+"$(INTDIR)\jabber_ui_utils.obj"	"$(INTDIR)\jabber_ui_utils.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
 
 
 !ENDIF

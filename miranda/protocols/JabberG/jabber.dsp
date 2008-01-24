@@ -327,6 +327,10 @@ SOURCE=.\jabber_treelist.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\jabber_ui_utils.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\jabber_userinfo.cpp
 # ADD CPP /Yu
 # End Source File
@@ -425,6 +429,10 @@ SOURCE=.\jabber_secur.h
 # Begin Source File
 
 SOURCE=.\jabber_ssl.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\jabber_ui_utils.h
 # End Source File
 # Begin Source File
 

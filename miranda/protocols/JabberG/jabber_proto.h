@@ -214,9 +214,10 @@ struct CJabberProto : public PROTO_INTERFACE
 	HWND   hwndJabberBookmarks;
 	HWND   hwndJabberAddBookmark;
 	HWND   hwndJabberInfo;
-	HWND   hwndPrivacyLists;
 	HWND   hwndPrivacyRule;
 	HWND   hwndServiceDiscovery;
+
+	CJabberDlgPrivacyLists *dlgPrivacyLists;
 
 	// Service and event handles
 	HANDLE heventNudge;

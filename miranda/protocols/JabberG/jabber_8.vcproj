@@ -1311,6 +1311,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\jabber_ui_utils.cpp"
+				>
+			</File>
+			<File
 				RelativePath="jabber_userinfo.cpp"
 				>
 				<FileConfiguration
@@ -1591,6 +1595,10 @@
 			</File>
 			<File
 				RelativePath="jabber_ssl.h"
+				>
+			</File>
+			<File
+				RelativePath=".\jabber_ui_utils.h"
 				>
 			</File>
 			<File

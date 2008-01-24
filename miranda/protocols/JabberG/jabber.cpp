@@ -194,9 +194,9 @@ int __cdecl CJabberProto::OnPreShutdown( WPARAM wParam, LPARAM lParam )
 		::SendMessage( hwndPrivacyRule, WM_CLOSE, 0, 0 );
 		hwndPrivacyRule = NULL;
 	}
-	if ( hwndPrivacyLists ) {
-		::SendMessage( hwndPrivacyLists, WM_CLOSE, 0, 0 );
-		hwndPrivacyLists = NULL;
+	if ( dlgPrivacyLists ) {
+		dlgPrivacyLists->Close();
+		dlgPrivacyLists = NULL;
 	}
 	if ( hwndServiceDiscovery ) {
 		::SendMessage( hwndServiceDiscovery, WM_CLOSE, 0, 0 );
