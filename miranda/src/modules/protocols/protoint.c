@@ -254,5 +254,6 @@ int FreeDefaultAccount( PROTO_INTERFACE* ppi )
 	mir_free( ppi->szModuleName );
 	mir_free( ppi->szProtoName );
 	mir_free( ppi->tszUserName );
+	mir_free( ppi );
 	return 0;
 }

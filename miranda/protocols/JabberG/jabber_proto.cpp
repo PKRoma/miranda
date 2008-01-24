@@ -181,6 +181,8 @@ CJabberProto::~CJabberProto()
 	mir_free( streamId );
 	mir_free( szModuleName );
 	mir_free( szProtoName );
+	mir_free( tszUserName );
+
 	if ( jabberVcardPhotoFileName ) {
 		DeleteFileA( jabberVcardPhotoFileName );
 		mir_free( jabberVcardPhotoFileName );
