@@ -207,11 +207,11 @@ static int checkAPI(char * plugin, BASIC_PLUGIN_INFO * bpi, DWORD mirandaVersion
 			pi = bpi->InfoEx(mirandaVersion);
 		else
 			pi = (PLUGININFOEX*)bpi->Info(mirandaVersion);
-        {
+        if (pi) {
             // similar to the above hack but these plugins are checked for a valid interface first (in case there are updates to the plugin later)
             char * p = strrchr(plugin,'\\');
             if ( p != NULL && ++p ) {
-                if (!bpi->InfoEx||pi->cbSize!=sizeof(PLUGININFOEX)) {
+                if (!bpi->InfoEx||(pi->cbSize!=sizeof(PLUGININFOEX)) {
                     int i;
                     for ( i = 0; i < SIZEOF(expiredModulesToSkip); i++ ) {
                         if ( lstrcmpiA( p, expiredModulesToSkip[i] ) == 0 ) {
