@@ -339,7 +339,7 @@ void CJabberProto::JabberHandleRosterPushRequest( XmlNode* node, void* userdata,
 					}
 					else DBDeleteContactSetting( hContact, "CList", "Group" );
 				}
-				else mir_free( nick );
+				mir_free( nick );
 		}	}
 
 		if (( item=JabberListGetItemPtr( LIST_ROSTER, jid )) != NULL ) {
