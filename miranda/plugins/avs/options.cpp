@@ -862,11 +862,10 @@ static char * GetSelectedProtocol(HWND hwndDlg)
 	return (char *) item.lParam;
 }
 
-static void EnableDisableControls(HWND hwndDlg)
+static void EnableDisableControls(HWND hwndDlg, char *proto)
 {
 	if (IsDlgButtonChecked(hwndDlg, IDC_PER_PROTO))
 	{
-		char *proto = GetSelectedProtocol(hwndDlg);
 		if (proto == NULL)
 		{
 			EnableWindow(GetDlgItem(hwndDlg, IDC_CHANGE), FALSE);
@@ -874,11 +873,19 @@ static void EnableDisableControls(HWND hwndDlg)
 		}
 		else
 		{
-			EnableWindow(GetDlgItem(hwndDlg, IDC_CHANGE), TRUE);
+			if (!ProtoServiceExists(proto, PS_SETMYAVATAR))
+			{
+				EnableWindow(GetDlgItem(hwndDlg, IDC_CHANGE), FALSE);
+				EnableWindow(GetDlgItem(hwndDlg, IDC_DELETE), FALSE);
+			}
+			else
+			{
+				EnableWindow(GetDlgItem(hwndDlg, IDC_CHANGE), TRUE);
 
-			int width, height;
-			SendMessage(GetDlgItem(hwndDlg, IDC_PROTOPIC), AVATAR_GETUSEDSPACE, (WPARAM) &width, (LPARAM) &height);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_DELETE), (LPARAM) width != 0 || height != 0);
+				int width, height;
+				SendMessage(GetDlgItem(hwndDlg, IDC_PROTOPIC), AVATAR_GETUSEDSPACE, (WPARAM) &width, (LPARAM) &height);
+				EnableWindow(GetDlgItem(hwndDlg, IDC_DELETE), (LPARAM) width != 0 || height != 0);
+			}
 		}
 	}
 	else
@@ -934,7 +941,7 @@ static void EnableDisableProtocols(HWND hwndDlg, BOOL init)
 		else
 		{
 			SendMessage(GetDlgItem(hwndDlg, IDC_PROTOPIC), AVATAR_SETPROTOCOL, 0, (LPARAM) proto);
-			EnableDisableControls(hwndDlg);
+			EnableDisableControls(hwndDlg, proto);
 		}
 	}
 	else
@@ -996,7 +1003,7 @@ BOOL CALLBACK DlgProcAvatarProtoInfo(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				if (protos[i]->szName == NULL || protos[i]->szName[0] == '\0')
 					continue;
 
-				if (!ProtoServiceExists(protos[i]->szName, PS_SETMYAVATAR))
+				if (!ProtoServiceExists(protos[i]->szName, PS_GETMYAVATAR))
 					continue;
 
 				if (!Proto_IsAvatarsEnabled(protos[i]->szName))
@@ -1037,7 +1044,7 @@ BOOL CALLBACK DlgProcAvatarProtoInfo(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 							if (li->uNewState & LVIS_SELECTED)
 							{
 								SendMessage(GetDlgItem(hwndDlg, IDC_PROTOPIC), AVATAR_SETPROTOCOL, 0, li->lParam);
-								EnableDisableControls(hwndDlg);
+								EnableDisableControls(hwndDlg, (char *) li->lParam);
 							}
 							break;
 						}
@@ -1050,7 +1057,7 @@ BOOL CALLBACK DlgProcAvatarProtoInfo(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					{
 						case NM_AVATAR_CHANGED:
 						{
-							EnableDisableControls(hwndDlg);
+							EnableDisableControls(hwndDlg, GetSelectedProtocol(hwndDlg));
 							break;
 						}
 					}
