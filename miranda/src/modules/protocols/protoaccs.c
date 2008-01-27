@@ -254,6 +254,7 @@ int LoadAccountsModule( void )
 		ppi = ppd->fnInit( pa->szModuleName, pa->tszAccountName );
 		if ( ppi != NULL ) {
 			pa->ppro = ppi;
+			ppi->iDesiredStatus = ppi->iStatus = ID_STATUS_OFFLINE;
 			ppi->services[0] = CreateProtoServiceEx( pa->szModuleName, PS_ADDTOLIST, (MIRANDASERVICEPARAM)stub1, pa->ppro );
 			ppi->services[1] = CreateProtoServiceEx( pa->szModuleName, PS_ADDTOLISTBYEVENT, (MIRANDASERVICEPARAM)stub2, pa->ppro );
 			ppi->services[2] = CreateProtoServiceEx( pa->szModuleName, PS_AUTHALLOW, (MIRANDASERVICEPARAM)stub3, pa->ppro );
