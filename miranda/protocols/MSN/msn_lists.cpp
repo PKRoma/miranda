@@ -189,20 +189,23 @@ void MSN_CreateContList(void)
 			
 			const MsnContact* C = contList[j];
 			
+			if (C->list == LIST_RL || C->netId == NETID_EMAIL)
+			{
+				used[j] = true;
+				continue;
+			}
+
 			const char* dom = strchr(C->email, '@');
 			if (dom == NULL && lastds == NULL)
 			{
-				if (C->list != LIST_RL && C->list != LIST_FL)
+				if (sz == 0) sz = mir_snprintf(cxml+sz, sizeof(cxml), "<ml l=\"1\">");
+				if (newdom)
 				{
-					if (sz == 0) sz = mir_snprintf(cxml+sz, sizeof(cxml), "<ml l=\"1\">");
-					if (newdom)
-					{
-						sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz, "<t>");
-						newdom = false;
-					}
-
-					sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz, "<c n=\"%s\" l=\"%d\"/>", C->email, C->list & ~LIST_RL);
+					sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz, "<t>");
+					newdom = false;
 				}
+
+				sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz, "<c n=\"%s\" l=\"%d\"/>", C->email, C->list & ~LIST_RL);
 				used[j] = true;
 			}
 			else if (dom != NULL && lastds != NULL && _stricmp(lastds, dom) == 0)
