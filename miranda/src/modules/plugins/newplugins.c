@@ -149,7 +149,7 @@ static int validInterfaceList(Miranda_Plugin_Interfaces ifaceProc)
 {
 	MUUID *piface = ( ifaceProc ) ? ifaceProc() : NULL;
 
-	if (!piface) 
+	if (!piface)
 		return 0;
 	if (equalUUID(miid_last, piface[0]))
 		return 0;
@@ -158,7 +158,7 @@ static int validInterfaceList(Miranda_Plugin_Interfaces ifaceProc)
 
 static int isPluginBanned(MUUID u1) {
     int i;
-    
+
     for (i=0; i<pluginBannedListCount; i++) {
         if (equalUUID(pluginBannedList[i].uuid, u1))
             return 1;
@@ -211,14 +211,14 @@ static int checkAPI(char * plugin, BASIC_PLUGIN_INFO * bpi, DWORD mirandaVersion
             // similar to the above hack but these plugins are checked for a valid interface first (in case there are updates to the plugin later)
             char * p = strrchr(plugin,'\\');
             if ( p != NULL && ++p ) {
-                if (!bpi->InfoEx||(pi->cbSize!=sizeof(PLUGININFOEX)) {
+                if ( !bpi->InfoEx || pi->cbSize != sizeof(PLUGININFOEX)) {
                     int i;
                     for ( i = 0; i < SIZEOF(expiredModulesToSkip); i++ ) {
                         if ( lstrcmpiA( p, expiredModulesToSkip[i] ) == 0 ) {
                             FreeLibrary(h);
                             return 0;
                         }
-                    }   
+                    }
                 }
             }
         }
@@ -496,7 +496,7 @@ void UnloadNewPlugins(void)
 //
 //   Plugins options page dialog
 
-typedef struct 
+typedef struct
 {
 	int   flags;
 	char* author;
@@ -534,7 +534,7 @@ static BOOL dialogListPlugins(WIN32_FIND_DATAA * fd, char * path, WPARAM wParam,
 	it.iImage = ( pi.pluginInfo->flags & 1 ) ? 0 : 1;
 	it.lParam = (LPARAM)( dat = (PluginListItemData*)mir_alloc( sizeof( PluginListItemData )));
 	iRow=SendMessageA( hwndList, LVM_INSERTITEMA, 0, (LPARAM)&it );
-	if ( isPluginOnWhiteList(fd->cFileName) ) 
+	if ( isPluginOnWhiteList(fd->cFileName) )
 		ListView_SetItemState(hwndList, iRow, !isdb ? 0x2000 : 0x3000, LVIS_STATEIMAGEMASK);
 	if ( iRow != -1 ) {
 		dat->flags = pi.pluginInfo->replacesDefaultModule;
@@ -630,7 +630,7 @@ static BOOL CALLBACK DlgPluginOpt(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 		// sort out the headers
         {
             int w, max;
-            
+
             ListView_SetColumnWidth( hwndList, 0, LVSCW_AUTOSIZE ); // dll name
             w = ListView_GetColumnWidth( hwndList, 0 );
             if (w>140) {
