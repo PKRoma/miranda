@@ -743,29 +743,19 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 		streamData.bRedraw = bRedraw;
 		SendMessage(hwndRich, EM_STREAMIN, wp, (LPARAM) & stream);
 
-		// do smileys
 		SendMessage(hwndRich, EM_EXGETSEL, (WPARAM)0, (LPARAM)&newsel);
+		/*
+		 * for new added events, only replace in message or action events.
+		 * no need to replace smileys or math formulas elswhere
+		 */
 		fDoReplace = (bRedraw || (lin->ptszText
-								  && lin->iType != GC_EVENT_JOIN
-								  && lin->iType != GC_EVENT_NICK
-								  && lin->iType != GC_EVENT_ADDSTATUS
-								  && lin->iType != GC_EVENT_REMOVESTATUS));
+								  && (lin->iType == GC_EVENT_MESSAGE || lin->iType == GC_EVENT_ACTION)));
 
-		if (myGlobals.g_SmileyAddAvail && fDoReplace) {
-			SMADD_RICHEDIT3 sm = {0};
+		
+		/*
+		 * use mathmod to replace formulas
+		 */
 
-			newsel.cpMin = sel.cpMin;
-			if (newsel.cpMin < 0)
-				newsel.cpMin = 0;
-			ZeroMemory(&sm, sizeof(sm));
-			sm.cbSize = sizeof(sm);
-			sm.hwndRichEditControl = hwndRich;
-			sm.Protocolname = si->pszModule;
-			sm.rangeToReplace = bRedraw ? NULL : &newsel;
-			sm.disableRedraw = TRUE;
-			sm.hContact = si->hContact;
-			CallService(MS_SMILEYADD_REPLACESMILEYS, 0, (LPARAM)&sm);
-		}
 		if (g_Settings.MathMod && fDoReplace) {
 			TMathRicheditInfo mathReplaceInfo;
 			CHARRANGE mathNewSel;
@@ -788,6 +778,10 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 			bFlag = TRUE;
 		}
 
+		/*
+		 * replace marked nicknames with hyperlinks to make the nicks
+		 * clickable
+		 */
 		if (g_Settings.ClickableNicks) {
 			CHARFORMAT2 cf2 = {0};
 			FINDTEXTEX fi, fi2;
@@ -823,6 +817,29 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 			SendMessage(hwndRich, EM_SETSEL, -1, -1);
 		}
 
+		/*
+		 * run smileyadd
+		 */
+		if (myGlobals.g_SmileyAddAvail && fDoReplace) {
+			SMADD_RICHEDIT3 sm = {0};
+
+			newsel.cpMin = sel.cpMin;
+			if (newsel.cpMin < 0)
+				newsel.cpMin = 0;
+			ZeroMemory(&sm, sizeof(sm));
+			sm.cbSize = sizeof(sm);
+			sm.hwndRichEditControl = hwndRich;
+			sm.Protocolname = si->pszModule;
+			sm.rangeToReplace = bRedraw ? NULL : &newsel;
+			sm.disableRedraw = TRUE;
+			sm.hContact = si->hContact;
+			CallService(MS_SMILEYADD_REPLACESMILEYS, 0, (LPARAM)&sm);
+		}
+
+		/*
+		 * trim the message log to the number of most recent events
+		 * this uses hidden marks in the rich text to find the events which should be deleted
+		 */
 		if (si->wasTrimmed) {
 			TCHAR szPattern[50];
 			FINDTEXTEX fi;

@@ -2137,7 +2137,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 				ZeroMemory(&wndClass, sizeof(wndClass));
 				GetClassInfoA(g_hInst, "RichEdit20A", &wndClass);
-				OldMessageLogProc = wndClass.lpfnWndProc;
+
+				OldMessageLogProc = (WNDPROC)GetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_WNDPROC);
+				//OldMessageLogProc = wndClass.lpfnWndProc;
 				SetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_WNDPROC, (LONG) MessageLogSubclassProc);
 			}
 
