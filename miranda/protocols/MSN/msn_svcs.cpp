@@ -978,13 +978,14 @@ static void sttSendOim( LPVOID param )
 static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 {
 	CCSDATA* ccs = ( CCSDATA* )lParam;
+	const HANDLE hContact = ccs->hContact;
 	char *errMsg = NULL;
 
 	char tEmail[ MSN_MAX_EMAIL_LEN ];
-	if ( MSN_IsMeByContact( ccs->hContact, tEmail )) 
+	if ( MSN_IsMeByContact( hContact, tEmail )) 
 	{
 		errMsg = MSN_Translate( "You cannot send message to yourself" );
-		mir_forkthread( sttFakeAck, new TFakeAckParams( ccs->hContact, 999999, errMsg ));
+		mir_forkthread( sttFakeAck, new TFakeAckParams( hContact, 999999, errMsg ));
 		return 999999;
 	}
 
@@ -1000,79 +1001,89 @@ static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 		else
 			msg = mir_strdup( msg );
 	}
-	else if ( ccs->wParam & PREF_UTF )
-		msg = mir_strdup( msg );
 	else
-		msg = mir_utf8encode( msg );
+		msg = (ccs->wParam & PREF_UTF) ? mir_strdup(msg) : mir_utf8encode(msg);
 
+	int rtlFlag = (ccs->wParam & PREF_RTL ) ? MSG_RTL : 0;
+
+	int seq;
 	int netId  = Lists_GetNetId(tEmail);
-	if (netId == NETID_UNKNOWN) netId = NETID_MSN;
 
-	if (netId == NETID_EMAIL)
+	switch (netId)
 	{
-		long id = 999997;
+	case NETID_EMAIL:
+		seq = 999994;
 		errMsg = MSN_Translate( "Cannot send messages to E-mail only contacts" );
-		mir_free( msg );
-		mir_forkthread( sttFakeAck, new TFakeAckParams( ccs->hContact, id, errMsg ));
-		return id;
-	}
+		mir_forkthread( sttFakeAck, new TFakeAckParams( hContact, seq, errMsg ));
+		break;
 
-	if (netId == NETID_MOB)
-	{
-		long id;
+	case NETID_MOB:
 		if ( strlen( msg ) > 133 ) {
 			errMsg = MSN_Translate( "Message is too long: SMS page limited to 133 UTF8 chars" );
-			id = 999997;
+			seq = 999997;
 		}
 		else
 		{
 			errMsg = NULL;
-			id = MSN_SendSMS(tEmail, msg);
+			seq = MSN_SendSMS(tEmail, msg);
 		}
-		mir_free( msg );
-		mir_forkthread( sttFakeAck, new TFakeAckParams( ccs->hContact, id, errMsg ));
-		return id;
-	}
+		mir_forkthread( sttFakeAck, new TFakeAckParams( hContact, seq, errMsg ));
+		break;
 
-	if ( strlen( msg ) > 1202 ) {
-		errMsg = MSN_Translate( "Message is too long: MSN messages are limited by 1202 UTF8 chars" );
-		mir_free( msg );
-
-		mir_forkthread( sttFakeAck, new TFakeAckParams( ccs->hContact, 999999, errMsg ));
-		return 999996;
-	}
-
-	int seq; 
-	int rtlFlag = (ccs->wParam & PREF_RTL ) ? MSG_RTL : 0;
-	
-	if (netId == NETID_MSN)
-	{
-		const char msgType = MyOptions.SlowSend ? 'A' : 'N';
-		bool isOffline;
-		ThreadData* thread = MSN_StartSB(ccs->hContact, isOffline);
-		if ( thread == NULL )
+	case NETID_UNKNOWN:
+	case NETID_MSN:
+		if ( strlen( msg ) > 1202 ) 
 		{
-			if ( isOffline ) 
-			{
-				seq = rand();
-				mir_forkthread( sttSendOim, new TFakeAckParams( ccs->hContact, seq, msg ));
-				return seq;
-			}
-			else
-				seq = MsgQueue_Add( ccs->hContact, msgType, msg, 0, 0, rtlFlag );
+			seq = 999996;
+			errMsg = MSN_Translate( "Message is too long: MSN messages are limited by 1202 UTF8 chars" );
+			mir_forkthread( sttFakeAck, new TFakeAckParams( hContact, seq, errMsg ));
 		}
 		else
 		{
-			seq = thread->sendMessage( msgType, tEmail, netId, msg, rtlFlag );
-			if ( !MyOptions.SlowSend )
-				mir_forkthread( sttFakeAck, new TFakeAckParams( ccs->hContact, seq, 0 ));
+			const char msgType = MyOptions.SlowSend ? 'A' : 'N';
+			bool isOffline;
+			ThreadData* thread = MSN_StartSB(hContact, isOffline);
+			if ( thread == NULL )
+			{
+				if ( isOffline ) 
+				{
+					seq = rand();
+					mir_forkthread( sttSendOim, new TFakeAckParams( hContact, seq, mir_strdup( msg )));
+				}
+				else
+					seq = MsgQueue_Add( hContact, msgType, msg, 0, 0, rtlFlag );
+			}
+			else
+			{
+				seq = thread->sendMessage( msgType, tEmail, netId, msg, rtlFlag );
+				if ( !MyOptions.SlowSend )
+					mir_forkthread( sttFakeAck, new TFakeAckParams( hContact, seq, 0 ));
+			}
 		}
-	}
-	else
-	{
-//		const char msgType = MyOptions.SlowSend ? '2' : '1';
-		seq = msnNsThread->sendMessage( '1', tEmail, netId, msg, rtlFlag );
-		mir_forkthread( sttFakeAck, new TFakeAckParams( ccs->hContact, seq, 0 ));
+		break;
+		
+	case NETID_LCS:
+		if (MSN_GetWord(hContact, "Status", ID_STATUS_OFFLINE) == ID_STATUS_OFFLINE) 
+		{
+			seq = 999993;
+			errMsg = MSN_Translate( "Cannot send messages to offline LCS contacts" );
+			mir_forkthread( sttFakeAck, new TFakeAckParams( hContact, seq, errMsg ));
+			break;
+		}
+
+	default:
+		if ( strlen( msg ) > 1202 ) 
+		{
+			seq = 999996;
+			errMsg = MSN_Translate( "Message is too long: MSN messages are limited by 1202 UTF8 chars" );
+			mir_forkthread( sttFakeAck, new TFakeAckParams( hContact, seq, errMsg ));
+		}
+		else
+		{
+			seq = msnNsThread->sendMessage( '1', tEmail, netId, msg, rtlFlag );
+			mir_forkthread( sttFakeAck, new TFakeAckParams( hContact, seq, 0 ));
+		}
+		break;
 	}
 
 	mir_free( msg );
@@ -1437,7 +1448,8 @@ static int MsnUserIsTyping(WPARAM wParam, LPARAM lParam)
 		break;
 
 	default:
-		if (typing) MSN_SendTyping(msnNsThread, tEmail, netId);
+		WORD wStatus = MSN_GetWord(hContact, "Status", ID_STATUS_OFFLINE);
+		if (typing && wStatus != ID_STATUS_OFFLINE) MSN_SendTyping(msnNsThread, tEmail, netId);
 		break;
 	}
 
