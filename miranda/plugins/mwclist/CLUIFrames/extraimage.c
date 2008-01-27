@@ -155,45 +155,43 @@ int OnIconLibIconChanged(WPARAM wParam,LPARAM lParam)
 
 void ReloadExtraIcons()
 {
-	{	
-		int count,i;
-		PROTOCOLDESCRIPTOR **protos;
-		HICON hicon;
+	int count,i;
+	PROTOACCOUNT **accs;
+	HICON hicon;
 
-		SendMessage(pcli->hwndContactTree,CLM_SETEXTRACOLUMNSSPACE,DBGetContactSettingByte(NULL,"CLUI","ExtraColumnSpace",18),0);					
-		SendMessage(pcli->hwndContactTree,CLM_SETEXTRAIMAGELIST,0,(LPARAM)NULL);		
-		if (hExtraImageList){ImageList_Destroy(hExtraImageList);};
-		hExtraImageList=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,1,256);
+	SendMessage(pcli->hwndContactTree,CLM_SETEXTRACOLUMNSSPACE,DBGetContactSettingByte(NULL,"CLUI","ExtraColumnSpace",18),0);					
+	SendMessage(pcli->hwndContactTree,CLM_SETEXTRAIMAGELIST,0,(LPARAM)NULL);		
+	if (hExtraImageList){ImageList_Destroy(hExtraImageList);};
+	hExtraImageList=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,1,256);
 
-		//adding protocol icons
-		CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&count,(LPARAM)&protos);
-
-		//loading icons
-		hicon=LoadIconFromExternalFile("clisticons.dll",0,TRUE,TRUE,"Email","Contact List",Translate("Email Icon"),-IDI_EMAIL);
-		if (!hicon) hicon=LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_EMAIL));
-		ExtraImageIconsIndex[0]=ImageList_AddIcon(hExtraImageList,hicon );
+	//loading icons
+	hicon=LoadIconFromExternalFile("clisticons.dll",0,TRUE,TRUE,"Email","Contact List",Translate("Email Icon"),-IDI_EMAIL);
+	if (!hicon) hicon=LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_EMAIL));
+	ExtraImageIconsIndex[0]=ImageList_AddIcon(hExtraImageList,hicon );
 
 
-		hicon=LoadIconFromExternalFile("clisticons.dll",1,TRUE,TRUE,"Sms","Contact List",Translate("Sms Icon"),-IDI_SMS);
-		if (!hicon) hicon=LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_SMS));
-		ExtraImageIconsIndex[1]=ImageList_AddIcon(hExtraImageList,hicon );
+	hicon=LoadIconFromExternalFile("clisticons.dll",1,TRUE,TRUE,"Sms","Contact List",Translate("Sms Icon"),-IDI_SMS);
+	if (!hicon) hicon=LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_SMS));
+	ExtraImageIconsIndex[1]=ImageList_AddIcon(hExtraImageList,hicon );
 
-		hicon=LoadIconFromExternalFile("clisticons.dll",4,TRUE,TRUE,"Web","Contact List",Translate("Web Icon"),-IDI_GLOBUS);
-		if (!hicon) hicon=LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_GLOBUS));
-		ExtraImageIconsIndex[2]=ImageList_AddIcon(hExtraImageList,hicon );	
-		//calc only needed protocols
-		for(i=0;i<count;i++) {
-			if(protos[i]->type!=PROTOTYPE_PROTOCOL || CallProtoService(protos[i]->szName,PS_GETCAPS,PFLAGNUM_2,0)==0) continue;
-			ImageList_AddIcon(hExtraImageList,LoadSkinnedProtoIcon(protos[i]->szName,ID_STATUS_ONLINE));
-		}
-		SendMessage(pcli->hwndContactTree,CLM_SETEXTRAIMAGELIST,0,(LPARAM)hExtraImageList);		
-		//SetAllExtraIcons(hImgList);
-		SetNewExtraColumnCount();
-		NotifyEventHooks(hExtraImageListRebuilding,0,0);
-		ImageCreated=TRUE;
-	}
+	hicon=LoadIconFromExternalFile("clisticons.dll",4,TRUE,TRUE,"Web","Contact List",Translate("Web Icon"),-IDI_GLOBUS);
+	if (!hicon) hicon=LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_GLOBUS));
+	ExtraImageIconsIndex[2]=ImageList_AddIcon(hExtraImageList,hicon );	
 
-};
+	//calc only needed protocols
+	ProtoEnumAccounts( &count, &accs );
+	for ( i=0; i < count; i++ )
+		if ( CallProtoService( accs[i]->szModuleName, PS_GETCAPS, PFLAGNUM_2, 0 ))
+			ImageList_AddIcon( hExtraImageList, LoadSkinnedProtoIcon( accs[i]->szModuleName, ID_STATUS_ONLINE ));
+
+	SendMessage(pcli->hwndContactTree,CLM_SETEXTRAIMAGELIST,0,(LPARAM)hExtraImageList);		
+
+	//SetAllExtraIcons(hImgList);
+	SetNewExtraColumnCount();
+	NotifyEventHooks(hExtraImageListRebuilding,0,0);
+	ImageCreated=TRUE;
+}
+
 void ClearExtraIcons();
 
 void ReAssignExtraIcons()
@@ -233,7 +231,7 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 	char *szProto;
 	char *(ImgIndex[64]);
 	int maxpr,count,i;
-	PROTOCOLDESCRIPTOR **protos;
+	PROTOACCOUNT **accs;
 	pdisplayNameCacheEntry pdnce;
 	int em,pr,sms,a1,a2,w1,c1;
 	int tick=0;
@@ -256,20 +254,19 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 	};
 
 	memset(&ImgIndex,0,sizeof(&ImgIndex));
-	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&count,(LPARAM)&protos);
+	ProtoEnumAccounts( &count, &accs );
 
 	maxpr=0;
 	//calc only needed protocols
-	for(i=0;i<count;i++) {
-		if(protos[i]->type!=PROTOTYPE_PROTOCOL || CallProtoService(protos[i]->szName,PS_GETCAPS,PFLAGNUM_2,0)==0) continue;
-		ImgIndex[maxpr]=protos[i]->szName;
+	for( i=0; i < count; i++ ) {
+		if ( CallProtoService( accs[i]->szModuleName, PS_GETCAPS, PFLAGNUM_2, 0 ) == 0 )
+			continue;
+		ImgIndex[maxpr] = accs[i]->szModuleName;
 		maxpr++;
 	}
 
-	if (hContact==NULL)
-	{
+	if ( hContact == NULL )
 		hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDFIRST,0,0);
-	}	
 
 	do {
 		szProto=NULL;

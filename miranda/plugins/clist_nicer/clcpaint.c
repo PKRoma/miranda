@@ -36,7 +36,6 @@ extern ImageItem *g_glyphItem;
 extern int hClcProtoCount;
 extern ORDERTREEDATA OrderTreeData[];
 
-extern ClcProtoStatus *clcProto;
 extern HIMAGELIST hCListImages;
 extern struct CluiData g_CluiData;
 static BYTE divide3[765] = {255};

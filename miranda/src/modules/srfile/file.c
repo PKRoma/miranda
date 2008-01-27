@@ -223,25 +223,22 @@ static void RemoveUnreadFileEvents(void)
 
 static int SRFileModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
-	CLISTMENUITEM mi = { 0 };
-	PROTOCOLDESCRIPTOR **protocol;
-	int protoCount,i;
+	int i;
 
+	CLISTMENUITEM mi = { 0 };
 	mi.cbSize = sizeof(mi);
 	mi.position = -2000020000;
 	mi.icolibItem = GetSkinIconHandle( SKINICON_EVENT_FILE );
 	mi.pszName = LPGEN("&File");
 	mi.pszService = MS_FILE_SENDFILE;
-	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&protocol);
-	for ( i=0; i <protoCount; i++ ) {
-		if ( protocol[i]->type != PROTOTYPE_PROTOCOL )
-			continue;
 
-		if ( CallProtoService( protocol[i]->szName, PS_GETCAPS,PFLAGNUM_1, 0 ) & PF1_FILESEND ) {
+	for ( i=0; i < accounts.count; i++ ) {
+		PROTOACCOUNT* pa = accounts.items[i];
+		if ( CallProtoService( pa->szModuleName, PS_GETCAPS,PFLAGNUM_1, 0 ) & PF1_FILESEND ) {
 			mi.flags = CMIF_ICONFROMICOLIB;
-			if ( !( CallProtoService( protocol[i]->szName, PS_GETCAPS,PFLAGNUM_4, 0 ) & PF4_OFFLINEFILES ))
+			if ( !( CallProtoService( pa->szModuleName, PS_GETCAPS,PFLAGNUM_4, 0 ) & PF4_OFFLINEFILES ))
 				mi.flags |= CMIF_NOTOFFLINE;
-			mi.pszContactOwner = protocol[i]->szName;
+			mi.pszContactOwner = pa->szModuleName;
 			CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
 	}	}
 

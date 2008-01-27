@@ -80,8 +80,7 @@ int FillTree(HWND hwnd)
 		CallProtoService( pa->szModuleName, PS_GETNAME, sizeof( szName ), ( LPARAM )szName );
 
 		PD = ( ProtocolData* )mir_alloc( sizeof( ProtocolData ));
-		PD->RealName = GetUniqueProtoName(szName); //it return static pointer to protocol name-> not net to be freed
-
+		PD->RealName = pa->szModuleName;
 		PD->show = pa->bIsVisible;
 		PD->protopos = pa->iOrder;
 
@@ -145,39 +144,30 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		switch(((LPNMHDR)lParam)->idFrom) {		
 		case 0: 
 			if (((LPNMHDR)lParam)->code == PSN_APPLY ) {
-				int count;
-				char buf[10];
+				int count = 0;
 
 				TVITEM tvi;
 				tvi.hItem = TreeView_GetRoot( GetDlgItem( hwndDlg, IDC_PROTOCOLORDER ));
 				tvi.cchTextMax = 32;
 				tvi.mask = TVIF_PARAM | TVIF_HANDLE;
-				count = 0;
 
 				while ( tvi.hItem != NULL ) {
-					_itoa( count, buf, 10 );
 					TreeView_GetItem(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),&tvi);
 
 					if (tvi.lParam!=0) {
 						ProtocolData* ppd = ( ProtocolData* )tvi.lParam;
-						PROTOACCOUNT* pa = ProtoGetAccount( ppd->RealName );
+						PROTOACCOUNT* pa = Proto_GetAccount( ppd->RealName );
 						if ( pa != NULL ) {
-							pa->iOrder = ppd->protopos;
+							pa->iOrder = count;
 							pa->bIsVisible = ppd->show;
 						}
-						DBWriteContactSettingString( NULL, "Protocols", buf, ppd->RealName );
-
-						_itoa( OFFSET_PROTOPOS + count, buf, 10 );  //save position in protos
-						DBWriteContactSettingDword( NULL, "Protocols", buf, ppd->protopos );
-
-						_itoa( OFFSET_VISIBLE + count, buf, 10 );  //save visible in protos
-						DBWriteContactSettingDword( NULL, "Protocols", buf, ppd->show );
 					}
 
 					tvi.hItem = TreeView_GetNextSibling( GetDlgItem( hwndDlg, IDC_PROTOCOLORDER ), tvi.hItem );
 					count++;
 				}
-
+				
+				WriteDbAccounts();
 				cli.pfnReloadProtoMenus();
 				cli.pfnTrayIconIconsChanged();
 				cli.pfnClcBroadcast( INTM_RELOADOPTIONS, 0, 0 );

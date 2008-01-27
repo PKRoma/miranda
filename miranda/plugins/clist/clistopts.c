@@ -120,20 +120,20 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			MAKELONG(DBGetContactSettingWord(NULL, "CList", "CycleTime", SETTING_CYCLETIME_DEFAULT), 0));
 		{
 			int i, count, item;
-			PROTOCOLDESCRIPTOR **protos;
+			PROTOACCOUNT **accs;
 			char szName[64];
 			DBVARIANT dbv = { DBVT_DELETED };
 			DBGetContactSetting(NULL, "CList", "PrimaryStatus", &dbv);
-			CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) & count, (LPARAM) & protos);
+			CallService( MS_PROTO_ENUMACCOUNTS, (WPARAM)&count, (LPARAM)&accs);
 			item = SendDlgItemMessage(hwndDlg, IDC_PRIMARYSTATUS, CB_ADDSTRING, 0, (LPARAM) TranslateT("Global"));
 			SendDlgItemMessage(hwndDlg, IDC_PRIMARYSTATUS, CB_SETITEMDATA, item, (LPARAM) 0);
 			for (i = 0; i < count; i++) {
-				if (protos[i]->type != PROTOTYPE_PROTOCOL || CallProtoService(protos[i]->szName, PS_GETCAPS, PFLAGNUM_2, 0) == 0)
+				if ( CallProtoService( accs[i]->szModuleName, PS_GETCAPS, PFLAGNUM_2, 0) == 0)
 					continue;
-				CallProtoService(protos[i]->szName, PS_GETNAME, SIZEOF(szName), (LPARAM) szName);
+				CallProtoService(accs[i]->szModuleName, PS_GETNAME, SIZEOF(szName), (LPARAM) szName);
 				item = SendDlgItemMessageA(hwndDlg, IDC_PRIMARYSTATUS, CB_ADDSTRING, 0, (LPARAM) szName);
-				SendDlgItemMessage(hwndDlg, IDC_PRIMARYSTATUS, CB_SETITEMDATA, item, (LPARAM) protos[i]);
-				if (dbv.type == DBVT_ASCIIZ && !lstrcmpA(dbv.pszVal, protos[i]->szName))
+				SendDlgItemMessage(hwndDlg, IDC_PRIMARYSTATUS, CB_SETITEMDATA, item, (LPARAM) accs[i]);
+				if (dbv.type == DBVT_ASCIIZ && !lstrcmpA(dbv.pszVal, accs[i]->szModuleName))
 					SendDlgItemMessage(hwndDlg, IDC_PRIMARYSTATUS, CB_SETCURSEL, item, 0);
 			}
 			DBFreeVariant(&dbv);
@@ -211,15 +211,15 @@ static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					(WORD) SendDlgItemMessage(hwndDlg, IDC_BLINKSPIN, UDM_GETPOS, 0, 0));
 				DBWriteContactSettingByte(NULL, "CList", "DisableTrayFlash", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_DISABLEBLINK));
 				DBWriteContactSettingByte(NULL, "CList", "NoIconBlink", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_ICONBLINK));
-				if (!SendDlgItemMessage
-					(hwndDlg, IDC_PRIMARYSTATUS, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, IDC_PRIMARYSTATUS, CB_GETCURSEL, 0, 0), 0))
-					DBDeleteContactSetting(NULL, "CList", "PrimaryStatus");
-				else
-					DBWriteContactSettingString(NULL, "CList", "PrimaryStatus",
-					((PROTOCOLDESCRIPTOR *)
-					SendDlgItemMessage(hwndDlg, IDC_PRIMARYSTATUS, CB_GETITEMDATA,
-					SendDlgItemMessage(hwndDlg, IDC_PRIMARYSTATUS, CB_GETCURSEL, 0, 0),
-					0))->szName);
+				{
+					int cur = SendDlgItemMessage(hwndDlg, IDC_PRIMARYSTATUS, CB_GETCURSEL, 0, 0);
+					PROTOACCOUNT* pa = ( PROTOACCOUNT* )SendDlgItemMessage(hwndDlg, IDC_PRIMARYSTATUS, CB_GETITEMDATA, cur, 0 );
+					if ( pa == NULL )
+						DBDeleteContactSetting(NULL, "CList", "PrimaryStatus");
+					else 
+						DBWriteContactSettingString(NULL, "CList", "PrimaryStatus", pa->szModuleName );
+				}
+
 				pcli->pfnTrayIconIconsChanged();
 				pcli->pfnLoadContactTree();  /* this won't do job properly since it only really works when changes happen */
 				pcli->pfnInvalidateDisplayNameCacheEntry( INVALID_HANDLE_VALUE );        /* force reshuffle */

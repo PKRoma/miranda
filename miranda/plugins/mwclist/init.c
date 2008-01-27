@@ -80,11 +80,11 @@ PLUGININFOEX pluginInfo = {
 	#else
 		"MultiWindow Contact List",
 	#endif
-	PLUGIN_MAKE_VERSION(0,3,4,6),
+	PLUGIN_MAKE_VERSION(0,8,0,1),
 	"Display contacts, event notifications, protocol status with MW modifications",
 	"",
 	"bethoven@mailgate.ru" ,
-	"Copyright 2000-2006 Miranda-IM project ["__DATE__" "__TIME__"]",
+	"Copyright 2000-2008 Miranda-IM project ["__DATE__" "__TIME__"]",
 	"http://www.miranda-im.org",
 	UNICODE_AWARE,
 	DEFMOD_CLISTALL,
@@ -104,7 +104,8 @@ BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD dwReason, LPVOID reserved)
 
 __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-	if ( mirandaVersion < PLUGIN_MAKE_VERSION(0,3,4,3) ) return NULL;
+	if ( mirandaVersion < PLUGIN_MAKE_VERSION(0,8,0,9) )
+		return NULL;
 	return &pluginInfo;
 }
 
@@ -186,10 +187,10 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 		pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);
 		if ( (int)pcli == CALLSERVICE_NOTFOUND ) {
 LBL_Error:
-			MessageBoxA( NULL, "This version of plugin requires Miranda IM 0.7.0.8 or later", "Fatal error", MB_OK );
+			MessageBoxA( NULL, "This version of plugin requires Miranda IM 0.8.0.9 or later", "Fatal error", MB_OK );
 			return 1;
 		}
-		if ( pcli->version < 4 )
+		if ( pcli->version < 6 )
 			goto LBL_Error;
 
 		pcli->pfnBuildGroupPopupMenu = BuildGroupPopupMenu;

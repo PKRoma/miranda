@@ -74,7 +74,8 @@ TCHAR* fnTrayIconMakeTooltip( const TCHAR *szPrefix, const char *szProto )
 	char szProtoName[32];
 	TCHAR *szStatus, *szSeparator, *sztProto;
 	TCHAR *ProtoXStatus=NULL;
-	int t,cn;
+	int t;
+	PROTOACCOUNT* pa;
 	initcheck NULL;
 	lock;
 	if ( !mToolTipTrayTips )
@@ -83,18 +84,14 @@ TCHAR* fnTrayIconMakeTooltip( const TCHAR *szPrefix, const char *szProto )
 		szSeparator = _T("\n");
 
 	if (szProto == NULL) {
-		PROTOCOLDESCRIPTOR **protos;
-		int count, netProtoCount, i;
-		CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) &count, (LPARAM) &protos);
-		for (i = 0,netProtoCount = 0; i < count; i++) {
-			if (protos[i]->type == PROTOTYPE_PROTOCOL)
-				netProtoCount++;
+		if (accounts.count == 0) {
+			ulock;
+			return NULL;
 		}
-		if (netProtoCount == 1) {
-			for (i = 0; i < count; i++) {
-				if ( protos[i]->type == PROTOTYPE_PROTOCOL )
-				{ ulock; return cli.pfnTrayIconMakeTooltip(szPrefix, protos[i]->szName); }
-		}	}
+		if (accounts.count == 1) {
+			ulock;
+			return cli.pfnTrayIconMakeTooltip(szPrefix, accounts.items[0]->szModuleName);
+		}
 
 		if (szPrefix && szPrefix[0]) {
 			lstrcpyn(cli.szTip, szPrefix, MAX_TIP_SIZE);
@@ -104,22 +101,20 @@ TCHAR* fnTrayIconMakeTooltip( const TCHAR *szPrefix, const char *szProto )
 		else cli.szTip[0] = '\0';
 		cli.szTip[ MAX_TIP_SIZE-1 ] = '\0';
 
-		t=0;
-		cn=DBGetContactSettingDword(NULL,"Protocols","ProtoCount",-1);
-		if ( cn == -1 )
-		{ ulock; return NULL; }
+		for ( t = 0; t < accounts.count; t++ ) {
+			int i = cli.pfnGetAccountIndexByPos( t );
+			if ( i == -1 ) {
+				ulock;
+				return _T("???");
+			}
+			pa = accounts.items[i];
 
-		for ( t=0; t < cn; t++ ) {
-			i = cli.pfnGetProtoIndexByPos(protos, count,t);
-			if ( i == -1 )
-			{ ulock; return _T("???"); }
-
-			if ( protos[i]->type == PROTOTYPE_PROTOCOL && cli.pfnGetProtocolVisibility( protos[i]->szName ))
-				ProtoXStatus = sttGetXStatus( protos[i]->szName );
+			if ( cli.pfnGetProtocolVisibility( pa->szModuleName ))
+				ProtoXStatus = sttGetXStatus( pa->szModuleName );
 			else
-				ProtoXStatus=NULL;
-			CallProtoService( protos[i]->szName, PS_GETNAME, sizeof(szProtoName), (LPARAM) szProtoName );
-			szStatus = cli.pfnGetStatusModeDescription( CallProtoService( protos[i]->szName, PS_GETSTATUS, 0, 0), 0);
+				ProtoXStatus = NULL;
+			CallProtoService( pa->szModuleName, PS_GETNAME, sizeof(szProtoName), (LPARAM) szProtoName );
+			szStatus = cli.pfnGetStatusModeDescription( CallProtoService( pa->szModuleName, PS_GETSTATUS, 0, 0), 0);
 			if ( szStatus ) {
 				if ( mToolTipTrayTips ) {
 					TCHAR tipline[256];
@@ -250,9 +245,7 @@ void fnTrayIconRemove(HWND hwnd, const char *szProto)
 
 int fnTrayIconInit(HWND hwnd)
 {
-	int count;
 	int averageMode = GetAverageMode();
-	PROTOCOLDESCRIPTOR **protos;
 	initcheck 0;
 	lock;
 	mToolTipTrayTips = ServiceExists("mToolTip/ShowTip") ? TRUE : FALSE;
@@ -261,28 +254,29 @@ int fnTrayIconInit(HWND hwnd)
 		KillTimer(NULL, cli.cycleTimerId);
 		cli.cycleTimerId = 0;
 	}
-	CallService(MS_PROTO_ENUMPROTOCOLS, ( WPARAM )&count, ( LPARAM )&protos);
 
 	if (DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT) == SETTING_TRAYICON_MULTI) {
 		int netProtoCount, i;
-		for (i = 0, netProtoCount = 0; i < count; i++)
-			if (protos[i]->type == PROTOTYPE_PROTOCOL && cli.pfnGetProtocolVisibility( protos[i]->szName ))
+		for (i = 0, netProtoCount = 0; i < accounts.count; i++)
+			if ( cli.pfnGetProtocolVisibility( accounts.items[i]->szModuleName ))
 				netProtoCount++;
 		cli.trayIconCount = netProtoCount;
 	}
 	else cli.trayIconCount = 1;
 
-	cli.trayIcon = (struct trayIconInfo_t *) mir_alloc(sizeof(struct trayIconInfo_t) * count);
-	memset(cli.trayIcon, 0, sizeof(struct trayIconInfo_t) * count);
+	cli.trayIcon = (struct trayIconInfo_t *) mir_alloc(sizeof(struct trayIconInfo_t) * accounts.count);
+	memset(cli.trayIcon, 0, sizeof(struct trayIconInfo_t) * accounts.count);
 	if ( DBGetContactSettingByte(NULL, "CList", "TrayIcon", SETTING_TRAYICON_DEFAULT) == SETTING_TRAYICON_MULTI
 	     && (averageMode <= 0 || DBGetContactSettingByte(NULL, "CList", "AlwaysMulti", SETTING_ALWAYSMULTI_DEFAULT ))) {
 		int i;
-		for (i = count - 1; i >= 0; i--) {
-			int j = cli.pfnGetProtoIndexByPos( protos, count, i);
-			if ( j > -1 )
-				if ( protos[j]->type == PROTOTYPE_PROTOCOL && cli.pfnGetProtocolVisibility( protos[j]->szName ))
-					cli.pfnTrayIconAdd(hwnd, protos[j]->szName, NULL, CallProtoService(protos[j]->szName, PS_GETSTATUS, 0, 0));
-	}	}
+		for (i = accounts.count - 1; i >= 0; i--) {
+			int j = cli.pfnGetAccountIndexByPos( i );
+			if ( j > -1 ) {
+				PROTOACCOUNT* pa = accounts.items[j];
+				if ( cli.pfnGetProtocolVisibility( pa->szModuleName ))
+					cli.pfnTrayIconAdd(hwnd, pa->szModuleName, NULL, CallProtoService(pa->szModuleName, PS_GETSTATUS, 0, 0));
+		}	}
+	}	
 	else if (/*averageMode <= ID_STATUS_OFFLINE ||*/ DBGetContactSettingByte(NULL, "CList", "TrayIcon", SETTING_TRAYICON_DEFAULT) == SETTING_TRAYICON_SINGLE) {
 		DBVARIANT dbv = { DBVT_DELETED };
 		char *szProto;
@@ -332,21 +326,19 @@ void fnTrayIconTaskbarCreated(HWND hwnd)
 	cli.pfnTrayIconInit(hwnd);
 }
 
-////////////////////////////////////////////////////////////
-
 static VOID CALLBACK RefreshTimerProc(HWND hwnd,UINT message,UINT idEvent,DWORD dwTime)
 {
-	int count,i;
-	PROTOCOLDESCRIPTOR **protos;
-	if(RefreshTimerId) {KillTimer(NULL,RefreshTimerId); RefreshTimerId=0;}
-	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&count,(LPARAM)&protos);
-	for (i=0; i<count; i++)
-		if(protos[i]->type==PROTOTYPE_PROTOCOL &&
-			(cli.pfnGetProtocolVisibility(protos[i]->szName)!=0))
-			cli.pfnTrayIconUpdateBase(protos[i]->szName);
-
+	int i;
+	if ( RefreshTimerId ) {
+		KillTimer(NULL,RefreshTimerId); 
+		RefreshTimerId=0;
+	}
+	for (i=0; i < accounts.count; i++) {
+		PROTOACCOUNT* pa = accounts.items[i];
+		if ( cli.pfnGetProtocolVisibility( pa->szModuleName ) != 0 )
+			cli.pfnTrayIconUpdateBase( pa->szModuleName );
+	}
 }
-//////// End by FYR /////////
 
 int fnTrayIconUpdate(HICON hNewIcon, const TCHAR *szNewTip, const char *szPreferredProto, int isBase)
 {
@@ -453,19 +445,18 @@ void fnTrayIconUpdateWithImageList(int iImage, const TCHAR *szNewTip, char *szPr
 
 VOID CALLBACK fnTrayCycleTimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD dwTime)
 {
-	int count;
-	PROTOCOLDESCRIPTOR **protos;
 	initcheck;
 	lock;
-	CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) & count, (LPARAM) & protos);
+
 	for (cycleStep++;; cycleStep++) {
-		if (cycleStep >= count)
+		if (cycleStep >= accounts.count)
 			cycleStep = 0;
-		if (protos[cycleStep]->type == PROTOTYPE_PROTOCOL && (cli.pfnGetProtocolVisibility(protos[cycleStep]->szName)) )
+		if ( cli.pfnGetProtocolVisibility( accounts.items[cycleStep]->szModuleName ))
 			break;
 	}
 	DestroyIcon(cli.trayIcon[0].hBaseIcon);
-	cli.trayIcon[0].hBaseIcon = cli.pfnGetIconFromStatusMode(NULL,protos[cycleStep]->szName,CallProtoService(protos[cycleStep]->szName,PS_GETSTATUS,0,0));
+	cli.trayIcon[0].hBaseIcon = cli.pfnGetIconFromStatusMode(NULL, accounts.items[cycleStep]->szModuleName, 
+		CallProtoService( accounts.items[cycleStep]->szModuleName, PS_GETSTATUS, 0, 0 ));
 	if (cli.trayIcon[0].isBase)
 		cli.pfnTrayIconUpdate(cli.trayIcon[0].hBaseIcon, NULL, NULL, 1);
 	ulock;
@@ -473,8 +464,7 @@ VOID CALLBACK fnTrayCycleTimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD 
 
 void fnTrayIconUpdateBase(const char *szChangedProto)
 {
-	int i, count, netProtoCount, changed = -1;
-	PROTOCOLDESCRIPTOR **protos;
+	int i, netProtoCount, changed = -1;
 	int averageMode = 0;
 	HWND hwnd = cli.hwndContactList;
 	initcheck;
@@ -483,16 +473,15 @@ void fnTrayIconUpdateBase(const char *szChangedProto)
 		KillTimer(NULL, cli.cycleTimerId);
 		cli.cycleTimerId = 0;
 	}
-	CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) & count, (LPARAM) & protos);
-	for (i = 0, netProtoCount = 0; i < count; i++) {
-		if (protos[i]->type != PROTOTYPE_PROTOCOL)
-			continue;
+
+	for (i = 0, netProtoCount = 0; i < accounts.count; i++) {
+		PROTOACCOUNT* pa = accounts.items[i];
 		netProtoCount++;
-		if (!lstrcmpA(szChangedProto, protos[i]->szName))
+		if (!lstrcmpA(szChangedProto, pa->szModuleName ))
 			cycleStep = i;
 		if (averageMode == 0)
-			averageMode = CallProtoService(protos[i]->szName, PS_GETSTATUS, 0, 0);
-		else if (averageMode != CallProtoService(protos[i]->szName, PS_GETSTATUS, 0, 0)) {
+			averageMode = CallProtoService( pa->szModuleName, PS_GETSTATUS, 0, 0 );
+		else if (averageMode != CallProtoService( pa->szModuleName, PS_GETSTATUS, 0, 0 )) {
 			averageMode = -1;
 			break;
 		}

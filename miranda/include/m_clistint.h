@@ -418,6 +418,11 @@ typedef struct
 	void   ( *pfnUnlockTray )( void );
 
 	VOID ( CALLBACK *pfnTrayCycleTimerProc )( HWND hwnd, UINT message, UINT idEvent, DWORD dwTime );
+
+	/*************************************************************************************
+	 * version 6 additions (0.8.0.x) - accounts
+	 *************************************************************************************/
+	int    ( *pfnGetAccountIndexByPos )( int pos );
 }
 	CLIST_INTERFACE;
 

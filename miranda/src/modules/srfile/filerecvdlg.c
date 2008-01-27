@@ -166,7 +166,7 @@ void GetContactReceivedFilesDir(HANDLE hContact,char *szDir,int cchDir)
 			switch (ci.type) {
 			case CNFT_ASCIIZ:
 				mir_snprintf(szUsername, SIZEOF(szUsername), "%s", ci.pszVal);
-				miranda_sys_free(ci.pszVal);
+				mir_free(ci.pszVal);
 				break;
 			case CNFT_DWORD:
 				mir_snprintf(szUsername, SIZEOF(szUsername), "%u", ci.dVal);

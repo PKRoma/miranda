@@ -63,7 +63,7 @@ static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
 	int rc;
 
 	if ( interfaceInited == 0 ) {
-		cli.version = 5;
+		cli.version = 6;
 
 		cli.pfnClcOptionsChanged               = fnClcOptionsChanged;
 		cli.pfnClcBroadcast                    = fnClcBroadcast;
@@ -199,8 +199,9 @@ static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
 		cli.pfnMOGetIntMenuItem                = MO_GetIntMenuItem;
 		cli.pfnMOGetMenuItemByGlobalID         = GetMenuItemByGlobalID;
 		cli.pfnGetProtocolVisibility           = fnGetProtocolVisibility;
-		cli.pfnGetProtoIndexByPos              = GetProtoIndexByPos;
+		cli.pfnGetProtoIndexByPos              = fnGetProtoIndexByPos;
 		cli.pfnReloadProtoMenus                = fnReloadProtoMenus;
+		cli.pfnGetAccountIndexByPos            = fnGetAccountIndexByPos;
 
 		cli.hInst = ( HMODULE )lParam;
 

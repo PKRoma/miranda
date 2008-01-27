@@ -402,7 +402,7 @@ static void InitIcoLib()
 	int i = 0, version = 0;
 	char szBuffer[128];
 	int p_count = 0;
-	PROTOCOLDESCRIPTOR **protos = NULL;
+	PROTOACCOUNT **accs = NULL;
 
 	GetModuleFileNameA(g_hInst, szFilename, MAX_PATH);
 
@@ -441,14 +441,14 @@ static void InitIcoLib()
 		CallService(MS_SKIN2_ADDICON, 0, (LPARAM) &sid);
 	}
 	sid.pszSection = "CList - Nicer/Connecting Icons";
-	CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM)&p_count, (LPARAM)&protos);
+	ProtoEnumAccounts( &p_count, &accs );
 	for (i = 0; i < p_count; i++) {
 		char szDescr[128];
-		if (protos[i]->type != PROTOTYPE_PROTOCOL || CallProtoService(protos[i]->szName, PS_GETCAPS, PFLAGNUM_2, 0) == 0)
+		if ( CallProtoService( accs[i]->szModuleName, PS_GETCAPS, PFLAGNUM_2, 0) == 0)
 			continue;
-		mir_snprintf(szBuffer, 128, "%s_conn", protos[i]->szName);
+		mir_snprintf(szBuffer, 128, "%s_conn", accs[i]->szModuleName );
 		sid.pszName = szBuffer;
-		mir_snprintf(szDescr, 128, "%s Connecting", protos[i]->szName);
+		mir_snprintf(szDescr, 128, "%s Connecting", accs[i]->szModuleName );
 		sid.pszDescription = szDescr;
 		sid.iDefaultIndex = -IDI_PROTOCONNECTING;
 		CallService(MS_SKIN2_ADDICON, 0, (LPARAM) &sid);
@@ -818,16 +818,13 @@ static void RestoreMode()
 // Happens on shutdown and standby.
 static void DisconnectAll()
 {
-	PROTOCOLDESCRIPTOR **ppProtoDesc;
+	PROTOACCOUNT **accs;
 	int nProtoCount;
 	int nProto;
 
-
-	CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) &nProtoCount, (LPARAM) &ppProtoDesc);
-	for (nProto = 0; nProto < nProtoCount; nProto++) {
-		if (ppProtoDesc[nProto]->type == PROTOTYPE_PROTOCOL)
-			CallProtoService(ppProtoDesc[nProto]->szName, PS_SETSTATUS, ID_STATUS_OFFLINE, 0);
-	}
+	ProtoEnumAccounts( &nProtoCount, &accs );
+	for (nProto = 0; nProto < nProtoCount; nProto++)
+		CallProtoService( accs[nProto]->szModuleName, PS_SETSTATUS, ID_STATUS_OFFLINE, 0);
 }
 
 void BlitWallpaper(HDC hdc, RECT *rc, RECT *rcPaint, struct ClcData *dat)

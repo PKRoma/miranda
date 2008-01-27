@@ -71,17 +71,11 @@ int hkRestoreStatus(WPARAM wParam,LPARAM lParam)
 */
 static int hkAllOffline(WPARAM wParam,LPARAM lParam)
 {
-	PROTOCOLDESCRIPTOR** ppProtoDesc;
-	int nProtoCount;
 	int nProto;
 
+	for (nProto = 0; nProto < accounts.count; nProto++)
+		CallProtoService( accounts.items[nProto]->szModuleName, PS_SETSTATUS, ID_STATUS_OFFLINE, 0);
 
-	CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM)&nProtoCount, (LPARAM)&ppProtoDesc);
-	for (nProto = 0; nProto < nProtoCount; nProto++)
-	{
-		if (ppProtoDesc[nProto]->type == PROTOTYPE_PROTOCOL)
-			CallProtoService(ppProtoDesc[nProto]->szName, PS_SETSTATUS, ID_STATUS_OFFLINE, 0);
-	}
 	return 0;
 }
 

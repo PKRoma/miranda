@@ -123,15 +123,11 @@ static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
 
 static int ClcModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
-	PROTOCOLDESCRIPTOR **proto;
-	int protoCount, i;
-
-	CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) & protoCount, (LPARAM) & proto);
-	for (i = 0; i < protoCount; i++) {
-		if (proto[i]->type != PROTOTYPE_PROTOCOL)
-			continue;
+	int i;
+	for (i = 0; i < accounts.count; i++) {
+		PROTOACCOUNT* pa = accounts.items[i];
 		cli.clcProto = (ClcProtoStatus *) mir_realloc(cli.clcProto, sizeof(ClcProtoStatus) * (cli.hClcProtoCount + 1));
-		cli.clcProto[cli.hClcProtoCount].szProto = proto[i]->szName;
+		cli.clcProto[cli.hClcProtoCount].szProto = pa->szModuleName;
 		cli.clcProto[cli.hClcProtoCount].dwStatus = ID_STATUS_OFFLINE;
 		cli.hClcProtoCount++;
 	}

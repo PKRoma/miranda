@@ -123,6 +123,8 @@ typedef struct
 
 extern TAccounts accounts;
 
+PROTOACCOUNT* Proto_GetAccount( const char* accName );
+
 PROTO_INTERFACE* AddDefaultAccount( const char* szProtoName );
 int FreeDefaultAccount( PROTO_INTERFACE* ppi );
 

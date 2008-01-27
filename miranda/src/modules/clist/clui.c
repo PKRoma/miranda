@@ -81,15 +81,9 @@ static void RestoreMode(HWND hwnd)
 // Happens on shutdown and standby.
 static void DisconnectAll()
 {
-	PROTOCOLDESCRIPTOR **ppProtoDesc;
-	int nProtoCount;
 	int nProto;
-
-	CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) & nProtoCount, (LPARAM) & ppProtoDesc);
-	for (nProto = 0; nProto < nProtoCount; nProto++) {
-		if (ppProtoDesc[nProto]->type == PROTOTYPE_PROTOCOL)
-			CallProtoService(ppProtoDesc[nProto]->szName, PS_SETSTATUS, ID_STATUS_OFFLINE, 0);
-	}
+	for (nProto = 0; nProto < accounts.count; nProto++)
+		CallProtoService( accounts.items[nProto]->szModuleName, PS_SETSTATUS, ID_STATUS_OFFLINE, 0);
 }
 
 static int CluiIconsChanged(WPARAM wParam, LPARAM lParam)

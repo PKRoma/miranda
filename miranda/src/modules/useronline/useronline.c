@@ -84,15 +84,11 @@ static int UserOnlineAck(WPARAM wParam, LPARAM lParam)
 
 static int UserOnlineModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
-	int protoCount=0, j;
-	PROTOCOLDESCRIPTOR **protos = 0;
-
-	CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM)&protoCount, (LPARAM)&protos);
 	// reset the counter
-	for (j=0 ; j < protoCount; j++) 
-		if (protos[j]->type == PROTOTYPE_PROTOCOL) {
-			db_dword_set(NULL, "UserOnline", protos[j]->szName, GetTickCount());
-		}
+	int j;
+	for ( j=0; j < accounts.count; j++ )
+		db_dword_set( NULL, "UserOnline", accounts.items[j]->szModuleName, GetTickCount());
+
 	return 0;
 }
 

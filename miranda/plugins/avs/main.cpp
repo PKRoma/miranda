@@ -27,7 +27,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 HINSTANCE g_hInst = 0;
 PLUGINLINK  *pluginLink;
 
-static          PROTOCOLDESCRIPTOR **g_protocols = NULL;
 static char     g_szDBPath[MAX_PATH];		// database profile path (read at startup only)
 #if defined(_UNICODE)
 	static wchar_t  g_wszDBPath[MAX_PATH];
@@ -45,7 +44,7 @@ static HANDLE	hPresutdown = 0;
 static HANDLE	hOkToExit = 0;
 
 
-int g_protocount = 0;
+int count = 0;
 
 HANDLE  hProtoAckHook = 0, hContactSettingChanged = 0, hEventChanged = 0, hEventContactAvatarChanged = 0,
 		hMyAvatarChanged = 0, hEventDeleted = 0, hUserInfoInitHook = 0;
@@ -1237,26 +1236,20 @@ static int InternalRemoveMyAvatar(char *protocol)
 	}
 	else
 	{
-		PROTOCOLDESCRIPTOR **protos;
+		PROTOACCOUNT **accs;
 		int i,count;
 
-		CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM)&count, (LPARAM)&protos);
+		ProtoEnumAccounts( &count, &accs );
 		for (i = 0; i < count; i++)
 		{
-			if (protos[i]->type != PROTOTYPE_PROTOCOL)
+			if ( !ProtoServiceExists( accs[i]->szModuleName, PS_SETMYAVATAR))
 				continue;
 
-			if (protos[i]->szName == NULL || protos[i]->szName[0] == '\0')
-				continue;
-
-			if (!ProtoServiceExists(protos[i]->szName, PS_SETMYAVATAR))
-				continue;
-
-			if (!Proto_IsAvatarsEnabled(protos[i]->szName))
+			if (!Proto_IsAvatarsEnabled( accs[i]->szModuleName ))
 				continue;
 
 			// Found a protocol
-			int retTmp = CallProtoService(protos[i]->szName, PS_SETMYAVATAR, 0, NULL);
+			int retTmp = CallProtoService( accs[i]->szModuleName, PS_SETMYAVATAR, 0, NULL);
 			if (retTmp != 0)
 				ret = retTmp;
 		}
@@ -1318,25 +1311,19 @@ static int InternalSetMyAvatar(char *protocol, char *szFinalName, SetMyAvatarHoo
 	}
 	else
 	{
-		PROTOCOLDESCRIPTOR **protos;
+		PROTOACCOUNT **accs;
 		int i,count;
 
-		CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM)&count, (LPARAM)&protos);
+		ProtoEnumAccounts( &count, &accs );
 		for (i = 0; i < count; i++)
 		{
-			if (protos[i]->type != PROTOTYPE_PROTOCOL)
+			if ( !ProtoServiceExists( accs[i]->szModuleName, PS_SETMYAVATAR))
 				continue;
 
-			if (protos[i]->szName == NULL || protos[i]->szName[0] == '\0')
+			if ( !Proto_IsAvatarsEnabled( accs[i]->szModuleName ))
 				continue;
 
-			if (!ProtoServiceExists(protos[i]->szName, PS_SETMYAVATAR))
-				continue;
-
-			if (!Proto_IsAvatarsEnabled(protos[i]->szName))
-				continue;
-
-			int retTmp = SetProtoMyAvatar(protos[i]->szName, hBmp, szFinalName, format, data.square, data.grow);
+			int retTmp = SetProtoMyAvatar( accs[i]->szModuleName, hBmp, szFinalName, format, data.square, data.grow);
 			if (retTmp != 0)
 				ret = retTmp;
 		}
@@ -1426,8 +1413,8 @@ static int InternalSetMyAvatar(char *protocol, char *szFinalName, SetMyAvatarHoo
 static int SetMyAvatar(WPARAM wParam, LPARAM lParam)
 {
 	char *protocol;
-    char FileName[MAX_PATH];
-    char *szFinalName = NULL;
+	char FileName[MAX_PATH];
+	char *szFinalName = NULL;
 	BOOL allAcceptXML;
 	BOOL allAcceptSWF;
 
@@ -1453,26 +1440,20 @@ static int SetMyAvatar(WPARAM wParam, LPARAM lParam)
 		allAcceptXML = TRUE;
 		allAcceptSWF = TRUE;
 
-		PROTOCOLDESCRIPTOR **protos;
+		PROTOACCOUNT **accs;
 		int i,count;
 
-		CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM)&count, (LPARAM)&protos);
+		ProtoEnumAccounts( &count, &accs );
 		for (i = 0; i < count; i++)
 		{
-			if (protos[i]->type != PROTOTYPE_PROTOCOL)
+			if ( !ProtoServiceExists( accs[i]->szModuleName, PS_SETMYAVATAR))
 				continue;
 
-			if (protos[i]->szName == NULL || protos[i]->szName[0] == '\0')
+			if ( !Proto_IsAvatarsEnabled( accs[i]->szModuleName ))
 				continue;
 
-			if (!ProtoServiceExists(protos[i]->szName, PS_SETMYAVATAR))
-				continue;
-
-			if (!Proto_IsAvatarsEnabled(protos[i]->szName))
-				continue;
-
-			allAcceptXML = allAcceptXML && Proto_IsAvatarFormatSupported(protos[i]->szName, PA_FORMAT_XML);
-			allAcceptSWF = allAcceptSWF && Proto_IsAvatarFormatSupported(protos[i]->szName, PA_FORMAT_SWF);
+			allAcceptXML = allAcceptXML && Proto_IsAvatarFormatSupported( accs[i]->szModuleName, PA_FORMAT_XML);
+			allAcceptSWF = allAcceptSWF && Proto_IsAvatarFormatSupported( accs[i]->szModuleName, PA_FORMAT_SWF);
 		}
 
 		data.square = DBGetContactSettingByte(0, AVS_MODULE, "SetAllwaysMakeSquare", 0);
@@ -1763,7 +1744,7 @@ int GetMyAvatar(WPARAM wParam, LPARAM lParam)
 	if(lParam == 0 || IsBadReadPtr(szProto, 4))
 		return 0;
 
-	for(i = 0; i < g_protocount + 1; i++) {
+	for(i = 0; i < count + 1; i++) {
 		if(!strcmp(szProto, g_MyAvatars[i].szProtoname) && g_MyAvatars[i].hbmPic != 0)
 			return (int)&g_MyAvatars[i];
 	}
@@ -1774,7 +1755,7 @@ static protoPicCacheEntry *GetProtoDefaultAvatar(HANDLE hContact)
 {
 	char *szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 	if(szProto) {
-		for(int i = 0; i < g_protocount; i++) {
+		for(int i = 0; i < count; i++) {
 			if(!strcmp(g_ProtoPictures[i].szProtoname, szProto) && g_ProtoPictures[i].hbmPic != NULL) {
 				return &g_ProtoPictures[i];
 			}
@@ -2024,87 +2005,87 @@ static int DestroyServicesAndEvents()
 
 static int ModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
-    int i, j;
-    DBVARIANT dbv = {0};
-    TCHAR szEventName[100];
+	int i, j;
+	DBVARIANT dbv = {0};
+	TCHAR szEventName[100];
 	int   result = 0;
 
-    InitPolls();
+	InitPolls();
 
-    mir_sntprintf(szEventName, 100, _T("avs_loaderthread_%d"), GetCurrentThreadId());
-    hLoaderEvent = CreateEvent(NULL, TRUE, FALSE, szEventName);
+	mir_sntprintf(szEventName, 100, _T("avs_loaderthread_%d"), GetCurrentThreadId());
+	hLoaderEvent = CreateEvent(NULL, TRUE, FALSE, szEventName);
 	hLoaderThread = (HANDLE) mir_forkthread(PicLoader, 0);
-    SetThreadPriority(hLoaderThread, THREAD_PRIORITY_IDLE);
+	SetThreadPriority(hLoaderThread, THREAD_PRIORITY_IDLE);
 
-    // Folders plugin support
+	// Folders plugin support
 	if (ServiceExists(MS_FOLDERS_REGISTER_PATH))
 	{
 		hMyAvatarsFolder = (HANDLE) FoldersRegisterCustomPath(Translate("Avatars"), Translate("My Avatars"),
-													  PROFILE_PATH "\\" CURRENT_PROFILE "\\MyAvatars");
+			PROFILE_PATH "\\" CURRENT_PROFILE "\\MyAvatars");
 
 		hGlobalAvatarFolder = (HANDLE) FoldersRegisterCustomPath(Translate("Avatars"), Translate("My Global Avatar Cache"),
-													  FOLDER_AVATARS "\\GlobalAvatar");
+			FOLDER_AVATARS "\\GlobalAvatar");
 	}
 
-    g_AvatarHistoryAvail = ServiceExists(MS_AVATARHISTORY_ENABLED);
+	g_AvatarHistoryAvail = ServiceExists(MS_AVATARHISTORY_ENABLED);
 
-    g_MetaAvail = ServiceExists(MS_MC_GETPROTOCOLNAME) ? TRUE : FALSE;
-    if(g_MetaAvail) {
-        g_szMetaName = (char *)CallService(MS_MC_GETPROTOCOLNAME, 0, 0);
-        if(g_szMetaName == NULL)
-            g_MetaAvail = FALSE;
-    }
+	g_MetaAvail = ServiceExists(MS_MC_GETPROTOCOLNAME) ? TRUE : FALSE;
+	if(g_MetaAvail) {
+		g_szMetaName = (char *)CallService(MS_MC_GETPROTOCOLNAME, 0, 0);
+		if(g_szMetaName == NULL)
+			g_MetaAvail = FALSE;
+	}
 
+	PROTOACCOUNT **accs = NULL;
+	int count;
+	ProtoEnumAccounts( &count, &accs );
+	g_ProtoPictures = (struct protoPicCacheEntry *)malloc(sizeof(struct protoPicCacheEntry) * (count + 1));
+	ZeroMemory((void *)g_ProtoPictures, sizeof(struct protoPicCacheEntry) * (count + 1));
 
-    CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM)&g_protocount, (LPARAM)&g_protocols);
-    g_ProtoPictures = (struct protoPicCacheEntry *)malloc(sizeof(struct protoPicCacheEntry) * (g_protocount + 1));
-    ZeroMemory((void *)g_ProtoPictures, sizeof(struct protoPicCacheEntry) * (g_protocount + 1));
+	g_MyAvatars = (struct protoPicCacheEntry *)malloc(sizeof(struct protoPicCacheEntry) * (count + 2));
+	ZeroMemory((void *)g_MyAvatars, sizeof(struct protoPicCacheEntry) * (count + 2));
 
-	g_MyAvatars = (struct protoPicCacheEntry *)malloc(sizeof(struct protoPicCacheEntry) * (g_protocount + 2));
-    ZeroMemory((void *)g_MyAvatars, sizeof(struct protoPicCacheEntry) * (g_protocount + 2));
-
-    j = 0;
-    for(i = 0; i < g_protocount; i++) {
-        if(g_protocols[i]->type != PROTOTYPE_PROTOCOL || fei == NULL)
-            continue;
-        if(CreateAvatarInCache(0, (struct avatarCacheEntry *)&g_ProtoPictures[j], g_protocols[i]->szName) == 1)
-            j++;
-        else {
-            strncpy(g_ProtoPictures[j].szProtoname, g_protocols[i]->szName, 100);
-            g_ProtoPictures[j++].szProtoname[99] = 0;
-            DBDeleteContactSetting(0, PPICT_MODULE, g_protocols[i]->szName);
-        }
-    }
 	j = 0;
-    for(i = 0; i < g_protocount; i++) {
-        if(g_protocols[i]->type != PROTOTYPE_PROTOCOL || fei == NULL)
-            continue;
-        if(CreateAvatarInCache((HANDLE)-1, (struct avatarCacheEntry *)&g_MyAvatars[j], g_protocols[i]->szName) == 1)
-            j++;
-        else {
-            strncpy(g_MyAvatars[j].szProtoname, g_protocols[i]->szName, 100);
-            g_MyAvatars[j++].szProtoname[99] = 0;
-        }
-    }
+	for(i = 0; i < count; i++) {
+		if ( fei == NULL )
+			continue;
+		if ( CreateAvatarInCache(0, (struct avatarCacheEntry *)&g_ProtoPictures[j], accs[i]->szModuleName ) == 1)
+			j++;
+		else {
+			strncpy(g_ProtoPictures[j].szProtoname, accs[i]->szModuleName, 100);
+			g_ProtoPictures[j++].szProtoname[99] = 0;
+			DBDeleteContactSetting(0, PPICT_MODULE, accs[i]->szModuleName);
+		}
+	}
+	j = 0;
+	for(i = 0; i < count; i++) {
+		if ( fei == NULL )
+			continue;
+		if ( CreateAvatarInCache((HANDLE)-1, (struct avatarCacheEntry *)&g_MyAvatars[j], accs[i]->szModuleName ) == 1)
+			j++;
+		else {
+			strncpy(g_MyAvatars[j].szProtoname, accs[i]->szModuleName, 100);
+			g_MyAvatars[j++].szProtoname[99] = 0;
+		}
+	}
 	// Load global avatar
 	CreateAvatarInCache((HANDLE)-1, (struct avatarCacheEntry *)&g_MyAvatars[j], "");
 
-
-    // updater plugin support
-    if(ServiceExists(MS_UPDATE_REGISTER))
+	// updater plugin support
+	if(ServiceExists(MS_UPDATE_REGISTER))
 	{
 		Update upd = {0};
 		char szCurrentVersion[30];
 #if defined(_UNICODE)
-        char *szVersionUrl = "http://miranda.or.at/files/avs/versionW.txt";
-        char *szUpdateUrl = "http://miranda.or.at/files/avs/avsW.zip";
-        char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=2990";
-        char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=2990";
+		char *szVersionUrl = "http://miranda.or.at/files/avs/versionW.txt";
+		char *szUpdateUrl = "http://miranda.or.at/files/avs/avsW.zip";
+		char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=2990";
+		char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=2990";
 #else
 		char *szVersionUrl = "http://miranda.or.at/files/avs/version.txt";
 		char *szUpdateUrl = "http://miranda.or.at/files/avs/avs.zip";
-        char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=2361";
-        char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=2361";
+		char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=2361";
+		char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=2361";
 #endif
 		char *szPrefix = "avs ";
 
@@ -2115,7 +2096,7 @@ static int ModulesLoaded(WPARAM wParam, LPARAM lParam)
 		upd.szVersionURL = szFLVersionUrl;
 		upd.szUpdateURL = szFLUpdateurl;
 #if defined(_UNICODE)
-        upd.pbVersionPrefix = (BYTE *)"<span class=\"fileNameHeader\">Avatar service (UNICODE) ";
+		upd.pbVersionPrefix = (BYTE *)"<span class=\"fileNameHeader\">Avatar service (UNICODE) ";
 #else
 		upd.pbVersionPrefix = (BYTE *)"<span class=\"fileNameHeader\">Avatar service ";
 #endif
@@ -2129,11 +2110,11 @@ static int ModulesLoaded(WPARAM wParam, LPARAM lParam)
 		upd.cpbVersionPrefix = strlen((char *)upd.pbVersionPrefix);
 		upd.cpbBetaVersionPrefix = strlen((char *)upd.pbBetaVersionPrefix);
 
-        CallService(MS_UPDATE_REGISTER, 0, (LPARAM)&upd);
+		CallService(MS_UPDATE_REGISTER, 0, (LPARAM)&upd);
 	}
 
 	hPresutdown = HookEvent(ME_SYSTEM_PRESHUTDOWN, ShutdownProc);
-    hOkToExit = HookEvent(ME_SYSTEM_OKTOEXIT, OkToExitProc);
+	hOkToExit = HookEvent(ME_SYSTEM_OKTOEXIT, OkToExitProc);
 	hUserInfoInitHook = HookEvent(ME_USERINFO_INITIALISE, OnDetailsInit);
 
 	return 0;
@@ -2144,7 +2125,7 @@ static void ReloadMyAvatar(LPVOID lpParam)
 	char *szProto = (char *)lpParam;
 
     mir_sleep(1000);
-	for(int i = 0; !g_shutDown && i < g_protocount + 1; i++) {
+	for(int i = 0; !g_shutDown && i < count + 1; i++) {
 		if(!strcmp(g_MyAvatars[i].szProtoname, szProto)) {
 			if(g_MyAvatars[i].hbmPic)
 				DeleteObject(g_MyAvatars[i].hbmPic);
@@ -2166,7 +2147,7 @@ static int ReportMyAvatarChanged(WPARAM wParam, LPARAM lParam)
 	char *proto = (char *) wParam;
 
 	int i;
-	for(i = 0; i < g_protocount + 1; i++) {
+	for(i = 0; i < count + 1; i++) {
 		if(!strcmp(g_MyAvatars[i].szProtoname, proto)) {
 			LPVOID lpParam = (void *)malloc(lstrlenA(g_MyAvatars[i].szProtoname) + 2);
 			strcpy((char *)lpParam, g_MyAvatars[i].szProtoname);
@@ -2374,7 +2355,7 @@ int DrawAvatarPicture(WPARAM wParam, LPARAM lParam)
         if(r->szProto == NULL)
             return 0;
 
-        for(i = 0; i < g_protocount; i++) {
+        for(i = 0; i < count; i++) {
             if(g_ProtoPictures[i].szProtoname[0] && !strcmp(g_ProtoPictures[i].szProtoname, r->szProto) && lstrlenA(r->szProto) == lstrlenA(g_ProtoPictures[i].szProtoname) && g_ProtoPictures[i].hbmPic != 0) {
                 ace = (AVATARCACHEENTRY *)&g_ProtoPictures[i];
                 break;
@@ -2492,22 +2473,15 @@ static int LoadAvatarModule()
 
 extern "C" BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD dwReason, LPVOID reserved)
 {
-    g_hInst = hInstDLL;
-    return TRUE;
-}
-
-extern "C" __declspec(dllexport) PLUGININFO * MirandaPluginInfo(DWORD mirandaVersion)
-{
-    if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 0))
-        return NULL;
-    return &pluginInfo;
+	g_hInst = hInstDLL;
+	return TRUE;
 }
 
 extern "C" __declspec(dllexport) PLUGININFOEX * MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-    if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 0))
-        return NULL;
-    return &pluginInfoEx;
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 8, 0, 9))
+		return NULL;
+	return &pluginInfoEx;
 }
 
 
@@ -2550,7 +2524,7 @@ extern "C" int __declspec(dllexport) Unload(void)
 		free(g_cacheBlocks[i]);
 	free(g_cacheBlocks);
 
-	for(i = 0; i < g_protocount + 1; i++) {
+	for(i = 0; i < count + 1; i++) {
         if(g_ProtoPictures[i].hbmPic != 0)
             DeleteObject(g_ProtoPictures[i].hbmPic);
 		if(g_MyAvatars[i].hbmPic != 0)

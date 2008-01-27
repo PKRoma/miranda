@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 
-extern int g_protocount;
+extern int count;
 extern struct protoPicCacheEntry *g_MyAvatars;
 extern FI_INTERFACE *fei;
 
@@ -163,7 +163,7 @@ void StartFlash(HWND hwnd, ACCData* data)
 	else if (data->proto[0] != '\0')
 	{
 		protoPicCacheEntry *ace = NULL;
-		for(int i = 0; i < g_protocount + 1; i++) 
+		for(int i = 0; i < count + 1; i++) 
 		{
 			if (!strcmp(data->proto, g_MyAvatars[i].szProtoname))
 			{

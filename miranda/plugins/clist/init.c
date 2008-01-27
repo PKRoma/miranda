@@ -59,11 +59,11 @@ BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD dwReason, LPVOID reserved)
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
 	"Classic contact list",
-	PLUGIN_MAKE_VERSION(0, 8, 0, 0),
+	PLUGIN_MAKE_VERSION(0, 8, 0, 1),
 	"Display contacts, event notifications, protocol status",
 	"Miranda IM project",
 	"ghazan@miranda-im.org",
-	"Copyright 2000-2006 Miranda IM project",
+	"Copyright 2000-2008 Miranda IM project",
 	"http://www.miranda-im.org",
 	UNICODE_AWARE,
 	DEFMOD_CLISTALL,
@@ -76,11 +76,13 @@ PLUGININFOEX pluginInfo = {
 
 __declspec(dllexport) PLUGININFOEX *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 3, 0))
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 8, 0, 9))
 		return NULL;
 	return &pluginInfo;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
+// returns plugin's interfaces information
 
 static const MUUID interfaces[] = {MIID_CLIST, MIID_LAST};
 __declspec(dllexport) const MUUID * MirandaPluginInterfaces(void)
@@ -133,10 +135,10 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);
 	if ( (int)pcli == CALLSERVICE_NOTFOUND ) {
 LBL_Error:
-		MessageBoxA( NULL, "This version of plugin requires Miranda IM 0.7.0.8 or later", "Fatal error", MB_OK );
+		MessageBoxA( NULL, "This version of plugin requires Miranda IM 0.8.0.9 or later", "Fatal error", MB_OK );
 		return 1;
 	}
-	if ( pcli->version < 4 )
+	if ( pcli->version < 6 )
 		goto LBL_Error;
 
 	pcli->pfnPaintClc = PaintClc;

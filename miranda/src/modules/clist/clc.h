@@ -163,10 +163,10 @@ DWORD GetDefaultExStyle(void);
 void GetFontSetting(int i,LOGFONTA *lf,COLORREF *colour);
 
 /* clistmenus.c */
-int    fnGetProtocolVisibility( const char* proto );
+int    fnGetProtocolVisibility( const char* accName );
 
-int    GetProtoIndexByPos(PROTOCOLDESCRIPTOR ** proto, int protoCnt, int Pos);
-char * GetUniqueProtoName(char * proto);
+int    fnGetAccountIndexByPos(int Pos);
+int    fnGetProtoIndexByPos(PROTOCOLDESCRIPTOR ** proto, int protoCnt, int Pos);
 void   RebuildMenuOrder( void );
 int    MenuProcessCommand(WPARAM wParam,LPARAM lParam);
 

@@ -104,12 +104,12 @@ void RecalcScrollBar(HWND hwnd, struct ClcData *dat);
 
 PLUGININFOEX pluginInfo = {
 #if defined(_UNICODE)
-		sizeof(PLUGININFOEX), "CList Nicer+ (Unicode)", PLUGIN_MAKE_VERSION(0, 8, 0, 2),
+		sizeof(PLUGININFOEX), "CList Nicer+ (Unicode)", PLUGIN_MAKE_VERSION(0, 8, 0, 3),
 #else
-		sizeof(PLUGININFOEX), "CList Nicer+", PLUGIN_MAKE_VERSION(0, 8, 0, 2),
+		sizeof(PLUGININFOEX), "CList Nicer+", PLUGIN_MAKE_VERSION(0, 8, 0, 3),
 #endif		
 		"Display contacts, event notifications, protocol status",
-		"Pixel, egoDust, cyreve, Nightwish", "", "Copyright 2000-2006 Miranda-IM project", "http://www.miranda-im.org",
+		"Pixel, egoDust, cyreve, Nightwish", "", "Copyright 2000-2008 Miranda-IM project", "http://www.miranda-im.org",
 		UNICODE_AWARE,
 		DEFMOD_CLISTALL,
 #if defined(_UNICODE)
@@ -173,29 +173,10 @@ BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD dwReason, LPVOID reserved)
 
 __declspec(dllexport) PLUGININFOEX * MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-#if defined(_UNICODE)
-	pluginInfo.flags |= UNICODE_AWARE;
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 2, 0))
-#else
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 1))
-#endif
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 8, 0, 9))
 		return NULL;
 	return &pluginInfo;
 }
-
-/*
-__declspec(dllexport) PLUGININFO * MirandaPluginInfo(DWORD mirandaVersion)
-{
-#if defined(_UNICODE)
-	pluginInfo.flags |= UNICODE_AWARE;
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 2, 0))
-#else
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 1))
-#endif
-		return NULL;
-	return &oldPluginInfo;
-}
-*/
 
 static const MUUID interfaces[] = {MIID_CLIST, MIID_LAST};
 __declspec(dllexport) const MUUID * MirandaPluginInterfaces(void)
@@ -374,10 +355,10 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);
 	if ( (int)pcli == CALLSERVICE_NOTFOUND ) {
 LBL_Error:
-		MessageBoxA( NULL, "This plugin requires Miranda IM 0.7.0.8 or later", "Fatal error", MB_OK );
+		MessageBoxA( NULL, "This plugin requires Miranda IM 0.8.0.9 or later", "Fatal error", MB_OK );
 		return 1;
 	}
-	if ( pcli->version < 4 ) // don't join it with the previous if()
+	if ( pcli->version < 6 ) // don't join it with the previous if()
 		goto LBL_Error;
 
 	pcli->pfnBuildGroupPopupMenu = BuildGroupPopupMenu;

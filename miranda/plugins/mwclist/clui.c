@@ -252,15 +252,12 @@ void RegisterProtoIcons (char *protoname)
 void RegisterProtoIconsForAllProtoIconLib()
 {
 	int protoCount,i;
-	PROTOCOLDESCRIPTOR **proto;
+	PROTOACCOUNT **accs;
 	
-	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&proto);
-	if(protoCount==0) return ;
-	for (i=0;i<protoCount;i++)
-	{
-		if(proto[i]->type!=PROTOTYPE_PROTOCOL || CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_2,0)==0) continue;
-		RegisterProtoIcons(proto[i]->szName); 
-	}
+	ProtoEnumAccounts( &protoCount, &accs );
+	for ( i=0; i < protoCount; i++ )
+		if ( CallProtoService( accs[i]->szModuleName, PS_GETCAPS, PFLAGNUM_2, 0 ))
+			RegisterProtoIcons( accs[i]->szModuleName ); 
 }
 
 HICON GetConnectingIconForProto_DLL(char *szProto,int b)
@@ -446,14 +443,13 @@ int OnSettingChanging(WPARAM wParam,LPARAM lParam)
 // Happens on shutdown and standby.
 static void DisconnectAll()
 {
-	PROTOCOLDESCRIPTOR** ppProtoDesc;
+	PROTOACCOUNT** accs;
 	int nProtoCount;
 	int nProto;
 
-	CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM)&nProtoCount, (LPARAM)&ppProtoDesc);
+	ProtoEnumAccounts( &nProtoCount, &accs );
 	for (nProto = 0; nProto < nProtoCount; nProto++)
-		if (ppProtoDesc[nProto]->type == PROTOTYPE_PROTOCOL)
-			CallProtoService(ppProtoDesc[nProto]->szName, PS_SETSTATUS, ID_STATUS_OFFLINE, 0);
+		CallProtoService( accs[nProto]->szModuleName, PS_SETSTATUS, ID_STATUS_OFFLINE, 0);
 }
 
 int PreCreateCLC(HWND parent)

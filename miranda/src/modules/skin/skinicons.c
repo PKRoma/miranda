@@ -221,18 +221,14 @@ HICON LoadSkinProtoIcon( const char* szProto, int status )
 		return NULL;
 
 	if ( !szProto ) {
-		PROTOCOLDESCRIPTOR **proto;
-		DWORD protoCount;
-
-		CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&proto);
 		// Only return a protocol specific icon if there is only one protocol
 		// Otherwise return the global icon. This affects the global status menu mainly.
-		if ( protoCount == 1 ) {
+		if ( accounts.count == 1 ) {
 			HICON hIcon;
 
 			// format: core_status_%proto%statusindex
 			strcpy(iconName, statusIconsFmt);
-			strcat(iconName, proto[0]->szName);
+			strcat(iconName, accounts.items[0]->szModuleName);
 			itoa(statusIndx, iconName + strlen(iconName), 10);
 
 			hIcon = IcoLib_GetIcon( iconName );

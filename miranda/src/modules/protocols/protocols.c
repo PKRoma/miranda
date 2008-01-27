@@ -94,7 +94,7 @@ static int Proto_RegisterModule(WPARAM wParam,LPARAM lParam)
 			// let's create a new container
 			PROTO_INTERFACE* ppi = AddDefaultAccount( pd->szName );
 			if ( ppi ) {
-				PROTOACCOUNT* pa = ProtoGetAccount( pd->szName );
+				PROTOACCOUNT* pa = Proto_GetAccount( pd->szName );
 				if ( pa == NULL ) {
 					pa = (PROTOACCOUNT*)malloc( sizeof( PROTOACCOUNT ));
 					memset( pa, 0, sizeof( PROTOACCOUNT ));
@@ -207,15 +207,20 @@ static int Proto_ContactIsTyping(WPARAM wParam,LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 // 0.8.0+ - accounts
 
-static int Proto_GetAccount(WPARAM wParam, LPARAM lParam)
+PROTOACCOUNT* Proto_GetAccount( const char* accName )
 {
 	int idx;
 	PROTOACCOUNT temp;
-	temp.szModuleName = ( char* )lParam;
+	temp.szModuleName = ( char* )accName;
 	if ( List_GetIndex(( SortedList* )&accounts, &temp, &idx ) == 0 )
-		return ( int )NULL;
+		return NULL;
 
-	return ( int )accounts.items[idx];
+	return accounts.items[idx];
+}
+
+static int srvProto_GetAccount(WPARAM wParam, LPARAM lParam)
+{
+	return ( int )Proto_GetAccount(( char* )lParam );
 }
 
 static int Proto_EnumAccounts(WPARAM wParam, LPARAM lParam)
@@ -232,7 +237,7 @@ int CallProtoServiceInt( HANDLE hContact, const char *szModule, const char *szSe
 	int idx;
 	char svcName[ MAXMODULELABELLENGTH ];
 	PROTO_INTERFACE* ppi;
-	PROTOACCOUNT* pa = ( PROTOACCOUNT* )Proto_GetAccount( 0, ( LPARAM )szModule );
+	PROTOACCOUNT* pa = ( PROTOACCOUNT* )Proto_GetAccount( szModule );
 	if ( pa == NULL )
 		return CALLSERVICE_NOTFOUND;
 
@@ -316,7 +321,7 @@ int CallContactService( HANDLE hContact, const char *szProtoService, WPARAM wPar
 	if ( DBGetContactSettingString( hContact, "Protocol", "p", &dbv ))
 		return 1;
 
-	pa = ProtoGetAccount( dbv.pszVal );
+	pa = Proto_GetAccount( dbv.pszVal );
 	if ( pa == NULL || pa->ppro == NULL )
 		ret = 1;
 	else {
@@ -422,7 +427,7 @@ int LoadProtocolsModule(void)
 	CreateServiceFunction( MS_PROTO_RECVMSG,          Proto_RecvMessage      );
 
 	CreateServiceFunction( MS_PROTO_ENUMACCOUNTS,     Proto_EnumAccounts     );
-	CreateServiceFunction( MS_PROTO_GETACCOUNT,       Proto_GetAccount       );
+	CreateServiceFunction( MS_PROTO_GETACCOUNT,       srvProto_GetAccount    );
 
 	return LoadProtoOptions();
 }

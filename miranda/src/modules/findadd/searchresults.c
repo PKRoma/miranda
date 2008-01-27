@@ -237,23 +237,18 @@ static void BeginSearchFailed(void * arg)
 
 int BeginSearch(HWND hwndDlg,struct FindAddDlgData *dat,const char *szProto,const char *szSearchService,DWORD requiredCapability,void *pvSearchParams)
 {
-	int protoCount,i;
-	PROTOCOLDESCRIPTOR **protos;
-
-	if(szProto==NULL) {
-		int failures=0;
-		DWORD caps;
-
-		CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&protos);
-		dat->searchCount=0;
-		dat->search=(struct ProtoSearchInfo*)mir_calloc(sizeof(struct ProtoSearchInfo) * protoCount);
-		for(i=0;i<protoCount;i++) {
-			if(protos[i]->type!=PROTOTYPE_PROTOCOL) continue;
-			caps=(DWORD)CallProtoService(protos[i]->szName,PS_GETCAPS,PFLAGNUM_1,0);
+	int i;
+	if ( szProto == NULL ) {
+		int failures = 0;
+		dat->searchCount = 0;
+		dat->search = (struct ProtoSearchInfo*)mir_calloc(sizeof(struct ProtoSearchInfo) * accounts.count);
+		for( i=0; i < accounts.count;i++) {
+			PROTOACCOUNT* pa = accounts.items[i];
+			DWORD caps=(DWORD)CallProtoService(pa->szModuleName,PS_GETCAPS,PFLAGNUM_1,0);
 			if(!(caps&requiredCapability)) continue;
-			dat->search[dat->searchCount].hProcess=(HANDLE)CallProtoService(protos[i]->szName,szSearchService,0,(LPARAM)pvSearchParams);
-			dat->search[dat->searchCount].szProto=protos[i]->szName;
-			if(dat->search[dat->searchCount].hProcess==NULL) failures++;
+			dat->search[dat->searchCount].hProcess = (HANDLE)CallProtoService(pa->szModuleName,szSearchService,0,(LPARAM)pvSearchParams);
+			dat->search[dat->searchCount].szProto = pa->szModuleName;
+			if ( dat->search[dat->searchCount].hProcess == NULL ) failures++;
 			else dat->searchCount++;
 		}
 		if(failures) {

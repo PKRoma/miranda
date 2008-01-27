@@ -54,7 +54,7 @@ int Proto_CallContactService(WPARAM wParam,LPARAM lParam)
 	if ( DBGetContactSettingString( ccs->hContact, "Protocol", "p", &dbv ))
 		return 1;
 
-	pa = ProtoGetAccount( dbv.pszVal );
+	pa = Proto_GetAccount( dbv.pszVal );
 	if ( pa == NULL || pa->ppro == NULL )
 		ret = 1;
 	else {
@@ -106,7 +106,7 @@ static int CallRecvChain(WPARAM wParam,LPARAM lParam)
 	if ( DBGetContactSettingString( ccs->hContact, "Protocol", "p", &dbv ))
 		return 1;
 
-	pa = ProtoGetAccount( dbv.pszVal );
+	pa = Proto_GetAccount( dbv.pszVal );
 	if ( pa == NULL || pa->ppro == NULL )
 		ret = 1;
 	else {

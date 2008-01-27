@@ -204,8 +204,7 @@ static int GetContactIcon(WPARAM wParam, LPARAM lParam)
 
 static int ContactListModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
-	int i, protoCount, j, iImg;
-	PROTOCOLDESCRIPTOR **protoList;
+	int i, j, iImg;
 
 	if ( !ServiceExists( MS_DB_CONTACT_GETSETTING_STR )) {
 		MessageBox( NULL, TranslateT( "This plugin requires db3x plugin version 0.5.1.0 or later" ), _T("CList"), MB_OK );
@@ -215,16 +214,14 @@ static int ContactListModulesLoaded(WPARAM wParam, LPARAM lParam)
 	CheckProtocolOrder();
 	RebuildMenuOrder();
 
-	CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) & protoCount, (LPARAM) & protoList);
 	protoIconIndexCount = 0;
 	protoIconIndex = NULL;
-	for (i = 0; i < protoCount; i++) {
-		if (protoList[i]->type != PROTOTYPE_PROTOCOL)
-			continue;
+	for (i = 0; i < accounts.count; i++) {
+		PROTOACCOUNT* pa = accounts.items[i];
 		protoIconIndex = (struct ProtoIconIndex *) mir_realloc(protoIconIndex, sizeof(struct ProtoIconIndex) * (protoIconIndexCount + 1));
-		protoIconIndex[protoIconIndexCount].szProto = protoList[i]->szName;
+		protoIconIndex[protoIconIndexCount].szProto = pa->szModuleName;
 		for (j = 0; j < SIZEOF(statusModeList); j++) {
-			iImg = ImageList_AddIcon_ProtoIconLibLoaded(hCListImages, protoList[i]->szName, statusModeList[j] );
+			iImg = ImageList_AddIcon_ProtoIconLibLoaded(hCListImages, pa->szModuleName, statusModeList[j] );
 			if (j == 0)
 				protoIconIndex[protoIconIndexCount].iIconBase = iImg;
 		}

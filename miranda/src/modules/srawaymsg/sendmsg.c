@@ -140,19 +140,15 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd,UINT msg,WPARAM wParam
 
 void ChangeAllProtoMessages(char *szProto, int statusMode,char *msg)
 {
-	if (szProto) CallProtoService(szProto,PS_SETAWAYMSG,statusMode,(LPARAM)msg);
-	else {
-		int protoCount,i;
-		PROTOCOLDESCRIPTOR **proto;
-		CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&proto);
-		
-		for(i=0;i<protoCount;i++) {
-			if (proto[i]->type == PROTOTYPE_PROTOCOL) {
-				if (CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_1,0)&PF1_MODEMSGSEND)
-					CallProtoService(proto[i]->szName,PS_SETAWAYMSG,statusMode,(LPARAM)msg);
-			}
+	if ( szProto == NULL ) {
+		int i;
+		for( i=0; i < accounts.count; i++ ) {
+			PROTOACCOUNT* pa = accounts.items[i];
+			if ( CallProtoService( pa->szModuleName, PS_GETCAPS, PFLAGNUM_1, 0 ) & PF1_MODEMSGSEND )
+				CallProtoService( pa->szModuleName, PS_SETAWAYMSG, statusMode, ( LPARAM )msg );
 		}
 	}
+	else CallProtoService(szProto,PS_SETAWAYMSG,statusMode,(LPARAM)msg);
 }
 
 struct SetAwayMsgData {
@@ -397,20 +393,15 @@ static int AwayMsgOptInitialise(WPARAM wParam,LPARAM lParam)
 
 static int AwayMsgSendModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
-	int i,protoCount;
-	PROTOCOLDESCRIPTOR **proto;
+	int i;
 
-	protoModeMsgFlags=0;
-	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&proto);
-	for(i=0;i<protoCount;i++)
-	{
-		if (proto[i]->type == PROTOTYPE_PROTOCOL)
-			protoModeMsgFlags|=CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_3,0);
-	}
+	protoModeMsgFlags = 0;
+	for( i=0; i < accounts.count; i++ )
+		protoModeMsgFlags |= CallProtoService( accounts.items[i]->szModuleName, PS_GETCAPS, PFLAGNUM_3, 0 );
 
-	if(protoModeMsgFlags) {
-		HookEvent(ME_CLIST_STATUSMODECHANGE,StatusModeChange);
-		HookEvent(ME_OPT_INITIALISE,AwayMsgOptInitialise);
+	if ( protoModeMsgFlags ) {
+		HookEvent( ME_CLIST_STATUSMODECHANGE, StatusModeChange );
+		HookEvent( ME_OPT_INITIALISE, AwayMsgOptInitialise );
 	}
 	return 0;
 }

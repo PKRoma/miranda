@@ -68,8 +68,8 @@ char g_maxProto[100] = "";
 void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 {
 	int protoCount,i;
-	PROTOCOLDESCRIPTOR **proto;
-	PROTOCOLDESCRIPTOR *curprotocol;
+	PROTOACCOUNT **accs;
+	PROTOACCOUNT *curprotocol;
 	int *partWidths,partCount;
 	int borders[3];
 	int status;
@@ -90,7 +90,7 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 	if (pcli->hwndStatus == 0 || g_shutDown)
 		return;
 
-	CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM)&protoCount, (LPARAM)&proto);
+	ProtoEnumAccounts( &protoCount, &accs );
 	if (protoCount == 0)
 		return;
 
@@ -157,7 +157,7 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 			szStoredName=DBGetString(NULL,"Protocols",buf);
 			if (szStoredName==NULL)
 				continue;
-			curprotocol=(PROTOCOLDESCRIPTOR*)CallService(MS_PROTO_ISPROTOCOLLOADED,0,(LPARAM)szStoredName);
+			curprotocol = ProtoGetAccount( szStoredName );
 			if (curprotocol==0)
 				continue;
 			mir_free(szStoredName);
@@ -165,13 +165,13 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 			if (showOpts & 1)
 				x += 16;
 			if (showOpts & 2) {
-				CallProtoService(curprotocol->szName,PS_GETNAME,sizeof(szName),(LPARAM)szName);
+				CallProtoService(curprotocol->szModuleName,PS_GETNAME,sizeof(szName),(LPARAM)szName);
 				if (showOpts&4 && lstrlenA(szName)<sizeof(szName)-1) lstrcatA(szName," ");
 				GetTextExtentPoint32A(hdc,szName,lstrlenA(szName),&textSize);
 				x += textSize.cx + GetSystemMetrics(SM_CXBORDER) * 4; // The SB panel doesnt allocate enough room
 			}
 			if (showOpts & 4) {
-				TCHAR* modeDescr = pcli->pfnGetStatusModeDescription( CallProtoService(curprotocol->szName,PS_GETSTATUS,0,0 ), 0 );
+				TCHAR* modeDescr = pcli->pfnGetStatusModeDescription( CallProtoService(curprotocol->szModuleName,PS_GETSTATUS,0,0 ), 0 );
 				GetTextExtentPoint32(hdc, modeDescr, lstrlen(modeDescr), &textSize );
 				x += textSize.cx + GetSystemMetrics(SM_CXBORDER) * 4; // The SB panel doesnt allocate enough room
 			}
@@ -205,13 +205,13 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 		szStoredName=DBGetString(NULL,"Protocols",buf);
 		if (szStoredName==NULL)
 			continue;
-		curprotocol=(PROTOCOLDESCRIPTOR*)CallService(MS_PROTO_ISPROTOCOLLOADED,0,(LPARAM)szStoredName);
+		curprotocol = ProtoGetAccount( szStoredName );
 		mir_free(szStoredName);
 		if (curprotocol==0)
 			continue;
-		status=CallProtoService(curprotocol->szName,PS_GETSTATUS,0,0);
+		status=CallProtoService(curprotocol->szModuleName,PS_GETSTATUS,0,0);
 		PD=(ProtocolData*)mir_alloc(sizeof(ProtocolData));
-		PD->RealName=mir_strdup(curprotocol->szName);
+		PD->RealName=mir_strdup(curprotocol->szModuleName);
 		PD->statusbarpos = partCount;
 		_itoa(OFFSET_PROTOPOS+i,(char *)&buf,10);
 		PD->protopos=DBGetContactSettingDword(NULL,"Protocols",(char *)&buf,-1);
@@ -221,60 +221,16 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 			if ( DBGetContactSettingByte(NULL,"CLUI","SBarBevel", 1)==0 ) flags |= SBT_NOBORDERS;
 			SendMessageA(pcli->hwndStatus,SB_SETTEXTA,partCount|flags,(LPARAM)PD);
 		}
-		caps2 = CallProtoService(curprotocol->szName, PS_GETCAPS, PFLAGNUM_2, 0);
-		caps1 = CallProtoService(curprotocol->szName, PS_GETCAPS, PFLAGNUM_1, 0);
+		caps2 = CallProtoService(curprotocol->szModuleName, PS_GETCAPS, PFLAGNUM_2, 0);
+		caps1 = CallProtoService(curprotocol->szModuleName, PS_GETCAPS, PFLAGNUM_1, 0);
 		if((caps1 & PF1_IM) && (caps2 & (PF2_LONGAWAY | PF2_SHORTAWAY))) {
 			onlineness = GetStatusOnlineness(status);
 			if(onlineness > maxOnline) {
 				maxStatus = status;
 				maxOnline = onlineness;
-				szMaxProto = curprotocol->szName;
+				szMaxProto = curprotocol->szModuleName;
 			}
 		}
-/* // Joe @ Whale: The core handles this by itself now, do not mess with it // 0.7.0.8+
-    if(pcli->menuProtos != NULL) {
-			int i;
-
-			for(i = 0; i < pcli->menuProtoCount; i++) {
-				if(!strcmp(pcli->menuProtos[i].szProto, curprotocol->szName) && pcli->menuProtos[i].menuID != 0 && pcli->menuProtos[i].hasAdded !=0) {
-					CLISTMENUITEM mi = {0};
-					char szServiceName[128];
-					TCHAR xStatusName[128];
-					int xStatus = 0;
-					int xStatusCount;
-					ICQ_CUSTOM_STATUS cst = {0};
-					mi.cbSize = sizeof(mi);
-					mi.flags = CMIM_FLAGS | CMIM_NAME | CMIM_ICON | CMIF_TCHAR;
-
-					mir_snprintf(szServiceName, 128, "%s%s", curprotocol->szName, PS_ICQ_GETCUSTOMSTATUSEX);
-
-					cst.cbSize = sizeof(ICQ_CUSTOM_STATUS);
-					cst.flags = CSSF_MASK_STATUS | CSSF_STATUSES_COUNT;
-					cst.wParam = &xStatusCount;
-					cst.status = &xStatus;
-					if(ServiceExists(szServiceName) && !CallService(szServiceName, 0, (LPARAM)&cst)) {
-						if(xStatus > 0 && xStatus <= xStatusCount) {
-							mi.hIcon = (HICON)CallProtoService(curprotocol->szName, PS_ICQ_GETCUSTOMSTATUSICON, 0, LR_SHARED);	// get OWN xStatus icon (if set)
-
-							cst.flags = CSSF_MASK_NAME | CSSF_DEFAULT_NAME | CSSF_TCHAR;
-							cst.wParam = &xStatus;
-							cst.ptszName = xStatusName; 
-							if(!CallService(szServiceName, 0, (LPARAM)&cst))
-								mi.ptszName = xStatusName;
-							else
-								mi.ptszName = _T("Custom Status");
-						}	
-						else {
-							mi.ptszName = _T("None");
-							mi.flags |= CMIF_CHECKED;
-							mi.hIcon = 0;
-						}
-						CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)pcli->menuProtos[i].hasAdded, (LPARAM)&mi);
-					}
-					break;
-				}
-			}
-		}*/
 		partCount++;
 	}
 	// update the clui button

@@ -28,7 +28,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define DM_AVATARCHANGED (WM_USER + 12)
 #define DM_PROTOCOLCHANGED (WM_USER + 13)
 
-extern int g_protocount;
 extern int _DebugPopup(HANDLE hContact, const char *fmt, ...);
 extern int SetAvatar(WPARAM wParam, LPARAM lParam);
 extern struct protoPicCacheEntry *g_ProtoPictures;
@@ -55,73 +54,79 @@ extern BOOL ScreenToClient(HWND hWnd, LPRECT lpRect);
 static BOOL dialoginit = TRUE;
 
 struct WindowData {
-    HANDLE hContact;
-    HANDLE hHook;
+	HANDLE hContact;
+	HANDLE hHook;
 };
 
 static void RemoveProtoPic(const char *szProto)
 {
-    DBDeleteContactSetting(NULL, PPICT_MODULE, szProto);
-    
-    if(szProto) {
-        for(int i = 0; i < g_protocount; i++) {
-            if(g_ProtoPictures[i].szProtoname != NULL && !strcmp(g_ProtoPictures[i].szProtoname, szProto)) {
-                if(g_ProtoPictures[i].hbmPic != 0)
-                    DeleteObject(g_ProtoPictures[i].hbmPic);
-                ZeroMemory((void *)&g_ProtoPictures[i], sizeof(struct avatarCacheEntry));
-                NotifyEventHooks(hEventChanged, 0, (LPARAM)&g_ProtoPictures[i]);
-            }
-        }
-    }
+	DBDeleteContactSetting(NULL, PPICT_MODULE, szProto);
+
+	if ( szProto ) {
+		PROTOACCOUNT **accs;
+		int count;
+		ProtoEnumAccounts( &count, &accs );
+		for(int i = 0; i < count; i++) {
+			if(g_ProtoPictures[i].szProtoname != NULL && !strcmp(g_ProtoPictures[i].szProtoname, szProto)) {
+				if(g_ProtoPictures[i].hbmPic != 0)
+					DeleteObject(g_ProtoPictures[i].hbmPic);
+				ZeroMemory((void *)&g_ProtoPictures[i], sizeof(struct avatarCacheEntry));
+				NotifyEventHooks(hEventChanged, 0, (LPARAM)&g_ProtoPictures[i]);
+			}
+		}
+	}
 }
 
 static void SetProtoPic(char *szProto)
 {
-    char FileName[MAX_PATH];
-    OPENFILENAMEA ofn={0};
+	char FileName[MAX_PATH];
+	OPENFILENAMEA ofn={0};
 	char filter[256];
 
 	filter[0] = '\0';
 	CallService(MS_UTILS_GETBITMAPFILTERSTRINGS, sizeof(filter), (LPARAM) filter);
 
-    ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
-    ofn.lpstrFilter = filter;
-    ofn.hwndOwner=0;
-    ofn.lpstrFile = FileName;
-    ofn.nMaxFile = MAX_PATH;
-    ofn.nMaxFileTitle = MAX_PATH;
-    ofn.Flags=OFN_HIDEREADONLY;
-    ofn.lpstrInitialDir = ".";
-    *FileName = '\0';
-    ofn.lpstrDefExt="";
-    if (GetOpenFileNameA(&ofn)) {
-        HANDLE hFile;
-        
-        if((hFile = CreateFileA(FileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE)
-            return;
-        else {
-            char szNewPath[MAX_PATH];
-            int i;
-            
-            CloseHandle(hFile);
-            AVS_pathToRelative(FileName, szNewPath);
-            DBWriteContactSettingString(NULL, PPICT_MODULE, szProto, szNewPath);
-            for(i = 0; i < g_protocount; i++) {
-                if(lstrlenA(g_ProtoPictures[i].szProtoname) == 0)
-                    break;
-                if(!strcmp(g_ProtoPictures[i].szProtoname, szProto) && lstrlenA(g_ProtoPictures[i].szProtoname) == lstrlenA(szProto)) {
-                    if(g_ProtoPictures[i].hbmPic != 0) 
-                        DeleteObject(g_ProtoPictures[i].hbmPic);
-                    ZeroMemory((void *)&g_ProtoPictures[i], sizeof(struct protoPicCacheEntry));
-                    CreateAvatarInCache(0, (struct avatarCacheEntry *)&g_ProtoPictures[i], (char *)szProto);
-                    strncpy(g_ProtoPictures[i].szProtoname, szProto, 100);
-                    g_ProtoPictures[i].szProtoname[99] = 0;
-                    NotifyEventHooks(hEventChanged, 0, (LPARAM)&g_ProtoPictures[i]);
-                    break;
-                }
-            }
-        }
-    }
+	ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
+	ofn.lpstrFilter = filter;
+	ofn.hwndOwner=0;
+	ofn.lpstrFile = FileName;
+	ofn.nMaxFile = MAX_PATH;
+	ofn.nMaxFileTitle = MAX_PATH;
+	ofn.Flags=OFN_HIDEREADONLY;
+	ofn.lpstrInitialDir = ".";
+	*FileName = '\0';
+	ofn.lpstrDefExt="";
+	if (GetOpenFileNameA(&ofn)) {
+		HANDLE hFile;
+
+		if((hFile = CreateFileA(FileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE)
+			return;
+
+		char szNewPath[MAX_PATH];
+		int i;
+
+		CloseHandle(hFile);
+		AVS_pathToRelative(FileName, szNewPath);
+		DBWriteContactSettingString(NULL, PPICT_MODULE, szProto, szNewPath);
+
+		PROTOACCOUNT **accs;
+		int count;
+		ProtoEnumAccounts( &count, &accs );
+		for(i = 0; i < count; i++) {
+			if ( lstrlenA(g_ProtoPictures[i].szProtoname) == 0)
+				break;
+			if(!strcmp(g_ProtoPictures[i].szProtoname, szProto) && lstrlenA(g_ProtoPictures[i].szProtoname) == lstrlenA(szProto)) {
+				if(g_ProtoPictures[i].hbmPic != 0) 
+					DeleteObject(g_ProtoPictures[i].hbmPic);
+				ZeroMemory((void *)&g_ProtoPictures[i], sizeof(struct protoPicCacheEntry));
+				CreateAvatarInCache(0, (struct avatarCacheEntry *)&g_ProtoPictures[i], (char *)szProto);
+				strncpy(g_ProtoPictures[i].szProtoname, szProto, 100);
+				g_ProtoPictures[i].szProtoname[99] = 0;
+				NotifyEventHooks(hEventChanged, 0, (LPARAM)&g_ProtoPictures[i]);
+				break;
+			}
+		}
+	}
 }
 
 static char g_selectedProto[100];
@@ -963,114 +968,99 @@ static void EnableDisableProtocols(HWND hwndDlg, BOOL init)
 
 BOOL CALLBACK DlgProcAvatarProtoInfo(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    switch(msg) 
-	{
-        case WM_INITDIALOG:
-        {
-            TranslateDialogDefault(hwndDlg);
+	switch(msg) {
+	case WM_INITDIALOG:
+		{
+			TranslateDialogDefault(hwndDlg);
 
 			HWND protopic = GetDlgItem(hwndDlg, IDC_PROTOPIC);
 			SendMessage(protopic, AVATAR_SETAVATARBORDERCOLOR, 0, (LPARAM) GetSysColor(COLOR_BTNSHADOW));
 			SendMessage(protopic, AVATAR_SETNOAVATARTEXT, 0, (LPARAM) "No avatar");
 			SendMessage(protopic, AVATAR_SETRESIZEIFSMALLER, 0, (LPARAM) FALSE);
 
-		    HWND hwndList = GetDlgItem(hwndDlg, IDC_PROTOCOLS);
+			HWND hwndList = GetDlgItem(hwndDlg, IDC_PROTOCOLS);
 			ListView_SetExtendedListViewStyleEx(hwndList, 0, LVS_EX_SUBITEMIMAGES);
-            
+
 			HIMAGELIST hIml = ImageList_Create(16, 16, ILC_MASK | (IsWinVerXPPlus()? ILC_COLOR32 : ILC_COLOR16), 4, 0);
 			ListView_SetImageList(hwndList, hIml, LVSIL_SMALL);
 
-            LVCOLUMN lvc = {0};
-            lvc.mask = LVCF_FMT;
-            lvc.fmt = LVCFMT_IMAGE | LVCFMT_LEFT;
-            ListView_InsertColumn(hwndList, 0, &lvc);
+			LVCOLUMN lvc = {0};
+			lvc.mask = LVCF_FMT;
+			lvc.fmt = LVCFMT_IMAGE | LVCFMT_LEFT;
+			ListView_InsertColumn(hwndList, 0, &lvc);
 
-            LVITEMA item = {0};
-            item.mask = LVIF_TEXT | LVIF_PARAM | LVIF_IMAGE;
-            item.iItem = 1000;
+			LVITEMA item = {0};
+			item.mask = LVIF_TEXT | LVIF_PARAM | LVIF_IMAGE;
+			item.iItem = 1000;
 
 			// List protocols
-			PROTOCOLDESCRIPTOR **protos;
+			PROTOACCOUNT **accs;
 			int i, count, num = 0;
 			char description[256];
 
-			CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM)&count, (LPARAM)&protos);
+			ProtoEnumAccounts( &count, &accs );
 			for (i = 0; i < count; i++)
 			{
-				if (protos[i]->type != PROTOTYPE_PROTOCOL)
+				if ( !ProtoServiceExists( accs[i]->szModuleName, PS_GETMYAVATAR))
 					continue;
 
-				if (protos[i]->szName == NULL || protos[i]->szName[0] == '\0')
+				if ( !Proto_IsAvatarsEnabled( accs[i]->szModuleName ))
 					continue;
 
-				if (!ProtoServiceExists(protos[i]->szName, PS_GETMYAVATAR))
-					continue;
+				CallProtoService( accs[i]->szModuleName, PS_GETNAME, sizeof(description),(LPARAM) description);
 
-				if (!Proto_IsAvatarsEnabled(protos[i]->szName))
-					continue;
-				
-				CallProtoService(protos[i]->szName, PS_GETNAME, sizeof(description),(LPARAM) description);
-
-				ImageList_AddIcon(hIml, LoadSkinnedProtoIcon(protos[i]->szName, ID_STATUS_ONLINE));
+				ImageList_AddIcon(hIml, LoadSkinnedProtoIcon( accs[i]->szModuleName, ID_STATUS_ONLINE));
 				item.pszText = description;
 				item.iImage = num;
-				item.lParam = (LPARAM) protos[i]->szName;
+				item.lParam = (LPARAM)accs[i]->szModuleName;
 
 				SendMessageA(hwndList, LVM_INSERTITEMA, 0, (LPARAM)&item);
 				num++;
 			}
 
-            ListView_SetColumnWidth(hwndList, 0, LVSCW_AUTOSIZE);
-            ListView_Arrange(hwndList, LVA_ALIGNLEFT | LVA_ALIGNTOP);
+			ListView_SetColumnWidth(hwndList, 0, LVSCW_AUTOSIZE);
+			ListView_Arrange(hwndList, LVA_ALIGNLEFT | LVA_ALIGNTOP);
 
 			// Check if should show per protocol avatars
 			CheckDlgButton(hwndDlg, IDC_PER_PROTO, DBGetContactSettingByte(NULL, AVS_MODULE, "PerProtocolUserAvatars", 1));
 			EnableDisableProtocols(hwndDlg, TRUE);
+		}
+		return TRUE;
 
-            return TRUE;
-        }
-        case WM_NOTIFY:
+	case WM_NOTIFY:
 		{
 			LPNMHDR nm = (LPNMHDR) lParam;
-            switch(nm->idFrom)
-			{
-				case IDC_PROTOCOLS:
-				{
-					switch (nm->code) 
+			switch(nm->idFrom) {
+			case IDC_PROTOCOLS:
+				switch (nm->code) {
+				case LVN_ITEMCHANGED:
 					{
-						case LVN_ITEMCHANGED:
+						LPNMLISTVIEW li = (LPNMLISTVIEW) nm;
+						if (li->uNewState & LVIS_SELECTED)
 						{
-							LPNMLISTVIEW li = (LPNMLISTVIEW) nm;
-							if (li->uNewState & LVIS_SELECTED)
-							{
-								SendMessage(GetDlgItem(hwndDlg, IDC_PROTOPIC), AVATAR_SETPROTOCOL, 0, li->lParam);
-								EnableDisableControls(hwndDlg, (char *) li->lParam);
-							}
-							break;
+							SendMessage(GetDlgItem(hwndDlg, IDC_PROTOPIC), AVATAR_SETPROTOCOL, 0, li->lParam);
+							EnableDisableControls(hwndDlg, (char *) li->lParam);
 						}
 					}
 					break;
 				}
-				case IDC_PROTOPIC:
-				{
-					if (nm->code) 
-					{
-						case NM_AVATAR_CHANGED:
-						{
-							EnableDisableControls(hwndDlg, GetSelectedProtocol(hwndDlg));
-							break;
-						}
-					}
+				break;
+
+			case IDC_PROTOPIC:
+				switch (nm->code) {
+				case NM_AVATAR_CHANGED:
+					EnableDisableControls(hwndDlg, GetSelectedProtocol(hwndDlg));
 					break;
 				}
+				break;
 			}
 			break;
 		}
-        case WM_COMMAND:
+	case WM_COMMAND:
 		{
-            switch(LOWORD(wParam)) 
+			switch(LOWORD(wParam)) 
 			{
-                case IDC_CHANGE:
+			case IDC_CHANGE:
 				{
 					if (!IsDlgButtonChecked(hwndDlg, IDC_PER_PROTO))
 					{
@@ -1084,9 +1074,9 @@ BOOL CALLBACK DlgProcAvatarProtoInfo(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
 						CallService(MS_AV_SETMYAVATAR, (WPARAM) proto, 0);
 					}
-                    break;
+					break;
 				}
-                case IDC_DELETE:
+			case IDC_DELETE:
 				{
 					if (!IsDlgButtonChecked(hwndDlg, IDC_PER_PROTO))
 					{
@@ -1104,17 +1094,17 @@ BOOL CALLBACK DlgProcAvatarProtoInfo(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 						if (MessageBoxA(hwndDlg, Translate("Are you sure you want to remove your avatar?"), description, MB_YESNO) == IDYES)
 							CallService(MS_AV_SETMYAVATAR, (WPARAM) proto, (LPARAM) "");
 					}
-                    break;
+					break;
 				}
-				case IDC_PER_PROTO:
+			case IDC_PER_PROTO:
 				{
 					DBWriteContactSettingByte(NULL, AVS_MODULE, "PerProtocolUserAvatars", IsDlgButtonChecked(hwndDlg, IDC_PER_PROTO) ? 1 : 0);
 					EnableDisableProtocols(hwndDlg, FALSE);
 					break;
 				}
-            }
-            break;
+			}
+			break;
 		}
-    }
-    return FALSE;
+	}
+	return FALSE;
 }

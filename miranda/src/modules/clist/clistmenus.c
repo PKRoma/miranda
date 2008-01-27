@@ -151,49 +151,29 @@ void FreeMenuProtos( void )
 	}
 	cli.menuProtoCount = 0;
 }
-//////////////////////////////////////////////////////////////////////////
-// The function converts Human-readable name of protocol like 'Freenode (IRC)'
-// to unique name of protocol based on DLL name, like 'FREENODE'
-//
 
-char * GetUniqueProtoName(char * proto)
-{
-    int i, count;
-    PROTOCOLDESCRIPTOR **protos;
-    char name[64];
-    CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) & count, (LPARAM) & protos);
-    for (i=0; i<count; i++)
-    {
-		if (protos[i]->type == PROTOTYPE_PROTOCOL) {
-	        name[0] = '\0';
-	        CallProtoService(protos[i]->szName, PS_GETNAME, sizeof(name), (LPARAM) name);
-	        if (!_strcmpi(proto,name))
-	            return protos[i]->szName;
-		}
-    }
-    return NULL;
-}
+//////////////////////////////////////////////////////////////////////////
 
 int GetAverageMode()
 {
-	int count,netProtoCount,i;
+	int netProtoCount,i;
 	int averageMode=0;
 	int flags, flags2;
-	PROTOCOLDESCRIPTOR **protos;
-	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&count,(LPARAM)&protos);
-	for ( i=0,netProtoCount = 0; i < count; i++ ) {
-		if ( protos[i]->type != PROTOTYPE_PROTOCOL || cli.pfnGetProtocolVisibility( protos[i]->szName ) == 0 )
+
+	for ( i=0,netProtoCount = 0; i < accounts.count; i++ ) {
+		PROTOACCOUNT* pa = accounts.items[i];
+		if ( cli.pfnGetProtocolVisibility( pa->szModuleName ) == 0 )
 			continue;
 
 		netProtoCount++;
 
-		flags = CallProtoService(protos[i]->szName,PS_GETCAPS,PFLAGNUM_2,0);
-		flags2 = CallProtoService(protos[i]->szName,PS_GETCAPS,PFLAGNUM_5,0);
+		flags = CallProtoService( pa->szModuleName, PS_GETCAPS, PFLAGNUM_2, 0 );
+		flags2 = CallProtoService( pa->szModuleName, PS_GETCAPS, PFLAGNUM_5, 0 );
 		if ((flags & ~flags2) == 0) continue;
 
 		if ( averageMode == 0 )
-			averageMode = CallProtoService( protos[i]->szName, PS_GETSTATUS, 0, 0 );
-		else if ( averageMode != CallProtoService( protos[i]->szName, PS_GETSTATUS, 0, 0 )) {
+			averageMode = CallProtoService( pa->szModuleName, PS_GETSTATUS, 0, 0 );
+		else if ( averageMode != CallProtoService( pa->szModuleName, PS_GETSTATUS, 0, 0 )) {
 			averageMode = -1;
 			break;
 	}	}
@@ -608,15 +588,15 @@ int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
 				BOOL IconNeedDestroy=FALSE;
 				char* prot;
 				if (smep)
-					prot = smep->proto;   // prot = GetUniqueProtoName( smep->proto );
+					prot = smep->proto;
 				else
 				{
 					#ifdef UNICODE
 						char *prn=u2a(timi->mi.ptszName);
-						prot = GetUniqueProtoName(prn);
+						prot = NEWSTR_ALLOCA( prn );  // !!!!!!!!!!!!!!!!!!!!
 						if (prn) mir_free(prn);
 					#else
-						prot=GetUniqueProtoName(timi->mi.ptszName);
+						prot = mi.ptszName;
 					#endif
 				}
 				if (!prot) return TRUE;
@@ -654,7 +634,6 @@ int StatusMenuExecService(WPARAM wParam,LPARAM lParam)
 
 			if ( smep->status == 0 && smep->protoindex !=0 && smep->proto != NULL ) {
 				PMO_IntMenuItem pimi;
-				//char *prot = GetUniqueProtoName(smep->proto);
 				char *prot = smep->proto;
 				char szHumanName[64]={0};
 				int i=(DBGetContactSettingByte(NULL,prot,"LockMainStatus",0)?0:1);
@@ -688,23 +667,19 @@ int StatusMenuExecService(WPARAM wParam,LPARAM lParam)
 			else {
 				int MenusProtoCount = 0;
 
-				PROTOCOLDESCRIPTOR **proto;
-				int protoCount;
-				CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&proto);
+				for( i=0; i < accounts.count; i++ )
+					MenusProtoCount += ( cli.pfnGetProtocolVisibility( accounts.items[i]->szModuleName )) ? 1 : 0;
 
-				for( i=0; i < protoCount; i++ )
-					MenusProtoCount += ( proto[i]->type == PROTOTYPE_PROTOCOL && cli.pfnGetProtocolVisibility( proto[i]->szName )) ? 1 : 0;
+				cli.currentDesiredStatusMode = smep->status;
 
-				cli.currentDesiredStatusMode=smep->status;
-				//	NotifyEventHooks(hStatusModeChangeEvent,currentDesiredStatusMode,0);
-				for(i=0;i<protoCount;i++) {
-					if (proto[i]->type != PROTOTYPE_PROTOCOL) continue;
-					if (!(MenusProtoCount>1 && DBGetContactSettingByte(NULL,proto[i]->szName,"LockMainStatus",0)))
-						CallProtoService(proto[i]->szName,PS_SETSTATUS,cli.currentDesiredStatusMode,0);
+				for ( i=0; i < accounts.count; i++ ) {
+					PROTOACCOUNT* pa = accounts.items[i];
+					if ( !( MenusProtoCount > 1 && DBGetContactSettingByte( NULL, pa->szModuleName, "LockMainStatus", 0 )))
+						CallProtoService( pa->szModuleName, PS_SETSTATUS, cli.currentDesiredStatusMode, 0 );
 				}
-				NotifyEventHooks(hStatusModeChangeEvent,cli.currentDesiredStatusMode,0);
+				NotifyEventHooks( hStatusModeChangeEvent, cli.currentDesiredStatusMode, 0 );
 
-				DBWriteContactSettingWord(NULL,"CList","Status",(WORD)cli.currentDesiredStatusMode);
+				DBWriteContactSettingWord( NULL, "CList", "Status", ( WORD )cli.currentDesiredStatusMode );
 				return 1;
 	}	}	}
 
@@ -882,56 +857,64 @@ static int MenuGetStatus(WPARAM wParam,LPARAM lParam)
 	return BuildStatusMenu(0,0);
 }
 
-int fnGetProtocolVisibility(const char *ProtoName)
+int fnGetProtocolVisibility(const char* accName)
 {
-	int i;
-
-	if ( ProtoName == NULL )
-		return FALSE;
-
-	for (i = 0; i < accounts.count; i++) {
-		PROTOACCOUNT* pa = accounts.items[i];
-		if ( strcmp( pa->szModuleName, ProtoName ) == 0 )
-			return pa->bIsVisible;
+	if ( accName ) {
+		PROTOACCOUNT* pa = Proto_GetAccount( accName );
+		if ( pa )
+			return ( pa->bIsVisible && pa->bIsEnabled ) ? TRUE : FALSE;
 	}
 
 	return FALSE;
 }
 
-int GetProtoIndexByPos(PROTOCOLDESCRIPTOR ** proto, int protoCnt, int Pos)
+int fnGetProtoIndexByPos(PROTOCOLDESCRIPTOR ** proto, int protoCnt, int Pos)
 {
 	int p;
+	char buf[10];
+	DBVARIANT dbv;
 
-	if ( Pos < 0 || Pos >= accounts.count )
-		return -1;
-	
-	for ( p=0; p < protoCnt; p++ )
-		if ( lstrcmpA( proto[p]->szName, accounts.items[Pos]->szModuleName ) == 0 )
-			return p;
+	_itoa( Pos, buf, 10 );
+	if ( !DBGetContactSetting( NULL, "Protocols", buf, &dbv )) {
+		for ( p=0; p < protoCnt; p++ ) {
+			if ( lstrcmpA( proto[p]->szName, dbv.pszVal ) == 0 ) {
+				DBFreeVariant( &dbv );
+				return p;
+		}	}
+
+		DBFreeVariant( &dbv );
+	}
+
+	return -1;
+}
+
+int fnGetAccountIndexByPos(int Pos)
+{
+	int i;
+	for ( i=0; i < accounts.count; i++ )
+		if ( accounts.items[i]->iOrder == Pos )
+			return i;
 
 	return -1;
 }
 
 void RebuildMenuOrder( void )
 {
-	int i,j,protoCount=0,networkProtoCount,s;
-	int storedProtoCount;
+	int i,j,s,networkProtoCount=0;
 	int visnetworkProtoCount=0;
-	PROTOCOLDESCRIPTOR **proto;
 	DWORD flags,flags2;
 	TMO_MenuItem tmi;
 	TMenuParam tmp;
 	int pos=0;
-
-	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&proto);
-	networkProtoCount=0;
+	PROTOACCOUNT* pa;
+	BYTE bHideStatusMenu = DBGetContactSettingByte( NULL, "CLUI", "DontHideStatusMenu", 0 ); // cool perversion, though
 
 	//clear statusmenu
 	while ( GetMenuItemCount(hStatusMenu) > 0 )
 		DeleteMenu(hStatusMenu,0,MF_BYPOSITION);
 
 	//status menu
-	if (hStatusMenuObject!=0) {
+	if ( hStatusMenuObject != 0 ) {
 		CallService(MO_REMOVEMENUOBJECT,hStatusMenuObject,0);
 		if ( hStatusMainMenuHandles != NULL)
 			mir_free( hStatusMainMenuHandles );
@@ -940,71 +923,65 @@ void RebuildMenuOrder( void )
 			mir_free( hStatusMenuHandles );
 	}
 	memset(&tmp,0,sizeof(tmp));
-	tmp.cbSize=sizeof(tmp);
-	tmp.ExecService="StatusMenuExecService";
-	tmp.CheckService="StatusMenuCheckService";
-	tmp.name="StatusMenu";
+	tmp.cbSize = sizeof(tmp);
+	tmp.ExecService = "StatusMenuExecService";
+	tmp.CheckService = "StatusMenuCheckService";
+	tmp.name = "StatusMenu";
 
 	hStatusMenuObject=(int)CallService(MO_CREATENEWMENUOBJECT,(WPARAM)0,(LPARAM)&tmp);
 	MO_SetOptionsMenuObject( hStatusMenuObject, OPT_MENUOBJECT_SET_FREE_SERVICE, (int)"CLISTMENUS/FreeOwnerDataStatusMenu" );
 
 	hStatusMainMenuHandles = ( int* )mir_alloc( SIZEOF(statusModeList) * sizeof( int ));
 	hStatusMainMenuHandlesCnt = SIZEOF(statusModeList);
-	for (i=0;i<protoCount;i++)
-		if (proto[i]->type==PROTOTYPE_PROTOCOL)
-			networkProtoCount++;
-
 	memset( hStatusMainMenuHandles, 0, SIZEOF(statusModeList) * sizeof( int ));
-	hStatusMenuHandles = ( tStatusMenuHandles* )mir_alloc(sizeof(tStatusMenuHandles)*protoCount);
-	hStatusMenuHandlesCnt = protoCount;
 
-	memset(hStatusMenuHandles,0,sizeof(tStatusMenuHandles)*protoCount);
-	if (( storedProtoCount = DBGetContactSettingDword(0,"Protocols","ProtoCount",-1)) == -1 ) {
-		storedProtoCount = 0;
-		for ( i=0; i < protoCount; i++ ) {
-			if ( proto[i]->type != PROTOTYPE_PROTOCOL || CallProtoService( proto[i]->szName, PS_GETCAPS, PFLAGNUM_2, 0 ) == 0 )
-				continue;
-			storedProtoCount++;
-	}	}
+	hStatusMenuHandles = ( tStatusMenuHandles* )mir_alloc(sizeof(tStatusMenuHandles)*accounts.count);
+	hStatusMenuHandlesCnt = accounts.count;
+	memset( hStatusMenuHandles, 0, sizeof(tStatusMenuHandles)*accounts.count );
 
-	FreeMenuProtos();
-
-	for ( s = 0; s < storedProtoCount; s++ ) {
-		i = GetProtoIndexByPos(proto,protoCount,s);
-		if ( i == -1 )
+	for ( i=0; i < accounts.count; i++ ) {
+		pa = accounts.items[i];
+		if ( CallProtoService( pa->szModuleName, PS_GETCAPS, PFLAGNUM_2, 0 ) == 0 )
 			continue;
-		if (!((proto[i]->type!=PROTOTYPE_PROTOCOL) || (DBGetContactSettingByte(NULL,"CLUI","DontHideStatusMenu",0)==0 && cli.pfnGetProtocolVisibility(proto[i]->szName)==0)))
+
+		if ( !bHideStatusMenu && cli.pfnGetProtocolVisibility( pa->szModuleName ))
 			visnetworkProtoCount++;
 	}
 
-	for ( s=0; s < storedProtoCount; s++ ) {
-		pos = 0;
-		i = GetProtoIndexByPos(proto,protoCount,s);
+	FreeMenuProtos();
+
+	for ( s=0; s < accounts.count; s++ ) {
+		i = cli.pfnGetAccountIndexByPos( s );
 		if ( i == -1 )
 			continue;
-		if (( proto[i]->type != PROTOTYPE_PROTOCOL) || (DBGetContactSettingByte(NULL,"CLUI","DontHideStatusMenu",0)==0 && cli.pfnGetProtocolVisibility(proto[i]->szName)==0))
+	
+		pa = accounts.items[i];
+		pos = 0;
+		if ( !pa->bIsEnabled || (!bHideStatusMenu && !cli.pfnGetProtocolVisibility( pa->szModuleName )))
 			continue;
 
-		flags = CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_2,0);
-		flags2 = CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_5,0);
+		flags = CallProtoService( pa->szModuleName, PS_GETCAPS,PFLAGNUM_2, 0 );
+		flags2 = CallProtoService( pa->szModuleName, PS_GETCAPS,PFLAGNUM_5, 0 );
 		flags &= ~flags2;
-		if (flags == 0) continue;
+		if (flags == 0)
+			continue;
 
 		if ( visnetworkProtoCount > 1 ) {
 			char protoName[128];
 			int j;
 			int rootmenu, menuHandle;
 			HICON ic;
+			
 			//adding root
 			memset( &tmi, 0, sizeof( tmi ));
 			memset( protoName, 0, 128 );
 			tmi.cbSize = sizeof(tmi);
 			tmi.flags = CMIF_CHILDPOPUP | CMIF_ROOTPOPUP;
-			tmi.position=pos++;
-			tmi.hIcon=(HICON)CallProtoService(proto[i]->szName,PS_LOADICON,PLI_PROTOCOL|PLIF_SMALL,0);
+			tmi.position = pos++;
+			tmi.hIcon=(HICON)CallProtoService( pa->szModuleName, PS_LOADICON, PLI_PROTOCOL | PLIF_SMALL, 0 );
 			ic = tmi.hIcon;
 			tmi.root = -1;
-			CallProtoService(proto[i]->szName,PS_GETNAME,sizeof(protoName),(LPARAM)protoName);
+			CallProtoService( pa->szModuleName, PS_GETNAME, sizeof(protoName), (LPARAM)protoName );
 			tmi.pszName = protoName;
 			rootmenu = MO_AddNewMenuItem( hStatusMenuObject, &tmi );
 
@@ -1019,11 +996,11 @@ void RebuildMenuOrder( void )
 				//owner data
 				lpStatusMenuExecParam smep = ( lpStatusMenuExecParam )mir_alloc( sizeof( StatusMenuExecParam ));
 				memset( smep, 0, sizeof( *smep ));
-				smep->proto = mir_strdup(proto[i]->szName);
+				smep->proto = mir_strdup(pa->szModuleName);
 				tmi.ownerdata = smep;
 			}
 
-			if ( DBGetContactSettingByte( NULL, proto[i]->szName, "LockMainStatus", 0 ))
+			if ( DBGetContactSettingByte( NULL, pa->szModuleName, "LockMainStatus", 0 ))
 				tmi.flags |= CMIF_CHECKED;
 
 			if (( tmi.flags & CMIF_CHECKED ) && cli.bDisplayLocked ) {
@@ -1040,13 +1017,13 @@ void RebuildMenuOrder( void )
 			else
 				cli.menuProtos=(MenuProto*)mir_alloc(sizeof(MenuProto));
 			memset(&(cli.menuProtos[cli.menuProtoCount]),0,sizeof(MenuProto));
-			cli.menuProtos[cli.menuProtoCount].menuID=(HANDLE)rootmenu;
-			cli.menuProtos[cli.menuProtoCount].szProto=mir_strdup(proto[i]->szName);
+			cli.menuProtos[cli.menuProtoCount].menuID = (HANDLE)rootmenu;
+			cli.menuProtos[cli.menuProtoCount].szProto = mir_strdup(pa->szModuleName);
 
 			cli.menuProtoCount++;
 			{
 				char buf[256];
-				sprintf( buf, "RootProtocolIcon_%s", proto[i]->szName );
+				sprintf( buf, "RootProtocolIcon_%s", pa->szModuleName );
 				MO_SetOptionsMenuItem( menuHandle, OPT_MENUITEMSETUNIQNAME, ( int )buf );
 			}
 			DestroyIcon(tmi.hIcon);
@@ -1065,14 +1042,14 @@ void RebuildMenuOrder( void )
 				tmi.root = rootmenu;
 				tmi.position = pos++;
 				tmi.ptszName = cli.pfnGetStatusModeDescription( statusModeList[j], GCMDF_TCHAR | GSMDF_UNTRANSLATED );
-				tmi.hIcon = LoadSkinProtoIcon( proto[i]->szName, statusModeList[j] );
+				tmi.hIcon = LoadSkinProtoIcon( pa->szModuleName, statusModeList[j] );
 				{
 					//owner data
 					lpStatusMenuExecParam smep = ( lpStatusMenuExecParam )mir_alloc( sizeof( StatusMenuExecParam ));
 					smep->custom = FALSE;
 					smep->status = statusModeList[j];
-					smep->protoindex = s;
-					smep->proto = mir_strdup(proto[i]->szName);
+					smep->protoindex = i;
+					smep->proto = mir_strdup(pa->szModuleName);
 					smep->svc = NULL;
 					tmi.ownerdata = smep;
 				}
@@ -1082,7 +1059,7 @@ void RebuildMenuOrder( void )
 				hStatusMenuHandles[i].menuhandle[j] = MO_AddNewMenuItem( hStatusMenuObject, &tmi );
 				{
 					char buf[ 256 ];
-					sprintf(buf,"ProtocolIcon_%s_%s",proto[i]->szName,tmi.pszName);
+					sprintf(buf,"ProtocolIcon_%s_%s",pa->szModuleName,tmi.pszName);
 					MO_SetOptionsMenuItem( hStatusMenuHandles[i].menuhandle[j], OPT_MENUITEMSETUNIQNAME, ( int )buf );
 				}
 				IconLib_ReleaseIcon(tmi.hIcon,0);
@@ -1094,7 +1071,7 @@ void RebuildMenuOrder( void )
 				cli.menuProtos=(MenuProto*)mir_alloc(sizeof(MenuProto));
 			memset(&(cli.menuProtos[cli.menuProtoCount]),0,sizeof(MenuProto));
 			cli.menuProtos[cli.menuProtoCount].menuID=(HANDLE)-1;
-			cli.menuProtos[cli.menuProtoCount].szProto=mir_strdup(proto[i]->szName);
+			cli.menuProtos[cli.menuProtoCount].szProto=mir_strdup(pa->szModuleName);
 			cli.menuProtoCount++;
 	}	}
 
@@ -1103,12 +1080,11 @@ void RebuildMenuOrder( void )
 
 	//add to root menu
 	for ( j=0; j < SIZEOF(statusModeList); j++ ) {
-		for ( i=0; i < protoCount; i++ ) {
-			if ( proto[i]->type != PROTOTYPE_PROTOCOL )
-				continue;
+		for ( i=0; i < accounts.count; i++ ) {
+			pa = accounts.items[i];
 
-			flags = CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_2,0);
-			flags2 = CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_5,0);
+			flags = CallProtoService(pa->szModuleName,PS_GETCAPS,PFLAGNUM_2,0);
+			flags2 = CallProtoService(pa->szModuleName,PS_GETCAPS,PFLAGNUM_5,0);
 			flags &= ~flags2;
 
 			if ( flags & statusModePf2List[j] ) {
@@ -1140,7 +1116,7 @@ void RebuildMenuOrder( void )
 				}
 				{
 					char buf[ 256 ];
-					mir_snprintf( buf, sizeof( buf ), "Root2ProtocolIcon_%s_%s", proto[i]->szName, tmi.pszName );
+					mir_snprintf( buf, sizeof( buf ), "Root2ProtocolIcon_%s_%s", pa->szModuleName, tmi.pszName );
 					MO_SetOptionsMenuItem( hStatusMainMenuHandles[j], OPT_MENUITEMSETUNIQNAME, ( int )buf );
 				}
 				IconLib_ReleaseIcon( tmi.hIcon, 0 );
@@ -1162,8 +1138,7 @@ int statustopos(int status)
 
 static int MenuProtoAck(WPARAM wParam,LPARAM lParam)
 {
-	int protoCount,i,networkProtoCount;
-	PROTOCOLDESCRIPTOR **proto;
+	int i,networkProtoCount;
 	ACKDATA* ack=(ACKDATA*)lParam;
 	int overallStatus = 0,thisStatus;
 	TMO_MenuItem tmi;
@@ -1171,21 +1146,22 @@ static int MenuProtoAck(WPARAM wParam,LPARAM lParam)
 	if ( ack->type != ACKTYPE_STATUS ) return 0;
 	if ( ack->result != ACKRESULT_SUCCESS ) return 0;
 	if ( hStatusMainMenuHandles == NULL ) return 0;
-	CallService( MS_PROTO_ENUMPROTOCOLS, ( WPARAM )&protoCount, ( LPARAM )&proto );
-	networkProtoCount = 0;
-	for ( i=0; i < protoCount; i++ ) {
-		if ( proto[i]->type == PROTOTYPE_PROTOCOL ) {
-			int flags = CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_2,0);
-			int flags2 = CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_5,0);
-			if ((flags & ~flags2) == 0) continue;
 
-			thisStatus = CallProtoService(proto[i]->szName,PS_GETSTATUS,0,0);
-			if ( overallStatus == 0 )
-				overallStatus = thisStatus;
-			else if ( overallStatus != thisStatus )
-				overallStatus = -1;
-			networkProtoCount++;
-	}	}
+	networkProtoCount = 0;
+	for ( i=0; i < accounts.count; i++ ) {
+		PROTOACCOUNT* pa = accounts.items[i];
+		int flags = CallProtoService( pa->szModuleName, PS_GETCAPS,PFLAGNUM_2, 0 );
+		int flags2 = CallProtoService( pa->szModuleName, PS_GETCAPS,PFLAGNUM_5, 0 );
+		if ((flags & ~flags2) == 0)
+			continue;
+
+		thisStatus = CallProtoService( pa->szModuleName, PS_GETSTATUS, 0, 0 );
+		if ( overallStatus == 0 )
+			overallStatus = thisStatus;
+		else if ( overallStatus != thisStatus )
+			overallStatus = -1;
+		networkProtoCount++;
+	}
 
 	memset(&tmi,0,sizeof(tmi));
 	tmi.cbSize=sizeof(tmi);
@@ -1223,8 +1199,8 @@ static int MenuProtoAck(WPARAM wParam,LPARAM lParam)
 	if ( networkProtoCount <= 1 )
 		return 0;
 
-	for ( i=0; i < protoCount; i++ )
-		if ( !lstrcmpA( proto[i]->szName, ack->szModule ))
+	for ( i=0; i < accounts.count; i++ )
+		if ( !lstrcmpA( accounts.items[i]->szModuleName, ack->szModule ))
 			break;
 
 	//hProcess is previous mode, lParam is new mode
