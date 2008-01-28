@@ -69,13 +69,9 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 {
 	int protoCount,i;
 	PROTOACCOUNT **accs;
-	PROTOACCOUNT *curprotocol;
 	int *partWidths,partCount;
 	int borders[3];
 	int status;
-	int storedcount;
-	char *szStoredName;
-	char buf[10];
 	int toshow;
 	TCHAR *szStatus = NULL;
 	char *szMaxProto = NULL;
@@ -94,17 +90,13 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 	if (protoCount == 0)
 		return;
 
-	storedcount=DBGetContactSettingDword(0,"Protocols","ProtoCount",-1);
-	if (storedcount==-1)
-		return;
-
 	FreeProtocolData();
 	g_maxStatus = ID_STATUS_OFFLINE;
 	g_maxProto[0] = 0;
 
 	SendMessage(pcli->hwndStatus,SB_GETBORDERS,0,(LPARAM)&borders);
 
-	partWidths=(int*)_alloca((storedcount+1)*sizeof(int));
+	partWidths=(int*)_alloca(( protoCount+1)*sizeof(int));
 
 	if (g_CluiData.bEqualSections) {
 		RECT rc;
@@ -113,26 +105,21 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 		GetClientRect(pcli->hwndStatus,&rc);
 		rc.right-=borders[0]*2;
 		toshow=0;
-		for (i=0;i<storedcount;i++) {
-			_itoa(OFFSET_VISIBLE+i,(char *)&buf,10);
-			if (DBGetContactSettingDword(0,"Protocols",(char *)&buf,1)==0)
-				continue;
-			toshow++;
-		};
-
-		if (toshow>0) {
-			for (part=0,i=0;i<storedcount;i++) {
-
-				_itoa(OFFSET_VISIBLE+i,(char *)&buf,10);
-				if (DBGetContactSettingDword(0,"Protocols",(char *)&buf,1)==0)
+		for ( i=0; i < protoCount; i++ )
+			if ( pcli->pfnGetProtocolVisibility( accs[i]->szModuleName ))
+				toshow++;
+	
+		if ( toshow > 0 ) {
+			for ( part=0, i=0; i < protoCount; i++ ) {
+				if ( !pcli->pfnGetProtocolVisibility( accs[i]->szModuleName ))
 					continue;
 
-				partWidths[part]=((rc.right-rc.left-rdelta)/toshow)*(part+1) + g_CluiData.bCLeft;
-				if(part == storedcount - 1)
-					partWidths[part] += g_CluiData.bCRight;
+				partWidths[ part ] = ((rc.right-rc.left-rdelta)/toshow)*(part+1) + g_CluiData.bCLeft;
+				if ( part == toshow-1 )
+					partWidths[ part ] += g_CluiData.bCRight;
 				part++;
-			}
-		}
+		}	}
+
 		partCount=toshow;
 	}
 	else {
@@ -146,32 +133,22 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 		hdc=GetDC(NULL);
 		hofont=SelectObject(hdc,(HFONT)SendMessage(pcli->hwndStatus,WM_GETFONT,0,0));
 
-		for (partCount=0,i=0;i<storedcount;i++) {      //count down since built in ones tend to go at the end
-
-			_itoa(OFFSET_VISIBLE+i,(char *)&buf,10);
-			//show this protocol ?
-			if (DBGetContactSettingDword(0,"Protocols",(char *)&buf,1)==0)
+		for ( partCount=0,i=0; i < protoCount; i++ ) {      //count down since built in ones tend to go at the end
+			if ( !pcli->pfnGetProtocolVisibility( accs[i]->szModuleName ))
 				continue;
 
-			_itoa(i,buf,10);
-			szStoredName=DBGetString(NULL,"Protocols",buf);
-			if (szStoredName==NULL)
-				continue;
-			curprotocol = ProtoGetAccount( szStoredName );
-			if (curprotocol==0)
-				continue;
-			mir_free(szStoredName);
 			x=2;
 			if (showOpts & 1)
 				x += 16;
 			if (showOpts & 2) {
-				CallProtoService(curprotocol->szModuleName,PS_GETNAME,sizeof(szName),(LPARAM)szName);
-				if (showOpts&4 && lstrlenA(szName)<sizeof(szName)-1) lstrcatA(szName," ");
+				CallProtoService( accs[i]->szModuleName,PS_GETNAME,sizeof(szName),(LPARAM)szName);
+				if (showOpts&4 && lstrlenA(szName)<sizeof(szName)-1)
+					lstrcatA(szName," ");
 				GetTextExtentPoint32A(hdc,szName,lstrlenA(szName),&textSize);
 				x += textSize.cx + GetSystemMetrics(SM_CXBORDER) * 4; // The SB panel doesnt allocate enough room
 			}
 			if (showOpts & 4) {
-				TCHAR* modeDescr = pcli->pfnGetStatusModeDescription( CallProtoService(curprotocol->szModuleName,PS_GETSTATUS,0,0 ), 0 );
+				TCHAR* modeDescr = pcli->pfnGetStatusModeDescription( CallProtoService(accs[i]->szModuleName,PS_GETSTATUS,0,0 ), 0 );
 				GetTextExtentPoint32(hdc, modeDescr, lstrlen(modeDescr), &textSize );
 				x += textSize.cx + GetSystemMetrics(SM_CXBORDER) * 4; // The SB panel doesnt allocate enough room
 			}
@@ -192,43 +169,33 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 	SendMessage(pcli->hwndStatus,SB_SETMINHEIGHT, 18 + g_CluiData.bClipBorder + ((windowStyle == SETTING_WINDOWSTYLE_THINBORDER || windowStyle == SETTING_WINDOWSTYLE_NOBORDER) ? 3 : 0), 0);
 	SendMessage(pcli->hwndStatus, SB_SETPARTS, partCount, (LPARAM)partWidths);
 
-	for (partCount=0,i=0;i<storedcount;i++) {      //count down since built in ones tend to go at the end
+	for ( partCount=0, i=0; i < protoCount; i++ ) {      //count down since built in ones tend to go at the end
 		ProtocolData    *PD;
 		int caps1, caps2;
 
-		_itoa(OFFSET_VISIBLE+i,(char *)&buf,10);
-		//show this protocol ?
-		if (DBGetContactSettingDword(0,"Protocols",(char *)&buf,1)==0)
+		if ( !pcli->pfnGetProtocolVisibility( accs[i]->szModuleName ))
 			continue;
 
-		_itoa(i,(char *)&buf,10);
-		szStoredName=DBGetString(NULL,"Protocols",buf);
-		if (szStoredName==NULL)
-			continue;
-		curprotocol = ProtoGetAccount( szStoredName );
-		mir_free(szStoredName);
-		if (curprotocol==0)
-			continue;
-		status=CallProtoService(curprotocol->szModuleName,PS_GETSTATUS,0,0);
-		PD=(ProtocolData*)mir_alloc(sizeof(ProtocolData));
-		PD->RealName=mir_strdup(curprotocol->szModuleName);
+		status = CallProtoService( accs[i]->szModuleName,PS_GETSTATUS,0,0);
+		PD = ( ProtocolData* )mir_alloc(sizeof(ProtocolData));
+		PD->RealName = mir_strdup( accs[i]->szModuleName );
 		PD->statusbarpos = partCount;
-		_itoa(OFFSET_PROTOPOS+i,(char *)&buf,10);
-		PD->protopos=DBGetContactSettingDword(NULL,"Protocols",(char *)&buf,-1);
+		PD->protopos = accs[i]->iOrder;
 		{
 			int flags;
 			flags = SBT_OWNERDRAW;
-			if ( DBGetContactSettingByte(NULL,"CLUI","SBarBevel", 1)==0 ) flags |= SBT_NOBORDERS;
-			SendMessageA(pcli->hwndStatus,SB_SETTEXTA,partCount|flags,(LPARAM)PD);
+			if ( DBGetContactSettingByte(NULL,"CLUI","SBarBevel", 1)==0 )
+				flags |= SBT_NOBORDERS;
+			SendMessageA( pcli->hwndStatus, SB_SETTEXTA, partCount|flags,(LPARAM)PD );
 		}
-		caps2 = CallProtoService(curprotocol->szModuleName, PS_GETCAPS, PFLAGNUM_2, 0);
-		caps1 = CallProtoService(curprotocol->szModuleName, PS_GETCAPS, PFLAGNUM_1, 0);
+		caps2 = CallProtoService(accs[i]->szModuleName, PS_GETCAPS, PFLAGNUM_2, 0);
+		caps1 = CallProtoService(accs[i]->szModuleName, PS_GETCAPS, PFLAGNUM_1, 0);
 		if((caps1 & PF1_IM) && (caps2 & (PF2_LONGAWAY | PF2_SHORTAWAY))) {
 			onlineness = GetStatusOnlineness(status);
 			if(onlineness > maxOnline) {
 				maxStatus = status;
 				maxOnline = onlineness;
-				szMaxProto = curprotocol->szModuleName;
+				szMaxProto = accs[i]->szModuleName;
 			}
 		}
 		partCount++;
