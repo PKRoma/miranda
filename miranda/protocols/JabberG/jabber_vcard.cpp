@@ -69,6 +69,7 @@ struct VcardPage
 	HWND hwnd;
 	int dlgId;
 	DLGPROC dlgProc;
+	LPARAM lParam;
 };
 
 struct VcardTab
@@ -102,8 +103,8 @@ static BOOL CALLBACK PersonalDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		TranslateDialogDefault( hwndDlg );
 		SendMessage( GetDlgItem( hwndDlg, IDC_GENDER ), CB_ADDSTRING, 0, ( LPARAM )TranslateT( "Male" ));
 		SendMessage( GetDlgItem( hwndDlg, IDC_GENDER ), CB_ADDSTRING, 0, ( LPARAM )TranslateT( "Female" ));
-		SendMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0 );
 		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
+		SendMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0 );
 		return TRUE;
 	case WM_JABBER_REFRESH:
 	{
@@ -133,8 +134,8 @@ static BOOL CALLBACK HomeDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 	switch ( msg ) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault( hwndDlg );
-		SendMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0 );
 		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
+		SendMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0 );
 		return TRUE;
 	case WM_JABBER_REFRESH:
 	{
@@ -160,8 +161,8 @@ static BOOL CALLBACK WorkDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 	switch ( msg ) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault( hwndDlg );
-		SendMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0 );
 		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
+		SendMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0 );
 		return TRUE;
 	case WM_JABBER_REFRESH:
 	{
@@ -204,8 +205,8 @@ static BOOL CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 		SendMessage( GetDlgItem( hwndDlg, IDC_LOAD ), BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadImage( hInst, MAKEINTRESOURCE( IDI_OPEN ), IMAGE_ICON, GetSystemMetrics( SM_CXSMICON ), GetSystemMetrics( SM_CYSMICON ), 0 ));
 		SendMessage( GetDlgItem( hwndDlg, IDC_DELETE ), BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadImage( hInst, MAKEINTRESOURCE( IDI_DELETE ), IMAGE_ICON, GetSystemMetrics( SM_CXSMICON ), GetSystemMetrics( SM_CYSMICON ), 0 ));
 		ShowWindow( GetDlgItem( hwndDlg, IDC_SAVE ), SW_HIDE );
-		SendMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0 );
 		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
+		SendMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0 );
 		return TRUE;
 
 	case WM_JABBER_REFRESH:
@@ -404,8 +405,8 @@ static BOOL CALLBACK NoteDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 	switch ( msg ) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault( hwndDlg );
-		SendMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0 );
 		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
+		SendMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0 );
 		return TRUE;
 	case WM_JABBER_REFRESH:
 	{
@@ -712,7 +713,13 @@ static BOOL CALLBACK ContactDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					if ( lvi.lParam == ( LPARAM )( -1 )) {
 						if ( hti.iSubItem == 3 ) {
 							//add
-							if ( DialogBoxParam( hInst, MAKEINTRESOURCE( nm->hdr.idFrom==IDC_PHONES?IDD_VCARD_ADDPHONE:IDD_VCARD_ADDEMAIL ), hwndDlg, nm->hdr.idFrom==IDC_PHONES?EditPhoneDlgProc:EditEmailDlgProc, ( LPARAM )( -1 )) != IDOK )
+							EditDlgParam param = { -1, ppro };
+							int res;
+							if ( nm->hdr.idFrom == IDC_PHONES )
+								res = DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_VCARD_ADDPHONE ), hwndDlg, EditPhoneDlgProc, ( LPARAM )&param );
+							else
+								res = DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_VCARD_ADDEMAIL ), hwndDlg, EditEmailDlgProc, ( LPARAM )&param );
+							if ( res != IDOK )
 								break;
 							SendMessage( hwndDlg, M_REMAKELISTS, 0, 0 );
 							SendMessage( GetParent( hwndDlg ), WM_JABBER_CHANGED, 0, 0 );
@@ -746,8 +753,13 @@ static BOOL CALLBACK ContactDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 							SendMessage( GetParent( hwndDlg ), WM_JABBER_CHANGED, 0, 0 );
 						}
 						else if ( hti.iSubItem == 2 ) {
-							//edit
-							if ( DialogBoxParam( hInst, MAKEINTRESOURCE( nm->hdr.idFrom==IDC_PHONES?IDD_VCARD_ADDPHONE:IDD_VCARD_ADDEMAIL ), hwndDlg, nm->hdr.idFrom==IDC_PHONES?EditPhoneDlgProc:EditEmailDlgProc, lvi.lParam ) != IDOK )
+							EditDlgParam param = { lvi.lParam, ppro };
+							int res;
+							if ( nm->hdr.idFrom == IDC_PHONES )
+								res = DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_VCARD_ADDPHONE ), hwndDlg, EditPhoneDlgProc, ( LPARAM )&param );
+							else
+								res = DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_VCARD_ADDEMAIL ), hwndDlg, EditEmailDlgProc, ( LPARAM )&param );
+							if ( res != IDOK )
 								break;
 							SendMessage( hwndDlg,M_REMAKELISTS,0,0 );
 							SendMessage( GetParent( hwndDlg ), WM_JABBER_CHANGED, 0, 0 );
@@ -1063,7 +1075,6 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 	switch ( msg ) {
 	case WM_INITDIALOG:
 	{
-		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )dat->ppro->LoadIconEx( "vcard" ));
 		TranslateDialogDefault( hwndDlg );
 
 		dat = ( VcardTab * ) mir_alloc( sizeof( VcardTab ));
@@ -1078,6 +1089,7 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		memset( dat->page, 0, dat->pageCount * sizeof( VcardPage ));
 
 		EnableWindow( GetDlgItem( hwndDlg, IDC_UPDATE ), dat->ppro->jabberOnline );
+		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )dat->ppro->LoadIconEx( "vcard" ));
 
 		HWND hwndTabs = GetDlgItem( hwndDlg, IDC_TABS );
 
@@ -1087,31 +1099,37 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		// Page 0: Personal
 		dat->page[0].dlgId = IDD_VCARD_PERSONAL;
 		dat->page[0].dlgProc = PersonalDlgProc;
+		dat->page[0].lParam = lParam;
 		tci.pszText = TranslateT( "Personal" );
 		TabCtrl_InsertItem( hwndTabs, 0, &tci );
 		// Page 1: Contacts
 		dat->page[1].dlgId = IDD_VCARD_CONTACT;
 		dat->page[1].dlgProc = ContactDlgProc;
+		dat->page[1].lParam = lParam;
 		tci.pszText = TranslateT( "Contacts" );
 		TabCtrl_InsertItem( hwndTabs, 1, &tci );
 		// Page 2: Home
 		dat->page[2].dlgId = IDD_VCARD_HOME;
 		dat->page[2].dlgProc = HomeDlgProc;
+		dat->page[2].lParam = lParam;
 		tci.pszText = TranslateT( "Home" );
 		TabCtrl_InsertItem( hwndTabs, 2, &tci );
 		// Page 3: Work
 		dat->page[3].dlgId = IDD_VCARD_WORK;
 		dat->page[3].dlgProc = WorkDlgProc;
+		dat->page[3].lParam = lParam;
 		tci.pszText = TranslateT( "Work" );
 		TabCtrl_InsertItem( hwndTabs, 3, &tci );
 		// Page 4: Photo
 		dat->page[4].dlgId = IDD_VCARD_PHOTO;
 		dat->page[4].dlgProc = PhotoDlgProc;
+		dat->page[4].lParam = lParam;
 		tci.pszText = TranslateT( "Photo" );
 		TabCtrl_InsertItem( hwndTabs, 4, &tci );
 		// Page 5: Note
 		dat->page[5].dlgId = IDD_VCARD_NOTE;
 		dat->page[5].dlgProc = NoteDlgProc;
+		dat->page[5].lParam = lParam;
 
 		tci.pszText = TranslateT( "Note" );
 		TabCtrl_InsertItem( hwndTabs, 5, &tci );
@@ -1124,10 +1142,13 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		}
 
 		TabCtrl_SetCurSel( hwndTabs, dat->currentPage );
-		dat->page[dat->currentPage].hwnd = CreateDialogParam( hInst, MAKEINTRESOURCE( dat->page[dat->currentPage].dlgId ), hwndDlg, dat->page[dat->currentPage].dlgProc, 0 );
-		ThemeDialogBackground( dat->page[dat->currentPage].hwnd );
-		SetWindowPos( dat->page[dat->currentPage].hwnd, HWND_TOP, dat->rectTab.left, dat->rectTab.top, 0, 0, SWP_NOSIZE );
-		ShowWindow( dat->page[dat->currentPage].hwnd, SW_SHOW );
+		{
+			VcardPage* pg = &dat->page[dat->currentPage];
+			pg->hwnd = CreateDialogParam( hInst, MAKEINTRESOURCE( pg->dlgId ), hwndDlg, pg->dlgProc, pg->lParam );
+			ThemeDialogBackground( pg->hwnd );
+			SetWindowPos( pg->hwnd, HWND_TOP, dat->rectTab.left, dat->rectTab.top, 0, 0, SWP_NOSIZE );
+			ShowWindow( pg->hwnd, SW_SHOW );
+		}
 
 		SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG ) dat );
 
@@ -1158,16 +1179,17 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		case IDC_TABS:
 			switch (( ( LPNMHDR ) lParam )->code ) {
 			case TCN_SELCHANGE:
-				if ( dat->currentPage>=0 && dat->page[dat->currentPage].hwnd!=NULL )
+				if ( dat->currentPage>=0 && dat->page[dat->currentPage].hwnd != NULL )
 					ShowWindow( dat->page[dat->currentPage].hwnd, SW_HIDE );
 				dat->currentPage = TabCtrl_GetCurSel( GetDlgItem( hwndDlg, IDC_TABS ));
 				if ( dat->currentPage >= 0 ) {
-					if ( dat->page[dat->currentPage].hwnd == NULL ) {
-						dat->page[dat->currentPage].hwnd = CreateDialogParam( hInst, MAKEINTRESOURCE( dat->page[dat->currentPage].dlgId ), hwndDlg, dat->page[dat->currentPage].dlgProc, 0 );
-						ThemeDialogBackground( dat->page[dat->currentPage].hwnd );
-						SetWindowPos( dat->page[dat->currentPage].hwnd, HWND_TOP, dat->rectTab.left, dat->rectTab.top, 0, 0, SWP_NOSIZE );
+					VcardPage* pg = &dat->page[dat->currentPage];
+					if ( pg->hwnd == NULL ) {
+						pg->hwnd = CreateDialogParam( hInst, MAKEINTRESOURCE( pg->dlgId ), hwndDlg, pg->dlgProc, pg->lParam );
+						ThemeDialogBackground( pg->hwnd );
+						SetWindowPos( pg->hwnd, HWND_TOP, dat->rectTab.left, dat->rectTab.top, 0, 0, SWP_NOSIZE );
 					}
-					ShowWindow( dat->page[dat->currentPage].hwnd, SW_SHOW );
+					ShowWindow( pg->hwnd, SW_SHOW );
 				}
 				break;
 			}
