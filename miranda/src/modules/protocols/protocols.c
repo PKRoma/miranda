@@ -71,7 +71,7 @@ int Proto_IsProtocolLoaded(WPARAM wParam,LPARAM lParam)
 
 static int Proto_EnumProtocols(WPARAM wParam,LPARAM lParam)
 {
-	*( int* )wParam = accounts.count;
+	*( int* )wParam = protos.count;
 	*( PROTOCOLDESCRIPTOR*** )lParam = protos.items;
 	return 0;
 }
@@ -429,6 +429,7 @@ int LoadProtocolsModule(void)
 	CreateServiceFunction( MS_PROTO_RECVFILE,         Proto_RecvFile         );
 	CreateServiceFunction( MS_PROTO_RECVMSG,          Proto_RecvMessage      );
 
+	CreateServiceFunction( "Proto/EnumProtocols",     Proto_EnumAccounts     );
 	CreateServiceFunction( MS_PROTO_ENUMACCOUNTS,     Proto_EnumAccounts     );
 	CreateServiceFunction( MS_PROTO_GETACCOUNT,       srvProto_GetAccount    );
 

@@ -203,8 +203,8 @@ typedef struct {
 #define PROTOTYPE_OTHER       10000   //avoid using this if at all possible
 
 #if MIRANDA_VER >= 0x800
+	#define MS_PROTO_ENUMPROTOS        "Proto/EnumProtos"
 	#define MS_PROTO_ENUMPROTOCOLS     "Proto/EnumAccounts"
-	#define MS_PROTO_ENUMPROTOS        "Proto/EnumProtocols"
 #else
 	#define MS_PROTO_ENUMPROTOCOLS     "Proto/EnumProtocols"
 #endif
