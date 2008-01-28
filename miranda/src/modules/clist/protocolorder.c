@@ -76,8 +76,11 @@ int FillTree(HWND hwnd)
 
 	for ( i = 0; i < accounts.count; i++ ) {
 		PROTOACCOUNT* pa = accounts.items[i];
+		if ( !pa->bIsEnabled )
+			continue;
 
-		CallProtoService( pa->szModuleName, PS_GETNAME, sizeof( szName ), ( LPARAM )szName );
+		if ( CALLSERVICE_NOTFOUND == CallProtoService( pa->szModuleName, PS_GETNAME, sizeof( szName ), ( LPARAM )szName ))
+			continue;
 
 		PD = ( ProtocolData* )mir_alloc( sizeof( ProtocolData ));
 		PD->RealName = pa->szModuleName;
