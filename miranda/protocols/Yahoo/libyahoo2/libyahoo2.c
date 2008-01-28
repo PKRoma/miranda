@@ -74,7 +74,6 @@ char *strchr (), *strrchr ();
 #include <stdlib.h>
 #include <ctype.h>
 
-#include "sha.h"
 #include "yahoo2.h"
 #include "yahoo_httplib.h"
 #include "yahoo_util.h"
@@ -2277,8 +2276,8 @@ static void yahoo_process_auth_0x0b(struct yahoo_input_data *yid, const char *se
 	mir_md5_byte_t			result[16];
 	mir_md5_state_t			ctx;
 
-	SHA_CTX				ctx1;
-	SHA_CTX				ctx2;
+	mir_sha1_ctx		ctx1;
+	mir_sha1_ctx		ctx2;
 
 	char 				*alphabet1 = "FBZDWAGHrJTLMNOPpRSKUVEXYChImkwQ";
 	char 				*alphabet2 = "F0E1D2C3B4A59687abcdefghijklmnop";
@@ -2525,26 +2524,26 @@ static void yahoo_process_auth_0x0b(struct yahoo_input_data *yid, const char *se
 	if (cnt < 64) 
 		memset(&(pass_hash_xor2[cnt]), 0x5c, 64-cnt);
 
-	shaInit(&ctx1);
-	shaInit(&ctx2);
+	mir_sha1_init(&ctx1);
+	mir_sha1_init(&ctx2);
 
 	/* The first context gets the password hash XORed with 0x36 plus a magic value
 	 * which we previously extrapolated from our challenge. 
 	 */
 
-	shaUpdate(&ctx1, pass_hash_xor1, 64);
+	mir_sha1_append(&ctx1, pass_hash_xor1, 64);
 	if (y >= 3)
   		ctx1.sizeLo = 0x1ff;
-	shaUpdate(&ctx1, magic_key_char, 4);
-	shaFinal(&ctx1, digest1);
+	mir_sha1_append(&ctx1, magic_key_char, 4);
+	mir_sha1_finish(&ctx1, digest1);
 
 	/* The second context gets the password hash XORed with 0x5c plus the SHA-1 digest
 	 * of the first context. 
 	 */
 
-	shaUpdate(&ctx2, pass_hash_xor2, 64);
-	shaUpdate(&ctx2, digest1, 20);
-	shaFinal(&ctx2, digest2);
+	mir_sha1_append(&ctx2, pass_hash_xor2, 64);
+	mir_sha1_append(&ctx2, digest1, 20);
+	mir_sha1_finish(&ctx2, digest2);
 
 	/* Now that we have digest2, use it to fetch characters from an alphabet to construct
 	 * our first authentication response. 
@@ -2612,26 +2611,26 @@ static void yahoo_process_auth_0x0b(struct yahoo_input_data *yid, const char *se
 	if (cnt < 64) 
 		memset(&(crypt_hash_xor2[cnt]), 0x5c, 64-cnt);
 
-	shaInit(&ctx1);
-	shaInit(&ctx2);
+	mir_sha1_init(&ctx1);
+	mir_sha1_init(&ctx2);
 
 	/* The first context gets the password hash XORed with 0x36 plus a magic value
 	 * which we previously extrapolated from our challenge. 
 	 */
 
-	shaUpdate(&ctx1, crypt_hash_xor1, 64);
+	mir_sha1_append(&ctx1, crypt_hash_xor1, 64);
 	if (y >= 3)
   		ctx1.sizeLo = 0x1ff;
-	shaUpdate(&ctx1, magic_key_char, 4);
-	shaFinal(&ctx1, digest1);
+	mir_sha1_append(&ctx1, magic_key_char, 4);
+	mir_sha1_finish(&ctx1, digest1);
 
 	/* The second context gets the password hash XORed 
 	 * with 0x5c plus the SHA-1 digest
 	 * of the first context. */
 
-	shaUpdate(&ctx2, crypt_hash_xor2, 64);
-	shaUpdate(&ctx2, digest1, 20);
-	shaFinal(&ctx2, digest2);
+	mir_sha1_append(&ctx2, crypt_hash_xor2, 64);
+	mir_sha1_append(&ctx2, digest1, 20);
+	mir_sha1_finish(&ctx2, digest2);
 
 	/* Now that we have digest2, use it to fetch characters from an alphabet to construct
 	 * our first authentication response.  
@@ -4358,6 +4357,7 @@ static void yahoo_process_yab_connection(struct yahoo_input_data *yid, int over)
 	YList *buds;
 	int changed=0;
 	int id = yd->client_id;
+	BOOL yab_used = FALSE;
 
 	if(over)
 		return;
@@ -4368,9 +4368,11 @@ static void yahoo_process_yab_connection(struct yahoo_input_data *yid, int over)
 			continue;
 		
 		changed=1;
+		yab_used = FALSE;
 		for(buds = yd->buddies; buds; buds=buds->next) {
 			struct yahoo_buddy * bud = buds->data;
 			if(!strcmp(bud->id, yab->id)) {
+				yab_used = TRUE;
 				bud->yab_entry = yab;
 				if(yab->nname) {
 					bud->real_name = strdup(yab->nname);
@@ -4387,6 +4389,21 @@ static void yahoo_process_yab_connection(struct yahoo_input_data *yid, int over)
 				break; /* for */
 			}
 		}
+		
+		if (!yab_used)
+		{
+			//need to free the yab entry
+			FREE(yab->fname);
+			FREE(yab->lname);
+			FREE(yab->nname);
+			FREE(yab->id);
+			FREE(yab->email);
+			FREE(yab->hphone);
+			FREE(yab->wphone);
+			FREE(yab->mphone);
+			FREE(yab);
+		}
+
 	}
 
 	if(changed)

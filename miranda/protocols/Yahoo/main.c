@@ -35,6 +35,7 @@ char			yahooProtocolName[MAX_PATH];
 struct MM_INTERFACE   mmi;
 struct UTF8_INTERFACE utfi;
 struct MD5_INTERFACE md5i;
+struct SHA1_INTERFACE	sha1i;
 
 HANDLE		    hNetlibUser = NULL;
 HANDLE			YahooMenuItems[ MENU_ITEMS_COUNT ];
@@ -82,8 +83,6 @@ BOOL WINAPI DllMain(HINSTANCE hinst,DWORD fdwReason,LPVOID lpvReserved)
 	hinstance=hinst;
 	return TRUE;
 }
-
-int YahooIdleEvent(WPARAM wParam, LPARAM lParam);
 
 /*
  *	Load - loads plugin into memory
@@ -161,6 +160,7 @@ int __declspec(dllexport)Load(PLUGINLINK *link)
 	mir_getMMI( &mmi );
 	mir_getUTFI( &utfi );
 	mir_getMD5I( &md5i );
+	mir_getSHA1I( &sha1i );
 	
 	//
 	// Need to disable threading since we got our own routines.

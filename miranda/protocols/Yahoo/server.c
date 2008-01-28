@@ -10,7 +10,6 @@
  * I want to thank Robert Rainwater and George Hazan for their code and support
  * and for answering some of my questions during development of this plugin.
  */
-#include <windows.h>
 #include "yahoo.h"
 #include <time.h>
 
@@ -66,7 +65,7 @@ extern yahoo_local_account * ylad;
 void __cdecl yahoo_server_main(void *empty)
 {
 	int status = (int) empty;
-	long lLastPing;
+	time_t lLastPing;
     YList *l;
     NETLIBSELECTEX nls = {0};
 	int recvResult, ridx = 0, widx = 0, i;

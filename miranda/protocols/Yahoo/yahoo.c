@@ -10,6 +10,9 @@
  * I want to thank Robert Rainwater and George Hazan for their code and support
  * and for answering some of my questions during development of this plugin.
  */
+
+#define _USE_32BIT_TIME_T
+
 #include <time.h>
 #include <malloc.h>
 #include <io.h>
@@ -403,6 +406,10 @@ void ext_yahoo_status_logon(int id, const char *who, int stat, const char *msg, 
 	} 
 	
 	switch (client_version) {
+		case 3075:
+				s = "Yahoo Web Messenger";
+				break;
+
 		case 262651: 
 				s = "libyahoo2"; 
 				break;
@@ -413,12 +420,17 @@ void ext_yahoo_status_logon(int id, const char *who, int stat, const char *msg, 
 				s = "Yahoo 6.x"; 
 				break;
 		case 524223: 
+				//Yahoo 7.4
+				//Yahoo 7.5
 				s = "Yahoo 7.x"; 
 				break;
 		case 822543:  /* ? "Yahoo Version 3.0 beta 1 (build 18274) OSX" */
 		case 1572799: /* 8.0.x ??  */ 
 		case 2097087: /* 8.1.0.195 */ 
 				s = "Yahoo 8.x"; 
+				break;
+		case 2088895:
+				s = "Yahoo 9.0";
 				break;
 	}
 	
