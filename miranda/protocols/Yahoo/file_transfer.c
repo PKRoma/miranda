@@ -217,7 +217,7 @@ static void dl_file(int id, int fd, int error,	const char *filename, unsigned lo
 {
     y_filetransfer *sf = (y_filetransfer*) data;
     char buf[1024];
-    long rsize = 0;
+    unsigned long rsize = 0;
 	DWORD dw, c;
 
 	if (fd < 0) {
@@ -326,7 +326,7 @@ static void dl_file(int id, int fd, int error,	const char *filename, unsigned lo
 						LOG(("DOING UI Notify. Got %lu/%lu", rsize, size));
 						
 						pfts.totalProgress = rsize;
-						pfts.currentFileTime = time(NULL);//ntohl(ft->hdr.modtime);
+						pfts.currentFileTime = (DWORD)time(NULL);//ntohl(ft->hdr.modtime);
 						pfts.currentFileProgress = rsize;
 						
 						ProtoBroadcastAck(yahooProtocolName, sf->hContact, ACKTYPE_FILE, ACKRESULT_DATA, sf, (LPARAM) & pfts);
@@ -431,7 +431,7 @@ void ext_yahoo_got_file(int id, const char *me, const char *who, const char *url
     strcpy(szBlob + sizeof(DWORD) + lstrlen(ft->filename) + 1, ft->msg);
 
 	pre.flags = 0;
-	pre.timestamp = time(NULL);
+	pre.timestamp = (DWORD)time(NULL);
     pre.szMessage = szBlob;
     pre.lParam = 0;
     ccs.szProtoService = PSR_FILE;
