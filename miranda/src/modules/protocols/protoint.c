@@ -205,7 +205,6 @@ PROTO_INTERFACE* AddDefaultAccount( const char* szProtoName )
 	PROTO_INTERFACE* ppi = ( PROTO_INTERFACE* )mir_calloc( sizeof( PROTO_INTERFACE ));
 	if ( ppi != NULL ) {
 		ppi->iVersion = 1;
-		ppi->bOldProto = TRUE;
 		ppi->szModuleName = mir_strdup( szProtoName );
 		ppi->szProtoName = mir_strdup( szProtoName );
 		ppi->tszUserName = mir_a2t( szProtoName );

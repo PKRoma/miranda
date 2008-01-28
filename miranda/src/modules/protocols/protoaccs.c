@@ -46,6 +46,8 @@ void LoadDbAccounts()
 		if ( !DBGetContactSettingString( NULL, "Protocols", buf, &dbv )) {
 			PROTOACCOUNT* pa = mir_calloc( sizeof( PROTOACCOUNT ));
 			if ( pa ) {
+				pa->cbSize = sizeof( *pa );
+				pa->type = PROTOTYPE_PROTOCOL;
 				pa->szModuleName = mir_strdup( dbv.pszVal );
 				DBFreeVariant( &dbv );
 
@@ -277,26 +279,37 @@ int LoadAccountsModule( void )
 	return 0;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
+
+void UnloadAccount( PROTOACCOUNT* pa, BOOL bIsDynamic )
+{
+	int idx;
+	if ( pa->ppro ) {
+		for ( idx = 0; idx < SIZEOF(pa->ppro->services); idx++ )
+			if ( pa->ppro->services[idx] )
+				DestroyServiceFunction( pa->ppro->services[idx] );
+
+		UninitAccount( pa->szModuleName, pa);
+	}
+	mir_free( pa->tszAccountName );
+	mir_free( pa->szProtoName );
+	// szModuleName should be freed only on a program's exit.
+	// otherwise many plugins dependand on static protocol names will crash!
+	// do NOT fix this 'leak', please
+	if ( !bIsDynamic ) {
+		mir_free( pa->szModuleName );
+		mir_free( pa );
+	}
+}
+
 void UnloadAccountsModule()
 {
 	int i;
 
 	if ( !bModuleInitialized ) return;
 
-	for( i=0; i < accounts.count; i++ ) {
-		PROTOACCOUNT* pa = accounts.items[ i ];
-		int idx;
-		if ( pa->ppro ) {
-			for ( idx = 0; idx < SIZEOF(pa->ppro->services); idx++ )
-				if ( pa->ppro->services[i] )
-					DestroyServiceFunction( pa->ppro->services[i] );
+	for( i=0; i < accounts.count; i++ )
+		UnloadAccount( accounts.items[ i ], FALSE );
 
-			UninitAccount(accounts.items[i]->szModuleName, pa);
-		}
-		mir_free( pa->tszAccountName );
-		mir_free( pa->szModuleName );
-		mir_free( pa->szProtoName );
-		mir_free( pa );
-	}
 	List_Destroy(( SortedList* )&accounts );
 }

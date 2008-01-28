@@ -147,6 +147,14 @@ typedef struct {
 //The list returned by this service is the protocol modules currently installed
 //and running. It is not the complete list of all protocols that have ever been
 //installed.
+//IMPORTANT NOTE #1: the list returned is not static, it may be changed in the
+//program's lifetime. Do not use this list in the global context, copy protocols
+//names otherwise.
+//IMPORTANT NOTE #2: in version 0.8 this service is mapped to the MS_PROTO_ENUMACCOUNTS
+//service to provide the compatibility with old plugins (first three members of 
+//PROTOACCOUNT are equal to the old PROTOCOLDESCRIPTOR format). If you declare the
+//MIRANDA_VER macro with value greater or equal to 0x800, use MS_PROTO_ENUMPROTOS
+//service instead to obtain the list of running protocols instead of accounts.
 //Note that a protocol module need not be an interface to an Internet server,
 //they can be encryption and loads of other things, too.
 //And yes, before you ask, that is triple indirection. Deal with it.
@@ -193,7 +201,13 @@ typedef struct {
 #define PROTOTYPE_FILTER      3000
 #define PROTOTYPE_TRANSLATION 4000
 #define PROTOTYPE_OTHER       10000   //avoid using this if at all possible
-#define MS_PROTO_ENUMPROTOCOLS     "Proto/EnumProtocols"
+
+#if MIRANDA_VER >= 0x800
+	#define MS_PROTO_ENUMPROTOCOLS     "Proto/EnumAccounts"
+	#define MS_PROTO_ENUMPROTOS        "Proto/EnumProtocols"
+#else
+	#define MS_PROTO_ENUMPROTOCOLS     "Proto/EnumProtocols"
+#endif
 
 //determines if a protocol module is loaded or not
 //wParam=0
@@ -252,12 +266,15 @@ typedef struct {
 
 typedef struct tagACCOUNT
 {
-	TCHAR* tszAccountName;  // user-defined account name
+	int    cbSize;          // sizeof this structure
 	char*  szModuleName;    // unique physical account name (matches database module name)
+	int    type;            // always equal to PROTOTYPE_PROTOCOL
+	TCHAR* tszAccountName;  // user-defined account name
 	char*  szProtoName;     // physical protocol name
 	int    bIsEnabled;      // is account enabled?
 	int    bIsVisible;      // is account visible?
 	int    iOrder;          // account order in various menus & lists
+	BOOL	 bOldProto;       // old-styled account (one instance per dll)
 	struct tagPROTO_INTERFACE* ppro;  // pointer to the underlying object
 }
 	PROTOACCOUNT;

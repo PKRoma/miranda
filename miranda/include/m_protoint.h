@@ -85,7 +85,6 @@ typedef struct tagPROTO_INTERFACE
           iDesiredStatus,
           iXStatus,
 			 iVersion;
-	BOOL	 bOldProto;
 	TCHAR* tszUserName;
 	char*  szProtoName;
 	char*  szModuleName;

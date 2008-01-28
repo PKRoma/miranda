@@ -126,7 +126,8 @@ extern TAccounts accounts;
 PROTOACCOUNT* Proto_GetAccount( const char* accName );
 
 PROTO_INTERFACE* AddDefaultAccount( const char* szProtoName );
-int FreeDefaultAccount( PROTO_INTERFACE* ppi );
+int  FreeDefaultAccount( PROTO_INTERFACE* ppi );
+void UnloadAccount( PROTOACCOUNT* pa, BOOL bIsDynamic );
 
 void LoadDbAccounts( void );
 void WriteDbAccounts( void );

@@ -71,7 +71,7 @@ int Proto_IsProtocolLoaded(WPARAM wParam,LPARAM lParam)
 
 static int Proto_EnumProtocols(WPARAM wParam,LPARAM lParam)
 {
-	*( int* )wParam = protos.count;
+	*( int* )wParam = accounts.count;
 	*( PROTOCOLDESCRIPTOR*** )lParam = protos.items;
 	return 0;
 }
@@ -98,12 +98,15 @@ static int Proto_RegisterModule(WPARAM wParam,LPARAM lParam)
 				if ( pa == NULL ) {
 					pa = (PROTOACCOUNT*)malloc( sizeof( PROTOACCOUNT ));
 					memset( pa, 0, sizeof( PROTOACCOUNT ));
+					pa->cbSize = sizeof(PROTOACCOUNT);
+					pa->type = PROTOTYPE_PROTOCOL;
 					pa->szModuleName = mir_strdup( pd->szName );
 					pa->szProtoName = mir_strdup( pd->szName );
 					pa->tszAccountName = mir_a2t( pd->szName );
 					pa->bIsVisible = pa->bIsEnabled = TRUE;
 					List_InsertPtr(( SortedList* )&accounts, pa );
 				}
+				pa->bOldProto = TRUE;
 				pa->ppro = ppi;
 				p->fnUninit = FreeDefaultAccount;
 			}
@@ -236,60 +239,60 @@ int CallProtoServiceInt( HANDLE hContact, const char *szModule, const char *szSe
 {
 	int idx;
 	char svcName[ MAXMODULELABELLENGTH ];
-	PROTO_INTERFACE* ppi;
 	PROTOACCOUNT* pa = ( PROTOACCOUNT* )Proto_GetAccount( szModule );
 	if ( pa == NULL )
 		return CALLSERVICE_NOTFOUND;
 
-	if (( ppi = pa->ppro ) == NULL )
-		return CALLSERVICE_NOTFOUND;
-
-	if ( !ppi->bOldProto ) {
-		TServiceListItem item;
-		item.name = szService;
-		if ( List_GetIndex(( SortedList* )&serviceItems, &item, &idx ) != 0 ) {
-			switch( serviceItems.items[ idx ]->id ) {
-				case  1: return ( int )ppi->vtbl->AddToList( ppi, wParam, (PROTOSEARCHRESULT*)lParam ); break;
-				case  2: return ( int )ppi->vtbl->AddToListByEvent( ppi, HIWORD(wParam), LOWORD(wParam), (HANDLE)lParam ); break;
-				case  3: return ( int )ppi->vtbl->Authorize( ppi, ( HANDLE )wParam ); break;
-				case  4: return ( int )ppi->vtbl->AuthDeny( ppi, ( HANDLE )wParam, ( const char* )lParam ); break;
-				case  5: return ( int )ppi->vtbl->AuthRecv( ppi, hContact, ( PROTORECVEVENT* )lParam ); break;
-				case  6: return ( int )ppi->vtbl->AuthRequest( ppi, hContact, ( char* )lParam ); break;
-				case  7: return ( int )ppi->vtbl->ChangeInfo( ppi, wParam, ( void* )lParam ); break;
-				case  8: return ( int )ppi->vtbl->FileAllow( ppi, hContact, ( HANDLE )wParam, ( char* )lParam ); break;
-				case  9: return ( int )ppi->vtbl->FileCancel( ppi, hContact, ( HANDLE )wParam ); break;
-				case 10: return ( int )ppi->vtbl->FileDeny( ppi, hContact, ( HANDLE )wParam, ( char* )lParam ); break;
-				case 11: {
-					PROTOFILERESUME* pfr = ( PROTOFILERESUME* )lParam;
-					return ( int )ppi->vtbl->FileResume( ppi, ( HANDLE )wParam, &pfr->action, &pfr->szFilename ); break;
-				}
-				case 12: return ( int )ppi->vtbl->GetCaps( ppi, wParam ); break;
-				case 13: return ( int )ppi->vtbl->GetIcon( ppi, wParam ); break;
-				case 14: return ( int )ppi->vtbl->GetInfo( ppi, hContact, wParam ); break;
-				case 15: return ( int )ppi->vtbl->SearchBasic( ppi, ( char* )lParam ); break;
-				case 16: return ( int )ppi->vtbl->SearchByEmail( ppi, ( char* )lParam ); break;
-				case 17: {
-					PROTOSEARCHBYNAME* psbn = ( PROTOSEARCHBYNAME* )lParam;
-					return ( int )ppi->vtbl->SearchByName( ppi, psbn->pszNick, psbn->pszFirstName, psbn->pszLastName ); break;
-				}
-				case 18: return ( int )ppi->vtbl->SearchAdvanced( ppi, ( HWND )lParam ); break;
-				case 19: return ( int )ppi->vtbl->CreateExtendedSearchUI ( ppi, ( HWND )lParam ); break;
-				case 20: return ( int )ppi->vtbl->RecvContacts( ppi, hContact, ( PROTORECVEVENT* )lParam ); break;
-				case 21: return ( int )ppi->vtbl->RecvFile( ppi, hContact, ( PROTORECVFILE* )lParam ); break;
-				case 22: return ( int )ppi->vtbl->RecvMsg( ppi, hContact, ( PROTORECVEVENT* )lParam ); break;
-				case 23: return ( int )ppi->vtbl->RecvUrl( ppi, hContact, ( PROTORECVEVENT* )lParam ); break;
-				case 24: return ( int )ppi->vtbl->SendContacts( ppi, hContact, HIWORD(wParam), LOWORD(wParam), ( HANDLE* )lParam ); break;
-				case 25: return ( int )ppi->vtbl->SendFile( ppi, hContact, ( const char* )wParam, ( char** )lParam ); break;
-				case 26: return ( int )ppi->vtbl->SendMsg( ppi, hContact, wParam, ( const char* )lParam ); break;
-				case 27: return ( int )ppi->vtbl->SendUrl( ppi, hContact, wParam, ( const char* )lParam ); break;
-				case 28: return ( int )ppi->vtbl->SetApparentMode( ppi, hContact, wParam ); break;
-				case 29: return ( int )ppi->vtbl->SetStatus( ppi, wParam ); break;
-				case 30: return ( int )ppi->vtbl->GetAwayMsg( ppi, hContact ); break;
-				case 31: return ( int )ppi->vtbl->RecvAwayMsg( ppi, hContact, wParam, ( PROTORECVEVENT* )lParam ); break;
-				case 32: return ( int )ppi->vtbl->SendAwayMsg( ppi, hContact, ( HANDLE )wParam, ( const char* )lParam ); break;
-				case 33: return ( int )ppi->vtbl->SetAwayMsg( ppi, wParam, ( const char* )lParam ); break;
-				case 34: return ( int )ppi->vtbl->UserIsTyping( ppi, ( HANDLE )wParam, lParam ); break;
-	}	}	}
+	if ( !pa->bOldProto ) {
+		PROTO_INTERFACE* ppi;
+		if (( ppi = pa->ppro ) == NULL )
+			return CALLSERVICE_NOTFOUND;
+		else {
+			TServiceListItem item;
+			item.name = szService;
+			if ( List_GetIndex(( SortedList* )&serviceItems, &item, &idx ) != 0 ) {
+				switch( serviceItems.items[ idx ]->id ) {
+					case  1: return ( int )ppi->vtbl->AddToList( ppi, wParam, (PROTOSEARCHRESULT*)lParam ); break;
+					case  2: return ( int )ppi->vtbl->AddToListByEvent( ppi, HIWORD(wParam), LOWORD(wParam), (HANDLE)lParam ); break;
+					case  3: return ( int )ppi->vtbl->Authorize( ppi, ( HANDLE )wParam ); break;
+					case  4: return ( int )ppi->vtbl->AuthDeny( ppi, ( HANDLE )wParam, ( const char* )lParam ); break;
+					case  5: return ( int )ppi->vtbl->AuthRecv( ppi, hContact, ( PROTORECVEVENT* )lParam ); break;
+					case  6: return ( int )ppi->vtbl->AuthRequest( ppi, hContact, ( char* )lParam ); break;
+					case  7: return ( int )ppi->vtbl->ChangeInfo( ppi, wParam, ( void* )lParam ); break;
+					case  8: return ( int )ppi->vtbl->FileAllow( ppi, hContact, ( HANDLE )wParam, ( char* )lParam ); break;
+					case  9: return ( int )ppi->vtbl->FileCancel( ppi, hContact, ( HANDLE )wParam ); break;
+					case 10: return ( int )ppi->vtbl->FileDeny( ppi, hContact, ( HANDLE )wParam, ( char* )lParam ); break;
+					case 11: {
+						PROTOFILERESUME* pfr = ( PROTOFILERESUME* )lParam;
+						return ( int )ppi->vtbl->FileResume( ppi, ( HANDLE )wParam, &pfr->action, &pfr->szFilename ); break;
+					}
+					case 12: return ( int )ppi->vtbl->GetCaps( ppi, wParam ); break;
+					case 13: return ( int )ppi->vtbl->GetIcon( ppi, wParam ); break;
+					case 14: return ( int )ppi->vtbl->GetInfo( ppi, hContact, wParam ); break;
+					case 15: return ( int )ppi->vtbl->SearchBasic( ppi, ( char* )lParam ); break;
+					case 16: return ( int )ppi->vtbl->SearchByEmail( ppi, ( char* )lParam ); break;
+					case 17: {
+						PROTOSEARCHBYNAME* psbn = ( PROTOSEARCHBYNAME* )lParam;
+						return ( int )ppi->vtbl->SearchByName( ppi, psbn->pszNick, psbn->pszFirstName, psbn->pszLastName ); break;
+					}
+					case 18: return ( int )ppi->vtbl->SearchAdvanced( ppi, ( HWND )lParam ); break;
+					case 19: return ( int )ppi->vtbl->CreateExtendedSearchUI ( ppi, ( HWND )lParam ); break;
+					case 20: return ( int )ppi->vtbl->RecvContacts( ppi, hContact, ( PROTORECVEVENT* )lParam ); break;
+					case 21: return ( int )ppi->vtbl->RecvFile( ppi, hContact, ( PROTORECVFILE* )lParam ); break;
+					case 22: return ( int )ppi->vtbl->RecvMsg( ppi, hContact, ( PROTORECVEVENT* )lParam ); break;
+					case 23: return ( int )ppi->vtbl->RecvUrl( ppi, hContact, ( PROTORECVEVENT* )lParam ); break;
+					case 24: return ( int )ppi->vtbl->SendContacts( ppi, hContact, HIWORD(wParam), LOWORD(wParam), ( HANDLE* )lParam ); break;
+					case 25: return ( int )ppi->vtbl->SendFile( ppi, hContact, ( const char* )wParam, ( char** )lParam ); break;
+					case 26: return ( int )ppi->vtbl->SendMsg( ppi, hContact, wParam, ( const char* )lParam ); break;
+					case 27: return ( int )ppi->vtbl->SendUrl( ppi, hContact, wParam, ( const char* )lParam ); break;
+					case 28: return ( int )ppi->vtbl->SetApparentMode( ppi, hContact, wParam ); break;
+					case 29: return ( int )ppi->vtbl->SetStatus( ppi, wParam ); break;
+					case 30: return ( int )ppi->vtbl->GetAwayMsg( ppi, hContact ); break;
+					case 31: return ( int )ppi->vtbl->RecvAwayMsg( ppi, hContact, wParam, ( PROTORECVEVENT* )lParam ); break;
+					case 32: return ( int )ppi->vtbl->SendAwayMsg( ppi, hContact, ( HANDLE )wParam, ( const char* )lParam ); break;
+					case 33: return ( int )ppi->vtbl->SetAwayMsg( ppi, wParam, ( const char* )lParam ); break;
+					case 34: return ( int )ppi->vtbl->UserIsTyping( ppi, ( HANDLE )wParam, lParam ); break;
+	}	}	}	}
 
 	mir_snprintf( svcName, sizeof(svcName), "%s%s", szModule, szService );
 	return CallService( svcName, wParam, lParam );
@@ -325,7 +328,7 @@ int CallContactService( HANDLE hContact, const char *szProtoService, WPARAM wPar
 	if ( pa == NULL || pa->ppro == NULL )
 		ret = 1;
 	else {
-		if ( pa->ppro->bOldProto )
+		if ( pa->bOldProto )
 			ret = CallProtoServiceInt( hContact, dbv.pszVal, szProtoService, (WPARAM)(-1), ( LPARAM)&ccs );
 		else
 			ret = CallProtoServiceInt( hContact, dbv.pszVal, szProtoService, wParam, lParam );
@@ -418,7 +421,7 @@ int LoadProtocolsModule(void)
 
 	CreateServiceFunction( MS_PROTO_BROADCASTACK,     Proto_BroadcastAck     );
 	CreateServiceFunction( MS_PROTO_ISPROTOCOLLOADED, Proto_IsProtocolLoaded );
-	CreateServiceFunction( MS_PROTO_ENUMPROTOCOLS,    Proto_EnumProtocols    );
+	CreateServiceFunction( MS_PROTO_ENUMPROTOS,       Proto_EnumProtocols    );
 	CreateServiceFunction( MS_PROTO_REGISTERMODULE,   Proto_RegisterModule   );
 	CreateServiceFunction( MS_PROTO_SELFISTYPING,     Proto_SelfIsTyping     );
 	CreateServiceFunction( MS_PROTO_CONTACTISTYPING,  Proto_ContactIsTyping  );
