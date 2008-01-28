@@ -127,153 +127,154 @@ int ModernDrawStatusBar(HWND hwnd, HDC hDC)
         CLUI__cliInvalidateRect(hwnd,NULL,FALSE);
     return 0;
 }
+
 int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 {
-    int line;
-    int iconHeight=GetSystemMetrics(SM_CYSMICON)+2;
-    int protosperline=0;
-    int visProtoCount=0;
-    int protoCount;
-    int SumWidth=0;
-    int rectwidth=0;
-    int aligndx=0;
-    int * ProtoWidth=NULL;
-    int i,j,po=0;
-    int protcnt=0;
+	int line;
+	int iconHeight=GetSystemMetrics(SM_CYSMICON)+2;
+	int protosperline=0;
+	int visProtoCount=0;
+	int protoCount;
+	int SumWidth=0;
+	int rectwidth=0;
+	int aligndx=0;
+	int * ProtoWidth=NULL;
+	int i,j,po=0;
+	int protcnt=0;
 
-    char servName[40];
-    char protoNameExt[40];
-    // Count visible protos
-    PROTOCOLDESCRIPTOR **proto;
-    RECT rc;
-    HFONT hOldFont;
-    int iconY, textY;
-    int spaceWidth;
-    int maxwidth=0;
-    int xstatus=0;
-    SIZE textSize={0};
-    GetClientRect(hWnd,&rc);
-    if (g_CluiData.fDisableSkinEngine)
-    {
-        if (g_StatusBarData.bkUseWinColors && xpt_IsThemed(g_StatusBarData.hTheme))
-        {
-            xpt_DrawTheme(g_StatusBarData.hTheme, hWnd, hDC, 0, 0, &rc, &rc);           
-        }
-        else
-            DrawBackGround(hWnd, hDC,  g_StatusBarData.hBmpBackground, g_StatusBarData.bkColour, g_StatusBarData.backgroundBmpUse );
-    }
-    else
-    {
-        SkinDrawGlyph(hDC,&rc,&rc,"Main,ID=StatusBar"); //TBD
-    }
-    g_StatusBarData.nProtosPerLine=DBGetContactSettingByte(NULL,"Protocols","ProtosPerLine",SETTING_PROTOSPERLINE_DEFAULT);
-    hOldFont=CLCPaint_ChangeToFont(hDC,NULL,FONTID_STATUSBAR_PROTONAME,NULL);
-    //  hOldFont=SelectObject(hDC,g_StatusBarData.BarFont);
-    //  SetTextColor(hDC,g_StatusBarData.fontColor);
-    {
+	char servName[40];
+	char protoNameExt[40];
+	// Count visible protos
+	PROTOACCOUNT **accs;
+	RECT rc;
+	HFONT hOldFont;
+	int iconY, textY;
+	int spaceWidth;
+	int maxwidth=0;
+	int xstatus=0;
+	SIZE textSize={0};
+	GetClientRect(hWnd,&rc);
+	if (g_CluiData.fDisableSkinEngine)
+	{
+		if (g_StatusBarData.bkUseWinColors && xpt_IsThemed(g_StatusBarData.hTheme))
+		{
+			xpt_DrawTheme(g_StatusBarData.hTheme, hWnd, hDC, 0, 0, &rc, &rc);           
+		}
+		else
+			DrawBackGround(hWnd, hDC,  g_StatusBarData.hBmpBackground, g_StatusBarData.bkColour, g_StatusBarData.backgroundBmpUse );
+	}
+	else
+	{
+		SkinDrawGlyph(hDC,&rc,&rc,"Main,ID=StatusBar"); //TBD
+	}
+	g_StatusBarData.nProtosPerLine=DBGetContactSettingByte(NULL,"Protocols","ProtosPerLine",SETTING_PROTOSPERLINE_DEFAULT);
+	hOldFont=CLCPaint_ChangeToFont(hDC,NULL,FONTID_STATUSBAR_PROTONAME,NULL);
+	//  hOldFont=SelectObject(hDC,g_StatusBarData.BarFont);
+	//  SetTextColor(hDC,g_StatusBarData.fontColor);
+	{
 
-        GetTextExtentPoint32A(hDC," ",1,&textSize);
-        spaceWidth=textSize.cx;
-        textY=rc.top+((rc.bottom-rc.top-textSize.cy)>>1);
-    }
-    iconY=rc.top+((rc.bottom-rc.top-GetSystemMetrics(SM_CXSMICON))>>1);
+		GetTextExtentPoint32A(hDC," ",1,&textSize);
+		spaceWidth=textSize.cx;
+		textY=rc.top+((rc.bottom-rc.top-textSize.cy)>>1);
+	}
+	iconY=rc.top+((rc.bottom-rc.top-GetSystemMetrics(SM_CXSMICON))>>1);
 
-    {
-        CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&proto);
-        if (allocedItemData && ProtosData)
-        {
-            int k;
+	{
+		ProtoEnumAccounts( &protoCount, &accs );
+		if (allocedItemData && ProtosData)
+		{
+			int k;
 
-            for (k=0; k<allocedItemData; k++)
-            {
-                if(ProtosData[k].ProtoXStatus) mir_free_and_nill (ProtosData[k].ProtoXStatus);
-                if(ProtosData[k].ProtoName) mir_free_and_nill (ProtosData[k].ProtoName);
-                if(ProtosData[k].ProtoHumanName) mir_free_and_nill (ProtosData[k].ProtoHumanName);
+			for (k=0; k<allocedItemData; k++)
+			{
+				if(ProtosData[k].ProtoXStatus) mir_free_and_nill (ProtosData[k].ProtoXStatus);
+				if(ProtosData[k].ProtoName) mir_free_and_nill (ProtosData[k].ProtoName);
+				if(ProtosData[k].ProtoHumanName) mir_free_and_nill (ProtosData[k].ProtoHumanName);
 				if(ProtosData[k].ProtoEMailCount) mir_free_and_nill (ProtosData[k].ProtoEMailCount);
-                if(ProtosData[k].ProtoStatusText) mir_free_and_nill (ProtosData[k].ProtoStatusText);      
-            }
-            mir_free_and_nill(ProtosData);
-            ProtosData=NULL;
-            allocedItemData=0;
-        }
-        ProtosData=mir_alloc(sizeof(ProtoItemData)*protoCount);
-        memset(ProtosData,0,sizeof(ProtoItemData)*protoCount);
-        protcnt=(int)DBGetContactSettingDword(0,"Protocols","ProtoCount",-1);
-        for (j=0; j<protcnt; j++)
-        {
-            int vis;
+				if(ProtosData[k].ProtoStatusText) mir_free_and_nill (ProtosData[k].ProtoStatusText);      
+			}
+			mir_free_and_nill(ProtosData);
+			ProtosData=NULL;
+			allocedItemData=0;
+		}
+		ProtosData=mir_alloc(sizeof(ProtoItemData)*protoCount);
+		memset(ProtosData,0,sizeof(ProtoItemData)*protoCount);
+		protcnt=(int)DBGetContactSettingDword(0,"Protocols","ProtoCount",-1);
+		for (j=0; j<protcnt; j++)
+		{
+			int vis;
 			char buf[40];
-            i=pcli->pfnGetProtoIndexByPos(proto,protoCount,j);
-            if (i==-1) 
-                vis=FALSE;
-            else
-                vis=pcli->pfnGetProtocolVisibility(proto[i]->szName);
-            if (!vis) continue;
-			ProtosData[visProtoCount].ProtoStatus=CallProtoService(proto[i]->szName,PS_GETSTATUS,0,0);
+			i=pcli->pfnGetAccountIndexByPos(j);
+			if (i==-1) 
+				vis=FALSE;
+			else
+				vis=pcli->pfnGetProtocolVisibility(accs[i]->szModuleName);
+			if (!vis) continue;
+			ProtosData[visProtoCount].ProtoStatus=CallProtoService(accs[i]->szModuleName,PS_GETSTATUS,0,0);
 			ProtosData[visProtoCount].ProtoEMailCount=NULL;
 			if (ProtosData[visProtoCount].ProtoStatus>ID_STATUS_OFFLINE)
 			{
 				// create service name
-				mir_snprintf(servName, SIZEOF(servName), "%s/GetUnreadEmailCount", proto[i]->szName);   
+				mir_snprintf(servName, SIZEOF(servName), "%s/GetUnreadEmailCount", accs[i]->szModuleName);   
 				if((g_StatusBarData.showProtoEmails == 1) && ServiceExists(servName))
 				{
-	                mir_snprintf(protoNameExt, SIZEOF(protoNameExt),"[%d]", (int) CallService(servName, 0, 0));
+					mir_snprintf(protoNameExt, SIZEOF(protoNameExt),"[%d]", (int) CallService(servName, 0, 0));
 					ProtosData[visProtoCount].ProtoEMailCount=mir_strdup(protoNameExt);
 				}
 			}	
-			if(!CallProtoService(proto[i]->szName,PS_GETNAME,(WPARAM)SIZEOF(buf),(LPARAM)buf))
+			if(!CallProtoService(accs[i]->szModuleName,PS_GETNAME,(WPARAM)SIZEOF(buf),(LPARAM)buf))
 				ProtosData[visProtoCount].ProtoHumanName=mir_strdup(buf);
 			else
-				ProtosData[visProtoCount].ProtoHumanName=mir_strdup(proto[i]->szName);
-            ProtosData[visProtoCount].ProtoName=mir_strdup(proto[i]->szName);
-            ProtosData[visProtoCount].ProtoStatusText=mir_strdup((char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,(WPARAM)ProtosData[visProtoCount].ProtoStatus,0));
-            ProtosData[visProtoCount].ProtoPos=visProtoCount;
-            visProtoCount++;
-            allocedItemData++;
-        }
+				ProtosData[visProtoCount].ProtoHumanName=mir_strdup(accs[i]->szModuleName);
+			ProtosData[visProtoCount].ProtoName=mir_strdup(accs[i]->szModuleName);
+			ProtosData[visProtoCount].ProtoStatusText=mir_strdup((char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,(WPARAM)ProtosData[visProtoCount].ProtoStatus,0));
+			ProtosData[visProtoCount].ProtoPos=visProtoCount;
+			visProtoCount++;
+			allocedItemData++;
+		}
 
-        // Calculate rects
+		// Calculate rects
 
-        //START MULTILINE HERE 
-        {
-            int orig_protoCount=protoCount;
-            int orig_visProtoCount=visProtoCount;
-            ProtoItemData * orig_ProtosData=ProtosData;
-            int linecount;
-            if (g_StatusBarData.nProtosPerLine)
-                protosperline=g_StatusBarData.nProtosPerLine;
-            else if (orig_visProtoCount)
-                protosperline=orig_visProtoCount;
-            else if (protoCount)
-            {
-                protosperline=protoCount;
-                orig_visProtoCount=protoCount;
-            }
-            else 
-            {
-                protosperline=1;
-                orig_visProtoCount=1;
-            }
-            protosperline=min(protosperline,orig_visProtoCount);
-            linecount=(orig_visProtoCount+(protosperline-1))/protosperline; //divide with rounding to up
-            for (line=0; line<linecount; line++)
-            {    
-                int height;
-                int rowsdy;
-                int rowheight=max(textSize.cy+2,iconHeight);
-                protoCount=min(protosperline,(orig_protoCount-line*protosperline));
-                visProtoCount=min(protosperline,(orig_visProtoCount-line*protosperline));
-                ProtosData+=line*protosperline; 
-                GetClientRect(hWnd,&rc);
-                aligndx=0;
-                maxwidth=0;
-                xstatus=0;
-                SumWidth=0;
-                height=(rowheight*linecount);
+		//START MULTILINE HERE 
+		{
+			int orig_protoCount=protoCount;
+			int orig_visProtoCount=visProtoCount;
+			ProtoItemData * orig_ProtosData=ProtosData;
+			int linecount;
+			if (g_StatusBarData.nProtosPerLine)
+				protosperline=g_StatusBarData.nProtosPerLine;
+			else if (orig_visProtoCount)
+				protosperline=orig_visProtoCount;
+			else if (protoCount)
+			{
+				protosperline=protoCount;
+				orig_visProtoCount=protoCount;
+			}
+			else 
+			{
+				protosperline=1;
+				orig_visProtoCount=1;
+			}
+			protosperline=min(protosperline,orig_visProtoCount);
+			linecount=(orig_visProtoCount+(protosperline-1))/protosperline; //divide with rounding to up
+			for (line=0; line<linecount; line++)
+			{    
+				int height;
+				int rowsdy;
+				int rowheight=max(textSize.cy+2,iconHeight);
+				protoCount=min(protosperline,(orig_protoCount-line*protosperline));
+				visProtoCount=min(protosperline,(orig_visProtoCount-line*protosperline));
+				ProtosData+=line*protosperline; 
+				GetClientRect(hWnd,&rc);
+				aligndx=0;
+				maxwidth=0;
+				xstatus=0;
+				SumWidth=0;
+				height=(rowheight*linecount);
 
 				rowsdy=((rc.bottom-rc.top)-height)/2;
 				if (rowheight*(line)+rowsdy<rc.top-rowheight) continue;
-			    if (rowheight*(line+1)+rowsdy>rc.bottom+rowheight)
+				if (rowheight*(line+1)+rowsdy>rc.bottom+rowheight)
 				{
 					ProtosData=orig_ProtosData;
 					break;
@@ -281,233 +282,233 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 				rc.top=rowsdy+rowheight*line+1;
 				rc.bottom=rowsdy+rowheight*(line+1);
 
-                textY=rc.top+(((rc.bottom-rc.top)-textSize.cy)/2);
-                iconY=rc.top+(((rc.bottom-rc.top)-iconHeight)/2);
+				textY=rc.top+(((rc.bottom-rc.top)-textSize.cy)/2);
+				iconY=rc.top+(((rc.bottom-rc.top)-iconHeight)/2);
 
-                { //Code for each line
-                    {
-                        DWORD sw;
-                        rectwidth=rc.right-rc.left-g_StatusBarData.rectBorders.left-g_StatusBarData.rectBorders.right;
-                        if (visProtoCount>1) sw=(rectwidth-(g_StatusBarData.extraspace*(visProtoCount-1)))/visProtoCount;
-                        else sw=rectwidth;
-                        if (ProtoWidth) mir_free_and_nill(ProtoWidth);
-                        ProtoWidth=mir_alloc(sizeof(DWORD)*visProtoCount);
-                        for (i=0; i<visProtoCount; i++)
-                        {
-                            SIZE textSize;
-                            DWORD w=GetSystemMetrics(SM_CXSMICON)+1;
-                            ProtosData[i].extraIcon=NULL;
-                            if ((g_StatusBarData.xStatusMode&8) && ProtosData[i].ProtoStatus>ID_STATUS_OFFLINE) 
-                            {
-                                char str[MAXMODULELABELLENGTH];
-                                strcpy(str,ProtosData[i].ProtoName);
-                                strcat(str,"/GetXStatus");
-                                if (ServiceExists(str))
-                                {
-                                    char * dbTitle="XStatusName";
-                                    char * dbTitle2=NULL;
-                                    xstatus=CallProtoService(ProtosData[i].ProtoName,"/GetXStatus",(WPARAM)&dbTitle,(LPARAM)&dbTitle2);
-                                    if (dbTitle && xstatus)
-                                    {
-                                        DBVARIANT dbv={0};
-                                        if (!DBGetContactSettingTString(NULL,ProtosData[i].ProtoName,dbTitle,&dbv))
-                                        {
-                                            ProtosData[i].ProtoXStatus=mir_tstrdup(dbv.ptszVal);
-                                            //mir_free_and_nill(dbv.ptszVal);
-                                            DBFreeVariant(&dbv);
-                                        }
-                                    }
-                                }
-                            }
-                            if ((g_StatusBarData.xStatusMode&3))
-                            {
-                                if (ProtosData[i].ProtoStatus>ID_STATUS_OFFLINE)
-                                {
-                                    char str[MAXMODULELABELLENGTH];
-                                    strcpy(str,ProtosData[i].ProtoName);
-                                    strcat(str,"/GetXStatusIcon");
-                                    if (ServiceExists(str))
-                                        ProtosData[i].extraIcon=(HICON)CallService(str,0,0);
-                                    if (ProtosData[i].extraIcon && (g_StatusBarData.xStatusMode&3)==3)
-                                        w+=GetSystemMetrics(SM_CXSMICON)+1;
+				{ //Code for each line
+					{
+						DWORD sw;
+						rectwidth=rc.right-rc.left-g_StatusBarData.rectBorders.left-g_StatusBarData.rectBorders.right;
+						if (visProtoCount>1) sw=(rectwidth-(g_StatusBarData.extraspace*(visProtoCount-1)))/visProtoCount;
+						else sw=rectwidth;
+						if (ProtoWidth) mir_free_and_nill(ProtoWidth);
+						ProtoWidth=mir_alloc(sizeof(DWORD)*visProtoCount);
+						for (i=0; i<visProtoCount; i++)
+						{
+							SIZE textSize;
+							DWORD w=GetSystemMetrics(SM_CXSMICON)+1;
+							ProtosData[i].extraIcon=NULL;
+							if ((g_StatusBarData.xStatusMode&8) && ProtosData[i].ProtoStatus>ID_STATUS_OFFLINE) 
+							{
+								char str[MAXMODULELABELLENGTH];
+								strcpy(str,ProtosData[i].ProtoName);
+								strcat(str,"/GetXStatus");
+								if (ServiceExists(str))
+								{
+									char * dbTitle="XStatusName";
+									char * dbTitle2=NULL;
+									xstatus=CallProtoService(ProtosData[i].ProtoName,"/GetXStatus",(WPARAM)&dbTitle,(LPARAM)&dbTitle2);
+									if (dbTitle && xstatus)
+									{
+										DBVARIANT dbv={0};
+										if (!DBGetContactSettingTString(NULL,ProtosData[i].ProtoName,dbTitle,&dbv))
+										{
+											ProtosData[i].ProtoXStatus=mir_tstrdup(dbv.ptszVal);
+											//mir_free_and_nill(dbv.ptszVal);
+											DBFreeVariant(&dbv);
+										}
+									}
+								}
+							}
+							if ((g_StatusBarData.xStatusMode&3))
+							{
+								if (ProtosData[i].ProtoStatus>ID_STATUS_OFFLINE)
+								{
+									char str[MAXMODULELABELLENGTH];
+									strcpy(str,ProtosData[i].ProtoName);
+									strcat(str,"/GetXStatusIcon");
+									if (ServiceExists(str))
+										ProtosData[i].extraIcon=(HICON)CallService(str,0,0);
+									if (ProtosData[i].extraIcon && (g_StatusBarData.xStatusMode&3)==3)
+										w+=GetSystemMetrics(SM_CXSMICON)+1;
 
-                                }
-                            }
-                            if (g_StatusBarData.showProtoName)
-                            {
-                                GetTextExtentPoint32A(hDC,ProtosData[i].ProtoHumanName,lstrlenA(ProtosData[i].ProtoHumanName),&textSize);
-                                w+=textSize.cx+3+spaceWidth;
-                            }
+								}
+							}
+							if (g_StatusBarData.showProtoName)
+							{
+								GetTextExtentPoint32A(hDC,ProtosData[i].ProtoHumanName,lstrlenA(ProtosData[i].ProtoHumanName),&textSize);
+								w+=textSize.cx+3+spaceWidth;
+							}
 							if (g_StatusBarData.showProtoEmails && ProtosData[i].ProtoEMailCount )
 							{
 								GetTextExtentPoint32A(hDC,ProtosData[i].ProtoEMailCount,lstrlenA(ProtosData[i].ProtoEMailCount),&textSize);
 								w+=textSize.cx+3+spaceWidth;
 							}
-                            if (g_StatusBarData.showStatusName)
-                            {
-                                GetTextExtentPoint32A(hDC,ProtosData[i].ProtoStatusText,lstrlenA(ProtosData[i].ProtoStatusText),&textSize);
-                                w+=textSize.cx+spaceWidth+3;
+							if (g_StatusBarData.showStatusName)
+							{
+								GetTextExtentPoint32A(hDC,ProtosData[i].ProtoStatusText,lstrlenA(ProtosData[i].ProtoStatusText),&textSize);
+								w+=textSize.cx+spaceWidth+3;
 
-                            }
-                            if ((g_StatusBarData.xStatusMode&8) && ProtosData[i].ProtoXStatus)
-                            {
-                                GetTextExtentPoint32(hDC,ProtosData[i].ProtoXStatus,lstrlen(ProtosData[i].ProtoXStatus),&textSize);
-                                w+=textSize.cx+spaceWidth+3;
-                            }
+							}
+							if ((g_StatusBarData.xStatusMode&8) && ProtosData[i].ProtoXStatus)
+							{
+								GetTextExtentPoint32(hDC,ProtosData[i].ProtoXStatus,lstrlen(ProtosData[i].ProtoXStatus),&textSize);
+								w+=textSize.cx+spaceWidth+3;
+							}
 							if ( (g_StatusBarData.showProtoName) || 
-								 (g_StatusBarData.showProtoEmails && ProtosData[i].ProtoEMailCount ) || 
-								 (g_StatusBarData.showStatusName) ||
-								 ((g_StatusBarData.xStatusMode&8) && ProtosData[i].ProtoXStatus) )
+								(g_StatusBarData.showProtoEmails && ProtosData[i].ProtoEMailCount ) || 
+								(g_StatusBarData.showStatusName) ||
+								((g_StatusBarData.xStatusMode&8) && ProtosData[i].ProtoXStatus) )
 								w-=spaceWidth;
-                            ProtosData[i].fullWidth=w;
-                            if (g_StatusBarData.sameWidth)
-                            {
-                                ProtoWidth[i]=sw;
-                                SumWidth+=w;
-                            }
-                            else
-                            {
-                                ProtoWidth[i]=w;
-                                SumWidth+=w;
-                            }
-                        }
+							ProtosData[i].fullWidth=w;
+							if (g_StatusBarData.sameWidth)
+							{
+								ProtoWidth[i]=sw;
+								SumWidth+=w;
+							}
+							else
+							{
+								ProtoWidth[i]=w;
+								SumWidth+=w;
+							}
+						}
 
-                        // Reposition rects
-                        for(i=0; i<visProtoCount; i++)
-                            if (ProtoWidth[i]>maxwidth) maxwidth=ProtoWidth[i];
+						// Reposition rects
+						for(i=0; i<visProtoCount; i++)
+							if (ProtoWidth[i]>maxwidth) maxwidth=ProtoWidth[i];
 
-                        if (g_StatusBarData.sameWidth)
-                        {
-                            for (i=0; i<visProtoCount; i++)
-                                ProtoWidth[i]=maxwidth;
-                            SumWidth=maxwidth*visProtoCount;
-                        }
-                        SumWidth+=(visProtoCount-1)*(g_StatusBarData.extraspace+1);
+						if (g_StatusBarData.sameWidth)
+						{
+							for (i=0; i<visProtoCount; i++)
+								ProtoWidth[i]=maxwidth;
+							SumWidth=maxwidth*visProtoCount;
+						}
+						SumWidth+=(visProtoCount-1)*(g_StatusBarData.extraspace+1);
 
-                        if (SumWidth>rectwidth)
-                        {
-                            float f=(float)rectwidth/SumWidth;
-                            //dx=(int)(0.5+(float)dx/visProtoCount);
-                            //SumWidth-=dx*visProtoCount;
-                            SumWidth=0;
-                            for (i=0; i<visProtoCount; i++)
-                            {
-                                ProtoWidth[i]=(int)((float)ProtoWidth[i]*f);
-                                SumWidth+=ProtoWidth[i];
-                            }
-                            SumWidth+=(visProtoCount-1)*(g_StatusBarData.extraspace+1);
-                        }
-                    }
-                    if (g_StatusBarData.Align==1) //center
-                        aligndx=(rectwidth-SumWidth)>>1;
-                    else if (g_StatusBarData.Align==2) //right
-                        aligndx=(rectwidth-SumWidth);
-                    // Draw in rects
-                    //ske_SelectTextEffect(hDC,g_StatusBarData.TextEffectID,g_StatusBarData.TextEffectColor1,g_StatusBarData.TextEffectColor2);
-                    {
-                        RECT r=rc;
-                        r.top+=g_StatusBarData.rectBorders.top;
-                        r.bottom-=g_StatusBarData.rectBorders.bottom;
-                        r.left+=g_StatusBarData.rectBorders.left+aligndx;
-                        for (i=0; i< visProtoCount; i++)
-                        {
+						if (SumWidth>rectwidth)
+						{
+							float f=(float)rectwidth/SumWidth;
+							//dx=(int)(0.5+(float)dx/visProtoCount);
+							//SumWidth-=dx*visProtoCount;
+							SumWidth=0;
+							for (i=0; i<visProtoCount; i++)
+							{
+								ProtoWidth[i]=(int)((float)ProtoWidth[i]*f);
+								SumWidth+=ProtoWidth[i];
+							}
+							SumWidth+=(visProtoCount-1)*(g_StatusBarData.extraspace+1);
+						}
+					}
+					if (g_StatusBarData.Align==1) //center
+						aligndx=(rectwidth-SumWidth)>>1;
+					else if (g_StatusBarData.Align==2) //right
+						aligndx=(rectwidth-SumWidth);
+					// Draw in rects
+					//ske_SelectTextEffect(hDC,g_StatusBarData.TextEffectID,g_StatusBarData.TextEffectColor1,g_StatusBarData.TextEffectColor2);
+					{
+						RECT r=rc;
+						r.top+=g_StatusBarData.rectBorders.top;
+						r.bottom-=g_StatusBarData.rectBorders.bottom;
+						r.left+=g_StatusBarData.rectBorders.left+aligndx;
+						for (i=0; i< visProtoCount; i++)
+						{
 
-                            HRGN rgn;
-                            int x=r.left;
-                            HICON hIcon=NULL;
-                            HICON hxIcon=NULL;
-                            BOOL NeedDestroy=FALSE;
-                            if (ProtosData[i].ProtoStatus>ID_STATUS_OFFLINE && ((g_StatusBarData.xStatusMode)&3)>0)
-                            {
-                                char str[MAXMODULELABELLENGTH];
-                                strcpy(str,ProtosData[i].ProtoName);
-                                strcat(str,"/GetXStatusIcon");
-                                if (ServiceExists(str))
-                                {
-                                    hxIcon=ProtosData[i].extraIcon;
-                                    if (hxIcon)
-                                    {
-                                        if (((g_StatusBarData.xStatusMode)&3)==2)
-                                        {
-                                            hIcon=GetMainStatusOverlay(ProtosData[i].ProtoStatus);
-                                            NeedDestroy=TRUE;
-                                        }
-                                        else if (((g_StatusBarData.xStatusMode)&3)==1)
-                                        {
-                                            hIcon=hxIcon;
-                                            NeedDestroy=TRUE;
-                                            hxIcon=NULL;
-                                        }           
+							HRGN rgn;
+							int x=r.left;
+							HICON hIcon=NULL;
+							HICON hxIcon=NULL;
+							BOOL NeedDestroy=FALSE;
+							if (ProtosData[i].ProtoStatus>ID_STATUS_OFFLINE && ((g_StatusBarData.xStatusMode)&3)>0)
+							{
+								char str[MAXMODULELABELLENGTH];
+								strcpy(str,ProtosData[i].ProtoName);
+								strcat(str,"/GetXStatusIcon");
+								if (ServiceExists(str))
+								{
+									hxIcon=ProtosData[i].extraIcon;
+									if (hxIcon)
+									{
+										if (((g_StatusBarData.xStatusMode)&3)==2)
+										{
+											hIcon=GetMainStatusOverlay(ProtosData[i].ProtoStatus);
+											NeedDestroy=TRUE;
+										}
+										else if (((g_StatusBarData.xStatusMode)&3)==1)
+										{
+											hIcon=hxIcon;
+											NeedDestroy=TRUE;
+											hxIcon=NULL;
+										}           
 
-                                    }
-                                }
-                            }
-                            if (hIcon==NULL && (hxIcon==NULL || (((g_StatusBarData.xStatusMode)&3)==3)))
-                            {
-                                if (hIcon==NULL && (g_StatusBarData.connectingIcon==1) && ProtosData[i].ProtoStatus>=ID_STATUS_CONNECTING&&ProtosData[i].ProtoStatus<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
-                                {
-                                    hIcon=(HICON)CLUI_GetConnectingIconService((WPARAM)ProtosData[i].ProtoName,0);
-                                    if (hIcon) NeedDestroy=TRUE;
-                                    else LoadSkinnedProtoIcon(ProtosData[i].ProtoName,ProtosData[i].ProtoStatus);
-                                }
-                                else hIcon=LoadSkinnedProtoIcon(ProtosData[i].ProtoName,ProtosData[i].ProtoStatus);
-                            }
+									}
+								}
+							}
+							if (hIcon==NULL && (hxIcon==NULL || (((g_StatusBarData.xStatusMode)&3)==3)))
+							{
+								if (hIcon==NULL && (g_StatusBarData.connectingIcon==1) && ProtosData[i].ProtoStatus>=ID_STATUS_CONNECTING&&ProtosData[i].ProtoStatus<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES)
+								{
+									hIcon=(HICON)CLUI_GetConnectingIconService((WPARAM)ProtosData[i].ProtoName,0);
+									if (hIcon) NeedDestroy=TRUE;
+									else LoadSkinnedProtoIcon(ProtosData[i].ProtoName,ProtosData[i].ProtoStatus);
+								}
+								else hIcon=LoadSkinnedProtoIcon(ProtosData[i].ProtoName,ProtosData[i].ProtoStatus);
+							}
 
-                            r.right=r.left+ProtoWidth[i];
-                            rgn=CreateRectRgn(r.left,r.top,r.right,r.bottom);
-                            //
-                            {
-                                if (g_StatusBarData.sameWidth)
-                                {
-                                    int fw=ProtosData[i].fullWidth;
-                                    int rw=r.right-r.left;
-                                    if (g_StatusBarData.Align==1)
-                                    {
-                                        x=r.left+((rw-fw)/2);
-                                    }
-                                    else if (g_StatusBarData.Align==2)
-                                    {
-                                        x=r.left+((rw-fw));
-                                    }
-                                    else x=r.left;
-                                }
-                            }
-                            //
-                            ProtosData[i].protoRect=r;
-                            SelectClipRgn(hDC,rgn);
-                            ProtosData[i].DoubleIcons=FALSE;
-                            if ((g_StatusBarData.xStatusMode&3)==3)
-                            {
-                                if (hIcon) mod_DrawIconEx_helper(hDC,x,iconY,hIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
-                                if (hxIcon) 
-                                {
-                                    mod_DrawIconEx_helper(hDC,x+GetSystemMetrics(SM_CXSMICON)+1,iconY,hxIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
-                                    x+=GetSystemMetrics(SM_CXSMICON)+1;
-                                }
-                                ProtosData[i].DoubleIcons=hIcon&&hxIcon;
-                            }
-                            else
-                            {
-                                if (hxIcon) mod_DrawIconEx_helper(hDC,x,iconY,hxIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
-                                if (hIcon) mod_DrawIconEx_helper(hDC,x,iconY,hIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL|((hxIcon&&(g_StatusBarData.xStatusMode&4))?(192<<24):0));
-                            }
-                            if (hxIcon) DestroyIcon_protect(hxIcon);
-                            if (NeedDestroy) DestroyIcon_protect(hIcon);
-                            x+=GetSystemMetrics(SM_CXSMICON)+1;
-                            if (g_StatusBarData.showProtoName)
-                            {
-                                SIZE textSize;
-                                RECT rt=r;
-                                rt.left=x+(spaceWidth>>1);
-                                rt.top=textY;
-                                ske_DrawTextA(hDC,ProtosData[i].ProtoHumanName,lstrlenA(ProtosData[i].ProtoHumanName),&rt,0);
-                                //TextOutS(hDC,x,textY,ProtosData[i].ProtoName,lstrlenA(ProtosData[i].ProtoName));
-                                if ((g_StatusBarData.showProtoEmails && ProtosData[i].ProtoEMailCount!=NULL) || g_StatusBarData.showStatusName || ((g_StatusBarData.xStatusMode&8) && ProtosData[i].ProtoXStatus))
-                                {
-                                    GetTextExtentPoint32A(hDC,ProtosData[i].ProtoHumanName,lstrlenA(ProtosData[i].ProtoHumanName),&textSize);
-                                    x+=textSize.cx+3;
-                                }
-                            }
+							r.right=r.left+ProtoWidth[i];
+							rgn=CreateRectRgn(r.left,r.top,r.right,r.bottom);
+							//
+							{
+								if (g_StatusBarData.sameWidth)
+								{
+									int fw=ProtosData[i].fullWidth;
+									int rw=r.right-r.left;
+									if (g_StatusBarData.Align==1)
+									{
+										x=r.left+((rw-fw)/2);
+									}
+									else if (g_StatusBarData.Align==2)
+									{
+										x=r.left+((rw-fw));
+									}
+									else x=r.left;
+								}
+							}
+							//
+							ProtosData[i].protoRect=r;
+							SelectClipRgn(hDC,rgn);
+							ProtosData[i].DoubleIcons=FALSE;
+							if ((g_StatusBarData.xStatusMode&3)==3)
+							{
+								if (hIcon) mod_DrawIconEx_helper(hDC,x,iconY,hIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
+								if (hxIcon) 
+								{
+									mod_DrawIconEx_helper(hDC,x+GetSystemMetrics(SM_CXSMICON)+1,iconY,hxIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
+									x+=GetSystemMetrics(SM_CXSMICON)+1;
+								}
+								ProtosData[i].DoubleIcons=hIcon&&hxIcon;
+							}
+							else
+							{
+								if (hxIcon) mod_DrawIconEx_helper(hDC,x,iconY,hxIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
+								if (hIcon) mod_DrawIconEx_helper(hDC,x,iconY,hIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL|((hxIcon&&(g_StatusBarData.xStatusMode&4))?(192<<24):0));
+							}
+							if (hxIcon) DestroyIcon_protect(hxIcon);
+							if (NeedDestroy) DestroyIcon_protect(hIcon);
+							x+=GetSystemMetrics(SM_CXSMICON)+1;
+							if (g_StatusBarData.showProtoName)
+							{
+								SIZE textSize;
+								RECT rt=r;
+								rt.left=x+(spaceWidth>>1);
+								rt.top=textY;
+								ske_DrawTextA(hDC,ProtosData[i].ProtoHumanName,lstrlenA(ProtosData[i].ProtoHumanName),&rt,0);
+								//TextOutS(hDC,x,textY,ProtosData[i].ProtoName,lstrlenA(ProtosData[i].ProtoName));
+								if ((g_StatusBarData.showProtoEmails && ProtosData[i].ProtoEMailCount!=NULL) || g_StatusBarData.showStatusName || ((g_StatusBarData.xStatusMode&8) && ProtosData[i].ProtoXStatus))
+								{
+									GetTextExtentPoint32A(hDC,ProtosData[i].ProtoHumanName,lstrlenA(ProtosData[i].ProtoHumanName),&textSize);
+									x+=textSize.cx+3;
+								}
+							}
 							if (g_StatusBarData.showProtoEmails && ProtosData[i].ProtoEMailCount!=NULL)
 							{
 								SIZE textSize;
@@ -522,46 +523,46 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 									x+=textSize.cx+3;
 								}
 							}
-                            if (g_StatusBarData.showStatusName)
-                            {
-                                SIZE textSize;
-                                RECT rt=r;
-                                rt.left=x+(spaceWidth>>1);
-                                rt.top=textY;
-                                ske_DrawTextA(hDC,ProtosData[i].ProtoStatusText,lstrlenA(ProtosData[i].ProtoStatusText),&rt,0);
-                                if ((g_StatusBarData.xStatusMode&8) && ProtosData[i].ProtoXStatus)
-                                {
-                                    GetTextExtentPoint32A(hDC,ProtosData[i].ProtoStatusText,lstrlenA(ProtosData[i].ProtoStatusText),&textSize);
-                                    x+=textSize.cx+3;
-                                }
-                                //TextOutS(hDC,x,textY,ProtosData[i].ProtoStatusText,lstrlenA(ProtosData[i].ProtoStatusText));
-                            }
-                            if ((g_StatusBarData.xStatusMode&8) && ProtosData[i].ProtoXStatus)
-                            {
-                                RECT rt=r;
-                                rt.left=x+(spaceWidth>>1);
-                                rt.top=textY;
-                                ske_DrawText(hDC,ProtosData[i].ProtoXStatus,lstrlen(ProtosData[i].ProtoXStatus),&rt,0);
-                                //TextOutS(hDC,x,textY,ProtosData[i].ProtoStatusText,lstrlenA(ProtosData[i].ProtoStatusText));
-                            }
+							if (g_StatusBarData.showStatusName)
+							{
+								SIZE textSize;
+								RECT rt=r;
+								rt.left=x+(spaceWidth>>1);
+								rt.top=textY;
+								ske_DrawTextA(hDC,ProtosData[i].ProtoStatusText,lstrlenA(ProtosData[i].ProtoStatusText),&rt,0);
+								if ((g_StatusBarData.xStatusMode&8) && ProtosData[i].ProtoXStatus)
+								{
+									GetTextExtentPoint32A(hDC,ProtosData[i].ProtoStatusText,lstrlenA(ProtosData[i].ProtoStatusText),&textSize);
+									x+=textSize.cx+3;
+								}
+								//TextOutS(hDC,x,textY,ProtosData[i].ProtoStatusText,lstrlenA(ProtosData[i].ProtoStatusText));
+							}
+							if ((g_StatusBarData.xStatusMode&8) && ProtosData[i].ProtoXStatus)
+							{
+								RECT rt=r;
+								rt.left=x+(spaceWidth>>1);
+								rt.top=textY;
+								ske_DrawText(hDC,ProtosData[i].ProtoXStatus,lstrlen(ProtosData[i].ProtoXStatus),&rt,0);
+								//TextOutS(hDC,x,textY,ProtosData[i].ProtoStatusText,lstrlenA(ProtosData[i].ProtoStatusText));
+							}
 
-                            r.left=r.right+g_StatusBarData.extraspace;
-                            //SelectClipRgn(hDC,NULL);
-                            DeleteObject(rgn);
+							r.left=r.right+g_StatusBarData.extraspace;
+							//SelectClipRgn(hDC,NULL);
+							DeleteObject(rgn);
 
-                        }
-                    }
+						}
+					}
 
-                    if (ProtoWidth) mir_free_and_nill(ProtoWidth);
-                } //code for each line
-                ProtosData=orig_ProtosData;
-            }
-        }
-    }
+					if (ProtoWidth) mir_free_and_nill(ProtoWidth);
+				} //code for each line
+				ProtosData=orig_ProtosData;
+			}
+		}
+	}
 
-    SelectObject(hDC,hOldFont);
+	SelectObject(hDC,hOldFont);
 	ske_ResetTextEffect(hDC);
-    return 0;
+	return 0;
 }
 
 #define TOOLTIP_TOLERANCE 5

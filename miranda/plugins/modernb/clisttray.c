@@ -119,14 +119,14 @@ int GetAverageMode()
 {
 	int count,netProtoCount,i;
 	int averageMode=0;
-	PROTOCOLDESCRIPTOR **protos;
-	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&count,(LPARAM)&protos);
+	PROTOACCOUNT **accs;
+	ProtoEnumAccounts( &count, &accs );
 	for(i=0,netProtoCount=0;i<count;i++) {
-		if(protos[i]->type!=PROTOTYPE_PROTOCOL || (pcli->pfnGetProtocolVisibility(protos[i]->szName)==0)) continue;
+		if ( pcli->pfnGetProtocolVisibility(accs[i]->szModuleName) == 0 ) continue;
 		pcli->cycleStep=i;
 		netProtoCount++;
-		if(averageMode==0) averageMode=CallProtoService(protos[i]->szName,PS_GETSTATUS,0,0);
-		else if(averageMode!=CallProtoService(protos[i]->szName,PS_GETSTATUS,0,0)) {averageMode=-1; break;}
+		if(averageMode==0) averageMode=CallProtoService(accs[i]->szModuleName,PS_GETSTATUS,0,0);
+		else if(averageMode!=CallProtoService(accs[i]->szModuleName,PS_GETSTATUS,0,0)) {averageMode=-1; break;}
 	}
 	return averageMode;
 }
@@ -138,14 +138,14 @@ int GetAverageMode()
 static VOID CALLBACK RefreshTimerProc(HWND hwnd,UINT message,UINT idEvent,DWORD dwTime)
 {
 	int count,i;
-	PROTOCOLDESCRIPTOR **protos;
+	PROTOACCOUNT **accs;
 
 	if(RefreshTimerId) {KillTimer(NULL,RefreshTimerId); RefreshTimerId=0;}
 
-	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&count,(LPARAM)&protos);
+	ProtoEnumAccounts( &count, &accs );
 	for (i=0; i<count; i++)
-		if(protos[i]->type==PROTOTYPE_PROTOCOL && pcli->pfnGetProtocolVisibility(protos[i]->szName))
-			pcli->pfnTrayIconUpdateBase(protos[i]->szName);
+		if ( pcli->pfnGetProtocolVisibility(accs[i]->szModuleName))
+			pcli->pfnTrayIconUpdateBase(accs[i]->szModuleName);
 
 }
 //////// End by FYR /////////
@@ -153,7 +153,7 @@ static VOID CALLBACK RefreshTimerProc(HWND hwnd,UINT message,UINT idEvent,DWORD 
 void cliTrayIconUpdateBase(const char *szChangedProto)
 {
 	int i,count,netProtoCount,changed=-1;
-	PROTOCOLDESCRIPTOR **protos;
+	PROTOACCOUNT **accs;
 	int averageMode=0;
 	HWND hwnd=pcli->hwndContactList;
 
@@ -163,13 +163,13 @@ void cliTrayIconUpdateBase(const char *szChangedProto)
 		KillTimer( NULL, pcli->cycleTimerId);
 		pcli->cycleTimerId=0;
 	}
-	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&count,(LPARAM)&protos);
+	ProtoEnumAccounts( &count, &accs );
 	for(i=0,netProtoCount=0;i<count;i++) {
-		if(protos[i]->type!=PROTOTYPE_PROTOCOL || (pcli->pfnGetProtocolVisibility(protos[i]->szName)==0)) continue;
+		if ( pcli->pfnGetProtocolVisibility(accs[i]->szModuleName)==0 ) continue;
 		netProtoCount++;
-		if(!lstrcmpA(szChangedProto,protos[i]->szName)) pcli->cycleStep=i;
-		if(averageMode==0) averageMode=CallProtoService(protos[i]->szName,PS_GETSTATUS,0,0);
-		else if(averageMode!=CallProtoService(protos[i]->szName,PS_GETSTATUS,0,0)) {averageMode=-1; break;}
+		if(!lstrcmpA(szChangedProto,accs[i]->szModuleName)) pcli->cycleStep=i;
+		if(averageMode==0) averageMode=CallProtoService(accs[i]->szModuleName,PS_GETSTATUS,0,0);
+		else if(averageMode!=CallProtoService(accs[i]->szModuleName,PS_GETSTATUS,0,0)) {averageMode=-1; break;}
 	}
 
 	if(netProtoCount>1) {

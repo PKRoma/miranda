@@ -224,95 +224,91 @@ static void UpdateStickies()
 
 static int FillDialog(HWND hwnd)
 {
-    LVCOLUMN lvc = {0};
-    HWND hwndList = GetDlgItem(hwnd, IDC_PROTOCOLS);
-    LVITEMA item = {0};
-    int protoCount = 0, i, newItem;
-    PROTOCOLDESCRIPTOR **protos = 0;
-    
-    CLVM_EnumModes(FillModes);
-    ListView_SetExtendedListViewStyle(GetDlgItem(hwnd, IDC_PROTOCOLS), LVS_EX_CHECKBOXES);
-    lvc.mask = LVCF_FMT;
-    lvc.fmt = LVCFMT_IMAGE | LVCFMT_LEFT;
-    ListView_InsertColumn(GetDlgItem(hwnd, IDC_PROTOCOLS), 0, &lvc);
+	LVCOLUMN lvc = {0};
+	HWND hwndList = GetDlgItem(hwnd, IDC_PROTOCOLS);
+	LVITEMA item = {0};
+	int protoCount = 0, i, newItem;
+	PROTOACCOUNT **accs;
 
-    // fill protocols...
-    
-    CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM)&protoCount, (LPARAM)&protos);
-    item.mask = LVIF_TEXT;
-    item.iItem = 1000;
-    for(i = 0; i < protoCount; i++) 
+	CLVM_EnumModes(FillModes);
+	ListView_SetExtendedListViewStyle(GetDlgItem(hwnd, IDC_PROTOCOLS), LVS_EX_CHECKBOXES);
+	lvc.mask = LVCF_FMT;
+	lvc.fmt = LVCFMT_IMAGE | LVCFMT_LEFT;
+	ListView_InsertColumn(GetDlgItem(hwnd, IDC_PROTOCOLS), 0, &lvc);
+
+	// fill protocols...
+	ProtoEnumAccounts( &protoCount, &accs );
+
+	item.mask = LVIF_TEXT;
+	item.iItem = 1000;
+	for(i = 0; i < protoCount; i++) 
 	{
-        if(protos[i]->type != PROTOTYPE_PROTOCOL)
-            continue;
-        
-        item.pszText = protos[i]->szName;
-        newItem = SendMessageA(hwndList, LVM_INSERTITEMA, 0, (LPARAM)&item);
-    }
-    
-    ListView_SetColumnWidth(hwndList, 0, LVSCW_AUTOSIZE);
-    ListView_Arrange(hwndList, LVA_ALIGNLEFT | LVA_ALIGNTOP);
+		item.pszText = accs[i]->szModuleName;
+		newItem = SendMessageA(hwndList, LVM_INSERTITEMA, 0, (LPARAM)&item);
+	}
 
-    // fill groups
-    
-    {
-        LVITEM item = {0};
-        char buf[20];
-        DBVARIANT dbv = {0};
+	ListView_SetColumnWidth(hwndList, 0, LVSCW_AUTOSIZE);
+	ListView_Arrange(hwndList, LVA_ALIGNLEFT | LVA_ALIGNTOP);
 
-        hwndList = GetDlgItem(hwnd, IDC_GROUPS);
-        
-        ListView_SetExtendedListViewStyle(hwndList, LVS_EX_CHECKBOXES);
-        lvc.mask = LVCF_FMT;
-        lvc.fmt = LVCFMT_IMAGE | LVCFMT_LEFT;
-        ListView_InsertColumn(hwndList, 0, &lvc);
+	// fill groups
+	{
+		LVITEM item = {0};
+		char buf[20];
+		DBVARIANT dbv = {0};
 
-        item.mask = LVIF_TEXT;
-        item.iItem = 1000;
+		hwndList = GetDlgItem(hwnd, IDC_GROUPS);
 
-        item.pszText = TranslateT("Ungrouped contacts");
-        newItem = SendMessage(hwndList, LVM_INSERTITEM, 0, (LPARAM)&item);
-        
-        for(i = 0;;i++)
+		ListView_SetExtendedListViewStyle(hwndList, LVS_EX_CHECKBOXES);
+		lvc.mask = LVCF_FMT;
+		lvc.fmt = LVCFMT_IMAGE | LVCFMT_LEFT;
+		ListView_InsertColumn(hwndList, 0, &lvc);
+
+		item.mask = LVIF_TEXT;
+		item.iItem = 1000;
+
+		item.pszText = TranslateT("Ungrouped contacts");
+		newItem = SendMessage(hwndList, LVM_INSERTITEM, 0, (LPARAM)&item);
+
+		for(i = 0;;i++)
 		{
-            mir_snprintf(buf, 20, "%d", i);
-            if(DBGetContactSettingTString(NULL, "CListGroups", buf, &dbv))
-                break;
-            
-            item.pszText = &dbv.ptszVal[1];
-            newItem = SendMessage(hwndList, LVM_INSERTITEM, 0, (LPARAM)&item);
-            DBFreeVariant(&dbv);
-        }
-        ListView_SetColumnWidth(hwndList, 0, LVSCW_AUTOSIZE);
-        ListView_Arrange(hwndList, LVA_ALIGNLEFT | LVA_ALIGNTOP);
-    }
-    hwndList = GetDlgItem(hwnd, IDC_STATUSMODES);
-    ListView_SetExtendedListViewStyle(hwndList, LVS_EX_CHECKBOXES);
-    lvc.mask = LVCF_FMT;
-    lvc.fmt = LVCFMT_IMAGE | LVCFMT_LEFT;
-    ListView_InsertColumn(hwndList, 0, &lvc);
-    for(i = ID_STATUS_OFFLINE; i <= ID_STATUS_OUTTOLUNCH; i++)
+			mir_snprintf(buf, 20, "%d", i);
+			if(DBGetContactSettingTString(NULL, "CListGroups", buf, &dbv))
+				break;
+
+			item.pszText = &dbv.ptszVal[1];
+			newItem = SendMessage(hwndList, LVM_INSERTITEM, 0, (LPARAM)&item);
+			DBFreeVariant(&dbv);
+		}
+		ListView_SetColumnWidth(hwndList, 0, LVSCW_AUTOSIZE);
+		ListView_Arrange(hwndList, LVA_ALIGNLEFT | LVA_ALIGNTOP);
+	}
+	hwndList = GetDlgItem(hwnd, IDC_STATUSMODES);
+	ListView_SetExtendedListViewStyle(hwndList, LVS_EX_CHECKBOXES);
+	lvc.mask = LVCF_FMT;
+	lvc.fmt = LVCFMT_IMAGE | LVCFMT_LEFT;
+	ListView_InsertColumn(hwndList, 0, &lvc);
+	for(i = ID_STATUS_OFFLINE; i <= ID_STATUS_OUTTOLUNCH; i++)
 	{
 		LVITEM item = {0};
 		item.mask = LVIF_TEXT;
-        item.pszText = TranslateTS((TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)i, GCMDF_TCHAR_MY));
-        item.iItem = i - ID_STATUS_OFFLINE;
-        newItem = SendMessage(hwndList, LVM_INSERTITEM, 0, (LPARAM)&item);
-    }
-    ListView_SetColumnWidth(hwndList, 0, LVSCW_AUTOSIZE);
-    ListView_Arrange(hwndList, LVA_ALIGNLEFT | LVA_ALIGNTOP);
+		item.pszText = TranslateTS((TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)i, GCMDF_TCHAR_MY));
+		item.iItem = i - ID_STATUS_OFFLINE;
+		newItem = SendMessage(hwndList, LVM_INSERTITEM, 0, (LPARAM)&item);
+	}
+	ListView_SetColumnWidth(hwndList, 0, LVSCW_AUTOSIZE);
+	ListView_Arrange(hwndList, LVA_ALIGNLEFT | LVA_ALIGNTOP);
 
-    SendDlgItemMessage(hwnd, IDC_PROTOGROUPOP, CB_INSERTSTRING, -1, (LPARAM)TranslateT("And"));
-    SendDlgItemMessage(hwnd, IDC_PROTOGROUPOP, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Or"));
-    SendDlgItemMessage(hwnd, IDC_GROUPSTATUSOP, CB_INSERTSTRING, -1, (LPARAM)TranslateT("And"));
-    SendDlgItemMessage(hwnd, IDC_GROUPSTATUSOP, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Or"));
+	SendDlgItemMessage(hwnd, IDC_PROTOGROUPOP, CB_INSERTSTRING, -1, (LPARAM)TranslateT("And"));
+	SendDlgItemMessage(hwnd, IDC_PROTOGROUPOP, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Or"));
+	SendDlgItemMessage(hwnd, IDC_GROUPSTATUSOP, CB_INSERTSTRING, -1, (LPARAM)TranslateT("And"));
+	SendDlgItemMessage(hwnd, IDC_GROUPSTATUSOP, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Or"));
 
-    SendDlgItemMessage(hwnd, IDC_LASTMESSAGEOP, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Older than"));
-    SendDlgItemMessage(hwnd, IDC_LASTMESSAGEOP, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Newer than"));
+	SendDlgItemMessage(hwnd, IDC_LASTMESSAGEOP, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Older than"));
+	SendDlgItemMessage(hwnd, IDC_LASTMESSAGEOP, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Newer than"));
 
-    SendDlgItemMessage(hwnd, IDC_LASTMESSAGEUNIT, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Minutes"));
-    SendDlgItemMessage(hwnd, IDC_LASTMESSAGEUNIT, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Hours"));
-    SendDlgItemMessage(hwnd, IDC_LASTMESSAGEUNIT, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Days"));
+	SendDlgItemMessage(hwnd, IDC_LASTMESSAGEUNIT, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Minutes"));
+	SendDlgItemMessage(hwnd, IDC_LASTMESSAGEUNIT, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Hours"));
+	SendDlgItemMessage(hwnd, IDC_LASTMESSAGEUNIT, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Days"));
 	SendDlgItemMessage(hwnd, IDC_LASTMESSAGEOP, CB_SETCURSEL, 0, 0);
 	SendDlgItemMessage(hwnd, IDC_LASTMESSAGEUNIT, CB_SETCURSEL, 0, 0);
 	SetDlgItemInt(hwnd, IDC_LASTMSGVALUE, 0, 0);

@@ -565,10 +565,7 @@ static int CLUI_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	g_flag_bOnModulesLoadedCalled=TRUE;	
 	///pcli->pfnInvalidateDisplayNameCacheEntry(INVALID_HANDLE_VALUE);   
 	PostMessage(pcli->hwndContactList,M_CREATECLC,0,0); //$$$
-#ifndef FORCE_HOTKEY_IN_MODERN
 	InitSkinHotKeys();
-#endif FORCE_HOTKEY_IN_MODERN
-
 	return 0;
 }
 
@@ -904,18 +901,13 @@ static int CLUI_OnSettingChanging(WPARAM wParam,LPARAM lParam)
 // Happens on shutdown and standby.
 void CLUI_DisconnectAll()
 {
-
-	PROTOCOLDESCRIPTOR** ppProtoDesc;
+	PROTOACCOUNT **accs;
 	int nProtoCount;
 	int nProto;
 
-	CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM)&nProtoCount, (LPARAM)&ppProtoDesc);
+	ProtoEnumAccounts( &nProtoCount, &accs );
 	for (nProto = 0; nProto < nProtoCount; nProto++)
-	{
-		if (ppProtoDesc[nProto]->type == PROTOTYPE_PROTOCOL)
-			CallProtoService(ppProtoDesc[nProto]->szName, PS_SETSTATUS, ID_STATUS_OFFLINE, 0);
-	}
-
+		CallProtoService( accs[nProto]->szModuleName, PS_SETSTATUS, ID_STATUS_OFFLINE, 0);
 }
 
 static int CLUI_PreCreateCLC(HWND parent)

@@ -46,15 +46,6 @@ void	cliFreeCacheItem( pdisplayNameCacheEntry p );
 void	cliRebuildEntireList(HWND hwnd,struct ClcData *dat);
 void	cliRecalcScrollBar(HWND hwnd,struct ClcData *dat);
 
-#ifdef FORCE_HOTKEY_IN_MODERN
-
-int   cliHotKeysProcess(HWND hwnd,WPARAM wParam,LPARAM lParam);
-int   cliHotkeysProcessMessage(WPARAM wParam,LPARAM lParam);
-int   cliHotKeysRegister(HWND hwnd);
-int   cliHotKeysUnregister(HWND hwnd);
-
-#endif //FORCE_HOTKEY_IN_MODERN
-
 void	CLUI_cliOnCreateClc(void);
 int   cli_AddItemToGroup(struct ClcGroup *group, int iAboveItem);
 int   cli_AddInfoItemToGroup(struct ClcGroup *group,int flags,const TCHAR *pszText);
@@ -246,7 +237,6 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 
 	InitUxTheme();
 
-
 	// get the lists manager interface
 	li.cbSize = sizeof(li);
 	CallService(MS_SYSTEM_GET_LI, 0, (LPARAM)&li);
@@ -259,10 +249,10 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);
 	if ( (int)pcli == CALLSERVICE_NOTFOUND ) {
 LBL_Error:
-		MessageBoxA( NULL, "This version of plugin requires Miranda IM 0.7.0.17 or later", "Fatal error", MB_OK );
+		MessageBoxA( NULL, "This version of plugin requires Miranda IM 0.8.0.9 or later", "Fatal error", MB_OK );
 		return 1;
 	}
-	if ( pcli->version < 5 )
+	if ( pcli->version < 6 )
 		goto LBL_Error;
 
 	// OVERLOAD CLIST INTERFACE FUNCTIONS
@@ -280,15 +270,6 @@ LBL_Error:
 
 	pcli->pfnTrayIconUpdateBase = cliTrayIconUpdateBase;	
 	pcli->pfnCluiProtocolStatusChanged	= cliCluiProtocolStatusChanged;
-
-#ifdef FORCE_HOTKEY_IN_MODERN
-
-	pcli->pfnHotkeysProcessMessage		= cliHotkeysProcessMessage;
-	pcli->pfnHotKeysProcess		= cliHotKeysProcess;
-	pcli->pfnHotKeysRegister	= cliHotKeysRegister;
-	pcli->pfnHotKeysUnregister	= cliHotKeysUnregister;
-
-#endif //FORCE_HOTKEY_IN_MODERN
 
 	pcli->pfnBeginRenameSelection		= cliBeginRenameSelection;
 	pcli->pfnCreateClcContact	= cliCreateClcContact;

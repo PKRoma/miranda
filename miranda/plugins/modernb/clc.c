@@ -296,21 +296,15 @@ int BgClcChange(WPARAM wParam,LPARAM lParam)
 /*
 *	clc modules loaded hook
 */
-static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam) {
-
-	PROTOCOLDESCRIPTOR **proto;
-	int protoCount,i;
+static int ClcModulesLoaded(WPARAM wParam,LPARAM lParam)
+{
+	int i;
 	if (MirandaExiting()) return 0;
 
 	if (ServiceExists(MS_MC_DISABLEHIDDENGROUP))
 		CallService(MS_MC_DISABLEHIDDENGROUP, (WPARAM)TRUE, (LPARAM)0);
 	if (ServiceExists(MS_MC_GETPROTOCOLNAME))
 		meta_module = (char *)CallService(MS_MC_GETPROTOCOLNAME, 0, 0);
-
-	CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&proto);
-	for(i=0;i<protoCount;i++) {
-		if(proto[i]->type!=PROTOTYPE_PROTOCOL) continue;
-	}
 
 	// Get icons
 	if(ServiceExists(MS_SKIN2_ADDICON)) 
