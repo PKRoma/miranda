@@ -229,6 +229,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 int CJabberProto::OnModulesLoadedEx( WPARAM wParam, LPARAM lParam )
 {
 	JHookEvent( ME_TB_MODULELOADED, &CJabberProto::OnModernToolbarInit );
+	JHookEvent( ME_USERINFO_INITIALISE, &CJabberProto::OnUserInfoInit );
 
 	if ( ServiceExists( MS_GC_REGISTER )) {
 		jabberChatDllPresent = true;

@@ -131,7 +131,6 @@ CJabberProto::CJabberProto( const char* aProtoName ) :
 	JHookEvent( ME_OPT_INITIALISE, &CJabberProto::OnOptionsInit );
 	JHookEvent( ME_SYSTEM_PRESHUTDOWN, &CJabberProto::OnPreShutdown );
 	JHookEvent( ME_SKIN2_ICONSCHANGED, &CJabberProto::OnReloadIcons );
-	JHookEvent( ME_USERINFO_INITIALISE, &CJabberProto::OnUserInfoInit );
 
 	m_iqManager.FillPermanentHandlers();
 	m_iqManager.Start();
