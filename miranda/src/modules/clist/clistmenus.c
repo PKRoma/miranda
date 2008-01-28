@@ -596,7 +596,7 @@ int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
 						prot = NEWSTR_ALLOCA( prn );  // !!!!!!!!!!!!!!!!!!!!
 						if (prn) mir_free(prn);
 					#else
-						prot = mi.ptszName;
+						prot = timi->mi.ptszName;
 					#endif
 				}
 				if (!prot) return TRUE;
