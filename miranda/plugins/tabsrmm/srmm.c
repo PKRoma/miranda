@@ -82,7 +82,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 __declspec(dllexport) PLUGININFOEX *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
 	g_mirandaVersion = mirandaVersion;
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 7, 0, 0))
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 8, 0, 9))
 		return NULL;
 	return &pluginInfo;
 }

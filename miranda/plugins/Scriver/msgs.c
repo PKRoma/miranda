@@ -513,7 +513,7 @@ int StatusIconPressed(WPARAM wParam, LPARAM lParam) {
 static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
    CLISTMENUITEM mi;
-   PROTOCOLDESCRIPTOR **protocol;
+   PROTOACCOUNT **accs;
    int protoCount, i;
 
    ReloadGlobals();
@@ -535,12 +535,10 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	}
    mi.pszName = LPGEN("&Message");
    mi.pszService = MS_MSG_SENDMESSAGE;
-   CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) & protoCount, (LPARAM) & protocol);
+	ProtoEnumAccounts( &protoCount, &accs );
    for (i = 0; i < protoCount; i++) {
-      if (protocol[i]->type != PROTOTYPE_PROTOCOL)
-         continue;
-      if (CallProtoService(protocol[i]->szName, PS_GETCAPS, PFLAGNUM_1, 0) & PF1_IMSEND) {
-         mi.pszContactOwner = protocol[i]->szName;
+		if ( CallProtoService( accs[i]->szModuleName, PS_GETCAPS, PFLAGNUM_1, 0) & PF1_IMSEND) {
+         mi.pszContactOwner = accs[i]->szModuleName;
          hMsgMenuItem = mir_realloc(hMsgMenuItem, (hMsgMenuItemCount + 1) * sizeof(HANDLE));
          hMsgMenuItem[hMsgMenuItemCount++] = (HANDLE) CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
       }

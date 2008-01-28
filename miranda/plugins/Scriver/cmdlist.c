@@ -26,7 +26,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <string.h>
 #include "commonheaders.h"
 
-
 TCmdList *tcmdlist_append(TCmdList *list, const char *data, int maxSize, BOOL temporary) {
 	TCmdList *n;
 	TCmdList *new_list = mir_alloc(sizeof(TCmdList));
@@ -157,4 +156,3 @@ void tcmdlist_free(TCmdList *list) {
 		n = next;
 	}
 }
-
