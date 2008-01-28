@@ -957,7 +957,7 @@ void RebuildMenuOrder( void )
 	
 		pa = accounts.items[i];
 		pos = 0;
-		if ( !pa->bIsEnabled || (!bHideStatusMenu && !cli.pfnGetProtocolVisibility( pa->szModuleName )))
+		if ( !bHideStatusMenu && !cli.pfnGetProtocolVisibility( pa->szModuleName ))
 			continue;
 
 		flags = CallProtoService( pa->szModuleName, PS_GETCAPS,PFLAGNUM_2, 0 );
@@ -1082,46 +1082,49 @@ void RebuildMenuOrder( void )
 	for ( j=0; j < SIZEOF(statusModeList); j++ ) {
 		for ( i=0; i < accounts.count; i++ ) {
 			pa = accounts.items[i];
+			if ( !bHideStatusMenu && !cli.pfnGetProtocolVisibility( pa->szModuleName ))
+				continue;
 
 			flags = CallProtoService(pa->szModuleName,PS_GETCAPS,PFLAGNUM_2,0);
 			flags2 = CallProtoService(pa->szModuleName,PS_GETCAPS,PFLAGNUM_5,0);
 			flags &= ~flags2;
+			if ( !( flags & statusModePf2List[j] ))
+				continue;
 
-			if ( flags & statusModePf2List[j] ) {
-				memset( &tmi, 0, sizeof( tmi ));
-				tmi.cbSize = sizeof( tmi );
-				tmi.flags = CMIF_CHILDPOPUP | CMIF_TCHAR;
-				if ( statusModeList[j] == ID_STATUS_OFFLINE )
-					tmi.flags |= CMIF_CHECKED;
+			memset( &tmi, 0, sizeof( tmi ));
+			tmi.cbSize = sizeof( tmi );
+			tmi.flags = CMIF_CHILDPOPUP | CMIF_TCHAR;
+			if ( statusModeList[j] == ID_STATUS_OFFLINE )
+				tmi.flags |= CMIF_CHECKED;
 
-				tmi.hIcon = LoadSkinIcon( skinIconStatusList[j] );
-				tmi.position = pos++;
-				tmi.root = -1;
-				tmi.hotKey = MAKELPARAM(MOD_CONTROL,'0'+j);
-				{
-					//owner data
-					lpStatusMenuExecParam smep = ( lpStatusMenuExecParam )mir_alloc( sizeof( StatusMenuExecParam ));
-					smep->custom = FALSE;
-					smep->status = statusModeList[j];
-					smep->proto = NULL;
-					smep->svc = NULL;
-					tmi.ownerdata = smep;
-				}
-				{
-					TCHAR buf[ 256 ];
-					mir_sntprintf( buf, SIZEOF( buf ), _T("%s\tCtrl+%c"),
-						cli.pfnGetStatusModeDescription( statusModeList[j], GCMDF_TCHAR ), '0'+j );
-					tmi.ptszName = buf;
-					hStatusMainMenuHandles[j] = MO_AddNewMenuItem( hStatusMenuObject, &tmi );
-				}
-				{
-					char buf[ 256 ];
-					mir_snprintf( buf, sizeof( buf ), "Root2ProtocolIcon_%s_%s", pa->szModuleName, tmi.pszName );
-					MO_SetOptionsMenuItem( hStatusMainMenuHandles[j], OPT_MENUITEMSETUNIQNAME, ( int )buf );
-				}
-				IconLib_ReleaseIcon( tmi.hIcon, 0 );
-				break;
-	}	}	}
+			tmi.hIcon = LoadSkinIcon( skinIconStatusList[j] );
+			tmi.position = pos++;
+			tmi.root = -1;
+			tmi.hotKey = MAKELPARAM(MOD_CONTROL,'0'+j);
+			{
+				//owner data
+				lpStatusMenuExecParam smep = ( lpStatusMenuExecParam )mir_alloc( sizeof( StatusMenuExecParam ));
+				smep->custom = FALSE;
+				smep->status = statusModeList[j];
+				smep->proto = NULL;
+				smep->svc = NULL;
+				tmi.ownerdata = smep;
+			}
+			{
+				TCHAR buf[ 256 ];
+				mir_sntprintf( buf, SIZEOF( buf ), _T("%s\tCtrl+%c"),
+					cli.pfnGetStatusModeDescription( statusModeList[j], GCMDF_TCHAR ), '0'+j );
+				tmi.ptszName = buf;
+				hStatusMainMenuHandles[j] = MO_AddNewMenuItem( hStatusMenuObject, &tmi );
+			}
+			{
+				char buf[ 256 ];
+				mir_snprintf( buf, sizeof( buf ), "Root2ProtocolIcon_%s_%s", pa->szModuleName, tmi.pszName );
+				MO_SetOptionsMenuItem( hStatusMainMenuHandles[j], OPT_MENUITEMSETUNIQNAME, ( int )buf );
+			}
+			IconLib_ReleaseIcon( tmi.hIcon, 0 );
+			break;
+	}	}
 
 	BuildStatusMenu(0,0);
 }
