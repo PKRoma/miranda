@@ -1,11 +1,8 @@
 /*
 
-Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright ( c ) 2003-5 George Hazan.
-Copyright ( c ) 2002-3 Richard Hughes ( original version ).
-
-Miranda IM: the mir_free icq client for MS Windows
-Copyright ( C ) 2000-2002 Richard Hughes, Roland Rabien & Tristan Van de Vreede
+Jabber Protocol Plugin for Miranda IM
+Copyright ( C ) 2002-04  Santithorn Bunchua
+Copyright ( C ) 2005-08  George Hazan
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License

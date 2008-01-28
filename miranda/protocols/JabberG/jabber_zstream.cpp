@@ -3,7 +3,7 @@
 Jabber Protocol Plugin for Miranda IM
 XEP-0138 (Stream Compression) implementation
 
-Copyright ( C ) 2005-07  George Hazan
+Copyright ( C ) 2005-08  George Hazan
 Copyright ( C ) 2007     Kostya Chukavin, Taras Zackrepa
 
 This program is free software; you can redistribute it and/or

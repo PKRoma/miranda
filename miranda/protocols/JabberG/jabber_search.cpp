@@ -2,7 +2,7 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-07  George Hazan
+Copyright ( C ) 2005-08  George Hazan
 Copyright ( C ) 2007     Artem Shpynov
 
 Module implements a search according to XEP-0055: Jabber Search
