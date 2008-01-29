@@ -23,8 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include <m_protomod.h>
 
-int Proto_IsProtocolLoaded(WPARAM wParam,LPARAM lParam);
-
 //Protocol chain is list of integers "0".."n", with network protocol named "p"
 int Proto_CallContactService(WPARAM wParam,LPARAM lParam)
 //note that this is ChainSend() too, due to a quirk of function definitions
@@ -145,7 +143,7 @@ static int Proto_GetContactBaseProto(WPARAM wParam,LPARAM lParam)
 	if ( CallService( MS_DB_CONTACT_GETSETTINGSTATIC, wParam, (LPARAM)&dbcgs ))
 		return (int)(char*)NULL;
 
-	pd = ( PROTOCOLDESCRIPTOR* )Proto_IsProtocolLoaded( 0, ( LPARAM )dbv.pszVal );
+	pd = ( PROTOCOLDESCRIPTOR* )Proto_IsProtocolLoaded( dbv.pszVal );
 	if ( pd == NULL )
 		return (int)(char*)NULL;
 	return (int)pd->szName;
@@ -181,7 +179,7 @@ static int Proto_AddToContact(WPARAM wParam,LPARAM lParam)
 {
 	PROTOCOLDESCRIPTOR *pd,*pdCompare;
 
-	pd=(PROTOCOLDESCRIPTOR*)Proto_IsProtocolLoaded(0,lParam);
+	pd = Proto_IsProtocolLoaded(( char* )lParam );
 	if(pd==NULL) return 1;
 	if ( pd->type == PROTOTYPE_PROTOCOL ) {
 		DBWriteContactSettingString((HANDLE)wParam,"Protocol","p",(char*)lParam);
@@ -196,7 +194,7 @@ static int Proto_AddToContact(WPARAM wParam,LPARAM lParam)
 		for(i=0;;i++) {
 			_itoa(i,str,10);
 			if(DBGetContactSettingString((HANDLE)wParam,"_Filter",str,&dbv)) break;
-			pdCompare=(PROTOCOLDESCRIPTOR*)Proto_IsProtocolLoaded(0,(LPARAM)dbv.pszVal);
+			pdCompare = Proto_IsProtocolLoaded(( char* )dbv.pszVal );
 			mir_free(dbv.pszVal);
 			if(pdCompare==NULL) continue;
 			if(pd->type > pdCompare->type) break;

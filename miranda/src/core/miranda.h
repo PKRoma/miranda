@@ -124,9 +124,12 @@ typedef struct
 extern TAccounts accounts;
 
 PROTOACCOUNT* Proto_GetAccount( const char* accName );
+PROTOCOLDESCRIPTOR* Proto_IsProtocolLoaded( const char* szProtoName );
 
 PROTO_INTERFACE* AddDefaultAccount( const char* szProtoName );
 int  FreeDefaultAccount( PROTO_INTERFACE* ppi );
+
+void EraseAccount( PROTOACCOUNT* pa );
 void UnloadAccount( PROTOACCOUNT* pa, BOOL bIsDynamic );
 
 void LoadDbAccounts( void );

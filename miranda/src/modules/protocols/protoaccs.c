@@ -25,7 +25,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "m_protoint.h"
 
-int Proto_IsProtocolLoaded(WPARAM wParam,LPARAM lParam);
 void UninitAccount(char *szModule, PROTOACCOUNT *pa);
 
 static BOOL bModuleInitialized = FALSE;
@@ -243,7 +242,7 @@ int LoadAccountsModule( void )
 		if ( pa->ppro != NULL )
 			continue;
 
-		if (( ppd = ( PROTOCOLDESCRIPTOR* )Proto_IsProtocolLoaded( 0, ( LPARAM )pa->szProtoName )) == NULL ) {
+		if (( ppd = ( PROTOCOLDESCRIPTOR* )Proto_IsProtocolLoaded( pa->szProtoName )) == NULL ) {
 			pa->bIsEnabled = FALSE;
 			continue;
 		}
@@ -277,6 +276,12 @@ int LoadAccountsModule( void )
 	}
 
 	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+void EraseAccount( PROTOACCOUNT* pa )
+{
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

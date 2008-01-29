@@ -3121,6 +3121,9 @@
 				RelativePath=".\res\group_opened.ico">
 			</File>
 			<File
+				RelativePath=".\res\icon_accmgr.ico">
+			</File>
+			<File
 				RelativePath=".\res\icon_all.ico">
 			</File>
 			<File

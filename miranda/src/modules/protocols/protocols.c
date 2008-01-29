@@ -57,19 +57,25 @@ static int Proto_BroadcastAck(WPARAM wParam,LPARAM lParam)
 	return NotifyEventHooks(hAckEvent,wParam,lParam);
 }
 
-int Proto_IsProtocolLoaded(WPARAM wParam,LPARAM lParam)
+PROTOCOLDESCRIPTOR* Proto_IsProtocolLoaded( char* szProtoName )
 {
-	if ( lParam ) {
+	if ( szProtoName ) {
 		int idx;
-		PROTOCOLDESCRIPTOR tmp = { 0, ( char* )lParam, 0 };
+		PROTOCOLDESCRIPTOR tmp;
+		tmp.szName = ( char* )szProtoName;
 		if ( List_GetIndex(( SortedList* )&protos, &tmp, &idx ))
-			return ( int )protos.items[idx];
+			return protos.items[idx];
 	}
 
-	return 0;
+	return NULL;
 }
 
-static int Proto_EnumProtocols(WPARAM wParam,LPARAM lParam)
+int srvProto_IsLoaded(WPARAM wParam,LPARAM lParam)
+{
+	return (int)Proto_IsProtocolLoaded(( char* )lParam );
+}
+
+int Proto_EnumProtocols(WPARAM wParam,LPARAM lParam)
 {
 	*( int* )wParam = protos.count;
 	*( PROTOCOLDESCRIPTOR*** )lParam = protos.items;
@@ -420,7 +426,7 @@ int LoadProtocolsModule(void)
 	hTypeEvent = CreateHookableEvent(ME_PROTO_CONTACTISTYPING);
 
 	CreateServiceFunction( MS_PROTO_BROADCASTACK,     Proto_BroadcastAck     );
-	CreateServiceFunction( MS_PROTO_ISPROTOCOLLOADED, Proto_IsProtocolLoaded );
+	CreateServiceFunction( MS_PROTO_ISPROTOCOLLOADED, srvProto_IsLoaded      );
 	CreateServiceFunction( MS_PROTO_ENUMPROTOS,       Proto_EnumProtocols    );
 	CreateServiceFunction( MS_PROTO_REGISTERMODULE,   Proto_RegisterModule   );
 	CreateServiceFunction( MS_PROTO_SELFISTYPING,     Proto_SelfIsTyping     );
