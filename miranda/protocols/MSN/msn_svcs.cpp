@@ -1055,7 +1055,7 @@ static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 			}
 			else
 			{
-				seq = thread->sendMessage( msgType, tEmail, netId, msg, rtlFlag );
+				seq = thread->sendMessage( msgType, tEmail, NETID_MSN, msg, rtlFlag );
 				if ( !MyOptions.SlowSend )
 					mir_forkthread( sttFakeAck, new TFakeAckParams( hContact, seq, 0 ));
 			}
