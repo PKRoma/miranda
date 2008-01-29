@@ -91,6 +91,10 @@ void sttSetMirVer( HANDLE hContact, DWORD dwValue )
 		MSN_SetString( hContact, "MirVer", "MSN Mobile" );
 	else if ( dwValue & 0x200 )
 		MSN_SetString( hContact, "MirVer", "Webmessenger" );
+	else if ( dwValue == 0x800800 )
+		MSN_SetString( hContact, "MirVer", "Yahoo" );
+	else if ( dwValue == 0x800 )
+		MSN_SetString( hContact, "MirVer", "LCS" );
 	else if ( dwValue == 0x50000000 )
 		MSN_SetString( hContact, "MirVer", "Miranda IM 0.5.x (MSN v.0.5.x)" );
 	else if ( dwValue == 0x30000024 )
