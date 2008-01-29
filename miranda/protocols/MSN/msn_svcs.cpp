@@ -1062,15 +1062,6 @@ static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 		}
 		break;
 		
-	case NETID_LCS:
-		if (MSN_GetWord(hContact, "Status", ID_STATUS_OFFLINE) == ID_STATUS_OFFLINE) 
-		{
-			seq = 999993;
-			errMsg = MSN_Translate( "Cannot send messages to offline LCS contacts" );
-			mir_forkthread( sttFakeAck, new TFakeAckParams( hContact, seq, errMsg ));
-			break;
-		}
-
 	default:
 		if ( strlen( msg ) > 1202 ) 
 		{
@@ -1448,8 +1439,7 @@ static int MsnUserIsTyping(WPARAM wParam, LPARAM lParam)
 		break;
 
 	default:
-		WORD wStatus = MSN_GetWord(hContact, "Status", ID_STATUS_OFFLINE);
-		if (typing && wStatus != ID_STATUS_OFFLINE) MSN_SendTyping(msnNsThread, tEmail, netId);
+		if (typing) MSN_SendTyping(msnNsThread, tEmail, netId);
 		break;
 	}
 
