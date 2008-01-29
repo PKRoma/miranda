@@ -1195,7 +1195,7 @@ LBL_InvalidCommand:
 
 				if ( lastStatus == ID_STATUS_OFFLINE ) {
 					DBVARIANT dbv;
-					if ( MSN_GetStringT( "MirVer", hContact, &dbv ))
+					if ( atol(data.netId) != 1 || MSN_GetStringT( "MirVer", hContact, &dbv ))
 						sttSetMirVer( hContact, dwValue );
 					else
 						MSN_FreeVariant( &dbv );
