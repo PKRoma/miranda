@@ -1093,21 +1093,37 @@ static int MsnSendNudge( WPARAM wParam, LPARAM lParam )
 	char tEmail[ MSN_MAX_EMAIL_LEN ];
 	if ( MSN_IsMeByContact( hContact, tEmail )) return 0;
 
-	static const nudgemsg[] = 
+	static const char nudgemsg[] = 
 		"MIME-Version: 1.0\r\n"
 		"Content-Type: text/x-msnmsgr-datacast\r\n\r\n"
 		"ID: 1\r\n\r\n";
 
-	bool isOffline;
-	ThreadData* thread = MSN_StartSB(hContact, isOffline);
-	if ( thread == NULL )
+	int netId = Lists_GetNetId(tEmail);
+	switch (netId)
 	{
-		if (isOffline) return 0; 
-		MsgQueue_Add( hContact, 'N', nudgemsg, -1 );
+	case NETID_UNKNOWN:
+	case NETID_MSN:
+		{
+			bool isOffline;
+			ThreadData* thread = MSN_StartSB(hContact, isOffline);
+			if ( thread == NULL )
+			{
+				if (isOffline) return 0; 
+				MsgQueue_Add( hContact, 'N', nudgemsg, -1 );
+			}
+			else
+				thread->sendMessage( 'N', tEmail, NETID_MSN, nudgemsg, MSG_DISABLE_HDR );
+		}
+		break;
+
+	case NETID_MOB:
+	case NETID_EMAIL:
+		break;
+
+	default:
+		msnNsThread->sendMessage( '3', tEmail, netId, nudgemsg, MSG_DISABLE_HDR );
+		break;
 	}
-	else
-		int netId = Lists_GetNetId(tEmail);
-		thread->sendMessage( netId == NETID_MSN ? 'N' : '3', tEmail, netId, nudgemsg, MSG_DISABLE_HDR );
 	return 0;
 }
 
