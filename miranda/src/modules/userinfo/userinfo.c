@@ -138,15 +138,8 @@ static int AddDetailsPage(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int UserInfoContactDelete(WPARAM wParam,LPARAM lParam)
+static void ThemeDialogBackground(HWND hwnd)
 {
-	HWND hwnd;
-	hwnd=WindowList_Find(hWindowList,(HANDLE)wParam);
-	if(hwnd!=NULL) DestroyWindow(hwnd);
-	return 0;
-}
-
-static void ThemeDialogBackground(HWND hwnd) {
 	if (IsWinVerXPPlus()) {
 		static HMODULE hThemeAPI = NULL;
 		if (!hThemeAPI) hThemeAPI = GetModuleHandleA("uxtheme");
@@ -156,6 +149,35 @@ static void ThemeDialogBackground(HWND hwnd) {
 				MyEnableThemeDialogTexture(hwnd,0x00000002|0x00000004); //0x00000002|0x00000004=ETDT_ENABLETAB
 		}
 	}
+}
+
+static void CreateDetailsPageWindow( HWND hwndDlg, struct DetailsData* dat, struct DetailsPageData* ppg )
+{
+	ppg->hwnd=CreateDialogIndirectParam(ppg->hInst,ppg->pTemplate,hwndDlg,ppg->dlgProc,(LPARAM)dat->hContact);
+	ThemeDialogBackground(ppg->hwnd);
+	SetWindowPos(ppg->hwnd, HWND_TOP, dat->rcDisplay.left, dat->rcDisplay.top, dat->rcDisplay.right - dat->rcDisplay.left, dat->rcDisplay.bottom - dat->rcDisplay.top, 0);
+	{	
+		PSHNOTIFY pshn;
+		pshn.hdr.code = PSN_PARAMCHANGED;
+		pshn.hdr.hwndFrom = ppg->hwnd;
+		pshn.hdr.idFrom = 0;
+		pshn.lParam = (LPARAM)ppg->dlgParam;
+		SendMessage(ppg->hwnd,WM_NOTIFY,0,(LPARAM)&pshn);
+
+		pshn.hdr.code=PSN_INFOCHANGED;
+		pshn.hdr.hwndFrom=ppg->hwnd;
+		pshn.hdr.idFrom=0;
+		pshn.lParam=(LPARAM)dat->hContact;
+		SendMessage(ppg->hwnd,WM_NOTIFY,0,(LPARAM)&pshn);
+	}
+}
+
+static int UserInfoContactDelete(WPARAM wParam,LPARAM lParam)
+{
+	HWND hwnd;
+	hwnd=WindowList_Find(hWindowList,(HANDLE)wParam);
+	if(hwnd!=NULL) DestroyWindow(hwnd);
+	return 0;
 }
 
 #define HM_PROTOACK   (WM_USER+10)
@@ -232,16 +254,7 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				OffsetRect(&dat->rcDisplay,-pt.x,-pt.y);
 			}
 			TreeView_Select(GetDlgItem(hwndDlg,IDC_PAGETREE), dat->opd[dat->currentPage].hItem, TVGN_CARET);
-			dat->opd[dat->currentPage].hwnd=CreateDialogIndirectParam(dat->opd[dat->currentPage].hInst,dat->opd[dat->currentPage].pTemplate,hwndDlg,dat->opd[dat->currentPage].dlgProc,(LPARAM)dat->hContact);
-			ThemeDialogBackground(dat->opd[dat->currentPage].hwnd);
-			SetWindowPos(dat->opd[dat->currentPage].hwnd, HWND_TOP, dat->rcDisplay.left, dat->rcDisplay.top, dat->rcDisplay.right - dat->rcDisplay.left, dat->rcDisplay.bottom - dat->rcDisplay.top, 0);
-			{	PSHNOTIFY pshn;
-				pshn.hdr.code=PSN_INFOCHANGED;
-				pshn.hdr.hwndFrom=dat->opd[dat->currentPage].hwnd;
-				pshn.hdr.idFrom=0;
-				pshn.lParam=(LPARAM)dat->hContact;
-				SendMessage(dat->opd[dat->currentPage].hwnd,WM_NOTIFY,0,(LPARAM)&pshn);
-			}
+			CreateDetailsPageWindow( hwndDlg, dat, &dat->opd[dat->currentPage] );
 			ShowWindow( dat->opd[dat->currentPage].hwnd, SW_SHOW );
 			dat->updateAnimFrame = 0;
 			GetDlgItemText(hwndDlg,IDC_UPDATING,dat->szUpdating,SIZEOF(dat->szUpdating));
@@ -372,24 +385,8 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 						dat->currentPage=tvi.lParam;
 					}
 					if(dat->currentPage!=-1) {
-						if(dat->opd[dat->currentPage].hwnd==NULL) {
-							PSHNOTIFY pshn;
-							dat->opd[dat->currentPage].hwnd=CreateDialogIndirectParam(dat->opd[dat->currentPage].hInst,dat->opd[dat->currentPage].pTemplate,hwndDlg,dat->opd[dat->currentPage].dlgProc,(LPARAM)dat->hContact);
-							ThemeDialogBackground(dat->opd[dat->currentPage].hwnd);
-							SetWindowPos(dat->opd[dat->currentPage].hwnd, HWND_TOP, dat->rcDisplay.left, dat->rcDisplay.top, dat->rcDisplay.right - dat->rcDisplay.left, dat->rcDisplay.bottom - dat->rcDisplay.top, 0);
-							
-							pshn.hdr.code = PSN_PARAMCHANGED;
-							pshn.hdr.hwndFrom = dat->opd[dat->currentPage].hwnd;
-							pshn.hdr.idFrom = 0;
-							pshn.lParam = (LPARAM)dat->opd[dat->currentPage].dlgParam;
-							SendMessage(dat->opd[dat->currentPage].hwnd,WM_NOTIFY,0,(LPARAM)&pshn);
-
-							pshn.hdr.code=PSN_INFOCHANGED;
-							pshn.hdr.hwndFrom=dat->opd[dat->currentPage].hwnd;
-							pshn.hdr.idFrom=0;
-							pshn.lParam=(LPARAM)dat->hContact;
-							SendMessage(dat->opd[dat->currentPage].hwnd,WM_NOTIFY,0,(LPARAM)&pshn);
-						}
+						if(dat->opd[dat->currentPage].hwnd==NULL)
+							CreateDetailsPageWindow( hwndDlg, dat, &dat->opd[dat->currentPage] );
 						ShowWindow(dat->opd[dat->currentPage].hwnd,SW_SHOW);
 						SetFocus(GetDlgItem(hwndDlg,IDC_PAGETREE));
 				}	}
