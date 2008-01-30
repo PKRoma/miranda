@@ -39,8 +39,8 @@ BEGIN
                     7,7,282,9
     EDITTEXT        IDC_ACCNAME,7,18,282,12,ES_AUTOHSCROLL
     LTEXT           "Choose the protocol type",IDC_STATIC,7,36,282,11
-    COMBOBOX        IDC_PROTOTYPECOMBO,7,48,141,12,CBS_DROPDOWN | CBS_SORT | 
-                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_PROTOTYPECOMBO,7,48,141,12,CBS_DROPDOWNLIST | 
+                    CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Specify the internal account name (optional)",
                     IDC_STATIC,7,66,282,8
     EDITTEXT        IDC_ACCINTERNALNAME,7,76,282,12,ES_AUTOHSCROLL

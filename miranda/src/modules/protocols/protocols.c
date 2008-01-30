@@ -95,7 +95,7 @@ static int Proto_RegisterModule(WPARAM wParam,LPARAM lParam)
 
 	if ( pd->cbSize == PROTOCOLDESCRIPTOR_V3_SIZE ) {
 		memset( p, 0, sizeof( PROTOCOLDESCRIPTOR ));
-		p->cbSize = sizeof( PROTOCOLDESCRIPTOR );
+		p->cbSize = PROTOCOLDESCRIPTOR_V3_SIZE;
 		p->type = pd->type;
 		if ( p->type == PROTOTYPE_PROTOCOL ) {
 			// let's create a new container

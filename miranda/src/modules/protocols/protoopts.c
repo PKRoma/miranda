@@ -71,9 +71,12 @@ static BOOL CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LP
 			PROTOCOLDESCRIPTOR** proto;
 			int protoCount, i;
 			Proto_EnumProtocols(( WPARAM )&protoCount, ( LPARAM )&proto );
-			for ( i=0; i < protoCount; i++ )
-				if ( proto[i]->type == PROTOTYPE_PROTOCOL )
+			for ( i=0; i < protoCount; i++ ) {
+				PROTOCOLDESCRIPTOR* pd = proto[i];
+				if ( pd->type == PROTOTYPE_PROTOCOL && pd->cbSize == sizeof( *pd ))
 					SendDlgItemMessageA( hwndDlg, IDC_PROTOTYPECOMBO, CB_ADDSTRING, 0, (LPARAM)proto[i]->szName );
+			}
+			SendDlgItemMessage( hwndDlg, IDC_PROTOTYPECOMBO, CB_SETCURSEL, 0, 0 );
 		}
 		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
 		{
