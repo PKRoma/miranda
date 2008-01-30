@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 int LoadProtoChains(void);
 int LoadProtoOptions( void );
 
+HANDLE hAccListChanged;
 static HANDLE hAckEvent,hTypeEvent;
 static BOOL bModuleInitialized = FALSE;
 
@@ -57,7 +58,7 @@ static int Proto_BroadcastAck(WPARAM wParam,LPARAM lParam)
 	return NotifyEventHooks(hAckEvent,wParam,lParam);
 }
 
-PROTOCOLDESCRIPTOR* Proto_IsProtocolLoaded( char* szProtoName )
+PROTOCOLDESCRIPTOR* Proto_IsProtocolLoaded( const char* szProtoName )
 {
 	if ( szProtoName ) {
 		int idx;
@@ -424,6 +425,7 @@ int LoadProtocolsModule(void)
 
 	hAckEvent = CreateHookableEvent(ME_PROTO_ACK);
 	hTypeEvent = CreateHookableEvent(ME_PROTO_CONTACTISTYPING);
+	hAccListChanged = CreateHookableEvent(ME_PROTO_ACCLISTCHANGED);
 
 	CreateServiceFunction( MS_PROTO_BROADCASTACK,     Proto_BroadcastAck     );
 	CreateServiceFunction( MS_PROTO_ISPROTOCOLLOADED, srvProto_IsLoaded      );
@@ -451,6 +453,10 @@ void UnloadProtocolsModule()
 	if ( hAckEvent ) {
 		DestroyHookableEvent(hAckEvent);
 		hAckEvent = NULL;
+	}
+	if ( hAccListChanged ) {
+		DestroyHookableEvent(hAccListChanged);
+		hAccListChanged = NULL;
 	}
 
 	if ( protos.count ) {

@@ -236,46 +236,49 @@ int LoadAccountsModule( void )
 	bModuleInitialized = TRUE;
 
 	for ( i = 0; i < accounts.count; i++ ) {
-		PROTOCOLDESCRIPTOR* ppd;
 		PROTOACCOUNT* pa = accounts.items[i];
-		PROTO_INTERFACE* ppi;
-		if ( pa->ppro != NULL )
-			continue;
-
-		if (( ppd = ( PROTOCOLDESCRIPTOR* )Proto_IsProtocolLoaded( pa->szProtoName )) == NULL ) {
-			pa->bIsEnabled = FALSE;
-			continue;
-		}
-
-		if ( ppd->fnInit == NULL ) {
-			pa->bIsEnabled = FALSE;
-			continue;
-		}
-
-		ppi = ppd->fnInit( pa->szModuleName, pa->tszAccountName );
-		if ( ppi != NULL ) {
-			pa->ppro = ppi;
-			ppi->iDesiredStatus = ppi->iStatus = ID_STATUS_OFFLINE;
-			ppi->services[0] = CreateProtoServiceEx( pa->szModuleName, PS_ADDTOLIST, (MIRANDASERVICEPARAM)stub1, pa->ppro );
-			ppi->services[1] = CreateProtoServiceEx( pa->szModuleName, PS_ADDTOLISTBYEVENT, (MIRANDASERVICEPARAM)stub2, pa->ppro );
-			ppi->services[2] = CreateProtoServiceEx( pa->szModuleName, PS_AUTHALLOW, (MIRANDASERVICEPARAM)stub3, pa->ppro );
-			ppi->services[3] = CreateProtoServiceEx( pa->szModuleName, PS_AUTHDENY, (MIRANDASERVICEPARAM)stub4, pa->ppro );
-			ppi->services[4] = CreateProtoServiceEx( pa->szModuleName, PS_CHANGEINFO, (MIRANDASERVICEPARAM)stub7, pa->ppro );
-			ppi->services[5] = CreateProtoServiceEx( pa->szModuleName, PS_FILERESUME, (MIRANDASERVICEPARAM)stub11, pa->ppro );
-			ppi->services[6] = CreateProtoServiceEx( pa->szModuleName, PS_GETCAPS, (MIRANDASERVICEPARAM)stub12, pa->ppro );
-			ppi->services[7] = CreateProtoServiceEx( pa->szModuleName, PS_LOADICON, (MIRANDASERVICEPARAM)stub13, pa->ppro );
-			ppi->services[8] = CreateProtoServiceEx( pa->szModuleName, PS_BASICSEARCH, (MIRANDASERVICEPARAM)stub15, pa->ppro );
-			ppi->services[9] = CreateProtoServiceEx( pa->szModuleName, PS_SEARCHBYEMAIL, (MIRANDASERVICEPARAM)stub16, pa->ppro );
-			ppi->services[10] = CreateProtoServiceEx( pa->szModuleName, PS_SEARCHBYNAME, (MIRANDASERVICEPARAM)stub17, pa->ppro );
-			ppi->services[11] = CreateProtoServiceEx( pa->szModuleName, PS_SEARCHBYADVANCED, (MIRANDASERVICEPARAM)stub18, pa->ppro );
-			ppi->services[12] = CreateProtoServiceEx( pa->szModuleName, PS_CREATEADVSEARCHUI, (MIRANDASERVICEPARAM)stub19, pa->ppro );
-			ppi->services[13] = CreateProtoServiceEx( pa->szModuleName, PS_SETSTATUS, (MIRANDASERVICEPARAM)stub29, pa->ppro );
-			ppi->services[14] = CreateProtoServiceEx( pa->szModuleName, PS_SETAWAYMSG, (MIRANDASERVICEPARAM)stub33, pa->ppro );
-		}
-		else pa->bIsEnabled = FALSE;
+		if ( pa->ppro == NULL )
+			ActivateAccount( pa );
 	}
 
 	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+BOOL ActivateAccount( PROTOACCOUNT* pa )
+{
+	PROTO_INTERFACE* ppi;
+	PROTOCOLDESCRIPTOR* ppd = Proto_IsProtocolLoaded( pa->szProtoName );
+	if ( ppd == NULL )
+		return pa->bIsEnabled = FALSE;
+
+	if ( ppd->fnInit == NULL )
+		return pa->bIsEnabled = FALSE;
+
+	ppi = ppd->fnInit( pa->szModuleName, pa->tszAccountName );
+	if ( ppi != NULL ) {
+		pa->ppro = ppi;
+		ppi->iDesiredStatus = ppi->iStatus = ID_STATUS_OFFLINE;
+		ppi->services[0] = CreateProtoServiceEx( pa->szModuleName, PS_ADDTOLIST, (MIRANDASERVICEPARAM)stub1, pa->ppro );
+		ppi->services[1] = CreateProtoServiceEx( pa->szModuleName, PS_ADDTOLISTBYEVENT, (MIRANDASERVICEPARAM)stub2, pa->ppro );
+		ppi->services[2] = CreateProtoServiceEx( pa->szModuleName, PS_AUTHALLOW, (MIRANDASERVICEPARAM)stub3, pa->ppro );
+		ppi->services[3] = CreateProtoServiceEx( pa->szModuleName, PS_AUTHDENY, (MIRANDASERVICEPARAM)stub4, pa->ppro );
+		ppi->services[4] = CreateProtoServiceEx( pa->szModuleName, PS_CHANGEINFO, (MIRANDASERVICEPARAM)stub7, pa->ppro );
+		ppi->services[5] = CreateProtoServiceEx( pa->szModuleName, PS_FILERESUME, (MIRANDASERVICEPARAM)stub11, pa->ppro );
+		ppi->services[6] = CreateProtoServiceEx( pa->szModuleName, PS_GETCAPS, (MIRANDASERVICEPARAM)stub12, pa->ppro );
+		ppi->services[7] = CreateProtoServiceEx( pa->szModuleName, PS_LOADICON, (MIRANDASERVICEPARAM)stub13, pa->ppro );
+		ppi->services[8] = CreateProtoServiceEx( pa->szModuleName, PS_BASICSEARCH, (MIRANDASERVICEPARAM)stub15, pa->ppro );
+		ppi->services[9] = CreateProtoServiceEx( pa->szModuleName, PS_SEARCHBYEMAIL, (MIRANDASERVICEPARAM)stub16, pa->ppro );
+		ppi->services[10] = CreateProtoServiceEx( pa->szModuleName, PS_SEARCHBYNAME, (MIRANDASERVICEPARAM)stub17, pa->ppro );
+		ppi->services[11] = CreateProtoServiceEx( pa->szModuleName, PS_SEARCHBYADVANCED, (MIRANDASERVICEPARAM)stub18, pa->ppro );
+		ppi->services[12] = CreateProtoServiceEx( pa->szModuleName, PS_CREATEADVSEARCHUI, (MIRANDASERVICEPARAM)stub19, pa->ppro );
+		ppi->services[13] = CreateProtoServiceEx( pa->szModuleName, PS_SETSTATUS, (MIRANDASERVICEPARAM)stub29, pa->ppro );
+		ppi->services[14] = CreateProtoServiceEx( pa->szModuleName, PS_SETAWAYMSG, (MIRANDASERVICEPARAM)stub33, pa->ppro );
+		return TRUE;
+	}
+
+	return pa->bIsEnabled = FALSE;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

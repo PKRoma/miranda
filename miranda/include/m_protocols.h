@@ -298,6 +298,11 @@ __inline PROTOACCOUNT* ProtoGetAccount( const char* accName )
 {	return (PROTOACCOUNT*)CallService( MS_PROTO_GETACCOUNT, 0, (LPARAM)accName );
 }
 
+//this event is fired when the accounts list gets changed
+//wParam = event type (1 - added, 2 - changed, 3 - deleted)
+//lParam = (LPARAM)(PROTOACCOUNT*) - account being changed
+#define ME_PROTO_ACCLISTCHANGED "Proto/AccListChanged"
+
 /* -------------- avatar support ---------------------
 
 First a protocol must report it supports PF4_AVATARS via PS_GETCAPS, secondly

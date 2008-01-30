@@ -425,6 +425,7 @@
 #define IDC_PROTOTYPECOMBO              1715
 #define IDC_ACCINTERNALNAME             1716
 #define IDC_OPTIONS                     1717
+#define IDC_BUTTON1                     1718
 #define IDI_SEARCHALL                   32548
 #define ID_ICQ_EXIT                     40001
 #define IDM_COPY                        40001
@@ -456,7 +457,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        285
 #define _APS_NEXT_COMMAND_VALUE         40018
-#define _APS_NEXT_CONTROL_VALUE         1718
+#define _APS_NEXT_CONTROL_VALUE         1719
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

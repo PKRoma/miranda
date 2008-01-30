@@ -126,7 +126,6 @@ static int Proto_ChainRecv(WPARAM wParam,LPARAM lParam)
 	return CallServiceSync(MS_PROTO_CHAINRECV "ThreadSafe",wParam,lParam);
 }
 
-#if 1
 static int Proto_GetContactBaseProto(WPARAM wParam,LPARAM lParam)
 {
 	DBVARIANT dbv;
@@ -144,11 +143,15 @@ static int Proto_GetContactBaseProto(WPARAM wParam,LPARAM lParam)
 		return (int)(char*)NULL;
 
 	pd = ( PROTOCOLDESCRIPTOR* )Proto_IsProtocolLoaded( dbv.pszVal );
-	if ( pd == NULL )
+	if ( pd == NULL ) {
+		PROTOACCOUNT* pa = ProtoGetAccount(( char* )dbv.pszVal );
+		if ( pa )
+			return (int)pa->szModuleName;
+
 		return (int)(char*)NULL;
+	}
 	return (int)pd->szName;
 }
-#endif
 
 static int Proto_IsProtoOnContact(WPARAM wParam,LPARAM lParam)
 {
@@ -180,7 +183,15 @@ static int Proto_AddToContact(WPARAM wParam,LPARAM lParam)
 	PROTOCOLDESCRIPTOR *pd,*pdCompare;
 
 	pd = Proto_IsProtocolLoaded(( char* )lParam );
-	if(pd==NULL) return 1;
+	if ( pd == NULL ) {
+		PROTOACCOUNT* pa = ProtoGetAccount(( char* )lParam );
+		if ( pa ) {
+			DBWriteContactSettingString((HANDLE)wParam,"Protocol","p",(char*)lParam);
+			return 0;
+		}
+		return 1;
+	}
+
 	if ( pd->type == PROTOTYPE_PROTOCOL ) {
 		DBWriteContactSettingString((HANDLE)wParam,"Protocol","p",(char*)lParam);
 		return 0;

@@ -129,6 +129,7 @@ PROTOCOLDESCRIPTOR* Proto_IsProtocolLoaded( const char* szProtoName );
 PROTO_INTERFACE* AddDefaultAccount( const char* szProtoName );
 int  FreeDefaultAccount( PROTO_INTERFACE* ppi );
 
+BOOL ActivateAccount( PROTOACCOUNT* pa );
 void EraseAccount( PROTOACCOUNT* pa );
 void UnloadAccount( PROTOACCOUNT* pa, BOOL bIsDynamic );
 
