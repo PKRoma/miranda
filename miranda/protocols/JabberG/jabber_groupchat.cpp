@@ -752,7 +752,7 @@ static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 		{
 			param = (JabberGroupchatJoinDlgProcParam*)lParam;
 			SetWindowLong( hwndDlg, GWL_USERDATA, (LPARAM)param );
-			// changed from "lParam is the room JID ( room@server ) in UTF-8" to structure
+
 			CJabberProto* ppro = param->ppro;
 			ppro->hwndJabberJoinGroupchat = hwndDlg;
 			TranslateDialogDefault( hwndDlg );
@@ -761,8 +761,8 @@ static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 			SendMessage(hwndDlg, WM_SETICON, ICON_SMALL, (LPARAM)ppro->LoadIconEx("group"));
 
 			JabberGcRecentInfo *info = NULL;
-			if ( lParam )
-				info = new JabberGcRecentInfo( ppro, (TCHAR *)lParam);
+			if ( param->m_jid )
+				info = new JabberGcRecentInfo( ppro, param->m_jid );
 			else
 			{
 				OpenClipboard(hwndDlg);
