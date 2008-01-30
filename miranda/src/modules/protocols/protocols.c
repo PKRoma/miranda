@@ -103,8 +103,7 @@ static int Proto_RegisterModule(WPARAM wParam,LPARAM lParam)
 			if ( ppi ) {
 				PROTOACCOUNT* pa = Proto_GetAccount( pd->szName );
 				if ( pa == NULL ) {
-					pa = (PROTOACCOUNT*)malloc( sizeof( PROTOACCOUNT ));
-					memset( pa, 0, sizeof( PROTOACCOUNT ));
+					pa = (PROTOACCOUNT*)mir_calloc( sizeof( PROTOACCOUNT ));
 					pa->cbSize = sizeof(PROTOACCOUNT);
 					pa->type = PROTOTYPE_PROTOCOL;
 					pa->szModuleName = mir_strdup( pd->szName );
