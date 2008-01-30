@@ -151,7 +151,7 @@ int __cdecl CJabberProto::JabberGetAvatarInfo( WPARAM wParam, LPARAM lParam )
 
 int __cdecl CJabberProto::JabberGetName( WPARAM wParam, LPARAM lParam )
 {
-	lstrcpynA(( char* )lParam, szModuleName, wParam );
+	lstrcpynA(( char* )lParam, m_szModuleName, wParam );
 	return 0;
 }
 
@@ -160,7 +160,7 @@ int __cdecl CJabberProto::JabberGetName( WPARAM wParam, LPARAM lParam )
 
 int __cdecl CJabberProto::JabberGetStatus( WPARAM wParam, LPARAM lParam )
 {
-	return iStatus;
+	return m_iStatus;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -194,7 +194,7 @@ int __cdecl CJabberProto::JabberSetAvatar( WPARAM wParam, LPARAM lParam )
 	if ( jabberConnected )
 	{	
 		JabberUpdateVCardPhoto( szFileName );
-		JabberSendPresence( iDesiredStatus, false );
+		JabberSendPresence( m_iDesiredStatus, false );
 	}
 	else 
 	{
@@ -410,7 +410,7 @@ int __cdecl CJabberProto::JabberServiceParseXmppURI( WPARAM wParam, LPARAM lPara
 
 			ADDCONTACTSTRUCT acs;
 			acs.handleType = HANDLE_SEARCHRESULT;
-			acs.szProto = szProtoName;
+			acs.szProto = m_szProtoName;
 			acs.psr = &jsr.hdr;
 			CallService( MS_ADDCONTACT_SHOW, (WPARAM)NULL, (LPARAM)&acs );
 			mir_free( jsr.hdr.email );

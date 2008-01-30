@@ -135,7 +135,7 @@ int CJabberProto::JabberGcInit( WPARAM wParam, LPARAM lParam )
 	TCHAR* szNick = JabberNickFromJID( item->jid );
 	gcw.cbSize = sizeof(GCSESSION);
 	gcw.iType = GCW_CHATROOM;
-	gcw.pszModule = szProtoName;
+	gcw.pszModule = m_szProtoName;
 	gcw.ptszName = szNick;
 	gcw.ptszID = item->jid;
 	gcw.dwFlags = GC_TCHAR;
@@ -144,7 +144,7 @@ int CJabberProto::JabberGcInit( WPARAM wParam, LPARAM lParam )
 	HANDLE hContact = JabberHContactFromJID( item->jid );
 	if ( hContact != NULL ) {
 		DBVARIANT dbv;
-		if ( !DBGetContactSettingTString( hContact, szProtoName, "MyNick", &dbv )) {
+		if ( !DBGetContactSettingTString( hContact, m_szProtoName, "MyNick", &dbv )) {
 			if ( !lstrcmp( dbv.ptszVal, szNick ))
 				JDeleteSetting( hContact, "MyNick" );
 			else
@@ -157,7 +157,7 @@ int CJabberProto::JabberGcInit( WPARAM wParam, LPARAM lParam )
 
 	item->bChatActive = TRUE;
 
-	GCDEST gcd = { szProtoName, NULL, GC_EVENT_ADDGROUP };
+	GCDEST gcd = { m_szProtoName, NULL, GC_EVENT_ADDGROUP };
 	gcd.ptszID = item->jid;
 	gce.cbSize = sizeof(GCEVENT);
 	gce.pDest = &gcd;
@@ -242,7 +242,7 @@ void CJabberProto::JabberGcLogShowInformation( JABBER_LIST_ITEM *item, JABBER_RE
 
 	if (*buf)
 	{
-		GCDEST gcd = { szProtoName, 0, 0 };
+		GCDEST gcd = { m_szProtoName, 0, 0 };
 		gcd.ptszID = item->jid;
 		GCEVENT gce = {0};
 		gce.cbSize = sizeof(GCEVENT);
@@ -275,7 +275,7 @@ void CJabberProto::JabberGcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, TCHAR*
 	if ( myNick == NULL )
 		myNick = JabberNickFromJID( jabberJID );
 
-	GCDEST gcd = { szProtoName, 0, 0 };
+	GCDEST gcd = { m_szProtoName, 0, 0 };
 	gcd.ptszID = item->jid;
 	GCEVENT gce = {0};
 	gce.cbSize = sizeof(GCEVENT);
@@ -344,7 +344,7 @@ void CJabberProto::JabberGcQuit( JABBER_LIST_ITEM* item, int code, XmlNode* reas
 	if ( reason != NULL && reason->text != NULL )
 		szReason = reason->text;
 
-	GCDEST gcd = { szProtoName, NULL, GC_EVENT_CONTROL };
+	GCDEST gcd = { m_szProtoName, NULL, GC_EVENT_CONTROL };
 	gcd.ptszID = item->jid;
 	GCEVENT gce = {0};
 	gce.cbSize = sizeof(GCEVENT);
@@ -356,7 +356,7 @@ void CJabberProto::JabberGcQuit( JABBER_LIST_ITEM* item, int code, XmlNode* reas
 	if ( code != 307 ) {
 		CallServiceSync( MS_GC_EVENT, SESSION_TERMINATE, ( LPARAM )&gce );
 		CallServiceSync( MS_GC_EVENT, WINDOW_CLEARLOG, ( LPARAM )&gce );
-		if (!DBGetContactSettingTString( NULL, szProtoName, "GcMsgQuit", &dbvMessage))
+		if (!DBGetContactSettingTString( NULL, m_szProtoName, "GcMsgQuit", &dbvMessage))
 			szMessage = dbvMessage.ptszVal;
 		else
 			szMessage = TranslateTS(JABBER_GC_MSG_QUIT);
@@ -425,7 +425,7 @@ int CJabberProto::JabberGcMenuHook( WPARAM wParam, LPARAM lParam )
 	if ( gcmi == NULL )
 		return 0;
 
-	if ( lstrcmpiA( gcmi->pszModule, szProtoName ))
+	if ( lstrcmpiA( gcmi->pszModule, m_szProtoName ))
 		return 0;
 
 	JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_CHATROOM, gcmi->pszID );
@@ -643,7 +643,7 @@ static void FilterList(CJabberProto* ppro, HWND hwndList)
 			hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0))
 	{
 		char *proto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-		if (!proto || lstrcmpA(proto, ppro->szProtoName) || DBGetContactSettingByte(hContact, proto, "ChatRoom", 0))
+		if (!proto || lstrcmpA(proto, ppro->m_szProtoName) || DBGetContactSettingByte(hContact, proto, "ChatRoom", 0))
 			if (int hItem = SendMessage(hwndList, CLM_FINDCONTACT, (WPARAM)hContact, 0))
 				SendMessage(hwndList, CLM_DELETEITEM, (WPARAM)hItem, 0);
 }	}
@@ -775,7 +775,7 @@ static BOOL CALLBACK JabberGcLogInviteDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 							hContact;
 							hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0)) {
 						char *proto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-						if ( !lstrcmpA(proto, data->ppro->szProtoName) && !DBGetContactSettingByte(hContact, proto, "ChatRoom", 0)) {
+						if ( !lstrcmpA(proto, data->ppro->m_szProtoName) && !DBGetContactSettingByte(hContact, proto, "ChatRoom", 0)) {
 							if (int hItem = SendMessage(hwndList, CLM_FINDCONTACT, (WPARAM)hContact, 0)) {
 								if ( SendMessage(hwndList, CLM_GETCHECKMARK, (WPARAM)hItem, 0 )) {
 									DBVARIANT dbv={0};
@@ -890,7 +890,7 @@ static LRESULT CALLBACK sttUserInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam
 		SendDlgItemMessage(hwndDlg, IDC_BTN_ROLE, BUTTONSETASFLATBTN, 0, 0);
 		SendDlgItemMessage(hwndDlg, IDC_BTN_ROLE, BUTTONADDTOOLTIP, (WPARAM)TranslateT("Apply"), BATF_TCHAR);
 
-		SendDlgItemMessage(hwndDlg, IDC_ICO_STATUS, STM_SETICON, (WPARAM)LoadSkinnedProtoIcon(dat->ppro->szProtoName, dat->him->status), 0);
+		SendDlgItemMessage(hwndDlg, IDC_ICO_STATUS, STM_SETICON, (WPARAM)LoadSkinnedProtoIcon(dat->ppro->m_szProtoName, dat->him->status), 0);
 
 		mir_sntprintf(buf, SIZEOF(buf), _T("%s %s"), TranslateT("Member Info:"), dat->him->resourceName);
 		SetWindowText(hwndDlg, buf);
@@ -1057,7 +1057,7 @@ static void sttNickListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK*
 	{
 		if ( ppro->jabberOnline ) {
 			DBVARIANT dbv = {0};
-			TCHAR *szMessage = DBGetContactSettingTString( NULL, ppro->szProtoName, "GcMsgSlap", &dbv) ?
+			TCHAR *szMessage = DBGetContactSettingTString( NULL, ppro->m_szProtoName, "GcMsgSlap", &dbv) ?
 				NEWTSTR_ALLOCA(TranslateTS(JABBER_GC_MSG_SLAP)) : dbv.ptszVal;
 
 			TCHAR buf[256];
@@ -1093,7 +1093,7 @@ static void sttNickListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK*
 		item->bUseResource = TRUE;
 		ppro->JabberListAddResource( LIST_VCARD_TEMP, jsr.jid, him->status, him->statusMessage, him->priority );
 
-		hContact = ( HANDLE )CallProtoService( ppro->szProtoName, PS_ADDTOLIST, PALF_TEMPORARY, ( LPARAM )&jsr );
+		hContact = ( HANDLE )CallProtoService( ppro->m_szProtoName, PS_ADDTOLIST, PALF_TEMPORARY, ( LPARAM )&jsr );
 		CallService( MS_USERINFO_SHOWDIALOG, ( WPARAM )hContact, 0 );
 		break;
 	}
@@ -1199,7 +1199,7 @@ static void sttNickListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK*
 			item->bUseResource = TRUE;
 			ppro->JabberListAddResource( LIST_VCARD_TEMP, jsr.jid, him->status, him->statusMessage, him->priority );
 
-			hContact = ( HANDLE )CallProtoService( ppro->szProtoName, PS_ADDTOLIST, PALF_TEMPORARY, ( LPARAM )&jsr );
+			hContact = ( HANDLE )CallProtoService( ppro->m_szProtoName, PS_ADDTOLIST, PALF_TEMPORARY, ( LPARAM )&jsr );
 			CallService( MS_USERINFO_SHOWDIALOG, ( WPARAM )hContact, 0 );
 			break;
 		}
@@ -1214,7 +1214,7 @@ static void sttNickListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK*
 
 			ADDCONTACTSTRUCT acs={0};
 			acs.handleType = HANDLE_SEARCHRESULT;
-			acs.szProto = ppro->szProtoName;
+			acs.szProto = ppro->m_szProtoName;
 			acs.psr = (PROTOSEARCHRESULT *)&jsr;
 			CallService(MS_ADDCONTACT_SHOW, (WPARAM)CallService(MS_CLUI_GETHWND, 0, 0), (LPARAM)&acs);
 			break;
@@ -1287,7 +1287,7 @@ static void sttLogListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK* 
 			if ( item != NULL ) {
 				TCHAR text[ 1024 ];
 				mir_sntprintf( text, SIZEOF( text ), _T("%s/%s"), gch->pDest->ptszID, szBuffer );
-				ppro->JabberSendPresenceTo( ppro->iStatus, text, NULL );
+				ppro->JabberSendPresenceTo( ppro->m_iStatus, text, NULL );
 		}	}
 		break;
 
@@ -1399,7 +1399,7 @@ int CJabberProto::JabberGcEventHook(WPARAM wParam,LPARAM lParam)
 	if ( gch == NULL )
 		return 0;
 
-	if ( lstrcmpiA( gch->pDest->pszModule, szProtoName ))
+	if ( lstrcmpiA( gch->pDest->pszModule, m_szProtoName ))
 		return 0;
 
 	JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_CHATROOM, gch->pDest->ptszID );

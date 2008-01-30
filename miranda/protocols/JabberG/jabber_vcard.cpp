@@ -89,7 +89,7 @@ static void SetDialogField( CJabberProto* ppro, HWND hwndDlg, int nDlgItem, char
 {
 	DBVARIANT dbv;
 
-	if ( !DBGetContactSettingTString( NULL, ppro->szProtoName, key, &dbv )) {
+	if ( !DBGetContactSettingTString( NULL, ppro->m_szProtoName, key, &dbv )) {
 		SetDlgItemText( hwndDlg, nDlgItem, dbv.ptszVal );
 		JFreeVariant( &dbv );
 	}
@@ -449,11 +449,11 @@ static BOOL CALLBACK EditEmailDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 				SetWindowText( hwndDlg, TranslateT( "Jabber vCard: Edit Email Address" ));
 				wsprintfA( idstr, "e-mail%d", lParam );
-				if ( !DBGetContactSettingString( NULL, dat->ppro->szProtoName, idstr, &dbv )) {
+				if ( !DBGetContactSettingString( NULL, dat->ppro->m_szProtoName, idstr, &dbv )) {
 					SetDlgItemTextA( hwndDlg, IDC_EMAIL, dbv.pszVal );
 					JFreeVariant( &dbv );
 					wsprintfA( idstr, "e-mailFlag%d", lParam );
-					nFlag = DBGetContactSettingWord( NULL, dat->ppro->szProtoName, idstr, 0 );
+					nFlag = DBGetContactSettingWord( NULL, dat->ppro->m_szProtoName, idstr, 0 );
 					if ( nFlag & JABBER_VCEMAIL_HOME ) CheckDlgButton( hwndDlg, IDC_HOME, TRUE );
 					if ( nFlag & JABBER_VCEMAIL_WORK ) CheckDlgButton( hwndDlg, IDC_WORK, TRUE );
 					if ( nFlag & JABBER_VCEMAIL_INTERNET ) CheckDlgButton( hwndDlg, IDC_INTERNET, TRUE );
@@ -473,7 +473,7 @@ static BOOL CALLBACK EditEmailDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				if ( dat->id < 0 ) {
 					for ( dat->id=0;;dat->id++ ) {
 						mir_snprintf( idstr, SIZEOF(idstr), "e-mail%d", dat->id );
-						if ( DBGetContactSettingString( NULL, dat->ppro->szProtoName, idstr, &dbv )) break;
+						if ( DBGetContactSettingString( NULL, dat->ppro->m_szProtoName, idstr, &dbv )) break;
 						JFreeVariant( &dbv );
 				}	}
 				GetDlgItemText( hwndDlg, IDC_EMAIL, text, SIZEOF( text ));
@@ -515,7 +515,7 @@ static BOOL CALLBACK EditPhoneDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 				SetWindowText( hwndDlg, TranslateT( "Jabber vCard: Edit Phone Number" ));
 				wsprintfA( idstr, "Phone%d", dat->id );
-				if ( !DBGetContactSettingString( NULL, dat->ppro->szProtoName, idstr, &dbv )) {
+				if ( !DBGetContactSettingString( NULL, dat->ppro->m_szProtoName, idstr, &dbv )) {
 					SetDlgItemTextA( hwndDlg, IDC_PHONE, dbv.pszVal );
 					JFreeVariant( &dbv );
 					wsprintfA( idstr, "PhoneFlag%d", dat->id );
@@ -547,7 +547,7 @@ static BOOL CALLBACK EditPhoneDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				if ( dat->id < 0 ) {
 					for ( dat->id=0;;dat->id++ ) {
 						wsprintfA( idstr, "Phone%d", dat->id );
-						if ( DBGetContactSettingString( NULL, dat->ppro->szProtoName, idstr, &dbv )) break;
+						if ( DBGetContactSettingString( NULL, dat->ppro->m_szProtoName, idstr, &dbv )) break;
 						JFreeVariant( &dbv );
 					}
 				}
@@ -625,7 +625,7 @@ static BOOL CALLBACK ContactDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			lvi.iItem = 0;
 			for ( i=0;;i++ ) {
 				wsprintfA( idstr, "e-mail%d", i );
-				if ( DBGetContactSettingTString( NULL, ppro->szProtoName, idstr, &dbv )) break;
+				if ( DBGetContactSettingTString( NULL, ppro->m_szProtoName, idstr, &dbv )) break;
 				wsprintf( number, _T("%d"), i+1 );
 				lvi.pszText = number;
 				lvi.lParam = ( LPARAM )i;
@@ -644,7 +644,7 @@ static BOOL CALLBACK ContactDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			lvi.iItem = 0;
 			for ( i=0;;i++ ) {
 				wsprintfA( idstr, "Phone%d", i );
-				if ( DBGetContactSettingTString( NULL, ppro->szProtoName, idstr, &dbv )) break;
+				if ( DBGetContactSettingTString( NULL, ppro->m_szProtoName, idstr, &dbv )) break;
 				wsprintf( number, _T("%d"), i+1 );
 				lvi.pszText = number;
 				lvi.lParam = ( LPARAM )i;
@@ -736,7 +736,7 @@ static BOOL CALLBACK ContactDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 								WORD nFlag;
 
 								wsprintfA( idstr, szIdTemplate, i+1 );
-								if ( DBGetContactSettingString( NULL, ppro->szProtoName, idstr, &dbv )) break;
+								if ( DBGetContactSettingString( NULL, ppro->m_szProtoName, idstr, &dbv )) break;
 								wsprintfA( idstr,szIdTemplate,i );
 								ppro->JSetString( NULL, idstr, dbv.pszVal );
 								wsprintfA( idstr, szFlagTemplate, i+1 );
@@ -865,7 +865,7 @@ void CJabberProto::AppendVcardFromDB( XmlNode* n, char* tag, char* key )
 		return;
 
 	DBVARIANT dbv;
-	if ( DBGetContactSettingTString( NULL, szProtoName, key, &dbv ))
+	if ( DBGetContactSettingTString( NULL, m_szProtoName, key, &dbv ))
 		n->addChild( tag );
 	else {
 		n->addChild( tag, dbv.ptszVal );
@@ -900,7 +900,7 @@ void CJabberProto::SetServerVcard()
 
 	for ( i=0;;i++ ) {
 		wsprintfA( idstr, "e-mail%d", i );
-		if ( DBGetContactSettingTString( NULL, szProtoName, idstr, &dbv )) 
+		if ( DBGetContactSettingTString( NULL, m_szProtoName, idstr, &dbv )) 
 			break;
 
 		XmlNode* e = v->addChild( "EMAIL", dbv.ptszVal );
@@ -908,7 +908,7 @@ void CJabberProto::SetServerVcard()
 		AppendVcardFromDB( e, "USERID", idstr );
 
 		wsprintfA( idstr, "e-mailFlag%d", i );
-		nFlag = DBGetContactSettingWord( NULL, szProtoName, idstr, 0 );
+		nFlag = DBGetContactSettingWord( NULL, m_szProtoName, idstr, 0 );
 		if ( nFlag & JABBER_VCEMAIL_HOME ) e->addChild( "HOME" );
 		if ( nFlag & JABBER_VCEMAIL_WORK ) e->addChild( "WORK" );
 		if ( nFlag & JABBER_VCEMAIL_INTERNET ) e->addChild( "INTERNET" );
@@ -948,7 +948,7 @@ void CJabberProto::SetServerVcard()
 
 	for ( i=0;;i++ ) {
 		wsprintfA( idstr, "Phone%d", i );
-		if ( DBGetContactSettingTString( NULL, szProtoName, idstr, &dbv )) break;
+		if ( DBGetContactSettingTString( NULL, m_szProtoName, idstr, &dbv )) break;
 		JFreeVariant( &dbv );
 
 		n = v->addChild( "TEL" );

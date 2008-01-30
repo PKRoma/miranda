@@ -259,22 +259,22 @@ BOOL ActivateAccount( PROTOACCOUNT* pa )
 	ppi = ppd->fnInit( pa->szModuleName, pa->tszAccountName );
 	if ( ppi != NULL ) {
 		pa->ppro = ppi;
-		ppi->iDesiredStatus = ppi->iStatus = ID_STATUS_OFFLINE;
-		ppi->services[0] = CreateProtoServiceEx( pa->szModuleName, PS_ADDTOLIST, (MIRANDASERVICEPARAM)stub1, pa->ppro );
-		ppi->services[1] = CreateProtoServiceEx( pa->szModuleName, PS_ADDTOLISTBYEVENT, (MIRANDASERVICEPARAM)stub2, pa->ppro );
-		ppi->services[2] = CreateProtoServiceEx( pa->szModuleName, PS_AUTHALLOW, (MIRANDASERVICEPARAM)stub3, pa->ppro );
-		ppi->services[3] = CreateProtoServiceEx( pa->szModuleName, PS_AUTHDENY, (MIRANDASERVICEPARAM)stub4, pa->ppro );
-		ppi->services[4] = CreateProtoServiceEx( pa->szModuleName, PS_CHANGEINFO, (MIRANDASERVICEPARAM)stub7, pa->ppro );
-		ppi->services[5] = CreateProtoServiceEx( pa->szModuleName, PS_FILERESUME, (MIRANDASERVICEPARAM)stub11, pa->ppro );
-		ppi->services[6] = CreateProtoServiceEx( pa->szModuleName, PS_GETCAPS, (MIRANDASERVICEPARAM)stub12, pa->ppro );
-		ppi->services[7] = CreateProtoServiceEx( pa->szModuleName, PS_LOADICON, (MIRANDASERVICEPARAM)stub13, pa->ppro );
-		ppi->services[8] = CreateProtoServiceEx( pa->szModuleName, PS_BASICSEARCH, (MIRANDASERVICEPARAM)stub15, pa->ppro );
-		ppi->services[9] = CreateProtoServiceEx( pa->szModuleName, PS_SEARCHBYEMAIL, (MIRANDASERVICEPARAM)stub16, pa->ppro );
-		ppi->services[10] = CreateProtoServiceEx( pa->szModuleName, PS_SEARCHBYNAME, (MIRANDASERVICEPARAM)stub17, pa->ppro );
-		ppi->services[11] = CreateProtoServiceEx( pa->szModuleName, PS_SEARCHBYADVANCED, (MIRANDASERVICEPARAM)stub18, pa->ppro );
-		ppi->services[12] = CreateProtoServiceEx( pa->szModuleName, PS_CREATEADVSEARCHUI, (MIRANDASERVICEPARAM)stub19, pa->ppro );
-		ppi->services[13] = CreateProtoServiceEx( pa->szModuleName, PS_SETSTATUS, (MIRANDASERVICEPARAM)stub29, pa->ppro );
-		ppi->services[14] = CreateProtoServiceEx( pa->szModuleName, PS_SETAWAYMSG, (MIRANDASERVICEPARAM)stub33, pa->ppro );
+		ppi->m_iDesiredStatus = ppi->m_iStatus = ID_STATUS_OFFLINE;
+		ppi->m_services[0] = CreateProtoServiceEx( pa->szModuleName, PS_ADDTOLIST, (MIRANDASERVICEPARAM)stub1, pa->ppro );
+		ppi->m_services[1] = CreateProtoServiceEx( pa->szModuleName, PS_ADDTOLISTBYEVENT, (MIRANDASERVICEPARAM)stub2, pa->ppro );
+		ppi->m_services[2] = CreateProtoServiceEx( pa->szModuleName, PS_AUTHALLOW, (MIRANDASERVICEPARAM)stub3, pa->ppro );
+		ppi->m_services[3] = CreateProtoServiceEx( pa->szModuleName, PS_AUTHDENY, (MIRANDASERVICEPARAM)stub4, pa->ppro );
+		ppi->m_services[4] = CreateProtoServiceEx( pa->szModuleName, PS_CHANGEINFO, (MIRANDASERVICEPARAM)stub7, pa->ppro );
+		ppi->m_services[5] = CreateProtoServiceEx( pa->szModuleName, PS_FILERESUME, (MIRANDASERVICEPARAM)stub11, pa->ppro );
+		ppi->m_services[6] = CreateProtoServiceEx( pa->szModuleName, PS_GETCAPS, (MIRANDASERVICEPARAM)stub12, pa->ppro );
+		ppi->m_services[7] = CreateProtoServiceEx( pa->szModuleName, PS_LOADICON, (MIRANDASERVICEPARAM)stub13, pa->ppro );
+		ppi->m_services[8] = CreateProtoServiceEx( pa->szModuleName, PS_BASICSEARCH, (MIRANDASERVICEPARAM)stub15, pa->ppro );
+		ppi->m_services[9] = CreateProtoServiceEx( pa->szModuleName, PS_SEARCHBYEMAIL, (MIRANDASERVICEPARAM)stub16, pa->ppro );
+		ppi->m_services[10] = CreateProtoServiceEx( pa->szModuleName, PS_SEARCHBYNAME, (MIRANDASERVICEPARAM)stub17, pa->ppro );
+		ppi->m_services[11] = CreateProtoServiceEx( pa->szModuleName, PS_SEARCHBYADVANCED, (MIRANDASERVICEPARAM)stub18, pa->ppro );
+		ppi->m_services[12] = CreateProtoServiceEx( pa->szModuleName, PS_CREATEADVSEARCHUI, (MIRANDASERVICEPARAM)stub19, pa->ppro );
+		ppi->m_services[13] = CreateProtoServiceEx( pa->szModuleName, PS_SETSTATUS, (MIRANDASERVICEPARAM)stub29, pa->ppro );
+		ppi->m_services[14] = CreateProtoServiceEx( pa->szModuleName, PS_SETAWAYMSG, (MIRANDASERVICEPARAM)stub33, pa->ppro );
 		return TRUE;
 	}
 
@@ -293,9 +293,9 @@ void UnloadAccount( PROTOACCOUNT* pa, BOOL bIsDynamic )
 {
 	int idx;
 	if ( pa->ppro ) {
-		for ( idx = 0; idx < SIZEOF(pa->ppro->services); idx++ )
-			if ( pa->ppro->services[idx] )
-				DestroyServiceFunction( pa->ppro->services[idx] );
+		for ( idx = 0; idx < SIZEOF(pa->ppro->m_services); idx++ )
+			if ( pa->ppro->m_services[idx] )
+				DestroyServiceFunction( pa->ppro->m_services[idx] );
 
 		UninitAccount( pa->szModuleName, pa);
 	}

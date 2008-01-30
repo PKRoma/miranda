@@ -154,7 +154,7 @@ int CJabberProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
 				mi.position = 0;
 				mi.icolibItem = GetIconHandle( IDI_REQUEST );
 				mi.pszService = text;
-				mi.pszContactOwner = szProtoName;
+				mi.pszContactOwner = m_szProtoName;
 
 				TCHAR szTmp[512];
 				for (int i = 0; i < nMenuResourceItemsNew; ++i) {
@@ -431,7 +431,7 @@ void CJabberProto::JabberMenuInit()
 	mi.cbSize = sizeof( CLISTMENUITEM );
 
 	char text[ 200 ];
-	strcpy( text, szProtoName );
+	strcpy( text, m_szProtoName );
 	char* tDest = text + strlen( text );
 
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -445,7 +445,7 @@ void CJabberProto::JabberMenuInit()
 	mi.position = -2000001000;
 	mi.icolibItem = GetIconHandle( IDI_REQUEST );
 	mi.pszService = text;
-	mi.pszContactOwner = szProtoName;
+	mi.pszContactOwner = m_szProtoName;
 	hMenuRequestAuth = ( HANDLE ) JCallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 
 	// "Grant authorization"
@@ -557,7 +557,7 @@ void CJabberProto::JabberMenuInit()
 
 	mi.popupPosition = 500083000;
 	mi.pszService = text;
-	mi.pszName = szProtoName;
+	mi.pszName = m_szProtoName;
 	mi.position = -1999901009;
 	mi.pszPopupName = (char *)-1;
 	mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTPOPUP;
@@ -666,7 +666,7 @@ void CJabberProto::JabberMenuInit()
 	hkd.cbSize = sizeof(hkd);
 	hkd.pszName = text;
 	hkd.pszService = text;
-	hkd.pszSection = szModuleName;
+	hkd.pszSection = m_szModuleName;
 
 	strcpy(tDest, "/Groupchat");
 	hkd.pszDescription = "Join conference";
@@ -688,7 +688,7 @@ void CJabberProto::JabberMenuInit()
 int CJabberProto::OnModernToolbarInit(WPARAM, LPARAM)
 {
 	char text[100], tmpbuf[256];
-	strcpy( text, szProtoName );
+	strcpy( text, m_szProtoName );
 	char* tDest = text + strlen( text );
 
 	TBButton button = {0};
@@ -702,14 +702,14 @@ int CJabberProto::OnModernToolbarInit(WPARAM, LPARAM)
 	JCreateService( "/Groupchat", &CJabberProto::JabberMenuHandleJoinGroupchat );
 
 	strcpy(tDest, "/Groupchat");
-	mir_snprintf(tmpbuf, SIZEOF(tmpbuf), "Join conference (%s)", szModuleName);
+	mir_snprintf(tmpbuf, SIZEOF(tmpbuf), "Join conference (%s)", m_szModuleName);
 	button.hSecondaryIconHandle = button.hPrimaryIconHandle = (HANDLE)GetIconHandle(IDI_GROUP);
 	CallService(MS_TB_ADDBUTTON, 0, (LPARAM)&button);
 
 	JCreateService( "/Bookmarks", &CJabberProto::JabberMenuHandleBookmarks );
 
 	strcpy(tDest, "/Bookmarks");
-	mir_snprintf(tmpbuf, SIZEOF(tmpbuf), "Open bookmarks (%s)", szModuleName);
+	mir_snprintf(tmpbuf, SIZEOF(tmpbuf), "Open bookmarks (%s)", m_szModuleName);
 	button.hSecondaryIconHandle = button.hPrimaryIconHandle = (HANDLE)GetIconHandle(IDI_BOOKMARKS);
 	button.defPos++;
 	CallService(MS_TB_ADDBUTTON, 0, (LPARAM)&button);
@@ -717,7 +717,7 @@ int CJabberProto::OnModernToolbarInit(WPARAM, LPARAM)
 	JCreateService( "/ServiceDiscovery", &CJabberProto::JabberMenuHandleServiceDiscovery );
 
 	strcpy(tDest, "/ServiceDiscovery");
-	mir_snprintf(tmpbuf, SIZEOF(tmpbuf), "Service discovery (%s)", szModuleName);
+	mir_snprintf(tmpbuf, SIZEOF(tmpbuf), "Service discovery (%s)", m_szModuleName);
 	button.hSecondaryIconHandle = button.hPrimaryIconHandle = (HANDLE)GetIconHandle(IDI_SERVICE_DISCOVERY);
 	button.defPos++;
 	CallService(MS_TB_ADDBUTTON, 0, (LPARAM)&button);
@@ -766,7 +766,7 @@ void CJabberProto::JabberMenuHideSrmmIcon(HANDLE hContact)
 {
 	StatusIconData sid = {0};
 	sid.cbSize = sizeof(sid);
-	sid.szModule = szProtoName;
+	sid.szModule = m_szProtoName;
 	sid.flags = MBF_HIDDEN;
 	CallService(MS_MSG_MODIFYICON, (WPARAM)hContact, (LPARAM)&sid);
 }
@@ -782,7 +782,7 @@ void CJabberProto::JabberMenuUpdateSrmmIcon(JABBER_LIST_ITEM *item)
 
 	StatusIconData sid = {0};
 	sid.cbSize = sizeof(sid);
-	sid.szModule = szProtoName;
+	sid.szModule = m_szProtoName;
 	sid.flags = item->resourceCount ? 0 : MBF_HIDDEN;
 	CallService(MS_MSG_MODIFYICON, (WPARAM)hContact, (LPARAM)&sid);
 }
@@ -838,7 +838,7 @@ int CJabberProto::OnProcessSrmmEvent( WPARAM wParam, LPARAM lParam )
 int CJabberProto::OnProcessSrmmIconClick( WPARAM wParam, LPARAM lParam )
 {
 	StatusIconClickData *sicd = (StatusIconClickData *)lParam;
-	if (lstrcmpA(sicd->szModule, szProtoName))
+	if (lstrcmpA(sicd->szModule, m_szProtoName))
 		return 0;
 
 	HANDLE hContact = (HANDLE)wParam;

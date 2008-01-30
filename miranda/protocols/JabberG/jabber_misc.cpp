@@ -145,7 +145,7 @@ void CJabberProto::JabberDBAddAuthRequest( TCHAR* jid, TCHAR* nick )
 	//blob is: 0( DWORD ), hContact( HANDLE ), nick( ASCIIZ ), ""( ASCIIZ ), ""( ASCIIZ ), email( ASCIIZ ), ""( ASCIIZ )
 	DBEVENTINFO dbei = {0};
 	dbei.cbSize = sizeof( DBEVENTINFO );
-	dbei.szModule = szProtoName;
+	dbei.szModule = m_szProtoName;
 	dbei.timestamp = ( DWORD )time( NULL );
 	dbei.flags = 0;
 	dbei.eventType = EVENTTYPE_AUTHREQUEST;
@@ -193,7 +193,7 @@ HANDLE CJabberProto::JabberDBCreateContact( TCHAR* jid, TCHAR* nick, BOOL tempor
 	HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL ) {
 		szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-		if ( szProto!=NULL && !strcmp( szProtoName, szProto )) {
+		if ( szProto!=NULL && !strcmp( m_szProtoName, szProto )) {
 			DBVARIANT dbv;
 			if ( !JGetStringT( hContact, "jid", &dbv )) {
 				p = dbv.ptszVal;
@@ -208,7 +208,7 @@ HANDLE CJabberProto::JabberDBCreateContact( TCHAR* jid, TCHAR* nick, BOOL tempor
 
 	if ( hContact == NULL ) {
 		hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_ADD, 0, 0 );
-		JCallService( MS_PROTO_ADDTOCONTACT, ( WPARAM ) hContact, ( LPARAM )szProtoName );
+		JCallService( MS_PROTO_ADDTOCONTACT, ( WPARAM ) hContact, ( LPARAM )m_szProtoName );
 		JSetStringT( hContact, "jid", s );
 		if ( nick != NULL && *nick != '\0' )
 			JSetStringT( hContact, "Nick", nick );
@@ -240,7 +240,7 @@ void CJabberProto::InitCustomFolders( void )
 		char AvatarsFolder[MAX_PATH]; AvatarsFolder[0] = 0;
 		CallService( MS_DB_GETPROFILEPATH, ( WPARAM )MAX_PATH, ( LPARAM )AvatarsFolder );
 		strcat( AvatarsFolder, "\\Jabber" );
-		hJabberAvatarsFolder = FoldersRegisterCustomPath(szProtoName, "Avatars", AvatarsFolder);
+		hJabberAvatarsFolder = FoldersRegisterCustomPath(m_szProtoName, "Avatars", AvatarsFolder);
 }	}
 
 void CJabberProto::JabberGetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen )
@@ -292,11 +292,11 @@ void CJabberProto::JabberGetAvatarFileName( HANDLE hContact, char* pszDest, int 
 	}
 	else {
 		DBVARIANT dbv1, dbv2;
-		BOOL res1 = DBGetContactSettingString( NULL, szProtoName, "LoginName", &dbv1 );
-		BOOL res2 = DBGetContactSettingString( NULL, szProtoName, "LoginServer", &dbv2 );
+		BOOL res1 = DBGetContactSettingString( NULL, m_szProtoName, "LoginName", &dbv1 );
+		BOOL res2 = DBGetContactSettingString( NULL, m_szProtoName, "LoginServer", &dbv2 );
 		mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%s@%s avatar.%s",
 			res1 ? "noname" : dbv1.pszVal,
-			res2 ? szProtoName : dbv2.pszVal,
+			res2 ? m_szProtoName : dbv2.pszVal,
 			szFileType );
 		if (!res1) JFreeVariant( &dbv1 );
 		if (!res2) JFreeVariant( &dbv2 );
@@ -315,7 +315,7 @@ void CJabberProto::JabberResolveTransportNicks( TCHAR* jid )
 
 	for ( ; hContact != NULL; hContact = ( HANDLE )JCallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 )) {
 		char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-		if ( lstrcmpA( szProto, szProtoName ))
+		if ( lstrcmpA( szProto, m_szProtoName ))
 			continue;
 
 		if ( !JGetByte( hContact, "IsTransported", 0 ))
@@ -358,30 +358,30 @@ void CJabberProto::JabberSetServerStatus( int iNewStatus )
 		return;
 
 	// change status
-	int oldStatus = iStatus;
+	int oldStatus = m_iStatus;
 	switch ( iNewStatus ) {
 	case ID_STATUS_ONLINE:
 	case ID_STATUS_NA:
 	case ID_STATUS_FREECHAT:
 	case ID_STATUS_INVISIBLE:
-		iStatus = iNewStatus;
+		m_iStatus = iNewStatus;
 		break;
 	case ID_STATUS_AWAY:
 	case ID_STATUS_ONTHEPHONE:
 	case ID_STATUS_OUTTOLUNCH:
-		iStatus = ID_STATUS_AWAY;
+		m_iStatus = ID_STATUS_AWAY;
 		break;
 	case ID_STATUS_DND:
 	case ID_STATUS_OCCUPIED:
-		iStatus = ID_STATUS_DND;
+		m_iStatus = ID_STATUS_DND;
 		break;
 	default:
 		return;
 	}
 
 	// send presence update
-	JabberSendPresence( iStatus, true );
-	JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, iStatus );
+	JabberSendPresence( m_iStatus, true );
+	JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, m_iStatus );
 }
 
 // Process a string, and double all % characters, according to chat.dll's restrictions

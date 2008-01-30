@@ -311,7 +311,7 @@ static BOOL CALLBACK JabberBookmarksDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 		ListView_SetExtendedListViewStyle(lv, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | LVS_EX_HEADERDRAGDROP );
 		hIml = ImageList_Create(16, 16,	 IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR16 | ILC_MASK, 2, 1);
 		if (hIml) {
-			ImageList_AddIcon(hIml, (HICON)JCallService(MS_SKIN_LOADPROTOICON,(WPARAM)ppro->szProtoName,(LPARAM)ID_STATUS_ONLINE) );
+			ImageList_AddIcon(hIml, (HICON)JCallService(MS_SKIN_LOADPROTOICON,(WPARAM)ppro->m_szProtoName,(LPARAM)ID_STATUS_ONLINE) );
 			ImageList_AddIcon(hIml, (HICON)JCallService(MS_SKIN_LOADICON, SKINICON_EVENT_URL ,0));
 			ListView_SetImageList (lv, hIml, LVSIL_SMALL);
 		}
@@ -319,17 +319,17 @@ static BOOL CALLBACK JabberBookmarksDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 		// Add columns
 		lvCol.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
 		lvCol.pszText = TranslateT( "Bookmark Name" );
-		lvCol.cx = DBGetContactSettingWord( NULL, ppro->szProtoName, "bookmarksWnd_cx0", 120 );
+		lvCol.cx = DBGetContactSettingWord( NULL, ppro->m_szProtoName, "bookmarksWnd_cx0", 120 );
 		lvCol.iSubItem = 0;
 		ListView_InsertColumn( lv, 0, &lvCol );
 
 		lvCol.pszText = TranslateT( "Room JID / URL" );
-		lvCol.cx = DBGetContactSettingWord( NULL, ppro->szProtoName, "bookmarksWnd_cx1", 210 );
+		lvCol.cx = DBGetContactSettingWord( NULL, ppro->m_szProtoName, "bookmarksWnd_cx1", 210 );
 		lvCol.iSubItem = 1;
 		ListView_InsertColumn( lv, 1, &lvCol );
 
 		lvCol.pszText = TranslateT( "Nick" );
-		lvCol.cx = DBGetContactSettingWord( NULL, ppro->szProtoName, "bookmarksWnd_cx2", 90 );
+		lvCol.cx = DBGetContactSettingWord( NULL, ppro->m_szProtoName, "bookmarksWnd_cx2", 90 );
 		lvCol.iSubItem = 2;
 		ListView_InsertColumn( lv, 2, &lvCol );
 
@@ -400,7 +400,7 @@ static BOOL CALLBACK JabberBookmarksDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 		HFONT hfnt = CreateFontIndirect(&lf);
 		SendDlgItemMessage(hwndDlg, IDC_TITLE, WM_SETFONT, (WPARAM)hfnt, TRUE);
 
-		Utils_RestoreWindowPosition( hwndDlg, NULL, ppro->szProtoName, "bookmarksWnd_" );
+		Utils_RestoreWindowPosition( hwndDlg, NULL, ppro->m_szProtoName, "bookmarksWnd_" );
 		return TRUE;
 	}
 
@@ -629,13 +629,13 @@ static BOOL CALLBACK JabberBookmarksDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			LVCOLUMN lvc = { 0 };
 			lvc.mask = LVCF_WIDTH;
 			ListView_GetColumn( hwndList, 0, &lvc );
-			DBWriteContactSettingWord( NULL, ppro->szProtoName, "bookmarksWnd_cx0", lvc.cx );
+			DBWriteContactSettingWord( NULL, ppro->m_szProtoName, "bookmarksWnd_cx0", lvc.cx );
 			ListView_GetColumn( hwndList, 1, &lvc );
-			DBWriteContactSettingWord( NULL, ppro->szProtoName, "bookmarksWnd_cx1", lvc.cx );
+			DBWriteContactSettingWord( NULL, ppro->m_szProtoName, "bookmarksWnd_cx1", lvc.cx );
 			ListView_GetColumn( hwndList, 2, &lvc );
-			DBWriteContactSettingWord( NULL, ppro->szProtoName, "bookmarksWnd_cx2", lvc.cx );
+			DBWriteContactSettingWord( NULL, ppro->m_szProtoName, "bookmarksWnd_cx2", lvc.cx );
 
-			Utils_SaveWindowPosition( hwndDlg, NULL, ppro->szProtoName, "bookmarksWnd_" );
+			Utils_SaveWindowPosition( hwndDlg, NULL, ppro->m_szProtoName, "bookmarksWnd_" );
 			DestroyWindow( hwndDlg );
 			break;
 		}

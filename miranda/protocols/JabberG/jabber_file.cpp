@@ -333,7 +333,7 @@ void CJabberProto::JabberFileServerThread( filetransfer* ft )
 				char *myAddr;
 				DBVARIANT dbv;
 				if ( JGetByte( "BsDirect", TRUE ) && JGetByte( "BsDirectManual", FALSE )) {
-					if ( !DBGetContactSettingString( NULL, szProtoName, "BsDirectAddr", &dbv )) {
+					if ( !DBGetContactSettingString( NULL, m_szProtoName, "BsDirectAddr", &dbv )) {
 						myAddr = NEWSTR_ALLOCA( dbv.pszVal );
 						JFreeVariant( &dbv );
 					}

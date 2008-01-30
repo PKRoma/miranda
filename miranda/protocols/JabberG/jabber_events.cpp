@@ -51,7 +51,7 @@ int CJabberProto::OnContactDeleted( WPARAM wParam, LPARAM lParam )
 		return 0;
 
 	char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, wParam, 0 );
-	if ( szProto==NULL || strcmp( szProto, szProtoName ))
+	if ( szProto==NULL || strcmp( szProto, m_szProtoName ))
 		return 0;
 
 	DBVARIANT dbv;
@@ -228,7 +228,7 @@ int __cdecl CJabberProto::OnDbSettingChanged( WPARAM wParam, LPARAM lParam )
 		return 0;
 
 	char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-	if ( szProto == NULL || strcmp( szProto, szProtoName ))
+	if ( szProto == NULL || strcmp( szProto, m_szProtoName ))
 		return 0;
 
 	if ( !strcmp( cws->szSetting, "Group" ))

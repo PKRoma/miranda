@@ -33,7 +33,7 @@ extern LIST<void> arServices;
 void CJabberProto::JCreateService( const char* szService, JServiceFunc serviceProc )
 {
 	char str[ MAXMODULELABELLENGTH ];
-	strcpy( str, szProtoName );
+	strcpy( str, m_szProtoName );
 	strcat( str, szService );
 	arServices.insert( ::CreateServiceFunctionObj( str, ( MIRANDASERVICEOBJ )*( void** )&serviceProc, this ));
 }
@@ -41,7 +41,7 @@ void CJabberProto::JCreateService( const char* szService, JServiceFunc servicePr
 void CJabberProto::JCreateServiceParam( const char* szService, JServiceFuncParam serviceProc, LPARAM lParam )
 {
 	char str[ MAXMODULELABELLENGTH ];
-	strcpy( str, szProtoName );
+	strcpy( str, m_szProtoName );
 	strcat( str, szService );
 	arServices.insert( ::CreateServiceFunctionObjParam( str, ( MIRANDASERVICEOBJPARAM )*( void** )&serviceProc, this, lParam ));
 }
@@ -54,7 +54,7 @@ void CJabberProto::JHookEvent( const char* szEvent, JEventFunc handler )
 HANDLE CJabberProto::JCreateHookableEvent( const char* szService )
 {
 	char str[ MAXMODULELABELLENGTH ];
-	strcpy( str, szProtoName );
+	strcpy( str, m_szProtoName );
 	strcat( str, szService );
 	return CreateHookableEvent( str );
 }
@@ -70,17 +70,17 @@ int __stdcall JCallService( const char* szSvcName, WPARAM wParam, LPARAM lParam 
 
 void CJabberProto::JDeleteSetting( HANDLE hContact, const char* valueName )
 {
-   DBDeleteContactSetting( hContact, szProtoName, valueName );
+   DBDeleteContactSetting( hContact, m_szProtoName, valueName );
 }
 
 DWORD CJabberProto::JGetByte( const char* valueName, int parDefltValue )
 {
-	return DBGetContactSettingByte( NULL, szProtoName, valueName, parDefltValue );
+	return DBGetContactSettingByte( NULL, m_szProtoName, valueName, parDefltValue );
 }
 
 DWORD CJabberProto::JGetByte( HANDLE hContact, const char* valueName, int parDefltValue )
 {
-	return DBGetContactSettingByte( hContact, szProtoName, valueName, parDefltValue );
+	return DBGetContactSettingByte( hContact, m_szProtoName, valueName, parDefltValue );
 }
 
 char* __stdcall JGetContactName( HANDLE hContact )
@@ -90,7 +90,7 @@ char* __stdcall JGetContactName( HANDLE hContact )
 
 DWORD CJabberProto::JGetDword( HANDLE hContact, const char* valueName, DWORD parDefltValue )
 {
-	return DBGetContactSettingDword( hContact, szProtoName, valueName, parDefltValue );
+	return DBGetContactSettingDword( hContact, m_szProtoName, valueName, parDefltValue );
 }
 
 int CJabberProto::JGetStaticString( const char* valueName, HANDLE hContact, char* dest, int dest_len )
@@ -102,7 +102,7 @@ int CJabberProto::JGetStaticString( const char* valueName, HANDLE hContact, char
 
 	DBCONTACTGETSETTING sVal;
 	sVal.pValue = &dbv;
-	sVal.szModule = szProtoName;
+	sVal.szModule = m_szProtoName;
 	sVal.szSetting = valueName;
 	if ( JCallService( MS_DB_CONTACT_GETSETTINGSTATIC, ( WPARAM )hContact, ( LPARAM )&sVal ) != 0 )
 		return 1;
@@ -112,17 +112,17 @@ int CJabberProto::JGetStaticString( const char* valueName, HANDLE hContact, char
 
 int CJabberProto::JGetStringUtf( HANDLE hContact, char* valueName, DBVARIANT* dbv )
 {
-	return DBGetContactSettingStringUtf( hContact, szProtoName, valueName, dbv );
+	return DBGetContactSettingStringUtf( hContact, m_szProtoName, valueName, dbv );
 }
 
 int CJabberProto::JGetStringT( HANDLE hContact, char* valueName, DBVARIANT* dbv )
 {
-	return DBGetContactSettingTString( hContact, szProtoName, valueName, dbv );
+	return DBGetContactSettingTString( hContact, m_szProtoName, valueName, dbv );
 }
 
 WORD CJabberProto::JGetWord( HANDLE hContact, const char* valueName, int parDefltValue )
 {
-	return DBGetContactSettingWord( hContact, szProtoName, valueName, parDefltValue );
+	return DBGetContactSettingWord( hContact, m_szProtoName, valueName, parDefltValue );
 }
 
 void __fastcall JFreeVariant( DBVARIANT* dbv )
@@ -134,7 +134,7 @@ int CJabberProto::JSendBroadcast( HANDLE hContact, int type, int result, HANDLE 
 {
 	ACKDATA ack = {0};
 	ack.cbSize = sizeof( ACKDATA );
-	ack.szModule = szProtoName;
+	ack.szModule = m_szProtoName;
 	ack.hContact = hContact;
 	ack.type = type;
 	ack.result = result;
@@ -145,37 +145,37 @@ int CJabberProto::JSendBroadcast( HANDLE hContact, int type, int result, HANDLE 
 
 DWORD CJabberProto::JSetByte( const char* valueName, int parValue )
 {
-	return DBWriteContactSettingByte( NULL, szProtoName, valueName, parValue );
+	return DBWriteContactSettingByte( NULL, m_szProtoName, valueName, parValue );
 }
 
 DWORD CJabberProto::JSetByte( HANDLE hContact, const char* valueName, int parValue )
 {
-	return DBWriteContactSettingByte( hContact, szProtoName, valueName, parValue );
+	return DBWriteContactSettingByte( hContact, m_szProtoName, valueName, parValue );
 }
 
 DWORD CJabberProto::JSetDword( HANDLE hContact, const char* valueName, DWORD parValue )
 {
-	return DBWriteContactSettingDword( hContact, szProtoName, valueName, parValue );
+	return DBWriteContactSettingDword( hContact, m_szProtoName, valueName, parValue );
 }
 
 DWORD CJabberProto::JSetString( HANDLE hContact, const char* valueName, const char* parValue )
 {
-	return DBWriteContactSettingString( hContact, szProtoName, valueName, parValue );
+	return DBWriteContactSettingString( hContact, m_szProtoName, valueName, parValue );
 }
 
 DWORD CJabberProto::JSetStringT( HANDLE hContact, const char* valueName, const TCHAR* parValue )
 {
-	return DBWriteContactSettingTString( hContact, szProtoName, valueName, parValue );
+	return DBWriteContactSettingTString( hContact, m_szProtoName, valueName, parValue );
 }
 
 DWORD CJabberProto::JSetStringUtf( HANDLE hContact, const char* valueName, const char* parValue )
 {
-	return DBWriteContactSettingStringUtf( hContact, szProtoName, valueName, parValue );
+	return DBWriteContactSettingStringUtf( hContact, m_szProtoName, valueName, parValue );
 }
 
 DWORD CJabberProto::JSetWord( HANDLE hContact, const char* valueName, int parValue )
 {
-	return DBWriteContactSettingWord( hContact, szProtoName, valueName, parValue );
+	return DBWriteContactSettingWord( hContact, m_szProtoName, valueName, parValue );
 }
 
 char* __fastcall JTranslate( const char* str )
@@ -193,7 +193,7 @@ TCHAR* CJabberProto::JGetStringCrypt( HANDLE hContact, char* valueName )
 {
 	DBVARIANT dbv;
 
-	if (DBGetContactSettingString( hContact, szProtoName, valueName, &dbv ))
+	if (DBGetContactSettingString( hContact, m_szProtoName, valueName, &dbv ))
 		return NULL;
 
 	sttCryptString(dbv.pszVal);

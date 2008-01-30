@@ -131,7 +131,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	virtual	int    __cdecl GetAwayMsg( HANDLE hContact );
 	virtual	int    __cdecl RecvAwayMsg( HANDLE hContact, int mode, PROTORECVEVENT* evt );
 	virtual	int    __cdecl SendAwayMsg( HANDLE hContact, HANDLE hProcess, const char* msg );
-	virtual	int    __cdecl SetAwayMsg( int iStatus, const char* msg );
+	virtual	int    __cdecl SetAwayMsg( int m_iStatus, const char* msg );
 
 	virtual	int    __cdecl UserIsTyping( HANDLE hContact, int type );
 
@@ -709,7 +709,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   JabberLog( const char* fmt, ... );
 	void   JabberSendVisibleInvisiblePresence( BOOL invisible );
 	void   JabberSendPresenceTo( int status, TCHAR* to, XmlNode* extra );
-	void   JabberSendPresence( int iStatus, bool bSendToAll );
+	void   JabberSendPresence( int m_iStatus, bool bSendToAll );
 	void   JabberStringAppend( char* *str, int *sizeAlloced, const char* fmt, ... );
 	TCHAR* JabberGetClientJID( const TCHAR* jid, TCHAR*, size_t );
 	TCHAR* JabberGetXmlLang( void );

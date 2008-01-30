@@ -32,12 +32,12 @@ BOOL CJabberProto::JabberWsInit( void )
 	NETLIBUSER nlu = {0};
 	char name[128];
 
-	sprintf( name, "%s %s", szModuleName, JTranslate( "connection" ));
+	sprintf( name, "%s %s", m_szModuleName, JTranslate( "connection" ));
 
 	nlu.cbSize = sizeof( nlu );
 	nlu.flags = NUF_OUTGOING | NUF_INCOMING | NUF_HTTPCONNS;	// | NUF_HTTPGATEWAY;
 	nlu.szDescriptiveName = name;
-	nlu.szSettingsModule = szProtoName;
+	nlu.szSettingsModule = m_szProtoName;
 	//nlu.szHttpGatewayHello = "http://http.proxy.icq.com/hello";
 	//nlu.szHttpGatewayUserAgent = "Mozilla/4.08 [en] ( WinNT; U ;Nav )";
 	//nlu.pfnHttpGatewayInit = JabberHttpGatewayInit;

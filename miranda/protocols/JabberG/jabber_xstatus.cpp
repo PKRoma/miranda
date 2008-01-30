@@ -147,7 +147,7 @@ int CJabberProto::CListMW_ExtraIconsApply( WPARAM wParam, LPARAM lParam )
 	if (jabberOnline && jabberPepSupported && ServiceExists(MS_CLIST_EXTRA_SET_ICON)) 
 	{
 		char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, wParam, 0 );
-		if ( szProto==NULL || strcmp( szProto, szProtoName ))
+		if ( szProto==NULL || strcmp( szProto, m_szProtoName ))
 			return 0; // only apply icons to our contacts, do not mess others
 
 		JabberUpdateContactExtraIcon((HANDLE)wParam);
@@ -423,19 +423,19 @@ int CJabberProto::CListMW_BuildStatusItems( WPARAM wParam, LPARAM lParam )
 
 	CLISTMENUITEM mi = { 0 };
 	int i;
-	char srvFce[MAX_PATH + 64], *svcName = srvFce+strlen( szProtoName );
+	char srvFce[MAX_PATH + 64], *svcName = srvFce+strlen( m_szProtoName );
 	char szItem[MAX_PATH + 64];
 	HANDLE hXStatusRoot;
 	HANDLE hRoot = ( HANDLE )szItem;
 
-	mir_snprintf( szItem, sizeof(szItem), LPGEN("%s Custom Status"), szProtoName );
+	mir_snprintf( szItem, sizeof(szItem), LPGEN("%s Custom Status"), m_szProtoName );
 	mi.cbSize = sizeof(mi);
 	mi.popupPosition= 500084000;
 	mi.position = 2000040000;
-	mi.pszContactOwner = szProtoName;
+	mi.pszContactOwner = m_szProtoName;
 
 	for( i = 0; i <= NUM_XMODES; i++ ) {
-		mir_snprintf( srvFce, sizeof(srvFce), "%s/menuXStatus%d", szProtoName, i );
+		mir_snprintf( srvFce, sizeof(srvFce), "%s/menuXStatus%d", m_szProtoName, i );
 
 		if ( !bXStatusMenuBuilt )
 			JCreateServiceParam( svcName, &CJabberProto::menuSetXStatus, i );
@@ -471,7 +471,7 @@ void CJabberProto::InitXStatusIcons()
 		strcpy( p+1, "..\\Icons\\jabber_xstatus.dll" );
 
 	char szSection[ 100 ];
-	mir_snprintf( szSection, sizeof( szSection ), "%s/Custom Status", JTranslate( szProtoName ));
+	mir_snprintf( szSection, sizeof( szSection ), "%s/Custom Status", JTranslate( m_szProtoName ));
 
 	SKINICONDESC sid = {0};
 	sid.cbSize = sizeof(SKINICONDESC);
@@ -481,7 +481,7 @@ void CJabberProto::InitXStatusIcons()
 
 	for ( int i = 1; i < SIZEOF(g_arrMoods); i++ ) {
 		char szSettingName[100];
-		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", szProtoName, g_arrMoods[i].szName );
+		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", m_szProtoName, g_arrMoods[i].szName );
 		sid.pszName = szSettingName;
 		sid.pszDescription = Translate( g_arrMoods[i].szName );
 		sid.iDefaultIndex = -( i+200 );

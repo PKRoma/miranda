@@ -81,14 +81,14 @@ typedef struct tagPROTO_INTERFACE
 		PROTO_INTERFACE_VTBL* vtbl;
 	#endif
 
-	int    iStatus,
-          iDesiredStatus,
-          iXStatus,
-			 iVersion;
-	TCHAR* tszUserName;
-	char*  szProtoName;
-	char*  szModuleName;
-	HANDLE services[ 20 ];
+	int    m_iStatus,
+          m_iDesiredStatus,
+          m_iXStatus,
+			 m_iVersion;
+	TCHAR* m_tszUserName;
+	char*  m_szProtoName;
+	char*  m_szModuleName;
+	HANDLE m_services[ 20 ];
 
 	DWORD  reserved[ 40 ];
 

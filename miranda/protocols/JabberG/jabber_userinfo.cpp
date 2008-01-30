@@ -229,7 +229,7 @@ static void sttFillResourceInfo( CJabberProto* ppro, HWND hwndTree, HTREEITEM ht
 	JABBER_RESOURCE_STATUS *res = resource ? &item->resource[resource-1] : &item->itemResource;
 
 	if ( res->resourceName && *res->resourceName )
-		htiResource = sttFillInfoLine( hwndTree, htiRoot, LoadSkinnedProtoIcon( ppro->szProtoName, res->status ), TranslateT("Resource"), res->resourceName,
+		htiResource = sttFillInfoLine( hwndTree, htiRoot, LoadSkinnedProtoIcon( ppro->m_szProtoName, res->status ), TranslateT("Resource"), res->resourceName,
 			sttInfoLineId(resource, INFOLINE_NAME), true );
 
 	{	// StatusMsg
@@ -451,7 +451,7 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 				HWND hwndTree = GetDlgItem(hwndDlg, IDC_TV_INFO);
 				TreeView_DeleteAllItems( hwndTree );
 				HTREEITEM htiRoot = sttFillInfoLine( hwndTree, NULL, dat->ppro->LoadIconEx( "main" ), _T( "JID" ), dbv.ptszVal, sttInfoLineId(0, INFOLINE_NAME), true );
-				sttFillInfoLine( hwndTree, htiRoot, LoadSkinnedProtoIcon( dat->ppro->szModuleName, ID_STATUS_OFFLINE ), NULL, 
+				sttFillInfoLine( hwndTree, htiRoot, LoadSkinnedProtoIcon( dat->ppro->m_szModuleName, ID_STATUS_OFFLINE ), NULL, 
 					TranslateT("Please switch online to see more details.") );
 
 				JFreeVariant(&dbv);
@@ -809,7 +809,7 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 
 int CJabberProto::OnUserInfoInit( WPARAM wParam, LPARAM lParam )
 {
-	if ( !JCallService( MS_PROTO_ISPROTOCOLLOADED, 0, ( LPARAM )szProtoName ))
+	if ( !JCallService( MS_PROTO_ISPROTOCOLLOADED, 0, ( LPARAM )m_szProtoName ))
 		return 0;
 
 	OPTIONSDIALOGPAGE odp = {0};
@@ -820,11 +820,11 @@ int CJabberProto::OnUserInfoInit( WPARAM wParam, LPARAM lParam )
 	HANDLE hContact = ( HANDLE )lParam;
 	if ( hContact ) {
 		char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-		if ( szProto != NULL && !strcmp( szProto, szProtoName )) {
+		if ( szProto != NULL && !strcmp( szProto, m_szProtoName )) {
 			odp.pfnDlgProc = JabberUserInfoDlgProc;
 			odp.position = -2000000000;
 			odp.pszTemplate = MAKEINTRESOURCEA( IDD_INFO_JABBER );
-			odp.pszTitle = szModuleName;
+			odp.pszTitle = m_szModuleName;
 			JCallService( MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp );
 
 			odp.pfnDlgProc = JabberUserPhotoDlgProc;

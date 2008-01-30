@@ -83,11 +83,11 @@ CJabberProto::CJabberProto( const char* aProtoName ) :
 
 	InitializeCriticalSection( &csLists );
 
-	szProtoName = mir_strdup( aProtoName );
-	szModuleName = mir_strdup( szProtoName );
-	_strlwr( szModuleName );
-	szModuleName[0] = toupper( szModuleName[0] );
-	JabberLog( "Setting protocol/module name to '%s/%s'", szProtoName, szModuleName );
+	m_szProtoName = mir_strdup( aProtoName );
+	m_szModuleName = mir_strdup( m_szProtoName );
+	_strlwr( m_szModuleName );
+	m_szModuleName[0] = toupper( m_szModuleName[0] );
+	JabberLog( "Setting protocol/module name to '%s/%s'", m_szProtoName, m_szModuleName );
 
 	// Protocol services and events...
 	heventNudge = JCreateHookableEvent( JE_NUDGE );
@@ -178,9 +178,9 @@ CJabberProto::~CJabberProto()
 	mir_free( modeMsgs.szFreechat );
 
 	mir_free( streamId );
-	mir_free( szModuleName );
-	mir_free( szProtoName );
-	mir_free( tszUserName );
+	mir_free( m_szModuleName );
+	mir_free( m_szProtoName );
+	mir_free( m_tszUserName );
 
 	if ( jabberVcardPhotoFileName ) {
 		DeleteFileA( jabberVcardPhotoFileName );
@@ -207,7 +207,7 @@ HANDLE CJabberProto::AddToListByJID( const TCHAR* newJid, DWORD flags )
 		jid = mir_tstrdup( newJid );
 		JabberLog( "Add new jid to contact jid = " TCHAR_STR_PARAM, jid );
 		hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_ADD, 0, 0 );
-		JCallService( MS_PROTO_ADDTOCONTACT, ( WPARAM ) hContact, ( LPARAM )szProtoName );
+		JCallService( MS_PROTO_ADDTOCONTACT, ( WPARAM ) hContact, ( LPARAM )m_szProtoName );
 		JSetStringT( hContact, "jid", jid );
 		if (( nick=JabberNickFromJID( newJid )) == NULL )
 			nick = mir_tstrdup( newJid );
@@ -263,7 +263,7 @@ HANDLE __cdecl CJabberProto::AddToListByEvent( int flags, int iContact, HANDLE h
 		return NULL;
 	if ( JCallService( MS_DB_EVENT_GET, ( WPARAM )hDbEvent, ( LPARAM )&dbei ))
 		return NULL;
-	if ( strcmp( dbei.szModule, szProtoName ))
+	if ( strcmp( dbei.szModule, m_szProtoName ))
 		return NULL;
 
 /*
@@ -308,7 +308,7 @@ int CJabberProto::Authorize( HANDLE hContact )
 		return 1;
 	if ( dbei.eventType != EVENTTYPE_AUTHREQUEST )
 		return 1;
-	if ( strcmp( dbei.szModule, szProtoName ))
+	if ( strcmp( dbei.szModule, m_szProtoName ))
 		return 1;
 
 	nick = ( char* )( dbei.pBlob + sizeof( DWORD )+ sizeof( HANDLE ));
@@ -366,7 +366,7 @@ int CJabberProto::AuthDeny( HANDLE hContact, const char* szReason )
 		mir_free( dbei.pBlob );
 		return 1;
 	}
-	if ( strcmp( dbei.szModule, szProtoName )) {
+	if ( strcmp( dbei.szModule, m_szProtoName )) {
 		mir_free( dbei.pBlob );
 		return 1;
 	}
@@ -1072,20 +1072,20 @@ int __cdecl CJabberProto::SetApparentMode( HANDLE hContact, int mode )
 		TCHAR* jid = dbv.ptszVal;
 		switch ( mode ) {
 		case ID_STATUS_ONLINE:
-			if ( iStatus == ID_STATUS_INVISIBLE || oldMode == ID_STATUS_OFFLINE ) {
+			if ( m_iStatus == ID_STATUS_INVISIBLE || oldMode == ID_STATUS_OFFLINE ) {
 				XmlNode p( "presence" ); p.addAttr( "to", jid );
 				jabberThreadInfo->send( p );
 			}
 			break;
 		case ID_STATUS_OFFLINE:
-			if ( iStatus != ID_STATUS_INVISIBLE || oldMode == ID_STATUS_ONLINE )
+			if ( m_iStatus != ID_STATUS_INVISIBLE || oldMode == ID_STATUS_ONLINE )
 				JabberSendPresenceTo( ID_STATUS_INVISIBLE, jid, NULL );
 			break;
 		case 0:
-			if ( oldMode == ID_STATUS_ONLINE && iStatus == ID_STATUS_INVISIBLE )
+			if ( oldMode == ID_STATUS_ONLINE && m_iStatus == ID_STATUS_INVISIBLE )
 				JabberSendPresenceTo( ID_STATUS_INVISIBLE, jid, NULL );
-			else if ( oldMode == ID_STATUS_OFFLINE && iStatus != ID_STATUS_INVISIBLE )
-				JabberSendPresenceTo( iStatus, jid, NULL );
+			else if ( oldMode == ID_STATUS_OFFLINE && m_iStatus != ID_STATUS_INVISIBLE )
+				JabberSendPresenceTo( m_iStatus, jid, NULL );
 			break;
 		}
 		JFreeVariant( &dbv );
@@ -1103,7 +1103,7 @@ int __cdecl CJabberProto::SetStatus( int iNewStatus )
 {
 	JabberLog( "PS_SETSTATUS( %d )", iNewStatus );
 	int desiredStatus = iNewStatus;
-	iDesiredStatus = desiredStatus;
+	m_iDesiredStatus = desiredStatus;
 
  	if ( desiredStatus == ID_STATUS_OFFLINE ) {
 		if ( jabberThreadInfo ) {
@@ -1116,19 +1116,19 @@ int __cdecl CJabberProto::SetStatus( int iNewStatus )
 			}
 		}
 
-		int oldStatus = iStatus;
-		iStatus = iDesiredStatus = ID_STATUS_OFFLINE;
-		JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, iStatus );
+		int oldStatus = m_iStatus;
+		m_iStatus = m_iDesiredStatus = ID_STATUS_OFFLINE;
+		JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, m_iStatus );
 	}
-	else if ( !jabberConnected && !( iStatus >= ID_STATUS_CONNECTING && iStatus < ID_STATUS_CONNECTING + MAX_CONNECT_RETRIES )) {
+	else if ( !jabberConnected && !( m_iStatus >= ID_STATUS_CONNECTING && m_iStatus < ID_STATUS_CONNECTING + MAX_CONNECT_RETRIES )) {
 		if ( jabberConnected )
 			return 0;
 
 		ThreadData* thread = new ThreadData( this, JABBER_SESSION_NORMAL );
-		iDesiredStatus = desiredStatus;
-		int oldStatus = iStatus;
-		iStatus = ID_STATUS_CONNECTING;
-		JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, iStatus );
+		m_iDesiredStatus = desiredStatus;
+		int oldStatus = m_iStatus;
+		m_iStatus = ID_STATUS_CONNECTING;
+		JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, m_iStatus );
 		thread->hThread = ( HANDLE ) mir_forkthread(( pThreadFunc )JabberServerThread, thread );
 	}
 	else JabberSetServerStatus( desiredStatus );
@@ -1280,8 +1280,8 @@ int __cdecl CJabberProto::SetAwayMsg( int status, const char* msg )
 			mir_free( *szMsg );
 		*szMsg = newModeMsg;
 		// Send a presence update if needed
-		if ( status == iStatus ) {
-			JabberSendPresence( iStatus, true );
+		if ( status == m_iStatus ) {
+			JabberSendPresence( m_iStatus, true );
 	}	}
 
 	LeaveCriticalSection( &modeMsgMutex );

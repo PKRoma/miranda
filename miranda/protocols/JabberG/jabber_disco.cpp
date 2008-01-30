@@ -689,7 +689,7 @@ BOOL CALLBACK JabberServiceDiscoveryDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 					SendDlgItemMessage(hwndDlg, buttons[i].idc, BUTTONSETASPUSHBTN, 0, 0);
 			}
 			CheckDlgButton(hwndDlg,
-				DBGetContactSettingByte(NULL, ppro->szProtoName, "discoWnd_useTree", 1) ?
+				DBGetContactSettingByte(NULL, ppro->m_szProtoName, "discoWnd_useTree", 1) ?
 					IDC_BTN_VIEWTREE : IDC_BTN_VIEWLIST,
 				TRUE);
 
@@ -705,15 +705,15 @@ BOOL CALLBACK JabberServiceDiscoveryDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			HWND hwndList = GetDlgItem(hwndDlg, IDC_TREE_DISCO);
 			LVCOLUMN lvc = {0};
 			lvc.mask = LVCF_SUBITEM|LVCF_WIDTH|LVCF_TEXT;
-			lvc.cx = DBGetContactSettingWord(NULL, ppro->szProtoName, "discoWnd_cx0", 200);
+			lvc.cx = DBGetContactSettingWord(NULL, ppro->m_szProtoName, "discoWnd_cx0", 200);
 			lvc.iSubItem = 0;
 			lvc.pszText = _T("Node hierarchy");
 			ListView_InsertColumn(hwndList, 0, &lvc);
-			lvc.cx = DBGetContactSettingWord(NULL, ppro->szProtoName, "discoWnd_cx1", 200);
+			lvc.cx = DBGetContactSettingWord(NULL, ppro->m_szProtoName, "discoWnd_cx1", 200);
 			lvc.iSubItem = 1;
 			lvc.pszText = _T("JID");
 			ListView_InsertColumn(hwndList, 1, &lvc);
-			lvc.cx = DBGetContactSettingWord(NULL, ppro->szProtoName, "discoWnd_cx2", 200);
+			lvc.cx = DBGetContactSettingWord(NULL, ppro->m_szProtoName, "discoWnd_cx2", 200);
 			lvc.iSubItem = 2;
 			lvc.pszText = _T("Node");
 			ListView_InsertColumn(hwndList, 2, &lvc);
@@ -736,11 +736,11 @@ BOOL CALLBACK JabberServiceDiscoveryDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			TreeList_AddIcon(hwndList, ppro->LoadIconEx("disco_progress"),SD_OVERLAY_PROGRESS);
 			TreeList_AddIcon(hwndList, ppro->LoadIconEx("disco_ok"),		SD_OVERLAY_REGISTERED);
 
-			TreeList_SetMode(hwndList, DBGetContactSettingByte(NULL, ppro->szProtoName, "discoWnd_useTree", 1) ? TLM_TREE : TLM_REPORT);
+			TreeList_SetMode(hwndList, DBGetContactSettingByte(NULL, ppro->m_szProtoName, "discoWnd_useTree", 1) ? TLM_TREE : TLM_REPORT);
 
 			PostMessage( hwndDlg, WM_COMMAND, MAKEWPARAM( IDC_BUTTON_BROWSE, 0 ), 0 );
 		}
-		Utils_RestoreWindowPosition(hwndDlg, NULL, ppro->szProtoName, "discoWnd_");
+		Utils_RestoreWindowPosition(hwndDlg, NULL, ppro->m_szProtoName, "discoWnd_");
 		return TRUE;
 	}
 	case WM_GETMINMAXINFO:
@@ -1129,19 +1129,19 @@ BOOL CALLBACK JabberServiceDiscoveryDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 
 	case WM_CLOSE:
 	{
-		DBWriteContactSettingByte(NULL, ppro->szProtoName, "discoWnd_useTree", IsDlgButtonChecked(hwndDlg, IDC_BTN_VIEWTREE));
+		DBWriteContactSettingByte(NULL, ppro->m_szProtoName, "discoWnd_useTree", IsDlgButtonChecked(hwndDlg, IDC_BTN_VIEWTREE));
 
 		HWND hwndList = GetDlgItem(hwndDlg, IDC_TREE_DISCO);
 		LVCOLUMN lvc = {0};
 		lvc.mask = LVCF_WIDTH;
 		ListView_GetColumn(hwndList, 0, &lvc);
-		DBWriteContactSettingWord(NULL, ppro->szProtoName, "discoWnd_cx0", lvc.cx);
+		DBWriteContactSettingWord(NULL, ppro->m_szProtoName, "discoWnd_cx0", lvc.cx);
 		ListView_GetColumn(hwndList, 1, &lvc);
-		DBWriteContactSettingWord(NULL, ppro->szProtoName, "discoWnd_cx1", lvc.cx);
+		DBWriteContactSettingWord(NULL, ppro->m_szProtoName, "discoWnd_cx1", lvc.cx);
 		ListView_GetColumn(hwndList, 2, &lvc);
-		DBWriteContactSettingWord(NULL, ppro->szProtoName, "discoWnd_cx2", lvc.cx);
+		DBWriteContactSettingWord(NULL, ppro->m_szProtoName, "discoWnd_cx2", lvc.cx);
 
-		Utils_SaveWindowPosition(hwndDlg, NULL, ppro->szProtoName, "discoWnd_");
+		Utils_SaveWindowPosition(hwndDlg, NULL, ppro->m_szProtoName, "discoWnd_");
 		DestroyWindow( hwndDlg );
 		return TRUE;
 	}
@@ -1438,7 +1438,7 @@ void CJabberProto::JabberServiceDiscoveryShowMenu(CJabberSDNode *pNode, HTREELIS
 				JABBER_SEARCH_RESULT jsr={0};
 				mir_sntprintf( jsr.jid, SIZEOF(jsr.jid), _T("%s"), jid );
 				jsr.hdr.cbSize = sizeof( JABBER_SEARCH_RESULT );
-				hContact = ( HANDLE )CallProtoService( szProtoName, PS_ADDTOLIST, PALF_TEMPORARY, ( LPARAM )&jsr );
+				hContact = ( HANDLE )CallProtoService( m_szProtoName, PS_ADDTOLIST, PALF_TEMPORARY, ( LPARAM )&jsr );
 			}
 			if ( JabberListGetItemPtr( LIST_VCARD_TEMP, pNode->GetJid()) == NULL ) {
 				JABBER_LIST_ITEM* item = JabberListAdd( LIST_VCARD_TEMP, pNode->GetJid() );

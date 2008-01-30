@@ -180,7 +180,7 @@ void CJabberProto::JabberByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 
 	if ( JGetByte( "BsProxyManual" , FALSE ) ) {
 		proxyJid = NULL;
-		if ( !DBGetContactSettingString( NULL, szProtoName, "BsProxyServer", &dbv )) {
+		if ( !DBGetContactSettingString( NULL, m_szProtoName, "BsProxyServer", &dbv )) {
 			proxyJid = mir_a2t( dbv.pszVal );
 			JFreeVariant( &dbv );
 		}
@@ -215,7 +215,7 @@ void CJabberProto::JabberByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 	if ( bDirect ) {
 		localAddr = NULL;
 		if ( JGetByte( "BsDirectManual", FALSE ) == TRUE ) {
-			if ( !DBGetContactSettingString( NULL, szProtoName, "BsDirectAddr", &dbv )) {
+			if ( !DBGetContactSettingString( NULL, m_szProtoName, "BsDirectAddr", &dbv )) {
 				localAddr = mir_strdup( dbv.pszVal );
 				JFreeVariant( &dbv );
 		}	}

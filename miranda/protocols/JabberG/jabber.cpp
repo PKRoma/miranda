@@ -240,15 +240,15 @@ int CJabberProto::OnModulesLoadedEx( WPARAM wParam, LPARAM lParam )
 		gcr.iMaxText = 0;
 		gcr.nColors = 16;
 		gcr.pColors = &crCols[0];
-		gcr.pszModuleDispName = szProtoName;
-		gcr.pszModule = szProtoName;
+		gcr.pszModuleDispName = m_szProtoName;
+		gcr.pszModule = m_szProtoName;
 		CallServiceSync( MS_GC_REGISTER, NULL, ( LPARAM )&gcr );
 
 		JHookEvent( ME_GC_EVENT, &CJabberProto::JabberGcEventHook );
 		JHookEvent( ME_GC_BUILDMENU, &CJabberProto::JabberGcMenuHook );
 
 		char szEvent[ 200 ];
-		mir_snprintf( szEvent, sizeof szEvent, "%s\\ChatInit", szProtoName );
+		mir_snprintf( szEvent, sizeof szEvent, "%s\\ChatInit", m_szProtoName );
 		hInitChat = CreateHookableEvent( szEvent );
 		JHookEvent( szEvent, &CJabberProto::JabberGcInit );
 	}
@@ -256,7 +256,7 @@ int CJabberProto::OnModulesLoadedEx( WPARAM wParam, LPARAM lParam )
 	if ( ServiceExists( MS_MSG_ADDICON )) {
 		StatusIconData sid = {0};
 		sid.cbSize = sizeof(sid);
-		sid.szModule = szProtoName;
+		sid.szModule = m_szProtoName;
 		sid.hIcon = LoadIconEx("main");
 		sid.hIconDisabled = LoadIconEx("main");
 		sid.flags = MBF_HIDDEN;
@@ -268,7 +268,7 @@ int CJabberProto::OnModulesLoadedEx( WPARAM wParam, LPARAM lParam )
 		HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 		while ( hContact != NULL ) {
 			char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-			if ( szProto != NULL && !strcmp( szProto, szProtoName ))
+			if ( szProto != NULL && !strcmp( szProto, m_szProtoName ))
 				JabberMenuHideSrmmIcon(hContact);
 			hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 );
 	}	}
@@ -276,14 +276,14 @@ int CJabberProto::OnModulesLoadedEx( WPARAM wParam, LPARAM lParam )
 	DBEVENTTYPEDESCR dbEventType = {0};
 	dbEventType.cbSize = sizeof(DBEVENTTYPEDESCR);
 	dbEventType.eventType = JABBER_DB_EVENT_TYPE_CHATSTATES;
-	dbEventType.module = szProtoName;
+	dbEventType.module = m_szProtoName;
 	dbEventType.descr = "Chat state notifications";
 	JCallService( MS_DB_EVENT_REGISTERTYPE, 0, (LPARAM)&dbEventType );
 
 	// file associations manager plugin support
 	if ( ServiceExists( MS_ASSOCMGR_ADDNEWURLTYPE )) {
 		char szService[ MAXMODULELABELLENGTH ];
-		mir_snprintf( szService, SIZEOF( szService ), "%s%s", szProtoName, JS_PARSE_XMPP_URI );
+		mir_snprintf( szService, SIZEOF( szService ), "%s%s", m_szProtoName, JS_PARSE_XMPP_URI );
 		AssocMgr_AddNewUrlTypeT( "xmpp:", TranslateT("Jabber Link Protocol"), hInst, IDI_JABBER, szService, 0 );
 	}
 
@@ -293,7 +293,7 @@ int CJabberProto::OnModulesLoadedEx( WPARAM wParam, LPARAM lParam )
 	HANDLE hContact = ( HANDLE )CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL ) {
 		char* szProto = ( char* )CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-		if ( szProto != NULL && !strcmp( szProto, szProtoName )) {
+		if ( szProto != NULL && !strcmp( szProto, m_szProtoName )) {
 			JabberSetContactOfflineStatus( hContact );
 
 			if ( JGetByte( hContact, "IsTransport", 0 )) {
@@ -312,18 +312,18 @@ int CJabberProto::OnModulesLoadedEx( WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
-static CJabberProto* jabberProtoInit( const char* szProtoName, const TCHAR* tszUserName )
+static CJabberProto* jabberProtoInit( const char* m_szProtoName, const TCHAR* tszUserName )
 {
-	CJabberProto* ppro = new CJabberProto( szProtoName );
+	CJabberProto* ppro = new CJabberProto( m_szProtoName );
 	if ( !ppro )
 		return NULL;
 
-	ppro->tszUserName = mir_tstrdup( tszUserName );
+	ppro->m_tszUserName = mir_tstrdup( tszUserName );
 
 	ppro->JHookEvent( ME_SYSTEM_MODULESLOADED, &CJabberProto::OnModulesLoadedEx );
 
 	char text[ MAX_PATH ];
-	mir_snprintf( text, sizeof( text ), "%s/Status", ppro->szProtoName );
+	mir_snprintf( text, sizeof( text ), "%s/Status", ppro->m_szProtoName );
 	JCallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )text );
 	return ppro;
 }

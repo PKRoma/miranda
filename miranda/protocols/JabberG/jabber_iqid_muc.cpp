@@ -293,7 +293,7 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 			}
 
 			JABBER_MUC_JIDLIST_INFO* dat = (JABBER_MUC_JIDLIST_INFO*)lParam;
-			Utils_RestoreWindowPosition(hwndDlg, NULL, dat->ppro->szProtoName, "jidListWnd_");
+			Utils_RestoreWindowPosition(hwndDlg, NULL, dat->ppro->m_szProtoName, "jidListWnd_");
 		}
 		return TRUE;
 	case WM_SIZE:
@@ -536,7 +536,7 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 				mir_free( jidListInfo );
 			}
 
-			Utils_SaveWindowPosition(hwndDlg, NULL, dat->ppro->szProtoName, "jidListWnd_");
+			Utils_SaveWindowPosition(hwndDlg, NULL, dat->ppro->m_szProtoName, "jidListWnd_");
 		}
 		break;
 	}

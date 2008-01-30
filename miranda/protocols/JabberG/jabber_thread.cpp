@@ -99,7 +99,7 @@ static VOID CALLBACK JabberPasswordCreateDialogApcProc( DWORD param )
 
 static VOID CALLBACK JabberOfflineChatWindows( CJabberProto* ppro )
 {
-	GCDEST gcd = { ppro->szProtoName, NULL, GC_EVENT_CONTROL };
+	GCDEST gcd = { ppro->m_szProtoName, NULL, GC_EVENT_CONTROL };
 	GCEVENT gce = { 0 };
 	gce.cbSize = sizeof(GCEVENT);
 	gce.pDest = &gcd;
@@ -254,13 +254,13 @@ LBL_Exit:
 			JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_BADUSERID );
 LBL_FatalError:
 			jabberThreadInfo = NULL;
-			oldStatus = iStatus;
-			iStatus = ID_STATUS_OFFLINE;
-			JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, iStatus );
+			oldStatus = m_iStatus;
+			m_iStatus = ID_STATUS_OFFLINE;
+			JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, m_iStatus );
          goto LBL_Exit;
 		}
 
-		if ( !DBGetContactSettingString( NULL, szProtoName, "LoginServer", &dbv )) {
+		if ( !DBGetContactSettingString( NULL, m_szProtoName, "LoginServer", &dbv )) {
 			strncpy( info->server, dbv.pszVal, SIZEOF( info->server )-1 );
 			JFreeVariant( &dbv );
 		}
@@ -308,7 +308,7 @@ LBL_FatalError:
 			info->password[ SIZEOF( info->password )-1] = '\0';
 		}
 		else {
-			if ( DBGetContactSettingString( NULL, szProtoName, "Password", &dbv )) {
+			if ( DBGetContactSettingString( NULL, m_szProtoName, "Password", &dbv )) {
 				JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_BADUSERID );
 				JabberLog( "Thread ended, password is not configured" );
 				goto LBL_FatalError;
@@ -320,7 +320,7 @@ LBL_FatalError:
 		}
 
 		if ( JGetByte( "ManualConnect", FALSE ) == TRUE ) {
-			if ( !DBGetContactSettingString( NULL, szProtoName, "ManualHost", &dbv )) {
+			if ( !DBGetContactSettingString( NULL, m_szProtoName, "ManualHost", &dbv )) {
 				strncpy( info->manualHost, dbv.pszVal, SIZEOF( info->manualHost ));
 				info->manualHost[sizeof( info->manualHost )-1] = '\0';
 				JFreeVariant( &dbv );
@@ -365,10 +365,10 @@ LBL_FatalError:
 	if (( buffer=( char* )mir_alloc( jabberNetworkBufferSize+1 )) == NULL ) {	// +1 is for '\0' when debug logging this buffer
 		JabberLog( "Cannot allocate network buffer, thread ended" );
 		if ( info->type == JABBER_SESSION_NORMAL ) {
-			oldStatus = iStatus;
-			iStatus = ID_STATUS_OFFLINE;
+			oldStatus = m_iStatus;
+			m_iStatus = ID_STATUS_OFFLINE;
 			JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NONETWORK );
-			JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, iStatus );
+			JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, m_iStatus );
 			jabberThreadInfo = NULL;
 		}
 		else if ( info->type == JABBER_SESSION_REGISTER ) {
@@ -383,10 +383,10 @@ LBL_FatalError:
 		JabberLog( "Connection failed ( %d )", WSAGetLastError());
 		if ( info->type == JABBER_SESSION_NORMAL ) {
 			if ( jabberThreadInfo == info ) {
-				oldStatus = iStatus;
-				iStatus = ID_STATUS_OFFLINE;
+				oldStatus = m_iStatus;
+				m_iStatus = ID_STATUS_OFFLINE;
 				JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NONETWORK );
-				JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, iStatus );
+				JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, m_iStatus );
 				jabberThreadInfo = NULL;
 		}	}
 		else if ( info->type == JABBER_SESSION_REGISTER )
@@ -433,9 +433,9 @@ LBL_FatalError:
 
 		if ( !info->ssl ) {
 			if ( info->type == JABBER_SESSION_NORMAL ) {
-				oldStatus = iStatus;
-				iStatus = ID_STATUS_OFFLINE;
-				JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, iStatus );
+				oldStatus = m_iStatus;
+				m_iStatus = ID_STATUS_OFFLINE;
+				JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, m_iStatus );
 				JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NONETWORK );
 				if ( jabberThreadInfo == info )
 					jabberThreadInfo = NULL;
@@ -451,7 +451,7 @@ LBL_FatalError:
 	}	}
 
 	// User may change status to OFFLINE while we are connecting above
-	if ( iDesiredStatus != ID_STATUS_OFFLINE || info->type == JABBER_SESSION_REGISTER ) {
+	if ( m_iDesiredStatus != ID_STATUS_OFFLINE || info->type == JABBER_SESSION_REGISTER ) {
 
 		if ( info->type == JABBER_SESSION_NORMAL ) {
 			jabberConnected = TRUE;
@@ -540,14 +540,14 @@ LBL_FatalError:
 				SendMessage( hwndJabberAddBookmark, WM_JABBER_CHECK_ONLINE, 0, 0 );
 
 			// Set status to offline
-			oldStatus = iStatus;
-			iStatus = ID_STATUS_OFFLINE;
-			JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, iStatus );
+			oldStatus = m_iStatus;
+			m_iStatus = ID_STATUS_OFFLINE;
+			JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, m_iStatus );
 
 			// Set all contacts to offline
 			HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 			while ( hContact != NULL ) {
-				if ( !lstrcmpA(( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 ), szProtoName ))
+				if ( !lstrcmpA(( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 ), m_szProtoName ))
 				{
 					JabberSetContactOfflineStatus( hContact );
 					JabberMenuHideSrmmIcon( hContact );
@@ -571,9 +571,9 @@ LBL_FatalError:
 			SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 100, ( LPARAM )TranslateT( "Error: Connection lost" ));
 	}
 	else if ( info->type == JABBER_SESSION_NORMAL ) {
-		oldStatus = iStatus;
-		iStatus = ID_STATUS_OFFLINE;
-		JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, iStatus );
+		oldStatus = m_iStatus;
+		m_iStatus = ID_STATUS_OFFLINE;
+		JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, m_iStatus );
 	}
 
 	JabberLog( "Thread ended: type=%d server='%s'", info->type, info->server );
@@ -814,7 +814,7 @@ void CJabberProto::JabberProcessSuccess( XmlNode *node, void *userdata )
 		DBVARIANT dbv;
 
 		JabberLog( "Success: Logged-in." );
-		if ( DBGetContactSettingString( NULL, szProtoName, "Nick", &dbv ))
+		if ( DBGetContactSettingString( NULL, m_szProtoName, "Nick", &dbv ))
 			JSetStringT( NULL, "Nick", info->username );
 		else
 			JFreeVariant( &dbv );
@@ -1266,7 +1266,7 @@ void CJabberProto::JabberProcessMessage( XmlNode *node, void *userdata )
 		dbei.eventType = JABBER_DB_EVENT_TYPE_CHATSTATES;
 		dbei.flags = 0;
 		dbei.timestamp = time(NULL);
-		dbei.szModule = szProtoName;
+		dbei.szModule = m_szProtoName;
 		CallService(MS_DB_EVENT_ADD, (WPARAM)hContact, (LPARAM)&dbei);
 	}
 

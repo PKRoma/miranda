@@ -550,6 +550,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\include\m_system_cpp.h"
+				>
+			</File>
+			<File
 				RelativePath="..\include\m_url.h"
 				>
 			</File>

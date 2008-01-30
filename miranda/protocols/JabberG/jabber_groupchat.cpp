@@ -469,7 +469,7 @@ static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 					gcw.cbSize = sizeof(GCSESSION);
 					gcw.iType = GCW_CHATROOM;
 					gcw.ptszID = jid;
-					gcw.pszModule = ppro->szProtoName;
+					gcw.pszModule = ppro->m_szProtoName;
 					gcw.dwFlags = GC_TCHAR;
 					gcw.ptszName = NEWTSTR_ALLOCA(gcw.ptszID);
 					TCHAR* p = ( TCHAR* )_tcschr( gcw.ptszName, '@' );
@@ -592,7 +592,7 @@ void CJabberProto::JabberGroupchatJoinRoom( const TCHAR* server, const TCHAR* ro
 	JABBER_LIST_ITEM* item = JabberListAdd( LIST_CHATROOM, text );
 	replaceStr( item->nick, nick );
 
-	int status = ( iStatus == ID_STATUS_INVISIBLE ) ? ID_STATUS_ONLINE : iStatus;
+	int status = ( m_iStatus == ID_STATUS_INVISIBLE ) ? ID_STATUS_ONLINE : m_iStatus;
 	XmlNode* x = new XmlNode( "x" ); x->addAttr( "xmlns", JABBER_FEAT_MUC );
 	if ( password && password[0]!='\0' )
 		x->addChild( "password", password );
@@ -1127,7 +1127,7 @@ void CJabberProto::JabberRenameParticipantNick( JABBER_LIST_ITEM* item, TCHAR* o
 					JSetStringT( hContact, "MyNick", newNick );
 			}
 
-			GCDEST gcd = { szProtoName, NULL, GC_EVENT_CHUID };
+			GCDEST gcd = { m_szProtoName, NULL, GC_EVENT_CHUID };
 			gcd.ptszID = item->jid;
 
 			GCEVENT gce = {0};
@@ -1289,8 +1289,8 @@ void CJabberProto::JabberGroupchatProcessPresence( XmlNode *node, void *userdata
 			itemNode = JabberXmlGetChild( xNode, "item" );
 			XmlNode* reasonNode = JabberXmlGetChild( itemNode, "reason" );
 			str = JabberXmlGetAttrValue( itemNode, "jid" );
-			int iStatus = sttGetStatusCode( xNode );
-			if (iStatus == 301)
+			int m_iStatus = sttGetStatusCode( xNode );
+			if (m_iStatus == 301)
 			{
 				JABBER_RESOURCE_STATUS *r = NULL;
 				for (int i = 0; i < item->resourceCount; ++i)
@@ -1301,10 +1301,10 @@ void CJabberProto::JabberGroupchatProcessPresence( XmlNode *node, void *userdata
 					}
 			}
 			if ( !lstrcmp( nick, item->nick )) {
-				switch( iStatus ) {
+				switch( m_iStatus ) {
 				case 301:
 				case 307:
-					JabberGcQuit( item, iStatus, reasonNode );
+					JabberGcQuit( item, m_iStatus, reasonNode );
 					break;
 
 				case 303:
@@ -1312,7 +1312,7 @@ void CJabberProto::JabberGroupchatProcessPresence( XmlNode *node, void *userdata
 					return;
 			}	}
 			else {
-				switch( iStatus ) {
+				switch( m_iStatus ) {
 				case 303:
 					JabberRenameParticipantNick( item, nick, itemNode );
 					return;
@@ -1321,7 +1321,7 @@ void CJabberProto::JabberGroupchatProcessPresence( XmlNode *node, void *userdata
 				case 307:
 				case 322:
 					JabberListRemoveResource( LIST_CHATROOM, from );
-					JabberGcLogUpdateMemberStatus( item, nick, str, GC_EVENT_KICK, reasonNode, iStatus );
+					JabberGcLogUpdateMemberStatus( item, nick, str, GC_EVENT_KICK, reasonNode, m_iStatus );
 					return;
 		}	}	}
 
@@ -1369,7 +1369,7 @@ void CJabberProto::JabberGroupchatProcessMessage( XmlNode *node, void *userdata 
 	if ( !lstrcmp( type, _T("error")))
 		return;
 
-	GCDEST gcd = { szProtoName, NULL, 0 };
+	GCDEST gcd = { m_szProtoName, NULL, 0 };
 	gcd.ptszID = item->jid;
 
 	TCHAR* msgText = NULL;

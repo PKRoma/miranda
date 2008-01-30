@@ -475,7 +475,7 @@ void CJabberProto::JabberIqResultGetRoster( XmlNode* iqNode, void* userdata, CJa
 			GCSESSION gcw = {0};
 			gcw.cbSize = sizeof(GCSESSION);
 			gcw.iType = GCW_CHATROOM;
-			gcw.pszModule = szProtoName;
+			gcw.pszModule = m_szProtoName;
 			gcw.dwFlags = GC_TCHAR;
 			gcw.ptszID = jid;
 			gcw.ptszName = NEWTSTR_ALLOCA( jid );
@@ -518,7 +518,7 @@ void CJabberProto::JabberIqResultGetRoster( XmlNode* iqNode, void* userdata, CJa
 		HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 		while ( hContact != NULL ) {
 			char* str = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-			if ( str != NULL && !strcmp( str, szProtoName )) {
+			if ( str != NULL && !strcmp( str, m_szProtoName )) {
 				DBVARIANT dbv;
 				if ( !JGetStringT( hContact, "jid", &dbv )) {
 					if ( !JabberListExist( LIST_ROSTER, dbv.ptszVal )) {
@@ -561,7 +561,7 @@ void CJabberProto::JabberIqResultGetRoster( XmlNode* iqNode, void* userdata, CJa
 
 	JabberLog( "Status changed via THREADSTART" );
 	modeMsgStatusChangePending = FALSE;
-	JabberSetServerStatus( iDesiredStatus );
+	JabberSetServerStatus( m_iDesiredStatus );
 
 	if ( JGetByte( "AutoJoinConferences", 0 )) {
 		for ( i=0; i < chatRooms.realCount; i++ )
@@ -684,7 +684,7 @@ LBL_NoTypeSpecified:
 
 	if ( GetTempPathA( sizeof( szTempPath ), szTempPath ) <= 0 )
 		lstrcpyA( szTempPath, ".\\" );
-	if ( !GetTempFileNameA( szTempPath, szProtoName, GetTickCount(), szTempFileName )) {
+	if ( !GetTempFileNameA( szTempPath, m_szProtoName, GetTickCount(), szTempFileName )) {
 LBL_Ret:
 		mir_free( buffer );
 		return;
@@ -1109,7 +1109,7 @@ void CJabberProto::JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 				else {
 					char text[ 100 ];
 					sprintf( text, "e-mail%d", nEmail-1 );
-					if ( DBGetContactSettingString( hContact, szProtoName, text, &dbv )) break;
+					if ( DBGetContactSettingString( hContact, m_szProtoName, text, &dbv )) break;
 					JFreeVariant( &dbv );
 					JDeleteSetting( hContact, text );
 				}
@@ -1120,7 +1120,7 @@ void CJabberProto::JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 			while ( true ) {
 				char text[ 100 ];
 				sprintf( text, "e-mail%d", nEmail );
-				if ( DBGetContactSettingString( NULL, szProtoName, text, &dbv )) break;
+				if ( DBGetContactSettingString( NULL, m_szProtoName, text, &dbv )) break;
 				JFreeVariant( &dbv );
 				JDeleteSetting( NULL, text );
 				sprintf( text, "e-mailFlag%d", nEmail );
@@ -1152,7 +1152,7 @@ void CJabberProto::JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 			while ( true ) {
 				char text[ 100 ];
 				sprintf( text, "Phone%d", nPhone );
-				if ( DBGetContactSettingString( NULL, szProtoName, text, &dbv )) break;
+				if ( DBGetContactSettingString( NULL, m_szProtoName, text, &dbv )) break;
 				JFreeVariant( &dbv );
 				JDeleteSetting( NULL, text );
 				sprintf( text, "PhoneFlag%d", nPhone );
