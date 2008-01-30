@@ -46,11 +46,11 @@ struct JabberGcRecentInfo
 		ppro = proto;
 		room = server = nick = password = NULL;
 	}
-	JabberGcRecentInfo( CJabberProto* proto, const TCHAR *room, const TCHAR *server, const TCHAR *nick = NULL, const TCHAR *password = NULL)
+	JabberGcRecentInfo( CJabberProto* proto, const TCHAR *_room, const TCHAR *_server, const TCHAR *_nick = NULL, const TCHAR *_password = NULL)
 	{
 		ppro = proto;
 		room = server = nick = password = NULL;
-		fillData(room, server, nick, password);
+		fillData(_room, _server, _nick, _password);
 	}
 	JabberGcRecentInfo( CJabberProto* proto, const TCHAR *jid)
 	{
@@ -72,10 +72,10 @@ struct JabberGcRecentInfo
 
 	void cleanup()
 	{
-		if (room)		mir_free(room);
-		if (server)		mir_free(server);
-		if (nick)		mir_free(nick);
-		if (password)	mir_free(password);
+		mir_free(room);
+		mir_free(server);
+		mir_free(nick);
+		mir_free(password);
 		room = server = nick = password = NULL;
 	}
 

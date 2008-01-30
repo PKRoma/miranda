@@ -39,20 +39,17 @@ struct JabberAddBookmarkDlgParam {
 
 static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
-	CJabberProto* ppro = (CJabberProto*)GetWindowLong( hwndDlg, GWL_USERDATA );
+	JabberAddBookmarkDlgParam* param = (JabberAddBookmarkDlgParam*)GetWindowLong( hwndDlg, GWL_USERDATA );
 
 	TCHAR text[128];
 	JABBER_LIST_ITEM *item;
-	TCHAR* roomJID=0;
-	TCHAR* currJID=0;
 
 	switch ( msg ) {
-	case WM_INITDIALOG: {
-		JabberAddBookmarkDlgParam* param = (JabberAddBookmarkDlgParam*)lParam;
-		ppro = param->ppro;
-		SetWindowLong( hwndDlg, GWL_USERDATA, (LPARAM)ppro );
+	case WM_INITDIALOG:
+		param = (JabberAddBookmarkDlgParam*)lParam;
+		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
 
-		ppro->hwndJabberAddBookmark = hwndDlg;
+		param->ppro->hwndJabberAddBookmark = hwndDlg;
 		TranslateDialogDefault( hwndDlg );
 		if ( item = param->m_item ) {
 			if ( !lstrcmp( item->type, _T("conference") )) {
@@ -76,9 +73,6 @@ static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 			EnableWindow( GetDlgItem( hwndDlg, IDC_AGENT_RADIO), FALSE );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_CHECK_BM_AUTOJOIN), FALSE );
 
-			replaceStr(currJID , item->jid);
-			SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG )currJID );
-
 			if ( item->jid ) SetDlgItemText( hwndDlg, IDC_ROOM_JID, item->jid );
 			if ( item->name ) SetDlgItemText( hwndDlg, IDC_NAME, item->name );
 			if ( item->nick ) SetDlgItemText( hwndDlg, IDC_NICK, item->nick );
@@ -92,7 +86,7 @@ static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 			SendDlgItemMessage(hwndDlg, IDC_ROOM_RADIO, BM_SETCHECK, BST_CHECKED, 0);
 		}
 		return TRUE;
-	}
+
 	case WM_COMMAND:
 		switch ( HIWORD(wParam) ) {
 			case BN_CLICKED:
@@ -119,40 +113,40 @@ static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 			break;
 
 		case IDOK:
-			GetDlgItemText( hwndDlg, IDC_ROOM_JID, text, SIZEOF( text ));
-			roomJID = NEWTSTR_ALLOCA( text );
-
-			currJID = ( TCHAR* )GetWindowLong( hwndDlg, GWL_USERDATA );
-			if ( currJID) {
-				ppro->JabberListRemove( LIST_BOOKMARK, currJID );
-				mir_free( currJID );
-				SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG ) NULL );
-			}
-			item = ppro->JabberListAdd( LIST_BOOKMARK, roomJID );
-			item->bUseResource = TRUE;
-
-			if ( SendDlgItemMessage(hwndDlg, IDC_URL_RADIO, BM_GETCHECK,0, 0) == BST_CHECKED )
-				replaceStr( item->type, _T( "url" ));
-			else
-				replaceStr( item->type, _T( "conference" ));
-
-			GetDlgItemText( hwndDlg, IDC_NICK, text, SIZEOF( text ));
-			replaceStr( item->nick, text );
-
-			GetDlgItemText( hwndDlg, IDC_PASSWORD, text, SIZEOF( text ));
-			replaceStr( item->password, text );
-
-			GetDlgItemText( hwndDlg, IDC_NAME, text, SIZEOF( text ));
-			replaceStr( item->name, ( text[0] == 0 ) ? roomJID : text );
-
-			item->bAutoJoin = (SendDlgItemMessage(hwndDlg, IDC_CHECK_BM_AUTOJOIN, BM_GETCHECK,0, 0) == BST_CHECKED );
 			{
-				int iqId = ppro->JabberSerialNext();
-				ppro->JabberIqAdd( iqId, IQ_PROC_SETBOOKMARKS, &CJabberProto::JabberIqResultSetBookmarks);
+				GetDlgItemText( hwndDlg, IDC_ROOM_JID, text, SIZEOF( text ));
+				TCHAR* roomJID = NEWTSTR_ALLOCA( text );
 
-				XmlNodeIq iq( "set", iqId);
-				ppro->JabberSetBookmarkRequest(iq);
-				ppro->jabberThreadInfo->send( iq );
+				TCHAR* currJID = param->m_item->jid;
+				if ( currJID )
+					param->ppro->JabberListRemove( LIST_BOOKMARK, currJID );
+
+				item = param->ppro->JabberListAdd( LIST_BOOKMARK, roomJID );
+				item->bUseResource = TRUE;
+
+				if ( SendDlgItemMessage(hwndDlg, IDC_URL_RADIO, BM_GETCHECK,0, 0) == BST_CHECKED )
+					replaceStr( item->type, _T( "url" ));
+				else
+					replaceStr( item->type, _T( "conference" ));
+
+				GetDlgItemText( hwndDlg, IDC_NICK, text, SIZEOF( text ));
+				replaceStr( item->nick, text );
+
+				GetDlgItemText( hwndDlg, IDC_PASSWORD, text, SIZEOF( text ));
+				replaceStr( item->password, text );
+
+				GetDlgItemText( hwndDlg, IDC_NAME, text, SIZEOF( text ));
+				replaceStr( item->name, ( text[0] == 0 ) ? roomJID : text );
+
+				item->bAutoJoin = (SendDlgItemMessage(hwndDlg, IDC_CHECK_BM_AUTOJOIN, BM_GETCHECK,0, 0) == BST_CHECKED );
+				{
+					int iqId = param->ppro->JabberSerialNext();
+					param->ppro->JabberIqAdd( iqId, IQ_PROC_SETBOOKMARKS, &CJabberProto::JabberIqResultSetBookmarks);
+
+					XmlNodeIq iq( "set", iqId);
+					param->ppro->JabberSetBookmarkRequest(iq);
+					param->ppro->jabberThreadInfo->send( iq );
+				}
 			}
 			// fall through
 		case IDCANCEL:
@@ -162,15 +156,12 @@ static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 		break;
 
 	case WM_JABBER_CHECK_ONLINE:
-		if ( !ppro->jabberOnline )
+		if ( !param->ppro->jabberOnline )
 			EndDialog( hwndDlg, 0 );
 		break;
 
 	case WM_DESTROY:
-		char* str = ( char* )GetWindowLong( hwndDlg, GWL_USERDATA );
-		if ( str != NULL )
-			mir_free( str );
-		ppro->hwndJabberAddBookmark = NULL;
+		param->ppro->hwndJabberAddBookmark = NULL;
 		break;
 	}
 	return FALSE;
