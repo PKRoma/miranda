@@ -482,5 +482,4 @@ void UninitAccount(char *szModule, PROTOACCOUNT *pa)
 	if ( List_GetIndex(( SortedList* )&protos, &temp, &idx ))
 		if ( protos.items[idx]->fnUninit != NULL )
 			protos.items[idx]->fnUninit( pa->ppro );
-
 }

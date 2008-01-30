@@ -49,6 +49,19 @@ extern HANDLE hAccListChanged;
 // Account edit form
 // Gets PROTOACCOUNT* as a parameter, or NULL to edit a new one
 
+static char* rtrim( char* string )
+{
+   char* p = string + strlen( string ) - 1;
+
+   while ( p >= string ) {
+		if ( *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r' )
+         break;
+
+		*p-- = 0;
+   }
+   return string;
+}
+
 static BOOL CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch( message ) {
@@ -98,6 +111,16 @@ static BOOL CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LP
 						GetDlgItemTextA( hwndDlg, IDC_PROTOTYPECOMBO, buf, sizeof( buf )); buf[sizeof(buf)-1] = 0;
 						pa->szProtoName = mir_strdup( buf );
 						GetDlgItemTextA( hwndDlg, IDC_ACCINTERNALNAME, buf, sizeof( buf )); buf[sizeof(buf)-1] = 0;
+						rtrim( buf );
+						if ( buf[0] == 0 ) {
+							int count = 1;
+							while( TRUE ) {
+								DBVARIANT dbv;
+								sprintf( buf, "%s_%d", pa->szProtoName, count++ );
+								if ( DBGetContactSettingString( NULL, buf, "AM_BaseProto", &dbv ))
+									break;
+								DBFreeVariant( &dbv );
+						}	}
 						pa->szModuleName = mir_strdup( buf );
 					}
 					List_InsertPtr(( SortedList* )&accounts, pa );
