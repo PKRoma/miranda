@@ -1016,11 +1016,11 @@ static int MsnSendNudge( WPARAM wParam, LPARAM lParam )
 	if ( !msnLoggedIn ) return 0;
 
 	HANDLE hContact = ( HANDLE )wParam;
-	char msg[ 1024 ];
 
 	if ( MSN_IsMeByContact( hContact )) return 0;
 
-	mir_snprintf( msg, sizeof( msg ),"N 69\r\nMIME-Version: 1.0\r\n"
+	static const char nudgemsg[] = 
+				"MIME-Version: 1.0\r\n"
 				"Content-Type: text/x-msnmsgr-datacast\r\n\r\n"
 				"ID: 1\r\n\r\n");
 
@@ -1032,7 +1032,7 @@ static int MsnSendNudge( WPARAM wParam, LPARAM lParam )
 		MsgQueue_Add( hContact, 'N', msg, -1 );
 	}
 	else
-		thread->sendPacket( "MSG", msg );
+		thread->sendMessage( 'N', nudgemsg, MSG_DISABLE_HDR );
 	return 0;
 }
 
