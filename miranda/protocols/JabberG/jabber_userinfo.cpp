@@ -414,7 +414,6 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 
 		dat = (JabberUserInfoDlgData *)mir_alloc(sizeof(JabberUserInfoDlgData));
 		dat->resourceCount = -1;
-		dat->ppro = ( CJabberProto* )lParam;
 
 		if ( CallService(MS_DB_CONTACT_IS, (WPARAM)lParam, 0 ))
 			dat->hContact = (HANDLE)lParam;
@@ -434,15 +433,6 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 			WindowList_Add(hUserInfoList, hwndDlg, dat->hContact);
 		}
 		return TRUE;
-
-	case WM_DESTROY:
-		WindowList_Remove(hUserInfoList, hwndDlg);
-		if ( dat ) { 
-			mir_free(dat);
-			SetWindowLong(hwndDlg, GWL_USERDATA, 0);
-		}
-		ImageList_Destroy(TreeView_SetImageList(GetDlgItem(hwndDlg, IDC_TV_INFO), NULL, TVSIL_NORMAL));
-		break;
 
 	case WM_JABBER_REFRESH:
 		if ( !dat ) break;
@@ -475,10 +465,6 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 
 	case WM_SIZE:
 		MoveWindow(GetDlgItem(hwndDlg, IDC_TV_INFO), 5, 5, LOWORD(lParam)-10, HIWORD(lParam)-10, TRUE);
-		break;
-
-	case WM_CLOSE:
-		DestroyWindow(hwndDlg);
 		break;
 
 	case WM_CONTEXTMENU:
@@ -557,9 +543,21 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 						dat->item = dat->ppro->JabberListGetItemPtr( LIST_ROSTER, dbv.ptszVal );
 					JFreeVariant(&dbv);
 				}
-				SendMessage(hwndDlg, WM_JABBER_REFRESH, 0, 0);
 				break;
 		}	}
+		break;
+
+	case WM_CLOSE:
+		DestroyWindow(hwndDlg);
+		break;
+
+	case WM_DESTROY:
+		WindowList_Remove(hUserInfoList, hwndDlg);
+		if ( dat ) { 
+			mir_free(dat);
+			SetWindowLong(hwndDlg, GWL_USERDATA, 0);
+		}
+		ImageList_Destroy(TreeView_SetImageList(GetDlgItem(hwndDlg, IDC_TV_INFO), NULL, TVSIL_NORMAL));
 		break;
 	}
 	return FALSE;
