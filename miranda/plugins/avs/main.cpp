@@ -43,16 +43,14 @@ static HANDLE   hModulesLoaded = 0;
 static HANDLE	hPresutdown = 0;
 static HANDLE	hOkToExit = 0;
 
-
-int count = 0;
-
 HANDLE  hProtoAckHook = 0, hContactSettingChanged = 0, hEventChanged = 0, hEventContactAvatarChanged = 0,
 		hMyAvatarChanged = 0, hEventDeleted = 0, hUserInfoInitHook = 0;
 HICON   g_hIcon = 0;
 
-static struct   CacheNode *g_Cache = 0;
-struct          protoPicCacheEntry *g_ProtoPictures = 0;
+static struct  CacheNode *g_Cache = 0;
+struct         protoPicCacheEntry *g_ProtoPictures = 0;
 struct			protoPicCacheEntry *g_MyAvatars = 0;
+int            g_MyAvatarsCount = 0;
 
 static  CRITICAL_SECTION cachecs, alloccs;
 char    *g_szMetaName = NULL;
@@ -1744,7 +1742,7 @@ int GetMyAvatar(WPARAM wParam, LPARAM lParam)
 	if(lParam == 0 || IsBadReadPtr(szProto, 4))
 		return 0;
 
-	for(i = 0; i < count + 1; i++) {
+	for(i = 0; i < g_MyAvatarsCount + 1; i++) {
 		if(!strcmp(szProto, g_MyAvatars[i].szProtoname) && g_MyAvatars[i].hbmPic != 0)
 			return (int)&g_MyAvatars[i];
 	}
@@ -1755,7 +1753,7 @@ static protoPicCacheEntry *GetProtoDefaultAvatar(HANDLE hContact)
 {
 	char *szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 	if(szProto) {
-		for(int i = 0; i < count; i++) {
+		for(int i = 0; i < g_MyAvatarsCount; i++) {
 			if(!strcmp(g_ProtoPictures[i].szProtoname, szProto) && g_ProtoPictures[i].hbmPic != NULL) {
 				return &g_ProtoPictures[i];
 			}
@@ -2037,16 +2035,15 @@ static int ModulesLoaded(WPARAM wParam, LPARAM lParam)
 	}
 
 	PROTOACCOUNT **accs = NULL;
-	int count;
-	ProtoEnumAccounts( &count, &accs );
-	g_ProtoPictures = (struct protoPicCacheEntry *)malloc(sizeof(struct protoPicCacheEntry) * (count + 1));
-	ZeroMemory((void *)g_ProtoPictures, sizeof(struct protoPicCacheEntry) * (count + 1));
+	ProtoEnumAccounts( &g_MyAvatarsCount, &accs );
+	g_ProtoPictures = (struct protoPicCacheEntry *)malloc(sizeof(struct protoPicCacheEntry) * (g_MyAvatarsCount + 1));
+	ZeroMemory((void *)g_ProtoPictures, sizeof(struct protoPicCacheEntry) * (g_MyAvatarsCount + 1));
 
-	g_MyAvatars = (struct protoPicCacheEntry *)malloc(sizeof(struct protoPicCacheEntry) * (count + 2));
-	ZeroMemory((void *)g_MyAvatars, sizeof(struct protoPicCacheEntry) * (count + 2));
+	g_MyAvatars = (struct protoPicCacheEntry *)malloc(sizeof(struct protoPicCacheEntry) * (g_MyAvatarsCount + 2));
+	ZeroMemory((void *)g_MyAvatars, sizeof(struct protoPicCacheEntry) * (g_MyAvatarsCount + 2));
 
 	j = 0;
-	for(i = 0; i < count; i++) {
+	for(i = 0; i < g_MyAvatarsCount; i++) {
 		if ( fei == NULL )
 			continue;
 		if ( CreateAvatarInCache(0, (struct avatarCacheEntry *)&g_ProtoPictures[j], accs[i]->szModuleName ) == 1)
@@ -2058,7 +2055,7 @@ static int ModulesLoaded(WPARAM wParam, LPARAM lParam)
 		}
 	}
 	j = 0;
-	for(i = 0; i < count; i++) {
+	for(i = 0; i < g_MyAvatarsCount; i++) {
 		if ( fei == NULL )
 			continue;
 		if ( CreateAvatarInCache((HANDLE)-1, (struct avatarCacheEntry *)&g_MyAvatars[j], accs[i]->szModuleName ) == 1)
@@ -2125,7 +2122,7 @@ static void ReloadMyAvatar(LPVOID lpParam)
 	char *szProto = (char *)lpParam;
 
     mir_sleep(1000);
-	for(int i = 0; !g_shutDown && i < count + 1; i++) {
+	for(int i = 0; !g_shutDown && i < g_MyAvatarsCount + 1; i++) {
 		if(!strcmp(g_MyAvatars[i].szProtoname, szProto)) {
 			if(g_MyAvatars[i].hbmPic)
 				DeleteObject(g_MyAvatars[i].hbmPic);
@@ -2147,7 +2144,7 @@ static int ReportMyAvatarChanged(WPARAM wParam, LPARAM lParam)
 	char *proto = (char *) wParam;
 
 	int i;
-	for(i = 0; i < count + 1; i++) {
+	for(i = 0; i < g_MyAvatarsCount + 1; i++) {
 		if(!strcmp(g_MyAvatars[i].szProtoname, proto)) {
 			LPVOID lpParam = (void *)malloc(lstrlenA(g_MyAvatars[i].szProtoname) + 2);
 			strcpy((char *)lpParam, g_MyAvatars[i].szProtoname);
@@ -2355,7 +2352,7 @@ int DrawAvatarPicture(WPARAM wParam, LPARAM lParam)
         if(r->szProto == NULL)
             return 0;
 
-        for(i = 0; i < count; i++) {
+        for(i = 0; i < g_MyAvatarsCount; i++) {
             if(g_ProtoPictures[i].szProtoname[0] && !strcmp(g_ProtoPictures[i].szProtoname, r->szProto) && lstrlenA(r->szProto) == lstrlenA(g_ProtoPictures[i].szProtoname) && g_ProtoPictures[i].hbmPic != 0) {
                 ace = (AVATARCACHEENTRY *)&g_ProtoPictures[i];
                 break;
@@ -2524,7 +2521,7 @@ extern "C" int __declspec(dllexport) Unload(void)
 		free(g_cacheBlocks[i]);
 	free(g_cacheBlocks);
 
-	for(i = 0; i < count + 1; i++) {
+	for(i = 0; i < g_MyAvatarsCount + 1; i++) {
         if(g_ProtoPictures[i].hbmPic != 0)
             DeleteObject(g_ProtoPictures[i].hbmPic);
 		if(g_MyAvatars[i].hbmPic != 0)
