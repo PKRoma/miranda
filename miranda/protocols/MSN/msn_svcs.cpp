@@ -885,7 +885,11 @@ static int MsnSendFile( WPARAM wParam, LPARAM lParam )
 	if ( MSN_GetWord( ccs->hContact, "Status", ID_STATUS_OFFLINE ) == ID_STATUS_OFFLINE )
 		return 0;
 
-	if ( MSN_IsMeByContact( ccs->hContact )) return 0;
+	char tEmail[ MSN_MAX_EMAIL_LEN ];
+	if ( MSN_IsMeByContact( ccs->hContact, tEmail )) return 0;
+
+	int netId = Lists_GetNetId( tEmail );
+	if (netId != NETID_MSN && netId != NETID_LCS) return 0;
 
 	char** files = ( char** )ccs->lParam;
 
@@ -1032,6 +1036,7 @@ static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 
 	case NETID_UNKNOWN:
 	case NETID_MSN:
+	case NETID_LCS:
 		if ( strlen( msg ) > 1202 ) 
 		{
 			seq = 999996;
@@ -1055,14 +1060,15 @@ static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 			}
 			else
 			{
-				seq = thread->sendMessage( msgType, tEmail, NETID_MSN, msg, rtlFlag );
+				int tNnetId = netId == NETID_UNKNOWN ? NETID_MSN : netId;
+				seq = thread->sendMessage( msgType, tEmail, tNnetId, msg, rtlFlag );
 				if ( !MyOptions.SlowSend )
 					mir_forkthread( sttFakeAck, new TFakeAckParams( hContact, seq, 0 ));
 			}
 		}
 		break;
 		
-	default:
+	case NETID_YAHOO:
 		if ( strlen( msg ) > 1202 ) 
 		{
 			seq = 999996;
@@ -1074,6 +1080,9 @@ static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 			seq = msnNsThread->sendMessage( '1', tEmail, netId, msg, rtlFlag );
 			mir_forkthread( sttFakeAck, new TFakeAckParams( hContact, seq, 0 ));
 		}
+		break;
+
+	default:
 		break;
 	}
 
@@ -1103,6 +1112,7 @@ static int MsnSendNudge( WPARAM wParam, LPARAM lParam )
 	{
 	case NETID_UNKNOWN:
 	case NETID_MSN:
+	case NETID_LCS:
 		{
 			bool isOffline;
 			ThreadData* thread = MSN_StartSB(hContact, isOffline);
@@ -1112,16 +1122,18 @@ static int MsnSendNudge( WPARAM wParam, LPARAM lParam )
 				MsgQueue_Add( hContact, 'N', nudgemsg, -1 );
 			}
 			else
-				thread->sendMessage( 'N', tEmail, NETID_MSN, nudgemsg, MSG_DISABLE_HDR );
+			{
+				int tNnetId = netId == NETID_UNKNOWN ? NETID_MSN : netId;
+				thread->sendMessage( 'N', tEmail, tNnetId, nudgemsg, MSG_DISABLE_HDR );
+			}
 		}
 		break;
 
-	case NETID_MOB:
-	case NETID_EMAIL:
+	case NETID_YAHOO:
+		msnNsThread->sendMessage( '3', tEmail, netId, nudgemsg, MSG_DISABLE_HDR );
 		break;
 
 	default:
-		msnNsThread->sendMessage( '3', tEmail, netId, nudgemsg, MSG_DISABLE_HDR );
 		break;
 	}
 	return 0;
@@ -1438,6 +1450,7 @@ static int MsnUserIsTyping(WPARAM wParam, LPARAM lParam)
 	{
 	case NETID_UNKNOWN:
 	case NETID_MSN:
+	case NETID_LCS:
 		{
 			bool isOffline;
 			ThreadData* thread = MSN_StartSB(hContact, isOffline);
@@ -1452,12 +1465,11 @@ static int MsnUserIsTyping(WPARAM wParam, LPARAM lParam)
 		}
 		break;
 
-	case NETID_MOB:
-	case NETID_EMAIL:
+	case NETID_YAHOO:
+		if (typing) MSN_SendTyping(msnNsThread, tEmail, netId);
 		break;
 
 	default:
-		if (typing) MSN_SendTyping(msnNsThread, tEmail, netId);
 		break;
 	}
 
