@@ -1020,16 +1020,16 @@ static int MsnSendNudge( WPARAM wParam, LPARAM lParam )
 	if ( MSN_IsMeByContact( hContact )) return 0;
 
 	static const char nudgemsg[] = 
-				"MIME-Version: 1.0\r\n"
-				"Content-Type: text/x-msnmsgr-datacast\r\n\r\n"
-				"ID: 1\r\n\r\n");
+		"MIME-Version: 1.0\r\n"
+		"Content-Type: text/x-msnmsgr-datacast\r\n\r\n"
+		"ID: 1\r\n\r\n";
 
 	bool isOffline;
 	ThreadData* thread = MSN_StartSB(hContact, isOffline);
 	if ( thread == NULL )
 	{
 		if (isOffline) return 0; 
-		MsgQueue_Add( hContact, 'N', msg, -1 );
+		MsgQueue_Add( hContact, 'N', nudgemsg, -1 );
 	}
 	else
 		thread->sendMessage( 'N', nudgemsg, MSG_DISABLE_HDR );
