@@ -26,7 +26,6 @@ $Id$
 
 #include "../commonheaders.h"
 
-//globals
 HANDLE		g_hWindowList;
 HMENU		g_hMenu = NULL;
 

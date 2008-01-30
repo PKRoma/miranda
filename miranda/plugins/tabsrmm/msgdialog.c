@@ -76,7 +76,7 @@ static DWORD CALLBACK StreamOut(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG
 
 TCHAR *pszIDCSAVE_close = 0, *pszIDCSAVE_save = 0;
 
-static WNDPROC OldMessageEditProc, OldAvatarWndProc, OldMessageLogProc, OldIEViewProc = 0, OldHppProc = 0;
+static WNDPROC OldMessageEditProc = 0, OldAvatarWndProc = 0, OldMessageLogProc = 0, OldIEViewProc = 0, OldHppProc = 0;
 WNDPROC OldSplitterProc = 0;
 
 static const UINT infoLineControls[] = { IDC_PROTOCOL, /* IDC_PROTOMENU, */ IDC_NAME, /* IDC_INFOPANELMENU */};
@@ -788,6 +788,10 @@ static LRESULT CALLBACK MessageLogSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			ShowPopupMenu(hwndParent, mwdat, IDC_LOG, hwnd, pt);
 			return TRUE;
 		}
+		case WM_NCDESTROY:
+			if(OldMessageLogProc)
+				SetWindowLong(hwnd, GWL_WNDPROC, (LONG) OldMessageLogProc);
+			break;
 	}
 	return CallWindowProc(OldMessageLogProc, hwnd, msg, wParam, lParam);
 }
@@ -1149,7 +1153,10 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			ShowPopupMenu(hwndParent, mwdat, IDC_MESSAGE, hwnd, pt);
 			return TRUE;
 		}
-
+		case WM_NCDESTROY:
+			if(OldMessageEditProc)
+				SetWindowLong(hwnd, GWL_WNDPROC, (LONG) OldMessageEditProc);
+			break;
 	}
 	return CallWindowProc(OldMessageEditProc, hwnd, msg, wParam, lParam);
 }
@@ -5597,10 +5604,8 @@ quote_from_last:
 			SetWindowLong(GetDlgItem(hwndDlg, IDC_MSGINDICATOR), GWL_WNDPROC, (LONG) OldSplitterProc);
 
 			SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_WNDPROC, (LONG) OldSplitterProc);
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_WNDPROC, (LONG) OldMessageEditProc);
 			SetWindowLong(GetDlgItem(hwndDlg, IDC_CONTACTPIC), GWL_WNDPROC, (LONG) OldAvatarWndProc);
 			SetWindowLong(GetDlgItem(hwndDlg, IDC_PANELPIC), GWL_WNDPROC, (LONG) OldAvatarWndProc);
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_WNDPROC, (LONG) OldMessageLogProc);
 
 			/* remove temporary contacts... */
 
