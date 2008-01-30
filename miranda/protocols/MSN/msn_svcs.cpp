@@ -430,7 +430,8 @@ int MsnWindowEvent(WPARAM wParam, LPARAM lParam)
 		char tEmail[ MSN_MAX_EMAIL_LEN ];
 		if ( MSN_IsMeByContact( msgEvData->hContact, tEmail )) return 0;
 
-		if (Lists_GetNetId(tEmail) != NETID_MSN) return 0;
+		int netId = Lists_GetNetId(tEmail);
+		if (netId != NETID_MSN && netId != NETID_LCS) return 0;
 
 		if (msnStatusMode == ID_STATUS_OFFLINE || msnStatusMode == ID_STATUS_INVISIBLE)
 			return 0;
@@ -1052,8 +1053,17 @@ static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 			{
 				if ( isOffline ) 
 				{
-					seq = rand();
-					mir_forkthread( sttSendOim, new TFakeAckParams( hContact, seq, mir_strdup( msg )));
+					if (netId == NETID_MSN)
+					{
+						seq = rand();
+						mir_forkthread( sttSendOim, new TFakeAckParams( hContact, seq, mir_strdup( msg )));
+					}
+					else
+					{
+						seq = 999993;
+						errMsg = MSN_Translate( "Offline messaging is not allowed for LCS contacts" );
+						mir_forkthread( sttFakeAck, new TFakeAckParams( hContact, seq, errMsg ));
+					}
 				}
 				else
 					seq = MsgQueue_Add( hContact, msgType, msg, 0, 0, rtlFlag );
