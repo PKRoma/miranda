@@ -655,7 +655,7 @@ BOOL CALLBACK JabberServiceDiscoveryDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 		{
 			int i;
 
-			if (lParam) {
+			if ( param->m_jid ) {
 				SetDlgItemText( hwndDlg, IDC_COMBO_JID, (TCHAR *)param->m_jid );
 				SetDlgItemText( hwndDlg, IDC_COMBO_NODE, _T("") );
 			} else {
@@ -1496,8 +1496,10 @@ int __cdecl CJabberProto::JabberMenuHandleServiceDiscovery( WPARAM wParam, LPARA
 {
 	if ( hwndServiceDiscovery && IsWindow( hwndServiceDiscovery ))
 		SetForegroundWindow( hwndServiceDiscovery );
-	else
-		CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_SERVICE_DISCOVERY ), NULL, JabberServiceDiscoveryDlgProc, lParam );
+	else {
+		JabberServiceDiscoveryDlgProcParam param = { this, NULL };
+		CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_SERVICE_DISCOVERY ), NULL, JabberServiceDiscoveryDlgProc, (LPARAM)&param );
+	}
 
 	return 0;
 }
@@ -1509,8 +1511,11 @@ int __cdecl CJabberProto::JabberMenuHandleServiceDiscoveryMyTransports( WPARAM w
 		SetDlgItemText( hwndServiceDiscovery, IDC_COMBO_JID, _T(SD_FAKEJID_MYAGENTS));
 		SetDlgItemText( hwndServiceDiscovery, IDC_COMBO_NODE, _T(""));
 		PostMessage( hwndServiceDiscovery, WM_COMMAND, MAKEWPARAM( IDC_BUTTON_BROWSE, 0 ), 0 );
-	} else
-		CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_SERVICE_DISCOVERY ), NULL, JabberServiceDiscoveryDlgProc, (LPARAM)_T(SD_FAKEJID_MYAGENTS) );
+	}
+	else {
+		JabberServiceDiscoveryDlgProcParam param = { this, _T(SD_FAKEJID_MYAGENTS) };
+		CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_SERVICE_DISCOVERY ), NULL, JabberServiceDiscoveryDlgProc, (LPARAM)&param );
+	}
 
 	return 0;
 }
@@ -1522,8 +1527,11 @@ int __cdecl CJabberProto::JabberMenuHandleServiceDiscoveryTransports( WPARAM wPa
 		SetDlgItemText( hwndServiceDiscovery, IDC_COMBO_JID, _T(SD_FAKEJID_AGENTS));
 		SetDlgItemText( hwndServiceDiscovery, IDC_COMBO_NODE, _T(""));
 		PostMessage( hwndServiceDiscovery, WM_COMMAND, MAKEWPARAM( IDC_BUTTON_BROWSE, 0 ), 0 );
-	} else
-		CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_SERVICE_DISCOVERY ), NULL, JabberServiceDiscoveryDlgProc, (LPARAM)_T(SD_FAKEJID_AGENTS) );
+	}
+	else {
+		JabberServiceDiscoveryDlgProcParam param = { this, _T(SD_FAKEJID_AGENTS) };
+		CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_SERVICE_DISCOVERY ), NULL, JabberServiceDiscoveryDlgProc, (LPARAM)&param );
+	}
 
 	return 0;
 }
@@ -1535,8 +1543,11 @@ int __cdecl CJabberProto::JabberMenuHandleServiceDiscoveryConferences( WPARAM wP
 		SetDlgItemText( hwndServiceDiscovery, IDC_COMBO_JID, _T(SD_FAKEJID_CONFERENCES));
 		SetDlgItemText( hwndServiceDiscovery, IDC_COMBO_NODE, _T(""));
 		PostMessage(  hwndServiceDiscovery, WM_COMMAND, MAKEWPARAM( IDC_BUTTON_BROWSE, 0 ), 0 );
-	} else
-		CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_SERVICE_DISCOVERY ), NULL, JabberServiceDiscoveryDlgProc, (LPARAM)_T(SD_FAKEJID_CONFERENCES) );
+	}
+	else {
+		JabberServiceDiscoveryDlgProcParam param = { this, _T(SD_FAKEJID_CONFERENCES) };
+		CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_SERVICE_DISCOVERY ), NULL, JabberServiceDiscoveryDlgProc, (LPARAM)&param );
+	}
 
 	return 0;
 }
