@@ -284,7 +284,7 @@ typedef struct tagACCOUNT
 //lParam=(LPARAM)(PROTOACCOUNT**)paAccounts
 #define MS_PROTO_ENUMACCOUNTS "Proto/EnumAccounts"
 
-__inline int ProtoEnumAccounts( int* accNumber, PROTOACCOUNT*** accArray )
+__inline static int ProtoEnumAccounts( int* accNumber, PROTOACCOUNT*** accArray )
 {	return CallService( MS_PROTO_ENUMACCOUNTS, ( WPARAM )accNumber, (LPARAM)accArray );
 }
 
@@ -294,7 +294,7 @@ __inline int ProtoEnumAccounts( int* accNumber, PROTOACCOUNT*** accArray )
 //return value = PROTOACCOUNT* or NULL
 #define MS_PROTO_GETACCOUNT "Proto/GetAccount"
 
-__inline PROTOACCOUNT* ProtoGetAccount( const char* accName )
+__inline static PROTOACCOUNT* ProtoGetAccount( const char* accName )
 {	return (PROTOACCOUNT*)CallService( MS_PROTO_GETACCOUNT, 0, (LPARAM)accName );
 }
 
