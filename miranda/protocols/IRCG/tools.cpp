@@ -211,7 +211,7 @@ int WCCmp( const TCHAR* wild, const TCHAR* string )
 
 bool IsChannel(TString sName) 
 {
-	return ( sChannelPrefixes.find(( char )sName[0] ) != string::npos );
+	return ( sChannelPrefixes.find(( TCHAR )sName[0] ) != string::npos );
 }
 
 #if defined( _UNICODE )

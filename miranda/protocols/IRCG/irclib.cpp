@@ -436,8 +436,11 @@ int CIrcSession::NLSend( const unsigned char* buf, int cbBuf)
 		lstrcpynA(pszTemp, (const char *)buf, lstrlenA ((const char *)buf) + 1);
 
 		if ( Scripting_TriggerMSPRawOut(&pszTemp) && pszTemp ) {
-			if ( sslSession.nSSLConnected == 1 ) 
-				iVal = pSSL_write(sslSession.m_ssl, pszTemp, lstrlenA(pszTemp));	
+			if ( sslSession.nSSLConnected == 1 ) {
+				iVal = pSSL_write(sslSession.m_ssl, pszTemp, lstrlenA(pszTemp));
+				if (DBGetContactSettingByte( NULL, "Netlib", "DumpSent", TRUE ) == TRUE)
+					DoNetlibLog("( SSL ) Data sent\n%s",pszTemp);
+			}
 			else if (con)
 				iVal = Netlib_Send(con, (const char*)pszTemp, lstrlenA(pszTemp), MSG_DUMPASTEXT);
 		}
@@ -447,9 +450,11 @@ int CIrcSession::NLSend( const unsigned char* buf, int cbBuf)
 		return iVal;
 	}
 	
-	if ( sslSession.nSSLConnected == 1 ) 
+	if ( sslSession.nSSLConnected == 1 ) {
+		if (DBGetContactSettingByte( NULL, "Netlib", "DumpSent", TRUE ) == TRUE)
+			DoNetlibLog("( SSL ) Data sent\n%s",buf);
 		return pSSL_write(sslSession.m_ssl, buf, cbBuf);	
-
+	}
 	if (con)
 		return Netlib_Send(con, (const char*)buf, cbBuf, MSG_DUMPASTEXT);
 
@@ -487,8 +492,11 @@ int CIrcSession::NLSend( const char* fmt, ...)
 
 int CIrcSession::NLSendNoScript( const unsigned char* buf, int cbBuf)
 {
-	if ( sslSession.nSSLConnected == 1 ) 
-		return pSSL_write(sslSession.m_ssl, buf, cbBuf);	
+	if ( sslSession.nSSLConnected == 1 ) {
+		if (DBGetContactSettingByte( NULL, "Netlib", "DumpSent", TRUE ) == TRUE)
+			DoNetlibLog("( SSL ) Data sent\n%s",buf);
+		return pSSL_write(sslSession.m_ssl, buf, cbBuf);
+	}
 
 	if ( con )
 		return Netlib_Send(con, (const char*)buf, cbBuf, MSG_DUMPASTEXT);
@@ -498,10 +506,16 @@ int CIrcSession::NLSendNoScript( const unsigned char* buf, int cbBuf)
 
 int CIrcSession::NLReceive(unsigned char* buf, int cbBuf)
 {
-	if ( sslSession.nSSLConnected == 1 ) 
-		return pSSL_read( sslSession.m_ssl, buf, cbBuf );
-
-	return Netlib_Recv( con, (char*)buf, cbBuf, MSG_DUMPASTEXT );
+	if ( sslSession.nSSLConnected == 1 ) {
+		int Retval = pSSL_read( sslSession.m_ssl, buf, cbBuf );
+		if (DBGetContactSettingByte( NULL, "Netlib", "DumpRecv", TRUE ) == TRUE) {
+			buf[Retval] = '\0';
+			DoNetlibLog("( SSL ) Data received\n%s",buf);
+		}
+		return Retval;
+	}
+	else
+		return Netlib_Recv( con, (char*)buf, cbBuf, MSG_DUMPASTEXT );
 }
 
 void CIrcSession::KillIdent()
@@ -550,9 +564,7 @@ void CIrcSession::DoReceive()
 		nb.wPort = m_info.iIdentServerPort;
 		hBindPort = (HANDLE)CallService( MS_NETLIB_BINDPORT, (WPARAM)hNetlib,(LPARAM) &nb);
 		if ( !hBindPort || nb.wPort != m_info.iIdentServerPort ) {
-			char szTemp[200];
-			mir_snprintf(szTemp, sizeof(szTemp), "Error: unable to bind local port %u", m_info.iIdentServerPort);
-			CallService( MS_NETLIB_LOG, (WPARAM) hNetlib , (LPARAM) szTemp );
+			DoNetlibLog("Error: unable to bind local port %u", m_info.iIdentServerPort);
 			KillIdent();
 	}	}
 

@@ -2142,3 +2142,15 @@ VOID CALLBACK RetryTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime)
 	}
 	else KillChatTimer(RetryTimer);
 }
+
+// logs text into NetLib (stolen from Jabber ;) )
+void __stdcall DoNetlibLog( const char* fmt, ... )
+{
+	va_list vararg;
+	va_start( vararg, fmt );
+	char* str = ( char* )alloca( 32000 );
+	mir_vsnprintf( str, 32000, fmt, vararg );
+	va_end( vararg );
+
+	CallService( MS_NETLIB_LOG, ( WPARAM )hNetlib, ( LPARAM )str );
+}

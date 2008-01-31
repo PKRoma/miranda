@@ -1548,7 +1548,7 @@ BOOL CALLBACK ManagerWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		{
 			if ( lParam != 3 ) {
 				if ( IsWindowEnabled(GetDlgItem( hwndDlg, IDC_APPLYMODES)) || IsWindowEnabled(GetDlgItem( hwndDlg, IDC_APPLYTOPIC))) {
-					int i = MessageBox( hwndDlg, TranslateT("You have not applied all changes!\n\nApply before exiting?"), TranslateT("IRC warning"), MB_YESNOCANCEL|MB_ICONWARNING|MB_DEFBUTTON3);
+					int i = MessageBox( NULL, TranslateT("You have not applied all changes!\n\nApply before exiting?"), TranslateT("IRC warning"), MB_YESNOCANCEL|MB_ICONWARNING|MB_DEFBUTTON3);
 					if ( i == IDCANCEL )
 						return false;
 

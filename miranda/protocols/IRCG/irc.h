@@ -336,6 +336,7 @@ void   CreateServiceFunctions(void);
 void   ConnectToServer(void);
 void   DisconnectFromServer(void);
 int    Service_GCEventHook(WPARAM wParam,LPARAM lParam);
+void   DoNetlibLog( const char* fmt, ... );
 
 //options.cpp
 extern UINT_PTR	OnlineNotifTimer;
