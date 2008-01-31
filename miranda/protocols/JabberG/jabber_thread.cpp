@@ -462,7 +462,7 @@ LBL_FatalError:
 				jabberSendKeepAlive = TRUE;
 			else
 				jabberSendKeepAlive = FALSE;
-			mir_forkthread(( pThreadFunc )JabberKeepAliveThread, info->s );
+			mir_forkthread(( pThreadFunc )JabberKeepAliveThread, this );
 		}
 
 		xmlStreamInitializeNow( info );
