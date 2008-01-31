@@ -797,6 +797,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 						}
 
 						mir_free(selItems);
+						SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 					}
 					return TRUE;
 				}
