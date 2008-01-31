@@ -794,10 +794,10 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 							}
 							InvalidateRect(GetDlgItem(hwndDlg, IDC_FONTLIST), NULL, TRUE);
 							EnableWindow(GetDlgItem(hwndDlg, IDC_BTN_UNDO), TRUE);
+							SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 						}
 
 						mir_free(selItems);
-						SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 					}
 					return TRUE;
 				}
