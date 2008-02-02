@@ -76,6 +76,7 @@ Bugfixes:
   Fixed connection problems with many contacts in server-list
 
 Improvements:
+  Restoration of known spam bot blocking
   Use new offline messages protocol (supports unicode)
 
 
