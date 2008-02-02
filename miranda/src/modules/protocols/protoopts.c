@@ -418,12 +418,11 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 				break;
 
 			SetBkMode(lps->hDC, TRANSPARENT);
-			if (lps->itemState & ODS_SELECTED)
-			{
+			if (lps->itemState & ODS_SELECTED) {
 				hbrBack = GetSysColorBrush(COLOR_HIGHLIGHT);
 				SetTextColor(lps->hDC, GetSysColor(COLOR_HIGHLIGHTTEXT));
-			} else
-			{
+			}
+			else {
 				hbrBack = GetSysColorBrush(COLOR_WINDOW);
 				SetTextColor(lps->hDC, GetSysColor(COLOR_WINDOWTEXT));
 			}
@@ -434,15 +433,13 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 			lps->rcItem.bottom -= 2;
 
 			if (CallService(MS_PROTO_ISPROTOCOLLOADED, 0, (LPARAM)acc->szProtoName))
-			{
 				DrawIconEx(lps->hDC, lps->rcItem.left, lps->rcItem.top,
 					LoadSkinnedIcon(acc->bIsEnabled ? SKINICON_OTHER_TICK : SKINICON_OTHER_NOTICK),
 					cxIcon, cyIcon, 0, hbrBack, DI_NORMAL);
-			}
+
 			lps->rcItem.left += cxIcon + 2;
 
-			if (acc->ppro)
-			{
+			if (acc->ppro) {
 				hIcon = acc->ppro->vtbl->GetIcon(acc->ppro, PLI_PROTOCOL);
 				DrawIconEx(lps->hDC, lps->rcItem.left, lps->rcItem.top, hIcon, cxIcon, cyIcon, 0, hbrBack, DI_NORMAL);
 				DestroyIcon(hIcon);
@@ -462,8 +459,7 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 			GetTextExtentPoint32(lps->hDC, text, length, &sz);
 			lps->rcItem.top += max(cxIcon, sz.cy) + 2;
 
-			if (lps->itemID == dat->iSelected)
-			{
+			if (lps->itemID == dat->iSelected) {
 				SelectObject(lps->hDC, dat->hfntText);
 				mir_sntprintf(text, size, _T("%s: ") _T(TCHAR_STR_PARAM), TranslateT("Protocol"), acc->szProtoName);
 				length = lstrlen(text);
@@ -471,50 +467,28 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 				GetTextExtentPoint32(lps->hDC, text, length, &sz);
 				lps->rcItem.top += sz.cy + 2;
 
-				if (acc->ppro && CallService(MS_PROTO_ISPROTOCOLLOADED, 0, (LPARAM)acc->szProtoName))
-				{
+				if (acc->ppro && CallService(MS_PROTO_ISPROTOCOLLOADED, 0, (LPARAM)acc->szProtoName)) {
 					char *szIdName;
 					TCHAR *tszIdName;
-					DBVARIANT dbv = { 0 };
-					DBCONTACTGETSETTING dbcgs = {acc->szModuleName, (char *)acc->ppro->vtbl->GetCaps(acc->ppro, PFLAG_UNIQUEIDSETTING), &dbv};
+					char *uniqueIdSetting = (char *)acc->ppro->vtbl->GetCaps(acc->ppro, PFLAG_UNIQUEIDSETTING);
 
 					szIdName = (char *)acc->ppro->vtbl->GetCaps(acc->ppro, PFLAG_UNIQUEIDTEXT);
 					tszIdName = szIdName ? mir_a2t(szIdName) : mir_tstrdup(TranslateT("Account ID"));
-					if (!CallService(MS_DB_CONTACT_GETSETTING_STR, 0, (LPARAM)&dbcgs))
-					{
-						switch (dbv.type)
-						{
-						case DBVT_DWORD:
-							mir_sntprintf(text, size, _T("%s: %d"), tszIdName, dbv.dVal);
-							break;
-						case DBVT_ASCIIZ:
-							{
-								TCHAR* p = mir_a2t( dbv.pszVal );
-								mir_sntprintf(text, size, _T("%s: %s"), tszIdName, p);
-								mir_free( p );
-							}
-							break;
-						case DBVT_WCHAR:
-							{
-								TCHAR* p = mir_u2t( dbv.pwszVal );
-								mir_sntprintf(text, size, _T("%s: %s"), tszIdName, p);
-								mir_free( p );
-							}
-							break;
-						default:
-							mir_sntprintf(text, size, _T("%s: %s"), tszIdName, TranslateT("<unknown>"));
-							break;
-						}
-						DBFreeVariant(&dbv);
-					} else
-					{
-						mir_sntprintf(text, size, _T("%s: %s"), tszIdName, TranslateT("<unknown>"));
+					if ( PF1_NUMERICUSERID & acc->ppro->vtbl->GetCaps(acc->ppro, PFLAGNUM_1)) {
+						DWORD uid = DBGetContactSettingDword( NULL, acc->szModuleName, uniqueIdSetting, -1 );
+						mir_sntprintf(text, size, _T("%s: %d"), tszIdName, uid);
 					}
+					else {
+						DBVARIANT dbv = { 0 };
+						if ( !DBGetContactSettingTString( NULL, acc->szModuleName, uniqueIdSetting, &dbv )) {
+							mir_sntprintf(text, size, _T("%s: %s"), tszIdName, dbv.ptszVal );
+							DBFreeVariant(&dbv);
+						}
+						else mir_sntprintf(text, size, _T("%s: %s"), tszIdName, TranslateT("<unknown>"));
+					} 
 					mir_free(tszIdName);
-				} else
-				{
-					mir_sntprintf(text, size, _T("Protocol is not loaded."));
 				}
+				else mir_sntprintf(text, size, _T("Protocol is not loaded."));
 
 				length = lstrlen(text);
 				DrawText(lps->hDC, text, -1, &lps->rcItem, DT_LEFT|DT_NOPREFIX|DT_SINGLELINE|DT_END_ELLIPSIS);
