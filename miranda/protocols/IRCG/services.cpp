@@ -1433,7 +1433,7 @@ static int Service_GetCaps(WPARAM wParam,LPARAM lParam)
 		return 400;
 
 	case PFLAG_UNIQUEIDSETTING:
-		return (int) "Default";
+		return (int) "Nick";
 	}
 
 	return 0;
