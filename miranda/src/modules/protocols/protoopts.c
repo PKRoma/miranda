@@ -475,7 +475,7 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 				{
 					char *szIdName;
 					TCHAR *tszIdName;
-					DBVARIANT dbv = {DBVT_TCHAR};
+					DBVARIANT dbv = { 0 };
 					DBCONTACTGETSETTING dbcgs = {acc->szModuleName, (char *)acc->ppro->vtbl->GetCaps(acc->ppro, PFLAG_UNIQUEIDSETTING), &dbv};
 
 					szIdName = (char *)acc->ppro->vtbl->GetCaps(acc->ppro, PFLAG_UNIQUEIDTEXT);
@@ -487,8 +487,19 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 						case DBVT_DWORD:
 							mir_sntprintf(text, size, _T("%s: %d"), tszIdName, dbv.dVal);
 							break;
-						case DBVT_TCHAR:
-							mir_sntprintf(text, size, _T("%s: %s"), tszIdName, dbv.ptszVal);
+						case DBVT_ASCIIZ:
+							{
+								TCHAR* p = mir_a2t( dbv.pszVal );
+								mir_sntprintf(text, size, _T("%s: %s"), tszIdName, p);
+								mir_free( p );
+							}
+							break;
+						case DBVT_WCHAR:
+							{
+								TCHAR* p = mir_u2t( dbv.pwszVal );
+								mir_sntprintf(text, size, _T("%s: %s"), tszIdName, p);
+								mir_free( p );
+							}
 							break;
 						default:
 							mir_sntprintf(text, size, _T("%s: %s"), tszIdName, TranslateT("<unknown>"));
