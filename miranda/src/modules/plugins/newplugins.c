@@ -502,11 +502,11 @@ static pluginEntry* getCListModule(char * exe, char * slice, int useWhiteList)
 
 char **GetSeviceModePluginsList(void)
 {
-    int i = 0;
-    char **list = NULL;
+	int i = 0;
+	char **list = NULL;
 	pluginEntry * p = pluginListSM;
 	while ( p != NULL ) {
-	    i++;
+		i++;
 		p = p->nextclass;
 	}
 	if ( i ) {
@@ -516,7 +516,6 @@ char **GetSeviceModePluginsList(void)
 		while ( p != NULL ) {
 			list[i++] = p->bpi.pluginInfo->shortName;
 			p = p->nextclass;
-			break;
 		}
 	}
 	return list;
