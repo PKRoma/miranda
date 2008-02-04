@@ -297,6 +297,11 @@ void UnloadAccount( PROTOACCOUNT* pa, BOOL bIsDynamic )
 			if ( pa->ppro->m_services[idx] )
 				DestroyServiceFunction( pa->ppro->m_services[idx] );
 
+		if ( bIsDynamic ) {
+			pa->ppro->vtbl->OnEvent( EV_PROTO_ONREADYTOEXIT, 0, 0 );
+			pa->ppro->vtbl->OnEvent( EV_PROTO_ONEXIT, 0, 0 );
+		}
+
 		UninitAccount( pa );
 	}
 	mir_free( pa->tszAccountName );

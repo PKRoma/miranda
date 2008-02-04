@@ -24,6 +24,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef M_PROTOINT_H__
 #define M_PROTOINT_H__ 1
 
+typedef enum 
+{
+	EV_PROTO_ONLOAD,
+	EV_PROTO_ONREADYTOEXIT,
+	EV_PROTO_ONEXIT
+}
+	PROTOEVENTTYPE;
+
 #ifndef __cplusplus
 typedef struct tagPROTO_INTERFACE_VTBL
 {
@@ -71,6 +79,8 @@ typedef struct tagPROTO_INTERFACE_VTBL
 	int    ( *SetAwayMsg )( struct tagPROTO_INTERFACE*, int iStatus, const char* msg );
 
 	int    ( *UserIsTyping )( struct tagPROTO_INTERFACE*, HANDLE hContact, int type );
+
+	int    ( *OnEvent )( PROTOEVENTTYPE iEventType, WPARAM wParam, LPARAM lParam );
 }
 	PROTO_INTERFACE_VTBL;
 #endif
@@ -137,6 +147,8 @@ typedef struct tagPROTO_INTERFACE
 	virtual	int    __cdecl SetAwayMsg( int iStatus, const char* msg ) = 0;
 
 	virtual	int    __cdecl UserIsTyping( HANDLE hContact, int type ) = 0;
+
+	virtual	int    __cdecl OnEvent( PROTOEVENTTYPE iEventType, WPARAM wParam, LPARAM lParam ) = 0;
 	#endif
 }
 	PROTO_INTERFACE;

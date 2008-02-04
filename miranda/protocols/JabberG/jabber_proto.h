@@ -135,6 +135,8 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	virtual	int    __cdecl UserIsTyping( HANDLE hContact, int type );
 
+	virtual	int    __cdecl OnEvent( PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM lParam );
+
 	//====| Events |======================================================================
 	void __cdecl OnAddContactForever( DBCONTACTWRITESETTING* cws, HANDLE hContact );
 	int  __cdecl OnContactDeleted( WPARAM, LPARAM );

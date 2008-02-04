@@ -1342,3 +1342,16 @@ int __cdecl CJabberProto::UserIsTyping( HANDLE hContact, int type )
 	JFreeVariant( &dbv );
 	return 0;
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// OnEvent - maintain protocol events
+
+int __cdecl CJabberProto::OnEvent( PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM lParam )
+{
+	switch( eventType ) {
+	case EV_PROTO_ONLOAD:  return OnModulesLoadedEx( 0, 0 );
+	case EV_PROTO_ONEXIT:  return OnPreShutdown( 0, 0 );
+	default:
+		return 1;
+	}	
+}
