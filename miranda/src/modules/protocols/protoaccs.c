@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "m_protoint.h"
 
-void UninitAccount(char *szModule, PROTOACCOUNT *pa);
+void UninitAccount( PROTOACCOUNT* pa );
 
 static BOOL bModuleInitialized = FALSE;
 
@@ -297,7 +297,7 @@ void UnloadAccount( PROTOACCOUNT* pa, BOOL bIsDynamic )
 			if ( pa->ppro->m_services[idx] )
 				DestroyServiceFunction( pa->ppro->m_services[idx] );
 
-		UninitAccount( pa->szModuleName, pa);
+		UninitAccount( pa );
 	}
 	mir_free( pa->tszAccountName );
 	mir_free( pa->szProtoName );

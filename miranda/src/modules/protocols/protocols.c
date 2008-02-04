@@ -473,11 +473,11 @@ void UnloadProtocolsModule()
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-void UninitAccount(char *szModule, PROTOACCOUNT *pa)
+void UninitAccount( PROTOACCOUNT* pa )
 {
 	int idx;	
 	PROTOCOLDESCRIPTOR temp;
-	temp.szName = szModule;
+	temp.szName = pa->szProtoName;
 	if ( List_GetIndex(( SortedList* )&protos, &temp, &idx ))
 		if ( protos.items[idx]->fnUninit != NULL )
 			protos.items[idx]->fnUninit( pa->ppro );
