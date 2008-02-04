@@ -27,15 +27,12 @@ Last change by : $Author$
 
 #include "jabber.h"
 
-extern LIST<void> arHooks;
-extern LIST<void> arServices;
-
 void CJabberProto::JCreateService( const char* szService, JServiceFunc serviceProc )
 {
 	char str[ MAXMODULELABELLENGTH ];
 	strcpy( str, m_szProtoName );
 	strcat( str, szService );
-	arServices.insert( ::CreateServiceFunctionObj( str, ( MIRANDASERVICEOBJ )*( void** )&serviceProc, this ));
+	::CreateServiceFunctionObj( str, ( MIRANDASERVICEOBJ )*( void** )&serviceProc, this );
 }
 
 void CJabberProto::JCreateServiceParam( const char* szService, JServiceFuncParam serviceProc, LPARAM lParam )
@@ -43,12 +40,12 @@ void CJabberProto::JCreateServiceParam( const char* szService, JServiceFuncParam
 	char str[ MAXMODULELABELLENGTH ];
 	strcpy( str, m_szProtoName );
 	strcat( str, szService );
-	arServices.insert( ::CreateServiceFunctionObjParam( str, ( MIRANDASERVICEOBJPARAM )*( void** )&serviceProc, this, lParam ));
+	::CreateServiceFunctionObjParam( str, ( MIRANDASERVICEOBJPARAM )*( void** )&serviceProc, this, lParam );
 }
 
 void CJabberProto::JHookEvent( const char* szEvent, JEventFunc handler )
 {
-	arHooks.insert( ::HookEventObj( szEvent, ( MIRANDAHOOKOBJ )*( void** )&handler, this ));
+	::HookEventObj( szEvent, ( MIRANDAHOOKOBJ )*( void** )&handler, this );
 }
 
 HANDLE CJabberProto::JCreateHookableEvent( const char* szService )

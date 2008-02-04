@@ -33,6 +33,7 @@ Last change by : $Author$
 #include "jabber_privacy.h"
 #include "jabber_disco.h"
 
+#include <m_genmenu.h>
 #include <m_contacts.h>
 #include <m_hotkeys.h>
 
@@ -44,9 +45,6 @@ Last change by : $Author$
 #define MENUITEM_LASTSEEN	1
 #define MENUITEM_SERVER		2
 #define MENUITEM_RESOURCES	10
-
-extern LIST<void> arHooks;
-extern LIST<void> arServices;
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // contact menu services
@@ -186,9 +184,8 @@ int CJabberProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
 							item->resource[i].priority);
 						clmi.ptszName = szTmp;
 						CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuResourceItems[i], ( LPARAM )&clmi );
-					} else {
-						sttEnableMenuItem( hMenuResourceItems[i], FALSE );
 					}
+					else sttEnableMenuItem( hMenuResourceItems[i], FALSE );
 				}
 
 				ZeroMemory(&mi, sizeof(mi));
@@ -704,7 +701,7 @@ int CJabberProto::OnModernToolbarInit(WPARAM, LPARAM)
 	strcpy(tDest, "/Groupchat");
 	mir_snprintf(tmpbuf, SIZEOF(tmpbuf), "Join conference (%s)", m_szModuleName);
 	button.hSecondaryIconHandle = button.hPrimaryIconHandle = (HANDLE)GetIconHandle(IDI_GROUP);
-	CallService(MS_TB_ADDBUTTON, 0, (LPARAM)&button);
+	JCallService(MS_TB_ADDBUTTON, 0, (LPARAM)&button);
 
 	JCreateService( "/Bookmarks", &CJabberProto::JabberMenuHandleBookmarks );
 
@@ -712,7 +709,7 @@ int CJabberProto::OnModernToolbarInit(WPARAM, LPARAM)
 	mir_snprintf(tmpbuf, SIZEOF(tmpbuf), "Open bookmarks (%s)", m_szModuleName);
 	button.hSecondaryIconHandle = button.hPrimaryIconHandle = (HANDLE)GetIconHandle(IDI_BOOKMARKS);
 	button.defPos++;
-	CallService(MS_TB_ADDBUTTON, 0, (LPARAM)&button);
+	JCallService(MS_TB_ADDBUTTON, 0, (LPARAM)&button);
 
 	JCreateService( "/ServiceDiscovery", &CJabberProto::JabberMenuHandleServiceDiscovery );
 
@@ -720,14 +717,34 @@ int CJabberProto::OnModernToolbarInit(WPARAM, LPARAM)
 	mir_snprintf(tmpbuf, SIZEOF(tmpbuf), "Service discovery (%s)", m_szModuleName);
 	button.hSecondaryIconHandle = button.hPrimaryIconHandle = (HANDLE)GetIconHandle(IDI_SERVICE_DISCOVERY);
 	button.defPos++;
-	CallService(MS_TB_ADDBUTTON, 0, (LPARAM)&button);
+	JCallService(MS_TB_ADDBUTTON, 0, (LPARAM)&button);
 	return 0;
 }
 
 void CJabberProto::JabberMenuUninit()
 {
-	mir_free(hMenuResourceItems);
-	hMenuResourceItems = NULL;
+	JCallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hMenuRequestAuth, 0 );
+	JCallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hMenuGrantAuth, 0 );
+	JCallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hMenuRevokeAuth, 0 );
+	JCallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hMenuJoinLeave, 0 );
+	JCallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hMenuConvert, 0 );
+	JCallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hMenuRosterAdd, 0 );
+	JCallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hMenuLogin, 0 );
+	JCallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hMenuRefresh, 0 );
+	JCallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hMenuAgent, 0 );
+	JCallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hMenuChangePassword, 0 );
+	JCallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hMenuGroupchat, 0 );
+	JCallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hMenuBookmarks, 0 );
+	JCallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hMenuAddBookmark, 0 );
+
+	JCallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )hMenuRoot, 0 );
+
+	if ( hMenuResourceItems ) {
+		for ( int i=0; i < nMenuResourceItems; i++ )
+			JCallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hMenuResourceItems[i], 0 );
+		mir_free(hMenuResourceItems);
+		hMenuResourceItems = NULL;
+	}
 	nMenuResourceItems = 0;
 }
 

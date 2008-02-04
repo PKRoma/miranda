@@ -44,6 +44,14 @@ WCHAR* mir_a2u(const char* src);
 char*  mir_u2a_cp(const wchar_t* src, int codepage);
 char*  mir_u2a( const wchar_t* src);
 
+/**** modules.c ************************************************************************/
+
+void KillModuleEventHooks( HINSTANCE );
+void KillModuleServices( HINSTANCE );
+
+void KillObjectEventHooks( void* pObject );
+void KillObjectServices( void* pObject );
+
 /**** utf.c ****************************************************************************/
 
 char* Utf8Decode( char* str, wchar_t** ucs2 );

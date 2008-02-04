@@ -86,12 +86,6 @@ PVOID jabberSslCtx;
 const char xmlnsAdmin[] = "http://jabber.org/protocol/muc#admin";
 const char xmlnsOwner[] = "http://jabber.org/protocol/muc#owner";
 
-static int sttCompareHandles( const void* p1, const void* p2 )
-{	return (long)p1 - (long)p2;
-}
-LIST<void> arHooks( 20, sttCompareHandles );
-LIST<void> arServices( 20, sttCompareHandles );
-
 void JabberUserInfoInit(void);
 
 int bSecureIM;
@@ -379,15 +373,6 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 
 extern "C" int __declspec( dllexport ) Unload( void )
 {
-	int i;
-	for ( i=0; i < arHooks.getCount(); i++ )
-		UnhookEvent( arHooks[i] );
-	arHooks.destroy();
-
-	for ( i=0; i < arServices.getCount(); i++ )
-		DestroyServiceFunction( arServices[i] );
-	arServices.destroy();
-
 	if ( hMainThread )
 		CloseHandle( hMainThread );
 	return 0;

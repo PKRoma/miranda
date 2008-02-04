@@ -80,7 +80,7 @@ typedef struct tagPROTO_INTERFACE_VTBL
 
 	int    ( *UserIsTyping )( struct tagPROTO_INTERFACE*, HANDLE hContact, int type );
 
-	int    ( *OnEvent )( PROTOEVENTTYPE iEventType, WPARAM wParam, LPARAM lParam );
+	int    ( *OnEvent )( struct tagPROTO_INTERFACE*, PROTOEVENTTYPE iEventType, WPARAM wParam, LPARAM lParam );
 }
 	PROTO_INTERFACE_VTBL;
 #endif
@@ -98,7 +98,6 @@ typedef struct tagPROTO_INTERFACE
 	TCHAR* m_tszUserName;
 	char*  m_szProtoName;
 	char*  m_szModuleName;
-	HANDLE m_services[ 20 ];
 
 	DWORD  reserved[ 40 ];
 

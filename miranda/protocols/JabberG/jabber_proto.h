@@ -74,6 +74,17 @@ struct ROSTERREQUSERDATA
 	BOOL bReadyToUpload;
 };
 
+struct TFilterInfo
+{
+	enum Type { T_JID, T_XMLNS, T_ANY, T_OFF };
+
+	volatile BOOL msg, presence, iq;
+	volatile Type type;
+
+	CRITICAL_SECTION csPatternLock;
+	TCHAR pattern[256];
+};
+
 struct CJabberProto : public PROTO_INTERFACE
 {
 				CJabberProto( const char* );
@@ -294,6 +305,8 @@ struct CJabberProto : public PROTO_INTERFACE
 	DWORD sttLastRefresh;
 	DWORD sttLastAutoDisco;
 
+	TFilterInfo m_filterInfo;
+
 	/*******************************************************************
 	* Function declarations
 	*******************************************************************/
@@ -370,6 +383,9 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	void   JabberConsoleInit( void );
 	void   JabberConsoleUninit( void );
+	
+	bool   FilterXml(XmlNode *node, DWORD flags);
+	bool   RecursiveCheckFilter(XmlNode *node, DWORD flags);
 
 	//---- jabber_disco.cpp --------------------------------------------------------------
 

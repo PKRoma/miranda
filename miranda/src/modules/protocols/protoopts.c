@@ -129,7 +129,7 @@ static BOOL CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LP
 					List_InsertPtr(( SortedList* )&accounts, pa );
 					DBWriteContactSettingString( NULL, pa->szModuleName, "AM_BaseProto", pa->szProtoName );
 					if ( ActivateAccount( pa ))
-						pa->ppro->vtbl->OnEvent( EV_PROTO_ONLOAD, 0, 0 );
+						pa->ppro->vtbl->OnEvent( pa->ppro, EV_PROTO_ONLOAD, 0, 0 );
 					NotifyEventHooks( hAccListChanged, 1, ( LPARAM )pa );
 				}
 				else NotifyEventHooks( hAccListChanged, 2, ( LPARAM )pa );

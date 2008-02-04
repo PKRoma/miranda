@@ -606,6 +606,25 @@ void KillModuleEventHooks( HINSTANCE hInst )
 	LeaveCriticalSection(&csHooks);
 }
 
+void KillObjectEventHooks( void* pObject )
+{
+	int i, j;
+
+	EnterCriticalSection(&csHooks);
+	for ( i = hooks.count-1; i >= 0; i-- ) {
+		if ( hooks.items[i]->subscriberCount == 0 )
+			continue;
+
+		for ( j = hooks.items[i]->subscriberCount-1; j >= 0; j-- ) {
+			if ( hooks.items[i]->subscriber[j].object == pObject ) {
+				UnhookEvent(( HANDLE )(( hooks.items[i]->id << 16 ) + j + 1 ));
+				if ( hooks.items[i]->subscriberCount == 0 )
+					break;
+	}	}	}
+
+	LeaveCriticalSection(&csHooks);
+}
+
 /////////////////////SERVICES
 
 static __inline TService* FindServiceByHash(DWORD hash)
@@ -803,6 +822,18 @@ void KillModuleServices( HINSTANCE hInst )
 				services.items[i]->name, szModuleName );
 			DestroyServiceFunction(( HANDLE )services.items[i]->nameHash );
 	}	}
+
+	LeaveCriticalSection(&csServices);
+}
+
+void KillObjectServices( void* pObject )
+{
+	int i;
+
+	EnterCriticalSection(&csServices);
+	for ( i = services.count-1; i >= 0; i-- )
+		if ( services.items[i]->object == pObject )
+			DestroyServiceFunction(( HANDLE )services.items[i]->nameHash );
 
 	LeaveCriticalSection(&csServices);
 }

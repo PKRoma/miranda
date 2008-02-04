@@ -97,9 +97,6 @@ void UninitIni(void);
 
 #define PLUGINDISABLELIST "PluginDisable"
 
-void KillModuleEventHooks( HINSTANCE );
-void KillModuleServices( HINSTANCE );
-
 int CallHookSubscribers( HANDLE hEvent, WPARAM wParam, LPARAM lParam );
 
 int LoadDatabaseModule(void);
