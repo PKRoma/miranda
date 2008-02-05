@@ -1070,7 +1070,7 @@ static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 			}
 			else
 			{
-				int tNnetId = netId == NETID_UNKNOWN ? NETID_MSN : netId;
+				const int tNnetId = netId == NETID_UNKNOWN ? NETID_MSN : netId;
 				seq = thread->sendMessage( msgType, tEmail, tNnetId, msg, rtlFlag );
 				if ( !MyOptions.SlowSend )
 					mir_forkthread( sttFakeAck, new TFakeAckParams( hContact, seq, 0 ));

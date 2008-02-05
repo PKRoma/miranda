@@ -318,10 +318,10 @@ LONG ThreadData::sendMessage( int msgType, const char* email, int netId, const c
 	}
 
 	int seq;
-	if (netId == 1)
-		seq = sendPacket( "MSG", "%c %d\r\n%s%s", msgType, strlen( parMsg )+strlen( tHeader ), tHeader, parMsg );
-	else
+	if (netId == NETID_YAHOO)
 		seq = sendPacket( "UUM", "%s %d %c %d\r\n%s%s", email, netId, msgType, strlen( parMsg )+strlen( tHeader ), tHeader, parMsg );
+	else
+		seq = sendPacket( "MSG", "%c %d\r\n%s%s", msgType, strlen( parMsg )+strlen( tHeader ), tHeader, parMsg );
 
 	return seq;
 }
