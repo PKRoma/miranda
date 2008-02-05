@@ -168,9 +168,13 @@ int LoadAccountsModule( void )
 
 	for ( i = 0; i < accounts.count; i++ ) {
 		PROTOACCOUNT* pa = accounts.items[i];
-		if ( pa->ppro == NULL )
-			ActivateAccount( pa );
-	}
+		if ( pa->ppro )
+			continue;
+
+		if ( !ActivateAccount( pa )) { // remove damaged account from list
+			List_Remove(( SortedList* )&accounts, i-- );
+			UnloadAccount( pa, FALSE );
+	}	}
 
 	return 0;
 }
