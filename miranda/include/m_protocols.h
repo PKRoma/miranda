@@ -303,6 +303,11 @@ __inline static PROTOACCOUNT* ProtoGetAccount( const char* accName )
 //lParam = (LPARAM)(PROTOACCOUNT*) - account being changed
 #define ME_PROTO_ACCLISTCHANGED "Proto/AccListChanged"
 
+//displays the Account Manager
+//wParam=0
+//lParam=0
+#define MS_PROTO_SHOWACCMGR "Protos/ShowAccountManager" 
+
 /* -------------- avatar support ---------------------
 
 First a protocol must report it supports PF4_AVATARS via PS_GETCAPS, secondly

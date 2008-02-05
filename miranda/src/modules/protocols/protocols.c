@@ -73,7 +73,7 @@ PROTOCOLDESCRIPTOR* Proto_IsProtocolLoaded( const char* szProtoName )
 
 int srvProto_IsLoaded(WPARAM wParam,LPARAM lParam)
 {
-	return (int)Proto_IsProtocolLoaded(( char* )lParam );
+	return (int)Proto_GetAccount(( char* )lParam );
 }
 
 int Proto_EnumProtocols(WPARAM wParam,LPARAM lParam)
