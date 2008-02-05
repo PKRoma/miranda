@@ -799,21 +799,21 @@ static BOOL CALLBACK JabberGcLogInviteDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 		break;
 
 	case WM_NOTIFY:
-	{
 		if (((LPNMHDR)lParam)->idFrom == IDC_CLIST) {
 			switch (((LPNMHDR)lParam)->code) {
 			case CLN_NEWCONTACT:
-				FilterList(data->ppro, GetDlgItem(hwndDlg,IDC_CLIST));
+				if ( data )
+					FilterList(data->ppro, GetDlgItem(hwndDlg,IDC_CLIST));
 				break;
 			case CLN_LISTREBUILT:
-				FilterList(data->ppro, GetDlgItem(hwndDlg,IDC_CLIST));
+				if ( data )
+					FilterList(data->ppro, GetDlgItem(hwndDlg,IDC_CLIST));
 				break;
 			case CLN_OPTIONSCHANGED:
 				ResetListOptions(GetDlgItem(hwndDlg,IDC_CLIST));
 				break;
 		}	}
 		break;
-	}
 
 	case WM_CLOSE:
 		DestroyWindow( hwndDlg );
@@ -1295,7 +1295,7 @@ static void sttLogListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK* 
 	{	
 		JabberGcLogInviteDlgData* param = new JabberGcLogInviteDlgData( gch->pDest->ptszID );
 		param->ppro = ppro;
-		CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_GROUPCHAT_INVITE ), NULL, JabberGcLogInviteDlgProc, ( LPARAM )gch->pDest->pszID );
+		CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_GROUPCHAT_INVITE ), NULL, JabberGcLogInviteDlgProc, ( LPARAM )param );
 		break;	
 	}
 
