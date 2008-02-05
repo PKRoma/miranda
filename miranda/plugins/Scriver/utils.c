@@ -360,3 +360,42 @@ void SearchWord(TCHAR * word, int engine)
 		CallService(MS_UTILS_OPENURL, 1, (LPARAM) szURL);
 	}
 }
+
+HDWP ResizeToolbar(HWND hwnd, HDWP hdwp, int width, int vPos, int height, int cControls, const UINT * controls, UINT *controlWidth, UINT *controlSpacing, char *controlAlignment, int controlVisibility)
+{
+	int i;
+	int lPos = 0;
+	int rPos = width;
+	for (i = 0; i < cControls ; i++) {
+		if (!controlAlignment[i] && (controlVisibility & (1 << i))) {
+			lPos += controlSpacing[i];
+			hdwp = DeferWindowPos(hdwp, GetDlgItem(hwnd, controls[i]), 0, lPos, vPos, controlWidth[i], height, SWP_NOZORDER);
+			lPos += controlWidth[i];
+		}
+	}
+	for (i = cControls - 1; i >=0; i--) {
+		if (controlAlignment[i] && (controlVisibility & (1 << i))) {
+			rPos -= controlSpacing[i] + controlWidth[i];
+			hdwp = DeferWindowPos(hdwp, GetDlgItem(hwnd, controls[i]), 0, rPos, vPos, controlWidth[i], height, SWP_NOZORDER);
+		}
+	}
+	return hdwp;
+}
+
+
+void AppendToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, const char *fmt, ...)
+{
+	va_list va;
+	int charsDone;
+
+	va_start(va, fmt);
+	for (;;) {
+		charsDone = _vsnprintf(*buffer + *cbBufferEnd, *cbBufferAlloced - *cbBufferEnd, fmt, va);
+		if (charsDone >= 0)
+			break;
+		*cbBufferAlloced += 1024;
+		*buffer = (char *) mir_realloc(*buffer, *cbBufferAlloced);
+	}
+	va_end(va);
+	*cbBufferEnd += charsDone;
+}

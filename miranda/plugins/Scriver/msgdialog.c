@@ -49,7 +49,7 @@ static void UpdateReadChars(HWND hwndDlg, struct MessageWindowData * dat);
 
 static WNDPROC OldMessageEditProc, OldSplitterProc, OldLogEditProc;
 static TCHAR *buttonNames[] = {_T("User Menu"), _T("User Details"), _T("Smiley"), _T("Add Contact"), _T("History"), _T("Quote"), _T("Close"), _T("Send")};
-static const UINT buttonLineControls[] = { IDC_USERMENU, IDC_DETAILS, IDC_SMILEYS, IDC_ADD, IDC_HISTORY, IDC_QUOTE, IDCANCEL, IDOK};
+static const UINT buttonControls[] = { IDC_USERMENU, IDC_DETAILS, IDC_SMILEYS, IDC_ADD, IDC_HISTORY, IDC_QUOTE, IDCANCEL, IDOK};
 static char buttonAlignment[] = { 0, 0, 0, 1, 1, 1, 1, 1};
 static UINT buttonSpacing[] = { 0, 0, 12, 0, 0, 0, 0, 0};
 static UINT buttonWidth[] = { 24, 24, 24, 24, 24, 24, 24, 38};
@@ -122,7 +122,7 @@ static TCHAR *GetIEViewSelection(struct MessageWindowData *dat) {
 	event.dwFlags = IEEF_NO_UNICODE;
 #endif
 	event.codepage = dat->windowData.codePage;
-	event.hwnd = dat->hwndLog;
+	event.hwnd = dat->windowData.hwndLog;
 	event.hContact = dat->windowData.hContact;
 	event.iType = IEE_GET_SELECTION;
 	return mir_tstrdup((TCHAR *)CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&event));
@@ -295,12 +295,12 @@ static void AddToFileList(char ***pppFiles,int *totalCount,const TCHAR* szFilena
 			FindClose( hFind );
 }	}	}
 
-static int GetToolbarWidth()
+static int GetToolbarWidth(int cControls, const UINT * controls)
 {
 	int i, w = 0;
-	for (i = 0; i < sizeof(buttonLineControls) / sizeof(buttonLineControls[0]); i++) {
+	for (i = 0; i < cControls; i++) {
 //		if (g_dat->buttonVisibility & (1 << i)) {
-			if (buttonLineControls[i] != IDC_SMILEYS || g_dat->smileyServiceExists) {
+			if (controls[i] != IDC_SMILEYS || g_dat->smileyServiceExists) {
 				w += buttonWidth[i] + buttonSpacing[i];
 			}
 //		}
@@ -308,22 +308,21 @@ static int GetToolbarWidth()
 	return w;
 }
 
-static void ShowMultipleControls(HWND hwndDlg, const UINT * controls, int cControls, int state)
+
+static void ShowToolbarControls(HWND hwndDlg, int cControls, const UINT * controls, int controlVisibility, int state)
 {
 	int i;
 	for (i = 0; i < cControls; i++)
-		ShowWindow(GetDlgItem(hwndDlg, controls[i]), (g_dat->buttonVisibility & (1 << i)) ? state : SW_HIDE);
+		ShowWindow(GetDlgItem(hwndDlg, controls[i]), (controlVisibility & (1 << i)) ? state : SW_HIDE);
 }
 
 static void SetDialogToType(HWND hwndDlg)
 {
-	struct MessageWindowData *dat;
-	ParentWindowData *pdat;
+	BOOL showToolbar = SendMessage(GetParent(hwndDlg), CM_GETTOOLBARSTATUS, 0, 0);
+	struct MessageWindowData *dat = (struct MessageWindowData *) GetWindowLong(hwndDlg, GWL_USERDATA);
 
-	dat = (struct MessageWindowData *) GetWindowLong(hwndDlg, GWL_USERDATA);
-	pdat = (ParentWindowData *) GetWindowLong(GetParent(hwndDlg), GWL_USERDATA);
 	if (dat->windowData.hContact) {
-		ShowMultipleControls(hwndDlg, buttonLineControls, sizeof(buttonLineControls) / sizeof(buttonLineControls[0]), (pdat->flags2&SMF2_SHOWTOOLBAR) ? SW_SHOW : SW_HIDE);
+		ShowToolbarControls(hwndDlg, SIZEOF(buttonControls), buttonControls, g_dat->buttonVisibility, showToolbar ? SW_SHOW : SW_HIDE);
 		if (!DBGetContactSettingByte(dat->windowData.hContact, "CList", "NotOnList", 0)) {
 			ShowWindow(GetDlgItem(hwndDlg, IDC_ADD), SW_HIDE);
 		}
@@ -331,10 +330,10 @@ static void SetDialogToType(HWND hwndDlg)
 			ShowWindow(GetDlgItem(hwndDlg, IDC_SMILEYS), SW_HIDE);
 		}
 	} else {
-		ShowMultipleControls(hwndDlg, buttonLineControls, sizeof(buttonLineControls) / sizeof(buttonLineControls[0]), SW_HIDE);
+		ShowToolbarControls(hwndDlg, SIZEOF(buttonControls), buttonControls, g_dat->buttonVisibility, SW_HIDE);
 	}
 	ShowWindow(GetDlgItem(hwndDlg, IDC_MESSAGE), SW_SHOW);
-	if (dat->hwndLog != NULL) {
+	if (dat->windowData.hwndLog != NULL) {
 		ShowWindow (GetDlgItem(hwndDlg, IDC_LOG), SW_HIDE);
 	} else {
 		ShowWindow (GetDlgItem(hwndDlg, IDC_LOG), SW_SHOW);
@@ -551,7 +550,7 @@ static void UnsubclassLogEdit(HWND hwnd) {
 static void MessageDialogResize(HWND hwndDlg, struct MessageWindowData *dat, int w, int h) {
 	HDWP hdwp;
 	ParentWindowData *pdat = dat->parent;
-	int i, lPos, rPos, vPos, aPos;
+	int rPos, vPos, aPos;
 	int vSplitterPos = 0, hSplitterPos = dat->splitterPos, toolbarHeight = pdat->flags2&SMF2_SHOWTOOLBAR ? dat->toolbarSize.cy : 0;
 	int splitterHeight = 2;
 	int hSplitterMinTop = toolbarHeight + dat->minLogBoxHeight, hSplitterMinBottom = dat->minEditBoxHeight;
@@ -573,7 +572,6 @@ static void MessageDialogResize(HWND hwndDlg, struct MessageWindowData *dat, int
 	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_MESSAGE), 0, 0, h - hSplitterPos + splitterHeight, w-(dat->avatarWidth ? dat->avatarWidth+1 : 0), hSplitterPos - splitterHeight, SWP_NOZORDER);
 	/* make the splitter a little bit bigger */
 	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_SPLITTER), 0, 0, h - hSplitterPos-1, w-dat->avatarWidth, splitterHeight + 1, SWP_NOZORDER);
-	lPos = 0;
 	if (dat->avatarHeight + 1 < hSplitterPos) {
 		rPos = w;
 		aPos = h - (hSplitterPos + dat->avatarHeight - 1) / 2;
@@ -582,28 +580,18 @@ static void MessageDialogResize(HWND hwndDlg, struct MessageWindowData *dat, int
 		aPos = h - (hSplitterPos + toolbarHeight + dat->avatarHeight + 1) / 2;
 	}
 	vPos = h - hSplitterPos - toolbarHeight + 1;
-	for (i = 0; i < sizeof(buttonLineControls) / sizeof(buttonLineControls[0]); i++) {
-		if (!buttonAlignment[i] && (g_dat->buttonVisibility & (1 << i))) {
-			lPos += buttonSpacing[i];
-			hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, buttonLineControls[i]), 0, lPos, vPos, buttonWidth[i], toolbarHeight - splitterHeight, SWP_NOZORDER);
-			lPos += buttonWidth[i];
-		}
-	}
-	for (i = sizeof(buttonLineControls) / sizeof(buttonLineControls[0]) - 1; i >=0; i--) {
-		if (buttonAlignment[i] && (g_dat->buttonVisibility & (1 << i))) {
-			rPos -= buttonSpacing[i] + buttonWidth[i];
-			hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, buttonLineControls[i]), 0, rPos, vPos, buttonWidth[i], toolbarHeight - splitterHeight, SWP_NOZORDER);
-		}
-	}
+	hdwp = ResizeToolbar(hwndDlg, hdwp, rPos, vPos, toolbarHeight - splitterHeight, SIZEOF(buttonControls), 
+					buttonControls, buttonWidth, buttonSpacing, buttonAlignment, g_dat->buttonVisibility);
+
 	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_AVATAR), 0, w-dat->avatarWidth, aPos, dat->avatarWidth, dat->avatarHeight, SWP_NOZORDER);
 //	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_AVATAR), 0, w-dat->avatarWidth, h - (hSplitterPos + toolbarHeight + dat->avatarHeight)/2, dat->avatarWidth, dat->avatarHeight, SWP_NOZORDER);
 	EndDeferWindowPos(hdwp);
-	if (dat->hwndLog != NULL) {
+	if (dat->windowData.hwndLog != NULL) {
 		IEVIEWWINDOW ieWindow;
 		ieWindow.cbSize = sizeof(IEVIEWWINDOW);
 		ieWindow.iType = IEW_SETPOS;
 		ieWindow.parent = hwndDlg;
-		ieWindow.hwnd = dat->hwndLog;
+		ieWindow.hwnd = dat->windowData.hwndLog;
         ieWindow.x = 0;
         ieWindow.y = 0;
         ieWindow.cx = w-vSplitterPos;
@@ -834,7 +822,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			dat->hwnd = hwndDlg;
 			dat->hwndParent = GetParent(hwndDlg);
 			dat->parent = (ParentWindowData *) GetWindowLong(dat->hwndParent, GWL_USERDATA);
-			dat->hwndLog = NULL;
+			dat->windowData.hwndLog = NULL;
 			dat->szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) dat->windowData.hContact, 0);
 			dat->avatarPic = 0;
 			if (dat->windowData.hContact && dat->szProto != NULL)
@@ -903,7 +891,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			dat->splitterPos = (int) DBGetContactSettingDword((g_dat->flags & SMF_SAVESPLITTERPERCONTACT) ? dat->windowData.hContact : NULL, SRMMMOD, "splitterPos", (DWORD) - 1);
 			dat->toolbarSize.cy = DBGetContactSettingDword((g_dat->flags & SMF_SAVESPLITTERPERCONTACT) ? dat->windowData.hContact : NULL, SRMMMOD, "splitterHeight", (DWORD) 24);
 			dat->toolbarSize.cy = max(min(dat->toolbarSize.cy, 24), 18);
-			dat->toolbarSize.cx = GetToolbarWidth();
+			dat->toolbarSize.cx = GetToolbarWidth(SIZEOF(buttonControls), buttonControls);
 			if (dat->splitterPos == -1) {
 				dat->splitterPos = dat->minEditBoxHeight;
 			}
@@ -930,8 +918,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			// Make them flat buttons
 			{
 				int i;
-				for (i = 0; i < sizeof(buttonLineControls) / sizeof(buttonLineControls[0]); i++)
-					SendMessage(GetDlgItem(hwndDlg, buttonLineControls[i]), BUTTONSETASFLATBTN, 0, 0);
+				for (i = 0; i < SIZEOF(buttonControls) ; i++)
+					SendMessage(GetDlgItem(hwndDlg, buttonControls[i]), BUTTONSETASFLATBTN, 0, 0);
 			}
 			SendMessage(GetDlgItem(hwndDlg, IDC_ADD), BUTTONADDTOOLTIP, (WPARAM) Translate("Add Contact Permanently to List"), 0);
 			SendMessage(GetDlgItem(hwndDlg, IDC_USERMENU), BUTTONADDTOOLTIP, (WPARAM) Translate("User Menu"), 0);
@@ -951,23 +939,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETLANGOPTIONS, 0, (LPARAM) SendDlgItemMessage(hwndDlg, IDC_LOG, EM_GETLANGOPTIONS, 0, 0) & ~(IMF_AUTOKEYBOARD | IMF_AUTOFONTSIZEADJUST));
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(0,0));
 			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_KEYEVENTS | ENM_CHANGE);
-			if (dat->flags & SMF_USEIEVIEW) {
-				IEVIEWWINDOW ieWindow;
-				ieWindow.cbSize = sizeof(IEVIEWWINDOW);
-				ieWindow.iType = IEW_CREATE;
-				ieWindow.dwFlags = 0;
-				ieWindow.dwMode = IEWM_SCRIVER;
-				ieWindow.parent = hwndDlg;
-				ieWindow.x = 0;
-				ieWindow.y = 0;
-				ieWindow.cx = 200;
-				ieWindow.cy = 300;
-				CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
-				dat->hwndLog = ieWindow.hwnd;
-				if (dat->hwndLog == NULL) {
-					dat->flags ^= SMF_USEIEVIEW;
-				}
-			}
 			/* duh, how come we didnt use this from the start? */
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
 			if (dat->windowData.hContact) {
@@ -983,6 +954,23 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			SubclassLogEdit(GetDlgItem(hwndDlg, IDC_LOG));
 			SubclassMessageEdit(GetDlgItem(hwndDlg, IDC_MESSAGE));
 			OldSplitterProc = (WNDPROC) SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_WNDPROC, (LONG) SplitterSubclassProc);
+			if (dat->flags & SMF_USEIEVIEW) {
+				IEVIEWWINDOW ieWindow;
+				ieWindow.cbSize = sizeof(IEVIEWWINDOW);
+				ieWindow.iType = IEW_CREATE;
+				ieWindow.dwFlags = 0;
+				ieWindow.dwMode = IEWM_SCRIVER;
+				ieWindow.parent = hwndDlg;
+				ieWindow.x = 0;
+				ieWindow.y = 0;
+				ieWindow.cx = 200;
+				ieWindow.cy = 300;
+				CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
+				dat->windowData.hwndLog = ieWindow.hwnd;
+				if (dat->windowData.hwndLog == NULL) {
+					dat->flags ^= SMF_USEIEVIEW;
+				}
+			}
 			if (dat->windowData.hContact) {
 				int historyMode = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_LOADHISTORY, SRMSGDEFSET_LOADHISTORY);
 				// This finds the first message to display, it works like shit
@@ -1108,7 +1096,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			POINT pt;
 			MENUITEMINFO mii;
 			hToolbarMenu = CreatePopupMenu();
-			for (i = 0; i < sizeof(buttonLineControls) / sizeof(buttonLineControls[0]); i++) {
+			for (i = 0; i < SIZEOF(buttonControls); i++) {
 				ZeroMemory(&mii, sizeof(mii));
 				mii.cbSize = sizeof(mii);
 				mii.fMask = MIIM_ID | MIIM_STRING | MIIM_STATE | MIIM_DATA | MIIM_BITMAP;
@@ -1468,7 +1456,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			COLORREF colour;
 			dat->flags &= ~SMF_USEIEVIEW;
 			dat->flags |= ServiceExists(MS_IEVIEW_WINDOW) ? g_dat->flags & SMF_USEIEVIEW : 0;
-			if (dat->flags & SMF_USEIEVIEW && dat->hwndLog == NULL) {
+			if (dat->flags & SMF_USEIEVIEW && dat->windowData.hwndLog == NULL) {
 				IEVIEWWINDOW ieWindow;
 				ieWindow.cbSize = sizeof(IEVIEWWINDOW);
 				ieWindow.iType = IEW_CREATE;
@@ -1480,19 +1468,19 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				ieWindow.cx = 200;
 				ieWindow.cy = 300;
 				CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
-				dat->hwndLog = ieWindow.hwnd;
-				if (dat->hwndLog == NULL) {
+				dat->windowData.hwndLog = ieWindow.hwnd;
+				if (dat->windowData.hwndLog == NULL) {
 					dat->flags ^= SMF_USEIEVIEW;
 				}
-			} else if (!(dat->flags & SMF_USEIEVIEW) && dat->hwndLog != NULL) {
-				if (dat->hwndLog != NULL) {
+			} else if (!(dat->flags & SMF_USEIEVIEW) && dat->windowData.hwndLog != NULL) {
+				if (dat->windowData.hwndLog != NULL) {
 					IEVIEWWINDOW ieWindow;
 					ieWindow.cbSize = sizeof(IEVIEWWINDOW);
 					ieWindow.iType = IEW_DESTROY;
-					ieWindow.hwnd = dat->hwndLog;
+					ieWindow.hwnd = dat->windowData.hwndLog;
 					CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
 				}
-				dat->hwndLog = NULL;
+				dat->windowData.hwndLog = NULL;
 			}
 			if(g_dat->avatarServiceExists) {
 				dat->ace = (struct avatarCacheEntry *)CallService(MS_AV_GETAVATARBITMAP, (WPARAM)dat->windowData.hContact, 0);
@@ -1674,8 +1662,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			RECT rc;
 			POINT pt;
 			GetCursorPos(&pt);
-			if (dat->hwndLog != NULL) {
-				hLog = dat->hwndLog;
+			if (dat->windowData.hwndLog != NULL) {
+				hLog = dat->windowData.hwndLog;
 			} else {
 				hLog = GetDlgItem(hwndDlg, IDC_LOG);
 			}
@@ -1771,7 +1759,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		StreamInEvents(hwndDlg, (HANDLE) wParam, 1, 1);
 		break;
 	case DM_SCROLLLOGTOBOTTOM:
-		if (dat->hwndLog == NULL) {
+		if (dat->windowData.hwndLog == NULL) {
 			/*
 			int	nMin, nMax;
 			HWND hwndLog = GetDlgItem(hwndDlg, IDC_LOG);
@@ -1795,7 +1783,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			IEVIEWWINDOW ieWindow;
 			ieWindow.cbSize = sizeof(IEVIEWWINDOW);
 			ieWindow.iType = IEW_SCROLLBOTTOM;
-			ieWindow.hwnd = dat->hwndLog;
+			ieWindow.hwnd = dat->windowData.hwndLog;
 			CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
 		}
 		break;
@@ -1904,13 +1892,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		break;
 	case DM_CLEARLOG:
 	// IEVIew MOD Begin
-		if (dat->hwndLog != NULL) {
+		if (dat->windowData.hwndLog != NULL) {
 			IEVIEWEVENT event;
 			ZeroMemory(&event, sizeof(event));
 			event.cbSize = sizeof(event);
 			event.iType = IEE_CLEAR_LOG;
 			event.dwFlags = ((dat->flags & SMF_RTL) ? IEEF_RTL : 0) | ((dat->flags & SMF_DISABLE_UNICODE) ? IEEF_NO_UNICODE : 0);
-			event.hwnd = dat->hwndLog;
+			event.hwnd = dat->windowData.hwndLog;
 			event.hContact = dat->windowData.hContact;
 			event.codepage = dat->windowData.codePage;
 			event.pszProto = dat->szProto;
@@ -2246,7 +2234,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				st.codepage = CP_ACP;
 #endif
 				if (dat->hDbEventLast==NULL) break;
-				if (dat->hwndLog != NULL) {
+				if (dat->windowData.hwndLog != NULL) {
 					buffer = GetIEViewSelection(dat);
 				} else {
 					buffer = GetRichEditSelection(GetDlgItem(hwndDlg, IDC_LOG));
@@ -2480,22 +2468,22 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		DBWriteContactSettingDword((g_dat->flags & SMF_SAVESPLITTERPERCONTACT) ? dat->windowData.hContact : NULL, SRMMMOD, "splitterHeight", dat->toolbarSize.cy);
 		if (dat->avatarPic && !g_dat->avatarServiceExists)
 			DeleteObject(dat->avatarPic);
-		NotifyLocalWinEvent(dat->windowData.hContact, hwndDlg, MSG_WINDOW_EVT_CLOSE);
 		if (dat->windowData.hContact && (g_dat->flags & SMF_DELTEMP)) {
 			if (DBGetContactSettingByte(dat->windowData.hContact, "CList", "NotOnList", 0)) {
 				CallService(MS_DB_CONTACT_DELETE, (WPARAM)dat->windowData.hContact, 0);
 			}
 		}
-		if (dat->hwndLog != NULL) {
+		SetWindowLong(hwndDlg, GWL_USERDATA, 0);
+		SendMessage(dat->hwndParent, CM_REMOVECHILD, 0, (LPARAM) hwndDlg);
+		if (dat->windowData.hwndLog != NULL) {
 			IEVIEWWINDOW ieWindow;
 			ieWindow.cbSize = sizeof(IEVIEWWINDOW);
 			ieWindow.iType = IEW_DESTROY;
-			ieWindow.hwnd = dat->hwndLog;
+			ieWindow.hwnd = dat->windowData.hwndLog;
 			CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
 		}
-		SetWindowLong(hwndDlg, GWL_USERDATA, 0);
-		SendMessage(dat->hwndParent, CM_REMOVECHILD, 0, (LPARAM) hwndDlg);
 		mir_free(dat);
+		NotifyLocalWinEvent(dat->windowData.hContact, hwndDlg, MSG_WINDOW_EVT_CLOSE);
 		break;
 	}
 	return FALSE;

@@ -228,19 +228,15 @@ SOURCE=.\input.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\chat\m_ieview.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\chat\m_smileyadd.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\chat\m_uninstaller.h
 # End Source File
 # Begin Source File
 
 SOURCE=.\msgs.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\msgwindow.h
 # End Source File
 # Begin Source File
 

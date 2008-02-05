@@ -1037,6 +1037,9 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 	case CM_GETACTIVECHILD:
 		SetWindowLong(hwndDlg, DWL_MSGRESULT, (LONG)dat->hwndActive);
 		return TRUE;
+	case CM_GETTOOLBARSTATUS:
+		SetWindowLong(hwndDlg, DWL_MSGRESULT, (LONG)(dat->flags2 & SMF2_SHOWTOOLBAR) != 0);
+		return TRUE;
 	case DM_SENDMESSAGE:
 		{
 			int i;

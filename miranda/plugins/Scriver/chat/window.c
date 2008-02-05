@@ -48,6 +48,12 @@ static WNDPROC OldNicklistProc;
 static WNDPROC OldFilterButtonProc;
 static WNDPROC OldLogProc;
 
+static const UINT buttonControls[] = {  IDC_CHAT_SMILEY, IDC_CHAT_BOLD, IDC_CHAT_ITALICS, IDC_CHAT_UNDERLINE, 
+											IDC_CHAT_COLOR, IDC_CHAT_BKGCOLOR, IDC_CHAT_FONTSIZE, IDC_CHAT_HISTORY, 
+											IDC_CHAT_FILTER, IDC_CHAT_CHANMGR, IDC_CHAT_SHOWNICKLIST};
+static char buttonAlignment[] = { 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1};
+static UINT buttonSpacing[] = { 8, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static UINT buttonWidth[] = { 24, 24, 24, 24, 24, 24, 48, 24, 24, 24, 24};
 
 typedef struct
 {
@@ -149,114 +155,85 @@ static void   InitButtons(HWND hwndDlg, SESSION_INFO* si)
 
 
 
+static void MessageDialogResize(HWND hwndDlg, SESSION_INFO *si, int w, int h) {
+	int toolbarHeight = 22;
+	int logBottom, toolbarTopY;
+	HDWP hdwp;
+	BOOL      bNick = si->iType!=GCW_SERVER && si->bNicklistEnabled;
+	BOOL      bFormat = (BOOL)DBGetContactSettingByte(NULL, "Chat", "ShowFormatButtons", 1);
+	BOOL      bControl = (BOOL)DBGetContactSettingByte(NULL, "Chat", "ShowTopButtons", 1);
+	BOOL      bToolbar = bFormat || bControl;
+	BOOL      bSend = (BOOL)DBGetContactSettingByte(NULL, "Chat", "ShowSend", 0);
+	MODULEINFO * pInfo = MM_FindModule(si->pszModule);
+	ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_SMILEY), (SmileyAddInstalled && bFormat)?SW_SHOW:SW_HIDE);
+	ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_BOLD), (pInfo->bBold && bFormat)?SW_SHOW:SW_HIDE);
+	ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_UNDERLINE), (pInfo->bUnderline && bFormat)?SW_SHOW:SW_HIDE);
+	ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_ITALICS), (pInfo->bItalics && bFormat)?SW_SHOW:SW_HIDE);
+	ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_COLOR), (pInfo->bColor && bFormat)?SW_SHOW:SW_HIDE);
+	ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_BKGCOLOR), (pInfo->bBkgColor && bFormat)?SW_SHOW:SW_HIDE);
+	ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_HISTORY), bControl?SW_SHOW:SW_HIDE);
+	ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_SHOWNICKLIST), bControl?SW_SHOW:SW_HIDE);
+	ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_FILTER), bControl?SW_SHOW:SW_HIDE);
+	ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_CHANMGR), bControl?SW_SHOW:SW_HIDE);
+	ShowWindow(GetDlgItem(hwndDlg, IDOK), bSend?SW_SHOW:SW_HIDE);
+	ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_SPLITTERX), bNick?SW_SHOW:SW_HIDE);
+	if (si->iType != GCW_SERVER)
+		ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_LIST), si->bNicklistEnabled?SW_SHOW:SW_HIDE);
+	else
+		ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_LIST), SW_HIDE);
 
+	if (si->iType == GCW_SERVER) {
+		EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_SHOWNICKLIST), FALSE);
+		EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_FILTER), FALSE);
+		EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_CHANMGR), FALSE);
+	} else {
+		EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_SHOWNICKLIST), TRUE);
+		EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_FILTER), TRUE);
+		if (si->iType == GCW_CHATROOM)
+			EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_CHANMGR), MM_FindModule(si->pszModule)->bChanMgr);
+	}
+	
+	hdwp = BeginDeferWindowPos(12);
+	toolbarTopY = bToolbar ? h - si->iSplitterY - toolbarHeight : h - si->iSplitterY;
+	if (si->windowData.hwndLog != NULL) {
+		logBottom = toolbarTopY / 2;
+	} else {
+		logBottom = toolbarTopY;
+	}
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_CHAT_LOG), 0, 0, 0, bNick?w - si->iSplitterX:w, logBottom, SWP_NOZORDER);
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_CHAT_LIST), 0, w - si->iSplitterX + 2, 0, si->iSplitterX - 1, toolbarTopY, SWP_NOZORDER);
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_CHAT_SPLITTERX), 0, w - si->iSplitterX, 1, 2, toolbarTopY - 1, SWP_NOZORDER);
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_CHAT_SPLITTERY), 0, 0, h - si->iSplitterY, w, 2, SWP_NOZORDER);
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), 0, 0, h - si->iSplitterY + 2, bSend?w-64:w, si->iSplitterY - 2, SWP_NOZORDER);
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDOK), 0, w - 64, h - si->iSplitterY + 2, 64, si->iSplitterY - 3, SWP_NOZORDER);
 
-static int RoomWndResize(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
-{
-   SESSION_INFO* si = (SESSION_INFO*)lParam;
-   BOOL      bControl = (BOOL)DBGetContactSettingByte(NULL, "Chat", "ShowTopButtons", 1);
-   BOOL      bFormat = (BOOL)DBGetContactSettingByte(NULL, "Chat", "ShowFormatButtons", 1);
-   BOOL      bToolbar = bFormat || bControl;
-   BOOL      bSend = (BOOL)DBGetContactSettingByte(NULL, "Chat", "ShowSend", 0);
-   BOOL      bNick = si->iType!=GCW_SERVER && si->bNicklistEnabled;
-
-   ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_SMILEY), SmileyAddInstalled&&bFormat?SW_SHOW:SW_HIDE);
-   ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_BOLD), bFormat?SW_SHOW:SW_HIDE);
-   ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_UNDERLINE), bFormat?SW_SHOW:SW_HIDE);
-   ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_ITALICS), bFormat?SW_SHOW:SW_HIDE);
-   ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_COLOR), bFormat?SW_SHOW:SW_HIDE);
-   ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_BKGCOLOR), bFormat?SW_SHOW:SW_HIDE);
-   ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_HISTORY), bControl?SW_SHOW:SW_HIDE);
-   ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_SHOWNICKLIST), bControl?SW_SHOW:SW_HIDE);
-   ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_FILTER), bControl?SW_SHOW:SW_HIDE);
-   ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_CHANMGR), bControl?SW_SHOW:SW_HIDE);
-   ShowWindow(GetDlgItem(hwndDlg, IDOK), bSend?SW_SHOW:SW_HIDE);
-   ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_SPLITTERX), bNick?SW_SHOW:SW_HIDE);
-   ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_CLOSE), SW_HIDE);
-   if (si->iType != GCW_SERVER)
-      ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_LIST), si->bNicklistEnabled?SW_SHOW:SW_HIDE);
-   else
-      ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_LIST), SW_HIDE);
-
-   if (si->iType == GCW_SERVER) {
-      EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_SHOWNICKLIST), FALSE);
-      EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_FILTER), FALSE);
-      EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_CHANMGR), FALSE);
-   }
-   else {
-      EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_SHOWNICKLIST), TRUE);
-      EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_FILTER), TRUE);
-      if (si->iType == GCW_CHATROOM)
-         EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_CHANMGR), MM_FindModule(si->pszModule)->bChanMgr);
-
-   }
-
-   switch(urc->wId) {
-   case IDOK:
-      urc->rcItem.left = bSend?315:urc->dlgNewSize.cx ;
-      urc->rcItem.top = urc->dlgNewSize.cy - si->iSplitterY+3;
-      urc->rcItem.bottom = urc->dlgNewSize.cy -1;
-      return RD_ANCHORX_RIGHT|RD_ANCHORY_CUSTOM;
-
-   case IDC_CHAT_LOG:
-      urc->rcItem.top = 0;
-      urc->rcItem.left = 0;
-      urc->rcItem.right = bNick?urc->dlgNewSize.cx - si->iSplitterX:urc->dlgNewSize.cx;
-      urc->rcItem.bottom = bToolbar?(urc->dlgNewSize.cy - si->iSplitterY - 20):(urc->dlgNewSize.cy - si->iSplitterY);
-      return RD_ANCHORX_CUSTOM|RD_ANCHORY_CUSTOM;
-
-   case IDC_CHAT_LIST:
-      urc->rcItem.top = 0;
-      urc->rcItem.right = urc->dlgNewSize.cx ;
-      urc->rcItem.left = urc->dlgNewSize.cx - si->iSplitterX + 2;
-      urc->rcItem.bottom = bToolbar?(urc->dlgNewSize.cy - si->iSplitterY - 20):(urc->dlgNewSize.cy - si->iSplitterY);
-      return RD_ANCHORX_CUSTOM|RD_ANCHORY_CUSTOM;
-
-   case IDC_CHAT_SPLITTERX:
-      urc->rcItem.right = urc->dlgNewSize.cx - si->iSplitterX+2;
-      urc->rcItem.left = urc->dlgNewSize.cx - si->iSplitterX;
-      urc->rcItem.bottom = bToolbar?(urc->dlgNewSize.cy - si->iSplitterY - 20):(urc->dlgNewSize.cy - si->iSplitterY);
-      urc->rcItem.top = 1;
-      return RD_ANCHORX_CUSTOM|RD_ANCHORY_CUSTOM;
-
-   case IDC_CHAT_SPLITTERY:
-      urc->rcItem.top = urc->dlgNewSize.cy - si->iSplitterY;
-      urc->rcItem.bottom = urc->dlgNewSize.cy - si->iSplitterY+2;
-      return RD_ANCHORX_WIDTH|RD_ANCHORY_CUSTOM;
-
-   case IDC_CHAT_MESSAGE:
-      urc->rcItem.right = bSend?urc->dlgNewSize.cx - 64:urc->dlgNewSize.cx ;
-      urc->rcItem.top = urc->dlgNewSize.cy - si->iSplitterY+2;
-      urc->rcItem.bottom = urc->dlgNewSize.cy -1 ;
-      return RD_ANCHORX_LEFT|RD_ANCHORY_CUSTOM;
-
-   case IDC_CHAT_SMILEY:
-   case IDC_CHAT_ITALICS:
-   case IDC_CHAT_BOLD:
-   case IDC_CHAT_UNDERLINE:
-   case IDC_CHAT_COLOR:
-   case IDC_CHAT_BKGCOLOR:
-      urc->rcItem.top = urc->dlgNewSize.cy - si->iSplitterY-17;
-      urc->rcItem.bottom = urc->dlgNewSize.cy - si->iSplitterY-1;
-      return RD_ANCHORX_LEFT|RD_ANCHORY_CUSTOM;
-
-   case IDC_CHAT_HISTORY:
-   case IDC_CHAT_CHANMGR:
-   case IDC_CHAT_SHOWNICKLIST:
-   case IDC_CHAT_FILTER:
-      urc->rcItem.top = urc->dlgNewSize.cy - si->iSplitterY-17;
-      urc->rcItem.bottom = urc->dlgNewSize.cy - si->iSplitterY-1;
-      return RD_ANCHORX_RIGHT|RD_ANCHORY_CUSTOM;
-
-   case IDC_CHAT_CLOSE:
-      urc->rcItem.right = urc->dlgNewSize.cx-3;
-      urc->rcItem.left = urc->dlgNewSize.cx - 19;
-      urc->rcItem.bottom = 19;
-      urc->rcItem.top = 3;
-      return RD_ANCHORX_CUSTOM|RD_ANCHORY_CUSTOM;
-   }
-   return RD_ANCHORX_LEFT|RD_ANCHORY_TOP;
+	hdwp = ResizeToolbar(hwndDlg, hdwp, w, toolbarTopY + 1, toolbarHeight - 1, SIZEOF(buttonControls), buttonControls, buttonWidth, buttonSpacing, buttonAlignment, 0xFFFF);
+	EndDeferWindowPos(hdwp);
+	if (si->windowData.hwndLog != NULL) {
+		RECT rect;
+		POINT pt;
+		IEVIEWWINDOW ieWindow;
+		GetWindowRect(GetDlgItem(hwndDlg,IDC_CHAT_LOG), &rect);
+		pt.x = 0;
+		pt.y = rect.top;
+		ScreenToClient(GetDlgItem(hwndDlg,IDC_CHAT_LOG),&pt);
+		ieWindow.cbSize = sizeof(IEVIEWWINDOW);
+		ieWindow.iType = IEW_SETPOS;
+		ieWindow.parent = hwndDlg;
+		ieWindow.hwnd = si->windowData.hwndLog;
+		ieWindow.x = 0;
+		ieWindow.y = logBottom + 1;
+		ieWindow.cx = bNick ? w - si->iSplitterX:w;
+		ieWindow.cy = logBottom;
+		CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
+	} else {
+		RedrawWindow(GetDlgItem(hwndDlg,IDC_CHAT_LOG), NULL, NULL, RDW_INVALIDATE);
+	}
+	RedrawWindow(GetDlgItem(hwndDlg,IDC_CHAT_LIST), NULL, NULL, RDW_INVALIDATE);
+	RedrawWindow(GetDlgItem(hwndDlg,IDC_CHAT_MESSAGE), NULL, NULL, RDW_INVALIDATE);
+	RedrawWindow(GetDlgItem(hwndDlg,IDOK), NULL, NULL, RDW_INVALIDATE);
 }
+
 
 static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -1070,6 +1047,35 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_LIMITTEXT, (WPARAM)sizeof(TCHAR)*0x7FFFFFFF, 0);
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETOLECALLBACK, 0, (LPARAM) & reOleCallback);
 
+
+			if (FALSE) {
+				IEVIEWWINDOW ieWindow;
+				IEVIEWEVENT iee;
+
+				ZeroMemory(&ieWindow, sizeof(ieWindow));
+				ieWindow.cbSize = sizeof(ieWindow);
+				ieWindow.iType = IEW_CREATE;
+				ieWindow.dwFlags = 0;
+				ieWindow.dwMode = IEWM_CHAT;
+				ieWindow.parent = hwndDlg;
+				ieWindow.x = 0;
+				ieWindow.y = 0;
+				ieWindow.cx = 200;
+				ieWindow.cy = 300;
+				CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
+				si->windowData.hwndLog = ieWindow.hwnd;
+				ZeroMemory(&iee, sizeof(iee));
+				iee.cbSize = sizeof(iee);
+				iee.iType = IEE_CLEAR_LOG;
+				iee.hwnd = si->windowData.hwndLog;
+				iee.hContact = si->windowData.hContact;
+				iee.codepage = si->windowData.codePage;
+				iee.pszProto = si->pszModule;
+				CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&iee);
+				if (si->windowData.hwndLog == NULL) {
+				}
+			}
+
 			EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_SMILEY), TRUE);
 
 			SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_LOG), EM_HIDESELECTION, TRUE, 0);
@@ -1198,29 +1204,30 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		si->pszHeader = Log_CreateRtfHeader(MM_FindModule(si->pszModule), si);
         SendMessage(hwndDlg, GC_REDRAWLOG2, 0, 0);
 		break;
-   case WM_SIZE:
-      {
-         UTILRESIZEDIALOG urd;
+	case WM_SIZE:
+	{
 
-         if (wParam == SIZE_MAXIMIZED)
-            PostMessage(hwndDlg, GC_SCROLLTOBOTTOM, 0, 0);
+		if (wParam == SIZE_MAXIMIZED)
+			PostMessage(hwndDlg, GC_SCROLLTOBOTTOM, 0, 0);
 
-         if (IsIconic(hwndDlg)) break;
-         ZeroMemory(&urd,sizeof(urd));
-         urd.cbSize=sizeof(urd);
-         urd.hInstance=g_hInst;
-         urd.hwndDlg=hwndDlg;
-         urd.lParam=(LPARAM)si;
-         urd.lpTemplate=MAKEINTRESOURCEA(IDD_CHANNEL);
-         urd.pfnResizer=RoomWndResize;
-         CallService(MS_UTILS_RESIZEDIALOG,0,(LPARAM)&urd);
+		if (IsIconic(hwndDlg)) break;
 
-         RedrawWindow(GetDlgItem(hwndDlg,IDC_CHAT_LOG), NULL, NULL, RDW_INVALIDATE);
-         RedrawWindow(GetDlgItem(hwndDlg,IDC_CHAT_LIST), NULL, NULL, RDW_INVALIDATE);
-         RedrawWindow(GetDlgItem(hwndDlg,IDC_CHAT_MESSAGE), NULL, NULL, RDW_INVALIDATE);
-         RedrawWindow(GetDlgItem(hwndDlg,IDOK), NULL, NULL, RDW_INVALIDATE);
-      }
-      break;
+		if (wParam==SIZE_RESTORED || wParam==SIZE_MAXIMIZED) {
+			int dlgWidth, dlgHeight;
+			RECT rc;
+			dlgWidth = LOWORD(lParam);
+			dlgHeight = HIWORD(lParam);
+			/*if (dlgWidth == 0 && dlgHeight ==0) */{
+				GetClientRect(hwndDlg, &rc);
+				dlgWidth = rc.right - rc.left;
+				dlgHeight = rc.bottom - rc.top;
+			}
+
+			MessageDialogResize(hwndDlg, si, dlgWidth, dlgHeight);
+
+		}
+	}
+    break;
 
    case GC_REDRAWWINDOW:
       InvalidateRect(hwndDlg, NULL, TRUE);
@@ -2045,6 +2052,13 @@ LABEL_SHOWWINDOW:
 		SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_BKGCOLOR),GWL_WNDPROC,(LONG)OldFilterButtonProc);
 
 		SendMessage(GetParent(hwndDlg), CM_REMOVECHILD, 0, (LPARAM) hwndDlg);
+		if (si->windowData.hwndLog != NULL) {
+			IEVIEWWINDOW ieWindow;
+			ieWindow.cbSize = sizeof(IEVIEWWINDOW);
+			ieWindow.iType = IEW_DESTROY;
+			ieWindow.hwnd = si->windowData.hwndLog;
+			CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
+		}
 
 		NotifyLocalWinEvent(si->windowData.hContact, hwndDlg, MSG_WINDOW_EVT_CLOSE);
 		break;

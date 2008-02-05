@@ -111,6 +111,7 @@ typedef struct CommonWindowDataStruct {
 	TCmdList *cmdListCurrent;
 	int		  codePage;
 	DWORD	  flags;
+	HWND 	  hwndLog;
 }CommonWindowData;
 
 struct MessageWindowData
@@ -119,7 +120,6 @@ struct MessageWindowData
 	int	tabId;
 	ParentWindowData *parent;
 	HWND hwndParent;
-	HWND hwndLog;
 	HANDLE hDbEventFirst, hDbEventLast, hDbUnreadEventFirst;
 	int splitterPos;
 	SIZE minEditBoxSize;

@@ -200,6 +200,7 @@
 #define IDC_CHAT_SHOWNICKLIST                5016
 #define IDC_CHAT_COLOR                       5017
 #define IDC_CHAT_BKGCOLOR                    5019
+#define IDC_CHAT_FONTSIZE			5020
 #define IDC_CHAT_CHECKBOXES                  5021
 #define IDC_CHAT_HISTORY                     5022
 #define IDC_CHAT_CLOSE                       5023

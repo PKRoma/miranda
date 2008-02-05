@@ -1067,13 +1067,13 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend)
 	CHARRANGE oldSel, sel;
 
 // IEVIew MOD Begin
-	if (dat->hwndLog != NULL) {
+	if (dat->windowData.hwndLog != NULL) {
 		IEVIEWEVENT event;
 		IEVIEWWINDOW ieWindow;
 		ZeroMemory(&event, sizeof(event));
 		event.cbSize = sizeof(event);
 		event.dwFlags = ((dat->flags & SMF_RTL) ? IEEF_RTL : 0) | ((dat->flags & SMF_DISABLE_UNICODE) ? IEEF_NO_UNICODE : 0);
-		event.hwnd = dat->hwndLog;
+		event.hwnd = dat->windowData.hwndLog;
 		event.hContact = dat->windowData.hContact;
 		event.codepage = dat->windowData.codePage;
 		event.pszProto = dat->szProto;
@@ -1090,7 +1090,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend)
 		ZeroMemory(&ieWindow, sizeof(ieWindow));
 		ieWindow.cbSize = sizeof(ieWindow);
 		ieWindow.iType = IEW_SCROLLBOTTOM;
-		ieWindow.hwnd = dat->hwndLog;
+		ieWindow.hwnd = dat->windowData.hwndLog;
 		CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
 		return;
 	}
