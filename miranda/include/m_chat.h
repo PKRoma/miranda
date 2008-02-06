@@ -136,6 +136,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define GC_TYPNOTIF        0x0040		//NOT SUPPORTED YET! Enable typing notifications.
 #define GC_CHANMGR         0x0080		//enable the 'channel settings' button
 #define GC_SINGLEFORMAT 0x0100		//the protocol supports only 1 formatting per message
+#define GC_FONTSIZE	0x0200		//enable font size selection
 
 #define GC_UNICODE        0x01000		//NOT SUPPORTED YET! Enable unicode (if chat supports it),
 													//Pass UNICODE instead of ASCII. Note that
