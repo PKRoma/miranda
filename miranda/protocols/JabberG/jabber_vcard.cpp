@@ -36,20 +36,6 @@ Last change by : $Author$
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
-
-int __cdecl CJabberProto::JabberMenuHandleVcard( WPARAM wParam, LPARAM lParam )
-{
-	if ( IsWindow( hwndJabberVcard ))
-		SetForegroundWindow( hwndJabberVcard );
-	else
-		hwndJabberVcard = CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_VCARD ), NULL, JabberVcardDlgProc, ( LPARAM )this );
-
-	return 0;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-
 int CJabberProto::JabberSendGetVcard( const TCHAR* jid )
 {
 	int iqId = JabberSerialNext();
@@ -188,54 +174,67 @@ static BOOL CALLBACK WorkDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-static char szPhotoFileName[MAX_PATH];
-static char szPhotoType[33];
-static BOOL bPhotoChanged;
+struct PhotoDlgProcData
+{
+	CJabberProto* ppro;
+	char szPhotoFileName[MAX_PATH];
+	BOOL bPhotoChanged;
+	HBITMAP hBitmap;
+};
 
 static BOOL CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
-	static HBITMAP hBitmap;
-	char szTempPath[MAX_PATH], szTempFileName[MAX_PATH];
-	CJabberProto* ppro = ( CJabberProto* )GetWindowLong( hwndDlg, GWL_USERDATA );
+	char szAvatarFileName[ MAX_PATH ], szTempPath[MAX_PATH], szTempFileName[MAX_PATH];
+	PhotoDlgProcData* dat = ( PhotoDlgProcData* )GetWindowLong( hwndDlg, GWL_USERDATA );
 
 	switch ( msg ) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault( hwndDlg );
-		hBitmap = NULL;
 		SendMessage( GetDlgItem( hwndDlg, IDC_LOAD ), BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadImage( hInst, MAKEINTRESOURCE( IDI_OPEN ), IMAGE_ICON, GetSystemMetrics( SM_CXSMICON ), GetSystemMetrics( SM_CYSMICON ), 0 ));
 		SendMessage( GetDlgItem( hwndDlg, IDC_DELETE ), BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadImage( hInst, MAKEINTRESOURCE( IDI_DELETE ), IMAGE_ICON, GetSystemMetrics( SM_CXSMICON ), GetSystemMetrics( SM_CYSMICON ), 0 ));
 		ShowWindow( GetDlgItem( hwndDlg, IDC_SAVE ), SW_HIDE );
-		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
+		{
+			dat = new PhotoDlgProcData;
+			dat->bPhotoChanged = FALSE;
+			dat->ppro = ( CJabberProto* )lParam;
+			dat->hBitmap = NULL;
+			SetWindowLong( hwndDlg, GWL_USERDATA, ( LPARAM )dat );
+		}
 		SendMessage( hwndDlg, WM_JABBER_REFRESH, 0, 0 );
 		return TRUE;
 
 	case WM_JABBER_REFRESH:
-		if ( hBitmap ) {
-			DeleteObject( hBitmap );
-			hBitmap = NULL;
-			DeleteFileA( szPhotoFileName );
-			szPhotoFileName[0] = '\0';
+		if ( dat->hBitmap ) {
+			DeleteObject( dat->hBitmap );
+			dat->hBitmap = NULL;
+			DeleteFileA( dat->szPhotoFileName );
+			dat->szPhotoFileName[0] = '\0';
 		}
 		EnableWindow( GetDlgItem( hwndDlg, IDC_DELETE ), FALSE );
-		if ( ppro->jabberVcardPhotoFileName ) {
+		dat->ppro->JabberGetAvatarFileName( NULL, szAvatarFileName, sizeof( szAvatarFileName ));
+		if ( _access( szAvatarFileName, 0 ) == 0 ) {
 			if ( GetTempPathA( sizeof( szTempPath ), szTempPath ) <= 0 )
 				strcpy( szTempPath, ".\\" );
 			if ( GetTempFileNameA( szTempPath, "jab", 0, szTempFileName ) > 0 ) {
-				ppro->JabberLog( "Temp file = %s", szTempFileName );
-				if ( CopyFileA( ppro->jabberVcardPhotoFileName, szTempFileName, FALSE ) == TRUE ) {
-					if (( hBitmap=( HBITMAP ) JCallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )szTempFileName )) != NULL ) {
-						JabberBitmapPremultiplyChannels(hBitmap);
-						strcpy( szPhotoFileName, szTempFileName );
+				dat->ppro->JabberLog( "Temp file = %s", szTempFileName );
+				if ( CopyFileA( szAvatarFileName, szTempFileName, FALSE ) == TRUE ) {
+					if (( dat->hBitmap=( HBITMAP ) JCallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )szTempFileName )) != NULL ) {
+						JabberBitmapPremultiplyChannels( dat->hBitmap );
+						strcpy( dat->szPhotoFileName, szTempFileName );
 						EnableWindow( GetDlgItem( hwndDlg, IDC_DELETE ), TRUE );
 					}
 					else DeleteFileA( szTempFileName );
 				}
 				else DeleteFileA( szTempFileName );
-			}
-		}
-		bPhotoChanged = FALSE;
+		}	}
+
+		dat->bPhotoChanged = FALSE;
 		InvalidateRect( hwndDlg, NULL, TRUE );
 		UpdateWindow( hwndDlg );
+		break;
+
+	case WM_JABBER_CHANGED:
+		dat->ppro->SetServerVcard( dat->bPhotoChanged, dat->szPhotoFileName );
 		break;
 
 	case WM_COMMAND:
@@ -260,7 +259,7 @@ static BOOL CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 					struct _stat st;
 					HBITMAP hNewBitmap;
 
-					ppro->JabberLog( "File selected is %s", szFileName );
+					dat->ppro->JabberLog( "File selected is %s", szFileName );
 					if ( _stat( szFileName, &st )<0 || st.st_size>40*1024 ) {
 						MessageBox( hwndDlg, TranslateT( "Only JPG, GIF, and BMP image files smaller than 40 KB are supported." ), TranslateT( "Jabber vCard" ), MB_OK|MB_SETFOREGROUND );
 						break;
@@ -268,28 +267,17 @@ static BOOL CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 					if ( GetTempPathA( sizeof( szTempPath ), szTempPath ) <= 0 )
 						strcpy( szTempPath, ".\\" );
 					if ( GetTempFileNameA( szTempPath, "jab", 0, szTempFileName ) > 0 ) {
-						ppro->JabberLog( "Temp file = %s", szTempFileName );
+						dat->ppro->JabberLog( "Temp file = %s", szTempFileName );
 						if ( CopyFileA( szFileName, szTempFileName, FALSE ) == TRUE ) {
 							if (( hNewBitmap=( HBITMAP ) JCallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )szTempFileName )) != NULL ) {
-								if ( hBitmap ) {
-									DeleteObject( hBitmap );
-									DeleteFileA( szPhotoFileName );
+								if ( dat->hBitmap ) {
+									DeleteObject( dat->hBitmap );
+									DeleteFileA( dat->szPhotoFileName );
 								}
 
-								char* p = strrchr( szFileName, '.' );
-								if ( p != NULL ) {
-									if ( !stricmp( p, ".bmp" ))
-										strcpy( szPhotoType, "image/bmp" );
-									else if ( !stricmp( p, ".gif" ))
-										strcpy( szPhotoType, "image/gif" );
-									else
-										strcpy( szPhotoType, "image/jpeg" );
-								}
-								else
-									strcpy( szPhotoType, "image/jpeg" );
-								hBitmap = hNewBitmap;
-								strcpy( szPhotoFileName, szTempFileName );
-								bPhotoChanged = TRUE;
+								dat->hBitmap = hNewBitmap;
+								strcpy( dat->szPhotoFileName, szTempFileName );
+								dat->bPhotoChanged = TRUE;
 								EnableWindow( GetDlgItem( hwndDlg, IDC_DELETE ), TRUE );
 								InvalidateRect( hwndDlg, NULL, TRUE );
 								UpdateWindow( hwndDlg );
@@ -303,12 +291,12 @@ static BOOL CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			}
 			break;
 		case IDC_DELETE:
-			if ( hBitmap ) {
-				DeleteObject( hBitmap );
-				hBitmap = NULL;
-				DeleteFileA( szPhotoFileName );
-				szPhotoFileName[0] = '\0';
-				bPhotoChanged = TRUE;
+			if ( dat->hBitmap ) {
+				DeleteObject( dat->hBitmap );
+				dat->hBitmap = NULL;
+				DeleteFileA( dat->szPhotoFileName );
+				dat->szPhotoFileName[0] = '\0';
+				dat->bPhotoChanged = TRUE;
 				EnableWindow( GetDlgItem( hwndDlg, IDC_DELETE ), FALSE );
 				InvalidateRect( hwndDlg, NULL, TRUE );
 				UpdateWindow( hwndDlg );
@@ -318,7 +306,7 @@ static BOOL CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 		}
 		break;
 	case WM_PAINT:
-		if ( hBitmap ) {
+		if ( dat->hBitmap ) {
 			BITMAP bm;
 			HDC hdcMem;
 			HWND hwndCanvas;
@@ -329,9 +317,9 @@ static BOOL CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			hwndCanvas = GetDlgItem( hwndDlg, IDC_CANVAS );
 			hdcCanvas = GetDC( hwndCanvas );
 			hdcMem = CreateCompatibleDC( hdcCanvas );
-			SelectObject( hdcMem, hBitmap );
+			SelectObject( hdcMem, dat->hBitmap );
 			SetMapMode( hdcMem, GetMapMode( hdcCanvas ));
-			GetObject( hBitmap, sizeof( BITMAP ), ( LPVOID ) &bm );
+			GetObject( dat->hBitmap, sizeof( BITMAP ), ( LPVOID ) &bm );
 			ptSize.x = bm.bmWidth;
 			ptSize.y = bm.bmHeight;
 			DPtoLP( hdcCanvas, &ptSize, 1 );
@@ -360,25 +348,21 @@ static BOOL CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 				}
 			}
 
+			RECT rc;
+			GetClientRect(hwndCanvas, &rc);
 			if (JabberIsThemeActive && JabberDrawThemeParentBackground && JabberIsThemeActive())
-			{
-				RECT rc; GetClientRect(hwndCanvas, &rc);
 				JabberDrawThemeParentBackground(hwndCanvas, hdcCanvas, &rc);
-			} else
-			{
-				RECT rc; GetClientRect(hwndCanvas, &rc);
+			else
 				FillRect(hdcCanvas, &rc, (HBRUSH)GetSysColorBrush(COLOR_BTNFACE));
-			}
 
-			if (JabberAlphaBlend && (bm.bmBitsPixel == 32))
-			{
+			if (JabberAlphaBlend && (bm.bmBitsPixel == 32)) {
 				BLENDFUNCTION bf = {0};
 				bf.AlphaFormat = AC_SRC_ALPHA;
 				bf.BlendOp = AC_SRC_OVER;
 				bf.SourceConstantAlpha = 255;
 				JabberAlphaBlend( hdcCanvas, pt.x, pt.y, ptFitSize.x, ptFitSize.y, hdcMem, ptOrg.x, ptOrg.y, ptSize.x, ptSize.y, bf );
-			} else
-			{
+			}
+			else {
 				SetStretchBltMode( hdcCanvas, COLORONCOLOR );
 				StretchBlt( hdcCanvas, pt.x, pt.y, ptFitSize.x, ptFitSize.y, hdcMem, ptOrg.x, ptOrg.y, ptSize.x, ptSize.y, SRCCOPY );
 			}
@@ -386,13 +370,14 @@ static BOOL CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			DeleteDC( hdcMem );
 		}
 		break;
+
 	case WM_DESTROY:
-		if ( hBitmap ) {
-			ppro->JabberLog( "Delete bitmap" );
-			DeleteObject( hBitmap );
-			DeleteFileA( szPhotoFileName );
-			szPhotoFileName[0] = '\0';
+		if ( dat->hBitmap ) {
+			dat->ppro->JabberLog( "Delete bitmap" );
+			DeleteObject( dat->hBitmap );
+			DeleteFileA( dat->szPhotoFileName );
 		}
+		delete dat;
 		break;
 	}
 	return FALSE;
@@ -872,7 +857,7 @@ void CJabberProto::AppendVcardFromDB( XmlNode* n, char* tag, char* key )
 		JFreeVariant( &dbv );
 }	}
 
-void CJabberProto::SetServerVcard()
+void CJabberProto::SetServerVcard( BOOL bPhotoChanged, char* szPhotoFileName )
 {
 	DBVARIANT dbv;
 	int  iqId;
@@ -970,22 +955,20 @@ void CJabberProto::SetServerVcard()
 		if ( nFlag & JABBER_VCTEL_PCS )   n->addChild( "PCS" );
 	}
 
+	char szAvatarName[ MAX_PATH ];
+	JabberGetAvatarFileName( NULL, szAvatarName, sizeof( szAvatarName ));
 	if ( bPhotoChanged )
-		szFileName = ( szPhotoFileName[0] ) ? szPhotoFileName : NULL;
+		szFileName = ( szPhotoFileName != NULL && szPhotoFileName[0] ) ? szPhotoFileName : NULL;
 	else
-		szFileName = jabberVcardPhotoFileName;
+		szFileName = szAvatarName;
 
 	// Set photo element, also update the global jabberVcardPhotoFileName to reflect the update
-	JabberLog( "Before update, jabberVcardPhotoFileName = %s", jabberVcardPhotoFileName );
+	JabberLog( "Before update, file name = %s", szFileName );
 	if ( szFileName == NULL ) {
 		v->addChild( "PHOTO" );
-		if ( jabberVcardPhotoFileName ) {
-			DeleteFileA( jabberVcardPhotoFileName );
-			mir_free( jabberVcardPhotoFileName );
-			jabberVcardPhotoFileName = NULL;
-	}	}
+		DeleteFileA( szAvatarName );
+	}
 	else {
-		char szTempPath[MAX_PATH], szTempFileName[MAX_PATH];
 		HANDLE hFile;
 		struct _stat st;
 		char* buffer, *str;
@@ -1028,21 +1011,9 @@ void CJabberProto::SetServerVcard()
 							JSetString( NULL, "AvatarSaved", buf );
 
 							if ( bPhotoChanged ) {
-								if ( jabberVcardPhotoFileName ) {
-									DeleteFileA( jabberVcardPhotoFileName );
-									mir_free( jabberVcardPhotoFileName );
-									jabberVcardPhotoFileName = NULL;
-								}
-
-								if ( GetTempPathA( sizeof( szTempPath ), szTempPath ) <= 0 )
-									strcpy( szTempPath, ".\\" );
-								if ( GetTempFileNameA( szTempPath, "jab", 0, szTempFileName ) > 0 ) {
-									JabberLog( "New global file is %s", szTempFileName );
-									if ( CopyFileA( szFileName, szTempFileName, FALSE ))
-										jabberVcardPhotoFileName = mir_strdup( szTempFileName );
-									else 
-										DeleteFileA( szTempFileName );
-					}	}	}	}
+								DeleteFileA( szAvatarName );
+								CopyFileA( szFileName, szAvatarName, FALSE );
+					}	}	}
 					mir_free( buffer );
 				}
 				CloseHandle( hFile );
@@ -1051,14 +1022,8 @@ void CJabberProto::SetServerVcard()
 	jabberThreadInfo->send( iq );
 }
 
-void CJabberProto::JabberUpdateVCardPhoto( char * szFileName )
+static void ThemeDialogBackground( HWND hwnd )
 {
-	bPhotoChanged=1;
-	strncpy( szPhotoFileName,szFileName,MAX_PATH );
-	SetServerVcard();
-}
-
-static void ThemeDialogBackground( HWND hwnd ) {
 	if ( IsWinVerXPPlus()) {
 		static HMODULE hThemeAPI = NULL;
 		if ( !hThemeAPI ) hThemeAPI = GetModuleHandleA( "uxtheme" );
@@ -1152,9 +1117,6 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 		SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG ) dat );
 
-		bPhotoChanged = FALSE;
-		szPhotoFileName[0] = '\0';
-
 		if ( dat->ppro->jabberOnline )
 			SendMessage( hwndDlg, WM_COMMAND, IDC_UPDATE, 0 );
 		return TRUE;
@@ -1221,7 +1183,7 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 			dat->animating = TRUE;
 			SetTimer( hwndDlg, 1, 200, NULL );
 			dat->ppro->SaveVcardToDB( dat );
-			dat->ppro->SetServerVcard();
+			SendMessage( dat->page[4].hwnd, WM_JABBER_CHANGED, 0, 0 );
 			break;
 		case IDCLOSE:
 			DestroyWindow( hwndDlg );
@@ -1268,4 +1230,16 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		break;
 	}
 	return FALSE;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+int __cdecl CJabberProto::JabberMenuHandleVcard( WPARAM wParam, LPARAM lParam )
+{
+	if ( IsWindow( hwndJabberVcard ))
+		SetForegroundWindow( hwndJabberVcard );
+	else
+		hwndJabberVcard = CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_VCARD ), NULL, JabberVcardDlgProc, ( LPARAM )this );
+
+	return 0;
 }

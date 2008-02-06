@@ -191,15 +191,11 @@ int __cdecl CJabberProto::JabberSetAvatar( WPARAM wParam, LPARAM lParam )
 {
 	char* szFileName = ( char* )lParam;
 
-	if ( jabberConnected )
-	{	
-		JabberUpdateVCardPhoto( szFileName );
+	if ( jabberConnected ) {	
+		SetServerVcard( TRUE, szFileName );
 		JabberSendPresence( m_iDesiredStatus, false );
 	}
-	else 
-	{
-		// FIXME OLD CODE: If avatar was changed during Jabber was offline. It should be store and send new vcard on online.
-
+	else {
 		int fileIn = open( szFileName, O_RDWR | O_BINARY, S_IREAD | S_IWRITE );
 		if ( fileIn == -1 )
 			return 1;

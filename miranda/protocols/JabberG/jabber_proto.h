@@ -264,8 +264,6 @@ struct CJabberProto : public PROTO_INTERFACE
 	int iqCount;
 	int iqAlloced;
 	
-	char* jabberVcardPhotoFileName;
-
 	TCHAR tszPhotoFileName[MAX_PATH];
 	BOOL bPhotoChanged;
 
@@ -742,10 +740,9 @@ struct CJabberProto : public PROTO_INTERFACE
 	int    __cdecl JabberMenuHandleVcard( WPARAM wParam, LPARAM lParam );
 
 	void   JabberGroupchatJoinByHContact( HANDLE hContact );
-	void   JabberUpdateVCardPhoto( char * szFileName );
 	int    JabberSendGetVcard( const TCHAR* jid );
 	void   AppendVcardFromDB( XmlNode* n, char* tag, char* key );
-	void   SetServerVcard();
+	void   SetServerVcard( BOOL bPhotoChanged, char* szPhotoFileName );
 	void   SaveVcardToDB( struct VcardTab *dat );
 
 	//---- jabber_ws.c -------------------------------------------------

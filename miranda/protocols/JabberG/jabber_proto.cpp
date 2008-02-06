@@ -182,11 +182,6 @@ CJabberProto::~CJabberProto()
 	mir_free( m_szProtoName );
 	mir_free( m_tszUserName );
 
-	if ( jabberVcardPhotoFileName ) {
-		DeleteFileA( jabberVcardPhotoFileName );
-		mir_free( jabberVcardPhotoFileName );
-	}
-
 	for ( int i=0; i < jabberTransports.getCount(); i++ )
 		free( jabberTransports[i] );
 	jabberTransports.destroy();
