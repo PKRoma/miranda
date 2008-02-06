@@ -48,12 +48,12 @@ static WNDPROC OldNicklistProc;
 static WNDPROC OldFilterButtonProc;
 static WNDPROC OldLogProc;
 
-static const UINT buttonControls[] = {  IDC_CHAT_SMILEY, IDC_CHAT_BOLD, IDC_CHAT_ITALICS, IDC_CHAT_UNDERLINE, 
-											IDC_CHAT_COLOR, IDC_CHAT_BKGCOLOR, IDC_CHAT_FONTSIZE, IDC_CHAT_HISTORY, 
-											IDC_CHAT_FILTER, IDC_CHAT_CHANMGR, IDC_CHAT_SHOWNICKLIST};
+static const UINT buttonControls[] = {  IDC_CHAT_BOLD, IDC_CHAT_ITALICS, IDC_CHAT_UNDERLINE, 
+										IDC_CHAT_COLOR, IDC_CHAT_BKGCOLOR, IDC_CHAT_FONTSIZE, IDC_CHAT_SMILEY, 
+										IDC_CHAT_HISTORY, IDC_CHAT_FILTER, IDC_CHAT_CHANMGR, IDC_CHAT_SHOWNICKLIST};
 static char buttonAlignment[] = { 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1};
-static UINT buttonSpacing[] = { 8, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-static UINT buttonWidth[] = { 24, 24, 24, 24, 24, 24, 48, 24, 24, 24, 24};
+static UINT buttonSpacing[] = { 4, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0};
+static UINT buttonWidth[] = { 24, 24, 24, 24, 24, 48, 24, 24, 24, 24, 24};
 
 typedef struct
 {
@@ -92,6 +92,23 @@ static LRESULT CALLBACK SplitterSubclassProc(HWND hwnd,UINT msg,WPARAM wParam,LP
       return 0;
    }
    return CallWindowProc(OldSplitterProc,hwnd,msg,wParam,lParam);
+}
+
+static int GetButtonVisibility(MODULEINFO * pInfo) 
+{
+	if (pInfo != NULL) {
+		int vis = 0;
+		vis |= pInfo->bBold ? 0x0001 : 0;
+		vis |= pInfo->bItalics ? 0x0002 : 0;
+		vis |= pInfo->bUnderline ? 0x0004 : 0;
+		vis |= pInfo->bColor ? 0x0008 : 0;
+		vis |= pInfo->bBkgColor ? 0x0010 : 0;
+		vis |= pInfo->bFontSize ? 0x0020 : 0;
+
+		vis |= 0xFFC0;
+		return vis;
+	}
+	return 0xFFFFFF;
 }
 
 static void   InitButtons(HWND hwndDlg, SESSION_INFO* si)
@@ -142,6 +159,7 @@ static void   InitButtons(HWND hwndDlg, SESSION_INFO* si)
 
    if (pInfo)
    {
+
       EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_BOLD), pInfo->bBold);
       EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_ITALICS), pInfo->bItalics);
       EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_UNDERLINE), pInfo->bUnderline);
@@ -151,8 +169,6 @@ static void   InitButtons(HWND hwndDlg, SESSION_INFO* si)
          EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_CHANMGR), pInfo->bChanMgr);
    }
 }
-
-
 
 
 static void MessageDialogResize(HWND hwndDlg, SESSION_INFO *si, int w, int h) {
@@ -166,11 +182,16 @@ static void MessageDialogResize(HWND hwndDlg, SESSION_INFO *si, int w, int h) {
 	BOOL      bSend = (BOOL)DBGetContactSettingByte(NULL, "Chat", "ShowSend", 0);
 	MODULEINFO * pInfo = MM_FindModule(si->pszModule);
 	ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_SMILEY), (SmileyAddInstalled && bFormat)?SW_SHOW:SW_HIDE);
+
+	ShowToolbarControls(hwndDlg, SIZEOF(buttonControls), buttonControls, GetButtonVisibility(pInfo), SW_SHOW);
+/*
 	ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_BOLD), (pInfo->bBold && bFormat)?SW_SHOW:SW_HIDE);
 	ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_UNDERLINE), (pInfo->bUnderline && bFormat)?SW_SHOW:SW_HIDE);
 	ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_ITALICS), (pInfo->bItalics && bFormat)?SW_SHOW:SW_HIDE);
 	ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_COLOR), (pInfo->bColor && bFormat)?SW_SHOW:SW_HIDE);
 	ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_BKGCOLOR), (pInfo->bBkgColor && bFormat)?SW_SHOW:SW_HIDE);
+	ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_FONTSIZE), (pInfo->bFontSize && bFormat)?SW_SHOW:SW_HIDE);
+*/
 	ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_HISTORY), bControl?SW_SHOW:SW_HIDE);
 	ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_SHOWNICKLIST), bControl?SW_SHOW:SW_HIDE);
 	ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_FILTER), bControl?SW_SHOW:SW_HIDE);
@@ -207,7 +228,7 @@ static void MessageDialogResize(HWND hwndDlg, SESSION_INFO *si, int w, int h) {
 	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), 0, 0, h - si->iSplitterY + 2, bSend?w-64:w, si->iSplitterY - 2, SWP_NOZORDER);
 	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDOK), 0, w - 64, h - si->iSplitterY + 2, 64, si->iSplitterY - 3, SWP_NOZORDER);
 
-	hdwp = ResizeToolbar(hwndDlg, hdwp, w, toolbarTopY + 1, toolbarHeight - 1, SIZEOF(buttonControls), buttonControls, buttonWidth, buttonSpacing, buttonAlignment, 0xFFFF);
+	hdwp = ResizeToolbar(hwndDlg, hdwp, w, toolbarTopY + 1, toolbarHeight - 1, SIZEOF(buttonControls), buttonControls, buttonWidth, buttonSpacing, buttonAlignment, GetButtonVisibility(pInfo));
 	EndDeferWindowPos(hdwp);
 	if (si->windowData.hwndLog != NULL) {
 		RECT rect;

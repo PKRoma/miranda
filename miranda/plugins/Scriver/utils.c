@@ -382,6 +382,13 @@ HDWP ResizeToolbar(HWND hwnd, HDWP hdwp, int width, int vPos, int height, int cC
 	return hdwp;
 }
 
+void ShowToolbarControls(HWND hwndDlg, int cControls, const UINT * controls, int controlVisibility, int state)
+{
+	int i;
+	for (i = 0; i < cControls; i++)
+		ShowWindow(GetDlgItem(hwndDlg, controls[i]), (controlVisibility & (1 << i)) ? state : SW_HIDE);
+}
+
 
 void AppendToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, const char *fmt, ...)
 {

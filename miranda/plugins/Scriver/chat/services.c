@@ -258,6 +258,7 @@ int Service_Register(WPARAM wParam, LPARAM lParam)
 		mi->bItalics = gcr->dwFlags&GC_ITALICS ;
 		mi->bColor = gcr->dwFlags&GC_COLOR ;
 		mi->bBkgColor = gcr->dwFlags&GC_BKGCOLOR ;
+		mi->bFontSize = gcr->dwFlags&GC_FONTSIZE;
 		mi->bAckMsg = gcr->dwFlags&GC_ACKMSG ;
 		mi->bChanMgr = gcr->dwFlags&GC_CHANMGR ;
 		mi->bSingleFormat = gcr->dwFlags&GC_SINGLEFORMAT;

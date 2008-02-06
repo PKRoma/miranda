@@ -52,6 +52,7 @@ extern int SetRichTextRTF(HWND hwnd, const char *text);
 extern int SetRichTextEncoded(HWND hwnd, const char *text, int codepage);
 extern void SearchWord(TCHAR * word, int engine);
 extern HDWP ResizeToolbar(HWND hwnd, HDWP hdwp, int width, int vPos, int height, int cControls, const UINT * controls, UINT *controlWidth, UINT *controlSpacing, char *controlAlignment, int controlVisibility);
+extern void ShowToolbarControls(HWND hwndDlg, int cControls, const UINT * controls, int controlVisibility, int state);
 extern void AppendToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, const char *fmt, ...);
 
 #endif

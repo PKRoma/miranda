@@ -124,6 +124,7 @@ typedef struct  MODULE_INFO_TYPE
 	BOOL		bItalics;
 	BOOL		bColor;
 	BOOL		bBkgColor;
+	BOOL		bFontSize;
 	BOOL		bChanMgr;
 	BOOL		bAckMsg;
 	BOOL		bSingleFormat;

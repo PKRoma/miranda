@@ -308,14 +308,6 @@ static int GetToolbarWidth(int cControls, const UINT * controls)
 	return w;
 }
 
-
-static void ShowToolbarControls(HWND hwndDlg, int cControls, const UINT * controls, int controlVisibility, int state)
-{
-	int i;
-	for (i = 0; i < cControls; i++)
-		ShowWindow(GetDlgItem(hwndDlg, controls[i]), (controlVisibility & (1 << i)) ? state : SW_HIDE);
-}
-
 static void SetDialogToType(HWND hwndDlg)
 {
 	BOOL showToolbar = SendMessage(GetParent(hwndDlg), CM_GETTOOLBARSTATUS, 0, 0);
