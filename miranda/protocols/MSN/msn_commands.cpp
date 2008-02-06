@@ -1586,7 +1586,7 @@ LBL_InvalidCommand:
 				{
 					if ( !MSN_RefreshContactList()) {
 						MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER );
-						MSN_GoOffline();
+						return 1;
 					}
 
 					DBVARIANT dbv;
