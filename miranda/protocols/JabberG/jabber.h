@@ -383,6 +383,8 @@ enum JABBER_MUC_JIDLIST_TYPE
 
 struct JABBER_MUC_JIDLIST_INFO
 {
+	~JABBER_MUC_JIDLIST_INFO();
+
 	JABBER_MUC_JIDLIST_TYPE type;
 	TCHAR* roomJid;	// filled-in by the WM_JABBER_REFRESH code
 	XmlNode *iqNode;
