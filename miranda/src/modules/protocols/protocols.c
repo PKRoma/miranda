@@ -246,10 +246,7 @@ int CallProtoServiceInt( HANDLE hContact, const char *szModule, const char *szSe
 	int idx;
 	char svcName[ MAXMODULELABELLENGTH ];
 	PROTOACCOUNT* pa = ( PROTOACCOUNT* )Proto_GetAccount( szModule );
-	if ( pa == NULL )
-		return CALLSERVICE_NOTFOUND;
-
-	if ( !pa->bOldProto ) {
+	if ( pa && !pa->bOldProto ) {
 		PROTO_INTERFACE* ppi;
 		if (( ppi = pa->ppro ) == NULL )
 			return CALLSERVICE_NOTFOUND;
