@@ -1260,7 +1260,7 @@ static int InternalRemoveMyAvatar(char *protocol)
 			DBWriteContactSettingByte(NULL, AVS_MODULE, "GlobalUserAvatarNotConsistent", 0);
 	}
 
-	ReportMyAvatarChanged((WPARAM) "", 0);
+	ReportMyAvatarChanged((WPARAM)(( protocol == NULL ) ? "" : protocol ), 0);
 	return ret;
 }
 
