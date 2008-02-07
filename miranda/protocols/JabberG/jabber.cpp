@@ -120,94 +120,94 @@ extern "C" __declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
 
 int __cdecl CJabberProto::OnPreShutdown( WPARAM wParam, LPARAM lParam )
 {
-	if ( hwndJabberAgents ) {
-		::SendMessage( hwndJabberAgents, WM_CLOSE, 0, 0 );
-		hwndJabberAgents = NULL;
+	if ( m_hwndJabberAgents ) {
+		::SendMessage( m_hwndJabberAgents, WM_CLOSE, 0, 0 );
+		m_hwndJabberAgents = NULL;
 	}
-	if ( hwndJabberGroupchat ) {
-		::SendMessage( hwndJabberGroupchat, WM_CLOSE, 0, 0 );
-		hwndJabberGroupchat = NULL;
+	if ( m_hwndJabberGroupchat ) {
+		::SendMessage( m_hwndJabberGroupchat, WM_CLOSE, 0, 0 );
+		m_hwndJabberGroupchat = NULL;
 	}
-	if ( hwndJabberJoinGroupchat ) {
-		::SendMessage( hwndJabberJoinGroupchat, WM_CLOSE, 0, 0 );
-		hwndJabberJoinGroupchat = NULL;
+	if ( m_hwndJabberJoinGroupchat ) {
+		::SendMessage( m_hwndJabberJoinGroupchat, WM_CLOSE, 0, 0 );
+		m_hwndJabberJoinGroupchat = NULL;
 	}
-	if ( hwndAgentReg ) {
-		::SendMessage( hwndAgentReg, WM_CLOSE, 0, 0 );
-		hwndAgentReg = NULL;
+	if ( m_hwndAgentReg ) {
+		::SendMessage( m_hwndAgentReg, WM_CLOSE, 0, 0 );
+		m_hwndAgentReg = NULL;
 	}
-	if ( hwndAgentRegInput ) {
-		::SendMessage( hwndAgentRegInput, WM_CLOSE, 0, 0 );
-		hwndAgentRegInput = NULL;
+	if ( m_hwndAgentRegInput ) {
+		::SendMessage( m_hwndAgentRegInput, WM_CLOSE, 0, 0 );
+		m_hwndAgentRegInput = NULL;
 	}
-	if ( hwndRegProgress ) {
-		::SendMessage( hwndRegProgress, WM_CLOSE, 0, 0 );
-		hwndRegProgress = NULL;
+	if ( m_hwndRegProgress ) {
+		::SendMessage( m_hwndRegProgress, WM_CLOSE, 0, 0 );
+		m_hwndRegProgress = NULL;
 	}
-	if ( hwndJabberVcard ) {
-		::SendMessage( hwndJabberVcard, WM_CLOSE, 0, 0 );
-		hwndJabberVcard = NULL;
+	if ( m_hwndJabberVcard ) {
+		::SendMessage( m_hwndJabberVcard, WM_CLOSE, 0, 0 );
+		m_hwndJabberVcard = NULL;
 	}
-	if ( hwndMucVoiceList ) {
-		::SendMessage( hwndMucVoiceList, WM_CLOSE, 0, 0 );
-		hwndMucVoiceList = NULL;
+	if ( m_hwndMucVoiceList ) {
+		::SendMessage( m_hwndMucVoiceList, WM_CLOSE, 0, 0 );
+		m_hwndMucVoiceList = NULL;
 	}
-	if ( hwndMucMemberList ) {
-		::SendMessage( hwndMucMemberList, WM_CLOSE, 0, 0 );
-		hwndMucMemberList = NULL;
+	if ( m_hwndMucMemberList ) {
+		::SendMessage( m_hwndMucMemberList, WM_CLOSE, 0, 0 );
+		m_hwndMucMemberList = NULL;
 	}
-	if ( hwndMucModeratorList ) {
-		::SendMessage( hwndMucModeratorList, WM_CLOSE, 0, 0 );
-		hwndMucModeratorList = NULL;
+	if ( m_hwndMucModeratorList ) {
+		::SendMessage( m_hwndMucModeratorList, WM_CLOSE, 0, 0 );
+		m_hwndMucModeratorList = NULL;
 	}
-	if ( hwndMucBanList ) {
-		::SendMessage( hwndMucBanList, WM_CLOSE, 0, 0 );
-		hwndMucBanList = NULL;
+	if ( m_hwndMucBanList ) {
+		::SendMessage( m_hwndMucBanList, WM_CLOSE, 0, 0 );
+		m_hwndMucBanList = NULL;
 	}
-	if ( hwndMucAdminList ) {
-		::SendMessage( hwndMucAdminList, WM_CLOSE, 0, 0 );
-		hwndMucAdminList = NULL;
+	if ( m_hwndMucAdminList ) {
+		::SendMessage( m_hwndMucAdminList, WM_CLOSE, 0, 0 );
+		m_hwndMucAdminList = NULL;
 	}
-	if ( hwndMucOwnerList ) {
-		::SendMessage( hwndMucOwnerList, WM_CLOSE, 0, 0 );
-		hwndMucOwnerList = NULL;
+	if ( m_hwndMucOwnerList ) {
+		::SendMessage( m_hwndMucOwnerList, WM_CLOSE, 0, 0 );
+		m_hwndMucOwnerList = NULL;
 	}
-	if ( hwndJabberChangePassword ) {
-		::SendMessage( hwndJabberChangePassword, WM_CLOSE, 0, 0 );
-		hwndJabberChangePassword = NULL;
+	if ( m_hwndJabberChangePassword ) {
+		::SendMessage( m_hwndJabberChangePassword, WM_CLOSE, 0, 0 );
+		m_hwndJabberChangePassword = NULL;
 	}
-	if ( hwndJabberBookmarks ) {
-		::SendMessage( hwndJabberBookmarks, WM_CLOSE, 0, 0 );
-		hwndJabberBookmarks = NULL;
+	if ( m_hwndJabberBookmarks ) {
+		::SendMessage( m_hwndJabberBookmarks, WM_CLOSE, 0, 0 );
+		m_hwndJabberBookmarks = NULL;
 	}
-	if ( hwndJabberAddBookmark ) {
-		::SendMessage( hwndJabberAddBookmark, WM_CLOSE, 0, 0 );
-		hwndJabberAddBookmark = NULL;
+	if ( m_hwndJabberAddBookmark ) {
+		::SendMessage( m_hwndJabberAddBookmark, WM_CLOSE, 0, 0 );
+		m_hwndJabberAddBookmark = NULL;
 	}
-	if ( hwndPrivacyRule ) {
-		::SendMessage( hwndPrivacyRule, WM_CLOSE, 0, 0 );
-		hwndPrivacyRule = NULL;
+	if ( m_hwndPrivacyRule ) {
+		::SendMessage( m_hwndPrivacyRule, WM_CLOSE, 0, 0 );
+		m_hwndPrivacyRule = NULL;
 	}
-	if ( dlgPrivacyLists ) {
-		dlgPrivacyLists->Close();
-		dlgPrivacyLists = NULL;
+	if ( m_pDlgPrivacyLists ) {
+		m_pDlgPrivacyLists->Close();
+		m_pDlgPrivacyLists = NULL;
 	}
-	if ( hwndServiceDiscovery ) {
-		::SendMessage( hwndServiceDiscovery, WM_CLOSE, 0, 0 );
-		hwndServiceDiscovery = NULL;
+	if ( m_hwndServiceDiscovery ) {
+		::SendMessage( m_hwndServiceDiscovery, WM_CLOSE, 0, 0 );
+		m_hwndServiceDiscovery = NULL;
 	}
-	hwndAgentManualReg = NULL;
+	m_hwndAgentManualReg = NULL;
 
 	m_iqManager.ExpireAll();
 	m_iqManager.Shutdown();
-	JabberConsoleUninit();
+	ConsoleUninit();
 	return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // OnModulesLoaded - execute some code when all plugins are initialized
 
-void JabberMenuHideSrmmIcon(HANDLE hContact);
+void MenuHideSrmmIcon(HANDLE hContact);
 
 static COLORREF crCols[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 
@@ -243,7 +243,7 @@ int CJabberProto::OnModulesLoadedEx( WPARAM wParam, LPARAM lParam )
 
 		char szEvent[ 200 ];
 		mir_snprintf( szEvent, sizeof szEvent, "%s\\ChatInit", m_szProtoName );
-		hInitChat = CreateHookableEvent( szEvent );
+		m_hInitChat = CreateHookableEvent( szEvent );
 		JHookEvent( szEvent, &CJabberProto::JabberGcInit );
 	}
 
@@ -263,7 +263,7 @@ int CJabberProto::OnModulesLoadedEx( WPARAM wParam, LPARAM lParam )
 		while ( hContact != NULL ) {
 			char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
 			if ( szProto != NULL && !strcmp( szProto, m_szProtoName ))
-				JabberMenuHideSrmmIcon(hContact);
+				MenuHideSrmmIcon(hContact);
 			hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 );
 	}	}
 
@@ -281,14 +281,14 @@ int CJabberProto::OnModulesLoadedEx( WPARAM wParam, LPARAM lParam )
 		AssocMgr_AddNewUrlTypeT( "xmpp:", TranslateT("Jabber Link Protocol"), hInst, IDI_JABBER, szService, 0 );
 	}
 
-	JabberCheckAllContactsAreTransported();
+	CheckAllContactsAreTransported();
 
 	// Set all contacts to offline
 	HANDLE hContact = ( HANDLE )CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL ) {
 		char* szProto = ( char* )CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
 		if ( szProto != NULL && !strcmp( szProto, m_szProtoName )) {
-			JabberSetContactOfflineStatus( hContact );
+			SetContactOfflineStatus( hContact );
 
 			if ( JGetByte( hContact, "IsTransport", 0 )) {
 				DBVARIANT dbv;
@@ -297,7 +297,7 @@ int CJabberProto::OnModulesLoadedEx( WPARAM wParam, LPARAM lParam )
 					TCHAR* resourcepos = _tcschr( domain, '/' );
 					if ( resourcepos != NULL )
 						*resourcepos = '\0';
-					jabberTransports.insert( _tcsdup( domain ));
+					m_lstTransports.insert( _tcsdup( domain ));
 					JFreeVariant( &dbv );
 		}	}	}
 

@@ -27,7 +27,7 @@ Last change by : $Author$
 
 #include "jabber.h"
 
-BOOL CJabberProto::JabberWsInit( void )
+BOOL CJabberProto::WsInit( void )
 {
 	NETLIBUSER nlu = {0};
 	char name[128];
@@ -44,48 +44,48 @@ BOOL CJabberProto::JabberWsInit( void )
 	//nlu.pfnHttpGatewayBegin = JabberHttpGatewayBegin;
 	//nlu.pfnHttpGatewayWrapSend = JabberHttpGatewayWrapSend;
 	//nlu.pfnHttpGatewayUnwrapRecv = JabberHttpGatewayUnwrapRecv;
-	hNetlibUser = ( HANDLE ) JCallService( MS_NETLIB_REGISTERUSER, 0, ( LPARAM )&nlu );
+	m_hNetlibUser = ( HANDLE ) JCallService( MS_NETLIB_REGISTERUSER, 0, ( LPARAM )&nlu );
 
-	return ( hNetlibUser!=NULL )?TRUE:FALSE;
+	return ( m_hNetlibUser!=NULL )?TRUE:FALSE;
 }
 
-void CJabberProto::JabberWsUninit( void )
+void CJabberProto::WsUninit( void )
 {
-	Netlib_CloseHandle( hNetlibUser );
-	hNetlibUser = NULL;
+	Netlib_CloseHandle( m_hNetlibUser );
+	m_hNetlibUser = NULL;
 }
 
-JABBER_SOCKET CJabberProto::JabberWsConnect( char* host, WORD port )
+JABBER_SOCKET CJabberProto::WsConnect( char* host, WORD port )
 {
 	NETLIBOPENCONNECTION nloc = { 0 };
 	nloc.cbSize = sizeof( nloc );
 	nloc.szHost = host;
 	nloc.wPort = port;
-	return ( HANDLE )JCallService( MS_NETLIB_OPENCONNECTION, ( WPARAM ) hNetlibUser, ( LPARAM )&nloc );
+	return ( HANDLE )JCallService( MS_NETLIB_OPENCONNECTION, ( WPARAM ) m_hNetlibUser, ( LPARAM )&nloc );
 }
 
-int CJabberProto::JabberWsSend( JABBER_SOCKET hConn, char* data, int datalen, int flags )
+int CJabberProto::WsSend( JABBER_SOCKET hConn, char* data, int datalen, int flags )
 {
 	int len;
 
 	if (( len = Netlib_Send( hConn, data, datalen, flags )) == SOCKET_ERROR || len != datalen ) {
-		JabberLog( "Netlib_Send() failed, error=%d", WSAGetLastError());
+		Log( "Netlib_Send() failed, error=%d", WSAGetLastError());
 		return SOCKET_ERROR;
 	}
 	return len;
 }
 
-int CJabberProto::JabberWsRecv( JABBER_SOCKET hConn, char* data, long datalen, int flags )
+int CJabberProto::WsRecv( JABBER_SOCKET hConn, char* data, long datalen, int flags )
 {
 	int ret;
 
 	ret = Netlib_Recv( hConn, data, datalen, flags );
 	if ( ret == SOCKET_ERROR ) {
-		JabberLog( "Netlib_Recv() failed, error=%d", WSAGetLastError());
+		Log( "Netlib_Recv() failed, error=%d", WSAGetLastError());
 		return 0;
 	}
 	if ( ret == 0 ) {
-		JabberLog( "Connection closed gracefully" );
+		Log( "Connection closed gracefully" );
 		return 0;
 	}
 	return ret;

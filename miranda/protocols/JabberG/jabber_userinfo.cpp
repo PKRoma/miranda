@@ -284,7 +284,7 @@ static void sttFillResourceInfo( CJabberProto* ppro, HWND hwndTree, HTREEITEM ht
 
 	{	// caps
 		mir_sntprintf( buf, SIZEOF(buf), _T("%s/%s"), item->jid, res->resourceName );
-		JabberCapsBits jcb = ppro->JabberGetResourceCapabilites( buf, TRUE );
+		JabberCapsBits jcb = ppro->GetResourceCapabilites( buf, TRUE );
 
 		if ( !( jcb & JABBER_RESOURCE_CAPS_ERROR ))
 		{
@@ -413,6 +413,7 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_OTHER_USERDETAILS));
 
 		dat = (JabberUserInfoDlgData *)mir_alloc(sizeof(JabberUserInfoDlgData));
+		ZeroMemory(dat, sizeof(JabberUserInfoDlgData));
 		dat->resourceCount = -1;
 
 		if ( CallService(MS_DB_CONTACT_IS, (WPARAM)lParam, 0 ))
@@ -443,8 +444,8 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 				break;
 
 			JABBER_LIST_ITEM *item = NULL;
-			if (!(dat->item = dat->ppro->JabberListGetItemPtr(LIST_VCARD_TEMP, dbv.ptszVal)))
-				dat->item = dat->ppro->JabberListGetItemPtr(LIST_ROSTER, dbv.ptszVal);
+			if (!(dat->item = dat->ppro->ListGetItemPtr(LIST_VCARD_TEMP, dbv.ptszVal)))
+				dat->item = dat->ppro->ListGetItemPtr(LIST_ROSTER, dbv.ptszVal);
 
 			if (!dat->item)
 			{
@@ -539,8 +540,8 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 						break;
 					
 					JABBER_LIST_ITEM *item = NULL;
-					if ( !(dat->item = dat->ppro->JabberListGetItemPtr( LIST_VCARD_TEMP, dbv.ptszVal )))
-						dat->item = dat->ppro->JabberListGetItemPtr( LIST_ROSTER, dbv.ptszVal );
+					if ( !(dat->item = dat->ppro->ListGetItemPtr( LIST_VCARD_TEMP, dbv.ptszVal )))
+						dat->item = dat->ppro->ListGetItemPtr( LIST_ROSTER, dbv.ptszVal );
 					JFreeVariant(&dbv);
 				}
 				break;
@@ -621,11 +622,11 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			ShowWindow( GetDlgItem( hwndDlg, IDC_SAVE ), SW_HIDE );
 			if ( !photoInfo->ppro->JGetStringT( photoInfo->hContact, "jid", &dbv )) {
 				TCHAR* jid = dbv.ptszVal;
-				if (( item = photoInfo->ppro->JabberListGetItemPtr( LIST_VCARD_TEMP, jid )) == NULL)
-					item = photoInfo->ppro->JabberListGetItemPtr( LIST_ROSTER, jid );
+				if (( item = photoInfo->ppro->ListGetItemPtr( LIST_VCARD_TEMP, jid )) == NULL)
+					item = photoInfo->ppro->ListGetItemPtr( LIST_ROSTER, jid );
 				if ( item != NULL ) {
 					if ( item->photoFileName ) {
-						photoInfo->ppro->JabberLog( "Showing picture from %s", item->photoFileName );
+						photoInfo->ppro->Log( "Showing picture from %s", item->photoFileName );
 						photoInfo->hBitmap = ( HBITMAP ) JCallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )item->photoFileName );
 						JabberBitmapPremultiplyChannels(photoInfo->hBitmap);
 						ShowWindow( GetDlgItem( hwndDlg, IDC_SAVE ), SW_SHOW );
@@ -655,8 +656,8 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 					break;
 
 				TCHAR* jid = dbv.ptszVal;
-				if (( item = photoInfo->ppro->JabberListGetItemPtr( LIST_VCARD_TEMP, jid )) == NULL)
-					item = photoInfo->ppro->JabberListGetItemPtr( LIST_ROSTER, jid );
+				if (( item = photoInfo->ppro->ListGetItemPtr( LIST_VCARD_TEMP, jid )) == NULL)
+					item = photoInfo->ppro->ListGetItemPtr( LIST_ROSTER, jid );
 				if ( item != NULL ) {
 					if (( hFile=CreateFileA( item->photoFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL )) != INVALID_HANDLE_VALUE ) {
 						if ( ReadFile( hFile, buffer, 3, &n, NULL ) && n==3 ) {
@@ -704,7 +705,7 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 							ofn.lpTemplateName = NULL;
 							szFileName[0] = '\0';
 							if ( GetSaveFileNameA( &ofn )) {
-								photoInfo->ppro->JabberLog( "File selected is %s", szFileName );
+								photoInfo->ppro->Log( "File selected is %s", szFileName );
 								CopyFileA( item->photoFileName, szFileName, FALSE );
 							}
 						}
@@ -719,7 +720,7 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 		break;
 
 	case WM_PAINT:
-		if ( !photoInfo->ppro->jabberOnline )
+		if ( !photoInfo->ppro->m_bJabberOnline )
 			SetDlgItemText( hwndDlg, IDC_CANVAS, TranslateT( "<Photo not available while offline>" ));
 		else if ( !photoInfo->hBitmap )
 			SetDlgItemText( hwndDlg, IDC_CANVAS, TranslateT( "<No photo>" ));
@@ -795,7 +796,7 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 
 	case WM_DESTROY:
 		if ( photoInfo->hBitmap ) {
-			photoInfo->ppro->JabberLog( "Delete bitmap" );
+			photoInfo->ppro->Log( "Delete bitmap" );
 			DeleteObject( photoInfo->hBitmap );
 		}
 		if ( photoInfo ) mir_free( photoInfo );

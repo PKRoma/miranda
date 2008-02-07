@@ -47,7 +47,7 @@ Last change by : $Author: m_mluhov $
 
 int CJabberProto::OnContactDeleted( WPARAM wParam, LPARAM lParam )
 {
-	if( !jabberOnline )	// should never happen
+	if( !m_bJabberOnline )	// should never happen
 		return 0;
 
 	char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, wParam, 0 );
@@ -56,20 +56,20 @@ int CJabberProto::OnContactDeleted( WPARAM wParam, LPARAM lParam )
 
 	DBVARIANT dbv;
 	if ( !JGetStringT(( HANDLE ) wParam, JGetByte( (HANDLE ) wParam, "ChatRoom", 0 )?(char*)"ChatRoomID":(char*)"jid", &dbv )) {
-		if ( JabberListExist( LIST_ROSTER, dbv.ptszVal )) {
+		if ( ListExist( LIST_ROSTER, dbv.ptszVal )) {
 			if ( !_tcschr( dbv.ptszVal, _T( '@' )))
 			{
-				XmlNodeIq iq( "set", JabberSerialNext(), dbv.ptszVal );
+				XmlNodeIq iq( "set", SerialNext(), dbv.ptszVal );
 				XmlNode* query = iq.addQuery( JABBER_FEAT_REGISTER );
 				query->addChild( "remove" );
-				jabberThreadInfo->send( iq );
+				m_ThreadInfo->send( iq );
 			}
 			{
 				// Remove from roster, server also handles the presence unsubscription process.
-				XmlNodeIq iq( "set" ); iq.addAttrID( JabberSerialNext());
+				XmlNodeIq iq( "set" ); iq.addAttrID( SerialNext());
 				XmlNode* query = iq.addQuery( JABBER_FEAT_IQ_ROSTER );
 				XmlNode* item = query->addChild( "item" ); item->addAttr( "jid", dbv.ptszVal ); item->addAttr( "subscription", "remove" );
-				jabberThreadInfo->send( iq );
+				m_ThreadInfo->send( iq );
 			}
 		}
 
@@ -110,7 +110,7 @@ void __cdecl CJabberProto::OnRenameGroup( DBCONTACTWRITESETTING* cws, HANDLE hCo
 	if ( JGetStringT( hContact, "jid", &jid ))
 		return;
 
-	JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, jid.ptszVal );
+	JABBER_LIST_ITEM* item = ListGetItemPtr( LIST_ROSTER, jid.ptszVal );
 	JFreeVariant( &jid );
 	if ( item == NULL )
 		return;
@@ -130,16 +130,16 @@ void __cdecl CJabberProto::OnRenameGroup( DBCONTACTWRITESETTING* cws, HANDLE hCo
 
 	if ( cws->value.type == DBVT_DELETED ) {
 		if ( item->group != NULL ) {
-			JabberLog( "Group set to nothing" );
-			JabberAddContactToRoster( item->jid, nick, NULL, item->subscription );
+			Log( "Group set to nothing" );
+			AddContactToRoster( item->jid, nick, NULL, item->subscription );
 		}
 	}
 	else {
 		TCHAR* p = sttSettingToTchar( cws );
 		if ( cws->value.pszVal != NULL && lstrcmp( p, item->group )) {
-			JabberLog( "Group set to " TCHAR_STR_PARAM, p );
+			Log( "Group set to " TCHAR_STR_PARAM, p );
 			if ( p )
-				JabberAddContactToRoster( item->jid, nick, p, item->subscription );
+				AddContactToRoster( item->jid, nick, p, item->subscription );
 		}
 		mir_free( p );
 	}
@@ -152,14 +152,14 @@ void __cdecl CJabberProto::OnRenameContact( DBCONTACTWRITESETTING* cws, HANDLE h
 	if ( JGetStringT( hContact, "jid", &jid ))
 		return;
 
-	JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, jid.ptszVal );
+	JABBER_LIST_ITEM* item = ListGetItemPtr( LIST_ROSTER, jid.ptszVal );
 	JFreeVariant( &jid );
 	if ( item == NULL )
 		return;
 
 	if ( cws->value.type == DBVT_DELETED ) {
 		TCHAR* nick = ( TCHAR* )JCallService( MS_CLIST_GETCONTACTDISPLAYNAME, ( WPARAM )hContact, GCDNF_NOMYHANDLE | GCDNF_TCHAR );
-		JabberAddContactToRoster( item->jid, nick, item->group, item->subscription );
+		AddContactToRoster( item->jid, nick, item->group, item->subscription );
 		mir_free(nick);
 		return;
 	}
@@ -167,8 +167,8 @@ void __cdecl CJabberProto::OnRenameContact( DBCONTACTWRITESETTING* cws, HANDLE h
 	TCHAR* newNick = sttSettingToTchar( cws );
 	if ( newNick ) {
 		if ( lstrcmp( item->nick, newNick )) {
-			JabberLog( "Renaming contact " TCHAR_STR_PARAM ": " TCHAR_STR_PARAM " -> " TCHAR_STR_PARAM, item->jid, item->nick, newNick );
-			JabberAddContactToRoster( item->jid, newNick, item->group, item->subscription );
+			Log( "Renaming contact " TCHAR_STR_PARAM ": " TCHAR_STR_PARAM " -> " TCHAR_STR_PARAM, item->jid, item->nick, newNick );
+			AddContactToRoster( item->jid, newNick, item->group, item->subscription );
 		}
 		mir_free( newNick );
 }	}
@@ -183,7 +183,7 @@ void __cdecl CJabberProto::OnAddContactForever( DBCONTACTWRITESETTING* cws, HAND
 		return;
 
 	TCHAR *nick;
-	JabberLog( "Add " TCHAR_STR_PARAM " permanently to list", jid.pszVal );
+	Log( "Add " TCHAR_STR_PARAM " permanently to list", jid.pszVal );
 	if ( !DBGetContactSettingTString( hContact, "CList", "MyHandle", &dbv )) {
 		nick = mir_tstrdup( dbv.ptszVal );
 		JFreeVariant( &dbv );
@@ -198,19 +198,19 @@ void __cdecl CJabberProto::OnAddContactForever( DBCONTACTWRITESETTING* cws, HAND
 		return;
 	}
 
-	JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_ROSTER, jid.ptszVal );
+	JABBER_LIST_ITEM* item = ListGetItemPtr( LIST_ROSTER, jid.ptszVal );
 	JABBER_SUBSCRIPTION subscription = ( item == NULL ) ? SUB_NONE : item->subscription;
 
 	if ( !DBGetContactSettingTString( hContact, "CList", "Group", &dbv )) {
-		JabberAddContactToRoster( jid.ptszVal, nick, dbv.ptszVal, subscription );
+		AddContactToRoster( jid.ptszVal, nick, dbv.ptszVal, subscription );
 		JFreeVariant( &dbv );
 	}
-	else JabberAddContactToRoster( jid.ptszVal, NULL, NULL, subscription );
+	else AddContactToRoster( jid.ptszVal, NULL, NULL, subscription );
 
 	XmlNode presence( "presence" ); presence.addAttr( "to", jid.ptszVal ); presence.addAttr( "type", "subscribe" );
-	jabberThreadInfo->send( presence );
+	m_ThreadInfo->send( presence );
 
-	JabberSendGetVcard( jid.ptszVal );
+	SendGetVcard( jid.ptszVal );
 
 	mir_free( nick );
 	DBDeleteContactSetting( hContact, "CList", "Hidden" );
@@ -220,7 +220,7 @@ void __cdecl CJabberProto::OnAddContactForever( DBCONTACTWRITESETTING* cws, HAND
 int __cdecl CJabberProto::OnDbSettingChanged( WPARAM wParam, LPARAM lParam )
 {
 	HANDLE hContact = ( HANDLE ) wParam;
-	if ( hContact == NULL || !jabberConnected )
+	if ( hContact == NULL || !m_bJabberConnected )
 		return 0;
 
 	DBCONTACTWRITESETTING* cws = ( DBCONTACTWRITESETTING* )lParam;
@@ -248,16 +248,16 @@ int CJabberProto::OnIdleChanged( WPARAM wParam, LPARAM lParam )
 {
 	// don't report idle time, if user disabled
 	if (lParam & IDF_PRIVACY) {
-		jabberIdleStartTime = 0;
+		m_tmJabberIdleStartTime = 0;
 		return 0;
 	}
 
 	BOOL bIdle = lParam & IDF_ISIDLE;
 
 	// second call, ignore it
-	if (bIdle && jabberIdleStartTime)
+	if (bIdle && m_tmJabberIdleStartTime)
 		return 0;
 
-	jabberIdleStartTime = bIdle ? time( 0 ) : 0;
+	m_tmJabberIdleStartTime = bIdle ? time( 0 ) : 0;
 	return 0;
 }

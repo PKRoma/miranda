@@ -44,21 +44,21 @@ static void sttStatusMessage(HWND hWnd, TCHAR *msg = NULL)
 		(LPARAM)(msg ? msg : TranslateT("Ready.")));
 }
 
-void CJabberProto::JabberProcessIqPrivacyLists( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqRequestPrivacyLists( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_SET ) {
-		if ( !dlgPrivacyLists )
+		if ( !m_pDlgPrivacyLists )
 		{
 			m_privacyListManager.RemoveAllLists();
 			QueryPrivacyLists();
 		}
-		else sttStatusMessage( dlgPrivacyLists->GetHwnd(), TranslateT("Warning: privacy lists were changed on server."));
+		else sttStatusMessage( m_pDlgPrivacyLists->GetHwnd(), TranslateT("Warning: privacy lists were changed on server."));
 
 		XmlNodeIq iq( "result", pInfo );
-		jabberThreadInfo->send( iq );
+		m_ThreadInfo->send( iq );
 }	}
 
-void CJabberProto::JabberIqResultPrivacyListModify( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultPrivacyListModify( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	if ( !pInfo->m_pUserData )
 		return;
@@ -74,13 +74,13 @@ void CJabberProto::JabberIqResultPrivacyListModify( XmlNode* iqNode, void* userd
 			mir_sntprintf( szText, SIZEOF( szText ), TranslateT("Error occurred while applying changes"));
 		else
 			mir_sntprintf( szText, SIZEOF( szText ), TranslateT("Privacy lists successfully saved"));
-		sttStatusMessage( dlgPrivacyLists->GetHwnd(), szText );
+		sttStatusMessage( m_pDlgPrivacyLists->GetHwnd(), szText );
 		// FIXME: enable apply button
 		delete pParam;
 	}
 }
 
-void CJabberProto::JabberIqResultPrivacyList( XmlNode* iqNode, void* userdata )
+void CJabberProto::OnIqResultPrivacyList( XmlNode* iqNode, void* userdata )
 {
 	if ( !iqNode )
 		return;
@@ -151,8 +151,8 @@ void CJabberProto::JabberIqResultPrivacyList( XmlNode* iqNode, void* userdata )
 		pList->SetModified(FALSE);
 		m_privacyListManager.Unlock();
 
-		if ( dlgPrivacyLists )
-			SendMessage( dlgPrivacyLists->GetHwnd(), WM_JABBER_REFRESH, 0, 0);
+		if ( m_pDlgPrivacyLists )
+			SendMessage( m_pDlgPrivacyLists->GetHwnd(), WM_JABBER_REFRESH, 0, 0);
 }	}
 
 CPrivacyList* GetSelectedList(HWND hDlg)
@@ -181,12 +181,12 @@ CPrivacyListRule* GetSelectedRule(HWND hDlg)
 	return (CPrivacyListRule* )nItemData;
 }
 
-void CJabberProto::JabberIqResultPrivacyListActive( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultPrivacyListActive( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	CPrivacyList *pList = (CPrivacyList *)pInfo->GetUserData();
 
-	if ( dlgPrivacyLists )
-		EnableWindow( GetDlgItem( dlgPrivacyLists->GetHwnd(), IDC_ACTIVATE ), TRUE );
+	if ( m_pDlgPrivacyLists )
+		EnableWindow( GetDlgItem( m_pDlgPrivacyLists->GetHwnd(), IDC_ACTIVATE ), TRUE );
 
 	if ( !iqNode )
 		return;
@@ -213,21 +213,21 @@ void CJabberProto::JabberIqResultPrivacyListActive( XmlNode* iqNode, void* userd
 	}
 	m_privacyListManager.Unlock();
 
-	if ( dlgPrivacyLists )
+	if ( m_pDlgPrivacyLists )
 	{
-		sttStatusMessage( dlgPrivacyLists->GetHwnd(), szText );
-		RedrawWindow(GetDlgItem(dlgPrivacyLists->GetHwnd(), IDC_LB_LISTS), NULL, NULL, RDW_INVALIDATE);
+		sttStatusMessage( m_pDlgPrivacyLists->GetHwnd(), szText );
+		RedrawWindow(GetDlgItem(m_pDlgPrivacyLists->GetHwnd(), IDC_LB_LISTS), NULL, NULL, RDW_INVALIDATE);
 	}
 
-	JabberRebuildStatusMenu();
+	RebuildStatusMenu();
 }
 
-void CJabberProto::JabberIqResultPrivacyListDefault( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultPrivacyListDefault( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	CPrivacyList *pList = (CPrivacyList *)pInfo->GetUserData();
 
-	if ( dlgPrivacyLists )
-		EnableWindow( GetDlgItem( dlgPrivacyLists->GetHwnd(), IDC_SET_DEFAULT ), TRUE );
+	if ( m_pDlgPrivacyLists )
+		EnableWindow( GetDlgItem( m_pDlgPrivacyLists->GetHwnd(), IDC_SET_DEFAULT ), TRUE );
 
 	if ( !iqNode )
 		return;
@@ -254,14 +254,14 @@ void CJabberProto::JabberIqResultPrivacyListDefault( XmlNode* iqNode, void* user
 	}
 	m_privacyListManager.Unlock();
 
-	if ( dlgPrivacyLists )
+	if ( m_pDlgPrivacyLists )
 	{
-		sttStatusMessage( dlgPrivacyLists->GetHwnd(), szText );
-		RedrawWindow(GetDlgItem(dlgPrivacyLists->GetHwnd(), IDC_LB_LISTS), NULL, NULL, RDW_INVALIDATE);
+		sttStatusMessage( m_pDlgPrivacyLists->GetHwnd(), szText );
+		RedrawWindow(GetDlgItem(m_pDlgPrivacyLists->GetHwnd(), IDC_LB_LISTS), NULL, NULL, RDW_INVALIDATE);
 	}
 }
 
-void CJabberProto::JabberIqResultPrivacyLists( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultPrivacyLists( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	if ( pInfo->m_nIqType != JABBER_IQ_TYPE_RESULT )
 		return;
@@ -270,8 +270,8 @@ void CJabberProto::JabberIqResultPrivacyLists( XmlNode* iqNode, void* userdata, 
 	if ( !query )
 		return;
 
-	if ( jabberThreadInfo )
-		jabberThreadInfo->jabberServerCaps |= JABBER_CAPS_PRIVACY_LISTS;
+	if ( m_ThreadInfo )
+		m_ThreadInfo->jabberServerCaps |= JABBER_CAPS_PRIVACY_LISTS;
 
 	m_privacyListManager.Lock();
 	m_privacyListManager.RemoveAllLists();
@@ -283,14 +283,14 @@ void CJabberProto::JabberIqResultPrivacyLists( XmlNode* iqNode, void* userdata, 
 			m_privacyListManager.AddList(listName);
 
 			// Query contents only if list editior is visible!
-			if ( dlgPrivacyLists ) {
-				int iqId = JabberSerialNext();
-				JabberIqAdd( iqId, IQ_PROC_NONE, &CJabberProto::JabberIqResultPrivacyList);
+			if ( m_pDlgPrivacyLists ) {
+				int iqId = SerialNext();
+				IqAdd( iqId, IQ_PROC_NONE, &CJabberProto::OnIqResultPrivacyList);
 				XmlNodeIq iq( "get", iqId);
 				XmlNode* queryNode = iq.addQuery( JABBER_FEAT_PRIVACY_LISTS );
 				XmlNode* listNode = queryNode->addChild( "list" );
 				listNode->addAttr( "name", listName );
-				jabberThreadInfo->send( iq );
+				m_ThreadInfo->send( iq );
 		}	}	}
 
 	TCHAR *szName = NULL;
@@ -307,10 +307,10 @@ void CJabberProto::JabberIqResultPrivacyLists( XmlNode* iqNode, void* userdata, 
 
 	m_privacyListManager.Unlock();
 
-	if ( dlgPrivacyLists )
-		SendMessage( dlgPrivacyLists->GetHwnd(), WM_JABBER_REFRESH, 0, 0);
+	if ( m_pDlgPrivacyLists )
+		SendMessage( m_pDlgPrivacyLists->GetHwnd(), WM_JABBER_REFRESH, 0, 0);
 
-	JabberRebuildStatusMenu();
+	RebuildStatusMenu();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -357,7 +357,7 @@ public:
 
 	virtual bool OnInitDialog()
 	{
-		m_proto->hwndPrivacyRule = m_hwnd;
+		m_proto->m_hwndPrivacyRule = m_hwnd;
 
 		SendDlgItemMessage(m_hwnd, IDC_ICO_MESSAGE,     STM_SETICON, (WPARAM)m_proto->LoadIconEx("pl_msg_allow"), 0);
 		SendDlgItemMessage(m_hwnd, IDC_ICO_QUERY,       STM_SETICON, (WPARAM)m_proto->LoadIconEx("pl_iq_allow"), 0);
@@ -444,10 +444,10 @@ public:
 
 				// append known chatroom jids from bookmarks
 				int i = 0;
-				while (( i = m_proto->JabberListFindNext( LIST_BOOKMARK, i )) >= 0 )
+				while (( i = m_proto->ListFindNext( LIST_BOOKMARK, i )) >= 0 )
 				{
 					JABBER_LIST_ITEM *item = 0;
-					if ( item = m_proto->JabberListGetItemPtrFromIndex( i ))
+					if ( item = m_proto->ListGetItemPtrFromIndex( i ))
 						SendDlgItemMessage( m_hwnd, IDC_COMBO_VALUES, CB_ADDSTRING, 0, (LPARAM)item->jid );
 					i++;
 				}
@@ -587,7 +587,7 @@ public:
 
 	bool OnDestroy()
 	{
-		m_proto->hwndPrivacyRule = NULL;
+		m_proto->m_hwndPrivacyRule = NULL;
 		return false;
 	}
 };
@@ -735,7 +735,7 @@ bool CJabberDlgPrivacyLists::OnInitDialog()
 
 bool CJabberDlgPrivacyLists::OnDestroy()
 {
-	m_proto->dlgPrivacyLists = NULL;
+	m_proto->m_pDlgPrivacyLists = NULL;
 
 	// Wipe all data and query lists without contents
 	m_proto->m_privacyListManager.RemoveAllLists();
@@ -941,7 +941,7 @@ void CJabberDlgPrivacyLists::DrawRulesList(LPDRAWITEMSTRUCT lpdis)
 				DrawNextRulePart(lpdis->hDC, clLine1, pRule->GetValue(), &rc);
 				DrawNextRulePart(lpdis->hDC, clLine2, TranslateT("'"), &rc);
 
-				if (HANDLE hContact = m_proto->JabberHContactFromJID(pRule->GetValue())) {
+				if (HANDLE hContact = m_proto->HContactFromJID(pRule->GetValue())) {
 					TCHAR *szName = (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR);
 					if ( szName ) {
 						DrawNextRulePart(lpdis->hDC, clLine2, TranslateT(" (nickname: "), &rc);
@@ -1162,7 +1162,7 @@ int CJabberDlgPrivacyLists::CListAddContact(HWND hwndList, TCHAR *jid)
 {
 	int hItem = 0;
 
-	HANDLE hContact = m_proto->JabberHContactFromJID(jid);
+	HANDLE hContact = m_proto->HContactFromJID(jid);
 	if ( !hContact ) {
 		hItem = clc_info.findJid(jid);
 		if (!hItem)
@@ -1530,13 +1530,13 @@ BOOL CJabberDlgPrivacyLists::OnCommand_AddJid(HWND hwndCtrl, WORD idCtrl, WORD i
 
 BOOL CJabberDlgPrivacyLists::OnCommand_Activate(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 {
-	if ( m_proto->jabberOnline )
+	if ( m_proto->m_bJabberOnline )
 	{
 		m_proto->m_privacyListManager.Lock();
 		EnableWindow( GetDlgItem( m_hwnd, IDC_ACTIVATE ), FALSE );
 		CPrivacyList* pList = GetSelectedList(m_hwnd);
 		SetWindowLong( GetDlgItem( m_hwnd, IDC_ACTIVATE ), GWL_USERDATA, (DWORD)pList );
-		XmlNodeIq iq( m_proto->m_iqManager.AddHandler( &CJabberProto::JabberIqResultPrivacyListActive, JABBER_IQ_TYPE_SET, NULL, 0, -1, pList ) );
+		XmlNodeIq iq( m_proto->m_iqManager.AddHandler( &CJabberProto::OnIqResultPrivacyListActive, JABBER_IQ_TYPE_SET, NULL, 0, -1, pList ) );
 		XmlNode* query = iq.addQuery( JABBER_FEAT_PRIVACY_LISTS );
 		XmlNode* active = query->addChild( "active" );
 		if ( pList )
@@ -1545,21 +1545,21 @@ BOOL CJabberDlgPrivacyLists::OnCommand_Activate(HWND hwndCtrl, WORD idCtrl, WORD
 
 		sttStatusMessage( m_hwnd, TranslateT( JABBER_PL_BUSY_MSG ));
 
-		m_proto->jabberThreadInfo->send( iq );
+		m_proto->m_ThreadInfo->send( iq );
 	}
 	return TRUE;
 }
 
 BOOL CJabberDlgPrivacyLists::OnCommand_SetDefault(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 {
-	if ( m_proto->jabberOnline )
+	if ( m_proto->m_bJabberOnline )
 	{
 		m_proto->m_privacyListManager.Lock();
 		EnableWindow( GetDlgItem( m_hwnd, IDC_SET_DEFAULT ), FALSE );
 		CPrivacyList* pList = GetSelectedList(m_hwnd);
 		SetWindowLong( GetDlgItem( m_hwnd, IDC_SET_DEFAULT ), GWL_USERDATA, (DWORD)pList );
-		int iqId = m_proto->JabberSerialNext();
-		XmlNodeIq iq( m_proto->m_iqManager.AddHandler( &CJabberProto::JabberIqResultPrivacyListDefault, JABBER_IQ_TYPE_SET, NULL, 0, -1, pList ) );
+		int iqId = m_proto->SerialNext();
+		XmlNodeIq iq( m_proto->m_iqManager.AddHandler( &CJabberProto::OnIqResultPrivacyListDefault, JABBER_IQ_TYPE_SET, NULL, 0, -1, pList ) );
 		XmlNode* query = iq.addQuery( JABBER_FEAT_PRIVACY_LISTS );
 		XmlNode* defaultTag = query->addChild( "default" );
 		if ( pList )
@@ -1568,7 +1568,7 @@ BOOL CJabberDlgPrivacyLists::OnCommand_SetDefault(HWND hwndCtrl, WORD idCtrl, WO
 
 		sttStatusMessage( m_hwnd, TranslateT( JABBER_PL_BUSY_MSG ));
 
-		m_proto->jabberThreadInfo->send( iq );
+		m_proto->m_ThreadInfo->send( iq );
 	}
 	return TRUE;
 }
@@ -1789,7 +1789,7 @@ BOOL CJabberDlgPrivacyLists::OnCommand_RemoveList(HWND hwndCtrl, WORD idCtrl, WO
 
 BOOL CJabberDlgPrivacyLists::OnCommand_Apply(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 {
-	if ( !m_proto->jabberOnline ) {
+	if ( !m_proto->m_bJabberOnline ) {
 		sttStatusMessage( m_hwnd, TranslateT("Unable to save list because you are currently offline."));
 		return TRUE;
 	}
@@ -1819,7 +1819,7 @@ BOOL CJabberDlgPrivacyLists::OnCommand_Apply(HWND hwndCtrl, WORD idCtrl, WORD id
 					pUserData->m_bAllOk = TRUE;
 				}
 
-				XmlNodeIq iq( m_proto->m_iqManager.AddHandler( &CJabberProto::JabberIqResultPrivacyListModify, JABBER_IQ_TYPE_SET, NULL, 0, -1, pUserData, dwGroupId ));
+				XmlNodeIq iq( m_proto->m_iqManager.AddHandler( &CJabberProto::OnIqResultPrivacyListModify, JABBER_IQ_TYPE_SET, NULL, 0, -1, pUserData, dwGroupId ));
 				XmlNode* query = iq.addQuery( JABBER_FEAT_PRIVACY_LISTS );
 				XmlNode* listTag = query->addChild( "list" );
 				listTag->addAttr( "name", pList->GetListName() );
@@ -1858,7 +1858,7 @@ BOOL CJabberDlgPrivacyLists::OnCommand_Apply(HWND hwndCtrl, WORD idCtrl, WORD id
 					pRule = pRule->GetNext();
 				}
 
-				m_proto->jabberThreadInfo->send( iq );
+				m_proto->m_ThreadInfo->send( iq );
 			}
 			pList = pList->GetNext();
 	}	}
@@ -2100,15 +2100,15 @@ BOOL CJabberDlgPrivacyLists::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	return CJabberDlgBase::DlgProc(msg, wParam, lParam);
 }
 
-int __cdecl CJabberProto::JabberMenuHandlePrivacyLists( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::OnMenuHandlePrivacyLists( WPARAM wParam, LPARAM lParam )
 {
-	if (dlgPrivacyLists)
+	if (m_pDlgPrivacyLists)
 	{
-		SetForegroundWindow(dlgPrivacyLists->GetHwnd());
+		SetForegroundWindow(m_pDlgPrivacyLists->GetHwnd());
 	} else
 	{
-		dlgPrivacyLists = new CJabberDlgPrivacyLists(this);
-		dlgPrivacyLists->Show();
+		m_pDlgPrivacyLists = new CJabberDlgPrivacyLists(this);
+		m_pDlgPrivacyLists->Show();
 	}
 
 	return 0;
@@ -2116,9 +2116,9 @@ int __cdecl CJabberProto::JabberMenuHandlePrivacyLists( WPARAM wParam, LPARAM lP
 
 void CJabberProto::QueryPrivacyLists()
 {
-	XmlNodeIq iq( m_iqManager.AddHandler( &CJabberProto::JabberIqResultPrivacyLists ) );
+	XmlNodeIq iq( m_iqManager.AddHandler( &CJabberProto::OnIqResultPrivacyLists ) );
 	XmlNode* query = iq.addQuery( JABBER_FEAT_PRIVACY_LISTS );
-	jabberThreadInfo->send( iq );
+	m_ThreadInfo->send( iq );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -2136,14 +2136,14 @@ int __cdecl CJabberProto::menuSetPrivacyList( WPARAM wParam, LPARAM lParam, LPAR
 			pList = pList->GetNext();
 	}
 
-	XmlNodeIq iq( m_iqManager.AddHandler( &CJabberProto::JabberIqResultPrivacyListActive, JABBER_IQ_TYPE_SET, NULL, 0, -1, pList ) );
+	XmlNodeIq iq( m_iqManager.AddHandler( &CJabberProto::OnIqResultPrivacyListActive, JABBER_IQ_TYPE_SET, NULL, 0, -1, pList ) );
 	XmlNode* query = iq.addQuery( JABBER_FEAT_PRIVACY_LISTS );
 	XmlNode* active = query->addChild( "active" );
 	if ( pList )
 		active->addAttr( "name", pList->GetListName() );
 	m_privacyListManager.Unlock();
 
-	jabberThreadInfo->send( iq );
+	m_ThreadInfo->send( iq );
 	return 0;
 }
 
@@ -2152,7 +2152,7 @@ int __cdecl CJabberProto::menuSetPrivacyList( WPARAM wParam, LPARAM lParam, LPAR
 
 int CJabberProto::OnBuildPrivacyMenu( WPARAM wParam, LPARAM lParam )
 {
-	if ( !jabberOnline )
+	if ( !m_bJabberOnline )
 		return 0;
 
 	static int serviceAllocated = -1;

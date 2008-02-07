@@ -36,15 +36,15 @@ Last change by : $Author$
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-int CJabberProto::JabberSendGetVcard( const TCHAR* jid )
+int CJabberProto::SendGetVcard( const TCHAR* jid )
 {
-	int iqId = JabberSerialNext();
-	JabberIqAdd( iqId, ( jid == jabberJID ) ? IQ_PROC_GETVCARD : IQ_PROC_NONE, &CJabberProto::JabberIqResultGetVcard );
+	int iqId = SerialNext();
+	IqAdd( iqId, ( jid == m_szJabberJID ) ? IQ_PROC_GETVCARD : IQ_PROC_NONE, &CJabberProto::OnIqResultGetVcard );
 
 	XmlNodeIq iq( "get", iqId, jid );
 	XmlNode* vs = iq.addChild( "vCard" ); vs->addAttr( "xmlns", JABBER_FEAT_VCARD_TEMP ); 
 	vs->addAttr( "prodid", "-//HandGen//NONSGML vGen v1.0//EN" ); vs->addAttr( "version", "2.0" );
-	jabberThreadInfo->send( iq );
+	m_ThreadInfo->send( iq );
 	return iqId;
 }
 
@@ -211,12 +211,12 @@ static BOOL CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			dat->szPhotoFileName[0] = '\0';
 		}
 		EnableWindow( GetDlgItem( hwndDlg, IDC_DELETE ), FALSE );
-		dat->ppro->JabberGetAvatarFileName( NULL, szAvatarFileName, sizeof( szAvatarFileName ));
+		dat->ppro->GetAvatarFileName( NULL, szAvatarFileName, sizeof( szAvatarFileName ));
 		if ( _access( szAvatarFileName, 0 ) == 0 ) {
 			if ( GetTempPathA( sizeof( szTempPath ), szTempPath ) <= 0 )
 				strcpy( szTempPath, ".\\" );
 			if ( GetTempFileNameA( szTempPath, "jab", 0, szTempFileName ) > 0 ) {
-				dat->ppro->JabberLog( "Temp file = %s", szTempFileName );
+				dat->ppro->Log( "Temp file = %s", szTempFileName );
 				if ( CopyFileA( szAvatarFileName, szTempFileName, FALSE ) == TRUE ) {
 					if (( dat->hBitmap=( HBITMAP ) JCallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )szTempFileName )) != NULL ) {
 						JabberBitmapPremultiplyChannels( dat->hBitmap );
@@ -259,7 +259,7 @@ static BOOL CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 					struct _stat st;
 					HBITMAP hNewBitmap;
 
-					dat->ppro->JabberLog( "File selected is %s", szFileName );
+					dat->ppro->Log( "File selected is %s", szFileName );
 					if ( _stat( szFileName, &st )<0 || st.st_size>40*1024 ) {
 						MessageBox( hwndDlg, TranslateT( "Only JPG, GIF, and BMP image files smaller than 40 KB are supported." ), TranslateT( "Jabber vCard" ), MB_OK|MB_SETFOREGROUND );
 						break;
@@ -267,7 +267,7 @@ static BOOL CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 					if ( GetTempPathA( sizeof( szTempPath ), szTempPath ) <= 0 )
 						strcpy( szTempPath, ".\\" );
 					if ( GetTempFileNameA( szTempPath, "jab", 0, szTempFileName ) > 0 ) {
-						dat->ppro->JabberLog( "Temp file = %s", szTempFileName );
+						dat->ppro->Log( "Temp file = %s", szTempFileName );
 						if ( CopyFileA( szFileName, szTempFileName, FALSE ) == TRUE ) {
 							if (( hNewBitmap=( HBITMAP ) JCallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )szTempFileName )) != NULL ) {
 								if ( dat->hBitmap ) {
@@ -373,7 +373,7 @@ static BOOL CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 
 	case WM_DESTROY:
 		if ( dat->hBitmap ) {
-			dat->ppro->JabberLog( "Delete bitmap" );
+			dat->ppro->Log( "Delete bitmap" );
 			DeleteObject( dat->hBitmap );
 			DeleteFileA( dat->szPhotoFileName );
 		}
@@ -866,8 +866,8 @@ void CJabberProto::SetServerVcard( BOOL bPhotoChanged, char* szPhotoFileName )
 	char idstr[33];
 	WORD nFlag;
 
-	iqId = JabberSerialNext();
-	JabberIqAdd( iqId, IQ_PROC_SETVCARD, &CJabberProto::JabberIqResultSetVcard );
+	iqId = SerialNext();
+	IqAdd( iqId, IQ_PROC_SETVCARD, &CJabberProto::OnIqResultSetVcard );
 
 	XmlNodeIq iq( "set", iqId );
 	XmlNode* v = iq.addChild( "vCard" ); v->addAttr( "xmlns", JABBER_FEAT_VCARD_TEMP );
@@ -956,14 +956,14 @@ void CJabberProto::SetServerVcard( BOOL bPhotoChanged, char* szPhotoFileName )
 	}
 
 	char szAvatarName[ MAX_PATH ];
-	JabberGetAvatarFileName( NULL, szAvatarName, sizeof( szAvatarName ));
+	GetAvatarFileName( NULL, szAvatarName, sizeof( szAvatarName ));
 	if ( bPhotoChanged )
 		szFileName = ( szPhotoFileName != NULL && szPhotoFileName[0] ) ? szPhotoFileName : NULL;
 	else
 		szFileName = szAvatarName;
 
 	// Set photo element, also update the global jabberVcardPhotoFileName to reflect the update
-	JabberLog( "Before update, file name = %s", szFileName );
+	Log( "Before update, file name = %s", szFileName );
 	if ( szFileName == NULL ) {
 		v->addChild( "PHOTO" );
 		DeleteFileA( szAvatarName );
@@ -974,7 +974,7 @@ void CJabberProto::SetServerVcard( BOOL bPhotoChanged, char* szPhotoFileName )
 		char* buffer, *str;
 		DWORD nRead;
 
-		JabberLog( "Saving picture from %s", szFileName );
+		Log( "Saving picture from %s", szFileName );
 		if ( _stat( szFileName, &st ) >= 0 ) {
 			// Note the FILE_SHARE_READ attribute so that the CopyFile can succeed
 			if (( hFile=CreateFileA( szFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL )) != INVALID_HANDLE_VALUE ) {
@@ -1019,7 +1019,7 @@ void CJabberProto::SetServerVcard( BOOL bPhotoChanged, char* szPhotoFileName )
 				CloseHandle( hFile );
 	}	}	}
 
-	jabberThreadInfo->send( iq );
+	m_ThreadInfo->send( iq );
 }
 
 static void ThemeDialogBackground( HWND hwnd )
@@ -1053,7 +1053,7 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		dat->page = ( VcardPage * ) mir_alloc( dat->pageCount * sizeof( VcardPage ));
 		memset( dat->page, 0, dat->pageCount * sizeof( VcardPage ));
 
-		EnableWindow( GetDlgItem( hwndDlg, IDC_UPDATE ), dat->ppro->jabberOnline );
+		EnableWindow( GetDlgItem( hwndDlg, IDC_UPDATE ), dat->ppro->m_bJabberOnline );
 		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )dat->ppro->LoadIconEx( "vcard" ));
 
 		HWND hwndTabs = GetDlgItem( hwndDlg, IDC_TABS );
@@ -1117,7 +1117,7 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 		SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG ) dat );
 
-		if ( dat->ppro->jabberOnline )
+		if ( dat->ppro->m_bJabberOnline )
 			SendMessage( hwndDlg, WM_COMMAND, IDC_UPDATE, 0 );
 		return TRUE;
 	}
@@ -1160,7 +1160,7 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		break;
 	case WM_JABBER_CHANGED:
 		dat->changed = TRUE;
-		EnableWindow( GetDlgItem( hwndDlg, IDC_SAVE ), dat->ppro->jabberOnline );
+		EnableWindow( GetDlgItem( hwndDlg, IDC_SAVE ), dat->ppro->m_bJabberOnline );
 		break;
 	case WM_COMMAND:
 		switch ( LOWORD( wParam )) {
@@ -1170,7 +1170,7 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 			dat->szUpdating = TranslateT( "Updating" );
 			SetDlgItemText( hwndDlg, IDC_UPDATING, dat->szUpdating );
 			ShowWindow( GetDlgItem( hwndDlg, IDC_UPDATING ), SW_SHOW );
-			dat->ppro->JabberSendGetVcard( dat->ppro->jabberJID );
+			dat->ppro->SendGetVcard( dat->ppro->m_szJabberJID );
 			dat->animating = TRUE;
 			SetTimer( hwndDlg, 1, 200, NULL );
 			break;
@@ -1198,9 +1198,9 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		}
 		break;
 	case WM_JABBER_CHECK_ONLINE:
-		EnableWindow( GetDlgItem( hwndDlg, IDC_UPDATE ), dat->ppro->jabberOnline );
+		EnableWindow( GetDlgItem( hwndDlg, IDC_UPDATE ), dat->ppro->m_bJabberOnline );
 		if ( dat->changed )
-			EnableWindow( GetDlgItem( hwndDlg, IDC_SAVE ), dat->ppro->jabberOnline );
+			EnableWindow( GetDlgItem( hwndDlg, IDC_SAVE ), dat->ppro->m_bJabberOnline );
 		break;
 	case WM_JABBER_REFRESH:
 		if ( dat->animating ) {
@@ -1220,7 +1220,7 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		DestroyWindow( hwndDlg );
 		break;
 	case WM_DESTROY:
-		dat->ppro->hwndJabberVcard = NULL;
+		dat->ppro->m_hwndJabberVcard = NULL;
 		for ( int i=0; i<dat->pageCount; i++ )
 			if ( dat->page[i].hwnd != NULL )
 				DestroyWindow( dat->page[i].hwnd );
@@ -1234,12 +1234,12 @@ static BOOL CALLBACK JabberVcardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-int __cdecl CJabberProto::JabberMenuHandleVcard( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::OnMenuHandleVcard( WPARAM wParam, LPARAM lParam )
 {
-	if ( IsWindow( hwndJabberVcard ))
-		SetForegroundWindow( hwndJabberVcard );
+	if ( IsWindow( m_hwndJabberVcard ))
+		SetForegroundWindow( m_hwndJabberVcard );
 	else
-		hwndJabberVcard = CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_VCARD ), NULL, JabberVcardDlgProc, ( LPARAM )this );
+		m_hwndJabberVcard = CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_VCARD ), NULL, JabberVcardDlgProc, ( LPARAM )this );
 
 	return 0;
 }

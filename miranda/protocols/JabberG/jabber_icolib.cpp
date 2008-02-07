@@ -143,7 +143,7 @@ static iconList[] =
 	{   LPGEN("Deny Queries"),          "pl_iq_deny",       IDI_PL_QUERY_DENY,      LPGEN("Dialogs/Privacy") },
 };
 
-void CJabberProto::JabberIconsInit( void )
+void CJabberProto::IconsInit( void )
 {
 	SKINICONDESC sid = {0};
 	char szFile[MAX_PATH];
@@ -153,7 +153,7 @@ void CJabberProto::JabberIconsInit( void )
 	sid.pszDefaultFile = szFile;
 	sid.cx = sid.cy = 16;
 
-	hIconLibItems = ( HANDLE* )mir_alloc( sizeof( HANDLE )*SIZEOF(iconList));
+	m_phIconLibItems = ( HANDLE* )mir_alloc( sizeof( HANDLE )*SIZEOF(iconList));
 
 	char *szRootSection = Translate( m_szProtoName );
 
@@ -170,14 +170,14 @@ void CJabberProto::JabberIconsInit( void )
 		sid.pszName = szSettingName;
 		sid.pszDescription = Translate( iconList[i].szDescr );
 		sid.iDefaultIndex = -iconList[i].defIconID;
-		hIconLibItems[i] = ( HANDLE )CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+		m_phIconLibItems[i] = ( HANDLE )CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 }	}
 
 HANDLE CJabberProto::GetIconHandle( int iconId )
 {
 	for ( int i=0; i < SIZEOF(iconList); i++ )
 		if ( iconList[i].defIconID == iconId )
-			return hIconLibItems[i];
+			return m_phIconLibItems[i];
 
 	return NULL;
 }
@@ -333,7 +333,7 @@ int CJabberProto::LoadAdvancedIcons(int iID)
 	if (!hAdvancedStatusIcon)
 		hAdvancedStatusIcon=(HIMAGELIST)CallService(MS_CLIST_GETICONSIMAGELIST,0,0);
 
-	EnterCriticalSection( &modeMsgMutex );
+	EnterCriticalSection( &m_csModeMsgMutex );
 	for (i=0; i<ID_STATUS_ONTHEPHONE-ID_STATUS_OFFLINE; i++) {
 		HICON hicon;
 		BOOL needFree;
@@ -349,7 +349,7 @@ int CJabberProto::LoadAdvancedIcons(int iID)
 
 	if ( TransportProtoTable[ iID ].startIndex == -1 )
 		TransportProtoTable[ iID ].startIndex = first;
-	LeaveCriticalSection( &modeMsgMutex );
+	LeaveCriticalSection( &m_csModeMsgMutex );
 	return 0;
 }
 
@@ -432,7 +432,7 @@ int __cdecl CJabberProto::JGetAdvancedStatusIcon(WPARAM wParam, LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 //   Transport check functions
 
-BOOL CJabberProto::JabberDBCheckIsTransportedContact(const TCHAR* jid, HANDLE hContact)
+BOOL CJabberProto::DBCheckIsTransportedContact(const TCHAR* jid, HANDLE hContact)
 {
 	// check if transport is already set
 	if ( !jid || !hContact )
@@ -458,9 +458,9 @@ BOOL CJabberProto::JabberDBCheckIsTransportedContact(const TCHAR* jid, HANDLE hC
 			break;
 	}	}
 
-	if ( jabberTransports.getIndex( domain ) == -1 ) {
+	if ( m_lstTransports.getIndex( domain ) == -1 ) {
 		if ( isAgent ) {
-			jabberTransports.insert( _tcsdup(domain) ); 
+			m_lstTransports.insert( _tcsdup(domain) ); 
 			JSetByte( hContact, "IsTransport", 1 );
 	}	}
 
@@ -471,7 +471,7 @@ BOOL CJabberProto::JabberDBCheckIsTransportedContact(const TCHAR* jid, HANDLE hC
 	return isTransported;
 }
 
-void CJabberProto::JabberCheckAllContactsAreTransported()
+void CJabberProto::CheckAllContactsAreTransported()
 {
 	HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL ) {
@@ -479,7 +479,7 @@ void CJabberProto::JabberCheckAllContactsAreTransported()
 		if ( !lstrcmpA( m_szProtoName, szProto )) {
 			DBVARIANT dbv;
 			if ( !JGetStringT( hContact, "jid", &dbv )) {
-				JabberDBCheckIsTransportedContact( dbv.ptszVal, hContact );
+				DBCheckIsTransportedContact( dbv.ptszVal, hContact );
 				JFreeVariant( &dbv );
 		}	}
 

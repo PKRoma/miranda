@@ -36,7 +36,7 @@ Last change by : $Author$
 #include "m_genmenu.h"
 #include "m_clistint.h"
 
-void CJabberProto::JabberIqResultServerDiscoInfo( XmlNode* iqNode, void* userdata )
+void CJabberProto::OnIqResultServerDiscoInfo( XmlNode* iqNode, void* userdata )
 {
 	if ( !iqNode )
 		return;
@@ -54,32 +54,32 @@ void CJabberProto::JabberIqResultServerDiscoInfo( XmlNode* iqNode, void* userdat
 			TCHAR *identityCategory = JabberXmlGetAttrValue( identity, "category" );
 			TCHAR *identityType = JabberXmlGetAttrValue( identity, "type" );
 			if ( identityCategory && identityType && !_tcscmp( identityCategory, _T("pubsub") ) && !_tcscmp( identityType, _T("pep")) ) {
-				jabberPepSupported = TRUE;
+				m_bPepSupported = TRUE;
 
-				JabberRebuildStatusMenu();
+				RebuildStatusMenu();
 				break;
 			}
 		}
-		if ( jabberThreadInfo ) {
-			jabberThreadInfo->jabberServerCaps = JABBER_RESOURCE_CAPS_NONE;
+		if ( m_ThreadInfo ) {
+			m_ThreadInfo->jabberServerCaps = JABBER_RESOURCE_CAPS_NONE;
 			XmlNode *feature;
 			for ( i = 1; ( feature = JabberXmlGetNthChild( query, "feature", i )) != NULL; i++ ) {
 				TCHAR *featureName = JabberXmlGetAttrValue( feature, "var" );
 				if ( featureName ) {
 					for ( int j = 0; g_JabberFeatCapPairs[j].szFeature; j++ ) {
 						if ( !_tcscmp( g_JabberFeatCapPairs[j].szFeature, featureName )) {
-							jabberThreadInfo->jabberServerCaps |= g_JabberFeatCapPairs[j].jcbCap;
+							m_ThreadInfo->jabberServerCaps |= g_JabberFeatCapPairs[j].jcbCap;
 							break;
 						}	
 					}	
 				}	
 			}	
 		}
-		JabberProcessLoginRq((ThreadData *)userdata, JABBER_LOGIN_SERVERINFO);
+		OnProcessLoginRq((ThreadData *)userdata, JABBER_LOGIN_SERVERINFO);
 	}	
 }
 
-void CJabberProto::JabberIqResultNestedRosterGroups( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultNestedRosterGroups( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	TCHAR *szGroupDelimeter = NULL;
 	BOOL bPrivateStorageSupport = FALSE;
@@ -95,37 +95,37 @@ void CJabberProto::JabberIqResultNestedRosterGroups( XmlNode* iqNode, void* user
 	}
 
 	// global fuckup
-	if ( !jabberThreadInfo )
+	if ( !m_ThreadInfo )
 		return;
 
 	// is our default delimiter?
 	if (( !szGroupDelimeter && bPrivateStorageSupport ) || ( szGroupDelimeter && _tcscmp( szGroupDelimeter, _T("\\") ))) {
-		XmlNodeIq iqNRG( "set", JabberSerialNext() );
+		XmlNodeIq iqNRG( "set", SerialNext() );
 		XmlNode* query = iqNRG.addQuery( JABBER_FEAT_PRIVATE_STORAGE );
 		XmlNode* roster = query->addChild( "roster", _T("\\") );
 		roster->addAttr( "xmlns", JABBER_FEAT_NESTED_ROSTER_GROUPS );
-		jabberThreadInfo->send( iqNRG );
+		m_ThreadInfo->send( iqNRG );
 	}
 
 	// roster request
 	TCHAR *szUserData = mir_tstrdup( szGroupDelimeter ? szGroupDelimeter : _T("\\") );
-	XmlNodeIq iq( m_iqManager.AddHandler( &CJabberProto::JabberIqResultGetRoster, JABBER_IQ_TYPE_GET, NULL, 0, -1, (void *)szUserData ));
+	XmlNodeIq iq( m_iqManager.AddHandler( &CJabberProto::OnIqResultGetRoster, JABBER_IQ_TYPE_GET, NULL, 0, -1, (void *)szUserData ));
 	XmlNode* query = iq.addChild( "query" ); query->addAttr( "xmlns", JABBER_FEAT_IQ_ROSTER );
-	jabberThreadInfo->send( iq );
+	m_ThreadInfo->send( iq );
 }
 
-void CJabberProto::JabberProcessLoginRq( ThreadData* info, DWORD rq )
+void CJabberProto::OnProcessLoginRq( ThreadData* info, DWORD rq )
 {
 	info->dwLoginRqs |= rq;
 
 	if ((info->dwLoginRqs & JABBER_LOGIN_ROSTER) && (info->dwLoginRqs & JABBER_LOGIN_BOOKMARKS) &&
 		(info->dwLoginRqs & JABBER_LOGIN_SERVERINFO) && !(info->dwLoginRqs & JABBER_LOGIN_BOOKMARKS_AJ))
 	{
-		if ( jabberChatDllPresent && JGetByte( "AutoJoinBookmarks", TRUE ) ) {
+		if ( m_bChatDllPresent && JGetByte( "AutoJoinBookmarks", TRUE ) ) {
 			JABBER_LIST_ITEM* item;
-			for ( int i=0; ( i = JabberListFindNext( LIST_BOOKMARK, i )) >= 0; i++ ) {
-				if ((( item = JabberListGetItemPtrFromIndex( i )) != NULL ) && !lstrcmp( item->type, _T("conference") )) {
-					if ( item->bAutoJoin && JabberListGetItemPtr( LIST_ROOM, item->jid ) == NULL ) {
+			for ( int i=0; ( i = ListFindNext( LIST_BOOKMARK, i )) >= 0; i++ ) {
+				if ((( item = ListGetItemPtrFromIndex( i )) != NULL ) && !lstrcmp( item->type, _T("conference") )) {
+					if ( item->bAutoJoin && ListGetItemPtr( LIST_ROOM, item->jid ) == NULL ) {
 						TCHAR room[256], *server, *p;
 						TCHAR text[128];
 						_tcsncpy( text, item->jid, SIZEOF( text ));
@@ -133,27 +133,27 @@ void CJabberProto::JabberProcessLoginRq( ThreadData* info, DWORD rq )
 						p = _tcstok( room, _T( "@" ));
 						server = _tcstok( NULL, _T( "@" ));
 						if ( item->nick && item->nick[0] != 0 )
-							JabberGroupchatJoinRoom( server, p, item->nick, item->password );
+							GroupchatJoinRoom( server, p, item->nick, item->password );
 						else {
-							TCHAR* nick = JabberNickFromJID( jabberJID );
-							JabberGroupchatJoinRoom( server, p, nick, item->password );
+							TCHAR* nick = JabberNickFromJID( m_szJabberJID );
+							GroupchatJoinRoom( server, p, nick, item->password );
 							mir_free( nick );
 		}	}	}	}	}
 
-		JabberProcessLoginRq( info, JABBER_LOGIN_BOOKMARKS_AJ );
+		OnProcessLoginRq( info, JABBER_LOGIN_BOOKMARKS_AJ );
 	}
 }
 
-void CJabberProto::JabberOnLoggedIn( ThreadData* info )
+void CJabberProto::OnLoggedIn( ThreadData* info )
 {
-	jabberOnline = TRUE;
-	jabberLoggedInTime = time(0);
+	m_bJabberOnline = TRUE;
+	m_tmJabberLoggedInTime = time(0);
 
 	info->dwLoginRqs = 0;
 
 	// XEP-0083 support
 	{
-		CJabberIqInfo* pIqInfo = m_iqManager.AddHandler( &CJabberProto::JabberIqResultNestedRosterGroups, JABBER_IQ_TYPE_GET );
+		CJabberIqInfo* pIqInfo = m_iqManager.AddHandler( &CJabberProto::OnIqResultNestedRosterGroups, JABBER_IQ_TYPE_GET );
 		// ugly hack to prevent hangup during login process
 		pIqInfo->SetTimeout( 30000 );
 		XmlNodeIq iqNRG( pIqInfo );
@@ -163,29 +163,29 @@ void CJabberProto::JabberOnLoggedIn( ThreadData* info )
 		info->send( iqNRG );
 	}
 
-	int iqId = JabberSerialNext();
-	JabberIqAdd( iqId, IQ_PROC_DISCOBOOKMARKS, &CJabberProto::JabberIqResultDiscoBookmarks);
+	int iqId = SerialNext();
+	IqAdd( iqId, IQ_PROC_DISCOBOOKMARKS, &CJabberProto::OnIqResultDiscoBookmarks);
 	XmlNodeIq biq( "get", iqId);
 	XmlNode* bquery = biq.addQuery( JABBER_FEAT_PRIVATE_STORAGE );
 	XmlNode* storage = bquery->addChild( "storage" );
 	storage->addAttr( "xmlns", "storage:bookmarks" );
 	info->send( biq );
 
-	jabberPepSupported = FALSE;
+	m_bPepSupported = FALSE;
 	info->jabberServerCaps = JABBER_RESOURCE_CAPS_NONE;
-	iqId = JabberSerialNext();
-	JabberIqAdd( iqId, IQ_PROC_NONE, &CJabberProto::JabberIqResultServerDiscoInfo );
-	XmlNodeIq diq( "get", iqId, jabberThreadInfo->server );
+	iqId = SerialNext();
+	IqAdd( iqId, IQ_PROC_NONE, &CJabberProto::OnIqResultServerDiscoInfo );
+	XmlNodeIq diq( "get", iqId, m_ThreadInfo->server );
 	diq.addQuery( JABBER_FEAT_DISCO_INFO );
-	jabberThreadInfo->send( diq );
+	m_ThreadInfo->send( diq );
 
 	QueryPrivacyLists();
 
 	char szServerName[ sizeof(info->server) ];
 	if ( JGetStaticString( "LastLoggedServer", NULL, szServerName, sizeof(szServerName)))
-		JabberSendGetVcard( jabberJID );
+		SendGetVcard( m_szJabberJID );
 	else if ( strcmp( info->server, szServerName ))
-		JabberSendGetVcard( jabberJID );
+		SendGetVcard( m_szJabberJID );
 	JSetString( NULL, "LastLoggedServer", info->server );
 
 	//Check if avatar changed
@@ -195,18 +195,18 @@ void CJabberProto::JabberOnLoggedIn( ThreadData* info )
 	int resultHash  = JGetStringT( NULL, "AvatarHash", &dbvHash );
 	if ( resultSaved || resultHash || lstrcmp( dbvSaved.ptszVal, dbvHash.ptszVal ))	{
 		char tFileName[ MAX_PATH ];
-		JabberGetAvatarFileName( NULL, tFileName, MAX_PATH );
+		GetAvatarFileName( NULL, tFileName, MAX_PATH );
 		SetServerVcard( TRUE, tFileName );
 	}
 	DBFreeVariant(&dbvSaved);
 	DBFreeVariant(&dbvHash);
 }
 
-void CJabberProto::JabberIqResultGetAuth( XmlNode *iqNode, void *userdata )
+void CJabberProto::OnIqResultGetAuth( XmlNode *iqNode, void *userdata )
 {
 	// RECVED: result of the request for authentication method
 	// ACTION: send account authentication information to log in
-	JabberLog( "<iq/> iqIdGetAuth" );
+	Log( "<iq/> iqIdGetAuth" );
 
 	ThreadData* info = ( ThreadData* ) userdata;
 	XmlNode *queryNode;
@@ -215,16 +215,16 @@ void CJabberProto::JabberIqResultGetAuth( XmlNode *iqNode, void *userdata )
 	if (( queryNode=JabberXmlGetChild( iqNode, "query" )) == NULL ) return;
 
 	if ( !lstrcmp( type, _T("result"))) {
-		int iqId = JabberSerialNext();
-		JabberIqAdd( iqId, IQ_PROC_NONE, &CJabberProto::JabberIqResultSetAuth );
+		int iqId = SerialNext();
+		IqAdd( iqId, IQ_PROC_NONE, &CJabberProto::OnIqResultSetAuth );
 
 		XmlNodeIq iq( "set", iqId );
 		XmlNode* query = iq.addQuery( "jabber:iq:auth" );
 		query->addChild( "username", info->username );
-		if ( JabberXmlGetChild( queryNode, "digest" )!=NULL && streamId ) {
+		if ( JabberXmlGetChild( queryNode, "digest" )!=NULL && m_szStreamId ) {
 			char* str = mir_utf8encode( info->password );
 			char text[200];
-			mir_snprintf( text, SIZEOF(text), "%s%s", streamId, str );
+			mir_snprintf( text, SIZEOF(text), "%s%s", m_szStreamId, str );
 			mir_free( str );
          if (( str=JabberSha1( text )) != NULL ) {
 				query->addChild( "digest", str );
@@ -234,7 +234,7 @@ void CJabberProto::JabberIqResultGetAuth( XmlNode *iqNode, void *userdata )
 		else if ( JabberXmlGetChild( queryNode, "password" ) != NULL )
 			query->addChild( "password", info->password );
 		else {
-			JabberLog( "No known authentication mechanism accepted by the server." );
+			Log( "No known authentication mechanism accepted by the server." );
 
 			info->send( "</stream:stream>" );
 			return;
@@ -252,17 +252,17 @@ void CJabberProto::JabberIqResultGetAuth( XmlNode *iqNode, void *userdata )
 		mir_sntprintf( text, SIZEOF( text ), _T("%s %s."), TranslateT( "Authentication failed for" ), info->username );
 		MessageBox( NULL, text, TranslateT( "Jabber Authentication" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
 		JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
-		jabberThreadInfo = NULL;	// To disallow auto reconnect
+		m_ThreadInfo = NULL;	// To disallow auto reconnect
 }	}
 
-void CJabberProto::JabberIqResultSetAuth( XmlNode *iqNode, void *userdata )
+void CJabberProto::OnIqResultSetAuth( XmlNode *iqNode, void *userdata )
 {
 	ThreadData* info = ( ThreadData* ) userdata;
 	TCHAR* type;
 
 	// RECVED: authentication result
 	// ACTION: if successfully logged in, continue by requesting roster list and set my initial status
-	JabberLog( "<iq/> iqIdSetAuth" );
+	Log( "<iq/> iqIdSetAuth" );
 	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
 
 	if ( !lstrcmp( type, _T("result"))) {
@@ -272,7 +272,7 @@ void CJabberProto::JabberIqResultSetAuth( XmlNode *iqNode, void *userdata )
 		else
 			JFreeVariant( &dbv );
 
-		JabberOnLoggedIn( info );
+		OnLoggedIn( info );
 	}
 	// What to do if password error? etc...
 	else if ( !lstrcmp( type, _T("error"))) {
@@ -282,10 +282,10 @@ void CJabberProto::JabberIqResultSetAuth( XmlNode *iqNode, void *userdata )
 		mir_sntprintf( text, SIZEOF( text ), _T("%s %s."), TranslateT( "Authentication failed for" ), info->username );
 		MessageBox( NULL, text, TranslateT( "Jabber Authentication" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
 		JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
-		jabberThreadInfo = NULL;	// To disallow auto reconnect
+		m_ThreadInfo = NULL;	// To disallow auto reconnect
 }	}
 
-void CJabberProto::JabberIqResultBind( XmlNode *iqNode, void *userdata )
+void CJabberProto::OnIqResultBind( XmlNode *iqNode, void *userdata )
 {
 	ThreadData* info = ( ThreadData* ) userdata;
 	XmlNode* n = JabberXmlGetChild( iqNode, "bind" );
@@ -293,29 +293,29 @@ void CJabberProto::JabberIqResultBind( XmlNode *iqNode, void *userdata )
 		if ( n = JabberXmlGetChild( n, "jid" )) {
 			if ( n->text ) {
 				if ( !_tcsncmp( info->fullJID, n->text, SIZEOF( info->fullJID )))
-					JabberLog( "Result Bind: "TCHAR_STR_PARAM" %s "TCHAR_STR_PARAM, info->fullJID, "confirmed.", NULL );
+					Log( "Result Bind: "TCHAR_STR_PARAM" %s "TCHAR_STR_PARAM, info->fullJID, "confirmed.", NULL );
 				else {
-					JabberLog( "Result Bind: "TCHAR_STR_PARAM" %s "TCHAR_STR_PARAM, info->fullJID, "changed to", n->text);
+					Log( "Result Bind: "TCHAR_STR_PARAM" %s "TCHAR_STR_PARAM, info->fullJID, "changed to", n->text);
 					_tcsncpy( info->fullJID, n->text, SIZEOF( info->fullJID ));
 		}	}	}
 
 		if ( info->bIsSessionAvailable ) {
-			int iqId = JabberSerialNext();
-			JabberIqAdd( iqId, IQ_PROC_NONE, &CJabberProto::JabberIqResultSession );
+			int iqId = SerialNext();
+			IqAdd( iqId, IQ_PROC_NONE, &CJabberProto::OnIqResultSession );
 
 			XmlNodeIq iq( "set" ); iq.addAttrID( iqId );
 			iq.addChild( "session" )->addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-session" );
 			info->send( iq );
 		}
-		else JabberOnLoggedIn( info );
+		else OnLoggedIn( info );
 	}
    else if ( n = JabberXmlGetChild( n, "error" )) {
 		//rfc3920 page 39
 		info->send( "</stream:stream>" );
-		jabberThreadInfo = NULL;	// To disallow auto reconnect
+		m_ThreadInfo = NULL;	// To disallow auto reconnect
 }	}
 
-void CJabberProto::JabberIqResultSession( XmlNode *iqNode, void *userdata )
+void CJabberProto::OnIqResultSession( XmlNode *iqNode, void *userdata )
 {
 	ThreadData* info = ( ThreadData* )userdata;
 
@@ -323,10 +323,10 @@ void CJabberProto::JabberIqResultSession( XmlNode *iqNode, void *userdata )
 	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
 
 	if ( !lstrcmp( type, _T("result")))
-		JabberOnLoggedIn( info );
+		OnLoggedIn( info );
 }
 
-void CJabberProto::JabberGroupchatJoinByHContact( HANDLE hContact )
+void CJabberProto::GroupchatJoinByHContact( HANDLE hContact )
 {
 	DBVARIANT dbv;
 	if( JGetStringT( hContact, "ChatRoomID", &dbv ))
@@ -346,7 +346,7 @@ void CJabberProto::JabberGroupchatJoinByHContact( HANDLE hContact )
 
 	TCHAR nick[ 256 ];
 	if ( JGetStringT( hContact, "MyNick", &dbv )) {
-		TCHAR* jidnick = JabberNickFromJID( jabberJID );
+		TCHAR* jidnick = JabberNickFromJID( m_szJabberJID );
 		if( !jidnick ) {
 			mir_free( jidnick );
 			mir_free( roomjid );
@@ -360,16 +360,16 @@ void CJabberProto::JabberGroupchatJoinByHContact( HANDLE hContact )
 		JFreeVariant( &dbv );
 	}
 
-	JabberGroupchatJoinRoom( server, room, nick, _T(""));
+	GroupchatJoinRoom( server, room, nick, _T(""));
 	mir_free( roomjid );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberIqResultGetRoster - populates LIST_ROSTER and creates contact for any new rosters
 
-void CJabberProto::JabberIqResultGetRoster( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultGetRoster( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
-	JabberLog( "<iq/> iqIdGetRoster" );
+	Log( "<iq/> iqIdGetRoster" );
 	TCHAR *szGroupDelimeter = (TCHAR *)pInfo->GetUserData();
 	if ( pInfo->GetIqType() != JABBER_IQ_TYPE_RESULT ) {
 		mir_free( szGroupDelimeter );
@@ -427,7 +427,7 @@ void CJabberProto::JabberIqResultGetRoster( XmlNode* iqNode, void* userdata, CJa
 		if ( nick == NULL )
 			continue;
 
-		JABBER_LIST_ITEM* item = JabberListAdd( LIST_ROSTER, jid );
+		JABBER_LIST_ITEM* item = ListAdd( LIST_ROSTER, jid );
 		item->subscription = sub;
 
 		mir_free( item->nick ); item->nick = nick;
@@ -450,11 +450,11 @@ void CJabberProto::JabberIqResultGetRoster( XmlNode* iqNode, void* userdata, CJa
 			}
 		}
 
-		HANDLE hContact = JabberHContactFromJID( jid );
+		HANDLE hContact = HContactFromJID( jid );
 		if ( hContact == NULL ) {
 			// Received roster has a new JID.
 			// Add the jid ( with empty resource ) to Miranda contact list.
-			hContact = JabberDBCreateContact( jid, nick, FALSE, FALSE );
+			hContact = DBCreateContact( jid, nick, FALSE, FALSE );
 		}
 
 		if ( name != NULL ) {
@@ -521,8 +521,8 @@ void CJabberProto::JabberIqResultGetRoster( XmlNode* iqNode, void* userdata, CJa
 			if ( str != NULL && !strcmp( str, m_szProtoName )) {
 				DBVARIANT dbv;
 				if ( !JGetStringT( hContact, "jid", &dbv )) {
-					if ( !JabberListExist( LIST_ROSTER, dbv.ptszVal )) {
-						JabberLog( "Syncing roster: preparing to delete " TCHAR_STR_PARAM " ( hContact=0x%x )", dbv.ptszVal, hContact );
+					if ( !ListExist( LIST_ROSTER, dbv.ptszVal )) {
+						Log( "Syncing roster: preparing to delete " TCHAR_STR_PARAM " ( hContact=0x%x )", dbv.ptszVal, hContact );
 						if ( listSize >= listAllocSize ) {
 							listAllocSize = listSize + 100;
 							if (( list=( HANDLE * ) mir_realloc( list, listAllocSize * sizeof( HANDLE ))) == NULL ) {
@@ -539,54 +539,54 @@ void CJabberProto::JabberIqResultGetRoster( XmlNode* iqNode, void* userdata, CJa
 		}
 
 		for ( i=0; i < listSize; i++ ) {
-			JabberLog( "Syncing roster: deleting 0x%x", list[i] );
+			Log( "Syncing roster: deleting 0x%x", list[i] );
 			JCallService( MS_DB_CONTACT_DELETE, ( WPARAM ) list[i], 0 );
 		}
 		if ( list != NULL )
 			mir_free( list );
 	}
 
-	JabberEnableMenuItems( TRUE );
+	EnableMenuItems( TRUE );
 
-	if ( hwndJabberGroupchat )
-		SendMessage( hwndJabberGroupchat, WM_JABBER_CHECK_ONLINE, 0, 0 );
-	if ( hwndJabberJoinGroupchat )
-		SendMessage( hwndJabberJoinGroupchat, WM_JABBER_CHECK_ONLINE, 0, 0 );
-	if ( hwndJabberBookmarks )
-		SendMessage( hwndJabberBookmarks, WM_JABBER_CHECK_ONLINE, 0, 0 );
-	if ( hwndJabberAddBookmark)
-		SendMessage( hwndJabberAddBookmark, WM_JABBER_CHECK_ONLINE, 0, 0 );
+	if ( m_hwndJabberGroupchat )
+		SendMessage( m_hwndJabberGroupchat, WM_JABBER_CHECK_ONLINE, 0, 0 );
+	if ( m_hwndJabberJoinGroupchat )
+		SendMessage( m_hwndJabberJoinGroupchat, WM_JABBER_CHECK_ONLINE, 0, 0 );
+	if ( m_hwndJabberBookmarks )
+		SendMessage( m_hwndJabberBookmarks, WM_JABBER_CHECK_ONLINE, 0, 0 );
+	if ( m_hwndJabberAddBookmark)
+		SendMessage( m_hwndJabberAddBookmark, WM_JABBER_CHECK_ONLINE, 0, 0 );
 
 
 
-	JabberLog( "Status changed via THREADSTART" );
-	modeMsgStatusChangePending = FALSE;
-	JabberSetServerStatus( m_iDesiredStatus );
+	Log( "Status changed via THREADSTART" );
+	m_bModeMsgStatusChangePending = FALSE;
+	SetServerStatus( m_iDesiredStatus );
 
 	if ( JGetByte( "AutoJoinConferences", 0 )) {
 		for ( i=0; i < chatRooms.realCount; i++ )
-			JabberGroupchatJoinByHContact(( HANDLE )chatRooms.items[i] );
+			GroupchatJoinByHContact(( HANDLE )chatRooms.items[i] );
 	}
 	li.List_Destroy( &chatRooms );
 
-	if ( hwndJabberAgents )
-		SendMessage( hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
-	if ( hwndServiceDiscovery )
-		SendMessage( hwndServiceDiscovery, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
-	if ( hwndJabberVcard )
-		SendMessage( hwndJabberVcard, WM_JABBER_CHECK_ONLINE, 0, 0 );
+	if ( m_hwndJabberAgents )
+		SendMessage( m_hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
+	if ( m_hwndServiceDiscovery )
+		SendMessage( m_hwndServiceDiscovery, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
+	if ( m_hwndJabberVcard )
+		SendMessage( m_hwndJabberVcard, WM_JABBER_CHECK_ONLINE, 0, 0 );
 
 	if ( szGroupDelimeter )
 		mir_free( szGroupDelimeter );
 
-	JabberProcessLoginRq((ThreadData *)userdata, JABBER_LOGIN_ROSTER);
+	OnProcessLoginRq((ThreadData *)userdata, JABBER_LOGIN_ROSTER);
 }
 
-void CJabberProto::JabberIqResultGetRegister( XmlNode *iqNode, void *userdata )
+void CJabberProto::OnIqResultGetRegister( XmlNode *iqNode, void *userdata )
 {
 	// RECVED: result of the request for ( agent ) registration mechanism
 	// ACTION: activate ( agent ) registration input dialog
-	JabberLog( "<iq/> iqIdGetRegister" );
+	Log( "<iq/> iqIdGetRegister" );
 
 	ThreadData* info = ( ThreadData* ) userdata;
 	XmlNode *queryNode, *n;
@@ -595,50 +595,50 @@ void CJabberProto::JabberIqResultGetRegister( XmlNode *iqNode, void *userdata )
 	if (( queryNode=JabberXmlGetChild( iqNode, "query" )) == NULL ) return;
 
 	if ( !lstrcmp( type, _T("result"))) {
-		if ( hwndAgentRegInput )
+		if ( m_hwndAgentRegInput )
 			if (( n = JabberXmlCopyNode( iqNode )) != NULL )
-				SendMessage( hwndAgentRegInput, WM_JABBER_REGINPUT_ACTIVATE, 1 /*success*/, ( LPARAM )n );
+				SendMessage( m_hwndAgentRegInput, WM_JABBER_REGINPUT_ACTIVATE, 1 /*success*/, ( LPARAM )n );
 	}
 	else if ( !lstrcmp( type, _T("error"))) {
-		if ( hwndAgentRegInput ) {
+		if ( m_hwndAgentRegInput ) {
 			XmlNode *errorNode = JabberXmlGetChild( iqNode, "error" );
 			TCHAR* str = JabberErrorMsg( errorNode );
-			SendMessage( hwndAgentRegInput, WM_JABBER_REGINPUT_ACTIVATE, 0 /*error*/, ( LPARAM )str );
+			SendMessage( m_hwndAgentRegInput, WM_JABBER_REGINPUT_ACTIVATE, 0 /*error*/, ( LPARAM )str );
 			mir_free( str );
 }	}	}
 
-void CJabberProto::JabberIqResultSetRegister( XmlNode *iqNode, void *userdata )
+void CJabberProto::OnIqResultSetRegister( XmlNode *iqNode, void *userdata )
 {
 	// RECVED: result of registration process
 	// ACTION: notify of successful agent registration
-	JabberLog( "<iq/> iqIdSetRegister" );
+	Log( "<iq/> iqIdSetRegister" );
 
 	TCHAR *type, *from;
 	if (( type = JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
 	if (( from = JabberXmlGetAttrValue( iqNode, "from" )) == NULL ) return;
 
 	if ( !lstrcmp( type, _T("result"))) {
-		HANDLE hContact = JabberHContactFromJID( from );
+		HANDLE hContact = HContactFromJID( from );
 		if ( hContact != NULL )
 			JSetByte( hContact, "IsTransport", TRUE );
 
-		if ( hwndRegProgress )
-			SendMessage( hwndRegProgress, WM_JABBER_REGDLG_UPDATE, 100, ( LPARAM )TranslateT( "Registration successful" ));
+		if ( m_hwndRegProgress )
+			SendMessage( m_hwndRegProgress, WM_JABBER_REGDLG_UPDATE, 100, ( LPARAM )TranslateT( "Registration successful" ));
 	}
 	else if ( !lstrcmp( type, _T("error"))) {
-		if ( hwndRegProgress ) {
+		if ( m_hwndRegProgress ) {
 			XmlNode *errorNode = JabberXmlGetChild( iqNode, "error" );
 			TCHAR* str = JabberErrorMsg( errorNode );
-			SendMessage( hwndRegProgress, WM_JABBER_REGDLG_UPDATE, 100, ( LPARAM )str );
+			SendMessage( m_hwndRegProgress, WM_JABBER_REGDLG_UPDATE, 100, ( LPARAM )str );
 			mir_free( str );
 }	}	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberIqResultGetVcard - processes the server-side v-card
 
-void CJabberProto::JabberIqResultGetVcardPhoto( const TCHAR* jid, XmlNode* n, HANDLE hContact, BOOL& hasPhoto )
+void CJabberProto::OnIqResultGetVcardPhoto( const TCHAR* jid, XmlNode* n, HANDLE hContact, BOOL& hasPhoto )
 {
-	JabberLog( "JabberIqResultGetVcardPhoto: %d", hasPhoto );
+	Log( "JabberIqResultGetVcardPhoto: %d", hasPhoto );
 	if ( hasPhoto )
 		return;
 
@@ -695,26 +695,26 @@ LBL_Ret:
 		if ( p != NULL )
 			lstrcpyA( p+1, szPicType + 6 );	
 	}
-	else JabberGetAvatarFileName( NULL, szAvatarFileName, sizeof( szAvatarFileName ));
+	else GetAvatarFileName( NULL, szAvatarFileName, sizeof( szAvatarFileName ));
 
-	JabberLog( "Picture file name set to %s", szAvatarFileName );
+	Log( "Picture file name set to %s", szAvatarFileName );
 	HANDLE hFile = CreateFileA( szAvatarFileName, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
 	if ( hFile == INVALID_HANDLE_VALUE )
 		goto LBL_Ret;
 
-	JabberLog( "Writing %d bytes", bufferLen );
+	Log( "Writing %d bytes", bufferLen );
 	if ( !WriteFile( hFile, buffer, bufferLen, &nWritten, NULL ))
 		goto LBL_Ret;
 
-	JabberLog( "%d bytes written", nWritten );
+	Log( "%d bytes written", nWritten );
 	if ( hContact == NULL ) {
 		hasPhoto = TRUE;
-		JabberLog( "My picture saved to %s", szAvatarFileName );
+		Log( "My picture saved to %s", szAvatarFileName );
 	}
 	else if ( !JGetStringT( hContact, "jid", &dbv )) {
-		item = JabberListGetItemPtr( LIST_ROSTER, jid );
+		item = ListGetItemPtr( LIST_ROSTER, jid );
 		if ( item == NULL ) {
-			item = JabberListAdd( LIST_VCARD_TEMP, jid ); // adding to the temp list to store information about photo
+			item = ListAdd( LIST_VCARD_TEMP, jid ); // adding to the temp list to store information about photo
 			item->bUseResource = TRUE;
 		}
 		if (item != NULL ) {
@@ -722,7 +722,7 @@ LBL_Ret:
 			if ( item->photoFileName )
 				DeleteFileA( item->photoFileName );
 			replaceStr( item->photoFileName, szAvatarFileName );
-			JabberLog( "Contact's picture saved to %s", szAvatarFileName );
+			Log( "Contact's picture saved to %s", szAvatarFileName );
 		}
 		JFreeVariant( &dbv );
 	}
@@ -744,7 +744,7 @@ static char* sttGetText( XmlNode* node, char* tag )
 	return mir_t2a( n->text );
 }
 
-void CJabberProto::JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
+void CJabberProto::OnIqResultGetVcard( XmlNode *iqNode, void *userdata )
 {
 	XmlNode *vCardNode, *m, *n, *o;
 	TCHAR* type, *jid;
@@ -752,13 +752,13 @@ void CJabberProto::JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 	TCHAR text[128];
 	DBVARIANT dbv;
 
-	JabberLog( "<iq/> iqIdGetVcard" );
+	Log( "<iq/> iqIdGetVcard" );
 	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
 	if (( jid=JabberXmlGetAttrValue( iqNode, "from" )) == NULL ) return;
 	int id = JabberGetPacketID( iqNode );
 
-	if ( id == jabberSearchID ) {
-		jabberSearchID = -1;
+	if ( id == m_nJabberSearchID ) {
+		m_nJabberSearchID = -1;
 
 		if (( vCardNode = JabberXmlGetChild( iqNode, "vCard" )) != NULL ) {
 			if ( !lstrcmp( type, _T("result"))) {
@@ -783,15 +783,15 @@ void CJabberProto::JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 		return;
 	}
 
-	int len = _tcslen( jabberJID );
-	if ( !_tcsnicmp( jid, jabberJID, len ) && ( jid[len]=='/' || jid[len]=='\0' )) {
+	int len = _tcslen( m_szJabberJID );
+	if ( !_tcsnicmp( jid, m_szJabberJID, len ) && ( jid[len]=='/' || jid[len]=='\0' )) {
 		hContact = NULL;
-		JabberLog( "Vcard for myself" );
+		Log( "Vcard for myself" );
 	}
 	else {
-		if (( hContact = JabberHContactFromJID( jid )) == NULL )
+		if (( hContact = HContactFromJID( jid )) == NULL )
 			return;
-		JabberLog( "Other user's vcard" );
+		Log( "Other user's vcard" );
 	}
 
 	if ( !lstrcmp( type, _T("result"))) {
@@ -1084,7 +1084,7 @@ void CJabberProto::JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 					}
 				}
 				else if ( !strcmp( n->name, "PHOTO" ))
-					JabberIqResultGetVcardPhoto( jid, n, hContact, hasPhoto );
+					OnIqResultGetVcardPhoto( jid, n, hContact, hasPhoto );
 		}	}
 
 		if ( !hasFn )
@@ -1201,39 +1201,39 @@ void CJabberProto::JabberIqResultGetVcard( XmlNode *iqNode, void *userdata )
 		if ( !hasDesc )
 			JDeleteSetting( hContact, "About" );
 
-		if ( id == jabberThreadInfo->resolveID ) {
+		if ( id == m_ThreadInfo->resolveID ) {
 			TCHAR* p = _tcschr( jid, '@' );
-			JabberResolveTransportNicks(( p != NULL ) ?  p+1 : jid );
+			ResolveTransportNicks(( p != NULL ) ?  p+1 : jid );
 		}
 		else if ( hContact != NULL )
 			JSendBroadcast( hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, ( HANDLE ) 1, 0 );
-		else if ( hwndJabberVcard )
-			SendMessage( hwndJabberVcard, WM_JABBER_REFRESH, 0, 0 );
+		else if ( m_hwndJabberVcard )
+			SendMessage( m_hwndJabberVcard, WM_JABBER_REFRESH, 0, 0 );
 	}
 	else if ( !lstrcmp( type, _T("error"))) {
 		if ( hContact != NULL )
 			JSendBroadcast( hContact, ACKTYPE_GETINFO, ACKRESULT_FAILED, ( HANDLE ) 1, 0 );
 }	}
 
-void CJabberProto::JabberIqResultSetVcard( XmlNode *iqNode, void *userdata )
+void CJabberProto::OnIqResultSetVcard( XmlNode *iqNode, void *userdata )
 {
-	JabberLog( "<iq/> iqIdSetVcard" );
+	Log( "<iq/> iqIdSetVcard" );
 	TCHAR* type = JabberXmlGetAttrValue( iqNode, "type" );
 	if ( type == NULL )
 		return;
 
-	if ( hwndJabberVcard )
-		SendMessage( hwndJabberVcard, WM_JABBER_REFRESH, 0, 0 );
+	if ( m_hwndJabberVcard )
+		SendMessage( m_hwndJabberVcard, WM_JABBER_REFRESH, 0, 0 );
 }
 
-void CJabberProto::JabberIqResultSetSearch( XmlNode *iqNode, void *userdata )
+void CJabberProto::OnIqResultSetSearch( XmlNode *iqNode, void *userdata )
 {
 	XmlNode *queryNode, *itemNode, *n;
 	TCHAR* type, *jid;
 	int i, id;
 	JABBER_SEARCH_RESULT jsr;
 
-	JabberLog( "<iq/> iqIdGetSearch" );
+	Log( "<iq/> iqIdGetSearch" );
 	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
 	if (( id = JabberGetPacketID( iqNode )) == -1 ) return;
 
@@ -1246,7 +1246,7 @@ void CJabberProto::JabberIqResultSetSearch( XmlNode *iqNode, void *userdata )
 				if (( jid=JabberXmlGetAttrValue( itemNode, "jid" )) != NULL ) {
 					_tcsncpy( jsr.jid, jid, SIZEOF( jsr.jid ));
 					jsr.jid[ SIZEOF( jsr.jid )-1] = '\0';
-					JabberLog( "Result jid = " TCHAR_STR_PARAM, jid );
+					Log( "Result jid = " TCHAR_STR_PARAM, jid );
 					if (( n=JabberXmlGetChild( itemNode, "nick" ))!=NULL && n->text!=NULL )
 						jsr.hdr.nick = mir_t2a( n->text );
 					else
@@ -1276,13 +1276,13 @@ void CJabberProto::JabberIqResultSetSearch( XmlNode *iqNode, void *userdata )
 		JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, ( HANDLE ) id, 0 );
 }
 
-void CJabberProto::JabberIqResultExtSearch( XmlNode *iqNode, void *userdata )
+void CJabberProto::OnIqResultExtSearch( XmlNode *iqNode, void *userdata )
 {
 	XmlNode *queryNode;
 	TCHAR* type;
 	int id;
 
-	JabberLog( "<iq/> iqIdGetExtSearch" );
+	Log( "<iq/> iqIdGetExtSearch" );
 	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
 	if (( id = JabberGetPacketID( iqNode )) == -1 ) return;
 
@@ -1314,7 +1314,7 @@ void CJabberProto::JabberIqResultExtSearch( XmlNode *iqNode, void *userdata )
 				if ( !lstrcmp( fieldName, _T("jid"))) {
 					_tcsncpy( jsr.jid, n->text, SIZEOF( jsr.jid ));
 					jsr.jid[SIZEOF( jsr.jid )-1] = '\0';
-					JabberLog( "Result jid = " TCHAR_STR_PARAM, jsr.jid );
+					Log( "Result jid = " TCHAR_STR_PARAM, jsr.jid );
 				}
 				else if ( !lstrcmp( fieldName, _T("nickname")))
 					jsr.hdr.nick = ( n->text != NULL ) ? mir_t2a( n->text ) : mir_strdup( "" );
@@ -1345,43 +1345,43 @@ void CJabberProto::JabberIqResultExtSearch( XmlNode *iqNode, void *userdata )
 		JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, ( HANDLE ) id, 0 );
 }
 
-void CJabberProto::JabberIqResultSetPassword( XmlNode *iqNode, void *userdata )
+void CJabberProto::OnIqResultSetPassword( XmlNode *iqNode, void *userdata )
 {
-	JabberLog( "<iq/> iqIdSetPassword" );
+	Log( "<iq/> iqIdSetPassword" );
 
 	TCHAR* type = JabberXmlGetAttrValue( iqNode, "type" );
 	if ( type == NULL )
 		return;
 
 	if ( !lstrcmp( type, _T("result"))) {
-		strncpy( jabberThreadInfo->password, jabberThreadInfo->newPassword, SIZEOF( jabberThreadInfo->password ));
+		strncpy( m_ThreadInfo->password, m_ThreadInfo->newPassword, SIZEOF( m_ThreadInfo->password ));
 		MessageBox( NULL, TranslateT( "Password is successfully changed. Don't forget to update your password in the Jabber protocol option." ), TranslateT( "Change Password" ), MB_OK|MB_ICONINFORMATION|MB_SETFOREGROUND );
 	}
 	else if ( !lstrcmp( type, _T("error")))
 		MessageBox( NULL, TranslateT( "Password cannot be changed." ), TranslateT( "Change Password" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
 }
 
-void CJabberProto::JabberIqResultDiscoAgentItems( XmlNode *iqNode, void *userdata )
+void CJabberProto::OnIqResultDiscoAgentItems( XmlNode *iqNode, void *userdata )
 {
 	if ( !JGetByte( "EnableAvatars", TRUE ))
 		return;
 }
 
-void CJabberProto::JabberIqResultGetAvatar( XmlNode *iqNode, void *userdata )
+void CJabberProto::OnIqResultGetAvatar( XmlNode *iqNode, void *userdata )
 {
 	ThreadData* info = ( ThreadData* ) userdata;
 	TCHAR* type;
 
 	// RECVED: agent list
 	// ACTION: refresh agent list dialog
-	JabberLog( "<iq/> iqIdResultGetAvatar" );
+	Log( "<iq/> iqIdResultGetAvatar" );
 	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL )   return;
 	if ( _tcscmp( type, _T("result")))                              return;
 
 	TCHAR* from = JabberXmlGetAttrValue( iqNode, "from" );
 	if ( from == NULL )
 		return;
-	HANDLE hContact = JabberHContactFromJID( from );
+	HANDLE hContact = HContactFromJID( from );
 	if ( hContact == NULL )
 		return;
 	XmlNode* n = NULL;
@@ -1422,7 +1422,7 @@ void CJabberProto::JabberIqResultGetAvatar( XmlNode *iqNode, void *userdata )
 		else if ( !lstrcmp( mimeType, _T("image/bmp"))) pictureType = PA_FORMAT_BMP;
 		else {
 LBL_ErrFormat:
-			JabberLog( "Invalid mime type specified for picture: " TCHAR_STR_PARAM, mimeType );
+			Log( "Invalid mime type specified for picture: " TCHAR_STR_PARAM, mimeType );
 			mir_free( body );
 			return;
 	}	}
@@ -1435,7 +1435,7 @@ LBL_ErrFormat:
 	AI.hContact = hContact;
 
 	if ( JGetByte( hContact, "AvatarType", PA_FORMAT_UNKNOWN ) != (unsigned char)pictureType ) {
-		JabberGetAvatarFileName( hContact, AI.filename, sizeof AI.filename );
+		GetAvatarFileName( hContact, AI.filename, sizeof AI.filename );
 		DeleteFileA( AI.filename );
 	}
 
@@ -1451,14 +1451,14 @@ LBL_ErrFormat:
 		sprintf( buffer+( i<<1 ), "%02x", digest[i] );
 	JSetString( hContact, "AvatarSaved", buffer );
 
-	JabberGetAvatarFileName( hContact, AI.filename, sizeof AI.filename );
+	GetAvatarFileName( hContact, AI.filename, sizeof AI.filename );
 
 	FILE* out = fopen( AI.filename, "wb" );
 	if ( out != NULL ) {
 		fwrite( body, resultLen, 1, out );
 		fclose( out );
 		JSendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS, HANDLE( &AI ), NULL );
-		JabberLog("Broadcast new avatar: %s",AI.filename);
+		Log("Broadcast new avatar: %s",AI.filename);
 	}
 	else JSendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, HANDLE( &AI ), NULL );
 
@@ -1468,7 +1468,7 @@ LBL_ErrFormat:
 /////////////////////////////////////////////////////////////////////////////////////////
 // Bookmarks
 
-void CJabberProto::JabberIqResultDiscoBookmarks( XmlNode *iqNode, void *userdata )
+void CJabberProto::OnIqResultDiscoBookmarks( XmlNode *iqNode, void *userdata )
 {
 	ThreadData* info = ( ThreadData* ) userdata;
 	XmlNode *queryNode, *itemNode, *storageNode, *nickNode, *passNode;
@@ -1476,23 +1476,23 @@ void CJabberProto::JabberIqResultDiscoBookmarks( XmlNode *iqNode, void *userdata
 
 	// RECVED: list of bookmarks
 	// ACTION: refresh bookmarks dialog
-	JabberLog( "<iq/> iqIdGetBookmarks" );
+	Log( "<iq/> iqIdGetBookmarks" );
 	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
 
 	if ( !lstrcmp( type, _T("result"))) {
-		if ( jabberThreadInfo && !( jabberThreadInfo->jabberServerCaps & JABBER_CAPS_PRIVATE_STORAGE )) {
-			jabberThreadInfo->jabberServerCaps |= JABBER_CAPS_PRIVATE_STORAGE;
-			JabberEnableMenuItems( TRUE );
+		if ( m_ThreadInfo && !( m_ThreadInfo->jabberServerCaps & JABBER_CAPS_PRIVATE_STORAGE )) {
+			m_ThreadInfo->jabberServerCaps |= JABBER_CAPS_PRIVATE_STORAGE;
+			EnableMenuItems( TRUE );
 		}
 
 		if (( queryNode = JabberXmlGetChild( iqNode, "query" )) != NULL ) {
 			if ((storageNode = JabberXmlGetChild( queryNode, "storage" )) != NULL) {
-				JabberListRemoveList( LIST_BOOKMARK );
+				ListRemoveList( LIST_BOOKMARK );
 				for ( int i=0; i<storageNode->numChild; i++ ) {
 					if (( itemNode = storageNode->child[i] ) != NULL && itemNode->name != NULL) {
 						if ( !strcmp( itemNode->name, "conference" )) {
 							if (( jid = JabberXmlGetAttrValue( itemNode, "jid" )) != NULL ) {
-								JABBER_LIST_ITEM* item = JabberListAdd( LIST_BOOKMARK, jid );
+								JABBER_LIST_ITEM* item = ListAdd( LIST_BOOKMARK, jid );
 								item->name = mir_tstrdup( JabberXmlGetAttrValue( itemNode, "name" ));
 								item->type = mir_tstrdup( _T( "conference" ));
 								item->bUseResource = TRUE;
@@ -1508,36 +1508,36 @@ void CJabberProto::JabberIqResultDiscoBookmarks( XmlNode *iqNode, void *userdata
 
 						if ( !strcmp( itemNode->name, "url" )) {
 							if (( jid = JabberXmlGetAttrValue( itemNode, "url" )) != NULL ) {
-								JABBER_LIST_ITEM* item = JabberListAdd( LIST_BOOKMARK, jid );
+								JABBER_LIST_ITEM* item = ListAdd( LIST_BOOKMARK, jid );
 								item->bUseResource = TRUE;
 								item->name = mir_tstrdup( JabberXmlGetAttrValue( itemNode, "name" ));
 								item->type = mir_tstrdup( _T("url") );
 			}	}	}	}	}
 
-			if ( hwndJabberBookmarks != NULL )
-				SendMessage( hwndJabberBookmarks, WM_JABBER_REFRESH, 0, 0);
+			if ( m_hwndJabberBookmarks != NULL )
+				SendMessage( m_hwndJabberBookmarks, WM_JABBER_REFRESH, 0, 0);
 			info->bBookmarksLoaded = TRUE;
-			JabberProcessLoginRq(info, JABBER_LOGIN_BOOKMARKS);
+			OnProcessLoginRq(info, JABBER_LOGIN_BOOKMARKS);
 		}
 	}
 	else if ( !lstrcmp( type, _T("error"))) {
 		if ( info->jabberServerCaps & JABBER_CAPS_PRIVATE_STORAGE ) {
 			info->jabberServerCaps &= ~JABBER_CAPS_PRIVATE_STORAGE;
-			JabberEnableMenuItems( TRUE );
-			if ( hwndJabberBookmarks != NULL )
-				SendMessage( hwndJabberBookmarks, WM_JABBER_ACTIVATE, 0, 0);
+			EnableMenuItems( TRUE );
+			if ( m_hwndJabberBookmarks != NULL )
+				SendMessage( m_hwndJabberBookmarks, WM_JABBER_ACTIVATE, 0, 0);
 			return;
 		}
 }	}
 
-void CJabberProto::JabberSetBookmarkRequest (XmlNodeIq& iq)
+void CJabberProto::SetBookmarkRequest (XmlNodeIq& iq)
 {
 	XmlNode* query = iq.addQuery( JABBER_FEAT_PRIVATE_STORAGE );
 	XmlNode* storage = query->addChild( "storage" );
 	storage->addAttr( "xmlns", "storage:bookmarks" );
 
-	for ( int i=0; ( i=JabberListFindNext( LIST_BOOKMARK, i )) >= 0; i++ ) {
-		JABBER_LIST_ITEM* item = JabberListGetItemPtrFromIndex( i );
+	for ( int i=0; ( i=ListFindNext( LIST_BOOKMARK, i )) >= 0; i++ ) {
+		JABBER_LIST_ITEM* item = ListGetItemPtrFromIndex( i );
 		if ( item == NULL )
 			continue;
 
@@ -1564,34 +1564,34 @@ void CJabberProto::JabberSetBookmarkRequest (XmlNodeIq& iq)
 	}
 }
 
-void CJabberProto::JabberIqResultSetBookmarks( XmlNode *iqNode, void *userdata )
+void CJabberProto::OnIqResultSetBookmarks( XmlNode *iqNode, void *userdata )
 {
 	// RECVED: server's response
 	// ACTION: refresh bookmarks list dialog
 
-	JabberLog( "<iq/> iqIdSetBookmarks" );
+	Log( "<iq/> iqIdSetBookmarks" );
 
 	TCHAR* type = JabberXmlGetAttrValue( iqNode, "type" );
 	if ( type == NULL )
 		return;
 
 	if ( !lstrcmp( type, _T("result"))) {
-		if ( hwndJabberBookmarks != NULL )
-			SendMessage( hwndJabberBookmarks, WM_JABBER_REFRESH, 0, 0);
+		if ( m_hwndJabberBookmarks != NULL )
+			SendMessage( m_hwndJabberBookmarks, WM_JABBER_REFRESH, 0, 0);
 	}
 	else if ( !lstrcmp( type, _T("error"))) {
 		XmlNode* errorNode = JabberXmlGetChild( iqNode, "error" );
 		TCHAR* str = JabberErrorMsg( errorNode );
 		MessageBox( NULL, str, TranslateT( "Jabber Bookmarks Error" ), MB_OK|MB_SETFOREGROUND );
 		mir_free( str );
-		if ( hwndJabberBookmarks != NULL )
-			SendMessage( hwndJabberBookmarks, WM_JABBER_ACTIVATE, 0, 0);
+		if ( m_hwndJabberBookmarks != NULL )
+			SendMessage( m_hwndJabberBookmarks, WM_JABBER_ACTIVATE, 0, 0);
 }	}
 
 // last activity (XEP-0012) support
-void CJabberProto::JabberIqResultLastActivity( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultLastActivity( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo )
 {
-	JABBER_RESOURCE_STATUS *r = JabberResourceInfoFromJID( pInfo->m_szFrom );
+	JABBER_RESOURCE_STATUS *r = ResourceInfoFromJID( pInfo->m_szFrom );
 	if ( !r )
 		return;
 
@@ -1616,7 +1616,7 @@ void CJabberProto::JabberIqResultLastActivity( XmlNode *iqNode, void *userdata, 
 }
 
 // entity time (XEP-0202) support
-void CJabberProto::JabberIqResultEntityTime( XmlNode* pIqNode, void* pUserdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultEntityTime( XmlNode* pIqNode, void* pUserdata, CJabberIqInfo* pInfo )
 {
 	if ( !pInfo->m_hContact )
 		return;

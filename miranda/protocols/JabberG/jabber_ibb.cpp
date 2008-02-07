@@ -47,33 +47,33 @@ void JabberIbbFreeJibb( JABBER_IBB_TRANSFER *jibb )
 		mir_free( jibb );
 }	}
 
-void CJabberProto::JabberFtHandleIbbIq( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnFtHandleIbbIq( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo )
 {
 	if ( !_tcscmp( pInfo->GetChildNodeName(), _T("open")))
-		JabberFtHandleIbbRequest( iqNode, TRUE );
+		FtHandleIbbRequest( iqNode, TRUE );
 	else if ( !_tcscmp( pInfo->GetChildNodeName(), _T("close")))
-		JabberFtHandleIbbRequest( iqNode, FALSE );
+		FtHandleIbbRequest( iqNode, FALSE );
 	else if ( !_tcscmp( pInfo->GetChildNodeName(), _T("data"))) {
 		BOOL bOk = FALSE;
 		TCHAR *sid = JabberXmlGetAttrValue( pInfo->GetChildNode(), "sid" );
 		TCHAR *seq = JabberXmlGetAttrValue( pInfo->GetChildNode(), "seq" );
 		if ( sid && seq && pInfo->GetChildNode()->text ) {
-			bOk = JabberIbbProcessRecvdData( pInfo->GetChildNode()->text, sid, seq );
+			bOk = OnIbbRecvdData( pInfo->GetChildNode()->text, sid, seq );
 		}
 		if ( bOk ) {
 			XmlNodeIq iq( "result", pInfo );
-			jabberThreadInfo->send( iq );
+			m_ThreadInfo->send( iq );
 		}
 		else {
 			XmlNodeIq iq( "error", pInfo );
 			XmlNode* e = iq.addChild( "error" ); e->addAttr( "code", 404 ); e->addAttr( "type", _T("cancel"));
 			XmlNode* na = e->addChild( "item-not-found" ); na->addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
-			jabberThreadInfo->send( iq );
+			m_ThreadInfo->send( iq );
 		}
 	}
 }
 
-void CJabberProto::JabberIbbInitiateResult( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIbbInitiateResult( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo )
 {
 	JABBER_IBB_TRANSFER *jibb = ( JABBER_IBB_TRANSFER * )pInfo->GetUserData();
 	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_RESULT )
@@ -82,7 +82,7 @@ void CJabberProto::JabberIbbInitiateResult( XmlNode *iqNode, void *userdata, CJa
 		SetEvent( jibb->hEvent );
 }
 
-void CJabberProto::JabberIbbCloseResult( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIbbCloseResult( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo )
 {
 	JABBER_IBB_TRANSFER *jibb = ( JABBER_IBB_TRANSFER * )pInfo->GetUserData();
 	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_RESULT )
@@ -93,14 +93,14 @@ void CJabberProto::JabberIbbCloseResult( XmlNode *iqNode, void *userdata, CJabbe
 
 void __cdecl JabberIbbSendThread( JABBER_IBB_TRANSFER *jibb )
 {
-	jibb->ppro->JabberIbbSendThread( jibb );
+	jibb->ppro->IbbSendThread( jibb );
 }
 
-void CJabberProto::JabberIbbSendThread( JABBER_IBB_TRANSFER *jibb )
+void CJabberProto::IbbSendThread( JABBER_IBB_TRANSFER *jibb )
 {
-	JabberLog( "Thread started: type=ibb_send" );
+	Log( "Thread started: type=ibb_send" );
 	
-	XmlNodeIq iq( m_iqManager.AddHandler( &CJabberProto::JabberIbbInitiateResult, JABBER_IQ_TYPE_SET, jibb->dstJID, 0, -1, jibb ));
+	XmlNodeIq iq( m_iqManager.AddHandler( &CJabberProto::OnIbbInitiateResult, JABBER_IQ_TYPE_SET, jibb->dstJID, 0, -1, jibb ));
 	XmlNode* openNode = iq.addChild( "open" );
 	openNode->addAttr( "sid", jibb->sid );
 	openNode->addAttr( "block-size", JABBER_IBB_BLOCK_SIZE );
@@ -111,7 +111,7 @@ void CJabberProto::JabberIbbSendThread( JABBER_IBB_TRANSFER *jibb )
 	jibb->bStreamClosed = FALSE;
 	jibb->state = JIBB_SENDING;
 
-	jabberThreadInfo->send( iq );
+	m_ThreadInfo->send( iq );
 
 	WaitForSingleObject( jibb->hEvent, INFINITE );
 	CloseHandle( jibb->hEvent );
@@ -125,14 +125,14 @@ void CJabberProto::JabberIbbSendThread( JABBER_IBB_TRANSFER *jibb )
 
 		if ( !jibb->bStreamClosed )
 		{
-			XmlNodeIq iq2( m_iqManager.AddHandler( &CJabberProto::JabberIbbCloseResult, JABBER_IQ_TYPE_SET, jibb->dstJID, 0, -1, jibb ));
+			XmlNodeIq iq2( m_iqManager.AddHandler( &CJabberProto::OnIbbCloseResult, JABBER_IQ_TYPE_SET, jibb->dstJID, 0, -1, jibb ));
 			XmlNode* closeNode = iq2.addChild( "close" );
 			closeNode->addAttr( "sid", jibb->sid );
 			closeNode->addAttr( "xmlns", JABBER_FEAT_IBB );
 
 			jibb->hEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
 
-			jabberThreadInfo->send( iq2 );
+			m_ThreadInfo->send( iq2 );
 
 			WaitForSingleObject( jibb->hEvent, INFINITE );
 			CloseHandle( jibb->hEvent );
@@ -153,11 +153,11 @@ void CJabberProto::JabberIbbSendThread( JABBER_IBB_TRANSFER *jibb )
 
 void __cdecl JabberIbbReceiveThread( JABBER_IBB_TRANSFER *jibb )
 {
-	jibb->ppro->JabberIbbReceiveThread( jibb );
+	jibb->ppro->IbbReceiveThread( jibb );
 }
-void CJabberProto::JabberIbbReceiveThread( JABBER_IBB_TRANSFER *jibb )
+void CJabberProto::IbbReceiveThread( JABBER_IBB_TRANSFER *jibb )
 {
-	JabberLog( "Thread started: type=ibb_recv" );
+	Log( "Thread started: type=ibb_recv" );
 
 	filetransfer *ft = (filetransfer *)jibb->userdata;
 
@@ -173,14 +173,14 @@ void CJabberProto::JabberIbbReceiveThread( JABBER_IBB_TRANSFER *jibb )
 	jibb->hEvent = NULL;
 
 	if ( jibb->state == JIBB_ERROR ) {
-		int iqId = JabberSerialNext();
+		int iqId = SerialNext();
 
 		XmlNodeIq iq2( "set", iqId, jibb->dstJID );
 		XmlNode* closeNode = iq2.addChild( "close" );
 		closeNode->addAttr( "sid", jibb->sid );
 		closeNode->addAttr( "xmlns", JABBER_FEAT_IBB );
 
-		jabberThreadInfo->send( iq2 );
+		m_ThreadInfo->send( iq2 );
 	}
 
 	if ( jibb->bStreamClosed && jibb->dwTransferredSize == ft->dwExpectedRecvFileSize )
@@ -189,14 +189,14 @@ void CJabberProto::JabberIbbReceiveThread( JABBER_IBB_TRANSFER *jibb )
 	(this->*jibb->pfnFinal)(( jibb->state==JIBB_DONE )?TRUE:FALSE, jibb->userdata );
 	jibb->userdata = NULL;
 
-	JabberListRemove( LIST_FTRECV, jibb->sid );
+	ListRemove( LIST_FTRECV, jibb->sid );
 
 	JabberIbbFreeJibb( jibb );
 }
 
-BOOL CJabberProto::JabberIbbProcessRecvdData( TCHAR *data, TCHAR *sid, TCHAR *seq )
+BOOL CJabberProto::OnIbbRecvdData( TCHAR *data, TCHAR *sid, TCHAR *seq )
 {
-	JABBER_LIST_ITEM *item = JabberListGetItemPtr( LIST_FTRECV, sid );
+	JABBER_LIST_ITEM *item = ListGetItemPtr( LIST_FTRECV, sid );
 	if ( !item ) return FALSE;
 
 	WORD wSeq = (WORD)_ttoi(seq);

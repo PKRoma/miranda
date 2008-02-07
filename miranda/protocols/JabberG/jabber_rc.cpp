@@ -38,7 +38,7 @@ CJabberAdhocSession::CJabberAdhocSession( CJabberProto* global )
 	ZeroMemory( this, sizeof(CJabberAdhocSession) );
 	ppro = global;
 	TCHAR szId[ 128 ];
-	mir_sntprintf( szId, SIZEOF(szId), _T("%u%u"), ppro->JabberSerialNext(), GetTickCount() );
+	mir_sntprintf( szId, SIZEOF(szId), _T("%u%u"), ppro->SerialNext(), GetTickCount() );
 	m_szSessionId = mir_tstrdup( szId );
 	m_dwStartTime = GetTickCount();
 }
@@ -52,7 +52,7 @@ BOOL CJabberProto::IsRcRequestAllowedByACL( CJabberIqInfo* pInfo )
 	if ( !szFrom )
 		return FALSE;
 
-	TCHAR* szTo = JabberPrepareJid( jabberThreadInfo->fullJID );
+	TCHAR* szTo = JabberPrepareJid( m_ThreadInfo->fullJID );
 	if ( !szTo ) {
 		mir_free( szFrom );
 		return FALSE;
@@ -72,7 +72,7 @@ BOOL CJabberProto::IsRcRequestAllowedByACL( CJabberIqInfo* pInfo )
 	return bRetVal;
 }
 
-void CJabberProto::JabberHandleAdhocCommandRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::HandleAdhocCommandRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	if ( !pInfo->GetChildNode() )
 		return;
@@ -107,7 +107,7 @@ BOOL CJabberAdhocManager::HandleItemsRequest( XmlNode* iqNode, void* userdata, C
 			XmlNode* item = resultQuery->addChild( "item" );
 			TCHAR* szJid = pNode->GetJid();
 			if ( !szJid )
-				szJid = m_pProto->jabberThreadInfo->fullJID;
+				szJid = m_pProto->m_ThreadInfo->fullJID;
 			item->addAttr( "jid", szJid );
 			item->addAttr( "node", pNode->GetNode() );
 			item->addAttr( "name", pNode->GetName() );
@@ -116,7 +116,7 @@ BOOL CJabberAdhocManager::HandleItemsRequest( XmlNode* iqNode, void* userdata, C
 		}
 		Unlock();
 
-		m_pProto->jabberThreadInfo->send( iq );
+		m_pProto->m_ThreadInfo->send( iq );
 		return TRUE;
 	}
 	return FALSE;
@@ -151,7 +151,7 @@ BOOL CJabberAdhocManager::HandleInfoRequest( XmlNode* iqNode, void* userdata, CJ
 		feature = resultQuery->addChild( "feature" );
 		feature->addAttr( "var", _T(JABBER_FEAT_DISCO_ITEMS) );
 
-		m_pProto->jabberThreadInfo->send( iq );
+		m_pProto->m_ThreadInfo->send( iq );
 		return TRUE;
 	}
 
@@ -178,7 +178,7 @@ BOOL CJabberAdhocManager::HandleInfoRequest( XmlNode* iqNode, void* userdata, CJ
 		feature->addAttr( "var", _T(JABBER_FEAT_DISCO_INFO) );
 
 		Unlock();
-		m_pProto->jabberThreadInfo->send( iq );
+		m_pProto->m_ThreadInfo->send( iq );
 		return TRUE;
 	}
 	Unlock();
@@ -203,7 +203,7 @@ BOOL CJabberAdhocManager::HandleCommandRequest( XmlNode* iqNode, void* userdata,
 		XmlNode *typeNode = errorNode->addChild( "item-not-found" );
 		typeNode->addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
 
-		m_pProto->jabberThreadInfo->send( iq );
+		m_pProto->m_ThreadInfo->send( iq );
 		return FALSE;
 	}
 
@@ -225,7 +225,7 @@ BOOL CJabberAdhocManager::HandleCommandRequest( XmlNode* iqNode, void* userdata,
 			typeNode = errorNode->addChild( "bad-sessionid" );
 			typeNode->addAttr( "xmlns", JABBER_FEAT_COMMANDS );
 
-			m_pProto->jabberThreadInfo->send( iq );
+			m_pProto->m_ThreadInfo->send( iq );
 			return FALSE;
 		}
 	}
@@ -242,7 +242,7 @@ BOOL CJabberAdhocManager::HandleCommandRequest( XmlNode* iqNode, void* userdata,
 		XmlNode *typeNode = errorNode->addChild( "forbidden" );
 		typeNode->addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
 
-		m_pProto->jabberThreadInfo->send( iq );
+		m_pProto->m_ThreadInfo->send( iq );
 		return FALSE;
 	}
 
@@ -261,7 +261,7 @@ BOOL CJabberAdhocManager::HandleCommandRequest( XmlNode* iqNode, void* userdata,
 		XmlNode* noteNode = commandNode2->addChild( "note", "Command completed successfully" );
 		noteNode->addAttr( "type", "info" );
 
-		m_pProto->jabberThreadInfo->send( iq );
+		m_pProto->m_ThreadInfo->send( iq );
 
 		RemoveSession( pSession );
 		pSession = NULL;
@@ -277,7 +277,7 @@ BOOL CJabberAdhocManager::HandleCommandRequest( XmlNode* iqNode, void* userdata,
 		XmlNode* noteNode = commandNode2->addChild( "note", "Error occured during processing command" );
 		noteNode->addAttr( "type", "error" );
 
-		m_pProto->jabberThreadInfo->send( iq );
+		m_pProto->m_ThreadInfo->send( iq );
 
 		RemoveSession( pSession );
 		pSession = NULL;
@@ -292,9 +292,9 @@ BOOL CJabberAdhocManager::HandleCommandRequest( XmlNode* iqNode, void* userdata,
 
 BOOL CJabberAdhocManager::FillDefaultNodes()
 {
-	AddNode( NULL, _T(JABBER_FEAT_RC_SET_STATUS), _T("Set status"), &CJabberProto::JabberAdhocSetStatusHandler );
-	AddNode( NULL, _T(JABBER_FEAT_RC_SET_OPTIONS), _T("Set options"), &CJabberProto::JabberAdhocOptionsHandler );
-	AddNode( NULL, _T(JABBER_FEAT_RC_FORWARD), _T("Forward unread messages"), &CJabberProto::JabberAdhocForwardHandler );
+	AddNode( NULL, _T(JABBER_FEAT_RC_SET_STATUS), _T("Set status"), &CJabberProto::AdhocSetStatusHandler );
+	AddNode( NULL, _T(JABBER_FEAT_RC_SET_OPTIONS), _T("Set options"), &CJabberProto::AdhocOptionsHandler );
+	AddNode( NULL, _T(JABBER_FEAT_RC_FORWARD), _T("Forward unread messages"), &CJabberProto::AdhocForwardHandler );
 	return TRUE;
 }
 
@@ -322,7 +322,7 @@ static char *StatusModeToDbSetting(int status,const char *suffix)
 	return str;
 }
 
-int CJabberProto::JabberAdhocSetStatusHandler( XmlNode* iqNode, void* usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
+int CJabberProto::AdhocSetStatusHandler( XmlNode* iqNode, void* usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
 {
 	if ( pSession->GetStage() == 0 ) {
 		// first form
@@ -438,7 +438,7 @@ int CJabberProto::JabberAdhocSetStatusHandler( XmlNode* iqNode, void* usedata, C
 			mir_free( szStatusMsg );
 		}
 
-		jabberThreadInfo->send( iq );
+		m_ThreadInfo->send( iq );
 		return JABBER_ADHOC_HANDLER_STATUS_EXECUTING;
 	}
 	else if ( pSession->GetStage() == 1 ) {
@@ -505,7 +505,7 @@ int CJabberProto::JabberAdhocSetStatusHandler( XmlNode* iqNode, void* usedata, C
 	return JABBER_ADHOC_HANDLER_STATUS_CANCEL;
 }
 
-int CJabberProto::JabberAdhocOptionsHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
+int CJabberProto::AdhocOptionsHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
 {
 	if ( pSession->GetStage() == 0 ) {
 		// first form
@@ -556,7 +556,7 @@ int CJabberProto::JabberAdhocOptionsHandler( XmlNode *iqNode, void *usedata, CJa
 		fieldNode->addAttr( "var", "enable-rc" );
 		fieldNode->addChild( "value", "0" );
 
-		jabberThreadInfo->send( iq );
+		m_ThreadInfo->send( iq );
 		return JABBER_ADHOC_HANDLER_STATUS_EXECUTING;
 	}
 	else if ( pSession->GetStage() == 1 ) {
@@ -595,7 +595,7 @@ int CJabberProto::JabberAdhocOptionsHandler( XmlNode *iqNode, void *usedata, CJa
 	return JABBER_ADHOC_HANDLER_STATUS_CANCEL;
 }
 
-int CJabberProto::JabberRcGetUnreadEventsCount()
+int CJabberProto::RcGetUnreadEventsCount()
 {
 	int nEventsSent = 0;
 	HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
@@ -631,11 +631,11 @@ int CJabberProto::JabberRcGetUnreadEventsCount()
 	return nEventsSent;
 }
 
-int CJabberProto::JabberAdhocForwardHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
+int CJabberProto::AdhocForwardHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
 {
 	TCHAR szMsg[ 1024 ];
 	if ( pSession->GetStage() == 0 ) {
-		int nUnreadEvents = JabberRcGetUnreadEventsCount();
+		int nUnreadEvents = RcGetUnreadEventsCount();
 		if ( !nUnreadEvents ) {
 			XmlNodeIq iq( "result", pInfo );
 			XmlNode* commandNode = iq.addChild( "command" );
@@ -648,7 +648,7 @@ int CJabberProto::JabberAdhocForwardHandler( XmlNode *iqNode, void *usedata, CJa
 			XmlNode* noteNode = commandNode->addChild( "note", szMsg );
 			noteNode->addAttr( "type", "info" );
 
-			jabberThreadInfo->send( iq );
+			m_ThreadInfo->send( iq );
 
 			return JABBER_ADHOC_HANDLER_STATUS_REMOVE_SESSION;
 		}
@@ -685,7 +685,7 @@ int CJabberProto::JabberAdhocForwardHandler( XmlNode *iqNode, void *usedata, CJa
 		fieldNode->addAttr( "var", "remove-clist-events" );
 		fieldNode->addChild( "value", "1" );
 
-		jabberThreadInfo->send( iq );
+		m_ThreadInfo->send( iq );
 		return JABBER_ADHOC_HANDLER_STATUS_EXECUTING;
 	}
 	else if ( pSession->GetStage() == 1 ) {
@@ -729,7 +729,7 @@ int CJabberProto::JabberAdhocForwardHandler( XmlNode *iqNode, void *usedata, CJa
 								if ( szEventText ) {
 									XmlNode msg( "message" );
 									msg.addAttr( "to", pInfo->GetFrom() );
-									msg.addAttrID( JabberSerialNext() );
+									msg.addAttrID( SerialNext() );
 
 									XmlNode* bodyNode = msg.addChild( "body", szEventText );
 									XmlNode* addressesNode = msg.addChild( "addresses" );
@@ -741,7 +741,7 @@ int CJabberProto::JabberAdhocForwardHandler( XmlNode *iqNode, void *usedata, CJa
 
 									addressNode = addressesNode->addChild( "address" );
 									addressNode->addAttr( "type", "oto" );
-									addressNode->addAttr( "jid", jabberThreadInfo->fullJID );
+									addressNode->addAttr( "jid", m_ThreadInfo->fullJID );
 
 									time_t ltime = ( time_t )dbei.timestamp;
 									struct tm *gmt = gmtime( &ltime );
@@ -753,7 +753,7 @@ int CJabberProto::JabberAdhocForwardHandler( XmlNode *iqNode, void *usedata, CJa
 									delayNode->addAttr( "xmlns", "urn:xmpp:delay" );
 									delayNode->addAttr( "stamp", stime );
 
-									jabberThreadInfo->send( msg );
+									m_ThreadInfo->send( msg );
 
 									nEventsSent++;
 
@@ -785,7 +785,7 @@ int CJabberProto::JabberAdhocForwardHandler( XmlNode *iqNode, void *usedata, CJa
 		XmlNode* noteNode = commandNode->addChild( "note", szMsg );
 		noteNode->addAttr( "type", "info" );
 
-		jabberThreadInfo->send( iq );
+		m_ThreadInfo->send( iq );
 
 		return JABBER_ADHOC_HANDLER_STATUS_REMOVE_SESSION;
 	}

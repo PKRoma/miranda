@@ -139,7 +139,7 @@ static char* findClose( char* p )
 	return NULL;
 }
 
-int CJabberProto::JabberXmlParse( XmlState *xmlState, char* buffer )
+int CJabberProto::OnXmlParse( XmlState *xmlState, char* buffer )
 {
 	char* r;
 	int num = 0;
@@ -168,7 +168,7 @@ int CJabberProto::JabberXmlParse( XmlState *xmlState, char* buffer )
 			// found closing bracket
 			for ( r=p+1; *r!='>' && *r!=' ' && *r!='\t'; r++ );
 			if ( r-( p+1 ) > TAG_MAX_LEN ) {
-				JabberLog( "TAG_MAX_LEN too small, ignore current tag" );
+				Log( "TAG_MAX_LEN too small, ignore current tag" );
 			}
 			else {
 				if ( *( p+1 ) == '/' ) {	// closing tag
@@ -190,7 +190,7 @@ int CJabberProto::JabberXmlParse( XmlState *xmlState, char* buffer )
 				}
 				for ( ;r<q && ( *r==' ' || *r=='\t' ); r++ );
 				if ( q-r > ATTR_MAX_LEN ) {
-					JabberLog( "ATTR_MAX_LEN too small, ignore current tag" );
+					Log( "ATTR_MAX_LEN too small, ignore current tag" );
 				}
 				else {
 					strncpy( attr, r, q-r );

@@ -331,7 +331,7 @@ static void sttQueryServerListThread(void *arg)
 
 	CJabberProto* ppro = ( CJabberProto* )GetWindowLong(( HWND )arg, GWL_USERDATA );
 
-	NETLIBHTTPREQUEST *result = (NETLIBHTTPREQUEST *)CallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM)ppro->hNetlibUser, (LPARAM)&request);
+	NETLIBHTTPREQUEST *result = (NETLIBHTTPREQUEST *)CallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM)ppro->m_hNetlibUser, (LPARAM)&request);
 	if ( !result ) {
 		SendMessage((HWND)arg, WM_JABBER_REFRESH, 0, (LPARAM)NULL);
 		return;
@@ -342,7 +342,7 @@ static void sttQueryServerListThread(void *arg)
 		XmlState xmlstate;
 		JabberXmlInitState(&xmlstate);
 		JabberXmlSetCallback(&xmlstate, 1, ELEM_CLOSE, sttQueryServerListXmlCallback, arg);
-		ppro->JabberXmlParse(&xmlstate, result->pData);
+		ppro->OnXmlParse(&xmlstate, result->pData);
 		JabberXmlDestroyState(&xmlstate);
 	}
 	else
@@ -418,7 +418,7 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 			CheckDlgButton( hwndDlg, IDC_USE_SSL, ppro->JGetByte( "UseSSL", FALSE ));
 			CheckDlgButton( hwndDlg, IDC_USE_TLS, ppro->JGetByte( "UseTLS", FALSE ));
-			if ( !ppro->JabberSslInit() ) {
+			if ( !ppro->SslInit() ) {
 				EnableWindow(GetDlgItem( hwndDlg, IDC_USE_SSL ), FALSE );
 				EnableWindow(GetDlgItem( hwndDlg, IDC_USE_TLS ), FALSE );
 				EnableWindow(GetDlgItem( hwndDlg, IDC_DOWNLOAD_OPENSSL ), TRUE );
@@ -429,7 +429,7 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			}
 
 			EnableWindow( GetDlgItem( hwndDlg, IDC_BUTTON_REGISTER ), enableRegister );
-			EnableWindow( GetDlgItem( hwndDlg, IDC_UNREGISTER ), ppro->jabberConnected );
+			EnableWindow( GetDlgItem( hwndDlg, IDC_UNREGISTER ), ppro->m_bJabberConnected );
 
 			if ( ppro->JGetByte( "ManualConnect", FALSE ) == TRUE ) {
 				CheckDlgButton( hwndDlg, IDC_MANUAL, TRUE );
@@ -455,7 +455,7 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			}
 			else SetDlgItemTextA( hwndDlg, IDC_JUD, "users.jabber.org" );
 
-			TCHAR *szSelectedLang = ppro->JabberGetXmlLang();
+			TCHAR *szSelectedLang = ppro->GetXmlLang();
 			HWND hWndLLB = GetDlgItem( hwndDlg, IDC_MSGLANG );
 			for ( int nI = 0; g_LanguageCodes[nI].szCode; nI++ ) {
 				int nId = SendMessage( hWndLLB, CB_ADDSTRING, 0, (LPARAM)TranslateTS( g_LanguageCodes[nI].szDescription ));
@@ -588,9 +588,9 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			if ( MessageBox( NULL, TranslateT( "This operation will kill your account, roster and all another information stored at the server. Are you ready to do that?"),
 						TranslateT( "Account removal warning" ), MB_YESNOCANCEL ) == IDYES )
 			{
-				XmlNodeIq iq( "set", NOID, ppro->jabberJID );
+				XmlNodeIq iq( "set", NOID, ppro->m_szJabberJID );
 				iq.addQuery( JABBER_FEAT_REGISTER )->addChild( "remove" );
-				ppro->jabberThreadInfo->send( iq );
+				ppro->m_ThreadInfo->send( iq );
 			}
 			break;
 		case IDC_MSGLANG:
@@ -713,7 +713,7 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			ppro->JSetWord( NULL, "ManualPort", port );
 
 			ppro->JSetByte( "KeepAlive", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_KEEPALIVE ));
-			ppro->jabberSendKeepAlive = IsDlgButtonChecked( hwndDlg, IDC_KEEPALIVE );
+			ppro->m_bSendKeepAlive = IsDlgButtonChecked( hwndDlg, IDC_KEEPALIVE );
 
 			ppro->JSetByte( "RosterSync", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_ROSTER_SYNC ));
 
@@ -722,7 +722,7 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 			int index = SendDlgItemMessage( hwndDlg, IDC_MSGLANG, CB_GETCURSEL, 0, 0 );
 			if ( index >= 0 ) {
-				TCHAR *szDefaultLanguage = ppro->JabberGetXmlLang();
+				TCHAR *szDefaultLanguage = ppro->GetXmlLang();
 				TCHAR *szLanguageCode = (TCHAR *)SendDlgItemMessage( hwndDlg, IDC_MSGLANG, CB_GETITEMDATA, ( WPARAM ) index, 0 );
 				if ( szLanguageCode ) {
 					ppro->JSetStringT( NULL, "XmlLang", szLanguageCode );
@@ -732,10 +732,10 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				mir_free( szDefaultLanguage );
 			}
 
-			if ( reconnectRequired && ppro->jabberConnected )
+			if ( reconnectRequired && ppro->m_bJabberConnected )
 				MessageBox( hwndDlg, TranslateT( "These changes will take effect the next time you connect to the Jabber network." ), TranslateT( "Jabber Protocol Option" ), MB_OK|MB_SETFOREGROUND );
 
-			ppro->JabberSendPresence( ppro->m_iStatus, true );
+			ppro->SendPresence( ppro->m_iStatus, true );
 
 			return TRUE;
 		}
@@ -918,11 +918,11 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			bChecked = (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "ShowTransport");
 			ppro->JSetByte( "ShowTransport", ( BYTE ) bChecked );
 			int index = 0;
-			while (( index = ppro->JabberListFindNext( LIST_ROSTER, index )) >= 0 ) {
-				JABBER_LIST_ITEM* item = ppro->JabberListGetItemPtrFromIndex( index );
+			while (( index = ppro->ListFindNext( LIST_ROSTER, index )) >= 0 ) {
+				JABBER_LIST_ITEM* item = ppro->ListGetItemPtrFromIndex( index );
 				if ( item != NULL ) {
 					if ( _tcschr( item->jid, '@' ) == NULL ) {
-						HANDLE hContact = ppro->JabberHContactFromJID( item->jid );
+						HANDLE hContact = ppro->HContactFromJID( item->jid );
 						if ( hContact != NULL ) {
 							if ( bChecked ) {
 								if ( item->itemResource.status != ppro->JGetWord( hContact, "Status", ID_STATUS_OFFLINE )) {
@@ -951,7 +951,7 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			ppro->JSetByte("ShowOSVersion",            (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "ShowOSVersion"));
 			ppro->JSetByte("BsOnlyIBB",                (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "BsOnlyIBB"));
 			ppro->JSetByte("FixIncorrectTimestamps",   (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "FixIncorrectTimestamps"));
-			ppro->JabberSendPresence( ppro->m_iStatus, true );
+			ppro->SendPresence( ppro->m_iStatus, true );
 			return TRUE;
 		}
 		break;
@@ -1231,8 +1231,8 @@ void CJabberProto::_RosterHandleGetRequest( XmlNode* node, void* userdata )
 		XmlNode * queryRoster=JabberXmlGetChild(node, "query");
 		if (!queryRoster) return;
 
-		int iqId = JabberSerialNext();
-		JabberIqAdd( iqId, IQ_PROC_NONE, (JABBER_IQ_PFUNC)&CJabberProto::_RosterHandleGetRequest );
+		int iqId = SerialNext();
+		IqAdd( iqId, IQ_PROC_NONE, (JABBER_IQ_PFUNC)&CJabberProto::_RosterHandleGetRequest );
 
 		XmlNode iq( "iq" );
 		iq.addAttr( "type", "set" );
@@ -1300,7 +1300,7 @@ void CJabberProto::_RosterHandleGetRequest( XmlNode* node, void* userdata )
 		}
 		rrud.bRRAction=RRA_SYNCDONE;
 		if (itemCount)
-			jabberThreadInfo->send( iq );
+			m_ThreadInfo->send( iq );
 		else
 			_RosterSendRequest(rrud.hwndDlg,RRA_FILLLIST);
 	}
@@ -1321,15 +1321,15 @@ void CJabberProto::_RosterSendRequest(HWND hwndDlg, BYTE rrAction)
 	rrud.bRRAction=rrAction;
 	rrud.hwndDlg=hwndDlg;
 
-	int iqId = JabberSerialNext();
-	JabberIqAdd( iqId, IQ_PROC_NONE, (JABBER_IQ_PFUNC)&CJabberProto::_RosterHandleGetRequest );
+	int iqId = SerialNext();
+	IqAdd( iqId, IQ_PROC_NONE, (JABBER_IQ_PFUNC)&CJabberProto::_RosterHandleGetRequest );
 
 	XmlNode iq( "iq" );
 	iq.addAttr( "type", "get" );
 	iq.addAttrID( iqId );
 	XmlNode* query = iq.addChild( "query" );
 	query->addAttr( "xmlns", JABBER_FEAT_IQ_ROSTER );
-	jabberThreadInfo->send( iq );
+	m_ThreadInfo->send( iq );
 }
 
 
@@ -1582,7 +1582,7 @@ void CJabberProto::_RosterImportFromFile(HWND hwndDlg)
 	XmlState xmlstate;
 	JabberXmlInitState(&xmlstate);
 	JabberXmlSetCallback( &xmlstate, 2, ELEM_CLOSE, _RosterParseXmlWorkbook, (void*)hList );
-	JabberXmlParse(&xmlstate,buffer);
+	OnXmlParse(&xmlstate,buffer);
 	xmlstate=xmlstate;
 	JabberXmlDestroyState(&xmlstate);
 	free(buffer);
@@ -1667,8 +1667,8 @@ static BOOL CALLBACK JabberRosterOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 	case JM_STATUSCHANGED:
 		{
 			int count = ListView_GetItemCount(GetDlgItem(hwndDlg,IDC_ROSTER));
-			EnableWindow( GetDlgItem( hwndDlg, IDC_DOWNLOAD ), ppro->jabberConnected );
-			EnableWindow( GetDlgItem( hwndDlg, IDC_UPLOAD ), count && ppro->jabberConnected );
+			EnableWindow( GetDlgItem( hwndDlg, IDC_DOWNLOAD ), ppro->m_bJabberConnected );
+			EnableWindow( GetDlgItem( hwndDlg, IDC_UPLOAD ), count && ppro->m_bJabberConnected );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_EXPORT ), count > 0);
 			break;
 		}
@@ -1765,7 +1765,7 @@ static BOOL CALLBACK JabberRosterOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 	return FALSE;
 }
 
-int __cdecl CJabberProto::JabberMenuHandleRosterControl( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::OnMenuHandleRosterControl( WPARAM wParam, LPARAM lParam )
 {
 	if ( rrud.hwndDlg && IsWindow( rrud.hwndDlg ))
 		SetForegroundWindow( rrud.hwndDlg );

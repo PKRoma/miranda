@@ -39,29 +39,29 @@ extern CRITICAL_SECTION mutex;
 
 extern int bSecureIM;
 
-void CJabberProto::JabberSerialInit( void )
+void CJabberProto::SerialInit( void )
 {
-	InitializeCriticalSection( &serialMutex );
-	serial = 0;
+	InitializeCriticalSection( &m_csSerial );
+	m_nSerial = 0;
 }
 
-void CJabberProto::JabberSerialUninit( void )
+void CJabberProto::SerialUninit( void )
 {
-	DeleteCriticalSection( &serialMutex );
+	DeleteCriticalSection( &m_csSerial );
 }
 
-int CJabberProto::JabberSerialNext( void )
+int CJabberProto::SerialNext( void )
 {
 	unsigned int ret;
 
-	EnterCriticalSection( &serialMutex );
-	ret = serial;
-	serial++;
-	LeaveCriticalSection( &serialMutex );
+	EnterCriticalSection( &m_csSerial );
+	ret = m_nSerial;
+	m_nSerial++;
+	LeaveCriticalSection( &m_csSerial );
 	return ret;
 }
 
-void CJabberProto::JabberLog( const char* fmt, ... )
+void CJabberProto::Log( const char* fmt, ... )
 {
 	va_list vararg;
 	va_start( vararg, fmt );
@@ -69,18 +69,18 @@ void CJabberProto::JabberLog( const char* fmt, ... )
 	mir_vsnprintf( str, 32000, fmt, vararg );
 	va_end( vararg );
 
-	JCallService( MS_NETLIB_LOG, ( WPARAM )hNetlibUser, ( LPARAM )str );
+	JCallService( MS_NETLIB_LOG, ( WPARAM )m_hNetlibUser, ( LPARAM )str );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // JabberChatRoomHContactFromJID - looks for the char room HCONTACT with required JID
 
-HANDLE CJabberProto::JabberChatRoomHContactFromJID( const TCHAR* jid )
+HANDLE CJabberProto::ChatRoomHContactFromJID( const TCHAR* jid )
 {
 	if ( jid == NULL )
 		return ( HANDLE )NULL;
 
-	JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_CHATROOM, jid );
+	JABBER_LIST_ITEM* item = ListGetItemPtr( LIST_CHATROOM, jid );
 	
 	HANDLE hContactMatched = NULL;
 	HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
@@ -110,12 +110,12 @@ HANDLE CJabberProto::JabberChatRoomHContactFromJID( const TCHAR* jid )
 ///////////////////////////////////////////////////////////////////////////////
 // JabberHContactFromJID - looks for the HCONTACT with required JID
 
-HANDLE CJabberProto::JabberHContactFromJID( const TCHAR* jid , BOOL bStripResource )
+HANDLE CJabberProto::HContactFromJID( const TCHAR* jid , BOOL bStripResource )
 {
 	if ( jid == NULL )
 		return ( HANDLE )NULL;
 
-	JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_CHATROOM, jid );
+	JABBER_LIST_ITEM* item = ListGetItemPtr( LIST_CHATROOM, jid );
 
 	HANDLE hContactMatched = NULL;
 	HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
@@ -175,14 +175,14 @@ TCHAR* __stdcall JabberNickFromJID( const TCHAR* jid )
 	return nick;
 }
 
-JABBER_RESOURCE_STATUS* CJabberProto::JabberResourceInfoFromJID( TCHAR* jid )
+JABBER_RESOURCE_STATUS* CJabberProto::ResourceInfoFromJID( TCHAR* jid )
 {
 	if ( !jid )
 		return NULL;
 
 	JABBER_LIST_ITEM *item = NULL;
-	if (( item = JabberListGetItemPtr( LIST_VCARD_TEMP, jid )) == NULL)
-		item = JabberListGetItemPtr( LIST_ROSTER, jid );
+	if (( item = ListGetItemPtr( LIST_VCARD_TEMP, jid )) == NULL)
+		item = ListGetItemPtr( LIST_ROSTER, jid );
 	if ( item == NULL ) return NULL;
 
 	TCHAR* p = _tcschr( jid, '/' );
@@ -563,26 +563,26 @@ TCHAR* __stdcall JabberErrorMsg( XmlNode *errorNode )
 	return errorStr;
 }
 
-void CJabberProto::JabberSendVisibleInvisiblePresence( BOOL invisible )
+void CJabberProto::SendVisibleInvisiblePresence( BOOL invisible )
 {
-	if ( !jabberOnline ) return;
+	if ( !m_bJabberOnline ) return;
 
-	for ( int i = 0; ( i=JabberListFindNext( LIST_ROSTER, i )) >= 0; i++ ) {
-		JABBER_LIST_ITEM *item = JabberListGetItemPtrFromIndex( i );
+	for ( int i = 0; ( i=ListFindNext( LIST_ROSTER, i )) >= 0; i++ ) {
+		JABBER_LIST_ITEM *item = ListGetItemPtrFromIndex( i );
 		if ( item == NULL )
 			continue;
 
-		HANDLE hContact = JabberHContactFromJID( item->jid );
+		HANDLE hContact = HContactFromJID( item->jid );
 		if ( hContact == NULL )
 			continue;
 
 		WORD apparentMode = JGetWord( hContact, "ApparentMode", 0 );
 		if ( invisible==TRUE && apparentMode==ID_STATUS_OFFLINE ) {
 			XmlNode p( "presence" ); p.addAttr( "to", item->jid ); p.addAttr( "type", "invisible" );
-			jabberThreadInfo->send( p );
+			m_ThreadInfo->send( p );
 		}
 		else if ( invisible==FALSE && apparentMode==ID_STATUS_ONLINE )
-			JabberSendPresenceTo( m_iStatus, item->jid, NULL );
+			SendPresenceTo( m_iStatus, item->jid, NULL );
 }	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -915,12 +915,12 @@ int __stdcall JabberCountryNameToId( TCHAR* ptszCountryName )
 	return 0xffff;
 }
 
-void CJabberProto::JabberSendPresenceTo( int status, TCHAR* to, XmlNode* extra )
+void CJabberProto::SendPresenceTo( int status, TCHAR* to, XmlNode* extra )
 {
-	if ( !jabberOnline ) return;
+	if ( !m_bJabberOnline ) return;
 
 	// Send <presence/> update for status ( we won't handle ID_STATUS_OFFLINE here )
-	EnterCriticalSection( &modeMsgMutex );
+	EnterCriticalSection( &m_csModeMsgMutex );
 
 	char szPriority[40];
 	itoa( (short)JGetWord( NULL, "Priority", 0 ), szPriority, 10 );
@@ -988,8 +988,8 @@ void CJabberProto::JabberSendPresenceTo( int status, TCHAR* to, XmlNode* extra )
 
 	switch ( status ) {
 	case ID_STATUS_ONLINE:
-		if ( modeMsgs.szOnline )
-			p.addChild( "status", modeMsgs.szOnline );
+		if ( m_modeMsgs.szOnline )
+			p.addChild( "status", m_modeMsgs.szOnline );
 		break;
 	case ID_STATUS_INVISIBLE:
 		p.addAttr( "type", "invisible" );
@@ -998,44 +998,44 @@ void CJabberProto::JabberSendPresenceTo( int status, TCHAR* to, XmlNode* extra )
 	case ID_STATUS_ONTHEPHONE:
 	case ID_STATUS_OUTTOLUNCH:
 		p.addChild( "show", "away" );
-		if ( modeMsgs.szAway )
-			p.addChild( "status", modeMsgs.szAway );
+		if ( m_modeMsgs.szAway )
+			p.addChild( "status", m_modeMsgs.szAway );
 		break;
 	case ID_STATUS_NA:
 		p.addChild( "show", "xa" );
-		if ( modeMsgs.szNa )
-			p.addChild( "status", modeMsgs.szNa );
+		if ( m_modeMsgs.szNa )
+			p.addChild( "status", m_modeMsgs.szNa );
 		break;
 	case ID_STATUS_DND:
 	case ID_STATUS_OCCUPIED:
 		p.addChild( "show", "dnd" );
-		if ( modeMsgs.szDnd )
-			p.addChild( "status", modeMsgs.szDnd );
+		if ( m_modeMsgs.szDnd )
+			p.addChild( "status", m_modeMsgs.szDnd );
 		break;
 	case ID_STATUS_FREECHAT:
 		p.addChild( "show", "chat" );
-		if ( modeMsgs.szFreechat )
-			p.addChild( "status", modeMsgs.szFreechat );
+		if ( m_modeMsgs.szFreechat )
+			p.addChild( "status", m_modeMsgs.szFreechat );
 		break;
 	default:
 		// Should not reach here
 		break;
 	}
-	jabberThreadInfo->send( p );
-	LeaveCriticalSection( &modeMsgMutex );
+	m_ThreadInfo->send( p );
+	LeaveCriticalSection( &m_csModeMsgMutex );
 }
 
-void CJabberProto::JabberSendPresence( int status, bool bSendToAll )
+void CJabberProto::SendPresence( int status, bool bSendToAll )
 {
-	JabberSendPresenceTo( status, NULL, NULL );
-	JabberSendVisibleInvisiblePresence( status == ID_STATUS_INVISIBLE );
+	SendPresenceTo( status, NULL, NULL );
+	SendVisibleInvisiblePresence( status == ID_STATUS_INVISIBLE );
 
 	// Also update status in all chatrooms
 	if ( bSendToAll ) {
-		for ( int i = 0; ( i=JabberListFindNext( LIST_CHATROOM, i )) >= 0; i++ ) {
-			JABBER_LIST_ITEM *item = JabberListGetItemPtrFromIndex( i );
+		for ( int i = 0; ( i=ListFindNext( LIST_CHATROOM, i )) >= 0; i++ ) {
+			JABBER_LIST_ITEM *item = ListGetItemPtrFromIndex( i );
 			if ( item != NULL )
-				JabberSendPresenceTo( status, item->jid, NULL );
+				SendPresenceTo( status, item->jid, NULL );
 }	}	}
 
 void __stdcall JabberStringAppend( char* *str, int *sizeAlloced, const char* fmt, ... )
@@ -1085,7 +1085,7 @@ int __stdcall JabberGetPacketID( XmlNode* n )
 ///////////////////////////////////////////////////////////////////////////////
 // JabberGetClientJID - adds a resource postfix to a JID
 
-TCHAR* CJabberProto::JabberGetClientJID( const TCHAR* jid, TCHAR* dest, size_t destLen )
+TCHAR* CJabberProto::GetClientJID( const TCHAR* jid, TCHAR* dest, size_t destLen )
 {
 	if ( jid == NULL )
 		return NULL;
@@ -1099,7 +1099,7 @@ TCHAR* CJabberProto::JabberGetClientJID( const TCHAR* jid, TCHAR* dest, size_t d
 
 	TCHAR* p = _tcschr( dest, '/' );
 	if ( p == NULL ) {
-		TCHAR* resource = JabberListGetBestResourceNamePtr( jid );
+		TCHAR* resource = ListGetBestResourceNamePtr( jid );
 		if ( resource != NULL )
 			mir_sntprintf( dest+len, destLen-len-1, _T("/%s"), resource );
 	}
@@ -1133,7 +1133,7 @@ TCHAR* __stdcall JabberStripJid( const TCHAR* jid, TCHAR* dest, size_t destLen )
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberGetXmlLang() - returns language code for xml:lang attribute, caller must free return value
 
-TCHAR* CJabberProto::JabberGetXmlLang()
+TCHAR* CJabberProto::GetXmlLang()
 {
 	DBVARIANT dbv;
 	TCHAR *szSelectedLang = NULL;
@@ -1214,7 +1214,7 @@ const char* TStringPairs::operator[]( const char* key ) const
 ////////////////////////////////////////////////////////////////////////
 // Manage combo boxes with recent item list
 
-void CJabberProto::JabberComboLoadRecentStrings(HWND hwndDlg, UINT idcCombo, char *param, int recentCount)
+void CJabberProto::ComboLoadRecentStrings(HWND hwndDlg, UINT idcCombo, char *param, int recentCount)
 {
 	for (int i = 0; i < recentCount; ++i) {
 		DBVARIANT dbv;
@@ -1228,7 +1228,7 @@ void CJabberProto::JabberComboLoadRecentStrings(HWND hwndDlg, UINT idcCombo, cha
 		SendDlgItemMessage(hwndDlg, idcCombo, CB_ADDSTRING, 0, (LPARAM)_T(""));
 }
 
-void CJabberProto::JabberComboAddRecentString(HWND hwndDlg, UINT idcCombo, char *param, TCHAR *string, int recentCount)
+void CJabberProto::ComboAddRecentString(HWND hwndDlg, UINT idcCombo, char *param, TCHAR *string, int recentCount)
 {
 	if (!string || !*string)
 		return;
@@ -1256,7 +1256,7 @@ static VOID CALLBACK sttRebuildMenusApcProc( DWORD param )
 		pcli->pfnReloadProtoMenus();
 }
 
-void CJabberProto::JabberRebuildStatusMenu()
+void CJabberProto::RebuildStatusMenu()
 {
 	QueueUserAPC(sttRebuildMenusApcProc, hMainThread, 0);
 }
@@ -1360,7 +1360,7 @@ static BOOL CALLBACK sttEnterStringDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 				params->idcControl = IDC_TXT_COMBO;
 				params->height = rc.bottom-rc.top;
 				if (params->windowName && params->recentCount)
-					params->ppro->JabberComboLoadRecentStrings(hwndDlg, IDC_TXT_COMBO, params->windowName, params->recentCount);
+					params->ppro->ComboLoadRecentStrings(hwndDlg, IDC_TXT_COMBO, params->windowName, params->recentCount);
 				break;
 			}
 			case JES_RICHEDIT:
@@ -1435,7 +1435,7 @@ static BOOL CALLBACK sttEnterStringDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 			params->result[ params->resultLen-1 ] = 0;
 
 			if ((params->type == JES_COMBO) && params->windowName && params->recentCount)
-				params->ppro->JabberComboAddRecentString(hwndDlg, IDC_TXT_COMBO, params->windowName, params->result, params->recentCount);
+				params->ppro->ComboAddRecentString(hwndDlg, IDC_TXT_COMBO, params->windowName, params->result, params->recentCount);
 			if (params->windowName)
 				Utils_SaveWindowPosition(hwndDlg, NULL, params->ppro->m_szProtoName, params->windowName);
 			EndDialog( hwndDlg, 1 );
@@ -1451,7 +1451,7 @@ static BOOL CALLBACK sttEnterStringDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 	return FALSE;
 }
 
-BOOL CJabberProto::JabberEnterString(TCHAR *result, size_t resultLen, TCHAR *caption, int type, char *windowName, int recentCount)
+BOOL CJabberProto::EnterString(TCHAR *result, size_t resultLen, TCHAR *caption, int type, char *windowName, int recentCount)
 {
 	bool free_caption = false;
 	if (!caption || (caption==result))

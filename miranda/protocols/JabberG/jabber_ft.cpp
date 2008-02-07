@@ -36,24 +36,24 @@ Last change by : $Author$
 #include "jabber_ibb.h"
 #include "jabber_caps.h"
 
-void CJabberProto::JabberFtCancel( filetransfer* ft )
+void CJabberProto::FtCancel( filetransfer* ft )
 {
 	JABBER_LIST_ITEM *item;
 	JABBER_BYTE_TRANSFER *jbt;
 	JABBER_IBB_TRANSFER *jibb;
 	int i;
 
-	JabberLog( "Invoking JabberFtCancel()" );
+	Log( "Invoking JabberFtCancel()" );
 
 	// For file sending session that is still in si negotiation phase
 	if ( m_iqManager.ExpireByUserData( ft ))
 		return;
 	// For file receiving session that is still in si negotiation phase
-	for ( i=0; ( i=JabberListFindNext( LIST_FTRECV, i ))>=0; i++ ) {
-		item = JabberListGetItemPtrFromIndex( i );
+	for ( i=0; ( i=ListFindNext( LIST_FTRECV, i ))>=0; i++ ) {
+		item = ListGetItemPtrFromIndex( i );
 		if ( item->ft == ft ) {
-			JabberLog( "Canceling file receiving session while in si negotiation" );
-			JabberListRemoveByIndex( i );
+			Log( "Canceling file receiving session while in si negotiation" );
+			ListRemoveByIndex( i );
 			JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
 			delete ft;
 			return;
@@ -61,10 +61,10 @@ void CJabberProto::JabberFtCancel( filetransfer* ft )
 	}
 	// For file transfer through bytestream
 	if (( jbt=ft->jbt ) != NULL ) {
-		JabberLog( "Canceling bytestream session" );
+		Log( "Canceling bytestream session" );
 		jbt->state = JBT_ERROR;
 		if ( jbt->hConn ) {
-			JabberLog( "Force closing bytestream session" );
+			Log( "Force closing bytestream session" );
 			Netlib_CloseHandle( jbt->hConn );
 			jbt->hConn = NULL;
 		}
@@ -74,7 +74,7 @@ void CJabberProto::JabberFtCancel( filetransfer* ft )
 	}
 	// For file transfer through IBB
 	if (( jibb=ft->jibb ) != NULL ) {
-		JabberLog( "Canceling IBB session" );
+		Log( "Canceling IBB session" );
 		jibb->state = JIBB_ERROR;
 		m_iqManager.ExpireByUserData( jibb );
 	}
@@ -82,7 +82,7 @@ void CJabberProto::JabberFtCancel( filetransfer* ft )
 
 ///////////////// File sending using stream initiation /////////////////////////
 
-void CJabberProto::JabberFtInitiate( TCHAR* jid, filetransfer* ft )
+void CJabberProto::FtInitiate( TCHAR* jid, filetransfer* ft )
 {
 	TCHAR *rs;
 	char *filename, *p;
@@ -90,7 +90,7 @@ void CJabberProto::JabberFtInitiate( TCHAR* jid, filetransfer* ft )
 	TCHAR sid[9];
 	XmlNode* option = NULL;
 
-	if ( jid==NULL || ft==NULL || !jabberOnline || ( rs=JabberListGetBestClientResourceNamePtr( jid ))==NULL ) {
+	if ( jid==NULL || ft==NULL || !m_bJabberOnline || ( rs=ListGetBestClientResourceNamePtr( jid ))==NULL ) {
 		if ( ft ) {
 			JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
 			delete ft;
@@ -110,7 +110,7 @@ void CJabberProto::JabberFtInitiate( TCHAR* jid, filetransfer* ft )
 	TCHAR tszJid[ 512 ];
 	mir_sntprintf( tszJid, SIZEOF(tszJid), _T("%s/%s"), jid, rs );
 
-	XmlNodeIq iq( m_iqManager.AddHandler( &CJabberProto::JabberFtSiResult, JABBER_IQ_TYPE_SET, tszJid, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_TO, -1, ft ));
+	XmlNodeIq iq( m_iqManager.AddHandler( &CJabberProto::OnFtSiResult, JABBER_IQ_TYPE_SET, tszJid, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_TO, -1, ft ));
 	XmlNode* si = iq.addChild( "si" ); si->addAttr( "xmlns", JABBER_FEAT_SI ); 
 	si->addAttr( "id", sid ); si->addAttr( "mime-type", "binary/octet-stream" );
 	si->addAttr( "profile", JABBER_FEAT_SI_FT );
@@ -129,10 +129,10 @@ void CJabberProto::JabberFtInitiate( TCHAR* jid, filetransfer* ft )
 		option = field->addChild( "option" ); option->addChild( "value", JABBER_FEAT_BYTESTREAMS );
 	}
 	option = field->addChild( "option" ); option->addChild( "value", JABBER_FEAT_IBB );
-	jabberThreadInfo->send( iq );
+	m_ThreadInfo->send( iq );
 }
 
-void CJabberProto::JabberFtSiResult( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnFtSiResult( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo )
 {
 	XmlNode *siNode, *featureNode, *xNode, *fieldNode, *valueNode;
 	filetransfer *ft = (filetransfer *)pInfo->GetUserData();
@@ -157,8 +157,8 @@ void CJabberProto::JabberFtSiResult( XmlNode *iqNode, void *userdata, CJabberIqI
 								jbt->srcJID = mir_tstrdup( pInfo->m_szTo );
 								jbt->dstJID = mir_tstrdup( pInfo->m_szFrom );
 								jbt->sid = mir_tstrdup( ft->sid );
-								jbt->pfnSend = &CJabberProto::JabberFtSend;
-								jbt->pfnFinal = &CJabberProto::JabberFtSendFinal;
+								jbt->pfnSend = &CJabberProto::FtSend;
+								jbt->pfnFinal = &CJabberProto::FtSendFinal;
 								jbt->userdata = ft;
 								ft->type = FT_BYTESTREAM;
 								ft->jbt = jbt;
@@ -170,21 +170,21 @@ void CJabberProto::JabberFtSiResult( XmlNode *iqNode, void *userdata, CJabberIqI
 								jibb->srcJID = mir_tstrdup( pInfo->m_szTo );
 								jibb->dstJID = mir_tstrdup( pInfo->m_szFrom );
 								jibb->sid = mir_tstrdup( ft->sid );
-								jibb->pfnSend = &CJabberProto::JabberFtIbbSend;
-								jibb->pfnFinal = &CJabberProto::JabberFtSendFinal;
+								jibb->pfnSend = &CJabberProto::FtIbbSend;
+								jibb->pfnFinal = &CJabberProto::FtSendFinal;
 								jibb->userdata = ft;
 								ft->type = FT_IBB;
 								ft->jibb = jibb;
 								mir_forkthread(( pThreadFunc )::JabberIbbSendThread, jibb );
 	}	}	}	}	}	}	}
 	else {
-		JabberLog( "File transfer stream initiation request denied or failed" );
+		Log( "File transfer stream initiation request denied or failed" );
 		JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, pInfo->GetIqType() == JABBER_IQ_TYPE_ERROR ? ACKRESULT_DENIED : ACKRESULT_FAILED, ft, 0 );
 		delete ft;
 	}
 }
 
-BOOL CJabberProto::JabberFtSend( HANDLE hConn, void *userdata )
+BOOL CJabberProto::FtSend( HANDLE hConn, void *userdata )
 {
 	filetransfer* ft = ( filetransfer* ) userdata;
 
@@ -193,10 +193,10 @@ BOOL CJabberProto::JabberFtSend( HANDLE hConn, void *userdata )
 	char* buffer;
 	int numRead;
 
-	JabberLog( "Sending [%s]", ft->std.files[ ft->std.currentFileNumber ] );
+	Log( "Sending [%s]", ft->std.files[ ft->std.currentFileNumber ] );
 	_stat( ft->std.files[ ft->std.currentFileNumber ], &statbuf );	// file size in statbuf.st_size
 	if (( fd=_open( ft->std.files[ ft->std.currentFileNumber ], _O_BINARY|_O_RDONLY )) < 0 ) {
-		JabberLog( "File cannot be opened" );
+		Log( "File cannot be opened" );
 		return FALSE;
 	}
 
@@ -221,7 +221,7 @@ BOOL CJabberProto::JabberFtSend( HANDLE hConn, void *userdata )
 	return TRUE;
 }
 
-BOOL CJabberProto::JabberFtIbbSend( int blocksize, void *userdata )
+BOOL CJabberProto::FtIbbSend( int blocksize, void *userdata )
 {
 	filetransfer* ft = ( filetransfer* ) userdata;
 
@@ -230,10 +230,10 @@ BOOL CJabberProto::JabberFtIbbSend( int blocksize, void *userdata )
 	char* buffer;
 	int numRead;
 
-	JabberLog( "Sending [%s]", ft->std.files[ ft->std.currentFileNumber ] );
+	Log( "Sending [%s]", ft->std.files[ ft->std.currentFileNumber ] );
 	_stat( ft->std.files[ ft->std.currentFileNumber ], &statbuf );	// file size in statbuf.st_size
 	if (( fd=_open( ft->std.files[ ft->std.currentFileNumber ], _O_BINARY|_O_RDONLY )) < 0 ) {
-		JabberLog( "File cannot be opened" );
+		Log( "File cannot be opened" );
 		return FALSE;
 	}
 
@@ -243,7 +243,7 @@ BOOL CJabberProto::JabberFtIbbSend( int blocksize, void *userdata )
 
 	if (( buffer=( char* )mir_alloc( blocksize )) != NULL ) {
 		while (( numRead=_read( fd, buffer, blocksize )) > 0 ) {
-			int iqId = JabberSerialNext();
+			int iqId = SerialNext();
 			XmlNode msg( "message" );
 			msg.addAttr( "to", ft->jibb->dstJID );
 			msg.addAttrID( iqId );
@@ -271,8 +271,8 @@ BOOL CJabberProto::JabberFtIbbSend( int blocksize, void *userdata )
 
 			mir_free( encoded );
 
-			if ( ft->jibb->state == JIBB_ERROR || ft->jibb->bStreamClosed || jabberThreadInfo->send( msg ) == SOCKET_ERROR ) {
-				JabberLog( "JabberFtIbbSend unsuccessful exit" );
+			if ( ft->jibb->state == JIBB_ERROR || ft->jibb->bStreamClosed || m_ThreadInfo->send( msg ) == SOCKET_ERROR ) {
+				Log( "JabberFtIbbSend unsuccessful exit" );
 				mir_free( buffer );
 				_close( fd );
 				return FALSE;
@@ -290,12 +290,12 @@ BOOL CJabberProto::JabberFtIbbSend( int blocksize, void *userdata )
 	return TRUE;
 }
 
-void CJabberProto::JabberFtSendFinal( BOOL success, void *userdata )
+void CJabberProto::FtSendFinal( BOOL success, void *userdata )
 {
 	filetransfer* ft = ( filetransfer* )userdata;
 
 	if ( !success ) {
-		JabberLog( "File transfer complete with error" );
+		Log( "File transfer complete with error" );
 		JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
 	}
 	else {
@@ -303,7 +303,7 @@ void CJabberProto::JabberFtSendFinal( BOOL success, void *userdata )
 			ft->std.currentFileNumber++;
 			replaceStr( ft->std.currentFile, ft->std.files[ ft->std.currentFileNumber ] );
 			JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, ft, 0 );
-			JabberFtInitiate( ft->jid, ft );
+			FtInitiate( ft->jid, ft );
 			return;
 		}
 
@@ -318,7 +318,7 @@ void CJabberProto::JabberFtSendFinal( BOOL success, void *userdata )
 static int JabberFtReceive( HANDLE hConn, void *userdata, char* buffer, int datalen );
 static void JabberFtReceiveFinal( BOOL success, void *userdata );
 
-void CJabberProto::JabberFtHandleSiRequest( XmlNode *iqNode )
+void CJabberProto::FtHandleSiRequest( XmlNode *iqNode )
 {
 	TCHAR* from, *sid, *str, *szId, *filename;
 	XmlNode *siNode, *fileNode, *featureNode, *xNode, *fieldNode, *optionNode, *n;
@@ -376,7 +376,7 @@ void CJabberProto::JabberFtHandleSiRequest( XmlNode *iqNode )
 				filetransfer* ft = new filetransfer( this );
 				ft->dwExpectedRecvFileSize = (DWORD)filesize;
 				ft->jid = mir_tstrdup( from );
-				ft->std.hContact = JabberHContactFromJID( from );
+				ft->std.hContact = HContactFromJID( from );
 				ft->sid = mir_tstrdup( sid );
 				ft->iqId = mir_tstrdup( szId );
 				ft->type = ftType;
@@ -405,7 +405,7 @@ void CJabberProto::JabberFtHandleSiRequest( XmlNode *iqNode )
 				XmlNode* e = iq.addChild( "error" ); e->addAttr( "code", 400 ); e->addAttr( "type", "cancel" );
 				XmlNode* br = e->addChild( "bad-request" ); br->addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
 				XmlNode* nvs = e->addChild( "no-valid-streams" ); nvs->addAttr( "xmlns", JABBER_FEAT_SI );
-				jabberThreadInfo->send( iq );
+				m_ThreadInfo->send( iq );
 				return;
 	}	}	}
 
@@ -414,15 +414,15 @@ void CJabberProto::JabberFtHandleSiRequest( XmlNode *iqNode )
 	XmlNode* e = iq.addChild( "error" ); e->addAttr( "code", 400 ); e->addAttr( "type", "cancel" );
 	XmlNode* br = e->addChild( "bad-request" ); br->addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
 	XmlNode* nvs = e->addChild( "bad-profile" ); nvs->addAttr( "xmlns", JABBER_FEAT_SI );
-	jabberThreadInfo->send( iq );
+	m_ThreadInfo->send( iq );
 }
 
-void CJabberProto::JabberFtAcceptSiRequest( filetransfer* ft )
+void CJabberProto::FtAcceptSiRequest( filetransfer* ft )
 {
-	if ( !jabberOnline || ft==NULL || ft->jid==NULL || ft->sid==NULL ) return;
+	if ( !m_bJabberOnline || ft==NULL || ft->jid==NULL || ft->sid==NULL ) return;
 
 	JABBER_LIST_ITEM *item;
-	if (( item=JabberListAdd( LIST_FTRECV, ft->sid )) != NULL ) {
+	if (( item=ListAdd( LIST_FTRECV, ft->sid )) != NULL ) {
 		item->ft = ft;
 
 		XmlNodeIq iq( "result", ft->iqId, ft->jid );
@@ -431,15 +431,15 @@ void CJabberProto::JabberFtAcceptSiRequest( filetransfer* ft )
 		XmlNode* x = f->addChild( "x" ); x->addAttr( "xmlns", JABBER_FEAT_DATA_FORMS ); x->addAttr( "type", "submit" );
 		XmlNode* fl = x->addChild( "field" ); fl->addAttr( "var", "stream-method" );
 		fl->addChild( "value", JABBER_FEAT_BYTESTREAMS );
-		jabberThreadInfo->send( iq );
+		m_ThreadInfo->send( iq );
 }	}
 
-void CJabberProto::JabberFtAcceptIbbRequest( filetransfer* ft )
+void CJabberProto::FtAcceptIbbRequest( filetransfer* ft )
 {
-	if ( !jabberOnline || ft==NULL || ft->jid==NULL || ft->sid==NULL ) return;
+	if ( !m_bJabberOnline || ft==NULL || ft->jid==NULL || ft->sid==NULL ) return;
 
 	JABBER_LIST_ITEM *item;
-	if (( item=JabberListAdd( LIST_FTRECV, ft->sid )) != NULL ) {
+	if (( item=ListAdd( LIST_FTRECV, ft->sid )) != NULL ) {
 		item->ft = ft;
 
 		XmlNodeIq iq( "result", ft->iqId, ft->jid );
@@ -448,36 +448,36 @@ void CJabberProto::JabberFtAcceptIbbRequest( filetransfer* ft )
 		XmlNode* x = f->addChild( "x" ); x->addAttr( "xmlns", JABBER_FEAT_DATA_FORMS ); x->addAttr( "type", "submit" );
 		XmlNode* fl = x->addChild( "field" ); fl->addAttr( "var", "stream-method" );
 		fl->addChild( "value", JABBER_FEAT_IBB );
-		jabberThreadInfo->send( iq );
+		m_ThreadInfo->send( iq );
 }	}
 
-void CJabberProto::JabberFtHandleBytestreamRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::FtHandleBytestreamRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	XmlNode *queryNode = pInfo->GetChildNode();
 
 	TCHAR* sid;
 	JABBER_LIST_ITEM *item;
 
-	if (( sid = JabberXmlGetAttrValue( queryNode, "sid" )) != NULL && ( item = JabberListGetItemPtr( LIST_FTRECV, sid )) != NULL ) {
+	if (( sid = JabberXmlGetAttrValue( queryNode, "sid" )) != NULL && ( item = ListGetItemPtr( LIST_FTRECV, sid )) != NULL ) {
 		// Start Bytestream session
 		JABBER_BYTE_TRANSFER *jbt = ( JABBER_BYTE_TRANSFER * ) mir_alloc( sizeof( JABBER_BYTE_TRANSFER ));
 		ZeroMemory( jbt, sizeof( JABBER_BYTE_TRANSFER ));
 		jbt->ppro = this;
 		jbt->iqNode = JabberXmlCopyNode( iqNode );
-		jbt->pfnRecv = &CJabberProto::JabberFtReceive;
-		jbt->pfnFinal = &CJabberProto::JabberFtReceiveFinal;
+		jbt->pfnRecv = &CJabberProto::FtReceive;
+		jbt->pfnFinal = &CJabberProto::FtReceiveFinal;
 		jbt->userdata = item->ft;
 		item->ft->jbt = jbt;
 		mir_forkthread(( pThreadFunc )::JabberByteReceiveThread, jbt );
-		JabberListRemove( LIST_FTRECV, sid );
+		ListRemove( LIST_FTRECV, sid );
 		return;
 	}
 
-	JabberLog( "File transfer invalid bytestream initiation request received" );
+	Log( "File transfer invalid bytestream initiation request received" );
 	return;
 }
 
-BOOL CJabberProto::JabberFtHandleIbbRequest( XmlNode *iqNode, BOOL bOpen )
+BOOL CJabberProto::FtHandleIbbRequest( XmlNode *iqNode, BOOL bOpen )
 {
 	if ( !iqNode ) return FALSE;
 
@@ -493,12 +493,12 @@ BOOL CJabberProto::JabberFtHandleIbbRequest( XmlNode *iqNode, BOOL bOpen )
 	if ( !sid ) return FALSE;
 
 	// already closed?
-	JABBER_LIST_ITEM *item = JabberListGetItemPtr( LIST_FTRECV, sid );
+	JABBER_LIST_ITEM *item = ListGetItemPtr( LIST_FTRECV, sid );
 	if ( !item ) {
 		XmlNodeIq iq( "error", id, from );
 		XmlNode* e = iq.addChild( "error" ); e->addAttr( "code", 404 ); e->addAttr( "type", _T("cancel"));
 		XmlNode* na = e->addChild( "item-not-found" ); na->addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
-		jabberThreadInfo->send( iq );
+		m_ThreadInfo->send( iq );
 		return FALSE;
 	}
 
@@ -511,21 +511,21 @@ BOOL CJabberProto::JabberFtHandleIbbRequest( XmlNode *iqNode, BOOL bOpen )
 			jibb->srcJID = mir_tstrdup( from );
 			jibb->dstJID = mir_tstrdup( to );
 			jibb->sid = mir_tstrdup( sid );
-			jibb->pfnRecv = &CJabberProto::JabberFtReceive;
-			jibb->pfnFinal = &CJabberProto::JabberFtReceiveFinal;
+			jibb->pfnRecv = &CJabberProto::FtReceive;
+			jibb->pfnFinal = &CJabberProto::FtReceiveFinal;
 			jibb->userdata = item->ft;
 			item->ft->jibb = jibb;
 			item->jibb = jibb;
 			mir_forkthread(( pThreadFunc )::JabberIbbReceiveThread, jibb );
 			XmlNodeIq iq( "result", id, from );
-			jabberThreadInfo->send( iq );
+			m_ThreadInfo->send( iq );
 			return TRUE;
 		}
 		// stream already open
 		XmlNodeIq iq( "error", id, from );
 		XmlNode* e = iq.addChild( "error" ); e->addAttr( "code", 404 ); e->addAttr( "type", _T("cancel"));
 		XmlNode* na = e->addChild( "item-not-found" ); na->addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
-		jabberThreadInfo->send( iq );
+		m_ThreadInfo->send( iq );
 		return FALSE;
 	}
 	
@@ -535,16 +535,16 @@ BOOL CJabberProto::JabberFtHandleIbbRequest( XmlNode *iqNode, BOOL bOpen )
 		SetEvent( item->jibb->hEvent );
 
 		XmlNodeIq iq( "result", id, from );
-		jabberThreadInfo->send( iq );
+		m_ThreadInfo->send( iq );
 		return TRUE;
 	}
 
-	JabberListRemove( LIST_FTRECV, sid );
+	ListRemove( LIST_FTRECV, sid );
 
 	return FALSE;
 }
 
-int CJabberProto::JabberFtReceive( HANDLE hConn, void *userdata, char* buffer, int datalen )
+int CJabberProto::FtReceive( HANDLE hConn, void *userdata, char* buffer, int datalen )
 {
 	filetransfer* ft = ( filetransfer* )userdata;
 	if ( ft->create() == -1 )
@@ -554,7 +554,7 @@ int CJabberProto::JabberFtReceive( HANDLE hConn, void *userdata, char* buffer, i
 	if ( remainingBytes > 0 ) {
 		int writeSize = ( remainingBytes<datalen ) ? remainingBytes : datalen;
 		if ( _write( ft->fileId, buffer, writeSize ) != writeSize ) {
-			JabberLog( "_write() error" );
+			Log( "_write() error" );
 			return -1;
 		}
 
@@ -567,15 +567,15 @@ int CJabberProto::JabberFtReceive( HANDLE hConn, void *userdata, char* buffer, i
 	return 0;
 }
 
-void CJabberProto::JabberFtReceiveFinal( BOOL success, void *userdata )
+void CJabberProto::FtReceiveFinal( BOOL success, void *userdata )
 {
 	filetransfer* ft = ( filetransfer* )userdata;
 
 	if ( success ) {
-		JabberLog( "File transfer complete successfully" );
+		Log( "File transfer complete successfully" );
 		ft->complete();
 	}
-	else JabberLog( "File transfer complete with error" );
+	else Log( "File transfer complete with error" );
 
 	delete ft;
 }

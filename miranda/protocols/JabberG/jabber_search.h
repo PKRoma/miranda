@@ -85,7 +85,7 @@ static void JabberSearchFreeData(HWND hwndDlg, JabberSearchData * dat);
 static void JabberSearchRefreshFrameScroll(HWND hwndDlg, JabberSearchData * dat);
 static BOOL CALLBACK JabberSearchAdvancedDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static void JabberSearchDeleteFromRecent(TCHAR * szAddr,BOOL deleteLastFromDB);
-void JabberSearchAddToRecent(TCHAR * szAddr, HWND hwnd);
+void SearchAddToRecent(TCHAR * szAddr, HWND hwnd);
 
 // Implementation of MAP class (the list
 template <typename _KEYTYPE , int (*COMPARATOR)(_KEYTYPE*, _KEYTYPE*) >

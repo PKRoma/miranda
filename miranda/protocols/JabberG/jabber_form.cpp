@@ -862,7 +862,7 @@ static VOID CALLBACK JabberFormCreateDialogApcProc( DWORD param )
 	CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_FORM ), NULL, JabberFormDlgProc, ( LPARAM )param );
 }
 
-void CJabberProto::JabberFormCreateDialog( XmlNode *xNode, TCHAR* defTitle, JABBER_FORM_SUBMIT_FUNC pfnSubmit, void *userdata )
+void CJabberProto::FormCreateDialog( XmlNode *xNode, TCHAR* defTitle, JABBER_FORM_SUBMIT_FUNC pfnSubmit, void *userdata )
 {
 	JABBER_FORM_INFO *jfi;
 

@@ -173,7 +173,7 @@ static struct
 
 static void sttApplyNodeIcon(HTREELISTITEM hItem, CJabberSDNode *pNode);
 
-void CJabberProto::JabberIqResultServiceDiscoveryInfo( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultServiceDiscoveryInfo( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	m_SDManager.Lock();
 	CJabberSDNode* pNode = m_SDManager.FindByIqId( pInfo->GetIqId(), TRUE );
@@ -216,13 +216,13 @@ void CJabberProto::JabberIqResultServiceDiscoveryInfo( XmlNode* iqNode, void* us
 
 	m_SDManager.Unlock();
 
-	if ( hwndServiceDiscovery ) {
-		sttApplyNodeIcon(pNode->GetTreeItemHandle(), pNode);
-		PostMessage( hwndServiceDiscovery, WM_JABBER_REFRESH, 0, 0 );
+	if ( m_hwndServiceDiscovery ) {
+		ApplyNodeIcon(pNode->GetTreeItemHandle(), pNode);
+		PostMessage( m_hwndServiceDiscovery, WM_JABBER_REFRESH, 0, 0 );
 	}
 }
 
-void CJabberProto::JabberIqResultServiceDiscoveryItems( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultServiceDiscoveryItems( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	m_SDManager.Lock();
 	CJabberSDNode* pNode = m_SDManager.FindByIqId( pInfo->GetIqId(), FALSE );
@@ -262,13 +262,13 @@ void CJabberProto::JabberIqResultServiceDiscoveryItems( XmlNode* iqNode, void* u
 
 	m_SDManager.Unlock();
 
-	if ( hwndServiceDiscovery ) {
-		sttApplyNodeIcon(pNode->GetTreeItemHandle(), pNode);
-		PostMessage( hwndServiceDiscovery, WM_JABBER_REFRESH, 0, 0 );
+	if ( m_hwndServiceDiscovery ) {
+		ApplyNodeIcon(pNode->GetTreeItemHandle(), pNode);
+		PostMessage( m_hwndServiceDiscovery, WM_JABBER_REFRESH, 0, 0 );
 	}
 }
 
-void CJabberProto::JabberIqResultServiceDiscoveryRootInfo( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultServiceDiscoveryRootInfo( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	if (!pInfo->m_pUserData) return;
 	m_SDManager.Lock();
@@ -285,11 +285,11 @@ void CJabberProto::JabberIqResultServiceDiscoveryRootInfo( XmlNode* iqNode, void
 	}	}	}	}
 	m_SDManager.Unlock();
 
-	if ( hwndServiceDiscovery )
-		PostMessage( hwndServiceDiscovery, WM_JABBER_REFRESH, 0, 0 );
+	if ( m_hwndServiceDiscovery )
+		PostMessage( m_hwndServiceDiscovery, WM_JABBER_REFRESH, 0, 0 );
 }
 
-void CJabberProto::JabberIqResultServiceDiscoveryRootItems( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultServiceDiscoveryRootItems( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	if (!pInfo->m_pUserData) return;
 	m_SDManager.Lock();
@@ -301,7 +301,7 @@ void CJabberProto::JabberIqResultServiceDiscoveryRootItems( XmlNode* iqNode, voi
 			for ( int i = 1; ( item = JabberXmlGetNthChild( query, "item", i )) != NULL; i++ ) {
 				TCHAR *szJid = JabberXmlGetAttrValue( item, "jid" );
 				TCHAR *szNode = JabberXmlGetAttrValue( item, "node" );
-				CJabberIqInfo* pNewInfo = m_iqManager.AddHandler( &CJabberProto::JabberIqResultServiceDiscoveryRootInfo, JABBER_IQ_TYPE_GET, szJid );
+				CJabberIqInfo* pNewInfo = m_iqManager.AddHandler( &CJabberProto::OnIqResultServiceDiscoveryRootInfo, JABBER_IQ_TYPE_GET, szJid );
 				pNewInfo->m_pUserData = pInfo->m_pUserData;
 				pNewInfo->SetTimeout( 30000 );
 				XmlNodeIq* iq = new XmlNodeIq( pNewInfo );
@@ -312,18 +312,18 @@ void CJabberProto::JabberIqResultServiceDiscoveryRootItems( XmlNode* iqNode, voi
 	m_SDManager.Unlock();
 
 	if (packet->numChild)
-		jabberThreadInfo->send( *packet );
+		m_ThreadInfo->send( *packet );
 	delete packet;
 }
 
 BOOL CJabberProto::SendInfoRequest(CJabberSDNode* pNode, XmlNode* parent)
 {
-	if ( !pNode || !jabberOnline )
+	if ( !pNode || !m_bJabberOnline )
 		return FALSE;
 
 	// disco#info
 	if ( !pNode->GetInfoRequestId() ) {
-		CJabberIqInfo* pInfo = m_iqManager.AddHandler( &CJabberProto::JabberIqResultServiceDiscoveryInfo, JABBER_IQ_TYPE_GET, pNode->GetJid() );
+		CJabberIqInfo* pInfo = m_iqManager.AddHandler( &CJabberProto::OnIqResultServiceDiscoveryInfo, JABBER_IQ_TYPE_GET, pNode->GetJid() );
 		pInfo->SetTimeout( 30000 );
 		pNode->SetInfoRequestId( pInfo->GetIqId() );
 
@@ -335,13 +335,13 @@ BOOL CJabberProto::SendInfoRequest(CJabberSDNode* pNode, XmlNode* parent)
 		if ( parent )
 			parent->addChild( iq );
 		else {
-			jabberThreadInfo->send( *iq );
+			m_ThreadInfo->send( *iq );
 			delete( iq );
 	}	}
 
-	if ( hwndServiceDiscovery ) {
-		sttApplyNodeIcon(pNode->GetTreeItemHandle(), pNode);
-		PostMessage( hwndServiceDiscovery, WM_JABBER_REFRESH, 0, 0 );
+	if ( m_hwndServiceDiscovery ) {
+		ApplyNodeIcon(pNode->GetTreeItemHandle(), pNode);
+		PostMessage( m_hwndServiceDiscovery, WM_JABBER_REFRESH, 0, 0 );
 	}
 
 	return TRUE;
@@ -349,12 +349,12 @@ BOOL CJabberProto::SendInfoRequest(CJabberSDNode* pNode, XmlNode* parent)
 
 BOOL CJabberProto::SendBothRequests(CJabberSDNode* pNode, XmlNode* parent)
 {
-	if ( !pNode || !jabberOnline )
+	if ( !pNode || !m_bJabberOnline )
 		return FALSE;
 
 	// disco#info
 	if ( !pNode->GetInfoRequestId() ) {
-		CJabberIqInfo* pInfo = m_iqManager.AddHandler( &CJabberProto::JabberIqResultServiceDiscoveryInfo, JABBER_IQ_TYPE_GET, pNode->GetJid() );
+		CJabberIqInfo* pInfo = m_iqManager.AddHandler( &CJabberProto::OnIqResultServiceDiscoveryInfo, JABBER_IQ_TYPE_GET, pNode->GetJid() );
 		pInfo->SetTimeout( 30000 );
 		pNode->SetInfoRequestId( pInfo->GetIqId() );
 
@@ -366,13 +366,13 @@ BOOL CJabberProto::SendBothRequests(CJabberSDNode* pNode, XmlNode* parent)
 		if ( parent )
 			parent->addChild( iq );
 		else {
-			jabberThreadInfo->send( *iq );
+			m_ThreadInfo->send( *iq );
 			delete( iq );
 	}	}
 
 	// disco#items
 	if ( !pNode->GetItemsRequestId() ) {
-		CJabberIqInfo* pInfo = m_iqManager.AddHandler( &CJabberProto::JabberIqResultServiceDiscoveryItems, JABBER_IQ_TYPE_GET, pNode->GetJid() );
+		CJabberIqInfo* pInfo = m_iqManager.AddHandler( &CJabberProto::OnIqResultServiceDiscoveryItems, JABBER_IQ_TYPE_GET, pNode->GetJid() );
 		pInfo->SetTimeout( 30000 );
 		pNode->SetItemsRequestId( pInfo->GetIqId() );
 
@@ -384,19 +384,19 @@ BOOL CJabberProto::SendBothRequests(CJabberSDNode* pNode, XmlNode* parent)
 		if ( parent )
 			parent->addChild( iq );
 		else {
-			jabberThreadInfo->send( *iq );
+			m_ThreadInfo->send( *iq );
 			delete( iq );
 	}	}
 
-	if ( hwndServiceDiscovery ) {
-		sttApplyNodeIcon(pNode->GetTreeItemHandle(), pNode);
-		PostMessage( hwndServiceDiscovery, WM_JABBER_REFRESH, 0, 0 );
+	if ( m_hwndServiceDiscovery ) {
+		ApplyNodeIcon(pNode->GetTreeItemHandle(), pNode);
+		PostMessage( m_hwndServiceDiscovery, WM_JABBER_REFRESH, 0, 0 );
 	}
 
 	return TRUE;
 }
 
-void CJabberProto::sttPerformBrowse(HWND hwndDlg)
+void CJabberProto::PerformBrowse(HWND hwndDlg)
 {
 	TCHAR szJid[ 512 ];
 	TCHAR szNode[ 512 ];
@@ -405,8 +405,8 @@ void CJabberProto::sttPerformBrowse(HWND hwndDlg)
 	if ( !GetDlgItemText( hwndDlg, IDC_COMBO_NODE, szNode, SIZEOF( szNode )))
 		szNode[ 0 ] = _T('\0');
 	
-	JabberComboAddRecentString(hwndDlg, IDC_COMBO_JID, "discoWnd_rcJid", szJid);
-	JabberComboAddRecentString(hwndDlg, IDC_COMBO_NODE, "discoWnd_rcNode", szNode);
+	ComboAddRecentString(hwndDlg, IDC_COMBO_JID, "discoWnd_rcJid", szJid);
+	ComboAddRecentString(hwndDlg, IDC_COMBO_NODE, "discoWnd_rcNode", szNode);
 
 	if ( _tcslen( szJid )) {
 		HWND hwndList = GetDlgItem(hwndDlg, IDC_TREE_DISCO);
@@ -418,15 +418,15 @@ void CJabberProto::sttPerformBrowse(HWND hwndDlg)
 			sttBrowseMode = SD_BROWSE_MYAGENTS;
 			int i = 0;
 			JABBER_LIST_ITEM *item = NULL;
-			while (( i=JabberListFindNext( LIST_ROSTER, i )) >= 0 ) {
-				if (( item=JabberListGetItemPtrFromIndex( i )) != NULL ) {
+			while (( i=ListFindNext( LIST_ROSTER, i )) >= 0 ) {
+				if (( item=ListGetItemPtrFromIndex( i )) != NULL ) {
 					if ( _tcschr( item->jid, '@' )==NULL && _tcschr( item->jid, '/' )==NULL && item->subscription!=SUB_NONE ) {
-						HANDLE hContact = JabberHContactFromJID( item->jid );
+						HANDLE hContact = HContactFromJID( item->jid );
 						if ( hContact != NULL )
 							JSetByte( hContact, "IsTransport", TRUE );
 
-						if ( jabberTransports.getIndex( item->jid ) == -1 )
-							jabberTransports.insert( _tcsdup( item->jid ));
+						if ( m_lstTransports.getIndex( item->jid ) == -1 )
+							m_lstTransports.insert( _tcsdup( item->jid ));
 
 						CJabberSDNode* pNode = m_SDManager.AddPrimaryNode(item->jid, NULL, NULL);
 						SendBothRequests( pNode, NULL );
@@ -435,25 +435,25 @@ void CJabberProto::sttPerformBrowse(HWND hwndDlg)
 		}	}
 		else if (!lstrcmp(szJid, _T(SD_FAKEJID_CONFERENCES))) {
 			sttBrowseMode = SD_BROWSE_CONFERENCES;
-			TCHAR *szServerJid = mir_a2t(jabberThreadInfo->server);
-			CJabberIqInfo* pInfo = m_iqManager.AddHandler( &CJabberProto::JabberIqResultServiceDiscoveryRootItems, JABBER_IQ_TYPE_GET, szServerJid );
+			TCHAR *szServerJid = mir_a2t(m_ThreadInfo->server);
+			CJabberIqInfo* pInfo = m_iqManager.AddHandler( &CJabberProto::OnIqResultServiceDiscoveryRootItems, JABBER_IQ_TYPE_GET, szServerJid );
 			pInfo->m_pUserData = _T(JABBER_FEAT_MUC);
 			pInfo->SetTimeout( 30000 );
 			XmlNodeIq* iq = new XmlNodeIq( pInfo );
 			XmlNode* query = iq->addQuery( JABBER_FEAT_DISCO_ITEMS );
-			jabberThreadInfo->send( *iq );
+			m_ThreadInfo->send( *iq );
 			delete( iq );
 			mir_free(szServerJid);
 		}
 		else if (!lstrcmp(szJid, _T(SD_FAKEJID_AGENTS))) {
 			sttBrowseMode = SD_BROWSE_AGENTS;
-			TCHAR *szServerJid = mir_a2t(jabberThreadInfo->server);
-			CJabberIqInfo* pInfo = m_iqManager.AddHandler( &CJabberProto::JabberIqResultServiceDiscoveryRootItems, JABBER_IQ_TYPE_GET, szServerJid );
+			TCHAR *szServerJid = mir_a2t(m_ThreadInfo->server);
+			CJabberIqInfo* pInfo = m_iqManager.AddHandler( &CJabberProto::OnIqResultServiceDiscoveryRootItems, JABBER_IQ_TYPE_GET, szServerJid );
 			pInfo->m_pUserData = _T("jabber:iq:gateway");
 			pInfo->SetTimeout( 30000 );
 			XmlNodeIq* iq = new XmlNodeIq( pInfo );
 			XmlNode* query = iq->addQuery( JABBER_FEAT_DISCO_ITEMS );
-			jabberThreadInfo->send( *iq );
+			m_ThreadInfo->send( *iq );
 			delete( iq );
 			mir_free(szServerJid);
 		}
@@ -488,22 +488,22 @@ void CJabberProto::sttPerformBrowse(HWND hwndDlg)
 	}
 }
 
-BOOL CJabberProto::sttIsNodeRegistered(CJabberSDNode *pNode)
+BOOL CJabberProto::IsNodeRegistered(CJabberSDNode *pNode)
 {
 	if (pNode->GetNode())
 		return FALSE;
 
 	JABBER_LIST_ITEM *item;
-	if (item = JabberListGetItemPtr(LIST_ROSTER, pNode->GetJid()))
+	if (item = ListGetItemPtr(LIST_ROSTER, pNode->GetJid()))
 		return (item->subscription != SUB_NONE) ? TRUE : FALSE;
 
-	if (item = JabberListGetItemPtr(LIST_BOOKMARK, pNode->GetJid()))
+	if (item = ListGetItemPtr(LIST_BOOKMARK, pNode->GetJid()))
 		return TRUE;
 
 	return FALSE;
 }
 
-void CJabberProto::sttApplyNodeIcon(HTREELISTITEM hItem, CJabberSDNode *pNode)
+void CJabberProto::ApplyNodeIcon(HTREELISTITEM hItem, CJabberSDNode *pNode)
 {
 	if (!hItem || !pNode) return;
 
@@ -514,12 +514,12 @@ void CJabberProto::sttApplyNodeIcon(HTREELISTITEM hItem, CJabberSDNode *pNode)
 	else if (pNode->GetInfoRequestId() == JABBER_DISCO_RESULT_ERROR)
 		iOverlay = SD_OVERLAY_FAIL;
 	else if (pNode->GetInfoRequestId() == JABBER_DISCO_RESULT_NOT_REQUESTED) {
-		if (sttIsNodeRegistered(pNode))
+		if (IsNodeRegistered(pNode))
 			iOverlay = SD_OVERLAY_REGISTERED;
 		else
 			iOverlay = SD_OVERLAY_NONE;
 	} else if (pNode->GetInfoRequestId() == JABBER_DISCO_RESULT_OK) {
-		if (sttIsNodeRegistered(pNode))
+		if (IsNodeRegistered(pNode))
 			iOverlay = SD_OVERLAY_REGISTERED;
 		else if (pNode->GetInfoRequestId() == JABBER_DISCO_RESULT_ERROR)
 			iOverlay = SD_OVERLAY_FAIL;
@@ -566,7 +566,7 @@ BOOL CJabberProto::SyncTree(HTREELISTITEM hIndex, CJabberSDNode* pNode)
 	while (pTmp) {
 		if ( !pTmp->GetTreeItemHandle() ) {
 			HTREELISTITEM hNewItem = TreeList_AddItem(
-				GetDlgItem(hwndServiceDiscovery, IDC_TREE_DISCO), hIndex,
+				GetDlgItem(m_hwndServiceDiscovery, IDC_TREE_DISCO), hIndex,
 				pTmp->GetName() ? pTmp->GetName() : pTmp->GetJid(),
 				(LPARAM)pTmp);
 			TreeList_AppendColumn(hNewItem, pTmp->GetJid());
@@ -578,7 +578,7 @@ BOOL CJabberProto::SyncTree(HTREELISTITEM hIndex, CJabberSDNode* pNode)
 			pTmp->SetTreeItemHandle( hNewItem );
 		}
 
-		sttApplyNodeIcon(pNode->GetTreeItemHandle(), pNode);
+		ApplyNodeIcon(pNode->GetTreeItemHandle(), pNode);
 
 		if ( pTmp->GetFirstChildNode() )
 			SyncTree( pTmp->GetTreeItemHandle(), pTmp->GetFirstChildNode() );
@@ -651,7 +651,7 @@ BOOL CALLBACK JabberServiceDiscoveryDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 
 		TranslateDialogDefault( hwndDlg );
 		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )ppro->LoadIconEx( "servicediscovery" ));
-		ppro->hwndServiceDiscovery = hwndDlg;
+		ppro->m_hwndServiceDiscovery = hwndDlg;
 		{
 			int i;
 
@@ -659,7 +659,7 @@ BOOL CALLBACK JabberServiceDiscoveryDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 				SetDlgItemText( hwndDlg, IDC_COMBO_JID, (TCHAR *)param->m_jid );
 				SetDlgItemText( hwndDlg, IDC_COMBO_NODE, _T("") );
 			} else {
-				SetDlgItemTextA( hwndDlg, IDC_COMBO_JID, ppro->jabberThreadInfo->server );
+				SetDlgItemTextA( hwndDlg, IDC_COMBO_JID, ppro->m_ThreadInfo->server );
 				SetDlgItemText( hwndDlg, IDC_COMBO_NODE, _T("") );
 			}
 
@@ -699,8 +699,8 @@ BOOL CALLBACK JabberServiceDiscoveryDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			SendDlgItemMessage(hwndDlg, IDC_COMBO_JID, CB_ADDSTRING, 0, (LPARAM)_T(SD_FAKEJID_MYAGENTS));
 			SendDlgItemMessage(hwndDlg, IDC_COMBO_JID, CB_ADDSTRING, 0, (LPARAM)_T(SD_FAKEJID_AGENTS));
 			SendDlgItemMessage(hwndDlg, IDC_COMBO_JID, CB_ADDSTRING, 0, (LPARAM)_T(SD_FAKEJID_FAVORITES));
-			ppro->JabberComboLoadRecentStrings(hwndDlg, IDC_COMBO_JID, "doscoWnd_rcJid");
-			ppro->JabberComboLoadRecentStrings(hwndDlg, IDC_COMBO_NODE, "doscoWnd_rcNode");
+			ppro->ComboLoadRecentStrings(hwndDlg, IDC_COMBO_JID, "doscoWnd_rcJid");
+			ppro->ComboLoadRecentStrings(hwndDlg, IDC_COMBO_NODE, "doscoWnd_rcNode");
 
 			HWND hwndList = GetDlgItem(hwndDlg, IDC_TREE_DISCO);
 			LVCOLUMN lvc = {0};
@@ -765,7 +765,7 @@ BOOL CALLBACK JabberServiceDiscoveryDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 		}
 
 	case WM_JABBER_TRANSPORT_REFRESH:
-		if (ppro->sttBrowseMode == SD_BROWSE_MYAGENTS) {
+		if (ppro->m_nSDBrowseMode == SD_BROWSE_MYAGENTS) {
 			SetDlgItemText(hwndDlg, IDC_COMBO_JID, _T(SD_FAKEJID_MYAGENTS));
 			SetDlgItemText(hwndDlg, IDC_COMBO_NODE, _T(""));
 			PostMessage( hwndDlg, WM_COMMAND, MAKEWPARAM( IDC_BUTTON_BROWSE, 0 ), 0 );
@@ -774,7 +774,7 @@ BOOL CALLBACK JabberServiceDiscoveryDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 
 	case WM_JABBER_REFRESH:
 		KillTimer(hwndDlg, REFRESH_TIMER);
-		if (GetTickCount() - ppro->sttLastRefresh < REFRESH_TIMEOUT) {
+		if (GetTickCount() - ppro->m_dwSDLastRefresh < REFRESH_TIMEOUT) {
 			SetTimer(hwndDlg, REFRESH_TIMER, REFRESH_TIMEOUT, NULL);
 			return TRUE;
 		} 
@@ -792,7 +792,7 @@ BOOL CALLBACK JabberServiceDiscoveryDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 				if ( pNode->GetJid() ) {
 					if ( !pNode->GetTreeItemHandle() ) {
 						HTREELISTITEM hNewItem = TreeList_AddItem(
-							GetDlgItem( ppro->hwndServiceDiscovery, IDC_TREE_DISCO), NULL,
+							GetDlgItem( ppro->m_hwndServiceDiscovery, IDC_TREE_DISCO), NULL,
 							pNode->GetName() ? pNode->GetName() : pNode->GetJid(),
 							(LPARAM)pNode);
 						TreeList_AppendColumn(hNewItem, pNode->GetJid());
@@ -805,7 +805,7 @@ BOOL CALLBACK JabberServiceDiscoveryDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			ppro->m_SDManager.Unlock();
 			TreeList_Update(GetDlgItem(hwndDlg, IDC_TREE_DISCO));
 			KillTimer(hwndDlg, REFRESH_TIMER);
-			ppro->sttLastRefresh = GetTickCount();
+			ppro->m_dwSDLastRefresh = GetTickCount();
 			return TRUE;
 		}
 		else if (wParam == AUTODISCO_TIMER) {
@@ -838,11 +838,11 @@ BOOL CALLBACK JabberServiceDiscoveryDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			}
 			ppro->m_SDManager.Unlock();
 			if ( packet->numChild )
-				ppro->jabberThreadInfo->send( *packet );
+				ppro->m_ThreadInfo->send( *packet );
 			delete packet;
 
 			KillTimer(hwndDlg, AUTODISCO_TIMER);
-			ppro->sttLastRefresh = GetTickCount();
+			ppro->m_dwSDLastRefresh = GetTickCount();
 			return TRUE;
 		}
 		return FALSE;
@@ -870,7 +870,7 @@ BOOL CALLBACK JabberServiceDiscoveryDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			CJabberSDNode *pNode = (CJabberSDNode *)TreeList_GetData(hItem);
 			if (!pNode) break;
 
-			ppro->JabberServiceDiscoveryShowMenu(pNode, hItem, pt);
+			ppro->ServiceDiscoveryShowMenu(pNode, hItem, pt);
 		}
 		return FALSE;
 
@@ -907,7 +907,7 @@ BOOL CALLBACK JabberServiceDiscoveryDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 				ppro->m_SDManager.Unlock();
 
 				if ( packet->numChild )
-					ppro->jabberThreadInfo->send( *packet );
+					ppro->m_ThreadInfo->send( *packet );
 				delete packet;
 			}
 			else if ( pHeader->code == NM_CUSTOMDRAW ) {
@@ -950,7 +950,7 @@ BOOL CALLBACK JabberServiceDiscoveryDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			}
 			case IDC_BUTTON_BROWSE:
 			{
-				ppro->sttPerformBrowse(hwndDlg);
+				ppro->PerformBrowse(hwndDlg);
 				return TRUE;
 			}
 			case IDC_BTN_REFRESH:
@@ -970,13 +970,13 @@ BOOL CALLBACK JabberServiceDiscoveryDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 				ppro->m_SDManager.Unlock();
 
 				if ( packet->numChild )
-					ppro->jabberThreadInfo->send( *packet );
+					ppro->m_ThreadInfo->send( *packet );
 				delete packet;
 				return TRUE;
 			}
 			case IDC_BTN_NAVHOME:
 			{
-				SetDlgItemTextA( hwndDlg, IDC_COMBO_JID, ppro->jabberThreadInfo->server );
+				SetDlgItemTextA( hwndDlg, IDC_COMBO_JID, ppro->m_ThreadInfo->server );
 				SetDlgItemText( hwndDlg, IDC_COMBO_NODE, _T("") );
 				PostMessage( hwndDlg, WM_COMMAND, MAKEWPARAM( IDC_BUTTON_BROWSE, 0 ), 0 );
 				return TRUE;
@@ -1045,7 +1045,7 @@ BOOL CALLBACK JabberServiceDiscoveryDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 
 				RECT rc; GetWindowRect(GetDlgItem(hwndDlg, IDC_BTN_FAVORITE), &rc);
 				CheckDlgButton(hwndDlg, IDC_BTN_FAVORITE, TRUE);
-				res = TrackPopupMenu(hMenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, ppro->hwndServiceDiscovery, NULL);
+				res = TrackPopupMenu(hMenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, ppro->m_hwndServiceDiscovery, NULL);
 				CheckDlgButton(hwndDlg, IDC_BTN_FAVORITE, FALSE);
 				DestroyMenu(hMenu);
 
@@ -1147,7 +1147,7 @@ BOOL CALLBACK JabberServiceDiscoveryDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 	}
 
 	case WM_DESTROY:
-		ppro->hwndServiceDiscovery = NULL;
+		ppro->m_hwndServiceDiscovery = NULL;
 		ppro->m_SDManager.Lock();
 		ppro->m_SDManager.RemoveAll();
 		ppro->m_SDManager.Unlock();
@@ -1158,9 +1158,9 @@ BOOL CALLBACK JabberServiceDiscoveryDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 }
 
 // extern references to used functions:
-void JabberSearchAddToRecent( TCHAR* szAddr, HWND hwndDialog = NULL );
+void SearchAddToRecent( TCHAR* szAddr, HWND hwndDialog = NULL );
 
-void CJabberProto::JabberServiceDiscoveryShowMenu(CJabberSDNode *pNode, HTREELISTITEM hItem, POINT pt)
+void CJabberProto::ServiceDiscoveryShowMenu(CJabberSDNode *pNode, HTREELISTITEM hItem, POINT pt)
 {
 	//ClientToScreen(GetDlgItem(hwndServiceDiscovery, IDC_TREE_DISCO), &pt);
 
@@ -1228,9 +1228,9 @@ void CJabberProto::JabberServiceDiscoveryShowMenu(CJabberSDNode *pNode, HTREELIS
 
 		if ((items[i].flags&SD_FLG_NONODE) && pNode->GetNode())
 			continue;
-		if ((items[i].flags&SD_FLG_NOTONROSTER) && (rosterItem = JabberListGetItemPtr(LIST_ROSTER, pNode->GetJid())))
+		if ((items[i].flags&SD_FLG_NOTONROSTER) && (rosterItem = ListGetItemPtr(LIST_ROSTER, pNode->GetJid())))
 			continue;
-		if ((items[i].flags&SD_FLG_ONROSTER) && !(rosterItem = JabberListGetItemPtr(LIST_ROSTER, pNode->GetJid())))
+		if ((items[i].flags&SD_FLG_ONROSTER) && !(rosterItem = ListGetItemPtr(LIST_ROSTER, pNode->GetJid())))
 			continue;
 		if ((items[i].flags&SD_FLG_SUBSCRIBED) && (!rosterItem || (rosterItem->subscription == SUB_NONE)))
 			continue;
@@ -1250,7 +1250,7 @@ void CJabberProto::JabberServiceDiscoveryShowMenu(CJabberSDNode *pNode, HTREELIS
 			if (items[i].title)
 			{
 				HANDLE hContact;
-				if ((items[i].action == SD_ACT_USERMENU) && (hContact = JabberHContactFromJID(pNode->GetJid()))) {
+				if ((items[i].action == SD_ACT_USERMENU) && (hContact = HContactFromJID(pNode->GetJid()))) {
 					HMENU hContactMenu = (HMENU)CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM)hContact, 0);
 					AppendMenu(hMenu, MF_STRING|MF_POPUP, (UINT_PTR)hContactMenu, TranslateTS(items[i].title));
 				} else
@@ -1287,7 +1287,7 @@ void CJabberProto::JabberServiceDiscoveryShowMenu(CJabberSDNode *pNode, HTREELIS
 		return;
 	}
 
-	int res = TrackPopupMenu(hMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndServiceDiscovery, NULL);
+	int res = TrackPopupMenu(hMenu, TPM_RETURNCMD, pt.x, pt.y, 0, m_hwndServiceDiscovery, NULL);
 	DestroyMenu(hMenu);
 
 	switch (res)
@@ -1298,7 +1298,7 @@ void CJabberProto::JabberServiceDiscoveryShowMenu(CJabberSDNode *pNode, HTREELIS
 			XmlNode* packet = new XmlNode( NULL );
 			if ( pNode ) 
 			{
-				TreeList_ResetItem(GetDlgItem(hwndServiceDiscovery, IDC_TREE_DISCO), hItem);
+				TreeList_ResetItem(GetDlgItem(m_hwndServiceDiscovery, IDC_TREE_DISCO), hItem);
 				pNode->ResetInfo();
 				SendBothRequests( pNode, packet );
 				TreeList_MakeFakeParent(hItem, FALSE);
@@ -1306,7 +1306,7 @@ void CJabberProto::JabberServiceDiscoveryShowMenu(CJabberSDNode *pNode, HTREELIS
 			m_SDManager.Unlock();
 
 			if ( packet->numChild )
-				jabberThreadInfo->send( *packet );
+				m_ThreadInfo->send( *packet );
 			delete packet;
 			break;
 		}
@@ -1320,38 +1320,38 @@ void CJabberProto::JabberServiceDiscoveryShowMenu(CJabberSDNode *pNode, HTREELIS
 				CJabberSDNode *pNode = (CJabberSDNode *)TreeList_GetData(hNode);
 				if ( pNode )
 				{
-					TreeList_ResetItem(GetDlgItem(hwndServiceDiscovery, IDC_TREE_DISCO), hNode);
+					TreeList_ResetItem(GetDlgItem(m_hwndServiceDiscovery, IDC_TREE_DISCO), hNode);
 					pNode->ResetInfo();
 					SendBothRequests( pNode, packet );
 					TreeList_MakeFakeParent(hNode, FALSE);
 				}
 
 				if ( packet->numChild >= 50 ) {
-					jabberThreadInfo->send( *packet );
+					m_ThreadInfo->send( *packet );
 					delete packet;
 					packet = new XmlNode( NULL );
 			}	}
 			m_SDManager.Unlock();
 
 			if ( packet->numChild )
-				jabberThreadInfo->send( *packet );
+				m_ThreadInfo->send( *packet );
 			delete packet;
 			break;
 		}
 
 		case SD_ACT_COPYJID:
-			JabberCopyText(hwndServiceDiscovery, pNode->GetJid());
+			JabberCopyText(m_hwndServiceDiscovery, pNode->GetJid());
 			break;
 
 		case SD_ACT_COPYNODE:
-			JabberCopyText(hwndServiceDiscovery, pNode->GetNode());
+			JabberCopyText(m_hwndServiceDiscovery, pNode->GetNode());
 			break;
 
 		case SD_ACT_COPYINFO:
 		{
 			TCHAR buf[8192];
 			pNode->GetTooltipText(buf, SIZEOF(buf));
-			JabberCopyText(hwndServiceDiscovery, buf);
+			JabberCopyText(m_hwndServiceDiscovery, buf);
 			break;
 		}
 
@@ -1370,18 +1370,18 @@ void CJabberProto::JabberServiceDiscoveryShowMenu(CJabberSDNode *pNode, HTREELIS
 		}
 
 		case SD_ACT_REGISTER:
-			JabberRegisterAgent(hwndServiceDiscovery, pNode->GetJid());
+			RegisterAgent(m_hwndServiceDiscovery, pNode->GetJid());
 			break;
 
 		case SD_ACT_ADHOC:
 		{
 			CJabberAdhocStartupParams* pStartupParams = new CJabberAdhocStartupParams( this, pNode->GetJid(), pNode->GetNode() );
-			JabberContactMenuAdhocCommands( pStartupParams );
+			ContactMenuAdhocCommands( pStartupParams );
 			break;
 		}
 
 		case SD_ACT_ADDDIRECTORY:
-			JabberSearchAddToRecent(pNode->GetJid());
+			SearchAddToRecent(pNode->GetJid());
 			break;
 
 		case SD_ACT_PROXY:
@@ -1393,39 +1393,39 @@ void CJabberProto::JabberServiceDiscoveryShowMenu(CJabberSDNode *pNode, HTREELIS
 		}
 
 		case SD_ACT_JOIN:
-			if ( jabberChatDllPresent )
-				JabberGroupchatJoinRoomByJid(hwndServiceDiscovery, pNode->GetJid());
+			if ( m_bChatDllPresent )
+				GroupchatJoinRoomByJid(m_hwndServiceDiscovery, pNode->GetJid());
 			else
 				JabberChatDllError();
 			break;
 
 		case SD_ACT_BOOKMARK:
 		{
-			JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_BOOKMARK, pNode->GetJid() );
+			JABBER_LIST_ITEM* item = ListGetItemPtr( LIST_BOOKMARK, pNode->GetJid() );
 			if ( item == NULL ) {
-				item = JabberListGetItemPtr( LIST_ROOM, pNode->GetJid() );
+				item = ListGetItemPtr( LIST_ROOM, pNode->GetJid() );
 				if ( item == NULL ) {
-					item = JabberListAdd( LIST_ROOM, pNode->GetJid() );
+					item = ListAdd( LIST_ROOM, pNode->GetJid() );
 					item->name = mir_tstrdup( pNode->GetName() );
 				}
 				if ( item != NULL ) {
 					item->type = _T("conference");
-					JabberAddEditBookmark( item );
+					AddEditBookmark( item );
 			}	}
 			break;
 		}
 
 		case SD_ACT_USERMENU:
 		{
-			HANDLE hContact = JabberHContactFromJID( pNode->GetJid() );
+			HANDLE hContact = HContactFromJID( pNode->GetJid() );
 			if ( !hContact ) {
-				hContact = JabberDBCreateContact( pNode->GetJid(), pNode->GetName(), TRUE, FALSE );
-				JABBER_LIST_ITEM* item = JabberListAdd( LIST_VCARD_TEMP, pNode->GetJid() );
+				hContact = DBCreateContact( pNode->GetJid(), pNode->GetName(), TRUE, FALSE );
+				JABBER_LIST_ITEM* item = ListAdd( LIST_VCARD_TEMP, pNode->GetJid() );
 				item->bUseResource = TRUE;
 			}
 			HMENU hContactMenu = (HMENU)CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM)hContact, 0);
 			GetCursorPos(&pt);
-			int res = TrackPopupMenu(hContactMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndServiceDiscovery, NULL);
+			int res = TrackPopupMenu(hContactMenu, TPM_RETURNCMD, pt.x, pt.y, 0, m_hwndServiceDiscovery, NULL);
 			CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(res, MPCF_CONTACTMENU), (LPARAM)hContact);
 			break;
 		}
@@ -1433,18 +1433,18 @@ void CJabberProto::JabberServiceDiscoveryShowMenu(CJabberSDNode *pNode, HTREELIS
 		case SD_ACT_VCARD:
 		{
 			TCHAR * jid = pNode->GetJid();
-			HANDLE hContact = JabberHContactFromJID(pNode->GetJid());
+			HANDLE hContact = HContactFromJID(pNode->GetJid());
 			if ( !hContact ) {	
 				JABBER_SEARCH_RESULT jsr={0};
 				mir_sntprintf( jsr.jid, SIZEOF(jsr.jid), _T("%s"), jid );
 				jsr.hdr.cbSize = sizeof( JABBER_SEARCH_RESULT );
 				hContact = ( HANDLE )CallProtoService( m_szProtoName, PS_ADDTOLIST, PALF_TEMPORARY, ( LPARAM )&jsr );
 			}
-			if ( JabberListGetItemPtr( LIST_VCARD_TEMP, pNode->GetJid()) == NULL ) {
-				JABBER_LIST_ITEM* item = JabberListAdd( LIST_VCARD_TEMP, pNode->GetJid() );
+			if ( ListGetItemPtr( LIST_VCARD_TEMP, pNode->GetJid()) == NULL ) {
+				JABBER_LIST_ITEM* item = ListAdd( LIST_VCARD_TEMP, pNode->GetJid() );
 				item->bUseResource = TRUE;
 				if ( item->resource == NULL )
-					JabberListAddResource( LIST_VCARD_TEMP, jid, ID_STATUS_OFFLINE, NULL, 0);
+					ListAddResource( LIST_VCARD_TEMP, jid, ID_STATUS_OFFLINE, NULL, 0);
 			}
 			CallService(MS_USERINFO_SHOWDIALOG, (WPARAM)hContact, 0);
 			break;
@@ -1452,9 +1452,9 @@ void CJabberProto::JabberServiceDiscoveryShowMenu(CJabberSDNode *pNode, HTREELIS
 
 		case SD_ACT_ROSTER:
 		{
-			HANDLE hContact = JabberDBCreateContact(pNode->GetJid(), pNode->GetName(), FALSE, FALSE);
+			HANDLE hContact = DBCreateContact(pNode->GetJid(), pNode->GetName(), FALSE, FALSE);
 			DBDeleteContactSetting( hContact, "CList", "NotOnList" );
-			JABBER_LIST_ITEM* item = JabberListAdd( LIST_VCARD_TEMP, pNode->GetJid() );
+			JABBER_LIST_ITEM* item = ListAdd( LIST_VCARD_TEMP, pNode->GetJid() );
 			item->bUseResource = TRUE;
 			break;
 		}
@@ -1465,7 +1465,7 @@ void CJabberProto::JabberServiceDiscoveryShowMenu(CJabberSDNode *pNode, HTREELIS
 			XmlNode p( "presence" ); p.addAttr( "to", pNode->GetJid() );
 			if ( res != SD_ACT_LOGON )
 				p.addAttr( "type", "unavailable" );
-			jabberThreadInfo->send( p );
+			m_ThreadInfo->send( p );
 			break;
 		}
 
@@ -1473,18 +1473,18 @@ void CJabberProto::JabberServiceDiscoveryShowMenu(CJabberSDNode *pNode, HTREELIS
 			{	XmlNodeIq iq( "set", NOID, pNode->GetJid() );
 				XmlNode* query = iq.addQuery( JABBER_FEAT_REGISTER );
 				query->addChild( "remove" );
-				jabberThreadInfo->send( iq );
+				m_ThreadInfo->send( iq );
 			}
 			{	XmlNodeIq iq( "set" );
 				XmlNode* query = iq.addQuery( JABBER_FEAT_IQ_ROSTER );
 				XmlNode* itm = query->addChild( "item" ); itm->addAttr( "jid", pNode->GetJid() ); itm->addAttr( "subscription", "remove" );
-				jabberThreadInfo->send( iq );
+				m_ThreadInfo->send( iq );
 			}
 			break;
 
 		default:
 			if ((res >= CLISTMENUIDMIN) && (res <= CLISTMENUIDMAX)) {
-				HANDLE hContact = JabberHContactFromJID(pNode->GetJid());
+				HANDLE hContact = HContactFromJID(pNode->GetJid());
 				if (hContact)
 					CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(res, MPCF_CONTACTMENU), (LPARAM)hContact);
 			}
@@ -1492,10 +1492,10 @@ void CJabberProto::JabberServiceDiscoveryShowMenu(CJabberSDNode *pNode, HTREELIS
 	}
 }
 
-int __cdecl CJabberProto::JabberMenuHandleServiceDiscovery( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::OnMenuHandleServiceDiscovery( WPARAM wParam, LPARAM lParam )
 {
-	if ( hwndServiceDiscovery && IsWindow( hwndServiceDiscovery ))
-		SetForegroundWindow( hwndServiceDiscovery );
+	if ( m_hwndServiceDiscovery && IsWindow( m_hwndServiceDiscovery ))
+		SetForegroundWindow( m_hwndServiceDiscovery );
 	else {
 		JabberServiceDiscoveryDlgProcParam param = { this, NULL };
 		CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_SERVICE_DISCOVERY ), NULL, JabberServiceDiscoveryDlgProc, (LPARAM)&param );
@@ -1504,13 +1504,13 @@ int __cdecl CJabberProto::JabberMenuHandleServiceDiscovery( WPARAM wParam, LPARA
 	return 0;
 }
 
-int __cdecl CJabberProto::JabberMenuHandleServiceDiscoveryMyTransports( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::OnMenuHandleServiceDiscoveryMyTransports( WPARAM wParam, LPARAM lParam )
 {
-	if ( hwndServiceDiscovery && IsWindow( hwndServiceDiscovery )) {
-		SetForegroundWindow( hwndServiceDiscovery );
-		SetDlgItemText( hwndServiceDiscovery, IDC_COMBO_JID, _T(SD_FAKEJID_MYAGENTS));
-		SetDlgItemText( hwndServiceDiscovery, IDC_COMBO_NODE, _T(""));
-		PostMessage( hwndServiceDiscovery, WM_COMMAND, MAKEWPARAM( IDC_BUTTON_BROWSE, 0 ), 0 );
+	if ( m_hwndServiceDiscovery && IsWindow( m_hwndServiceDiscovery )) {
+		SetForegroundWindow( m_hwndServiceDiscovery );
+		SetDlgItemText( m_hwndServiceDiscovery, IDC_COMBO_JID, _T(SD_FAKEJID_MYAGENTS));
+		SetDlgItemText( m_hwndServiceDiscovery, IDC_COMBO_NODE, _T(""));
+		PostMessage( m_hwndServiceDiscovery, WM_COMMAND, MAKEWPARAM( IDC_BUTTON_BROWSE, 0 ), 0 );
 	}
 	else {
 		JabberServiceDiscoveryDlgProcParam param = { this, _T(SD_FAKEJID_MYAGENTS) };
@@ -1520,13 +1520,13 @@ int __cdecl CJabberProto::JabberMenuHandleServiceDiscoveryMyTransports( WPARAM w
 	return 0;
 }
 
-int __cdecl CJabberProto::JabberMenuHandleServiceDiscoveryTransports( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::OnMenuHandleServiceDiscoveryTransports( WPARAM wParam, LPARAM lParam )
 {
-	if ( hwndServiceDiscovery && IsWindow( hwndServiceDiscovery )) {
-		SetForegroundWindow( hwndServiceDiscovery );
-		SetDlgItemText( hwndServiceDiscovery, IDC_COMBO_JID, _T(SD_FAKEJID_AGENTS));
-		SetDlgItemText( hwndServiceDiscovery, IDC_COMBO_NODE, _T(""));
-		PostMessage( hwndServiceDiscovery, WM_COMMAND, MAKEWPARAM( IDC_BUTTON_BROWSE, 0 ), 0 );
+	if ( m_hwndServiceDiscovery && IsWindow( m_hwndServiceDiscovery )) {
+		SetForegroundWindow( m_hwndServiceDiscovery );
+		SetDlgItemText( m_hwndServiceDiscovery, IDC_COMBO_JID, _T(SD_FAKEJID_AGENTS));
+		SetDlgItemText( m_hwndServiceDiscovery, IDC_COMBO_NODE, _T(""));
+		PostMessage( m_hwndServiceDiscovery, WM_COMMAND, MAKEWPARAM( IDC_BUTTON_BROWSE, 0 ), 0 );
 	}
 	else {
 		JabberServiceDiscoveryDlgProcParam param = { this, _T(SD_FAKEJID_AGENTS) };
@@ -1536,13 +1536,13 @@ int __cdecl CJabberProto::JabberMenuHandleServiceDiscoveryTransports( WPARAM wPa
 	return 0;
 }
 
-int __cdecl CJabberProto::JabberMenuHandleServiceDiscoveryConferences( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::OnMenuHandleServiceDiscoveryConferences( WPARAM wParam, LPARAM lParam )
 {
-	if ( hwndServiceDiscovery && IsWindow( hwndServiceDiscovery )) {
-		SetForegroundWindow( hwndServiceDiscovery );
-		SetDlgItemText( hwndServiceDiscovery, IDC_COMBO_JID, _T(SD_FAKEJID_CONFERENCES));
-		SetDlgItemText( hwndServiceDiscovery, IDC_COMBO_NODE, _T(""));
-		PostMessage(  hwndServiceDiscovery, WM_COMMAND, MAKEWPARAM( IDC_BUTTON_BROWSE, 0 ), 0 );
+	if ( m_hwndServiceDiscovery && IsWindow( m_hwndServiceDiscovery )) {
+		SetForegroundWindow( m_hwndServiceDiscovery );
+		SetDlgItemText( m_hwndServiceDiscovery, IDC_COMBO_JID, _T(SD_FAKEJID_CONFERENCES));
+		SetDlgItemText( m_hwndServiceDiscovery, IDC_COMBO_NODE, _T(""));
+		PostMessage(  m_hwndServiceDiscovery, WM_COMMAND, MAKEWPARAM( IDC_BUTTON_BROWSE, 0 ), 0 );
 	}
 	else {
 		JabberServiceDiscoveryDlgProcParam param = { this, _T(SD_FAKEJID_CONFERENCES) };

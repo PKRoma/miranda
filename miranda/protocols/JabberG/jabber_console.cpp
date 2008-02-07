@@ -89,9 +89,9 @@ static void sttEmptyBuf(StringBuf *buf);
 
 static void sttRtfAppendXml(StringBuf *buf, XmlNode *node, DWORD flags, int indent);
 
-void CJabberProto::JabberConsoleProcessXml(XmlNode *node, DWORD flags)
+void CJabberProto::OnConsoleProcessXml(XmlNode *node, DWORD flags)
 {
-	if ( node && hwndJabberConsole ) {
+	if ( node && m_hwndConsole ) {
 		if ( node->name ) {
 			if ( FilterXml( node, flags )) {
 				StringBuf buf = {0};
@@ -99,13 +99,13 @@ void CJabberProto::JabberConsoleProcessXml(XmlNode *node, DWORD flags)
 				sttRtfAppendXml(&buf, node, flags, 1);
 				sttAppendBufRaw(&buf, RTF_SEPARATOR);
 				sttAppendBufRaw(&buf, RTF_FOOTER);
-				SendMessage(hwndJabberConsole, WM_JABBER_REFRESH, 0, (LPARAM)&buf);
+				SendMessage(m_hwndConsole, WM_JABBER_REFRESH, 0, (LPARAM)&buf);
 				sttEmptyBuf(&buf);
 			}
 		}
 		else {
 			for ( int i = 0; i < node->numChild; ++i )
-				JabberConsoleProcessXml( node->child[i], flags );
+				OnConsoleProcessXml( node->child[i], flags );
 		}
 	}
 }
@@ -433,7 +433,7 @@ static int JabberConsoleDlgResizer(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTRO
 
 static void JabberConsoleXmlCallback(XmlNode *node, CJabberProto *ppro)
 {
-	ppro->JabberConsoleProcessXml(node, JCPF_OUT);
+	ppro->OnConsoleProcessXml(node, JCPF_OUT);
 }
 
 static void sttJabberConsoleRebuildStrings(CJabberProto* ppro, HWND hwndCombo)
@@ -452,11 +452,11 @@ static void sttJabberConsoleRebuildStrings(CJabberProto* ppro, HWND hwndCombo)
 	for (i = 0; g_JabberFeatCapPairsExt[i].szFeature; ++i)
 		SendMessage(hwndCombo, CB_ADDSTRING, 0, (LPARAM)g_JabberFeatCapPairsExt[i].szFeature);
 
-	for (i = 0; i >= 0; i = ppro->JabberListFindNext(LIST_ROSTER, i+1))
-		if (item = ppro->JabberListGetItemPtrFromIndex(i))
+	for (i = 0; i >= 0; i = ppro->ListFindNext(LIST_ROSTER, i+1))
+		if (item = ppro->ListGetItemPtrFromIndex(i))
 			SendMessage(hwndCombo, CB_ADDSTRING, 0, (LPARAM)item->jid);
-	for (i = 0; i >= 0; i = ppro->JabberListFindNext(LIST_CHATROOM, i+1))
-		if (item = ppro->JabberListGetItemPtrFromIndex(i))
+	for (i = 0; i >= 0; i = ppro->ListFindNext(LIST_CHATROOM, i+1))
+		if (item = ppro->ListGetItemPtrFromIndex(i))
 			SendMessage(hwndCombo, CB_ADDSTRING, 0, (LPARAM)item->jid);
 
 	SetWindowText(hwndCombo, buf);
@@ -613,7 +613,7 @@ static BOOL CALLBACK JabberConsoleDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam
 			{
 				case IDOK:
 				{
-					if (!ppro->jabberOnline)
+					if (!ppro->m_bJabberOnline)
 					{
 						MessageBox(hwndDlg, TranslateT("Can't send data while you are offline."), TranslateT("Jabber Error"), MB_ICONSTOP|MB_OK);
 						break;
@@ -623,7 +623,7 @@ static BOOL CALLBACK JabberConsoleDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam
 					TCHAR *textToSend = (TCHAR *)mir_alloc(length * sizeof(TCHAR));
 					GetWindowText(GetDlgItem(hwndDlg, IDC_CONSOLEIN), textToSend, length);
 					char *tmp = mir_utf8encodeT(textToSend);
-					ppro->jabberThreadInfo->send(tmp, lstrlenA(tmp));
+					ppro->m_ThreadInfo->send(tmp, lstrlenA(tmp));
 
 					StringBuf buf = {0};
 					sttAppendBufRaw(&buf, RTF_HEADER);
@@ -638,7 +638,7 @@ static BOOL CALLBACK JabberConsoleDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam
 					XmlState xmlstate;
 					JabberXmlInitState(&xmlstate);
 					JabberXmlSetCallback(&xmlstate, 1, ELEM_CLOSE, ( JABBER_XML_CALLBACK )JabberConsoleXmlCallback, ppro);
-					ppro->JabberXmlParse(&xmlstate,tmp);
+					ppro->OnXmlParse(&xmlstate,tmp);
 					xmlstate=xmlstate;
 					JabberXmlDestroyState(&xmlstate);
 
@@ -750,7 +750,7 @@ static BOOL CALLBACK JabberConsoleDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam
 			return TRUE;
 
 		case WM_DESTROY:
-			ppro->hwndJabberConsole = NULL;
+			ppro->m_hwndConsole = NULL;
 			break;
 	}
 
@@ -763,8 +763,8 @@ static UINT WINAPI sttJabberConsoleThread( void* param )
 	MSG msg;
 	while ( GetMessage(&msg, NULL, 0, 0 )) {
 		if ( msg.message == WM_CREATECONSOLE ) {
-			ppro->hwndJabberConsole = CreateDialogParam( hInst, MAKEINTRESOURCE(IDD_CONSOLE), NULL, JabberConsoleDlgProc, (LPARAM)ppro );
-			ShowWindow( ppro->hwndJabberConsole, SW_SHOW );
+			ppro->m_hwndConsole = CreateDialogParam( hInst, MAKEINTRESOURCE(IDD_CONSOLE), NULL, JabberConsoleDlgProc, (LPARAM)ppro );
+			ShowWindow( ppro->m_hwndConsole, SW_SHOW );
 			continue;
 		}
 
@@ -774,29 +774,29 @@ static UINT WINAPI sttJabberConsoleThread( void* param )
 	return 0;
 }
 
-void CJabberProto::JabberConsoleInit()
+void CJabberProto::ConsoleInit()
 {
 	LoadLibraryA("riched20.dll");
 	InitializeCriticalSection(&m_filterInfo.csPatternLock);
-	hThreadConsole = (HANDLE)mir_forkthreadex( ::sttJabberConsoleThread, this, 0, &sttJabberConsoleThreadId);
+	m_hThreadConsole = (HANDLE)mir_forkthreadex( ::sttJabberConsoleThread, this, 0, &m_dwConsoleThreadId);
 }
 
-void CJabberProto::JabberConsoleUninit()
+void CJabberProto::ConsoleUninit()
 {
-	if ( hThreadConsole ) 
-		PostThreadMessage(sttJabberConsoleThreadId, WM_QUIT, 0, 0);
+	if ( m_hThreadConsole ) 
+		PostThreadMessage(m_dwConsoleThreadId, WM_QUIT, 0, 0);
 
 	m_filterInfo.iq = m_filterInfo.msg = m_filterInfo.presence = FALSE;
 	m_filterInfo.type = TFilterInfo::T_OFF;
 	DeleteCriticalSection(&m_filterInfo.csPatternLock);
 }
 
-int __cdecl CJabberProto::JabberMenuHandleConsole(WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::OnMenuHandleConsole(WPARAM wParam, LPARAM lParam )
 {
-	if ( hwndJabberConsole && IsWindow( hwndJabberConsole ))
-		SetForegroundWindow( hwndJabberConsole );
+	if ( m_hwndConsole && IsWindow( m_hwndConsole ))
+		SetForegroundWindow( m_hwndConsole );
 	else
-		if ( hThreadConsole )
-			PostThreadMessage( sttJabberConsoleThreadId, WM_CREATECONSOLE, 0, 0 );
+		if ( m_hThreadConsole )
+			PostThreadMessage( m_dwConsoleThreadId, WM_CREATECONSOLE, 0, 0 );
 	return 0;
 }
