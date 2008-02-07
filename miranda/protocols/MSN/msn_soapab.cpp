@@ -162,6 +162,13 @@ bool MSN_SharingFindMembership(void)
 //	node = ezxml_add_child(tps, "ServiceType", 0);
 //	ezxml_set_txt(node, "Profile");
 
+//	node = ezxml_add_child(tbdy, "View", 0);
+//	ezxml_set_txt(node, "Full");
+//	node = ezxml_add_child(tbdy, "deltasOnly", 0);
+//	ezxml_set_txt(node, "false");
+//	node = ezxml_add_child(tbdy, "lastChange", 0);
+//	ezxml_set_txt(node, "0001-01-01T00:00:00.0000000-08:00");
+
 	char* szData = ezxml_toxml(xmlp, true);
 
 	ezxml_free(xmlp);
