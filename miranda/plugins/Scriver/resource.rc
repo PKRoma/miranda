@@ -67,26 +67,24 @@ BEGIN
     EDITTEXT        IDC_SECONDS,223,134,25,12,ES_AUTOHSCROLL
     LTEXT           "seconds.",IDC_STATIC,253,136,44,8
 
-    GROUPBOX        "Look And Feel",IDC_STATIC,0,150,304,79
+    GROUPBOX        "Look And Feel",IDC_STATIC,0,150,304,68
 
-	CONTROL         "Show tool bar ",IDC_SHOWBUTTONLINE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,162,140,10
     CONTROL         "Use the contact's status icon as the window icon",
-                    IDC_STATUSWIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,173,
+                    IDC_STATUSWIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,162,
                     292,10
     CONTROL         "Show 'sending in progress' indicator",IDC_SHOWPROGRESS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,184,138,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,173,138,10
     CONTROL         "Enable avatar support in the message window",
                     IDC_AVATARSUPPORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    8,195,292,10
+                    8,184,292,10
     CONTROL         "Limit avatar height to min.",IDC_LIMITAVATARH,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,20,206,106,10
-    EDITTEXT        IDC_AVATARHEIGHTMIN,148,205,28,12,ES_AUTOHSCROLL
-    LTEXT           "and max.",IDC_AVATARTEXT1,188,206,35,8
-    EDITTEXT        IDC_AVATARHEIGHT,230,205,28,12,ES_AUTOHSCROLL
-    LTEXT           "pixels.",IDC_AVATARTEXT2,263,206,35,8
+                    BS_AUTOCHECKBOX | WS_TABSTOP,20,195,106,10
+    EDITTEXT        IDC_AVATARHEIGHTMIN,148,294,28,12,ES_AUTOHSCROLL
+    LTEXT           "and max.",IDC_AVATARTEXT1,188,195,35,8
+    EDITTEXT        IDC_AVATARHEIGHT,230,194,28,12,ES_AUTOHSCROLL
+    LTEXT           "pixels.",IDC_AVATARTEXT2,263,195,35,8
     CONTROL         "Keep original avatar size",IDC_ORIGINALAVATARH,"Button",BS_AUTOCHECKBOX |
-                    WS_TABSTOP,20,216,106,10
+                    WS_TABSTOP,20,205,106,10
 END
 
 IDD_OPT_MSGLOG DIALOGEX 2, 0, 304, 232
@@ -200,21 +198,24 @@ BEGIN
                     IDC_HIDECONTAINERS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     8,133,260,10
 
-	GROUPBOX        "Look And Feel",IDC_STATIC,0,149,304,60
+	GROUPBOX        "Look And Feel",IDC_STATIC,0,149,304,73
 	CONTROL         "Show title bar",IDC_SHOWTITLEBAR,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,161,140,10
     CONTROL         "Show status bar",IDC_SHOWSTATUSBAR,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,172,138,10
+	CONTROL         "Show tool bar ",IDC_SHOWBUTTONLINE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,183,140,10
+
     CONTROL         "Enable transparency",IDC_TRANSPARENCY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,190,140,10
-    LTEXT           "active",IDC_TRANSPARENCYTEXT1,148,186,40,8
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,201,140,10
+    LTEXT           "active",IDC_TRANSPARENCYTEXT1,148,197,40,8
     CONTROL         "Slider1",IDC_ATRANSPARENCYVALUE,"msctls_trackbar32",
-                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,194,186,70,11
-    LTEXT           "100%",IDC_ATRANSPARENCYPERC,264,186,22,8
-    LTEXT           "inactive",IDC_TRANSPARENCYTEXT2,148,197,40,8
-    CONTROL         "Slider1",IDC_ITRANSPARENCYVALUE,"msctls_trackbar32",
                     TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,194,197,70,11
-    LTEXT           "100%",IDC_ITRANSPARENCYPERC,264,197,22,8
+    LTEXT           "100%",IDC_ATRANSPARENCYPERC,264,197,22,8
+    LTEXT           "inactive",IDC_TRANSPARENCYTEXT2,148,208,40,8
+    CONTROL         "Slider1",IDC_ITRANSPARENCYVALUE,"msctls_trackbar32",
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,194,208,70,11
+    LTEXT           "100%",IDC_ITRANSPARENCYPERC,264,208,22,8
 END
 
 IDD_OPT_MSGTYPE DIALOGEX 0, 0, 283, 252
@@ -672,8 +673,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,8,0,4
- PRODUCTVERSION 2,8,0,4
+ FILEVERSION 2,8,0,10
+ PRODUCTVERSION 2,8,0,10
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -691,14 +692,14 @@ BEGIN
             VALUE "Comments", "http://www.miranda-im.org\0"
             VALUE "CompanyName", "Miranda IM Development Team\0"
             VALUE "FileDescription", "Scriver - send and receive instant messages\0"
-            VALUE "FileVersion", "2.8.0.4\0"
+            VALUE "FileVersion", "2.8.0.10\0"
             VALUE "InternalName", "scriver\0"
-            VALUE "LegalCopyright", "Copyright © 2000-2007 Miranda IM Project\0"
+            VALUE "LegalCopyright", "Copyright © 2000-2008 Miranda IM Project\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "scriver.dll\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "Scriver\0"
-            VALUE "ProductVersion", "2.8.0.4\0"
+            VALUE "ProductVersion", "2.8.0.10\0"
             VALUE "SpecialBuild", "\0"
         END
     END

@@ -41,7 +41,7 @@ PLUGININFOEX pluginInfo = {
 #else
 	"Scriver",
 #endif
-	PLUGIN_MAKE_VERSION(2, 8, 0, 4),
+	PLUGIN_MAKE_VERSION(2, 8, 0, 10),
 	"Scriver - send and receive instant messages",
 	"Miranda IM Development Team",
 	"the_leech@users.berlios.de",
@@ -65,7 +65,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 __declspec(dllexport)
 	 PLUGININFOEX *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 7, 0, 40))
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 8, 0, 0))
 		return NULL;
 	return &pluginInfo;
 }

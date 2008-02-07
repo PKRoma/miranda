@@ -243,23 +243,6 @@ static void freeEvent(struct EventData *event) {
 	mir_free(event);
 }
 
-static void AppendToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, const char *fmt, ...)
-{
-	va_list va;
-	int charsDone;
-
-	va_start(va, fmt);
-	for (;;) {
-		charsDone = _vsnprintf(*buffer + *cbBufferEnd, *cbBufferAlloced - *cbBufferEnd, fmt, va);
-		if (charsDone >= 0)
-			break;
-		*cbBufferAlloced += 1024;
-		*buffer = (char *) mir_realloc(*buffer, *cbBufferAlloced);
-	}
-	va_end(va);
-	*cbBufferEnd += charsDone;
-}
-
 static int AppendAnsiToBufferL(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, unsigned char * line, int maxLen)
 {
 	int textCharsCount = 0;

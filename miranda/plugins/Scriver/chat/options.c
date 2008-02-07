@@ -93,8 +93,6 @@ static struct branch_t branch1[] = {
 	{LPGENT("Show buttons for controlling the chat room"), "ShowTopButtons", 0,1, NULL},
 	{LPGENT("Show buttons for formatting the text you are typing"), "ShowFormatButtons", 0,1, NULL},
 	{LPGENT("Show button menus when right clicking the buttons"), "RightClickFilter", 0,0, NULL},
-	{LPGENT("Show new windows cascaded"), "CascadeWindows", 0,1, NULL},
-	{LPGENT("Save the size and position of chat rooms"), "SavePosition", 0,0, NULL},
 	{LPGENT("Show the topic of the room on your contact list (if supported)"), "TopicOnClist", 0, 0, NULL},
 	{LPGENT("Do not play sounds when the chat room is focused"), "SoundsFocus", 0, 0, NULL},
 	{LPGENT("Do not pop up the window when joining a chat room"), "PopupOnJoin", 0,0, NULL},
