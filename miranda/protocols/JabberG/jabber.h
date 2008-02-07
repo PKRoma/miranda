@@ -411,6 +411,7 @@ extern HMODULE hLibSSL;
 extern PVOID jabberSslCtx;
 extern HANDLE hMainThread;
 extern DWORD  jabberMainThreadId;
+extern BOOL   jabberChatDllPresent;
 
 extern const char xmlnsOwner[], xmlnsAdmin[];
 

@@ -240,7 +240,7 @@ static void sttOpenBookmarkItem(CJabberProto* ppro, HWND hwndDlg)
 			JABBER_LIST_ITEM *item = ppro->ListGetItemPtr(LIST_BOOKMARK, ( TCHAR* )lvItem.lParam);
 
 			if(!lstrcmpi(item->type, _T("conference") )){
-				if ( ppro->m_bChatDllPresent ) {
+				if ( jabberChatDllPresent ) {
 					_tcsncpy( text, ( TCHAR* )lvItem.lParam, SIZEOF( text ));
 					_tcsncpy( room, text, SIZEOF( room ));
 

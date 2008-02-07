@@ -325,7 +325,7 @@ int __cdecl CJabberProto::OnMenuJoinLeave( WPARAM wParam, LPARAM lParam )
 		}
 
 	if ( JGetWord(( HANDLE )wParam, "Status", 0 ) != ID_STATUS_ONLINE ) {
-		if ( !m_bChatDllPresent ) {
+		if ( !jabberChatDllPresent ) {
 			JabberChatDllError();
 			goto LBL_Return;
 		}

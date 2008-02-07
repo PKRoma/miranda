@@ -523,7 +523,7 @@ LBL_FatalError:
 				SendMessage( m_hwndJabberChangePassword, WM_COMMAND, MAKEWORD( IDCANCEL, 0 ), 0 );
 			}
 
-			if ( m_bChatDllPresent )
+			if ( jabberChatDllPresent )
 				QueueUserAPC(( PAPCFUNC )JabberOfflineChatWindows, hMainThread, ( LPARAM )this );
 
 			ListRemoveList( LIST_CHATROOM );

@@ -1393,7 +1393,7 @@ void CJabberProto::ServiceDiscoveryShowMenu(CJabberSDNode *pNode, HTREELISTITEM 
 		}
 
 		case SD_ACT_JOIN:
-			if ( m_bChatDllPresent )
+			if ( jabberChatDllPresent )
 				GroupchatJoinRoomByJid(m_hwndServiceDiscovery, pNode->GetJid());
 			else
 				JabberChatDllError();

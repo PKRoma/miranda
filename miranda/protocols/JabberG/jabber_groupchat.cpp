@@ -228,7 +228,7 @@ int JabberMenuHandleGroupchat( WPARAM wParam, LPARAM lParam )
 
 int __cdecl CJabberProto::OnMenuHandleJoinGroupchat( WPARAM wParam, LPARAM lParam )
 {
-	if ( m_bChatDllPresent )
+	if ( jabberChatDllPresent )
 		GroupchatJoinRoomByJid( NULL, NULL );
 	else
 		JabberChatDllError();
@@ -440,7 +440,7 @@ static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 	case WM_COMMAND:
 		switch ( LOWORD( wParam )) {
 		case WM_JABBER_JOIN:
-			if ( ppro->m_bChatDllPresent ) {
+			if ( jabberChatDllPresent ) {
 				lv = GetDlgItem( hwndDlg, IDC_ROOM );
 				if (( lvItem.iItem=ListView_GetNextItem( lv, -1, LVNI_SELECTED )) >= 0 ) {
 					lvItem.iSubItem = 0;

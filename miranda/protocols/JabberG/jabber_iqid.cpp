@@ -121,7 +121,7 @@ void CJabberProto::OnProcessLoginRq( ThreadData* info, DWORD rq )
 	if ((info->dwLoginRqs & JABBER_LOGIN_ROSTER) && (info->dwLoginRqs & JABBER_LOGIN_BOOKMARKS) &&
 		(info->dwLoginRqs & JABBER_LOGIN_SERVERINFO) && !(info->dwLoginRqs & JABBER_LOGIN_BOOKMARKS_AJ))
 	{
-		if ( m_bChatDllPresent && JGetByte( "AutoJoinBookmarks", TRUE ) ) {
+		if ( jabberChatDllPresent && JGetByte( "AutoJoinBookmarks", TRUE ) ) {
 			JABBER_LIST_ITEM* item;
 			for ( int i=0; ( i = ListFindNext( LIST_BOOKMARK, i )) >= 0; i++ ) {
 				if ((( item = ListGetItemPtrFromIndex( i )) != NULL ) && !lstrcmp( item->type, _T("conference") )) {

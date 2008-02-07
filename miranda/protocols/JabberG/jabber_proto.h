@@ -207,7 +207,6 @@ struct CJabberProto : public PROTO_INTERFACE
 	BOOL   m_bChangeStatusMessageOnly;
 	BOOL   m_bSendKeepAlive;
 	BOOL   m_bPepSupported;
-	BOOL   m_bChatDllPresent;
 
 	HWND   m_hwndJabberAgents;
 	HWND   m_hwndAgentReg;
