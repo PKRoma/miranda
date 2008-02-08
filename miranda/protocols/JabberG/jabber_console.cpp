@@ -771,6 +771,7 @@ static UINT WINAPI sttJabberConsoleThread( void* param )
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
+	ppro->m_dwConsoleThreadId = 0;
 	return 0;
 }
 
@@ -788,7 +789,6 @@ void CJabberProto::ConsoleUninit()
 
 	m_filterInfo.iq = m_filterInfo.msg = m_filterInfo.presence = FALSE;
 	m_filterInfo.type = TFilterInfo::T_OFF;
-	DeleteCriticalSection(&m_filterInfo.csPatternLock);
 }
 
 int __cdecl CJabberProto::OnMenuHandleConsole(WPARAM wParam, LPARAM lParam )

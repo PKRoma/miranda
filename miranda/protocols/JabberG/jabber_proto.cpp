@@ -170,6 +170,8 @@ CJabberProto::~CJabberProto()
 
 	mir_free( m_phIconLibItems );
 
+	DeleteCriticalSection( &m_filterInfo.csPatternLock );
+
 	DeleteCriticalSection( &m_csModeMsgMutex );
 	mir_free( m_modeMsgs.szOnline );
 	mir_free( m_modeMsgs.szAway );
