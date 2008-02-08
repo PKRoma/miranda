@@ -24,6 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "statusicon.h"
 
+extern void   Chat_Load();
+extern void   Chat_Unload();
 extern int    Chat_ModulesLoaded(WPARAM wParam,LPARAM lParam);
 extern int    Chat_FontsChanged(WPARAM wParam,LPARAM lParam);
 extern int    Chat_SmileyOptionsChanged(WPARAM wParam,LPARAM lParam);
@@ -510,21 +512,21 @@ int StatusIconPressed(WPARAM wParam, LPARAM lParam) {
 }
 
 
-static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
+static int OnModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
-   CLISTMENUITEM mi;
-   PROTOACCOUNT **accs;
-   int protoCount, i;
+	CLISTMENUITEM mi;
+	PROTOACCOUNT **accs;
+	int protoCount, i;
 
-   ReloadGlobals();
-   RegisterIcoLibIcons();
-   RegisterFontServiceFonts();
-   RegisterKeyBindings();
-   LoadGlobalIcons();
-   LoadMsgLogIcons();
-   ZeroMemory(&mi, sizeof(mi));
-   mi.cbSize = sizeof(mi);
-   mi.position = -2000090000;
+	ReloadGlobals();
+	RegisterIcoLibIcons();
+	RegisterFontServiceFonts();
+	RegisterKeyBindings();
+	LoadGlobalIcons();
+	LoadMsgLogIcons();
+	ZeroMemory(&mi, sizeof(mi));
+	mi.cbSize = sizeof(mi);
+	mi.position = -2000090000;
 	if ( ServiceExists( MS_SKIN2_GETICONBYHANDLE )) {
 		mi.flags = CMIF_ICONFROMICOLIB;
 		mi.icolibItem = LoadSkinnedIconHandle( SKINICON_EVENT_MESSAGE );
@@ -533,17 +535,17 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 		mi.flags = 0;
 		mi.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
 	}
-   mi.pszName = LPGEN("&Message");
-   mi.pszService = MS_MSG_SENDMESSAGE;
+	mi.pszName = LPGEN("&Message");
+	mi.pszService = MS_MSG_SENDMESSAGE;
 	ProtoEnumAccounts( &protoCount, &accs );
-   for (i = 0; i < protoCount; i++) {
+	for (i = 0; i < protoCount; i++) {
 		if ( CallProtoService( accs[i]->szModuleName, PS_GETCAPS, PFLAGNUM_1, 0) & PF1_IMSEND) {
-         mi.pszContactOwner = accs[i]->szModuleName;
-         hMsgMenuItem = mir_realloc(hMsgMenuItem, (hMsgMenuItemCount + 1) * sizeof(HANDLE));
-         hMsgMenuItem[hMsgMenuItemCount++] = (HANDLE) CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
-      }
-   }
-   CallService(MS_SKIN2_RELEASEICON,(WPARAM)mi.hIcon, 0);
+			mi.pszContactOwner = accs[i]->szModuleName;
+			hMsgMenuItem = mir_realloc(hMsgMenuItem, (hMsgMenuItemCount + 1) * sizeof(HANDLE));
+			hMsgMenuItem[hMsgMenuItemCount++] = (HANDLE) CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
+		}
+	}
+	CallService(MS_SKIN2_RELEASEICON,(WPARAM)mi.hIcon, 0);
 
 	HookEvent_Ex(ME_CLIST_DOUBLECLICKED, SendMessageCommand);
 	HookEvent_Ex(ME_SMILEYADD_OPTIONSCHANGED, SmileySettingsChanged);
@@ -559,7 +561,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
+int OnSystemPreshutdown(WPARAM wParam, LPARAM lParam)
 {
 	Chat_PreShutdown(wParam, lParam);
 	WindowList_BroadcastAsync(g_dat->hMessageWindowList, WM_CLOSE, 0, 0);
@@ -567,8 +569,9 @@ int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int SplitmsgShutdown(void)
+int OnUnloadModule(void)
 {
+	Chat_Unload();
 	DestroyCursor(hCurSplitNS);
 	DestroyCursor(hCurHyperlinkHand);
 	DestroyCursor(hCurSplitWE);
@@ -589,7 +592,7 @@ int SplitmsgShutdown(void)
 	return 0;
 }
 
-int LoadSendRecvMessageModule(void) {
+int OnLoadModule(void) {
 	HMODULE	hDLL = 0;
 	if (LoadLibraryA("riched20.dll") == NULL) {
 		if (IDYES !=
@@ -619,10 +622,10 @@ int LoadSendRecvMessageModule(void) {
 	HookEvent_Ex(ME_DB_EVENT_ADDED, MessageEventAdded);
 	HookEvent_Ex(ME_DB_CONTACT_SETTINGCHANGED, MessageSettingChanged);
 	HookEvent_Ex(ME_DB_CONTACT_DELETED, ContactDeleted);
-	HookEvent_Ex(ME_SYSTEM_MODULESLOADED, SplitmsgModulesLoaded);
+	HookEvent_Ex(ME_SYSTEM_MODULESLOADED, OnModulesLoaded);
 	HookEvent_Ex(ME_SKIN_ICONSCHANGED, IconsChanged);
 	HookEvent_Ex(ME_PROTO_CONTACTISTYPING, TypingMessage);
-	HookEvent_Ex(ME_SYSTEM_PRESHUTDOWN, PreshutdownSendRecv);
+	HookEvent_Ex(ME_SYSTEM_PRESHUTDOWN, OnSystemPreshutdown);
 
 	CreateServiceFunction_Ex(MS_MSG_SENDMESSAGE, SendMessageCommand);
  #if defined(_UNICODE)
@@ -646,6 +649,9 @@ int LoadSendRecvMessageModule(void) {
 	if (hCurHyperlinkHand == NULL)
 		hCurHyperlinkHand = LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_HYPERLINKHAND));
 	hDragCursor = LoadCursor(g_hInst,  MAKEINTRESOURCE(IDC_DRAGCURSOR));
+
+
+	Chat_Load();
 	return 0;
 }
 

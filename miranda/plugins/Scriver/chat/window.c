@@ -38,7 +38,6 @@ extern HINSTANCE   g_hInst;
 extern HICON      hIcons[30];
 extern struct      CREOleCallback reOleCallback;
 extern HMENU      g_hMenu;
-extern BOOL         SmileyAddInstalled;
 extern TABLIST *   g_TabList;
 extern HANDLE hHookWinPopup;
 
@@ -107,7 +106,7 @@ static int GetButtonVisibility(MODULEINFO * pInfo)
 			vis |= pInfo->bColor ? 0x0008 : 0;
 			vis |= pInfo->bBkgColor ? 0x0010 : 0;
 			vis |= pInfo->bFontSize ? 0x0020 : 0;
-			vis |= SmileyAddInstalled ? 0x0040 : 0;
+			vis |= g_dat->smileyAddInstalled ? 0x0040 : 0;
 		}
 		if (bControl) {
 			vis |= 0x0780;

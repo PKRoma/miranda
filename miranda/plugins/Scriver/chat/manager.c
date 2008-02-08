@@ -24,7 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern TCHAR* pszActiveWndID ;
 extern char*  pszActiveWndModule ;
 extern HICON  hIcons[30];
-extern int overlayIcon;
 extern struct MM_INTERFACE		mmi ;
 
 extern struct GlobalMessageData *g_dat;

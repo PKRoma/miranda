@@ -23,12 +23,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 
-int LoadSendRecvMessageModule(void);
-int SplitmsgShutdown(void);
-extern void Chat_Load(PLUGINLINK *link);
-extern void Chat_Unload();
+int OnLoadModule(void);
+int OnUnloadModule(void);
 
-struct MM_INTERFACE memoryManagerInterface;
+struct MM_INTERFACE mmi;
 struct UTF8_INTERFACE utfi;
 
 PLUGINLINK *pluginLink;
@@ -86,13 +84,11 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 	mir_getUTFI( &utfi );
 
 	InitSendQueue();
-	Chat_Load(link);
-	return LoadSendRecvMessageModule();
+	return OnLoadModule();
 }
 
 int __declspec(dllexport) Unload(void)
 {
-	Chat_Unload();
 	DestroySendQueue();
-	return SplitmsgShutdown();
+	return OnUnloadModule();
 }

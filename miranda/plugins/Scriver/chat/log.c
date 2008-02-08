@@ -33,7 +33,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern FONTINFO  aFonts[OPTIONS_FONTCOUNT];
 extern HICON     hIcons[30];
-extern BOOL      SmileyAddInstalled;
 
 static PBYTE pLogIconBmpBits[14];
 static int logIconBmpSize[ SIZEOF(pLogIconBmpBits) ];
@@ -218,7 +217,7 @@ static int Log_AppendRTF(LOGSTREAMDATA* streamData, BOOL simpleMode, char **buff
 	return textCharsCount;
 }
 
-static void LogEventIEView(LOGSTREAMDATA *streamData, TCHAR *ptszNick) 
+static void LogEventIEView(LOGSTREAMDATA *streamData, TCHAR *ptszNick)
 {
 	IEVIEWEVENTDATA ied;
 	IEVIEWEVENT event;
@@ -638,7 +637,7 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 
 		// do smileys
 		SendMessage(hwndRich, EM_EXGETSEL, (WPARAM)0, (LPARAM)&newsel);
-		if (SmileyAddInstalled && (bRedraw
+		if (g_dat->smileyAddInstalled && (bRedraw
 			|| (lin->ptszText
 			&& lin->iType != GC_EVENT_JOIN
 			&& lin->iType != GC_EVENT_NICK

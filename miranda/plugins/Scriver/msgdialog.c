@@ -300,7 +300,7 @@ static int GetToolbarWidth(int cControls, const UINT * controls)
 	int i, w = 0;
 	for (i = 0; i < cControls; i++) {
 //		if (g_dat->buttonVisibility & (1 << i)) {
-			if (controls[i] != IDC_SMILEYS || g_dat->smileyServiceExists) {
+			if (controls[i] != IDC_SMILEYS || g_dat->smileyAddInstalled) {
 				w += buttonWidth[i] + buttonSpacing[i];
 			}
 //		}
@@ -318,7 +318,7 @@ static void SetDialogToType(HWND hwndDlg)
 		if (!DBGetContactSettingByte(dat->windowData.hContact, "CList", "NotOnList", 0)) {
 			ShowWindow(GetDlgItem(hwndDlg, IDC_ADD), SW_HIDE);
 		}
-		if (!g_dat->smileyServiceExists) {
+		if (!g_dat->smileyAddInstalled) {
 			ShowWindow(GetDlgItem(hwndDlg, IDC_SMILEYS), SW_HIDE);
 		}
 	} else {
@@ -572,7 +572,7 @@ static void MessageDialogResize(HWND hwndDlg, struct MessageWindowData *dat, int
 		aPos = h - (hSplitterPos + toolbarHeight + dat->avatarHeight + 1) / 2;
 	}
 	vPos = h - hSplitterPos - toolbarHeight + 1;
-	hdwp = ResizeToolbar(hwndDlg, hdwp, rPos, vPos, toolbarHeight - splitterHeight, SIZEOF(buttonControls), 
+	hdwp = ResizeToolbar(hwndDlg, hdwp, rPos, vPos, toolbarHeight - splitterHeight, SIZEOF(buttonControls),
 					buttonControls, buttonWidth, buttonSpacing, buttonAlignment, g_dat->buttonVisibility);
 
 	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_AVATAR), 0, w-dat->avatarWidth, aPos, dat->avatarWidth, dat->avatarHeight, SWP_NOZORDER);
@@ -616,7 +616,7 @@ static void UpdateReadChars(HWND hwndDlg, struct MessageWindowData * dat)
 void ShowAvatar(HWND hwndDlg, struct MessageWindowData *dat) {
 	DBVARIANT dbv;
 
-	if (g_dat->avatarServiceExists) {
+	if (g_dat->avatarServiceInstalled) {
 		if (dat->ace != NULL) {
 			dat->avatarPic = (dat->ace->dwFlags & AVS_HIDEONCLIST) ? NULL : dat->ace->hbmPic;
 		} else {
@@ -1474,7 +1474,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				}
 				dat->windowData.hwndLog = NULL;
 			}
-			if(g_dat->avatarServiceExists) {
+			if(g_dat->avatarServiceInstalled) {
 				dat->ace = (struct avatarCacheEntry *)CallService(MS_AV_GETAVATARBITMAP, (WPARAM)dat->windowData.hContact, 0);
 			}
 			SendMessage(hwndDlg, DM_GETAVATAR, 0, 0);
@@ -2041,7 +2041,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					} else {
 						FillRect(hdcMem, &rect, GetSysColorBrush(COLOR_3DFACE));
 					}
-					if (!g_dat->avatarServiceExists) {
+					if (!g_dat->avatarServiceInstalled) {
 						BITMAP bminfo;
 						HPEN hPen = CreatePen(PS_SOLID, 1, RGB(0,0,0));
 						HDC hdcTemp = CreateCompatibleDC(dis->hDC);
@@ -2191,7 +2191,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			CallService(MS_USERINFO_SHOWDIALOG, (WPARAM) dat->windowData.hContact, 0);
 			break;
 		case IDC_SMILEYS:
-			if (g_dat->smileyServiceExists) {
+			if (g_dat->smileyAddInstalled) {
 				SMADD_SHOWSEL3 smaddInfo;
 				RECT rc;
 				smaddInfo.cbSize = sizeof(SMADD_SHOWSEL3);
@@ -2458,7 +2458,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		DBWriteContactSettingWord(dat->windowData.hContact, SRMMMOD, "CodePage", (WORD) dat->windowData.codePage);
 		DBWriteContactSettingDword((g_dat->flags & SMF_SAVESPLITTERPERCONTACT) ? dat->windowData.hContact : NULL, SRMMMOD, "splitterPos", dat->splitterPos);
 		DBWriteContactSettingDword((g_dat->flags & SMF_SAVESPLITTERPERCONTACT) ? dat->windowData.hContact : NULL, SRMMMOD, "splitterHeight", dat->toolbarSize.cy);
-		if (dat->avatarPic && !g_dat->avatarServiceExists)
+		if (dat->avatarPic && !g_dat->avatarServiceInstalled)
 			DeleteObject(dat->avatarPic);
 		if (dat->windowData.hContact && (g_dat->flags & SMF_DELTEMP)) {
 			if (DBGetContactSettingByte(dat->windowData.hContact, "CList", "NotOnList", 0)) {

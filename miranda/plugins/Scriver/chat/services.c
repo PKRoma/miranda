@@ -23,25 +23,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../msgwindow.h"
 
 extern HANDLE		g_hInst;
-extern BOOL			SmileyAddInstalled;
 extern BOOL			PopUpInstalled;
-extern BOOL			IEviewInstalled;
 extern HICON      hIcons[30];
 
 HANDLE				hSendEvent;
 HANDLE				hBuildMenuEvent ;
-HANDLE				g_hHookContactDblClick;
 CRITICAL_SECTION	cs;
 
 void RegisterFonts( void );
-
-static HANDLE     hServiceRegister = NULL,
-                  hServiceNewChat = NULL,
-                  hServiceAddEvent = NULL,
-                  hServiceGetAddEventPtr = NULL,
-                  hServiceGetInfo = NULL,
-                  hServiceGetCount = NULL,
-                  hEventDoubleclicked = NULL;
 
 #define SIZEOF_STRUCT_GCREGISTER_V1 28
 #define SIZEOF_STRUCT_GCWINDOW_V1	32
@@ -50,37 +39,18 @@ static HANDLE     hServiceRegister = NULL,
 
 void HookEvents(void)
 {
-	InitializeCriticalSection(&cs);
-	g_hHookContactDblClick=		HookEvent(ME_CLIST_DOUBLECLICKED, CList_RoomDoubleclicked);
-	return;
-}
-
-void UnhookEvents(void)
-{
-	UnhookEvent(g_hHookContactDblClick);
-	DeleteCriticalSection(&cs);
+	HookEvent_Ex(ME_CLIST_DOUBLECLICKED, CList_RoomDoubleclicked);
 }
 
 void CreateServiceFunctions(void)
 {
-	hServiceRegister       = CreateServiceFunction(MS_GC_REGISTER,        Service_Register);
-	hServiceNewChat        = CreateServiceFunction(MS_GC_NEWSESSION,      Service_NewChat);
-	hServiceAddEvent       = CreateServiceFunction(MS_GC_EVENT,           Service_AddEvent);
-	hServiceGetAddEventPtr = CreateServiceFunction(MS_GC_GETEVENTPTR,     Service_GetAddEventPtr);
-	hServiceGetInfo        = CreateServiceFunction(MS_GC_GETINFO,         Service_GetInfo);
-	hServiceGetCount       = CreateServiceFunction(MS_GC_GETSESSIONCOUNT, Service_GetCount);
-	hEventDoubleclicked    = CreateServiceFunction("GChat/DblClickEvent", CList_EventDoubleclicked);
-}
-
-void DestroyServiceFunctions(void)
-{
-	DestroyServiceFunction(hServiceRegister       );
-	DestroyServiceFunction(hServiceNewChat        );
-	DestroyServiceFunction(hServiceAddEvent       );
-	DestroyServiceFunction(hServiceGetAddEventPtr );
-	DestroyServiceFunction(hServiceGetInfo        );
-	DestroyServiceFunction(hServiceGetCount       );
-	DestroyServiceFunction(hEventDoubleclicked    );
+	CreateServiceFunction_Ex(MS_GC_REGISTER,        Service_Register);
+	CreateServiceFunction_Ex(MS_GC_NEWSESSION,      Service_NewChat);
+	CreateServiceFunction_Ex(MS_GC_EVENT,           Service_AddEvent);
+	CreateServiceFunction_Ex(MS_GC_GETEVENTPTR,     Service_GetAddEventPtr);
+	CreateServiceFunction_Ex(MS_GC_GETINFO,         Service_GetInfo);
+	CreateServiceFunction_Ex(MS_GC_GETSESSIONCOUNT, Service_GetCount);
+	CreateServiceFunction_Ex("GChat/DblClickEvent", CList_EventDoubleclicked);
 }
 
 void CreateHookableEvents(void)
@@ -96,14 +66,8 @@ int Chat_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	CallService( "DBEditorpp/RegisterModule", (WPARAM)mods, 2 );
 
 
-	if ( ServiceExists( MS_SMILEYADD_SHOWSELECTION )) {
-		SmileyAddInstalled = TRUE;
-	}
 	if ( ServiceExists( MS_POPUP_ADDPOPUPEX ))
 		PopUpInstalled = TRUE;
-
-	if ( ServiceExists( MS_IEVIEW_WINDOW ))
-		IEviewInstalled = TRUE;
 
 	RegisterFonts();
 	CList_SetAllOffline(TRUE);

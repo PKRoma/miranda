@@ -214,8 +214,10 @@ void FreeGlobals() {
 }
 
 void ReloadGlobals() {
-	g_dat->avatarServiceExists = ServiceExists(MS_AV_GETAVATARBITMAP);
-	g_dat->smileyServiceExists =  ServiceExists(MS_SMILEYADD_SHOWSELECTION);
+	g_dat->avatarServiceInstalled = ServiceExists(MS_AV_GETAVATARBITMAP);
+	g_dat->smileyAddInstalled =  ServiceExists(MS_SMILEYADD_SHOWSELECTION);
+	g_dat->popupInstalled =  ServiceExists(MS_POPUP_ADDPOPUPEX);
+	g_dat->ieviewInstalled =  ServiceExists(MS_IEVIEW_WINDOW);
 	g_dat->flags = 0;
 	g_dat->flags2 = 0;
 //	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SENDBUTTON, SRMSGDEFSET_SENDBUTTON))

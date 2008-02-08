@@ -135,8 +135,10 @@ struct GlobalMessageData
 	HIMAGELIST hButtonIconList;
 	HIMAGELIST hHelperIconList;
 	TCmdList *draftList;
-	int		avatarServiceExists;
-	int		smileyServiceExists;
+	int		avatarServiceInstalled;
+	int		smileyAddInstalled;
+	int 	popupInstalled;
+	int		ieviewInstalled;
 	int		buttonVisibility;
 	int		limitTabsNum;
 	int		limitChatsTabsNum;
