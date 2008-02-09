@@ -23,7 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../msgwindow.h"
 
 extern HANDLE		g_hInst;
-extern BOOL			PopUpInstalled;
 extern HICON      hIcons[30];
 
 HANDLE				hSendEvent;
@@ -64,11 +63,6 @@ int Chat_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
 	char* mods[3] = { "Chat", "ChatFonts" };
 	CallService( "DBEditorpp/RegisterModule", (WPARAM)mods, 2 );
-
-
-	if ( ServiceExists( MS_POPUP_ADDPOPUPEX ))
-		PopUpInstalled = TRUE;
-
 	RegisterFonts();
 	CList_SetAllOffline(TRUE);
  	return 0;

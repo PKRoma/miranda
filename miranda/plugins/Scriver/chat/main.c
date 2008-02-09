@@ -30,7 +30,6 @@ HMENU       g_hMenu = NULL;
 
 FONTINFO    aFonts[OPTIONS_FONTCOUNT];
 HICON       hIcons[30];
-BOOL        PopUpInstalled = FALSE;
 HBRUSH      hListBkgBrush = NULL;
 HBRUSH      hListSelectedBkgBrush = NULL;
 

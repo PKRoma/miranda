@@ -434,10 +434,6 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 	case WM_KEYDOWN:
 		{
 			if (wParam == VK_RETURN) {
-				if (isCtrl && isShift) {
-					PostMessage(GetParent(hwnd), WM_COMMAND, IDC_SENDALL, 0);
-					return 0;
-				}
 				if ((isCtrl != 0) ^ (0 != (g_dat->flags & SMF_SENDONENTER))) {
 					PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
 					return 0;
@@ -2299,21 +2295,18 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			case IDC_LOG:
 				switch (pNmhdr->code) {
 				case EN_MSGFILTER:
+					{
+						int result = InputAreaShortcuts(GetDlgItem(hwndDlg, IDC_MESSAGE), ((MSGFILTER *) lParam)->msg, ((MSGFILTER *) lParam)->wParam, ((MSGFILTER *) lParam)->lParam, &dat->windowData);
+						if (result != -1) {
+							SetWindowLong(hwndDlg, DWL_MSGRESULT, TRUE);
+							return TRUE;
+						}
+					}
 					switch (((MSGFILTER *) lParam)->msg) {
 					case WM_CHAR:
 						if (!(GetKeyState(VK_CONTROL) & 0x8000)) {
 							SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
 							SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), ((MSGFILTER *) lParam)->msg, ((MSGFILTER *) lParam)->wParam, ((MSGFILTER *) lParam)->lParam);
-							SetWindowLong(hwndDlg, DWL_MSGRESULT, TRUE);
-						}
-						return TRUE;
-					case WM_KEYDOWN:
-						if (GetKeyState(VK_CONTROL) & 0x8000 && ((MSGFILTER *) lParam)->wParam== VK_TAB) {
-							if (GetKeyState(VK_SHIFT) & 0x8000) {
-								SendMessage(GetParent(hwndDlg), CM_ACTIVATEPREV, 0, (LPARAM)hwndDlg);
-							} else {
-								SendMessage(GetParent(hwndDlg), CM_ACTIVATENEXT, 0, (LPARAM)hwndDlg);
-							}
 							SetWindowLong(hwndDlg, DWL_MSGRESULT, TRUE);
 						}
 						return TRUE;

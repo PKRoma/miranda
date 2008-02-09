@@ -30,7 +30,7 @@ extern HANDLE hHookWinPopup;
 
 enum KB_ACTIONS {KB_PREV_TAB = 1, KB_NEXT_TAB, KB_SWITCHTOOLBAR,
 				 KB_SWITCHSTATUSBAR, KB_SWITCHTITLEBAR, KB_MINIMIZE, KB_CLOSE, KB_CLEAR_LOG,
-				 KB_TAB1, KB_TAB2, KB_TAB3, KB_TAB4, KB_TAB5, KB_TAB6, KB_TAB7, KB_TAB8, KB_TAB9};
+				 KB_TAB1, KB_TAB2, KB_TAB3, KB_TAB4, KB_TAB5, KB_TAB6, KB_TAB7, KB_TAB8, KB_TAB9, KB_SEND_ALL};
 
 void InputAreaContextMenu(HWND hwnd, WPARAM wParam, LPARAM lParam, HANDLE hContact) {
 
@@ -163,6 +163,9 @@ int InputAreaShortcuts(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, Common
 		case KB_TAB8:
 		case KB_TAB9:
 			SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEBYINDEX, 0, action - KB_TAB1);
+			return FALSE;
+		case KB_SEND_ALL:
+			PostMessage(GetParent(hwnd), WM_COMMAND, IDC_SENDALL, 0);
 			return FALSE;
 	}
 
@@ -383,8 +386,14 @@ void RegisterKeyBindings() {
 	desc.pszName = "Scriver/Wnd/Close Tab";
 	desc.pszDescription = "Window: Close Tab";
 	desc.lParam = KB_CLOSE;
-//	desc.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL, VK_F4);
-//	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM) &desc);
+	desc.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL, VK_F4);
+	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM) &desc);
 	desc.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL, 'W');
+	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM) &desc);
+
+	desc.pszName = "Scriver/Action/Send All";
+	desc.pszDescription = "Action: Send to All";
+	desc.lParam = KB_SEND_ALL;
+	desc.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL | HOTKEYF_SHIFT, VK_RETURN);
 	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM) &desc);
 }

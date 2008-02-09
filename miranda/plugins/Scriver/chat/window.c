@@ -651,6 +651,11 @@ static LRESULT CALLBACK ButtonSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, L
 
 static LRESULT CALLBACK LogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	SESSION_INFO* si =(SESSION_INFO*)GetWindowLong(GetParent(hwnd),GWL_USERDATA);
+	int result = InputAreaShortcuts(hwnd, msg, wParam, lParam, &si->windowData);
+	if (result != -1) {
+		return result;
+	}
    switch (msg) {
    case WM_LBUTTONUP:
       {
@@ -666,12 +671,6 @@ static LRESULT CALLBACK LogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
          SetFocus(GetDlgItem(GetParent(hwnd), IDC_CHAT_MESSAGE));
          break;
       }
-   case WM_KEYDOWN:
-      if (wParam == 0x57 && GetKeyState(VK_CONTROL) & 0x8000) { // ctrl-w (close window)
-         PostMessage(GetParent(hwnd), WM_CLOSE, 0, 0);
-         return TRUE;
-      }
-      break;
 
    case WM_ACTIVATE:
       if (LOWORD(wParam) == WA_INACTIVE) {
@@ -691,7 +690,6 @@ static LRESULT CALLBACK LogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 		HMENU hMenu = 0;
 		TCHAR *pszWord = NULL;
 		POINTL ptl;
-		SESSION_INFO* si =(SESSION_INFO*)GetWindowLong(GetParent(hwnd),GWL_USERDATA);
 
 		SendMessage(hwnd, EM_EXGETSEL, 0, (LPARAM) & sel);
 		if (lParam == 0xFFFFFFFF) {
@@ -818,19 +816,23 @@ static void ProcessNickListHovering(HWND hwnd, int hoveredItem, POINT * pt, SESS
 
 static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	SESSION_INFO* si =(SESSION_INFO*)GetWindowLong(GetParent(hwnd),GWL_USERDATA);
+	int result = InputAreaShortcuts(hwnd, msg, wParam, lParam, &si->windowData);
+	if (result != -1) {
+		return result;
+	}
    switch (msg) {
    case WM_ERASEBKGND:
       {
          HDC dc = (HDC)wParam;
-         SESSION_INFO* parentdat =(SESSION_INFO*)GetWindowLong(GetParent(hwnd),GWL_USERDATA);
          if (dc) {
             int height, index, items = 0;
 
             index = SendMessage(hwnd, LB_GETTOPINDEX, 0, 0);
-            if (index == LB_ERR || parentdat->nUsersInNicklist <= 0)
+            if (index == LB_ERR || si->nUsersInNicklist <= 0)
                return 0;
 
-            items = parentdat->nUsersInNicklist - index;
+            items = si->nUsersInNicklist - index;
             height = SendMessage(hwnd, LB_GETITEMHEIGHT, 0, 0);
 
             if (height != LB_ERR) {
@@ -842,13 +844,6 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
                   FillRect(dc, &rc, hListBkgBrush);
       }   }   }   }
       return 1;
-
-   case WM_KEYDOWN:
-      if (wParam == 0x57 && GetKeyState(VK_CONTROL) & 0x8000) { // ctrl-w (close window)
-         PostMessage(GetParent(hwnd), WM_CLOSE, 0, 0);
-         return TRUE;
-      }
-      break;
 
    case WM_RBUTTONDOWN:
       SendMessage(hwnd, WM_LBUTTONDOWN, wParam, lParam);
@@ -878,7 +873,6 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
          DWORD item;
          int height=0;
          USERINFO * ui;
-         SESSION_INFO* parentdat =(SESSION_INFO*)GetWindowLong(GetParent(hwnd),GWL_USERDATA);
 
          hti.pt.x = (short) LOWORD(lParam);
          hti.pt.y = (short) HIWORD(lParam);
@@ -896,7 +890,7 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 			item = (DWORD)(-1);
 		 else
 			item &= 0xFFFF;
-         ui = SM_GetUserFromIndex(parentdat->ptszID, parentdat->pszModule, (int)item);
+         ui = SM_GetUserFromIndex(si->ptszID, si->pszModule, (int)item);
          if (ui) {
             HMENU hMenu = 0;
             UINT uID;
@@ -906,18 +900,18 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
             if (hti.pt.x == -1 && hti.pt.y == -1)
                hti.pt.y += height - 4;
             ClientToScreen(hwnd, &hti.pt);
-            uID = CreateGCMenu(hwnd, &hMenu, 0, hti.pt, parentdat, uinew.pszUID, NULL);
+            uID = CreateGCMenu(hwnd, &hMenu, 0, hti.pt, si, uinew.pszUID, NULL);
 
             switch (uID) {
             case 0:
                break;
 
             case ID_MESS:
-               DoEventHookAsync(GetParent(hwnd), parentdat->ptszID, parentdat->pszModule, GC_USER_PRIVMESS, ui->pszUID, NULL, (LPARAM)NULL);
+               DoEventHookAsync(GetParent(hwnd), si->ptszID, si->pszModule, GC_USER_PRIVMESS, ui->pszUID, NULL, (LPARAM)NULL);
                break;
 
             default:
-               DoEventHookAsync(GetParent(hwnd), parentdat->ptszID, parentdat->pszModule, GC_USER_NICKLISTMENU, ui->pszUID, NULL, (LPARAM)uID);
+               DoEventHookAsync(GetParent(hwnd), si->ptszID, si->pszModule, GC_USER_NICKLISTMENU, ui->pszUID, NULL, (LPARAM)uID);
                break;
             }
             DestroyGCMenu(&hMenu, 1);
@@ -930,7 +924,6 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 			POINT pt;
 			RECT clientRect;
 			BOOL bInClient;
-			SESSION_INFO* parentdat =(SESSION_INFO*)GetWindowLong(GetParent(hwnd),GWL_USERDATA);
 			pt.x=LOWORD(lParam);
 			pt.y=HIWORD(lParam);
 			GetClientRect(hwnd,&clientRect);
@@ -949,7 +942,7 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 				else
 					nItemUnderMouse &= 0xFFFF;
 
-				ProcessNickListHovering(hwnd, (int)nItemUnderMouse, &pt, parentdat);
+				ProcessNickListHovering(hwnd, (int)nItemUnderMouse, &pt, si);
 			} else {
 				ProcessNickListHovering(hwnd, -1, &pt, NULL);
 		}	}
