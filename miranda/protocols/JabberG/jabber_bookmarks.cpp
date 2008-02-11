@@ -117,9 +117,8 @@ static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 				GetDlgItemText( hwndDlg, IDC_ROOM_JID, text, SIZEOF( text ));
 				TCHAR* roomJID = NEWTSTR_ALLOCA( text );
 
-				TCHAR* currJID = param->m_item->jid;
-				if ( currJID )
-					param->ppro->ListRemove( LIST_BOOKMARK, currJID );
+				if ( param->m_item )
+					param->ppro->ListRemove( LIST_BOOKMARK, param->m_item->jid );
 
 				item = param->ppro->ListAdd( LIST_BOOKMARK, roomJID );
 				item->bUseResource = TRUE;

@@ -37,8 +37,6 @@ Last change by : $Author$
 #include "sdk/m_icolib.h"
 #include "sdk/m_folders.h"
 #include "sdk/m_wizard.h"
-#include "sdk/m_assocmgr.h"
-#include "sdk/m_toolbar.h"
 
 HINSTANCE hInst;
 PLUGINLINK *pluginLink;
@@ -207,10 +205,6 @@ int __cdecl CJabberProto::OnPreShutdown( WPARAM wParam, LPARAM lParam )
 ///////////////////////////////////////////////////////////////////////////////
 // OnModulesLoaded - execute some code when all plugins are initialized
 
-void MenuHideSrmmIcon(HANDLE hContact);
-
-static COLORREF crCols[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
-
 static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
 	bSecureIM = (ServiceExists("SecureIM/IsContactSecured"));
@@ -220,95 +214,9 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 ///////////////////////////////////////////////////////////////////////////////
 // OnLoad - initialize the plugin instance
 
-int CJabberProto::OnModulesLoadedEx( WPARAM wParam, LPARAM lParam )
+static CJabberProto* jabberProtoInit( const char* pszProtoName, const TCHAR* tszUserName )
 {
-	JHookEvent( ME_TB_MODULELOADED, &CJabberProto::OnModernToolbarInit );
-	JHookEvent( ME_USERINFO_INITIALISE, &CJabberProto::OnUserInfoInit );
-
-	if ( ServiceExists( MS_GC_REGISTER )) {
-		jabberChatDllPresent = true;
-
-		GCREGISTER gcr = {0};
-		gcr.cbSize = sizeof( GCREGISTER );
-		gcr.dwFlags = GC_TYPNOTIF|GC_CHANMGR;
-		gcr.iMaxText = 0;
-		gcr.nColors = 16;
-		gcr.pColors = &crCols[0];
-		gcr.pszModuleDispName = m_szProtoName;
-		gcr.pszModule = m_szProtoName;
-		CallServiceSync( MS_GC_REGISTER, NULL, ( LPARAM )&gcr );
-
-		JHookEvent( ME_GC_EVENT, &CJabberProto::JabberGcEventHook );
-		JHookEvent( ME_GC_BUILDMENU, &CJabberProto::JabberGcMenuHook );
-
-		char szEvent[ 200 ];
-		mir_snprintf( szEvent, sizeof szEvent, "%s\\ChatInit", m_szProtoName );
-		m_hInitChat = CreateHookableEvent( szEvent );
-		JHookEvent( szEvent, &CJabberProto::JabberGcInit );
-	}
-
-	if ( ServiceExists( MS_MSG_ADDICON )) {
-		StatusIconData sid = {0};
-		sid.cbSize = sizeof(sid);
-		sid.szModule = m_szProtoName;
-		sid.hIcon = LoadIconEx("main");
-		sid.hIconDisabled = LoadIconEx("main");
-		sid.flags = MBF_HIDDEN;
-		sid.szTooltip = "Jabber Resource";
-		CallService(MS_MSG_ADDICON, 0, (LPARAM) &sid);
-		JHookEvent( ME_MSG_ICONPRESSED, &CJabberProto::OnProcessSrmmIconClick );
-		JHookEvent( ME_MSG_WINDOWEVENT, &CJabberProto::OnProcessSrmmEvent );
-
-		HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
-		while ( hContact != NULL ) {
-			char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-			if ( szProto != NULL && !strcmp( szProto, m_szProtoName ))
-				MenuHideSrmmIcon(hContact);
-			hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 );
-	}	}
-
-	DBEVENTTYPEDESCR dbEventType = {0};
-	dbEventType.cbSize = sizeof(DBEVENTTYPEDESCR);
-	dbEventType.eventType = JABBER_DB_EVENT_TYPE_CHATSTATES;
-	dbEventType.module = m_szProtoName;
-	dbEventType.descr = "Chat state notifications";
-	JCallService( MS_DB_EVENT_REGISTERTYPE, 0, (LPARAM)&dbEventType );
-
-	// file associations manager plugin support
-	if ( ServiceExists( MS_ASSOCMGR_ADDNEWURLTYPE )) {
-		char szService[ MAXMODULELABELLENGTH ];
-		mir_snprintf( szService, SIZEOF( szService ), "%s%s", m_szProtoName, JS_PARSE_XMPP_URI );
-		AssocMgr_AddNewUrlTypeT( "xmpp:", TranslateT("Jabber Link Protocol"), hInst, IDI_JABBER, szService, 0 );
-	}
-
-	CheckAllContactsAreTransported();
-
-	// Set all contacts to offline
-	HANDLE hContact = ( HANDLE )CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
-	while ( hContact != NULL ) {
-		char* szProto = ( char* )CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-		if ( szProto != NULL && !strcmp( szProto, m_szProtoName )) {
-			SetContactOfflineStatus( hContact );
-
-			if ( JGetByte( hContact, "IsTransport", 0 )) {
-				DBVARIANT dbv;
-				if ( !JGetStringT( hContact, "jid", &dbv )) {
-					TCHAR* domain = NEWTSTR_ALLOCA(dbv.ptszVal);
-					TCHAR* resourcepos = _tcschr( domain, '/' );
-					if ( resourcepos != NULL )
-						*resourcepos = '\0';
-					m_lstTransports.insert( _tcsdup( domain ));
-					JFreeVariant( &dbv );
-		}	}	}
-
-		hContact = ( HANDLE )CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 );
-	}
-	return 0;
-}
-
-static CJabberProto* jabberProtoInit( const char* m_szProtoName, const TCHAR* tszUserName )
-{
-	CJabberProto* ppro = new CJabberProto( m_szProtoName );
+	CJabberProto* ppro = new CJabberProto( pszProtoName );
 	if ( !ppro )
 		return NULL;
 
