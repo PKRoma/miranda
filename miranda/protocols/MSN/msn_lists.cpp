@@ -159,7 +159,15 @@ void MSN_CleanupLists(void)
 
 		HANDLE hContact = MSN_HContactFromEmail(p->email, p->email, true, false);
 		MSN_SetContactDb(hContact, p->email);
-		if (p->list & LIST_PL || p->list == LIST_RL )
+		if (p->list & LIST_PL)
+		{
+			if (p->list & (LIST_AL | LIST_BL))
+				MSN_AddUser( hContact, p->email, p->netId, LIST_PL + LIST_REMOVE );
+			else
+				MSN_AddAuthRequest( hContact, p->email, p->email );
+		}
+
+		if (p->list == LIST_RL)
 			MSN_AddAuthRequest( hContact, p->email, p->email );
 	}
 	LeaveCriticalSection(&csLists);
