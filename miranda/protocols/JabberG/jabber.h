@@ -408,7 +408,6 @@ enum { TLM_TREE, TLM_REPORT };
  *******************************************************************/
 extern HINSTANCE hInst;
 extern HMODULE hLibSSL;
-extern PVOID jabberSslCtx;
 extern HANDLE hMainThread;
 extern DWORD  jabberMainThreadId;
 extern BOOL   jabberChatDllPresent;

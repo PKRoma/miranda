@@ -75,11 +75,9 @@ HRESULT (WINAPI *JabberDrawThemeParentBackground)(HWND, HDC, RECT *) = NULL;
 HANDLE hMainThread = NULL;
 DWORD  jabberMainThreadId;
 BOOL   jabberChatDllPresent = FALSE;
-HANDLE hNetlibUser;
 
 // SSL-related global variable
 HMODULE hLibSSL = NULL;
-PVOID jabberSslCtx;
 
 const char xmlnsAdmin[] = "http://jabber.org/protocol/muc#admin";
 const char xmlnsOwner[] = "http://jabber.org/protocol/muc#owner";
@@ -283,5 +281,11 @@ extern "C" int __declspec( dllexport ) Unload( void )
 {
 	if ( hMainThread )
 		CloseHandle( hMainThread );
+
+	if ( hLibSSL ) {
+		FreeLibrary( hLibSSL );
+		hLibSSL = NULL;
+	}
+
 	return 0;
 }

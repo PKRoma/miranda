@@ -178,10 +178,12 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	//====| Data |========================================================================
 
-	HANDLE m_hNetlibUser;
-
 	ThreadData* m_ThreadInfo;
-	HANDLE      m_hThreadHandle;
+
+	HANDLE m_hNetlibUser;
+	PVOID  m_sslCtx;
+
+	HANDLE m_hThreadHandle;
 
 	TCHAR* m_szJabberJID;
 	char*  m_szStreamId;
@@ -788,6 +790,9 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   SetContactTune( HANDLE hContact,  TCHAR* szArtist, TCHAR* szLength, TCHAR* szSource, TCHAR* szTitle, TCHAR* szTrack, TCHAR* szUri );
 
 private:
+	XmlState xmlState;
+	char*    xmlStreamToBeInitialized;
+
 	CRITICAL_SECTION m_csSerial;
 	unsigned int m_nSerial;
 

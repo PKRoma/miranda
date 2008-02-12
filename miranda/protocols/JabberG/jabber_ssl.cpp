@@ -80,7 +80,7 @@ BOOL CJabberProto::SslInit()
 	if ( hLibSSL ) {
 		Log( "SSL library load successful" );
 		pfn_SSL_library_init();
-		jabberSslCtx = pfn_SSL_CTX_new( pfn_SSLv23_client_method());
+		m_sslCtx = pfn_SSL_CTX_new( pfn_SSLv23_client_method());
 
 		return TRUE;
 	}
@@ -93,13 +93,9 @@ BOOL CJabberProto::SslInit()
 
 int CJabberProto::SslUninit()
 {
-	if ( hLibSSL ) {
-		pfn_SSL_CTX_free( jabberSslCtx );
+	if ( m_sslCtx && pfn_SSL_CTX_free )
+		pfn_SSL_CTX_free( m_sslCtx );
 
-		Log( "Free SSL library" );
-		FreeLibrary( hLibSSL );
-		hLibSSL = NULL;
-	}
 	return 0;
 }
 

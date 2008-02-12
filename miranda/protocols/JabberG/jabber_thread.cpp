@@ -160,9 +160,6 @@ static int xmpp_client_query( char* domain )
 	return port;
 }
 
-static XmlState xmlState;
-static char *xmlStreamToBeInitialized = 0;
-
 void CJabberProto::xmlStreamInitialize(char *which)
 {
 	Log("Stream will be initialized %s",which);
@@ -413,7 +410,7 @@ LBL_FatalError:
 		Log( "Intializing SSL connection" );
 		if ( SslInit() && socket != INVALID_SOCKET ) {
 			Log( "SSL using socket = %d", socket );
-			if (( ssl=pfn_SSL_new( jabberSslCtx )) != NULL ) {
+			if (( ssl=pfn_SSL_new( m_sslCtx )) != NULL ) {
 				Log( "SSL create context ok" );
 				if ( pfn_SSL_set_fd( ssl, socket ) > 0 ) {
 					Log( "SSL set fd ok" );
@@ -904,7 +901,7 @@ void CJabberProto::OnProcessProceed( XmlNode *node, void *userdata )
 
 		int socket = JCallService( MS_NETLIB_GETSOCKET, ( WPARAM ) info->s, 0 );
 		PVOID ssl;
-		if (( ssl=pfn_SSL_new( jabberSslCtx )) != NULL ) {
+		if (( ssl=pfn_SSL_new( m_sslCtx )) != NULL ) {
 			Log( "SSL create context ok" );
 			if ( pfn_SSL_set_fd( ssl, socket ) > 0 ) {
 				Log( "SSL set fd ok" );
