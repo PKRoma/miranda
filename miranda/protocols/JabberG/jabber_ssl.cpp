@@ -39,7 +39,7 @@ PFN_SSL_int_pvoid            pfn_SSL_connect;           // int SSL_connect( SSL 
 PFN_SSL_int_pvoid_pvoid_int  pfn_SSL_read;              // int SSL_read( SSL *ssl, void *buffer, int bufsize )
 PFN_SSL_int_pvoid_pvoid_int  pfn_SSL_write;             // int SSL_write( SSL *ssl, void *buffer, int bufsize )
 
-BOOL CJabberProto::SslInit()
+static BOOL jabberSslInit()
 {
 	if ( hLibSSL )
 		return TRUE;
@@ -77,25 +77,26 @@ BOOL CJabberProto::SslInit()
 			hLibSSL = NULL;
 	}	}
 
-	if ( hLibSSL ) {
-		Log( "SSL library load successful" );
-		pfn_SSL_library_init();
+	if ( !hLibSSL )
+		return FALSE;
+		
+	pfn_SSL_library_init();
+	return TRUE;
+}
+
+BOOL CJabberProto::SslInit()
+{
+	if ( !jabberSslInit() ) {
+		Log( "SSL library cannot load" );
+		JSetByte( "UseTLS", 0 );
+		JSetByte( "UseSSL", 0 );
+		return FALSE;
+	}
+		Netlib_Logf( NULL, "SSL library load successful" );
+
+	Log( "SSL library load successful" );
+	if ( m_sslCtx == NULL )
 		m_sslCtx = pfn_SSL_CTX_new( pfn_SSLv23_client_method());
 
-		return TRUE;
-	}
-
-	Log( "SSL library cannot load" );
-	JSetByte( "UseTLS", 0 );
-	JSetByte( "UseSSL", 0 );
-	return FALSE;
+	return TRUE;
 }
-
-int CJabberProto::SslUninit()
-{
-	if ( m_sslCtx && pfn_SSL_CTX_free )
-		pfn_SSL_CTX_free( m_sslCtx );
-
-	return 0;
-}
-

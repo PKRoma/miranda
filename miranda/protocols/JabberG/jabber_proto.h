@@ -756,7 +756,6 @@ struct CJabberProto : public PROTO_INTERFACE
 	int    WsRecv( JABBER_SOCKET s, char* data, long datalen, int flags );
 
 	BOOL   SslInit();
-	BOOL   SslUninit();
 
 	//---- jabber_xml.c ------------------------------------------------------------------
 
