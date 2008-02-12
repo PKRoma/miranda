@@ -678,7 +678,8 @@ static void sttProcessRemove( char* buf, size_t len )
 			if ((listId & ( LIST_RL | LIST_FL )) == 0) 
 			{
 				HANDLE hContact = MSN_HContactFromEmail(szEmail, NULL, false, false);
-				MSN_CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
+				if (strcmp(szEmail, MyOptions.szEmail))
+					MSN_CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
 			}
 
 			cont = ezxml_next(cont);
