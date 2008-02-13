@@ -171,6 +171,7 @@ static void sttInviteMessage( ThreadData* info, char* msgBody, char* email, char
 		ccs.wParam = 0;
 		ccs.lParam = ( LPARAM )&pre;
 		MSN_CallService( MS_PROTO_CHAINRECV, 0, ( LPARAM )&ccs );
+		mir_free(pre.szMessage);
 		return;
 	}
 
@@ -482,7 +483,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 			gce.time = time( NULL );
 			gce.bIsMe = FALSE;
 
-			#if defined( _UNICODE )
+			#ifdef _UNICODE
 				TCHAR* p;
 				mir_utf8decode(( char* )msgBody, &p );
 				gce.ptszText = EscapeChatTags( p );

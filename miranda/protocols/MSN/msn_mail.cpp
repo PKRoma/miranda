@@ -133,6 +133,7 @@ void getOIMs(ezxml_t xmli)
 			ccs.szProtoService = PSR_MESSAGE;
 			ccs.lParam = ( LPARAM )&pre;
 			MSN_CallService( MS_PROTO_CHAINRECV, 0, ( LPARAM )&ccs );
+			mir_free(pre.szMessage);
 
 			ezxml_t delmid = ezxml_add_child(delmids, "messageId", 0);
 			ezxml_set_txt(delmid, szId);
