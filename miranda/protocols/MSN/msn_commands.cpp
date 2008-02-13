@@ -176,6 +176,7 @@ static void sttInviteMessage( ThreadData* info, char* msgBody, char* email, char
 		ccs.wParam = 0;
 		ccs.lParam = ( LPARAM )&pre;
 		MSN_CallService( MS_PROTO_CHAINRECV, 0, ( LPARAM )&ccs );
+		mir_free(pre.szMessage);
 		return;
 	}
 
