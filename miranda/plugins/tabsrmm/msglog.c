@@ -606,7 +606,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 	TemplateSet *this_templateset;
 	BOOL isBold = FALSE, isItalic = FALSE, isUnderline = FALSE;
 	DWORD dwEffectiveFlags;
-	DWORD dwFormattingParams = MAKELONG(myGlobals.m_FormatWholeWordsOnly, dat->dwFlagsEx & MWF_SHOW_BBCODE);
+	DWORD dwFormattingParams = MAKELONG(myGlobals.m_FormatWholeWordsOnly, 0);
 	char  *szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
 	BOOL  fIsStatusChangeEvent = FALSE;
 	TCHAR *msg, *formatted;
@@ -748,7 +748,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 	 */
 	if (dwEffectiveFlags & MWF_LOG_SHOWTIME) {
 		final_time = dbei.timestamp;
-		if (dat->dwFlagsEx & MWF_SHOW_USELOCALTIME) {
+		if (dat->dwFlags & MWF_LOG_LOCALTIME) {
 			if (!isSent && dat->timediff != 0)
 				final_time = dbei.timestamp - dat->timediff;
 		}

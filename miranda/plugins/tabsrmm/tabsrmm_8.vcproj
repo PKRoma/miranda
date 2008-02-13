@@ -1036,15 +1036,27 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\Close.ico"
-				>
-			</File>
-			<File
 				RelativePath=".\chat\Icons\close.ico"
 				>
 			</File>
 			<File
+				RelativePath=".\res\angeli-icons\Close.ico"
+				>
+			</File>
+			<File
 				RelativePath=".\chat\Icons\color.ico"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\res\cursor_drag_copy.cur"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\res\cursor_drop_user.cur"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\res\cursor_hyperlink.cur"
 				>
 			</File>
 			<File
@@ -1096,11 +1108,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\History.ico"
+				RelativePath="..\..\Miranda-IM\res\history.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\history.ico"
+				RelativePath=".\res\angeli-icons\History.ico"
 				>
 			</File>
 			<File
@@ -1116,11 +1128,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\res\hyperlin.cur"
+				RelativePath="..\..\Miranda-IM\res\hyperlin.cur"
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\hyperlin.cur"
+				RelativePath="..\..\src\res\hyperlin.cur"
 				>
 			</File>
 			<File
@@ -1140,11 +1152,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\chat\Icons\info.ico"
+				RelativePath=".\res\angeli-icons\Info.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\Info.ico"
+				RelativePath=".\chat\Icons\info.ico"
 				>
 			</File>
 			<File

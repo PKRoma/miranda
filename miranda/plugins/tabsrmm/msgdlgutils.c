@@ -463,7 +463,7 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
 		EnableMenuItem(submenu, ID_TABMENU_CLEARSAVEDTABPOSITION, (DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "tabindex", -1) != -1) ? MF_ENABLED : MF_GRAYED);
 	}
 	else if (menuID == MENU_LOGMENU) {
-		int iLocalTime = dat->dwFlagsEx & MWF_SHOW_USELOCALTIME ? 1 : 0;
+		int iLocalTime = 0;
 		int iRtl = (myGlobals.m_RTLDefault == 0 ? DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 0) : DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 1));
 		int iLogStatus = (myGlobals.m_LogStatusChanges != 0) && (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) != 0);
 
@@ -639,7 +639,7 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
 		}
 	}
 	else if (menuId == MENU_LOGMENU) {
-		int iLocalTime = dat->dwFlagsEx & MWF_SHOW_USELOCALTIME ? 1 : 0;
+		int iLocalTime = 0;
 		int iRtl = (myGlobals.m_RTLDefault == 0 ? DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 0) : DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 1));
 		int iLogStatus = (myGlobals.m_LogStatusChanges != 0) && (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) != 0);
 
@@ -649,14 +649,6 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
 
 			case ID_LOGMENU_SHOWTIMESTAMP:
 				dat->dwFlags ^= MWF_LOG_SHOWTIME;
-				return 1;
-			case ID_LOGMENU_USECONTACTSLOCALTIME:
-				iLocalTime ^= 1;
-				dat->dwFlagsEx ^= MWF_SHOW_USELOCALTIME;
-				if (dat->hContact) {
-					DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "uselocaltime", (BYTE) iLocalTime);
-					SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
-				}
 				return 1;
 			case ID_LOGMENU_INDENTMESSAGEBODY:
 				dat->dwFlags ^= MWF_LOG_INDENT;

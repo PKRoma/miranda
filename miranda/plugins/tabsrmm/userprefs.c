@@ -39,10 +39,16 @@ Sets things like:
 
 #include "commonheaders.h"
 #pragma hdrstop
+#include "uxtheme.h"
 
-extern MYGLOBALS myGlobals;
-extern HANDLE hMessageWindowList, hUserPrefsWindowList;
-extern struct CPTABLE cpTable[];
+#define UPREF_ACTION_APPLYOPTIONS 1
+#define UPREF_ACTION_REMAKELOG 2
+#define UPREF_ACTION_SWITCHLOGVIEWER 4
+
+extern		MYGLOBALS myGlobals;
+extern		HANDLE hMessageWindowList, hUserPrefsWindowList;
+extern		struct CPTABLE cpTable[];
+extern		BOOL (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD);
 
 static HWND hCpCombo;
 
@@ -62,7 +68,7 @@ static BOOL CALLBACK FillCpCombo(LPCTSTR str)
 
 static int have_ieview = 0, have_hpp = 0;
 
-BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	HANDLE hContact = (HANDLE)GetWindowLong(hwndDlg, GWL_USERDATA);
 
@@ -75,7 +81,6 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			DWORD contact_gmt_diff;
 			int i, offset;
 			DWORD maxhist = DBGetContactSettingDword((HANDLE)lParam, SRMSGMOD_T, "maxhist", 0);
-			BYTE bOverride = DBGetContactSettingByte((HANDLE)lParam, SRMSGMOD_T, "mwoverride", 0);
 			BYTE bIEView = DBGetContactSettingByte((HANDLE)lParam, SRMSGMOD_T, "ieview", 0);
 			BYTE bHPP = DBGetContactSettingByte((HANDLE)lParam, SRMSGMOD_T, "hpplog", 0);
 			int iLocalFormat = DBGetContactSettingDword((HANDLE)lParam, SRMSGMOD_T, "sendformat", 0);
@@ -88,10 +93,9 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
 			have_ieview = ServiceExists(MS_IEVIEW_WINDOW);
 			have_hpp = ServiceExists("History++/ExtGrid/NewWindow");
-
+  
 			hContact = (HANDLE)lParam;
 
-			WindowList_Add(hUserPrefsWindowList, hwndDlg, hContact);
 			TranslateDialogDefault(hwndDlg);
 			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)lParam);
 
@@ -120,18 +124,11 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			SendDlgItemMessage(hwndDlg, IDC_TEXTFORMATTING, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Force Off"));
 			SendDlgItemMessage(hwndDlg, IDC_TEXTFORMATTING, CB_SETCURSEL, iLocalFormat == 0 ? 0 : (iLocalFormat == -1 ? 3 : (iLocalFormat == SENDFORMAT_BBCODE ? 1 : 2)), 0);
 
-			SendDlgItemMessage(hwndDlg, IDC_BIDI, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Use Default"));
-			SendDlgItemMessage(hwndDlg, IDC_BIDI, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Always LTR"));
-			SendDlgItemMessage(hwndDlg, IDC_BIDI, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Always RTL"));
-			SendDlgItemMessage(hwndDlg, IDC_BIDI, CB_SETCURSEL, (bLTR == 1 && bRTL == 0) ? 0 : (bLTR == 0 ? 1 : 2), 0);
-
 			if (CheckMenuItem(myGlobals.g_hMenuFavorites, (UINT_PTR)lParam, MF_BYCOMMAND | MF_UNCHECKED) == -1)
 				CheckDlgButton(hwndDlg, IDC_ISFAVORITE, FALSE);
 			else
 				CheckDlgButton(hwndDlg, IDC_ISFAVORITE, TRUE);
 
-			CheckDlgButton(hwndDlg, IDC_LOGISGLOBAL, bOverride == 0);
-			CheckDlgButton(hwndDlg, IDC_LOGISPRIVATE, bOverride != 0);
 			CheckDlgButton(hwndDlg, IDC_PRIVATESPLITTER, bSplit);
 			CheckDlgButton(hwndDlg, IDC_TEMPLOVERRIDE, DBGetContactSettingByte(hContact, TEMPLATES_MODULE, "enabled", 0));
 			CheckDlgButton(hwndDlg, IDC_RTLTEMPLOVERRIDE, DBGetContactSettingByte(hContact, RTLTEMPLATES_MODULE, "enabled", 0));
@@ -161,8 +158,6 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			EnableWindow(GetDlgItem(hwndDlg, IDC_FORCEANSI), FALSE);
 #endif
 			CheckDlgButton(hwndDlg, IDC_IGNORETIMEOUTS, DBGetContactSettingByte(hContact, SRMSGMOD_T, "no_ack", 0));
-			mir_sntprintf(szBuffer, safe_sizeof(szBuffer), TranslateT("Set options for %s"), (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR));
-			SetWindowText(hwndDlg, szBuffer);
 			SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("<default, no change>"));
 			timezone = (DWORD)DBGetContactSettingByte(hContact, "UserInfo", "Timezone", DBGetContactSettingByte(hContact, (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0), "Timezone", -1));
 			for (i = -12; i <= 12; i++) {
@@ -181,23 +176,21 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 		}
 		case WM_COMMAND:
 			switch (LOWORD(wParam)) {
-				case IDCANCEL:
-					DestroyWindow(hwndDlg);
-					break;
 				case IDC_ALWAYSTRIM2:
 					EnableWindow(GetDlgItem(hwndDlg, IDC_TRIMSPIN), IsDlgButtonChecked(hwndDlg, IDC_ALWAYSTRIM2));
 					EnableWindow(GetDlgItem(hwndDlg, IDC_TRIM), IsDlgButtonChecked(hwndDlg, IDC_ALWAYSTRIM2));
 					break;
-				case IDOK: {
-					struct MessageWindowData *dat = 0;
-					int iIndex = CB_ERR;
-					DWORD newCodePage;
-					int offset;
+				case WM_USER + 100: {
+					struct	MessageWindowData *dat = 0;
+					DWORD	*pdwActionToTake = (DWORD *)lParam;
+					int		iIndex = CB_ERR;
+					DWORD	newCodePage;
+					int		offset;
 					unsigned int iOldIEView;
-					HWND hWnd = WindowList_Find(hMessageWindowList, hContact);
-					DWORD sCodePage = DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", 0);
-					DWORD oldTZ = (DWORD)DBGetContactSettingByte(hContact, "UserInfo", "Timezone", DBGetContactSettingByte(hContact, (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0), "Timezone", -1));
-					BYTE bInfoPanel, bOldInfoPanel = DBGetContactSettingByte(hContact, SRMSGMOD_T, "infopanel", 0);
+					HWND	hWnd = WindowList_Find(hMessageWindowList, hContact);
+					DWORD	sCodePage = DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", 0);
+					DWORD	oldTZ = (DWORD)DBGetContactSettingByte(hContact, "UserInfo", "Timezone", DBGetContactSettingByte(hContact, (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0), "Timezone", -1));
+					BYTE	bInfoPanel, bOldInfoPanel = DBGetContactSettingByte(hContact, SRMSGMOD_T, "infopanel", 0);
 
 					if (hWnd) {
 						dat = (struct MessageWindowData *)GetWindowLong(hWnd, GWL_USERDATA);
@@ -230,28 +223,10 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 						}
 						if (hWnd && dat) {
 							iNewIEView = GetIEViewMode(hWnd, dat);
-							if (iNewIEView != iOldIEView)
-								SwitchMessageLog(hWnd, dat, iNewIEView);
-						}
-					}
-					if ((iIndex = SendDlgItemMessage(hwndDlg, IDC_BIDI, CB_GETCURSEL, 0, 0)) != CB_ERR) {
-						if (iIndex == 0)
-							DBDeleteContactSetting(hContact, SRMSGMOD_T, "RTL");
-						else
-							DBWriteContactSettingByte(hContact, SRMSGMOD_T, "RTL", (BYTE)(iIndex == 1 ? 0 : 1));
-					}
-					if (IsDlgButtonChecked(hwndDlg, IDC_LOGISGLOBAL)) {
-						DBWriteContactSettingByte(hContact, SRMSGMOD_T, "mwoverride", 0);
-						if (hWnd && dat) {
-							SendMessage(hWnd, DM_OPTIONSAPPLIED, 1, 0);
-						}
-					}
-					if (IsDlgButtonChecked(hwndDlg, IDC_LOGISPRIVATE)) {
-						DBWriteContactSettingByte(hContact, SRMSGMOD_T, "mwoverride", 1);
-						if (hWnd && dat) {
-							dat->dwFlags &= ~(MWF_LOG_ALL);
-							dat->dwFlags = DBGetContactSettingDword(hContact, SRMSGMOD_T, "mwflags", DBGetContactSettingDword(0, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT));
-							SendMessage(hWnd, DM_OPTIONSAPPLIED, 0, 0);
+							if (iNewIEView != iOldIEView) {
+								if(pdwActionToTake)
+									*pdwActionToTake |= UPREF_ACTION_SWITCHLOGVIEWER;
+							}
 						}
 					}
 					if ((iIndex = SendDlgItemMessage(hwndDlg, IDC_TEXTFORMATTING, CB_GETCURSEL, 0, 0)) != CB_ERR) {
@@ -337,10 +312,227 @@ BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 					break;
 			}
 			break;
+	}
+	return FALSE;
+}
+
+static struct _checkboxes {
+	UINT	uId;
+	UINT	uFlag;
+} checkboxes[] = {
+	IDC_UPREFS_GRID, MWF_LOG_GRID,
+	IDC_UPREFS_SHOWICONS, MWF_LOG_SHOWICONS,
+	IDC_UPREFS_SHOWSYMBOLS, MWF_LOG_SYMBOLS,
+	IDC_UPREFS_INOUTICONS, MWF_LOG_INOUTICONS,
+	IDC_UPREFS_SHOWTIMESTAMP, MWF_LOG_SHOWTIME,
+	IDC_UPREFS_SHOWDATES, MWF_LOG_SHOWDATES,
+	IDC_UPREFS_SHOWSECONDS, MWF_LOG_SHOWSECONDS,
+	IDC_UPREFS_LOCALTIME, MWF_LOG_LOCALTIME,
+	IDC_UPREFS_INDENT, MWF_LOG_INDENT,
+	IDC_UPREFS_GROUPING, MWF_LOG_GROUPMODE,
+	IDC_UPREFS_MULTIPLEBG, MWF_LOG_INDIVIDUALBKG,
+	IDC_UPREFS_BBCODE, MWF_LOG_BBCODE,
+	IDC_UPREFS_RTL, MWF_LOG_RTL,
+	IDC_UPREFS_LOGSTATUS, MWF_LOG_STATUSCHANGES,
+	IDC_UPREFS_NORMALTEMPLATES, MWF_LOG_NORMALTEMPLATES,
+	0, 0
+};
+
+static BOOL CALLBACK DlgProcUserPrefs1(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	HANDLE hContact = (HANDLE)GetWindowLong(hwndDlg, GWL_USERDATA);
+	switch(msg) {
+		case WM_INITDIALOG: {
+			DWORD	dwGlobalFlags, dwLocalFlags, maskval;
+			int		i = 0;
+
+			hContact = (HANDLE)lParam;
+			TranslateDialogDefault(hwndDlg);
+			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)hContact);
+
+			dwGlobalFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT);
+			dwLocalFlags = DBGetContactSettingDword(hContact, SRMSGMOD_T, "mwflags", dwGlobalFlags);
+
+			while(checkboxes[i].uId) {
+				maskval = checkboxes[i].uFlag;
+
+				if((dwGlobalFlags & maskval) == (dwLocalFlags & maskval))
+					CheckDlgButton(hwndDlg, checkboxes[i].uId, BST_INDETERMINATE);
+				else 
+					CheckDlgButton(hwndDlg, checkboxes[i].uId, (dwLocalFlags & maskval) ? BST_CHECKED : BST_UNCHECKED);
+				i++;
+			}
+			return TRUE;
+		}
+		case WM_COMMAND:
+			switch(LOWORD(wParam)) {
+				case WM_USER + 100: {
+					int i = 0;
+					DWORD	dwGlobalFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT), dwLocalFlags = 0, maskval = 0;
+					LRESULT state;
+					HWND	hwnd = WindowList_Find(hMessageWindowList, hContact);
+					struct	MessageWindowData *dat = NULL;
+					DWORD	*dwActionToTake = (DWORD *)lParam, dwFinalFlags = 0;
+
+					if(hwnd)
+						dat = (struct MessageWindowData *)GetWindowLong(hwnd, GWL_USERDATA);
+
+					while(checkboxes[i].uId) {
+						maskval = checkboxes[i].uFlag;
+
+						state = IsDlgButtonChecked(hwndDlg, checkboxes[i].uId);
+						if(state == BST_INDETERMINATE)
+							dwLocalFlags |= (dwGlobalFlags & maskval);
+						else
+							dwLocalFlags = (state == BST_CHECKED) ? (dwLocalFlags | maskval) : (dwLocalFlags & ~maskval);
+						i++;
+					}
+					if(dwLocalFlags != dwGlobalFlags) {
+						DBWriteContactSettingDword(hContact, SRMSGMOD_T, "mwflags", dwLocalFlags & MWF_LOG_ALL);
+						DBWriteContactSettingByte(hContact, SRMSGMOD_T, "mwoverride", 1);
+						dwFinalFlags = dwLocalFlags;
+					}
+					else {
+						DBDeleteContactSetting(hContact, SRMSGMOD_T, "mwoverride");
+						DBDeleteContactSetting(hContact, SRMSGMOD_T, "mwflags");
+						dwFinalFlags = dwGlobalFlags;
+					}
+					if(hwnd && dat) {
+						if((dwFinalFlags & MWF_LOG_ALL) != (dat->dwFlags & MWF_LOG_ALL))
+							*dwActionToTake |= (DWORD)UPREF_ACTION_REMAKELOG;
+						if((dwFinalFlags & MWF_LOG_RTL) != (dat->dwFlags & MWF_LOG_RTL))
+							*dwActionToTake |= (DWORD)UPREF_ACTION_APPLYOPTIONS;
+					}
+					break;
+				}
+			}
+			break;
+	}
+	return FALSE;
+}
+
+BOOL CALLBACK DlgProcUserPrefsFrame(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	HANDLE hContact = (HANDLE)GetWindowLong(hwndDlg, GWL_USERDATA);
+
+	switch(msg) {
+		case WM_INITDIALOG: {
+			TCITEM tci;
+			RECT rcClient;
+			TCHAR szBuffer[180];
+
+			hContact = (HANDLE)lParam;
+			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)hContact);
+
+			WindowList_Add(hUserPrefsWindowList, hwndDlg, hContact);
+			TranslateDialogDefault(hwndDlg);
+
+			GetClientRect(hwndDlg, &rcClient);
+
+			mir_sntprintf(szBuffer, safe_sizeof(szBuffer), TranslateT("Set options for %s"), (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR));
+			SetWindowText(hwndDlg, szBuffer);
+
+			tci.mask = TCIF_PARAM | TCIF_TEXT;
+			tci.lParam = (LPARAM)CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_USERPREFS), hwndDlg, DlgProcUserPrefs, (LPARAM)hContact);
+			tci.pszText = TranslateT("General");
+			TabCtrl_InsertItem(GetDlgItem(hwndDlg, IDC_OPTIONSTAB), 0, &tci);
+			MoveWindow((HWND)tci.lParam, 5, 32, rcClient.right - 10, rcClient.bottom - 80, 1);
+			ShowWindow((HWND)tci.lParam, SW_SHOW);
+			if (MyEnableThemeDialogTexture)
+				MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+
+
+			tci.lParam = (LPARAM)CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_USERPREFS1), hwndDlg, DlgProcUserPrefs1, (LPARAM)hContact);
+			tci.pszText = TranslateT("Message Log");
+			TabCtrl_InsertItem(GetDlgItem(hwndDlg, IDC_OPTIONSTAB), 1, &tci);
+			MoveWindow((HWND)tci.lParam, 5, 32, rcClient.right - 10, rcClient.bottom - 80, 1);
+			ShowWindow((HWND)tci.lParam, SW_HIDE);
+			if (MyEnableThemeDialogTexture)
+				MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+			TabCtrl_SetCurSel(GetDlgItem(hwndDlg, IDC_OPTIONSTAB), 0);
+			ShowWindow(hwndDlg, SW_SHOW);
+			return TRUE;
+		}
+		case WM_NOTIFY:
+			switch (((LPNMHDR)lParam)->idFrom) {
+				case IDC_OPTIONSTAB:
+					switch (((LPNMHDR)lParam)->code) {
+						case TCN_SELCHANGING: {
+							TCITEM tci;
+							tci.mask = TCIF_PARAM;
+
+							TabCtrl_GetItem(GetDlgItem(hwndDlg, IDC_OPTIONSTAB), TabCtrl_GetCurSel(GetDlgItem(hwndDlg, IDC_OPTIONSTAB)), &tci);
+							ShowWindow((HWND)tci.lParam, SW_HIDE);
+						}
+						break;
+						case TCN_SELCHANGE: {
+							TCITEM tci;
+							tci.mask = TCIF_PARAM;
+
+							TabCtrl_GetItem(GetDlgItem(hwndDlg, IDC_OPTIONSTAB), TabCtrl_GetCurSel(GetDlgItem(hwndDlg, IDC_OPTIONSTAB)), &tci);
+							ShowWindow((HWND)tci.lParam, SW_SHOW);
+						}
+						break;
+					}
+					break;
+			}
+			break;
+		case WM_COMMAND: {
+			switch(LOWORD(wParam)) {
+				case IDOK: {
+					TCITEM	tci;
+					int		i, count;
+					DWORD	dwActionToTake = 0;			// child pages request which action to take
+					HWND	hwnd = WindowList_Find(hMessageWindowList, hContact);
+
+					tci.mask = TCIF_PARAM;
+					
+					count = TabCtrl_GetItemCount(GetDlgItem(hwndDlg, IDC_OPTIONSTAB));
+					for (i = 0;i < count;i++) {
+						TabCtrl_GetItem(GetDlgItem(hwndDlg, IDC_OPTIONSTAB), i, &tci);
+						SendMessage((HWND)tci.lParam, WM_COMMAND, WM_USER + 100, (LPARAM)&dwActionToTake);
+					}
+					if(hwnd) {
+						struct		MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwnd, GWL_USERDATA);
+						unsigned	int uLogViewer;
+
+						if(dat) {
+							DWORD	dwNewFlags = 0, dwOldFlags = (dat->dwFlags & MWF_LOG_ALL);
+
+							SetDialogToType(hwnd);
+							if(dwActionToTake & UPREF_ACTION_SWITCHLOGVIEWER) {
+								unsigned int mode = GetIEViewMode(hwndDlg, dat);
+								SwitchMessageLog(hwnd, dat, mode);
+							}
+
+							if(DBGetContactSettingByte(hContact, SRMSGMOD_T, "mwoverride", 0))
+								dwNewFlags = DBGetContactSettingDword(hContact, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT) & MWF_LOG_ALL;
+							else {
+								if(dat->dwFlags & MWF_SHOW_PRIVATETHEME)
+									dwNewFlags = dat->theme.dwFlags & MWF_LOG_ALL;
+								else
+									dwNewFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT) & MWF_LOG_ALL;
+							}
+							if(dwNewFlags != dwOldFlags) {
+								dat->dwFlags &= ~MWF_LOG_ALL;
+								dat->dwFlags |= dwNewFlags;
+								SendMessage(hwnd, DM_OPTIONSAPPLIED, 0, 0);
+								SendMessage(hwnd, DM_DEFERREDREMAKELOG, (WPARAM)hwnd, 0);
+							}
+						}
+					}
+					DestroyWindow(hwndDlg);
+					break;
+				}
+				case IDCANCEL:
+					DestroyWindow(hwndDlg);
+					break;
+			}
+			break;
+		}
 		case WM_DESTROY:
 			WindowList_Remove(hUserPrefsWindowList, hwndDlg);
 			break;
 	}
 	return FALSE;
 }
-
