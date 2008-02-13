@@ -314,8 +314,8 @@ int MsnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 		if (MyOptions.SlowSend && strcmp(cws->szSetting, "MessageTimeout") == 0 &&
 		   (strcmp(cws->szModule, "SRMM") == 0 || strcmp(cws->szModule, "SRMsg") == 0))
 		{ 
-			if (cws->value.dVal < 30000)
-				MessageBox(NULL, TranslateT("MSN Protocol requires messages timeout to be not less then 30 sec. Correct the timeout value."), TranslateT("MSN"), MB_OK|MB_ICONINFORMATION);
+			if (cws->value.dVal < 60000)
+				MessageBox(NULL, TranslateT("MSN Protocol requires messages timeout to be not less then 60 sec. Correct the timeout value."), TranslateT("MSN"), MB_OK|MB_ICONINFORMATION);
 		}
 		return 0;
 	}

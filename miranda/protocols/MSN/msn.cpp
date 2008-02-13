@@ -349,10 +349,10 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 
 	if (MyOptions.SlowSend)
 	{
-		if (DBGetContactSettingDword(NULL, "SRMsg", "MessageTimeout", 10000) < 30000) 
-			DBWriteContactSettingDword(NULL, "SRMsg", "MessageTimeout", 30000);
-		if (DBGetContactSettingDword(NULL, "SRMM", "MessageTimeout", 10000) < 30000) 
-			DBWriteContactSettingDword(NULL, "SRMM", "MessageTimeout", 30000);
+		if (DBGetContactSettingDword(NULL, "SRMsg", "MessageTimeout", 10000) < 60000) 
+			DBWriteContactSettingDword(NULL, "SRMsg", "MessageTimeout", 60000);
+		if (DBGetContactSettingDword(NULL, "SRMM", "MessageTimeout", 10000) < 60000) 
+			DBWriteContactSettingDword(NULL, "SRMM", "MessageTimeout", 60000);
 	}
 
 	mailsoundname = ( char* )mir_alloc( 64 );
