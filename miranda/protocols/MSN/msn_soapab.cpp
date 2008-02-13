@@ -829,7 +829,7 @@ void MSN_ABUpdateAttr(const char* szCntId, const char* szAttr, const char* szVal
 	node = ezxml_add_child(anot, "Name", 0);
 	ezxml_set_txt(node, szAttr);
 	node = ezxml_add_child(anot, "Value", 0);
-	ezxml_set_txt(node, szValue);
+	if (szValue != NULL) ezxml_set_txt(node, szValue);
 
 	node = ezxml_add_child(cont, "propertiesChanged", 0);
 	ezxml_set_txt(node, "Annotation");
