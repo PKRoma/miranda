@@ -30,6 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 typedef int (__cdecl * Miranda_Plugin_Load) ( PLUGINLINK * );
 typedef int (__cdecl * Miranda_Plugin_Unload) ( void );
 // version control
+typedef PLUGININFO * (__cdecl * Miranda_Plugin_Info) ( DWORD mirandaVersion );
 typedef PLUGININFOEX * (__cdecl * Miranda_Plugin_InfoEx) ( DWORD mirandaVersion );
 // prototype for databases
 typedef DATABASELINK * (__cdecl * Database_Plugin_Info) ( void * reserved );
@@ -42,6 +43,7 @@ typedef struct { // can all be NULL
 	HINSTANCE hInst;
 	Miranda_Plugin_Load Load;
 	Miranda_Plugin_Unload Unload;
+	Miranda_Plugin_Info Info;
 	Miranda_Plugin_InfoEx InfoEx;
 	Miranda_Plugin_Interfaces Interfaces;
 	Database_Plugin_Info DbInfo;
@@ -173,14 +175,34 @@ static int isPluginBanned(MUUID u1) {
 #define CHECKAPI_DB 	 1
 #define CHECKAPI_CLIST   2
 
+/*
+ * historyeditor added by nightwish - plugin is problematic and can ruin database as it does not understand UTF-8 message
+ * storage
+ */
+     
+static char* modulesToSkip[] = { "autoloadavatars.dll", "multiwindow.dll", "fontservice.dll", "icolib.dll", "historyeditor.dll" };
+// The following plugins will be checked for a valid MUUID or they will not be loaded
+static char* expiredModulesToSkip[] = { "scriver.dll", "nconvers.dll", "tabsrmm.dll", "nhistory.dll", "historypp.dll", "help.dll", "loadavatars.dll",
+                                        "tabsrmm_unicode.dll", "clist_nicer_plus.dll", "changeinfo.dll", "png2dib.dll", "dbx_mmap.dll", "dbx_3x.dll",
+                                        "sramm.dll", "srmm_mod.dll", "srmm_mod (no Unicode).dll", "singlemodeSRMM.dll", "msg_export.dll" };
+
 static int checkPI( BASIC_PLUGIN_INFO* bpi, PLUGININFOEX* pi )
 {
+	int bHasValidInfo = FALSE;
 
 	if ( pi == NULL )
 		return FALSE;
 
-	if ( pi->cbSize == sizeof(PLUGININFOEX))
-		if ( !validInterfaceList(bpi->Interfaces) || isPluginBanned( pi->uuid ))
+	if ( bpi->InfoEx ) {
+		if ( pi->cbSize == sizeof(PLUGININFOEX))
+			if ( !validInterfaceList(bpi->Interfaces) || isPluginBanned( pi->uuid ))
+				return FALSE;
+
+		bHasValidInfo = TRUE;
+	}
+	
+	if ( !bHasValidInfo )
+		if ( bpi->Info && pi->cbSize != sizeof(PLUGININFO))
 			return FALSE;
 
 	if ( pi->shortName == NULL || pi->description == NULL || pi->author == NULL ||
@@ -198,18 +220,44 @@ static int checkPI( BASIC_PLUGIN_INFO* bpi, PLUGININFOEX* pi )
 static int checkAPI(char* plugin, BASIC_PLUGIN_INFO* bpi, DWORD mirandaVersion, int checkTypeAPI, int* exports)
 {
 	HINSTANCE h = NULL;
+	// this is evil but these plugins are buggy/old and people are blaming Miranda
+	// fontservice plugin is built into the core now
+	{
+		char * p = strrchr(plugin,'\\');
+		if ( p != NULL && ++p ) {
+			int i;
+			for ( i = 0; i < SIZEOF(modulesToSkip); i++ )
+				if ( lstrcmpiA( p, modulesToSkip[i] ) == 0 )
+					return 0;
+	}	}
 
 	h = LoadLibraryA(plugin);
 	if ( h == NULL ) return 0;
 	// loaded, check for exports
 	bpi->Load = (Miranda_Plugin_Load) GetProcAddress(h, "Load");
 	bpi->Unload = (Miranda_Plugin_Unload) GetProcAddress(h, "Unload");
+	bpi->Info = (Miranda_Plugin_Info) GetProcAddress(h, "MirandaPluginInfo");
 	bpi->InfoEx = (Miranda_Plugin_InfoEx) GetProcAddress(h, "MirandaPluginInfoEx");
 	bpi->Interfaces = (Miranda_Plugin_Interfaces) GetProcAddress(h, "MirandaPluginInterfaces");
 
 	// if they were present
-	if ( bpi->Load && bpi->Unload && bpi->InfoEx && bpi->Interfaces ) {
-		PLUGININFOEX* pi = bpi->InfoEx(mirandaVersion);
+	if ( bpi->Load && bpi->Unload && ( bpi->Info || ( bpi->InfoEx && bpi->Interfaces ))) {
+		PLUGININFOEX* pi = 0;
+		if (bpi->InfoEx)
+			pi = bpi->InfoEx(mirandaVersion);
+		else
+			pi = (PLUGININFOEX*)bpi->Info(mirandaVersion);
+		{
+			// similar to the above hack but these plugins are checked for a valid interface first (in case there are updates to the plugin later)
+			char* p = strrchr(plugin,'\\');
+			if ( p != NULL && ++p ) {
+				if ( !bpi->InfoEx || pi->cbSize != sizeof(PLUGININFOEX)) {
+					int i;
+					for ( i = 0; i < SIZEOF(expiredModulesToSkip); i++ ) {
+						if ( lstrcmpiA( p, expiredModulesToSkip[i] ) == 0 ) {
+							FreeLibrary(h);
+							return 0;
+		}	}	}	}	}
 
 		if ( checkPI( bpi, pi )) {
 			bpi->pluginInfo = pi;
