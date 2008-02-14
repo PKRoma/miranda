@@ -599,6 +599,8 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	//---- jabber_opt.cpp ----------------------------------------------------------------
 
+	CJabberDlgBase::CreateParam		OptCreateAccount;
+
 	int    __cdecl OnMenuHandleRosterControl( WPARAM wParam, LPARAM lParam );
 
 	void   _RosterExportToFile(HWND hwndDlg);

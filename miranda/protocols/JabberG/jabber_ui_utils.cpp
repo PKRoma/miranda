@@ -29,20 +29,51 @@ Last change by : $Author$
 
 #include "jabber.h"
 
-CJabberDlgBase::CJabberDlgBase(CJabberProto *proto, int idDialog, HWND hwndParent): m_controls(1, CJabberCtrlBase::cmp)
+bool CJabberCtrlData::Initialize(CJabberDlgBase *wnd, int idCtrl, CJabberDbLink *dbLink, CJabberCallback<CJabberCtrlData> onChange)
+{
+	if (m_wnd) return false;
+
+	m_wnd = wnd;
+	m_idCtrl = idCtrl;
+	m_dbLink = dbLink;
+	OnChange = onChange;
+	if (m_wnd) m_wnd->AddControl(this);
+	return true;
+}
+
+void CJabberCtrlData::OnInit()
+{
+	m_hwnd = (m_idCtrl && m_wnd && m_wnd->GetHwnd()) ? GetDlgItem(m_wnd->GetHwnd(), m_idCtrl) : NULL;
+	m_changed = false;
+}
+
+void CJabberCtrlData::NotifyChange()
+{
+	if (!m_wnd || m_wnd->IsInitialized()) m_changed = true;
+	if (m_wnd) m_wnd->OnChange(this);
+	OnChange(this);
+}
+
+
+CJabberDlgBase::CJabberDlgBase(CJabberProto *proto, int idDialog, HWND hwndParent): m_controls(1, CJabberCtrlBase::cmp), m_autocontrols(1, CJabberCtrlBase::cmp)
 {
 	m_proto = proto;
 	m_idDialog = idDialog;
 	m_hwndParent = hwndParent;
 	m_hwnd = NULL;
 	m_isModal = false;
+	m_initialized = false;
 }
 
 CJabberDlgBase::~CJabberDlgBase()
 {
-	for (int i = 0; i < m_controls.getCount(); ++i)
-		delete m_controls[i];
+	// remove handlers
 	m_controls.destroy();
+
+	// destroy automatic handlers
+	for (int i = 0; i < m_controls.getCount(); ++i)
+		delete m_autocontrols[i];
+	m_autocontrols.destroy();
 
 	if (m_hwnd) DestroyWindow(m_hwnd);
 }
@@ -69,9 +100,39 @@ BOOL CJabberDlgBase::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 		case WM_INITDIALOG:
 		{
+			m_initialized = false;
 			TranslateDialogDefault(m_hwnd);
+			NotifyControls(&CJabberCtrlBase::OnInit);
 			OnInitDialog();
+			m_initialized = true;
 			return TRUE;
+		}
+
+		case WM_MEASUREITEM:
+		{
+			MEASUREITEMSTRUCT *param = (MEASUREITEMSTRUCT *)lParam;
+			if (param && param->CtlID)
+				if (CJabberCtrlBase *ctrl = FindControl(param->CtlID))
+					return ctrl->OnMesaureItem(param);
+			return FALSE;
+		}
+
+		case WM_DRAWITEM:
+		{
+			DRAWITEMSTRUCT *param = (DRAWITEMSTRUCT *)lParam;
+			if (param && param->CtlID)
+				if (CJabberCtrlBase *ctrl = FindControl(param->CtlID))
+					return ctrl->OnDrawItem(param);
+			return FALSE;
+		}
+
+		case WM_DELETEITEM:
+		{
+			DELETEITEMSTRUCT *param = (DELETEITEMSTRUCT *)lParam;
+			if (param && param->CtlID)
+				if (CJabberCtrlBase *ctrl = FindControl(param->CtlID))
+					return ctrl->OnDeleteItem(param);
+			return FALSE;
 		}
 
 		case WM_COMMAND:
@@ -79,8 +140,7 @@ BOOL CJabberDlgBase::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			HWND hwndCtrl = (HWND)lParam;
 			WORD idCtrl = LOWORD(wParam);
 			WORD idCode = HIWORD(wParam);
-			CJabberCtrlBase search; search.m_idCtrl = idCtrl;
-			if (CJabberCtrlBase *ctrl = m_controls.find(&search))
+			if (CJabberCtrlBase *ctrl = FindControl(idCtrl))
 				return ctrl->OnCommand(hwndCtrl, idCtrl, idCode);
 			return FALSE;
 		}
@@ -89,8 +149,22 @@ BOOL CJabberDlgBase::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			int idCtrl = wParam;
 			NMHDR *pnmh = (NMHDR *)lParam;
-			CJabberCtrlBase search; search.m_idCtrl = pnmh->idFrom;
-			if (CJabberCtrlBase *ctrl = m_controls.find(&search))
+
+			if (pnmh->idFrom == 0)
+			{
+				if (pnmh->code == PSN_APPLY)
+				{
+					NotifyControls(&CJabberCtrlBase::OnApply);
+					OnApply();
+				}
+				else if (pnmh->code == PSN_RESET)
+				{
+					NotifyControls(&CJabberCtrlBase::OnReset);
+					OnReset();
+				}
+			}
+
+			if (CJabberCtrlBase *ctrl = FindControl(idCtrl))
 				return ctrl->OnNotify(idCtrl, pnmh);
 			return FALSE;
 		}
@@ -123,6 +197,8 @@ BOOL CJabberDlgBase::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		case WM_DESTROY:
 		{
 			OnDestroy();
+			NotifyControls(&CJabberCtrlBase::OnDestroy);
+
 			SetWindowLong(m_hwnd, GWL_USERDATA, 0);
 			m_hwnd = NULL;
 			if (m_isModal)
@@ -200,18 +276,16 @@ void JabberUIShowControls(HWND hwndDlg, int *idList, int nCmdShow)
 }
 
 
-/////////////////////////////////////////////////////////////////
-// Test class
-class CJabberDlgTest: public CJabberDlgBase
+void JabberUISetupControls(CJabberDlgBase *wnd, TJabberCtrlInfo *controls, int count)
 {
-public:
-	typedef CJabberDlgBase BaseDlg;
-
-	BOOL OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode) { return 0; }
-	BOOL OnNotify(int idCtrl, NMHDR *pnmh) { return 0; }
-
-	CJabberDlgTest(): CJabberDlgBase(NULL, 0, NULL)
+	for (int i = 0; i < count; ++i)
 	{
-		SetControlHandler(0, &CJabberDlgTest::OnCommand, &CJabberDlgTest::OnNotify);
+		CJabberDbLink *dbLink = NULL;
+		if (controls[i].dbType == DBVT_TCHAR)
+			dbLink = new CJabberDbLink(wnd->GetProto()->m_szProtoName, controls[i].szSetting, controls[i].dbType, controls[i].szValue);
+		else if (controls[i].dbType != DBVT_DELETED)
+			dbLink = new CJabberDbLink(wnd->GetProto()->m_szProtoName, controls[i].szSetting, controls[i].dbType, controls[i].iValue);
+
+		controls[i].ctrl->Initialize(wnd, controls[i].idCtrl, dbLink );
 	}
-};
+}
