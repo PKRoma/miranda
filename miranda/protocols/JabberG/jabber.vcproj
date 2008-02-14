@@ -987,9 +987,6 @@
 				RelativePath=".\jabber_treelist.cpp">
 			</File>
 			<File
-				RelativePath=".\jabber_ui_utils.cpp">
-			</File>
-			<File
 				RelativePath="jabber_userinfo.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -1160,6 +1157,9 @@
 			<File
 				RelativePath=".\jabber_zstream.cpp">
 			</File>
+			<File
+				RelativePath=".\ui_utils.cpp">
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -1207,9 +1207,6 @@
 				RelativePath="jabber_ssl.h">
 			</File>
 			<File
-				RelativePath=".\jabber_ui_utils.h">
-			</File>
-			<File
 				RelativePath="jabber_xml.h">
 			</File>
 			<File
@@ -1217,6 +1214,9 @@
 			</File>
 			<File
 				RelativePath=".\resource.h">
+			</File>
+			<File
+				RelativePath=".\ui_utils.h">
 			</File>
 			<File
 				RelativePath=".\version.h">

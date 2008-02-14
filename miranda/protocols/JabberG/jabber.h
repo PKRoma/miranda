@@ -74,7 +74,10 @@ Last change by : $Author$
 #include "jabber_xml.h"
 #include "jabber_byte.h"
 #include "jabber_ibb.h"
-#include "jabber_ui_utils.h"
+#include "ui_utils.h"
+
+struct CJabberProto;
+typedef CProtoDlgBase<CJabberProto> CJabberDlgBase;
 
 #if !defined(OPENFILENAME_SIZE_VERSION_400)
 	#define OPENFILENAME_SIZE_VERSION_400 sizeof(OPENFILENAME)

@@ -297,12 +297,12 @@ static BOOL CALLBACK JabberRegisterDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberOptDlgProc - main options dialog procedure
 
-class CJabberCtrlEditJid: public CJabberCtrlEdit
+class CCtrlEditJid: public CCtrlEdit
 {
 public:
 	void OnInit()
 	{
-		CJabberCtrlEdit::OnInit();
+		CCtrlEdit::OnInit();
 		Subclass();
 	}
 
@@ -319,34 +319,34 @@ protected:
 				return 0;
 			}
 		}
-		return CJabberCtrlEdit::CustomWndProc(msg, wParam, lParam);
+		return CCtrlEdit::CustomWndProc(msg, wParam, lParam);
 	}
 };
 
-class CJabberDlgOptAccount: public CJabberDlgBase
+class CDlgOptAccount: public CJabberDlgBase
 {
-	CJabberCtrlEditJid m_txtUsername;
-	CJabberCtrlEdit    m_txtPassword;
-	CJabberCtrlEdit    m_txtPriority;
-	CJabberCtrlCheck   m_chkSavePassword;
-	CJabberCtrlCombo   m_cbResource;
-	CJabberCtrlCheck   m_chkUseHostnameAsResource;
-	CJabberCtrlCombo   m_cbServer;
-	CJabberCtrlEdit    m_txtPort;
-	CJabberCtrlCheck   m_chkUseSsl;
-	CJabberCtrlCheck   m_chkUseTls;
-	CJabberCtrlCheck   m_chkManualHost;
-	CJabberCtrlEdit    m_txtManualHost;
-	CJabberCtrlEdit    m_txtManualPort;
-	CJabberCtrlCheck   m_chkKeepAlive;
-	CJabberCtrlCheck   m_chkAutoDeleteContacts;
-	CJabberCtrlEdit    m_txtUserDirectory;
-	CJabberCtrlCombo   m_cbLocale;
+	CCtrlEditJid m_txtUsername;
+	CCtrlEdit    m_txtPassword;
+	CCtrlEdit    m_txtPriority;
+	CCtrlCheck   m_chkSavePassword;
+	CCtrlCombo   m_cbResource;
+	CCtrlCheck   m_chkUseHostnameAsResource;
+	CCtrlCombo   m_cbServer;
+	CCtrlEdit    m_txtPort;
+	CCtrlCheck   m_chkUseSsl;
+	CCtrlCheck   m_chkUseTls;
+	CCtrlCheck   m_chkManualHost;
+	CCtrlEdit    m_txtManualHost;
+	CCtrlEdit    m_txtManualPort;
+	CCtrlCheck   m_chkKeepAlive;
+	CCtrlCheck   m_chkAutoDeleteContacts;
+	CCtrlEdit    m_txtUserDirectory;
+	CCtrlCombo   m_cbLocale;
 
 public:
-	CJabberDlgOptAccount(CJabberProto *proto): CJabberDlgBase(proto, IDD_OPT_JABBER, NULL)
+	CDlgOptAccount(CJabberProto *proto): CJabberDlgBase(proto, IDD_OPT_JABBER, NULL)
 	{
-		TJabberCtrlInfo controls[] =
+		TCtrlInfo controls[] =
 		{
 			{ &m_txtUsername,				IDC_EDIT_USERNAME,			DBVT_TCHAR,	"LoginName",			_T(""),	0 },
 			{ &m_txtPassword,				IDC_EDIT_PASSWORD },
@@ -367,22 +367,22 @@ public:
 			{ &m_cbLocale,					IDC_MSGLANG },
 		};
 
-		JabberUISetupControls(this, controls, SIZEOF(controls));
+		UISetupControls<CJabberProto>(this, controls, SIZEOF(controls));
 
 		// Bind events
-		m_cbServer.OnDropdown = JCallback(this, &CJabberDlgOptAccount::cbServer_OnDropdown);
-		m_chkManualHost.OnChange = JCallback(this, &CJabberDlgOptAccount::chkManualHost_OnChange);
-		m_chkUseHostnameAsResource.OnChange = JCallback(this, &CJabberDlgOptAccount::chkUseHostnameAsResource_OnChange);
-		m_chkUseSsl.OnChange = JCallback(this, &CJabberDlgOptAccount::chkUseSsl_OnChange);
+		m_cbServer.OnDropdown = JCallback(this, &CDlgOptAccount::cbServer_OnDropdown);
+		m_chkManualHost.OnChange = JCallback(this, &CDlgOptAccount::chkManualHost_OnChange);
+		m_chkUseHostnameAsResource.OnChange = JCallback(this, &CDlgOptAccount::chkUseHostnameAsResource_OnChange);
+		m_chkUseSsl.OnChange = JCallback(this, &CDlgOptAccount::chkUseSsl_OnChange);
 
 		// Custom controls
-		SetControlHandler(IDC_LINK_PUBLIC_SERVER, &CJabberDlgOptAccount::OnCommand_PublicServers);
-		SetControlHandler(IDC_DOWNLOAD_OPENSSL, &CJabberDlgOptAccount::OnCommand_DownloadOpenSsl);
-		SetControlHandler(IDC_BUTTON_REGISTER, &CJabberDlgOptAccount::OnCommand_ButtonRegister);
-		SetControlHandler(IDC_UNREGISTER, &CJabberDlgOptAccount::OnCommand_Unregister);
+		SetControlHandler(IDC_LINK_PUBLIC_SERVER, &CDlgOptAccount::OnCommand_PublicServers);
+		SetControlHandler(IDC_DOWNLOAD_OPENSSL, &CDlgOptAccount::OnCommand_DownloadOpenSsl);
+		SetControlHandler(IDC_BUTTON_REGISTER, &CDlgOptAccount::OnCommand_ButtonRegister);
+		SetControlHandler(IDC_UNREGISTER, &CDlgOptAccount::OnCommand_Unregister);
 	}
 
-	static CJabberDlgBase *Create(void *param) { return new CJabberDlgOptAccount((CJabberProto *)param); }
+	static CDlgBase *Create(void *param) { return new CDlgOptAccount((CJabberProto *)param); }
 
 protected:
 	bool OnInitDialog()
@@ -497,7 +497,7 @@ protected:
 		}
 	}
 
-	void OnChange(CJabberCtrlBase *ctrl)
+	void OnChange(CCtrlBase *ctrl)
 	{
 		if (m_initialized)
 		{
@@ -514,7 +514,7 @@ protected:
 			RefreshServers((XmlNode *)lParam);
 			break;
 		}
-		return CJabberDlgBase::DlgProc(msg, wParam, lParam);
+		return CDlgBase::DlgProc(msg, wParam, lParam);
 	}
 
 private:
@@ -570,14 +570,14 @@ private:
 		return TRUE;
 	}
 
-	void __cdecl cbServer_OnDropdown(CJabberCtrlCombo *sender)
+	void __cdecl cbServer_OnDropdown(CCtrlCombo *sender)
 	{
 		if (!m_gotservers) mir_forkthread(QueryServerListThread, (void *)this);
 	}
 
-	void __cdecl chkManualHost_OnChange(CJabberCtrlData *sender)
+	void __cdecl chkManualHost_OnChange(CCtrlData *sender)
 	{
-		CJabberCtrlCheck *chk = (CJabberCtrlCheck *)sender;
+		CCtrlCheck *chk = (CCtrlCheck *)sender;
 
 		if (chk->GetState() == BST_CHECKED)
 		{
@@ -592,9 +592,9 @@ private:
 		}
 	}
 
-	void __cdecl chkUseHostnameAsResource_OnChange(CJabberCtrlData *sender)
+	void __cdecl chkUseHostnameAsResource_OnChange(CCtrlData *sender)
 	{
-		CJabberCtrlCheck *chk = (CJabberCtrlCheck *)sender;
+		CCtrlCheck *chk = (CCtrlCheck *)sender;
 
 		m_cbResource.Enable(chk->GetState() != BST_CHECKED);
 		if (chk->GetState() == BST_CHECKED)
@@ -606,7 +606,7 @@ private:
 		}
 	}
 
-	void __cdecl chkUseSsl_OnChange(CJabberCtrlData *sender)
+	void __cdecl chkUseSsl_OnChange(CCtrlData *sender)
 	{
 		if (m_chkManualHost.GetState() != BST_CHECKED)
 		{
@@ -681,7 +681,7 @@ private:
 
 	static void QueryServerListThread(void *arg)
 	{
-		CJabberDlgOptAccount *wnd = (CJabberDlgOptAccount *)arg;
+		CDlgOptAccount *wnd = (CDlgOptAccount *)arg;
 		HWND hwnd = wnd->GetHwnd();
 
 		NETLIBHTTPREQUEST request = {0};
@@ -1762,9 +1762,9 @@ int CJabberProto::OnOptionsInit( WPARAM wParam, LPARAM lParam )
 
 	odp.pszTab      = LPGEN("Account");
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_JABBER);
-	odp.pfnDlgProc  = CJabberDlgBase::DynamicDlgProc;
+	odp.pfnDlgProc  = CDlgBase::DynamicDlgProc;
 	odp.dwInitParam	= (LPARAM)&OptCreateAccount;
-	OptCreateAccount.create = CJabberDlgOptAccount::Create;
+	OptCreateAccount.create = CDlgOptAccount::Create;
 	OptCreateAccount.param = this;
 	JCallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
 

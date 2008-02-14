@@ -1308,10 +1308,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\jabber_ui_utils.cpp"
-				>
-			</File>
-			<File
 				RelativePath="jabber_userinfo.cpp"
 				>
 				<FileConfiguration
@@ -1529,6 +1525,10 @@
 				RelativePath=".\jabber_zstream.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\ui_utils.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -1608,6 +1608,10 @@
 			</File>
 			<File
 				RelativePath=".\resource.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ui_utils.h"
 				>
 			</File>
 			<File

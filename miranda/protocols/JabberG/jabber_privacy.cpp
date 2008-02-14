@@ -705,17 +705,17 @@ bool CJabberDlgPrivacyLists::OnInitDialog()
 		{IDC_BTN_SIMPLE,	_T("Simple mode"),		"group", 0,							true},
 		{IDC_BTN_ADVANCED,	_T("Advanced mode"),	"sd_view_list", 0,					true},
 	};
-	JabberUISetupMButtons(m_proto, m_hwnd, buttons, SIZEOF(buttons));
+	UISetupMButtons<CJabberProto>(m_proto, m_hwnd, buttons, SIZEOF(buttons));
 
 	if ( DBGetContactSettingByte(NULL, m_proto->m_szProtoName, "plistsWnd_simpleMode", 1))
 	{
-		JabberUIShowControls(m_hwnd, idSimpleControls, SW_SHOW);
-		JabberUIShowControls(m_hwnd, idAdvancedControls, SW_HIDE);
+		UIShowControls(m_hwnd, idSimpleControls, SW_SHOW);
+		UIShowControls(m_hwnd, idAdvancedControls, SW_HIDE);
 		CheckDlgButton(m_hwnd, IDC_BTN_SIMPLE, TRUE);
 	} else
 	{
-		JabberUIShowControls(m_hwnd, idSimpleControls, SW_HIDE);
-		JabberUIShowControls(m_hwnd, idAdvancedControls, SW_SHOW);
+		UIShowControls(m_hwnd, idSimpleControls, SW_HIDE);
+		UIShowControls(m_hwnd, idAdvancedControls, SW_SHOW);
 		CheckDlgButton(m_hwnd, IDC_BTN_ADVANCED, TRUE);
 	}
 
@@ -1438,14 +1438,14 @@ LRESULT CALLBACK CJabberDlgPrivacyLists::LstListsSubclassProc(HWND hwnd, UINT ms
 		case WM_SYSKEYDOWN:
 		{
 			if (wParam == VK_INSERT)
-				return JabberUIEmulateBtnClick(GetParent(hwnd), IDC_ADD_LIST);
+				return UIEmulateBtnClick(GetParent(hwnd), IDC_ADD_LIST);
 			if (wParam == VK_DELETE)
-				return JabberUIEmulateBtnClick(GetParent(hwnd), IDC_REMOVE_LIST);
+				return UIEmulateBtnClick(GetParent(hwnd), IDC_REMOVE_LIST);
 			if (wParam == VK_SPACE)
 			{
 				if (GetAsyncKeyState(VK_CONTROL))
-					return JabberUIEmulateBtnClick(GetParent(hwnd), IDC_SET_DEFAULT);
-				return JabberUIEmulateBtnClick(GetParent(hwnd), IDC_ACTIVATE);
+					return UIEmulateBtnClick(GetParent(hwnd), IDC_SET_DEFAULT);
+				return UIEmulateBtnClick(GetParent(hwnd), IDC_ACTIVATE);
 			}
 
 			break;
@@ -1463,15 +1463,15 @@ LRESULT CALLBACK CJabberDlgPrivacyLists::LstRulesSubclassProc(HWND hwnd, UINT ms
 		case WM_SYSKEYDOWN:
 		{
 			if (wParam == VK_INSERT)
-				return JabberUIEmulateBtnClick(GetParent(hwnd), IDC_ADD_RULE);
+				return UIEmulateBtnClick(GetParent(hwnd), IDC_ADD_RULE);
 			if (wParam == VK_DELETE)
-				return JabberUIEmulateBtnClick(GetParent(hwnd), IDC_REMOVE_RULE);
+				return UIEmulateBtnClick(GetParent(hwnd), IDC_REMOVE_RULE);
 			if ((wParam == VK_UP) && (lParam & (1UL << 29)))
-				return JabberUIEmulateBtnClick(GetParent(hwnd), IDC_UP_RULE);
+				return UIEmulateBtnClick(GetParent(hwnd), IDC_UP_RULE);
 			if ((wParam == VK_DOWN) && (lParam & (1UL << 29)))
-				return JabberUIEmulateBtnClick(GetParent(hwnd), IDC_DOWN_RULE);
+				return UIEmulateBtnClick(GetParent(hwnd), IDC_DOWN_RULE);
 			if (wParam == VK_F2)
-				return JabberUIEmulateBtnClick(GetParent(hwnd), IDC_EDIT_RULE);
+				return UIEmulateBtnClick(GetParent(hwnd), IDC_EDIT_RULE);
 
 			break;
 		}
@@ -1501,8 +1501,8 @@ BOOL CJabberDlgPrivacyLists::OnCommand_Simple(HWND hwndCtrl, WORD idCtrl, WORD i
 {
 	CheckDlgButton(m_hwnd, IDC_BTN_SIMPLE, TRUE);
 	CheckDlgButton(m_hwnd, IDC_BTN_ADVANCED, FALSE);
-	JabberUIShowControls(m_hwnd, idSimpleControls, SW_SHOW);
-	JabberUIShowControls(m_hwnd, idAdvancedControls, SW_HIDE);
+	UIShowControls(m_hwnd, idSimpleControls, SW_SHOW);
+	UIShowControls(m_hwnd, idAdvancedControls, SW_HIDE);
 	CListApplyList(GetDlgItem(m_hwnd, IDC_CLIST), GetSelectedList(m_hwnd));
 	return TRUE;
 }
@@ -1511,8 +1511,8 @@ BOOL CJabberDlgPrivacyLists::OnCommand_Advanced(HWND hwndCtrl, WORD idCtrl, WORD
 {
 	CheckDlgButton(m_hwnd, IDC_BTN_SIMPLE, FALSE);
 	CheckDlgButton(m_hwnd, IDC_BTN_ADVANCED, TRUE);
-	JabberUIShowControls(m_hwnd, idSimpleControls, SW_HIDE);
-	JabberUIShowControls(m_hwnd, idAdvancedControls, SW_SHOW);
+	UIShowControls(m_hwnd, idSimpleControls, SW_HIDE);
+	UIShowControls(m_hwnd, idAdvancedControls, SW_SHOW);
 	CListBuildList(GetDlgItem(m_hwnd, IDC_CLIST), GetSelectedList(m_hwnd));
 	PostMessage(m_hwnd, WM_COMMAND, MAKEWPARAM(IDC_LB_LISTS, LBN_SELCHANGE), 0);
 	return TRUE;

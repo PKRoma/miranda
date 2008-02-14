@@ -30,22 +30,22 @@ Last change by : $Author$
 #ifndef __jabber_ui_utils_h__
 #define __jabber_ui_utils_h__
 
-struct CJabberCallbackImp
+struct CCallbackImp
 {
 public:
-	__forceinline CJabberCallbackImp(): m_object(NULL), m_func(NULL) {}
+	__forceinline CCallbackImp(): m_object(NULL), m_func(NULL) {}
 
-	__forceinline CJabberCallbackImp(const CJabberCallbackImp &other): m_object(other.m_object), m_func(other.m_func) {}
-	__forceinline CJabberCallbackImp &operator=(const CJabberCallbackImp &other) { m_object = other.m_object; m_func = other.m_func; return *this; }
+	__forceinline CCallbackImp(const CCallbackImp &other): m_object(other.m_object), m_func(other.m_func) {}
+	__forceinline CCallbackImp &operator=(const CCallbackImp &other) { m_object = other.m_object; m_func = other.m_func; return *this; }
 
-	__forceinline bool operator==(const CJabberCallbackImp &other) const { return (m_object == other.m_object) && (m_func == other.m_func); }
-	__forceinline bool operator!=(const CJabberCallbackImp &other) const { return (m_object != other.m_object) || (m_func != other.m_func); }
+	__forceinline bool operator==(const CCallbackImp &other) const { return (m_object == other.m_object) && (m_func == other.m_func); }
+	__forceinline bool operator!=(const CCallbackImp &other) const { return (m_object != other.m_object) || (m_func != other.m_func); }
 
 	__forceinline bool CheckObject(void *object) const { return (object == m_object) ? true : false; }
 
 protected:
 	template<typename TClass, typename TArgument>
-	__forceinline CJabberCallbackImp(TClass *object, void (__cdecl TClass::*func)(TArgument *argument)): m_object(object), m_func(*(TFnCallback *)(void *)&func) {}
+	__forceinline CCallbackImp(TClass *object, void (__cdecl TClass::*func)(TArgument *argument)): m_object(object), m_func(*(TFnCallback *)(void *)&func) {}
 
 	__forceinline void Invoke(void *argument) const { if (m_func && m_object) m_func(m_object, argument); }
 
@@ -57,24 +57,24 @@ private:
 };
 
 template<typename TArgument>
-struct CJabberCallback: public CJabberCallbackImp
+struct CCallback: public CCallbackImp
 {
 public:
-	__forceinline CJabberCallback() {}
+	__forceinline CCallback() {}
 
 	template<typename TClass>
-	__forceinline CJabberCallback(TClass *object, void (__cdecl TClass::*func)(TArgument *argument)): CJabberCallbackImp(object, func) {}
+	__forceinline CCallback(TClass *object, void (__cdecl TClass::*func)(TArgument *argument)): CCallbackImp(object, func) {}
 
 	__forceinline void operator()(TArgument *argument) const { Invoke((void *)argument); }
 };
 
 template<typename TClass, typename TArgument>
-__forceinline CJabberCallback<TArgument> JCallback(TClass *object, void (__cdecl TClass::*func)(TArgument *argument))
-	{ return CJabberCallback<TArgument>(object, func); }
+__forceinline CCallback<TArgument> JCallback(TClass *object, void (__cdecl TClass::*func)(TArgument *argument))
+	{ return CCallback<TArgument>(object, func); }
 
-class CJabberDlgBase;
+class CDlgBase;
 
-class CJabberDbLink
+class CDbLink
 {
 private:
 	char *m_szModule;
@@ -87,7 +87,7 @@ private:
 	DBVARIANT dbv;
 
 public:
-	CJabberDbLink(char *szModule, char *szSetting, BYTE type, DWORD iValue)
+	CDbLink(char *szModule, char *szSetting, BYTE type, DWORD iValue)
 	{
 		m_szModule = mir_strdup(szModule);
 		m_szSetting = mir_strdup(szSetting);
@@ -96,7 +96,7 @@ public:
 		m_szDefault = 0;
 		dbv.type = DBVT_DELETED;
 	}
-	CJabberDbLink(char *szModule, char *szSetting, BYTE type, TCHAR *szValue)
+	CDbLink(char *szModule, char *szSetting, BYTE type, TCHAR *szValue)
 	{
 		m_szModule = mir_strdup(szModule);
 		m_szSetting = mir_strdup(szSetting);
@@ -104,7 +104,7 @@ public:
 		m_szDefault = mir_tstrdup(szValue);
 		dbv.type = DBVT_DELETED;
 	}
-	~CJabberDbLink()
+	~CDbLink()
 	{
 		mir_free(m_szModule);
 		mir_free(m_szSetting);
@@ -152,13 +152,13 @@ public:
 	}
 };
 
-class CJabberCtrlBase
+class CCtrlBase
 {
 public:
-	CJabberCtrlBase(CJabberDlgBase *wnd = NULL, int idCtrl = 0): m_wnd(wnd), m_idCtrl(idCtrl) {}
-	virtual ~CJabberCtrlBase() {}
+	CCtrlBase(CDlgBase *wnd = NULL, int idCtrl = 0): m_wnd(wnd), m_idCtrl(idCtrl) {}
+	virtual ~CCtrlBase() {}
 
-	inline CJabberDlgBase *GetParent() { return m_wnd; }
+	inline CDlgBase *GetParent() { return m_wnd; }
 
 	virtual BOOL OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode) { return FALSE; }
 	virtual BOOL OnNotify(int idCtrl, NMHDR *pnmh) { return FALSE; }
@@ -172,7 +172,7 @@ public:
 	virtual void OnReset() {}
 	virtual void OnDestroy() {}
 
-	static int cmp(const CJabberCtrlBase *c1, const CJabberCtrlBase *c2)
+	static int cmp(const CCtrlBase *c1, const CCtrlBase *c2)
 	{
 		if (c1->m_idCtrl < c2->m_idCtrl) return -1;
 		if (c1->m_idCtrl > c2->m_idCtrl) return +1;
@@ -181,16 +181,16 @@ public:
 
 protected:
 	int m_idCtrl;
-	CJabberDlgBase *m_wnd;
+	CDlgBase *m_wnd;
 };
 
-class CJabberCtrlData: public CJabberCtrlBase
+class CCtrlData: public CCtrlBase
 {
 public:
-	CJabberCtrlData(): m_dbLink(NULL), m_wndproc(0) {}
-	bool Initialize(CJabberDlgBase *wnd, int idCtrl, CJabberDbLink *dbLink = NULL, CJabberCallback<CJabberCtrlData> onChange = CJabberCallback<CJabberCtrlData>());
+	CCtrlData(): m_dbLink(NULL), m_wndproc(0) {}
+	bool Initialize(CDlgBase *wnd, int idCtrl, CDbLink *dbLink = NULL, CCallback<CCtrlData> onChange = CCallback<CCtrlData>());
 
-	virtual ~CJabberCtrlData()
+	virtual ~CCtrlData()
 	{
 		Unsubclass();
 		if (m_dbLink) delete m_dbLink;
@@ -259,11 +259,11 @@ public:
 	virtual void OnDestroy() { Unsubclass(); m_hwnd = 0; }
 
 	// Events
-	CJabberCallback<CJabberCtrlData> OnChange;
+	CCallback<CCtrlData> OnChange;
 
 protected:
 	HWND m_hwnd;
-	CJabberDbLink *m_dbLink;
+	CDbLink *m_dbLink;
 	bool m_changed;
 
 	void NotifyChange();
@@ -298,20 +298,20 @@ private:
 	WNDPROC m_wndproc;
 	static LRESULT CALLBACK GlobalSubclassWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
-		if (CJabberCtrlData *ctrl = (CJabberCtrlData *)GetWindowLong(hwnd, GWL_USERDATA))
+		if (CCtrlData *ctrl = (CCtrlData *)GetWindowLong(hwnd, GWL_USERDATA))
 			if (ctrl) return ctrl->CustomWndProc(msg, wParam, lParam);
 		return DefWindowProc(hwnd, msg, wParam, lParam);
 	}
 };
 
-class CJabberCtrlCheck: public CJabberCtrlData
+class CCtrlCheck: public CCtrlData
 {
 public:
-	CJabberCtrlCheck() {}
+	CCtrlCheck() {}
 	virtual BOOL OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode) { NotifyChange(); return TRUE; }
 	virtual void OnInit()
 	{
-		CJabberCtrlData::OnInit();
+		CCtrlData::OnInit();
 		OnReset();
 	}
 	virtual void OnApply()
@@ -327,10 +327,10 @@ public:
 	void SetState(int state) { SendMessage(m_hwnd, BM_SETCHECK, state, 0); }
 };
 
-class CJabberCtrlEdit: public CJabberCtrlData
+class CCtrlEdit: public CCtrlData
 {
 public:
-	CJabberCtrlEdit() {}
+	CCtrlEdit() {}
 	virtual BOOL OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 	{
 		if (idCode == EN_CHANGE)
@@ -339,7 +339,7 @@ public:
 	}
 	virtual void OnInit()
 	{
-		CJabberCtrlData::OnInit();
+		CCtrlData::OnInit();
 		OnReset();
 	}
 	virtual void OnApply()
@@ -365,7 +365,7 @@ public:
 	}
 };
 
-class CJabberCtrlListBox: public CJabberCtrlData
+class CCtrlListBox: public CCtrlData
 {
 public:
 	virtual void COMPILE_LOCK() = 0;
@@ -422,7 +422,7 @@ public:
 	void SetSel(int index, bool sel=true) { SendMessage(m_hwnd, LB_SETSEL, sel ? TRUE : FALSE, index); }
 };
 
-class CJabberCtrlCombo: public CJabberCtrlData
+class CCtrlCombo: public CCtrlData
 {
 public:
 	virtual BOOL OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode)
@@ -444,7 +444,7 @@ public:
 
 	virtual void OnInit()
 	{
-		CJabberCtrlData::OnInit();
+		CCtrlData::OnInit();
 		OnReset();
 	}
 	virtual void OnApply()
@@ -508,12 +508,12 @@ public:
 	void ShowDropdown(bool show = true) { SendMessage(m_hwnd, CB_SHOWDROPDOWN, show ? TRUE : FALSE, 0); }
 
 	// Events
-	CJabberCallback<CJabberCtrlCombo>	OnCloseup;
-	CJabberCallback<CJabberCtrlCombo>	OnDropdown;
+	CCallback<CCtrlCombo>	OnCloseup;
+	CCallback<CCtrlCombo>	OnDropdown;
 };
 
 template<typename TDlg>
-class CJabberCtrlCustom: public CJabberCtrlBase
+class CCtrlCustom: public CCtrlBase
 {
 private:
 	BOOL (TDlg::*m_pfnOnCommand)(HWND hwndCtrl, WORD idCtrl, WORD idCode);
@@ -523,12 +523,12 @@ private:
 	BOOL (TDlg::*m_pfnOnDeleteItem)(DELETEITEMSTRUCT *param);
 
 public:
-	CJabberCtrlCustom(TDlg *wnd, int idCtrl,
+	CCtrlCustom(TDlg *wnd, int idCtrl,
 		BOOL (TDlg::*pfnOnCommand)(HWND hwndCtrl, WORD idCtrl, WORD idCode),
 		BOOL (TDlg::*pfnOnNotify)(int idCtrl, NMHDR *pnmh),
 		BOOL (TDlg::*pfnOnMeasureItem)(MEASUREITEMSTRUCT *param) = NULL,
 		BOOL (TDlg::*pfnOnDrawItem)(DRAWITEMSTRUCT *param) = NULL,
-		BOOL (TDlg::*pfnOnDeleteItem)(DELETEITEMSTRUCT *param) = NULL): CJabberCtrlBase(wnd, idCtrl)
+		BOOL (TDlg::*pfnOnDeleteItem)(DELETEITEMSTRUCT *param) = NULL): CCtrlBase(wnd, idCtrl)
 	{
 		m_pfnOnCommand		= pfnOnCommand;
 		m_pfnOnNotify		= pfnOnNotify;
@@ -546,7 +546,7 @@ public:
 		return (m_wnd && m_pfnOnNotify) ? ((((TDlg *)m_wnd)->*m_pfnOnNotify)(idCtrl, pnmh)) : FALSE;
 	}
 
-	virtual BOOL OnMesaureItem(MEASUREITEMSTRUCT *param)
+	virtual BOOL OnMeasureItem(MEASUREITEMSTRUCT *param)
 	{
 		return (m_wnd && m_pfnOnMeasureItem) ? ((((TDlg *)m_wnd)->*m_pfnOnMeasureItem)(param)) : FALSE;
 	}
@@ -560,19 +560,20 @@ public:
 	}
 };
 
+/////////////////////////////////////////////////////////////////////////////////////////
 // Base dialog class
-class CJabberDlgBase
+
+class CDlgBase
 {
-	friend class CJabberCtrlData;
+	friend class CCtrlData;
 
 public:
-	CJabberDlgBase(CJabberProto *proto, int idDialog, HWND hwndParent);
-	virtual ~CJabberDlgBase();
+	CDlgBase(int idDialog, HWND hwndParent);
+	virtual ~CDlgBase();
 
 	// general utilities
 	void Show();
 	int DoModal();
-	CJabberProto *GetProto() { return m_proto; }
 	inline HWND GetHwnd() const { return m_hwnd; }
 	bool IsInitialized() const { return m_initialized; }
 	inline void Close() { SendMessage(m_hwnd, WM_CLOSE, 0, 0); }
@@ -585,7 +586,7 @@ public:
 	// dynamic creation support (mainly to avoid leaks in options)
 	struct CreateParam
 	{
-		CJabberDlgBase *(*create)(void *param);
+		CDlgBase *(*create)(void *param);
 		void *param;
 	};
 	static BOOL CALLBACK DynamicDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -593,7 +594,7 @@ public:
 		if (msg == WM_INITDIALOG)
 		{
 			CreateParam *param = (CreateParam *)lParam;
-			CJabberDlgBase *wnd = param->create(param->param);
+			CDlgBase *wnd = param->create(param->param);
 			SetWindowLong(hwnd, DWL_DLGPROC, (LONG)GlobalDlgProc);
 			return GlobalDlgProc(hwnd, msg, wParam, (LPARAM)wnd);
 		}
@@ -602,13 +603,12 @@ public:
 	}
 
 protected:
-	CJabberProto	*m_proto;
-	HWND			m_hwnd;
-	HWND			m_hwndParent;
-	int				m_idDialog;
-	MSG				m_msg;
-	bool			m_isModal;
-	bool			m_initialized;
+	HWND    m_hwnd;
+	HWND    m_hwndParent;
+	int     m_idDialog;
+	MSG     m_msg;
+	bool    m_isModal;
+	bool    m_initialized;
 
 	// override this handlers to provide custom functionality
 	// general messages
@@ -620,25 +620,25 @@ protected:
 	virtual int Resizer(UTILRESIZECONTROL *urc);
 	virtual void OnApply() {}
 	virtual void OnReset() {}
-	virtual void OnChange(CJabberCtrlBase *ctrl) {}
+	virtual void OnChange(CCtrlBase *ctrl) {}
 
 	// main dialog procedure
 	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
 
 	// resister controls
-	inline void AddControl(CJabberCtrlBase *ctrl) { m_controls.insert(ctrl); }
-	inline void ManageControl(CJabberCtrlBase *ctrl) { AddControl(ctrl); m_autocontrols.insert(ctrl); }
+	inline void AddControl(CCtrlBase *ctrl) { m_controls.insert(ctrl); }
+	inline void ManageControl(CCtrlBase *ctrl) { AddControl(ctrl); m_autocontrols.insert(ctrl); }
 
 	// register handlers for different controls
 	template<typename TDlg>
 	inline void SetControlHandler(int idCtrl,
 			BOOL (TDlg::*pfnOnCommand)(HWND hwndCtrl, WORD idCtrl, WORD idCode))
-			{ ManageControl(new CJabberCtrlCustom<TDlg>((TDlg *)this, idCtrl, pfnOnCommand, NULL)); }
+			{ ManageControl(new CCtrlCustom<TDlg>((TDlg *)this, idCtrl, pfnOnCommand, NULL)); }
 
 	template<typename TDlg>
 	inline void SetControlHandler(int idCtrl,
 			BOOL (TDlg::*pfnOnNotify)(int idCtrl, NMHDR *pnmh))
-			{ ManageControl(new CJabberCtrlCustom<TDlg>((TDlg *)this, idCtrl, NULL, pfnOnNotify)); }
+			{ ManageControl(new CCtrlCustom<TDlg>((TDlg *)this, idCtrl, NULL, pfnOnNotify)); }
 
 	template<typename TDlg>
 	inline void SetControlHandler(int idCtrl,
@@ -647,26 +647,42 @@ protected:
 			BOOL (TDlg::*pfnOnMeasureItem)(MEASUREITEMSTRUCT *param) = NULL,
 			BOOL (TDlg::*pfnOnDrawItem)(DRAWITEMSTRUCT *param) = NULL,
 			BOOL (TDlg::*pfnOnDeleteItem)(DELETEITEMSTRUCT *param) = NULL)
-			{ ManageControl(new CJabberCtrlCustom<TDlg>((TDlg *)this, idCtrl, pfnOnCommand, pfnOnNotify, pfnOnMeasureItem, pfnOnDrawItem, pfnOnDeleteItem)); }
+			{ ManageControl(new CCtrlCustom<TDlg>((TDlg *)this, idCtrl, pfnOnCommand, pfnOnNotify, pfnOnMeasureItem, pfnOnDrawItem, pfnOnDeleteItem)); }
 
 private:
-	LIST<CJabberCtrlBase> m_controls;
-	LIST<CJabberCtrlBase> m_autocontrols; // this controls will be automatically destroyed
+	LIST<CCtrlBase> m_controls;
+	LIST<CCtrlBase> m_autocontrols; // this controls will be automatically destroyed
 
-	inline void NotifyControls(void (CJabberCtrlBase::*fn)())
+	inline void NotifyControls(void (CCtrlBase::*fn)())
 	{
 		for (int i = 0; i < m_controls.getCount(); ++i)
 			(m_controls[i]->*fn)();
 	}
 
-	inline CJabberCtrlBase *FindControl(int idCtrl)
+	inline CCtrlBase *FindControl(int idCtrl)
 	{
-		CJabberCtrlBase search(NULL, idCtrl);
+		CCtrlBase search(NULL, idCtrl);
 		return m_controls.find(&search);
 	}
 
 	static BOOL CALLBACK GlobalDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	static int GlobalDlgResizer(HWND hwnd, LPARAM lParam, UTILRESIZECONTROL *urc);
+};
+
+template<typename TProto>
+class CProtoDlgBase : public CDlgBase
+{
+public:
+	__inline CProtoDlgBase<TProto>(TProto *proto, int idDialog, HWND parent ) :
+		CDlgBase( idDialog, parent ),
+		m_proto( proto )
+	{
+	}
+
+	__inline TProto *GetProto() { return m_proto; }
+
+protected:
+	TProto* m_proto;
 };
 
 // General utilities
@@ -679,13 +695,28 @@ struct TMButtonInfo
 	bool	bIsPush;
 };
 
-void JabberUISetupMButtons(CJabberProto *proto, HWND hwnd, TMButtonInfo *buttons, int count);
-int JabberUIEmulateBtnClick(HWND hwndDlg, UINT idcButton);
-void JabberUIShowControls(HWND hwndDlg, int *idList, int nCmdShow);
-
-struct TJabberCtrlInfo
+template<typename TProto>
+void UISetupMButtons(TProto *proto, HWND hwnd, TMButtonInfo *buttons, int count)
 {
-	CJabberCtrlData	*ctrl;
+	for (int i = 0; i < count; ++i)
+	{
+		SendDlgItemMessage(hwnd, buttons[i].idCtrl, BM_SETIMAGE, IMAGE_ICON,
+			(LPARAM)(buttons[i].szIcon ?
+				proto->LoadIconEx(buttons[i].szIcon) :
+				LoadSkinnedIcon(buttons[i].iCoreIcon)));
+		SendDlgItemMessage(hwnd, buttons[i].idCtrl, BUTTONSETASFLATBTN, 0, 0);
+		SendDlgItemMessage(hwnd, buttons[i].idCtrl, BUTTONADDTOOLTIP, (WPARAM)TranslateTS(buttons[i].szTitle), BATF_TCHAR);
+		if (buttons[i].bIsPush)
+			SendDlgItemMessage(hwnd, buttons[i].idCtrl, BUTTONSETASPUSHBTN, 0, 0);
+	}
+}
+
+int UIEmulateBtnClick(HWND hwndDlg, UINT idcButton);
+void UIShowControls(HWND hwndDlg, int *idList, int nCmdShow);
+
+struct TCtrlInfo
+{
+	CCtrlData	*ctrl;
 	int				idCtrl;
 	BYTE			dbType;
 	char			*szSetting;
@@ -694,6 +725,19 @@ struct TJabberCtrlInfo
 	DWORD			iValue;
 };
 
-void JabberUISetupControls(CJabberDlgBase *wnd, TJabberCtrlInfo *controls, int count);
+template<typename TProto>
+void UISetupControls(CProtoDlgBase<TProto>* wnd, TCtrlInfo *controls, int count)
+{
+	for (int i = 0; i < count; ++i)
+	{
+		CDbLink *dbLink = NULL;
+		if (controls[i].dbType == DBVT_TCHAR)
+			dbLink = new CDbLink(wnd->GetProto()->m_szProtoName, controls[i].szSetting, controls[i].dbType, controls[i].szValue);
+		else if (controls[i].dbType != DBVT_DELETED)
+			dbLink = new CDbLink(wnd->GetProto()->m_szProtoName, controls[i].szSetting, controls[i].dbType, controls[i].iValue);
+
+		controls[i].ctrl->Initialize(wnd, controls[i].idCtrl, dbLink );
+	}
+}
 
 #endif // __jabber_ui_utils_h__

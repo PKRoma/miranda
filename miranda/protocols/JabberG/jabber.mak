@@ -1,7 +1,7 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on jabber.dsp
 !IF "$(CFG)" == ""
 CFG=jabberg - Win32 Release Unicode
-!MESSAGE No configuration specified. Defaulting to jabberg - Win32 Release Unicode.
+!MESSAGE No configuration specified. Defaulting to jabberg - Win32 Debug Unicode.
 !ENDIF
 
 !IF "$(CFG)" != "jabberg - Win32 Release" && "$(CFG)" != "jabberg - Win32 Debug" && "$(CFG)" != "jabberg - Win32 Release Unicode" && "$(CFG)" != "jabberg - Win32 Debug Unicode"
@@ -90,7 +90,6 @@ CLEAN :
 	-@erase "$(INTDIR)\jabber_svc.obj"
 	-@erase "$(INTDIR)\jabber_thread.obj"
 	-@erase "$(INTDIR)\jabber_treelist.obj"
-	-@erase "$(INTDIR)\jabber_ui_utils.obj"
 	-@erase "$(INTDIR)\jabber_userinfo.obj"
 	-@erase "$(INTDIR)\jabber_util.obj"
 	-@erase "$(INTDIR)\jabber_vcard.obj"
@@ -99,6 +98,7 @@ CLEAN :
 	-@erase "$(INTDIR)\jabber_xstatus.obj"
 	-@erase "$(INTDIR)\jabber_zstream.obj"
 	-@erase "$(INTDIR)\msvc6.res"
+	-@erase "$(INTDIR)\ui_utils.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(OUTDIR)\jabber.exp"
@@ -165,7 +165,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_xstatus.obj" \
 	"$(INTDIR)\jabber_zstream.obj" \
 	"$(INTDIR)\msvc6.res" \
-	"$(INTDIR)\jabber_ui_utils.obj" \
+	"$(INTDIR)\ui_utils.obj" \
 	"..\..\plugins\zlib\Release\zlib.lib"
 
 "..\..\bin\release\plugins\jabber.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -273,8 +273,6 @@ CLEAN :
 	-@erase "$(INTDIR)\jabber_thread.sbr"
 	-@erase "$(INTDIR)\jabber_treelist.obj"
 	-@erase "$(INTDIR)\jabber_treelist.sbr"
-	-@erase "$(INTDIR)\jabber_ui_utils.obj"
-	-@erase "$(INTDIR)\jabber_ui_utils.sbr"
 	-@erase "$(INTDIR)\jabber_userinfo.obj"
 	-@erase "$(INTDIR)\jabber_userinfo.sbr"
 	-@erase "$(INTDIR)\jabber_util.obj"
@@ -290,6 +288,8 @@ CLEAN :
 	-@erase "$(INTDIR)\jabber_zstream.obj"
 	-@erase "$(INTDIR)\jabber_zstream.sbr"
 	-@erase "$(INTDIR)\msvc6.res"
+	-@erase "$(INTDIR)\ui_utils.obj"
+	-@erase "$(INTDIR)\ui_utils.sbr"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(OUTDIR)\jabber.bsc"
@@ -353,7 +353,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\jabber_xml.sbr" \
 	"$(INTDIR)\jabber_xstatus.sbr" \
 	"$(INTDIR)\jabber_zstream.sbr" \
-	"$(INTDIR)\jabber_ui_utils.sbr"
+	"$(INTDIR)\ui_utils.sbr"
 
 "$(OUTDIR)\jabber.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -409,7 +409,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_xstatus.obj" \
 	"$(INTDIR)\jabber_zstream.obj" \
 	"$(INTDIR)\msvc6.res" \
-	"$(INTDIR)\jabber_ui_utils.obj" \
+	"$(INTDIR)\ui_utils.obj" \
 	"..\..\plugins\zlib\Debug\zlib.lib"
 
 "..\..\bin\debug\plugins\jabber.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -476,7 +476,6 @@ CLEAN :
 	-@erase "$(INTDIR)\jabber_svc.obj"
 	-@erase "$(INTDIR)\jabber_thread.obj"
 	-@erase "$(INTDIR)\jabber_treelist.obj"
-	-@erase "$(INTDIR)\jabber_ui_utils.obj"
 	-@erase "$(INTDIR)\jabber_userinfo.obj"
 	-@erase "$(INTDIR)\jabber_util.obj"
 	-@erase "$(INTDIR)\jabber_vcard.obj"
@@ -485,6 +484,7 @@ CLEAN :
 	-@erase "$(INTDIR)\jabber_xstatus.obj"
 	-@erase "$(INTDIR)\jabber_zstream.obj"
 	-@erase "$(INTDIR)\msvc6.res"
+	-@erase "$(INTDIR)\ui_utils.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(OUTDIR)\jabber.exp"
@@ -551,7 +551,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_xstatus.obj" \
 	"$(INTDIR)\jabber_zstream.obj" \
 	"$(INTDIR)\msvc6.res" \
-	"$(INTDIR)\jabber_ui_utils.obj" \
+	"$(INTDIR)\ui_utils.obj" \
 	"..\..\plugins\zlib\Release_Unicode\zlib.lib"
 
 "..\..\bin\Release Unicode\plugins\jabber.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -659,8 +659,6 @@ CLEAN :
 	-@erase "$(INTDIR)\jabber_thread.sbr"
 	-@erase "$(INTDIR)\jabber_treelist.obj"
 	-@erase "$(INTDIR)\jabber_treelist.sbr"
-	-@erase "$(INTDIR)\jabber_ui_utils.obj"
-	-@erase "$(INTDIR)\jabber_ui_utils.sbr"
 	-@erase "$(INTDIR)\jabber_userinfo.obj"
 	-@erase "$(INTDIR)\jabber_userinfo.sbr"
 	-@erase "$(INTDIR)\jabber_util.obj"
@@ -676,6 +674,8 @@ CLEAN :
 	-@erase "$(INTDIR)\jabber_zstream.obj"
 	-@erase "$(INTDIR)\jabber_zstream.sbr"
 	-@erase "$(INTDIR)\msvc6.res"
+	-@erase "$(INTDIR)\ui_utils.obj"
+	-@erase "$(INTDIR)\ui_utils.sbr"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(OUTDIR)\jabber.bsc"
@@ -739,7 +739,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\jabber_xml.sbr" \
 	"$(INTDIR)\jabber_xstatus.sbr" \
 	"$(INTDIR)\jabber_zstream.sbr" \
-	"$(INTDIR)\jabber_ui_utils.sbr"
+	"$(INTDIR)\ui_utils.sbr"
 
 "$(OUTDIR)\jabber.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -795,7 +795,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\jabber_xstatus.obj" \
 	"$(INTDIR)\jabber_zstream.obj" \
 	"$(INTDIR)\msvc6.res" \
-	"$(INTDIR)\jabber_ui_utils.obj" \
+	"$(INTDIR)\ui_utils.obj" \
 	"..\..\plugins\zlib\Debug_Unicode\zlib.lib"
 
 "..\..\bin\debug unicode\plugins\jabber.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -2214,34 +2214,6 @@ SOURCE=.\jabber_treelist.cpp
 
 !ENDIF
 
-SOURCE=.\jabber_ui_utils.cpp
-
-!IF  "$(CFG)" == "jabberg - Win32 Release"
-
-
-"$(INTDIR)\jabber_ui_utils.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
-
-
-!ELSEIF  "$(CFG)" == "jabberg - Win32 Debug"
-
-
-"$(INTDIR)\jabber_ui_utils.obj"	"$(INTDIR)\jabber_ui_utils.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
-
-
-!ELSEIF  "$(CFG)" == "jabberg - Win32 Release Unicode"
-
-
-"$(INTDIR)\jabber_ui_utils.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
-
-
-!ELSEIF  "$(CFG)" == "jabberg - Win32 Debug Unicode"
-
-
-"$(INTDIR)\jabber_ui_utils.obj"	"$(INTDIR)\jabber_ui_utils.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
-
-
-!ENDIF
-
 SOURCE=.\jabber_userinfo.cpp
 
 !IF  "$(CFG)" == "jabberg - Win32 Release"
@@ -2514,6 +2486,34 @@ SOURCE=.\jabber_zstream.cpp
 
 
 "$(INTDIR)\jabber_zstream.obj"	"$(INTDIR)\jabber_zstream.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
+
+
+!ENDIF
+
+SOURCE=.\ui_utils.cpp
+
+!IF  "$(CFG)" == "jabberg - Win32 Release"
+
+
+"$(INTDIR)\ui_utils.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
+
+
+!ELSEIF  "$(CFG)" == "jabberg - Win32 Debug"
+
+
+"$(INTDIR)\ui_utils.obj"	"$(INTDIR)\ui_utils.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
+
+
+!ELSEIF  "$(CFG)" == "jabberg - Win32 Release Unicode"
+
+
+"$(INTDIR)\ui_utils.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
+
+
+!ELSEIF  "$(CFG)" == "jabberg - Win32 Debug Unicode"
+
+
+"$(INTDIR)\ui_utils.obj"	"$(INTDIR)\ui_utils.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\jabber.pch"
 
 
 !ENDIF
