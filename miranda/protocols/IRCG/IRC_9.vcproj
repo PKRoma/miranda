@@ -564,6 +564,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\ircproto.cpp"
+				>
+			</File>
+			<File
 				RelativePath="main.cpp"
 				>
 				<FileConfiguration
@@ -808,6 +812,14 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\ui_utils.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\userinfo.cpp"
+				>
+			</File>
+			<File
 				RelativePath="windows.cpp"
 				>
 				<FileConfiguration
@@ -861,11 +873,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\irc_dlg.h"
+				>
+			</File>
+			<File
 				RelativePath="irclib.h"
 				>
 			</File>
 			<File
 				RelativePath="resource.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ui_utils.h"
 				>
 			</File>
 			<Filter
@@ -918,11 +938,11 @@
 				>
 			</File>
 			<File
-				RelativePath="Icons\Icons\irc.ico"
+				RelativePath="Icons\irc.ico"
 				>
 			</File>
 			<File
-				RelativePath="Icons\irc.ico"
+				RelativePath="Icons\Icons\irc.ico"
 				>
 			</File>
 			<File

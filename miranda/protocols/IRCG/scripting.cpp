@@ -1,8 +1,8 @@
 /*
 IRC plugin for Miranda IM
 
-Copyright (C) 2003-2005 Jurgen Persson
-Copyright (C) 2007 George Hazan
+Copyright (C) 2003-05 Jurgen Persson
+Copyright (C) 2007-08 George Hazan
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -22,13 +22,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "irc.h"
 #include <algorithm>
 
-int Scripting_InsertRawIn(WPARAM wParam,LPARAM lParam)
+int __cdecl CIrcProto::Scripting_InsertRawIn(WPARAM wParam,LPARAM lParam)
 {
 	char* pszRaw = ( char* ) lParam;
 
-	if ( bMbotInstalled && prefs->ScriptingEnabled && pszRaw && g_ircSession ) {
+	if ( bMbotInstalled && ScriptingEnabled && pszRaw && IsConnected() ) {
 		TCHAR* p = mir_a2t( pszRaw );
-		g_ircSession.InsertIncomingEvent( p );
+		InsertIncomingEvent( p );
 		mir_free( p );
 		return 0;
 	}
@@ -36,26 +36,26 @@ int Scripting_InsertRawIn(WPARAM wParam,LPARAM lParam)
 	return 1;
 }
  
-int Scripting_InsertRawOut( WPARAM wParam, LPARAM lParam )
+int __cdecl CIrcProto::Scripting_InsertRawOut( WPARAM wParam, LPARAM lParam )
 {
 	char* pszRaw = ( char* ) lParam;
-	if ( bMbotInstalled && prefs->ScriptingEnabled && pszRaw && g_ircSession ) {	
+	if ( bMbotInstalled && ScriptingEnabled && pszRaw && IsConnected() ) {	
 		String S = pszRaw;
 		ReplaceString( S, "%", "%%%%");
-		g_ircSession.NLSendNoScript((const unsigned char *)S.c_str(), lstrlenA(S.c_str()));
+		NLSendNoScript((const unsigned char *)S.c_str(), lstrlenA(S.c_str()));
 		return 0;
 	}
 
 	return 1;
 }
 
-int Scripting_InsertGuiIn(WPARAM wParam,LPARAM lParam)
+int __cdecl CIrcProto::Scripting_InsertGuiIn(WPARAM wParam,LPARAM lParam)
 {
 	GCEVENT* gce = (GCEVENT *) lParam;
 	WPARAM_GUI_IN * wgi = (WPARAM_GUI_IN *) wParam;
 
 
-	if ( bMbotInstalled && prefs->ScriptingEnabled && gce ) {	
+	if ( bMbotInstalled && ScriptingEnabled && gce ) {	
 		TCHAR* p1 = NULL;
 		TString S;
 		if ( gce->pDest && gce->pDest->ptszID ) {
@@ -80,7 +80,7 @@ static void __stdcall OnHook(void * pi)
 {
 	GCHOOK* gch = ( GCHOOK* )pi;
 
-	Service_GCEventHook(1, (LPARAM) gch);
+	//Service_GCEventHook(1, (LPARAM) gch);
 
 	if(gch->pszUID)
 		free(gch->pszUID);
@@ -99,11 +99,11 @@ static void __cdecl GuiOutThread(LPVOID di)
 	CallFunctionAsync( OnHook, ( void* )gch );
 }
 
-int Scripting_InsertGuiOut( WPARAM wParam,LPARAM lParam )
+int __cdecl CIrcProto::Scripting_InsertGuiOut( WPARAM wParam,LPARAM lParam )
 {
 	GCHOOK* gch = ( GCHOOK* )lParam;
 
-	if ( bMbotInstalled && prefs->ScriptingEnabled && gch ) {	
+	if ( bMbotInstalled && ScriptingEnabled && gch ) {	
 		GCHOOK* gchook = new GCHOOK;
 		gchook->pDest = new GCDEST;
 
@@ -134,29 +134,29 @@ int Scripting_InsertGuiOut( WPARAM wParam,LPARAM lParam )
 	return 1;
 }
 
-BOOL Scripting_TriggerMSPRawIn( char** pszRaw )
+BOOL CIrcProto::Scripting_TriggerMSPRawIn( char** pszRaw )
 {
-	int iVal = CallService( MS_MBOT_IRC_RAW_IN, (WPARAM)IRCPROTONAME, (LPARAM)pszRaw);
+	int iVal = CallService( MS_MBOT_IRC_RAW_IN, (WPARAM)m_szModuleName, (LPARAM)pszRaw);
 	if ( iVal == 0 )
 		return TRUE;
 
 	return iVal > 0 ? FALSE : TRUE;
 }
 
-BOOL Scripting_TriggerMSPRawOut(char ** pszRaw)
+BOOL CIrcProto::Scripting_TriggerMSPRawOut(char ** pszRaw)
 {
-	int iVal =  CallService( MS_MBOT_IRC_RAW_OUT, (WPARAM)IRCPROTONAME, (LPARAM)pszRaw);
+	int iVal =  CallService( MS_MBOT_IRC_RAW_OUT, (WPARAM)m_szModuleName, (LPARAM)pszRaw);
 	if ( iVal == 0 )
 		return TRUE;
 
 	return iVal > 0 ? FALSE : TRUE;
 }
 
-BOOL Scripting_TriggerMSPGuiIn(WPARAM * wparam, GCEVENT * gce)
+BOOL CIrcProto::Scripting_TriggerMSPGuiIn(WPARAM * wparam, GCEVENT * gce)
 {
 	WPARAM_GUI_IN wgi = {0};
 
-	wgi.pszModule = IRCPROTONAME;
+	wgi.pszModule = m_szModuleName;
 	wgi.wParam = *wparam;
 	if (gce->time == 0)
 		gce->time = time(0);
@@ -170,18 +170,18 @@ BOOL Scripting_TriggerMSPGuiIn(WPARAM * wparam, GCEVENT * gce)
 	return iVal > 0 ? FALSE : TRUE;
 }
 
-BOOL Scripting_TriggerMSPGuiOut(GCHOOK* gch)
+BOOL CIrcProto::Scripting_TriggerMSPGuiOut(GCHOOK* gch)
 {
-	int iVal =  CallService( MS_MBOT_IRC_GUI_OUT, (WPARAM)IRCPROTONAME, (LPARAM)gch);
+	int iVal =  CallService( MS_MBOT_IRC_GUI_OUT, (WPARAM)m_szModuleName, (LPARAM)gch);
 	if ( iVal == 0 )
 		return TRUE;
 
 	return iVal > 0 ? FALSE : TRUE;
 }
 
-int Scripting_GetIrcData(WPARAM wparam, LPARAM lparam)
+int __cdecl CIrcProto::Scripting_GetIrcData(WPARAM wparam, LPARAM lparam)
 {
-	if ( bMbotInstalled && prefs->ScriptingEnabled && lparam ) {
+	if ( bMbotInstalled && ScriptingEnabled && lparam ) {
 		String sString = ( char* ) lparam, sRequest;
 		TString sOutput, sChannel; 
 
@@ -196,27 +196,27 @@ int Scripting_GetIrcData(WPARAM wparam, LPARAM lparam)
 
 		transform (sRequest.begin(),sRequest.end(), sRequest.begin(), tolower);
 
-		if (sRequest == "ownnick" && g_ircSession)
-			sOutput = g_ircSession.GetInfo().sNick;
+		if (sRequest == "ownnick" && IsConnected())
+			sOutput = GetInfo().sNick;
 
-		else if (sRequest == "network" && g_ircSession)
-			sOutput = g_ircSession.GetInfo().sNetwork;
+		else if (sRequest == "network" && IsConnected())
+			sOutput = GetInfo().sNetwork;
 
 		else if (sRequest == "primarynick")
-			sOutput = prefs->Nick;
+			sOutput = Nick;
 
 		else if (sRequest == "secondarynick")
-			sOutput = prefs->AlternativeNick;
+			sOutput = AlternativeNick;
 
 		else if (sRequest == "myip")
-			return ( int )mir_strdup( prefs->ManualHost ? prefs->MySpecifiedHostIP : 
-										( prefs->IPFromServer ) ? prefs->MyHost : prefs->MyLocalHost);
+			return ( int )mir_strdup( ManualHost ? MySpecifiedHostIP : 
+										( IPFromServer ) ? MyHost : MyLocalHost);
 
 		else if (sRequest == "usercount" && !sChannel.empty()) {
 			TString S = MakeWndID(sChannel.c_str());
 			GC_INFO gci = {0};
 			gci.Flags = BYID|COUNT;
-			gci.pszModule = IRCPROTONAME;
+			gci.pszModule = m_szModuleName;
 			gci.pszID = (TCHAR*)S.c_str();
 			if ( !CallServiceSync( MS_GC_GETINFO, 0, (LPARAM)&gci )) {
 				TCHAR szTemp[40];
@@ -228,20 +228,20 @@ int Scripting_GetIrcData(WPARAM wparam, LPARAM lparam)
 			TString S = MakeWndID(sChannel.c_str());
 			GC_INFO gci = {0};
 			gci.Flags = BYID|USERS;
-			gci.pszModule = IRCPROTONAME;
+			gci.pszModule = m_szModuleName;
 			gci.pszID = ( TCHAR* )S.c_str();
 			if ( !CallServiceSync( MS_GC_GETINFO, 0, (LPARAM)&gci ))
 				return (int)mir_strdup( gci.pszUsers );
 		}
 		else if (sRequest == "channellist") {
 			TString S = _T("");
-			int i = CallServiceSync( MS_GC_GETSESSIONCOUNT, 0, (LPARAM)IRCPROTONAME);
+			int i = CallServiceSync( MS_GC_GETSESSIONCOUNT, 0, (LPARAM)m_szModuleName);
 			if ( i >= 0 ) {
 				int j = 0;
 				while (j < i) {
 					GC_INFO gci = {0};
 					gci.Flags = BYINDEX|ID;
-					gci.pszModule = IRCPROTONAME;
+					gci.pszModule = m_szModuleName;
 					gci.iItem = j;
 					if ( !CallServiceSync( MS_GC_GETINFO, 0, ( LPARAM )&gci )) {
 						if ( lstrcmpi( gci.pszID, SERVERWINDOW)) {

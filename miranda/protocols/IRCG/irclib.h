@@ -1,8 +1,8 @@
 /*
 IRC plugin for Miranda IM
 
-Copyright (C) 2003-2005 Jurgen Persson
-Copyright (C) 2007 George Hazan
+Copyright (C) 2003-05 Jurgen Persson
+Copyright (C) 2007-08 George Hazan
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -52,6 +52,8 @@ VOID CALLBACK DCCTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime);
 unsigned long ConvertIPToInteger(char * IP);
 char* ConvertIntegerToIP(unsigned long int_ip_addr);
 
+struct CIrcProto;
+
 ////////////////////////////////////////////////////////////////////
 namespace irc {
 ////////////////////////////////////////////////////////////////////
@@ -63,7 +65,8 @@ typedef std::string String;
 	typedef std::string TString;
 #endif
 
-typedef struct {
+struct DCCINFO
+{
 	DWORD   dwAdr;
 	DWORD   dwSize;
 	DWORD   iType;
@@ -79,8 +82,7 @@ typedef struct {
 	TString sHostmask;
 	HANDLE  hContact;
 	TString sContactName;
-}
-	DCCINFO;
+};
 
 class CIrcMessage
 {
@@ -91,15 +93,16 @@ public :
 	}
 		prefix;
 
+	CIrcProto* m_proto;
 	TString sCommand;
 	std::vector<TString> parameters;
 	bool m_bIncoming;
 	bool m_bNotify;
 	int  m_codePage;
 
-	CIrcMessage(); // default constructor
-	CIrcMessage(const TCHAR* lpszCmdLine, int codepage, bool bIncoming=false, bool bNotify = true); // parser constructor
-	CIrcMessage(const CIrcMessage& m); // copy constructor
+	//CIrcMessage( CIrcProto* ); // default constructor
+	CIrcMessage( CIrcProto*, const TCHAR* lpszCmdLine, int codepage, bool bIncoming=false, bool bNotify = true); // parser constructor
+	CIrcMessage( const CIrcMessage& m ); // copy constructor
 
 	void Reset();
 
@@ -110,13 +113,6 @@ public :
 
 private :
 	void ParseIrcCommand(const TCHAR* lpszCmdLine);
-};
-
-////////////////////////////////////////////////////////////////////
-
-struct IIrcSessionMonitor
-{
-	virtual void OnIrcMessage(const CIrcMessage* pmsg) = 0;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -165,79 +161,6 @@ public:
 };
 
 //#endif
-////////////////////////////////////////////////////////////////////
-
-class CIrcDefaultMonitor; // foreward
-class CDccSession; // forward
-
-typedef std::map<HANDLE, CDccSession*> DccSessionMap;
-typedef std::pair<HANDLE, CDccSession*> DccSessionPair;
-
-class CIrcSession
-{
-public :
-	friend class CIrcDefaultMonitor;
-
-	CIrcSession( void );
-	virtual ~CIrcSession();
-
-	void AddDCCSession(HANDLE hContact, CDccSession* dcc);
-	void AddDCCSession(DCCINFO*  pdci, CDccSession* dcc);
-	void RemoveDCCSession(HANDLE hContact);
-	void RemoveDCCSession(DCCINFO*  pdci);
-	
-	CDccSession* FindDCCSession(HANDLE hContact);
-	CDccSession* FindDCCSession(DCCINFO* pdci);
-	CDccSession* FindDCCSendByPort(int iPort);
-	CDccSession* FindDCCRecvByPortAndName(int iPort, const TCHAR* szName);
-	CDccSession* FindPassiveDCCSend(int iToken);
-	CDccSession* FindPassiveDCCRecv(TString sName, TString sToken);
-	
-	void DisconnectAllDCCSessions(bool Shutdown);
-	void CheckDCCTimeout(void);
-
-	bool Connect(const CIrcSessionInfo& info);
-	void Disconnect(void);
-	void KillIdent(void);
-
-	CIrcSessionInfo& GetInfo() const
-				{ return (CIrcSessionInfo&)m_info; }
-
-	#if defined( _UNICODE )
-		int NLSend(const TCHAR* fmt, ...);
-	#endif
-	int NLSend(const char* fmt, ...);
-	int NLSend(const unsigned char* buf, int cbBuf);
-	int NLSendNoScript( const unsigned char* buf, int cbBuf);
-	int NLReceive(unsigned char* buf, int cbBuf);
-	void InsertIncomingEvent(TCHAR* pszRaw);
-
-	operator bool() const { return con != NULL; }
-
-	// send-to-stream operators
-	CIrcSession& operator << (const CIrcMessage& m);
-
-	int getCodepage() const;
-	__inline void setCodepage( int aPage ) { codepage = aPage; }
-
-protected :
-	int codepage;
-	CIrcSessionInfo m_info;
-	CSSLSession sslSession;
-	HANDLE con;
-	HANDLE hBindPort;
-	void DoReceive();
-	DccSessionMap m_dcc_chats;
-	DccSessionMap m_dcc_xfers;
-
-private :
-	CRITICAL_SECTION    m_dcc;      // protect the dcc objects
-	CIrcDefaultMonitor *m_monitor;  // Object that processes data from the IRC server
-
-	void createMessageFromPchar( const char* p );
-	void Notify(const CIrcMessage* pmsg);
-	static void __cdecl ThreadProc(void *pparam);
-};
 
 ////////////////////////////////////////////////////////////////////
 typedef struct			
@@ -246,8 +169,7 @@ typedef struct
 	CIrcMessage * pmsg;
 } XTHREADS;
 
-class CIrcMonitor :
-	public IIrcSessionMonitor
+class CIrcMonitor 
 {
 public :
 	typedef bool (CIrcMonitor::*PfnIrcMessageHandler)(const CIrcMessage* pmsg);
@@ -263,7 +185,7 @@ public :
 		IrcCommandsMapsListEntry* pBaseHandlersMap;
 	};
 
-	CIrcMonitor(CIrcSession& session);
+	CIrcMonitor(CIrcProto& session);
 	virtual ~CIrcMonitor();
 	static IrcCommandsMapsListEntry m_handlersMapsListEntry;
 	static HandlersMap m_handlers;
@@ -273,7 +195,7 @@ public :
 
 	static void __stdcall OnCrossThreadsMessage(void * p);
 	virtual void OnIrcMessage(const CIrcMessage* pmsg);
-	CIrcSession& m_session;
+	CIrcProto& m_proto;
 
 	virtual IrcCommandsMapsListEntry* GetIrcCommandsMap() 
 				{ return &m_handlersMapsListEntry; }
@@ -311,7 +233,7 @@ protected :
 class CIrcDefaultMonitor : public CIrcMonitor
 {
 public :
-	CIrcDefaultMonitor(CIrcSession& session);
+	CIrcDefaultMonitor(CIrcProto& session);
 
 	DEFINE_IRC_MAP()
 
@@ -328,19 +250,19 @@ struct CIrcIgnoreItem
 {
 	CIrcIgnoreItem( const TCHAR*, const TCHAR*, const TCHAR* );
 	#if defined( _UNICODE )
-		CIrcIgnoreItem( const char*, const char*, const char* );
+		CIrcIgnoreItem( int codepage, const char*, const char*, const char* );
 	#endif
 	~CIrcIgnoreItem();
 
    TString mask, flags, network;
 };
 
-extern std::vector<CIrcIgnoreItem> g_ignoreItems;
-
 ////////////////////////////////////////////////////////////////////
 
-class CDccSession{
+class CDccSession
+{
 protected:
+	CIrcProto* m_proto;
 	HANDLE con;			// connection handle	
 	HANDLE hBindPort;	// handle for listening port
 	static int nDcc;	// number of dcc objects
@@ -368,7 +290,7 @@ protected:
 
 public:
 	
-	CDccSession(DCCINFO* pdci);  // constructor
+	CDccSession(CIrcProto*, DCCINFO* pdci);  // constructor
 	~CDccSession();               // destructor, что характерно
 
 	time_t tLastPercentageUpdate; // time of last update of the filetransfer dialog

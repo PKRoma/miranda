@@ -1,7 +1,7 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on IRC.dsp
 !IF "$(CFG)" == ""
 CFG=IRC - Win32 Release Unicode
-!MESSAGE No configuration specified. Defaulting to IRC - Win32 Release Unicode.
+!MESSAGE No configuration specified. Defaulting to IRC - Win32 Debug Unicode.
 !ENDIF
 
 !IF "$(CFG)" != "IRC - Win32 Release" && "$(CFG)" != "IRC - Win32 Debug" && "$(CFG)" != "IRC - Win32 Debug Unicode" && "$(CFG)" != "IRC - Win32 Release Unicode"
@@ -45,6 +45,7 @@ CLEAN :
 	-@erase "$(INTDIR)\input.obj"
 	-@erase "$(INTDIR)\IRC.pch"
 	-@erase "$(INTDIR)\irclib.obj"
+	-@erase "$(INTDIR)\ircproto.obj"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\options.obj"
 	-@erase "$(INTDIR)\output.obj"
@@ -52,6 +53,8 @@ CLEAN :
 	-@erase "$(INTDIR)\scripting.obj"
 	-@erase "$(INTDIR)\services.obj"
 	-@erase "$(INTDIR)\tools.obj"
+	-@erase "$(INTDIR)\ui_utils.obj"
+	-@erase "$(INTDIR)\userinfo.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(INTDIR)\windows.obj"
@@ -85,7 +88,10 @@ LINK32_OBJS= \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\tools.obj" \
 	"$(INTDIR)\windows.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\ircproto.obj" \
+	"$(INTDIR)\ui_utils.obj" \
+	"$(INTDIR)\userinfo.obj"
 
 "..\..\bin\release\plugins\IRC.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -106,6 +112,7 @@ CLEAN :
 	-@erase "$(INTDIR)\input.obj"
 	-@erase "$(INTDIR)\IRC.pch"
 	-@erase "$(INTDIR)\irclib.obj"
+	-@erase "$(INTDIR)\ircproto.obj"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\options.obj"
 	-@erase "$(INTDIR)\output.obj"
@@ -113,6 +120,8 @@ CLEAN :
 	-@erase "$(INTDIR)\scripting.obj"
 	-@erase "$(INTDIR)\services.obj"
 	-@erase "$(INTDIR)\tools.obj"
+	-@erase "$(INTDIR)\ui_utils.obj"
+	-@erase "$(INTDIR)\userinfo.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(INTDIR)\windows.obj"
@@ -147,7 +156,10 @@ LINK32_OBJS= \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\tools.obj" \
 	"$(INTDIR)\windows.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\ircproto.obj" \
+	"$(INTDIR)\ui_utils.obj" \
+	"$(INTDIR)\userinfo.obj"
 
 "..\..\bin\debug\plugins\IRC.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -159,7 +171,7 @@ LINK32_OBJS= \
 OUTDIR=.\Debug_Unicode
 INTDIR=.\Debug_Unicode
 
-ALL : "..\..\bin\debug\plugins\IRC.dll"
+ALL : "..\..\bin\debug Unicode\plugins\IRC.dll"
 
 
 CLEAN :
@@ -168,6 +180,7 @@ CLEAN :
 	-@erase "$(INTDIR)\input.obj"
 	-@erase "$(INTDIR)\IRC.pch"
 	-@erase "$(INTDIR)\irclib.obj"
+	-@erase "$(INTDIR)\ircproto.obj"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\options.obj"
 	-@erase "$(INTDIR)\output.obj"
@@ -175,6 +188,8 @@ CLEAN :
 	-@erase "$(INTDIR)\scripting.obj"
 	-@erase "$(INTDIR)\services.obj"
 	-@erase "$(INTDIR)\tools.obj"
+	-@erase "$(INTDIR)\ui_utils.obj"
+	-@erase "$(INTDIR)\userinfo.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(INTDIR)\windows.obj"
@@ -182,13 +197,13 @@ CLEAN :
 	-@erase "$(OUTDIR)\IRC.lib"
 	-@erase "$(OUTDIR)\IRC.map"
 	-@erase "$(OUTDIR)\IRC.pdb"
-	-@erase "..\..\bin\debug\plugins\IRC.dll"
-	-@erase "..\..\bin\debug\plugins\IRC.ilk"
+	-@erase "..\..\bin\debug Unicode\plugins\IRC.dll"
+	-@erase "..\..\bin\debug Unicode\plugins\IRC.ilk"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "IRC_EXPORTS" /Fp"$(INTDIR)\IRC.pch" /Yu"irc.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
+CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "IRC_EXPORTS" /Fp"$(INTDIR)\IRC.pch" /Yu"irc.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
 RSC_PROJ=/l 0x41d /fo"$(INTDIR)\resource.res" /d "_DEBUG"
 BSC32=bscmake.exe
@@ -196,7 +211,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\IRC.bsc"
 BSC32_SBRS= \
 
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib shlwapi.lib wsock32.lib /nologo /base:"0x54010000" /dll /incremental:yes /pdb:"$(OUTDIR)\IRC.pdb" /map:"$(INTDIR)\IRC.map" /debug /machine:I386 /out:"../../bin/debug/plugins/IRC.dll" /implib:"$(OUTDIR)\IRC.lib" /pdbtype:sept
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib shlwapi.lib wsock32.lib /nologo /base:"0x54010000" /dll /incremental:yes /pdb:"$(OUTDIR)\IRC.pdb" /map:"$(INTDIR)\IRC.map" /debug /machine:I386 /out:"../../bin/debug Unicode/plugins/IRC.dll" /implib:"$(OUTDIR)\IRC.lib" /pdbtype:sept
 LINK32_OBJS= \
 	"$(INTDIR)\clist.obj" \
 	"$(INTDIR)\commandmonitor.obj" \
@@ -209,9 +224,12 @@ LINK32_OBJS= \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\tools.obj" \
 	"$(INTDIR)\windows.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\ircproto.obj" \
+	"$(INTDIR)\ui_utils.obj" \
+	"$(INTDIR)\userinfo.obj"
 
-"..\..\bin\debug\plugins\IRC.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+"..\..\bin\debug Unicode\plugins\IRC.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
@@ -230,6 +248,7 @@ CLEAN :
 	-@erase "$(INTDIR)\input.obj"
 	-@erase "$(INTDIR)\IRC.pch"
 	-@erase "$(INTDIR)\irclib.obj"
+	-@erase "$(INTDIR)\ircproto.obj"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\options.obj"
 	-@erase "$(INTDIR)\output.obj"
@@ -237,6 +256,8 @@ CLEAN :
 	-@erase "$(INTDIR)\scripting.obj"
 	-@erase "$(INTDIR)\services.obj"
 	-@erase "$(INTDIR)\tools.obj"
+	-@erase "$(INTDIR)\ui_utils.obj"
+	-@erase "$(INTDIR)\userinfo.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(INTDIR)\windows.obj"
@@ -269,7 +290,10 @@ LINK32_OBJS= \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\tools.obj" \
 	"$(INTDIR)\windows.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\ircproto.obj" \
+	"$(INTDIR)\ui_utils.obj" \
+	"$(INTDIR)\userinfo.obj"
 
 "..\..\bin\release unicode\plugins\IRC.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -339,6 +363,11 @@ SOURCE=.\irclib.cpp
 "$(INTDIR)\irclib.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\IRC.pch"
 
 
+SOURCE=.\ircproto.cpp
+
+"$(INTDIR)\ircproto.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\IRC.pch"
+
+
 SOURCE=.\main.cpp
 
 !IF  "$(CFG)" == "IRC - Win32 Release"
@@ -363,7 +392,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 
 !ELSEIF  "$(CFG)" == "IRC - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "IRC_EXPORTS" /Fp"$(INTDIR)\IRC.pch" /Yc"irc.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "IRC_EXPORTS" /Fp"$(INTDIR)\IRC.pch" /Yc"irc.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
 
 "$(INTDIR)\main.obj"	"$(INTDIR)\IRC.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -406,6 +435,16 @@ SOURCE=.\services.cpp
 SOURCE=.\tools.cpp
 
 "$(INTDIR)\tools.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\IRC.pch"
+
+
+SOURCE=.\ui_utils.cpp
+
+"$(INTDIR)\ui_utils.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\IRC.pch"
+
+
+SOURCE=.\userinfo.cpp
+
+"$(INTDIR)\userinfo.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\IRC.pch"
 
 
 SOURCE=.\windows.cpp

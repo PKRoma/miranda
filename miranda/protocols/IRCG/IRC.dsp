@@ -172,6 +172,10 @@ SOURCE=.\irclib.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ircproto.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\main.cpp
 # ADD CPP /Yc"irc.h"
 # End Source File
@@ -194,6 +198,14 @@ SOURCE=.\services.cpp
 # Begin Source File
 
 SOURCE=.\tools.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ui_utils.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\userinfo.cpp
 # End Source File
 # Begin Source File
 
@@ -238,6 +250,10 @@ SOURCE=.\irclib.h
 # Begin Source File
 
 SOURCE=.\resource.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\ui_utils.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

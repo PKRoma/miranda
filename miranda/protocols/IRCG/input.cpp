@@ -1,8 +1,8 @@
 /*
 IRC plugin for Miranda IM
 
-Copyright (C) 2003-2005 Jurgen Persson
-Copyright (C) 2007 George Hazan
+Copyright (C) 2003-05 Jurgen Persson
+Copyright (C) 2007-08 George Hazan
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -20,6 +20,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "irc.h"
+#include "irc_dlg.h"
+#include "version.h"
 
 #define NICKSUBSTITUTE _T("!_nick_!")
 
@@ -28,7 +30,7 @@ bool bTempDisableCheck = false;
 bool bTempForceCheck = false;
 TString sNick4Perform = _T("");
 
-static TString FormatMsg(TString text)
+TString CIrcProto::FormatMsg(TString text)
 {
 	TCHAR temp[30];
 	lstrcpyn(temp, GetWord(text.c_str(), 0).c_str(), 29);
@@ -53,7 +55,7 @@ static TString FormatMsg(TString text)
 			TString sNewNick = GetWord(text.c_str(), 1);
 			if ( sNick4Perform == _T("")) {
 				DBVARIANT dbv;
-				if ( !DBGetContactSettingTString(NULL, IRCPROTONAME, "PNick", &dbv )) {
+				if ( !DBGetContactSettingTString(NULL, m_szModuleName, "PNick", &dbv )) {
 					sNick4Perform = dbv.ptszVal;
 					DBFreeVariant(&dbv);
 			}	}
@@ -74,7 +76,7 @@ static void AddCR( TString& text )
 	ReplaceString( text, _T("\r\r"), _T("\r"));
 }
 
-static TString DoAlias( const TCHAR *text, TCHAR *window)
+TString CIrcProto::DoAlias( const TCHAR *text, TCHAR *window)
 {
 	TString Messageout = _T("");
 	const TCHAR* p1 = text;
@@ -101,7 +103,7 @@ static TString DoAlias( const TCHAR *text, TCHAR *window)
 			delete [] line;
 			line = new TCHAR[S.length()+2]; 
 			lstrcpyn(line, S.c_str(), S.length()+1);
-			TString alias( prefs->Alias );
+			TString alias( Alias );
 			const TCHAR* p3 = _tcsstr( alias.c_str(), (GetWord(line, 0)+ _T(" ")).c_str());
 			if ( p3 != alias.c_str()) {
 				p3 = _tcsstr( alias.c_str(), (TString(_T("\r\n")) + GetWord(line, 0) + _T(" ")).c_str());
@@ -156,26 +158,26 @@ static TString DoAlias( const TCHAR *text, TCHAR *window)
 	return Messageout;
 }
 
-static TString DoIdentifiers( TString text, const TCHAR* window )
+TString CIrcProto::DoIdentifiers( TString text, const TCHAR* window )
 {
 	SYSTEMTIME time;
 	TCHAR str[800];
 	int  i = 0;
 
 	GetLocalTime( &time );
-	ReplaceString( text, _T("%mnick"), prefs->Nick);
-	ReplaceString( text, _T("%anick"), prefs->AlternativeNick);
+	ReplaceString( text, _T("%mnick"), Nick);
+	ReplaceString( text, _T("%anick"), AlternativeNick);
 	ReplaceString( text, _T("%awaymsg"), StatusMessage.c_str());
-	ReplaceString( text, _T("%module"), _A2T(IRCPROTONAME));
-	ReplaceString( text, _T("%name"), prefs->Name);
+	ReplaceString( text, _T("%module"), _A2T(m_szModuleName));
+	ReplaceString( text, _T("%name"), Name);
 	ReplaceString( text, _T("%newl"), _T("\r\n"));
-	ReplaceString( text, _T("%network"), g_ircSession.GetInfo().sNetwork.c_str());
-	ReplaceString( text, _T("%me"), g_ircSession.GetInfo().sNick.c_str());
+	ReplaceString( text, _T("%network"), GetInfo().sNetwork.c_str());
+	ReplaceString( text, _T("%me"), GetInfo().sNick.c_str());
 
 	mir_sntprintf( str, SIZEOF(str), _T("%d.%d.%d.%d"),(mirVersion>>24)&0xFF,(mirVersion>>16)&0xFF,(mirVersion>>8)&0xFF,mirVersion&0xFF);
 	ReplaceString(text, _T("%mirver"), str);
 
-	mir_sntprintf( str, SIZEOF(str), _T("%d.%d.%d.%d"),(pluginInfo.version>>24)&0xFF,(pluginInfo.version>>16)&0xFF,(pluginInfo.version>>8)&0xFF,pluginInfo.version&0xFF);
+	mir_sntprintf( str, SIZEOF(str), _T(__VERSION_STRING));
 	ReplaceString(text, _T("%version"), str);
 
 	str[0] = (char)3; str[1] = '\0';
@@ -192,22 +194,24 @@ static TString DoIdentifiers( TString text, const TCHAR* window )
 	return text;
 }
 
-static void __stdcall sttSetTimerOn( void* )
+static void __stdcall sttSetTimerOn( void* _pro )
 {
-	DoEvent( GC_EVENT_INFORMATION, NULL, g_ircSession.GetInfo().sNick.c_str(), TranslateT(	"The buddy check function is enabled"), NULL, NULL, NULL, true, false); 
-	SetChatTimer( OnlineNotifTimer, 500, OnlineNotifTimerProc );
-	if ( prefs->ChannelAwayNotification )
-		SetChatTimer( OnlineNotifTimer3, 1500, OnlineNotifTimerProc3 );
+	CIrcProto* ppro = ( CIrcProto* )_pro;
+	ppro->DoEvent( GC_EVENT_INFORMATION, NULL, ppro->GetInfo().sNick.c_str(), TranslateT(	"The buddy check function is enabled"), NULL, NULL, NULL, true, false); 
+	ppro->SetChatTimer( ppro->OnlineNotifTimer, 500, &CIrcProto::OnlineNotifTimerProc );
+	if ( ppro->ChannelAwayNotification )
+		ppro->SetChatTimer( ppro->OnlineNotifTimer3, 1500, &CIrcProto::OnlineNotifTimerProc3 );
 }
 
-static void __stdcall sttSetTimerOff( void* )
+static void __stdcall sttSetTimerOff( void* _pro )
 {
-	DoEvent( GC_EVENT_INFORMATION, NULL, g_ircSession.GetInfo().sNick.c_str(), TranslateT("The buddy check function is disabled"), NULL, NULL, NULL, true, false); 
-	KillChatTimer( OnlineNotifTimer );
-	KillChatTimer( OnlineNotifTimer3 );
+	CIrcProto* ppro = ( CIrcProto* )_pro;
+	ppro->DoEvent( GC_EVENT_INFORMATION, NULL, ppro->GetInfo().sNick.c_str(), TranslateT("The buddy check function is disabled"), NULL, NULL, NULL, true, false); 
+	ppro->KillChatTimer( ppro->OnlineNotifTimer );
+	ppro->KillChatTimer( ppro->OnlineNotifTimer3 );
 }
 
-static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
+BOOL CIrcProto::DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 {
 	TCHAR temp[30];
 	lstrcpyn(temp, GetWord(text.c_str(), 0).c_str(), 29 );
@@ -219,13 +223,13 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 	TString therest = GetWordAddress(text.c_str(), 4);
 
 	if ( command == _T("/servershow") || command == _T("/serverhide")) {
-		if ( prefs->UseServer ) {
+		if ( UseServer ) {
 			GCEVENT gce = {0};
 			GCDEST gcd = {0};
 			gce.dwFlags = GC_TCHAR;
 			gcd.iType = GC_EVENT_CONTROL;
 			gcd.ptszID = SERVERWINDOW;
-			gcd.pszModule = IRCPROTONAME;
+			gcd.pszModule = m_szModuleName;
 			gce.cbSize = sizeof(GCEVENT);
 			gce.pDest = &gcd;
 			CallChatEvent( command == _T("/servershow") ? WINDOW_VISIBLE : WINDOW_HIDDEN, (LPARAM)&gce);
@@ -250,7 +254,7 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 		GCDEST gcd = {0};
 		gce.cbSize = sizeof(GCEVENT);
 		gcd.iType = GC_EVENT_CONTROL;
-		gcd.pszModule = IRCPROTONAME;
+		gcd.pszModule = m_szModuleName;
 		gce.pDest = &gcd;
 		gce.dwFlags = GC_TCHAR;
 		gcd.ptszID = (TCHAR*)S.c_str();
@@ -258,24 +262,24 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 		return true;
 	}
 	else if ( command == _T("/ignore")) {
-		if ( g_ircSession ) {
+		if ( IsConnected() ) {
 			TString IgnoreFlags;
 			TCHAR temp[500];
 			if ( one.empty() ) {
-				if ( prefs->Ignore )
-					DoEvent( GC_EVENT_INFORMATION, NULL, g_ircSession.GetInfo().sNick.c_str(), TranslateT("Ignore system is enabled"), NULL, NULL, NULL, true, false); 
+				if ( Ignore )
+					DoEvent( GC_EVENT_INFORMATION, NULL, GetInfo().sNick.c_str(), TranslateT("Ignore system is enabled"), NULL, NULL, NULL, true, false); 
 				else
-					DoEvent( GC_EVENT_INFORMATION, NULL, g_ircSession.GetInfo().sNick.c_str(), TranslateT("Ignore system is disabled"), NULL, NULL, NULL, true, false); 
+					DoEvent( GC_EVENT_INFORMATION, NULL, GetInfo().sNick.c_str(), TranslateT("Ignore system is disabled"), NULL, NULL, NULL, true, false); 
 				return true;
 			}
 			if ( !lstrcmpi( one.c_str(), _T("on"))) {
-				prefs->Ignore = 1;
-				DoEvent( GC_EVENT_INFORMATION, NULL, g_ircSession.GetInfo().sNick.c_str(), TranslateT("Ignore system is enabled"), NULL, NULL, NULL, true, false); 
+				Ignore = 1;
+				DoEvent( GC_EVENT_INFORMATION, NULL, GetInfo().sNick.c_str(), TranslateT("Ignore system is enabled"), NULL, NULL, NULL, true, false); 
 				return true;
 			}
 			if ( !lstrcmpi( one.c_str(), _T("off"))) {
-				prefs->Ignore = 0;
-				DoEvent( GC_EVENT_INFORMATION, NULL, g_ircSession.GetInfo().sNick.c_str(), TranslateT("Ignore system is disabled"), NULL, NULL, NULL, true, false); 
+				Ignore = 0;
+				DoEvent( GC_EVENT_INFORMATION, NULL, GetInfo().sNick.c_str(), TranslateT("Ignore system is disabled"), NULL, NULL, NULL, true, false); 
 				return true;
 			}
 			if ( !_tcschr( one.c_str(), '!' ) && !_tcschr( one.c_str(), '@' ))
@@ -299,14 +303,14 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 
 			TString Network;
 			if ( three.empty() )
-				Network = g_ircSession.GetInfo().sNetwork;
+				Network = GetInfo().sNetwork;
 			else
 				Network = three;
 
 			AddIgnore( one.c_str(), IgnoreFlags.c_str(), Network.c_str() );
 			
 			mir_sntprintf(temp, SIZEOF(temp), TranslateT("%s on %s is now ignored (+%s)"), one.c_str(), Network.c_str(), IgnoreFlags.c_str());
-			DoEvent( GC_EVENT_INFORMATION, NULL, g_ircSession.GetInfo().sNick.c_str(), temp, NULL, NULL, NULL, true, false); 
+			DoEvent( GC_EVENT_INFORMATION, NULL, GetInfo().sNick.c_str(), temp, NULL, NULL, NULL, true, false); 
 		}
 		return true;
 	}
@@ -319,7 +323,7 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 			mir_sntprintf(temp, SIZEOF(temp), TranslateT("%s is not ignored now"), one.c_str());
 		else
 			mir_sntprintf(temp, SIZEOF(temp), TranslateT("%s was not ignored"), one.c_str());
-		DoEvent( GC_EVENT_INFORMATION, NULL, g_ircSession.GetInfo().sNick.c_str(), temp, NULL, NULL, NULL, true, false); 
+		DoEvent( GC_EVENT_INFORMATION, NULL, GetInfo().sNick.c_str(), temp, NULL, NULL, NULL, true, false); 
 		return true;
 	}
 
@@ -355,12 +359,12 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 		TString S = MakeWndID(window);
 		GC_INFO gci = {0};
 		gci.Flags = BYID|NAME|COUNT;
-		gci.pszModule = IRCPROTONAME;
+		gci.pszModule = m_szModuleName;
 		gci.pszID = (TCHAR*)S.c_str();
 		if ( !CallServiceSync( MS_GC_GETINFO, 0, ( LPARAM )&gci ))
 			mir_sntprintf( szTemp, SIZEOF(szTemp), _T("users: %u"), gci.iCount);
 
-		DoEvent( GC_EVENT_INFORMATION, NULL, g_ircSession.GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
+		DoEvent( GC_EVENT_INFORMATION, NULL, GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
 		return true;
 	}
 	else if (command == _T("/echo")) {
@@ -369,11 +373,11 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 
 		if ( !lstrcmpi( one.c_str(), _T("on"))) {
 			bEcho = TRUE;
-			DoEvent( GC_EVENT_INFORMATION, NULL, g_ircSession.GetInfo().sNick.c_str(), TranslateT("Outgoing commands are shown"), NULL, NULL, NULL, true, false); 
+			DoEvent( GC_EVENT_INFORMATION, NULL, GetInfo().sNick.c_str(), TranslateT("Outgoing commands are shown"), NULL, NULL, NULL, true, false); 
 		}
 		
 		if ( !lstrcmpi( one.c_str(), _T("off"))) {
-			DoEvent( GC_EVENT_INFORMATION, NULL, g_ircSession.GetInfo().sNick.c_str(), TranslateT("Outgoing commands are not shown"), NULL, NULL, NULL, true, false); 
+			DoEvent( GC_EVENT_INFORMATION, NULL, GetInfo().sNick.c_str(), TranslateT("Outgoing commands are not shown"), NULL, NULL, NULL, true, false); 
 			bEcho = FALSE;
 		}
 
@@ -382,10 +386,10 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 	
 	else if (command == _T("/buddycheck")) {
 		if ( one.empty()) {
-			if (( prefs->AutoOnlineNotification && !bTempDisableCheck) || bTempForceCheck )
-				DoEvent( GC_EVENT_INFORMATION, NULL, g_ircSession.GetInfo().sNick.c_str(), TranslateT("The buddy check function is enabled"), NULL, NULL, NULL, true, false); 
+			if (( AutoOnlineNotification && !bTempDisableCheck) || bTempForceCheck )
+				DoEvent( GC_EVENT_INFORMATION, NULL, GetInfo().sNick.c_str(), TranslateT("The buddy check function is enabled"), NULL, NULL, NULL, true, false); 
 			else
-				DoEvent( GC_EVENT_INFORMATION, NULL, g_ircSession.GetInfo().sNick.c_str(), TranslateT("The buddy check function is disabled"), NULL, NULL, NULL, true, false); 
+				DoEvent( GC_EVENT_INFORMATION, NULL, GetInfo().sNick.c_str(), TranslateT("The buddy check function is disabled"), NULL, NULL, NULL, true, false); 
 			return true;
 		}
 		if ( !lstrcmpi( one.c_str(), _T("on"))) {
@@ -404,11 +408,11 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 				iTempCheckTime = 10;
 
 			if ( iTempCheckTime == 0 )
-				DoEvent( GC_EVENT_INFORMATION, NULL, g_ircSession.GetInfo().sNick.c_str(), TranslateT("The time interval for the buddy check function is now at default setting"), NULL, NULL, NULL, true, false); 
+				DoEvent( GC_EVENT_INFORMATION, NULL, GetInfo().sNick.c_str(), TranslateT("The time interval for the buddy check function is now at default setting"), NULL, NULL, NULL, true, false); 
 			else {
 				TCHAR temp[200];
 				mir_sntprintf( temp, SIZEOF(temp), TranslateT("The time interval for the buddy check function is now %u seconds"), iTempCheckTime);
-				DoEvent( GC_EVENT_INFORMATION, NULL, g_ircSession.GetInfo().sNick.c_str(), temp, NULL, NULL, NULL, true, false); 
+				DoEvent( GC_EVENT_INFORMATION, NULL, GetInfo().sNick.c_str(), temp, NULL, NULL, NULL, true, false); 
 		}	}
 		return true;
 	}
@@ -421,13 +425,15 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 
 	else if ( command == _T("/channelmanager")) {
 		if ( window && !hContact && IsChannel( window )) {
-			if ( g_ircSession ) {
+			if ( IsConnected() ) {
 				if ( manager_hWnd != NULL ) {
 					SetActiveWindow( manager_hWnd );
 					SendMessage( manager_hWnd, WM_CLOSE, 0, 0 );
 				}
 				if ( manager_hWnd == NULL ) {
-					manager_hWnd = CreateDialog( g_hInstance, MAKEINTRESOURCE(IDD_CHANMANAGER), NULL, ManagerWndProc );
+					CManagerDlg* dlg = new CManagerDlg( this );
+					dlg->Show();
+					manager_hWnd = dlg->GetHwnd();
 					SetWindowText( manager_hWnd, TranslateT( "Channel Manager" ));
 					SetWindowText( GetDlgItem( manager_hWnd, IDC_CAPTION ), window );
 					SendMessage( manager_hWnd, IRC_INITMANAGER, 1, (LPARAM)window );
@@ -462,7 +468,7 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 		gcd.iType = GC_EVENT_CONTROL;
 		TString S = MakeWndID(window);
 		gcd.ptszID = (TCHAR*)S.c_str();
-		gcd.pszModule = IRCPROTONAME;
+		gcd.pszModule = m_szModuleName;
 		gce.cbSize = sizeof(GCEVENT);
 		gce.dwFlags = GC_TCHAR;
 		gce.pDest = &gcd;
@@ -473,8 +479,11 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 	}
 	
 	else if (command == _T("/list" )) {
-		if ( list_hWnd == NULL )
-			list_hWnd = CreateDialog( g_hInstance, MAKEINTRESOURCE(IDD_LIST), NULL, ListWndProc );
+		if ( list_hWnd == NULL ) {
+			CListDlg* dlg = new CListDlg( this );
+			dlg->Show();
+			list_hWnd = dlg->GetHwnd();
+		}
 		SetActiveWindow( list_hWnd );
 		int minutes = ( int )NoOfChannels/4000;
 		int minutes2 = ( int )NoOfChannels/9000;
@@ -538,11 +547,11 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 		CONTACT user = { (TCHAR*)one.c_str(), NULL, NULL, false, false, false};
 		HANDLE hContact2 = CList_AddContact(&user, false, false);
 		if ( hContact2 ) {
-			if ( DBGetContactSettingByte( hContact, IRCPROTONAME, "AdvancedMode", 0 ) == 0 )
+			if ( DBGetContactSettingByte( hContact, m_szModuleName, "AdvancedMode", 0 ) == 0 )
 				DoUserhostWithReason(1, (_T("S") + one).c_str(), true, one.c_str());
 			else {
 				DBVARIANT dbv1;
-				if ( !DBGetContactSettingTString( hContact, IRCPROTONAME, "UWildcard", &dbv1 )) {
+				if ( !DBGetContactSettingTString( hContact, m_szModuleName, "UWildcard", &dbv1 )) {
 					DoUserhostWithReason(2, (TString(_T("S")) + dbv1.ptszVal).c_str(), true, dbv1.ptszVal);
 					DBFreeVariant(&dbv1);
 				}
@@ -565,10 +574,10 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 
 		TCHAR szTemp[1000];
 		unsigned long ulAdr = 0;
-		if ( prefs->ManualHost )
-			ulAdr = ConvertIPToInteger( prefs->MySpecifiedHostIP );
+		if ( ManualHost )
+			ulAdr = ConvertIPToInteger( MySpecifiedHostIP );
 		else
-			ulAdr = ConvertIPToInteger( prefs->IPFromServer ? prefs->MyHost : prefs->MyLocalHost );
+			ulAdr = ConvertIPToInteger( IPFromServer ? MyHost : MyLocalHost );
 
 		 // if it is not dcc or if it is dcc and a local ip exist
 		if ( lstrcmpi( two.c_str(), _T("dcc")) != 0 || ulAdr ) {
@@ -581,7 +590,7 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 
 		if ( lstrcmpi(two.c_str(), _T("dcc")) != 0 ) {
 			mir_sntprintf( szTemp, SIZEOF(szTemp), TranslateT("CTCP %s request sent to %s"), two.c_str(), one.c_str());
-			DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, g_ircSession.GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
+			DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
 		}
 
 		return true;
@@ -594,10 +603,10 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 			TCHAR szTemp[1000];
 			unsigned long ulAdr = 0;
 
-			if ( prefs->ManualHost )
-				ulAdr = ConvertIPToInteger( prefs->MySpecifiedHostIP );
+			if ( ManualHost )
+				ulAdr = ConvertIPToInteger( MySpecifiedHostIP );
 			else
-				ulAdr = ConvertIPToInteger( prefs->IPFromServer ? prefs->MyHost : prefs->MyLocalHost );
+				ulAdr = ConvertIPToInteger( IPFromServer ? MyHost : MyLocalHost );
 
 			if ( ulAdr ) {
 				CONTACT user = { (TCHAR*)two.c_str(), NULL, NULL, false, false, true };
@@ -605,11 +614,11 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 				if ( hContact ) {
 					TString s;
 					
-					if ( DBGetContactSettingByte( hContact, IRCPROTONAME, "AdvancedMode", 0 ) == 0 )
+					if ( DBGetContactSettingByte( hContact, m_szModuleName, "AdvancedMode", 0 ) == 0 )
 						DoUserhostWithReason( 1, (_T("S") + two).c_str(), true, two.c_str());
 					else {
 						DBVARIANT dbv1;
-						if ( !DBGetContactSettingTString( hContact, IRCPROTONAME, "UWildcard", &dbv1 )) {
+						if ( !DBGetContactSettingTString( hContact, m_szModuleName, "UWildcard", &dbv1 )) {
 							DoUserhostWithReason(2, (TString(_T("S")) + dbv1.ptszVal).c_str(), true, dbv1.ptszVal );
 							DBFreeVariant( &dbv1 );
 						}
@@ -629,7 +638,7 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 			}
 			else {
 				mir_sntprintf( szTemp, SIZEOF(szTemp), TranslateT("DCC ERROR: Unable to automatically resolve external IP"));
-				DoEvent(GC_EVENT_INFORMATION, 0, g_ircSession.GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
+				DoEvent(GC_EVENT_INFORMATION, 0, GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
 			}
 			return true;
 		}
@@ -638,16 +647,16 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 			TCHAR szTemp[1000];
 
 			unsigned long ulAdr = 0;
-			if ( prefs->ManualHost )
-				ulAdr = ConvertIPToInteger( prefs->MySpecifiedHostIP );
+			if ( ManualHost )
+				ulAdr = ConvertIPToInteger( MySpecifiedHostIP );
 			else
-				ulAdr = ConvertIPToInteger( prefs->IPFromServer ? prefs->MyHost : prefs->MyLocalHost );
+				ulAdr = ConvertIPToInteger( IPFromServer ? MyHost : MyLocalHost );
 
 			if ( ulAdr ) {
 				TString contact = two + _T(DCCSTRING);
 				CONTACT user = { (TCHAR*)contact.c_str(), NULL, NULL, false, false, true};
 				HANDLE hContact = CList_AddContact( &user, false, false );
-				DBWriteContactSettingByte(hContact, IRCPROTONAME, "DCC", 1);
+				DBWriteContactSettingByte(hContact, m_szModuleName, "DCC", 1);
 
 				int iPort = 0;
 				if ( hContact ) {
@@ -658,35 +667,52 @@ static BOOL DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact )
 					dci->iType = DCC_CHAT;
 					dci->bSender = true;
 
-					CDccSession* dcc = new CDccSession(dci);
-					CDccSession* olddcc = g_ircSession.FindDCCSession(hContact);
+					CDccSession* dcc = new CDccSession(this, dci);
+					CDccSession* olddcc = FindDCCSession(hContact);
 					if ( olddcc )
 						olddcc->Disconnect();
-					g_ircSession.AddDCCSession(hContact, dcc);
+					AddDCCSession(hContact, dcc);
 					iPort = dcc->Connect();
 				}
 
 				if ( iPort != 0 ) {
 					PostIrcMessage( _T("/CTCP %s DCC CHAT chat %u %u"), two.c_str(), ulAdr, iPort );
 					mir_sntprintf( szTemp, SIZEOF(szTemp), TranslateT("DCC CHAT request sent to %s"), two.c_str(), one.c_str());
-					DoEvent( GC_EVENT_INFORMATION, 0, g_ircSession.GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
+					DoEvent( GC_EVENT_INFORMATION, 0, GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
 				}
 				else {
 					mir_sntprintf( szTemp, SIZEOF(szTemp), TranslateT("DCC ERROR: Unable to bind port"));
-					DoEvent( GC_EVENT_INFORMATION, 0, g_ircSession.GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
+					DoEvent( GC_EVENT_INFORMATION, 0, GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
 				}
 			}
 			else {
 				mir_sntprintf( szTemp, SIZEOF(szTemp), TranslateT("DCC ERROR: Unable to automatically resolve external IP"));
-				DoEvent( GC_EVENT_INFORMATION, 0, g_ircSession.GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
+				DoEvent( GC_EVENT_INFORMATION, 0, GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
 		}	}
 		return true;
 	}		
 	return false;
 }
 
-static void __stdcall DoInputRequestAliasApcStub( void* str )
+/////////////////////////////////////////////////////////////////////////////////////////
+
+struct DoInputRequestParam
 {
+	DoInputRequestParam( CIrcProto* _pro, const TCHAR* _str ) :
+		ppro( _pro ),
+		str( mir_tstrdup( _str ))
+	{}
+
+	CIrcProto* ppro;
+	TCHAR* str;
+};
+
+static void __stdcall DoInputRequestAliasApcStub( void* _par )
+{
+	DoInputRequestParam* param = ( DoInputRequestParam* )_par;
+	CIrcProto* ppro = param->ppro;
+	TCHAR* str = param->str;
+	
 	TCHAR* infotext = NULL;
 	TCHAR* title = NULL;
 	TCHAR* defaulttext = NULL;
@@ -713,7 +739,9 @@ static void __stdcall DoInputRequestAliasApcStub( void* str )
 							*p = '\0';
 	}	}	}	}	}
 
-	HWND question_hWnd = CreateDialog( g_hInstance, MAKEINTRESOURCE(IDD_QUESTION), NULL, QuestionWndProc );
+	CQuestionDlg* dlg = new CQuestionDlg( ppro, NULL );
+	dlg->Show();
+	HWND question_hWnd = dlg->GetHwnd();
 
 	if ( title )
 		SetDlgItemText( question_hWnd, IDC_CAPTION, title);
@@ -732,19 +760,10 @@ static void __stdcall DoInputRequestAliasApcStub( void* str )
 	PostMessage( question_hWnd, IRC_ACTIVATE, 0, 0);
 
 	mir_free( str );
+	delete param;
 }
 
-static bool DoInputRequestAlias( TCHAR* text )
-{
-	TCHAR* p = _tcsstr( text, _T("%question"));
-	if ( p == NULL )
-		return false;
-
-	CallFunctionAsync( DoInputRequestAliasApcStub, mir_tstrdup( text ));
-	return true;
-}
-
-bool PostIrcMessage( const TCHAR* fmt, ... )
+bool CIrcProto::PostIrcMessage( const TCHAR* fmt, ... )
 {
 	if ( !fmt || lstrlen(fmt) < 1 || lstrlen(fmt) > 4000 )
 		return 0;
@@ -758,19 +777,19 @@ bool PostIrcMessage( const TCHAR* fmt, ... )
 	return PostIrcMessageWnd(NULL, NULL, szBuf);
 }
 
-bool PostIrcMessageWnd( TCHAR* window, HANDLE hContact, const TCHAR* szBuf )
+bool CIrcProto::PostIrcMessageWnd( TCHAR* window, HANDLE hContact, const TCHAR* szBuf )
 {
 	DBVARIANT dbv;
 	TCHAR windowname[256];
 	BYTE bDCC = 0;
 	
 	if ( hContact )
-		bDCC = DBGetContactSettingByte( hContact, IRCPROTONAME, "DCC", 0 );
+		bDCC = DBGetContactSettingByte( hContact, m_szModuleName, "DCC", 0 );
 
-	if ( !g_ircSession && !bDCC || !szBuf || lstrlen(szBuf) < 1 )
+	if ( !IsConnected() && !bDCC || !szBuf || lstrlen(szBuf) < 1 )
 		return 0;
 
-	if ( hContact && !DBGetContactSettingTString( hContact, IRCPROTONAME, "Nick", &dbv )) {
+	if ( hContact && !DBGetContactSettingTString( hContact, m_szModuleName, "Nick", &dbv )) {
 		lstrcpyn( windowname, dbv.ptszVal, 255); 
 		DBFreeVariant(&dbv);
 	}
@@ -789,10 +808,14 @@ bool PostIrcMessageWnd( TCHAR* window, HANDLE hContact, const TCHAR* szBuf )
 	TString Message = szBuf;
 	AddCR( Message );
 	RemoveLinebreaks( Message );
-	if ( !hContact && g_ircSession ) {
+	if ( !hContact && IsConnected() ) {
 		Message = DoAlias( Message.c_str(), windowname );
-		if ( DoInputRequestAlias(( TCHAR* )Message.c_str()))
+
+		if ( _tcsstr( Message.c_str(), _T("%question"))) {
+			CallFunctionAsync( DoInputRequestAliasApcStub, new DoInputRequestParam( this, Message.c_str()));
 			return 1;
+		}
+
 		ReplaceString( Message, _T("%newl"), _T("\r\n"));
 		RemoveLinebreaks( Message );
 	}
@@ -801,7 +824,7 @@ bool PostIrcMessageWnd( TCHAR* window, HANDLE hContact, const TCHAR* szBuf )
 		return 0;
 	
 	CHANNELINFO* wi = (CHANNELINFO *)DoEvent(GC_EVENT_GETITEMDATA, windowname, NULL, NULL, NULL, NULL, NULL, FALSE, FALSE, 0);
-	int codepage = ( wi ) ? wi->codepage : g_ircSession.getCodepage();
+	int codepage = ( wi ) ? wi->codepage : getCodepage();
 
 	// process the message
 	while ( !Message.empty()) {
@@ -820,12 +843,12 @@ bool PostIrcMessageWnd( TCHAR* window, HANDLE hContact, const TCHAR* szBuf )
 			Message.erase( 0, 2 );
 
 		//do this if it's a /raw
-		if ( g_ircSession && ( GetWord(DoThis.c_str(), 0) == _T("/raw") || GetWord(DoThis.c_str(), 0) == _T("/quote"))) {
+		if ( IsConnected() && ( GetWord(DoThis.c_str(), 0) == _T("/raw") || GetWord(DoThis.c_str(), 0) == _T("/quote"))) {
 			if ( GetWord( DoThis.c_str(), 1 ).empty())
 				continue;
 			
 			TString S = GetWordAddress( DoThis.c_str(), 1 );
-			g_ircSession << CIrcMessage( S.c_str(), codepage );
+			*this << CIrcMessage( this, S.c_str(), codepage );
 			continue;
 		}
 
@@ -833,8 +856,8 @@ bool PostIrcMessageWnd( TCHAR* window, HANDLE hContact, const TCHAR* szBuf )
 		if (  (GetWord( DoThis.c_str(), 0)[0] != '/') ||													// not a command
 			  ( (GetWord( DoThis.c_str(), 0)[0] == '/') && (GetWord( DoThis.c_str(), 0)[1] == '/') ) ||		// or double backslash at the beginning
 			  hContact ) {
-			if ( lstrcmpi(window, SERVERWINDOW) == 0 && !g_ircSession.GetInfo().sServerName.empty() )
-				DoThis = (TString)_T("/PRIVMSG ") + g_ircSession.GetInfo().sServerName + _T(" ") + DoThis;
+			if ( lstrcmpi(window, SERVERWINDOW) == 0 && !GetInfo().sServerName.empty() )
+				DoThis = (TString)_T("/PRIVMSG ") + GetInfo().sServerName + _T(" ") + DoThis;
 			else
 				DoThis = (TString)_T("/PRIVMSG ") + windowname + _T(" ") + DoThis;
 			flag = true;
@@ -844,15 +867,15 @@ bool PostIrcMessageWnd( TCHAR* window, HANDLE hContact, const TCHAR* szBuf )
 		if ( DoHardcodedCommand( DoThis, windowname, hContact ))
 			continue;
 
-		if ( !g_ircSession && !bDCC )
+		if ( !IsConnected() && !bDCC )
 			continue;
 
-		if ( !flag && g_ircSession )
+		if ( !flag && IsConnected() )
 			DoThis = DoIdentifiers(DoThis, windowname);
 				
 		if ( hContact ) {
 			if ( flag && bDCC ) {
-				CDccSession* dcc = g_ircSession.FindDCCSession( hContact );
+				CDccSession* dcc = FindDCCSession( hContact );
 				if ( dcc ) {
 					DoThis = FormatMsg( DoThis );
 					TString mess = GetWordAddress(DoThis.c_str(), 2);
@@ -862,14 +885,14 @@ bool PostIrcMessageWnd( TCHAR* window, HANDLE hContact, const TCHAR* szBuf )
 					dcc->SendStuff( mess.c_str());
 				}
 			}
-			else if( g_ircSession ) {
+			else if( IsConnected() ) {
 				DoThis = FormatMsg( DoThis );
-				g_ircSession << CIrcMessage( DoThis.c_str(), codepage, false, false );
+				*this << CIrcMessage( this, DoThis.c_str(), codepage, false, false );
 			}
 		}
 		else {
 			DoThis = FormatMsg( DoThis );
-			g_ircSession << CIrcMessage( DoThis.c_str(), codepage, false, true );
+			*this << CIrcMessage( this, DoThis.c_str(), codepage, false, true );
 	}	}
 
 	return 1;

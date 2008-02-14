@@ -1,8 +1,8 @@
 /*
 IRC plugin for Miranda IM
 
-Copyright (C) 2003-2005 Jurgen Persson
-Copyright (C) 2007 George Hazan
+Copyright (C) 2003-05 Jurgen Persson
+Copyright (C) 2007-08 George Hazan
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -134,7 +134,7 @@ THE_END:
 	return sMessage;
 }
 
-BOOL ShowMessage (const CIrcMessage* pmsg)
+BOOL CIrcProto::ShowMessage (const CIrcMessage* pmsg)
 {
 	TString mess = FormatOutput(pmsg);
 
@@ -150,13 +150,13 @@ BOOL ShowMessage (const CIrcMessage* pmsg)
 		|| ( (pmsg->sCommand == _T("NOTICE")) && ( (pmsg->parameters.size() > 2) ? (_tcsstr(pmsg->parameters[1].c_str(), _T("\001"))==NULL) : false) ) // CTCP answers should go to Network Log window!
 		|| pmsg->sCommand == _T("515"))		//chanserv error
 	{
-		DoEvent(GC_EVENT_INFORMATION, NULL, pmsg->m_bIncoming?pmsg->prefix.sNick.c_str():g_ircSession.GetInfo().sNick.c_str(), mess.c_str(), NULL, NULL, NULL, true, pmsg->m_bIncoming?false:true); 
+		DoEvent(GC_EVENT_INFORMATION, NULL, pmsg->m_bIncoming?pmsg->prefix.sNick.c_str():GetInfo().sNick.c_str(), mess.c_str(), NULL, NULL, NULL, true, pmsg->m_bIncoming?false:true); 
 		return TRUE;
 	}
 
-	if ( prefs->UseServer ) {
+	if ( UseServer ) {
 		DoEvent( GC_EVENT_INFORMATION, SERVERWINDOW, 
-			( pmsg->m_bIncoming ) ? pmsg->prefix.sNick.c_str() : g_ircSession.GetInfo().sNick.c_str(),
+			( pmsg->m_bIncoming ) ? pmsg->prefix.sNick.c_str() : GetInfo().sNick.c_str(),
 			mess.c_str(), NULL, NULL, NULL, true, pmsg->m_bIncoming ? false : true ); 
 		return true;
 	}

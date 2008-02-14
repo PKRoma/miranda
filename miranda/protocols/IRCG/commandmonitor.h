@@ -1,8 +1,8 @@
 /*
 IRC plugin for Miranda IM
 
-Copyright (C) 2003-2005 Jurgen Persson
-Copyright (C) 2007 George Hazan
+Copyright (C) 2003-05 Jurgen Persson
+Copyright (C) 2007-08 George Hazan
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -21,12 +21,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 using namespace irc;
 
-bool  DoOnConnect(const CIrcMessage *pmsg);
-int   DoPerform(const char* event);
-int   IsIgnored(TString nick, TString address, TString host, char type) ;
-int   IsIgnored(TString user, char type);
-bool  AddIgnore(const TCHAR* mask, const TCHAR* mode, const TCHAR* network) ;
-bool  RemoveIgnore(const TCHAR* mask) ;
 void  ResolveIPThread(LPVOID di);
 
 class CMyMonitor :  public CIrcDefaultMonitor
@@ -34,7 +28,7 @@ class CMyMonitor :  public CIrcDefaultMonitor
 protected:
 
 public:
-	CMyMonitor();
+	CMyMonitor( CIrcProto& session );
 	virtual ~CMyMonitor();
 
 	bool OnIrc_WELCOME(const CIrcMessage* pmsg);
