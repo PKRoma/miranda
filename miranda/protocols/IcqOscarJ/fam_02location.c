@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/fam_02location.c,v $
+// File name      : $URL: https://miranda.svn.sourceforge.net/svnroot/miranda/trunk/miranda/protocols/IcqOscarJ/fam_02location.c $
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -37,7 +37,10 @@
 #include "icqoscar.h"
 
 
-static void handleLocationAwayReply(BYTE* buf, WORD wLen, DWORD dwCookie);
+static void handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie);
+
+extern const char* cliSpamBot;
+extern char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, BYTE bDirectFlag, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, BYTE* bClientId, char* szClientBuf);
 
 
 void handleLocationFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader)
@@ -50,7 +53,7 @@ void handleLocationFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* 
     break;
 
   case ICQ_LOCATION_USR_INFO_REPLY: // AIM user info reply
-    handleLocationAwayReply(pBuffer, wBufferLength, pSnacHeader->dwRef);
+    handleLocationUserInfoReply(pBuffer, wBufferLength, pSnacHeader->dwRef);
     break;
 
   case ICQ_ERROR:
@@ -111,7 +114,7 @@ static char* AimApplyEncoding(char* pszStr, const char* pszEncoding)
 
 
 
-void handleLocationAwayReply(BYTE* buf, WORD wLen, DWORD dwCookie)
+void handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie)
 {
   HANDLE hContact;
   DWORD dwUIN;
@@ -163,139 +166,238 @@ void handleLocationAwayReply(BYTE* buf, WORD wLen, DWORD dwCookie)
     return;
   }
 
-  if (GetCookieType(dwCookie) == CKT_FAMILYSPECIAL)
+  switch (GetCookieType(dwCookie))
   {
-    ReleaseCookie(dwCookie);
-
-    // Read user info TLVs
+    case CKT_FAMILYSPECIAL:
     {
-      oscar_tlv_chain* pChain;
-      oscar_tlv* pTLV;
-      BYTE *tmp;
-      char *szMsg = NULL;
+      ReleaseCookie(dwCookie);
 
-      // Syntax check
-      if (wLen < 4)
-        return;
-
-      tmp = buf;
-      // Get general chain
-      if (!(pChain = readIntoTLVChain(&buf, wLen, wTLVCount)))
-        return;
-
-      disposeChain(&pChain);
-
-      wLen -= (buf - tmp);
-
-      // Get extra chain
-      if (pChain = readIntoTLVChain(&buf, wLen, 2))
+      // Read user info TLVs
       {
-        char* szEncoding = NULL;
+        oscar_tlv_chain* pChain;
+        oscar_tlv* pTLV;
+        BYTE *tmp;
+        char *szMsg = NULL;
 
-        // Get Profile encoding TLV
-        pTLV = getTLV(pChain, 0x01, 1);
-        if (pTLV && (pTLV->wLen >= 1))
+        // Syntax check
+        if (wLen < 4)
+          return;
+
+        tmp = buf;
+        // Get general chain
+        if (!(pChain = readIntoTLVChain(&buf, wLen, wTLVCount)))
+          return;
+
+        disposeChain(&pChain);
+
+        wLen -= (buf - tmp);
+
+        // Get extra chain
+        if (pChain = readIntoTLVChain(&buf, wLen, 2))
         {
-          szEncoding = (char*)_alloca(pTLV->wLen + 1);
-          memcpy(szEncoding, pTLV->pData, pTLV->wLen);
-          szEncoding[pTLV->wLen] = '\0';
+          char* szEncoding = NULL;
+
+          // Get Profile encoding TLV
+          pTLV = getTLV(pChain, 0x01, 1);
+          if (pTLV && (pTLV->wLen >= 1))
+          {
+            szEncoding = (char*)_alloca(pTLV->wLen + 1);
+            memcpy(szEncoding, pTLV->pData, pTLV->wLen);
+            szEncoding[pTLV->wLen] = '\0';
+          }
+          // Get Profile info TLV
+          pTLV = getTLV(pChain, 0x02, 1);
+          if (pTLV && (pTLV->wLen >= 1))
+          {
+            szMsg = (char*)SAFE_MALLOC(pTLV->wLen + 2);
+            memcpy(szMsg, pTLV->pData, pTLV->wLen);
+            szMsg[pTLV->wLen] = '\0';
+            szMsg[pTLV->wLen + 1] = '\0';
+            szMsg = AimApplyEncoding(szMsg, szEncoding);
+            szMsg = EliminateHtml(szMsg, pTLV->wLen);
+          }
+          // Free TLV chain
+          disposeChain(&pChain);
         }
-        // Get Profile info TLV
-        pTLV = getTLV(pChain, 0x02, 1);
-        if (pTLV && (pTLV->wLen >= 1))
+
+        ICQWriteContactSettingString(hContact, "About", szMsg);
+        ICQBroadcastAck(hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE)1 ,0);
+
+        SAFE_FREE(&szMsg);
+      }
+      break;
+    }
+
+    case CKT_CHECKSPAMBOT:
+    {
+      ReleaseCookie(dwCookie);
+
+      // Read user info TLVs
+      {
+        oscar_tlv_chain* pChain;
+        oscar_tlv* pTLV;
+        BYTE *tmp;
+        WORD wVersion = 0;
+        DWORD dwFT1 = 0, dwFT2 = 0, dwFT3 = 0;
+        DWORD dwOnlineSince;
+        BYTE nTCPFlag = 0;
+        DWORD dwDirectConnCookie = 0;
+        DWORD dwWebPort = 0;
+        BYTE* capBuf = NULL;
+        WORD capLen = 0;
+        char szStrBuf[MAX_PATH];
+        BYTE bClientId = 0;
+        char *szClient;
+
+        // Syntax check
+        if (wLen < 4)
+          return;
+
+        tmp = buf;
+        // Get general chain
+        if (!(pChain = readIntoTLVChain(&buf, wLen, wTLVCount)))
+          return;
+
+        if (dwUIN)
+        { // Get DC info TLV
+          pTLV = getTLV(pChain, 0x0C, 1);
+          if (pTLV && (pTLV->wLen >= 15))
+          {
+            BYTE* pBuffer;
+
+            pBuffer = pTLV->pData;
+            pBuffer += 8;
+            unpackByte(&pBuffer,  &nTCPFlag);
+            unpackWord(&pBuffer,  &wVersion);
+            unpackDWord(&pBuffer, &dwDirectConnCookie);
+            unpackDWord(&pBuffer, &dwWebPort); // Web front port
+            pBuffer += 4; // Client features
+
+            // Get faked time signatures, used to identify clients
+            if (pTLV->wLen >= 0x23)
+            {
+              unpackDWord(&pBuffer, &dwFT1);
+              unpackDWord(&pBuffer, &dwFT2);
+              unpackDWord(&pBuffer, &dwFT3);
+            }
+          }
+        }
+        // Get Online Since TLV
+        dwOnlineSince = getDWordFromChain(pChain, 0x03, 1);
+
+        disposeChain(&pChain);
+
+        wLen -= (buf - tmp);
+
+        // Get extra chain
+        if (pChain = readIntoTLVChain(&buf, wLen, 2))
         {
-          szMsg = (char*)SAFE_MALLOC(pTLV->wLen + 2);
-          memcpy(szMsg, pTLV->pData, pTLV->wLen);
-          szMsg[pTLV->wLen] = '\0';
-          szMsg[pTLV->wLen + 1] = '\0';
-          szMsg = AimApplyEncoding(szMsg, szEncoding);
-          szMsg = EliminateHtml(szMsg, pTLV->wLen);
+          pTLV = getTLV(pChain, 0x05, 1);
+          if (pTLV && (pTLV->wLen > 0))
+          {
+            capBuf = pTLV->pData;
+            capLen = pTLV->wLen;
+          }
         }
+        szClient = detectUserClient(hContact, dwUIN, wVersion, dwFT1, dwFT2, dwFT3, dwOnlineSince, nTCPFlag, dwDirectConnCookie, dwWebPort, capBuf, capLen, &bClientId, szStrBuf);
+
         // Free TLV chain
         disposeChain(&pChain);
+
+        if (szClient == cliSpamBot)
+        {
+          if (DBGetContactSettingByte(hContact, "CList", "NotOnList", 0))
+          { // kill spammer
+            icq_DequeueUser(dwUIN);
+            AddToSpammerList(dwUIN);
+            if (ICQGetContactSettingByte(NULL, "PopupsSpamEnabled", DEFAULT_SPAM_POPUPS_ENABLED))
+              ShowPopUpMsg(hContact, "Spambot Detected", "Contact deleted & further events blocked.", POPTYPE_SPAM);
+            CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
+
+            NetLog_Server("Contact %s deleted", strUID(dwUIN, szUID));
+          }
+        }
       }
-
-      ICQWriteContactSettingString(hContact, "About", szMsg);
-      ICQBroadcastAck(hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE)1 ,0);
-
-      SAFE_FREE(&szMsg);
+      break;
     }
-  }
-  else
-  {
-    status = AwayMsgTypeToStatus(pCookieData->nAckType);
-    if (status == ID_STATUS_OFFLINE)
+
+    default: // away message
     {
-      NetLog_Server("SNAC(2.6) Ignoring unknown status message from %s", strUID(dwUIN, szUID));
+      status = AwayMsgTypeToStatus(pCookieData->nAckType);
+      if (status == ID_STATUS_OFFLINE)
+      {
+        NetLog_Server("SNAC(2.6) Ignoring unknown status message from %s", strUID(dwUIN, szUID));
+
+        ReleaseCookie(dwCookie);
+        return;
+      }
 
       ReleaseCookie(dwCookie);
-      return;
-    }
 
-    ReleaseCookie(dwCookie);
-
-    // Read user info TLVs
-    {
-      oscar_tlv_chain* pChain;
-      oscar_tlv* pTLV;
-      BYTE *tmp;
-      char *szMsg = NULL;
-      CCSDATA ccs;
-      PROTORECVEVENT pre;
-
-      // Syntax check
-      if (wLen < 4)
-        return;
-
-      tmp = buf;
-      // Get general chain
-      if (!(pChain = readIntoTLVChain(&buf, wLen, wTLVCount)))
-        return;
-
-      disposeChain(&pChain);
-
-      wLen -= (buf - tmp);
-
-      // Get extra chain
-      if (pChain = readIntoTLVChain(&buf, wLen, 2))
+      // Read user info TLVs
       {
-        char* szEncoding = NULL;
+        oscar_tlv_chain* pChain;
+        oscar_tlv* pTLV;
+        BYTE *tmp;
+        char *szMsg = NULL;
+        CCSDATA ccs;
+        PROTORECVEVENT pre;
 
-        // Get Away encoding TLV
-        pTLV = getTLV(pChain, 0x03, 1);
-        if (pTLV && (pTLV->wLen >= 1))
-        {
-          szEncoding = (char*)_alloca(pTLV->wLen + 1);
-          memcpy(szEncoding, pTLV->pData, pTLV->wLen);
-          szEncoding[pTLV->wLen] = '\0';
-        }
-        // Get Away info TLV
-        pTLV = getTLV(pChain, 0x04, 1);
-        if (pTLV && (pTLV->wLen >= 1))
-        {
-          szMsg = (char*)SAFE_MALLOC(pTLV->wLen + 2);
-          memcpy(szMsg, pTLV->pData, pTLV->wLen);
-          szMsg[pTLV->wLen] = '\0';
-          szMsg[pTLV->wLen + 1] = '\0';
-          szMsg = AimApplyEncoding(szMsg, szEncoding);
-          szMsg = EliminateHtml(szMsg, pTLV->wLen);
-        }
-        // Free TLV chain
+        // Syntax check
+        if (wLen < 4)
+          return;
+
+        tmp = buf;
+        // Get general chain
+        if (!(pChain = readIntoTLVChain(&buf, wLen, wTLVCount)))
+          return;
+
         disposeChain(&pChain);
+
+        wLen -= (buf - tmp);
+
+        // Get extra chain
+        if (pChain = readIntoTLVChain(&buf, wLen, 2))
+        {
+          char* szEncoding = NULL;
+
+          // Get Away encoding TLV
+          pTLV = getTLV(pChain, 0x03, 1);
+          if (pTLV && (pTLV->wLen >= 1))
+          {
+            szEncoding = (char*)_alloca(pTLV->wLen + 1);
+            memcpy(szEncoding, pTLV->pData, pTLV->wLen);
+            szEncoding[pTLV->wLen] = '\0';
+          }
+          // Get Away info TLV
+          pTLV = getTLV(pChain, 0x04, 1);
+          if (pTLV && (pTLV->wLen >= 1))
+          {
+            szMsg = (char*)SAFE_MALLOC(pTLV->wLen + 2);
+            memcpy(szMsg, pTLV->pData, pTLV->wLen);
+            szMsg[pTLV->wLen] = '\0';
+            szMsg[pTLV->wLen + 1] = '\0';
+            szMsg = AimApplyEncoding(szMsg, szEncoding);
+            szMsg = EliminateHtml(szMsg, pTLV->wLen);
+          }
+          // Free TLV chain
+          disposeChain(&pChain);
+        }
+
+        ccs.szProtoService = PSR_AWAYMSG;
+        ccs.hContact = hContact;
+        ccs.wParam = status;
+        ccs.lParam = (LPARAM)&pre;
+        pre.flags = 0;
+        pre.szMessage = szMsg?szMsg:"";
+        pre.timestamp = time(NULL);
+        pre.lParam = dwCookie;
+
+        CallService(MS_PROTO_CHAINRECV,0,(LPARAM)&ccs);
+
+        SAFE_FREE(&szMsg);
       }
-
-      ccs.szProtoService = PSR_AWAYMSG;
-      ccs.hContact = hContact;
-      ccs.wParam = status;
-      ccs.lParam = (LPARAM)&pre;
-      pre.flags = 0;
-      pre.szMessage = szMsg?szMsg:"";
-      pre.timestamp = time(NULL);
-      pre.lParam = dwCookie;
-
-      CallService(MS_PROTO_CHAINRECV,0,(LPARAM)&ccs);
-
-      SAFE_FREE(&szMsg);
+      break;
     }
   }
 }

@@ -158,6 +158,7 @@ const capstr capRAndQ     = {'R', '&', 'Q', 'i', 'n', 's', 'i', 'd', 'e', 0, 0, 
 const capstr capIMadering = {'I', 'M', 'a', 'd', 'e', 'r', 'i', 'n', 'g', ' ', 'C', 'l', 'i', 'e', 'n', 't'};
 const capstr capmChat     = {'m', 'C', 'h', 'a', 't', ' ', 'i', 'c', 'q', ' ', 0, 0, 0, 0, 0, 0};
 const capstr capJimm      = {'J', 'i', 'm', 'm', ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+const capstr capCorePager = {'C', 'O', 'R', 'E', ' ', 'P', 'a', 'g', 'e', 'r', 0, 0, 0, 0, 0, 0};
 const capstr capVmIcq     = {'V', 'm', 'I', 'C', 'Q', ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capSmapeR    = {'S', 'm', 'a', 'p', 'e', 'r', ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capAnastasia = {0x44, 0xE5, 0xBF, 0xCE, 0xB0, 0x96, 0xE5, 0x47, 0xBD, 0x65, 0xEF, 0xD6, 0xA3, 0x7E, 0x36, 0x02};
@@ -563,6 +564,19 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         strcpy(szClientBuf, "Jimm ");
         strncat(szClientBuf, (*capId) + 5, 11);
         szClient = szClientBuf;
+      }
+      else if (capId = MatchCap(caps, wLen, &capCorePager, 0xA))
+      { // http://corepager.net.ru/index/0-2
+        strcpy(szClientBuf, "CORE Pager");
+        if (dwFT2 == 0x0FFFF0011 && dwFT3 == 0x1100FFFF && (dwFT1 >> 0x18))
+        {
+          char ver[16];
+
+          null_snprintf(ver, 10, " %d.%d", dwFT1 >> 0x18, (dwFT1 >> 0x10) & 0xFF);
+          if ((dwFT1 & 0xFF) == 0x0B)
+            strcat(ver, " Beta");
+          strcat(szClientBuf, ver);
+        }
       }
       else if (MatchCap(caps, wLen, &capMacIcq, 0x10))
       {

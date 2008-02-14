@@ -745,6 +745,26 @@ void icq_sendSetAimAwayMsgServ(char *szMsg)
 
 
 
+DWORD icq_sendCheckSpamBot(HANDLE hContact, DWORD dwUIN, char *szUID)
+{
+  icq_packet packet;
+  DWORD dwCookie;
+  BYTE bUIDlen = getUIDLen(dwUIN, szUID);
+
+  dwCookie = AllocateCookie(CKT_CHECKSPAMBOT, ICQ_LOCATION_QRY_USER_INFO, hContact, NULL);
+
+  serverPacketInit(&packet, (WORD)(15 + bUIDlen));
+  packFNACHeaderFull(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_QRY_USER_INFO, 0, dwCookie);
+  packDWord(&packet, 0x04);
+  packUID(&packet, dwUIN, szUID);
+
+  sendServPacket(&packet);
+
+  return dwCookie;
+}
+
+
+
 void icq_sendFileSendServv7(filetransfer* ft, const char *szFiles)
 {
   icq_packet packet;
@@ -1372,10 +1392,10 @@ void icq_sendNewContact(DWORD dwUin, char* szUid)
 
 
 
-void icq_sendRemoveContact(DWORD dwUin, char* szUid)
+/*void icq_sendRemoveContact(DWORD dwUin, char* szUid)
 {
   icq_sendGenericContact(dwUin, szUid, ICQ_BUDDY_FAMILY, ICQ_USER_REMOVEFROMLIST);
-}
+}*/
 
 
 // list==0: visible list

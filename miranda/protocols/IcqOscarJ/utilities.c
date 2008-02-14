@@ -588,6 +588,8 @@ HANDLE HContactFromUIN(DWORD uin, int *Added)
       {
         icq_sendNewContact(uin, NULL);
       }
+      if (ICQGetContactSettingByte(NULL, "KillSpambots", DEFAULT_KILLSPAM_ENABLED))
+        icq_sendCheckSpamBot(hContact, uin, NULL);
     }
     AddToCache(hContact, uin);
     *Added = 1;
@@ -653,6 +655,8 @@ HANDLE HContactFromUID(DWORD dwUIN, char* pszUID, int *Added)
       {
         icq_sendNewContact(0, pszUID);
       }
+      if (ICQGetContactSettingByte(NULL, "KillSpambots", DEFAULT_KILLSPAM_ENABLED))
+        icq_sendCheckSpamBot(hContact, 0, pszUID);
     }
     *Added = 1;
 
