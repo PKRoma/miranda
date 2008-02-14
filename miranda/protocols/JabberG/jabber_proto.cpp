@@ -74,7 +74,7 @@ static int compareListItems( const JABBER_LIST_ITEM* p1, const JABBER_LIST_ITEM*
 	return lstrcmpi( szp1, szp2 );
 }
 
-CJabberProto::CJabberProto( const char* aProtoName ) :
+CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 	m_lstTransports( 50, compareTransports ),
 	m_lstRoster( 50, compareListItems ),
 	m_iqManager( this ),
@@ -86,6 +86,7 @@ CJabberProto::CJabberProto( const char* aProtoName ) :
 
 	InitializeCriticalSection( &m_csLists );
 
+	m_tszUserName = mir_tstrdup( aUserName );
 	m_szProtoName = mir_strdup( aProtoName );
 	m_szModuleName = mir_strdup( m_szProtoName );
 	_strlwr( m_szModuleName );
@@ -132,6 +133,7 @@ CJabberProto::CJabberProto( const char* aProtoName ) :
 	JHookEvent( ME_CLIST_PREBUILDCONTACTMENU, &CJabberProto::OnPrebuildContactMenu );
 	JHookEvent( ME_MODERNOPT_INITIALIZE, &CJabberProto::OnModernOptInit );
 	JHookEvent( ME_OPT_INITIALISE, &CJabberProto::OnOptionsInit );
+	JHookEvent( ME_SYSTEM_MODULESLOADED, &CJabberProto::OnModulesLoadedEx );
 	JHookEvent( ME_SYSTEM_PRESHUTDOWN, &CJabberProto::OnPreShutdown );
 	JHookEvent( ME_SKIN2_ICONSCHANGED, &CJabberProto::OnReloadIcons );
 
@@ -148,6 +150,10 @@ CJabberProto::CJabberProto( const char* aProtoName ) :
 	SerialInit();
 	ConsoleInit();
 	InitCustomFolders();
+
+	char text[ MAX_PATH ];
+	mir_snprintf( text, sizeof( text ), "%s/Status", m_szProtoName );
+	JCallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )text );
 }
 
 CJabberProto::~CJabberProto()

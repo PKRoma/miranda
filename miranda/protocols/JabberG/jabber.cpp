@@ -214,18 +214,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 
 static CJabberProto* jabberProtoInit( const char* pszProtoName, const TCHAR* tszUserName )
 {
-	CJabberProto* ppro = new CJabberProto( pszProtoName );
-	if ( !ppro )
-		return NULL;
-
-	ppro->m_tszUserName = mir_tstrdup( tszUserName );
-
-	ppro->JHookEvent( ME_SYSTEM_MODULESLOADED, &CJabberProto::OnModulesLoadedEx );
-
-	char text[ MAX_PATH ];
-	mir_snprintf( text, sizeof( text ), "%s/Status", ppro->m_szProtoName );
-	JCallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )text );
-	return ppro;
+	return new CJabberProto( pszProtoName, tszUserName );
 }
 
 static int jabberProtoUninit( CJabberProto* ppro )

@@ -87,7 +87,7 @@ struct TFilterInfo
 
 struct CJabberProto : public PROTO_INTERFACE
 {
-				CJabberProto( const char* );
+				CJabberProto( const char*, const TCHAR* );
 				~CJabberProto();
 
 				__inline void* operator new( size_t size )
