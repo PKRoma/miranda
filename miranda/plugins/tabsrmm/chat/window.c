@@ -119,19 +119,16 @@ static BOOL CheckCustomLink(HWND hwndDlg, POINT* ptClient, UINT uMsg, WPARAM wPa
 
 		if (TextRange->lpVtbl->GetFont(TextRange, &TextFont) != S_OK) break;
 		TextFont->lpVtbl->GetProtected(TextFont, &res);
-
-		bIsCustomLink = (res != tomFalse);
-		if (!bIsCustomLink) break;
+		if (res == tomFalse) break;
 
 		TextRange->lpVtbl->Expand(TextRange, tomCharFormat, NULL);
 		TextRange->lpVtbl->GetPoint(TextRange, tomStart+TA_TOP+TA_LEFT, &r.left, &r.top);
 		TextRange->lpVtbl->GetPoint(TextRange, tomEnd+TA_BOTTOM+TA_RIGHT, &r.right, &r.bottom);
-
 		if (!PtInRect(&r,pt)) break;
 		
 		TextRange->lpVtbl->GetStart(TextRange,&cpMin);
 		TextRange->lpVtbl->GetEnd(TextRange,&cpMax);
-
+		bIsCustomLink = (cpMin < cpMax);
 	} while(FALSE);
 
 	if (TextFont) TextFont->lpVtbl->Release(TextFont);
@@ -2797,7 +2794,6 @@ LABEL_SHOWWINDOW:
 										HMENU     hMenu = 0;
 										USERINFO  uiNew;
 
-										MessageBox(0, tr.lpstrText, _T("foo"), MB_OK);
 										while (ui) {
 											if (!lstrcmp(ui->pszNick, tr.lpstrText)) {
 												POINT pt;
@@ -2829,16 +2825,17 @@ LABEL_SHOWWINDOW:
 									}
 									else if (msg == WM_LBUTTONUP) {
 										USERINFO	*ui = si->pUsers;
-										BOOL		fFound = FALSE;
+										//BOOL		fFound = TRUE;
 
-										while(ui) {
+										/*while(ui) {
 											if(!lstrcmp(ui->pszNick, tr.lpstrText)) {
 												fFound = TRUE;
 												break;
 											}
 											ui = ui->next;
-										}
-										if(fFound) {
+										}*/
+
+										//if(fFound) {
 											SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_EXGETSEL, 0, (LPARAM) &chr);
 											tszTmp = tszAppeal = (TCHAR *) malloc((_tcslen(tr.lpstrText) + _tcslen(tszAplTmpl) + 3) * sizeof(TCHAR));
 											tr2.lpstrText = (LPTSTR) malloc(sizeof(TCHAR) * 2);
@@ -2872,7 +2869,7 @@ LABEL_SHOWWINDOW:
 											SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_REPLACESEL,  FALSE, (LPARAM)tszAppeal);
 											free((void *) tr2.lpstrText);
 											free((void *) tszAppeal);
-										}
+										//}
 									}
 								}
 								SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
