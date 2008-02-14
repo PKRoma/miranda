@@ -40,7 +40,7 @@ int ThreadData::send( char data[], int datalen )
 {
 	NETLIBBUFFER nlb = { data, datalen, 0 };
 
-	mWaitPeriod = mJoinedCount ? 60 : 30;
+	mWaitPeriod = 60;
 
 	if ( MyOptions.UseGateway && !( mType == SERVER_FILETRANS || mType == SERVER_P2P_DIRECT )) {
 		mGatewayTimeout = 2;
@@ -368,7 +368,7 @@ int ThreadData::recv_dg( char* data, long datalen )
 		if ( ressz > (size_t)(tBody - tResult) )
 		{
 			mGatewayTimeout = 1;
-			mWaitPeriod = mJoinedCount ? 60 : 30;
+			mWaitPeriod = 60;
 		}
 
 		mReadAheadBuffer = tResult;
@@ -387,7 +387,7 @@ int ThreadData::recv( char* data, long datalen )
 
 LBL_RecvAgain:
 	if ( !mIsMainThread && !MyOptions.UseGateway && !MyOptions.UseProxy ) {
-		mWaitPeriod = mJoinedCount ? 60 : 30;
+		mWaitPeriod = 60;
 		NETLIBSELECT nls = { 0 };
 		nls.cbSize = sizeof( nls );
 		nls.dwTimeout = 1000;
