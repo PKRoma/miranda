@@ -24,6 +24,17 @@ Contents
 ----------------------
 * New in 0.7.4
  - TBD
+ 
+Enhancements:
+ - ICQ: Use new offline messaging protocol (supports unicode)
+ - ICQ: Ability to send/receive contacts to/from ICQ6 and AIM
+ - ICQ: Ability to view/set ICQ6 compatible custom statuses (icons only)
+ - ICQ: Reinvented known spam bot blocking
+ 
+Bugfixes:
+ - ICQ: Fixed receiving of multi-part messages (only first part was received)
+ - ICQ: Fixed connection problems with many contacts in the server-list
+ - ICQ: Do not lose server-list contacts due to too long nicknames/comments
 
 * New in 0.7.3
  - MSN: URL encoding of utf8 was broken
