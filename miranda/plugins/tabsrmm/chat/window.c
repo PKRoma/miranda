@@ -55,6 +55,7 @@ static WNDPROC OldNicklistProc;
 static WNDPROC OldFilterButtonProc;
 static WNDPROC OldLogProc;
 static HKL hkl = NULL;
+static HCURSOR hCurHyperlinkHand;
 
 extern PITA pfnIsThemeActive;
 extern POTD pfnOpenThemeData;
@@ -89,6 +90,71 @@ static struct _tagbtns {
 	IDOK, _T("Send message"),
 	-1, NULL
 };
+
+static const CLSID IID_ITextDocument= { 0x8CC497C0,0xA1DF,0x11CE, { 0x80,0x98, 0x00,0xAA, 0x00,0x47,0xBE,0x5D} };
+
+
+/*
+ * checking if theres's protected text at the point
+ * emulates EN_LINK WM_NOTIFY to parent to process links
+ */
+static BOOL CheckCustomLink(HWND hwndDlg, POINT* ptClient, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	long res = 0;
+	long cpMin = 0,cpMax = 0;
+	RECT r = {0};
+	IRichEditOle* RichEditOle = NULL;
+	ITextDocument* TextDocument = NULL;
+	ITextRange* TextRange = NULL;
+	ITextFont* TextFont = NULL;
+	BOOL bIsCustomLink = FALSE;
+
+	POINT pt = *ptClient;
+	ClientToScreen(hwndDlg, &pt);
+
+	do  {
+		if (!SendMessage(hwndDlg, EM_GETOLEINTERFACE, 0, (LPARAM)&RichEditOle)) break;
+		if (RichEditOle->lpVtbl->QueryInterface(RichEditOle, &IID_ITextDocument, (void**)&TextDocument) != S_OK) break;
+		if (TextDocument->lpVtbl->RangeFromPoint(TextDocument, pt.x, pt.y, &TextRange) != S_OK) break;
+
+		if (TextRange->lpVtbl->GetFont(TextRange, &TextFont) != S_OK) break;
+		TextFont->lpVtbl->GetProtected(TextFont, &res);
+
+		bIsCustomLink = (res != tomFalse);
+		if (!bIsCustomLink) break;
+
+		TextRange->lpVtbl->Expand(TextRange, tomCharFormat, NULL);
+		TextRange->lpVtbl->GetPoint(TextRange, tomStart+TA_TOP+TA_LEFT, &r.left, &r.top);
+		TextRange->lpVtbl->GetPoint(TextRange, tomEnd+TA_BOTTOM+TA_RIGHT, &r.right, &r.bottom);
+
+		if (!PtInRect(&r,pt)) break;
+		
+		TextRange->lpVtbl->GetStart(TextRange,&cpMin);
+		TextRange->lpVtbl->GetEnd(TextRange,&cpMax);
+
+	} while(FALSE);
+
+	if (TextFont) TextFont->lpVtbl->Release(TextFont);
+	if (TextRange) TextRange->lpVtbl->Release(TextRange);
+	if (TextDocument) TextDocument->lpVtbl->Release(TextDocument);
+	if (RichEditOle) RichEditOle->lpVtbl->Release(RichEditOle);
+
+	if (bIsCustomLink) {
+		ENLINK enlink = {0};
+		enlink.nmhdr.hwndFrom = hwndDlg;
+		enlink.nmhdr.idFrom = IDC_CHAT_LOG;
+		enlink.nmhdr.code = EN_LINK;
+		enlink.msg = uMsg;
+		enlink.wParam = wParam;
+		enlink.lParam = lParam;
+		enlink.chrg.cpMin = cpMin;
+		enlink.chrg.cpMax = cpMax;	
+		SendMessage(GetParent(hwndDlg), WM_NOTIFY, (WPARAM)IDC_CHAT_LOG, (LPARAM)&enlink);
+	}
+	return bIsCustomLink;
+}
+
+
 
 static BOOL IsStringValidLink(TCHAR* pszText)
 {
@@ -1355,9 +1421,32 @@ static LRESULT CALLBACK LogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 		case WM_COPY:
 			return(DM_WMCopyHandler(hwnd, OldLogProc, wParam, lParam));
 
+		case WM_SETCURSOR:
+			if (g_Settings.ClickableNicks && (LOWORD(lParam) == HTCLIENT)) {
+				POINT pt;
+				GetCursorPos(&pt);
+				ScreenToClient(hwnd,&pt);
+				if (CheckCustomLink(hwnd, &pt, msg, wParam, lParam)) return TRUE;
+			}
+			break;
+
+		case WM_LBUTTONDOWN:
+		case WM_LBUTTONDBLCLK:
+		case WM_RBUTTONUP:
+		case WM_RBUTTONDOWN:
+		case WM_RBUTTONDBLCLK:
+			if (g_Settings.ClickableNicks) {
+				POINT pt={LOWORD(lParam), HIWORD(lParam)};
+				CheckCustomLink(hwnd, &pt, msg, wParam, lParam);
+			}
+			break;
+
 		case WM_LBUTTONUP: {
 			CHARRANGE sel;
-
+			if (g_Settings.ClickableNicks) {
+				POINT pt={LOWORD(lParam), HIWORD(lParam)};
+				CheckCustomLink(hwnd, &pt, msg, wParam, lParam);
+			}
 			SendMessage(hwnd, EM_EXGETSEL, 0, (LPARAM) &sel);
 			if (sel.cpMin != sel.cpMax) {
 				SendMessage(hwnd, WM_COPY, 0, 0);
@@ -1375,7 +1464,7 @@ static LRESULT CALLBACK LogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 			}
 			break;
 
-		case WM_ACTIVATE: {
+		case WM_ACTIVATE:
 			if (LOWORD(wParam) == WA_INACTIVE) {
 				CHARRANGE sel;
 				SendMessage(hwnd, EM_EXGETSEL, 0, (LPARAM) &sel);
@@ -1384,8 +1473,7 @@ static LRESULT CALLBACK LogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 					SendMessage(hwnd, EM_EXSETSEL, 0, (LPARAM) & sel);
 				}
 			}
-		}
-		break;
+			break;
 
 		case WM_CHAR:
 			SetFocus(GetDlgItem(hwndParent, IDC_CHAT_MESSAGE));
@@ -2621,6 +2709,16 @@ LABEL_SHOWWINDOW:
 				case EN_LINK:
 					if (pNmhdr->idFrom = IDC_CHAT_LOG) {
 						switch (((ENLINK *) lParam)->msg) {
+							case WM_SETCURSOR:
+								if (g_Settings.ClickableNicks) {
+									if (!hCurHyperlinkHand)
+										hCurHyperlinkHand = LoadCursor(NULL, IDC_HAND);
+									if (hCurHyperlinkHand != GetCursor())
+										SetCursor(hCurHyperlinkHand);
+									return TRUE;
+								}
+								break;
+
 							case WM_RBUTTONDOWN:
 							case WM_LBUTTONUP:
 							case WM_LBUTTONDBLCLK: {
@@ -2698,6 +2796,8 @@ LABEL_SHOWWINDOW:
 										USERINFO *ui = si->pUsers;
 										HMENU     hMenu = 0;
 										USERINFO  uiNew;
+
+										MessageBox(0, tr.lpstrText, _T("foo"), MB_OK);
 										while (ui) {
 											if (!lstrcmp(ui->pszNick, tr.lpstrText)) {
 												POINT pt;
@@ -2728,47 +2828,51 @@ LABEL_SHOWWINDOW:
 										return TRUE;
 									}
 									else if (msg == WM_LBUTTONUP) {
-										SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE,
-														   EM_EXGETSEL, 0, (LPARAM) &chr);
-										tszTmp = tszAppeal = (TCHAR *) malloc(
-																 (_tcslen(tr.lpstrText) +
-																  _tcslen(tszAplTmpl) + 3) * sizeof(TCHAR));
-										tr2.lpstrText = (LPTSTR) malloc(sizeof(TCHAR) * 2);
-										if (chr.cpMin) {
-											/* prepend nick with space if needed */
-											tr2.chrg.cpMin = chr.cpMin - 1;
-											tr2.chrg.cpMax = chr.cpMin;
-											SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE,
-															   EM_GETTEXTRANGE, 0, (LPARAM) &tr2);
-											if (! _istspace(*tr2.lpstrText))
-												*tszTmp++ = _T(' ');
-											_tcscpy(tszTmp, tr.lpstrText);
+										USERINFO	*ui = si->pUsers;
+										BOOL		fFound = FALSE;
+
+										while(ui) {
+											if(!lstrcmp(ui->pszNick, tr.lpstrText)) {
+												fFound = TRUE;
+												break;
+											}
+											ui = ui->next;
 										}
-										else
-											/* in the beginning of the message window */
-											_stprintf(tszAppeal, tszAplTmpl, tr.lpstrText);
-										st = _tcslen(tszAppeal);
-										if (chr.cpMax != -1) {
-											tr2.chrg.cpMin = chr.cpMax;
-											tr2.chrg.cpMax = chr.cpMax + 1;
-											/* if there is no space after selection,
-											   or there is nothing after selection at all... */
-											if (! SendDlgItemMessage(hwndDlg,
-																	 IDC_CHAT_MESSAGE,
-																	 EM_GETTEXTRANGE, 0, (LPARAM) &tr2) ||
-													! _istspace(*tr2.lpstrText)) {
+										if(fFound) {
+											SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_EXGETSEL, 0, (LPARAM) &chr);
+											tszTmp = tszAppeal = (TCHAR *) malloc((_tcslen(tr.lpstrText) + _tcslen(tszAplTmpl) + 3) * sizeof(TCHAR));
+											tr2.lpstrText = (LPTSTR) malloc(sizeof(TCHAR) * 2);
+											if (chr.cpMin) {
+												/* prepend nick with space if needed */
+												tr2.chrg.cpMin = chr.cpMin - 1;
+												tr2.chrg.cpMax = chr.cpMin;
+												SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_GETTEXTRANGE, 0, (LPARAM) &tr2);
+												if (! _istspace(*tr2.lpstrText))
+													*tszTmp++ = _T(' ');
+												_tcscpy(tszTmp, tr.lpstrText);
+											}
+											else
+												/* in the beginning of the message window */
+												_stprintf(tszAppeal, tszAplTmpl, tr.lpstrText);
+											st = _tcslen(tszAppeal);
+											if (chr.cpMax != -1) {
+												tr2.chrg.cpMin = chr.cpMax;
+												tr2.chrg.cpMax = chr.cpMax + 1;
+												/* if there is no space after selection,
+												or there is nothing after selection at all... */
+												if (! SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE,	EM_GETTEXTRANGE, 0, (LPARAM) &tr2) || ! _istspace(*tr2.lpstrText)) {
+														tszAppeal[st++] = _T(' ');
+														tszAppeal[st++] = _T('\0');
+												}
+											}
+											else {
 												tszAppeal[st++] = _T(' ');
 												tszAppeal[st++] = _T('\0');
 											}
+											SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_REPLACESEL,  FALSE, (LPARAM)tszAppeal);
+											free((void *) tr2.lpstrText);
+											free((void *) tszAppeal);
 										}
-										else {
-											tszAppeal[st++] = _T(' ');
-											tszAppeal[st++] = _T('\0');
-										}
-										SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE,
-														   EM_REPLACESEL,  FALSE, (LPARAM)tszAppeal);
-										free((void *) tr2.lpstrText);
-										free((void *) tszAppeal);
 									}
 								}
 								SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
@@ -3444,6 +3548,9 @@ LABEL_SHOWWINDOW:
 
 			if (dat->hSmileyIcon)
 				DestroyIcon(dat->hSmileyIcon);
+
+			if (hCurHyperlinkHand) 
+				DestroyCursor(hCurHyperlinkHand);
 
 			i = GetTabIndexFromHWND(hwndTab, hwndDlg);
 			if (i >= 0) {

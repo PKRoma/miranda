@@ -19,6 +19,17 @@ the file listing the same day.
 Version 2.0.x.x was released in October 2007 and is the current "stable" version.
 It NEEDS Miranda 0.7.x and will not work on older versions.
 
+Version 2.1.0.0  - 2008/02/15
+
+		* groupchats: clickable nicknames can now be colorized. Patch by theMiron
+		  (h++ author).
+		
+		* reworked message log settings
+		  see: http://miranda.or.at/Blog:Tabsrmm_changes_2_1_0_0 for details.
+
+		* compatibility with Miranda 0.7 no longer given. 2.0.0.5 was branched
+		  as stable tree for 0.7 users.
+		  
 Version 2.0.0.5  - 2008/01/02
 
 		* increased timer for info panel tooltips to 1 sec (previously, it was set

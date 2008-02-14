@@ -2286,10 +2286,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		case DM_OPTIONSAPPLIED:
 			dat->szMicroLf[0] = 0;
 			if (wParam == 1) {      // 1 means, the message came from message log options page, so reload the defaults...
-				if (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "mwoverride", 0) == 0) {
-					dat->dwFlags &= ~(MWF_LOG_ALL);
+				dat->dwFlags &= ~(MWF_LOG_ALL);
+				if (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "mwoverride", 0) == 0)
 					dat->dwFlags |= DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT);
-				}
+				else
+					dat->dwFlags |= DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT);
 				dat->panelWidth = -1;
 			}
 

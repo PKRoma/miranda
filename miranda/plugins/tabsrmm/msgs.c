@@ -39,6 +39,7 @@ static char *relnotes[] = {
 	"\\par\t\\b\\ul1 Release notes for version 2.1.0.0\\b0\\ul0\\par ",
 	"*\tOnly compatible with Miranda 0.8 alpha/dev. Do not run this version with Miranda 0.7!.\\par",
 	"*\tReworked message log options. Please see http://miranda.or.at/Blog:tabsrmm_changes_2_1_0_0.\\par",
+	"*\tGroup chats: Clickable nicknames can now be colorized. Patch sent by theMiron.\\par",
 	NULL
 };
 

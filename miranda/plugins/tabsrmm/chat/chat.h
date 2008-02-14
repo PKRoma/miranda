@@ -33,6 +33,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <windows.h>
 #include <commctrl.h>
 #include <richedit.h>
+#include <richole.h>
+#include <tom.h>
 #include <process.h>
 #include <ole2.h>
 #include <richole.h>
