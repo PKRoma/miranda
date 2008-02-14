@@ -75,23 +75,23 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\IRC.bsc"
 BSC32_SBRS= \
 
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib shlwapi.lib wsock32.lib /nologo /base:"0x54010000" /dll /incremental:no /pdb:"$(OUTDIR)\IRC.pdb" /map:"$(INTDIR)\IRC.map" /debug /machine:I386 /out:"../../bin/release/plugins/IRC.dll" /implib:"$(OUTDIR)\IRC.lib"
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib shlwapi.lib wsock32.lib /nologo /base:"0x54010000" /dll /incremental:no /pdb:"$(OUTDIR)\IRC.pdb" /map:"$(INTDIR)\IRC.map" /debug /machine:I386 /out:"../../bin/release/plugins/IRC.dll" /implib:"$(OUTDIR)\IRC.lib" /filealign:512
 LINK32_OBJS= \
 	"$(INTDIR)\clist.obj" \
 	"$(INTDIR)\commandmonitor.obj" \
 	"$(INTDIR)\input.obj" \
 	"$(INTDIR)\irclib.obj" \
+	"$(INTDIR)\ircproto.obj" \
 	"$(INTDIR)\main.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\output.obj" \
 	"$(INTDIR)\scripting.obj" \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\tools.obj" \
-	"$(INTDIR)\windows.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\ircproto.obj" \
 	"$(INTDIR)\ui_utils.obj" \
-	"$(INTDIR)\userinfo.obj"
+	"$(INTDIR)\userinfo.obj" \
+	"$(INTDIR)\windows.obj" \
+	"$(INTDIR)\resource.res"
 
 "..\..\bin\release\plugins\IRC.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -149,17 +149,17 @@ LINK32_OBJS= \
 	"$(INTDIR)\commandmonitor.obj" \
 	"$(INTDIR)\input.obj" \
 	"$(INTDIR)\irclib.obj" \
+	"$(INTDIR)\ircproto.obj" \
 	"$(INTDIR)\main.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\output.obj" \
 	"$(INTDIR)\scripting.obj" \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\tools.obj" \
-	"$(INTDIR)\windows.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\ircproto.obj" \
 	"$(INTDIR)\ui_utils.obj" \
-	"$(INTDIR)\userinfo.obj"
+	"$(INTDIR)\userinfo.obj" \
+	"$(INTDIR)\windows.obj" \
+	"$(INTDIR)\resource.res"
 
 "..\..\bin\debug\plugins\IRC.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -217,17 +217,17 @@ LINK32_OBJS= \
 	"$(INTDIR)\commandmonitor.obj" \
 	"$(INTDIR)\input.obj" \
 	"$(INTDIR)\irclib.obj" \
+	"$(INTDIR)\ircproto.obj" \
 	"$(INTDIR)\main.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\output.obj" \
 	"$(INTDIR)\scripting.obj" \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\tools.obj" \
-	"$(INTDIR)\windows.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\ircproto.obj" \
 	"$(INTDIR)\ui_utils.obj" \
-	"$(INTDIR)\userinfo.obj"
+	"$(INTDIR)\userinfo.obj" \
+	"$(INTDIR)\windows.obj" \
+	"$(INTDIR)\resource.res"
 
 "..\..\bin\debug Unicode\plugins\IRC.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -277,23 +277,23 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\IRC.bsc"
 BSC32_SBRS= \
 
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib shlwapi.lib wsock32.lib /nologo /base:"0x54010000" /dll /incremental:no /pdb:"$(OUTDIR)\IRC.pdb" /map:"$(INTDIR)\IRC.map" /debug /machine:I386 /out:"../../bin/release unicode/plugins/IRC.dll" /implib:"$(OUTDIR)\IRC.lib"
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib shlwapi.lib wsock32.lib /nologo /base:"0x54010000" /dll /incremental:no /pdb:"$(OUTDIR)\IRC.pdb" /map:"$(INTDIR)\IRC.map" /debug /machine:I386 /out:"../../bin/release unicode/plugins/IRC.dll" /implib:"$(OUTDIR)\IRC.lib" /filealign:512
 LINK32_OBJS= \
 	"$(INTDIR)\clist.obj" \
 	"$(INTDIR)\commandmonitor.obj" \
 	"$(INTDIR)\input.obj" \
 	"$(INTDIR)\irclib.obj" \
+	"$(INTDIR)\ircproto.obj" \
 	"$(INTDIR)\main.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\output.obj" \
 	"$(INTDIR)\scripting.obj" \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\tools.obj" \
-	"$(INTDIR)\windows.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\ircproto.obj" \
 	"$(INTDIR)\ui_utils.obj" \
-	"$(INTDIR)\userinfo.obj"
+	"$(INTDIR)\userinfo.obj" \
+	"$(INTDIR)\windows.obj" \
+	"$(INTDIR)\resource.res"
 
 "..\..\bin\release unicode\plugins\IRC.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
