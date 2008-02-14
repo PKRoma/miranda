@@ -21,6 +21,51 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "irc.h"
 
+/////////////////////////////////////////////////////////////////////////////////////////
+// Standard functions
+
+void CIrcProto::setByte( const char* name, BYTE value )
+{	DBWriteContactSettingByte(NULL, m_szModuleName, name, value );
+}
+
+void CIrcProto::setByte( HANDLE hContact, const char* name, BYTE value )
+{	DBWriteContactSettingByte(hContact, m_szModuleName, name, value );
+}
+
+void CIrcProto::setDword( const char* name, DWORD value )
+{	DBWriteContactSettingDword(NULL, m_szModuleName, name, value );
+}
+
+void CIrcProto::setDword( HANDLE hContact, const char* name, DWORD value )
+{	DBWriteContactSettingDword(hContact, m_szModuleName, name, value );
+}
+
+void CIrcProto::setString( const char* name, const char* value )
+{	DBWriteContactSettingString(NULL, m_szModuleName, name, value );
+}
+
+void CIrcProto::setString( HANDLE hContact, const char* name, const char* value )
+{	DBWriteContactSettingString(hContact, m_szModuleName, name, value );
+}
+
+void CIrcProto::setTString( const char* name, const TCHAR* value )
+{	DBWriteContactSettingTString(NULL, m_szModuleName, name, value );
+}
+
+void CIrcProto::setTString( HANDLE hContact, const char* name, const TCHAR* value )
+{	DBWriteContactSettingTString(hContact, m_szModuleName, name, value );
+}
+
+void CIrcProto::setWord( const char* name, int value )
+{	DBWriteContactSettingWord(NULL, m_szModuleName, name, value );
+}
+
+void CIrcProto::setWord( HANDLE hContact, const char* name, int value )
+{	DBWriteContactSettingWord(hContact, m_szModuleName, name, value );
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
 void CIrcProto::AddToJTemp(TString sCommand)
 {
 	DBVARIANT dbv;
@@ -29,7 +74,7 @@ void CIrcProto::AddToJTemp(TString sCommand)
 		DBFreeVariant( &dbv );
 	}
 
-	DBWriteContactSettingTString(NULL, m_szModuleName, "JTemp", sCommand.c_str());
+	setTString("JTemp", sCommand.c_str());
 }
 
 void CIrcProto::IrcHookEvent( const char* szEvent, IrcEventFunc pFunc )

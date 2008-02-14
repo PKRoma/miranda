@@ -652,10 +652,10 @@ bool CMyMonitor::OnIrc_NICK( const CIrcMessage* pmsg )
 		HANDLE hContact = m_proto.CList_FindContact(&user);
 		if (hContact) {
 			if (DBGetContactSettingWord(hContact,m_proto.m_szModuleName, "Status", ID_STATUS_OFFLINE) == ID_STATUS_OFFLINE)
-				DBWriteContactSettingWord(hContact, m_proto.m_szModuleName, "Status", ID_STATUS_ONLINE);
-			DBWriteContactSettingTString(hContact, m_proto.m_szModuleName, "Nick", pmsg->parameters[0].c_str());
-			DBWriteContactSettingTString(hContact, m_proto.m_szModuleName, "User", pmsg->prefix.sUser.c_str());
-			DBWriteContactSettingTString(hContact, m_proto.m_szModuleName, "Host", pmsg->prefix.sHost.c_str());
+				m_proto.setWord(hContact, "Status", ID_STATUS_ONLINE);
+			m_proto.setTString(hContact, "Nick", pmsg->parameters[0].c_str());
+			m_proto.setTString(hContact, "User", pmsg->prefix.sUser.c_str());
+			m_proto.setTString(hContact, "Host", pmsg->prefix.sHost.c_str());
 		}
 	}
 	else m_proto.ShowMessage( pmsg );
@@ -772,8 +772,8 @@ bool CMyMonitor::OnIrc_PRIVMSG( const CIrcMessage* pmsg )
 			#else
 				pre.szMessage = ( char* )mess.c_str();
 			#endif
-			DBWriteContactSettingTString(ccs.hContact, m_proto.m_szModuleName, "User", pmsg->prefix.sUser.c_str());
-			DBWriteContactSettingTString(ccs.hContact, m_proto.m_szModuleName, "Host", pmsg->prefix.sHost.c_str());
+			m_proto.setTString(ccs.hContact, "User", pmsg->prefix.sUser.c_str());
+			m_proto.setTString(ccs.hContact, "Host", pmsg->prefix.sHost.c_str());
 			CallService( MS_PROTO_CHAINRECV, 0, (LPARAM) & ccs);
 			#if defined( _UNICODE )
 				mir_free( pre.szMessage );
@@ -1231,8 +1231,8 @@ bool CMyMonitor::IsCTCP( const CIrcMessage* pmsg )
 							strcpy(szBlob + sizeof(DWORD), szFileName );
 							strcpy(szBlob + sizeof(DWORD) + strlen(szFileName) + 1, " ");
 
-							DBWriteContactSettingTString(hContact, m_proto.m_szModuleName, "User", pmsg->prefix.sUser.c_str());
-							DBWriteContactSettingTString(hContact, m_proto.m_szModuleName, "Host", pmsg->prefix.sHost.c_str());
+							m_proto.setTString(hContact, "User", pmsg->prefix.sUser.c_str());
+							m_proto.setTString(hContact, "Host", pmsg->prefix.sHost.c_str());
 
 							pre.szMessage = szBlob;
 							ccs.hContact = hContact;
@@ -1260,7 +1260,7 @@ bool CMyMonitor::IsCTCP( const CIrcMessage* pmsg )
 				struct CONTACT user = { (TCHAR*)pmsg->prefix.sNick.c_str(), (TCHAR*)pmsg->prefix.sUser.c_str(), (TCHAR*)pmsg->prefix.sHost.c_str(), false, false, false};
 				HANDLE hContact = m_proto.CList_FindContact(&user);
 				if (hContact) 
-					DBWriteContactSettingTString( hContact, m_proto.m_szModuleName, "MirVer", DoColorCodes(GetWordAddress(mess.c_str(), 1), TRUE, FALSE)); 
+					m_proto.setTString( hContact, "MirVer", DoColorCodes(GetWordAddress(mess.c_str(), 1), TRUE, FALSE)); 
 				}
 
 			// if the whois window is visible and the ctcp reply belongs to the user in it, then show the reply in the whois window
@@ -1501,7 +1501,7 @@ bool CMyMonitor::OnIrc_ENDNAMES( const CIrcMessage* pmsg )
 					if ( save.empty())
 						DBDeleteContactSetting(NULL, m_proto.m_szModuleName, "JTemp");
 					else
-						DBWriteContactSettingTString(NULL, m_proto.m_szModuleName, "JTemp", save.c_str());
+						m_proto.setTString("JTemp", save.c_str());
 					DBFreeVariant(&dbv);
 				}
 				else m_proto.CallChatEvent( SESSION_INITDONE, (LPARAM)&gce);
@@ -1878,7 +1878,7 @@ bool CMyMonitor::OnIrc_WHOIS_NO_USER( const CIrcMessage* pmsg )
 
 			DBVARIANT dbv;
 			if ( !DBGetContactSettingTString( hContact, m_proto.m_szModuleName, "Default", &dbv )) {
-				DBWriteContactSettingTString( hContact, m_proto.m_szModuleName, "Nick", dbv.ptszVal );
+				m_proto.setTString( hContact, "Nick", dbv.ptszVal );
 				
 				DBVARIANT dbv2;
 				if ( DBGetContactSettingByte( hContact, m_proto.m_szModuleName, "AdvancedMode", 0 ) == 0 )
@@ -1890,8 +1890,8 @@ bool CMyMonitor::OnIrc_WHOIS_NO_USER( const CIrcMessage* pmsg )
 					}
 					else m_proto.DoUserhostWithReason(2, ((TString)_T("S") + dbv.ptszVal).c_str(), true, dbv.ptszVal );
 				}
-				DBWriteContactSettingString(hContact, m_proto.m_szModuleName, "User", "");
-				DBWriteContactSettingString(hContact, m_proto.m_szModuleName, "Host", "");
+				m_proto.setString(hContact, "User", "");
+				m_proto.setString(hContact, "Host", "");
 				DBFreeVariant(&dbv);
 	}	}	}
 
@@ -1955,7 +1955,7 @@ bool CMyMonitor::OnIrc_JOINERROR( const CIrcMessage* pmsg )
 			if ( save.empty())
 				DBDeleteContactSetting( NULL, m_proto.m_szModuleName, "JTemp" );
 			else
-				DBWriteContactSettingTString( NULL, m_proto.m_szModuleName, "JTemp", save.c_str());
+				m_proto.setTString( "JTemp", save.c_str());
 	}	}
 
 	m_proto.ShowMessage( pmsg );
@@ -2080,16 +2080,16 @@ bool CMyMonitor::OnIrc_WHO_END( const CIrcMessage* pmsg )
 						&& (WCCmp(DBUser, user.c_str()) && WCCmp(DBHost, host.c_str())))
 					{
 						if (away[0] == 'G' && DBGetContactSettingWord(hContact,m_proto.m_szModuleName, "Status", ID_STATUS_OFFLINE) != ID_STATUS_AWAY)
-							DBWriteContactSettingWord(hContact, m_proto.m_szModuleName, "Status", ID_STATUS_AWAY);
+							m_proto.setWord(hContact, "Status", ID_STATUS_AWAY);
 						else if (away[0] == 'H' && DBGetContactSettingWord(hContact,m_proto.m_szModuleName, "Status", ID_STATUS_OFFLINE) != ID_STATUS_ONLINE)
-							DBWriteContactSettingWord(hContact, m_proto.m_szModuleName, "Status", ID_STATUS_ONLINE);
+							m_proto.setWord(hContact, "Status", ID_STATUS_ONLINE);
 
 						if (( DBNick && lstrcmpi( nick.c_str(), DBNick)) || !DBNick )
-							DBWriteContactSettingTString( hContact, m_proto.m_szModuleName, "Nick", nick.c_str());
+							m_proto.setTString( hContact, "Nick", nick.c_str());
 						if (( DBManUser && lstrcmpi( user.c_str(), DBManUser)) || !DBManUser )
-							DBWriteContactSettingTString( hContact, m_proto.m_szModuleName, "User", user.c_str());
+							m_proto.setTString( hContact, "User", user.c_str());
 						if (( DBManHost && lstrcmpi(host.c_str(), DBManHost)) || !DBManHost )
-							DBWriteContactSettingTString(hContact, m_proto.m_szModuleName, "Host", host.c_str());
+							m_proto.setTString(hContact, "Host", host.c_str());
 
 						goto LBL_Exit;
 					}
@@ -2098,20 +2098,20 @@ bool CMyMonitor::OnIrc_WHO_END( const CIrcMessage* pmsg )
 				}
 				
 				if ( DBWildcard && DBNick && !WCCmp( CharLower( DBWildcard ), CharLower( DBNick ))) {
-					DBWriteContactSettingTString(hContact, m_proto.m_szModuleName, "Nick", DBDefault);
+					m_proto.setTString(hContact, "Nick", DBDefault);
 					
 					m_proto.DoUserhostWithReason(2, ((TString)_T("S") + DBWildcard).c_str(), true, DBWildcard);
 							
-					DBWriteContactSettingString(hContact, m_proto.m_szModuleName, "User", "");
-					DBWriteContactSettingString(hContact, m_proto.m_szModuleName, "Host", "");
+					m_proto.setString(hContact, "User", "");
+					m_proto.setString(hContact, "Host", "");
 					goto LBL_Exit;
 				}
 
 				if ( DBGetContactSettingWord( hContact,m_proto.m_szModuleName, "Status", ID_STATUS_OFFLINE ) != ID_STATUS_OFFLINE ) {
-					DBWriteContactSettingWord(hContact, m_proto.m_szModuleName, "Status", ID_STATUS_OFFLINE);
-					DBWriteContactSettingTString(hContact, m_proto.m_szModuleName, "Nick", DBDefault);
-					DBWriteContactSettingString(hContact, m_proto.m_szModuleName, "User", "");
-					DBWriteContactSettingString(hContact, m_proto.m_szModuleName, "Host", "");
+					m_proto.setWord(hContact, "Status", ID_STATUS_OFFLINE);
+					m_proto.setTString(hContact, "Nick", DBDefault);
+					m_proto.setString(hContact, "User", "");
+					m_proto.setString(hContact, "Host", "");
 				}
 LBL_Exit:
 				if ( DBDefault )  DBFreeVariant(&dbv1);
@@ -2242,10 +2242,10 @@ bool CMyMonitor::OnIrc_USERHOST_REPLY( const CIrcMessage* pmsg )
 
 					HANDLE hContact = m_proto.CList_FindContact(&finduser);
 					if ( hContact && DBGetContactSettingByte( hContact, m_proto.m_szModuleName, "AdvancedMode", 0 ) == 0 ) {
-						DBWriteContactSettingWord(hContact, m_proto.m_szModuleName, "Status", awaystatus == '-'? ID_STATUS_AWAY : ID_STATUS_ONLINE);
-						DBWriteContactSettingTString(hContact, m_proto.m_szModuleName, "User", user.c_str());
-						DBWriteContactSettingTString(hContact, m_proto.m_szModuleName, "Host", host.c_str());
-						DBWriteContactSettingTString(hContact, m_proto.m_szModuleName, "Nick", nick.c_str());
+						m_proto.setWord(hContact, "Status", awaystatus == '-'? ID_STATUS_AWAY : ID_STATUS_ONLINE);
+						m_proto.setTString(hContact, "User", user.c_str());
+						m_proto.setTString(hContact, "Host", host.c_str());
+						m_proto.setTString(hContact, "Nick", nick.c_str());
 
 						// If user found, remove from checklist
 						for ( i = 0; i < (int)checklist.size(); i++ )
@@ -2428,7 +2428,7 @@ void CMyMonitor::OnIrcDisconnected()
 
 	if ( !Miranda_Terminated() )
 		m_proto.CList_SetAllOffline( m_proto.DisconnectDCCChats );
-	DBWriteContactSettingTString( NULL, m_proto.m_szModuleName, "Nick", m_proto.Nick );
+	m_proto.setTString( "Nick", m_proto.Nick );
 	
 	CLISTMENUITEM clmi = {0};
 	clmi.cbSize = sizeof( clmi );

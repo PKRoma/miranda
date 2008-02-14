@@ -84,7 +84,7 @@ void CIrcProto::InitPrefs(void)
 	if (!GetPrefsString( "PNick", Nick, 30, _T(""))) {
 		GetPrefsString( "Nick", Nick, 30, _T(""));
 		if ( lstrlen(Nick) > 0)
-			DBWriteContactSettingTString(NULL, m_szModuleName, "PNick", Nick);
+			setTString("PNick", Nick);
 	}
 	GetPrefsString( "AlernativeNick", AlternativeNick, 31, _T(""));
 	GetPrefsString( "Name", Name, 199, _T(""));
@@ -560,37 +560,37 @@ struct CCtcpPrefsDlg : public CProtoDlgBase<CIrcProto>
 	virtual void OnApply()
 	{
 		GetDlgItemText( m_hwnd,IDC_USERINFO, m_proto->UserInfo, 499);
-		DBWriteContactSettingTString(NULL,m_proto->m_szModuleName,"UserInfo",m_proto->UserInfo);
+		m_proto->setTString("UserInfo",m_proto->UserInfo);
 
 		char szTemp[10];
 		GetWindowTextA(GetDlgItem( m_hwnd, IDC_COMBO), szTemp, 10);
-		DBWriteContactSettingWord(NULL,m_proto->m_szModuleName,"DCCPacketSize", (WORD)atoi(szTemp));
+		m_proto->setWord("DCCPacketSize", (WORD)atoi(szTemp));
 
 		m_proto->DCCPassive = IsDlgButtonChecked( m_hwnd,IDC_PASSIVE)== BST_CHECKED?1:0;
-		DBWriteContactSettingByte(NULL,m_proto->m_szModuleName,"DccPassive",m_proto->DCCPassive);
+		m_proto->setByte("DccPassive",m_proto->DCCPassive);
 
 		m_proto->SendNotice = IsDlgButtonChecked( m_hwnd,IDC_SENDNOTICE)== BST_CHECKED?1:0;
-		DBWriteContactSettingByte(NULL,m_proto->m_szModuleName,"SendNotice",m_proto->SendNotice);
+		m_proto->setByte("SendNotice",m_proto->SendNotice);
 
 		if ( IsDlgButtonChecked( m_hwnd,IDC_SLOW)== BST_CHECKED)
-			DBWriteContactSettingByte(NULL,m_proto->m_szModuleName,"DCCMode",0);
+			m_proto->setByte("DCCMode",0);
 		else 
-			DBWriteContactSettingByte(NULL,m_proto->m_szModuleName,"DCCMode",1);
+			m_proto->setByte("DCCMode",1);
 
 		m_proto->ManualHost = IsDlgButtonChecked( m_hwnd,IDC_ENABLEIP)== BST_CHECKED?1:0;
-		DBWriteContactSettingByte(NULL,m_proto->m_szModuleName,"ManualHost",m_proto->ManualHost);
+		m_proto->setByte("ManualHost",m_proto->ManualHost);
 
 		m_proto->IPFromServer = IsDlgButtonChecked( m_hwnd,IDC_FROMSERVER)== BST_CHECKED?1:0;
-		DBWriteContactSettingByte(NULL,m_proto->m_szModuleName,"IPFromServer",m_proto->IPFromServer);
+		m_proto->setByte("IPFromServer",m_proto->IPFromServer);
 
 		m_proto->DisconnectDCCChats = IsDlgButtonChecked( m_hwnd,IDC_DISC)== BST_CHECKED?1:0;
-		DBWriteContactSettingByte(NULL,m_proto->m_szModuleName,"DisconnectDCCChats",m_proto->DisconnectDCCChats);
+		m_proto->setByte("DisconnectDCCChats",m_proto->DisconnectDCCChats);
 
 		if ( IsDlgButtonChecked( m_hwnd, IDC_ENABLEIP) == BST_CHECKED) {
 			char szTemp[500];
 			GetDlgItemTextA( m_hwnd,IDC_IP,szTemp, 499);
 			lstrcpynA(m_proto->MySpecifiedHost, GetWord(szTemp, 0).c_str(), 499);
-			DBWriteContactSettingString(NULL,m_proto->m_szModuleName,"SpecHost",m_proto->MySpecifiedHost);
+			m_proto->setString( "SpecHost", m_proto->MySpecifiedHost );
 			if ( lstrlenA( m_proto->MySpecifiedHost ))
 				mir_forkthread( ResolveIPThread, new IPRESOLVE( m_proto, m_proto->MySpecifiedHost, IP_MANUAL ));
 		}
@@ -601,7 +601,7 @@ struct CCtcpPrefsDlg : public CProtoDlgBase<CIrcProto>
 			m_proto->DCCChatAccept = 2;
 		if(IsDlgButtonChecked( m_hwnd, IDC_RADIO3) == BST_CHECKED)
 			m_proto->DCCChatAccept = 3;
-		DBWriteContactSettingByte(NULL,m_proto->m_szModuleName,"CtcpChatAccept",m_proto->DCCChatAccept);
+		m_proto->setByte("CtcpChatAccept",m_proto->DCCChatAccept);
 	}
 };
 
@@ -827,24 +827,24 @@ struct COtherPrefsDlg : public CProtoDlgBase<CIrcProto>
 			m_proto->Alias = ( TCHAR* )mir_alloc( sizeof( TCHAR )*( len+1 ));
          GetDlgItemText( m_hwnd, IDC_ALIASEDIT, m_proto->Alias, len+1 );
 		}
-		DBWriteContactSettingTString( NULL, m_proto->m_szModuleName, "Alias", m_proto->Alias );
+		m_proto->setTString( "Alias", m_proto->Alias );
 
 		GetDlgItemText( m_hwnd,IDC_QUITMESSAGE,m_proto->QuitMessage, 399 );
-		DBWriteContactSettingTString( NULL, m_proto->m_szModuleName, "QuitMessage", m_proto->QuitMessage );
+		m_proto->setTString( "QuitMessage", m_proto->QuitMessage );
 		{
 			int curSel = SendDlgItemMessage( m_hwnd, IDC_CODEPAGE, CB_GETCURSEL, 0, 0 );
 			m_proto->Codepage = SendDlgItemMessage( m_hwnd, IDC_CODEPAGE, CB_GETITEMDATA, curSel, 0 );
-			DBWriteContactSettingDword( NULL, m_proto->m_szModuleName, "Codepage", m_proto->Codepage );
+			m_proto->setDword( "Codepage", m_proto->Codepage );
 			if ( m_proto->IsConnected() )
 				m_proto->setCodepage( m_proto->Codepage );
 		}
 
 		m_proto->UtfAutodetect = IsDlgButtonChecked( m_hwnd,IDC_UTF_AUTODETECT)== BST_CHECKED;
-		DBWriteContactSettingByte(NULL,m_proto->m_szModuleName,"UtfAutodetect",m_proto->UtfAutodetect);
+		m_proto->setByte("UtfAutodetect",m_proto->UtfAutodetect);
 		m_proto->Perform = IsDlgButtonChecked( m_hwnd,IDC_PERFORM)== BST_CHECKED;
-		DBWriteContactSettingByte(NULL,m_proto->m_szModuleName,"Perform",m_proto->Perform);
+		m_proto->setByte("Perform",m_proto->Perform);
 		m_proto->ScriptingEnabled = IsDlgButtonChecked( m_hwnd,IDC_SCRIPT)== BST_CHECKED;
-		DBWriteContactSettingByte(NULL,m_proto->m_szModuleName,"ScriptingEnabled",m_proto->ScriptingEnabled);
+		m_proto->setByte("ScriptingEnabled",m_proto->ScriptingEnabled);
 		if (IsWindowEnabled(GetDlgItem( m_hwnd, IDC_ADD)))
 			SendMessage( m_hwnd, WM_COMMAND, MAKEWPARAM(IDC_ADD, BN_CLICKED), 0);
       
@@ -858,7 +858,7 @@ struct COtherPrefsDlg : public CProtoDlgBase<CIrcProto>
 					continue;
 
 				if ( !pPerf->mText.empty())
-					DBWriteContactSettingTString( NULL, m_proto->m_szModuleName, pPerf->mSetting.c_str(), pPerf->mText.c_str());
+					m_proto->setTString( pPerf->mSetting.c_str(), pPerf->mText.c_str());
 				else 
 					DBDeleteContactSetting( NULL, m_proto->m_szModuleName, pPerf->mSetting.c_str());
 	}	}	}
@@ -1171,79 +1171,79 @@ struct CConnectPrefsDlg : public CProtoDlgBase<CIrcProto>
 		//Save the setting in the CONNECT dialog
 		if(IsDlgButtonChecked( m_hwnd, IDC_STARTUP)== BST_CHECKED) {
 			GetDlgItemTextA( m_hwnd,IDC_SERVER, m_proto->ServerName, 99);
-			DBWriteContactSettingString(NULL,m_proto->m_szModuleName,"ServerName",m_proto->ServerName);
+			m_proto->setString("ServerName",m_proto->ServerName);
 			GetDlgItemTextA( m_hwnd,IDC_PORT, m_proto->PortStart, 6);
-			DBWriteContactSettingString(NULL,m_proto->m_szModuleName,"PortStart",m_proto->PortStart);
+			m_proto->setString("PortStart",m_proto->PortStart);
 			GetDlgItemTextA( m_hwnd,IDC_PORT2, m_proto->PortEnd, 6);
-			DBWriteContactSettingString(NULL,m_proto->m_szModuleName,"PortEnd",m_proto->PortEnd);
+			m_proto->setString("PortEnd",m_proto->PortEnd);
 			GetDlgItemTextA( m_hwnd,IDC_PASS, m_proto->Password, 500);
 			CallService( MS_DB_CRYPT_ENCODESTRING, 499, (LPARAM)m_proto->Password);
-			DBWriteContactSettingString(NULL,m_proto->m_szModuleName,"Password",m_proto->Password);
+			m_proto->setString("Password",m_proto->Password);
 			CallService( MS_DB_CRYPT_DECODESTRING, 499, (LPARAM)m_proto->Password);
 		}
 		else {
 			lstrcpyA(m_proto->ServerName, "");
-			DBWriteContactSettingString(NULL,m_proto->m_szModuleName,"ServerName",m_proto->ServerName);
+			m_proto->setString("ServerName",m_proto->ServerName);
 			lstrcpyA(m_proto->PortStart, "");
-			DBWriteContactSettingString(NULL,m_proto->m_szModuleName,"PortStart",m_proto->PortStart);
+			m_proto->setString("PortStart",m_proto->PortStart);
 			lstrcpyA(m_proto->PortEnd, "");
-			DBWriteContactSettingString(NULL,m_proto->m_szModuleName,"PortEnd",m_proto->PortEnd);
+			m_proto->setString("PortEnd",m_proto->PortEnd);
 			lstrcpyA( m_proto->Password, "");
-			DBWriteContactSettingString(NULL,m_proto->m_szModuleName,"Password",m_proto->Password);
+			m_proto->setString("Password",m_proto->Password);
 		}
 
 		m_proto->OnlineNotificationTime = SendDlgItemMessage( m_hwnd,IDC_SPIN1,UDM_GETPOS,0,0);
-		DBWriteContactSettingWord(NULL, m_proto->m_szModuleName, "OnlineNotificationTime", (BYTE)m_proto->OnlineNotificationTime);
+		m_proto->setWord("OnlineNotificationTime", (BYTE)m_proto->OnlineNotificationTime);
 
 		m_proto->OnlineNotificationLimit = SendDlgItemMessage( m_hwnd,IDC_SPIN2,UDM_GETPOS,0,0);
-		DBWriteContactSettingWord(NULL, m_proto->m_szModuleName, "OnlineNotificationLimit", (BYTE)m_proto->OnlineNotificationLimit);
+		m_proto->setWord("OnlineNotificationLimit", (BYTE)m_proto->OnlineNotificationLimit);
 
 		m_proto->ChannelAwayNotification = IsDlgButtonChecked( m_hwnd, IDC_CHANNELAWAY )== BST_CHECKED;
-		DBWriteContactSettingByte(NULL,m_proto->m_szModuleName,"ChannelAwayNotification",m_proto->ChannelAwayNotification);
+		m_proto->setByte("ChannelAwayNotification",m_proto->ChannelAwayNotification);
 
 		GetDlgItemText( m_hwnd,IDC_NICK, m_proto->Nick, 30);
 		removeSpaces(m_proto->Nick);
-		DBWriteContactSettingTString(NULL,m_proto->m_szModuleName,"PNick",m_proto->Nick);
-		DBWriteContactSettingTString(NULL,m_proto->m_szModuleName,"Nick",m_proto->Nick);
+		m_proto->setTString("PNick",m_proto->Nick);
+		m_proto->setTString("Nick",m_proto->Nick);
 		GetDlgItemText( m_hwnd,IDC_NICK2, m_proto->AlternativeNick, 30);
 		removeSpaces(m_proto->AlternativeNick);
-		DBWriteContactSettingTString(NULL,m_proto->m_szModuleName,"AlernativeNick",m_proto->AlternativeNick);
+		m_proto->setTString("AlernativeNick",m_proto->AlternativeNick);
 		GetDlgItemText( m_hwnd,IDC_USERID, m_proto->UserID, 199);
 		removeSpaces(m_proto->UserID);
-		DBWriteContactSettingTString(NULL,m_proto->m_szModuleName,"UserID",m_proto->UserID);
+		m_proto->setTString("UserID",m_proto->UserID);
 		GetDlgItemText( m_hwnd,IDC_NAME, m_proto->Name, 199);
-		DBWriteContactSettingTString(NULL,m_proto->m_szModuleName,"Name",m_proto->Name);
+		m_proto->setTString("Name",m_proto->Name);
 		GetDlgItemText( m_hwnd,IDC_IDENTSYSTEM, m_proto->IdentSystem, 10);
-		DBWriteContactSettingTString(NULL,m_proto->m_szModuleName,"IdentSystem",m_proto->IdentSystem);
+		m_proto->setTString("IdentSystem",m_proto->IdentSystem);
 		GetDlgItemText( m_hwnd,IDC_IDENTPORT, m_proto->IdentPort, 6);
-		DBWriteContactSettingTString(NULL,m_proto->m_szModuleName,"IdentPort",m_proto->IdentPort);
+		m_proto->setTString("IdentPort",m_proto->IdentPort);
 		GetDlgItemText( m_hwnd,IDC_RETRYWAIT, m_proto->RetryWait, 4);
-		DBWriteContactSettingTString(NULL,m_proto->m_szModuleName,"RetryWait",m_proto->RetryWait);
+		m_proto->setTString("RetryWait",m_proto->RetryWait);
 		GetDlgItemText( m_hwnd,IDC_RETRYCOUNT, m_proto->RetryCount, 4);
-		DBWriteContactSettingTString(NULL,m_proto->m_szModuleName,"RetryCount",m_proto->RetryCount);
+		m_proto->setTString("RetryCount",m_proto->RetryCount);
 		m_proto->DisableDefaultServer = !IsDlgButtonChecked( m_hwnd, IDC_STARTUP)== BST_CHECKED;
-		DBWriteContactSettingByte(NULL,m_proto->m_szModuleName,"DisableDefaultServer",m_proto->DisableDefaultServer);
+		m_proto->setByte("DisableDefaultServer",m_proto->DisableDefaultServer);
 		m_proto->Ident = IsDlgButtonChecked( m_hwnd, IDC_IDENT)== BST_CHECKED;
-		DBWriteContactSettingByte(NULL,m_proto->m_szModuleName,"Ident",m_proto->Ident);
+		m_proto->setByte("Ident",m_proto->Ident);
 		m_proto->IdentTimer = IsDlgButtonChecked( m_hwnd, IDC_IDENT_TIMED)== BST_CHECKED;
-		DBWriteContactSettingByte(NULL,m_proto->m_szModuleName,"IdentTimer",m_proto->IdentTimer);
+		m_proto->setByte("IdentTimer",m_proto->IdentTimer);
 		m_proto->ForceVisible = IsDlgButtonChecked( m_hwnd, IDC_FORCEVISIBLE)== BST_CHECKED;
-		DBWriteContactSettingByte(NULL,m_proto->m_szModuleName,"ForceVisible",m_proto->ForceVisible);
+		m_proto->setByte("ForceVisible",m_proto->ForceVisible);
 		m_proto->DisableErrorPopups = IsDlgButtonChecked( m_hwnd, IDC_DISABLEERROR)== BST_CHECKED;
-		DBWriteContactSettingByte(NULL,m_proto->m_szModuleName,"DisableErrorPopups",m_proto->DisableErrorPopups);
+		m_proto->setByte("DisableErrorPopups",m_proto->DisableErrorPopups);
 		m_proto->RejoinChannels = IsDlgButtonChecked( m_hwnd, IDC_REJOINCHANNELS)== BST_CHECKED;
-		DBWriteContactSettingByte(NULL,m_proto->m_szModuleName,"RejoinChannels",m_proto->RejoinChannels);
+		m_proto->setByte("RejoinChannels",m_proto->RejoinChannels);
 		m_proto->RejoinIfKicked = IsDlgButtonChecked( m_hwnd, IDC_REJOINONKICK)== BST_CHECKED;
-		DBWriteContactSettingByte(NULL,m_proto->m_szModuleName,"RejoinIfKicked",m_proto->RejoinIfKicked);
+		m_proto->setByte("RejoinIfKicked",m_proto->RejoinIfKicked);
 		m_proto->Retry = IsDlgButtonChecked( m_hwnd, IDC_RETRY)== BST_CHECKED;
-		DBWriteContactSettingByte(NULL,m_proto->m_szModuleName,"Retry",m_proto->Retry);
+		m_proto->setByte("Retry",m_proto->Retry);
 		m_proto->ShowAddresses = IsDlgButtonChecked( m_hwnd, IDC_ADDRESS)== BST_CHECKED;
-		DBWriteContactSettingByte(NULL,m_proto->m_szModuleName,"ShowAddresses",m_proto->ShowAddresses);
+		m_proto->setByte("ShowAddresses",m_proto->ShowAddresses);
 		m_proto->OldStyleModes = IsDlgButtonChecked( m_hwnd, IDC_OLDSTYLE)== BST_CHECKED;
-		DBWriteContactSettingByte(NULL,m_proto->m_szModuleName,"OldStyleModes",m_proto->OldStyleModes);
+		m_proto->setByte("OldStyleModes",m_proto->OldStyleModes);
 
 		m_proto->UseServer = IsDlgButtonChecked( m_hwnd, IDC_USESERVER )== BST_CHECKED;
-		DBWriteContactSettingByte(NULL,m_proto->m_szModuleName,"UseServer",m_proto->UseServer);
+		m_proto->setByte("UseServer",m_proto->UseServer);
 
 		CLISTMENUITEM clmi;
 		memset( &clmi, 0, sizeof( clmi ));
@@ -1254,20 +1254,20 @@ struct CConnectPrefsDlg : public CProtoDlgBase<CIrcProto>
 		CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )m_proto->hMenuServer, ( LPARAM )&clmi );
 
 		m_proto->JoinOnInvite = IsDlgButtonChecked( m_hwnd, IDC_AUTOJOIN )== BST_CHECKED;
-		DBWriteContactSettingByte(NULL,m_proto->m_szModuleName,"JoinOnInvite",m_proto->JoinOnInvite);
+		m_proto->setByte("JoinOnInvite",m_proto->JoinOnInvite);
 		m_proto->HideServerWindow = IsDlgButtonChecked( m_hwnd, IDC_SHOWSERVER )== BST_UNCHECKED;
-		DBWriteContactSettingByte(NULL,m_proto->m_szModuleName,"HideServerWindow",m_proto->HideServerWindow);
+		m_proto->setByte("HideServerWindow",m_proto->HideServerWindow);
 		m_proto->ServerComboSelection = SendMessage(GetDlgItem( m_hwnd, IDC_SERVERCOMBO), CB_GETCURSEL, 0, 0) + 1;
-		DBWriteContactSettingDword(NULL,m_proto->m_szModuleName,"ServerComboSelection",m_proto->ServerComboSelection);
+		m_proto->setDword("ServerComboSelection",m_proto->ServerComboSelection);
 		m_proto->SendKeepAlive = IsDlgButtonChecked( m_hwnd, IDC_KEEPALIVE )== BST_CHECKED;
-		DBWriteContactSettingByte(NULL,m_proto->m_szModuleName,"SendKeepAlive",m_proto->SendKeepAlive);
+		m_proto->setByte("SendKeepAlive",m_proto->SendKeepAlive);
 		if (m_proto->SendKeepAlive)
 			m_proto->SetChatTimer(m_proto->KeepAliveTimer, 60*1000, &CIrcProto::KeepAliveTimerProc);
 		else
 			m_proto->KillChatTimer(m_proto->KeepAliveTimer);
 
 		m_proto->AutoOnlineNotification = IsDlgButtonChecked( m_hwnd, IDC_ONLINENOTIF )== BST_CHECKED;
-		DBWriteContactSettingByte(NULL,m_proto->m_szModuleName,"AutoOnlineNotification",m_proto->AutoOnlineNotification);
+		m_proto->setByte("AutoOnlineNotification",m_proto->AutoOnlineNotification);
 		if (m_proto->AutoOnlineNotification) {
 			if( !m_proto->bTempDisableCheck) {
 				m_proto->SetChatTimer(m_proto->OnlineNotifTimer, 500, &CIrcProto::OnlineNotifTimerProc);
@@ -1287,9 +1287,9 @@ struct CConnectPrefsDlg : public CProtoDlgBase<CIrcProto>
 				lstrcpyA(m_proto->Network, pData->Group); 
 			else
 				lstrcpyA(m_proto->Network, ""); 
-			DBWriteContactSettingString(NULL,m_proto->m_szModuleName,"Network",m_proto->Network);
+			m_proto->setString("Network",m_proto->Network);
 			m_proto->iSSL = pData->iSSL;
-			DBWriteContactSettingByte(NULL,m_proto->m_szModuleName,"UseSSL",pData->iSSL);			
+			m_proto->setByte("UseSSL",pData->iSSL);			
 		}
 
 		if (m_proto->ServerlistModified) {
@@ -1524,7 +1524,7 @@ void CIrcProto::RewriteIgnoreSettings( void )
 		mir_snprintf( settingName, sizeof(settingName), "IGNORE:%d", i );
 
 		CIrcIgnoreItem& C = g_ignoreItems[i];
-		DBWriteContactSettingTString( NULL, m_szModuleName, settingName, ( C.mask + _T(" ") + C.flags + _T(" ") + C.network ).c_str());
+		setTString( settingName, ( C.mask + _T(" ") + C.flags + _T(" ") + C.network ).c_str());
 }	}
 
 struct CIgnorePrefsDlg : public CProtoDlgBase<CIrcProto>
@@ -1685,11 +1685,11 @@ struct CIgnorePrefsDlg : public CProtoDlgBase<CIrcProto>
 					m_proto->Ignore = IsDlgButtonChecked( m_hwnd,IDC_ENABLEIGNORE)== BST_CHECKED?1:0;
 					m_proto->IgnoreChannelDefault = IsDlgButtonChecked( m_hwnd,IDC_IGNORECHANNEL)== BST_CHECKED?1:0;
 					m_proto->DCCChatIgnore = IsDlgButtonChecked( m_hwnd, IDC_IGNOREUNKNOWN) == BST_CHECKED?2:1;
-					DBWriteContactSettingByte(NULL,m_proto->m_szModuleName,"EnableCtcpFile",m_proto->DCCFileEnabled);
-					DBWriteContactSettingByte(NULL,m_proto->m_szModuleName,"EnableCtcpChat",m_proto->DCCChatEnabled);
-					DBWriteContactSettingByte(NULL,m_proto->m_szModuleName,"Ignore",m_proto->Ignore);
-					DBWriteContactSettingByte(NULL,m_proto->m_szModuleName,"IgnoreChannelDefault",m_proto->IgnoreChannelDefault);
-					DBWriteContactSettingByte(NULL,m_proto->m_szModuleName,"CtcpChatIgnore",m_proto->DCCChatIgnore);
+					m_proto->setByte("EnableCtcpFile",m_proto->DCCFileEnabled);
+					m_proto->setByte("EnableCtcpChat",m_proto->DCCChatEnabled);
+					m_proto->setByte("Ignore",m_proto->Ignore);
+					m_proto->setByte("IgnoreChannelDefault",m_proto->IgnoreChannelDefault);
+					m_proto->setByte("CtcpChatIgnore",m_proto->DCCChatIgnore);
 				}
 				return TRUE;
 			}

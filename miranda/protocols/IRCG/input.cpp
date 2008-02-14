@@ -656,7 +656,7 @@ BOOL CIrcProto::DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact
 				TString contact = two + _T(DCCSTRING);
 				CONTACT user = { (TCHAR*)contact.c_str(), NULL, NULL, false, false, true};
 				HANDLE hContact = CList_AddContact( &user, false, false );
-				DBWriteContactSettingByte(hContact, m_szModuleName, "DCC", 1);
+				setByte(hContact, "DCC", 1);
 
 				int iPort = 0;
 				if ( hContact ) {

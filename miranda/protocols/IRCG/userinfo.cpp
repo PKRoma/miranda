@@ -129,22 +129,22 @@ BOOL CALLBACK UserDetailsDlgProc(HWND m_hwnd, UINT msg, WPARAM wParam, LPARAM lP
 
 				GetDlgItemText( m_hwnd, IDC_WILDCARD, temp, SIZEOF(temp));
 				if ( lstrlen( GetWord(temp, 0).c_str()))
-					DBWriteContactSettingTString( p->hContact, p->ppro->m_szModuleName, "UWildcard", GetWord(temp, 0).c_str());
+					p->ppro->setTString( p->hContact, "UWildcard", GetWord(temp, 0).c_str());
 				else
 					DBDeleteContactSetting( p->hContact, p->ppro->m_szModuleName, "UWildcard");
 			}
 
-			DBWriteContactSettingByte( p->hContact, p->ppro->m_szModuleName, "AdvancedMode", bAdvanced);
+			p->ppro->setByte( p->hContact, "AdvancedMode", bAdvanced);
 
 			GetDlgItemText( m_hwnd, IDC_USER, temp, SIZEOF(temp));
 			if (lstrlen(GetWord(temp, 0).c_str()))
-				DBWriteContactSettingTString( p->hContact, p->ppro->m_szModuleName, "UUser", GetWord(temp, 0).c_str());
+				p->ppro->setTString( p->hContact, "UUser", GetWord(temp, 0).c_str());
 			else
 				DBDeleteContactSetting( p->hContact, p->ppro->m_szModuleName, "UUser");
 
 			GetDlgItemText( m_hwnd, IDC_HOST, temp, SIZEOF(temp));
 			if (lstrlen(GetWord(temp, 0).c_str()))
-				DBWriteContactSettingTString( p->hContact, p->ppro->m_szModuleName, "UHost", GetWord(temp, 0).c_str());
+				p->ppro->setTString( p->hContact, "UHost", GetWord(temp, 0).c_str());
 			else
 				DBDeleteContactSetting( p->hContact, p->ppro->m_szModuleName, "UHost");
 

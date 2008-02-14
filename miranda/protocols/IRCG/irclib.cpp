@@ -956,7 +956,7 @@ bool CIrcDefaultMonitor::OnIrc_NICK(const CIrcMessage* pmsg)
 {
 	if (( m_proto.GetInfo().sNick == pmsg->prefix.sNick) && (pmsg->parameters.size() > 0 )) {
 		m_proto.m_info.sNick = pmsg->parameters[0];
-		DBWriteContactSettingTString(NULL,m_proto.m_szModuleName,"Nick",m_proto.m_info.sNick.c_str());
+		m_proto.setTString( "Nick", m_proto.m_info.sNick.c_str());
 	}
 	return false;
 }
@@ -1059,7 +1059,7 @@ CDccSession::CDccSession( CIrcProto* _pro, DCCINFO* pdci ) :
 	iPacketSize = DBGetContactSettingWord(NULL,m_proto->m_szModuleName, "PacketSize", 4096);
 
 	if ( di->dwAdr )
-		DBWriteContactSettingDword(di->hContact, m_proto->m_szModuleName, "IP", di->dwAdr); // mtooltip stuff
+		m_proto->setDword(di->hContact, "IP", di->dwAdr); // mtooltip stuff
 
 	#if defined( _UNICODE )
 		szFullPath = szWorkingDir = NULL;
@@ -1080,7 +1080,7 @@ CDccSession::~CDccSession() // destroy all that needs destroying
 		CDccSession* dcc = m_proto->FindDCCSession(di->hContact);
 		if ( dcc && this == dcc ) {
 			m_proto->RemoveDCCSession(di->hContact); // objects automatically remove themselves from the list of objects
-			DBWriteContactSettingWord(di->hContact, m_proto->m_szModuleName, "Status", ID_STATUS_OFFLINE);
+			m_proto->setWord(di->hContact, "Status", ID_STATUS_OFFLINE);
 	}	}
 
 	if ( di->iType == DCC_SEND )
@@ -1162,7 +1162,7 @@ void CDccSession::SetupPassive(DWORD adress, DWORD port)
 	di->dwAdr = adress;
 	di->iPort = (int)port;
 
-	DBWriteContactSettingDword(di->hContact, m_proto->m_szModuleName, "IP", di->dwAdr); // mtooltip stuff
+	m_proto->setDword(di->hContact, "IP", di->dwAdr); // mtooltip stuff
 }
 
 int CDccSession::SetupConnection()
@@ -1172,7 +1172,7 @@ int CDccSession::SetupConnection()
 	{
 		// if it is a dcc chat connection make sure it is "offline" to begoin with, since no connection exists still
 		if ( di->iType == DCC_CHAT )
-			DBWriteContactSettingWord(di->hContact, m_proto->m_szModuleName, "Status", ID_STATUS_OFFLINE);
+			m_proto->setWord(di->hContact, "Status", ID_STATUS_OFFLINE);
 
 		// Set up stuff needed for the filetransfer dialog (if it is a filetransfer)
 		if ( di->iType == DCC_SEND ) {
@@ -1341,7 +1341,7 @@ int CDccSession::SetupConnection()
 
 		// if it is a chat connection set the user to online now since we now know there is a connection
 		if ( di->iType == DCC_CHAT )
-			DBWriteContactSettingWord(di->hContact, m_proto->m_szModuleName, "Status", ID_STATUS_ONLINE);
+			m_proto->setWord(di->hContact, "Status", ID_STATUS_ONLINE);
 
 		// spawn a new thread to handle receiving/sending of data for the new chat/filetransfer connection to the remote computer
 		mir_forkthread(ThreadProc, this  );
@@ -1367,10 +1367,10 @@ int CDccSession::IncomingConnection(HANDLE hConnection, DWORD dwIP)
 		return false; // failed to connect
 	}
 
-	DBWriteContactSettingDword(di->hContact, m_proto->m_szModuleName, "IP", dwIP); // mToolTip stuff
+	m_proto->setDword(di->hContact, "IP", dwIP); // mToolTip stuff
 
 	if ( di->iType == DCC_CHAT )
-		DBWriteContactSettingWord(di->hContact, m_proto->m_szModuleName, "Status", ID_STATUS_ONLINE); // set chat to online
+		m_proto->setWord(di->hContact, "Status", ID_STATUS_ONLINE); // set chat to online
 
 	// same as above, spawn a new thread to handle receiving/sending of data for the new incoming chat/filetransfer connection  
 	mir_forkthread(ThreadProc, this  );

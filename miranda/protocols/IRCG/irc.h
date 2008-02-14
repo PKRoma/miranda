@@ -567,6 +567,17 @@ struct CIrcProto : public PROTO_INTERFACE
 	TString  GetNextUserhostReason(int type);
 	TString  PeekAtReasons(int type);
 
+	void     setByte( const char* name, BYTE value );
+	void     setByte( HANDLE hContact, const char* name, BYTE value );
+	void     setDword( const char* name, DWORD value );
+	void     setDword( HANDLE hContact, const char* name, DWORD value );
+	void     setString( const char* name, const char* value );
+	void     setString( HANDLE hContact, const char* name, const char* value );
+	void     setTString( const char* name, const TCHAR* value );
+	void     setTString( HANDLE hContact, const char* name, const TCHAR* value );
+	void     setWord( const char* name, int value );
+	void     setWord( HANDLE hContact, const char* name, int value );
+
 	////////////////////////////////////////////////////////////////////////////////////////
 	// former CIrcProto class
 

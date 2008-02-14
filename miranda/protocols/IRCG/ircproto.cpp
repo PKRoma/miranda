@@ -218,7 +218,7 @@ int CIrcProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 				break;
 
 			*p2++ = 0;
-			DBWriteContactSettingString( NULL, m_szModuleName, ("PERFORM:" + sNetwork).c_str(), rtrim( p1 ));
+			setString(("PERFORM:" + sNetwork).c_str(), rtrim( p1 ));
 		}
 		delete[] pszPerformData;
 		::remove( szTemp );
@@ -238,11 +238,11 @@ int CIrcProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 			if ( !DBGetContactSettingTString( NULL, m_szModuleName, s.c_str(), &dbv )) {
 				DBDeleteContactSetting( NULL, m_szModuleName, s.c_str());
 				transform( s.begin(), s.end(), s.begin(), toupper );
-				DBWriteContactSettingTString( NULL, m_szModuleName, s.c_str(), dbv.ptszVal );
+				setTString( s.c_str(), dbv.ptszVal );
 				DBFreeVariant( &dbv );
 		}	}
 
-		DBWriteContactSettingByte( NULL, m_szModuleName, "PerformConversionDone", 1 );
+		setByte( "PerformConversionDone", 1 );
 	}
 
 	InitIgnore();
@@ -258,13 +258,13 @@ int CIrcProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		TCHAR szBuf[ 40 ];
 		if ( lstrlen( AlternativeNick ) == 0 ) {
 			mir_sntprintf( szBuf, SIZEOF(szBuf), _T("%s%u"), Nick, rand()%9999);
-			DBWriteContactSettingTString(NULL, m_szModuleName, "AlernativeNick", szBuf);
+			setTString("AlernativeNick", szBuf);
 			lstrcpyn(AlternativeNick, szBuf, 30);
 		}
 
 		if ( lstrlen( Name ) == 0 ) {
 			mir_sntprintf( szBuf, SIZEOF(szBuf), _T("Miranda%u"), rand()%9999);
-			DBWriteContactSettingTString(NULL, m_szModuleName, "Name", szBuf);
+			setTString("Name", szBuf);
 			lstrcpyn( Name, szBuf, 200 );
 	}	}
 

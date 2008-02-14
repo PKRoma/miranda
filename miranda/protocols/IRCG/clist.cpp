@@ -42,7 +42,7 @@ BOOL CIrcProto::CList_AddDCCChat(TString name, TString hostmask, unsigned long a
 
 	CONTACT user = { (TCHAR*)contactname.c_str(), NULL, NULL, false, false, true};
 	hContact = CList_AddContact(&user, false, false);
-	DBWriteContactSettingByte(hContact, m_szModuleName, "DCC", 1);
+	setByte(hContact, "DCC", 1);
 
 	DCCINFO* pdci = new DCCINFO;
 	ZeroMemory(pdci, sizeof(DCCINFO));
@@ -96,10 +96,10 @@ HANDLE CIrcProto::CList_AddContact(CONTACT * user, bool InList, bool SetOnline)
 	if ( hContact ) {
 		if ( InList )
 			DBDeleteContactSetting( hContact, "CList", "NotOnList" );
-		DBWriteContactSettingTString(hContact, m_szModuleName, "Nick", user->name);
+		setTString(hContact, "Nick", user->name);
 		DBDeleteContactSetting(hContact, "CList", "Hidden");
 		if (SetOnline && DBGetContactSettingWord(hContact, m_szModuleName, "Status", ID_STATUS_OFFLINE)== ID_STATUS_OFFLINE)
-			DBWriteContactSettingWord(hContact, m_szModuleName, "Status", ID_STATUS_ONLINE);
+			setWord(hContact, "Status", ID_STATUS_ONLINE);
 		return hContact;
 	}
 	
@@ -113,9 +113,9 @@ HANDLE CIrcProto::CList_AddContact(CONTACT * user, bool InList, bool SetOnline)
 		else
 			DBWriteContactSettingByte(hContact, "CList", "NotOnList", 1);
 		DBDeleteContactSetting(hContact, "CList", "Hidden");
-		DBWriteContactSettingTString(hContact, m_szModuleName, "Nick", user->name);
-		DBWriteContactSettingTString(hContact, m_szModuleName, "Default", user->name);
-		DBWriteContactSettingWord(hContact, m_szModuleName, "Status", SetOnline ? ID_STATUS_ONLINE:ID_STATUS_OFFLINE);
+		setTString(hContact, "Nick", user->name);
+		setTString(hContact, "Default", user->name);
+		setWord(hContact, "Status", SetOnline ? ID_STATUS_ONLINE:ID_STATUS_OFFLINE);
 		return hContact;
 	}
 	return false;
@@ -127,10 +127,10 @@ HANDLE CIrcProto::CList_SetOffline(struct CONTACT * user)
 	HANDLE hContact = CList_FindContact(user);
 	if ( hContact ) {
 		if ( !DBGetContactSettingTString( hContact, m_szModuleName, "Default", &dbv )) {
-			DBWriteContactSettingString(hContact, m_szModuleName, "User", "");
-			DBWriteContactSettingString(hContact, m_szModuleName, "Host", "");
-			DBWriteContactSettingTString(hContact, m_szModuleName, "Nick", dbv.ptszVal);
-			DBWriteContactSettingWord(hContact, m_szModuleName, "Status", ID_STATUS_OFFLINE);
+			setString(hContact, "User", "");
+			setString(hContact, "Host", "");
+			setTString(hContact, "Nick", dbv.ptszVal);
+			setWord(hContact, "Status", ID_STATUS_OFFLINE);
 			DBFreeVariant(&dbv);
 			return hContact;
 	}	}
@@ -151,16 +151,16 @@ bool CIrcProto::CList_SetAllOffline(BYTE ChatsToo)
 			if ( DBGetContactSettingByte( hContact, m_szModuleName, "ChatRoom", 0 ) == 0 ) {
 				if ( DBGetContactSettingByte(hContact, m_szModuleName, "DCC", 0 ) != 0 ) {
 					if ( ChatsToo )
-						DBWriteContactSettingWord(hContact, m_szModuleName, "Status", ID_STATUS_OFFLINE);
+						setWord(hContact, "Status", ID_STATUS_OFFLINE);
 				}
 				else if ( !DBGetContactSettingTString( hContact, m_szModuleName, "Default", &dbv )) {
-					DBWriteContactSettingTString( hContact, m_szModuleName, "Nick", dbv.ptszVal);
-					DBWriteContactSettingWord( hContact, m_szModuleName, "Status", ID_STATUS_OFFLINE );
+					setTString( hContact, "Nick", dbv.ptszVal);
+					setWord( hContact, "Status", ID_STATUS_OFFLINE );
 					DBFreeVariant( &dbv );
 				}
 				DBDeleteContactSetting( hContact, m_szModuleName, "IP" );
-				DBWriteContactSettingString( hContact, m_szModuleName, "User", "" );
-				DBWriteContactSettingString( hContact, m_szModuleName, "Host", "" );
+				setString( hContact, "User", "" );
+				setString( hContact, "Host", "" );
 		}	}
 
 		hContact = (HANDLE) CallService( MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);

@@ -254,7 +254,7 @@ void CNickDlg::OnCommand_Yes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 		}	}
 		DBFreeVariant(&dbv);
 	}
-	DBWriteContactSettingTString( NULL, m_proto->m_szModuleName, "RecentNicks", S.c_str());
+	m_proto->setTString( "RecentNicks", S.c_str());
 	SendMessage( m_hwnd, WM_CLOSE, 0,0);
 }
 
@@ -373,8 +373,8 @@ BOOL CListDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			GetWindowRect( m_hwnd, &winRect);
 			m_proto->ListSize.x = winRect.right-winRect.left;
 			m_proto->ListSize.y = winRect.bottom-winRect.top;
-			DBWriteContactSettingDword(NULL,m_proto->m_szModuleName, "SizeOfListBottom", m_proto->ListSize.y);
-			DBWriteContactSettingDword(NULL,m_proto->m_szModuleName, "SizeOfListRight", m_proto->ListSize.x);
+			m_proto->setDword("SizeOfListBottom", m_proto->ListSize.y);
+			m_proto->setDword("SizeOfListRight", m_proto->ListSize.x);
 		}
 		return 0;		
 
@@ -486,7 +486,7 @@ void CJoinDlg::OnCommand_Yes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 		}	}
 		DBFreeVariant(&dbv);
 	}
-	DBWriteContactSettingTString(NULL, m_proto->m_szModuleName, "RecentChannels", S.c_str());
+	m_proto->setTString("RecentChannels", S.c_str());
 	PostMessage ( m_hwnd, WM_CLOSE, 0,0);
 }
 
@@ -546,15 +546,15 @@ void CInitDlg::OnCommand_Yes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 		GetDlgItemText( m_hwnd, IDC_EDIT, l, SIZEOF(l));
 		GetDlgItemText( m_hwnd, IDC_EDIT2, m, SIZEOF(m));
 
-		DBWriteContactSettingTString(NULL, m_proto->m_szModuleName, "PNick", l);
-		DBWriteContactSettingTString(NULL, m_proto->m_szModuleName, "Nick", l);
-		DBWriteContactSettingTString(NULL, m_proto->m_szModuleName, "Name", m);
+		m_proto->setTString("PNick", l);
+		m_proto->setTString("Nick", l);
+		m_proto->setTString("Name", m);
 		lstrcpyn( m_proto->Nick, l, 30 );
 		lstrcpyn( m_proto->Name, m, 200 );
 		if ( lstrlen( m_proto->AlternativeNick ) == 0) {
 			TCHAR szTemp[30];
 			mir_sntprintf(szTemp, SIZEOF(szTemp), _T("%s%u"), l, rand()%9999);
-			DBWriteContactSettingTString(NULL, m_proto->m_szModuleName, "AlernativeNick", szTemp);
+			m_proto->setTString("AlernativeNick", szTemp);
 			lstrcpyn(m_proto->AlternativeNick, szTemp, 30);					
 	}	}
 
@@ -736,18 +736,18 @@ void CQuickDlg::OnCommand_Yes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 	GetWindowText( m_hwnd, windowname, 20);
 	if ( lstrcmpi(windowname, _T("Miranda IRC")) == 0 ) {
 		m_proto->ServerComboSelection = SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_GETCURSEL, 0, 0);
-		DBWriteContactSettingDword(NULL,m_proto->m_szModuleName,"ServerComboSelection",m_proto->ServerComboSelection);
-		DBWriteContactSettingString(NULL,m_proto->m_szModuleName,"ServerName",m_proto->ServerName);
-		DBWriteContactSettingString(NULL,m_proto->m_szModuleName,"PortStart",m_proto->PortStart);
-		DBWriteContactSettingString(NULL,m_proto->m_szModuleName,"PortEnd",m_proto->PortEnd);
+		m_proto->setDword("ServerComboSelection",m_proto->ServerComboSelection);
+		m_proto->setString("ServerName",m_proto->ServerName);
+		m_proto->setString("PortStart",m_proto->PortStart);
+		m_proto->setString("PortEnd",m_proto->PortEnd);
 		CallService( MS_DB_CRYPT_ENCODESTRING, 499, (LPARAM)m_proto->Password);
-		DBWriteContactSettingString(NULL,m_proto->m_szModuleName,"Password",m_proto->Password);
+		m_proto->setString("Password",m_proto->Password);
 		CallService( MS_DB_CRYPT_DECODESTRING, 499, (LPARAM)m_proto->Password);
-		DBWriteContactSettingString(NULL,m_proto->m_szModuleName,"Network",m_proto->Network);
-		DBWriteContactSettingByte(NULL,m_proto->m_szModuleName,"UseSSL",m_proto->iSSL);
+		m_proto->setString("Network",m_proto->Network);
+		m_proto->setByte("UseSSL",m_proto->iSSL);
 	}
 	m_proto->QuickComboSelection = SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_GETCURSEL, 0, 0);
-	DBWriteContactSettingDword(NULL,m_proto->m_szModuleName,"QuickComboSelection",m_proto->QuickComboSelection);
+	m_proto->setDword("QuickComboSelection",m_proto->QuickComboSelection);
 	m_proto->DisconnectFromServer();
 	m_proto->ConnectToServer();
 	PostMessage ( m_hwnd, WM_CLOSE, 0,0);
@@ -1042,10 +1042,10 @@ void CManagerDlg::OnClose()
 		mir_sntprintf( temp, SIZEOF(temp), _T("Topic%s%s"), window, m_proto->GetInfo().sNetwork.c_str());
 		#if defined( _UNICODE )
 			char* p = mir_t2a(temp);
-			DBWriteContactSettingTString(NULL, m_proto->m_szModuleName, p, S.c_str());
+			m_proto->setTString(p, S.c_str());
 			mir_free(p);
 		#else
-			DBWriteContactSettingString(NULL, m_szModuleName, temp, S.c_str());
+			m_proto->setString(temp, S.c_str());
 		#endif
 	}
 	DestroyWindow( m_hwnd);
