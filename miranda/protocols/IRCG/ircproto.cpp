@@ -74,8 +74,6 @@ CIrcProto::CIrcProto( const char* szModuleName, const TCHAR* tszUserName )
 
 CIrcProto::~CIrcProto()
 {
-	CList_SetAllOffline( TRUE );
-
 	Netlib_CloseHandle(hNetlib);
 	Netlib_CloseHandle(hNetlibDCC);
 
