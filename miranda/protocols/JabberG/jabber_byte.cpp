@@ -220,10 +220,6 @@ void CJabberProto::ByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 				JFreeVariant( &dbv );
 		}	}
 
-		if ( localAddr == NULL ) {
-			in.S_un.S_addr = m_dwJabberLocalIP;
-			localAddr = mir_strdup( inet_ntoa( in ));
-		}
 		nlb.cbSize = sizeof( NETLIBBIND );
 		nlb.pfnNewConnectionV2 = JabberByteSendConnection;
 		nlb.pExtra = this;
@@ -234,6 +230,10 @@ void CJabberProto::ByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 			JabberByteFreeJbt( jbt );
 			mir_free( localAddr );
 			return;
+		}
+		if ( localAddr == NULL ) {
+			in.S_un.S_addr = htonl(nlb.dwExternalIP);
+			localAddr = mir_strdup( inet_ntoa( in ));
 		}
 
 		mir_sntprintf( szPort, SIZEOF( szPort ), _T("%d"), nlb.wPort );
