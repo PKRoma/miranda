@@ -332,11 +332,6 @@ SOURCE=.\chat\chat.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\chat\chat.rc
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
 SOURCE=.\chat\clist.c
 # End Source File
 # Begin Source File

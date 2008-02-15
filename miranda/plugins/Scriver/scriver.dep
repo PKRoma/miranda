@@ -557,7 +557,6 @@
 	
 
 .\resource.rc : \
-	".\chat\chat.rc"\
 	".\res\addcontact.ico"\
 	".\res\ansi.ico"\
 	".\res\chat\1.ico"\
