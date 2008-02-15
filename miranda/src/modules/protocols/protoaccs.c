@@ -323,7 +323,7 @@ void UnloadAccountsModule()
 
 	if ( !bModuleInitialized ) return;
 
-	for( i=0; i < accounts.count; i++ )
+	for( i=accounts.count-1; i >= 0; i--, accounts.count-- )
 		UnloadAccount( accounts.items[ i ], FALSE );
 
 	List_Destroy(( SortedList* )&accounts );
