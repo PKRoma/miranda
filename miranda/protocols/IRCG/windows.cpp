@@ -20,7 +20,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "irc.h"
-#include "irc_dlg.h"
 
 static WNDPROC OldMgrEditProc;
 
@@ -108,7 +107,7 @@ void CWhoisDlg::OnDestroy()
 	HFONT hFont2=(HFONT)SendDlgItemMessage( m_hwnd,IDC_AWAYTIME,WM_GETFONT,0,0);
 	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,SendDlgItemMessage( m_hwnd,IDOK,WM_GETFONT,0,0),0);
 	DeleteObject(hFont2);				
-	m_proto->whois_hWnd = NULL;
+	m_proto->m_whoisDlg = NULL;
 }
 
 BOOL CWhoisDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
@@ -206,7 +205,7 @@ void CNickDlg::OnDestroy()
 	HFONT hFont = ( HFONT )SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_GETFONT,0,0);
 	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,SendDlgItemMessage( m_hwnd,IDOK,WM_GETFONT,0,0),0);
 	DeleteObject(hFont);			
-	m_proto->nick_hWnd = NULL;
+	m_proto->m_nickDlg = NULL;
 }
 
 BOOL CNickDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
@@ -284,7 +283,7 @@ void CListDlg::OnInitDialog()
 
 void CListDlg::OnDestroy()
 {
-	m_proto->list_hWnd = NULL;
+	m_proto->m_listDlg = NULL;
 }
 
 struct ListViewSortParam
@@ -371,9 +370,9 @@ BOOL CListDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		case LVN_COLUMNCLICK:
 			{
 				LPNMLISTVIEW lv = (LPNMLISTVIEW)lParam;
-				ListViewSortParam param = { m_proto->list_hWnd, lv->iSubItem };
+				ListViewSortParam param = { m_proto->m_listDlg->GetHwnd(), lv->iSubItem };
 				SendDlgItemMessage( m_hwnd, IDC_INFO_LISTVIEW, LVM_SORTITEMS, (WPARAM)&param, (LPARAM)ListViewSort);
-				SendMessage(m_proto->list_hWnd, IRC_UPDATELIST, 0, 0);
+				SendMessage(m_proto->m_listDlg->GetHwnd(), IRC_UPDATELIST, 0, 0);
 			}
 			break;
 		}
@@ -426,7 +425,7 @@ void CJoinDlg::OnDestroy()
 	HFONT hFont = (HFONT)SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_GETFONT,0,0);
 	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,SendDlgItemMessage( m_hwnd,IDOK,WM_GETFONT,0,0),0);
 	DeleteObject( hFont );				
-	m_proto->join_hWnd = NULL;
+	m_proto->m_joinDlg = NULL;
 }
 
 BOOL CJoinDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
@@ -657,7 +656,7 @@ void CQuickDlg::OnDestroy()
 	for ( int index2 = 0; index2 < j; index2++ )
 		delete ( SERVER_INFO* )SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_GETITEMDATA, index2, 0);
 	
-	m_proto->quickconn_hWnd = NULL;
+	m_proto->m_quickDlg = NULL;
 }
 
 BOOL CQuickDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
@@ -873,19 +872,20 @@ CManagerDlg::CManagerDlg(CIrcProto *_pro) :
 	SetControlHandler( IDC_CHECK2, &CManagerDlg::OnCheck );
 	SetControlHandler( IDC_CHECK3, &CManagerDlg::OnCheck );
 	SetControlHandler( IDC_CHECK4, &CManagerDlg::OnCheck );
+	SetControlHandler( IDC_CHECK5, &CManagerDlg::OnCheck5 );
+	SetControlHandler( IDC_CHECK6, &CManagerDlg::OnCheck6 );
 	SetControlHandler( IDC_CHECK7, &CManagerDlg::OnCheck );
 	SetControlHandler( IDC_CHECK8, &CManagerDlg::OnCheck );
 	SetControlHandler( IDC_CHECK9, &CManagerDlg::OnCheck );
-	SetControlHandler( IDC_CHECK5, &CManagerDlg::OnCheck5 );
 	SetControlHandler( IDC_EDIT, &CManagerDlg::OnEdit );
-	SetControlHandler( IDC_KEY, &CManagerDlg::OnChange );
-	SetControlHandler( IDC_LIMIT, &CManagerDlg::OnChange );
+	SetControlHandler( IDC_KEY, &CManagerDlg::OnChangeModes );
+	SetControlHandler( IDC_LIMIT, &CManagerDlg::OnChangeModes );
 	SetControlHandler( IDC_LIST, &CManagerDlg::OnList );
 	SetControlHandler( IDC_RADIO1, &CManagerDlg::OnRadio );
 	SetControlHandler( IDC_RADIO2, &CManagerDlg::OnRadio );
 	SetControlHandler( IDC_RADIO3, &CManagerDlg::OnRadio );
 	SetControlHandler( IDC_REMOVE, &CManagerDlg::OnRemove );
-	SetControlHandler( IDC_TOPIC, &CManagerDlg::OnChange );
+	SetControlHandler( IDC_TOPIC, &CManagerDlg::OnChangeTopic );
 }
 
 LRESULT CALLBACK MgrEditSubclassProc(HWND m_hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
@@ -1017,7 +1017,7 @@ void CManagerDlg::OnDestroy()
 	HFONT hFont = (HFONT)SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_GETFONT,0,0);
 	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,SendDlgItemMessage( m_hwnd,IDOK,WM_GETFONT,0,0),0);
 	DeleteObject(hFont);
-	m_proto->manager_hWnd = NULL;
+	m_proto->m_managerDlg = NULL;
 }
 
 void CManagerDlg::OnRemove(HWND hwndCtrl, WORD idCtrl, WORD idCode)
@@ -1145,10 +1145,16 @@ void CManagerDlg::OnList(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 		SendMessage( m_hwnd, WM_COMMAND, MAKEWPARAM(IDC_EDIT, BN_CLICKED), 0);
 }
 
-void CManagerDlg::OnChange(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void CManagerDlg::OnChangeModes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 {
 	if ( idCode == EN_CHANGE || idCode == CBN_EDITCHANGE || idCode == CBN_SELCHANGE )
 		EnableWindow(GetDlgItem( m_hwnd, IDC_APPLYMODES), true);
+}
+
+void CManagerDlg::OnChangeTopic(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+{
+	if ( idCode == EN_CHANGE || idCode == CBN_EDITCHANGE || idCode == CBN_SELCHANGE )
+		EnableWindow(GetDlgItem( m_hwnd, IDC_APPLYTOPIC), true);
 }
 
 void CManagerDlg::OnApplyModes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
@@ -1394,7 +1400,7 @@ BOOL CManagerDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				if ( wi->pszTopic )
 					SetDlgItemText( m_hwnd, IDC_TOPIC, wi->pszTopic);
 
-				if ( !IsDlgButtonChecked( m_proto->manager_hWnd, IDC_NOTOP ))
+				if ( !IsDlgButtonChecked( m_proto->m_managerDlg->GetHwnd(), IDC_NOTOP ))
 					EnableWindow(GetDlgItem( m_hwnd, IDC_ADD), true);
 
 

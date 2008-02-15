@@ -142,7 +142,8 @@ struct CManagerDlg : public CProtoDlgBase<CIrcProto>
 	void OnApplyModes(HWND hwndCtrl, WORD idCtrl, WORD idCode);
 	void OnApplyTopic(HWND hwndCtrl, WORD idCtrl, WORD idCode);
 	void OnCommand_Yes(HWND hwndCtrl, WORD idCtrl, WORD idCode);
-	void OnChange(HWND hwndCtrl, WORD idCtrl, WORD idCode);
+	void OnChangeModes(HWND hwndCtrl, WORD idCtrl, WORD idCode);
+	void OnChangeTopic(HWND hwndCtrl, WORD idCtrl, WORD idCode);
 	void OnCheck(HWND hwndCtrl, WORD idCtrl, WORD idCode);
 	void OnCheck5(HWND hwndCtrl, WORD idCtrl, WORD idCode);
 	void OnCheck6(HWND hwndCtrl, WORD idCtrl, WORD idCode);

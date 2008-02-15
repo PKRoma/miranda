@@ -20,7 +20,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "irc.h"
-#include "irc_dlg.h"
 #include "version.h"
 
 #define NICKSUBSTITUTE _T("!_nick_!")
@@ -426,17 +425,16 @@ BOOL CIrcProto::DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact
 	else if ( command == _T("/channelmanager")) {
 		if ( window && !hContact && IsChannel( window )) {
 			if ( IsConnected() ) {
-				if ( manager_hWnd != NULL ) {
-					SetActiveWindow( manager_hWnd );
-					SendMessage( manager_hWnd, WM_CLOSE, 0, 0 );
+				if ( m_managerDlg != NULL ) {
+					SetActiveWindow( m_managerDlg->GetHwnd() );
+					m_managerDlg->Close();
 				}
-				if ( manager_hWnd == NULL ) {
-					CManagerDlg* dlg = new CManagerDlg( this );
-					dlg->Show();
-					manager_hWnd = dlg->GetHwnd();
-					SetWindowText( manager_hWnd, TranslateT( "Channel Manager" ));
-					SetWindowText( GetDlgItem( manager_hWnd, IDC_CAPTION ), window );
-					SendMessage( manager_hWnd, IRC_INITMANAGER, 1, (LPARAM)window );
+				else {
+					m_managerDlg = new CManagerDlg( this );
+					m_managerDlg->Show();
+					SetWindowText( m_managerDlg->GetHwnd(), TranslateT( "Channel Manager" ));
+					SetWindowText( GetDlgItem( m_managerDlg->GetHwnd(), IDC_CAPTION ), window );
+					SendMessage( m_managerDlg->GetHwnd(), IRC_INITMANAGER, 1, (LPARAM)window );
 		}	}	}
 		return true;
 	}
@@ -479,23 +477,22 @@ BOOL CIrcProto::DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact
 	}
 	
 	else if (command == _T("/list" )) {
-		if ( list_hWnd == NULL ) {
-			CListDlg* dlg = new CListDlg( this );
-			dlg->Show();
-			list_hWnd = dlg->GetHwnd();
+		if ( m_listDlg->GetHwnd() == NULL ) {
+			m_listDlg = new CListDlg( this );
+			m_listDlg->Show();
 		}
-		SetActiveWindow( list_hWnd );
+		SetActiveWindow( m_listDlg->GetHwnd() );
 		int minutes = ( int )NoOfChannels/4000;
 		int minutes2 = ( int )NoOfChannels/9000;
 		
 		TCHAR text[256];
 		mir_sntprintf( text, SIZEOF(text), TranslateT("This command is not recommended on a network of this size!\r\nIt will probably cause high CPU usage and/or high bandwidth\r\nusage for around %u to %u minute(s).\r\n\r\nDo you want to continue?"), minutes2, minutes);
 		if ( NoOfChannels < 4000 || ( NoOfChannels >= 4000 && MessageBox( NULL, text, TranslateT("IRC warning") , MB_YESNO|MB_ICONWARNING|MB_DEFBUTTON2) == IDYES)) {
-			ListView_DeleteAllItems( GetDlgItem( list_hWnd, IDC_INFO_LISTVIEW ));
+			ListView_DeleteAllItems( GetDlgItem( m_listDlg->GetHwnd(), IDC_INFO_LISTVIEW ));
 			PostIrcMessage( _T("/lusers" ));
 			return false;
 		}
-		SetDlgItemText( list_hWnd, IDC_TEXT, TranslateT("Aborted")); 
+		SetDlgItemText( m_listDlg->GetHwnd(), IDC_TEXT, TranslateT("Aborted")); 
 		return true;
 	}
 	

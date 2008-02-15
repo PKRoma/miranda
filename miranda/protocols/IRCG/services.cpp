@@ -20,7 +20,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "irc.h"
-#include "irc_dlg.h"
 
 #include <algorithm>
 
@@ -336,34 +335,32 @@ int __cdecl CIrcProto::OnMenuIgnore(WPARAM wp, LPARAM lp)
 
 int __cdecl CIrcProto::OnJoinMenuCommand(WPARAM wp, LPARAM lp)
 {
-	if ( !join_hWnd ) {
-		CJoinDlg* dlg = new CJoinDlg( this );
-		dlg->Show();
-		join_hWnd = dlg->GetHwnd();
+	if ( !m_joinDlg ) {
+		m_joinDlg = new CJoinDlg( this );
+		m_joinDlg->Show();
 	}
 
-	SetDlgItemText(join_hWnd, IDC_CAPTION, TranslateT("Join channel"));
-	SetWindowText(GetDlgItem(join_hWnd, IDC_TEXT), TranslateT("Please enter a channel to join"));
-	SendMessage(GetDlgItem(join_hWnd, IDC_ENICK), EM_SETSEL, 0,MAKELPARAM(0,-1));
-	ShowWindow(join_hWnd, SW_SHOW);
-	SetActiveWindow(join_hWnd);
+	SetDlgItemText( m_joinDlg->GetHwnd(), IDC_CAPTION, TranslateT("Join channel"));
+	SetWindowText( GetDlgItem( m_joinDlg->GetHwnd(), IDC_TEXT), TranslateT("Please enter a channel to join"));
+	SendMessage( GetDlgItem( m_joinDlg->GetHwnd(), IDC_ENICK), EM_SETSEL, 0,MAKELPARAM(0,-1));
+	ShowWindow( m_joinDlg->GetHwnd(), SW_SHOW);
+	SetActiveWindow( m_joinDlg->GetHwnd());
 	return 0;
 }
 
 int __cdecl CIrcProto::OnQuickConnectMenuCommand(WPARAM wp, LPARAM lp)
 {
-	if ( !quickconn_hWnd ) {
-		CQuickDlg* dlg = new CQuickDlg( this );
-		dlg->Show();
-		quickconn_hWnd = dlg->GetHwnd();
+	if ( !m_quickDlg ) {
+		m_quickDlg = new CQuickDlg( this );
+		m_quickDlg->Show();
 	}
 
-	SetWindowText( quickconn_hWnd, TranslateT( "Quick connect" ));
-	SetDlgItemText( quickconn_hWnd, IDC_TEXT, TranslateT( "Please select IRC network and enter the password if needed" ));
-	SetDlgItemText( quickconn_hWnd, IDC_CAPTION, TranslateT( "Quick connect" ));
-	SendMessage( quickconn_hWnd, WM_SETICON, ICON_BIG, ( LPARAM )LoadIconEx( IDI_QUICK ));
-	ShowWindow( quickconn_hWnd, SW_SHOW );
-	SetActiveWindow( quickconn_hWnd );
+	SetWindowText( m_quickDlg->GetHwnd(), TranslateT( "Quick connect" ));
+	SetDlgItemText( m_quickDlg->GetHwnd(), IDC_TEXT, TranslateT( "Please select IRC network and enter the password if needed" ));
+	SetDlgItemText( m_quickDlg->GetHwnd(), IDC_CAPTION, TranslateT( "Quick connect" ));
+	SendMessage( m_quickDlg->GetHwnd(), WM_SETICON, ICON_BIG, ( LPARAM )LoadIconEx( IDI_QUICK ));
+	ShowWindow( m_quickDlg->GetHwnd(), SW_SHOW );
+	SetActiveWindow( m_quickDlg->GetHwnd() );
 	return 0;
 }
 
@@ -389,18 +386,17 @@ int __cdecl CIrcProto::OnShowServerMenuCommand(WPARAM wp, LPARAM lp)
 
 int __cdecl CIrcProto::OnChangeNickMenuCommand(WPARAM wp, LPARAM lp)
 {
-	if ( !nick_hWnd ) {
-		CNickDlg* dlg = new CNickDlg( this );
-		dlg->Show();
-		nick_hWnd = dlg->GetHwnd();
+	if ( !m_nickDlg->GetHwnd() ) {
+		m_nickDlg = new CNickDlg( this );
+		m_nickDlg->Show();
 	}
 
-	SetDlgItemText(nick_hWnd, IDC_CAPTION, TranslateT("Change nick name"));
-	SetWindowText(GetDlgItem(nick_hWnd, IDC_TEXT), TranslateT("Please enter a unique nickname"));
-	SetWindowText(GetDlgItem(nick_hWnd, IDC_ENICK), GetInfo().sNick.c_str());
-	SendMessage(GetDlgItem(nick_hWnd, IDC_ENICK), CB_SETEDITSEL, 0,MAKELPARAM(0,-1));
-	ShowWindow(nick_hWnd, SW_SHOW);
-	SetActiveWindow(nick_hWnd);
+	SetDlgItemText( m_nickDlg->GetHwnd(), IDC_CAPTION, TranslateT("Change nick name"));
+	SetWindowText( GetDlgItem( m_nickDlg->GetHwnd(), IDC_TEXT), TranslateT("Please enter a unique nickname"));
+	SetWindowText( GetDlgItem( m_nickDlg->GetHwnd(), IDC_ENICK), GetInfo().sNick.c_str());
+	SendMessage( GetDlgItem( m_nickDlg->GetHwnd(), IDC_ENICK), CB_SETEDITSEL, 0,MAKELPARAM(0,-1));
+	ShowWindow( m_nickDlg->GetHwnd(), SW_SHOW);
+	SetActiveWindow( m_nickDlg->GetHwnd());
 	return 0;
 }
 
@@ -966,16 +962,16 @@ int __cdecl CIrcProto::OnPreShutdown(WPARAM wParam,LPARAM lParam)
 
 	DisconnectAllDCCSessions( true );
 
-	if (IsConnected())
+	if ( IsConnected() )
 		Disconnect();
-	if (list_hWnd)
-		SendMessage(list_hWnd, WM_CLOSE, 0, 0);
-	if (nick_hWnd)
-		SendMessage(nick_hWnd, WM_CLOSE, 0, 0);
-	if (join_hWnd)
-		SendMessage(join_hWnd, WM_CLOSE, 0, 0);
-	LeaveCriticalSection(&cs);
+	if ( m_listDlg )
+		m_listDlg->Close();
+	if ( m_nickDlg )
+		m_nickDlg->Close();
+	if ( m_joinDlg )
+		m_joinDlg->Close();
 
+	LeaveCriticalSection(&cs);
 	return 0;
 }
 

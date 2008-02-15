@@ -591,7 +591,6 @@ public:
 class CDlgBase
 {
 	friend class CCtrlData;
-	friend class CCtrlData;
 
 public:
 	CDlgBase(int idDialog, HWND hwndParent);

@@ -70,7 +70,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "resource.h"
 #include "irclib.h"
 #include "commandmonitor.h"
-#include "ui_utils.h"
+#include "irc_dlg.h"
 
 #define IRC_UPDATELIST        (WM_USER+1)
 #define IRC_QUESTIONAPPLY     (WM_USER+2)
@@ -426,8 +426,16 @@ struct CIrcProto : public PROTO_INTERFACE
 	bool	nickflag;
 
 	bool     bPerformDone;
-	HWND     join_hWnd, list_hWnd, manager_hWnd, nick_hWnd, whois_hWnd, quickconn_hWnd;
+
+	CJoinDlg*    m_joinDlg;
+	CListDlg*    m_listDlg;
+	CManagerDlg* m_managerDlg;
+	CNickDlg*    m_nickDlg;
+	CWhoisDlg*   m_whoisDlg;
+	CQuickDlg*   m_quickDlg;
+	
 	HWND     IgnoreWndHwnd;
+
 	int      NoOfChannels, ManualWhoisCount;
 	String   sChannelModes, sUserModes;
 	TString  sChannelPrefixes, sUserModePrefixes, WhoisAwayReply;

@@ -23,7 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // certain commands from the server.
 
 #include "irc.h"
-#include "irc_dlg.h"
 #include <algorithm>
 
 using namespace irc;
@@ -1283,16 +1282,16 @@ bool CMyMonitor::IsCTCP( const CIrcMessage* pmsg )
 				}
 
 			// if the whois window is visible and the ctcp reply belongs to the user in it, then show the reply in the whois window
-			if ( m_proto.whois_hWnd && IsWindowVisible( m_proto.whois_hWnd )) {
-				GetDlgItemText( m_proto.whois_hWnd, IDC_INFO_NICK, szTemp, SIZEOF(szTemp));
+			if ( m_proto.m_whoisDlg->GetHwnd() && IsWindowVisible( m_proto.m_whoisDlg->GetHwnd() )) {
+				GetDlgItemText( m_proto.m_whoisDlg->GetHwnd(), IDC_INFO_NICK, szTemp, SIZEOF(szTemp));
 				if ( lstrcmpi(szTemp, pmsg->prefix.sNick.c_str()) == 0 ) {
 					if ( pmsg->m_bIncoming && (command == _T("version") || command == _T("userinfo") || command == _T("time"))) {
-						SetActiveWindow( m_proto.whois_hWnd );
-						SetDlgItemText( m_proto.whois_hWnd, IDC_REPLY, DoColorCodes(GetWordAddress(mess.c_str(), 1), TRUE, FALSE));
+						SetActiveWindow( m_proto.m_whoisDlg->GetHwnd() );
+						SetDlgItemText( m_proto.m_whoisDlg->GetHwnd(), IDC_REPLY, DoColorCodes(GetWordAddress(mess.c_str(), 1), TRUE, FALSE));
 						return true;
 					}
 					if (pmsg->m_bIncoming && command == _T("ping")) {
-						SetActiveWindow( m_proto.whois_hWnd );
+						SetActiveWindow( m_proto.m_whoisDlg->GetHwnd() );
 						int s = (int)time(0) - (int)_ttol(GetWordAddress(mess.c_str(), 1));
 						TCHAR szTemp[30];
 						if ( s == 1 )
@@ -1300,7 +1299,7 @@ bool CMyMonitor::IsCTCP( const CIrcMessage* pmsg )
 						else
 							mir_sntprintf( szTemp, SIZEOF(szTemp), _T("%u seconds"), s );
 
-						SetDlgItemText( m_proto.whois_hWnd, IDC_REPLY, DoColorCodes( szTemp, TRUE, FALSE ));
+						SetDlgItemText( m_proto.m_whoisDlg->GetHwnd(), IDC_REPLY, DoColorCodes( szTemp, TRUE, FALSE ));
 						return true;
 			}	}	}
 
@@ -1574,10 +1573,9 @@ bool CMyMonitor::OnIrc_TOPIC( const CIrcMessage* pmsg )
 static void __stdcall sttShowDlgList( void* param )
 {
 	CIrcProto* ppro = ( CIrcProto* )param;
-	if ( ppro->list_hWnd == NULL ) {
-		CListDlg* dlg = new CListDlg( ppro );
-		dlg->Show();
-		ppro->list_hWnd = dlg->GetHwnd();
+	if ( ppro->m_listDlg == NULL ) {
+		ppro->m_listDlg = new CListDlg( ppro );
+		ppro->m_listDlg->Show();
 }	}
 
 bool CMyMonitor::OnIrc_LISTSTART( const CIrcMessage* pmsg )
@@ -1593,10 +1591,10 @@ bool CMyMonitor::OnIrc_LISTSTART( const CIrcMessage* pmsg )
 
 bool CMyMonitor::OnIrc_LIST( const CIrcMessage* pmsg )
 {
-	if ( pmsg->m_bIncoming == 1 && m_proto.list_hWnd && pmsg->parameters.size() > 2 ) {
+	if ( pmsg->m_bIncoming == 1 && m_proto.m_listDlg->GetHwnd() && pmsg->parameters.size() > 2 ) {
 		m_proto.ChannelNumber++;
 		LVITEM lvItem;
-		HWND hListView = GetDlgItem( m_proto.list_hWnd, IDC_INFO_LISTVIEW );
+		HWND hListView = GetDlgItem( m_proto.m_listDlg->GetHwnd(), IDC_INFO_LISTVIEW );
 		lvItem.iItem = ListView_GetItemCount( hListView ); 
 		lvItem.mask = LVIF_TEXT | LVIF_PARAM;
 		lvItem.iSubItem = 0;
@@ -1642,7 +1640,7 @@ bool CMyMonitor::OnIrc_LIST( const CIrcMessage* pmsg )
 			mir_sntprintf(text, SIZEOF(text), TranslateT("Downloading list (%u%%) - %u channels"), percent, m_proto.ChannelNumber);
 		else
 			mir_sntprintf(text, SIZEOF(text), TranslateT("Downloading list - %u channels"), m_proto.ChannelNumber);
-		SetDlgItemText(m_proto.list_hWnd, IDC_TEXT, text);
+		SetDlgItemText(m_proto.m_listDlg->GetHwnd(), IDC_TEXT, text);
 	}
 	
 	return true;
@@ -1650,13 +1648,13 @@ bool CMyMonitor::OnIrc_LIST( const CIrcMessage* pmsg )
 
 bool CMyMonitor::OnIrc_LISTEND( const CIrcMessage* pmsg )
 {
-	if ( pmsg->m_bIncoming && m_proto.list_hWnd ) {
-		EnableWindow(GetDlgItem(m_proto.list_hWnd, IDC_JOIN), true);
-		ListView_SetSelectionMark(GetDlgItem(m_proto.list_hWnd, IDC_INFO_LISTVIEW), 0);		
-		ListView_SetColumnWidth(GetDlgItem(m_proto.list_hWnd, IDC_INFO_LISTVIEW), 1, LVSCW_AUTOSIZE);
-		ListView_SetColumnWidth(GetDlgItem(m_proto.list_hWnd, IDC_INFO_LISTVIEW), 2, LVSCW_AUTOSIZE);
-		ListView_SetColumnWidth(GetDlgItem(m_proto.list_hWnd, IDC_INFO_LISTVIEW), 3, LVSCW_AUTOSIZE);
-		SendMessage(m_proto.list_hWnd, IRC_UPDATELIST, 0, 0);
+	if ( pmsg->m_bIncoming && m_proto.m_listDlg->GetHwnd() ) {
+		EnableWindow(GetDlgItem(m_proto.m_listDlg->GetHwnd(), IDC_JOIN), true);
+		ListView_SetSelectionMark(GetDlgItem(m_proto.m_listDlg->GetHwnd(), IDC_INFO_LISTVIEW), 0);		
+		ListView_SetColumnWidth(GetDlgItem(m_proto.m_listDlg->GetHwnd(), IDC_INFO_LISTVIEW), 1, LVSCW_AUTOSIZE);
+		ListView_SetColumnWidth(GetDlgItem(m_proto.m_listDlg->GetHwnd(), IDC_INFO_LISTVIEW), 2, LVSCW_AUTOSIZE);
+		ListView_SetColumnWidth(GetDlgItem(m_proto.m_listDlg->GetHwnd(), IDC_INFO_LISTVIEW), 3, LVSCW_AUTOSIZE);
+		SendMessage(m_proto.m_listDlg->GetHwnd(), IRC_UPDATELIST, 0, 0);
 
 		TCHAR text[100];
 		mir_sntprintf( text, SIZEOF(text), TranslateT("Done: %u channels"), m_proto.ChannelNumber );
@@ -1667,7 +1665,7 @@ bool CMyMonitor::OnIrc_LISTEND( const CIrcMessage* pmsg )
 			lstrcat( text, _T(" "));
 			lstrcat( text, TranslateT("(probably truncated by server)"));
 		}
-		SetDlgItemText( m_proto.list_hWnd, IDC_TEXT, text );
+		SetDlgItemText( m_proto.m_listDlg->GetHwnd(), IDC_TEXT, text );
 	}
 	m_proto.ShowMessage( pmsg );
 	return true;
@@ -1676,11 +1674,11 @@ bool CMyMonitor::OnIrc_LISTEND( const CIrcMessage* pmsg )
 bool CMyMonitor::OnIrc_BANLIST( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming && pmsg->parameters.size() > 2 ) {
-		if ( m_proto.manager_hWnd && (
-			IsDlgButtonChecked(m_proto.manager_hWnd, IDC_RADIO1) && pmsg->sCommand == _T("367") ||
-			IsDlgButtonChecked(m_proto.manager_hWnd, IDC_RADIO2) && pmsg->sCommand == _T("346") ||
-			IsDlgButtonChecked(m_proto.manager_hWnd, IDC_RADIO3) && pmsg->sCommand == _T("348")) && 
-			!IsWindowEnabled(GetDlgItem(m_proto.manager_hWnd, IDC_RADIO1)) && !IsWindowEnabled(GetDlgItem(m_proto.manager_hWnd, IDC_RADIO2)) && !IsWindowEnabled(GetDlgItem(m_proto.manager_hWnd, IDC_RADIO3)))
+		if ( m_proto.m_managerDlg->GetHwnd() && (
+			IsDlgButtonChecked(m_proto.m_managerDlg->GetHwnd(), IDC_RADIO1) && pmsg->sCommand == _T("367") ||
+			IsDlgButtonChecked(m_proto.m_managerDlg->GetHwnd(), IDC_RADIO2) && pmsg->sCommand == _T("346") ||
+			IsDlgButtonChecked(m_proto.m_managerDlg->GetHwnd(), IDC_RADIO3) && pmsg->sCommand == _T("348")) && 
+			!IsWindowEnabled(GetDlgItem(m_proto.m_managerDlg->GetHwnd(), IDC_RADIO1)) && !IsWindowEnabled(GetDlgItem(m_proto.m_managerDlg->GetHwnd(), IDC_RADIO2)) && !IsWindowEnabled(GetDlgItem(m_proto.m_managerDlg->GetHwnd(), IDC_RADIO3)))
 		{
 			TString S = pmsg->parameters[2];
 			if ( pmsg->parameters.size() > 3 ) {
@@ -1694,7 +1692,7 @@ bool CMyMonitor::OnIrc_BANLIST( const CIrcMessage* pmsg )
 					S += _T(")");
 			}	}
 
-			SendDlgItemMessage(m_proto.manager_hWnd, IDC_LIST, LB_ADDSTRING, 0, (LPARAM)S.c_str());
+			SendDlgItemMessage(m_proto.m_managerDlg->GetHwnd(), IDC_LIST, LB_ADDSTRING, 0, (LPARAM)S.c_str());
 	}	}
 
 	m_proto.ShowMessage( pmsg );
@@ -1704,20 +1702,20 @@ bool CMyMonitor::OnIrc_BANLIST( const CIrcMessage* pmsg )
 bool CMyMonitor::OnIrc_BANLISTEND( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming && pmsg->parameters.size() > 1 ) {
-		if ( m_proto.manager_hWnd && 
-			  (IsDlgButtonChecked(m_proto.manager_hWnd, IDC_RADIO1) && pmsg->sCommand == _T("368")
-			|| IsDlgButtonChecked(m_proto.manager_hWnd, IDC_RADIO2) && pmsg->sCommand == _T("347")
-			|| IsDlgButtonChecked(m_proto.manager_hWnd, IDC_RADIO3) && pmsg->sCommand == _T("349")) && 
-			!IsWindowEnabled(GetDlgItem(m_proto.manager_hWnd, IDC_RADIO1)) && !IsWindowEnabled(GetDlgItem(m_proto.manager_hWnd, IDC_RADIO2)) && !IsWindowEnabled(GetDlgItem(m_proto.manager_hWnd, IDC_RADIO3)))
+		if ( m_proto.m_managerDlg->GetHwnd() && 
+			  (IsDlgButtonChecked(m_proto.m_managerDlg->GetHwnd(), IDC_RADIO1) && pmsg->sCommand == _T("368")
+			|| IsDlgButtonChecked(m_proto.m_managerDlg->GetHwnd(), IDC_RADIO2) && pmsg->sCommand == _T("347")
+			|| IsDlgButtonChecked(m_proto.m_managerDlg->GetHwnd(), IDC_RADIO3) && pmsg->sCommand == _T("349")) && 
+			!IsWindowEnabled(GetDlgItem(m_proto.m_managerDlg->GetHwnd(), IDC_RADIO1)) && !IsWindowEnabled(GetDlgItem(m_proto.m_managerDlg->GetHwnd(), IDC_RADIO2)) && !IsWindowEnabled(GetDlgItem(m_proto.m_managerDlg->GetHwnd(), IDC_RADIO3)))
 		{
 			if ( strchr( m_proto.sChannelModes.c_str(), 'b' ))
-				EnableWindow( GetDlgItem(m_proto.manager_hWnd, IDC_RADIO1), true );
+				EnableWindow( GetDlgItem(m_proto.m_managerDlg->GetHwnd(), IDC_RADIO1), true );
 			if ( strchr( m_proto.sChannelModes.c_str(), 'I' ))
-				EnableWindow( GetDlgItem(m_proto.manager_hWnd, IDC_RADIO2), true );
+				EnableWindow( GetDlgItem(m_proto.m_managerDlg->GetHwnd(), IDC_RADIO2), true );
 			if ( strchr( m_proto.sChannelModes.c_str(), 'e' ))
-				EnableWindow( GetDlgItem(m_proto.manager_hWnd, IDC_RADIO3), true );
-			if ( !IsDlgButtonChecked(m_proto.manager_hWnd, IDC_NOTOP))
-				EnableWindow( GetDlgItem(m_proto.manager_hWnd, IDC_ADD), true );
+				EnableWindow( GetDlgItem(m_proto.m_managerDlg->GetHwnd(), IDC_RADIO3), true );
+			if ( !IsDlgButtonChecked(m_proto.m_managerDlg->GetHwnd(), IDC_NOTOP))
+				EnableWindow( GetDlgItem(m_proto.m_managerDlg->GetHwnd(), IDC_ADD), true );
 	}	}
 	
 	m_proto.ShowMessage( pmsg );
@@ -1728,34 +1726,33 @@ static void __stdcall sttShowWhoisWnd( void* param )
 {
 	CIrcMessage* pmsg = ( CIrcMessage* )param;
 	CIrcProto* ppro = ( CIrcProto* )pmsg->m_proto;
-	if ( ppro->whois_hWnd == NULL ) {
-		CWhoisDlg* dlg = new CWhoisDlg( ppro );
-		dlg->Show();
-		ppro->whois_hWnd = dlg->GetHwnd();
+	if ( ppro->m_whoisDlg == NULL ) {
+		ppro->m_whoisDlg = new CWhoisDlg( ppro );
+		ppro->m_whoisDlg->Show();
 	}	
 
-	if ( SendMessage( GetDlgItem( ppro->whois_hWnd, IDC_INFO_NICK), CB_FINDSTRINGEXACT, -1, (LPARAM) pmsg->parameters[1].c_str()) == CB_ERR)	
-		SendMessage( GetDlgItem(  ppro->whois_hWnd, IDC_INFO_NICK), CB_ADDSTRING, 0, (LPARAM) pmsg->parameters[1].c_str());	
-	int i = SendMessage(GetDlgItem( ppro->whois_hWnd, IDC_INFO_NICK), CB_FINDSTRINGEXACT, -1, (LPARAM) pmsg->parameters[1].c_str());
-	SendMessage(GetDlgItem( ppro->whois_hWnd, IDC_INFO_NICK), CB_SETCURSEL, i, 0);	
-	SetWindowText(GetDlgItem( ppro->whois_hWnd, IDC_CAPTION), pmsg->parameters[1].c_str());	
+	if ( SendMessage( GetDlgItem( ppro->m_whoisDlg->GetHwnd(), IDC_INFO_NICK), CB_FINDSTRINGEXACT, -1, (LPARAM) pmsg->parameters[1].c_str()) == CB_ERR)	
+		SendMessage( GetDlgItem(  ppro->m_whoisDlg->GetHwnd(), IDC_INFO_NICK), CB_ADDSTRING, 0, (LPARAM) pmsg->parameters[1].c_str());	
+	int i = SendMessage(GetDlgItem( ppro->m_whoisDlg->GetHwnd(), IDC_INFO_NICK), CB_FINDSTRINGEXACT, -1, (LPARAM) pmsg->parameters[1].c_str());
+	SendMessage(GetDlgItem( ppro->m_whoisDlg->GetHwnd(), IDC_INFO_NICK), CB_SETCURSEL, i, 0);	
+	SetWindowText(GetDlgItem( ppro->m_whoisDlg->GetHwnd(), IDC_CAPTION), pmsg->parameters[1].c_str());	
 
-	SetWindowText(GetDlgItem( ppro->whois_hWnd, IDC_INFO_NAME), pmsg->parameters[5].c_str());	
-	SetWindowText(GetDlgItem( ppro->whois_hWnd, IDC_INFO_ADDRESS), pmsg->parameters[3].c_str());
-	SetWindowText(GetDlgItem( ppro->whois_hWnd, IDC_INFO_ID), pmsg->parameters[2].c_str());
-	SetWindowTextA(GetDlgItem( ppro->whois_hWnd, IDC_INFO_CHANNELS), "");
-	SetWindowTextA(GetDlgItem( ppro->whois_hWnd, IDC_INFO_SERVER), "");
-	SetWindowTextA(GetDlgItem( ppro->whois_hWnd, IDC_INFO_AWAY2), "");
-	SetWindowTextA(GetDlgItem( ppro->whois_hWnd, IDC_INFO_AUTH), "");
-	SetWindowTextA(GetDlgItem( ppro->whois_hWnd, IDC_INFO_OTHER), "");
-	SetWindowTextA(GetDlgItem( ppro->whois_hWnd, IDC_REPLY), "");
-	SetWindowText( ppro->whois_hWnd, TranslateT("User information"));
-	EnableWindow(GetDlgItem( ppro->whois_hWnd, ID_INFO_QUERY), true);
-	ShowWindow( ppro->whois_hWnd, SW_SHOW);
-	if ( IsIconic(  ppro->whois_hWnd ))
-		ShowWindow(  ppro->whois_hWnd, SW_SHOWNORMAL );
-	SendMessage( ppro->whois_hWnd, WM_SETREDRAW, TRUE, 0);
-	InvalidateRect( ppro->whois_hWnd, NULL, TRUE);
+	SetWindowText(GetDlgItem( ppro->m_whoisDlg->GetHwnd(), IDC_INFO_NAME), pmsg->parameters[5].c_str());	
+	SetWindowText(GetDlgItem( ppro->m_whoisDlg->GetHwnd(), IDC_INFO_ADDRESS), pmsg->parameters[3].c_str());
+	SetWindowText(GetDlgItem( ppro->m_whoisDlg->GetHwnd(), IDC_INFO_ID), pmsg->parameters[2].c_str());
+	SetWindowTextA(GetDlgItem( ppro->m_whoisDlg->GetHwnd(), IDC_INFO_CHANNELS), "");
+	SetWindowTextA(GetDlgItem( ppro->m_whoisDlg->GetHwnd(), IDC_INFO_SERVER), "");
+	SetWindowTextA(GetDlgItem( ppro->m_whoisDlg->GetHwnd(), IDC_INFO_AWAY2), "");
+	SetWindowTextA(GetDlgItem( ppro->m_whoisDlg->GetHwnd(), IDC_INFO_AUTH), "");
+	SetWindowTextA(GetDlgItem( ppro->m_whoisDlg->GetHwnd(), IDC_INFO_OTHER), "");
+	SetWindowTextA(GetDlgItem( ppro->m_whoisDlg->GetHwnd(), IDC_REPLY), "");
+	SetWindowText( ppro->m_whoisDlg->GetHwnd(), TranslateT("User information"));
+	EnableWindow(GetDlgItem( ppro->m_whoisDlg->GetHwnd(), ID_INFO_QUERY), true);
+	ShowWindow( ppro->m_whoisDlg->GetHwnd(), SW_SHOW);
+	if ( IsIconic(  ppro->m_whoisDlg->GetHwnd() ))
+		ShowWindow(  ppro->m_whoisDlg->GetHwnd(), SW_SHOWNORMAL );
+	SendMessage( ppro->m_whoisDlg->GetHwnd(), WM_SETREDRAW, TRUE, 0);
+	InvalidateRect( ppro->m_whoisDlg->GetHwnd(), NULL, TRUE);
 	delete pmsg;
 }
 
@@ -1769,16 +1766,16 @@ bool CMyMonitor::OnIrc_WHOIS_NAME( const CIrcMessage* pmsg )
 
 bool CMyMonitor::OnIrc_WHOIS_CHANNELS( const CIrcMessage* pmsg )
 {
-	if ( pmsg->m_bIncoming && m_proto.whois_hWnd && pmsg->parameters.size() > 2 && m_proto.ManualWhoisCount > 0 )
-		SetDlgItemText( m_proto.whois_hWnd, IDC_INFO_CHANNELS, pmsg->parameters[2].c_str());
+	if ( pmsg->m_bIncoming && m_proto.m_whoisDlg->GetHwnd() && pmsg->parameters.size() > 2 && m_proto.ManualWhoisCount > 0 )
+		SetDlgItemText( m_proto.m_whoisDlg->GetHwnd(), IDC_INFO_CHANNELS, pmsg->parameters[2].c_str());
 	m_proto.ShowMessage( pmsg );
 	return true;
 }
 
 bool CMyMonitor::OnIrc_WHOIS_AWAY( const CIrcMessage* pmsg )
 {
-	if ( pmsg->m_bIncoming && m_proto.whois_hWnd && pmsg->parameters.size() > 2 && m_proto.ManualWhoisCount > 0 )
-		SetDlgItemText( m_proto.whois_hWnd, IDC_INFO_AWAY2, pmsg->parameters[2].c_str());
+	if ( pmsg->m_bIncoming && m_proto.m_whoisDlg->GetHwnd() && pmsg->parameters.size() > 2 && m_proto.ManualWhoisCount > 0 )
+		SetDlgItemText( m_proto.m_whoisDlg->GetHwnd(), IDC_INFO_AWAY2, pmsg->parameters[2].c_str());
 	if ( m_proto.ManualWhoisCount < 1 && pmsg->m_bIncoming && pmsg->parameters.size() > 2 )
 		m_proto.WhoisAwayReply = pmsg->parameters[2];
 	m_proto.ShowMessage( pmsg );
@@ -1787,12 +1784,12 @@ bool CMyMonitor::OnIrc_WHOIS_AWAY( const CIrcMessage* pmsg )
 
 bool CMyMonitor::OnIrc_WHOIS_OTHER( const CIrcMessage* pmsg )
 {
-	if ( pmsg->m_bIncoming && m_proto.whois_hWnd && pmsg->parameters.size() > 2 && m_proto.ManualWhoisCount > 0 ) {
+	if ( pmsg->m_bIncoming && m_proto.m_whoisDlg->GetHwnd() && pmsg->parameters.size() > 2 && m_proto.ManualWhoisCount > 0 ) {
 		TCHAR temp[1024], temp2[1024];
-		GetDlgItemText( m_proto.whois_hWnd, IDC_INFO_OTHER, temp, 1000);
+		GetDlgItemText( m_proto.m_whoisDlg->GetHwnd(), IDC_INFO_OTHER, temp, 1000);
 		lstrcat( temp, _T("%s\r\n"));
 		mir_sntprintf( temp2, 1020, temp, pmsg->parameters[2].c_str()); 
-		SetWindowText( GetDlgItem( m_proto.whois_hWnd, IDC_INFO_OTHER), temp2 );
+		SetWindowText( GetDlgItem( m_proto.m_whoisDlg->GetHwnd(), IDC_INFO_OTHER), temp2 );
 	}
 	m_proto.ShowMessage( pmsg );
 	return true;
@@ -1820,7 +1817,7 @@ bool CMyMonitor::OnIrc_WHOIS_IDLE( const CIrcMessage* pmsg )
 	int H = 0;
 	int M = 0;
 	int S = 0;
-	if ( pmsg->m_bIncoming && m_proto.whois_hWnd && pmsg->parameters.size() > 2 && m_proto.ManualWhoisCount > 0 ) {
+	if ( pmsg->m_bIncoming && m_proto.m_whoisDlg->GetHwnd() && pmsg->parameters.size() > 2 && m_proto.ManualWhoisCount > 0 ) {
 		S = StrToInt(pmsg->parameters[2].c_str());
 		D = S/(60*60*24);
 		S -= (D * 60 * 60 *24);
@@ -1844,7 +1841,7 @@ bool CMyMonitor::OnIrc_WHOIS_IDLE( const CIrcMessage* pmsg )
 		time_t ttTime = _tcstol( pmsg->parameters[3].c_str(), &tStopStr, 10);
 		_tcsftime(tTimeBuf, 128, _T("%c"), localtime(&ttTime));
 		mir_sntprintf( temp3, SIZEOF(temp3), _T("online since %s, idle %s"), tTimeBuf, temp);
-		SetDlgItemText( m_proto.whois_hWnd, IDC_AWAYTIME, temp3 );	
+		SetDlgItemText( m_proto.m_whoisDlg->GetHwnd(), IDC_AWAYTIME, temp3 );	
 	}
 	m_proto.ShowMessage( pmsg );
 	return true;
@@ -1852,19 +1849,19 @@ bool CMyMonitor::OnIrc_WHOIS_IDLE( const CIrcMessage* pmsg )
 
 bool CMyMonitor::OnIrc_WHOIS_SERVER( const CIrcMessage* pmsg )
 {
-	if ( pmsg->m_bIncoming && m_proto.whois_hWnd && pmsg->parameters.size() > 2 && m_proto.ManualWhoisCount > 0 )
-		SetDlgItemText( m_proto.whois_hWnd, IDC_INFO_SERVER, pmsg->parameters[2].c_str());
+	if ( pmsg->m_bIncoming && m_proto.m_whoisDlg->GetHwnd() && pmsg->parameters.size() > 2 && m_proto.ManualWhoisCount > 0 )
+		SetDlgItemText( m_proto.m_whoisDlg->GetHwnd(), IDC_INFO_SERVER, pmsg->parameters[2].c_str());
 	m_proto.ShowMessage( pmsg );
 	return true;
 }
 
 bool CMyMonitor::OnIrc_WHOIS_AUTH( const CIrcMessage* pmsg )
 {
-	if ( pmsg->m_bIncoming && m_proto.whois_hWnd && pmsg->parameters.size() > 2 && m_proto.ManualWhoisCount > 0 ) {
+	if ( pmsg->m_bIncoming && m_proto.m_whoisDlg->GetHwnd() && pmsg->parameters.size() > 2 && m_proto.ManualWhoisCount > 0 ) {
 		if ( pmsg->sCommand == _T("330"))
-			SetDlgItemText( m_proto.whois_hWnd, IDC_INFO_AUTH, pmsg->parameters[2].c_str());
+			SetDlgItemText( m_proto.m_whoisDlg->GetHwnd(), IDC_INFO_AUTH, pmsg->parameters[2].c_str());
 		else if ( pmsg->parameters[2] == _T("is an identified user") || pmsg->parameters[2] == _T("is a registered nick"))
-			SetDlgItemText( m_proto.whois_hWnd, IDC_INFO_AUTH, pmsg->parameters[2].c_str());
+			SetDlgItemText( m_proto.m_whoisDlg->GetHwnd(), IDC_INFO_AUTH, pmsg->parameters[2].c_str());
 		else
 			OnIrc_WHOIS_OTHER( pmsg );
 	}
@@ -1875,19 +1872,19 @@ bool CMyMonitor::OnIrc_WHOIS_AUTH( const CIrcMessage* pmsg )
 bool CMyMonitor::OnIrc_WHOIS_NO_USER( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming && pmsg->parameters.size() > 2 && !m_proto.IsChannel( pmsg->parameters[1] )) {
-		if ( m_proto.whois_hWnd ) {
-			SetWindowText(GetDlgItem(m_proto.whois_hWnd, IDC_INFO_NICK), pmsg->parameters[2].c_str());
-			SendMessage(GetDlgItem(m_proto.whois_hWnd, IDC_INFO_NICK), CB_SETEDITSEL, 0,MAKELPARAM(0,-1));
-			SetWindowText(GetDlgItem(m_proto.whois_hWnd, IDC_CAPTION), pmsg->parameters[2].c_str());	
-			SetWindowTextA(GetDlgItem(m_proto.whois_hWnd, IDC_INFO_NAME), "");	
-			SetWindowTextA(GetDlgItem(m_proto.whois_hWnd, IDC_INFO_ADDRESS), "");
-			SetWindowTextA(GetDlgItem(m_proto.whois_hWnd, IDC_INFO_ID), "");
-			SetWindowTextA(GetDlgItem(m_proto.whois_hWnd, IDC_INFO_CHANNELS), "");
-			SetWindowTextA(GetDlgItem(m_proto.whois_hWnd, IDC_INFO_SERVER), "");
-			SetWindowTextA(GetDlgItem(m_proto.whois_hWnd, IDC_INFO_AWAY2), "");
-			SetWindowTextA(GetDlgItem(m_proto.whois_hWnd, IDC_INFO_AUTH), "");
-			SetWindowTextA(GetDlgItem(m_proto.whois_hWnd, IDC_REPLY), "");
-			EnableWindow(GetDlgItem(m_proto.whois_hWnd, ID_INFO_QUERY), false);
+		if ( m_proto.m_whoisDlg->GetHwnd() ) {
+			SetWindowText(GetDlgItem(m_proto.m_whoisDlg->GetHwnd(), IDC_INFO_NICK), pmsg->parameters[2].c_str());
+			SendMessage(GetDlgItem(m_proto.m_whoisDlg->GetHwnd(), IDC_INFO_NICK), CB_SETEDITSEL, 0,MAKELPARAM(0,-1));
+			SetWindowText(GetDlgItem(m_proto.m_whoisDlg->GetHwnd(), IDC_CAPTION), pmsg->parameters[2].c_str());	
+			SetWindowTextA(GetDlgItem(m_proto.m_whoisDlg->GetHwnd(), IDC_INFO_NAME), "");	
+			SetWindowTextA(GetDlgItem(m_proto.m_whoisDlg->GetHwnd(), IDC_INFO_ADDRESS), "");
+			SetWindowTextA(GetDlgItem(m_proto.m_whoisDlg->GetHwnd(), IDC_INFO_ID), "");
+			SetWindowTextA(GetDlgItem(m_proto.m_whoisDlg->GetHwnd(), IDC_INFO_CHANNELS), "");
+			SetWindowTextA(GetDlgItem(m_proto.m_whoisDlg->GetHwnd(), IDC_INFO_SERVER), "");
+			SetWindowTextA(GetDlgItem(m_proto.m_whoisDlg->GetHwnd(), IDC_INFO_AWAY2), "");
+			SetWindowTextA(GetDlgItem(m_proto.m_whoisDlg->GetHwnd(), IDC_INFO_AUTH), "");
+			SetWindowTextA(GetDlgItem(m_proto.m_whoisDlg->GetHwnd(), IDC_REPLY), "");
+			EnableWindow(GetDlgItem(m_proto.m_whoisDlg->GetHwnd(), ID_INFO_QUERY), false);
 		}
 		
 		CONTACT user = { (TCHAR*)pmsg->parameters[1].c_str(), NULL, NULL, false, false, false};
@@ -1922,15 +1919,14 @@ static void __stdcall sttShowNickWnd( void* param )
 {
 	CIrcMessage* pmsg = ( CIrcMessage* )param;
 	CIrcProto* ppro = pmsg->m_proto;
-	if ( ppro->nick_hWnd == NULL ) {
-		CNickDlg* dlg = new CNickDlg( ppro );
-		dlg->Show();
-		ppro->nick_hWnd = dlg->GetHwnd();
+	if ( ppro->m_nickDlg == NULL ) {
+		ppro->m_nickDlg = new CNickDlg( ppro );
+		ppro->m_nickDlg->Show();
 	}
-	SetWindowText( GetDlgItem( ppro->nick_hWnd, IDC_CAPTION ), TranslateT("Change nickname"));
-	SetWindowText( GetDlgItem( ppro->nick_hWnd, IDC_TEXT    ), pmsg->parameters[2].c_str());
-	SetWindowText( GetDlgItem( ppro->nick_hWnd, IDC_ENICK   ), pmsg->parameters[1].c_str());
-	SendMessage( GetDlgItem(ppro->nick_hWnd, IDC_ENICK), CB_SETEDITSEL, 0,MAKELPARAM(0,-1));
+	SetWindowText( GetDlgItem( ppro->m_nickDlg->GetHwnd(), IDC_CAPTION ), TranslateT("Change nickname"));
+	SetWindowText( GetDlgItem( ppro->m_nickDlg->GetHwnd(), IDC_TEXT    ), pmsg->parameters[2].c_str());
+	SetWindowText( GetDlgItem( ppro->m_nickDlg->GetHwnd(), IDC_ENICK   ), pmsg->parameters[1].c_str());
+	SendMessage( GetDlgItem( ppro->m_nickDlg->GetHwnd(), IDC_ENICK), CB_SETEDITSEL, 0,MAKELPARAM(0,-1));
 	delete pmsg;
 }
 
