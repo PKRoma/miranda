@@ -975,8 +975,10 @@ void CManagerDlg::OnClose()
 //	if ( lParam != 3 ) {
 	if ( IsWindowEnabled(GetDlgItem( m_hwnd, IDC_APPLYMODES)) || IsWindowEnabled(GetDlgItem( m_hwnd, IDC_APPLYTOPIC))) {
 		int i = MessageBox( NULL, TranslateT("You have not applied all changes!\n\nApply before exiting?"), TranslateT("IRC warning"), MB_YESNOCANCEL|MB_ICONWARNING|MB_DEFBUTTON3);
-		if ( i == IDCANCEL )
+		if ( i == IDCANCEL ) {
+			m_lresult = TRUE;
 			return;
+		}
 
 		if ( i == IDYES ) {
 			if ( IsWindowEnabled( GetDlgItem( m_hwnd, IDC_APPLYMODES )))
