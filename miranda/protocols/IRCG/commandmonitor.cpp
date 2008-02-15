@@ -1743,7 +1743,7 @@ static void __stdcall sttShowWhoisWnd( void* param )
 bool CMyMonitor::OnIrc_WHOIS_NAME( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming && pmsg->parameters.size() > 5 && m_proto.ManualWhoisCount > 0 )
-		CallFunctionAsync( sttShowWhoisWnd, &m_proto );
+		CallFunctionAsync( sttShowWhoisWnd, new CIrcMessage( *pmsg ));
 	m_proto.ShowMessage( pmsg );
 	return true;
 }
