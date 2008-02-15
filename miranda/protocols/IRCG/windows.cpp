@@ -865,7 +865,7 @@ void CQuestionDlg::OnCommand_Yes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 // 'Channel Manager' dialog
 
 CManagerDlg::CManagerDlg(CIrcProto *_pro) :
-	CProtoDlgBase<CIrcProto>( _pro, IDD_QUESTION, NULL )
+	CProtoDlgBase<CIrcProto>( _pro, IDD_CHANMANAGER, NULL )
 {
 	SetControlHandler( IDC_ADD, &CManagerDlg::OnAdd );
 	SetControlHandler( IDC_APPLYTOPIC, &CManagerDlg::OnApplyTopic );
