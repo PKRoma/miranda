@@ -172,15 +172,21 @@ static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 static BOOL sortAscending;
 static int sortColumn;
 
+struct BookmarkCompareParam
+{
+	CJabberProto* ppro;
+	int column;
+};
+
 static int CALLBACK BookmarkCompare( LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort )
 {
-	CJabberProto* param = ( CJabberProto* )lParamSort;
+	BookmarkCompareParam* param = ( BookmarkCompareParam* )lParamSort;
 	JABBER_LIST_ITEM *item1, *item2;
 	int res = 0;
-	item1 = param->ListGetItemPtr( LIST_BOOKMARK, ( TCHAR* )lParam1 );
-	item2 = param->ListGetItemPtr( LIST_BOOKMARK, ( TCHAR* )lParam2 );
+	item1 = param->ppro->ListGetItemPtr( LIST_BOOKMARK, ( TCHAR* )lParam1 );
+	item2 = param->ppro->ListGetItemPtr( LIST_BOOKMARK, ( TCHAR* )lParam2 );
 	if ( item1 != NULL && item2 != NULL ) {
-		switch ( lParamSort ) {
+		switch ( param->column ) {
 		case 1:	// sort by JID column
 			res = lstrcmp( item1->jid, item2->jid );
 			break;
@@ -519,7 +525,9 @@ static BOOL CALLBACK JabberBookmarksDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 							sortAscending = TRUE;
 							sortColumn = pnmlv->iSubItem;
 						}
-						ListView_SortItems( GetDlgItem( hwndDlg, IDC_BM_LIST), BookmarkCompare, sortColumn );
+
+						BookmarkCompareParam param = { ppro, sortColumn };
+						ListView_SortItems( GetDlgItem( hwndDlg, IDC_BM_LIST), BookmarkCompare, ( LPARAM )&param );
 					}
 				}
 				break;
