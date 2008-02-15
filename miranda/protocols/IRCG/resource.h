@@ -37,7 +37,6 @@
 #define IDI_DCC                         196
 #define IDI_PART                        197
 #define IDI_JOIN                        198
-#define IDD_QUESTION2                   199
 #define IDC_ENICK                       1000
 #define IDC_USERID                      1001
 #define IDC_INFO_NAME                   1001
@@ -65,8 +64,6 @@
 #define IDC_INFO_NICK                   1013
 #define IDC_EDIT2                       1013
 #define ID_INFO_GO                      1017
-#define IDNOK                           1019
-#define IDNCANCEL                       1020
 #define IDC_SERVERCOMBO                 1022
 #define IDC_IDENT                       1023
 #define IDC_IDENT_TIMED                 1024
@@ -104,8 +101,6 @@
 #define IDC_ADD_ADDRESS                 1102
 #define IDC_ADD_PORT                    1103
 #define IDC_ADD_PORT2                   1104
-#define IDN_ADD_OK                      1105
-#define IDN_ADD_CANCEL                  1106
 #define IDC_CLOSE                       1108
 #define IDC_JOIN                        1109
 #define ID_INFO_OK                      1110

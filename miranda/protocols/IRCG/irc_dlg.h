@@ -31,7 +31,6 @@ struct CMessageBoxDlg : public CProtoDlgBase<CIrcProto>
 	CMessageBoxDlg( CIrcProto* _pro, DCCINFO* _dci );
 
 	void OnCommand_Yes(HWND hwndCtrl, WORD idCtrl, WORD idCode);
-	void OnCommand_No(HWND hwndCtrl, WORD idCtrl, WORD idCode);
 
 	virtual void OnInitDialog();
 };
@@ -40,7 +39,6 @@ struct CWhoisDlg : public CProtoDlgBase<CIrcProto>
 {
 	CWhoisDlg( CIrcProto* _pro );
 
-	void OnOk(HWND hwndCtrl, WORD idCtrl, WORD idCode);
 	void OnGo(HWND hwndCtrl, WORD idCtrl, WORD idCode);
 	void OnQuery(HWND hwndCtrl, WORD idCtrl, WORD idCode);
 	void OnPing(HWND hwndCtrl, WORD idCtrl, WORD idCode);
@@ -65,7 +63,6 @@ struct CNickDlg : public CProtoDlgBase<CIrcProto>
 	virtual void OnDestroy();
 
 	void OnCommand_Yes(HWND hwndCtrl, WORD idCtrl, WORD idCode);
-	void OnCommand_No(HWND hwndCtrl, WORD idCtrl, WORD idCode);
 };
 
 struct CListDlg : public CProtoDlgBase<CIrcProto>
@@ -103,7 +100,6 @@ struct CInitDlg : public CProtoDlgBase<CIrcProto>
 	virtual void OnDestroy();
 
 	void OnCommand_Yes(HWND hwndCtrl, WORD idCtrl, WORD idCode);
-	void OnCommand_No(HWND hwndCtrl, WORD idCtrl, WORD idCode);
 };
 
 struct CQuickDlg : public CProtoDlgBase<CIrcProto>

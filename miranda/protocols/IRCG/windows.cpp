@@ -31,8 +31,7 @@ CMessageBoxDlg::CMessageBoxDlg( CIrcProto* _pro, DCCINFO* _dci ) :
 	CProtoDlgBase<CIrcProto>( _pro, IDD_MESSAGEBOX, NULL ),
 	pdci( _dci )
 {
-	SetControlHandler( IDN_YES, &CMessageBoxDlg::OnCommand_Yes );
-	SetControlHandler( IDN_NO,  &CMessageBoxDlg::OnCommand_No );
+	SetControlHandler( IDOK, &CMessageBoxDlg::OnCommand_Yes );
 }
 
 void CMessageBoxDlg::OnInitDialog()
@@ -50,13 +49,6 @@ void CMessageBoxDlg::OnCommand_Yes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 	m_proto->AddDCCSession(pdci->hContact, dcc);
 
 	dcc->Connect();
-
-	PostMessage ( m_hwnd, WM_CLOSE, 0,0);
-}
-
-void CMessageBoxDlg::OnCommand_No(HWND hwndCtrl, WORD idCtrl, WORD idCode)
-{
-	PostMessage ( m_hwnd, WM_CLOSE, 0,0);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -65,7 +57,6 @@ void CMessageBoxDlg::OnCommand_No(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 CWhoisDlg::CWhoisDlg( CIrcProto* _pro ) :
 	CProtoDlgBase<CIrcProto>( _pro, IDD_INFO, NULL )
 {
-	SetControlHandler( ID_INFO_OK, &CWhoisDlg::OnOk );
 	SetControlHandler( ID_INFO_GO, &CWhoisDlg::OnGo );
 	SetControlHandler( ID_INFO_QUERY, &CWhoisDlg::OnQuery );
 	SetControlHandler( IDC_PING, &CWhoisDlg::OnPing );
@@ -133,11 +124,6 @@ BOOL CWhoisDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	return CDlgBase::DlgProc(msg, wParam, lParam);
 }
 
-void CWhoisDlg::OnOk(HWND hwndCtrl, WORD idCtrl, WORD idCode)
-{
-	PostMessage( m_hwnd, WM_CLOSE, 0, 0 );
-}
-
 void CWhoisDlg::OnGo(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 {
 	TCHAR szTemp[255];
@@ -190,8 +176,7 @@ void CWhoisDlg::OnVersion(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 CNickDlg::CNickDlg(CIrcProto *_pro) :
 	CProtoDlgBase<CIrcProto>( _pro, IDD_NICK, NULL )
 {
-	SetControlHandler( IDNOK, &CNickDlg::OnCommand_Yes );
-	SetControlHandler( IDNCANCEL, &CNickDlg::OnCommand_No );
+	SetControlHandler( IDOK, &CNickDlg::OnCommand_Yes );
 }
 
 void CNickDlg::OnInitDialog()
@@ -255,12 +240,6 @@ void CNickDlg::OnCommand_Yes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 		DBFreeVariant(&dbv);
 	}
 	m_proto->setTString( "RecentNicks", S.c_str());
-	SendMessage( m_hwnd, WM_CLOSE, 0,0);
-}
-
-void CNickDlg::OnCommand_No(HWND hwndCtrl, WORD idCtrl, WORD idCode)
-{
-	SendMessage( m_hwnd, WM_CLOSE, 0,0);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -269,7 +248,7 @@ void CNickDlg::OnCommand_No(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 CListDlg::CListDlg(CIrcProto *_pro) :
 	CProtoDlgBase<CIrcProto>( _pro, IDD_LIST, NULL )
 {
-	SetControlHandler( IDC_JOIN, &CNickDlg::OnCommand_Yes );
+	SetControlHandler( IDC_JOIN, &CListDlg::OnJoin );
 }
 
 void CListDlg::OnInitDialog()
@@ -417,8 +396,7 @@ void CListDlg::OnJoin(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 CJoinDlg::CJoinDlg(CIrcProto *_pro) :
 	CProtoDlgBase<CIrcProto>( _pro, IDD_NICK, NULL )
 {
-	SetControlHandler( IDNOK, &CJoinDlg::OnCommand_Yes );
-	SetControlHandler( IDNCANCEL, &CJoinDlg::OnCommand_No );
+	SetControlHandler( IDOK, &CJoinDlg::OnCommand_Yes );
 }
 
 void CJoinDlg::OnInitDialog()
@@ -487,12 +465,6 @@ void CJoinDlg::OnCommand_Yes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 		DBFreeVariant(&dbv);
 	}
 	m_proto->setTString("RecentChannels", S.c_str());
-	PostMessage ( m_hwnd, WM_CLOSE, 0,0);
-}
-
-void CJoinDlg::OnCommand_No(HWND hwndCtrl, WORD idCtrl, WORD idCode)
-{
-	PostMessage( m_hwnd, WM_CLOSE, 0, 0 );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -502,7 +474,6 @@ CInitDlg::CInitDlg(CIrcProto *_pro) :
 	CProtoDlgBase<CIrcProto>( _pro, IDD_INIT, NULL )
 {
 	SetControlHandler( IDNOK, &CInitDlg::OnCommand_Yes );
-	SetControlHandler( IDNOK, &CInitDlg::OnCommand_No );
 }
 
 void CInitDlg::OnInitDialog()
@@ -556,15 +527,7 @@ void CInitDlg::OnCommand_Yes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 			mir_sntprintf(szTemp, SIZEOF(szTemp), _T("%s%u"), l, rand()%9999);
 			m_proto->setTString("AlernativeNick", szTemp);
 			lstrcpyn(m_proto->AlternativeNick, szTemp, 30);					
-	}	}
-
-	PostMessage( m_hwnd, WM_CLOSE, 0, 0 );
-}
-
-void CInitDlg::OnCommand_No(HWND hwndCtrl, WORD idCtrl, WORD idCode)
-{
-	PostMessage( m_hwnd, WM_CLOSE, 0, 0 );
-}
+}	}	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // 'Quick' dialog
@@ -572,7 +535,7 @@ void CInitDlg::OnCommand_No(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 CQuickDlg::CQuickDlg(CIrcProto *_pro) :
 	CProtoDlgBase<CIrcProto>( _pro, IDD_QUICKCONN, NULL )
 {
-	SetControlHandler( IDNOK, &CQuickDlg::OnCommand_Yes );
+	SetControlHandler( IDOK, &CQuickDlg::OnCommand_Yes );
 	SetControlHandler( IDC_SERVERCOMBO, &CQuickDlg::OnServerCombo );
 }
 
@@ -750,7 +713,6 @@ void CQuickDlg::OnCommand_Yes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 	m_proto->setDword("QuickComboSelection",m_proto->QuickComboSelection);
 	m_proto->DisconnectFromServer();
 	m_proto->ConnectToServer();
-	PostMessage ( m_hwnd, WM_CLOSE, 0,0);
 }
 
 void CQuickDlg::OnServerCombo(HWND hwndCtrl, WORD idCtrl, WORD idCode)
@@ -806,7 +768,7 @@ void CQuickDlg::OnServerCombo(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 CQuestionDlg::CQuestionDlg(CIrcProto *_pro, HWND parent ) :
 	CProtoDlgBase<CIrcProto>( _pro, IDD_QUESTION, parent )
 {
-	SetControlHandler( IDNOK, &CQuestionDlg::OnCommand_Yes );
+	SetControlHandler( IDOK, &CQuestionDlg::OnCommand_Yes );
 }
 
 void CQuestionDlg::OnInitDialog()
@@ -897,9 +859,7 @@ void CQuestionDlg::OnCommand_Yes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 		HWND hwnd = GetParent( m_hwnd);
 		if( hwnd )
 			SendMessage(hwnd, IRC_QUESTIONAPPLY, 0, 0);
-	}
-	SendMessage ( m_hwnd, WM_CLOSE, 0,0);
-}
+}	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // 'Channel Manager' dialog
@@ -907,7 +867,6 @@ void CQuestionDlg::OnCommand_Yes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 CManagerDlg::CManagerDlg(CIrcProto *_pro) :
 	CProtoDlgBase<CIrcProto>( _pro, IDD_QUESTION, NULL )
 {
-//	SetControlHandler( IDNOK, &CManagerDlg::OnCommand_Yes );
 	SetControlHandler( IDC_ADD, &CManagerDlg::OnAdd );
 	SetControlHandler( IDC_APPLYTOPIC, &CManagerDlg::OnApplyTopic );
 	SetControlHandler( IDC_CHECK1, &CManagerDlg::OnCheck );

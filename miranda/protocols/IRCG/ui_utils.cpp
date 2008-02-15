@@ -141,11 +141,16 @@ BOOL CDlgBase::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			HWND hwndCtrl = (HWND)lParam;
 			WORD idCtrl = LOWORD(wParam);
 			WORD idCode = HIWORD(wParam);
-			if (CCtrlBase *ctrl = FindControl(idCtrl))
-				return ctrl->OnCommand(hwndCtrl, idCtrl, idCode);
+			if (CCtrlBase *ctrl = FindControl(idCtrl)) {
+				BOOL result = ctrl->OnCommand(hwndCtrl, idCtrl, idCode);
+				if ( result != FALSE )
+					return result;
+			}
 
-			if ( idCode == CBN_SELCHANGE || idCode == EN_CHANGE )
+			if ( m_initialized && ( idCode == CBN_SELCHANGE || idCode == EN_CHANGE ))
 				SendMessage( GetParent( m_hwnd ), PSM_CHANGED, 0, 0 );
+			else if ( idCode == BN_CLICKED && ( idCtrl == IDOK || idCtrl == IDCANCEL ))
+				PostMessage( m_hwnd, WM_CLOSE, 0, 0 );
 			return FALSE;
 		}
 

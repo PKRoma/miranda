@@ -302,7 +302,7 @@ struct CAddServerDlg : public CProtoDlgBase<CIrcProto>
 	CAddServerDlg( CIrcProto* _pro, HWND parent ) :
 		CProtoDlgBase<CIrcProto>( _pro, IDD_ADDSERVER, parent )
 	{
-		SetControlHandler( IDN_ADD_OK, &CAddServerDlg::OnCommand_Yes );
+		SetControlHandler( IDOK, &CAddServerDlg::OnCommand_Yes );
 	}
 
 	virtual void OnInitDialog()
@@ -352,7 +352,7 @@ struct CAddServerDlg : public CProtoDlgBase<CIrcProto>
 			SendMessage(GetDlgItem(m_proto->connect_hWnd, IDC_SERVERCOMBO),CB_SETITEMDATA,iItem,(LPARAM) pData);
 			SendMessage(GetDlgItem(m_proto->connect_hWnd, IDC_SERVERCOMBO),CB_SETCURSEL,iItem,0);
 			SendMessage(m_proto->connect_hWnd, WM_COMMAND, MAKEWPARAM(IDC_SERVERCOMBO,CBN_SELCHANGE), 0);						
-			PostMessage ( m_hwnd, WM_CLOSE, 0,0);
+			Close();
 			if ( SendMessage(GetDlgItem(m_proto->connect_hWnd, IDC_PERFORMCOMBO),CB_FINDSTRINGEXACT,-1, (LPARAM)pData->Group) == CB_ERR) {
 				int m = SendMessageA(GetDlgItem(m_proto->connect_hWnd, IDC_PERFORMCOMBO),CB_ADDSTRING,0,(LPARAM) pData->Group);
 				SendMessage(GetDlgItem(m_proto->connect_hWnd, IDC_PERFORMCOMBO),CB_SETITEMDATA,m,0);
@@ -379,7 +379,7 @@ struct CEditServerDlg : public CProtoDlgBase<CIrcProto>
 	CEditServerDlg( CIrcProto* _pro, HWND parent ) :
 		CProtoDlgBase<CIrcProto>( _pro, IDD_ADDSERVER, parent )
 	{
-		SetControlHandler( IDN_ADD_OK, &CEditServerDlg::OnCommand_Yes );
+		SetControlHandler( IDOK, &CEditServerDlg::OnCommand_Yes );
 	}
 
 	virtual void OnInitDialog()
@@ -448,7 +448,7 @@ struct CEditServerDlg : public CProtoDlgBase<CIrcProto>
 			SendMessage(GetDlgItem(m_proto->connect_hWnd, IDC_SERVERCOMBO),CB_SETITEMDATA,iItem,(LPARAM) pData);
 			SendMessage(GetDlgItem(m_proto->connect_hWnd, IDC_SERVERCOMBO),CB_SETCURSEL,iItem,0);
 			SendMessage(m_proto->connect_hWnd, WM_COMMAND, MAKEWPARAM(IDC_SERVERCOMBO,CBN_SELCHANGE), 0);
-			PostMessage ( m_hwnd, WM_CLOSE, 0,0);
+			Close();
 			if ( SendMessage(GetDlgItem(m_proto->connect_hWnd, IDC_PERFORMCOMBO),CB_FINDSTRINGEXACT,-1, (LPARAM)pData->Group) == CB_ERR) {
 				int m = SendMessageA(GetDlgItem(m_proto->connect_hWnd, IDC_PERFORMCOMBO),CB_ADDSTRING,0,(LPARAM) pData->Group);
 				SendMessage(GetDlgItem(m_proto->connect_hWnd, IDC_PERFORMCOMBO),CB_SETITEMDATA,m,0);
@@ -1343,8 +1343,7 @@ struct CAddIgnoreDlg : public CProtoDlgBase<CIrcProto>
 		else
 			_tcsncpy( szOldMask, mask, SIZEOF(szOldMask));
 
-		SetControlHandler( IDN_YES, &CAddIgnoreDlg::OnOk );
-		SetControlHandler( IDN_NO, &CAddIgnoreDlg::OnCancel );
+		SetControlHandler( IDOK, &CAddIgnoreDlg::OnOk );
 	}
 
 	virtual void OnInitDialog()
@@ -1383,15 +1382,7 @@ struct CAddIgnoreDlg : public CProtoDlgBase<CIrcProto>
 				if ( *szOldMask )
 					m_proto->RemoveIgnore( szOldMask );
 				m_proto->AddIgnore(Mask.c_str(), flags.c_str(), szNetwork);
-		}	}
-
-		PostMessage( m_hwnd, WM_CLOSE, 0, 0 );
-	}
-
-	void OnCancel(HWND hwndCtrl, WORD idCtrl, WORD idCode)
-	{
-		PostMessage( m_hwnd, WM_CLOSE, 0, 0 );
-	}
+	}	}	}
 
 	virtual void OnClose()
 	{
