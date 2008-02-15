@@ -103,10 +103,10 @@ void CWhoisDlg::OnClose()
 void CWhoisDlg::OnDestroy()
 {
 	HFONT hFont = (HFONT)SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_GETFONT,0,0);
-	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,SendDlgItemMessage( m_hwnd,IDNOK,WM_GETFONT,0,0),0);
+	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,SendDlgItemMessage( m_hwnd,IDOK,WM_GETFONT,0,0),0);
 	DeleteObject(hFont);				
 	HFONT hFont2=(HFONT)SendDlgItemMessage( m_hwnd,IDC_AWAYTIME,WM_GETFONT,0,0);
-	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,SendDlgItemMessage( m_hwnd,IDNOK,WM_GETFONT,0,0),0);
+	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,SendDlgItemMessage( m_hwnd,IDOK,WM_GETFONT,0,0),0);
 	DeleteObject(hFont2);				
 	m_proto->whois_hWnd = NULL;
 }
@@ -204,7 +204,7 @@ void CNickDlg::OnInitDialog()
 void CNickDlg::OnDestroy()
 {
 	HFONT hFont = ( HFONT )SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_GETFONT,0,0);
-	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,SendDlgItemMessage( m_hwnd,IDNOK,WM_GETFONT,0,0),0);
+	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,SendDlgItemMessage( m_hwnd,IDOK,WM_GETFONT,0,0),0);
 	DeleteObject(hFont);			
 	m_proto->nick_hWnd = NULL;
 }
@@ -424,7 +424,7 @@ void CJoinDlg::OnInitDialog()
 void CJoinDlg::OnDestroy()
 {
 	HFONT hFont = (HFONT)SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_GETFONT,0,0);
-	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,SendDlgItemMessage( m_hwnd,IDNOK,WM_GETFONT,0,0),0);
+	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,SendDlgItemMessage( m_hwnd,IDOK,WM_GETFONT,0,0),0);
 	DeleteObject( hFont );				
 	m_proto->join_hWnd = NULL;
 }
@@ -473,7 +473,7 @@ void CJoinDlg::OnCommand_Yes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 CInitDlg::CInitDlg(CIrcProto *_pro) :
 	CProtoDlgBase<CIrcProto>( _pro, IDD_INIT, NULL )
 {
-	SetControlHandler( IDNOK, &CInitDlg::OnCommand_Yes );
+	SetControlHandler( IDOK, &CInitDlg::OnCommand_Yes );
 }
 
 void CInitDlg::OnInitDialog()
@@ -491,7 +491,7 @@ void CInitDlg::OnInitDialog()
 void CInitDlg::OnDestroy()
 {
 	HFONT hFont = (HFONT)SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_GETFONT,0,0);
-	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,SendDlgItemMessage( m_hwnd,IDNOK,WM_GETFONT,0,0),0);
+	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,SendDlgItemMessage( m_hwnd,IDOK,WM_GETFONT,0,0),0);
 	DeleteObject(hFont);				
 }
 
@@ -610,7 +610,7 @@ void CQuickDlg::OnInitDialog()
 			SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_SETITEMDATA, iItem,(LPARAM) pData);
 		}
 	}
-	else EnableWindow(GetDlgItem( m_hwnd, IDNOK), false);
+	else EnableWindow(GetDlgItem( m_hwnd, IDOK), false);
 	
 	SERVER_INFO* pData = new SERVER_INFO;
 	pData->Group = mir_strdup( "" );
@@ -644,13 +644,13 @@ void CQuickDlg::OnInitDialog()
 		SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_SETCURSEL, m_proto->QuickComboSelection,0);
 		SendMessage( m_hwnd, WM_COMMAND, MAKEWPARAM(IDC_SERVERCOMBO, CBN_SELCHANGE), 0);
 	}
-	else EnableWindow(GetDlgItem( m_hwnd, IDNOK), false);
+	else EnableWindow(GetDlgItem( m_hwnd, IDOK), false);
 }
 
 void CQuickDlg::OnDestroy()
 {
 	HFONT hFont = ( HFONT )SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_GETFONT,0,0);
-	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,SendDlgItemMessage( m_hwnd,IDNOK,WM_GETFONT,0,0),0);
+	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,SendDlgItemMessage( m_hwnd,IDOK,WM_GETFONT,0,0),0);
 	DeleteObject(hFont);				
 	
 	int j = (int) SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_GETCOUNT, 0, 0);
@@ -759,7 +759,7 @@ void CQuickDlg::OnServerCombo(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 				EnableWindow(GetDlgItem( m_hwnd, IDC_SSL_ON),  FALSE);
 			}
 
-			EnableWindow(GetDlgItem( m_hwnd, IDNOK), true);
+			EnableWindow(GetDlgItem( m_hwnd, IDOK), true);
 }	}	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -794,7 +794,7 @@ void CQuestionDlg::OnClose()
 void CQuestionDlg::OnDestroy()
 {
 	HFONT hFont = (HFONT)SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_GETFONT,0,0);
-	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,SendDlgItemMessage( m_hwnd,IDNOK,WM_GETFONT,0,0),0);
+	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,SendDlgItemMessage( m_hwnd,IDOK,WM_GETFONT,0,0),0);
 	DeleteObject(hFont);				
 }
 
@@ -1013,7 +1013,7 @@ void CManagerDlg::OnClose()
 void CManagerDlg::OnDestroy()
 {
 	HFONT hFont = (HFONT)SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_GETFONT,0,0);
-	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,SendDlgItemMessage( m_hwnd,IDNOK,WM_GETFONT,0,0),0);
+	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,SendDlgItemMessage( m_hwnd,IDOK,WM_GETFONT,0,0),0);
 	DeleteObject(hFont);
 	m_proto->manager_hWnd = NULL;
 }

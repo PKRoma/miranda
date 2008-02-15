@@ -1047,7 +1047,7 @@ CDccSession::CDccSession( CIrcProto* _pro, DCCINFO* pdci ) :
 		hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
 	if(nDcc == 0)
-		m_proto->SetChatTimer(m_proto->DCCTimer, 20*1000, &CIrcProto::DCCTimerProc);
+		m_proto->SetChatTimer(m_proto->DCCTimer, 20*1000, DCCTimerProc);
 
 	nDcc++; // increase the count of existing objects
 
@@ -1725,9 +1725,11 @@ int CDccSession::Disconnect()
 ////////////////////////////////////////////////////////////////////
 // check if the dcc chats should disconnect ( default 5 minute timeout )
 
-void CIrcProto::DCCTimerProc( int idEvent )
+VOID CALLBACK DCCTimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime )
 {
-	CheckDCCTimeout();
+	CIrcProto* ppro = GetTimerOwner( idEvent );
+	if ( ppro )
+		ppro->CheckDCCTimeout();
 }
 
 // helper function for incoming dcc connections.

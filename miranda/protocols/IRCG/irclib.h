@@ -48,7 +48,6 @@ typedef void		(*tSSL_free)				(SSL *ssl);
 
 void DoIdent(HANDLE hConnection, DWORD dwRemoteIP, void* extra);
 void DoIncomingDcc(HANDLE hConnection, DWORD dwRemoteIP, void* extra);
-VOID CALLBACK DCCTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime);
 unsigned long ConvertIPToInteger(char * IP);
 char* ConvertIntegerToIP(unsigned long int_ip_addr);
 

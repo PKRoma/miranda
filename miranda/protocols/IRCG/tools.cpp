@@ -610,52 +610,84 @@ TString CIrcProto::PrefixToStatus(int cPrefix)
 /////////////////////////////////////////////////////////////////////////////////////////
 // Timer functions 
 
-void CIrcProto::SetChatTimer(UINT_PTR &nIDEvent,UINT uElapse, IrcTimerFunc lpTimerFunc)
+struct TimerPair
+{
+	TimerPair( CIrcProto* _pro, UINT_PTR _id ) :
+		ppro( _pro ),
+		idEvent( _id )
+	{}
+
+	UINT_PTR idEvent;
+	CIrcProto* ppro;
+};
+
+static int CompareTimers( const TimerPair* p1, const TimerPair* p2 )
+{
+	if ( p1->idEvent < p2->idEvent )
+		return -1;
+	return ( p1->idEvent == p2->idEvent ) ? 0 : 1;
+}
+
+static LIST<TimerPair> timers( 10, CompareTimers );
+static CRITICAL_SECTION timers_cs;
+
+void InitTimers( void )
+{
+	InitializeCriticalSection( &timers_cs );
+}
+
+void UninitTimers( void )
+{
+	EnterCriticalSection( &timers_cs );
+	for ( int i=0; i < timers.getCount(); i++ )
+		delete timers[i];
+	timers.destroy();
+	LeaveCriticalSection( &timers_cs );
+	DeleteCriticalSection( &timers_cs );
+}
+
+CIrcProto* GetTimerOwner( UINT_PTR nIDEvent )
+{
+	CIrcProto* result;
+
+	EnterCriticalSection( &timers_cs );
+	TimerPair temp( NULL, nIDEvent );
+	int idx = timers.getIndex( &temp );
+	if ( idx == -1 )
+		result = NULL;
+	else
+		result = timers[ idx ]->ppro;
+	LeaveCriticalSection( &timers_cs );
+	return result;
+}
+
+void CIrcProto::SetChatTimer(UINT_PTR &nIDEvent,UINT uElapse, TIMERPROC lpTimerFunc)
 {
 	if (nIDEvent)
 		KillChatTimer(nIDEvent);
 
-	nIDEvent = SetTimer( m_hwndTimer, NULL, uElapse, ( TIMERPROC )*( void ** )&lpTimerFunc);
+	nIDEvent = SetTimer( NULL, NULL, uElapse, lpTimerFunc);
+
+	EnterCriticalSection( &timers_cs );
+	timers.insert( new TimerPair( this, nIDEvent ));
+	LeaveCriticalSection( &timers_cs );
 }
 
 void CIrcProto::KillChatTimer(UINT_PTR &nIDEvent)
 {
-	if (nIDEvent)
+	if ( nIDEvent ) {
+		EnterCriticalSection( &timers_cs );
+		TimerPair temp( this, nIDEvent );
+		int idx = timers.getIndex( &temp );
+		if ( idx != -1 ) {
+			delete timers[ idx ];
+			timers.remove( idx );
+		}
+		LeaveCriticalSection( &timers_cs );
+
 		KillTimer(NULL, nIDEvent);
-
-	nIDEvent = NULL;
-}
-
-static LRESULT CALLBACK TimerWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	if ( msg == WM_TIMER )
-	{
-		CIrcProto* ppro = ( CIrcProto* )GetWindowLong( hwnd, GWL_USERDATA );
-
-		typedef void ( *pfnTimerStub )( CIrcProto*, int );
-		pfnTimerStub foo = ( pfnTimerStub )lParam;
-		( *foo )( ppro, wParam );
-	}
-
-	return FALSE;
-}
-
-void InitTimers()
-{
-	// register a window class for timers
-	WNDCLASS wcl;
-	wcl.lpfnWndProc = TimerWndProc;
-	wcl.cbClsExtra = 0;
-	wcl.cbWndExtra = sizeof(void*);
-	wcl.hInstance = GetModuleHandle(NULL);
-	wcl.hCursor = NULL;
-	wcl.lpszClassName = _T(WNDCLASS_IRCWINDOW);
-	wcl.hbrBackground = NULL;
-	wcl.hIcon = NULL;
-	wcl.lpszMenuName = NULL;
-	wcl.style = 0;
-	RegisterClass(&wcl);
-}
+		nIDEvent = NULL;
+}	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 

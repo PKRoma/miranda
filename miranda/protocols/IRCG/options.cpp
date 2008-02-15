@@ -884,6 +884,8 @@ struct COtherPrefsDlg : public CProtoDlgBase<CIrcProto>
 
 struct CConnectPrefsDlg : public CProtoDlgBase<CIrcProto>
 {
+	CCtrlCheck m_JoinOnInvite;
+
 	CConnectPrefsDlg( CIrcProto* _pro ) :
 		CProtoDlgBase<CIrcProto>( _pro, IDD_PREFS_CONNECT, NULL )
 	{
@@ -903,6 +905,12 @@ struct CConnectPrefsDlg : public CProtoDlgBase<CIrcProto>
 
 	virtual void OnInitDialog()
 	{
+		TCtrlInfo controls[] =
+		{
+			{ &m_JoinOnInvite, IDC_AUTOJOIN, DBVT_BYTE,	"JoinOnInvite", NULL, 0 }
+		};
+		UISetupControls<CIrcProto>(this, controls, SIZEOF(controls));
+
 		SendDlgItemMessage( m_hwnd,IDC_ADDSERVER,BM_SETIMAGE,IMAGE_ICON,(LPARAM)m_proto->LoadIconEx(IDI_ADD));
 		SendDlgItemMessage( m_hwnd,IDC_DELETESERVER,BM_SETIMAGE,IMAGE_ICON,(LPARAM)m_proto->LoadIconEx(IDI_DELETE));
 		SendDlgItemMessage( m_hwnd,IDC_EDITSERVER,BM_SETIMAGE,IMAGE_ICON,(LPARAM)m_proto->LoadIconEx(IDI_RENAME));
@@ -1030,7 +1038,7 @@ struct CConnectPrefsDlg : public CProtoDlgBase<CIrcProto>
 		CheckDlgButton( m_hwnd,IDC_IDENT_TIMED, ((m_proto->IdentTimer) ? (BST_CHECKED) : (BST_UNCHECKED)));				
 		CheckDlgButton( m_hwnd,IDC_USESERVER, ((m_proto->UseServer) ? (BST_CHECKED) : (BST_UNCHECKED)));				
 		CheckDlgButton( m_hwnd,IDC_SHOWSERVER, ((!m_proto->HideServerWindow) ? (BST_CHECKED) : (BST_UNCHECKED)));				
-		CheckDlgButton( m_hwnd,IDC_AUTOJOIN, ((m_proto->JoinOnInvite) ? (BST_CHECKED) : (BST_UNCHECKED)));				
+//		CheckDlgButton( m_hwnd,IDC_AUTOJOIN, ((m_proto->JoinOnInvite) ? (BST_CHECKED) : (BST_UNCHECKED)));				
 		EnableWindow(GetDlgItem( m_hwnd, IDC_SHOWSERVER), m_proto->UseServer);
 		EnableWindow(GetDlgItem( m_hwnd, IDC_SERVERCOMBO), !m_proto->DisableDefaultServer);
 		EnableWindow(GetDlgItem( m_hwnd, IDC_ADDSERVER), !m_proto->DisableDefaultServer);
@@ -1253,8 +1261,8 @@ struct CConnectPrefsDlg : public CProtoDlgBase<CIrcProto>
 			clmi.flags |= CMIF_GRAYED;
 		CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )m_proto->hMenuServer, ( LPARAM )&clmi );
 
-		m_proto->JoinOnInvite = IsDlgButtonChecked( m_hwnd, IDC_AUTOJOIN )== BST_CHECKED;
-		m_proto->setByte("JoinOnInvite",m_proto->JoinOnInvite);
+//		m_proto->JoinOnInvite = IsDlgButtonChecked( m_hwnd, IDC_AUTOJOIN )== BST_CHECKED;
+//		m_proto->setByte("JoinOnInvite",m_proto->JoinOnInvite);
 		m_proto->HideServerWindow = IsDlgButtonChecked( m_hwnd, IDC_SHOWSERVER )== BST_UNCHECKED;
 		m_proto->setByte("HideServerWindow",m_proto->HideServerWindow);
 		m_proto->ServerComboSelection = SendMessage(GetDlgItem( m_hwnd, IDC_SERVERCOMBO), CB_GETCURSEL, 0, 0) + 1;
@@ -1262,7 +1270,7 @@ struct CConnectPrefsDlg : public CProtoDlgBase<CIrcProto>
 		m_proto->SendKeepAlive = IsDlgButtonChecked( m_hwnd, IDC_KEEPALIVE )== BST_CHECKED;
 		m_proto->setByte("SendKeepAlive",m_proto->SendKeepAlive);
 		if (m_proto->SendKeepAlive)
-			m_proto->SetChatTimer(m_proto->KeepAliveTimer, 60*1000, &CIrcProto::KeepAliveTimerProc);
+			m_proto->SetChatTimer(m_proto->KeepAliveTimer, 60*1000, KeepAliveTimerProc);
 		else
 			m_proto->KillChatTimer(m_proto->KeepAliveTimer);
 
@@ -1270,9 +1278,9 @@ struct CConnectPrefsDlg : public CProtoDlgBase<CIrcProto>
 		m_proto->setByte("AutoOnlineNotification",m_proto->AutoOnlineNotification);
 		if (m_proto->AutoOnlineNotification) {
 			if( !m_proto->bTempDisableCheck) {
-				m_proto->SetChatTimer(m_proto->OnlineNotifTimer, 500, &CIrcProto::OnlineNotifTimerProc);
+				m_proto->SetChatTimer(m_proto->OnlineNotifTimer, 500, OnlineNotifTimerProc);
 				if(m_proto->ChannelAwayNotification)
-					m_proto->SetChatTimer(m_proto->OnlineNotifTimer3, 1500, &CIrcProto::OnlineNotifTimerProc3);
+					m_proto->SetChatTimer(m_proto->OnlineNotifTimer3, 1500, OnlineNotifTimerProc3);
 			}
 		}
 		else if (!m_proto->bTempForceCheck) {

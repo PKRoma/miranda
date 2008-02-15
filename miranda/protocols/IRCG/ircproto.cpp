@@ -63,9 +63,6 @@ CIrcProto::CIrcProto( const char* szModuleName, const TCHAR* tszUserName )
 	InitializeCriticalSection(&m_dcc);
 	m_monitor = new CMyMonitor( *this );
 
-	m_hwndTimer = CreateWindow( _T(WNDCLASS_IRCWINDOW), _T(""), 0, 0, 0, 0, 0, NULL, NULL, hInst, NULL );
-	SetWindowLong( m_hwndTimer, 0, ( LPARAM )this );
-
 	InitPrefs();
 
 	char text[ MAX_PATH ];
@@ -98,8 +95,6 @@ CIrcProto::~CIrcProto()
 	delete m_monitor;
 
 	delete[] hIconLibItems;
-
-	DestroyWindow( m_hwndTimer );
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

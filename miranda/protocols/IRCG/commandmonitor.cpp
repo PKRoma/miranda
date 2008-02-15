@@ -28,97 +28,116 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 using namespace irc;
 
-void CIrcProto::IdentTimerProc( int idEvent )
+VOID CALLBACK IdentTimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime )
 {
-	KillChatTimer( IdentTimer );
-	if ( m_iDesiredStatus == ID_STATUS_OFFLINE || m_iDesiredStatus == ID_STATUS_CONNECTING )
+	CIrcProto* ppro = GetTimerOwner( idEvent );
+	if ( !ppro )
 		return;
 
-	if (IsConnected() && IdentTimer)
-		KillIdent();
-
-	return;
-}
-
-void CIrcProto::TimerProc( int idEvent )
-{
-	KillChatTimer(InitTimer);
-	if(m_iDesiredStatus == ID_STATUS_OFFLINE || m_iDesiredStatus == ID_STATUS_CONNECTING) 
+	ppro->KillChatTimer( ppro->IdentTimer );
+	if ( ppro->m_iDesiredStatus == ID_STATUS_OFFLINE || ppro->m_iDesiredStatus == ID_STATUS_CONNECTING )
 		return;
 
-	if ( ForceVisible )
-		PostIrcMessage( _T("/MODE %s -i"), GetInfo().sNick.c_str());
-
-	if ( lstrlenA( MyHost ) == 0 && IsConnected() )
-		DoUserhostWithReason(2, (_T("S")+ GetInfo().sNick).c_str(), true, _T("%s"), GetInfo().sNick.c_str());
+	if ( ppro->IsConnected() && ppro->IdentTimer )
+		ppro->KillIdent();
 }
 
-void CIrcProto::KeepAliveTimerProc( int idEvent )
+VOID CALLBACK TimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime )
 {
-	if ( !SendKeepAlive || (m_iDesiredStatus == ID_STATUS_OFFLINE || m_iDesiredStatus == ID_STATUS_CONNECTING )) {
-		KillChatTimer(KeepAliveTimer);
+	CIrcProto* ppro = GetTimerOwner( idEvent );
+	if ( !ppro )
+		return;
+
+	ppro->KillChatTimer( ppro->InitTimer );
+	if ( ppro->m_iDesiredStatus == ID_STATUS_OFFLINE || ppro->m_iDesiredStatus == ID_STATUS_CONNECTING )
+		return;
+
+	if ( ppro->ForceVisible )
+		ppro->PostIrcMessage( _T("/MODE %s -i"), ppro->GetInfo().sNick.c_str());
+
+	if ( lstrlenA( ppro->MyHost ) == 0 && ppro->IsConnected() )
+		ppro->DoUserhostWithReason(2, (_T("S") + ppro->GetInfo().sNick).c_str(), true, _T("%s"), ppro->GetInfo().sNick.c_str());
+}
+
+VOID CALLBACK KeepAliveTimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime )
+{
+	CIrcProto* ppro = GetTimerOwner( idEvent );
+	if ( !ppro )
+		return;
+
+	if ( !ppro->SendKeepAlive || ( ppro->m_iDesiredStatus == ID_STATUS_OFFLINE || ppro->m_iDesiredStatus == ID_STATUS_CONNECTING )) {
+		ppro->KillChatTimer( ppro->KeepAliveTimer );
 		return;
 	}
 
 	TCHAR temp2[270];
-	if ( !GetInfo().sServerName.empty())
-		mir_sntprintf(temp2, SIZEOF(temp2), _T("PING %s"), GetInfo().sServerName.c_str());
+	if ( !ppro->GetInfo().sServerName.empty())
+		mir_sntprintf(temp2, SIZEOF(temp2), _T("PING %s"), ppro->GetInfo().sServerName.c_str());
 	else
 		mir_sntprintf(temp2, SIZEOF(temp2), _T("PING %u"), time(0));
 
-	if (IsConnected())
-		*this << CIrcMessage( this, temp2, getCodepage(), false, false);
+	if ( ppro->IsConnected())
+		*ppro << CIrcMessage( ppro, temp2, ppro->getCodepage(), false, false);
 }
 
-void CIrcProto::OnlineNotifTimerProc3( int idEvent )
+VOID CALLBACK OnlineNotifTimerProc3( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime )
 {
-	if ( !ChannelAwayNotification || m_iDesiredStatus == ID_STATUS_OFFLINE || m_iDesiredStatus == ID_STATUS_CONNECTING || (!AutoOnlineNotification && !bTempForceCheck) || bTempDisableCheck) 
-	{
-		KillChatTimer(OnlineNotifTimer3);
-		ChannelsToWho = _T("");
+	CIrcProto* ppro = GetTimerOwner( idEvent );
+	if ( !ppro )
+		return;
+
+	if ( !ppro->ChannelAwayNotification || 
+		  ppro->m_iDesiredStatus == ID_STATUS_OFFLINE || ppro->m_iDesiredStatus == ID_STATUS_CONNECTING || 
+		  ( !ppro->AutoOnlineNotification && !ppro->bTempForceCheck) || ppro->bTempDisableCheck ) {
+		ppro->KillChatTimer( ppro->OnlineNotifTimer3 );
+		ppro->ChannelsToWho = _T("");
 		return;
 	}
 
-	TString name = GetWord( ChannelsToWho.c_str(), 0 );
+	TString name = GetWord( ppro->ChannelsToWho.c_str(), 0 );
 	if ( name.empty()) {
-		ChannelsToWho = _T("");
-		int count = (int)CallServiceSync(MS_GC_GETSESSIONCOUNT, 0, (LPARAM)m_szModuleName);
+		ppro->ChannelsToWho = _T("");
+		int count = (int)CallServiceSync(MS_GC_GETSESSIONCOUNT, 0, (LPARAM)ppro->m_szModuleName);
 		for ( int i = 0; i < count; i++ ) {
 			GC_INFO gci = {0};
 			gci.Flags = BYINDEX | NAME | TYPE | COUNT;
 			gci.iItem = i;
-			gci.pszModule = m_szModuleName;
+			gci.pszModule = ppro->m_szModuleName;
 			if ( !CallServiceSync( MS_GC_GETINFO, 0, (LPARAM)&gci ) && gci.iType == GCW_CHATROOM )
-				if ( gci.iCount <= OnlineNotificationLimit )
-					ChannelsToWho += (TString)gci.pszName + _T(" ");
+				if ( gci.iCount <= ppro->OnlineNotificationLimit )
+					ppro->ChannelsToWho += (TString)gci.pszName + _T(" ");
 	}	}
 
-	if ( ChannelsToWho.empty()) {
-		SetChatTimer( OnlineNotifTimer3, 60*1000, &CIrcProto::OnlineNotifTimerProc3 );
+	if ( ppro->ChannelsToWho.empty()) {
+		ppro->SetChatTimer( ppro->OnlineNotifTimer3, 60*1000, OnlineNotifTimerProc3 );
 		return;
 	}
 
-	name = GetWord( ChannelsToWho.c_str(), 0 );
-	DoUserhostWithReason(2, _T("S") + name, true, _T("%s"), name.c_str());
-	TString temp = GetWordAddress( ChannelsToWho.c_str(), 1 );
-	ChannelsToWho = temp;
-	if ( iTempCheckTime )
-		SetChatTimer( OnlineNotifTimer3, iTempCheckTime*1000, &CIrcProto::OnlineNotifTimerProc3 );
+	name = GetWord( ppro->ChannelsToWho.c_str(), 0 );
+	ppro->DoUserhostWithReason(2, _T("S") + name, true, _T("%s"), name.c_str());
+	TString temp = GetWordAddress( ppro->ChannelsToWho.c_str(), 1 );
+	ppro->ChannelsToWho = temp;
+	if ( ppro->iTempCheckTime )
+		ppro->SetChatTimer( ppro->OnlineNotifTimer3, ppro->iTempCheckTime*1000, OnlineNotifTimerProc3 );
 	else
-		SetChatTimer( OnlineNotifTimer3, OnlineNotificationTime*1000, &CIrcProto::OnlineNotifTimerProc3 );
+		ppro->SetChatTimer( ppro->OnlineNotifTimer3, ppro->OnlineNotificationTime*1000, OnlineNotifTimerProc3 );
 }
 
-void CIrcProto::OnlineNotifTimerProc( int idEvent )
+VOID CALLBACK OnlineNotifTimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime )
 {
-	if ( m_iDesiredStatus == ID_STATUS_OFFLINE || m_iDesiredStatus == ID_STATUS_CONNECTING || (!AutoOnlineNotification && !bTempForceCheck) || bTempDisableCheck ) 
-	{
-		KillChatTimer(OnlineNotifTimer);
-		NamesToWho = _T("");
+	CIrcProto* ppro = GetTimerOwner( idEvent );
+	if ( !ppro )
+		return;
+
+	if ( ppro->m_iDesiredStatus == ID_STATUS_OFFLINE || ppro->m_iDesiredStatus == ID_STATUS_CONNECTING || 
+		  ( !ppro->AutoOnlineNotification && !ppro->bTempForceCheck) || ppro->bTempDisableCheck ) {
+		ppro->KillChatTimer( ppro->OnlineNotifTimer );
+		ppro->NamesToWho = _T("");
 		return;
 	}
 
-	TString name = GetWord(NamesToWho.c_str(), 0);
-	TString name2 = GetWord(NamesToUserhost.c_str(), 0);
+	TString name = GetWord( ppro->NamesToWho.c_str(), 0);
+	TString name2 = GetWord( ppro->NamesToUserhost.c_str(), 0);
 
 	if ( name.empty() && name2.empty()) {
 		DBVARIANT dbv;
@@ -127,18 +146,18 @@ void CIrcProto::OnlineNotifTimerProc( int idEvent )
 		HANDLE hContact = (HANDLE) CallService( MS_DB_CONTACT_FINDFIRST, 0, 0);
 		while ( hContact ) {
 		   szProto = ( char* )CallService( MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-		   if ( szProto != NULL && !lstrcmpiA( szProto, m_szModuleName )) {
-			   BYTE bRoom = DBGetContactSettingByte(hContact, m_szModuleName, "ChatRoom", 0);
+		   if ( szProto != NULL && !lstrcmpiA( szProto, ppro->m_szModuleName )) {
+			   BYTE bRoom = DBGetContactSettingByte(hContact, ppro->m_szModuleName, "ChatRoom", 0);
 			   if ( bRoom == 0 ) {
-				   BYTE bDCC = DBGetContactSettingByte(hContact, m_szModuleName, "DCC", 0);
+				   BYTE bDCC = DBGetContactSettingByte(hContact, ppro->m_szModuleName, "DCC", 0);
 				   BYTE bHidden = DBGetContactSettingByte(hContact,"CList", "Hidden", 0);
 					if ( bDCC == 0 && bHidden == 0 ) {
-						if ( !DBGetContactSettingTString( hContact, m_szModuleName, "Default", &dbv )) {
-							BYTE bAdvanced = DBGetContactSettingByte(hContact,m_szModuleName, "AdvancedMode", 0) ;
+						if ( !DBGetContactSettingTString( hContact, ppro->m_szModuleName, "Default", &dbv )) {
+							BYTE bAdvanced = DBGetContactSettingByte(hContact, ppro->m_szModuleName, "AdvancedMode", 0) ;
 							if ( !bAdvanced ) {
 								DBFreeVariant( &dbv );
-								if ( !DBGetContactSettingTString( hContact, m_szModuleName, "Nick", &dbv )) {	
-									NamesToUserhost += (TString)dbv.ptszVal + _T(" ");
+								if ( !DBGetContactSettingTString( hContact, ppro->m_szModuleName, "Nick", &dbv )) {	
+									ppro->NamesToUserhost += (TString)dbv.ptszVal + _T(" ");
 									DBFreeVariant( &dbv );
 								}
 							}
@@ -148,15 +167,15 @@ void CIrcProto::OnlineNotifTimerProc( int idEvent )
 								
 								TCHAR* DBNick = NULL;
 								TCHAR* DBWildcard = NULL;
-								if ( !DBGetContactSettingTString( hContact, m_szModuleName, "Nick", &dbv ))
+								if ( !DBGetContactSettingTString( hContact, ppro->m_szModuleName, "Nick", &dbv ))
 									DBNick = dbv.ptszVal;
-								if ( !DBGetContactSettingTString( hContact, m_szModuleName, "UWildcard", &dbv2 ))
+								if ( !DBGetContactSettingTString( hContact, ppro->m_szModuleName, "UWildcard", &dbv2 ))
 									DBWildcard = dbv2.ptszVal;
 
 								if ( DBNick && ( !DBWildcard || !WCCmp(CharLower(DBWildcard), CharLower(DBNick)))) 
-									NamesToWho += (TString)DBNick + _T(" ");
+									ppro->NamesToWho += (TString)DBNick + _T(" ");
 								else if( DBWildcard )
-									NamesToWho += (TString)DBWildcard + _T(" ");
+									ppro->NamesToWho += (TString)DBWildcard + _T(" ");
 
 								if ( DBNick )     DBFreeVariant(&dbv);
                         if ( DBWildcard ) DBFreeVariant(&dbv2);
@@ -165,18 +184,18 @@ void CIrcProto::OnlineNotifTimerProc( int idEvent )
 			hContact = (HANDLE) CallService( MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}	}
 
-	if ( NamesToWho.empty() && NamesToUserhost.empty()) {
-		SetChatTimer( OnlineNotifTimer, 60*1000, &CIrcProto::OnlineNotifTimerProc );
+	if ( ppro->NamesToWho.empty() && ppro->NamesToUserhost.empty()) {
+		ppro->SetChatTimer( ppro->OnlineNotifTimer, 60*1000, OnlineNotifTimerProc );
 		return;
 	}
 
-	name = GetWord( NamesToWho.c_str(), 0);
-	name2 = GetWord( NamesToUserhost.c_str(), 0);
+	name = GetWord( ppro->NamesToWho.c_str(), 0);
+	name2 = GetWord( ppro->NamesToUserhost.c_str(), 0);
 	TString temp;
 	if ( !name.empty()) {
-		DoUserhostWithReason(2, _T("S") + name, true, _T("%s"), name.c_str());
-		temp = GetWordAddress( NamesToWho.c_str(), 1 );
-		NamesToWho = temp;
+		ppro->DoUserhostWithReason(2, _T("S") + name, true, _T("%s"), name.c_str());
+		temp = GetWordAddress( ppro->NamesToWho.c_str(), 1 );
+		ppro->NamesToWho = temp;
 	}
 
 	if ( !name2.empty()) {
@@ -184,19 +203,19 @@ void CIrcProto::OnlineNotifTimerProc( int idEvent )
 		for ( int i = 0; i < 3; i++ ) {
 			params = _T("");
 			for ( int j = 0; j < 5; j++ ) 
-				params += GetWord(NamesToUserhost.c_str(), i *5 + j) + _T(" ");
+				params += GetWord( ppro->NamesToUserhost.c_str(), i *5 + j) + _T(" ");
 
 			if ( params[0] != ' ' )
-				DoUserhostWithReason(1, (TString)_T("S") + params, true, params);
+				ppro->DoUserhostWithReason(1, (TString)_T("S") + params, true, params);
 		}
-		temp = GetWordAddress( NamesToUserhost.c_str(), 15 );
-		NamesToUserhost = temp;
+		temp = GetWordAddress( ppro->NamesToUserhost.c_str(), 15 );
+		ppro->NamesToUserhost = temp;
 	}
 
-	if ( iTempCheckTime )
-		SetChatTimer( OnlineNotifTimer, iTempCheckTime*1000, &CIrcProto::OnlineNotifTimerProc );
+	if ( ppro->iTempCheckTime )
+		ppro->SetChatTimer( ppro->OnlineNotifTimer, ppro->iTempCheckTime*1000, OnlineNotifTimerProc );
 	else
-		SetChatTimer( OnlineNotifTimer, OnlineNotificationTime*1000, &CIrcProto::OnlineNotifTimerProc );
+		ppro->SetChatTimer( ppro->OnlineNotifTimer, ppro->OnlineNotificationTime*1000, OnlineNotifTimerProc );
 }
 
 int CIrcProto::AddOutgoingMessageToDB(HANDLE hContact, TCHAR* msg)
@@ -2441,6 +2460,21 @@ void CMyMonitor::OnIrcDisconnected()
 /////////////////////////////////////////////////////////////////////////////////////////
 // OnConnect
 
+static void __stdcall sttMainThrdOnConnect( void* param )
+{
+	CIrcProto* ppro = ( CIrcProto* )param;
+
+	ppro->SetChatTimer( ppro->InitTimer, 1*1000, TimerProc );
+	if ( ppro->IdentTimer )
+		ppro->SetChatTimer( ppro->IdentTimer, 60*1000, IdentTimerProc );
+	if ( ppro->SendKeepAlive )
+		ppro->SetChatTimer( ppro->KeepAliveTimer, 60*1000, KeepAliveTimerProc );
+	if ( ppro->AutoOnlineNotification && !ppro->bTempDisableCheck || ppro->bTempForceCheck ) {
+		ppro->SetChatTimer( ppro->OnlineNotifTimer, 1000, OnlineNotifTimerProc );
+		if ( ppro->ChannelAwayNotification )
+			ppro->SetChatTimer( ppro->OnlineNotifTimer3, 3000, OnlineNotifTimerProc3);
+}	}
+
 bool CIrcProto::DoOnConnect( const CIrcMessage* pmsg )
 {
 	bPerformDone = true;
@@ -2499,16 +2533,7 @@ bool CIrcProto::DoOnConnect( const CIrcMessage* pmsg )
 		CallChatEvent( SESSION_ONLINE, (LPARAM)&gce);
 	}
 
-	SetChatTimer( InitTimer, 1*1000, &CIrcProto::TimerProc );
-	if ( IdentTimer )
-		SetChatTimer( IdentTimer, 60*1000, &CIrcProto::IdentTimerProc );
-	if ( SendKeepAlive )
-		SetChatTimer( KeepAliveTimer, 60*1000, &CIrcProto::KeepAliveTimerProc );
-	if ( AutoOnlineNotification && !bTempDisableCheck || bTempForceCheck ) {
-		SetChatTimer( OnlineNotifTimer, 1000, &CIrcProto::OnlineNotifTimerProc );
-		if ( ChannelAwayNotification )
-			SetChatTimer(OnlineNotifTimer3, 3000, &CIrcProto::OnlineNotifTimerProc3);
-	}
+	CallFunctionAsync( sttMainThrdOnConnect, this );
 	return 0;
 }
 

@@ -99,8 +99,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define DCCSTRING        " (DCC)"
 #define SERVERWINDOW	 _T("Network log")
 
-#define WNDCLASS_IRCWINDOW "MirandaIrcVoidWindow"
-
 #define DCC_CHAT		1
 #define DCC_SEND		2
 
@@ -251,7 +249,6 @@ struct CIrcProto;
 typedef int  ( __cdecl CIrcProto::*IrcEventFunc )( WPARAM, LPARAM );
 typedef int  ( __cdecl CIrcProto::*IrcServiceFunc )( WPARAM, LPARAM );
 typedef int  ( __cdecl CIrcProto::*IrcServiceFuncParam )( WPARAM, LPARAM, LPARAM );
-typedef void ( __cdecl CIrcProto::*IrcTimerFunc )( int eventId );
 
 typedef std::map<HANDLE, CDccSession*> DccSessionMap;
 typedef std::pair<HANDLE, CDccSession*> DccSessionPair;
@@ -435,8 +432,6 @@ struct CIrcProto : public PROTO_INTERFACE
 	String   sChannelModes, sUserModes;
 	TString  sChannelPrefixes, sUserModePrefixes, WhoisAwayReply;
 
-	HWND    m_hwndTimer;
-
 	CDlgBase::CreateParam OptCreateAccount, OptCreateConn, OptCreateIgnore, OptCreateOther;
 
 	//clist.cpp
@@ -449,20 +444,7 @@ struct CIrcProto : public PROTO_INTERFACE
 	BOOL   CList_AddDCCChat(TString name, TString hostmask, unsigned long adr, int port) ;
 
 	//commandmonitor.cpp
-	UINT_PTR IdentTimer;
-	void __cdecl IdentTimerProc( int idEvent );
-
-	UINT_PTR InitTimer;
-	void __cdecl TimerProc( int idEvent );
-
-	UINT_PTR KeepAliveTimer;
-	void __cdecl KeepAliveTimerProc( int idEvent );
-
-	UINT_PTR OnlineNotifTimer;	
-	void __cdecl OnlineNotifTimerProc( int idEvent );
-
-	UINT_PTR OnlineNotifTimer3;	
-	void __cdecl OnlineNotifTimerProc3( int idEvent );
+	UINT_PTR IdentTimer, InitTimer, KeepAliveTimer, OnlineNotifTimer, OnlineNotifTimer3;	
 
 	int  AddOutgoingMessageToDB(HANDLE hContact, TCHAR* msg);
 	bool DoOnConnect(const CIrcMessage *pmsg);
@@ -483,7 +465,6 @@ struct CIrcProto : public PROTO_INTERFACE
 
 	// irclib.cpp
 	UINT_PTR	DCCTimer;	
-	void __cdecl DCCTimerProc( int idEvent );
 
 	//options.cpp
 	HWND connect_hWnd;
@@ -538,7 +519,6 @@ struct CIrcProto : public PROTO_INTERFACE
 	void   InitMenus( void );
 
 	UINT_PTR  RetryTimer;
-	void __cdecl RetryTimerProc( int idEvent );
 
 	int __cdecl GetName( WPARAM, LPARAM );
 	int __cdecl GetStatus( WPARAM, LPARAM );
@@ -560,7 +540,7 @@ struct CIrcProto : public PROTO_INTERFACE
 	TString  ModeToStatus(int sMode);
 	TString  PrefixToStatus(int cPrefix);
 	int      SetChannelSBText(TString sWindow, CHANNELINFO * wi);
-	void     SetChatTimer(UINT_PTR &nIDEvent,UINT uElapse, IrcTimerFunc lpTimerFunc);
+	void     SetChatTimer(UINT_PTR &nIDEvent,UINT uElapse, TIMERPROC lpTimerFunc);
 
 	void     ClearUserhostReasons(int type);
 	void     DoUserhostWithReason(int type, TString reason, bool bSendCommand, TString userhostparams, ...);
@@ -651,6 +631,16 @@ extern char mirandapath[MAX_PATH];
 extern int mirVersion;
 
 void   UpgradeCheck(void);
+
+CIrcProto* GetTimerOwner( UINT_PTR eventId );
+
+VOID CALLBACK IdentTimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime );
+VOID CALLBACK TimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime );
+VOID CALLBACK KeepAliveTimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime );
+VOID CALLBACK OnlineNotifTimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime );
+VOID CALLBACK OnlineNotifTimerProc3( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime );
+VOID CALLBACK DCCTimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime );
+VOID CALLBACK RetryTimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime );
 
 // services.cpp
 

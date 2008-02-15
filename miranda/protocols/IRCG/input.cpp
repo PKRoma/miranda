@@ -198,9 +198,9 @@ static void __stdcall sttSetTimerOn( void* _pro )
 {
 	CIrcProto* ppro = ( CIrcProto* )_pro;
 	ppro->DoEvent( GC_EVENT_INFORMATION, NULL, ppro->GetInfo().sNick.c_str(), TranslateT(	"The buddy check function is enabled"), NULL, NULL, NULL, true, false); 
-	ppro->SetChatTimer( ppro->OnlineNotifTimer, 500, &CIrcProto::OnlineNotifTimerProc );
+	ppro->SetChatTimer( ppro->OnlineNotifTimer, 500, OnlineNotifTimerProc );
 	if ( ppro->ChannelAwayNotification )
-		ppro->SetChatTimer( ppro->OnlineNotifTimer3, 1500, &CIrcProto::OnlineNotifTimerProc3 );
+		ppro->SetChatTimer( ppro->OnlineNotifTimer3, 1500, OnlineNotifTimerProc3 );
 }
 
 static void __stdcall sttSetTimerOff( void* _pro )

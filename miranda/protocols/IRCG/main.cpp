@@ -29,11 +29,12 @@ HMODULE        m_ssleay32 = NULL;
 char           mirandapath[MAX_PATH];
 int            mirVersion;
 
-void InitTimers( void );
-
 UTF8_INTERFACE utfi;
 MM_INTERFACE   mmi;
 LIST_INTERFACE li;
+
+void InitTimers( void );
+void UninitTimers( void );
 
 // Information about the plugin
 PLUGININFOEX pluginInfo =
@@ -136,5 +137,6 @@ extern "C" int __declspec(dllexport) Unload(void)
 	if ( m_ssleay32 )
 		FreeLibrary( m_ssleay32 );
 
+	UninitTimers();
 	return 0;
 }

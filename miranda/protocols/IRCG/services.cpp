@@ -26,8 +26,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 BOOL bChatInstalled = FALSE, bMbotInstalled = FALSE;
 
-VOID CALLBACK RetryTimerProc(HWND hwnd,UINT uMsg,UINT idEvent,DWORD dwTime);
-
 void CIrcProto::InitMenus()
 {
 	char temp[ MAXMODULELABELLENGTH ];
@@ -1162,7 +1160,7 @@ void CIrcProto::ConnectToServer(void)
 	if (Retry) {
 		if (StrToInt(RetryWait)<10)
 			lstrcpy(RetryWait, _T("10"));
-		SetChatTimer(RetryTimer, StrToInt(RetryWait)*1000, &CIrcProto::RetryTimerProc);
+		SetChatTimer(RetryTimer, StrToInt(RetryWait)*1000, RetryTimerProc);
 	}
 
 	bPerformDone = false;
@@ -1218,28 +1216,32 @@ int __cdecl CIrcProto::GetStatus(WPARAM wParam,LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 // Service function creation
 
-void CIrcProto::RetryTimerProc( int idEvent )
+VOID CALLBACK RetryTimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime )
 {
-	if (iRetryCount <= StrToInt(RetryCount) && Retry) {
-		PortCount++;
-		if (PortCount > StrToIntA(PortEnd) || StrToIntA(PortEnd) ==0)
-			PortCount = StrToIntA(PortStart);
-		si.iPort = PortCount;
+	CIrcProto* ppro = GetTimerOwner( idEvent );
+	if ( !ppro )
+		return;
+
+	if ( ppro->iRetryCount <= StrToInt( ppro->RetryCount) && ppro->Retry ) {
+		ppro->PortCount++;
+		if ( ppro->PortCount > StrToIntA( ppro->PortEnd ) || StrToIntA( ppro->PortEnd ) == 0 )
+			ppro->PortCount = StrToIntA( ppro->PortStart );
+		ppro->si.iPort = ppro->PortCount;
 
 		TCHAR szTemp[300];
 		mir_sntprintf(szTemp, SIZEOF(szTemp), _T("\0033%s \002%s\002 (") _T(TCHAR_STR_PARAM) _T(": %u, try %u)"),
-			TranslateT("Reconnecting to"), si.sNetwork.c_str(), si.sServer.c_str(), si.iPort, RetryCount);
+			TranslateT("Reconnecting to"), ppro->si.sNetwork.c_str(), ppro->si.sServer.c_str(), ppro->si.iPort, ppro->iRetryCount);
 
-		DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, NULL, szTemp, NULL, NULL, NULL, true, false);
+		ppro->DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, NULL, szTemp, NULL, NULL, NULL, true, false);
 
-		if (!bConnectThreadRunning)
-			mir_forkthread(( pThreadFunc )ConnectServerThread, this );
+		if ( !ppro->bConnectThreadRunning )
+			mir_forkthread(( pThreadFunc )ConnectServerThread, ppro );
 		else
-			bConnectRequested = true;
+			ppro->bConnectRequested = true;
 
-		iRetryCount++;
+		ppro->iRetryCount++;
 	}
-	else KillChatTimer(RetryTimer);
+	else ppro->KillChatTimer( ppro->RetryTimer );
 }
 
 // logs text into NetLib (stolen from Jabber ;) )
