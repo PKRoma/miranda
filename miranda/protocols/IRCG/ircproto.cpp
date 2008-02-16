@@ -60,7 +60,6 @@ CIrcProto::CIrcProto( const char* szModuleName, const TCHAR* tszUserName )
 	codepage = CP_ACP;
 	InitializeCriticalSection(&m_resolve);
 	InitializeCriticalSection(&m_dcc);
-	m_monitor = new CMyMonitor( *this );
 
 	InitPrefs();
 
@@ -69,6 +68,71 @@ CIrcProto::CIrcProto( const char* szModuleName, const TCHAR* tszUserName )
 	CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )text );
 
 	CList_SetAllOffline(true);
+
+	IRC_MAP_ENTRY("PING", OnIrc_PING)
+	IRC_MAP_ENTRY("JOIN", OnIrc_JOIN)
+	IRC_MAP_ENTRY("QUIT", OnIrc_QUIT)
+	IRC_MAP_ENTRY("KICK", OnIrc_KICK)
+	IRC_MAP_ENTRY("MODE", OnIrc_MODE)
+	IRC_MAP_ENTRY("NICK", OnIrc_NICK)
+	IRC_MAP_ENTRY("PART", OnIrc_PART)
+	IRC_MAP_ENTRY("PRIVMSG", OnIrc_PRIVMSG)
+	IRC_MAP_ENTRY("TOPIC", OnIrc_TOPIC)
+	IRC_MAP_ENTRY("NOTICE", OnIrc_NOTICE)
+	IRC_MAP_ENTRY("PING", OnIrc_PINGPONG)
+	IRC_MAP_ENTRY("PONG", OnIrc_PINGPONG)
+	IRC_MAP_ENTRY("INVITE", OnIrc_INVITE)
+	IRC_MAP_ENTRY("ERROR", OnIrc_ERROR)
+	IRC_MAP_ENTRY("001", OnIrc_WELCOME)
+	IRC_MAP_ENTRY("002", OnIrc_YOURHOST)
+	IRC_MAP_ENTRY("005", OnIrc_SUPPORT)
+	IRC_MAP_ENTRY("223", OnIrc_WHOIS_OTHER)			//CodePage info
+	IRC_MAP_ENTRY("254", OnIrc_NOOFCHANNELS)
+	IRC_MAP_ENTRY("263", OnIrc_TRYAGAIN)
+	IRC_MAP_ENTRY("264", OnIrc_WHOIS_OTHER)			//Encryption info (SSL connect)
+	IRC_MAP_ENTRY("301", OnIrc_WHOIS_AWAY)
+	IRC_MAP_ENTRY("302", OnIrc_USERHOST_REPLY)
+	IRC_MAP_ENTRY("305", OnIrc_BACKFROMAWAY)
+	IRC_MAP_ENTRY("306", OnIrc_SETAWAY)
+	IRC_MAP_ENTRY("307", OnIrc_WHOIS_AUTH)
+	IRC_MAP_ENTRY("310", OnIrc_WHOIS_OTHER)
+	IRC_MAP_ENTRY("311", OnIrc_WHOIS_NAME)
+	IRC_MAP_ENTRY("312", OnIrc_WHOIS_SERVER)
+	IRC_MAP_ENTRY("313", OnIrc_WHOIS_OTHER)
+	IRC_MAP_ENTRY("315", OnIrc_WHO_END)
+	IRC_MAP_ENTRY("317", OnIrc_WHOIS_IDLE)
+	IRC_MAP_ENTRY("318", OnIrc_WHOIS_END)
+	IRC_MAP_ENTRY("319", OnIrc_WHOIS_CHANNELS)
+	IRC_MAP_ENTRY("320", OnIrc_WHOIS_AUTH)
+	IRC_MAP_ENTRY("321", OnIrc_LISTSTART)
+	IRC_MAP_ENTRY("322", OnIrc_LIST)
+	IRC_MAP_ENTRY("323", OnIrc_LISTEND)
+	IRC_MAP_ENTRY("324", OnIrc_MODEQUERY)
+	IRC_MAP_ENTRY("330", OnIrc_WHOIS_AUTH)
+	IRC_MAP_ENTRY("332", OnIrc_INITIALTOPIC)
+	IRC_MAP_ENTRY("333", OnIrc_INITIALTOPICNAME)
+	IRC_MAP_ENTRY("352", OnIrc_WHO_REPLY)
+	IRC_MAP_ENTRY("353", OnIrc_NAMES)
+	IRC_MAP_ENTRY("366", OnIrc_ENDNAMES)
+	IRC_MAP_ENTRY("367", OnIrc_BANLIST)
+	IRC_MAP_ENTRY("368", OnIrc_BANLISTEND)
+	IRC_MAP_ENTRY("346", OnIrc_BANLIST)
+	IRC_MAP_ENTRY("347", OnIrc_BANLISTEND)
+	IRC_MAP_ENTRY("348", OnIrc_BANLIST)
+	IRC_MAP_ENTRY("349", OnIrc_BANLISTEND)
+	IRC_MAP_ENTRY("371", OnIrc_WHOIS_OTHER)
+	IRC_MAP_ENTRY("376", OnIrc_ENDMOTD)
+	IRC_MAP_ENTRY("401", OnIrc_WHOIS_NO_USER)
+	IRC_MAP_ENTRY("403", OnIrc_JOINERROR)
+	IRC_MAP_ENTRY("416", OnIrc_WHOTOOLONG)
+	IRC_MAP_ENTRY("421", OnIrc_UNKNOWN)
+	IRC_MAP_ENTRY("422", OnIrc_ENDMOTD)
+	IRC_MAP_ENTRY("433", OnIrc_NICK_ERR)
+	IRC_MAP_ENTRY("471", OnIrc_JOINERROR)
+	IRC_MAP_ENTRY("473", OnIrc_JOINERROR)
+	IRC_MAP_ENTRY("474", OnIrc_JOINERROR)
+	IRC_MAP_ENTRY("475", OnIrc_JOINERROR)
+	IRC_MAP_ENTRY("671", OnIrc_WHOIS_OTHER)			//Encryption info (SSL connect)
 }
 
 CIrcProto::~CIrcProto()
@@ -79,8 +143,8 @@ CIrcProto::~CIrcProto()
 	DeleteCriticalSection( &cs );
 	DeleteCriticalSection( &m_gchook );
 
-	mir_free( Alias );
-	delete []pszServerFile;
+	mir_free( m_alias );
+	delete []m_pszServerFile;
 
 	mir_free( m_szModuleName );
 	mir_free( m_tszUserName );
@@ -89,7 +153,6 @@ CIrcProto::~CIrcProto()
 	DeleteCriticalSection(&m_dcc);
 	KillChatTimer(OnlineNotifTimer);
 	KillChatTimer(OnlineNotifTimer3);
-	delete m_monitor;
 
 	delete[] hIconLibItems;
 }
@@ -143,7 +206,7 @@ int CIrcProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 
 	if ( ServiceExists("MBot/GetFcnTable")) {
 		CallService( MS_MBOT_REGISTERIRC, 0, (LPARAM)m_szModuleName);
-		bMbotInstalled = TRUE;
+		m_bMbotInstalled = TRUE;
 	}
 
 	if ( ServiceExists( MS_GC_REGISTER )) {
@@ -168,7 +231,7 @@ int CIrcProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		gcw.iType = GCW_SERVER;
 		gcw.ptszID = SERVERWINDOW;
 		gcw.pszModule = m_szModuleName;
-		gcw.ptszName = NEWTSTR_ALLOCA( _A2T( Network ));
+		gcw.ptszName = NEWTSTR_ALLOCA( _A2T( m_network ));
 		CallServiceSync( MS_GC_NEWSESSION, 0, (LPARAM)&gcw );
 
 		gce.cbSize = sizeof(GCEVENT);
@@ -179,7 +242,7 @@ int CIrcProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		gcd.iType = GC_EVENT_CONTROL;
 
 		gce.pDest = &gcd;
-		if ( UseServer && !HideServerWindow )
+		if ( m_useServer && !m_hideServerWindow )
 			CallChatEvent( WINDOW_VISIBLE, (LPARAM)&gce);
 		else
 			CallChatEvent( WINDOW_HIDDEN, (LPARAM)&gce);
@@ -191,7 +254,7 @@ int CIrcProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	}
 
 	mir_snprintf(szTemp, sizeof(szTemp), "%s\\%s_servers.ini", mirandapath, m_szModuleName);
-	pszServerFile = IrcLoadFile(szTemp);
+	m_pszServerFile = IrcLoadFile(szTemp);
 
 	mir_snprintf(szTemp, sizeof(szTemp), "%s\\%s_perform.ini", mirandapath, m_szModuleName);
 	char* pszPerformData = IrcLoadFile( szTemp );
@@ -216,7 +279,7 @@ int CIrcProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		::remove( szTemp );
 	}
 
-	if ( !DBGetContactSettingByte( NULL, m_szModuleName, "PerformConversionDone", 0 )) {
+	if ( !getByte( "PerformConversionDone", 0 )) {
 		vector<String> performToConvert;
 		DBCONTACTENUMSETTINGS dbces;
 		dbces.pfnEnumProc = sttCheckPerform;
@@ -227,7 +290,7 @@ int CIrcProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		for ( size_t i = 0; i < performToConvert.size(); i++ ) {
 			String s = performToConvert[i];
 			DBVARIANT dbv;
-			if ( !DBGetContactSettingTString( NULL, m_szModuleName, s.c_str(), &dbv )) {
+			if ( !getTString( s.c_str(), &dbv )) {
 				DBDeleteContactSetting( NULL, m_szModuleName, s.c_str());
 				transform( s.begin(), s.end(), s.begin(), toupper );
 				setTString( s.c_str(), dbv.ptszVal );
@@ -244,20 +307,20 @@ int CIrcProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	IrcHookEvent( ME_CLIST_PREBUILDCONTACTMENU, &CIrcProto::OnMenuPreBuild );
 	IrcHookEvent( ME_OPT_INITIALISE, &CIrcProto::OnInitOptionsPages );
 
-	if ( lstrlen(Nick) == 0 )
+	if ( lstrlen(m_nick) == 0 )
 		(new CInitDlg( this ))->Show();
 	else {
 		TCHAR szBuf[ 40 ];
-		if ( lstrlen( AlternativeNick ) == 0 ) {
-			mir_sntprintf( szBuf, SIZEOF(szBuf), _T("%s%u"), Nick, rand()%9999);
+		if ( lstrlen( m_alternativeNick ) == 0 ) {
+			mir_sntprintf( szBuf, SIZEOF(szBuf), _T("%s%u"), m_nick, rand()%9999);
 			setTString("AlernativeNick", szBuf);
-			lstrcpyn(AlternativeNick, szBuf, 30);
+			lstrcpyn(m_alternativeNick, szBuf, 30);
 		}
 
-		if ( lstrlen( Name ) == 0 ) {
+		if ( lstrlen( m_name ) == 0 ) {
 			mir_sntprintf( szBuf, SIZEOF(szBuf), _T("Miranda%u"), rand()%9999);
 			setTString("Name", szBuf);
-			lstrcpyn( Name, szBuf, 200 );
+			lstrcpyn( m_name, szBuf, 200 );
 	}	}
 
 	return 0;
@@ -277,16 +340,16 @@ HANDLE __cdecl CIrcProto::AddToList( int flags, PROTOSEARCHRESULT* psr )
 	if ( hContact ) {
 		DBVARIANT dbv1;
 
-		if ( DBGetContactSettingByte( hContact, m_szModuleName, "AdvancedMode", 0 ) == 0 )
+		if ( getByte( hContact, "AdvancedMode", 0 ) == 0 )
 			DoUserhostWithReason( 1, ((TString)_T("S") + user.name).c_str(), true, user.name );
 		else {
-			if ( !DBGetContactSettingTString(hContact, m_szModuleName, "UWildcard", &dbv1 )) {
+			if ( !getTString(hContact, "UWildcard", &dbv1 )) {
 				DoUserhostWithReason(2, ((TString)_T("S") + dbv1.ptszVal).c_str(), true, dbv1.ptszVal);
 				DBFreeVariant( &dbv1 );
 				}
 			else DoUserhostWithReason( 2, ((TString)_T("S") + user.name).c_str(), true, user.name );
 			}
-			if (DBGetContactSettingByte(NULL, m_szModuleName,"MirVerAutoRequest", 1))
+			if (getByte( "MirVerAutoRequest", 1))
 				PostIrcMessage( _T("/PRIVMSG %s \001VERSION\001"), user.name);
 		}
 
@@ -606,18 +669,18 @@ int __cdecl CIrcProto::SendFile( HANDLE hContact, const char* szDescription, cha
 	DWORD size = 0;
 
 	// do not send to channels :-P
-	if (DBGetContactSettingByte(hContact, m_szModuleName, "ChatRoom", 0) != 0)
+	if ( getByte(hContact, "ChatRoom", 0) != 0)
 		return 0;
 
 	// stop if it is an active type filetransfer and the user's IP is not known
 	unsigned long ulAdr = 0;
-	if (ManualHost)
-		ulAdr = ConvertIPToInteger(MySpecifiedHostIP);
+	if (m_manualHost)
+		ulAdr = ConvertIPToInteger(m_mySpecifiedHostIP);
 	else
-		ulAdr = ConvertIPToInteger(IPFromServer?MyHost:MyLocalHost);
+		ulAdr = ConvertIPToInteger(m_IPFromServer?m_myHost:m_myLocalHost);
 
-	if (!DCCPassive && !ulAdr) {
-		DoEvent(GC_EVENT_INFORMATION, 0, GetInfo().sNick.c_str(), TranslateT("DCC ERROR: Unable to automatically resolve external IP"), NULL, NULL, NULL, true, false);
+	if (!m_DCCPassive && !ulAdr) {
+		DoEvent(GC_EVENT_INFORMATION, 0, m_info.sNick.c_str(), TranslateT("DCC ERROR: Unable to automatically resolve external IP"), NULL, NULL, NULL, true, false);
 		return 0;
 	}
 
@@ -638,12 +701,12 @@ int __cdecl CIrcProto::SendFile( HANDLE hContact, const char* szDescription, cha
 		}
 
 		if (size == 0) {
-			DoEvent(GC_EVENT_INFORMATION, 0, GetInfo().sNick.c_str(), TranslateT("DCC ERROR: No valid files specified"), NULL, NULL, NULL, true, false);
+			DoEvent(GC_EVENT_INFORMATION, 0, m_info.sNick.c_str(), TranslateT("DCC ERROR: No valid files specified"), NULL, NULL, NULL, true, false);
 			return 0;
 		}
 
 		DBVARIANT dbv;
-		if ( !DBGetContactSettingTString( hContact, m_szModuleName, "Nick", &dbv )) {
+		if ( !getTString( hContact, "Nick", &dbv )) {
 			// set up a basic DCCINFO struct and pass it to a DCC object
 			dci = new DCCINFO;
 			dci->sFileAndPath = (TString)_A2T( ppszFiles[index], getCodepage());
@@ -665,7 +728,7 @@ int __cdecl CIrcProto::SendFile( HANDLE hContact, const char* szDescription, cha
 			dci->hContact = hContact;
 			dci->sContactName = dbv.ptszVal;
 			dci->iType = DCC_SEND;
-			dci->bReverse = DCCPassive?true:false;
+			dci->bReverse = m_DCCPassive?true:false;
 			dci->bSender = true;
 			dci->dwSize = size;
 
@@ -688,9 +751,9 @@ int __cdecl CIrcProto::SendFile( HANDLE hContact, const char* szDescription, cha
 				mir_sntprintf(szTemp, SIZEOF(szTemp),
 					TranslateT("DCC reversed file transfer request sent to %s [%s]"),
 					dci->sContactName.c_str(), sFileCorrect.c_str());
-				DoEvent(GC_EVENT_INFORMATION, 0, GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false);
+				DoEvent(GC_EVENT_INFORMATION, 0, m_info.sNick.c_str(), szTemp, NULL, NULL, NULL, true, false);
 
-				if (SendNotice) {
+				if (m_sendNotice) {
 					mir_sntprintf(szTemp, SIZEOF(szTemp),
 						_T("/NOTICE %s I am sending the file \'\002%s\002\' (%u kB) to you, please accept it. [Reverse transfer]"),
 						dci->sContactName.c_str(), sFileCorrect.c_str(), dci->dwSize/1024);
@@ -707,16 +770,16 @@ int __cdecl CIrcProto::SendFile( HANDLE hContact, const char* szDescription, cha
 					mir_sntprintf(szTemp, SIZEOF(szTemp),
 						TranslateT("DCC file transfer request sent to %s [%s]"),
 						dci->sContactName.c_str(), sFileCorrect.c_str());
-					DoEvent(GC_EVENT_INFORMATION, 0, GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false);
+					DoEvent(GC_EVENT_INFORMATION, 0, m_info.sNick.c_str(), szTemp, NULL, NULL, NULL, true, false);
 
-					if ( SendNotice ) {
+					if ( m_sendNotice ) {
 						mir_sntprintf(szTemp, SIZEOF(szTemp),
 							_T("/NOTICE %s I am sending the file \'\002%s\002\' (%u kB) to you, please accept it. [IP: %s]"),
 							dci->sContactName.c_str(), sFileCorrect.c_str(), dci->dwSize/1024, (TCHAR*)_A2T(ConvertIntegerToIP(ulAdr)));
 						PostIrcMessage(szTemp);
 					}
 				}
-				else DoEvent(GC_EVENT_INFORMATION, 0, GetInfo().sNick.c_str(),
+				else DoEvent(GC_EVENT_INFORMATION, 0, m_info.sNick.c_str(),
 					TranslateT("DCC ERROR: Unable to bind local port"), NULL, NULL, NULL, true, false);
 			}
 
@@ -771,8 +834,8 @@ static void __cdecl AckMessageSuccess( AckMessageThreadParam* param )
 
 int __cdecl CIrcProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 {
-	BYTE bDcc = DBGetContactSettingByte( hContact, m_szModuleName, "DCC", 0) ;
-	WORD wStatus = DBGetContactSettingWord( hContact, m_szModuleName, "Status", ID_STATUS_OFFLINE) ;
+	BYTE bDcc = getByte( hContact, "DCC", 0) ;
+	WORD wStatus = getWord( hContact, "Status", ID_STATUS_OFFLINE) ;
 	if ( m_iDesiredStatus != ID_STATUS_OFFLINE && m_iDesiredStatus != ID_STATUS_CONNECTING && !bDcc || bDcc && wStatus == ID_STATUS_ONLINE ) {
 		int codepage = getCodepage();
 
@@ -843,8 +906,8 @@ int __cdecl CIrcProto::SetStatus( int iNewStatus )
 		return 0;
 	}
 
-	if ( iNewStatus != ID_STATUS_OFFLINE && lstrlenA(Network) < 1 ) {
-		if (lstrlen(Nick) > 0 && !DisableDefaultServer) {
+	if ( iNewStatus != ID_STATUS_OFFLINE && lstrlenA(m_network) < 1 ) {
+		if (lstrlen(m_nick) > 0 && !m_disableDefaultServer) {
 			CQuickDlg* dlg = new CQuickDlg( this );
 			dlg->Show();
 			HWND hwnd = dlg->GetHwnd();
@@ -859,25 +922,25 @@ int __cdecl CIrcProto::SetStatus( int iNewStatus )
 		return 0;
 	}
 
-	if ( iNewStatus != ID_STATUS_OFFLINE && (lstrlen(Nick) <1 || lstrlen(UserID) < 1 || lstrlen(Name) < 1)) {
+	if ( iNewStatus != ID_STATUS_OFFLINE && (lstrlen(m_nick) <1 || lstrlen(m_userID) < 1 || lstrlen(m_name) < 1)) {
 		MIRANDASYSTRAYNOTIFY msn;
 		msn.cbSize = sizeof( MIRANDASYSTRAYNOTIFY );
 		msn.szProto = m_szModuleName;
 		msn.tszInfoTitle = TranslateT( "IRC error" );
-		msn.tszInfo = TranslateT( "Connection can not be established! You have not completed all necessary fields (Nickname, User ID and Name)." );
+		msn.tszInfo = TranslateT( "Connection can not be established! You have not completed all necessary fields (Nickname, User ID and m_name)." );
 		msn.dwInfoFlags = NIIF_ERROR | NIIF_INTERN_UNICODE;
 		msn.uTimeout = 15000;
 		CallService( MS_CLIST_SYSTRAY_NOTIFY, (WPARAM)NULL,(LPARAM) &msn);
 		return 0;
 	}
 
-	if ( iNewStatus == ID_STATUS_FREECHAT && Perform && IsConnected() )
+	if ( iNewStatus == ID_STATUS_FREECHAT && m_perform && IsConnected() )
 		DoPerform( "Event: Free for chat" );
-	if ( iNewStatus == ID_STATUS_ONTHEPHONE && Perform && IsConnected() )
+	if ( iNewStatus == ID_STATUS_ONTHEPHONE && m_perform && IsConnected() )
 		DoPerform( "Event: On the phone" );
-	if ( iNewStatus == ID_STATUS_OUTTOLUNCH && Perform && IsConnected() )
+	if ( iNewStatus == ID_STATUS_OUTTOLUNCH && m_perform && IsConnected() )
 		DoPerform( "Event: Out for lunch" );
-	if ( iNewStatus == ID_STATUS_ONLINE && Perform && IsConnected() && (m_iStatus ==ID_STATUS_ONTHEPHONE ||m_iStatus  ==ID_STATUS_OUTTOLUNCH) && m_iDesiredStatus  !=ID_STATUS_AWAY)
+	if ( iNewStatus == ID_STATUS_ONLINE && m_perform && IsConnected() && (m_iStatus ==ID_STATUS_ONTHEPHONE ||m_iStatus  ==ID_STATUS_OUTTOLUNCH) && m_iDesiredStatus  !=ID_STATUS_AWAY)
 		DoPerform( "Event: Available" );
 	if ( iNewStatus != 1 )
 		m_iStatus = iNewStatus;
@@ -886,7 +949,7 @@ int __cdecl CIrcProto::SetStatus( int iNewStatus )
 		ConnectToServer();
 	else if (( iNewStatus == ID_STATUS_ONLINE || iNewStatus == ID_STATUS_FREECHAT) && IsConnected() && m_iDesiredStatus == ID_STATUS_AWAY) //go to online while connected
 	{
-		StatusMessage = _T("");
+		m_statusMessage = _T("");
 		PostIrcMessage( _T("/AWAY"));
 		return 0;
 	}
@@ -915,9 +978,9 @@ int __cdecl CIrcProto::GetAwayMsg( HANDLE hContact )
 	DBVARIANT dbv;
 
 	// bypass chat contacts.
-	if ( DBGetContactSettingByte( hContact, m_szModuleName, "ChatRoom", 0 ) == 0) {
-		if ( hContact && !DBGetContactSettingTString( hContact, m_szModuleName, "Nick", &dbv)) {
-			int i = DBGetContactSettingWord( hContact,m_szModuleName, "Status", ID_STATUS_OFFLINE);
+	if ( getByte( hContact, "ChatRoom", 0 ) == 0) {
+		if ( hContact && !getTString( hContact, "Nick", &dbv)) {
+			int i = getWord( hContact, "Status", ID_STATUS_OFFLINE );
 			if ( i != ID_STATUS_AWAY) {
 				DBFreeVariant( &dbv);
 				return 0;
@@ -960,13 +1023,13 @@ int __cdecl CIrcProto::SetAwayMsg( int status, const char* msg )
 	default:
 		TString newStatus = _A2T( msg, getCodepage());
 		ReplaceString( newStatus, _T("\r\n"), _T(" "));
-		if ( StatusMessage.empty() || msg == NULL || StatusMessage != newStatus ) {
+		if ( m_statusMessage.empty() || msg == NULL || m_statusMessage != newStatus ) {
 			if ( msg == NULL || *( char* )msg == '\0')
-				StatusMessage = _T(STR_AWAYMESSAGE);
+				m_statusMessage = _T(STR_AWAYMESSAGE);
 			else
-				StatusMessage = newStatus;
+				m_statusMessage = newStatus;
 
-			PostIrcMessage( _T("/AWAY %s"), StatusMessage.substr(0,450).c_str());
+			PostIrcMessage( _T("/AWAY %s"), m_statusMessage.substr(0,450).c_str());
 	}	}
 
 	return 0;

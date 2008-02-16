@@ -54,7 +54,7 @@ TString CIrcProto::FormatMsg(TString text)
 			TString sNewNick = GetWord(text.c_str(), 1);
 			if ( sNick4Perform == _T("")) {
 				DBVARIANT dbv;
-				if ( !DBGetContactSettingTString(NULL, m_szModuleName, "PNick", &dbv )) {
+				if ( !getTString( "PNick", &dbv )) {
 					sNick4Perform = dbv.ptszVal;
 					DBFreeVariant(&dbv);
 			}	}
@@ -102,7 +102,7 @@ TString CIrcProto::DoAlias( const TCHAR *text, TCHAR *window)
 			delete [] line;
 			line = new TCHAR[S.length()+2]; 
 			lstrcpyn(line, S.c_str(), S.length()+1);
-			TString alias( Alias );
+			TString alias( m_alias );
 			const TCHAR* p3 = _tcsstr( alias.c_str(), (GetWord(line, 0)+ _T(" ")).c_str());
 			if ( p3 != alias.c_str()) {
 				p3 = _tcsstr( alias.c_str(), (TString(_T("\r\n")) + GetWord(line, 0) + _T(" ")).c_str());
@@ -164,14 +164,14 @@ TString CIrcProto::DoIdentifiers( TString text, const TCHAR* window )
 	int  i = 0;
 
 	GetLocalTime( &time );
-	ReplaceString( text, _T("%mnick"), Nick);
-	ReplaceString( text, _T("%anick"), AlternativeNick);
-	ReplaceString( text, _T("%awaymsg"), StatusMessage.c_str());
+	ReplaceString( text, _T("%mnick"), m_nick);
+	ReplaceString( text, _T("%anick"), m_alternativeNick);
+	ReplaceString( text, _T("%awaymsg"), m_statusMessage.c_str());
 	ReplaceString( text, _T("%module"), _A2T(m_szModuleName));
-	ReplaceString( text, _T("%name"), Name);
+	ReplaceString( text, _T("%name"), m_name);
 	ReplaceString( text, _T("%newl"), _T("\r\n"));
-	ReplaceString( text, _T("%network"), GetInfo().sNetwork.c_str());
-	ReplaceString( text, _T("%me"), GetInfo().sNick.c_str());
+	ReplaceString( text, _T("%network"), m_info.sNetwork.c_str());
+	ReplaceString( text, _T("%me"), m_info.sNick.c_str());
 
 	mir_sntprintf( str, SIZEOF(str), _T("%d.%d.%d.%d"),(mirVersion>>24)&0xFF,(mirVersion>>16)&0xFF,(mirVersion>>8)&0xFF,mirVersion&0xFF);
 	ReplaceString(text, _T("%mirver"), str);
@@ -196,16 +196,16 @@ TString CIrcProto::DoIdentifiers( TString text, const TCHAR* window )
 static void __stdcall sttSetTimerOn( void* _pro )
 {
 	CIrcProto* ppro = ( CIrcProto* )_pro;
-	ppro->DoEvent( GC_EVENT_INFORMATION, NULL, ppro->GetInfo().sNick.c_str(), TranslateT(	"The buddy check function is enabled"), NULL, NULL, NULL, true, false); 
+	ppro->DoEvent( GC_EVENT_INFORMATION, NULL, ppro->m_info.sNick.c_str(), TranslateT(	"The buddy check function is enabled"), NULL, NULL, NULL, true, false); 
 	ppro->SetChatTimer( ppro->OnlineNotifTimer, 500, OnlineNotifTimerProc );
-	if ( ppro->ChannelAwayNotification )
+	if ( ppro->m_channelAwayNotification )
 		ppro->SetChatTimer( ppro->OnlineNotifTimer3, 1500, OnlineNotifTimerProc3 );
 }
 
 static void __stdcall sttSetTimerOff( void* _pro )
 {
 	CIrcProto* ppro = ( CIrcProto* )_pro;
-	ppro->DoEvent( GC_EVENT_INFORMATION, NULL, ppro->GetInfo().sNick.c_str(), TranslateT("The buddy check function is disabled"), NULL, NULL, NULL, true, false); 
+	ppro->DoEvent( GC_EVENT_INFORMATION, NULL, ppro->m_info.sNick.c_str(), TranslateT("The buddy check function is disabled"), NULL, NULL, NULL, true, false); 
 	ppro->KillChatTimer( ppro->OnlineNotifTimer );
 	ppro->KillChatTimer( ppro->OnlineNotifTimer3 );
 }
@@ -222,7 +222,7 @@ BOOL CIrcProto::DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact
 	TString therest = GetWordAddress(text.c_str(), 4);
 
 	if ( command == _T("/servershow") || command == _T("/serverhide")) {
-		if ( UseServer ) {
+		if ( m_useServer ) {
 			GCEVENT gce = {0};
 			GCDEST gcd = {0};
 			gce.dwFlags = GC_TCHAR;
@@ -265,20 +265,20 @@ BOOL CIrcProto::DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact
 			TString IgnoreFlags;
 			TCHAR temp[500];
 			if ( one.empty() ) {
-				if ( Ignore )
-					DoEvent( GC_EVENT_INFORMATION, NULL, GetInfo().sNick.c_str(), TranslateT("Ignore system is enabled"), NULL, NULL, NULL, true, false); 
+				if ( m_ignore )
+					DoEvent( GC_EVENT_INFORMATION, NULL, m_info.sNick.c_str(), TranslateT("Ignore system is enabled"), NULL, NULL, NULL, true, false); 
 				else
-					DoEvent( GC_EVENT_INFORMATION, NULL, GetInfo().sNick.c_str(), TranslateT("Ignore system is disabled"), NULL, NULL, NULL, true, false); 
+					DoEvent( GC_EVENT_INFORMATION, NULL, m_info.sNick.c_str(), TranslateT("Ignore system is disabled"), NULL, NULL, NULL, true, false); 
 				return true;
 			}
 			if ( !lstrcmpi( one.c_str(), _T("on"))) {
-				Ignore = 1;
-				DoEvent( GC_EVENT_INFORMATION, NULL, GetInfo().sNick.c_str(), TranslateT("Ignore system is enabled"), NULL, NULL, NULL, true, false); 
+				m_ignore = 1;
+				DoEvent( GC_EVENT_INFORMATION, NULL, m_info.sNick.c_str(), TranslateT("Ignore system is enabled"), NULL, NULL, NULL, true, false); 
 				return true;
 			}
 			if ( !lstrcmpi( one.c_str(), _T("off"))) {
-				Ignore = 0;
-				DoEvent( GC_EVENT_INFORMATION, NULL, GetInfo().sNick.c_str(), TranslateT("Ignore system is disabled"), NULL, NULL, NULL, true, false); 
+				m_ignore = 0;
+				DoEvent( GC_EVENT_INFORMATION, NULL, m_info.sNick.c_str(), TranslateT("Ignore system is disabled"), NULL, NULL, NULL, true, false); 
 				return true;
 			}
 			if ( !_tcschr( one.c_str(), '!' ) && !_tcschr( one.c_str(), '@' ))
@@ -300,16 +300,16 @@ BOOL CIrcProto::DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact
 			}
 			else IgnoreFlags = _T("qnidc");
 
-			TString Network;
+			TString m_network;
 			if ( three.empty() )
-				Network = GetInfo().sNetwork;
+				m_network = m_info.sNetwork;
 			else
-				Network = three;
+				m_network = three;
 
-			AddIgnore( one.c_str(), IgnoreFlags.c_str(), Network.c_str() );
+			AddIgnore( one.c_str(), IgnoreFlags.c_str(), m_network.c_str() );
 			
-			mir_sntprintf(temp, SIZEOF(temp), TranslateT("%s on %s is now ignored (+%s)"), one.c_str(), Network.c_str(), IgnoreFlags.c_str());
-			DoEvent( GC_EVENT_INFORMATION, NULL, GetInfo().sNick.c_str(), temp, NULL, NULL, NULL, true, false); 
+			mir_sntprintf(temp, SIZEOF(temp), TranslateT("%s on %s is now ignored (+%s)"), one.c_str(), m_network.c_str(), IgnoreFlags.c_str());
+			DoEvent( GC_EVENT_INFORMATION, NULL, m_info.sNick.c_str(), temp, NULL, NULL, NULL, true, false); 
 		}
 		return true;
 	}
@@ -322,7 +322,7 @@ BOOL CIrcProto::DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact
 			mir_sntprintf(temp, SIZEOF(temp), TranslateT("%s is not ignored now"), one.c_str());
 		else
 			mir_sntprintf(temp, SIZEOF(temp), TranslateT("%s was not ignored"), one.c_str());
-		DoEvent( GC_EVENT_INFORMATION, NULL, GetInfo().sNick.c_str(), temp, NULL, NULL, NULL, true, false); 
+		DoEvent( GC_EVENT_INFORMATION, NULL, m_info.sNick.c_str(), temp, NULL, NULL, NULL, true, false); 
 		return true;
 	}
 
@@ -363,7 +363,7 @@ BOOL CIrcProto::DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact
 		if ( !CallServiceSync( MS_GC_GETINFO, 0, ( LPARAM )&gci ))
 			mir_sntprintf( szTemp, SIZEOF(szTemp), _T("users: %u"), gci.iCount);
 
-		DoEvent( GC_EVENT_INFORMATION, NULL, GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
+		DoEvent( GC_EVENT_INFORMATION, NULL, m_info.sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
 		return true;
 	}
 	else if (command == _T("/echo")) {
@@ -372,11 +372,11 @@ BOOL CIrcProto::DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact
 
 		if ( !lstrcmpi( one.c_str(), _T("on"))) {
 			bEcho = TRUE;
-			DoEvent( GC_EVENT_INFORMATION, NULL, GetInfo().sNick.c_str(), TranslateT("Outgoing commands are shown"), NULL, NULL, NULL, true, false); 
+			DoEvent( GC_EVENT_INFORMATION, NULL, m_info.sNick.c_str(), TranslateT("Outgoing commands are shown"), NULL, NULL, NULL, true, false); 
 		}
 		
 		if ( !lstrcmpi( one.c_str(), _T("off"))) {
-			DoEvent( GC_EVENT_INFORMATION, NULL, GetInfo().sNick.c_str(), TranslateT("Outgoing commands are not shown"), NULL, NULL, NULL, true, false); 
+			DoEvent( GC_EVENT_INFORMATION, NULL, m_info.sNick.c_str(), TranslateT("Outgoing commands are not shown"), NULL, NULL, NULL, true, false); 
 			bEcho = FALSE;
 		}
 
@@ -385,10 +385,10 @@ BOOL CIrcProto::DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact
 	
 	else if (command == _T("/buddycheck")) {
 		if ( one.empty()) {
-			if (( AutoOnlineNotification && !bTempDisableCheck) || bTempForceCheck )
-				DoEvent( GC_EVENT_INFORMATION, NULL, GetInfo().sNick.c_str(), TranslateT("The buddy check function is enabled"), NULL, NULL, NULL, true, false); 
+			if (( m_autoOnlineNotification && !bTempDisableCheck) || bTempForceCheck )
+				DoEvent( GC_EVENT_INFORMATION, NULL, m_info.sNick.c_str(), TranslateT("The buddy check function is enabled"), NULL, NULL, NULL, true, false); 
 			else
-				DoEvent( GC_EVENT_INFORMATION, NULL, GetInfo().sNick.c_str(), TranslateT("The buddy check function is disabled"), NULL, NULL, NULL, true, false); 
+				DoEvent( GC_EVENT_INFORMATION, NULL, m_info.sNick.c_str(), TranslateT("The buddy check function is disabled"), NULL, NULL, NULL, true, false); 
 			return true;
 		}
 		if ( !lstrcmpi( one.c_str(), _T("on"))) {
@@ -402,23 +402,23 @@ BOOL CIrcProto::DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact
 			CallFunctionAsync( sttSetTimerOff, NULL );
 		}
 		if ( !lstrcmpi( one.c_str(), _T("time")) && !two.empty()) {
-			iTempCheckTime = StrToInt( two.c_str());
-			if ( iTempCheckTime < 10 && iTempCheckTime != 0 )
-				iTempCheckTime = 10;
+			m_iTempCheckTime = StrToInt( two.c_str());
+			if ( m_iTempCheckTime < 10 && m_iTempCheckTime != 0 )
+				m_iTempCheckTime = 10;
 
-			if ( iTempCheckTime == 0 )
-				DoEvent( GC_EVENT_INFORMATION, NULL, GetInfo().sNick.c_str(), TranslateT("The time interval for the buddy check function is now at default setting"), NULL, NULL, NULL, true, false); 
+			if ( m_iTempCheckTime == 0 )
+				DoEvent( GC_EVENT_INFORMATION, NULL, m_info.sNick.c_str(), TranslateT("The time interval for the buddy check function is now at default setting"), NULL, NULL, NULL, true, false); 
 			else {
 				TCHAR temp[200];
-				mir_sntprintf( temp, SIZEOF(temp), TranslateT("The time interval for the buddy check function is now %u seconds"), iTempCheckTime);
-				DoEvent( GC_EVENT_INFORMATION, NULL, GetInfo().sNick.c_str(), temp, NULL, NULL, NULL, true, false); 
+				mir_sntprintf( temp, SIZEOF(temp), TranslateT("The time interval for the buddy check function is now %u seconds"), m_iTempCheckTime);
+				DoEvent( GC_EVENT_INFORMATION, NULL, m_info.sNick.c_str(), temp, NULL, NULL, NULL, true, false); 
 		}	}
 		return true;
 	}
 	else if (command == _T("/whois")) {
 		if ( one.empty())
 			return false;
-		ManualWhoisCount++;
+		m_manualWhoisCount++;
 		return false;
 	}
 
@@ -477,17 +477,17 @@ BOOL CIrcProto::DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact
 	}
 	
 	else if (command == _T("/list" )) {
-		if ( m_listDlg->GetHwnd() == NULL ) {
+		if ( m_listDlg == NULL ) {
 			m_listDlg = new CListDlg( this );
 			m_listDlg->Show();
 		}
 		SetActiveWindow( m_listDlg->GetHwnd() );
-		int minutes = ( int )NoOfChannels/4000;
-		int minutes2 = ( int )NoOfChannels/9000;
+		int minutes = ( int )m_noOfChannels/4000;
+		int minutes2 = ( int )m_noOfChannels/9000;
 		
 		TCHAR text[256];
 		mir_sntprintf( text, SIZEOF(text), TranslateT("This command is not recommended on a network of this size!\r\nIt will probably cause high CPU usage and/or high bandwidth\r\nusage for around %u to %u minute(s).\r\n\r\nDo you want to continue?"), minutes2, minutes);
-		if ( NoOfChannels < 4000 || ( NoOfChannels >= 4000 && MessageBox( NULL, text, TranslateT("IRC warning") , MB_YESNO|MB_ICONWARNING|MB_DEFBUTTON2) == IDYES)) {
+		if ( m_noOfChannels < 4000 || ( m_noOfChannels >= 4000 && MessageBox( NULL, text, TranslateT("IRC warning") , MB_YESNO|MB_ICONWARNING|MB_DEFBUTTON2) == IDYES)) {
 			ListView_DeleteAllItems( GetDlgItem( m_listDlg->GetHwnd(), IDC_INFO_LISTVIEW ));
 			PostIrcMessage( _T("/lusers" ));
 			return false;
@@ -544,11 +544,11 @@ BOOL CIrcProto::DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact
 		CONTACT user = { (TCHAR*)one.c_str(), NULL, NULL, false, false, false};
 		HANDLE hContact2 = CList_AddContact(&user, false, false);
 		if ( hContact2 ) {
-			if ( DBGetContactSettingByte( hContact, m_szModuleName, "AdvancedMode", 0 ) == 0 )
+			if ( getByte( hContact, "AdvancedMode", 0 ) == 0 )
 				DoUserhostWithReason(1, (_T("S") + one).c_str(), true, one.c_str());
 			else {
 				DBVARIANT dbv1;
-				if ( !DBGetContactSettingTString( hContact, m_szModuleName, "UWildcard", &dbv1 )) {
+				if ( !getTString( hContact, "UWildcard", &dbv1 )) {
 					DoUserhostWithReason(2, (TString(_T("S")) + dbv1.ptszVal).c_str(), true, dbv1.ptszVal);
 					DBFreeVariant(&dbv1);
 				}
@@ -571,10 +571,10 @@ BOOL CIrcProto::DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact
 
 		TCHAR szTemp[1000];
 		unsigned long ulAdr = 0;
-		if ( ManualHost )
-			ulAdr = ConvertIPToInteger( MySpecifiedHostIP );
+		if ( m_manualHost )
+			ulAdr = ConvertIPToInteger( m_mySpecifiedHostIP );
 		else
-			ulAdr = ConvertIPToInteger( IPFromServer ? MyHost : MyLocalHost );
+			ulAdr = ConvertIPToInteger( m_IPFromServer ? m_myHost : m_myLocalHost );
 
 		 // if it is not dcc or if it is dcc and a local ip exist
 		if ( lstrcmpi( two.c_str(), _T("dcc")) != 0 || ulAdr ) {
@@ -587,7 +587,7 @@ BOOL CIrcProto::DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact
 
 		if ( lstrcmpi(two.c_str(), _T("dcc")) != 0 ) {
 			mir_sntprintf( szTemp, SIZEOF(szTemp), TranslateT("CTCP %s request sent to %s"), two.c_str(), one.c_str());
-			DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
+			DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, m_info.sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
 		}
 
 		return true;
@@ -600,10 +600,10 @@ BOOL CIrcProto::DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact
 			TCHAR szTemp[1000];
 			unsigned long ulAdr = 0;
 
-			if ( ManualHost )
-				ulAdr = ConvertIPToInteger( MySpecifiedHostIP );
+			if ( m_manualHost )
+				ulAdr = ConvertIPToInteger( m_mySpecifiedHostIP );
 			else
-				ulAdr = ConvertIPToInteger( IPFromServer ? MyHost : MyLocalHost );
+				ulAdr = ConvertIPToInteger( m_IPFromServer ? m_myHost : m_myLocalHost );
 
 			if ( ulAdr ) {
 				CONTACT user = { (TCHAR*)two.c_str(), NULL, NULL, false, false, true };
@@ -611,11 +611,11 @@ BOOL CIrcProto::DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact
 				if ( hContact ) {
 					TString s;
 					
-					if ( DBGetContactSettingByte( hContact, m_szModuleName, "AdvancedMode", 0 ) == 0 )
+					if ( getByte( hContact, "AdvancedMode", 0 ) == 0 )
 						DoUserhostWithReason( 1, (_T("S") + two).c_str(), true, two.c_str());
 					else {
 						DBVARIANT dbv1;
-						if ( !DBGetContactSettingTString( hContact, m_szModuleName, "UWildcard", &dbv1 )) {
+						if ( !getTString( hContact, "UWildcard", &dbv1 )) {
 							DoUserhostWithReason(2, (TString(_T("S")) + dbv1.ptszVal).c_str(), true, dbv1.ptszVal );
 							DBFreeVariant( &dbv1 );
 						}
@@ -635,7 +635,7 @@ BOOL CIrcProto::DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact
 			}
 			else {
 				mir_sntprintf( szTemp, SIZEOF(szTemp), TranslateT("DCC ERROR: Unable to automatically resolve external IP"));
-				DoEvent(GC_EVENT_INFORMATION, 0, GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
+				DoEvent(GC_EVENT_INFORMATION, 0, m_info.sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
 			}
 			return true;
 		}
@@ -644,10 +644,10 @@ BOOL CIrcProto::DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact
 			TCHAR szTemp[1000];
 
 			unsigned long ulAdr = 0;
-			if ( ManualHost )
-				ulAdr = ConvertIPToInteger( MySpecifiedHostIP );
+			if ( m_manualHost )
+				ulAdr = ConvertIPToInteger( m_mySpecifiedHostIP );
 			else
-				ulAdr = ConvertIPToInteger( IPFromServer ? MyHost : MyLocalHost );
+				ulAdr = ConvertIPToInteger( m_IPFromServer ? m_myHost : m_myLocalHost );
 
 			if ( ulAdr ) {
 				TString contact = two + _T(DCCSTRING);
@@ -675,16 +675,16 @@ BOOL CIrcProto::DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact
 				if ( iPort != 0 ) {
 					PostIrcMessage( _T("/CTCP %s DCC CHAT chat %u %u"), two.c_str(), ulAdr, iPort );
 					mir_sntprintf( szTemp, SIZEOF(szTemp), TranslateT("DCC CHAT request sent to %s"), two.c_str(), one.c_str());
-					DoEvent( GC_EVENT_INFORMATION, 0, GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
+					DoEvent( GC_EVENT_INFORMATION, 0, m_info.sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
 				}
 				else {
 					mir_sntprintf( szTemp, SIZEOF(szTemp), TranslateT("DCC ERROR: Unable to bind port"));
-					DoEvent( GC_EVENT_INFORMATION, 0, GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
+					DoEvent( GC_EVENT_INFORMATION, 0, m_info.sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
 				}
 			}
 			else {
 				mir_sntprintf( szTemp, SIZEOF(szTemp), TranslateT("DCC ERROR: Unable to automatically resolve external IP"));
-				DoEvent( GC_EVENT_INFORMATION, 0, GetInfo().sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
+				DoEvent( GC_EVENT_INFORMATION, 0, m_info.sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
 		}	}
 		return true;
 	}		
@@ -781,12 +781,12 @@ bool CIrcProto::PostIrcMessageWnd( TCHAR* window, HANDLE hContact, const TCHAR* 
 	BYTE bDCC = 0;
 	
 	if ( hContact )
-		bDCC = DBGetContactSettingByte( hContact, m_szModuleName, "DCC", 0 );
+		bDCC = getByte( hContact, "DCC", 0 );
 
 	if ( !IsConnected() && !bDCC || !szBuf || lstrlen(szBuf) < 1 )
 		return 0;
 
-	if ( hContact && !DBGetContactSettingTString( hContact, m_szModuleName, "Nick", &dbv )) {
+	if ( hContact && !getTString( hContact, "Nick", &dbv )) {
 		lstrcpyn( windowname, dbv.ptszVal, 255); 
 		DBFreeVariant(&dbv);
 	}
@@ -853,8 +853,8 @@ bool CIrcProto::PostIrcMessageWnd( TCHAR* window, HANDLE hContact, const TCHAR* 
 		if (  (GetWord( DoThis.c_str(), 0)[0] != '/') ||													// not a command
 			  ( (GetWord( DoThis.c_str(), 0)[0] == '/') && (GetWord( DoThis.c_str(), 0)[1] == '/') ) ||		// or double backslash at the beginning
 			  hContact ) {
-			if ( lstrcmpi(window, SERVERWINDOW) == 0 && !GetInfo().sServerName.empty() )
-				DoThis = (TString)_T("/PRIVMSG ") + GetInfo().sServerName + _T(" ") + DoThis;
+			if ( lstrcmpi(window, SERVERWINDOW) == 0 && !m_info.sServerName.empty() )
+				DoThis = (TString)_T("/PRIVMSG ") + m_info.sServerName + _T(" ") + DoThis;
 			else
 				DoThis = (TString)_T("/PRIVMSG ") + windowname + _T(" ") + DoThis;
 			flag = true;

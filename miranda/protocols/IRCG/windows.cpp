@@ -28,9 +28,10 @@ static WNDPROC OldMgrEditProc;
 
 CMessageBoxDlg::CMessageBoxDlg( CIrcProto* _pro, DCCINFO* _dci ) :
 	CProtoDlgBase<CIrcProto>( _pro, IDD_MESSAGEBOX, NULL ),
-	pdci( _dci )
+	pdci( _dci ),
+	m_Ok( this, IDOK )
 {
-	SetControlHandler( IDOK, &CMessageBoxDlg::OnCommand_Yes );
+	m_Ok.OnClick = Callback( this, &CMessageBoxDlg::OnOk );
 }
 
 void CMessageBoxDlg::OnInitDialog()
@@ -38,7 +39,7 @@ void CMessageBoxDlg::OnInitDialog()
 	SendDlgItemMessage( m_hwnd, IDC_LOGO, STM_SETICON, (LPARAM)(HICON)LoadImage(NULL,IDI_QUESTION,IMAGE_ICON,48, 48,LR_SHARED), 0);
 }
 
-void CMessageBoxDlg::OnCommand_Yes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void CMessageBoxDlg::OnOk( CCtrlButton* )
 {
 	CDccSession* dcc = new CDccSession(m_proto, pdci);
 
@@ -54,42 +55,52 @@ void CMessageBoxDlg::OnCommand_Yes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 // Whois dialog
 
 CWhoisDlg::CWhoisDlg( CIrcProto* _pro ) :
-	CProtoDlgBase<CIrcProto>( _pro, IDD_INFO, NULL )
+	CProtoDlgBase<CIrcProto>( _pro, IDD_INFO, NULL ),
+	m_InfoNick( this, IDC_INFO_NICK ),
+	m_Reply( this, IDC_REPLY ),
+	m_Caption( this, IDC_CAPTION ),
+	m_AwayTime( this, IDC_AWAYTIME ),
+	m_InfoName( this, IDC_INFO_NAME ),
+	m_InfoId( this, IDC_INFO_ID ),
+	m_InfoAddress( this, IDC_INFO_ADDRESS ),
+	m_InfoChannels( this, IDC_INFO_CHANNELS ),
+	m_InfoAuth( this, IDC_INFO_AUTH ),
+	m_InfoServer( this, IDC_INFO_SERVER ),
+	m_InfoAway2( this, IDC_INFO_AWAY2 ),
+	m_InfoOther( this, IDC_INFO_OTHER ),
+	m_Ping( this, IDC_PING ),
+	m_Version( this, IDC_VERSION ),
+	m_Time( this, IDC_TIME ),
+	m_userInfo( this, IDC_USERINFO ),
+	m_Refresh( this, ID_INFO_GO ),
+	m_Query( this, ID_INFO_QUERY )
 {
-	SetControlHandler( ID_INFO_GO, &CWhoisDlg::OnGo );
-	SetControlHandler( ID_INFO_QUERY, &CWhoisDlg::OnQuery );
-	SetControlHandler( IDC_PING, &CWhoisDlg::OnPing );
-	SetControlHandler( IDC_USERINFO, &CWhoisDlg::OnUserInfo );
-	SetControlHandler( IDC_TIME, &CWhoisDlg::OnTime );
-	SetControlHandler( IDC_VERSION, &CWhoisDlg::OnVersion );
+	m_Ping.OnClick = Callback( this, &CWhoisDlg::OnPing );
+	m_Version.OnClick = Callback( this, &CWhoisDlg::OnVersion );
+	m_Time.OnClick = Callback( this, &CWhoisDlg::OnTime );
+	m_userInfo.OnClick = Callback( this, &CWhoisDlg::OnUserInfo );
+	m_Refresh.OnClick = Callback( this, &CWhoisDlg::OnGo );
+	m_Query.OnClick = Callback( this, &CWhoisDlg::OnQuery );
 }
 
 void CWhoisDlg::OnInitDialog()
 {
 	LOGFONT lf;
-	HFONT hFont = ( HFONT )SendDlgItemMessage( m_hwnd, IDC_CAPTION, WM_GETFONT, 0, 0 );
+	HFONT hFont = ( HFONT )m_Caption.SendMsg( WM_GETFONT, 0, 0 );
 	GetObject( hFont, sizeof( lf ), &lf );
 	lf.lfHeight = (int)(lf.lfHeight*1.6);
 	lf.lfWeight = FW_BOLD;
 	hFont = CreateFontIndirect( &lf );
-	SendDlgItemMessage( m_hwnd, IDC_CAPTION, WM_SETFONT, ( WPARAM )hFont, 0 );
+	m_Caption.SendMsg( WM_SETFONT, ( WPARAM )hFont, 0 );
 
-	HFONT hFont2 = ( HFONT )SendDlgItemMessage( m_hwnd, IDC_AWAYTIME, WM_GETFONT, 0, 0 );
+	HFONT hFont2 = ( HFONT )m_AwayTime.SendMsg( WM_GETFONT, 0, 0 );
 	GetObject( hFont2, sizeof( lf ), &lf );
 	//lf.lfHeight = (int)(lf.lfHeight*0.6);
 	lf.lfWeight = FW_BOLD;
 	hFont2 = CreateFontIndirect( &lf );
-	SendDlgItemMessage( m_hwnd, IDC_AWAYTIME, WM_SETFONT, ( WPARAM )hFont2, 0 );
+	m_AwayTime.SendMsg( WM_SETFONT, ( WPARAM )hFont2, 0 );
 
 	SendDlgItemMessage( m_hwnd, IDC_LOGO, STM_SETICON,(LPARAM)(HICON)m_proto->LoadIconEx(IDI_LOGO), 0);
-	SendDlgItemMessage( m_hwnd, IDC_INFO_NAME, EM_SETREADONLY, true, 0);
-	SendDlgItemMessage( m_hwnd, IDC_INFO_ID, EM_SETREADONLY, true, 0);
-	SendDlgItemMessage( m_hwnd, IDC_INFO_ADDRESS, EM_SETREADONLY, true, 0);
-	SendDlgItemMessage( m_hwnd, IDC_INFO_CHANNELS, EM_SETREADONLY, true, 0);
-	SendDlgItemMessage( m_hwnd, IDC_INFO_AUTH, EM_SETREADONLY, true, 0);
-	SendDlgItemMessage( m_hwnd, IDC_INFO_SERVER, EM_SETREADONLY, true, 0);
-	SendDlgItemMessage( m_hwnd, IDC_INFO_AWAY2, EM_SETREADONLY, true, 0);
-	SendDlgItemMessage( m_hwnd, IDC_INFO_OTHER, EM_SETREADONLY, true, 0);
 	SendMessage( m_hwnd, WM_SETICON, ICON_BIG,(LPARAM)m_proto->LoadIconEx(IDI_WHOIS)); // Tell the dialog to use it
 }
 
@@ -123,59 +134,102 @@ BOOL CWhoisDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	return CDlgBase::DlgProc(msg, wParam, lParam);
 }
 
-void CWhoisDlg::OnGo(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void __cdecl CWhoisDlg::OnGo( CCtrlButton* )
 {
 	TCHAR szTemp[255];
-	GetDlgItemText( m_hwnd, IDC_INFO_NICK, szTemp, SIZEOF(szTemp));
-	m_proto->PostIrcMessage( _T("/WHOIS %s %s"), szTemp, szTemp);
+	m_InfoNick.GetText( szTemp, SIZEOF(szTemp));
+	m_proto->PostIrcMessage( _T("/WHOIS %s %s"), szTemp, szTemp );
 }
 
-void CWhoisDlg::OnQuery(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void __cdecl CWhoisDlg::OnQuery( CCtrlButton* )
 {
 	TCHAR szTemp[255];
-	GetDlgItemText( m_hwnd, IDC_INFO_NICK, szTemp, SIZEOF(szTemp));
-	m_proto->PostIrcMessage( _T("/QUERY %s"), szTemp);
+	m_InfoNick.GetText( szTemp, SIZEOF(szTemp));
+	m_proto->PostIrcMessage( _T("/QUERY %s"), szTemp );
 }
 
-void CWhoisDlg::OnPing(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void __cdecl CWhoisDlg::OnPing( CCtrlButton* )
 {
 	TCHAR szTemp[255];
-	GetDlgItemText( m_hwnd, IDC_INFO_NICK, szTemp, SIZEOF(szTemp));
-	SetDlgItemText( m_hwnd, IDC_REPLY, TranslateT("Please wait..."));
+	m_InfoNick.GetText( szTemp, SIZEOF(szTemp));
+	m_Reply.SetText( TranslateT("Please wait..."));
 	m_proto->PostIrcMessage( _T("/PRIVMSG %s \001PING %u\001"), szTemp, time(0));
 }
 
-void CWhoisDlg::OnUserInfo(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void __cdecl CWhoisDlg::OnUserInfo( CCtrlButton* )
 {
 	TCHAR szTemp[255];
-	GetDlgItemText( m_hwnd, IDC_INFO_NICK, szTemp, SIZEOF(szTemp));
-	SetDlgItemText( m_hwnd, IDC_REPLY, TranslateT("Please wait..."));
+	m_InfoNick.GetText( szTemp, SIZEOF(szTemp));
+	m_Reply.SetText( TranslateT("Please wait..."));
 	m_proto->PostIrcMessage( _T("/PRIVMSG %s \001USERINFO\001"), szTemp);
 }
 
-void CWhoisDlg::OnTime(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void __cdecl CWhoisDlg::OnTime( CCtrlButton* )
 {
 	TCHAR szTemp[255];
-	GetDlgItemText( m_hwnd, IDC_INFO_NICK, szTemp, SIZEOF(szTemp));
-	SetDlgItemText( m_hwnd, IDC_REPLY, TranslateT("Please wait..."));
+	m_InfoNick.GetText( szTemp, SIZEOF(szTemp));
+	m_Reply.SetText( TranslateT("Please wait..."));
 	m_proto->PostIrcMessage( _T("/PRIVMSG %s \001TIME\001"), szTemp);
 }
 
-void CWhoisDlg::OnVersion(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void __cdecl CWhoisDlg::OnVersion( CCtrlButton* )
 {
 	TCHAR szTemp[255];
-	GetDlgItemText( m_hwnd, IDC_INFO_NICK, szTemp, SIZEOF(szTemp));
-	SetDlgItemText( m_hwnd, IDC_REPLY, TranslateT("Please wait..."));
+	m_InfoNick.GetText( szTemp, SIZEOF(szTemp));
+	m_Reply.SetText( TranslateT("Please wait..."));
 	m_proto->PostIrcMessage( _T("/PRIVMSG %s \001VERSION\001"), szTemp);
+}
+
+void CWhoisDlg::ShowMessage( const CIrcMessage* pmsg )
+{
+	if ( m_InfoNick.SendMsg( CB_FINDSTRINGEXACT, -1, (LPARAM) pmsg->parameters[1].c_str()) == CB_ERR)	
+		m_InfoNick.SendMsg( CB_ADDSTRING, 0, (LPARAM) pmsg->parameters[1].c_str());	
+	int i = m_InfoNick.SendMsg( CB_FINDSTRINGEXACT, -1, (LPARAM) pmsg->parameters[1].c_str());
+	m_InfoNick.SendMsg( CB_SETCURSEL, i, 0);
+	m_Caption.SetText( pmsg->parameters[1].c_str());
+	m_InfoName.SetText( pmsg->parameters[5].c_str());	
+	m_InfoAddress.SetText( pmsg->parameters[3].c_str());
+	m_InfoId.SetText( pmsg->parameters[2].c_str());
+	m_InfoChannels.SetText( _T("") );
+	m_InfoServer.SetText( _T("") );
+	m_InfoAway2.SetText( _T("") );
+	m_InfoAuth.SetText( _T("") );
+	m_InfoOther.SetText( _T("") );
+	m_Reply.SetText( _T("") );
+	SetWindowText( m_hwnd, TranslateT("User information"));
+	EnableWindow( GetDlgItem( m_hwnd, ID_INFO_QUERY), true );
+	ShowWindow( m_hwnd, SW_SHOW);
+	if ( IsIconic( m_hwnd ))
+		ShowWindow( m_hwnd, SW_SHOWNORMAL );
+	SendMessage( m_hwnd, WM_SETREDRAW, TRUE, 0);
+	InvalidateRect( m_hwnd, NULL, TRUE);
+}
+
+void CWhoisDlg::ShowMessageNoUser( const CIrcMessage* pmsg )
+{
+	m_InfoNick.SetText( pmsg->parameters[2].c_str());
+	m_InfoNick.SendMsg( CB_SETEDITSEL, 0,MAKELPARAM(0,-1));
+	m_Caption.SetText( pmsg->parameters[2].c_str());	
+	m_InfoName.SetText(  _T("") );
+	m_InfoAddress.SetText(  _T("") );
+	m_InfoId.SetText(  _T("") );
+	m_InfoChannels.SetText( _T("") );
+	m_InfoServer.SetText( _T("") );
+	m_InfoAway2.SetText( _T("") );
+	m_InfoAuth.SetText( _T("") );
+	m_Reply.SetText( _T(""));
+	EnableWindow(GetDlgItem(m_hwnd, ID_INFO_QUERY), false);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // 'Change nickname' dialog
 
 CNickDlg::CNickDlg(CIrcProto *_pro) :
-	CProtoDlgBase<CIrcProto>( _pro, IDD_NICK, NULL )
+	CProtoDlgBase<CIrcProto>( _pro, IDD_NICK, NULL ),
+	m_Ok( this, IDOK ),
+	m_Enick( this, IDC_ENICK )
 {
-	SetControlHandler( IDOK, &CNickDlg::OnCommand_Yes );
+	m_Ok.OnClick = Callback( this, &CNickDlg::OnOk );
 }
 
 void CNickDlg::OnInitDialog()
@@ -191,14 +245,13 @@ void CNickDlg::OnInitDialog()
 	SendDlgItemMessage( m_hwnd, IDC_LOGO,STM_SETICON,(LPARAM)(HICON)m_proto->LoadIconEx(IDI_LOGO), 0);
 
 	DBVARIANT dbv;
-	if ( !DBGetContactSettingTString(NULL, m_proto->m_szModuleName, "RecentNicks", &dbv)) {
+	if ( !m_proto->getTString( "RecentNicks", &dbv)) {
 		for (int i = 0; i<10; i++)
 			if ( !GetWord( dbv.ptszVal, i).empty())
 				SendDlgItemMessage( m_hwnd, IDC_ENICK, CB_ADDSTRING, 0, (LPARAM)GetWord(dbv.ptszVal, i).c_str());
 
 		DBFreeVariant(&dbv);
-	}
-}
+}	}
 
 void CNickDlg::OnDestroy()
 {
@@ -221,15 +274,15 @@ BOOL CNickDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	return CDlgBase::DlgProc(msg, wParam, lParam);
 }
 
-void CNickDlg::OnCommand_Yes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void CNickDlg::OnOk( CCtrlButton* )
 {
 	TCHAR szTemp[255];
-	GetDlgItemText( m_hwnd, IDC_ENICK, szTemp, SIZEOF(szTemp));
+	m_Enick.GetText( szTemp, SIZEOF(szTemp));
 	m_proto->PostIrcMessage( _T("/NICK %s"), szTemp);
 
 	TString S = szTemp; 
 	DBVARIANT dbv;
-	if ( !DBGetContactSettingTString( NULL, m_proto->m_szModuleName, "RecentNicks", &dbv )) {
+	if ( !m_proto->getTString( "RecentNicks", &dbv )) {
 		for ( int i = 0; i<10; i++ ) {
 			TString s = GetWord(dbv.ptszVal, i);
 			if ( !s.empty() && s != szTemp) {
@@ -245,9 +298,9 @@ void CNickDlg::OnCommand_Yes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 // 'Change nickname' dialog
 
 CListDlg::CListDlg(CIrcProto *_pro) :
-	CProtoDlgBase<CIrcProto>( _pro, IDD_LIST, NULL )
+	CProtoDlgBase<CIrcProto>( _pro, IDD_LIST, NULL ),
+	m_Join( this, IDC_JOIN )
 {
-	SetControlHandler( IDC_JOIN, &CListDlg::OnJoin );
 }
 
 void CListDlg::OnInitDialog()
@@ -275,8 +328,8 @@ void CListDlg::OnInitDialog()
 		ListView_InsertColumn(GetDlgItem( m_hwnd, IDC_INFO_LISTVIEW),index,&lvC);
 	}
 	
-	SetWindowPos( m_hwnd, HWND_TOP, (screen.right-screen.left)/2- (m_proto->ListSize.x)/2,(screen.bottom-screen.top)/2- (m_proto->ListSize.y)/2, (m_proto->ListSize.x), (m_proto->ListSize.y), 0);
-	SendMessage( m_hwnd, WM_SIZE, SIZE_RESTORED, MAKELPARAM(m_proto->ListSize.x, m_proto->ListSize.y));
+	SetWindowPos( m_hwnd, HWND_TOP, (screen.right-screen.left)/2- (m_proto->m_listSize.x)/2,(screen.bottom-screen.top)/2- (m_proto->m_listSize.y)/2, (m_proto->m_listSize.x), (m_proto->m_listSize.y), 0);
+	SendMessage( m_hwnd, WM_SIZE, SIZE_RESTORED, MAKELPARAM(m_proto->m_listSize.x, m_proto->m_listSize.y));
 	ListView_SetExtendedListViewStyle(GetDlgItem( m_hwnd, IDC_INFO_LISTVIEW), LVS_EX_FULLROWSELECT);
 	SendMessage( m_hwnd,WM_SETICON,ICON_BIG,(LPARAM)m_proto->LoadIconEx(IDI_LIST)); // Tell the dialog to use it
 }
@@ -349,10 +402,10 @@ BOOL CListDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			SetWindowPos(GetDlgItem( m_hwnd, IDC_TEXT), HWND_TOP, 4,  winRect.bottom-28, winRect.right-200, buttRect.bottom- buttRect.top, 0 );
 
 			GetWindowRect( m_hwnd, &winRect);
-			m_proto->ListSize.x = winRect.right-winRect.left;
-			m_proto->ListSize.y = winRect.bottom-winRect.top;
-			m_proto->setDword("SizeOfListBottom", m_proto->ListSize.y);
-			m_proto->setDword("SizeOfListRight", m_proto->ListSize.x);
+			m_proto->m_listSize.x = winRect.right-winRect.left;
+			m_proto->m_listSize.y = winRect.bottom-winRect.top;
+			m_proto->setDword("SizeOfListBottom", m_proto->m_listSize.y);
+			m_proto->setDword("SizeOfListRight", m_proto->m_listSize.x);
 		}
 		return 0;		
 
@@ -381,7 +434,7 @@ BOOL CListDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	return CDlgBase::DlgProc(msg, wParam, lParam);
 }
 
-void CListDlg::OnJoin(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void CListDlg::OnJoin( CCtrlButton* )
 {
 	TCHAR szTemp[255];
 	int i = ListView_GetSelectionMark( GetDlgItem( m_hwnd, IDC_INFO_LISTVIEW));
@@ -393,9 +446,10 @@ void CListDlg::OnJoin(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 // 'Join' dialog
 
 CJoinDlg::CJoinDlg(CIrcProto *_pro) :
-	CProtoDlgBase<CIrcProto>( _pro, IDD_NICK, NULL )
+	CProtoDlgBase<CIrcProto>( _pro, IDD_NICK, NULL ),
+	m_Ok( this, IDOK )
 {
-	SetControlHandler( IDOK, &CJoinDlg::OnCommand_Yes );
+	m_Ok.OnClick = Callback( this, &CJoinDlg::OnOk );
 }
 
 void CJoinDlg::OnInitDialog()
@@ -410,7 +464,7 @@ void CJoinDlg::OnInitDialog()
 	SendDlgItemMessage( m_hwnd, IDC_LOGO,STM_SETICON,(LPARAM)(HICON)m_proto->LoadIconEx(IDI_LOGO), 0);
 
 	DBVARIANT dbv;
-	if ( !DBGetContactSettingTString( NULL, m_proto->m_szModuleName, "RecentChannels", &dbv)) {
+	if ( !m_proto->getTString( "RecentChannels", &dbv)) {
 		for ( int i = 0; i < 20; i++ ) {
 			if ( !GetWord( dbv.ptszVal, i).empty()) {
 				TString S = GetWord(dbv.ptszVal, i);
@@ -441,7 +495,7 @@ BOOL CJoinDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	return CDlgBase::DlgProc(msg, wParam, lParam);
 }
 
-void CJoinDlg::OnCommand_Yes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void CJoinDlg::OnOk( CCtrlButton* )
 {
 	TCHAR szTemp[255];
 	GetDlgItemText( m_hwnd, IDC_ENICK, szTemp, SIZEOF(szTemp));
@@ -455,7 +509,7 @@ void CJoinDlg::OnCommand_Yes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 	TString SL = S;
 	
 	DBVARIANT dbv;
-	if ( !DBGetContactSettingTString( NULL, m_proto->m_szModuleName, "RecentChannels", &dbv)) {
+	if ( !m_proto->getTString( "RecentChannels", &dbv)) {
 		for (int i = 0; i < 20; i++ ) {
 			if ( !GetWord(dbv.ptszVal, i).empty() && GetWord(dbv.ptszVal, i) != SL) {
 				S += _T(" ");
@@ -470,9 +524,10 @@ void CJoinDlg::OnCommand_Yes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 // 'Init' dialog
 
 CInitDlg::CInitDlg(CIrcProto *_pro) :
-	CProtoDlgBase<CIrcProto>( _pro, IDD_INIT, NULL )
+	CProtoDlgBase<CIrcProto>( _pro, IDD_INIT, NULL ),
+	m_Ok( this, IDOK )
 {
-	SetControlHandler( IDOK, &CInitDlg::OnCommand_Yes );
+	m_Ok.OnClick = Callback( this, &CInitDlg::OnOk );
 }
 
 void CInitDlg::OnInitDialog()
@@ -507,7 +562,7 @@ BOOL CInitDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	return CDlgBase::DlgProc(msg, wParam, lParam);
 }
 
-void CInitDlg::OnCommand_Yes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void CInitDlg::OnOk( CCtrlButton* )
 {
 	int i = SendMessage( GetDlgItem( m_hwnd, IDC_EDIT), WM_GETTEXTLENGTH, 0, 0);
 	int j = SendMessage( GetDlgItem( m_hwnd, IDC_EDIT2), WM_GETTEXTLENGTH, 0, 0);
@@ -519,22 +574,24 @@ void CInitDlg::OnCommand_Yes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 		m_proto->setTString("PNick", l);
 		m_proto->setTString("Nick", l);
 		m_proto->setTString("Name", m);
-		lstrcpyn( m_proto->Nick, l, 30 );
-		lstrcpyn( m_proto->Name, m, 200 );
-		if ( lstrlen( m_proto->AlternativeNick ) == 0) {
+		lstrcpyn( m_proto->m_nick, l, 30 );
+		lstrcpyn( m_proto->m_name, m, 200 );
+		if ( lstrlen( m_proto->m_alternativeNick ) == 0) {
 			TCHAR szTemp[30];
 			mir_sntprintf(szTemp, SIZEOF(szTemp), _T("%s%u"), l, rand()%9999);
 			m_proto->setTString("AlernativeNick", szTemp);
-			lstrcpyn(m_proto->AlternativeNick, szTemp, 30);					
+			lstrcpyn(m_proto->m_alternativeNick, szTemp, 30);					
 }	}	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // 'Quick' dialog
 
 CQuickDlg::CQuickDlg(CIrcProto *_pro) :
-	CProtoDlgBase<CIrcProto>( _pro, IDD_QUICKCONN, NULL )
+	CProtoDlgBase<CIrcProto>( _pro, IDD_QUICKCONN, NULL ),
+	m_Ok( this, IDOK )
 {
-	SetControlHandler( IDOK, &CQuickDlg::OnCommand_Yes );
+	m_Ok.OnClick = Callback( this, &CQuickDlg::OnOk );
+
 	SetControlHandler( IDC_SERVERCOMBO, &CQuickDlg::OnServerCombo );
 }
 
@@ -550,26 +607,26 @@ void CQuickDlg::OnInitDialog()
 	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,(WPARAM)hFont,0);
 	SendDlgItemMessage( m_hwnd, IDC_LOGO,STM_SETICON,(LPARAM)(HICON)m_proto->LoadIconEx(IDI_LOGO), 0);
 	
-	char * p1 = m_proto->pszServerFile;
-	char * p2 = m_proto->pszServerFile;
-	if ( m_proto->pszServerFile ) {
+	char * p1 = m_proto->m_pszServerFile;
+	char * p2 = m_proto->m_pszServerFile;
+	if ( m_proto->m_pszServerFile ) {
 		while (strchr(p2, 'n')) {
 			SERVER_INFO* pData = new SERVER_INFO;
 			p1 = strchr(p2, '=');
 			++p1;
 			p2 = strstr(p1, "SERVER:");
-			pData->Name = ( char* )mir_alloc( p2-p1+1 );
-			lstrcpynA( pData->Name, p1, p2-p1+1 );
+			pData->m_name = ( char* )mir_alloc( p2-p1+1 );
+			lstrcpynA( pData->m_name, p1, p2-p1+1 );
 			
 			p1 = strchr(p2, ':');
 			++p1;
-			pData->iSSL = 0;
+			pData->m_iSSL = 0;
 			if ( strstr(p1, "SSL") == p1 ) {
 				p1 +=3;
 				if(*p1 == '1')
-					pData->iSSL = 1;
+					pData->m_iSSL = 1;
 				else if(*p1 == '2')
-					pData->iSSL = 2;
+					pData->m_iSSL = 2;
 				p1++;
 			}
 
@@ -581,19 +638,19 @@ void CQuickDlg::OnInitDialog()
 			p1++;
 			while (*p2 !='G' && *p2 != '-')
 				p2++;
-			pData->PortStart = ( char* )mir_alloc( p2-p1+1 );
-			lstrcpynA( pData->PortStart, p1, p2-p1+1 );
+			pData->m_portStart = ( char* )mir_alloc( p2-p1+1 );
+			lstrcpynA( pData->m_portStart, p1, p2-p1+1 );
 
 			if (*p2 == 'G'){
-				pData->PortEnd = ( char* )mir_alloc( p2-p1+1 );
-				lstrcpyA(pData->PortEnd, pData->PortStart);
+				pData->m_portEnd = ( char* )mir_alloc( p2-p1+1 );
+				lstrcpyA(pData->m_portEnd, pData->m_portStart);
 			} 
 			else {
 				p1 = p2;
 				p1++;
 				p2 = strchr(p1, 'G');
-				pData->PortEnd = ( char* )mir_alloc( p2-p1+1 );
-				lstrcpynA(pData->PortEnd, p1, p2-p1+1);
+				pData->m_portEnd = ( char* )mir_alloc( p2-p1+1 );
+				lstrcpynA(pData->m_portEnd, p1, p2-p1+1);
 			}
 
 			p1 = strchr(p2, ':');
@@ -605,7 +662,7 @@ void CQuickDlg::OnInitDialog()
 				p2 = strchr(p1, '\0');
 			pData->Group = ( char* )mir_alloc( p2-p1+1 );
 			lstrcpynA(pData->Group, p1, p2-p1+1);
-			int iItem = SendDlgItemMessageA( m_hwnd, IDC_SERVERCOMBO, CB_ADDSTRING,0,(LPARAM) pData->Name);
+			int iItem = SendDlgItemMessageA( m_hwnd, IDC_SERVERCOMBO, CB_ADDSTRING,0,(LPARAM) pData->m_name);
 			SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_SETITEMDATA, iItem,(LPARAM) pData);
 		}
 	}
@@ -613,34 +670,34 @@ void CQuickDlg::OnInitDialog()
 	
 	SERVER_INFO* pData = new SERVER_INFO;
 	pData->Group = mir_strdup( "" );
-	pData->Name = mir_strdup( Translate("---- Not listed server ----"));
+	pData->m_name = mir_strdup( Translate("---- Not listed server ----"));
 
 	DBVARIANT dbv;
-	if ( !DBGetContactSettingString( NULL, m_proto->m_szModuleName, "ServerName", &dbv )) {
+	if ( !m_proto->getString( "ServerName", &dbv )) {
 		pData->Address = mir_strdup( dbv.pszVal );
 		DBFreeVariant(&dbv);
 	}
 	else pData->Address = mir_strdup( Translate("Type new server address here"));
 
-	if ( !DBGetContactSettingString( NULL, m_proto->m_szModuleName, "PortStart", &dbv )) {
-		pData->PortStart = mir_strdup( dbv.pszVal );
+	if ( !m_proto->getString( "PortStart", &dbv )) {
+		pData->m_portStart = mir_strdup( dbv.pszVal );
 		DBFreeVariant(&dbv);
 	}
-	else pData->PortStart = mir_strdup( "6667" );
+	else pData->m_portStart = mir_strdup( "6667" );
 
-	if ( !DBGetContactSettingString( NULL, m_proto->m_szModuleName, "PortEnd", &dbv )) {
-		pData->PortEnd = mir_strdup( dbv.pszVal );
+	if ( !m_proto->getString( "PortEnd", &dbv )) {
+		pData->m_portEnd = mir_strdup( dbv.pszVal );
 		DBFreeVariant(&dbv);
 	}
-	else pData->PortEnd = mir_strdup( "6667" );
+	else pData->m_portEnd = mir_strdup( "6667" );
 
-	pData->iSSL = DBGetContactSettingByte( NULL, m_proto->m_szModuleName, "UseSSL", 0 );
+	pData->m_iSSL = m_proto->getByte( "UseSSL", 0 );
 	
-	int iItem = SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_ADDSTRING,0,(LPARAM)  mir_a2t(pData->Name));
+	int iItem = SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_ADDSTRING,0,(LPARAM)  mir_a2t(pData->m_name));
 	SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_SETITEMDATA, iItem,(LPARAM) pData);
 
-	if ( m_proto->QuickComboSelection != -1 ) {
-		SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_SETCURSEL, m_proto->QuickComboSelection,0);
+	if ( m_proto->m_quickComboSelection != -1 ) {
+		SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_SETCURSEL, m_proto->m_quickComboSelection,0);
 		SendMessage( m_hwnd, WM_COMMAND, MAKEWPARAM(IDC_SERVERCOMBO, CBN_SELCHANGE), 0);
 	}
 	else EnableWindow(GetDlgItem( m_hwnd, IDOK), false);
@@ -672,44 +729,44 @@ BOOL CQuickDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	return CDlgBase::DlgProc(msg, wParam, lParam);
 }
 
-void CQuickDlg::OnCommand_Yes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void CQuickDlg::OnOk( CCtrlButton* )
 {
-	GetDlgItemTextA( m_hwnd, IDC_SERVER, m_proto->ServerName, SIZEOF(m_proto->ServerName));				 
-	GetDlgItemTextA( m_hwnd, IDC_PORT,   m_proto->PortStart,  SIZEOF(m_proto->PortStart));
-	GetDlgItemTextA( m_hwnd, IDC_PORT2,  m_proto->PortEnd,    SIZEOF(m_proto->PortEnd));
-	GetDlgItemTextA( m_hwnd, IDC_PASS,   m_proto->Password,   SIZEOF(m_proto->Password));
+	GetDlgItemTextA( m_hwnd, IDC_SERVER, m_proto->m_serverName, SIZEOF(m_proto->m_serverName));				 
+	GetDlgItemTextA( m_hwnd, IDC_PORT,   m_proto->m_portStart,  SIZEOF(m_proto->m_portStart));
+	GetDlgItemTextA( m_hwnd, IDC_PORT2,  m_proto->m_portEnd,    SIZEOF(m_proto->m_portEnd));
+	GetDlgItemTextA( m_hwnd, IDC_PASS,   m_proto->m_password,   SIZEOF(m_proto->m_password));
 	
 	int i = SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_GETCURSEL, 0, 0);
 	SERVER_INFO* pData = ( SERVER_INFO* )SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_GETITEMDATA, i, 0);
 	if ( pData && (int)pData != CB_ERR ) {
-		lstrcpyA( m_proto->Network, pData->Group ); 
+		lstrcpyA( m_proto->m_network, pData->Group ); 
 		if( m_ssleay32 ) {
-			pData->iSSL = 0;
+			pData->m_iSSL = 0;
 			if(IsDlgButtonChecked( m_hwnd, IDC_SSL_ON))
-				pData->iSSL = 2;
+				pData->m_iSSL = 2;
 			if(IsDlgButtonChecked( m_hwnd, IDC_SSL_AUTO))
-				pData->iSSL = 1;
-			m_proto->iSSL = pData->iSSL;
+				pData->m_iSSL = 1;
+			m_proto->m_iSSL = pData->m_iSSL;
 		}
-		else m_proto->iSSL = 0;
+		else m_proto->m_iSSL = 0;
 	}
 	
 	TCHAR windowname[20];
 	GetWindowText( m_hwnd, windowname, 20);
 	if ( lstrcmpi(windowname, _T("Miranda IRC")) == 0 ) {
-		m_proto->ServerComboSelection = SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_GETCURSEL, 0, 0);
-		m_proto->setDword("ServerComboSelection",m_proto->ServerComboSelection);
-		m_proto->setString("ServerName",m_proto->ServerName);
-		m_proto->setString("PortStart",m_proto->PortStart);
-		m_proto->setString("PortEnd",m_proto->PortEnd);
-		CallService( MS_DB_CRYPT_ENCODESTRING, 499, (LPARAM)m_proto->Password);
-		m_proto->setString("Password",m_proto->Password);
-		CallService( MS_DB_CRYPT_DECODESTRING, 499, (LPARAM)m_proto->Password);
-		m_proto->setString("Network",m_proto->Network);
-		m_proto->setByte("UseSSL",m_proto->iSSL);
+		m_proto->m_serverComboSelection = SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_GETCURSEL, 0, 0);
+		m_proto->setDword("ServerComboSelection",m_proto->m_serverComboSelection);
+		m_proto->setString("ServerName",m_proto->m_serverName);
+		m_proto->setString("PortStart",m_proto->m_portStart);
+		m_proto->setString("PortEnd",m_proto->m_portEnd);
+		CallService( MS_DB_CRYPT_ENCODESTRING, 499, (LPARAM)m_proto->m_password);
+		m_proto->setString("Password",m_proto->m_password);
+		CallService( MS_DB_CRYPT_DECODESTRING, 499, (LPARAM)m_proto->m_password);
+		m_proto->setString("Network",m_proto->m_network);
+		m_proto->setByte("UseSSL",m_proto->m_iSSL);
 	}
-	m_proto->QuickComboSelection = SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_GETCURSEL, 0, 0);
-	m_proto->setDword("QuickComboSelection",m_proto->QuickComboSelection);
+	m_proto->m_quickComboSelection = SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_GETCURSEL, 0, 0);
+	m_proto->setDword("QuickComboSelection",m_proto->m_quickComboSelection);
 	m_proto->DisconnectFromServer();
 	m_proto->ConnectToServer();
 }
@@ -721,27 +778,27 @@ void CQuickDlg::OnServerCombo(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 		SERVER_INFO* pData = ( SERVER_INFO* )SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_GETITEMDATA, i, 0);
 		if ( i != CB_ERR ) {
 			SetDlgItemTextA( m_hwnd,IDC_SERVER, pData->Address );
-			SetDlgItemTextA( m_hwnd,IDC_PORT,   pData->PortStart );
-			SetDlgItemTextA( m_hwnd,IDC_PORT2,  pData->PortEnd );
+			SetDlgItemTextA( m_hwnd,IDC_PORT,   pData->m_portStart );
+			SetDlgItemTextA( m_hwnd,IDC_PORT2,  pData->m_portEnd );
 			SetDlgItemTextA( m_hwnd,IDC_PASS,   "" );
 			if ( m_ssleay32 ) {
-				if ( pData->iSSL == 0 ) {
+				if ( pData->m_iSSL == 0 ) {
 					CheckDlgButton( m_hwnd, IDC_SSL_OFF,  BST_CHECKED );
 					CheckDlgButton( m_hwnd, IDC_SSL_AUTO, BST_UNCHECKED );
 					CheckDlgButton( m_hwnd, IDC_SSL_ON,   BST_UNCHECKED );
 				}
-				if ( pData->iSSL == 1 ) {
+				if ( pData->m_iSSL == 1 ) {
 					CheckDlgButton( m_hwnd, IDC_SSL_AUTO, BST_CHECKED );
 					CheckDlgButton( m_hwnd, IDC_SSL_OFF,  BST_UNCHECKED );
 					CheckDlgButton( m_hwnd, IDC_SSL_ON,   BST_UNCHECKED );
 				}
-				if ( pData->iSSL == 2 ) {
+				if ( pData->m_iSSL == 2 ) {
 					CheckDlgButton( m_hwnd, IDC_SSL_ON,   BST_CHECKED );
 					CheckDlgButton( m_hwnd, IDC_SSL_OFF,  BST_UNCHECKED );
 					CheckDlgButton( m_hwnd, IDC_SSL_AUTO, BST_UNCHECKED );
 			}	}
 
-			if ( !strcmp( pData->Name, Translate("---- Not listed server ----" ))) {
+			if ( !strcmp( pData->m_name, Translate("---- Not listed server ----" ))) {
 				SendDlgItemMessage( m_hwnd, IDC_SERVER, EM_SETREADONLY, false, 0);
 				SendDlgItemMessage( m_hwnd, IDC_PORT,   EM_SETREADONLY, false, 0);
 				SendDlgItemMessage( m_hwnd, IDC_PORT2,  EM_SETREADONLY, false, 0);
@@ -765,9 +822,10 @@ void CQuickDlg::OnServerCombo(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 // 'Question' dialog
 
 CQuestionDlg::CQuestionDlg(CIrcProto *_pro, HWND parent ) :
-	CProtoDlgBase<CIrcProto>( _pro, IDD_QUESTION, parent )
+	CProtoDlgBase<CIrcProto>( _pro, IDD_QUESTION, parent ),
+	m_Ok( this, IDOK )
 {
-	SetControlHandler( IDOK, &CQuestionDlg::OnCommand_Yes );
+	m_Ok.OnClick = Callback( this, &CQuestionDlg::OnOk );
 }
 
 void CQuestionDlg::OnInitDialog()
@@ -814,7 +872,7 @@ BOOL CQuestionDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	return CDlgBase::DlgProc(msg, wParam, lParam);
 }
 
-void CQuestionDlg::OnCommand_Yes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void CQuestionDlg::OnOk( CCtrlButton* )
 {
 	int i = GetWindowTextLength( GetDlgItem( m_hwnd, IDC_EDIT ));
 	if ( i > 0 ) {
@@ -864,27 +922,41 @@ void CQuestionDlg::OnCommand_Yes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 // 'Channel Manager' dialog
 
 CManagerDlg::CManagerDlg(CIrcProto *_pro) :
-	CProtoDlgBase<CIrcProto>( _pro, IDD_CHANMANAGER, NULL )
+	CProtoDlgBase<CIrcProto>( _pro, IDD_CHANMANAGER, NULL ),
+	m_add( this, IDC_ADD ),
+	m_edit( this, IDC_EDIT),
+	m_remove( this, IDC_REMOVE ),
+	m_check1( this, IDC_CHECK1 ),
+	m_check2( this, IDC_CHECK2 ),
+	m_check3( this, IDC_CHECK3 ),
+	m_check4( this, IDC_CHECK4 ),
+	m_check5( this, IDC_CHECK5 ),
+	m_check6( this, IDC_CHECK6 ),
+	m_check7( this, IDC_CHECK7 ),
+	m_check8( this, IDC_CHECK8 ),
+	m_check9( this, IDC_CHECK9 )
 {
-	SetControlHandler( IDC_ADD, &CManagerDlg::OnAdd );
+	m_add.OnClick = Callback( this, &CManagerDlg::OnAdd );
+	m_edit.OnClick = Callback( this, &CManagerDlg::OnEdit );
+	m_remove.OnClick = Callback( this, &CManagerDlg::OnRemove );
+
+	m_check1.OnChange = Callback( this, &CManagerDlg::OnCheck );
+	m_check2.OnChange = Callback( this, &CManagerDlg::OnCheck );
+	m_check3.OnChange = Callback( this, &CManagerDlg::OnCheck );
+	m_check4.OnChange = Callback( this, &CManagerDlg::OnCheck );
+	m_check5.OnChange = Callback( this, &CManagerDlg::OnCheck5 );
+	m_check6.OnChange = Callback( this, &CManagerDlg::OnCheck6 );
+	m_check7.OnChange = Callback( this, &CManagerDlg::OnCheck );
+	m_check8.OnChange = Callback( this, &CManagerDlg::OnCheck );
+	m_check9.OnChange = Callback( this, &CManagerDlg::OnCheck );
+
 	SetControlHandler( IDC_APPLYTOPIC, &CManagerDlg::OnApplyTopic );
-	SetControlHandler( IDC_CHECK1, &CManagerDlg::OnCheck );
-	SetControlHandler( IDC_CHECK2, &CManagerDlg::OnCheck );
-	SetControlHandler( IDC_CHECK3, &CManagerDlg::OnCheck );
-	SetControlHandler( IDC_CHECK4, &CManagerDlg::OnCheck );
-	SetControlHandler( IDC_CHECK5, &CManagerDlg::OnCheck5 );
-	SetControlHandler( IDC_CHECK6, &CManagerDlg::OnCheck6 );
-	SetControlHandler( IDC_CHECK7, &CManagerDlg::OnCheck );
-	SetControlHandler( IDC_CHECK8, &CManagerDlg::OnCheck );
-	SetControlHandler( IDC_CHECK9, &CManagerDlg::OnCheck );
-	SetControlHandler( IDC_EDIT, &CManagerDlg::OnEdit );
 	SetControlHandler( IDC_KEY, &CManagerDlg::OnChangeModes );
 	SetControlHandler( IDC_LIMIT, &CManagerDlg::OnChangeModes );
 	SetControlHandler( IDC_LIST, &CManagerDlg::OnList );
 	SetControlHandler( IDC_RADIO1, &CManagerDlg::OnRadio );
 	SetControlHandler( IDC_RADIO2, &CManagerDlg::OnRadio );
 	SetControlHandler( IDC_RADIO3, &CManagerDlg::OnRadio );
-	SetControlHandler( IDC_REMOVE, &CManagerDlg::OnRemove );
 	SetControlHandler( IDC_TOPIC, &CManagerDlg::OnChangeTopic );
 }
 
@@ -950,24 +1022,17 @@ void CManagerDlg::OnInitDialog()
 
 	SendDlgItemMessage( m_hwnd,IDC_LIST,LB_SETHORIZONTALEXTENT,750,NULL);
 	CheckDlgButton( m_hwnd, IDC_RADIO1, BST_CHECKED);
-	if ( !strchr(m_proto->sChannelModes.c_str(), 't'))
-		EnableWindow(GetDlgItem( m_hwnd, IDC_CHECK1), false);
-	if ( !strchr(m_proto->sChannelModes.c_str(), 'n'))
-		EnableWindow(GetDlgItem( m_hwnd, IDC_CHECK2), false);
-	if ( !strchr(m_proto->sChannelModes.c_str(), 'i'))
-		EnableWindow(GetDlgItem( m_hwnd, IDC_CHECK3), false);
-	if ( !strchr(m_proto->sChannelModes.c_str(), 'm'))
-		EnableWindow(GetDlgItem( m_hwnd, IDC_CHECK4), false);
-	if ( !strchr(m_proto->sChannelModes.c_str(), 'k'))
-		EnableWindow(GetDlgItem( m_hwnd, IDC_CHECK5), false);
-	if ( !strchr(m_proto->sChannelModes.c_str(), 'l'))
-		EnableWindow(GetDlgItem( m_hwnd, IDC_CHECK6), false);
-	if ( !strchr(m_proto->sChannelModes.c_str(), 'p'))
-		EnableWindow(GetDlgItem( m_hwnd, IDC_CHECK7), false);
-	if ( !strchr(m_proto->sChannelModes.c_str(), 's'))
-		EnableWindow(GetDlgItem( m_hwnd, IDC_CHECK8), false);
-	if ( !strchr(m_proto->sChannelModes.c_str(), 'c'))
-		EnableWindow(GetDlgItem( m_hwnd, IDC_CHECK9), false);
+
+	const char* modes = m_proto->sChannelModes.c_str();
+	if ( !strchr( modes, 't')) m_check1.Disable();
+	if ( !strchr( modes, 'n')) m_check2.Disable();
+	if ( !strchr( modes, 'i')) m_check3.Disable();
+	if ( !strchr( modes, 'm')) m_check4.Disable();
+	if ( !strchr( modes, 'k')) m_check5.Disable();
+	if ( !strchr( modes, 'l')) m_check6.Disable();
+	if ( !strchr( modes, 'p')) m_check7.Disable();
+	if ( !strchr( modes, 's')) m_check8.Disable();
+	if ( !strchr( modes, 'c')) m_check9.Disable();
 }
 
 void CManagerDlg::OnClose()
@@ -1000,7 +1065,7 @@ void CManagerDlg::OnClose()
 	}	}
 
 	if ( !S.empty() && m_proto->IsConnected() ) {
-		mir_sntprintf( temp, SIZEOF(temp), _T("Topic%s%s"), window, m_proto->GetInfo().sNetwork.c_str());
+		mir_sntprintf( temp, SIZEOF(temp), _T("Topic%s%s"), window, m_proto->m_info.sNetwork.c_str());
 		#if defined( _UNICODE )
 			char* p = mir_t2a(temp);
 			m_proto->setTString(p, S.c_str());
@@ -1020,42 +1085,7 @@ void CManagerDlg::OnDestroy()
 	m_proto->m_managerDlg = NULL;
 }
 
-void CManagerDlg::OnRemove(HWND hwndCtrl, WORD idCtrl, WORD idCode)
-{
-	int i = SendDlgItemMessage( m_hwnd, IDC_LIST, LB_GETCURSEL, 0, 0);
-	if ( i != LB_ERR ) {
-		EnableWindow(GetDlgItem( m_hwnd, IDC_REMOVE), false);
-		EnableWindow(GetDlgItem( m_hwnd, IDC_EDIT), false);
-		EnableWindow(GetDlgItem( m_hwnd, IDC_ADD), false);
-		TCHAR* m = new TCHAR[ SendDlgItemMessage( m_hwnd, IDC_LIST, LB_GETTEXTLEN, i, 0)+2 ];
-		SendDlgItemMessage( m_hwnd, IDC_LIST, LB_GETTEXT, i, (LPARAM)m);
-		TString user = GetWord(m, 0);
-		delete[]m;
-		TCHAR temp[100];
-		TCHAR mode[3];
-		if ( IsDlgButtonChecked( m_hwnd, IDC_RADIO1 )) {
-			lstrcpy(mode, _T("-b"));
-			lstrcpyn(temp, TranslateT( "Remove ban?" ), 100 );
-		}
-		if ( IsDlgButtonChecked( m_hwnd, IDC_RADIO2 )) {
-			lstrcpy(mode, _T("-I"));
-			lstrcpyn(temp, TranslateT( "Remove invite?" ), 100 );
-		}
-		if ( IsDlgButtonChecked( m_hwnd, IDC_RADIO3 )) {
-			lstrcpy(mode, _T("-e"));
-			lstrcpyn(temp, TranslateT( "Remove exception?" ), 100 );
-		}
-		
-		TCHAR window[256];
-		GetDlgItemText( m_hwnd, IDC_CAPTION, window, SIZEOF(window));
-		if ( MessageBox( m_hwnd, user.c_str(), temp, MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2 ) == IDYES ) {
-			m_proto->PostIrcMessage( _T("/MODE %s %s %s"), window, mode, user.c_str());
-			SendMessage( m_hwnd, IRC_QUESTIONAPPLY, 0, 0);
-		}
-		SendMessage( m_hwnd, IRC_QUESTIONCLOSE, 0, 0);
-}	}
-
-void CManagerDlg::OnAdd(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void __cdecl CManagerDlg::OnAdd( CCtrlButton* )
 {
 	TCHAR temp[100];
 	TCHAR mode[3];
@@ -1090,7 +1120,7 @@ void CManagerDlg::OnAdd(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 	PostMessage(addban_hWnd, IRC_ACTIVATE, 0, 0);
 }
 
-void CManagerDlg::OnEdit(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void __cdecl CManagerDlg::OnEdit( CCtrlButton* )
 {
 	if ( !IsDlgButtonChecked( m_hwnd, IDC_NOTOP )) {
 		int i = SendDlgItemMessage( m_hwnd, IDC_LIST, LB_GETCURSEL, 0, 0);
@@ -1133,6 +1163,41 @@ void CManagerDlg::OnEdit(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 			PostMessage(addban_hWnd, IRC_ACTIVATE, 0, 0);
 }	}	}
 
+void __cdecl CManagerDlg::OnRemove( CCtrlButton* )
+{
+	int i = SendDlgItemMessage( m_hwnd, IDC_LIST, LB_GETCURSEL, 0, 0);
+	if ( i != LB_ERR ) {
+		EnableWindow(GetDlgItem( m_hwnd, IDC_REMOVE), false);
+		EnableWindow(GetDlgItem( m_hwnd, IDC_EDIT), false);
+		EnableWindow(GetDlgItem( m_hwnd, IDC_ADD), false);
+		TCHAR* m = new TCHAR[ SendDlgItemMessage( m_hwnd, IDC_LIST, LB_GETTEXTLEN, i, 0)+2 ];
+		SendDlgItemMessage( m_hwnd, IDC_LIST, LB_GETTEXT, i, (LPARAM)m);
+		TString user = GetWord(m, 0);
+		delete[]m;
+		TCHAR temp[100];
+		TCHAR mode[3];
+		if ( IsDlgButtonChecked( m_hwnd, IDC_RADIO1 )) {
+			lstrcpy(mode, _T("-b"));
+			lstrcpyn(temp, TranslateT( "Remove ban?" ), 100 );
+		}
+		if ( IsDlgButtonChecked( m_hwnd, IDC_RADIO2 )) {
+			lstrcpy(mode, _T("-I"));
+			lstrcpyn(temp, TranslateT( "Remove invite?" ), 100 );
+		}
+		if ( IsDlgButtonChecked( m_hwnd, IDC_RADIO3 )) {
+			lstrcpy(mode, _T("-e"));
+			lstrcpyn(temp, TranslateT( "Remove exception?" ), 100 );
+		}
+		
+		TCHAR window[256];
+		GetDlgItemText( m_hwnd, IDC_CAPTION, window, SIZEOF(window));
+		if ( MessageBox( m_hwnd, user.c_str(), temp, MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2 ) == IDYES ) {
+			m_proto->PostIrcMessage( _T("/MODE %s %s %s"), window, mode, user.c_str());
+			SendMessage( m_hwnd, IRC_QUESTIONAPPLY, 0, 0);
+		}
+		SendMessage( m_hwnd, IRC_QUESTIONCLOSE, 0, 0);
+}	}
+
 void CManagerDlg::OnList(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 {
 	if ( idCode == LBN_SELCHANGE ) {
@@ -1168,58 +1233,58 @@ void CManagerDlg::OnApplyModes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 		TString appendixadd = _T("");
 		TString appendixremove = _T("");
 		if ( wi->pszMode && _tcschr( wi->pszMode, 't' )) {
-			if ( !IsDlgButtonChecked( m_hwnd, IDC_CHECK1 ))
+			if ( !m_check1.GetState())
 				lstrcat( toremove, _T("t"));
 		}
-		else if ( IsDlgButtonChecked( m_hwnd, IDC_CHECK1 ))
+		else if ( m_check1.GetState())
 			lstrcat( toadd, _T("t"));
 
 		if ( wi->pszMode && _tcschr( wi->pszMode, 'n' )) {
-			if( ! IsDlgButtonChecked( m_hwnd, IDC_CHECK2 ))
+			if( !m_check2.GetState())
 				lstrcat( toremove, _T("n"));
 		}
-		else if ( IsDlgButtonChecked( m_hwnd, IDC_CHECK2 ))
+		else if ( m_check2.GetState())
 			lstrcat( toadd, _T("n"));
 
 		if ( wi->pszMode && _tcschr( wi->pszMode, 'i' )) {
-			if ( !IsDlgButtonChecked( m_hwnd, IDC_CHECK3 ))
+			if ( !m_check3.GetState())
 				lstrcat( toremove, _T("i"));
 		}
-		else if ( IsDlgButtonChecked( m_hwnd, IDC_CHECK3 ))
+		else if ( m_check3.GetState())
 			lstrcat( toadd, _T("i"));
 
 		if ( wi->pszMode && _tcschr( wi->pszMode, 'm' )) {
-			if( !IsDlgButtonChecked( m_hwnd, IDC_CHECK4 ))
+			if( !m_check4.GetState())
 				lstrcat( toremove, _T("m"));
 		}
-		else if ( IsDlgButtonChecked( m_hwnd, IDC_CHECK4 ))
+		else if ( m_check4.GetState())
 			lstrcat( toadd, _T("m"));
 
 		if ( wi->pszMode && _tcschr( wi->pszMode, 'p' )) {
-			if ( !IsDlgButtonChecked( m_hwnd, IDC_CHECK7 ))
+			if ( !m_check7.GetState())
 				lstrcat( toremove, _T("p"));
 		}
-		else if ( IsDlgButtonChecked( m_hwnd, IDC_CHECK7 ))
+		else if ( m_check7.GetState())
 			lstrcat( toadd, _T("p"));
 
 		if ( wi->pszMode && _tcschr( wi->pszMode, 's' )) {
-			if ( !IsDlgButtonChecked( m_hwnd, IDC_CHECK8 ))
+			if ( !m_check8.GetState())
 				lstrcat( toremove, _T("s"));
 		}
-		else if ( IsDlgButtonChecked( m_hwnd, IDC_CHECK8 ))
+		else if ( m_check8.GetState())
 			lstrcat( toadd, _T("s"));
 
 		if ( wi->pszMode && _tcschr( wi->pszMode, 'c' )) {
-			if ( !IsDlgButtonChecked( m_hwnd, IDC_CHECK9 ))
+			if ( !m_check9.GetState())
 				lstrcat( toremove, _T("c"));
 		}
-		else if ( IsDlgButtonChecked( m_hwnd, IDC_CHECK9 ))
+		else if ( m_check9.GetState())
 			lstrcat( toadd, _T("c"));
 
 		TString Key = _T("");
 		TString Limit = _T("");
 		if ( wi->pszMode && wi->pszPassword && _tcschr( wi->pszMode, 'k' )) {
-			if ( !IsDlgButtonChecked( m_hwnd, IDC_CHECK5 )) {
+			if ( !m_check5.GetState()) {
 				lstrcat( toremove, _T("k"));
 				appendixremove += _T(" ");
 				appendixremove += wi->pszPassword;
@@ -1237,7 +1302,7 @@ void CManagerDlg::OnApplyModes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 					appendixremove += wi->pszPassword;
 			}	}
 		}
-		else if ( IsDlgButtonChecked( m_hwnd, IDC_CHECK5) && GetWindowTextLength( GetDlgItem( m_hwnd, IDC_KEY ))) {
+		else if ( m_check5.GetState() && GetWindowTextLength( GetDlgItem( m_hwnd, IDC_KEY ))) {
 			lstrcat( toadd, _T("k"));
 			appendixadd += _T(" ");
 			
@@ -1247,7 +1312,7 @@ void CManagerDlg::OnApplyModes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 		}
 
 		if ( _tcschr( wi->pszMode, 'l' )) {
-			if ( !IsDlgButtonChecked( m_hwnd, IDC_CHECK6 ))
+			if ( !m_check6.GetState())
 				lstrcat( toremove, _T("l"));
 			else if ( GetWindowTextLength( GetDlgItem( m_hwnd, IDC_LIMIT ))) {
 				TCHAR temp[15];
@@ -1258,7 +1323,7 @@ void CManagerDlg::OnApplyModes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 					appendixadd += temp;
 			}	}
 		}
-		else if ( IsDlgButtonChecked( m_hwnd, IDC_CHECK6 ) && GetWindowTextLength( GetDlgItem( m_hwnd, IDC_LIMIT ))) {
+		else if ( m_check6.GetState() && GetWindowTextLength( GetDlgItem( m_hwnd, IDC_LIMIT ))) {
 			lstrcat( toadd, _T("l"));
 			appendixadd += _T(" ");
 			
@@ -1300,28 +1365,27 @@ void CManagerDlg::OnApplyTopic(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 	EnableWindow(GetDlgItem( m_hwnd, IDC_APPLYTOPIC), false);
 }
 
-void CManagerDlg::OnCheck5(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void __cdecl CManagerDlg::OnCheck( CCtrlData* )
+{
+	EnableWindow(GetDlgItem( m_hwnd, IDC_APPLYMODES), true);				
+}
+
+void __cdecl CManagerDlg::OnCheck5( CCtrlData* )
 {
 	EnableWindow(GetDlgItem( m_hwnd, IDC_KEY), IsDlgButtonChecked( m_hwnd, IDC_CHECK5) == BST_CHECKED);				
 	EnableWindow(GetDlgItem( m_hwnd, IDC_APPLYMODES), true);
 }
 
-void CManagerDlg::OnCheck6(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void __cdecl CManagerDlg::OnCheck6( CCtrlData* )
 {
 	EnableWindow(GetDlgItem( m_hwnd, IDC_LIMIT), IsDlgButtonChecked( m_hwnd, IDC_CHECK6) == BST_CHECKED );				
-	EnableWindow(GetDlgItem( m_hwnd, IDC_APPLYMODES), true);
+	EnableWindow(GetDlgItem( m_hwnd, IDC_APPLYTOPIC), true);
 }
 
 void CManagerDlg::OnRadio(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 {
 	if ( idCode == BN_CLICKED )
 		SendMessage( m_hwnd, IRC_QUESTIONAPPLY, 0, 0);
-}
-
-void CManagerDlg::OnCheck(HWND hwndCtrl, WORD idCtrl, WORD idCode)
-{
-	if ( idCode == BN_CLICKED )
-		EnableWindow(GetDlgItem( m_hwnd, IDC_APPLYMODES), true);				
 }
 
 BOOL CManagerDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
@@ -1375,7 +1439,7 @@ BOOL CManagerDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			if ( wi ) {
 				if ( m_proto->IsConnected() ) {
 					TCHAR temp[1000];
-					mir_sntprintf(temp, SIZEOF(temp), _T("Topic%s%s"), window, m_proto->GetInfo().sNetwork.c_str());
+					mir_sntprintf(temp, SIZEOF(temp), _T("Topic%s%s"), window, m_proto->m_info.sNetwork.c_str());
 
 					#if defined( _UNICODE )
 						char* p = mir_t2a(temp);
@@ -1383,7 +1447,7 @@ BOOL CManagerDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 						char* p = temp;
 					#endif
 					DBVARIANT dbv;
-  					if ( !DBGetContactSettingTString(NULL, m_proto->m_szModuleName, p, &dbv )) {
+  					if ( !m_proto->getTString( p, &dbv )) {
 						for ( int i = 0; i<5; i++ ) {
 							if ( !GetWord(dbv.ptszVal, i).empty()) {
 								TString S = GetWord(dbv.ptszVal, i);
@@ -1413,27 +1477,27 @@ BOOL CManagerDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 						if (*p1 == '-')
 							add = false;
 						if (*p1 == 't')
-							CheckDlgButton( m_hwnd, IDC_CHECK1, add?(BST_CHECKED) : (BST_UNCHECKED));
+							m_check1.SetState( add );
 						if (*p1 == 'n')
-							CheckDlgButton( m_hwnd, IDC_CHECK2, add?(BST_CHECKED) : (BST_UNCHECKED));
+							m_check2.SetState( add );
 						if (*p1 == 'i')
-							CheckDlgButton( m_hwnd, IDC_CHECK3, add?(BST_CHECKED) : (BST_UNCHECKED));
+							m_check3.SetState( add );
 						if (*p1 == 'm')
-							CheckDlgButton( m_hwnd, IDC_CHECK4, add?(BST_CHECKED) : (BST_UNCHECKED));
+							m_check4.SetState( add );
 						if (*p1 == 'p')
-							CheckDlgButton( m_hwnd, IDC_CHECK7, add?(BST_CHECKED) : (BST_UNCHECKED));
+							m_check7.SetState( add );
 						if (*p1 == 's')
-							CheckDlgButton( m_hwnd, IDC_CHECK8, add?(BST_CHECKED) : (BST_UNCHECKED));
+							m_check8.SetState( add );
 						if (*p1 == 'c')
-							CheckDlgButton( m_hwnd, IDC_CHECK9, add?(BST_CHECKED) : (BST_UNCHECKED));
+							m_check9.SetState( add );
 						if (*p1 == 'k' && add) {
-							CheckDlgButton( m_hwnd, IDC_CHECK5, add?(BST_CHECKED) : (BST_UNCHECKED));
+							m_check5.SetState( add );
 							EnableWindow(GetDlgItem( m_hwnd, IDC_KEY), add?(true) : (false));
 							if(wi->pszPassword)
 								SetDlgItemText( m_hwnd, IDC_KEY, wi->pszPassword);
 						}
 						if (*p1 == 'l' && add) {
-							CheckDlgButton( m_hwnd, IDC_CHECK6, add?(BST_CHECKED) : (BST_UNCHECKED));
+							m_check6.SetState( add );
 							EnableWindow(GetDlgItem( m_hwnd, IDC_LIMIT), add?(true) : (false));
 							if(wi->pszLimit)
 								SetDlgItemText( m_hwnd, IDC_LIMIT, wi->pszLimit);
@@ -1442,17 +1506,17 @@ BOOL CManagerDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 						if (wParam == 0 ) {
 							EnableWindow(GetDlgItem( m_hwnd, IDC_LIMIT),  (false));
 							EnableWindow(GetDlgItem( m_hwnd, IDC_KEY),    (false));
-							EnableWindow(GetDlgItem( m_hwnd, IDC_CHECK1), (false));
-							EnableWindow(GetDlgItem( m_hwnd, IDC_CHECK2), (false));
-							EnableWindow(GetDlgItem( m_hwnd, IDC_CHECK3), (false));
-							EnableWindow(GetDlgItem( m_hwnd, IDC_CHECK4), (false));
-							EnableWindow(GetDlgItem( m_hwnd, IDC_CHECK5), (false));
-							EnableWindow(GetDlgItem( m_hwnd, IDC_CHECK6), (false));
-							EnableWindow(GetDlgItem( m_hwnd, IDC_CHECK7), (false));
-							EnableWindow(GetDlgItem( m_hwnd, IDC_CHECK8), (false));
-							EnableWindow(GetDlgItem( m_hwnd, IDC_CHECK9), (false));
+							m_check1.Disable();
+							m_check2.Disable();
+							m_check3.Disable();
+							m_check4.Disable();
+							m_check5.Disable();
+							m_check6.Disable();
+							m_check7.Disable();
+							m_check8.Disable();
+							m_check9.Disable();
 							EnableWindow(GetDlgItem( m_hwnd, IDC_ADD), (false));
-							if(IsDlgButtonChecked( m_hwnd, IDC_CHECK1))
+							if ( m_check1.GetState())
 								EnableWindow(GetDlgItem( m_hwnd, IDC_TOPIC), (false));
 							CheckDlgButton( m_hwnd, IDC_NOTOP, BST_CHECKED);
 						}

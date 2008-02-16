@@ -128,7 +128,7 @@ struct CIrcSessionInfo
 	TString sNetwork;
 	bool bIdentServer;
 	bool bNickFlag;
-	int iSSL;
+	int m_iSSL;
 	unsigned int iIdentServerPort;
 	unsigned int iPort;
 
@@ -160,88 +160,6 @@ public:
 };
 
 //#endif
-
-////////////////////////////////////////////////////////////////////
-typedef struct			
-{
-	void * pthis;
-	CIrcMessage * pmsg;
-} XTHREADS;
-
-class CIrcMonitor 
-{
-public :
-	typedef bool (CIrcMonitor::*PfnIrcMessageHandler)(const CIrcMessage* pmsg);
-	struct LessString
-	{
-		bool operator()(const TCHAR* s1, const TCHAR* s2) const
-			{ return _tcsicmp(s1, s2) < 0; }
-	};
-	typedef std::map<const TCHAR*, PfnIrcMessageHandler, LessString> HandlersMap;
-	struct IrcCommandsMapsListEntry
-	{
-		HandlersMap* pHandlersMap;
-		IrcCommandsMapsListEntry* pBaseHandlersMap;
-	};
-
-	CIrcMonitor(CIrcProto& session);
-	virtual ~CIrcMonitor();
-	static IrcCommandsMapsListEntry m_handlersMapsListEntry;
-	static HandlersMap m_handlers;
-
-	PfnIrcMessageHandler FindMethod(const TCHAR* lpszName);
-	PfnIrcMessageHandler FindMethod(IrcCommandsMapsListEntry* pMapsList, const TCHAR* lpszName);
-
-	static void __stdcall OnCrossThreadsMessage(void * p);
-	virtual void OnIrcMessage(const CIrcMessage* pmsg);
-	CIrcProto& m_proto;
-
-	virtual IrcCommandsMapsListEntry* GetIrcCommandsMap() 
-				{ return &m_handlersMapsListEntry; }
-
-	virtual void OnIrcAll(const CIrcMessage* pmsg) {}
-	virtual void OnIrcDefault(const CIrcMessage* pmsg) {}
-	virtual void OnIrcDisconnected() {}
-};
-
-// define an IRC command-to-member map.
-// put that macro inside the class definition (.H file)
-#define	DEFINE_IRC_MAP()	\
-protected :	\
-	virtual IrcCommandsMapsListEntry* GetIrcCommandsMap()	\
-				{ return &m_handlersMapsListEntry; }	\
-	static CIrcMonitor::IrcCommandsMapsListEntry m_handlersMapsListEntry;	\
-	static CIrcMonitor::HandlersMap m_handlers;	\
-private :	\
-protected :
-
-// IRC command-to-member map's declaration. 
-// add this macro to the class's .CPP file
-#define	DECLARE_IRC_MAP(this_class, base_class)	\
-	CIrcMonitor::HandlersMap this_class##::m_handlers;	\
-	CIrcMonitor::IrcCommandsMapsListEntry this_class##::m_handlersMapsListEntry	\
-		= { &this_class##::m_handlers, &base_class##::m_handlersMapsListEntry };
-
-// map actual member functions to their associated IRC command.
-// put any number of this macro in the class's constructor.
-#define	IRC_MAP_ENTRY(class_name, name, member)	\
-	m_handlers[_T(name)] = (PfnIrcMessageHandler)&class_name##::member;
-
-////////////////////////////////////////////////////////////////////
-
-class CIrcDefaultMonitor : public CIrcMonitor
-{
-public :
-	CIrcDefaultMonitor(CIrcProto& session);
-
-	DEFINE_IRC_MAP()
-
-protected :
-	bool OnIrc_NICK(const CIrcMessage* pmsg);
-	bool OnIrc_PING(const CIrcMessage* pmsg);
-	bool OnIrc_YOURHOST(const CIrcMessage* pmsg);
-	bool OnIrc_WELCOME(const CIrcMessage* pmsg);
-};
 
 ////////////////////////////////////////////////////////////////////
 

@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <algorithm>
 
-BOOL bChatInstalled = FALSE, bMbotInstalled = FALSE;
+BOOL bChatInstalled = FALSE, m_bMbotInstalled = FALSE;
 
 void CIrcProto::InitMenus()
 {
@@ -134,7 +134,7 @@ void CIrcProto::InitMenus()
 	CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuJoin, ( LPARAM )&clmi );
 	CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuList, ( LPARAM )&clmi );
 	CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuNick, ( LPARAM )&clmi );
-	if ( !UseServer )
+	if ( !m_useServer )
 		CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuServer, ( LPARAM )&clmi );
 }
 
@@ -145,7 +145,7 @@ int __cdecl CIrcProto::OnDoubleclicked(WPARAM wParam,LPARAM lParam)
 
 	CLISTEVENT* pcle = (CLISTEVENT*)lParam;
 
-	if (DBGetContactSettingByte((HANDLE) pcle->hContact, m_szModuleName, "DCC", 0) != 0) {
+	if ( getByte((HANDLE) pcle->hContact, "DCC", 0) != 0) {
 		DCCINFO* pdci = ( DCCINFO* )pcle->lParam;
 		CMessageBoxDlg* dlg = new CMessageBoxDlg( this, pdci );
 		dlg->Show();
@@ -167,8 +167,8 @@ int __cdecl CIrcProto::OnDeletedContact(WPARAM wp, LPARAM lp)
 		return 0;
 
 	DBVARIANT dbv;
-	if ( !DBGetContactSettingTString( hContact, m_szModuleName, "Nick", &dbv )) {
-		int type = DBGetContactSettingByte( hContact, m_szModuleName, "ChatRoom", 0 );
+	if ( !getTString( hContact, "Nick", &dbv )) {
+		int type = getByte( hContact, "ChatRoom", 0 );
 		if ( type != 0 ) {
 			GCEVENT gce = {0};
 			GCDEST gcd = {0};
@@ -189,7 +189,7 @@ int __cdecl CIrcProto::OnDeletedContact(WPARAM wp, LPARAM lp)
 				PostIrcMessage( _T("/PART %s"), dbv.ptszVal);
 		}
 		else {
-			BYTE bDCC = DBGetContactSettingByte((HANDLE)wp, m_szModuleName, "DCC", 0) ;
+			BYTE bDCC = getByte(( HANDLE )wp, "DCC", 0) ;
 			if ( bDCC ) {
 				CDccSession* dcc = FindDCCSession((HANDLE)wp);
 				if ( dcc )
@@ -207,8 +207,8 @@ int __cdecl CIrcProto::OnMenuShowChannel(WPARAM wp, LPARAM lp)
 		return 0;
 
 	DBVARIANT dbv;
-	if ( !DBGetContactSettingTString(( HANDLE )wp, m_szModuleName, "Nick", &dbv )) {
-		int type = DBGetContactSettingByte((HANDLE)wp, m_szModuleName, "ChatRoom", 0);
+	if ( !getTString(( HANDLE )wp, "Nick", &dbv )) {
+		int type = getByte(( HANDLE )wp, "ChatRoom", 0);
 		if ( type != 0) {
 			GCEVENT gce = {0};
 			GCDEST gcd = {0};
@@ -237,15 +237,13 @@ int __cdecl CIrcProto::OnMenuJoinLeave(WPARAM wp, LPARAM lp)
 	if (!wp )
 		return 0;
 
-	if (!DBGetContactSettingTString((HANDLE)wp, m_szModuleName, "Nick", &dbv)) {
-		int type = DBGetContactSettingByte((HANDLE)wp, m_szModuleName, "ChatRoom", 0);
+	if ( !getTString(( HANDLE )wp, "Nick", &dbv)) {
+		int type = getByte(( HANDLE )wp, "ChatRoom", 0);
 		if ( type != 0 ) {
-			if (type == GCW_CHATROOM)
-				{
-				if (DBGetContactSettingWord((HANDLE)wp, m_szModuleName, "Status", ID_STATUS_OFFLINE)== ID_STATUS_OFFLINE)
+			if (type == GCW_CHATROOM) {
+				if ( getWord(( HANDLE )wp, "Status", ID_STATUS_OFFLINE)== ID_STATUS_OFFLINE)
 					PostIrcMessage( _T("/JOIN %s"), dbv.ptszVal);
-				else
-					{
+				else {
 					PostIrcMessage( _T("/PART %s"), dbv.ptszVal);
 					GCEVENT gce = {0};
 					GCDEST gcd = {0};
@@ -257,10 +255,7 @@ int __cdecl CIrcProto::OnMenuJoinLeave(WPARAM wp, LPARAM lp)
 					gce.pDest = &gcd;
 					gcd.ptszID = ( TCHAR* )S.c_str();
 					CallChatEvent( SESSION_TERMINATE, (LPARAM)&gce);
-					}
-				}
-
-		}
+		}	}	}
 		DBFreeVariant(&dbv);
 	}
 	return 0;
@@ -273,7 +268,7 @@ int __cdecl CIrcProto::OnMenuChanSettings(WPARAM wp, LPARAM lp)
 
 	HANDLE hContact = (HANDLE) wp;
 	DBVARIANT dbv;
-	if ( !DBGetContactSettingTString(hContact, m_szModuleName, "Nick", &dbv )) {
+	if ( !getTString( hContact, "Nick", &dbv )) {
 		PostIrcMessageWnd(dbv.ptszVal, NULL, _T("/CHANNELMANAGER"));
 		DBFreeVariant(&dbv);
 	}
@@ -287,7 +282,7 @@ int __cdecl CIrcProto::OnMenuWhois(WPARAM wp, LPARAM lp)
 
 	DBVARIANT dbv;
 
-	if (!DBGetContactSettingTString((HANDLE)wp, m_szModuleName, "Nick", &dbv)) {
+	if ( !getTString(( HANDLE )wp, "Nick", &dbv)) {
 		PostIrcMessage( _T("/WHOIS %s %s"), dbv.ptszVal, dbv.ptszVal);
 		DBFreeVariant(&dbv);
 	}
@@ -309,16 +304,16 @@ int __cdecl CIrcProto::OnMenuIgnore(WPARAM wp, LPARAM lp)
 
 	HANDLE hContact = (HANDLE) wp;
 	DBVARIANT dbv;
-	if ( !DBGetContactSettingTString(hContact, m_szModuleName, "Nick", &dbv )) {
-		if ( DBGetContactSettingByte((HANDLE)wp, m_szModuleName, "ChatRoom", 0) == 0 ) {
+	if ( !getTString( hContact, "Nick", &dbv )) {
+		if ( getByte(( HANDLE )wp, "ChatRoom", 0) == 0 ) {
 			char* host = NULL;
 			DBVARIANT dbv1;
-			if (!DBGetContactSettingString((HANDLE) wp, m_szModuleName, "Host", &dbv1))
+			if ( !getString((HANDLE) wp, "Host", &dbv1))
 				host = dbv1.pszVal;
 
 			if ( host ) {
 				String S;
-				if (IgnoreChannelDefault)
+				if (m_ignoreChannelDefault)
 					S = "+qnidcm";
 				else
 					S = "+qnidc";
@@ -393,8 +388,8 @@ int __cdecl CIrcProto::OnChangeNickMenuCommand(WPARAM wp, LPARAM lp)
 
 	SetDlgItemText( m_nickDlg->GetHwnd(), IDC_CAPTION, TranslateT("Change nick name"));
 	SetWindowText( GetDlgItem( m_nickDlg->GetHwnd(), IDC_TEXT), TranslateT("Please enter a unique nickname"));
-	SetWindowText( GetDlgItem( m_nickDlg->GetHwnd(), IDC_ENICK), GetInfo().sNick.c_str());
-	SendMessage( GetDlgItem( m_nickDlg->GetHwnd(), IDC_ENICK), CB_SETEDITSEL, 0,MAKELPARAM(0,-1));
+	m_nickDlg->m_Enick.SetText( m_info.sNick.c_str());
+	m_nickDlg->m_Enick.SendMsg( CB_SETEDITSEL, 0, MAKELPARAM(0,-1));
 	ShowWindow( m_nickDlg->GetHwnd(), SW_SHOW);
 	SetActiveWindow( m_nickDlg->GetHwnd());
 	return 0;
@@ -502,7 +497,7 @@ int __cdecl CIrcProto::GCEventHook(WPARAM wParam,LPARAM lParam)
 		if (!lstrcmpiA(gchook->pDest->pszModule, m_szModuleName)) {
 
 			// first see if the scripting module should modify or stop this event
-			if (bMbotInstalled && ScriptingEnabled && wParam == NULL) {
+			if (m_bMbotInstalled && m_scriptingEnabled && wParam == NULL) {
 				gchtemp = (GCHOOK *)mir_alloc(sizeof(GCHOOK));
 				gchtemp->pDest = (GCDEST *)mir_alloc(sizeof(GCDEST));
 				gchtemp->pDest->iType = gchook->pDest->iType;
@@ -622,13 +617,11 @@ int __cdecl CIrcProto::GCEventHook(WPARAM wParam,LPARAM lParam)
 						break;
 					case 9:		// nickserv remind password
 						{
-						DBVARIANT dbv;
-						if ( !DBGetContactSettingTString( NULL, m_szModuleName, "Nick", &dbv ))
-							{
-							PostIrcMessage( _T("/nickserv SENDPASS %s"), dbv.ptszVal);
-							DBFreeVariant( &dbv );
-							}
-						}
+							DBVARIANT dbv;
+							if ( !getTString( "Nick", &dbv )) {
+								PostIrcMessage( _T("/nickserv SENDPASS %s"), dbv.ptszVal);
+								DBFreeVariant( &dbv );
+						}	}
 						break;
 					case 10:		// nickserv set new password
 						PostIrcMessage( _T("/nickserv SET PASSWORD %%question=\"%s\",\"%s\""),
@@ -919,10 +912,10 @@ int __cdecl CIrcProto::GCMenuHook(WPARAM wParam,LPARAM lParam)
 				gcmi->Item[gcmi->nItems-1].bDisabled = bIsInList;
 
 				unsigned long ulAdr = 0;
-				if (ManualHost)
-					ulAdr = ConvertIPToInteger(MySpecifiedHostIP);
+				if (m_manualHost)
+					ulAdr = ConvertIPToInteger(m_mySpecifiedHostIP);
 				else
-					ulAdr = ConvertIPToInteger(IPFromServer?MyHost:MyLocalHost);
+					ulAdr = ConvertIPToInteger(m_IPFromServer?m_myHost:m_myLocalHost);
 				gcmi->Item[23].bDisabled = ulAdr == 0?TRUE:FALSE;		//DCC submenu
 
 				TCHAR stzChanName[100];
@@ -956,7 +949,7 @@ int __cdecl CIrcProto::OnPreShutdown(WPARAM wParam,LPARAM lParam)
 {
 	EnterCriticalSection(&cs);
 
-	if ( Perform && IsConnected() )
+	if ( m_perform && IsConnected() )
 		if ( DoPerform( "Event: Disconnect" ))
 			Sleep( 200 );
 
@@ -988,8 +981,8 @@ int __cdecl CIrcProto::OnMenuPreBuild(WPARAM wParam,LPARAM lParam)
 
 	char *szProto = ( char* ) CallService( MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) wParam, 0);
 	if ( szProto && !lstrcmpiA(szProto, m_szModuleName)) {
-		bool bIsOnline = DBGetContactSettingWord(hContact, m_szModuleName, "Status", ID_STATUS_OFFLINE)== ID_STATUS_OFFLINE ? false : true;
-		if (DBGetContactSettingByte(hContact, m_szModuleName, "ChatRoom", 0) == GCW_CHATROOM) {
+		bool bIsOnline = getWord(hContact, "Status", ID_STATUS_OFFLINE)== ID_STATUS_OFFLINE ? false : true;
+		if ( getByte(hContact, "ChatRoom", 0) == GCW_CHATROOM) {
 			// context menu for chatrooms
 			clmi.flags |= CMIF_NOTOFFLINE;
 			clmi.icolibItem = GetIconHandle(IDI_SHOW);
@@ -1020,7 +1013,7 @@ int __cdecl CIrcProto::OnMenuPreBuild(WPARAM wParam,LPARAM lParam)
 			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuDisconnect,		( LPARAM )&clmi );
 			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuIgnore,			( LPARAM )&clmi );
 		}
-		else if ( DBGetContactSettingByte(hContact, m_szModuleName, "ChatRoom", 0) == GCW_SERVER ) {
+		else if ( getByte(hContact, "ChatRoom", 0) == GCW_SERVER ) {
 			//context menu for server window
 			clmi.icolibItem = GetIconHandle(IDI_SERVER);
 			clmi.pszName = LPGEN("&Show server");
@@ -1033,9 +1026,9 @@ int __cdecl CIrcProto::OnMenuPreBuild(WPARAM wParam,LPARAM lParam)
 			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuDisconnect,		( LPARAM )&clmi );
 			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuIgnore,			( LPARAM )&clmi );
 		}
-		else if ( !DBGetContactSettingTString( hContact, m_szModuleName, "Default", &dbv )) {
+		else if ( !getTString( hContact, "Default", &dbv )) {
 			// context menu for contact
-			BYTE bDcc = DBGetContactSettingByte( hContact, m_szModuleName, "DCC", 0) ;
+			BYTE bDcc = getByte( hContact, "DCC", 0) ;
 
 			clmi.flags = CMIM_FLAGS | CMIF_HIDDEN;
 			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuShowChannel,		( LPARAM )&clmi );
@@ -1064,7 +1057,7 @@ int __cdecl CIrcProto::OnMenuPreBuild(WPARAM wParam,LPARAM lParam)
 
 				if (bIsOnline) {
 					DBVARIANT dbv3;
-					if ( !DBGetContactSettingString( hContact, m_szModuleName, "Host", &dbv3) ) {
+					if ( !getString( hContact, "Host", &dbv3) ) {
 						if (dbv3.pszVal[0] == 0)  
 							clmi.flags = CMIM_FLAGS | CMIF_HIDDEN;
 						DBFreeVariant( &dbv3 );
@@ -1087,17 +1080,17 @@ int __cdecl CIrcProto::GetName(WPARAM wParam,LPARAM lParam)
 static void __cdecl ConnectServerThread( CIrcProto* ppro )
 {
 	EnterCriticalSection(&ppro->cs);
-	InterlockedIncrement((long *) &ppro->bConnectThreadRunning);
-	InterlockedIncrement((long *) &ppro->bConnectRequested);
-	while ( !Miranda_Terminated() && ppro->bConnectRequested > 0 ) {
-		while(ppro->bConnectRequested > 0)
-			InterlockedDecrement((long *) &ppro->bConnectRequested);
+	InterlockedIncrement((long *) &ppro->m_bConnectThreadRunning);
+	InterlockedIncrement((long *) &ppro->m_bConnectRequested);
+	while ( !Miranda_Terminated() && ppro->m_bConnectRequested > 0 ) {
+		while(ppro->m_bConnectRequested > 0)
+			InterlockedDecrement((long *) &ppro->m_bConnectRequested);
 		if (ppro->IsConnected()) {
 			Sleep(200);
 			ppro->Disconnect();
 		}
 
-		ppro->GetInfo().bNickFlag = false;
+		ppro->m_info.bNickFlag = false;
 		int Temp = ppro->m_iDesiredStatus;
 		ppro->m_iDesiredStatus = ID_STATUS_CONNECTING;
 		ppro->nickflag = false;
@@ -1107,10 +1100,10 @@ static void __cdecl ConnectServerThread( CIrcProto* ppro )
 		if (ppro->IsConnected()) {
 			ppro->KillChatTimer( ppro->RetryTimer );
 
-			if ( lstrlenA( ppro->MySpecifiedHost ))
-				mir_forkthread( ResolveIPThread, new IPRESOLVE( ppro, ppro->MySpecifiedHost, IP_MANUAL ));
+			if ( lstrlenA( ppro->m_mySpecifiedHost ))
+				mir_forkthread( ResolveIPThread, new IPRESOLVE( ppro, ppro->m_mySpecifiedHost, IP_MANUAL ));
 
-			ppro->DoEvent(GC_EVENT_CHANGESESSIONAME, SERVERWINDOW, NULL, ppro->GetInfo().sNetwork.c_str(), NULL, NULL, NULL, FALSE, TRUE);
+			ppro->DoEvent(GC_EVENT_CHANGESESSIONAME, SERVERWINDOW, NULL, ppro->m_info.sNetwork.c_str(), NULL, NULL, NULL, FALSE, TRUE);
 		}
 		else {
 			Temp = ppro->m_iDesiredStatus;
@@ -1119,7 +1112,7 @@ static void __cdecl ConnectServerThread( CIrcProto* ppro )
 			Sleep(100);
 	}	}
 
-	InterlockedDecrement((long *) &ppro->bConnectThreadRunning);
+	InterlockedDecrement((long *) &ppro->m_bConnectThreadRunning);
 	LeaveCriticalSection(&ppro->cs);
 	return;
 }
@@ -1136,42 +1129,42 @@ static void __cdecl DisconnectServerThread( CIrcProto* ppro )
 
 void CIrcProto::ConnectToServer(void)
 {
-	PortCount = StrToIntA(PortStart);
-	si.sServer = GetWord(ServerName, 0);
-	si.iPort = PortCount;
-	si.sNick = Nick;
-	si.sUserID = UserID;
-	si.sFullName = Name;
-	si.sPassword = Password;
-	si.bIdentServer =  ((Ident) ? (true) : (false));
-	si.iIdentServerPort = StrToInt(IdentPort);
-	si.sIdentServerType = IdentSystem;
-	si.iSSL = iSSL;
-	{	TCHAR* p = mir_a2t( Network );
+	m_portCount = StrToIntA(m_portStart);
+	si.sServer = GetWord(m_serverName, 0);
+	si.iPort = m_portCount;
+	si.sNick = m_nick;
+	si.sUserID = m_userID;
+	si.sFullName = m_name;
+	si.sPassword = m_password;
+	si.bIdentServer =  ((m_ident) ? (true) : (false));
+	si.iIdentServerPort = StrToInt(m_identPort);
+	si.sIdentServerType = m_identSystem;
+	si.m_iSSL = m_iSSL;
+	{	TCHAR* p = mir_a2t( m_network );
 		si.sNetwork = p;
 		mir_free(p);
 	}
-	iRetryCount = 1;
+	m_iRetryCount = 1;
 	KillChatTimer(RetryTimer);
-	if (Retry) {
-		if (StrToInt(RetryWait)<10)
-			lstrcpy(RetryWait, _T("10"));
-		SetChatTimer(RetryTimer, StrToInt(RetryWait)*1000, RetryTimerProc);
+	if (m_retry) {
+		if (StrToInt(m_retryWait)<10)
+			lstrcpy(m_retryWait, _T("10"));
+		SetChatTimer(RetryTimer, StrToInt(m_retryWait)*1000, RetryTimerProc);
 	}
 
 	bPerformDone = false;
 	bTempDisableCheck = false;
 	bTempForceCheck = false;
-	iTempCheckTime = 0;
+	m_iTempCheckTime = 0;
 	sChannelPrefixes = _T("&#");
 	sUserModes = "ov";
 	sUserModePrefixes = _T("@+");
 	sChannelModes = "btnimklps";
 
-	if (!bConnectThreadRunning)
+	if (!m_bConnectThreadRunning)
 		mir_forkthread(( pThreadFunc )ConnectServerThread, this );
-	else if (bConnectRequested < 1)
-		InterlockedIncrement((long *) &bConnectRequested);
+	else if (m_bConnectRequested < 1)
+		InterlockedIncrement((long *) &m_bConnectRequested);
 
 	TCHAR szTemp[300];
 	mir_sntprintf(szTemp, SIZEOF(szTemp), _T("\0033%s \002%s\002 (") _T(TCHAR_STR_PARAM) _T(": %u)"),
@@ -1184,7 +1177,7 @@ void CIrcProto::DisconnectFromServer(void)
 	GCEVENT gce = {0};
 	GCDEST gcd = {0};
 
-	if ( Perform && IsConnected() )
+	if ( m_perform && IsConnected() )
 		DoPerform( "Event: Disconnect" );
 
 	gcd.iType = GC_EVENT_CONTROL;
@@ -1218,24 +1211,24 @@ VOID CALLBACK RetryTimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTi
 	if ( !ppro )
 		return;
 
-	if ( ppro->iRetryCount <= StrToInt( ppro->RetryCount) && ppro->Retry ) {
-		ppro->PortCount++;
-		if ( ppro->PortCount > StrToIntA( ppro->PortEnd ) || StrToIntA( ppro->PortEnd ) == 0 )
-			ppro->PortCount = StrToIntA( ppro->PortStart );
-		ppro->si.iPort = ppro->PortCount;
+	if ( ppro->m_iRetryCount <= StrToInt( ppro->m_retryCount) && ppro->m_retry ) {
+		ppro->m_portCount++;
+		if ( ppro->m_portCount > StrToIntA( ppro->m_portEnd ) || StrToIntA( ppro->m_portEnd ) == 0 )
+			ppro->m_portCount = StrToIntA( ppro->m_portStart );
+		ppro->si.iPort = ppro->m_portCount;
 
 		TCHAR szTemp[300];
 		mir_sntprintf(szTemp, SIZEOF(szTemp), _T("\0033%s \002%s\002 (") _T(TCHAR_STR_PARAM) _T(": %u, try %u)"),
-			TranslateT("Reconnecting to"), ppro->si.sNetwork.c_str(), ppro->si.sServer.c_str(), ppro->si.iPort, ppro->iRetryCount);
+			TranslateT("Reconnecting to"), ppro->si.sNetwork.c_str(), ppro->si.sServer.c_str(), ppro->si.iPort, ppro->m_iRetryCount);
 
 		ppro->DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, NULL, szTemp, NULL, NULL, NULL, true, false);
 
-		if ( !ppro->bConnectThreadRunning )
+		if ( !ppro->m_bConnectThreadRunning )
 			mir_forkthread(( pThreadFunc )ConnectServerThread, ppro );
 		else
-			ppro->bConnectRequested = true;
+			ppro->m_bConnectRequested = true;
 
-		ppro->iRetryCount++;
+		ppro->m_iRetryCount++;
 	}
 	else ppro->KillChatTimer( ppro->RetryTimer );
 }

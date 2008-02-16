@@ -311,7 +311,7 @@ CIrcProto& CIrcProto::operator << (const CIrcMessage& msg)
 
 bool CIrcProto::Connect(const CIrcSessionInfo& info)
 {
-	codepage = Codepage;
+	codepage = m_codepage;
 
 	try
 	{
@@ -326,9 +326,9 @@ bool CIrcProto::Connect(const CIrcSessionInfo& info)
 
 		FindLocalIP(con); // get the local ip used for filetransfers etc
 
-		if ( info.iSSL > 0 ) {
+		if ( info.m_iSSL > 0 ) {
 			sslSession.SSLConnect( con ); // Establish SSL connection
-			if ( sslSession.nSSLConnected != 1 && info.iSSL == 2 ) {
+			if ( sslSession.nSSLConnected != 1 && info.m_iSSL == 2 ) {
 				Netlib_CloseHandle( con );
 				con = NULL;
 				m_info.Reset();
@@ -349,16 +349,16 @@ bool CIrcProto::Connect(const CIrcSessionInfo& info)
 			NLSend( "PASS %s\r\n", info.sPassword.c_str());
 		NLSend( _T("NICK %s\r\n"), info.sNick.c_str());
 
-		TString UserID = GetWord(info.sUserID.c_str(), 0);
+		TString m_userID = GetWord(info.sUserID.c_str(), 0);
 		TCHAR szHostName[MAX_PATH];
 		DWORD cbHostName = SIZEOF( szHostName );
 		GetComputerName(szHostName, &cbHostName);
 		TString HostName = GetWord(szHostName, 0);
-		if ( UserID.empty() )
-			UserID = _T("Miranda");
+		if ( m_userID.empty() )
+			m_userID = _T("Miranda");
 		if ( HostName.empty())
 			HostName= _T("host");
-		NLSend( _T("USER %s %s %s :%s\r\n"), UserID.c_str(), HostName.c_str(), _T("server"), info.sFullName.c_str());
+		NLSend( _T("USER %s %s %s :%s\r\n"), m_userID.c_str(), HostName.c_str(), _T("server"), info.sFullName.c_str());
 	}
 	catch( const char* )
 	{
@@ -379,8 +379,8 @@ void CIrcProto::Disconnect(void)
 	if( con == NULL )
 		return;
 
-	if ( QuitMessage && lstrlen(QuitMessage) > 0 )
-		NLSend( _T("QUIT :%s\r\n"), QuitMessage);
+	if ( m_quitMessage && lstrlen(m_quitMessage) > 0 )
+		NLSend( _T("QUIT :%s\r\n"), m_quitMessage);
 	else
 		NLSend( "QUIT \r\n" );
 
@@ -405,12 +405,12 @@ void CIrcProto::Disconnect(void)
 
 void CIrcProto::Notify(const CIrcMessage* pmsg)
 {
-	m_monitor->OnIrcMessage(pmsg);
+	OnIrcMessage(pmsg);
 }
 
 int CIrcProto::NLSend( const unsigned char* buf, int cbBuf)
 {
-	if ( bMbotInstalled && ScriptingEnabled ) {
+	if ( m_bMbotInstalled && m_scriptingEnabled ) {
 		int iVal = NULL;
 		char * pszTemp = 0;
 		pszTemp = ( char* ) mir_alloc( lstrlenA((const char *) buf ) + 1);
@@ -419,7 +419,7 @@ int CIrcProto::NLSend( const unsigned char* buf, int cbBuf)
 		if ( Scripting_TriggerMSPRawOut(&pszTemp) && pszTemp ) {
 			if ( sslSession.nSSLConnected == 1 ) {
 				iVal = pSSL_write(sslSession.m_ssl, pszTemp, lstrlenA(pszTemp));
-				if (DBGetContactSettingByte( NULL, "Netlib", "DumpSent", TRUE ) == TRUE)
+				if ( DBGetContactSettingByte( NULL, "Netlib", "DumpSent", TRUE ) == TRUE)
 					DoNetlibLog("( SSL ) Data sent\n%s",pszTemp);
 			}
 			else if (con)
@@ -432,7 +432,7 @@ int CIrcProto::NLSend( const unsigned char* buf, int cbBuf)
 	}
 	
 	if ( sslSession.nSSLConnected == 1 ) {
-		if (DBGetContactSettingByte( NULL, "Netlib", "DumpSent", TRUE ) == TRUE)
+		if ( DBGetContactSettingByte( NULL, "Netlib", "DumpSent", TRUE ) == TRUE)
 			DoNetlibLog("( SSL ) Data sent\n%s",buf);
 		return pSSL_write(sslSession.m_ssl, buf, cbBuf);	
 	}
@@ -474,7 +474,7 @@ int CIrcProto::NLSend( const char* fmt, ...)
 int CIrcProto::NLSendNoScript( const unsigned char* buf, int cbBuf)
 {
 	if ( sslSession.nSSLConnected == 1 ) {
-		if (DBGetContactSettingByte( NULL, "Netlib", "DumpSent", TRUE ) == TRUE)
+		if ( DBGetContactSettingByte( NULL, "Netlib", "DumpSent", TRUE ) == TRUE)
 			DoNetlibLog("( SSL ) Data sent\n%s",buf);
 		return pSSL_write(sslSession.m_ssl, buf, cbBuf);
 	}
@@ -489,7 +489,7 @@ int CIrcProto::NLReceive(unsigned char* buf, int cbBuf)
 {
 	if ( sslSession.nSSLConnected == 1 ) {
 		int Retval = pSSL_read( sslSession.m_ssl, buf, cbBuf );
-		if (DBGetContactSettingByte( NULL, "Netlib", "DumpRecv", TRUE ) == TRUE) {
+		if ( DBGetContactSettingByte( NULL, "Netlib", "DumpRecv", TRUE ) == TRUE) {
 			buf[Retval] = '\0';
 			DoNetlibLog("( SSL ) Data received\n%s",buf);
 		}
@@ -516,7 +516,7 @@ void CIrcProto::InsertIncomingEvent(TCHAR* pszRaw)
 void CIrcProto::createMessageFromPchar( const char* p )
 {
 	TCHAR* ptszMsg;
-	if ( codepage != CP_UTF8 && UtfAutodetect ) {
+	if ( codepage != CP_UTF8 && m_utfAutodetect ) {
 		#if defined( _UNICODE )
 			if ( mir_utf8decodecp( NEWSTR_ALLOCA(p), codepage, &ptszMsg ) == NULL )
 				ptszMsg = mir_a2t_cp( p, codepage );
@@ -578,7 +578,7 @@ void CIrcProto::DoReceive()
 
 			// process single message by monitor objects
 			if ( *pStart ) {
-				if ( bMbotInstalled && ScriptingEnabled ) {
+				if ( m_bMbotInstalled && m_scriptingEnabled ) {
 					char* pszTemp = mir_strdup( pStart ); 
 
 					if ( Scripting_TriggerMSPRawIn( &pszTemp ) && pszTemp ) {
@@ -731,7 +731,7 @@ CDccSession* CIrcProto::FindDCCRecvByPortAndName(int iPort, const TCHAR* szName)
 		dcc = it->second;
 		DBVARIANT dbv;
 
-		if ( !DBGetContactSettingTString(dcc->di->hContact, m_szModuleName, "Nick", &dbv)) {
+		if ( !getTString(dcc->di->hContact, "Nick", &dbv)) {
 			if ( dcc->di->iType == DCC_SEND && !dcc->di->bSender && !lstrcmpi( szName, dbv.ptszVal) && iPort == dcc->di->iPort ) {
 				DBFreeVariant( &dbv );
 				LeaveCriticalSection( &m_dcc );
@@ -793,7 +793,7 @@ void CIrcProto::DisconnectAllDCCSessions(bool Shutdown)
 	while ( it != m_dcc_chats.end()) {
 		dcc = it->second;
 		it++;
-		if ( DisconnectDCCChats || Shutdown )
+		if ( m_disconnectDCCChats || Shutdown )
 			dcc->Disconnect();
 	}
 
@@ -866,7 +866,7 @@ CIrcSessionInfo::CIrcSessionInfo(const CIrcSessionInfo& si) :
 	sFullName(si.sFullName),
 	sPassword(si.sPassword),
 	bIdentServer(si.bIdentServer),
-	iSSL(si.iSSL),
+	m_iSSL(si.m_iSSL),
 	sIdentServerType(si.sIdentServerType),
 	sNetwork(si.sNetwork),
 	iIdentServerPort(si.iIdentServerPort)
@@ -884,32 +884,19 @@ void CIrcSessionInfo::Reset()
 	sPassword = "";
 	bIdentServer = false;
 	bNickFlag = false;
-	iSSL = 0;
+	m_iSSL = 0;
 	sIdentServerType = _T("");
 	iIdentServerPort = 0;
 	sNetwork = _T("");
 }
 
 ////////////////////////////////////////////////////////////////////
-CIrcMonitor::HandlersMap CIrcMonitor::m_handlers;
-CIrcMonitor::IrcCommandsMapsListEntry CIrcMonitor::m_handlersMapsListEntry
-	= { &CIrcMonitor::m_handlers, NULL };
 
+CIrcProto::HandlersMap CIrcProto::m_handlers;
 
-CIrcMonitor::CIrcMonitor(CIrcProto& session)
-	: m_proto(session)
-{
-}
-
-CIrcMonitor::~CIrcMonitor()
-{
-}
-
-void CIrcMonitor::OnIrcMessage(const CIrcMessage* pmsg)
+void CIrcProto::OnIrcMessage(const CIrcMessage* pmsg)
 {
 	if ( pmsg != NULL ) {
-		OnIrcAll(pmsg);
-
 		PfnIrcMessageHandler pfn = FindMethod( pmsg->sCommand.c_str() );
 		if ( pfn ) {
 			// call member function. if it returns 'false',
@@ -923,67 +910,12 @@ void CIrcMonitor::OnIrcMessage(const CIrcMessage* pmsg)
 	else OnIrcDisconnected();
 }
 
-CIrcMonitor::PfnIrcMessageHandler CIrcMonitor::FindMethod(const TCHAR* lpszName)
+PfnIrcMessageHandler CIrcProto::FindMethod(const TCHAR* lpszName)
 {
-	// call the recursive version with the most derived map
-	return FindMethod(GetIrcCommandsMap(), lpszName);
-}
-
-CIrcMonitor::PfnIrcMessageHandler CIrcMonitor::FindMethod(IrcCommandsMapsListEntry* pMapsList, const TCHAR* lpszName)
-{
-	HandlersMap::iterator it = pMapsList->pHandlersMap->find(lpszName);
-	if( it != pMapsList->pHandlersMap->end() )
+	HandlersMap::iterator it = m_handlers.find(lpszName);
+	if( it != m_handlers.end() )
 		return it->second; // found !
-	else if( pMapsList->pBaseHandlersMap )
-		return FindMethod(pMapsList->pBaseHandlersMap, lpszName); // try at base class
 	return NULL; // not found in any map
-}
-
-////////////////////////////////////////////////////////////////////
-
-DECLARE_IRC_MAP(CIrcDefaultMonitor, CIrcMonitor)
-
-CIrcDefaultMonitor::CIrcDefaultMonitor(CIrcProto& session) :
-	CIrcMonitor( session )
-{
-	IRC_MAP_ENTRY(CIrcDefaultMonitor, "NICK", OnIrc_NICK)
-	IRC_MAP_ENTRY(CIrcDefaultMonitor, "PING", OnIrc_PING)
-	IRC_MAP_ENTRY(CIrcDefaultMonitor, "002", OnIrc_YOURHOST)
-	IRC_MAP_ENTRY(CIrcDefaultMonitor, "001", OnIrc_WELCOME)
-}
-
-bool CIrcDefaultMonitor::OnIrc_NICK(const CIrcMessage* pmsg)
-{
-	if (( m_proto.GetInfo().sNick == pmsg->prefix.sNick) && (pmsg->parameters.size() > 0 )) {
-		m_proto.m_info.sNick = pmsg->parameters[0];
-		m_proto.setTString( "Nick", m_proto.m_info.sNick.c_str());
-	}
-	return false;
-}
-
-bool CIrcDefaultMonitor::OnIrc_PING(const CIrcMessage* pmsg)
-{
-	TCHAR szResponse[100];
-	mir_sntprintf(szResponse, SIZEOF(szResponse), _T("PONG %s"), pmsg->parameters[0].c_str());
-	m_proto << CIrcMessage( &m_proto, szResponse, m_proto.getCodepage() );
-	return false;
-}
-
-bool CIrcDefaultMonitor::OnIrc_YOURHOST(const CIrcMessage* pmsg)
-{
-	static const TCHAR* lpszFmt = _T("Your host is %99[^ \x5b,], running version %99s");
-	TCHAR szHostName[100], szVersion[100];
-	if( _stscanf(pmsg->parameters[1].c_str(), lpszFmt, &szHostName, &szVersion) > 0 )
-		m_proto.m_info.sServerName = szHostName;
-	if (pmsg->parameters[0] != m_proto.GetInfo().sNick)
-		m_proto.m_info.sNick = pmsg->parameters[0];
-	return false;
-}
-bool CIrcDefaultMonitor::OnIrc_WELCOME(const CIrcMessage* pmsg)
-{
-	if (pmsg->parameters[0] != m_proto.GetInfo().sNick)
-		m_proto.m_info.sNick = pmsg->parameters[0];
-	return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1056,7 +988,7 @@ CDccSession::CDccSession( CIrcProto* _pro, DCCINFO* pdci ) :
 		iGlobalToken = 1;
 	iToken = iGlobalToken;
 
-	iPacketSize = DBGetContactSettingWord(NULL,m_proto->m_szModuleName, "PacketSize", 4096);
+	iPacketSize = m_proto->getWord( "PacketSize", 4096 );
 
 	if ( di->dwAdr )
 		m_proto->setDword(di->hContact, "IP", di->dwAdr); // mtooltip stuff
@@ -1296,7 +1228,7 @@ int CDccSession::SetupConnection()
 				hBindPort = (HANDLE)CallService( MS_NETLIB_BINDPORT, (WPARAM)m_proto->hNetlibDCC,(LPARAM) &nb);
 
 				if ( hBindPort == NULL ) {
-					m_proto->DoEvent(GC_EVENT_INFORMATION, 0, m_proto->GetInfo().sNick.c_str(), LPGENT("DCC ERROR: Unable to bind local port for passive filetransfer"), NULL, NULL, NULL, true, false); 
+					m_proto->DoEvent(GC_EVENT_INFORMATION, 0, m_proto->m_info.sNick.c_str(), LPGENT("DCC ERROR: Unable to bind local port for passive filetransfer"), NULL, NULL, NULL, true, false); 
 					delete this; // dcc objects destroy themselves when the connection has been closed or failed for some reasson.
 					return 0;
 				}
@@ -1313,10 +1245,10 @@ int CDccSession::SetupConnection()
 
 				// send out DCC RECV command for passive filetransfers
 				unsigned long ulAdr = 0;
-				if ( m_proto->ManualHost )
-					ulAdr = ConvertIPToInteger( m_proto->MySpecifiedHostIP );				
+				if ( m_proto->m_manualHost )
+					ulAdr = ConvertIPToInteger( m_proto->m_mySpecifiedHostIP );				
 				else
-					ulAdr = ConvertIPToInteger( m_proto->IPFromServer ? m_proto->MyHost : m_proto->MyLocalHost );
+					ulAdr = ConvertIPToInteger( m_proto->m_IPFromServer ? m_proto->m_myHost : m_proto->m_myLocalHost );
 
 				if ( di->iPort && ulAdr )
 					m_proto->PostIrcMessage( _T("/CTCP %s DCC SEND %s %u %u %u %s"), di->sContactName.c_str(), sFileWithQuotes.c_str(), ulAdr, di->iPort, di->dwSize, di->sToken.c_str());
@@ -1412,8 +1344,8 @@ void CDccSession::DoSendFile()
 	ProtoBroadcastAck(m_proto->m_szModuleName, di->hContact, ACKTYPE_FILE, ACKRESULT_INITIALISING, (void *)di, 0);
 	ProtoBroadcastAck(m_proto->m_szModuleName, di->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, (void *)di, 0);
 
-	BYTE DCCMode = DBGetContactSettingByte(NULL, m_proto->m_szModuleName, "DCCMode", 0);
-	WORD wPacketSize = DBGetContactSettingWord(NULL, m_proto->m_szModuleName, "DCCPacketSize", 1024*4);
+	BYTE DCCMode = m_proto->getByte( "DCCMode", 0);
+	WORD wPacketSize = m_proto->getWord( "DCCPacketSize", 1024*4);
 
 	if ( wPacketSize < 256 )
 		wPacketSize = 256;
@@ -1559,11 +1491,10 @@ DCC_STOP:
 void CDccSession::DoReceiveFile() 
 {
 	// initialize the filetransfer dialog
-	ProtoBroadcastAck(m_proto->m_szModuleName, di->hContact, ACKTYPE_FILE, ACKRESULT_INITIALISING, (void *)di, 0);
+	ProtoBroadcastAck( m_proto->m_szModuleName, di->hContact, ACKTYPE_FILE, ACKRESULT_INITIALISING, (void *)di, 0);
 
 	BYTE chBuf[1024*32+1];
-	BYTE DCCMode = DBGetContactSettingByte(NULL, m_proto->m_szModuleName, "DCCMode", 0); // type of dcc: normal, send-ahead
-	WORD wAckRate = DBGetContactSettingWord(NULL, m_proto->m_szModuleName, "DCCAckRate", 1024*4); 
+	BYTE DCCMode = m_proto->getByte( "DCCMode", 0); // type of dcc: normal, send-ahead
 
 	// do some stupid thing so  the filetransfer dialog shows the right thing
 	ProtoBroadcastAck(m_proto->m_szModuleName, di->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, (void *)di, 0);
@@ -1754,7 +1685,7 @@ void DoIdent(HANDLE hConnection, DWORD dwRemoteIP, void* extra )
 
 	char buf[1024*4];
 	mir_snprintf(buf, SIZEOF(buf), "%s : USERID : " TCHAR_STR_PARAM " : " TCHAR_STR_PARAM "\r\n", 
-		szBuf, ppro->GetInfo().sIdentServerType.c_str() , ppro->GetInfo().sUserID.c_str());
+		szBuf, ppro->m_info.sIdentServerType.c_str() , ppro->m_info.sUserID.c_str());
 	Netlib_Send(hConnection, (const char*)buf, strlen(buf), 0);
 	Netlib_CloseHandle(hConnection);
 }

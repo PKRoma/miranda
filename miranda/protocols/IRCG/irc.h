@@ -213,13 +213,13 @@ struct SERVER_INFO  // Contains info about different servers
 
 	char* Group;
 	char* Address;
-	char* Name;
-	char* PortStart;
-	char* PortEnd;
-	int   iSSL;
+	char* m_name;
+	char* m_portStart;
+	char* m_portEnd;
+	int   m_iSSL;
 };
 
-struct PERFORM_INFO  // Contains 'Perform buffer' for different networks
+struct PERFORM_INFO  // Contains 'm_perform buffer' for different networks
 {
 	PERFORM_INFO( const char* szSetting, const TCHAR* value ) :
 		mSetting( szSetting ),
@@ -249,6 +249,8 @@ struct CIrcProto;
 typedef int  ( __cdecl CIrcProto::*IrcEventFunc )( WPARAM, LPARAM );
 typedef int  ( __cdecl CIrcProto::*IrcServiceFunc )( WPARAM, LPARAM );
 typedef int  ( __cdecl CIrcProto::*IrcServiceFuncParam )( WPARAM, LPARAM, LPARAM );
+
+typedef bool (CIrcProto::*PfnIrcMessageHandler)(const CIrcMessage* pmsg);
 
 typedef std::map<HANDLE, CDccSession*> DccSessionMap;
 typedef std::pair<HANDLE, CDccSession*> DccSessionPair;
@@ -339,66 +341,66 @@ struct CIrcProto : public PROTO_INTERFACE
 
 	// Data
 
-	char     ServerName[100];
-	char     Password [500];
-	TCHAR    IdentSystem[10];
-	char     Network[30];
-	char     PortStart[10];
-	char     PortEnd[10];
-	int      iSSL;
-	TCHAR    IdentPort[10];
-	TCHAR    RetryWait[10];
-	TCHAR    RetryCount[10];
-	TCHAR    Nick[30];
-	TCHAR    AlternativeNick[30];
-	TCHAR    Name[200];
-	TCHAR    UserID[200];
-	TCHAR    QuitMessage[400];
-	TCHAR    UserInfo[500];
-	char     MyHost[50];
-	char     MySpecifiedHost[500];
-	char     MySpecifiedHostIP[50];
-	char     MyLocalHost[50];
-	TCHAR*   Alias;
-	int      ServerComboSelection;
-	int      QuickComboSelection;
-	int      OnlineNotificationTime;
-	int      OnlineNotificationLimit;
-	BYTE     ScriptingEnabled;
-	BYTE     IPFromServer;
-	BYTE     ShowAddresses;
-	BYTE     DisconnectDCCChats;
-	BYTE     DisableErrorPopups;
-	BYTE     RejoinChannels;
-	BYTE     RejoinIfKicked;
-	BYTE     HideServerWindow;
-	BYTE     Ident;
-	BYTE     Retry;
-	BYTE     DisableDefaultServer;
-	BYTE     AutoOnlineNotification;
-	BYTE     SendKeepAlive;
-	BYTE     JoinOnInvite;
-	BYTE     Perform;
-	BYTE     ForceVisible;
-	BYTE     Ignore;
-	BYTE     IgnoreChannelDefault;
-	BYTE     UseServer;
-	BYTE     DCCFileEnabled;
-	BYTE     DCCChatEnabled;
-	BYTE     DCCChatAccept;
-	BYTE     DCCChatIgnore;
-	BYTE     DCCPassive;
-	BYTE     ManualHost;
-	BYTE     OldStyleModes;
-	BYTE     ChannelAwayNotification;
-	BYTE     SendNotice;
-	BYTE     UtfAutodetect;
-	int      Codepage;
-	POINT    ListSize;
+	char     m_serverName[100];
+	char     m_password [500];
+	TCHAR    m_identSystem[10];
+	char     m_network[30];
+	char     m_portStart[10];
+	char     m_portEnd[10];
+	int      m_iSSL;
+	TCHAR    m_identPort[10];
+	TCHAR    m_retryWait[10];
+	TCHAR    m_retryCount[10];
+	TCHAR    m_nick[30];
+	TCHAR    m_alternativeNick[30];
+	TCHAR    m_name[200];
+	TCHAR    m_userID[200];
+	TCHAR    m_quitMessage[400];
+	TCHAR    m_userInfo[500];
+	char     m_myHost[50];
+	char     m_mySpecifiedHost[500];
+	char     m_mySpecifiedHostIP[50];
+	char     m_myLocalHost[50];
+	TCHAR*   m_alias;
+	int      m_serverComboSelection;
+	int      m_quickComboSelection;
+	int      m_onlineNotificationTime;
+	int      m_onlineNotificationLimit;
+	BYTE     m_scriptingEnabled;
+	BYTE     m_IPFromServer;
+	BYTE     m_showAddresses;
+	BYTE     m_disconnectDCCChats;
+	BYTE     m_disableErrorPopups;
+	BYTE     m_rejoinChannels;
+	BYTE     m_rejoinIfKicked;
+	BYTE     m_hideServerWindow;
+	BYTE     m_ident;
+	BYTE     m_retry;
+	BYTE     m_disableDefaultServer;
+	BYTE     m_autoOnlineNotification;
+	BYTE     m_sendKeepAlive;
+	BYTE     m_joinOnInvite;
+	BYTE     m_perform;
+	BYTE     m_forceVisible;
+	BYTE     m_ignore;
+	BYTE     m_ignoreChannelDefault;
+	BYTE     m_useServer;
+	BYTE     m_DCCFileEnabled;
+	BYTE     m_DCCChatEnabled;
+	BYTE     m_DCCChatAccept;
+	BYTE     m_DCCChatIgnore;
+	BYTE     m_DCCPassive;
+	BYTE     m_manualHost;
+	BYTE     m_oldStyleModes;
+	BYTE     m_channelAwayNotification;
+	BYTE     m_sendNotice;
+	BYTE     m_utfAutodetect;
+	int      m_codepage;
+	POINT    m_listSize;
 	COLORREF colors[16];
 	HICON    hIcon[13];
 
-	char* pszServerFile;
+	char* m_pszServerFile;
 
 	std::vector<TString> vUserhostReasons;
 	std::vector<TString> vWhoInProgress;
@@ -407,16 +409,16 @@ struct CIrcProto : public PROTO_INTERFACE
 	CRITICAL_SECTION m_gchook;
 	CRITICAL_SECTION m_resolve;
 
-	TString StatusMessage;
-	bool    bMbotInstalled;
-	int     iTempCheckTime;
+	TString m_statusMessage;
+	bool    m_bMbotInstalled;
+	int     m_iTempCheckTime;
 
 	CIrcSessionInfo si;
 
-	int       iRetryCount;
-	int       PortCount;
-	DWORD     bConnectRequested;
-	DWORD     bConnectThreadRunning;
+	int       m_iRetryCount;
+	int       m_portCount;
+	DWORD     m_bConnectRequested;
+	DWORD     m_bConnectThreadRunning;
 
 	HANDLE  hMenuRoot, hMenuQuick, hMenuServer, hMenuJoin, hMenuNick, hMenuList;
 	HANDLE  hNetlib, hNetlibDCC, hUMenuShowChannel, hUMenuJoinLeave, hUMenuChanSettings, hUMenuWhois;
@@ -434,9 +436,7 @@ struct CIrcProto : public PROTO_INTERFACE
 	CWhoisDlg*   m_whoisDlg;
 	CQuickDlg*   m_quickDlg;
 	
-	HWND     IgnoreWndHwnd;
-
-	int      NoOfChannels, ManualWhoisCount;
+	int      m_noOfChannels, m_manualWhoisCount;
 	String   sChannelModes, sUserModes;
 	TString  sChannelPrefixes, sUserModePrefixes, WhoisAwayReply;
 
@@ -475,22 +475,21 @@ struct CIrcProto : public PROTO_INTERFACE
 	UINT_PTR	DCCTimer;	
 
 	//options.cpp
-	HWND connect_hWnd;
-	HWND addserver_hWnd;
+	HWND m_hwndConnect, m_hwndAddServer, m_hwndIgnore;
 
-	std::vector<CIrcIgnoreItem> g_ignoreItems;
+	std::vector<CIrcIgnoreItem> m_ignoreItems;
 
-	int            ChannelNumber;
-	TString        WhoReply;
+	int            m_channelNumber;
+	TString        m_whoReply;
 	TString        sNamesList;
 	TString        sTopic;
 	TString        sTopicName;
 	TString		   sTopicTime;
-	TString        NamesToWho;
-	TString        ChannelsToWho;
-	TString        NamesToUserhost;
+	TString        m_namesToWho;
+	TString        m_channelsToWho;
+	TString        m_namesToUserhost;
 
-	bool     ServerlistModified, PerformlistModified;
+	bool     m_serverlistModified, m_performlistModified;
 
 	void    InitPrefs(void);
 	int     GetPrefsString(const char *szSetting, char * prefstoset, int n, char * defaulttext);
@@ -555,6 +554,17 @@ struct CIrcProto : public PROTO_INTERFACE
 	TString  GetNextUserhostReason(int type);
 	TString  PeekAtReasons(int type);
 
+	int      getByte( const char* name, BYTE defaultValue );
+	int      getByte( HANDLE hContact, const char* name, BYTE defaultValue );
+	int      getDword( const char* name, DWORD defaultValue );
+	int      getDword( HANDLE hContact, const char* name, DWORD defaultValue );
+	int      getString( const char* name, DBVARIANT* );
+	int      getString( HANDLE hContact, const char* name, DBVARIANT* );
+	int      getTString( const char* name, DBVARIANT* );
+	int      getTString( HANDLE hContact, const char* name, DBVARIANT* );
+	int      getWord( const char* name, WORD defaultValue );
+	int      getWord( HANDLE hContact, const char* name, WORD defaultValue );
+
 	void     setByte( const char* name, BYTE value );
 	void     setByte( HANDLE hContact, const char* name, BYTE value );
 	void     setDword( const char* name, DWORD value );
@@ -567,9 +577,7 @@ struct CIrcProto : public PROTO_INTERFACE
 	void     setWord( HANDLE hContact, const char* name, int value );
 
 	////////////////////////////////////////////////////////////////////////////////////////
-	// former CIrcProto class
-
-	friend class CIrcDefaultMonitor;
+	// former CIrcSession class
 
 	void AddDCCSession(HANDLE hContact, CDccSession* dcc);
 	void AddDCCSession(DCCINFO*  pdci, CDccSession* dcc);
@@ -590,8 +598,6 @@ struct CIrcProto : public PROTO_INTERFACE
 	void Disconnect(void);
 	void KillIdent(void);
 
-	CIrcSessionInfo& GetInfo() const { return (CIrcSessionInfo&)m_info; }
-
 	#if defined( _UNICODE )
 		int NLSend(const TCHAR* fmt, ...);
 	#endif
@@ -609,9 +615,10 @@ struct CIrcProto : public PROTO_INTERFACE
 	int getCodepage() const;
 	__inline void setCodepage( int aPage ) { codepage = aPage; }
 
+	CIrcSessionInfo m_info;
+
 protected :
 	int codepage;
-	CIrcSessionInfo m_info;
 	CSSLSession sslSession;
 	HANDLE con;
 	HANDLE hBindPort;
@@ -621,15 +628,91 @@ protected :
 
 private :
 	CRITICAL_SECTION    m_dcc;      // protect the dcc objects
-	CIrcDefaultMonitor *m_monitor;  // Object that processes data from the IRC server
 
 	void createMessageFromPchar( const char* p );
 	void Notify(const CIrcMessage* pmsg);
 	static void __cdecl ThreadProc(void *pparam);
+
+	////////////////////////////////////////////////////////////////////////////////////////
+	// former CIrcMonitor class
+
+	bool OnIrc_PING(const CIrcMessage* pmsg);
+	bool OnIrc_WELCOME(const CIrcMessage* pmsg);
+	bool OnIrc_YOURHOST(const CIrcMessage* pmsg);
+	bool OnIrc_NICK(const CIrcMessage* pmsg);
+	bool OnIrc_PRIVMSG(const CIrcMessage* pmsg);
+	bool OnIrc_JOIN(const CIrcMessage* pmsg);
+	bool OnIrc_QUIT(const CIrcMessage* pmsg);
+	bool OnIrc_PART(const CIrcMessage* pmsg);
+	bool OnIrc_KICK(const CIrcMessage* pmsg);
+	bool OnIrc_MODE(const CIrcMessage* pmsg);
+	bool OnIrc_USERHOST_REPLY(const CIrcMessage* pmsg);
+	bool OnIrc_MODEQUERY(const CIrcMessage* pmsg);
+	bool OnIrc_NAMES(const CIrcMessage* pmsg);
+	bool OnIrc_ENDNAMES(const CIrcMessage* pmsg);
+	bool OnIrc_INITIALTOPIC(const CIrcMessage* pmsg);
+	bool OnIrc_INITIALTOPICNAME(const CIrcMessage* pmsg);
+	bool OnIrc_TOPIC(const CIrcMessage* pmsg);
+	bool OnIrc_TRYAGAIN(const CIrcMessage* pmsg);
+	bool OnIrc_NOTICE(const CIrcMessage* pmsg);
+	bool OnIrc_WHOIS_NAME(const CIrcMessage* pmsg);
+	bool OnIrc_WHOIS_CHANNELS(const CIrcMessage* pmsg);
+	bool OnIrc_WHOIS_SERVER(const CIrcMessage* pmsg);
+	bool OnIrc_WHOIS_AWAY(const CIrcMessage* pmsg);
+	bool OnIrc_WHOIS_IDLE(const CIrcMessage* pmsg);
+	bool OnIrc_WHOIS_END(const CIrcMessage* pmsg);
+	bool OnIrc_WHOIS_OTHER(const CIrcMessage* pmsg);
+	bool OnIrc_WHOIS_AUTH(const CIrcMessage* pmsg);
+	bool OnIrc_WHOIS_NO_USER(const CIrcMessage* pmsg);
+	bool OnIrc_NICK_ERR(const CIrcMessage* pmsg);
+	bool OnIrc_ENDMOTD(const CIrcMessage* pmsg);
+	bool OnIrc_LISTSTART(const CIrcMessage* pmsg);
+	bool OnIrc_LIST(const CIrcMessage* pmsg);
+	bool OnIrc_LISTEND(const CIrcMessage* pmsg);
+	bool OnIrc_BANLIST(const CIrcMessage* pmsg);
+	bool OnIrc_BANLISTEND(const CIrcMessage* pmsg);
+	bool OnIrc_SUPPORT(const CIrcMessage* pmsg);
+	bool OnIrc_BACKFROMAWAY(const CIrcMessage* pmsg);
+	bool OnIrc_SETAWAY(const CIrcMessage* pmsg);
+	bool OnIrc_JOINERROR(const CIrcMessage* pmsg);
+	bool OnIrc_UNKNOWN(const CIrcMessage* pmsg);
+	bool OnIrc_ERROR(const CIrcMessage* pmsg);
+	bool OnIrc_NOOFCHANNELS(const CIrcMessage* pmsg);
+	bool OnIrc_PINGPONG(const CIrcMessage* pmsg);
+	bool OnIrc_INVITE(const CIrcMessage* pmsg);
+	bool OnIrc_WHO_END(const CIrcMessage* pmsg);
+	bool OnIrc_WHO_REPLY(const CIrcMessage* pmsg);
+	bool OnIrc_WHOTOOLONG(const CIrcMessage* pmsg);
+
+	bool IsCTCP(const CIrcMessage* pmsg);
+
+	void OnIrcDefault(const CIrcMessage* pmsg);
+	void OnIrcDisconnected();
+
+	struct LessString
+	{
+		bool operator()(const TCHAR* s1, const TCHAR* s2) const
+			{ return _tcsicmp(s1, s2) < 0; }
+	};
+	typedef std::map<const TCHAR*, PfnIrcMessageHandler, LessString> HandlersMap;
+
+	static HandlersMap m_handlers;
+
+	PfnIrcMessageHandler FindMethod(const TCHAR* lpszName);
+
+	void OnIrcMessage(const CIrcMessage* pmsg);
 };
+
+// map actual member functions to their associated IRC command.
+// put any number of this macro in the class's constructor.
+#define	IRC_MAP_ENTRY(name, member)	\
+	m_handlers[_T(name)] = (PfnIrcMessageHandler)&CIrcProto##::member;
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Functions
+
+//commandmonitor.cpp
+void  ResolveIPThread(LPVOID di);
 
 //main.cpp
 extern HINSTANCE hInst;
@@ -652,7 +735,7 @@ VOID CALLBACK RetryTimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTi
 
 // services.cpp
 
-extern BOOL bChatInstalled, bMbotInstalled;
+extern BOOL bChatInstalled, m_bMbotInstalled;
 
 //tools.cpp
 int      WCCmp(const TCHAR* wild, const TCHAR* string);

@@ -54,7 +54,7 @@ BOOL CIrcProto::CList_AddDCCChat(TString name, TString hostmask, unsigned long a
 	pdci->bSender = false;
 	pdci->sContactName = name;
 
-	if ( DCCChatAccept == 3 || DCCChatAccept == 2 && bFlag ) {
+	if ( m_DCCChatAccept == 3 || m_DCCChatAccept == 2 && bFlag ) {
 		CDccSession* dcc = new CDccSession( this, pdci );
 
 		CDccSession* olddcc = FindDCCSession(hContact);
@@ -63,9 +63,8 @@ BOOL CIrcProto::CList_AddDCCChat(TString name, TString hostmask, unsigned long a
 
 		AddDCCSession(hContact, dcc);
 		dcc->Connect();
-		if (DBGetContactSettingByte(NULL, m_szModuleName,"MirVerAutoRequest", 1))
+		if (getByte( "MirVerAutoRequest", 1))
 		  PostIrcMessage( _T("/PRIVMSG %s \001VERSION\001"), name.c_str());
-
 	}
 	else {
 		CLISTEVENT cle = {0};
@@ -98,7 +97,7 @@ HANDLE CIrcProto::CList_AddContact(CONTACT * user, bool InList, bool SetOnline)
 			DBDeleteContactSetting( hContact, "CList", "NotOnList" );
 		setTString(hContact, "Nick", user->name);
 		DBDeleteContactSetting(hContact, "CList", "Hidden");
-		if (SetOnline && DBGetContactSettingWord(hContact, m_szModuleName, "Status", ID_STATUS_OFFLINE)== ID_STATUS_OFFLINE)
+		if (SetOnline && getWord(hContact, "Status", ID_STATUS_OFFLINE)== ID_STATUS_OFFLINE)
 			setWord(hContact, "Status", ID_STATUS_ONLINE);
 		return hContact;
 	}
@@ -126,7 +125,7 @@ HANDLE CIrcProto::CList_SetOffline(struct CONTACT * user)
 	DBVARIANT dbv;
 	HANDLE hContact = CList_FindContact(user);
 	if ( hContact ) {
-		if ( !DBGetContactSettingTString( hContact, m_szModuleName, "Default", &dbv )) {
+		if ( !getTString( hContact, "Default", &dbv )) {
 			setString(hContact, "User", "");
 			setString(hContact, "Host", "");
 			setTString(hContact, "Nick", dbv.ptszVal);
@@ -148,12 +147,12 @@ bool CIrcProto::CList_SetAllOffline(BYTE ChatsToo)
 	while ( hContact ) {
 		char* szProto = ( char* ) CallService( MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0 );
 		if ( szProto != NULL && !lstrcmpiA( szProto, m_szModuleName )) {
-			if ( DBGetContactSettingByte( hContact, m_szModuleName, "ChatRoom", 0 ) == 0 ) {
-				if ( DBGetContactSettingByte(hContact, m_szModuleName, "DCC", 0 ) != 0 ) {
+			if ( getByte( hContact, "ChatRoom", 0 ) == 0 ) {
+				if ( getByte(hContact, "DCC", 0 ) != 0 ) {
 					if ( ChatsToo )
 						setWord(hContact, "Status", ID_STATUS_OFFLINE);
 				}
-				else if ( !DBGetContactSettingTString( hContact, m_szModuleName, "Default", &dbv )) {
+				else if ( !getTString( hContact, "Default", &dbv )) {
 					setTString( hContact, "Nick", dbv.ptszVal);
 					setWord( hContact, "Status", ID_STATUS_OFFLINE );
 					DBFreeVariant( &dbv );
@@ -186,18 +185,18 @@ HANDLE CIrcProto::CList_FindContact (CONTACT* user)
 	while (hContact) {
 		szProto = ( char* ) CallService( MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 		if ( szProto != NULL && !lstrcmpiA( szProto, m_szModuleName )) {
-			if ( DBGetContactSettingByte( hContact, m_szModuleName, "ChatRoom", 0) == 0) {
+			if ( getByte( hContact, "ChatRoom", 0) == 0) {
 				HANDLE hContact_temp = NULL;
 				TCHAR* DBDefault = NULL;
 				TCHAR* DBNick = NULL;
 				TCHAR* DBWildcard = NULL;
 				TCHAR* DBUser = NULL;
 				TCHAR* DBHost = NULL;
-				if ( !DBGetContactSettingTString(hContact, m_szModuleName, "Default",   &dbv1)) DBDefault = dbv1.ptszVal;
-				if ( !DBGetContactSettingTString(hContact, m_szModuleName, "Nick",      &dbv2)) DBNick = dbv2.ptszVal;
-				if ( !DBGetContactSettingTString(hContact, m_szModuleName, "UWildcard", &dbv3)) DBWildcard = dbv3.ptszVal;
-				if ( !DBGetContactSettingTString(hContact, m_szModuleName, "UUser",     &dbv4)) DBUser = dbv4.ptszVal;
-				if ( !DBGetContactSettingTString(hContact, m_szModuleName, "UHost",     &dbv5)) DBHost = dbv5.ptszVal;
+				if ( !getTString(hContact, "Default",   &dbv1)) DBDefault = dbv1.ptszVal;
+				if ( !getTString(hContact, "Nick",      &dbv2)) DBNick = dbv2.ptszVal;
+				if ( !getTString(hContact, "UWildcard", &dbv3)) DBWildcard = dbv3.ptszVal;
+				if ( !getTString(hContact, "UUser",     &dbv4)) DBUser = dbv4.ptszVal;
+				if ( !getTString(hContact, "UHost",     &dbv5)) DBHost = dbv5.ptszVal;
 				
 				if ( DBWildcard )
 					CharLower( DBWildcard );

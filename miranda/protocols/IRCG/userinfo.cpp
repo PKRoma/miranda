@@ -59,7 +59,7 @@ BOOL CALLBACK UserDetailsDlgProc(HWND m_hwnd, UINT msg, WPARAM wParam, LPARAM lP
 			p->ppro = ( CIrcProto* )(( PSHNOTIFY* )lParam )->lParam;
 
 			DBVARIANT dbv;
-			BYTE bAdvanced = DBGetContactSettingByte( p->hContact, p->ppro->m_szModuleName, "AdvancedMode", 0);
+			BYTE bAdvanced = p->ppro->getByte( p->hContact, "AdvancedMode", 0);
 
 			TranslateDialogDefault( m_hwnd);
 
@@ -69,24 +69,24 @@ BOOL CALLBACK UserDetailsDlgProc(HWND m_hwnd, UINT msg, WPARAM wParam, LPARAM lP
 
 			if ( !bAdvanced ) {
 				SetDlgItemText( m_hwnd, IDC_DEFAULT, TranslateT(STR_BASIC));
-				if ( !DBGetContactSettingTString( p->hContact, p->ppro->m_szModuleName, "Default", &dbv)) {
+				if ( !p->ppro->getTString( p->hContact, "Default", &dbv)) {
 					SetDlgItemText( m_hwnd, IDC_WILDCARD, dbv.ptszVal);
 					DBFreeVariant(&dbv);
 				}
 			}
 			else {
 				SetDlgItemText( m_hwnd, IDC_DEFAULT, TranslateT(STR_ADVANCED));
-				if ( !DBGetContactSettingTString( p->hContact, p->ppro->m_szModuleName, "UWildcard", &dbv)) {
+				if ( !p->ppro->getTString( p->hContact, "UWildcard", &dbv)) {
 					SetDlgItemText( m_hwnd, IDC_WILDCARD, dbv.ptszVal);
 					DBFreeVariant(&dbv);
 			}	}
 
-			if ( !DBGetContactSettingTString( p->hContact, p->ppro->m_szModuleName, "UUser", &dbv)) {
+			if ( !p->ppro->getTString( p->hContact, "UUser", &dbv)) {
 				SetDlgItemText( m_hwnd, IDC_USER, dbv.ptszVal);
 				DBFreeVariant(&dbv);
 			}
 
-			if ( !DBGetContactSettingTString( p->hContact, p->ppro->m_szModuleName, "UHost", &dbv)) {
+			if ( !p->ppro->getTString( p->hContact, "UHost", &dbv)) {
 				SetDlgItemText( m_hwnd, IDC_HOST, dbv.ptszVal);
 				DBFreeVariant(&dbv);
 			}
@@ -117,7 +117,7 @@ BOOL CALLBACK UserDetailsDlgProc(HWND m_hwnd, UINT msg, WPARAM wParam, LPARAM lP
 					return FALSE;
 				}
 
-				if ( !DBGetContactSettingTString( p->hContact, p->ppro->m_szModuleName, "Default", &dbv )) {
+				if ( !p->ppro->getTString( p->hContact, "Default", &dbv )) {
 					TString S = _T(STR_ERROR) + (TString)_T(" (") + dbv.ptszVal + (TString)_T(")");
 					if (( lstrlen(temp) < 4 && lstrlen(temp)) || !WCCmp(CharLower(temp), CharLower(dbv.ptszVal))) {
 						MessageBox( NULL, TranslateTS( S.c_str()), TranslateT( "IRC error" ), MB_OK | MB_ICONERROR );
@@ -167,7 +167,7 @@ BOOL CALLBACK UserDetailsDlgProc(HWND m_hwnd, UINT msg, WPARAM wParam, LPARAM lP
 			SetDlgItemText( m_hwnd, IDC_DEFAULT, TranslateT(STR_BASIC));
 
 			DBVARIANT dbv;
-			if ( !DBGetContactSettingTString( p->hContact, p->ppro->m_szModuleName, "Default", &dbv )) {
+			if ( !p->ppro->getTString( p->hContact, "Default", &dbv )) {
 				SetDlgItemText( m_hwnd, IDC_WILDCARD, dbv.ptszVal );
 				DBFreeVariant( &dbv );
 			}
@@ -177,7 +177,7 @@ BOOL CALLBACK UserDetailsDlgProc(HWND m_hwnd, UINT msg, WPARAM wParam, LPARAM lP
 		if ( HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDC_RADIO2 ) {
 			DBVARIANT dbv;
 			SetDlgItemText( m_hwnd, IDC_DEFAULT, TranslateT(STR_ADVANCED));
-			if ( !DBGetContactSettingTString( p->hContact, p->ppro->m_szModuleName, "UWildcard", &dbv )) {
+			if ( !p->ppro->getTString( p->hContact, "UWildcard", &dbv )) {
 				SetDlgItemText( m_hwnd, IDC_WILDCARD, dbv.ptszVal );
 				DBFreeVariant( &dbv );
 			}
@@ -195,14 +195,14 @@ int __cdecl CIrcProto::OnInitUserInfo(WPARAM wParam, LPARAM lParam)
 	if ( !hContact || !szProto || lstrcmpiA( szProto, m_szModuleName ))
 		return 0;
 
-	if ( DBGetContactSettingByte( hContact, m_szModuleName, "ChatRoom", 0 ) != 0 )
+	if ( getByte( hContact, "ChatRoom", 0 ) != 0 )
 		return 0;
 
-	if ( DBGetContactSettingByte( hContact, m_szModuleName, "DCC", 0 ) != 0 )
+	if ( getByte( hContact, "DCC", 0 ) != 0 )
 		return 0;
 
 	DBVARIANT dbv;
-	if ( !DBGetContactSettingTString( hContact, m_szModuleName, "Default", &dbv )) {
+	if ( !getTString( hContact, "Default", &dbv )) {
 		if ( IsChannel( dbv.ptszVal )) {
 			DBFreeVariant( &dbv );
 			return 0;

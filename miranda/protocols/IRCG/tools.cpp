@@ -24,6 +24,46 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /////////////////////////////////////////////////////////////////////////////////////////
 // Standard functions
 
+int CIrcProto::getByte( const char* name, BYTE defaultValue )
+{	return DBGetContactSettingByte( NULL, m_szModuleName, name, defaultValue );
+}
+
+int CIrcProto::getByte( HANDLE hContact, const char* name, BYTE defaultValue )
+{	return DBGetContactSettingByte(hContact, m_szModuleName, name, defaultValue );
+}
+
+int CIrcProto::getDword( const char* name, DWORD defaultValue )
+{	return DBGetContactSettingDword( NULL, m_szModuleName, name, defaultValue );
+}
+
+int CIrcProto::getDword( HANDLE hContact, const char* name, DWORD defaultValue )
+{	return DBGetContactSettingDword(hContact, m_szModuleName, name, defaultValue );
+}
+
+int CIrcProto::getString( const char* name, DBVARIANT* result )
+{	return DBGetContactSettingString( NULL, m_szModuleName, name, result );
+}
+
+int CIrcProto::getString( HANDLE hContact, const char* name, DBVARIANT* result )
+{	return DBGetContactSettingString( hContact, m_szModuleName, name, result );
+}
+
+int CIrcProto::getTString( const char* name, DBVARIANT* result )
+{	return DBGetContactSettingTString( NULL, m_szModuleName, name, result );
+}
+
+int CIrcProto::getTString( HANDLE hContact, const char* name, DBVARIANT* result )
+{	return DBGetContactSettingTString( hContact, m_szModuleName, name, result );
+}
+
+int CIrcProto::getWord( const char* name, WORD defaultValue )
+{	return DBGetContactSettingWord( NULL, m_szModuleName, name, defaultValue );
+}
+
+int CIrcProto::getWord( HANDLE hContact, const char* name, WORD defaultValue )
+{	return DBGetContactSettingWord(hContact, m_szModuleName, name, defaultValue );
+}
+
 void CIrcProto::setByte( const char* name, BYTE value )
 {	DBWriteContactSettingByte(NULL, m_szModuleName, name, value );
 }
@@ -69,7 +109,7 @@ void CIrcProto::setWord( HANDLE hContact, const char* name, int value )
 void CIrcProto::AddToJTemp(TString sCommand)
 {
 	DBVARIANT dbv;
-	if ( !DBGetContactSettingTString(NULL, m_szModuleName, "JTemp", &dbv )) {
+	if ( !getTString( "JTemp", &dbv )) {
 		sCommand = TString(dbv.ptszVal) + _T(" ") + sCommand;
 		DBFreeVariant( &dbv );
 	}
@@ -466,7 +506,7 @@ int CIrcProto::CallChatEvent(WPARAM wParam, LPARAM lParam)
 	int iVal = 0;
 
 	// first see if the scripting module should modify or stop this event
-	if ( bMbotInstalled && ScriptingEnabled && gce 
+	if ( m_bMbotInstalled && m_scriptingEnabled && gce 
 		&& gce->time != 0 && (gce->pDest->pszID == NULL 
 		|| lstrlen(gce->pDest->ptszID) != 0 && lstrcmpi(gce->pDest->ptszID , SERVERWINDOW)))
 	{
@@ -493,7 +533,7 @@ int CIrcProto::CallChatEvent(WPARAM wParam, LPARAM lParam)
 			//MBOT CORRECTIONS
 			//if ( gcetemp && gcetemp->pDest && gcetemp->pDest->ptszID ) {
 			if ( gcetemp && gcetemp->pDest && gcetemp->pDest->ptszID && 
-				!my_strstri(gcetemp->pDest->ptszID, (IsConnected()) ? GetInfo().sNetwork.c_str() : TranslateT("Offline")) ) {
+				!my_strstri(gcetemp->pDest->ptszID, (IsConnected()) ? m_info.sNetwork.c_str() : TranslateT("Offline")) ) {
 
 				TString sTempId = MakeWndID( gcetemp->pDest->ptszID );
 				mir_realloc( gcetemp->pDest->ptszID, sizeof(TCHAR)*(sTempId.length() + 1));
@@ -542,7 +582,7 @@ int CIrcProto::DoEvent(int iEvent, const TCHAR* pszWindow, const TCHAR* pszNick,
 
 	if ( pszWindow ) {
 		if ( lstrcmpi( pszWindow, SERVERWINDOW))
-			sID = pszWindow + (TString)_T(" - ") + GetInfo().sNetwork;
+			sID = pszWindow + (TString)_T(" - ") + m_info.sNetwork;
 		else
 			sID = pszWindow;
 		gcd.ptszID = (TCHAR*)sID.c_str();
@@ -561,7 +601,7 @@ int CIrcProto::DoEvent(int iEvent, const TCHAR* pszWindow, const TCHAR* pszNick,
 	if (iEvent == GC_EVENT_TOPIC)
 	  gce.ptszUserInfo = pszUserInfo;
 	else
-	  gce.ptszUserInfo = ShowAddresses ? pszUserInfo : NULL;
+	  gce.ptszUserInfo = m_showAddresses ? pszUserInfo : NULL;
 
 	if ( !sText.empty() )
 		gce.ptszText = sText.c_str();
@@ -709,7 +749,7 @@ int CIrcProto::SetChannelSBText(TString sWindow, CHANNELINFO * wi)
 TString CIrcProto::MakeWndID(const TCHAR* sWindow)
 {
 	TCHAR buf[200];
-	mir_sntprintf( buf, SIZEOF(buf), _T("%s - %s"), sWindow, (IsConnected()) ? GetInfo().sNetwork.c_str() : TranslateT("Offline"));
+	mir_sntprintf( buf, SIZEOF(buf), _T("%s - %s"), sWindow, (IsConnected()) ? m_info.sNetwork.c_str() : TranslateT("Offline"));
 	return TString(buf);
 }
 
@@ -773,7 +813,7 @@ void CIrcProto::FindLocalIP(HANDLE con) // inspiration from jabber
 		struct sockaddr_in saddr;
 		int len = sizeof(saddr);
 		getsockname(socket, (struct sockaddr *) &saddr, &len);
-		lstrcpynA(MyLocalHost, inet_ntoa(saddr.sin_addr), 49);
+		lstrcpynA(m_myLocalHost, inet_ntoa(saddr.sin_addr), 49);
 }	} 
 
 void CIrcProto::DoUserhostWithReason(int type, TString reason, bool bSendCommand, TString userhostparams, ...)
@@ -865,9 +905,9 @@ void CIrcProto::ClearUserhostReasons(int type)
 
 SERVER_INFO::~SERVER_INFO()
 {
-	mir_free( Name );
+	mir_free( m_name );
 	mir_free( Address );
-	mir_free( PortStart );
-	mir_free( PortEnd );
+	mir_free( m_portStart );
+	mir_free( m_portEnd );
 	mir_free( Group );
 }

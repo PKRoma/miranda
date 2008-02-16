@@ -26,7 +26,7 @@ int __cdecl CIrcProto::Scripting_InsertRawIn(WPARAM wParam,LPARAM lParam)
 {
 	char* pszRaw = ( char* ) lParam;
 
-	if ( bMbotInstalled && ScriptingEnabled && pszRaw && IsConnected() ) {
+	if ( m_bMbotInstalled && m_scriptingEnabled && pszRaw && IsConnected() ) {
 		TCHAR* p = mir_a2t( pszRaw );
 		InsertIncomingEvent( p );
 		mir_free( p );
@@ -39,7 +39,7 @@ int __cdecl CIrcProto::Scripting_InsertRawIn(WPARAM wParam,LPARAM lParam)
 int __cdecl CIrcProto::Scripting_InsertRawOut( WPARAM wParam, LPARAM lParam )
 {
 	char* pszRaw = ( char* ) lParam;
-	if ( bMbotInstalled && ScriptingEnabled && pszRaw && IsConnected() ) {	
+	if ( m_bMbotInstalled && m_scriptingEnabled && pszRaw && IsConnected() ) {	
 		String S = pszRaw;
 		ReplaceString( S, "%", "%%%%");
 		NLSendNoScript((const unsigned char *)S.c_str(), lstrlenA(S.c_str()));
@@ -55,7 +55,7 @@ int __cdecl CIrcProto::Scripting_InsertGuiIn(WPARAM wParam,LPARAM lParam)
 	WPARAM_GUI_IN * wgi = (WPARAM_GUI_IN *) wParam;
 
 
-	if ( bMbotInstalled && ScriptingEnabled && gce ) {	
+	if ( m_bMbotInstalled && m_scriptingEnabled && gce ) {	
 		TCHAR* p1 = NULL;
 		TString S;
 		if ( gce->pDest && gce->pDest->ptszID ) {
@@ -103,7 +103,7 @@ int __cdecl CIrcProto::Scripting_InsertGuiOut( WPARAM wParam,LPARAM lParam )
 {
 	GCHOOK* gch = ( GCHOOK* )lParam;
 
-	if ( bMbotInstalled && ScriptingEnabled && gch ) {	
+	if ( m_bMbotInstalled && m_scriptingEnabled && gch ) {	
 		GCHOOK* gchook = new GCHOOK;
 		gchook->pDest = new GCDEST;
 
@@ -181,7 +181,7 @@ BOOL CIrcProto::Scripting_TriggerMSPGuiOut(GCHOOK* gch)
 
 int __cdecl CIrcProto::Scripting_GetIrcData(WPARAM wparam, LPARAM lparam)
 {
-	if ( bMbotInstalled && ScriptingEnabled && lparam ) {
+	if ( m_bMbotInstalled && m_scriptingEnabled && lparam ) {
 		String sString = ( char* ) lparam, sRequest;
 		TString sOutput, sChannel; 
 
@@ -197,20 +197,20 @@ int __cdecl CIrcProto::Scripting_GetIrcData(WPARAM wparam, LPARAM lparam)
 		transform (sRequest.begin(),sRequest.end(), sRequest.begin(), tolower);
 
 		if (sRequest == "ownnick" && IsConnected())
-			sOutput = GetInfo().sNick;
+			sOutput = m_info.sNick;
 
 		else if (sRequest == "network" && IsConnected())
-			sOutput = GetInfo().sNetwork;
+			sOutput = m_info.sNetwork;
 
 		else if (sRequest == "primarynick")
-			sOutput = Nick;
+			sOutput = m_nick;
 
 		else if (sRequest == "secondarynick")
-			sOutput = AlternativeNick;
+			sOutput = m_alternativeNick;
 
 		else if (sRequest == "myip")
-			return ( int )mir_strdup( ManualHost ? MySpecifiedHostIP : 
-										( IPFromServer ) ? MyHost : MyLocalHost);
+			return ( int )mir_strdup( m_manualHost ? m_mySpecifiedHostIP : 
+										( m_IPFromServer ) ? m_myHost : m_myLocalHost);
 
 		else if (sRequest == "usercount" && !sChannel.empty()) {
 			TString S = MakeWndID(sChannel.c_str());
