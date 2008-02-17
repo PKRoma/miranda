@@ -60,8 +60,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../../include/m_message.h"
 #include "../../include/m_icolib.h"
 #include "../../include/m_popup.h"
+#include "../../include/m_chat.h"
 #include "resource.h"
-#include "m_chat.h"
 #include "m_ieview.h"
 #include "m_smileyadd.h"
 
