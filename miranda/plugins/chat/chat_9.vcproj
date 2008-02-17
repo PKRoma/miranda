@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="chat"
 	ProjectGUID="{268BD296-8DD3-4715-A386-CF120398EC98}"
 	RootNamespace="chat"
@@ -824,10 +824,6 @@
 				>
 			</File>
 			<File
-				RelativePath="m_chat.h"
-				>
-			</File>
-			<File
 				RelativePath="richutil.h"
 				>
 			</File>
@@ -836,14 +832,6 @@
 				>
 				<File
 					RelativePath="AggressiveOptimize.h"
-					>
-				</File>
-				<File
-					RelativePath="IcoLib.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\include\m_popup.h"
 					>
 				</File>
 				<File
