@@ -123,10 +123,12 @@ public:
 
 	void Enable( int bIsEnable = true );
 	__inline void Disable() { Enable( false ); }
+	BOOL Enabled( void ) const;
 
 	LRESULT SendMsg( UINT Msg, WPARAM wParam, LPARAM lParam );
 
 	void SetText(const TCHAR *text);
+	void SetTextA(const char *text);
 	void SetInt(int value);
 
 	TCHAR *GetText();
@@ -402,9 +404,11 @@ public:
 	}
 
 	// Control interface
-	int    AddString(TCHAR *text, LPARAM data=0);
+	int    AddString(TCHAR *text, LPARAM data = 0 );
+	int    AddStringA(char *text, LPARAM data = 0 );
 	void   DeleteString(int index);
 	int    FindString(TCHAR *str, int index = -1, bool exact = false);
+	int    FindStringA(char *str, int index = -1, bool exact = false);
 	int    GetCount();
 	int    GetCurSel();
 	bool   GetDroppedState();
@@ -571,31 +575,9 @@ protected:
 
 	// resister controls
 	void AddControl(CCtrlBase *ctrl);
-	void ManageControl(CCtrlBase *ctrl);
-
-	// register handlers for different controls
-	template<typename TDlg>
-	__inline void SetControlHandler(int idCtrl,
-			void (TDlg::*pfnOnCommand)(HWND hwndCtrl, WORD idCtrl, WORD idCode))
-			{ ManageControl(new CCtrlCustom<TDlg>((TDlg *)this, idCtrl, pfnOnCommand, NULL)); }
-
-	template<typename TDlg>
-	__inline void SetControlHandler(int idCtrl,
-			void (TDlg::*pfnOnNotify)(int idCtrl, NMHDR *pnmh))
-			{ ManageControl(new CCtrlCustom<TDlg>((TDlg *)this, idCtrl, NULL, pfnOnNotify)); }
-
-	template<typename TDlg>
-	__inline void SetControlHandler(int idCtrl,
-			void (TDlg::*pfnOnCommand)(HWND hwndCtrl, WORD idCtrl, WORD idCode),
-			void (TDlg::*pfnOnNotify)(int idCtrl, NMHDR *pnmh),
-			void (TDlg::*pfnOnMeasureItem)(MEASUREITEMSTRUCT *param) = NULL,
-			void (TDlg::*pfnOnDrawItem)(DRAWITEMSTRUCT *param) = NULL,
-			void (TDlg::*pfnOnDeleteItem)(DELETEITEMSTRUCT *param) = NULL)
-			{ ManageControl(new CCtrlCustom<TDlg>((TDlg *)this, idCtrl, pfnOnCommand, pfnOnNotify, pfnOnMeasureItem, pfnOnDrawItem, pfnOnDeleteItem)); }
 
 private:
 	LIST<CCtrlBase> m_controls;
-	LIST<CCtrlBase> m_autocontrols; // this controls will be automatically destroyed
 
 	void NotifyControls(void (CCtrlBase::*fn)());
 	CCtrlBase *FindControl(int idCtrl);

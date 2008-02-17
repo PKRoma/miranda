@@ -30,8 +30,7 @@ Last change by : $Author: m_mluhov $
 extern HINSTANCE hInst;
 
 CDlgBase::CDlgBase(int idDialog, HWND hwndParent) :
-	m_controls(1, CCtrlBase::cmp),
-	m_autocontrols(1, CCtrlBase::cmp)
+	m_controls(1, CCtrlBase::cmp)
 {
 	m_idDialog = idDialog;
 	m_hwndParent = hwndParent;
@@ -46,12 +45,8 @@ CDlgBase::~CDlgBase()
 	// remove handlers
 	m_controls.destroy();
 
-	// destroy automatic handlers
-	for (int i = 0; i < m_controls.getCount(); ++i)
-		delete m_autocontrols[i];
-	m_autocontrols.destroy();
-
-	if (m_hwnd) DestroyWindow(m_hwnd);
+	if (m_hwnd)
+		DestroyWindow(m_hwnd);
 }
 
 void CDlgBase::Show()
@@ -126,9 +121,7 @@ BOOL CDlgBase::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					return result;
 			}
 
-			if ( m_initialized && ( idCode == CBN_SELCHANGE || idCode == EN_CHANGE ))
-				SendMessage( GetParent( m_hwnd ), PSM_CHANGED, 0, 0 );
-			else if ( idCode == BN_CLICKED && ( idCtrl == IDOK || idCtrl == IDCANCEL ))
+			if ( idCode == BN_CLICKED && ( idCtrl == IDOK || idCtrl == IDCANCEL ))
 				PostMessage( m_hwnd, WM_CLOSE, 0, 0 );
 			return FALSE;
 		}
@@ -240,12 +233,6 @@ void CDlgBase::AddControl(CCtrlBase *ctrl)
 	m_controls.insert(ctrl);
 }
 
-void CDlgBase::ManageControl(CCtrlBase *ctrl)
-{
-	AddControl(ctrl);
-	m_autocontrols.insert(ctrl);
-}
-
 void CDlgBase::NotifyControls(void (CCtrlBase::*fn)())
 {
 	for (int i = 0; i < m_controls.getCount(); ++i)
@@ -269,7 +256,16 @@ CCtrlCombo::CCtrlCombo( CDlgBase* dlg, int ctrlId ) :
 int CCtrlCombo::AddString(TCHAR *text, LPARAM data)
 {
 	int iItem = SendMessage(m_hwnd, CB_ADDSTRING, 0, (LPARAM)text);
-	SendMessage(m_hwnd, CB_SETITEMDATA, iItem, data);
+	if ( data )
+		SendMessage(m_hwnd, CB_SETITEMDATA, iItem, data);
+	return iItem;
+}
+
+int CCtrlCombo::AddStringA(char *text, LPARAM data)
+{
+	int iItem = SendMessageA(m_hwnd, CB_ADDSTRING, 0, (LPARAM)text);
+	if ( data )
+		SendMessage(m_hwnd, CB_SETITEMDATA, iItem, data);
 	return iItem;
 }
 
@@ -279,6 +275,10 @@ void CCtrlCombo::DeleteString(int index)
 
 int CCtrlCombo::FindString(TCHAR *str, int index, bool exact )
 {	return SendMessage(m_hwnd, exact?CB_FINDSTRINGEXACT:CB_FINDSTRING, index, (LPARAM)str);
+}
+
+int CCtrlCombo::FindStringA(char *str, int index, bool exact )
+{	return SendMessageA(m_hwnd, exact?CB_FINDSTRINGEXACT:CB_FINDSTRING, index, (LPARAM)str);
 }
 
 int CCtrlCombo::GetCount()
@@ -483,7 +483,12 @@ void CCtrlData::OnInit()
 void CCtrlData::NotifyChange()
 {
 	if (!m_parentWnd || m_parentWnd->IsInitialized()) m_changed = true;
-	if (m_parentWnd) m_parentWnd->OnChange(this);
+	if ( m_parentWnd ) {
+		m_parentWnd->OnChange(this);
+		if ( m_parentWnd->IsInitialized())
+			::SendMessage( ::GetParent( m_parentWnd->GetHwnd()), PSM_CHANGED, 0, 0 );
+	}
+
 	OnChange(this);
 }
 
@@ -525,7 +530,7 @@ CCtrlButton::CCtrlButton( CDlgBase* wnd, int idCtrl ) :
 
 BOOL CCtrlButton::OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 {
-	if ( idCode == BN_CLICKED )
+	if ( idCode == BN_CLICKED || idCode == STN_CLICKED )
 		OnClick(this);
 	return FALSE;
 }
@@ -560,6 +565,11 @@ void CCtrlBase::Enable( int bIsEnable )
 	::EnableWindow( m_hwnd, bIsEnable );
 }
 
+BOOL CCtrlBase::Enabled() const
+{
+	return ( m_hwnd ) ? IsWindowEnabled( m_hwnd ) : FALSE;
+}
+
 LRESULT CCtrlBase::SendMsg( UINT Msg, WPARAM wParam, LPARAM lParam )
 {
 	return ::SendMessage( m_hwnd, Msg, wParam, lParam );
@@ -568,6 +578,11 @@ LRESULT CCtrlBase::SendMsg( UINT Msg, WPARAM wParam, LPARAM lParam )
 void CCtrlBase::SetText(const TCHAR *text)
 {
 	::SetWindowText( m_hwnd, text );
+}
+
+void CCtrlBase::SetTextA(const char *text)
+{
+	::SetWindowTextA( m_hwnd, text );
 }
 
 void CCtrlBase::SetInt(int value)

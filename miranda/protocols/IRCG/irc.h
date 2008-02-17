@@ -472,7 +472,7 @@ struct CIrcProto : public PROTO_INTERFACE
 	UINT_PTR	DCCTimer;	
 
 	//options.cpp
-	HWND m_hwndConnect, m_hwndAddServer, m_hwndIgnore;
+	HWND m_hwndConnect, m_hwndIgnore;
 
 	std::vector<CIrcIgnoreItem> m_ignoreItems;
 

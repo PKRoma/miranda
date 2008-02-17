@@ -1628,10 +1628,10 @@ bool CIrcProto::OnIrc_BANLIST( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming && pmsg->parameters.size() > 2 ) {
 		if ( m_managerDlg->GetHwnd() && (
-			IsDlgButtonChecked(m_managerDlg->GetHwnd(), IDC_RADIO1) && pmsg->sCommand == _T("367") ||
-			IsDlgButtonChecked(m_managerDlg->GetHwnd(), IDC_RADIO2) && pmsg->sCommand == _T("346") ||
-			IsDlgButtonChecked(m_managerDlg->GetHwnd(), IDC_RADIO3) && pmsg->sCommand == _T("348")) && 
-			!IsWindowEnabled(GetDlgItem(m_managerDlg->GetHwnd(), IDC_RADIO1)) && !IsWindowEnabled(GetDlgItem(m_managerDlg->GetHwnd(), IDC_RADIO2)) && !IsWindowEnabled(GetDlgItem(m_managerDlg->GetHwnd(), IDC_RADIO3)))
+			m_managerDlg->m_radio1.GetState() && pmsg->sCommand == _T("367") ||
+			m_managerDlg->m_radio2.GetState() && pmsg->sCommand == _T("346") ||
+			m_managerDlg->m_radio3.GetState() && pmsg->sCommand == _T("348")) && 
+			!m_managerDlg->m_radio1.Enabled() && !m_managerDlg->m_radio2.Enabled() && !m_managerDlg->m_radio3.Enabled())
 		{
 			TString S = pmsg->parameters[2];
 			if ( pmsg->parameters.size() > 3 ) {
@@ -1656,19 +1656,19 @@ bool CIrcProto::OnIrc_BANLISTEND( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming && pmsg->parameters.size() > 1 ) {
 		if ( m_managerDlg->GetHwnd() && 
-			  (IsDlgButtonChecked(m_managerDlg->GetHwnd(), IDC_RADIO1) && pmsg->sCommand == _T("368")
-			|| IsDlgButtonChecked(m_managerDlg->GetHwnd(), IDC_RADIO2) && pmsg->sCommand == _T("347")
-			|| IsDlgButtonChecked(m_managerDlg->GetHwnd(), IDC_RADIO3) && pmsg->sCommand == _T("349")) && 
-			!IsWindowEnabled(GetDlgItem(m_managerDlg->GetHwnd(), IDC_RADIO1)) && !IsWindowEnabled(GetDlgItem(m_managerDlg->GetHwnd(), IDC_RADIO2)) && !IsWindowEnabled(GetDlgItem(m_managerDlg->GetHwnd(), IDC_RADIO3)))
+			 ( m_managerDlg->m_radio1.GetState() && pmsg->sCommand == _T("368")
+			|| m_managerDlg->m_radio2.GetState() && pmsg->sCommand == _T("347")
+			|| m_managerDlg->m_radio3.GetState() && pmsg->sCommand == _T("349")) && 
+			!m_managerDlg->m_radio1.Enabled() && !m_managerDlg->m_radio2.Enabled() && !m_managerDlg->m_radio3.Enabled())
 		{
 			if ( strchr( sChannelModes.c_str(), 'b' ))
-				EnableWindow( GetDlgItem(m_managerDlg->GetHwnd(), IDC_RADIO1), true );
+				m_managerDlg->m_radio1.Enable();
 			if ( strchr( sChannelModes.c_str(), 'I' ))
-				EnableWindow( GetDlgItem(m_managerDlg->GetHwnd(), IDC_RADIO2), true );
+				m_managerDlg->m_radio2.Enable();
 			if ( strchr( sChannelModes.c_str(), 'e' ))
-				EnableWindow( GetDlgItem(m_managerDlg->GetHwnd(), IDC_RADIO3), true );
+				m_managerDlg->m_radio3.Enable();
 			if ( !IsDlgButtonChecked(m_managerDlg->GetHwnd(), IDC_NOTOP))
-				EnableWindow( GetDlgItem(m_managerDlg->GetHwnd(), IDC_ADD), true );
+				m_managerDlg->m_add.Enable();
 	}	}
 	
 	ShowMessage( pmsg );

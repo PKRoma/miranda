@@ -182,3 +182,149 @@ struct CQuestionDlg : public CCoolIrcDlg
 private:
 	CManagerDlg* m_owner;
 };
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// options
+
+struct CAddIgnoreDlg : public CProtoDlgBase<CIrcProto>
+{
+	CCtrlButton m_Ok;
+
+	TCHAR szOldMask[500];
+
+	CAddIgnoreDlg( CIrcProto* _pro, const TCHAR* mask, HWND parent );
+
+	virtual void OnInitDialog();
+	virtual void OnClose();
+
+	void __cdecl OnOk( CCtrlButton* );
+};
+
+struct CIgnorePrefsDlg : public CProtoDlgBase<CIrcProto>
+{
+	CCtrlMButton m_add, m_edit, m_del;
+	CCtrlCheck m_enable, m_ignoreChat, m_ignoreFile, m_ignoreChannel, m_ignoreUnknown;
+	CCtrlBase m_list;  // TODO - convert it to CCtrlListView
+	
+	CIgnorePrefsDlg( CIrcProto* _pro );
+
+	static CDlgBase* Create( void* param ) { return new CIgnorePrefsDlg(( CIrcProto* )param ); }
+
+	virtual void OnInitDialog();
+	virtual void OnDestroy();
+
+	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
+
+	void __cdecl OnEnableIgnore( CCtrlData* );
+	void __cdecl OnIgnoreChat( CCtrlData* );
+	void __cdecl OnAdd( CCtrlButton* );
+	void __cdecl OnEdit( CCtrlButton* );
+	void __cdecl OnDelete( CCtrlButton* );
+};
+
+struct COtherPrefsDlg : public CProtoDlgBase<CIrcProto>
+{
+	CCtrlButton  m_url;
+	CCtrlMButton m_add, m_delete;
+	CCtrlCombo   m_performCombo, m_codepage;
+	CCtrlEdit    m_pertormEdit;
+	CCtrlCheck   m_perform;
+
+	COtherPrefsDlg( CIrcProto* _pro );
+
+	static CDlgBase* Create( void* param ) { return new COtherPrefsDlg(( CIrcProto* )param ); }
+
+	virtual void OnInitDialog();
+	virtual void OnApply();
+	virtual void OnDestroy();
+
+	void __cdecl OnUrl( CCtrlButton* );
+	void __cdecl OnPerformCombo( CCtrlData* );
+	void __cdecl OnCodePage( CCtrlData* );
+	void __cdecl OnPerformEdit( CCtrlData* );
+	void __cdecl OnPerform( CCtrlData* );
+	void __cdecl OnAdd( CCtrlButton* );
+	void __cdecl OnDelete( CCtrlButton* );
+
+	void addPerformComboValue( int idx, const char* szValueName );
+};
+
+struct CCtcpPrefsDlg : public CProtoDlgBase<CIrcProto>
+{
+	CCtrlButton m_enableIP, m_fromServer;
+
+	CCtcpPrefsDlg( CIrcProto* _pro );
+
+	static CDlgBase* Create( void* param ) { return new CCtcpPrefsDlg(( CIrcProto* )param ); }
+
+	virtual void OnInitDialog();
+	virtual void OnApply();
+
+	void __cdecl OnClicked( CCtrlButton* );
+};
+
+//---- main property page: Account ------------------------------------------------------
+
+struct CConnectPrefsDlg : public CProtoDlgBase<CIrcProto>
+{
+	CCtrlCombo   m_serverCombo;
+	CCtrlEdit    m_server, m_port, m_port2, m_pass;
+	CCtrlMButton m_add, m_edit, m_del;
+	CCtrlEdit    m_nick, m_nick2, m_name, m_userID;
+
+	CCtrlCheck   m_ident, m_identTimed;
+	CCtrlEdit    m_identSystem, m_identPort;
+
+	CCtrlCheck   m_retry;
+	CCtrlEdit    m_retryCount, m_retryWait;
+
+	CCtrlCheck   m_forceVisible, m_rejoinOnKick, m_rejoinChannels, m_disableError,
+		          m_address, m_useServer, m_showServer, m_keepAlive, m_autoJoin,
+					 m_oldStyle, m_onlineNotif, m_channelAway, m_startup;
+	CCtrlEdit    m_onlineTimer, m_limit, m_spin1, m_spin2, m_ssl;
+
+	CConnectPrefsDlg( CIrcProto* _pro );
+
+	static CDlgBase* Create( void* param ) { return new CConnectPrefsDlg(( CIrcProto* )param ); }
+
+	virtual void OnInitDialog();
+	virtual void OnApply();
+	virtual void OnDestroy();
+
+	void __cdecl OnServerCombo( CCtrlData* );
+	void __cdecl OnAddServer( CCtrlButton* );
+	void __cdecl OnDeleteServer( CCtrlButton* );
+	void __cdecl OnEditServer( CCtrlButton* );
+	void __cdecl OnStartup( CCtrlData* );
+	void __cdecl OnIdent( CCtrlData* );
+	void __cdecl OnUseServer( CCtrlData* );
+	void __cdecl OnOnlineNotif( CCtrlData* );
+	void __cdecl OnChannelAway( CCtrlData* );
+	void __cdecl OnRetry( CCtrlData* );
+};
+
+struct CAddServerDlg : public CProtoDlgBase<CIrcProto>
+{
+	CConnectPrefsDlg* m_owner;
+	CCtrlButton m_OK;
+
+	CAddServerDlg( CIrcProto* _pro, CConnectPrefsDlg* _owner );
+
+	virtual void OnInitDialog();
+	virtual void OnClose();
+
+	void __cdecl OnOk( CCtrlButton* );
+};
+
+struct CEditServerDlg : public CProtoDlgBase<CIrcProto>
+{
+	CCtrlButton m_OK;
+	CConnectPrefsDlg* m_owner;
+
+	CEditServerDlg( CIrcProto* _pro, CConnectPrefsDlg* _owner );
+
+	virtual void OnInitDialog();
+	virtual void OnClose();
+
+	void __cdecl OnOk( CCtrlButton* );
+};

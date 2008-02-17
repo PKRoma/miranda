@@ -557,8 +557,7 @@ void CQuickDlg::OnInitDialog()
 				p2 = strchr(p1, '\0');
 			pData->Group = ( char* )mir_alloc( p2-p1+1 );
 			lstrcpynA(pData->Group, p1, p2-p1+1);
-			int iItem = SendDlgItemMessageA( m_hwnd, IDC_SERVERCOMBO, CB_ADDSTRING,0,(LPARAM) pData->m_name);
-			SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_SETITEMDATA, iItem,(LPARAM) pData);
+			m_serverCombo.AddStringA( pData->m_name, ( LPARAM )pData );
 		}
 	}
 	else EnableWindow(GetDlgItem( m_hwnd, IDOK), false);
@@ -588,12 +587,11 @@ void CQuickDlg::OnInitDialog()
 
 	pData->m_iSSL = m_proto->getByte( "UseSSL", 0 );
 	
-	int iItem = SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_ADDSTRING,0,(LPARAM)  mir_a2t(pData->m_name));
-	SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_SETITEMDATA, iItem,(LPARAM) pData);
+	int iItem = m_serverCombo.AddStringA( pData->m_name, ( LPARAM )pData );
 
 	if ( m_proto->m_quickComboSelection != -1 ) {
-		SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_SETCURSEL, m_proto->m_quickComboSelection,0);
-		SendMessage( m_hwnd, WM_COMMAND, MAKEWPARAM(IDC_SERVERCOMBO, CBN_SELCHANGE), 0);
+		m_serverCombo.SetCurSel( m_proto->m_quickComboSelection );
+		OnServerCombo( NULL );
 	}
 	else EnableWindow(GetDlgItem( m_hwnd, IDOK), false);
 }
@@ -602,9 +600,9 @@ void CQuickDlg::OnDestroy()
 {
 	CCoolIrcDlg::OnDestroy();
 	
-	int j = (int) SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_GETCOUNT, 0, 0);
+	int j = m_serverCombo.GetCount();
 	for ( int index2 = 0; index2 < j; index2++ )
-		delete ( SERVER_INFO* )SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_GETITEMDATA, index2, 0);
+		delete ( SERVER_INFO* )m_serverCombo.GetItemData( index2 );
 	
 	m_proto->m_quickDlg = NULL;
 }
@@ -616,8 +614,8 @@ void CQuickDlg::OnOk( CCtrlButton* )
 	GetDlgItemTextA( m_hwnd, IDC_PORT2,  m_proto->m_portEnd,    SIZEOF(m_proto->m_portEnd));
 	GetDlgItemTextA( m_hwnd, IDC_PASS,   m_proto->m_password,   SIZEOF(m_proto->m_password));
 	
-	int i = SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_GETCURSEL, 0, 0);
-	SERVER_INFO* pData = ( SERVER_INFO* )SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_GETITEMDATA, i, 0);
+	int i = m_serverCombo.GetCurSel();
+	SERVER_INFO* pData = ( SERVER_INFO* )m_serverCombo.GetItemData( i );
 	if ( pData && (int)pData != CB_ERR ) {
 		lstrcpyA( m_proto->m_network, pData->Group ); 
 		if( m_ssleay32 ) {
@@ -634,7 +632,7 @@ void CQuickDlg::OnOk( CCtrlButton* )
 	TCHAR windowname[20];
 	GetWindowText( m_hwnd, windowname, 20);
 	if ( lstrcmpi(windowname, _T("Miranda IRC")) == 0 ) {
-		m_proto->m_serverComboSelection = SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_GETCURSEL, 0, 0);
+		m_proto->m_serverComboSelection = m_serverCombo.GetCurSel();
 		m_proto->setDword("ServerComboSelection",m_proto->m_serverComboSelection);
 		m_proto->setString("ServerName",m_proto->m_serverName);
 		m_proto->setString("PortStart",m_proto->m_portStart);
@@ -645,7 +643,7 @@ void CQuickDlg::OnOk( CCtrlButton* )
 		m_proto->setString("Network",m_proto->m_network);
 		m_proto->setByte("UseSSL",m_proto->m_iSSL);
 	}
-	m_proto->m_quickComboSelection = SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_GETCURSEL, 0, 0);
+	m_proto->m_quickComboSelection = m_serverCombo.GetCurSel();
 	m_proto->setDword("QuickComboSelection",m_proto->m_quickComboSelection);
 	m_proto->DisconnectFromServer();
 	m_proto->ConnectToServer();
@@ -653,8 +651,8 @@ void CQuickDlg::OnOk( CCtrlButton* )
 
 void CQuickDlg::OnServerCombo( CCtrlData* )
 {
-	int i = SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_GETCURSEL, 0, 0);
-	SERVER_INFO* pData = ( SERVER_INFO* )SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_GETITEMDATA, i, 0);
+	int i = m_serverCombo.GetCurSel();
+	SERVER_INFO* pData = ( SERVER_INFO* )m_serverCombo.GetItemData( i );
 	if ( i == CB_ERR )
 		return;
 
@@ -884,7 +882,7 @@ void CManagerDlg::OnInitDialog()
 
 void CManagerDlg::OnClose()
 {
-	if ( IsWindowEnabled( m_applyModes.GetHwnd()) || IsWindowEnabled( m_applyTopic.GetHwnd())) {
+	if ( m_applyModes.Enabled() || m_applyTopic.Enabled()) {
 		int i = MessageBox( NULL, TranslateT("You have not applied all changes!\n\nApply before exiting?"), TranslateT("IRC warning"), MB_YESNOCANCEL|MB_ICONWARNING|MB_DEFBUTTON3);
 		if ( i == IDCANCEL ) {
 			m_lresult = TRUE;
@@ -892,9 +890,9 @@ void CManagerDlg::OnClose()
 		}
 
 		if ( i == IDYES ) {
-			if ( IsWindowEnabled( m_applyModes.GetHwnd()))
+			if ( m_applyModes.Enabled())
 				OnApplyModes( NULL );
-			if ( IsWindowEnabled( m_applyTopic.GetHwnd()))
+			if ( m_applyTopic.Enabled())
 				OnApplyTopic( NULL );
 	}	}
 
