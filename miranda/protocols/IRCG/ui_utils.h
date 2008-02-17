@@ -121,8 +121,8 @@ public:
 	__inline HWND GetHwnd() const { return m_hwnd; }
 	__inline CDlgBase *GetParent() { return m_parentWnd; }
 
-	void Enable();
-	void Disable();
+	void Enable( int bIsEnable = true );
+	__inline void Disable() { Enable( false ); }
 
 	LRESULT SendMsg( UINT Msg, WPARAM wParam, LPARAM lParam );
 
@@ -190,6 +190,17 @@ public:
 	virtual BOOL OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode);
 
 	CCallback<CCtrlButton> OnClick;
+};
+
+class CCtrlMButton : public CCtrlButton
+{
+public:
+	CCtrlMButton( CDlgBase* dlg, int ctrlId, HICON hIcon, const char* tooltip );
+	virtual void OnInit();
+
+protected:
+	HICON m_hIcon;
+	const char* m_toolTip;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////

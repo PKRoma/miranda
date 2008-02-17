@@ -133,26 +133,15 @@ struct CQuickDlg : public CProtoDlgBase<CIrcProto>
 	void OnServerCombo(HWND hwndCtrl, WORD idCtrl, WORD idCode);
 };
 
-struct CQuestionDlg : public CProtoDlgBase<CIrcProto>
-{
-	CQuestionDlg( CIrcProto* _pro, HWND parent );
-
-	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
-
-	virtual void OnInitDialog();
-	virtual void OnClose();
-	virtual void OnDestroy();
-
-	CCtrlButton  m_Ok;
-	void __cdecl OnOk( CCtrlButton* );
-};
-
 struct CManagerDlg : public CProtoDlgBase<CIrcProto>
 {
 	CManagerDlg( CIrcProto* _pro );
 
-	CCtrlCheck m_check1, m_check2, m_check3, m_check4, m_check5, m_check6, m_check7, m_check8, m_check9;
-	CCtrlButton m_add, m_edit, m_remove;
+	CCtrlCheck   m_check1, m_check2, m_check3, m_check4, m_check5, m_check6, m_check7, m_check8, m_check9;
+	CCtrlEdit    m_key, m_limit;
+	CCtrlCombo   m_topic;
+	CCtrlCheck   m_radio1, m_radio2, m_radio3;
+	CCtrlMButton m_add, m_edit, m_remove, m_applyTopic, m_applyModes;
 
 	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -163,16 +152,40 @@ struct CManagerDlg : public CProtoDlgBase<CIrcProto>
 	void __cdecl OnCheck( CCtrlData* );
 	void __cdecl OnCheck5( CCtrlData* );
 	void __cdecl OnCheck6( CCtrlData* );
+	void __cdecl OnRadio( CCtrlData* );
 
 	void __cdecl OnAdd( CCtrlButton* );
 	void __cdecl OnEdit( CCtrlButton* );
 	void __cdecl OnRemove( CCtrlButton* );
 
-	void OnApplyModes(HWND hwndCtrl, WORD idCtrl, WORD idCode);
-	void OnApplyTopic(HWND hwndCtrl, WORD idCtrl, WORD idCode);
-	void OnCommand_Yes(HWND hwndCtrl, WORD idCtrl, WORD idCode);
-	void OnChangeModes(HWND hwndCtrl, WORD idCtrl, WORD idCode);
-	void OnChangeTopic(HWND hwndCtrl, WORD idCtrl, WORD idCode);
+	void __cdecl OnChangeModes( CCtrlData* );
+	void __cdecl OnChangeTopic( CCtrlData* );
+
+	void __cdecl OnApplyModes( CCtrlButton* );
+	void __cdecl OnApplyTopic( CCtrlButton* );
+
 	void OnList(HWND hwndCtrl, WORD idCtrl, WORD idCode);
-	void OnRadio(HWND hwndCtrl, WORD idCtrl, WORD idCode);
+
+	void ApplyQuestion();
+	void CloseQuestion();
+	void InitManager( int mode, const TCHAR* window );
+};
+
+struct CQuestionDlg : public CProtoDlgBase<CIrcProto>
+{
+	CQuestionDlg( CIrcProto* _pro, CManagerDlg* owner = NULL );
+
+	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
+
+	virtual void OnInitDialog();
+	virtual void OnClose();
+	virtual void OnDestroy();
+
+	CCtrlButton  m_Ok;
+	void __cdecl OnOk( CCtrlButton* );
+
+	void Activate();
+
+private:
+	CManagerDlg* m_owner;
 };

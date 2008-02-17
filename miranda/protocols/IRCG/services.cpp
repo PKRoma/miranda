@@ -381,7 +381,7 @@ int __cdecl CIrcProto::OnShowServerMenuCommand(WPARAM wp, LPARAM lp)
 
 int __cdecl CIrcProto::OnChangeNickMenuCommand(WPARAM wp, LPARAM lp)
 {
-	if ( !m_nickDlg->GetHwnd() ) {
+	if ( !m_nickDlg ) {
 		m_nickDlg = new CNickDlg( this );
 		m_nickDlg->Show();
 	}
@@ -601,18 +601,18 @@ int __cdecl CIrcProto::GCEventHook(WPARAM wParam,LPARAM lParam)
 						break;
 					case 8:		// nickserv Identify
 						{
-						CQuestionDlg* dlg = new CQuestionDlg( this, NULL );
-						dlg->Show();
-						HWND question_hWnd = dlg->GetHwnd();
-						HWND hEditCtrl = GetDlgItem( question_hWnd, IDC_EDIT);
-						SetDlgItemText( question_hWnd, IDC_CAPTION, TranslateT("Identify nick"));
-						SetWindowText( GetDlgItem( question_hWnd, IDC_TEXT), TranslateT("Please enter your password") );
-						SetDlgItemText( question_hWnd, IDC_HIDDENEDIT, _T("/nickserv IDENTIFY %question=\"%s\",\"%s\""));
-						SetWindowLong(GetDlgItem( question_hWnd, IDC_EDIT), GWL_STYLE,
-							(LONG)GetWindowLong(GetDlgItem( question_hWnd, IDC_EDIT), GWL_STYLE) | ES_PASSWORD);
-						SendMessage(hEditCtrl, EM_SETPASSWORDCHAR,(WPARAM)_T('*'),0 );
-						SetFocus(hEditCtrl);
-						PostMessage( question_hWnd, IRC_ACTIVATE, 0, 0);
+							CQuestionDlg* dlg = new CQuestionDlg( this );
+							dlg->Show();
+							HWND question_hWnd = dlg->GetHwnd();
+							HWND hEditCtrl = GetDlgItem( question_hWnd, IDC_EDIT);
+							SetDlgItemText( question_hWnd, IDC_CAPTION, TranslateT("Identify nick"));
+							SetWindowText( GetDlgItem( question_hWnd, IDC_TEXT), TranslateT("Please enter your password") );
+							SetDlgItemText( question_hWnd, IDC_HIDDENEDIT, _T("/nickserv IDENTIFY %question=\"%s\",\"%s\""));
+							SetWindowLong(GetDlgItem( question_hWnd, IDC_EDIT), GWL_STYLE,
+								(LONG)GetWindowLong(GetDlgItem( question_hWnd, IDC_EDIT), GWL_STYLE) | ES_PASSWORD);
+							SendMessage(hEditCtrl, EM_SETPASSWORDCHAR,(WPARAM)_T('*'),0 );
+							SetFocus(hEditCtrl);
+							dlg->Activate();
 						}
 						break;
 					case 9:		// nickserv remind password

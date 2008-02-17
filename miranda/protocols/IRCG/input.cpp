@@ -432,9 +432,7 @@ BOOL CIrcProto::DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact
 				else {
 					m_managerDlg = new CManagerDlg( this );
 					m_managerDlg->Show();
-					SetWindowText( m_managerDlg->GetHwnd(), TranslateT( "Channel Manager" ));
-					SetWindowText( GetDlgItem( m_managerDlg->GetHwnd(), IDC_CAPTION ), window );
-					SendMessage( m_managerDlg->GetHwnd(), IRC_INITMANAGER, 1, (LPARAM)window );
+					m_managerDlg->InitManager( 1, window );
 		}	}	}
 		return true;
 	}
@@ -736,7 +734,7 @@ static void __stdcall DoInputRequestAliasApcStub( void* _par )
 							*p = '\0';
 	}	}	}	}	}
 
-	CQuestionDlg* dlg = new CQuestionDlg( ppro, NULL );
+	CQuestionDlg* dlg = new CQuestionDlg( ppro );
 	dlg->Show();
 	HWND question_hWnd = dlg->GetHwnd();
 
@@ -754,7 +752,7 @@ static void __stdcall DoInputRequestAliasApcStub( void* _par )
 		SetWindowText( GetDlgItem( question_hWnd, IDC_EDIT), defaulttext );
 
 	SetDlgItemText( question_hWnd, IDC_HIDDENEDIT, command.c_str());
-	PostMessage( question_hWnd, IRC_ACTIVATE, 0, 0);
+	dlg->Activate();
 
 	mir_free( str );
 	delete param;

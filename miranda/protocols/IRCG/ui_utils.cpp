@@ -493,6 +493,24 @@ void CCtrlData::CreateDbLink( const char* szModuleName, const char* szSetting, T
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
+// CCtrlMButton
+
+CCtrlMButton::CCtrlMButton( CDlgBase* dlg, int ctrlId, HICON hIcon, const char* tooltip ) :
+	CCtrlButton( dlg, ctrlId ),
+	m_hIcon( hIcon ),
+	m_toolTip( tooltip )
+{
+}
+
+void CCtrlMButton::OnInit()
+{
+	CCtrlButton::OnInit();
+
+	SendMessage( m_hwnd, BM_SETIMAGE, IMAGE_ICON, (LPARAM)m_hIcon );
+	SendMessage( m_hwnd, BUTTONADDTOOLTIP, (WPARAM)m_toolTip, 0);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 // CCtrlButton
 
 CCtrlButton::CCtrlButton( CDlgBase* wnd, int idCtrl ) :
@@ -504,7 +522,7 @@ BOOL CCtrlButton::OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 {
 	if ( idCode == BN_CLICKED )
 		OnClick(this);
-	return TRUE;
+	return FALSE;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -532,14 +550,9 @@ void CCtrlBase::OnDestroy()
 	m_hwnd = NULL;
 }
 
-void CCtrlBase::Enable()
+void CCtrlBase::Enable( int bIsEnable )
 {
-	::EnableWindow( m_hwnd, TRUE );
-}
-
-void CCtrlBase::Disable()
-{
-	::EnableWindow( m_hwnd, FALSE );
+	::EnableWindow( m_hwnd, bIsEnable );
 }
 
 LRESULT CCtrlBase::SendMsg( UINT Msg, WPARAM wParam, LPARAM lParam )

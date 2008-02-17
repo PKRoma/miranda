@@ -821,9 +821,10 @@ void CQuickDlg::OnServerCombo(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 /////////////////////////////////////////////////////////////////////////////////////////
 // 'Question' dialog
 
-CQuestionDlg::CQuestionDlg(CIrcProto *_pro, HWND parent ) :
-	CProtoDlgBase<CIrcProto>( _pro, IDD_QUESTION, parent ),
-	m_Ok( this, IDOK )
+CQuestionDlg::CQuestionDlg(CIrcProto *_pro, CManagerDlg* owner ) :
+	CProtoDlgBase<CIrcProto>( _pro, IDD_QUESTION, ( owner == NULL ) ? NULL : owner->GetHwnd()),
+	m_Ok( this, IDOK ),
+	m_owner( owner )
 {
 	m_Ok.OnClick = Callback( this, &CQuestionDlg::OnOk );
 }
@@ -842,9 +843,9 @@ void CQuestionDlg::OnInitDialog()
 
 void CQuestionDlg::OnClose()
 {
-	HWND hwnd = GetParent( m_hwnd);
-	if ( hwnd )
-		SendMessage(GetParent( m_hwnd), IRC_QUESTIONCLOSE, 0, 0);
+	if ( m_owner )
+		m_owner->CloseQuestion();
+
 	DestroyWindow( m_hwnd );
 }
 
@@ -857,11 +858,7 @@ void CQuestionDlg::OnDestroy()
 
 BOOL CQuestionDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	if ( msg == IRC_ACTIVATE ) {
-		ShowWindow( m_hwnd, SW_SHOW);
-		SetActiveWindow( m_hwnd);
-	}
-	else if ( msg == WM_CTLCOLOREDIT || msg == WM_CTLCOLORSTATIC ) {
+	if ( msg == WM_CTLCOLOREDIT || msg == WM_CTLCOLORSTATIC ) {
 		switch( GetDlgCtrlID(( HWND )lParam )) {
 		case IDC_WHITERECT:  case IDC_TEXT:  case IDC_CAPTION:  case IDC_LOGO:
 			SetTextColor((HDC)wParam,RGB(0,0,0));
@@ -913,19 +910,21 @@ void CQuestionDlg::OnOk( CCtrlButton* )
 		delete []m;
 		delete []l;
 
-		HWND hwnd = GetParent( m_hwnd);
-		if( hwnd )
-			SendMessage(hwnd, IRC_QUESTIONAPPLY, 0, 0);
+		if ( m_owner )
+			m_owner->ApplyQuestion();
 }	}
+
+void CQuestionDlg::Activate()
+{
+	ShowWindow( m_hwnd, SW_SHOW );
+	SetActiveWindow( m_hwnd );
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // 'Channel Manager' dialog
 
 CManagerDlg::CManagerDlg(CIrcProto *_pro) :
 	CProtoDlgBase<CIrcProto>( _pro, IDD_CHANMANAGER, NULL ),
-	m_add( this, IDC_ADD ),
-	m_edit( this, IDC_EDIT),
-	m_remove( this, IDC_REMOVE ),
 	m_check1( this, IDC_CHECK1 ),
 	m_check2( this, IDC_CHECK2 ),
 	m_check3( this, IDC_CHECK3 ),
@@ -934,11 +933,28 @@ CManagerDlg::CManagerDlg(CIrcProto *_pro) :
 	m_check6( this, IDC_CHECK6 ),
 	m_check7( this, IDC_CHECK7 ),
 	m_check8( this, IDC_CHECK8 ),
-	m_check9( this, IDC_CHECK9 )
+	m_check9( this, IDC_CHECK9 ),
+
+	m_key( this, IDC_KEY ),
+	m_limit( this, IDC_LIMIT ),
+	m_topic( this, IDC_TOPIC ),
+
+	m_add( this, IDC_ADD, _pro->LoadIconEx(IDI_ADD), LPGEN("Add ban/invite/exception")),
+	m_edit( this, IDC_EDIT, _pro->LoadIconEx(IDI_RENAME), LPGEN("Edit selected ban/invite/exception")),
+	m_remove( this, IDC_REMOVE, _pro->LoadIconEx(IDI_DELETE), LPGEN("Delete selected ban/invite/exception")),
+	m_applyModes( this, IDC_APPLYMODES, _pro->LoadIconEx( IDI_GO ), LPGEN("Set these modes for the channel")),
+	m_applyTopic( this, IDC_APPLYTOPIC, _pro->LoadIconEx( IDI_GO ), LPGEN("Set this topic for the channel")),
+
+	m_radio1( this, IDC_RADIO1 ),
+	m_radio2( this, IDC_RADIO2 ),
+	m_radio3( this, IDC_RADIO3 )
 {
 	m_add.OnClick = Callback( this, &CManagerDlg::OnAdd );
 	m_edit.OnClick = Callback( this, &CManagerDlg::OnEdit );
 	m_remove.OnClick = Callback( this, &CManagerDlg::OnRemove );
+
+	m_applyModes.OnClick = Callback( this, &CManagerDlg::OnApplyModes );
+	m_applyTopic.OnClick = Callback( this, &CManagerDlg::OnApplyTopic );
 
 	m_check1.OnChange = Callback( this, &CManagerDlg::OnCheck );
 	m_check2.OnChange = Callback( this, &CManagerDlg::OnCheck );
@@ -950,14 +966,15 @@ CManagerDlg::CManagerDlg(CIrcProto *_pro) :
 	m_check8.OnChange = Callback( this, &CManagerDlg::OnCheck );
 	m_check9.OnChange = Callback( this, &CManagerDlg::OnCheck );
 
-	SetControlHandler( IDC_APPLYTOPIC, &CManagerDlg::OnApplyTopic );
-	SetControlHandler( IDC_KEY, &CManagerDlg::OnChangeModes );
-	SetControlHandler( IDC_LIMIT, &CManagerDlg::OnChangeModes );
+	m_key.OnChange = Callback( this, &CManagerDlg::OnChangeModes );
+	m_limit.OnChange = Callback( this, &CManagerDlg::OnChangeModes );
+	m_topic.OnChange = Callback( this, &CManagerDlg::OnChangeTopic );
+
+	m_radio1.OnChange = Callback( this, &CManagerDlg::OnRadio );
+	m_radio2.OnChange = Callback( this, &CManagerDlg::OnRadio );
+	m_radio3.OnChange = Callback( this, &CManagerDlg::OnRadio );
+
 	SetControlHandler( IDC_LIST, &CManagerDlg::OnList );
-	SetControlHandler( IDC_RADIO1, &CManagerDlg::OnRadio );
-	SetControlHandler( IDC_RADIO2, &CManagerDlg::OnRadio );
-	SetControlHandler( IDC_RADIO3, &CManagerDlg::OnRadio );
-	SetControlHandler( IDC_TOPIC, &CManagerDlg::OnChangeTopic );
 }
 
 LRESULT CALLBACK MgrEditSubclassProc(HWND m_hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
@@ -1002,26 +1019,14 @@ void CManagerDlg::OnInitDialog()
 	POINT pt;
 	pt.x = 3; 
 	pt.y = 3; 
-	HWND hwndEdit = ChildWindowFromPoint(GetDlgItem( m_hwnd, IDC_TOPIC), pt); 
-	
+	HWND hwndEdit = ChildWindowFromPoint( m_topic.GetHwnd(), pt); 
 	OldMgrEditProc = (WNDPROC)SetWindowLong(hwndEdit, GWL_WNDPROC,(LONG)MgrEditSubclassProc); 
 	
-	SendDlgItemMessage( m_hwnd,IDC_ADD,BM_SETIMAGE,IMAGE_ICON,(LPARAM)(HICON)m_proto->LoadIconEx(IDI_ADD));
-	SendDlgItemMessage( m_hwnd,IDC_REMOVE,BM_SETIMAGE,IMAGE_ICON,(LPARAM)m_proto->LoadIconEx(IDI_DELETE));
-	SendDlgItemMessage( m_hwnd,IDC_EDIT,BM_SETIMAGE,IMAGE_ICON,(LPARAM)m_proto->LoadIconEx(IDI_RENAME));
-	SendDlgItemMessage( m_hwnd,IDC_ADD, BUTTONADDTOOLTIP, (WPARAM)LPGEN("Add ban/invite/exception"), 0);
-	SendDlgItemMessage( m_hwnd,IDC_EDIT, BUTTONADDTOOLTIP, (WPARAM)LPGEN("Edit selected ban/invite/exception"), 0);
-	SendDlgItemMessage( m_hwnd,IDC_REMOVE, BUTTONADDTOOLTIP, (WPARAM)LPGEN("Delete selected ban/invite/exception"), 0);
-
 	SendMessage( m_hwnd,WM_SETICON,ICON_BIG,(LPARAM)m_proto->LoadIconEx(IDI_MANAGER));
 	SendDlgItemMessage( m_hwnd, IDC_LOGO,STM_SETICON,(LPARAM)(HICON)m_proto->LoadIconEx(IDI_LOGO), 0);
-	SendDlgItemMessage( m_hwnd,IDC_APPLYTOPIC,BM_SETIMAGE,IMAGE_ICON,(LPARAM)m_proto->LoadIconEx( IDI_GO ));
-	SendDlgItemMessage( m_hwnd,IDC_APPLYMODES,BM_SETIMAGE,IMAGE_ICON,(LPARAM)m_proto->LoadIconEx( IDI_GO ));
-	SendDlgItemMessage( m_hwnd,IDC_APPLYTOPIC, BUTTONADDTOOLTIP, (WPARAM)LPGEN("Set this topic for the channel"), 0);
-	SendDlgItemMessage( m_hwnd,IDC_APPLYMODES, BUTTONADDTOOLTIP, (WPARAM)LPGEN("Set these modes for the channel"), 0);
 
 	SendDlgItemMessage( m_hwnd,IDC_LIST,LB_SETHORIZONTALEXTENT,750,NULL);
-	CheckDlgButton( m_hwnd, IDC_RADIO1, BST_CHECKED);
+	m_radio1.SetState( true );
 
 	const char* modes = m_proto->sChannelModes.c_str();
 	if ( !strchr( modes, 't')) m_check1.Disable();
@@ -1037,8 +1042,7 @@ void CManagerDlg::OnInitDialog()
 
 void CManagerDlg::OnClose()
 {
-//	if ( lParam != 3 ) {
-	if ( IsWindowEnabled(GetDlgItem( m_hwnd, IDC_APPLYMODES)) || IsWindowEnabled(GetDlgItem( m_hwnd, IDC_APPLYTOPIC))) {
+	if ( IsWindowEnabled( m_applyModes.GetHwnd()) || IsWindowEnabled( m_applyTopic.GetHwnd())) {
 		int i = MessageBox( NULL, TranslateT("You have not applied all changes!\n\nApply before exiting?"), TranslateT("IRC warning"), MB_YESNOCANCEL|MB_ICONWARNING|MB_DEFBUTTON3);
 		if ( i == IDCANCEL ) {
 			m_lresult = TRUE;
@@ -1046,10 +1050,10 @@ void CManagerDlg::OnClose()
 		}
 
 		if ( i == IDYES ) {
-			if ( IsWindowEnabled( GetDlgItem( m_hwnd, IDC_APPLYMODES )))
-				SendMessage( m_hwnd, WM_COMMAND, MAKEWPARAM( IDC_APPLYMODES, BN_CLICKED), 0);
-			if ( IsWindowEnabled( GetDlgItem( m_hwnd, IDC_APPLYTOPIC )))
-				SendMessage( m_hwnd, WM_COMMAND, MAKEWPARAM( IDC_APPLYTOPIC, BN_CLICKED), 0);
+			if ( IsWindowEnabled( m_applyModes.GetHwnd()))
+				OnApplyModes( NULL );
+			if ( IsWindowEnabled( m_applyTopic.GetHwnd()))
+				OnApplyTopic( NULL );
 	}	}
 
 	TCHAR window[256];
@@ -1057,7 +1061,7 @@ void CManagerDlg::OnClose()
 	TString S = _T("");
 	TCHAR temp[1000];
 	for ( int i = 0; i < 5; i++ ) {
-		if ( SendDlgItemMessage( m_hwnd, IDC_TOPIC, CB_GETLBTEXT, i, (LPARAM)temp) != LB_ERR) {
+		if ( m_topic.SendMsg( CB_GETLBTEXT, i, (LPARAM)temp) != LB_ERR) {
 			TString S1 = temp;
 			ReplaceString( S1, _T(" "), _T("%¤"));
 			S += _T(" ");
@@ -1089,24 +1093,24 @@ void __cdecl CManagerDlg::OnAdd( CCtrlButton* )
 {
 	TCHAR temp[100];
 	TCHAR mode[3];
-	if ( IsDlgButtonChecked( m_hwnd, IDC_RADIO1 )) {
+	if ( m_radio1.GetState()) {
 		lstrcpy( mode, _T("+b"));
 		lstrcpyn( temp, TranslateT("Add ban"), 100 );
 	}
-	if ( IsDlgButtonChecked( m_hwnd, IDC_RADIO2 )) {
+	if ( m_radio2.GetState()) {
 		lstrcpy( mode, _T("+I"));
 		lstrcpyn( temp, TranslateT("Add invite"), 100 );
 	}
-	if ( IsDlgButtonChecked( m_hwnd, IDC_RADIO3 )) {
+	if ( m_radio3.GetState()) {
 		lstrcpy( mode, _T("+e"));
 		lstrcpyn( temp, TranslateT("Add exception"), 100);
 	}
 
-	EnableWindow(GetDlgItem( m_hwnd, IDC_ADD), false);
-	EnableWindow(GetDlgItem( m_hwnd, IDC_REMOVE), false);
-	EnableWindow(GetDlgItem( m_hwnd, IDC_EDIT), false);
+	m_add.Disable();
+	m_edit.Disable();
+	m_remove.Disable();
 
-	CQuestionDlg* dlg = new CQuestionDlg( m_proto, m_hwnd );
+	CQuestionDlg* dlg = new CQuestionDlg( m_proto, this );
 	dlg->Show();
 	HWND addban_hWnd = dlg->GetHwnd();
 	SetDlgItemText(addban_hWnd, IDC_CAPTION, temp);
@@ -1117,7 +1121,7 @@ void __cdecl CManagerDlg::OnAdd( CCtrlButton* )
 	GetDlgItemText( m_hwnd, IDC_CAPTION, window, SIZEOF(window));
 	mir_sntprintf(temp2, 450, _T("/MODE %s %s %s"), window, mode, _T("%question"));
 	SetDlgItemText(addban_hWnd, IDC_HIDDENEDIT, temp2);
-	PostMessage(addban_hWnd, IRC_ACTIVATE, 0, 0);
+	dlg->Activate();
 }
 
 void __cdecl CManagerDlg::OnEdit( CCtrlButton* )
@@ -1132,59 +1136,60 @@ void __cdecl CManagerDlg::OnEdit( CCtrlButton* )
 			
 			TCHAR temp[100];
 			TCHAR mode[3];
-			if ( IsDlgButtonChecked( m_hwnd, IDC_RADIO1 )) {
+			if ( m_radio1.GetState()) {
 				lstrcpy( mode, _T("b"));
 				lstrcpyn( temp, TranslateT("Edit ban"), 100 );
 			}
-			if ( IsDlgButtonChecked( m_hwnd, IDC_RADIO2 )) {
+			if ( m_radio2.GetState()) {
 				lstrcpy( mode, _T("I"));
 				lstrcpyn( temp, TranslateT("Edit invite?"), 100 );
 			}
-			if (IsDlgButtonChecked( m_hwnd, IDC_RADIO3 )) {
+			if ( m_radio3.GetState()) {
 				lstrcpy( mode, _T("e"));
 				lstrcpyn( temp, TranslateT("Edit exception?"), 100 );
 			}
 				
-			CQuestionDlg* dlg = new CQuestionDlg( m_proto, m_hwnd );
+			CQuestionDlg* dlg = new CQuestionDlg( m_proto, this );
 			dlg->Show();
 			HWND addban_hWnd = dlg->GetHwnd();
-			EnableWindow(GetDlgItem( m_hwnd, IDC_ADD), false);
-			EnableWindow(GetDlgItem( m_hwnd, IDC_REMOVE), false);
-			EnableWindow(GetDlgItem( m_hwnd, IDC_EDIT), false);
 			SetDlgItemText(addban_hWnd, IDC_CAPTION, temp);
 			SetWindowText(GetDlgItem(addban_hWnd, IDC_TEXT), TranslateT("Please enter the hostmask (nick!user@host)"));
 			SetWindowText(GetDlgItem(addban_hWnd, IDC_EDIT), user.c_str());
+
+			m_add.Disable();
+			m_edit.Disable();
+			m_remove.Disable();
 
 			TCHAR temp2[450];
 			TCHAR window[256];
 			GetDlgItemText( m_hwnd, IDC_CAPTION, window, SIZEOF(window));
 			mir_sntprintf(temp2, 450, _T("/MODE %s -%s %s%s/MODE %s +%s %s"), window, mode, user.c_str(), _T("%newl"), window, mode, _T("%question"));
 			SetDlgItemText(addban_hWnd, IDC_HIDDENEDIT, temp2);
-			PostMessage(addban_hWnd, IRC_ACTIVATE, 0, 0);
+			dlg->Activate();
 }	}	}
 
 void __cdecl CManagerDlg::OnRemove( CCtrlButton* )
 {
 	int i = SendDlgItemMessage( m_hwnd, IDC_LIST, LB_GETCURSEL, 0, 0);
 	if ( i != LB_ERR ) {
-		EnableWindow(GetDlgItem( m_hwnd, IDC_REMOVE), false);
-		EnableWindow(GetDlgItem( m_hwnd, IDC_EDIT), false);
-		EnableWindow(GetDlgItem( m_hwnd, IDC_ADD), false);
+		m_add.Disable();
+		m_edit.Disable();
+		m_remove.Disable();
 		TCHAR* m = new TCHAR[ SendDlgItemMessage( m_hwnd, IDC_LIST, LB_GETTEXTLEN, i, 0)+2 ];
 		SendDlgItemMessage( m_hwnd, IDC_LIST, LB_GETTEXT, i, (LPARAM)m);
 		TString user = GetWord(m, 0);
 		delete[]m;
 		TCHAR temp[100];
 		TCHAR mode[3];
-		if ( IsDlgButtonChecked( m_hwnd, IDC_RADIO1 )) {
+		if ( m_radio1.GetState()) {
 			lstrcpy(mode, _T("-b"));
 			lstrcpyn(temp, TranslateT( "Remove ban?" ), 100 );
 		}
-		if ( IsDlgButtonChecked( m_hwnd, IDC_RADIO2 )) {
+		if ( m_radio2.GetState()) {
 			lstrcpy(mode, _T("-I"));
 			lstrcpyn(temp, TranslateT( "Remove invite?" ), 100 );
 		}
-		if ( IsDlgButtonChecked( m_hwnd, IDC_RADIO3 )) {
+		if ( m_radio3.GetState()) {
 			lstrcpy(mode, _T("-e"));
 			lstrcpyn(temp, TranslateT( "Remove exception?" ), 100 );
 		}
@@ -1193,36 +1198,34 @@ void __cdecl CManagerDlg::OnRemove( CCtrlButton* )
 		GetDlgItemText( m_hwnd, IDC_CAPTION, window, SIZEOF(window));
 		if ( MessageBox( m_hwnd, user.c_str(), temp, MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2 ) == IDYES ) {
 			m_proto->PostIrcMessage( _T("/MODE %s %s %s"), window, mode, user.c_str());
-			SendMessage( m_hwnd, IRC_QUESTIONAPPLY, 0, 0);
+			ApplyQuestion();
 		}
-		SendMessage( m_hwnd, IRC_QUESTIONCLOSE, 0, 0);
+		CloseQuestion();
 }	}
 
 void CManagerDlg::OnList(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 {
 	if ( idCode == LBN_SELCHANGE ) {
 		if ( !IsDlgButtonChecked( m_hwnd, IDC_NOTOP )) {
-			EnableWindow(GetDlgItem( m_hwnd, IDC_EDIT), true);
-			EnableWindow(GetDlgItem( m_hwnd, IDC_REMOVE), true);
+			m_edit.Enable();
+			m_remove.Enable();
 	}	}
 	
 	if ( idCode == LBN_DBLCLK )
-		SendMessage( m_hwnd, WM_COMMAND, MAKEWPARAM(IDC_EDIT, BN_CLICKED), 0);
+		OnEdit( NULL );
 }
 
-void CManagerDlg::OnChangeModes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void CManagerDlg::OnChangeModes( CCtrlData* )
 {
-	if ( idCode == EN_CHANGE || idCode == CBN_EDITCHANGE || idCode == CBN_SELCHANGE )
-		EnableWindow(GetDlgItem( m_hwnd, IDC_APPLYMODES), true);
+	m_applyModes.Enable();
 }
 
-void CManagerDlg::OnChangeTopic(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void CManagerDlg::OnChangeTopic( CCtrlData* )
 {
-	if ( idCode == EN_CHANGE || idCode == CBN_EDITCHANGE || idCode == CBN_SELCHANGE )
-		EnableWindow(GetDlgItem( m_hwnd, IDC_APPLYTOPIC), true);
+	m_applyTopic.Enable();
 }
 
-void CManagerDlg::OnApplyModes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void CManagerDlg::OnApplyModes( CCtrlButton* )
 {
 	TCHAR window[256];
 	GetDlgItemText( m_hwnd, IDC_CAPTION, window, SIZEOF(window));
@@ -1289,9 +1292,9 @@ void CManagerDlg::OnApplyModes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 				appendixremove += _T(" ");
 				appendixremove += wi->pszPassword;
 			}
-			else if( GetWindowTextLength( GetDlgItem( m_hwnd, IDC_KEY ))) {
+			else if( GetWindowTextLength( m_key.GetHwnd())) {
 				TCHAR temp[400];
-				GetDlgItemText( m_hwnd, IDC_KEY, temp, 14);
+				m_key.GetText( temp, 14);
 
 				if ( Key != temp ) {
 					lstrcat( toremove, _T("k"));
@@ -1302,12 +1305,12 @@ void CManagerDlg::OnApplyModes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 					appendixremove += wi->pszPassword;
 			}	}
 		}
-		else if ( m_check5.GetState() && GetWindowTextLength( GetDlgItem( m_hwnd, IDC_KEY ))) {
+		else if ( m_check5.GetState() && GetWindowTextLength( m_key.GetHwnd())) {
 			lstrcat( toadd, _T("k"));
 			appendixadd += _T(" ");
 			
 			TCHAR temp[400];
-			GetDlgItemText( m_hwnd, IDC_KEY, temp, SIZEOF(temp));
+			m_key.GetText( temp, SIZEOF(temp));
 			appendixadd += temp;
 		}
 
@@ -1323,12 +1326,12 @@ void CManagerDlg::OnApplyModes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 					appendixadd += temp;
 			}	}
 		}
-		else if ( m_check6.GetState() && GetWindowTextLength( GetDlgItem( m_hwnd, IDC_LIMIT ))) {
+		else if ( m_check6.GetState() && GetWindowTextLength( m_limit.GetHwnd())) {
 			lstrcat( toadd, _T("l"));
 			appendixadd += _T(" ");
 			
 			TCHAR temp[15];
-			GetDlgItemText( m_hwnd, IDC_LIMIT, temp, SIZEOF(temp));
+			m_limit.GetText( temp, SIZEOF(temp));
 			appendixadd += temp;
 		}
 
@@ -1347,45 +1350,45 @@ void CManagerDlg::OnApplyModes(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 				lstrcat(temp, appendixadd.c_str());
 			m_proto->PostIrcMessage( temp);
 	}	}
-	EnableWindow(GetDlgItem( m_hwnd, IDC_APPLYMODES), false);				
+
+	m_applyModes.Disable();
 }
 
-void CManagerDlg::OnApplyTopic(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void __cdecl CManagerDlg::OnApplyTopic( CCtrlButton* )
 {
 	TCHAR temp[470];
 	TCHAR window[256];
 	GetDlgItemText( m_hwnd, IDC_CAPTION, window, SIZEOF(window));
-	GetDlgItemText( m_hwnd, IDC_TOPIC, temp, SIZEOF(temp));
+	m_topic.GetText( temp, SIZEOF(temp));
 	m_proto->PostIrcMessage( _T("/TOPIC %s %s"), window, temp);
-	int i = SendDlgItemMessage( m_hwnd, IDC_TOPIC, CB_FINDSTRINGEXACT, -1, (LPARAM)temp);
+	int i = m_topic.SendMsg( CB_FINDSTRINGEXACT, -1, (LPARAM)temp);
 	if ( i != LB_ERR )
-		SendDlgItemMessage( m_hwnd, IDC_TOPIC, CB_DELETESTRING, i, 0);
-	SendDlgItemMessage( m_hwnd, IDC_TOPIC, CB_INSERTSTRING, 0, (LPARAM)temp);
-	SetDlgItemText( m_hwnd, IDC_TOPIC, temp);
-	EnableWindow(GetDlgItem( m_hwnd, IDC_APPLYTOPIC), false);
+		m_topic.SendMsg( CB_DELETESTRING, i, 0);
+	m_topic.SendMsg( CB_INSERTSTRING, 0, (LPARAM)temp);
+	m_topic.SetText( temp );
+	m_applyTopic.Disable();
 }
 
 void __cdecl CManagerDlg::OnCheck( CCtrlData* )
 {
-	EnableWindow(GetDlgItem( m_hwnd, IDC_APPLYMODES), true);				
+	m_applyModes.Enable();
 }
 
 void __cdecl CManagerDlg::OnCheck5( CCtrlData* )
 {
-	EnableWindow(GetDlgItem( m_hwnd, IDC_KEY), IsDlgButtonChecked( m_hwnd, IDC_CHECK5) == BST_CHECKED);				
-	EnableWindow(GetDlgItem( m_hwnd, IDC_APPLYMODES), true);
+	m_key.Enable( m_check5.GetState());
+	m_applyModes.Enable();
 }
 
 void __cdecl CManagerDlg::OnCheck6( CCtrlData* )
 {
-	EnableWindow(GetDlgItem( m_hwnd, IDC_LIMIT), IsDlgButtonChecked( m_hwnd, IDC_CHECK6) == BST_CHECKED );				
-	EnableWindow(GetDlgItem( m_hwnd, IDC_APPLYTOPIC), true);
+	m_limit.Enable( m_check6.GetState() );				
+	m_applyModes.Enable();
 }
 
-void CManagerDlg::OnRadio(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void __cdecl CManagerDlg::OnRadio( CCtrlData* )
 {
-	if ( idCode == BN_CLICKED )
-		SendMessage( m_hwnd, IRC_QUESTIONAPPLY, 0, 0);
+	ApplyQuestion();
 }
 
 BOOL CManagerDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
@@ -1400,134 +1403,131 @@ BOOL CManagerDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			return (BOOL)GetStockObject(WHITE_BRUSH);
 		}
 		break;
-
-	case IRC_QUESTIONCLOSE:
-		EnableWindow(GetDlgItem( m_hwnd, IDC_ADD), true);
-		if ( SendDlgItemMessage( m_hwnd, IDC_LIST, LB_GETCURSEL, 0, 0) != LB_ERR) {
-			EnableWindow(GetDlgItem( m_hwnd, IDC_REMOVE), true);
-			EnableWindow(GetDlgItem( m_hwnd, IDC_EDIT), true);
-		}
-		break;
-
-	case IRC_QUESTIONAPPLY:
-		{
-			TCHAR window[256];
-			GetDlgItemText( m_hwnd, IDC_CAPTION, window, 255);
-
-			TCHAR mode[3];
-			lstrcpy( mode, _T("+b"));
-			if ( IsDlgButtonChecked( m_hwnd, IDC_RADIO2 ))
-				lstrcpy( mode, _T("+I"));
-			if ( IsDlgButtonChecked( m_hwnd, IDC_RADIO3 ))
-				lstrcpy( mode, _T("+e"));
-			SendDlgItemMessage( m_hwnd, IDC_LIST, LB_RESETCONTENT, 0, 0);
-			EnableWindow(GetDlgItem( m_hwnd, IDC_RADIO1), false);
-			EnableWindow(GetDlgItem( m_hwnd, IDC_RADIO2), false);
-			EnableWindow(GetDlgItem( m_hwnd, IDC_RADIO3), false);
-			EnableWindow(GetDlgItem( m_hwnd, IDC_ADD), false);
-			EnableWindow(GetDlgItem( m_hwnd, IDC_EDIT), false);
-			EnableWindow(GetDlgItem( m_hwnd, IDC_REMOVE), false);
-			m_proto->PostIrcMessage( _T("%s %s %s"), _T("/MODE"), window, mode); //wrong overloaded operator if three args
-		}
-		break;		
-
-	case IRC_INITMANAGER:
-		{
-			TCHAR* window = (TCHAR*) lParam;
-
-			CHANNELINFO* wi = (CHANNELINFO *)m_proto->DoEvent(GC_EVENT_GETITEMDATA, window, NULL, NULL, NULL, NULL, NULL, FALSE, FALSE, 0);
-			if ( wi ) {
-				if ( m_proto->IsConnected() ) {
-					TCHAR temp[1000];
-					mir_sntprintf(temp, SIZEOF(temp), _T("Topic%s%s"), window, m_proto->m_info.sNetwork.c_str());
-
-					#if defined( _UNICODE )
-						char* p = mir_t2a(temp);
-					#else
-						char* p = temp;
-					#endif
-					DBVARIANT dbv;
-  					if ( !m_proto->getTString( p, &dbv )) {
-						for ( int i = 0; i<5; i++ ) {
-							if ( !GetWord(dbv.ptszVal, i).empty()) {
-								TString S = GetWord(dbv.ptszVal, i);
-								ReplaceString( S, _T("%¤"), _T(" "));
-								SendDlgItemMessage( m_hwnd, IDC_TOPIC, CB_ADDSTRING, 0, (LPARAM)S.c_str());
-						}	}
-						DBFreeVariant(&dbv);
-					}
-					#if defined( _UNICODE )
-						mir_free(p);
-					#endif
-				}
-
-				if ( wi->pszTopic )
-					SetDlgItemText( m_hwnd, IDC_TOPIC, wi->pszTopic);
-
-				if ( !IsDlgButtonChecked( m_proto->m_managerDlg->GetHwnd(), IDC_NOTOP ))
-					EnableWindow(GetDlgItem( m_hwnd, IDC_ADD), true);
-
-
-				bool add = false;
-				TCHAR* p1= wi->pszMode;
-				if ( p1 ) {
-					while ( *p1 != '\0' && *p1 != ' ' ) {
-						if (*p1 == '+')
-							add = true;
-						if (*p1 == '-')
-							add = false;
-						if (*p1 == 't')
-							m_check1.SetState( add );
-						if (*p1 == 'n')
-							m_check2.SetState( add );
-						if (*p1 == 'i')
-							m_check3.SetState( add );
-						if (*p1 == 'm')
-							m_check4.SetState( add );
-						if (*p1 == 'p')
-							m_check7.SetState( add );
-						if (*p1 == 's')
-							m_check8.SetState( add );
-						if (*p1 == 'c')
-							m_check9.SetState( add );
-						if (*p1 == 'k' && add) {
-							m_check5.SetState( add );
-							EnableWindow(GetDlgItem( m_hwnd, IDC_KEY), add?(true) : (false));
-							if(wi->pszPassword)
-								SetDlgItemText( m_hwnd, IDC_KEY, wi->pszPassword);
-						}
-						if (*p1 == 'l' && add) {
-							m_check6.SetState( add );
-							EnableWindow(GetDlgItem( m_hwnd, IDC_LIMIT), add?(true) : (false));
-							if(wi->pszLimit)
-								SetDlgItemText( m_hwnd, IDC_LIMIT, wi->pszLimit);
-						}
-						p1++;
-						if (wParam == 0 ) {
-							EnableWindow(GetDlgItem( m_hwnd, IDC_LIMIT),  (false));
-							EnableWindow(GetDlgItem( m_hwnd, IDC_KEY),    (false));
-							m_check1.Disable();
-							m_check2.Disable();
-							m_check3.Disable();
-							m_check4.Disable();
-							m_check5.Disable();
-							m_check6.Disable();
-							m_check7.Disable();
-							m_check8.Disable();
-							m_check9.Disable();
-							EnableWindow(GetDlgItem( m_hwnd, IDC_ADD), (false));
-							if ( m_check1.GetState())
-								EnableWindow(GetDlgItem( m_hwnd, IDC_TOPIC), (false));
-							CheckDlgButton( m_hwnd, IDC_NOTOP, BST_CHECKED);
-						}
-						ShowWindow( m_hwnd, SW_SHOW);
-			}	}	}
-
-			if ( strchr( m_proto->sChannelModes.c_str(), 'b' )) {
-				CheckDlgButton( m_hwnd, IDC_RADIO1, BST_CHECKED);
-				m_proto->PostIrcMessage( _T("/MODE %s +b"), window);
-		}	}
-		break;		
 	}
 	return CDlgBase::DlgProc(msg, wParam, lParam);
 }
+
+void CManagerDlg::ApplyQuestion()
+{
+	TCHAR window[256];
+	GetDlgItemText( m_hwnd, IDC_CAPTION, window, 255);
+
+	TCHAR mode[3];
+	lstrcpy( mode, _T("+b"));
+	if ( m_radio2.GetState())
+		lstrcpy( mode, _T("+I"));
+	if ( m_radio3.GetState())
+		lstrcpy( mode, _T("+e"));
+	SendDlgItemMessage( m_hwnd, IDC_LIST, LB_RESETCONTENT, 0, 0);
+	m_radio1.Disable();
+	m_radio2.Disable();
+	m_radio3.Disable();
+	m_add.Disable();
+	m_edit.Disable();
+	m_remove.Disable();
+	m_proto->PostIrcMessage( _T("%s %s %s"), _T("/MODE"), window, mode); //wrong overloaded operator if three args
+}
+
+void CManagerDlg::CloseQuestion()
+{
+	m_add.Enable();
+	if ( SendDlgItemMessage( m_hwnd, IDC_LIST, LB_GETCURSEL, 0, 0) != LB_ERR) {
+		m_edit.Enable();
+		m_remove.Enable();
+}	}
+
+void CManagerDlg::InitManager( int mode, const TCHAR* window )
+{
+	SetWindowText( GetDlgItem( m_hwnd, IDC_CAPTION ), window );
+
+	CHANNELINFO* wi = (CHANNELINFO *)m_proto->DoEvent(GC_EVENT_GETITEMDATA, window, NULL, NULL, NULL, NULL, NULL, FALSE, FALSE, 0);
+	if ( wi ) {
+		if ( m_proto->IsConnected() ) {
+			TCHAR temp[1000];
+			mir_sntprintf(temp, SIZEOF(temp), _T("Topic%s%s"), window, m_proto->m_info.sNetwork.c_str());
+
+			#if defined( _UNICODE )
+				char* p = mir_t2a(temp);
+			#else
+				char* p = temp;
+			#endif
+			DBVARIANT dbv;
+			if ( !m_proto->getTString( p, &dbv )) {
+				for ( int i = 0; i<5; i++ ) {
+					if ( !GetWord(dbv.ptszVal, i).empty()) {
+						TString S = GetWord(dbv.ptszVal, i);
+						ReplaceString( S, _T("%¤"), _T(" "));
+						m_topic.SendMsg( CB_ADDSTRING, 0, (LPARAM)S.c_str());
+				}	}
+				DBFreeVariant(&dbv);
+			}
+			#if defined( _UNICODE )
+				mir_free(p);
+			#endif
+		}
+
+		if ( wi->pszTopic )
+			m_topic.SetText( wi->pszTopic );
+
+		if ( !IsDlgButtonChecked( m_proto->m_managerDlg->GetHwnd(), IDC_NOTOP ))
+			m_add.Enable();
+
+		bool add = false;
+		TCHAR* p1= wi->pszMode;
+		if ( p1 ) {
+			while ( *p1 != '\0' && *p1 != ' ' ) {
+				if (*p1 == '+')
+					add = true;
+				if (*p1 == '-')
+					add = false;
+				if (*p1 == 't')
+					m_check1.SetState( add );
+				if (*p1 == 'n')
+					m_check2.SetState( add );
+				if (*p1 == 'i')
+					m_check3.SetState( add );
+				if (*p1 == 'm')
+					m_check4.SetState( add );
+				if (*p1 == 'p')
+					m_check7.SetState( add );
+				if (*p1 == 's')
+					m_check8.SetState( add );
+				if (*p1 == 'c')
+					m_check9.SetState( add );
+				if (*p1 == 'k' && add) {
+					m_check5.SetState( add );
+					m_key.Enable( add );
+					if ( wi->pszPassword )
+						m_key.SetText( wi->pszPassword );
+				}
+				if (*p1 == 'l' && add) {
+					m_check6.SetState( add );
+					m_limit.Enable( add );
+					if ( wi->pszLimit )
+						m_limit.SetText( wi->pszLimit );
+				}
+				p1++;
+				if ( mode == 0 ) {
+					m_limit.Disable();
+					m_key.Disable();
+					m_check1.Disable();
+					m_check2.Disable();
+					m_check3.Disable();
+					m_check4.Disable();
+					m_check5.Disable();
+					m_check6.Disable();
+					m_check7.Disable();
+					m_check8.Disable();
+					m_check9.Disable();
+					m_add.Disable();
+					if ( m_check1.GetState())
+						m_topic.Disable();
+					CheckDlgButton( m_hwnd, IDC_NOTOP, BST_CHECKED);
+				}
+				ShowWindow( m_hwnd, SW_SHOW );
+	}	}	}
+
+	if ( strchr( m_proto->sChannelModes.c_str(), 'b' )) {
+		m_radio1.SetState( true );
+		m_proto->PostIrcMessage( _T("/MODE %s +b"), window);
+}	}

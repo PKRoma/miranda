@@ -73,10 +73,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "irc_dlg.h"
 
 #define IRC_UPDATELIST        (WM_USER+1)
-#define IRC_QUESTIONAPPLY     (WM_USER+2)
-#define IRC_QUESTIONCLOSE     (WM_USER+3)
-#define IRC_ACTIVATE          (WM_USER+4)
-#define IRC_INITMANAGER       (WM_USER+5)
 #define IRC_REBUILDIGNORELIST (WM_USER+6)
 #define IRC_UPDATEIGNORELIST  (WM_USER+7)
 #define IRC_FIXIGNOREBUTTONS  (WM_USER+8)
@@ -88,10 +84,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define IRC_SHOWSERVER        "/ShowServerMenu"
 #define IRC_UM_SHOWCHANNEL    "/UMenuShowChannel"
 #define IRC_UM_JOINLEAVE      "/UMenuJoinLeave"
-#define IRC_UM_CHANSETTINGS	  "/UMenuChanSettings"
-#define IRC_UM_WHOIS	      "/UMenuWhois"
+#define IRC_UM_CHANSETTINGS   "/UMenuChanSettings"
+#define IRC_UM_WHOIS          "/UMenuWhois"
 #define IRC_UM_DISCONNECT     "/UMenuDisconnect"
-#define IRC_UM_IGNORE		  "/UMenuIgnore"
+#define IRC_UM_IGNORE         "/UMenuIgnore"
 
 #define STR_QUITMESSAGE  "\002Miranda IM!\002 Smaller, Faster, Easier. http://miranda-im.org"
 #define STR_USERINFO     "I'm a happy Miranda IM user! Get it here: http://miranda-im.org"
