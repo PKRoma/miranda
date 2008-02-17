@@ -36,7 +36,17 @@ struct CMessageBoxDlg : public CProtoDlgBase<CIrcProto>
 	virtual void OnInitDialog();
 };
 
-struct CWhoisDlg : public CProtoDlgBase<CIrcProto>
+struct CCoolIrcDlg : public CProtoDlgBase<CIrcProto>
+{
+	CCoolIrcDlg( CIrcProto* _pro, int dlgId, HWND parent = NULL );
+
+	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
+
+	virtual void OnInitDialog();
+	virtual void OnDestroy();
+};
+
+struct CWhoisDlg : public CCoolIrcDlg
 {
 	CWhoisDlg( CIrcProto* _pro );
 
@@ -57,21 +67,17 @@ struct CWhoisDlg : public CProtoDlgBase<CIrcProto>
 	void __cdecl OnTime( CCtrlButton* );
 	void __cdecl OnVersion( CCtrlButton* );
 
-	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
-
 	virtual void OnInitDialog();
 	virtual void OnClose();
 	virtual void OnDestroy();
 };
 
-struct CNickDlg : public CProtoDlgBase<CIrcProto>
+struct CNickDlg : public CCoolIrcDlg
 {
 	CNickDlg( CIrcProto* _pro );
 
 	CCtrlCombo   m_Enick;
 	CCtrlButton  m_Ok;
-
-	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
 
 	virtual void OnInitDialog();
 	virtual void OnDestroy();
@@ -92,12 +98,10 @@ struct CListDlg : public CProtoDlgBase<CIrcProto>
 	void __cdecl OnJoin( CCtrlButton* );
 };
 
-struct CJoinDlg : public CProtoDlgBase<CIrcProto>
+struct CJoinDlg : public CCoolIrcDlg
 {
 	CJoinDlg( CIrcProto* _pro );
 
-	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
-
 	virtual void OnInitDialog();
 	virtual void OnDestroy();
 
@@ -105,35 +109,29 @@ struct CJoinDlg : public CProtoDlgBase<CIrcProto>
 	void __cdecl OnOk( CCtrlButton* );
 };
 
-struct CInitDlg : public CProtoDlgBase<CIrcProto>
+struct CInitDlg : public CCoolIrcDlg
 {
 	CInitDlg( CIrcProto* _pro );
 
-	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
-
-	virtual void OnInitDialog();
-	virtual void OnDestroy();
-
 	CCtrlButton  m_Ok;
 	void __cdecl OnOk( CCtrlButton* );
 };
 
-struct CQuickDlg : public CProtoDlgBase<CIrcProto>
+struct CQuickDlg : public CCoolIrcDlg
 {
 	CQuickDlg( CIrcProto* _pro );
 
-	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
-
 	virtual void OnInitDialog();
 	virtual void OnDestroy();
 
+	CCtrlCombo m_serverCombo;
+	void __cdecl OnServerCombo( CCtrlData* );
+
 	CCtrlButton  m_Ok;
 	void __cdecl OnOk( CCtrlButton* );
-
-	void OnServerCombo(HWND hwndCtrl, WORD idCtrl, WORD idCode);
 };
 
-struct CManagerDlg : public CProtoDlgBase<CIrcProto>
+struct CManagerDlg : public CCoolIrcDlg
 {
 	CManagerDlg( CIrcProto* _pro );
 
@@ -142,8 +140,7 @@ struct CManagerDlg : public CProtoDlgBase<CIrcProto>
 	CCtrlCombo   m_topic;
 	CCtrlCheck   m_radio1, m_radio2, m_radio3;
 	CCtrlMButton m_add, m_edit, m_remove, m_applyTopic, m_applyModes;
-
-	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
+	CCtrlListBox m_list;
 
 	virtual void OnInitDialog();
 	virtual void OnClose();
@@ -158,28 +155,24 @@ struct CManagerDlg : public CProtoDlgBase<CIrcProto>
 	void __cdecl OnEdit( CCtrlButton* );
 	void __cdecl OnRemove( CCtrlButton* );
 
+	void __cdecl OnListDblClick( CCtrlListBox* );
+	void __cdecl OnChangeList( CCtrlData* );
 	void __cdecl OnChangeModes( CCtrlData* );
 	void __cdecl OnChangeTopic( CCtrlData* );
 
 	void __cdecl OnApplyModes( CCtrlButton* );
 	void __cdecl OnApplyTopic( CCtrlButton* );
 
-	void OnList(HWND hwndCtrl, WORD idCtrl, WORD idCode);
-
 	void ApplyQuestion();
 	void CloseQuestion();
 	void InitManager( int mode, const TCHAR* window );
 };
 
-struct CQuestionDlg : public CProtoDlgBase<CIrcProto>
+struct CQuestionDlg : public CCoolIrcDlg
 {
 	CQuestionDlg( CIrcProto* _pro, CManagerDlg* owner = NULL );
 
-	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
-
-	virtual void OnInitDialog();
 	virtual void OnClose();
-	virtual void OnDestroy();
 
 	CCtrlButton  m_Ok;
 	void __cdecl OnOk( CCtrlButton* );

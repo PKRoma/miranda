@@ -55,7 +55,7 @@ void CMessageBoxDlg::OnOk( CCtrlButton* )
 // Whois dialog
 
 CWhoisDlg::CWhoisDlg( CIrcProto* _pro ) :
-	CProtoDlgBase<CIrcProto>( _pro, IDD_INFO, NULL ),
+	CCoolIrcDlg( _pro, IDD_INFO ),
 	m_InfoNick( this, IDC_INFO_NICK ),
 	m_Reply( this, IDC_REPLY ),
 	m_Caption( this, IDC_CAPTION ),
@@ -86,21 +86,14 @@ CWhoisDlg::CWhoisDlg( CIrcProto* _pro ) :
 void CWhoisDlg::OnInitDialog()
 {
 	LOGFONT lf;
-	HFONT hFont = ( HFONT )m_Caption.SendMsg( WM_GETFONT, 0, 0 );
+	HFONT hFont = ( HFONT )m_AwayTime.SendMsg( WM_GETFONT, 0, 0 );
 	GetObject( hFont, sizeof( lf ), &lf );
-	lf.lfHeight = (int)(lf.lfHeight*1.6);
 	lf.lfWeight = FW_BOLD;
 	hFont = CreateFontIndirect( &lf );
-	m_Caption.SendMsg( WM_SETFONT, ( WPARAM )hFont, 0 );
+	m_AwayTime.SendMsg( WM_SETFONT, ( WPARAM )hFont, 0 );
 
-	HFONT hFont2 = ( HFONT )m_AwayTime.SendMsg( WM_GETFONT, 0, 0 );
-	GetObject( hFont2, sizeof( lf ), &lf );
-	//lf.lfHeight = (int)(lf.lfHeight*0.6);
-	lf.lfWeight = FW_BOLD;
-	hFont2 = CreateFontIndirect( &lf );
-	m_AwayTime.SendMsg( WM_SETFONT, ( WPARAM )hFont2, 0 );
+	CCoolIrcDlg::OnInitDialog();
 
-	SendDlgItemMessage( m_hwnd, IDC_LOGO, STM_SETICON,(LPARAM)(HICON)m_proto->LoadIconEx(IDI_LOGO), 0);
 	SendMessage( m_hwnd, WM_SETICON, ICON_BIG,(LPARAM)m_proto->LoadIconEx(IDI_WHOIS)); // Tell the dialog to use it
 }
 
@@ -112,26 +105,13 @@ void CWhoisDlg::OnClose()
 
 void CWhoisDlg::OnDestroy()
 {
-	HFONT hFont = (HFONT)SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_GETFONT,0,0);
-	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,SendDlgItemMessage( m_hwnd,IDOK,WM_GETFONT,0,0),0);
-	DeleteObject(hFont);				
+	CCoolIrcDlg::OnDestroy();
+
 	HFONT hFont2=(HFONT)SendDlgItemMessage( m_hwnd,IDC_AWAYTIME,WM_GETFONT,0,0);
 	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,SendDlgItemMessage( m_hwnd,IDOK,WM_GETFONT,0,0),0);
 	DeleteObject(hFont2);				
+
 	m_proto->m_whoisDlg = NULL;
-}
-
-BOOL CWhoisDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	if ( msg == WM_CTLCOLOREDIT || msg == WM_CTLCOLORSTATIC ) {
-		switch( GetDlgCtrlID(( HWND )lParam )) {
-		case IDC_WHITERECT: case IDC_TEXT: case IDC_CAPTION: case IDC_AWAYTIME: case IDC_LOGO:
-			SetTextColor((HDC)wParam,RGB(0,0,0));
-			SetBkColor((HDC)wParam,RGB(255,255,255));
-			return (BOOL)GetStockObject(WHITE_BRUSH);
-	}	}
-
-	return CDlgBase::DlgProc(msg, wParam, lParam);
 }
 
 void __cdecl CWhoisDlg::OnGo( CCtrlButton* )
@@ -225,7 +205,7 @@ void CWhoisDlg::ShowMessageNoUser( const CIrcMessage* pmsg )
 // 'Change nickname' dialog
 
 CNickDlg::CNickDlg(CIrcProto *_pro) :
-	CProtoDlgBase<CIrcProto>( _pro, IDD_NICK, NULL ),
+	CCoolIrcDlg( _pro, IDD_NICK ),
 	m_Ok( this, IDOK ),
 	m_Enick( this, IDC_ENICK )
 {
@@ -234,15 +214,7 @@ CNickDlg::CNickDlg(CIrcProto *_pro) :
 
 void CNickDlg::OnInitDialog()
 {
-	HFONT hFont;
-	LOGFONT lf;
-	hFont=(HFONT)SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_GETFONT,0,0);
-	GetObject(hFont,sizeof(lf),&lf);
-	lf.lfHeight=(int)(lf.lfHeight*1.2);
-	lf.lfWeight=FW_BOLD;
-	hFont=CreateFontIndirect(&lf);
-	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,(WPARAM)hFont,0);
-	SendDlgItemMessage( m_hwnd, IDC_LOGO,STM_SETICON,(LPARAM)(HICON)m_proto->LoadIconEx(IDI_LOGO), 0);
+	CCoolIrcDlg::OnInitDialog();
 
 	DBVARIANT dbv;
 	if ( !m_proto->getTString( "RecentNicks", &dbv)) {
@@ -255,23 +227,8 @@ void CNickDlg::OnInitDialog()
 
 void CNickDlg::OnDestroy()
 {
-	HFONT hFont = ( HFONT )SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_GETFONT,0,0);
-	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,SendDlgItemMessage( m_hwnd,IDOK,WM_GETFONT,0,0),0);
-	DeleteObject(hFont);			
+	CCoolIrcDlg::OnDestroy();
 	m_proto->m_nickDlg = NULL;
-}
-
-BOOL CNickDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	if ( msg == WM_CTLCOLOREDIT || msg == WM_CTLCOLORSTATIC ) {
-		switch( GetDlgCtrlID(( HWND )lParam )) {
-		case IDC_WHITERECT: case IDC_TEXT: case IDC_CAPTION: case IDC_LOGO:
-			SetTextColor((HDC)wParam,RGB(0,0,0));
-			SetBkColor((HDC)wParam,RGB(255,255,255));
-			return (BOOL)GetStockObject(WHITE_BRUSH);
-	}	}
-
-	return CDlgBase::DlgProc(msg, wParam, lParam);
 }
 
 void CNickDlg::OnOk( CCtrlButton* )
@@ -446,7 +403,7 @@ void CListDlg::OnJoin( CCtrlButton* )
 // 'Join' dialog
 
 CJoinDlg::CJoinDlg(CIrcProto *_pro) :
-	CProtoDlgBase<CIrcProto>( _pro, IDD_NICK, NULL ),
+	CCoolIrcDlg( _pro, IDD_NICK, NULL ),
 	m_Ok( this, IDOK )
 {
 	m_Ok.OnClick = Callback( this, &CJoinDlg::OnOk );
@@ -454,14 +411,7 @@ CJoinDlg::CJoinDlg(CIrcProto *_pro) :
 
 void CJoinDlg::OnInitDialog()
 {
-	HFONT hFont=(HFONT)SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_GETFONT,0,0);
-	LOGFONT lf;
-	GetObject(hFont,sizeof(lf),&lf);
-	lf.lfHeight=(int)(lf.lfHeight*1.2);
-	lf.lfWeight=FW_BOLD;
-	hFont=CreateFontIndirect(&lf);
-	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,(WPARAM)hFont,0);
-	SendDlgItemMessage( m_hwnd, IDC_LOGO,STM_SETICON,(LPARAM)(HICON)m_proto->LoadIconEx(IDI_LOGO), 0);
+	CCoolIrcDlg::OnInitDialog();
 
 	DBVARIANT dbv;
 	if ( !m_proto->getTString( "RecentChannels", &dbv)) {
@@ -476,23 +426,8 @@ void CJoinDlg::OnInitDialog()
 
 void CJoinDlg::OnDestroy()
 {
-	HFONT hFont = (HFONT)SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_GETFONT,0,0);
-	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,SendDlgItemMessage( m_hwnd,IDOK,WM_GETFONT,0,0),0);
-	DeleteObject( hFont );				
+	CCoolIrcDlg::OnDestroy();
 	m_proto->m_joinDlg = NULL;
-}
-
-BOOL CJoinDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	if ( msg == WM_CTLCOLOREDIT || msg == WM_CTLCOLORSTATIC ) {
-		switch( GetDlgCtrlID(( HWND )lParam )) {
-		case IDC_WHITERECT:  case IDC_TEXT:  case IDC_CAPTION:  case IDC_LOGO:
-			SetTextColor((HDC)wParam,RGB(0,0,0));
-			SetBkColor((HDC)wParam,RGB(255,255,255));
-			return (BOOL)GetStockObject(WHITE_BRUSH);
-	}	}
-
-	return CDlgBase::DlgProc(msg, wParam, lParam);
 }
 
 void CJoinDlg::OnOk( CCtrlButton* )
@@ -524,42 +459,10 @@ void CJoinDlg::OnOk( CCtrlButton* )
 // 'Init' dialog
 
 CInitDlg::CInitDlg(CIrcProto *_pro) :
-	CProtoDlgBase<CIrcProto>( _pro, IDD_INIT, NULL ),
+	CCoolIrcDlg( _pro, IDD_INIT ),
 	m_Ok( this, IDOK )
 {
 	m_Ok.OnClick = Callback( this, &CInitDlg::OnOk );
-}
-
-void CInitDlg::OnInitDialog()
-{
-	HFONT hFont=(HFONT)SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_GETFONT,0,0);
-	LOGFONT lf;
-	GetObject(hFont,sizeof(lf),&lf);
-	lf.lfHeight=(int)(lf.lfHeight*1.2);
-	lf.lfWeight=FW_BOLD;
-	hFont=CreateFontIndirect(&lf);
-	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,(WPARAM)hFont,0);
-	SendDlgItemMessage( m_hwnd, IDC_LOGO,STM_SETICON,(LPARAM)(HICON)m_proto->LoadIconEx(IDI_LOGO), 0);
-}
-
-void CInitDlg::OnDestroy()
-{
-	HFONT hFont = (HFONT)SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_GETFONT,0,0);
-	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,SendDlgItemMessage( m_hwnd,IDOK,WM_GETFONT,0,0),0);
-	DeleteObject(hFont);				
-}
-
-BOOL CInitDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	if ( msg == WM_CTLCOLOREDIT || msg == WM_CTLCOLORSTATIC ) {
-		switch( GetDlgCtrlID(( HWND )lParam )) {
-		case IDC_WHITERECT:  case IDC_TEXT:  case IDC_CAPTION:  case IDC_LOGO:
-			SetTextColor((HDC)wParam,RGB(0,0,0));
-			SetBkColor((HDC)wParam,RGB(255,255,255));
-			return (BOOL)GetStockObject(WHITE_BRUSH);
-	}	}
-
-	return CDlgBase::DlgProc(msg, wParam, lParam);
 }
 
 void CInitDlg::OnOk( CCtrlButton* )
@@ -587,26 +490,18 @@ void CInitDlg::OnOk( CCtrlButton* )
 // 'Quick' dialog
 
 CQuickDlg::CQuickDlg(CIrcProto *_pro) :
-	CProtoDlgBase<CIrcProto>( _pro, IDD_QUICKCONN, NULL ),
-	m_Ok( this, IDOK )
+	CCoolIrcDlg( _pro, IDD_QUICKCONN ),
+	m_Ok( this, IDOK ),
+	m_serverCombo( this, IDC_SERVERCOMBO )
 {
 	m_Ok.OnClick = Callback( this, &CQuickDlg::OnOk );
-
-	SetControlHandler( IDC_SERVERCOMBO, &CQuickDlg::OnServerCombo );
+	m_serverCombo.OnChange = Callback( this, &CQuickDlg::OnServerCombo );
 }
 
 void CQuickDlg::OnInitDialog()
 {
-	HFONT hFont;
-	LOGFONT lf;
-	hFont=(HFONT)SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_GETFONT,0,0);
-	GetObject(hFont,sizeof(lf),&lf);
-	lf.lfHeight=(int)(lf.lfHeight*1.2);
-	lf.lfWeight=FW_BOLD;
-	hFont=CreateFontIndirect(&lf);
-	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,(WPARAM)hFont,0);
-	SendDlgItemMessage( m_hwnd, IDC_LOGO,STM_SETICON,(LPARAM)(HICON)m_proto->LoadIconEx(IDI_LOGO), 0);
-	
+	CCoolIrcDlg::OnInitDialog();
+
 	char * p1 = m_proto->m_pszServerFile;
 	char * p2 = m_proto->m_pszServerFile;
 	if ( m_proto->m_pszServerFile ) {
@@ -705,28 +600,13 @@ void CQuickDlg::OnInitDialog()
 
 void CQuickDlg::OnDestroy()
 {
-	HFONT hFont = ( HFONT )SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_GETFONT,0,0);
-	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,SendDlgItemMessage( m_hwnd,IDOK,WM_GETFONT,0,0),0);
-	DeleteObject(hFont);				
+	CCoolIrcDlg::OnDestroy();
 	
 	int j = (int) SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_GETCOUNT, 0, 0);
 	for ( int index2 = 0; index2 < j; index2++ )
 		delete ( SERVER_INFO* )SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_GETITEMDATA, index2, 0);
 	
 	m_proto->m_quickDlg = NULL;
-}
-
-BOOL CQuickDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	if ( msg == WM_CTLCOLOREDIT || msg == WM_CTLCOLORSTATIC ) {
-		switch( GetDlgCtrlID(( HWND )lParam )) {
-		case IDC_WHITERECT:  case IDC_TEXT:  case IDC_CAPTION:  case IDC_LOGO:
-			SetTextColor((HDC)wParam,RGB(0,0,0));
-			SetBkColor((HDC)wParam,RGB(255,255,255));
-			return (BOOL)GetStockObject(WHITE_BRUSH);
-	}	}
-
-	return CDlgBase::DlgProc(msg, wParam, lParam);
 }
 
 void CQuickDlg::OnOk( CCtrlButton* )
@@ -771,102 +651,69 @@ void CQuickDlg::OnOk( CCtrlButton* )
 	m_proto->ConnectToServer();
 }
 
-void CQuickDlg::OnServerCombo(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void CQuickDlg::OnServerCombo( CCtrlData* )
 {
-	if ( idCode == CBN_SELCHANGE ) {
-		int i = SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_GETCURSEL, 0, 0);
-		SERVER_INFO* pData = ( SERVER_INFO* )SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_GETITEMDATA, i, 0);
-		if ( i != CB_ERR ) {
-			SetDlgItemTextA( m_hwnd,IDC_SERVER, pData->Address );
-			SetDlgItemTextA( m_hwnd,IDC_PORT,   pData->m_portStart );
-			SetDlgItemTextA( m_hwnd,IDC_PORT2,  pData->m_portEnd );
-			SetDlgItemTextA( m_hwnd,IDC_PASS,   "" );
-			if ( m_ssleay32 ) {
-				if ( pData->m_iSSL == 0 ) {
-					CheckDlgButton( m_hwnd, IDC_SSL_OFF,  BST_CHECKED );
-					CheckDlgButton( m_hwnd, IDC_SSL_AUTO, BST_UNCHECKED );
-					CheckDlgButton( m_hwnd, IDC_SSL_ON,   BST_UNCHECKED );
-				}
-				if ( pData->m_iSSL == 1 ) {
-					CheckDlgButton( m_hwnd, IDC_SSL_AUTO, BST_CHECKED );
-					CheckDlgButton( m_hwnd, IDC_SSL_OFF,  BST_UNCHECKED );
-					CheckDlgButton( m_hwnd, IDC_SSL_ON,   BST_UNCHECKED );
-				}
-				if ( pData->m_iSSL == 2 ) {
-					CheckDlgButton( m_hwnd, IDC_SSL_ON,   BST_CHECKED );
-					CheckDlgButton( m_hwnd, IDC_SSL_OFF,  BST_UNCHECKED );
-					CheckDlgButton( m_hwnd, IDC_SSL_AUTO, BST_UNCHECKED );
-			}	}
+	int i = SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_GETCURSEL, 0, 0);
+	SERVER_INFO* pData = ( SERVER_INFO* )SendDlgItemMessage( m_hwnd, IDC_SERVERCOMBO, CB_GETITEMDATA, i, 0);
+	if ( i == CB_ERR )
+		return;
 
-			if ( !strcmp( pData->m_name, Translate("---- Not listed server ----" ))) {
-				SendDlgItemMessage( m_hwnd, IDC_SERVER, EM_SETREADONLY, false, 0);
-				SendDlgItemMessage( m_hwnd, IDC_PORT,   EM_SETREADONLY, false, 0);
-				SendDlgItemMessage( m_hwnd, IDC_PORT2,  EM_SETREADONLY, false, 0);
-				EnableWindow(GetDlgItem( m_hwnd, IDC_SSL_OFF), TRUE);
-				EnableWindow(GetDlgItem( m_hwnd, IDC_SSL_AUTO),TRUE);
-				EnableWindow(GetDlgItem( m_hwnd, IDC_SSL_ON),  TRUE);
-			}
-			else {
-				SendDlgItemMessage( m_hwnd, IDC_SERVER, EM_SETREADONLY, true, 0);
-				SendDlgItemMessage( m_hwnd, IDC_PORT,   EM_SETREADONLY, true, 0);
-				SendDlgItemMessage( m_hwnd, IDC_PORT2,  EM_SETREADONLY, true, 0);
-				EnableWindow(GetDlgItem( m_hwnd, IDC_SSL_OFF), FALSE);
-				EnableWindow(GetDlgItem( m_hwnd, IDC_SSL_AUTO),FALSE);
-				EnableWindow(GetDlgItem( m_hwnd, IDC_SSL_ON),  FALSE);
-			}
+	SetDlgItemTextA( m_hwnd,IDC_SERVER, pData->Address );
+	SetDlgItemTextA( m_hwnd,IDC_PORT,   pData->m_portStart );
+	SetDlgItemTextA( m_hwnd,IDC_PORT2,  pData->m_portEnd );
+	SetDlgItemTextA( m_hwnd,IDC_PASS,   "" );
+	if ( m_ssleay32 ) {
+		if ( pData->m_iSSL == 0 ) {
+			CheckDlgButton( m_hwnd, IDC_SSL_OFF,  BST_CHECKED );
+			CheckDlgButton( m_hwnd, IDC_SSL_AUTO, BST_UNCHECKED );
+			CheckDlgButton( m_hwnd, IDC_SSL_ON,   BST_UNCHECKED );
+		}
+		if ( pData->m_iSSL == 1 ) {
+			CheckDlgButton( m_hwnd, IDC_SSL_AUTO, BST_CHECKED );
+			CheckDlgButton( m_hwnd, IDC_SSL_OFF,  BST_UNCHECKED );
+			CheckDlgButton( m_hwnd, IDC_SSL_ON,   BST_UNCHECKED );
+		}
+		if ( pData->m_iSSL == 2 ) {
+			CheckDlgButton( m_hwnd, IDC_SSL_ON,   BST_CHECKED );
+			CheckDlgButton( m_hwnd, IDC_SSL_OFF,  BST_UNCHECKED );
+			CheckDlgButton( m_hwnd, IDC_SSL_AUTO, BST_UNCHECKED );
+	}	}
 
-			EnableWindow(GetDlgItem( m_hwnd, IDOK), true);
-}	}	}
+	if ( !strcmp( pData->m_name, Translate("---- Not listed server ----" ))) {
+		SendDlgItemMessage( m_hwnd, IDC_SERVER, EM_SETREADONLY, false, 0);
+		SendDlgItemMessage( m_hwnd, IDC_PORT,   EM_SETREADONLY, false, 0);
+		SendDlgItemMessage( m_hwnd, IDC_PORT2,  EM_SETREADONLY, false, 0);
+		EnableWindow(GetDlgItem( m_hwnd, IDC_SSL_OFF), TRUE);
+		EnableWindow(GetDlgItem( m_hwnd, IDC_SSL_AUTO),TRUE);
+		EnableWindow(GetDlgItem( m_hwnd, IDC_SSL_ON),  TRUE);
+	}
+	else {
+		SendDlgItemMessage( m_hwnd, IDC_SERVER, EM_SETREADONLY, true, 0);
+		SendDlgItemMessage( m_hwnd, IDC_PORT,   EM_SETREADONLY, true, 0);
+		SendDlgItemMessage( m_hwnd, IDC_PORT2,  EM_SETREADONLY, true, 0);
+		EnableWindow(GetDlgItem( m_hwnd, IDC_SSL_OFF), FALSE);
+		EnableWindow(GetDlgItem( m_hwnd, IDC_SSL_AUTO),FALSE);
+		EnableWindow(GetDlgItem( m_hwnd, IDC_SSL_ON),  FALSE);
+	}
+
+	EnableWindow(GetDlgItem( m_hwnd, IDOK), true);
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // 'Question' dialog
 
 CQuestionDlg::CQuestionDlg(CIrcProto *_pro, CManagerDlg* owner ) :
-	CProtoDlgBase<CIrcProto>( _pro, IDD_QUESTION, ( owner == NULL ) ? NULL : owner->GetHwnd()),
+	CCoolIrcDlg( _pro, IDD_QUESTION, ( owner == NULL ) ? NULL : owner->GetHwnd()),
 	m_Ok( this, IDOK ),
 	m_owner( owner )
 {
 	m_Ok.OnClick = Callback( this, &CQuestionDlg::OnOk );
 }
 
-void CQuestionDlg::OnInitDialog()
-{
-	HFONT hFont = (HFONT)SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_GETFONT,0,0);
-	LOGFONT lf;
-	GetObject(hFont,sizeof(lf),&lf);
-	lf.lfHeight=(int)(lf.lfHeight*1.2);
-	lf.lfWeight=FW_BOLD;
-	hFont=CreateFontIndirect(&lf);
-	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,(WPARAM)hFont,0);
-	SendDlgItemMessage( m_hwnd, IDC_LOGO,STM_SETICON,(LPARAM)(HICON)m_proto->LoadIconEx(IDI_LOGO), 0);
-}
-
 void CQuestionDlg::OnClose()
 {
 	if ( m_owner )
 		m_owner->CloseQuestion();
-
-	DestroyWindow( m_hwnd );
-}
-
-void CQuestionDlg::OnDestroy()
-{
-	HFONT hFont = (HFONT)SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_GETFONT,0,0);
-	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,SendDlgItemMessage( m_hwnd,IDOK,WM_GETFONT,0,0),0);
-	DeleteObject(hFont);				
-}
-
-BOOL CQuestionDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	if ( msg == WM_CTLCOLOREDIT || msg == WM_CTLCOLORSTATIC ) {
-		switch( GetDlgCtrlID(( HWND )lParam )) {
-		case IDC_WHITERECT:  case IDC_TEXT:  case IDC_CAPTION:  case IDC_LOGO:
-			SetTextColor((HDC)wParam,RGB(0,0,0));
-			SetBkColor((HDC)wParam,RGB(255,255,255));
-			return (BOOL)GetStockObject(WHITE_BRUSH);
-	}	}
-
-	return CDlgBase::DlgProc(msg, wParam, lParam);
 }
 
 void CQuestionDlg::OnOk( CCtrlButton* )
@@ -924,7 +771,9 @@ void CQuestionDlg::Activate()
 // 'Channel Manager' dialog
 
 CManagerDlg::CManagerDlg(CIrcProto *_pro) :
-	CProtoDlgBase<CIrcProto>( _pro, IDD_CHANMANAGER, NULL ),
+	CCoolIrcDlg( _pro, IDD_CHANMANAGER ),
+	m_list( this, IDC_LIST ),
+
 	m_check1( this, IDC_CHECK1 ),
 	m_check2( this, IDC_CHECK2 ),
 	m_check3( this, IDC_CHECK3 ),
@@ -974,7 +823,8 @@ CManagerDlg::CManagerDlg(CIrcProto *_pro) :
 	m_radio2.OnChange = Callback( this, &CManagerDlg::OnRadio );
 	m_radio3.OnChange = Callback( this, &CManagerDlg::OnRadio );
 
-	SetControlHandler( IDC_LIST, &CManagerDlg::OnList );
+	m_list.OnDblClick = Callback( this, &CManagerDlg::OnListDblClick );
+	m_list.OnChange = Callback( this, &CManagerDlg::OnChangeList );
 }
 
 LRESULT CALLBACK MgrEditSubclassProc(HWND m_hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
@@ -1007,14 +857,7 @@ LRESULT CALLBACK MgrEditSubclassProc(HWND m_hwnd, UINT msg, WPARAM wParam, LPARA
 
 void CManagerDlg::OnInitDialog()
 {
-	HFONT hFont;
-	LOGFONT lf;
-	hFont=(HFONT)SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_GETFONT,0,0);
-	GetObject(hFont,sizeof(lf),&lf);
-	lf.lfHeight=(int)(lf.lfHeight*1.2);
-	lf.lfWeight=FW_BOLD;
-	hFont=CreateFontIndirect(&lf);
-	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,(WPARAM)hFont,0);
+	CCoolIrcDlg::OnInitDialog();
 
 	POINT pt;
 	pt.x = 3; 
@@ -1023,9 +866,8 @@ void CManagerDlg::OnInitDialog()
 	OldMgrEditProc = (WNDPROC)SetWindowLong(hwndEdit, GWL_WNDPROC,(LONG)MgrEditSubclassProc); 
 	
 	SendMessage( m_hwnd,WM_SETICON,ICON_BIG,(LPARAM)m_proto->LoadIconEx(IDI_MANAGER));
-	SendDlgItemMessage( m_hwnd, IDC_LOGO,STM_SETICON,(LPARAM)(HICON)m_proto->LoadIconEx(IDI_LOGO), 0);
 
-	SendDlgItemMessage( m_hwnd,IDC_LIST,LB_SETHORIZONTALEXTENT,750,NULL);
+	m_list.SendMsg( LB_SETHORIZONTALEXTENT, 750, NULL );
 	m_radio1.SetState( true );
 
 	const char* modes = m_proto->sChannelModes.c_str();
@@ -1083,9 +925,7 @@ void CManagerDlg::OnClose()
 
 void CManagerDlg::OnDestroy()
 {
-	HFONT hFont = (HFONT)SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_GETFONT,0,0);
-	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,SendDlgItemMessage( m_hwnd,IDOK,WM_GETFONT,0,0),0);
-	DeleteObject(hFont);
+	CCoolIrcDlg::OnDestroy();
 	m_proto->m_managerDlg = NULL;
 }
 
@@ -1127,12 +967,11 @@ void __cdecl CManagerDlg::OnAdd( CCtrlButton* )
 void __cdecl CManagerDlg::OnEdit( CCtrlButton* )
 {
 	if ( !IsDlgButtonChecked( m_hwnd, IDC_NOTOP )) {
-		int i = SendDlgItemMessage( m_hwnd, IDC_LIST, LB_GETCURSEL, 0, 0);
+		int i = m_list.GetCurSel();
 		if ( i != LB_ERR ) {
-			TCHAR* m = new TCHAR[ SendDlgItemMessage( m_hwnd, IDC_LIST, LB_GETTEXTLEN, i, 0)+2 ];
-			SendDlgItemMessage( m_hwnd, IDC_LIST, LB_GETTEXT, i, (LPARAM)m );
+			TCHAR* m = m_list.GetItemText( i );
 			TString user = GetWord(m, 0);
-			delete[]m;
+			mir_free( m );
 			
 			TCHAR temp[100];
 			TCHAR mode[3];
@@ -1170,17 +1009,16 @@ void __cdecl CManagerDlg::OnEdit( CCtrlButton* )
 
 void __cdecl CManagerDlg::OnRemove( CCtrlButton* )
 {
-	int i = SendDlgItemMessage( m_hwnd, IDC_LIST, LB_GETCURSEL, 0, 0);
+	int i = m_list.GetCurSel();
 	if ( i != LB_ERR ) {
 		m_add.Disable();
 		m_edit.Disable();
 		m_remove.Disable();
-		TCHAR* m = new TCHAR[ SendDlgItemMessage( m_hwnd, IDC_LIST, LB_GETTEXTLEN, i, 0)+2 ];
-		SendDlgItemMessage( m_hwnd, IDC_LIST, LB_GETTEXT, i, (LPARAM)m);
+
+		TCHAR temp[100], mode[3];
+		TCHAR* m = m_list.GetItemText( i, temp, SIZEOF( temp ));
 		TString user = GetWord(m, 0);
-		delete[]m;
-		TCHAR temp[100];
-		TCHAR mode[3];
+		
 		if ( m_radio1.GetState()) {
 			lstrcpy(mode, _T("-b"));
 			lstrcpyn(temp, TranslateT( "Remove ban?" ), 100 );
@@ -1203,17 +1041,17 @@ void __cdecl CManagerDlg::OnRemove( CCtrlButton* )
 		CloseQuestion();
 }	}
 
-void CManagerDlg::OnList(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void CManagerDlg::OnListDblClick( CCtrlListBox* )
 {
-	if ( idCode == LBN_SELCHANGE ) {
-		if ( !IsDlgButtonChecked( m_hwnd, IDC_NOTOP )) {
-			m_edit.Enable();
-			m_remove.Enable();
-	}	}
-	
-	if ( idCode == LBN_DBLCLK )
-		OnEdit( NULL );
+	OnEdit( NULL );
 }
+
+void CManagerDlg::OnChangeList( CCtrlData* )
+{
+	if ( !IsDlgButtonChecked( m_hwnd, IDC_NOTOP )) {
+		m_edit.Enable();
+		m_remove.Enable();
+}	}
 
 void CManagerDlg::OnChangeModes( CCtrlData* )
 {
@@ -1391,22 +1229,6 @@ void __cdecl CManagerDlg::OnRadio( CCtrlData* )
 	ApplyQuestion();
 }
 
-BOOL CManagerDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	switch( msg ) {
-	case WM_CTLCOLOREDIT:
-	case WM_CTLCOLORSTATIC:
-		switch( GetDlgCtrlID(( HWND )lParam )) {
-		case IDC_WHITERECT: case IDC_TEXT: case IDC_CAPTION: case IDC_AWAYTIME: case IDC_LOGO:
-			SetTextColor((HDC)wParam,RGB(0,0,0));
-			SetBkColor((HDC)wParam,RGB(255,255,255));
-			return (BOOL)GetStockObject(WHITE_BRUSH);
-		}
-		break;
-	}
-	return CDlgBase::DlgProc(msg, wParam, lParam);
-}
-
 void CManagerDlg::ApplyQuestion()
 {
 	TCHAR window[256];
@@ -1418,7 +1240,7 @@ void CManagerDlg::ApplyQuestion()
 		lstrcpy( mode, _T("+I"));
 	if ( m_radio3.GetState())
 		lstrcpy( mode, _T("+e"));
-	SendDlgItemMessage( m_hwnd, IDC_LIST, LB_RESETCONTENT, 0, 0);
+	m_list.ResetContent();
 	m_radio1.Disable();
 	m_radio2.Disable();
 	m_radio3.Disable();
@@ -1431,7 +1253,7 @@ void CManagerDlg::ApplyQuestion()
 void CManagerDlg::CloseQuestion()
 {
 	m_add.Enable();
-	if ( SendDlgItemMessage( m_hwnd, IDC_LIST, LB_GETCURSEL, 0, 0) != LB_ERR) {
+	if ( m_list.GetCurSel() != LB_ERR) {
 		m_edit.Enable();
 		m_remove.Enable();
 }	}
@@ -1531,3 +1353,45 @@ void CManagerDlg::InitManager( int mode, const TCHAR* window )
 		m_radio1.SetState( true );
 		m_proto->PostIrcMessage( _T("/MODE %s +b"), window);
 }	}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// 'cool' dialog
+
+CCoolIrcDlg::CCoolIrcDlg( CIrcProto* _pro, int dlgId, HWND parent ) :
+	CProtoDlgBase<CIrcProto>( _pro, dlgId, parent )
+{
+}
+
+void CCoolIrcDlg::OnInitDialog()
+{
+	HFONT hFont;
+	LOGFONT lf;
+	hFont=(HFONT)SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_GETFONT,0,0);
+	GetObject(hFont,sizeof(lf),&lf);
+	lf.lfHeight=(int)(lf.lfHeight*1.2);
+	lf.lfWeight=FW_BOLD;
+	hFont=CreateFontIndirect(&lf);
+	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,(WPARAM)hFont,0);
+
+	SendDlgItemMessage( m_hwnd, IDC_LOGO, STM_SETICON,(LPARAM)(HICON)m_proto->LoadIconEx(IDI_LOGO), 0);
+}
+
+void CCoolIrcDlg::OnDestroy()
+{
+	HFONT hFont = (HFONT)SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_GETFONT,0,0);
+	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,SendDlgItemMessage( m_hwnd,IDOK,WM_GETFONT,0,0),0);
+	DeleteObject(hFont);
+}
+
+BOOL CCoolIrcDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	if ( msg == WM_CTLCOLOREDIT || msg == WM_CTLCOLORSTATIC ) {
+		switch( GetDlgCtrlID(( HWND )lParam )) {
+		case IDC_WHITERECT: case IDC_TEXT: case IDC_CAPTION: case IDC_AWAYTIME: case IDC_LOGO:
+			SetTextColor((HDC)wParam,RGB(0,0,0));
+			SetBkColor((HDC)wParam,RGB(255,255,255));
+			return (BOOL)GetStockObject(WHITE_BRUSH);
+	}	}
+
+	return CDlgBase::DlgProc(msg, wParam, lParam);
+}

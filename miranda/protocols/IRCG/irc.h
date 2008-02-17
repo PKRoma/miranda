@@ -404,6 +404,7 @@ struct CIrcProto : public PROTO_INTERFACE
 	CRITICAL_SECTION cs;
 	CRITICAL_SECTION m_gchook;
 	CRITICAL_SECTION m_resolve;
+	HANDLE           m_evWndCreate;
 
 	TString m_statusMessage;
 	bool    m_bMbotInstalled;

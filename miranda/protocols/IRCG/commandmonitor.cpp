@@ -1526,12 +1526,15 @@ static void __stdcall sttShowDlgList( void* param )
 	if ( ppro->m_listDlg == NULL ) {
 		ppro->m_listDlg = new CListDlg( ppro );
 		ppro->m_listDlg->Show();
-}	}
+	}
+	SetEvent( ppro->m_evWndCreate );
+}
 
 bool CIrcProto::OnIrc_LISTSTART( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming ) {
 		CallFunctionAsync( sttShowDlgList, this );
+		WaitForSingleObject( m_evWndCreate, INFINITE );
 		m_channelNumber = 0;
 	}
 
@@ -1679,7 +1682,8 @@ static void __stdcall sttShowWhoisWnd( void* param )
 	if ( ppro->m_whoisDlg == NULL ) {
 		ppro->m_whoisDlg = new CWhoisDlg( ppro );
 		ppro->m_whoisDlg->Show();
-	}	
+	}
+	SetEvent( ppro->m_evWndCreate );
 
 	ppro->m_whoisDlg->ShowMessage( pmsg );
 	delete pmsg;
@@ -1687,8 +1691,10 @@ static void __stdcall sttShowWhoisWnd( void* param )
 
 bool CIrcProto::OnIrc_WHOIS_NAME( const CIrcMessage* pmsg )
 {
-	if ( pmsg->m_bIncoming && pmsg->parameters.size() > 5 && m_manualWhoisCount > 0 )
+	if ( pmsg->m_bIncoming && pmsg->parameters.size() > 5 && m_manualWhoisCount > 0 ) {
 		CallFunctionAsync( sttShowWhoisWnd, new CIrcMessage( *pmsg ));
+		WaitForSingleObject( m_evWndCreate, INFINITE );
+	}
 	ShowMessage( pmsg );
 	return true;
 }
@@ -1764,6 +1770,8 @@ bool CIrcProto::OnIrc_WHOIS_IDLE( const CIrcMessage* pmsg )
 			mir_sntprintf(temp, 99, _T("%um, %us"), M, S);
 		else if (S)
 			mir_sntprintf(temp, 99, _T("%us"), S);
+		else
+			temp[0] = 0;
 
 		TCHAR temp3[256];
 		TCHAR tTimeBuf[128], *tStopStr;
@@ -1840,6 +1848,7 @@ static void __stdcall sttShowNickWnd( void* param )
 		ppro->m_nickDlg = new CNickDlg( ppro );
 		ppro->m_nickDlg->Show();
 	}
+	SetEvent( ppro->m_evWndCreate );
 	SetWindowText( GetDlgItem( ppro->m_nickDlg->GetHwnd(), IDC_CAPTION ), TranslateT("Change nickname"));
 	SetWindowText( GetDlgItem( ppro->m_nickDlg->GetHwnd(), IDC_TEXT    ), pmsg->parameters[2].c_str());
 	ppro->m_nickDlg->m_Enick.SetText( pmsg->parameters[1].c_str());
@@ -1849,8 +1858,10 @@ static void __stdcall sttShowNickWnd( void* param )
 
 bool CIrcProto::OnIrc_NICK_ERR( const CIrcMessage* pmsg )
 {
-	if (( nickflag || m_alternativeNick[0] == 0) && pmsg->m_bIncoming && pmsg->parameters.size() > 2 )
+	if (( nickflag || m_alternativeNick[0] == 0) && pmsg->m_bIncoming && pmsg->parameters.size() > 2 ) {
 		CallFunctionAsync( sttShowNickWnd, new CIrcMessage( *pmsg ));
+		WaitForSingleObject( m_evWndCreate, INFINITE );
+	}
 	else if ( pmsg->m_bIncoming ) {
 		TCHAR m[200];
 		mir_sntprintf( m, SIZEOF(m), _T("NICK %s"), m_alternativeNick );

@@ -312,7 +312,22 @@ public:
 class CCtrlListBox : public CCtrlData
 {
 public:
-	virtual void COMPILE_LOCK() = 0;
+	CCtrlListBox( CDlgBase* dlg, int ctrlId );
+
+	virtual BOOL OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+	{
+		switch( idCode ) {
+		case LBN_SELCHANGE:
+			NotifyChange();
+			break;
+		case LBN_DBLCLK:
+			OnDblClick(this);
+			break;
+		}		
+		return FALSE;
+	}
+	
+	CCallback<CCtrlListBox> OnDblClick;
 
 	int    AddString(TCHAR *text, LPARAM data=0);
 	void   DeleteString(int index);
@@ -618,32 +633,6 @@ protected:
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// TMButtonInfo
-
-struct TMButtonInfo
-{
-	int    idCtrl;
-	TCHAR	*szTitle;
-	char	*szIcon;
-	int    iCoreIcon;
-	bool   bIsPush;
-};
-
-template<typename TProto>
-void UISetupMButtons(TProto *proto, HWND hwnd, TMButtonInfo *buttons, int count)
-{
-	for (int i = 0; i < count; ++i)
-	{
-		SendDlgItemMessage(hwnd, buttons[i].idCtrl, BM_SETIMAGE, IMAGE_ICON,
-			(LPARAM)(buttons[i].szIcon ?
-				proto->LoadIconEx(buttons[i].szIcon) :
-				LoadSkinnedIcon(buttons[i].iCoreIcon)));
-		SendDlgItemMessage(hwnd, buttons[i].idCtrl, BUTTONSETASFLATBTN, 0, 0);
-		SendDlgItemMessage(hwnd, buttons[i].idCtrl, BUTTONADDTOOLTIP, (WPARAM)TranslateTS(buttons[i].szTitle), BATF_TCHAR);
-		if (buttons[i].bIsPush)
-			SendDlgItemMessage(hwnd, buttons[i].idCtrl, BUTTONSETASPUSHBTN, 0, 0);
-	}
-}
 
 int UIEmulateBtnClick(HWND hwndDlg, UINT idcButton);
 void UIShowControls(HWND hwndDlg, int *idList, int nCmdShow);

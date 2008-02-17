@@ -21,7 +21,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "irc.h"
 #include "version.h"
+
 #include <algorithm>
+
+#include <m_genmenu.h>
 
 CIrcProto::CIrcProto( const char* szModuleName, const TCHAR* tszUserName )
 {
@@ -30,6 +33,7 @@ CIrcProto::CIrcProto( const char* szModuleName, const TCHAR* tszUserName )
 
 	InitializeCriticalSection(&cs);
 	InitializeCriticalSection(&m_gchook);
+	m_evWndCreate = ::CreateEvent( NULL, FALSE, FALSE, NULL );
 
 	IrcHookEvent( ME_SYSTEM_MODULESLOADED, &CIrcProto::OnModulesLoaded);
 	IrcHookEvent( ME_SYSTEM_PRESHUTDOWN,   &CIrcProto::OnPreShutdown);
@@ -142,6 +146,15 @@ CIrcProto::~CIrcProto()
 
 	DeleteCriticalSection( &cs );
 	DeleteCriticalSection( &m_gchook );
+
+	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hUMenuShowChannel, 0 );
+	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hUMenuJoinLeave, 0 );
+	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hUMenuChanSettings, 0 );
+	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hUMenuWhois, 0 );
+	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hUMenuDisconnect, 0 );
+	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hUMenuIgnore, 0 );
+
+	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hMenuRoot, 0 );
 
 	mir_free( m_alias );
 	delete []m_pszServerFile;

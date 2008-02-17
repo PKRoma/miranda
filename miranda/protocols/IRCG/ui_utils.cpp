@@ -342,6 +342,11 @@ void CCtrlCombo::ShowDropdown(bool show)
 /////////////////////////////////////////////////////////////////////////////////////////
 // CCtrlListBox class
 
+CCtrlListBox::CCtrlListBox( CDlgBase* dlg, int ctrlId ) :
+	CCtrlData( dlg, ctrlId )
+{
+}
+
 int CCtrlListBox::AddString(TCHAR *text, LPARAM data)
 {
 	int iItem = SendMessage(m_hwnd, LB_ADDSTRING, 0, (LPARAM)text);
