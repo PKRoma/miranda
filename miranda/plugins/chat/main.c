@@ -156,6 +156,7 @@ int __declspec(dllexport) Unload(void)
 
 	DestroyMenu(g_hMenu);
 	DestroyServiceFunctions();
+	DestroyHookableEvents();
 	FreeIcons();
 	OptionsUnInit();
 	FreeLibrary(GetModuleHandleA("riched20.dll"));

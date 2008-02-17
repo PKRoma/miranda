@@ -57,6 +57,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../../include/m_addcontact.h"
 #include "../../include/m_clist.h"
 #include "../../include/m_clui.h"
+#include "../../include/m_message.h"
 #include "../../include/m_popup.h"
 #include "resource.h"
 #include "m_chat.h"
@@ -417,6 +418,7 @@ void   UnhookEvents(void);
 void   CreateServiceFunctions(void);
 void   DestroyServiceFunctions(void);
 void   CreateHookableEvents(void);
+void   DestroyHookableEvents(void);
 void   TabsInit(void);
 void   ShowRoom(SESSION_INFO* si, WPARAM wp, BOOL bSetForeground);
 

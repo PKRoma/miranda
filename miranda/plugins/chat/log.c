@@ -548,7 +548,7 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 			&& lin->iType != GC_EVENT_ADDSTATUS
 			&& lin->iType != GC_EVENT_REMOVESTATUS )))
 		{
-			SMADD_RICHEDIT2 sm = {0};
+			SMADD_RICHEDIT3 sm = {0};
 
 			newsel.cpMin = sel.cpMin;
 			if (newsel.cpMin < 0)
@@ -559,6 +559,7 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 			sm.Protocolname = si->pszModule;
 			sm.rangeToReplace = bRedraw?NULL:&newsel;
 			sm.disableRedraw = TRUE;
+			sm.hContact = si->hContact;
 			CallService(MS_SMILEYADD_REPLACESMILEYS, 0, (LPARAM)&sm);
 		}
 

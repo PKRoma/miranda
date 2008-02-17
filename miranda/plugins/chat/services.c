@@ -30,6 +30,7 @@ extern BOOL			IEviewInstalled;
 
 HANDLE				hSendEvent;
 HANDLE				hBuildMenuEvent ;
+HANDLE				hHookWinEvt;
 HANDLE				g_hModulesLoaded;
 HANDLE				g_hSystemPreShutdown;
 HANDLE				g_hHookContactDblClick;
@@ -839,4 +840,12 @@ void CreateHookableEvents(void)
 {
 	hSendEvent = CreateHookableEvent(ME_GC_EVENT);
 	hBuildMenuEvent = CreateHookableEvent(ME_GC_BUILDMENU);
+	hHookWinEvt = CreateHookableEvent(ME_MSG_WINDOWEVENT);
+}
+
+void DestroyHookableEvents(void)
+{
+	DestroyHookableEvent(hSendEvent);
+	DestroyHookableEvent(hBuildMenuEvent);
+	DestroyHookableEvent(hHookWinEvt);
 }
