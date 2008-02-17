@@ -996,7 +996,7 @@ void CConnectPrefsDlg::OnInitDialog()
 	if ( m_proto->m_serverComboSelection != -1 ) {
 		SERVER_INFO* pData = ( SERVER_INFO* )m_serverCombo.GetItemData( m_proto->m_serverComboSelection-1 );
 		if ((int)pData != CB_ERR) {
-			m_address.SetTextA( pData->Address );
+			m_server.SetTextA( pData->Address );
 			m_port.SetTextA( pData->m_portStart );
 			m_port2.SetTextA( pData->m_portEnd );
 	}	}
@@ -1024,7 +1024,7 @@ void CConnectPrefsDlg::OnInitDialog()
 	m_spin2.Enable( m_proto->m_autoOnlineNotification && m_proto->m_channelAwayNotification );
 	m_limit.Enable( m_proto->m_autoOnlineNotification && m_proto->m_channelAwayNotification );
 	m_ident.SetState( m_proto->m_ident );
-	m_ident.Enable( m_proto->m_ident );
+	m_identSystem.Enable( m_proto->m_ident );
 	m_identPort.Enable( m_proto->m_ident );
 	m_identTimed.SetState( m_proto->IdentTimer );				
 	m_disableError.SetState( m_proto->m_disableErrorPopups );

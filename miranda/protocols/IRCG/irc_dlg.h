@@ -186,84 +186,7 @@ private:
 /////////////////////////////////////////////////////////////////////////////////////////
 // options
 
-struct CAddIgnoreDlg : public CProtoDlgBase<CIrcProto>
-{
-	CCtrlButton m_Ok;
-
-	TCHAR szOldMask[500];
-
-	CAddIgnoreDlg( CIrcProto* _pro, const TCHAR* mask, HWND parent );
-
-	virtual void OnInitDialog();
-	virtual void OnClose();
-
-	void __cdecl OnOk( CCtrlButton* );
-};
-
-struct CIgnorePrefsDlg : public CProtoDlgBase<CIrcProto>
-{
-	CCtrlMButton m_add, m_edit, m_del;
-	CCtrlCheck m_enable, m_ignoreChat, m_ignoreFile, m_ignoreChannel, m_ignoreUnknown;
-	CCtrlBase m_list;  // TODO - convert it to CCtrlListView
-	
-	CIgnorePrefsDlg( CIrcProto* _pro );
-
-	static CDlgBase* Create( void* param ) { return new CIgnorePrefsDlg(( CIrcProto* )param ); }
-
-	virtual void OnInitDialog();
-	virtual void OnDestroy();
-
-	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
-
-	void __cdecl OnEnableIgnore( CCtrlData* );
-	void __cdecl OnIgnoreChat( CCtrlData* );
-	void __cdecl OnAdd( CCtrlButton* );
-	void __cdecl OnEdit( CCtrlButton* );
-	void __cdecl OnDelete( CCtrlButton* );
-};
-
-struct COtherPrefsDlg : public CProtoDlgBase<CIrcProto>
-{
-	CCtrlButton  m_url;
-	CCtrlMButton m_add, m_delete;
-	CCtrlCombo   m_performCombo, m_codepage;
-	CCtrlEdit    m_pertormEdit;
-	CCtrlCheck   m_perform;
-
-	COtherPrefsDlg( CIrcProto* _pro );
-
-	static CDlgBase* Create( void* param ) { return new COtherPrefsDlg(( CIrcProto* )param ); }
-
-	virtual void OnInitDialog();
-	virtual void OnApply();
-	virtual void OnDestroy();
-
-	void __cdecl OnUrl( CCtrlButton* );
-	void __cdecl OnPerformCombo( CCtrlData* );
-	void __cdecl OnCodePage( CCtrlData* );
-	void __cdecl OnPerformEdit( CCtrlData* );
-	void __cdecl OnPerform( CCtrlData* );
-	void __cdecl OnAdd( CCtrlButton* );
-	void __cdecl OnDelete( CCtrlButton* );
-
-	void addPerformComboValue( int idx, const char* szValueName );
-};
-
-struct CCtcpPrefsDlg : public CProtoDlgBase<CIrcProto>
-{
-	CCtrlButton m_enableIP, m_fromServer;
-
-	CCtcpPrefsDlg( CIrcProto* _pro );
-
-	static CDlgBase* Create( void* param ) { return new CCtcpPrefsDlg(( CIrcProto* )param ); }
-
-	virtual void OnInitDialog();
-	virtual void OnApply();
-
-	void __cdecl OnClicked( CCtrlButton* );
-};
-
-//---- main property page: Account ------------------------------------------------------
+//---- the first property page: Account -------------------------------------------------
 
 struct CConnectPrefsDlg : public CProtoDlgBase<CIrcProto>
 {
@@ -322,6 +245,89 @@ struct CEditServerDlg : public CProtoDlgBase<CIrcProto>
 	CConnectPrefsDlg* m_owner;
 
 	CEditServerDlg( CIrcProto* _pro, CConnectPrefsDlg* _owner );
+
+	virtual void OnInitDialog();
+	virtual void OnClose();
+
+	void __cdecl OnOk( CCtrlButton* );
+};
+
+//---- the second property page: DCC/CTCP -----------------------------------------------
+
+struct CCtcpPrefsDlg : public CProtoDlgBase<CIrcProto>
+{
+	CCtrlButton m_enableIP, m_fromServer;
+
+	CCtcpPrefsDlg( CIrcProto* _pro );
+
+	static CDlgBase* Create( void* param ) { return new CCtcpPrefsDlg(( CIrcProto* )param ); }
+
+	virtual void OnInitDialog();
+	virtual void OnApply();
+
+	void __cdecl OnClicked( CCtrlButton* );
+};
+
+//---- the third property page: Other ---------------------------------------------------
+
+struct COtherPrefsDlg : public CProtoDlgBase<CIrcProto>
+{
+	CCtrlButton  m_url;
+	CCtrlMButton m_add, m_delete;
+	CCtrlCombo   m_performCombo, m_codepage;
+	CCtrlEdit    m_pertormEdit;
+	CCtrlCheck   m_perform;
+
+	COtherPrefsDlg( CIrcProto* _pro );
+
+	static CDlgBase* Create( void* param ) { return new COtherPrefsDlg(( CIrcProto* )param ); }
+
+	virtual void OnInitDialog();
+	virtual void OnApply();
+	virtual void OnDestroy();
+
+	void __cdecl OnUrl( CCtrlButton* );
+	void __cdecl OnPerformCombo( CCtrlData* );
+	void __cdecl OnCodePage( CCtrlData* );
+	void __cdecl OnPerformEdit( CCtrlData* );
+	void __cdecl OnPerform( CCtrlData* );
+	void __cdecl OnAdd( CCtrlButton* );
+	void __cdecl OnDelete( CCtrlButton* );
+
+	void addPerformComboValue( int idx, const char* szValueName );
+};
+
+struct CIgnorePrefsDlg : public CProtoDlgBase<CIrcProto>
+{
+	CCtrlMButton m_add, m_edit, m_del;
+	CCtrlCheck m_enable, m_ignoreChat, m_ignoreFile, m_ignoreChannel, m_ignoreUnknown;
+	CCtrlBase m_list;  // TODO - convert it to CCtrlListView
+	
+	CIgnorePrefsDlg( CIrcProto* _pro );
+
+	static CDlgBase* Create( void* param ) { return new CIgnorePrefsDlg(( CIrcProto* )param ); }
+
+	virtual void OnInitDialog();
+	virtual void OnDestroy();
+
+	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
+
+	void __cdecl OnEnableIgnore( CCtrlData* );
+	void __cdecl OnIgnoreChat( CCtrlData* );
+	void __cdecl OnAdd( CCtrlButton* );
+	void __cdecl OnEdit( CCtrlButton* );
+	void __cdecl OnDelete( CCtrlButton* );
+};
+
+//---- the fourth property page: Ignore -------------------------------------------------
+
+struct CAddIgnoreDlg : public CProtoDlgBase<CIrcProto>
+{
+	CCtrlButton m_Ok;
+
+	TCHAR szOldMask[500];
+
+	CAddIgnoreDlg( CIrcProto* _pro, const TCHAR* mask, HWND parent );
 
 	virtual void OnInitDialog();
 	virtual void OnClose();
