@@ -470,11 +470,11 @@ iconList[] =
 void AddIcons(void)
 {
 	int i;
-	SKINICONDESC3 sid = {0};
+	SKINICONDESC sid = {0};
 	char szFile[MAX_PATH];
 	GetModuleFileNameA(g_hInst, szFile, MAX_PATH);
 
-	sid.cbSize = sizeof(SKINICONDESC3);
+	sid.cbSize = sizeof(SKINICONDESC);
 	sid.pszDefaultFile = szFile;
 
 	for ( i = 0; i < SIZEOF(iconList); i++ ) {
