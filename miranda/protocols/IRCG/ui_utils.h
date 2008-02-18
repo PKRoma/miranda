@@ -603,9 +603,9 @@ public:
 	{
 		ctrl.CreateDbLink((( PROTO_INTERFACE* )m_proto)->m_szModuleName, szSetting, type, iValue );
 	}
-	__inline void CreateLink( CCtrlData& ctrl, char *szSetting, TCHAR *szValue)
+	__inline void CreateLink( CCtrlData& ctrl, const char *szSetting, TCHAR *szValue)
 	{
-		ctrl.CreateDbLink((( PROTO_INTERFACE* )m_proto)->m_szModuleName, szSetting, DBVT_TCHAR, szValue );
+		ctrl.CreateDbLink((( PROTO_INTERFACE* )m_proto)->m_szModuleName, szSetting, szValue );
 	}
 
 	__inline TProto *GetProto() { return m_proto; }

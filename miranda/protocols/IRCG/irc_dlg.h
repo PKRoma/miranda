@@ -195,15 +195,15 @@ struct CConnectPrefsDlg : public CProtoDlgBase<CIrcProto>
 	CCtrlMButton m_add, m_edit, m_del;
 	CCtrlEdit    m_nick, m_nick2, m_name, m_userID;
 
-	CCtrlCheck   m_ident, m_identTimed;
+	CCtrlCheck   m_ident, m_identTimer;
 	CCtrlEdit    m_identSystem, m_identPort;
 
 	CCtrlCheck   m_retry;
 	CCtrlEdit    m_retryCount, m_retryWait;
 
 	CCtrlCheck   m_forceVisible, m_rejoinOnKick, m_rejoinChannels, m_disableError,
-		          m_address, m_useServer, m_showServer, m_keepAlive, m_autoJoin,
-					 m_oldStyle, m_onlineNotif, m_channelAway, m_startup;
+		          m_address, m_useServer, m_hideServer, m_keepAlive, m_autoJoin,
+					 m_oldStyle, m_onlineNotif, m_channelAway, m_enableServer;
 	CCtrlEdit    m_onlineTimer, m_limit, m_spin1, m_spin2, m_ssl;
 
 	CConnectPrefsDlg( CIrcProto* _pro );
@@ -256,7 +256,10 @@ struct CEditServerDlg : public CProtoDlgBase<CIrcProto>
 
 struct CCtcpPrefsDlg : public CProtoDlgBase<CIrcProto>
 {
-	CCtrlButton m_enableIP, m_fromServer;
+	CCtrlCombo m_combo;
+	CCtrlCheck m_slow, m_fast, m_disc, m_passive, m_sendNotice, m_enableIP, m_fromServer;
+	CCtrlEdit m_ip;
+	CCtrlCheck m_radio1, m_radio2, m_radio3;
 
 	CCtcpPrefsDlg( CIrcProto* _pro );
 
@@ -265,7 +268,7 @@ struct CCtcpPrefsDlg : public CProtoDlgBase<CIrcProto>
 	virtual void OnInitDialog();
 	virtual void OnApply();
 
-	void __cdecl OnClicked( CCtrlButton* );
+	void __cdecl OnClicked( CCtrlData* );
 };
 
 //---- the third property page: Other ---------------------------------------------------
@@ -275,8 +278,8 @@ struct COtherPrefsDlg : public CProtoDlgBase<CIrcProto>
 	CCtrlButton  m_url;
 	CCtrlMButton m_add, m_delete;
 	CCtrlCombo   m_performCombo, m_codepage;
-	CCtrlEdit    m_pertormEdit;
-	CCtrlCheck   m_perform;
+	CCtrlEdit    m_pertormEdit, m_quitMessage, m_alias;
+	CCtrlCheck   m_perform, m_scripting, m_autodetect;
 
 	COtherPrefsDlg( CIrcProto* _pro );
 
@@ -296,6 +299,8 @@ struct COtherPrefsDlg : public CProtoDlgBase<CIrcProto>
 
 	void addPerformComboValue( int idx, const char* szValueName );
 };
+
+//---- the fourth property page: Ignore -------------------------------------------------
 
 struct CIgnorePrefsDlg : public CProtoDlgBase<CIrcProto>
 {
@@ -317,17 +322,19 @@ struct CIgnorePrefsDlg : public CProtoDlgBase<CIrcProto>
 	void __cdecl OnAdd( CCtrlButton* );
 	void __cdecl OnEdit( CCtrlButton* );
 	void __cdecl OnDelete( CCtrlButton* );
-};
 
-//---- the fourth property page: Ignore -------------------------------------------------
+	void FixButtons( void );
+	void RebuildList( void );
+};
 
 struct CAddIgnoreDlg : public CProtoDlgBase<CIrcProto>
 {
 	CCtrlButton m_Ok;
+	CIgnorePrefsDlg* m_owner;
 
 	TCHAR szOldMask[500];
 
-	CAddIgnoreDlg( CIrcProto* _pro, const TCHAR* mask, HWND parent );
+	CAddIgnoreDlg( CIrcProto* _pro, const TCHAR* mask, CIgnorePrefsDlg* parent );
 
 	virtual void OnInitDialog();
 	virtual void OnClose();

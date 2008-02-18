@@ -75,7 +75,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define IRC_UPDATELIST        (WM_USER+1)
 #define IRC_REBUILDIGNORELIST (WM_USER+6)
 #define IRC_UPDATEIGNORELIST  (WM_USER+7)
-#define IRC_FIXIGNOREBUTTONS  (WM_USER+8)
 
 #define IRC_QUICKCONNECT      "/QuickConnectMenu"
 #define IRC_JOINCHANNEL       "/JoinChannelMenu"
@@ -239,6 +238,15 @@ struct CONTACT // Contains info about users
 	bool ExactNick;
 };
 
+struct TDbSetting
+{
+	int    offset;
+	char*  name;
+	int    type;
+	size_t size;
+	int    defValue;
+};
+
 /////////////////////////////////////////////////////////////////////////////////////////
 
 struct CIrcProto;
@@ -347,7 +355,7 @@ struct CIrcProto : public PROTO_INTERFACE
 	TCHAR    m_identPort[10];
 	TCHAR    m_retryWait[10];
 	TCHAR    m_retryCount[10];
-	TCHAR    m_nick[30];
+	TCHAR    m_nick[30], m_pNick[30];
 	TCHAR    m_alternativeNick[30];
 	TCHAR    m_name[200];
 	TCHAR    m_userID[200];
@@ -371,6 +379,7 @@ struct CIrcProto : public PROTO_INTERFACE
 	BYTE     m_rejoinIfKicked;
 	BYTE     m_hideServerWindow;
 	BYTE     m_ident;
+	BYTE     m_identTimer;
 	BYTE     m_retry;
 	BYTE     m_disableDefaultServer;
 	BYTE     m_autoOnlineNotification;
@@ -386,6 +395,8 @@ struct CIrcProto : public PROTO_INTERFACE
 	BYTE     m_DCCChatAccept;
 	BYTE     m_DCCChatIgnore;
 	BYTE     m_DCCPassive;
+	BYTE     m_DCCMode;
+	WORD     m_DCCPacketSize;
 	BYTE     m_manualHost;
 	BYTE     m_oldStyleModes;
 	BYTE     m_channelAwayNotification;
@@ -432,6 +443,7 @@ struct CIrcProto : public PROTO_INTERFACE
 	CNickDlg*    m_nickDlg;
 	CWhoisDlg*   m_whoisDlg;
 	CQuickDlg*   m_quickDlg;
+	CIgnorePrefsDlg* m_ignoreDlg;
 	
 	int      m_noOfChannels, m_manualWhoisCount;
 	String   sChannelModes, sUserModes;
@@ -472,7 +484,7 @@ struct CIrcProto : public PROTO_INTERFACE
 	UINT_PTR	DCCTimer;	
 
 	//options.cpp
-	HWND m_hwndConnect, m_hwndIgnore;
+	HWND m_hwndConnect;
 
 	std::vector<CIrcIgnoreItem> m_ignoreItems;
 
@@ -489,17 +501,15 @@ struct CIrcProto : public PROTO_INTERFACE
 	bool     m_serverlistModified, m_performlistModified;
 
 	void    InitPrefs(void);
-	int     GetPrefsString(const char *szSetting, char * prefstoset, int n, char * defaulttext);
-	#if defined( _UNICODE )
-		int CIrcProto::GetPrefsString(const char *szSetting, TCHAR* prefstoset, int n, TCHAR* defaulttext);
-	#endif
 
 	HANDLE* hIconLibItems;
 	void    AddIcons(void);
 	void    InitIgnore(void);
 	HICON   LoadIconEx(int iIndex);
 	HANDLE  GetIconHandle(int iconId);
+	void    ReadSettings( TDbSetting* sets, int count );
 	void    RewriteIgnoreSettings( void );
+	void    WriteSettings( TDbSetting* sets, int count );
 
 	//output
 	BOOL   ShowMessage (const CIrcMessage* pmsg);

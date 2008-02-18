@@ -255,7 +255,7 @@ int CIrcProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		gcd.iType = GC_EVENT_CONTROL;
 
 		gce.pDest = &gcd;
-		if ( m_useServer && !m_hideServerWindow )
+		if ( m_useServer && m_hideServerWindow )
 			CallChatEvent( WINDOW_VISIBLE, (LPARAM)&gce);
 		else
 			CallChatEvent( WINDOW_HIDDEN, (LPARAM)&gce);

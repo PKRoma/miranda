@@ -37,7 +37,7 @@ VOID CALLBACK IdentTimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTi
 	if ( ppro->m_iDesiredStatus == ID_STATUS_OFFLINE || ppro->m_iDesiredStatus == ID_STATUS_CONNECTING )
 		return;
 
-	if ( ppro->IsConnected() && ppro->IdentTimer )
+	if ( ppro->IsConnected() && ppro->m_identTimer )
 		ppro->KillIdent();
 }
 
@@ -2387,7 +2387,7 @@ static void __stdcall sttMainThrdOnConnect( void* param )
 	CIrcProto* ppro = ( CIrcProto* )param;
 
 	ppro->SetChatTimer( ppro->InitTimer, 1*1000, TimerProc );
-	if ( ppro->IdentTimer )
+	if ( ppro->m_identTimer )
 		ppro->SetChatTimer( ppro->IdentTimer, 60*1000, IdentTimerProc );
 	if ( ppro->m_sendKeepAlive )
 		ppro->SetChatTimer( ppro->KeepAliveTimer, 60*1000, KeepAliveTimerProc );
@@ -2521,8 +2521,8 @@ bool CIrcProto::AddIgnore( const TCHAR* mask, const TCHAR* flags, const TCHAR* n
 	m_ignoreItems.push_back( CIrcIgnoreItem( mask, (_T("+") + TString(flags)).c_str(), network ));
 	RewriteIgnoreSettings();
 
-	if ( m_hwndIgnore )
-		SendMessage(m_hwndIgnore, IRC_REBUILDIGNORELIST, 0, 0);
+	if ( m_ignoreDlg )
+		m_ignoreDlg->RebuildList();
 	return true;
 }  
 
@@ -2531,9 +2531,9 @@ bool CIrcProto::RemoveIgnore( const TCHAR* mask )
 	int idx;
 	while (( idx = IsIgnored( mask, '\0')) != 0 )
 		m_ignoreItems.erase( m_ignoreItems.begin()+idx-1 );
-
 	RewriteIgnoreSettings();
-	if ( m_hwndIgnore )
-		SendMessage(m_hwndIgnore, IRC_REBUILDIGNORELIST, 0, 0);
+
+	if ( m_ignoreDlg )
+		m_ignoreDlg->RebuildList();
 	return true; 
 } 

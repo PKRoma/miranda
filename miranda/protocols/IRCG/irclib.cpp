@@ -1344,7 +1344,6 @@ void CDccSession::DoSendFile()
 	ProtoBroadcastAck(m_proto->m_szModuleName, di->hContact, ACKTYPE_FILE, ACKRESULT_INITIALISING, (void *)di, 0);
 	ProtoBroadcastAck(m_proto->m_szModuleName, di->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, (void *)di, 0);
 
-	BYTE DCCMode = m_proto->getByte( "DCCMode", 0);
 	WORD wPacketSize = m_proto->getWord( "DCCPacketSize", 1024*4);
 
 	if ( wPacketSize < 256 )
@@ -1403,7 +1402,7 @@ void CDccSession::DoSendFile()
 				iTotal += cbSent;
 
 				// block connection and receive ack's from remote computer (if applicable)
-				if ( DCCMode == 0 ) {
+				if ( m_proto->m_DCCMode == 0 ) {
 					DWORD dwRead = 0;
 					DWORD dwPacket = NULL;
 
@@ -1424,7 +1423,7 @@ void CDccSession::DoSendFile()
 						goto DCC_STOP;
 				}
 
-				if ( DCCMode == 1 ) {
+				if ( m_proto->m_DCCMode == 1 ) {
 					DWORD dwRead = 0;
 					DWORD dwPacket = NULL;
 
@@ -1494,7 +1493,6 @@ void CDccSession::DoReceiveFile()
 	ProtoBroadcastAck( m_proto->m_szModuleName, di->hContact, ACKTYPE_FILE, ACKRESULT_INITIALISING, (void *)di, 0);
 
 	BYTE chBuf[1024*32+1];
-	BYTE DCCMode = m_proto->getByte( "DCCMode", 0); // type of dcc: normal, send-ahead
 
 	// do some stupid thing so  the filetransfer dialog shows the right thing
 	ProtoBroadcastAck(m_proto->m_szModuleName, di->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, (void *)di, 0);
