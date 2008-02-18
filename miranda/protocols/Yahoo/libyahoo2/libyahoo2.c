@@ -1739,7 +1739,11 @@ static void yahoo_process_message(struct yahoo_input_data *yid, struct yahoo_pac
 	
 	for (l = pkt->hash; l; l = l->next) {
 		struct yahoo_pair *pair = l->data;
-		if (pair->key == 1 || pair->key == 4)
+		
+		/* so it seems that key == 1 is not used when receiving messages and causes
+		  problems for mobile IMs? This has been reported in the forum and this patch
+		 was provided by Bryan Aldrich */
+		if (/*pair->key == 1 || */pair->key == 4)
 		{
 			if(!message->from)
 				message->from = pair->value;
@@ -1860,12 +1864,14 @@ static void yahoo_process_logon(struct yahoo_input_data *yid, struct yahoo_packe
 			if (atoi(pair->value) > 0 )
 				mobile = 1;
 			break;
-		case 137: /* seconds idle */
+		case 137: /* Idle: seconds */
 			idle = atoi(pair->value);
 			break;
-		case 138: /* either we're not idle, or we are but won't say how long */
-			/* thanx Gaim.. I am seeing 138 -> 1. so don't do idle at all for miranda
-				since we don't have idle w/o time :( */
+		case 138: /* Idle: Flag 
+				   *	0: Use the 137 key to see how long
+				   *    1: not-idle
+				   */
+			
 			idle = 0;
 			break;
 
