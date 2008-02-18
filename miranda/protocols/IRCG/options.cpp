@@ -425,7 +425,7 @@ static TDbSetting ConnectSettings[] =
 	{  FIELD_OFFSET(CIrcProto, m_showAddresses), "ShowAddresses", DBVT_BYTE },
 	{  FIELD_OFFSET(CIrcProto, m_oldStyleModes), "OldStyleModes", DBVT_BYTE },
 	{  FIELD_OFFSET(CIrcProto, m_useServer), "UseServer", DBVT_BYTE, 0, 1 },
-	{  FIELD_OFFSET(CIrcProto, m_hideServerWindow), "ShowServerWindow", DBVT_BYTE },
+	{  FIELD_OFFSET(CIrcProto, m_hideServerWindow), "HideServerWindow", DBVT_BYTE },
 	{  FIELD_OFFSET(CIrcProto, m_serverComboSelection), "ServerComboSelection", DBVT_DWORD, 0 },
 	{  FIELD_OFFSET(CIrcProto, m_sendKeepAlive), "SendKeepAlive", DBVT_BYTE, 0, 1 },
 	{  FIELD_OFFSET(CIrcProto, m_autoOnlineNotification), "AutoOnlineNotification", DBVT_BYTE },
@@ -458,7 +458,7 @@ CConnectPrefsDlg::CConnectPrefsDlg( CIrcProto* _pro ) :
 	m_disableError( this, IDC_DISABLEERROR ),
 	m_address( this, IDC_ADDRESS ),
 	m_useServer( this, IDC_USESERVER ),
-	m_hideServer( this, IDC_SHOWSERVER ),
+	m_showServer( this, IDC_SHOWSERVER ),
 	m_keepAlive( this, IDC_KEEPALIVE ),
 	m_autoJoin( this, IDC_AUTOJOIN ),
 	m_oldStyle( this, IDC_OLDSTYLE ),
@@ -590,7 +590,7 @@ void CConnectPrefsDlg::OnInitDialog()
 	m_spin2.Enable( m_proto->m_autoOnlineNotification && m_proto->m_channelAwayNotification );
 	m_limit.Enable( m_proto->m_autoOnlineNotification && m_proto->m_channelAwayNotification );
 	m_ident.SetState( m_proto->m_ident );
-	m_ident.Enable( m_proto->m_ident );
+	m_identSystem.Enable( m_proto->m_ident );
 	m_identPort.Enable( m_proto->m_ident );
 	m_identTimer.Enable( m_proto->m_ident );
 	m_identTimer.SetState( m_proto->IdentTimer );				
@@ -601,13 +601,13 @@ void CConnectPrefsDlg::OnInitDialog()
 	m_retry.SetState( m_proto->m_retry );
 	m_retryWait.Enable( m_proto->m_retry );
 	m_retryCount.Enable( m_proto->m_retry );
+	m_enableServer.SetState( !m_proto->m_disableDefaultServer );
 	m_keepAlive.SetState( m_proto->m_sendKeepAlive );				
 	m_useServer.SetState( m_proto->m_useServer );				
-	m_hideServer.SetState( m_proto->m_hideServerWindow );
-	m_hideServer.Enable( !m_proto->m_useServer );
+	m_showServer.SetState( !m_proto->m_hideServerWindow );
+	m_showServer.Enable( m_proto->m_useServer );
 	m_autoJoin.SetState( m_proto->m_joinOnInvite );				
 
-	m_hideServer.SetState( !m_proto->m_disableDefaultServer );
 	m_serverCombo.Enable( !m_proto->m_disableDefaultServer );
 	m_add.Enable( !m_proto->m_disableDefaultServer );
 	m_edit.Enable( !m_proto->m_disableDefaultServer );
@@ -790,7 +790,7 @@ void CConnectPrefsDlg::OnApply()
 	CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )m_proto->hMenuServer, ( LPARAM )&clmi );
 
 	m_proto->m_joinOnInvite = m_autoJoin.GetState();
-	m_proto->m_hideServerWindow = m_hideServer.GetState();
+	m_proto->m_hideServerWindow = !m_showServer.GetState();
 	m_proto->m_serverComboSelection = m_serverCombo.GetCurSel();
 	if ( m_proto->m_sendKeepAlive = m_keepAlive.GetState())
 		m_proto->SetChatTimer(m_proto->KeepAliveTimer, 60*1000, KeepAliveTimerProc);
@@ -1007,7 +1007,7 @@ static TDbSetting OtherSettings[] =
 {
 	{	FIELD_OFFSET(CIrcProto, m_alias ), "Alias", DBVT_TCHAR, -1 },
 	{	FIELD_OFFSET(CIrcProto, m_quitMessage ), "QuitMessage", DBVT_TCHAR, SIZEOF(pZero->m_userInfo) },
-	{	FIELD_OFFSET(CIrcProto, m_codepage ), "Codepage", DBVT_WORD },
+	{	FIELD_OFFSET(CIrcProto, m_codepage ), "Codepage", DBVT_DWORD, 0, CP_ACP },
 	{	FIELD_OFFSET(CIrcProto, m_utfAutodetect ), "UtfAutodetect", DBVT_BYTE },
 	{	FIELD_OFFSET(CIrcProto, m_perform ), "Perform", DBVT_BYTE },
 	{	FIELD_OFFSET(CIrcProto, m_scriptingEnabled ), "ScriptingEnabled", DBVT_BYTE }

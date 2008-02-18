@@ -202,7 +202,7 @@ struct CConnectPrefsDlg : public CProtoDlgBase<CIrcProto>
 	CCtrlEdit    m_retryCount, m_retryWait;
 
 	CCtrlCheck   m_forceVisible, m_rejoinOnKick, m_rejoinChannels, m_disableError,
-		          m_address, m_useServer, m_hideServer, m_keepAlive, m_autoJoin,
+		          m_address, m_useServer, m_showServer, m_keepAlive, m_autoJoin,
 					 m_oldStyle, m_onlineNotif, m_channelAway, m_enableServer;
 	CCtrlEdit    m_onlineTimer, m_limit, m_spin1, m_spin2, m_ssl;
 
