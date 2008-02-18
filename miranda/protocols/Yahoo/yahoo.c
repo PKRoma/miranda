@@ -407,6 +407,9 @@ void ext_yahoo_status_logon(int id, const char *who, int stat, const char *msg, 
 	} 
 	
 	switch (client_version) {
+		case 2:
+				s = "Yahoo Mobile";
+				break;
 		case 3075:
 				s = "Yahoo Web Messenger";
 				break;
@@ -437,7 +440,10 @@ void ext_yahoo_status_logon(int id, const char *who, int stat, const char *msg, 
 	
 	if (s != NULL) 
 		DBWriteContactSettingString( hContact, yahooProtocolName, "MirVer", s);
-		
+	
+	/* Add the client_Version # to the contact DB entry */
+	DBWriteContactSettingDword( hContact, yahooProtocolName, "ClientVersion", client_version);
+	
 	/* Last thing check the checksum and request new one if we need to */
 	if (buddy_icon == -1) {
 		YAHOO_DebugLog("[ext_yahoo_status_logon] No avatar information in this packet? Not touching stuff!");
