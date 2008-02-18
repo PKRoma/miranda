@@ -949,7 +949,7 @@ void CCtcpPrefsDlg::OnInitDialog()
 void __cdecl CCtcpPrefsDlg::OnClicked( CCtrlData* )
 {
 	m_ip.Enable( m_enableIP.GetState());
-	m_fromServer.Enable( m_enableIP.GetState());
+	m_fromServer.Enable( !m_enableIP.GetState());
 
 	if ( m_enableIP.GetState())
 		m_ip.SetTextA( m_proto->m_mySpecifiedHost );
