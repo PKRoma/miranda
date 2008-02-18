@@ -95,8 +95,20 @@ void CIrcProto::WriteSettings( TDbSetting* sets, int count )
 			case DBVT_BYTE:   setByte( p->name, *( BYTE* )ptr );       break;
 			case DBVT_WORD:   setWord( p->name, *( WORD* )ptr );       break;
 			case DBVT_DWORD:  setDword( p->name, *( DWORD* )ptr );     break;
-			case DBVT_ASCIIZ: setString( p->name, (char*)ptr );        break;
-			case DBVT_TCHAR:  setTString( p->name, (TCHAR*)ptr );      break;
+
+			case DBVT_ASCIIZ:
+				if ( p->size == -1 )
+					setString( p->name, *(char**)ptr );
+				else
+					setString( p->name, (char*)ptr );
+				break;
+
+			case DBVT_TCHAR:
+				if ( p->size == -1 )
+					setTString( p->name, *(TCHAR**)ptr );
+				else
+					setTString( p->name, (TCHAR*)ptr );
+				break;
 }	}	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
