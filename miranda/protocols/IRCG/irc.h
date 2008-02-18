@@ -73,7 +73,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "irc_dlg.h"
 
 #define IRC_UPDATELIST        (WM_USER+1)
-#define IRC_REBUILDIGNORELIST (WM_USER+6)
 #define IRC_UPDATEIGNORELIST  (WM_USER+7)
 
 #define IRC_QUICKCONNECT      "/QuickConnectMenu"

@@ -1532,7 +1532,7 @@ void CIgnorePrefsDlg::OnInitDialog()
 	}
 
 	ListView_SetExtendedListViewStyle(GetDlgItem( m_hwnd, IDC_INFO_LISTVIEW), LVS_EX_FULLROWSELECT);
-	PostMessage( m_hwnd, IRC_REBUILDIGNORELIST, 0, 0);
+	RebuildList();
 }
 
 BOOL CIgnorePrefsDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
@@ -1550,11 +1550,6 @@ BOOL CIgnorePrefsDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					lvm.lParam = i;
 					ListView_SetItem(GetDlgItem( m_hwnd, IDC_LIST),&lvm);
 		}	}	}
-		break;
-
-	case IRC_REBUILDIGNORELIST:
-		{
-		}
 		break;
 
 	case WM_NOTIFY :

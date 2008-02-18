@@ -326,6 +326,7 @@ struct CIgnorePrefsDlg : public CProtoDlgBase<CIrcProto>
 
 	void FixButtons( void );
 	void RebuildList( void );
+	void UpdateList( void );
 };
 
 struct CAddIgnoreDlg : public CProtoDlgBase<CIrcProto>
