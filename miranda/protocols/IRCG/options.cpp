@@ -1514,8 +1514,8 @@ void CIgnorePrefsDlg::OnInitDialog()
 	OldListViewProc = (WNDPROC)SetWindowLong( m_list.GetHwnd(),GWL_WNDPROC, (LONG)ListviewSubclassProc );
 
 	m_enable.SetState( m_proto->m_ignore );
-	m_ignoreFile.SetState( m_proto->m_DCCFileEnabled );
-	m_ignoreChat.SetState( m_proto->m_DCCChatEnabled );
+	m_ignoreFile.SetState( !m_proto->m_DCCFileEnabled );
+	m_ignoreChat.SetState( !m_proto->m_DCCChatEnabled );
 	m_ignoreChannel.SetState( m_proto->m_ignoreChannelDefault );
 	if ( m_proto->m_DCCChatIgnore == 2 )
 		m_ignoreUnknown.SetState( BST_CHECKED );
@@ -1664,8 +1664,8 @@ void __cdecl CIgnorePrefsDlg::OnDelete( CCtrlButton* )
 
 void CIgnorePrefsDlg::OnApply()
 {
-	m_proto->m_DCCFileEnabled = m_ignoreFile.GetState();
-	m_proto->m_DCCChatEnabled = m_ignoreChat.GetState();
+	m_proto->m_DCCFileEnabled = !m_ignoreFile.GetState();
+	m_proto->m_DCCChatEnabled = !m_ignoreChat.GetState();
 	m_proto->m_ignore = m_enable.GetState();
 	m_proto->m_ignoreChannelDefault = m_ignoreChannel.GetState();
 	m_proto->m_DCCChatIgnore = m_ignoreUnknown.GetState() ? 2 : 1;
