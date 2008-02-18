@@ -27,10 +27,6 @@ NULL=
 NULL=nul
 !ENDIF
 
-CPP=cl.exe
-MTL=midl.exe
-RSC=rc.exe
-
 !IF  "$(CFG)" == "modernb - Win32 Release"
 
 OUTDIR=.\Release
@@ -42,7 +38,6 @@ ALL : "..\..\bin\release\plugins\clist_modern.dll"
 CLEAN :
 	-@erase "$(INTDIR)\button.obj"
 	-@erase "$(INTDIR)\cache_funcs.obj"
-	-@erase "$(INTDIR)\clc.obj"
 	-@erase "$(INTDIR)\clcidents.obj"
 	-@erase "$(INTDIR)\clcitems.obj"
 	-@erase "$(INTDIR)\clcmsgs.obj"
@@ -71,8 +66,10 @@ CLEAN :
 	-@erase "$(INTDIR)\modern_animated_avatars.obj"
 	-@erase "$(INTDIR)\modern_awaymsg.obj"
 	-@erase "$(INTDIR)\modern_button.obj"
+	-@erase "$(INTDIR)\modern_clc.obj"
 	-@erase "$(INTDIR)\modern_ext_frames.obj"
 	-@erase "$(INTDIR)\modern_gettextasync.obj"
+	-@erase "$(INTDIR)\modern_global.obj"
 	-@erase "$(INTDIR)\modern_row.obj"
 	-@erase "$(INTDIR)\modern_skinselector.obj"
 	-@erase "$(INTDIR)\modern_statusbar.obj"
@@ -96,446 +93,8 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
+CPP=cl.exe
 CPP_PROJ=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "modernb_EXPORTS" /Fp"$(INTDIR)\modernb.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
-MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /d "NDEBUG"
-BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\modernb.bsc"
-BSC32_SBRS= \
-
-LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib delayimp.lib gdiplus.lib msimg32.lib shlwapi.lib /nologo /base:"0x6590000" /dll /incremental:no /pdb:"$(OUTDIR)\clist_modern.pdb" /map:"$(INTDIR)\clist_modern.map" /debug /machine:I386 /out:"../../bin/release/plugins/clist_modern.dll" /implib:"$(OUTDIR)\clist_modern.lib" /delayload:gdiplus.dll
-LINK32_OBJS= \
-	"$(INTDIR)\modern_ext_frames.obj" \
-	"$(INTDIR)\button.obj" \
-	"$(INTDIR)\cache_funcs.obj" \
-	"$(INTDIR)\clc.obj" \
-	"$(INTDIR)\clcidents.obj" \
-	"$(INTDIR)\clcitems.obj" \
-	"$(INTDIR)\clcmsgs.obj" \
-	"$(INTDIR)\clcopts.obj" \
-	"$(INTDIR)\clcpaint.obj" \
-	"$(INTDIR)\clcutils.obj" \
-	"$(INTDIR)\clistevents.obj" \
-	"$(INTDIR)\clistmenus.obj" \
-	"$(INTDIR)\clistmod.obj" \
-	"$(INTDIR)\clistopts.obj" \
-	"$(INTDIR)\clistsettings.obj" \
-	"$(INTDIR)\clisttray.obj" \
-	"$(INTDIR)\clui.obj" \
-	"$(INTDIR)\cluiservices.obj" \
-	"$(INTDIR)\commonheaders.obj" \
-	"$(INTDIR)\contact.obj" \
-	"$(INTDIR)\Docking.obj" \
-	"$(INTDIR)\gdiplus.obj" \
-	"$(INTDIR)\groupmenu.obj" \
-	"$(INTDIR)\image_array.obj" \
-	"$(INTDIR)\init.obj" \
-	"$(INTDIR)\keyboard.obj" \
-	"$(INTDIR)\modern_animated_avatars.obj" \
-	"$(INTDIR)\modern_button.obj" \
-	"$(INTDIR)\modern_row.obj" \
-	"$(INTDIR)\modern_statusbar.obj" \
-	"$(INTDIR)\modern_toolbar.obj" \
-	"$(INTDIR)\rowheight_funcs.obj" \
-	"$(INTDIR)\rowtemplateopt.obj" \
-	"$(INTDIR)\SkinEditor.obj" \
-	"$(INTDIR)\SkinEngine.obj" \
-	"$(INTDIR)\SkinOpt.obj" \
-	"$(INTDIR)\viewmodes.obj" \
-	"$(INTDIR)\xpTheme.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\cluiframes.obj" \
-	"$(INTDIR)\framesmenu.obj" \
-	"$(INTDIR)\extraimage.obj" \
-	"$(INTDIR)\modern_gettextasync.obj" \
-	"$(INTDIR)\modern_skinselector.obj" \
-	"$(INTDIR)\modern_awaymsg.obj"
-
-"..\..\bin\release\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
-    $(LINK32) @<<
-  $(LINK32_FLAGS) $(LINK32_OBJS)
-<<
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug"
-
-OUTDIR=.\Debug
-INTDIR=.\Debug
-
-ALL : "..\..\bin\debug\plugins\clist_modern.dll"
-
-
-CLEAN :
-	-@erase "$(INTDIR)\button.obj"
-	-@erase "$(INTDIR)\cache_funcs.obj"
-	-@erase "$(INTDIR)\clc.obj"
-	-@erase "$(INTDIR)\clcidents.obj"
-	-@erase "$(INTDIR)\clcitems.obj"
-	-@erase "$(INTDIR)\clcmsgs.obj"
-	-@erase "$(INTDIR)\clcopts.obj"
-	-@erase "$(INTDIR)\clcpaint.obj"
-	-@erase "$(INTDIR)\clcutils.obj"
-	-@erase "$(INTDIR)\clistevents.obj"
-	-@erase "$(INTDIR)\clistmenus.obj"
-	-@erase "$(INTDIR)\clistmod.obj"
-	-@erase "$(INTDIR)\clistopts.obj"
-	-@erase "$(INTDIR)\clistsettings.obj"
-	-@erase "$(INTDIR)\clisttray.obj"
-	-@erase "$(INTDIR)\clui.obj"
-	-@erase "$(INTDIR)\cluiframes.obj"
-	-@erase "$(INTDIR)\cluiservices.obj"
-	-@erase "$(INTDIR)\commonheaders.obj"
-	-@erase "$(INTDIR)\contact.obj"
-	-@erase "$(INTDIR)\Docking.obj"
-	-@erase "$(INTDIR)\extraimage.obj"
-	-@erase "$(INTDIR)\framesmenu.obj"
-	-@erase "$(INTDIR)\gdiplus.obj"
-	-@erase "$(INTDIR)\groupmenu.obj"
-	-@erase "$(INTDIR)\image_array.obj"
-	-@erase "$(INTDIR)\init.obj"
-	-@erase "$(INTDIR)\keyboard.obj"
-	-@erase "$(INTDIR)\modern_animated_avatars.obj"
-	-@erase "$(INTDIR)\modern_awaymsg.obj"
-	-@erase "$(INTDIR)\modern_button.obj"
-	-@erase "$(INTDIR)\modern_ext_frames.obj"
-	-@erase "$(INTDIR)\modern_gettextasync.obj"
-	-@erase "$(INTDIR)\modern_row.obj"
-	-@erase "$(INTDIR)\modern_skinselector.obj"
-	-@erase "$(INTDIR)\modern_statusbar.obj"
-	-@erase "$(INTDIR)\modern_toolbar.obj"
-	-@erase "$(INTDIR)\modernb.pch"
-	-@erase "$(INTDIR)\resource.res"
-	-@erase "$(INTDIR)\rowheight_funcs.obj"
-	-@erase "$(INTDIR)\rowtemplateopt.obj"
-	-@erase "$(INTDIR)\SkinEditor.obj"
-	-@erase "$(INTDIR)\SkinEngine.obj"
-	-@erase "$(INTDIR)\SkinOpt.obj"
-	-@erase "$(INTDIR)\vc60.idb"
-	-@erase "$(INTDIR)\vc60.pdb"
-	-@erase "$(INTDIR)\viewmodes.obj"
-	-@erase "$(INTDIR)\xpTheme.obj"
-	-@erase "$(OUTDIR)\clist_modern.exp"
-	-@erase "$(OUTDIR)\clist_modern.pdb"
-	-@erase "..\..\bin\debug\plugins\clist_modern.dll"
-	-@erase "..\..\bin\debug\plugins\clist_modern.ilk"
-
-"$(OUTDIR)" :
-    if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
-
-CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "modernb_EXPORTS" /Fp"$(INTDIR)\modernb.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
-MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /d "_DEBUG"
-BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\modernb.bsc"
-BSC32_SBRS= \
-
-LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib delayimp.lib gdiplus.lib msimg32.lib shlwapi.lib /nologo /base:"0x6590000" /dll /incremental:yes /pdb:"$(OUTDIR)\clist_modern.pdb" /debug /machine:I386 /out:"../../bin/debug/plugins/clist_modern.dll" /implib:"$(OUTDIR)\clist_modern.lib" /pdbtype:sept
-LINK32_OBJS= \
-	"$(INTDIR)\modern_ext_frames.obj" \
-	"$(INTDIR)\button.obj" \
-	"$(INTDIR)\cache_funcs.obj" \
-	"$(INTDIR)\clc.obj" \
-	"$(INTDIR)\clcidents.obj" \
-	"$(INTDIR)\clcitems.obj" \
-	"$(INTDIR)\clcmsgs.obj" \
-	"$(INTDIR)\clcopts.obj" \
-	"$(INTDIR)\clcpaint.obj" \
-	"$(INTDIR)\clcutils.obj" \
-	"$(INTDIR)\clistevents.obj" \
-	"$(INTDIR)\clistmenus.obj" \
-	"$(INTDIR)\clistmod.obj" \
-	"$(INTDIR)\clistopts.obj" \
-	"$(INTDIR)\clistsettings.obj" \
-	"$(INTDIR)\clisttray.obj" \
-	"$(INTDIR)\clui.obj" \
-	"$(INTDIR)\cluiservices.obj" \
-	"$(INTDIR)\commonheaders.obj" \
-	"$(INTDIR)\contact.obj" \
-	"$(INTDIR)\Docking.obj" \
-	"$(INTDIR)\gdiplus.obj" \
-	"$(INTDIR)\groupmenu.obj" \
-	"$(INTDIR)\image_array.obj" \
-	"$(INTDIR)\init.obj" \
-	"$(INTDIR)\keyboard.obj" \
-	"$(INTDIR)\modern_animated_avatars.obj" \
-	"$(INTDIR)\modern_button.obj" \
-	"$(INTDIR)\modern_row.obj" \
-	"$(INTDIR)\modern_statusbar.obj" \
-	"$(INTDIR)\modern_toolbar.obj" \
-	"$(INTDIR)\rowheight_funcs.obj" \
-	"$(INTDIR)\rowtemplateopt.obj" \
-	"$(INTDIR)\SkinEditor.obj" \
-	"$(INTDIR)\SkinEngine.obj" \
-	"$(INTDIR)\SkinOpt.obj" \
-	"$(INTDIR)\viewmodes.obj" \
-	"$(INTDIR)\xpTheme.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\cluiframes.obj" \
-	"$(INTDIR)\framesmenu.obj" \
-	"$(INTDIR)\extraimage.obj" \
-	"$(INTDIR)\modern_gettextasync.obj" \
-	"$(INTDIR)\modern_skinselector.obj" \
-	"$(INTDIR)\modern_awaymsg.obj"
-
-"..\..\bin\debug\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
-    $(LINK32) @<<
-  $(LINK32_FLAGS) $(LINK32_OBJS)
-<<
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Release Unicode"
-
-OUTDIR=.\./Release_Unicode
-INTDIR=.\./Release_Unicode
-
-ALL : "..\..\bin\release Unicode\plugins\clist_modern.dll"
-
-
-CLEAN :
-	-@erase "$(INTDIR)\button.obj"
-	-@erase "$(INTDIR)\cache_funcs.obj"
-	-@erase "$(INTDIR)\clc.obj"
-	-@erase "$(INTDIR)\clcidents.obj"
-	-@erase "$(INTDIR)\clcitems.obj"
-	-@erase "$(INTDIR)\clcmsgs.obj"
-	-@erase "$(INTDIR)\clcopts.obj"
-	-@erase "$(INTDIR)\clcpaint.obj"
-	-@erase "$(INTDIR)\clcutils.obj"
-	-@erase "$(INTDIR)\clistevents.obj"
-	-@erase "$(INTDIR)\clistmenus.obj"
-	-@erase "$(INTDIR)\clistmod.obj"
-	-@erase "$(INTDIR)\clistopts.obj"
-	-@erase "$(INTDIR)\clistsettings.obj"
-	-@erase "$(INTDIR)\clisttray.obj"
-	-@erase "$(INTDIR)\clui.obj"
-	-@erase "$(INTDIR)\cluiframes.obj"
-	-@erase "$(INTDIR)\cluiservices.obj"
-	-@erase "$(INTDIR)\commonheaders.obj"
-	-@erase "$(INTDIR)\contact.obj"
-	-@erase "$(INTDIR)\Docking.obj"
-	-@erase "$(INTDIR)\extraimage.obj"
-	-@erase "$(INTDIR)\framesmenu.obj"
-	-@erase "$(INTDIR)\gdiplus.obj"
-	-@erase "$(INTDIR)\groupmenu.obj"
-	-@erase "$(INTDIR)\image_array.obj"
-	-@erase "$(INTDIR)\init.obj"
-	-@erase "$(INTDIR)\keyboard.obj"
-	-@erase "$(INTDIR)\modern_animated_avatars.obj"
-	-@erase "$(INTDIR)\modern_awaymsg.obj"
-	-@erase "$(INTDIR)\modern_button.obj"
-	-@erase "$(INTDIR)\modern_ext_frames.obj"
-	-@erase "$(INTDIR)\modern_gettextasync.obj"
-	-@erase "$(INTDIR)\modern_row.obj"
-	-@erase "$(INTDIR)\modern_skinselector.obj"
-	-@erase "$(INTDIR)\modern_statusbar.obj"
-	-@erase "$(INTDIR)\modern_toolbar.obj"
-	-@erase "$(INTDIR)\modernb.pch"
-	-@erase "$(INTDIR)\resource.res"
-	-@erase "$(INTDIR)\rowheight_funcs.obj"
-	-@erase "$(INTDIR)\rowtemplateopt.obj"
-	-@erase "$(INTDIR)\SkinEditor.obj"
-	-@erase "$(INTDIR)\SkinEngine.obj"
-	-@erase "$(INTDIR)\SkinOpt.obj"
-	-@erase "$(INTDIR)\vc60.idb"
-	-@erase "$(INTDIR)\vc60.pdb"
-	-@erase "$(INTDIR)\viewmodes.obj"
-	-@erase "$(INTDIR)\xpTheme.obj"
-	-@erase "$(OUTDIR)\clist_modern.exp"
-	-@erase "$(OUTDIR)\clist_modern.map"
-	-@erase "$(OUTDIR)\clist_modern.pdb"
-	-@erase "..\..\bin\release Unicode\plugins\clist_modern.dll"
-
-"$(OUTDIR)" :
-    if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
-
-CPP_PROJ=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "modernb_EXPORTS" /Fp"$(INTDIR)\modernb.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
-MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /d "NDEBUG"
-BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\modernb.bsc"
-BSC32_SBRS= \
-
-LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib delayimp.lib gdiplus.lib msimg32.lib shlwapi.lib /nologo /base:"0x6590000" /dll /incremental:no /pdb:"$(OUTDIR)\clist_modern.pdb" /map:"$(INTDIR)\clist_modern.map" /debug /machine:I386 /out:"../../bin/release Unicode/plugins/clist_modern.dll" /implib:"$(OUTDIR)\clist_modern.lib" /delayload:gdiplus.dll
-LINK32_OBJS= \
-	"$(INTDIR)\modern_ext_frames.obj" \
-	"$(INTDIR)\button.obj" \
-	"$(INTDIR)\cache_funcs.obj" \
-	"$(INTDIR)\clc.obj" \
-	"$(INTDIR)\clcidents.obj" \
-	"$(INTDIR)\clcitems.obj" \
-	"$(INTDIR)\clcmsgs.obj" \
-	"$(INTDIR)\clcopts.obj" \
-	"$(INTDIR)\clcpaint.obj" \
-	"$(INTDIR)\clcutils.obj" \
-	"$(INTDIR)\clistevents.obj" \
-	"$(INTDIR)\clistmenus.obj" \
-	"$(INTDIR)\clistmod.obj" \
-	"$(INTDIR)\clistopts.obj" \
-	"$(INTDIR)\clistsettings.obj" \
-	"$(INTDIR)\clisttray.obj" \
-	"$(INTDIR)\clui.obj" \
-	"$(INTDIR)\cluiservices.obj" \
-	"$(INTDIR)\commonheaders.obj" \
-	"$(INTDIR)\contact.obj" \
-	"$(INTDIR)\Docking.obj" \
-	"$(INTDIR)\gdiplus.obj" \
-	"$(INTDIR)\groupmenu.obj" \
-	"$(INTDIR)\image_array.obj" \
-	"$(INTDIR)\init.obj" \
-	"$(INTDIR)\keyboard.obj" \
-	"$(INTDIR)\modern_animated_avatars.obj" \
-	"$(INTDIR)\modern_button.obj" \
-	"$(INTDIR)\modern_row.obj" \
-	"$(INTDIR)\modern_statusbar.obj" \
-	"$(INTDIR)\modern_toolbar.obj" \
-	"$(INTDIR)\rowheight_funcs.obj" \
-	"$(INTDIR)\rowtemplateopt.obj" \
-	"$(INTDIR)\SkinEditor.obj" \
-	"$(INTDIR)\SkinEngine.obj" \
-	"$(INTDIR)\SkinOpt.obj" \
-	"$(INTDIR)\viewmodes.obj" \
-	"$(INTDIR)\xpTheme.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\cluiframes.obj" \
-	"$(INTDIR)\framesmenu.obj" \
-	"$(INTDIR)\extraimage.obj" \
-	"$(INTDIR)\modern_gettextasync.obj" \
-	"$(INTDIR)\modern_skinselector.obj" \
-	"$(INTDIR)\modern_awaymsg.obj"
-
-"..\..\bin\release Unicode\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
-    $(LINK32) @<<
-  $(LINK32_FLAGS) $(LINK32_OBJS)
-<<
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug Unicode"
-
-OUTDIR=.\./Debug_Unicode
-INTDIR=.\./Debug_Unicode
-
-ALL : "..\..\bin\debug Unicode\plugins\clist_modern.dll"
-
-
-CLEAN :
-	-@erase "$(INTDIR)\button.obj"
-	-@erase "$(INTDIR)\cache_funcs.obj"
-	-@erase "$(INTDIR)\clc.obj"
-	-@erase "$(INTDIR)\clcidents.obj"
-	-@erase "$(INTDIR)\clcitems.obj"
-	-@erase "$(INTDIR)\clcmsgs.obj"
-	-@erase "$(INTDIR)\clcopts.obj"
-	-@erase "$(INTDIR)\clcpaint.obj"
-	-@erase "$(INTDIR)\clcutils.obj"
-	-@erase "$(INTDIR)\clistevents.obj"
-	-@erase "$(INTDIR)\clistmenus.obj"
-	-@erase "$(INTDIR)\clistmod.obj"
-	-@erase "$(INTDIR)\clistopts.obj"
-	-@erase "$(INTDIR)\clistsettings.obj"
-	-@erase "$(INTDIR)\clisttray.obj"
-	-@erase "$(INTDIR)\clui.obj"
-	-@erase "$(INTDIR)\cluiframes.obj"
-	-@erase "$(INTDIR)\cluiservices.obj"
-	-@erase "$(INTDIR)\commonheaders.obj"
-	-@erase "$(INTDIR)\contact.obj"
-	-@erase "$(INTDIR)\Docking.obj"
-	-@erase "$(INTDIR)\extraimage.obj"
-	-@erase "$(INTDIR)\framesmenu.obj"
-	-@erase "$(INTDIR)\gdiplus.obj"
-	-@erase "$(INTDIR)\groupmenu.obj"
-	-@erase "$(INTDIR)\image_array.obj"
-	-@erase "$(INTDIR)\init.obj"
-	-@erase "$(INTDIR)\keyboard.obj"
-	-@erase "$(INTDIR)\modern_animated_avatars.obj"
-	-@erase "$(INTDIR)\modern_awaymsg.obj"
-	-@erase "$(INTDIR)\modern_button.obj"
-	-@erase "$(INTDIR)\modern_ext_frames.obj"
-	-@erase "$(INTDIR)\modern_gettextasync.obj"
-	-@erase "$(INTDIR)\modern_row.obj"
-	-@erase "$(INTDIR)\modern_skinselector.obj"
-	-@erase "$(INTDIR)\modern_statusbar.obj"
-	-@erase "$(INTDIR)\modern_toolbar.obj"
-	-@erase "$(INTDIR)\modernb.pch"
-	-@erase "$(INTDIR)\resource.res"
-	-@erase "$(INTDIR)\rowheight_funcs.obj"
-	-@erase "$(INTDIR)\rowtemplateopt.obj"
-	-@erase "$(INTDIR)\SkinEditor.obj"
-	-@erase "$(INTDIR)\SkinEngine.obj"
-	-@erase "$(INTDIR)\SkinOpt.obj"
-	-@erase "$(INTDIR)\vc60.idb"
-	-@erase "$(INTDIR)\vc60.pdb"
-	-@erase "$(INTDIR)\viewmodes.obj"
-	-@erase "$(INTDIR)\xpTheme.obj"
-	-@erase "$(OUTDIR)\clist_modern.exp"
-	-@erase "$(OUTDIR)\clist_modern.pdb"
-	-@erase "..\..\bin\debug Unicode\plugins\clist_modern.dll"
-	-@erase "..\..\bin\debug Unicode\plugins\clist_modern.ilk"
-
-"$(OUTDIR)" :
-    if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
-
-CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "modernb_EXPORTS" /Fp"$(INTDIR)\modernb.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
-MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /d "_DEBUG"
-BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\modernb.bsc"
-BSC32_SBRS= \
-
-LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib delayimp.lib gdiplus.lib msimg32.lib shlwapi.lib /nologo /base:"0x6590000" /dll /incremental:yes /pdb:"$(OUTDIR)\clist_modern.pdb" /debug /machine:I386 /out:"../../bin/debug Unicode/plugins/clist_modern.dll" /implib:"$(OUTDIR)\clist_modern.lib" /pdbtype:sept
-LINK32_OBJS= \
-	"$(INTDIR)\modern_ext_frames.obj" \
-	"$(INTDIR)\button.obj" \
-	"$(INTDIR)\cache_funcs.obj" \
-	"$(INTDIR)\clc.obj" \
-	"$(INTDIR)\clcidents.obj" \
-	"$(INTDIR)\clcitems.obj" \
-	"$(INTDIR)\clcmsgs.obj" \
-	"$(INTDIR)\clcopts.obj" \
-	"$(INTDIR)\clcpaint.obj" \
-	"$(INTDIR)\clcutils.obj" \
-	"$(INTDIR)\clistevents.obj" \
-	"$(INTDIR)\clistmenus.obj" \
-	"$(INTDIR)\clistmod.obj" \
-	"$(INTDIR)\clistopts.obj" \
-	"$(INTDIR)\clistsettings.obj" \
-	"$(INTDIR)\clisttray.obj" \
-	"$(INTDIR)\clui.obj" \
-	"$(INTDIR)\cluiservices.obj" \
-	"$(INTDIR)\commonheaders.obj" \
-	"$(INTDIR)\contact.obj" \
-	"$(INTDIR)\Docking.obj" \
-	"$(INTDIR)\gdiplus.obj" \
-	"$(INTDIR)\groupmenu.obj" \
-	"$(INTDIR)\image_array.obj" \
-	"$(INTDIR)\init.obj" \
-	"$(INTDIR)\keyboard.obj" \
-	"$(INTDIR)\modern_animated_avatars.obj" \
-	"$(INTDIR)\modern_button.obj" \
-	"$(INTDIR)\modern_row.obj" \
-	"$(INTDIR)\modern_statusbar.obj" \
-	"$(INTDIR)\modern_toolbar.obj" \
-	"$(INTDIR)\rowheight_funcs.obj" \
-	"$(INTDIR)\rowtemplateopt.obj" \
-	"$(INTDIR)\SkinEditor.obj" \
-	"$(INTDIR)\SkinEngine.obj" \
-	"$(INTDIR)\SkinOpt.obj" \
-	"$(INTDIR)\viewmodes.obj" \
-	"$(INTDIR)\xpTheme.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\cluiframes.obj" \
-	"$(INTDIR)\framesmenu.obj" \
-	"$(INTDIR)\extraimage.obj" \
-	"$(INTDIR)\modern_gettextasync.obj" \
-	"$(INTDIR)\modern_skinselector.obj" \
-	"$(INTDIR)\modern_awaymsg.obj"
-
-"..\..\bin\debug Unicode\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
-    $(LINK32) @<<
-  $(LINK32_FLAGS) $(LINK32_OBJS)
-<<
-
-!ENDIF
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
@@ -566,6 +125,557 @@ LINK32_OBJS= \
    $(CPP) @<<
    $(CPP_PROJ) $<
 <<
+
+MTL=midl.exe
+MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
+RSC=rc.exe
+RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /d "NDEBUG"
+BSC32=bscmake.exe
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\modernb.bsc"
+BSC32_SBRS= \
+
+LINK32=link.exe
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib delayimp.lib gdiplus.lib msimg32.lib shlwapi.lib /nologo /base:"0x6590000" /dll /incremental:no /pdb:"$(OUTDIR)\clist_modern.pdb" /map:"$(INTDIR)\clist_modern.map" /debug /machine:I386 /out:"../../bin/release/plugins/clist_modern.dll" /implib:"$(OUTDIR)\clist_modern.lib" /delayload:gdiplus.dll
+LINK32_OBJS= \
+	"$(INTDIR)\cluiframes.obj" \
+	"$(INTDIR)\extraimage.obj" \
+	"$(INTDIR)\framesmenu.obj" \
+	"$(INTDIR)\modern_ext_frames.obj" \
+	"$(INTDIR)\button.obj" \
+	"$(INTDIR)\cache_funcs.obj" \
+	"$(INTDIR)\clcidents.obj" \
+	"$(INTDIR)\clcitems.obj" \
+	"$(INTDIR)\clcmsgs.obj" \
+	"$(INTDIR)\clcopts.obj" \
+	"$(INTDIR)\clcpaint.obj" \
+	"$(INTDIR)\clcutils.obj" \
+	"$(INTDIR)\clistevents.obj" \
+	"$(INTDIR)\clistmenus.obj" \
+	"$(INTDIR)\clistmod.obj" \
+	"$(INTDIR)\clistopts.obj" \
+	"$(INTDIR)\clistsettings.obj" \
+	"$(INTDIR)\clisttray.obj" \
+	"$(INTDIR)\clui.obj" \
+	"$(INTDIR)\cluiservices.obj" \
+	"$(INTDIR)\commonheaders.obj" \
+	"$(INTDIR)\contact.obj" \
+	"$(INTDIR)\Docking.obj" \
+	"$(INTDIR)\gdiplus.obj" \
+	"$(INTDIR)\groupmenu.obj" \
+	"$(INTDIR)\image_array.obj" \
+	"$(INTDIR)\init.obj" \
+	"$(INTDIR)\keyboard.obj" \
+	"$(INTDIR)\modern_animated_avatars.obj" \
+	"$(INTDIR)\modern_awaymsg.obj" \
+	"$(INTDIR)\modern_button.obj" \
+	"$(INTDIR)\modern_clc.obj" \
+	"$(INTDIR)\modern_gettextasync.obj" \
+	"$(INTDIR)\modern_global.obj" \
+	"$(INTDIR)\modern_row.obj" \
+	"$(INTDIR)\modern_skinselector.obj" \
+	"$(INTDIR)\modern_statusbar.obj" \
+	"$(INTDIR)\modern_toolbar.obj" \
+	"$(INTDIR)\rowheight_funcs.obj" \
+	"$(INTDIR)\rowtemplateopt.obj" \
+	"$(INTDIR)\SkinEditor.obj" \
+	"$(INTDIR)\SkinEngine.obj" \
+	"$(INTDIR)\SkinOpt.obj" \
+	"$(INTDIR)\viewmodes.obj" \
+	"$(INTDIR)\xpTheme.obj" \
+	"$(INTDIR)\resource.res"
+
+"..\..\bin\release\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+    $(LINK32) @<<
+  $(LINK32_FLAGS) $(LINK32_OBJS)
+<<
+
+!ELSEIF  "$(CFG)" == "modernb - Win32 Debug"
+
+OUTDIR=.\Debug
+INTDIR=.\Debug
+
+ALL : "..\..\bin\debug\plugins\clist_modern.dll"
+
+
+CLEAN :
+	-@erase "$(INTDIR)\button.obj"
+	-@erase "$(INTDIR)\cache_funcs.obj"
+	-@erase "$(INTDIR)\clcidents.obj"
+	-@erase "$(INTDIR)\clcitems.obj"
+	-@erase "$(INTDIR)\clcmsgs.obj"
+	-@erase "$(INTDIR)\clcopts.obj"
+	-@erase "$(INTDIR)\clcpaint.obj"
+	-@erase "$(INTDIR)\clcutils.obj"
+	-@erase "$(INTDIR)\clistevents.obj"
+	-@erase "$(INTDIR)\clistmenus.obj"
+	-@erase "$(INTDIR)\clistmod.obj"
+	-@erase "$(INTDIR)\clistopts.obj"
+	-@erase "$(INTDIR)\clistsettings.obj"
+	-@erase "$(INTDIR)\clisttray.obj"
+	-@erase "$(INTDIR)\clui.obj"
+	-@erase "$(INTDIR)\cluiframes.obj"
+	-@erase "$(INTDIR)\cluiservices.obj"
+	-@erase "$(INTDIR)\commonheaders.obj"
+	-@erase "$(INTDIR)\contact.obj"
+	-@erase "$(INTDIR)\Docking.obj"
+	-@erase "$(INTDIR)\extraimage.obj"
+	-@erase "$(INTDIR)\framesmenu.obj"
+	-@erase "$(INTDIR)\gdiplus.obj"
+	-@erase "$(INTDIR)\groupmenu.obj"
+	-@erase "$(INTDIR)\image_array.obj"
+	-@erase "$(INTDIR)\init.obj"
+	-@erase "$(INTDIR)\keyboard.obj"
+	-@erase "$(INTDIR)\modern_animated_avatars.obj"
+	-@erase "$(INTDIR)\modern_awaymsg.obj"
+	-@erase "$(INTDIR)\modern_button.obj"
+	-@erase "$(INTDIR)\modern_clc.obj"
+	-@erase "$(INTDIR)\modern_ext_frames.obj"
+	-@erase "$(INTDIR)\modern_gettextasync.obj"
+	-@erase "$(INTDIR)\modern_global.obj"
+	-@erase "$(INTDIR)\modern_row.obj"
+	-@erase "$(INTDIR)\modern_skinselector.obj"
+	-@erase "$(INTDIR)\modern_statusbar.obj"
+	-@erase "$(INTDIR)\modern_toolbar.obj"
+	-@erase "$(INTDIR)\modernb.pch"
+	-@erase "$(INTDIR)\resource.res"
+	-@erase "$(INTDIR)\rowheight_funcs.obj"
+	-@erase "$(INTDIR)\rowtemplateopt.obj"
+	-@erase "$(INTDIR)\SkinEditor.obj"
+	-@erase "$(INTDIR)\SkinEngine.obj"
+	-@erase "$(INTDIR)\SkinOpt.obj"
+	-@erase "$(INTDIR)\vc60.idb"
+	-@erase "$(INTDIR)\vc60.pdb"
+	-@erase "$(INTDIR)\viewmodes.obj"
+	-@erase "$(INTDIR)\xpTheme.obj"
+	-@erase "$(OUTDIR)\clist_modern.exp"
+	-@erase "$(OUTDIR)\clist_modern.pdb"
+	-@erase "..\..\bin\debug\plugins\clist_modern.dll"
+	-@erase "..\..\bin\debug\plugins\clist_modern.ilk"
+
+"$(OUTDIR)" :
+    if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
+
+CPP=cl.exe
+CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "modernb_EXPORTS" /Fp"$(INTDIR)\modernb.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+MTL=midl.exe
+MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
+RSC=rc.exe
+RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /d "_DEBUG"
+BSC32=bscmake.exe
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\modernb.bsc"
+BSC32_SBRS= \
+
+LINK32=link.exe
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib delayimp.lib gdiplus.lib msimg32.lib shlwapi.lib /nologo /base:"0x6590000" /dll /incremental:yes /pdb:"$(OUTDIR)\clist_modern.pdb" /debug /machine:I386 /out:"../../bin/debug/plugins/clist_modern.dll" /implib:"$(OUTDIR)\clist_modern.lib" /pdbtype:sept
+LINK32_OBJS= \
+	"$(INTDIR)\cluiframes.obj" \
+	"$(INTDIR)\extraimage.obj" \
+	"$(INTDIR)\framesmenu.obj" \
+	"$(INTDIR)\modern_ext_frames.obj" \
+	"$(INTDIR)\button.obj" \
+	"$(INTDIR)\cache_funcs.obj" \
+	"$(INTDIR)\clcidents.obj" \
+	"$(INTDIR)\clcitems.obj" \
+	"$(INTDIR)\clcmsgs.obj" \
+	"$(INTDIR)\clcopts.obj" \
+	"$(INTDIR)\clcpaint.obj" \
+	"$(INTDIR)\clcutils.obj" \
+	"$(INTDIR)\clistevents.obj" \
+	"$(INTDIR)\clistmenus.obj" \
+	"$(INTDIR)\clistmod.obj" \
+	"$(INTDIR)\clistopts.obj" \
+	"$(INTDIR)\clistsettings.obj" \
+	"$(INTDIR)\clisttray.obj" \
+	"$(INTDIR)\clui.obj" \
+	"$(INTDIR)\cluiservices.obj" \
+	"$(INTDIR)\commonheaders.obj" \
+	"$(INTDIR)\contact.obj" \
+	"$(INTDIR)\Docking.obj" \
+	"$(INTDIR)\gdiplus.obj" \
+	"$(INTDIR)\groupmenu.obj" \
+	"$(INTDIR)\image_array.obj" \
+	"$(INTDIR)\init.obj" \
+	"$(INTDIR)\keyboard.obj" \
+	"$(INTDIR)\modern_animated_avatars.obj" \
+	"$(INTDIR)\modern_awaymsg.obj" \
+	"$(INTDIR)\modern_button.obj" \
+	"$(INTDIR)\modern_clc.obj" \
+	"$(INTDIR)\modern_gettextasync.obj" \
+	"$(INTDIR)\modern_global.obj" \
+	"$(INTDIR)\modern_row.obj" \
+	"$(INTDIR)\modern_skinselector.obj" \
+	"$(INTDIR)\modern_statusbar.obj" \
+	"$(INTDIR)\modern_toolbar.obj" \
+	"$(INTDIR)\rowheight_funcs.obj" \
+	"$(INTDIR)\rowtemplateopt.obj" \
+	"$(INTDIR)\SkinEditor.obj" \
+	"$(INTDIR)\SkinEngine.obj" \
+	"$(INTDIR)\SkinOpt.obj" \
+	"$(INTDIR)\viewmodes.obj" \
+	"$(INTDIR)\xpTheme.obj" \
+	"$(INTDIR)\resource.res"
+
+"..\..\bin\debug\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+    $(LINK32) @<<
+  $(LINK32_FLAGS) $(LINK32_OBJS)
+<<
+
+!ELSEIF  "$(CFG)" == "modernb - Win32 Release Unicode"
+
+OUTDIR=.\./Release_Unicode
+INTDIR=.\./Release_Unicode
+
+ALL : "..\..\bin\release Unicode\plugins\clist_modern.dll"
+
+
+CLEAN :
+	-@erase "$(INTDIR)\button.obj"
+	-@erase "$(INTDIR)\cache_funcs.obj"
+	-@erase "$(INTDIR)\clcidents.obj"
+	-@erase "$(INTDIR)\clcitems.obj"
+	-@erase "$(INTDIR)\clcmsgs.obj"
+	-@erase "$(INTDIR)\clcopts.obj"
+	-@erase "$(INTDIR)\clcpaint.obj"
+	-@erase "$(INTDIR)\clcutils.obj"
+	-@erase "$(INTDIR)\clistevents.obj"
+	-@erase "$(INTDIR)\clistmenus.obj"
+	-@erase "$(INTDIR)\clistmod.obj"
+	-@erase "$(INTDIR)\clistopts.obj"
+	-@erase "$(INTDIR)\clistsettings.obj"
+	-@erase "$(INTDIR)\clisttray.obj"
+	-@erase "$(INTDIR)\clui.obj"
+	-@erase "$(INTDIR)\cluiframes.obj"
+	-@erase "$(INTDIR)\cluiservices.obj"
+	-@erase "$(INTDIR)\commonheaders.obj"
+	-@erase "$(INTDIR)\contact.obj"
+	-@erase "$(INTDIR)\Docking.obj"
+	-@erase "$(INTDIR)\extraimage.obj"
+	-@erase "$(INTDIR)\framesmenu.obj"
+	-@erase "$(INTDIR)\gdiplus.obj"
+	-@erase "$(INTDIR)\groupmenu.obj"
+	-@erase "$(INTDIR)\image_array.obj"
+	-@erase "$(INTDIR)\init.obj"
+	-@erase "$(INTDIR)\keyboard.obj"
+	-@erase "$(INTDIR)\modern_animated_avatars.obj"
+	-@erase "$(INTDIR)\modern_awaymsg.obj"
+	-@erase "$(INTDIR)\modern_button.obj"
+	-@erase "$(INTDIR)\modern_clc.obj"
+	-@erase "$(INTDIR)\modern_ext_frames.obj"
+	-@erase "$(INTDIR)\modern_gettextasync.obj"
+	-@erase "$(INTDIR)\modern_global.obj"
+	-@erase "$(INTDIR)\modern_row.obj"
+	-@erase "$(INTDIR)\modern_skinselector.obj"
+	-@erase "$(INTDIR)\modern_statusbar.obj"
+	-@erase "$(INTDIR)\modern_toolbar.obj"
+	-@erase "$(INTDIR)\modernb.pch"
+	-@erase "$(INTDIR)\resource.res"
+	-@erase "$(INTDIR)\rowheight_funcs.obj"
+	-@erase "$(INTDIR)\rowtemplateopt.obj"
+	-@erase "$(INTDIR)\SkinEditor.obj"
+	-@erase "$(INTDIR)\SkinEngine.obj"
+	-@erase "$(INTDIR)\SkinOpt.obj"
+	-@erase "$(INTDIR)\vc60.idb"
+	-@erase "$(INTDIR)\vc60.pdb"
+	-@erase "$(INTDIR)\viewmodes.obj"
+	-@erase "$(INTDIR)\xpTheme.obj"
+	-@erase "$(OUTDIR)\clist_modern.exp"
+	-@erase "$(OUTDIR)\clist_modern.map"
+	-@erase "$(OUTDIR)\clist_modern.pdb"
+	-@erase "..\..\bin\release Unicode\plugins\clist_modern.dll"
+
+"$(OUTDIR)" :
+    if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
+
+CPP=cl.exe
+CPP_PROJ=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "modernb_EXPORTS" /Fp"$(INTDIR)\modernb.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+MTL=midl.exe
+MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
+RSC=rc.exe
+RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /d "NDEBUG"
+BSC32=bscmake.exe
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\modernb.bsc"
+BSC32_SBRS= \
+
+LINK32=link.exe
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib delayimp.lib gdiplus.lib msimg32.lib shlwapi.lib /nologo /base:"0x6590000" /dll /incremental:no /pdb:"$(OUTDIR)\clist_modern.pdb" /map:"$(INTDIR)\clist_modern.map" /debug /machine:I386 /out:"../../bin/release Unicode/plugins/clist_modern.dll" /implib:"$(OUTDIR)\clist_modern.lib" /delayload:gdiplus.dll
+LINK32_OBJS= \
+	"$(INTDIR)\cluiframes.obj" \
+	"$(INTDIR)\extraimage.obj" \
+	"$(INTDIR)\framesmenu.obj" \
+	"$(INTDIR)\modern_ext_frames.obj" \
+	"$(INTDIR)\button.obj" \
+	"$(INTDIR)\cache_funcs.obj" \
+	"$(INTDIR)\clcidents.obj" \
+	"$(INTDIR)\clcitems.obj" \
+	"$(INTDIR)\clcmsgs.obj" \
+	"$(INTDIR)\clcopts.obj" \
+	"$(INTDIR)\clcpaint.obj" \
+	"$(INTDIR)\clcutils.obj" \
+	"$(INTDIR)\clistevents.obj" \
+	"$(INTDIR)\clistmenus.obj" \
+	"$(INTDIR)\clistmod.obj" \
+	"$(INTDIR)\clistopts.obj" \
+	"$(INTDIR)\clistsettings.obj" \
+	"$(INTDIR)\clisttray.obj" \
+	"$(INTDIR)\clui.obj" \
+	"$(INTDIR)\cluiservices.obj" \
+	"$(INTDIR)\commonheaders.obj" \
+	"$(INTDIR)\contact.obj" \
+	"$(INTDIR)\Docking.obj" \
+	"$(INTDIR)\gdiplus.obj" \
+	"$(INTDIR)\groupmenu.obj" \
+	"$(INTDIR)\image_array.obj" \
+	"$(INTDIR)\init.obj" \
+	"$(INTDIR)\keyboard.obj" \
+	"$(INTDIR)\modern_animated_avatars.obj" \
+	"$(INTDIR)\modern_awaymsg.obj" \
+	"$(INTDIR)\modern_button.obj" \
+	"$(INTDIR)\modern_clc.obj" \
+	"$(INTDIR)\modern_gettextasync.obj" \
+	"$(INTDIR)\modern_global.obj" \
+	"$(INTDIR)\modern_row.obj" \
+	"$(INTDIR)\modern_skinselector.obj" \
+	"$(INTDIR)\modern_statusbar.obj" \
+	"$(INTDIR)\modern_toolbar.obj" \
+	"$(INTDIR)\rowheight_funcs.obj" \
+	"$(INTDIR)\rowtemplateopt.obj" \
+	"$(INTDIR)\SkinEditor.obj" \
+	"$(INTDIR)\SkinEngine.obj" \
+	"$(INTDIR)\SkinOpt.obj" \
+	"$(INTDIR)\viewmodes.obj" \
+	"$(INTDIR)\xpTheme.obj" \
+	"$(INTDIR)\resource.res"
+
+"..\..\bin\release Unicode\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+    $(LINK32) @<<
+  $(LINK32_FLAGS) $(LINK32_OBJS)
+<<
+
+!ELSEIF  "$(CFG)" == "modernb - Win32 Debug Unicode"
+
+OUTDIR=.\./Debug_Unicode
+INTDIR=.\./Debug_Unicode
+
+ALL : "..\..\bin\debug Unicode\plugins\clist_modern.dll"
+
+
+CLEAN :
+	-@erase "$(INTDIR)\button.obj"
+	-@erase "$(INTDIR)\cache_funcs.obj"
+	-@erase "$(INTDIR)\clcidents.obj"
+	-@erase "$(INTDIR)\clcitems.obj"
+	-@erase "$(INTDIR)\clcmsgs.obj"
+	-@erase "$(INTDIR)\clcopts.obj"
+	-@erase "$(INTDIR)\clcpaint.obj"
+	-@erase "$(INTDIR)\clcutils.obj"
+	-@erase "$(INTDIR)\clistevents.obj"
+	-@erase "$(INTDIR)\clistmenus.obj"
+	-@erase "$(INTDIR)\clistmod.obj"
+	-@erase "$(INTDIR)\clistopts.obj"
+	-@erase "$(INTDIR)\clistsettings.obj"
+	-@erase "$(INTDIR)\clisttray.obj"
+	-@erase "$(INTDIR)\clui.obj"
+	-@erase "$(INTDIR)\cluiframes.obj"
+	-@erase "$(INTDIR)\cluiservices.obj"
+	-@erase "$(INTDIR)\commonheaders.obj"
+	-@erase "$(INTDIR)\contact.obj"
+	-@erase "$(INTDIR)\Docking.obj"
+	-@erase "$(INTDIR)\extraimage.obj"
+	-@erase "$(INTDIR)\framesmenu.obj"
+	-@erase "$(INTDIR)\gdiplus.obj"
+	-@erase "$(INTDIR)\groupmenu.obj"
+	-@erase "$(INTDIR)\image_array.obj"
+	-@erase "$(INTDIR)\init.obj"
+	-@erase "$(INTDIR)\keyboard.obj"
+	-@erase "$(INTDIR)\modern_animated_avatars.obj"
+	-@erase "$(INTDIR)\modern_awaymsg.obj"
+	-@erase "$(INTDIR)\modern_button.obj"
+	-@erase "$(INTDIR)\modern_clc.obj"
+	-@erase "$(INTDIR)\modern_ext_frames.obj"
+	-@erase "$(INTDIR)\modern_gettextasync.obj"
+	-@erase "$(INTDIR)\modern_global.obj"
+	-@erase "$(INTDIR)\modern_row.obj"
+	-@erase "$(INTDIR)\modern_skinselector.obj"
+	-@erase "$(INTDIR)\modern_statusbar.obj"
+	-@erase "$(INTDIR)\modern_toolbar.obj"
+	-@erase "$(INTDIR)\modernb.pch"
+	-@erase "$(INTDIR)\resource.res"
+	-@erase "$(INTDIR)\rowheight_funcs.obj"
+	-@erase "$(INTDIR)\rowtemplateopt.obj"
+	-@erase "$(INTDIR)\SkinEditor.obj"
+	-@erase "$(INTDIR)\SkinEngine.obj"
+	-@erase "$(INTDIR)\SkinOpt.obj"
+	-@erase "$(INTDIR)\vc60.idb"
+	-@erase "$(INTDIR)\vc60.pdb"
+	-@erase "$(INTDIR)\viewmodes.obj"
+	-@erase "$(INTDIR)\xpTheme.obj"
+	-@erase "$(OUTDIR)\clist_modern.exp"
+	-@erase "$(OUTDIR)\clist_modern.pdb"
+	-@erase "..\..\bin\debug Unicode\plugins\clist_modern.dll"
+	-@erase "..\..\bin\debug Unicode\plugins\clist_modern.ilk"
+
+"$(OUTDIR)" :
+    if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
+
+CPP=cl.exe
+CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "modernb_EXPORTS" /Fp"$(INTDIR)\modernb.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+MTL=midl.exe
+MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
+RSC=rc.exe
+RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /d "_DEBUG"
+BSC32=bscmake.exe
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\modernb.bsc"
+BSC32_SBRS= \
+
+LINK32=link.exe
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib delayimp.lib gdiplus.lib msimg32.lib shlwapi.lib /nologo /base:"0x6590000" /dll /incremental:yes /pdb:"$(OUTDIR)\clist_modern.pdb" /debug /machine:I386 /out:"../../bin/debug Unicode/plugins/clist_modern.dll" /implib:"$(OUTDIR)\clist_modern.lib" /pdbtype:sept
+LINK32_OBJS= \
+	"$(INTDIR)\cluiframes.obj" \
+	"$(INTDIR)\extraimage.obj" \
+	"$(INTDIR)\framesmenu.obj" \
+	"$(INTDIR)\modern_ext_frames.obj" \
+	"$(INTDIR)\button.obj" \
+	"$(INTDIR)\cache_funcs.obj" \
+	"$(INTDIR)\clcidents.obj" \
+	"$(INTDIR)\clcitems.obj" \
+	"$(INTDIR)\clcmsgs.obj" \
+	"$(INTDIR)\clcopts.obj" \
+	"$(INTDIR)\clcpaint.obj" \
+	"$(INTDIR)\clcutils.obj" \
+	"$(INTDIR)\clistevents.obj" \
+	"$(INTDIR)\clistmenus.obj" \
+	"$(INTDIR)\clistmod.obj" \
+	"$(INTDIR)\clistopts.obj" \
+	"$(INTDIR)\clistsettings.obj" \
+	"$(INTDIR)\clisttray.obj" \
+	"$(INTDIR)\clui.obj" \
+	"$(INTDIR)\cluiservices.obj" \
+	"$(INTDIR)\commonheaders.obj" \
+	"$(INTDIR)\contact.obj" \
+	"$(INTDIR)\Docking.obj" \
+	"$(INTDIR)\gdiplus.obj" \
+	"$(INTDIR)\groupmenu.obj" \
+	"$(INTDIR)\image_array.obj" \
+	"$(INTDIR)\init.obj" \
+	"$(INTDIR)\keyboard.obj" \
+	"$(INTDIR)\modern_animated_avatars.obj" \
+	"$(INTDIR)\modern_awaymsg.obj" \
+	"$(INTDIR)\modern_button.obj" \
+	"$(INTDIR)\modern_clc.obj" \
+	"$(INTDIR)\modern_gettextasync.obj" \
+	"$(INTDIR)\modern_global.obj" \
+	"$(INTDIR)\modern_row.obj" \
+	"$(INTDIR)\modern_skinselector.obj" \
+	"$(INTDIR)\modern_statusbar.obj" \
+	"$(INTDIR)\modern_toolbar.obj" \
+	"$(INTDIR)\rowheight_funcs.obj" \
+	"$(INTDIR)\rowtemplateopt.obj" \
+	"$(INTDIR)\SkinEditor.obj" \
+	"$(INTDIR)\SkinEngine.obj" \
+	"$(INTDIR)\SkinOpt.obj" \
+	"$(INTDIR)\viewmodes.obj" \
+	"$(INTDIR)\xpTheme.obj" \
+	"$(INTDIR)\resource.res"
+
+"..\..\bin\debug Unicode\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+    $(LINK32) @<<
+  $(LINK32_FLAGS) $(LINK32_OBJS)
+<<
+
+!ENDIF
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
@@ -646,50 +756,6 @@ SOURCE=.\cache_funcs.c
 
 "$(INTDIR)\cache_funcs.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\modernb.pch"
 
-
-SOURCE=.\clc.c
-
-!IF  "$(CFG)" == "modernb - Win32 Release"
-
-CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "modernb_EXPORTS" /Fp"$(INTDIR)\modernb.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
-
-"$(INTDIR)\clc.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\modernb.pch"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug"
-
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "modernb_EXPORTS" /Fp"$(INTDIR)\modernb.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
-
-"$(INTDIR)\clc.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\modernb.pch"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Release Unicode"
-
-CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "modernb_EXPORTS" /Fp"$(INTDIR)\modernb.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
-
-"$(INTDIR)\clc.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\modernb.pch"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug Unicode"
-
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "modernb_EXPORTS" /Fp"$(INTDIR)\modernb.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
-
-"$(INTDIR)\clc.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\modernb.pch"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ENDIF
 
 SOURCE=.\clcidents.c
 
@@ -1479,9 +1545,19 @@ SOURCE=.\modern_button.c
 "$(INTDIR)\modern_button.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\modernb.pch"
 
 
+SOURCE=.\modern_clc.c
+
+"$(INTDIR)\modern_clc.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\modernb.pch"
+
+
 SOURCE=.\modern_gettextasync.c
 
 "$(INTDIR)\modern_gettextasync.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\modernb.pch"
+
+
+SOURCE=.\modern_global.c
+
+"$(INTDIR)\modern_global.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\modernb.pch"
 
 
 SOURCE=.\modern_row.cpp

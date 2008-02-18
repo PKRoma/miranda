@@ -188,26 +188,6 @@ SOURCE=.\cache_funcs.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\clc.c
-
-!IF  "$(CFG)" == "modernb - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "modernb - Win32 Debug Unicode"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
 SOURCE=.\clcidents.c
 
 !IF  "$(CFG)" == "modernb - Win32 Release"
@@ -550,7 +530,15 @@ SOURCE=.\modern_button.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\modern_clc.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\modern_gettextasync.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\modern_global.c
 # End Source File
 # Begin Source File
 

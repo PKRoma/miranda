@@ -5,8 +5,6 @@
 	Name="clist_modern"
 	ProjectGUID="{D9057E63-AAAA-4FE7-800A-20C02F4761F3}"
 	RootNamespace="clist_modern"
-	SccProjectName=""
-	SccLocalPath=""
 	>
 	<Platforms>
 		<Platform
@@ -286,7 +284,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				IgnoreImportLibrary="true"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib"
 				OutputFile="$(OutDir)/$(ProjectName).dll"
@@ -446,10 +443,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\clc.c"
-				>
-			</File>
-			<File
 				RelativePath=".\clcidents.c"
 				>
 			</File>
@@ -566,7 +559,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\modern_clc.c"
+				>
+			</File>
+			<File
 				RelativePath=".\modern_gettextasync.c"
+				>
+			</File>
+			<File
+				RelativePath=".\modern_global.c"
 				>
 			</File>
 			<File
@@ -932,11 +933,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\m_api\m_clui.h"
+				RelativePath="..\..\include\m_clui.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\m_clui.h"
+				RelativePath=".\m_api\m_clui.h"
 				>
 			</File>
 			<File
