@@ -514,10 +514,18 @@ BOOL CALLBACK DlgProcUserPrefsFrame(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 									dwNewFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT) & MWF_LOG_ALL;
 							}
 							if(dwNewFlags != dwOldFlags) {
+								BOOL	fShouldHide = TRUE;
+
 								dat->dwFlags &= ~MWF_LOG_ALL;
 								dat->dwFlags |= dwNewFlags;
+								if(IsIconic(dat->pContainer->hwnd) || dat->pContainer->bInTray)
+									fShouldHide = FALSE;
+								else
+									ShowWindow(dat->pContainer->hwnd, SW_HIDE);
 								SendMessage(hwnd, DM_OPTIONSAPPLIED, 0, 0);
 								SendMessage(hwnd, DM_DEFERREDREMAKELOG, (WPARAM)hwnd, 0);
+								if(fShouldHide)
+									ShowWindow(dat->pContainer->hwnd, SW_SHOWNORMAL);
 							}
 						}
 					}

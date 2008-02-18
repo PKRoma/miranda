@@ -30,6 +30,9 @@ Version 2.1.0.0  - 2008/02/15
 		* compatibility with Miranda 0.7 no longer given. 2.0.0.5 was branched
 		  as stable tree for 0.7 users.
 		  
+		* proper handling of RTF \endash, \emdash and \bullet (patch by
+		  theMiron).
+		  
 Version 2.0.0.5  - 2008/01/02
 
 		* increased timer for info panel tooltips to 1 sec (previously, it was set

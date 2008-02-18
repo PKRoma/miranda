@@ -26,10 +26,6 @@ $Id$
 
 */
 
-/* UNDONE 
- * all state image masks changed to use simple checkboxes instead of image lists
- */
-
 #include "commonheaders.h"
 #pragma hdrstop
 #include "uxtheme.h"
@@ -66,21 +62,6 @@ struct FontOptionsList {
 static fontOptionsList[] = {
 	{RGB(0, 0, 0), "Tahoma", 0, -10}
 };
-
-/*
-static HIMAGELIST g_himlStates = 0;
-HIMAGELIST CreateStateImageList()
-{
-	if (g_himlStates == 0) {
-		g_himlStates = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 4, 0);
-		ImageList_AddIcon(g_himlStates, myGlobals.g_IconFolder);
-		ImageList_AddIcon(g_himlStates, myGlobals.g_IconFolder);
-		ImageList_AddIcon(g_himlStates, myGlobals.g_IconUnchecked);
-		ImageList_AddIcon(g_himlStates, myGlobals.g_IconChecked);
-	}
-	return g_himlStates;
-}
-*/
 
 #if defined( _UNICODE )
 static BYTE MsgDlgGetFontDefaultCharset(const char* szFont)
@@ -381,14 +362,8 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 							if (item.state & TVIS_BOLD && hti.flags & TVHT_ONITEMSTATEICON) {
 								item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_BOLD;
 								SendDlgItemMessageA(hwndDlg, IDC_WINDOWOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
-							} else if (hti.flags & TVHT_ONITEMSTATEICON) {
-								/*
-								if (((item.state & TVIS_STATEIMAGEMASK) >> 12) == 3) {
-									item.state = INDEXTOSTATEIMAGEMASK(1);
-									SendDlgItemMessageA(hwndDlg, IDC_WINDOWOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
-								}*/
+							} else if (hti.flags & TVHT_ONITEMSTATEICON)
 								SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-							}
 						}
 					}
 					break;
@@ -458,7 +433,7 @@ static struct LISTOPTIONSGROUP lvGroups[] = {
 	0, _T("Support for external plugins"),
 	0, _T("Other options"),
 	0, _T("Events to show"),
-	0, _T("Timestamp settings (note: timstamps also depnd on your templates)"),
+	0, _T("Timestamp settings (note: timstamps also depend on your templates)"),
 	0, _T("Message log icons"),
 	0, NULL
 };
@@ -520,11 +495,6 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					break;
 			}
 			SetWindowLong(GetDlgItem(hwndDlg, IDC_LOGOPTIONS), GWL_STYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_LOGOPTIONS), GWL_STYLE) | (TVS_NOHSCROLL | TVS_CHECKBOXES));
-			/*
-			g_himlOptions = (HIMAGELIST)SendDlgItemMessage(hwndDlg, IDC_LOGOPTIONS, TVM_SETIMAGELIST, TVSIL_STATE, (LPARAM)CreateStateImageList());
-			if (g_himlOptions)
-				ImageList_Destroy(g_himlOptions);
-			*/
 
 			/*
 			* fill the list box, create groups first, then add items
@@ -654,15 +624,8 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 							if (item.state & TVIS_BOLD && hti.flags & TVHT_ONITEMSTATEICON) {
 								item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_BOLD;
 								SendDlgItemMessageA(hwndDlg, IDC_LOGOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
-							} else if (hti.flags & TVHT_ONITEMSTATEICON) {
-								/*
-								if (((item.state & TVIS_STATEIMAGEMASK) >> 12) == 3) {
-									item.state = INDEXTOSTATEIMAGEMASK(1);
-									SendDlgItemMessageA(hwndDlg, IDC_LOGOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
-								}
-								*/
+							} else if (hti.flags & TVHT_ONITEMSTATEICON)
 								SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-							}
 						}
 					}
 					break;
@@ -928,11 +891,7 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 
 			TranslateDialogDefault(hwndDlg);
 			SetWindowLong(GetDlgItem(hwndDlg, IDC_TABMSGOPTIONS), GWL_STYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_TABMSGOPTIONS), GWL_STYLE) | (TVS_NOHSCROLL | TVS_CHECKBOXES));
-			/*
-			g_himlOptions = (HIMAGELIST)SendDlgItemMessage(hwndDlg, IDC_TABMSGOPTIONS, TVM_SETIMAGELIST, TVSIL_STATE, (LPARAM)CreateStateImageList());
-			if (g_himlOptions)
-				ImageList_Destroy(g_himlOptions);
-			*/
+
 			/*
 			* fill the list box, create groups first, then add items
 			*/
@@ -1029,15 +988,8 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 							if (item.state & TVIS_BOLD && hti.flags & TVHT_ONITEMSTATEICON) {
 								item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_BOLD;
 								SendDlgItemMessageA(hwndDlg, IDC_TABMSGOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
-							} else if (hti.flags & TVHT_ONITEMSTATEICON) {
-								/*
-								if (((item.state & TVIS_STATEIMAGEMASK) >> 12) == 3) {
-									item.state = INDEXTOSTATEIMAGEMASK(1);
-									SendDlgItemMessageA(hwndDlg, IDC_TABMSGOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
-								}
-								*/
+							} else if (hti.flags & TVHT_ONITEMSTATEICON)
 								SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-							}
 						}
 					}
 					break;
@@ -1506,9 +1458,6 @@ static BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
 			BYTE loadMode = DBGetContactSettingByte(NULL, SRMSGMOD_T, "skin_loadmode", 0);
 			TranslateDialogDefault(hwndDlg);
-
-			//SendDlgItemMessage(hwndDlg, IDC_CORNERSPIN, UDM_SETRANGE, 0, MAKELONG(10, 0));
-			//SendDlgItemMessage(hwndDlg, IDC_CORNERSPIN, UDM_SETPOS, 0, g_CluiData.cornerRadius);
 
 			CheckDlgButton(hwndDlg, IDC_USESKIN, DBGetContactSettingByte(NULL, SRMSGMOD_T, "useskin", 0) ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_SKIN_LOADFONTS, loadMode & THEME_READ_FONTS);
