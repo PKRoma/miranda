@@ -1348,7 +1348,7 @@ static TDbSetting IgnoreSettings[] =
 {
 	{	FIELD_OFFSET(CIrcProto, m_DCCFileEnabled ), "EnableCtcpFile", DBVT_BYTE, 0, 1 },
 	{	FIELD_OFFSET(CIrcProto, m_DCCChatEnabled ), "EnableCtcpChat", DBVT_BYTE, 0, 1 },
-	{	FIELD_OFFSET(CIrcProto, m_DCCChatIgnore), "CtcpChatIgnore", DBVT_BYTE, 0, 1 }
+	{	FIELD_OFFSET(CIrcProto, m_DCCChatIgnore), "CtcpChatIgnore", DBVT_BYTE, 0, 1 },
 	{	FIELD_OFFSET(CIrcProto, m_ignore ), "Ignore", DBVT_BYTE },
 	{	FIELD_OFFSET(CIrcProto, m_ignoreChannelDefault ), "IgnoreChannelDefault", DBVT_BYTE },
 };

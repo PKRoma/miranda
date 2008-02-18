@@ -314,6 +314,7 @@ struct CIgnorePrefsDlg : public CProtoDlgBase<CIrcProto>
 
 	virtual void OnInitDialog();
 	virtual void OnDestroy();
+	virtual void OnApply();
 
 	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
 
