@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 #include "m_clc.h"
-#include "clc.h"
+#include "modern_clc.h"
 #include "commonprototypes.h"
 #include "defsettings.h"
 
@@ -451,7 +451,7 @@ int GetDropTargetInformation(HWND hwnd,struct ClcData *dat,POINT pt)
 	}
 	dat->selection=hit;
 
-	if (meta_module && !mir_strcmp(contact->proto,meta_module)&& (ServiceExists(MS_MC_ADDTOMETA))) return DROPTARGET_ONMETACONTACT;
+	if (g_szMetaModuleName && !mir_strcmp(contact->proto,g_szMetaModuleName)&& (ServiceExists(MS_MC_ADDTOMETA))) return DROPTARGET_ONMETACONTACT;
 	if (contact->isSubcontact && (ServiceExists(MS_MC_ADDTOMETA))) return DROPTARGET_ONSUBCONTACT;
 	return DROPTARGET_ONCONTACT;
 }
@@ -748,9 +748,9 @@ void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 	dat->selTextColour=DBGetContactSettingDword(NULL,"CLC","SelTextColour",CLCDEFAULT_MODERN_SELTEXTCOLOUR);
 	dat->hotTextColour=DBGetContactSettingDword(NULL,"CLC","HotTextColour",CLCDEFAULT_MODERN_HOTTEXTCOLOUR);
 	dat->quickSearchColour=DBGetContactSettingDword(NULL,"CLC","QuickSearchColour",CLCDEFAULT_MODERN_QUICKSEARCHCOLOUR);
-	if(!meta_module && ServiceExists(MS_MC_GETPROTOCOLNAME)) meta_module = (char *)CallService(MS_MC_GETPROTOCOLNAME, 0, 0);
+	if(!g_szMetaModuleName && ServiceExists(MS_MC_GETPROTOCOLNAME)) g_szMetaModuleName = (char *)CallService(MS_MC_GETPROTOCOLNAME, 0, 0);
 	dat->IsMetaContactsEnabled=(!(GetWindowLong(hwnd,GWL_STYLE)&CLS_MANUALUPDATE)) &&
-		meta_module && DBGetContactSettingByte(NULL,meta_module,"Enabled",1) && ServiceExists(MS_MC_GETDEFAULTCONTACT);
+		g_szMetaModuleName && DBGetContactSettingByte(NULL,g_szMetaModuleName,"Enabled",1) && ServiceExists(MS_MC_GETDEFAULTCONTACT);
 	dat->MetaIgnoreEmptyExtra=DBGetContactSettingByte(NULL,"CLC","MetaIgnoreEmptyExtra",SETTING_METAIGNOREEMPTYEXTRA_DEFAULT);
 	dat->expandMeta=DBGetContactSettingByte(NULL,"CLC","MetaExpanding",SETTING_METAEXPANDING_DEFAULT);
 	dat->useMetaIcon=DBGetContactSettingByte(NULL,"CLC","Meta",SETTING_USEMETAICON_DEFAULT);
@@ -778,7 +778,18 @@ void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 
 }
 
-int ExpandMetaContact(HWND hwnd, struct ClcContact * contact, struct ClcData * dat, BOOL bExpand);
+int ExpandMetaContact(HWND hwnd, struct ClcContact * contact, struct ClcData * dat, BOOL bExpand)
+{
+	struct ClcContact * ht=NULL;
+	KillTimer(hwnd,TIMERID_SUBEXPAND);
+	if (contact->type!=CLCIT_CONTACT ||contact->SubAllocated==0 || contact->SubExpanded==bExpand || !DBGetContactSettingByte(NULL,"CLC","MetaExpanding",SETTING_METAEXPANDING_DEFAULT)) return 0;
+	contact->SubExpanded=bExpand;
+	DBWriteContactSettingByte(contact->hContact,"CList","Expanded",contact->SubExpanded);
+	dat->NeedResort=1;
+	pcli->pfnSortCLC(hwnd,dat,1);		
+	cliRecalcScrollBar(hwnd,dat);
+	return contact->SubExpanded;
+}
 
 int cliFindRowByText(HWND hwnd, struct ClcData *dat, const TCHAR *text, int prefixOk)
 {

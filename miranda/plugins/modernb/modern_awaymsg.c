@@ -151,7 +151,7 @@ static int amThreadProc(HWND hwnd)
 					ack.szModule=dnce.m_cache_cszProto;
 				else
 					ack.szModule=NULL;
-				ClcProtoAck((WPARAM)hContact,(LPARAM) &ack);
+				ClcDoProtoAck(hContact, &ack);
 			}
 			CListSettings_FreeCacheItemData(&dnce);
 			amRequestTick=time;

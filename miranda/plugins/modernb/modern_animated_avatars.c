@@ -982,7 +982,7 @@ static void _AniAva_LoadOptions()
 				break;
 			case SETTING_AVATAR_OVERLAY_TYPE_PROTOCOL:
 			case SETTING_AVATAR_OVERLAY_TYPE_CONTACT:
-				AniAva.overlayIconImageList=himlCListClc;
+				AniAva.overlayIconImageList=g_himlCListClc;
 				break;
 			default:
 				AniAva.overlayIconImageList=NULL;

@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 #include "m_clc.h"
-#include "clc.h"
+#include "modern_clc.h"
 #include "commonprototypes.h"
 #include "defsettings.h"
 
@@ -1972,6 +1972,11 @@ CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 }
 
 
+void ClcOptionsChanged(void)
+{
+	pcli->pfnClcBroadcast( INTM_RELOADOPTIONS,0,0);
+	pcli->pfnClcBroadcast( INTM_INVALIDATE,0,0);
+}
 
 HWND g_hCLUIOptionsWnd=NULL;
 

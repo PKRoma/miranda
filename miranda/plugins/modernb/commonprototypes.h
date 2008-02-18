@@ -30,12 +30,11 @@ extern HIMAGELIST hAvatarOverlays;
 extern int  g_nTitleBarHeight;
 extern int  g_nGapBetweenTitlebar;
 extern BOOL g_bTransparentFlag;
-extern ClcProtoStatus *clcProto;
-extern HIMAGELIST himlCListClc;
+extern HIMAGELIST g_himlCListClc;
 extern HIMAGELIST hCListImages;
 extern BOOL g_mutex_bSizing;
 extern BOOL LOCK_RECALC_SCROLLBAR;
-extern HIMAGELIST himlCListClc;
+extern HIMAGELIST g_himlCListClc;
 extern int currentDesiredStatusMode;
 extern BYTE nameOrder[];
 extern SortedList lContactsCache;
@@ -60,7 +59,7 @@ extern BOOL g_flag_bPostWasCanceled;
 extern BOOL g_flag_bFullRepaint;
 extern BOOL g_bMultiConnectionMode;
 extern BYTE g_bCalledFromShowHide;
-extern HICON listening_to_icon;
+extern HICON g_hListeningToIcon;
 extern BOOL glOtherSkinWasLoaded;
 extern BYTE glSkinWasModified;
 extern HWND g_hCLUIOptionsWnd;
@@ -241,7 +240,7 @@ HICON	cliGetIconFromStatusMode(HANDLE hContact, const char *szProto,int status);
 HICON	GetMainStatusOverlay(int STATUS);													//clc.c
 int	__fastcall	CLVM_GetContactHiddenStatus(HANDLE hContact, char *szStatus, struct ClcData *dat);  //clcitems.c
 int		BgStatusBarChange(WPARAM wParam,LPARAM lParam);										//clcopts.c
-int		ClcProtoAck(WPARAM wParam,LPARAM lParam);											//clc.c
+int		ClcDoProtoAck(HANDLE wParam,ACKDATA * ack);											//clc.c
 int		DeleteButtons();																	//modernbutton.c
 int		GetAverageMode( void );																	//clisttray.c
 int		GetContactCachedStatus(HANDLE hContact);											//clistsettings.c
@@ -288,6 +287,8 @@ void	UnloadAvatarOverlayIcon();															//clc.c
 void	UnLoadContactListModule();															//clistmod.c
 void	UpdateAllAvatars(struct ClcData *dat);												//cache_func.c
 											//cluiframes.c
+void gtaRenewText(HANDLE hContact);
+int ExtraImage_ExtraIDToColumnNum(int extra);
 
 // INTERFACES
 int    cliShowHide(WPARAM wParam,LPARAM lParam);
@@ -350,5 +351,9 @@ BYTE SkinDBGetContactSettingByte(HANDLE hContact, const char* szSection, const c
 
 int doCLUIFramesProxyCall(PSYNCCALLBACKPROC pfnProc, WPARAM wParam, LPARAM lParam);
 int SyncCall(void * vproc, int count, ... );
+
+
+extern OVERLAYICONINFO g_pAvatarOverlayIcons[ID_STATUS_OUTTOLUNCH - ID_STATUS_OFFLINE + 1];
+extern OVERLAYICONINFO g_pStatusOverlayIcons[ID_STATUS_OUTTOLUNCH - ID_STATUS_OFFLINE + 1];
 
 #endif

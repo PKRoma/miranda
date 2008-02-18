@@ -162,7 +162,7 @@ void Cache_DestroySmileyList( SortedList* p_list )
 
                 if (!IsBadWritePtr(piece, sizeof(ClcContactTextPiece)))
                 {
-                    if (piece->type==TEXT_PIECE_TYPE_SMILEY && piece->smiley != listening_to_icon)
+                    if (piece->type==TEXT_PIECE_TYPE_SMILEY && piece->smiley != g_hListeningToIcon)
                         DestroyIcon_protect(piece->smiley);
                     mir_free_and_nill(piece);
                 }
@@ -204,7 +204,7 @@ void Cache_AddListeningToIcon(struct SHORTDATA *dat, PDNCE pdnce, TCHAR *text, i
 
         piece->type = TEXT_PIECE_TYPE_SMILEY;
         piece->len = 0;
-        piece->smiley = listening_to_icon;
+        piece->smiley = g_hListeningToIcon;
 
         piece->smiley_width = 16;
         piece->smiley_height = 16;
@@ -268,7 +268,7 @@ void Cache_ReplaceSmileys(struct SHORTDATA *dat, PDNCE pdnce, TCHAR *text, int t
     {
         sp.Protocolname = pdnce->m_cache_cszProto;
 
-        if (DBGetContactSettingByte(NULL,"CLC","Meta",SETTING_USEMETAICON_DEFAULT) != 1 && pdnce->m_cache_cszProto != NULL && meta_module && strcmp(pdnce->m_cache_cszProto, meta_module) == 0)
+        if (DBGetContactSettingByte(NULL,"CLC","Meta",SETTING_USEMETAICON_DEFAULT) != 1 && pdnce->m_cache_cszProto != NULL && g_szMetaModuleName && strcmp(pdnce->m_cache_cszProto, g_szMetaModuleName) == 0)
         {
             HANDLE hContact = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT, (UINT)pdnce->m_cache_hContact, 0);
             if (hContact != 0)

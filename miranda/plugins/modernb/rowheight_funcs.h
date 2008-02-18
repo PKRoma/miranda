@@ -26,7 +26,7 @@ Created by Pescuma
 #ifndef __ROWHEIGHT_FUNCS_H__
 # define __ROWHEIGHT_FUNCS_H__
 
-#include "clc.h"
+#include "modern_clc.h"
 
 #define ROW_SPACE_BEETWEEN_LINES 2
 #define ICON_HEIGHT 16

@@ -83,7 +83,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_genmenu.h"
 #include "m_clui.h"
 #include "m_clc.h"
-#include "clc.h"
+#include "modern_clc.h"
 #include "clist.h"
 #include "m_icolib.h"
 #include <m_userinfo.h>
@@ -107,7 +107,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "./m_api/m_xpTheme.h"
 
 // module name of MetaContacts plugin
-extern char *meta_module;
+extern char *g_szMetaModuleName;
 
 //macros to free data and set it pointer to NULL
 #define mir_free_and_nill(x) {mir_free(x); x=NULL;}

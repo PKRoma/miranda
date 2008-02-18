@@ -49,6 +49,56 @@ int InitSkinHotKeys();
 extern BOOL amWakeThread();
 extern BOOL gtaWakeThread();
 
+
+HIMAGELIST hAvatarOverlays=NULL;
+
+OVERLAYICONINFO g_pAvatarOverlayIcons[ID_STATUS_OUTTOLUNCH - ID_STATUS_OFFLINE + 1] = 
+{
+	{ "AVATAR_OVERLAY_OFFLINE",		LPGEN("Offline"),		IDI_AVATAR_OVERLAY_OFFLINE,   -1},
+	{ "AVATAR_OVERLAY_ONLINE",		LPGEN("Online"),		IDI_AVATAR_OVERLAY_ONLINE,	  -1},
+	{ "AVATAR_OVERLAY_AWAY",		LPGEN("Away"),			IDI_AVATAR_OVERLAY_AWAY,	  -1},
+	{ "AVATAR_OVERLAY_DND",			LPGEN("DND"),			IDI_AVATAR_OVERLAY_DND,		  -1},
+	{ "AVATAR_OVERLAY_NA",			LPGEN("NA"),			IDI_AVATAR_OVERLAY_NA,	 	  -1},
+	{ "AVATAR_OVERLAY_OCCUPIED",	LPGEN("Occupied"),		IDI_AVATAR_OVERLAY_OCCUPIED,  -1},
+	{ "AVATAR_OVERLAY_CHAT",		LPGEN("Free for chat"), IDI_AVATAR_OVERLAY_CHAT,	  -1},
+	{ "AVATAR_OVERLAY_INVISIBLE",	LPGEN("Invisible"),		IDI_AVATAR_OVERLAY_INVISIBLE, -1},
+	{ "AVATAR_OVERLAY_PHONE",		LPGEN("On the phone"),	IDI_AVATAR_OVERLAY_PHONE,	  -1},
+	{ "AVATAR_OVERLAY_LUNCH",		LPGEN("Out to lunch"),	IDI_AVATAR_OVERLAY_LUNCH,	  -1}
+};
+OVERLAYICONINFO g_pStatusOverlayIcons[ID_STATUS_OUTTOLUNCH - ID_STATUS_OFFLINE + 1] = 
+{
+	{ "STATUS_OVERLAY_OFFLINE", LPGEN("Offline"), IDI_STATUS_OVERLAY_OFFLINE, -1},
+	{ "STATUS_OVERLAY_ONLINE", LPGEN("Online"), IDI_STATUS_OVERLAY_ONLINE, -1},
+	{ "STATUS_OVERLAY_AWAY", LPGEN("Away"), IDI_STATUS_OVERLAY_AWAY, -1},
+	{ "STATUS_OVERLAY_DND", LPGEN("DND"), IDI_STATUS_OVERLAY_DND, -1},
+	{ "STATUS_OVERLAY_NA", LPGEN("NA"), IDI_STATUS_OVERLAY_NA, -1},
+	{ "STATUS_OVERLAY_OCCUPIED", LPGEN("Occupied"), IDI_STATUS_OVERLAY_OCCUPIED, -1},
+	{ "STATUS_OVERLAY_CHAT", LPGEN("Free for chat"), IDI_STATUS_OVERLAY_CHAT, -1},
+	{ "STATUS_OVERLAY_INVISIBLE", LPGEN("Invisible"), IDI_STATUS_OVERLAY_INVISIBLE, -1},
+	{ "STATUS_OVERLAY_PHONE", LPGEN("On the phone"), IDI_STATUS_OVERLAY_PHONE, -1},
+	{ "STATUS_OVERLAY_LUNCH", LPGEN("Out to lunch"), IDI_STATUS_OVERLAY_LUNCH, -1}
+};
+
+HICON GetMainStatusOverlay(int STATUS)
+{
+	return ImageList_GetIcon(hAvatarOverlays,g_pStatusOverlayIcons[STATUS-ID_STATUS_OFFLINE].listID,ILD_NORMAL);
+}
+
+void UnloadAvatarOverlayIcon()
+{
+	int i;
+	for (i = 0 ; i < MAX_REGS(g_pAvatarOverlayIcons) ; i++)
+	{
+		g_pAvatarOverlayIcons[i].listID=-1;
+		g_pStatusOverlayIcons[i].listID=-1;
+	}
+	ImageList_Destroy(hAvatarOverlays);
+	hAvatarOverlays=NULL;
+	DestroyIcon_protect(g_hListeningToIcon);
+	g_hListeningToIcon=NULL;
+}
+
+
 /*
 *  Function CLUI_CheckOwnedByClui returns true if given window is in 
 *  frames.
@@ -550,7 +600,7 @@ static int CLUI_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	if (ServiceExists(MS_MC_DISABLEHIDDENGROUP))
 		CallService(MS_MC_DISABLEHIDDENGROUP, (WPARAM)TRUE, (LPARAM)0);
 	if (ServiceExists(MS_MC_GETPROTOCOLNAME))
-		meta_module = (char *)CallService(MS_MC_GETPROTOCOLNAME, 0, 0);
+		g_szMetaModuleName = (char *)CallService(MS_MC_GETPROTOCOLNAME, 0, 0);
 
 	ZeroMemory(&mii,sizeof(mii));
 	mii.cbSize=MENUITEMINFO_V4_SIZE;
@@ -1178,7 +1228,7 @@ int CLUI_SyncGetShortData(WPARAM wParam, LPARAM lParam)
 	HWND hwnd=(HWND) wParam;
 	struct ClcData * dat=(struct ClcData * )GetWindowLong(hwnd,0);
 	//log0("CLUI_SyncGetShortData");
-	return CLC_GetShortData(dat,(struct SHORTDATA *)lParam);
+	return ClcGetShortData(dat,(struct SHORTDATA *)lParam);
 }
 
 int  CLUI_SyncSmoothAnimation(WPARAM wParam, LPARAM lParam)
@@ -2138,7 +2188,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 		}
 		/*===================*/
 		if (DBGetContactSettingByte(NULL,"CLUI","DragToScroll",SETTING_DRAGTOSCROLL_DEFAULT) && !DBGetContactSettingByte(NULL,"CLUI","ClientAreaDrag",SETTING_CLIENTDRAG_DEFAULT))
-			return CLC_EnterDragToScroll(pcli->hwndContactTree,nm->pt.y);
+			return ClcEnterDragToScroll(pcli->hwndContactTree,nm->pt.y);
 		/*===================*/
 		return 0;
 		}	}	}
@@ -2287,10 +2337,9 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 
 			if (state==SETTING_STATE_NORMAL){CLUI_ShowWindowMod(hwnd,SW_HIDE);};
 			UnLoadContactListModule();
-			if(hSettingChangedHook!=0){UnhookEvent(hSettingChangedHook);};
-			if(hAvatarChanged!=0){UnhookEvent(hAvatarChanged);};
-			if(hSmileyAddOptionsChangedHook!=0){UnhookEvent(hSmileyAddOptionsChangedHook);};
-			if(hIconChangedHook!=0){UnhookEvent(hIconChangedHook);};
+			if(hSettingChangedHook!=0)	UnhookEvent(hSettingChangedHook);
+			ClcUnloadModule();
+
 
 			pcli->pfnTrayIconDestroy(hwnd);	
 			mutex_bAnimationInProgress=0;  		

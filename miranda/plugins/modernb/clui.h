@@ -58,9 +58,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define ANIMATION_STEP              40
 
+
 /* Declaration of prototypes in other modules */
-int CLC_GetShortData(struct ClcData* pData, struct SHORTDATA *pShortData);
-int  CLC_EnterDragToScroll(HWND hwnd, int Y);
+
+int ClcUnloadModule();
+int ClcGetShortData(struct ClcData* pData, struct SHORTDATA *pShortData);
+int ClcEnterDragToScroll(HWND hwnd, int Y);
 
 HFONT CLCPaint_ChangeToFont(HDC hdc,struct ClcData *dat,int id,int *fontHeight);
 void CLCPaint_FillQuickHash();
@@ -220,4 +223,5 @@ static HANDLE hFrameContactTree;
 static PROTOTICKS CycleStartTick[64]={0};//max 64 protocols 
 
 static int nAnimatedIconStep=100;
+
 

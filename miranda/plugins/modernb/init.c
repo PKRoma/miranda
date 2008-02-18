@@ -39,7 +39,7 @@ void  GetDefaultFontSetting(int i,LOGFONT *lf,COLORREF *colour);
 int   CLUI_OnSkinLoad(WPARAM wParam, LPARAM lParam);
 int   LoadContactListModule(void);
 int	  PreLoadContactListModule();
-int   LoadCLCModule(void);
+int   ClcLoadModule(void);
 
 void	cliCheckCacheItem(pdisplayNameCacheEntry pdnce);
 void	cliFreeCacheItem( pdisplayNameCacheEntry p );
@@ -214,6 +214,7 @@ int SetDrawer(WPARAM wParam,LPARAM lParam)
 }
 
 void InitToolBarModule();
+
 int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 {
 	int rc=0;
@@ -366,7 +367,7 @@ LBL_Error:
 	ModernButton_LoadModule();
 	ske_LoadModule();
 	rc=LoadContactListModule();
-	if (rc==0) rc=LoadCLCModule();
+	if (rc==0) rc=ClcLoadModule();
 	BGModuleLoad();
 	LoadSkinButtonModule();
 	InitToolBarModule();

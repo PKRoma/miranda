@@ -174,7 +174,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../../include"
-				PreprocessorDefinitions="_DEBUG_LOG;WIN32;_DEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS"
+				PreprocessorDefinitions="FORCE_HOTKEY_IN_MODERN;_DEBUG_LOG;WIN32;_DEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS"
 				GeneratePreprocessedFile="0"
 				ExceptionHandling="TRUE"
 				BasicRuntimeChecks="3"
@@ -195,7 +195,7 @@
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib"
-				OutputFile="$(OutDir)/$(ProjectName).dll"
+				OutputFile="p:/Test/miranda im/plugins/$(ProjectName).dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories=""
@@ -218,7 +218,7 @@
 				Name="VCPreLinkEventTool"/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
+				PreprocessorDefinitions="FORCE_HOTKEY_IN_MODERN;_DEBUG"
 				Culture="1033"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
@@ -248,7 +248,7 @@
 				OmitFramePointers="FALSE"
 				OptimizeForProcessor="0"
 				AdditionalIncludeDirectories="../../include"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS"
+				PreprocessorDefinitions="FORCE_HOTKEY_IN_MODERN;WIN32;NDEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS"
 				StringPooling="TRUE"
 				ExceptionHandling="TRUE"
 				RuntimeLibrary="2"
@@ -270,7 +270,7 @@
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib  gdiplus.lib Delayimp.lib"
-				OutputFile="$(OutDir)/$(ProjectName).dll"
+				OutputFile="p:/miranda im/plugins/$(ProjectName).dll"
 				IgnoreAllDefaultLibraries="FALSE"
 				IgnoreDefaultLibraryNames=""
 				DelayLoadDLLs="gdiplus.dll"
@@ -297,7 +297,7 @@
 				Name="VCPreLinkEventTool"/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
+				PreprocessorDefinitions="NDEBUG; FORCE_HOTKEY_IN_MODERN"
 				Culture="2057"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
@@ -322,9 +322,6 @@
 			</File>
 			<File
 				RelativePath=".\cache_funcs.c">
-			</File>
-			<File
-				RelativePath=".\clc.c">
 			</File>
 			<File
 				RelativePath=".\clcidents.c">
@@ -414,7 +411,13 @@
 				RelativePath=".\modern_button.c">
 			</File>
 			<File
+				RelativePath=".\modern_clc.c">
+			</File>
+			<File
 				RelativePath=".\modern_gettextasync.c">
+			</File>
+			<File
+				RelativePath=".\modern_global.c">
 			</File>
 			<File
 				RelativePath=".\modern_row.cpp">
@@ -491,6 +494,9 @@
 			</File>
 			<File
 				RelativePath=".\menuSubsystem.h">
+			</File>
+			<File
+				RelativePath=".\modern_clc.h">
 			</File>
 			<File
 				RelativePath=".\modern_row.h">

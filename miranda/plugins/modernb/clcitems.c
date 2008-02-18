@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 #include "m_clc.h"
-#include "clc.h"
+#include "modern_clc.h"
 #include "clist.h"
 #include "./m_api/m_metacontacts.h"
 #include "commonprototypes.h"
@@ -279,7 +279,7 @@ void cli_AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int upda
 	struct ClcContact * cont;
 	pdisplayNameCacheEntry cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(hContact);
 	if(dat->IsMetaContactsEnabled && cacheEntry && cacheEntry->m_cache_nHiddenSubcontact) return;		//contact should not be added
-	if(!dat->IsMetaContactsEnabled && cacheEntry && meta_module && !mir_strcmp(cacheEntry->m_cache_cszProto,meta_module)) return;
+	if(!dat->IsMetaContactsEnabled && cacheEntry && g_szMetaModuleName && !mir_strcmp(cacheEntry->m_cache_cszProto,g_szMetaModuleName)) return;
 	saveAddContactToTree(hwnd,dat,hContact,updateTotalCount,checkHideOffline);
 	if (FindItem(hwnd,dat,hContact,&cont,&group,NULL,FALSE))
 	{
@@ -289,7 +289,7 @@ void cli_AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int upda
 			if (cont && cont->proto)
 			{	
 				cont->SubAllocated=0;
-				if (meta_module && mir_strcmp(cont->proto,meta_module)==0) 
+				if (g_szMetaModuleName && mir_strcmp(cont->proto,g_szMetaModuleName)==0) 
 					AddSubcontacts(dat,cont,CLCItems_IsShowOfflineGroup(group));
 			}
             cont->lastPaintCounter=0;
@@ -315,8 +315,7 @@ void cli_DeleteItemFromTree(HWND hwnd,HANDLE hItem)
 	ClearRowByIndexCache();
 }
 
-//TODO move next line to m_clist.h
-#define GROUPF_SHOWOFFLINE 0x80   
+
 __inline BOOL CLCItems_IsShowOfflineGroup(struct ClcGroup* group)
 {
 	DWORD groupFlags=0;
@@ -412,7 +411,7 @@ void cliRebuildEntireList(HWND hwnd,struct ClcData *dat)
 		if (cont)	
 		{	
 			cont->SubAllocated=0;
-			if (cont->proto && meta_module && strcmp(cont->proto,meta_module)==0)
+			if (cont->proto && g_szMetaModuleName && strcmp(cont->proto,g_szMetaModuleName)==0)
 				AddSubcontacts(dat,cont,CLCItems_IsShowOfflineGroup(group));
 		}
 		hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0);
@@ -772,7 +771,7 @@ int __fastcall CLVM_GetContactHiddenStatus(HANDLE hContact, char *szProto, struc
 	BOOL fEmbedded=dat->force_in_dialog;
 	// always hide subcontacts (but show them on embedded contact lists)
 	
-	if(g_CluiData.bMetaAvail && dat != NULL && dat->IsMetaContactsEnabled && meta_module && DBGetContactSettingByte(hContact, meta_module, "IsSubcontact", 0))
+	if(g_CluiData.bMetaAvail && dat != NULL && dat->IsMetaContactsEnabled && g_szMetaModuleName && DBGetContactSettingByte(hContact, g_szMetaModuleName, "IsSubcontact", 0))
 		return -1; //subcontact
     if (pdnce && pdnce->isUnknown && !fEmbedded)    
         return 1; //'Unknown Contact'

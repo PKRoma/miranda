@@ -106,4 +106,6 @@ typedef struct tagEXTRASLOTINFO
 #define CLVM_MODULE "CLVM"
 #endif
 
+#define GROUPF_SHOWOFFLINE 0x80   
+
 #endif

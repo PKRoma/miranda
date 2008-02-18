@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 #include "m_clc.h"
-#include "clc.h"
+#include "modern_clc.h"
 #include "skinengine.h"
 #include "commonprototypes.h"
 #include "modern_row.h"
@@ -35,8 +35,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MIN_TEXT_WIDTH 20
 #define BUF2SIZE 7
 
-extern OVERLAYICONINFO g_pAvatarOverlayIcons[ID_STATUS_OUTTOLUNCH - ID_STATUS_OFFLINE + 1];
-extern OVERLAYICONINFO g_pStatusOverlayIcons[];
+
 
 static void CLCPaint_InternalPaintRowItems (HWND hwnd, HDC hdcMem, struct ClcData *dat, struct ClcContact *Drawing, RECT row_rc, RECT free_row_rc, int left_pos, int right_pos, int selected,int hottrack, RECT *rcPaint);
 static void CLCPaint_DrawStatusIcon(struct ClcContact * Drawing, struct ClcData *dat, int iImage, HDC hDC, int x, int y, int cx, int cy, DWORD colorbg,DWORD colorfg, int mode);
@@ -1795,12 +1794,12 @@ static void CLCPaint_DrawStatusIcon(struct ClcContact * Drawing, struct ClcData 
 {
     if (Drawing->type!=CLCIT_CONTACT)
     {
-        ske_ImageList_DrawEx(himlCListClc, LOWORD(iImage), hdcMem,
+        ske_ImageList_DrawEx(g_himlCListClc, LOWORD(iImage), hdcMem,
             x, y,cx,cy,colorbg,colorfg,mode);
     }
     else if (Drawing->image_is_special)
     {
-        ske_ImageList_DrawEx(himlCListClc, LOWORD(iImage), hdcMem,
+        ske_ImageList_DrawEx(g_himlCListClc, LOWORD(iImage), hdcMem,
             x, y,cx,cy,colorbg,colorfg,mode);
     }
     else if (iImage!=-1 && HIWORD(iImage) && dat->drawOverlayedStatus)
@@ -1808,7 +1807,7 @@ static void CLCPaint_DrawStatusIcon(struct ClcContact * Drawing, struct ClcData 
         int status=GetContactCachedStatus(Drawing->hContact);
         if (status<ID_STATUS_OFFLINE) status=ID_STATUS_OFFLINE;
         else if (status>ID_STATUS_OUTTOLUNCH) status=ID_STATUS_ONLINE;
-        ske_ImageList_DrawEx(himlCListClc, HIWORD(iImage), hdcMem,
+        ske_ImageList_DrawEx(g_himlCListClc, HIWORD(iImage), hdcMem,
             x, y,cx,cy,colorbg,colorfg,mode);
         if (dat->drawOverlayedStatus&2) //draw overlay
             ske_ImageList_DrawEx(hAvatarOverlays, g_pStatusOverlayIcons[status-ID_STATUS_OFFLINE].listID, hdcMem,
@@ -1816,7 +1815,7 @@ static void CLCPaint_DrawStatusIcon(struct ClcContact * Drawing, struct ClcData 
     }
     else
     {
-        ske_ImageList_DrawEx(himlCListClc, LOWORD(iImage), hdcMem,
+        ske_ImageList_DrawEx(g_himlCListClc, LOWORD(iImage), hdcMem,
             x, y,cx,cy,colorbg,colorfg,mode);
     }
 }
@@ -2373,7 +2372,7 @@ void CLCPaint_cliPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 
     if (SED.cbSize==sizeof(SED)&&SED.PaintClc!=NULL)
     {
-        SED.PaintClc(hwnd,dat,hdc,rcPaint,pcli->hClcProtoCount,clcProto,himlCListClc);
+        SED.PaintClc(hwnd,dat,hdc,rcPaint,pcli->hClcProtoCount,pcli->clcProto,g_himlCListClc);
         return;
     }
     if (MirandaExiting()) return;
