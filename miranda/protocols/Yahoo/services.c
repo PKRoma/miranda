@@ -205,7 +205,10 @@ int SetStatus(WPARAM wParam,LPARAM lParam)
 		
 		//DBWriteContactSettingWord(NULL, yahooProtocolName, "StartupStatus", status);
 		gStartStatus = status;
-		
+
+		//reset the unread email count. We'll get a new packet since we are connecting.
+		mUnreadMessages = 0;
+
 		yahoo_util_broadcaststatus(ID_STATUS_CONNECTING);
 		
 		status = (status == ID_STATUS_INVISIBLE) ? YAHOO_STATUS_INVISIBLE: YAHOO_STATUS_AVAILABLE;
