@@ -49,7 +49,7 @@ void CJabberProto::AddContactToRoster( const TCHAR* jid, const TCHAR* nick, cons
 		default:       item->addAttr( "subscription", "none" ); break;
 	}
 
-	if ( grpName != NULL )
+	if ( grpName != NULL && _tcsstr(grpName, _T("MetaContacts Hidden Group")))
 		item->addChild( "group", grpName );
 	m_ThreadInfo->send( iq );
 
