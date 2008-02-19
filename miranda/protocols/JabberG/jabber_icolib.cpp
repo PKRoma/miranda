@@ -120,7 +120,7 @@ void CJabberProto::IconsInit( void )
 		if ( iconList[i].szSection ) {
 			mir_snprintf( szSectionName, sizeof( szSectionName ), "%s/%s", szRootSection, iconList[i].szSection );
 			if (strstr(szSectionName, "%s")) {
-				mir_snprintf(tmp, SIZEOF(tmp), szSectionName, m_szProtoName);
+				mir_snprintf(tmp, SIZEOF(tmp), szSectionName, m_szModuleName);
 				lstrcpyA(szSectionName, tmp);
 			}
 			sid.pszSection = szSectionName;
@@ -128,12 +128,12 @@ void CJabberProto::IconsInit( void )
 		else sid.pszSection = szRootSection;
 
 		if (strstr(iconList[i].szDescr, "%s")) {
-			mir_snprintf( szDescription, sizeof( szDescription ), iconList[i].szDescr, m_szProtoName );
+			mir_snprintf( szDescription, sizeof( szDescription ), iconList[i].szDescr, m_szModuleName );
 			sid.pszDescription = szDescription;
 		}
 		else sid.pszDescription = iconList[i].szDescr;
 
-		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", m_szProtoName, iconList[i].szName );
+		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", m_szModuleName, iconList[i].szName );
 		sid.pszName = szSettingName;
 
 		sid.iDefaultIndex = -iconList[i].defIconID;
@@ -158,7 +158,7 @@ HICON CJabberProto::LoadIconEx( const char* name )
 		return result;
 
 	char szSettingName[100];
-	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", m_szProtoName, name );
+	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", m_szModuleName, name );
 	return ( HICON )JCallService( MS_SKIN2_GETICON, 0, (LPARAM)szSettingName );
 }
 
@@ -312,7 +312,7 @@ int CJabberProto::LoadAdvancedIcons(int iID)
 		BOOL needFree;
 		int n=skinStatusToJabberStatus[i];
 		char * descr=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,n+ID_STATUS_OFFLINE,0);
-		_snprintf((char *)Uname, sizeof(Uname),"%s_Transport_%s_%d",m_szProtoName,proto,n);
+		_snprintf((char *)Uname, sizeof(Uname),"%s_Transport_%s_%d",m_szModuleName,proto,n);
 		hicon=(HICON)LoadTransportIcon((char*)defFile,-skinIconStatusToResourceId[i],(char*)Uname,(char*)Group,(char*)descr,-(n+ID_STATUS_OFFLINE),&needFree);
 		int index=(TransportProtoTable[iID].startIndex == -1)?-1:TransportProtoTable[iID].startIndex+n;
 		int added=ImageList_ReplaceIcon(hAdvancedStatusIcon,index,hicon?hicon:empty);
@@ -449,7 +449,7 @@ void CJabberProto::CheckAllContactsAreTransported()
 	HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL ) {
 		char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-		if ( !lstrcmpA( m_szProtoName, szProto )) {
+		if ( !lstrcmpA( m_szModuleName, szProto )) {
 			DBVARIANT dbv;
 			if ( !JGetStringT( hContact, "jid", &dbv )) {
 				DBCheckIsTransportedContact( dbv.ptszVal, hContact );

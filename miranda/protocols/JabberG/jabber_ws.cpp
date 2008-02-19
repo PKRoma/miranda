@@ -37,7 +37,7 @@ BOOL CJabberProto::WsInit( void )
 	nlu.cbSize = sizeof( nlu );
 	nlu.flags = NUF_OUTGOING | NUF_INCOMING | NUF_HTTPCONNS;	// | NUF_HTTPGATEWAY;
 	nlu.szDescriptiveName = name;
-	nlu.szSettingsModule = m_szProtoName;
+	nlu.szSettingsModule = m_szModuleName;
 	//nlu.szHttpGatewayHello = "http://http.proxy.icq.com/hello";
 	//nlu.szHttpGatewayUserAgent = "Mozilla/4.08 [en] ( WinNT; U ;Nav )";
 	//nlu.pfnHttpGatewayInit = JabberHttpGatewayInit;

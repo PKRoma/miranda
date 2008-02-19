@@ -145,7 +145,7 @@ void CJabberProto::DBAddAuthRequest( TCHAR* jid, TCHAR* nick )
 	//blob is: 0( DWORD ), hContact( HANDLE ), nick( ASCIIZ ), ""( ASCIIZ ), ""( ASCIIZ ), email( ASCIIZ ), ""( ASCIIZ )
 	DBEVENTINFO dbei = {0};
 	dbei.cbSize = sizeof( DBEVENTINFO );
-	dbei.szModule = m_szProtoName;
+	dbei.szModule = m_szModuleName;
 	dbei.timestamp = ( DWORD )time( NULL );
 	dbei.flags = 0;
 	dbei.eventType = EVENTTYPE_AUTHREQUEST;
@@ -193,7 +193,7 @@ HANDLE CJabberProto::DBCreateContact( TCHAR* jid, TCHAR* nick, BOOL temporary, B
 	HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL ) {
 		szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-		if ( szProto!=NULL && !strcmp( m_szProtoName, szProto )) {
+		if ( szProto!=NULL && !strcmp( m_szModuleName, szProto )) {
 			DBVARIANT dbv;
 			if ( !JGetStringT( hContact, "jid", &dbv )) {
 				p = dbv.ptszVal;
@@ -208,7 +208,7 @@ HANDLE CJabberProto::DBCreateContact( TCHAR* jid, TCHAR* nick, BOOL temporary, B
 
 	if ( hContact == NULL ) {
 		hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_ADD, 0, 0 );
-		JCallService( MS_PROTO_ADDTOCONTACT, ( WPARAM ) hContact, ( LPARAM )m_szProtoName );
+		JCallService( MS_PROTO_ADDTOCONTACT, ( WPARAM ) hContact, ( LPARAM )m_szModuleName );
 		JSetStringT( hContact, "jid", s );
 		if ( nick != NULL && *nick != '\0' )
 			JSetStringT( hContact, "Nick", nick );
@@ -240,7 +240,7 @@ void CJabberProto::InitCustomFolders( void )
 		char AvatarsFolder[MAX_PATH]; AvatarsFolder[0] = 0;
 		CallService( MS_DB_GETPROFILEPATH, ( WPARAM )MAX_PATH, ( LPARAM )AvatarsFolder );
 		strcat( AvatarsFolder, "\\Jabber" );
-		hJabberAvatarsFolder = FoldersRegisterCustomPath(m_szProtoName, "Avatars", AvatarsFolder);
+		hJabberAvatarsFolder = FoldersRegisterCustomPath(m_szModuleName, "Avatars", AvatarsFolder);
 }	}
 
 void CJabberProto::GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen )
@@ -292,11 +292,11 @@ void CJabberProto::GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen 
 	}
 	else {
 		DBVARIANT dbv1, dbv2;
-		BOOL res1 = DBGetContactSettingString( NULL, m_szProtoName, "LoginName", &dbv1 );
-		BOOL res2 = DBGetContactSettingString( NULL, m_szProtoName, "LoginServer", &dbv2 );
+		BOOL res1 = DBGetContactSettingString( NULL, m_szModuleName, "LoginName", &dbv1 );
+		BOOL res2 = DBGetContactSettingString( NULL, m_szModuleName, "LoginServer", &dbv2 );
 		mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%s@%s avatar.%s",
 			res1 ? "noname" : dbv1.pszVal,
-			res2 ? m_szProtoName : dbv2.pszVal,
+			res2 ? m_szModuleName : dbv2.pszVal,
 			szFileType );
 		if (!res1) JFreeVariant( &dbv1 );
 		if (!res2) JFreeVariant( &dbv2 );
@@ -315,7 +315,7 @@ void CJabberProto::ResolveTransportNicks( TCHAR* jid )
 
 	for ( ; hContact != NULL; hContact = ( HANDLE )JCallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 )) {
 		char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-		if ( lstrcmpA( szProto, m_szProtoName ))
+		if ( lstrcmpA( szProto, m_szModuleName ))
 			continue;
 
 		if ( !JGetByte( hContact, "IsTransported", 0 ))

@@ -492,10 +492,10 @@ static BOOL CALLBACK JabberConsoleDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam
 			SendDlgItemMessage(hwndDlg, IDC_CONSOLE, EM_SETEDITSTYLE, SES_EXTENDBACKCOLOR, SES_EXTENDBACKCOLOR);
 			SendDlgItemMessage(hwndDlg, IDC_CONSOLE, EM_EXLIMITTEXT, 0, 0x80000000);
 
-			ppro->m_filterInfo.msg = DBGetContactSettingByte(NULL, ppro->m_szProtoName, "consoleWnd_msg", TRUE);
-			ppro->m_filterInfo.presence = DBGetContactSettingByte(NULL, ppro->m_szProtoName, "consoleWnd_presence", TRUE);
-			ppro->m_filterInfo.iq = DBGetContactSettingByte(NULL, ppro->m_szProtoName, "consoleWnd_iq", TRUE);
-			ppro->m_filterInfo.type = (TFilterInfo::Type)DBGetContactSettingByte(NULL, ppro->m_szProtoName, "consoleWnd_ftype", TFilterInfo::T_OFF);
+			ppro->m_filterInfo.msg = DBGetContactSettingByte(NULL, ppro->m_szModuleName, "consoleWnd_msg", TRUE);
+			ppro->m_filterInfo.presence = DBGetContactSettingByte(NULL, ppro->m_szModuleName, "consoleWnd_presence", TRUE);
+			ppro->m_filterInfo.iq = DBGetContactSettingByte(NULL, ppro->m_szModuleName, "consoleWnd_iq", TRUE);
+			ppro->m_filterInfo.type = (TFilterInfo::Type)DBGetContactSettingByte(NULL, ppro->m_szModuleName, "consoleWnd_ftype", TFilterInfo::T_OFF);
 
 			DBVARIANT dbv;
 			*ppro->m_filterInfo.pattern = 0;
@@ -540,7 +540,7 @@ static BOOL CALLBACK JabberConsoleDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam
 			EnableWindow(GetDlgItem(hwndDlg, IDC_CB_FILTER), (ppro->m_filterInfo.type == TFilterInfo::T_OFF) ? FALSE : TRUE);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_BTN_FILTER_REFRESH), (ppro->m_filterInfo.type == TFilterInfo::T_OFF) ? FALSE : TRUE);
 
-			Utils_RestoreWindowPosition(hwndDlg, NULL, ppro->m_szProtoName, "consoleWnd_");
+			Utils_RestoreWindowPosition(hwndDlg, NULL, ppro->m_szModuleName, "consoleWnd_");
 			return TRUE;
 		}
 
@@ -739,13 +739,13 @@ static BOOL CALLBACK JabberConsoleDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam
 		}
 
 		case WM_CLOSE:
-			DBWriteContactSettingByte(NULL, ppro->m_szProtoName, "consoleWnd_msg", ppro->m_filterInfo.msg);
-			DBWriteContactSettingByte(NULL, ppro->m_szProtoName, "consoleWnd_presence", ppro->m_filterInfo.presence);
-			DBWriteContactSettingByte(NULL, ppro->m_szProtoName, "consoleWnd_iq", ppro->m_filterInfo.iq);
-			DBWriteContactSettingByte(NULL, ppro->m_szProtoName, "consoleWnd_ftype", ppro->m_filterInfo.type);
+			DBWriteContactSettingByte(NULL, ppro->m_szModuleName, "consoleWnd_msg", ppro->m_filterInfo.msg);
+			DBWriteContactSettingByte(NULL, ppro->m_szModuleName, "consoleWnd_presence", ppro->m_filterInfo.presence);
+			DBWriteContactSettingByte(NULL, ppro->m_szModuleName, "consoleWnd_iq", ppro->m_filterInfo.iq);
+			DBWriteContactSettingByte(NULL, ppro->m_szModuleName, "consoleWnd_ftype", ppro->m_filterInfo.type);
 			ppro->JSetStringT(NULL, "consoleWnd_fpattern", ppro->m_filterInfo.pattern);
 
-			Utils_SaveWindowPosition(hwndDlg, NULL, ppro->m_szProtoName, "consoleWnd_");
+			Utils_SaveWindowPosition(hwndDlg, NULL, ppro->m_szModuleName, "consoleWnd_");
 			DestroyWindow(hwndDlg);
 			return TRUE;
 

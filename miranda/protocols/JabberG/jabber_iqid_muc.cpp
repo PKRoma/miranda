@@ -294,7 +294,7 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 					SendDlgItemMessage(hwndDlg, buttons[i].idc, BUTTONSETASPUSHBTN, 0, 0);
 			}
 
-			Utils_RestoreWindowPosition(hwndDlg, NULL, dat->ppro->m_szProtoName, "jidListWnd_");
+			Utils_RestoreWindowPosition(hwndDlg, NULL, dat->ppro->m_szModuleName, "jidListWnd_");
 		}
 		return TRUE;
 	case WM_SIZE:
@@ -518,7 +518,7 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 	case WM_DESTROY:
 		// Clear GWL_USERDATA
 		if ( dat != NULL ) {
-			Utils_SaveWindowPosition(hwndDlg, NULL, dat->ppro->m_szProtoName, "jidListWnd_");
+			Utils_SaveWindowPosition(hwndDlg, NULL, dat->ppro->m_szModuleName, "jidListWnd_");
 			delete dat;
 		}
 		break;

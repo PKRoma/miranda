@@ -147,7 +147,7 @@ int CJabberProto::CListMW_ExtraIconsApply( WPARAM wParam, LPARAM lParam )
 	if (m_bJabberOnline && m_bPepSupported && ServiceExists(MS_CLIST_EXTRA_SET_ICON)) 
 	{
 		char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, wParam, 0 );
-		if ( szProto==NULL || strcmp( szProto, m_szProtoName ))
+		if ( szProto==NULL || strcmp( szProto, m_szModuleName ))
 			return 0; // only apply icons to our contacts, do not mess others
 
 		JabberUpdateContactExtraIcon((HANDLE)wParam);
@@ -423,19 +423,19 @@ int CJabberProto::CListMW_BuildStatusItems( WPARAM wParam, LPARAM lParam )
 
 	CLISTMENUITEM mi = { 0 };
 	int i;
-	char srvFce[MAX_PATH + 64], *svcName = srvFce+strlen( m_szProtoName );
+	char srvFce[MAX_PATH + 64], *svcName = srvFce+strlen( m_szModuleName );
 	char szItem[MAX_PATH + 64];
 	HANDLE hXStatusRoot;
 	HANDLE hRoot = ( HANDLE )szItem;
 
-	mir_snprintf( szItem, sizeof(szItem), LPGEN("%s Custom Status"), m_szProtoName );
+	mir_snprintf( szItem, sizeof(szItem), LPGEN("%s Custom Status"), m_szModuleName );
 	mi.cbSize = sizeof(mi);
 	mi.popupPosition= 500084000;
 	mi.position = 2000040000;
-	mi.pszContactOwner = m_szProtoName;
+	mi.pszContactOwner = m_szModuleName;
 
 	for( i = 0; i <= NUM_XMODES; i++ ) {
-		mir_snprintf( srvFce, sizeof(srvFce), "%s/menuXStatus%d", m_szProtoName, i );
+		mir_snprintf( srvFce, sizeof(srvFce), "%s/menuXStatus%d", m_szModuleName, i );
 
 		if ( !m_bXStatusMenuBuilt )
 			JCreateServiceParam( svcName, &CJabberProto::OnMenuSetXStatus, i );
@@ -481,7 +481,7 @@ void CJabberProto::InitXStatusIcons()
 
 	for ( int i = 1; i < SIZEOF(g_arrMoods); i++ ) {
 		char szSettingName[100];
-		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", m_szProtoName, g_arrMoods[i].szName );
+		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", m_szModuleName, g_arrMoods[i].szName );
 		sid.pszName = szSettingName;
 		sid.pszDescription = g_arrMoods[i].szName;
 		sid.iDefaultIndex = -( i+200 );

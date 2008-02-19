@@ -442,7 +442,7 @@ public:
 				while ( hContact != NULL )
 				{
 					char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-					if ( szProto != NULL && !strcmp( szProto, m_proto->m_szProtoName ))
+					if ( szProto != NULL && !strcmp( szProto, m_proto->m_szModuleName ))
 					{
 						DBVARIANT dbv;
 						if ( !m_proto->JGetStringT( hContact, "jid", &dbv ))
@@ -723,7 +723,7 @@ void CJabberDlgPrivacyLists::OnInitDialog()
 	CListFilter(GetDlgItem(m_hwnd, IDC_CLIST));
 	CListApplyList(GetDlgItem(m_hwnd, IDC_CLIST));
 
-	if ( DBGetContactSettingByte(NULL, m_proto->m_szProtoName, "plistsWnd_simpleMode", 1))
+	if ( DBGetContactSettingByte(NULL, m_proto->m_szModuleName, "plistsWnd_simpleMode", 1))
 	{
 		UIShowControls(m_hwnd, idSimpleControls, SW_SHOW);
 		UIShowControls(m_hwnd, idAdvancedControls, SW_HIDE);
@@ -744,7 +744,7 @@ void CJabberDlgPrivacyLists::OnInitDialog()
 	SendDlgItemMessage(m_hwnd, IDC_STATUSBAR, SB_SIMPLE, TRUE, 0);
 	sttStatusMessage( m_hwnd, TranslateT("Loading..."));
 
-	Utils_RestoreWindowPosition(m_hwnd, NULL, m_proto->m_szProtoName, "plistsWnd_sz");
+	Utils_RestoreWindowPosition(m_hwnd, NULL, m_proto->m_szModuleName, "plistsWnd_sz");
 }
 
 void CJabberDlgPrivacyLists::OnDestroy()
@@ -759,9 +759,9 @@ void CJabberDlgPrivacyLists::OnDestroy()
 	// Delete custom bold font
 	DeleteObject((HFONT)SendDlgItemMessage(m_hwnd, IDC_TXT_LISTS, WM_GETFONT, 0, 0));
 
-	DBWriteContactSettingByte(NULL, m_proto->m_szProtoName, "plistsWnd_simpleMode", IsDlgButtonChecked(m_hwnd, IDC_BTN_SIMPLE));
+	DBWriteContactSettingByte(NULL, m_proto->m_szModuleName, "plistsWnd_simpleMode", IsDlgButtonChecked(m_hwnd, IDC_BTN_SIMPLE));
 
-	Utils_SaveWindowPosition(m_hwnd, NULL, m_proto->m_szProtoName, "plistsWnd_sz");
+	Utils_SaveWindowPosition(m_hwnd, NULL, m_proto->m_szModuleName, "plistsWnd_sz");
 }
 
 void CJabberDlgPrivacyLists::ShowAdvancedList(CPrivacyList *pList)
@@ -1112,7 +1112,7 @@ void CJabberDlgPrivacyLists::CListFilter(HWND hwndList)
 			hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0))
 	{
 		char *proto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-		if (!proto || lstrcmpA(proto, m_proto->m_szProtoName))
+		if (!proto || lstrcmpA(proto, m_proto->m_szModuleName))
 			if (HANDLE hItem = m_clcClist.FindContact(hContact))
 				m_clcClist.DeleteItem(hItem);
 	}
@@ -2142,7 +2142,7 @@ int CJabberProto::OnBuildPrivacyMenu( WPARAM wParam, LPARAM lParam )
 
 	CLISTMENUITEM mi = { 0 };
 	int i=0;
-	char srvFce[MAX_PATH + 64], *svcName = srvFce+strlen( m_szProtoName );
+	char srvFce[MAX_PATH + 64], *svcName = srvFce+strlen( m_szModuleName );
 	char szItem[MAX_PATH + 64];
 	HANDLE hPrivacyRoot;
 	HANDLE hRoot = ( HANDLE )szItem;
@@ -2151,7 +2151,7 @@ int CJabberProto::OnBuildPrivacyMenu( WPARAM wParam, LPARAM lParam )
 
 	mi.cbSize = sizeof(mi);
 	mi.popupPosition= 500084000;
-	mi.pszContactOwner = m_szProtoName;
+	mi.pszContactOwner = m_szModuleName;
 	mi.pszService = srvFce;
 	mi.pszPopupName = (char *)hRoot;
 
@@ -2160,7 +2160,7 @@ int CJabberProto::OnBuildPrivacyMenu( WPARAM wParam, LPARAM lParam )
 
 	mi.icolibItem = GetIconHandle(IDI_PRIVACY_LISTS);
 	mi.ptszName = LPGENT("List Editor...");
-	mir_snprintf( srvFce, sizeof(srvFce), "%s/PrivacyLists", m_szProtoName );
+	mir_snprintf( srvFce, sizeof(srvFce), "%s/PrivacyLists", m_szModuleName );
 	CallService( MS_CLIST_ADDSTATUSMENUITEM, ( WPARAM )&hPrivacyRoot, ( LPARAM )&mi );
 
 	CLISTMENUITEM miTmp = {0};
@@ -2174,7 +2174,7 @@ int CJabberProto::OnBuildPrivacyMenu( WPARAM wParam, LPARAM lParam )
 
 	m_privacyListManager.Lock();
 
-	mir_snprintf( srvFce, sizeof(srvFce), "%s/menuPrivacy%d", m_szProtoName, i );
+	mir_snprintf( srvFce, sizeof(srvFce), "%s/menuPrivacy%d", m_szModuleName, i );
 	if ( i > serviceAllocated ) {
 		JCreateServiceParam( svcName, &CJabberProto::menuSetPrivacyList, i );
 		serviceAllocated = i;
@@ -2189,7 +2189,7 @@ int CJabberProto::OnBuildPrivacyMenu( WPARAM wParam, LPARAM lParam )
 
 	for ( CPrivacyList *pList = m_privacyListManager.GetFirstList(); pList; pList = pList->GetNext()) {
 		++i;
-		mir_snprintf( srvFce, sizeof(srvFce), "%s/menuPrivacy%d", m_szProtoName, i );
+		mir_snprintf( srvFce, sizeof(srvFce), "%s/menuPrivacy%d", m_szModuleName, i );
 
 		if ( i > serviceAllocated ) {
 			JCreateServiceParam( svcName, &CJabberProto::menuSetPrivacyList, i );

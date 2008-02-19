@@ -229,7 +229,7 @@ static void sttFillResourceInfo( CJabberProto* ppro, HWND hwndTree, HTREEITEM ht
 	JABBER_RESOURCE_STATUS *res = resource ? &item->resource[resource-1] : &item->itemResource;
 
 	if ( res->resourceName && *res->resourceName )
-		htiResource = sttFillInfoLine( hwndTree, htiRoot, LoadSkinnedProtoIcon( ppro->m_szProtoName, res->status ), TranslateT("Resource"), res->resourceName,
+		htiResource = sttFillInfoLine( hwndTree, htiRoot, LoadSkinnedProtoIcon( ppro->m_szModuleName, res->status ), TranslateT("Resource"), res->resourceName,
 			sttInfoLineId(resource, INFOLINE_NAME), true );
 
 	{	// StatusMsg
@@ -810,7 +810,7 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 
 int CJabberProto::OnUserInfoInit( WPARAM wParam, LPARAM lParam )
 {
-	if ( !JCallService( MS_PROTO_ISPROTOCOLLOADED, 0, ( LPARAM )m_szProtoName ))
+	if ( !JCallService( MS_PROTO_ISPROTOCOLLOADED, 0, ( LPARAM )m_szModuleName ))
 		return 0;
 
 	OPTIONSDIALOGPAGE odp = {0};
@@ -821,7 +821,7 @@ int CJabberProto::OnUserInfoInit( WPARAM wParam, LPARAM lParam )
 	HANDLE hContact = ( HANDLE )lParam;
 	if ( hContact ) {
 		char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-		if ( szProto != NULL && !strcmp( szProto, m_szProtoName )) {
+		if ( szProto != NULL && !strcmp( szProto, m_szModuleName )) {
 			odp.pfnDlgProc = JabberUserInfoDlgProc;
 			odp.position = -2000000000;
 			odp.pszTemplate = MAKEINTRESOURCEA( IDD_INFO_JABBER );

@@ -87,11 +87,11 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 	InitializeCriticalSection( &m_csLists );
 
 	m_tszUserName = mir_tstrdup( aUserName );
+	m_szModuleName = mir_strdup( aProtoName );
 	m_szProtoName = mir_strdup( aProtoName );
-	m_szModuleName = mir_strdup( m_szProtoName );
-	_strlwr( m_szModuleName );
-	m_szModuleName[0] = toupper( m_szModuleName[0] );
-	Log( "Setting protocol/module name to '%s/%s'", m_szProtoName, m_szModuleName );
+	_strlwr( m_szProtoName );
+	m_szProtoName[0] = toupper( m_szProtoName[0] );
+	Log( "Setting protocol/module name to '%s/%s'", m_szModuleName, m_szModuleName );
 
 	// Protocol services and events...
 	m_hEventNudge = JCreateHookableEvent( JE_NUDGE );
@@ -152,7 +152,7 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 	InitCustomFolders();
 
 	char text[ MAX_PATH ];
-	mir_snprintf( text, sizeof( text ), "%s/Status", m_szProtoName );
+	mir_snprintf( text, sizeof( text ), "%s/Status", m_szModuleName );
 	JCallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )text );
 }
 
@@ -189,7 +189,7 @@ CJabberProto::~CJabberProto()
 
 	mir_free( m_szStreamId );
 	mir_free( m_szModuleName );
-	mir_free( m_szProtoName );
+	mir_free( m_szModuleName );
 	mir_free( m_tszUserName );
 
 	if ( m_sslCtx && pfn_SSL_CTX_free )
@@ -219,15 +219,15 @@ int CJabberProto::OnModulesLoadedEx( WPARAM wParam, LPARAM lParam )
 		gcr.iMaxText = 0;
 		gcr.nColors = 16;
 		gcr.pColors = &crCols[0];
-		gcr.pszModuleDispName = m_szProtoName;
-		gcr.pszModule = m_szProtoName;
+		gcr.pszModuleDispName = m_szModuleName;
+		gcr.pszModule = m_szModuleName;
 		CallServiceSync( MS_GC_REGISTER, NULL, ( LPARAM )&gcr );
 
 		JHookEvent( ME_GC_EVENT, &CJabberProto::JabberGcEventHook );
 		JHookEvent( ME_GC_BUILDMENU, &CJabberProto::JabberGcMenuHook );
 
 		char szEvent[ 200 ];
-		mir_snprintf( szEvent, sizeof szEvent, "%s\\ChatInit", m_szProtoName );
+		mir_snprintf( szEvent, sizeof szEvent, "%s\\ChatInit", m_szModuleName );
 		m_hInitChat = CreateHookableEvent( szEvent );
 		JHookEvent( szEvent, &CJabberProto::JabberGcInit );
 	}
@@ -235,7 +235,7 @@ int CJabberProto::OnModulesLoadedEx( WPARAM wParam, LPARAM lParam )
 	if ( ServiceExists( MS_MSG_ADDICON )) {
 		StatusIconData sid = {0};
 		sid.cbSize = sizeof(sid);
-		sid.szModule = m_szProtoName;
+		sid.szModule = m_szModuleName;
 		sid.hIcon = LoadIconEx("main");
 		sid.hIconDisabled = LoadIconEx("main");
 		sid.flags = MBF_HIDDEN;
@@ -247,7 +247,7 @@ int CJabberProto::OnModulesLoadedEx( WPARAM wParam, LPARAM lParam )
 		HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 		while ( hContact != NULL ) {
 			char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-			if ( szProto != NULL && !strcmp( szProto, m_szProtoName ))
+			if ( szProto != NULL && !strcmp( szProto, m_szModuleName ))
 				MenuHideSrmmIcon(hContact);
 			hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 );
 	}	}
@@ -255,14 +255,14 @@ int CJabberProto::OnModulesLoadedEx( WPARAM wParam, LPARAM lParam )
 	DBEVENTTYPEDESCR dbEventType = {0};
 	dbEventType.cbSize = sizeof(DBEVENTTYPEDESCR);
 	dbEventType.eventType = JABBER_DB_EVENT_TYPE_CHATSTATES;
-	dbEventType.module = m_szProtoName;
+	dbEventType.module = m_szModuleName;
 	dbEventType.descr = "Chat state notifications";
 	JCallService( MS_DB_EVENT_REGISTERTYPE, 0, (LPARAM)&dbEventType );
 
 	// file associations manager plugin support
 	if ( ServiceExists( MS_ASSOCMGR_ADDNEWURLTYPE )) {
 		char szService[ MAXMODULELABELLENGTH ];
-		mir_snprintf( szService, SIZEOF( szService ), "%s%s", m_szProtoName, JS_PARSE_XMPP_URI );
+		mir_snprintf( szService, SIZEOF( szService ), "%s%s", m_szModuleName, JS_PARSE_XMPP_URI );
 		AssocMgr_AddNewUrlTypeT( "xmpp:", TranslateT("Jabber Link Protocol"), hInst, IDI_JABBER, szService, 0 );
 	}
 
@@ -272,7 +272,7 @@ int CJabberProto::OnModulesLoadedEx( WPARAM wParam, LPARAM lParam )
 	HANDLE hContact = ( HANDLE )CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL ) {
 		char* szProto = ( char* )CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-		if ( szProto != NULL && !strcmp( szProto, m_szProtoName )) {
+		if ( szProto != NULL && !strcmp( szProto, m_szModuleName )) {
 			SetContactOfflineStatus( hContact );
 
 			if ( JGetByte( hContact, "IsTransport", 0 )) {
@@ -306,7 +306,7 @@ HANDLE CJabberProto::AddToListByJID( const TCHAR* newJid, DWORD flags )
 		jid = mir_tstrdup( newJid );
 		Log( "Add new jid to contact jid = " TCHAR_STR_PARAM, jid );
 		hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_ADD, 0, 0 );
-		JCallService( MS_PROTO_ADDTOCONTACT, ( WPARAM ) hContact, ( LPARAM )m_szProtoName );
+		JCallService( MS_PROTO_ADDTOCONTACT, ( WPARAM ) hContact, ( LPARAM )m_szModuleName );
 		JSetStringT( hContact, "jid", jid );
 		if (( nick=JabberNickFromJID( newJid )) == NULL )
 			nick = mir_tstrdup( newJid );
@@ -362,7 +362,7 @@ HANDLE __cdecl CJabberProto::AddToListByEvent( int flags, int iContact, HANDLE h
 		return NULL;
 	if ( JCallService( MS_DB_EVENT_GET, ( WPARAM )hDbEvent, ( LPARAM )&dbei ))
 		return NULL;
-	if ( strcmp( dbei.szModule, m_szProtoName ))
+	if ( strcmp( dbei.szModule, m_szModuleName ))
 		return NULL;
 
 /*
@@ -407,7 +407,7 @@ int CJabberProto::Authorize( HANDLE hContact )
 		return 1;
 	if ( dbei.eventType != EVENTTYPE_AUTHREQUEST )
 		return 1;
-	if ( strcmp( dbei.szModule, m_szProtoName ))
+	if ( strcmp( dbei.szModule, m_szModuleName ))
 		return 1;
 
 	nick = ( char* )( dbei.pBlob + sizeof( DWORD )+ sizeof( HANDLE ));
@@ -465,7 +465,7 @@ int CJabberProto::AuthDeny( HANDLE hContact, const char* szReason )
 		mir_free( dbei.pBlob );
 		return 1;
 	}
-	if ( strcmp( dbei.szModule, m_szProtoName )) {
+	if ( strcmp( dbei.szModule, m_szModuleName )) {
 		mir_free( dbei.pBlob );
 		return 1;
 	}

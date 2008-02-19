@@ -152,7 +152,7 @@ int CJabberProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
 				mi.position = 0;
 				mi.icolibItem = GetIconHandle( IDI_REQUEST );
 				mi.pszService = text;
-				mi.pszContactOwner = m_szProtoName;
+				mi.pszContactOwner = m_szModuleName;
 
 				TCHAR szTmp[512];
 				for (int i = 0; i < nMenuResourceItemsNew; ++i) {
@@ -428,7 +428,7 @@ void CJabberProto::MenuInit()
 	mi.cbSize = sizeof( CLISTMENUITEM );
 
 	char text[ 200 ];
-	strcpy( text, m_szProtoName );
+	strcpy( text, m_szModuleName );
 	char* tDest = text + strlen( text );
 
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -442,7 +442,7 @@ void CJabberProto::MenuInit()
 	mi.position = -2000001000;
 	mi.icolibItem = GetIconHandle( IDI_REQUEST );
 	mi.pszService = text;
-	mi.pszContactOwner = m_szProtoName;
+	mi.pszContactOwner = m_szModuleName;
 	m_hMenuRequestAuth = ( HANDLE ) JCallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 
 	// "Grant authorization"
@@ -685,7 +685,7 @@ void CJabberProto::MenuInit()
 int CJabberProto::OnModernToolbarInit(WPARAM, LPARAM)
 {
 	char text[100], tmpbuf[256];
-	strcpy( text, m_szProtoName );
+	strcpy( text, m_szModuleName );
 	char* tDest = text + strlen( text );
 
 	TBButton button = {0};
@@ -783,7 +783,7 @@ void CJabberProto::MenuHideSrmmIcon(HANDLE hContact)
 {
 	StatusIconData sid = {0};
 	sid.cbSize = sizeof(sid);
-	sid.szModule = m_szProtoName;
+	sid.szModule = m_szModuleName;
 	sid.flags = MBF_HIDDEN;
 	CallService(MS_MSG_MODIFYICON, (WPARAM)hContact, (LPARAM)&sid);
 }
@@ -799,7 +799,7 @@ void CJabberProto::MenuUpdateSrmmIcon(JABBER_LIST_ITEM *item)
 
 	StatusIconData sid = {0};
 	sid.cbSize = sizeof(sid);
-	sid.szModule = m_szProtoName;
+	sid.szModule = m_szModuleName;
 	sid.flags = item->resourceCount ? 0 : MBF_HIDDEN;
 	CallService(MS_MSG_MODIFYICON, (WPARAM)hContact, (LPARAM)&sid);
 }
@@ -855,7 +855,7 @@ int CJabberProto::OnProcessSrmmEvent( WPARAM wParam, LPARAM lParam )
 int CJabberProto::OnProcessSrmmIconClick( WPARAM wParam, LPARAM lParam )
 {
 	StatusIconClickData *sicd = (StatusIconClickData *)lParam;
-	if (lstrcmpA(sicd->szModule, m_szProtoName))
+	if (lstrcmpA(sicd->szModule, m_szModuleName))
 		return 0;
 
 	HANDLE hContact = (HANDLE)wParam;

@@ -99,7 +99,7 @@ static VOID CALLBACK JabberPasswordCreateDialogApcProc( DWORD param )
 
 static VOID CALLBACK JabberOfflineChatWindows( CJabberProto* ppro )
 {
-	GCDEST gcd = { ppro->m_szProtoName, NULL, GC_EVENT_CONTROL };
+	GCDEST gcd = { ppro->m_szModuleName, NULL, GC_EVENT_CONTROL };
 	GCEVENT gce = { 0 };
 	gce.cbSize = sizeof(GCEVENT);
 	gce.pDest = &gcd;
@@ -257,7 +257,7 @@ LBL_FatalError:
          goto LBL_Exit;
 		}
 
-		if ( !DBGetContactSettingString( NULL, m_szProtoName, "LoginServer", &dbv )) {
+		if ( !DBGetContactSettingString( NULL, m_szModuleName, "LoginServer", &dbv )) {
 			strncpy( info->server, dbv.pszVal, SIZEOF( info->server )-1 );
 			JFreeVariant( &dbv );
 		}
@@ -305,7 +305,7 @@ LBL_FatalError:
 			info->password[ SIZEOF( info->password )-1] = '\0';
 		}
 		else {
-			if ( DBGetContactSettingString( NULL, m_szProtoName, "Password", &dbv )) {
+			if ( DBGetContactSettingString( NULL, m_szModuleName, "Password", &dbv )) {
 				JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_BADUSERID );
 				Log( "Thread ended, password is not configured" );
 				goto LBL_FatalError;
@@ -317,7 +317,7 @@ LBL_FatalError:
 		}
 
 		if ( JGetByte( "ManualConnect", FALSE ) == TRUE ) {
-			if ( !DBGetContactSettingString( NULL, m_szProtoName, "ManualHost", &dbv )) {
+			if ( !DBGetContactSettingString( NULL, m_szModuleName, "ManualHost", &dbv )) {
 				strncpy( info->manualHost, dbv.pszVal, SIZEOF( info->manualHost ));
 				info->manualHost[sizeof( info->manualHost )-1] = '\0';
 				JFreeVariant( &dbv );
@@ -544,7 +544,7 @@ LBL_FatalError:
 			// Set all contacts to offline
 			HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 			while ( hContact != NULL ) {
-				if ( !lstrcmpA(( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 ), m_szProtoName ))
+				if ( !lstrcmpA(( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 ), m_szModuleName ))
 				{
 					SetContactOfflineStatus( hContact );
 					MenuHideSrmmIcon( hContact );
@@ -811,7 +811,7 @@ void CJabberProto::OnProcessSuccess( XmlNode *node, void *userdata )
 		DBVARIANT dbv;
 
 		Log( "Success: Logged-in." );
-		if ( DBGetContactSettingString( NULL, m_szProtoName, "Nick", &dbv ))
+		if ( DBGetContactSettingString( NULL, m_szModuleName, "Nick", &dbv ))
 			JSetStringT( NULL, "Nick", info->username );
 		else
 			JFreeVariant( &dbv );
@@ -1263,7 +1263,7 @@ void CJabberProto::OnProcessMessage( XmlNode *node, void *userdata )
 		dbei.eventType = JABBER_DB_EVENT_TYPE_CHATSTATES;
 		dbei.flags = 0;
 		dbei.timestamp = time(NULL);
-		dbei.szModule = m_szProtoName;
+		dbei.szModule = m_szModuleName;
 		CallService(MS_DB_EVENT_ADD, (WPARAM)hContact, (LPARAM)&dbei);
 	}
 

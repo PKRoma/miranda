@@ -86,7 +86,7 @@ HANDLE CJabberProto::ChatRoomHContactFromJID( const TCHAR* jid )
 	HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL ) {
 		char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-		if ( szProto != NULL && !strcmp( m_szProtoName, szProto )) {
+		if ( szProto != NULL && !strcmp( m_szModuleName, szProto )) {
 			DBVARIANT dbv;
 			int result = JGetStringT( hContact, "ChatRoomID", &dbv );
 			if ( result )
@@ -121,7 +121,7 @@ HANDLE CJabberProto::HContactFromJID( const TCHAR* jid , BOOL bStripResource )
 	HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL ) {
 		char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-		if ( szProto != NULL && !strcmp( m_szProtoName, szProto )) {
+		if ( szProto != NULL && !strcmp( m_szModuleName, szProto )) {
 			DBVARIANT dbv;
 			int result = JGetStringT( hContact, "jid", &dbv );
 			if ( result )
@@ -1379,7 +1379,7 @@ static BOOL CALLBACK sttEnterStringDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 		SetDlgItemText( hwndDlg, params->idcControl, params->result );
 
 		if (params->windowName)
-			Utils_RestoreWindowPosition(hwndDlg, NULL, params->ppro->m_szProtoName, params->windowName);
+			Utils_RestoreWindowPosition(hwndDlg, NULL, params->ppro->m_szModuleName, params->windowName);
 
 		SetTimer(hwndDlg, 1000, 50, NULL);
 		return TRUE;
@@ -1437,13 +1437,13 @@ static BOOL CALLBACK sttEnterStringDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 			if ((params->type == JES_COMBO) && params->windowName && params->recentCount)
 				params->ppro->ComboAddRecentString(hwndDlg, IDC_TXT_COMBO, params->windowName, params->result, params->recentCount);
 			if (params->windowName)
-				Utils_SaveWindowPosition(hwndDlg, NULL, params->ppro->m_szProtoName, params->windowName);
+				Utils_SaveWindowPosition(hwndDlg, NULL, params->ppro->m_szModuleName, params->windowName);
 			EndDialog( hwndDlg, 1 );
 			break;
 
 		case IDCANCEL:
 			if (params->windowName)
-				Utils_SaveWindowPosition(hwndDlg, NULL, params->ppro->m_szProtoName, params->windowName);
+				Utils_SaveWindowPosition(hwndDlg, NULL, params->ppro->m_szModuleName, params->windowName);
 			EndDialog( hwndDlg, 0 );
 			break;
 	}	}

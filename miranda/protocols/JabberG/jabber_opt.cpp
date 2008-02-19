@@ -418,7 +418,7 @@ protected:
 
 		SendDlgItemMessage(m_hwnd, IDC_PRIORITY_SPIN, UDM_SETRANGE, 0, (LPARAM)MAKELONG(127, -128));
 
-		if (!DBGetContactSettingString(NULL, m_proto->m_szProtoName, "Password", &dbv))
+		if (!DBGetContactSettingString(NULL, m_proto->m_szModuleName, "Password", &dbv))
 		{
 			JCallService(MS_DB_CRYPT_DECODESTRING, lstrlenA(dbv.pszVal) + 1, (LPARAM)dbv.pszVal);
 			TCHAR *tmp = mir_a2t(dbv.pszVal);
@@ -440,7 +440,7 @@ protected:
 		if (GetComputerName(szCompName, &dwCompNameLength))
 			m_cbResource.AddString(szCompName);
 
-		if (!DBGetContactSettingTString(NULL, m_proto->m_szProtoName, "Resource", &dbv))
+		if (!DBGetContactSettingTString(NULL, m_proto->m_szModuleName, "Resource", &dbv))
 		{
 			m_cbResource.AddString(dbv.ptszVal);
 			m_cbResource.SetText(dbv.ptszVal);
@@ -797,7 +797,7 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 		CheckDlgButton( hwndDlg, IDC_DIRECT_MANUAL, bManualDirect );
 
 		DBVARIANT dbv;
-		if ( !DBGetContactSettingString( NULL, ppro->m_szProtoName, "BsDirectAddr", &dbv )) {
+		if ( !DBGetContactSettingString( NULL, ppro->m_szModuleName, "BsDirectAddr", &dbv )) {
 			SetDlgItemTextA( hwndDlg, IDC_DIRECT_ADDR, dbv.pszVal );
 			JFreeVariant( &dbv );
 		}
@@ -808,7 +808,7 @@ static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 
 		BOOL bManualProxy = ppro->JGetByte( "BsProxyManual", FALSE );
 		CheckDlgButton( hwndDlg, IDC_PROXY_MANUAL, bManualProxy );
-		if ( !DBGetContactSettingString( NULL, ppro->m_szProtoName, "BsProxyServer", &dbv )) {
+		if ( !DBGetContactSettingString( NULL, ppro->m_szModuleName, "BsProxyServer", &dbv )) {
 			SetDlgItemTextA( hwndDlg, IDC_PROXY_ADDR, dbv.pszVal );
 			JFreeVariant( &dbv );
 		}
@@ -983,7 +983,7 @@ static BOOL CALLBACK JabberGcOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), ppro->JGetByte("GcLogRoles",			FALSE)?1:0,	"GcLogRoles");
 
 		DBVARIANT dbv;
-		if (!DBGetContactSettingTString( NULL, ppro->m_szProtoName, "GcMsgQuit", &dbv))
+		if (!DBGetContactSettingTString( NULL, ppro->m_szModuleName, "GcMsgQuit", &dbv))
 		{
 			SetDlgItemText(hwndDlg, IDC_TXT_QUIT, dbv.ptszVal);
 			JFreeVariant( &dbv );
@@ -992,7 +992,7 @@ static BOOL CALLBACK JabberGcOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 			SetDlgItemText(hwndDlg, IDC_TXT_QUIT, TranslateTS(JABBER_GC_MSG_QUIT));
 		}
 
-		if (!DBGetContactSettingTString( NULL, ppro->m_szProtoName, "GcMsgSlap", &dbv))
+		if (!DBGetContactSettingTString( NULL, ppro->m_szModuleName, "GcMsgSlap", &dbv))
 		{
 			SetDlgItemText(hwndDlg, IDC_TXT_SLAP, dbv.ptszVal);
 			JFreeVariant( &dbv );
@@ -1159,7 +1159,7 @@ void CJabberProto::_RosterHandleGetRequest( XmlNode* node, void* userdata )
 			while ( hContact != NULL )
 			{
 				char* str = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-				if ( str != NULL && !strcmp( str, m_szProtoName ))
+				if ( str != NULL && !strcmp( str, m_szModuleName ))
 				{
 					DBVARIANT dbv;
 					if ( !JGetStringT( hContact, "jid", &dbv ))
@@ -1657,7 +1657,7 @@ static BOOL CALLBACK JabberRosterOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 		}
 	case WM_DESTROY:
 		{
-			Utils_SaveWindowPosition(hwndDlg, NULL, ppro->m_szProtoName, "rosterCtrlWnd_");
+			Utils_SaveWindowPosition(hwndDlg, NULL, ppro->m_szModuleName, "rosterCtrlWnd_");
 			DeleteObject((HFONT)SendDlgItemMessage(hwndDlg, IDC_TITLE, WM_GETFONT, 0, 0));
 			ppro->rrud.hwndDlg = NULL;
 			break;
@@ -1676,7 +1676,7 @@ static BOOL CALLBACK JabberRosterOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			HFONT hfnt = CreateFontIndirect(&lf);
 			SendDlgItemMessage(hwndDlg, IDC_TITLE, WM_SETFONT, (WPARAM)hfnt, TRUE);
 
-			Utils_RestoreWindowPosition(hwndDlg, NULL, ppro->m_szProtoName, "rosterCtrlWnd_");
+			Utils_RestoreWindowPosition(hwndDlg, NULL, ppro->m_szModuleName, "rosterCtrlWnd_");
 
 			ListView_SetExtendedListViewStyle(GetDlgItem(hwndDlg,IDC_ROSTER),  LVS_EX_CHECKBOXES | LVS_EX_BORDERSELECT /*| LVS_EX_FULLROWSELECT*/ | LVS_EX_GRIDLINES /*| LVS_EX_HEADERDRAGDROP*/ );
 			_RosterOldListProc=(WNDPROC) GetWindowLong(GetDlgItem(hwndDlg,IDC_ROSTER), GWL_WNDPROC);
@@ -1816,12 +1816,12 @@ int CJabberProto::OnModernOptInit( WPARAM wParam, LPARAM lParam )
 	obj.hInstance = hInst;
 	obj.iSection = MODERNOPT_PAGE_ACCOUNTS;
 	obj.iType = MODERNOPT_TYPE_SUBSECTIONPAGE;
-	obj.lptzSubsection = mir_a2t(m_szProtoName);
+	obj.lptzSubsection = mir_a2t(m_szModuleName);
 	obj.lpzTemplate = MAKEINTRESOURCEA(IDD_MODERNOPT);
 	obj.iBoldControls = iBoldControls;
 	obj.pfnDlgProc = JabberWizardDlgProc;
 	obj.lpszClassicGroup = "Network";
-	obj.lpszClassicPage = m_szProtoName;
+	obj.lpszClassicPage = m_szModuleName;
 	obj.lpszHelpUrl = "http://forums.miranda-im.org/showthread.php?t=14294";
 	CallService(MS_MODERNOPT_ADDOBJECT, wParam, (LPARAM)&obj);
 	mir_free(obj.lptzSubsection); */

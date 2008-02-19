@@ -469,7 +469,7 @@ static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 					gcw.cbSize = sizeof(GCSESSION);
 					gcw.iType = GCW_CHATROOM;
 					gcw.ptszID = jid;
-					gcw.pszModule = ppro->m_szProtoName;
+					gcw.pszModule = ppro->m_szModuleName;
 					gcw.dwFlags = GC_TCHAR;
 					gcw.ptszName = NEWTSTR_ALLOCA(gcw.ptszID);
 					TCHAR* p = ( TCHAR* )_tcschr( gcw.ptszName, '@' );
@@ -1127,7 +1127,7 @@ void CJabberProto::RenameParticipantNick( JABBER_LIST_ITEM* item, TCHAR* oldNick
 					JSetStringT( hContact, "MyNick", newNick );
 			}
 
-			GCDEST gcd = { m_szProtoName, NULL, GC_EVENT_CHUID };
+			GCDEST gcd = { m_szModuleName, NULL, GC_EVENT_CHUID };
 			gcd.ptszID = item->jid;
 
 			GCEVENT gce = {0};
@@ -1369,7 +1369,7 @@ void CJabberProto::GroupchatProcessMessage( XmlNode *node, void *userdata )
 	if ( !lstrcmp( type, _T("error")))
 		return;
 
-	GCDEST gcd = { m_szProtoName, NULL, 0 };
+	GCDEST gcd = { m_szModuleName, NULL, 0 };
 	gcd.ptszID = item->jid;
 
 	TCHAR* msgText = NULL;

@@ -475,7 +475,7 @@ void CJabberProto::OnIqResultGetRoster( XmlNode* iqNode, void* userdata, CJabber
 			GCSESSION gcw = {0};
 			gcw.cbSize = sizeof(GCSESSION);
 			gcw.iType = GCW_CHATROOM;
-			gcw.pszModule = m_szProtoName;
+			gcw.pszModule = m_szModuleName;
 			gcw.dwFlags = GC_TCHAR;
 			gcw.ptszID = jid;
 			gcw.ptszName = NEWTSTR_ALLOCA( jid );
@@ -518,7 +518,7 @@ void CJabberProto::OnIqResultGetRoster( XmlNode* iqNode, void* userdata, CJabber
 		HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 		while ( hContact != NULL ) {
 			char* str = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-			if ( str != NULL && !strcmp( str, m_szProtoName )) {
+			if ( str != NULL && !strcmp( str, m_szModuleName )) {
 				DBVARIANT dbv;
 				if ( !JGetStringT( hContact, "jid", &dbv )) {
 					if ( !ListExist( LIST_ROSTER, dbv.ptszVal )) {
@@ -685,7 +685,7 @@ LBL_NoTypeSpecified:
 	if ( hContact ) {
 		if ( GetTempPathA( sizeof( szTempPath ), szTempPath ) <= 0 )
 			lstrcpyA( szTempPath, ".\\" );
-		if ( !GetTempFileNameA( szTempPath, m_szProtoName, GetTickCount(), szAvatarFileName )) {
+		if ( !GetTempFileNameA( szTempPath, m_szModuleName, GetTickCount(), szAvatarFileName )) {
 LBL_Ret:
 			mir_free( buffer );
 			return;
@@ -1105,7 +1105,7 @@ void CJabberProto::OnIqResultGetVcard( XmlNode *iqNode, void *userdata )
 				else {
 					char text[ 100 ];
 					sprintf( text, "e-mail%d", nEmail-1 );
-					if ( DBGetContactSettingString( hContact, m_szProtoName, text, &dbv )) break;
+					if ( DBGetContactSettingString( hContact, m_szModuleName, text, &dbv )) break;
 					JFreeVariant( &dbv );
 					JDeleteSetting( hContact, text );
 				}
@@ -1116,7 +1116,7 @@ void CJabberProto::OnIqResultGetVcard( XmlNode *iqNode, void *userdata )
 			while ( true ) {
 				char text[ 100 ];
 				sprintf( text, "e-mail%d", nEmail );
-				if ( DBGetContactSettingString( NULL, m_szProtoName, text, &dbv )) break;
+				if ( DBGetContactSettingString( NULL, m_szModuleName, text, &dbv )) break;
 				JFreeVariant( &dbv );
 				JDeleteSetting( NULL, text );
 				sprintf( text, "e-mailFlag%d", nEmail );
@@ -1148,7 +1148,7 @@ void CJabberProto::OnIqResultGetVcard( XmlNode *iqNode, void *userdata )
 			while ( true ) {
 				char text[ 100 ];
 				sprintf( text, "Phone%d", nPhone );
-				if ( DBGetContactSettingString( NULL, m_szProtoName, text, &dbv )) break;
+				if ( DBGetContactSettingString( NULL, m_szModuleName, text, &dbv )) break;
 				JFreeVariant( &dbv );
 				JDeleteSetting( NULL, text );
 				sprintf( text, "PhoneFlag%d", nPhone );
