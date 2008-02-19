@@ -471,7 +471,7 @@ void CJabberProto::InitXStatusIcons()
 		strcpy( p+1, "..\\Icons\\jabber_xstatus.dll" );
 
 	char szSection[ 100 ];
-	mir_snprintf( szSection, sizeof( szSection ), "%s/Custom Status", JTranslate( m_szProtoName ));
+	mir_snprintf( szSection, sizeof( szSection ), "Status Icons/%s/Moods", m_szModuleName);
 
 	SKINICONDESC sid = {0};
 	sid.cbSize = sizeof(SKINICONDESC);
@@ -483,7 +483,7 @@ void CJabberProto::InitXStatusIcons()
 		char szSettingName[100];
 		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", m_szProtoName, g_arrMoods[i].szName );
 		sid.pszName = szSettingName;
-		sid.pszDescription = Translate( g_arrMoods[i].szName );
+		sid.pszDescription = g_arrMoods[i].szName;
 		sid.iDefaultIndex = -( i+200 );
 		m_xstatusIcons[ i ].hIcon = ( HANDLE )CallService( MS_SKIN2_ADDICON, 0, ( LPARAM )&sid );
 	}

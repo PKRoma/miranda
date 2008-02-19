@@ -320,42 +320,54 @@ class CJabberDlgPrivacyAddList: public CJabberDlgBase
 public:
 	TCHAR szLine[512];
 
-	CJabberDlgPrivacyAddList(CJabberProto *proto, HWND hwndParent): CJabberDlgBase(proto, IDD_PRIVACY_ADD_LIST, hwndParent)
+	CJabberDlgPrivacyAddList(CJabberProto *proto, HWND hwndParent):
+		CJabberDlgBase(proto, IDD_PRIVACY_ADD_LIST, hwndParent),
+		m_txtName(this, IDC_EDIT_NAME),
+		m_btnOk(this, IDOK, &CJabberDlgPrivacyAddList::btnOk_OnClick),
+		m_btnCancel(this, IDCANCEL, &CJabberDlgPrivacyAddList::btnCancel_OnClick)
 	{
-		SetControlHandler(IDOK,		&CJabberDlgPrivacyAddList::OnCommand_Ok);
-		SetControlHandler(IDCANCEL,	&CJabberDlgPrivacyAddList::OnCommand_Cancel);
 	}
 
-	BOOL OnCommand_Ok(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+	void __cdecl btnOk_OnClick(CCtrlButton *btn)
 	{
 		GetDlgItemText(m_hwnd, IDC_EDIT_NAME, szLine, SIZEOF(szLine));
 		EndDialog(m_hwnd, 1);
-		return TRUE;
 	}
-	BOOL OnCommand_Cancel(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+	void __cdecl btnCancel_OnClick(CCtrlButton *btn)
 	{
 		*szLine = 0;
 		EndDialog(m_hwnd, 0);
-		return TRUE;
 	}
+
+private:
+	CCtrlEdit	m_txtName;
+	CCtrlButton	m_btnOk;
+	CCtrlButton	m_btnCancel;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Privacy rule editor
 class CJabberDlgPrivacyRule: public CJabberDlgBase
 {
+	CCtrlButton	m_btnOk;
+	CCtrlButton	m_btnCancel;
+	CCtrlCombo	m_cbType;
+
 public:
 	CPrivacyListRule *m_pRule;
 
-	CJabberDlgPrivacyRule(CJabberProto *proto, HWND hwndParent, CPrivacyListRule *pRule): CJabberDlgBase(proto, IDD_PRIVACY_RULE, hwndParent)
+	CJabberDlgPrivacyRule(CJabberProto *proto, HWND hwndParent, CPrivacyListRule *pRule):
+		CJabberDlgBase(proto, IDD_PRIVACY_RULE, hwndParent),
+		m_btnOk(this, IDOK, &CJabberDlgPrivacyRule::btnOk_OnClick),
+		m_btnCancel(this, IDCANCEL, &CJabberDlgPrivacyRule::btnCancel_OnClick),
+		m_cbType(this, IDC_COMBO_TYPE)
+
 	{
 		m_pRule = pRule;
-		SetControlHandler(IDOK,				&CJabberDlgPrivacyRule::OnCommand_Ok);
-		SetControlHandler(IDCANCEL,			&CJabberDlgPrivacyRule::OnCommand_Cancel);
-		SetControlHandler(IDC_COMBO_TYPE,	&CJabberDlgPrivacyRule::OnCommand_ComboType);
+		m_cbType.OnChange = Callback(this, &CJabberDlgPrivacyRule::cbType_OnChange);
 	}
 
-	virtual bool OnInitDialog()
+	virtual void OnInitDialog()
 	{
 		m_proto->m_hwndPrivacyRule = m_hwnd;
 
@@ -403,18 +415,15 @@ public:
 
 		if ( m_pRule->GetValue() && ( m_pRule->GetType() == Jid || m_pRule->GetType() == Group ))
 			SetDlgItemText( m_hwnd, IDC_EDIT_VALUE, m_pRule->GetValue() );
-
-		return false;
 	}
 
-	BOOL OnCommand_ComboType(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+	void __cdecl cbType_OnChange(CCtrlData *cb)
 	{
-		if (idCode != CBN_SELCHANGE) return FALSE;
-		if ( !m_pRule ) return TRUE;
+		if ( !m_pRule ) return;
 
 		int nCurSel = SendDlgItemMessage( m_hwnd, IDC_COMBO_TYPE, CB_GETCURSEL, 0, 0 );
 		if ( nCurSel == CB_ERR )
-			return TRUE;
+			return;
 
 		int nItemData = SendDlgItemMessage( m_hwnd, IDC_COMBO_TYPE, CB_GETITEMDATA, nCurSel, 0 );
 		switch (nItemData)
@@ -516,10 +525,10 @@ public:
 			}
 		}
 
-		return TRUE;
+		return;
 	}
 
-	BOOL OnCommand_Ok(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+	void __cdecl btnOk_OnClick(CCtrlButton *)
 	{
 		int nItemData = -1;
 		int nCurSel = SendDlgItemMessage( m_hwnd, IDC_COMBO_TYPE, CB_GETCURSEL, 0, 0 );
@@ -576,19 +585,16 @@ public:
 		m_pRule->SetPackets( dwPackets );
 
 		EndDialog( m_hwnd, 1 );
-		return TRUE;
 	}
 
-	BOOL OnCommand_Cancel(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+	void __cdecl btnCancel_OnClick(CCtrlButton *)
 	{
 		EndDialog(m_hwnd, 0);
-		return TRUE;
 	}
 
-	bool OnDestroy()
+	void OnDestroy()
 	{
 		m_proto->m_hwndPrivacyRule = NULL;
-		return false;
 	}
 };
 
@@ -611,29 +617,37 @@ int CJabberDlgPrivacyLists::idAdvancedControls[] =
 	0
 };
 
-CJabberDlgPrivacyLists::CJabberDlgPrivacyLists(CJabberProto *proto): CJabberDlgBase(proto, IDD_PRIVACY_LISTS, NULL)
+CJabberDlgPrivacyLists::CJabberDlgPrivacyLists(CJabberProto *proto):
+	CJabberDlgBase(proto, IDD_PRIVACY_LISTS, NULL),
+	m_btnSimple(this,     IDC_BTN_SIMPLE,   proto->LoadIconEx("group"),           LPGEN("Simple mode"),    &CJabberDlgPrivacyLists::btnSimple_OnClick),
+	m_btnAdvanced(this,   IDC_BTN_ADVANCED, proto->LoadIconEx("sd_view_list"),    LPGEN("Advanced mode"),  &CJabberDlgPrivacyLists::btnAdvanced_OnClick),
+	m_btnAddJid(this,     IDC_ADDJID,       proto->LoadIconEx("addroster"),       LPGEN("Add JID"),        &CJabberDlgPrivacyLists::btnAddJid_OnClick),
+	m_btnActivate(this,   IDC_ACTIVATE,     proto->LoadIconEx("pl_list_active"),  LPGEN("Activate"),       &CJabberDlgPrivacyLists::btnActivate_OnClick),
+	m_btnSetDefault(this, IDC_SET_DEFAULT,  proto->LoadIconEx("pl_list_default"),	LPGEN("Set default"),    &CJabberDlgPrivacyLists::btnSetDefault_OnClick),
+	m_btnEditRule(this,   IDC_EDIT_RULE,    SKINICON_OTHER_RENAME,                LPGEN("Edit rule"),      &CJabberDlgPrivacyLists::btnEditRule_OnClick),
+	m_btnAddRule(this,    IDC_ADD_RULE,     SKINICON_OTHER_ADDCONTACT,				LPGEN("Add rule"),       &CJabberDlgPrivacyLists::btnAddRule_OnClick),
+	m_btnRemoveRule(this, IDC_REMOVE_RULE,  SKINICON_OTHER_DELETE,                LPGEN("Delete rule"),    &CJabberDlgPrivacyLists::btnRemoveRule_OnClick),
+	m_btnUpRule(this,     IDC_UP_RULE,      proto->LoadIconEx("arrow_up"),        LPGEN("Move rule up"),   &CJabberDlgPrivacyLists::btnUpRule_OnClick),
+	m_btnDownRule(this,   IDC_DOWN_RULE,    proto->LoadIconEx("arrow_down"),      LPGEN("Move rule down"), &CJabberDlgPrivacyLists::btnDownRule_OnClick),
+	m_btnAddList(this,    IDC_ADD_LIST,     SKINICON_OTHER_ADDCONTACT,            LPGEN("Add list..."),    &CJabberDlgPrivacyLists::btnAddList_OnClick),
+	m_btnRemoveList(this, IDC_REMOVE_LIST,  SKINICON_OTHER_DELETE,                LPGEN("Remove list"),    &CJabberDlgPrivacyLists::btnRemoveList_OnClick),
+	m_btnApply(this,      IDC_APPLY,        SKINICON_EVENT_FILE,                  LPGEN("Save changes"),   &CJabberDlgPrivacyLists::btnApply_OnClick),
+	m_lbLists(this,       IDC_LB_LISTS),
+	m_lbRules(this,       IDC_PL_RULES_LIST),
+	m_clcClist(this,      IDC_CLIST)
 {
-	SetControlHandler(IDC_BTN_SIMPLE,		&CJabberDlgPrivacyLists::OnCommand_Simple);
-	SetControlHandler(IDC_BTN_ADVANCED,		&CJabberDlgPrivacyLists::OnCommand_Advanced);
-	SetControlHandler(IDC_ADDJID,			&CJabberDlgPrivacyLists::OnCommand_AddJid);
-	SetControlHandler(IDC_ACTIVATE,			&CJabberDlgPrivacyLists::OnCommand_Activate);
-	SetControlHandler(IDC_SET_DEFAULT,		&CJabberDlgPrivacyLists::OnCommand_SetDefault);
-	SetControlHandler(IDC_LB_LISTS,			&CJabberDlgPrivacyLists::OnCommand_LbLists);
-	SetControlHandler(IDC_PL_RULES_LIST,	&CJabberDlgPrivacyLists::OnCommand_PlRulesList);
-	SetControlHandler(IDC_EDIT_RULE,		&CJabberDlgPrivacyLists::OnCommand_EditRule);
-	SetControlHandler(IDC_ADD_RULE,			&CJabberDlgPrivacyLists::OnCommand_AddRule);
-	SetControlHandler(IDC_REMOVE_RULE,		&CJabberDlgPrivacyLists::OnCommand_RemoveRule);
-	SetControlHandler(IDC_UP_RULE,			&CJabberDlgPrivacyLists::OnCommand_UpRule);
-	SetControlHandler(IDC_DOWN_RULE,		&CJabberDlgPrivacyLists::OnCommand_DownRule);
-	SetControlHandler(IDC_ADD_LIST,			&CJabberDlgPrivacyLists::OnCommand_AddList);
-	SetControlHandler(IDC_REMOVE_LIST,		&CJabberDlgPrivacyLists::OnCommand_RemoveList);
-	SetControlHandler(IDC_APPLY,			&CJabberDlgPrivacyLists::OnCommand_Apply);
-	SetControlHandler(IDCLOSE,				&CJabberDlgPrivacyLists::OnCommand_Close);
-	SetControlHandler(IDCANCEL,				&CJabberDlgPrivacyLists::OnCommand_Close);
-	SetControlHandler(IDC_CLIST,			&CJabberDlgPrivacyLists::OnNotify_CList);
+	m_lbLists.OnSelChange = Callback(this, &CJabberDlgPrivacyLists::lbLists_OnSelChange);
+	m_lbLists.OnDblClick = Callback(this, &CJabberDlgPrivacyLists::lbLists_OnDblClick);
+	m_lbRules.OnSelChange = Callback(this, &CJabberDlgPrivacyLists::lbRules_OnSelChange);
+	m_lbRules.OnDblClick = Callback(this, &CJabberDlgPrivacyLists::lbRules_OnDblClick);
+
+	m_clcClist.OnNewContact =
+	m_clcClist.OnListRebuilt = Callback(this, &CJabberDlgPrivacyLists::clcClist_OnUpdate);
+	m_clcClist.OnOptionsChanged = Callback(this, &CJabberDlgPrivacyLists::clcClist_OnOptionsChanged);
+	m_clcClist.OnClick = Callback(this, &CJabberDlgPrivacyLists::clcClist_OnClick);
 }
 
-bool CJabberDlgPrivacyLists::OnInitDialog()
+void CJabberDlgPrivacyLists::OnInitDialog()
 {
 	SendMessage( m_hwnd, WM_SETICON, ICON_BIG, ( LPARAM )m_proto->LoadIconEx( "privacylists" ));
 
@@ -655,7 +669,7 @@ bool CJabberDlgPrivacyLists::OnInitDialog()
 
 	SetWindowLong(GetDlgItem(m_hwnd, IDC_CLIST), GWL_STYLE,
 		GetWindowLong(GetDlgItem(m_hwnd, IDC_CLIST), GWL_STYLE)|CLS_HIDEEMPTYGROUPS|CLS_USEGROUPS|CLS_GREYALTERNATE);
-	SendMessage(GetDlgItem(m_hwnd, IDC_CLIST), CLM_SETEXSTYLE, CLS_EX_DISABLEDRAGDROP|CLS_EX_TRACKSELECT, 0);
+	m_clcClist.SetExStyle(CLS_EX_DISABLEDRAGDROP|CLS_EX_TRACKSELECT);
 
 	HIMAGELIST hIml = ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),(IsWinVerXPPlus()?ILC_COLOR32:ILC_COLOR16)|ILC_MASK,9,9);
 	ImageList_AddIcon(hIml, LoadSkinnedIcon(SKINICON_OTHER_SMALLDOT));
@@ -667,45 +681,30 @@ bool CJabberDlgPrivacyLists::OnInitDialog()
 	ImageList_AddIcon(hIml, m_proto->LoadIconEx("pl_prout_deny"));
 	ImageList_AddIcon(hIml, m_proto->LoadIconEx("pl_iq_allow"));
 	ImageList_AddIcon(hIml, m_proto->LoadIconEx("pl_iq_deny"));
-	SendDlgItemMessage(m_hwnd, IDC_CLIST, CLM_SETEXTRAIMAGELIST, 0, (LPARAM)hIml);
-	SendDlgItemMessage(m_hwnd, IDC_CLIST, CLM_SETEXTRACOLUMNS, 4, 0);
+	m_clcClist.SetExtraImageList(hIml);
+	m_clcClist.SetExtraColumns(4);
+
+	m_btnSimple.MakePush();
+	m_btnAdvanced.MakePush();
 
 	CLCINFOITEM cii = {0};
 	cii.cbSize = sizeof(cii);
 
 	cii.flags = CLCIIF_GROUPFONT;
 	cii.pszText = TranslateT("** Default **");
-	clc_info.hItemDefault = SendDlgItemMessage(m_hwnd,IDC_CLIST,CLM_ADDINFOITEM,0,(LPARAM)&cii);
+	clc_info.hItemDefault = m_clcClist.AddInfoItem(&cii);
 	cii.pszText = TranslateT("** Subsription: both **");
-	clc_info.hItemSubBoth = SendDlgItemMessage(m_hwnd,IDC_CLIST,CLM_ADDINFOITEM,0,(LPARAM)&cii);
+	clc_info.hItemSubBoth = m_clcClist.AddInfoItem(&cii);
 	cii.pszText = TranslateT("** Subsription: to **");
-	clc_info.hItemSubTo = SendDlgItemMessage(m_hwnd,IDC_CLIST,CLM_ADDINFOITEM,0,(LPARAM)&cii);
+	clc_info.hItemSubTo = m_clcClist.AddInfoItem(&cii);
 	cii.pszText = TranslateT("** Subsription: from **");
-	clc_info.hItemSubFrom = SendDlgItemMessage(m_hwnd,IDC_CLIST,CLM_ADDINFOITEM,0,(LPARAM)&cii);
+	clc_info.hItemSubFrom = m_clcClist.AddInfoItem(&cii);
 	cii.pszText = TranslateT("** Subsription: none **");
-	clc_info.hItemSubNone = SendDlgItemMessage(m_hwnd,IDC_CLIST,CLM_ADDINFOITEM,0,(LPARAM)&cii);
+	clc_info.hItemSubNone = m_clcClist.AddInfoItem(&cii);
 
 	CListResetOptions(GetDlgItem(m_hwnd, IDC_CLIST));
 	CListFilter(GetDlgItem(m_hwnd, IDC_CLIST));
 	CListApplyList(GetDlgItem(m_hwnd, IDC_CLIST));
-
-	TMButtonInfo buttons[] =
-	{
-		{IDC_ADD_LIST,		_T("Add list..."),		NULL, SKINICON_OTHER_ADDCONTACT,	false},
-		{IDC_ACTIVATE,		_T("Activate"),			"pl_list_active", 0,				false},
-		{IDC_SET_DEFAULT,	_T("Set default"),		"pl_list_default", 0,				false},
-		{IDC_REMOVE_LIST,	_T("Remove list"),		NULL, SKINICON_OTHER_DELETE,		false},
-		{IDC_ADD_RULE,		_T("Add rule"),			NULL, SKINICON_OTHER_ADDCONTACT,	false},
-		{IDC_EDIT_RULE,		_T("Edit rule"),		NULL, SKINICON_OTHER_RENAME,		false},
-		{IDC_UP_RULE,		_T("Move rule up"),		"arrow_up", 0,						false},
-		{IDC_DOWN_RULE,		_T("Move rule down"),	"arrow_down", 0,					false},
-		{IDC_REMOVE_RULE,	_T("Delete rule"),		NULL, SKINICON_OTHER_DELETE,		false},
-		{IDC_APPLY,			_T("Save changes"),		NULL, SKINICON_EVENT_FILE,			false},
-		{IDC_ADDJID,		_T("Add JID"),			"addroster", 0,						false},
-		{IDC_BTN_SIMPLE,	_T("Simple mode"),		"group", 0,							true},
-		{IDC_BTN_ADVANCED,	_T("Advanced mode"),	"sd_view_list", 0,					true},
-	};
-	UISetupMButtons<CJabberProto>(m_proto, m_hwnd, buttons, SIZEOF(buttons));
 
 	if ( DBGetContactSettingByte(NULL, m_proto->m_szProtoName, "plistsWnd_simpleMode", 1))
 	{
@@ -729,11 +728,9 @@ bool CJabberDlgPrivacyLists::OnInitDialog()
 	sttStatusMessage( m_hwnd, TranslateT("Loading..."));
 
 	Utils_RestoreWindowPosition(m_hwnd, NULL, m_proto->m_szProtoName, "plistsWnd_sz");
-
-	return false;
 }
 
-bool CJabberDlgPrivacyLists::OnDestroy()
+void CJabberDlgPrivacyLists::OnDestroy()
 {
 	m_proto->m_pDlgPrivacyLists = NULL;
 
@@ -748,7 +745,6 @@ bool CJabberDlgPrivacyLists::OnDestroy()
 	DBWriteContactSettingByte(NULL, m_proto->m_szProtoName, "plistsWnd_simpleMode", IsDlgButtonChecked(m_hwnd, IDC_BTN_SIMPLE));
 
 	Utils_SaveWindowPosition(m_hwnd, NULL, m_proto->m_szProtoName, "plistsWnd_sz");
-	return false;
 }
 
 void CJabberDlgPrivacyLists::ShowAdvancedList(CPrivacyList *pList)
@@ -1081,16 +1077,15 @@ void CJabberDlgPrivacyLists::DrawLists(LPDRAWITEMSTRUCT lpdis)
 
 void CJabberDlgPrivacyLists::CListResetOptions(HWND hwndList)
 {
-	int i;
-	SendMessage(hwndList,CLM_SETBKBITMAP,0,(LPARAM)(HBITMAP)NULL);
-	SendMessage(hwndList,CLM_SETBKCOLOR,GetSysColor(COLOR_WINDOW),0);
-	SendMessage(hwndList,CLM_SETGREYOUTFLAGS,0,0);
-	SendMessage(hwndList,CLM_SETLEFTMARGIN,4,0);
-	SendMessage(hwndList,CLM_SETINDENT,10,0);
-	SendMessage(hwndList,CLM_SETHIDEEMPTYGROUPS,0,0);
-	SendMessage(hwndList,CLM_SETHIDEOFFLINEROOT,0,0);
-	for ( i=0; i <= FONTID_MAX; i++ )
-		SendMessage( hwndList, CLM_SETTEXTCOLOR, i, GetSysColor( COLOR_WINDOWTEXT ));
+	m_clcClist.SetBkBitmap(0, NULL);
+	m_clcClist.SetBkColor(GetSysColor(COLOR_WINDOW));
+	m_clcClist.SetGreyoutFlags(0);
+	m_clcClist.SetLeftMargin(4);
+	m_clcClist.SetIndent(10);
+	m_clcClist.SetHideEmptyGroups(false);
+	m_clcClist.SetHideOfflineRoot(false);
+	for (int i = 0; i <= FONTID_MAX; i++)
+		m_clcClist.SetTextColor(i, GetSysColor(COLOR_WINDOWTEXT));
 }
 
 void CJabberDlgPrivacyLists::CListFilter(HWND hwndList)
@@ -1101,19 +1096,19 @@ void CJabberDlgPrivacyLists::CListFilter(HWND hwndList)
 	{
 		char *proto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 		if (!proto || lstrcmpA(proto, m_proto->m_szProtoName))
-			if (int hItem = SendMessage(hwndList, CLM_FINDCONTACT, (WPARAM)hContact, 0))
-				SendMessage(hwndList, CLM_DELETEITEM, (WPARAM)hItem, 0);
+			if (HANDLE hItem = m_clcClist.FindContact(hContact))
+				m_clcClist.DeleteItem(hItem);
 	}
 }
 
-bool CJabberDlgPrivacyLists::CListIsGroup(int hGroup)
+bool CJabberDlgPrivacyLists::CListIsGroup(HANDLE hGroup)
 {
 	char idstr[33];
 	DBVARIANT dbv;
 
 	bool result = true;
 
-	itoa(hGroup-1, idstr, 10);
+	itoa((int)hGroup-1, idstr, 10);
 
 	if (DBGetContactSettingTString(NULL, "CListGroups", idstr, &dbv))
 		result = false;
@@ -1146,21 +1141,21 @@ HANDLE CJabberDlgPrivacyLists::CListFindGroupByName(TCHAR *name)
 	return hGroup;
 }
 
-void CJabberDlgPrivacyLists::CListResetIcons(HWND hwndList, int hItem, bool hide)
+void CJabberDlgPrivacyLists::CListResetIcons(HWND hwndList, HANDLE hItem, bool hide)
 {
 	for (int i = 0; i < 4; ++i)
-		SendMessage(hwndList, CLM_SETEXTRAIMAGE, hItem, MAKELPARAM(i, hide?0xFF:0));
+		m_clcClist.SetExtraImage(hItem, i, hide ? 0xFF : 0);
 }
 
-void CJabberDlgPrivacyLists::CListSetupIcons(HWND hwndList, int hItem, int iSlot, DWORD dwProcess, BOOL bAction)
+void CJabberDlgPrivacyLists::CListSetupIcons(HWND hwndList, HANDLE hItem, int iSlot, DWORD dwProcess, BOOL bAction)
 {
-	if (dwProcess && !SendMessage(hwndList, CLM_GETEXTRAIMAGE, hItem, MAKELPARAM(iSlot, 0)))
-		SendMessage(hwndList, CLM_SETEXTRAIMAGE, hItem, MAKELPARAM(iSlot, iSlot*2 + (bAction?1:2) ));
+	if (dwProcess && !m_clcClist.GetExtraImage(hItem, iSlot))
+		m_clcClist.SetExtraImage(hItem, iSlot, iSlot*2 + (bAction?1:2));
 }
 
-int CJabberDlgPrivacyLists::CListAddContact(HWND hwndList, TCHAR *jid)
+HANDLE CJabberDlgPrivacyLists::CListAddContact(HWND hwndList, TCHAR *jid)
 {
-	int hItem = 0;
+	HANDLE hItem = 0;
 
 	HANDLE hContact = m_proto->HContactFromJID(jid);
 	if ( !hContact ) {
@@ -1170,13 +1165,13 @@ int CJabberDlgPrivacyLists::CListAddContact(HWND hwndList, TCHAR *jid)
 			CLCINFOITEM cii = {0};
 			cii.cbSize = sizeof(cii);
 			cii.pszText = jid;
-			hItem = SendMessage(hwndList,CLM_ADDINFOITEM,0,(LPARAM)&cii);
+			hItem = m_clcClist.AddInfoItem(&cii);
 			CListResetIcons(hwndList, hItem);
 			clc_info.addJid(hItem, jid);
 		}
 	} else
 	{
-		hItem = SendMessage(hwndList, CLM_FINDCONTACT, (WPARAM)hContact, 0);
+		hItem = m_clcClist.FindContact(hContact);
 	}
 
 	return hItem;
@@ -1195,9 +1190,9 @@ void CJabberDlgPrivacyLists::CListApplyList(HWND hwndList, CPrivacyList *pList)
 	CListResetIcons(hwndList, clc_info.hItemSubTo, bHideIcons);
 
 	// group handles start with 1 (0 is "root")
-	for (int hGroup = 1; CListIsGroup(hGroup); ++hGroup)
+	for (int iGroup = 1; CListIsGroup((HANDLE)iGroup); ++iGroup)
 	{
-		int hItem = SendMessage(hwndList, CLM_FINDGROUP, hGroup, 0);
+		HANDLE hItem = m_clcClist.FindGroup((HANDLE)iGroup);
 		if (!hItem) continue;
 		CListResetIcons(hwndList, hItem, bHideIcons);
 	}
@@ -1205,7 +1200,7 @@ void CJabberDlgPrivacyLists::CListApplyList(HWND hwndList, CPrivacyList *pList)
 	for (HANDLE hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDFIRST,0,0); hContact;
 			hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0))
 	{
-		int hItem = SendMessage(hwndList, CLM_FINDCONTACT, (WPARAM)hContact, 0);
+		HANDLE hItem = m_clcClist.FindContact(hContact);
 		if (!hItem) continue;
 		CListResetIcons(hwndList, hItem, bHideIcons);
 	}
@@ -1219,7 +1214,7 @@ void CJabberDlgPrivacyLists::CListApplyList(HWND hwndList, CPrivacyList *pList)
 	CPrivacyListRule *pRule;
 	for (pRule = pList->GetFirstRule(); pRule; pRule = pRule->GetNext())
 	{
-		int hItem = 0;
+		HANDLE hItem = 0;
 		switch (pRule->GetType())
 		{
 			case Jid:
@@ -1230,7 +1225,7 @@ void CJabberDlgPrivacyLists::CListApplyList(HWND hwndList, CPrivacyList *pList)
 			case Group:
 			{
 				HANDLE hGroup = CListFindGroupByName(pRule->GetValue());
-				hItem = SendMessage(hwndList, CLM_FINDGROUP, (WPARAM)hGroup, 0);
+				hItem = m_clcClist.FindGroup(hGroup);
 				break;
 			}
 			case Subscription:
@@ -1262,25 +1257,25 @@ lbl_return:
 	clc_info.bChanged = false;
 }
 
-DWORD CJabberDlgPrivacyLists::CListGetPackets(HWND hwndList, int hItem, bool bAction)
+DWORD CJabberDlgPrivacyLists::CListGetPackets(HWND hwndList, HANDLE hItem, bool bAction)
 {
 	DWORD result = 0;
 
 	int iIcon = 0;
 
-	iIcon = SendMessage(hwndList, CLM_GETEXTRAIMAGE, hItem, MAKELPARAM(0, 0));
+	iIcon = m_clcClist.GetExtraImage(hItem, 0);
 	     if ( bAction && (iIcon == 1)) result |= JABBER_PL_RULE_TYPE_MESSAGE;
 	else if (!bAction && (iIcon == 2)) result |= JABBER_PL_RULE_TYPE_MESSAGE;
 
-	iIcon = SendMessage(hwndList, CLM_GETEXTRAIMAGE, hItem, MAKELPARAM(1, 0));
+	iIcon = m_clcClist.GetExtraImage(hItem, 1);
 	     if ( bAction && (iIcon == 3)) result |= JABBER_PL_RULE_TYPE_PRESENCE_IN;
 	else if (!bAction && (iIcon == 4)) result |= JABBER_PL_RULE_TYPE_PRESENCE_IN;
 
-	iIcon = SendMessage(hwndList, CLM_GETEXTRAIMAGE, hItem, MAKELPARAM(2, 0));
+	iIcon = m_clcClist.GetExtraImage(hItem, 2);
 	     if ( bAction && (iIcon == 5)) result |= JABBER_PL_RULE_TYPE_PRESENCE_OUT;
 	else if (!bAction && (iIcon == 6)) result |= JABBER_PL_RULE_TYPE_PRESENCE_OUT;
 
-	iIcon = SendMessage(hwndList, CLM_GETEXTRAIMAGE, hItem, MAKELPARAM(3, 0));
+	iIcon = m_clcClist.GetExtraImage(hItem, 3);
 	     if ( bAction && (iIcon == 7)) result |= JABBER_PL_RULE_TYPE_IQ;
 	else if (!bAction && (iIcon == 8)) result |= JABBER_PL_RULE_TYPE_IQ;
 
@@ -1298,7 +1293,7 @@ void CJabberDlgPrivacyLists::CListBuildList(HWND hwndList, CPrivacyList *pList)
 	DWORD dwOrder = 0;
 	DWORD dwPackets = 0;
 
-	int hItem;
+	HANDLE hItem;
 	TCHAR *szJid;
 
 	pList->RemoveAllRules();
@@ -1317,7 +1312,7 @@ void CJabberDlgPrivacyLists::CListBuildList(HWND hwndList, CPrivacyList *pList)
 	for (HANDLE hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDFIRST,0,0); hContact;
 			hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0))
 	{
-		hItem = SendMessage(hwndList, CLM_FINDCONTACT, (WPARAM)hContact, 0);
+		hItem = m_clcClist.FindContact(hContact);
 
 		DBVARIANT dbv;
 		if ( m_proto->JGetStringT(hContact, "jid", &dbv)) {
@@ -1338,10 +1333,10 @@ void CJabberDlgPrivacyLists::CListBuildList(HWND hwndList, CPrivacyList *pList)
 	}
 
 	// group handles start with 1 (0 is "root")
-	for (int hGroup = 1; ; ++hGroup)
+	for (int iGroup = 1; ; ++iGroup)
 	{
 		char idstr[33];
-		itoa(hGroup-1, idstr, 10);
+		itoa(iGroup-1, idstr, 10);
 		DBVARIANT dbv;
 		if (DBGetContactSettingTString(NULL, "CListGroups", idstr, &dbv))
 		{
@@ -1349,7 +1344,7 @@ void CJabberDlgPrivacyLists::CListBuildList(HWND hwndList, CPrivacyList *pList)
 			break;
 		}
 
-		hItem = SendMessage(hwndList, CLM_FINDGROUP, (WPARAM)hGroup, 0);
+		hItem = m_clcClist.FindGroup((HANDLE)iGroup);
 		szJid = dbv.ptszVal+1;
 
 		if (dwPackets = CListGetPackets(hwndList, hItem, true))
@@ -1497,17 +1492,16 @@ BOOL CJabberDlgPrivacyLists::CanExit()
 	return FALSE;
 }
 
-BOOL CJabberDlgPrivacyLists::OnCommand_Simple(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void __cdecl CJabberDlgPrivacyLists::btnSimple_OnClick(CCtrlButton *)
 {
 	CheckDlgButton(m_hwnd, IDC_BTN_SIMPLE, TRUE);
 	CheckDlgButton(m_hwnd, IDC_BTN_ADVANCED, FALSE);
 	UIShowControls(m_hwnd, idSimpleControls, SW_SHOW);
 	UIShowControls(m_hwnd, idAdvancedControls, SW_HIDE);
 	CListApplyList(GetDlgItem(m_hwnd, IDC_CLIST), GetSelectedList(m_hwnd));
-	return TRUE;
 }
 
-BOOL CJabberDlgPrivacyLists::OnCommand_Advanced(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void __cdecl CJabberDlgPrivacyLists::btnAdvanced_OnClick(CCtrlButton *)
 {
 	CheckDlgButton(m_hwnd, IDC_BTN_SIMPLE, FALSE);
 	CheckDlgButton(m_hwnd, IDC_BTN_ADVANCED, TRUE);
@@ -1515,20 +1509,18 @@ BOOL CJabberDlgPrivacyLists::OnCommand_Advanced(HWND hwndCtrl, WORD idCtrl, WORD
 	UIShowControls(m_hwnd, idAdvancedControls, SW_SHOW);
 	CListBuildList(GetDlgItem(m_hwnd, IDC_CLIST), GetSelectedList(m_hwnd));
 	PostMessage(m_hwnd, WM_COMMAND, MAKEWPARAM(IDC_LB_LISTS, LBN_SELCHANGE), 0);
-	return TRUE;
 }
 
-BOOL CJabberDlgPrivacyLists::OnCommand_AddJid(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void __cdecl CJabberDlgPrivacyLists::btnAddJid_OnClick(CCtrlButton *)
 {
 	int len = GetWindowTextLength(GetDlgItem(m_hwnd, IDC_NEWJID))+1;
 	TCHAR *buf = (TCHAR *)_alloca(sizeof(TCHAR) * len);
 	GetWindowText(GetDlgItem(m_hwnd, IDC_NEWJID), buf, len);
 	SetWindowText(GetDlgItem(m_hwnd, IDC_NEWJID), _T(""));
 	CListAddContact(GetDlgItem(m_hwnd, IDC_CLIST), buf);
-	return TRUE;
 }
 
-BOOL CJabberDlgPrivacyLists::OnCommand_Activate(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void __cdecl CJabberDlgPrivacyLists::btnActivate_OnClick(CCtrlButton *)
 {
 	if ( m_proto->m_bJabberOnline )
 	{
@@ -1547,10 +1539,9 @@ BOOL CJabberDlgPrivacyLists::OnCommand_Activate(HWND hwndCtrl, WORD idCtrl, WORD
 
 		m_proto->m_ThreadInfo->send( iq );
 	}
-	return TRUE;
 }
 
-BOOL CJabberDlgPrivacyLists::OnCommand_SetDefault(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void __cdecl CJabberDlgPrivacyLists::btnSetDefault_OnClick(CCtrlButton *)
 {
 	if ( m_proto->m_bJabberOnline )
 	{
@@ -1570,70 +1561,62 @@ BOOL CJabberDlgPrivacyLists::OnCommand_SetDefault(HWND hwndCtrl, WORD idCtrl, WO
 
 		m_proto->m_ThreadInfo->send( iq );
 	}
-	return TRUE;
 }
 
-BOOL CJabberDlgPrivacyLists::OnCommand_LbLists(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void __cdecl CJabberDlgPrivacyLists::lbLists_OnSelChange(CCtrlListBox *)
 {
-	if (idCode == LBN_SELCHANGE)
+	int nCurSel = SendDlgItemMessage( m_hwnd, IDC_LB_LISTS, LB_GETCURSEL, 0, 0 );
+	if ( nCurSel == LB_ERR )
+		return;
+
+	int nErr = SendDlgItemMessage( m_hwnd, IDC_LB_LISTS, LB_GETITEMDATA, nCurSel, 0 );
+	if ( nErr == LB_ERR )
+		return;
+	if ( nErr == 0 )
 	{
-		int nCurSel = SendDlgItemMessage( m_hwnd, IDC_LB_LISTS, LB_GETCURSEL, 0, 0 );
-		if ( nCurSel == LB_ERR )
-			return TRUE;
-
-		int nErr = SendDlgItemMessage( m_hwnd, IDC_LB_LISTS, LB_GETITEMDATA, nCurSel, 0 );
-		if ( nErr == LB_ERR )
-			return TRUE;
-		if ( nErr == 0 )
-		{
-			if (IsWindowVisible(GetDlgItem(m_hwnd, IDC_CLIST)))
-			{
-				CListBuildList(GetDlgItem(m_hwnd, IDC_CLIST), clc_info.pList);
-				CListApplyList(GetDlgItem(m_hwnd, IDC_CLIST), NULL);
-			} else
-			{
-				EnableWindow( GetDlgItem( m_hwnd, IDC_PL_RULES_LIST ), FALSE );
-				SendDlgItemMessage( m_hwnd, IDC_PL_RULES_LIST, LB_RESETCONTENT, 0, 0 );
-				SendDlgItemMessage( m_hwnd, IDC_PL_RULES_LIST, LB_ADDSTRING, 0, (LPARAM)TranslateTS(_T("No list selected")));
-			}
-			EnableEditorControls();
-			return TRUE;
-		}
-
-		m_proto->m_privacyListManager.Lock();
 		if (IsWindowVisible(GetDlgItem(m_hwnd, IDC_CLIST)))
 		{
 			CListBuildList(GetDlgItem(m_hwnd, IDC_CLIST), clc_info.pList);
-			CListApplyList(GetDlgItem(m_hwnd, IDC_CLIST), (CPrivacyList* )nErr);
+			CListApplyList(GetDlgItem(m_hwnd, IDC_CLIST), NULL);
+		} else
+		{
+			EnableWindow( GetDlgItem( m_hwnd, IDC_PL_RULES_LIST ), FALSE );
+			SendDlgItemMessage( m_hwnd, IDC_PL_RULES_LIST, LB_RESETCONTENT, 0, 0 );
+			SendDlgItemMessage( m_hwnd, IDC_PL_RULES_LIST, LB_ADDSTRING, 0, (LPARAM)TranslateTS(_T("No list selected")));
 		}
-		else ShowAdvancedList((CPrivacyList* )nErr);
-
-		m_proto->m_privacyListManager.Unlock();
-
 		EnableEditorControls();
-	} else
-	if ( idCode == LBN_DBLCLK )
-	{
-		PostMessage( m_hwnd, WM_COMMAND, MAKEWPARAM( IDC_ACTIVATE, 0 ), 0 );
+		return;
 	}
-	return TRUE;
+
+	m_proto->m_privacyListManager.Lock();
+	if (IsWindowVisible(GetDlgItem(m_hwnd, IDC_CLIST)))
+	{
+		CListBuildList(GetDlgItem(m_hwnd, IDC_CLIST), clc_info.pList);
+		CListApplyList(GetDlgItem(m_hwnd, IDC_CLIST), (CPrivacyList* )nErr);
+	}
+	else ShowAdvancedList((CPrivacyList* )nErr);
+
+	m_proto->m_privacyListManager.Unlock();
+
+	EnableEditorControls();
 }
 
-BOOL CJabberDlgPrivacyLists::OnCommand_PlRulesList(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void __cdecl CJabberDlgPrivacyLists::lbLists_OnDblClick(CCtrlListBox *)
 {
-	if (idCode == LBN_SELCHANGE)
-	{
-		EnableEditorControls();
-	} else
-	if (idCode == LBN_DBLCLK)
-	{
-		PostMessage( m_hwnd, WM_COMMAND, MAKEWPARAM( IDC_EDIT_RULE, 0 ), 0 );
-	}
-
-	return TRUE;
+	PostMessage( m_hwnd, WM_COMMAND, MAKEWPARAM( IDC_ACTIVATE, 0 ), 0 );
 }
 
-BOOL CJabberDlgPrivacyLists::OnCommand_EditRule(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void __cdecl CJabberDlgPrivacyLists::lbRules_OnSelChange(CCtrlListBox *)
+{
+	EnableEditorControls();
+}
+
+void __cdecl CJabberDlgPrivacyLists::lbRules_OnDblClick(CCtrlListBox *)
+{
+	PostMessage( m_hwnd, WM_COMMAND, MAKEWPARAM( IDC_EDIT_RULE, 0 ), 0 );
+}
+
+void __cdecl CJabberDlgPrivacyLists::btnEditRule_OnClick(CCtrlButton *)
 {
 	// FIXME: potential deadlock due to PLM lock while editing rule
 	m_proto->m_privacyListManager.Lock();
@@ -1648,10 +1631,9 @@ BOOL CJabberDlgPrivacyLists::OnCommand_EditRule(HWND hwndCtrl, WORD idCtrl, WORD
 				PostMessage( m_hwnd, WM_JABBER_REFRESH, 0, 0 );
 	}	}	}
 	m_proto->m_privacyListManager.Unlock();
-	return TRUE;
 }
 
-BOOL CJabberDlgPrivacyLists::OnCommand_AddRule(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void __cdecl CJabberDlgPrivacyLists::btnAddRule_OnClick(CCtrlButton *)
 {
 	// FIXME: potential deadlock due to PLM lock while editing rule
 	m_proto->m_privacyListManager.Lock();
@@ -1670,10 +1652,9 @@ BOOL CJabberDlgPrivacyLists::OnCommand_AddRule(HWND hwndCtrl, WORD idCtrl, WORD 
 			else delete pRule;
 	}	}
 	m_proto->m_privacyListManager.Unlock();
-	return TRUE;
 }
 
-BOOL CJabberDlgPrivacyLists::OnCommand_RemoveRule(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void __cdecl CJabberDlgPrivacyLists::btnRemoveRule_OnClick(CCtrlButton *)
 {
 	m_proto->m_privacyListManager.Lock();
 	{
@@ -1691,10 +1672,9 @@ BOOL CJabberDlgPrivacyLists::OnCommand_RemoveRule(HWND hwndCtrl, WORD idCtrl, WO
 	}	}
 
 	m_proto->m_privacyListManager.Unlock();
-	return TRUE;
 }
 
-BOOL CJabberDlgPrivacyLists::OnCommand_UpRule(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void __cdecl CJabberDlgPrivacyLists::btnUpRule_OnClick(CCtrlButton *)
 {
 	m_proto->m_privacyListManager.Lock();
 	{
@@ -1711,10 +1691,9 @@ BOOL CJabberDlgPrivacyLists::OnCommand_UpRule(HWND hwndCtrl, WORD idCtrl, WORD i
 	}	}
 
 	m_proto->m_privacyListManager.Unlock();
-	return TRUE;
 }
 
-BOOL CJabberDlgPrivacyLists::OnCommand_DownRule(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void __cdecl CJabberDlgPrivacyLists::btnDownRule_OnClick(CCtrlButton *)
 {
 	m_proto->m_privacyListManager.Lock();
 	{
@@ -1732,10 +1711,9 @@ BOOL CJabberDlgPrivacyLists::OnCommand_DownRule(HWND hwndCtrl, WORD idCtrl, WORD
 	}	}
 
 	m_proto->m_privacyListManager.Unlock();
-	return TRUE;
 }
 
-BOOL CJabberDlgPrivacyLists::OnCommand_AddList(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void __cdecl CJabberDlgPrivacyLists::btnAddList_OnClick(CCtrlButton *)
 {
 	// FIXME: line length is hard coded in dialog procedure
 	CJabberDlgPrivacyAddList dlgPrivacyAddList(m_proto, m_hwnd);
@@ -1762,10 +1740,9 @@ BOOL CJabberDlgPrivacyLists::OnCommand_AddList(HWND hwndCtrl, WORD idCtrl, WORD 
 		m_proto->m_privacyListManager.Unlock();
 		PostMessage( m_hwnd, WM_JABBER_REFRESH, 0, 0 );
 	}
-	return TRUE;
 }
 
-BOOL CJabberDlgPrivacyLists::OnCommand_RemoveList(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void __cdecl CJabberDlgPrivacyLists::btnRemoveList_OnClick(CCtrlButton *)
 {
 	m_proto->m_privacyListManager.Lock();
 	{
@@ -1776,7 +1753,7 @@ BOOL CJabberDlgPrivacyLists::OnCommand_RemoveList(HWND hwndCtrl, WORD idCtrl, WO
 				|| ( m_proto->m_privacyListManager.GetDefaultListName() && !_tcscmp( szListName, m_proto->m_privacyListManager.GetDefaultListName()) )) {
 				m_proto->m_privacyListManager.Unlock();
 				MessageBox( m_hwnd, TranslateTS(_T("Can't remove active or default list")), TranslateTS(_T("Sorry")), MB_OK | MB_ICONSTOP );
-				return TRUE;
+				return;
 			}
 			pList->SetDeleted();
 			pList->SetModified();
@@ -1784,14 +1761,13 @@ BOOL CJabberDlgPrivacyLists::OnCommand_RemoveList(HWND hwndCtrl, WORD idCtrl, WO
 
 	m_proto->m_privacyListManager.Unlock();
 	PostMessage( m_hwnd, WM_JABBER_REFRESH, 0, 0 );
-	return TRUE;
 }
 
-BOOL CJabberDlgPrivacyLists::OnCommand_Apply(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void __cdecl CJabberDlgPrivacyLists::btnApply_OnClick(CCtrlButton *)
 {
 	if ( !m_proto->m_bJabberOnline ) {
 		sttStatusMessage( m_hwnd, TranslateT("Unable to save list because you are currently offline."));
-		return TRUE;
+		return;
 	}
 
 	m_proto->m_privacyListManager.Lock();
@@ -1865,66 +1841,56 @@ BOOL CJabberDlgPrivacyLists::OnCommand_Apply(HWND hwndCtrl, WORD idCtrl, WORD id
 	m_proto->m_privacyListManager.Unlock();
 	sttStatusMessage( m_hwnd, TranslateT( JABBER_PL_BUSY_MSG ));
 	PostMessage( m_hwnd, WM_JABBER_REFRESH, 0, 0 );
-	return TRUE;
 }
 
-BOOL CJabberDlgPrivacyLists::OnCommand_Close(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+void CJabberDlgPrivacyLists::OnCommand_Close(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 {
 	if (IsWindowVisible(GetDlgItem(m_hwnd, IDC_CLIST)))
 		CListBuildList(GetDlgItem(m_hwnd, IDC_CLIST), clc_info.pList);
 
 	if (CanExit())
 		DestroyWindow(m_hwnd);
-	return TRUE;
 }
 
-BOOL CJabberDlgPrivacyLists::OnNotify_CList(int idCtrl, NMHDR *pnmh)
+void __cdecl CJabberDlgPrivacyLists::clcClist_OnUpdate(CCtrlClc::TEventInfo *evt)
 {
-	switch (pnmh->code)
+	CListFilter(GetDlgItem(m_hwnd, IDC_CLIST));
+	CListApplyList(GetDlgItem(m_hwnd, IDC_CLIST), GetSelectedList(m_hwnd));
+}
+
+void __cdecl CJabberDlgPrivacyLists::clcClist_OnOptionsChanged(CCtrlClc::TEventInfo *evt)
+{
+	CListResetOptions(GetDlgItem(m_hwnd, IDC_CLIST));
+	CListApplyList(GetDlgItem(m_hwnd, IDC_CLIST), GetSelectedList(m_hwnd));
+}
+
+void __cdecl CJabberDlgPrivacyLists::clcClist_OnClick(CCtrlClc::TEventInfo *evt)
+{
+	HANDLE hItem;
+	DWORD hitFlags;
+	int iImage;
+
+	if(evt->info->iColumn==-1) return;
+	hItem = m_clcClist.HitTest(evt->info->pt.x, evt->info->pt.y, &hitFlags);
+	if(hItem==NULL) return;
+	if(!(hitFlags&CLCHT_ONITEMEXTRA)) return;
+
+	iImage = m_clcClist.GetExtraImage(hItem, evt->info->iColumn);
+	if (iImage != 0xFF)
 	{
-		case CLN_NEWCONTACT:
-		case CLN_LISTREBUILT:
-			CListFilter(GetDlgItem(m_hwnd, IDC_CLIST));
-			CListApplyList(GetDlgItem(m_hwnd, IDC_CLIST), GetSelectedList(m_hwnd));
-			break;
-		case CLN_OPTIONSCHANGED:
-			CListResetOptions(GetDlgItem(m_hwnd, IDC_CLIST));
-			CListApplyList(GetDlgItem(m_hwnd, IDC_CLIST), GetSelectedList(m_hwnd));
-			break;
-		case NM_CLICK:
-		{
-			HANDLE hItem;
-			NMCLISTCONTROL *nm = (NMCLISTCONTROL*)pnmh;
-			DWORD hitFlags;
-			int iImage;
+		if (iImage == 0)
+			iImage = evt->info->iColumn * 2 + 2;
+		else if (iImage == evt->info->iColumn * 2 + 2)
+			iImage = evt->info->iColumn * 2 + 1;
+		else
+			iImage = 0;
 
-			if(nm->iColumn==-1) break;
-			hItem=(HANDLE)SendDlgItemMessage(m_hwnd,IDC_CLIST,CLM_HITTEST,(WPARAM)&hitFlags,MAKELPARAM(nm->pt.x,nm->pt.y));
-			if(hItem==NULL) break;
-			if(!(hitFlags&CLCHT_ONITEMEXTRA)) break;
+		m_clcClist.SetExtraImage(hItem, evt->info->iColumn, iImage);
 
-			iImage = SendDlgItemMessage(m_hwnd,IDC_CLIST,CLM_GETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM(nm->iColumn,0));
-			if (iImage != 0xFF)
-			{
-				if (iImage == 0)
-					iImage = nm->iColumn * 2 + 2;
-				else if (iImage == nm->iColumn * 2 + 2)
-					iImage = nm->iColumn * 2 + 1;
-				else
-					iImage = 0;
+		clc_info.bChanged = true;
 
-				SendDlgItemMessage(m_hwnd, IDC_CLIST, CLM_SETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM(nm->iColumn, iImage));
-
-				clc_info.bChanged = true;
-
-				EnableEditorControls();
-			}
-
-			break;
-		}
+		EnableEditorControls();
 	}
-
-	return TRUE;
 }
 
 int CJabberDlgPrivacyLists::Resizer(UTILRESIZECONTROL *urc)

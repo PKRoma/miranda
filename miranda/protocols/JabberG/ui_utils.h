@@ -30,24 +30,31 @@ Last change by : $Author$
 #ifndef __jabber_ui_utils_h__
 #define __jabber_ui_utils_h__
 
+#pragma warning(disable:4355)
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// Callbacks
+
 struct CCallbackImp
 {
 public:
-	__forceinline CCallbackImp(): m_object(NULL), m_func(NULL) {}
+	__inline CCallbackImp(): m_object(NULL), m_func(NULL) {}
 
-	__forceinline CCallbackImp(const CCallbackImp &other): m_object(other.m_object), m_func(other.m_func) {}
-	__forceinline CCallbackImp &operator=(const CCallbackImp &other) { m_object = other.m_object; m_func = other.m_func; return *this; }
+	__inline CCallbackImp(const CCallbackImp &other): m_object(other.m_object), m_func(other.m_func) {}
+	__inline CCallbackImp &operator=(const CCallbackImp &other) { m_object = other.m_object; m_func = other.m_func; return *this; }
 
-	__forceinline bool operator==(const CCallbackImp &other) const { return (m_object == other.m_object) && (m_func == other.m_func); }
-	__forceinline bool operator!=(const CCallbackImp &other) const { return (m_object != other.m_object) || (m_func != other.m_func); }
+	__inline bool operator==(const CCallbackImp &other) const { return (m_object == other.m_object) && (m_func == other.m_func); }
+	__inline bool operator!=(const CCallbackImp &other) const { return (m_object != other.m_object) || (m_func != other.m_func); }
 
-	__forceinline bool CheckObject(void *object) const { return (object == m_object) ? true : false; }
+	__inline operator bool() const { return m_object && m_func; }
+
+	__inline bool CheckObject(void *object) const { return (object == m_object) ? true : false; }
 
 protected:
 	template<typename TClass, typename TArgument>
-	__forceinline CCallbackImp(TClass *object, void (__cdecl TClass::*func)(TArgument *argument)): m_object(object), m_func(*(TFnCallback *)(void *)&func) {}
+	__inline CCallbackImp(TClass *object, void (__cdecl TClass::*func)(TArgument *argument)): m_object(object), m_func(*(TFnCallback *)(void *)&func) {}
 
-	__forceinline void Invoke(void *argument) const { if (m_func && m_object) m_func(m_object, argument); }
+	__inline void Invoke(void *argument) const { if (m_func && m_object) m_func(m_object, argument); }
 
 private:
 	typedef void (__cdecl *TFnCallback)(void *object, void *argument);
@@ -60,23 +67,25 @@ template<typename TArgument>
 struct CCallback: public CCallbackImp
 {
 public:
-	__forceinline CCallback() {}
+	__inline CCallback() {}
 
 	template<typename TClass>
-	__forceinline CCallback(TClass *object, void (__cdecl TClass::*func)(TArgument *argument)): CCallbackImp(object, func) {}
+	__inline CCallback(TClass *object, void (__cdecl TClass::*func)(TArgument *argument)): CCallbackImp(object, func) {}
 
-	__forceinline void operator()(TArgument *argument) const { Invoke((void *)argument); }
+	__inline void operator()(TArgument *argument) const { Invoke((void *)argument); }
 };
 
 template<typename TClass, typename TArgument>
-__forceinline CCallback<TArgument> JCallback(TClass *object, void (__cdecl TClass::*func)(TArgument *argument))
+__inline CCallback<TArgument> Callback(TClass *object, void (__cdecl TClass::*func)(TArgument *argument))
 	{ return CCallback<TArgument>(object, func); }
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// CDbLink
 
 class CDlgBase;
 
 class CDbLink
 {
-private:
 	char *m_szModule;
 	char *m_szSetting;
 	BYTE m_type;
@@ -87,90 +96,63 @@ private:
 	DBVARIANT dbv;
 
 public:
-	CDbLink(char *szModule, char *szSetting, BYTE type, DWORD iValue)
-	{
-		m_szModule = mir_strdup(szModule);
-		m_szSetting = mir_strdup(szSetting);
-		m_type = type;
-		m_iDefault = iValue;
-		m_szDefault = 0;
-		dbv.type = DBVT_DELETED;
-	}
-	CDbLink(char *szModule, char *szSetting, BYTE type, TCHAR *szValue)
-	{
-		m_szModule = mir_strdup(szModule);
-		m_szSetting = mir_strdup(szSetting);
-		m_type = type;
-		m_szDefault = mir_tstrdup(szValue);
-		dbv.type = DBVT_DELETED;
-	}
-	~CDbLink()
-	{
-		mir_free(m_szModule);
-		mir_free(m_szSetting);
-		mir_free(m_szDefault);
-		if (dbv.type != DBVT_DELETED) DBFreeVariant(&dbv);
-	}
+	CDbLink(const char *szModule, const char *szSetting, BYTE type, DWORD iValue);
+	CDbLink(const char *szModule, const char *szSetting, BYTE type, TCHAR *szValue);
+	~CDbLink();
 
-	__forceinline BYTE GetDataType() { return m_type; }
+	__inline BYTE GetDataType() { return m_type; }
 
-	DWORD LoadInt()
-	{
-		switch (m_type)
-		{
-			case DBVT_BYTE:		return DBGetContactSettingByte(NULL, m_szModule, m_szSetting, m_iDefault);
-			case DBVT_WORD:		return DBGetContactSettingWord(NULL, m_szModule, m_szSetting, m_iDefault);
-			case DBVT_DWORD:	return DBGetContactSettingDword(NULL, m_szModule, m_szSetting, m_iDefault);
-			default:			return m_iDefault;
-		}
-	}
-	void SaveInt(DWORD value)
-	{
-		switch (m_type)
-		{
-			case DBVT_BYTE:		DBWriteContactSettingByte(NULL, m_szModule, m_szSetting, (BYTE)value); break;
-			case DBVT_WORD:		DBWriteContactSettingWord(NULL, m_szModule, m_szSetting, (WORD)value); break;
-			case DBVT_DWORD:	DBWriteContactSettingDword(NULL, m_szModule, m_szSetting, value); break;
-		}
-	}
-	TCHAR *LoadText()
-	{
-		if (dbv.type != DBVT_DELETED) DBFreeVariant(&dbv);
-		if (!DBGetContactSettingTString(NULL, m_szModule, m_szSetting, &dbv))
-		{
-			if (dbv.type == DBVT_TCHAR)
-				return dbv.ptszVal;
-			return m_szDefault;
-		}
+	DWORD LoadInt();
+	void SaveInt(DWORD value);
 
-		dbv.type = DBVT_DELETED;
-		return m_szDefault;
-	}
-	void SaveText(TCHAR *value)
-	{
-		DBWriteContactSettingTString(NULL, m_szModule, m_szSetting, value);
-	}
+	TCHAR *LoadText();
+	void SaveText(TCHAR *value);
 };
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// CCtrlBase
 
 class CCtrlBase
 {
-public:
-	CCtrlBase(CDlgBase *wnd = NULL, int idCtrl = 0): m_wnd(wnd), m_idCtrl(idCtrl) {}
-	virtual ~CCtrlBase() {}
+	friend class CDlgBase;
 
-	inline CDlgBase *GetParent() { return m_wnd; }
+public:
+	CCtrlBase(CDlgBase *wnd, int idCtrl );
+	virtual ~CCtrlBase() { Unsubclass(); }
+
+	__inline HWND GetHwnd() const { return m_hwnd; }
+	__inline CDlgBase *GetParent() { return m_parentWnd; }
+
+	void Enable( int bIsEnable = true );
+	__inline void Disable() { Enable( false ); }
+	BOOL Enabled( void ) const;
+
+	LRESULT SendMsg( UINT Msg, WPARAM wParam, LPARAM lParam );
+
+	void SetText(const TCHAR *text);
+	void SetTextA(const char *text);
+	void SetInt(int value);
+
+	TCHAR *GetText();
+	char *GetTextA();
+
+	TCHAR *GetText(TCHAR *buf, int size);
+	char *GetTextA(char *buf, int size);
+
+	int GetInt();
 
 	virtual BOOL OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode) { return FALSE; }
 	virtual BOOL OnNotify(int idCtrl, NMHDR *pnmh) { return FALSE; }
 
-	virtual BOOL OnMesaureItem(MEASUREITEMSTRUCT *param) { return FALSE; }
+	virtual BOOL OnMeasureItem(MEASUREITEMSTRUCT *param) { return FALSE; }
 	virtual BOOL OnDrawItem(DRAWITEMSTRUCT *param) { return FALSE; }
 	virtual BOOL OnDeleteItem(DELETEITEMSTRUCT *param) { return FALSE; }
 
-	virtual void OnInit() {}
+	virtual void OnInit();
+	virtual void OnDestroy();
+
 	virtual void OnApply() {}
 	virtual void OnReset() {}
-	virtual void OnDestroy() {}
 
 	static int cmp(const CCtrlBase *c1, const CCtrlBase *c2)
 	{
@@ -180,134 +162,219 @@ public:
 	}
 
 protected:
-	int m_idCtrl;
-	CDlgBase *m_wnd;
-};
-
-class CCtrlData: public CCtrlBase
-{
-public:
-	CCtrlData(): m_dbLink(NULL), m_wndproc(0) {}
-	bool Initialize(CDlgBase *wnd, int idCtrl, CDbLink *dbLink = NULL, CCallback<CCtrlData> onChange = CCallback<CCtrlData>());
-
-	virtual ~CCtrlData()
-	{
-		Unsubclass();
-		if (m_dbLink) delete m_dbLink;
-	}
-
-	inline HWND GetHwnd() const { return m_hwnd; }
-
-	bool IsChanged() const { return m_changed; }
-
-	void Enable(bool enable=true) { EnableWindow(m_hwnd, enable ? TRUE : FALSE); }
-	void Disable() { Enable(false); }
-
-	void SetText(TCHAR *text) { SetWindowText(m_hwnd, text); }
-	void SetInt(int value)
-	{
-		TCHAR buf[32] = {0};
-		mir_sntprintf(buf, SIZEOF(buf), _T("%d"), value);
-		SetWindowText(m_hwnd, buf);
-	}
-
-	TCHAR *GetText()
-	{
-		int length = GetWindowTextLength(m_hwnd) + 1;
-		TCHAR *result = (TCHAR *)mir_alloc(length * sizeof(TCHAR));
-		GetWindowText(m_hwnd, result, length);
-		return result;
-	}
-	char *GetTextA()
-	{
-#ifdef UNICODE
-		int length = GetWindowTextLength(m_hwnd) + 1;
-		char *result = (char *)mir_alloc(length * sizeof(char));
-		GetWindowTextA(m_hwnd, result, length);
-		return result;
-#else
-		return GetText();
-#endif
-	}
-
-	TCHAR *GetText(TCHAR *buf, int size)
-	{
-		GetWindowText(m_hwnd, buf, size);
-		buf[size-1] = 0;
-		return buf;
-	}
-	char *GetTextA(char *buf, int size)
-	{
-#ifdef UNICODE
-		GetWindowTextA(m_hwnd, buf, size);
-		buf[size-1] = 0;
-		return buf;
-#else
-		return GetText(buf, size);
-#endif
-	}
-
-	int GetInt()
-	{
-		int length = GetWindowTextLength(m_hwnd) + 1;
-		TCHAR *result = (TCHAR *)_alloca(length * sizeof(TCHAR));
-		GetWindowText(m_hwnd, result, length);
-		return _ttoi(result);
-	}
-
-	virtual void OnInit();
-	virtual void OnDestroy() { Unsubclass(); m_hwnd = 0; }
-
-	// Events
-	CCallback<CCtrlData> OnChange;
-
-protected:
 	HWND m_hwnd;
-	CDbLink *m_dbLink;
-	bool m_changed;
+	int m_idCtrl;
+	CCtrlBase* m_next;
+	CDlgBase* m_parentWnd;
 
-	void NotifyChange();
-
-	__forceinline BYTE GetDataType() { return m_dbLink ? m_dbLink->GetDataType() : DBVT_DELETED; }
-	__forceinline DWORD LoadInt() { return m_dbLink ? m_dbLink->LoadInt() : 0; }
-	__forceinline void SaveInt(DWORD value) { if (m_dbLink) m_dbLink->SaveInt(value); }
-	__forceinline TCHAR *LoadText() { return m_dbLink ? m_dbLink->LoadText() : _T(""); }
-	__forceinline void SaveText(TCHAR *value) { if (m_dbLink) m_dbLink->SaveText(value); }
-
-	virtual LRESULT CustomWndProc(UINT msg, WPARAM wParam, LPARAM lParam)
-	{
-		if (msg == WM_DESTROY) Unsubclass();
-		return CallWindowProc(m_wndproc, m_hwnd, msg, wParam, lParam);
-	}
-	void Subclass()
-	{
-		SetWindowLong(m_hwnd, GWL_USERDATA, (LONG)this);
-		m_wndproc = (WNDPROC)SetWindowLong(m_hwnd, GWL_WNDPROC, (LONG)GlobalSubclassWndProc);
-	}
-	void Unsubclass()
-	{
-		if (m_wndproc)
-		{
-			SetWindowLong(m_hwnd, GWL_WNDPROC, (LONG)m_wndproc);
-			SetWindowLong(m_hwnd, GWL_USERDATA, (LONG)0);
-			m_wndproc = 0;
-		}
-	}
+	virtual LRESULT CustomWndProc(UINT msg, WPARAM wParam, LPARAM lParam);
+	void Subclass();
+	void Unsubclass();
 
 private:
 	WNDPROC m_wndproc;
 	static LRESULT CALLBACK GlobalSubclassWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
-		if (CCtrlData *ctrl = (CCtrlData *)GetWindowLong(hwnd, GWL_USERDATA))
-			if (ctrl) return ctrl->CustomWndProc(msg, wParam, lParam);
+		if (CCtrlBase *ctrl = (CCtrlBase*)GetWindowLong(hwnd, GWL_USERDATA))
+			if (ctrl)
+				return ctrl->CustomWndProc(msg, wParam, lParam);
+
 		return DefWindowProc(hwnd, msg, wParam, lParam);
 	}
 };
 
-class CCtrlCheck: public CCtrlData
+/////////////////////////////////////////////////////////////////////////////////////////
+// CCtrlButton
+
+class CCtrlButton : public CCtrlBase
 {
 public:
-	CCtrlCheck() {}
+	CCtrlButton( CDlgBase* dlg, int ctrlId );
+
+	template<class TDlg>
+	CCtrlButton( TDlg* dlg, int ctrlId, void (__cdecl TDlg::*pfnOnClick)(CCtrlButton *argument) );
+
+	virtual BOOL OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode);
+
+	CCallback<CCtrlButton> OnClick;
+};
+
+template<class TDlg>
+CCtrlButton::CCtrlButton( TDlg* dlg, int ctrlId, void (__cdecl TDlg::*pfnOnClick)(CCtrlButton *argument) ) :
+	CCtrlBase( dlg, ctrlId ),
+	OnClick( dlg, pfnOnClick )
+{
+}
+
+class CCtrlMButton : public CCtrlButton
+{
+public:
+	CCtrlMButton( CDlgBase* dlg, int ctrlId, HICON hIcon, const char* tooltip );
+	CCtrlMButton( CDlgBase* dlg, int ctrlId, int iCoreIcon, const char* tooltip );
+
+	template<class TDlg>
+	CCtrlMButton( TDlg* dlg, int ctrlId, HICON hIcon, const char* tooltip, void (__cdecl TDlg::*pfnOnClick)(CCtrlButton *argument) );
+
+	template<class TDlg>
+	CCtrlMButton( TDlg* dlg, int ctrlId, int iCoreIcon, const char* tooltip, void (__cdecl TDlg::*pfnOnClick)(CCtrlButton *argument) );
+
+	void MakeFlat();
+	void MakePush();
+
+	virtual void OnInit();
+
+protected:
+	HICON m_hIcon;
+	const char* m_toolTip;
+};
+
+template<class TDlg>
+CCtrlMButton::CCtrlMButton( TDlg* dlg, int ctrlId, HICON hIcon, const char* tooltip, void (__cdecl TDlg::*pfnOnClick)(CCtrlButton *argument) ) :
+	CCtrlButton( dlg, ctrlId, pfnOnClick ),
+	m_hIcon( hIcon ),
+	m_toolTip( tooltip )
+{
+}
+
+template<class TDlg>
+CCtrlMButton::CCtrlMButton( TDlg* dlg, int ctrlId, int iCoreIcon, const char* tooltip, void (__cdecl TDlg::*pfnOnClick)(CCtrlButton *argument) ) :
+	CCtrlButton( dlg, ctrlId, pfnOnClick ),
+	m_hIcon( LoadSkinnedIcon(iCoreIcon) ),
+	m_toolTip( tooltip )
+{
+}
+
+class CCtrlHyperlink : public CCtrlBase
+{
+public:
+	CCtrlHyperlink( CDlgBase* dlg, int ctrlId, const char* url );
+
+	virtual BOOL OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode);
+
+protected:
+	const char* m_url;
+};
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// CCtrlClc
+class CCtrlClc: public CCtrlBase
+{
+public:
+	CCtrlClc( CDlgBase* dlg, int ctrlId );
+
+	void AddContact(HANDLE hContact);
+	void AddGroup(HANDLE hGroup);
+	void AutoRebuild();
+	void DeleteItem(HANDLE hItem);
+	void EditLabel(HANDLE hItem);
+	void EndEditLabel(bool save);
+	void EnsureVisible(HANDLE hItem, bool partialOk);
+	void Expand(HANDLE hItem, DWORD flags);
+	HANDLE FindContact(HANDLE hContact);
+	HANDLE FindGroup(HANDLE hGroup);
+	COLORREF GetBkColor();
+	bool GetCheck(HANDLE hItem);
+	int GetCount();
+	HWND GetEditControl();
+	DWORD GetExpand(HANDLE hItem);
+	int GetExtraColumns();
+	BYTE GetExtraImage(HANDLE hItem, int iColumn);
+	HIMAGELIST GetExtraImageList();
+	HFONT GetFont(int iFontId);
+	HANDLE GetSelection();
+	HANDLE HitTest(int x, int y, DWORD *hitTest);
+	void SelectItem(HANDLE hItem);
+	void SetBkBitmap(DWORD mode, HBITMAP hBitmap);
+	void SetBkColor(COLORREF clBack);
+	void SetCheck(HANDLE hItem, bool check);
+	void SetExtraColumns(int iColumns);
+	void SetExtraImage(HANDLE hItem, int iColumn, int iImage);
+	void SetExtraImageList(HIMAGELIST hImgList);
+	void SetFont(int iFontId, HANDLE hFont, bool bRedraw);
+	void SetIndent(int iIndent);
+	void SetItemText(HANDLE hItem, char *szText);
+	void SetHideEmptyGroups(bool state);
+	void SetGreyoutFlags(DWORD flags);
+	bool GetHideOfflineRoot();
+	void SetHideOfflineRoot(bool state);
+	void SetUseGroups(bool state);
+	void SetOfflineModes(DWORD modes);
+	DWORD GetExStyle();
+	void SetExStyle(DWORD exStyle);
+	int GetLefrMargin();
+	void SetLeftMargin(int iMargin);
+	HANDLE AddInfoItem(CLCINFOITEM *cii);
+	int GetItemType(HANDLE hItem);
+	HANDLE GetNextItem(HANDLE hItem, DWORD flags);
+	COLORREF GetTextColot(int iFontId);
+	void SetTextColor(int iFontId, COLORREF clText);
+
+	struct TEventInfo
+	{
+		CCtrlClc		*ctrl;
+		NMCLISTCONTROL	*info;
+	};
+
+	CCallback<TEventInfo>	OnExpanded;
+	CCallback<TEventInfo>	OnListRebuilt;
+	CCallback<TEventInfo>	OnItemChecked;
+	CCallback<TEventInfo>	OnDragging;
+	CCallback<TEventInfo>	OnDropped;
+	CCallback<TEventInfo>	OnListSizeChange;
+	CCallback<TEventInfo>	OnOptionsChanged;
+	CCallback<TEventInfo>	OnDragStop;
+	CCallback<TEventInfo>	OnNewContact;
+	CCallback<TEventInfo>	OnContactMoved;
+	CCallback<TEventInfo>	OnCheckChanged;
+	CCallback<TEventInfo>	OnClick;
+
+protected:
+	BOOL OnNotify(int idCtrl, NMHDR *pnmh);
+};
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// CCtrlData - data access controls base class
+
+class CCtrlData : public CCtrlBase
+{
+public:
+	CCtrlData( CDlgBase* dlg, int ctrlId );
+
+	virtual ~CCtrlData()
+	{
+		if (m_dbLink) delete m_dbLink;
+	}
+
+	__inline bool IsChanged() const { return m_changed; }
+
+	void CreateDbLink( const char* szModuleName, const char* szSetting, BYTE type, DWORD iValue );
+	void CreateDbLink( const char* szModuleName, const char* szSetting, TCHAR* szValue );
+
+	virtual void OnInit();
+
+	// Events
+	CCallback<CCtrlData> OnChange;
+
+protected:
+	CDbLink *m_dbLink;
+	bool m_changed;
+
+	void NotifyChange();
+
+	__inline BYTE GetDataType() { return m_dbLink ? m_dbLink->GetDataType() : DBVT_DELETED; }
+	__inline DWORD LoadInt() { return m_dbLink ? m_dbLink->LoadInt() : 0; }
+	__inline void SaveInt(DWORD value) { if (m_dbLink) m_dbLink->SaveInt(value); }
+	__inline TCHAR *LoadText() { return m_dbLink ? m_dbLink->LoadText() : _T(""); }
+	__inline void SaveText(TCHAR *value) { if (m_dbLink) m_dbLink->SaveText(value); }
+};
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// CCtrlCheck
+
+class CCtrlCheck : public CCtrlData
+{
+public:
+	CCtrlCheck( CDlgBase* dlg, int ctrlId );
 	virtual BOOL OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode) { NotifyChange(); return TRUE; }
 	virtual void OnInit()
 	{
@@ -323,14 +390,17 @@ public:
 		SetState(LoadInt());
 	}
 
-	int GetState() { return SendMessage(m_hwnd, BM_GETCHECK, 0, 0); }
-	void SetState(int state) { SendMessage(m_hwnd, BM_SETCHECK, state, 0); }
+	int GetState();
+	void SetState(int state);
 };
 
-class CCtrlEdit: public CCtrlData
+/////////////////////////////////////////////////////////////////////////////////////////
+// CCtrlEdit
+
+class CCtrlEdit : public CCtrlData
 {
 public:
-	CCtrlEdit() {}
+	CCtrlEdit( CDlgBase* dlg, int ctrlId );
 	virtual BOOL OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 	{
 		if (idCode == EN_CHANGE)
@@ -350,8 +420,8 @@ public:
 			TCHAR *buf = (TCHAR *)_alloca(sizeof(TCHAR) * len);
 			GetWindowText(m_hwnd, buf, len);
 			SaveText(buf);
-		} else
-		if (GetDataType() != DBVT_DELETED)
+		} 
+		else if (GetDataType() != DBVT_DELETED)
 		{
 			SaveInt(GetInt());
 		}
@@ -365,72 +435,56 @@ public:
 	}
 };
 
-class CCtrlListBox: public CCtrlData
+/////////////////////////////////////////////////////////////////////////////////////////
+// CCtrlListBox
+
+class CCtrlListBox : public CCtrlBase
 {
 public:
-	virtual void COMPILE_LOCK() = 0;
+	CCtrlListBox( CDlgBase* dlg, int ctrlId );
 
-	int AddString(TCHAR *text, LPARAM data=0)
-	{
-		int iItem = SendMessage(m_hwnd, LB_ADDSTRING, 0, (LPARAM)text);
-		SendMessage(m_hwnd, LB_SETITEMDATA, iItem, data);
-		return iItem;
-	}
-	void DeleteString(int index) { SendMessage(m_hwnd, LB_DELETESTRING, index, 0); }
-	int FindString(TCHAR *str, int index = -1, bool exact = false) { return SendMessage(m_hwnd, exact?LB_FINDSTRINGEXACT:LB_FINDSTRING, index, (LPARAM)str); }
-	int GetCount() { return SendMessage(m_hwnd, LB_GETCOUNT, 0, 0); }
-	int GetCurSel() { return SendMessage(m_hwnd, LB_GETCURSEL, 0, 0); }
-	LPARAM GetItemData(int index) { return SendMessage(m_hwnd, LB_GETITEMDATA, index, 0); }
-	TCHAR *GetItemText(int index)
-	{
-		TCHAR *result = (TCHAR *)mir_alloc(sizeof(TCHAR) * (SendMessage(m_hwnd, LB_GETTEXTLEN, index, 0) + 1));
-		SendMessage(m_hwnd, LB_GETTEXT, index, (LPARAM)result);
-		return result;
-	}
-	TCHAR *GetItemText(int index, TCHAR *buf, int size)
-	{
-		TCHAR *result = (TCHAR *)_alloca(sizeof(TCHAR) * (SendMessage(m_hwnd, LB_GETTEXTLEN, index, 0) + 1));
-		SendMessage(m_hwnd, LB_GETTEXT, index, (LPARAM)result);
-		lstrcpyn(buf, result, size);
-		return buf;
-	}
-	bool GetSel(int index) { return SendMessage(m_hwnd, LB_GETSEL, index, 0) ? true : false; }
-	int GetSelCount() { return SendMessage(m_hwnd, LB_GETSELCOUNT, 0, 0); }
-	int *GetSelItems(int *items, int count)
-	{
-		SendMessage(m_hwnd, LB_GETSELITEMS, count, (LPARAM)items);
-		return items;
-	}
-	int *GetSelItems()
-	{
-		int count = GetSelCount() + 1;
-		int *result = (int *)mir_alloc(sizeof(int) * count);
-		SendMessage(m_hwnd, LB_GETSELITEMS, count, (LPARAM)result);
-		result[count-1] = -1;
-		return result;
-	}
-	int InsertString(TCHAR *text, int pos, LPARAM data=0)
-	{
-		int iItem = SendMessage(m_hwnd, CB_INSERTSTRING, pos, (LPARAM)text);
-		SendMessage(m_hwnd, CB_SETITEMDATA, iItem, data);
-		return iItem;
-	}
-	void ResetContent() { SendMessage(m_hwnd, LB_RESETCONTENT, 0, 0); }
-	int SelectString(TCHAR *str) { return SendMessage(m_hwnd, LB_SELECTSTRING, 0, (LPARAM)str); }
-	int SetCurSel(int index) { return SendMessage(m_hwnd, LB_SETCURSEL, index, 0); }
-	void SetItemData(int index, LPARAM data) { SendMessage(m_hwnd, LB_SETITEMDATA, index, data); }
-	void SetSel(int index, bool sel=true) { SendMessage(m_hwnd, LB_SETSEL, sel ? TRUE : FALSE, index); }
+	int    AddString(TCHAR *text, LPARAM data=0);
+	void   DeleteString(int index);
+	int    FindString(TCHAR *str, int index = -1, bool exact = false);
+	int    GetCount();
+	int    GetCurSel();
+	LPARAM GetItemData(int index);
+	TCHAR* GetItemText(int index);
+	TCHAR* GetItemText(int index, TCHAR *buf, int size);
+	bool   GetSel(int index);
+	int    GetSelCount();
+	int*   GetSelItems(int *items, int count);
+	int*   GetSelItems();
+	int    InsertString(TCHAR *text, int pos, LPARAM data=0);
+	void   ResetContent();
+	int    SelectString(TCHAR *str);
+	int    SetCurSel(int index);
+	void   SetItemData(int index, LPARAM data);
+	void   SetSel(int index, bool sel=true);
+
+	// Events
+	CCallback<CCtrlListBox>	OnDblClick;
+	CCallback<CCtrlListBox>	OnSelCancel;
+	CCallback<CCtrlListBox>	OnSelChange;
+
+protected:
+	BOOL OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode);
 };
 
-class CCtrlCombo: public CCtrlData
+/////////////////////////////////////////////////////////////////////////////////////////
+// CCtrlCombo
+
+class CCtrlCombo : public CCtrlData
 {
 public:
+	CCtrlCombo( CDlgBase* dlg, int ctrlId );
+
 	virtual BOOL OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 	{
 		switch (idCode)
 		{
-			case CBN_CLOSEUP:		OnCloseup(this);	break;
-			case CBN_DROPDOWN:		OnDropdown(this);	break;
+			case CBN_CLOSEUP:  OnCloseup(this);  break;
+			case CBN_DROPDOWN: OnDropdown(this); break;
 
 			case CBN_EDITCHANGE:
 			case CBN_EDITUPDATE:
@@ -455,8 +509,8 @@ public:
 			TCHAR *buf = (TCHAR *)_alloca(sizeof(TCHAR) * len);
 			GetWindowText(m_hwnd, buf, len);
 			SaveText(buf);
-		} else
-		if (GetDataType() != DBVT_DELETED)
+		}
+		else if (GetDataType() != DBVT_DELETED)
 		{
 			SaveInt(GetInt());
 		}
@@ -470,65 +524,49 @@ public:
 	}
 
 	// Control interface
-	int AddString(TCHAR *text, LPARAM data=0)
-	{
-		int iItem = SendMessage(m_hwnd, CB_ADDSTRING, 0, (LPARAM)text);
-		SendMessage(m_hwnd, CB_SETITEMDATA, iItem, data);
-		return iItem;
-	}
-	void DeleteString(int index) { SendMessage(m_hwnd, CB_DELETESTRING, index, 0); }
-	int FindString(TCHAR *str, int index = -1, bool exact = false) { return SendMessage(m_hwnd, exact?CB_FINDSTRINGEXACT:CB_FINDSTRING, index, (LPARAM)str); }
-	int GetCount() { return SendMessage(m_hwnd, CB_GETCOUNT, 0, 0); }
-	int GetCurSel() { return SendMessage(m_hwnd, CB_GETCURSEL, 0, 0); }
-	bool GetDroppedState() { return SendMessage(m_hwnd, CB_GETDROPPEDSTATE, 0, 0) ? true : false; }
-	LPARAM GetItemData(int index) { return SendMessage(m_hwnd, CB_GETITEMDATA, index, 0); }
-	TCHAR *GetItemText(int index)
-	{
-		TCHAR *result = (TCHAR *)mir_alloc(sizeof(TCHAR) * (SendMessage(m_hwnd, CB_GETLBTEXTLEN, index, 0) + 1));
-		SendMessage(m_hwnd, CB_GETLBTEXT, index, (LPARAM)result);
-		return result;
-	}
-	TCHAR *GetItemText(int index, TCHAR *buf, int size)
-	{
-		TCHAR *result = (TCHAR *)_alloca(sizeof(TCHAR) * (SendMessage(m_hwnd, CB_GETLBTEXTLEN, index, 0) + 1));
-		SendMessage(m_hwnd, CB_GETLBTEXT, index, (LPARAM)result);
-		lstrcpyn(buf, result, size);
-		return buf;
-	}
-	int InsertString(TCHAR *text, int pos, LPARAM data=0)
-	{
-		int iItem = SendMessage(m_hwnd, CB_INSERTSTRING, pos, (LPARAM)text);
-		SendMessage(m_hwnd, CB_SETITEMDATA, iItem, data);
-		return iItem;
-	}
-	void ResetContent() { SendMessage(m_hwnd, CB_RESETCONTENT, 0, 0); }
-	int SelectString(TCHAR *str) { return SendMessage(m_hwnd, CB_SELECTSTRING, 0, (LPARAM)str); }
-	int SetCurSel(int index) { return SendMessage(m_hwnd, CB_SETCURSEL, index, 0); }
-	void SetItemData(int index, LPARAM data) { SendMessage(m_hwnd, CB_SETITEMDATA, index, data); }
-	void ShowDropdown(bool show = true) { SendMessage(m_hwnd, CB_SHOWDROPDOWN, show ? TRUE : FALSE, 0); }
+	int    AddString(TCHAR *text, LPARAM data = 0 );
+	int    AddStringA(char *text, LPARAM data = 0 );
+	void   DeleteString(int index);
+	int    FindString(TCHAR *str, int index = -1, bool exact = false);
+	int    FindStringA(char *str, int index = -1, bool exact = false);
+	int    GetCount();
+	int    GetCurSel();
+	bool   GetDroppedState();
+	LPARAM GetItemData(int index);
+	TCHAR* GetItemText(int index);
+	TCHAR* GetItemText(int index, TCHAR *buf, int size);
+	int    InsertString(TCHAR *text, int pos, LPARAM data=0);
+	void   ResetContent();
+	int    SelectString(TCHAR *str);
+	int    SetCurSel(int index);
+	void   SetItemData(int index, LPARAM data);
+	void   ShowDropdown(bool show = true);
 
 	// Events
 	CCallback<CCtrlCombo>	OnCloseup;
 	CCallback<CCtrlCombo>	OnDropdown;
 };
 
+/////////////////////////////////////////////////////////////////////////////////////////
+// CCtrlCustom
+
 template<typename TDlg>
-class CCtrlCustom: public CCtrlBase
+class CCtrlCustom : public CCtrlBase
 {
 private:
-	BOOL (TDlg::*m_pfnOnCommand)(HWND hwndCtrl, WORD idCtrl, WORD idCode);
-	BOOL (TDlg::*m_pfnOnNotify)(int idCtrl, NMHDR *pnmh);
-	BOOL (TDlg::*m_pfnOnMeasureItem)(MEASUREITEMSTRUCT *param);
-	BOOL (TDlg::*m_pfnOnDrawItem)(DRAWITEMSTRUCT *param);
-	BOOL (TDlg::*m_pfnOnDeleteItem)(DELETEITEMSTRUCT *param);
+	void (TDlg::*m_pfnOnCommand)(HWND hwndCtrl, WORD idCtrl, WORD idCode);
+	void (TDlg::*m_pfnOnNotify)(int idCtrl, NMHDR *pnmh);
+	void (TDlg::*m_pfnOnMeasureItem)(MEASUREITEMSTRUCT *param);
+	void (TDlg::*m_pfnOnDrawItem)(DRAWITEMSTRUCT *param);
+	void (TDlg::*m_pfnOnDeleteItem)(DELETEITEMSTRUCT *param);
 
 public:
 	CCtrlCustom(TDlg *wnd, int idCtrl,
-		BOOL (TDlg::*pfnOnCommand)(HWND hwndCtrl, WORD idCtrl, WORD idCode),
-		BOOL (TDlg::*pfnOnNotify)(int idCtrl, NMHDR *pnmh),
-		BOOL (TDlg::*pfnOnMeasureItem)(MEASUREITEMSTRUCT *param) = NULL,
-		BOOL (TDlg::*pfnOnDrawItem)(DRAWITEMSTRUCT *param) = NULL,
-		BOOL (TDlg::*pfnOnDeleteItem)(DELETEITEMSTRUCT *param) = NULL): CCtrlBase(wnd, idCtrl)
+		void (TDlg::*pfnOnCommand)(HWND hwndCtrl, WORD idCtrl, WORD idCode),
+		void (TDlg::*pfnOnNotify)(int idCtrl, NMHDR *pnmh),
+		void (TDlg::*pfnOnMeasureItem)(MEASUREITEMSTRUCT *param) = NULL,
+		void (TDlg::*pfnOnDrawItem)(DRAWITEMSTRUCT *param) = NULL,
+		void (TDlg::*pfnOnDeleteItem)(DELETEITEMSTRUCT *param) = NULL): CCtrlBase(wnd, idCtrl)
 	{
 		m_pfnOnCommand		= pfnOnCommand;
 		m_pfnOnNotify		= pfnOnNotify;
@@ -539,32 +577,58 @@ public:
 
 	virtual BOOL OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 	{
-		return (m_wnd && m_pfnOnCommand) ? ((((TDlg *)m_wnd)->*m_pfnOnCommand)(hwndCtrl, idCtrl, idCode)) : FALSE;
+		if (m_parentWnd && m_pfnOnCommand) {
+			m_parentWnd->m_lresult = 0;
+			(((TDlg *)m_parentWnd)->*m_pfnOnCommand)(hwndCtrl, idCtrl, idCode);
+			return m_parentWnd->m_lresult;
+		}
+		return FALSE;
 	}
 	virtual BOOL OnNotify(int idCtrl, NMHDR *pnmh)
 	{
-		return (m_wnd && m_pfnOnNotify) ? ((((TDlg *)m_wnd)->*m_pfnOnNotify)(idCtrl, pnmh)) : FALSE;
+		if (m_parentWnd && m_pfnOnNotify) {
+			m_parentWnd->m_lresult = 0;
+			(((TDlg *)m_parentWnd)->*m_pfnOnNotify)(idCtrl, pnmh);
+			return m_parentWnd->m_lresult;
+		}
+		return FALSE;
 	}
 
 	virtual BOOL OnMeasureItem(MEASUREITEMSTRUCT *param)
 	{
-		return (m_wnd && m_pfnOnMeasureItem) ? ((((TDlg *)m_wnd)->*m_pfnOnMeasureItem)(param)) : FALSE;
+		if (m_parentWnd && m_pfnOnMeasureItem) {
+			m_parentWnd->m_lresult = 0;
+			(((TDlg *)m_parentWnd)->*m_pfnOnMeasureItem)(param);
+			return m_parentWnd->m_lresult;
+		}
+		return FALSE;
 	}
 	virtual BOOL OnDrawItem(DRAWITEMSTRUCT *param)
 	{
-		return (m_wnd && m_pfnOnDrawItem) ? ((((TDlg *)m_wnd)->*m_pfnOnDrawItem)(param)) : FALSE;
+		if (m_parentWnd && m_pfnOnDrawItem) {
+			m_parentWnd->m_lresult = 0;
+			(((TDlg *)m_parentWnd)->*m_pfnOnDrawItem)(param);
+			return m_parentWnd->m_lresult;
+		}
+		return FALSE;
 	}
 	virtual BOOL OnDeleteItem(DELETEITEMSTRUCT *param)
 	{
-		return (m_wnd && m_pfnOnDeleteItem) ? ((((TDlg *)m_wnd)->*m_pfnOnDeleteItem)(param)) : FALSE;
+		if (m_parentWnd && m_pfnOnDeleteItem) {
+			m_parentWnd->m_lresult = 0;
+			(((TDlg *)m_parentWnd)->*m_pfnOnDeleteItem)(param);
+			return m_parentWnd->m_lresult;
+		}
+		return FALSE;
 	}
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// Base dialog class
+// CDlgBase - base dialog class
 
 class CDlgBase
 {
+	friend class CCtrlBase;
 	friend class CCtrlData;
 
 public:
@@ -574,10 +638,11 @@ public:
 	// general utilities
 	void Show();
 	int DoModal();
-	inline HWND GetHwnd() const { return m_hwnd; }
-	bool IsInitialized() const { return m_initialized; }
-	inline void Close() { SendMessage(m_hwnd, WM_CLOSE, 0, 0); }
-	inline const MSG *ActiveMessage() const { return &m_msg; }
+
+	__inline HWND GetHwnd() const { return m_hwnd; }
+	__inline bool IsInitialized() const { return m_initialized; }
+	__inline void Close() { SendMessage(m_hwnd, WM_CLOSE, 0, 0); }
+	__inline const MSG *ActiveMessage() const { return &m_msg; }
 
 	// global jabber events
 	virtual void OnJabberOffline() {}
@@ -602,6 +667,7 @@ public:
 		return FALSE;
 	}
 
+	LRESULT m_lresult;
 protected:
 	HWND    m_hwnd;
 	HWND    m_hwndParent;
@@ -610,11 +676,13 @@ protected:
 	bool    m_isModal;
 	bool    m_initialized;
 
+	CCtrlBase* m_first;
+
 	// override this handlers to provide custom functionality
 	// general messages
-	virtual bool OnInitDialog() { return false; }
-	virtual bool OnClose() { return false; }
-	virtual bool OnDestroy() { return false; }
+	virtual void OnInitDialog() { }
+	virtual void OnClose() { }
+	virtual void OnDestroy() { }
 
 	// miranda-related stuff
 	virtual int Resizer(UTILRESIZECONTROL *urc);
@@ -626,48 +694,20 @@ protected:
 	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
 
 	// resister controls
-	inline void AddControl(CCtrlBase *ctrl) { m_controls.insert(ctrl); }
-	inline void ManageControl(CCtrlBase *ctrl) { AddControl(ctrl); m_autocontrols.insert(ctrl); }
-
-	// register handlers for different controls
-	template<typename TDlg>
-	inline void SetControlHandler(int idCtrl,
-			BOOL (TDlg::*pfnOnCommand)(HWND hwndCtrl, WORD idCtrl, WORD idCode))
-			{ ManageControl(new CCtrlCustom<TDlg>((TDlg *)this, idCtrl, pfnOnCommand, NULL)); }
-
-	template<typename TDlg>
-	inline void SetControlHandler(int idCtrl,
-			BOOL (TDlg::*pfnOnNotify)(int idCtrl, NMHDR *pnmh))
-			{ ManageControl(new CCtrlCustom<TDlg>((TDlg *)this, idCtrl, NULL, pfnOnNotify)); }
-
-	template<typename TDlg>
-	inline void SetControlHandler(int idCtrl,
-			BOOL (TDlg::*pfnOnCommand)(HWND hwndCtrl, WORD idCtrl, WORD idCode),
-			BOOL (TDlg::*pfnOnNotify)(int idCtrl, NMHDR *pnmh),
-			BOOL (TDlg::*pfnOnMeasureItem)(MEASUREITEMSTRUCT *param) = NULL,
-			BOOL (TDlg::*pfnOnDrawItem)(DRAWITEMSTRUCT *param) = NULL,
-			BOOL (TDlg::*pfnOnDeleteItem)(DELETEITEMSTRUCT *param) = NULL)
-			{ ManageControl(new CCtrlCustom<TDlg>((TDlg *)this, idCtrl, pfnOnCommand, pfnOnNotify, pfnOnMeasureItem, pfnOnDrawItem, pfnOnDeleteItem)); }
+	void AddControl(CCtrlBase *ctrl);
 
 private:
 	LIST<CCtrlBase> m_controls;
-	LIST<CCtrlBase> m_autocontrols; // this controls will be automatically destroyed
 
-	inline void NotifyControls(void (CCtrlBase::*fn)())
-	{
-		for (int i = 0; i < m_controls.getCount(); ++i)
-			(m_controls[i]->*fn)();
-	}
-
-	inline CCtrlBase *FindControl(int idCtrl)
-	{
-		CCtrlBase search(NULL, idCtrl);
-		return m_controls.find(&search);
-	}
+	void NotifyControls(void (CCtrlBase::*fn)());
+	CCtrlBase *FindControl(int idCtrl);
 
 	static BOOL CALLBACK GlobalDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	static int GlobalDlgResizer(HWND hwnd, LPARAM lParam, UTILRESIZECONTROL *urc);
 };
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// CProtoDlgBase
 
 template<typename TProto>
 class CProtoDlgBase : public CDlgBase
@@ -679,65 +719,24 @@ public:
 	{
 	}
 
+	__inline void CreateLink( CCtrlData& ctrl, char *szSetting, BYTE type, DWORD iValue)
+	{
+		ctrl.CreateDbLink((( PROTO_INTERFACE* )m_proto)->m_szModuleName, szSetting, type, iValue );
+	}
+	__inline void CreateLink( CCtrlData& ctrl, const char *szSetting, TCHAR *szValue)
+	{
+		ctrl.CreateDbLink((( PROTO_INTERFACE* )m_proto)->m_szModuleName, szSetting, szValue );
+	}
+
 	__inline TProto *GetProto() { return m_proto; }
 
 protected:
 	TProto* m_proto;
 };
 
-// General utilities
-struct TMButtonInfo
-{
-	int		idCtrl;
-	TCHAR	*szTitle;
-	char	*szIcon;
-	int		iCoreIcon;
-	bool	bIsPush;
-};
-
-template<typename TProto>
-void UISetupMButtons(TProto *proto, HWND hwnd, TMButtonInfo *buttons, int count)
-{
-	for (int i = 0; i < count; ++i)
-	{
-		SendDlgItemMessage(hwnd, buttons[i].idCtrl, BM_SETIMAGE, IMAGE_ICON,
-			(LPARAM)(buttons[i].szIcon ?
-				proto->LoadIconEx(buttons[i].szIcon) :
-				LoadSkinnedIcon(buttons[i].iCoreIcon)));
-		SendDlgItemMessage(hwnd, buttons[i].idCtrl, BUTTONSETASFLATBTN, 0, 0);
-		SendDlgItemMessage(hwnd, buttons[i].idCtrl, BUTTONADDTOOLTIP, (WPARAM)TranslateTS(buttons[i].szTitle), BATF_TCHAR);
-		if (buttons[i].bIsPush)
-			SendDlgItemMessage(hwnd, buttons[i].idCtrl, BUTTONSETASPUSHBTN, 0, 0);
-	}
-}
+/////////////////////////////////////////////////////////////////////////////////////////
 
 int UIEmulateBtnClick(HWND hwndDlg, UINT idcButton);
 void UIShowControls(HWND hwndDlg, int *idList, int nCmdShow);
-
-struct TCtrlInfo
-{
-	CCtrlData	*ctrl;
-	int				idCtrl;
-	BYTE			dbType;
-	char			*szSetting;
-
-	TCHAR			*szValue;
-	DWORD			iValue;
-};
-
-template<typename TProto>
-void UISetupControls(CProtoDlgBase<TProto>* wnd, TCtrlInfo *controls, int count)
-{
-	for (int i = 0; i < count; ++i)
-	{
-		CDbLink *dbLink = NULL;
-		if (controls[i].dbType == DBVT_TCHAR)
-			dbLink = new CDbLink(wnd->GetProto()->m_szProtoName, controls[i].szSetting, controls[i].dbType, controls[i].szValue);
-		else if (controls[i].dbType != DBVT_DELETED)
-			dbLink = new CDbLink(wnd->GetProto()->m_szProtoName, controls[i].szSetting, controls[i].dbType, controls[i].iValue);
-
-		controls[i].ctrl->Initialize(wnd, controls[i].idCtrl, dbLink );
-	}
-}
 
 #endif // __jabber_ui_utils_h__

@@ -42,6 +42,7 @@ Last change by : $Author$
  *******************************************************************/
 #define _WIN32_WINNT 0x510
 #include <windows.h>
+#include <commctrl.h>
 #include <process.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -86,6 +87,9 @@ typedef CProtoDlgBase<CJabberProto> CJabberDlgBase;
 /*******************************************************************
  * Global constants
  *******************************************************************/
+
+#define GLOBAL_SETTING_PREFIX	"JABBER"
+
 #define JABBER_DEFAULT_PORT 5222
 #define JABBER_IQID "mir_"
 #define JABBER_MAX_JID_LEN  256
@@ -483,6 +487,10 @@ void JabberFormCreateDialog( XmlNode *xNode, TCHAR* defTitle, JABBER_FORM_SUBMIT
 XmlNode* JabberFormGetData( HWND hwndStatic, XmlNode *xNode );
 
 //---- jabber_icolib.c ----------------------------------------------
+
+void   g_IconsInit();
+HANDLE g_GetIconHandle( int iconId );
+HICON  g_LoadIconEx( const char* name );
 
 int    ReloadIconsEventHook(WPARAM wParam, LPARAM lParam);
 

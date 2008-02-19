@@ -444,28 +444,33 @@ protected:
 	static int idSimpleControls[];
 	static int idAdvancedControls[];
 
-	bool OnInitDialog();
-	bool OnDestroy();
+	void OnInitDialog();
+	void OnDestroy();
 	int Resizer(UTILRESIZECONTROL *urc);
 	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
 
-	BOOL OnCommand_Simple(HWND hwndCtrl, WORD idCtrl, WORD idCode);
-	BOOL OnCommand_Advanced(HWND hwndCtrl, WORD idCtrl, WORD idCode);
-	BOOL OnCommand_AddJid(HWND hwndCtrl, WORD idCtrl, WORD idCode);
-	BOOL OnCommand_Activate(HWND hwndCtrl, WORD idCtrl, WORD idCode);
-	BOOL OnCommand_SetDefault(HWND hwndCtrl, WORD idCtrl, WORD idCode);
-	BOOL OnCommand_LbLists(HWND hwndCtrl, WORD idCtrl, WORD idCode);
-	BOOL OnCommand_PlRulesList(HWND hwndCtrl, WORD idCtrl, WORD idCode);
-	BOOL OnCommand_EditRule(HWND hwndCtrl, WORD idCtrl, WORD idCode);
-	BOOL OnCommand_AddRule(HWND hwndCtrl, WORD idCtrl, WORD idCode);
-	BOOL OnCommand_RemoveRule(HWND hwndCtrl, WORD idCtrl, WORD idCode);
-	BOOL OnCommand_UpRule(HWND hwndCtrl, WORD idCtrl, WORD idCode);
-	BOOL OnCommand_DownRule(HWND hwndCtrl, WORD idCtrl, WORD idCode);
-	BOOL OnCommand_AddList(HWND hwndCtrl, WORD idCtrl, WORD idCode);
-	BOOL OnCommand_RemoveList(HWND hwndCtrl, WORD idCtrl, WORD idCode);
-	BOOL OnCommand_Apply(HWND hwndCtrl, WORD idCtrl, WORD idCode);
-	BOOL OnCommand_Close(HWND hwndCtrl, WORD idCtrl, WORD idCode);
-	BOOL OnNotify_CList(int idCtrl, NMHDR *pnmh);
+	void __cdecl btnSimple_OnClick(CCtrlButton *);
+	void __cdecl btnAdvanced_OnClick(CCtrlButton *);
+	void __cdecl btnAddJid_OnClick(CCtrlButton *);
+	void __cdecl btnActivate_OnClick(CCtrlButton *);
+	void __cdecl btnSetDefault_OnClick(CCtrlButton *);
+	void __cdecl lbLists_OnSelChange(CCtrlListBox *);
+	void __cdecl lbLists_OnDblClick(CCtrlListBox *);
+	void __cdecl lbRules_OnSelChange(CCtrlListBox *);
+	void __cdecl lbRules_OnDblClick(CCtrlListBox *);
+	void __cdecl btnEditRule_OnClick(CCtrlButton *);
+	void __cdecl btnAddRule_OnClick(CCtrlButton *);
+	void __cdecl btnRemoveRule_OnClick(CCtrlButton *);
+	void __cdecl btnUpRule_OnClick(CCtrlButton *);
+	void __cdecl btnDownRule_OnClick(CCtrlButton *);
+	void __cdecl btnAddList_OnClick(CCtrlButton *);
+	void __cdecl btnRemoveList_OnClick(CCtrlButton *);
+	void __cdecl btnApply_OnClick(CCtrlButton *);
+	void __cdecl clcClist_OnUpdate(CCtrlClc::TEventInfo *evt);
+	void __cdecl clcClist_OnOptionsChanged(CCtrlClc::TEventInfo *evt);
+	void __cdecl clcClist_OnClick(CCtrlClc::TEventInfo *evt);
+
+	void OnCommand_Close(HWND hwndCtrl, WORD idCtrl, WORD idCode);
 
 	void ShowAdvancedList(CPrivacyList *pList);
 	void DrawNextRulePart(HDC hdc, COLORREF color, TCHAR *text, RECT *rc);
@@ -475,13 +480,13 @@ protected:
 
 	void CListResetOptions(HWND hwndList);
 	void CListFilter(HWND hwndList);
-	bool CListIsGroup(int hGroup);
+	bool CListIsGroup(HANDLE hGroup);
 	HANDLE CListFindGroupByName(TCHAR *name);
-	void CListResetIcons(HWND hwndList, int hItem, bool hide=false);
-	void CListSetupIcons(HWND hwndList, int hItem, int iSlot, DWORD dwProcess, BOOL bAction);
-	int CListAddContact(HWND hwndList, TCHAR *jid);
+	void CListResetIcons(HWND hwndList, HANDLE hItem, bool hide=false);
+	void CListSetupIcons(HWND hwndList, HANDLE hItem, int iSlot, DWORD dwProcess, BOOL bAction);
+	HANDLE CListAddContact(HWND hwndList, TCHAR *jid);
 	void CListApplyList(HWND hwndList, CPrivacyList *pList = NULL);
-	DWORD CListGetPackets(HWND hwndList, int hItem, bool bAction);
+	DWORD CListGetPackets(HWND hwndList, HANDLE hItem, bool bAction);
 	void CListBuildList(HWND hwndList, CPrivacyList *pList);
 
 	void EnableEditorControls();
@@ -494,17 +499,17 @@ protected:
 	{
 		struct TJidData
 		{
-			int hItem;
+			HANDLE hItem;
 			TCHAR *jid;
 
 			static int cmp(const TJidData *p1, const TJidData *p2) { return lstrcmp(p1->jid, p2->jid); }
 		};
 
-		int hItemDefault;
-		int hItemSubNone;
-		int hItemSubTo;
-		int hItemSubFrom;
-		int hItemSubBoth;
+		HANDLE hItemDefault;
+		HANDLE hItemSubNone;
+		HANDLE hItemSubTo;
+		HANDLE hItemSubFrom;
+		HANDLE hItemSubBoth;
 
 		LIST<TJidData> newJids;
 
@@ -523,7 +528,7 @@ protected:
 			newJids.destroy();
 		}
 
-		void addJid(int hItem, TCHAR *jid)
+		void addJid(HANDLE hItem, TCHAR *jid)
 		{
 			TJidData *data = (TJidData *)mir_alloc(sizeof(TJidData));
 			data->hItem = hItem;
@@ -531,7 +536,7 @@ protected:
 			newJids.insert(data);
 		}
 
-		int findJid(TCHAR *jid)
+		HANDLE findJid(TCHAR *jid)
 		{
 			TJidData data = {0};
 			data.jid = jid;
@@ -541,6 +546,24 @@ protected:
 	};
 
 	TCLCInfo clc_info;
+
+private:
+	CCtrlMButton	m_btnSimple;
+	CCtrlMButton	m_btnAdvanced;
+	CCtrlMButton	m_btnAddJid;
+	CCtrlMButton	m_btnActivate;
+	CCtrlMButton	m_btnSetDefault;
+	CCtrlMButton	m_btnEditRule;
+	CCtrlMButton	m_btnAddRule;
+	CCtrlMButton	m_btnRemoveRule;
+	CCtrlMButton	m_btnUpRule;
+	CCtrlMButton	m_btnDownRule;
+	CCtrlMButton	m_btnAddList;
+	CCtrlMButton	m_btnRemoveList;
+	CCtrlMButton	m_btnApply;
+	CCtrlListBox	m_lbLists;
+	CCtrlListBox	m_lbRules;
+	CCtrlClc		m_clcClist;
 };
 
 #endif //_JABBER_PRIVACY_H_

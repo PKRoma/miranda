@@ -554,10 +554,10 @@ void CJabberProto::MenuInit()
 
 	mi.popupPosition = 500083000;
 	mi.pszService = text;
-	mi.pszName = m_szProtoName;
+	mi.ptszName = m_tszUserName;
 	mi.position = -1999901009;
 	mi.pszPopupName = (char *)-1;
-	mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTPOPUP;
+	mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTPOPUP | CMIF_TCHAR;
 	mi.icolibItem = GetIconHandle( IDI_JABBER );
 	m_hMenuRoot = (HANDLE)CallService( MS_CLIST_ADDMAINMENUITEM,  (WPARAM)0, (LPARAM)&mi);
 

@@ -300,6 +300,8 @@ static BOOL CALLBACK JabberRegisterDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 class CCtrlEditJid: public CCtrlEdit
 {
 public:
+	CCtrlEditJid( CDlgBase* dlg, int ctrlId );
+
 	void OnInit()
 	{
 		CCtrlEdit::OnInit();
@@ -323,69 +325,91 @@ protected:
 	}
 };
 
+CCtrlEditJid::CCtrlEditJid( CDlgBase* dlg, int ctrlId ):
+	CCtrlEdit( dlg, ctrlId )
+{
+}
+
 class CDlgOptAccount: public CJabberDlgBase
 {
-	CCtrlEditJid m_txtUsername;
-	CCtrlEdit    m_txtPassword;
-	CCtrlEdit    m_txtPriority;
-	CCtrlCheck   m_chkSavePassword;
-	CCtrlCombo   m_cbResource;
-	CCtrlCheck   m_chkUseHostnameAsResource;
-	CCtrlCombo   m_cbServer;
-	CCtrlEdit    m_txtPort;
-	CCtrlCheck   m_chkUseSsl;
-	CCtrlCheck   m_chkUseTls;
-	CCtrlCheck   m_chkManualHost;
-	CCtrlEdit    m_txtManualHost;
-	CCtrlEdit    m_txtManualPort;
-	CCtrlCheck   m_chkKeepAlive;
-	CCtrlCheck   m_chkAutoDeleteContacts;
-	CCtrlEdit    m_txtUserDirectory;
-	CCtrlCombo   m_cbLocale;
+	CCtrlEditJid	m_txtUsername;
+	CCtrlEdit		m_txtPassword;
+	CCtrlEdit		m_txtPriority;
+	CCtrlCheck		m_chkSavePassword;
+	CCtrlCombo		m_cbResource;
+	CCtrlCheck		m_chkUseHostnameAsResource;
+	CCtrlCombo		m_cbServer;
+	CCtrlEdit		m_txtPort;
+	CCtrlCheck		m_chkUseSsl;
+	CCtrlCheck		m_chkUseTls;
+	CCtrlCheck		m_chkManualHost;
+	CCtrlEdit		m_txtManualHost;
+	CCtrlEdit		m_txtManualPort;
+	CCtrlCheck		m_chkKeepAlive;
+	CCtrlCheck		m_chkAutoDeleteContacts;
+	CCtrlEdit		m_txtUserDirectory;
+	CCtrlCombo		m_cbLocale;
+	CCtrlButton		m_btnRegister;
+	CCtrlButton		m_btnUnregister;
+	CCtrlHyperlink	m_lnkServers;
+	CCtrlHyperlink	m_lnkOpenSsl;
 
 public:
-	CDlgOptAccount(CJabberProto *proto): CJabberDlgBase(proto, IDD_OPT_JABBER, NULL)
-	{
-		TCtrlInfo controls[] =
-		{
-			{ &m_txtUsername,				IDC_EDIT_USERNAME,			DBVT_TCHAR,	"LoginName",			_T(""),	0 },
-			{ &m_txtPassword,				IDC_EDIT_PASSWORD },
-			{ &m_txtPriority,				IDC_PRIORITY,				DBVT_WORD,	"Priority",				_T(""),	0 },
-			{ &m_chkSavePassword,			IDC_SAVEPASSWORD,			DBVT_BYTE,	"SavePassword",			_T(""),	1 },
-			{ &m_cbResource,				IDC_COMBO_RESOURCE,			DBVT_TCHAR,	"Resource",				_T("Miranda"), 0 },
-			{ &m_chkUseHostnameAsResource,	IDC_HOSTNAME_AS_RESOURCE,	DBVT_BYTE,	"HostNameAsResource",	_T(""),	0 },
-			{ &m_cbServer,					IDC_EDIT_LOGIN_SERVER,		DBVT_TCHAR,	"LoginServer",			_T("jabber.org"), 0 },
-			{ &m_txtPort,					IDC_PORT,					DBVT_WORD,	"Port",					_T(""),	5222 },
-			{ &m_chkUseSsl,					IDC_USE_SSL,				DBVT_BYTE,	"UseSSL",				_T(""),	0 },
-			{ &m_chkUseTls,					IDC_USE_TLS,				DBVT_BYTE,	"UseTLS",				_T(""),	1 },
-			{ &m_chkManualHost,				IDC_MANUAL,					DBVT_BYTE,	"ManualConnect",		_T(""),	0 },
-			{ &m_txtManualHost,				IDC_HOST,					DBVT_TCHAR,	"ManualHost",			_T(""),	0 },
-			{ &m_txtManualPort,				IDC_HOSTPORT,				DBVT_WORD,	"ManualPort",			_T(""),	0 },
-			{ &m_chkKeepAlive,				IDC_KEEPALIVE,				DBVT_BYTE,	"KeepAlive",			_T(""),	1 },
-			{ &m_chkAutoDeleteContacts,		IDC_ROSTER_SYNC,			DBVT_BYTE,	"RosterSync",			_T(""),	0 },
-			{ &m_txtUserDirectory,			IDC_JUD,					DBVT_TCHAR,	"Jud",					_T(""),	0 },
-			{ &m_cbLocale,					IDC_MSGLANG },
-		};
+	CDlgOptAccount(CJabberProto *proto):
+		CJabberDlgBase(proto, IDD_OPT_JABBER, NULL),
+		m_txtUsername(this, IDC_EDIT_USERNAME),
+		m_txtPassword(this, IDC_EDIT_PASSWORD),
+		m_txtPriority(this, IDC_PRIORITY),
+		m_chkSavePassword(this, IDC_SAVEPASSWORD),
+		m_cbResource(this, IDC_COMBO_RESOURCE),
+		m_chkUseHostnameAsResource(this,IDC_HOSTNAME_AS_RESOURCE),
+		m_cbServer(this, IDC_EDIT_LOGIN_SERVER),
+		m_txtPort(this, IDC_PORT),
+		m_chkUseSsl(this, IDC_USE_SSL),
+		m_chkUseTls(this, IDC_USE_TLS),
+		m_chkManualHost(this, IDC_MANUAL),
+		m_txtManualHost(this, IDC_HOST),
+		m_txtManualPort(this, IDC_HOSTPORT),
+		m_chkKeepAlive(this, IDC_KEEPALIVE),
+		m_chkAutoDeleteContacts(this, IDC_ROSTER_SYNC),
+		m_txtUserDirectory(this, IDC_JUD),
+		m_cbLocale(this, IDC_MSGLANG),
+		m_btnRegister(this, IDC_BUTTON_REGISTER),
+		m_btnUnregister(this, IDC_UNREGISTER),
+		m_lnkServers(this, IDC_LINK_PUBLIC_SERVER, "http://www.jabber.org/user/publicservers.shtml"),
+		m_lnkOpenSsl(this, IDC_DOWNLOAD_OPENSSL, "http://www.slproweb.com/products/Win32OpenSSL.html")
 
-		UISetupControls<CJabberProto>(this, controls, SIZEOF(controls));
+	{
+		CreateLink(m_txtUsername, "LoginName", _T(""));
+		CreateLink(m_txtPriority, "Priority", DBVT_WORD, 0);
+		CreateLink(m_chkSavePassword, "SavePassword", DBVT_BYTE, 1);
+		CreateLink(m_cbResource, "Resource", _T("Miranda"));
+		CreateLink(m_chkUseHostnameAsResource, "HostNameAsResource", DBVT_BYTE, 0);
+		CreateLink(m_cbServer, "LoginServer", _T("jabber.org"));
+		CreateLink(m_txtPort, "Port", DBVT_WORD, 5222);
+		CreateLink(m_chkUseSsl, "UseSSL", DBVT_BYTE, 0);
+		CreateLink(m_chkUseTls, "UseTLS", DBVT_BYTE, 1);
+		CreateLink(m_chkManualHost, "ManualConnect", DBVT_BYTE, 0);
+		CreateLink(m_txtManualHost, "ManualHost", _T(""));
+		CreateLink(m_txtManualPort, "ManualPort", DBVT_WORD, 0);
+		CreateLink(m_chkKeepAlive, "KeepAlive", DBVT_BYTE, 1);
+		CreateLink(m_chkAutoDeleteContacts, "RosterSync", DBVT_BYTE, 0);
+		CreateLink(m_txtUserDirectory, "Jud", _T(""));
 
 		// Bind events
-		m_cbServer.OnDropdown = JCallback(this, &CDlgOptAccount::cbServer_OnDropdown);
-		m_chkManualHost.OnChange = JCallback(this, &CDlgOptAccount::chkManualHost_OnChange);
-		m_chkUseHostnameAsResource.OnChange = JCallback(this, &CDlgOptAccount::chkUseHostnameAsResource_OnChange);
-		m_chkUseSsl.OnChange = JCallback(this, &CDlgOptAccount::chkUseSsl_OnChange);
+		m_cbServer.OnDropdown = Callback(this, &CDlgOptAccount::cbServer_OnDropdown);
+		m_chkManualHost.OnChange = Callback(this, &CDlgOptAccount::chkManualHost_OnChange);
+		m_chkUseHostnameAsResource.OnChange = Callback(this, &CDlgOptAccount::chkUseHostnameAsResource_OnChange);
+		m_chkUseSsl.OnChange = Callback(this, &CDlgOptAccount::chkUseSsl_OnChange);
 
-		// Custom controls
-		SetControlHandler(IDC_LINK_PUBLIC_SERVER, &CDlgOptAccount::OnCommand_PublicServers);
-		SetControlHandler(IDC_DOWNLOAD_OPENSSL, &CDlgOptAccount::OnCommand_DownloadOpenSsl);
-		SetControlHandler(IDC_BUTTON_REGISTER, &CDlgOptAccount::OnCommand_ButtonRegister);
-		SetControlHandler(IDC_UNREGISTER, &CDlgOptAccount::OnCommand_Unregister);
+		m_btnRegister.OnClick = Callback(this, &CDlgOptAccount::btnRegister_OnClick);
+		m_btnUnregister.OnClick = Callback(this, &CDlgOptAccount::btnUnregister_OnClick);
 	}
 
 	static CDlgBase *Create(void *param) { return new CDlgOptAccount((CJabberProto *)param); }
 
 protected:
-	bool OnInitDialog()
+	void OnInitDialog()
 	{
 		int i;
 		DBVARIANT dbv;
@@ -456,8 +480,6 @@ protected:
 		}
 
 		CheckRegistration();
-
-		return true;
 	}
 
 	void OnApply()
@@ -520,19 +542,7 @@ protected:
 private:
 	bool m_gotservers;
 
-	BOOL OnCommand_PublicServers(HWND hwndCtrl, WORD idCtrl, WORD idCode)
-	{
-		ShellExecuteA(m_hwnd, "open", "http://www.jabber.org/user/publicservers.shtml", "", "", SW_SHOW);
-		return TRUE;
-	}
-
-	BOOL OnCommand_DownloadOpenSsl(HWND hwndCtrl, WORD idCtrl, WORD idCode)
-	{
-		ShellExecuteA(m_hwnd, "open", "http://www.slproweb.com/products/Win32OpenSSL.html", "", "", SW_SHOW);
-		return TRUE;
-	}
-
-	BOOL OnCommand_ButtonRegister(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+	void __cdecl btnRegister_OnClick(CCtrlButton *)
 	{
 		ThreadData regInfo(m_proto, JABBER_SESSION_NORMAL);
 		m_txtUsername.GetText(regInfo.username, SIZEOF(regInfo.username));
@@ -550,11 +560,9 @@ private:
 
 		if (regInfo.username[0] && regInfo.password[0] && regInfo.server[0] && regInfo.port>0 && ( (m_chkManualHost.GetState() != BST_CHECKED) || regInfo.manualHost[0] ))
 			DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_OPT_REGISTER), m_hwnd, JabberRegisterDlgProc, (LPARAM)&regInfo);
-
-		return TRUE;
 	}
 
-	BOOL OnCommand_Unregister(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+	void __cdecl btnUnregister_OnClick(CCtrlButton *)
 	{
 		int res = MessageBox(NULL,
 			TranslateT("This operation will kill your account, roster and all another information stored at the server. Are you ready to do that?"),
@@ -566,8 +574,6 @@ private:
 			iq.addQuery(JABBER_FEAT_REGISTER )->addChild("remove");
 			m_proto->m_ThreadInfo->send(iq);
 		}
-
-		return TRUE;
 	}
 
 	void __cdecl cbServer_OnDropdown(CCtrlCombo *sender)
