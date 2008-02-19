@@ -259,6 +259,7 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	}	}
 
 	srand(( unsigned ) time( NULL ));
+	g_IconsInit();
 	JabberUserInfoInit();
 	return 0;
 }
