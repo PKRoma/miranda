@@ -91,7 +91,7 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 	m_szProtoName = mir_strdup( aProtoName );
 	_strlwr( m_szProtoName );
 	m_szProtoName[0] = toupper( m_szProtoName[0] );
-	Log( "Setting protocol/module name to '%s/%s'", m_szModuleName, m_szModuleName );
+	Log( "Setting protocol/module name to '%s/%s'", m_szProtoName, m_szModuleName );
 
 	// Protocol services and events...
 	m_hEventNudge = JCreateHookableEvent( JE_NUDGE );
@@ -188,7 +188,7 @@ CJabberProto::~CJabberProto()
 	mir_free( m_modeMsgs.szFreechat );
 
 	mir_free( m_szStreamId );
-	mir_free( m_szModuleName );
+	mir_free( m_szProtoName );
 	mir_free( m_szModuleName );
 	mir_free( m_tszUserName );
 

@@ -34,20 +34,39 @@ Last change by : $Author$
 
 #define OPTTREE_CHECK	0
 
-typedef struct {
-  int       iconIndex;
-  TCHAR    *szOptionName;
-  int       groupId;
-  DWORD     dwFlag;
-  HTREEITEM hItem;
-  char     *szSettingName;
-} OPTTREE_OPTION;
+class CCtrlTreeOpts : public CCtrlTreeView
+{
+public:
+	CCtrlTreeOpts( CDlgBase* dlg, int ctrlId, char *szModule );
+	~CCtrlTreeOpts();
 
-BOOL OptTree_ProcessMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam, BOOL *result, int idcTree, OPTTREE_OPTION *options, int optionCount);
+	void AddOption(TCHAR *szOption, char *szSetting, BYTE defValue);
 
-DWORD OptTree_GetOptions(HWND hwnd, int idcTree, OPTTREE_OPTION *options, int optionCount, char *szSettingName = NULL);
-void OptTree_SetOptions(HWND hwnd, int idcTree, OPTTREE_OPTION *options, int optionCount, DWORD dwOptions, char *szSettingName = NULL);
+	BOOL OnNotify(int idCtrl, NMHDR *pnmh);
+	void OnDestroy();
+	void OnInit();
+	void OnApply();
 
-void OptTree_Translate(HWND hwndTree);
+protected:
+	struct COptionsItem
+	{
+		TCHAR *m_szOptionName;
+		int m_groupId;
+
+		char *m_szSettingName;
+		BYTE m_defValue;
+
+		HTREEITEM m_hItem;
+
+		COptionsItem(TCHAR *szOption, char *szSetting, BYTE defValue);
+		~COptionsItem();
+	};
+
+	LIST<COptionsItem> m_options;
+
+	char *m_szModule;
+
+	void ProcessItemClick(HTREEITEM hti);
+};
 
 #endif // __opttree_h__

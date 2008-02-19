@@ -30,386 +30,250 @@ Last change by : $Author$
 #include "jabber.h"
 #include "jabber_opttree.h"
 
-HTREEITEM OptTree_FindNamedTreeItemAt(HWND hwndTree, HTREEITEM hItem, const TCHAR *name);
-HTREEITEM OptTree_AddItem(HWND hwndTree, char *name, LPARAM lParam = 0, int iconIndex = -1);
-
 enum { IMG_GROUP, IMG_CHECK, IMG_NOCHECK, IMG_RCHECK, IMG_NORCHECK, IMG_GRPOPEN, IMG_GRPCLOSED };
 
-static void OptTree_TranslateItem(HWND hwndTree, HTREEITEM hItem)
+CCtrlTreeOpts::CCtrlTreeOpts(CDlgBase* dlg, int ctrlId, char *szModule):
+	CCtrlTreeView(dlg, ctrlId),
+	m_options(5)
 {
-	TCHAR buf[128];
-
-	TVITEM tvi = {0};
-	tvi.mask = TVIF_HANDLE|TVIF_TEXT;
-	tvi.hItem = hItem;
-	tvi.pszText = buf;
-	tvi.cchTextMax = SIZEOF(buf);
-	SendMessage(hwndTree, TVM_GETITEM, 0, (LPARAM)&tvi);
-	tvi.pszText = TranslateTS(tvi.pszText);
-	tvi.cchTextMax = lstrlen(tvi.pszText);
-	SendMessage(hwndTree, TVM_SETITEM, 0, (LPARAM)&tvi);
+	m_szModule = mir_strdup(szModule);
 }
 
-void OptTree_Translate(HWND hwndTree)
+CCtrlTreeOpts::~CCtrlTreeOpts()
 {
-	HTREEITEM hItem = TreeView_GetRoot(hwndTree);
-	while (hItem)
-	{
-		OptTree_TranslateItem(hwndTree, hItem);
+	for (int i = 0; i < m_options.getCount(); ++i)
+		delete m_options[i];
+	m_options.destroy();
+	mir_free(m_szModule);
+}
 
-		HTREEITEM hItemTmp = 0;
-		if (hItemTmp = TreeView_GetChild(hwndTree, hItem))
+void CCtrlTreeOpts::AddOption(TCHAR *szOption, char *szSetting, BYTE defValue)
+{
+	m_options.insert(new COptionsItem(szOption, szSetting, defValue), m_options.getCount());
+}
+
+BOOL CCtrlTreeOpts::OnNotify(int idCtrl, NMHDR *pnmh)
+{
+	switch (pnmh->code)
+	{
+		case TVN_KEYDOWN:
 		{
-			hItem = hItemTmp;
-		} else
-		if (hItemTmp = TreeView_GetNextSibling(hwndTree, hItem))
+			LPNMTVKEYDOWN lpnmtvkd = (LPNMTVKEYDOWN)pnmh;
+			HTREEITEM hti;
+			if ((lpnmtvkd->wVKey == VK_SPACE) && (hti = GetSelection()))
+				ProcessItemClick(hti);
+			break;
+		}
+
+		case NM_CLICK:
 		{
-			hItem = hItemTmp;
-		} else
+			TVHITTESTINFO hti;
+			hti.pt.x=(short)LOWORD(GetMessagePos());
+			hti.pt.y=(short)HIWORD(GetMessagePos());
+			ScreenToClient(pnmh->hwndFrom,&hti.pt);
+			if(HitTest(&hti))
+				if(hti.flags&TVHT_ONITEMICON)
+					ProcessItemClick(hti.hItem);
+			break;
+		}
+		
+		case TVN_ITEMEXPANDEDW:
 		{
-			while (1)
-			{
-				if (!(hItem = TreeView_GetParent(hwndTree, hItem))) break;
-				if (hItemTmp = TreeView_GetNextSibling(hwndTree, hItem))
-				{
-					hItem = hItemTmp;
-					break;
-				}
-			}
+			LPNMTREEVIEWW lpnmtv = (LPNMTREEVIEWW)pnmh;
+			TVITEM tvi;
+			tvi.mask=TVIF_HANDLE|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
+			tvi.hItem = lpnmtv->itemNew.hItem;
+			tvi.iImage = tvi.iSelectedImage =
+				(lpnmtv->itemNew.state & TVIS_EXPANDED) ? IMG_GRPOPEN : IMG_GRPCLOSED;
+			SendMessageW(pnmh->hwndFrom, TVM_SETITEMW, 0, (LPARAM)&tvi);
+			break;
+		}
+		
+		case TVN_ITEMEXPANDEDA:
+		{
+			LPNMTREEVIEWA lpnmtv = (LPNMTREEVIEWA)pnmh;
+			TVITEM tvi;
+			tvi.mask=TVIF_HANDLE|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
+			tvi.hItem = lpnmtv->itemNew.hItem;
+			tvi.iImage = tvi.iSelectedImage =
+				(lpnmtv->itemNew.state & TVIS_EXPANDED) ? IMG_GRPOPEN : IMG_GRPCLOSED;
+			SendMessageA(pnmh->hwndFrom, TVM_SETITEMA, 0, (LPARAM)&tvi);
+			break;
 		}
 	}
+
+	return CCtrlTreeView::OnNotify(idCtrl, pnmh);
 }
 
-HTREEITEM OptTree_FindNamedTreeItemAt(HWND hwndTree, HTREEITEM hItem, const TCHAR *name)
+void CCtrlTreeOpts::OnInit()
 {
-	TVITEM tvi = {0};
-	TCHAR str[MAX_PATH];
+	CCtrlTreeView::OnInit();
 
-	if (hItem)
-		tvi.hItem = TreeView_GetChild(hwndTree, hItem);
-	else
-		tvi.hItem = TreeView_GetRoot(hwndTree);
-
-	if (!name)
-		return tvi.hItem;
-
-	tvi.mask = TVIF_TEXT;
-	tvi.pszText = str;
-	tvi.cchTextMax = MAX_PATH;
-
-	while (tvi.hItem)
-	{
-		TreeView_GetItem(hwndTree, &tvi);
-
-		if (!lstrcmp(tvi.pszText, name))
-			return tvi.hItem;
-
-		tvi.hItem = TreeView_GetNextSibling(hwndTree, tvi.hItem);
-	}
-	return NULL;
-}
-
-HTREEITEM OptTree_AddItem(HWND hwndTree, TCHAR *name, LPARAM lParam, int iconIndex)
-{
 	TCHAR itemName[1024];
+	HIMAGELIST hImgLst;
 
-	TCHAR* sectionName;
-	int sectionLevel = 0;
+	SelectItem(NULL);
+	DeleteAllItems();
 
-	HTREEITEM hSection = NULL, result = NULL;
-	lstrcpy(itemName, name);
-	sectionName = itemName;
+	hImgLst = ImageList_Create(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), ILC_COLOR|ILC_COLOR32|ILC_MASK, 5, 1);
+	ImageList_ReplaceIcon(hImgLst, -1, (HICON)LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
+	ImageList_ReplaceIcon(hImgLst, -1, (HICON)LoadSkinnedIcon(SKINICON_OTHER_TICK));	// check on
+	ImageList_ReplaceIcon(hImgLst, -1, (HICON)LoadSkinnedIcon(SKINICON_OTHER_NOTICK));	// check off
+	ImageList_ReplaceIcon(hImgLst, -1, (HICON)LoadSkinnedIcon(SKINICON_OTHER_TICK));	// radio on
+	ImageList_ReplaceIcon(hImgLst, -1, (HICON)LoadSkinnedIcon(SKINICON_OTHER_NOTICK));	// radio on
+	ImageList_ReplaceIcon(hImgLst, -1, (HICON)LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN));
+	ImageList_ReplaceIcon(hImgLst, -1, (HICON)LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT));
+	SetImageList(hImgLst, TVSIL_NORMAL);
 
-	while (sectionName)
+	/* build options tree. based on code from IcoLib */
+	for (int i = 0; i < m_options.getCount(); i++)
 	{
-		// allow multi-level tree
-		TCHAR* pItemName = sectionName;
-		HTREEITEM hItem;
+		TCHAR* sectionName;
+		int sectionLevel = 0;
 
-		if (sectionName = _tcschr(sectionName, '/'))
-		{
-			// one level deeper
-			*sectionName = 0;
-			sectionName++;
-		}
+		HTREEITEM hSection = NULL;
+		lstrcpy(itemName, m_options[i]->m_szOptionName);
+		sectionName = itemName;
 
-		hItem = OptTree_FindNamedTreeItemAt(hwndTree, hSection, pItemName);
-		if (!sectionName || !hItem)
+		while (sectionName)
 		{
-			if (!hItem)
+			// allow multi-level tree
+			TCHAR* pItemName = sectionName;
+			HTREEITEM hItem;
+
+			if (sectionName = _tcschr(sectionName, '/'))
 			{
-				TVINSERTSTRUCT tvis = {0};
-
-				tvis.hParent = hSection;
-				tvis.hInsertAfter = TVI_LAST;//TVI_SORT;
-				tvis.item.mask = TVIF_TEXT|TVIF_PARAM|TVIF_STATE;
-				tvis.item.pszText = pItemName;
-				tvis.item.state = tvis.item.stateMask = TVIS_EXPANDED;
-				if (sectionName)
-				{
-					tvis.item.lParam = 0;
-					tvis.item.iImage = tvis.item.iSelectedImage = -1;
-				} else
-				{
-					tvis.item.lParam = lParam;
-					tvis.item.iImage = tvis.item.iSelectedImage = iconIndex;
-					tvis.item.mask |= TVIF_IMAGE|TVIF_SELECTEDIMAGE;
-				}
-				hItem = TreeView_InsertItem(hwndTree, &tvis);
-				if (!sectionName)
-					result = hItem;
+				// one level deeper
+				*sectionName = 0;
+				sectionName++;
 			}
+
+			hItem = FindNamedItem(hSection, pItemName);
+			if (!sectionName || !hItem)
+			{
+				if (!hItem)
+				{
+					TVINSERTSTRUCT tvis = {0};
+
+					tvis.hParent = hSection;
+					tvis.hInsertAfter = TVI_LAST;//TVI_SORT;
+					tvis.item.mask = TVIF_TEXT|TVIF_PARAM|TVIF_STATE|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
+					tvis.item.pszText = pItemName;
+					tvis.item.state = tvis.item.stateMask = TVIS_EXPANDED;
+					if (sectionName)
+					{
+						tvis.item.lParam = -1;
+						tvis.item.state |= TVIS_BOLD;
+						tvis.item.stateMask |= TVIS_BOLD;
+						tvis.item.iImage = tvis.item.iSelectedImage = IMG_GRPOPEN;
+					} else
+					{
+						tvis.item.lParam = i;
+
+						BYTE val = DBGetContactSettingByte(NULL, m_szModule, m_options[i]->m_szSettingName, m_options[i]->m_defValue);
+
+						if (m_options[i]->m_groupId == OPTTREE_CHECK)
+						{
+							tvis.item.iImage = tvis.item.iSelectedImage = val ? IMG_CHECK : IMG_NOCHECK;
+						} else
+						{
+							tvis.item.iImage = tvis.item.iSelectedImage = val ? IMG_RCHECK : IMG_NORCHECK;
+						}
+					}
+					hItem = InsertItem(&tvis);
+					if (!sectionName)
+						m_options[i]->m_hItem = hItem;
+				}
+			}
+			sectionLevel++;
+			hSection = hItem;
 		}
-		sectionLevel++;
-		hSection = hItem;
 	}
 
-	return result;
+	TranslateTree();
+	ShowWindow(m_hwnd, SW_SHOW);
+	SelectItem(FindNamedItem(0, NULL));
 }
 
-static void OptTree_ProcessItemClick(HWND hwndTree, HTREEITEM hti, OPTTREE_OPTION *options, int optionCount)
+void CCtrlTreeOpts::OnDestroy()
 {
-	TVITEM tvi;
-	tvi.mask=TVIF_HANDLE|TVIF_PARAM|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
-	tvi.hItem=hti;
-	TreeView_GetItem(hwndTree,&tvi);
+	ImageList_Destroy(GetImageList(TVSIL_NORMAL));
+}
+
+void CCtrlTreeOpts::OnApply()
+{
+	CCtrlTreeView::OnApply();
+
+	for (int i = 0; i < m_options.getCount(); ++i)
+	{
+		TVITEMEX tvi;
+		GetItem(m_options[i]->m_hItem, &tvi);
+
+		if ((tvi.iImage == IMG_CHECK) || (tvi.iImage == IMG_RCHECK))
+			DBWriteContactSettingByte(NULL, m_szModule, m_options[i]->m_szSettingName, 1);
+		else
+			DBWriteContactSettingByte(NULL, m_szModule, m_options[i]->m_szSettingName, 0);
+	}
+}
+
+void CCtrlTreeOpts::ProcessItemClick(HTREEITEM hti)
+{
+	TVITEMEX tvi;
+	GetItem(hti, &tvi);
 	switch (tvi.iImage)
 	{
 		case IMG_GRPOPEN:
 			tvi.iImage = tvi.iSelectedImage = IMG_GRPCLOSED;
-			TreeView_Expand(hwndTree, tvi.hItem, TVE_COLLAPSE);
+			Expand(tvi.hItem, TVE_COLLAPSE);
 			break;
 		case IMG_GRPCLOSED:
 			tvi.iImage = tvi.iSelectedImage = IMG_GRPOPEN;
-			TreeView_Expand(hwndTree, tvi.hItem, TVE_EXPAND);
+			Expand(tvi.hItem, TVE_EXPAND);
 			break;
 
 		case IMG_CHECK:
 			tvi.iImage = tvi.iSelectedImage = IMG_NOCHECK;
-			SendMessage(GetParent(GetParent(hwndTree)), PSM_CHANGED, 0, 0);
+			SendMessage(::GetParent(::GetParent(m_hwnd)), PSM_CHANGED, 0, 0);
 			break;
 		case IMG_NOCHECK:
 			tvi.iImage = tvi.iSelectedImage = IMG_CHECK;
-			SendMessage(GetParent(GetParent(hwndTree)), PSM_CHANGED, 0, 0);
+			SendMessage(::GetParent(::GetParent(m_hwnd)), PSM_CHANGED, 0, 0);
 			break;
 		case IMG_NORCHECK:
 		{
 			int i;
-			for (i = 0; i < optionCount; ++i)
+			for (i = 0; i < m_options.getCount(); ++i)
 			{
-				if (options[i].groupId == options[tvi.lParam].groupId)
+				if (m_options[i]->m_groupId == m_options[tvi.lParam]->m_groupId)
 				{
-					TVITEM tvi_tmp;
+					TVITEMEX tvi_tmp;
 					tvi_tmp.mask = TVIF_HANDLE|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
-					tvi_tmp.hItem = options[i].hItem;
+					tvi_tmp.hItem = m_options[i]->m_hItem;
 					tvi_tmp.iImage = tvi_tmp.iSelectedImage = IMG_NORCHECK;
-					TreeView_SetItem(hwndTree, &tvi_tmp);
+					SetItem(&tvi_tmp);
 				}
 			}
 			tvi.iImage = tvi.iSelectedImage = IMG_RCHECK;
-			SendMessage(GetParent(GetParent(hwndTree)), PSM_CHANGED, 0, 0);
+			SendMessage(::GetParent(::GetParent(m_hwnd)), PSM_CHANGED, 0, 0);
 			break;
 		}
 	}
-	TreeView_SetItem(hwndTree,&tvi);
+
+	SetItem(&tvi);
 }
 
-BOOL  OptTree_ProcessMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam, BOOL *result, int idcTree, OPTTREE_OPTION *options, int optionCount)
+CCtrlTreeOpts::COptionsItem::COptionsItem(TCHAR *szOption, char *szSetting, BYTE defValue)
 {
-	HWND hwndTree = GetDlgItem(hwnd, idcTree);
-	switch (msg)
-	{
-		case WM_INITDIALOG:
-		{
-			int indx;
-			TCHAR itemName[1024];
-			HIMAGELIST hImgLst;
+	m_szOptionName = mir_tstrdup(szOption);
+	m_szSettingName = mir_strdup(szSetting);
+	m_defValue = defValue;
 
-			TreeView_SelectItem(hwndTree, NULL);
-			TreeView_DeleteAllItems(hwndTree);
-
-			hImgLst = ImageList_Create(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), ILC_COLOR|ILC_COLOR32|ILC_MASK, 5, 1);
-			ImageList_ReplaceIcon(hImgLst, -1, (HICON)LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
-			ImageList_ReplaceIcon(hImgLst, -1, (HICON)LoadSkinnedIcon(SKINICON_OTHER_TICK));	// check on
-			ImageList_ReplaceIcon(hImgLst, -1, (HICON)LoadSkinnedIcon(SKINICON_OTHER_NOTICK));	// check off
-			ImageList_ReplaceIcon(hImgLst, -1, (HICON)LoadSkinnedIcon(SKINICON_OTHER_TICK));	// radio on
-			ImageList_ReplaceIcon(hImgLst, -1, (HICON)LoadSkinnedIcon(SKINICON_OTHER_NOTICK));	// radio on
-			ImageList_ReplaceIcon(hImgLst, -1, (HICON)LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN));
-			ImageList_ReplaceIcon(hImgLst, -1, (HICON)LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT));
-			TreeView_SetImageList(hwndTree, hImgLst, TVSIL_NORMAL);
-
-			/* build options tree. based on code from IcoLib */
-			for (indx = 0; indx < optionCount; indx++)
-			{
-				TCHAR* sectionName;
-				int sectionLevel = 0;
-
-				HTREEITEM hSection = NULL;
-				lstrcpy(itemName, options[indx].szOptionName);
-				sectionName = itemName;
-
-				while (sectionName)
-				{
-					// allow multi-level tree
-					TCHAR* pItemName = sectionName;
-					HTREEITEM hItem;
-
-					if (sectionName = _tcschr(sectionName, '/'))
-					{
-						// one level deeper
-						*sectionName = 0;
-						sectionName++;
-					}
-
-					hItem = OptTree_FindNamedTreeItemAt(hwndTree, hSection, pItemName);
-					if (!sectionName || !hItem)
-					{
-						if (!hItem)
-						{
-							TVINSERTSTRUCT tvis = {0};
-
-							tvis.hParent = hSection;
-							tvis.hInsertAfter = TVI_LAST;//TVI_SORT;
-							tvis.item.mask = TVIF_TEXT|TVIF_PARAM|TVIF_STATE|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
-							tvis.item.pszText = pItemName;
-							tvis.item.state = tvis.item.stateMask = TVIS_EXPANDED;
-							if (sectionName)
-							{
-								tvis.item.lParam = -1;
-								tvis.item.state |= TVIS_BOLD;
-								tvis.item.stateMask |= TVIS_BOLD;
-								tvis.item.iImage = tvis.item.iSelectedImage = IMG_GRPOPEN;
-							} else
-							{
-								tvis.item.lParam = indx;
-								if (options[indx].groupId == OPTTREE_CHECK)
-								{
-									tvis.item.iImage = tvis.item.iSelectedImage = IMG_NOCHECK;
-								} else
-								{
-									tvis.item.iImage = tvis.item.iSelectedImage = IMG_NORCHECK;
-								}
-							}
-							hItem = TreeView_InsertItem(hwndTree, &tvis);
-							if (!sectionName)
-								options[indx].hItem = hItem;
-						}
-					}
-					sectionLevel++;
-					hSection = hItem;
-				}
-			}
-
-			OptTree_Translate(hwndTree);
-			ShowWindow(hwndTree, SW_SHOW);
-			TreeView_SelectItem(hwndTree, OptTree_FindNamedTreeItemAt(hwndTree, 0, NULL));
-			break;
-		}
-
-		case WM_DESTROY:
-		{
-			ImageList_Destroy(TreeView_GetImageList(hwndTree, TVSIL_NORMAL));
-			break;
-		}
-
-		case WM_NOTIFY:
-		{
-			LPNMHDR lpnmhdr = (LPNMHDR)lparam;
-			if (lpnmhdr->idFrom != idcTree) break;
-			switch (lpnmhdr->code)
-			{
-				case TVN_KEYDOWN:
-				{
-					LPNMTVKEYDOWN lpnmtvkd = (LPNMTVKEYDOWN)lparam;
-					HTREEITEM hti;
-					if ((lpnmtvkd->wVKey == VK_SPACE) && (hti = TreeView_GetSelection(lpnmhdr->hwndFrom)))
-						OptTree_ProcessItemClick(lpnmhdr->hwndFrom, hti, options, optionCount);
-					break;
-				}
-
-				case NM_CLICK:
-				{
-					TVHITTESTINFO hti;
-					hti.pt.x=(short)LOWORD(GetMessagePos());
-					hti.pt.y=(short)HIWORD(GetMessagePos());
-					ScreenToClient(lpnmhdr->hwndFrom,&hti.pt);
-					if(TreeView_HitTest(lpnmhdr->hwndFrom,&hti))
-						if(hti.flags&TVHT_ONITEMICON)
-							OptTree_ProcessItemClick(lpnmhdr->hwndFrom, hti.hItem, options, optionCount);
-					break;
-				}
-				
-				case TVN_ITEMEXPANDEDW:
-				{
-					LPNMTREEVIEWW lpnmtv = (LPNMTREEVIEWW)lparam;
-					TVITEM tvi;
-					tvi.mask=TVIF_HANDLE|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
-					tvi.hItem = lpnmtv->itemNew.hItem;
-					tvi.iImage = tvi.iSelectedImage =
-						(lpnmtv->itemNew.state & TVIS_EXPANDED) ? IMG_GRPOPEN : IMG_GRPCLOSED;
-					SendMessageW(lpnmhdr->hwndFrom, TVM_SETITEMW, 0, (LPARAM)&tvi);
-					break;
-				}
-				
-				case TVN_ITEMEXPANDEDA:
-				{
-					LPNMTREEVIEWA lpnmtv = (LPNMTREEVIEWA)lparam;
-					TVITEM tvi;
-					tvi.mask=TVIF_HANDLE|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
-					tvi.hItem = lpnmtv->itemNew.hItem;
-					tvi.iImage = tvi.iSelectedImage =
-						(lpnmtv->itemNew.state & TVIS_EXPANDED) ? IMG_GRPOPEN : IMG_GRPCLOSED;
-					SendMessageA(lpnmhdr->hwndFrom, TVM_SETITEMA, 0, (LPARAM)&tvi);
-					break;
-				}
-			}
-			break;
-		}
-	}
-	return FALSE;
+	m_hItem = NULL;
+	m_groupId = OPTTREE_CHECK;
 }
 
-DWORD OptTree_GetOptions(HWND hwnd, int idcTree, OPTTREE_OPTION *options, int optionCount, char *szSettingName)
+CCtrlTreeOpts::COptionsItem::~COptionsItem()
 {
-	HWND hwndTree = GetDlgItem(hwnd, idcTree);
-	DWORD result = 0;
-	int i;
-	for (i = 0; i < optionCount; ++i)
-	{
-		if ((!options[i].szSettingName && !szSettingName) ||
-			(options[i].szSettingName && szSettingName && !lstrcmpA(options[i].szSettingName, szSettingName)))
-		{
-			TVITEM tvi;
-			tvi.mask = TVIF_HANDLE|TVIF_IMAGE;
-			tvi.hItem = options[i].hItem;
-			TreeView_GetItem(hwndTree, &tvi);
-			if ((tvi.iImage == IMG_CHECK) || (tvi.iImage == IMG_RCHECK))
-				result |= options[i].dwFlag;
-		}
-	}
-	return result;
-}
-
-void OptTree_SetOptions(HWND hwnd, int idcTree, OPTTREE_OPTION *options, int optionCount, DWORD dwOptions, char *szSettingName)
-{
-	HWND hwndTree = GetDlgItem(hwnd, idcTree);
-	int i;
-	for (i = 0; i < optionCount; ++i)
-	{
-		if ((!options[i].szSettingName && !szSettingName) ||
-			(options[i].szSettingName && szSettingName && !lstrcmpA(options[i].szSettingName, szSettingName)))
-		{
-			TVITEM tvi;
-			tvi.mask = TVIF_HANDLE|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
-			tvi.hItem = options[i].hItem;
-			if (options[i].groupId == OPTTREE_CHECK)
-			{
-				tvi.iImage = tvi.iSelectedImage = (dwOptions & options[i].dwFlag) ? IMG_CHECK : IMG_NOCHECK;
-			} else
-			{
-				tvi.iImage = tvi.iSelectedImage = (dwOptions & options[i].dwFlag) ? IMG_RCHECK : IMG_NORCHECK;
-			}
-			TreeView_SetItem(hwndTree, &tvi);
-		}
-	}
+	mir_free(m_szOptionName);
+	mir_free(m_szSettingName);
 }

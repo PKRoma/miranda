@@ -600,6 +600,8 @@ struct CJabberProto : public PROTO_INTERFACE
 	//---- jabber_opt.cpp ----------------------------------------------------------------
 
 	CJabberDlgBase::CreateParam		OptCreateAccount;
+	CJabberDlgBase::CreateParam		OptCreateGc;
+	CJabberDlgBase::CreateParam		OptCreateAdvanced;
 
 	int    __cdecl OnMenuHandleRosterControl( WPARAM wParam, LPARAM lParam );
 

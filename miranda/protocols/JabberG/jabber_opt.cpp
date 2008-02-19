@@ -522,10 +522,7 @@ protected:
 	void OnChange(CCtrlBase *ctrl)
 	{
 		if (m_initialized)
-		{
-			SendMessage(GetParent(m_hwnd), PSM_CHANGED, 0, 0);
 			CheckRegistration();
-		}
 	}
 
 	BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
@@ -726,324 +723,144 @@ private:
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberAdvOptDlgProc - advanced options dialog procedure
 
-static BOOL CALLBACK JabberAdvOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+class CDlgOptAdvanced: public CJabberDlgBase
 {
-	char text[256];
-	BOOL bChecked;
+	CCtrlCheck		m_chkDirect;
+	CCtrlCheck		m_chkDirectManual;
+	CCtrlCheck		m_chkProxy;
+	CCtrlEdit		m_txtDirect;
+	CCtrlEdit		m_txtProxy;
+	CCtrlTreeOpts	m_otvOptions;
 
-	static OPTTREE_OPTION options[] =
+public:
+	CDlgOptAdvanced(CJabberProto *proto):
+		CJabberDlgBase(proto, IDD_OPT_JABBER2, NULL),
+		m_chkDirect(this, IDC_DIRECT),
+		m_chkDirectManual(this, IDC_DIRECT_MANUAL),
+		m_chkProxy(this, IDC_PROXY_MANUAL),
+		m_txtDirect(this, IDC_DIRECT_ADDR),
+		m_txtProxy(this, IDC_PROXY_ADDR),
+		m_otvOptions(this, IDC_OPTTREE, proto->m_szModuleName)
 	{
-		{0,	LPGENT("Messaging") _T("/") LPGENT("Send messages slower, but with full acknowledgement"),
-				OPTTREE_CHECK,	1,	NULL,	"MsgAck"},
-		{0,	LPGENT("Messaging") _T("/") LPGENT("Enable avatars"),
-				OPTTREE_CHECK,	1,	NULL,	"EnableAvatars"},
-		{0,	LPGENT("Messaging") _T("/") LPGENT("Log chat state changes"),
-				OPTTREE_CHECK,	1,	NULL,	"LogChatstates"},
-		{0,	LPGENT("Messaging") _T("/") LPGENT("Enable user moods receiving"),
-				OPTTREE_CHECK,	1,	NULL,	"EnableUserMood"},
-		{0,	LPGENT("Messaging") _T("/") LPGENT("Enable user tunes receiving"),
-				OPTTREE_CHECK,	1,	NULL,	"EnableUserTune"},
-/*
-		{0,	LPGENT("Conferences") _T("/") LPGENT("Autoaccept multiuser chat invitations"),
-				OPTTREE_CHECK,	1,	NULL,	"AutoAcceptMUC"},
-		{0,	LPGENT("Conferences") _T("/") LPGENT("Automatically join Bookmarks on login"),
-				OPTTREE_CHECK,	1,	NULL,	"AutoJoinBookmarks"},
-		{0,	LPGENT("Conferences") _T("/") LPGENT("Automatically join conferences on login"),
-				OPTTREE_CHECK,	1,	NULL,	"AutoJoinConferences"},
-		{0, LPGENT("Conferences") _T("/") LPGENT("Do not show multiuser chat invitations"),
-				OPTTREE_CHECK,  1,	NULL,	"IgnoreMUCInvites"},
-*/
-		{0,	LPGENT("Server options") _T("/") LPGENT("Disable SASL authentication (for old servers)"),
-				OPTTREE_CHECK,	1,	NULL,	"Disable3920auth"},
-		{0,	LPGENT("Server options") _T("/") LPGENT("Enable stream compression (if possible)"),
-				OPTTREE_CHECK,	1,	NULL,	"EnableZlib"},
+		CreateLink(m_chkDirect, "BsDirect", DBVT_BYTE, FALSE);
+		CreateLink(m_chkDirectManual, "BsDirectManual", DBVT_BYTE, FALSE);
+		CreateLink(m_chkProxy, "BsProxyManual", DBVT_BYTE, FALSE);
+		CreateLink(m_txtDirect, "BsDirectAddr", _T(""));
+		CreateLink(m_txtProxy, "BsProxyServer", _T(""));
 
-		{0,	LPGENT("Other") _T("/") LPGENT("Enable remote controlling (from another resource of same JID only)"),
-				OPTTREE_CHECK,	1,	NULL,	"EnableRemoteControl"},
-		{0,	LPGENT("Other") _T("/") LPGENT("Show transport agents on contact list"),
-				OPTTREE_CHECK,	1,	NULL,	"ShowTransport"},
-		{0,	LPGENT("Other") _T("/") LPGENT("Automatically add contact when accept authorization"),
-				OPTTREE_CHECK,	1,	NULL,	"AutoAdd"},
-		{0,	LPGENT("Other") _T("/") LPGENT("Automatically accept authorization requests"),
-				OPTTREE_CHECK,	1,	NULL,	"AutoAcceptAuthorization"},
-		{0,	LPGENT("Other") _T("/") LPGENT("Fix incorrect timestamps in incoming messages"),
-				OPTTREE_CHECK,	1,	NULL,	"FixIncorrectTimestamps"},
+		m_chkDirect.OnChange =
+		m_chkDirectManual.OnChange = Callback(this, &CDlgOptAdvanced::chkDirect_OnChange);
+		m_chkProxy.OnChange = Callback(this, &CDlgOptAdvanced::chkProxy_OnChange);
+
+		m_otvOptions.AddOption(LPGENT("Messaging") _T("/") LPGENT("Send messages slower, but with full acknowledgement"), "MsgAck", FALSE);
+		m_otvOptions.AddOption(LPGENT("Messaging") _T("/") LPGENT("Enable avatars"), "EnableAvatars", TRUE);
+		m_otvOptions.AddOption(LPGENT("Messaging") _T("/") LPGENT("Log chat state changes"), "LogChatstates", FALSE);
+		m_otvOptions.AddOption(LPGENT("Messaging") _T("/") LPGENT("Enable user moods receiving"), "EnableUserMood", TRUE);
+		m_otvOptions.AddOption(LPGENT("Messaging") _T("/") LPGENT("Enable user tunes receiving"), "EnableUserTune", FALSE);
+
+		m_otvOptions.AddOption(LPGENT("Server options") _T("/") LPGENT("Disable SASL authentication (for old servers)"), "Disable3920auth", FALSE);
+		m_otvOptions.AddOption(LPGENT("Server options") _T("/") LPGENT("Enable stream compression (if possible)"), "EnableZlib", FALSE);
+
+		m_otvOptions.AddOption(LPGENT("Other") _T("/") LPGENT("Enable remote controlling (from another resource of same JID only)"), "EnableRemoteControl", FALSE);
+		m_otvOptions.AddOption(LPGENT("Other") _T("/") LPGENT("Show transport agents on contact list"), "ShowTransport", TRUE);
+		m_otvOptions.AddOption(LPGENT("Other") _T("/") LPGENT("Automatically add contact when accept authorization"), "AutoAdd", TRUE);
+		m_otvOptions.AddOption(LPGENT("Other") _T("/") LPGENT("Automatically accept authorization requests"), "AutoAcceptAuthorization", FALSE);
+		m_otvOptions.AddOption(LPGENT("Other") _T("/") LPGENT("Fix incorrect timestamps in incoming messages"), "FixIncorrectTimestamps", TRUE);
 		
-		{0, LPGENT("Security") _T("/") LPGENT("Show information about operating system in version replies"),
-				OPTTREE_CHECK,	1,	NULL,	"ShowOSVersion"},
-		{0, LPGENT("Security") _T("/") LPGENT("Accept only in band incoming filetransfers (don't disclose own IP)"),
-				OPTTREE_CHECK,	1,	NULL,	"BsOnlyIBB"},
-	};
+		m_otvOptions.AddOption(LPGENT("Security") _T("/") LPGENT("Show information about operating system in version replies"), "ShowOSVersion", TRUE);
+		m_otvOptions.AddOption(LPGENT("Security") _T("/") LPGENT("Accept only in band incoming filetransfers (don't disclose own IP)"), "BsOnlyIBB", FALSE);
+	}
 
-	CJabberProto* ppro = ( CJabberProto* )GetWindowLong( hwndDlg, GWL_USERDATA );
-
-	BOOL result;
-	if (OptTree_ProcessMessage(hwndDlg, msg, wParam, lParam, &result, IDC_OPTTREE, options, SIZEOF(options)))
-		return result;
-
-	switch ( msg ) {
-	case WM_INITDIALOG:
+	void OnInitDialog()
 	{
-		TranslateDialogDefault( hwndDlg );
-		OptTree_Translate(GetDlgItem(hwndDlg, IDC_OPTTREE));
+		CJabberDlgBase::OnInitDialog();
 
-		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
-		ppro = ( CJabberProto* )lParam;
-
-		// File transfer options
-		BOOL bDirect = ppro->JGetByte( "BsDirect", TRUE );
-		BOOL bManualDirect = ppro->JGetByte( "BsDirectManual", FALSE );
-		CheckDlgButton( hwndDlg, IDC_DIRECT, bDirect );
-		CheckDlgButton( hwndDlg, IDC_DIRECT_MANUAL, bManualDirect );
-
-		DBVARIANT dbv;
-		if ( !DBGetContactSettingString( NULL, ppro->m_szModuleName, "BsDirectAddr", &dbv )) {
-			SetDlgItemTextA( hwndDlg, IDC_DIRECT_ADDR, dbv.pszVal );
-			JFreeVariant( &dbv );
-		}
-		if ( !bDirect )
-			EnableWindow( GetDlgItem( hwndDlg, IDC_DIRECT_MANUAL ), FALSE );
-		if ( !bDirect || !bManualDirect )
-			EnableWindow( GetDlgItem( hwndDlg, IDC_DIRECT_ADDR ), FALSE );
-
-		BOOL bManualProxy = ppro->JGetByte( "BsProxyManual", FALSE );
-		CheckDlgButton( hwndDlg, IDC_PROXY_MANUAL, bManualProxy );
-		if ( !DBGetContactSettingString( NULL, ppro->m_szModuleName, "BsProxyServer", &dbv )) {
-			SetDlgItemTextA( hwndDlg, IDC_PROXY_ADDR, dbv.pszVal );
-			JFreeVariant( &dbv );
-		}
-		if ( !bManualProxy )
-			EnableWindow( GetDlgItem( hwndDlg, IDC_PROXY_ADDR ), FALSE );
-
-		// Miscellaneous options
-		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
-			ppro->JGetByte("ShowTransport", TRUE)?1:0,		"ShowTransport");
-		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
-			ppro->JGetByte("AutoAdd", TRUE)?1:0,				"AutoAdd");
-		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options),
-			ppro->JGetByte("AutoAcceptAuthorization", FALSE)?1:0, "AutoAcceptAuthorization");
-		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
-			ppro->JGetByte("MsgAck", FALSE)?1:0,				"MsgAck");
-		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
-			ppro->JGetByte("EnableAvatars", TRUE)?1:0,		"EnableAvatars");
-//		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
-//			JGetByte("AutoAcceptMUC", FALSE)?1:0,		"AutoAcceptMUC");
-//		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
-//			JGetByte("AutoJoinConferences", FALSE)?1:0, "AutoJoinConferences");
-//		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options),
-//			JGetByte("IgnoreMUCInvites", FALSE)?1:0,	"IgnoreMUCInvites");
-		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
-			ppro->JGetByte("Disable3920auth", FALSE)?1:0,		"Disable3920auth");
-		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
-			ppro->JGetByte("EnableRemoteControl", FALSE)?1:0, "EnableRemoteControl");
-//		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
-//			JGetByte("AutoJoinBookmarks", TRUE)?1:0,	"AutoJoinBookmarks");
-		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
-			ppro->JGetByte("EnableZlib", FALSE)?1:0,			"EnableZlib");
-		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
-			ppro->JGetByte("LogChatstates", FALSE)?1:0,		"LogChatstates");
-		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
-			ppro->JGetByte("EnableUserMood", TRUE)?1:0,		"EnableUserMood");
-		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
-			ppro->JGetByte("EnableUserTune", FALSE)?1:0,		"EnableUserTune");
-		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
-			ppro->JGetByte("ShowOSVersion", TRUE)?1:0,		"ShowOSVersion");
-		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
-			ppro->JGetByte("BsOnlyIBB", FALSE)?1:0,			"BsOnlyIBB");
-		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), 
-			ppro->JGetByte("FixIncorrectTimestamps", TRUE)?1:0,"FixIncorrectTimestamps");
-		return TRUE;
+		chkDirect_OnChange(&m_chkDirect);
+		chkProxy_OnChange(&m_chkProxy);
 	}
-	case WM_COMMAND:
+
+	void OnApply()
 	{
-		switch ( LOWORD( wParam )) {
-		case IDC_DIRECT_ADDR:
-		case IDC_PROXY_ADDR:
-			if (( HWND )lParam==GetFocus() && HIWORD( wParam )==EN_CHANGE )
-				goto LBL_Apply;
-			break;
-		case IDC_DIRECT:
-			bChecked = IsDlgButtonChecked( hwndDlg, IDC_DIRECT );
-			EnableWindow( GetDlgItem( hwndDlg, IDC_DIRECT_MANUAL ), bChecked );
-			EnableWindow( GetDlgItem( hwndDlg, IDC_DIRECT_ADDR ), ( bChecked && IsDlgButtonChecked( hwndDlg, IDC_DIRECT_MANUAL )) );
-			goto LBL_Apply;
-		case IDC_DIRECT_MANUAL:
-			bChecked = IsDlgButtonChecked( hwndDlg, IDC_DIRECT_MANUAL );
-			EnableWindow( GetDlgItem( hwndDlg, IDC_DIRECT_ADDR ), bChecked );
-			goto LBL_Apply;
-		case IDC_PROXY_MANUAL:
-			bChecked = IsDlgButtonChecked( hwndDlg, IDC_PROXY_MANUAL );
-			EnableWindow( GetDlgItem( hwndDlg, IDC_PROXY_ADDR ), bChecked );
-		default:
-		LBL_Apply:
-			SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
-			break;
+		BOOL bChecked = m_proto->JGetByte("ShowTransport", TRUE);
+		int index = 0;
+		while (( index = m_proto->ListFindNext( LIST_ROSTER, index )) >= 0 ) {
+			JABBER_LIST_ITEM* item = m_proto->ListGetItemPtrFromIndex( index );
+			if ( item != NULL ) {
+				if ( _tcschr( item->jid, '@' ) == NULL ) {
+					HANDLE hContact = m_proto->HContactFromJID( item->jid );
+					if ( hContact != NULL ) {
+						if ( bChecked ) {
+							if ( item->itemResource.status != m_proto->JGetWord( hContact, "Status", ID_STATUS_OFFLINE )) {
+								m_proto->JSetWord( hContact, "Status", ( WORD )item->itemResource.status );
+						}	}
+						else if ( m_proto->JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != ID_STATUS_OFFLINE )
+							m_proto->JSetWord( hContact, "Status", ID_STATUS_OFFLINE );
+			}	}	}
+			index++;
 		}
-		break;
-	}
-	case WM_NOTIFY:
-		if (( ( LPNMHDR ) lParam )->code == PSN_APPLY ) {
-			// File transfer options
-			ppro->JSetByte( "BsDirect", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_DIRECT ));
-			ppro->JSetByte( "BsDirectManual", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_DIRECT_MANUAL ));
-			GetDlgItemTextA( hwndDlg, IDC_DIRECT_ADDR, text, sizeof( text ));
-			ppro->JSetString( NULL, "BsDirectAddr", text );
-			ppro->JSetByte( "BsProxyManual", ( BYTE ) IsDlgButtonChecked( hwndDlg, IDC_PROXY_MANUAL ));
-			GetDlgItemTextA( hwndDlg, IDC_PROXY_ADDR, text, sizeof( text ));
-			ppro->JSetString( NULL, "BsProxyServer", text );
 
-			// Miscellaneous options
-			bChecked = (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "ShowTransport");
-			ppro->JSetByte( "ShowTransport", ( BYTE ) bChecked );
-			int index = 0;
-			while (( index = ppro->ListFindNext( LIST_ROSTER, index )) >= 0 ) {
-				JABBER_LIST_ITEM* item = ppro->ListGetItemPtrFromIndex( index );
-				if ( item != NULL ) {
-					if ( _tcschr( item->jid, '@' ) == NULL ) {
-						HANDLE hContact = ppro->HContactFromJID( item->jid );
-						if ( hContact != NULL ) {
-							if ( bChecked ) {
-								if ( item->itemResource.status != ppro->JGetWord( hContact, "Status", ID_STATUS_OFFLINE )) {
-									ppro->JSetWord( hContact, "Status", ( WORD )item->itemResource.status );
-							}	}
-							else if ( ppro->JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != ID_STATUS_OFFLINE )
-								ppro->JSetWord( hContact, "Status", ID_STATUS_OFFLINE );
-				}	}	}
-				index++;
-			}
-
-			ppro->JSetByte("AutoAdd",                  (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoAdd"));
-			ppro->JSetByte("AutoAcceptAuthorization",  (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoAcceptAuthorization"));
-			ppro->JSetByte("MsgAck",                   (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "MsgAck"));
-			ppro->JSetByte("Disable3920auth",          (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "Disable3920auth"));
-			ppro->JSetByte("EnableAvatars",            (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableAvatars"));
-//			ppro->JSetByte("AutoAcceptMUC",            (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoAcceptMUC"));
-//			ppro->JSetByte("AutoJoinConferences",      (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoJoinConferences"));
-//			ppro->JSetByte("IgnoreMUCInvites",         (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "IgnoreMUCInvites"));
-			ppro->JSetByte("EnableRemoteControl",      (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableRemoteControl"));
-//			ppro->JSetByte("AutoJoinBookmarks",        (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoJoinBookmarks"));
-			ppro->JSetByte("EnableZlib",               (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableZlib"));
-			ppro->JSetByte("LogChatstates",            (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "LogChatstates"));
-			ppro->JSetByte("EnableUserMood",           (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableUserMood"));
-			ppro->JSetByte("EnableUserTune",           (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "EnableUserTune"));
-			ppro->JSetByte("ShowOSVersion",            (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "ShowOSVersion"));
-			ppro->JSetByte("BsOnlyIBB",                (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "BsOnlyIBB"));
-			ppro->JSetByte("FixIncorrectTimestamps",   (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "FixIncorrectTimestamps"));
-			ppro->SendPresence( ppro->m_iStatus, true );
-			return TRUE;
-		}
-		break;
+		m_proto->SendPresence( m_proto->m_iStatus, true );
 	}
 
-	return FALSE;
-}
+	void __cdecl chkDirect_OnChange(CCtrlData *)
+	{
+		if (m_chkDirect.GetState() == BST_CHECKED)
+		{
+			if (m_chkDirectManual.GetState() == BST_CHECKED)
+				m_txtDirect.Enable();
+			else
+				m_txtDirect.Disable();
 
+			m_chkDirectManual.Enable();
+		} else
+		{
+			m_txtDirect.Disable();
+			m_chkDirectManual.Disable();
+		}
+	}
+
+	void __cdecl chkProxy_OnChange(CCtrlData *)
+	{
+		if (m_chkProxy.GetState() == BST_CHECKED)
+			m_txtProxy.Enable();
+		else
+			m_txtProxy.Disable();
+	}
+
+	static CDlgBase *Create(void *param) { return new CDlgOptAdvanced((CJabberProto *)param); }
+};
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberGcOptDlgProc - chat options dialog procedure
 
-static BOOL CALLBACK JabberGcOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+class CDlgOptGc: public CJabberDlgBase
 {
-	static OPTTREE_OPTION options[] =
+	CCtrlEdit		m_txtSlap;
+	CCtrlEdit		m_txtQuit;
+	CCtrlTreeOpts	m_otvOptions;
+
+public:
+	CDlgOptGc(CJabberProto *proto):
+		CJabberDlgBase(proto, IDD_OPT_JABBER4, NULL),
+		m_txtSlap(this, IDC_TXT_SLAP),
+		m_txtQuit(this, IDC_TXT_QUIT),
+		m_otvOptions(this, IDC_OPTTREE, proto->m_szModuleName)
 	{
-		{0,	LPGENT("General") _T("/") LPGENT("Autoaccept multiuser chat invitations"),		OPTTREE_CHECK,	1,	NULL,	"AutoAcceptMUC"},
-		{0,	LPGENT("General") _T("/") LPGENT("Automatically join bookmarks on login"),		OPTTREE_CHECK,	1,	NULL,	"AutoJoinBookmarks"},
-		{0,	LPGENT("General") _T("/") LPGENT("Automatically join conferences on login"),	OPTTREE_CHECK,	1,	NULL,	"AutoJoinConferences"},
-		{0, LPGENT("General") _T("/") LPGENT("Do not show multiuser chat invitations"),		OPTTREE_CHECK,  1,	NULL,	"IgnoreMUCInvites"},
+		CreateLink(m_txtSlap, "GcMsgSlap", TranslateTS(JABBER_GC_MSG_SLAP));
+		CreateLink(m_txtQuit, "GcMsgQuit", TranslateTS(JABBER_GC_MSG_QUIT));
 
-		{0, LPGENT("Log events") _T("/") LPGENT("Ban notifications"),						OPTTREE_CHECK,  1,	NULL,	"GcLogBans"},
-		{0, LPGENT("Log events") _T("/") LPGENT("Room configuration changes"),				OPTTREE_CHECK,  1,	NULL,	"GcLogConfig"},
-		{0, LPGENT("Log events") _T("/") LPGENT("Affiliation changes"),						OPTTREE_CHECK,  1,	NULL,	"GcLogAffiliations"},
-		{0, LPGENT("Log events") _T("/") LPGENT("Role changes"),							OPTTREE_CHECK,  1,	NULL,	"GcLogRoles"},
-	};
-
-	CJabberProto* ppro = ( CJabberProto* )GetWindowLong( hwndDlg, GWL_USERDATA );
-
-	BOOL result;
-	if (OptTree_ProcessMessage(hwndDlg, msg, wParam, lParam, &result, IDC_OPTTREE, options, SIZEOF(options)))
-		return result;
-
-	switch ( msg ) {
-	case WM_INITDIALOG:
-	{
-		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
-		ppro = ( CJabberProto* )lParam;
-
-		TranslateDialogDefault( hwndDlg );
-		OptTree_Translate(GetDlgItem(hwndDlg, IDC_OPTTREE));
-
-		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), ppro->JGetByte("AutoAcceptMUC",		FALSE)?1:0,	"AutoAcceptMUC");
-		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), ppro->JGetByte("AutoJoinConferences",	FALSE)?1:0,	"AutoJoinConferences");
-		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), ppro->JGetByte("IgnoreMUCInvites",		FALSE)?1:0,	"IgnoreMUCInvites");
-		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), ppro->JGetByte("AutoJoinBookmarks",	TRUE)?1:0,	"AutoJoinBookmarks");
-
-		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), ppro->JGetByte("GcLogBans",			TRUE)?1:0,	"GcLogBans");
-		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), ppro->JGetByte("GcLogConfig",			FALSE)?1:0,	"GcLogConfig");
-		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), ppro->JGetByte("GcLogAffiliations",	FALSE)?1:0,	"GcLogAffiliations");
-		OptTree_SetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), ppro->JGetByte("GcLogRoles",			FALSE)?1:0,	"GcLogRoles");
-
-		DBVARIANT dbv;
-		if (!DBGetContactSettingTString( NULL, ppro->m_szModuleName, "GcMsgQuit", &dbv))
-		{
-			SetDlgItemText(hwndDlg, IDC_TXT_QUIT, dbv.ptszVal);
-			JFreeVariant( &dbv );
-		} else
-		{
-			SetDlgItemText(hwndDlg, IDC_TXT_QUIT, TranslateTS(JABBER_GC_MSG_QUIT));
-		}
-
-		if (!DBGetContactSettingTString( NULL, ppro->m_szModuleName, "GcMsgSlap", &dbv))
-		{
-			SetDlgItemText(hwndDlg, IDC_TXT_SLAP, dbv.ptszVal);
-			JFreeVariant( &dbv );
-		} else
-		{
-			SetDlgItemText(hwndDlg, IDC_TXT_SLAP, TranslateTS(JABBER_GC_MSG_SLAP));
-		}
-
-		return TRUE;
+		m_otvOptions.AddOption(LPGENT("General") _T("/") LPGENT("Autoaccept multiuser chat invitations"),		"AutoAcceptMUC",		FALSE);
+		m_otvOptions.AddOption(LPGENT("General") _T("/") LPGENT("Automatically join bookmarks on login"),		"AutoJoinConferences",	FALSE);
+		m_otvOptions.AddOption(LPGENT("General") _T("/") LPGENT("Automatically join conferences on login"),		"IgnoreMUCInvites",		FALSE);
+		m_otvOptions.AddOption(LPGENT("General") _T("/") LPGENT("Do not show multiuser chat invitations"),		"AutoJoinBookmarks",	TRUE);
+		m_otvOptions.AddOption(LPGENT("Log events") _T("/") LPGENT("Ban notifications"),						"GcLogBans",			TRUE);
+		m_otvOptions.AddOption(LPGENT("Log events") _T("/") LPGENT("Room configuration changes"),				"GcLogConfig",			FALSE);
+		m_otvOptions.AddOption(LPGENT("Log events") _T("/") LPGENT("Affiliation changes"),						"GcLogAffiliations",	FALSE);
+		m_otvOptions.AddOption(LPGENT("Log events") _T("/") LPGENT("Role changes"),								"GcLogRoles",			FALSE);
 	}
 
-	case WM_COMMAND:
-	{
-		switch ( LOWORD( wParam ))
-		{
-		case IDC_TXT_SLAP:
-		case IDC_TXT_QUIT:
-			if (HIWORD(wParam) == EN_CHANGE)
-				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
-			break;
-		}
-		break;
-	}
-
-	case WM_NOTIFY:
-		if (( ( LPNMHDR ) lParam )->code == PSN_APPLY ) {
-			TCHAR text[256];
-			GetDlgItemText(hwndDlg, IDC_TXT_QUIT, text, SIZEOF(text));
-			ppro->JSetStringT(NULL, "GcMsgQuit", text);
-			GetDlgItemText(hwndDlg, IDC_TXT_SLAP, text, SIZEOF(text));
-			ppro->JSetStringT(NULL, "GcMsgSlap", text);
-
-			ppro->JSetByte("AutoAcceptMUC",           (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoAcceptMUC"));
-			ppro->JSetByte("AutoJoinConferences",     (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoJoinConferences"));
-			ppro->JSetByte("IgnoreMUCInvites",        (BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "IgnoreMUCInvites"));
-			ppro->JSetByte("AutoJoinBookmarks",		(BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "AutoJoinBookmarks"));
-
-			ppro->JSetByte("GcLogBans",				(BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "GcLogBans"));
-			ppro->JSetByte("GcLogConfig",				(BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "GcLogConfig"));
-			ppro->JSetByte("GcLogAffiliations",		(BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "GcLogAffiliations"));
-			ppro->JSetByte("GcLogRoles",				(BYTE)OptTree_GetOptions(hwndDlg, IDC_OPTTREE, options, SIZEOF(options), "GcLogRoles"));
-
-			return TRUE;
-		}
-		break;
-	}
-
-	return FALSE;
-}
-
-
+	static CDlgBase *Create(void *param) { return new CDlgOptGc((CJabberProto *)param); }
+};
 
 //////////////////////////////////////////////////////////////////////////
 // roster editor
@@ -1774,23 +1591,22 @@ int CJabberProto::OnOptionsInit( WPARAM wParam, LPARAM lParam )
 	OptCreateAccount.param = this;
 	JCallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
 
-/*
-	odp.pszTab      = LPGEN("Account");
-	odp.pszTemplate = MAKEINTRESOURCEA( IDD_OPT_JABBER );
-	odp.pfnDlgProc  = JabberOptDlgProc;
-	odp.dwInitParam = ( LPARAM )this;
-	JCallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
-*/
 	odp.pszTab      = LPGEN("Conferences");
-	odp.pszTemplate = MAKEINTRESOURCEA( IDD_OPT_JABBER4 );
-	odp.pfnDlgProc  = JabberGcOptDlgProc;
-	odp.dwInitParam = ( LPARAM )this;
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_JABBER4);
+	odp.pfnDlgProc  = CDlgBase::DynamicDlgProc;
+	odp.dwInitParam	= (LPARAM)&OptCreateGc;
+	OptCreateGc.create = CDlgOptGc::Create;
+	OptCreateGc.param = this;
 	JCallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
+
+	odp.flags |= ODPF_EXPERTONLY;
 
 	odp.pszTab      = LPGEN("Advanced");
 	odp.pszTemplate = MAKEINTRESOURCEA( IDD_OPT_JABBER2 );
-	odp.pfnDlgProc  = JabberAdvOptDlgProc;
-	odp.dwInitParam = ( LPARAM )this;
+	odp.pfnDlgProc  = CDlgBase::DynamicDlgProc;
+	odp.dwInitParam	= (LPARAM)&OptCreateAdvanced;
+	OptCreateAdvanced.create = CDlgOptAdvanced::Create;
+	OptCreateAdvanced.param = this;
 	JCallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
 
 	return 0;

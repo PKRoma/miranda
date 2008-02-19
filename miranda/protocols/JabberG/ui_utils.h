@@ -516,6 +516,123 @@ public:
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
+// CCtrlListView
+
+class CCtrlListView : public CCtrlBase
+{
+public:
+protected:
+};
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// CCtrlTreeView
+
+class CCtrlTreeView : public CCtrlBase
+{
+public:
+	CCtrlTreeView( CDlgBase* dlg, int ctrlId );
+
+	// Classic TV interface
+	HIMAGELIST CreateDragImage(HTREEITEM hItem);
+	void DeleteAllItems();
+	void DeleteItem(HTREEITEM hItem);
+	HWND EditLabel(HTREEITEM hItem);
+	void EndEditLabelNow(BOOL cancel);
+	void EnsureVisible(HTREEITEM hItem);
+	void Expand(HTREEITEM hItem, DWORD flag);
+	COLORREF GetBkColor();
+	DWORD GetCheckState(HTREEITEM hItem);
+	HTREEITEM GetChild(HTREEITEM hItem);
+	int GetCount();
+	HTREEITEM GetDropHilight();
+	HWND GetEditControl();
+	HTREEITEM GetFirstVisible();
+	HIMAGELIST GetImageList(int iImage);
+	int GetIndent();
+	COLORREF GetInsertMarkColor();
+	void GetItem(TVITEMEX *tvi);
+	int GetItemHeight();
+	void GetItemRect(HTREEITEM hItem, RECT *rcItem, BOOL fItemRect);
+	DWORD GetItemState(HTREEITEM hItem, DWORD stateMask);
+	HTREEITEM GetLastVisible();
+	COLORREF GetLineColor();
+	HTREEITEM GetNextItem(HTREEITEM hItem, DWORD flag);
+	HTREEITEM GetNextSibling(HTREEITEM hItem);
+	HTREEITEM GetNextVisible(HTREEITEM hItem);
+	HTREEITEM GetParent(HTREEITEM hItem);
+	HTREEITEM GetPrevSibling(HTREEITEM hItem);
+	HTREEITEM GetPrevVisible(HTREEITEM hItem);
+	HTREEITEM GetRoot();
+	DWORD GetScrollTime();
+	HTREEITEM GetSelection();
+	COLORREF GetTextColor();
+	HWND GetToolTips();
+	BOOL GetUnicodeFormat();
+	unsigned GetVisibleCount();
+	HTREEITEM HitTest(TVHITTESTINFO *hti);
+	HTREEITEM InsertItem(TVINSERTSTRUCT *tvis);
+	//HTREEITEM MapAccIDToHTREEITEM(UINT id);
+	//UINT MapHTREEITEMtoAccID(HTREEITEM hItem);
+	void Select(HTREEITEM hItem, DWORD flag);
+	void SelectDropTarget(HTREEITEM hItem);
+	void SelectItem(HTREEITEM hItem);
+	void SelectSetFirstVisible(HTREEITEM hItem);
+	COLORREF SetBkColor(COLORREF clBack);
+	void SetCheckState(HTREEITEM hItem, DWORD state);
+	void SetImageList(HIMAGELIST hIml, int iImage);
+	void SetIndent(int iIndent);
+	void SetInsertMark(HTREEITEM hItem, BOOL fAfter);
+	COLORREF SetInsertMarkColor(COLORREF clMark);
+	void SetItem(TVITEMEX *tvi);
+	void SetItemHeight(short cyItem);
+	void SetItemState(HTREEITEM hItem, DWORD state, DWORD stateMask);
+	COLORREF SetLineColor(COLORREF clLine);
+	void SetScrollTime(UINT uMaxScrollTime);
+	COLORREF SetTextColor(COLORREF clText);
+	HWND SetToolTips(HWND hwndToolTips);
+	BOOL SetUnicodeFormat(BOOL fUnicode);
+	void SortChildren(HTREEITEM hItem, BOOL fRecurse);
+	void SortChildrenCB(TVSORTCB *cb, BOOL fRecurse);
+
+	// Additional stuff
+	void TranslateItem(HTREEITEM hItem);
+	void TranslateTree();
+	HTREEITEM FindNamedItem(HTREEITEM hItem, const TCHAR *name);
+	void GetItem(HTREEITEM hItem, TVITEMEX *tvi);
+	void GetItem(HTREEITEM hItem, TVITEMEX *tvi, TCHAR *szText, int iTextLength);
+
+	// Events
+	struct TEventInfo {
+		CCtrlTreeView *treeviewctrl;
+		union {
+			NMHDR			*nmhdr;
+			NMTREEVIEW		*nmtv;
+			NMTVDISPINFO	*nmtvdi;
+			NMTVGETINFOTIP	*nmtvit;
+			NMTVKEYDOWN		*nmtvkey;
+		};
+	};
+
+	CCallback<TEventInfo> OnBeginDrag;
+	CCallback<TEventInfo> OnBeginLabelEdit;
+	CCallback<TEventInfo> OnBeginRDrag;
+	CCallback<TEventInfo> OnDeleteItem;
+	CCallback<TEventInfo> OnEndLabelEdit;
+	CCallback<TEventInfo> OnGetDispInfo;
+	CCallback<TEventInfo> OnGetInfoTip;
+	CCallback<TEventInfo> OnItemExpanded;
+	CCallback<TEventInfo> OnItemExpanding;
+	CCallback<TEventInfo> OnKeyDown;
+	CCallback<TEventInfo> OnSelChanged;
+	CCallback<TEventInfo> OnSelChanging;
+	CCallback<TEventInfo> OnSetDispInfo;
+	CCallback<TEventInfo> OnSingleExpand;
+
+protected:
+	BOOL OnNotify(int idCtrl, NMHDR *pnmh);
+};
+
+/////////////////////////////////////////////////////////////////////////////////////////
 // CCtrlCustom
 
 template<typename TDlg>

@@ -790,6 +790,369 @@ void CCtrlClc::SetTextColor(int iFontId, COLORREF clText)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
+// CCtrlTreeView
+
+CCtrlTreeView::CCtrlTreeView( CDlgBase* dlg, int ctrlId ):
+	CCtrlBase(dlg, ctrlId)
+{
+}
+
+BOOL CCtrlTreeView::OnNotify(int idCtrl, NMHDR *pnmh)
+{
+	TEventInfo evt = { this, pnmh };
+
+	switch (pnmh->code)
+	{
+		case TVN_BEGINDRAG:			OnBeginDrag(&evt);		return TRUE;
+		case TVN_BEGINLABELEDIT:	OnBeginLabelEdit(&evt);	return TRUE;
+		case TVN_BEGINRDRAG:		OnBeginRDrag(&evt);		return TRUE;
+		case TVN_DELETEITEM:		OnDeleteItem(&evt);		return TRUE;
+		case TVN_ENDLABELEDIT:		OnEndLabelEdit(&evt);	return TRUE;
+		case TVN_GETDISPINFO:		OnGetDispInfo(&evt);	return TRUE;
+		case TVN_GETINFOTIP:		OnGetInfoTip(&evt);		return TRUE;
+		case TVN_ITEMEXPANDED:		OnItemExpanded(&evt);	return TRUE;
+		case TVN_ITEMEXPANDING:		OnItemExpanding(&evt);	return TRUE;
+		case TVN_KEYDOWN:			OnKeyDown(&evt);		return TRUE;
+		case TVN_SELCHANGED:		OnSelChanged(&evt);		return TRUE;
+		case TVN_SELCHANGING:		OnSelChanging(&evt);	return TRUE;
+		case TVN_SETDISPINFO:		OnSetDispInfo(&evt);	return TRUE;
+		case TVN_SINGLEEXPAND:		OnSingleExpand(&evt);	return TRUE;
+	}
+
+	return FALSE;
+}
+
+void CCtrlTreeView::TranslateItem(HTREEITEM hItem)
+{
+	TCHAR buf[128];
+	TVITEMEX tvi;
+
+	GetItem(hItem, &tvi, buf, SIZEOF(buf));
+	tvi.pszText = TranslateTS(tvi.pszText);
+	tvi.cchTextMax = lstrlen(tvi.pszText);
+	SetItem(&tvi);
+}
+
+void CCtrlTreeView::TranslateTree()
+{
+	HTREEITEM hItem = GetRoot();
+	while (hItem)
+	{
+		TranslateItem(hItem);
+
+		HTREEITEM hItemTmp = 0;
+		if (hItemTmp = GetChild(hItem))
+		{
+			hItem = hItemTmp;
+		} else
+		if (hItemTmp = GetNextSibling(hItem))
+		{
+			hItem = hItemTmp;
+		} else
+		{
+			while (1)
+			{
+				if (!(hItem = GetParent(hItem))) break;
+				if (hItemTmp = GetNextSibling(hItem))
+				{
+					hItem = hItemTmp;
+					break;
+				}
+			}
+		}
+	}
+}
+
+HTREEITEM CCtrlTreeView::FindNamedItem(HTREEITEM hItem, const TCHAR *name)
+{
+	TVITEMEX tvi = {0};
+	TCHAR str[MAX_PATH];
+
+	if (hItem)
+		tvi.hItem = GetChild(hItem);
+	else
+		tvi.hItem = GetRoot();
+
+	if (!name)
+		return tvi.hItem;
+
+	tvi.mask = TVIF_TEXT;
+	tvi.pszText = str;
+	tvi.cchTextMax = SIZEOF(str);
+
+	while (tvi.hItem)
+	{
+		GetItem(&tvi);
+
+		if (!lstrcmp(tvi.pszText, name))
+			return tvi.hItem;
+
+		tvi.hItem = GetNextSibling(tvi.hItem);
+	}
+	return NULL;
+}
+
+void CCtrlTreeView::GetItem(HTREEITEM hItem, TVITEMEX *tvi)
+{
+	ZeroMemory(tvi, sizeof(*tvi));
+	tvi->mask = TVIF_CHILDREN|TVIF_HANDLE|TVIF_IMAGE|TVIF_INTEGRAL|TVIF_PARAM|TVIF_SELECTEDIMAGE|TVIF_STATE;
+	tvi->hItem = hItem;
+	GetItem(tvi);
+}
+
+void CCtrlTreeView::GetItem(HTREEITEM hItem, TVITEMEX *tvi, TCHAR *szText, int iTextLength)
+{
+	ZeroMemory(tvi, sizeof(*tvi));
+	tvi->mask = TVIF_CHILDREN|TVIF_HANDLE|TVIF_IMAGE|TVIF_INTEGRAL|TVIF_PARAM|TVIF_SELECTEDIMAGE|TVIF_STATE|TVIF_TEXT;
+	tvi->hItem = hItem;
+	tvi->pszText = szText;
+	tvi->cchTextMax = iTextLength;
+	GetItem(tvi);
+}
+
+HIMAGELIST CCtrlTreeView::CreateDragImage(HTREEITEM hItem)
+{	return TreeView_CreateDragImage(m_hwnd, hItem);
+}
+
+void CCtrlTreeView::DeleteAllItems()
+{	TreeView_DeleteAllItems(m_hwnd);
+}
+
+void CCtrlTreeView::DeleteItem(HTREEITEM hItem)
+{	TreeView_DeleteItem(m_hwnd, hItem);
+}
+
+HWND CCtrlTreeView::EditLabel(HTREEITEM hItem)
+{	return TreeView_EditLabel(m_hwnd, hItem);
+}
+
+void CCtrlTreeView::EndEditLabelNow(BOOL cancel)
+{	TreeView_EndEditLabelNow(m_hwnd, cancel);
+}
+
+void CCtrlTreeView::EnsureVisible(HTREEITEM hItem)
+{	TreeView_EnsureVisible(m_hwnd, hItem);
+}
+
+void CCtrlTreeView::Expand(HTREEITEM hItem, DWORD flag)
+{	TreeView_Expand(m_hwnd, hItem, flag);
+}
+
+COLORREF CCtrlTreeView::GetBkColor()
+{	return TreeView_GetBkColor(m_hwnd);
+}
+
+DWORD CCtrlTreeView::GetCheckState(HTREEITEM hItem)
+{	return TreeView_GetCheckState(m_hwnd, hItem);
+}
+
+HTREEITEM CCtrlTreeView::GetChild(HTREEITEM hItem)
+{	return TreeView_GetChild(m_hwnd, hItem);
+}
+
+int CCtrlTreeView::GetCount()
+{	return TreeView_GetCount(m_hwnd);
+}
+
+HTREEITEM CCtrlTreeView::GetDropHilight()
+{	return TreeView_GetDropHilight(m_hwnd);
+}
+
+HWND CCtrlTreeView::GetEditControl()
+{	return TreeView_GetEditControl(m_hwnd);
+}
+
+HTREEITEM CCtrlTreeView::GetFirstVisible()
+{	return TreeView_GetFirstVisible(m_hwnd);
+}
+
+HIMAGELIST CCtrlTreeView::GetImageList(int iImage)
+{	return TreeView_GetImageList(m_hwnd, iImage);
+}
+
+int CCtrlTreeView::GetIndent()
+{	return TreeView_GetIndent(m_hwnd);
+}
+
+COLORREF CCtrlTreeView::GetInsertMarkColor()
+{	return TreeView_GetInsertMarkColor(m_hwnd);
+}
+
+void CCtrlTreeView::GetItem(TVITEMEX *tvi)
+{	TreeView_GetItem(m_hwnd, tvi);
+}
+
+int CCtrlTreeView::GetItemHeight()
+{	return TreeView_GetItemHeight(m_hwnd);
+}
+
+void CCtrlTreeView::GetItemRect(HTREEITEM hItem, RECT *rcItem, BOOL fItemRect)
+{	TreeView_GetItemRect(m_hwnd, hItem, rcItem, fItemRect);
+}
+
+DWORD CCtrlTreeView::GetItemState(HTREEITEM hItem, DWORD stateMask)
+{	return TreeView_GetItemState(m_hwnd, hItem, stateMask);
+}
+
+HTREEITEM CCtrlTreeView::GetLastVisible()
+{	return TreeView_GetLastVisible(m_hwnd);
+}
+
+COLORREF CCtrlTreeView::GetLineColor()
+{	return TreeView_GetLineColor(m_hwnd);
+}
+
+HTREEITEM CCtrlTreeView::GetNextItem(HTREEITEM hItem, DWORD flag)
+{	return TreeView_GetNextItem(m_hwnd, hItem, flag);
+}
+
+HTREEITEM CCtrlTreeView::GetNextSibling(HTREEITEM hItem)
+{	return TreeView_GetNextSibling(m_hwnd, hItem);
+}
+
+HTREEITEM CCtrlTreeView::GetNextVisible(HTREEITEM hItem)
+{	return TreeView_GetNextVisible(m_hwnd, hItem);
+}
+
+HTREEITEM CCtrlTreeView::GetParent(HTREEITEM hItem)
+{	return TreeView_GetParent(m_hwnd, hItem);
+}
+
+HTREEITEM CCtrlTreeView::GetPrevSibling(HTREEITEM hItem)
+{	return TreeView_GetPrevSibling(m_hwnd, hItem);
+}
+
+HTREEITEM CCtrlTreeView::GetPrevVisible(HTREEITEM hItem)
+{	return TreeView_GetPrevVisible(m_hwnd, hItem);
+}
+
+HTREEITEM CCtrlTreeView::GetRoot()
+{	return TreeView_GetRoot(m_hwnd);
+}
+
+DWORD CCtrlTreeView::GetScrollTime()
+{	return TreeView_GetScrollTime(m_hwnd);
+}
+
+HTREEITEM CCtrlTreeView::GetSelection()
+{	return TreeView_GetSelection(m_hwnd);
+}
+
+COLORREF CCtrlTreeView::GetTextColor()
+{	return TreeView_GetTextColor(m_hwnd);
+}
+
+HWND CCtrlTreeView::GetToolTips()
+{	return TreeView_GetToolTips(m_hwnd);
+}
+
+BOOL CCtrlTreeView::GetUnicodeFormat()
+{	return TreeView_GetUnicodeFormat(m_hwnd);
+}
+
+unsigned CCtrlTreeView::GetVisibleCount()
+{	return TreeView_GetVisibleCount(m_hwnd);
+}
+
+HTREEITEM CCtrlTreeView::HitTest(TVHITTESTINFO *hti)
+{	return TreeView_HitTest(m_hwnd, hti);
+}
+
+HTREEITEM CCtrlTreeView::InsertItem(TVINSERTSTRUCT *tvis)
+{	return TreeView_InsertItem(m_hwnd, tvis);
+}
+
+/*
+HTREEITEM CCtrlTreeView::MapAccIDToHTREEITEM(UINT id)
+{	return TreeView_MapAccIDToHTREEITEM(m_hwnd, id);
+}
+
+UINT CCtrlTreeView::MapHTREEITEMtoAccID(HTREEITEM hItem)
+{	return TreeView_MapHTREEITEMtoAccID(m_hwnd, hItem);
+}
+
+*/
+void CCtrlTreeView::Select(HTREEITEM hItem, DWORD flag)
+{	TreeView_Select(m_hwnd, hItem, flag);
+}
+
+void CCtrlTreeView::SelectDropTarget(HTREEITEM hItem)
+{	TreeView_SelectDropTarget(m_hwnd, hItem);
+}
+
+void CCtrlTreeView::SelectItem(HTREEITEM hItem)
+{	TreeView_SelectItem(m_hwnd, hItem);
+}
+
+void CCtrlTreeView::SelectSetFirstVisible(HTREEITEM hItem)
+{	TreeView_SelectSetFirstVisible(m_hwnd, hItem);
+}
+
+COLORREF CCtrlTreeView::SetBkColor(COLORREF clBack)
+{	return TreeView_SetBkColor(m_hwnd, clBack);
+}
+
+void CCtrlTreeView::SetCheckState(HTREEITEM hItem, DWORD state)
+{	TreeView_SetCheckState(m_hwnd, hItem, state);
+}
+
+void CCtrlTreeView::SetImageList(HIMAGELIST hIml, int iImage)
+{	TreeView_SetImageList(m_hwnd, hIml, iImage);
+}
+
+void CCtrlTreeView::SetIndent(int iIndent)
+{	TreeView_SetIndent(m_hwnd, iIndent);
+}
+
+void CCtrlTreeView::SetInsertMark(HTREEITEM hItem, BOOL fAfter)
+{	TreeView_SetInsertMark(m_hwnd, hItem, fAfter);
+}
+
+COLORREF CCtrlTreeView::SetInsertMarkColor(COLORREF clMark)
+{	return TreeView_SetInsertMarkColor(m_hwnd, clMark);
+}
+
+void CCtrlTreeView::SetItem(TVITEMEX *tvi)
+{	TreeView_SetItem(m_hwnd, tvi);
+}
+
+void CCtrlTreeView::SetItemHeight(short cyItem)
+{	TreeView_SetItemHeight(m_hwnd, cyItem);
+}
+
+void CCtrlTreeView::SetItemState(HTREEITEM hItem, DWORD state, DWORD stateMask)
+{	TreeView_SetItemState(m_hwnd, hItem, state, stateMask);
+}
+
+COLORREF CCtrlTreeView::SetLineColor(COLORREF clLine)
+{	return TreeView_SetLineColor(m_hwnd, clLine);
+}
+
+void CCtrlTreeView::SetScrollTime(UINT uMaxScrollTime)
+{	TreeView_SetScrollTime(m_hwnd, uMaxScrollTime);
+}
+
+COLORREF CCtrlTreeView::SetTextColor(COLORREF clText)
+{	return TreeView_SetTextColor(m_hwnd, clText);
+}
+
+HWND CCtrlTreeView::SetToolTips(HWND hwndToolTips)
+{	return TreeView_SetToolTips(m_hwnd, hwndToolTips);
+}
+
+BOOL CCtrlTreeView::SetUnicodeFormat(BOOL fUnicode)
+{	return TreeView_SetUnicodeFormat(m_hwnd, fUnicode);
+}
+
+void CCtrlTreeView::SortChildren(HTREEITEM hItem, BOOL fRecurse)
+{	TreeView_SortChildren(m_hwnd, hItem, fRecurse);
+}
+
+void CCtrlTreeView::SortChildrenCB(TVSORTCB *cb, BOOL fRecurse)
+{	TreeView_SortChildrenCB(m_hwnd, cb, fRecurse);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 // CCtrlBase
 
 CCtrlBase::CCtrlBase(CDlgBase *wnd, int idCtrl) :
