@@ -93,9 +93,12 @@ struct CListDlg : public CProtoDlgBase<CIrcProto>
 
 	virtual void OnInitDialog();
 	virtual void OnDestroy();
+	virtual int Resizer(UTILRESIZECONTROL *urc);
 
 	CCtrlButton  m_Join;
 	void __cdecl OnJoin( CCtrlButton* );
+
+	void UpdateList( void );
 };
 
 struct CJoinDlg : public CCoolIrcDlg
@@ -156,7 +159,7 @@ struct CManagerDlg : public CCoolIrcDlg
 	void __cdecl OnRemove( CCtrlButton* );
 
 	void __cdecl OnListDblClick( CCtrlListBox* );
-	void __cdecl OnChangeList( CCtrlData* );
+	void __cdecl OnChangeList( CCtrlListBox* );
 	void __cdecl OnChangeModes( CCtrlData* );
 	void __cdecl OnChangeTopic( CCtrlData* );
 

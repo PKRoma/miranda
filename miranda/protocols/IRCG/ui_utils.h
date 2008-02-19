@@ -30,6 +30,8 @@ Last change by : $Author: m_mluhov $
 #ifndef __jabber_ui_utils_h__
 #define __jabber_ui_utils_h__
 
+#include "m_clc.h"
+
 #pragma warning(disable:4355)
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -45,6 +47,8 @@ public:
 
 	__inline bool operator==(const CCallbackImp &other) const { return (m_object == other.m_object) && (m_func == other.m_func); }
 	__inline bool operator!=(const CCallbackImp &other) const { return (m_object != other.m_object) || (m_func != other.m_func); }
+
+	__inline operator bool() const { return m_object && m_func; }
 
 	__inline bool CheckObject(void *object) const { return (object == m_object) ? true : false; }
 
@@ -198,11 +202,104 @@ class CCtrlMButton : public CCtrlButton
 {
 public:
 	CCtrlMButton( CDlgBase* dlg, int ctrlId, HICON hIcon, const char* tooltip );
+	CCtrlMButton( CDlgBase* dlg, int ctrlId, int iCoreIcon, const char* tooltip );
+
+	void MakeFlat();
+	void MakePush();
+
 	virtual void OnInit();
 
 protected:
 	HICON m_hIcon;
 	const char* m_toolTip;
+};
+
+class CCtrlHyperlink : public CCtrlBase
+{
+public:
+	CCtrlHyperlink( CDlgBase* dlg, int ctrlId, const char* url );
+
+	virtual BOOL OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode);
+
+protected:
+	const char* m_url;
+};
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// CCtrlClc
+class CCtrlClc: public CCtrlBase
+{
+public:
+	CCtrlClc( CDlgBase* dlg, int ctrlId );
+
+	void AddContact(HANDLE hContact);
+	void AddGroup(HANDLE hGroup);
+	void AutoRebuild();
+	void DeleteItem(HANDLE hItem);
+	void EditLabel(HANDLE hItem);
+	void EndEditLabel(bool save);
+	void EnsureVisible(HANDLE hItem, bool partialOk);
+	void Expand(HANDLE hItem, DWORD flags);
+	HANDLE FindContact(HANDLE hContact);
+	HANDLE FindGroup(HANDLE hGroup);
+	COLORREF GetBkColor();
+	bool GetCheck(HANDLE hItem);
+	int GetCount();
+	HWND GetEditControl();
+	DWORD GetExpand(HANDLE hItem);
+	int GetExtraColumns();
+	BYTE GetExtraImage(HANDLE hItem, int iColumn);
+	HIMAGELIST GetExtraImageList();
+	HFONT GetFont(int iFontId);
+	HANDLE GetSelection();
+	HANDLE HitTest(int x, int y, DWORD *hitTest);
+	void SelectItem(HANDLE hItem);
+	void SetBkBitmap(DWORD mode, HBITMAP hBitmap);
+	void SetBkColor(COLORREF clBack);
+	void SetCheck(HANDLE hItem, bool check);
+	void SetExtraColumns(int iColumns);
+	void SetExtraImage(HANDLE hItem, int iColumn, int iImage);
+	void SetExtraImageList(HIMAGELIST hImgList);
+	void SetFont(int iFontId, HANDLE hFont, bool bRedraw);
+	void SetIndent(int iIndent);
+	void SetItemText(HANDLE hItem, char *szText);
+	void SetHideEmptyGroups(bool state);
+	void SetGreyoutFlags(DWORD flags);
+	bool GetHideOfflineRoot();
+	void SetHideOfflineRoot(bool state);
+	void SetUseGroups(bool state);
+	void SetOfflineModes(DWORD modes);
+	DWORD GetExStyle();
+	void SetExStyle(DWORD exStyle);
+	int GetLefrMargin();
+	void SetLeftMargin(int iMargin);
+	HANDLE AddInfoItem(CLCINFOITEM *cii);
+	int GetItemType(HANDLE hItem);
+	HANDLE GetNextItem(HANDLE hItem, DWORD flags);
+	COLORREF GetTextColot(int iFontId);
+	void SetTextColor(int iFontId, COLORREF clText);
+
+	struct TEventInfo
+	{
+		CCtrlClc		*ctrl;
+		NMCLISTCONTROL	*info;
+	};
+
+	CCallback<TEventInfo>	OnExpanded;
+	CCallback<TEventInfo>	OnListRebuilt;
+	CCallback<TEventInfo>	OnItemChecked;
+	CCallback<TEventInfo>	OnDragging;
+	CCallback<TEventInfo>	OnDropped;
+	CCallback<TEventInfo>	OnListSizeChange;
+	CCallback<TEventInfo>	OnOptionsChanged;
+	CCallback<TEventInfo>	OnDragStop;
+	CCallback<TEventInfo>	OnNewContact;
+	CCallback<TEventInfo>	OnContactMoved;
+	CCallback<TEventInfo>	OnCheckChanged;
+	CCallback<TEventInfo>	OnClick;
+
+protected:
+	BOOL OnNotify(int idCtrl, NMHDR *pnmh);
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -221,7 +318,7 @@ public:
 	__inline bool IsChanged() const { return m_changed; }
 
 	void CreateDbLink( const char* szModuleName, const char* szSetting, BYTE type, DWORD iValue );
-	void CreateDbLink( const char* szModuleName, const char* szSetting, TCHAR* iValue );
+	void CreateDbLink( const char* szModuleName, const char* szSetting, TCHAR* szValue );
 
 	virtual void OnInit();
 
@@ -311,25 +408,10 @@ public:
 /////////////////////////////////////////////////////////////////////////////////////////
 // CCtrlListBox
 
-class CCtrlListBox : public CCtrlData
+class CCtrlListBox : public CCtrlBase
 {
 public:
 	CCtrlListBox( CDlgBase* dlg, int ctrlId );
-
-	virtual BOOL OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode)
-	{
-		switch( idCode ) {
-		case LBN_SELCHANGE:
-			NotifyChange();
-			break;
-		case LBN_DBLCLK:
-			OnDblClick(this);
-			break;
-		}		
-		return FALSE;
-	}
-	
-	CCallback<CCtrlListBox> OnDblClick;
 
 	int    AddString(TCHAR *text, LPARAM data=0);
 	void   DeleteString(int index);
@@ -349,6 +431,14 @@ public:
 	int    SetCurSel(int index);
 	void   SetItemData(int index, LPARAM data);
 	void   SetSel(int index, bool sel=true);
+
+	// Events
+	CCallback<CCtrlListBox>	OnDblClick;
+	CCallback<CCtrlListBox>	OnSelCancel;
+	CCallback<CCtrlListBox>	OnSelChange;
+
+protected:
+	BOOL OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode);
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////

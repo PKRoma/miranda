@@ -1793,6 +1793,16 @@ void CIrcProto::InitPrefs(void)
 
 	CallService( MS_DB_CRYPT_DECODESTRING, 499, (LPARAM)m_password);
 
+	int x = getDword( "SizeOfListBottom", -1 );
+	if ( x != -1 ) {
+		DBDeleteContactSetting( NULL, m_szModuleName, "SizeOfListBottom" );
+		setDword( "channelList_height", x );
+	}
+	if (( x = getDword( "SizeOfListWidth", -1 )) != -1 ) {
+		DBDeleteContactSetting( NULL, m_szModuleName, "SizeOfListWidth" );
+		setDword( "channelList_width", x );
+	}
+
 	if ( m_pNick[0] == 0 ) {
 		if ( m_nick[0] != 0 )
 			setTString("PNick", m_nick);
@@ -1805,8 +1815,6 @@ void CIrcProto::InitPrefs(void)
 		m_alias = mir_tstrdup( _T("/op /mode ## +ooo $1 $2 $3\r\n/dop /mode ## -ooo $1 $2 $3\r\n/voice /mode ## +vvv $1 $2 $3\r\n/dvoice /mode ## -vvv $1 $2 $3\r\n/j /join #$1 $2-\r\n/p /part ## $1-\r\n/w /whois $1\r\n/k /kick ## $1 $2-\r\n/q /query $1\r\n/logon /log on ##\r\n/logoff /log off ##\r\n/save /log buffer $1\r\n/slap /me slaps $1 around a bit with a large trout" ));
 
 	m_quickComboSelection = getDword( "QuickComboSelection", m_serverComboSelection);
-	m_listSize.y = getDword( "SizeOfListBottom", 400);
-	m_listSize.x = getDword( "SizeOfListRight", 600);
 	m_myHost[0] = '\0';
 
 	colors[0] = RGB(255,255,255);

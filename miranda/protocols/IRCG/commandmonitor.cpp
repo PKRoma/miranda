@@ -1607,7 +1607,7 @@ bool CIrcProto::OnIrc_LISTEND( const CIrcMessage* pmsg )
 		ListView_SetColumnWidth(GetDlgItem(m_listDlg->GetHwnd(), IDC_INFO_LISTVIEW), 1, LVSCW_AUTOSIZE);
 		ListView_SetColumnWidth(GetDlgItem(m_listDlg->GetHwnd(), IDC_INFO_LISTVIEW), 2, LVSCW_AUTOSIZE);
 		ListView_SetColumnWidth(GetDlgItem(m_listDlg->GetHwnd(), IDC_INFO_LISTVIEW), 3, LVSCW_AUTOSIZE);
-		SendMessage(m_listDlg->GetHwnd(), IRC_UPDATELIST, 0, 0);
+		m_listDlg->UpdateList();
 
 		TCHAR text[100];
 		mir_sntprintf( text, SIZEOF(text), TranslateT("Done: %u channels"), m_channelNumber );

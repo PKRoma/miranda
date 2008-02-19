@@ -285,14 +285,15 @@ void CListDlg::OnInitDialog()
 		ListView_InsertColumn(GetDlgItem( m_hwnd, IDC_INFO_LISTVIEW),index,&lvC);
 	}
 	
-	SetWindowPos( m_hwnd, HWND_TOP, (screen.right-screen.left)/2- (m_proto->m_listSize.x)/2,(screen.bottom-screen.top)/2- (m_proto->m_listSize.y)/2, (m_proto->m_listSize.x), (m_proto->m_listSize.y), 0);
-	SendMessage( m_hwnd, WM_SIZE, SIZE_RESTORED, MAKELPARAM(m_proto->m_listSize.x, m_proto->m_listSize.y));
+	Utils_RestoreWindowPosition(m_hwnd, NULL, m_proto->m_szModuleName, "channelList_");
+
 	ListView_SetExtendedListViewStyle(GetDlgItem( m_hwnd, IDC_INFO_LISTVIEW), LVS_EX_FULLROWSELECT);
 	SendMessage( m_hwnd,WM_SETICON,ICON_BIG,(LPARAM)m_proto->LoadIconEx(IDI_LIST)); // Tell the dialog to use it
 }
 
 void CListDlg::OnDestroy()
 {
+	Utils_SaveWindowPosition(m_hwnd, NULL, m_proto->m_szModuleName, "channelList_");
 	m_proto->m_listDlg = NULL;
 }
 
@@ -330,43 +331,21 @@ static int CALLBACK ListViewSort(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSo
 	return ( StrToInt(temp1) < StrToInt(temp2)) ? 1 : -1;
 }
 
+int CListDlg::Resizer( UTILRESIZECONTROL *urc)
+{
+	switch( urc->wId ) {
+	case IDC_INFO_LISTVIEW:
+		return RD_ANCHORX_LEFT | RD_ANCHORY_TOP | RD_ANCHORY_HEIGHT | RD_ANCHORX_WIDTH;
+	case IDC_TEXT:
+		return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM | RD_ANCHORX_WIDTH;
+	default:
+		return RD_ANCHORX_RIGHT | RD_ANCHORY_BOTTOM;
+}	}
+
 BOOL CListDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch( msg ) {
-	case IRC_UPDATELIST:
-		{
-			int j = ListView_GetItemCount(GetDlgItem( m_hwnd, IDC_INFO_LISTVIEW));
-			if ( j > 0 ) {
-				LVITEM lvm;
-				lvm.mask= LVIF_PARAM;
-				lvm.iSubItem = 0;
-				for ( int i =0; i < j; i++ ) {
-					lvm.iItem = i;
-					lvm.lParam = i;
-					ListView_SetItem(GetDlgItem( m_hwnd, IDC_INFO_LISTVIEW),&lvm);
-		}	}	}
-		break;
-
-	case WM_SIZE:
-		{
-			RECT winRect;
-			GetClientRect( m_hwnd, &winRect);
-			RECT buttRect;
-			GetWindowRect(GetDlgItem( m_hwnd, IDC_JOIN), &buttRect);
-			SetWindowPos(GetDlgItem( m_hwnd, IDC_INFO_LISTVIEW), HWND_TOP, 4, 4, winRect.right-8, winRect.bottom-36, 0 );
-			SetWindowPos(GetDlgItem( m_hwnd, IDC_CLOSE), HWND_TOP, winRect.right-84, winRect.bottom-28, buttRect.right- buttRect.left, buttRect.bottom- buttRect.top, 0 );
-			SetWindowPos(GetDlgItem( m_hwnd, IDC_JOIN), HWND_TOP, winRect.right-174,  winRect.bottom-28, buttRect.right- buttRect.left, buttRect.bottom- buttRect.top, 0 );
-			SetWindowPos(GetDlgItem( m_hwnd, IDC_TEXT), HWND_TOP, 4,  winRect.bottom-28, winRect.right-200, buttRect.bottom- buttRect.top, 0 );
-
-			GetWindowRect( m_hwnd, &winRect);
-			m_proto->m_listSize.x = winRect.right-winRect.left;
-			m_proto->m_listSize.y = winRect.bottom-winRect.top;
-			m_proto->setDword("SizeOfListBottom", m_proto->m_listSize.y);
-			m_proto->setDword("SizeOfListRight", m_proto->m_listSize.x);
-		}
-		return 0;		
-
-	case WM_NOTIFY :
+	case WM_NOTIFY:
 		switch (((NMHDR*)lParam)->code) {
 		case NM_DBLCLK:
 			{
@@ -382,7 +361,7 @@ BOOL CListDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				LPNMLISTVIEW lv = (LPNMLISTVIEW)lParam;
 				ListViewSortParam param = { m_proto->m_listDlg->GetHwnd(), lv->iSubItem };
 				SendDlgItemMessage( m_hwnd, IDC_INFO_LISTVIEW, LVM_SORTITEMS, (WPARAM)&param, (LPARAM)ListViewSort);
-				SendMessage(m_proto->m_listDlg->GetHwnd(), IRC_UPDATELIST, 0, 0);
+				UpdateList();
 			}
 			break;
 		}
@@ -398,6 +377,19 @@ void CListDlg::OnJoin( CCtrlButton* )
 	ListView_GetItemText( GetDlgItem( m_hwnd, IDC_INFO_LISTVIEW), i, 0, szTemp, 255);
 	m_proto->PostIrcMessage( _T("/JOIN %s"), szTemp );
 }
+
+void CListDlg::UpdateList()
+{
+	int j = ListView_GetItemCount(GetDlgItem( m_hwnd, IDC_INFO_LISTVIEW));
+	if ( j > 0 ) {
+		LVITEM lvm;
+		lvm.mask= LVIF_PARAM;
+		lvm.iSubItem = 0;
+		for ( int i = 0; i < j; i++ ) {
+			lvm.iItem = i;
+			lvm.lParam = i;
+			ListView_SetItem(GetDlgItem( m_hwnd, IDC_INFO_LISTVIEW),&lvm);
+}	}	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // 'Join' dialog
@@ -822,7 +814,7 @@ CManagerDlg::CManagerDlg(CIrcProto *_pro) :
 	m_radio3.OnChange = Callback( this, &CManagerDlg::OnRadio );
 
 	m_list.OnDblClick = Callback( this, &CManagerDlg::OnListDblClick );
-	m_list.OnChange = Callback( this, &CManagerDlg::OnChangeList );
+	m_list.OnSelChange = Callback( this, &CManagerDlg::OnChangeList );
 }
 
 LRESULT CALLBACK MgrEditSubclassProc(HWND m_hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
@@ -1044,7 +1036,7 @@ void CManagerDlg::OnListDblClick( CCtrlListBox* )
 	OnEdit( NULL );
 }
 
-void CManagerDlg::OnChangeList( CCtrlData* )
+void CManagerDlg::OnChangeList( CCtrlListBox* )
 {
 	if ( !IsDlgButtonChecked( m_hwnd, IDC_NOTOP )) {
 		m_edit.Enable();

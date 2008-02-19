@@ -145,7 +145,7 @@ BOOL CDlgBase::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				}
 			}
 
-			if (CCtrlBase *ctrl = FindControl(idCtrl))
+			if (CCtrlBase *ctrl = FindControl(pnmh->idFrom))
 				return ctrl->OnNotify(idCtrl, pnmh);
 			return FALSE;
 		}
@@ -343,8 +343,19 @@ void CCtrlCombo::ShowDropdown(bool show)
 // CCtrlListBox class
 
 CCtrlListBox::CCtrlListBox( CDlgBase* dlg, int ctrlId ) :
-	CCtrlData( dlg, ctrlId )
+	CCtrlBase( dlg, ctrlId )
 {
+}
+
+BOOL CCtrlListBox::OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+{
+	switch (idCode)
+	{
+		case LBN_DBLCLK:	OnDblClick(this); break;
+		case LBN_SELCANCEL:	OnSelCancel(this); break;
+		case LBN_SELCHANGE:	OnSelChange(this); break;
+	}
+	return TRUE;
 }
 
 int CCtrlListBox::AddString(TCHAR *text, LPARAM data)
@@ -512,12 +523,29 @@ CCtrlMButton::CCtrlMButton( CDlgBase* dlg, int ctrlId, HICON hIcon, const char* 
 {
 }
 
+CCtrlMButton::CCtrlMButton( CDlgBase* dlg, int ctrlId, int iCoreIcon, const char* tooltip ) :
+	CCtrlButton( dlg, ctrlId ),
+	m_hIcon( LoadSkinnedIcon(iCoreIcon) ),
+	m_toolTip( tooltip )
+{
+}
+
 void CCtrlMButton::OnInit()
 {
 	CCtrlButton::OnInit();
 
 	SendMessage( m_hwnd, BM_SETIMAGE, IMAGE_ICON, (LPARAM)m_hIcon );
 	SendMessage( m_hwnd, BUTTONADDTOOLTIP, (WPARAM)m_toolTip, 0);
+}
+
+void CCtrlMButton::MakeFlat()
+{
+	SendMessage(m_hwnd, BUTTONSETASFLATBTN, 0, 0);
+}
+
+void CCtrlMButton::MakePush()
+{
+	SendMessage(m_hwnd, BUTTONSETASPUSHBTN, 0, 0);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -533,6 +561,233 @@ BOOL CCtrlButton::OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode)
 	if ( idCode == BN_CLICKED || idCode == STN_CLICKED )
 		OnClick(this);
 	return FALSE;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// CCtrlHyperlink
+
+CCtrlHyperlink::CCtrlHyperlink( CDlgBase* wnd, int idCtrl, const char* url ) :
+	CCtrlBase( wnd, idCtrl ),
+	m_url(url)
+{
+}
+
+BOOL CCtrlHyperlink::OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+{
+	ShellExecuteA(m_hwnd, "open", m_url, "", "", SW_SHOW);
+	return FALSE;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// CCtrlClc
+CCtrlClc::CCtrlClc( CDlgBase* dlg, int ctrlId ):
+	CCtrlBase(dlg, ctrlId)
+{
+}
+
+BOOL CCtrlClc::OnNotify(int idCtrl, NMHDR *pnmh)
+{
+	TEventInfo evt = { this, (NMCLISTCONTROL *)pnmh };
+	switch (pnmh->code)
+	{
+		case CLN_EXPANDED:			OnExpanded(&evt); break;
+		case CLN_LISTREBUILT:		OnListRebuilt(&evt); break;
+		case CLN_ITEMCHECKED:		OnItemChecked(&evt); break;
+		case CLN_DRAGGING:			OnDragging(&evt); break;
+		case CLN_DROPPED:			OnDropped(&evt); break;
+		case CLN_LISTSIZECHANGE:	OnListSizeChange(&evt); break;
+		case CLN_OPTIONSCHANGED:	OnOptionsChanged(&evt); break;
+		case CLN_DRAGSTOP:			OnDragStop(&evt); break;
+		case CLN_NEWCONTACT:		OnNewContact(&evt); break;
+		case CLN_CONTACTMOVED:		OnContactMoved(&evt); break;
+		case CLN_CHECKCHANGED:		OnCheckChanged(&evt); break;
+		case NM_CLICK:				OnClick(&evt); break;
+	}
+	return FALSE;
+}
+
+void CCtrlClc::AddContact(HANDLE hContact)
+{	SendMessage(m_hwnd, CLM_ADDCONTACT, (WPARAM)hContact, 0);
+}
+
+void CCtrlClc::AddGroup(HANDLE hGroup)
+{	SendMessage(m_hwnd, CLM_ADDGROUP, (WPARAM)hGroup, 0);
+}
+
+void CCtrlClc::AutoRebuild()
+{	SendMessage(m_hwnd, CLM_AUTOREBUILD, 0, 0);
+}
+
+void CCtrlClc::DeleteItem(HANDLE hItem)
+{	SendMessage(m_hwnd, CLM_DELETEITEM, (WPARAM)hItem, 0);
+}
+
+void CCtrlClc::EditLabel(HANDLE hItem)
+{	SendMessage(m_hwnd, CLM_EDITLABEL, (WPARAM)hItem, 0);
+}
+
+void CCtrlClc::EndEditLabel(bool save)
+{	SendMessage(m_hwnd, CLM_ENDEDITLABELNOW, save ? 0 : 1, 0);
+}
+
+void CCtrlClc::EnsureVisible(HANDLE hItem, bool partialOk)
+{	SendMessage(m_hwnd, CLM_ENSUREVISIBLE, (WPARAM)hItem, partialOk ? TRUE : FALSE);
+}
+
+void CCtrlClc::Expand(HANDLE hItem, DWORD flags)
+{	SendMessage(m_hwnd, CLM_EXPAND, (WPARAM)hItem, flags);
+}
+
+HANDLE CCtrlClc::FindContact(HANDLE hContact)
+{	return (HANDLE)SendMessage(m_hwnd, CLM_FINDCONTACT, (WPARAM)hContact, 0);
+}
+
+HANDLE CCtrlClc::FindGroup(HANDLE hGroup)
+{	return (HANDLE)SendMessage(m_hwnd, CLM_FINDGROUP, (WPARAM)hGroup, 0);
+}
+
+COLORREF CCtrlClc::GetBkColor()
+{	return (COLORREF)SendMessage(m_hwnd, CLM_GETBKCOLOR, 0, 0);
+}
+
+bool CCtrlClc::GetCheck(HANDLE hItem)
+{	return SendMessage(m_hwnd, CLM_GETCHECKMARK, (WPARAM)hItem, 0) ? true : false;
+}
+
+int CCtrlClc::GetCount()
+{	return SendMessage(m_hwnd, CLM_GETCOUNT, 0, 0);
+}
+
+HWND CCtrlClc::GetEditControl()
+{	return (HWND)SendMessage(m_hwnd, CLM_GETEDITCONTROL, 0, 0);
+}
+
+DWORD CCtrlClc::GetExpand(HANDLE hItem)
+{	return SendMessage(m_hwnd, CLM_GETEXPAND, (WPARAM)hItem, 0);
+}
+
+int CCtrlClc::GetExtraColumns()
+{	return SendMessage(m_hwnd, CLM_GETEXTRACOLUMNS, 0, 0);
+}
+
+BYTE CCtrlClc::GetExtraImage(HANDLE hItem, int iColumn)
+{	return (BYTE)(SendMessage(m_hwnd, CLM_GETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM(iColumn, 0)) & 0xFF);
+}
+
+HIMAGELIST CCtrlClc::GetExtraImageList()
+{	return (HIMAGELIST)SendMessage(m_hwnd, CLM_GETEXTRAIMAGELIST, 0, 0);
+}
+
+HFONT CCtrlClc::GetFont(int iFontId)
+{	return (HFONT)SendMessage(m_hwnd, CLM_GETFONT, (WPARAM)iFontId, 0);
+}
+
+HANDLE CCtrlClc::GetSelection()
+{	return (HANDLE)SendMessage(m_hwnd, CLM_GETSELECTION, 0, 0);
+}
+
+HANDLE CCtrlClc::HitTest(int x, int y, DWORD *hitTest)
+{	return (HANDLE)SendMessage(m_hwnd, CLM_HITTEST, (WPARAM)hitTest, MAKELPARAM(x,y));
+}
+
+void CCtrlClc::SelectItem(HANDLE hItem)
+{	SendMessage(m_hwnd, CLM_SELECTITEM, (WPARAM)hItem, 0);
+}
+
+void CCtrlClc::SetBkBitmap(DWORD mode, HBITMAP hBitmap)
+{	SendMessage(m_hwnd, CLM_SETBKBITMAP, mode, (LPARAM)hBitmap);
+}
+
+void CCtrlClc::SetBkColor(COLORREF clBack)
+{	SendMessage(m_hwnd, CLM_SETBKCOLOR, (WPARAM)clBack, 0);
+}
+
+void CCtrlClc::SetCheck(HANDLE hItem, bool check)
+{	SendMessage(m_hwnd, CLM_SETCHECKMARK, (WPARAM)hItem, check ? 1 : 0);
+}
+
+void CCtrlClc::SetExtraColumns(int iColumns)
+{	SendMessage(m_hwnd, CLM_SETEXTRACOLUMNS, (WPARAM)iColumns, 0);
+}
+
+void CCtrlClc::SetExtraImage(HANDLE hItem, int iColumn, int iImage)
+{	SendMessage(m_hwnd, CLM_SETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM(iColumn, iImage));
+}
+
+void CCtrlClc::SetExtraImageList(HIMAGELIST hImgList)
+{	SendMessage(m_hwnd, CLM_SETEXTRAIMAGELIST, 0, (LPARAM)hImgList);
+}
+
+void CCtrlClc::SetFont(int iFontId, HANDLE hFont, bool bRedraw)
+{	SendMessage(m_hwnd, CLM_SETFONT, (WPARAM)hFont, MAKELPARAM(bRedraw ? 1 : 0, iFontId));
+}
+
+void CCtrlClc::SetIndent(int iIndent)
+{	SendMessage(m_hwnd, CLM_SETINDENT, (WPARAM)iIndent, 0);
+}
+
+void CCtrlClc::SetItemText(HANDLE hItem, char *szText)
+{	SendMessage(m_hwnd, CLM_SETITEMTEXT, (WPARAM)hItem, (LPARAM)szText);
+}
+
+void CCtrlClc::SetHideEmptyGroups(bool state)
+{	SendMessage(m_hwnd, CLM_SETHIDEEMPTYGROUPS, state ? 1 : 0, 0);
+}
+
+void CCtrlClc::SetGreyoutFlags(DWORD flags)
+{	SendMessage(m_hwnd, CLM_SETGREYOUTFLAGS, (WPARAM)flags, 0);
+}
+
+bool CCtrlClc::GetHideOfflineRoot()
+{	return SendMessage(m_hwnd, CLM_GETHIDEOFFLINEROOT, 0, 0) ? true : false;
+}
+
+void CCtrlClc::SetHideOfflineRoot(bool state)
+{	SendMessage(m_hwnd, CLM_SETHIDEOFFLINEROOT, state ? 1 : 0, 9);
+}
+
+void CCtrlClc::SetUseGroups(bool state)
+{	SendMessage(m_hwnd, CLM_SETUSEGROUPS, state ? 1 : 0, 0);
+}
+
+void CCtrlClc::SetOfflineModes(DWORD modes)
+{	SendMessage(m_hwnd, CLM_SETOFFLINEMODES, modes, 0);
+}
+
+DWORD CCtrlClc::GetExStyle()
+{	return SendMessage(m_hwnd, CLM_GETEXSTYLE, 0, 0);
+}
+
+void CCtrlClc::SetExStyle(DWORD exStyle)
+{	SendMessage(m_hwnd, CLM_SETEXSTYLE, (WPARAM)exStyle, 0);
+}
+
+int CCtrlClc::GetLefrMargin()
+{	return SendMessage(m_hwnd, CLM_GETLEFTMARGIN, 0, 0);
+}
+
+void CCtrlClc::SetLeftMargin(int iMargin)
+{	SendMessage(m_hwnd, CLM_SETLEFTMARGIN, (WPARAM)iMargin, 0);
+}
+
+HANDLE CCtrlClc::AddInfoItem(CLCINFOITEM *cii)
+{	return (HANDLE)SendMessage(m_hwnd, CLM_ADDINFOITEM, 0, (LPARAM)cii);
+}
+
+int CCtrlClc::GetItemType(HANDLE hItem)
+{	return SendMessage(m_hwnd, CLM_GETITEMTYPE, (WPARAM)hItem, 0);
+}
+
+HANDLE CCtrlClc::GetNextItem(HANDLE hItem, DWORD flags)
+{	return (HANDLE)SendMessage(m_hwnd, CLM_GETNEXTITEM, (WPARAM)flags, (LPARAM)hItem);
+}
+
+COLORREF CCtrlClc::GetTextColot(int iFontId)
+{	return (COLORREF)SendMessage(m_hwnd, CLM_GETTEXTCOLOR, (WPARAM)iFontId, 0);
+}
+
+void CCtrlClc::SetTextColor(int iFontId, COLORREF clText)
+{	SendMessage(m_hwnd, CLM_SETTEXTCOLOR, (WPARAM)iFontId, (LPARAM)clText);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

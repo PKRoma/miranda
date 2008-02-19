@@ -72,7 +72,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commandmonitor.h"
 #include "irc_dlg.h"
 
-#define IRC_UPDATELIST        (WM_USER+1)
 #define IRC_UPDATEIGNORELIST  (WM_USER+7)
 
 #define IRC_QUICKCONNECT      "/QuickConnectMenu"
@@ -402,7 +401,6 @@ struct CIrcProto : public PROTO_INTERFACE
 	BYTE     m_sendNotice;
 	BYTE     m_utfAutodetect;
 	int      m_codepage;
-	POINT    m_listSize;
 	COLORREF colors[16];
 	HICON    hIcon[13];
 
