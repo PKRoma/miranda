@@ -323,9 +323,11 @@ public:
 	CJabberDlgPrivacyAddList(CJabberProto *proto, HWND hwndParent):
 		CJabberDlgBase(proto, IDD_PRIVACY_ADD_LIST, hwndParent),
 		m_txtName(this, IDC_EDIT_NAME),
-		m_btnOk(this, IDOK, &CJabberDlgPrivacyAddList::btnOk_OnClick),
-		m_btnCancel(this, IDCANCEL, &CJabberDlgPrivacyAddList::btnCancel_OnClick)
+		m_btnOk(this, IDOK),
+		m_btnCancel(this, IDCANCEL)
 	{
+		m_btnOk.OnClick = Callback( this, &CJabberDlgPrivacyAddList::btnOk_OnClick );
+		m_btnCancel.OnClick = Callback( this, &CJabberDlgPrivacyAddList::btnCancel_OnClick);
 	}
 
 	void __cdecl btnOk_OnClick(CCtrlButton *btn)
@@ -358,13 +360,14 @@ public:
 
 	CJabberDlgPrivacyRule(CJabberProto *proto, HWND hwndParent, CPrivacyListRule *pRule):
 		CJabberDlgBase(proto, IDD_PRIVACY_RULE, hwndParent),
-		m_btnOk(this, IDOK, &CJabberDlgPrivacyRule::btnOk_OnClick),
-		m_btnCancel(this, IDCANCEL, &CJabberDlgPrivacyRule::btnCancel_OnClick),
+		m_btnOk(this, IDOK),
+		m_btnCancel(this, IDCANCEL),
 		m_cbType(this, IDC_COMBO_TYPE)
-
 	{
 		m_pRule = pRule;
 		m_cbType.OnChange = Callback(this, &CJabberDlgPrivacyRule::cbType_OnChange);
+		m_btnOk.OnClick = Callback(this, &CJabberDlgPrivacyRule::btnOk_OnClick);
+		m_btnCancel.OnClick = Callback(this, &CJabberDlgPrivacyRule::btnCancel_OnClick);
 	}
 
 	virtual void OnInitDialog()
@@ -619,23 +622,37 @@ int CJabberDlgPrivacyLists::idAdvancedControls[] =
 
 CJabberDlgPrivacyLists::CJabberDlgPrivacyLists(CJabberProto *proto):
 	CJabberDlgBase(proto, IDD_PRIVACY_LISTS, NULL),
-	m_btnSimple(this,     IDC_BTN_SIMPLE,   proto->LoadIconEx("group"),           LPGEN("Simple mode"),    &CJabberDlgPrivacyLists::btnSimple_OnClick),
-	m_btnAdvanced(this,   IDC_BTN_ADVANCED, proto->LoadIconEx("sd_view_list"),    LPGEN("Advanced mode"),  &CJabberDlgPrivacyLists::btnAdvanced_OnClick),
-	m_btnAddJid(this,     IDC_ADDJID,       proto->LoadIconEx("addroster"),       LPGEN("Add JID"),        &CJabberDlgPrivacyLists::btnAddJid_OnClick),
-	m_btnActivate(this,   IDC_ACTIVATE,     proto->LoadIconEx("pl_list_active"),  LPGEN("Activate"),       &CJabberDlgPrivacyLists::btnActivate_OnClick),
-	m_btnSetDefault(this, IDC_SET_DEFAULT,  proto->LoadIconEx("pl_list_default"),	LPGEN("Set default"),    &CJabberDlgPrivacyLists::btnSetDefault_OnClick),
-	m_btnEditRule(this,   IDC_EDIT_RULE,    SKINICON_OTHER_RENAME,                LPGEN("Edit rule"),      &CJabberDlgPrivacyLists::btnEditRule_OnClick),
-	m_btnAddRule(this,    IDC_ADD_RULE,     SKINICON_OTHER_ADDCONTACT,				LPGEN("Add rule"),       &CJabberDlgPrivacyLists::btnAddRule_OnClick),
-	m_btnRemoveRule(this, IDC_REMOVE_RULE,  SKINICON_OTHER_DELETE,                LPGEN("Delete rule"),    &CJabberDlgPrivacyLists::btnRemoveRule_OnClick),
-	m_btnUpRule(this,     IDC_UP_RULE,      proto->LoadIconEx("arrow_up"),        LPGEN("Move rule up"),   &CJabberDlgPrivacyLists::btnUpRule_OnClick),
-	m_btnDownRule(this,   IDC_DOWN_RULE,    proto->LoadIconEx("arrow_down"),      LPGEN("Move rule down"), &CJabberDlgPrivacyLists::btnDownRule_OnClick),
-	m_btnAddList(this,    IDC_ADD_LIST,     SKINICON_OTHER_ADDCONTACT,            LPGEN("Add list..."),    &CJabberDlgPrivacyLists::btnAddList_OnClick),
-	m_btnRemoveList(this, IDC_REMOVE_LIST,  SKINICON_OTHER_DELETE,                LPGEN("Remove list"),    &CJabberDlgPrivacyLists::btnRemoveList_OnClick),
-	m_btnApply(this,      IDC_APPLY,        SKINICON_EVENT_FILE,                  LPGEN("Save changes"),   &CJabberDlgPrivacyLists::btnApply_OnClick),
+	m_btnSimple(this,     IDC_BTN_SIMPLE,   proto->LoadIconEx("group"),           LPGEN("Simple mode")),
+	m_btnAdvanced(this,   IDC_BTN_ADVANCED, proto->LoadIconEx("sd_view_list"),    LPGEN("Advanced mode")),
+	m_btnAddJid(this,     IDC_ADDJID,       proto->LoadIconEx("addroster"),       LPGEN("Add JID")),
+	m_btnActivate(this,   IDC_ACTIVATE,     proto->LoadIconEx("pl_list_active"),  LPGEN("Activate")),
+	m_btnSetDefault(this, IDC_SET_DEFAULT,  proto->LoadIconEx("pl_list_default"),	LPGEN("Set default")),
+	m_btnEditRule(this,   IDC_EDIT_RULE,    SKINICON_OTHER_RENAME,                LPGEN("Edit rule")),
+	m_btnAddRule(this,    IDC_ADD_RULE,     SKINICON_OTHER_ADDCONTACT,				LPGEN("Add rule")),
+	m_btnRemoveRule(this, IDC_REMOVE_RULE,  SKINICON_OTHER_DELETE,                LPGEN("Delete rule")),
+	m_btnUpRule(this,     IDC_UP_RULE,      proto->LoadIconEx("arrow_up"),        LPGEN("Move rule up")),
+	m_btnDownRule(this,   IDC_DOWN_RULE,    proto->LoadIconEx("arrow_down"),      LPGEN("Move rule down")),
+	m_btnAddList(this,    IDC_ADD_LIST,     SKINICON_OTHER_ADDCONTACT,            LPGEN("Add list...")),
+	m_btnRemoveList(this, IDC_REMOVE_LIST,  SKINICON_OTHER_DELETE,                LPGEN("Remove list")),
+	m_btnApply(this,      IDC_APPLY,        SKINICON_EVENT_FILE,                  LPGEN("Save changes")),
 	m_lbLists(this,       IDC_LB_LISTS),
 	m_lbRules(this,       IDC_PL_RULES_LIST),
 	m_clcClist(this,      IDC_CLIST)
 {
+	m_btnSimple.OnClick = Callback( this,     &CJabberDlgPrivacyLists::btnSimple_OnClick);
+	m_btnAdvanced.OnClick = Callback( this,	&CJabberDlgPrivacyLists::btnAdvanced_OnClick);
+	m_btnAddJid.OnClick = Callback( this,		&CJabberDlgPrivacyLists::btnAddJid_OnClick);
+	m_btnActivate.OnClick = Callback( this,	&CJabberDlgPrivacyLists::btnActivate_OnClick);
+	m_btnSetDefault.OnClick = Callback( this, &CJabberDlgPrivacyLists::btnSetDefault_OnClick);
+	m_btnEditRule.OnClick = Callback( this,	&CJabberDlgPrivacyLists::btnEditRule_OnClick);
+	m_btnAddRule.OnClick = Callback( this,		&CJabberDlgPrivacyLists::btnAddRule_OnClick);
+	m_btnRemoveRule.OnClick = Callback( this, &CJabberDlgPrivacyLists::btnRemoveRule_OnClick);
+	m_btnUpRule.OnClick = Callback( this,		&CJabberDlgPrivacyLists::btnUpRule_OnClick);
+	m_btnDownRule.OnClick = Callback( this,	&CJabberDlgPrivacyLists::btnDownRule_OnClick);
+	m_btnAddList.OnClick = Callback( this,		&CJabberDlgPrivacyLists::btnAddList_OnClick);
+	m_btnRemoveList.OnClick = Callback( this, &CJabberDlgPrivacyLists::btnRemoveList_OnClick);
+	m_btnApply.OnClick = Callback( this,		&CJabberDlgPrivacyLists::btnApply_OnClick);
+
 	m_lbLists.OnSelChange = Callback(this, &CJabberDlgPrivacyLists::lbLists_OnSelChange);
 	m_lbLists.OnDblClick = Callback(this, &CJabberDlgPrivacyLists::lbLists_OnDblClick);
 	m_lbRules.OnSelChange = Callback(this, &CJabberDlgPrivacyLists::lbRules_OnSelChange);

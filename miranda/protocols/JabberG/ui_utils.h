@@ -191,32 +191,16 @@ class CCtrlButton : public CCtrlBase
 public:
 	CCtrlButton( CDlgBase* dlg, int ctrlId );
 
-	template<class TDlg>
-	CCtrlButton( TDlg* dlg, int ctrlId, void (__cdecl TDlg::*pfnOnClick)(CCtrlButton *argument) );
-
 	virtual BOOL OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode);
 
 	CCallback<CCtrlButton> OnClick;
 };
-
-template<class TDlg>
-CCtrlButton::CCtrlButton( TDlg* dlg, int ctrlId, void (__cdecl TDlg::*pfnOnClick)(CCtrlButton *argument) ) :
-	CCtrlBase( dlg, ctrlId ),
-	OnClick( dlg, pfnOnClick )
-{
-}
 
 class CCtrlMButton : public CCtrlButton
 {
 public:
 	CCtrlMButton( CDlgBase* dlg, int ctrlId, HICON hIcon, const char* tooltip );
 	CCtrlMButton( CDlgBase* dlg, int ctrlId, int iCoreIcon, const char* tooltip );
-
-	template<class TDlg>
-	CCtrlMButton( TDlg* dlg, int ctrlId, HICON hIcon, const char* tooltip, void (__cdecl TDlg::*pfnOnClick)(CCtrlButton *argument) );
-
-	template<class TDlg>
-	CCtrlMButton( TDlg* dlg, int ctrlId, int iCoreIcon, const char* tooltip, void (__cdecl TDlg::*pfnOnClick)(CCtrlButton *argument) );
 
 	void MakeFlat();
 	void MakePush();
@@ -227,22 +211,6 @@ protected:
 	HICON m_hIcon;
 	const char* m_toolTip;
 };
-
-template<class TDlg>
-CCtrlMButton::CCtrlMButton( TDlg* dlg, int ctrlId, HICON hIcon, const char* tooltip, void (__cdecl TDlg::*pfnOnClick)(CCtrlButton *argument) ) :
-	CCtrlButton( dlg, ctrlId, pfnOnClick ),
-	m_hIcon( hIcon ),
-	m_toolTip( tooltip )
-{
-}
-
-template<class TDlg>
-CCtrlMButton::CCtrlMButton( TDlg* dlg, int ctrlId, int iCoreIcon, const char* tooltip, void (__cdecl TDlg::*pfnOnClick)(CCtrlButton *argument) ) :
-	CCtrlButton( dlg, ctrlId, pfnOnClick ),
-	m_hIcon( LoadSkinnedIcon(iCoreIcon) ),
-	m_toolTip( tooltip )
-{
-}
 
 class CCtrlHyperlink : public CCtrlBase
 {
