@@ -802,28 +802,28 @@ BOOL CCtrlListView::OnNotify(int idCtrl, NMHDR *pnmh)
 {
 	TEventInfo evt = { this, pnmh };
 
-	switch (pnmh->code)
-	{
-		case LVN_BEGINDRAG:			OnBeginDrag(&evt);			return TRUE;
-		case LVN_BEGINLABELEDIT:	OnBeginLabelEdit(&evt);		return TRUE;
-		case LVN_BEGINRDRAG:		OnBeginRDrag(&evt);			return TRUE;
-		case LVN_BEGINSCROLL:		OnBeginScroll(&evt);		return TRUE;
-		case LVN_COLUMNCLICK:		OnColumnClick(&evt);		return TRUE;
-		case LVN_DELETEALLITEMS:	OnDeleteAllItems(&evt);		return TRUE;
-		case LVN_DELETEITEM:		OnDeleteItem(&evt);			return TRUE;
-		case LVN_ENDLABELEDIT:		OnEndLabelEdit(&evt);		return TRUE;
-		case LVN_ENDSCROLL:			OnEndScroll(&evt);			return TRUE;
-		case LVN_GETDISPINFO:		OnGetDispInfo(&evt);		return TRUE;
-		case LVN_GETINFOTIP:		OnGetInfoTip(&evt);			return TRUE;
-		case LVN_HOTTRACK:			OnHotTrack(&evt);			return TRUE;
-		case LVN_INCREMENTALSEARCH:	OnIncrementalSearch(&evt);	return TRUE;
-		case LVN_INSERTITEM:		OnInsertItem(&evt);			return TRUE;
-		case LVN_ITEMACTIVATE:		OnItemActivate(&evt);		return TRUE;
-		case LVN_ITEMCHANGED:		OnItemChanged(&evt);		return TRUE;
-		case LVN_ITEMCHANGING:		OnItemChanging(&evt);		return TRUE;
-		case LVN_KEYDOWN:			OnKeyDown(&evt);			return TRUE;
-		case LVN_MARQUEEBEGIN:		OnMarqueeBegin(&evt);		return TRUE;
-		case LVN_SETDISPINFO:		OnSetDispInfo(&evt);		return TRUE;
+	switch (pnmh->code) {
+		case NM_DBLCLK:             OnDoubleClick(&evt);       return TRUE;
+		case LVN_BEGINDRAG:         OnBeginDrag(&evt);         return TRUE;
+		case LVN_BEGINLABELEDIT:    OnBeginLabelEdit(&evt);    return TRUE;
+		case LVN_BEGINRDRAG:        OnBeginRDrag(&evt);        return TRUE;
+		case LVN_BEGINSCROLL:       OnBeginScroll(&evt);       return TRUE;
+		case LVN_COLUMNCLICK:       OnColumnClick(&evt);       return TRUE;
+		case LVN_DELETEALLITEMS:    OnDeleteAllItems(&evt);    return TRUE;
+		case LVN_DELETEITEM:        OnDeleteItem(&evt);        return TRUE;
+		case LVN_ENDLABELEDIT:      OnEndLabelEdit(&evt);      return TRUE;
+		case LVN_ENDSCROLL:         OnEndScroll(&evt);         return TRUE;
+		case LVN_GETDISPINFO:       OnGetDispInfo(&evt);       return TRUE;
+		case LVN_GETINFOTIP:        OnGetInfoTip(&evt);        return TRUE;
+		case LVN_HOTTRACK:          OnHotTrack(&evt);          return TRUE;
+		//case LVN_INCREMENTALSEARCH: OnIncrementalSearch(&evt); return TRUE;
+		case LVN_INSERTITEM:        OnInsertItem(&evt);        return TRUE;
+		case LVN_ITEMACTIVATE:      OnItemActivate(&evt);      return TRUE;
+		case LVN_ITEMCHANGED:       OnItemChanged(&evt);       return TRUE;
+		case LVN_ITEMCHANGING:      OnItemChanging(&evt);      return TRUE;
+		case LVN_KEYDOWN:           OnKeyDown(&evt);           return TRUE;
+		case LVN_MARQUEEBEGIN:      OnMarqueeBegin(&evt);      return TRUE;
+		case LVN_SETDISPINFO:       OnSetDispInfo(&evt);       return TRUE;
 	}
 
 	return FALSE;
@@ -894,9 +894,9 @@ HWND CCtrlListView::GetEditControl()
 DWORD CCtrlListView::GetExtendedListViewStyle()
 {	return ListView_GetExtendedListViewStyle(m_hwnd);
 }
-INT CCtrlListView::GetFocusedGroup()
-{	return ListView_GetFocusedGroup(m_hwnd);
-}
+//INT CCtrlListView::GetFocusedGroup()
+//{	return ListView_GetFocusedGroup(m_hwnd);
+//}
 //void CCtrlListView::GetFooterInfo(LPLVFOOTERINFO plvfi)
 //{	ListView_GetFooterInfo(m_hwnd, plvfi);
 //}
@@ -909,27 +909,27 @@ INT CCtrlListView::GetFocusedGroup()
 //void CCtrlListView::GetFooterRect(RECT *prc)
 //{	ListView_GetFooterRect(m_hwnd, prc);
 //}
-int CCtrlListView::GetGroupCount()
-{	return ListView_GetGroupCount(m_hwnd);
-}
+//int CCtrlListView::GetGroupCount()
+//{	return ListView_GetGroupCount(m_hwnd);
+//}
 //HIMAGELIST CCtrlListView::GetGroupHeaderImageList()
 //{	return ListView_GetGroupHeaderImageList(m_hwnd);
 //}
-void CCtrlListView::GetGroupInfo(int iGroupId, PLVGROUP pgrp)
-{	ListView_GetGroupInfo(m_hwnd, iGroupId, pgrp);
-}
-void CCtrlListView::GetGroupInfoByIndex(int iIndex, PLVGROUP pgrp)
-{	ListView_GetGroupInfoByIndex(m_hwnd, iIndex, pgrp);
-}
+//void CCtrlListView::GetGroupInfo(int iGroupId, PLVGROUP pgrp)
+//{	ListView_GetGroupInfo(m_hwnd, iGroupId, pgrp);
+//}
+//void CCtrlListView::GetGroupInfoByIndex(int iIndex, PLVGROUP pgrp)
+//{	ListView_GetGroupInfoByIndex(m_hwnd, iIndex, pgrp);
+//}
 void CCtrlListView::GetGroupMetrics(LVGROUPMETRICS *pGroupMetrics)
 {	ListView_GetGroupMetrics(m_hwnd, pGroupMetrics);
 }
 //BOOL CCtrlListView::GetGroupRect(int iGroupId, RECT *prc)
 //{	return ListView_GetGroupRect(m_hwnd, iGroupId, prc);
 //}
-UINT CCtrlListView::GetGroupState(UINT dwGroupId, UINT dwMask)
-{	return ListView_GetGroupState(m_hwnd, dwGroupId, dwMask);
-}
+//UINT CCtrlListView::GetGroupState(UINT dwGroupId, UINT dwMask)
+//{	return ListView_GetGroupState(m_hwnd, dwGroupId, dwMask);
+//}
 HWND CCtrlListView::GetHeader()
 {	return ListView_GetHeader(m_hwnd);
 }
@@ -1047,9 +1047,9 @@ BOOL CCtrlListView::HasGroup(int dwGroupId)
 int CCtrlListView::HitTest(LPLVHITTESTINFO pinfo)
 {	return ListView_HitTest(m_hwnd, pinfo);
 }
-int CCtrlListView::HitTestEx(LPLVHITTESTINFO pinfo)
-{	return ListView_HitTestEx(m_hwnd, pinfo);
-}
+//int CCtrlListView::HitTestEx(LPLVHITTESTINFO pinfo)
+//{	return ListView_HitTestEx(m_hwnd, pinfo);
+//}
 int CCtrlListView::InsertColumn(int iCol, const LPLVCOLUMN pcol)
 {	return ListView_InsertColumn(m_hwnd, iCol, pcol);
 }
@@ -1068,9 +1068,9 @@ BOOL CCtrlListView::InsertMarkHitTest(LPPOINT point, LVINSERTMARK *plvim)
 BOOL CCtrlListView::IsGroupViewEnabled()
 {	return ListView_IsGroupViewEnabled(m_hwnd);
 }
-UINT CCtrlListView::IsItemVisible(UINT index)
-{	return ListView_IsItemVisible(m_hwnd, index);
-}
+//UINT CCtrlListView::IsItemVisible(UINT index)
+//{	return ListView_IsItemVisible(m_hwnd, index);
+//}
 UINT CCtrlListView::MapIDToIndex(UINT id)
 {	return ListView_MapIDToIndex(m_hwnd, id);
 }
@@ -1125,9 +1125,9 @@ int CCtrlListView::SetGroupInfo(int iGroupId, PLVGROUP pgrp)
 void CCtrlListView::SetGroupMetrics(PLVGROUPMETRICS pGroupMetrics)
 {	ListView_SetGroupMetrics(m_hwnd, pGroupMetrics);
 }
-void CCtrlListView::SetGroupState(UINT dwGroupId, UINT dwMask, UINT dwState)
-{	ListView_SetGroupState(m_hwnd, dwGroupId, dwMask, dwState);
-}
+//void CCtrlListView::SetGroupState(UINT dwGroupId, UINT dwMask, UINT dwState)
+//{	ListView_SetGroupState(m_hwnd, dwGroupId, dwMask, dwState);
+//}
 HCURSOR CCtrlListView::SetHotCursor(HCURSOR hCursor)
 {	return ListView_SetHotCursor(m_hwnd, hCursor);
 }
@@ -1221,9 +1221,9 @@ BOOL CCtrlListView::SortItemsEx(PFNLVCOMPARE pfnCompare, LPARAM lParamSort)
 INT CCtrlListView::SubItemHitTest(LPLVHITTESTINFO pInfo)
 {	return ListView_SubItemHitTest(m_hwnd, pInfo);
 }
-INT CCtrlListView::SubItemHitTestEx(LPLVHITTESTINFO plvhti)
-{	return ListView_SubItemHitTestEx(m_hwnd, plvhti);
-}
+//INT CCtrlListView::SubItemHitTestEx(LPLVHITTESTINFO plvhti)
+//{	return ListView_SubItemHitTestEx(m_hwnd, plvhti);
+//}
 BOOL CCtrlListView::Update(int iItem)
 {	return ListView_Update(m_hwnd, iItem);
 }

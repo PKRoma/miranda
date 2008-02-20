@@ -259,7 +259,9 @@ CListDlg::CListDlg(CIrcProto *_pro) :
 	m_Join( this, IDC_JOIN ),
 	m_list( this, IDC_INFO_LISTVIEW )
 {
+	m_Join.OnClick = Callback( this, &CListDlg::OnJoin );
 	m_list.OnColumnClick = Callback( this, &CListDlg::List_OnColumnClick );
+	memcpy( &m_list.OnDoubleClick, &m_Join.OnClick, sizeof( CCallbackImp ));
 }
 
 void CListDlg::OnInitDialog()
@@ -343,20 +345,6 @@ int CListDlg::Resizer( UTILRESIZECONTROL *urc)
 	default:
 		return RD_ANCHORX_RIGHT | RD_ANCHORY_BOTTOM;
 }	}
-
-BOOL CListDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	switch( msg ) {
-	case WM_NOTIFY:
-		switch (((NMHDR*)lParam)->code) {
-		case NM_DBLCLK:
-			OnJoin( NULL );
-			break;
-		}
-		break;
-	}
-	return CDlgBase::DlgProc(msg, wParam, lParam);
-}
 
 void CListDlg::List_OnColumnClick( CCtrlListView::TEventInfo* ev )
 {

@@ -1507,6 +1507,7 @@ CIgnorePrefsDlg::CIgnorePrefsDlg( CIrcProto* _pro ) :
 	m_edit.OnClick = Callback( this, &CIgnorePrefsDlg::OnEdit );
 	m_del.OnClick = Callback( this, &CIgnorePrefsDlg::OnDelete );
 	m_list.OnColumnClick = Callback( this, &CIgnorePrefsDlg::List_OnColumnClick );
+	memcpy( &m_list.OnDoubleClick, &m_edit.OnClick, sizeof( CCallbackImp ));
 }
 
 void CIgnorePrefsDlg::OnInitDialog()
@@ -1559,10 +1560,6 @@ BOOL CIgnorePrefsDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			case NM_RCLICK:
 				if ( m_list.GetSelectionMark() != -1 )
 					FixButtons();
-				break;
-				
-			case NM_DBLCLK:
-				OnEdit( NULL );
 				break;
 		}	}
 		break;

@@ -89,8 +89,6 @@ struct CListDlg : public CProtoDlgBase<CIrcProto>
 {
 	CListDlg( CIrcProto* _pro );
 
-	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
-
 	virtual void OnInitDialog();
 	virtual void OnDestroy();
 	virtual int Resizer(UTILRESIZECONTROL *urc);

@@ -78,6 +78,8 @@ public:
 	template<typename TClass>
 	__inline CCallback(TClass *object, void ( TClass::*func)(TArgument *argument)): CCallbackImp(object, func) {}
 
+	__inline void Assign( const CCallback& x ) { CCallbackImp::operator =( x ); return *this; }
+
 	__inline void operator()(TArgument *argument) const { Invoke((void *)argument); }
 };
 

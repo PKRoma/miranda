@@ -22,7 +22,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _IRCWIN_H_
 #define _IRCWIN_H_
 
-#define MIRANDA_VER 0x0800
+#define MIRANDA_VER  0x0800
+#define _WIN32_WINNT 0x0600
 
 #include "m_stdhdr.h"
 
@@ -39,6 +40,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <process.h>
 #include <math.h>
 #include <winsock.h>
+#include <commctrl.h>
 #include <time.h>
 
 #include "newpluginapi.h"
