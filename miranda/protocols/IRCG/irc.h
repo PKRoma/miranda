@@ -72,8 +72,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commandmonitor.h"
 #include "irc_dlg.h"
 
-#define IRC_UPDATEIGNORELIST  (WM_USER+7)
-
 #define IRC_QUICKCONNECT      "/QuickConnectMenu"
 #define IRC_JOINCHANNEL       "/JoinChannelMenu"
 #define IRC_CHANGENICK        "/ChangeNickMenu"

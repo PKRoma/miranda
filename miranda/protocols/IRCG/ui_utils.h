@@ -39,6 +39,10 @@ Last change by : $Author: m_mluhov $
 
 struct CCallbackImp
 {
+	struct CDummy
+	{	int foo;
+	};
+
 public:
 	__inline CCallbackImp(): m_object(NULL), m_func(NULL) {}
 
@@ -54,14 +58,14 @@ public:
 
 protected:
 	template<typename TClass, typename TArgument>
-	__inline CCallbackImp(TClass *object, void (__cdecl TClass::*func)(TArgument *argument)): m_object(object), m_func(*(TFnCallback *)(void *)&func) {}
+	__inline CCallbackImp(TClass *object, void ( TClass::*func)(TArgument *argument)): m_object(( CDummy* )object), m_func((TFnCallback)func) {}
 
-	__inline void Invoke(void *argument) const { if (m_func && m_object) m_func(m_object, argument); }
+	__inline void Invoke(void *argument) const { if (m_func && m_object) (m_object->*m_func)(argument); }
 
 private:
-	typedef void (__cdecl *TFnCallback)(void *object, void *argument);
+	typedef void ( CDummy::*TFnCallback)( void *argument );
 
-	void *m_object;
+	CDummy* m_object;
 	TFnCallback m_func;
 };
 
@@ -72,13 +76,13 @@ public:
 	__inline CCallback() {}
 
 	template<typename TClass>
-	__inline CCallback(TClass *object, void (__cdecl TClass::*func)(TArgument *argument)): CCallbackImp(object, func) {}
+	__inline CCallback(TClass *object, void ( TClass::*func)(TArgument *argument)): CCallbackImp(object, func) {}
 
 	__inline void operator()(TArgument *argument) const { Invoke((void *)argument); }
 };
 
 template<typename TClass, typename TArgument>
-__inline CCallback<TArgument> Callback(TClass *object, void (__cdecl TClass::*func)(TArgument *argument))
+__inline CCallback<TArgument> Callback(TClass *object, void (TClass::*func)(TArgument *argument))
 	{ return CCallback<TArgument>(object, func); }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -515,6 +519,302 @@ public:
 	// Events
 	CCallback<CCtrlCombo>	OnCloseup;
 	CCallback<CCtrlCombo>	OnDropdown;
+};
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// CCtrlListView
+
+class CCtrlListView : public CCtrlBase
+{
+public:
+	CCtrlListView( CDlgBase* dlg, int ctrlId );
+
+	// Classic LV interface
+	DWORD ApproximateViewRect(int cx, int cy, int iCount);
+	void Arrange(UINT code);
+	void CancelEditLabel();
+	HIMAGELIST CreateDragImage(int iItem, LPPOINT lpptUpLeft);
+	void DeleteAllItems();
+	void DeleteColumn(int iCol);
+	void DeleteItem(int iItem);
+	HWND EditLabel(int iItem);
+	int EnableGroupView(BOOL fEnable);
+	BOOL EnsureVisible(int i, BOOL fPartialOK);
+	int FindItem(int iStart, const LVFINDINFO *plvfi);
+	COLORREF GetBkColor();
+	void GetBkImage(LPLVBKIMAGE plvbki);
+	UINT GetCallbackMask();
+	BOOL GetCheckState(UINT iIndex);
+	void GetColumn(int iCol, LPLVCOLUMN pcol);
+	void GetColumnOrderArray(int iCount, int *lpiArray);
+	int GetColumnWidth(int iCol);
+	int GetCountPerPage();
+	HWND GetEditControl();
+	//void GetEmptyText(PWSTR pszText, UINT cchText);
+	DWORD GetExtendedListViewStyle();
+	INT GetFocusedGroup();
+	//void GetFooterInfo(LVFOOTERINFO *plvfi);
+	//void GetFooterItem(UINT iItem, LVFOOTERITEM *pfi);
+	//void GetFooterItemRect(UINT iItem,  RECT *prc);
+	//void GetFooterRect(RECT *prc);
+	int GetGroupCount();
+	//HIMAGELIST GetGroupHeaderImageList();
+	void GetGroupInfo(int iGroupId, PLVGROUP pgrp);
+	void GetGroupInfoByIndex(int iIndex, PLVGROUP pgrp);
+	void GetGroupMetrics(LVGROUPMETRICS *pGroupMetrics);
+	//BOOL GetGroupRect(int iGroupId, RECT *prc);
+	UINT GetGroupState(UINT dwGroupId, UINT dwMask);
+	HWND GetHeader();
+	HCURSOR GetHotCursor();
+	INT GetHotItem();
+	DWORD GetHoverTime();
+	HIMAGELIST GetImageList(int iImageList);
+	BOOL GetInsertMark(LVINSERTMARK *plvim);
+	COLORREF GetInsertMarkColor();
+	int GetInsertMarkRect(LPRECT prc);
+	BOOL GetISearchString(LPSTR lpsz);
+	void GetItem(LPLVITEM pitem);
+	int GetItemCount();
+	//void GetItemIndexRect(LVITEMINDEX *plvii, LONG iSubItem, LONG code, LPRECT prc);
+	void GetItemPosition(int i, POINT *ppt);
+	void GetItemRect(int i, RECT *prc, int code);
+	DWORD GetItemSpacing(BOOL fSmall);
+	UINT GetItemState(int i, UINT mask);
+	void GetItemText(int iItem, int iSubItem, LPTSTR pszText, int cchTextMax);
+	int GetNextItem(int iStart, UINT flags);
+	//BOOL GetNextItemIndex(LVITEMINDEX *plvii, LPARAM flags);
+	BOOL GetNumberOfWorkAreas(LPUINT lpuWorkAreas);
+	BOOL GetOrigin(LPPOINT lpptOrg);
+	COLORREF GetOutlineColor();
+	UINT GetSelectedColumn();
+	UINT GetSelectedCount();
+	INT GetSelectionMark();
+	int GetStringWidth(LPCSTR psz);
+	BOOL GetSubItemRect(int iItem, int iSubItem, int code, LPRECT lpRect);
+	COLORREF GetTextBkColor();
+	COLORREF GetTextColor();
+	void GetTileInfo(PLVTILEINFO plvtinfo);
+	void GetTileViewInfo(PLVTILEVIEWINFO plvtvinfo);
+	HWND GetToolTips();
+	int GetTopIndex();
+	BOOL GetUnicodeFormat();
+	DWORD GetView();
+	BOOL GetViewRect(RECT *prc);
+	void GetWorkAreas(INT nWorkAreas, LPRECT lprc);
+	BOOL HasGroup(int dwGroupId);
+	int HitTest(LPLVHITTESTINFO pinfo);
+	int HitTestEx(LPLVHITTESTINFO pinfo);
+	int InsertColumn(int iCol, const LPLVCOLUMN pcol);
+	int InsertGroup(int index, PLVGROUP pgrp);
+	void InsertGroupSorted(PLVINSERTGROUPSORTED structInsert);
+	int InsertItem(const LPLVITEM pitem);
+	BOOL InsertMarkHitTest(LPPOINT point, LVINSERTMARK *plvim);
+	BOOL IsGroupViewEnabled();
+	UINT IsItemVisible(UINT index);
+	UINT MapIDToIndex(UINT id);
+	UINT MapIndexToID(UINT index);
+	BOOL RedrawItems(int iFirst, int iLast);
+	void RemoveAllGroups();
+	int RemoveGroup(int iGroupId);
+	BOOL Scroll(int dx, int dy);
+	BOOL SetBkColor(COLORREF clrBk);
+	BOOL SetBkImage(LPLVBKIMAGE plvbki);
+	BOOL SetCallbackMask(UINT mask);
+	void SetCheckState(UINT iIndex, BOOL fCheck);
+	BOOL SetColumn(int iCol, LPLVCOLUMN pcol);
+	BOOL SetColumnOrderArray(int iCount, int *lpiArray);
+	BOOL SetColumnWidth(int iCol, int cx);
+	void SetExtendedListViewStyle(DWORD dwExStyle);
+	void SetExtendedListViewStyleEx(DWORD dwExMask, DWORD dwExStyle);
+	//HIMAGELIST SetGroupHeaderImageList(HIMAGELIST himl);
+	int SetGroupInfo(int iGroupId, PLVGROUP pgrp);
+	void SetGroupMetrics(PLVGROUPMETRICS pGroupMetrics);
+	void SetGroupState(UINT dwGroupId, UINT dwMask, UINT dwState);
+	HCURSOR SetHotCursor(HCURSOR hCursor);
+	INT SetHotItem(INT iIndex);
+	void SetHoverTime(DWORD dwHoverTime);
+	DWORD SetIconSpacing(int cx, int cy);
+	HIMAGELIST SetImageList(HIMAGELIST himl, int iImageList);
+	BOOL SetInfoTip(PLVSETINFOTIP plvSetInfoTip);
+	BOOL SetInsertMark(LVINSERTMARK *plvim);
+	COLORREF SetInsertMarkColor(COLORREF color);
+	BOOL SetItem(const LPLVITEM pitem);
+	void SetItemCount(int cItems);
+	void SetItemCountEx(int cItems, DWORD dwFlags);
+	//HRESULT SetItemIndexState(LVITEMINDEX *plvii, UINT data, UINT mask);
+	BOOL SetItemPosition(int i, int x, int y);
+	void SetItemPosition32(int iItem, int x, int y);
+	void SetItemState(int i, UINT state, UINT mask);
+	void SetItemText(int i, int iSubItem, TCHAR *pszText);
+	COLORREF SetOutlineColor(COLORREF color);
+	void SetSelectedColumn(int iCol);
+	INT SetSelectionMark(INT iIndex);
+	BOOL SetTextBkColor(COLORREF clrText);
+	BOOL SetTextColor(COLORREF clrText);
+	BOOL SetTileInfo(PLVTILEINFO plvtinfo);
+	BOOL SetTileViewInfo(PLVTILEVIEWINFO plvtvinfo);
+	HWND SetToolTips(HWND ToolTip);
+	BOOL SetUnicodeFormat(BOOL fUnicode);
+	int SetView(DWORD iView);
+	void SetWorkAreas(INT nWorkAreas, LPRECT lprc);
+	int SortGroups(PFNLVGROUPCOMPARE pfnGroupCompare, LPVOID plv);
+	BOOL SortItems(PFNLVCOMPARE pfnCompare, LPARAM lParamSort);
+	BOOL SortItemsEx(PFNLVCOMPARE pfnCompare, LPARAM lParamSort);
+	INT SubItemHitTest(LPLVHITTESTINFO pInfo);
+	INT SubItemHitTestEx(LPLVHITTESTINFO plvhti);
+	BOOL Update(int iItem);
+
+	// Events
+	struct TEventInfo {
+		CCtrlListView *treeviewctrl;
+		union {
+			NMHDR			*nmhdr;
+			NMLISTVIEW		*nmlv;
+			NMLVDISPINFO	*nmlvdi;
+			NMLVSCROLL		*nmlvscr;
+			NMLVGETINFOTIP	*nmlvit;
+			NMLVFINDITEM	*nmlvfi;
+			NMITEMACTIVATE	*nmlvia;
+			NMLVKEYDOWN		*nmlvkey;
+		};
+	};
+
+	CCallback<TEventInfo> OnBeginDrag;
+	CCallback<TEventInfo> OnBeginLabelEdit;
+	CCallback<TEventInfo> OnBeginRDrag;
+	CCallback<TEventInfo> OnBeginScroll;
+	CCallback<TEventInfo> OnColumnClick;
+	//CCallback<TEventInfo> OnColumnDropdown;
+	//CCallback<TEventInfo> OnColumnOverflowClick;
+	CCallback<TEventInfo> OnDeleteAllItems;
+	CCallback<TEventInfo> OnDeleteItem;
+	CCallback<TEventInfo> OnDoubleClick;
+	CCallback<TEventInfo> OnEndLabelEdit;
+	CCallback<TEventInfo> OnEndScroll;
+	CCallback<TEventInfo> OnGetDispInfo;
+	//CCallback<TEventInfo> OnGetEmptyMarkup;
+	CCallback<TEventInfo> OnGetInfoTip;
+	CCallback<TEventInfo> OnHotTrack;
+	CCallback<TEventInfo> OnIncrementalSearch;
+	CCallback<TEventInfo> OnInsertItem;
+	CCallback<TEventInfo> OnItemActivate;
+	CCallback<TEventInfo> OnItemChanged;
+	CCallback<TEventInfo> OnItemChanging;
+	CCallback<TEventInfo> OnKeyDown;
+	//CCallback<TEventInfo> OnLinkClick;
+	CCallback<TEventInfo> OnMarqueeBegin;
+	CCallback<TEventInfo> OnSetDispInfo;
+
+protected:
+	BOOL OnNotify(int idCtrl, NMHDR *pnmh);
+};
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// CCtrlTreeView
+
+class CCtrlTreeView : public CCtrlBase
+{
+public:
+	CCtrlTreeView( CDlgBase* dlg, int ctrlId );
+
+	// Classic TV interface
+	HIMAGELIST CreateDragImage(HTREEITEM hItem);
+	void DeleteAllItems();
+	void DeleteItem(HTREEITEM hItem);
+	HWND EditLabel(HTREEITEM hItem);
+	void EndEditLabelNow(BOOL cancel);
+	void EnsureVisible(HTREEITEM hItem);
+	void Expand(HTREEITEM hItem, DWORD flag);
+	COLORREF GetBkColor();
+	DWORD GetCheckState(HTREEITEM hItem);
+	HTREEITEM GetChild(HTREEITEM hItem);
+	int GetCount();
+	HTREEITEM GetDropHilight();
+	HWND GetEditControl();
+	HTREEITEM GetFirstVisible();
+	HIMAGELIST GetImageList(int iImage);
+	int GetIndent();
+	COLORREF GetInsertMarkColor();
+	void GetItem(TVITEMEX *tvi);
+	int GetItemHeight();
+	void GetItemRect(HTREEITEM hItem, RECT *rcItem, BOOL fItemRect);
+	DWORD GetItemState(HTREEITEM hItem, DWORD stateMask);
+	HTREEITEM GetLastVisible();
+	COLORREF GetLineColor();
+	HTREEITEM GetNextItem(HTREEITEM hItem, DWORD flag);
+	HTREEITEM GetNextSibling(HTREEITEM hItem);
+	HTREEITEM GetNextVisible(HTREEITEM hItem);
+	HTREEITEM GetParent(HTREEITEM hItem);
+	HTREEITEM GetPrevSibling(HTREEITEM hItem);
+	HTREEITEM GetPrevVisible(HTREEITEM hItem);
+	HTREEITEM GetRoot();
+	DWORD GetScrollTime();
+	HTREEITEM GetSelection();
+	COLORREF GetTextColor();
+	HWND GetToolTips();
+	BOOL GetUnicodeFormat();
+	unsigned GetVisibleCount();
+	HTREEITEM HitTest(TVHITTESTINFO *hti);
+	HTREEITEM InsertItem(TVINSERTSTRUCT *tvis);
+	//HTREEITEM MapAccIDToHTREEITEM(UINT id);
+	//UINT MapHTREEITEMtoAccID(HTREEITEM hItem);
+	void Select(HTREEITEM hItem, DWORD flag);
+	void SelectDropTarget(HTREEITEM hItem);
+	void SelectItem(HTREEITEM hItem);
+	void SelectSetFirstVisible(HTREEITEM hItem);
+	COLORREF SetBkColor(COLORREF clBack);
+	void SetCheckState(HTREEITEM hItem, DWORD state);
+	void SetImageList(HIMAGELIST hIml, int iImage);
+	void SetIndent(int iIndent);
+	void SetInsertMark(HTREEITEM hItem, BOOL fAfter);
+	COLORREF SetInsertMarkColor(COLORREF clMark);
+	void SetItem(TVITEMEX *tvi);
+	void SetItemHeight(short cyItem);
+	void SetItemState(HTREEITEM hItem, DWORD state, DWORD stateMask);
+	COLORREF SetLineColor(COLORREF clLine);
+	void SetScrollTime(UINT uMaxScrollTime);
+	COLORREF SetTextColor(COLORREF clText);
+	HWND SetToolTips(HWND hwndToolTips);
+	BOOL SetUnicodeFormat(BOOL fUnicode);
+	void SortChildren(HTREEITEM hItem, BOOL fRecurse);
+	void SortChildrenCB(TVSORTCB *cb, BOOL fRecurse);
+
+	// Additional stuff
+	void TranslateItem(HTREEITEM hItem);
+	void TranslateTree();
+	HTREEITEM FindNamedItem(HTREEITEM hItem, const TCHAR *name);
+	void GetItem(HTREEITEM hItem, TVITEMEX *tvi);
+	void GetItem(HTREEITEM hItem, TVITEMEX *tvi, TCHAR *szText, int iTextLength);
+
+	// Events
+	struct TEventInfo {
+		CCtrlTreeView *treeviewctrl;
+		union {
+			NMHDR			*nmhdr;
+			NMTREEVIEW		*nmtv;
+			NMTVDISPINFO	*nmtvdi;
+			NMTVGETINFOTIP	*nmtvit;
+			NMTVKEYDOWN		*nmtvkey;
+		};
+	};
+
+	CCallback<TEventInfo> OnBeginDrag;
+	CCallback<TEventInfo> OnBeginLabelEdit;
+	CCallback<TEventInfo> OnBeginRDrag;
+	CCallback<TEventInfo> OnDeleteItem;
+	CCallback<TEventInfo> OnEndLabelEdit;
+	CCallback<TEventInfo> OnGetDispInfo;
+	CCallback<TEventInfo> OnGetInfoTip;
+	CCallback<TEventInfo> OnItemExpanded;
+	CCallback<TEventInfo> OnItemExpanding;
+	CCallback<TEventInfo> OnKeyDown;
+	CCallback<TEventInfo> OnSelChanged;
+	CCallback<TEventInfo> OnSelChanging;
+	CCallback<TEventInfo> OnSetDispInfo;
+	CCallback<TEventInfo> OnSingleExpand;
+
+protected:
+	BOOL OnNotify(int idCtrl, NMHDR *pnmh);
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////

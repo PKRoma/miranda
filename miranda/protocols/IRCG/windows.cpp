@@ -114,21 +114,21 @@ void CWhoisDlg::OnDestroy()
 	m_proto->m_whoisDlg = NULL;
 }
 
-void __cdecl CWhoisDlg::OnGo( CCtrlButton* )
+void CWhoisDlg::OnGo( CCtrlButton* )
 {
 	TCHAR szTemp[255];
 	m_InfoNick.GetText( szTemp, SIZEOF(szTemp));
 	m_proto->PostIrcMessage( _T("/WHOIS %s %s"), szTemp, szTemp );
 }
 
-void __cdecl CWhoisDlg::OnQuery( CCtrlButton* )
+void CWhoisDlg::OnQuery( CCtrlButton* )
 {
 	TCHAR szTemp[255];
 	m_InfoNick.GetText( szTemp, SIZEOF(szTemp));
 	m_proto->PostIrcMessage( _T("/QUERY %s"), szTemp );
 }
 
-void __cdecl CWhoisDlg::OnPing( CCtrlButton* )
+void CWhoisDlg::OnPing( CCtrlButton* )
 {
 	TCHAR szTemp[255];
 	m_InfoNick.GetText( szTemp, SIZEOF(szTemp));
@@ -136,7 +136,7 @@ void __cdecl CWhoisDlg::OnPing( CCtrlButton* )
 	m_proto->PostIrcMessage( _T("/PRIVMSG %s \001PING %u\001"), szTemp, time(0));
 }
 
-void __cdecl CWhoisDlg::OnUserInfo( CCtrlButton* )
+void CWhoisDlg::OnUserInfo( CCtrlButton* )
 {
 	TCHAR szTemp[255];
 	m_InfoNick.GetText( szTemp, SIZEOF(szTemp));
@@ -144,7 +144,7 @@ void __cdecl CWhoisDlg::OnUserInfo( CCtrlButton* )
 	m_proto->PostIrcMessage( _T("/PRIVMSG %s \001USERINFO\001"), szTemp);
 }
 
-void __cdecl CWhoisDlg::OnTime( CCtrlButton* )
+void CWhoisDlg::OnTime( CCtrlButton* )
 {
 	TCHAR szTemp[255];
 	m_InfoNick.GetText( szTemp, SIZEOF(szTemp));
@@ -152,7 +152,7 @@ void __cdecl CWhoisDlg::OnTime( CCtrlButton* )
 	m_proto->PostIrcMessage( _T("/PRIVMSG %s \001TIME\001"), szTemp);
 }
 
-void __cdecl CWhoisDlg::OnVersion( CCtrlButton* )
+void CWhoisDlg::OnVersion( CCtrlButton* )
 {
 	TCHAR szTemp[255];
 	m_InfoNick.GetText( szTemp, SIZEOF(szTemp));
@@ -256,8 +256,10 @@ void CNickDlg::OnOk( CCtrlButton* )
 
 CListDlg::CListDlg(CIrcProto *_pro) :
 	CProtoDlgBase<CIrcProto>( _pro, IDD_LIST, NULL ),
-	m_Join( this, IDC_JOIN )
+	m_Join( this, IDC_JOIN ),
+	m_list( this, IDC_INFO_LISTVIEW )
 {
+	m_list.OnColumnClick = Callback( this, &CListDlg::List_OnColumnClick );
 }
 
 void CListDlg::OnInitDialog()
@@ -282,12 +284,12 @@ void CListDlg::OnInitDialog()
 			case 3: lstrcpy( szBuffer, TranslateT("Topic"));   break;
 		}
 		lvC.pszText = szBuffer;
-		ListView_InsertColumn(GetDlgItem( m_hwnd, IDC_INFO_LISTVIEW),index,&lvC);
+		m_list.InsertColumn( index, &lvC );
 	}
 	
 	Utils_RestoreWindowPosition(m_hwnd, NULL, m_proto->m_szModuleName, "channelList_");
 
-	ListView_SetExtendedListViewStyle(GetDlgItem( m_hwnd, IDC_INFO_LISTVIEW), LVS_EX_FULLROWSELECT);
+	m_list.SetExtendedListViewStyle( LVS_EX_FULLROWSELECT );
 	SendMessage( m_hwnd,WM_SETICON,ICON_BIG,(LPARAM)m_proto->LoadIconEx(IDI_LIST)); // Tell the dialog to use it
 }
 
@@ -299,14 +301,14 @@ void CListDlg::OnDestroy()
 
 struct ListViewSortParam
 {
-	HWND hwnd;
-	int  iSubItem;
+	CCtrlListView* pList;
+	int            iSubItem;
 };
 
 static int CALLBACK ListViewSort(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
 {
 	ListViewSortParam* param = ( ListViewSortParam* )lParamSort;
-	if ( !param->hwnd )
+	if ( !param->pList->GetHwnd() )
 		return 0;
 
 	TCHAR temp1[512];
@@ -317,10 +319,10 @@ static int CALLBACK ListViewSort(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSo
 	lvm.iSubItem = param->iSubItem;
 	lvm.pszText = temp1;
 	lvm.cchTextMax = 511;
-	SendDlgItemMessage(param->hwnd, IDC_INFO_LISTVIEW, LVM_GETITEM, 0, (LPARAM)&lvm);
+	param->pList->GetItem( &lvm );
 	lvm.iItem = lParam2;
 	lvm.pszText = temp2;
-	SendDlgItemMessage(param->hwnd, IDC_INFO_LISTVIEW, LVM_GETITEM, 0, (LPARAM)&lvm);
+	param->pList->GetItem( &lvm );
 	if (param->iSubItem != 1){
 		if (lstrlen(temp1) != 0 && lstrlen(temp2) !=0)
 			return lstrcmpi(temp1, temp2);
@@ -348,21 +350,7 @@ BOOL CListDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_NOTIFY:
 		switch (((NMHDR*)lParam)->code) {
 		case NM_DBLCLK:
-			{
-				TCHAR szTemp[255];
-				int i = ListView_GetSelectionMark(GetDlgItem( m_hwnd, IDC_INFO_LISTVIEW));
-				ListView_GetItemText(GetDlgItem( m_hwnd, IDC_INFO_LISTVIEW), i, 0, szTemp, SIZEOF(szTemp));
-				m_proto->PostIrcMessage( _T("/JOIN %s"), szTemp);
-			}
-			break;
-				
-		case LVN_COLUMNCLICK:
-			{
-				LPNMLISTVIEW lv = (LPNMLISTVIEW)lParam;
-				ListViewSortParam param = { m_proto->m_listDlg->GetHwnd(), lv->iSubItem };
-				SendDlgItemMessage( m_hwnd, IDC_INFO_LISTVIEW, LVM_SORTITEMS, (WPARAM)&param, (LPARAM)ListViewSort);
-				UpdateList();
-			}
+			OnJoin( NULL );
 			break;
 		}
 		break;
@@ -370,17 +358,24 @@ BOOL CListDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	return CDlgBase::DlgProc(msg, wParam, lParam);
 }
 
+void CListDlg::List_OnColumnClick( CCtrlListView::TEventInfo* ev )
+{
+	ListViewSortParam param = { &m_list, ev->nmlv->iSubItem };
+	m_list.SortItems( ListViewSort, (LPARAM)&param );
+	UpdateList();
+}
+
 void CListDlg::OnJoin( CCtrlButton* )
 {
 	TCHAR szTemp[255];
-	int i = ListView_GetSelectionMark( GetDlgItem( m_hwnd, IDC_INFO_LISTVIEW));
-	ListView_GetItemText( GetDlgItem( m_hwnd, IDC_INFO_LISTVIEW), i, 0, szTemp, 255);
+	int i = m_list.GetSelectionMark();
+	m_list.GetItemText( i, 0, szTemp, 255 );
 	m_proto->PostIrcMessage( _T("/JOIN %s"), szTemp );
 }
 
 void CListDlg::UpdateList()
 {
-	int j = ListView_GetItemCount(GetDlgItem( m_hwnd, IDC_INFO_LISTVIEW));
+	int j = m_list.GetItemCount();
 	if ( j > 0 ) {
 		LVITEM lvm;
 		lvm.mask= LVIF_PARAM;
@@ -388,7 +383,7 @@ void CListDlg::UpdateList()
 		for ( int i = 0; i < j; i++ ) {
 			lvm.iItem = i;
 			lvm.lParam = i;
-			ListView_SetItem(GetDlgItem( m_hwnd, IDC_INFO_LISTVIEW),&lvm);
+			m_list.SetItem( &lvm );
 }	}	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -919,7 +914,7 @@ void CManagerDlg::OnDestroy()
 	m_proto->m_managerDlg = NULL;
 }
 
-void __cdecl CManagerDlg::OnAdd( CCtrlButton* )
+void CManagerDlg::OnAdd( CCtrlButton* )
 {
 	TCHAR temp[100];
 	TCHAR mode[3];
@@ -954,7 +949,7 @@ void __cdecl CManagerDlg::OnAdd( CCtrlButton* )
 	dlg->Activate();
 }
 
-void __cdecl CManagerDlg::OnEdit( CCtrlButton* )
+void CManagerDlg::OnEdit( CCtrlButton* )
 {
 	if ( !IsDlgButtonChecked( m_hwnd, IDC_NOTOP )) {
 		int i = m_list.GetCurSel();
@@ -997,7 +992,7 @@ void __cdecl CManagerDlg::OnEdit( CCtrlButton* )
 			dlg->Activate();
 }	}	}
 
-void __cdecl CManagerDlg::OnRemove( CCtrlButton* )
+void CManagerDlg::OnRemove( CCtrlButton* )
 {
 	int i = m_list.GetCurSel();
 	if ( i != LB_ERR ) {
@@ -1182,7 +1177,7 @@ void CManagerDlg::OnApplyModes( CCtrlButton* )
 	m_applyModes.Disable();
 }
 
-void __cdecl CManagerDlg::OnApplyTopic( CCtrlButton* )
+void CManagerDlg::OnApplyTopic( CCtrlButton* )
 {
 	TCHAR temp[470];
 	TCHAR window[256];
@@ -1197,24 +1192,24 @@ void __cdecl CManagerDlg::OnApplyTopic( CCtrlButton* )
 	m_applyTopic.Disable();
 }
 
-void __cdecl CManagerDlg::OnCheck( CCtrlData* )
+void CManagerDlg::OnCheck( CCtrlData* )
 {
 	m_applyModes.Enable();
 }
 
-void __cdecl CManagerDlg::OnCheck5( CCtrlData* )
+void CManagerDlg::OnCheck5( CCtrlData* )
 {
 	m_key.Enable( m_check5.GetState());
 	m_applyModes.Enable();
 }
 
-void __cdecl CManagerDlg::OnCheck6( CCtrlData* )
+void CManagerDlg::OnCheck6( CCtrlData* )
 {
 	m_limit.Enable( m_check6.GetState() );				
 	m_applyModes.Enable();
 }
 
-void __cdecl CManagerDlg::OnRadio( CCtrlData* )
+void CManagerDlg::OnRadio( CCtrlData* )
 {
 	ApplyQuestion();
 }

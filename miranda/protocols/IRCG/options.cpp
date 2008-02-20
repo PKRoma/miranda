@@ -269,7 +269,7 @@ void CAddServerDlg::OnInitDialog()
 	SetFocus(GetDlgItem( m_hwnd, IDC_ADD_COMBO));
 }
 
-void __cdecl CAddServerDlg::OnOk( CCtrlButton* )
+void CAddServerDlg::OnOk( CCtrlButton* )
 {
 	if (GetWindowTextLength(GetDlgItem( m_hwnd, IDC_ADD_SERVER)) && GetWindowTextLength(GetDlgItem( m_hwnd, IDC_ADD_ADDRESS)) && GetWindowTextLength(GetDlgItem( m_hwnd, IDC_ADD_PORT)) && GetWindowTextLength(GetDlgItem( m_hwnd, IDC_ADD_PORT2)) && GetWindowTextLength(GetDlgItem( m_hwnd, IDC_ADD_COMBO))) {
 		SERVER_INFO* pData = new SERVER_INFO;
@@ -357,7 +357,7 @@ void CEditServerDlg::OnInitDialog()
 	SetFocus(GetDlgItem( m_hwnd, IDC_ADD_COMBO));	
 }
 
-void __cdecl CEditServerDlg::OnOk( CCtrlButton* )
+void CEditServerDlg::OnOk( CCtrlButton* )
 {
 	if (GetWindowTextLength(GetDlgItem( m_hwnd, IDC_ADD_SERVER)) && GetWindowTextLength(GetDlgItem( m_hwnd, IDC_ADD_ADDRESS)) && GetWindowTextLength(GetDlgItem( m_hwnd, IDC_ADD_PORT)) && GetWindowTextLength(GetDlgItem( m_hwnd, IDC_ADD_PORT2)) && GetWindowTextLength(GetDlgItem( m_hwnd, IDC_ADD_COMBO))) {
 		int i = m_owner->m_serverCombo.GetCurSel();
@@ -631,7 +631,7 @@ void CConnectPrefsDlg::OnInitDialog()
 	m_proto->m_serverlistModified = false;
 }
 
-void __cdecl CConnectPrefsDlg::OnServerCombo( CCtrlData* )
+void CConnectPrefsDlg::OnServerCombo( CCtrlData* )
 {
 	int i = m_serverCombo.GetCurSel();
 	SERVER_INFO* pData = ( SERVER_INFO* )m_serverCombo.GetItemData( i );
@@ -652,7 +652,7 @@ void __cdecl CConnectPrefsDlg::OnServerCombo( CCtrlData* )
 		SendMessage(GetParent( m_hwnd), PSM_CHANGED,0,0);
 }	}
 
-void __cdecl CConnectPrefsDlg::OnAddServer( CCtrlButton* )
+void CConnectPrefsDlg::OnAddServer( CCtrlButton* )
 {
 	m_serverCombo.Disable();
 	m_add.Disable();
@@ -662,7 +662,7 @@ void __cdecl CConnectPrefsDlg::OnAddServer( CCtrlButton* )
 	dlg->Show();
 }
 
-void __cdecl CConnectPrefsDlg::OnDeleteServer( CCtrlButton* )
+void CConnectPrefsDlg::OnDeleteServer( CCtrlButton* )
 {
 	int i = m_serverCombo.GetCurSel();
 	if ( i == CB_ERR)
@@ -693,7 +693,7 @@ void __cdecl CConnectPrefsDlg::OnDeleteServer( CCtrlButton* )
 	m_del.Enable();
 }
 
-void __cdecl CConnectPrefsDlg::OnEditServer( CCtrlButton* )
+void CConnectPrefsDlg::OnEditServer( CCtrlButton* )
 {
 	int i = m_serverCombo.GetCurSel();
 	if ( i == CB_ERR )
@@ -708,7 +708,7 @@ void __cdecl CConnectPrefsDlg::OnEditServer( CCtrlButton* )
 	SetWindowText( dlg->GetHwnd(), TranslateT( "Edit server" ));
 }
 
-void __cdecl CConnectPrefsDlg::OnStartup( CCtrlData* )
+void CConnectPrefsDlg::OnStartup( CCtrlData* )
 {
 	m_serverCombo.Enable( m_enableServer.GetState());
 	m_add.Enable( m_enableServer.GetState());
@@ -721,19 +721,19 @@ void __cdecl CConnectPrefsDlg::OnStartup( CCtrlData* )
 	m_ssl.Enable( m_enableServer.GetState());
 }
 
-void __cdecl CConnectPrefsDlg::OnIdent( CCtrlData* )
+void CConnectPrefsDlg::OnIdent( CCtrlData* )
 {
 	m_identSystem.Enable( m_ident.GetState());
 	m_identPort.Enable( m_ident.GetState());
 	m_identTimer.Enable( m_ident.GetState());
 }
 
-void __cdecl CConnectPrefsDlg::OnUseServer( CCtrlData* )
+void CConnectPrefsDlg::OnUseServer( CCtrlData* )
 {
 	EnableWindow(GetDlgItem( m_hwnd, IDC_SHOWSERVER), m_useServer.GetState());
 }
 
-void __cdecl CConnectPrefsDlg::OnOnlineNotif( CCtrlData* )
+void CConnectPrefsDlg::OnOnlineNotif( CCtrlData* )
 {
 	m_channelAway.Enable( m_onlineNotif.GetState());
 	m_onlineTimer.Enable( m_onlineNotif.GetState());
@@ -742,13 +742,13 @@ void __cdecl CConnectPrefsDlg::OnOnlineNotif( CCtrlData* )
 	m_limit.Enable( m_onlineNotif.GetState() && m_channelAway.GetState());
 }
 
-void __cdecl CConnectPrefsDlg::OnChannelAway( CCtrlData* )
+void CConnectPrefsDlg::OnChannelAway( CCtrlData* )
 {	
 	m_spin2.Enable( m_onlineNotif.GetState() && m_channelAway.GetState());
 	m_limit.Enable( m_onlineNotif.GetState() && m_channelAway.GetState());
 }
 
-void __cdecl CConnectPrefsDlg::OnRetry( CCtrlData* )
+void CConnectPrefsDlg::OnRetry( CCtrlData* )
 {	
 	m_retryWait.Enable( m_retry.GetState());
 	m_retryCount.Enable( m_retry.GetState());
@@ -958,7 +958,7 @@ void CCtcpPrefsDlg::OnInitDialog()
 			else m_ip.SetText( TranslateT( "<Automatic>" ));
 }	}	}
 
-void __cdecl CCtcpPrefsDlg::OnClicked( CCtrlData* )
+void CCtcpPrefsDlg::OnClicked( CCtrlData* )
 {
 	m_ip.Enable( m_enableIP.GetState());
 	m_fromServer.Enable( !m_enableIP.GetState());
@@ -1155,12 +1155,12 @@ void COtherPrefsDlg::OnInitDialog()
 	m_proto->m_performlistModified = false;
 }
 
-void __cdecl COtherPrefsDlg::OnUrl( CCtrlButton* )
+void COtherPrefsDlg::OnUrl( CCtrlButton* )
 {
 	CallService( MS_UTILS_OPENURL,0,(LPARAM) "http://members.chello.se/matrix/index.html" );
 }
 
-void __cdecl COtherPrefsDlg::OnPerformCombo( CCtrlData* )
+void COtherPrefsDlg::OnPerformCombo( CCtrlData* )
 {
 	int i = m_performCombo.GetCurSel();
 	PERFORM_INFO* pPerf = (PERFORM_INFO*)m_performCombo.GetItemData( i );
@@ -1175,13 +1175,13 @@ void __cdecl COtherPrefsDlg::OnPerformCombo( CCtrlData* )
 		m_delete.Disable();
 }
 
-void __cdecl COtherPrefsDlg::OnCodePage( CCtrlData* )
+void COtherPrefsDlg::OnCodePage( CCtrlData* )
 {
 	int curSel = m_codepage.GetCurSel();
 	m_autodetect.Enable( m_codepage.GetItemData(curSel) != CP_UTF8 );
 }
 
-void __cdecl COtherPrefsDlg::OnPerformEdit( CCtrlData* )
+void COtherPrefsDlg::OnPerformEdit( CCtrlData* )
 {
 	m_add.Enable();
 
@@ -1191,7 +1191,7 @@ void __cdecl COtherPrefsDlg::OnPerformEdit( CCtrlData* )
 		m_delete.Disable();
 }
 
-void __cdecl COtherPrefsDlg::OnPerform( CCtrlData* )
+void COtherPrefsDlg::OnPerform( CCtrlData* )
 {
 	m_performCombo.Enable( m_perform.GetState());
 	m_pertormEdit.Enable( m_perform.GetState());
@@ -1199,7 +1199,7 @@ void __cdecl COtherPrefsDlg::OnPerform( CCtrlData* )
 	m_delete.Enable( m_perform.GetState());
 }
 
-void __cdecl COtherPrefsDlg::OnAdd( CCtrlButton* )
+void COtherPrefsDlg::OnAdd( CCtrlButton* )
 {
 	TCHAR* temp = m_pertormEdit.GetText();
 
@@ -1218,7 +1218,7 @@ void __cdecl COtherPrefsDlg::OnAdd( CCtrlButton* )
 	mir_free( temp );
 }
 
-void __cdecl COtherPrefsDlg::OnDelete( CCtrlButton* )
+void COtherPrefsDlg::OnDelete( CCtrlButton* )
 {
 	int i = m_performCombo.GetCurSel();
 	if ( i != CB_ERR ) {
@@ -1322,7 +1322,7 @@ void CAddIgnoreDlg::OnInitDialog()
 		CheckDlgButton( m_hwnd, IDC_C, BST_CHECKED);
 }	}
 
-void __cdecl CAddIgnoreDlg::OnOk( CCtrlButton* )
+void CAddIgnoreDlg::OnOk( CCtrlButton* )
 {
 	TCHAR szMask[500];
 	TCHAR szNetwork[500];
@@ -1381,11 +1381,11 @@ static int CALLBACK IgnoreListSort(LPARAM lParam1, LPARAM lParam2, LPARAM lParam
 
 	lvm.iItem = lParam1;
 	lvm.pszText = temp1;
-	ListView_GetItem( hwndDlg->m_list.GetHwnd(), &lvm );
+	hwndDlg->m_list.GetItem( &lvm );
 
 	lvm.iItem = lParam2;
 	lvm.pszText = temp2;
-	ListView_GetItem( hwndDlg->m_list.GetHwnd(), &lvm );
+	hwndDlg->m_list.GetItem( &lvm );
 	
 	if ( temp1[0] && temp2[0] )
 		return lstrcmpi( temp1, temp2 );
@@ -1506,6 +1506,7 @@ CIgnorePrefsDlg::CIgnorePrefsDlg( CIrcProto* _pro ) :
 	m_add.OnClick = Callback( this, &CIgnorePrefsDlg::OnAdd );
 	m_edit.OnClick = Callback( this, &CIgnorePrefsDlg::OnEdit );
 	m_del.OnClick = Callback( this, &CIgnorePrefsDlg::OnDelete );
+	m_list.OnColumnClick = Callback( this, &CIgnorePrefsDlg::List_OnColumnClick );
 }
 
 void CIgnorePrefsDlg::OnInitDialog()
@@ -1550,41 +1551,18 @@ void CIgnorePrefsDlg::OnInitDialog()
 BOOL CIgnorePrefsDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch( msg ) {
-	case IRC_UPDATEIGNORELIST:
-		{
-			int j = ListView_GetItemCount(GetDlgItem( m_hwnd, IDC_LIST));
-			if (j > 0 ) {
-				LVITEM lvm;
-				lvm.mask= LVIF_PARAM;
-				lvm.iSubItem = 0;
-				for( int i =0; i < j; i++) {
-					lvm.iItem = i;
-					lvm.lParam = i;
-					ListView_SetItem(GetDlgItem( m_hwnd, IDC_LIST),&lvm);
-		}	}	}
-		break;
-
-	case WM_NOTIFY :
+	case WM_NOTIFY:
 		switch(((LPNMHDR)lParam)->idFrom) {
 		case IDC_LIST:
 			switch (((NMHDR*)lParam)->code) {
 			case NM_CLICK:
 			case NM_RCLICK:
-				if ( ListView_GetSelectionMark(GetDlgItem( m_hwnd, IDC_LIST)) != -1 )
+				if ( m_list.GetSelectionMark() != -1 )
 					FixButtons();
 				break;
 				
 			case NM_DBLCLK:
 				OnEdit( NULL );
-				break;
-
-			case LVN_COLUMNCLICK :
-				{
-					LPNMLISTVIEW lv;
-					lv = (LPNMLISTVIEW)lParam;
-					SendMessage(GetDlgItem( m_hwnd, IDC_LIST), LVM_SORTITEMS, (WPARAM)lv->iSubItem, (LPARAM)this );
-					SendMessage( m_hwnd, IRC_UPDATEIGNORELIST, 0, 0);
-				}
 				break;
 		}	}
 		break;
@@ -1592,19 +1570,19 @@ BOOL CIgnorePrefsDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	return CDlgBase::DlgProc(msg, wParam, lParam);
 }
 
-void __cdecl CIgnorePrefsDlg::OnEnableIgnore( CCtrlData* )
+void CIgnorePrefsDlg::OnEnableIgnore( CCtrlData* )
 {
 	m_ignoreChannel.Enable( m_enable.GetState());
-	EnableWindow(GetDlgItem( m_hwnd, IDC_LIST), m_enable.GetState());
+	m_list.Enable( m_enable.GetState());
 	m_add.Enable( m_enable.GetState());
 }
 
-void __cdecl CIgnorePrefsDlg::OnIgnoreChat( CCtrlData* )
+void CIgnorePrefsDlg::OnIgnoreChat( CCtrlData* )
 {
 	m_ignoreUnknown.Enable( m_ignoreChat.GetState() == BST_UNCHECKED );
 }
 
-void __cdecl CIgnorePrefsDlg::OnAdd( CCtrlButton* )
+void CIgnorePrefsDlg::OnAdd( CCtrlButton* )
 {
 	CAddIgnoreDlg* dlg = new CAddIgnoreDlg( m_proto, NULL, this );
 	dlg->Show();
@@ -1614,7 +1592,7 @@ void __cdecl CIgnorePrefsDlg::OnAdd( CCtrlButton* )
 	m_del.Disable();
 }
 
-void __cdecl CIgnorePrefsDlg::OnEdit( CCtrlButton* )
+void CIgnorePrefsDlg::OnEdit( CCtrlButton* )
 {
 	if ( !m_add.Enabled())
 		return;
@@ -1622,10 +1600,10 @@ void __cdecl CIgnorePrefsDlg::OnEdit( CCtrlButton* )
 	TCHAR szMask[512];
 	TCHAR szFlags[512];
 	TCHAR szNetwork[512];
-	int i = ListView_GetSelectionMark(GetDlgItem( m_hwnd, IDC_LIST));
-	ListView_GetItemText(GetDlgItem( m_hwnd, IDC_LIST), i, 0, szMask, 511); 
-	ListView_GetItemText(GetDlgItem( m_hwnd, IDC_LIST), i, 1, szFlags, 511); 
-	ListView_GetItemText(GetDlgItem( m_hwnd, IDC_LIST), i, 2, szNetwork, 511); 
+	int i = m_list.GetSelectionMark();
+	m_list.GetItemText( i, 0, szMask, 511 );
+	m_list.GetItemText( i, 1, szFlags, 511 );
+	m_list.GetItemText( i, 2, szNetwork, 511 );
 	CAddIgnoreDlg* dlg = new CAddIgnoreDlg( m_proto, szMask, this );
 	dlg->Show();
 	HWND hWnd = dlg->GetHwnd();
@@ -1651,15 +1629,21 @@ void __cdecl CIgnorePrefsDlg::OnEdit( CCtrlButton* )
 	m_del.Disable();
 }
 
-void __cdecl CIgnorePrefsDlg::OnDelete( CCtrlButton* )
+void CIgnorePrefsDlg::OnDelete( CCtrlButton* )
 {
 	if ( !m_del.Enabled())
 		return;
 
 	TCHAR szMask[512];
-	int i = ListView_GetSelectionMark(GetDlgItem( m_hwnd, IDC_LIST ));
-	ListView_GetItemText( GetDlgItem( m_hwnd, IDC_LIST), i, 0, szMask, SIZEOF(szMask));
+	int i = m_list.GetSelectionMark();
+	m_list.GetItemText( i, 0, szMask, SIZEOF(szMask));
 	m_proto->RemoveIgnore( szMask );
+}
+
+void CIgnorePrefsDlg::List_OnColumnClick( CCtrlListView::TEventInfo* )
+{
+	m_list.SortItems( IgnoreListSort, (LPARAM)this );
+	UpdateList();
 }
 
 void CIgnorePrefsDlg::OnApply()
@@ -1677,24 +1661,23 @@ void CIgnorePrefsDlg::OnDestroy()
 	m_proto->m_ignoreDlg = NULL;
 	m_proto->m_ignoreItems.clear();
 
-	HWND hListView = GetDlgItem( m_hwnd, IDC_LIST );
-	int i = ListView_GetItemCount(GetDlgItem( m_hwnd, IDC_LIST));
+	int i = m_list.GetItemCount();
 	for ( int j = 0; j < i; j++ ) {
 		TCHAR szMask[512], szFlags[40], szNetwork[100];
-		ListView_GetItemText( hListView, j, 0, szMask, SIZEOF(szMask));
-		ListView_GetItemText( hListView, j, 1, szFlags, SIZEOF(szFlags));
-		ListView_GetItemText( hListView, j, 2, szNetwork, SIZEOF(szNetwork));
+		m_list.GetItemText( j, 0, szMask, SIZEOF(szMask));
+		m_list.GetItemText( j, 1, szFlags, SIZEOF(szFlags));
+		m_list.GetItemText( j, 2, szNetwork, SIZEOF(szNetwork));
 		m_proto->m_ignoreItems.push_back( CIrcIgnoreItem( szMask, szFlags, szNetwork ));
 	}
 
 	m_proto->RewriteIgnoreSettings();
-	SetWindowLong(GetDlgItem( m_hwnd,IDC_LIST),GWL_WNDPROC,(LONG)OldListViewProc);
+	SetWindowLong( m_list.GetHwnd(), GWL_WNDPROC, (LONG)OldListViewProc );
 }
 
 void CIgnorePrefsDlg::FixButtons()
 {
 	m_add.Enable( m_enable.GetState());
-	if(ListView_GetSelectionMark(GetDlgItem( m_hwnd, IDC_LIST)) != -1) {
+	if ( m_list.GetSelectionMark() != -1 ) {
 		m_edit.Enable();
 		m_del.Enable();
 	}
@@ -1705,8 +1688,7 @@ void CIgnorePrefsDlg::FixButtons()
 
 void CIgnorePrefsDlg::RebuildList()
 {
-	HWND hListView = m_list.GetHwnd();
-	ListView_DeleteAllItems( hListView );
+	m_list.DeleteAllItems();
 
 	for ( size_t i=0; i < m_proto->m_ignoreItems.size(); i++ ) {
 		CIrcIgnoreItem& C = m_proto->m_ignoreItems[i];
@@ -1714,34 +1696,47 @@ void CIgnorePrefsDlg::RebuildList()
 			continue;
 
 		LVITEM lvItem;
-		lvItem.iItem = ListView_GetItemCount(hListView); 
+		lvItem.iItem = m_list.GetItemCount(); 
 		lvItem.mask = LVIF_TEXT|LVIF_PARAM ;
 		lvItem.iSubItem = 0;
 		lvItem.lParam = lvItem.iItem;
 		lvItem.pszText = (TCHAR*)C.mask.c_str();
-		lvItem.iItem = ListView_InsertItem(hListView,&lvItem);
+		lvItem.iItem = m_list.InsertItem( &lvItem );
 
 		lvItem.mask = LVIF_TEXT;
-		lvItem.iSubItem =1;
+		lvItem.iSubItem = 1;
 		lvItem.pszText = (TCHAR*)C.flags.c_str();
-		ListView_SetItem(hListView,&lvItem);
+		m_list.SetItem( &lvItem );
 
 		lvItem.mask = LVIF_TEXT;
 		lvItem.iSubItem =2;
 		lvItem.pszText = (TCHAR*)C.network.c_str();
-		ListView_SetItem(hListView,&lvItem);
+		m_list.SetItem( &lvItem );
 	}
 
-	SendMessage( m_hwnd, IRC_UPDATEIGNORELIST, 0, 0);
-	SendMessage( hListView, LVM_SORTITEMS, (WPARAM)m_proto, (LPARAM)this );
-	SendMessage( m_hwnd, IRC_UPDATEIGNORELIST, 0, 0);
+	UpdateList();
+	m_list.SortItems( IgnoreListSort, ( LPARAM )this );
+	UpdateList();
 
 	FixButtons();
 }
 
+void CIgnorePrefsDlg::UpdateList()
+{
+	int j = m_list.GetItemCount();
+	if (j > 0 ) {
+		LVITEM lvm;
+		lvm.mask= LVIF_PARAM;
+		lvm.iSubItem = 0;
+		for( int i =0; i < j; i++) {
+			lvm.iItem = i;
+			lvm.lParam = i;
+			m_list.SetItem( &lvm );
+}	}	}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 
-int __cdecl CIrcProto::OnInitOptionsPages(WPARAM wParam,LPARAM lParam)
+int CIrcProto::OnInitOptionsPages(WPARAM wParam,LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE odp = { 0 };
 

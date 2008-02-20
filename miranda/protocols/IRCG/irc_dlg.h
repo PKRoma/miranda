@@ -31,7 +31,7 @@ struct CMessageBoxDlg : public CProtoDlgBase<CIrcProto>
 	CMessageBoxDlg( CIrcProto* _pro, DCCINFO* _dci );
 
 	CCtrlButton  m_Ok;
-	void __cdecl OnOk( CCtrlButton* );
+	void OnOk( CCtrlButton* );
 
 	virtual void OnInitDialog();
 };
@@ -60,12 +60,12 @@ struct CWhoisDlg : public CCoolIrcDlg
 	void ShowMessage( const CIrcMessage* );
 	void ShowMessageNoUser( const CIrcMessage* );
 
-	void __cdecl OnGo( CCtrlButton* );
-	void __cdecl OnQuery( CCtrlButton* );
-	void __cdecl OnPing( CCtrlButton* );
-	void __cdecl OnUserInfo( CCtrlButton* );
-	void __cdecl OnTime( CCtrlButton* );
-	void __cdecl OnVersion( CCtrlButton* );
+	void OnGo( CCtrlButton* );
+	void OnQuery( CCtrlButton* );
+	void OnPing( CCtrlButton* );
+	void OnUserInfo( CCtrlButton* );
+	void OnTime( CCtrlButton* );
+	void OnVersion( CCtrlButton* );
 
 	virtual void OnInitDialog();
 	virtual void OnClose();
@@ -82,7 +82,7 @@ struct CNickDlg : public CCoolIrcDlg
 	virtual void OnInitDialog();
 	virtual void OnDestroy();
 
-	void __cdecl OnOk( CCtrlButton* );
+	void OnOk( CCtrlButton* );
 };
 
 struct CListDlg : public CProtoDlgBase<CIrcProto>
@@ -95,8 +95,12 @@ struct CListDlg : public CProtoDlgBase<CIrcProto>
 	virtual void OnDestroy();
 	virtual int Resizer(UTILRESIZECONTROL *urc);
 
+	CCtrlListView m_list;
+
 	CCtrlButton  m_Join;
-	void __cdecl OnJoin( CCtrlButton* );
+	void OnJoin( CCtrlButton* );
+
+	void List_OnColumnClick( CCtrlListView::TEventInfo* ev );
 
 	void UpdateList( void );
 };
@@ -109,7 +113,7 @@ struct CJoinDlg : public CCoolIrcDlg
 	virtual void OnDestroy();
 
 	CCtrlButton  m_Ok;
-	void __cdecl OnOk( CCtrlButton* );
+	void OnOk( CCtrlButton* );
 };
 
 struct CInitDlg : public CCoolIrcDlg
@@ -117,7 +121,7 @@ struct CInitDlg : public CCoolIrcDlg
 	CInitDlg( CIrcProto* _pro );
 
 	CCtrlButton  m_Ok;
-	void __cdecl OnOk( CCtrlButton* );
+	void OnOk( CCtrlButton* );
 };
 
 struct CQuickDlg : public CCoolIrcDlg
@@ -128,10 +132,10 @@ struct CQuickDlg : public CCoolIrcDlg
 	virtual void OnDestroy();
 
 	CCtrlCombo m_serverCombo;
-	void __cdecl OnServerCombo( CCtrlData* );
+	void OnServerCombo( CCtrlData* );
 
 	CCtrlButton  m_Ok;
-	void __cdecl OnOk( CCtrlButton* );
+	void OnOk( CCtrlButton* );
 };
 
 struct CManagerDlg : public CCoolIrcDlg
@@ -149,22 +153,22 @@ struct CManagerDlg : public CCoolIrcDlg
 	virtual void OnClose();
 	virtual void OnDestroy();
 
-	void __cdecl OnCheck( CCtrlData* );
-	void __cdecl OnCheck5( CCtrlData* );
-	void __cdecl OnCheck6( CCtrlData* );
-	void __cdecl OnRadio( CCtrlData* );
+	void OnCheck( CCtrlData* );
+	void OnCheck5( CCtrlData* );
+	void OnCheck6( CCtrlData* );
+	void OnRadio( CCtrlData* );
 
-	void __cdecl OnAdd( CCtrlButton* );
-	void __cdecl OnEdit( CCtrlButton* );
-	void __cdecl OnRemove( CCtrlButton* );
+	void OnAdd( CCtrlButton* );
+	void OnEdit( CCtrlButton* );
+	void OnRemove( CCtrlButton* );
 
-	void __cdecl OnListDblClick( CCtrlListBox* );
-	void __cdecl OnChangeList( CCtrlListBox* );
-	void __cdecl OnChangeModes( CCtrlData* );
-	void __cdecl OnChangeTopic( CCtrlData* );
+	void OnListDblClick( CCtrlListBox* );
+	void OnChangeList( CCtrlListBox* );
+	void OnChangeModes( CCtrlData* );
+	void OnChangeTopic( CCtrlData* );
 
-	void __cdecl OnApplyModes( CCtrlButton* );
-	void __cdecl OnApplyTopic( CCtrlButton* );
+	void OnApplyModes( CCtrlButton* );
+	void OnApplyTopic( CCtrlButton* );
 
 	void ApplyQuestion();
 	void CloseQuestion();
@@ -178,7 +182,7 @@ struct CQuestionDlg : public CCoolIrcDlg
 	virtual void OnClose();
 
 	CCtrlButton  m_Ok;
-	void __cdecl OnOk( CCtrlButton* );
+	void OnOk( CCtrlButton* );
 
 	void Activate();
 
@@ -217,16 +221,16 @@ struct CConnectPrefsDlg : public CProtoDlgBase<CIrcProto>
 	virtual void OnApply();
 	virtual void OnDestroy();
 
-	void __cdecl OnServerCombo( CCtrlData* );
-	void __cdecl OnAddServer( CCtrlButton* );
-	void __cdecl OnDeleteServer( CCtrlButton* );
-	void __cdecl OnEditServer( CCtrlButton* );
-	void __cdecl OnStartup( CCtrlData* );
-	void __cdecl OnIdent( CCtrlData* );
-	void __cdecl OnUseServer( CCtrlData* );
-	void __cdecl OnOnlineNotif( CCtrlData* );
-	void __cdecl OnChannelAway( CCtrlData* );
-	void __cdecl OnRetry( CCtrlData* );
+	void OnServerCombo( CCtrlData* );
+	void OnAddServer( CCtrlButton* );
+	void OnDeleteServer( CCtrlButton* );
+	void OnEditServer( CCtrlButton* );
+	void OnStartup( CCtrlData* );
+	void OnIdent( CCtrlData* );
+	void OnUseServer( CCtrlData* );
+	void OnOnlineNotif( CCtrlData* );
+	void OnChannelAway( CCtrlData* );
+	void OnRetry( CCtrlData* );
 };
 
 struct CAddServerDlg : public CProtoDlgBase<CIrcProto>
@@ -239,7 +243,7 @@ struct CAddServerDlg : public CProtoDlgBase<CIrcProto>
 	virtual void OnInitDialog();
 	virtual void OnClose();
 
-	void __cdecl OnOk( CCtrlButton* );
+	void OnOk( CCtrlButton* );
 };
 
 struct CEditServerDlg : public CProtoDlgBase<CIrcProto>
@@ -252,7 +256,7 @@ struct CEditServerDlg : public CProtoDlgBase<CIrcProto>
 	virtual void OnInitDialog();
 	virtual void OnClose();
 
-	void __cdecl OnOk( CCtrlButton* );
+	void OnOk( CCtrlButton* );
 };
 
 //---- the second property page: DCC/CTCP -----------------------------------------------
@@ -271,7 +275,7 @@ struct CCtcpPrefsDlg : public CProtoDlgBase<CIrcProto>
 	virtual void OnInitDialog();
 	virtual void OnApply();
 
-	void __cdecl OnClicked( CCtrlData* );
+	void OnClicked( CCtrlData* );
 };
 
 //---- the third property page: Other ---------------------------------------------------
@@ -292,13 +296,13 @@ struct COtherPrefsDlg : public CProtoDlgBase<CIrcProto>
 	virtual void OnApply();
 	virtual void OnDestroy();
 
-	void __cdecl OnUrl( CCtrlButton* );
-	void __cdecl OnPerformCombo( CCtrlData* );
-	void __cdecl OnCodePage( CCtrlData* );
-	void __cdecl OnPerformEdit( CCtrlData* );
-	void __cdecl OnPerform( CCtrlData* );
-	void __cdecl OnAdd( CCtrlButton* );
-	void __cdecl OnDelete( CCtrlButton* );
+	void OnUrl( CCtrlButton* );
+	void OnPerformCombo( CCtrlData* );
+	void OnCodePage( CCtrlData* );
+	void OnPerformEdit( CCtrlData* );
+	void OnPerform( CCtrlData* );
+	void OnAdd( CCtrlButton* );
+	void OnDelete( CCtrlButton* );
 
 	void addPerformComboValue( int idx, const char* szValueName );
 };
@@ -309,7 +313,7 @@ struct CIgnorePrefsDlg : public CProtoDlgBase<CIrcProto>
 {
 	CCtrlMButton m_add, m_edit, m_del;
 	CCtrlCheck m_enable, m_ignoreChat, m_ignoreFile, m_ignoreChannel, m_ignoreUnknown;
-	CCtrlBase m_list;  // TODO - convert it to CCtrlListView
+	CCtrlListView m_list;
 	
 	CIgnorePrefsDlg( CIrcProto* _pro );
 
@@ -321,11 +325,12 @@ struct CIgnorePrefsDlg : public CProtoDlgBase<CIrcProto>
 
 	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
 
-	void __cdecl OnEnableIgnore( CCtrlData* );
-	void __cdecl OnIgnoreChat( CCtrlData* );
-	void __cdecl OnAdd( CCtrlButton* );
-	void __cdecl OnEdit( CCtrlButton* );
-	void __cdecl OnDelete( CCtrlButton* );
+	void List_OnColumnClick( CCtrlListView::TEventInfo* );
+	void OnEnableIgnore( CCtrlData* );
+	void OnIgnoreChat( CCtrlData* );
+	void OnAdd( CCtrlButton* );
+	void OnEdit( CCtrlButton* );
+	void OnDelete( CCtrlButton* );
 
 	void FixButtons( void );
 	void RebuildList( void );
@@ -344,5 +349,5 @@ struct CAddIgnoreDlg : public CProtoDlgBase<CIrcProto>
 	virtual void OnInitDialog();
 	virtual void OnClose();
 
-	void __cdecl OnOk( CCtrlButton* );
+	void OnOk( CCtrlButton* );
 };
