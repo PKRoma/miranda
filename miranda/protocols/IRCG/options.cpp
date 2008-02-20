@@ -1504,10 +1504,9 @@ CIgnorePrefsDlg::CIgnorePrefsDlg( CIrcProto* _pro ) :
 	m_enable.OnChange = Callback( this, &CIgnorePrefsDlg::OnEnableIgnore );
 	m_ignoreChat.OnChange = Callback( this, &CIgnorePrefsDlg::OnIgnoreChat );
 	m_add.OnClick = Callback( this, &CIgnorePrefsDlg::OnAdd );
-	m_edit.OnClick = Callback( this, &CIgnorePrefsDlg::OnEdit );
+	m_list.OnDoubleClick = m_edit.OnClick = Callback( this, &CIgnorePrefsDlg::OnEdit );
 	m_del.OnClick = Callback( this, &CIgnorePrefsDlg::OnDelete );
 	m_list.OnColumnClick = Callback( this, &CIgnorePrefsDlg::List_OnColumnClick );
-	memcpy( &m_list.OnDoubleClick, &m_edit.OnClick, sizeof( CCallbackImp ));
 }
 
 void CIgnorePrefsDlg::OnInitDialog()

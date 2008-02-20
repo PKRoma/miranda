@@ -259,9 +259,8 @@ CListDlg::CListDlg(CIrcProto *_pro) :
 	m_Join( this, IDC_JOIN ),
 	m_list( this, IDC_INFO_LISTVIEW )
 {
-	m_Join.OnClick = Callback( this, &CListDlg::OnJoin );
+	m_list.OnDoubleClick = m_Join.OnClick = Callback( this, &CListDlg::OnJoin );
 	m_list.OnColumnClick = Callback( this, &CListDlg::List_OnColumnClick );
-	memcpy( &m_list.OnDoubleClick, &m_Join.OnClick, sizeof( CCallbackImp ));
 }
 
 void CListDlg::OnInitDialog()
