@@ -588,6 +588,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
             strcat(ver, " Beta");
           strcat(szClientBuf, ver);
         }
+        szClient = szClientBuf;
       }
       else if (capId = MatchCap(caps, wLen, &capDiChat, 9))
       { // http://darkjimm.ucoz.ru/
