@@ -159,6 +159,7 @@ const capstr capIMadering = {'I', 'M', 'a', 'd', 'e', 'r', 'i', 'n', 'g', ' ', '
 const capstr capmChat     = {'m', 'C', 'h', 'a', 't', ' ', 'i', 'c', 'q', ' ', 0, 0, 0, 0, 0, 0};
 const capstr capJimm      = {'J', 'i', 'm', 'm', ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capCorePager = {'C', 'O', 'R', 'E', ' ', 'P', 'a', 'g', 'e', 'r', 0, 0, 0, 0, 0, 0};
+const capstr capDiChat    = {'D', '[', 'i', ']', 'C', 'h', 'a', 't', ' ', 0, 0, 0, 0, 0, 0, 0};
 const capstr capVmIcq     = {'V', 'm', 'I', 'C', 'Q', ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capSmapeR    = {'S', 'm', 'a', 'p', 'e', 'r', ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capAnastasia = {0x44, 0xE5, 0xBF, 0xCE, 0xB0, 0x96, 0xE5, 0x47, 0xBD, 0x65, 0xEF, 0xD6, 0xA3, 0x7E, 0x36, 0x02};
@@ -317,6 +318,16 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
   { // this is R&Q (Rapid Edition)
     null_snprintf(szClientBuf, 64, "R&Q %u", (unsigned)dwFT2);
     szClient = szClientBuf;   
+  }
+  else if (dwFT1 == 0x66666666 && dwFT3 == 0x66666666)
+  { // http://darkjimm.ucoz.ru/
+    strcpy(szClientBuf, "D[i]Chat");
+    if (dwFT2 == 0x10000)
+      strcat(szClientBuf, " v.0.1a");
+    else if (dwFT2 == 0x22)
+      strcat(szClientBuf, " v.0.2b");
+
+    szClient = szClientBuf;
   }
   else if (dwFT1 == dwFT2 && dwFT2 == dwFT3 && wVersion == 8)
   {
@@ -577,6 +588,13 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
             strcat(ver, " Beta");
           strcat(szClientBuf, ver);
         }
+        szClient = szClientBuf;
+      }
+      else if (capId = MatchCap(caps, wLen, &capDiChat, 9))
+      { // http://darkjimm.ucoz.ru/
+        strcpy(szClientBuf, "D[i]Chat");
+        strncat(szClientBuf, (*capId) + 8, 8);
+        szClient = szClientBuf;
       }
       else if (MatchCap(caps, wLen, &capMacIcq, 0x10))
       {
