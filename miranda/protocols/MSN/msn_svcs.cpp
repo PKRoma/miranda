@@ -982,6 +982,8 @@ static void sttSendOim( LPVOID param )
 
 static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 {
+	if ( !msnLoggedIn ) return 0;
+
 	CCSDATA* ccs = ( CCSDATA* )lParam;
 	const HANDLE hContact = ccs->hContact;
 	char *errMsg = NULL;
