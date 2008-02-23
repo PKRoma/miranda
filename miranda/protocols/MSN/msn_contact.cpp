@@ -53,10 +53,19 @@ HANDLE  MSN_HContactFromEmail( const char* msnEmail, const char* msnNick, bool a
 void MSN_SetContactDb(HANDLE hContact, const char *szEmail)
 {
 	int listId = Lists_GetMask( szEmail );
+
 	TCHAR* szNonIm = TranslateT("Non IM Contacts");
+	bool isNonIm = false;
+	DBVARIANT dbv;
+	if (DBGetContactSettingTString( hContact, "CList", "Group", &dbv ) == 0)
+	{ 
+		isNonIm = _tcscmp(dbv.ptszVal, szNonIm) == 0;
+		MSN_FreeVariant( &dbv );
+	}
+
 	if (listId & LIST_FL)
 	{
-		if (DBGetContactSettingByte( hContact, "CList", "NotOnList", 0 ) == 1)
+		if (isNonIm || DBGetContactSettingByte( hContact, "CList", "NotOnList", 0 ) == 1)
 		{
 			DBDeleteContactSetting( hContact, "CList", "NotOnList" );
 			DBDeleteContactSetting( hContact, "CList", "Hidden" );
@@ -74,19 +83,13 @@ void MSN_SetContactDb(HANDLE hContact, const char *szEmail)
 		int netId = Lists_GetNetId(szEmail);
 		if (netId == NETID_EMAIL)
 		{
-			DBWriteContactSettingTString( hContact, "CList", "Group", szNonIm);
+			if (!isNonIm) DBWriteContactSettingTString( hContact, "CList", "Group", szNonIm);
 			MSN_SetWord( hContact, "Status", ID_STATUS_ONLINE );
 			MSN_SetString( hContact, "MirVer", "E-Mail Only" );
 		}
 		else
 		{
-			DBVARIANT dbv;
-			if (DBGetContactSettingTString( hContact, "CList", "Group", &dbv ) == 0 && 
-				_tcscmp(dbv.ptszVal, szNonIm) == 0)
-			{
-				DBDeleteContactSetting(hContact, "CList", "Group" );
-				MSN_FreeVariant( &dbv );
-			}
+			if (isNonIm) DBDeleteContactSetting(hContact, "CList", "Group" );
 		}
 
 		if (netId == NETID_MOB)
@@ -97,9 +100,13 @@ void MSN_SetContactDb(HANDLE hContact, const char *szEmail)
 	}
 	else
 	{
-		DBWriteContactSettingByte( hContact, "CList", "NotOnList", 1 );
+		if (listId & (LIST_BL | LIST_AL))
+			DBDeleteContactSetting( hContact, "CList", "NotOnList" );
+		else
+			DBWriteContactSettingByte( hContact, "CList", "NotOnList", 1 );
+
 		DBWriteContactSettingByte( hContact, "CList", "Hidden", 1 );
-		DBWriteContactSettingTString( hContact, "CList", "Group", szNonIm);
+		if (!isNonIm) DBWriteContactSettingTString( hContact, "CList", "Group", szNonIm);
 	}
 }
 

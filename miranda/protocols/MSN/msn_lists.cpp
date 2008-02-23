@@ -171,6 +171,19 @@ void MSN_CleanupLists(void)
 			MSN_AddAuthRequest( hContact, p->email, p->email );
 	}
 	LeaveCriticalSection(&csLists);
+
+	for (HANDLE hContact = (HANDLE)MSN_CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+		 hContact != NULL; 
+	     hContact = (HANDLE)MSN_CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0)) 
+	{
+		if (!MSN_IsMyContact(hContact)) continue;
+
+		char szEmail[MSN_MAX_EMAIL_LEN];
+		if (MSN_GetStaticString("e-mail", hContact, szEmail, sizeof(szEmail)) == 0 && Lists_IsInList(-1, szEmail))
+			continue;
+
+		MSN_CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
+	}
 }
 
 void MSN_CreateContList(void)
